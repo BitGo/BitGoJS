@@ -22,6 +22,7 @@ import {
   createTokenMapUsingConfigDetails,
   createTokenMapUsingTrimmedConfigDetails,
   createToken,
+  getFormattedTokenConfigForCoin,
 } from '../../src';
 import { utxo } from '../../src/utxo';
 import { expectedColdFeatures } from './fixtures/expectedColdFeatures';
@@ -1080,5 +1081,21 @@ describe('create token map using config details', () => {
       coinMap.addCoin(staticsCoin);
     }
     coinMap.has('hteth:faketoken').should.be.true();
+  });
+  it('should be able to create token config of a single base coin', () => {
+    const tokenName = 'hteth:faketoken';
+    const coinMap = createTokenMapUsingTrimmedConfigDetails(reducedAmsTokenConfig);
+    const amsTokenConfig = reducedAmsTokenConfig[tokenName][0];
+    const amsToken = coinMap.get('hteth:faketoken');
+    const tokenConfig = getFormattedTokenConfigForCoin(amsToken);
+    tokenConfig?.should.not.be.undefined();
+    tokenConfig?.should.deepEqual({
+      type: tokenName,
+      coin: 'hteth',
+      network: 'Testnet',
+      name: amsTokenConfig.fullName,
+      decimalPlaces: amsTokenConfig.decimalPlaces,
+      tokenContractAddress: amsTokenConfig.contractAddress.toLowerCase(),
+    });
   });
 });

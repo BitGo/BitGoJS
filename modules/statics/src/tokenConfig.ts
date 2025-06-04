@@ -25,7 +25,7 @@ import {
   XrpCoin,
   ZkethERC20Token,
 } from './account';
-import { CoinFamily, CoinKind } from './base';
+import { CoinFamily, CoinKind, BaseCoin } from './base';
 import { coins } from './coins';
 import { Networks, NetworkType } from './networks';
 import { OfcCoin } from './ofc';
@@ -110,6 +110,26 @@ export type Sip10TokenConfig = BaseNetworkConfig & {
 export type Nep141TokenConfig = BaseNetworkConfig & {
   contractAddress: string;
 };
+
+export type TokenConfig =
+  | Erc20TokenConfig
+  | StellarTokenConfig
+  | OfcTokenConfig
+  | CeloTokenConfig
+  | EthLikeTokenConfig
+  | EosTokenConfig
+  | AvaxcTokenConfig
+  | SolTokenConfig
+  | HbarTokenConfig
+  | AdaTokenConfig
+  | AlgoTokenConfig
+  | TrxTokenConfig
+  | XrpTokenConfig
+  | SuiTokenConfig
+  | AptTokenConfig
+  | AptNFTCollectionConfig
+  | Sip10TokenConfig
+  | Nep141TokenConfig;
 
 export interface Tokens {
   bitcoin: {
@@ -303,36 +323,39 @@ export interface TrimmedAmsTokenConfig extends Omit<AmsTokenConfig, 'features' |
   additionalFeatures?: string[];
 }
 
+function getErc20TokenConfig(coin: Erc20Coin): Erc20TokenConfig {
+  let baseCoin: string;
+  switch (coin.network.name) {
+    case Networks.main.ethereum.name:
+      baseCoin = 'eth';
+      break;
+    case Networks.test.kovan.name:
+      baseCoin = 'teth';
+      break;
+    case Networks.test.goerli.name:
+      baseCoin = 'gteth';
+      break;
+    case Networks.test.holesky.name:
+      baseCoin = 'hteth';
+      break;
+    default:
+      throw new Error(`Erc20 token ${coin.name} has an unsupported network`);
+  }
+  return {
+    type: coin.name,
+    coin: baseCoin,
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+    decimalPlaces: coin.decimalPlaces,
+  };
+}
+
 // Get the list of ERC-20 tokens from statics and format it properly
 const getFormattedErc20Tokens = (customCoinMap = coins) =>
   customCoinMap.reduce((acc: Erc20TokenConfig[], coin) => {
     if (coin instanceof Erc20Coin) {
-      let baseCoin: string;
-      switch (coin.network.name) {
-        case Networks.main.ethereum.name:
-          baseCoin = 'eth';
-          break;
-        case Networks.test.kovan.name:
-          baseCoin = 'teth';
-          break;
-        case Networks.test.goerli.name:
-          baseCoin = 'gteth';
-          break;
-        case Networks.test.holesky.name:
-          baseCoin = 'hteth';
-          break;
-        default:
-          throw new Error(`Erc20 token ${coin.name} has an unsupported network`);
-      }
-
-      acc.push({
-        type: coin.name,
-        coin: baseCoin,
-        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-        name: coin.fullName,
-        tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
-        decimalPlaces: coin.decimalPlaces,
-      });
+      acc.push(getErc20TokenConfig(coin));
     }
     return acc;
   }, []);
@@ -348,378 +371,451 @@ export const ethGasConfigs = {
   newEthLikeCoinsMinGasLimit: 400000, // minimum gas limit a user can set for a send for eth like coins like arbitrum, optimism, etc
   opethGasL1Fees: 1000000000000000, // Buffer for opeth L1 gas fees
 };
+
+function getStellarTokenConfig(coin: StellarCoin): StellarTokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'xlm' : 'txlm',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    decimalPlaces: coin.decimalPlaces,
+  };
+}
 // Get the list of Stellar tokens from statics and format it properly
 const getFormattedStellarTokens = (customCoinMap = coins) =>
   customCoinMap.reduce((acc: StellarTokenConfig[], coin) => {
     if (coin instanceof StellarCoin) {
-      acc.push({
-        type: coin.name,
-        coin: coin.network.type === NetworkType.MAINNET ? 'xlm' : 'txlm',
-        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-        name: coin.fullName,
-        decimalPlaces: coin.decimalPlaces,
-      });
+      acc.push(getStellarTokenConfig(coin));
     }
     return acc;
   }, []);
 
+function getOfcTokenConfig(coin: OfcCoin): OfcTokenConfig {
+  return {
+    type: coin.name,
+    coin: 'ofc',
+    backingCoin: coin.asset,
+    name: coin.fullName,
+    decimalPlaces: coin.decimalPlaces,
+    isFiat: coin.kind === CoinKind.FIAT,
+  };
+}
 // Get the list of OFC tokens from statics and format it properly
 const getFormattedOfcCoins = (customCoinMap = coins) =>
   customCoinMap.reduce((acc: OfcTokenConfig[], coin) => {
     if (coin instanceof OfcCoin) {
-      acc.push({
-        type: coin.name,
-        coin: 'ofc',
-        backingCoin: coin.asset,
-        name: coin.fullName,
-        decimalPlaces: coin.decimalPlaces,
-        isFiat: coin.kind === CoinKind.FIAT,
-      });
+      acc.push(getOfcTokenConfig(coin));
     }
     return acc;
   }, []);
 
+function getCeloTokenConfig(coin: CeloCoin): CeloTokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'celo' : 'tcelo',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+    decimalPlaces: coin.decimalPlaces,
+  };
+}
 const getFormattedCeloTokens = (customCoinMap = coins) =>
   customCoinMap.reduce((acc: CeloTokenConfig[], coin) => {
     if (coin instanceof CeloCoin) {
-      acc.push({
-        type: coin.name,
-        coin: coin.network.type === NetworkType.MAINNET ? 'celo' : 'tcelo',
-        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-        name: coin.fullName,
-        tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
-        decimalPlaces: coin.decimalPlaces,
-      });
+      acc.push(getCeloTokenConfig(coin));
     }
     return acc;
   }, []);
 
+function getBscTokenConfig(coin: BscCoin): EthLikeTokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'bsc' : 'tbsc',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+    decimalPlaces: coin.decimalPlaces,
+  };
+}
 const getFormattedBscTokens = (customCoinMap = coins) =>
   customCoinMap.reduce((acc: EthLikeTokenConfig[], coin) => {
     if (coin instanceof BscCoin) {
-      acc.push({
-        type: coin.name,
-        coin: coin.network.type === NetworkType.MAINNET ? 'bsc' : 'tbsc',
-        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-        name: coin.fullName,
-        tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
-        decimalPlaces: coin.decimalPlaces,
-      });
+      acc.push(getBscTokenConfig(coin));
     }
     return acc;
   }, []);
 
+function getEosTokenConfig(coin: EosCoin): EosTokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'eos' : 'teos',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    tokenContractAddress: coin.contractName.toString().toLowerCase(),
+    decimalPlaces: coin.decimalPlaces,
+    contractName: coin.contractName,
+    contractAddress: coin.contractAddress,
+  };
+}
 const getFormattedEosTokens = (customCoinMap = coins) =>
   customCoinMap.reduce((acc: EosTokenConfig[], coin) => {
     if (coin instanceof EosCoin) {
-      acc.push({
-        type: coin.name,
-        coin: coin.network.type === NetworkType.MAINNET ? 'eos' : 'teos',
-        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-        name: coin.fullName,
-        tokenContractAddress: coin.contractName.toString().toLowerCase(),
-        decimalPlaces: coin.decimalPlaces,
-        contractName: coin.contractName,
-        contractAddress: coin.contractAddress,
-      });
+      acc.push(getEosTokenConfig(coin));
     }
     return acc;
   }, []);
 
+function getAvaxCTokenConfig(coin: AvaxERC20Token): AvaxcTokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'avaxc' : 'tavaxc',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+    decimalPlaces: coin.decimalPlaces,
+  };
+}
 const getFormattedAvaxCTokens = (customCoinMap = coins) =>
   customCoinMap.reduce((acc: AvaxcTokenConfig[], coin) => {
     if (coin instanceof AvaxERC20Token) {
-      acc.push({
-        type: coin.name,
-        coin: coin.network.type === NetworkType.MAINNET ? 'avaxc' : 'tavaxc',
-        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-        name: coin.fullName,
-        tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
-        decimalPlaces: coin.decimalPlaces,
-      });
+      acc.push(getAvaxCTokenConfig(coin));
     }
     return acc;
   }, []);
 
+function getPolygonTokenConfig(coin: PolygonERC20Token | Erc721Coin | Erc1155Coin): EthLikeTokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'polygon' : 'tpolygon',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+    decimalPlaces: coin.decimalPlaces,
+  };
+}
 const getFormattedPolygonTokens = (customCoinMap = coins) =>
   customCoinMap.reduce((acc: EthLikeTokenConfig[], coin) => {
     if (
       coin instanceof PolygonERC20Token ||
       ((coin instanceof Erc721Coin || coin instanceof Erc1155Coin) && coin.family === CoinFamily.POLYGON)
     ) {
-      acc.push({
-        type: coin.name,
-        coin: coin.network.type === NetworkType.MAINNET ? 'polygon' : 'tpolygon',
-        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-        name: coin.fullName,
-        tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
-        decimalPlaces: coin.decimalPlaces,
-      });
+      acc.push(getPolygonTokenConfig(coin));
     }
     return acc;
   }, []);
 
+function getSoneiumTokenConfig(coin: Erc721Coin | Erc1155Coin): EthLikeTokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'soneium' : 'tsoneium',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+    decimalPlaces: coin.decimalPlaces,
+  };
+}
 const getFormattedSoneiumTokens = (customCoinMap = coins) =>
   customCoinMap.reduce((acc: EthLikeTokenConfig[], coin) => {
     if ((coin instanceof Erc721Coin || coin instanceof Erc1155Coin) && coin.family === CoinFamily.SONEIUM) {
-      acc.push({
-        type: coin.name,
-        coin: coin.network.type === NetworkType.MAINNET ? 'soneium' : 'tsoneium',
-        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-        name: coin.fullName,
-        tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
-        decimalPlaces: coin.decimalPlaces,
-      });
+      acc.push(getSoneiumTokenConfig(coin));
     }
     return acc;
   }, []);
 
+function getArbethTokenConfig(coin: ArbethERC20Token): EthLikeTokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'arbeth' : 'tarbeth',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+    decimalPlaces: coin.decimalPlaces,
+  };
+}
 const getFormattedArbethTokens = (customCoinMap = coins) =>
   customCoinMap.reduce((acc: EthLikeTokenConfig[], coin) => {
     if (coin instanceof ArbethERC20Token) {
-      acc.push({
-        type: coin.name,
-        coin: coin.network.type === NetworkType.MAINNET ? 'arbeth' : 'tarbeth',
-        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-        name: coin.fullName,
-        tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
-        decimalPlaces: coin.decimalPlaces,
-      });
+      acc.push(getArbethTokenConfig(coin));
     }
     return acc;
   }, []);
 
+function getOpethTokenConfig(coin: OpethERC20Token): EthLikeTokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'opeth' : 'topeth',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+    decimalPlaces: coin.decimalPlaces,
+  };
+}
 const getFormattedOpethTokens = (customCoinMap = coins) =>
   customCoinMap.reduce((acc: EthLikeTokenConfig[], coin) => {
     if (coin instanceof OpethERC20Token) {
-      acc.push({
-        type: coin.name,
-        coin: coin.network.type === NetworkType.MAINNET ? 'opeth' : 'topeth',
-        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-        name: coin.fullName,
-        tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
-        decimalPlaces: coin.decimalPlaces,
-      });
+      acc.push(getOpethTokenConfig(coin));
     }
     return acc;
   }, []);
 
+function getZkethTokenConfig(coin: ZkethERC20Token): EthLikeTokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'zketh' : 'tzketh',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+    decimalPlaces: coin.decimalPlaces,
+  };
+}
 const getFormattedZkethTokens = (customCoinMap = coins) =>
   customCoinMap.reduce((acc: EthLikeTokenConfig[], coin) => {
     if (coin instanceof ZkethERC20Token) {
-      acc.push({
-        type: coin.name,
-        coin: coin.network.type === NetworkType.MAINNET ? 'zketh' : 'tzketh',
-        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-        name: coin.fullName,
-        tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
-        decimalPlaces: coin.decimalPlaces,
-      });
+      acc.push(getZkethTokenConfig(coin));
     }
     return acc;
   }, []);
 
+function getBeraTokenConfig(coin: BeraERC20Token): EthLikeTokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'bera' : 'tbera',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+    decimalPlaces: coin.decimalPlaces,
+  };
+}
 const getFormattedBeraTokens = (customCoinMap = coins) =>
   customCoinMap.reduce((acc: EthLikeTokenConfig[], coin) => {
     if (coin instanceof BeraERC20Token) {
-      acc.push({
-        type: coin.name,
-        coin: coin.network.type === NetworkType.MAINNET ? 'bera' : 'tbera',
-        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-        name: coin.fullName,
-        tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
-        decimalPlaces: coin.decimalPlaces,
-      });
+      acc.push(getBeraTokenConfig(coin));
     }
     return acc;
   }, []);
 
+function getCoredaoTokenConfig(coin: CoredaoERC20Token): EthLikeTokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'coredao' : 'tcoredao',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+    decimalPlaces: coin.decimalPlaces,
+  };
+}
 const getFormattedCoredaoTokens = (customCoinMap = coins) =>
   customCoinMap.reduce((acc: EthLikeTokenConfig[], coin) => {
     if (coin instanceof CoredaoERC20Token) {
-      acc.push({
-        type: coin.name,
-        coin: coin.network.type === NetworkType.MAINNET ? 'coredao' : 'tcoredao',
-        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-        name: coin.fullName,
-        tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
-        decimalPlaces: coin.decimalPlaces,
-      });
+      acc.push(getCoredaoTokenConfig(coin));
     }
     return acc;
   }, []);
 
+function getSolTokenConfig(coin: SolCoin): SolTokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'sol' : 'tsol',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    tokenAddress: coin.tokenAddress,
+    decimalPlaces: coin.decimalPlaces,
+    contractAddress: coin.contractAddress,
+  };
+}
 const getFormattedSolTokens = (customCoinMap = coins) =>
   customCoinMap.reduce((acc: SolTokenConfig[], coin) => {
     if (coin instanceof SolCoin) {
-      acc.push({
-        type: coin.name,
-        coin: coin.network.type === NetworkType.MAINNET ? 'sol' : 'tsol',
-        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-        name: coin.fullName,
-        tokenAddress: coin.tokenAddress,
-        decimalPlaces: coin.decimalPlaces,
-        contractAddress: coin.contractAddress,
-      });
+      acc.push(getSolTokenConfig(coin));
     }
     return acc;
   }, []);
 
+function getAlgoTokenConfig(coin: AlgoCoin): AlgoTokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'algo' : 'talgo',
+    alias: coin.alias,
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    decimalPlaces: coin.decimalPlaces,
+  };
+}
 export const getFormattedAlgoTokens = (customCoinMap = coins) =>
   customCoinMap.reduce((acc: AlgoTokenConfig[], coin) => {
     if (coin instanceof AlgoCoin) {
-      acc.push({
-        type: coin.name,
-        coin: coin.network.type === NetworkType.MAINNET ? 'algo' : 'talgo',
-        alias: coin.alias,
-        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-        name: coin.fullName,
-        decimalPlaces: coin.decimalPlaces,
-      });
+      acc.push(getAlgoTokenConfig(coin));
     }
     return acc;
   }, []);
 
+function getHbarTokenConfig(coin: HederaToken): HbarTokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'hbar' : 'thbar',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    decimalPlaces: coin.decimalPlaces,
+    nodeAccountId: coin.nodeAccountId,
+    tokenId: coin.tokenId,
+    contractAddress: coin.contractAddress,
+  };
+}
 const getFormattedHbarTokens = (customCoinMap = coins) =>
   customCoinMap.reduce((acc: HbarTokenConfig[], coin) => {
     if (coin instanceof HederaToken) {
-      acc.push({
-        type: coin.name,
-        coin: coin.network.type === NetworkType.MAINNET ? 'hbar' : 'thbar',
-        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-        name: coin.fullName,
-        decimalPlaces: coin.decimalPlaces,
-        nodeAccountId: coin.nodeAccountId,
-        tokenId: coin.tokenId,
-        contractAddress: coin.contractAddress,
-      });
+      acc.push(getHbarTokenConfig(coin));
     }
     return acc;
   }, []);
 
+function getAdaTokenConfig(coin: AdaCoin): AdaTokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'ada' : 'tada',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    policyId: coin.policyId,
+    assetName: coin.assetName,
+    decimalPlaces: coin.decimalPlaces,
+  };
+}
 const getFormattedAdaTokens = (customCoinMap = coins) =>
   customCoinMap.reduce((acc: AdaTokenConfig[], coin) => {
     if (coin instanceof AdaCoin) {
-      acc.push({
-        type: coin.name,
-        coin: coin.network.type === NetworkType.MAINNET ? 'ada' : 'tada',
-        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-        name: coin.fullName,
-        policyId: coin.policyId,
-        assetName: coin.assetName,
-        decimalPlaces: coin.decimalPlaces,
-      });
+      acc.push(getAdaTokenConfig(coin));
     }
     return acc;
   }, []);
 
+function getTrxTokenConfig(coin: TronErc20Coin): TrxTokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'trx' : 'ttrx',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+    decimalPlaces: coin.decimalPlaces,
+  };
+}
 const getFormattedTrxTokens = (customCoinMap = coins) =>
   customCoinMap.reduce((acc: TrxTokenConfig[], coin) => {
     if (coin instanceof TronErc20Coin) {
-      acc.push({
-        type: coin.name,
-        coin: coin.network.type === NetworkType.MAINNET ? 'trx' : 'ttrx',
-        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-        name: coin.fullName,
-        tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
-        decimalPlaces: coin.decimalPlaces,
-      });
+      acc.push(getTrxTokenConfig(coin));
     }
     return acc;
   }, []);
 
+function getXrpTokenConfig(coin: XrpCoin): XrpTokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'xrp' : 'txrp',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    decimalPlaces: coin.decimalPlaces,
+    issuerAddress: coin.issuerAddress,
+    currencyCode: coin.currencyCode,
+    domain: coin.domain,
+    contractAddress: coin.contractAddress,
+  };
+}
 const getFormattedXrpTokens = (customCoinMap = coins) =>
   customCoinMap.reduce((acc: XrpTokenConfig[], coin) => {
     if (coin instanceof XrpCoin) {
-      acc.push({
-        type: coin.name,
-        coin: coin.network.type === NetworkType.MAINNET ? 'xrp' : 'txrp',
-        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-        name: coin.fullName,
-        decimalPlaces: coin.decimalPlaces,
-        issuerAddress: coin.issuerAddress,
-        currencyCode: coin.currencyCode,
-        domain: coin.domain,
-        contractAddress: coin.contractAddress,
-      });
+      acc.push(getXrpTokenConfig(coin));
     }
     return acc;
   }, []);
 
+function getSuiTokenConfig(coin: SuiCoin): SuiTokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'sui' : 'tsui',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    decimalPlaces: coin.decimalPlaces,
+    packageId: coin.packageId,
+    module: coin.module,
+    symbol: coin.symbol,
+    contractAddress: coin.contractAddress,
+  };
+}
 const getFormattedSuiTokens = (customCoinMap = coins) =>
   customCoinMap.reduce((acc: SuiTokenConfig[], coin) => {
     if (coin instanceof SuiCoin) {
-      acc.push({
-        type: coin.name,
-        coin: coin.network.type === NetworkType.MAINNET ? 'sui' : 'tsui',
-        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-        name: coin.fullName,
-        decimalPlaces: coin.decimalPlaces,
-        packageId: coin.packageId,
-        module: coin.module,
-        symbol: coin.symbol,
-        contractAddress: coin.contractAddress,
-      });
+      acc.push(getSuiTokenConfig(coin));
     }
     return acc;
   }, []);
 
+function getAptTokenConfig(coin: AptCoin): AptTokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'apt' : 'tapt',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    assetId: coin.assetId,
+    decimalPlaces: coin.decimalPlaces,
+  };
+}
 const getFormattedAptTokens = (customCoinMap = coins) =>
   customCoinMap.reduce((acc: AptTokenConfig[], coin) => {
     if (coin instanceof AptCoin) {
-      acc.push({
-        type: coin.name,
-        coin: coin.network.type === NetworkType.MAINNET ? 'apt' : 'tapt',
-        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-        name: coin.fullName,
-        assetId: coin.assetId,
-        decimalPlaces: coin.decimalPlaces,
-      });
+      acc.push(getAptTokenConfig(coin));
     }
     return acc;
   }, []);
 
+function getAptNFTCollectionConfig(coin: AptNFTCollection): AptNFTCollectionConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'apt' : 'tapt',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    nftCollectionId: coin.nftCollectionId,
+    decimalPlaces: coin.decimalPlaces,
+  };
+}
 const getFormattedAptNFTCollections = (customCoinMap = coins) =>
   customCoinMap.reduce((acc: AptNFTCollectionConfig[], coin) => {
     if (coin instanceof AptNFTCollection) {
-      acc.push({
-        type: coin.name,
-        coin: coin.network.type === NetworkType.MAINNET ? 'apt' : 'tapt',
-        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-        name: coin.fullName,
-        nftCollectionId: coin.nftCollectionId,
-        decimalPlaces: coin.decimalPlaces,
-      });
+      acc.push(getAptNFTCollectionConfig(coin));
     }
     return acc;
   }, []);
 
+function getSip10TokenConfig(coin: Sip10Token): Sip10TokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'stx' : 'tstx',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    assetId: coin.assetId,
+    decimalPlaces: coin.decimalPlaces,
+  };
+}
 const getFormattedSip10Tokens = (customCoinMap = coins) =>
   customCoinMap.reduce((acc: Sip10TokenConfig[], coin) => {
     if (coin instanceof Sip10Token) {
-      acc.push({
-        type: coin.name,
-        coin: coin.network.type === NetworkType.MAINNET ? 'stx' : 'tstx',
-        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-        name: coin.fullName,
-        assetId: coin.assetId,
-        decimalPlaces: coin.decimalPlaces,
-      });
+      acc.push(getSip10TokenConfig(coin));
     }
     return acc;
   }, []);
 
+function getNep141TokenConfig(coin: Nep141Token): Nep141TokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'near' : 'tnear',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    contractAddress: coin.contractAddress,
+    decimalPlaces: coin.decimalPlaces,
+  };
+}
 const getFormattedNep141Tokens = (customCoinMap = coins) =>
   customCoinMap.reduce((acc: Nep141TokenConfig[], coin) => {
     if (coin instanceof Nep141Token) {
-      acc.push({
-        type: coin.name,
-        coin: coin.network.type === NetworkType.MAINNET ? 'near' : 'tnear',
-        network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-        name: coin.fullName,
-        contractAddress: coin.contractAddress,
-        decimalPlaces: coin.decimalPlaces,
-      });
+      acc.push(getNep141TokenConfig(coin));
     }
     return acc;
   }, []);
@@ -925,3 +1021,60 @@ export const mainnetTokens = { ...mainnetErc20Tokens, ...mainnetStellarTokens };
 const testnetErc20Tokens = verifyTokens(tokens.testnet.eth.tokens);
 const testnetStellarTokens = verifyTokens(tokens.testnet.xlm.tokens);
 export const testnetTokens = { ...testnetErc20Tokens, ...testnetStellarTokens };
+
+/**
+ * Get formatted token configuration for a single coin
+ * @param coin - Static Base coin instance
+ * @returns The formatted token configuration for the coin, or undefined if not supported
+ */
+export function getFormattedTokenConfigForCoin(coin: Readonly<BaseCoin>): TokenConfig | undefined {
+  if (coin instanceof Erc20Coin) {
+    return getErc20TokenConfig(coin);
+  } else if (coin instanceof StellarCoin) {
+    return getStellarTokenConfig(coin);
+  } else if (coin instanceof OfcCoin) {
+    return getOfcTokenConfig(coin);
+  } else if (coin instanceof CeloCoin) {
+    return getCeloTokenConfig(coin);
+  } else if (coin instanceof BscCoin) {
+    return getBscTokenConfig(coin);
+  } else if (coin instanceof EosCoin) {
+    return getEosTokenConfig(coin);
+  } else if (coin instanceof AvaxERC20Token) {
+    return getAvaxCTokenConfig(coin);
+  } else if (
+    coin instanceof PolygonERC20Token ||
+    ((coin instanceof Erc721Coin || coin instanceof Erc1155Coin) && coin.family === CoinFamily.POLYGON)
+  ) {
+    return getPolygonTokenConfig(coin);
+  } else if ((coin instanceof Erc721Coin || coin instanceof Erc1155Coin) && coin.family === CoinFamily.SONEIUM) {
+    return getSoneiumTokenConfig(coin);
+  } else if (coin instanceof ArbethERC20Token) {
+    return getArbethTokenConfig(coin);
+  } else if (coin instanceof OpethERC20Token) {
+    return getOpethTokenConfig(coin);
+  } else if (coin instanceof ZkethERC20Token) {
+    return getZkethTokenConfig(coin);
+  } else if (coin instanceof SolCoin) {
+    return getSolTokenConfig(coin);
+  } else if (coin instanceof HederaToken) {
+    return getHbarTokenConfig(coin);
+  } else if (coin instanceof AdaCoin) {
+    return getAdaTokenConfig(coin);
+  } else if (coin instanceof TronErc20Coin) {
+    return getTrxTokenConfig(coin);
+  } else if (coin instanceof XrpCoin) {
+    return getXrpTokenConfig(coin);
+  } else if (coin instanceof SuiCoin) {
+    return getSuiTokenConfig(coin);
+  } else if (coin instanceof AptCoin) {
+    return getAptTokenConfig(coin);
+  } else if (coin instanceof AptNFTCollection) {
+    return getAptNFTCollectionConfig(coin);
+  } else if (coin instanceof Sip10Token) {
+    return getSip10TokenConfig(coin);
+  } else if (coin instanceof Nep141Token) {
+    return getNep141TokenConfig(coin);
+  }
+  return undefined;
+}
