@@ -9,7 +9,7 @@ import { Near, TNear } from '@bitgo/sdk-coin-near';
 import { SolToken } from '@bitgo/sdk-coin-sol';
 import { TrxToken } from '@bitgo/sdk-coin-trx';
 import { CoinFactory } from '@bitgo/sdk-core';
-import { CoinMap, coins, getFormattedTokens } from '@bitgo/statics';
+import { CoinFeature, CoinMap, coins, getFormattedTokens } from '@bitgo/statics';
 import {
   Ada,
   Algo,
@@ -49,6 +49,7 @@ import {
   Eth,
   Ethw,
   EthLikeCoin,
+  EvmCoin,
   FetchAi,
   Flr,
   TethLikeCoin,
@@ -344,6 +345,12 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('zec', Zec.createInstance);
   coinFactory.register('zeta', Zeta.createInstance);
   coinFactory.register('zketh', Zketh.createInstance);
+
+  coins
+    .filter((coin) => coin.features.includes(CoinFeature.SHARED_EVM_SDK))
+    .forEach((coin) => {
+      coinFactory.register(coin.name, EvmCoin.createInstance);
+    });
 
   const tokens = getFormattedTokens(coinMap);
 
