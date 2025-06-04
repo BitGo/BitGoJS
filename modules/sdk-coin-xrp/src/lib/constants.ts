@@ -26,3 +26,6 @@ export const VALID_ACCOUNT_SET_FLAGS = [
 export const USER_KEY_SETTING_FLAG = 65536;
 export const MASTER_KEY_DEACTIVATION_FLAG = 1048576;
 export const REQUIRE_DESTINATION_TAG_FLAG = 131072;
+
+// TrustSet flags
+export const NO_RIPPLE_FLAG = 131072;
