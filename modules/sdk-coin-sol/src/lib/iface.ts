@@ -128,7 +128,14 @@ export interface SetPriorityFee {
 
 export interface AtaInit {
   type: InstructionBuilderTypes.CreateAssociatedTokenAccount;
-  params: { mintAddress: string; ataAddress: string; ownerAddress: string; payerAddress: string; tokenName: string };
+  params: {
+    mintAddress: string;
+    ataAddress: string;
+    ownerAddress: string;
+    payerAddress: string;
+    tokenName: string;
+    programId?: string;
+  };
 }
 
 export interface AtaClose {

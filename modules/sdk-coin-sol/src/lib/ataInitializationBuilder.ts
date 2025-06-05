@@ -159,6 +159,7 @@ export class AtaInitializationBuilder extends TransactionBuilder {
             ownerAddress: recipient.ownerAddress,
             payerAddress: this._sender,
             tokenName: recipient.tokenName,
+            programId: token.programId,
           },
         });
       })

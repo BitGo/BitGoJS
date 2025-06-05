@@ -164,6 +164,7 @@ export class TransferBuilderV2 extends TransactionBuilder {
             mintAddress: coin.tokenAddress,
             ataAddress: recipientTokenAddress,
             payerAddress: this._sender,
+            programId: coin.programId,
           },
         };
       })

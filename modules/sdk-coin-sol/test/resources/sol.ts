@@ -295,6 +295,17 @@ export const associatedTokenAccounts = {
   ],
 };
 
+export const associatedTokenAccountsForSol2022 = {
+  mint: 'tsol:t22mint',
+  mintId: '5NR1bQwLWqjbkhbQ1hx72HKJybbuvwkDnUZNoAZ2VhW6',
+  accounts: [
+    {
+      pub: 'ANjpai13LdUuqTeHoJd72tosapYofAWNk95U7vind9dd',
+      ata: 'GQEPA5QK43RDD9xE1wN52aVgnH5acoPr4mMrEoob7KWq',
+    },
+  ],
+};
+
 export const ATA_INIT_UNSIGNED_TX =
   'AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAUHAGymKVqOJEQemBHH67uu8ISJV4rtwTejLrjw7VSeW6eRPnWyN8hzxKVQ4TDLI3w9B+9bjXlvcVElL/sY0IDBtgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAjJclj04kifG7PRApFI4NgwtaE5na/xCEBI572Nvp+FnG+nrzvtutOj1l82qryXQxsbvkwtL24OR8pgIDRS9dYQan1RcZLFxRIYzJTD1K8X9Y2u4Im6H9ROPb2YoAAAAABt324ddloZPZy+FGzut5rBy0he1fWzeROoz1hX7/AKnjMtr5L6vs6LY/96RABeX9/Zr6FYdWthxalfkEs7jQgQEDBwABAAQCBgUA';
 export const ATA_INIT_UNSIGNED_TX_WITH_MEMO =
@@ -337,6 +348,16 @@ export const tokenTransfers = {
   memo: 'test memo',
   decimals: 9,
   amount: 300000,
+};
+
+export const sol2022TokenTransfers = {
+  owner: 'ANjpai13LdUuqTeHoJd72tosapYofAWNk95U7vind9dd',
+  name: 'tsol:t22mint',
+  mint: '5NR1bQwLWqjbkhbQ1hx72HKJybbuvwkDnUZNoAZ2VhW6',
+  memo: 'test memo',
+  decimals: 9,
+  amount: 300000,
+  source: 'GQEPA5QK43RDD9xE1wN52aVgnH5acoPr4mMrEoob7KWq',
 };
 
 export const TOKEN_TRANSFER_TO_NATIVE_UNSIGNED_TX_HEX =
