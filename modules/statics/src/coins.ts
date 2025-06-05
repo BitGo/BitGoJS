@@ -2285,7 +2285,8 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.VAULTA,
     AccountCoin.DEFAULT_FEATURES,
     '',
-    'VAULTA'
+    'VAULTA',
+    'A'
   ),
   teosToken(
     '1c627bb5-4bee-4ab0-8bb6-3d535e17a769',
@@ -2345,7 +2346,8 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.VAULTA,
     AccountCoin.DEFAULT_FEATURES,
     '',
-    'VAULTA'
+    'VAULTA',
+    'A'
   ),
   erc721(
     'dd743064-09e6-4028-9e61-ebf7c24ff40b',
@@ -3673,7 +3675,9 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
         ...commonArgs.slice(0, 4), // id, name, fullName, decimalPlaces
         token.contractName, // contractName
         token.contractAddress, // contractAddress
-        ...commonArgs.slice(4) // asset, features, prefix, suffix, network, primaryKeyCurve
+        ...commonArgs.slice(4, 8), // asset, features, prefix, suffix
+        token.symbol, // symbol
+        ...commonArgs.slice(8) // network, primaryKeyCurve
       );
 
     case 'hbar':
