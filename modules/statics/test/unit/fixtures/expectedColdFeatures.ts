@@ -79,6 +79,7 @@ export const expectedColdFeatures = {
     'near',
     'oas',
     'osmo',
+    'peaq',
     'polyx',
     'sgb',
     'soneium',

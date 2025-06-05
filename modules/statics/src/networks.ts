@@ -1432,7 +1432,7 @@ class PeaqTestnet extends Testnet implements EthereumNetwork {
 class Peaq extends Mainnet implements EthereumNetwork {
   name = 'Peaq';
   family = CoinFamily.PEAQ;
-  explorerUrl = 'https://scout.agung.peaq.network/tx/';
+  explorerUrl = 'https://peaq.subscan.io/tx/';
   chainId = 3338;
   nativeCoinOperationHashPrefix = '3338';
 }
