@@ -1,5 +1,7 @@
 export * from 'bitcoinjs-lib';
 
+export * as varuint from 'bitcoinjs-lib/src/bufferutils';
+
 export * as bitgo from './bitgo';
 
 export * as address from './address';
