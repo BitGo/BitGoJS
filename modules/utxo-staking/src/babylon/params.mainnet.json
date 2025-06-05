@@ -114,5 +114,34 @@
       "allow_list_expiration_height": "139920",
       "btc_activation_height": 891425
     }
+  },
+  {
+    "params": {
+      "covenant_pks": [
+        "d45c70d28f169e1f0c7f4a78e2bc73497afe585b70aa897955989068f3350aaa",
+        "4b15848e495a3a62283daaadb3f458a00859fe48e321f0121ebabbdd6698f9fa",
+        "23b29f89b45f4af41588dcaf0ca572ada32872a88224f311373917f1b37d08d1",
+        "d3c79b99ac4d265c2f97ac11e3232c07a598b020cf56c6f055472c893c0967ae",
+        "8242640732773249312c47ca7bdb50ca79f15f2ecc32b9c83ceebba44fb74df7",
+        "e36200aaa8dce9453567bba108bdc51f7f1174b97a65e4dc4402fc5de779d41c",
+        "f178fcce82f95c524b53b077e6180bd2d779a9057fdff4255a0af95af918cee0",
+        "de13fc96ea6899acbdc5db3afaa683f62fe35b60ff6eb723dad28a11d2b12f8c",
+        "cbdd028cfe32c1c1f2d84bfec71e19f92df509bba7b8ad31ca6c1a134fe09204"
+      ],
+      "covenant_quorum": 6,
+      "min_staking_value_sat": "500000",
+      "max_staking_value_sat": "500000000000",
+      "min_staking_time_blocks": 64000,
+      "max_staking_time_blocks": 64000,
+      "slashing_pk_script": "agdiYWJ5bG9u",
+      "min_slashing_tx_fee_sat": "100000",
+      "slashing_rate": "0.001000000000000000",
+      "unbonding_time_blocks": 1008,
+      "unbonding_fee_sat": "9600",
+      "min_commission_rate": "0.030000000000000000",
+      "delegation_creation_base_gas_fee": "1095000",
+      "allow_list_expiration_height": "139920",
+      "btc_activation_height": 893362
+    }
   }
 ]
