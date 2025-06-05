@@ -120,6 +120,7 @@ export const expectedColdFeatures = {
     'tmantra',
     'tnear',
     'tosmo',
+    'tpeaq',
     'tpolyx',
     'tsei',
     'tsgb',

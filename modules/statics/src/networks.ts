@@ -1419,6 +1419,24 @@ class SongbirdTestnet extends Testnet implements EthereumNetwork {
   forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
+
+class PeaqTestnet extends Testnet implements EthereumNetwork {
+  name = 'PeaqTestnet';
+  family = CoinFamily.PEAQ;
+  explorerUrl = 'https://agung-testnet.subscan.io/tx/';
+  accountExplorerUrl = 'https://agung-testnet.subscan.io/account/';
+  chainId = 9990;
+  nativeCoinOperationHashPrefix = '9990';
+}
+
+class Peaq extends Mainnet implements EthereumNetwork {
+  name = 'Peaq';
+  family = CoinFamily.PEAQ;
+  explorerUrl = 'https://scout.agung.peaq.network/tx/';
+  chainId = 3338;
+  nativeCoinOperationHashPrefix = '3338';
+}
+
 class BaseChainTestnet extends Testnet implements EthereumNetwork {
   name = 'BaseChainTestnet';
   family = CoinFamily.BASEETH;
@@ -1524,6 +1542,7 @@ export const Networks = {
     litecoin: Object.freeze(new Litecoin()),
     mon: Object.freeze(new Monad()),
     mantra: Object.freeze(new Mantra()),
+    peaq: Object.freeze(new Peaq()),
     polygon: Object.freeze(new Polygon()),
     polyx: Object.freeze(new Polymesh()),
     oas: Object.freeze(new Oas()),
@@ -1606,6 +1625,7 @@ export const Networks = {
     lnbtc: Object.freeze(new LightningBitcoinTestnet()),
     litecoin: Object.freeze(new LitecoinTestnet()),
     mantra: Object.freeze(new MantraTestnet()),
+    peaq: Object.freeze(new PeaqTestnet()),
     polygon: Object.freeze(new PolygonTestnet()),
     polyx: Object.freeze(new PolymeshTestnet()),
     oas: Object.freeze(new OasTestnet()),

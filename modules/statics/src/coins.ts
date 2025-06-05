@@ -1467,6 +1467,26 @@ export const coins = CoinMap.fromCoins([
     VET_FEATURES,
     KeyCurve.Secp256k1
   ),
+  account(
+    '19eec55f-7711-4c9a-8754-4ea523265cdc',
+    'peaq',
+    'Peaq',
+    Networks.main.peaq,
+    18,
+    UnderlyingAsset.PEAQ,
+    BaseUnit.ETH,
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
+  ),
+  account(
+    '32d8fc7f-c323-488c-9996-53610e43c828',
+    'tpeaq',
+    'Testnet Peaq',
+    Networks.test.peaq,
+    18,
+    UnderlyingAsset.PEAQ,
+    BaseUnit.ETH,
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
+  ),
   erc20CompatibleAccountCoin(
     'bfae821b-cf3a-4190-b1a8-a54af51d730e',
     'celo',
