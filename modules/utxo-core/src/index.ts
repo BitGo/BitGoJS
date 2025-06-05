@@ -4,4 +4,4 @@ export * as testutil from './testutil';
 export * from './dustThreshold';
 export * from './Output';
 export * from './xOnlyPubkey';
-export * from './ExtractAddressPayGoAttestation';
+export * from './paygo/ExtractAddressPayGoAttestation';

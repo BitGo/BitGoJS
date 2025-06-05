@@ -2,7 +2,7 @@ import * as assert from 'assert';
 
 import * as utxolib from '@bitgo/utxo-lib';
 
-import { extractAddressBufferFromPayGoAttestationProof } from '../src/ExtractAddressPayGoAttestation';
+import { extractAddressBufferFromPayGoAttestationProof } from '../../src/paygo/ExtractAddressPayGoAttestation';
 
 const addressFromPubKeyBase58 = 'bitgoAddressToExtract';
 const bufferAddressPubKeyB58 = Buffer.from(addressFromPubKeyBase58);
