@@ -5,6 +5,7 @@ import { crypto } from 'bitcoinjs-lib';
 import { address } from '../..';
 import { networks } from '../../networks';
 import { toBase58Check } from '../../address';
+import { extractAddressBufferFromPayGoAttestationProof } from '../../bitgo/ExtractAddressPayGoAttestation';
 import { getPsbtOutputProprietaryKeyVals, ProprietaryKeySubtype, PSBT_PROPRIETARY_IDENTIFIER } from '../PsbtUtil';
 import { UtxoPsbt } from '../UtxoPsbt';
 
@@ -33,15 +34,16 @@ export function addPaygoAddressProof(psbt: UtxoPsbt, outputIndex: number, sig: B
  * @param psbt - PSBT we want to verify that the paygo address is in
  * @param outputIndex - we have the output index that address is in
  * @param pub - The public key that we want to verify the proof with
+ * @param message - The message we want to verify corresponding to sig
  * @returns
  */
-export function verifyPaygoAddressProof(psbt: UtxoPsbt, outputIndex: number, pub: Buffer): void {
+export function verifyPaygoAddressProof(psbt: UtxoPsbt, outputIndex: number, message: Buffer): void {
   const stored = psbt.getOutputProprietaryKeyVals(outputIndex, {
     identifier: PSBT_PROPRIETARY_IDENTIFIER,
     subtype: ProprietaryKeySubtype.PAYGO_ADDRESS_ATTESTATION_PROOF,
   });
   if (!stored) {
-    throw new Error('No address proof');
+    throw new Error(`No address proof.`);
   }
 
   // assert stored length is 0 or 1
@@ -52,12 +54,13 @@ export function verifyPaygoAddressProof(psbt: UtxoPsbt, outputIndex: number, pub
   }
 
   const signature = stored[0].value;
+  const pub = stored[0].key.keydata;
   // It doesn't matter that this is bitcoin or not, we just need to convert the public key buffer into an address format
   // for the verification
   const messageToVerify = toBase58Check(crypto.hash160(pub), networks.bitcoin.pubKeyHash, networks.bitcoin);
 
   // TODO: need to figure out what the message is in this context
-  // Answer: message is our <varint_length><Entropy><Address><UUID>
+  // Answer: message is our 0x18Bitcoin Signed Message:\n<varint_length><Entropy><Address><UUID>
   if (!bitcoinMessage.verify(message, messageToVerify, signature)) {
     throw new Error('Cannot verify the paygo address signature with the provided pubkey.');
   }
@@ -65,7 +68,7 @@ export function verifyPaygoAddressProof(psbt: UtxoPsbt, outputIndex: number, pub
   const out = psbt.txOutputs[outputIndex];
   assert(out);
   const addressFromOutput = address.fromOutputScript(out.script, psbt.network);
-  const addressFromProof = extractAddressFromPayGoAttestationProof(message, addressFromOutput.length);
+  const addressFromProof = extractAddressBufferFromPayGoAttestationProof(message);
 
   if (addressFromProof !== addressFromOutput) {
     throw new Error(
