@@ -61,8 +61,8 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-apt /var/modules/sdk-coin-apt/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-arbeth /var/modules/sdk-coin-arbeth/
 COPY --from=builder /tmp/bitgo/modules/abstract-eth /var/modules/abstract-eth/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-asi /var/modules/sdk-coin-asi/
-COPY --from=builder /tmp/bitgo/modules/sdk-coin-atom /var/modules/sdk-coin-atom/
 COPY --from=builder /tmp/bitgo/modules/abstract-cosmos /var/modules/abstract-cosmos/
+COPY --from=builder /tmp/bitgo/modules/sdk-coin-atom /var/modules/sdk-coin-atom/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-avaxc /var/modules/sdk-coin-avaxc/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-avaxp /var/modules/sdk-coin-avaxp/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-eth /var/modules/sdk-coin-eth/
@@ -154,8 +154,9 @@ cd /var/modules/sdk-coin-algo && yarn link && \
 cd /var/modules/sdk-coin-apt && yarn link && \
 cd /var/modules/sdk-coin-arbeth && yarn link && \
 cd /var/modules/abstract-eth && yarn link && \
-cd /var/modules/sdk-coin-atom && yarn link && \
+cd /var/modules/sdk-coin-asi && yarn link && \
 cd /var/modules/abstract-cosmos && yarn link && \
+cd /var/modules/sdk-coin-atom && yarn link && \
 cd /var/modules/sdk-coin-avaxc && yarn link && \
 cd /var/modules/sdk-coin-avaxp && yarn link && \
 cd /var/modules/sdk-coin-eth && yarn link && \
@@ -250,8 +251,9 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-apt && \
     yarn link @bitgo/sdk-coin-arbeth && \
     yarn link @bitgo/abstract-eth && \
-    yarn link @bitgo/sdk-coin-atom && \
+    yarn link @bitgo/sdk-coin-asi && \
     yarn link @bitgo/abstract-cosmos && \
+    yarn link @bitgo/sdk-coin-atom && \
     yarn link @bitgo/sdk-coin-avaxc && \
     yarn link @bitgo/sdk-coin-avaxp && \
     yarn link @bitgo/sdk-coin-eth && \
@@ -323,9 +325,9 @@ RUN cd /var/bitgo-express && \
 #LINK_END
 
 #LABEL_START
-LABEL created="Mon, 02 Jun 2025 19:21:46 GMT"
-LABEL version=13.6.3
-LABEL git_hash=fdb949ab6a04b12b51782856c8b61825da6f35f8
+LABEL created="Thu, 05 Jun 2025 23:15:42 GMT"
+LABEL version=14.0.0
+LABEL git_hash=93f71e0fd983674ba1a41ab7f21ccdb648e35275
 #LABEL_END
 
 USER node
