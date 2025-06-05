@@ -1,7 +1,9 @@
 import assert from 'assert';
 import BigNumber from 'bignumber.js';
+
 import * as hex from '@stablelib/hex';
 import * as nearAPI from 'near-api-js';
+import { DelegateAction } from '@near-js/transactions';
 
 import {
   BaseAddress,
@@ -14,26 +16,27 @@ import {
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 
 import { AddressValidationError } from './errors';
+import { BLOCK_HEIGHT_TTL } from './constants';
+import { DelegateTransaction } from './delegateTransaction';
 import { InitializableBuilder } from './initializableBuilder';
 import { KeyPair } from './keyPair';
-import { Transaction } from './transaction';
 import utils from './utils';
 
-export abstract class TransactionBuilder extends BaseTransactionBuilder implements InitializableBuilder {
-  private _transaction: Transaction;
+export abstract class AbstractDelegateBuilder extends BaseTransactionBuilder implements InitializableBuilder {
+  private _delegateTransaction: DelegateTransaction;
 
   private _sender: string;
   private _publicKey: string;
   protected _receiverId: string;
   private _nonce: bigint;
-  private _recentBlockHash: string;
+  private _recentBlockHeight: bigint;
   private _signer: KeyPair;
-  private _signatures: Signature[] = []; // only support single sig for now
+  private _signatures: Signature[] = [];
   protected _actions: nearAPI.transactions.Action[];
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-    this._transaction = new Transaction(_coinConfig);
+    this._delegateTransaction = new DelegateTransaction(_coinConfig);
   }
 
   /**
@@ -41,28 +44,28 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder implemen
    *
    * @param {Transaction} tx the transaction data
    */
-  initBuilder(tx: Transaction): void {
-    this._transaction = tx;
-    const nearTransaction = tx.nearTransaction;
-    this._sender = nearTransaction.signerId;
-    this._nonce = nearTransaction.nonce;
-    this._receiverId = nearTransaction.receiverId;
-    if (nearTransaction.publicKey.ed25519Key?.data) {
-      this._publicKey = hex.encode(nearTransaction.publicKey.ed25519Key.data);
+  initBuilder(tx: DelegateTransaction): void {
+    this._delegateTransaction = tx;
+    const nearDelegateAction = tx.nearTransaction;
+    this._sender = nearDelegateAction.senderId;
+    this._nonce = nearDelegateAction.nonce;
+    this._receiverId = nearDelegateAction.receiverId;
+    if (nearDelegateAction.publicKey.ed25519Key?.data) {
+      this._publicKey = hex.encode(nearDelegateAction.publicKey.ed25519Key.data);
     }
-    this._recentBlockHash = nearAPI.utils.serialize.base_encode(new Uint8Array(nearTransaction.blockHash));
-    this._actions = nearTransaction.actions;
+    this._recentBlockHeight = nearDelegateAction.maxBlockHeight;
+    this._actions = nearDelegateAction.actions;
   }
 
   /** @inheritdoc */
-  protected fromImplementation(rawTransaction: string): Transaction {
+  protected fromImplementation(rawTransaction: string): DelegateTransaction {
     this.validateRawTransaction(rawTransaction);
     this.buildImplementation();
     return this.transaction;
   }
 
   /** @inheritdoc */
-  protected async buildImplementation(): Promise<Transaction> {
+  protected async buildImplementation(): Promise<DelegateTransaction> {
     this.transaction.nearTransaction = this.buildNearTransaction();
     if (this._signer) {
       this.transaction.sign(this._signer);
@@ -75,25 +78,21 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder implemen
   }
 
   /** @inheritdoc */
-  protected signImplementation(key: BaseKey): Transaction {
+  protected signImplementation(key: BaseKey): DelegateTransaction {
     this._signer = new KeyPair({ prv: key.key });
-    return this._transaction;
-  }
-
-  // region Getters and Setters
-  /** @inheritdoc */
-  protected get transaction(): Transaction {
-    return this._transaction;
+    return this._delegateTransaction;
   }
 
   /** @inheritdoc */
-  protected set transaction(transaction: Transaction) {
-    this._transaction = transaction;
+  protected get transaction(): DelegateTransaction {
+    return this._delegateTransaction;
   }
 
-  // endregion
+  /** @inheritdoc */
+  protected set transaction(transaction: DelegateTransaction) {
+    this._delegateTransaction = transaction;
+  }
 
-  // region Validators
   /** @inheritdoc */
   validateAddress(address: BaseAddress, addressFormat?: string): void {
     if (!utils.isValidAddress(address.address)) {
@@ -113,10 +112,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder implemen
   /** @inheritdoc */
   validateRawTransaction(rawTransaction: any): void {
     try {
-      nearAPI.utils.serialize.deserialize(nearAPI.transactions.SCHEMA.SignedTransaction, rawTransaction);
+      nearAPI.utils.serialize.deserialize(nearAPI.transactions.SCHEMA.SignedDelegate, rawTransaction);
     } catch {
       try {
-        nearAPI.utils.serialize.deserialize(nearAPI.transactions.SCHEMA.Transaction, rawTransaction);
+        nearAPI.utils.serialize.deserialize(nearAPI.transactions.SCHEMA.DelegateAction, rawTransaction);
       } catch {
         throw new BuildTransactionError('invalid raw transaction');
       }
@@ -124,11 +123,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder implemen
   }
 
   /** @inheritdoc */
-  validateTransaction(transaction: Transaction): void {
+  validateTransaction(transaction: DelegateTransaction): void {
     if (!transaction.nearTransaction) {
       return;
     }
-    this.validateAddress({ address: transaction.nearTransaction.signerId });
+    this.validateAddress({ address: transaction.nearTransaction.senderId });
     this.validateAddress({ address: transaction.nearTransaction.receiverId });
   }
 
@@ -139,14 +138,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder implemen
     }
   }
 
-  // endregion
-
   /**
    * Sets the public key and the address of the sender of this transaction.
    *
    * @param {string} address the account that is sending this transaction
    * @param {string} pubKey the public key that is sending this transaction
-   * @returns {TransactionBuilder} This transaction builder
+   * @returns {AbstractDelegateBuilder} The delegate transaction builder
    */
   public sender(address: string, pubKey: string): this {
     if (!address || !utils.isValidAddress(address.toString())) {
@@ -161,10 +158,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder implemen
   }
 
   /**
-   * Sets the account Id of the receiver of this transaction.
+   * Sets the account id of the receiver of this transaction.
    *
    * @param {string} accountId the account id of the account that is receiving this transaction
-   * @returns {TransactionBuilder} This transaction builder
+   * @returns {AbstractDelegateBuilder} The delegate transaction builder
    */
   public receiverId(accountId: string): this {
     utils.isValidAddress(accountId);
@@ -176,7 +173,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder implemen
    * Set the nonce
    *
    * @param {bigint} nonce - number that can be only used once
-   * @returns {TransactionBuilder} This transaction builder
+   * @returns {AbstractDelegateBuilder} This delegate transaction builder
    */
   public nonce(nonce: bigint): this {
     if (nonce < 0) {
@@ -187,46 +184,55 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder implemen
   }
 
   /**
-   * Sets the blockHash of this transaction.
+   * Sets the recent block height for this transaction
    *
-   * @param {string} blockHash the blockHash of this transaction
-   * @returns {TransactionBuilder} This transaction builder
+   * @param {string} blockHeight the blockHeight of this transaction
+   * @returns {AbstractDelegateBuilder} The delegate transaction builder
    */
-  public recentBlockHash(blockHash: string): this {
-    if (!utils.isValidBlockId(blockHash)) {
-      throw new BuildTransactionError(`Invalid blockHash ${blockHash}`);
-    }
-    this._recentBlockHash = blockHash;
+  public recentBlockHeight(blockHeight: bigint): this {
+    this._recentBlockHeight = blockHeight;
     return this;
   }
 
   /**
    * Sets the list of actions of this transaction.
    *
-   * @param {nearAPI.transactions.Action[]} value the the list of actions
-   * @returns {TransactionBuilder} This transaction builder
+   * @param {nearAPI.transactions.Action[]} value the list of actions
+   * @returns {AbstractDelegateBuilder} The delegate transaction builder
    */
   protected actions(value: nearAPI.transactions.Action[]): this {
     this._actions = value;
     return this;
   }
-  /**
-   * Builds the NEAR transaction.
-   *
-   * @return {Transaction} near sdk transaction
-   */
-  protected buildNearTransaction(): nearAPI.transactions.Transaction {
-    assert(this._sender, new BuildTransactionError('sender is required before building'));
-    assert(this._recentBlockHash, new BuildTransactionError('recent blockhash is required before building'));
 
-    const tx = nearAPI.transactions.createTransaction(
-      this._sender,
-      nearAPI.utils.PublicKey.fromString(nearAPI.utils.serialize.base_encode(hex.decode(this._publicKey))),
-      this._receiverId,
-      this._nonce,
-      this._actions,
-      nearAPI.utils.serialize.base_decode(this._recentBlockHash)
-    );
+  /**
+   * Sets the action for this transaction/
+   *
+   * @param {nearAPI.transactions.Action} value the delegate action
+   * @returns {AbstractDelegateBuilder} The delegate transaction builder
+   */
+  protected action(value: nearAPI.transactions.Action): this {
+    this._actions ? this._actions.push(value) : (this._actions = [value]);
+    return this;
+  }
+
+  /**
+   * Builds the NEAR delegate action.
+   *
+   * @return {DelegateAction} near sdk delegate action
+   */
+  protected buildNearTransaction(): DelegateAction {
+    assert(this._sender, new BuildTransactionError('sender is required before building'));
+    assert(this._recentBlockHeight, new BuildTransactionError('recent block height is required before building'));
+
+    const tx = new DelegateAction({
+      senderId: this._sender,
+      receiverId: this._receiverId,
+      actions: this._actions,
+      nonce: this._nonce,
+      maxBlockHeight: BigInt(BLOCK_HEIGHT_TTL + this._recentBlockHeight),
+      publicKey: nearAPI.utils.PublicKey.fromString(nearAPI.utils.serialize.base_encode(hex.decode(this._publicKey))),
+    });
 
     return tx;
   }

@@ -5,20 +5,19 @@ import * as NearAPI from 'near-api-js';
 import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 
-import { FT_TRANSFER } from './constants';
-import { ContractCallWrapper } from './contractCallWrapper';
 import { AbstractDelegateBuilder } from './abstractDelegateBuilder';
+import { ContractCallWrapper } from './contractCallWrapper';
 import { DelegateTransaction } from './delegateTransaction';
+import { STORAGE_DEPOSIT } from './constants';
 import utils from './utils';
-import { StorageDepositInput } from './iface';
 
-export class FungibleTokenTransferBuilder extends AbstractDelegateBuilder {
+export class StorageDepositTransferBuilder extends AbstractDelegateBuilder {
   private contractCallWrapper: ContractCallWrapper;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
     this.contractCallWrapper = new ContractCallWrapper();
-    this.contractCallWrapper.methodName = FT_TRANSFER;
+    this.contractCallWrapper.methodName = STORAGE_DEPOSIT;
   }
 
   /**
@@ -29,7 +28,7 @@ export class FungibleTokenTransferBuilder extends AbstractDelegateBuilder {
   initBuilder(tx: DelegateTransaction): void {
     super.initBuilder(tx);
     for (const action of tx.nearTransaction.actions) {
-      if (action.functionCall && action.functionCall.methodName === FT_TRANSFER) {
+      if (action.functionCall && action.functionCall.methodName === STORAGE_DEPOSIT) {
         this.contractCallWrapper.deposit = action.functionCall.deposit.toString();
         this.contractCallWrapper.gas = action.functionCall.gas.toString();
       }
@@ -79,40 +78,10 @@ export class FungibleTokenTransferBuilder extends AbstractDelegateBuilder {
    *
    * @param accountId the receiver account id
    */
-  public ftReceiverId(accountId: string): this {
+  public beneficiaryId(accountId: string): this {
     utils.isValidAddress(accountId);
-    this.contractCallWrapper.args = { receiver_id: accountId };
+    this.contractCallWrapper.args = { account_id: accountId };
     return this;
-  }
-
-  /**
-   * Sets the ft amount to be transferred
-   *
-   * @param amount the amount of fungible token to be transferred
-   */
-  public amount(amount: string): this {
-    this.validateValue(new BigNumber(amount));
-    this.contractCallWrapper.args = { amount };
-    return this;
-  }
-
-  /**
-   * Sets the optional memo for the transfer
-   *
-   * @param memo
-   */
-  public memo(memo: string): this {
-    this.contractCallWrapper.args = { memo };
-    return this;
-  }
-
-  public addStorageDeposit(input: StorageDepositInput): void {
-    const methodName = 'storage_deposit';
-    assert(input.deposit, new BuildTransactionError('deposit is required before building storage deposit transfer'));
-    assert(input.gas, new BuildTransactionError('gas is required before building fungible token transfer'));
-    const args = input.accountId ? { account_id: input.accountId } : {};
-    const action = NearAPI.transactions.functionCall(methodName, args, input.gas, input.deposit);
-    super.action(action);
   }
 
   /** @inheritdoc */
@@ -123,7 +92,7 @@ export class FungibleTokenTransferBuilder extends AbstractDelegateBuilder {
 
     super.action(NearAPI.transactions.functionCall(methodName, args, BigInt(gas), BigInt(deposit)));
     const tx = await super.buildImplementation();
-    tx.setTransactionType(TransactionType.Send);
+    tx.setTransactionType(TransactionType.StorageDeposit);
     return tx;
   }
 }

@@ -78,6 +78,8 @@ export enum TransactionType {
   TrustLine,
   // Send Non Fungible Token (e.g. APT NFTs)
   SendNFT,
+  // register an account with ft (e.g. NEAR)
+  StorageDeposit,
 }
 
 /**

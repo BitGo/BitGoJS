@@ -1,3 +1,11 @@
+import base58 from 'bs58';
+import { sha256 } from 'js-sha256';
+import * as nearAPI from 'near-api-js';
+import { functionCall, transfer } from 'near-api-js/lib/transaction';
+
+import { KeyType } from '@near-js/crypto';
+import { Action as TxAction, SignedTransaction, Transaction as UnsignedTransaction } from '@near-js/transactions';
+
 import {
   BaseKey,
   BaseTransaction,
@@ -7,16 +15,11 @@ import {
   TransactionType,
 } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { Action, Signature, TransactionExplanation, TxData } from './iface';
+
 import { AdditionalAllowedMethods, FT_TRANSFER, HEX_REGEX, StakingContractMethodNames } from './constants';
-import utils from './utils';
+import { Action, Signature, TransactionExplanation, TxData } from './iface';
 import { KeyPair } from './keyPair';
-import * as nearAPI from 'near-api-js';
-import base58 from 'bs58';
-import { Action as TxAction, SignedTransaction, Transaction as UnsignedTransaction } from '@near-js/transactions';
-import { functionCall, transfer } from 'near-api-js/lib/transaction';
-import { sha256 } from 'js-sha256';
-import { KeyType } from '@near-js/crypto';
+import utils from './utils';
 
 export class Transaction extends BaseTransaction {
   private _nearTransaction: nearAPI.transactions.Transaction;
@@ -33,6 +36,31 @@ export class Transaction extends BaseTransaction {
   set nearTransaction(tx: nearAPI.transactions.Transaction) {
     this._nearTransaction = tx;
     this._id = utils.base58Encode(this.getTransactionHash());
+  }
+
+  static fromSigned(coinConfig: Readonly<CoinConfig>, signedTx: SignedTransaction): Transaction {
+    const tx = new Transaction(coinConfig);
+    tx.initFromSigned(signedTx);
+    return tx;
+  }
+
+  static fromUnsigned(coinConfig: Readonly<CoinConfig>, unsignedTx: UnsignedTransaction): Transaction {
+    const tx = new Transaction(coinConfig);
+    tx.initFromUnsigned(unsignedTx);
+    return tx;
+  }
+
+  private initFromSigned(signedTx: SignedTransaction): void {
+    this._nearSignedTransaction = signedTx;
+    this._nearTransaction = signedTx.transaction;
+    this._id = utils.base58Encode(this.getTransactionHash());
+    this.loadInputsAndOutputs();
+  }
+
+  private initFromUnsigned(unsignedTx: UnsignedTransaction): void {
+    this._nearTransaction = unsignedTx;
+    this._id = utils.base58Encode(this.getTransactionHash());
+    this.loadInputsAndOutputs();
   }
 
   /** @inheritdoc */
