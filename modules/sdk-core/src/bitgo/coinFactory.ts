@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import { coins, BaseCoin as StaticsBaseCoin, CoinNotDefinedError } from '@bitgo/statics';
+import { coins, CoinMap, BaseCoin as StaticsBaseCoin, CoinNotDefinedError } from '@bitgo/statics';
 import { BaseCoin } from './baseCoin';
 import { BitGoBase } from './bitgoBase';
 import { UnsupportedCoinError } from './errors';
@@ -15,9 +15,11 @@ export interface NamedCoinConstructor {
 
 export class CoinFactory {
   private coinConstructors: Map<string, CoinConstructor>;
+  private coinMap: CoinMap;
 
-  constructor() {
+  constructor(coinMap: CoinMap = coins) {
     this.coinConstructors = new Map();
+    this.coinMap = coinMap;
   }
 
   /**
@@ -41,6 +43,25 @@ export class CoinFactory {
   }
 
   /**
+   * Registers a token in the coin map and the constructor map.
+   * @param staticsCoin The static coin definition from BitGo Statics
+   * @param coinConstructor The constructor for the coin plugin
+   * @throws Error
+   */
+  public registerToken(staticsCoin: Readonly<StaticsBaseCoin>, coinConstructor: CoinConstructor): void {
+    if (
+      !(
+        this.coinMap.has(staticsCoin.name) ||
+        this.coinMap.has(staticsCoin.id) ||
+        (staticsCoin.alias && this.coinMap.has(staticsCoin.alias))
+      )
+    ) {
+      this.coinMap.addCoin(staticsCoin);
+    }
+    this.register(staticsCoin.name, coinConstructor);
+  }
+
+  /**
    * @param bitgo Instance of BitGo
    * @param name Name of coin or address
    * @throws CoinNotDefinedError
@@ -50,7 +71,7 @@ export class CoinFactory {
     let staticsCoin;
 
     try {
-      staticsCoin = coins.get(name);
+      staticsCoin = this.coinMap.get(name);
     } catch (e) {
       if (!(e instanceof CoinNotDefinedError)) {
         throw e;
