@@ -375,6 +375,11 @@ export enum CoinFeature {
    * This coin supports multisig wallets
    */
   MULTISIG = 'multisig',
+
+  /**
+   * This coin is a rebase token and should use the rebase token functionality
+   */
+  REBASE_TOKEN = 'rebase-token',
 }
 
 /**
