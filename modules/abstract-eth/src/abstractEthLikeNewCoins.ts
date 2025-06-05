@@ -253,6 +253,7 @@ export type RecoverOptions = {
   intendedChain?: string;
   common?: EthLikeCommon.default;
   derivationSeed?: string;
+  apiKey?: string;
 } & TSSRecoverOptions;
 
 export type GetBatchExecutionInfoRT = {
