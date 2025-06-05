@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.11.0...@bitgo/sdk-coin-sol@4.12.0) (2025-06-05)
+
+### Bug Fixes
+
+- **sdk-coin-sol:** fix enable token for sol 2022 program ([f03487d](https://github.com/BitGo/BitGoJS/commit/f03487d83d0ee27de65e401b62627ca1dabf7230))
+
+### Features
+
+- **root:** support node 22 ([c4ad6af](https://github.com/BitGo/BitGoJS/commit/c4ad6af2e8896221417c303f0f6b84652b493216))
+
 # [4.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.10.5...@bitgo/sdk-coin-sol@4.11.0) (2025-06-02)
 
 ### Bug Fixes

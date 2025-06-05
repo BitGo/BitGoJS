@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@5.0.0...@bitgo/abstract-lightning@6.0.0) (2025-06-05)
+
+### Bug Fixes
+
+- removed InvoiceInfo codec ([9864abf](https://github.com/BitGo/BitGoJS/commit/9864abf35bc721059204377a359583c82556df92))
+
+### Features
+
+- added common withdraw codecs in abstract-lightning ([af6d555](https://github.com/BitGo/BitGoJS/commit/af6d55576fd83359387e42b0997ab3b64c1e8c23))
+- **root:** support node 22 ([c4ad6af](https://github.com/BitGo/BitGoJS/commit/c4ad6af2e8896221417c303f0f6b84652b493216))
+
+### BREAKING CHANGES
+
+- create invoice response changed
+
+TICKET: BTC-2155
+
 # [5.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@4.3.4...@bitgo/abstract-lightning@5.0.0) (2025-06-02)
 
 ### Features

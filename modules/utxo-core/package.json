@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/utxo-core",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "description": "BitGo UTXO Core types",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -51,8 +51,8 @@
     ]
   },
   "dependencies": {
-    "@bitgo/unspents": "^0.47.21",
-    "@bitgo/utxo-lib": "^11.3.0",
+    "@bitgo/unspents": "^0.48.0",
+    "@bitgo/utxo-lib": "^11.4.0",
     "@bitgo/wasm-miniscript": "2.0.0-beta.7",
     "bip174": "npm:@bitgo-forks/bip174@3.1.0-master.4"
   },

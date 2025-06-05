@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polyx@1.2.0...@bitgo/sdk-coin-polyx@1.3.0) (2025-06-05)
+
+### Features
+
+- add batchStakingBuilder (bond and nominate) and bondExtraBuilder for polyx ([cd29662](https://github.com/BitGo/BitGoJS/commit/cd296620fb013ebd48ec89bb4bcf1bf0433ec7d4))
+- add batchUnstakingBuilder and withdrawUnbondedBuilder ([d86c459](https://github.com/BitGo/BitGoJS/commit/d86c459f1c42c1d5cbf93b7ba408760b617bf328))
+- **root:** support node 22 ([c4ad6af](https://github.com/BitGo/BitGoJS/commit/c4ad6af2e8896221417c303f0f6b84652b493216))
+
 # [1.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polyx@1.1.2...@bitgo/sdk-coin-polyx@1.2.0) (2025-06-02)
 
 ### Bug Fixes

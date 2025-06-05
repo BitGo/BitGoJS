@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-celo@5.0.10...@bitgo/sdk-coin-celo@5.1.0) (2025-06-05)
+
+### Features
+
+- **root:** support node 22 ([c4ad6af](https://github.com/BitGo/BitGoJS/commit/c4ad6af2e8896221417c303f0f6b84652b493216))
+
 ## [5.0.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-celo@5.0.9...@bitgo/sdk-coin-celo@5.0.10) (2025-06-02)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-celo

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-zec@2.1.33...@bitgo/sdk-coin-zec@2.2.0) (2025-06-05)
+
+### Features
+
+- **root:** support node 22 ([c4ad6af](https://github.com/BitGo/BitGoJS/commit/c4ad6af2e8896221417c303f0f6b84652b493216))
+
 ## [2.1.33](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-zec@2.1.32...@bitgo/sdk-coin-zec@2.1.33) (2025-06-02)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-zec

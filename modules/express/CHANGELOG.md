@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@13.6.3...@bitgo/express@14.0.0) (2025-06-05)
+
+### Bug Fixes
+
+- removed InvoiceInfo codec ([9864abf](https://github.com/BitGo/BitGoJS/commit/9864abf35bc721059204377a359583c82556df92))
+
+### Features
+
+- **root:** support node 22 ([c4ad6af](https://github.com/BitGo/BitGoJS/commit/c4ad6af2e8896221417c303f0f6b84652b493216))
+
+### BREAKING CHANGES
+
+- create invoice response changed
+
+TICKET: BTC-2155
+
 ## [13.6.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@13.6.2...@bitgo/express@13.6.3) (2025-06-02)
 
 **Note:** Version bump only for package @bitgo/express

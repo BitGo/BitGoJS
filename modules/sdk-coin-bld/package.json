@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-bld",
-  "version": "3.0.52",
+  "version": "3.1.0",
   "description": "BitGo SDK coin library for Agoric",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,18 +40,18 @@
     ]
   },
   "dependencies": {
-    "@bitgo/abstract-cosmos": "^11.8.0",
-    "@bitgo/sdk-core": "^35.1.0",
-    "@bitgo/sdk-lib-mpc": "^10.4.0",
-    "@bitgo/statics": "^54.1.0",
+    "@bitgo/abstract-cosmos": "^11.9.0",
+    "@bitgo/sdk-core": "^35.2.0",
+    "@bitgo/sdk-lib-mpc": "^10.5.0",
+    "@bitgo/statics": "^54.2.0",
     "@cosmjs/amino": "^0.29.5",
     "@cosmjs/encoding": "^0.29.5",
     "@cosmjs/stargate": "^0.29.5",
     "bignumber.js": "^9.1.1"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.63.3",
-    "@bitgo/sdk-test": "^8.0.88",
+    "@bitgo/sdk-api": "^1.63.4",
+    "@bitgo/sdk-test": "^8.0.89",
     "@types/lodash": "^4.14.183"
   },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c"

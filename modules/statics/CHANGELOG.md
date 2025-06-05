@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [54.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@54.1.0...@bitgo/statics@54.2.0) (2025-06-05)
+
+### Features
+
+- **sdk-coin-asi:** add statics and SDK support for ASI ([38baf3c](https://github.com/BitGo/BitGoJS/commit/38baf3ce3f4d8b8e2f454a92de4fce7245665e7e))
+- **statics:** add ape chain config ([0ac85c7](https://github.com/BitGo/BitGoJS/commit/0ac85c735467098bb91822230a79515e1ea0a570))
+- **statics:** add helper methods to create token config ([31aeb04](https://github.com/BitGo/BitGoJS/commit/31aeb041d673530f9f9703b76bd454075cbc23a8))
+- **statics:** onboard testnet vaulta token ([b16e4fc](https://github.com/BitGo/BitGoJS/commit/b16e4fce68566efb1748ce33dd9acd95aab85c2d))
+- **statics:** remove STAKING feature from APT ([6f70b3b](https://github.com/BitGo/BitGoJS/commit/6f70b3b2779d9c2664f3a91909c749ace8ddd688))
+
 # [54.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@54.0.1...@bitgo/statics@54.1.0) (2025-06-02)
 
 ### Bug Fixes
