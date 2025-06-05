@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.8.0...@bitgo/utxo-core@1.9.0) (2025-06-05)
+
+### Features
+
+- **utxo-core:** add descriptor support for fixed script wallets ([090bac5](https://github.com/BitGo/BitGoJS/commit/090bac5797961ec963438e17220885211eaa8f07))
+
 # [1.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.7.0...@bitgo/utxo-core@1.8.0) (2025-04-15)
 
 ### Features

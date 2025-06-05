@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [48.0.0](https://github.com/BitGo/BitGoJS/compare/bitgo@47.0.0...bitgo@48.0.0) (2025-06-05)
+
+### Bug Fixes
+
+- removed InvoiceInfo codec ([9864abf](https://github.com/BitGo/BitGoJS/commit/9864abf35bc721059204377a359583c82556df92))
+
+### Features
+
+- **root:** support node 22 ([c4ad6af](https://github.com/BitGo/BitGoJS/commit/c4ad6af2e8896221417c303f0f6b84652b493216))
+- **sdk-coin-asi:** add statics and SDK support for ASI ([38baf3c](https://github.com/BitGo/BitGoJS/commit/38baf3ce3f4d8b8e2f454a92de4fce7245665e7e))
+- **statics:** add ape chain config ([0ac85c7](https://github.com/BitGo/BitGoJS/commit/0ac85c735467098bb91822230a79515e1ea0a570))
+
+### BREAKING CHANGES
+
+- create invoice response changed
+
+TICKET: BTC-2155
+
 # [47.0.0](https://github.com/BitGo/BitGoJS/compare/bitgo@46.0.1...bitgo@47.0.0) (2025-06-02)
 
 ### Bug Fixes

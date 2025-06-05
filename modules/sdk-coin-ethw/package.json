@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-ethw",
-  "version": "20.0.83",
+  "version": "20.1.0",
   "description": "BitGo SDK coin library for Ethereum pow",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,15 +40,15 @@
     ]
   },
   "dependencies": {
-    "@bitgo/sdk-coin-eth": "^24.5.0",
-    "@bitgo/sdk-core": "^35.1.0",
-    "@bitgo/statics": "^54.1.0",
+    "@bitgo/sdk-coin-eth": "^24.6.0",
+    "@bitgo/sdk-core": "^35.2.0",
+    "@bitgo/statics": "^54.2.0",
     "ethereumjs-util": "7.1.5",
     "superagent": "^9.0.1"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.63.3",
-    "@bitgo/sdk-test": "^8.0.88"
+    "@bitgo/sdk-api": "^1.63.4",
+    "@bitgo/sdk-test": "^8.0.89"
   },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c"
 }

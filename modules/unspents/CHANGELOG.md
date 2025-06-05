@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.48.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.47.21...@bitgo/unspents@0.48.0) (2025-06-05)
+
+### Features
+
+- **root:** support node 22 ([c4ad6af](https://github.com/BitGo/BitGoJS/commit/c4ad6af2e8896221417c303f0f6b84652b493216))
+
 ## [0.47.21](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.47.20...@bitgo/unspents@0.47.21) (2025-04-04)
 
 **Note:** Version bump only for package @bitgo/unspents
