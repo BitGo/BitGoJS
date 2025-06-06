@@ -273,7 +273,8 @@ export const avaxTokens = [
     'Staked AVAX',
     18,
     '0x2b2c81e08f1af8835a78bb2a90ae924ace0ea4be',
-    UnderlyingAsset['avaxc:savax']
+    UnderlyingAsset['avaxc:savax'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   avaxErc20(
     '772a2498-2bef-4da8-9bce-f1a89e6f4536',
