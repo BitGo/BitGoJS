@@ -1675,6 +1675,7 @@ export enum UnderlyingAsset {
   TRYBBULL = 'trybbull',
   TRYX = 'tryx',
   TST = 'tst',
+  TSTETH = 'tsteth',
   TSUKA = 'tsuka',
   TULIP = 'tulip',
   TUPOLIS = 'tupolis',
