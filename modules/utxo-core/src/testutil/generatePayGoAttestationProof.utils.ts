@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 
-import { varuint } from 'bitcoinjs-lib/src/bufferutils';
+import { bufferutils } from '@bitgo/utxo-lib';
 /** We have a mirrored function similar to our hsm that generates our Bitcoin signed
  * message so that we can use for testing. This creates a random entropy as well using
  * the nilUUID structure to construct our uuid buffer and given our address we can
@@ -30,7 +30,7 @@ export function generatePayGoAttestationProof(uuid: string, address: Buffer): Bu
 
   // <VARINT_LENGTH>
   const msgLength = entropyLength + addressBufferLength + uuidBufferLength;
-  const msgLengthBuffer = varuint.encode(msgLength);
+  const msgLengthBuffer = bufferutils.varuint.encode(msgLength);
 
   // <0x18Bitcoin Signed Message:\n<LENGTH><ENTROPY><ADDRESS><UUID>
   const proofMessage = Buffer.concat([prefixBuffer, msgLengthBuffer, entropy, address, uuidBuffer]);
