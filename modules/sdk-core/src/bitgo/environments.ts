@@ -174,7 +174,7 @@ const mainnetBase: EnvironmentTemplate = {
   mantraNodeUrl: 'https://mantra-rest.publicnode.com/',
   cronosNodeUrl: 'https://cronos-pos-rest.publicnode.com/',
   fetchAiNodeUrl: 'https://rest-fetchhub.fetch.ai/',
-  initiaNodeUrl: 'https://rest.initia.xyz/', //TODO: COIN-3992: post mainnet launch re-check or change this
+  initiaNodeUrl: 'https://rest.initia.xyz/',
   asiNodeUrl: 'https://rest-fetchhub.fetch.ai/',
   dotNodeUrls: ['wss://rpc.polkadot.io'],
   substrateNodeUrls: ['wss://entrypoint-finney.opentensor.ai/'],
