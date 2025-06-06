@@ -10,9 +10,8 @@ import * as testData from '../../resources/near';
 import { getBuilderFactory } from '../getBuilderFactory';
 
 import { KeyPair, Nep141Token, TransactionBuilderFactory } from '../../../src';
-import { StorageDepositInput } from '../../../src/lib/iface';
 
-describe('Near: Fungible Token Transfer Builder', () => {
+describe('Near: Storage Deposit Transfer Builder', () => {
   const coinName = 'near:usdc';
   const coinNameTest = 'tnear:tnep24dp';
   let nep141Token: Nep141Token;
@@ -29,19 +28,16 @@ describe('Near: Fungible Token Transfer Builder', () => {
     nep141Token = bitgo.coin(coinNameTest) as Nep141Token;
   });
 
-  describe('Near fungible token transfer builder', function () {
+  describe('Near storage deposit transfer builder', function () {
     const factory = new TransactionBuilderFactory(coins.get(coinNameTest));
     const factoryProd = new TransactionBuilderFactory(coins.get(coinName));
     const gas = '125000000000000';
-    const deposit = '1';
+    const deposit = '1250000000000000000000';
 
     const initTxBuilder = () => {
-      const txBuilder = factory.getFungibleTokenTransferBuilder();
+      const txBuilder = factory.getStorageDepositTransferBuilder();
       txBuilder.gas(gas);
       txBuilder.deposit(deposit);
-      txBuilder.ftReceiverId(testData.accounts.account2.address);
-      txBuilder.amount('100');
-      txBuilder.memo('test');
       txBuilder.nonce(BigInt(1));
       txBuilder.receiverId(nep141Token.contractAddress);
       txBuilder.recentBlockHeight(testData.blockHeight.height1);
@@ -50,11 +46,11 @@ describe('Near: Fungible Token Transfer Builder', () => {
 
     describe('fungible token builder environment', function () {
       it('should select the right network', function () {
-        should.equal(factory.getFungibleTokenTransferBuilder().coinName(), coinNameTest);
-        should.equal(factoryProd.getFungibleTokenTransferBuilder().coinName(), coinName);
+        should.equal(factory.getStorageDepositTransferBuilder().coinName(), coinNameTest);
+        should.equal(factoryProd.getStorageDepositTransferBuilder().coinName(), coinName);
         // used type any to access protected properties
-        const txBuilder: any = factory.getFungibleTokenTransferBuilder();
-        const txBuilderProd: any = factoryProd.getFungibleTokenTransferBuilder();
+        const txBuilder: any = factory.getStorageDepositTransferBuilder();
+        const txBuilderProd: any = factoryProd.getStorageDepositTransferBuilder();
 
         txBuilder._coinConfig.name.should.deepEqual(coinNameTest);
         txBuilderProd._coinConfig.name.should.deepEqual(coinName);
@@ -62,77 +58,69 @@ describe('Near: Fungible Token Transfer Builder', () => {
     });
 
     describe('should build', function () {
-      it('an unsigned fungible token transfer transaction', async () => {
+      it('an unsigned storage deposit self transfer transaction', async () => {
         const builder = initTxBuilder();
         builder.sender(testData.accounts.account1.address, testData.accounts.account1.publicKey);
         const tx = await builder.build();
-        should.equal(tx.type, TransactionType.Send);
+        should.equal(tx.type, TransactionType.StorageDeposit);
         tx.inputs.length.should.equal(1);
         tx.inputs[0].should.deepEqual({
-          address: testData.accounts.account2.address,
-          value: '100',
-          coin: coinNameTest,
+          address: testData.accounts.account1.address,
+          value: '1250000000000000000000',
+          coin: nep141Token.getFamily(),
         });
         tx.outputs.length.should.equal(1);
         tx.outputs[0].should.deepEqual({
           address: testData.accounts.account1.address,
-          value: '100',
-          coin: coinNameTest,
+          value: '1250000000000000000000',
+          coin: nep141Token.getFamily(),
         });
         const rawTx = tx.toBroadcastFormat();
-        rawTx.should.deepEqual(testData.rawTx.fungibleTokenTransfer.unsigned);
+        rawTx.should.deepEqual(testData.rawTx.storageDeposit.unsigned);
       });
 
-      it('a signed fungible token transfer transaction', async () => {
+      it('a signed storage deposit self transfer transaction', async () => {
         const builder = initTxBuilder();
         builder.sender(testData.accounts.account1.address, testData.accounts.account1.publicKey);
         builder.sign({ key: testData.accounts.account1.secretKey });
         const tx = await builder.build();
-        should.equal(tx.type, TransactionType.Send);
+        should.equal(tx.type, TransactionType.StorageDeposit);
         tx.inputs.length.should.equal(1);
         tx.inputs[0].should.deepEqual({
-          address: testData.accounts.account2.address,
-          value: '100',
-          coin: coinNameTest,
+          address: testData.accounts.account1.address,
+          value: '1250000000000000000000',
+          coin: nep141Token.getFamily(),
         });
         tx.outputs.length.should.equal(1);
         tx.outputs[0].should.deepEqual({
           address: testData.accounts.account1.address,
-          value: '100',
-          coin: coinNameTest,
+          value: '1250000000000000000000',
+          coin: nep141Token.getFamily(),
         });
         const rawTx = tx.toBroadcastFormat();
-        rawTx.should.deepEqual(testData.rawTx.fungibleTokenTransfer.signed);
+        rawTx.should.deepEqual(testData.rawTx.storageDeposit.signed);
       });
     });
 
-    it('an unsigned fungible token transfer with storage deposit transaction', async () => {
+    it('an unsigned storage deposit transfer transaction', async () => {
       const builder = initTxBuilder();
       builder.sender(testData.accounts.account1.address, testData.accounts.account1.publicKey);
-      const storageDepositInput: StorageDepositInput = {
-        deposit: BigInt('1250000000000000000000'),
-        gas: BigInt(125000000000000),
-      };
-      builder.addStorageDeposit(storageDepositInput);
+      builder.beneficiaryId(testData.accounts.account2.address);
       const tx = await builder.build();
-      should.equal(tx.type, TransactionType.Send);
-      tx.inputs.length.should.equal(2);
-      tx.outputs.length.should.equal(2);
+      should.equal(tx.type, TransactionType.StorageDeposit);
+      tx.inputs.length.should.equal(1);
+      tx.outputs.length.should.equal(1);
     });
 
     it('a signed fungible token transfer with storage deposit transaction', async () => {
       const builder = initTxBuilder();
       builder.sender(testData.accounts.account1.address, testData.accounts.account1.publicKey);
-      const storageDepositInput: StorageDepositInput = {
-        deposit: BigInt('1250000000000000000000'),
-        gas: BigInt(125000000000000),
-      };
-      builder.addStorageDeposit(storageDepositInput);
+      builder.beneficiaryId(testData.accounts.account2.address);
       builder.sign({ key: testData.accounts.account1.secretKey });
       const tx = await builder.build();
-      should.equal(tx.type, TransactionType.Send);
-      tx.inputs.length.should.equal(2);
-      tx.outputs.length.should.equal(2);
+      should.equal(tx.type, TransactionType.StorageDeposit);
+      tx.inputs.length.should.equal(1);
+      tx.outputs.length.should.equal(1);
     });
 
     describe('add TSS signature', function () {

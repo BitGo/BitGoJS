@@ -40,3 +40,9 @@ export interface TxData {
   actions: Action[];
   signature?: Signature;
 }
+
+export interface StorageDepositInput {
+  deposit: bigint;
+  gas: bigint;
+  accountId?: string;
+}
