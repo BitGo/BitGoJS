@@ -441,7 +441,6 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
       CoinFeature.CUSTODY_BITGO_KOREA,
       CoinFeature.CUSTODY_BITGO_SINGAPORE,
       CoinFeature.CUSTODY_BITGO_SWITZERLAND,
-      CoinFeature.STAKING,
     ],
   },
   tbtcsig: {
