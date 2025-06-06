@@ -1,15 +1,14 @@
 import * as assert from 'assert';
 
-import * as utxolib from '@bitgo/utxo-lib';
-
-import { extractAddressBufferFromPayGoAttestationProof } from '../../src/paygo/ExtractAddressPayGoAttestation';
+import { extractAddressBufferFromPayGoAttestationProof } from '../../src/paygo';
+import { generatePayGoAttestationProof } from '../../src/testutil';
 
 const addressFromPubKeyBase58 = 'bitgoAddressToExtract';
 const bufferAddressPubKeyB58 = Buffer.from(addressFromPubKeyBase58);
 
 describe('extractAddressBufferFromPayGoAttestationProof', () => {
   it('should extractAddressBufferFromPayGoAttestationProof properly', () => {
-    const paygoAttestationProof = utxolib.testutil.generatePayGoAttestationProof(
+    const paygoAttestationProof = generatePayGoAttestationProof(
       '00000000-0000-0000-0000-000000000000',
       bufferAddressPubKeyB58
     );
@@ -18,7 +17,7 @@ describe('extractAddressBufferFromPayGoAttestationProof', () => {
   });
 
   it('should extract the paygo address paygo attestation proof given a non nilUUID', () => {
-    const paygoAttestationProof = utxolib.testutil.generatePayGoAttestationProof(
+    const paygoAttestationProof = generatePayGoAttestationProof(
       '12345678-1234-4567-6890-231928472123',
       bufferAddressPubKeyB58
     );
@@ -27,7 +26,7 @@ describe('extractAddressBufferFromPayGoAttestationProof', () => {
   });
 
   it('should not extract the correct address given a uuid of wrong format', () => {
-    const paygoAttestationProof = utxolib.testutil.generatePayGoAttestationProof(
+    const paygoAttestationProof = generatePayGoAttestationProof(
       '000000000000000-000000-0000000-000000-0000000000000000',
       bufferAddressPubKeyB58
     );

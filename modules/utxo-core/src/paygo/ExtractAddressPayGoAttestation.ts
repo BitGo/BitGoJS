@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import * as utxolib from '@bitgo/utxo-lib';
+import { varuint } from '@bitgo/utxo-lib';
 
 // The signed address will always have the following structure:
 // 0x18Bitcoin Signed Message:\n<varint_length><ENTROPY><ADDRESS><UUID>
@@ -32,7 +32,7 @@ export function extractAddressBufferFromPayGoAttestationProof(message: Buffer): 
 
   // we decode the varint of the message which is uint32
   // https://en.bitcoin.it/wiki/Protocol_documentation
-  const varInt = utxolib.varuint.varuint.decode(message, offset);
+  const varInt = varuint.varuint.decode(message, offset);
   assert(varInt);
   offset += 1;
 
