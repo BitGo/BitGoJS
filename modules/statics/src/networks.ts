@@ -890,13 +890,13 @@ class MantraTestnet extends Testnet implements AccountNetwork {
 class Cronos extends Mainnet implements AccountNetwork {
   name = 'Cronos POS';
   family = CoinFamily.CRONOS;
-  explorerUrl = 'https://cronos-pos.org/explorer/';
+  explorerUrl = 'https://cronos-pos.org/explorer/tx/';
 }
 
 class CronosTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Cronos POS';
   family = CoinFamily.CRONOS;
-  explorerUrl = 'https://cronos-pos.org/explorer/croeseid4/';
+  explorerUrl = 'https://cronos-pos.org/explorer/croeseid4/tx/';
 }
 
 class FetchAi extends Mainnet implements AccountNetwork {
@@ -914,25 +914,25 @@ class FetchAiTestnet extends Testnet implements AccountNetwork {
 class Initia extends Mainnet implements AccountNetwork {
   name = 'Initia';
   family = CoinFamily.INITIA;
-  explorerUrl = 'https://scan.initia.xyz/'; //TODO: COIN-3992 : Post launch need to update this if changed
+  explorerUrl = 'https://scan.initia.xyz/interwoven-1/txs/';
 }
 
 class InitiaTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Initia';
   family = CoinFamily.INITIA;
-  explorerUrl = 'https://scan.testnet.initia.xyz/initiation-2/';
+  explorerUrl = 'https://scan.testnet.initia.xyz/initiation-2/txs/';
 }
 
 class Asi extends Mainnet implements AccountNetwork {
   name = 'Fetch Native';
   family = CoinFamily.ASI;
-  explorerUrl = 'https://companion.fetch.ai/fetchhub-4/';
+  explorerUrl = 'https://companion.fetch.ai/fetchhub-4/transactions/';
 }
 
 class AsiTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Fetch Native';
   family = CoinFamily.ASI;
-  explorerUrl = 'https://companion.fetch.ai/dorado-1/';
+  explorerUrl = 'https://companion.fetch.ai/dorado-1/transactions/';
 }
 
 class Islm extends Mainnet implements AccountNetwork {
