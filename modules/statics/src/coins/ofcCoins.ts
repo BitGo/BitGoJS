@@ -970,6 +970,13 @@ export const ofcCoins = [
     18,
     UnderlyingAsset['arbeth:anime']
   ),
+  ofcArbethErc20(
+    '6929c56f-82c5-49d5-b920-28cb62f82aff',
+    'ofcarbeth:benji',
+    'Franklin OnChain U.S. Government Money Fund',
+    18,
+    UnderlyingAsset['arbeth:benji']
+  ),
   ofcAvaxErc20('2bd6201d-c46c-481e-b82d-7cf3601679cb', 'ofcavaxc:aave-e', 'Aave', 18, UnderlyingAsset['avaxc:aave']),
   ofcAvaxErc20('515a5a74-54fe-4d73-bb12-8d1130f78692', 'ofcavaxc:btc-b', 'Bitcoin', 8, UnderlyingAsset['avaxc:btc']),
   ofcAvaxErc20(
@@ -1038,6 +1045,13 @@ export const ofcCoins = [
     'WisdomTree 500 Digital Fund',
     18,
     UnderlyingAsset['avaxc:spxux']
+  ),
+  ofcAvaxErc20(
+    '2147a7e1-0dd5-4ef4-b6bc-1d5c7270b050',
+    'ofcavaxc:benji',
+    'Franklin OnChain U.S. Government Money Fund',
+    18,
+    UnderlyingAsset['avaxc:benji']
   ),
   ofcAvaxErc20('9fb77e47-8916-4dcb-ac10-e11fa07172fb', 'ofcavaxc:nxpc', 'NEXPACE', 18, UnderlyingAsset['avaxc:nxpc']),
   ofcOpethErc20('10259b23-2e2e-4574-b146-b49f1119600f', 'ofcopeth:op', 'Optimism', 18, UnderlyingAsset['opeth:op']),
@@ -1649,6 +1663,13 @@ export const ofcCoins = [
     UnderlyingAsset['polygon:buidl']
   ),
   ofcPolygonErc20(
+    '8bec43b8-62e2-4695-96ac-cd60751e0539',
+    'ofcpolygon:benji',
+    'Franklin OnChain U.S. Government Money Fund',
+    18,
+    UnderlyingAsset['polygon:benji']
+  ),
+  ofcPolygonErc20(
     '82855675-ecfa-4acb-a489-8d7b826d2783',
     'ofcpolygon:weth',
     'Wrapped Ether',
@@ -1940,6 +1961,22 @@ export const ofcCoins = [
     UnderlyingAsset['xlm:USDC-GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN']
   ),
 
+  ofcStellarToken(
+    '612c9f4e-3c0d-496b-97cb-b4035ded678d',
+    'ofcxlm:benji',
+    'Benji',
+    7,
+    UnderlyingAsset['xlm:BENJI-GBHNGLLIE3KWGKCHIKMHJ5HVZHYIK7WTBE4QF5PLAKL4CJGSEU7HZIW5']
+  ),
+
+  ofcStellarToken(
+    '0b731a87-9ed2-4a5b-a7ac-59c3a6d37ea6',
+    'ofcxlm:gbenji',
+    'Gbenji',
+    7,
+    UnderlyingAsset['xlm:gBENJI-GD5J73EKK5IYL5XS3FBTHHX7CZIYRP7QXDL57XFWGC2WVYWT326OBXRP']
+  ),
+
   tofcStellarToken(
     '4883a062-c38c-43d9-92c6-7cec9aaef995',
     'ofctxlm:tst',
@@ -1960,6 +1997,14 @@ export const ofcCoins = [
     'USD Coin',
     6,
     UnderlyingAsset['apt:usdc'],
+    APT_OFC_TOKEN_FEATURES
+  ),
+  ofcaptToken(
+    '5d781823-37b5-4e50-bc3b-d078420f2972',
+    'ofcapt:benji',
+    'Frk OnChain US Gov Mon Fd',
+    9,
+    UnderlyingAsset['apt:benji'],
     APT_OFC_TOKEN_FEATURES
   ),
   ofcaptToken(

@@ -1936,6 +1936,8 @@ export enum UnderlyingAsset {
   'eth:la' = 'eth:la',
   'eth:es' = 'eth:es',
   'eth:ctrl' = 'eth:ctrl',
+  'eth:benji' = 'eth:benji',
+  'eth:ibenji' = 'eth:ibenji',
   'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ' = 'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ',
   'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M' = 'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M',
   'xlm:SLT-GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP' = 'xlm:SLT-GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP',
@@ -1954,6 +1956,8 @@ export enum UnderlyingAsset {
   'xlm:VEUR-GDXLSLCOPPHTWOQXLLKSVN4VN3G67WD2ENU7UMVAROEYVJLSPSEWXIZN' = 'xlm:VEUR-GDXLSLCOPPHTWOQXLLKSVN4VN3G67WD2ENU7UMVAROEYVJLSPSEWXIZN',
   'xlm:VCHF-GDXLSLCOPPHTWOQXLLKSVN4VN3G67WD2ENU7UMVAROEYVJLSPSEWXIZN' = 'xlm:VCHF-GDXLSLCOPPHTWOQXLLKSVN4VN3G67WD2ENU7UMVAROEYVJLSPSEWXIZN',
   'xlm:AUDD-GDC7X2MXTYSAKUUGAIQ7J7RPEIM7GXSAIWFYWWH4GLNFECQVJJLB2EEU' = 'xlm:AUDD-GDC7X2MXTYSAKUUGAIQ7J7RPEIM7GXSAIWFYWWH4GLNFECQVJJLB2EEU',
+  'xlm:BENJI-GBHNGLLIE3KWGKCHIKMHJ5HVZHYIK7WTBE4QF5PLAKL4CJGSEU7HZIW5' = 'xlm:BENJI-GBHNGLLIE3KWGKCHIKMHJ5HVZHYIK7WTBE4QF5PLAKL4CJGSEU7HZIW5',
+  'xlm:gBENJI-GD5J73EKK5IYL5XS3FBTHHX7CZIYRP7QXDL57XFWGC2WVYWT326OBXRP' = 'xlm:gBENJI-GD5J73EKK5IYL5XS3FBTHHX7CZIYRP7QXDL57XFWGC2WVYWT326OBXRP',
 
   // Eth NFTs
   // generic NFTs
@@ -2079,6 +2083,7 @@ export enum UnderlyingAsset {
   'avaxc:swap' = 'avaxc:swap',
   'avaxc:tico' = 'avaxc:tico',
   'avaxc:shrap' = 'avaxc:shrap',
+  'avaxc:benji' = 'avaxc:benji',
   // End FTX missing AVAXC tokens
 
   // polygon Token ERC-20
@@ -2193,6 +2198,7 @@ export enum UnderlyingAsset {
   'polygon:bid' = 'polygon:bid',
   'polygon:tcs' = 'polygon:tcs',
   'polygon:buidl' = 'polygon:buidl',
+  'polygon:benji' = 'polygon:benji',
   // Polygon NFTs
   // generic NFTs
   'erc721:polygontoken' = 'erc721:polygontoken',
@@ -2404,6 +2410,7 @@ export enum UnderlyingAsset {
   'arbeth:lngvx' = 'arbeth:lngvx',
   'arbeth:eqtyx' = 'arbeth:eqtyx',
   'arbeth:anime' = 'arbeth:anime',
+  'arbeth:benji' = 'arbeth:benji',
 
   // Arbitrum testnet tokens
   'tarbeth:link' = 'tarbeth:link',
@@ -2647,7 +2654,7 @@ export enum UnderlyingAsset {
   'apt:usdt' = 'apt:usdt',
   'apt:usdc' = 'apt:usdc',
   'apt:pact' = 'apt:pact',
-
+  'apt:benji' = 'apt:benji',
   // Apt mainnet NFT collections
   'apt:h00ts' = 'apt:h00ts',
 

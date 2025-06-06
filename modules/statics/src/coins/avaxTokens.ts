@@ -653,6 +653,14 @@ export const avaxTokens = [
     '0x1a149e21bd3e74b7018db79c988b4ba3bbc1873d',
     UnderlyingAsset['avaxc:spxux']
   ),
+  avaxErc20(
+    '5f67467a-c714-4dcb-a3ae-cc3d52dce75c',
+    'avaxc:benji',
+    'Franklin OnChain U.S. Government Money Fund',
+    18,
+    '0xe08b4c1005603427420e64252a8b120cace4d122',
+    UnderlyingAsset['avaxc:benji']
+  ),
   // End FTX missing AVAXC tokens
   tavaxErc20(
     'cd107316-6e78-4936-946f-70e8fd5d8040',

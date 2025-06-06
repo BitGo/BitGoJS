@@ -3152,6 +3152,20 @@ export const ofcErc20Coins = [
     18,
     underlyingAssetForSymbol('eth:gaia')
   ),
+  ofcerc20(
+    '282045b5-9394-4995-990d-a14b08931ea6',
+    'ofceth:benji',
+    'Franklin OnChain U.S. Government Money Fund',
+    18,
+    underlyingAssetForSymbol('eth:benji')
+  ),
+  ofcerc20(
+    '6d17f939-52f6-4aee-9f2d-201fa4464f4c',
+    'ofceth:ibenji',
+    'Franklin OnChain Institutional Liquidity Fund Ltd.',
+    18,
+    underlyingAssetForSymbol('eth:ibenji')
+  ),
   ofcerc20('c3a5c5d2-5d6e-4c9b-9f3e-6d2a4e5b6c8d', 'ofceth:usds', 'USDS', 18, underlyingAssetForSymbol('eth:usds')),
   ofcerc20('b4aed05b-b667-4b1e-b88e-19219989c1e4', 'ofceth:perc', 'Perion', 18, underlyingAssetForSymbol('eth:perc')),
   ofcerc20('d6ba9776-1b5b-4364-8afd-594363a01ec1', 'ofceth:cfg', 'Centrifuge', 18, underlyingAssetForSymbol('eth:cfg')),
