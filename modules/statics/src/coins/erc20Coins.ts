@@ -11336,6 +11336,14 @@ export const erc20Coins = [
     '0x050e25a2630b2aee94546589fd39785254de112c',
     UnderlyingAsset.SCHZ
   ),
+   terc20(
+    '31eedb6e-3bd1-4407-b924-7136c4dc0483',
+    'tsteth',
+    'test stETH',
+    18,
+    '0x3F1c547b21f65e10480dE3ad8E19fAAC46C95034',
+    UnderlyingAsset.TSTETH
+  ),
   terc20(
     '5c7e28b8-0154-4400-9e67-3cc0b5f72e0c',
     'tcat',
