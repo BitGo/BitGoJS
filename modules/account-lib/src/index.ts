@@ -8,7 +8,7 @@ import {
   accountLibBaseCoin,
   acountLibCrypto,
 } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig, coins } from '@bitgo/statics';
+import { BaseCoin as CoinConfig, coins, CoinFeature } from '@bitgo/statics';
 export { Ed25519BIP32, Eddsa };
 
 /**
@@ -191,6 +191,9 @@ export { Stt };
 import * as Soneium from '@bitgo/sdk-coin-soneium';
 export { Soneium };
 
+import * as EvmCoin from '@bitgo/sdk-coin-evm';
+export { EvmCoin };
+
 const coinBuilderMap = {
   trx: Trx.WrappedBuilder,
   ttrx: Trx.WrappedBuilder,
@@ -302,6 +305,16 @@ const coinBuilderMap = {
   polyx: Polyx.TransactionBuilderFactory,
   tpolyx: Polyx.TransactionBuilderFactory,
 };
+
+/**
+ * coins.filter(coin => coin.coinFeature.has(EVM_SHARED_SDK)).forEach(coin => coinBuilderMap[coin.name] = EvmCoin.TransactionBuilder);
+ */
+
+coins
+  .filter((coin) => coin.features.includes(CoinFeature.SHARED_EVM_SDK))
+  .forEach((coin) => {
+    coinBuilderMap[coin.name] = EvmCoin.TransactionBuilder;
+  });
 
 /**
  * Get the list of coin tickers supported by this library.

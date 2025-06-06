@@ -46,6 +46,7 @@
     "@bitgo/sdk-coin-dot": "^4.2.0",
     "@bitgo/sdk-coin-etc": "^2.2.50",
     "@bitgo/sdk-coin-eth": "^24.5.0",
+    "@bitgo/sdk-coin-evm": "^1.0.0",
     "@bitgo/sdk-coin-fetchai": "^2.0.2",
     "@bitgo/sdk-coin-flr": "^1.2.7",
     "@bitgo/sdk-coin-hash": "^3.0.52",
