@@ -33,4 +33,16 @@ describe('Asset metadata service', () => {
       'Coin or token type hteth:faketoken not supported or not compiled. Please be sure that you are using the latest version of BitGoJS. If using @bitgo/sdk-api, please confirm you have registered hteth:faketoken first.'
     );
   });
+
+  it('should be able to register a token in the coin factory', () => {
+    const tokenName = 'hteth:faketoken';
+    const amsToken = reducedAmsTokenConfig[tokenName][0];
+    bitgo.registerToken(amsToken);
+    const coin = bitgo.coin(tokenName);
+    should.exist(coin);
+    coin.type.should.equal(tokenName);
+    coin.name.should.equal('Holesky Testnet fake token');
+    coin.decimalPlaces.should.equal(6);
+    coin.tokenContractAddress.should.equal('0x89a959b9184b4f8c8633646d5dfd049d2ebc983a');
+  });
 });

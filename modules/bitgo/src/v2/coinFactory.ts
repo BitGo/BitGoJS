@@ -8,8 +8,29 @@ import { HbarToken } from '@bitgo/sdk-coin-hbar';
 import { Near, TNear } from '@bitgo/sdk-coin-near';
 import { SolToken } from '@bitgo/sdk-coin-sol';
 import { TrxToken } from '@bitgo/sdk-coin-trx';
-import { CoinFactory } from '@bitgo/sdk-core';
-import { CoinMap, coins, getFormattedTokens } from '@bitgo/statics';
+import { CoinFactory, CoinConstructor } from '@bitgo/sdk-core';
+import {
+  CoinMap,
+  coins,
+  getFormattedTokens,
+  TokenConfig,
+  Erc20TokenConfig,
+  StellarTokenConfig,
+  OfcTokenConfig,
+  CeloTokenConfig,
+  EthLikeTokenConfig,
+  EosTokenConfig,
+  AvaxcTokenConfig,
+  SolTokenConfig,
+  HbarTokenConfig,
+  AdaTokenConfig,
+  AlgoTokenConfig,
+  TrxTokenConfig,
+  XrpTokenConfig,
+  SuiTokenConfig,
+  AptTokenConfig,
+  Sip10TokenConfig,
+} from '@bitgo/statics';
 import {
   Ada,
   Algo,
@@ -455,6 +476,81 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   Sip10Token.createTokenConstructors([...tokens.bitcoin.stx.tokens, ...tokens.testnet.stx.tokens]).forEach(
     ({ name, coinConstructor }) => coinFactory.register(name, coinConstructor)
   );
+}
+
+export function getTokenConstructor(tokenConfig: TokenConfig): CoinConstructor | undefined {
+  switch (tokenConfig.coin) {
+    case 'eth':
+    case 'hteth':
+      return Erc20Token.createTokenConstructor(tokenConfig as Erc20TokenConfig);
+    case 'xlm':
+    case 'txlm':
+      return StellarToken.createTokenConstructor(tokenConfig as StellarTokenConfig);
+    case 'ofc':
+      return OfcToken.createTokenConstructor(tokenConfig as OfcTokenConfig);
+    case 'celo':
+    case 'tcelo':
+      return CeloToken.createTokenConstructor(tokenConfig as CeloTokenConfig);
+    case 'bsc':
+    case 'tbsc':
+      return BscToken.createTokenConstructor(tokenConfig as Erc20TokenConfig);
+    case 'eos':
+    case 'teos':
+      return EosToken.createTokenConstructor(tokenConfig as EosTokenConfig);
+    case 'algo':
+    case 'talgo':
+      return AlgoToken.createTokenConstructor(tokenConfig as AlgoTokenConfig);
+    case 'avaxc':
+    case 'tavaxc':
+      return AvaxCToken.createTokenConstructor(tokenConfig as AvaxcTokenConfig);
+    case 'polygon':
+    case 'tpolygon':
+      return PolygonToken.createTokenConstructor(tokenConfig as EthLikeTokenConfig);
+    case 'soneium':
+    case 'tsoneium':
+      return SoneiumToken.createTokenConstructor(tokenConfig as EthLikeTokenConfig);
+    case 'arbeth':
+    case 'tarbeth':
+      return ArbethToken.createTokenConstructor(tokenConfig as EthLikeTokenConfig);
+    case 'opeth':
+    case 'topeth':
+      return OpethToken.createTokenConstructor(tokenConfig as EthLikeTokenConfig);
+    case 'zketh':
+    case 'tzketh':
+      return ZkethToken.createTokenConstructor(tokenConfig as EthLikeTokenConfig);
+    case 'bera':
+    case 'tbera':
+      return BeraToken.createTokenConstructor(tokenConfig as EthLikeTokenConfig);
+    case 'coredao':
+    case 'tcoredao':
+      return CoredaoToken.createTokenConstructor(tokenConfig as EthLikeTokenConfig);
+    case 'sol':
+    case 'tsol':
+      return SolToken.createTokenConstructor(tokenConfig as SolTokenConfig);
+    case 'hbar':
+    case 'thbar':
+      return HbarToken.createTokenConstructor(tokenConfig as HbarTokenConfig);
+    case 'trx':
+    case 'ttrx':
+      return TrxToken.createTokenConstructor(tokenConfig as TrxTokenConfig);
+    case 'ada':
+    case 'tada':
+      return AdaToken.createTokenConstructor(tokenConfig as AdaTokenConfig);
+    case 'sui':
+    case 'tsui':
+      return SuiToken.createTokenConstructor(tokenConfig as SuiTokenConfig);
+    case 'xrp':
+    case 'txrp':
+      return XrpToken.createTokenConstructor(tokenConfig as XrpTokenConfig);
+    case 'apt':
+    case 'tapt':
+      return AptToken.createTokenConstructor(tokenConfig as AptTokenConfig);
+    case 'sip10':
+    case 'tsip10':
+      return Sip10Token.createTokenConstructor(tokenConfig as Sip10TokenConfig);
+    default:
+      return undefined;
+  }
 }
 
 export const GlobalCoinFactory: CoinFactory = new CoinFactory();
