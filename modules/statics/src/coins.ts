@@ -1875,6 +1875,28 @@ export const coins = CoinMap.fromCoins([
     '',
     'AUDD'
   ),
+  stellarToken(
+    '10a1aeb5-c738-4ff2-9924-58b0aabaf6e4',
+    'xlm:BENJI-GBHNGLLIE3KWGKCHIKMHJ5HVZHYIK7WTBE4QF5PLAKL4CJGSEU7HZIW5',
+    'BENJI',
+    7,
+    UnderlyingAsset['xlm:BENJI-GBHNGLLIE3KWGKCHIKMHJ5HVZHYIK7WTBE4QF5PLAKL4CJGSEU7HZIW5'],
+    'www.franklintempleton.com',
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'BENJI'
+  ),
+  stellarToken(
+    '4afce14d-e061-4008-8ef6-ef13c42d667a',
+    'xlm:gBENJI-GD5J73EKK5IYL5XS3FBTHHX7CZIYRP7QXDL57XFWGC2WVYWT326OBXRP',
+    'GBENJI',
+    7,
+    UnderlyingAsset['xlm:gBENJI-GD5J73EKK5IYL5XS3FBTHHX7CZIYRP7QXDL57XFWGC2WVYWT326OBXRP'],
+    'www.franklintempleton.com',
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'GBENJI'
+  ),
   tronToken(
     '5f3266f8-252c-492a-90d7-bb6d3bf550fb',
     'trx:btt',
@@ -2854,6 +2876,14 @@ export const coins = CoinMap.fromCoins([
     '0x37a645648df29205c6261289983fb04ecd70b4b3',
     UnderlyingAsset['arbeth:anime']
   ),
+  arbethErc20(
+    '383eadb6-1ea6-4784-8791-3a01bc055dac',
+    'arbeth:benji',
+    'Franklin OnChain U.S. Government Money Fund',
+    18,
+    '0xb9e4765bce2609bc1949592059b17ea72fee6c6a',
+    UnderlyingAsset['arbeth:benji']
+  ),
   opethErc20(
     '8d80fac6-4cbc-447c-b49b-4229cb8aa89d',
     'opeth:link',
@@ -3498,6 +3528,15 @@ export const coins = CoinMap.fromCoins([
     8,
     '0xc546cc2dd26d9e9a4516b4514288bedf1085259fcb106b84b6469337f527fb92',
     UnderlyingAsset['apt:pact'],
+    APT_FEATURES
+  ),
+  aptToken(
+    '8127e6cf-7255-4351-b5da-cce6eca9a5aa',
+    'apt:benji',
+    'Frk OnChain US Gov Mon Fd',
+    9,
+    '0x7b5e9cac3433e9202f28527f707c89e1e47b19de2c33e4db9521a63ad219b739',
+    UnderlyingAsset['apt:benji'],
     APT_FEATURES
   ),
   taptToken(

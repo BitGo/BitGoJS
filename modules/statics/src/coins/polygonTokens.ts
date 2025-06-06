@@ -1029,6 +1029,15 @@ export const polygonTokens = [
     UnderlyingAsset['polygon:buidl'],
     POLYGON_TOKEN_FEATURES
   ),
+  polygonErc20(
+    '325d787e-7860-4886-9fb2-c0699c33959a',
+    'polygon:benji',
+    'Franklin OnChain U.S. Government Money Fund',
+    18,
+    '0x408a634b8a8f0de729b48574a3a7ec3fe820b00a',
+    UnderlyingAsset['polygon:benji'],
+    POLYGON_TOKEN_FEATURES
+  ),
   // testnet polygon tokens
   tpolygonErc20(
     '09ba76d0-331e-4b75-bb75-739285c3e03a',
