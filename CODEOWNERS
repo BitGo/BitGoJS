@@ -123,7 +123,7 @@
 /modules/sdk-rpc-wrapper @BitGo/ethalt-team
 /modules/sdk-test/ @BitGo/web-experience @BitGo/wallet-platform
 /modules/sjcl/ @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform
-/modules/statics/ @BitGo/web-experience @BitGo/wallet-platform @BitGo/ethalt-team
+/modules/statics/ @BitGo/web-experience @BitGo/ethalt-team
 /modules/statics/src/utxo.ts @BitGo/btc-team
 /modules/web-demo/ @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform
 /scripts/ @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform
