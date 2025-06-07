@@ -1,5 +1,5 @@
-import { bscToken, tbscToken } from '../account';
-import { UnderlyingAsset } from '../base';
+import { bscToken, tbscToken, AccountCoin } from '../account';
+import { UnderlyingAsset, CoinFeature } from '../base';
 import { BSC_TOKEN_FEATURES, BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE } from '../coinFeatures';
 
 export const bscTokens = [
@@ -343,7 +343,11 @@ export const bscTokens = [
     18,
     '0x2a459dd33f05ed8ea9584505cf04698be5654e6d',
     UnderlyingAsset['bsc:wrx'],
-    BSC_TOKEN_FEATURES
+    AccountCoin.getFeaturesExcluding([
+      CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+      CoinFeature.CUSTODY_BITGO_MENA_FZE,
+    ])
   ),
   bscToken(
     '1a26f668-9cde-4768-be8c-1fdcdf8e39e9',
@@ -622,7 +626,7 @@ export const bscTokens = [
     18,
     '0x5d5c5c1d14faf8ff704295b2f502daa9d06799a0',
     UnderlyingAsset['bsc:nnn'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     '9b2925ed-7e66-4f60-b1bb-edae3931e9cd',
@@ -1116,7 +1120,11 @@ export const bscTokens = [
     18,
     '0x9fb9a33956351cf4fa040f65a13b835a3c8764e3',
     UnderlyingAsset['bsc:multi'],
-    BSC_TOKEN_FEATURES
+    AccountCoin.getFeaturesExcluding([
+      CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+      CoinFeature.CUSTODY_BITGO_MENA_FZE,
+    ])
   ),
   bscToken(
     'ec186a0f-8e7c-4844-92b0-630d4bce7eef',
