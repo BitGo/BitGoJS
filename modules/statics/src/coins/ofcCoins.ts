@@ -1839,6 +1839,432 @@ export const ofcCoins = [
     18,
     UnderlyingAsset['polygon:mask']
   ),
+  ofcPolygonErc20(
+    'b910d91a-da77-4602-91f4-a9be4d20e7aa',
+    'ofcpolygon:agix',
+    'SingularityNET Token',
+    18,
+    UnderlyingAsset['polygon:agix']
+  ),
+  ofcPolygonErc20(
+    '81d6d44e-53b0-45ad-b62e-3f8b8c529784',
+    'ofcpolygon:ali',
+    'Artificial Liquid Intelligence Token',
+    18,
+    UnderlyingAsset['polygon:ali']
+  ),
+  ofcPolygonErc20(
+    '049fc94e-1c7e-443f-a0de-444fd21af4e7',
+    'ofcpolygon:avax',
+    'Avalanche Token',
+    18,
+    UnderlyingAsset['polygon:avax']
+  ),
+  ofcPolygonErc20(
+    'a917ef65-8856-45f2-bfb2-e1174eff95cb',
+    'ofcpolygon:bal',
+    'Balancer',
+    18,
+    UnderlyingAsset['polygon:bal']
+  ),
+  ofcPolygonErc20(
+    '4806a71e-a6d0-4e5d-91d5-feec51f7a6ae',
+    'ofcpolygon:band',
+    'BandToken',
+    18,
+    UnderlyingAsset['polygon:band']
+  ),
+  ofcPolygonErc20(
+    '4be0804d-ec11-41a7-8873-0f24d0122254',
+    'ofcpolygon:bcut',
+    'bitsCrunch Token',
+    18,
+    UnderlyingAsset['polygon:bcut']
+  ),
+  ofcPolygonErc20(
+    '674c9a89-abb4-48a3-a88c-0c9bce518c7b',
+    'ofcpolygon:blz',
+    'Bluzelle',
+    18,
+    UnderlyingAsset['polygon:blz']
+  ),
+  ofcPolygonErc20('2ab92e0a-5012-4f76-ae9b-a34a2b8adb71', 'ofcpolygon:bnb', 'BNB', 18, UnderlyingAsset['polygon:bnb']),
+  ofcPolygonErc20(
+    'e6da6d36-4914-407d-9c3b-7dd7a4d66af8',
+    'ofcpolygon:bnt',
+    'Bancor',
+    18,
+    UnderlyingAsset['polygon:bnt']
+  ),
+  ofcPolygonErc20(
+    'fa08f0a2-ef30-4b40-939e-43459910f66f',
+    'ofcpolygon:busd',
+    'BUSD Token',
+    18,
+    UnderlyingAsset['polygon:busd']
+  ),
+  ofcPolygonErc20(
+    'b12a9d51-3067-47d2-945e-65b3cd414532',
+    'ofcpolygon:chz',
+    'chiliZ',
+    18,
+    UnderlyingAsset['polygon:chz']
+  ),
+  ofcPolygonErc20(
+    '257a2ea2-3487-465b-b417-5a80d1a38341',
+    'ofcpolygon:dipe',
+    'DIPE',
+    6,
+    UnderlyingAsset['polygon:dipe']
+  ),
+  ofcPolygonErc20(
+    '72192c10-d060-4b23-a722-374c6ff14be1',
+    'ofcpolygon:elon',
+    'Dogelon',
+    18,
+    UnderlyingAsset['polygon:elon']
+  ),
+  ofcPolygonErc20(
+    '631b954f-9a45-41e3-8841-d2fe49484151',
+    'ofcpolygon:enj',
+    'EnjinCoin',
+    18,
+    UnderlyingAsset['polygon:enj']
+  ),
+  ofcPolygonErc20(
+    '173ecd0d-c73b-4322-aee2-50d0dc791e23',
+    'ofcpolygon:euroe',
+    'EUROe Stablecoin',
+    6,
+    UnderlyingAsset['polygon:euroe']
+  ),
+  ofcPolygonErc20(
+    '0ea61c1a-7588-4ea0-9ca5-6b8be1c46366',
+    'ofcpolygon:fet',
+    'Fetch',
+    18,
+    UnderlyingAsset['polygon:fet']
+  ),
+  ofcPolygonErc20(
+    '15f301e0-431c-4410-972d-6e45c3937492',
+    'ofcpolygon:forth',
+    'Ampleforth Governance',
+    18,
+    UnderlyingAsset['polygon:forth']
+  ),
+  ofcPolygonErc20(
+    '430d99c2-2baa-425e-8ea9-c7c8f92a6fe9',
+    'ofcpolygon:glm',
+    'Golem Network Token',
+    18,
+    UnderlyingAsset['polygon:glm']
+  ),
+  ofcPolygonErc20('9b748e49-e91d-4297-8f35-e6000187276b', 'ofcpolygon:gmt', 'GMT', 8, UnderlyingAsset['polygon:gmt']),
+  ofcPolygonErc20(
+    '39ea8a85-a0b8-4c44-bc68-fa6cda29c6c4',
+    'ofcpolygon:gno',
+    'Gnosis',
+    18,
+    UnderlyingAsset['polygon:gno']
+  ),
+  ofcPolygonErc20(
+    '95457f51-01ed-47ba-9110-627bfaa6eb04',
+    'ofcpolygon:gohm',
+    'Governance OHM',
+    18,
+    UnderlyingAsset['polygon:gohm']
+  ),
+  ofcPolygonErc20(
+    'b4ccb201-c80f-4295-8cc6-596d4f4be0f4',
+    'ofcpolygon:grt',
+    'Graph',
+    18,
+    UnderlyingAsset['polygon:grt']
+  ),
+  ofcPolygonErc20(
+    'cc3e949c-720b-46b9-bde2-d7306e393b60',
+    'ofcpolygon:gtc',
+    'Gitcoin (PoS)',
+    18,
+    UnderlyingAsset['polygon:gtc']
+  ),
+  ofcPolygonErc20(
+    '485022f8-1930-453b-909e-1aa5f406e824',
+    'ofcpolygon:gusd',
+    'Gemini dollar',
+    2,
+    UnderlyingAsset['polygon:gusd']
+  ),
+  ofcPolygonErc20(
+    'a6eb179c-c5e5-429d-8cfe-6d01ddf3c9cb',
+    'ofcpolygon:heth',
+    'ETH Hop Token',
+    18,
+    UnderlyingAsset['polygon:heth']
+  ),
+  ofcPolygonErc20('5a6976af-0546-48ee-b451-7c8abb93e892', 'ofcpolygon:hex', 'HEX', 8, UnderlyingAsset['polygon:hex']),
+  ofcPolygonErc20(
+    '5d428183-398c-42de-ae71-a42f1b4f941f',
+    'ofcpolygon:hot',
+    'HoloToken',
+    18,
+    UnderlyingAsset['polygon:hot']
+  ),
+  ofcPolygonErc20(
+    'adceecd9-0e84-4abb-b6fd-dadf2f1f4a4a',
+    'ofcpolygon:inj',
+    'Injective Token',
+    18,
+    UnderlyingAsset['polygon:inj']
+  ),
+  ofcPolygonErc20(
+    '9c3d5127-72a6-4b44-8932-ffcc733532e9',
+    'ofcpolygon:iotx',
+    'IoTeX Network',
+    18,
+    UnderlyingAsset['polygon:iotx']
+  ),
+  ofcPolygonErc20(
+    '62ece06c-e202-4bcf-8a08-7d321ab9e634',
+    'ofcpolygon:l3usd',
+    'L3USD',
+    18,
+    UnderlyingAsset['polygon:l3usd']
+  ),
+  ofcPolygonErc20(
+    '1774f7fb-e6e6-436a-850f-a824bc6d5e72',
+    'ofcpolygon:lif3',
+    'LIF3',
+    18,
+    UnderlyingAsset['polygon:lif3']
+  ),
+  ofcPolygonErc20(
+    '0303974a-c9cb-4dee-bb55-3f1e3da41893',
+    'ofcpolygon:lit',
+    'Litentry',
+    18,
+    UnderlyingAsset['polygon:lit']
+  ),
+  ofcPolygonErc20(
+    '0dbdb1ad-f959-42a8-97de-d96a8f1be944',
+    'ofcpolygon:lrc',
+    'LoopringCoin V2',
+    18,
+    UnderlyingAsset['polygon:lrc']
+  ),
+  ofcPolygonErc20(
+    '33cea60a-3106-4b02-b718-0eef8afda6be',
+    'ofcpolygon:mana',
+    'Decentraland',
+    18,
+    UnderlyingAsset['polygon:mana']
+  ),
+  ofcPolygonErc20(
+    'cf8f2170-1b96-411c-831b-7ea0c065064f',
+    'ofcpolygon:mkr',
+    'Maker',
+    18,
+    UnderlyingAsset['polygon:mkr']
+  ),
+  ofcPolygonErc20(
+    '92ddee49-4409-4aab-b7dc-f8b9bb956cd1',
+    'ofcpolygon:nexo',
+    'Nexo',
+    18,
+    UnderlyingAsset['polygon:nexo']
+  ),
+  ofcPolygonErc20(
+    '858ddcbc-2bfd-4183-8271-d95c12e27bd7',
+    'ofcpolygon:npt',
+    'NEOPIN Token',
+    18,
+    UnderlyingAsset['polygon:npt']
+  ),
+  ofcPolygonErc20(
+    'b03c1ff4-4fb1-4e94-9c6b-f9c50717203c',
+    'ofcpolygon:om',
+    'MANTRA DAO',
+    18,
+    UnderlyingAsset['polygon:om']
+  ),
+  ofcPolygonErc20(
+    'e48b7abf-f409-4709-b5bb-0f97d917cf6f',
+    'ofcpolygon:ont',
+    'Poly-Peg Ontology Token',
+    9,
+    UnderlyingAsset['polygon:ont']
+  ),
+  ofcPolygonErc20(
+    '734a0b5f-f6ee-4073-a480-e1f15e225767',
+    'ofcpolygon:ooki',
+    'Ooki Protocol',
+    18,
+    UnderlyingAsset['polygon:ooki']
+  ),
+  ofcPolygonErc20(
+    'bf17ae96-72ee-49d5-9c31-758bc102dad1',
+    'ofcpolygon:orb',
+    'OrbCity (ORB)',
+    18,
+    UnderlyingAsset['polygon:orb']
+  ),
+  ofcPolygonErc20(
+    '5c217564-07d9-47e8-87af-1ca0ebf30d26',
+    'ofcpolygon:oxt',
+    'Orchid',
+    18,
+    UnderlyingAsset['polygon:oxt']
+  ),
+  ofcPolygonErc20(
+    'e4d5929c-4c52-430a-a4d6-aca61997b833',
+    'ofcpolygon:pax',
+    'Paxos Standard',
+    18,
+    UnderlyingAsset['polygon:pax']
+  ),
+  ofcPolygonErc20(
+    '07998da1-b196-4b52-948a-85a086f9e08f',
+    'ofcpolygon:paxg',
+    'Paxos Gold',
+    18,
+    UnderlyingAsset['polygon:paxg']
+  ),
+  ofcPolygonErc20('8a74539f-471e-4cee-930a-fe238af01871', 'ofcpolygon:pme', 'PME', 0, UnderlyingAsset['polygon:pme']),
+  ofcPolygonErc20(
+    'e356c3c0-ba8b-4a66-8e4e-c3e5d203f435',
+    'ofcpolygon:powr',
+    'PowerLedger',
+    18,
+    UnderlyingAsset['polygon:powr']
+  ),
+  ofcPolygonErc20(
+    'd21259f1-f7a6-44fc-b9b5-2333ba34cdcf',
+    'ofcpolygon:pyr',
+    'PYR Token',
+    18,
+    UnderlyingAsset['polygon:pyr']
+  ),
+  ofcPolygonErc20(
+    'd094bef1-1773-406a-96dd-e8da0bd0dd71',
+    'ofcpolygon:renbtc',
+    'renBTC',
+    8,
+    UnderlyingAsset['polygon:renbtc']
+  ),
+  ofcPolygonErc20(
+    '9f4010d5-50b7-4a63-8e72-c019b537acab',
+    'ofcpolygon:req',
+    'Request',
+    18,
+    UnderlyingAsset['polygon:req']
+  ),
+  ofcPolygonErc20(
+    'f47fc78d-05d5-4df9-b9dc-fc9bee0b5da2',
+    'ofcpolygon:rndr',
+    'Render Token',
+    18,
+    UnderlyingAsset['polygon:rndr']
+  ),
+  ofcPolygonErc20(
+    '5c17b285-4c8f-4a1e-a10f-98624956a719',
+    'ofcpolygon:route',
+    'Route (ROUTE)',
+    18,
+    UnderlyingAsset['polygon:route']
+  ),
+  ofcPolygonErc20(
+    '9ee3afa7-d644-4a3d-8459-7679c0c5dbfd',
+    'ofcpolygon:shib',
+    'SHIBA INU (PoS)',
+    18,
+    UnderlyingAsset['polygon:shib']
+  ),
+  ofcPolygonErc20(
+    '0e61469e-745b-4453-9da2-a384b636e634',
+    'ofcpolygon:snx',
+    'Synthetix Network Token (PoS)',
+    18,
+    UnderlyingAsset['polygon:snx']
+  ),
+  ofcPolygonErc20(
+    '9c50b095-bde1-41cd-aafd-2c8d4c309a51',
+    'ofcpolygon:super',
+    'SuperFarm',
+    18,
+    UnderlyingAsset['polygon:super']
+  ),
+  ofcPolygonErc20(
+    '9121803e-0473-42d3-b55d-f2ab92b0a159',
+    'ofcpolygon:swap',
+    'TrustSwap Token',
+    18,
+    UnderlyingAsset['polygon:swap']
+  ),
+  ofcPolygonErc20(
+    '1b244d52-6b4c-4f5e-9b52-78d4ba29d75c',
+    'ofcpolygon:sxp',
+    'Swipe',
+    18,
+    UnderlyingAsset['polygon:sxp']
+  ),
+  ofcPolygonErc20(
+    'd564f196-2a6d-4c25-88b9-7768b01dbd4a',
+    'ofcpolygon:trb',
+    'Tellor Tributes',
+    18,
+    UnderlyingAsset['polygon:trb']
+  ),
+  ofcPolygonErc20(
+    '8b2904a0-4e6e-456e-beaa-ca0ee07decde',
+    'ofcpolygon:uft',
+    'UniLend Finance Token',
+    18,
+    UnderlyingAsset['polygon:uft']
+  ),
+  ofcPolygonErc20('3e4652c4-8122-448d-8cf6-1efea18cd963', 'ofcpolygon:uhu', 'Uhu', 18, UnderlyingAsset['polygon:uhu']),
+  ofcPolygonErc20(
+    '2e31da22-1824-4f3e-86f2-51f15971e4f0',
+    'ofcpolygon:uma',
+    'UMA Voting Token (v1)',
+    18,
+    UnderlyingAsset['polygon:uma']
+  ),
+  ofcPolygonErc20(
+    'ad4a98a9-096a-4743-9881-2ac66eff214b',
+    'ofcpolygon:uni',
+    'Uniswap',
+    18,
+    UnderlyingAsset['polygon:uni']
+  ),
+  ofcPolygonErc20(
+    'c6e1880d-eed5-4729-9128-5a71e47b2681',
+    'ofcpolygon:vanry',
+    'Vanar Chain Token',
+    18,
+    UnderlyingAsset['polygon:vanry']
+  ),
+  ofcPolygonErc20(
+    '54c8d334-e87c-445d-abe1-9cf6741534ba',
+    'ofcpolygon:volt',
+    'Volt Inu',
+    9,
+    UnderlyingAsset['polygon:volt']
+  ),
+  ofcPolygonErc20(
+    '37d33ab5-7a28-4823-bfbb-86cb616180d2',
+    'ofcpolygon:voxel',
+    'VOXEL Token',
+    18,
+    UnderlyingAsset['polygon:voxel']
+  ),
+  ofcPolygonErc20(
+    '4b37fd1c-23c4-46fe-bbc1-bad036a9b6d0',
+    'ofcpolygon:wrx',
+    'Wazirx (PoS)',
+    8,
+    UnderlyingAsset['polygon:wrx']
+  ),
+  ofcPolygonErc20('c0556aae-6646-4160-b4cc-db361af3019c', 'ofcpolygon:zrx', 'ZRX', 18, UnderlyingAsset['polygon:zrx']),
   tofcPolygonErc20(
     '62f4329d-11cd-4875-b91b-9ceae66c9439',
     'ofctpolygon:link',
