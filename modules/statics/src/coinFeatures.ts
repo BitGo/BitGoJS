@@ -25,6 +25,7 @@ export const ETH_FEATURES = [
   CoinFeature.SUPPORTS_TOKENS,
   CoinFeature.ENTERPRISE_PAYS_FEES,
   CoinFeature.WALLET_CONNECT_DEFI,
+  CoinFeature.EVM_COIN,
 ];
 export const ETH_FEATURES_WITH_MMI = [...ETH_FEATURES, CoinFeature.METAMASK_INSTITUTIONAL];
 export const ETH_FEATURES_WITH_STAKING = [...ETH_FEATURES, CoinFeature.STAKING];
