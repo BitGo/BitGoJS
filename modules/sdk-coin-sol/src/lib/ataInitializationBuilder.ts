@@ -115,10 +115,15 @@ export class AtaInitializationBuilder extends TransactionBuilder {
     }
     validateOwnerAddress(recipient.ownerAddress);
     const token = getSolTokenFromTokenName(recipient.tokenName);
-    if (!token) {
+    let tokenAddress: string;
+    if (token) {
+      tokenAddress = token.tokenAddress;
+    } else if (recipient.tokenAddress) {
+      tokenAddress = recipient.tokenAddress;
+    } else {
       throw new BuildTransactionError('Invalid transaction: invalid token name, got: ' + recipient.tokenName);
     }
-    validateMintAddress(token.tokenAddress);
+    validateMintAddress(tokenAddress);
 
     this._tokenAssociateRecipients.push(recipient);
     return this;
@@ -141,25 +146,33 @@ export class AtaInitializationBuilder extends TransactionBuilder {
     await Promise.all(
       this._tokenAssociateRecipients.map(async (recipient) => {
         const token = getSolTokenFromTokenName(recipient.tokenName);
-        if (!token) {
+        let tokenAddress: string;
+        let programId: string;
+        if (token) {
+          tokenAddress = token.tokenAddress;
+          programId = token.programId;
+        } else if (recipient.tokenAddress && recipient.programId) {
+          tokenAddress = recipient.tokenAddress;
+          programId = recipient.programId;
+        } else {
           throw new BuildTransactionError('Invalid transaction: invalid token name, got: ' + recipient.tokenName);
         }
 
         // Use the provided ataAddress if it exists, otherwise calculate it
         let ataPk = recipient.ataAddress;
         if (!ataPk) {
-          ataPk = await getAssociatedTokenAccountAddress(token.tokenAddress, recipient.ownerAddress);
+          ataPk = await getAssociatedTokenAccountAddress(tokenAddress, recipient.ownerAddress);
         }
 
         this._instructionsData.push({
           type: InstructionBuilderTypes.CreateAssociatedTokenAccount,
           params: {
-            mintAddress: token.tokenAddress,
+            mintAddress: tokenAddress,
             ataAddress: ataPk,
             ownerAddress: recipient.ownerAddress,
             payerAddress: this._sender,
             tokenName: recipient.tokenName,
-            programId: token.programId,
+            programId: programId,
           },
         });
       })

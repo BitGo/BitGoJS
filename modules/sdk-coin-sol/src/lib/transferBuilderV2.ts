@@ -9,7 +9,7 @@ import {
   validateMintAddress,
   validateOwnerAddress,
 } from './utils';
-import { BaseCoin as CoinConfig, SolCoin } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import assert from 'assert';
 import { AtaInit, TokenAssociateRecipient, TokenTransfer, Transfer, SetPriorityFee } from './iface';
 import { InstructionBuilderTypes } from './constants';
@@ -19,6 +19,9 @@ export interface SendParams {
   address: string;
   amount: string;
   tokenName?: string;
+  tokenAddress?: string;
+  programId?: string;
+  decimalPlaces?: number;
 }
 
 const UNSIGNED_BIGINT_MAX = BigInt('18446744073709551615');
@@ -108,10 +111,17 @@ export class TransferBuilderV2 extends TransactionBuilder {
   createAssociatedTokenAccount(recipient: TokenAssociateRecipient): this {
     validateOwnerAddress(recipient.ownerAddress);
     const token = getSolTokenFromTokenName(recipient.tokenName);
-    if (!token) {
+    let tokenAddress;
+    if (token) {
+      tokenAddress = token.tokenAddress;
+    } else if (recipient.tokenAddress) {
+      tokenAddress = recipient.tokenAddress;
+    }
+
+    if (!tokenAddress) {
       throw new BuildTransactionError('Invalid token name, got: ' + recipient.tokenName);
     }
-    validateMintAddress(token.tokenAddress);
+    validateMintAddress(tokenAddress);
 
     this._createAtaParams.push(recipient);
     return this;
@@ -124,16 +134,36 @@ export class TransferBuilderV2 extends TransactionBuilder {
       this._sendParams.map(async (sendParams: SendParams): Promise<Transfer | TokenTransfer> => {
         if (sendParams.tokenName) {
           const coin = getSolTokenFromTokenName(sendParams.tokenName);
-          assert(coin instanceof SolCoin);
-          const sourceAddress = await getAssociatedTokenAccountAddress(coin.tokenAddress, this._sender);
+          let tokenAddress: string;
+          let tokenName: string;
+          let programId: string | undefined;
+          let decimals: number | undefined;
+          if (coin) {
+            tokenName = coin.name;
+            tokenAddress = coin.tokenAddress;
+            decimals = coin.decimalPlaces;
+            programId = coin.programId;
+          } else if (sendParams.tokenAddress) {
+            tokenName = sendParams.tokenName;
+            tokenAddress = sendParams.tokenAddress;
+            decimals = sendParams.decimalPlaces;
+            programId = sendParams.programId;
+          } else {
+            throw new Error(`Could not determine token information for ${sendParams.tokenName}`);
+          }
+
+          const sourceAddress = await getAssociatedTokenAccountAddress(tokenAddress, this._sender);
           return {
             type: InstructionBuilderTypes.TokenTransfer,
             params: {
               fromAddress: this._sender,
               toAddress: sendParams.address,
               amount: sendParams.amount,
-              tokenName: coin.name,
+              tokenName: tokenName,
               sourceAddress: sourceAddress,
+              tokenAddress: tokenAddress,
+              programId: programId,
+              decimalPlaces: decimals,
             },
           };
         } else {
@@ -154,17 +184,30 @@ export class TransferBuilderV2 extends TransactionBuilder {
     const createAtaInstructions = await Promise.all(
       uniqueCreateAtaParams.map(async (recipient: TokenAssociateRecipient): Promise<AtaInit> => {
         const coin = getSolTokenFromTokenName(recipient.tokenName);
-        assert(coin instanceof SolCoin);
-        const recipientTokenAddress = await getAssociatedTokenAccountAddress(coin.tokenAddress, recipient.ownerAddress);
+        let tokenAddress: string;
+        let tokenName: string;
+        let programId: string | undefined;
+        if (coin) {
+          tokenName = coin.name;
+          tokenAddress = coin.tokenAddress;
+          programId = coin.programId;
+        } else if (recipient.tokenAddress) {
+          tokenName = recipient.tokenName;
+          tokenAddress = recipient.tokenAddress;
+          programId = recipient.programId;
+        } else {
+          throw new Error(`Could not determine token information for ${recipient.tokenName}`);
+        }
+        const recipientTokenAddress = await getAssociatedTokenAccountAddress(tokenAddress, recipient.ownerAddress);
         return {
           type: InstructionBuilderTypes.CreateAssociatedTokenAccount,
           params: {
             ownerAddress: recipient.ownerAddress,
-            tokenName: coin.name,
-            mintAddress: coin.tokenAddress,
+            tokenName: tokenName,
+            mintAddress: tokenAddress,
             ataAddress: recipientTokenAddress,
             payerAddress: this._sender,
-            programId: coin.programId,
+            programId: programId,
           },
         };
       })

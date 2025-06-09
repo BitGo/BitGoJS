@@ -20,6 +20,7 @@ import {
 } from './constants';
 import {
   DurableNonceParams,
+  InstructionParams,
   Memo,
   Nonce,
   StakingActivate,
@@ -45,6 +46,7 @@ export class Transaction extends BaseTransaction {
   private _lamportsPerSignature: number | undefined;
   private _tokenAccountRentExemptAmount: string | undefined;
   protected _type: TransactionType;
+  protected _instructionsData: InstructionParams[] = [];
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -119,6 +121,15 @@ export class Transaction extends BaseTransaction {
    */
   setTransactionType(transactionType: TransactionType): void {
     this._type = transactionType;
+  }
+
+  /**
+   * Set the instructionData.
+   *
+   * @param {InstructionParams[]} instructionData The instruction data to be set.
+   */
+  setInstructionsData(instructionData: InstructionParams[]): void {
+    this._instructionsData = instructionData;
   }
 
   /** @inheritdoc */
@@ -242,7 +253,8 @@ export class Transaction extends BaseTransaction {
     const instructionData = instructionParamsFactory(
       this._type,
       this._solTransaction.instructions,
-      this._coinConfig.name
+      this._coinConfig.name,
+      this._instructionsData
     );
     if (this._type) {
       if (
@@ -291,7 +303,8 @@ export class Transaction extends BaseTransaction {
     const instructionParams = instructionParamsFactory(
       this.type,
       this._solTransaction.instructions,
-      this._coinConfig.name
+      this._coinConfig.name,
+      this._instructionsData
     );
 
     for (const instruction of instructionParams) {
