@@ -1,3 +1,5 @@
+import * as _ from 'lodash';
+import BigNumber from 'bignumber.js';
 import {
   AuditDecryptedKeyParams,
   BaseCoin,
@@ -19,6 +21,9 @@ import utils from './lib/utils';
 import { bip32 } from '@bitgo/secp256k1';
 import { randomBytes } from 'crypto';
 import { KeyPair as EthKeyPair } from '@bitgo/abstract-eth';
+import { TransactionBuilderFactory } from './lib';
+import { ExplainTransactionOptions, VetParseTransactionOptions } from './lib/types';
+import { VetTransactionExplanation } from './lib/iface';
 
 /**
  * Full Name: Vechain
@@ -79,7 +84,40 @@ export class Vet extends BaseCoin {
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
-    throw new Error('Method not implemented');
+    const { txPrebuild: txPrebuild, txParams: txParams } = params;
+    const txHex = txPrebuild.txHex;
+    if (!txHex) {
+      throw new Error('missing required tx prebuild property txHex');
+    }
+    const explainedTx = await this.explainTransaction({ txHex });
+    if (!explainedTx) {
+      throw new Error('failed to explain transaction');
+    }
+    if (txParams.recipients !== undefined) {
+      const filteredRecipients = txParams.recipients?.map((recipient) => {
+        return {
+          address: recipient.address,
+          amount: BigInt(recipient.amount),
+        };
+      });
+      const filteredOutputs = explainedTx.outputs.map((output) => {
+        return {
+          address: output.address,
+          amount: BigInt(output.amount),
+        };
+      });
+      if (!_.isEqual(filteredOutputs, filteredRecipients)) {
+        throw new Error('Tx outputs does not match with expected txParams recipients');
+      }
+      let totalAmount = new BigNumber(0);
+      for (const recipients of txParams.recipients) {
+        totalAmount = totalAmount.plus(recipients.amount);
+      }
+      if (!totalAmount.isEqualTo(explainedTx.outputAmount)) {
+        throw new Error('Tx total amount does not match with expected total amount field');
+      }
+    }
+    return true;
   }
 
   async isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
@@ -91,16 +129,39 @@ export class Vet extends BaseCoin {
     return true;
   }
 
-  async parseTransaction(): Promise<ParsedTransaction> {
-    throw new Error('Method not implemented');
+  async parseTransaction(params: VetParseTransactionOptions): Promise<ParsedTransaction> {
+    const transactionExplanation = await this.explainTransaction({ txHex: params.txHex });
+    if (!transactionExplanation) {
+      throw new Error('Invalid transaction');
+    }
+    return {
+      inputs: [
+        {
+          address: transactionExplanation.sender,
+          amount: transactionExplanation.outputAmount,
+        },
+      ],
+      outputs: [
+        {
+          address: transactionExplanation.outputs[0].address,
+          amount: transactionExplanation.outputs[0].amount,
+        },
+      ],
+    };
   }
 
   /**
    * Explain a Vechain transaction
    * @param params
    */
-  async explainTransaction(params): Promise<undefined> {
-    throw new Error('Method not implemented');
+  async explainTransaction(params: ExplainTransactionOptions): Promise<VetTransactionExplanation | undefined> {
+    let rebuiltTransaction: BaseTransaction;
+    try {
+      rebuiltTransaction = await this.rebuildTransaction(params.txHex);
+    } catch {
+      return undefined;
+    }
+    return rebuiltTransaction.explainTransaction();
   }
 
   generateKeyPair(seed?: Buffer): KeyPair {
@@ -136,16 +197,22 @@ export class Vet extends BaseCoin {
     throw new Error('Method not implemented.');
   }
 
-  protected getTxBuilderFactory() {
-    throw new Error('Method not implemented.');
+  protected getTxBuilderFactory(): TransactionBuilderFactory {
+    return new TransactionBuilderFactory(this._staticsCoin);
   }
 
   protected async rebuildTransaction(txHex: string): Promise<BaseTransaction> {
-    throw new Error('Method not implemented');
+    const txBuilderFactory = this.getTxBuilderFactory();
+    try {
+      const txBuilder = txBuilderFactory.from(txHex);
+      return txBuilder.transaction;
+    } catch {
+      throw new Error('Failed to rebuild transaction');
+    }
   }
 
   /** @inheritDoc */
-  auditDecryptedKey(params: AuditDecryptedKeyParams) {
+  auditDecryptedKey(params: AuditDecryptedKeyParams): void {
     /** https://bitgoinc.atlassian.net/browse/COIN-4213 */
     throw new Error('Method not implemented.');
   }
