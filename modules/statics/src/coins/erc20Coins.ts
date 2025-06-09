@@ -11353,6 +11353,14 @@ export const erc20Coins = [
     UnderlyingAsset.SCHZ
   ),
   terc20(
+    '31eedb6e-3bd1-4407-b924-7136c4dc0483',
+    'tsteth',
+    'test stETH',
+    18,
+    '0x3f1c547b21f65e10480de3ad8e19faac46c95034',
+    UnderlyingAsset.TSTETH
+  ),
+  terc20(
     '5c7e28b8-0154-4400-9e67-3cc0b5f72e0c',
     'tcat',
     'Test CAT-20 Token',

@@ -3191,6 +3191,7 @@ export const ofcErc20Coins = [
 export const tOfcErc20Coins = [
   tofcerc20('055ebe86-72cc-4f0e-b46f-c517d8e3687a', 'ofcterc', 'Test ERC Token', 18, UnderlyingAsset.TERC),
   tofcerc20('ac822eb1-4aa0-40d2-836d-7a24db24d47a', 'ofctest', 'Test Mintable ERC20 Token', 18, UnderlyingAsset.TEST),
+  tofcerc20('35c394f6-6d05-4a14-8512-dddb52659b45', 'ofctsteth', 'Test stETH', 18, UnderlyingAsset.TSTETH),
   tofcerc20(
     '67b3f68b-a0bd-4bd7-b67e-36e8220bf67e',
     'ofcterc18dp13',
