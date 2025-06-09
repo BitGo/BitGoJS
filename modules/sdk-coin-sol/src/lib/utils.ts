@@ -544,12 +544,14 @@ export async function getAssociatedTokenAccountAddress(
   }
 
   const coin = getSolTokenFromAddressOnly(tokenMintAddress);
-  if (!coin || !(coin instanceof SolCoin)) {
-    throw new UtilsError(`Token not found or not a Solana token: ${tokenMintAddress}`);
+  let ataAddress: PublicKey;
+  let programId: string;
+  if (coin && coin instanceof SolCoin && (coin as any).programId) {
+    programId = (coin as any).programId.toString();
+  } else {
+    programId = TOKEN_PROGRAM_ID.toString();
   }
 
-  let ataAddress: PublicKey;
-  const programId = coin.programId;
   if (programId === TOKEN_2022_PROGRAM_ID.toString()) {
     ataAddress = await getAssociatedTokenAddress(mintPublicKey, ownerPublicKey, false, TOKEN_2022_PROGRAM_ID);
   } else {
