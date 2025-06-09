@@ -18,6 +18,9 @@ describe('Sol Transfer Builder V2', () => {
   const memo = 'test memo';
   const nameUSDC = testData.tokenTransfers.nameUSDC;
   const mintUSDC = testData.tokenTransfers.mintUSDC;
+  const nameAMS = testData.amsTokenTransfers.nameAMSToken;
+  const mintAMS = testData.amsTokenTransfers.mintAMS;
+  const amsProgramID = testData.amsTokenTransfers.programID;
   const owner = testData.tokenTransfers.owner;
   const walletPK = testData.associatedTokenAccounts.accounts[0].pub;
   const walletSK = testData.associatedTokenAccounts.accounts[0].prv;
@@ -474,6 +477,75 @@ describe('Sol Transfer Builder V2', () => {
       const rawTx = tx.toBroadcastFormat();
       should.equal(Utils.isValidRawTransaction(rawTx), true);
       should.equal(rawTx, testData.TOKEN_TRANSFERV2_SIGNED_TX_WITH_WITH_CREATE_ATA_AND_MEMO_AND_DURABLE_NONCE);
+    });
+
+    it('build a token transfer tx unsigned with create ATA, memo, tokenAddress and durable nonce', async () => {
+      const txBuilder = factory.getTransferBuilderV2();
+      txBuilder.nonce(recentBlockHash, {
+        walletNonceAddress: nonceAccount.pub,
+        authWalletAddress: walletPK,
+      });
+      txBuilder.feePayer(feePayerAccount.pub);
+      txBuilder.sender(walletPK);
+      txBuilder.send({
+        address: otherAccount.pub,
+        amount,
+        tokenName: nameAMS,
+        tokenAddress: mintAMS,
+        programId: amsProgramID,
+        decimalPlaces: 9,
+      });
+      txBuilder.memo(memo);
+      txBuilder.createAssociatedTokenAccount({
+        ownerAddress: otherAccount.pub,
+        tokenName: nameAMS,
+        tokenAddress: mintAMS,
+        programId: amsProgramID,
+      });
+      txBuilder.sign({ key: walletSK });
+      txBuilder.setPriorityFee(priorityFee);
+      const tx = await txBuilder.build();
+      tx.id.should.not.equal(undefined);
+      tx.inputs.length.should.equal(1);
+      tx.inputs[0].should.deepEqual({
+        address: walletPK,
+        value: amount,
+        coin: nameAMS,
+      });
+      tx.outputs.length.should.equal(1);
+      tx.outputs[0].should.deepEqual({
+        address: otherAccount.pub,
+        value: amount,
+        coin: nameAMS,
+      });
+      const txJson = tx.toJson();
+      txJson.instructionsData.length.should.equal(4);
+      txJson.instructionsData[0].type.should.equal('SetPriorityFee');
+      txJson.instructionsData[1].type.should.equal('CreateAssociatedTokenAccount');
+      txJson.instructionsData[1].params.should.deepEqual({
+        mintAddress: mintAMS,
+        ataAddress: '8KLnroP6hHkr1ZsQL4k6A3i2yhhnv2kr2Teedx7a26Eg',
+        ownerAddress: otherAccount.pub,
+        payerAddress: walletPK,
+        tokenName: nameAMS,
+      });
+      txJson.instructionsData[2].type.should.equal('TokenTransfer');
+      txJson.instructionsData[2].params.should.deepEqual({
+        fromAddress: walletPK,
+        toAddress: otherAccount.pub,
+        amount: amount,
+        tokenName: nameAMS,
+        sourceAddress: 'EytHm3gWSmaTkuF1datepgDzx7grGuDG7ws5QA7tCmU4',
+      });
+      txJson.instructionsData[3].type.should.equal('Memo');
+      txJson.instructionsData[3].params.memo.should.equal(memo);
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(Utils.isValidRawTransaction(rawTx), true);
+      should.equal(
+        rawTx,
+        testData.TOKEN_TRANSFERV2_SIGNED_TX_WITH_WITH_CREATE_ATA_AND_MEMO_AND_DURABLE_NONCE_WITH_OPTIONAL_PARAMS
+      );
     });
 
     it('build a token multi transfer tx signed with memo and durable nonce', async () => {

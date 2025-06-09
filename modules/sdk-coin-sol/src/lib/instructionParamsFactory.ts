@@ -52,13 +52,14 @@ import { getInstructionType } from './utils';
 export function instructionParamsFactory(
   type: TransactionType,
   instructions: TransactionInstruction[],
-  coinName?: string
+  coinName?: string,
+  instructionMetadata?: InstructionParams[]
 ): InstructionParams[] {
   switch (type) {
     case TransactionType.WalletInitialization:
       return parseWalletInitInstructions(instructions);
     case TransactionType.Send:
-      return parseSendInstructions(instructions);
+      return parseSendInstructions(instructions, instructionMetadata);
     case TransactionType.StakingActivate:
       return parseStakingActivateInstructions(instructions);
     case TransactionType.StakingDeactivate:
@@ -66,7 +67,7 @@ export function instructionParamsFactory(
     case TransactionType.StakingWithdraw:
       return parseStakingWithdrawInstructions(instructions);
     case TransactionType.AssociatedTokenAccountInitialization:
-      return parseAtaInitInstructions(instructions);
+      return parseAtaInitInstructions(instructions, instructionMetadata);
     case TransactionType.CloseAssociatedTokenAccount:
       return parseAtaCloseInstructions(instructions);
     case TransactionType.StakingAuthorize:
@@ -120,7 +121,8 @@ function parseWalletInitInstructions(instructions: TransactionInstruction[]): Ar
  * @returns {InstructionParams[]} An array containing instruction params for Send tx
  */
 function parseSendInstructions(
-  instructions: TransactionInstruction[]
+  instructions: TransactionInstruction[],
+  instructionMetadata?: InstructionParams[]
 ): Array<Nonce | Memo | Transfer | TokenTransfer | AtaInit | AtaClose | SetPriorityFee> {
   const instructionData: Array<Nonce | Memo | Transfer | TokenTransfer | AtaInit | AtaClose | SetPriorityFee> = [];
   for (const instruction of instructions) {
@@ -160,7 +162,7 @@ function parseSendInstructions(
         } else {
           tokenTransferInstruction = decodeTransferCheckedInstruction(instruction, TOKEN_2022_PROGRAM_ID);
         }
-        const tokenName = findTokenName(tokenTransferInstruction.keys.mint.pubkey.toString());
+        const tokenName = findTokenName(tokenTransferInstruction.keys.mint.pubkey.toString(), instructionMetadata);
         const tokenTransfer: TokenTransfer = {
           type: InstructionBuilderTypes.TokenTransfer,
           params: {
@@ -175,7 +177,7 @@ function parseSendInstructions(
         break;
       case ValidInstructionTypesEnum.InitializeAssociatedTokenAccount:
         const mintAddress = instruction.keys[ataInitInstructionKeysIndexes.MintAddress].pubkey.toString();
-        const mintTokenName = findTokenName(mintAddress);
+        const mintTokenName = findTokenName(mintAddress, instructionMetadata);
 
         const ataInit: AtaInit = {
           type: InstructionBuilderTypes.CreateAssociatedTokenAccount,
@@ -652,7 +654,10 @@ const closeAtaInstructionKeysIndexes = {
  * @param {TransactionInstruction[]} instructions - an array of supported Solana instructions
  * @returns {InstructionParams[]} An array containing instruction params for Send tx
  */
-function parseAtaInitInstructions(instructions: TransactionInstruction[]): Array<AtaInit | Memo | Nonce> {
+function parseAtaInitInstructions(
+  instructions: TransactionInstruction[],
+  instructionMetadata?: InstructionParams[]
+): Array<AtaInit | Memo | Nonce> {
   const instructionData: Array<AtaInit | Memo | Nonce> = [];
   let memo: Memo | undefined;
 
@@ -675,7 +680,7 @@ function parseAtaInitInstructions(instructions: TransactionInstruction[]): Array
         break;
       case ValidInstructionTypesEnum.InitializeAssociatedTokenAccount:
         const mintAddress = instruction.keys[ataInitInstructionKeysIndexes.MintAddress].pubkey.toString();
-        const tokenName = findTokenName(mintAddress);
+        const tokenName = findTokenName(mintAddress, instructionMetadata);
 
         const ataInit: AtaInit = {
           type: InstructionBuilderTypes.CreateAssociatedTokenAccount,
@@ -831,7 +836,7 @@ function parseStakingAuthorizeRawInstructions(instructions: TransactionInstructi
   return instructionData;
 }
 
-function findTokenName(mintAddress: string): string {
+function findTokenName(mintAddress: string, instructionMetadata?: InstructionParams[]): string {
   let token: string | undefined;
 
   coins.forEach((value, key) => {
@@ -840,6 +845,21 @@ function findTokenName(mintAddress: string): string {
     }
   });
 
+  if (!token && instructionMetadata) {
+    instructionMetadata.forEach((instruction) => {
+      if (
+        instruction.type === InstructionBuilderTypes.CreateAssociatedTokenAccount &&
+        instruction.params.mintAddress === mintAddress
+      ) {
+        token = instruction.params.tokenName;
+      } else if (
+        instruction.type === InstructionBuilderTypes.TokenTransfer &&
+        instruction.params.tokenAddress === mintAddress
+      ) {
+        token = instruction.params.tokenName;
+      }
+    });
+  }
   assert(token);
 
   return token;

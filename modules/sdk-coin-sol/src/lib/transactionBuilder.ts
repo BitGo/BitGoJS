@@ -113,6 +113,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected async buildImplementation(): Promise<Transaction> {
     this.transaction.solTransaction = this.buildSolTransaction();
     this.transaction.setTransactionType(this.transactionType);
+    this.transaction.setInstructionsData(this._instructionsData);
     this.transaction.loadInputsAndOutputs();
     this._transaction.tokenAccountRentExemptAmount = this._tokenAccountRentExemptAmount;
     return this.transaction;
