@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [35.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@35.1.0...@bitgo/sdk-core@35.2.0) (2025-06-05)
+
+### Features
+
+- **sdk-coin-asi:** add statics and SDK support for ASI ([38baf3c](https://github.com/BitGo/BitGoJS/commit/38baf3ce3f4d8b8e2f454a92de4fce7245665e7e))
+- **sdk-core:** implement method to add token in coin map and constructor map ([8366309](https://github.com/BitGo/BitGoJS/commit/83663098483fb4ee164abe5e200c2a09548304ad))
+
 # [35.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@35.0.1...@bitgo/sdk-core@35.1.0) (2025-06-02)
 
 ### Bug Fixes

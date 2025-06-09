@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [27.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.0.2...@bitgo/account-lib@27.1.0) (2025-06-05)
+
+### Features
+
+- **root:** support node 22 ([c4ad6af](https://github.com/BitGo/BitGoJS/commit/c4ad6af2e8896221417c303f0f6b84652b493216))
+- **sdk-coin-asi:** add statics and SDK support for ASI ([38baf3c](https://github.com/BitGo/BitGoJS/commit/38baf3ce3f4d8b8e2f454a92de4fce7245665e7e))
+
 ## [27.0.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.0.1...@bitgo/account-lib@27.0.2) (2025-06-02)
 
 **Note:** Version bump only for package @bitgo/account-lib

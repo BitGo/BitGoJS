@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.6.0...@bitgo/abstract-substrate@1.7.0) (2025-06-05)
+
+### Features
+
+- **root:** support node 22 ([c4ad6af](https://github.com/BitGo/BitGoJS/commit/c4ad6af2e8896221417c303f0f6b84652b493216))
+
 # [1.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.5.2...@bitgo/abstract-substrate@1.6.0) (2025-06-02)
 
 ### Bug Fixes

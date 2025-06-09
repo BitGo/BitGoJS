@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-etc@2.2.50...@bitgo/sdk-coin-etc@2.3.0) (2025-06-05)
+
+### Features
+
+- **root:** support node 22 ([c4ad6af](https://github.com/BitGo/BitGoJS/commit/c4ad6af2e8896221417c303f0f6b84652b493216))
+
 ## [2.2.50](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-etc@2.2.49...@bitgo/sdk-coin-etc@2.2.50) (2025-06-02)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-etc

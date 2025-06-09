@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-tao",
-  "version": "1.7.3",
+  "version": "1.8.0",
   "description": "BitGo SDK coin library for TAO (Bittensor) coin",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,17 +40,17 @@
     ]
   },
   "dependencies": {
-    "@bitgo/abstract-substrate": "^1.6.0",
-    "@bitgo/sdk-core": "^35.1.0",
-    "@bitgo/statics": "^54.1.0",
+    "@bitgo/abstract-substrate": "^1.7.0",
+    "@bitgo/sdk-core": "^35.2.0",
+    "@bitgo/statics": "^54.2.0",
     "@polkadot/api": "14.1.1",
     "@substrate/txwrapper-core": "7.5.2",
     "@substrate/txwrapper-polkadot": "7.5.2",
     "bignumber.js": "^9.0.0"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.63.3",
-    "@bitgo/sdk-test": "^8.0.88"
+    "@bitgo/sdk-api": "^1.63.4",
+    "@bitgo/sdk-test": "^8.0.89"
   },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c"
 }
