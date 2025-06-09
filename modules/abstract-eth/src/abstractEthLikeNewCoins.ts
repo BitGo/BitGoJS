@@ -1377,6 +1377,10 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     const txBuilder = this.getTransactionBuilder(params.common) as TransactionBuilder;
     const txHex = buildResponse.txHex;
     txBuilder.from(txHex);
+    if (buildResponse.walletVersion) {
+      // If walletVersion is provided, set it in the txBuilder
+      txBuilder.walletVersion(buildResponse.walletVersion);
+    }
     txBuilder
       .transfer()
       .coin(this.staticsCoin?.name as string)
@@ -1391,12 +1395,15 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     };
   }
 
-  async buildCrossChainRecoveryTransaction(recoveryId: string): Promise<{ coin: string; txHex: string; txid: string }> {
+  async buildCrossChainRecoveryTransaction(
+    recoveryId: string
+  ): Promise<{ coin: string; txHex: string; txid: string; walletVersion?: number }> {
     const res = await this.bitgo.get(this.bitgo.microservicesUrl(`/api/recovery/v1/crosschain/${recoveryId}/buildtx`));
     return {
       coin: res.body.coin,
       txHex: res.body.txHex,
       txid: res.body.txid,
+      walletVersion: res.body.walletVersion,
     };
   }
 
