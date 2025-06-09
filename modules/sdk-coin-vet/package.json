@@ -46,7 +46,10 @@
     "@bitgo/statics": "^54.2.0",
     "bignumber.js": "^9.1.1",
     "ethereumjs-util": "7.1.5",
-    "tweetnacl": "^1.0.3"
+    "tweetnacl": "^1.0.3",
+    "lodash": "^4.17.21",
+    "@vechain/sdk-core": "^1.2.0-rc.3",
+    "@noble/curves": "1.8.1"
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.63.4",

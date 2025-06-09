@@ -100,6 +100,7 @@ export interface HederaTokenConstructorOptions extends AccountConstructorOptions
 export interface EosCoinConstructorOptions extends AccountConstructorOptions {
   contractName: string;
   contractAddress: string;
+  symbol?: string;
 }
 
 export interface SolCoinConstructorOptions extends AccountConstructorOptions {
@@ -356,6 +357,7 @@ export class AlgoCoin extends AccountCoinToken {
 export class EosCoin extends AccountCoinToken {
   public contractName: string;
   public contractAddress: string;
+  public symbol: string;
   constructor(options: EosCoinConstructorOptions) {
     super({
       ...options,
@@ -363,6 +365,7 @@ export class EosCoin extends AccountCoinToken {
 
     this.contractName = options.contractAddress;
     this.contractAddress = options.contractAddress;
+    this.symbol = options.symbol ?? options.name.split(':')[1];
   }
 }
 
@@ -1530,6 +1533,7 @@ export function eosToken(
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix = '',
   suffix: string = name.toUpperCase(),
+  symbol?: string,
   network: AccountNetwork = Networks.main.eos,
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
@@ -1549,6 +1553,7 @@ export function eosToken(
       isToken: true,
       primaryKeyCurve,
       baseUnit: BaseUnit.EOS,
+      symbol,
     })
   );
 }
@@ -1565,6 +1570,7 @@ export function eosToken(
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
  * @param prefix? Optional token prefix. Defaults to empty string
  * @param suffix? Optional token suffix. Defaults to token name.
+ * @param symbol? token symbol as defined in token contract.
  * @param network? Optional token network. Defaults to the testnet EOS network.
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
  */
@@ -1579,6 +1585,7 @@ export function teosToken(
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix = '',
   suffix: string = name.toUpperCase(),
+  symbol?: string,
   network: AccountNetwork = Networks.test.eos
 ) {
   return eosToken(
@@ -1592,6 +1599,7 @@ export function teosToken(
     features,
     prefix,
     suffix,
+    symbol,
     network
   );
 }

@@ -10524,6 +10524,22 @@ export const erc20Coins = [
     '0xe50e009ddb1a4d8ec668eac9d8b2df1f96348707',
     UnderlyingAsset['eth:ctrl']
   ),
+  erc20(
+    '7e3c6735-2da3-42a3-aa60-fad6e267e335',
+    'eth:benji',
+    'Franklin OnChain U.S. Government Money Fund',
+    18,
+    '0x3ddc84940ab509c11b20b76b466933f40b750dc9',
+    UnderlyingAsset['eth:benji']
+  ),
+  erc20(
+    '9fe1912f-a981-4041-91ea-d756576b2e02',
+    'eth:ibenji',
+    'Franklin OnChain Institutional Liquidity Fund Ltd.',
+    18,
+    '0x90276e9d4a023b5229e0c2e9d4b2a83fe3a2b48c',
+    UnderlyingAsset['eth:ibenji']
+  ),
   terc20(
     '0205f0d6-0647-47c9-ad8b-c48d048e54f3',
     'fixed',
@@ -11335,6 +11351,14 @@ export const erc20Coins = [
     18,
     '0x050e25a2630b2aee94546589fd39785254de112c',
     UnderlyingAsset.SCHZ
+  ),
+  terc20(
+    '31eedb6e-3bd1-4407-b924-7136c4dc0483',
+    'tsteth',
+    'test stETH',
+    18,
+    '0x3f1c547b21f65e10480de3ad8e19faac46c95034',
+    UnderlyingAsset.TSTETH
   ),
   terc20(
     '5c7e28b8-0154-4400-9e67-3cc0b5f72e0c',

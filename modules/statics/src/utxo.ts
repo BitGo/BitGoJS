@@ -210,7 +210,7 @@ export const utxoCoins: Readonly<BaseCoin>[] = [
     Networks.test.bitcoin,
     UnderlyingAsset.BTC,
     BaseUnit.BTC,
-    BTC_FEATURES
+    BTC_FEATURES.filter((f) => f !== CoinFeature.STAKING)
   ),
   utxo(
     'a0d53dc9-2dcc-4ebb-a2d4-51983fe20da6',

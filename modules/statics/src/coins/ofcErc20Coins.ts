@@ -3152,6 +3152,20 @@ export const ofcErc20Coins = [
     18,
     underlyingAssetForSymbol('eth:gaia')
   ),
+  ofcerc20(
+    '282045b5-9394-4995-990d-a14b08931ea6',
+    'ofceth:benji',
+    'Franklin OnChain U.S. Government Money Fund',
+    18,
+    underlyingAssetForSymbol('eth:benji')
+  ),
+  ofcerc20(
+    '6d17f939-52f6-4aee-9f2d-201fa4464f4c',
+    'ofceth:ibenji',
+    'Franklin OnChain Institutional Liquidity Fund Ltd.',
+    18,
+    underlyingAssetForSymbol('eth:ibenji')
+  ),
   ofcerc20('c3a5c5d2-5d6e-4c9b-9f3e-6d2a4e5b6c8d', 'ofceth:usds', 'USDS', 18, underlyingAssetForSymbol('eth:usds')),
   ofcerc20('b4aed05b-b667-4b1e-b88e-19219989c1e4', 'ofceth:perc', 'Perion', 18, underlyingAssetForSymbol('eth:perc')),
   ofcerc20('d6ba9776-1b5b-4364-8afd-594363a01ec1', 'ofceth:cfg', 'Centrifuge', 18, underlyingAssetForSymbol('eth:cfg')),
@@ -3177,6 +3191,7 @@ export const ofcErc20Coins = [
 export const tOfcErc20Coins = [
   tofcerc20('055ebe86-72cc-4f0e-b46f-c517d8e3687a', 'ofcterc', 'Test ERC Token', 18, UnderlyingAsset.TERC),
   tofcerc20('ac822eb1-4aa0-40d2-836d-7a24db24d47a', 'ofctest', 'Test Mintable ERC20 Token', 18, UnderlyingAsset.TEST),
+  tofcerc20('35c394f6-6d05-4a14-8512-dddb52659b45', 'ofctsteth', 'Test stETH', 18, UnderlyingAsset.TSTETH),
   tofcerc20(
     '67b3f68b-a0bd-4bd7-b67e-36e8220bf67e',
     'ofcterc18dp13',

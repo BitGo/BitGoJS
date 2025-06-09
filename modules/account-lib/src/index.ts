@@ -191,6 +191,9 @@ export { Stt };
 import * as Soneium from '@bitgo/sdk-coin-soneium';
 export { Soneium };
 
+import * as Vet from '@bitgo/sdk-coin-vet';
+export { Vet };
+
 const coinBuilderMap = {
   trx: Trx.WrappedBuilder,
   ttrx: Trx.WrappedBuilder,
@@ -301,6 +304,8 @@ const coinBuilderMap = {
   tsoneium: Soneium.TransactionBuilder,
   polyx: Polyx.TransactionBuilderFactory,
   tpolyx: Polyx.TransactionBuilderFactory,
+  vet: Vet.TransactionBuilderFactory,
+  tvet: Vet.TransactionBuilderFactory,
 };
 
 /**

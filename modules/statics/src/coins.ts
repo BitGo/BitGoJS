@@ -1875,6 +1875,28 @@ export const coins = CoinMap.fromCoins([
     '',
     'AUDD'
   ),
+  stellarToken(
+    '10a1aeb5-c738-4ff2-9924-58b0aabaf6e4',
+    'xlm:BENJI-GBHNGLLIE3KWGKCHIKMHJ5HVZHYIK7WTBE4QF5PLAKL4CJGSEU7HZIW5',
+    'BENJI',
+    7,
+    UnderlyingAsset['xlm:BENJI-GBHNGLLIE3KWGKCHIKMHJ5HVZHYIK7WTBE4QF5PLAKL4CJGSEU7HZIW5'],
+    'www.franklintempleton.com',
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'BENJI'
+  ),
+  stellarToken(
+    '4afce14d-e061-4008-8ef6-ef13c42d667a',
+    'xlm:gBENJI-GD5J73EKK5IYL5XS3FBTHHX7CZIYRP7QXDL57XFWGC2WVYWT326OBXRP',
+    'GBENJI',
+    7,
+    UnderlyingAsset['xlm:gBENJI-GD5J73EKK5IYL5XS3FBTHHX7CZIYRP7QXDL57XFWGC2WVYWT326OBXRP'],
+    'www.franklintempleton.com',
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'GBENJI'
+  ),
   tronToken(
     '5f3266f8-252c-492a-90d7-bb6d3bf550fb',
     'trx:btt',
@@ -2306,7 +2328,8 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.VAULTA,
     AccountCoin.DEFAULT_FEATURES,
     '',
-    'VAULTA'
+    'VAULTA',
+    'A'
   ),
   teosToken(
     '1c627bb5-4bee-4ab0-8bb6-3d535e17a769',
@@ -2366,7 +2389,8 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.VAULTA,
     AccountCoin.DEFAULT_FEATURES,
     '',
-    'VAULTA'
+    'VAULTA',
+    'A'
   ),
   erc721(
     'dd743064-09e6-4028-9e61-ebf7c24ff40b',
@@ -2853,6 +2877,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x37a645648df29205c6261289983fb04ecd70b4b3',
     UnderlyingAsset['arbeth:anime']
+  ),
+  arbethErc20(
+    '383eadb6-1ea6-4784-8791-3a01bc055dac',
+    'arbeth:benji',
+    'Franklin OnChain U.S. Government Money Fund',
+    18,
+    '0xb9e4765bce2609bc1949592059b17ea72fee6c6a',
+    UnderlyingAsset['arbeth:benji']
   ),
   opethErc20(
     '8d80fac6-4cbc-447c-b49b-4229cb8aa89d',
@@ -3500,6 +3532,15 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['apt:pact'],
     APT_FEATURES
   ),
+  aptToken(
+    '8127e6cf-7255-4351-b5da-cce6eca9a5aa',
+    'apt:benji',
+    'Frk OnChain US Gov Mon Fd',
+    9,
+    '0x7b5e9cac3433e9202f28527f707c89e1e47b19de2c33e4db9521a63ad219b739',
+    UnderlyingAsset['apt:benji'],
+    APT_FEATURES
+  ),
   taptToken(
     '2695e728-96dd-46e6-9d01-bd0fdbe1ff38',
     'tapt:usdt',
@@ -3694,7 +3735,9 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
         ...commonArgs.slice(0, 4), // id, name, fullName, decimalPlaces
         token.contractName, // contractName
         token.contractAddress, // contractAddress
-        ...commonArgs.slice(4) // asset, features, prefix, suffix, network, primaryKeyCurve
+        ...commonArgs.slice(4, 8), // asset, features, prefix, suffix
+        token.symbol, // symbol
+        ...commonArgs.slice(8) // network, primaryKeyCurve
       );
 
     case 'hbar':
