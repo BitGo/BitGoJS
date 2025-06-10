@@ -522,9 +522,9 @@ export class Transaction extends BaseTransaction {
         }
       }
     }
-    if (hasFtTransfer && hasStorageDeposit) {
+    if (hasFtTransfer) {
       return totalTokenAmount.toString();
-    } else if (!hasFtTransfer && hasStorageDeposit) {
+    } else if (hasStorageDeposit) {
       return totalNearDeposit.toString();
     }
     return '';
@@ -545,10 +545,17 @@ export class Transaction extends BaseTransaction {
         const functionCall = action.functionCall;
         if (functionCall.methodName === FT_TRANSFER) {
           const amountStr = functionCall.args['amount'] as string;
-          outputs.push({
-            address: json.receiverId,
+          const receiverId = functionCall.args['receiver_id'] as string;
+          // in ft transfer, the outer receiver id will be contract address of the token
+          const tokenName = utils.findTokenNameFromContractAddress(json.receiverId);
+          const output: ITransactionRecipient = {
+            address: receiverId,
             amount: amountStr,
-          });
+          };
+          if (tokenName) {
+            output.tokenName = tokenName;
+          }
+          outputs.push(output);
         }
       }
     });
@@ -573,10 +580,20 @@ export class Transaction extends BaseTransaction {
       if (action.functionCall) {
         const functionCall = action.functionCall;
         if (functionCall.methodName === STORAGE_DEPOSIT) {
-          outputs.push({
-            address: json.receiverId,
+          const receiverId =
+            functionCall.args && functionCall.args['account_id']
+              ? (functionCall.args['account_id'] as string)
+              : json.signerId;
+          // in storage deposit, the outer receiver id will be contract address of the token
+          const tokenName = utils.findTokenNameFromContractAddress(json.receiverId);
+          const output: ITransactionRecipient = {
+            address: receiverId,
             amount: functionCall.deposit,
-          });
+          };
+          if (tokenName) {
+            output.tokenName = tokenName;
+          }
+          outputs.push(output);
         }
       }
     });

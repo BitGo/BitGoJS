@@ -1,6 +1,9 @@
-import { BaseUtils, isBase58 } from '@bitgo/sdk-core';
-import { KeyPair } from './keyPair';
 import bs58 from 'bs58';
+
+import { BaseUtils, isBase58 } from '@bitgo/sdk-core';
+import { coins, Nep141Token } from '@bitgo/statics';
+
+import { KeyPair } from './keyPair';
 
 export class Utils implements BaseUtils {
   /** @inheritdoc */
@@ -81,6 +84,19 @@ export class Utils implements BaseUtils {
     } catch (e) {
       return false;
     }
+  }
+
+  /**
+   * Find the bitgo token name using contract address
+   *
+   * @param {String} contractAddress the token contract address
+   * @returns {String} token name
+   */
+  findTokenNameFromContractAddress(contractAddress: string): string | undefined {
+    const token = coins
+      .filter((coin) => coin instanceof Nep141Token && coin.contractAddress === contractAddress)
+      .map((coin) => coin as Nep141Token);
+    return token ? token[0].name : undefined;
   }
 }
 
