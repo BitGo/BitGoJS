@@ -7332,7 +7332,8 @@ export const erc20Coins = [
     'stETH',
     18,
     '0xae7ab96520de3a18e5e111b5eaab095312d7fe84',
-    UnderlyingAsset.STETH
+    UnderlyingAsset.STETH,
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION, CoinFeature.REBASE_TOKEN]
   ),
   erc20(
     '8e23a447-d5e7-49e9-b7a0-5b23058971db',
