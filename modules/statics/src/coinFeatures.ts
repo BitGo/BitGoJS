@@ -552,4 +552,5 @@ export const VET_FEATURES = [
   CoinFeature.SUPPORTS_TOKENS,
   CoinFeature.ENTERPRISE_PAYS_FEES,
   CoinFeature.TSS_ENTERPRISE_PAYS_FEES,
+  CoinFeature.MPCV2,
 ];
