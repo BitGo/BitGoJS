@@ -1,7 +1,5 @@
+import * as utxolib from '@bitgo/utxo-lib';
 import * as bitcoinMessage from 'bitcoinjs-message';
-import { crypto } from 'bitcoinjs-lib';
-import { networks, bitgo } from '@bitgo/utxo-lib';
-import { toBase58Check } from '@bitgo/utxo-lib/src/address';
 
 import { extractAddressBufferFromPayGoAttestationProof } from '../ExtractAddressPayGoAttestation';
 
@@ -14,11 +12,16 @@ import { extractAddressBufferFromPayGoAttestationProof } from '../ExtractAddress
  * @param outputIndex - the index of the address in our output
  * @param sig - the signature that we want to encode
  */
-export function addPaygoAddressProof(psbt: bitgo.UtxoPsbt, outputIndex: number, sig: Buffer, pub: Buffer): void {
+export function addPaygoAddressProof(
+  psbt: utxolib.bitgo.UtxoPsbt,
+  outputIndex: number,
+  sig: Buffer,
+  pub: Buffer
+): void {
   psbt.addProprietaryKeyValToOutput(outputIndex, {
     key: {
-      identifier: bitgo.PSBT_PROPRIETARY_IDENTIFIER,
-      subtype: bitgo.ProprietaryKeySubtype.PAYGO_ADDRESS_ATTESTATION_PROOF,
+      identifier: utxolib.bitgo.PSBT_PROPRIETARY_IDENTIFIER,
+      subtype: utxolib.bitgo.ProprietaryKeySubtype.PAYGO_ADDRESS_ATTESTATION_PROOF,
       keydata: pub,
     },
     value: sig,
@@ -33,10 +36,15 @@ export function addPaygoAddressProof(psbt: bitgo.UtxoPsbt, outputIndex: number, 
  * @param message - The message we want to verify corresponding to sig
  * @returns
  */
-export function verifyPaygoAddressProof(psbt: bitgo.UtxoPsbt, outputIndex: number, message: Buffer): void {
+export function verifyPaygoAddressProof(
+  psbt: utxolib.bitgo.UtxoPsbt,
+  outputIndex: number,
+  message: Buffer,
+  attestationPubKey: Buffer
+): void {
   const stored = psbt.getOutputProprietaryKeyVals(outputIndex, {
-    identifier: bitgo.PSBT_PROPRIETARY_IDENTIFIER,
-    subtype: bitgo.ProprietaryKeySubtype.PAYGO_ADDRESS_ATTESTATION_PROOF,
+    identifier: utxolib.bitgo.PSBT_PROPRIETARY_IDENTIFIER,
+    subtype: utxolib.bitgo.ProprietaryKeySubtype.PAYGO_ADDRESS_ATTESTATION_PROOF,
   });
   if (!stored) {
     throw new Error(`No address proof.`);
@@ -51,21 +59,37 @@ export function verifyPaygoAddressProof(psbt: bitgo.UtxoPsbt, outputIndex: numbe
 
   const signature = stored[0].value;
   const pub = stored[0].key.keydata;
+
+  // Check that the keydata pubkey is the same as the one we are verifying against
+  if (Buffer.compare(pub, attestationPubKey) !== 0) {
+    throw new Error('The public key in the PSBT does not match the provided public key.');
+  }
+
   // It doesn't matter that this is bitcoin or not, we just need to convert the public key buffer into an address format
   // for the verification
-  const messageToVerify = toBase58Check(crypto.hash160(pub), networks.bitcoin.pubKeyHash, networks.bitcoin);
+  const messageToVerify = utxolib.address.toBase58Check(
+    utxolib.crypto.hash160(pub),
+    utxolib.networks.bitcoin.pubKeyHash,
+    utxolib.networks.bitcoin
+  );
 
-  if (!bitcoinMessage.verify(message, messageToVerify, signature)) {
+  if (!bitcoinMessage.verify(message, messageToVerify, signature, utxolib.networks.bitcoin.messagePrefix)) {
     throw new Error('Cannot verify the paygo address signature with the provided pubkey.');
   }
-  // We should be verifying the address that was encoded into our message, not from our transaction output.
-  // We already do this because our message should be signed with our address
-  // which is the same one we used to verify the authenticity of the message given its signature as well.
-  const addressFromProof = extractAddressBufferFromPayGoAttestationProof(message);
+  // We should be verifying the address that was encoded into our message.
+  const addressFromProof = extractAddressBufferFromPayGoAttestationProof(message).toString();
 
-  if (Buffer.compare(addressFromProof, Buffer.from(messageToVerify)) !== 0) {
+  // Check that the address from the proof matches what is in the PSBT
+  const txOutputs = psbt.txOutputs;
+  if (outputIndex >= txOutputs.length) {
+    throw new Error(`Output index ${outputIndex} is out of bounds for PSBT outputs.`);
+  }
+  const output = txOutputs[outputIndex];
+  const addressFromOutput = utxolib.address.fromOutputScript(output.script, psbt.network);
+
+  if (addressFromProof !== addressFromOutput) {
     throw new Error(
-      `The address from the output (${messageToVerify}) does not match the address that is in the proof (${addressFromProof}).`
+      `The address from the output (${addressFromOutput}) does not match the address that is in the proof (${addressFromProof}).`
     );
   }
 }
@@ -77,11 +101,11 @@ export function verifyPaygoAddressProof(psbt: bitgo.UtxoPsbt, outputIndex: numbe
  * @param psbt
  * @returns number - the index of the output address
  */
-export function getPaygoAddressProofOutputIndex(psbt: bitgo.UtxoPsbt): number | undefined {
+export function getPaygoAddressProofOutputIndex(psbt: utxolib.bitgo.UtxoPsbt): number | undefined {
   const res = psbt.data.outputs.flatMap((output, outputIndex) => {
-    const proprietaryKeyVals = bitgo.getPsbtOutputProprietaryKeyVals(output, {
-      identifier: bitgo.PSBT_PROPRIETARY_IDENTIFIER,
-      subtype: bitgo.ProprietaryKeySubtype.PAYGO_ADDRESS_ATTESTATION_PROOF,
+    const proprietaryKeyVals = utxolib.bitgo.getPsbtOutputProprietaryKeyVals(output, {
+      identifier: utxolib.bitgo.PSBT_PROPRIETARY_IDENTIFIER,
+      subtype: utxolib.bitgo.ProprietaryKeySubtype.PAYGO_ADDRESS_ATTESTATION_PROOF,
     });
 
     if (proprietaryKeyVals.length > 1) {
@@ -94,6 +118,6 @@ export function getPaygoAddressProofOutputIndex(psbt: bitgo.UtxoPsbt): number | 
   return res.length === 0 ? undefined : res[0];
 }
 
-export function psbtOutputIncludesPaygoAddressProof(psbt: bitgo.UtxoPsbt): boolean {
+export function psbtOutputIncludesPaygoAddressProof(psbt: utxolib.bitgo.UtxoPsbt): boolean {
   return getPaygoAddressProofOutputIndex(psbt) !== undefined;
 }
