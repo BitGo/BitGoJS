@@ -73,7 +73,7 @@ export class Utils implements BaseUtils {
    *
    * @param {string} value - string to be checked
    * @param {number} length - expected decoded length
-   * @return {boolean} if the string can decoded as base58 and match the expected length
+   * @return {boolean} if the string can be decoded as base58 and match the expected length
    */
   isBase58(value: string, length: number): boolean {
     try {

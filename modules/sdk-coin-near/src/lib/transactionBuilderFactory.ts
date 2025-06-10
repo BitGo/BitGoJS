@@ -7,6 +7,8 @@ import { Transaction } from './transaction';
 import { StakingActivateBuilder } from './stakingActivateBuilder';
 import { StakingDeactivateBuilder } from './stakingDeactivateBuilder';
 import { StakingWithdrawBuilder } from './stakingWithdrawBuilder';
+import { FungibleTokenTransferBuilder } from './fungibleTokenTransferBuilder';
+import { StorageDepositTransferBuilder } from './storageDepositTransferBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -20,6 +22,9 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
       tx.fromRawTransaction(raw);
       switch (tx.type) {
         case TransactionType.Send:
+          if (FungibleTokenTransferBuilder.isFungibleTokenTransferTransaction(tx.nearTransaction.actions)) {
+            return this.getFungibleTokenTransferBuilder(tx);
+          }
           return this.getTransferBuilder(tx);
         case TransactionType.WalletInitialization:
           return this.getWalletInitializationBuilder(tx);
@@ -29,6 +34,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           return this.getStakingDeactivateBuilder(tx);
         case TransactionType.StakingWithdraw:
           return this.getStakingWithdrawBuilder(tx);
+        case TransactionType.StorageDeposit:
+          return this.getStorageDepositTransferBuilder(tx);
         default:
           throw new InvalidTransactionError('unsupported transaction');
       }
@@ -57,6 +64,14 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getStakingWithdrawBuilder(tx?: Transaction): StakingWithdrawBuilder {
     return TransactionBuilderFactory.initializeBuilder(tx, new StakingWithdrawBuilder(this._coinConfig));
+  }
+
+  getFungibleTokenTransferBuilder(tx?: Transaction): FungibleTokenTransferBuilder {
+    return TransactionBuilderFactory.initializeBuilder(tx, new FungibleTokenTransferBuilder(this._coinConfig));
+  }
+
+  getStorageDepositTransferBuilder(tx?: Transaction): StorageDepositTransferBuilder {
+    return TransactionBuilderFactory.initializeBuilder(tx, new StorageDepositTransferBuilder(this._coinConfig));
   }
 
   /**
