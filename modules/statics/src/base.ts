@@ -2620,6 +2620,8 @@ export enum UnderlyingAsset {
 
   // TRX testnet tokens
   'ttrx:usdt' = 'ttrx:usdt',
+  'ttrx:usd1' = 'ttrx:usd1',
+  'ttrx:stgusd1' = 'ttrx:stgusd1',
 
   // XRP tokens
   'txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd' = 'txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd',
