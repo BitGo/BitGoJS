@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/utxo-staking",
-  "version": "1.16.0",
+  "version": "1.16.1",
   "description": "BitGo SDK for build UTXO staking transactions",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -44,9 +44,9 @@
   "dependencies": {
     "@babylonlabs-io/babylon-proto-ts": "1.0.0",
     "@bitgo/babylonlabs-io-btc-staking-ts": "^1.2.0",
-    "@bitgo/unspents": "^0.48.0",
-    "@bitgo/utxo-core": "^1.9.0",
-    "@bitgo/utxo-lib": "^11.4.0",
+    "@bitgo/unspents": "^0.48.1",
+    "@bitgo/utxo-core": "^1.9.1",
+    "@bitgo/utxo-lib": "^11.5.0",
     "@bitgo/wasm-miniscript": "2.0.0-beta.7",
     "bip322-js": "^2.0.0",
     "bitcoinjs-lib": "^6.1.7",

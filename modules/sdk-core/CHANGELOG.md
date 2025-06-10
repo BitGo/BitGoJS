@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [35.2.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@35.2.0...@bitgo/sdk-core@35.2.1) (2025-06-10)
+
+### Bug Fixes
+
+- **statics:** update explorer URLs for Cronos, Initia, and ASI networks ([d148897](https://github.com/BitGo/BitGoJS/commit/d148897dfcc788ca7b94331e81d326f424c311c2))
+
 # [35.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@35.1.0...@bitgo/sdk-core@35.2.0) (2025-06-05)
 
 ### Features

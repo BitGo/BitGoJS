@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@1.3.0...@bitgo/sdk-coin-vet@1.4.0) (2025-06-10)
+
+### Features
+
+- **sdk-coin-vet:** add transaction builder logic for vechain ([96c089f](https://github.com/BitGo/BitGoJS/commit/96c089fcbd2401c921d2bc9a43ef7bc112c80e8b))
+
 # [1.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@1.2.0...@bitgo/sdk-coin-vet@1.3.0) (2025-06-05)
 
 ### Features

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.12.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.12.0...@bitgo/sdk-coin-sol@4.12.1) (2025-06-10)
+
+### Bug Fixes
+
+- **sdk-coin-sol:** make spl program id as default ([d96dfe9](https://github.com/BitGo/BitGoJS/commit/d96dfe9ec716ece6b18c17934128e750f3f1d908))
+
 # [4.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.11.0...@bitgo/sdk-coin-sol@4.12.0) (2025-06-05)
 
 ### Bug Fixes
