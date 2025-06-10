@@ -1,0 +1,1168 @@
+{
+  "account_name": "core.vaulta",
+  "abi": {
+    "version": "eosio::abi/1.2",
+    "types": [],
+    "structs": [
+      {
+        "name": "account",
+        "base": "",
+        "fields": [
+          {
+            "name": "balance",
+            "type": "asset"
+          },
+          {
+            "name": "released",
+            "type": "bool"
+          }
+        ]
+      },
+      {
+        "name": "authority",
+        "base": "",
+        "fields": [
+          {
+            "name": "threshold",
+            "type": "uint32"
+          },
+          {
+            "name": "keys",
+            "type": "key_weight[]"
+          },
+          {
+            "name": "accounts",
+            "type": "permission_level_weight[]"
+          },
+          {
+            "name": "waits",
+            "type": "wait_weight[]"
+          }
+        ]
+      },
+      {
+        "name": "bidname",
+        "base": "",
+        "fields": [
+          {
+            "name": "bidder",
+            "type": "name"
+          },
+          {
+            "name": "newname",
+            "type": "name"
+          },
+          {
+            "name": "bid",
+            "type": "asset"
+          }
+        ]
+      },
+      {
+        "name": "bidrefund",
+        "base": "",
+        "fields": [
+          {
+            "name": "bidder",
+            "type": "name"
+          },
+          {
+            "name": "newname",
+            "type": "name"
+          }
+        ]
+      },
+      {
+        "name": "blocked_recipient",
+        "base": "",
+        "fields": [
+          {
+            "name": "account",
+            "type": "name"
+          }
+        ]
+      },
+      {
+        "name": "blockswapto",
+        "base": "",
+        "fields": [
+          {
+            "name": "account",
+            "type": "name"
+          },
+          {
+            "name": "block",
+            "type": "bool"
+          }
+        ]
+      },
+      {
+        "name": "buyram",
+        "base": "",
+        "fields": [
+          {
+            "name": "payer",
+            "type": "name"
+          },
+          {
+            "name": "receiver",
+            "type": "name"
+          },
+          {
+            "name": "quant",
+            "type": "asset"
+          }
+        ]
+      },
+      {
+        "name": "buyramburn",
+        "base": "",
+        "fields": [
+          {
+            "name": "payer",
+            "type": "name"
+          },
+          {
+            "name": "quantity",
+            "type": "asset"
+          },
+          {
+            "name": "memo",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "name": "buyrambytes",
+        "base": "",
+        "fields": [
+          {
+            "name": "payer",
+            "type": "name"
+          },
+          {
+            "name": "receiver",
+            "type": "name"
+          },
+          {
+            "name": "bytes",
+            "type": "uint32"
+          }
+        ]
+      },
+      {
+        "name": "buyramself",
+        "base": "",
+        "fields": [
+          {
+            "name": "payer",
+            "type": "name"
+          },
+          {
+            "name": "quant",
+            "type": "asset"
+          }
+        ]
+      },
+      {
+        "name": "buyrex",
+        "base": "",
+        "fields": [
+          {
+            "name": "from",
+            "type": "name"
+          },
+          {
+            "name": "amount",
+            "type": "asset"
+          }
+        ]
+      },
+      {
+        "name": "claimrewards",
+        "base": "",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "name"
+          }
+        ]
+      },
+      {
+        "name": "close",
+        "base": "",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "name"
+          },
+          {
+            "name": "symbol",
+            "type": "symbol"
+          }
+        ]
+      },
+      {
+        "name": "config",
+        "base": "",
+        "fields": [
+          {
+            "name": "token_symbol",
+            "type": "symbol"
+          }
+        ]
+      },
+      {
+        "name": "currency_stats",
+        "base": "",
+        "fields": [
+          {
+            "name": "supply",
+            "type": "asset"
+          },
+          {
+            "name": "max_supply",
+            "type": "asset"
+          },
+          {
+            "name": "issuer",
+            "type": "name"
+          }
+        ]
+      },
+      {
+        "name": "delegatebw",
+        "base": "",
+        "fields": [
+          {
+            "name": "from",
+            "type": "name"
+          },
+          {
+            "name": "receiver",
+            "type": "name"
+          },
+          {
+            "name": "stake_net_quantity",
+            "type": "asset"
+          },
+          {
+            "name": "stake_cpu_quantity",
+            "type": "asset"
+          },
+          {
+            "name": "transfer",
+            "type": "bool"
+          }
+        ]
+      },
+      {
+        "name": "deleteauth",
+        "base": "",
+        "fields": [
+          {
+            "name": "account",
+            "type": "name"
+          },
+          {
+            "name": "permission",
+            "type": "name"
+          },
+          {
+            "name": "authorized_by",
+            "type": "name$"
+          }
+        ]
+      },
+      {
+        "name": "deposit",
+        "base": "",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "name"
+          },
+          {
+            "name": "amount",
+            "type": "asset"
+          }
+        ]
+      },
+      {
+        "name": "donatetorex",
+        "base": "",
+        "fields": [
+          {
+            "name": "payer",
+            "type": "name"
+          },
+          {
+            "name": "quantity",
+            "type": "asset"
+          },
+          {
+            "name": "memo",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "name": "enforcebal",
+        "base": "",
+        "fields": [
+          {
+            "name": "account",
+            "type": "name"
+          },
+          {
+            "name": "expected_eos_balance",
+            "type": "asset"
+          }
+        ]
+      },
+      {
+        "name": "giftram",
+        "base": "",
+        "fields": [
+          {
+            "name": "from",
+            "type": "name"
+          },
+          {
+            "name": "receiver",
+            "type": "name"
+          },
+          {
+            "name": "ram_bytes",
+            "type": "int64"
+          },
+          {
+            "name": "memo",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "name": "init",
+        "base": "",
+        "fields": [
+          {
+            "name": "maximum_supply",
+            "type": "asset"
+          }
+        ]
+      },
+      {
+        "name": "key_weight",
+        "base": "",
+        "fields": [
+          {
+            "name": "key",
+            "type": "public_key"
+          },
+          {
+            "name": "weight",
+            "type": "uint16"
+          }
+        ]
+      },
+      {
+        "name": "linkauth",
+        "base": "",
+        "fields": [
+          {
+            "name": "account",
+            "type": "name"
+          },
+          {
+            "name": "code",
+            "type": "name"
+          },
+          {
+            "name": "type",
+            "type": "name"
+          },
+          {
+            "name": "requirement",
+            "type": "name"
+          },
+          {
+            "name": "authorized_by",
+            "type": "name$"
+          }
+        ]
+      },
+      {
+        "name": "mvfrsavings",
+        "base": "",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "name"
+          },
+          {
+            "name": "rex",
+            "type": "asset"
+          }
+        ]
+      },
+      {
+        "name": "mvtosavings",
+        "base": "",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "name"
+          },
+          {
+            "name": "rex",
+            "type": "asset"
+          }
+        ]
+      },
+      {
+        "name": "newaccount",
+        "base": "",
+        "fields": [
+          {
+            "name": "creator",
+            "type": "name"
+          },
+          {
+            "name": "name",
+            "type": "name"
+          },
+          {
+            "name": "owner",
+            "type": "authority"
+          },
+          {
+            "name": "active",
+            "type": "authority"
+          }
+        ]
+      },
+      {
+        "name": "newaccount2",
+        "base": "",
+        "fields": [
+          {
+            "name": "creator",
+            "type": "name"
+          },
+          {
+            "name": "name",
+            "type": "name"
+          },
+          {
+            "name": "key",
+            "type": "public_key"
+          }
+        ]
+      },
+      {
+        "name": "noop",
+        "base": "",
+        "fields": [
+          {
+            "name": "memo",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "name": "open",
+        "base": "",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "name"
+          },
+          {
+            "name": "symbol",
+            "type": "symbol"
+          },
+          {
+            "name": "ram_payer",
+            "type": "name"
+          }
+        ]
+      },
+      {
+        "name": "permission_level",
+        "base": "",
+        "fields": [
+          {
+            "name": "actor",
+            "type": "name"
+          },
+          {
+            "name": "permission",
+            "type": "name"
+          }
+        ]
+      },
+      {
+        "name": "permission_level_weight",
+        "base": "",
+        "fields": [
+          {
+            "name": "permission",
+            "type": "permission_level"
+          },
+          {
+            "name": "weight",
+            "type": "uint16"
+          }
+        ]
+      },
+      {
+        "name": "powerup",
+        "base": "",
+        "fields": [
+          {
+            "name": "payer",
+            "type": "name"
+          },
+          {
+            "name": "receiver",
+            "type": "name"
+          },
+          {
+            "name": "days",
+            "type": "uint32"
+          },
+          {
+            "name": "net_frac",
+            "type": "int64"
+          },
+          {
+            "name": "cpu_frac",
+            "type": "int64"
+          },
+          {
+            "name": "max_payment",
+            "type": "asset"
+          }
+        ]
+      },
+      {
+        "name": "ramburn",
+        "base": "",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "name"
+          },
+          {
+            "name": "bytes",
+            "type": "int64"
+          },
+          {
+            "name": "memo",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "name": "ramtransfer",
+        "base": "",
+        "fields": [
+          {
+            "name": "from",
+            "type": "name"
+          },
+          {
+            "name": "to",
+            "type": "name"
+          },
+          {
+            "name": "bytes",
+            "type": "int64"
+          },
+          {
+            "name": "memo",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "name": "refund",
+        "base": "",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "name"
+          }
+        ]
+      },
+      {
+        "name": "sellram",
+        "base": "",
+        "fields": [
+          {
+            "name": "account",
+            "type": "name"
+          },
+          {
+            "name": "bytes",
+            "type": "int64"
+          }
+        ]
+      },
+      {
+        "name": "sellrex",
+        "base": "",
+        "fields": [
+          {
+            "name": "from",
+            "type": "name"
+          },
+          {
+            "name": "rex",
+            "type": "asset"
+          }
+        ]
+      },
+      {
+        "name": "setabi",
+        "base": "",
+        "fields": [
+          {
+            "name": "account",
+            "type": "name"
+          },
+          {
+            "name": "abi",
+            "type": "bytes"
+          },
+          {
+            "name": "memo",
+            "type": "string$"
+          }
+        ]
+      },
+      {
+        "name": "setcode",
+        "base": "",
+        "fields": [
+          {
+            "name": "account",
+            "type": "name"
+          },
+          {
+            "name": "vmtype",
+            "type": "uint8"
+          },
+          {
+            "name": "vmversion",
+            "type": "uint8"
+          },
+          {
+            "name": "code",
+            "type": "bytes"
+          },
+          {
+            "name": "memo",
+            "type": "string$"
+          }
+        ]
+      },
+      {
+        "name": "swapexcess",
+        "base": "",
+        "fields": [
+          {
+            "name": "account",
+            "type": "name"
+          },
+          {
+            "name": "eos_before",
+            "type": "asset"
+          }
+        ]
+      },
+      {
+        "name": "swapto",
+        "base": "",
+        "fields": [
+          {
+            "name": "from",
+            "type": "name"
+          },
+          {
+            "name": "to",
+            "type": "name"
+          },
+          {
+            "name": "quantity",
+            "type": "asset"
+          },
+          {
+            "name": "memo",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "name": "swaptrace",
+        "base": "",
+        "fields": [
+          {
+            "name": "account",
+            "type": "name"
+          },
+          {
+            "name": "quantity",
+            "type": "asset"
+          }
+        ]
+      },
+      {
+        "name": "transfer",
+        "base": "",
+        "fields": [
+          {
+            "name": "from",
+            "type": "name"
+          },
+          {
+            "name": "to",
+            "type": "name"
+          },
+          {
+            "name": "quantity",
+            "type": "asset"
+          },
+          {
+            "name": "memo",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "name": "undelegatebw",
+        "base": "",
+        "fields": [
+          {
+            "name": "from",
+            "type": "name"
+          },
+          {
+            "name": "receiver",
+            "type": "name"
+          },
+          {
+            "name": "unstake_net_quantity",
+            "type": "asset"
+          },
+          {
+            "name": "unstake_cpu_quantity",
+            "type": "asset"
+          }
+        ]
+      },
+      {
+        "name": "ungiftram",
+        "base": "",
+        "fields": [
+          {
+            "name": "from",
+            "type": "name"
+          },
+          {
+            "name": "to",
+            "type": "name"
+          },
+          {
+            "name": "memo",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "name": "unlinkauth",
+        "base": "",
+        "fields": [
+          {
+            "name": "account",
+            "type": "name"
+          },
+          {
+            "name": "code",
+            "type": "name"
+          },
+          {
+            "name": "type",
+            "type": "name"
+          },
+          {
+            "name": "authorized_by",
+            "type": "name$"
+          }
+        ]
+      },
+      {
+        "name": "unstaketorex",
+        "base": "",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "name"
+          },
+          {
+            "name": "receiver",
+            "type": "name"
+          },
+          {
+            "name": "from_net",
+            "type": "asset"
+          },
+          {
+            "name": "from_cpu",
+            "type": "asset"
+          }
+        ]
+      },
+      {
+        "name": "updateauth",
+        "base": "",
+        "fields": [
+          {
+            "name": "account",
+            "type": "name"
+          },
+          {
+            "name": "permission",
+            "type": "name"
+          },
+          {
+            "name": "parent",
+            "type": "name"
+          },
+          {
+            "name": "auth",
+            "type": "authority"
+          },
+          {
+            "name": "authorized_by",
+            "type": "name$"
+          }
+        ]
+      },
+      {
+        "name": "voteproducer",
+        "base": "",
+        "fields": [
+          {
+            "name": "voter",
+            "type": "name"
+          },
+          {
+            "name": "proxy",
+            "type": "name"
+          },
+          {
+            "name": "producers",
+            "type": "name[]"
+          }
+        ]
+      },
+      {
+        "name": "voteupdate",
+        "base": "",
+        "fields": [
+          {
+            "name": "voter_name",
+            "type": "name"
+          }
+        ]
+      },
+      {
+        "name": "wait_weight",
+        "base": "",
+        "fields": [
+          {
+            "name": "wait_sec",
+            "type": "uint32"
+          },
+          {
+            "name": "weight",
+            "type": "uint16"
+          }
+        ]
+      },
+      {
+        "name": "withdraw",
+        "base": "",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "name"
+          },
+          {
+            "name": "amount",
+            "type": "asset"
+          }
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "name": "bidname",
+        "type": "bidname",
+        "ricardian_contract": ""
+      },
+      {
+        "name": "bidrefund",
+        "type": "bidrefund",
+        "ricardian_contract": ""
+      },
+      {
+        "name": "blockswapto",
+        "type": "blockswapto",
+        "ricardian_contract": ""
+      },
+      {
+        "name": "buyram",
+        "type": "buyram",
+        "ricardian_contract": ""
+      },
+      {
+        "name": "buyramburn",
+        "type": "buyramburn",
+        "ricardian_contract": ""
+      },
+      {
+        "name": "buyrambytes",
+        "type": "buyrambytes",
+        "ricardian_contract": ""
+      },
+      {
+        "name": "buyramself",
+        "type": "buyramself",
+        "ricardian_contract": ""
+      },
+      {
+        "name": "buyrex",
+        "type": "buyrex",
+        "ricardian_contract": ""
+      },
+      {
+        "name": "claimrewards",
+        "type": "claimrewards",
+        "ricardian_contract": ""
+      },
+      {
+        "name": "close",
+        "type": "close",
+        "ricardian_contract": ""
+      },
+      {
+        "name": "delegatebw",
+        "type": "delegatebw",
+        "ricardian_contract": ""
+      },
+      {
+        "name": "deleteauth",
+        "type": "deleteauth",
+        "ricardian_contract": ""
+      },
+      {
+        "name": "deposit",
+        "type": "deposit",
+        "ricardian_contract": ""
+      },
+      {
+        "name": "donatetorex",
+        "type": "donatetorex",
+        "ricardian_contract": ""
+      },
+      {
+        "name": "enforcebal",
+        "type": "enforcebal",
+        "ricardian_contract": ""
+      },
+      {
+        "name": "giftram",
+        "type": "giftram",
+        "ricardian_contract": ""
+      },
+      {
+        "name": "init",
+        "type": "init",
+        "ricardian_contract": ""
+      },
+      {
+        "name": "linkauth",
+        "type": "linkauth",
+        "ricardian_contract": ""
+      },
+      {
+        "name": "mvfrsavings",
+        "type": "mvfrsavings",
+        "ricardian_contract": ""
+      },
+      {
+        "name": "mvtosavings",
+        "type": "mvtosavings",
+        "ricardian_contract": ""
+      },
+      {
+        "name": "newaccount",
+        "type": "newaccount",
+        "ricardian_contract": ""
+      },
+      {
+        "name": "newaccount2",
+        "type": "newaccount2",
+        "ricardian_contract": ""
+      },
+      {
+        "name": "noop",
+        "type": "noop",
+        "ricardian_contract": ""
+      },
+      {
+        "name": "open",
+        "type": "open",
+        "ricardian_contract": ""
+      },
+      {
+        "name": "powerup",
+        "type": "powerup",
+        "ricardian_contract": ""
+      },
+      {
+        "name": "ramburn",
+        "type": "ramburn",
+        "ricardian_contract": ""
+      },
+      {
+        "name": "ramtransfer",
+        "type": "ramtransfer",
+        "ricardian_contract": ""
+      },
+      {
+        "name": "refund",
+        "type": "refund",
+        "ricardian_contract": ""
+      },
+      {
+        "name": "sellram",
+        "type": "sellram",
+        "ricardian_contract": ""
+      },
+      {
+        "name": "sellrex",
+        "type": "sellrex",
+        "ricardian_contract": ""
+      },
+      {
+        "name": "setabi",
+        "type": "setabi",
+        "ricardian_contract": ""
+      },
+      {
+        "name": "setcode",
+        "type": "setcode",
+        "ricardian_contract": ""
+      },
+      {
+        "name": "swapexcess",
+        "type": "swapexcess",
+        "ricardian_contract": ""
+      },
+      {
+        "name": "swapto",
+        "type": "swapto",
+        "ricardian_contract": ""
+      },
+      {
+        "name": "swaptrace",
+        "type": "swaptrace",
+        "ricardian_contract": ""
+      },
+      {
+        "name": "transfer",
+        "type": "transfer",
+        "ricardian_contract": ""
+      },
+      {
+        "name": "undelegatebw",
+        "type": "undelegatebw",
+        "ricardian_contract": ""
+      },
+      {
+        "name": "ungiftram",
+        "type": "ungiftram",
+        "ricardian_contract": ""
+      },
+      {
+        "name": "unlinkauth",
+        "type": "unlinkauth",
+        "ricardian_contract": ""
+      },
+      {
+        "name": "unstaketorex",
+        "type": "unstaketorex",
+        "ricardian_contract": ""
+      },
+      {
+        "name": "updateauth",
+        "type": "updateauth",
+        "ricardian_contract": ""
+      },
+      {
+        "name": "voteproducer",
+        "type": "voteproducer",
+        "ricardian_contract": ""
+      },
+      {
+        "name": "voteupdate",
+        "type": "voteupdate",
+        "ricardian_contract": ""
+      },
+      {
+        "name": "withdraw",
+        "type": "withdraw",
+        "ricardian_contract": ""
+      }
+    ],
+    "tables": [
+      {
+        "name": "accounts",
+        "index_type": "i64",
+        "key_names": [],
+        "key_types": [],
+        "type": "account"
+      },
+      {
+        "name": "blocked",
+        "index_type": "i64",
+        "key_names": [],
+        "key_types": [],
+        "type": "blocked_recipient"
+      },
+      {
+        "name": "config",
+        "index_type": "i64",
+        "key_names": [],
+        "key_types": [],
+        "type": "config"
+      },
+      {
+        "name": "stat",
+        "index_type": "i64",
+        "key_names": [],
+        "key_types": [],
+        "type": "currency_stats"
+      }
+    ],
+    "ricardian_clauses": [],
+    "error_messages": [],
+    "abi_extensions": [],
+    "variants": [],
+    "action_results": []
+  }
+}
