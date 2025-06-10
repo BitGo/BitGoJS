@@ -7,7 +7,7 @@ import {
   Transaction as ITransaction,
   TransactionFromBuffer,
 } from 'bip174/src/lib/interfaces';
-import { checkForInput } from 'bip174/src/lib/utils';
+import { checkForInput, checkForOutput } from 'bip174/src/lib/utils';
 import { BufferWriter, varuint } from 'bitcoinjs-lib/src/bufferutils';
 import { SessionKey } from '@brandonblack/musig';
 import { BIP32Factory, BIP32Interface } from 'bip32';
@@ -57,6 +57,7 @@ import { getTaprootOutputKey } from '../taproot';
 import {
   getPsbtInputProprietaryKeyVals,
   getPsbtInputSignatureCount,
+  getPsbtOutputProprietaryKeyVals,
   ProprietaryKeySearch,
   ProprietaryKeySubtype,
   ProprietaryKeyValue,
@@ -1109,7 +1110,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
   }
 
   /**
-   * To search any data from proprietary key value against keydata.
+   * To search any data from proprietary key value against keydata in the inputs.
    * Default identifierEncoding is utf-8 for identifier.
    */
   getProprietaryKeyVals(inputIndex: number, keySearch?: ProprietaryKeySearch): ProprietaryKeyValue[] {
@@ -1118,7 +1119,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
   }
 
   /**
-   * To delete any data from proprietary key value.
+   * To delete any data from proprietary key value in PSBT input.
    * Default identifierEncoding is utf-8 for identifier.
    */
   deleteProprietaryKeyVals(inputIndex: number, keysToDelete?: ProprietaryKeySearch): this {
@@ -1130,6 +1131,75 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
       throw new Error('invalid proprietary key search filter combination. subtype is required');
     }
     input.unknownKeyVals = input.unknownKeyVals.filter((keyValue, i) => {
+      const key = decodeProprietaryKey(keyValue.key);
+      return !(
+        keysToDelete === undefined ||
+        (keysToDelete.identifier === key.identifier &&
+          (keysToDelete.subtype === undefined ||
+            (keysToDelete.subtype === key.subtype &&
+              (!Buffer.isBuffer(keysToDelete.keydata) || keysToDelete.keydata.equals(key.keydata)))))
+      );
+    });
+    return this;
+  }
+
+  /**
+   * Adds a proprietary key value pair to PSBT output
+   * Default identifier is utf-8 for identifier
+   */
+  addProprietaryKeyValToOutput(outputIndex: number, keyValueData: ProprietaryKeyValue): this {
+    const output = checkForOutput(this.data.outputs, outputIndex);
+    assert(output.unknownKeyVals);
+    return this.addUnknownKeyValToOutput(outputIndex, {
+      key: encodeProprietaryKey(keyValueData.key),
+      value: keyValueData.value,
+    });
+  }
+
+  /**
+   * To search any data from proprietary key value against keydata in the PSBT outputs.
+   * Default identifierEncoding is utf-8 for identifier.
+   */
+  getOutputProprietaryKeyVals(outputIndex: number, keySearch?: ProprietaryKeySearch): ProprietaryKeyValue[] {
+    const output = checkForOutput(this.data.outputs, outputIndex);
+    return getPsbtOutputProprietaryKeyVals(output, keySearch);
+  }
+
+  /**
+   * Adds or updates (if exists) proprietary key value pair to PSBT output.
+   * Default identifierEncoding is utf-8 for identifier.
+   */
+  addOrUpdateProprietaryKeyValsToOutput(outputIndex: number, keyValueData: ProprietaryKeyValue): this {
+    const output = checkForOutput(this.data.outputs, outputIndex);
+    const key = encodeProprietaryKey(keyValueData.key);
+    const { value } = keyValueData;
+    if (output.unknownKeyVals?.length) {
+      const ukvIndex = output.unknownKeyVals.findIndex((ukv) => ukv.key.equals(key));
+      if (ukvIndex > -1) {
+        output.unknownKeyVals[ukvIndex] = { key, value };
+        return this;
+      }
+    }
+    this.addUnknownKeyValToOutput(outputIndex, {
+      key,
+      value,
+    });
+    return this;
+  }
+
+  /**
+   * To delete any data from proprietary key value in PSBT output.
+   * Default identifierEncoding is utf-8 for identifier.
+   */
+  deleteProprietaryKeyValsInOutput(outputIndex: number, keysToDelete?: ProprietaryKeySearch): this {
+    const output = checkForOutput(this.data.outputs, outputIndex);
+    if (!output.unknownKeyVals?.length) {
+      return this;
+    }
+    if (keysToDelete && keysToDelete.subtype === undefined && Buffer.isBuffer(keysToDelete.keydata)) {
+      throw new Error('invalid proprietary key search filter combination. subtype is required');
+    }
+    output.unknownKeyVals = output.unknownKeyVals.filter((keyValue, i) => {
       const key = decodeProprietaryKey(keyValue.key);
       return !(
         keysToDelete === undefined ||
