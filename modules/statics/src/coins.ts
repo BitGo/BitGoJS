@@ -2204,6 +2204,22 @@ export const coins = CoinMap.fromCoins([
     'TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs',
     UnderlyingAsset['ttrx:usdt']
   ),
+  ttronToken(
+    '78551a7f-17d1-4e81-b6a9-3c6e960337f4',
+    'ttrx:usd1',
+    'Test USD1 Token',
+    18,
+    'TMsuh7QxbJkYaLsGMGCgNJYtYjTZLJG3Np',
+    UnderlyingAsset['ttrx:usd1']
+  ),
+  ttronToken(
+    '4853b203-e475-4538-bcba-f69da0e45d4b',
+    'ttrx:stgusd1',
+    'Staging USD1 Token',
+    18,
+    'TPEwuCefwvzBcr9BHvg2xhJCaf499uGMZx',
+    UnderlyingAsset['ttrx:stgusd1']
+  ),
   talgoToken(
     '0e20b757-3e62-4400-887d-caff117481c8',
     'talgo:USDC-10458941',
