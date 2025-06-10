@@ -101,6 +101,7 @@ import {
   RBTC_FEATURES,
   SEI_FEATURES,
   SOL_FEATURES,
+  SONEIUM_FEATURES,
   STX_FEATURES,
   SUI_FEATURES,
   SUI_TOKEN_FEATURES,
@@ -1281,7 +1282,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.SONEIUM,
     BaseUnit.ETH,
-    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
+    [...SONEIUM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
   ),
   account(
     'a4587ed1-a4a6-4bbe-b965-3119b52e76cf',
@@ -1291,7 +1292,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.SONEIUM,
     BaseUnit.ETH,
-    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
+    [...SONEIUM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
   ),
   account(
     '87c104ca-6b49-479e-87fb-9253b095158c',
