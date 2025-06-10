@@ -11013,7 +11013,7 @@ export const erc20Coins = [
     18,
     '0x3f1c547b21f65e10480de3ad8e19faac46c95034',
     UnderlyingAsset['hteth:tsteth'],
-    undefined,
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION, CoinFeature.REBASE_TOKEN],
     undefined,
     undefined,
     Networks.test.holesky
