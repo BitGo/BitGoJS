@@ -758,7 +758,7 @@ class TiaTestnet extends Testnet implements AccountNetwork {
 class Hash extends Mainnet implements AccountNetwork {
   name = 'Provenance';
   family = CoinFamily.HASH;
-  explorerUrl = 'https://www.mintscan.io/provenance/tx/';
+  explorerUrl = 'https://explorer.provenance.io/tx/';
 }
 
 class HashTestnet extends Testnet implements AccountNetwork {
