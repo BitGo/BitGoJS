@@ -341,12 +341,12 @@ export class Transaction extends BaseTransaction {
             if (action.functionCall.methodName === 'ft_transfer') {
               const parsedArgs = JSON.parse(Buffer.from(action.functionCall.args).toString());
               inputs.push({
-                address: parsedArgs.receiver_id,
+                address: this._nearTransaction.signerId,
                 value: parsedArgs.amount,
                 coin: this._coinConfig.name,
               });
               outputs.push({
-                address: this._nearTransaction.signerId,
+                address: parsedArgs.receiver_id,
                 value: parsedArgs.amount,
                 coin: this._coinConfig.name,
               });
@@ -355,7 +355,7 @@ export class Transaction extends BaseTransaction {
               const parsedArgs = JSON.parse(Buffer.from(action.functionCall.args).toString());
               const receiverId = parsedArgs.account_id ? parsedArgs.account_id : this._nearTransaction.signerId;
               inputs.push({
-                address: receiverId,
+                address: this._nearTransaction.signerId,
                 value: action.functionCall.deposit.toString(),
                 coin:
                   this._coinConfig.network.type === NetworkType.TESTNET
@@ -363,7 +363,7 @@ export class Transaction extends BaseTransaction {
                     : this._coinConfig.family,
               });
               outputs.push({
-                address: this._nearTransaction.signerId,
+                address: receiverId,
                 value: action.functionCall.deposit.toString(),
                 coin:
                   this._coinConfig.network.type === NetworkType.TESTNET
@@ -408,7 +408,7 @@ export class Transaction extends BaseTransaction {
             const parsedArgs = JSON.parse(Buffer.from(action.functionCall.args).toString());
             const receiverId = parsedArgs.account_id ? parsedArgs.account_id : this._nearTransaction.signerId;
             inputs.push({
-              address: receiverId,
+              address: this._nearTransaction.signerId,
               value: action.functionCall.deposit.toString(),
               coin:
                 this._coinConfig.network.type === NetworkType.TESTNET
@@ -416,7 +416,7 @@ export class Transaction extends BaseTransaction {
                   : this._coinConfig.family,
             });
             outputs.push({
-              address: this._nearTransaction.signerId,
+              address: receiverId,
               value: action.functionCall.deposit.toString(),
               coin:
                 this._coinConfig.network.type === NetworkType.TESTNET
@@ -522,9 +522,9 @@ export class Transaction extends BaseTransaction {
         }
       }
     }
-    if (hasFtTransfer && hasStorageDeposit) {
+    if (hasFtTransfer) {
       return totalTokenAmount.toString();
-    } else if (!hasFtTransfer && hasStorageDeposit) {
+    } else if (hasStorageDeposit) {
       return totalNearDeposit.toString();
     }
     return '';
@@ -545,10 +545,17 @@ export class Transaction extends BaseTransaction {
         const functionCall = action.functionCall;
         if (functionCall.methodName === FT_TRANSFER) {
           const amountStr = functionCall.args['amount'] as string;
-          outputs.push({
-            address: json.receiverId,
+          const receiverId = functionCall.args['receiver_id'] as string;
+          // in ft transfer, the outer receiver id will be contract address of the token
+          const tokenName = utils.findTokenNameFromContractAddress(json.receiverId);
+          const output: ITransactionRecipient = {
+            address: receiverId,
             amount: amountStr,
-          });
+          };
+          if (tokenName) {
+            output.tokenName = tokenName;
+          }
+          outputs.push(output);
         }
       }
     });
@@ -573,10 +580,20 @@ export class Transaction extends BaseTransaction {
       if (action.functionCall) {
         const functionCall = action.functionCall;
         if (functionCall.methodName === STORAGE_DEPOSIT) {
-          outputs.push({
-            address: json.receiverId,
+          const receiverId =
+            functionCall.args && functionCall.args['account_id']
+              ? (functionCall.args['account_id'] as string)
+              : json.signerId;
+          // in storage deposit, the outer receiver id will be contract address of the token
+          const tokenName = utils.findTokenNameFromContractAddress(json.receiverId);
+          const output: ITransactionRecipient = {
+            address: receiverId,
             amount: functionCall.deposit,
-          });
+          };
+          if (tokenName) {
+            output.tokenName = tokenName;
+          }
+          outputs.push(output);
         }
       }
     });

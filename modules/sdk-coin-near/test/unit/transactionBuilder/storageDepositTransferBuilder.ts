@@ -76,7 +76,7 @@ describe('Near: Storage Deposit Transfer Builder', () => {
           coin: `t${nep141Token.getFamily()}`,
         });
         const rawTx = tx.toBroadcastFormat();
-        rawTx.should.deepEqual(testData.rawTx.storageDeposit.unsigned);
+        rawTx.should.deepEqual(testData.rawTx.selfStorageDeposit.unsigned);
       });
 
       it('a signed storage deposit self transfer transaction', async () => {
@@ -98,7 +98,7 @@ describe('Near: Storage Deposit Transfer Builder', () => {
           coin: `t${nep141Token.getFamily()}`,
         });
         const rawTx = tx.toBroadcastFormat();
-        rawTx.should.deepEqual(testData.rawTx.storageDeposit.signed);
+        rawTx.should.deepEqual(testData.rawTx.selfStorageDeposit.signed);
       });
     });
 
@@ -110,16 +110,18 @@ describe('Near: Storage Deposit Transfer Builder', () => {
       should.equal(tx.type, TransactionType.StorageDeposit);
       tx.inputs.length.should.equal(1);
       tx.inputs[0].should.deepEqual({
-        address: testData.accounts.account2.address,
+        address: testData.accounts.account1.address,
         value: '1250000000000000000000',
         coin: `t${nep141Token.getFamily()}`,
       });
       tx.outputs.length.should.equal(1);
       tx.outputs[0].should.deepEqual({
-        address: testData.accounts.account1.address,
+        address: testData.accounts.account2.address,
         value: '1250000000000000000000',
         coin: `t${nep141Token.getFamily()}`,
       });
+      const rawTx = tx.toBroadcastFormat();
+      rawTx.should.deepEqual(testData.rawTx.storageDeposit.unsigned);
     });
 
     it('a signed fungible token transfer with storage deposit transaction', async () => {
@@ -131,16 +133,18 @@ describe('Near: Storage Deposit Transfer Builder', () => {
       should.equal(tx.type, TransactionType.StorageDeposit);
       tx.inputs.length.should.equal(1);
       tx.inputs[0].should.deepEqual({
-        address: testData.accounts.account2.address,
+        address: testData.accounts.account1.address,
         value: '1250000000000000000000',
         coin: `t${nep141Token.getFamily()}`,
       });
       tx.outputs.length.should.equal(1);
       tx.outputs[0].should.deepEqual({
-        address: testData.accounts.account1.address,
+        address: testData.accounts.account2.address,
         value: '1250000000000000000000',
         coin: `t${nep141Token.getFamily()}`,
       });
+      const rawTx = tx.toBroadcastFormat();
+      rawTx.should.deepEqual(testData.rawTx.storageDeposit.signed);
     });
 
     describe('add TSS signature', function () {
