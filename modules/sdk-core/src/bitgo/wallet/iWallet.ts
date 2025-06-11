@@ -711,7 +711,7 @@ export interface CrossChainUTXO {
 }
 
 export type WalletType = 'backing' | 'cold' | 'custodial' | 'custodialPaired' | 'hot' | 'trading';
-export type SubWalletType = 'distributedCustody' | 'lightningCustody' | 'lightningSelfCustody';
+export type SubWalletType = 'distributedCustody' | 'lightningCustody' | 'lightningSelfCustody' | 'onPrem';
 
 export interface WalletData {
   id: string;
