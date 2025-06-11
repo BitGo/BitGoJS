@@ -166,5 +166,36 @@ describe('EOS Token:', function () {
         .verifyTransaction({ txParams, txPrebuild, wallet, verification })
         .should.be.rejectedWith('txHex receive symbol does not match expected recipient symbol');
     });
+
+    it('should be able to verify vaulta transaction', async function () {
+      const vaultaCoin = bitgo.coin('teos:VAULTA');
+      const txParams = {
+        recipients: [
+          {
+            address: 'lionteste212',
+            amount: '1000',
+          },
+        ],
+      };
+      const txPrebuild = {
+        txHex:
+          '5fff1dae8dc8e2fc4d5b23b2c7665c97f9e9d8edf2b6485a86ba311c25639191ee694868c24f71ef56f10000000100408c7a02ea3055000000000085269d000302323801004c8eda6ca02e45000000572d3ccdcd0170e5e73f5643715600000000a8ed32322170e5e73f5643715620825019ab3ca98be803000000000000044100000000000000000000000000000000000000000000000000000000000000000000000000000000',
+        transaction: {
+          packed_trx:
+            'ee694868c24f71ef56f10000000100408c7a02ea3055000000000085269d000302323801004c8eda6ca02e45000000572d3ccdcd0170e5e73f5643715600000000a8ed32322170e5e73f5643715620825019ab3ca98be80300000000000004410000000000000000',
+          signatures: [],
+          compression: 'none',
+        },
+        token: 'teos:VAULTA',
+        coin: 'teos',
+      };
+      const validTransaction = await vaultaCoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        wallet,
+        verification,
+      });
+      validTransaction.should.equal(true);
+    });
   });
 });
