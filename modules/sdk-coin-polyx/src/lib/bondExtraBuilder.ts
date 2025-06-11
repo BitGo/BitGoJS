@@ -55,7 +55,7 @@ export class BondExtraBuilder extends TransactionBuilder {
   validateDecodedTransaction(decodedTxn: DecodedSigningPayload | DecodedSignedTx): void {
     const methodName = decodedTxn.method?.name as string;
 
-    if (methodName === 'staking.bondExtra') {
+    if (methodName === 'bondExtra') {
       const txMethod = decodedTxn.method.args as unknown as BondExtraArgs;
       const value = txMethod.maxAdditional;
 
@@ -76,11 +76,11 @@ export class BondExtraBuilder extends TransactionBuilder {
     const tx = super.fromImplementation(rawTransaction);
     const methodName = this._method?.name as string;
 
-    if (methodName === 'staking.bondExtra' && this._method) {
+    if (methodName === 'bondExtra' && this._method) {
       const txMethod = this._method.args as unknown as BondExtraArgs;
       this.amount(txMethod.maxAdditional);
     } else {
-      throw new InvalidTransactionError(`Invalid Transaction Type: ${methodName}. Expected staking.bondExtra`);
+      throw new InvalidTransactionError(`Invalid Transaction Type: ${methodName}. Expected bondExtra`);
     }
 
     return tx;

@@ -1,9 +1,11 @@
 import { DecodedSigningPayload } from '@substrate/txwrapper-core';
+import { decode } from '@substrate/txwrapper-polkadot';
 import { coins } from '@bitgo/statics';
 import should from 'should';
 import sinon from 'sinon';
 import { TransactionBuilderFactory, WithdrawUnbondedBuilder, Transaction } from '../../../src/lib';
 import { TransactionType } from '@bitgo/sdk-core';
+import utils from '../../../src/lib/utils';
 
 import { accounts, rawTx } from '../../resources';
 
@@ -73,51 +75,49 @@ describe('Polyx WithdrawUnbonded Builder', function () {
   });
 
   describe('Transaction Validation', function () {
-    it('should validate decoded transaction', () => {
-      const mockDecodedTx: DecodedSigningPayload = {
-        method: {
-          name: 'staking.withdrawUnbonded',
-          pallet: 'staking',
-          args: {
-            numSlashingSpans: testSlashingSpans,
-          },
-        },
-        address: senderAddress,
-        blockHash: '0x',
-        blockNumber: '0',
-        era: { mortalEra: '0x' },
-        genesisHash: '0x',
-        metadataRpc: '0x',
-        nonce: 0,
-        specVersion: 0,
-        tip: '0',
-        transactionVersion: 0,
-        signedExtensions: [],
-      } as unknown as DecodedSigningPayload;
+    it('should build, decode, and validate a real withdrawUnbonded transaction', () => {
+      // Build the transaction with real parameters
+      builder
+        .slashingSpans(testSlashingSpans)
+        .sender({ address: senderAddress })
+        .validity({ firstValid: 3933, maxDuration: 64 })
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
+        .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 100 });
 
+      // Set up material for decoding
+      const material = utils.getMaterial(coins.get('tpolyx').network.type);
+      builder.material(material);
+
+      // Build the actual unsigned transaction
+      const unsignedTx = builder['buildTransaction']();
+      const registry = builder['_registry'];
+
+      // Decode the actual built transaction
+      const decodedTx = decode(unsignedTx, {
+        metadataRpc: material.metadata,
+        registry: registry,
+      });
+
+      // Validate the decoded transaction structure
+      should.equal(decodedTx.method.name, 'withdrawUnbonded');
+      should.equal(decodedTx.method.pallet, 'staking');
+
+      const withdrawArgs = decodedTx.method.args as { numSlashingSpans: number };
+      should.equal(withdrawArgs.numSlashingSpans, testSlashingSpans);
+
+      // Now validate using the builder's validation method
       should.doesNotThrow(() => {
-        builder.validateDecodedTransaction(mockDecodedTx);
+        builder.validateDecodedTransaction(decodedTx);
       });
     });
 
     it('should reject invalid transaction types', () => {
       const mockDecodedTx: DecodedSigningPayload = {
         method: {
-          name: 'balances.transfer',
+          name: 'transfer',
           pallet: 'balances',
           args: {},
         },
-        address: senderAddress,
-        blockHash: '0x',
-        blockNumber: '0',
-        era: { mortalEra: '0x' },
-        genesisHash: '0x',
-        metadataRpc: '0x',
-        nonce: 0,
-        specVersion: 0,
-        tip: '0',
-        transactionVersion: 0,
-        signedExtensions: [],
       } as unknown as DecodedSigningPayload;
 
       should.throws(() => {
@@ -127,23 +127,31 @@ describe('Polyx WithdrawUnbonded Builder', function () {
   });
 
   describe('From Raw Transaction', function () {
-    beforeEach(() => {
-      sinon.stub(builder, 'from').callsFake(function (this: WithdrawUnbondedBuilder, rawTransaction: string) {
-        if (rawTransaction === rawTx.withdrawUnbonded.unsigned) {
-          this.slashingSpans(testSlashingSpans);
-          this.sender({ address: senderAddress });
-        }
-        return this;
-      });
-    });
+    it('should rebuild from real withdrawUnbonded transaction', async () => {
+      // First build a transaction to get a real raw transaction
+      const originalBuilder = factory.getWithdrawUnbondedBuilder();
+      originalBuilder
+        .slashingSpans(testSlashingSpans)
+        .sender({ address: senderAddress })
+        .validity({ firstValid: 3933, maxDuration: 64 })
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
+        .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 100 });
 
-    afterEach(() => {
-      sinon.restore();
-    });
+      // Set up material
+      const material = utils.getMaterial(coins.get('tpolyx').network.type);
+      originalBuilder.material(material);
 
-    it('should rebuild from rawTransaction', () => {
-      builder.from(rawTx.withdrawUnbonded.unsigned);
-      should.equal(builder.getSlashingSpans(), testSlashingSpans);
+      // Build the transaction and get the serialized hex
+      const tx = await originalBuilder.build();
+      const rawTxHex = tx.toBroadcastFormat();
+
+      // Create a new builder and reconstruct from the transaction hex
+      const newBuilder = factory.getWithdrawUnbondedBuilder();
+      newBuilder.material(material);
+      newBuilder.from(rawTxHex);
+
+      // Verify the reconstructed builder has the same parameters
+      should.equal(newBuilder.getSlashingSpans(), testSlashingSpans);
     });
   });
 });

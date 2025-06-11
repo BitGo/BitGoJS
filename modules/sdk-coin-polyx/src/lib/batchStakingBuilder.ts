@@ -8,6 +8,22 @@ import utils from './utils';
 import { BatchArgs, BondArgs, NominateArgs } from './iface';
 import BigNumber from 'bignumber.js';
 
+// Type definitions for decoded transaction formats
+interface DecodedController {
+  id: string;
+}
+
+interface DecodedPayee {
+  staked?: null;
+  stash?: null;
+  controller?: null;
+  account?: string;
+}
+
+type ControllerValue = string | DecodedController;
+type PayeeValue = string | DecodedPayee;
+type AmountValue = string | number;
+
 export class BatchStakingBuilder extends TransactionBuilder {
   // For bond operation
   protected _amount: string;
@@ -147,23 +163,39 @@ export class BatchStakingBuilder extends TransactionBuilder {
     const methodName = decodedTxn.method?.name as string;
 
     // batch bond and nominate
-    if (methodName === 'utility.batchAll') {
+    if (methodName === 'batchAll') {
       const txMethod = decodedTxn.method.args as unknown as BatchArgs;
       const calls = txMethod.calls;
 
-      for (const call of calls) {
-        const callMethod = call.method;
-
-        if (callMethod === 'staking.bond') {
-          const bondArgs = call.args as unknown as BondArgs;
-          this.validateBondArgs(bondArgs);
-        } else if (callMethod === 'staking.nominate') {
-          const nominateArgs = call.args as unknown as NominateArgs;
-          this.validateNominateArgs(nominateArgs);
-        } else {
-          throw new InvalidTransactionError(`Invalid call in batch: ${callMethod}`);
-        }
+      if (calls.length !== 2) {
+        throw new InvalidTransactionError(
+          `Invalid batch staking transaction: expected 2 calls but got ${calls.length}`
+        );
       }
+
+      // Check that first call is bond
+      const firstCallMethod = utils.decodeMethodName(calls[0], this._registry);
+      if (firstCallMethod !== 'bond') {
+        throw new InvalidTransactionError(
+          `Invalid batch staking transaction: first call should be bond but got ${firstCallMethod}`
+        );
+      }
+
+      // Check that second call is nominate
+      const secondCallMethod = utils.decodeMethodName(calls[1], this._registry);
+      if (secondCallMethod !== 'nominate') {
+        throw new InvalidTransactionError(
+          `Invalid batch staking transaction: second call should be nominate but got ${secondCallMethod}`
+        );
+      }
+
+      // Validate bond arguments
+      const bondArgs = calls[0].args as unknown as BondArgs;
+      this.validateBondArgs(bondArgs);
+
+      // Validate nominate arguments
+      const nominateArgs = calls[1].args as unknown as NominateArgs;
+      this.validateNominateArgs(nominateArgs);
     } else {
       throw new InvalidTransactionError(`Invalid transaction type: ${methodName}`);
     }
@@ -173,16 +205,40 @@ export class BatchStakingBuilder extends TransactionBuilder {
    * Validate bond arguments
    */
   private validateBondArgs(args: BondArgs): void {
-    if (!utils.isValidAddress(args.controller)) {
+    // Handle both string and object formats for controller
+    const controllerValue = args.controller as ControllerValue;
+    const controllerAddress = typeof controllerValue === 'string' ? controllerValue : controllerValue.id;
+
+    if (!utils.isValidAddress(controllerAddress)) {
       throw new InvalidTransactionError(
-        `Invalid bond args: controller address ${args.controller} is not a well-formed address`
+        `Invalid bond args: controller address ${controllerAddress} is not a well-formed address`
       );
     }
 
+    // Handle both string and number formats for value
+    const amountValue = args.value as AmountValue;
+    const valueString = typeof amountValue === 'string' ? amountValue : amountValue.toString();
+
+    // Handle different payee formats
+    const payeeValue = args.payee as PayeeValue;
+    let normalizedPayee: string | { Account: string } = payeeValue as string;
+    if (typeof payeeValue === 'object' && payeeValue !== null) {
+      const decodedPayee = payeeValue as DecodedPayee;
+      if (decodedPayee.staked !== undefined) {
+        normalizedPayee = 'Staked';
+      } else if (decodedPayee.stash !== undefined) {
+        normalizedPayee = 'Stash';
+      } else if (decodedPayee.controller !== undefined) {
+        normalizedPayee = 'Controller';
+      } else if (decodedPayee.account) {
+        normalizedPayee = { Account: decodedPayee.account };
+      }
+    }
+
     const validationResult = BatchTransactionSchema.validateBond({
-      value: args.value,
-      controller: args.controller,
-      payee: args.payee,
+      value: valueString,
+      controller: controllerAddress,
+      payee: normalizedPayee,
     });
 
     if (validationResult.error) {
@@ -194,8 +250,18 @@ export class BatchStakingBuilder extends TransactionBuilder {
    * Validate nominate arguments
    */
   private validateNominateArgs(args: NominateArgs): void {
+    // Handle both string and object formats for targets
+    const targetAddresses = args.targets.map((target) => {
+      if (typeof target === 'string') {
+        return target;
+      } else if (target && typeof target === 'object' && 'id' in target) {
+        return (target as { id: string }).id;
+      }
+      throw new InvalidTransactionError(`Invalid target format: ${JSON.stringify(target)}`);
+    });
+
     const validationResult = BatchTransactionSchema.validateNominate({
-      validators: args.targets,
+      validators: targetAddresses,
     });
 
     if (validationResult.error) {
@@ -208,22 +274,56 @@ export class BatchStakingBuilder extends TransactionBuilder {
     const tx = super.fromImplementation(rawTransaction);
 
     // Check if the transaction is a batch transaction
-    if ((this._method?.name as string) !== 'utility.batchAll') {
-      throw new InvalidTransactionError(`Invalid Transaction Type: ${this._method?.name}. Expected utility.batchAll`);
+    if ((this._method?.name as string) !== 'batchAll') {
+      throw new InvalidTransactionError(`Invalid Transaction Type: ${this._method?.name}. Expected batchAll`);
     }
 
     if (this._method) {
       const txMethod = this._method.args as unknown as BatchArgs;
 
       for (const call of txMethod.calls) {
-        if (call.method === 'staking.bond') {
+        const callMethod = utils.decodeMethodName(call, this._registry);
+        if (callMethod === 'bond') {
           const bondArgs = call.args as unknown as BondArgs;
-          this.amount(bondArgs.value);
-          this.controller({ address: bondArgs.controller });
-          this.payee(bondArgs.payee);
-        } else if (call.method === 'staking.nominate') {
+          // Handle both string and number formats for value
+          const amountValue = bondArgs.value as AmountValue;
+          const valueString = typeof amountValue === 'string' ? amountValue : amountValue.toString();
+          this.amount(valueString);
+
+          // Handle both string and object formats for controller
+          const controllerValue = bondArgs.controller as ControllerValue;
+          const controllerAddress = typeof controllerValue === 'string' ? controllerValue : controllerValue.id;
+          this.controller({ address: controllerAddress });
+
+          // Handle different payee formats
+          const payeeValue = bondArgs.payee as PayeeValue;
+          let normalizedPayee: string | { Account: string } = payeeValue as string;
+          if (typeof payeeValue === 'object' && payeeValue !== null) {
+            const decodedPayee = payeeValue as DecodedPayee;
+            if (decodedPayee.staked !== undefined) {
+              normalizedPayee = 'Staked';
+            } else if (decodedPayee.stash !== undefined) {
+              normalizedPayee = 'Stash';
+            } else if (decodedPayee.controller !== undefined) {
+              normalizedPayee = 'Controller';
+            } else if (decodedPayee.account) {
+              normalizedPayee = { Account: decodedPayee.account };
+            }
+          }
+          this.payee(normalizedPayee);
+        } else if (callMethod === 'nominate') {
           const nominateArgs = call.args as unknown as NominateArgs;
-          this.validators(nominateArgs.targets);
+
+          // Handle both string and object formats for targets
+          const targetAddresses = nominateArgs.targets.map((target) => {
+            if (typeof target === 'string') {
+              return target;
+            } else if (target && typeof target === 'object' && 'id' in target) {
+              return (target as { id: string }).id;
+            }
+            throw new InvalidTransactionError(`Invalid target format: ${JSON.stringify(target)}`);
+          });
+          this.validators(targetAddresses);
         }
       }
     }

@@ -26,7 +26,7 @@ export class Transaction extends BaseTransaction {
   protected _chainName: string;
   protected _sender: string;
 
-  private static FAKE_SIGNATURE = `0x${Buffer.from(new Uint8Array(256).fill(1)).toString('hex')}`;
+  private static FAKE_SIGNATURE = `0x${Buffer.from(new Uint8Array(256).fill(1)).toString('hex')}` as HexString;
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
@@ -77,7 +77,7 @@ export class Transaction extends BaseTransaction {
   addSignature(signature: string): void {
     this._signedTransaction = utils.serializeSignedTransaction(
       this._substrateTransaction,
-      signature,
+      signature as HexString,
       this._substrateTransaction.metadataRpc,
       this._registry
     );
@@ -177,6 +177,11 @@ export class Transaction extends BaseTransaction {
         result.to = keypairDest.getAddress(this.getAddressFormat());
         result.amount = txMethod.amountStaked.toString();
         result.netuid = txMethod.netuid;
+      } else if (utils.isBond(txMethod)) {
+        result.amount = txMethod.value;
+        result.payee = typeof txMethod.payee === 'string' ? txMethod.payee : txMethod.payee.Account;
+      } else if (utils.isBondExtra(txMethod)) {
+        result.amount = txMethod.maxAdditional;
       }
     } else if (this.type === TransactionType.StakingDeactivate) {
       if (utils.isRemoveStake(txMethod)) {
@@ -187,6 +192,28 @@ export class Transaction extends BaseTransaction {
         result.to = keypairDest.getAddress(this.getAddressFormat());
         result.amount = txMethod.amountUnstaked.toString();
         result.netuid = txMethod.netuid;
+      } else if (utils.isUnbond(txMethod)) {
+        result.amount = txMethod.value;
+      } else if (utils.isWithdrawUnbonded(txMethod)) {
+        result.numSlashingSpans = txMethod.numSlashingSpans;
+      }
+    } else if (this.type === TransactionType.Batch) {
+      if (utils.isBatch(txMethod)) {
+        result.batchCalls = txMethod.calls;
+        // Extract amount from batch calls for display
+        if (txMethod.calls && txMethod.calls.length === 2) {
+          const firstCall = txMethod.calls[0];
+          const secondCall = txMethod.calls[1];
+          if (firstCall.method === 'bond' && secondCall.method === 'nominate') {
+            // Staking batch: bond + nominate
+            const bondArgs = firstCall.args as Record<string, unknown>;
+            result.amount = bondArgs.value as string;
+          } else if (firstCall.method === 'chill' && secondCall.method === 'unbond') {
+            // Unstaking batch: chill + unbond
+            const unbondArgs = secondCall.args as Record<string, unknown>;
+            result.amount = unbondArgs.value as string;
+          }
+        }
       }
     }
 
@@ -277,6 +304,8 @@ export class Transaction extends BaseTransaction {
       this.decodeInputsAndOutputsForStakingActivate(decodedTx);
     } else if (this.type === TransactionType.StakingDeactivate) {
       this.decodeInputsAndOutputsForStakingDeactivate(decodedTx);
+    } else if (this.type === TransactionType.Batch) {
+      this.decodeInputsAndOutputsForBatch(decodedTx);
     }
   }
 
@@ -331,6 +360,14 @@ export class Transaction extends BaseTransaction {
       to = keypairDest.getAddress(this.getAddressFormat());
       value = txMethod.amountStaked.toString();
       from = decodedTx.address;
+    } else if (utils.isBond(txMethod)) {
+      to = decodedTx.address; // For bond, funds are locked in the same account
+      value = txMethod.value;
+      from = decodedTx.address;
+    } else if (utils.isBondExtra(txMethod)) {
+      to = decodedTx.address; // For bond extra, funds are locked in the same account
+      value = txMethod.maxAdditional;
+      from = decodedTx.address;
     } else {
       throw new ParseTransactionError(`Loading inputs of unknown StakingActivate type parameters`);
     }
@@ -363,6 +400,14 @@ export class Transaction extends BaseTransaction {
       to = keypairDest.getAddress(this.getAddressFormat());
       value = txMethod.amountUnstaked.toString();
       from = decodedTx.address;
+    } else if (utils.isUnbond(txMethod)) {
+      to = decodedTx.address; // For unbond, funds are unlocked from the same account
+      value = txMethod.value;
+      from = decodedTx.address;
+    } else if (utils.isWithdrawUnbonded(txMethod)) {
+      to = decodedTx.address; // For withdraw unbonded, funds are returned to the same account
+      value = '0'; // Amount is not specified in withdraw unbonded
+      from = decodedTx.address;
     } else {
       throw new ParseTransactionError(`Loading inputs of unknown StakingDeactivate type parameters`);
     }
@@ -381,6 +426,83 @@ export class Transaction extends BaseTransaction {
         coin: this._coinConfig.name,
       },
     ];
+  }
+
+  private decodeInputsAndOutputsForBatch(decodedTx: DecodedTx) {
+    const txMethod = decodedTx.method.args;
+    const sender = decodedTx.address;
+    this._inputs = [];
+    this._outputs = [];
+
+    if (utils.isBatch(txMethod)) {
+      if (!txMethod.calls) {
+        throw new InvalidTransactionError('failed to decode calls from batch transaction');
+      }
+      // Handle different types of batch operations
+      let totalStakingValue = '0';
+      let hasStakingOperations = false;
+      let hasUnstakingOperations = false;
+
+      for (const call of txMethod.calls) {
+        // Handle both possible formats: simple method names or callIndex with registry lookup
+        let methodName: string;
+
+        if (typeof call.method === 'string') {
+          methodName = call.method;
+        } else {
+          try {
+            const callIndex = call.method as string;
+            const decodedCall = this._registry.findMetaCall(
+              new Uint8Array(Buffer.from(callIndex.replace('0x', ''), 'hex'))
+            );
+            methodName = decodedCall.method;
+          } catch (e) {
+            methodName = call.method as string;
+          }
+        }
+
+        if (methodName === 'bond') {
+          const args = call.args as Record<string, unknown>;
+          const value = (args.value as string) || '0';
+          totalStakingValue = value;
+          hasStakingOperations = true;
+        } else if (methodName === 'chill') {
+          hasUnstakingOperations = true;
+        } else if (methodName === 'unbond') {
+          const args = call.args as Record<string, unknown>;
+          const value = (args.value as string) || '0';
+          totalStakingValue = value;
+          hasUnstakingOperations = true;
+        }
+      }
+
+      // For staking batch operations (bond + nominate or bondExtra + nominate)
+      if (hasStakingOperations && !hasUnstakingOperations) {
+        this._inputs.push({
+          address: sender,
+          value: totalStakingValue,
+          coin: this._coinConfig.name,
+        });
+        this._outputs.push({
+          address: sender, // For staking, funds are locked in the same account
+          value: totalStakingValue,
+          coin: this._coinConfig.name,
+        });
+      }
+      // For unstaking batch operations (chill + unbond)
+      else if (hasUnstakingOperations && !hasStakingOperations) {
+        this._inputs.push({
+          address: sender,
+          value: totalStakingValue,
+          coin: this._coinConfig.name,
+        });
+        this._outputs.push({
+          address: sender, // For unstaking, funds are unlocked from the same account
+          value: totalStakingValue,
+          coin: this._coinConfig.name,
+        });
+      }
+    }
   }
 
   /**

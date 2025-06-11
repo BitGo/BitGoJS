@@ -74,26 +74,30 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
       return this.getTransferBuilder();
     } else if (methodName === Interface.MethodNames.RegisterDidWithCDD) {
       return this.getRegisterDidWithCDDBuilder();
-    } else if (methodName === 'staking.bondExtra') {
+    } else if (methodName === 'bondExtra') {
       return this.getBondExtraBuilder();
-    } else if (methodName === 'utility.batch' || methodName === 'utility.batchAll') {
-      return this.getBatchBuilder();
-    } else if (methodName === 'staking.bond') {
-      return this.getBatchBuilder();
-    } else if (methodName === 'staking.nominate') {
-      return this.getBatchBuilder();
-    } else if (methodName === 'utility.batchAll') {
+    } else if (methodName === 'batchAll') {
       const args = decodedTxn.method.args as { calls?: { method: string; args: Record<string, unknown> }[] };
 
-      if (
-        args.calls &&
-        args.calls.length === 2 &&
-        args.calls[0].method === 'staking.chill' &&
-        args.calls[1].method === 'staking.unbond'
-      ) {
-        return this.getBatchUnstakingBuilder();
+      if (args.calls && args.calls.length === 2) {
+        // Check for batch staking pattern: bond + nominate
+        if (args.calls[0].method === 'bond' && args.calls[1].method === 'nominate') {
+          return this.getBatchBuilder();
+        }
+        // Check for batch unstaking pattern: chill + unbond
+        if (args.calls[0].method === 'chill' && args.calls[1].method === 'unbond') {
+          return this.getBatchUnstakingBuilder();
+        }
       }
-    } else if (methodName === 'staking.withdrawUnbonded') {
+      // Fall back to general batch builder for other batchAll cases
+      return this.getBatchBuilder();
+    } else if (methodName === 'batch') {
+      return this.getBatchBuilder();
+    } else if (methodName === 'bond') {
+      return this.getBatchBuilder();
+    } else if (methodName === 'nominate') {
+      return this.getBatchBuilder();
+    } else if (methodName === 'withdrawUnbonded') {
       return this.getWithdrawUnbondedBuilder();
     }
 

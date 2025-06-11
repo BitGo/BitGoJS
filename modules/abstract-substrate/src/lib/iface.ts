@@ -42,6 +42,39 @@ export enum MethodNames {
   RemoveStake = 'removeStake',
 
   /**
+   * Take the origin account as a stash and lock up value of its balance.
+   */
+  Bond = 'bond',
+  /**
+   * Add some extra amount that have appeared in the stash free_balance into the balance up for staking.
+   */
+  BondExtra = 'bondExtra',
+  /**
+   * Declare the desire to nominate targets for the origin controller.
+   */
+  Nominate = 'nominate',
+  /**
+   * Declare no desire to either validate or nominate.
+   */
+  Chill = 'chill',
+  /**
+   * Schedule a portion of the stash to be unlocked ready for transfer out after the bond period ends.
+   */
+  Unbond = 'unbond',
+  /**
+   * Remove any unlocked chunks from the unlocking queue from our management.
+   */
+  WithdrawUnbonded = 'withdrawUnbonded',
+  /**
+   * Send a batch of dispatch calls.
+   */
+  Batch = 'batch',
+  /**
+   * Send a batch of dispatch calls and atomically execute them.
+   */
+  BatchAll = 'batchAll',
+
+  /**
    * Registers a Decentralized Identifier (DID) along with Customer Due Diligence (CDD) information.
    *
    * @see https://developers.polymesh.network/sdk-docs/enums/Generated/Types/IdentityTx/#cddregisterdidwithcdd
@@ -71,6 +104,8 @@ export interface TxData {
   payee?: string;
   keepAlive?: boolean;
   netuid?: string;
+  numSlashingSpans?: number;
+  batchCalls?: BatchCallObject[];
 }
 
 /**
@@ -107,11 +142,57 @@ export interface RemoveStakeArgs extends Args {
   netuid: string;
 }
 
+export interface BondArgs extends Args {
+  value: string;
+  controller: string;
+  payee: string | { Account: string };
+}
+
+export interface BondExtraArgs extends Args {
+  maxAdditional: string;
+}
+
+export interface NominateArgs extends Args {
+  targets: string[];
+}
+
+export interface ChillArgs extends Args {
+  [key: string]: never; // Chill has no arguments
+}
+
+export interface UnbondArgs extends Args {
+  value: string;
+}
+
+export interface WithdrawUnbondedArgs extends Args {
+  numSlashingSpans: number;
+}
+
+export interface BatchCallObject {
+  method: string;
+  args: Record<string, unknown>;
+}
+
+export interface BatchArgs {
+  calls: BatchCallObject[];
+}
+
 /**
  * Decoded TxMethod from a transaction hex
  */
 export interface TxMethod {
-  args: TransferArgs | TransferAllArgs | AddStakeArgs | RemoveStakeArgs;
+  args:
+    | TransferArgs
+    | TransferAllArgs
+    | AddStakeArgs
+    | RemoveStakeArgs
+    | BondArgs
+    | BondExtraArgs
+    | NominateArgs
+    | ChillArgs
+    | UnbondArgs
+    | WithdrawUnbondedArgs
+    | BatchArgs;
   name: MethodNames;
   pallet: string;
 }
