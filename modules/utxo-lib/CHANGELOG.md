@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [11.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.4.0...@bitgo/utxo-lib@11.5.0) (2025-06-10)
+
+### Features
+
+- **utxo-lib:** extract address from paygo attestation proof ([502e561](https://github.com/BitGo/BitGoJS/commit/502e561d52784d07b9c5963c3368d22b83669654))
+
 # [11.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.3.0...@bitgo/utxo-lib@11.4.0) (2025-06-05)
 
 ### Features

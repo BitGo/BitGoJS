@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [54.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@54.2.0...@bitgo/statics@54.3.0) (2025-06-10)
+
+### Bug Fixes
+
+- **statics:** remove staking feature for tbtc ([b817d19](https://github.com/BitGo/BitGoJS/commit/b817d1991968f57ded29b293e340901e0c720073))
+- **statics:** update explorer URLs for Cronos, Initia, and ASI networks ([d148897](https://github.com/BitGo/BitGoJS/commit/d148897dfcc788ca7b94331e81d326f424c311c2))
+- testnet token of steth ([a8d0059](https://github.com/BitGo/BitGoJS/commit/a8d00594c7805548bd4c7e8d952d711c12a62538))
+- update explorer url for provenance ([89e3de2](https://github.com/BitGo/BitGoJS/commit/89e3de2477738bd187ef604bc90a66635589ee8e))
+
+### Features
+
+- add test usd1 tron test tokens ([e5720a5](https://github.com/BitGo/BitGoJS/commit/e5720a56bd7268d7669a1cd27dd67b1c2cd6d915))
+- implement staking feature for cronos and fetch ([c057560](https://github.com/BitGo/BitGoJS/commit/c057560f924cec1db5ae4ee1115a876ea11e369c))
+- onboard test stETH ([e99c631](https://github.com/BitGo/BitGoJS/commit/e99c631182c84a07eedbe8f5761fae5698b80ab7))
+- onboarded new tokens for Benji, Ticket:WIN-5754 ([f9152e3](https://github.com/BitGo/BitGoJS/commit/f9152e3f83291a93017c35e3a6068e68b731d559))
+- **statics:** add go account support for polyx test ([b0de85e](https://github.com/BitGo/BitGoJS/commit/b0de85ee81c48e1633f0b16d74100acb5130ebc3))
+- **statics:** add ofc support to all polygon tokens ([c6fd6cd](https://github.com/BitGo/BitGoJS/commit/c6fd6cd56c73138ffbfc3681dc56aef9ad71b17c))
+- **statics:** adding EVM_COIN coin feature ([4626eba](https://github.com/BitGo/BitGoJS/commit/4626eba2e8af8c5e9a32a7bf6b23ffa97f5f1bc6))
+- **statics:** adds `rebase-token` coin feature ([a151f42](https://github.com/BitGo/BitGoJS/commit/a151f42c09b852160dc23e934720cf37082695aa))
+- **statics:** adds testnet `rebase-token` feature ([470f1a2](https://github.com/BitGo/BitGoJS/commit/470f1a23a3e9460f758969e1409e94694f3df2dd))
+
 # [54.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@54.1.0...@bitgo/statics@54.2.0) (2025-06-05)
 
 ### Features

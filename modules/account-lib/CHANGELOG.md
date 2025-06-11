@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [27.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.1.0...@bitgo/account-lib@27.2.0) (2025-06-10)
+
+### Features
+
+- **account-lib:** add sdk-coin-vet in account-lib ([024e5c8](https://github.com/BitGo/BitGoJS/commit/024e5c87994a45c0e05b319f4ef02b13db8d8102))
+
 # [27.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.0.2...@bitgo/account-lib@27.1.0) (2025-06-05)
 
 ### Features
