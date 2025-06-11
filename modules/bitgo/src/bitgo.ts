@@ -8,8 +8,13 @@ import * as _ from 'lodash';
 
 import { BaseCoin, CoinFactory, common } from '@bitgo/sdk-core';
 import { BitGoAPI, BitGoAPIOptions } from '@bitgo/sdk-api';
-import { createTokenMapUsingTrimmedConfigDetails, TrimmedAmsTokenConfig } from '@bitgo/statics';
-import { GlobalCoinFactory, registerCoinConstructors } from './v2/coinFactory';
+import {
+  createTokenMapUsingTrimmedConfigDetails,
+  TrimmedAmsTokenConfig,
+  createToken,
+  getFormattedTokenConfigForCoin,
+} from '@bitgo/statics';
+import { GlobalCoinFactory, registerCoinConstructors, getTokenConstructor } from './v2/coinFactory';
 
 // constructor params used exclusively for BitGo class
 export type BitGoOptions = BitGoAPIOptions & {
@@ -56,8 +61,12 @@ export class BitGo extends BitGoAPI {
     this._coinFactory = new CoinFactory();
   }
 
+  /**
+   * Initialize the coin factory with token configurations
+   * @param tokenConfigMap - A map of token metadata from AMS
+   */
   initCoinFactory(tokenConfigMap: Record<string, TrimmedAmsTokenConfig[]>): void {
-    // TODO(WIN-5057): use AMS endpoint to fetch config details
+    // TODO(WIN-5839): use AMS endpoint to fetch config details
     const coinMap = createTokenMapUsingTrimmedConfigDetails(tokenConfigMap);
     this._coinFactory = new CoinFactory();
     registerCoinConstructors(this._coinFactory, coinMap);
@@ -72,6 +81,27 @@ export class BitGo extends BitGoAPI {
       return this._coinFactory.getInstance(this, coinName);
     }
     return GlobalCoinFactory.getInstance(this, coinName);
+  }
+
+  /**
+   * Register a token in the coin factory
+   * @param tokenConfig - The token metadata from AMS
+   */
+  registerToken(tokenConfig: TrimmedAmsTokenConfig): void {
+    if (!this._useAms) {
+      throw new Error('registerToken is only supported when useAms is set to true');
+    }
+    // TODO(WIN-5839): use AMS endpoint to fetch token metadata
+    const staticsBaseCoin = createToken(tokenConfig);
+    if (staticsBaseCoin) {
+      const formattedTokenConfig = getFormattedTokenConfigForCoin(staticsBaseCoin);
+      if (formattedTokenConfig) {
+        const tokenConstructor = getTokenConstructor(formattedTokenConfig);
+        if (tokenConstructor) {
+          this._coinFactory.registerToken(staticsBaseCoin, tokenConstructor);
+        }
+      }
+    }
   }
 
   /**
