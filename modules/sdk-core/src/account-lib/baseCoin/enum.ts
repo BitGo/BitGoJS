@@ -82,6 +82,7 @@ export enum TransactionType {
   DelegateResource,
   // Un-delegate resource (e.g. TRX)
   UnDelegateResource,
+  StorageDeposit,
 }
 
 /**

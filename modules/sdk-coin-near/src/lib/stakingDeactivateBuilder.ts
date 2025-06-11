@@ -4,7 +4,6 @@ import { Transaction } from './transaction';
 import BigNumber from 'bignumber.js';
 import * as NearAPI from 'near-api-js';
 import assert from 'assert';
-import BN from 'bn.js';
 
 import { ContractCallWrapper } from './contractCallWrapper';
 import { TransactionBuilder } from './transactionBuilder';
@@ -32,14 +31,16 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
   initBuilder(tx: Transaction): void {
     super.initBuilder(tx);
     const functionCall = tx.nearTransaction.actions[0].functionCall;
-    this.contractCallWrapper.args = JSON.parse(Buffer.from(functionCall.args).toString());
-    this.contractCallWrapper.gas = functionCall.gas.toString();
+    if (functionCall) {
+      this.contractCallWrapper.args = JSON.parse(Buffer.from(functionCall.args).toString());
+      this.contractCallWrapper.gas = functionCall.gas.toString();
+    }
   }
 
   /**
    * Sets the gas of this transaction.
    *
-   * @param {string} value the gas of this transaction
+   * @param {string} gas the gas of this transaction
    * @returns {TransactionBuilder} This transaction builder
    */
   public gas(gas: string): this {
@@ -51,7 +52,7 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
   /**
    * Sets the amount of this transaction.
    *
-   * @param {string} value the amount in the minimum unit (1 Near = 1e24 yoctos) of this transaction
+   * @param {string} amount the amount in the minimum unit (1 Near = 1e24 yoctos) of this transaction
    * @returns {TransactionBuilder} This transaction builder
    */
   public amount(amount: string): this {
@@ -66,7 +67,7 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
     assert(gas, new BuildTransactionError('gas is required before building staking deactivate'));
     assert(args?.amount, new BuildTransactionError('amount is required before building staking deactivate'));
 
-    super.actions([NearAPI.transactions.functionCall(methodName, args, new BN(gas), new BN(deposit))]);
+    super.actions([NearAPI.transactions.functionCall(methodName, args, BigInt(gas), BigInt(deposit))]);
     const tx = await super.buildImplementation();
     tx.setTransactionType(TransactionType.StakingDeactivate);
     return tx;
