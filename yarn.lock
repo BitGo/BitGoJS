@@ -899,6 +899,49 @@
     monocle-ts "^2.3.13"
     newtype-ts "^0.3.5"
 
+"@bitgo/unspents@^0.48.1":
+  version "0.48.1"
+  resolved "https://registry.npmjs.org/@bitgo/unspents/-/unspents-0.48.1.tgz#a460b7549ff484ba4779fc9df8a811c3c79c9b0e"
+  integrity sha512-lpEy55Q/w/xgMrJWqUAnRaYhPrRrKn7FMPE/kMWjaM/1OriVvtQwl6LLSSXHH/wsPb/fHAlEMhn5u101MZHUgA==
+  dependencies:
+    "@bitgo/utxo-lib" "^11.5.0"
+    lodash "~4.17.21"
+    tcomb "~3.2.29"
+    varuint-bitcoin "^1.0.4"
+
+"@bitgo/utxo-core@^1.9.1":
+  version "1.9.1"
+  resolved "https://registry.npmjs.org/@bitgo/utxo-core/-/utxo-core-1.9.1.tgz#44b3c3a6ef5c7eaffb70fb4fdf54151e55d31ce6"
+  integrity sha512-wPkW+YRgtdNiIMvIh4gKV7aUXAOFFx3KkLEG4v1HlUqMjEnuTff8shLoeLpcpb/oUSu2+/6WvTovqVjLYuXOAQ==
+  dependencies:
+    "@bitgo/unspents" "^0.48.1"
+    "@bitgo/utxo-lib" "^11.5.0"
+    "@bitgo/wasm-miniscript" "2.0.0-beta.7"
+    bip174 "npm:@bitgo-forks/bip174@3.1.0-master.4"
+
+"@bitgo/utxo-lib@^11.5.0":
+  version "11.5.0"
+  resolved "https://registry.npmjs.org/@bitgo/utxo-lib/-/utxo-lib-11.5.0.tgz#7f1e7b03cdeda4e7c0645969991aaac5a2bd230d"
+  integrity sha512-LJxScyyfIw6y/w4j8C4MCeIyFfSGIrDEwEPipf9unX4hmI7ZvH8teg81aC8h2hhUhsMea7XrrOqrZBoZOWILzg==
+  dependencies:
+    "@bitgo/blake2b" "^3.2.4"
+    "@brandonblack/musig" "^0.0.1-alpha.0"
+    "@noble/curves" "1.8.1"
+    "@noble/secp256k1" "1.6.3"
+    bech32 "^2.0.0"
+    bip174 "npm:@bitgo-forks/bip174@3.1.0-master.4"
+    bip32 "^3.0.1"
+    bitcoin-ops "^1.3.0"
+    bitcoinjs-lib "npm:@bitgo-forks/bitcoinjs-lib@7.1.0-master.9"
+    bs58check "^2.1.2"
+    cashaddress "^1.1.0"
+    create-hash "^1.2.0"
+    create-hmac "^1.1.7"
+    ecpair "npm:@bitgo/ecpair@2.1.0-rc.0"
+    fastpriorityqueue "^0.7.1"
+    typeforce "^1.11.3"
+    varuint-bitcoin "^1.1.2"
+
 "@bitgo/wasm-miniscript@2.0.0-beta.7":
   version "2.0.0-beta.7"
   resolved "https://registry.npmjs.org/@bitgo/wasm-miniscript/-/wasm-miniscript-2.0.0-beta.7.tgz#53eb0e87295ad5f2df0933c3b3b519e90bb4d2f1"

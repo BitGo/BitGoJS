@@ -2,6 +2,14 @@
   "extends": "../../.eslintrc.json",
   "rules": {
     "@typescript-eslint/explicit-module-boundary-types": "error",
+    "import/no-internal-modules": [
+      "error",
+      {
+        "allow": [
+          "@bitgo/utxo-core"
+        ]
+      }
+    ],
     "indent": "off"
   }
 }
