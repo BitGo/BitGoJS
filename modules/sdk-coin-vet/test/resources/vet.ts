@@ -31,6 +31,18 @@ export const addresses = {
   ],
 };
 
+export const blockIds: { validBlockIds: string[]; invalidBlockIds: string[] } = {
+  validBlockIds: [
+    '0x014f12ed94c4b4770f7f9a73e2aa41a9dfbac02a49f36ec05acfdba8c7244ff0',
+    '0x014f130d00a2fe06d471a35e7f2cd18d25bdefe5370c07a2ad68c0ae3852ad86',
+  ],
+  invalidBlockIds: [
+    'randomString',
+    '0xc4173a804406a365e69dfb297ddfgsdcvf',
+    '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
+  ],
+};
+
 export const invalidRecipients: Recipient[] = [
   {
     address: addresses.invalidAddresses[0],
