@@ -1,6 +1,6 @@
-import * as assert from 'assert';
+import assert from 'assert';
 
-import * as yargs from 'yargs';
+import yargs from 'yargs';
 import * as utxolib from '@bitgo/utxo-lib';
 
 import { formatTreeNoColor, getFixtureString } from './fixtures';
