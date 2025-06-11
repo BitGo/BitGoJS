@@ -1,12 +1,8 @@
-import BN from 'bn.js';
+import { KeyType } from '@near-js/crypto';
 import { TransactionType, TransactionExplanation as BaseTransactionExplanation } from '@bitgo/sdk-core';
 
 export interface TransactionExplanation extends BaseTransactionExplanation {
   type: TransactionType;
-}
-
-export enum KeyType {
-  ED25519 = 0,
 }
 
 export interface Signature {
@@ -15,7 +11,7 @@ export interface Signature {
 }
 
 export interface Transfer {
-  deposit: BN;
+  deposit: bigint;
 }
 
 /** Interface with parameters needed to perform  FunctionCall to a contract */
@@ -38,9 +34,15 @@ export interface Action {
 export interface TxData {
   id?: string;
   signerId: string;
-  publicKey: string;
-  nonce: number;
+  publicKey?: string;
+  nonce: bigint;
   receiverId: string;
   actions: Action[];
   signature?: Signature;
+}
+
+export interface StorageDepositInput {
+  deposit: bigint;
+  gas: bigint;
+  accountId?: string;
 }

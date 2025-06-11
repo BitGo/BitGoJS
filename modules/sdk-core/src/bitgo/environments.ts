@@ -50,7 +50,6 @@ interface EnvironmentTemplate {
   babyNodeUrl: string;
   mantraNodeUrl: string;
   cronosNodeUrl: string;
-  fetchAiNodeUrl: string;
   initiaNodeUrl: string;
   asiNodeUrl: string;
   islmNodeUrl: string;
@@ -173,7 +172,6 @@ const mainnetBase: EnvironmentTemplate = {
   islmNodeUrl: 'https://rest.cosmos.haqq.network',
   mantraNodeUrl: 'https://mantra-rest.publicnode.com/',
   cronosNodeUrl: 'https://cronos-pos-rest.publicnode.com/',
-  fetchAiNodeUrl: 'https://rest-fetchhub.fetch.ai/',
   initiaNodeUrl: 'https://rest.initia.xyz/',
   asiNodeUrl: 'https://rest-fetchhub.fetch.ai/',
   dotNodeUrls: ['wss://rpc.polkadot.io'],
@@ -246,7 +244,6 @@ const testnetBase: EnvironmentTemplate = {
   islmNodeUrl: 'https://rest.cosmos.testedge2.haqq.network ',
   mantraNodeUrl: 'https://mantra-testnet-rest.publicnode.com/',
   cronosNodeUrl: 'https://testnet-croeseid-4.crypto.org:1317/',
-  fetchAiNodeUrl: 'https://rest-dorado.fetch.ai/',
   initiaNodeUrl: 'https://rest.testnet.initia.xyz/',
   asiNodeUrl: 'https://rest-dorado.fetch.ai/',
   dotNodeUrls: ['wss://westend-rpc.polkadot.io'],

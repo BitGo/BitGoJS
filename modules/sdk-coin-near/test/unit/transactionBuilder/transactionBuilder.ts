@@ -17,7 +17,7 @@ describe('NEAR Transaction Builder', async () => {
   it('start and build an empty a transfer tx', async () => {
     const txBuilder = factory.getTransferBuilder();
     txBuilder.sender(testData.accounts.account1.address, testData.accounts.account1.publicKey);
-    txBuilder.nonce(1);
+    txBuilder.nonce(BigInt(1));
     txBuilder.receiverId(testData.accounts.account2.address);
     txBuilder.recentBlockHash(testData.blockHash.block1);
     txBuilder.amount(testData.AMOUNT);
@@ -31,7 +31,7 @@ describe('NEAR Transaction Builder', async () => {
   it('build and sign a transfer tx', async () => {
     const txBuilder = factory.getTransferBuilder();
     txBuilder.sender(testData.accounts.account1.address, testData.accounts.account1.publicKey);
-    txBuilder.nonce(1);
+    txBuilder.nonce(BigInt(1));
     txBuilder.receiverId(testData.accounts.account2.address);
     txBuilder.recentBlockHash(testData.blockHash.block1);
     txBuilder.amount(testData.AMOUNT);

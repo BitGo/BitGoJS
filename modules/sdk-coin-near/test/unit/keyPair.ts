@@ -52,14 +52,14 @@ describe('NEAR KeyPair', () => {
       const source = {
         pub: '01D63D',
       };
-      assert.throws(() => new KeyPair(source), /Non-base58 character/);
+      assert.throws(() => new KeyPair(source), /Unknown letter/);
     });
 
     it('should fail to create from an invalid private key', () => {
       const source = {
         prv: '82A34',
       };
-      assert.throws(() => new KeyPair(source), /Non-base58 character/);
+      assert.throws(() => new KeyPair(source), /Unknown letter/);
     });
   });
 

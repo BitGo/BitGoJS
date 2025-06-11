@@ -24,6 +24,25 @@ describe('Vechain util library', function () {
     });
   });
 
+  describe('isValidBlockId', function () {
+    it('should succeed to validate valid block IDs', function () {
+      for (const blockId of testData.blockIds.validBlockIds) {
+        should.equal(utils.isValidBlockId(blockId), true);
+      }
+    });
+
+    it('should fail to validate invalid block IDs', function () {
+      for (const blockId of testData.blockIds.invalidBlockIds) {
+        should.doesNotThrow(() => utils.isValidBlockId(blockId));
+        should.equal(utils.isValidBlockId(blockId), false);
+      }
+      // @ts-expect-error Testing for missing param, should not throw an error
+      should.doesNotThrow(() => utils.isValidBlockId(undefined));
+      // @ts-expect-error Testing for missing param, should return false
+      should.equal(utils.isValidBlockId(undefined), false);
+    });
+  });
+
   describe('isValidDeserialize', function () {
     it('should succeed to correctly deserialize sponsored signed serialized transaction', function () {
       const signedTxn: VetTransaction = utils.deserializeTransaction(testData.SPONSORED_TRANSACTION);

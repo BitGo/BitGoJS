@@ -1,15 +1,15 @@
 import { BaseUtils, TransactionType } from '@bitgo/sdk-core';
-import { VET_TRANSACTION_ID_LENGTH } from './constants';
+import { VET_ADDRESS_LENGTH, VET_BLOCK_ID_LENGTH, VET_TRANSACTION_ID_LENGTH } from './constants';
 import { KeyPair } from './keyPair';
 import { HexUInt, Transaction, TransactionClause } from '@vechain/sdk-core';
 
 export class Utils implements BaseUtils {
   isValidAddress(address: string): boolean {
-    return /^0x[0-9a-fA-F]{40}$/.test(address);
+    return this.isValidHex(address, VET_ADDRESS_LENGTH);
   }
 
   isValidBlockId(hash: string): boolean {
-    throw new Error('Method not implemented');
+    return this.isValidHex(hash, VET_BLOCK_ID_LENGTH);
   }
 
   isValidPrivateKey(key: string): boolean {
