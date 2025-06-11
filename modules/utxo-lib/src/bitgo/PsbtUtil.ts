@@ -1,6 +1,7 @@
-import { decodeProprietaryKey, ProprietaryKey } from 'bip174/src/lib/proprietaryKeyVal';
-import { PsbtInput, PsbtOutput, KeyValue } from 'bip174/src/lib/interfaces';
+import { ProprietaryKey } from 'bip174/src/lib/proprietaryKeyVal';
+import { PsbtInput, PsbtOutput } from 'bip174/src/lib/interfaces';
 import { Psbt } from 'bitcoinjs-lib/src/psbt';
+import { getProprietaryKeyValuesFromUnknownKeyValues } from './psbt/ProprietaryKeyValUtils';
 
 /**
  * bitgo proprietary key identifier
@@ -38,26 +39,6 @@ export interface ProprietaryKeySearch {
   identifierEncoding?: BufferEncoding;
 }
 
-function getProprietaryKeyValuesFromUnknownKeyValues(
-  unknownKeyVals: KeyValue[],
-  keySearch?: ProprietaryKeySearch
-): ProprietaryKeyValue[] {
-  if (keySearch && keySearch.subtype === undefined && Buffer.isBuffer(keySearch.keydata)) {
-    throw new Error('invalid proprietary key search filter combination. subtype is required');
-  }
-  const keyVals = unknownKeyVals.map(({ key, value }, i) => {
-    return { key: decodeProprietaryKey(key), value };
-  });
-  return keyVals.filter((keyVal) => {
-    return (
-      keySearch === undefined ||
-      (keySearch.identifier === keyVal.key.identifier &&
-        (keySearch.subtype === undefined ||
-          (keySearch.subtype === keyVal.key.subtype &&
-            (!Buffer.isBuffer(keySearch.keydata) || keySearch.keydata.equals(keyVal.key.keydata)))))
-    );
-  });
-}
 /**
  * Search any data from psbt proprietary key value against keydata.
  * Default identifierEncoding is utf-8 for identifier.
@@ -71,6 +52,7 @@ export function getPsbtInputProprietaryKeyVals(
   }
   return getProprietaryKeyValuesFromUnknownKeyValues(input.unknownKeyVals, keySearch);
 }
+
 export function getPsbtOutputProprietaryKeyVals(
   output: PsbtOutput,
   keySearch?: ProprietaryKeySearch
@@ -80,6 +62,7 @@ export function getPsbtOutputProprietaryKeyVals(
   }
   return getProprietaryKeyValuesFromUnknownKeyValues(output.unknownKeyVals, keySearch);
 }
+
 /**
  * @return partialSig/tapScriptSig/MUSIG2_PARTIAL_SIG count iff input is not finalized
  */

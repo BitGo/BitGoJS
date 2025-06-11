@@ -63,6 +63,11 @@ import {
   ProprietaryKeyValue,
   PSBT_PROPRIETARY_IDENTIFIER,
 } from './PsbtUtil';
+import {
+  deleteProprietaryKeyValuesFromUnknownKeyValues,
+  UnknownKeyValsType,
+  updateProprietaryKeyValuesToUnknownKeyValues,
+} from './psbt/ProprietaryKeyValUtils';
 
 type SignatureParams = {
   /** When true, and add the second (last) nonce and signature for a taproot key
@@ -1077,6 +1082,8 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
   }
 
   /**
+   * @deprecated Please use the new method addProprietaryKeyVals(type, index, keyValueData)
+   *
    * Adds proprietary key value pair to PSBT input.
    * Default identifierEncoding is utf-8 for identifier.
    */
@@ -1088,6 +1095,8 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
   }
 
   /**
+   * @deprecated Please use the new method addOrUpdateProprietaryKeyVal(type, index, keyValueData)
+   *
    * Adds or updates (if exists) proprietary key value pair to PSBT input.
    * Default identifierEncoding is utf-8 for identifier.
    */
@@ -1110,6 +1119,9 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
   }
 
   /**
+   * @deprecated Please use getProprietaryKeyValues(type, index, keySearch). The new method
+   * allows for the retrieval of either input or output proprietary key values.
+   *
    * To search any data from proprietary key value against keydata in the inputs.
    * Default identifierEncoding is utf-8 for identifier.
    */
@@ -1119,6 +1131,9 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
   }
 
   /**
+   * @deprecated Please use deleteProprietaryKeyValues(type, index, keysToDelete?). The new method
+   * allows for the deletion of either input or output proprietary key values.
+   *
    * To delete any data from proprietary key value in PSBT input.
    * Default identifierEncoding is utf-8 for identifier.
    */
@@ -1143,73 +1158,94 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
     return this;
   }
 
-  /**
-   * Adds a proprietary key value pair to PSBT output
-   * Default identifier is utf-8 for identifier
-   */
-  addProprietaryKeyValToOutput(outputIndex: number, keyValueData: ProprietaryKeyValue): this {
-    const output = checkForOutput(this.data.outputs, outputIndex);
-    assert(output.unknownKeyVals);
-    return this.addUnknownKeyValToOutput(outputIndex, {
-      key: encodeProprietaryKey(keyValueData.key),
-      value: keyValueData.value,
-    });
+  addProprietaryKeyValues(type: UnknownKeyValsType, index: number, keyValueData: ProprietaryKeyValue): this {
+    switch (type) {
+      case 'input':
+        const input = checkForInput(this.data.inputs, index);
+        assert(input);
+        return this.addUnknownKeyValToInput(index, {
+          key: encodeProprietaryKey(keyValueData.key),
+          value: keyValueData.value,
+        });
+      case 'output':
+        const output = checkForOutput(this.data.outputs, index);
+        assert(output);
+        return this.addUnknownKeyValToOutput(index, {
+          key: encodeProprietaryKey(keyValueData.key),
+          value: keyValueData.value,
+        });
+      default:
+        throw new Error('There is no such type, something went wrong.');
+    }
   }
 
-  /**
-   * To search any data from proprietary key value against keydata in the PSBT outputs.
-   * Default identifierEncoding is utf-8 for identifier.
-   */
-  getOutputProprietaryKeyVals(outputIndex: number, keySearch?: ProprietaryKeySearch): ProprietaryKeyValue[] {
-    const output = checkForOutput(this.data.outputs, outputIndex);
-    return getPsbtOutputProprietaryKeyVals(output, keySearch);
-  }
-
-  /**
-   * Adds or updates (if exists) proprietary key value pair to PSBT output.
-   * Default identifierEncoding is utf-8 for identifier.
-   */
-  addOrUpdateProprietaryKeyValsToOutput(outputIndex: number, keyValueData: ProprietaryKeyValue): this {
-    const output = checkForOutput(this.data.outputs, outputIndex);
+  addOrUpdateProprietaryKeyValues(type: UnknownKeyValsType, index: number, keyValueData: ProprietaryKeyValue): this {
     const key = encodeProprietaryKey(keyValueData.key);
     const { value } = keyValueData;
-    if (output.unknownKeyVals?.length) {
-      const ukvIndex = output.unknownKeyVals.findIndex((ukv) => ukv.key.equals(key));
-      if (ukvIndex > -1) {
-        output.unknownKeyVals[ukvIndex] = { key, value };
-        return this;
-      }
+    switch (type) {
+      case 'output':
+        const output = checkForOutput(this.data.outputs, index);
+        assert(output);
+        if (output.unknownKeyVals?.length) {
+          updateProprietaryKeyValuesToUnknownKeyValues(keyValueData, output.unknownKeyVals);
+          return this;
+        }
+        return this.addUnknownKeyValToOutput(index, {
+          key,
+          value,
+        });
+      case 'input':
+        const input = checkForInput(this.data.inputs, index);
+        assert(input);
+        if (input.unknownKeyVals?.length) {
+          updateProprietaryKeyValuesToUnknownKeyValues(keyValueData, input.unknownKeyVals);
+          return this;
+        }
+        return this.addUnknownKeyValToInput(index, {
+          key,
+          value,
+        });
+      default:
+        throw new Error('There is no such type. Something went wrong.');
     }
-    this.addUnknownKeyValToOutput(outputIndex, {
-      key,
-      value,
-    });
-    return this;
   }
 
-  /**
-   * To delete any data from proprietary key value in PSBT output.
-   * Default identifierEncoding is utf-8 for identifier.
-   */
-  deleteProprietaryKeyValsInOutput(outputIndex: number, keysToDelete?: ProprietaryKeySearch): this {
-    const output = checkForOutput(this.data.outputs, outputIndex);
-    if (!output.unknownKeyVals?.length) {
-      return this;
+  getProprietaryKeyValues(
+    type: UnknownKeyValsType,
+    index: number,
+    keySearch?: ProprietaryKeySearch
+  ): ProprietaryKeyValue[] {
+    switch (type) {
+      case 'input':
+        const input = checkForInput(this.data.inputs, index);
+        return getPsbtInputProprietaryKeyVals(input, keySearch);
+      case 'output':
+        const output = checkForOutput(this.data.outputs, index);
+        return getPsbtOutputProprietaryKeyVals(output, keySearch);
+      default:
+        throw new Error('There is no such type. Something went wrong.');
     }
-    if (keysToDelete && keysToDelete.subtype === undefined && Buffer.isBuffer(keysToDelete.keydata)) {
-      throw new Error('invalid proprietary key search filter combination. subtype is required');
+  }
+
+  deleteProprietaryKeyValues(type: UnknownKeyValsType, index: number, keysToDelete?: ProprietaryKeySearch): this {
+    switch (type) {
+      case 'input':
+        const input = checkForInput(this.data.inputs, index);
+        if (!input.unknownKeyVals?.length) {
+          return this;
+        }
+        input.unknownKeyVals = deleteProprietaryKeyValuesFromUnknownKeyValues(input.unknownKeyVals, keysToDelete);
+        return this;
+      case 'output':
+        const output = checkForOutput(this.data.outputs, index);
+        if (!output.unknownKeyVals?.length) {
+          return this;
+        }
+        output.unknownKeyVals = deleteProprietaryKeyValuesFromUnknownKeyValues(output.unknownKeyVals, keysToDelete);
+        return this;
+      default:
+        throw new Error('There is no such type. Something went wrong.');
     }
-    output.unknownKeyVals = output.unknownKeyVals.filter((keyValue, i) => {
-      const key = decodeProprietaryKey(keyValue.key);
-      return !(
-        keysToDelete === undefined ||
-        (keysToDelete.identifier === key.identifier &&
-          (keysToDelete.subtype === undefined ||
-            (keysToDelete.subtype === key.subtype &&
-              (!Buffer.isBuffer(keysToDelete.keydata) || keysToDelete.keydata.equals(key.keydata)))))
-      );
-    });
-    return this;
   }
 
   private createMusig2NonceForInput(
