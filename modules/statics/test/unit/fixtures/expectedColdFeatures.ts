@@ -1,5 +1,5 @@
 export const expectedColdFeatures = {
-  both: ['eth', 'gteth', 'polygon', 'tpolygon', 'hteth', 'opeth', 'topeth', 'arbeth', 'tarbeth'],
+  both: ['eth', 'gteth', 'polygon', 'tpolygon', 'hteth', 'opeth', 'topeth', 'arbeth', 'tarbeth', 'soneium', 'tsoneium'],
   justMultiSig: [
     'algo',
     'avaxc',
@@ -81,7 +81,6 @@ export const expectedColdFeatures = {
     'osmo',
     'polyx',
     'sgb',
-    'soneium',
     'sei',
     'sol',
     'stt',
@@ -123,7 +122,6 @@ export const expectedColdFeatures = {
     'tpolyx',
     'tsei',
     'tsgb',
-    'tsoneium',
     'tsol',
     'tstt',
     'tsui',

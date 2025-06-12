@@ -362,6 +362,11 @@ export enum CoinFeature {
   TSS_SUPPORT_GATED = 'tss-support-gated',
 
   /**
+   * This coin is gated for Multisig Support
+   */
+  MULTISIG_SUPPORT_GATED = 'multisig-support-gated',
+
+  /**
    * This coins is an EVM compatible coin and should use common EVM functionality
    */
   SHARED_EVM_SIGNING = 'shared-evm-signing',
