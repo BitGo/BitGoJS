@@ -1,6 +1,6 @@
-import * as assert from 'assert';
+import assert from 'assert';
 
-import * as yargs from 'yargs';
+import yargs from 'yargs';
 import * as mocha from 'mocha';
 import * as utxolib from '@bitgo/utxo-lib';
 

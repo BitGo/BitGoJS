@@ -1,5 +1,5 @@
 import { Chalk, Instance } from 'chalk';
-import * as archy from 'archy';
+import archy from 'archy';
 
 import { ParserNode, ParserNodeValue } from './Parser';
 

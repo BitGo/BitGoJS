@@ -1,8 +1,6 @@
 import * as process from 'process';
 import * as fs from 'fs';
 
-import clipboardy from 'clipboardy-cjs';
-
 type Format = 'hex' | 'base64';
 export function stringToBuffer(data: string, format: Format | Format[]): Buffer {
   if (typeof format !== 'string') {
@@ -113,6 +111,7 @@ export async function argToString(argv: ReadStringOptions, input?: string): Prom
     if (input) {
       throw new Error(`conflicting arguments`);
     }
+    const { default: clipboardy } = await import('clipboardy');
     input = await clipboardy.read();
   }
 
