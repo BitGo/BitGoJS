@@ -1,7 +1,11 @@
-import { ProprietaryKey } from 'bip174/src/lib/proprietaryKeyVal';
 import { PsbtInput, PsbtOutput } from 'bip174/src/lib/interfaces';
 import { Psbt } from 'bitcoinjs-lib/src/psbt';
-import { getProprietaryKeyValuesFromUnknownKeyValues } from './psbt/ProprietaryKeyValUtils';
+
+import {
+  getProprietaryKeyValuesFromUnknownKeyValues,
+  ProprietaryKeySearch,
+  ProprietaryKeyValue,
+} from './ProprietaryKeyValUtils';
 
 /**
  * bitgo proprietary key identifier
@@ -19,27 +23,6 @@ export enum ProprietaryKeySubtype {
 }
 
 /**
- * Psbt proprietary keydata object.
- * <compact size uint identifier length> <bytes identifier> <compact size uint subtype> <bytes subkeydata>
- * => <bytes valuedata>
- */
-export interface ProprietaryKeyValue {
-  key: ProprietaryKey;
-  value: Buffer;
-}
-
-/**
- * Psbt proprietary keydata object search fields.
- * <compact size uint identifier length> <bytes identifier> <compact size uint subtype> <bytes subkeydata>
- */
-export interface ProprietaryKeySearch {
-  identifier: string;
-  subtype?: number;
-  keydata?: Buffer;
-  identifierEncoding?: BufferEncoding;
-}
-
-/**
  * Search any data from psbt proprietary key value against keydata.
  * Default identifierEncoding is utf-8 for identifier.
  */
@@ -50,7 +33,7 @@ export function getPsbtInputProprietaryKeyVals(
   if (!input.unknownKeyVals?.length) {
     return [];
   }
-  return getProprietaryKeyValuesFromUnknownKeyValues(input.unknownKeyVals, keySearch);
+  return getProprietaryKeyValuesFromUnknownKeyValues(input, keySearch);
 }
 
 export function getPsbtOutputProprietaryKeyVals(
@@ -60,7 +43,7 @@ export function getPsbtOutputProprietaryKeyVals(
   if (!output.unknownKeyVals?.length) {
     return [];
   }
-  return getProprietaryKeyValuesFromUnknownKeyValues(output.unknownKeyVals, keySearch);
+  return getProprietaryKeyValuesFromUnknownKeyValues(output, keySearch);
 }
 
 /**
@@ -79,12 +62,14 @@ export function getPsbtInputSignatureCount(input: PsbtInput): number {
     }).length
   );
 }
+
 /**
  * @return true iff PSBT input is finalized
  */
 export function isPsbtInputFinalized(input: PsbtInput): boolean {
   return Buffer.isBuffer(input.finalScriptSig) || Buffer.isBuffer(input.finalScriptWitness);
 }
+
 /**
  * @return true iff data starts with magic PSBT byte sequence
  * @param data byte array or hex string
@@ -100,6 +85,7 @@ export function isPsbt(data: Buffer | string): boolean {
   }
   return 5 <= data.length && data.readUInt32BE(0) === 0x70736274 && data.readUInt8(4) === 0xff;
 }
+
 /**
  * First checks if the input is already a buffer that starts with the magic PSBT byte sequence.
  * If not, it checks if the input is a base64- or hex-encoded string that starts with PSBT header.
@@ -117,9 +103,11 @@ export function toPsbtBuffer(data: Buffer | string): Buffer {
     if (isPsbt(data)) {
       return data;
     }
+
     // we could be dealing with a buffer that could be a hex or base64 encoded psbt
     data = data.toString('ascii');
   }
+
   if (typeof data === 'string') {
     const encodings = ['hex', 'base64'] as const;
     for (const encoding of encodings) {
@@ -133,10 +121,13 @@ export function toPsbtBuffer(data: Buffer | string): Buffer {
         return buffer;
       }
     }
+
     throw new Error(`data is not in any of the following formats: ${encodings.join(', ')}`);
   }
+
   throw new Error('data must be a buffer or a string');
 }
+
 /**
  * This function allows signing or validating a psbt with non-segwit inputs those do not contain nonWitnessUtxo.
  */

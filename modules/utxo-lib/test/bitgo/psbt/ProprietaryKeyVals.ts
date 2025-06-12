@@ -2,6 +2,13 @@ import * as assert from 'assert';
 import { constructPsbt } from '../../../src/testutil';
 import { bip32, BIP32Interface, networks, testutil } from '../../../src';
 import { RootWalletKeys, PSBT_PROPRIETARY_IDENTIFIER } from '../../../src/bitgo';
+import { checkForInput, checkForOutput } from 'bip174/src/lib/utils';
+import {
+  addProprietaryKeyValuesToUnknownKeyValues,
+  deleteProprietaryKeyValuesFromUnknownKeyValues,
+  getProprietaryKeyValuesFromUnknownKeyValues,
+  updateProprietaryKeyValuesToUnknownKeyValues,
+} from '../../../src/bitgo/ProprietaryKeyValUtils';
 
 const network = networks.bitcoin;
 const keys = [1, 2, 3].map((v) => bip32.fromSeed(Buffer.alloc(16, `test/2/${v}`), network)) as BIP32Interface[];
@@ -20,7 +27,7 @@ const psbtOutputs = testutil.outputScriptTypes.map((scriptType) => ({
   value: BigInt(900),
 }));
 
-describe('Proprietary key value methods on PSBT class', () => {
+describe('Proprietary key value helper functions', () => {
   it('addProprietaryKeyValues to PSBT input unknown key vals', function () {
     const psbt = constructPsbt(psbtInputs, psbtOutputs, network, rootWalletKeys, 'unsigned');
     const key = {
@@ -28,8 +35,9 @@ describe('Proprietary key value methods on PSBT class', () => {
       subtype: 100,
       keydata: dummyTapOutputKey,
     };
-    psbt.addProprietaryKeyValues('input', 0, { key, value: dummyTapInternalKey });
-    const keyVal = psbt.getProprietaryKeyValues('input', 0);
+    const input = checkForInput(psbt.data.inputs, 0);
+    addProprietaryKeyValuesToUnknownKeyValues(psbt, 'input', 0, { key, value: dummyTapInternalKey });
+    const keyVal = getProprietaryKeyValuesFromUnknownKeyValues(input);
     assert.strictEqual(keyVal[0].key.identifier, 'DUMMY');
   });
 
@@ -40,8 +48,9 @@ describe('Proprietary key value methods on PSBT class', () => {
       subtype: 100,
       keydata: dummyTapOutputKey,
     };
-    psbt.addProprietaryKeyValues('output', 0, { key, value: dummyTapInternalKey });
-    const keyVal = psbt.getProprietaryKeyValues('output', 0);
+    const output = checkForOutput(psbt.data.outputs, 0);
+    addProprietaryKeyValuesToUnknownKeyValues(psbt, 'output', 0, { key, value: dummyTapInternalKey });
+    const keyVal = getProprietaryKeyValuesFromUnknownKeyValues(output);
     assert.strictEqual(keyVal[0].key.identifier, 'DUMMY');
   });
 
@@ -52,9 +61,10 @@ describe('Proprietary key value methods on PSBT class', () => {
       subtype: 100,
       keydata: dummyTapOutputKey,
     };
-    psbt.addProprietaryKeyValues('input', 0, { key, value: dummyTapInternalKey });
-    psbt.addOrUpdateProprietaryKeyValues('input', 0, { key, value: invalidTapOutputKey });
-    const keyVal = psbt.getProprietaryKeyValues('input', 0);
+    const input = checkForInput(psbt.data.inputs, 0);
+    addProprietaryKeyValuesToUnknownKeyValues(psbt, 'input', 0, { key, value: dummyTapInternalKey });
+    updateProprietaryKeyValuesToUnknownKeyValues({ key, value: invalidTapOutputKey }, input);
+    const keyVal = getProprietaryKeyValuesFromUnknownKeyValues(input);
     assert.strictEqual(keyVal[0].value, invalidTapOutputKey);
   });
 
@@ -65,9 +75,10 @@ describe('Proprietary key value methods on PSBT class', () => {
       subtype: 100,
       keydata: dummyTapOutputKey,
     };
-    psbt.addProprietaryKeyValues('output', 0, { key, value: dummyTapInternalKey });
-    psbt.addOrUpdateProprietaryKeyValues('output', 0, { key, value: invalidTapOutputKey });
-    const keyVal = psbt.getProprietaryKeyValues('output', 0);
+    const output = checkForOutput(psbt.data.outputs, 0);
+    addProprietaryKeyValuesToUnknownKeyValues(psbt, 'output', 0, { key, value: dummyTapInternalKey });
+    updateProprietaryKeyValuesToUnknownKeyValues({ key, value: invalidTapOutputKey }, output);
+    const keyVal = getProprietaryKeyValuesFromUnknownKeyValues(output);
     assert.strictEqual(keyVal[0].value, invalidTapOutputKey);
   });
 
@@ -78,9 +89,10 @@ describe('Proprietary key value methods on PSBT class', () => {
       subtype: 100,
       keydata: dummyTapOutputKey,
     };
-    psbt.addProprietaryKeyValues('input', 0, { key, value: dummyTapInternalKey });
-    psbt.deleteProprietaryKeyValues('input', 0, { identifier: PSBT_PROPRIETARY_IDENTIFIER });
-    const keyVal = psbt.getProprietaryKeyValues('input', 0);
+    const input = checkForInput(psbt.data.inputs, 0);
+    addProprietaryKeyValuesToUnknownKeyValues(psbt, 'input', 0, { key, value: dummyTapInternalKey });
+    deleteProprietaryKeyValuesFromUnknownKeyValues(input, { identifier: PSBT_PROPRIETARY_IDENTIFIER });
+    const keyVal = getProprietaryKeyValuesFromUnknownKeyValues(input);
     assert.strictEqual(keyVal[0].key.identifier, 'DUMMY');
   });
 
@@ -96,10 +108,11 @@ describe('Proprietary key value methods on PSBT class', () => {
       subtype: 200,
       keydata: dummyTapOutputKey,
     };
-    psbt.addProprietaryKeyValues('output', 0, { key, value: dummyTapInternalKey });
-    psbt.addProprietaryKeyValues('output', 0, { key: key2, value: dummyTapInternalKey });
-    psbt.deleteProprietaryKeyValues('output', 0, { identifier: 'DUMMY' });
-    const keyVal = psbt.getProprietaryKeyValues('output', 0);
+    const output = checkForOutput(psbt.data.outputs, 0);
+    addProprietaryKeyValuesToUnknownKeyValues(psbt, 'output', 0, { key, value: dummyTapInternalKey });
+    addProprietaryKeyValuesToUnknownKeyValues(psbt, 'output', 0, { key: key2, value: dummyTapInternalKey });
+    deleteProprietaryKeyValuesFromUnknownKeyValues(output, { identifier: 'DUMMY' });
+    const keyVal = getProprietaryKeyValuesFromUnknownKeyValues(output);
     assert.strictEqual(keyVal[0].key.identifier, 'OTHER_DUMMY');
   });
 });

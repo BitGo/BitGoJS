@@ -7,7 +7,7 @@ import {
   Transaction as ITransaction,
   TransactionFromBuffer,
 } from 'bip174/src/lib/interfaces';
-import { checkForInput, checkForOutput } from 'bip174/src/lib/utils';
+import { checkForInput } from 'bip174/src/lib/utils';
 import { BufferWriter, varuint } from 'bitcoinjs-lib/src/bufferutils';
 import { SessionKey } from '@brandonblack/musig';
 import { BIP32Factory, BIP32Interface } from 'bip32';
@@ -57,17 +57,10 @@ import { getTaprootOutputKey } from '../taproot';
 import {
   getPsbtInputProprietaryKeyVals,
   getPsbtInputSignatureCount,
-  getPsbtOutputProprietaryKeyVals,
-  ProprietaryKeySearch,
   ProprietaryKeySubtype,
-  ProprietaryKeyValue,
   PSBT_PROPRIETARY_IDENTIFIER,
 } from './PsbtUtil';
-import {
-  deleteProprietaryKeyValuesFromUnknownKeyValues,
-  UnknownKeyValsType,
-  updateProprietaryKeyValuesToUnknownKeyValues,
-} from './psbt/ProprietaryKeyValUtils';
+import { ProprietaryKeySearch, ProprietaryKeyValue } from './ProprietaryKeyValUtils';
 
 type SignatureParams = {
   /** When true, and add the second (last) nonce and signature for a taproot key
@@ -1156,96 +1149,6 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
       );
     });
     return this;
-  }
-
-  addProprietaryKeyValues(type: UnknownKeyValsType, index: number, keyValueData: ProprietaryKeyValue): this {
-    switch (type) {
-      case 'input':
-        const input = checkForInput(this.data.inputs, index);
-        assert(input);
-        return this.addUnknownKeyValToInput(index, {
-          key: encodeProprietaryKey(keyValueData.key),
-          value: keyValueData.value,
-        });
-      case 'output':
-        const output = checkForOutput(this.data.outputs, index);
-        assert(output);
-        return this.addUnknownKeyValToOutput(index, {
-          key: encodeProprietaryKey(keyValueData.key),
-          value: keyValueData.value,
-        });
-      default:
-        throw new Error('There is no such type, something went wrong.');
-    }
-  }
-
-  addOrUpdateProprietaryKeyValues(type: UnknownKeyValsType, index: number, keyValueData: ProprietaryKeyValue): this {
-    const key = encodeProprietaryKey(keyValueData.key);
-    const { value } = keyValueData;
-    switch (type) {
-      case 'output':
-        const output = checkForOutput(this.data.outputs, index);
-        assert(output);
-        if (output.unknownKeyVals?.length) {
-          updateProprietaryKeyValuesToUnknownKeyValues(keyValueData, output.unknownKeyVals);
-          return this;
-        }
-        return this.addUnknownKeyValToOutput(index, {
-          key,
-          value,
-        });
-      case 'input':
-        const input = checkForInput(this.data.inputs, index);
-        assert(input);
-        if (input.unknownKeyVals?.length) {
-          updateProprietaryKeyValuesToUnknownKeyValues(keyValueData, input.unknownKeyVals);
-          return this;
-        }
-        return this.addUnknownKeyValToInput(index, {
-          key,
-          value,
-        });
-      default:
-        throw new Error('There is no such type. Something went wrong.');
-    }
-  }
-
-  getProprietaryKeyValues(
-    type: UnknownKeyValsType,
-    index: number,
-    keySearch?: ProprietaryKeySearch
-  ): ProprietaryKeyValue[] {
-    switch (type) {
-      case 'input':
-        const input = checkForInput(this.data.inputs, index);
-        return getPsbtInputProprietaryKeyVals(input, keySearch);
-      case 'output':
-        const output = checkForOutput(this.data.outputs, index);
-        return getPsbtOutputProprietaryKeyVals(output, keySearch);
-      default:
-        throw new Error('There is no such type. Something went wrong.');
-    }
-  }
-
-  deleteProprietaryKeyValues(type: UnknownKeyValsType, index: number, keysToDelete?: ProprietaryKeySearch): this {
-    switch (type) {
-      case 'input':
-        const input = checkForInput(this.data.inputs, index);
-        if (!input.unknownKeyVals?.length) {
-          return this;
-        }
-        input.unknownKeyVals = deleteProprietaryKeyValuesFromUnknownKeyValues(input.unknownKeyVals, keysToDelete);
-        return this;
-      case 'output':
-        const output = checkForOutput(this.data.outputs, index);
-        if (!output.unknownKeyVals?.length) {
-          return this;
-        }
-        output.unknownKeyVals = deleteProprietaryKeyValuesFromUnknownKeyValues(output.unknownKeyVals, keysToDelete);
-        return this;
-      default:
-        throw new Error('There is no such type. Something went wrong.');
-    }
   }
 
   private createMusig2NonceForInput(
