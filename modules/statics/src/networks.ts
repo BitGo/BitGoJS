@@ -1473,13 +1473,15 @@ class PolymeshTestnet extends Testnet implements AccountNetwork {
 class Vet extends Mainnet implements AccountNetwork {
   name = 'VeChain';
   family = CoinFamily.VET;
-  explorerUrl = 'https://explore.vechain.org/';
+  explorerUrl = 'https://explore.vechain.org/transactions/';
+  accountExplorerUrl = 'https://explore.vechain.org/accounts/';
 }
 
 class VetTestnet extends Testnet implements AccountNetwork {
   name = 'VeChainTestnet';
   family = CoinFamily.VET;
-  explorerUrl = 'https://explore-testnet.vechain.org/';
+  explorerUrl = 'https://explore-testnet.vechain.org/transactions/';
+  accountExplorerUrl = 'https://explore-testnet.vechain.org/accounts/';
 }
 
 export const Networks = {
