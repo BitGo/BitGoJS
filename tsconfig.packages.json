@@ -44,6 +44,9 @@
       "path": "./modules/sdk-coin-algo"
     },
     {
+      "path": "./modules/sdk-coin-apecoin"
+    },
+    {
       "path": "./modules/sdk-coin-apt"
     },
     {
@@ -155,19 +158,16 @@
       "path": "./modules/sdk-coin-ltc"
     },
     {
-      "path": "./modules/sdk-coin-mon"
+      "path": "./modules/sdk-coin-mantra"
     },
     {
-      "path": "./modules/sdk-coin-mantra"
+      "path": "./modules/sdk-coin-mon"
     },
     {
       "path": "./modules/sdk-coin-near"
     },
     {
       "path": "./modules/sdk-coin-oas"
-    },
-    {
-      "path": "./modules/sdk-coin-sgb"
     },
     {
       "path": "./modules/sdk-coin-opeth"
@@ -191,16 +191,19 @@
       "path": "./modules/sdk-coin-sei"
     },
     {
+      "path": "./modules/sdk-coin-sgb"
+    },
+    {
       "path": "./modules/sdk-coin-sol"
     },
     {
-      "path": "./modules/sdk-coin-stx"
+      "path": "./modules/sdk-coin-soneium"
     },
     {
       "path": "./modules/sdk-coin-stt"
     },
     {
-      "path": "./modules/sdk-coin-soneium"
+      "path": "./modules/sdk-coin-stx"
     },
     {
       "path": "./modules/sdk-coin-sui"

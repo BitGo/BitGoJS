@@ -11,6 +11,9 @@
   "exclude": ["node_modules"],
   "references": [
     {
+      "path": "../sdk-coin-apecoin"
+    },
+    {
       "path": "../sdk-coin-algo"
     },
     {
