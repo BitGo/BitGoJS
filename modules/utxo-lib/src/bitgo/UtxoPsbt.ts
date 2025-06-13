@@ -57,11 +57,10 @@ import { getTaprootOutputKey } from '../taproot';
 import {
   getPsbtInputProprietaryKeyVals,
   getPsbtInputSignatureCount,
-  ProprietaryKeySearch,
   ProprietaryKeySubtype,
-  ProprietaryKeyValue,
   PSBT_PROPRIETARY_IDENTIFIER,
 } from './PsbtUtil';
+import { ProprietaryKeySearch, ProprietaryKeyValue } from './ProprietaryKeyValUtils';
 
 type SignatureParams = {
   /** When true, and add the second (last) nonce and signature for a taproot key
@@ -1076,6 +1075,8 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
   }
 
   /**
+   * @deprecated Please use the new method addProprietaryKeyVals(psbt, entry, index, keyValueData)
+   *
    * Adds proprietary key value pair to PSBT input.
    * Default identifierEncoding is utf-8 for identifier.
    */
@@ -1087,6 +1088,9 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
   }
 
   /**
+   * @deprecated Please use the new method addProprietaryKeyValuesToUnknownKeyValues(psbt, entry, index, keyValueData)
+   *  or updateProprietaryKeyValuesToUnknownKeyValues(keyValueData)
+   *
    * Adds or updates (if exists) proprietary key value pair to PSBT input.
    * Default identifierEncoding is utf-8 for identifier.
    */
@@ -1109,7 +1113,10 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
   }
 
   /**
-   * To search any data from proprietary key value against keydata.
+   * @deprecated Please use getProprietaryKeyValuesFromUnknownKeyValues(psbtField, keySearch). The new method
+   * allows for the retrieval of either input or output proprietary key values.
+   *
+   * To search any data from proprietary key value against keydata in the inputs.
    * Default identifierEncoding is utf-8 for identifier.
    */
   getProprietaryKeyVals(inputIndex: number, keySearch?: ProprietaryKeySearch): ProprietaryKeyValue[] {
@@ -1118,7 +1125,10 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
   }
 
   /**
-   * To delete any data from proprietary key value.
+   * @deprecated Please use deleteProprietaryKeyValues(type, index, keysToDelete?). The new method
+   * allows for the deletion of either input or output proprietary key values.
+   *
+   * To delete any data from proprietary key value in PSBT input.
    * Default identifierEncoding is utf-8 for identifier.
    */
   deleteProprietaryKeyVals(inputIndex: number, keysToDelete?: ProprietaryKeySearch): this {
