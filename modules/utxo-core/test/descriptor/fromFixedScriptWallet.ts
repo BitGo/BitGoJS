@@ -19,7 +19,7 @@ const customPrefixes: (utxolib.bitgo.Triple<string> | undefined)[] = [
   ['1/2', '1/2', '1/2'], // Custom prefixes for testing
   ['1/2', '3/4', '5/6'], // Different custom prefixes
 ];
-const scriptTypes = ['p2sh', 'p2shP2wsh', 'p2wsh'] as const;
+const scriptTypes = utxolib.bitgo.outputScripts.scriptTypes2Of3;
 const scope = ['external', 'internal'] as const;
 const index = [0, 1, 2];
 
@@ -111,6 +111,10 @@ function runTestGetDescriptorMap(customPrefix: utxolib.bitgo.Triple<string> | un
         const key = `${scriptType}/${s}`;
         it(`should have a correct descriptor for ${key}`, function () {
           const descriptorFromMap = descriptorMap.get(key);
+          if (scriptType === 'p2tr' || scriptType === 'p2trMusig2') {
+            assert.equal(descriptorFromMap, null, `Descriptor for ${key} should be null`);
+            return;
+          }
           assert.ok(descriptorFromMap, `Descriptor for ${key} should exist`);
           const expectedDescriptor = getDescriptorForScriptType(rootWalletKeys, scriptType, s);
           assert.equal(descriptorFromMap.toString(), expectedDescriptor.toString());
@@ -124,7 +128,9 @@ customPrefixes.forEach((customPrefix) => {
   scriptTypes.forEach((scriptType) => {
     index.forEach((index) => {
       scope.forEach((scope) => {
-        runTestGetDescriptorWithScriptType(customPrefix, scriptType, index, scope);
+        if (scriptType !== 'p2tr' && scriptType !== 'p2trMusig2') {
+          runTestGetDescriptorWithScriptType(customPrefix, scriptType, index, scope);
+        }
       });
     });
   });
