@@ -96,10 +96,10 @@ export class TokenTransferBuilder extends TransactionBuilder {
     validateOwnerAddress(recipient.ownerAddress);
     const token = getSolTokenFromTokenName(recipient.tokenName);
     let tokenAddress: string;
-    if (token) {
-      tokenAddress = token.tokenAddress;
-    } else if (recipient.tokenAddress) {
+    if (recipient.tokenAddress) {
       tokenAddress = recipient.tokenAddress;
+    } else if (token) {
+      tokenAddress = token.tokenAddress;
     } else {
       throw new BuildTransactionError('Invalid token name, got: ' + recipient.tokenName);
     }
@@ -119,16 +119,16 @@ export class TokenTransferBuilder extends TransactionBuilder {
         let tokenName: string;
         let programId: string | undefined;
         let decimals: number | undefined;
-        if (coin) {
-          tokenAddress = coin.tokenAddress;
-          tokenName = coin.name;
-          programId = coin.programId;
-          decimals = coin.decimalPlaces;
-        } else if (sendParams.tokenAddress) {
+        if (sendParams.tokenAddress && sendParams.programId && sendParams.decimalPlaces) {
           tokenAddress = sendParams.tokenAddress;
           tokenName = sendParams.tokenName;
           programId = sendParams.programId;
           decimals = sendParams.decimalPlaces;
+        } else if (coin) {
+          tokenAddress = coin.tokenAddress;
+          tokenName = coin.name;
+          programId = coin.programId;
+          decimals = coin.decimalPlaces;
         } else {
           throw new Error(`Could not determine token information for ${sendParams.tokenName}`);
         }
@@ -157,14 +157,14 @@ export class TokenTransferBuilder extends TransactionBuilder {
         let tokenAddress: string;
         let tokenName: string;
         let programId: string | undefined;
-        if (coin) {
-          tokenName = coin.name;
-          tokenAddress = coin.tokenAddress;
-          programId = coin.programId;
-        } else if (recipient.tokenAddress) {
+        if (recipient.tokenAddress && recipient.programId) {
           tokenName = recipient.tokenName;
           tokenAddress = recipient.tokenAddress;
           programId = recipient.programId;
+        } else if (coin) {
+          tokenName = coin.name;
+          tokenAddress = coin.tokenAddress;
+          programId = coin.programId;
         } else {
           throw new Error(`Could not determine token information for ${recipient.tokenName}`);
         }
