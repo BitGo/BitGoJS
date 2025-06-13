@@ -1,9 +1,12 @@
 import { DecodedSigningPayload } from '@substrate/txwrapper-core';
+import { decode } from '@substrate/txwrapper-polkadot';
 import { coins } from '@bitgo/statics';
 import should from 'should';
 import sinon from 'sinon';
 import { TransactionBuilderFactory, BatchUnstakingBuilder, Transaction } from '../../../src/lib';
 import { TransactionType } from '@bitgo/sdk-core';
+import { BatchArgs } from '../../../src/lib/iface';
+import utils from '../../../src/lib/utils';
 
 import { accounts, rawTx } from '../../resources';
 
@@ -73,62 +76,63 @@ describe('Polyx BatchUnstaking Builder', function () {
   });
 
   describe('Transaction Validation', function () {
-    it('should validate decoded transaction', () => {
-      const mockDecodedTx: DecodedSigningPayload = {
-        method: {
-          name: 'utility.batchAll',
-          pallet: 'utility',
-          args: {
-            calls: [
-              {
-                method: 'staking.chill',
-                args: {},
-              },
-              {
-                method: 'staking.unbond',
-                args: {
-                  value: testAmount,
-                },
-              },
-            ],
-          },
-        },
-        address: senderAddress,
-        blockHash: '0x',
-        blockNumber: '0',
-        era: { mortalEra: '0x' },
-        genesisHash: '0x',
-        metadataRpc: '0x',
-        nonce: 0,
-        specVersion: 0,
-        tip: '0',
-        transactionVersion: 0,
-        signedExtensions: [],
-      } as unknown as DecodedSigningPayload;
+    it('should build, decode, and validate a real batch unstaking transaction', () => {
+      // Build the transaction with real parameters
+      builder
+        .amount(testAmount)
+        .sender({ address: senderAddress })
+        .validity({ firstValid: 3933, maxDuration: 64 })
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
+        .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 100 });
 
+      // Set up material for decoding
+      const material = utils.getMaterial(coins.get('tpolyx').network.type);
+      builder.material(material);
+
+      // Build the actual unsigned transaction
+      const unsignedTx = builder['buildTransaction']();
+      const registry = builder['_registry'];
+
+      // Decode the actual built transaction
+      const decodedTx = decode(unsignedTx, {
+        metadataRpc: material.metadata,
+        registry: registry,
+      });
+
+      // Validate the decoded transaction structure
+      should.equal(decodedTx.method.name, 'batchAll');
+      should.equal(decodedTx.method.pallet, 'utility');
+
+      const batchArgs = decodedTx.method.args as unknown as BatchArgs;
+      should.exist(batchArgs.calls);
+      should.equal(batchArgs.calls.length, 2);
+
+      // Validate first call is chill
+      const firstCall = batchArgs.calls[0];
+      const firstCallMethod = utils.decodeMethodName(firstCall, registry);
+      should.equal(firstCallMethod, 'chill');
+
+      // Validate second call is unbond
+      const secondCall = batchArgs.calls[1];
+      const secondCallMethod = utils.decodeMethodName(secondCall, registry);
+      should.equal(secondCallMethod, 'unbond');
+
+      const unbondArgs = secondCall.args as { value: string };
+      should.equal(unbondArgs.value, testAmount);
+
+      // Now validate using the builder's validation method
       should.doesNotThrow(() => {
-        builder.validateDecodedTransaction(mockDecodedTx);
+        builder.validateDecodedTransaction(decodedTx);
       });
     });
 
     it('should reject invalid transaction types', () => {
       const mockDecodedTx: DecodedSigningPayload = {
         method: {
-          name: 'balances.transfer',
+          name: 'transfer',
           pallet: 'balances',
           args: {},
         },
-        address: senderAddress,
-        blockHash: '0x',
-        blockNumber: '0',
-        era: { mortalEra: '0x' },
-        genesisHash: '0x',
-        metadataRpc: '0x',
-        nonce: 0,
-        specVersion: 0,
-        tip: '0',
-        transactionVersion: 0,
-        signedExtensions: [],
       } as unknown as DecodedSigningPayload;
 
       should.throws(() => {
@@ -150,23 +154,31 @@ describe('Polyx BatchUnstaking Builder', function () {
   });
 
   describe('From Raw Transaction', function () {
-    beforeEach(() => {
-      sinon.stub(builder, 'from').callsFake(function (this: BatchUnstakingBuilder, rawTransaction: string) {
-        if (rawTransaction === rawTx.unstake.unsigned) {
-          this.amount(testAmount);
-          this.sender({ address: senderAddress });
-        }
-        return this;
-      });
-    });
+    it('should rebuild from real batch unstaking transaction', async () => {
+      // First build a transaction to get a real raw transaction
+      const originalBuilder = factory.getBatchUnstakingBuilder();
+      originalBuilder
+        .amount(testAmount)
+        .sender({ address: senderAddress })
+        .validity({ firstValid: 3933, maxDuration: 64 })
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
+        .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 100 });
 
-    afterEach(() => {
-      sinon.restore();
-    });
+      // Set up material
+      const material = utils.getMaterial(coins.get('tpolyx').network.type);
+      originalBuilder.material(material);
 
-    it('should rebuild from rawTransaction', () => {
-      builder.from(rawTx.unstake.unsigned);
-      should.equal(builder.getAmount(), testAmount);
+      // Build the transaction and get the serialized hex
+      const tx = await originalBuilder.build();
+      const rawTxHex = tx.toBroadcastFormat();
+
+      // Create a new builder and reconstruct from the transaction hex
+      const newBuilder = factory.getBatchUnstakingBuilder();
+      newBuilder.material(material);
+      newBuilder.from(rawTxHex);
+
+      // Verify the reconstructed builder has the same parameters
+      should.equal(newBuilder.getAmount(), testAmount);
     });
   });
 });

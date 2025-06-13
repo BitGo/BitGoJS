@@ -56,7 +56,7 @@ export class WithdrawUnbondedBuilder extends TransactionBuilder {
 
   /** @inheritdoc */
   validateDecodedTransaction(decodedTxn: DecodedSigningPayload | DecodedSignedTx): void {
-    if (decodedTxn.method?.name === 'staking.withdrawUnbonded') {
+    if (decodedTxn.method?.name === 'withdrawUnbonded') {
       const txMethod = decodedTxn.method.args as unknown as WithdrawUnbondedArgs;
       const slashingSpans = txMethod.numSlashingSpans;
       const validationResult = WithdrawUnbondedTransactionSchema.validate({ slashingSpans });
@@ -68,7 +68,7 @@ export class WithdrawUnbondedBuilder extends TransactionBuilder {
       }
     } else {
       throw new InvalidTransactionError(
-        `Invalid transaction type: ${decodedTxn.method?.name}. Expected staking.withdrawUnbonded`
+        `Invalid transaction type: ${decodedTxn.method?.name}. Expected withdrawUnbonded`
       );
     }
   }
@@ -77,13 +77,11 @@ export class WithdrawUnbondedBuilder extends TransactionBuilder {
   protected fromImplementation(rawTransaction: string): Transaction {
     const tx = super.fromImplementation(rawTransaction);
 
-    if (this._method && (this._method.name as string) === 'staking.withdrawUnbonded') {
+    if (this._method && (this._method.name as string) === 'withdrawUnbonded') {
       const txMethod = this._method.args as unknown as WithdrawUnbondedArgs;
       this.slashingSpans(txMethod.numSlashingSpans);
     } else {
-      throw new InvalidTransactionError(
-        `Invalid Transaction Type: ${this._method?.name}. Expected staking.withdrawUnbonded`
-      );
+      throw new InvalidTransactionError(`Invalid Transaction Type: ${this._method?.name}. Expected withdrawUnbonded`);
     }
 
     return tx;

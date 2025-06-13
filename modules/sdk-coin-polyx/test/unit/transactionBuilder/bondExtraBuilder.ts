@@ -1,9 +1,11 @@
 import { DecodedSigningPayload } from '@substrate/txwrapper-core';
+import { decode } from '@substrate/txwrapper-polkadot';
 import { coins } from '@bitgo/statics';
 import should from 'should';
 import sinon from 'sinon';
 import { TransactionBuilderFactory, BondExtraBuilder, Transaction } from '../../../src/lib';
 import { TransactionType } from '@bitgo/sdk-core';
+import utils from '../../../src/lib/utils';
 
 import { accounts, stakingTx } from '../../resources';
 
@@ -73,51 +75,49 @@ describe('Polyx BondExtra Builder', function () {
   });
 
   describe('Transaction Validation', function () {
-    it('should validate decoded transaction', () => {
-      const mockDecodedTx: DecodedSigningPayload = {
-        method: {
-          name: 'staking.bondExtra',
-          pallet: 'staking',
-          args: {
-            maxAdditional: testAmount,
-          },
-        },
-        address: senderAddress,
-        blockHash: '0x',
-        blockNumber: '0',
-        era: { mortalEra: '0x' },
-        genesisHash: '0x',
-        metadataRpc: '0x',
-        nonce: 0,
-        specVersion: 0,
-        tip: '0',
-        transactionVersion: 0,
-        signedExtensions: [],
-      } as unknown as DecodedSigningPayload;
+    it('should build, decode, and validate a real bondExtra transaction', () => {
+      // Build the transaction with real parameters
+      builder
+        .amount(testAmount)
+        .sender({ address: senderAddress })
+        .validity({ firstValid: 3933, maxDuration: 64 })
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
+        .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 100 });
 
+      // Set up material for decoding
+      const material = utils.getMaterial(coins.get('tpolyx').network.type);
+      builder.material(material);
+
+      // Build the actual unsigned transaction
+      const unsignedTx = builder['buildTransaction']();
+      const registry = builder['_registry'];
+
+      // Decode the actual built transaction
+      const decodedTx = decode(unsignedTx, {
+        metadataRpc: material.metadata,
+        registry: registry,
+      });
+
+      // Validate the decoded transaction structure
+      should.equal(decodedTx.method.name, 'bondExtra');
+      should.equal(decodedTx.method.pallet, 'staking');
+
+      const bondExtraArgs = decodedTx.method.args as { maxAdditional: string };
+      should.equal(bondExtraArgs.maxAdditional, testAmount);
+
+      // validate using the builder's validation method
       should.doesNotThrow(() => {
-        builder.validateDecodedTransaction(mockDecodedTx);
+        builder.validateDecodedTransaction(decodedTx);
       });
     });
 
     it('should reject non-bondExtra transactions', () => {
       const mockDecodedTx: DecodedSigningPayload = {
         method: {
-          name: 'staking.bond',
+          name: 'bond',
           pallet: 'staking',
           args: {},
         },
-        address: senderAddress,
-        blockHash: '0x',
-        blockNumber: '0',
-        era: { mortalEra: '0x' },
-        genesisHash: '0x',
-        metadataRpc: '0x',
-        nonce: 0,
-        specVersion: 0,
-        tip: '0',
-        transactionVersion: 0,
-        signedExtensions: [],
       } as unknown as DecodedSigningPayload;
 
       should.throws(() => {
@@ -153,22 +153,31 @@ describe('Polyx BondExtra Builder', function () {
   });
 
   describe('From Raw Transaction', function () {
-    beforeEach(() => {
-      sinon.stub(builder, 'from').callsFake(function (this: BondExtraBuilder, rawTransaction: string) {
-        if (rawTransaction === stakingTx.bondExtra.unsigned) {
-          this.amount(testAmount);
-        }
-        return this;
-      });
-    });
+    it('should rebuild from real bondExtra transaction', async () => {
+      // First build a transaction to get a real raw transaction
+      const originalBuilder = factory.getBondExtraBuilder();
+      originalBuilder
+        .amount(testAmount)
+        .sender({ address: senderAddress })
+        .validity({ firstValid: 3933, maxDuration: 64 })
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
+        .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 100 });
 
-    afterEach(() => {
-      sinon.restore();
-    });
+      // Set up material
+      const material = utils.getMaterial(coins.get('tpolyx').network.type);
+      originalBuilder.material(material);
 
-    it('should rebuild from rawTransaction', () => {
-      builder.from(stakingTx.bondExtra.unsigned);
-      should.equal(builder.getAmount(), testAmount);
+      // Build the transaction and get the serialized hex
+      const tx = await originalBuilder.build();
+      const rawTxHex = tx.toBroadcastFormat();
+
+      // Create a new builder and reconstruct from the transaction hex
+      const newBuilder = factory.getBondExtraBuilder();
+      newBuilder.material(material);
+      newBuilder.from(rawTxHex);
+
+      // Verify the reconstructed builder has the same parameters
+      should.equal(newBuilder.getAmount(), testAmount);
     });
   });
 });

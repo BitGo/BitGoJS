@@ -1,9 +1,12 @@
 import { DecodedSigningPayload } from '@substrate/txwrapper-core';
+import { decode } from '@substrate/txwrapper-polkadot';
 import { coins } from '@bitgo/statics';
 import should from 'should';
 import sinon from 'sinon';
 import { TransactionBuilderFactory, BatchBuilder, Transaction } from '../../../src/lib';
 import { TransactionType } from '@bitgo/sdk-core';
+import { BatchArgs, BondArgs, NominateArgs } from '../../../src/lib/iface';
+import utils from '../../../src/lib/utils';
 
 import { accounts, stakingTx } from '../../resources';
 
@@ -123,98 +126,106 @@ describe('Polyx Batch Builder', function () {
   });
 
   describe('Transaction Validation', function () {
-    it('should validate decoded transaction with bond and nominate', () => {
-      const mockDecodedTx: DecodedSigningPayload = {
-        method: {
-          name: 'utility.batchAll',
-          pallet: 'utility',
-          args: {
-            calls: [
-              {
-                method: 'staking.bond',
-                args: {
-                  controller: controllerAddress,
-                  value: testAmount,
-                  payee: 'Staked',
-                },
-              },
-              {
-                method: 'staking.nominate',
-                args: {
-                  targets: [validatorAddress],
-                },
-              },
-            ],
-          },
-        },
-        address: senderAddress,
-        blockHash: '0x',
-        blockNumber: '0',
-        era: { mortalEra: '0x' },
-        genesisHash: '0x',
-        metadataRpc: '0x',
-        nonce: 0,
-        specVersion: 0,
-        tip: '0',
-        transactionVersion: 0,
-        signedExtensions: [],
-      } as unknown as DecodedSigningPayload;
+    it('should build, decode, and validate a real batch staking transaction', () => {
+      // Build the transaction with real parameters
+      builder
+        .amount(testAmount)
+        .controller({ address: controllerAddress })
+        .payee('Staked')
+        .validators([validatorAddress])
+        .sender({ address: senderAddress })
+        .validity({ firstValid: 3933, maxDuration: 64 })
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
+        .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 100 });
 
+      // Set up material for decoding
+      const material = utils.getMaterial(coins.get('tpolyx').network.type);
+      builder.material(material);
+      // Build the actual unsigned transaction
+      const unsignedTx = builder['buildTransaction']();
+      const registry = builder['_registry'];
+
+      // Decode the actual built transaction
+      const decodedTx = decode(unsignedTx, {
+        metadataRpc: material.metadata,
+        registry: registry,
+      });
+
+      // Validate the decoded transaction structure
+      should.equal(decodedTx.method.name, 'batchAll');
+      should.equal(decodedTx.method.pallet, 'utility');
+
+      const batchArgs = decodedTx.method.args as unknown as BatchArgs;
+      should.exist(batchArgs.calls);
+      should.equal(batchArgs.calls.length, 2);
+
+      // Validate first call is bond
+      const firstCall = batchArgs.calls[0];
+      const firstCallMethod = utils.decodeMethodName(firstCall, registry);
+      should.equal(firstCallMethod, 'bond');
+
+      const bondArgs = firstCall.args as unknown as BondArgs;
+      should.equal(bondArgs.value, testAmount);
+      // Controller can be either a string or an object with id property
+      const controllerValue =
+        typeof bondArgs.controller === 'string' ? bondArgs.controller : (bondArgs.controller as { id: string }).id;
+      should.equal(controllerValue, controllerAddress);
+      // Payee can be either a string or an object with staked property
+      const payeeValue =
+        typeof bondArgs.payee === 'string'
+          ? bondArgs.payee
+          : (bondArgs.payee as { staked?: null }).staked !== undefined
+          ? 'Staked'
+          : bondArgs.payee;
+      should.equal(payeeValue, 'Staked');
+
+      // Validate second call is nominate
+      const secondCall = batchArgs.calls[1];
+      const secondCallMethod = utils.decodeMethodName(secondCall, registry);
+      should.equal(secondCallMethod, 'nominate');
+
+      const nominateArgs = secondCall.args as unknown as NominateArgs;
+      // Targets can be either strings or objects with id property
+      const targetValues = nominateArgs.targets.map((target) =>
+        typeof target === 'string' ? target : (target as { id: string }).id
+      );
+      should.deepEqual(targetValues, [validatorAddress]);
+
+      // Now validate using the builder's validation method
       should.doesNotThrow(() => {
-        builder.validateDecodedTransaction(mockDecodedTx);
+        builder.validateDecodedTransaction(decodedTx);
       });
     });
 
-    it('should reject invalid calls in batch', () => {
-      const mockDecodedTx: DecodedSigningPayload = {
-        method: {
-          name: 'utility.batchAll',
-          pallet: 'utility',
-          args: {
-            calls: [
-              {
-                method: 'balances.transfer',
-                args: {},
-              },
-            ],
-          },
-        },
-        address: senderAddress,
-        blockHash: '0x',
-        blockNumber: '0',
-        era: { mortalEra: '0x' },
-        genesisHash: '0x',
-        metadataRpc: '0x',
-        nonce: 0,
-        specVersion: 0,
-        tip: '0',
-        transactionVersion: 0,
-        signedExtensions: [],
-      } as unknown as DecodedSigningPayload;
+    it('should reject invalid batch transaction when built', () => {
+      // Try to build a batch with only bond (missing nominate)
+      builder
+        .amount(testAmount)
+        .controller({ address: controllerAddress })
+        .payee('Staked')
+        .sender({ address: senderAddress })
+        .validity({ firstValid: 3933, maxDuration: 64 })
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
+        .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 100 });
 
+      // Set up material
+      const material = utils.getMaterial(coins.get('tpolyx').network.type);
+      builder.material(material);
+
+      // Should throw when trying to build without validators
       should.throws(() => {
-        builder.validateDecodedTransaction(mockDecodedTx);
-      }, /Invalid call in batch/);
+        builder['buildTransaction']();
+      }, /must include both bond and nominate operations/);
     });
 
-    it('should reject non-batch transactions', () => {
+    it('should reject validation of non-batch method name', () => {
+      // Create a mock decoded transaction with wrong method name
       const mockDecodedTx: DecodedSigningPayload = {
         method: {
-          name: 'staking.bond',
+          name: 'bond',
           pallet: 'staking',
           args: {},
         },
-        address: senderAddress,
-        blockHash: '0x',
-        blockNumber: '0',
-        era: { mortalEra: '0x' },
-        genesisHash: '0x',
-        metadataRpc: '0x',
-        nonce: 0,
-        specVersion: 0,
-        tip: '0',
-        transactionVersion: 0,
-        signedExtensions: [],
       } as unknown as DecodedSigningPayload;
 
       should.throws(() => {
@@ -224,29 +235,37 @@ describe('Polyx Batch Builder', function () {
   });
 
   describe('From Raw Transaction', function () {
-    beforeEach(() => {
-      sinon.stub(builder, 'from').callsFake(function (this: BatchBuilder, rawTransaction: string) {
-        if (rawTransaction === stakingTx.batch.bondAndNominate.unsigned) {
-          this.amount(testAmount);
-          this.controller({ address: controllerAddress });
-          this.validators([validatorAddress]);
-          return this;
-        }
+    it('should rebuild from real batch transaction', async () => {
+      // First build a transaction to get a real raw transaction
+      const originalBuilder = factory.getBatchBuilder();
+      originalBuilder
+        .amount(testAmount)
+        .controller({ address: controllerAddress })
+        .payee('Staked')
+        .validators([validatorAddress])
+        .sender({ address: senderAddress })
+        .validity({ firstValid: 3933, maxDuration: 64 })
+        .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
+        .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 100 });
 
-        // Any non-bondAndNominate transaction should throw
-        throw new Error('Only bondAndNominate batch transactions are supported');
-      });
-    });
+      // Set up material
+      const material = utils.getMaterial(coins.get('tpolyx').network.type);
+      originalBuilder.material(material);
 
-    afterEach(() => {
-      sinon.restore();
-    });
+      // Build the transaction and get the serialized hex
+      const tx = await originalBuilder.build();
+      const rawTxHex = tx.toBroadcastFormat();
 
-    it('should rebuild from bondAndNominate transaction', () => {
-      builder.from(stakingTx.batch.bondAndNominate.unsigned);
-      should.exist(builder.getAmount());
-      should.exist(builder.getController());
-      should.equal(builder.getValidators().length, 1);
+      // Create a new builder and reconstruct from the transaction hex
+      const newBuilder = factory.getBatchBuilder();
+      newBuilder.material(material);
+      newBuilder.from(rawTxHex);
+
+      // Verify the reconstructed builder has the same parameters
+      should.equal(newBuilder.getAmount(), testAmount);
+      should.equal(newBuilder.getController(), controllerAddress);
+      should.equal(newBuilder.getPayee(), 'Staked');
+      should.deepEqual(newBuilder.getValidators(), [validatorAddress]);
     });
   });
 

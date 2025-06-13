@@ -16,6 +16,13 @@ export interface TxMethod extends Omit<Interface.TxMethod, 'args'> {
     | Interface.TransferAllArgs
     | Interface.AddStakeArgs
     | Interface.RemoveStakeArgs
+    | Interface.BondArgs
+    | Interface.BondExtraArgs
+    | Interface.NominateArgs
+    | Interface.ChillArgs
+    | Interface.UnbondArgs
+    | Interface.WithdrawUnbondedArgs
+    | Interface.BatchArgs
     | RegisterDidWithCDDArgs;
 }
 
@@ -42,27 +49,10 @@ export interface BatchCallObject {
   args: Record<string, unknown>;
 }
 
-export type BatchCallArray = Array<BatchCallObject>;
-
-export type ExtendedJson = AnyJson | BatchCallObject | BatchCallArray;
-
-export interface BatchArgs extends Omit<Args, keyof Args> {
-  [key: string]: ExtendedJson;
-  calls: BatchCallObject[];
-}
-
-export interface BatchParams {
-  [key: string]: ExtendedJson;
+export interface BatchArgs {
   calls: BatchCallObject[];
 }
 
 export interface WithdrawUnbondedArgs extends Args {
   numSlashingSpans: number;
-}
-
-export interface BatchArgs {
-  calls: {
-    method: string;
-    args: Record<string, unknown>;
-  }[];
 }

@@ -13,7 +13,22 @@ import bs58 from 'bs58';
 import base32 from 'hi-base32';
 import nacl from 'tweetnacl';
 import { KeyPair } from '.';
-import { HexString, Material, TransferAllArgs, TransferArgs, TxMethod, AddStakeArgs, RemoveStakeArgs } from './iface';
+import {
+  HexString,
+  Material,
+  TransferAllArgs,
+  TransferArgs,
+  TxMethod,
+  AddStakeArgs,
+  RemoveStakeArgs,
+  BondArgs,
+  BondExtraArgs,
+  NominateArgs,
+  ChillArgs,
+  UnbondArgs,
+  WithdrawUnbondedArgs,
+  BatchArgs,
+} from './iface';
 
 export class Utils implements BaseUtils {
   /** @inheritdoc */
@@ -143,7 +158,12 @@ export class Utils implements BaseUtils {
    * @param registry Transaction registry
    * @returns string Serialized transaction
    */
-  serializeSignedTransaction(transaction, signature, metadataRpc: `0x${string}`, registry): string {
+  serializeSignedTransaction(
+    transaction: UnsignedTransaction,
+    signature: HexString,
+    metadataRpc: `0x${string}`,
+    registry: TypeRegistry
+  ): string {
     return construct.signedTx(transaction, signature, {
       metadataRpc,
       registry,
@@ -209,6 +229,38 @@ export class Utils implements BaseUtils {
       (arg as RemoveStakeArgs).hotkey !== undefined &&
       (arg as RemoveStakeArgs).netuid !== undefined
     );
+  }
+
+  isBond(arg: TxMethod['args']): arg is BondArgs {
+    return (
+      (arg as BondArgs).value !== undefined &&
+      (arg as BondArgs).controller !== undefined &&
+      (arg as BondArgs).payee !== undefined
+    );
+  }
+
+  isBondExtra(arg: TxMethod['args']): arg is BondExtraArgs {
+    return (arg as BondExtraArgs).maxAdditional !== undefined;
+  }
+
+  isNominate(arg: TxMethod['args']): arg is NominateArgs {
+    return (arg as NominateArgs).targets !== undefined;
+  }
+
+  isChill(arg: TxMethod['args']): arg is ChillArgs {
+    return true; // Chill has no arguments, so any object can be considered ChillArgs
+  }
+
+  isUnbond(arg: TxMethod['args']): arg is UnbondArgs {
+    return (arg as UnbondArgs).value !== undefined;
+  }
+
+  isWithdrawUnbonded(arg: TxMethod['args']): arg is WithdrawUnbondedArgs {
+    return (arg as WithdrawUnbondedArgs).numSlashingSpans !== undefined;
+  }
+
+  isBatch(arg: TxMethod['args']): arg is BatchArgs {
+    return (arg as BatchArgs).calls !== undefined && Array.isArray((arg as BatchArgs).calls);
   }
 
   /**
