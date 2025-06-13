@@ -1,4 +1,4 @@
-import { KeyValue } from 'bip174/src/lib/interfaces';
+import { PsbtInput, PsbtOutput } from 'bip174/src/lib/interfaces';
 import { decodeProprietaryKey, encodeProprietaryKey, ProprietaryKey } from 'bip174/src/lib/proprietaryKeyVal';
 import { UtxoPsbt } from './UtxoPsbt';
 
@@ -22,12 +22,8 @@ export interface ProprietaryKeyValue {
   value: Buffer;
 }
 
-export interface WithUnknownKeyValues {
-  unknownKeyVals?: KeyValue[];
-}
-
 export function getProprietaryKeyValuesFromUnknownKeyValues(
-  psbtField: WithUnknownKeyValues,
+  psbtField: PsbtInput | PsbtOutput,
   keySearch?: ProprietaryKeySearch
 ): ProprietaryKeyValue[] {
   if (!psbtField.unknownKeyVals?.length) {
@@ -52,7 +48,7 @@ export function getProprietaryKeyValuesFromUnknownKeyValues(
 }
 
 export function deleteProprietaryKeyValuesFromUnknownKeyValues(
-  psbtField: WithUnknownKeyValues,
+  psbtField: PsbtInput | PsbtOutput,
   keysToDelete?: ProprietaryKeySearch
 ): void {
   if (!psbtField.unknownKeyVals?.length) {
@@ -74,9 +70,9 @@ export function deleteProprietaryKeyValuesFromUnknownKeyValues(
   });
 }
 
-export function updateProprietaryKeyValuesToUnknownKeyValues(
+export function updateProprietaryKeyValuesFromUnknownKeyValues(
   keyValueData: ProprietaryKeyValue,
-  psbtField: WithUnknownKeyValues
+  psbtField: PsbtInput | PsbtOutput
 ): void {
   if (!psbtField.unknownKeyVals?.length) {
     return;
@@ -91,7 +87,7 @@ export function updateProprietaryKeyValuesToUnknownKeyValues(
   psbtField.unknownKeyVals[ukvIndex] = { key, value };
 }
 
-export function addProprietaryKeyValuesToUnknownKeyValues(
+export function addProprietaryKeyValuesFromUnknownKeyValues(
   psbt: UtxoPsbt,
   entry: string,
   index: number,

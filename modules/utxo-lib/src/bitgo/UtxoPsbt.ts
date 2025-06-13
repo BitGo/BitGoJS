@@ -1075,7 +1075,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
   }
 
   /**
-   * @deprecated Please use the new method addProprietaryKeyVals(type, index, keyValueData)
+   * @deprecated Please use the new method addProprietaryKeyVals(psbt, entry, index, keyValueData)
    *
    * Adds proprietary key value pair to PSBT input.
    * Default identifierEncoding is utf-8 for identifier.
@@ -1088,7 +1088,8 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
   }
 
   /**
-   * @deprecated Please use the new method addOrUpdateProprietaryKeyVal(type, index, keyValueData)
+   * @deprecated Please use the new method addProprietaryKeyValuesToUnknownKeyValues(psbt, entry, index, keyValueData)
+   *  or updateProprietaryKeyValuesToUnknownKeyValues(keyValueData)
    *
    * Adds or updates (if exists) proprietary key value pair to PSBT input.
    * Default identifierEncoding is utf-8 for identifier.
@@ -1112,7 +1113,7 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
   }
 
   /**
-   * @deprecated Please use getProprietaryKeyValues(type, index, keySearch). The new method
+   * @deprecated Please use getProprietaryKeyValuesFromUnknownKeyValues(psbtField, keySearch). The new method
    * allows for the retrieval of either input or output proprietary key values.
    *
    * To search any data from proprietary key value against keydata in the inputs.
