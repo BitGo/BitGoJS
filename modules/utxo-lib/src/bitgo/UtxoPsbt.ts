@@ -7,7 +7,7 @@ import {
   Transaction as ITransaction,
   TransactionFromBuffer,
 } from 'bip174/src/lib/interfaces';
-import { checkForInput, checkForOutput } from 'bip174/src/lib/utils';
+import { checkForInput } from 'bip174/src/lib/utils';
 import { BufferWriter, varuint } from 'bitcoinjs-lib/src/bufferutils';
 import { SessionKey } from '@brandonblack/musig';
 import { BIP32Factory, BIP32Interface } from 'bip32';
@@ -57,7 +57,6 @@ import { getTaprootOutputKey } from '../taproot';
 import {
   getPsbtInputProprietaryKeyVals,
   getPsbtInputSignatureCount,
-  getPsbtOutputProprietaryKeyVals,
   ProprietaryKeySubtype,
   PSBT_PROPRIETARY_IDENTIFIER,
 } from './PsbtUtil';

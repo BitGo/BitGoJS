@@ -1,5 +1,6 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import * as bitcoinMessage from 'bitcoinjs-message';
+import { checkForOutput } from 'bip174/src/lib/utils';
 
 import { extractAddressBufferFromPayGoAttestationProof } from '../ExtractAddressPayGoAttestation';
 
@@ -18,7 +19,7 @@ export function addPaygoAddressProof(
   sig: Buffer,
   pub: Buffer
 ): void {
-  psbt.addProprietaryKeyValToOutput(outputIndex, {
+  utxolib.bitgo.addProprietaryKeyValuesFromUnknownKeyValues(psbt, 'output', outputIndex, {
     key: {
       identifier: utxolib.bitgo.PSBT_PROPRIETARY_IDENTIFIER,
       subtype: utxolib.bitgo.ProprietaryKeySubtype.PAYGO_ADDRESS_ATTESTATION_PROOF,
@@ -42,7 +43,8 @@ export function verifyPaygoAddressProof(
   message: Buffer,
   attestationPubKey: Buffer
 ): void {
-  const stored = psbt.getOutputProprietaryKeyVals(outputIndex, {
+  const psbtOutputs = checkForOutput(psbt.data.outputs, outputIndex);
+  const stored = utxolib.bitgo.getProprietaryKeyValuesFromUnknownKeyValues(psbtOutputs, {
     identifier: utxolib.bitgo.PSBT_PROPRIETARY_IDENTIFIER,
     subtype: utxolib.bitgo.ProprietaryKeySubtype.PAYGO_ADDRESS_ATTESTATION_PROOF,
   });

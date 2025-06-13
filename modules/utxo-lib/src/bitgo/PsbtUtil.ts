@@ -20,6 +20,7 @@ export enum ProprietaryKeySubtype {
   MUSIG2_PARTICIPANT_PUB_KEYS = 0x01,
   MUSIG2_PUB_NONCE = 0x02,
   MUSIG2_PARTIAL_SIG = 0x03,
+  PAYGO_ADDRESS_ATTESTATION_PROOF = 0x04,
 }
 
 /**
@@ -45,7 +46,6 @@ export function getPsbtOutputProprietaryKeyVals(
   }
   return getProprietaryKeyValuesFromUnknownKeyValues(output, keySearch);
 }
-
 
 /**
  * @return partialSig/tapScriptSig/MUSIG2_PARTIAL_SIG count iff input is not finalized
