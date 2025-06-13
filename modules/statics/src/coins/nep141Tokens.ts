@@ -9,6 +9,7 @@ export const nep141Tokens = [
     'USD Coin',
     6,
     '17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1',
+    '1250000000000000000000',
     UnderlyingAsset['near:usdc'],
     NEAR_TOKEN_FEATURES
   ),
@@ -18,6 +19,7 @@ export const nep141Tokens = [
     'Tether USD',
     6,
     'usdt.tether-token.near',
+    '1250000000000000000000',
     UnderlyingAsset['near:usdt'],
     NEAR_TOKEN_FEATURES
   ),
@@ -28,6 +30,7 @@ export const nep141Tokens = [
     'Test NEP141 Token 24 Decimals',
     24,
     'ft-tnep24dp.testnet',
+    '1250000000000000000000',
     UnderlyingAsset['tnear:tnep24dp'],
     NEAR_TOKEN_FEATURES
   ),

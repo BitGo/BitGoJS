@@ -43,6 +43,10 @@ export class Nep141Token extends Near {
     return this.tokenConfig.decimalPlaces;
   }
 
+  get storageDepositAmount(): string {
+    return this.tokenConfig.storageDepositAmount;
+  }
+
   getChain(): string {
     return this.tokenConfig.type;
   }

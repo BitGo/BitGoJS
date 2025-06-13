@@ -109,6 +109,7 @@ export type Sip10TokenConfig = BaseNetworkConfig & {
 
 export type Nep141TokenConfig = BaseNetworkConfig & {
   contractAddress: string;
+  storageDepositAmount: string;
 };
 
 export type TokenConfig =
@@ -809,6 +810,7 @@ function getNep141TokenConfig(coin: Nep141Token): Nep141TokenConfig {
     network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
     name: coin.fullName,
     contractAddress: coin.contractAddress,
+    storageDepositAmount: coin.storageDepositAmount,
     decimalPlaces: coin.decimalPlaces,
   };
 }
