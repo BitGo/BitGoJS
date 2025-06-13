@@ -792,6 +792,14 @@ export const ofcCoins = [
     SOL_TOKEN_FEATURES
   ),
   tofcTronToken('937efe97-a17a-4d2a-aaf2-0ffdb529a943', 'ofcttrx:usdt', 'Tether USD', 6, UnderlyingAsset['ttrx:usdt']),
+  tofcTronToken('26d82f2c-47fd-474f-be79-246117214e0e', 'ofcttrx:usd1', 'USD1 Token', 18, UnderlyingAsset['ttrx:usd1']),
+  tofcTronToken(
+    '8e2ca812-2dee-4264-b5da-20d52a9194c8',
+    'ofcttrx:stgusd1',
+    'Staging USD1 Token',
+    18,
+    UnderlyingAsset['ttrx:stgusd1']
+  ),
   ofcTronToken('94b00b66-68a4-45ed-b772-77e5bca1e34c', 'ofctrx:usdt', 'Tether USD', 6, UnderlyingAsset['trx:usdt']),
   ofcTronToken('486dca06-5709-45ee-8b35-677e3d27509f', 'ofctrx:usd1', 'USD1 Token', 18, UnderlyingAsset['trx:usd1']),
   ofcXrpToken('6a173023-5faf-4a0a-af38-b8be98abe94f', 'ofcxrp:rlusd', 'Ripple USD', 15, UnderlyingAsset['xrp:rlusd']),
