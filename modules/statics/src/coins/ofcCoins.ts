@@ -718,6 +718,38 @@ export const ofcCoins = [
     UnderlyingAsset['sol:chillguy'],
     SOL_TOKEN_FEATURES
   ),
+  ofcsolToken(
+    '8ca042ad-dc79-4241-bdc6-0095627f2d68',
+    'ofcsol:grph',
+    'Soul Graph',
+    6,
+    UnderlyingAsset['sol:grph'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '75a572c8-a76e-4f27-a275-2ad1abe7a595',
+    'ofcsol:moodeng',
+    'Moo Deng',
+    6,
+    UnderlyingAsset['sol:moodeng'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    'd14c520f-5b02-4f19-a48d-f1a158cdf066',
+    'ofcsol:hsol',
+    'Helius Staked SOL',
+    9,
+    UnderlyingAsset['sol:hsol'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '4074f374-2229-41f4-a79c-2cd9a3e8a56f',
+    'ofcsol:superbonds',
+    'SuperBonds',
+    6,
+    UnderlyingAsset['sol:superbonds'],
+    SOL_TOKEN_FEATURES
+  ),
   tofcsolToken(
     '24d678cf-e0f0-4cde-a338-d754289c5b27',
     'ofctsol:slnd',
@@ -1552,6 +1584,13 @@ export const ofcCoins = [
     UnderlyingAsset['bsc:psg']
   ),
   ofcBscToken('5c7a8f9e-4b1e-1f2e-9d6f-7c8a1b6f2e5a', 'ofcbsc:telos', 'Telos', 18, UnderlyingAsset['bsc:telos']),
+  ofcBscToken(
+    '5af23514-1f09-45cc-9a2d-305dd8de7c30',
+    'ofcbsc:aitech',
+    'Solidus Ai Tech',
+    18,
+    UnderlyingAsset['bsc:aitech']
+  ),
   tofcBscToken(
     'bf8a52e5-f416-46ea-95c2-a920dc204233',
     'ofctbsc:usd1',
