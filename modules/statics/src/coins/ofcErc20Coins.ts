@@ -3186,6 +3186,29 @@ export const ofcErc20Coins = [
     18,
     underlyingAssetForSymbol('eth:ctrl')
   ),
+  ofcerc20('4d2f98ef-557c-42d6-bf60-8831a0221a5c', 'ofceth:towns', 'Towns', 18, underlyingAssetForSymbol('eth:towns')),
+  ofcerc20(
+    'f87db929-734f-4482-8c4c-eddcdf25ac59',
+    'ofceth:chex',
+    'Chintai Exchange Token',
+    18,
+    underlyingAssetForSymbol('eth:chex')
+  ),
+  ofcerc20('0c2aab6d-ae2b-45a0-920e-5daa17951d62', 'ofceth:gho', 'GHO', 18, underlyingAssetForSymbol('eth:gho')),
+  ofcerc20(
+    'bacfffac-926a-41e9-95e2-23f354548dea',
+    'ofceth:npc',
+    'Non-Playable Coin',
+    18,
+    underlyingAssetForSymbol('eth:npc')
+  ),
+  ofcerc20(
+    '9081e77f-ccca-48b6-8b51-de73849042dc',
+    'ofceth:umint',
+    'UBS uMINT',
+    0,
+    underlyingAssetForSymbol('eth:umint')
+  ),
 ];
 
 export const tOfcErc20Coins = [
