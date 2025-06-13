@@ -7,6 +7,8 @@ export { TransferBuilder } from './transferBuilder';
 export { StakingActivateBuilder } from './stakingActivateBuilder';
 export { StakingDeactivateBuilder } from './stakingDeactivateBuilder';
 export { StakingWithdrawBuilder } from './stakingWithdrawBuilder';
+export { FungibleTokenTransferBuilder } from './fungibleTokenTransferBuilder';
+export { StorageDepositTransferBuilder } from './storageDepositTransferBuilder';
 
 export { TransactionBuilderFactory } from './transactionBuilderFactory';
 export { Utils };
