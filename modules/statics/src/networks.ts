@@ -15,6 +15,7 @@ export abstract class BaseNetwork {
 export interface UtxoNetwork extends BaseNetwork {
   // Network name as defined in @bitgo/utxo-lib networks.ts
   utxolibName: string;
+  paygoAddressAttestationPubkey?: string;
 }
 
 export interface LightningNetwork extends UtxoNetwork {
@@ -342,6 +343,9 @@ class BitcoinTestnet extends Testnet implements UtxoNetwork {
   family = CoinFamily.BTC;
   utxolibName = 'testnet';
   explorerUrl = 'https://mempool.space/testnet/tx/';
+  // Add our pubkey for our paygo wallet
+  paygoAddressAttestationPubkey =
+    'xpub661MyMwAqRbcFU2Qx7pvGmmiQpVj8NcR7dSVpgqNChMkQyobpVWWERcrTb47WicmXwkhAY2VrC3hb29s18FDQWJf5pLm3saN6uLXAXpw1GV';
 }
 
 class BitcoinPublicSignet extends Testnet implements UtxoNetwork {
@@ -758,7 +762,7 @@ class TiaTestnet extends Testnet implements AccountNetwork {
 class Hash extends Mainnet implements AccountNetwork {
   name = 'Provenance';
   family = CoinFamily.HASH;
-  explorerUrl = 'https://www.mintscan.io/provenance/tx/';
+  explorerUrl = 'https://explorer.provenance.io/tx/';
 }
 
 class HashTestnet extends Testnet implements AccountNetwork {
@@ -890,13 +894,13 @@ class MantraTestnet extends Testnet implements AccountNetwork {
 class Cronos extends Mainnet implements AccountNetwork {
   name = 'Cronos POS';
   family = CoinFamily.CRONOS;
-  explorerUrl = 'https://cronos-pos.org/explorer/';
+  explorerUrl = 'https://cronos-pos.org/explorer/tx/';
 }
 
 class CronosTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Cronos POS';
   family = CoinFamily.CRONOS;
-  explorerUrl = 'https://cronos-pos.org/explorer/croeseid4/';
+  explorerUrl = 'https://cronos-pos.org/explorer/croeseid4/tx/';
 }
 
 class FetchAi extends Mainnet implements AccountNetwork {
@@ -914,25 +918,25 @@ class FetchAiTestnet extends Testnet implements AccountNetwork {
 class Initia extends Mainnet implements AccountNetwork {
   name = 'Initia';
   family = CoinFamily.INITIA;
-  explorerUrl = 'https://scan.initia.xyz/'; //TODO: COIN-3992 : Post launch need to update this if changed
+  explorerUrl = 'https://scan.initia.xyz/interwoven-1/txs/';
 }
 
 class InitiaTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Initia';
   family = CoinFamily.INITIA;
-  explorerUrl = 'https://scan.testnet.initia.xyz/initiation-2/';
+  explorerUrl = 'https://scan.testnet.initia.xyz/initiation-2/txs/';
 }
 
 class Asi extends Mainnet implements AccountNetwork {
   name = 'Fetch Native';
   family = CoinFamily.ASI;
-  explorerUrl = 'https://companion.fetch.ai/fetchhub-4/';
+  explorerUrl = 'https://companion.fetch.ai/fetchhub-4/transactions/';
 }
 
 class AsiTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Fetch Native';
   family = CoinFamily.ASI;
-  explorerUrl = 'https://companion.fetch.ai/dorado-1/';
+  explorerUrl = 'https://companion.fetch.ai/dorado-1/transactions/';
 }
 
 class Islm extends Mainnet implements AccountNetwork {
@@ -1344,6 +1348,7 @@ class Soneium extends Mainnet implements EthereumNetwork {
   accountExplorerUrl = 'https://soneium.blockscout.com/address/';
   chainId = 1868;
   nativeCoinOperationHashPrefix = '1868';
+  walletFactoryAddress = '0x809ee567e413543af1caebcdb247f6a67eafc8dd';
 }
 
 class SoneiumTestnet extends Testnet implements EthereumNetwork {
@@ -1353,6 +1358,7 @@ class SoneiumTestnet extends Testnet implements EthereumNetwork {
   accountExplorerUrl = 'https://soneium-minato.blockscout.com/address/';
   chainId = 1946;
   nativeCoinOperationHashPrefix = '1946';
+  walletFactoryAddress = '0x809ee567e413543af1caebcdb247f6a67eafc8dd';
   batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
   forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
@@ -1467,13 +1473,15 @@ class PolymeshTestnet extends Testnet implements AccountNetwork {
 class Vet extends Mainnet implements AccountNetwork {
   name = 'VeChain';
   family = CoinFamily.VET;
-  explorerUrl = 'https://explore.vechain.org/';
+  explorerUrl = 'https://explore.vechain.org/transactions/';
+  accountExplorerUrl = 'https://explore.vechain.org/accounts/';
 }
 
 class VetTestnet extends Testnet implements AccountNetwork {
   name = 'VeChainTestnet';
   family = CoinFamily.VET;
-  explorerUrl = 'https://explore-testnet.vechain.org/';
+  explorerUrl = 'https://explore-testnet.vechain.org/transactions/';
+  accountExplorerUrl = 'https://explore-testnet.vechain.org/accounts/';
 }
 
 export const Networks = {

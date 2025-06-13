@@ -16,9 +16,11 @@ export class Nep141Token extends Near {
     return (bitgo: BitGoBase) => new Nep141Token(bitgo, config);
   }
 
-  static createTokenConstructors(): NamedCoinConstructor[] {
+  static createTokenConstructors(
+    tokenConfig: Nep141TokenConfig[] = [...tokens.bitcoin.near.tokens, ...tokens.testnet.near.tokens]
+  ): NamedCoinConstructor[] {
     const tokensCtors: NamedCoinConstructor[] = [];
-    for (const token of [...tokens.bitcoin.near.tokens, ...tokens.testnet.near.tokens]) {
+    for (const token of tokenConfig) {
       const tokenConstructor = Nep141Token.createTokenConstructor(token);
       tokensCtors.push({ name: token.type, coinConstructor: tokenConstructor });
     }

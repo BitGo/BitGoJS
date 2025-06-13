@@ -58,11 +58,10 @@ import {
   getPsbtInputProprietaryKeyVals,
   getPsbtInputSignatureCount,
   getPsbtOutputProprietaryKeyVals,
-  ProprietaryKeySearch,
   ProprietaryKeySubtype,
-  ProprietaryKeyValue,
   PSBT_PROPRIETARY_IDENTIFIER,
 } from './PsbtUtil';
+import { ProprietaryKeySearch, ProprietaryKeyValue } from './ProprietaryKeyValUtils';
 
 type SignatureParams = {
   /** When true, and add the second (last) nonce and signature for a taproot key
@@ -1077,6 +1076,8 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
   }
 
   /**
+   * @deprecated Please use the new method addProprietaryKeyVals(psbt, entry, index, keyValueData)
+   *
    * Adds proprietary key value pair to PSBT input.
    * Default identifierEncoding is utf-8 for identifier.
    */
@@ -1088,6 +1089,9 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
   }
 
   /**
+   * @deprecated Please use the new method addProprietaryKeyValuesToUnknownKeyValues(psbt, entry, index, keyValueData)
+   *  or updateProprietaryKeyValuesToUnknownKeyValues(keyValueData)
+   *
    * Adds or updates (if exists) proprietary key value pair to PSBT input.
    * Default identifierEncoding is utf-8 for identifier.
    */
@@ -1110,6 +1114,9 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
   }
 
   /**
+   * @deprecated Please use getProprietaryKeyValuesFromUnknownKeyValues(psbtField, keySearch). The new method
+   * allows for the retrieval of either input or output proprietary key values.
+   *
    * To search any data from proprietary key value against keydata in the inputs.
    * Default identifierEncoding is utf-8 for identifier.
    */
@@ -1119,6 +1126,9 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
   }
 
   /**
+   * @deprecated Please use deleteProprietaryKeyValues(type, index, keysToDelete?). The new method
+   * allows for the deletion of either input or output proprietary key values.
+   *
    * To delete any data from proprietary key value in PSBT input.
    * Default identifierEncoding is utf-8 for identifier.
    */
@@ -1131,75 +1141,6 @@ export class UtxoPsbt<Tx extends UtxoTransaction<bigint> = UtxoTransaction<bigin
       throw new Error('invalid proprietary key search filter combination. subtype is required');
     }
     input.unknownKeyVals = input.unknownKeyVals.filter((keyValue, i) => {
-      const key = decodeProprietaryKey(keyValue.key);
-      return !(
-        keysToDelete === undefined ||
-        (keysToDelete.identifier === key.identifier &&
-          (keysToDelete.subtype === undefined ||
-            (keysToDelete.subtype === key.subtype &&
-              (!Buffer.isBuffer(keysToDelete.keydata) || keysToDelete.keydata.equals(key.keydata)))))
-      );
-    });
-    return this;
-  }
-
-  /**
-   * Adds a proprietary key value pair to PSBT output
-   * Default identifier is utf-8 for identifier
-   */
-  addProprietaryKeyValToOutput(outputIndex: number, keyValueData: ProprietaryKeyValue): this {
-    const output = checkForOutput(this.data.outputs, outputIndex);
-    assert(output.unknownKeyVals);
-    return this.addUnknownKeyValToOutput(outputIndex, {
-      key: encodeProprietaryKey(keyValueData.key),
-      value: keyValueData.value
-    })
-  }
-
-  /**
-   * To search any data from proprietary key value against keydata in the PSBT outputs.
-   * Default identifierEncoding is utf-8 for identifier.
-   */
-  getOutputProprietaryKeyVals(outputIndex: number, keySearch?: ProprietaryKeySearch): ProprietaryKeyValue[] {
-    const output = checkForOutput(this.data.outputs, outputIndex);
-    return getPsbtOutputProprietaryKeyVals(output, keySearch);
-  }
-
-  /**
-   * Adds or updates (if exists) proprietary key value pair to PSBT output.
-   * Default identifierEncoding is utf-8 for identifier.
-   */
-  addOrUpdateProprietaryKeyValsToOutput(outputIndex: number, keyValueData: ProprietaryKeyValue): this {
-    const output = checkForOutput(this.data.outputs, outputIndex);
-    const key = encodeProprietaryKey(keyValueData.key);
-    const { value } = keyValueData;
-    if (output.unknownKeyVals?.length) {
-      const ukvIndex = output.unknownKeyVals.findIndex((ukv) => ukv.key.equals(key));
-      if (ukvIndex > -1) {
-        output.unknownKeyVals[ukvIndex] = { key, value };
-        return this;
-      }
-    }
-    this.addUnknownKeyValToOutput(outputIndex, {
-      key,
-      value,
-    });
-    return this;
-  }
-
-  /**
-   * To delete any data from proprietary key value in PSBT output.
-   * Default identifierEncoding is utf-8 for identifier.
-   */
-  deleteProprietaryKeyValsInOutput(outputIndex: number, keysToDelete?: ProprietaryKeySearch): this {
-    const output = checkForOutput(this.data.outputs, outputIndex);
-    if (!output.unknownKeyVals?.length) {
-      return this;
-    }
-    if (keysToDelete && keysToDelete.subtype === undefined && Buffer.isBuffer(keysToDelete.keydata)) {
-      throw new Error('invalid proprietary key search filter combination. subtype is required');
-    }
-    output.unknownKeyVals = output.unknownKeyVals.filter((keyValue, i) => {
       const key = decodeProprietaryKey(keyValue.key);
       return !(
         keysToDelete === undefined ||

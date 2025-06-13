@@ -1,8 +1,6 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import { Descriptor, ast } from '@bitgo/wasm-miniscript';
 
-import { DescriptorMap } from './DescriptorMap';
-
 /** Expand a template with the given root wallet keys and chain code */
 function expand(rootWalletKeys: utxolib.bitgo.RootWalletKeys, keyIndex: number, chainCode: number): string {
   if (keyIndex !== 0 && keyIndex !== 1 && keyIndex !== 2) {
@@ -42,12 +40,28 @@ export function getDescriptorForScriptType(
   }
 }
 
-export function getNamedDescriptorsForRootWalletKeys(rootWalletKeys: utxolib.bitgo.RootWalletKeys): DescriptorMap {
-  const scriptTypes = ['p2sh', 'p2shP2wsh', 'p2wsh'] as const;
+function isSupportedScriptType(
+  scriptType: utxolib.bitgo.outputScripts.ScriptType2Of3
+): scriptType is 'p2sh' | 'p2shP2wsh' | 'p2wsh' {
+  return ['p2sh', 'p2shP2wsh', 'p2wsh'].includes(scriptType);
+}
+
+/**
+ * Get a map of named descriptors for the given root wallet keys.
+ * Unsupported script types will have a value of null.
+ * Currently supports p2sh, p2shP2wsh, and p2wsh script types.
+ * @param rootWalletKeys
+ */
+export function getNamedDescriptorsForRootWalletKeys(
+  rootWalletKeys: utxolib.bitgo.RootWalletKeys
+): Map<string, Descriptor | null> {
   const scopes = ['external', 'internal'] as const;
   return new Map(
-    scriptTypes.flatMap((scriptType) =>
-      scopes.map((scope) => [`${scriptType}/${scope}`, getDescriptorForScriptType(rootWalletKeys, scriptType, scope)])
+    utxolib.bitgo.outputScripts.scriptTypes2Of3.flatMap((scriptType) =>
+      scopes.map((scope) => [
+        `${scriptType}/${scope}`,
+        isSupportedScriptType(scriptType) ? getDescriptorForScriptType(rootWalletKeys, scriptType, scope) : null,
+      ])
     )
   );
 }

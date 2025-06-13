@@ -25,6 +25,7 @@ export const ETH_FEATURES = [
   CoinFeature.SUPPORTS_TOKENS,
   CoinFeature.ENTERPRISE_PAYS_FEES,
   CoinFeature.WALLET_CONNECT_DEFI,
+  CoinFeature.EVM_COIN,
 ];
 export const ETH_FEATURES_WITH_MMI = [...ETH_FEATURES, CoinFeature.METAMASK_INSTITUTIONAL];
 export const ETH_FEATURES_WITH_STAKING = [...ETH_FEATURES, CoinFeature.STAKING];
@@ -509,6 +510,20 @@ export const TAO_FEATURES = [
   CoinFeature.STAKING,
 ];
 
+export const SONEIUM_FEATURES = [
+  ...ETH_FEATURES,
+  CoinFeature.TSS,
+  CoinFeature.TSS_COLD,
+  CoinFeature.MPCV2,
+  CoinFeature.EVM_WALLET,
+  CoinFeature.BULK_TRANSACTION,
+  CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
+  CoinFeature.EIP1559,
+  CoinFeature.MULTISIG,
+  CoinFeature.MULTISIG_COLD,
+  CoinFeature.MULTISIG_SUPPORT_GATED,
+];
+
 export const POLYX_FEATURES = [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.TSS_COLD];
 
 export const ETH_FEATURES_WITH_FRANKFURT = [...ETH_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT];
@@ -551,4 +566,5 @@ export const VET_FEATURES = [
   CoinFeature.SUPPORTS_TOKENS,
   CoinFeature.ENTERPRISE_PAYS_FEES,
   CoinFeature.TSS_ENTERPRISE_PAYS_FEES,
+  CoinFeature.MPCV2,
 ];

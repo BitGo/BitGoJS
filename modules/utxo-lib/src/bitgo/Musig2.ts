@@ -12,12 +12,8 @@ import { Tuple } from './types';
 import { calculateTapTweak, tapTweakPubkey } from '../taproot';
 import { Transaction } from '../index';
 import { PsbtInput } from 'bip174/src/lib/interfaces';
-import {
-  getPsbtInputProprietaryKeyVals,
-  ProprietaryKeySubtype,
-  ProprietaryKeyValue,
-  PSBT_PROPRIETARY_IDENTIFIER,
-} from './PsbtUtil';
+import { getPsbtInputProprietaryKeyVals, ProprietaryKeySubtype, PSBT_PROPRIETARY_IDENTIFIER } from './PsbtUtil';
+import { ProprietaryKeyValue } from './ProprietaryKeyValUtils';
 
 /**
  *  Participant key value object.

@@ -769,7 +769,12 @@ export const erc20Coins = [
     'Beam',
     18,
     '0x62d0a8458ed7719fdaf978fe5929c6d342b0bfce',
-    UnderlyingAsset.BEAM
+    UnderlyingAsset.BEAM,
+    AccountCoin.getFeaturesExcluding([
+      CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+      CoinFeature.CUSTODY_BITGO_MENA_FZE,
+    ])
   ),
   erc20(
     '04c44584-c417-4fce-883f-8f316854c63e',
@@ -1110,7 +1115,8 @@ export const erc20Coins = [
     'Backed NVIDIA Corp',
     18,
     '0xa34c5e0abe843e10461e2c9586ea03e55dbcc495',
-    UnderlyingAsset.BNVDA
+    UnderlyingAsset.BNVDA,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '44fefbae-d835-4fb2-931a-22167f9f4894',
@@ -3292,7 +3298,8 @@ export const erc20Coins = [
     'Kroma',
     18,
     '0x25500000d700bbe27104577cccce8eabcc96c8ad',
-    UnderlyingAsset.KRO
+    UnderlyingAsset.KRO,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'cbcebae0-e2a8-4ebe-8da7-89983f04f917',
@@ -5318,7 +5325,12 @@ export const erc20Coins = [
     'Serum',
     6,
     '0x476c5e26a75bd202a9683ffd34359c0cc15be0ff',
-    UnderlyingAsset.SRM
+    UnderlyingAsset.SRM,
+    AccountCoin.getFeaturesExcluding([
+      CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+      CoinFeature.CUSTODY_BITGO_MENA_FZE,
+    ])
   ),
   erc20(
     '7c786a41-3527-4e87-8b7a-addfe4f4e02a',
@@ -7320,7 +7332,8 @@ export const erc20Coins = [
     'stETH',
     18,
     '0xae7ab96520de3a18e5e111b5eaab095312d7fe84',
-    UnderlyingAsset.STETH
+    UnderlyingAsset.STETH,
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION, CoinFeature.REBASE_TOKEN]
   ),
   erc20(
     '8e23a447-d5e7-49e9-b7a0-5b23058971db',
@@ -9862,7 +9875,8 @@ export const erc20Coins = [
     'USCC',
     8,
     '0x7b13abb88eb01aa0cd9739b91d4d4f273262eacf',
-    UnderlyingAsset.USCC
+    UnderlyingAsset.USCC,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'efae2e71-10b8-4461-8e84-51390f6e77df',
@@ -10988,6 +11002,18 @@ export const erc20Coins = [
     '0x78f81399cd3bc0937ea9049cc6604fb6e67ebe83',
     UnderlyingAsset['hteth:stgusd1'],
     undefined,
+    undefined,
+    undefined,
+    Networks.test.holesky
+  ),
+  terc20(
+    '31eedb6e-3bd1-4407-b924-7136c4dc0483',
+    'hteth:tsteth',
+    'Holesky Testnet STETH',
+    18,
+    '0x3f1c547b21f65e10480de3ad8e19faac46c95034',
+    UnderlyingAsset['hteth:tsteth'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION, CoinFeature.REBASE_TOKEN],
     undefined,
     undefined,
     Networks.test.holesky

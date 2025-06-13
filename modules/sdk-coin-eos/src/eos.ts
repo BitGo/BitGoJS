@@ -3,6 +3,7 @@
  */
 import { BigNumber } from 'bignumber.js';
 import { bip32, BIP32Interface } from '@bitgo/secp256k1';
+import { coins, EosCoin } from '@bitgo/statics';
 import { createHash, randomBytes } from 'crypto';
 import { Api, ApiInterfaces, JsonRpc, RpcInterfaces } from 'eosjs';
 import * as ecc from 'eosjs-ecc';
@@ -1123,7 +1124,7 @@ export class Eos extends BaseCoin {
       }
 
       if (txPrebuild.coin === 'eos' || txPrebuild.coin === 'teos') {
-        const expectedSymbol = _.isNil(txPrebuild.token) ? 'EOS' : txPrebuild.token.split(':')[1];
+        const expectedSymbol = _.isNil(txPrebuild.token) ? 'EOS' : (coins.get(txPrebuild.token) as EosCoin).symbol;
 
         if (actualAmountAndCoin[1] !== expectedSymbol) {
           throw new Error('txHex receive symbol does not match expected recipient symbol');

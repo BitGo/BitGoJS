@@ -362,14 +362,29 @@ export enum CoinFeature {
   TSS_SUPPORT_GATED = 'tss-support-gated',
 
   /**
+   * This coin is gated for Multisig Support
+   */
+  MULTISIG_SUPPORT_GATED = 'multisig-support-gated',
+
+  /**
    * This coins is an EVM compatible coin and should use common EVM functionality
    */
   SHARED_EVM_SIGNING = 'shared-evm-signing',
 
   /**
+   * This coin is EVM based coin
+   */
+  EVM_COIN = 'evm_coin',
+
+  /**
    * This coin supports multisig wallets
    */
   MULTISIG = 'multisig',
+
+  /**
+   * This coin is a rebase token and should use the rebase token functionality
+   */
+  REBASE_TOKEN = 'rebase-token',
 }
 
 /**
@@ -1624,6 +1639,7 @@ export enum UnderlyingAsset {
   'hteth:gousd' = 'hteth:gousd',
   'hteth:usd1' = 'hteth:usd1',
   'hteth:stgusd1' = 'hteth:stgusd1',
+  'hteth:tsteth' = 'hteth:tsteth',
   THKD = 'thkd',
   THUNDER = 'thunder',
   TIO = 'tio',
@@ -2614,6 +2630,8 @@ export enum UnderlyingAsset {
 
   // TRX testnet tokens
   'ttrx:usdt' = 'ttrx:usdt',
+  'ttrx:usd1' = 'ttrx:usd1',
+  'ttrx:stgusd1' = 'ttrx:stgusd1',
 
   // XRP tokens
   'txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd' = 'txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd',

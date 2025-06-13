@@ -1,8 +1,8 @@
+import * as nacl from 'tweetnacl';
 import assert from 'assert';
 import should from 'should';
 
-import { KeyPair } from '../../src/lib';
-import * as nacl from 'tweetnacl';
+import { KeyPair } from '../../src';
 
 describe('VeChain KeyPair', function () {
   // these are all encodings of the same key so the test suite will show that they we can interchange between them
@@ -32,11 +32,13 @@ describe('VeChain KeyPair', function () {
     it('from an xprv', () => {
       const keyPair = new KeyPair({ prv: xprv });
       const defaultKeys = keyPair.getKeys();
-      defaultKeys.prv!.should.equal(prv);
+      assert(defaultKeys.prv);
+      defaultKeys.prv.should.equal(prv);
       defaultKeys.pub.should.equal(pub);
 
       const extendedKeys = keyPair.getExtendedKeys();
-      extendedKeys.xprv!.should.equal(xprv);
+      assert(extendedKeys.xprv);
+      extendedKeys.xprv.should.equal(xprv);
       extendedKeys.xpub.should.equal(xpub);
     });
 
@@ -60,7 +62,8 @@ describe('VeChain KeyPair', function () {
     it('from a raw private key', () => {
       const keyPair = new KeyPair({ prv });
       const defaultKeys = keyPair.getKeys();
-      defaultKeys.prv!.should.equal(prv);
+      assert(defaultKeys.prv);
+      defaultKeys.prv.should.equal(prv);
       defaultKeys.pub.should.equal(uncompressedPub);
 
       assert.throws(() => keyPair.getExtendedKeys());
@@ -70,8 +73,10 @@ describe('VeChain KeyPair', function () {
       const keyPair = new KeyPair();
       should.exists(keyPair.getKeys().prv);
       should.exists(keyPair.getKeys().pub);
-      should.equal(keyPair.getKeys().prv!.length, 64);
-      should.equal(keyPair.getKeys().pub.length, 66);
+      const keys = keyPair.getKeys();
+      assert(keys.prv);
+      should.equal(keys.prv.length, 64);
+      should.equal(keys.pub.length, 66);
     });
 
     it('from seed', () => {
@@ -138,7 +143,8 @@ describe('VeChain KeyPair', function () {
     it('should get the keys in extended format from xprv', () => {
       const keyPair = new KeyPair({ prv: xprv });
       const { xprv: calculatedXprv, xpub: calculatedXpub } = keyPair.getExtendedKeys();
-      calculatedXprv!.should.equal(xprv);
+      assert(calculatedXprv);
+      calculatedXprv.should.equal(xprv);
       calculatedXpub.should.equal(xpub);
     });
 

@@ -4,7 +4,6 @@ import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
 import * as NearAPI from 'near-api-js';
 import assert from 'assert';
-import BN from 'bn.js';
 import BigNumber from 'bignumber.js';
 
 export class TransferBuilder extends TransactionBuilder {
@@ -21,13 +20,15 @@ export class TransferBuilder extends TransactionBuilder {
    */
   initBuilder(tx: Transaction): void {
     super.initBuilder(tx);
-    this._amount = tx.nearTransaction.actions[0].transfer.deposit.toString();
+    if (tx.nearTransaction.actions[0].transfer) {
+      this._amount = tx.nearTransaction.actions[0].transfer.deposit.toString();
+    }
   }
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     assert(this._amount, new BuildTransactionError('amount is required before building transfer'));
-    super.actions([NearAPI.transactions.transfer(new BN(this._amount))]);
+    super.actions([NearAPI.transactions.transfer(BigInt(this._amount))]);
     const tx = await super.buildImplementation();
     tx.setTransactionType(TransactionType.Send);
     return tx;

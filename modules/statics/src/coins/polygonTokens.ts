@@ -1,5 +1,5 @@
 import { polygonErc20, tpolygonErc20 } from '../account';
-import { UnderlyingAsset } from '../base';
+import { UnderlyingAsset, CoinFeature } from '../base';
 import { POLYGON_TOKEN_FEATURES, POLYGON_TOKEN_FEATURES_WITH_FRANKFURT } from '../coinFeatures';
 
 export const polygonTokens = [
@@ -874,7 +874,14 @@ export const polygonTokens = [
     8,
     '0x72d6066f486bd0052eefb9114b66ae40e0a6031a',
     UnderlyingAsset['polygon:wrx'],
-    POLYGON_TOKEN_FEATURES
+    POLYGON_TOKEN_FEATURES.filter(
+      (feature) =>
+        ![
+          CoinFeature.CUSTODY_BITGO_SINGAPORE,
+          CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+          CoinFeature.CUSTODY_BITGO_MENA_FZE,
+        ].includes(feature)
+    )
   ),
   polygonErc20(
     '8c61bb88-f103-4d42-bf5e-26826d4b7712',

@@ -52,7 +52,7 @@ export interface TransactionPrebuild {
   txHex: string;
   key: string;
   blockHash: string;
-  nonce: number;
+  nonce: bigint;
 }
 
 export interface ExplainTransactionOptions {
@@ -94,7 +94,7 @@ interface RecoveryOptions {
 }
 
 interface NearTxBuilderParamsFromNode {
-  nonce: number;
+  nonce: bigint;
   blockHash: string;
 }
 

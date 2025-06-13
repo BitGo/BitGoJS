@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import * as fs from 'fs/promises';
 
-import * as yargs from 'yargs';
+import yargs from 'yargs';
 import * as utxolib from '@bitgo/utxo-lib';
 import { Descriptor } from '@bitgo/wasm-miniscript';
 

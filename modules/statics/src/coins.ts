@@ -101,6 +101,7 @@ import {
   RBTC_FEATURES,
   SEI_FEATURES,
   SOL_FEATURES,
+  SONEIUM_FEATURES,
   STX_FEATURES,
   SUI_FEATURES,
   SUI_TOKEN_FEATURES,
@@ -867,7 +868,7 @@ export const coins = CoinMap.fromCoins([
     8,
     UnderlyingAsset.CRONOS,
     BaseUnit.CRONOS,
-    COSMOS_SIDECHAIN_FEATURES
+    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
   ),
   account(
     '854513b2-cf1a-44b4-879b-e3aae0b5f227',
@@ -927,7 +928,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.ASI,
     BaseUnit.ASI,
-    COSMOS_SIDECHAIN_FEATURES
+    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
   ),
   account(
     'b473d5f0-1590-4edf-bc9f-813aff515a23',
@@ -1281,7 +1282,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.SONEIUM,
     BaseUnit.ETH,
-    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
+    [...SONEIUM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
   ),
   account(
     'a4587ed1-a4a6-4bbe-b965-3119b52e76cf',
@@ -1291,7 +1292,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.SONEIUM,
     BaseUnit.ETH,
-    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
+    [...SONEIUM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
   ),
   account(
     '87c104ca-6b49-479e-87fb-9253b095158c',
@@ -2203,6 +2204,22 @@ export const coins = CoinMap.fromCoins([
     6,
     'TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs',
     UnderlyingAsset['ttrx:usdt']
+  ),
+  ttronToken(
+    '78551a7f-17d1-4e81-b6a9-3c6e960337f4',
+    'ttrx:usd1',
+    'Test USD1 Token',
+    18,
+    'TMsuh7QxbJkYaLsGMGCgNJYtYjTZLJG3Np',
+    UnderlyingAsset['ttrx:usd1']
+  ),
+  ttronToken(
+    '4853b203-e475-4538-bcba-f69da0e45d4b',
+    'ttrx:stgusd1',
+    'Staging USD1 Token',
+    18,
+    'TPEwuCefwvzBcr9BHvg2xhJCaf499uGMZx',
+    UnderlyingAsset['ttrx:stgusd1']
   ),
   talgoToken(
     '0e20b757-3e62-4400-887d-caff117481c8',

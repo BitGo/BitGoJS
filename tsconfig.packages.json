@@ -128,9 +128,6 @@
       "path": "./modules/sdk-coin-ethw"
     },
     {
-      "path": "./modules/sdk-coin-fetchai"
-    },
-    {
       "path": "./modules/sdk-coin-flr"
     },
     {

@@ -1,6 +1,11 @@
-import { decodeProprietaryKey, ProprietaryKey } from 'bip174/src/lib/proprietaryKeyVal';
-import { KeyValue, PsbtInput, PsbtOutput } from 'bip174/src/lib/interfaces';
+import { PsbtInput, PsbtOutput } from 'bip174/src/lib/interfaces';
 import { Psbt } from 'bitcoinjs-lib/src/psbt';
+
+import {
+  getProprietaryKeyValuesFromUnknownKeyValues,
+  ProprietaryKeySearch,
+  ProprietaryKeyValue,
+} from './ProprietaryKeyValUtils';
 
 /**
  * bitgo proprietary key identifier
@@ -15,51 +20,6 @@ export enum ProprietaryKeySubtype {
   MUSIG2_PARTICIPANT_PUB_KEYS = 0x01,
   MUSIG2_PUB_NONCE = 0x02,
   MUSIG2_PARTIAL_SIG = 0x03,
-  PAYGO_ADDRESS_ATTESTATION_PROOF = 0x04,
-}
-
-/**
- * Psbt proprietary keydata object.
- * <compact size uint identifier length> <bytes identifier> <compact size uint subtype> <bytes subkeydata>
- * => <bytes valuedata>
- */
-export interface ProprietaryKeyValue {
-  key: ProprietaryKey;
-  value: Buffer;
-}
-
-/**
- * Psbt proprietary keydata object search fields.
- * <compact size uint identifier length> <bytes identifier> <compact size uint subtype> <bytes subkeydata>
- */
-export interface ProprietaryKeySearch {
-  identifier: string;
-  subtype?: number;
-  keydata?: Buffer;
-  identifierEncoding?: BufferEncoding;
-}
-
-function getProprietaryKeyValuesFromUnknownKeyValues(
-  unknownKeyVals: KeyValue[],
-  keySearch?: ProprietaryKeySearch
-): ProprietaryKeyValue[] {
-  if (keySearch && keySearch.subtype === undefined && Buffer.isBuffer(keySearch.keydata)) {
-    throw new Error('invalid proprietary key search filter combination. subtype is required');
-  }
-
-  const keyVals = unknownKeyVals.map(({ key, value }, i) => {
-    return { key: decodeProprietaryKey(key), value };
-  });
-
-  return keyVals.filter((keyVal) => {
-    return (
-      keySearch === undefined ||
-      (keySearch.identifier === keyVal.key.identifier &&
-        (keySearch.subtype === undefined ||
-          (keySearch.subtype === keyVal.key.subtype &&
-            (!Buffer.isBuffer(keySearch.keydata) || keySearch.keydata.equals(keyVal.key.keydata)))))
-    );
-  });
 }
 
 /**
@@ -73,8 +33,7 @@ export function getPsbtInputProprietaryKeyVals(
   if (!input.unknownKeyVals?.length) {
     return [];
   }
-
-  return getProprietaryKeyValuesFromUnknownKeyValues(input.unknownKeyVals, keySearch);
+  return getProprietaryKeyValuesFromUnknownKeyValues(input, keySearch);
 }
 
 export function getPsbtOutputProprietaryKeyVals(
@@ -84,9 +43,9 @@ export function getPsbtOutputProprietaryKeyVals(
   if (!output.unknownKeyVals?.length) {
     return [];
   }
-
-  return getProprietaryKeyValuesFromUnknownKeyValues(output.unknownKeyVals, keySearch);
+  return getProprietaryKeyValuesFromUnknownKeyValues(output, keySearch);
 }
+
 
 /**
  * @return partialSig/tapScriptSig/MUSIG2_PARTIAL_SIG count iff input is not finalized
