@@ -143,6 +143,7 @@ export interface Sip10TokenConstructorOptions extends AccountConstructorOptions 
 
 export interface Nep141TokenConstructorOptions extends AccountConstructorOptions {
   contractAddress: string;
+  storageDepositAmount: string;
 }
 
 export interface ContractAddress extends String {
@@ -591,12 +592,14 @@ export class Sip10Token extends AccountCoinToken {
  */
 export class Nep141Token extends AccountCoinToken {
   public contractAddress: string;
+  public storageDepositAmount: string;
   constructor(options: Nep141TokenConstructorOptions) {
     super({
       ...options,
     });
 
     this.contractAddress = options.contractAddress;
+    this.storageDepositAmount = options.storageDepositAmount;
   }
 }
 
@@ -2928,6 +2931,7 @@ export function tsip10Token(
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
  * @param contractAddress Contract address of this token
+ * @param storageDepositAmount the deposit amount needed to get registered with this contract
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
  * @param features Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
  * @param prefix Optional token prefix. Defaults to empty string
@@ -2941,6 +2945,7 @@ export function nep141Token(
   fullName: string,
   decimalPlaces: number,
   contractAddress: string,
+  storageDepositAmount: string,
   asset: UnderlyingAsset,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix = '',
@@ -2956,6 +2961,7 @@ export function nep141Token(
       network,
       decimalPlaces,
       contractAddress,
+      storageDepositAmount,
       prefix,
       suffix,
       features,
@@ -2975,6 +2981,7 @@ export function nep141Token(
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
  * @param contractAddress Contract address of this token
+ * @param storageDepositAmount the deposit amount needed to get registered with this contract
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
  * @param features Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
  * @param prefix Optional token prefix. Defaults to empty string
@@ -2987,11 +2994,24 @@ export function tnep141Token(
   fullName: string,
   decimalPlaces: number,
   contractAddress: string,
+  storageDepositAmount: string,
   asset: UnderlyingAsset,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix = '',
   suffix: string = name.toUpperCase(),
   network: AccountNetwork = Networks.test.near
 ) {
-  return nep141Token(id, name, fullName, decimalPlaces, contractAddress, asset, features, prefix, suffix, network);
+  return nep141Token(
+    id,
+    name,
+    fullName,
+    decimalPlaces,
+    contractAddress,
+    storageDepositAmount,
+    asset,
+    features,
+    prefix,
+    suffix,
+    network
+  );
 }
