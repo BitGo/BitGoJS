@@ -116,10 +116,10 @@ export class AtaInitializationBuilder extends TransactionBuilder {
     validateOwnerAddress(recipient.ownerAddress);
     const token = getSolTokenFromTokenName(recipient.tokenName);
     let tokenAddress: string;
-    if (token) {
-      tokenAddress = token.tokenAddress;
-    } else if (recipient.tokenAddress) {
+    if (recipient.tokenAddress) {
       tokenAddress = recipient.tokenAddress;
+    } else if (token) {
+      tokenAddress = token.tokenAddress;
     } else {
       throw new BuildTransactionError('Invalid transaction: invalid token name, got: ' + recipient.tokenName);
     }
@@ -148,12 +148,12 @@ export class AtaInitializationBuilder extends TransactionBuilder {
         const token = getSolTokenFromTokenName(recipient.tokenName);
         let tokenAddress: string;
         let programId: string;
-        if (token) {
-          tokenAddress = token.tokenAddress;
-          programId = token.programId;
-        } else if (recipient.tokenAddress && recipient.programId) {
+        if (recipient.tokenAddress && recipient.programId) {
           tokenAddress = recipient.tokenAddress;
           programId = recipient.programId;
+        } else if (token) {
+          tokenAddress = token.tokenAddress;
+          programId = token.programId;
         } else {
           throw new BuildTransactionError('Invalid transaction: invalid token name, got: ' + recipient.tokenName);
         }

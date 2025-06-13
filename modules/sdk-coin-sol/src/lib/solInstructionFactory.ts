@@ -162,15 +162,15 @@ function tokenTransferInstruction(data: TokenTransfer): TransactionInstruction[]
   let tokenAddress: string;
   let programId: string | undefined;
   let decimalPlaces: number;
-  if (token) {
+  if (data.params.tokenAddress && data.params.decimalPlaces) {
+    tokenAddress = data.params.tokenAddress;
+    decimalPlaces = data.params.decimalPlaces;
+    programId = data.params.programId;
+  } else if (token) {
     assert(token instanceof SolCoin);
     tokenAddress = token.tokenAddress;
     decimalPlaces = token.decimalPlaces;
     programId = token.programId;
-  } else if (data.params.tokenAddress && data.params.decimalPlaces) {
-    tokenAddress = data.params.tokenAddress;
-    decimalPlaces = data.params.decimalPlaces;
-    programId = data.params.programId;
   } else {
     throw new Error('Invalid token name, got:' + data.params.tokenName);
   }
