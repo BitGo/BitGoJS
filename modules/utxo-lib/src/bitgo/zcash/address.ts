@@ -23,7 +23,7 @@ export function toBase58Check(hash: Buffer, version: number): string {
 }
 
 export function fromOutputScript(outputScript: Buffer, network: Network): string {
-  assert(isZcash(network));
+  assert.ok(isZcash(network));
   let o;
   let prefix;
   try {
@@ -41,7 +41,7 @@ export function fromOutputScript(outputScript: Buffer, network: Network): string
 }
 
 export function toOutputScript(address: string, network: Network): Buffer {
-  assert(isZcash(network));
+  assert.ok(isZcash(network));
   const { version, hash } = fromBase58Check(address);
   if (version === network.pubKeyHash) {
     return payments.p2pkh({ hash }).output as Buffer;
