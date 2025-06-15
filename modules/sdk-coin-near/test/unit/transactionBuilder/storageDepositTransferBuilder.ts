@@ -76,7 +76,7 @@ describe('Near: Storage Deposit Transfer Builder', () => {
           coin: `t${nep141Token.getFamily()}`,
         });
         const rawTx = tx.toBroadcastFormat();
-        rawTx.should.deepEqual(testData.rawTx.storageDeposit.unsigned);
+        rawTx.should.deepEqual(testData.rawTx.selfStorageDeposit.unsigned);
       });
 
       it('a signed storage deposit self transfer transaction', async () => {
@@ -98,7 +98,7 @@ describe('Near: Storage Deposit Transfer Builder', () => {
           coin: `t${nep141Token.getFamily()}`,
         });
         const rawTx = tx.toBroadcastFormat();
-        rawTx.should.deepEqual(testData.rawTx.storageDeposit.signed);
+        rawTx.should.deepEqual(testData.rawTx.selfStorageDeposit.signed);
       });
     });
 
@@ -120,6 +120,8 @@ describe('Near: Storage Deposit Transfer Builder', () => {
         value: '1250000000000000000000',
         coin: `t${nep141Token.getFamily()}`,
       });
+      const rawTx = tx.toBroadcastFormat();
+      rawTx.should.deepEqual(testData.rawTx.storageDeposit.unsigned);
     });
 
     it('a signed fungible token transfer with storage deposit transaction', async () => {
@@ -141,6 +143,8 @@ describe('Near: Storage Deposit Transfer Builder', () => {
         value: '1250000000000000000000',
         coin: `t${nep141Token.getFamily()}`,
       });
+      const rawTx = tx.toBroadcastFormat();
+      rawTx.should.deepEqual(testData.rawTx.storageDeposit.signed);
     });
 
     describe('add TSS signature', function () {
