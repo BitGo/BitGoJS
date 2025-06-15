@@ -10554,6 +10554,46 @@ export const erc20Coins = [
     '0x90276e9d4a023b5229e0c2e9d4b2a83fe3a2b48c',
     UnderlyingAsset['eth:ibenji']
   ),
+  erc20(
+    '4f8f73d3-d264-4d4b-a150-885fdcbae600',
+    'eth:towns',
+    'Towns',
+    18,
+    '0x000000fa00b200406de700041cfc6b19bbfb4d13',
+    UnderlyingAsset['eth:towns']
+  ),
+  erc20(
+    'bef92a29-449e-4c8b-99cc-ffa355fe4b8b',
+    'eth:chex',
+    'Chintai Exchange Token',
+    18,
+    '0x9ce84f6a69986a83d92c324df10bc8e64771030f',
+    UnderlyingAsset['eth:chex']
+  ),
+  erc20(
+    '81579a85-7339-45ba-9f95-6dc8a43e1afa',
+    'eth:gho',
+    'GHO',
+    18,
+    '0x40d16fc0246ad3160ccc09b8d0d3a2cd28ae6c2f',
+    UnderlyingAsset['eth:gho']
+  ),
+  erc20(
+    '3bf4dce0-d17b-4f98-9e7a-933e6a767aa4',
+    'eth:npc',
+    'Non-Playable Coin',
+    18,
+    '0x8ed97a637a790be1feff5e888d43629dc05408f6',
+    UnderlyingAsset['eth:npc']
+  ),
+  erc20(
+    '89776872-d6f0-443b-89ca-abf4e6868779',
+    'eth:umint',
+    'UBS uMINT',
+    0,
+    '0x3797c46db697c24a983222c335f17ba28e8c5b69',
+    UnderlyingAsset['eth:umint']
+  ),
   terc20(
     '0205f0d6-0647-47c9-ad8b-c48d048e54f3',
     'fixed',
