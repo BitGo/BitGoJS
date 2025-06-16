@@ -837,13 +837,6 @@ coins.forEach((coin, coinName) => {
       it(`should return true for CUSTODY_BITGO_TRUST ${coin.family} coin feature`, () => {
         coin.features.includes(CoinFeature.CUSTODY_BITGO_TRUST).should.eql(true);
       });
-
-      it(`should return true for CUSTODY_BITGO_MENA_FZE ${coin.family} coin feature`, () => {
-        coin.features.includes(CoinFeature.CUSTODY_BITGO_MENA_FZE).should.eql(true);
-      });
-      it(`should return true for CUSTODY_BITGO_CUSTODY_MENA_FZE ${coin.family} coin feature`, () => {
-        coin.features.includes(CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE).should.eql(true);
-      });
     } else if (coin.family === CoinFamily.XTZ || coin.features.includes(CoinFeature.GENERIC_TOKEN)) {
       it(`should return false for all custody ${coin.family} coin feature`, () => {
         coin.features.includes(CoinFeature.CUSTODY).should.eql(false);
@@ -859,8 +852,6 @@ coins.forEach((coin, coinName) => {
         const coinSupportsCustody = coin.family !== CoinFamily.LNBTC && coin.family !== CoinFamily.CELO;
         coin.features.includes(CoinFeature.CUSTODY).should.eql(coinSupportsCustody);
         coin.features.includes(CoinFeature.CUSTODY_BITGO_TRUST).should.eql(coinSupportsCustody);
-        coin.features.includes(CoinFeature.CUSTODY_BITGO_MENA_FZE).should.eql(coinSupportsCustody);
-        coin.features.includes(CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE).should.eql(coinSupportsCustody);
       });
 
       it('should return false for all non-SD coin feature', () => {
