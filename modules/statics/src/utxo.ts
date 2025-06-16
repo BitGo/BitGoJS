@@ -282,7 +282,14 @@ export const utxoCoins: Readonly<BaseCoin>[] = [
     Networks.main.dash,
     UnderlyingAsset.DASH,
     BaseUnit.DASH,
-    DASH_FEATURES
+    DASH_FEATURES.filter(
+      (feature) =>
+        ![
+          CoinFeature.CUSTODY_BITGO_SINGAPORE,
+          CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+          CoinFeature.CUSTODY_BITGO_MENA_FZE,
+        ].includes(feature)
+    )
   ),
   utxo(
     '5950d78f-e8dd-457a-ab5d-310e6b476bb1',

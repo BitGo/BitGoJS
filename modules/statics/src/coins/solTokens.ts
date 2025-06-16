@@ -316,7 +316,14 @@ export const solTokens = [
     'EzfgjvkSwthhgHaceR3LnKXUoRkP6NUhfghdaHAj1tUv',
     'EzfgjvkSwthhgHaceR3LnKXUoRkP6NUhfghdaHAj1tUv',
     UnderlyingAsset.FTT,
-    SOL_TOKEN_FEATURES
+    SOL_TOKEN_FEATURES.filter(
+      (feature) =>
+        ![
+          CoinFeature.CUSTODY_BITGO_SINGAPORE,
+          CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+          CoinFeature.CUSTODY_BITGO_MENA_FZE,
+        ].includes(feature)
+    )
   ),
   solToken(
     'bb248d80-4233-4c02-8a23-5a09fb9b986c',
@@ -766,7 +773,14 @@ export const solTokens = [
     'nRtfwU9G82CSHhHGJNxFhtn7FLvWP2rqvQvje1WtL69',
     'nRtfwU9G82CSHhHGJNxFhtn7FLvWP2rqvQvje1WtL69',
     UnderlyingAsset.CEL,
-    SOL_TOKEN_FEATURES
+    SOL_TOKEN_FEATURES.filter(
+      (feature) =>
+        ![
+          CoinFeature.CUSTODY_BITGO_SINGAPORE,
+          CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+          CoinFeature.CUSTODY_BITGO_MENA_FZE,
+        ].includes(feature)
+    )
   ),
   solToken(
     '3e85d244-101d-4873-b957-d52e3843da94',
@@ -1466,7 +1480,14 @@ export const solTokens = [
     'AGFEad2et2ZJif9jaGpdMixQqvW5i81aBdvKe7PHNfz3',
     'AGFEad2et2ZJif9jaGpdMixQqvW5i81aBdvKe7PHNfz3',
     UnderlyingAsset.FTT,
-    SOL_TOKEN_FEATURES
+    SOL_TOKEN_FEATURES.filter(
+      (feature) =>
+        ![
+          CoinFeature.CUSTODY_BITGO_SINGAPORE,
+          CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+          CoinFeature.CUSTODY_BITGO_MENA_FZE,
+        ].includes(feature)
+    )
   ),
   solToken(
     'f194cd14-d0c2-443a-b717-e826143c7e33',
@@ -1526,7 +1547,14 @@ export const solTokens = [
     'GbBWwtYTMPis4VHb8MrBbdibPhn28TSrLB53KvUmb7Gi',
     'GbBWwtYTMPis4VHb8MrBbdibPhn28TSrLB53KvUmb7Gi',
     UnderlyingAsset.WFFT,
-    SOL_TOKEN_FEATURES
+    SOL_TOKEN_FEATURES.filter(
+      (feature) =>
+        ![
+          CoinFeature.CUSTODY_BITGO_SINGAPORE,
+          CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+          CoinFeature.CUSTODY_BITGO_MENA_FZE,
+        ].includes(feature)
+    )
   ),
   solToken(
     '2e848aaf-b5ac-49b6-8bd2-eb8b56493ece',
@@ -2266,7 +2294,7 @@ export const solTokens = [
     'J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn',
     'J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn',
     UnderlyingAsset['sol:jitosol'],
-    SOL_TOKEN_FEATURES
+    SOL_TOKEN_FEATURES.filter((feature) => feature !== CoinFeature.CUSTODY_BITGO_SINGAPORE)
   ),
   solToken(
     'bd2130ca-c44f-4d7a-977b-62939a1f9fdb',

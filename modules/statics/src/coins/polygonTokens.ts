@@ -127,7 +127,14 @@ export const polygonTokens = [
     4,
     '0xd85d1e945766fea5eda9103f918bd915fbca63e6',
     UnderlyingAsset['polygon:cel'],
-    POLYGON_TOKEN_FEATURES
+    POLYGON_TOKEN_FEATURES.filter(
+      (feature) =>
+        ![
+          CoinFeature.CUSTODY_BITGO_SINGAPORE,
+          CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+          CoinFeature.CUSTODY_BITGO_MENA_FZE,
+        ].includes(feature)
+    )
   ),
   polygonErc20(
     '95b52504-fb5c-44fa-8546-91384daa55f6',
