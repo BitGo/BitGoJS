@@ -3690,6 +3690,18 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
     ofc: ofcToken,
   };
 
+  //return the BaseCoin from default coin map if present
+  if (isCoinPresentInCoinMap({ ...token })) {
+    if (coins.has(token.name)) {
+      return coins.get(token.name);
+    }
+    if (coins.has(token.id)) {
+      return coins.get(token.id);
+    }
+    if (token.alias && coins.has(token.alias)) {
+      return coins.get(token.alias);
+    }
+  }
   const family = token.family;
   const initializer = initializerMap[family] as (...args: unknown[]) => Readonly<BaseCoin>;
   if (!initializer) {
