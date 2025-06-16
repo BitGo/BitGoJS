@@ -803,7 +803,7 @@ export class Sol extends BaseCoin {
           if (params.tokenContractAddress === tokenAccount.info.mint) {
             const tokenAmount = new BigNumber(tokenAccount.info.tokenAmount.amount);
             const network = this.getNetwork();
-            const token = getSolTokenFromAddress(tokenAccount.info.mint, network);
+            const token = getSolTokenFromAddress(tokenAccount.info.mint, network); // todo(WIN-5894) fix for ams
 
             if (!_.isUndefined(token) && tokenAmount.gt(new BigNumber(0))) {
               tokenAccount.tokenName = token.name;
@@ -1116,7 +1116,7 @@ export class Sol extends BaseCoin {
       txBuilder.fee({ amount: feePerSignature });
 
       const network = this.getNetwork();
-      const token = getSolTokenFromAddress(tokenInfo.info.mint, network);
+      const token = getSolTokenFromAddress(tokenInfo.info.mint, network); // todo(WIN-5894) fix for ams
       txBuilder.send({
         address: params.recoveryDestinationAtaAddress,
         amount: tokenBalance,
