@@ -192,3 +192,129 @@ export const coinAmounts = {
   amount4: { amount: '-1', denom: 'basetcro' },
   amount5: { amount: '1000000000', denom: 'mbasetcro' },
 };
+
+export const TEST_DELEGATE_TX = {
+  hash: '01BA59AAF0EC2AAAB8B036B16C27E654C57822BEB8AE3FDDC22C31D5ED7521D8',
+  signature: '5H3a5WlZS3yvL+muU8qPB1IlYBxvuu7vIDOQuIc0JMU06kNtj8arKQLH9NGEpweu3u84KXYURA+Qxo8AzoO8Zw==',
+  pubKey: 'AtlNaLjd5ijapNfxJCzOJV4pdMBouEomADHNgQEPulHL',
+  privateKey: 'peFJjp2ECSNTRdKBfVhv8aGgoUBbmYPp2+l9prY5zjc=',
+  signedTxBase64:
+    'CpkBCpYBCiMvY29zbW9zLnN0YWtpbmcudjFiZXRhMS5Nc2dEZWxlZ2F0ZRJvCit0Y3JvMXJoczQwMnZuamY3MzY5eXlqa2swbnJza3VwbWZsNHl4cG5hYWhqEi90Y3JvY25jbDFzNGdncTJ6dXp2d2c1azh2bngyeGZ3dGRtNGN6Nnd0bnVxa2w3YRoPCghiYXNldGNybxIDMTAwEmoKUApGCh8vY29zbW9zLmNyeXB0by5zZWNwMjU2azEuUHViS2V5EiMKIQLZTWi43eYo2qTX8SQsziVeKXTAaLhKJgAxzYEBD7pRyxIECgIIARgKEhYKEAoIYmFzZXRjcm8SBDUwMDAQwJoMGkDkfdrlaVlLfK8v6a5Tyo8HUiVgHG+67u8gM5C4hzQkxTTqQ22PxqspAsf00YSnB67e7zgpdhRED5DGjwDOg7xn',
+  delegator: 'tcro1rhs402vnjf7369yyjkk0nrskupmfl4yxpnaahj',
+  validator: 'tcrocncl1s4ggq2zuzvwg5k8vnx2xfwtdm4cz6wtnuqkl7a',
+  chainId: 'testnet-croeseid-4',
+  accountNumber: 10,
+  sequence: 10,
+  sendAmount: '100',
+  feeAmount: '5000',
+  sendMessage: {
+    typeUrl: '/cosmos.staking.v1beta1.MsgDelegate',
+    value: {
+      delegatorAddress: 'tcro1rhs402vnjf7369yyjkk0nrskupmfl4yxpnaahj',
+      validatorAddress: 'tcrocncl1s4ggq2zuzvwg5k8vnx2xfwtdm4cz6wtnuqkl7a',
+      amount: {
+        denom: 'basetcro',
+        amount: '100',
+      },
+    },
+  },
+  gasBudget: {
+    amount: [{ denom: 'basetcro', amount: '5000' }],
+    gasLimit: 200000,
+  },
+};
+
+export const TEST_UNDELEGATE_TX = {
+  hash: '0148F45CD290B9D4A5594ACC49707C362A3275AE00F881776BE2B8929FC3A430',
+  signature: '5H3a5WlZS3yvL+muU8qPB1IlYBxvuu7vIDOQuIc0JMU06kNtj8arKQLH9NGEpweu3u84KXYURA+Qxo8AzoO8Zw==',
+  pubKey: 'AtlNaLjd5ijapNfxJCzOJV4pdMBouEomADHNgQEPulHL',
+  privateKey: 'peFJjp2ECSNTRdKBfVhv8aGgoUBbmYPp2+l9prY5zjc=',
+  signedTxBase64:
+    'CpsBCpgBCiUvY29zbW9zLnN0YWtpbmcudjFiZXRhMS5Nc2dVbmRlbGVnYXRlEm8KK3Rjcm8xcmhzNDAydm5qZjczNjl5eWprazBucnNrdXBtZmw0eXhwbmFhaGoSL3Rjcm9jbmNsMXM0Z2dxMnp1enZ3ZzVrOHZueDJ4Znd0ZG00Y3o2d3RudXFrbDdhGg8KCGJhc2V0Y3JvEgMxMDASawpQCkYKHy9jb3Ntb3MuY3J5cHRvLnNlY3AyNTZrMS5QdWJLZXkSIwohAtlNaLjd5ijapNfxJCzOJV4pdMBouEomADHNgQEPulHLEgQKAggBGAoSFwoRCghiYXNldGNybxIFNTAwMDAQwJoMGkDkfdrlaVlLfK8v6a5Tyo8HUiVgHG+67u8gM5C4hzQkxTTqQ22PxqspAsf00YSnB67e7zgpdhRED5DGjwDOg7xn',
+  delegator: 'tcro1rhs402vnjf7369yyjkk0nrskupmfl4yxpnaahj',
+  validator: 'tcrocncl1s4ggq2zuzvwg5k8vnx2xfwtdm4cz6wtnuqkl7a',
+  chainId: 'testnet-croeseid-4',
+  accountNumber: 10,
+  sequence: 10,
+  sendAmount: '100',
+  feeAmount: '5000',
+  sendMessage: {
+    typeUrl: '/cosmos.staking.v1beta1.MsgUndelegate',
+    value: {
+      delegatorAddress: 'tcro1rhs402vnjf7369yyjkk0nrskupmfl4yxpnaahj',
+      validatorAddress: 'tcrocncl1s4ggq2zuzvwg5k8vnx2xfwtdm4cz6wtnuqkl7a',
+      amount: {
+        denom: 'basetcro',
+        amount: '100',
+      },
+    },
+  },
+  gasBudget: {
+    amount: [
+      {
+        denom: 'basetcro',
+        amount: '50000',
+      },
+    ],
+    gasLimit: 200000,
+  },
+};
+
+export const TEST_REDELEGATE_TX = {
+  hash: '01BDED57D2A48B9CC3F47AFE9BFFEB934ABC0E83B83E9DF8B60C1C0843583A46',
+  signature: '5H3a5WlZS3yvL+muU8qPB1IlYBxvuu7vIDOQuIc0JMU06kNtj8arKQLH9NGEpweu3u84KXYURA+Qxo8AzoO8Zw==',
+  pubKey: 'AtlNaLjd5ijapNfxJCzOJV4pdMBouEomADHNgQEPulHL',
+  privateKey: 'peFJjp2ECSNTRdKBfVhv8aGgoUBbmYPp2+l9prY5zjc=',
+  signedTxBase64:
+    'CtIBCs8BCiovY29zbW9zLnN0YWtpbmcudjFiZXRhMS5Nc2dCZWdpblJlZGVsZWdhdGUSoAEKK3Rjcm8xcmhzNDAydm5qZjczNjl5eWprazBucnNrdXBtZmw0eXhwbmFhaGoSL3Rjcm9jbmNsMXM0Z2dxMnp1enZ3ZzVrOHZueDJ4Znd0ZG00Y3o2d3RudXFrbDdhGi90Y3JvY25jbDE2M3R2NTl5emdlcWNhcDhscnNhMnI0ems1ODBoOGRkcjVhMHNkZCIPCghiYXNldGNybxIDMTAwEmoKUApGCh8vY29zbW9zLmNyeXB0by5zZWNwMjU2azEuUHViS2V5EiMKIQLZTWi43eYo2qTX8SQsziVeKXTAaLhKJgAxzYEBD7pRyxIECgIIARgKEhYKEAoIYmFzZXRjcm8SBDgwMDAQ4KcSGkDkfdrlaVlLfK8v6a5Tyo8HUiVgHG+67u8gM5C4hzQkxTTqQ22PxqspAsf00YSnB67e7zgpdhRED5DGjwDOg7xn',
+  delegator: 'tcro1rhs402vnjf7369yyjkk0nrskupmfl4yxpnaahj',
+  validator: 'tcrocncl1s4ggq2zuzvwg5k8vnx2xfwtdm4cz6wtnuqkl7a',
+  validatorDst: 'tcrocncl163tv59yzgeqcap8lrsa2r4zk580h8ddr5a0sdd',
+  chainId: 'testnet-croeseid-4',
+  accountNumber: 10,
+  sequence: 10,
+  sendAmount: '100',
+  feeAmount: '5000',
+  sendMessage: {
+    typeUrl: '/cosmos.staking.v1beta1.MsgBeginRedelegate',
+    value: {
+      delegatorAddress: 'tcro1rhs402vnjf7369yyjkk0nrskupmfl4yxpnaahj',
+      validatorSrcAddress: 'tcrocncl1s4ggq2zuzvwg5k8vnx2xfwtdm4cz6wtnuqkl7a',
+      validatorDstAddress: 'tcrocncl163tv59yzgeqcap8lrsa2r4zk580h8ddr5a0sdd',
+      amount: {
+        denom: 'basetcro',
+        amount: '100',
+      },
+    },
+  },
+  gasBudget: {
+    amount: [{ denom: 'basetcro', amount: '8000' }],
+    gasLimit: 300000,
+  },
+};
+
+export const TEST_WITHDRAW_REWARDS_TX = {
+  hash: '4CAA5DDBFB138D555DDDEFC8E256BDD3CFC201C6C71DC3BB245A412EB29CB49A',
+  signature: '5H3a5WlZS3yvL+muU8qPB1IlYBxvuu7vIDOQuIc0JMU06kNtj8arKQLH9NGEpweu3u84KXYURA+Qxo8AzoO8Zw==',
+  pubKey: 'AtlNaLjd5ijapNfxJCzOJV4pdMBouEomADHNgQEPulHL',
+  privateKey: 'peFJjp2ECSNTRdKBfVhv8aGgoUBbmYPp2+l9prY5zjc=',
+  signedTxBase64:
+    'CpwBCpkBCjcvY29zbW9zLmRpc3RyaWJ1dGlvbi52MWJldGExLk1zZ1dpdGhkcmF3RGVsZWdhdG9yUmV3YXJkEl4KK3Rjcm8xcmhzNDAydm5qZjczNjl5eWprazBucnNrdXBtZmw0eXhwbmFhaGoSL3Rjcm9jbmNsMXM0Z2dxMnp1enZ3ZzVrOHZueDJ4Znd0ZG00Y3o2d3RudXFrbDdhEmoKUApGCh8vY29zbW9zLmNyeXB0by5zZWNwMjU2azEuUHViS2V5EiMKIQLZTWi43eYo2qTX8SQsziVeKXTAaLhKJgAxzYEBD7pRyxIECgIIARgKEhYKEAoIYmFzZXRjcm8SBDUwMDAQwJoMGkDkfdrlaVlLfK8v6a5Tyo8HUiVgHG+67u8gM5C4hzQkxTTqQ22PxqspAsf00YSnB67e7zgpdhRED5DGjwDOg7xn',
+  delegator: 'tcro1rhs402vnjf7369yyjkk0nrskupmfl4yxpnaahj',
+  validator: 'tcrocncl1s4ggq2zuzvwg5k8vnx2xfwtdm4cz6wtnuqkl7a',
+  chainId: 'testnet-croeseid-4',
+  accountNumber: 10,
+  sequence: 10,
+  feeAmount: '50000',
+  sendMessage: {
+    typeUrl: '/cosmos.distribution.v1beta1.MsgWithdrawDelegatorReward',
+    value: {
+      delegatorAddress: 'tcro1rhs402vnjf7369yyjkk0nrskupmfl4yxpnaahj',
+      validatorAddress: 'tcrocncl1s4ggq2zuzvwg5k8vnx2xfwtdm4cz6wtnuqkl7a',
+    },
+  },
+  gasBudget: {
+    amount: [{ denom: 'basetcro', amount: '5000' }],
+    gasLimit: 200000,
+  },
+};
