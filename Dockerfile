@@ -66,6 +66,7 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-atom /var/modules/sdk-coin-atom/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-avaxc /var/modules/sdk-coin-avaxc/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-avaxp /var/modules/sdk-coin-avaxp/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-eth /var/modules/sdk-coin-eth/
+COPY --from=builder /tmp/bitgo/modules/sdk-coin-evm /var/modules/sdk-coin-evm/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-baby /var/modules/sdk-coin-baby/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-bera /var/modules/sdk-coin-bera/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-bld /var/modules/sdk-coin-bld/
@@ -159,6 +160,7 @@ cd /var/modules/sdk-coin-atom && yarn link && \
 cd /var/modules/sdk-coin-avaxc && yarn link && \
 cd /var/modules/sdk-coin-avaxp && yarn link && \
 cd /var/modules/sdk-coin-eth && yarn link && \
+cd /var/modules/sdk-coin-evm && yarn link && \
 cd /var/modules/sdk-coin-baby && yarn link && \
 cd /var/modules/sdk-coin-bera && yarn link && \
 cd /var/modules/sdk-coin-bld && yarn link && \
@@ -255,6 +257,7 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-avaxc && \
     yarn link @bitgo/sdk-coin-avaxp && \
     yarn link @bitgo/sdk-coin-eth && \
+    yarn link @bitgo/sdk-coin-evm && \
     yarn link @bitgo/sdk-coin-baby && \
     yarn link @bitgo/sdk-coin-bera && \
     yarn link @bitgo/sdk-coin-bld && \
