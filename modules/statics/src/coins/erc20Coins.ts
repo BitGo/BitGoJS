@@ -2268,7 +2268,7 @@ export const erc20Coins = [
   erc20(
     'fd8e59ae-d6f1-4ab6-917e-954d052cf60c',
     'euroc',
-    'Euro Coin',
+    'EURC',
     6,
     '0x1abaea1f7c830bd89acc67ec4af516284b1bc33c',
     UnderlyingAsset.EUROC,
