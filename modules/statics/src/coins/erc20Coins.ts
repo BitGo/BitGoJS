@@ -1245,7 +1245,14 @@ export const erc20Coins = [
     4,
     '0xaaaebe6fe48e54f431b0c390cfaf0b017d09d42d',
     UnderlyingAsset.CEL,
-    ETH_FEATURES_WITH_FRANKFURT
+    ETH_FEATURES_WITH_FRANKFURT.filter(
+      (feature) =>
+        ![
+          CoinFeature.CUSTODY_BITGO_SINGAPORE,
+          CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+          CoinFeature.CUSTODY_BITGO_MENA_FZE,
+        ].includes(feature)
+    )
   ),
   erc20(
     'a5dfdbdd-aff4-4a38-a798-37225afb2c8c',
@@ -2491,7 +2498,14 @@ export const erc20Coins = [
     18,
     '0x50d1c9771902476076ecfc8b2a83ad6b9355a4c9',
     UnderlyingAsset.FTT,
-    ETH_FEATURES_WITH_FRANKFURT
+    ETH_FEATURES_WITH_FRANKFURT.filter(
+      (feature) =>
+        ![
+          CoinFeature.CUSTODY_BITGO_SINGAPORE,
+          CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+          CoinFeature.CUSTODY_BITGO_MENA_FZE,
+        ].includes(feature)
+    )
   ),
   erc20(
     'd7c330ea-7767-4737-8701-cc50c605bab9',
@@ -6444,7 +6458,8 @@ export const erc20Coins = [
     'WisdomTree Government Money Market Digital Fund',
     18,
     '0x1fecf3d9d4fee7f2c02917a66028a48c6706c179',
-    UnderlyingAsset.WTGXX
+    UnderlyingAsset.WTGXX,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'acf1b526-75e0-47f8-b812-32893f85b180',
