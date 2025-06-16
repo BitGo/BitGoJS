@@ -2102,4 +2102,27 @@ export class BitGoAPI implements BitGoBase {
     // use defaultConstants as the backup for keys that are not set in this._constants
     return _.merge({}, defaultConstants(this.getEnv()), BitGoAPI._constants[this.getEnv()]);
   }
+
+  /**
+   * Execute an asset request which does not need HMAC validation
+   * @param url The URL for the asset request
+   * @returns {Promise<any>} The response body
+   */
+  protected async executeAssetRequest(url: string): Promise<any> {
+    const req = this.getAgentRequest('get', url);
+    req.set('BitGo-SDK-Version', this._version);
+    if (this._customProxyAgent) {
+      req.agent(this._customProxyAgent);
+    }
+    // Set the request timeout to just above 5 minutes by default
+    req.timeout((process.env.BITGO_TIMEOUT as any) * 1000 || 305 * 1000);
+    if (this.getAdditionalHeadersCb) {
+      const additionalHeaders = this.getAdditionalHeadersCb('get', url);
+      for (const { key, value } of additionalHeaders) {
+        req.set(key, value);
+      }
+    }
+    const result = await req;
+    return result.body;
+  }
 }
