@@ -2646,6 +2646,46 @@ export const solTokens = [
     UnderlyingAsset['sol:chillguy'],
     SOL_TOKEN_FEATURES
   ),
+  solToken(
+    '184eeeea-cd6c-4ee1-babf-ebf0ba12f12f',
+    'sol:grph',
+    'Soul Graph',
+    6,
+    '9doRRAik5gvhbEwjbZDbZR6GxXSAfdoomyJR57xKpump',
+    '9doRRAik5gvhbEwjbZDbZR6GxXSAfdoomyJR57xKpump',
+    UnderlyingAsset['sol:grph'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    'a86d983f-675b-49d7-a2d8-4333264316f8',
+    'sol:moodeng',
+    'Moo Deng',
+    6,
+    'ED5nyyWEzpPPiWimP8vYm7sD7TD3LAt3Q3gRTWHzPJBY',
+    'ED5nyyWEzpPPiWimP8vYm7sD7TD3LAt3Q3gRTWHzPJBY',
+    UnderlyingAsset['sol:moodeng'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '2f71891a-cd0f-465a-ba1b-b1e07072cd04',
+    'sol:hsol',
+    'Helius Staked SOL',
+    9,
+    'he1iusmfkpAdwvxLNGV8Y1iSbj4rUy6yMhEA3fotn9A',
+    'he1iusmfkpAdwvxLNGV8Y1iSbj4rUy6yMhEA3fotn9A',
+    UnderlyingAsset['sol:hsol'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '247b9f70-2e4c-4f31-a944-bb5b59f1529a',
+    'sol:superbonds',
+    'SuperBonds',
+    6,
+    'SuperbZyz7TsSdSoFAZ6RYHfAWe9NmjXBLVQpS8hqdx',
+    'SuperbZyz7TsSdSoFAZ6RYHfAWe9NmjXBLVQpS8hqdx',
+    UnderlyingAsset['sol:superbonds'],
+    SOL_TOKEN_FEATURES
+  ),
   tsolToken(
     'b98c5a7a-49c5-45f1-a6ee-b08dff596a7d',
     'tsol:srm',

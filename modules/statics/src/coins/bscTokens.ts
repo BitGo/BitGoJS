@@ -1153,6 +1153,15 @@ export const bscTokens = [
     UnderlyingAsset['bsc:telos'],
     BSC_TOKEN_FEATURES
   ),
+  bscToken(
+    'e3e05194-500b-4ef3-843d-0efac7b693a3',
+    'bsc:aitech',
+    'Solidus Ai Tech',
+    18,
+    '0x2d060ef4d6bf7f9e5edde373ab735513c0e4f944',
+    UnderlyingAsset['bsc:aitech'],
+    BSC_TOKEN_FEATURES
+  ),
   tbscToken(
     'b31aa2b5-8d8c-4ac1-b5e5-0f9d59377eab',
     'tbsc:busd',

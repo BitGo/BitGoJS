@@ -1954,6 +1954,11 @@ export enum UnderlyingAsset {
   'eth:ctrl' = 'eth:ctrl',
   'eth:benji' = 'eth:benji',
   'eth:ibenji' = 'eth:ibenji',
+  'eth:chex' = 'eth:chex',
+  'eth:gho' = 'eth:gho',
+  'eth:npc' = 'eth:npc',
+  'eth:towns' = 'eth:towns',
+  'eth:umint' = 'eth:umint',
   'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ' = 'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ',
   'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M' = 'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M',
   'xlm:SLT-GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP' = 'xlm:SLT-GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP',
@@ -2352,6 +2357,7 @@ export enum UnderlyingAsset {
   'bsc:lina' = 'bsc:lina',
   'bsc:usd1' = 'bsc:usd1',
   'bsc:oort' = 'bsc:oort',
+  'bsc:aitech' = 'bsc:aitech',
   // BSC NFTs
   // generic NFTs
   'erc721:bsctoken' = 'erc721:bsctoken',
@@ -2617,6 +2623,10 @@ export enum UnderlyingAsset {
   'sol:sb' = 'sol:sb',
   'sol:dfdvsol' = 'sol:dfdvsol',
   'sol:chillguy' = 'sol:chillguy',
+  'sol:moodeng' = 'sol:moodeng',
+  'sol:hsol' = 'sol:hsol',
+  'sol:grph' = 'sol:grph',
+  'sol:superbonds' = 'sol:superbonds',
 
   // TRX tokens
   'trx:htx' = 'trx:htx',
