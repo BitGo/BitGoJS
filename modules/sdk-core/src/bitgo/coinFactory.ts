@@ -43,6 +43,16 @@ export class CoinFactory {
   }
 
   /**
+   * Checks if the coin is present in both coin map and constructor map
+   * @param name Name of coin
+   * @returns {boolean}
+   */
+
+  public hasCoin(name: string): boolean {
+    return this.coinMap.has(name) && this.getCoinConstructor(name) !== undefined;
+  }
+
+  /**
    * Registers a token in the coin map and the constructor map.
    * @param staticsCoin The static coin definition from BitGo Statics
    * @param coinConstructor The constructor for the coin plugin

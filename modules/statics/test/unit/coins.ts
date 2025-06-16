@@ -1161,5 +1161,14 @@ describe('create token map using config details', () => {
       decimalPlaces: amsTokenConfig.decimalPlaces,
       tokenContractAddress: amsTokenConfig.contractAddress.toLowerCase(),
     });
+    it('should return the base coin present in default coin map', () => {
+      const tokenName = 'thbar:usdc';
+      const token = createToken(incorrectAmsTokenConfig[tokenName][0]);
+      token?.should.not.be.undefined();
+      token?.decimalPlaces.should.eql(coins.get(tokenName).decimalPlaces);
+      token?.baseUnit.should.eql(coins.get(tokenName).baseUnit);
+      token?.decimalPlaces.should.not.eql(incorrectAmsTokenConfig[tokenName][0].decimalPlaces);
+      token?.baseUnit.should.not.eql(incorrectAmsTokenConfig[tokenName][0].baseUnit);
+    });
   });
 });
