@@ -672,4 +672,58 @@ describe('EthLikeCoin', function () {
       transaction.halfSigned?.should.have.property('recipients');
     });
   });
+
+  describe('Common parameter handling', function () {
+    it('should handle plain object common parameter for BASE chain', function () {
+      const baseCoin = bitgo.coin('baseeth') as EthLikeCoin;
+
+      const plainCommon = { chain: 8453, hardfork: 'london' };
+
+      const txBuilder = (baseCoin as any).getTransactionBuilder(plainCommon);
+      txBuilder.should.be.an.instanceof(EthLikeTransactionBuilder);
+    });
+
+    it('should handle plain object common parameter with chainId property', function () {
+      const baseCoin = bitgo.coin('baseeth') as EthLikeCoin;
+
+      const plainCommon = { chainId: 8453, hardfork: 'london' };
+
+      const txBuilder = (baseCoin as any).getTransactionBuilder(plainCommon);
+      txBuilder.should.be.an.instanceof(EthLikeTransactionBuilder);
+    });
+
+    it('should handle EthereumCommon instance', function () {
+      const baseCoin = bitgo.coin('baseeth') as EthLikeCoin;
+
+      const txBuilder = (baseCoin as any).getTransactionBuilder(baseChainCommon);
+      txBuilder.should.be.an.instanceof(EthLikeTransactionBuilder);
+    });
+
+    it('should require common parameter and throw error when undefined', function () {
+      const baseCoin = bitgo.coin('baseeth') as EthLikeCoin;
+
+      (() => {
+        (baseCoin as any).getTransactionBuilder(undefined);
+      }).should.throw('Common must be provided for EthLikeTransactionBuilder');
+    });
+
+    it('should convert plain object common to EthereumCommon with working gteHardfork method', function () {
+      const baseCoin = bitgo.coin('baseeth') as EthLikeCoin;
+
+      const plainCommon = { chain: 8453, hardfork: 'london' };
+
+      const txBuilder = (baseCoin as any).getTransactionBuilder(plainCommon);
+      txBuilder.should.be.an.instanceof(EthLikeTransactionBuilder);
+
+      const common = (txBuilder as any)._common;
+      common.should.not.be.undefined;
+
+      common.should.have.property('gteHardfork');
+      (typeof common.gteHardfork).should.equal('function');
+
+      const result = common.gteHardfork('homestead');
+      (typeof result).should.equal('boolean');
+      result.should.equal(true);
+    });
+  });
 });
