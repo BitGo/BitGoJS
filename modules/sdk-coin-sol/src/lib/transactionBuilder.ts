@@ -75,7 +75,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this.sender(sender);
     this.feePayer(txData.feePayer as string);
     this.nonce(txData.nonce, txData.durableNonce);
-    this._instructionsData = instructionParamsFactory(tx.type, tx.solTransaction.instructions, this._coinConfig.name);
+    this._instructionsData = instructionParamsFactory(
+      tx.type,
+      tx.solTransaction.instructions,
+      this._coinConfig.name,
+      txData.instructionsData
+    );
     // Parse priority fee instruction data
     const filteredPriorityFeeInstructionsData = txData.instructionsData.filter(
       (data) => data.type === InstructionBuilderTypes.SetPriorityFee

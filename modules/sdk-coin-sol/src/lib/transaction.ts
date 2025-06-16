@@ -402,7 +402,8 @@ export class Transaction extends BaseTransaction {
     const decodedInstructions = instructionParamsFactory(
       this._type,
       this._solTransaction.instructions,
-      this._coinConfig.name
+      this._coinConfig.name,
+      this._instructionsData
     );
 
     let memo: string | undefined = undefined;
