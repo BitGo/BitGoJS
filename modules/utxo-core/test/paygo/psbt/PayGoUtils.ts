@@ -1,18 +1,21 @@
 import assert from 'assert';
+import crypto from 'crypto';
 
 import * as utxolib from '@bitgo/utxo-lib';
-import * as bitcoinMessage from 'bitcoinjs-message';
 import { decodeProprietaryKey } from 'bip174/src/lib/proprietaryKeyVal';
 import { KeyValue } from 'bip174/src/lib/interfaces';
 import { checkForOutput } from 'bip174/src/lib/utils';
 
 import {
-  addPaygoAddressProof,
-  getPaygoAddressProofOutputIndex,
+  addPayGoAddressProof,
+  createPayGoAttestationBuffer,
+  getPayGoAddressProofOutputIndex,
   psbtOutputIncludesPaygoAddressProof,
-  verifyPaygoAddressProof,
+  verifyPayGoAddressProof,
 } from '../../../src/paygo/psbt/PayGoUtils';
 import { generatePayGoAttestationProof } from '../../../src/testutil/generatePayGoAttestationProof.utils';
+import { parseVaspProof } from '../../../src/testutil/parseVaspProof';
+import { signMessage } from '../../../src/bip32utils';
 
 // To construct our PSBTs
 const network = utxolib.networks.bitcoin;
@@ -35,7 +38,7 @@ const attestationPubKey = dummyPub1.user.publicKey;
 const attestationPrvKey = dummyPub1.user.privateKey!;
 
 // UUID structure
-const nilUUID = '00000000-0000-0000-0000-000000000000';
+const nillUUID = '00000000-0000-0000-0000-000000000000';
 
 // our xpub converted to base58 address
 const addressToVerify = utxolib.address.toBase58Check(
@@ -45,9 +48,13 @@ const addressToVerify = utxolib.address.toBase58Check(
 );
 
 // this should be retuning a Buffer
-const addressProofBuffer = generatePayGoAttestationProof(nilUUID, Buffer.from(addressToVerify));
+const addressProofBuffer = generatePayGoAttestationProof(nillUUID, Buffer.from(addressToVerify));
+const addressProofMsgBuffer = parseVaspProof(addressProofBuffer);
+// We know that that the entropy is a set 64 bytes.
+const addressProofEntropy = addressProofMsgBuffer.subarray(0, 65);
+
 // signature with the given msg addressProofBuffer
-const sig = bitcoinMessage.sign(addressProofBuffer, attestationPrvKey!, true, network.messagePrefix);
+const sig = signMessage(addressProofMsgBuffer.toString(), attestationPrvKey!, network);
 
 function getTestPsbt() {
   return utxolib.testutil.constructPsbt(psbtInputs, psbtOutputs, network, rootWalletKeys, 'unsigned');
@@ -67,38 +74,25 @@ describe('addPaygoAddressProof and verifyPaygoAddressProof', () => {
       });
   }
 
-  it("should fail a proof verification if the proof isn't valid", () => {
-    const outputIndex = 0;
-    const psbt = getTestPsbt();
-    addPaygoAddressProof(psbt, outputIndex, sig, Buffer.from(attestationPubKey));
-    const output = checkForOutput(psbt.data.outputs, outputIndex);
-    const proofInPsbt = getPaygoProprietaryKey(output.unknownKeyVals!);
-    assert(proofInPsbt.length === 1);
-    assert.throws(
-      () => verifyPaygoAddressProof(psbt, 0, Buffer.from('Random Signed Message'), attestationPubKey),
-      (e: any) => e.message === 'Cannot verify the paygo address signature with the provided pubkey.'
-    );
-  });
-
   it('should add and verify a valid paygo address proof on the PSBT', () => {
     const psbt = getTestPsbt();
     psbt.addOutput({ script: utxolib.address.toOutputScript(addressToVerify, network), value: BigInt(10000) });
     const outputIndex = psbt.data.outputs.length - 1;
-    addPaygoAddressProof(psbt, outputIndex, sig, Buffer.from(attestationPubKey));
-    verifyPaygoAddressProof(psbt, outputIndex, Buffer.from(addressProofBuffer), attestationPubKey);
+    addPayGoAddressProof(psbt, outputIndex, sig, addressProofEntropy);
+    verifyPayGoAddressProof(psbt, outputIndex, attestationPubKey);
   });
 
   it('should throw an error if there are multiple PayGo proprietary keys in the PSBT', () => {
     const outputIndex = 0;
     const psbt = getTestPsbt();
-    addPaygoAddressProof(psbt, outputIndex, sig, Buffer.from(attestationPubKey));
-    addPaygoAddressProof(psbt, outputIndex, Buffer.from('signature2'), Buffer.from('fakepubkey2s'));
+    addPayGoAddressProof(psbt, outputIndex, sig, addressProofEntropy);
+    addPayGoAddressProof(psbt, outputIndex, Buffer.from('signature2'), crypto.randomBytes(64));
     const output = checkForOutput(psbt.data.outputs, outputIndex);
     const proofInPsbt = getPaygoProprietaryKey(output.unknownKeyVals!);
     assert(proofInPsbt.length !== 0);
     assert(proofInPsbt.length > 1);
     assert.throws(
-      () => verifyPaygoAddressProof(psbt, outputIndex, addressProofBuffer, attestationPubKey),
+      () => verifyPayGoAddressProof(psbt, outputIndex, attestationPubKey),
       (e: any) => e.message === 'There are multiple paygo address proofs encoded in the PSBT. Something went wrong.'
     );
   });
@@ -108,7 +102,7 @@ describe('verifyPaygoAddressProof', () => {
   it('should throw an error if there is no PayGo address in PSBT', () => {
     const psbt = getTestPsbt();
     assert.throws(
-      () => verifyPaygoAddressProof(psbt, 0, addressProofBuffer, attestationPubKey),
+      () => verifyPayGoAddressProof(psbt, 0, attestationPubKey),
       (e: any) => e.message === 'There is no paygo address proof encoded in the PSBT at output 0.'
     );
   });
@@ -118,25 +112,43 @@ describe('getPaygoAddressProofIndex', () => {
   it('should get PayGo address proof index from PSBT if there is one', () => {
     const psbt = getTestPsbt();
     const outputIndex = 0;
-    addPaygoAddressProof(psbt, outputIndex, sig, Buffer.from(attestationPubKey));
+    addPayGoAddressProof(psbt, outputIndex, sig, Buffer.from(attestationPubKey));
     assert(psbtOutputIncludesPaygoAddressProof(psbt));
-    assert(getPaygoAddressProofOutputIndex(psbt) === 0);
+    assert(getPayGoAddressProofOutputIndex(psbt) === 0);
   });
 
   it('should return undefined if there is no PayGo address proof in PSBT', () => {
     const psbt = getTestPsbt();
-    assert(getPaygoAddressProofOutputIndex(psbt) === undefined);
+    assert(getPayGoAddressProofOutputIndex(psbt) === undefined);
     assert(!psbtOutputIncludesPaygoAddressProof(psbt));
   });
 
   it('should return an error and fail if we have multiple PayGo address in the PSBT in the same output index', () => {
     const psbt = getTestPsbt();
     const outputIndex = 0;
-    addPaygoAddressProof(psbt, outputIndex, sig, Buffer.from(attestationPubKey));
-    addPaygoAddressProof(psbt, outputIndex, sig, Buffer.from('xpub12345abcdef29a028510d3b2d4'));
+    addPayGoAddressProof(psbt, outputIndex, sig, addressProofEntropy);
+    addPayGoAddressProof(psbt, outputIndex, sig, crypto.randomBytes(64));
     assert.throws(
-      () => getPaygoAddressProofOutputIndex(psbt),
+      () => getPayGoAddressProofOutputIndex(psbt),
       (e: any) => e.message === 'There are multiple PayGo addresses in the PSBT output 0.'
     );
+  });
+});
+
+describe('createPayGoAttestationBuffer', () => {
+  it('should create a PayGo Attestation proof matching with original proof', () => {
+    const payGoAttestationProof = createPayGoAttestationBuffer(addressToVerify, addressProofEntropy);
+    assert.strictEqual(payGoAttestationProof.toString(), addressProofMsgBuffer.toString());
+    assert(Buffer.compare(payGoAttestationProof, addressProofMsgBuffer) === 0);
+  });
+
+  it('should create a PayGo Attestation proof that does not match with different uuid', () => {
+    const addressProofBufferDiffUuid = generatePayGoAttestationProof(
+      '00000000-0000-0000-0000-000000000001',
+      Buffer.from(addressToVerify)
+    );
+    const payGoAttestationProof = createPayGoAttestationBuffer(addressToVerify, addressProofEntropy);
+    assert.notStrictEqual(payGoAttestationProof.toString(), addressProofBufferDiffUuid.toString());
+    assert(Buffer.compare(payGoAttestationProof, addressProofBufferDiffUuid) !== 0);
   });
 });
