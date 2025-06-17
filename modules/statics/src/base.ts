@@ -392,6 +392,11 @@ export enum CoinFeature {
   EVM_COMPATIBLE_BGA = 'evm-compatible-bga',
 
   /**
+   * This coin is an EVM compatible coin and should use common EVM model registration in IMS
+   */
+  EVM_COMPATIBLE_IMS = 'evm-compatible-ims',
+
+  /**
    * This coin is a rebase token and should use the rebase token functionality
    */
   REBASE_TOKEN = 'rebase-token',
