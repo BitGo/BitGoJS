@@ -66,6 +66,9 @@
       "path": "../sdk-coin-algo"
     },
     {
+      "path": "../sdk-coin-apechain"
+    },
+    {
       "path": "../sdk-coin-apt"
     },
     {
@@ -237,10 +240,10 @@
       "path": "../sdk-coin-wemix"
     },
     {
-      "path": "../sdk-coin-xlm"
+      "path": "../sdk-coin-xdc"
     },
     {
-      "path": "../sdk-coin-xdc"
+      "path": "../sdk-coin-xlm"
     },
     {
       "path": "../sdk-coin-xrp"

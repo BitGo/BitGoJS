@@ -96,6 +96,8 @@ export class CoinMap {
       50312: 'tstt',
       1868: 'soneium',
       1946: 'tsoneium',
+      33111: 'apechain',
+      33139: 'tapechain',
     };
     return ethLikeCoinFromChainId[chainId];
   }

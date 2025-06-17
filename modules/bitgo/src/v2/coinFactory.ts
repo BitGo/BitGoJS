@@ -34,6 +34,7 @@ import {
 import {
   Ada,
   Algo,
+  Apechain,
   Apt,
   AptToken,
   Arbeth,
@@ -116,6 +117,7 @@ import {
   Ton,
   Tada,
   Talgo,
+  Tapechain,
   Tapt,
   Tarbeth,
   Tasi,
@@ -207,6 +209,7 @@ import {
 export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: CoinMap = coins): void {
   coinFactory.register('ada', Ada.createInstance);
   coinFactory.register('algo', Algo.createInstance);
+  coinFactory.register('apechain', Apechain.createInstance);
   coinFactory.register('apt', Apt.createInstance);
   coinFactory.register('arbeth', Arbeth.createInstance);
   coinFactory.register('asi', Asi.createInstance);
@@ -275,6 +278,7 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('tia', Tia.createInstance);
   coinFactory.register('ton', Ton.createInstance);
   coinFactory.register('talgo', Talgo.createInstance);
+  coinFactory.register('tapechain', Tapechain.createInstance);
   coinFactory.register('tapt', Tapt.createInstance);
   coinFactory.register('tarbeth', Tarbeth.createInstance);
   coinFactory.register('tada', Tada.createInstance);

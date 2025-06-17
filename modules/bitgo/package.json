@@ -51,6 +51,7 @@
     "@bitgo/sdk-api": "^1.63.5",
     "@bitgo/sdk-coin-ada": "^4.11.1",
     "@bitgo/sdk-coin-algo": "^2.3.1",
+    "@bitgo/sdk-coin-apechain": "^1.0.0",
     "@bitgo/sdk-coin-apt": "^2.4.1",
     "@bitgo/sdk-coin-arbeth": "^21.6.1",
     "@bitgo/sdk-coin-asi": "^1.1.1",

@@ -1243,7 +1243,7 @@ class CoredaoTestnet extends Testnet implements EthereumNetwork {
 }
 
 class ApeChain extends Mainnet implements EthereumNetwork {
-  name = 'Ape Chain';
+  name = 'ApeChain';
   family = CoinFamily.APECHAIN;
   explorerUrl = 'https://apescan.io/tx/';
   accountExplorerUrl = 'https://apescan.io/address/';
@@ -1252,7 +1252,7 @@ class ApeChain extends Mainnet implements EthereumNetwork {
 }
 
 class ApeChainTestnet extends Testnet implements EthereumNetwork {
-  name = 'Ape Chain Testnet';
+  name = 'ApeChainTestnet';
   family = CoinFamily.APECHAIN;
   explorerUrl = 'https://curtis.apescan.io/tx/';
   accountExplorerUrl = 'https://curtis.apescan.io/address/';
