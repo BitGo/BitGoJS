@@ -2674,7 +2674,7 @@ export const solTokens = [
     'he1iusmfkpAdwvxLNGV8Y1iSbj4rUy6yMhEA3fotn9A',
     'he1iusmfkpAdwvxLNGV8Y1iSbj4rUy6yMhEA3fotn9A',
     UnderlyingAsset['sol:hsol'],
-    SOL_TOKEN_FEATURES
+    SOL_TOKEN_FEATURES.filter((feature) => ![CoinFeature.CUSTODY_BITGO_SINGAPORE].includes(feature))
   ),
   solToken(
     '247b9f70-2e4c-4f31-a944-bb5b59f1529a',
