@@ -86,6 +86,12 @@ interface EnvironmentTemplate {
   soneiumExplorerApiToken?: string;
   stxNodeUrl: string;
   vetNodeUrl: string;
+  evm?: {
+    [key: string]: {
+      baseUrl: string;
+      apiToken?: string;
+    };
+  };
 }
 
 export interface Environment extends EnvironmentTemplate {
