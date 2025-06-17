@@ -43,6 +43,7 @@
     "@bitgo/sjcl": "^1.0.1",
     "@bitgo/statics": "^54.3.0",
     "@bitgo/utxo-lib": "^11.5.0",
+    "@bitgo/utxo-core": "^1.9.1",
     "@noble/curves": "1.8.1",
     "@stablelib/hex": "^1.0.0",
     "@types/superagent": "4.1.15",
