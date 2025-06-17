@@ -1,7 +1,16 @@
-import should = require('should');
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
 import { randomBytes } from 'crypto';
+
+import should from 'should';
+import _ from 'lodash';
+import sinon from 'sinon';
+
+import { BitGoAPI } from '@bitgo/sdk-api';
+import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { coins } from '@bitgo/statics';
+
+import { KeyPair, Near, TNear, Transaction } from '../../src';
+import { getBuilderFactory } from './getBuilderFactory';
+
 import {
   rawTx,
   accounts,
@@ -13,11 +22,7 @@ import {
   nonce,
   ovcResponse,
 } from '../fixtures/near';
-import * as _ from 'lodash';
-import * as sinon from 'sinon';
-import { KeyPair, Near, TNear, Transaction } from '../../src';
-import { getBuilderFactory } from './getBuilderFactory';
-import { coins } from '@bitgo/statics';
+import * as testData from '../resources/near';
 
 describe('NEAR:', function () {
   let bitgo: TestBitGoAPI;
@@ -163,6 +168,82 @@ describe('NEAR:', function () {
       const txParams = newTxParams();
       const verification = {};
 
+      const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild, verification });
+      isTransactionVerified.should.equal(true);
+    });
+
+    it('should succeed to verify unsigned self storage deposit transaction', async () => {
+      const txPrebuild = {
+        txHex: testData.rawTx.selfStorageDeposit.unsigned,
+      };
+      const txParams = {
+        type: 'enabletoken',
+        recipients: [
+          {
+            address: testData.accounts.account1.address,
+            amount: '0',
+            tokenName: 'tnear:tnep24dp',
+          },
+        ],
+      };
+      const verification = {};
+      const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild, verification });
+      isTransactionVerified.should.equal(true);
+    });
+
+    it('should succeed to verify signed self storage deposit transaction', async () => {
+      const txPrebuild = {
+        txHex: testData.rawTx.selfStorageDeposit.signed,
+      };
+      const txParams = {
+        type: 'enabletoken',
+        recipients: [
+          {
+            address: testData.accounts.account1.address,
+            amount: '0',
+            tokenName: 'tnear:tnep24dp',
+          },
+        ],
+      };
+      const verification = {};
+      const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild, verification });
+      isTransactionVerified.should.equal(true);
+    });
+
+    it('should succeed to verify unsigned storage deposit transaction', async () => {
+      const txPrebuild = {
+        txHex: testData.rawTx.storageDeposit.unsigned,
+      };
+      const txParams = {
+        type: 'enabletoken',
+        recipients: [
+          {
+            address: testData.accounts.account2.address,
+            amount: '0',
+            tokenName: 'tnear:tnep24dp',
+          },
+        ],
+      };
+      const verification = {};
+      const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild, verification });
+      isTransactionVerified.should.equal(true);
+    });
+
+    it('should succeed to verify signed storage deposit transaction', async () => {
+      const txPrebuild = {
+        txHex: testData.rawTx.storageDeposit.signed,
+      };
+      const txParams = {
+        type: 'enabletoken',
+        recipients: [
+          {
+            address: testData.accounts.account2.address,
+            amount: '0',
+            tokenName: 'tnear:tnep24dp',
+          },
+        ],
+      };
+      const verification = {};
       const isTransactionVerified = await basecoin.verifyTransaction({ txParams, txPrebuild, verification });
       isTransactionVerified.should.equal(true);
     });
