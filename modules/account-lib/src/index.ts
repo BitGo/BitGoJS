@@ -161,6 +161,9 @@ export { Coredao };
 import * as Apt from '@bitgo/sdk-coin-apt';
 export { Apt };
 
+import * as Apechain from '@bitgo/sdk-coin-apechain';
+export { Apechain };
+
 import * as Tao from '@bitgo/sdk-coin-tao';
 export { Tao };
 
@@ -265,6 +268,8 @@ const coinBuilderMap = {
   toas: Oas.TransactionBuilder,
   coredao: Coredao.TransactionBuilder,
   tcoredao: Coredao.TransactionBuilder,
+  apechain: Apechain.TransactionBuilder,
+  tapechain: Apechain.TransactionBuilder,
   apt: Apt.TransactionBuilder,
   tapt: Apt.TransactionBuilder,
   tao: Tao.TransactionBuilderFactory,

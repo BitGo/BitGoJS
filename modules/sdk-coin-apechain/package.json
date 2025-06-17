@@ -1,0 +1,52 @@
+{
+  "name": "@bitgo/sdk-coin-apechain",
+  "version": "1.0.0",
+  "description": "BitGo SDK coin library for Apechain",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "scripts": {
+    "build": "yarn tsc --build --incremental --verbose .",
+    "fmt": "prettier --write .",
+    "check-fmt": "prettier --check .",
+    "clean": "rm -r ./dist",
+    "lint": "eslint --quiet .",
+    "prepare": "npm run build",
+    "test": "npm run coverage",
+    "coverage": "nyc -- npm run unit-test",
+    "unit-test": "mocha"
+  },
+  "author": "BitGo SDK Team <sdkteam@bitgo.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18 <23"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git",
+    "directory": "modules/sdk-coin-apechain"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "yarn prettier --write",
+      "yarn eslint --fix"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ]
+  },
+  "dependencies": {
+    "@bitgo/abstract-eth": "^24.5.1",
+    "@bitgo/sdk-core": "^35.2.1",
+    "@bitgo/statics": "^54.3.0",
+    "@ethereumjs/common": "^2.6.5"
+  },
+  "devDependencies": {
+    "@bitgo/sdk-api": "^1.63.5",
+    "@bitgo/sdk-test": "^8.0.90"
+  }
+}

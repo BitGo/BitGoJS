@@ -19,6 +19,8 @@ interface EnvironmentTemplate {
   bscscanBaseUrl?: string;
   bscscanApiToken?: string;
   polygonscanApiToken?: string;
+  apechainExplorerApiToken?: string;
+  apechainExplorerBaseUrl?: string;
   arbiscanBaseUrl?: string;
   arbiscanApiToken?: string;
   oasExplorerApiToken?: string;
