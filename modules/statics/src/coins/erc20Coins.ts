@@ -10568,7 +10568,8 @@ export const erc20Coins = [
     'Chintai Exchange Token',
     18,
     '0x9ce84f6a69986a83d92c324df10bc8e64771030f',
-    UnderlyingAsset['eth:chex']
+    UnderlyingAsset['eth:chex'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '81579a85-7339-45ba-9f95-6dc8a43e1afa',
