@@ -206,3 +206,13 @@ export function deriveLightningServiceSharedSecret(coinName: 'lnbtc' | 'tlnbtc',
   const userAuthHdNode = utxolib.bip32.fromBase58(userAuthXprv);
   return sdkcore.getSharedSecret(userAuthHdNode, publicKey);
 }
+
+/**
+ * Derives the shared secret for the middleware using the user's auth extended private key and the middleware's public key.
+ * This is used for secure communication between the middleware and the user's key.
+ */
+export function deriveMiddlewareSharedSecret(coinName: 'lnbtc' | 'tlnbtc', userXprv: string): Buffer {
+  const publicKey = Buffer.from(getStaticsLightningNetwork(coinName).middlewarePubKey, 'hex');
+  const userAuthHdNode = utxolib.bip32.fromBase58(userXprv);
+  return sdkcore.getSharedSecret(userAuthHdNode, publicKey);
+}
