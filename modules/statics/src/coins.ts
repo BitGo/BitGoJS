@@ -215,7 +215,14 @@ export const coins = CoinMap.fromCoins([
     9,
     UnderlyingAsset.CSPR,
     BaseUnit.CSPR,
-    CSPR_FEATURES
+    CSPR_FEATURES.filter(
+      (feature) =>
+        ![
+          CoinFeature.CUSTODY_BITGO_SINGAPORE,
+          CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+          CoinFeature.CUSTODY_BITGO_MENA_FZE,
+        ].includes(feature)
+    )
   ),
   account(
     'bd8f0b27-d13b-41c8-9f60-84fc1f201d89',
@@ -778,7 +785,14 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.COREUM,
     BaseUnit.COREUM,
-    COREUM_FEATURES
+    COREUM_FEATURES.filter(
+      (feature) =>
+        ![
+          CoinFeature.CUSTODY_BITGO_SINGAPORE,
+          CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+          CoinFeature.CUSTODY_BITGO_MENA_FZE,
+        ].includes(feature)
+    )
   ),
   account(
     'df2f040b-89f3-4bb3-8da7-2445c7fdefca',
@@ -2869,7 +2883,8 @@ export const coins = CoinMap.fromCoins([
     'WisdomTree Government Money Market Digital Fund',
     18,
     '0xfeb26f0943c3885b2cb85a9f933975356c81c33d',
-    UnderlyingAsset['arbeth:wtgxx']
+    UnderlyingAsset['arbeth:wtgxx'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   arbethErc20(
     '54f5fdda-954e-4296-994b-a89247ad311f',
@@ -3055,7 +3070,8 @@ export const coins = CoinMap.fromCoins([
     'WisdomTree Government Money Market Digital Fund',
     18,
     '0x870fd36b3bf7f5abeeea2c8d4abdf1dc4e33109d',
-    UnderlyingAsset['opeth:wtgxx']
+    UnderlyingAsset['opeth:wtgxx'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   opethErc20(
     '42729d3e-e010-43a9-91ea-378565b0aa51',
@@ -3436,7 +3452,7 @@ export const coins = CoinMap.fromCoins([
     'AFSUI',
     '0xf325ce1300e8dac124071d3152c5c5ee6174914f8bc2161e88329cf579246efc::afsui::AFSUI',
     UnderlyingAsset['sui:afsui'],
-    SUI_TOKEN_FEATURES
+    SUI_TOKEN_FEATURES.filter((feature) => feature !== CoinFeature.CUSTODY_BITGO_SINGAPORE)
   ),
   suiToken(
     'af864118-e9ec-47b2-896c-735f0530fb8f',
