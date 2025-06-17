@@ -2809,6 +2809,7 @@ export enum BaseUnit {
   FETCHAI = 'afet',
   INITIA = 'uinit',
   ASI = 'afet',
+  VET = 'wei',
 }
 
 export interface BaseCoinConstructorOptions {
