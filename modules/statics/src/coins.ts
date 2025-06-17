@@ -3384,9 +3384,9 @@ export const coins = CoinMap.fromCoins([
     'Wormhole USDC',
     6,
     '0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf',
-    'wusdc',
-    'WUSDC',
-    '0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf::wusdc::WUSDC',
+    'coin',
+    'COIN',
+    '0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf::coin::COIN',
     UnderlyingAsset['sui:wusdc'],
     SUI_TOKEN_FEATURES
   ),
