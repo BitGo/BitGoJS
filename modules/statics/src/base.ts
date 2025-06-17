@@ -387,6 +387,11 @@ export enum CoinFeature {
   MULTISIG = 'multisig',
 
   /**
+   * This coin is an EVM compatible coin and should use common EVM functionality in BGA
+   */
+  EVM_COMPATIBLE_BGA = 'evm-compatible-bga',
+
+  /**
    * This coin is a rebase token and should use the rebase token functionality
    */
   REBASE_TOKEN = 'rebase-token',
