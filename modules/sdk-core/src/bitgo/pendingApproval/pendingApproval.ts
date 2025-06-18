@@ -435,6 +435,17 @@ export class PendingApproval implements IPendingApproval {
             assert(this._pendingApproval.txRequestId, 'Missing txRequestId');
             // this.populateWallet is called before this so we should be good here
             assert(this.wallet?.id(), 'Missing wallet id');
+            // todo: add test case for this
+            // add new transfer before sending tx
+            await this.bitgo
+              .post(
+                this.bitgo.url(
+                  '/wallet/' + this.wallet?.id() + '/txrequests/' + this._pendingApproval.txRequestId + '/transfers',
+                  2
+                )
+              )
+              .send()
+              .result();
             await sendTxRequest(
               this.bitgo,
               this.wallet?.id() as string,

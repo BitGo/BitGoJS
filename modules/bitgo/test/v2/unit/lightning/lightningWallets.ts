@@ -395,6 +395,12 @@ describe('Lightning wallets', function () {
         ],
       };
 
+      const createTransferData = {
+        id: 'fake_id',
+        coin: 'tlnbtc',
+        state: 'initialized',
+      };
+
       const transferData = {
         id: 'fake_id',
         coin: 'tlnbtc',
@@ -403,12 +409,16 @@ describe('Lightning wallets', function () {
       };
 
       const getTransferNock = nock(bgUrl)
-        .get(`/api/v2/${coinName}/wallet/${wallet.wallet.id()}/transfer/${lndResponse.paymentHash}`)
+        .get(`/api/v2/${coinName}/wallet/${wallet.wallet.id()}/transfer/fake_id`)
         .reply(200, transferData);
 
       const createTxRequestNock = nock(bgUrl)
         .post(`/api/v2/wallet/${wallet.wallet.id()}/txrequests`)
         .reply(200, txRequestResponse);
+
+      const createTransferNock = nock(bgUrl)
+        .post(`/api/v2/wallet/${wallet.wallet.id()}/txrequests/${txRequestResponse.txRequestId}/transfers`)
+        .reply(200, createTransferData);
 
       const sendTxRequestNock = nock(bgUrl)
         .post(`/api/v2/wallet/${wallet.wallet.id()}/txrequests/${txRequestResponse.txRequestId}/transactions/0/send`)
@@ -424,6 +434,7 @@ describe('Lightning wallets', function () {
       const response = await wallet.payInvoice(params);
       assert.strictEqual(response.txRequestId, 'txReq123');
       assert.strictEqual(response.txRequestState, 'delivered');
+      assert.strictEqual(response.transfer.id, transferData.id);
       assert(response.paymentStatus);
       assert.strictEqual(
         response.paymentStatus.status,
@@ -449,6 +460,7 @@ describe('Lightning wallets', function () {
       getTransferNock.done();
       createTxRequestNock.done();
       sendTxRequestNock.done();
+      createTransferNock.done();
       userAuthKeyNock.done();
       nodeAuthKeyNock.done();
     });
@@ -821,20 +833,119 @@ describe('Lightning wallets', function () {
         state: 'delivered',
       };
 
+      const transferResponse = {
+        entries: [
+          {
+            address: 'tb1qr54zqkf0sjwdycygulkcuw0audm8n6r77xj3q6',
+            wallet: '6846918381f118cc42c335b037929665',
+            value: -1000000,
+            valueString: '-1000000',
+          },
+          {
+            address: 'tb1qmddle8nhnjcv93t0qnr2tmhvvxfem4ppxq4rzc',
+            value: 498590,
+            valueString: '498590',
+            isChange: true,
+            isPayGo: false,
+          },
+          {
+            address: 'tb1qjq48cqk2u80hewdcndf539m8nnnvt8453kr23h',
+            value: 500000,
+            valueString: '500000',
+            isChange: false,
+            isPayGo: false,
+          },
+        ],
+        id: '6846918481f118cc42c33611410906e5',
+        coin: 'tlnbtc',
+        wallet: 'walletId',
+        walletType: 'hot',
+        enterprise: '6846918381f118cc42c3354ff05d72d8',
+        organization: '6846918381f118cc42c3355f6807d11e',
+        txidType: 'transactionHash',
+        txRequestId: 'txReq123',
+        height: 999999999,
+        heightId: '999999999-6846918481f118cc42c33611410906e5',
+        date: '2025-06-09T07:47:16.090Z',
+        type: 'send',
+        value: -1000000,
+        valueString: '-1000000',
+        intendedValueString: '-1000000',
+        baseValue: -998590,
+        baseValueString: '-998590',
+        baseValueWithoutFees: -998590,
+        baseValueWithoutFeesString: '-998590',
+        feeString: '1410',
+        payGoFee: 0,
+        payGoFeeString: '0',
+        usd: -1.23456,
+        usdRate: 123456,
+        state: 'initialized',
+        instant: false,
+        isReward: false,
+        isUnlock: false,
+        isFee: false,
+        senderInformationVerified: false,
+        tags: ['6846918381f118cc42c335b037929665', '6846918381f118cc42c3354ff05d72d8'],
+        history: [
+          {
+            date: '2025-06-09T07:47:16.102Z',
+            user: '6846918281f118cc42c33352779df88f',
+            action: 'created',
+          },
+        ],
+        coinSpecific: {
+          isOffchain: false,
+        },
+        metadata: [],
+        createdTime: '2025-06-09T07:47:16.102Z',
+      };
+
+      const updatedTransferResponse = {
+        ...transferResponse,
+        txid: '211b8fb30990632751a83d1dc4f0323ff7d2fd3cad88084de13c9be2ae1c6426',
+        date: '2025-06-09T08:50:55.063Z',
+        state: 'signed',
+        history: [
+          {
+            date: '2025-06-09T07:50:55.063Z',
+            user: '6846918281f118cc42c33352779df88f',
+            action: 'signed',
+          },
+          {
+            date: '2025-06-09T07:47:16.102Z',
+            user: '6846918281f118cc42c33352779df88f',
+            action: 'created',
+          },
+        ],
+        signedTime: '2025-06-09T08:50:55.063Z',
+      };
+
       const createTxRequestNock = nock(bgUrl)
         .post(`/api/v2/wallet/${wallet.wallet.id()}/txrequests`)
         .reply(200, txRequestResponse);
+
+      const createTransferNock = nock(bgUrl)
+        .post(`/api/v2/wallet/${wallet.wallet.id()}/txrequests/${txRequestResponse.txRequestId}/transfers`)
+        .reply(200, transferResponse);
 
       const sendTxRequestNock = nock(bgUrl)
         .post(`/api/v2/wallet/${wallet.wallet.id()}/txrequests/${txRequestResponse.txRequestId}/transactions/0/send`)
         .reply(200, finalPaymentResponse);
 
+      const getTransferNock = nock(bgUrl)
+        .get(`/api/v2/${coinName}/wallet/${wallet.wallet.id()}/transfer/${transferResponse.id}`)
+        .reply(200, updatedTransferResponse);
+
       const response = await wallet.withdrawOnchain(params);
       assert.strictEqual(response.txRequestId, 'txReq123');
       assert.strictEqual(response.txRequestState, 'delivered');
+      assert.deepStrictEqual(response.transfer, updatedTransferResponse);
 
       createTxRequestNock.done();
+      createTransferNock.done();
       sendTxRequestNock.done();
+      getTransferNock.done();
     });
 
     it('should handle pending approval when withdrawing onchain', async function () {

@@ -292,6 +292,16 @@ export class LightningWallet implements ILightningWallet {
       };
     }
 
+    const transfer: { id: string } = await this.wallet.bitgo
+      .post(
+        this.wallet.bitgo.url(
+          '/wallet/' + this.wallet.id() + '/txrequests/' + transactionRequestCreate.txRequestId + '/transfers',
+          2
+        )
+      )
+      .send()
+      .result();
+
     const transactionRequestSend = await commonTssMethods.sendTxRequest(
       this.wallet.bitgo,
       this.wallet.id(),
@@ -301,17 +311,15 @@ export class LightningWallet implements ILightningWallet {
     );
 
     const coinSpecific = transactionRequestSend.transactions?.[0]?.unsignedTx?.coinSpecific;
-    let transfer;
-    if (coinSpecific && coinSpecific.paymentHash && typeof coinSpecific.paymentHash === 'string') {
-      transfer = await this.wallet.getTransfer({ id: coinSpecific.paymentHash });
-    }
+    const updatedTransfer = await this.wallet.getTransfer({ id: transfer.id });
+
     return {
       txRequestId: transactionRequestCreate.txRequestId,
       txRequestState: transactionRequestSend.state,
       paymentStatus: coinSpecific
         ? t.exact(LndCreatePaymentResponse).encode(coinSpecific as LndCreatePaymentResponse)
         : undefined,
-      transfer,
+      transfer: updatedTransfer,
     };
   }
 
@@ -344,6 +352,16 @@ export class LightningWallet implements ILightningWallet {
       };
     }
 
+    const transfer: { id: string } = await this.wallet.bitgo
+      .post(
+        this.wallet.bitgo.url(
+          '/wallet/' + this.wallet.id() + '/txrequests/' + transactionRequestCreate.txRequestId + '/transfers',
+          2
+        )
+      )
+      .send()
+      .result();
+
     const transactionRequestSend = await commonTssMethods.sendTxRequest(
       this.wallet.bitgo,
       this.wallet.id(),
@@ -352,9 +370,12 @@ export class LightningWallet implements ILightningWallet {
       reqId
     );
 
+    const updatedTransfer = await this.wallet.getTransfer({ id: transfer.id });
+
     return {
       txRequestId: transactionRequestCreate.txRequestId,
       txRequestState: transactionRequestSend.state,
+      transfer: updatedTransfer,
     };
   }
 
