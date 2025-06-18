@@ -47,6 +47,7 @@ export class Transaction extends BaseTransaction {
   private _tokenAccountRentExemptAmount: string | undefined;
   protected _type: TransactionType;
   protected _instructionsData: InstructionParams[] = [];
+  private _useTokenAddressTokenName = false;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -132,6 +133,13 @@ export class Transaction extends BaseTransaction {
     this._instructionsData = instructionData;
   }
 
+  get useTokenAddressTokenName(): boolean {
+    return this._useTokenAddressTokenName;
+  }
+
+  setUseTokenAddressTokenName(value: boolean): void {
+    this._useTokenAddressTokenName = value;
+  }
   /** @inheritdoc */
   canSign(): boolean {
     return true;
@@ -254,7 +262,8 @@ export class Transaction extends BaseTransaction {
       this._type,
       this._solTransaction.instructions,
       this._coinConfig.name,
-      this._instructionsData
+      this._instructionsData,
+      this._useTokenAddressTokenName
     );
     if (this._type) {
       if (
@@ -304,7 +313,8 @@ export class Transaction extends BaseTransaction {
       this.type,
       this._solTransaction.instructions,
       this._coinConfig.name,
-      this._instructionsData
+      this._instructionsData,
+      this._useTokenAddressTokenName
     );
 
     for (const instruction of instructionParams) {
@@ -403,7 +413,8 @@ export class Transaction extends BaseTransaction {
       this._type,
       this._solTransaction.instructions,
       this._coinConfig.name,
-      this._instructionsData
+      this._instructionsData,
+      this._useTokenAddressTokenName
     );
 
     let memo: string | undefined = undefined;

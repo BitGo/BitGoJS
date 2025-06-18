@@ -42,6 +42,8 @@ export class AtaInitializationBuilder extends TransactionBuilder {
         this._tokenAssociateRecipients.push({
           ownerAddress: ataInitInstruction.params.ownerAddress,
           tokenName: ataInitInstruction.params.tokenName,
+          tokenAddress: ataInitInstruction.params.mintAddress,
+          programId: ataInitInstruction.params.programId,
         });
       }
     }

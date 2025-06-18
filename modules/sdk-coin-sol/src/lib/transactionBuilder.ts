@@ -79,7 +79,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       tx.type,
       tx.solTransaction.instructions,
       this._coinConfig.name,
-      txData.instructionsData
+      txData.instructionsData,
+      tx.useTokenAddressTokenName
     );
     // Parse priority fee instruction data
     const filteredPriorityFeeInstructionsData = txData.instructionsData.filter(

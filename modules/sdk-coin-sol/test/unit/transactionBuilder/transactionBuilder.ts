@@ -211,6 +211,9 @@ describe('Sol Transaction Builder', async () => {
           amount: testData.tokenTransfers.amount.toString(),
           tokenName: testData.tokenTransfers.nameUSDC.toString(),
           sourceAddress: 'B5rJjuVi7En63iK6o3ijKdJwAoTe2gwCYmJsVdHQ2aKV',
+          tokenAddress: 'F4uLeXJoFz3hw13MposuwaQbMcZbCjqvEGPPeRRB1Byf',
+          programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+          decimalPlaces: 9,
         },
       },
       {

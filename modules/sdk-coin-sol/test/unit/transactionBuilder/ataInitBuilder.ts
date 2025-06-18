@@ -489,6 +489,16 @@ describe('Sol Associated Token Account Builder', () => {
         should.equal(rawTx, testData.MULTI_ATA_INIT_SIGNED_TX_WITH_MEMO);
       });
 
+      it('build from a unsigned ATA init for multi recipients with memo and sign it with optinal param', async () => {
+        const txBuilder = factory.from(testData.MULTI_ATA_INIT_UNSIGNED_TX_WITH_MEMO_OPTIONAL_PARAM);
+        (txBuilder as AtaInitializationBuilder).rentExemptAmount(rentAmount);
+        txBuilder.sign({ key: account.prv });
+        const tx = await txBuilder.build();
+        const rawTx = tx.toBroadcastFormat();
+
+        should.equal(rawTx, testData.MULTI_ATA_INIT_SIGNED_TX_WITH_MEMO_OPTIONAL_PARAM1);
+      });
+
       it('build from an unsigned ATA init with durable nonce and sign it', async () => {
         const txBuilder = factory.from(testData.ATA_INIT_UNSIGNED_TX_DURABLE_NONCE);
         txBuilder.sign({ key: account.prv });
