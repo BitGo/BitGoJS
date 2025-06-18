@@ -22,6 +22,7 @@ import {
   StellarCoin,
   SuiCoin,
   TronErc20Coin,
+  VetToken,
   XrpCoin,
   ZkethERC20Token,
 } from './account';
@@ -110,6 +111,10 @@ export type Sip10TokenConfig = BaseNetworkConfig & {
 export type Nep141TokenConfig = BaseNetworkConfig & {
   contractAddress: string;
   storageDepositAmount: string;
+};
+
+export type VetTokenConfig = BaseNetworkConfig & {
+  contractAddress: string;
 };
 
 export type TokenConfig =
@@ -207,6 +212,9 @@ export interface Tokens {
     near: {
       tokens: Nep141TokenConfig[];
     };
+    vet: {
+      tokens: VetTokenConfig[];
+    };
   };
   testnet: {
     eth: {
@@ -281,6 +289,9 @@ export interface Tokens {
     };
     near: {
       tokens: Nep141TokenConfig[];
+    };
+    vet: {
+      tokens: VetTokenConfig[];
     };
   };
 }
@@ -822,6 +833,25 @@ const getFormattedNep141Tokens = (customCoinMap = coins) =>
     return acc;
   }, []);
 
+function getVetTokenConfig(coin: VetToken): VetTokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'vet' : 'tvet',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    contractAddress: coin.contractAddress,
+    decimalPlaces: coin.decimalPlaces,
+  };
+}
+
+const getFormattedVetTokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: VetTokenConfig[], coin) => {
+    if (coin instanceof VetToken) {
+      acc.push(getVetTokenConfig(coin));
+    }
+    return acc;
+  }, []);
+
 export const getFormattedTokens = (coinMap = coins): Tokens => {
   const formattedAptNFTCollections = getFormattedAptNFTCollections(coinMap);
   return {
@@ -903,6 +933,9 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
       near: {
         tokens: getFormattedNep141Tokens(coinMap).filter((token) => token.network === 'Mainnet'),
       },
+      vet: {
+        tokens: getFormattedVetTokens(coinMap).filter((token) => token.network === 'Mainnet'),
+      },
     },
     testnet: {
       eth: {
@@ -981,6 +1014,9 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
       },
       near: {
         tokens: getFormattedNep141Tokens(coinMap).filter((token) => token.network === 'Testnet'),
+      },
+      vet: {
+        tokens: getFormattedVetTokens(coinMap).filter((token) => token.network === 'Testnet'),
       },
     },
   };

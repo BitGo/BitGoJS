@@ -26,6 +26,7 @@ export {
   AptNFTCollection,
   Sip10Token,
   Nep141Token,
+  VetToken,
 } from './account';
 export { CoinMap } from './map';
 export { networkFeatureMapForTokens } from './networkFeatureMapForTokens';
