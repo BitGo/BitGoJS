@@ -9,7 +9,7 @@ import { BatchUnstakingBuilder } from './batchUnstakingBuilder';
 import { WithdrawUnbondedBuilder } from './withdrawUnbondedBuilder';
 import utils from './utils';
 import { Interface, SingletonRegistry, TransactionBuilder } from './';
-import { TxMethod } from './iface';
+import { TxMethod, BatchCallObject } from './iface';
 import { Transaction as BaseTransaction } from '@bitgo/abstract-substrate';
 import { Transaction as PolyxTransaction } from './transaction';
 
@@ -77,15 +77,19 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     } else if (methodName === 'bondExtra') {
       return this.getBondExtraBuilder();
     } else if (methodName === 'batchAll') {
-      const args = decodedTxn.method.args as { calls?: { method: string; args: Record<string, unknown> }[] };
+      const args = decodedTxn.method.args as { calls?: BatchCallObject[] };
 
       if (args.calls && args.calls.length === 2) {
+        // Decode method names from the calls using utils.decodeMethodName
+        const firstCallMethod = utils.decodeMethodName(args.calls[0], registry);
+        const secondCallMethod = utils.decodeMethodName(args.calls[1], registry);
+
         // Check for batch staking pattern: bond + nominate
-        if (args.calls[0].method === 'bond' && args.calls[1].method === 'nominate') {
+        if (firstCallMethod === 'bond' && secondCallMethod === 'nominate') {
           return this.getBatchBuilder();
         }
         // Check for batch unstaking pattern: chill + unbond
-        if (args.calls[0].method === 'chill' && args.calls[1].method === 'unbond') {
+        if (firstCallMethod === 'chill' && secondCallMethod === 'unbond') {
           return this.getBatchUnstakingBuilder();
         }
       }
