@@ -3,6 +3,7 @@ import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { SubstrateCoin } from '@bitgo/abstract-substrate';
 import { BatchStakingBuilder } from './lib/batchStakingBuilder';
 import { BondExtraBuilder } from './lib/bondExtraBuilder';
+import { POLYX_ADDRESS_FORMAT } from './lib/constants';
 
 export class Polyx extends SubstrateCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -46,5 +47,15 @@ export class Polyx extends SubstrateCoin {
 
   bondExtra(): BondExtraBuilder {
     return this.getBuilder().getBondExtraBuilder();
+  }
+
+  /**
+   * Retrieves the address format for Polyx.
+   *
+   * @returns {number} The address format as a number for Polyx.
+   * @override
+   */
+  protected getAddressFormat(): number {
+    return POLYX_ADDRESS_FORMAT;
   }
 }
