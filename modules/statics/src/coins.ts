@@ -27,6 +27,7 @@ import {
   solToken,
   stellarToken,
   suiToken,
+  vetToken,
   talgoToken,
   taptNFTCollection,
   taptToken,
@@ -66,6 +67,7 @@ import { ofcErc20Coins, tOfcErc20Coins } from './coins/ofcErc20Coins';
 import { ofcCoins } from './coins/ofcCoins';
 import { sip10Tokens } from './coins/sip10Tokens';
 import { nep141Tokens } from './coins/nep141Tokens';
+import { vetTokens } from './coins/vetTokens';
 import {
   ADA_FEATURES_WITH_FRANKFURT,
   ALGO_FEATURES,
@@ -135,6 +137,7 @@ export const coins = CoinMap.fromCoins([
   ...solTokens,
   ...sip10Tokens,
   ...nep141Tokens,
+  ...vetTokens,
   avaxp(
     '5436386e-9e4d-4d82-92df-59d9720d1738',
     'avaxp',
@@ -3701,6 +3704,7 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
     stx: sip10Token,
     sui: suiToken,
     trx: tronToken,
+    vet: vetToken,
     xlm: stellarToken,
     xrp: xrpToken,
     ofc: ofcToken,

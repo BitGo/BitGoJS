@@ -2741,6 +2741,12 @@ export enum UnderlyingAsset {
   // Nep141 testnet tokens
   'tnear:tnep24dp' = 'tnear:tnep24dp',
 
+  // VET tokens
+  'vet:vtho' = 'vet:vtho',
+
+  // VET testnet tokens
+  'tvet:vtho' = 'tvet:vtho',
+
   // fiats
   AED = 'aed',
   EUR = 'eur',
