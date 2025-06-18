@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [35.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@35.2.1...@bitgo/sdk-core@35.3.0) (2025-06-18)
+
+### Features
+
+- add the transaction builder changes for ape chain ([2b82d82](https://github.com/BitGo/BitGoJS/commit/2b82d826313d87dfa7af39ed3fcd3125f08a6e1d))
+- **sdk-coin-near:** added fungible token transfer builder ([15fc2c5](https://github.com/BitGo/BitGoJS/commit/15fc2c5378a428a4903bfd6c44ab64c1848f6f56))
+- **sdk-core:** add method to check if coin is present in map ([b1b0ead](https://github.com/BitGo/BitGoJS/commit/b1b0ead36d160e7f8daaa347c86ccc4af73ceac8))
+- **sdk-core:** add onprem to wallet subtype ([9d30112](https://github.com/BitGo/BitGoJS/commit/9d3011265ef0e340a2acb577a832dccf4ce8118b))
+
 ## [35.2.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@35.2.0...@bitgo/sdk-core@35.2.1) (2025-06-10)
 
 ### Bug Fixes

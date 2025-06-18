@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [11.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.5.0...@bitgo/utxo-lib@11.6.0) (2025-06-18)
+
+### Features
+
+- **utxo-lib:** psbt util functions for output proprietary key vals ([959bf98](https://github.com/BitGo/BitGoJS/commit/959bf98fd01da3ea325885e90c5cb07b2867f6e7))
+
 # [11.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.4.0...@bitgo/utxo-lib@11.5.0) (2025-06-10)
 
 ### Features

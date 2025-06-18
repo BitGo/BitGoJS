@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@1.4.0...@bitgo/sdk-coin-vet@1.5.0) (2025-06-18)
+
+### Features
+
+- **sdk-coin-vet:** implement isValidBlockId for vet ([2a7e6e7](https://github.com/BitGo/BitGoJS/commit/2a7e6e78b3972ef8d3858c9b2d9a83e713ae4437))
+
 # [1.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@1.3.0...@bitgo/sdk-coin-vet@1.4.0) (2025-06-10)
 
 ### Features

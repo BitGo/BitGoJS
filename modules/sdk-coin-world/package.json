@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-world",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "BitGo SDK coin library for World",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,13 +40,13 @@
     ]
   },
   "dependencies": {
-    "@bitgo/abstract-eth": "^24.5.1",
-    "@bitgo/sdk-core": "^35.2.1",
-    "@bitgo/statics": "^54.3.0",
+    "@bitgo/abstract-eth": "^24.5.2",
+    "@bitgo/sdk-core": "^35.3.0",
+    "@bitgo/statics": "^54.4.0",
     "@ethereumjs/common": "^2.6.5"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.63.5",
-    "@bitgo/sdk-test": "^8.0.90"
+    "@bitgo/sdk-api": "^1.64.0",
+    "@bitgo/sdk-test": "^8.0.91"
   }
 }

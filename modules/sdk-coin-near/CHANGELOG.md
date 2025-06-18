@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@2.4.1...@bitgo/sdk-coin-near@2.5.0) (2025-06-18)
+
+### Features
+
+- **sdk-coin-near:** added fungible token transfer builder ([15fc2c5](https://github.com/BitGo/BitGoJS/commit/15fc2c5378a428a4903bfd6c44ab64c1848f6f56))
+- **sdk-coin-near:** added storage deposit amount to token config ([5b85304](https://github.com/BitGo/BitGoJS/commit/5b853049be29159478d81246221a400f183679bb))
+- **sdk-coin-near:** added verify transaction for near token & storage ([19cb74c](https://github.com/BitGo/BitGoJS/commit/19cb74c359fb808e9d4522f658c60db5f3673bc7))
+
 ## [2.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@2.4.0...@bitgo/sdk-coin-near@2.4.1) (2025-06-10)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-near
