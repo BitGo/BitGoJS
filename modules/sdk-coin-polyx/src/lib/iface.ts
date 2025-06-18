@@ -45,7 +45,8 @@ export interface NominateArgs extends Args {
 }
 
 export interface BatchCallObject {
-  method: string;
+  method?: string;
+  callIndex?: string;
   args: Record<string, unknown>;
 }
 
