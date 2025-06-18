@@ -1,7 +1,8 @@
 import { Chalk, Instance } from 'chalk';
 import archy from 'archy';
 
-import { ParserNode, ParserNodeValue } from './Parser';
+import { Parser, ParserNode, ParserNodeValue } from './Parser';
+import { parseUnknown } from './parseUnknown';
 
 const hideDefault = ['pubkeys', 'sequence', 'locktime', 'scriptSig', 'witness'];
 
@@ -9,9 +10,21 @@ export function formatSat(v: number | bigint): string {
   return (Number(v) / 1e8).toFixed(8);
 }
 
+type FormatOptions = {
+  hide?: string[];
+  chalk?: Chalk;
+};
+
+function getDefaultChalk(): Chalk {
+  if (process.env.NO_COLOR) {
+    return new Instance({ level: 0 });
+  }
+  return new Instance();
+}
+
 export function formatTree(
   n: ParserNode,
-  { hide = hideDefault, chalk = new Instance() }: { hide?: string[]; chalk?: Chalk } = {}
+  { hide = hideDefault, chalk = getDefaultChalk() }: FormatOptions = {}
 ): string {
   function getLabel(
     label: string | number,
@@ -60,4 +73,14 @@ export function formatTree(
   }
 
   return archy(toArchy(n));
+}
+
+export function formatObjAsTree(
+  label: string | number,
+  obj: unknown,
+  { hide = hideDefault, chalk = getDefaultChalk() }: FormatOptions = {}
+): string {
+  const p = new Parser({ parseError: 'continue' });
+  const node = parseUnknown(p, label, obj, { omit: hide });
+  return formatTree(node, { hide, chalk });
 }
