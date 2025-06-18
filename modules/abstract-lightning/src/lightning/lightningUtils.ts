@@ -226,3 +226,12 @@ export function deriveTatSharedSecret(coinName: 'lnbtc' | 'tlnbtc', userXprv: st
   const userAuthHdNode = utxolib.bip32.fromBase58(userXprv);
   return sdkcore.getSharedSecret(userAuthHdNode, publicKey);
 }
+
+/**
+ * Given a seed, compute a BIP32 derivation index.
+ * 0 <= index < 4294967295 (largest 4 byte number)
+ * @param seed
+ */
+export function computeBip32DerivationIndexFromSeed(seed: string): number {
+  return Buffer.from(utxolib.crypto.sha256(Buffer.from(seed, 'utf8'))).readUint32BE(0);
+}

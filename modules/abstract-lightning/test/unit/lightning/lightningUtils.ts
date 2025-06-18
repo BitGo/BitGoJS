@@ -15,6 +15,7 @@ import {
   deriveLightningServiceSharedSecret,
   deriveMiddlewareSharedSecret,
   deriveTatSharedSecret,
+  computeBip32DerivationIndexFromSeed,
 } from '../../../src/lightning';
 
 import * as sdkcore from '@bitgo/sdk-core';
@@ -124,5 +125,11 @@ describe('lightning utils', function () {
     const expectedSecret = sdkcore.getSharedSecret(utxolib.bip32.fromBase58(userXprv), Buffer.from(tatPubKey, 'hex'));
     const secret = deriveTatSharedSecret('tlnbtc', userXprv);
     assert.deepStrictEqual(secret, expectedSecret);
+  });
+
+  it(`computeBip32DerivationIndexFromSeed`, function () {
+    const seed1 = 'The Times 03/Jan/2009 Chancellor on brink of second bailout for banks.';
+    const seed2 = 'The Times 04/Jan/2009 Chancellor on brink of second bailout for banks.';
+    assert.notDeepStrictEqual(computeBip32DerivationIndexFromSeed(seed1), computeBip32DerivationIndexFromSeed(seed2));
   });
 });
