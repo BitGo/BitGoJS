@@ -10610,6 +10610,78 @@ export const erc20Coins = [
     '0x3797c46db697c24a983222c335f17ba28e8c5b69',
     UnderlyingAsset['eth:umint']
   ),
+  erc20(
+    '627ba0d4-29e6-48ec-b72b-e1124fcc5079',
+    'eth:arb',
+    'Arbitrum',
+    18,
+    '0xb50721bcf8d664c30412cfbc6cf7a15145234ad1',
+    UnderlyingAsset['eth:arb']
+  ),
+  erc20(
+    'a721ce40-56ed-4767-8fd5-87ef45b39dc3',
+    'eth:ez',
+    'EasyFi',
+    18,
+    '0x00aba6fe5557de1a1d565658cbddddf7c710a1eb',
+    UnderlyingAsset['eth:ez']
+  ),
+  erc20(
+    '93678c40-bc4d-4d06-be96-71b13ae7d7ec',
+    'eth:ncash',
+    'Nucleus Vision',
+    18,
+    '0x809826cceab68c387726af962713b64cb5cb3cca',
+    UnderlyingAsset['eth:ncash']
+  ),
+  erc20(
+    'd89c82a0-3515-407b-92d8-282163588028',
+    'eth:sub',
+    'Substratum',
+    18,
+    '0x8d75959f1e61ec2571aa72798237101f084de63a',
+    UnderlyingAsset['eth:sub']
+  ),
+  erc20(
+    '00833124-dc5d-4afa-b63e-8afc0196ec1b',
+    'eth:poe',
+    'Po.et',
+    8,
+    '0x0e0989b1f9b8a38983c2ba8053269ca62ec9b195',
+    UnderlyingAsset['eth:poe']
+  ),
+  erc20(
+    '83695557-5a68-43ca-a3c7-a49f3ccb383b',
+    'eth:ocn',
+    'Odyssey',
+    18,
+    '0x4092678e4e78230f46a1534c0fbc8fa39780892b',
+    UnderlyingAsset['eth:ocn']
+  ),
+  erc20(
+    '7c33dc29-ee47-4697-bcec-b07d446e37e9',
+    'eth:banca',
+    'Banca',
+    18,
+    '0x998b3b82bc9dba173990be7afb772788b5acb8bd',
+    UnderlyingAsset['eth:banca']
+  ),
+  erc20(
+    'ef3b5c95-db85-453a-b66e-4ea023db63d8',
+    'eth:stq',
+    'Storiqa',
+    18,
+    '0x5c3a228510d246b78a3765c20221cbf3082b44a4',
+    UnderlyingAsset['eth:stq']
+  ),
+  erc20(
+    '289b4eb1-e109-48de-a016-09d9172b688c',
+    'eth:lf',
+    'LF labs',
+    18,
+    '0x957c7fa189a408e78543113412f6ae1a9b4022c4',
+    UnderlyingAsset['eth:lf']
+  ),
   terc20(
     '0205f0d6-0647-47c9-ad8b-c48d048e54f3',
     'fixed',
