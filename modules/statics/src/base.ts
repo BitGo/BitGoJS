@@ -2826,6 +2826,8 @@ export enum BaseUnit {
   INITIA = 'uinit',
   ASI = 'afet',
   VET = 'wei',
+  TCRONOS = 'basetcro',
+  TASI = 'atestfet',
 }
 
 export interface BaseCoinConstructorOptions {

@@ -1,5 +1,5 @@
 import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, BaseUnit } from '@bitgo/statics';
 import { Asi } from './asi';
 
 export class Tasi extends Asi {
@@ -12,6 +12,10 @@ export class Tasi extends Asi {
     }
 
     this._staticsCoin = staticsCoin;
+  }
+
+  getDenomination(): string {
+    return BaseUnit.TASI;
   }
 
   static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {

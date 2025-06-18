@@ -1,5 +1,5 @@
 import { AddressFormat, BaseCoin, BitGoBase } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, NetworkType } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, BaseUnit, NetworkType } from '@bitgo/statics';
 import { Cronos } from './cronos';
 import { Utils } from './lib/utils';
 import { KeyPair } from './lib/keyPair';
@@ -20,6 +20,10 @@ export class Tcronos extends Cronos {
 
   static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
     return new Tcronos(bitgo, staticsCoin);
+  }
+
+  getDenomination(): string {
+    return BaseUnit.TCRONOS;
   }
 
   /** @inheritDoc **/
