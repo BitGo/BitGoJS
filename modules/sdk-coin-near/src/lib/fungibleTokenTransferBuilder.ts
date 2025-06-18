@@ -124,7 +124,11 @@ export class FungibleTokenTransferBuilder extends TransactionBuilder {
     assert(gas, new BuildTransactionError('gas is required before building fungible token transfer'));
     assert(deposit, new BuildTransactionError('deposit is required before building fungible token transfer'));
 
-    if (!this._actions || this._actions.length === 0 || this._actions[0].functionCall?.methodName !== methodName) {
+    if (
+      !this._actions ||
+      this._actions.length === 0 ||
+      (this._actions.length === 1 && this._actions[0].functionCall?.methodName !== methodName)
+    ) {
       super.action(NearAPI.transactions.functionCall(methodName, args, BigInt(gas), BigInt(deposit)));
     }
     const tx = await super.buildImplementation();
