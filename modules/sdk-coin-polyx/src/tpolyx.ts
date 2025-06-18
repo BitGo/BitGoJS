@@ -1,6 +1,7 @@
 import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { Polyx } from './polyx';
+import { TPOLYX_ADDRESS_FORMAT } from './lib/constants';
 
 export class Tpolyx extends Polyx {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -30,5 +31,15 @@ export class Tpolyx extends Polyx {
    */
   public getFullName(): string {
     return 'Testnet Polymesh';
+  }
+
+  /**
+   * Retrieves the address format for Testnet Polyx.
+   *
+   * @returns {number} The address format as a number for Testnet Polyx.
+   * @override
+   */
+  protected getAddressFormat(): number {
+    return TPOLYX_ADDRESS_FORMAT;
   }
 }
