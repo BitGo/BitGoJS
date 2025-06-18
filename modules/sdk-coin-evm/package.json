@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-evm",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Configurable common module for EVM assets, using @bitgo/abstract-eth for reduced coin integration boilerplate.",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -15,8 +15,6 @@
     "unit-test": "mocha",
     "prepare": "npm run build"
   },
-  "dependencies": {},
-  "devDependencies": {},
   "author": "BitGo SDK Team <sdkteam@bitgo.com>",
   "license": "MIT",
   "repository": {

@@ -7,4 +7,4 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### Features
 
-- add sdk-coin-evm ([e3fff21](https://github.com/BitGo/BitGoJS/commit/e3fff21b6108646588a019551a61e9f6770d2ab5))
+- add the transaction builder changes for ape chain ([2b82d82](https://github.com/BitGo/BitGoJS/commit/2b82d826313d87dfa7af39ed3fcd3125f08a6e1d))

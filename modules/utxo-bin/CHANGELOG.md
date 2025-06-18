@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@3.6.19...@bitgo/utxo-bin@3.7.0) (2025-06-18)
+
+### Features
+
+- **utxo-bin:** update module resolution to NodeNext ([ac2ae6e](https://github.com/BitGo/BitGoJS/commit/ac2ae6ea45aead4bcb0bb40add0531d06c381844))
+
 ## [3.6.19](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@3.6.18...@bitgo/utxo-bin@3.6.19) (2025-06-10)
 
 **Note:** Version bump only for package @bitgo/utxo-bin

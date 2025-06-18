@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-api",
-  "version": "1.63.5",
+  "version": "1.64.0",
   "description": "REST wrapper for BitGoJS",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,11 +40,11 @@
     ]
   },
   "dependencies": {
-    "@bitgo/sdk-core": "^35.2.1",
+    "@bitgo/sdk-core": "^35.3.0",
     "@bitgo/sdk-hmac": "^1.1.0",
     "@bitgo/sjcl": "^1.0.1",
-    "@bitgo/unspents": "^0.48.1",
-    "@bitgo/utxo-lib": "^11.5.0",
+    "@bitgo/unspents": "^0.48.2",
+    "@bitgo/utxo-lib": "^11.6.0",
     "@types/superagent": "4.1.15",
     "bitcoinjs-message": "npm:@bitgo-forks/bitcoinjs-message@1.0.0-master.3",
     "debug": "3.1.0",

@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.9.1...@bitgo/utxo-core@1.10.0) (2025-06-18)
+
+### Features
+
+- **utxo-core:** export fromFixedScriptWallet ([2af49d9](https://github.com/BitGo/BitGoJS/commit/2af49d97fcccf39ab6f24234bc8872ef15b2a26e))
+- **utxo-core:** improve fromFixedScriptWallet descriptor handling ([3f9ab49](https://github.com/BitGo/BitGoJS/commit/3f9ab499f0f33bb457b0abb31c6484dbeaf7efb6))
+
 ## [1.9.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.9.0...@bitgo/utxo-core@1.9.1) (2025-06-10)
 
 **Note:** Version bump only for package @bitgo/utxo-core

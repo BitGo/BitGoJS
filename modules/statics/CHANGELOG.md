@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [54.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@54.3.0...@bitgo/statics@54.4.0) (2025-06-18)
+
+### Bug Fixes
+
+- **sdk-coin-sui:** fix contract address for sui wusdc token ([6ddd97b](https://github.com/BitGo/BitGoJS/commit/6ddd97b8440077a3ccb1bd395e7e927bfc62c4d4))
+- **statics:** add accountExplorerUrl for vechain ([3077c68](https://github.com/BitGo/BitGoJS/commit/3077c68a3101ec2315fe0d354fb32b00f5b825ea))
+
+### Features
+
+- add the transaction builder changes for ape chain ([2b82d82](https://github.com/BitGo/BitGoJS/commit/2b82d826313d87dfa7af39ed3fcd3125f08a6e1d))
+- added paygo xpub to statics for tbtc ([5bca58c](https://github.com/BitGo/BitGoJS/commit/5bca58c453c0c251e6e3c62526a0bbea5c71d125))
+- adding new batch of tokens ([a5d058d](https://github.com/BitGo/BitGoJS/commit/a5d058d3f4b20748945277cd3d2edb2ea6781286))
+- introduce EVM_COMPATIBLE_BGA coin feature ([e3bfebf](https://github.com/BitGo/BitGoJS/commit/e3bfebf6fe947afa4cad1a2f140183d04b2ebc3d))
+- introduce EVM_COMPATIBLE_IMS coin feature ([b6fbaa3](https://github.com/BitGo/BitGoJS/commit/b6fbaa3f920397b823b8cd05bbb95de5ff1dfef8))
+- name change from euro coin to eurc ([78ced2a](https://github.com/BitGo/BitGoJS/commit/78ced2aee26313ec376aee2aaed27babd28186b1))
+- **sdk-coin-near:** added storage deposit amount to token config ([5b85304](https://github.com/BitGo/BitGoJS/commit/5b853049be29159478d81246221a400f183679bb))
+- **sdk-coin-soneium:** update multisig type for soneium and add new features ([a845677](https://github.com/BitGo/BitGoJS/commit/a845677e827839d375089e9b0dbb9b6c9574914f))
+- **sdk-core:** add method to check if coin is present in map ([b1b0ead](https://github.com/BitGo/BitGoJS/commit/b1b0ead36d160e7f8daaa347c86ccc4af73ceac8))
+
 # [54.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@54.2.0...@bitgo/statics@54.3.0) (2025-06-10)
 
 ### Bug Fixes

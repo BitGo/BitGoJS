@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.7.1...@bitgo/abstract-substrate@1.8.0) (2025-06-18)
+
+### Features
+
+- add decoding support for polyx staking related txns ([f680b01](https://github.com/BitGo/BitGoJS/commit/f680b011c6c89b4c3c04ede21f089e8efc1c0ee8))
+
 ## [1.7.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.7.0...@bitgo/abstract-substrate@1.7.1) (2025-06-10)
 
 **Note:** Version bump only for package @bitgo/abstract-substrate

@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [48.1.0](https://github.com/BitGo/BitGoJS/compare/bitgo@48.0.1...bitgo@48.1.0) (2025-06-18)
+
+### Features
+
+- add the transaction builder changes for ape chain ([2b82d82](https://github.com/BitGo/BitGoJS/commit/2b82d826313d87dfa7af39ed3fcd3125f08a6e1d))
+- **bitgo:** add method to register single token from ams in coin factory ([278243e](https://github.com/BitGo/BitGoJS/commit/278243eb58cabfe125da0793bbe19002975e54fd))
+- **sdk-coin-near:** added fungible token transfer builder ([15fc2c5](https://github.com/BitGo/BitGoJS/commit/15fc2c5378a428a4903bfd6c44ab64c1848f6f56))
+
 ## [48.0.1](https://github.com/BitGo/BitGoJS/compare/bitgo@48.0.0...bitgo@48.0.1) (2025-06-10)
 
 **Note:** Version bump only for package bitgo

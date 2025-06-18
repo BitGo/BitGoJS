@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.64.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.63.5...@bitgo/sdk-api@1.64.0) (2025-06-18)
+
+### Features
+
+- **sdk-api:** add method to create request for public AMS endpoints ([617b0fd](https://github.com/BitGo/BitGoJS/commit/617b0fd163ddc41b3dd1b3eb6031bfb5e6cf065e))
+
 ## [1.63.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.63.4...@bitgo/sdk-api@1.63.5) (2025-06-10)
 
 **Note:** Version bump only for package @bitgo/sdk-api
