@@ -568,3 +568,11 @@ export const VET_FEATURES = [
   CoinFeature.TSS_ENTERPRISE_PAYS_FEES,
   CoinFeature.MPCV2,
 ];
+export const VET_TOKEN_FEATURES = [
+  ...ACCOUNT_COIN_DEFAULT_FEATURES,
+  CoinFeature.TSS,
+  CoinFeature.TSS_COLD,
+  CoinFeature.ENTERPRISE_PAYS_FEES,
+  CoinFeature.TSS_ENTERPRISE_PAYS_FEES,
+  CoinFeature.MPCV2,
+];
