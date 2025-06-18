@@ -1162,6 +1162,15 @@ export const bscTokens = [
     UnderlyingAsset['bsc:aitech'],
     BSC_TOKEN_FEATURES
   ),
+  bscToken(
+    '9d387bf7-6290-4da5-a8ca-49ef622c4b8c',
+    'bsc:sol',
+    'Solana',
+    18,
+    '0x570a5d26f7765ecb712c0924e4de545b89fd43df',
+    UnderlyingAsset['bsc:sol'],
+    BSC_TOKEN_FEATURES
+  ),
   tbscToken(
     'b31aa2b5-8d8c-4ac1-b5e5-0f9d59377eab',
     'tbsc:busd',

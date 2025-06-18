@@ -1591,6 +1591,7 @@ export const ofcCoins = [
     18,
     UnderlyingAsset['bsc:aitech']
   ),
+  ofcBscToken('16b3a242-d500-4930-884a-183aa9038609', 'ofcbsc:sol', 'Solana', 18, UnderlyingAsset['bsc:sol']),
   tofcBscToken(
     'bf8a52e5-f416-46ea-95c2-a920dc204233',
     'ofctbsc:usd1',

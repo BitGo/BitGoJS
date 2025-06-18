@@ -3209,6 +3209,21 @@ export const ofcErc20Coins = [
     0,
     underlyingAssetForSymbol('eth:umint')
   ),
+  ofcerc20('f89abeb4-6566-4a16-9cb6-54c607467602', 'ofceth:arb', 'Arbitrum', 18, underlyingAssetForSymbol('eth:arb')),
+  ofcerc20('6aa08f88-50ef-4fd9-b386-bd9cf10a12c7', 'ofceth:ez', 'EasyFi', 18, underlyingAssetForSymbol('eth:ez')),
+  ofcerc20(
+    '76c39793-f54e-427c-b7f7-0be1cf0960d9',
+    'ofceth:ncash',
+    'Nucleus Vision',
+    18,
+    underlyingAssetForSymbol('eth:ncash')
+  ),
+  ofcerc20('490d7928-cb00-4b38-81ce-99778e0c1e15', 'ofceth:sub', 'Substratum', 18, underlyingAssetForSymbol('eth:sub')),
+  ofcerc20('109574cf-0eba-40c8-a988-0d990e2d1936', 'ofceth:poe', 'Po.et', 8, underlyingAssetForSymbol('eth:poe')),
+  ofcerc20('0cb66151-195b-4e3e-b6f8-e9fa953fb5dc', 'ofceth:ocn', 'Odyssey', 18, underlyingAssetForSymbol('eth:ocn')),
+  ofcerc20('1d5bea63-7976-48be-b557-7644631e13d3', 'ofceth:banca', 'Banca', 18, underlyingAssetForSymbol('eth:banca')),
+  ofcerc20('a5f7e552-54b6-4dde-b070-b3c42ce09d5d', 'ofceth:stq', 'Storiqa', 18, underlyingAssetForSymbol('eth:stq')),
+  ofcerc20('827a39b3-0124-4667-b1ed-f939dc7bb86f', 'ofceth:lf', 'LF labs', 18, underlyingAssetForSymbol('eth:lf')),
 ];
 
 export const tOfcErc20Coins = [

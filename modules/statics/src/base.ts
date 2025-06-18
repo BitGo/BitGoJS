@@ -1974,6 +1974,15 @@ export enum UnderlyingAsset {
   'eth:npc' = 'eth:npc',
   'eth:towns' = 'eth:towns',
   'eth:umint' = 'eth:umint',
+  'eth:arb' = 'eth:arb',
+  'eth:ez' = 'eth:ez',
+  'eth:ncash' = 'eth:ncash',
+  'eth:sub' = 'eth:sub',
+  'eth:poe' = 'eth:poe',
+  'eth:ocn' = 'eth:ocn',
+  'eth:banca' = 'eth:banca',
+  'eth:stq' = 'eth:stq',
+  'eth:lf' = 'eth:lf',
   'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ' = 'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ',
   'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M' = 'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M',
   'xlm:SLT-GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP' = 'xlm:SLT-GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP',
@@ -2241,6 +2250,7 @@ export enum UnderlyingAsset {
   'erc1155:polygontoken' = 'erc1155:polygontoken',
 
   // BSC Token BEP-20
+  'bsc:sol' = 'bsc:sol',
   'bsc:solv' = 'bsc:solv',
   'bsc:brise' = 'bsc:brise',
   'bsc:bsw' = 'bsc:bsw',
