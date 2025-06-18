@@ -411,6 +411,96 @@ const getTokenAccountsByOwnerResponse2 = {
   },
 };
 
+const getTokenAccountsByOwnerForSol2022Response = {
+  status: 200,
+  body: {
+    jsonrpc: '2.0',
+    result: {
+      context: {
+        apiVersion: '1.17.5',
+        slot: 259019329,
+      },
+      value: [
+        {
+          account: {
+            data: {
+              parsed: {
+                info: {
+                  isNative: false,
+                  mint: '5NR1bQwLWqjbkhbQ1hx72HKJybbuvwkDnUZNoAZ2VhW6',
+                  owner: 'cyggsFnDvbfsPeiFXziebWsWAp6bW5Nc5SePTx8mebL',
+                  state: 'initialized',
+                  tokenAmount: {
+                    amount: '2000000000',
+                    decimals: 9,
+                    uiAmount: 2,
+                    uiAmountString: '2',
+                  },
+                },
+                type: 'account',
+              },
+              program: 'spl-token',
+              space: 165,
+            },
+            executable: false,
+            lamports: 2039280,
+            owner: 'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb',
+            rentEpoch: 18446744073709552000,
+            space: 165,
+          },
+          pubkey: '5seRT43oRMkVgwxEssfci6Zgs9PJkt4igjqRiEjL5g3v',
+        },
+      ],
+    },
+    id: '1',
+  },
+};
+
+const getTokenAccountsByOwnerForSol2022Response2 = {
+  status: 200,
+  body: {
+    jsonrpc: '2.0',
+    result: {
+      context: {
+        apiVersion: '1.17.5',
+        slot: 259019329,
+      },
+      value: [
+        {
+          account: {
+            data: {
+              parsed: {
+                info: {
+                  isNative: false,
+                  mint: '5NR1bQwLWqjbkhbQ1hx72HKJybbuvwkDnUZNoAZ2VhW6',
+                  owner: 'HMEgbR4S2hLKfst2VZUVpHVUu4FioFPyW5iUuJvZdMvs',
+                  state: 'initialized',
+                  tokenAmount: {
+                    amount: '2000000000',
+                    decimals: 9,
+                    uiAmount: 2,
+                    uiAmountString: '2',
+                  },
+                },
+                type: 'account',
+              },
+              program: 'spl-token',
+              space: 165,
+            },
+            executable: false,
+            lamports: 2039280,
+            owner: 'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb',
+            rentEpoch: 18446744073709552000,
+            space: 165,
+          },
+          pubkey: 'E2ZC9Kgc1aq3q7ect4iyF3zVgJWCfomRGsg98hkJxm6k',
+        },
+      ],
+    },
+    id: '1',
+  },
+};
+
 const getTokenAccountsByOwnerResponseNoAccounts = {
   status: 200,
   body: {
@@ -502,6 +592,8 @@ export const SolResponses = {
   getTokenAccountsByOwnerResponse2,
   getTokenAccountsByOwnerResponse3,
   getTokenAccountsByOwnerResponseNoAccounts,
+  getTokenAccountsByOwnerForSol2022Response,
+  getTokenAccountsByOwnerForSol2022Response2,
   getMinimumBalanceForRentExemptionResponse,
   broadcastTransactionResponse,
   broadcastTransactionResponse1,

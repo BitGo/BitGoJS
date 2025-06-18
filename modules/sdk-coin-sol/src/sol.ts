@@ -58,6 +58,8 @@ import {
   isValidPublicKey,
   validateRawTransaction,
 } from './lib/utils';
+import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+
 export const DEFAULT_SCAN_FACTOR = 20; // default number of receive addresses to scan for funds
 
 export interface TransactionFee {
@@ -154,6 +156,7 @@ export interface SolRecoveryOptions extends MPCRecoveryOptions {
   closeAtaAddress?: string;
   // destination address where token should be sent before closing the ATA address
   recoveryDestinationAtaAddress?: string;
+  programId?: string; // programId of the token
 }
 
 export interface SolConsolidationRecoveryOptions extends MPCConsolidationRecoveryOptions {
@@ -638,7 +641,7 @@ export class Sol extends BaseCoin {
     };
   }
 
-  protected async getTokenAccountsByOwner(pubKey = ''): Promise<[] | TokenAccount[]> {
+  protected async getTokenAccountsByOwner(pubKey = '', programId = ''): Promise<[] | TokenAccount[]> {
     const response = await this.getDataFromNode({
       payload: {
         id: '1',
@@ -647,7 +650,10 @@ export class Sol extends BaseCoin {
         params: [
           pubKey,
           {
-            programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+            programId:
+              programId.toString().toLowerCase() === TOKEN_2022_PROGRAM_ID.toString().toLowerCase()
+                ? TOKEN_2022_PROGRAM_ID.toString()
+                : TOKEN_PROGRAM_ID.toString(),
           },
           {
             encoding: 'jsonParsed',
@@ -793,7 +799,7 @@ export class Sol extends BaseCoin {
 
     // check for possible token recovery, recover the token provide by user
     if (params.tokenContractAddress) {
-      const tokenAccounts = await this.getTokenAccountsByOwner(bs58EncodedPublicKey);
+      const tokenAccounts = await this.getTokenAccountsByOwner(bs58EncodedPublicKey, params.programId);
       if (tokenAccounts.length !== 0) {
         // there exists token accounts on the given address, but need to check certain conditions:
         // 1. if there is a recoverable balance
@@ -824,7 +830,10 @@ export class Sol extends BaseCoin {
             .feePayer(bs58EncodedPublicKey);
 
           // need to get all token accounts of the recipient address and need to create them if they do not exist
-          const recipientTokenAccounts = await this.getTokenAccountsByOwner(params.recoveryDestination);
+          const recipientTokenAccounts = await this.getTokenAccountsByOwner(
+            params.recoveryDestination,
+            params.programId
+          );
 
           for (const tokenAccount of recovereableTokenAccounts) {
             let recipientTokenAccountExists = false;
@@ -851,6 +860,10 @@ export class Sol extends BaseCoin {
               txBuilder.createAssociatedTokenAccount({
                 ownerAddress: params.recoveryDestination,
                 tokenName: tokenName,
+                programId:
+                  params.programId?.toString().toLowerCase() === TOKEN_2022_PROGRAM_ID.toString().toLowerCase()
+                    ? TOKEN_2022_PROGRAM_ID.toString()
+                    : TOKEN_PROGRAM_ID.toString(),
               });
               // add rent exempt amount to total fee for each token account that has to be created
               totalFeeForTokenRecovery = totalFeeForTokenRecovery.plus(rentExemptAmount);
