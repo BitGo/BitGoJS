@@ -1,4 +1,5 @@
 import * as should from 'should';
+import * as nock from 'nock';
 
 import { Environments } from '@bitgo/sdk-core';
 import { TestBitGo } from '@bitgo/sdk-test';
@@ -44,5 +45,38 @@ describe('Asset metadata service', () => {
     coin.name.should.equal('Holesky Testnet fake token');
     coin.decimalPlaces.should.equal(6);
     coin.tokenContractAddress.should.equal('0x89a959b9184b4f8c8633646d5dfd049d2ebc983a');
+  });
+
+  describe('registerToken', () => {
+    it('should throw an error when useAms is false', async () => {
+      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock', microservicesUri, useAms: false } as BitGoOptions);
+      bitgo.initializeTestVars();
+
+      await bitgo
+        .registerToken('hteth:faketoken')
+        .should.be.rejectedWith('registerToken is only supported when useAms is set to true');
+    });
+
+    it('should register a token from statics library if available', async () => {
+      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock', microservicesUri, useAms: true } as BitGoOptions);
+      bitgo.initializeTestVars();
+      await bitgo.registerToken('hteth:bgerchv2');
+      const coin = bitgo.coin('hteth:bgerchv2');
+      should.exist(coin);
+    });
+
+    it('should fetch token information from AMS if not in statics library', async () => {
+      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock', microservicesUri, useAms: true } as BitGoOptions);
+      bitgo.initializeTestVars();
+
+      const tokenName = 'hteth:faketoken';
+
+      // Setup nocks
+      nock(microservicesUri).get(`/api/v1/assets/name/${tokenName}`).reply(200, reducedAmsTokenConfig[tokenName][0]);
+
+      await bitgo.registerToken(tokenName);
+      const coin = bitgo.coin(tokenName);
+      should.exist(coin);
+    });
   });
 });
