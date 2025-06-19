@@ -195,6 +195,7 @@ import {
   Vet,
   Wemix,
   World,
+  WorldToken,
   Xdc,
   Xlm,
   Xrp,
@@ -436,6 +437,10 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   });
 
   CoredaoToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
+    coinFactory.register(name, coinConstructor);
+  });
+
+  WorldToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
     coinFactory.register(name, coinConstructor);
   });
 

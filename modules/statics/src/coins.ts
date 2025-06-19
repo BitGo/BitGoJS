@@ -10,6 +10,7 @@ import {
   bscToken,
   celoToken,
   coredaoErc20,
+  worldErc20,
   eosToken,
   erc1155,
   erc20,
@@ -44,6 +45,7 @@ import {
   tsuiToken,
   ttronToken,
   txrpToken,
+  tworldErc20,
   tzkethErc20,
   xrpToken,
   zkethErc20,
@@ -3215,6 +3217,38 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x6401f24ef7c54032f4f54e67492928973ab87650',
     UnderlyingAsset['tcoredao:stcore']
+  ),
+  worldErc20(
+    '35cadba6-2324-4ad0-b809-fbdbb59e6ce3',
+    'world:wld',
+    'Worldcoin',
+    18,
+    '0x2cfc85d8e48f8eab294be644d9e25c3030863003',
+    UnderlyingAsset['world:wld']
+  ),
+  worldErc20(
+    '78aaa845-2c36-4f16-bc0f-6a4c65b43dab',
+    'world:usdc',
+    'USDC',
+    18,
+    '0x79a02482a880bce3f13e09da970dc34db4cd24d1',
+    UnderlyingAsset['world:usdc']
+  ),
+  tworldErc20(
+    'c5acdc9b-d0d4-4e0c-88fe-2cc68504cf86',
+    'tworld:wld',
+    'Worldcoin Testnet',
+    18,
+    '0x8803e47fd253915f9c860837f391aa71b3e03c5a',
+    UnderlyingAsset['tworld:wld']
+  ),
+  tworldErc20(
+    'd347b3ba-73ac-4f3d-bd3a-e68b7c1e4669',
+    'tworld:usdc',
+    'USDC',
+    18,
+    '0x66145f38cbac35ca6f1dfb4914df98f1614aea88',
+    UnderlyingAsset['tworld:usdc']
   ),
   txrpToken(
     '8ef16158-1015-4a67-b6fe-db669c18ab2b',

@@ -484,6 +484,16 @@ export class CoredaoERC20Token extends ContractAddressDefinedToken {
 }
 
 /**
+ * The World Chain network supports tokens
+ * World Chain Tokens are ERC20 tokens
+ */
+export class WorldERC20Token extends ContractAddressDefinedToken {
+  constructor(options: Erc20ConstructorOptions) {
+    super(options);
+  }
+}
+
+/**
  * The Xrp network supports tokens
  * Xrp tokens are identified by their issuer address
  * Naming format is similar to XLM
@@ -2412,6 +2422,96 @@ export function tcoredaoErc20(
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
   return coredaoErc20(
+    id,
+    name,
+    fullName,
+    decimalPlaces,
+    contractAddress,
+    asset,
+    features,
+    prefix,
+    suffix,
+    network,
+    primaryKeyCurve
+  );
+}
+
+/**
+ * Factory function for WorldErc20 token instances.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param contractAddress Contract address of this token
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param prefix? Optional token prefix. Defaults to empty string
+ * @param suffix? Optional token suffix. Defaults to token name.
+ * @param network? Optional token network. Defaults to World Chain mainnet network.
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function worldErc20(
+  id: string,
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  contractAddress: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.EIP1559],
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.main.world,
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
+) {
+  return Object.freeze(
+    new WorldERC20Token({
+      id,
+      name,
+      fullName,
+      network,
+      contractAddress,
+      prefix,
+      suffix,
+      features,
+      decimalPlaces,
+      asset,
+      isToken: true,
+      primaryKeyCurve,
+      baseUnit: BaseUnit.ETH,
+    })
+  );
+}
+
+/**
+ * Factory function for world testnet worldErc20 token instances.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param contractAddress Contract address of this token
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param prefix? Optional token prefix. Defaults to empty string
+ * @param suffix? Optional token suffix. Defaults to token name.
+ * @param network? Optional token network. Defaults to the World Chain test network.
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function tworldErc20(
+  id: string,
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  contractAddress: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.test.coredao,
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
+) {
+  return worldErc20(
     id,
     name,
     fullName,
