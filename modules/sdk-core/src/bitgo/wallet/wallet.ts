@@ -34,6 +34,7 @@ import {
   inferAddressType,
   IntentOptionsForMessage,
   IntentOptionsForTypedData,
+  MessageStandardType,
   RequestTracer,
   RequestType,
   TokenTransferRecipientParams,
@@ -2091,6 +2092,51 @@ export class Wallet implements IWallet {
       reqId: params.reqId,
     };
     return this.signMessageTss(presign);
+  }
+
+  /**
+   * Prepares and creates a sign message request for TSS wallets, that can be used later for signing.
+   *
+   * @param params - Parameters for creating the sign message request
+   * @returns Promise<TxRequest> - The created transaction request for signing a message
+   */
+  async createSignMessageRequest(params: {
+    messageRaw: string;
+    messageStandardType?: MessageStandardType;
+    custodianMessageId?: string;
+    reqId?: RequestTracer;
+  }): Promise<TxRequest> {
+    if (this._wallet.multisigType !== 'tss') {
+      throw new Error('Message signing only supported for TSS wallets');
+    }
+
+    if (!this.baseCoin.supportsMessageSigning()) {
+      throw new Error(`Message signing not supported for ${this.baseCoin.getFullName()}`);
+    }
+
+    if (!params.messageRaw) {
+      throw new Error('message required to create message sign request');
+    }
+
+    const reqId = params.reqId || new RequestTracer();
+
+    try {
+      const intentOption: IntentOptionsForMessage = {
+        custodianMessageId: params.custodianMessageId,
+        reqId,
+        intentType: 'signMessage',
+        isTss: true,
+        messageRaw: params.messageRaw,
+        messageStandardType: params.messageStandardType,
+      };
+
+      if (!this.tssUtils) {
+        throw new Error('TSS utilities not available for this wallet');
+      }
+      return await this.tssUtils.createSignMessageRequest(intentOption);
+    } catch (error) {
+      throw new Error(`Failed to create message sign request: ${error}`);
+    }
   }
 
   /**

@@ -9,33 +9,33 @@ import * as nock from 'nock';
 import * as _ from 'lodash';
 
 import {
+  BaseTssUtils,
   common,
   CustomSigningFunction,
+  Ecdsa,
   ECDSAUtils,
   EDDSAUtils,
+  GetUserPrvOptions,
+  Keychains,
+  KeyType,
+  ManageUnspentsOptions,
+  MessageTypes,
+  PopulatedIntent,
+  PrebuildTransactionWithIntentOptions,
   RequestTracer,
+  SendManyOptions,
+  SignatureShareType,
+  SignedMessage,
+  SignTypedDataVersion,
   TokenType,
   TssUtils,
   TxRequest,
-  Wallet,
-  SignatureShareType,
-  Ecdsa,
-  Keychains,
+  TxRequestVersion,
   TypedData,
   TypedMessage,
-  MessageTypes,
-  SignTypedDataVersion,
-  GetUserPrvOptions,
-  ManageUnspentsOptions,
-  SignedMessage,
-  BaseTssUtils,
-  KeyType,
-  SendManyOptions,
-  PopulatedIntent,
-  TxRequestVersion,
+  Wallet,
   WalletSignMessageOptions,
   WalletSignTypedDataOptions,
-  PrebuildTransactionWithIntentOptions,
 } from '@bitgo/sdk-core';
 
 import { TestBitGo } from '@bitgo/sdk-test';
@@ -3467,14 +3467,24 @@ describe('V2 Wallet:', function () {
         nock.cleanAll();
       });
 
-      it('should throw error for unsupported coins', async function () {
-        await tssSolWallet
-          .signMessage({
-            reqId,
-            message: { messageRaw },
-            prv: 'secretKey',
-          })
-          .should.be.rejectedWith('Message signing not supported for Testnet Solana');
+      describe('should throw error for unsupported coins', function () {
+        it('sol signMessage', async function () {
+          await tssSolWallet
+            .signMessage({
+              reqId,
+              message: { messageRaw },
+              prv: 'secretKey',
+            })
+            .should.be.rejectedWith('Message signing not supported for Testnet Solana');
+        });
+
+        it('sol create signMessage tx request', async function () {
+          await tssSolWallet
+            .createSignMessageRequest({
+              messageRaw,
+            })
+            .should.be.rejectedWith('Message signing not supported for Testnet Solana');
+        });
       });
 
       messageSigningCoins.map((coinName) => {
@@ -3482,6 +3492,15 @@ describe('V2 Wallet:', function () {
 
         tssEthWallet = new Wallet(bitgo, bitgo.coin(coinName), ethWalletData);
         const txRequestId = txRequestForMessageSigning.txRequestId;
+
+        it('should create tx Request with signMessage intent', async function () {
+          nock(bgUrl).post(`/api/v2/wallet/${tssEthWallet.id()}/msgrequests`).reply(200, txRequestForMessageSigning);
+
+          const txRequest = await tssEthWallet.createSignMessageRequest({
+            messageRaw,
+          });
+          txRequest.should.deepEqual(txRequestForMessageSigning);
+        });
 
         it('should sign message', async function () {
           const signMessageTssSpy = sinon.spy(tssEthWallet, 'signMessageTss' as any);
