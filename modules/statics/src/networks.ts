@@ -331,10 +331,8 @@ class LightningBitcoin extends Mainnet implements LightningNetwork {
   utxolibName = 'bitcoin';
   explorerUrl = 'https://mempool.space/lightning';
   lightningServicePubKey = '0338508686f978ceffd7ce05404041b1a5b4f75a39bc92a6d355240ccc081f763e';
-  // TODO - BTC-2202
-  middlewarePubKey = '';
-  // TODO - BTC-2211
-  tatPubKey = '';
+  middlewarePubKey = '020d52f6458b17b565bc03516568d1a65c8cbd131ce03f2207567e4cd3322e82f3';
+  tatPubKey = '03953da20068c096858d3cca60f8c5b0e5a2f5d0383ecf9b6ab392d71e4f3e72df';
 }
 
 class LightningBitcoinTestnet extends Testnet implements LightningNetwork {
