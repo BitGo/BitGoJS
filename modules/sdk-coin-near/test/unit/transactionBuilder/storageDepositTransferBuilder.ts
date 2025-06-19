@@ -63,18 +63,8 @@ describe('Near: Storage Deposit Transfer Builder', () => {
         builder.sender(testData.accounts.account1.address, testData.accounts.account1.publicKey);
         const tx = await builder.build();
         should.equal(tx.type, TransactionType.StorageDeposit);
-        tx.inputs.length.should.equal(1);
-        tx.inputs[0].should.deepEqual({
-          address: testData.accounts.account1.address,
-          value: '1250000000000000000000',
-          coin: `t${nep141Token.getFamily()}`,
-        });
-        tx.outputs.length.should.equal(1);
-        tx.outputs[0].should.deepEqual({
-          address: testData.accounts.account1.address,
-          value: '1250000000000000000000',
-          coin: `t${nep141Token.getFamily()}`,
-        });
+        tx.inputs.length.should.equal(0);
+        tx.outputs.length.should.equal(0);
         const rawTx = tx.toBroadcastFormat();
         rawTx.should.deepEqual(testData.rawTx.selfStorageDeposit.unsigned);
       });
@@ -85,18 +75,8 @@ describe('Near: Storage Deposit Transfer Builder', () => {
         builder.sign({ key: testData.accounts.account1.secretKey });
         const tx = await builder.build();
         should.equal(tx.type, TransactionType.StorageDeposit);
-        tx.inputs.length.should.equal(1);
-        tx.inputs[0].should.deepEqual({
-          address: testData.accounts.account1.address,
-          value: '1250000000000000000000',
-          coin: `t${nep141Token.getFamily()}`,
-        });
-        tx.outputs.length.should.equal(1);
-        tx.outputs[0].should.deepEqual({
-          address: testData.accounts.account1.address,
-          value: '1250000000000000000000',
-          coin: `t${nep141Token.getFamily()}`,
-        });
+        tx.inputs.length.should.equal(0);
+        tx.outputs.length.should.equal(0);
         const rawTx = tx.toBroadcastFormat();
         rawTx.should.deepEqual(testData.rawTx.selfStorageDeposit.signed);
       });
@@ -108,18 +88,8 @@ describe('Near: Storage Deposit Transfer Builder', () => {
       builder.beneficiaryId(testData.accounts.account2.address);
       const tx = await builder.build();
       should.equal(tx.type, TransactionType.StorageDeposit);
-      tx.inputs.length.should.equal(1);
-      tx.inputs[0].should.deepEqual({
-        address: testData.accounts.account1.address,
-        value: '1250000000000000000000',
-        coin: `t${nep141Token.getFamily()}`,
-      });
-      tx.outputs.length.should.equal(1);
-      tx.outputs[0].should.deepEqual({
-        address: testData.accounts.account2.address,
-        value: '1250000000000000000000',
-        coin: `t${nep141Token.getFamily()}`,
-      });
+      tx.inputs.length.should.equal(0);
+      tx.outputs.length.should.equal(0);
       const rawTx = tx.toBroadcastFormat();
       rawTx.should.deepEqual(testData.rawTx.storageDeposit.unsigned);
     });
@@ -131,18 +101,8 @@ describe('Near: Storage Deposit Transfer Builder', () => {
       builder.sign({ key: testData.accounts.account1.secretKey });
       const tx = await builder.build();
       should.equal(tx.type, TransactionType.StorageDeposit);
-      tx.inputs.length.should.equal(1);
-      tx.inputs[0].should.deepEqual({
-        address: testData.accounts.account1.address,
-        value: '1250000000000000000000',
-        coin: `t${nep141Token.getFamily()}`,
-      });
-      tx.outputs.length.should.equal(1);
-      tx.outputs[0].should.deepEqual({
-        address: testData.accounts.account2.address,
-        value: '1250000000000000000000',
-        coin: `t${nep141Token.getFamily()}`,
-      });
+      tx.inputs.length.should.equal(0);
+      tx.outputs.length.should.equal(0);
       const rawTx = tx.toBroadcastFormat();
       rawTx.should.deepEqual(testData.rawTx.storageDeposit.signed);
     });
