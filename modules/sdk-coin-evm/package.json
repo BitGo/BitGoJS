@@ -15,6 +15,13 @@
     "unit-test": "mocha",
     "prepare": "npm run build"
   },
+  "dependencies": {
+    "@bitgo/abstract-eth": "^24.5.2",
+    "@bitgo/sdk-core": "^35.3.0",
+    "@bitgo/statics": "^54.4.0",
+    "@ethereumjs/common": "^2.6.5"
+  },
+  "devDependencies": {},
   "author": "BitGo SDK Team <sdkteam@bitgo.com>",
   "license": "MIT",
   "repository": {
