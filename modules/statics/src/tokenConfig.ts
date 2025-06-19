@@ -23,6 +23,7 @@ import {
   SuiCoin,
   TronErc20Coin,
   VetToken,
+  WorldERC20Token,
   XrpCoin,
   ZkethERC20Token,
 } from './account';
@@ -178,6 +179,9 @@ export interface Tokens {
     coredao: {
       tokens: EthLikeTokenConfig[];
     };
+    world: {
+      tokens: EthLikeTokenConfig[];
+    };
     sol: {
       tokens: SolTokenConfig[];
     };
@@ -278,6 +282,9 @@ export interface Tokens {
       tokens: EthLikeTokenConfig[];
     };
     coredao: {
+      tokens: EthLikeTokenConfig[];
+    };
+    world: {
       tokens: EthLikeTokenConfig[];
     };
     apt: {
@@ -624,6 +631,24 @@ const getFormattedCoredaoTokens = (customCoinMap = coins) =>
     return acc;
   }, []);
 
+function getWorldTokenConfig(coin: WorldERC20Token): EthLikeTokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'world' : 'tworld',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+    decimalPlaces: coin.decimalPlaces,
+  };
+}
+const getFormattedWorldTokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: EthLikeTokenConfig[], coin) => {
+    if (coin instanceof WorldERC20Token) {
+      acc.push(getWorldTokenConfig(coin));
+    }
+    return acc;
+  }, []);
+
 function getSolTokenConfig(coin: SolCoin): SolTokenConfig {
   return {
     type: coin.name,
@@ -921,6 +946,9 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
       coredao: {
         tokens: getFormattedCoredaoTokens(coinMap).filter((token) => token.network === 'Mainnet'),
       },
+      world: {
+        tokens: getFormattedWorldTokens(coinMap).filter((token) => token.network === 'Mainnet'),
+      },
       apt: {
         tokens: getFormattedAptTokens(coinMap).filter((token) => token.network === 'Mainnet'),
         nftCollections: formattedAptNFTCollections.filter(
@@ -1011,6 +1039,9 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
       },
       coredao: {
         tokens: getFormattedCoredaoTokens(coinMap).filter((token) => token.network === 'Testnet'),
+      },
+      world: {
+        tokens: getFormattedWorldTokens(coinMap).filter((token) => token.network === 'Testnet'),
       },
       near: {
         tokens: getFormattedNep141Tokens(coinMap).filter((token) => token.network === 'Testnet'),

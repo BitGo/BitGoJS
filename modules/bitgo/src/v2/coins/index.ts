@@ -63,7 +63,7 @@ import { Trx, Ttrx } from '@bitgo/sdk-coin-trx';
 import { StellarToken, Txlm, Xlm } from '@bitgo/sdk-coin-xlm';
 import { Vet, Tvet } from '@bitgo/sdk-coin-vet';
 import { Wemix, Twemix } from '@bitgo/sdk-coin-wemix';
-import { World, Tworld } from '@bitgo/sdk-coin-world';
+import { World, Tworld, WorldToken } from '@bitgo/sdk-coin-world';
 import { Xdc, Txdc } from '@bitgo/sdk-coin-xdc';
 import { Txrp, Xrp, XrpToken } from '@bitgo/sdk-coin-xrp';
 import { Txtz, Xtz } from '@bitgo/sdk-coin-xtz';
@@ -141,7 +141,7 @@ export { Txtz, Xtz };
 export { Tzec, Zec };
 export { Tzeta, Zeta };
 export { Wemix, Twemix };
-export { World, Tworld };
+export { World, Tworld, WorldToken };
 export { Zketh, Tzketh, ZkethToken };
 
 import { coins } from '@bitgo/sdk-core';

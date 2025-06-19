@@ -2523,6 +2523,14 @@ export enum UnderlyingAsset {
   // coredao testnet tokens
   'tcoredao:stcore' = 'tcoredao:stcore',
 
+  //world chain mainnet tokens
+  'world:wld' = 'world:wld',
+  'world:usdc' = 'world:usdc',
+
+  //world chain testnet tokens
+  'tworld:wld' = 'tworld:wld',
+  'tworld:usdc' = 'tworld:usdc',
+
   ERC721 = 'erc721',
   ERC1155 = 'erc1155',
   NONSTANDARD = 'nonstandard',
