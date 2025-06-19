@@ -14,7 +14,7 @@ import {
   TransactionRecipient,
   TransactionType,
 } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig, NetworkType } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
 
 import {
   FT_TRANSFER,
@@ -351,26 +351,6 @@ export class Transaction extends BaseTransaction {
                 coin: this._coinConfig.name,
               });
             }
-            if (action.functionCall.methodName === 'storage_deposit') {
-              const parsedArgs = JSON.parse(Buffer.from(action.functionCall.args).toString());
-              const receiverId = parsedArgs.account_id ? parsedArgs.account_id : this._nearTransaction.signerId;
-              inputs.push({
-                address: this._nearTransaction.signerId,
-                value: action.functionCall.deposit.toString(),
-                coin:
-                  this._coinConfig.network.type === NetworkType.TESTNET
-                    ? `t${this._coinConfig.family}`
-                    : this._coinConfig.family,
-              });
-              outputs.push({
-                address: receiverId,
-                value: action.functionCall.deposit.toString(),
-                coin:
-                  this._coinConfig.network.type === NetworkType.TESTNET
-                    ? `t${this._coinConfig.family}`
-                    : this._coinConfig.family,
-              });
-            }
           }
           break;
         case TransactionType.StakingActivate:
@@ -403,29 +383,8 @@ export class Transaction extends BaseTransaction {
             });
           }
           break;
-        case TransactionType.StorageDeposit: {
-          if (action.functionCall) {
-            const parsedArgs = JSON.parse(Buffer.from(action.functionCall.args).toString());
-            const receiverId = parsedArgs.account_id ? parsedArgs.account_id : this._nearTransaction.signerId;
-            inputs.push({
-              address: this._nearTransaction.signerId,
-              value: action.functionCall.deposit.toString(),
-              coin:
-                this._coinConfig.network.type === NetworkType.TESTNET
-                  ? `t${this._coinConfig.family}`
-                  : this._coinConfig.family,
-            });
-            outputs.push({
-              address: receiverId,
-              value: action.functionCall.deposit.toString(),
-              coin:
-                this._coinConfig.network.type === NetworkType.TESTNET
-                  ? `t${this._coinConfig.family}`
-                  : this._coinConfig.family,
-            });
-          }
+        case TransactionType.StorageDeposit:
           break;
-        }
       }
     });
     this._outputs = outputs;
