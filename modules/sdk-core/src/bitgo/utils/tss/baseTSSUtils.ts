@@ -43,6 +43,7 @@ import { RequestTracer } from '../util';
 import * as openpgp from 'openpgp';
 import { envRequiresBitgoPubGpgKeyConfig, getBitgoMpcGpgPubKey } from '../../tss/bitgoPubKeys';
 import { getBitgoGpgPubKey } from '../opengpgUtils';
+import assert from 'assert';
 
 /**
  * BaseTssUtil class which different signature schemes have to extend
@@ -380,6 +381,35 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
   }
 
   /**
+   * Create a sign message request
+   *
+   * @param params - the parameters for the sign message request
+   * @param apiVersion - the API version to use, defaults to 'full'
+   */
+  async createSignMessageRequest(
+    params: IntentOptionsForMessage,
+    apiVersion: TxRequestVersion = 'full'
+  ): Promise<TxRequest> {
+    assert(
+      params.intentType === 'signMessage',
+      'Intent type must be signMessage for createMsgRequestWithSignMessageIntent'
+    );
+    const intent: PopulatedIntentForMessageSigning = {
+      custodianMessageId: params.custodianMessageId,
+      intentType: params.intentType,
+      sequenceId: params.sequenceId,
+      comment: params.comment,
+      memo: params.memo?.value,
+      isTss: params.isTss,
+      messageRaw: params.messageRaw,
+      messageStandardType: params.messageStandardType,
+      messageEncoded: params.messageEncoded ?? '',
+    };
+
+    return this.createSignMessageRequestBase(intent, apiVersion, params.reqId);
+  }
+
+  /**
    * Create a tx request from params for type data signing
    *
    * @param params
@@ -428,6 +458,31 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
     this.bitgo.setRequestTracer(reqTracer);
     return this.bitgo
       .post(this.bitgo.url(`/wallet/${this.wallet.id()}/txrequests`, 2))
+      .send(whitelistedParams)
+      .result();
+  }
+
+  /**
+   * Calls Bitgo API to create msg request.
+   *
+   * @private
+   */
+  private async createSignMessageRequestBase(
+    intent: PopulatedIntentForMessageSigning,
+    apiVersion: TxRequestVersion,
+    reqId?: IRequestTracer
+  ): Promise<TxRequest> {
+    const whitelistedParams = {
+      intent: {
+        ...intent,
+      },
+      apiVersion,
+    };
+
+    const reqTracer = reqId || new RequestTracer();
+    this.bitgo.setRequestTracer(reqTracer);
+    return this.bitgo
+      .post(this.bitgo.url(`/wallet/${this.wallet.id()}/msgrequests`, 2))
       .send(whitelistedParams)
       .result();
   }
