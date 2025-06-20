@@ -25,6 +25,16 @@ export interface LightningNetwork extends UtxoNetwork {
    * by enabling the creation of a shared secret for encryption and decryption of data.
    */
   lightningServicePubKey: string;
+  /**
+   * The public key of the middleware service, used for deriving the shared Elliptic Curve Diffie-Hellman (ECDH) secret
+   * between the user's extended private key and the middleware service.
+   */
+  middlewarePubKey: string;
+  /**
+   * The public key of the TAT service, used for deriving the shared Elliptic Curve Diffie-Hellman (ECDH) secret
+   * between the user's extended private key and the TAT service.
+   */
+  tatPubKey: string;
 }
 
 export interface AdaNetwork extends BaseNetwork {
@@ -321,6 +331,8 @@ class LightningBitcoin extends Mainnet implements LightningNetwork {
   utxolibName = 'bitcoin';
   explorerUrl = 'https://mempool.space/lightning';
   lightningServicePubKey = '0338508686f978ceffd7ce05404041b1a5b4f75a39bc92a6d355240ccc081f763e';
+  middlewarePubKey = '020d52f6458b17b565bc03516568d1a65c8cbd131ce03f2207567e4cd3322e82f3';
+  tatPubKey = '03953da20068c096858d3cca60f8c5b0e5a2f5d0383ecf9b6ab392d71e4f3e72df';
 }
 
 class LightningBitcoinTestnet extends Testnet implements LightningNetwork {
@@ -329,6 +341,8 @@ class LightningBitcoinTestnet extends Testnet implements LightningNetwork {
   utxolibName = 'testnet';
   explorerUrl = 'https://mempool.space/testnet/lightning';
   lightningServicePubKey = '024055021db1e7f019ebb783ab0b0810c21a819207d4cb1ec4a6e2150ac07f1482';
+  middlewarePubKey = '027cb3bc6b49fc385d282b42a7be232a94ffcbaffc7818b603b17722582bbf539b';
+  tatPubKey = '02e747c99c371eac9c14fb19913bec8a0e3e46e35ab1a45878e5b9afbb69899c1e';
 }
 
 class Bitcoin extends Mainnet implements UtxoNetwork {

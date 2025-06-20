@@ -1,5 +1,6 @@
 import * as statics from '@bitgo/statics';
 import * as utxolib from '@bitgo/utxo-lib';
+import { randomBytes } from 'crypto';
 import { importMacaroon, bytesToBase64 } from 'macaroon';
 import * as bs58check from 'bs58check';
 import * as sdkcore from '@bitgo/sdk-core';
@@ -205,4 +206,33 @@ export function deriveLightningServiceSharedSecret(coinName: 'lnbtc' | 'tlnbtc',
   const publicKey = Buffer.from(getStaticsLightningNetwork(coinName).lightningServicePubKey, 'hex');
   const userAuthHdNode = utxolib.bip32.fromBase58(userAuthXprv);
   return sdkcore.getSharedSecret(userAuthHdNode, publicKey);
+}
+
+/**
+ * Derives the shared secret for the middleware using a private key and the middleware's public key.
+ */
+export function deriveMiddlewareSharedSecret(coinName: 'lnbtc' | 'tlnbtc', xprv: string): Buffer {
+  const publicKey = Buffer.from(getStaticsLightningNetwork(coinName).middlewarePubKey, 'hex');
+  const userAuthHdNode = utxolib.bip32.fromBase58(xprv);
+  return sdkcore.getSharedSecret(userAuthHdNode, publicKey);
+}
+
+/**
+ * Derives the shared secret for TAT service using ta private key and the TAT public key.
+ */
+export function deriveTatSharedSecret(coinName: 'lnbtc' | 'tlnbtc', xprv: string): Buffer {
+  const publicKey = Buffer.from(getStaticsLightningNetwork(coinName).tatPubKey, 'hex');
+  const userAuthHdNode = utxolib.bip32.fromBase58(xprv);
+  return sdkcore.getSharedSecret(userAuthHdNode, publicKey);
+}
+
+/**
+ * Given a seed, compute a BIP32 derivation index.
+ * 0 <= index < 4294967295 (largest 4 byte number)
+ * @param seed (optional) If nothing provided, we will generate one randomly
+ */
+export function computeBip32DerivationIndexFromSeed(seed?: string): number {
+  return Buffer.from(utxolib.crypto.sha256(Buffer.from(seed ?? randomBytes(32).toString('hex'), 'utf8'))).readUint32BE(
+    0
+  );
 }
