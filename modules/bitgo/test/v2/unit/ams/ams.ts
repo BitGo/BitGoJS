@@ -47,6 +47,18 @@ describe('Asset metadata service', () => {
     coin.tokenContractAddress.should.equal('0x89a959b9184b4f8c8633646d5dfd049d2ebc983a');
   });
 
+  it('should fetch all assets from AMS and initialize the coin factory', async () => {
+    const bitgo = TestBitGo.decorate(BitGo, { env: 'mock', microservicesUri, useAms: true } as BitGoOptions);
+    bitgo.initializeTestVars();
+
+    // Setup nocks
+    nock(microservicesUri).get('/api/v1/assets/list/testnet').reply(200, reducedAmsTokenConfig);
+
+    await bitgo.registerAllTokens();
+    const coin = bitgo.coin('hteth:faketoken');
+    should.exist(coin);
+  });
+
   describe('registerToken', () => {
     it('should throw an error when useAms is false', async () => {
       const bitgo = TestBitGo.decorate(BitGo, { env: 'mock', microservicesUri, useAms: false } as BitGoOptions);
