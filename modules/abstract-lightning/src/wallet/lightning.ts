@@ -311,7 +311,14 @@ export class LightningWallet implements ILightningWallet {
     );
 
     const coinSpecific = transactionRequestSend.transactions?.[0]?.unsignedTx?.coinSpecific;
-    const updatedTransfer = await this.wallet.getTransfer({ id: transfer.id });
+    let updatedTransfer: any = undefined;
+    try {
+      updatedTransfer = await this.wallet.getTransfer({ id: transfer.id });
+    } catch (e) {
+      // If transfer is not found which is possible in cases where the payment has definitely failed
+      // Or even if some unknown error occurs, we will not throw an error here
+      // We still want to return the txRequestId, txRequestState and paymentStatus.
+    }
 
     return {
       txRequestId: transactionRequestCreate.txRequestId,
@@ -370,7 +377,14 @@ export class LightningWallet implements ILightningWallet {
       reqId
     );
 
-    const updatedTransfer = await this.wallet.getTransfer({ id: transfer.id });
+    let updatedTransfer: any = undefined;
+    try {
+      updatedTransfer = await this.wallet.getTransfer({ id: transfer.id });
+    } catch (e) {
+      // If transfer is not found which is possible in cases where the withdraw has definitely failed
+      // Or even if some unknown error occurs, we will not throw an error here
+      // We still want to return the txRequestId and txRequestState.
+    }
 
     return {
       txRequestId: transactionRequestCreate.txRequestId,
