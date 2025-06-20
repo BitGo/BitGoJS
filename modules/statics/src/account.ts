@@ -2508,7 +2508,7 @@ export function tworldErc20(
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix = '',
   suffix: string = name.toUpperCase(),
-  network: AccountNetwork = Networks.test.coredao,
+  network: AccountNetwork = Networks.test.world,
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
   return worldErc20(
