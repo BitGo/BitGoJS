@@ -68,10 +68,23 @@ export class BitGo extends BitGoAPI {
    * @param tokenConfigMap - A map of token metadata from AMS
    */
   initCoinFactory(tokenConfigMap: Record<string, TrimmedAmsTokenConfig[]>): void {
-    // TODO(WIN-5839): use AMS endpoint to fetch config details
     const coinMap = createTokenMapUsingTrimmedConfigDetails(tokenConfigMap);
     this._coinFactory = new CoinFactory();
     registerCoinConstructors(this._coinFactory, coinMap);
+  }
+
+  /**
+   * Fetch all the tokens and initialize the coin factory
+   */
+  async registerAllTokens(): Promise<void> {
+    if (!this._useAms) {
+      throw new Error('registerAllTokens is only supported when useAms is set to true');
+    }
+    // Fetch mainnet assets for prod and adminProd environments, testnet assets for all other environments
+    const assetEnvironment = ['prod', 'adminProd'].includes(this.getEnv()) ? 'mainnet' : 'testnet';
+    const url = this.url(`/assets/list/${assetEnvironment}`);
+    const tokenConfigMap = (await this.executeAssetRequest(url)) as Record<string, TrimmedAmsTokenConfig[]>;
+    this.initCoinFactory(tokenConfigMap);
   }
 
   /**
