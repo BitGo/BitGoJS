@@ -2,6 +2,7 @@ import * as utxolib from '@bitgo/utxo-lib';
 import { checkForOutput } from 'bip174/src/lib/utils';
 
 import { verifyMessage } from '../../bip32utils';
+import { createPayGoAttestationBuffer } from '../attestation';
 
 import {
   ErrorMultiplePayGoProof,
@@ -10,8 +11,6 @@ import {
   ErrorOutputIndexOutOfBounds,
   ErrorPayGoAddressProofFailedVerification,
 } from './Errors';
-
-const NILLUUID = '00000000-0000-0000-0000-000000000000';
 
 /** This function adds the entropy and signature into the PSBT output unknown key vals.
  * We store the entropy so that we reconstruct the message <ENTROPY><ADDRESS><UUID>
@@ -108,16 +107,4 @@ export function getPayGoAddressProofOutputIndex(psbt: utxolib.bitgo.UtxoPsbt): n
 
 export function psbtOutputIncludesPaygoAddressProof(psbt: utxolib.bitgo.UtxoPsbt): boolean {
   return getPayGoAddressProofOutputIndex(psbt) !== undefined;
-}
-
-/** This function reconstructs the proof <ENTROPY><ADDRESS><UUID>
- * given the address and entropy.
- *
- * @param address
- * @param entropy
- * @returns
- */
-export function createPayGoAttestationBuffer(address: string, entropy: Buffer): Buffer {
-  const addressBuffer = Buffer.from(address);
-  return Buffer.concat([entropy, addressBuffer, Buffer.from(NILLUUID)]);
 }

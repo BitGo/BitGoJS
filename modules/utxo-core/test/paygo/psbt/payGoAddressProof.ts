@@ -8,14 +8,14 @@ import { checkForOutput } from 'bip174/src/lib/utils';
 
 import {
   addPayGoAddressProof,
-  createPayGoAttestationBuffer,
   getPayGoAddressProofOutputIndex,
   psbtOutputIncludesPaygoAddressProof,
   verifyPayGoAddressProof,
-} from '../../../src/paygo/psbt/PayGoUtils';
+} from '../../../src/paygo/psbt/payGoAddressProof';
 import { generatePayGoAttestationProof } from '../../../src/testutil/generatePayGoAttestationProof.utils';
 import { parseVaspProof } from '../../../src/testutil/parseVaspProof';
 import { signMessage } from '../../../src/bip32utils';
+import { createPayGoAttestationBuffer, NILL_UUID } from '../../../src/paygo/attestation';
 
 // To construct our PSBTs
 const network = utxolib.networks.bitcoin;
@@ -37,9 +37,6 @@ const dummyPub1 = rootWalletKeys.deriveForChainAndIndex(50, 200);
 const attestationPubKey = dummyPub1.user.publicKey;
 const attestationPrvKey = dummyPub1.user.privateKey!;
 
-// UUID structure
-const nillUUID = '00000000-0000-0000-0000-000000000000';
-
 // our xpub converted to base58 address
 const addressToVerify = utxolib.address.toBase58Check(
   utxolib.crypto.hash160(Buffer.from(dummyPub1.backup.publicKey)),
@@ -48,7 +45,7 @@ const addressToVerify = utxolib.address.toBase58Check(
 );
 
 // this should be retuning a Buffer
-const addressProofBuffer = generatePayGoAttestationProof(nillUUID, Buffer.from(addressToVerify));
+const addressProofBuffer = generatePayGoAttestationProof(NILL_UUID, Buffer.from(addressToVerify));
 const addressProofMsgBuffer = parseVaspProof(addressProofBuffer);
 // We know that that the entropy is a set 64 bytes.
 const addressProofEntropy = addressProofMsgBuffer.subarray(0, 65);

@@ -1,1 +1,1 @@
-export * from './PayGoUtils';
+export * from './payGoAddressProof';
