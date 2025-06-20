@@ -6,15 +6,17 @@
 import pjson = require('../package.json');
 import * as _ from 'lodash';
 
-import { BaseCoin, CoinFactory, common } from '@bitgo/sdk-core';
+import { BaseCoin, CoinFactory, common, UnsupportedCoinError } from '@bitgo/sdk-core';
 import { BitGoAPI, BitGoAPIOptions } from '@bitgo/sdk-api';
 import {
   createTokenMapUsingTrimmedConfigDetails,
   TrimmedAmsTokenConfig,
   createToken,
   getFormattedTokenConfigForCoin,
+  coins,
+  BaseCoin as StaticsBaseCoin,
 } from '@bitgo/statics';
-import { GlobalCoinFactory, registerCoinConstructors, getTokenConstructor } from './v2/coinFactory';
+import { GlobalCoinFactory, registerCoinConstructors, getTokenConstructor, getCoinConstructor } from './v2/coinFactory';
 
 // constructor params used exclusively for BitGo class
 export type BitGoOptions = BitGoAPIOptions & {
@@ -87,20 +89,45 @@ export class BitGo extends BitGoAPI {
    * Register a token in the coin factory
    * @param tokenConfig - The token metadata from AMS
    */
-  registerToken(tokenConfig: TrimmedAmsTokenConfig): void {
+  async registerToken(tokenName: string): Promise<void> {
     if (!this._useAms) {
       throw new Error('registerToken is only supported when useAms is set to true');
     }
-    // TODO(WIN-5839): use AMS endpoint to fetch token metadata
-    const staticsBaseCoin = createToken(tokenConfig);
-    if (staticsBaseCoin) {
+    //do not register a coin/token if it's already registered
+    if (this._coinFactory.hasCoin(tokenName)) {
+      return;
+    }
+
+    // Get the coin/token details only if it's not present in statics library
+    let staticsBaseCoin: Readonly<StaticsBaseCoin> | undefined;
+    if (coins.has(tokenName)) {
+      staticsBaseCoin = coins.get(tokenName);
+    } else {
+      const url = this.url(`/assets/name/${tokenName}`);
+      const tokenConfig = (await this.executeAssetRequest(url)) as TrimmedAmsTokenConfig;
+      staticsBaseCoin = createToken(tokenConfig);
+    }
+
+    if (!staticsBaseCoin) {
+      throw new UnsupportedCoinError(tokenName);
+    }
+    if (staticsBaseCoin.isToken) {
       const formattedTokenConfig = getFormattedTokenConfigForCoin(staticsBaseCoin);
-      if (formattedTokenConfig) {
-        const tokenConstructor = getTokenConstructor(formattedTokenConfig);
-        if (tokenConstructor) {
-          this._coinFactory.registerToken(staticsBaseCoin, tokenConstructor);
-        }
+      if (!formattedTokenConfig) {
+        throw new UnsupportedCoinError(tokenName);
       }
+
+      const tokenConstructor = getTokenConstructor(formattedTokenConfig);
+      if (!tokenConstructor) {
+        throw new UnsupportedCoinError(tokenName);
+      }
+      this._coinFactory.registerToken(staticsBaseCoin, tokenConstructor);
+    } else {
+      const coinConstructor = getCoinConstructor(tokenName);
+      if (!coinConstructor) {
+        throw new UnsupportedCoinError(tokenName);
+      }
+      this._coinFactory.registerToken(staticsBaseCoin, coinConstructor);
     }
   }
 
