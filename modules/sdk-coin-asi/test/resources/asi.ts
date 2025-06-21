@@ -192,3 +192,135 @@ export const coinAmounts = {
   amount4: { amount: '-1', denom: 'atestfet' },
   amount5: { amount: '1000000000', denom: 'matestfet' },
 };
+
+export const TEST_DELEGATE_TX = {
+  hash: 'A8BD3DE82A4B2453EC5EC86577EB60638741C8A10EEE0038941D36F5D5EC4F1A',
+  signature: '+p86as/2XFjVHVLjQERp5aeMa7lHuxdoXiZGYp2onbs2Yt3QsLuElqD6Eg3wNq5BbCyzoj89d7l1tmoJHWML4Q==',
+  pubKey: 'A/iPk4rOMnePj2eLaJrJuP+3wfQl5RuNWnatW8Ppwj3L',
+  privateKey: '06tW+IizHiD8gQGxJ6f6xSty27MlzdUs9TwMc9iWcVM=',
+  signedTxBase64:
+    'CqIBCp8BCiMvY29zbW9zLnN0YWtpbmcudjFiZXRhMS5Nc2dEZWxlZ2F0ZRJ4CixmZXRjaDE3NTNmNzhmMmNwNjdzM2RkODkzZDBnbjBmYTNyeTBybmM2eTJ6dRIzZmV0Y2h2YWxvcGVyMXJzYW5lOTg4dmtzcmdwMm1scXpjbG10OHd1Y3h2MGVqNGhybjJrGhMKCGF0ZXN0ZmV0EgcxMDAwMDAwEnUKUApGCh8vY29zbW9zLmNyeXB0by5zZWNwMjU2azEuUHViS2V5EiMKIQP4j5OKzjJ3j49ni2iaybj/t8H0JeUbjVp2rVvD6cI9yxIECgIIARgIEiEKGwoIYXRlc3RmZXQSDzI1MDAwMDAwMDAwMDAwMBCQoQ8aQPqfOmrP9lxY1R1S40BEaeWnjGu5R7sXaF4mRmKdqJ27NmLd0LC7hJag+hIN8DauQWwss6I/PXe5dbZqCR1jC+E=',
+  validator: 'fetchvaloper1rsane988vksrgp2mlqzclmt8wucxv0ej4hrn2k',
+  delegator: 'fetch1753f78f2cp67s3dd893d0gn0fa3ry0rnc6y2zu',
+  chainId: 'dorado-1',
+  accountNumber: 8,
+  sequence: 8,
+  sendAmount: '1000000',
+  feeAmount: '250000000000000',
+  sendMessage: {
+    typeUrl: '/cosmos.staking.v1beta1.MsgDelegate',
+    value: {
+      validatorAddress: 'fetchvaloper1rsane988vksrgp2mlqzclmt8wucxv0ej4hrn2k',
+      delegatorAddress: 'fetch1753f78f2cp67s3dd893d0gn0fa3ry0rnc6y2zu',
+      amount: {
+        denom: 'atestfet',
+        amount: '1000000',
+      },
+    },
+  },
+  gasBudget: {
+    amount: [
+      {
+        denom: 'atestfet',
+        amount: '250000000000000',
+      },
+    ],
+    gasLimit: 250000,
+  },
+};
+
+export const TEST_UNDELEGATE_TX = {
+  hash: 'DC6F8F0115C069B9C4D2013F7D1515432C0CEDC821B50E045FE4CEB3E442EC3A',
+  signature: 'oXtW0tQjyKJB5Du66WTSrFyqMbKEQ2vnXHKwmSqtsY8x7uqNCenJSbN0QL6GZ48Fr7iNaTZBE7+TJOEL5RfiTg==',
+  pubKey: 'A/iPk4rOMnePj2eLaJrJuP+3wfQl5RuNWnatW8Ppwj3L',
+  privateKey: '06tW+IizHiD8gQGxJ6f6xSty27MlzdUs9TwMc9iWcVM=',
+  signedTxBase64:
+    'CqABCp0BCiUvY29zbW9zLnN0YWtpbmcudjFiZXRhMS5Nc2dVbmRlbGVnYXRlEnQKLGZldGNoMTc1M2Y3OGYyY3A2N3MzZGQ4OTNkMGduMGZhM3J5MHJuYzZ5Mnp1EjNmZXRjaHZhbG9wZXIxcnNhbmU5ODh2a3NyZ3AybWxxemNsbXQ4d3VjeHYwZWo0aHJuMmsaDwoIYXRlc3RmZXQSAzEwMBJ1ClAKRgofL2Nvc21vcy5jcnlwdG8uc2VjcDI1NmsxLlB1YktleRIjCiED+I+Tis4yd4+PZ4tomsm4/7fB9CXlG41adq1bw+nCPcsSBAoCCAEYCBIhChsKCGF0ZXN0ZmV0Eg8yNTAwMDAwMDAwMDAwMDAQkKEPGkChe1bS1CPIokHkO7rpZNKsXKoxsoRDa+dccrCZKq2xjzHu6o0J6clJs3RAvoZnjwWvuI1pNkETv5Mk4QvlF+JO',
+  validator: 'fetchvaloper1rsane988vksrgp2mlqzclmt8wucxv0ej4hrn2k',
+  delegator: 'fetch1753f78f2cp67s3dd893d0gn0fa3ry0rnc6y2zu',
+  chainId: 'dorado-1',
+  accountNumber: 8,
+  sequence: 8,
+  sendAmount: '100',
+  feeAmount: '250000000000000',
+  sendMessage: {
+    typeUrl: '/cosmos.staking.v1beta1.MsgUndelegate',
+    value: {
+      delegatorAddress: 'fetch1753f78f2cp67s3dd893d0gn0fa3ry0rnc6y2zu',
+      validatorAddress: 'fetchvaloper1rsane988vksrgp2mlqzclmt8wucxv0ej4hrn2k',
+      amount: {
+        denom: 'atestfet',
+        amount: '100',
+      },
+    },
+  },
+  gasBudget: {
+    amount: [
+      {
+        denom: 'atestfet',
+        amount: '250000000000000',
+      },
+    ],
+    gasLimit: 250000,
+  },
+};
+
+export const TEST_REDELEGATE_TX = {
+  hash: 'A36F88D8A810DFCD256746E55D29644D491812B2D13FB8E98C1708749885042D',
+  signature: 'cPbIm75ZXDUnNOyfNWoRXIPfI2QchcghQ7O86PgOGppHAWWsDa5e9MfOKOnO42CnPNz79hWbFJHSos9blQEMEA==',
+  pubKey: 'A/iPk4rOMnePj2eLaJrJuP+3wfQl5RuNWnatW8Ppwj3L',
+  privateKey: '06tW+IizHiD8gQGxJ6f6xSty27MlzdUs9TwMc9iWcVM=',
+  signedTxBase64:
+    'Ct4BCtsBCiovY29zbW9zLnN0YWtpbmcudjFiZXRhMS5Nc2dCZWdpblJlZGVsZWdhdGUSrAEKLGZldGNoMTc1M2Y3OGYyY3A2N3MzZGQ4OTNkMGduMGZhM3J5MHJuYzZ5Mnp1EjNmZXRjaHZhbG9wZXIxcnNhbmU5ODh2a3NyZ3AybWxxemNsbXQ4d3VjeHYwZWo0aHJuMmsaM2ZldGNodmFsb3BlcjFqZTdyOHl1cWdhZjVmMnR4NHoyZjkwMDh3cDRqeDBjdDZtc256ZyISCghhdGVzdGZldBIGMTAwMDAwEnUKUApGCh8vY29zbW9zLmNyeXB0by5zZWNwMjU2azEuUHViS2V5EiMKIQP4j5OKzjJ3j49ni2iaybj/t8H0JeUbjVp2rVvD6cI9yxIECgIIARgIEiEKGwoIYXRlc3RmZXQSDzI1MDAwMDAwMDAwMDAwMBCQoQ8aQHD2yJu+WVw1JzTsnzVqEVyD3yNkHIXIIUOzvOj4DhqaRwFlrA2uXvTHzijpzuNgpzzc+/YVmxSR0qLPW5UBDBA=',
+  validator: 'fetchvaloper1rsane988vksrgp2mlqzclmt8wucxv0ej4hrn2k',
+  validatorDst: 'fetchvaloper1je7r8yuqgaf5f2tx4z2f9008wp4jx0ct6msnzg',
+  delegator: 'fetch1753f78f2cp67s3dd893d0gn0fa3ry0rnc6y2zu',
+  chainId: 'dorado-1',
+  accountNumber: 8,
+  sequence: 8,
+  sendAmount: '100',
+  feeAmount: '250000000000000',
+  sendMessage: {
+    typeUrl: '/cosmos.staking.v1beta1.MsgBeginRedelegate',
+    value: {
+      delegatorAddress: 'fetch1753f78f2cp67s3dd893d0gn0fa3ry0rnc6y2zu',
+      validatorSrcAddress: 'fetchvaloper1rsane988vksrgp2mlqzclmt8wucxv0ej4hrn2k',
+      validatorDstAddress: 'fetchvaloper1je7r8yuqgaf5f2tx4z2f9008wp4jx0ct6msnzg',
+      amount: {
+        denom: 'atestfet',
+        amount: '100000',
+      },
+    },
+  },
+  gasBudget: {
+    amount: [{ denom: 'atestfet', amount: '250000000000000' }],
+    gasLimit: 250000,
+  },
+};
+
+export const TEST_WITHDRAW_REWARDS_TX = {
+  hash: '3B9236E5EEB2D657E4A7F1E32583C621B7EB1EAF5E51F841010F39F63FD3DBC4',
+  signature: 'WjzqdlfBdzokA8AbalFgT6oKeDbBaKbcTP4z+Auo/AdvZytEu77j1CSGmVXOprx12npT33FI+hZvMmPp5YZshg==',
+  pubKey: 'A/iPk4rOMnePj2eLaJrJuP+3wfQl5RuNWnatW8Ppwj3L',
+  privateKey: '06tW+IizHiD8gQGxJ6f6xSty27MlzdUs9TwMc9iWcVM=',
+  signedTxBase64:
+    'CqEBCp4BCjcvY29zbW9zLmRpc3RyaWJ1dGlvbi52MWJldGExLk1zZ1dpdGhkcmF3RGVsZWdhdG9yUmV3YXJkEmMKLGZldGNoMTc1M2Y3OGYyY3A2N3MzZGQ4OTNkMGduMGZhM3J5MHJuYzZ5Mnp1EjNmZXRjaHZhbG9wZXIxcnNhbmU5ODh2a3NyZ3AybWxxemNsbXQ4d3VjeHYwZWo0aHJuMmsSdQpQCkYKHy9jb3Ntb3MuY3J5cHRvLnNlY3AyNTZrMS5QdWJLZXkSIwohA/iPk4rOMnePj2eLaJrJuP+3wfQl5RuNWnatW8Ppwj3LEgQKAggBGAgSIQobCghhdGVzdGZldBIPMjUwMDAwMDAwMDAwMDAwEJChDxpAWjzqdlfBdzokA8AbalFgT6oKeDbBaKbcTP4z+Auo/AdvZytEu77j1CSGmVXOprx12npT33FI+hZvMmPp5YZshg==',
+  validator: 'fetchvaloper1rsane988vksrgp2mlqzclmt8wucxv0ej4hrn2k',
+  delegator: 'fetch1753f78f2cp67s3dd893d0gn0fa3ry0rnc6y2zu',
+  chainId: 'dorado-1',
+  accountNumber: 8,
+  sequence: 8,
+  sendAmount: '100',
+  feeAmount: '250000000000000',
+  sendMessage: {
+    typeUrl: '/cosmos.distribution.v1beta1.MsgWithdrawDelegatorReward',
+    value: {
+      delegatorAddress: 'fetch1753f78f2cp67s3dd893d0gn0fa3ry0rnc6y2zu',
+      validatorAddress: 'fetchvaloper1rsane988vksrgp2mlqzclmt8wucxv0ej4hrn2k',
+    },
+  },
+  gasBudget: {
+    amount: [{ denom: 'atestfet', amount: '250000000000000' }],
+    gasLimit: 250000,
+  },
+};
