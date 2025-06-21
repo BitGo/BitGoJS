@@ -54,6 +54,12 @@ export enum MPCType {
   ECDSA = 'ecdsa',
 }
 
+export enum MessageType {
+  STRING = 'string',
+  EIP712 = 'eip712',
+  CIP8 = 'cip8',
+}
+
 export interface CustomPaillierModulusGetterFunction {
   (params: { txRequest: TxRequest }): Promise<{
     userPaillierModulus: string;
@@ -174,6 +180,11 @@ export interface IntentOptionsForMessage extends IntentOptionsBase {
   messageEncoded?: string;
 }
 
+export interface MessageIntentOptions<TMessage = string | Record<string, unknown>> extends IntentOptionsBase {
+  message: TMessage;
+  messageType: MessageType | string;
+}
+
 export interface IntentOptionsForTypedData extends IntentOptionsBase {
   typedDataRaw: string;
   typedDataEncoded?: string;
@@ -225,6 +236,12 @@ interface PopulatedIntentBase {
 export interface PopulatedIntentForMessageSigning extends PopulatedIntentBase {
   messageRaw: string;
   messageEncoded: string;
+  custodianMessageId?: string;
+}
+
+export interface MessageIntent<TMessage = string | Record<string, unknown>> extends PopulatedIntentBase {
+  message: TMessage;
+  messageType: MessageType | string;
   custodianMessageId?: string;
 }
 
