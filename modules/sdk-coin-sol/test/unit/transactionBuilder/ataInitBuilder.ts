@@ -258,6 +258,13 @@ describe('Sol Associated Token Account Builder', () => {
         tokenName: 'sol:ray',
         ataAddress: 'ACEuzYtR4gBFt6HLQTYisg2T7k8Vh4ss1SpnqmbVQSNy',
       },
+      {
+        ownerAddress: ownerPubkeys.pubkey,
+        tokenName: 'tsol:ams',
+        ataAddress: 'ACEuzYtR4gBFt6HLQTYisg2T7k8Vh4ss1SpnqmbVQSNy',
+        tokenAddress: 'F4uLeXioFz3hw13MposuwaQbMcZbCjqvEGPPeRRB1Byf',
+        programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+      },
     ];
     const multiAtaInitBuilder = (recipients) => {
       const txBuilder = factory.getAtaInitializationBuilder();
@@ -282,15 +289,15 @@ describe('Sol Associated Token Account Builder', () => {
         tx.outputs.length.should.equal(0);
         const instructions = tx.toJson().instructionsData;
 
-        instructions.length.should.equal(2);
+        instructions.length.should.equal(3);
         instructions[0].params.tokenName.should.equal(mint);
         instructions[0].params.ownerAddress.should.equal(sender.pubkey);
         instructions[0].params.ataAddress.should.equal(sender.ataPubkey);
         instructions[1].params.tokenName.should.equal('sol:ray');
         instructions[1].params.ownerAddress.should.equal(ownerPubkeys.pubkey);
         instructions[1].params.ataAddress.should.equal(ownerRayATA);
-
-        should.equal(rawTx, testData.MULTI_ATA_INIT_UNSIGNED_TX);
+        instructions[2].params.tokenName.should.equal('tsol:ams');
+        should.equal(rawTx, testData.MULTI_ATA_INIT_UNSIGNED_TX_WITH_OPTIONAL_PARAMS);
       });
 
       it('build an associated token account init for multiple recipients with memo', async () => {
@@ -299,7 +306,7 @@ describe('Sol Associated Token Account Builder', () => {
         const tx = await txBuilder.build();
         const rawTx = tx.toBroadcastFormat();
 
-        should.equal(rawTx, testData.MULTI_ATA_INIT_UNSIGNED_TX_WITH_MEMO);
+        should.equal(rawTx, testData.MULTI_ATA_INIT_UNSIGNED_TX_WITH_MEMO_OPTIONAL_PARAM);
       });
 
       it('build an associated token account init tx for multiple recipients signed', async () => {
@@ -308,7 +315,7 @@ describe('Sol Associated Token Account Builder', () => {
         const tx = await txBuilder.build();
         const rawTx = tx.toBroadcastFormat();
 
-        should.equal(rawTx, testData.MULTI_ATA_INIT_SIGNED_TX);
+        should.equal(rawTx, testData.MULTI_ATA_INIT_SIGNED_TX_OPTIONAL_PARAM);
       });
 
       it('build an associated token account init for multiple recipients tx with memo signed', async () => {
@@ -318,7 +325,7 @@ describe('Sol Associated Token Account Builder', () => {
         const tx = await txBuilder.build();
         const rawTx = tx.toBroadcastFormat();
 
-        should.equal(rawTx, testData.MULTI_ATA_INIT_SIGNED_TX_WITH_MEMO);
+        should.equal(rawTx, testData.MULTI_ATA_INIT_SIGNED_TX_WITH_MEMO_OPTIONAL_PARAM);
       });
     });
 
@@ -480,6 +487,16 @@ describe('Sol Associated Token Account Builder', () => {
         const rawTx = tx.toBroadcastFormat();
 
         should.equal(rawTx, testData.MULTI_ATA_INIT_SIGNED_TX_WITH_MEMO);
+      });
+
+      it('build from a unsigned ATA init for multi recipients with memo and sign it with optinal param', async () => {
+        const txBuilder = factory.from(testData.MULTI_ATA_INIT_UNSIGNED_TX_WITH_MEMO_OPTIONAL_PARAM);
+        (txBuilder as AtaInitializationBuilder).rentExemptAmount(rentAmount);
+        txBuilder.sign({ key: account.prv });
+        const tx = await txBuilder.build();
+        const rawTx = tx.toBroadcastFormat();
+
+        should.equal(rawTx, testData.MULTI_ATA_INIT_SIGNED_TX_WITH_MEMO_OPTIONAL_PARAM1);
       });
 
       it('build from an unsigned ATA init with durable nonce and sign it', async () => {
