@@ -1,7 +1,7 @@
 import assert from 'assert';
 import { TransactionType } from '@bitgo/sdk-core';
 import { describe, it } from 'node:test';
-import { PARTICIPANTS, BLOCK_HASH, BLOCK_NUMBER, EXPIRATION, VOTE_WITNESS_CONTRACT } from '../../resources';
+import { PARTICIPANTS, BLOCK_HASH, BLOCK_NUMBER, EXPIRATION, VOTE_WITNESS_CONTRACT, FEE_LIMIT } from '../../resources';
 import { getBuilder } from '../../../src/lib/builder';
 import { Transaction, WrappedBuilder } from '../../../src';
 
@@ -22,7 +22,8 @@ describe('Tron VoteWitnessContract builder', function () {
     builder
       .source({ address: PARTICIPANTS.custodian.address })
       .block({ number: BLOCK_NUMBER, hash: BLOCK_HASH })
-      .setVotes(voteArray);
+      .setVotes(voteArray)
+      .fee({ feeLimit: FEE_LIMIT });
 
     return builder;
   };
@@ -264,9 +265,10 @@ describe('Tron VoteWitnessContract builder', function () {
       builder
         .source({ address: PARTICIPANTS.custodian.address })
         .block({ number: BLOCK_NUMBER, hash: BLOCK_HASH })
+        .fee({ feeLimit: FEE_LIMIT })
         .setVotes(voteArray);
 
-      assert.doesNotReject(() => {
+      await assert.doesNotReject(() => {
         return builder.build();
       });
     });
@@ -335,7 +337,12 @@ describe('Tron VoteWitnessContract builder', function () {
       });
 
       txBuilder.setVotes(voteArray);
-      assert.doesNotReject(() => {
+      await assert.rejects(txBuilder.build(), {
+        message: 'Missing fee',
+      });
+
+      txBuilder.fee({ feeLimit: FEE_LIMIT });
+      await assert.doesNotReject(() => {
         return txBuilder.build();
       });
     });

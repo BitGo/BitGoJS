@@ -1,9 +1,16 @@
 import { createHash } from 'crypto';
-import { TransactionType, BaseKey, BuildTransactionError, SigningError, ExtendTransactionError } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import {
+  TransactionType,
+  BaseKey,
+  BuildTransactionError,
+  SigningError,
+  ExtendTransactionError,
+  InvalidParameterValueError,
+} from '@bitgo/sdk-core';
+import { BaseCoin as CoinConfig, TronNetwork } from '@bitgo/statics';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
-import { TransactionReceipt, VoteWitnessData, VoteWitnessContract } from './iface';
+import { TransactionReceipt, VoteWitnessData, VoteWitnessContract, Fee } from './iface';
 import {
   decodeTransaction,
   getHexAddressFromBase58Address,
@@ -15,10 +22,12 @@ import {
 import { protocol } from '../../resources/protobuf/tron';
 
 import ContractType = protocol.Transaction.Contract.ContractType;
+import BigNumber from 'bignumber.js';
 
 export class VoteWitnessTxBuilder extends TransactionBuilder {
   protected _signingKeys: BaseKey[];
   private _votes: VoteWitnessData[];
+  private _fee: Fee;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -85,9 +94,20 @@ export class VoteWitnessTxBuilder extends TransactionBuilder {
     this._refBlockHash = rawData.ref_block_hash;
     this._expiration = rawData.expiration;
     this._timestamp = rawData.timestamp;
+    this._fee = { feeLimit: rawData.fee_limit!.toString() };
     this.transaction.setTransactionType(TransactionType.StakingVote);
     const contractCall = rawData.contract[0] as VoteWitnessContract;
     this.initVoteWitnessContractCall(contractCall);
+    return this;
+  }
+
+  fee(fee: Fee): this {
+    const feeLimit = new BigNumber(fee.feeLimit);
+    const tronNetwork = this._coinConfig.network as TronNetwork;
+    if (feeLimit.isNaN() || feeLimit.isLessThan(0) || feeLimit.isGreaterThan(tronNetwork.maxFeeLimit)) {
+      throw new InvalidParameterValueError('Invalid fee limit value');
+    }
+    this._fee = fee;
     return this;
   }
 
@@ -182,6 +202,7 @@ export class VoteWitnessTxBuilder extends TransactionBuilder {
       expiration: this._expiration || Date.now() + TRANSACTION_DEFAULT_EXPIRATION,
       timestamp: this._timestamp || Date.now(),
       contract: [txContract],
+      feeLimit: parseInt(this._fee.feeLimit, 10),
     };
     const rawTx = protocol.Transaction.raw.create(raw);
     return Buffer.from(protocol.Transaction.raw.encode(rawTx).finish()).toString('hex');
@@ -249,6 +270,10 @@ export class VoteWitnessTxBuilder extends TransactionBuilder {
     // Validate votes
     if (!this._votes || this._votes.length === 0) {
       throw new BuildTransactionError('Missing or empty votes array');
+    }
+
+    if (!this._fee) {
+      throw new BuildTransactionError('Missing fee');
     }
   }
 }

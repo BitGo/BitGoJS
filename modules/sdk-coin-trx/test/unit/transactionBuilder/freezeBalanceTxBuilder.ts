@@ -9,6 +9,7 @@ import {
   RESOURCE_ENERGY,
   FROZEN_BALANCE,
   FREEZE_BALANCE_V2_CONTRACT,
+  FEE_LIMIT,
 } from '../../resources';
 import { getBuilder } from '../../../src/lib/builder';
 import { Transaction, WrappedBuilder } from '../../../src';
@@ -20,7 +21,8 @@ describe('Tron FreezeBalanceV2 builder', function () {
       .source({ address: PARTICIPANTS.custodian.address })
       .block({ number: BLOCK_NUMBER, hash: BLOCK_HASH })
       .setFrozenBalance(FROZEN_BALANCE)
-      .setResource(RESOURCE_ENERGY);
+      .setResource(RESOURCE_ENERGY)
+      .fee({ feeLimit: FEE_LIMIT });
 
     return builder;
   };
@@ -262,9 +264,10 @@ describe('Tron FreezeBalanceV2 builder', function () {
       builder
         .source({ address: PARTICIPANTS.custodian.address })
         .block({ number: BLOCK_NUMBER, hash: BLOCK_HASH })
+        .fee({ feeLimit: FEE_LIMIT })
         .setFrozenBalance(FROZEN_BALANCE);
       builder.setResource('ENERGY');
-      assert.doesNotReject(() => {
+      await assert.doesNotReject(() => {
         return builder.build();
       });
     });
@@ -274,9 +277,10 @@ describe('Tron FreezeBalanceV2 builder', function () {
       builder
         .source({ address: PARTICIPANTS.custodian.address })
         .block({ number: BLOCK_NUMBER, hash: BLOCK_HASH })
+        .fee({ feeLimit: FEE_LIMIT })
         .setFrozenBalance(FROZEN_BALANCE);
       builder.setResource('BANDWIDTH');
-      assert.doesNotReject(() => {
+      await assert.doesNotReject(() => {
         return builder.build();
       });
     });
@@ -287,6 +291,7 @@ describe('Tron FreezeBalanceV2 builder', function () {
       builder
         .source({ address: PARTICIPANTS.custodian.address })
         .block({ number: BLOCK_NUMBER, hash: BLOCK_HASH })
+        .fee({ feeLimit: FEE_LIMIT })
         .setFrozenBalance(FROZEN_BALANCE);
 
       assert.throws(() => builder.setResource(invalidResource), `${invalidResource} is a not valid resource type.`);
@@ -315,7 +320,12 @@ describe('Tron FreezeBalanceV2 builder', function () {
       });
 
       txBuilder.block({ number: BLOCK_NUMBER, hash: BLOCK_HASH });
-      assert.doesNotReject(() => {
+      await assert.rejects(txBuilder.build(), {
+        message: 'Missing fee',
+      });
+
+      txBuilder.fee({ feeLimit: FEE_LIMIT });
+      await assert.doesNotReject(() => {
         return txBuilder.build();
       });
     });
