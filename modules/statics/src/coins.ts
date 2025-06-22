@@ -456,7 +456,7 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.TRX,
     BaseUnit.TRX,
-    [...TRX_FEATURES, CoinFeature.STAKING]
+    TRX_FEATURES
   ),
   account(
     'a4578c23-8e01-4d13-bc17-7bf8b529fbef',
