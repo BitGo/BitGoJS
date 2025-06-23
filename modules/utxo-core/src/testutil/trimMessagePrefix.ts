@@ -2,14 +2,14 @@ import * as utxolib from '@bitgo/utxo-lib';
 
 /** We receive a proof in the form:
  * 0x18Bitcoin Signed Message:\n<varint_length><ENTROPY><ADDRESS><UUID>
- * and when verifying our message in our PayGo utils we want to only verify
- * the message portion of our proof. This helps to pare our proof in that format,
- * and returns a Buffer.
+ * and when verifying our message we want to exclude the 0x18Bitcoin Signed Message:\n<varint_length>
+ * of the proof so that we are left with the entropy address and uuid as our message.
+ * This is what we are going to be verifying.
  *
  * @param proof
  * @returns
  */
-export function parseVaspProof(proof: Buffer): Buffer {
+export function trimMessagePrefix(proof: Buffer): Buffer {
   const prefix = '\u0018Bitcoin Signed Message:\n';
   if (proof.toString().startsWith(prefix)) {
     proof = proof.slice(Buffer.from(prefix).length);

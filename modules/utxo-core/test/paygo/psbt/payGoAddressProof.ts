@@ -13,7 +13,7 @@ import {
   verifyPayGoAddressProof,
 } from '../../../src/paygo/psbt/payGoAddressProof';
 import { generatePayGoAttestationProof } from '../../../src/testutil/generatePayGoAttestationProof.utils';
-import { parseVaspProof } from '../../../src/testutil/parseVaspProof';
+import { trimMessagePrefix } from '../../../src/testutil/trimMessagePrefix';
 import { signMessage } from '../../../src/bip32utils';
 import { NIL_UUID } from '../../../src/paygo/attestation';
 
@@ -46,7 +46,7 @@ export const addressToVerify = utxolib.address.toBase58Check(
 
 // this should be retuning a Buffer
 export const addressProofBuffer = generatePayGoAttestationProof(NIL_UUID, Buffer.from(addressToVerify));
-export const addressProofMsgBuffer = parseVaspProof(addressProofBuffer);
+export const addressProofMsgBuffer = trimMessagePrefix(addressProofBuffer);
 // We know that that the entropy is a set 64 bytes.
 export const addressProofEntropy = addressProofMsgBuffer.subarray(0, 65);
 
