@@ -30,6 +30,7 @@ import {
   SuiTokenConfig,
   AptTokenConfig,
   Sip10TokenConfig,
+  CoinFeature,
 } from '@bitgo/statics';
 import {
   Ada,
@@ -71,6 +72,7 @@ import {
   Eth,
   Ethw,
   EthLikeCoin,
+  EvmCoin,
   Flr,
   TethLikeCoin,
   FiatAED,
@@ -367,6 +369,12 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('zeta', Zeta.createInstance);
   coinFactory.register('zketh', Zketh.createInstance);
 
+  coins
+    .filter((coin) => coin.features.includes(CoinFeature.SHARED_EVM_SDK))
+    .forEach((coin) => {
+      coinFactory.register(coin.name, EvmCoin.createInstance);
+    });
+
   const tokens = getFormattedTokens(coinMap);
 
   Erc20Token.createTokenConstructors([...tokens.bitcoin.eth.tokens, ...tokens.testnet.eth.tokens]).forEach(
@@ -488,6 +496,10 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
 }
 
 export function getCoinConstructor(coinName: string): CoinConstructor | undefined {
+  const evmCoins = coins.filter((coin) => coin.features.includes(CoinFeature.SHARED_EVM_SDK));
+  if (evmCoins.has(coinName)) {
+    return EvmCoin.createInstance;
+  }
   switch (coinName) {
     case 'ada':
       return Ada.createInstance;
