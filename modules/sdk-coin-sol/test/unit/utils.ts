@@ -9,6 +9,7 @@ import {
   stakingWithdrawInstructionsIndexes,
 } from '../../src/lib/constants';
 import BigNumber from 'bignumber.js';
+import { TOKEN_2022_PROGRAM_ID } from '@solana/spl-token';
 
 describe('SOL util library', function () {
   describe('isValidAddress', function () {
@@ -320,14 +321,22 @@ describe('SOL util library', function () {
     const tokenAddress = 'JC2HAixRNrhBgNjCsV2PBfZEdyitEnWqJPNGokFD8xSA';
     it('should succeed for native address as owner address', async function () {
       const ownerAddress = testData.sol2022AuthAccount.pub;
-      const result = await Utils.getAssociatedTokenAccountAddress(ai16ZMintAddress, ownerAddress);
+      const result = await Utils.getAssociatedTokenAccountAddress(
+        ai16ZMintAddress,
+        ownerAddress,
+        false,
+        TOKEN_2022_PROGRAM_ID.toString()
+      );
       result.should.be.equal(tokenAddress);
     });
     it('should fail for token address as owner address', async function () {
       const invalidOwnerAddress = tokenAddress;
-      await Utils.getAssociatedTokenAccountAddress(ai16ZMintAddress, invalidOwnerAddress).should.be.rejectedWith(
-        'Invalid ownerAddress - address off ed25519 curve, got: ' + invalidOwnerAddress
-      );
+      await Utils.getAssociatedTokenAccountAddress(
+        ai16ZMintAddress,
+        invalidOwnerAddress,
+        false,
+        TOKEN_2022_PROGRAM_ID.toString()
+      ).should.be.rejectedWith('Invalid ownerAddress - address off ed25519 curve, got: ' + invalidOwnerAddress);
     });
   });
 

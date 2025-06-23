@@ -163,7 +163,7 @@ export class AtaInitializationBuilder extends TransactionBuilder {
         // Use the provided ataAddress if it exists, otherwise calculate it
         let ataPk = recipient.ataAddress;
         if (!ataPk) {
-          ataPk = await getAssociatedTokenAccountAddress(tokenAddress, recipient.ownerAddress);
+          ataPk = await getAssociatedTokenAccountAddress(tokenAddress, recipient.ownerAddress, false, programId);
         }
 
         this._instructionsData.push({
