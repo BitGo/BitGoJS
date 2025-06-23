@@ -132,7 +132,7 @@ export class TokenTransferBuilder extends TransactionBuilder {
         } else {
           throw new Error(`Could not determine token information for ${sendParams.tokenName}`);
         }
-        const sourceAddress = await getAssociatedTokenAccountAddress(tokenAddress, this._sender);
+        const sourceAddress = await getAssociatedTokenAccountAddress(tokenAddress, this._sender, false, programId);
         return {
           type: InstructionBuilderTypes.TokenTransfer,
           params: {
@@ -172,7 +172,7 @@ export class TokenTransferBuilder extends TransactionBuilder {
         // Use the provided ataAddress if it exists, otherwise calculate it
         let ataAddress = recipient.ataAddress;
         if (!ataAddress) {
-          ataAddress = await getAssociatedTokenAccountAddress(tokenAddress, recipient.ownerAddress);
+          ataAddress = await getAssociatedTokenAccountAddress(tokenAddress, recipient.ownerAddress, false, programId);
         }
         return {
           type: InstructionBuilderTypes.CreateAssociatedTokenAccount,

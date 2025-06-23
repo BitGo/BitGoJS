@@ -2091,11 +2091,15 @@ describe('SOL:', function () {
 
       const source2022TokenAccount = await getAssociatedTokenAccountAddress(
         t22mintAddress,
-        testData.wrwUser.walletAddress0
+        testData.wrwUser.walletAddress0,
+        false,
+        TOKEN_2022_PROGRAM_ID.toString()
       );
       const destination2022TokenAccount = await getAssociatedTokenAccountAddress(
         t22mintAddress,
-        testData.keys.destinationPubKey2
+        testData.keys.destinationPubKey2,
+        false,
+        TOKEN_2022_PROGRAM_ID.toString()
       );
       should.equal(instructionsData[1].type, 'TokenTransfer');
       should.equal(instructionsData[1].params.fromAddress, testData.wrwUser.walletAddress0);

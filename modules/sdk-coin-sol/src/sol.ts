@@ -286,7 +286,8 @@ export class Sol extends BaseCoin {
               return getAssociatedTokenAccountAddress(
                 tokenMintAddress!.tokenAddress,
                 recipientFromUser.address,
-                true
+                true,
+                tokenMintAddress!.programId
               ).then((ata: string) => {
                 return ata === recipientFromTx.address;
               });
@@ -846,7 +847,9 @@ export class Sol extends BaseCoin {
 
             const recipientTokenAccount = await getAssociatedTokenAccountAddress(
               tokenAccount.info.mint,
-              params.recoveryDestination
+              params.recoveryDestination,
+              false,
+              params.programId?.toString()
             );
             const tokenName = tokenAccount.tokenName as string;
             txBuilder.send({

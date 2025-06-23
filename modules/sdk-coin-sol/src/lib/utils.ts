@@ -533,7 +533,8 @@ export function getSolTokenFromTokenName(tokenName: string): Readonly<SolCoin> |
 export async function getAssociatedTokenAccountAddress(
   tokenMintAddress: string,
   ownerAddress: string,
-  allowOwnerOffCurve = false
+  allowOwnerOffCurve = false,
+  programId?: string
 ): Promise<string> {
   const mintPublicKey = new PublicKey(tokenMintAddress);
   const ownerPublicKey = new PublicKey(ownerAddress);
@@ -543,15 +544,16 @@ export async function getAssociatedTokenAccountAddress(
     throw new UtilsError('Invalid ownerAddress - address off ed25519 curve, got: ' + ownerAddress);
   }
 
-  const coin = getSolTokenFromAddressOnly(tokenMintAddress);
-  let ataAddress: PublicKey;
-  let programId: string;
-  if (coin && coin instanceof SolCoin && (coin as any).programId) {
-    programId = (coin as any).programId.toString();
-  } else {
-    programId = TOKEN_PROGRAM_ID.toString();
+  if (!programId) {
+    const coin = getSolTokenFromAddressOnly(tokenMintAddress);
+    if (coin && coin instanceof SolCoin && (coin as any).programId) {
+      programId = (coin as any).programId.toString();
+    } else {
+      programId = TOKEN_PROGRAM_ID.toString();
+    }
   }
 
+  let ataAddress: PublicKey;
   if (programId === TOKEN_2022_PROGRAM_ID.toString()) {
     ataAddress = await getAssociatedTokenAddress(mintPublicKey, ownerPublicKey, false, TOKEN_2022_PROGRAM_ID);
   } else {
