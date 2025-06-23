@@ -1998,6 +1998,14 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['trx:tusd']
   ),
   tronToken(
+    '71084f91-30f3-4907-bbb0-ce26ea8584d5',
+    'trx:nft',
+    'APENFT',
+    6,
+    'TFczxzPhnThNSqr5by8tvxsdCFRRz6cPNq',
+    UnderlyingAsset['trx:nft']
+  ),
+  tronToken(
     '649c3a89-6064-4131-8eb7-087d65207cdc',
     'trx:win',
     'WINkLink',
@@ -3169,6 +3177,14 @@ export const coins = CoinMap.fromCoins([
     18,
     '0x9b6761bf2397bb5a6624a856cc84a3a14dcd3fe5',
     UnderlyingAsset['bera:ibera']
+  ),
+  beraErc20(
+    'e2a5a47c-d188-44d5-a1c4-280973c99dbb',
+    'bera:wgbera',
+    'Wrapped gBERA',
+    18,
+    '0xd77552d3849ab4d8c3b189a9582d0ba4c1f4f912',
+    UnderlyingAsset['bera:wgbera']
   ),
   tberaErc20(
     '24af5e18-ab4b-43e5-80db-0ddb9beb01b3',

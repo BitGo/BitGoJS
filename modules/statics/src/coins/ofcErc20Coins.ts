@@ -3223,6 +3223,14 @@ export const ofcErc20Coins = [
   ofcerc20('0cb66151-195b-4e3e-b6f8-e9fa953fb5dc', 'ofceth:ocn', 'Odyssey', 18, underlyingAssetForSymbol('eth:ocn')),
   ofcerc20('1d5bea63-7976-48be-b557-7644631e13d3', 'ofceth:banca', 'Banca', 18, underlyingAssetForSymbol('eth:banca')),
   ofcerc20('a5f7e552-54b6-4dde-b070-b3c42ce09d5d', 'ofceth:stq', 'Storiqa', 18, underlyingAssetForSymbol('eth:stq')),
+  ofcerc20(
+    'd91868c4-f7c3-42ca-a954-06e4fb69b26c',
+    'ofceth:route',
+    'Router Protocol (New)',
+    18,
+    underlyingAssetForSymbol('eth:route')
+  ),
+  ofcerc20('8d778a3b-7537-4333-97b4-9244078ae37c', 'ofceth:sc', 'SteelCoin', 18, underlyingAssetForSymbol('eth:sc')),
   ofcerc20('827a39b3-0124-4667-b1ed-f939dc7bb86f', 'ofceth:lf', 'LF labs', 18, underlyingAssetForSymbol('eth:lf')),
 ];
 
