@@ -8,7 +8,7 @@ import {
   accountLibBaseCoin,
   acountLibCrypto,
 } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig, coins } from '@bitgo/statics';
+import { BaseCoin as CoinConfig, CoinFeature, coins } from '@bitgo/statics';
 export { Ed25519BIP32, Eddsa };
 
 /**
@@ -173,6 +173,9 @@ export { Icp };
 import * as Flr from '@bitgo/sdk-coin-flr';
 export { Flr };
 
+import * as EvmCoin from '@bitgo/sdk-coin-evm';
+export { EvmCoin };
+
 import * as Sgb from '@bitgo/sdk-coin-sgb';
 export { Sgb };
 
@@ -307,6 +310,12 @@ const coinBuilderMap = {
   vet: Vet.TransactionBuilderFactory,
   tvet: Vet.TransactionBuilderFactory,
 };
+
+coins
+  .filter((coin) => coin.features.includes(CoinFeature.SHARED_EVM_SDK))
+  .forEach((coin) => {
+    coinBuilderMap[coin.name] = EvmCoin.TransactionBuilder;
+  });
 
 /**
  * Get the list of coin tickers supported by this library.

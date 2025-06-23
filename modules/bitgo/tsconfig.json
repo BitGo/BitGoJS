@@ -153,6 +153,9 @@
       "path": "../sdk-coin-ethw"
     },
     {
+      "path": "../sdk-coin-evm"
+    },
+    {
       "path": "../sdk-coin-flr"
     },
     {
