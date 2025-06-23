@@ -110,6 +110,9 @@ describe('Instruction Parser Tests: ', function () {
           amount: amount.toString(),
           tokenName: nameUSDC,
           sourceAddress: sourceUSDC,
+          programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+          tokenAddress: 'F4uLeXJoFz3hw13MposuwaQbMcZbCjqvEGPPeRRB1Byf',
+          decimalPlaces: 9,
         },
       };
       const transferInstruction = createTransferCheckedInstruction(
@@ -169,6 +172,9 @@ describe('Instruction Parser Tests: ', function () {
           amount: amount.toString(),
           tokenName: name,
           sourceAddress: source,
+          tokenAddress: '5NR1bQwLWqjbkhbQ1hx72HKJybbuvwkDnUZNoAZ2VhW6',
+          programId: 'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb',
+          decimalPlaces: 9,
         },
       };
       const transferInstruction = createTransferCheckedInstruction(
@@ -207,12 +213,14 @@ describe('Instruction Parser Tests: ', function () {
           ownerAddress: testData.associatedTokenAccounts.accounts[0].pub,
           payerAddress: testData.associatedTokenAccounts.accounts[0].pub,
           ataAddress: testData.associatedTokenAccounts.accounts[0].ata,
+          programId: 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
         },
         {
           mintAddress: testData.associatedTokenAccounts.mintId,
           ownerAddress: testData.associatedTokenAccounts.accounts[1].pub,
           payerAddress: testData.associatedTokenAccounts.accounts[0].pub,
           ataAddress: testData.associatedTokenAccounts.accounts[1].ata,
+          programId: 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
         },
       ];
 
@@ -244,6 +252,7 @@ describe('Instruction Parser Tests: ', function () {
           ownerAddress: testData.associatedTokenAccountsForSol2022.accounts[0].pub,
           payerAddress: testData.associatedTokenAccountsForSol2022.accounts[0].pub,
           ataAddress: testData.associatedTokenAccountsForSol2022.accounts[0].ata,
+          programId: 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
         },
       ];
 

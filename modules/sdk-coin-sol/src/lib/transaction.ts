@@ -20,6 +20,7 @@ import {
 } from './constants';
 import {
   DurableNonceParams,
+  InstructionParams,
   Memo,
   Nonce,
   StakingActivate,
@@ -45,6 +46,8 @@ export class Transaction extends BaseTransaction {
   private _lamportsPerSignature: number | undefined;
   private _tokenAccountRentExemptAmount: string | undefined;
   protected _type: TransactionType;
+  protected _instructionsData: InstructionParams[] = [];
+  private _useTokenAddressTokenName = false;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -121,6 +124,22 @@ export class Transaction extends BaseTransaction {
     this._type = transactionType;
   }
 
+  /**
+   * Set the instructionData.
+   *
+   * @param {InstructionParams[]} instructionData The instruction data to be set.
+   */
+  setInstructionsData(instructionData: InstructionParams[]): void {
+    this._instructionsData = instructionData;
+  }
+
+  get useTokenAddressTokenName(): boolean {
+    return this._useTokenAddressTokenName;
+  }
+
+  setUseTokenAddressTokenName(value: boolean): void {
+    this._useTokenAddressTokenName = value;
+  }
   /** @inheritdoc */
   canSign(): boolean {
     return true;
@@ -242,7 +261,9 @@ export class Transaction extends BaseTransaction {
     const instructionData = instructionParamsFactory(
       this._type,
       this._solTransaction.instructions,
-      this._coinConfig.name
+      this._coinConfig.name,
+      this._instructionsData,
+      this._useTokenAddressTokenName
     );
     if (this._type) {
       if (
@@ -291,7 +312,9 @@ export class Transaction extends BaseTransaction {
     const instructionParams = instructionParamsFactory(
       this.type,
       this._solTransaction.instructions,
-      this._coinConfig.name
+      this._coinConfig.name,
+      this._instructionsData,
+      this._useTokenAddressTokenName
     );
 
     for (const instruction of instructionParams) {
@@ -389,7 +412,9 @@ export class Transaction extends BaseTransaction {
     const decodedInstructions = instructionParamsFactory(
       this._type,
       this._solTransaction.instructions,
-      this._coinConfig.name
+      this._coinConfig.name,
+      this._instructionsData,
+      this._useTokenAddressTokenName
     );
 
     let memo: string | undefined = undefined;

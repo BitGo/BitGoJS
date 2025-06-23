@@ -25,6 +25,9 @@ describe('Sol Token Transfer Builder', () => {
   const nameUSDC = testData.tokenTransfers.nameUSDC;
   const mintUSDC = testData.tokenTransfers.mintUSDC;
   const owner = testData.tokenTransfers.owner;
+  const nameAMS = testData.amsTokenTransfers.nameAMSToken;
+  const mintAMS = testData.amsTokenTransfers.mintAMS;
+  const amsProgramID = testData.amsTokenTransfers.programID;
   const walletPK = testData.associatedTokenAccounts.accounts[0].pub;
   const walletSK = testData.associatedTokenAccounts.accounts[0].prv;
   const prioFeeMicroLamports = '10000000';
@@ -388,6 +391,7 @@ describe('Sol Token Transfer Builder', () => {
         ownerAddress: otherAccount.pub,
         payerAddress: walletPK,
         tokenName: nameUSDC,
+        programId: 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
       });
       txJson.instructionsData[1].type.should.equal('TokenTransfer');
       txJson.instructionsData[1].params.should.deepEqual({
@@ -396,6 +400,9 @@ describe('Sol Token Transfer Builder', () => {
         amount: amount,
         tokenName: nameUSDC,
         sourceAddress: 'B5rJjuVi7En63iK6o3ijKdJwAoTe2gwCYmJsVdHQ2aKV',
+        tokenAddress: 'F4uLeXJoFz3hw13MposuwaQbMcZbCjqvEGPPeRRB1Byf',
+        programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+        decimalPlaces: 9,
       });
       txJson.instructionsData[2].type.should.equal('Memo');
       txJson.instructionsData[2].params.memo.should.equal(memo);
@@ -403,6 +410,77 @@ describe('Sol Token Transfer Builder', () => {
       const rawTx = tx.toBroadcastFormat();
       should.equal(Utils.isValidRawTransaction(rawTx), true);
       should.equal(rawTx, testData.TOKEN_TRANSFER_UNSIGNED_WITH_CREATE_ATA_AND_MEMO_AND_DURABLE_NONCE);
+    });
+
+    it('build a token transfer tx unsigned with create ATA, memo and durable nonce with optional param', async () => {
+      const txBuilder = factory.getTokenTransferBuilder();
+      txBuilder.nonce(recentBlockHash, { walletNonceAddress: nonceAccount.pub, authWalletAddress: walletPK });
+      txBuilder.sender(walletPK);
+      txBuilder.send({
+        address: otherAccount.pub,
+        amount,
+        tokenName: nameAMS,
+        tokenAddress: mintAMS,
+        programId: amsProgramID,
+        decimalPlaces: 9,
+      });
+      txBuilder.memo(memo);
+      txBuilder.createAssociatedTokenAccount({
+        ownerAddress: otherAccount.pub,
+        tokenName: nameAMS,
+        tokenAddress: mintAMS,
+        programId: amsProgramID,
+      });
+      const prioFeeMicroLamports = '0';
+      const priorityFee: FeeOptions = {
+        amount: prioFeeMicroLamports,
+      };
+      txBuilder.setPriorityFee(priorityFee);
+      const tx = await txBuilder.build();
+      tx.inputs.length.should.equal(1);
+      tx.inputs[0].should.deepEqual({
+        address: walletPK,
+        value: amount,
+        coin: nameAMS,
+      });
+      tx.outputs.length.should.equal(1);
+      tx.outputs[0].should.deepEqual({
+        address: otherAccount.pub,
+        value: amount,
+        coin: nameAMS,
+      });
+      const txJson = tx.toJson();
+      // Since prio fee is 0, we are not adding compute unit price instruction
+      txJson.instructionsData.length.should.equal(3);
+      txJson.instructionsData[0].type.should.equal('CreateAssociatedTokenAccount');
+      txJson.instructionsData[0].params.should.deepEqual({
+        mintAddress: mintAMS,
+        ataAddress: '8KLnroP6hHkr1ZsQL4k6A3i2yhhnv2kr2Teedx7a26Eg',
+        ownerAddress: otherAccount.pub,
+        payerAddress: walletPK,
+        tokenName: nameAMS,
+        programId: 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
+      });
+      txJson.instructionsData[1].type.should.equal('TokenTransfer');
+      txJson.instructionsData[1].params.should.deepEqual({
+        fromAddress: walletPK,
+        toAddress: otherAccount.pub,
+        amount: amount,
+        tokenName: nameAMS,
+        sourceAddress: 'EytHm3gWSmaTkuF1datepgDzx7grGuDG7ws5QA7tCmU4',
+        tokenAddress: 'F4uLeXioFz3hw13MposuwaQbMcZbCjqvEGPPeRRB1Byf',
+        programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+        decimalPlaces: 9,
+      });
+      txJson.instructionsData[2].type.should.equal('Memo');
+      txJson.instructionsData[2].params.memo.should.equal(memo);
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(Utils.isValidRawTransaction(rawTx), true);
+      should.equal(
+        rawTx,
+        testData.TOKEN_TRANSFER_UNSIGNED_WITH_CREATE_ATA_AND_MEMO_AND_DURABLE_NONCE_WITH_OPTIONAL_PARAMS
+      );
     });
 
     it('build a multi token transfer tx unsigned with multi create ATA, memo and durable nonce', async () => {
@@ -477,6 +555,7 @@ describe('Sol Token Transfer Builder', () => {
         ownerAddress: otherAccount.pub,
         payerAddress: walletPK,
         tokenName: nameUSDC,
+        programId: 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
       });
       txJson.instructionsData[2].type.should.equal('CreateAssociatedTokenAccount');
       txJson.instructionsData[2].params.should.deepEqual({
@@ -485,6 +564,7 @@ describe('Sol Token Transfer Builder', () => {
         ownerAddress: account1.pub,
         payerAddress: walletPK,
         tokenName: nameUSDC,
+        programId: 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
       });
       txJson.instructionsData[2].type.should.equal('CreateAssociatedTokenAccount');
       txJson.instructionsData[3].params.should.deepEqual({
@@ -493,6 +573,7 @@ describe('Sol Token Transfer Builder', () => {
         ownerAddress: account2.pub,
         payerAddress: walletPK,
         tokenName: nameUSDC,
+        programId: 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
       });
       txJson.instructionsData.length.should.equal(8);
       txJson.instructionsData[4].type.should.equal('TokenTransfer');
@@ -502,6 +583,9 @@ describe('Sol Token Transfer Builder', () => {
         amount: amount,
         tokenName: nameUSDC,
         sourceAddress: 'B5rJjuVi7En63iK6o3ijKdJwAoTe2gwCYmJsVdHQ2aKV',
+        tokenAddress: 'F4uLeXJoFz3hw13MposuwaQbMcZbCjqvEGPPeRRB1Byf',
+        programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+        decimalPlaces: 9,
       });
       txJson.instructionsData[5].type.should.equal('TokenTransfer');
       txJson.instructionsData[5].params.should.deepEqual({
@@ -510,6 +594,9 @@ describe('Sol Token Transfer Builder', () => {
         amount: amount,
         tokenName: nameUSDC,
         sourceAddress: 'B5rJjuVi7En63iK6o3ijKdJwAoTe2gwCYmJsVdHQ2aKV',
+        tokenAddress: 'F4uLeXJoFz3hw13MposuwaQbMcZbCjqvEGPPeRRB1Byf',
+        programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+        decimalPlaces: 9,
       });
       txJson.instructionsData[6].type.should.equal('TokenTransfer');
       txJson.instructionsData[6].params.should.deepEqual({
@@ -518,6 +605,9 @@ describe('Sol Token Transfer Builder', () => {
         amount: amount,
         tokenName: nameUSDC,
         sourceAddress: 'B5rJjuVi7En63iK6o3ijKdJwAoTe2gwCYmJsVdHQ2aKV',
+        tokenAddress: 'F4uLeXJoFz3hw13MposuwaQbMcZbCjqvEGPPeRRB1Byf',
+        programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+        decimalPlaces: 9,
       });
       txJson.instructionsData[7].type.should.equal('Memo');
       txJson.instructionsData[7].params.memo.should.equal(memo);
@@ -594,6 +684,7 @@ describe('Sol Token Transfer Builder', () => {
         ownerAddress: otherAccount.pub,
         payerAddress: walletPK,
         tokenName: nameUSDC,
+        programId: 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
       });
       txJson.instructionsData[2].type.should.equal('TokenTransfer');
       txJson.instructionsData[2].params.should.deepEqual({
@@ -602,6 +693,9 @@ describe('Sol Token Transfer Builder', () => {
         amount: amount,
         tokenName: nameUSDC,
         sourceAddress: 'B5rJjuVi7En63iK6o3ijKdJwAoTe2gwCYmJsVdHQ2aKV',
+        tokenAddress: 'F4uLeXJoFz3hw13MposuwaQbMcZbCjqvEGPPeRRB1Byf',
+        programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+        decimalPlaces: 9,
       });
       txJson.instructionsData[3].type.should.equal('TokenTransfer');
       txJson.instructionsData[3].params.should.deepEqual({
@@ -610,6 +704,9 @@ describe('Sol Token Transfer Builder', () => {
         amount: amount,
         tokenName: nameUSDC,
         sourceAddress: 'B5rJjuVi7En63iK6o3ijKdJwAoTe2gwCYmJsVdHQ2aKV',
+        tokenAddress: 'F4uLeXJoFz3hw13MposuwaQbMcZbCjqvEGPPeRRB1Byf',
+        programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+        decimalPlaces: 9,
       });
       txJson.instructionsData[4].type.should.equal('TokenTransfer');
       txJson.instructionsData[4].params.should.deepEqual({
@@ -618,6 +715,9 @@ describe('Sol Token Transfer Builder', () => {
         amount: amount,
         tokenName: nameUSDC,
         sourceAddress: 'B5rJjuVi7En63iK6o3ijKdJwAoTe2gwCYmJsVdHQ2aKV',
+        tokenAddress: 'F4uLeXJoFz3hw13MposuwaQbMcZbCjqvEGPPeRRB1Byf',
+        programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+        decimalPlaces: 9,
       });
       txJson.instructionsData[5].type.should.equal('Memo');
       txJson.instructionsData[5].params.memo.should.equal(memo);
