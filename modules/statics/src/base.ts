@@ -1982,6 +1982,8 @@ export enum UnderlyingAsset {
   'eth:ocn' = 'eth:ocn',
   'eth:banca' = 'eth:banca',
   'eth:stq' = 'eth:stq',
+  'eth:route' = 'eth:route',
+  'eth:sc' = 'eth:sc',
   'eth:lf' = 'eth:lf',
   'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ' = 'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ',
   'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M' = 'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M',
@@ -2244,6 +2246,7 @@ export enum UnderlyingAsset {
   'polygon:tcs' = 'polygon:tcs',
   'polygon:buidl' = 'polygon:buidl',
   'polygon:benji' = 'polygon:benji',
+  'polygon:naka' = 'polygon:naka',
   // Polygon NFTs
   // generic NFTs
   'erc721:polygontoken' = 'erc721:polygontoken',
@@ -2383,6 +2386,12 @@ export enum UnderlyingAsset {
   'bsc:usd1' = 'bsc:usd1',
   'bsc:oort' = 'bsc:oort',
   'bsc:aitech' = 'bsc:aitech',
+  'bsc:fil' = 'bsc:fil',
+  'bsc:ftm' = 'bsc:ftm',
+  'bsc:comp' = 'bsc:comp',
+  'bsc:uni' = 'bsc:uni',
+  'bsc:yfi' = 'bsc:yfi',
+  'bsc:link' = 'bsc:link',
   // BSC NFTs
   // generic NFTs
   'erc721:bsctoken' = 'erc721:bsctoken',
@@ -2505,6 +2514,7 @@ export enum UnderlyingAsset {
   'bera:usdc' = 'bera:usdc',
   'bera:ibera' = 'bera:ibera',
   'bera:dolo' = 'bera:dolo',
+  'bera:wgbera' = 'bera:wgbera',
 
   // bera testnet tokens
   'tbera:bgt' = 'tbera:bgt',
@@ -2670,6 +2680,7 @@ export enum UnderlyingAsset {
   'trx:usdd' = 'trx:usdd',
   'trx:usdt' = 'trx:usdt',
   'trx:usd1' = 'trx:usd1',
+  'trx:nft' = 'trx:nft',
 
   // TRX testnet tokens
   'ttrx:usdt' = 'ttrx:usdt',

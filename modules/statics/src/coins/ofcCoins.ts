@@ -1584,6 +1584,12 @@ export const ofcCoins = [
     UnderlyingAsset['bsc:psg']
   ),
   ofcBscToken('5c7a8f9e-4b1e-1f2e-9d6f-7c8a1b6f2e5a', 'ofcbsc:telos', 'Telos', 18, UnderlyingAsset['bsc:telos']),
+  ofcBscToken('9ab9cf5e-71a5-407f-8233-8495a79e45dc', 'ofcbsc:fil', 'Filecoin', 18, UnderlyingAsset['bsc:fil']),
+  ofcBscToken('1b227f23-8729-4b49-8c98-ed1470b6c82c', 'ofcbsc:ftm', 'Fantom', 18, UnderlyingAsset['bsc:ftm']),
+  ofcBscToken('0c37610d-29b2-484e-b29a-7c744fa36d79', 'ofcbsc:comp', 'Compound', 18, UnderlyingAsset['bsc:comp']),
+  ofcBscToken('ec88372f-33c1-4553-842c-0ccbc7cd2358', 'ofcbsc:uni', 'Uniswap', 18, UnderlyingAsset['bsc:uni']),
+  ofcBscToken('1076917e-06d3-4c28-b26b-8f351ba74f2e', 'ofcbsc:yfi', 'yearn.finance', 18, UnderlyingAsset['bsc:yfi']),
+  ofcBscToken('7982c847-0e57-4215-808e-8ea488b24515', 'ofcbsc:link', 'Chainlink', 18, UnderlyingAsset['bsc:link']),
   ofcBscToken(
     '5af23514-1f09-45cc-9a2d-305dd8de7c30',
     'ofcbsc:aitech',
@@ -2319,6 +2325,13 @@ export const ofcCoins = [
     'Vanar Chain Token',
     18,
     UnderlyingAsset['polygon:vanry']
+  ),
+  ofcPolygonErc20(
+    '1d5f140f-bc72-47b6-a80e-332e54f3c8dc',
+    'ofcpolygon:naka',
+    'Nakamoto Games',
+    18,
+    UnderlyingAsset['polygon:naka']
   ),
   ofcPolygonErc20(
     '54c8d334-e87c-445d-abe1-9cf6741534ba',

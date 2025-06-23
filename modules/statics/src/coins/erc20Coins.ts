@@ -10578,6 +10578,22 @@ export const erc20Coins = [
     UnderlyingAsset['eth:towns']
   ),
   erc20(
+    '7905c0fa-a284-4995-a994-abd7050d9523',
+    'eth:route',
+    'Router Protocol (New)',
+    18,
+    '0x60f67e1015b3f069dd4358a78c38f83fe3a667a9',
+    UnderlyingAsset['eth:route']
+  ),
+  erc20(
+    'ea5587fc-c76b-4203-8364-185814210c75',
+    'eth:sc',
+    'SteelCoin',
+    18,
+    '0x6d4e7931944dc1a78256570a073d410a71cc312f',
+    UnderlyingAsset['eth:sc']
+  ),
+  erc20(
     'bef92a29-449e-4c8b-99cc-ffa355fe4b8b',
     'eth:chex',
     'Chintai Exchange Token',

@@ -999,6 +999,15 @@ export const polygonTokens = [
     POLYGON_TOKEN_FEATURES
   ),
   polygonErc20(
+    'e91bfd4a-b3de-43ee-afd1-cee82210e24b',
+    'polygon:naka',
+    'Nakamoto Games',
+    18,
+    '0x311434160d7537be358930def317afb606c0d737',
+    UnderlyingAsset['polygon:naka'],
+    POLYGON_TOKEN_FEATURES
+  ),
+  polygonErc20(
     'fd5f6faf-0a77-4bf0-b678-8979f5addad2',
     'polygon:heth',
     'ETH Hop Token',

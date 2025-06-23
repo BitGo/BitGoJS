@@ -1114,6 +1114,60 @@ export const bscTokens = [
     BSC_TOKEN_FEATURES
   ),
   bscToken(
+    '5a61da1c-26da-41e4-9d6e-803feec1d39d',
+    'bsc:fil',
+    'Filecoin',
+    18,
+    '0x0d8ce2a99bb6e3b7db580ed848240e4a0f9ae153',
+    UnderlyingAsset['bsc:fil'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
+    'bc669333-afd7-4388-a308-5354e1835cf8',
+    'bsc:ftm',
+    'Fantom',
+    18,
+    '0xad29abb318791d579433d831ed122afeaf29dcfe',
+    UnderlyingAsset['bsc:ftm'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
+    '2a1d251c-388d-48cb-9f91-53d41d7e0e91',
+    'bsc:comp',
+    'Compound',
+    18,
+    '0x52ce071bd9b1c4b00a0b92d298c512478cad67e8',
+    UnderlyingAsset['bsc:comp'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
+    'b7d539a3-5d30-4423-9bba-13b820bb69f8',
+    'bsc:uni',
+    'Uniswap',
+    18,
+    '0xbf5140a22578168fd562dccf235e5d43a02ce9b1',
+    UnderlyingAsset['bsc:uni'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
+    'e25428b8-4520-46f1-978c-de614b2c6fb4',
+    'bsc:yfi',
+    'yearn.finance',
+    18,
+    '0x88f1a5ae2a3bf98aeaf342d26b30a79438c9142e',
+    UnderlyingAsset['bsc:yfi'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
+    '533f3693-6983-4228-aad7-a90639ec3d29',
+    'bsc:link',
+    'Chainlink',
+    18,
+    '0xf8a0bf9cf54bb92f17374d9e9a321e6a111a51bd',
+    UnderlyingAsset['bsc:link'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
     '3cd43d47-451e-4043-822c-d2566ea93ade',
     'bsc:multi',
     'Multichain',
