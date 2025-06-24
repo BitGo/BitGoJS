@@ -88,7 +88,8 @@
     "canvg": "4.0.3",
     "**/stellar-sdk/**/bignumber.js": "4.1.0",
     "**/stellar-base/**/bignumber.js": "4.1.0",
-    "bignumber.js": "9.1.2"
+    "bignumber.js": "9.1.2",
+    "pbkdf2": "3.1.3"
   },
   "workspaces": [
     "modules/*"
