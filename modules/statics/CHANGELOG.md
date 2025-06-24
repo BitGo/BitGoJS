@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [54.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@54.4.0...@bitgo/statics@54.5.0) (2025-06-24)
+
+### Bug Fixes
+
+- add base units for tcronos and tasi ([5edbff8](https://github.com/BitGo/BitGoJS/commit/5edbff828ce8c9b36b44ab3928c157c698e2644a))
+- worldcoin statics ([b8b210b](https://github.com/BitGo/BitGoJS/commit/b8b210b7aee5a2a323b691f8a058dc3635937f82))
+
+### Features
+
+- add vechain token standard support ([f81cf23](https://github.com/BitGo/BitGoJS/commit/f81cf230afe4636ac87a2d94821b49947605d1ff))
+- add WORLDCHAIN token support ([48cabb3](https://github.com/BitGo/BitGoJS/commit/48cabb32a608d4299a261196e5d5bae5fe86dab8))
+- adding new batch of tokens ([181e63a](https://github.com/BitGo/BitGoJS/commit/181e63a93b4a7397c9a08fdbd45f664bb26cb98f))
+- **statics:** add middleware public key field to LightningNetwork ([579a9a3](https://github.com/BitGo/BitGoJS/commit/579a9a35cf96213b7ece8c6f38b99f53df61fec4))
+- **statics:** add staking feature to trx in testnet ([acc070c](https://github.com/BitGo/BitGoJS/commit/acc070cc240a87f2dffd4b18dacd3d968360ba2a))
+- **statics:** add TAT shared secret derivation function ([8a75e82](https://github.com/BitGo/BitGoJS/commit/8a75e82068a9d8d44db7b276079c88fb46eefaee))
+- **statics:** enable TRX staking feature ([642d62d](https://github.com/BitGo/BitGoJS/commit/642d62d78fb33b7d6757fdc16a1bbf8150acf9ba))
+- **statics:** onboard tnear:usdc token ([8dc18d1](https://github.com/BitGo/BitGoJS/commit/8dc18d1249eb7d798013fe66e2af303065a2111d))
+- using the shared evm sdk feature for testnet monad ([430c65f](https://github.com/BitGo/BitGoJS/commit/430c65fba0628c2ffd3f9a572e3449af2c6ab2d5))
+
 # [54.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@54.3.0...@bitgo/statics@54.4.0) (2025-06-18)
 
 ### Bug Fixes

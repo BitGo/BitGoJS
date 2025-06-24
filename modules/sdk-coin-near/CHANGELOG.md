@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@2.5.0...@bitgo/sdk-coin-near@2.6.0) (2025-06-24)
+
+### Bug Fixes
+
+- **sdk-coin-near:** bug fix in ft builder of near ([97787e9](https://github.com/BitGo/BitGoJS/commit/97787e936b29024fe6a0677a55a3725ebac67309))
+
+### Features
+
+- **sdk-coin-near:** removed inputs & outputs for storage deposits ([93bb4a6](https://github.com/BitGo/BitGoJS/commit/93bb4a6374d739c60c86fb521087761827f07ea1))
+
 # [2.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@2.4.1...@bitgo/sdk-coin-near@2.5.0) (2025-06-18)
 
 ### Features

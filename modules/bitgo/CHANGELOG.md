@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [48.2.0](https://github.com/BitGo/BitGoJS/compare/bitgo@48.1.0...bitgo@48.2.0) (2025-06-24)
+
+### Bug Fixes
+
+- **bitgo:** create token constructors for near and stx ([38526bd](https://github.com/BitGo/BitGoJS/commit/38526bd927ffcca8f657d7ed45af803071e7dc2e))
+- creating transfer before sending tx ([c7e30c5](https://github.com/BitGo/BitGoJS/commit/c7e30c5565c8485ff383fe5d24b9472e9328bafe))
+
+### Features
+
+- add WORLDCHAIN token support ([48cabb3](https://github.com/BitGo/BitGoJS/commit/48cabb32a608d4299a261196e5d5bae5fe86dab8))
+- **bitgo:** add method to fetch and register all the assets from AMS ([efb54f2](https://github.com/BitGo/BitGoJS/commit/efb54f2d3c61cc2912460dcf69328d1a9beddafb))
+- **bitgo:** use AMS endpoints to register single token ([568e5f8](https://github.com/BitGo/BitGoJS/commit/568e5f8b14edef37cf630b4e278d6cab11f47a45))
+- **sdk-coin-evm:** add EvmCoin & transaction builder ([0682aea](https://github.com/BitGo/BitGoJS/commit/0682aeadffded4847c8bf70aa52e9d0b9bbf113b))
+- use common evm sdk in account-lib & coin factory ([743fdb2](https://github.com/BitGo/BitGoJS/commit/743fdb2f83ca32a9961d3698f6d9e15807b03fe4))
+
 # [48.1.0](https://github.com/BitGo/BitGoJS/compare/bitgo@48.0.1...bitgo@48.1.0) (2025-06-18)
 
 ### Features

@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polyx@1.4.0...@bitgo/sdk-coin-polyx@1.4.1) (2025-06-24)
+
+### Bug Fixes
+
+- decoding logic to differentiate b/w stake and unstake batch ([2d82c4e](https://github.com/BitGo/BitGoJS/commit/2d82c4e572c94cb5b770301428c107da22f84448))
+- **sdk-coin-polyx:** add address format for polyx and tpolyx ([7748439](https://github.com/BitGo/BitGoJS/commit/774843999a56b793775f119c0f3a4f6a49d40a73))
+
 # [1.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polyx@1.3.1...@bitgo/sdk-coin-polyx@1.4.0) (2025-06-18)
 
 ### Features

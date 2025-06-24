@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@1.5.0...@bitgo/sdk-coin-vet@1.6.0) (2025-06-24)
+
+### Features
+
+- add vechain token standard support ([f81cf23](https://github.com/BitGo/BitGoJS/commit/f81cf230afe4636ac87a2d94821b49947605d1ff))
+
 # [1.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@1.4.0...@bitgo/sdk-coin-vet@1.5.0) (2025-06-18)
 
 ### Features

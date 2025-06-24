@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [27.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.3.0...@bitgo/account-lib@27.4.0) (2025-06-24)
+
+### Features
+
+- use common evm sdk in account-lib & coin factory ([743fdb2](https://github.com/BitGo/BitGoJS/commit/743fdb2f83ca32a9961d3698f6d9e15807b03fe4))
+
 # [27.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.2.0...@bitgo/account-lib@27.3.0) (2025-06-18)
 
 ### Features

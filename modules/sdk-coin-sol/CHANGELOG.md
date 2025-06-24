@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.12.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.12.2...@bitgo/sdk-coin-sol@4.12.3) (2025-06-24)
+
+### Bug Fixes
+
+- **sdk-coin-sol:** handling sol 2022 token recoveries ([bde64bc](https://github.com/BitGo/BitGoJS/commit/bde64bcc15ebde59e0565fd60a35501ac45ba0c8))
+- **sdk-coin-sol:** remove coin iteration to fetch programId from getAssociatedTokenAccountAddress ([5eb5720](https://github.com/BitGo/BitGoJS/commit/5eb572009a5a9a425276493fefa674e6cd23c3a8))
+
 ## [4.12.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.12.1...@bitgo/sdk-coin-sol@4.12.2) (2025-06-18)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol

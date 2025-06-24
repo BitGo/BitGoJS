@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [35.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@35.3.0...@bitgo/sdk-core@35.4.0) (2025-06-24)
+
+### Bug Fixes
+
+- creating transfer before sending tx ([c7e30c5](https://github.com/BitGo/BitGoJS/commit/c7e30c5565c8485ff383fe5d24b9472e9328bafe))
+
+### Features
+
+- **sdk-coin-evm:** add EvmCoin & transaction builder ([0682aea](https://github.com/BitGo/BitGoJS/commit/0682aeadffded4847c8bf70aa52e9d0b9bbf113b))
+
 # [35.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@35.2.1...@bitgo/sdk-core@35.3.0) (2025-06-18)
 
 ### Features
