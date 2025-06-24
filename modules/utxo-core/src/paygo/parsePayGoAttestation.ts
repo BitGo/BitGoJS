@@ -21,7 +21,7 @@ const EntropyLen = 64;
  * @param message
  * @param adressProofLength
  */
-export function extractMsgBufferFromPayGoAttestationProof(message: Buffer): {
+export function parsePayGoAttestation(message: Buffer): {
   entropy: Buffer;
   address: Buffer;
   uuid: Buffer;

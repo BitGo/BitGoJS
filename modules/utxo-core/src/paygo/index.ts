@@ -1,2 +1,2 @@
-export * from './ExtractAddressPayGoAttestation';
+export * from './parsePayGoAttestation';
 export * from './psbt';
