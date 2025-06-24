@@ -21,7 +21,11 @@ const EntropyLen = 64;
  * @param message
  * @param adressProofLength
  */
-export function extractAddressBufferFromPayGoAttestationProof(message: Buffer): Buffer {
+export function extractMsgBufferFromPayGoAttestationProof(message: Buffer): {
+  entropy: Buffer;
+  address: Buffer;
+  uuid: Buffer;
+} {
   if (message.length <= PrefixLength + EntropyLen + UuidBufferLength) {
     throw new Error('PayGo attestation proof is too short to contain a valid address');
   }
@@ -34,12 +38,14 @@ export function extractAddressBufferFromPayGoAttestationProof(message: Buffer): 
   // https://en.bitcoin.it/wiki/Protocol_documentation
   const varInt = bufferutils.varuint.decode(message, offset);
   assert(varInt);
-  offset += 1;
+  offset += bufferutils.varuint.decode.bytes;
 
-  const addressLength = varInt - EntropyLen - UuidBufferLength;
+  const entropy = message.subarray(offset, offset + EntropyLen);
   offset += EntropyLen;
+  const address = message.subarray(offset, message.length - UuidBufferLength);
+  offset += address.length;
+  const uuid = message.subarray(message.length - UuidBufferLength);
 
-  // we return what the Buffer subarray from the offset (beginning of address)
-  // to the end of the address index in the buffer.
-  return message.subarray(offset, offset + addressLength);
+  // we break up the original message and retuen the entropy, address and uuid in their buffers
+  return { entropy, address, uuid };
 }
