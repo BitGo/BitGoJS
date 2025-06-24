@@ -31,6 +31,7 @@ import {
   AptTokenConfig,
   Sip10TokenConfig,
   CoinFeature,
+  Nep141TokenConfig,
 } from '@bitgo/statics';
 import {
   Ada,
@@ -889,9 +890,12 @@ export function getTokenConstructor(tokenConfig: TokenConfig): CoinConstructor |
     case 'apt':
     case 'tapt':
       return AptToken.createTokenConstructor(tokenConfig as AptTokenConfig);
-    case 'sip10':
-    case 'tsip10':
+    case 'stx':
+    case 'tstx':
       return Sip10Token.createTokenConstructor(tokenConfig as Sip10TokenConfig);
+    case 'near':
+    case 'tnear':
+      return Nep141Token.createTokenConstructor(tokenConfig as Nep141TokenConfig);
     default:
       return undefined;
   }
