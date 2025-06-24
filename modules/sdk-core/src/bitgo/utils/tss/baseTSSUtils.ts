@@ -76,7 +76,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
     }
   }
 
-  protected async pickBitgoPubGpgKeyForSigning(
+  public async pickBitgoPubGpgKeyForSigning(
     isMpcv2: boolean,
     reqId?: IRequestTracer,
     enterpriseId?: string
