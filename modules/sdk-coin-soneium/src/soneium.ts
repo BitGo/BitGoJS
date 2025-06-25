@@ -8,7 +8,7 @@
  */
 
 import { BaseCoin, BitGoBase, common, MPCAlgorithm, MultisigType, multisigTypes } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, coins, ethGasConfigs } from '@bitgo/statics';
 import {
   AbstractEthLikeNewCoins,
   recoveryBlockchainExplorerQuery,
@@ -54,5 +54,23 @@ export class Soneium extends AbstractEthLikeNewCoins {
     const apiToken = common.Environments[this.bitgo.getEnv()].soneiumExplorerApiToken;
     const explorerUrl = common.Environments[this.bitgo.getEnv()].soneiumExplorerBaseUrl;
     return await recoveryBlockchainExplorerQuery(query, explorerUrl as string, apiToken);
+  }
+
+  /**
+   * Check whether gas limit passed in by user are within our max and min bounds
+   * If they are not set, set them to the defaults
+   * @param {number} userGasLimit user defined gas limit
+   * @returns {number} the gas limit to use for this transaction
+   */
+  setGasLimit(userGasLimit?: number): number {
+    if (!userGasLimit) {
+      return ethGasConfigs.defaultGasLimit;
+    }
+    const gasLimitMax = ethGasConfigs.maximumGasLimit;
+    const gasLimitMin = ethGasConfigs.newEthLikeCoinsMinGasLimit;
+    if (userGasLimit < gasLimitMin || userGasLimit > gasLimitMax) {
+      throw new Error(`Gas limit must be between ${gasLimitMin} and ${gasLimitMax}`);
+    }
+    return userGasLimit;
   }
 }
