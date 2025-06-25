@@ -1,10 +1,14 @@
 import assert from 'assert';
 
 import * as utxolib from '@bitgo/utxo-lib';
-import { Descriptor } from '@bitgo/wasm-miniscript';
+// Changed from direct import to async import (will be imported when used)
+// import { Descriptor } from '@bitgo/wasm-miniscript';
 import { DescriptorMap } from '@bitgo/utxo-core/descriptor';
 
 import { UtxoCoinSpecific, VerifyAddressOptions } from '../abstractUtxoCoin';
+
+// Define types to be used before dynamic import
+type Descriptor = any;
 
 class DescriptorAddressMismatchError extends Error {
   constructor(descriptor: Descriptor, index: number, derivedAddress: string, expectedAddress: string) {
@@ -14,11 +18,13 @@ class DescriptorAddressMismatchError extends Error {
   }
 }
 
-export function assertDescriptorWalletAddress(
+export async function assertDescriptorWalletAddress(
   network: utxolib.Network,
   params: VerifyAddressOptions<UtxoCoinSpecific>,
   descriptors: DescriptorMap
-): void {
+): Promise<void> {
+  const { Descriptor } = await import('@bitgo/wasm-miniscript');
+  
   assert(params.coinSpecific);
   assert('descriptorName' in params.coinSpecific);
   assert('descriptorChecksum' in params.coinSpecific);

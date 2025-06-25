@@ -1,5 +1,9 @@
 import { BIP32Interface } from '@bitgo/utxo-lib';
-import { Descriptor } from '@bitgo/wasm-miniscript';
+// Changed from direct import to async import (will be imported when used)
+// import { Descriptor } from '@bitgo/wasm-miniscript';
+
+// Define types to be used before dynamic import
+type Descriptor = any;
 
 type DescriptorWithKeys<TName extends string> = {
   name: TName;
@@ -49,6 +53,7 @@ function getDescriptorString(builder: DescriptorBuilder): string {
   throw new Error(`Unknown descriptor template: ${builder}`);
 }
 
-export function getDescriptorFromBuilder(builder: DescriptorBuilder): Descriptor {
+export async function getDescriptorFromBuilder(builder: DescriptorBuilder): Promise<Descriptor> {
+  const { Descriptor } = await import('@bitgo/wasm-miniscript');
   return Descriptor.fromString(getDescriptorString(builder), 'derivable');
 }

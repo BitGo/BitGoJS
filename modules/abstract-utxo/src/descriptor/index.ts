@@ -1,4 +1,5 @@
-export { Miniscript, Descriptor } from '@bitgo/wasm-miniscript';
+// Changed from direct import to async import pattern
+// Import Miniscript and Descriptor dynamically where they are used
 export { DescriptorMap } from '@bitgo/utxo-core/descriptor';
 export { assertDescriptorWalletAddress } from './assertDescriptorWalletAddress';
 export {

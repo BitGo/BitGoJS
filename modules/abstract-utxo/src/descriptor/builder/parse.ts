@@ -1,8 +1,12 @@
 import { BIP32Interface } from '@bitgo/utxo-lib';
 import * as utxolib from '@bitgo/utxo-lib';
-import { Descriptor } from '@bitgo/wasm-miniscript';
+// Changed from direct import to async import (will be imported when used)
+// import { Descriptor } from '@bitgo/wasm-miniscript';
 
 import { DescriptorBuilder, getDescriptorFromBuilder } from './builder';
+
+// Define types to be used before dynamic import
+type Descriptor = any;
 
 type NodeUnary<Key extends string> = { [k in Key]: unknown };
 
@@ -121,9 +125,10 @@ export function parseDescriptorNode(node: unknown): DescriptorBuilder {
   return parsed;
 }
 
-export function parseDescriptor(descriptor: Descriptor): DescriptorBuilder {
+export async function parseDescriptor(descriptor: Descriptor): Promise<DescriptorBuilder> {
   const builder = parseDescriptorNode(descriptor.node());
-  if (getDescriptorFromBuilder(builder).toString() !== descriptor.toString()) {
+  const generatedDescriptor = await getDescriptorFromBuilder(builder);
+  if (generatedDescriptor.toString() !== descriptor.toString()) {
     throw new Error('Failed to parse descriptor');
   }
   return builder;

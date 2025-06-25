@@ -10,7 +10,7 @@ export type KeyTriple = Triple<utxolib.BIP32Interface>;
 export interface DescriptorValidationPolicy {
   name: string;
 
-  validate(arr: NamedDescriptorNative[], walletKeys: KeyTriple): boolean;
+  validate(arr: NamedDescriptorNative[], walletKeys: KeyTriple): boolean | Promise<boolean>;
 }
 
 export const policyAllowAll: DescriptorValidationPolicy = {
@@ -21,15 +21,18 @@ export const policyAllowAll: DescriptorValidationPolicy = {
 export function getValidatorDescriptorTemplate(name: string): DescriptorValidationPolicy {
   return {
     name: 'descriptorTemplate(' + name + ')',
-    validate(arr: NamedDescriptorNative[], walletKeys: KeyTriple): boolean {
-      return arr.every((d) => {
-        const parsed = parseDescriptor(d.value);
-        return (
-          parsed.name === name &&
-          parsed.keys.length === walletKeys.length &&
-          parsed.keys.every((k, i) => k.toBase58() === walletKeys[i].neutered().toBase58())
-        );
-      });
+    async validate(arr: NamedDescriptorNative[], walletKeys: KeyTriple): Promise<boolean> {
+      for (const d of arr) {
+        const parsed = await parseDescriptor(d.value);
+        if (
+          parsed.name !== name ||
+          parsed.keys.length !== walletKeys.length ||
+          !parsed.keys.every((k, i) => k.toBase58() === walletKeys[i].neutered().toBase58())
+        ) {
+          return false;
+        }
+      }
+      return true;
     },
   };
 }
@@ -37,8 +40,14 @@ export function getValidatorDescriptorTemplate(name: string): DescriptorValidati
 export function getValidatorEvery(validators: DescriptorValidationPolicy[]): DescriptorValidationPolicy {
   return {
     name: 'every(' + validators.map((v) => v.name).join(',') + ')',
-    validate(arr: NamedDescriptorNative[], walletKeys: KeyTriple): boolean {
-      return validators.every((v) => v.validate(arr, walletKeys));
+    async validate(arr: NamedDescriptorNative[], walletKeys: KeyTriple): Promise<boolean> {
+      for (const validator of validators) {
+        const result = await validator.validate(arr, walletKeys);
+        if (!result) {
+          return false;
+        }
+      }
+      return true;
     },
   };
 }
@@ -46,8 +55,14 @@ export function getValidatorEvery(validators: DescriptorValidationPolicy[]): Des
 export function getValidatorSome(validators: DescriptorValidationPolicy[]): DescriptorValidationPolicy {
   return {
     name: 'some(' + validators.map((v) => v.name).join(',') + ')',
-    validate(arr: NamedDescriptorNative[], walletKeys: KeyTriple): boolean {
-      return validators.some((v) => v.validate(arr, walletKeys));
+    async validate(arr: NamedDescriptorNative[], walletKeys: KeyTriple): Promise<boolean> {
+      for (const validator of validators) {
+        const result = await validator.validate(arr, walletKeys);
+        if (result) {
+          return true;
+        }
+      }
+      return false;
     },
   };
 }
@@ -59,9 +74,14 @@ export function getValidatorOneOfTemplates(names: string[]): DescriptorValidatio
 export function getValidatorSignedByUserKey(): DescriptorValidationPolicy {
   return {
     name: 'signedByUser',
-    validate(arr: NamedDescriptorNative[], walletKeys: KeyTriple): boolean {
+    async validate(arr: NamedDescriptorNative[], walletKeys: KeyTriple): Promise<boolean> {
       // the first key is the user key, by convention
-      return arr.every((d) => hasValidSignature(d.value, walletKeys[0], d.signatures ?? []));
+      for (const d of arr) {
+        if (!(await hasValidSignature(d.value, walletKeys[0], d.signatures ?? []))) {
+          return false;
+        }
+      }
+      return true;
     },
   };
 }
@@ -72,25 +92,28 @@ export class DescriptorPolicyValidationError extends Error {
   }
 }
 
-export function assertDescriptorPolicy(
+export async function assertDescriptorPolicy(
   descriptors: NamedDescriptorNative[],
   policy: DescriptorValidationPolicy,
   walletKeys: KeyTriple
-): void {
-  if (!policy.validate(descriptors, walletKeys)) {
+): Promise<void> {
+  if (!(await policy.validate(descriptors, walletKeys))) {
     throw new DescriptorPolicyValidationError(descriptors, policy);
   }
 }
 
-export function toDescriptorMapValidate(
+export async function toDescriptorMapValidate(
   descriptors: NamedDescriptor[],
   walletKeys: KeyTriple,
   policy: DescriptorValidationPolicy
-): DescriptorMap {
-  const namedDescriptorsNative: NamedDescriptorNative[] = descriptors.map((v) =>
-    toNamedDescriptorNative(v, 'derivable')
-  );
-  assertDescriptorPolicy(namedDescriptorsNative, policy, walletKeys);
+): Promise<DescriptorMap> {
+  const namedDescriptorsNative: NamedDescriptorNative[] = [];
+  
+  for (const descriptor of descriptors) {
+    namedDescriptorsNative.push(await toNamedDescriptorNative(descriptor, 'derivable'));
+  }
+  
+  await assertDescriptorPolicy(namedDescriptorsNative, policy, walletKeys);
   return toDescriptorMap(namedDescriptorsNative);
 }
 
