@@ -23,7 +23,7 @@ export async function assertDescriptorWalletAddress(
   params: VerifyAddressOptions<UtxoCoinSpecific>,
   descriptors: DescriptorMap
 ): Promise<void> {
-  const { Descriptor } = await import('@bitgo/wasm-miniscript');
+// Removed unused dynamic import of Descriptor
   
   assert(params.coinSpecific);
   assert('descriptorName' in params.coinSpecific);
