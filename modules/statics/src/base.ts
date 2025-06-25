@@ -2681,6 +2681,7 @@ export enum UnderlyingAsset {
   'trx:usdt' = 'trx:usdt',
   'trx:usd1' = 'trx:usd1',
   'trx:nft' = 'trx:nft',
+  'trx:strx' = 'trx:strx',
 
   // TRX testnet tokens
   'ttrx:usdt' = 'ttrx:usdt',

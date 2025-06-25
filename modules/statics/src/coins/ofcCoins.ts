@@ -861,6 +861,7 @@ export const ofcCoins = [
   ),
   ofcTronToken('94b00b66-68a4-45ed-b772-77e5bca1e34c', 'ofctrx:usdt', 'Tether USD', 6, UnderlyingAsset['trx:usdt']),
   ofcTronToken('486dca06-5709-45ee-8b35-677e3d27509f', 'ofctrx:usd1', 'USD1 Token', 18, UnderlyingAsset['trx:usd1']),
+  ofcTronToken('d953a72b-b7b9-4c8d-97bd-f03394e30608', 'ofctrx:strx', 'Staked TRX', 18, UnderlyingAsset['trx:strx']),
   ofcXrpToken('6a173023-5faf-4a0a-af38-b8be98abe94f', 'ofcxrp:rlusd', 'Ripple USD', 15, UnderlyingAsset['xrp:rlusd']),
   tofcXrpToken('bd406dab-3b55-4ab5-b0a5-74b9f94268a3', 'ofctxrp:rlusd', 'RLUSD', 15, UnderlyingAsset['txrp:rlusd']),
   ofcXrpToken('eb3c02de-7221-4fde-9235-5cc576eb7c8b', 'ofcxrp:xsgd', 'XSGD', 6, UnderlyingAsset['xrp:xsgd']),
