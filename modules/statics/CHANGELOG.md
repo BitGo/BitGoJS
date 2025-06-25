@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [54.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@54.5.0...@bitgo/statics@54.6.0) (2025-06-25)
+
+### Bug Fixes
+
+- renaming the staked trx token ([43362d9](https://github.com/BitGo/BitGoJS/commit/43362d93a123d6057c301d0a2ddeba8f12bef119))
+
+### Features
+
+- **statics:** add go account support for cosmos batch ([a5f48dc](https://github.com/BitGo/BitGoJS/commit/a5f48dc023181683c1ee27dafd9a1fe6a47c3f81))
+
 # [54.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@54.4.0...@bitgo/statics@54.5.0) (2025-06-24)
 
 ### Bug Fixes
