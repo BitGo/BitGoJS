@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-cronos@1.2.2...@bitgo/sdk-coin-cronos@1.2.3) (2025-06-24)
+
+### Bug Fixes
+
+- add base units for tcronos and tasi ([5edbff8](https://github.com/BitGo/BitGoJS/commit/5edbff828ce8c9b36b44ab3928c157c698e2644a))
+
 ## [1.2.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-cronos@1.2.1...@bitgo/sdk-coin-cronos@1.2.2) (2025-06-18)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-cronos

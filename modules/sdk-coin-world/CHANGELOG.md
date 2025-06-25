@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-world@1.2.2...@bitgo/sdk-coin-world@1.3.0) (2025-06-24)
+
+### Features
+
+- add WORLDCHAIN token support ([48cabb3](https://github.com/BitGo/BitGoJS/commit/48cabb32a608d4299a261196e5d5bae5fe86dab8))
+
 ## [1.2.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-world@1.2.1...@bitgo/sdk-coin-world@1.2.2) (2025-06-18)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-world

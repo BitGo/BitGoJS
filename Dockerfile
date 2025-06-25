@@ -78,6 +78,7 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-cronos /var/modules/sdk-coin-cro
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-cspr /var/modules/sdk-coin-cspr/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-dot /var/modules/sdk-coin-dot/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-etc /var/modules/sdk-coin-etc/
+COPY --from=builder /tmp/bitgo/modules/sdk-coin-evm /var/modules/sdk-coin-evm/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-flr /var/modules/sdk-coin-flr/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-hash /var/modules/sdk-coin-hash/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-hbar /var/modules/sdk-coin-hbar/
@@ -172,6 +173,7 @@ cd /var/modules/sdk-coin-cronos && yarn link && \
 cd /var/modules/sdk-coin-cspr && yarn link && \
 cd /var/modules/sdk-coin-dot && yarn link && \
 cd /var/modules/sdk-coin-etc && yarn link && \
+cd /var/modules/sdk-coin-evm && yarn link && \
 cd /var/modules/sdk-coin-flr && yarn link && \
 cd /var/modules/sdk-coin-hash && yarn link && \
 cd /var/modules/sdk-coin-hbar && yarn link && \
@@ -269,6 +271,7 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-cspr && \
     yarn link @bitgo/sdk-coin-dot && \
     yarn link @bitgo/sdk-coin-etc && \
+    yarn link @bitgo/sdk-coin-evm && \
     yarn link @bitgo/sdk-coin-flr && \
     yarn link @bitgo/sdk-coin-hash && \
     yarn link @bitgo/sdk-coin-hbar && \
@@ -325,9 +328,9 @@ RUN cd /var/bitgo-express && \
 #LINK_END
 
 #LABEL_START
-LABEL created="Wed, 18 Jun 2025 01:01:44 GMT"
-LABEL version=14.0.2
-LABEL git_hash=f332715435b8571bca621e87f00462b5f0ddc409
+LABEL created="Wed, 25 Jun 2025 01:53:59 GMT"
+LABEL version=14.0.3
+LABEL git_hash=9e8fdd0d02b59f8fd4eacfa8417e9a33dfb0c93e
 #LABEL_END
 
 USER node

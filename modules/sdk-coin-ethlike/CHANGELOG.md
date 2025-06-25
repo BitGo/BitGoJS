@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.3.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ethlike@1.3.2...@bitgo/sdk-coin-ethlike@1.3.3) (2025-06-24)
+
+### Bug Fixes
+
+- fixed the common handling for ethlike coin ([098726b](https://github.com/BitGo/BitGoJS/commit/098726beeff22c38f349b5c630906d41df924051))
+
 ## [1.3.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ethlike@1.3.1...@bitgo/sdk-coin-ethlike@1.3.2) (2025-06-18)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ethlike

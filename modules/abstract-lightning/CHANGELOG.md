@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@6.0.2...@bitgo/abstract-lightning@6.1.0) (2025-06-24)
+
+### Bug Fixes
+
+- added payment_already_exist failure reason lightning ([220ca18](https://github.com/BitGo/BitGoJS/commit/220ca18417c2c9e196600f59a6eb921ecae31fd3))
+- creating transfer before sending tx ([c7e30c5](https://github.com/BitGo/BitGoJS/commit/c7e30c5565c8485ff383fe5d24b9472e9328bafe))
+- not send a error if get transfer fail lightning ([47a0568](https://github.com/BitGo/BitGoJS/commit/47a0568eba4509fb83c773ecc0d27a19e2d88ca3))
+
+### Features
+
+- **abstract-lightning:** add utility to compute BIP32 derivation index ([0ef9228](https://github.com/BitGo/BitGoJS/commit/0ef9228da2014e4a806c0735a05e41a5cc7a4414))
+- **statics:** add middleware public key field to LightningNetwork ([579a9a3](https://github.com/BitGo/BitGoJS/commit/579a9a35cf96213b7ece8c6f38b99f53df61fec4))
+- **statics:** add TAT shared secret derivation function ([8a75e82](https://github.com/BitGo/BitGoJS/commit/8a75e82068a9d8d44db7b276079c88fb46eefaee))
+
 ## [6.0.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@6.0.1...@bitgo/abstract-lightning@6.0.2) (2025-06-18)
 
 **Note:** Version bump only for package @bitgo/abstract-lightning

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.10.0...@bitgo/utxo-core@1.11.0) (2025-06-24)
+
+### Features
+
+- **utxo-core:** extractMsgBufferFromPayGoAttestationProof refactor ([b9d2a45](https://github.com/BitGo/BitGoJS/commit/b9d2a453e162cf529a042bf00e16d593a00e6556))
+
 # [1.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.9.1...@bitgo/utxo-core@1.10.0) (2025-06-18)
 
 ### Features
