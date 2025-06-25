@@ -8,7 +8,7 @@ import * as vendor from '@bitgo/babylonlabs-io-btc-staking-ts';
 import * as babylonProtobuf from '@babylonlabs-io/babylon-proto-ts';
 import * as bitcoinjslib from 'bitcoinjs-lib';
 import * as utxolib from '@bitgo/utxo-lib';
-import { Descriptor } from '@bitgo/wasm-miniscript';
+import type { Descriptor } from '@bitgo/wasm-miniscript';
 import { toXOnlyPublicKey } from '@bitgo/utxo-core';
 import { signWithKey, toWrappedPsbt } from '@bitgo/utxo-core/descriptor';
 
@@ -55,7 +55,7 @@ export function getSignedPsbt(
   psbt: bitcoinjslib.Psbt,
   descriptor: Descriptor,
   signers: utxolib.ECPairInterface[],
-  { finalize = false }
+  { finalize = false }: { finalize?: boolean }
 ): bitcoinjslib.Psbt {
   const wrappedPsbt = toWrappedPsbt(psbt.toBuffer());
   const signedInputs = psbt.data.inputs.flatMap((input, i) => {
