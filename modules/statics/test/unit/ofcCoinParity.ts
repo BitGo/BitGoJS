@@ -1,4 +1,4 @@
-const should = require('should');
+import should from 'should';
 import { randomUUID } from 'crypto';
 
 import { CoinFeature, coins, UnderlyingAsset } from '../../src';
