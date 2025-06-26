@@ -1,14 +1,16 @@
 import * as assert from 'assert';
 
+import * as WasmMiniscript from '@bitgo/wasm-miniscript';
 import * as utxolib from '@bitgo/utxo-lib';
-import { Descriptor } from '@bitgo/wasm-miniscript';
 import { getFixture } from '@bitgo/utxo-core/testutil';
 
 import { createMultiSigDescriptor, decodeTimelock } from '../../../src/coreDao';
 
 import { finalizePsbt, updateInputWithDescriptor } from './utils';
 
-describe('descriptor', function () {
+utxolib.initializeMiniscript(WasmMiniscript);
+
+describe('descriptor', async function () {
   const baseFixturePath = 'test/fixtures/coreDao/descriptor/';
   const rootWalletKeys = utxolib.testutil.getDefaultWalletKeys();
   const key1 = rootWalletKeys.triple[0];
@@ -45,7 +47,7 @@ describe('descriptor', function () {
       });
 
       it('has expected AST', async function () {
-        const descriptor = Descriptor.fromString(
+        const descriptor = WasmMiniscript.Descriptor.fromString(
           createMultiSigDescriptor(scriptType, validLocktime, m, keys, false),
           'derivable'
         );
@@ -54,7 +56,7 @@ describe('descriptor', function () {
       });
 
       it('has expected asm', async function () {
-        const descriptor = Descriptor.fromString(
+        const descriptor = WasmMiniscript.Descriptor.fromString(
           createMultiSigDescriptor(scriptType, validLocktime, m, keys, false),
           'derivable'
         );
@@ -64,7 +66,7 @@ describe('descriptor', function () {
 
       it('can be signed', async function () {
         // Derive the script from the descriptor
-        const descriptor = Descriptor.fromString(
+        const descriptor = WasmMiniscript.Descriptor.fromString(
           createMultiSigDescriptor(scriptType, validLocktime, m, keys, false),
           'derivable'
         );
@@ -147,7 +149,7 @@ describe('descriptor', function () {
       [Buffer.from(pubkey1, 'hex'), Buffer.from(pubkey2, 'hex')],
       false
     );
-    const descriptorASM = Descriptor.fromString(descriptor, 'definite').toAsmString();
+    const descriptorASM = WasmMiniscript.Descriptor.fromString(descriptor, 'definite').toAsmString();
     assert.deepStrictEqual(redeemScriptASM, descriptorASM);
   });
 });

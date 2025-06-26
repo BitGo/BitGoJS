@@ -1,5 +1,5 @@
-import { BIP32Interface } from '@bitgo/utxo-lib';
-import { ast } from '@bitgo/wasm-miniscript';
+import { BIP32Interface, miniscript } from '@bitgo/utxo-lib';
+import type { ast } from '@bitgo/wasm-miniscript';
 
 /**
  * Script type for a descriptor.
@@ -43,10 +43,10 @@ export function createMultiSigDescriptor(
   const inner: ast.MiniscriptNode = { and_v: [{ 'r:after': locktime }, { multi: [m, ...keys] }] };
   switch (scriptType) {
     case 'sh':
-      return ast.formatNode({ sh: inner });
+      return miniscript.ast.formatNode({ sh: inner });
     case 'sh-wsh':
-      return ast.formatNode({ sh: { wsh: inner } });
+      return miniscript.ast.formatNode({ sh: { wsh: inner } });
     case 'wsh':
-      return ast.formatNode({ wsh: inner });
+      return miniscript.ast.formatNode({ wsh: inner });
   }
 }

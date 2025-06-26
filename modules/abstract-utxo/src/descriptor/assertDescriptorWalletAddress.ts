@@ -1,7 +1,7 @@
 import assert from 'assert';
 
 import * as utxolib from '@bitgo/utxo-lib';
-import { Descriptor } from '@bitgo/wasm-miniscript';
+import type { Descriptor } from '@bitgo/wasm-miniscript';
 import { DescriptorMap } from '@bitgo/utxo-core/descriptor';
 
 import { UtxoCoinSpecific, VerifyAddressOptions } from '../abstractUtxoCoin';

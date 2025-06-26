@@ -2,7 +2,7 @@ import assert from 'assert';
 
 import * as utxolib from '@bitgo/utxo-lib';
 import { BIP32Interface, ECPair, ECPairInterface } from '@bitgo/utxo-lib';
-import { Descriptor } from '@bitgo/wasm-miniscript';
+import * as WasmMiniscript from '@bitgo/wasm-miniscript';
 
 import { PsbtParams, parse, toUtxoPsbt, toWrappedPsbt, ParsedDescriptorTransaction } from '../../../src/descriptor';
 import { getFixture, getKeyTriple } from '../../../src/testutil';
@@ -17,11 +17,13 @@ import {
 } from '../../../src/testutil/descriptor';
 import { getNewSignatureCount, signWithKey } from '../../../src/descriptor/psbt/sign';
 
+utxolib.initializeMiniscript(WasmMiniscript);
+
 function normalize(v: unknown): unknown {
   if (typeof v === 'bigint') {
     return v.toString();
   }
-  if (v instanceof Descriptor) {
+  if (v instanceof WasmMiniscript.Descriptor) {
     return v.toString();
   }
   if (v instanceof Buffer) {
@@ -104,7 +106,7 @@ function getStages(
 }
 
 type TestParams = {
-  descriptorSelf: Descriptor;
+  descriptorSelf: WasmMiniscript.Descriptor;
   stages: PsbtStage[];
 } & (
   | {

@@ -1,4 +1,4 @@
-import { Descriptor } from '@bitgo/wasm-miniscript';
+import type { Descriptor } from '@bitgo/wasm-miniscript';
 import * as utxolib from '@bitgo/utxo-lib';
 
 import { DescriptorMap } from '../DescriptorMap';

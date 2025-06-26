@@ -4,7 +4,8 @@
  * https://github.com/babylonlabs-io/babylon/blob/v1.99.0-snapshot.250211/btcstaking/staking.go
  */
 
-import { Descriptor, ast } from '@bitgo/wasm-miniscript';
+import type { Descriptor, ast } from '@bitgo/wasm-miniscript';
+import { miniscript } from '@bitgo/utxo-lib';
 import { StakingParams } from '@bitgo/babylonlabs-io-btc-staking-ts';
 
 export function getUnspendableKey(): string {
@@ -26,7 +27,7 @@ function multiArgs(threshold: number, keys: Buffer[]): [number, ...string[]] {
 }
 
 function taprootScriptOnlyFromAst(n: ast.TapTreeNode): Descriptor {
-  return Descriptor.fromString(ast.formatNode({ tr: [getUnspendableKey(), n] }), 'definite');
+  return miniscript.Descriptor.fromString(miniscript.ast.formatNode({ tr: [getUnspendableKey(), n] }), 'definite');
 }
 
 export class BabylonDescriptorBuilder {

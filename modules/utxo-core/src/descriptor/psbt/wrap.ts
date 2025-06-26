@@ -1,18 +1,19 @@
-import { Psbt as WasmPsbt } from '@bitgo/wasm-miniscript';
+import type { Psbt as WasmPsbt } from '@bitgo/wasm-miniscript';
 import * as utxolib from '@bitgo/utxo-lib';
+import { miniscript } from '@bitgo/utxo-lib';
 
 export function toWrappedPsbt(psbt: utxolib.bitgo.UtxoPsbt | utxolib.Psbt | Buffer | Uint8Array): WasmPsbt {
   if (psbt instanceof utxolib.bitgo.UtxoPsbt || psbt instanceof utxolib.Psbt) {
     psbt = psbt.toBuffer();
   }
   if (psbt instanceof Buffer || psbt instanceof Uint8Array) {
-    return WasmPsbt.deserialize(psbt);
+    return miniscript.Psbt.deserialize(psbt);
   }
   throw new Error('Invalid input');
 }
 
 export function toUtxoPsbt(psbt: WasmPsbt | Buffer | Uint8Array, network: utxolib.Network): utxolib.bitgo.UtxoPsbt {
-  if (psbt instanceof WasmPsbt) {
+  if (psbt instanceof miniscript.Psbt) {
     psbt = psbt.serialize();
   }
   if (psbt instanceof Buffer || psbt instanceof Uint8Array) {

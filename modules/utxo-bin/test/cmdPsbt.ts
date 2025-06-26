@@ -3,12 +3,14 @@ import * as fs from 'fs/promises';
 
 import yargs from 'yargs';
 import * as utxolib from '@bitgo/utxo-lib';
-import { Descriptor } from '@bitgo/wasm-miniscript';
+import * as WasmMiniscript from '@bitgo/wasm-miniscript';
 
 import { cmdPsbt } from '../src/commands';
 import { formatTreeNoColor, getFixtureString } from './fixtures';
 import { getKeyTriple } from './bip32.util';
 import { TxParser } from '../src/TxParser';
+
+utxolib.initializeMiniscript(WasmMiniscript);
 
 async function runPsbtCommand(args: string[]) {
   return cmdPsbt.builder(yargs([])).strict().exitProcess(false).parse(args);
@@ -30,7 +32,7 @@ function multi(n: number, xpubs: string[], path: string) {
   return 'multi(' + n + ',' + xpubs.map((xpub) => xpub + path).join(',') + ')';
 }
 
-function getAddressFromDescriptor(descriptor: Descriptor, network: utxolib.Network) {
+function getAddressFromDescriptor(descriptor: WasmMiniscript.Descriptor, network: utxolib.Network) {
   return utxolib.address.fromOutputScript(Buffer.from(descriptor.scriptPubkey()), network);
 }
 
@@ -38,7 +40,7 @@ describe('cmdPsbt commands', function () {
   const keys = getKeyTriple('cmdPsbt');
   const xpubs = keys.map((k) => k.neutered().toBase58());
   const descriptorString = `wsh(${multi(2, xpubs, '/*')})`;
-  const descriptor = Descriptor.fromString(descriptorString, 'derivable');
+  const descriptor = WasmMiniscript.Descriptor.fromString(descriptorString, 'derivable');
 
   it('creates empty psbt', async function () {
     await fs.rm('/tmp/test.psbt', { force: true });

@@ -1,12 +1,15 @@
 import * as assert from 'assert';
 
-import { Descriptor } from '@bitgo/wasm-miniscript';
+import * as utxolib from '@bitgo/utxo-lib';
+import * as WasmMiniscript from '@bitgo/wasm-miniscript';
 
 import { getDefaultXPubs } from '../../../src/testutil/descriptor';
 import { getRequiredLocktime } from '../../../src/descriptor';
 
-function d(s: string): Descriptor {
-  return Descriptor.fromString(s, 'derivable');
+utxolib.initializeMiniscript(WasmMiniscript);
+
+function d(s: string): WasmMiniscript.Descriptor {
+  return WasmMiniscript.Descriptor.fromString(s, 'derivable');
 }
 
 describe('assertSatisfiable', function () {

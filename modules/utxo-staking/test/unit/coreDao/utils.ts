@@ -1,8 +1,14 @@
-import { Descriptor, Psbt } from '@bitgo/wasm-miniscript';
 import * as utxolib from '@bitgo/utxo-lib';
+import * as WasmMiniscript from '@bitgo/wasm-miniscript';
 
-export function updateInputWithDescriptor(psbt: utxolib.Psbt, inputIndex: number, descriptor: Descriptor): void {
-  const wrappedPsbt = Psbt.deserialize(psbt.toBuffer());
+utxolib.initializeMiniscript(WasmMiniscript);
+
+export function updateInputWithDescriptor(
+  psbt: utxolib.Psbt,
+  inputIndex: number,
+  descriptor: WasmMiniscript.Descriptor
+): void {
+  const wrappedPsbt = WasmMiniscript.Psbt.deserialize(psbt.toBuffer());
   wrappedPsbt.updateInputWithDescriptor(inputIndex, descriptor);
   psbt.data.inputs[inputIndex] = utxolib.bitgo.UtxoPsbt.fromBuffer(Buffer.from(wrappedPsbt.serialize()), {
     network: utxolib.networks.bitcoin,
@@ -10,7 +16,7 @@ export function updateInputWithDescriptor(psbt: utxolib.Psbt, inputIndex: number
 }
 
 export function finalizePsbt(psbt: utxolib.Psbt): utxolib.bitgo.UtxoPsbt {
-  const wrappedPsbt = Psbt.deserialize(psbt.toBuffer());
+  const wrappedPsbt = WasmMiniscript.Psbt.deserialize(psbt.toBuffer());
   wrappedPsbt.finalize();
   return utxolib.bitgo.UtxoPsbt.fromBuffer(Buffer.from(wrappedPsbt.serialize()), {
     network: utxolib.networks.bitcoin,

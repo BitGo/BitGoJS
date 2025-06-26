@@ -1,12 +1,14 @@
 import * as assert from 'node:assert/strict';
 
 import * as utxolib from '@bitgo/utxo-lib';
-import { Descriptor } from '@bitgo/wasm-miniscript';
+import * as WasmMiniscript from '@bitgo/wasm-miniscript';
 
 import {
   getDescriptorForScriptType,
   getNamedDescriptorsForRootWalletKeys,
 } from '../../src/descriptor/fromFixedScriptWallet';
+
+utxolib.initializeMiniscript(WasmMiniscript);
 
 function getRootWalletKeys(derivationPrefixes?: utxolib.bitgo.Triple<string>): utxolib.bitgo.RootWalletKeys {
   // This is a fixed script wallet, so we use a fixed key triple.
@@ -77,7 +79,7 @@ function runTestGetDescriptorWithScriptType(
       scriptType
     ).scriptPubKey;
 
-    let descriptor: Descriptor;
+    let descriptor: WasmMiniscript.Descriptor;
 
     before(function () {
       descriptor = getDescriptorForScriptType(rootWalletKeys, scriptType, scope);
@@ -124,7 +126,7 @@ function runTestGetDescriptorMap(customPrefix: utxolib.bitgo.Triple<string> | un
   });
 }
 
-customPrefixes.forEach((customPrefix) => {
+customPrefixes.forEach(async (customPrefix) => {
   scriptTypes.forEach((scriptType) => {
     index.forEach((index) => {
       scope.forEach((scope) => {

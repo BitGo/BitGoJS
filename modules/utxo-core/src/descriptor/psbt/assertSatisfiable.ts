@@ -8,8 +8,9 @@
  *
  * The goal is not an exhaustive check, but to catch common mistakes.
  */
-import { Descriptor } from '@bitgo/wasm-miniscript';
+import type { Descriptor } from '@bitgo/wasm-miniscript';
 import * as utxolib from '@bitgo/utxo-lib';
+import { miniscript } from '@bitgo/utxo-lib';
 
 export const FINAL_SEQUENCE = 0xffffffff;
 
@@ -18,7 +19,7 @@ export const FINAL_SEQUENCE = 0xffffffff;
  * @param descriptor
  */
 export function getRequiredLocktime(descriptor: Descriptor | unknown): number | undefined {
-  if (descriptor instanceof Descriptor) {
+  if (descriptor instanceof miniscript.Descriptor) {
     return getRequiredLocktime(descriptor.node());
   }
   if (typeof descriptor !== 'object' || descriptor === null) {

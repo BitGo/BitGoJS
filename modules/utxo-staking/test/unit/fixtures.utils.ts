@@ -1,4 +1,4 @@
-import { Descriptor } from '@bitgo/wasm-miniscript';
+import * as wasmMiniscript from '@bitgo/wasm-miniscript';
 import * as utxolib from '@bitgo/utxo-lib';
 import * as bitcoinjslib from 'bitcoinjs-lib';
 import { toPlainObjectFromTx, toPlainObjectFromPsbt } from '@bitgo/utxo-core/testutil/descriptor';
@@ -7,7 +7,7 @@ export function normalize(v: unknown): unknown {
   if (typeof v === 'bigint') {
     return v.toString();
   }
-  if (v instanceof Descriptor) {
+  if (v instanceof wasmMiniscript.Descriptor) {
     return v.toString();
   }
   if (v instanceof Uint8Array) {

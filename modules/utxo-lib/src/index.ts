@@ -18,6 +18,8 @@ export * from './noble_ecc';
 
 export * as p2trPayments from './payments';
 
+export { initializeMiniscript, miniscript } from './miniscript';
+
 export {
   networks,
   Network,

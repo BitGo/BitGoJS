@@ -7,7 +7,7 @@
     "allowJs": false,
     "strict": true
   },
-  "include": ["src/**/*", "test/**/*"],
+  "include": ["src/**/*", "test/**/*", "../utxo-lib/src/miniscript"],
   "exclude": ["node_modules"],
   "references": [
     {

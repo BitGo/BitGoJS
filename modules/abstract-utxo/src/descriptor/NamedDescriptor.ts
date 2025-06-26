@@ -1,6 +1,6 @@
 import * as t from 'io-ts';
-import { Descriptor, DescriptorPkType } from '@bitgo/wasm-miniscript';
-import { BIP32Interface, networks } from '@bitgo/utxo-lib';
+import type { Descriptor, DescriptorPkType } from '@bitgo/wasm-miniscript';
+import { BIP32Interface, miniscript, networks } from '@bitgo/utxo-lib';
 import { signMessage, verifyMessage } from '@bitgo/sdk-core';
 
 export const NamedDescriptor = t.intersection(
@@ -30,7 +30,7 @@ export function createNamedDescriptorWithSignature(
   signingKey: BIP32Interface
 ): NamedDescriptor {
   if (typeof descriptor === 'string') {
-    descriptor = Descriptor.fromString(descriptor, 'derivable');
+    descriptor = miniscript.Descriptor.fromString(descriptor, 'derivable');
   }
   const value = descriptor.toString();
   const signature = signMessage(value, signingKey, networks.bitcoin).toString('hex');
@@ -38,12 +38,12 @@ export function createNamedDescriptorWithSignature(
 }
 
 export function toNamedDescriptorNative(e: NamedDescriptor, pkType: DescriptorPkType): NamedDescriptorNative {
-  return { ...e, value: Descriptor.fromString(e.value, pkType) };
+  return { ...e, value: miniscript.Descriptor.fromString(e.value, pkType) };
 }
 
 export function hasValidSignature(descriptor: string | Descriptor, key: BIP32Interface, signatures: string[]): boolean {
   if (typeof descriptor === 'string') {
-    descriptor = Descriptor.fromString(descriptor, 'derivable');
+    descriptor = miniscript.Descriptor.fromString(descriptor, 'derivable');
   }
 
   const message = descriptor.toString();

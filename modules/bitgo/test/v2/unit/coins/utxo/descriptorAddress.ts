@@ -4,12 +4,15 @@ import { TestBitGo } from '@bitgo/sdk-test';
 import { AbstractUtxoCoin, descriptor as utxod } from '@bitgo/abstract-utxo';
 import * as utxolib from '@bitgo/utxo-lib';
 import { IWallet, WalletCoinSpecific } from '@bitgo/sdk-core';
+import * as WasmMiniscript from '@bitgo/wasm-miniscript';
 
 import { BitGo } from '../../../../../src';
 
+utxolib.initializeMiniscript(WasmMiniscript);
+
 export function getDescriptorAddress(d: string, index: number, network: utxolib.Network): string {
   const derivedScript = Buffer.from(
-    utxod.Descriptor.fromString(d, 'derivable').atDerivationIndex(index).scriptPubkey()
+    utxolib.miniscript.Descriptor.fromString(d, 'derivable').atDerivationIndex(index).scriptPubkey()
   );
   return utxolib.address.fromOutputScript(derivedScript, network);
 }
@@ -20,7 +23,7 @@ describe('descriptor wallets', function () {
   const xpubs = utxolib.testutil.getKeyTriple('setec astronomy').map((k) => k.neutered().toBase58());
 
   function withChecksum(descriptor: string): string {
-    return utxod.Descriptor.fromString(descriptor, 'derivable').toString();
+    return utxolib.miniscript.Descriptor.fromString(descriptor, 'derivable').toString();
   }
 
   function getNamedDescriptor2Of2(name: string, a: string, b: string): utxod.NamedDescriptor {
