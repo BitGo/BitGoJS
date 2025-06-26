@@ -10,7 +10,7 @@ import {
   Triple,
   UtxoTransaction,
 } from '../../../src/bitgo';
-import { BIP32Interface } from 'bip32';
+import type { BIP32Interface } from 'bip32';
 import {
   constructPsbt,
   constructTxnBuilder,

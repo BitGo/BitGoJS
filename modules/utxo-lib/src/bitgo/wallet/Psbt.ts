@@ -2,7 +2,7 @@ import assert from 'assert';
 
 import { GlobalXpub, PartialSig, PsbtInput, TapScriptSig } from 'bip174/src/lib/interfaces';
 import { checkForInput } from 'bip174/src/lib/utils';
-import { BIP32Interface } from 'bip32';
+import type { BIP32Interface } from 'bip32';
 import * as bs58check from 'bs58check';
 import { UtxoPsbt } from '../UtxoPsbt';
 import { UtxoTransaction } from '../UtxoTransaction';

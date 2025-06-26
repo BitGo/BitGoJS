@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { BIP32Interface } from 'bip32';
+import type { BIP32Interface } from 'bip32';
 
 import { script as bscript, classify, TxOutput } from '../../src';
 import { getKeyName } from '../../src/testutil';
