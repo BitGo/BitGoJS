@@ -7,6 +7,8 @@ import {
   Eddsa,
   accountLibBaseCoin,
   acountLibCrypto,
+  BaseMessageBuilderFactory,
+  BuildMessageError,
 } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig, CoinFeature, coins } from '@bitgo/statics';
 export { Ed25519BIP32, Eddsa };
@@ -311,6 +313,11 @@ const coinBuilderMap = {
   tvet: Vet.TransactionBuilderFactory,
 };
 
+const coinMessageBuilderFactoryMap = {
+  eth: Eth.MessageBuilderFactory,
+  hteth: Eth.MessageBuilderFactory,
+};
+
 coins
   .filter((coin) => coin.features.includes(CoinFeature.SHARED_EVM_SDK))
   .forEach((coin) => {
@@ -337,6 +344,14 @@ export function getBuilder(coinName: string): BaseBuilder {
   return new builderClass(coins.get(coinName));
 }
 
+export function getMessageBuilderFactory(coinName: string): BaseMessageBuilderFactory {
+  const messageBuilderFactoryClass = coinMessageBuilderFactoryMap[coinName];
+  if (!messageBuilderFactoryClass) {
+    throw new BuildMessageError(`Message builder factory for coin ${coinName} not supported`);
+  }
+  return new messageBuilderFactoryClass(coins.get(coinName));
+}
+
 /**
  * Register a new coin instance with its builder factory
  *
@@ -352,5 +367,22 @@ export function register<T extends BaseTransactionBuilderFactory>(
   const factory = new builderFactory(coinConfig);
   // coinBuilderMap[coinName] = factory;
   coinBuilderMap[coinName] = builderFactory; // For now register the constructor function until reimplement getBuilder method
+  return factory;
+}
+
+/**
+ * Register a new coin instance with its message builder factory constructor.
+ *
+ * @param {string} coinName coin name as it was registered in @bitgo/statics
+ * @param {any} messageBuilderFactory the message builder factory class for that coin
+ * @returns {any} the message builder factory instance for the registered coin
+ */
+export function registerMessageBuilderFactory<T extends BaseMessageBuilderFactory>(
+  coinName: string,
+  messageBuilderFactory: { new (_coinConfig: Readonly<CoinConfig>): T },
+): T {
+  const coinConfig = coins.get(coinName);
+  const factory = new messageBuilderFactory(coinConfig);
+  coinMessageBuilderFactoryMap[coinName] = messageBuilderFactory;
   return factory;
 }

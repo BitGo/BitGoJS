@@ -1,3 +1,4 @@
+import { BaseCoin } from '@bitgo/statics';
 import {
   BaseMessage,
   BaseMessageBuilder,
@@ -6,26 +7,25 @@ import {
   IMessageBuilder,
   MessageOptions,
   MessageStandardType,
-} from '../../../../../src';
-import { BaseCoin } from '@bitgo/statics';
+} from '@bitgo/sdk-core';
 
-export class TestMessageBuilderFactory extends BaseMessageBuilderFactory {
+export class MockMessageBuilderFactory extends BaseMessageBuilderFactory {
   constructor(coinConfig: Readonly<BaseCoin>) {
     super(coinConfig);
   }
 
   getMessageBuilder(type: MessageStandardType): IMessageBuilder {
-    return new TestMessageBuilder(this.coinConfig, type);
+    return new MockMessageBuilder(this.coinConfig, type);
   }
 }
 
-export class TestMessageBuilder extends BaseMessageBuilder {
+export class MockMessageBuilder extends BaseMessageBuilder {
   constructor(coinConfig: Readonly<BaseCoin>, type: MessageStandardType = MessageStandardType.UNKNOWN) {
     super(coinConfig, type);
   }
 
   async build(): Promise<IMessage> {
-    return new TestMessage({
+    return new MockMessage({
       coinConfig: this.coinConfig,
       payload: this.payload,
       type: this.type,
@@ -49,7 +49,7 @@ export class TestMessageBuilder extends BaseMessageBuilder {
   }
 }
 
-export class TestMessage extends BaseMessage {
+export class MockMessage extends BaseMessage {
   constructor(options: MessageOptions) {
     super(options);
   }
@@ -61,20 +61,3 @@ export class TestMessage extends BaseMessage {
     return Buffer.from(this.payload);
   }
 }
-
-export const messageSamples = {
-  eip191: {
-    payload: 'Hello BitGo!',
-    type: MessageStandardType.EIP191,
-    metadata: { chainId: 1 },
-    signers: ['0x1234567890abcdef1234567890abcdef12345678'],
-    signatures: ['0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890'],
-  },
-  unknown: {
-    payload: 'Unknown message type',
-    type: MessageStandardType.UNKNOWN,
-    metadata: { version: '1.0' },
-    signers: ['12345'],
-    signatures: ['67890'],
-  },
-};

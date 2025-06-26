@@ -1,4 +1,4 @@
-import { Eip191MessageBuilder } from './eip191/eip191MessageBuilder';
+import { Eip191MessageBuilder } from './eip191';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseMessageBuilderFactory, IMessageBuilder, MessageStandardType } from '@bitgo/sdk-core';
 

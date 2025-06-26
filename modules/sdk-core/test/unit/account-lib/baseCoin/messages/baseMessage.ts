@@ -2,7 +2,7 @@ import { BaseCoin } from '@bitgo/statics';
 import sinon from 'sinon';
 import should from 'should';
 import { MessageStandardType } from '../../../../../src';
-import { messageSamples, TestBaseMessage } from './fixtures';
+import { messageSamples, TestMessage } from './fixtures';
 
 describe('Base Message', () => {
   let coinConfig: sinon.SinonStubbedInstance<BaseCoin>;
@@ -12,7 +12,7 @@ describe('Base Message', () => {
   });
 
   it('should initialize with default values', () => {
-    const message = new TestBaseMessage({
+    const message = new TestMessage({
       coinConfig,
       payload: '',
     });
@@ -27,7 +27,7 @@ describe('Base Message', () => {
   it('should initialize with provided values', () => {
     const { payload, type, metadata, signers, signatures } = messageSamples.eip191;
 
-    const message = new TestBaseMessage({
+    const message = new TestMessage({
       coinConfig,
       payload,
       type,
@@ -44,10 +44,10 @@ describe('Base Message', () => {
   });
 
   describe('Getters and Setters', () => {
-    let message: TestBaseMessage;
+    let message: TestMessage;
 
     beforeEach(() => {
-      message = new TestBaseMessage({
+      message = new TestMessage({
         coinConfig,
         payload: 'test',
       });
@@ -111,7 +111,7 @@ describe('Base Message', () => {
   describe('getSignablePayload', () => {
     it('should return the signablePayload if set', async () => {
       const customSignablePayload = '0xabcdef123456';
-      const message = new TestBaseMessage({
+      const message = new TestMessage({
         coinConfig,
         payload: 'original payload',
         signablePayload: customSignablePayload,
@@ -123,7 +123,7 @@ describe('Base Message', () => {
 
     it('should return the payload as buffer if signablePayload is not set', async () => {
       const payload = 'test payload';
-      const message = new TestBaseMessage({
+      const message = new TestMessage({
         coinConfig,
         payload,
       });
@@ -135,7 +135,7 @@ describe('Base Message', () => {
 
   describe('toBroadcastFormat', () => {
     it('should throw an error if no signatures are available', async () => {
-      const message = new TestBaseMessage({
+      const message = new TestMessage({
         coinConfig,
         payload: 'test',
         signers: ['addr1'],
@@ -147,7 +147,7 @@ describe('Base Message', () => {
     });
 
     it('should throw an error if no signers are available', async () => {
-      const message = new TestBaseMessage({
+      const message = new TestMessage({
         coinConfig,
         payload: 'test',
         signatures: ['sig1'],
@@ -162,7 +162,7 @@ describe('Base Message', () => {
       const { payload, type, metadata, signers, signatures } = messageSamples.eip191;
       const customSignablePayload = Buffer.from('custom signable payload');
 
-      const message = new TestBaseMessage({
+      const message = new TestMessage({
         coinConfig,
         payload,
         type,
@@ -193,7 +193,7 @@ describe('Base Message', () => {
         },
       };
 
-      const message = new TestBaseMessage({
+      const message = new TestMessage({
         coinConfig,
         payload: 'test',
         metadata: nestedMetadata,
@@ -219,7 +219,7 @@ describe('Base Message', () => {
     it('should serialize the broadcastable format to JSON string', async () => {
       const { payload, type, metadata, signers, signatures } = messageSamples.eip191;
 
-      const message = new TestBaseMessage({
+      const message = new TestMessage({
         coinConfig,
         payload,
         type,
