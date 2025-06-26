@@ -1,5 +1,5 @@
 import * as bitcoinjslib from 'bitcoinjs-lib';
-import { ECPairInterface } from '@bitgo/utxo-lib';
+import type { ECPairInterface } from '@bitgo/utxo-lib';
 import * as vendor from '@bitgo/babylonlabs-io-btc-staking-ts';
 import * as babylonProtobuf from '@babylonlabs-io/babylon-proto-ts';
 import { toBech32 } from 'bitcoinjs-lib/src/address';
