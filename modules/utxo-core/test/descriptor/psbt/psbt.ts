@@ -16,6 +16,7 @@ import {
   toPlainObjectFromTx,
 } from '../../../src/testutil/descriptor';
 import { getNewSignatureCount, signWithKey } from '../../../src/descriptor/psbt/sign';
+import { initializeMiniscript } from '../../../src';
 
 function normalize(v: unknown): unknown {
   if (typeof v === 'bigint') {
@@ -104,14 +105,14 @@ function getStages(
 }
 
 type TestParams = {
-  descriptorSelf: Descriptor;
+  descriptorSelf: () => Descriptor;
   stages: PsbtStage[];
 } & (
   | {
       psbtParams: Partial<PsbtParams>;
     }
   | {
-      psbt: utxolib.bitgo.UtxoPsbt;
+      psbt: () => utxolib.bitgo.UtxoPsbt;
     }
 );
 
@@ -120,13 +121,13 @@ function describeCreatePsbt(name: string, testParams: TestParams) {
     it('creates psbt with expected properties', async function () {
       const psbtUnsigned =
         'psbt' in testParams
-          ? testParams.psbt
+          ? testParams.psbt()
           : mockPsbtDefault({
-              descriptorSelf: testParams.descriptorSelf,
+              descriptorSelf: testParams.descriptorSelf(),
               descriptorOther: getDescriptor('Wsh2Of3', otherKeys),
               params: testParams.psbtParams,
             });
-      const descriptorMap = new Map([['self', testParams.descriptorSelf]]);
+      const descriptorMap = new Map([['self', testParams.descriptorSelf()]]);
       const parsed = parse(psbtUnsigned, descriptorMap, utxolib.networks.bitcoin);
       assert.strictEqual(parsed.spendAmount, psbtUnsigned.txOutputs[1].value);
       await assertEqualsFixture(name, 'psbtStages.json', getStages(psbtUnsigned, parsed, testParams.stages));
@@ -151,46 +152,49 @@ function getDefaultStagesSeparateAB({ plain = false } = {}): PsbtStage[] {
 
 function describeCreatePsbt2Of3(t: DescriptorTemplate) {
   describeCreatePsbt(t, {
-    descriptorSelf: getDescriptor(t, selfKeys),
+    descriptorSelf: () => getDescriptor(t, selfKeys),
     psbtParams: getPsbtParams(t),
     stages: defaultStagesCombinedAB,
   });
 }
 
-describeCreatePsbt2Of3('Wsh2Of3');
-describeCreatePsbt2Of3('Wsh2Of3CltvDrop');
-describeCreatePsbt2Of3('Tr2Of3-NoKeyPath');
-describeCreatePsbt('Tr1Of3-NoKeyPath-Tree', {
-  descriptorSelf: getDescriptor('Tr1Of3-NoKeyPath-Tree', selfKeys),
-  psbtParams: {},
-  stages: getDefaultStagesSeparateAB(),
-});
-describeCreatePsbt('Tr1Of3-NoKeyPath-Tree-PlainKeys', {
-  descriptorSelf: getDescriptor('Tr1Of3-NoKeyPath-Tree-Plain', selfKeys),
-  psbtParams: {},
-  stages: getDefaultStagesSeparateAB({ plain: true }),
-});
+describe('psbt', function () {
+  before(async function () {
+    await initializeMiniscript();
+  });
 
-{
-  const descriptorSelf = getDescriptor('Wsh2Of3', selfKeys);
-  const descriptorOther = getDescriptor('Wsh2Of3', otherKeys);
+  describeCreatePsbt2Of3('Wsh2Of3');
+  describeCreatePsbt2Of3('Wsh2Of3CltvDrop');
+  describeCreatePsbt2Of3('Tr2Of3-NoKeyPath');
+  describeCreatePsbt('Tr1Of3-NoKeyPath-Tree', {
+    descriptorSelf: () => getDescriptor('Tr1Of3-NoKeyPath-Tree', selfKeys),
+    psbtParams: {},
+    stages: getDefaultStagesSeparateAB(),
+  });
+  describeCreatePsbt('Tr1Of3-NoKeyPath-Tree-PlainKeys', {
+    descriptorSelf: () => getDescriptor('Tr1Of3-NoKeyPath-Tree-Plain', selfKeys),
+    psbtParams: {},
+    stages: getDefaultStagesSeparateAB({ plain: true }),
+  });
+
   describeCreatePsbt('Wsh2Of3-CustomInputSequence', {
-    descriptorSelf,
-    psbt: mockPsbt(
-      [
-        { descriptor: descriptorSelf, index: 0 },
-        { descriptor: descriptorSelf, index: 1, id: { vout: 1 }, sequence: 123 },
-      ],
-      [
-        {
-          descriptor: descriptorOther,
-          index: 0,
-          value: BigInt(4e5),
-          external: true,
-        },
-        { descriptor: descriptorSelf, index: 0, value: BigInt(4e5) },
-      ]
-    ),
+    descriptorSelf: () => getDescriptor('Wsh2Of3', selfKeys),
+    psbt: () =>
+      mockPsbt(
+        [
+          { descriptor: getDescriptor('Wsh2Of3', selfKeys), index: 0 },
+          { descriptor: getDescriptor('Wsh2Of3', selfKeys), index: 1, id: { vout: 1 }, sequence: 123 },
+        ],
+        [
+          {
+            descriptor: getDescriptor('Wsh2Of3', otherKeys),
+            index: 0,
+            value: BigInt(4e5),
+            external: true,
+          },
+          { descriptor: getDescriptor('Wsh2Of3', selfKeys), index: 0, value: BigInt(4e5) },
+        ]
+      ),
     stages: defaultStagesCombinedAB,
   });
-}
+});

@@ -7,6 +7,7 @@ import {
   getDescriptorForScriptType,
   getNamedDescriptorsForRootWalletKeys,
 } from '../../src/descriptor/fromFixedScriptWallet';
+import { initializeMiniscript } from '../../src';
 
 function getRootWalletKeys(derivationPrefixes?: utxolib.bitgo.Triple<string>): utxolib.bitgo.RootWalletKeys {
   // This is a fixed script wallet, so we use a fixed key triple.
@@ -79,7 +80,8 @@ function runTestGetDescriptorWithScriptType(
 
     let descriptor: Descriptor;
 
-    before(function () {
+    before(async function () {
+      await initializeMiniscript();
       descriptor = getDescriptorForScriptType(rootWalletKeys, scriptType, scope);
     });
 
@@ -100,7 +102,12 @@ function runTestGetDescriptorWithScriptType(
 function runTestGetDescriptorMap(customPrefix: utxolib.bitgo.Triple<string> | undefined) {
   describe(`getNamedDescriptorsForRootWalletKeys with customPrefix=${customPrefix}`, function () {
     const rootWalletKeys = getRootWalletKeys(customPrefix);
-    const descriptorMap = getNamedDescriptorsForRootWalletKeys(rootWalletKeys);
+    let descriptorMap: Map<string, Descriptor | null>;
+
+    before(async function () {
+      await initializeMiniscript();
+      descriptorMap = getNamedDescriptorsForRootWalletKeys(rootWalletKeys);
+    });
 
     it('should return a map with the correct number of entries', function () {
       assert.equal(descriptorMap.size, scriptTypes.length * scope.length);

@@ -14,12 +14,15 @@ export function toWrappedPsbt(psbt: utxolib.bitgo.UtxoPsbt | utxolib.Psbt | Buff
 }
 
 export function toUtxoPsbt(psbt: WasmPsbt | Buffer | Uint8Array, network: utxolib.Network): utxolib.bitgo.UtxoPsbt {
-  if (psbt instanceof PsbtClass) {
-    psbt = psbt.serialize();
+  try {
+    psbt = (psbt as WasmPsbt).serialize();
+  } catch (e) {
+    // Do nothing
   }
   if (psbt instanceof Buffer || psbt instanceof Uint8Array) {
     return utxolib.bitgo.UtxoPsbt.fromBuffer(Buffer.from(psbt), { network });
   }
+
   throw new Error('Invalid input');
 }
 
