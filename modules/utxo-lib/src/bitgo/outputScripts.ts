@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import assert from 'assert';
 import * as bitcoinjs from 'bitcoinjs-lib';
 
 import { Network, supportsSegwit, supportsTaproot } from '../networks';

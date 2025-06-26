@@ -29,7 +29,7 @@ import {
   ParsedPsbtTaproot,
 } from '../../../src/bitgo';
 import { parsePsbtInput, signWalletPsbt } from '../../../src/bitgo/wallet/Psbt';
-import * as assert from 'assert';
+import assert from 'assert';
 import { SignatureTargetType } from './Psbt';
 import { Network } from '../../../src';
 

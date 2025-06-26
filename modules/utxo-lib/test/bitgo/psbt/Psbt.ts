@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import assert from 'assert';
 
 import { Network, getNetworkName, networks, getNetworkList, testutil, isMainnet, Transaction } from '../../../src';
 import {
