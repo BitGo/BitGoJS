@@ -43,12 +43,19 @@ type MethodArguments = unknown[];
  * A test case for a UtxoApi method.
  */
 class TestCase<T> {
+  public coinName: string;
+  public methodName: keyof UtxoApi;
+  public args: unknown[];
   /**
    * @param coinName - coin to test
    * @param methodName - method to test
    * @param args - method arguments
    */
-  constructor(public coinName: string, public methodName: keyof UtxoApi, public args: unknown[]) {}
+  constructor(coinName: string, methodName: keyof UtxoApi, args: unknown[]) {
+    this.coinName = coinName;
+    this.methodName = methodName;
+    this.args = args;
+  }
 
   /**
    * Call the method on the given API.
