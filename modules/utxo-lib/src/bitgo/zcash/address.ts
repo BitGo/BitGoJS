@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import assert from 'assert';
 import { payments } from 'bitcoinjs-lib';
 import * as types from 'bitcoinjs-lib/src/types';
 import { Base58CheckResult } from 'bitcoinjs-lib/src/address';

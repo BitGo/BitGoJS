@@ -1,5 +1,5 @@
 import { networks } from 'bitcoinjs-lib';
-import * as assert from 'assert';
+import assert from 'assert';
 
 import {
   createOutputScript2of3,
