@@ -20,8 +20,8 @@ import {
   mockAccountDetailsResponse,
   wrwUser,
 } from '../resources/zeta';
-import should = require('should');
-import nock = require('nock');
+import should from 'should';
+import nock from 'nock';
 
 describe('Zeta', function () {
   let bitgo: TestBitGoAPI;

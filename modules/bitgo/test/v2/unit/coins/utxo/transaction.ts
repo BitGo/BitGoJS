@@ -3,9 +3,9 @@
  */
 import 'mocha';
 import * as _ from 'lodash';
-import * as assert from 'assert';
+import assert from 'assert';
 import * as utxolib from '@bitgo/utxo-lib';
-import * as nock from 'nock';
+import nock from 'nock';
 import { BIP32Interface, bitgo, testutil } from '@bitgo/utxo-lib';
 
 import { AbstractUtxoCoin, getReplayProtectionAddresses } from '@bitgo/abstract-utxo';

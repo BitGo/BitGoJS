@@ -4,7 +4,7 @@
  * P2SH address per wallet whose redeem script uses uncompressed public keys.
  * */
 
-import * as assert from 'assert';
+import assert from 'assert';
 import { ecc as eccLib } from '../../noble_ecc';
 import { isBitcoin, Network } from '../../networks';
 import { isTriple } from '../types';

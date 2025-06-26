@@ -1,5 +1,5 @@
-import { ExchangeCommitmentResponse, RequestType, SignatureShareRecord } from '@bitgo/sdk-core';
-import * as nock from 'nock';
+import { type ExchangeCommitmentResponse, RequestType, type SignatureShareRecord } from '@bitgo/sdk-core';
+import nock from 'nock';
 import * as _ from 'lodash';
 
 export async function nockSendTxRequest(params: {

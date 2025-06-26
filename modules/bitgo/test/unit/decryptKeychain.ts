@@ -1,5 +1,5 @@
 import 'should';
-import { decryptKeychainPrivateKey, OptionalKeychainEncryptedKey } from '@bitgo/sdk-core';
+import { decryptKeychainPrivateKey, type OptionalKeychainEncryptedKey } from '@bitgo/sdk-core';
 import { BitGoAPI } from '@bitgo/sdk-api';
 
 describe('decryptKeychainPrivateKey', () => {

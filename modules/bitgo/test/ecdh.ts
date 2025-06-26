@@ -8,7 +8,7 @@ import * as utxolib from '@bitgo/utxo-lib';
 
 import { getSharedSecret, signMessageWithDerivedEcdhKey, verifyEcdhSignature } from '@bitgo/sdk-core';
 import { TestBitGo } from '@bitgo/sdk-test';
-import * as assert from 'assert';
+import assert from 'assert';
 import { BitGo } from '../src/bitgo';
 
 describe('ECDH utils', () => {
