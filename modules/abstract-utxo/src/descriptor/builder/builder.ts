@@ -1,5 +1,6 @@
 import { BIP32Interface } from '@bitgo/utxo-lib';
-import { Descriptor } from '@bitgo/wasm-miniscript';
+import type { Descriptor } from '@bitgo/wasm-miniscript';
+import { Descriptor as DescriptorClass } from '@bitgo/utxo-core';
 
 type DescriptorWithKeys<TName extends string> = {
   name: TName;
@@ -50,5 +51,5 @@ function getDescriptorString(builder: DescriptorBuilder): string {
 }
 
 export function getDescriptorFromBuilder(builder: DescriptorBuilder): Descriptor {
-  return Descriptor.fromString(getDescriptorString(builder), 'derivable');
+  return DescriptorClass.fromString(getDescriptorString(builder), 'derivable');
 }

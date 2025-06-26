@@ -1,6 +1,8 @@
 import assert from 'assert';
 
-import { Descriptor } from '@bitgo/wasm-miniscript';
+import type { Descriptor } from '@bitgo/wasm-miniscript';
+
+import { Descriptor as DescriptorClass } from '../miniscript';
 
 /**
  * Get a descriptor at a specific derivation index.
@@ -12,9 +14,9 @@ import { Descriptor } from '@bitgo/wasm-miniscript';
  * @throws {Error} If index is undefined for a wildcard descriptor or if index is provided for a definite descriptor
  */
 export function getDescriptorAtIndex(descriptor: Descriptor, index: number | undefined): Descriptor {
-  assert(descriptor instanceof Descriptor);
-  Descriptor.fromString(descriptor.toString(), 'derivable');
-  descriptor = Descriptor.fromStringDetectType(descriptor.toString());
+  assert(descriptor instanceof DescriptorClass);
+  DescriptorClass.fromString(descriptor.toString(), 'derivable');
+  descriptor = DescriptorClass.fromStringDetectType(descriptor.toString());
   if (descriptor.hasWildcard()) {
     if (index === undefined) {
       throw new Error('Derivable descriptor requires an index');
@@ -34,11 +36,11 @@ export function getDescriptorAtIndexCheckScript(
   script: Buffer,
   descriptorString = descriptor.toString()
 ): Descriptor {
-  assert(descriptor instanceof Descriptor);
+  assert(descriptor instanceof DescriptorClass);
   const descriptorAtIndex = getDescriptorAtIndex(descriptor, index);
   if (!script.equals(descriptorAtIndex.scriptPubkey())) {
     throw new Error(`Script mismatch: descriptor ${descriptorString} script=${script.toString('hex')}`);
   }
-  assert(descriptorAtIndex instanceof Descriptor);
+  assert(descriptorAtIndex instanceof DescriptorClass);
   return descriptorAtIndex;
 }

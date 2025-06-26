@@ -6,3 +6,4 @@ export * as bip32utils from './bip32utils';
 export * from './dustThreshold';
 export * from './Output';
 export * from './xOnlyPubkey';
+export { initializeMiniscript, ast, Descriptor, Miniscript, Psbt } from './miniscript';

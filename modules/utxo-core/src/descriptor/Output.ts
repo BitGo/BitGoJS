@@ -1,7 +1,8 @@
 import assert from 'assert';
 
-import { Descriptor } from '@bitgo/wasm-miniscript';
+import type { Descriptor } from '@bitgo/wasm-miniscript';
 
+import { Descriptor as DescriptorClass } from '../miniscript';
 import { getFixedOutputSum, MaxOutput, Output, PrevOutput } from '../Output';
 
 import { DescriptorMap } from './DescriptorMap';
@@ -46,7 +47,7 @@ export function toDerivedDescriptorWalletOutput(
   if (!descriptor) {
     throw new Error(`Descriptor not found: ${output.descriptorName}`);
   }
-  assert(descriptor instanceof Descriptor);
+  assert(descriptor instanceof DescriptorClass);
   const descriptorAtIndex = getDescriptorAtIndexCheckScript(
     descriptor,
     output.descriptorIndex,

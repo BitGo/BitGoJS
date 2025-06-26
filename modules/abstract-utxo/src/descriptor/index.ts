@@ -1,4 +1,4 @@
-export { Miniscript, Descriptor } from '@bitgo/wasm-miniscript';
+export { Miniscript, Descriptor } from '@bitgo/utxo-core';
 export { DescriptorMap } from '@bitgo/utxo-core/descriptor';
 export { assertDescriptorWalletAddress } from './assertDescriptorWalletAddress';
 export {

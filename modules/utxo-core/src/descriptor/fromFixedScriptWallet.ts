@@ -1,5 +1,7 @@
 import * as utxolib from '@bitgo/utxo-lib';
-import { Descriptor, ast } from '@bitgo/wasm-miniscript';
+import type { Descriptor, ast } from '@bitgo/wasm-miniscript';
+
+import { ast as astClass, Descriptor as DescriptorClass } from '../miniscript';
 
 /** Expand a template with the given root wallet keys and chain code */
 function expand(rootWalletKeys: utxolib.bitgo.RootWalletKeys, keyIndex: number, chainCode: number): string {
@@ -30,11 +32,11 @@ export function getDescriptorForScriptType(
   };
   switch (scriptType) {
     case 'p2sh':
-      return Descriptor.fromString(ast.formatNode({ sh: multi }), 'derivable');
+      return DescriptorClass.fromString(astClass.formatNode({ sh: multi }), 'derivable');
     case 'p2shP2wsh':
-      return Descriptor.fromString(ast.formatNode({ sh: { wsh: multi } }), 'derivable');
+      return DescriptorClass.fromString(astClass.formatNode({ sh: { wsh: multi } }), 'derivable');
     case 'p2wsh':
-      return Descriptor.fromString(ast.formatNode({ wsh: multi }), 'derivable');
+      return DescriptorClass.fromString(astClass.formatNode({ wsh: multi }), 'derivable');
     default:
       throw new Error(`Unsupported script type ${scriptType}`);
   }

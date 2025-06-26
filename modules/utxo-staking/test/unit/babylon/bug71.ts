@@ -4,11 +4,13 @@ import assert from 'assert';
 import * as bitcoinjs from 'bitcoinjs-lib';
 import * as utxolib from '@bitgo/utxo-lib';
 import * as wasmMiniscript from '@bitgo/wasm-miniscript';
+import { initializeMiniscript } from '@bitgo/utxo-core';
 
 // demonstrate https://github.com/babylonlabs-io/btc-staking-ts/issues/71
 describe('btc-staking-ts bug #71', function () {
   let buf: Buffer;
   before('load half-signed transaction', async function () {
+    await initializeMiniscript();
     const fixture = JSON.parse(
       await fs.promises.readFile(__dirname + '/../../fixtures/babylon/txTree.testnet.json', 'utf-8')
     );

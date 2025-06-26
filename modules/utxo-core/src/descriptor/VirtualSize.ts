@@ -1,6 +1,8 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import { Dimensions, VirtualSizes } from '@bitgo/unspents';
-import { Descriptor } from '@bitgo/wasm-miniscript';
+import type { Descriptor } from '@bitgo/wasm-miniscript';
+
+import { Descriptor as DescriptorClass } from '../miniscript';
 
 import { DescriptorMap } from './DescriptorMap';
 import { findDescriptorForInput } from './psbt';
@@ -86,7 +88,7 @@ export function getVirtualSize(
 ): number {
   const lookup = descriptorMap ? getInputVSizesForDescriptors(descriptorMap) : undefined;
   const inputVSize = tx.inputs.reduce((sum, input) => {
-    if (input instanceof Descriptor) {
+    if (input instanceof DescriptorClass) {
       return sum + getInputVSizeForDescriptor(input);
     }
     if ('descriptorName' in input) {
