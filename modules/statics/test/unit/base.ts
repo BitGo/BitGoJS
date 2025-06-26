@@ -1,13 +1,13 @@
 import should from 'should';
-import { UnderlyingAsset } from '../../src/base';
+import { UnderlyingAsset, UnderlyingAssetValue } from '../../src/base';
 
 describe('UnderlyingAsset', function () {
   it('UnderlyingAsset values should be unique', function () {
     const underlyingAssetSet = new Set();
-    const duplicateAssets: (typeof UnderlyingAsset)[] = [];
+    const duplicateAssets: UnderlyingAssetValue[] = [];
 
-    for (const asset in UnderlyingAsset) {
-      const assetValue = UnderlyingAsset[asset].toUpperCase();
+    for (const asset of Object.keys(UnderlyingAsset)) {
+      const assetValue = UnderlyingAsset[asset as keyof typeof UnderlyingAsset].toUpperCase() as UnderlyingAssetValue;
       if (underlyingAssetSet.has(assetValue)) {
         duplicateAssets.push(assetValue);
       }
