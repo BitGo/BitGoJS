@@ -11,7 +11,9 @@ export const CoinKind = {
   FIAT: 'fiat',
 } as const;
 
-export type CoinKind = (typeof CoinKind)[keyof typeof CoinKind];
+export type CoinKindKey = keyof typeof CoinKind;
+export type CoinKindValue = (typeof CoinKind)[keyof typeof CoinKind];
+export type CoinKind = CoinKindValue;
 
 /**
  * The coin family links related variants of a single coin together.
@@ -101,7 +103,9 @@ export const CoinFamily = {
   ZKETH: 'zketh',
 } as const;
 
-export type CoinFamily = (typeof CoinFamily)[keyof typeof CoinFamily];
+export type CoinFamilyKey = keyof typeof CoinFamily;
+export type CoinFamilyValue = (typeof CoinFamily)[keyof typeof CoinFamily];
+export type CoinFamily = CoinFamilyValue;
 
 /**
  * Coin features are yes or no questions about what a coin requires or is capable of.
@@ -406,7 +410,9 @@ export const CoinFeature = {
   REBASE_TOKEN: 'rebase-token',
 } as const;
 
-export type CoinFeature = (typeof CoinFeature)[keyof typeof CoinFeature];
+export type CoinFeatureKey = keyof typeof CoinFeature;
+export type CoinFeatureValue = (typeof CoinFeature)[keyof typeof CoinFeature];
+export type CoinFeature = CoinFeatureValue;
 
 /**
  * Some coins are representations of another underlying asset class. An example
@@ -2814,7 +2820,9 @@ export const UnderlyingAsset = {
   USD: 'usd',
 } as const;
 
-export type UnderlyingAsset = (typeof UnderlyingAsset)[keyof typeof UnderlyingAsset];
+export type UnderLyingAssetKey = keyof typeof UnderlyingAsset;
+export type UnderlyingAssetValue = (typeof UnderlyingAsset)[keyof typeof UnderlyingAsset];
+export type UnderlyingAsset = UnderlyingAssetValue;
 
 /**
  * This is the curve BitGo signs against with the user, backup and BitGo key.
@@ -2824,7 +2832,9 @@ export const KeyCurve = {
   Ed25519: 'ed25519',
 } as const;
 
-export type KeyCurve = (typeof KeyCurve)[keyof typeof KeyCurve];
+export type KeyCurveKey = keyof typeof KeyCurve;
+export type KeyCurveValue = (typeof KeyCurve)[keyof typeof KeyCurve];
+export type KeyCurve = KeyCurveValue;
 
 /**
  * This enum contains the base units for the coins that BitGo supports
@@ -2883,7 +2893,9 @@ export const BaseUnit = {
   TASI: 'atestfet',
 } as const;
 
-export type BaseUnit = (typeof BaseUnit)[keyof typeof BaseUnit];
+export type BaseUnitKey = keyof typeof BaseUnit;
+export type BaseUnitValue = (typeof BaseUnit)[keyof typeof BaseUnit];
+export type BaseUnit = BaseUnitValue;
 
 export interface BaseCoinConstructorOptions {
   id: string; // uuid v4
