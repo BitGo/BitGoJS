@@ -94,10 +94,10 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
-      - name: Setup node 18
+      - name: Setup node 24
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: 18
+          node-version: 24
 
       - name: restore lerna dependencies
         id: lerna-cache
@@ -106,7 +106,7 @@ jobs:
           path: |
             node_modules
             modules/*/node_modules
-          key: ${{ runner.os }}-node18-${{ hashFiles('yarn.lock') }}-${{ hashFiles('tsconfig.packages.json') }}-${{ hashFiles('package.json') }}
+          key: ${{ runner.os }}-node24-${{ hashFiles('yarn.lock') }}-${{ hashFiles('tsconfig.packages.json') }}-${{ hashFiles('package.json') }}
 
       - name: Install Packages
         if: steps.lerna-cache.outputs.cache-hit != 'true' || contains( github.event.pull_request.labels.*.name, 'SKIP_CACHE')
@@ -142,10 +142,10 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
-      - name: Setup node 18
+      - name: Setup node 24
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: 18 # this just needs to pass our lock file requirement for compilation
+          node-version: 24 # this just needs to pass our lock file requirement for compilation
 
       - name: Build Info
         run: |
