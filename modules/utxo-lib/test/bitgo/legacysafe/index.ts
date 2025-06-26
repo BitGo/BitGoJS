@@ -1,6 +1,6 @@
 import { toUncompressedPub, toCompressedPub, createLegacySafeOutputScript2of3 } from '../../../src/bitgo/legacysafe';
 import { getKey, getKeyTriple, getUncompressedKeyTriple } from '../../../src/testutil';
-import * as assert from 'assert';
+import assert from 'assert';
 import { networks } from '../../../src';
 import { fromOutputScript } from '../../../src/address';
 

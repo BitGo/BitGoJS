@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import assert from 'assert';
 import * as opcodes from 'bitcoin-ops';
 import { classify, script as bscript, TxInput } from '../';
 
