@@ -340,11 +340,13 @@ export const solTokens = [
     UnderlyingAsset.FTT,
     SOL_TOKEN_FEATURES.filter(
       (feature) =>
-        ![
-          CoinFeature.CUSTODY_BITGO_SINGAPORE,
-          CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
-          CoinFeature.CUSTODY_BITGO_MENA_FZE,
-        ].includes(feature)
+        !(
+          [
+            CoinFeature.CUSTODY_BITGO_SINGAPORE,
+            CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+            CoinFeature.CUSTODY_BITGO_MENA_FZE,
+          ] as CoinFeature[]
+        ).includes(feature)
     )
   ),
   solToken(
@@ -797,11 +799,13 @@ export const solTokens = [
     UnderlyingAsset.CEL,
     SOL_TOKEN_FEATURES.filter(
       (feature) =>
-        ![
-          CoinFeature.CUSTODY_BITGO_SINGAPORE,
-          CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
-          CoinFeature.CUSTODY_BITGO_MENA_FZE,
-        ].includes(feature)
+        !(
+          [
+            CoinFeature.CUSTODY_BITGO_SINGAPORE,
+            CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+            CoinFeature.CUSTODY_BITGO_MENA_FZE,
+          ] as CoinFeature[]
+        ).includes(feature)
     )
   ),
   solToken(
@@ -1504,11 +1508,13 @@ export const solTokens = [
     UnderlyingAsset.FTT,
     SOL_TOKEN_FEATURES.filter(
       (feature) =>
-        ![
-          CoinFeature.CUSTODY_BITGO_SINGAPORE,
-          CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
-          CoinFeature.CUSTODY_BITGO_MENA_FZE,
-        ].includes(feature)
+        !(
+          [
+            CoinFeature.CUSTODY_BITGO_SINGAPORE,
+            CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+            CoinFeature.CUSTODY_BITGO_MENA_FZE,
+          ] as CoinFeature[]
+        ).includes(feature)
     )
   ),
   solToken(
@@ -1571,11 +1577,13 @@ export const solTokens = [
     UnderlyingAsset.WFFT,
     SOL_TOKEN_FEATURES.filter(
       (feature) =>
-        ![
-          CoinFeature.CUSTODY_BITGO_SINGAPORE,
-          CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
-          CoinFeature.CUSTODY_BITGO_MENA_FZE,
-        ].includes(feature)
+        !(
+          [
+            CoinFeature.CUSTODY_BITGO_SINGAPORE,
+            CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+            CoinFeature.CUSTODY_BITGO_MENA_FZE,
+          ] as CoinFeature[]
+        ).includes(feature)
     )
   ),
   solToken(
@@ -2736,7 +2744,7 @@ export const solTokens = [
     'he1iusmfkpAdwvxLNGV8Y1iSbj4rUy6yMhEA3fotn9A',
     'he1iusmfkpAdwvxLNGV8Y1iSbj4rUy6yMhEA3fotn9A',
     UnderlyingAsset['sol:hsol'],
-    SOL_TOKEN_FEATURES.filter((feature) => ![CoinFeature.CUSTODY_BITGO_SINGAPORE].includes(feature))
+    SOL_TOKEN_FEATURES.filter((feature) => !([CoinFeature.CUSTODY_BITGO_SINGAPORE] as CoinFeature[]).includes(feature))
   ),
   solToken(
     '247b9f70-2e4c-4f31-a944-bb5b59f1529a',

@@ -61,7 +61,7 @@ import { bscTokens } from './coins/bscTokens';
 import { polygonTokens } from './coins/polygonTokens';
 import { solTokens } from './coins/solTokens';
 import { CoinMap } from './map';
-import { Networks } from './networks';
+import { BaseNetwork, Networks } from './networks';
 import { networkFeatureMapForTokens } from './networkFeatureMapForTokens';
 import { utxoCoins } from './utxo';
 import { lightningCoins } from './lightning';
@@ -221,11 +221,13 @@ export const coins = CoinMap.fromCoins([
     BaseUnit.CSPR,
     CSPR_FEATURES.filter(
       (feature) =>
-        ![
-          CoinFeature.CUSTODY_BITGO_SINGAPORE,
-          CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
-          CoinFeature.CUSTODY_BITGO_MENA_FZE,
-        ].includes(feature)
+        !(
+          [
+            CoinFeature.CUSTODY_BITGO_SINGAPORE,
+            CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+            CoinFeature.CUSTODY_BITGO_MENA_FZE,
+          ] as CoinFeature[]
+        ).includes(feature)
     )
   ),
   account(
@@ -811,11 +813,13 @@ export const coins = CoinMap.fromCoins([
     BaseUnit.COREUM,
     COREUM_FEATURES.filter(
       (feature) =>
-        ![
-          CoinFeature.CUSTODY_BITGO_SINGAPORE,
-          CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
-          CoinFeature.CUSTODY_BITGO_MENA_FZE,
-        ].includes(feature)
+        !(
+          [
+            CoinFeature.CUSTODY_BITGO_SINGAPORE,
+            CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+            CoinFeature.CUSTODY_BITGO_MENA_FZE,
+          ] as CoinFeature[]
+        ).includes(feature)
     )
   ),
   account(
@@ -4207,7 +4211,7 @@ export function createTokenMapUsingTrimmedConfigDetails(
   reducedTokenConfigMap: Record<string, TrimmedAmsTokenConfig[]>
 ): CoinMap {
   const amsTokenConfigMap: Record<string, AmsTokenConfig[]> = {};
-  const networkNameMap = new Map(
+  const networkNameMap = new Map<string, BaseNetwork>(
     Object.values(Networks).flatMap((networkType) =>
       Object.values(networkType).map((network) => [network.name, network])
     )
