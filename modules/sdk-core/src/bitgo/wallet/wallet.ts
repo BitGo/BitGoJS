@@ -2203,8 +2203,9 @@ export class Wallet implements IWallet {
     }
     let keychains: Keychain[] = [];
     let txPrebuild: PrebuildTransactionResult;
-
+    console.time('Build Transaction');
     const results = await Promise.allSettled([keychainPromise, txPrebuildQuery]);
+    console.timeEnd('Build Transaction');
 
     // Handle keychain promise (index 0)
     if (results[0].status === 'fulfilled') {
@@ -2221,6 +2222,7 @@ export class Wallet implements IWallet {
     }
 
     try {
+      console.time('Transaction Prebuild Local Validation');
       await this.baseCoin.verifyTransaction({
         txParams: { ...txPrebuild.buildParams, ...params },
         txPrebuild,
@@ -2229,6 +2231,7 @@ export class Wallet implements IWallet {
         reqId: params.reqId,
         walletType: this._wallet.multisigType,
       });
+      console.timeEnd('Transaction Prebuild Local Validation');
     } catch (e) {
       console.error('transaction prebuild failed local validation:', e.message);
       console.error(
@@ -2265,7 +2268,10 @@ export class Wallet implements IWallet {
     }
 
     try {
-      return await this.signTransaction(signingParams);
+      console.time('Sign Transaction');
+      const signedTxn = await this.signTransaction(signingParams);
+      console.timeEnd('Sign Transaction');
+      return signedTxn;
     } catch (error) {
       if (error.message.includes('insufficient funds')) {
         error.code = 'insufficient_funds';
@@ -3684,6 +3690,7 @@ export class Wallet implements IWallet {
     }
 
     if (params.apiVersion === 'full') {
+      console.time('getTxRequest from sendManyTxRequests');
       const latestTxRequest = await getTxRequest(this.bitgo, this.id(), signedTransaction.txRequestId, params.reqId);
       const reqId = params.reqId || new RequestTracer();
       this.bitgo.setRequestTracer(reqId);
@@ -3696,6 +3703,8 @@ export class Wallet implements IWallet {
         )
         .send()
         .result();
+      console.timeEnd('getTxRequest from sendManyTxRequests');
+
       if (latestTxRequest.state === 'pendingApproval') {
         const pendingApprovals = new PendingApprovals(this.bitgo, this.baseCoin);
         const pendingApproval = await pendingApprovals.get({ id: latestTxRequest.pendingApprovalId });

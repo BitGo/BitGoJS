@@ -952,7 +952,9 @@ async function handleV2SendMany(req: express.Request) {
   let result;
   try {
     if (wallet._wallet.multisigType === 'tss') {
+      console.time('sendMany from express');
       result = await wallet.sendMany(createTSSSendParams(req, wallet));
+      console.timeEnd('sendMany from express');
     } else {
       result = await wallet.sendMany(createSendParams(req));
     }

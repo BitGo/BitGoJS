@@ -712,7 +712,9 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     params: TSSParamsWithPrv | TSSParamsForMessageWithPrv,
     requestType: RequestType
   ): Promise<TxRequest> {
+    console.time('signRequestBase');
     const userKeyShare = Buffer.from(params.prv, 'base64');
+    console.time('getTxRequest');
     const txRequest: TxRequest =
       typeof params.txRequest === 'string'
         ? await getTxRequest(this.bitgo, this.wallet.id(), params.txRequest, params.reqId)
@@ -722,11 +724,12 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     let bufferContent;
     const userGpgKey = await generateGPGKeyPair('secp256k1');
     const bitgoGpgPubKey = await this.pickBitgoPubGpgKeyForSigning(true, params.reqId, txRequest.enterpriseId);
+    console.timeEnd('getTxRequest');
 
     if (!bitgoGpgPubKey) {
       throw new Error('Missing BitGo GPG key for MPCv2');
     }
-
+    console.time('verifyTransaction');
     if (requestType === RequestType.tx) {
       assert(txRequest.transactions || txRequest.unsignedTxs, 'Unable to find transactions in txRequest');
       const unsignedTx =
@@ -761,7 +764,9 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     } else {
       throw new Error('Invalid request type');
     }
+    console.timeEnd('verifyTransaction');
 
+    console.time('initDklsDsg');
     let hash: Hash;
     try {
       hash = this.baseCoin.getHashFunction();
@@ -777,12 +782,15 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       hashBuffer
     );
     const userSignerBroadcastMsg1 = await otherSigner.init();
+    console.timeEnd('initDklsDsg');
+    console.time('sign broadcast message 1');
     const signatureShareRound1 = await getSignatureShareRoundOne(
       userSignerBroadcastMsg1,
       userGpgKey,
       params.mpcv2PartyId
     );
-
+    console.timeEnd('sign broadcast message 1');
+    console.time('send round 1 message to bitgo');
     let latestTxRequest = await sendSignatureShareV2(
       this.bitgo,
       txRequest.walletId,
@@ -795,7 +803,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       this.wallet.multisigTypeVersion(),
       params.reqId
     );
-
+    console.timeEnd('send round 1 message to bitgo');
+    console.time('parse bitgo messages and signatures round 1 response');
     assert(latestTxRequest.transactions || latestTxRequest.messages, 'Invalid txRequest Object');
 
     let bitgoToUserMessages1And2: any;
@@ -811,13 +820,16 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     if (parsedBitGoToUserSigShareRoundOne.type !== 'round1Output') {
       throw new Error('Unexpected signature share response. Unable to parse data.');
     }
+    console.timeEnd('parse bitgo messages and signatures round 1 response');
+    console.time('verify bitgo messages and signatures round 1');
     const serializedBitGoToUserMessagesRound1And2 = await verifyBitGoMessagesAndSignaturesRoundOne(
       parsedBitGoToUserSigShareRoundOne,
       userGpgKey,
       bitgoGpgPubKey,
       params.mpcv2PartyId
     );
-
+    console.timeEnd('verify bitgo messages and signatures round 1');
+    console.time('compute round 2 messages using dkls lib');
     /** Round 2 **/
     const deserializedMessages = DklsTypes.deserializeMessages(serializedBitGoToUserMessagesRound1And2);
     const userToBitGoMessagesRound2 = otherSigner.handleIncomingMessages({
@@ -828,6 +840,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       p2pMessages: deserializedMessages.p2pMessages,
       broadcastMessages: [],
     });
+    console.timeEnd('compute round 2 messages using dkls lib');
+    console.time('prepare signature share round 2 request to bitgo');
     const signatureShareRoundTwo = await getSignatureShareRoundTwo(
       userToBitGoMessagesRound2,
       userToBitGoMessagesRound3,
@@ -835,6 +849,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       bitgoGpgPubKey,
       params.mpcv2PartyId
     );
+    console.timeEnd('prepare signature share round 2 request to bitgo');
+    console.time('send signature share round 2 request to bitgo');
     latestTxRequest = await sendSignatureShareV2(
       this.bitgo,
       txRequest.walletId,
@@ -847,6 +863,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       this.wallet.multisigTypeVersion(),
       params.reqId
     );
+    console.timeEnd('send signature share round 2 request to bitgo');
+    console.time('parse bitgo messages and signatures round 2 response');
     assert(latestTxRequest.transactions || latestTxRequest.messages, 'Invalid txRequest Object');
 
     const txRequestSignatureShares =
@@ -860,13 +878,16 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     if (parsedBitGoToUserSigShareRoundTwo.type !== 'round2Output') {
       throw new Error('Unexpected signature share response. Unable to parse data.');
     }
+    console.timeEnd('parse bitgo messages and signatures round 2 response');
+    console.time('verify bitgo messages and signatures round 2');
     const serializedBitGoToUserMessagesRound3 = await verifyBitGoMessagesAndSignaturesRoundTwo(
       parsedBitGoToUserSigShareRoundTwo,
       userGpgKey,
       bitgoGpgPubKey,
       params.mpcv2PartyId
     );
-
+    console.timeEnd('verify bitgo messages and signatures round 2');
+    console.time('compute round 3 messages using dkls lib');
     /** Round 3 **/
     const deserializedBitGoToUserMessagesRound3 = DklsTypes.deserializeMessages({
       p2pMessages: serializedBitGoToUserMessagesRound3.p2pMessages,
@@ -876,13 +897,16 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       p2pMessages: deserializedBitGoToUserMessagesRound3.p2pMessages,
       broadcastMessages: [],
     });
-
+    console.timeEnd('compute round 3 messages using dkls lib');
+    console.time('prepare signature share round 3 request to bitgo');
     const signatureShareRoundThree = await getSignatureShareRoundThree(
       userToBitGoMessagesRound4,
       userGpgKey,
       bitgoGpgPubKey,
       params.mpcv2PartyId
     );
+    console.timeEnd('prepare signature share round 3 request to bitgo');
+    console.time('send signature share round 3 request to bitgo');
     // Submit for final signature share combine
     await sendSignatureShareV2(
       this.bitgo,
@@ -896,7 +920,8 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
       this.wallet.multisigTypeVersion(),
       params.reqId
     );
-
+    console.timeEnd('send signature share round 3 request to bitgo');
+    console.timeEnd('signRequestBase');
     return sendTxRequest(this.bitgo, txRequest.walletId, txRequest.txRequestId, requestType, params.reqId);
   }
 
