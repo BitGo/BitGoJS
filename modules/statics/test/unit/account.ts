@@ -1,4 +1,4 @@
-const should = require('should');
+import should from 'should';
 import { AccountCoin, Networks, UnderlyingAsset } from '../../src';
 import { txrpToken, xrpToken } from '../../src/account';
 

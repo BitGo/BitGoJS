@@ -3,6 +3,7 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": ".",
+    "esModuleInterop": true,
     "strict": true,
     "typeRoots": ["../../types", "./node_modules/@types", "../../node_modules/@types"]
   },
