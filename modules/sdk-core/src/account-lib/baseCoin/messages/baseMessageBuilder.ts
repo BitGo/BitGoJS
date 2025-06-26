@@ -1,0 +1,129 @@
+import { BroadcastableMessage, MessagePayload, MessageStandardType } from '../../../bitgo';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { IMessage, IMessageBuilder } from './iface';
+
+/**
+ * Base Message Builder
+ */
+export abstract class BaseMessageBuilder implements IMessageBuilder {
+  protected coinConfig: Readonly<CoinConfig>;
+  protected payload: MessagePayload = '';
+  protected type: MessageStandardType;
+  protected signatures: string[] = [];
+  protected signers: string[] = [];
+  protected metadata?: Record<string, unknown> = {};
+  protected digest?: string;
+
+  /**
+   * Base constructor.
+   * @param coinConfig BaseCoin from statics library
+   * @param messageType The type of message this builder creates, defaults to UNKNOWN
+   */
+  protected constructor(
+    coinConfig: Readonly<CoinConfig>,
+    messageType: MessageStandardType = MessageStandardType.UNKNOWN
+  ) {
+    this.coinConfig = coinConfig;
+    this.type = messageType;
+  }
+
+  /**
+   * Sets the message payload to be used when building the message
+   * @param payload The message payload (string, JSON, etc.)
+   * @returns The builder instance for chaining
+   */
+  public setPayload(payload: MessagePayload): IMessageBuilder {
+    this.payload = payload;
+    return this;
+  }
+
+  /**
+   * Sets metadata for the message
+   * @param metadata Additional metadata for the message
+   * @returns The builder instance for chaining
+   */
+  public setMetadata(metadata: Record<string, unknown>): IMessageBuilder {
+    this.metadata = metadata;
+    return this;
+  }
+
+  /**
+   * Gets the current message payload
+   * @returns The current message payload
+   */
+  public getPayload(): MessagePayload | undefined {
+    return this.payload;
+  }
+
+  /**
+   * Gets the current metadata
+   * @returns The current metadata
+   */
+  public getMetadata(): Record<string, unknown> | undefined {
+    return this.metadata;
+  }
+
+  public getType(): MessageStandardType {
+    return this.type;
+  }
+
+  public setType(value: MessageStandardType): IMessageBuilder {
+    this.type = value;
+    return this;
+  }
+
+  public getSignatures(): string[] {
+    return this.signatures;
+  }
+
+  public setSignatures(value: string[]): IMessageBuilder {
+    this.signatures = value;
+    return this;
+  }
+
+  public addSignature(signature: string): IMessageBuilder {
+    if (!this.signatures.includes(signature)) {
+      this.signatures.push(signature);
+    }
+    return this;
+  }
+
+  public getSigners(): string[] {
+    return this.signers;
+  }
+
+  public setSigners(value: string[]): IMessageBuilder {
+    this.signers = value;
+    return this;
+  }
+
+  public addSigner(signer: string): IMessageBuilder {
+    if (!this.signers.includes(signer)) {
+      this.signers.push(signer);
+    }
+    return this;
+  }
+
+  public getDigest(): string | undefined {
+    return this.digest;
+  }
+
+  public setDigest(value: string): IMessageBuilder {
+    this.digest = value;
+    return this;
+  }
+
+  /**
+   * Builds a message using the previously set payload and metadata
+   * This abstract method must be implemented by each specific builder
+   * @returns A Promise resolving to the built IMessage
+   */
+  abstract build(): Promise<IMessage>;
+
+  /**
+   * Parse a broadcastable message back into a message
+   * @param broadcastMessage The broadcastable message to parse
+   * @returns The parsed message
+   */
+  abstract fromBroadcastFormat(broadcastMessage: BroadcastableMessage): Promise<IMessage>;
+}
