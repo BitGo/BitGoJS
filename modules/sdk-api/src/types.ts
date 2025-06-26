@@ -1,5 +1,5 @@
 import { EnvironmentName, IRequestTracer, V1Network } from '@bitgo/sdk-core';
-import { ECPairInterface } from '@bitgo/utxo-lib';
+import type { ECPairInterface } from '@bitgo/utxo-lib';
 import { type Agent } from 'http';
 
 const patchedRequestMethods = ['get', 'post', 'put', 'del', 'patch', 'options'] as const;
