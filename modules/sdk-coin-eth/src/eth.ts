@@ -43,7 +43,7 @@ import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import type * as EthTxLib from '@ethereumjs/tx';
 import { BigNumber } from 'bignumber.js';
 
-import { TransactionBuilder } from './lib/transactionBuilder';
+import { TransactionBuilder } from './lib';
 import { Erc20Token } from './erc20Token';
 
 export {

@@ -32,6 +32,12 @@ export class BuildTransactionError extends ExtendableError {
   }
 }
 
+export class BuildMessageError extends ExtendableError {
+  constructor(message: string) {
+    super(message);
+  }
+}
+
 export class UtilsError extends ExtendableError {
   constructor(message: string) {
     super(message);
