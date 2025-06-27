@@ -3254,7 +3254,7 @@ export const coins = CoinMap.fromCoins([
     '78aaa845-2c36-4f16-bc0f-6a4c65b43dab',
     'world:usdc',
     'USDC',
-    18,
+    6,
     '0x79a02482a880bce3f13e09da970dc34db4cd24d1',
     UnderlyingAsset['world:usdc']
   ),
@@ -3270,7 +3270,7 @@ export const coins = CoinMap.fromCoins([
     'd347b3ba-73ac-4f3d-bd3a-e68b7c1e4669',
     'tworld:usdc',
     'USDC',
-    18,
+    6,
     '0x66145f38cbac35ca6f1dfb4914df98f1614aea88',
     UnderlyingAsset['tworld:usdc']
   ),
