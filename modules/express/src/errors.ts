@@ -52,3 +52,10 @@ export class LightningSignerConfigError extends BitGoJsError {
     super(message || 'Lightning signer configuration is invalid');
   }
 }
+
+export class BitGoExpressError extends BitGoJsError {
+  public constructor(message?: string) {
+    super(message);
+    Object.setPrototypeOf(this, BitGoExpressError.prototype);
+  }
+}

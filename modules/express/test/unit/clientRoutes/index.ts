@@ -134,5 +134,20 @@ describe('common methods', () => {
       res.status.calledWith(500).should.be.true();
       res.send.calledWithMatch((result: any) => result.message === 'Test error').should.be.true();
     });
+
+    it('should have name field on error request', async () => {
+      const handler = sandbox.stub().throws({ message: 'Test error' });
+      const req: any = {};
+      const res: any = {
+        status: sandbox.stub().returnsThis(),
+        send: sandbox.stub().returnsThis(),
+      };
+      const next = sandbox.stub();
+
+      await promiseWrapper(handler)(req, res, next);
+
+      res.status.calledWith(500).should.be.true();
+      res.send.calledWithMatch((result: any) => result.name === 'BitGoExpressError').should.be.true();
+    });
   });
 });
