@@ -1,4 +1,4 @@
-import { KeyPair, Utils, AtaInitializationBuilder } from '../../../src';
+import { KeyPair, Utils, AtaInitializationBuilder, TokenTransferBuilder } from '../../../src';
 import should from 'should';
 import * as testData from '../../resources/sol';
 import { BaseTransaction } from '@bitgo/sdk-core';
@@ -497,6 +497,23 @@ describe('Sol Associated Token Account Builder', () => {
         const rawTx = tx.toBroadcastFormat();
 
         should.equal(rawTx, testData.MULTI_ATA_INIT_SIGNED_TX_WITH_MEMO_OPTIONAL_PARAM1);
+      });
+
+      it('build from a unsigned raw token transfer with optinal param', async () => {
+        const txBuilder = factory.from(
+          testData.TOKEN_TRANSFER_UNSIGNED_WITH_CREATE_ATA_AND_MEMO_AND_DURABLE_NONCE_WITH_OPTIONAL_PARAMS
+        ) as TokenTransferBuilder;
+
+        (txBuilder as any)._sendParams[0].tokenName = 'tsol:ams';
+        (txBuilder as any)._createAtaParams[0].tokenName = 'tsol:ams';
+
+        const tx = await txBuilder.build();
+        const rawTx = tx.toBroadcastFormat();
+
+        should.equal(
+          rawTx,
+          testData.TOKEN_TRANSFER_UNSIGNED_WITH_CREATE_ATA_AND_MEMO_AND_DURABLE_NONCE_WITH_OPTIONAL_PARAMS
+        );
       });
 
       it('build from an unsigned ATA init with durable nonce and sign it', async () => {
