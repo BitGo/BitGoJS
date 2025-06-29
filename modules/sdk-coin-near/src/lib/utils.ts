@@ -49,6 +49,9 @@ export class Utils implements BaseUtils {
    * or can create a new keyPair
    */
   isValidAccountId(accountId: string): boolean {
+    if (!accountId) {
+      return false;
+    }
     return (
       (/^(([a-z\d]+[\-_])*[a-z\d]+\.)*([a-z\d]+[\-_])*[a-z\d]+$/.test(accountId) &&
         accountId.length >= 2 &&
