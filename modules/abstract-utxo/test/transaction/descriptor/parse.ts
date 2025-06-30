@@ -1,7 +1,7 @@
 import assert from 'assert';
 
 import * as utxolib from '@bitgo/utxo-lib';
-import { Descriptor } from '@bitgo/wasm-miniscript';
+import * as WasmMiniscript from '@bitgo/wasm-miniscript';
 import {
   getDefaultXPubs,
   getDescriptor,
@@ -22,6 +22,8 @@ import { toAmountType } from '../../../src/transaction/descriptor/parseToAmountT
 import { BaseOutput } from '../../../src';
 
 import { getFixtureRoot } from './fixtures.utils';
+
+utxolib.initializeMiniscript(WasmMiniscript);
 
 const { assertEqualFixture } = getFixtureRoot(__dirname + '/fixtures');
 
@@ -58,7 +60,7 @@ describe('parse', function () {
   const descriptorOther = getDescriptor('Wsh2Of3', getDefaultXPubs('b'));
   const psbt = mockPsbtDefault({ descriptorSelf, descriptorOther });
 
-  function recipient(descriptor: Descriptor, index: number, value = 1000) {
+  function recipient(descriptor: WasmMiniscript.Descriptor, index: number, value = 1000) {
     return { value, address: createAddressFromDescriptor(descriptor, index, utxolib.networks.bitcoin) };
   }
 

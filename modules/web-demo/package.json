@@ -24,7 +24,6 @@
     "precommit": "yarn lint-staged"
   },
   "dependencies": {
-    "@bitgo/abstract-utxo": "^9.21.3",
     "@bitgo/key-card": "^0.24.10",
     "@bitgo/sdk-api": "^1.64.1",
     "@bitgo/sdk-coin-ada": "^4.11.3",
@@ -63,6 +62,7 @@
     "@bitgo/sdk-lib-mpc": "^10.5.0",
     "@bitgo/sdk-opensslbytes": "^2.0.0",
     "@bitgo/statics": "^54.5.0",
+    "@bitgo/utxo-lib": "^11.6.1",
     "bitgo": "^48.2.0",
     "lodash": "^4.17.15",
     "react": "^17.0.2",

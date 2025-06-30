@@ -5,6 +5,8 @@ import * as bitcoinjs from 'bitcoinjs-lib';
 import * as utxolib from '@bitgo/utxo-lib';
 import * as wasmMiniscript from '@bitgo/wasm-miniscript';
 
+utxolib.initializeMiniscript(wasmMiniscript);
+
 // demonstrate https://github.com/babylonlabs-io/btc-staking-ts/issues/71
 describe('btc-staking-ts bug #71', function () {
   let buf: Buffer;

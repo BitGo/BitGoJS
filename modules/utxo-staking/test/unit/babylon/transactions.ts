@@ -4,7 +4,7 @@ import * as vendor from '@bitgo/babylonlabs-io-btc-staking-ts';
 import * as bitcoinjslib from 'bitcoinjs-lib';
 import * as utxolib from '@bitgo/utxo-lib';
 import { ECPairInterface } from '@bitgo/utxo-lib';
-import { ast, Descriptor, Miniscript } from '@bitgo/wasm-miniscript';
+import * as WasmMiniscript from '@bitgo/wasm-miniscript';
 import {
   createAddressFromDescriptor,
   createPsbt,
@@ -28,6 +28,8 @@ import { normalize } from '../fixtures.utils';
 
 import { fromXOnlyPublicKey, getECKey, getECKeys, getXOnlyPubkey } from './key.utils';
 import { getBitGoUtxoStakingMsgCreateBtcDelegation, getVendorMsgCreateBtcDelegation } from './vendor.utils';
+
+utxolib.initializeMiniscript(WasmMiniscript);
 
 type WithFee<T> = T & { fee: number };
 type TransactionWithFee = WithFee<{ transaction: bitcoinjslib.Transaction }>;
@@ -112,7 +114,7 @@ function getStakingTransactionTreeVendor(
 
 function createUnstakingTransaction(
   stakingTx: vendor.TransactionResult,
-  stakingDescriptor: Descriptor,
+  stakingDescriptor: WasmMiniscript.Descriptor,
   changeAddress: string,
   { sequence }: { sequence: number }
 ): utxolib.Psbt {
@@ -154,11 +156,14 @@ function getTestnetStakingParamsWithCovenant(
   };
 }
 
-function wpkhDescriptor(key: utxolib.ECPairInterface): Descriptor {
-  return Descriptor.fromString(ast.formatNode({ wpkh: key.publicKey.toString('hex') }), 'definite');
+function wpkhDescriptor(key: utxolib.ECPairInterface): WasmMiniscript.Descriptor {
+  return WasmMiniscript.Descriptor.fromString(
+    WasmMiniscript.ast.formatNode({ wpkh: key.publicKey.toString('hex') }),
+    'definite'
+  );
 }
 
-function mockUtxo(descriptor: Descriptor): vendor.UTXO {
+function mockUtxo(descriptor: WasmMiniscript.Descriptor): vendor.UTXO {
   const scriptPubKey = Buffer.from(descriptor.scriptPubkey());
   const witnessScript = Buffer.from(descriptor.encode());
   return {
@@ -176,11 +181,11 @@ function parseScript(key: string, script: unknown) {
   if (!Buffer.isBuffer(script)) {
     throw new Error('script must be a buffer');
   }
-  const ms = Miniscript.fromBitcoinScript(script, 'tap');
+  const ms = WasmMiniscript.Miniscript.fromBitcoinScript(script, 'tap');
   return {
     script: script.toString('hex'),
     miniscript: ms.toString(),
-    miniscriptAst: ast.fromMiniscript(ms),
+    miniscriptAst: WasmMiniscript.ast.fromMiniscript(ms),
     scriptASM: utxolib.script.toASM(script).split(/\s+/),
   };
 }
@@ -219,12 +224,14 @@ async function assertTransactionEqualsFixture(fixtureName: string, tx: unknown):
   await assertEqualsFixture(fixtureName, normalize(tx));
 }
 
-function assertEqualsMiniscript(script: Buffer, miniscript: ast.MiniscriptNode): void {
-  const ms = Miniscript.fromBitcoinScript(script, 'tap');
-  assert.deepStrictEqual(ast.fromMiniscript(ms), miniscript);
+function assertEqualsMiniscript(script: Buffer, miniscript: WasmMiniscript.ast.MiniscriptNode): void {
+  const ms = WasmMiniscript.Miniscript.fromBitcoinScript(script, 'tap');
+  assert.deepStrictEqual(WasmMiniscript.ast.fromMiniscript(ms), miniscript);
   assert.deepStrictEqual(
     script.toString('hex'),
-    Buffer.from(Miniscript.fromString(ast.formatNode(miniscript), 'tap').encode()).toString('hex')
+    Buffer.from(
+      WasmMiniscript.Miniscript.fromString(WasmMiniscript.ast.formatNode(miniscript), 'tap').encode()
+    ).toString('hex')
   );
 }
 
@@ -249,7 +256,7 @@ function assertEqualScripts(descriptorBuilder: BabylonDescriptorBuilder, builder
   }
 }
 
-function assertEqualOutputScript(outputInfo: { scriptPubKey: Buffer }, descriptor: Descriptor) {
+function assertEqualOutputScript(outputInfo: { scriptPubKey: Buffer }, descriptor: WasmMiniscript.Descriptor) {
   assert.strictEqual(outputInfo.scriptPubKey.toString('hex'), Buffer.from(descriptor.scriptPubkey()).toString('hex'));
 }
 

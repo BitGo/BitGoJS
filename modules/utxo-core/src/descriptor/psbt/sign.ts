@@ -1,7 +1,7 @@
 import assert from 'assert';
 
 import * as utxolib from '@bitgo/utxo-lib';
-import { Psbt as WasmPsbt } from '@bitgo/wasm-miniscript';
+import type { Psbt as WasmPsbt } from '@bitgo/wasm-miniscript';
 
 /** These can be replaced when @bitgo/wasm-miniscript is updated */
 export type SignPsbtInputResult = { Schnorr: string[] } | { Ecdsa: string[] };
