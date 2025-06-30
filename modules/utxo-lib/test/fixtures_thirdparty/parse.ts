@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import assert from 'assert';
 import { describe } from 'mocha';
 import { getNetworkList, getNetworkName, isBitcoinGold, isMainnet, isZcash, isDogecoin } from '../../src/networks';
 import {

@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import assert from 'assert';
 
 import { DerivedWalletKeys, RootWalletKeys, WalletKeys } from '../../../src/bitgo';
 import { getDefaultWalletKeys } from '../../../src/testutil';

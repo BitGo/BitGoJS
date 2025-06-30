@@ -24,8 +24,11 @@ function unwrapResult<A>(method: string, v: { result: A } | { error: { code: num
 }
 
 export class RpcError extends Error {
-  constructor(public rpcError: { code: number; message: string }) {
+  public rpcError: { code: number; message: string };
+
+  constructor(rpcError: { code: number; message: string }) {
     super(`RPC error: ${rpcError.message} (code=${rpcError.code})`);
+    this.rpcError = rpcError;
   }
 
   static isRpcErrorWithCode(e: Error, code: number): boolean {
@@ -44,10 +47,13 @@ export type Coin = {
 
 /** Wrapper around https://docs.sui.io/sui-jsonrpc */
 export class RpcClient {
+  public url: string;
   // Running counter, increments every request
   id = 0;
 
-  constructor(public url: string) {}
+  constructor(url: string) {
+    this.url = url;
+  }
 
   static async createCheckedConnection(url: string): Promise<RpcClient> {
     const rpcClient = new RpcClient(url);

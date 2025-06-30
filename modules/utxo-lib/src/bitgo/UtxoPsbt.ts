@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import assert from 'assert';
 import { Psbt as PsbtBase } from 'bip174';
 import {
   Bip32Derivation,

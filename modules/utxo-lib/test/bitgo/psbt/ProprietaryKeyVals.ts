@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import assert from 'assert';
 import { constructPsbt } from '../../../src/testutil';
 import { bip32, BIP32Interface, networks, testutil } from '../../../src';
 import { RootWalletKeys, PSBT_PROPRIETARY_IDENTIFIER } from '../../../src/bitgo';

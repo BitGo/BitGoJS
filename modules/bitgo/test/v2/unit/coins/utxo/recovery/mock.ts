@@ -10,8 +10,10 @@ import { Bsv } from '@bitgo/sdk-coin-bsv';
 
 type Unspent<TNumber extends number | bigint = number> = bitgo.Unspent<TNumber>;
 export class MockRecoveryProvider implements RecoveryProvider {
+  public unspents: Unspent<bigint>[];
   private prevTxCache: Record<string, string> = {};
-  constructor(public unspents: Unspent<bigint>[]) {
+  constructor(unspents: Unspent<bigint>[]) {
+    this.unspents = unspents;
     this.unspents.forEach((u) => {
       if (utxolib.bitgo.isUnspentWithPrevTx(u)) {
         const { txid } = bitgo.parseOutputId(u.id);

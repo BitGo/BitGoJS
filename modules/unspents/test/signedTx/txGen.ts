@@ -105,17 +105,29 @@ function signInput(
 }
 
 class TxCombo {
+  public walletKeys: BIP32Interface[];
+  public inputTypes: string[];
+  public outputTypes: TestUnspentType[];
+  public expectedDims: Readonly<Dimensions>;
+  public signKeys?: BIP32Interface[];
+  public inputValue: number;
   public unspents: IUnspent[];
   public inputTx: any;
 
   constructor(
-    public walletKeys: BIP32Interface[],
-    public inputTypes: string[],
-    public outputTypes: TestUnspentType[],
-    public expectedDims: Readonly<Dimensions> = Dimensions.ZERO,
-    public signKeys?: BIP32Interface[],
-    public inputValue: number = 10
+    walletKeys: BIP32Interface[],
+    inputTypes: string[],
+    outputTypes: TestUnspentType[],
+    expectedDims: Readonly<Dimensions> = Dimensions.ZERO,
+    signKeys?: BIP32Interface[],
+    inputValue = 10
   ) {
+    this.walletKeys = walletKeys;
+    this.inputTypes = inputTypes;
+    this.outputTypes = outputTypes;
+    this.expectedDims = expectedDims;
+    this.signKeys = signKeys;
+    this.inputValue = inputValue;
     this.unspents = inputTypes.map((inputType) =>
       createUnspent(
         walletKeys.map((key) => key.publicKey),
@@ -180,9 +192,12 @@ const runCombinations = (
 };
 
 class Histogram {
+  public map: Map<number, number>;
   public total = 0;
 
-  constructor(public map: Map<number, number> = new Map()) {}
+  constructor(map: Map<number, number> = new Map()) {
+    this.map = map;
+  }
 
   public add(size: number): void {
     this.map.set(size, (this.map.get(size) || 0) + 1);

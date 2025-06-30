@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import assert from 'assert';
 
 import { networks } from '../../../src';
 import * as utxolib from '../../../src';

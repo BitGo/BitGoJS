@@ -1,6 +1,6 @@
 import * as path from 'path';
 import * as fs from 'fs-extra';
-import * as assert from 'assert';
+import assert from 'assert';
 
 import { networks, Network, getNetworkName } from '../../src';
 import { createTransactionFromBuffer } from '../../src/bitgo';
