@@ -2508,6 +2508,28 @@ export const coins = CoinMap.fromCoins([
     Networks.test.soneium,
     KeyCurve.Secp256k1
   ),
+  terc721(
+    '95bfa074-a3d0-4579-a18a-9bccafc2bd0b',
+    'tsoneium:test721',
+    'soneium Test ERC721',
+    '0xc78d4c49ccaa27a9ba9d0de9d93f50dbc67d4f8e',
+    GENERIC_TOKEN_FEATURES,
+    '',
+    '',
+    Networks.test.soneium,
+    KeyCurve.Secp256k1
+  ),
+  terc1155(
+    '6299cdc3-07b8-40b3-a814-f2d9965bcbb4',
+    'tsoneium:test1155',
+    'soneium Test ERC1155',
+    '0xa8005b2990abfd688c0815b84509896f2c7bf78d',
+    GENERIC_TOKEN_FEATURES,
+    '',
+    '',
+    Networks.test.soneium,
+    KeyCurve.Secp256k1
+  ),
   arbethErc20(
     '14a21e93-b123-4437-b99f-0489947d0379',
     'arbeth:link',
