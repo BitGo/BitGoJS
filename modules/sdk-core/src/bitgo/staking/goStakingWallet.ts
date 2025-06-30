@@ -5,13 +5,16 @@ import { BitGoBase } from '../bitgoBase';
 import { IWallet, PrebuildTransactionResult } from '../wallet';
 import {
   BaseGoStakeOptions,
-  FrontTransferSendRequest,
   GoStakeFinalizeOptions,
   GoStakeOptions,
   GoStakingRequest,
-  IGoStakingWallet,
+  GoStakingRequestOptions,
+  GoStakingRequestResults,
+  GoStakingWalletObject,
+  GoStakingWalletResults,
   UnsignedGoStakingRequest,
-} from './iGoStakingWallet';
+} from './goStakingInterfaces';
+import { FrontTransferSendRequest, IGoStakingWallet } from './iGoStakingWallet';
 import assert from 'assert';
 
 export class GoStakingWallet implements IGoStakingWallet {
@@ -91,6 +94,52 @@ export class GoStakingWallet implements IGoStakingWallet {
     return await this.bitgo.get(this.bitgo.microservicesUrl(this.getGoStakingRequestURL(goStakingRequestId))).result();
   }
 
+  /**
+   * Get go staking requests by coin
+   * @param options
+   */
+  async getGoStakingRequestsByWalletCoin(options?: GoStakingRequestOptions): Promise<GoStakingRequestResults> {
+    return await this.bitgo
+      .get(this.bitgo.microservicesUrl(this.goStakingRequestBaseURL()))
+      .query({
+        ...options,
+      })
+      .result();
+  }
+
+  /**
+   * Get all go staking requests for the account
+   * @param options
+   */
+  async getGoStakingRequests(options: GoStakingRequestOptions = {}): Promise<GoStakingRequestResults> {
+    return await this.bitgo
+      .get(this.bitgo.microservicesUrl(this.getGoStakingRequestsUrl()))
+      .query({
+        ...options,
+      })
+      .result();
+  }
+
+  /**
+   * Get go staking wallets for the account
+   * @param options
+   */
+  async getGoStakingWallets(options?: { page?: number; pageSize?: number }): Promise<GoStakingWalletResults> {
+    return await this.bitgo
+      .get(this.bitgo.microservicesUrl(this.getGoStakingWalletsUrl()))
+      .query({
+        ...options,
+      })
+      .result();
+  }
+
+  /**
+   * Get go staking wallets for the account
+   */
+  async getGoStakingWallet(): Promise<GoStakingWalletObject> {
+    return await this.bitgo.get(this.bitgo.microservicesUrl(this.getGoStakingWalletUrl())).result();
+  }
+
   private async createGoStakingRequest(
     options: BaseGoStakeOptions | GoStakeFinalizeOptions,
     path: 'preview' | 'finalize',
@@ -115,5 +164,17 @@ export class GoStakingWallet implements IGoStakingWallet {
 
   private getGoStakingRequestURL(stakingRequestId: string): string {
     return `${this.goStakingRequestBaseURL()}/${stakingRequestId}`;
+  }
+
+  private getGoStakingRequestsUrl() {
+    return `${this.goStakingBaseURL()}/accounts/${this.accountId}/requests`;
+  }
+
+  private getGoStakingWalletsUrl() {
+    return `${this.goStakingBaseURL()}/accounts/${this.accountId}/coins`;
+  }
+
+  private getGoStakingWalletUrl(): string {
+    return `${this.goStakingBaseURL()}/${this.wallet.baseCoin.getChain()}/accounts/${this.accountId}/coins`;
   }
 }
