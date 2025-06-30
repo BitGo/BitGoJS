@@ -10698,6 +10698,14 @@ export const erc20Coins = [
     '0x957c7fa189a408e78543113412f6ae1a9b4022c4',
     UnderlyingAsset['eth:lf']
   ),
+  erc20(
+    '1fbbb0b4-63bf-40a6-9aba-9a0a5ffba1cd',
+    'eth:usdcv',
+    'USD CoinVertible',
+    18,
+    '0x5422374b27757da72d5265cc745ea906e0446634',
+    UnderlyingAsset['eth:usdcv']
+  ),
   terc20(
     '0205f0d6-0647-47c9-ad8b-c48d048e54f3',
     'fixed',
