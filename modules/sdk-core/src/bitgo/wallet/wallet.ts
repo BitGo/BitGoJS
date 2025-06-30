@@ -34,7 +34,6 @@ import {
   inferAddressType,
   IntentOptionsForMessage,
   IntentOptionsForTypedData,
-  MessageStandardType,
   RequestTracer,
   RequestType,
   TokenTransferRecipientParams,
@@ -2069,8 +2068,8 @@ export class Wallet implements IWallet {
     if (!this.baseCoin.supportsMessageSigning()) {
       throw new Error(`Message signing not supported for ${this.baseCoin.getFullName()}`);
     }
-    if (!params.message) {
-      throw new Error('message required to sign message');
+    if (!params.message || !params.message.messageStandardType) {
+      throw new Error('message and type required to sign message');
     }
     if (this._wallet.multisigType !== 'tss') {
       throw new Error('Message signing only supported for TSS wallets');
@@ -2100,12 +2099,7 @@ export class Wallet implements IWallet {
    * @param params - Parameters for creating the sign message request
    * @returns Promise<TxRequest> - The created transaction request for signing a message
    */
-  async createSignMessageRequest(params: {
-    messageRaw: string;
-    messageStandardType?: MessageStandardType;
-    custodianMessageId?: string;
-    reqId?: RequestTracer;
-  }): Promise<TxRequest> {
+  async buildSignMessageRequest(params: WalletSignMessageOptions): Promise<TxRequest> {
     if (this._wallet.multisigType !== 'tss') {
       throw new Error('Message signing only supported for TSS wallets');
     }
@@ -2114,9 +2108,11 @@ export class Wallet implements IWallet {
       throw new Error(`Message signing not supported for ${this.baseCoin.getFullName()}`);
     }
 
-    if (!params.messageRaw) {
-      throw new Error('message required to create message sign request');
+    if (!params.message?.messageRaw || !params.message?.messageStandardType) {
+      throw new Error('message and type required to create message sign request');
     }
+    const messageRaw = params.message.messageRaw;
+    const messageStandardType = params.message.messageStandardType;
 
     const reqId = params.reqId || new RequestTracer();
 
@@ -2126,14 +2122,14 @@ export class Wallet implements IWallet {
         reqId,
         intentType: 'signMessage',
         isTss: true,
-        messageRaw: params.messageRaw,
-        messageStandardType: params.messageStandardType,
+        messageRaw,
+        messageStandardType,
       };
 
       if (!this.tssUtils) {
         throw new Error('TSS utilities not available for this wallet');
       }
-      return await this.tssUtils.createSignMessageRequest(intentOption);
+      return await this.tssUtils.buildSignMessageRequest(intentOption);
     } catch (error) {
       throw new Error(`Failed to create message sign request: ${error}`);
     }
@@ -3616,28 +3612,36 @@ export class Wallet implements IWallet {
     try {
       let txRequest;
       assert(params.message, 'message required for message signing');
+      const messageRaw = params.message.messageRaw;
+
       if (!params.message.txRequestId) {
         const intentOption: IntentOptionsForMessage = {
           custodianMessageId: params.custodianMessageId,
           reqId: params.reqId,
           intentType: 'signMessage',
           isTss: true,
-          messageRaw: params.message.messageRaw,
-          messageEncoded: params.message.messageEncoded,
+          messageRaw,
+          messageStandardType: params.message.messageStandardType,
         };
-        txRequest = await this.tssUtils!.createTxRequestWithIntentForMessageSigning(intentOption);
+        txRequest = await this.tssUtils!.buildSignMessageRequest(intentOption);
         params.message.txRequestId = txRequest.txRequestId;
       } else {
         txRequest = await getTxRequest(this.bitgo, this.id(), params.message.txRequestId, params.reqId);
       }
 
+      assert(
+        txRequest.messages && txRequest.messages.length > 0,
+        'Unable to find messages in txRequest for message signing'
+      );
+      const messageEncoded = txRequest.messages[0].messageEncoded;
+
       const signedMessageRequest = await this.tssUtils!.signTxRequestForMessage({
         txRequest,
         prv: params.prv,
         reqId: params.reqId || new RequestTracer(),
-        messageRaw: params.message.messageRaw,
-        messageEncoded: params.message.messageEncoded,
-        bufferToSign: Buffer.from(params.message.messageEncoded ?? '', 'hex'),
+        messageRaw,
+        messageEncoded,
+        bufferToSign: Buffer.from(messageEncoded, 'hex'),
       });
       assert(signedMessageRequest.messages, 'Unable to find messages in signedMessageRequest');
       assert(
@@ -3649,8 +3653,8 @@ export class Wallet implements IWallet {
         coin: this.coin(),
         txHash: signedMessageRequest.messages[0].txHash,
         signature: signedMessageRequest.messages[0].txHash,
-        messageRaw: params.message?.messageRaw,
-        messageEncoded: params.message?.messageEncoded,
+        messageRaw,
+        messageEncoded,
         txRequestId: signedMessageRequest.txRequestId,
       };
     } catch (e) {
