@@ -27,6 +27,7 @@ import {
   CustomSShareGeneratingFunction,
   TokenEnablement,
   TokenTransferRecipientParams,
+  TxRequest,
 } from '../utils';
 import { SerializedNtilde } from '../../account-lib/mpc/tss/ecdsa/types';
 import { IAddressBook } from '../address-book';
@@ -909,6 +910,7 @@ export interface IWallet {
   sendTokenEnablement(params?: PrebuildAndSignTransactionOptions): Promise<any>;
   sendTokenEnablements(params?: BuildTokenEnablementOptions): Promise<any>;
   signMessage(params: WalletSignMessageOptions): Promise<SignedMessage>;
+  buildSignMessageRequest(params: WalletSignMessageOptions): Promise<TxRequest>;
   signTypedData(params: WalletSignTypedDataOptions): Promise<SignedMessage>;
   fetchCrossChainUTXOs(params: FetchCrossChainUTXOsOptions): Promise<CrossChainUTXO[]>;
   getChallengesForEcdsaSigning(): Promise<WalletEcdsaChallenges>;

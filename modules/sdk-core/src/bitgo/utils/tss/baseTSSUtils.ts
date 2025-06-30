@@ -1,4 +1,5 @@
 import { IRequestTracer } from '../../../api';
+import * as openpgp from 'openpgp';
 import { Key, readKey, SerializedKeyPair } from 'openpgp';
 import { IBaseCoin, KeychainsTriplet } from '../../baseCoin';
 import { BitGoBase } from '../../bitgoBase';
@@ -10,40 +11,40 @@ import * as _ from 'lodash';
 import {
   BitgoGPGPublicKey,
   BitgoHeldBackupKeyShare,
-  CustomGShareGeneratingFunction,
-  CustomRShareGeneratingFunction,
-  ITssUtils,
-  PrebuildTransactionWithIntentOptions,
-  SignatureShareRecord,
-  TSSParams,
-  TxRequest,
-  TxRequestVersion,
-  CreateKeychainParamsBase,
-  IntentOptionsForMessage,
-  PopulatedIntentForMessageSigning,
-  IntentOptionsForTypedData,
-  PopulatedIntentForTypedDataSigning,
-  CreateBitGoKeychainParamsBase,
   CommitmentShareRecord,
-  EncryptedSignerShareRecord,
+  CreateBitGoKeychainParamsBase,
+  CreateKeychainParamsBase,
   CustomCommitmentGeneratingFunction,
-  TSSParamsForMessage,
-  RequestType,
-  CustomPaillierModulusGetterFunction,
+  CustomGShareGeneratingFunction,
   CustomKShareGeneratingFunction,
-  CustomMuDeltaShareGeneratingFunction,
-  CustomSShareGeneratingFunction,
   CustomMPCv2SigningRound1GeneratingFunction,
   CustomMPCv2SigningRound2GeneratingFunction,
   CustomMPCv2SigningRound3GeneratingFunction,
+  CustomMuDeltaShareGeneratingFunction,
+  CustomPaillierModulusGetterFunction,
+  CustomRShareGeneratingFunction,
+  CustomSShareGeneratingFunction,
+  EncryptedSignerShareRecord,
+  IntentOptionsForMessage,
+  IntentOptionsForTypedData,
+  ITssUtils,
+  PopulatedIntentForMessageSigning,
+  PopulatedIntentForTypedDataSigning,
+  PrebuildTransactionWithIntentOptions,
+  RequestType,
+  SignatureShareRecord,
+  TSSParams,
+  TSSParamsForMessage,
   TSSParamsWithPrv,
+  TxRequest,
+  TxRequestVersion,
 } from './baseTypes';
 import { GShare, SignShare } from '../../../account-lib/mpc/tss';
 import { RequestTracer } from '../util';
-import * as openpgp from 'openpgp';
 import { envRequiresBitgoPubGpgKeyConfig, getBitgoMpcGpgPubKey } from '../../tss/bitgoPubKeys';
 import { getBitgoGpgPubKey } from '../opengpgUtils';
 import assert from 'assert';
+import { MessageStandardType } from '../messageTypes';
 
 /**
  * BaseTssUtil class which different signature schemes have to extend
@@ -356,6 +357,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
 
   /**
    * Create a tx request from params for message signing
+   * @deprecated Use createSignMessageRequest instead
    *
    * @param params
    * @param apiVersion
@@ -386,7 +388,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
    * @param params - the parameters for the sign message request
    * @param apiVersion - the API version to use, defaults to 'full'
    */
-  async createSignMessageRequest(
+  async buildSignMessageRequest(
     params: IntentOptionsForMessage,
     apiVersion: TxRequestVersion = 'full'
   ): Promise<TxRequest> {
@@ -402,11 +404,11 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
       memo: params.memo?.value,
       isTss: params.isTss,
       messageRaw: params.messageRaw,
-      messageStandardType: params.messageStandardType,
+      messageStandardType: params.messageStandardType ?? MessageStandardType.UNKNOWN,
       messageEncoded: params.messageEncoded ?? '',
     };
 
-    return this.createSignMessageRequestBase(intent, apiVersion, params.reqId);
+    return this.buildSignMessageRequestBase(intent, apiVersion, params.reqId);
   }
 
   /**
@@ -467,7 +469,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
    *
    * @private
    */
-  private async createSignMessageRequestBase(
+  private async buildSignMessageRequestBase(
     intent: PopulatedIntentForMessageSigning,
     apiVersion: TxRequestVersion,
     reqId?: IRequestTracer

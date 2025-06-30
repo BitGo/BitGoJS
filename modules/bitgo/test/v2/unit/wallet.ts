@@ -19,6 +19,7 @@ import {
   Keychains,
   KeyType,
   ManageUnspentsOptions,
+  MessageStandardType,
   MessageTypes,
   PopulatedIntent,
   PrebuildTransactionWithIntentOptions,
@@ -3414,6 +3415,10 @@ describe('V2 Wallet:', function () {
 
     describe('Message Signing', function () {
       const txHash = '0xrrrsss1b';
+      const messageRaw = 'hello world';
+      const messageEncoded = Buffer.from(`\u0019Ethereum Signed Message:\n${messageRaw.length}${messageRaw}`).toString(
+        'hex'
+      );
       const txRequestForMessageSigning: TxRequest = {
         txRequestId: reqId.toString(),
         transactions: [],
@@ -3438,19 +3443,19 @@ describe('V2 Wallet:', function () {
             signatureShares: [{ from: SignatureShareType.USER, to: SignatureShareType.USER, share: '' }],
             combineSigShare: '0:rrr:sss:3',
             txHash,
+            messageEncoded,
           },
         ],
       };
       let signTxRequestForMessage;
       const messageSigningCoins = ['teth', 'tpolygon'];
-      const messageRaw = 'test';
       const expected: SignedMessage = {
         txRequestId: reqId.toString(),
         txHash,
         signature: txHash,
         messageRaw,
         coin: 'teth',
-        messageEncoded: Buffer.from('\u0019Ethereum Signed Message:\n4test').toString('hex'),
+        messageEncoded,
       };
 
       beforeEach(async function () {
@@ -3480,8 +3485,11 @@ describe('V2 Wallet:', function () {
 
         it('sol create signMessage tx request', async function () {
           await tssSolWallet
-            .createSignMessageRequest({
-              messageRaw,
+            .buildSignMessageRequest({
+              message: {
+                messageRaw,
+                messageStandardType: MessageStandardType.EIP191,
+              },
             })
             .should.be.rejectedWith('Message signing not supported for Testnet Solana');
         });
@@ -3496,13 +3504,16 @@ describe('V2 Wallet:', function () {
         it('should create tx Request with signMessage intent', async function () {
           nock(bgUrl).post(`/api/v2/wallet/${tssEthWallet.id()}/msgrequests`).reply(200, txRequestForMessageSigning);
 
-          const txRequest = await tssEthWallet.createSignMessageRequest({
-            messageRaw,
+          const txRequest = await tssEthWallet.buildSignMessageRequest({
+            message: {
+              messageRaw,
+              messageStandardType: MessageStandardType.EIP191,
+            },
           });
           txRequest.should.deepEqual(txRequestForMessageSigning);
         });
 
-        it('should sign message', async function () {
+        it(`[${coinName}] should sign message`, async function () {
           const signMessageTssSpy = sinon.spy(tssEthWallet, 'signMessageTss' as any);
           nock(bgUrl)
             .get(
@@ -3514,7 +3525,7 @@ describe('V2 Wallet:', function () {
 
           const signMessage = await tssEthWallet.signMessage({
             reqId,
-            message: { messageRaw, txRequestId },
+            message: { messageRaw, txRequestId, messageStandardType: MessageStandardType.EIP191 },
             prv: 'secretKey',
           });
           signMessage.should.deepEqual(expectedWithCoinField);
@@ -3524,14 +3535,14 @@ describe('V2 Wallet:', function () {
           );
         });
 
-        it('should sign message when custodianMessageId is provided', async function () {
+        it(`[${coinName}] should sign message when custodianMessageId is provided`, async function () {
           const signMessageTssSpy = sinon.spy(tssEthWallet, 'signMessageTss' as any);
-          nock(bgUrl).post(`/api/v2/wallet/${tssEthWallet.id()}/txrequests`).reply(200, txRequestForMessageSigning);
+          nock(bgUrl).post(`/api/v2/wallet/${tssEthWallet.id()}/msgrequests`).reply(200, txRequestForMessageSigning);
 
           const signMessage = await tssEthWallet.signMessage({
             custodianMessageId: 'unittest',
             reqId,
-            message: { messageRaw },
+            message: { messageRaw, messageStandardType: MessageStandardType.EIP191 },
             prv: 'secretKey',
           });
           signMessage.should.deepEqual(expectedWithCoinField);
@@ -3541,13 +3552,13 @@ describe('V2 Wallet:', function () {
           );
         });
 
-        it('should sign message when txRequestId not provided', async function () {
+        it(`[${coinName}] should sign message when txRequestId not provided`, async function () {
           const signMessageTssSpy = sinon.spy(tssEthWallet, 'signMessageTss' as any);
-          nock(bgUrl).post(`/api/v2/wallet/${tssEthWallet.id()}/txrequests`).reply(200, txRequestForMessageSigning);
+          nock(bgUrl).post(`/api/v2/wallet/${tssEthWallet.id()}/msgrequests`).reply(200, txRequestForMessageSigning);
 
           const signMessage = await tssEthWallet.signMessage({
             reqId,
-            message: { messageRaw },
+            message: { messageRaw, messageStandardType: MessageStandardType.EIP191 },
             prv: 'secretKey',
           });
           signMessage.should.deepEqual(expectedWithCoinField);
@@ -3561,7 +3572,7 @@ describe('V2 Wallet:', function () {
           await tssEthWallet
             .signMessage({
               reqId,
-              message: { messageRaw, txRequestId },
+              message: { messageRaw, txRequestId, messageStandardType: MessageStandardType.EIP191 },
               prv: '',
             })
             .should.be.rejectedWith('keychain does not have property encryptedPrv');
