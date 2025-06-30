@@ -523,6 +523,7 @@ export const SONEIUM_FEATURES = [
   CoinFeature.MULTISIG,
   CoinFeature.MULTISIG_COLD,
   CoinFeature.MULTISIG_SUPPORT_GATED,
+  CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
 ];
 
 export const POLYX_FEATURES = [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.TSS_COLD];
