@@ -2526,6 +2526,8 @@ export enum UnderlyingAsset {
   // generic NFTs
   'erc721:soneiumtoken' = 'erc721:soneiumtoken',
   'erc1155:soneiumtoken' = 'erc1155:soneiumtoken',
+  'tsoneium:test721' = 'tsoneium:test721',
+  'tsoneium:test1155' = 'tsoneium:test1155',
 
   // coredao mainnet tokens
   'coredao:stcore' = 'coredao:stcore',
