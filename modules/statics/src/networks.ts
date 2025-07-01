@@ -1384,6 +1384,7 @@ class SoneiumTestnet extends Testnet implements EthereumNetwork {
   batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
   forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
+  walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
 }
 
 class Somnia extends Mainnet implements EthereumNetwork {
