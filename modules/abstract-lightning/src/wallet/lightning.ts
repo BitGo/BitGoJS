@@ -27,6 +27,7 @@ import {
   LightningOnchainWithdrawResponse,
   ListInvoicesResponse,
   ListPaymentsResponse,
+  LndCreateWithdrawResponse,
 } from '../codecs';
 import { LightningPaymentIntent, LightningPaymentRequest } from '@bitgo/public-types';
 
@@ -377,6 +378,7 @@ export class LightningWallet implements ILightningWallet {
       reqId
     );
 
+    const coinSpecific = transactionRequestSend.transactions?.[0]?.unsignedTx?.coinSpecific;
     let updatedTransfer: any = undefined;
     try {
       updatedTransfer = await this.wallet.getTransfer({ id: transfer.id });
@@ -390,6 +392,10 @@ export class LightningWallet implements ILightningWallet {
       txRequestId: transactionRequestCreate.txRequestId,
       txRequestState: transactionRequestSend.state,
       transfer: updatedTransfer,
+      withdrawStatus:
+        coinSpecific && 'status' in coinSpecific
+          ? t.exact(LndCreateWithdrawResponse).encode(coinSpecific as LndCreateWithdrawResponse)
+          : undefined,
     };
   }
 
