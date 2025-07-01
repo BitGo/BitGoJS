@@ -68,6 +68,26 @@ export const solTokens = [
     SOL_TOKEN_FEATURES
   ),
   solToken(
+    'b9631491-32e7-4f4c-b8a9-739839c16364',
+    'sol:usdg',
+    'Global Dollar',
+    6,
+    '2u1tszSeqZ3qBWF3uNGPFc8TzMk2tdiwknnRMWGWjGWH', // https://solscan.io/token/2u1tszSeqZ3qBWF3uNGPFc8TzMk2tdiwknnRMWGWjGWH
+    '2u1tszSeqZ3qBWF3uNGPFc8TzMk2tdiwknnRMWGWjGWH',
+    UnderlyingAsset['sol:usdg'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    'eaa1bdb5-36cf-4c5b-b30c-8f156f366f47',
+    'sol:ausd',
+    'Agora Dollar',
+    6,
+    'AUSD1jCcCyPLybk1YnvPWsHQSrZ46dxwoMniN4N2UEB9', // https://solscan.io/token/AUSD1jCcCyPLybk1YnvPWsHQSrZ46dxwoMniN4N2UEB9
+    'AUSD1jCcCyPLybk1YnvPWsHQSrZ46dxwoMniN4N2UEB9',
+    UnderlyingAsset['sol:ausd'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
     'a885f00b-d958-477d-9857-9d4f9c9bf66a',
     'sol:ai16z',
     'AI16Z',
