@@ -109,6 +109,54 @@ export const erc20Coins = [
     UnderlyingAsset['eth:xy']
   ),
   erc20(
+    '3f5f1c68-28e2-4b94-8dc1-d32d09c53183',
+    'eth:guild',
+    'BlockchainSpace',
+    18,
+    '0x83e9f223e1edb3486f876ee888d76bfba26c475a',
+    UnderlyingAsset['eth:guild']
+  ),
+  erc20(
+    '7f986f36-7a0c-4bc8-8c1a-90c6f1a7a5e2',
+    'eth:rdo',
+    'Reddio',
+    18,
+    '0x57240c3e140f98abe315ca8e0213c7a77f34a334',
+    UnderlyingAsset['eth:rdo']
+  ),
+  erc20(
+    '9a21174b-fb13-4a43-9e14-502d51cc5e87',
+    'eth:ryt',
+    'Real Yield Token',
+    18,
+    '0x1d06aa46994f2aba30f6eed46b315664460a709a',
+    UnderlyingAsset['eth:ryt']
+  ),
+  erc20(
+    '4f09e21a-36b1-4d95-93f6-e57a0c7f96d0',
+    'eth:h',
+    'Humanity Protocol',
+    18,
+    '0xcf5104d094e3864cfcbda43b82e1cefd26a016eb',
+    UnderlyingAsset['eth:h']
+  ),
+  erc20(
+    '79a6c4f7-9874-4b7f-844a-83b9f9e93c34',
+    'eth:wbt',
+    'WhiteBIT Coin',
+    8,
+    '0x925206b8a707096ed26ae47c84747fe0bb734f59',
+    UnderlyingAsset['eth:wbt']
+  ),
+  erc20(
+    'c630a709-91d5-4e8d-9855-26b6277cfd32',
+    'eth:ftn',
+    'Fasttoken',
+    18,
+    '0xaedf386b755465871ff874e3e37af5976e247064',
+    UnderlyingAsset['eth:ftn']
+  ),
+  erc20(
     'aba8da14-ee9a-44b0-9680-f53069495b08',
     'eth:spx',
     'SPX6900',

@@ -1559,6 +1559,16 @@ export const coins = CoinMap.fromCoins([
     AccountCoin.DEFAULT_FEATURES
   ),
   hederaToken(
+    '0831f9ae-5ea3-47e0-b3ef-b7e69bb48b4d',
+    'hbar:co2e',
+    'OrbexCO2-dAluminium',
+    Networks.main.hedera,
+    3,
+    UnderlyingAsset['hbar:co2e'],
+    '0.0.6908371',
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  hederaToken(
     '44beb5f1-7581-4b0d-a09a-bae78d8c266f',
     'hbar:clxy',
     'Calaxy Tokens',
@@ -2588,6 +2598,14 @@ export const coins = CoinMap.fromCoins([
     6,
     '0xa05245ade25cc1063ee50cf7c083b4524c1c4302',
     UnderlyingAsset['arbeth:xsgdv2']
+  ),
+  arbethErc20(
+    'd3ac7e6d-14f0-4ff9-8b20-20348e63b723',
+    'arbeth:trn',
+    't3rn',
+    18,
+    '0x1114982539a2bfb84e8b9e4e320bbc04532a9e44',
+    UnderlyingAsset['arbeth:trn']
   ),
   arbethErc20(
     '0606676c-1e6b-488a-abe1-ab46c697c4b9',

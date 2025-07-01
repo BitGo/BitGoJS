@@ -423,6 +423,8 @@ export const ofcCoins = [
     6,
     UnderlyingAsset['sol:pnut']
   ),
+  ofcsolToken('e792c18a-05d1-4622-a8db-192f431b70a2', 'ofcsol:usdg', 'Global Dollar', 6, UnderlyingAsset['sol:usdg']),
+  ofcsolToken('56b9f9c2-1a6a-4d79-aad2-2e418c3b52e0', 'ofcsol:ausd', 'Agora Dollar', 6, UnderlyingAsset['sol:ausd']),
   ofcsolToken(
     'c382f3cc-c071-4ef5-89ac-bcb85d8d415f',
     'ofcsol:wec',
@@ -898,6 +900,7 @@ export const ofcCoins = [
     18,
     UnderlyingAsset['arbeth:spxux']
   ),
+  ofcArbethErc20('f4f0e2d4-9937-49a6-a6f2-80e1717a5d82', 'ofcarbeth:trn', 't3rn', 18, UnderlyingAsset['arbeth:trn']),
   ofcArbethErc20(
     '0cf9baf8-eca6-47b2-82e1-6ca0ee09f760',
     'ofcarbeth:xsgdv2',
@@ -1245,6 +1248,14 @@ export const ofcCoins = [
   ofcBscToken('6a1e8b8c-4d7e-4f9a-9d8f-f6e72f8c7e65', 'ofcbsc:solv', 'SOLV Protocol', 9, UnderlyingAsset['bsc:solv']),
   ofcBscToken('f8c3d7b5-2d9e-4b3f-8a1e-7c6d9e3a2f4b', 'ofcbsc:brise', 'Bitrise Token', 9, UnderlyingAsset['bsc:brise']),
   ofcBscToken('2e9f4c6b-8a7d-4b2e-9d3f-7c6a5e8b1f2a', 'ofcbsc:bsw', 'Biswap', 18, UnderlyingAsset['bsc:bsw']),
+  ofcBscToken(
+    '89dfd19c-d241-45e2-94b1-8a9bcdb9c09b',
+    'ofcbsc:parti',
+    'Particle Network',
+    18,
+    UnderlyingAsset['bsc:parti']
+  ),
+  ofcBscToken('8d250ad4-775f-4435-9c4c-cf0f77b26f7e', 'ofcbsc:form', 'Four', 18, UnderlyingAsset['bsc:form']),
   ofcBscToken(
     '7c3f2e8a-9d1f-4b6a-8e7b-1f9e4c5d2a6f',
     'ofcbsc:burger',
@@ -2448,6 +2459,13 @@ export const ofcCoins = [
     'Karate Combat',
     8,
     UnderlyingAsset['hbar:karate']
+  ),
+  ofcHederaToken(
+    '0e2b2946-3e4f-4fc1-a3a0-650850e37207',
+    'ofchbar:co2e',
+    'OrbexCO2-dAluminium',
+    3,
+    UnderlyingAsset['hbar:co2e']
   ),
   ofcHederaToken(
     'f15365a0-924f-47aa-8e41-02022079a368',
