@@ -13,9 +13,10 @@ import {
   verifyPayGoAddressProof,
 } from '../../../src/paygo/psbt/payGoAddressProof';
 import { generatePayGoAttestationProof } from '../../../src/testutil/generatePayGoAttestationProof.utils';
-import { trimMessagePrefix } from '../../../src/testutil/trimMessagePrefix';
+import { trimMessagePrefix } from '../../../src/paygo/trimMessagePrefix';
 import { signMessage } from '../../../src/bip32utils';
-import { NIL_UUID } from '../../../src/paygo/attestation';
+import { createPayGoAttestationBuffer, NIL_UUID } from '../../../src/paygo/attestation';
+import { parsePayGoAttestation } from '../../../src/paygo';
 
 // To construct our PSBTs
 export const network = utxolib.networks.bitcoin;
@@ -46,9 +47,11 @@ export const addressToVerify = utxolib.address.toBase58Check(
 
 // this should be retuning a Buffer
 export const addressProofBuffer = generatePayGoAttestationProof(NIL_UUID, Buffer.from(addressToVerify));
+
 export const addressProofMsgBuffer = trimMessagePrefix(addressProofBuffer);
-// We know that that the entropy is a set 64 bytes.
-export const addressProofEntropy = addressProofMsgBuffer.subarray(0, 65);
+const payGoAttestationProofComponents = parsePayGoAttestation(addressProofBuffer);
+
+export const addressProofEntropy = payGoAttestationProofComponents.entropy;
 
 // signature with the given msg addressProofBuffer
 export const sig = signMessage(addressProofMsgBuffer.toString(), attestationPrvKey!, network);
@@ -129,5 +132,38 @@ describe('getPaygoAddressProofIndex', () => {
       () => getPayGoAddressProofOutputIndex(psbt),
       (e: any) => e.message === 'There are multiple PayGo addresses in the PSBT output 0.'
     );
+  });
+});
+
+describe('trimMessagePrefix', function () {
+  it('should be the same proof constructed consistently', function () {
+    const psbt = getTestPsbt();
+    psbt.addOutput({ script: utxolib.address.toOutputScript(addressToVerify, network), value: BigInt(10000) });
+    const outputIndex = psbt.data.outputs.length - 1;
+    addPayGoAddressProof(psbt, outputIndex, sig, addressProofEntropy);
+    // manually check without the verify function to see if the entropy being stored
+    // in the psbt is the same as the entropy being extracted and trimmed.
+    const psbtOutputs = checkForOutput(psbt.data.outputs, outputIndex);
+    const stored = utxolib.bitgo.getProprietaryKeyValuesFromUnknownKeyValues(psbtOutputs, {
+      identifier: utxolib.bitgo.PSBT_PROPRIETARY_IDENTIFIER,
+      subtype: utxolib.bitgo.ProprietaryKeySubtype.PAYGO_ADDRESS_ATTESTATION_PROOF,
+    });
+
+    assert(stored[0].key.keydata.equals(payGoAttestationProofComponents.entropy));
+    assert(stored[0].value.equals(sig));
+
+    const reconstructedProofFromComponents = Buffer.concat([
+      payGoAttestationProofComponents.entropy,
+      payGoAttestationProofComponents.address,
+      payGoAttestationProofComponents.uuid,
+    ]);
+    const verifyConstructedProof = createPayGoAttestationBuffer(
+      addressToVerify,
+      stored[0].key.keydata,
+      utxolib.networks.bitcoin
+    );
+
+    assert(addressProofMsgBuffer.equals(reconstructedProofFromComponents));
+    assert(verifyConstructedProof.equals(reconstructedProofFromComponents));
   });
 });
