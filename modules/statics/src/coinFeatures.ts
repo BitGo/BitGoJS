@@ -117,10 +117,12 @@ export const XTZ_FEATURES = [
   CoinFeature.ENTERPRISE_PAYS_FEES,
 ].filter(
   (feature) =>
-    feature !== CoinFeature.CUSTODY &&
-    feature !== CoinFeature.CUSTODY_BITGO_TRUST &&
     feature !== CoinFeature.CUSTODY_BITGO_MENA_FZE &&
-    feature !== CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE
+    feature !== CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE &&
+    feature !== CoinFeature.CUSTODY_BITGO_SINGAPORE &&
+    feature !== CoinFeature.CUSTODY_BITGO_KOREA &&
+    feature !== CoinFeature.CUSTODY_BITGO_EUROPE_APS &&
+    feature !== CoinFeature.CUSTODY_BITGO_FRANKFURT
 );
 
 export const XRP_FEATURES = [
