@@ -54,6 +54,10 @@ export interface BatchArgs {
   calls: BatchCallObject[];
 }
 
+export interface UnbondArgs extends Args {
+  value: string;
+}
+
 export interface WithdrawUnbondedArgs extends Args {
   numSlashingSpans: number;
 }
