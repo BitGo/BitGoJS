@@ -1,7 +1,16 @@
 import { BaseAddress, BaseKey, BaseTransactionBuilder, BuildTransactionError, SigningError } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
-import { DEFAULT_MEMO, IcpTransaction, IcpTransactionData, PayloadsData, Signatures } from './iface';
+import { Principal } from '@dfinity/principal';
+import {
+  DEFAULT_MEMO,
+  IcpTransaction,
+  IcpTransactionData,
+  PayloadsData,
+  Signatures,
+  OperationType,
+  MAX_INGRESS_TTL,
+} from './iface';
 import { SignedTransactionBuilder } from './signedTransactionBuilder';
 import { Transaction } from './transaction';
 import utils from './utils';
@@ -14,6 +23,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _ingressEnd: number | BigInt;
   protected _receiverId: string;
   protected _amount: string;
+  protected static readonly GOVERNANCE_CANISTER_ID = Principal.fromText('rrkah-fqaaa-aaaaa-aaaaq-cai');
+  protected static readonly DEFAULT_FEE_E8S = '10000'; // 0.0001 ICP
+  protected _neuronId: bigint;
+  protected _additionalDelaySeconds: number;
+  protected _feeE8s: string;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -184,5 +198,85 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       this._transaction.signaturePayload
     );
     this._transaction.signedTransaction = signedTransactionBuilder.getSignTransaction();
+  }
+
+  /**
+   * Handle dissolve delay increase for a neuron
+   *
+   * @param {bigint} neuronId - The ID of the neuron
+   * @param {number} additionalDelaySeconds - Additional seconds to add to dissolve delay
+   * @param {string} senderPublicKey - The sender's public key
+   * @returns {Promise<Transaction>} The built transaction
+   */
+  protected async handleDissolveDelay(
+    neuronId: bigint,
+    additionalDelaySeconds: number,
+    senderPublicKey: string
+  ): Promise<Transaction> {
+    if (!neuronId) {
+      throw new BuildTransactionError('Neuron ID is required');
+    }
+    if (!additionalDelaySeconds || additionalDelaySeconds <= 0) {
+      throw new BuildTransactionError('Additional delay seconds must be greater than 0');
+    }
+
+    const controllerPrincipal = utils.derivePrincipalFromPublicKey(senderPublicKey);
+    const defaultSubaccount = new Uint8Array(32);
+    const senderAddress = utils.fromPrincipal(controllerPrincipal, defaultSubaccount);
+
+    const currentTime = Date.now() * 1000_000;
+    const ingressStartTime = currentTime;
+    const ingressEndTime = ingressStartTime + MAX_INGRESS_TTL;
+
+    const transactionData: IcpTransactionData = {
+      senderAddress,
+      receiverAddress: utils.fromPrincipal(TransactionBuilder.GOVERNANCE_CANISTER_ID, defaultSubaccount),
+      amount: '0', // No amount transfer needed for dissolve delay increase
+      fee: this._feeE8s || TransactionBuilder.DEFAULT_FEE_E8S,
+      senderPublicKeyHex: senderPublicKey,
+      memo: BigInt(neuronId.toString()),
+      transactionType: OperationType.INCREASE_DISSOLVE_DELAY,
+      expiryTime: ingressEndTime,
+      additionalData: {
+        neuronId: neuronId,
+        additionalDelaySeconds: additionalDelaySeconds,
+      },
+    };
+
+    this._transaction.icpTransactionData = transactionData;
+    return this._transaction;
+  }
+
+  /**
+   * Set the neuron ID for dissolve delay operation
+   *
+   * @param {bigint} id - The neuron ID
+   * @returns {this} The transaction builder instance
+   */
+  public neuron(id: bigint): this {
+    this._neuronId = id;
+    return this;
+  }
+
+  /**
+   * Set the additional delay seconds for dissolve delay operation
+   *
+   * @param {number} seconds - The additional seconds to add
+   * @returns {this} The transaction builder instance
+   */
+  public additionalDelay(seconds: number): this {
+    this._additionalDelaySeconds = seconds;
+    return this;
+  }
+
+  /**
+   * Set the fee for the transaction
+   *
+   * @param {string} value - The fee amount in e8s
+   * @returns {this} The transaction builder instance
+   */
+  public fee(value: string): this {
+    this._feeE8s = value;
+    return this;
   }
 }

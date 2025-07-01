@@ -47,6 +47,7 @@
     "@bitgo/statics": "^54.5.0",
     "@dfinity/agent": "^2.2.0",
     "@dfinity/candid": "^2.2.0",
+    "@dfinity/nns": "^8.5.0",
     "@dfinity/principal": "^2.2.0",
     "@noble/curves": "1.8.1",
     "bignumber.js": "^9.1.1",

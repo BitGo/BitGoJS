@@ -26,9 +26,29 @@ export enum CurveType {
   SECP256K1 = 'secp256k1',
 }
 
+export enum Topic {
+  Unspecified = 0,
+  Governance = 1,
+  SnsAndCommunityFund = 2,
+}
+
 export enum OperationType {
   TRANSACTION = 'TRANSACTION',
   FEE = 'FEE',
+  INCREASE_DISSOLVE_DELAY = 'INCREASE_DISSOLVE_DELAY',
+  CLAIM_OR_REFRESH = 'CLAIM_OR_REFRESH',
+  ADD_HOTKEY = 'ADD_HOTKEY',
+  REMOVE_HOTKEY = 'REMOVE_HOTKEY',
+}
+
+export interface NeuronDetails {
+  neuronId: bigint;
+  controller: string;
+  hotkeys: string[];
+}
+
+export interface FollowConfig {
+  [topic: number]: bigint[];
 }
 
 export enum MethodName {
@@ -48,6 +68,12 @@ export interface IcpTransactionData {
   memo: number | BigInt; // memo in string is not accepted by ICP chain.
   transactionType: OperationType;
   expiryTime: number | BigInt;
+  additionalData?: {
+    neuronId?: bigint;
+    additionalDelaySeconds?: number;
+    followConfig?: FollowConfig;
+    dissolveDelaySeconds?: number;
+  };
 }
 
 export interface IcpPublicKey {
