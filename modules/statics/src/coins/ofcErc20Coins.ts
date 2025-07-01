@@ -3232,6 +3232,13 @@ export const ofcErc20Coins = [
   ),
   ofcerc20('8d778a3b-7537-4333-97b4-9244078ae37c', 'ofceth:sc', 'SteelCoin', 18, underlyingAssetForSymbol('eth:sc')),
   ofcerc20('827a39b3-0124-4667-b1ed-f939dc7bb86f', 'ofceth:lf', 'LF labs', 18, underlyingAssetForSymbol('eth:lf')),
+  ofcerc20(
+    '6386ef1a-db83-419b-be2f-0a7a3626e259',
+    'ofceth:usdcv',
+    'USD CoinVertible',
+    18,
+    underlyingAssetForSymbol('eth:usdcv')
+  ),
 ];
 
 export const tOfcErc20Coins = [
