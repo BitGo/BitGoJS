@@ -10,6 +10,13 @@ type BundlerWasmer = typeof import('@silencelaboratories/dkls-wasm-ll-bundler');
 
 type DklsWasm = NodeWasmer | WebWasmer | BundlerWasmer;
 
+export interface DkgSessionData {
+  dkgSessionBytes: Uint8Array;
+  dkgState: DkgState;
+  chainCodeCommitment?: Uint8Array;
+  keyShareBuff?: Buffer;
+}
+
 export class Dkg {
   protected dkgSession: KeygenSession | undefined;
   protected dkgSessionBytes: Uint8Array;
@@ -159,6 +166,7 @@ export class Dkg {
     }
     try {
       const payload = this.dkgSession.createFirstMessage().payload;
+      this.dkgSessionBytes = this.dkgSession.toBytes();
       this._deserializeState();
       return {
         payload: payload,
@@ -275,5 +283,68 @@ export class Dkg {
       }
     }
     return nextRoundDeserializedMessages;
+  }
+
+  /**
+   * Get the current session data that can be used to restore the session later
+   * @returns The current session data
+   */
+  getSessionData(): DkgSessionData {
+    const sessionData: DkgSessionData = {
+      dkgSessionBytes: this.dkgSessionBytes,
+      dkgState: this.dkgState,
+    };
+
+    if (this.chainCodeCommitment) {
+      sessionData.chainCodeCommitment = this.chainCodeCommitment;
+    }
+
+    if (this.keyShareBuff) {
+      sessionData.keyShareBuff = this.keyShareBuff;
+    }
+
+    return sessionData;
+  }
+
+  /**
+   * Restore a DKG session from previous session data
+   * Note: This should not be used for Round 1 as that's the initialization phase
+   * @param n Number of parties
+   * @param t Threshold
+   * @param partyIdx Party index
+   * @param sessionData Previous session data
+   * @param seed Optional seed
+   * @param retrofitData Optional retrofit data
+   * @param dklsWasm Optional DKLS wasm instance
+   * @returns A new DKG instance with the restored session
+   */
+  static async restoreSession(
+    n: number,
+    t: number,
+    partyIdx: number,
+    sessionData: DkgSessionData,
+    seed?: Buffer,
+    retrofitData?: RetrofitData,
+    dklsWasm?: BundlerWasmer
+  ): Promise<Dkg> {
+    const dkg = new Dkg(n, t, partyIdx, seed, retrofitData, dklsWasm);
+
+    if (!dkg.dklsWasm) {
+      await dkg.loadDklsWasm();
+    }
+
+    dkg.dkgSessionBytes = sessionData.dkgSessionBytes;
+    dkg.dkgState = sessionData.dkgState;
+
+    if (sessionData.chainCodeCommitment) {
+      dkg.chainCodeCommitment = sessionData.chainCodeCommitment;
+    }
+
+    if (sessionData.keyShareBuff) {
+      dkg.keyShareBuff = sessionData.keyShareBuff;
+    }
+
+    dkg._restoreSession();
+    return dkg;
   }
 }
