@@ -1294,6 +1294,26 @@ export const coins = CoinMap.fromCoins([
     [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
   ),
   account(
+    'bc2c6d82-69ee-4745-b213-6f83e90199db',
+    'phrs',
+    'Pharos',
+    Networks.main.phrs,
+    18,
+    UnderlyingAsset.PHRS,
+    BaseUnit.ETH,
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK]
+  ),
+  account(
+    '06b62cc0-1ab1-4473-8d14-c86f31e0b224',
+    'tphrs',
+    'Pharos Testnet',
+    Networks.test.phrs,
+    18,
+    UnderlyingAsset.PHRS,
+    BaseUnit.ETH,
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK]
+  ),
+  account(
     '251b78df-90c5-4ff5-b07a-8cc23f27c5ff',
     'soneium',
     'Soneium',
