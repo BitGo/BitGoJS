@@ -17,6 +17,7 @@ import jsonMainnetParams from './params.mainnet.json';
 import jsonTestnetParams from './params.testnet.json';
 import { BabylonNetworkLike, toBabylonNetwork } from './network';
 
+/** @see https://docs.babylonlabs.io/api/babylon-gRPC/params/ */
 const BabylonParamsJSON = t.type({
   covenant_pks: t.array(t.string),
   covenant_quorum: t.number,
@@ -63,7 +64,7 @@ function toVersionedParamsFromJson(jsonParams: unknown[]): VersionedStakingParam
       const result = t.type({ params: BabylonParamsJSON }).decode(p);
       if (isLeft(result)) {
         const msg = PathReporter.report(result).join('\n');
-        throw new Error(`Invalid testnet params: ${msg}`);
+        throw new Error(`Invalid params: ${msg}`);
       }
       return result.right.params;
     })
