@@ -45,7 +45,7 @@ import { handlePingEnclavedExpress } from './enclavedExpressRoutes';
 import { RequestTracer } from 'bitgo/dist/src/v2/internal/util';
 
 import { Config } from './config';
-import { ApiResponseError } from './errors';
+import { ApiResponseError, BitGoExpressError } from './errors';
 import { promises as fs } from 'fs';
 import { retryPromise } from './retryPromise';
 import {
@@ -1310,9 +1310,9 @@ function handleRequestHandlerError(res: express.Response, error: unknown) {
   if (error instanceof Error) {
     err = error;
   } else if (typeof error === 'string') {
-    err = new Error('(string_error) ' + error);
+    err = new BitGoExpressError('(string_error) ' + error);
   } else {
-    err = new Error('(object_error) ' + JSON.stringify(error));
+    err = new BitGoExpressError('(object_error) ' + JSON.stringify(error));
   }
 
   const message = err.message || 'local error';
@@ -1320,6 +1320,7 @@ function handleRequestHandlerError(res: express.Response, error: unknown) {
   let result = err.result || { error: message };
   result = _.extend({}, result, {
     message: err.message,
+    name: err.name || 'BitGoExpressError',
     bitgoJsVersion: version,
     bitgoExpressVersion: pjson.version,
   });
