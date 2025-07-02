@@ -252,6 +252,7 @@ export const ofcErc20Coins = [
   ofcerc20('d3f81454-874d-44a2-96e9-2fa37b5311b3', 'ofceth:turbo', 'Turbo', 18, UnderlyingAsset['eth:turbo']),
   ofcerc20('509e7614-4134-4f4a-b107-cd3b4783a558', 'ofceth:spx', 'SPX6900', 8, UnderlyingAsset['eth:spx']),
   ofcerc20('2c863d38-6d3b-438a-983d-79f20aff030a', 'ofceth:kava', 'Kava', 6, UnderlyingAsset['eth:kava']),
+  ofcerc20('53a414b4-cefa-4a81-936c-9ecbb2da22cc', 'ofceth:gousd', 'goUSD', 6, UnderlyingAsset['eth:gousd']),
   ofcerc20('42e30f8e-0e75-4e3f-bb9c-c4f8ec6d819e', 'ofceth:ryt', 'Real Yield Token', 18, UnderlyingAsset['eth:ryt']),
   ofcerc20('0bdaaf36-bd01-4cce-96b5-60a9d2c82c36', 'ofceth:guild', 'BlockchainSpace', 18, UnderlyingAsset['eth:guild']),
   ofcerc20('f9bb204c-cfc7-406a-8e4e-6205efb9b187', 'ofceth:rdo', 'Reddio', 18, UnderlyingAsset['eth:rdo']),
