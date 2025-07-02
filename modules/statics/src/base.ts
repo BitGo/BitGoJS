@@ -68,6 +68,7 @@ export enum CoinFamily {
   MON = 'mon',
   POLYGON = 'polygon',
   POLYX = 'polyx',
+  PHRS = 'phrs',
   NEAR = 'near',
   OAS = 'oas',
   OFC = 'ofc',
