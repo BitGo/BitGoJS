@@ -2,10 +2,12 @@ import {
   TransactionExplanation as BaseTransactionExplanation,
   TransactionType as BitGoTransactionType,
 } from '@bitgo/sdk-core';
+import { Principal } from '@dfinity/principal';
 
 export const MAX_INGRESS_TTL = 5 * 60 * 1000_000_000; // 5 minutes in nanoseconds
 export const PERMITTED_DRIFT = 60 * 1000_000_000; // 60 seconds in nanoseconds
-export const LEDGER_CANISTER_ID = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 2, 1, 1]); // Uint8Array value for "00000000000000020101" and the string value is "ryjl3-tyaaa-aaaaa-aaaba-cai"
+export const LEDGER_CANISTER_ID = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 2, 1, 1]); // ryjl3-tyaaa-aaaaa-aaaba-cai
+export const GOVERNANCE_CANISTER_ID = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 1]); // rrkah-fqaaa-aaaaa-aaaaq-cai
 export const ROOT_PATH = 'm/0';
 export const ACCOUNT_BALANCE_CALL = 'icrc1_balance_of';
 export const PUBLIC_NODE_REQUEST_ENDPOINT = '/api/v3/canister/';
@@ -37,6 +39,25 @@ export enum MethodName {
 
 export enum Network {
   ID = '00000000000000020101', // ICP does not have different network IDs for mainnet and testnet
+}
+
+export enum Topic {
+  Unspecified = 0,
+  Governance = 1,
+  SnsAndCommunityFund = 2,
+  NetworkEconomics = 3,
+  Node = 4,
+  ParticipantManagement = 5,
+  SubnetManagement = 6,
+  NetworkCanisterManagement = 7,
+  KYC = 8,
+  NodeProviderRewards = 9,
+}
+
+export enum Vote {
+  Unspecified = 0,
+  Yes = 1,
+  No = 2,
 }
 
 export interface IcpTransactionData {
@@ -194,6 +215,37 @@ export interface RecoveryTransaction {
   tx: string;
 }
 
+export enum HotkeyPermission {
+  VOTE = 'VOTE',
+  FOLLOW = 'FOLLOW',
+  DISSOLVE = 'DISSOLVE',
+  CONFIGURE = 'CONFIGURE',
+}
+
+export interface HotkeyStatus {
+  principal: Principal;
+  permissions: HotkeyPermission[];
+  addedAt: number;
+  lastUsed?: number;
+}
+
+export interface FullNeuron {
+  controller: Principal;
+  hotKeys: Principal[];
+  hotkeyDetails?: HotkeyStatus[];
+  dissolveDelaySeconds: number;
+  votingPower: bigint;
+  state: string;
+}
+
+export interface NeuronInfo {
+  neuronId: bigint;
+  fullNeuron?: FullNeuron;
+  dissolveDelaySeconds: number;
+  votingPower: bigint;
+  state: string;
+}
+
 export interface UnsignedSweepRecoveryTransaction {
   txHex: string;
   coin: string;
@@ -210,4 +262,30 @@ export interface AccountIdentifierHash {
 export interface TransactionHexParams {
   transactionHex: string;
   signableHex?: string;
+}
+
+export interface ProposalInfo {
+  proposalId: bigint;
+  title: string;
+  topic: Topic;
+  status: string;
+  summary: string;
+  proposer: Principal;
+  created: number;
+}
+
+export interface ClaimNeuronParams {
+  controller: Principal;
+  memo: bigint;
+}
+
+export interface SetFolloweesParams {
+  neuronId: bigint;
+  topic: Topic;
+  followees: bigint[];
+}
+
+export interface DissolveDelayParams {
+  neuronId: bigint;
+  dissolveDelaySeconds: number;
 }
