@@ -1,5 +1,6 @@
 [
   {
+    "version": 0,
     "params": {
       "covenant_pks": [
         "d45c70d28f169e1f0c7f4a78e2bc73497afe585b70aa897955989068f3350aaa",
@@ -29,6 +30,7 @@
     }
   },
   {
+    "version": 1,
     "params": {
       "covenant_pks": [
         "d45c70d28f169e1f0c7f4a78e2bc73497afe585b70aa897955989068f3350aaa",
@@ -58,6 +60,7 @@
     }
   },
   {
+    "version": 2,
     "params": {
       "covenant_pks": [
         "d45c70d28f169e1f0c7f4a78e2bc73497afe585b70aa897955989068f3350aaa",
@@ -87,6 +90,7 @@
     }
   },
   {
+    "version": 3,
     "params": {
       "covenant_pks": [
         "d45c70d28f169e1f0c7f4a78e2bc73497afe585b70aa897955989068f3350aaa",
@@ -116,6 +120,7 @@
     }
   },
   {
+    "version": 4,
     "params": {
       "covenant_pks": [
         "d45c70d28f169e1f0c7f4a78e2bc73497afe585b70aa897955989068f3350aaa",

@@ -1,3 +1,4 @@
+import assert from 'node:assert';
 import * as fs from 'fs/promises';
 
 import yargs from 'yargs';
@@ -12,27 +13,17 @@ function getBaseUrl(network: 'mainnet' | 'testnet') {
 
 type BabylonNetwork = 'mainnet' | 'testnet';
 
-async function getParams(network: BabylonNetwork, version: number): Promise<unknown> {
-  const url = `${getBaseUrl(network)}/babylon/btcstaking/v1/params/${version}`;
+async function getAllParams(network: BabylonNetwork): Promise<unknown[]> {
+  const url = `${getBaseUrl(network)}/babylon/btcstaking/v1/params_versions`;
   const resp = await fetch(url);
   if (!resp.ok) {
     throw new Error(`Failed to fetch ${url}: ${resp.status} ${resp.statusText}`);
   }
-  return await resp.json();
-}
-
-async function getAllParams(network: BabylonNetwork): Promise<unknown[]> {
-  const params: unknown[] = [];
-  for (let i = 0; ; i++) {
-    try {
-      const p = await getParams(network, i);
-      params.push(p);
-    } catch (e) {
-      console.error(`error fetching ${network} params version ${i}: ${e.message}`);
-      break;
-    }
-  }
-  return params;
+  const result = await resp.json();
+  assert(result && typeof result === 'object', `Invalid response from ${url}`);
+  assert('params' in result, `Response from ${url} does not contain 'params'`);
+  assert(Array.isArray(result.params), `Response from ${url} 'params' is not an array`);
+  return result.params;
 }
 
 async function syncParams(network: BabylonNetwork | undefined): Promise<void> {
