@@ -534,6 +534,7 @@ describe('Lightning wallets', function () {
 
     it('should get payments', async function () {
       const payment: PaymentInfo = {
+        id: '8308fddb-2356-49aa-8548-10c23099854c',
         paymentHash: 'foo',
         walletId: wallet.wallet.id(),
         txRequestId: 'txReqId',
@@ -562,6 +563,7 @@ describe('Lightning wallets', function () {
 
     it('should work properly with pagination while listing payments', async function () {
       const payment1: PaymentInfo = {
+        id: '8308fddb-2356-49aa-8548-10c23099854c',
         paymentHash: 'foo1',
         walletId: wallet.wallet.id(),
         txRequestId: 'txReqId1',
@@ -575,12 +577,14 @@ describe('Lightning wallets', function () {
       };
       const payment2: PaymentInfo = {
         ...payment1,
+        id: '8308fddb-2356-49aa-8548-10c23099854d',
         paymentHash: 'foo2',
         txRequestId: 'txReqId2',
         invoice: 'tlnfoobar2',
       };
       const payment3: PaymentInfo = {
         ...payment1,
+        id: '8308fddb-2356-49aa-8548-10c23099854e',
         paymentHash: 'foo3',
         txRequestId: 'txReqId3',
         invoice: 'tlnfoobar3',
