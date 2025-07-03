@@ -217,6 +217,10 @@ export function decodeTransaction(hexString: string): RawData {
       contract = decodeWithdrawExpireUnfreezeContract(rawTransaction.contracts[0].parameter.value);
       contractType = ContractType.WithdrawExpireUnfreeze;
       break;
+    case 'type.googleapis.com/protocol.WithdrawBalanceContract':
+      contract = decodeWithdrawBalanceContract(rawTransaction.contracts[0].parameter.value);
+      contractType = ContractType.WithdrawBalance;
+      break;
     case 'type.googleapis.com/protocol.UnfreezeBalanceV2Contract':
       contract = decodeUnfreezeBalanceV2Contract(rawTransaction.contracts[0].parameter.value);
       contractType = ContractType.UnfreezeBalanceV2;
@@ -557,6 +561,40 @@ export function decodeUnfreezeBalanceV2Contract(base64: string): UnfreezeBalance
         value: {
           resource: resourceEnum,
           unfreeze_balance: Number(unfreezeContract.unfreezeBalance),
+          owner_address,
+        },
+      },
+    },
+  ];
+}
+
+/**
+ * Deserialize the segment of the txHex corresponding with withdraw balance contract
+ *
+ * @param {string} base64 - The base64 encoded contract data
+ * @returns {WithdrawExpireUnfreezeContractParameter[]} - Array containing the decoded withdraw contract
+ */
+export function decodeWithdrawBalanceContract(base64: string): WithdrawExpireUnfreezeContractParameter[] {
+  let withdrawContract: WithdrawContractDecoded;
+  try {
+    withdrawContract = protocol.WithdrawBalanceContract.decode(Buffer.from(base64, 'base64')).toJSON();
+  } catch (e) {
+    throw new UtilsError('There was an error decoding the withdraw contract in the transaction.');
+  }
+
+  if (!withdrawContract.ownerAddress) {
+    throw new UtilsError('Owner address does not exist in this withdraw contract.');
+  }
+
+  // deserialize attributes
+  const owner_address = getBase58AddressFromByteArray(
+    getByteArrayFromHexAddress(Buffer.from(withdrawContract.ownerAddress, 'base64').toString('hex'))
+  );
+
+  return [
+    {
+      parameter: {
+        value: {
           owner_address,
         },
       },

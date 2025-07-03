@@ -28,7 +28,9 @@ export const PAYMENT_FAILURE_INSUFFICIENT_WALLET_BALANCE = 'INSUFFICIENT_WALLET_
 /** Excess custodial lightning balance for the customer's wallet */
 export const PAYMENT_FAILURE_EXCESS_WALLET_BALANCE = 'EXCESS_WALLET_BALANCE';
 export const PAYMENT_FAILURE_INVOICE_EXPIRED = 'INVOICE_EXPIRED';
-export const PAYMENT_FAILURE_PAYMENT_ALREADY_EXISTS = 'PAYMENT_ALREADY_EXISTS';
+export const PAYMENT_FAILURE_PAYMENT_ALREADY_SETTLED = 'PAYMENT_ALREADY_SETTLED';
+export const PAYMENT_FAILURE_PAYMENT_ALREADY_IN_FLIGHT = 'PAYMENT_ALREADY_IN_FLIGHT';
+export const PAYMENT_FAILURE_TRANSIENT_ERROR_RETRY_LATER = 'TRANSIENT_ERROR_RETRY_LATER';
 export const PAYMENT_FAILURE_CANCELED = 'CANCELED';
 export const PAYMENT_FAILURE_FORCE_FAILED = 'FORCE_FAILED';
 
@@ -41,7 +43,9 @@ export const PaymentFailureReason = t.union([
   t.literal(PAYMENT_FAILURE_INSUFFICIENT_WALLET_BALANCE),
   t.literal(PAYMENT_FAILURE_EXCESS_WALLET_BALANCE),
   t.literal(PAYMENT_FAILURE_INVOICE_EXPIRED),
-  t.literal(PAYMENT_FAILURE_PAYMENT_ALREADY_EXISTS),
+  t.literal(PAYMENT_FAILURE_PAYMENT_ALREADY_SETTLED),
+  t.literal(PAYMENT_FAILURE_PAYMENT_ALREADY_IN_FLIGHT),
+  t.literal(PAYMENT_FAILURE_TRANSIENT_ERROR_RETRY_LATER),
   t.literal(PAYMENT_FAILURE_CANCELED),
   t.literal(PAYMENT_FAILURE_FORCE_FAILED),
 ]);
@@ -54,6 +58,7 @@ export type PaymentFailureReason = t.TypeOf<typeof PaymentFailureReason>;
 export const PaymentInfo = t.intersection(
   [
     t.type({
+      id: t.string,
       paymentHash: t.string,
       walletId: t.string,
       txRequestId: t.string,
@@ -83,7 +88,7 @@ export const ListPaymentsResponse = t.intersection(
     }),
     t.partial({
       /**
-       * This is the paymentHash of the last Payment in the last iteration.
+       * This is the paymentId of the last Payment in the last iteration.
        * Providing this value as the prevId in the next request will return the next batch of payments.
        * */
       nextBatchPrevId: t.string,
@@ -102,7 +107,8 @@ export const PaymentQuery = t.partial(
     limit: BigIntFromString,
     startDate: DateFromISOString,
     endDate: DateFromISOString,
-    /** paymentHash provided by nextBatchPrevId in the previous list */
+    paymentHash: t.string,
+    /** paymentId provided by nextBatchPrevId in the previous list */
     prevId: t.string,
   },
   'PaymentQuery'
@@ -129,6 +135,7 @@ export const LndCreatePaymentResponse = t.intersection(
       paymentHash: t.string,
     }),
     t.partial({
+      paymentId: t.string,
       paymentPreimage: t.string,
       amountMsat: t.string,
       feeMsat: t.string,

@@ -50,6 +50,7 @@ export interface RawData {
     | VoteWitnessContract[]
     | UnfreezeBalanceV2Contract[]
     | WithdrawExpireUnfreezeContract[]
+    | WithdrawBalanceContract[]
     | ResourceManagementContract[];
 }
 
@@ -208,6 +209,11 @@ export interface WithdrawExpireUnfreezeValue {
  * Withdraw expire unfreeze contract interface
  */
 export interface WithdrawExpireUnfreezeContract {
+  parameter: WithdrawExpireUnfreezeValue;
+  type?: string;
+}
+
+export interface WithdrawBalanceContract {
   parameter: WithdrawExpireUnfreezeValue;
   type?: string;
 }
