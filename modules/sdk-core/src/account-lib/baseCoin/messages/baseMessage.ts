@@ -117,6 +117,10 @@ export abstract class BaseMessage implements IMessage {
    */
   abstract getSignablePayload(): Promise<string | Buffer>;
 
+  getBroadcastableSignatures(): Signature[] {
+    return this.signatures;
+  }
+
   /**
    * Converts this message to a broadcastable format
    * Uses internal signatures and signers that were previously set
@@ -129,6 +133,7 @@ export abstract class BaseMessage implements IMessage {
     if (this.signers.length === 0) {
       throw new Error('No signers available for broadcast. Call setSigners or addSigner first.');
     }
+
     let signablePayload: string | undefined;
     if (this.signablePayload) {
       if (Buffer.isBuffer(this.signablePayload)) {
@@ -141,7 +146,7 @@ export abstract class BaseMessage implements IMessage {
     return {
       type: this.type,
       payload: this.payload,
-      serializedSignatures: serializeSignatures(this.signatures),
+      serializedSignatures: serializeSignatures(this.getBroadcastableSignatures()),
       signers: [...this.signers],
       metadata: {
         ...(this.metadata ? JSON.parse(JSON.stringify(this.metadata)) : {}), // deep copy to avoid mutation
