@@ -14,6 +14,7 @@ import { FreezeBalanceTxBuilder } from './freezeBalanceTxBuilder';
 import { VoteWitnessTxBuilder } from './voteWitnessTxBuilder';
 import { UnfreezeBalanceTxBuilder } from './unfreezeBalanceTxBuilder';
 import { WithdrawExpireUnfreezeTxBuilder } from './withdrawExpireUnfreezeTxBuilder';
+import { WithdrawBalanceTxBuilder } from './withdrawBuilder';
 import { DelegateResourceTxBuilder } from './delegateResourceTxBuilder';
 import { UndelegateResourceTxBuilder } from './undelegateResourceTxBuilder';
 
@@ -90,6 +91,16 @@ export class WrappedBuilder extends TransactionBuilder {
   }
 
   /**
+   * Returns a specific builder to create a withdraw balance transaction
+   *
+   * @param {Transaction} [tx] The transaction to initialize builder
+   * @returns {WithdrawBalanceTxBuilder} The specific withdraw balance builder
+   */
+  getWithdrawBalanceTxBuilder(tx?: TransactionReceipt | string): WithdrawBalanceTxBuilder {
+    return this.initializeBuilder(tx, new WithdrawBalanceTxBuilder(this._coinConfig));
+  }
+
+  /**
    * Returns a specific builder to create a delegate resource transaction
    *
    * @param {TransactionReceipt | string} [tx] The transaction to initialize builder
@@ -152,6 +163,8 @@ export class WrappedBuilder extends TransactionBuilder {
         return this.getUnfreezeBalanceV2TxBuilder(raw);
       case ContractType.WithdrawExpireUnfreeze:
         return this.getWithdrawExpireUnfreezeTxBuilder(raw);
+      case ContractType.WithdrawBalance:
+        return this.getWithdrawBalanceTxBuilder(raw);
       case ContractType.DelegateResourceContract:
         return this.getDelegateResourceTxBuilder(raw);
       case ContractType.UnDelegateResourceContract:

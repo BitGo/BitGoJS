@@ -31,6 +31,10 @@ export enum ContractType {
    */
   WithdrawExpireUnfreeze,
   /**
+   * This is the contract for withdrawing reward balances
+   */
+  WithdrawBalance,
+  /**
    * This is the contract for delegating resource
    */
   DelegateResourceContract,

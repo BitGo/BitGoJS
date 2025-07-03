@@ -107,6 +107,18 @@ export const WITHDRAW_EXPIRE_UNFREEZE_CONTRACT = [
   },
 ];
 
+export const WITHDRAW_BALANCE_CONTRACT = [
+  {
+    parameter: {
+      value: {
+        owner_address: '4173a5993cd182ae152adad8203163f780c65a8aa5',
+      },
+      type_url: 'type.googleapis.com/protocol.WithdrawBalanceContract',
+    },
+    type: 'WithdrawBalanceContract',
+  },
+];
+
 export const VOTE_WITNESS_CONTRACT = [
   {
     parameter: {
