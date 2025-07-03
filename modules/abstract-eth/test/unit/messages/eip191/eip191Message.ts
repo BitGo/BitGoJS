@@ -143,7 +143,7 @@ describe('EIP191 Message', () => {
       broadcastFormat.serializedSignatures.should.deepEqual(expectedSerializedSignatures);
       broadcastFormat.signers.should.deepEqual([fixtures.eip191.signer]);
       broadcastFormat.metadata!.should.deepEqual(fixtures.eip191.metadata);
-      broadcastFormat.signablePayload!.should.equal('test-signable-payload');
+      broadcastFormat.signablePayload!.should.equal('dGVzdC1zaWduYWJsZS1wYXlsb2Fk');
     });
 
     it('should throw error when broadcasting without signatures', async () => {

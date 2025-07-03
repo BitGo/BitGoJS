@@ -12,3 +12,4 @@ export { StakingWithdrawBuilder } from './stakingWithdrawBuilder';
 export { StakingPledgeBuilder } from './stakingPledgeBuilder';
 export { VoteDelegationBuilder } from './voteDelegationBuilder';
 export { Utils };
+export * from './messages';
