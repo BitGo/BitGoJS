@@ -15,3 +15,7 @@ export {
   getBabylonParamByVersion,
 } from "./utils/staking/param";
 export * from "./staking/manager";
+
+// BitGo-specific exports
+export * from "./utils/babylon";
+export * from "./utils/staking";
