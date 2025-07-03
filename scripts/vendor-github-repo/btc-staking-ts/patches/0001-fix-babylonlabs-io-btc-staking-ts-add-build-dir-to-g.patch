@@ -1,0 +1,27 @@
+From a5f486a9d30209bf2a6d24abee61236d0aae7be9 Mon Sep 17 00:00:00 2001
+From: Otto Allmendinger <otto@bitgo.com>
+Date: Thu, 3 Jul 2025 13:28:38 +0200
+Subject: [PATCH] fix(babylonlabs-io-btc-staking-ts): add build dir to
+ gitignore
+
+Issue: BTC-2143
+
+Co-authored-by: llm-git <llm-git@ttll.de>
+---
+ modules/babylonlabs-io-btc-staking-ts/.gitignore | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/modules/babylonlabs-io-btc-staking-ts/.gitignore b/modules/babylonlabs-io-btc-staking-ts/.gitignore
+index 2f621f05c..6b0417d7d 100644
+--- a/modules/babylonlabs-io-btc-staking-ts/.gitignore
++++ b/modules/babylonlabs-io-btc-staking-ts/.gitignore
+@@ -206,3 +206,5 @@ $RECYCLE.BIN/
+ # End of https://www.toptal.com/developers/gitignore/api/node,macos,windows
+ *.swp
+ *.swo
++
++build/
+\ No newline at end of file
+-- 
+2.43.0
+

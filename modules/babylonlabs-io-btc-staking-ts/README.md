@@ -1,1 +1,1 @@
-BitGo Fork of https://github.com/babylonlabs-io/btc-staking-ts/tree/v0.4.0-rc.2
+BitGo Fork of https://github.com/babylonlabs-io/btc-staking-ts/tree/v1.0.3
