@@ -3,6 +3,7 @@ import { coins } from '@bitgo/statics';
 import * as testData from '../resources/vet';
 import should from 'should';
 import { TransactionType } from '@bitgo/sdk-core';
+import { AddressInitializationTransaction } from '../../src/lib/transaction/addressInitializationTransaction';
 
 describe('Vet Transfer Transaction', () => {
   const factory = new TransactionBuilderFactory(coins.get('tvet'));
@@ -157,6 +158,28 @@ describe('Vet Transfer Transaction', () => {
       it('should fail for invalid gas amount', async function () {
         const builder = factory.getTransferBuilder();
         should(() => builder.gas(-1)).throwError('Value cannot be less than zero');
+      });
+    });
+  });
+
+  describe('Address Initialisation Transaction', () => {
+    describe('Succeed', () => {
+      it('should build a address initialisation transaction', async function () {
+        const transaction = new AddressInitializationTransaction(coins.get('tvet'));
+        const txBuilder = factory.getAddressInitialisationBuilder(transaction);
+        txBuilder.gas(21000);
+        txBuilder.nonce(64248);
+        txBuilder.counter(64248);
+        txBuilder.blockRef('0x014ead140e77bbc1');
+        txBuilder.addFeePayerAddress(testData.feePayer.address);
+        txBuilder.expiration(64);
+        txBuilder.gasPriceCoef(128);
+        txBuilder.forwarderFactoryAddress('0xabc');
+        txBuilder.baseAddress('oxabc');
+        txBuilder.feeAddress('0xabc');
+        txBuilder.salt('0x');
+        txBuilder.sign({ key: '0xprv' });
+        txBuilder.build();
       });
     });
   });
