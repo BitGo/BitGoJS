@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [24.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@24.6.4...@bitgo/sdk-coin-eth@24.7.0) (2025-07-03)
+
+### Features
+
+- **account-lib:** register message builder factory ([bc5c71c](https://github.com/BitGo/BitGoJS/commit/bc5c71cd92266ec1011d85f0568bf174c3743bc2))
+
 ## [24.6.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@24.6.3...@bitgo/sdk-coin-eth@24.6.4) (2025-06-25)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-eth

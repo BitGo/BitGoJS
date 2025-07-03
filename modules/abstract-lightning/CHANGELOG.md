@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@6.1.1...@bitgo/abstract-lightning@6.2.0) (2025-07-03)
+
+### Bug Fixes
+
+- **abstract-lightning:** correct derivation index computation ([6800e77](https://github.com/BitGo/BitGoJS/commit/6800e779ba84d639a6dcd9e81a6789543c6422d6))
+
+### Features
+
+- added withdrawStatus in response lightning ([8666309](https://github.com/BitGo/BitGoJS/commit/866630934dfdea696d5f185e18785278999bb9cc))
+- primary key changes for payment apis ([b398ae3](https://github.com/BitGo/BitGoJS/commit/b398ae3ee3af9749c16ebfb5c630e3b2ce26b043))
+
 ## [6.1.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@6.1.0...@bitgo/abstract-lightning@6.1.1) (2025-06-25)
 
 **Note:** Version bump only for package @bitgo/abstract-lightning

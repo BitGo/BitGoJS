@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [24.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.5.4...@bitgo/abstract-eth@24.6.0) (2025-07-03)
+
+### Features
+
+- **account-lib:** register message builder factory ([bc5c71c](https://github.com/BitGo/BitGoJS/commit/bc5c71cd92266ec1011d85f0568bf174c3743bc2))
+- **sdk-core:** add message builder and message builder factory ([5741739](https://github.com/BitGo/BitGoJS/commit/57417395029ec064485ac9ee69eb38fb08c592ec))
+
 ## [24.5.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.5.3...@bitgo/abstract-eth@24.5.4) (2025-06-25)
 
 **Note:** Version bump only for package @bitgo/abstract-eth

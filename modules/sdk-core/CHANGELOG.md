@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [35.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@35.4.1...@bitgo/sdk-core@35.5.0) (2025-07-03)
+
+### Features
+
+- **account-lib:** register message builder factory ([bc5c71c](https://github.com/BitGo/BitGoJS/commit/bc5c71cd92266ec1011d85f0568bf174c3743bc2))
+- add go staking service endpoints to sdk ([13c4430](https://github.com/BitGo/BitGoJS/commit/13c44306137cf1c5e74f2b9fa6fcc7485b91c88b))
+- **sdk-core:** add message builder and message builder factory ([5741739](https://github.com/BitGo/BitGoJS/commit/57417395029ec064485ac9ee69eb38fb08c592ec))
+
 ## [35.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@35.4.0...@bitgo/sdk-core@35.4.1) (2025-06-25)
 
 **Note:** Version bump only for package @bitgo/sdk-core

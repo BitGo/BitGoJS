@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@2.6.1...@bitgo/sdk-coin-near@2.7.0) (2025-07-03)
+
+### Bug Fixes
+
+- **sdk-coin-near:** account id is undefined ([715c925](https://github.com/BitGo/BitGoJS/commit/715c92596441aa457ccea4839e957e757234aa03))
+
+### Features
+
+- **sdk-coin-near:** added getTokenEnablementConfig for near ([aba8a99](https://github.com/BitGo/BitGoJS/commit/aba8a999c6966d92cc66c66690bbecc8354b9d65))
+
 ## [2.6.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@2.6.0...@bitgo/sdk-coin-near@2.6.1) (2025-06-25)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-near

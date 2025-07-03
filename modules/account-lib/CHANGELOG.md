@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [27.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.4.1...@bitgo/account-lib@27.5.0) (2025-07-03)
+
+### Features
+
+- **account-lib:** register message builder factory ([bc5c71c](https://github.com/BitGo/BitGoJS/commit/bc5c71cd92266ec1011d85f0568bf174c3743bc2))
+
 ## [27.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.4.0...@bitgo/account-lib@27.4.1) (2025-06-25)
 
 **Note:** Version bump only for package @bitgo/account-lib

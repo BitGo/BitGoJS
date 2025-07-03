@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [48.3.0](https://github.com/BitGo/BitGoJS/compare/bitgo@48.2.1...bitgo@48.3.0) (2025-07-03)
+
+### Features
+
+- add go staking service endpoints to sdk ([13c4430](https://github.com/BitGo/BitGoJS/commit/13c44306137cf1c5e74f2b9fa6fcc7485b91c88b))
+- added withdrawStatus in response lightning ([8666309](https://github.com/BitGo/BitGoJS/commit/866630934dfdea696d5f185e18785278999bb9cc))
+- primary key changes for payment apis ([b398ae3](https://github.com/BitGo/BitGoJS/commit/b398ae3ee3af9749c16ebfb5c630e3b2ce26b043))
+
 ## [48.2.1](https://github.com/BitGo/BitGoJS/compare/bitgo@48.2.0...bitgo@48.2.1) (2025-06-25)
 
 **Note:** Version bump only for package bitgo
