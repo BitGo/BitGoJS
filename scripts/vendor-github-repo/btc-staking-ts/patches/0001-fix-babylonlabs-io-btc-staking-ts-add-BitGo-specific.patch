@@ -1,0 +1,35 @@
+From 1ffd7fac756de23859d3f1b61c26619c597e5021 Mon Sep 17 00:00:00 2001
+From: Otto Allmendinger <otto@bitgo.com>
+Date: Thu, 3 Jul 2025 11:03:24 +0200
+Subject: [PATCH] fix(babylonlabs-io-btc-staking-ts): add BitGo-specific
+ exports
+
+Add exports for babylon and staking utility functions needed by BitGo
+integration code.
+
+Issue: BTC-2143
+
+Co-authored-by: llm-git <llm-git@ttll.de>
+---
+ modules/babylonlabs-io-btc-staking-ts/src/index.ts | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/modules/babylonlabs-io-btc-staking-ts/src/index.ts b/modules/babylonlabs-io-btc-staking-ts/src/index.ts
+index cd14e42be..883c517ce 100644
+--- a/modules/babylonlabs-io-btc-staking-ts/src/index.ts
++++ b/modules/babylonlabs-io-btc-staking-ts/src/index.ts
+@@ -14,4 +14,8 @@ export {
+   getBabylonParamByBtcHeight,
+   getBabylonParamByVersion,
+ } from "./utils/staking/param";
+-export * from "./staking/manager";
+\ No newline at end of file
++export * from "./staking/manager";
++
++// BitGo-specific exports
++export * from "./utils/babylon";
++export * from "./utils/staking";
+\ No newline at end of file
+-- 
+2.43.0
+

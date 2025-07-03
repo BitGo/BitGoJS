@@ -1,0 +1,59 @@
+From fd94e62d8bdb05bbdd742b6b7dddf163f1a7dd35 Mon Sep 17 00:00:00 2001
+From: Otto Allmendinger <otto@bitgo.com>
+Date: Thu, 3 Jul 2025 11:01:15 +0200
+Subject: [PATCH] fix(babylonlabs-io-btc-staking-ts): simplify README to
+ identify as fork
+
+Issue: BTC-2143
+
+Co-authored-by: llm-git <llm-git@ttll.de>
+---
+ .../babylonlabs-io-btc-staking-ts/README.md   | 37 +------------------
+ 1 file changed, 1 insertion(+), 36 deletions(-)
+
+diff --git a/modules/babylonlabs-io-btc-staking-ts/README.md b/modules/babylonlabs-io-btc-staking-ts/README.md
+index ed35980ea..cecbcaff7 100644
+--- a/modules/babylonlabs-io-btc-staking-ts/README.md
++++ b/modules/babylonlabs-io-btc-staking-ts/README.md
+@@ -1,36 +1 @@
+-<p align="center">
+-    <img alt="Babylon Logo" src="https://github.com/user-attachments/assets/dc74271e-90f1-44bd-9122-2b7438ab375c" width="100" />
+-    <h3 align="center">@babylonlabs-io/btc-staking-ts</h3>
+-    <p align="center">Babylon Bitcoin Staking Protocol</p>
+-    <p align="center"><strong>TypeScript</strong> library</p>
+-    <p align="center">
+-      <a href="https://www.npmjs.com/package/@babylonlabs-io/btc-staking-ts"><img src="https://badge.fury.io/js/btc-staking-ts.svg" alt="npm version" height="18"></a>
+-    </p>
+-</p>
+-<br/>
+-
+-## Installation
+-
+-```console
+-npm i @babylonlabs-io/btc-staking-ts
+-```
+-
+-## Version Release
+-
+-### Stable version
+-
+-Stable release versions are manually released from the main branch.
+-
+-### Canary version
+-
+-A canary version is a pre-release version from `dev` branch.
+-Make sure all changes are added and committed before running the command below:
+-
+-```console
+-npm run version:canary
+-```
+-
+-## Usage Guide
+-
+-Details on the usage of the library can be found
+-on the [usage guide](./docs/usage.md).
++BitGo Fork of https://github.com/babylonlabs-io/btc-staking-ts/tree/v0.4.0-rc.2
+\ No newline at end of file
+-- 
+2.43.0
+

@@ -1,0 +1,57 @@
+From 75323a260f5b9031ce9c653ad3fe17755a4e25d0 Mon Sep 17 00:00:00 2001
+From: Otto Allmendinger <otto@bitgo.com>
+Date: Thu, 3 Jul 2025 11:03:39 +0200
+Subject: [PATCH] fix(babylonlabs-io-btc-staking-ts): change class fields and
+ methods visibility
+
+Changed class fields and methods visibility from private to protected or
+public to allow better extensibility for subclasses.
+
+Issue: BTC-2143
+
+Co-authored-by: llm-git <llm-git@ttll.de>
+---
+ .../src/staking/manager.ts                          | 13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
+
+diff --git a/modules/babylonlabs-io-btc-staking-ts/src/staking/manager.ts b/modules/babylonlabs-io-btc-staking-ts/src/staking/manager.ts
+index 778f3e700..af3dad5d0 100644
+--- a/modules/babylonlabs-io-btc-staking-ts/src/staking/manager.ts
++++ b/modules/babylonlabs-io-btc-staking-ts/src/staking/manager.ts
+@@ -93,10 +93,10 @@ interface InclusionProof {
+ }
+ 
+ export class BabylonBtcStakingManager {
+-  private stakingParams: VersionedStakingParams[];
+-  private btcProvider: BtcProvider;
+-  private network: networks.Network;
+-  private babylonProvider: BabylonProvider;
++  protected stakingParams: VersionedStakingParams[];
++  protected btcProvider: BtcProvider;
++  protected network: networks.Network;
++  protected babylonProvider: BabylonProvider;
+ 
+   constructor(
+     network: networks.Network,
+@@ -624,7 +624,8 @@ export class BabylonBtcStakingManager {
+ 
+   /**
+    * Creates a proof of possession for the staker based on ECDSA signature.
+-   * @param bech32Address - The staker's bech32 address.
++   * @param bech32Address - The staker's bech32 address on the babylon chain
++   * @param stakerBtcAddress - The staker's BTC address.
+    * @returns The proof of possession.
+    */
+   async createProofOfPossession(
+@@ -709,7 +710,7 @@ export class BabylonBtcStakingManager {
+    * @param inclusionProof - The inclusion proof of the staking transaction.
+    * @returns The protobuf message.
+    */
+-  private async createBtcDelegationMsg(
++  public async createBtcDelegationMsg(
+     stakingInstance: Staking,
+     stakingInput: StakingInputs,
+     stakingTx: Transaction,
+-- 
+2.43.0
+

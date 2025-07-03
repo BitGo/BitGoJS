@@ -1,0 +1,39 @@
+From 1f802177441fd09087b4ecfac254dac214dd29bf Mon Sep 17 00:00:00 2001
+From: Otto Allmendinger <otto@bitgo.com>
+Date: Thu, 3 Jul 2025 11:03:55 +0200
+Subject: [PATCH] fix(babylonlabs-io-btc-staking-ts): update tsconfig for
+ correct builds
+
+Update tsconfig.json to include composite mode, specify outDir to build
+folder, and exclude build from compilation. This fixes issues with the
+vendor script.
+
+Issue: BTC-2143
+
+Co-authored-by: llm-git <llm-git@ttll.de>
+---
+ modules/babylonlabs-io-btc-staking-ts/tsconfig.json | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/modules/babylonlabs-io-btc-staking-ts/tsconfig.json b/modules/babylonlabs-io-btc-staking-ts/tsconfig.json
+index 838bfdba1..965f1a3de 100644
+--- a/modules/babylonlabs-io-btc-staking-ts/tsconfig.json
++++ b/modules/babylonlabs-io-btc-staking-ts/tsconfig.json
+@@ -7,10 +7,13 @@
+     "strict": true,
+     "skipLibCheck": true,
+     "isolatedModules": true,
+-    "declaration": true
++    "declaration": true,
++    "composite": true,
++    "outDir": "./build",
+   },
+   "exclude": [
+     "node_modules",
++    "build",
+     "dist",
+     "**/*.test.ts"
+   ]
+-- 
+2.43.0
+
