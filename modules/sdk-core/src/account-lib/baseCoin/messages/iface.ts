@@ -1,4 +1,5 @@
 import { BroadcastableMessage, MessageMetadata, MessagePayload, MessageStandardType } from '../../../bitgo';
+import { Signature } from '../iface';
 
 /**
  * Represents a built message that can be signed
@@ -39,19 +40,19 @@ export interface IMessage {
   /**
    * Gets all signatures associated with this message
    */
-  getSignatures(): string[];
+  getSignatures(): Signature[];
 
   /**
    * Sets signatures for this message
    * @param signatures Array of signatures to set
    */
-  setSignatures(signatures: string[]): void;
+  setSignatures(signatures: Signature[]): void;
 
   /**
    * Adds a signature to this message
    * @param signature The signature to add
    */
-  addSignature(signature: string): void;
+  addSignature(signature: Signature): void;
 
   /**
    * Returns the payload that should be signed
@@ -98,14 +99,14 @@ export interface IMessageBuilder {
    * @param signatures The signatures to add
    * @returns The builder instance for chaining
    */
-  setSignatures(signatures: string[]): IMessageBuilder;
+  setSignatures(signatures: Signature[]): IMessageBuilder;
 
   /**
    * Adds a signature to the message
    * @param signature The signature to add
    * @returns The builder instance for chaining
    */
-  addSignature(signature: string): IMessageBuilder;
+  addSignature(signature: Signature): IMessageBuilder;
 
   /**
    * Sets the signers for the message

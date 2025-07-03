@@ -7,12 +7,13 @@ import {
   MessageStandardType,
 } from '../../../bitgo';
 import { IMessage } from './iface';
+import { serializeSignatures, Signature } from '../iface';
 
 export abstract class BaseMessage implements IMessage {
   protected coinConfig: Readonly<CoinConfig>;
   protected type: MessageStandardType;
   protected payload: MessagePayload;
-  protected signatures: string[] = [];
+  protected signatures: Signature[] = [];
   protected signers: string[] = [];
   protected signablePayload?: string | Buffer;
   protected metadata?: MessageMetadata;
@@ -30,7 +31,11 @@ export abstract class BaseMessage implements IMessage {
     this.metadata = options.metadata || {};
 
     if (options.signatures) {
-      this.signatures = [...options.signatures];
+      // Deep copy each Signature object, including the Buffer
+      this.signatures = options.signatures.map((sig) => ({
+        publicKey: { ...sig.publicKey },
+        signature: Buffer.from(sig.signature),
+      }));
     }
     if (options.signers) {
       this.signers = [...options.signers];
@@ -86,7 +91,7 @@ export abstract class BaseMessage implements IMessage {
   /**
    * Gets all signatures associated with this message
    */
-  getSignatures(): string[] {
+  getSignatures(): Signature[] {
     return [...this.signatures];
   }
 
@@ -94,7 +99,7 @@ export abstract class BaseMessage implements IMessage {
    * Sets signatures for this message
    * @param signatures Array of signatures to set
    */
-  setSignatures(signatures: string[]): void {
+  setSignatures(signatures: Signature[]): void {
     this.signatures = [...signatures];
   }
 
@@ -102,7 +107,7 @@ export abstract class BaseMessage implements IMessage {
    * Adds a signature to this message
    * @param signature The signature to add
    */
-  addSignature(signature: string): void {
+  addSignature(signature: Signature): void {
     this.signatures.push(signature);
   }
 
@@ -121,20 +126,27 @@ export abstract class BaseMessage implements IMessage {
     if (this.signatures.length === 0) {
       throw new Error('No signatures available for broadcast. Call setSignatures or addSignature first.');
     }
-
     if (this.signers.length === 0) {
       throw new Error('No signers available for broadcast. Call setSigners or addSigner first.');
+    }
+    let signablePayload: string | undefined;
+    if (this.signablePayload) {
+      if (Buffer.isBuffer(this.signablePayload)) {
+        signablePayload = this.signablePayload.toString('base64');
+      } else {
+        signablePayload = Buffer.from(String(this.signablePayload)).toString('base64');
+      }
     }
 
     return {
       type: this.type,
       payload: this.payload,
-      signatures: this.signatures,
-      signers: this.signers,
+      serializedSignatures: serializeSignatures(this.signatures),
+      signers: [...this.signers],
       metadata: {
         ...(this.metadata ? JSON.parse(JSON.stringify(this.metadata)) : {}), // deep copy to avoid mutation
       },
-      signablePayload: this.signablePayload,
+      signablePayload,
     };
   }
 

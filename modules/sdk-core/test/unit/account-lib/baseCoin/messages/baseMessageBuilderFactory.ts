@@ -32,7 +32,12 @@ describe('Base Message Builder Factory', () => {
       const broadcastMessage: BroadcastableMessage = {
         type: MessageStandardType.EIP191,
         payload: 'hello world',
-        signatures: ['sig1'],
+        serializedSignatures: [
+          {
+            publicKey: 'pub1',
+            signature: 'sig1',
+          },
+        ],
         signers: ['addr1'],
         metadata: { version: '1.0' },
       };
@@ -49,7 +54,16 @@ describe('Base Message Builder Factory', () => {
       const broadcastMessage: BroadcastableMessage = {
         type: MessageStandardType.EIP191,
         payload: 'test message',
-        signatures: ['sig1', 'sig2'],
+        serializedSignatures: [
+          {
+            publicKey: 'pub1',
+            signature: 'sig1',
+          },
+          {
+            publicKey: 'pub2',
+            signature: 'sig2',
+          },
+        ],
         signers: ['addr1', 'addr2'],
         metadata: { chainId: 1 },
       };
@@ -66,7 +80,12 @@ describe('Base Message Builder Factory', () => {
       const broadcastMessage: BroadcastableMessage = {
         type: MessageStandardType.UNKNOWN,
         payload: 'unknown message',
-        signatures: ['sig1'],
+        serializedSignatures: [
+          {
+            publicKey: 'pub1',
+            signature: 'sig1',
+          },
+        ],
         signers: ['addr1'],
       };
 

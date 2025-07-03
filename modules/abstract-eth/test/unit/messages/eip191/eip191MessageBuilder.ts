@@ -1,6 +1,6 @@
 import 'should';
 import sinon from 'sinon';
-import { MessageStandardType } from '@bitgo/sdk-core';
+import { BroadcastableMessage, MessageStandardType, serializeSignatures } from '@bitgo/sdk-core';
 import { fixtures } from '../fixtures';
 import { EIP191Message, Eip191MessageBuilder } from '../../../../src';
 
@@ -79,10 +79,10 @@ describe('EIP191 Message Builder', () => {
     it('should reconstruct a message from broadcast format', async () => {
       const builder = new Eip191MessageBuilder(fixtures.coin);
 
-      const broadcastMessage = {
+      const broadcastMessage: BroadcastableMessage = {
         type: MessageStandardType.EIP191,
         payload: fixtures.messages.validMessage,
-        signatures: [fixtures.eip191.signature],
+        serializedSignatures: serializeSignatures([fixtures.eip191.signature]),
         signers: [fixtures.eip191.signer],
         metadata: fixtures.eip191.metadata,
       };
@@ -101,10 +101,10 @@ describe('EIP191 Message Builder', () => {
     it('should throw an error for incorrect message type', async () => {
       const builder = new Eip191MessageBuilder(fixtures.coin);
 
-      const broadcastMessage = {
+      const broadcastMessage: BroadcastableMessage = {
         type: MessageStandardType.UNKNOWN,
         payload: fixtures.messages.validMessage,
-        signatures: [fixtures.eip191.signature],
+        serializedSignatures: serializeSignatures([fixtures.eip191.signature]),
         signers: [fixtures.eip191.signer],
         metadata: {},
       };
