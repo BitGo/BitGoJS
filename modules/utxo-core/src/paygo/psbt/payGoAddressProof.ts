@@ -19,6 +19,7 @@ import {
  * @param psbt - PSBT that we need to encode our paygo address into
  * @param outputIndex - the index of the address in our output
  * @param sig - the signature that we want to encode
+ * @param entropy - the arbitrary entropy bytes from our vasp proof
  */
 export function addPayGoAddressProof(
   psbt: utxolib.bitgo.UtxoPsbt,
@@ -40,7 +41,7 @@ export function addPayGoAddressProof(
  *
  * @param psbt - PSBT we want to verify that the paygo address is in
  * @param outputIndex - we have the output index that address is in
- * @param uuid
+ * @param verificationPubkey - the pubkey signed by the HSM to verify our message
  * @returns
  */
 export function verifyPayGoAddressProof(
@@ -76,7 +77,8 @@ export function verifyPayGoAddressProof(
   // We construct our message <ENTROPY><ADDRESS><UUID>
   const message = createPayGoAttestationBuffer(addressFromOutput, entropy, psbt.network);
 
-  if (!verifyMessage(message.toString(), verificationPubkey, signature, utxolib.networks.bitcoin)) {
+  // bip32utils.verifyMessage now takes in message as a Buffer
+  if (!verifyMessage(message, verificationPubkey, signature, utxolib.networks.bitcoin)) {
     throw new ErrorPayGoAddressProofFailedVerification();
   }
 }
