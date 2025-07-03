@@ -117,10 +117,12 @@ export const XTZ_FEATURES = [
   CoinFeature.ENTERPRISE_PAYS_FEES,
 ].filter(
   (feature) =>
-    feature !== CoinFeature.CUSTODY &&
-    feature !== CoinFeature.CUSTODY_BITGO_TRUST &&
     feature !== CoinFeature.CUSTODY_BITGO_MENA_FZE &&
-    feature !== CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE
+    feature !== CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE &&
+    feature !== CoinFeature.CUSTODY_BITGO_SINGAPORE &&
+    feature !== CoinFeature.CUSTODY_BITGO_KOREA &&
+    feature !== CoinFeature.CUSTODY_BITGO_EUROPE_APS &&
+    feature !== CoinFeature.CUSTODY_BITGO_FRANKFURT
 );
 
 export const XRP_FEATURES = [
@@ -523,6 +525,7 @@ export const SONEIUM_FEATURES = [
   CoinFeature.MULTISIG,
   CoinFeature.MULTISIG_COLD,
   CoinFeature.MULTISIG_SUPPORT_GATED,
+  CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
 ];
 
 export const POLYX_FEATURES = [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.TSS_COLD];

@@ -109,6 +109,15 @@ export const BatchUnstakingTransactionSchema = {
       .validate(value),
 };
 
+export const UnbondTransactionSchema = {
+  validate: (value: { value: string }): joi.ValidationResult =>
+    joi
+      .object({
+        value: joi.string().required(),
+      })
+      .validate(value),
+};
+
 export const WithdrawUnbondedTransactionSchema = {
   validate: (value: { slashingSpans: number }): joi.ValidationResult =>
     joi

@@ -534,6 +534,7 @@ describe('Lightning wallets', function () {
 
     it('should get payments', async function () {
       const payment: PaymentInfo = {
+        id: '8308fddb-2356-49aa-8548-10c23099854c',
         paymentHash: 'foo',
         walletId: wallet.wallet.id(),
         txRequestId: 'txReqId',
@@ -562,6 +563,7 @@ describe('Lightning wallets', function () {
 
     it('should work properly with pagination while listing payments', async function () {
       const payment1: PaymentInfo = {
+        id: '8308fddb-2356-49aa-8548-10c23099854c',
         paymentHash: 'foo1',
         walletId: wallet.wallet.id(),
         txRequestId: 'txReqId1',
@@ -575,12 +577,14 @@ describe('Lightning wallets', function () {
       };
       const payment2: PaymentInfo = {
         ...payment1,
+        id: '8308fddb-2356-49aa-8548-10c23099854d',
         paymentHash: 'foo2',
         txRequestId: 'txReqId2',
         invoice: 'tlnfoobar2',
       };
       const payment3: PaymentInfo = {
         ...payment1,
+        id: '8308fddb-2356-49aa-8548-10c23099854e',
         paymentHash: 'foo3',
         txRequestId: 'txReqId3',
         invoice: 'tlnfoobar3',
@@ -828,9 +832,19 @@ describe('Lightning wallets', function () {
         state: 'pendingDelivery',
       };
 
-      const finalPaymentResponse = {
+      const finalWithdrawResponse = {
         txRequestId: 'txReq123',
         state: 'delivered',
+        transactions: [
+          {
+            unsignedTx: {
+              coinSpecific: {
+                status: 'delivered',
+                txid: 'tx123',
+              },
+            },
+          },
+        ],
       };
 
       const transferResponse = {
@@ -931,7 +945,7 @@ describe('Lightning wallets', function () {
 
       const sendTxRequestNock = nock(bgUrl)
         .post(`/api/v2/wallet/${wallet.wallet.id()}/txrequests/${txRequestResponse.txRequestId}/transactions/0/send`)
-        .reply(200, finalPaymentResponse);
+        .reply(200, finalWithdrawResponse);
 
       const getTransferNock = nock(bgUrl)
         .get(`/api/v2/${coinName}/wallet/${wallet.wallet.id()}/transfer/${transferResponse.id}`)
@@ -940,6 +954,8 @@ describe('Lightning wallets', function () {
       const response = await wallet.withdrawOnchain(params);
       assert.strictEqual(response.txRequestId, 'txReq123');
       assert.strictEqual(response.txRequestState, 'delivered');
+      assert.strictEqual(response.withdrawStatus?.status, 'delivered');
+      assert.strictEqual(response.withdrawStatus?.txid, 'tx123');
       assert.deepStrictEqual(response.transfer, updatedTransferResponse);
 
       createTxRequestNock.done();

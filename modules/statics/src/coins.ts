@@ -1559,6 +1559,16 @@ export const coins = CoinMap.fromCoins([
     AccountCoin.DEFAULT_FEATURES
   ),
   hederaToken(
+    '0831f9ae-5ea3-47e0-b3ef-b7e69bb48b4d',
+    'hbar:co2e',
+    'OrbexCO2-dAluminium',
+    Networks.main.hedera,
+    3,
+    UnderlyingAsset['hbar:co2e'],
+    '0.0.6908371',
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  hederaToken(
     '44beb5f1-7581-4b0d-a09a-bae78d8c266f',
     'hbar:clxy',
     'Calaxy Tokens',
@@ -2543,6 +2553,28 @@ export const coins = CoinMap.fromCoins([
     Networks.test.soneium,
     KeyCurve.Secp256k1
   ),
+  terc721(
+    '95bfa074-a3d0-4579-a18a-9bccafc2bd0b',
+    'tsoneium:test721',
+    'soneium Test ERC721',
+    '0xc78d4c49ccaa27a9ba9d0de9d93f50dbc67d4f8e',
+    GENERIC_TOKEN_FEATURES,
+    '',
+    '',
+    Networks.test.soneium,
+    KeyCurve.Secp256k1
+  ),
+  terc1155(
+    '6299cdc3-07b8-40b3-a814-f2d9965bcbb4',
+    'tsoneium:test1155',
+    'soneium Test ERC1155',
+    '0xa8005b2990abfd688c0815b84509896f2c7bf78d',
+    GENERIC_TOKEN_FEATURES,
+    '',
+    '',
+    Networks.test.soneium,
+    KeyCurve.Secp256k1
+  ),
   arbethErc20(
     '14a21e93-b123-4437-b99f-0489947d0379',
     'arbeth:link',
@@ -2566,6 +2598,14 @@ export const coins = CoinMap.fromCoins([
     6,
     '0xa05245ade25cc1063ee50cf7c083b4524c1c4302',
     UnderlyingAsset['arbeth:xsgdv2']
+  ),
+  arbethErc20(
+    'd3ac7e6d-14f0-4ff9-8b20-20348e63b723',
+    'arbeth:trn',
+    't3rn',
+    18,
+    '0x1114982539a2bfb84e8b9e4e320bbc04532a9e44',
+    UnderlyingAsset['arbeth:trn']
   ),
   arbethErc20(
     '0606676c-1e6b-488a-abe1-ab46c697c4b9',
@@ -3192,7 +3232,8 @@ export const coins = CoinMap.fromCoins([
     'Wrapped gBERA',
     18,
     '0xd77552d3849ab4d8c3b189a9582d0ba4c1f4f912',
-    UnderlyingAsset['bera:wgbera']
+    UnderlyingAsset['bera:wgbera'],
+    [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.EIP1559]
   ),
   tberaErc20(
     '24af5e18-ab4b-43e5-80db-0ddb9beb01b3',
@@ -3254,7 +3295,7 @@ export const coins = CoinMap.fromCoins([
     '78aaa845-2c36-4f16-bc0f-6a4c65b43dab',
     'world:usdc',
     'USDC',
-    18,
+    6,
     '0x79a02482a880bce3f13e09da970dc34db4cd24d1',
     UnderlyingAsset['world:usdc']
   ),
@@ -3270,7 +3311,7 @@ export const coins = CoinMap.fromCoins([
     'd347b3ba-73ac-4f3d-bd3a-e68b7c1e4669',
     'tworld:usdc',
     'USDC',
-    18,
+    6,
     '0x66145f38cbac35ca6f1dfb4914df98f1614aea88',
     UnderlyingAsset['tworld:usdc']
   ),

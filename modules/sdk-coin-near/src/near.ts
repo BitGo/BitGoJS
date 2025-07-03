@@ -35,6 +35,7 @@ import {
   MultisigType,
   multisigTypes,
   AuditDecryptedKeyParams,
+  TokenEnablementConfig,
 } from '@bitgo/sdk-core';
 import * as nearAPI from 'near-api-js';
 import * as request from 'superagent';
@@ -157,6 +158,16 @@ export class Near extends BaseCoin {
   /** inherited doc */
   getDefaultMultisigType(): MultisigType {
     return multisigTypes.tss;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  getTokenEnablementConfig(): TokenEnablementConfig {
+    return {
+      requiresTokenEnablement: true,
+      supportsMultipleTokenEnablements: false,
+    };
   }
 
   getMPCAlgorithm(): MPCAlgorithm {

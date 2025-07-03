@@ -1499,6 +1499,8 @@ export enum UnderlyingAsset {
   'sol:veur' = 'sol:veur',
   'sol:vchf' = 'sol:vchf',
   'sol:tbill' = 'sol:tbill',
+  'sol:usdg' = 'sol:usdg',
+  'sol:ausd' = 'sol:ausd',
   SBF = 'sbf',
   SBR = 'sbr',
   // Saber IOU Token (Liquidity Mining Rewards)
@@ -1983,8 +1985,15 @@ export enum UnderlyingAsset {
   'eth:banca' = 'eth:banca',
   'eth:stq' = 'eth:stq',
   'eth:route' = 'eth:route',
+  'eth:ryt' = 'eth:ryt',
+  'eth:guild' = 'eth:guild',
+  'eth:rdo' = 'eth:rdo',
+  'eth:h' = 'eth:h',
+  'eth:wbt' = 'eth:wbt',
+  'eth:ftn' = 'eth:ftn',
   'eth:sc' = 'eth:sc',
   'eth:lf' = 'eth:lf',
+  'eth:usdcv' = 'eth:usdcv',
   'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ' = 'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ',
   'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M' = 'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M',
   'xlm:SLT-GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP' = 'xlm:SLT-GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP',
@@ -2273,6 +2282,8 @@ export enum UnderlyingAsset {
   'bsc:usdc' = 'bsc:usdc',
   'bsc:eth' = 'bsc:eth',
   'bsc:dd' = 'bsc:dd',
+  'bsc:parti' = 'bsc:parti',
+  'bsc:form' = 'bsc:form',
   'bsc:ltc' = 'bsc:ltc',
   'bsc:mask' = 'bsc:mask',
   'bsc:matic' = 'bsc:matic',
@@ -2424,6 +2435,7 @@ export enum UnderlyingAsset {
   'arbeth:spxux' = 'arbeth:spxux',
   'arbeth:usdc' = 'arbeth:usdc',
   'arbeth:xsgdv2' = 'arbeth:xsgdv2',
+  'arbeth:trn' = 'arbeth:trn',
   'arbeth:usdcv2' = 'arbeth:usdcv2',
   'arbeth:usdt' = 'arbeth:usdt',
   'arbeth:arb' = 'arbeth:arb',
@@ -2526,6 +2538,8 @@ export enum UnderlyingAsset {
   // generic NFTs
   'erc721:soneiumtoken' = 'erc721:soneiumtoken',
   'erc1155:soneiumtoken' = 'erc1155:soneiumtoken',
+  'tsoneium:test721' = 'tsoneium:test721',
+  'tsoneium:test1155' = 'tsoneium:test1155',
 
   // coredao mainnet tokens
   'coredao:stcore' = 'coredao:stcore',
@@ -2760,6 +2774,7 @@ export enum UnderlyingAsset {
   'hbar:jam' = 'hbar:jam',
   'hbar:berry' = 'hbar:berry',
   'hbar:bonzo' = 'hbar:bonzo',
+  'hbar:co2e' = 'hbar:co2e',
 
   // Hbar Testnet tokens
   'thbar:txsgd' = 'thbar:txsgd',

@@ -148,7 +148,7 @@ describe('Go Staking Wallet Common', function () {
   });
 
   describe('getGoStakingRequest', function () {
-    it('should call gostaking-service to get go staking request', async function () {
+    it('should call go-staking-service to get go staking request', async function () {
       const stakingRequestId = '8638284a-dab2-46b9-b07f-21109a6e7220';
       const expected = fixtures.finalizeGoStakingRequest(coin, 'STAKE');
       const msScope = nock(microservicesUri)
@@ -160,6 +160,70 @@ describe('Go Staking Wallet Common', function () {
       should.exist(stakingRequest);
 
       stakingRequest.should.deepEqual(expected);
+      msScope.isDone().should.be.True();
+    });
+  });
+
+  describe('getGoStakingRequestsByCoin', function () {
+    it('should call go-staking-service to get go staking requests by coin', async function () {
+      const expected = fixtures.getGoStakingRequestsByCoin(ofcCoin);
+      const msScope = nock(microservicesUri)
+        .get(`/api/go-staking/v1/${ofcCoin}/accounts/${stakingWallet.accountId}/requests`)
+        .reply(200, expected);
+
+      const stakingRequests = await stakingWallet.getGoStakingRequestsByWalletCoin();
+
+      should.exist(stakingRequests);
+
+      stakingRequests.should.deepEqual(expected);
+      msScope.isDone().should.be.True();
+    });
+  });
+
+  describe('getGoStakingRequests', function () {
+    it('should call go-staking-service to get go staking requests', async function () {
+      const expected = fixtures.getGoStakingRequests([ofcCoin]);
+      const msScope = nock(microservicesUri)
+        .get(`/api/go-staking/v1/accounts/${stakingWallet.accountId}/requests`)
+        .reply(200, expected);
+
+      const stakingRequests = await stakingWallet.getGoStakingRequests();
+
+      should.exist(stakingRequests);
+
+      stakingRequests.should.deepEqual(expected);
+      msScope.isDone().should.be.True();
+    });
+  });
+
+  describe('getGoStakingWallets', function () {
+    it('should call go-staking-service to get go staking wallets', async function () {
+      const expected = fixtures.getGoStakingWallets([ofcCoin]);
+      const msScope = nock(microservicesUri)
+        .get(`/api/go-staking/v1/accounts/${stakingWallet.accountId}/coins`)
+        .reply(200, expected);
+
+      const goStakingWallets = await stakingWallet.getGoStakingWallets();
+
+      should.exist(goStakingWallets);
+
+      goStakingWallets.should.deepEqual(expected);
+      msScope.isDone().should.be.True();
+    });
+  });
+
+  describe('getGoStakingWallet', function () {
+    it('should call go-staking-service to get go staking wallet', async function () {
+      const expected = fixtures.getGoStakingWallet(ofcCoin);
+      const msScope = nock(microservicesUri)
+        .get(`/api/go-staking/v1/${ofcCoin}/accounts/${stakingWallet.accountId}/coins`)
+        .reply(200, expected);
+
+      const goStakingWallet = await stakingWallet.getGoStakingWallet();
+
+      should.exist(goStakingWallet);
+
+      goStakingWallet.should.deepEqual(expected);
       msScope.isDone().should.be.True();
     });
   });

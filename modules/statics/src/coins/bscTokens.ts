@@ -22,6 +22,24 @@ export const bscTokens = [
     BSC_TOKEN_FEATURES
   ),
   bscToken(
+    '5e733ad8-d1e8-4556-ae76-c6e99f3e5f04',
+    'bsc:parti',
+    'Particle Network',
+    18,
+    '0x59264f02d301281f3393e1385c0aefd446eb0f00',
+    UnderlyingAsset['bsc:parti'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
+    'a85e7404-2268-4394-bdb2-0166b8444072',
+    'bsc:form',
+    'Four',
+    18,
+    '0x5b73a93b4e5e4f1fd27d8b3f8c97d69908b5e284',
+    UnderlyingAsset['bsc:form'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
     '2a3e9315-0cb8-4bdf-ba9c-d872aeeb1ce2',
     'bsc:bsw',
     'Biswap',

@@ -582,6 +582,12 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
   tatom: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   tton: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   tbsc: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.BULK_TRANSACTION] },
+  xtz: {
+    features: [CoinFeature.CUSTODY_BITGO_TRUST],
+  },
+  txtz: {
+    features: [CoinFeature.CUSTODY_BITGO_TRUST],
+  },
 };
 
 const coinsWithExcludedFeatures: Record<string, { features: CoinFeature[] }> = {
@@ -840,7 +846,9 @@ coins.forEach((coin, coinName) => {
     } else if (coin.family === CoinFamily.XTZ || coin.features.includes(CoinFeature.GENERIC_TOKEN)) {
       it(`should return false for all custody ${coin.family} coin feature`, () => {
         coin.features.includes(CoinFeature.CUSTODY).should.eql(false);
-        coin.features.includes(CoinFeature.CUSTODY_BITGO_TRUST).should.eql(false);
+        if (coin.family !== CoinFamily.XTZ) {
+          coin.features.includes(CoinFeature.CUSTODY_BITGO_TRUST).should.eql(false);
+        }
         coin.features.includes(CoinFeature.CUSTODY_BITGO_MENA_FZE).should.eql(false);
         coin.features.includes(CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE).should.eql(false);
         coin.features.includes(CoinFeature.CUSTODY_BITGO_NEW_YORK).should.eql(false);

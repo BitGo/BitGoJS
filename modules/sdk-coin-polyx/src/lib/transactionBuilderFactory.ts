@@ -6,6 +6,7 @@ import { RegisterDidWithCDDBuilder } from './registerDidWithCDDBuilder';
 import { BondExtraBuilder } from './bondExtraBuilder';
 import { BatchStakingBuilder } from './batchStakingBuilder';
 import { BatchUnstakingBuilder } from './batchUnstakingBuilder';
+import { UnbondBuilder } from './unbondBuilder';
 import { WithdrawUnbondedBuilder } from './withdrawUnbondedBuilder';
 import utils from './utils';
 import { Interface, SingletonRegistry, TransactionBuilder } from './';
@@ -41,6 +42,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getBatchUnstakingBuilder(): BatchUnstakingBuilder {
     return new BatchUnstakingBuilder(this._coinConfig).material(this._material);
+  }
+
+  getUnbondBuilder(): UnbondBuilder {
+    return new UnbondBuilder(this._coinConfig).material(this._material);
   }
 
   getWithdrawUnbondedBuilder(): WithdrawUnbondedBuilder {
@@ -101,6 +106,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
       return this.getBatchBuilder();
     } else if (methodName === 'nominate') {
       return this.getBatchBuilder();
+    } else if (methodName === 'unbond') {
+      return this.getUnbondBuilder();
     } else if (methodName === 'withdrawUnbonded') {
       return this.getWithdrawUnbondedBuilder();
     }

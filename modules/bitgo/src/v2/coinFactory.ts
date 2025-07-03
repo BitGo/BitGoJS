@@ -869,6 +869,9 @@ export function getTokenConstructor(tokenConfig: TokenConfig): CoinConstructor |
     case 'coredao':
     case 'tcoredao':
       return CoredaoToken.createTokenConstructor(tokenConfig as EthLikeTokenConfig);
+    case 'world':
+    case 'tworld':
+      return WorldToken.createTokenConstructor(tokenConfig as EthLikeTokenConfig);
     case 'sol':
     case 'tsol':
       return SolToken.createTokenConstructor(tokenConfig as SolTokenConfig);

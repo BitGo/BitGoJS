@@ -27,6 +27,7 @@ import {
   LightningOnchainWithdrawResponse,
   ListInvoicesResponse,
   ListPaymentsResponse,
+  LndCreateWithdrawResponse,
 } from '../codecs';
 import { LightningPaymentIntent, LightningPaymentRequest } from '@bitgo/public-types';
 
@@ -170,12 +171,12 @@ export interface ILightningWallet {
    */
   withdrawOnchain(params: LightningOnchainWithdrawParams): Promise<LightningOnchainWithdrawResponse>;
   /**
-   * Get payment details by payment hash
-   * @param {string} paymentHash - Payment hash to lookup
+   * Get payment details by payment id
+   * @param {string} paymentId - Payment id to lookup
    * @returns {Promise<PaymentInfo>} Payment details
-   * @throws {InvalidPaymentHash} When payment hash is not valid
+   * @throws {InvalidPaymentId} When payment id is not valid
    */
-  getPayment(paymentHash: string): Promise<PaymentInfo>;
+  getPayment(paymentId: string): Promise<PaymentInfo>;
   /**
    * List payments for a wallet with optional filtering
    * @param {PaymentQuery} params Query parameters for filtering payments
@@ -183,6 +184,7 @@ export interface ILightningWallet {
    * @param {bigint} [params.limit] The maximum number of payments to return
    * @param {Date} [params.startDate] The start date for the query
    * @param {Date} [params.endDate] The end date for the query
+   * @param {string} [params.paymentHash] The payment hash of the payments
    * @param {string} [params.prevId] Continue iterating (provided by nextBatchPrevId in the previous list)
    * @returns {Promise<ListPaymentsResponse>} List of payments and nextBatchPrevId
    */
@@ -377,6 +379,7 @@ export class LightningWallet implements ILightningWallet {
       reqId
     );
 
+    const coinSpecific = transactionRequestSend.transactions?.[0]?.unsignedTx?.coinSpecific;
     let updatedTransfer: any = undefined;
     try {
       updatedTransfer = await this.wallet.getTransfer({ id: transfer.id });
@@ -390,12 +393,16 @@ export class LightningWallet implements ILightningWallet {
       txRequestId: transactionRequestCreate.txRequestId,
       txRequestState: transactionRequestSend.state,
       transfer: updatedTransfer,
+      withdrawStatus:
+        coinSpecific && 'status' in coinSpecific
+          ? t.exact(LndCreateWithdrawResponse).encode(coinSpecific as LndCreateWithdrawResponse)
+          : undefined,
     };
   }
 
-  async getPayment(paymentHash: string): Promise<PaymentInfo> {
+  async getPayment(paymentId: string): Promise<PaymentInfo> {
     const response = await this.wallet.bitgo
-      .get(this.wallet.bitgo.url(`/wallet/${this.wallet.id()}/lightning/payment/${paymentHash}`, 2))
+      .get(this.wallet.bitgo.url(`/wallet/${this.wallet.id()}/lightning/payment/${paymentId}`, 2))
       .result();
     return decodeOrElse(PaymentInfo.name, PaymentInfo, response, (error) => {
       throw new Error(`Invalid payment response: ${error}`);

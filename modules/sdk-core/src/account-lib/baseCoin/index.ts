@@ -8,3 +8,4 @@ export { TransactionType, StakingOperationTypes, AddressFormat, DotAddressFormat
 export * from './secp256k1ExtendedKeyPair';
 export * from './errors';
 export * from './iface';
+export * from './messages';

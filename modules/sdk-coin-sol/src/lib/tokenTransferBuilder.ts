@@ -50,6 +50,9 @@ export class TokenTransferBuilder extends TransactionBuilder {
           address: transferInstruction.params.toAddress,
           amount: transferInstruction.params.amount,
           tokenName: transferInstruction.params.tokenName,
+          tokenAddress: transferInstruction.params.tokenAddress,
+          programId: transferInstruction.params.programId,
+          decimalPlaces: transferInstruction.params.decimalPlaces,
         });
       }
       if (instruction.type === InstructionBuilderTypes.CreateAssociatedTokenAccount) {
@@ -58,6 +61,8 @@ export class TokenTransferBuilder extends TransactionBuilder {
           ownerAddress: ataInitInstruction.params.ownerAddress,
           tokenName: ataInitInstruction.params.tokenName,
           ataAddress: ataInitInstruction.params.ataAddress,
+          tokenAddress: ataInitInstruction.params.mintAddress,
+          programId: ataInitInstruction.params.programId,
         });
       }
     }

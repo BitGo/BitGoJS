@@ -15,6 +15,7 @@ export { Transaction as PolyxTransaction } from './transaction';
 export { BondExtraBuilder } from './bondExtraBuilder';
 export { BatchStakingBuilder as BatchBuilder } from './batchStakingBuilder';
 export { BatchUnstakingBuilder } from './batchUnstakingBuilder';
+export { UnbondBuilder } from './unbondBuilder';
 export { WithdrawUnbondedBuilder } from './withdrawUnbondedBuilder';
 export { Utils, default as utils } from './utils';
 export * from './iface';

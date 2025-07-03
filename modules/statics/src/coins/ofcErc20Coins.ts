@@ -253,6 +253,12 @@ export const ofcErc20Coins = [
   ofcerc20('509e7614-4134-4f4a-b107-cd3b4783a558', 'ofceth:spx', 'SPX6900', 8, UnderlyingAsset['eth:spx']),
   ofcerc20('2c863d38-6d3b-438a-983d-79f20aff030a', 'ofceth:kava', 'Kava', 6, UnderlyingAsset['eth:kava']),
   ofcerc20('53a414b4-cefa-4a81-936c-9ecbb2da22cc', 'ofceth:gousd', 'goUSD', 6, UnderlyingAsset['eth:gousd']),
+  ofcerc20('42e30f8e-0e75-4e3f-bb9c-c4f8ec6d819e', 'ofceth:ryt', 'Real Yield Token', 18, UnderlyingAsset['eth:ryt']),
+  ofcerc20('0bdaaf36-bd01-4cce-96b5-60a9d2c82c36', 'ofceth:guild', 'BlockchainSpace', 18, UnderlyingAsset['eth:guild']),
+  ofcerc20('f9bb204c-cfc7-406a-8e4e-6205efb9b187', 'ofceth:rdo', 'Reddio', 18, UnderlyingAsset['eth:rdo']),
+  ofcerc20('3a9b6f94-b3a5-4375-a2ad-2a53057e5c89', 'ofceth:h', 'Humanity Protocol', 18, UnderlyingAsset['eth:h']),
+  ofcerc20('a1d91c70-7c7d-4b79-8729-9be52f2dd144', 'ofceth:wbt', 'WhiteBIT Coin', 8, UnderlyingAsset['eth:wbt']),
+  ofcerc20('f60b1ac2-2b25-4097-8679-ef746498ea86', 'ofceth:ftn', 'Fasttoken', 18, UnderlyingAsset['eth:ftn']),
   ofcerc20(
     'baded9c2-d530-4188-b35d-2fd00cf6ee2e',
     'ofcustb',
@@ -3232,6 +3238,13 @@ export const ofcErc20Coins = [
   ),
   ofcerc20('8d778a3b-7537-4333-97b4-9244078ae37c', 'ofceth:sc', 'SteelCoin', 18, underlyingAssetForSymbol('eth:sc')),
   ofcerc20('827a39b3-0124-4667-b1ed-f939dc7bb86f', 'ofceth:lf', 'LF labs', 18, underlyingAssetForSymbol('eth:lf')),
+  ofcerc20(
+    '6386ef1a-db83-419b-be2f-0a7a3626e259',
+    'ofceth:usdcv',
+    'USD CoinVertible',
+    18,
+    underlyingAssetForSymbol('eth:usdcv')
+  ),
 ];
 
 export const tOfcErc20Coins = [

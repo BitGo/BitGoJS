@@ -228,11 +228,14 @@ export function deriveTatSharedSecret(coinName: 'lnbtc' | 'tlnbtc', xprv: string
 
 /**
  * Given a seed, compute a BIP32 derivation index.
- * 0 <= index < 4294967295 (largest 4 byte number)
+ * 0 <= index < 2147483648 (largest 31 bit number). This needs to be 2^31 - 1 so that the bip32 library
+ * can derive the hardened key.
  * @param seed (optional) If nothing provided, we will generate one randomly
  */
 export function computeBip32DerivationIndexFromSeed(seed?: string): number {
-  return Buffer.from(utxolib.crypto.sha256(Buffer.from(seed ?? randomBytes(32).toString('hex'), 'utf8'))).readUint32BE(
-    0
+  return (
+    (Buffer.from(utxolib.crypto.sha256(Buffer.from(seed ?? randomBytes(32).toString('hex'), 'utf8'))).readUint32BE(0) %
+      Math.pow(2, 31)) -
+    1
   );
 }
