@@ -1325,6 +1325,11 @@ class MonadTestnet extends Testnet implements EthereumNetwork {
   accountExplorerUrl = 'https://testnet.monadexplorer.com/address/';
   chainId = 10143;
   nativeCoinOperationHashPrefix = '10143';
+  walletFactoryAddress = '0x809ee567e413543af1caebcdb247f6a67eafc8dd';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
+  forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
+  forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
+  walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
 }
 class Monad extends Mainnet implements EthereumNetwork {
   name = 'Monad';
@@ -1332,6 +1337,10 @@ class Monad extends Mainnet implements EthereumNetwork {
   explorerUrl = 'https://testnet.monadexplorer.com/tx/'; //TODO: WIN-5225: change it with mainnet explorer, when its available
   chainId = 10143; //TODO: WIN-5225: change it with mainnet explorer, when its available
   nativeCoinOperationHashPrefix = '10143'; //TODO: WIN-5225: change it with mainnet explorer, when its available
+  walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
+  forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
+  forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
 
 class World extends Mainnet implements EthereumNetwork {
@@ -1357,6 +1366,7 @@ class WorldTestnet extends Testnet implements EthereumNetwork {
   batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
   forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
+  walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
 }
 
 class Soneium extends Mainnet implements EthereumNetwork {
@@ -1402,6 +1412,11 @@ class SomniaTestnet extends Testnet implements EthereumNetwork {
   accountExplorerUrl = 'https://shannon-explorer.somnia.network/address/';
   chainId = 50312;
   nativeCoinOperationHashPrefix = '50312';
+  walletFactoryAddress = '0x809ee567e413543af1caebcdb247f6a67eafc8dd';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
+  forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
+  forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
+  walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
 }
 
 class Flare extends Mainnet implements EthereumNetwork {
