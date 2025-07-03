@@ -832,9 +832,19 @@ describe('Lightning wallets', function () {
         state: 'pendingDelivery',
       };
 
-      const finalPaymentResponse = {
+      const finalWithdrawResponse = {
         txRequestId: 'txReq123',
         state: 'delivered',
+        transactions: [
+          {
+            unsignedTx: {
+              coinSpecific: {
+                status: 'delivered',
+                txid: 'tx123',
+              },
+            },
+          },
+        ],
       };
 
       const transferResponse = {
@@ -935,7 +945,7 @@ describe('Lightning wallets', function () {
 
       const sendTxRequestNock = nock(bgUrl)
         .post(`/api/v2/wallet/${wallet.wallet.id()}/txrequests/${txRequestResponse.txRequestId}/transactions/0/send`)
-        .reply(200, finalPaymentResponse);
+        .reply(200, finalWithdrawResponse);
 
       const getTransferNock = nock(bgUrl)
         .get(`/api/v2/${coinName}/wallet/${wallet.wallet.id()}/transfer/${transferResponse.id}`)
@@ -944,6 +954,8 @@ describe('Lightning wallets', function () {
       const response = await wallet.withdrawOnchain(params);
       assert.strictEqual(response.txRequestId, 'txReq123');
       assert.strictEqual(response.txRequestState, 'delivered');
+      assert.strictEqual(response.withdrawStatus?.status, 'delivered');
+      assert.strictEqual(response.withdrawStatus?.txid, 'tx123');
       assert.deepStrictEqual(response.transfer, updatedTransferResponse);
 
       createTxRequestNock.done();

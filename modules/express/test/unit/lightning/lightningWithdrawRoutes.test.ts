@@ -1,7 +1,7 @@
 import * as sinon from 'sinon';
 import * as should from 'should';
 import * as express from 'express';
-import { PayInvoiceResponse } from '@bitgo/abstract-lightning';
+import { LightningOnchainWithdrawResponse } from '@bitgo/abstract-lightning';
 import { BitGo } from 'bitgo';
 import { handleLightningWithdraw } from '../../../src/lightning/lightningWithdrawRoutes';
 
@@ -34,9 +34,13 @@ describe('Lightning Withdraw Routes', () => {
         satsPerVbyte: '15',
       };
 
-      const expectedResponse: PayInvoiceResponse = {
+      const expectedResponse: LightningOnchainWithdrawResponse = {
         txRequestState: 'delivered',
         txRequestId: '123',
+        withdrawStatus: {
+          status: 'delivered',
+          txid: 'tx123',
+        },
       };
 
       const onchainWithdrawStub = sinon.stub().resolves(expectedResponse);

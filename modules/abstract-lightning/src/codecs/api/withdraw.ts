@@ -3,7 +3,11 @@ import { LightningOnchainRecipient } from '@bitgo/public-types';
 import { PendingApprovalData, TxRequestState } from '@bitgo/sdk-core';
 import { BigIntFromString } from 'io-ts-types';
 
-// todo:(current) which to keep here which to take to common types
+export const WithdrawStatusDelivered = 'delivered';
+export const WithdrawStatusFailed = 'failed';
+
+export const WithdrawStatus = t.union([t.literal(WithdrawStatusDelivered), t.literal(WithdrawStatusFailed)]);
+
 export const LightningOnchainWithdrawParams = t.type({
   recipients: t.array(LightningOnchainRecipient),
   satsPerVbyte: BigIntFromString,
@@ -12,6 +16,20 @@ export const LightningOnchainWithdrawParams = t.type({
 });
 
 export type LightningOnchainWithdrawParams = t.TypeOf<typeof LightningOnchainWithdrawParams>;
+
+export const LndCreateWithdrawResponse = t.intersection(
+  [
+    t.type({
+      status: WithdrawStatus,
+    }),
+    t.partial({
+      txid: t.string,
+      failureReason: t.string,
+    }),
+  ],
+  'LndCreateWithdrawResponse'
+);
+export type LndCreateWithdrawResponse = t.TypeOf<typeof LndCreateWithdrawResponse>;
 
 export type LightningOnchainWithdrawResponse = {
   /**
@@ -31,6 +49,14 @@ export type LightningOnchainWithdrawResponse = {
    * - If present, withdraw has not been initiated yet.
    */
   pendingApproval?: PendingApprovalData;
+
+  /**
+   * Current snapshot of withdraw status (if available).
+   * - **`'delivered'`**: Withdraw request is delivered to the blockchain.
+   * - **`'failed'`**: Withdraw failed.
+   * This field is absent if approval is required before processing.
+   */
+  withdrawStatus?: LndCreateWithdrawResponse;
 
   /**
    * Latest transfer details for this withdraw request (if available).
@@ -77,10 +103,16 @@ export const SendPsbtRequest = t.type(
 );
 export type SendPsbtRequest = t.TypeOf<typeof SendPsbtRequest>;
 
-export const SendPsbtResponse = t.type(
-  {
-    label: t.string,
-  },
+export const SendPsbtResponse = t.intersection(
+  [
+    t.type({
+      label: t.string,
+    }),
+    t.partial({
+      status: WithdrawStatus,
+      failureReason: t.string,
+    }),
+  ],
   'SendPsbtResponse'
 );
 export type SendPsbtResponse = t.TypeOf<typeof SendPsbtResponse>;
