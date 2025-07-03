@@ -3232,7 +3232,8 @@ export const coins = CoinMap.fromCoins([
     'Wrapped gBERA',
     18,
     '0xd77552d3849ab4d8c3b189a9582d0ba4c1f4f912',
-    UnderlyingAsset['bera:wgbera']
+    UnderlyingAsset['bera:wgbera'],
+    [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.EIP1559]
   ),
   tberaErc20(
     '24af5e18-ab4b-43e5-80db-0ddb9beb01b3',
