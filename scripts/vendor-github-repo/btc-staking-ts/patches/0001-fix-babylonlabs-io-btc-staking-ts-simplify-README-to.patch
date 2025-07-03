@@ -52,7 +52,7 @@ index ed35980ea..cecbcaff7 100644
 -
 -Details on the usage of the library can be found
 -on the [usage guide](./docs/usage.md).
-+BitGo Fork of https://github.com/babylonlabs-io/btc-staking-ts/tree/v0.4.0-rc.2
++BitGo Fork of https://github.com/babylonlabs-io/btc-staking-ts/tree/v1.0.3
 \ No newline at end of file
 -- 
 2.43.0
