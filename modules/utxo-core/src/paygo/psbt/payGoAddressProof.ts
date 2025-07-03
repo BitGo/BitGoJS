@@ -76,7 +76,7 @@ export function verifyPayGoAddressProof(
   // We construct our message <ENTROPY><ADDRESS><UUID>
   const message = createPayGoAttestationBuffer(addressFromOutput, entropy, psbt.network);
 
-  if (!verifyMessage(message.toString(), verificationPubkey, signature, utxolib.networks.bitcoin)) {
+  if (!verifyMessage(message.toString('hex'), verificationPubkey, signature, utxolib.networks.bitcoin)) {
     throw new ErrorPayGoAddressProofFailedVerification();
   }
 }
