@@ -1,5 +1,4 @@
 import * as utxolib from '@bitgo/utxo-lib';
-import * as _ from 'lodash';
 import * as bitcoinMessage from 'bitcoinjs-message';
 import { BIP32Interface } from '@bitgo/utxo-lib';
 /**
@@ -17,7 +16,7 @@ export function signMessage(
       throw new Error(`must provide privateKey`);
     }
   }
-  if (!_.isObject(network) || !_.isString(network.messagePrefix)) {
+  if (network === null || typeof network !== 'object' || typeof network.messagePrefix !== 'string') {
     throw new Error(`invalid argument 'network'`);
   }
   const compressed = true;
@@ -37,7 +36,7 @@ export function verifyMessage(
   if (!Buffer.isBuffer(publicKey)) {
     publicKey = publicKey.publicKey;
   }
-  if (!_.isObject(network) || !_.isString(network.messagePrefix)) {
+  if (network === null || typeof network !== 'object' || typeof network.messagePrefix !== 'string') {
     throw new Error(`invalid argument 'network'`);
   }
 
