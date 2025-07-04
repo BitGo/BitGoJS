@@ -93,10 +93,10 @@ interface InclusionProof {
 }
 
 export class BabylonBtcStakingManager {
-  private stakingParams: VersionedStakingParams[];
-  private btcProvider: BtcProvider;
-  private network: networks.Network;
-  private babylonProvider: BabylonProvider;
+  protected stakingParams: VersionedStakingParams[];
+  protected btcProvider: BtcProvider;
+  protected network: networks.Network;
+  protected babylonProvider: BabylonProvider;
 
   constructor(
     network: networks.Network,
