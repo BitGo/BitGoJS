@@ -5,7 +5,7 @@
  */
 
 import * as fs from 'fs';
-import * as execa from 'execa';
+import { execa } from 'execa';
 import * as mpath from 'path';
 import * as yargs from 'yargs';
 import {
