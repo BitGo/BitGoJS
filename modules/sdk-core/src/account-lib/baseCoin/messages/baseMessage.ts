@@ -25,8 +25,8 @@ export abstract class BaseMessage implements IMessage {
    */
   protected constructor(options: MessageOptions) {
     this.coinConfig = options.coinConfig;
+    this.payload = options.payload;
     this.type = options.type || MessageStandardType.UNKNOWN;
-    this.payload = options.payload || '';
     this.signablePayload = options.signablePayload;
     this.metadata = options.metadata || {};
 
@@ -117,6 +117,9 @@ export abstract class BaseMessage implements IMessage {
    */
   abstract getSignablePayload(): Promise<string | Buffer>;
 
+  /**
+   * Gets the signatures in a format suitable for broadcasting
+   */
   getBroadcastableSignatures(): Signature[] {
     return this.signatures;
   }

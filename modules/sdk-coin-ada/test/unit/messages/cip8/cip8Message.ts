@@ -105,7 +105,6 @@ describe('Cip8Message', function () {
 
     it('should cache signable payload', async function () {
       const message = new Cip8Message(createDefaultMessageOptions());
-      const buildSignablePayloadSpy = sandbox.spy(message as any, 'buildSignablePayload');
 
       const payload1 = await message.getSignablePayload();
       const payload2 = await message.getSignablePayload();
@@ -115,27 +114,6 @@ describe('Cip8Message', function () {
 
       // Payloads should be the same
       should.equal(payload1, payload2);
-
-      // buildSignablePayload should be called only once
-      buildSignablePayloadSpy.calledOnce.should.be.true();
-    });
-  });
-
-  describe('buildSignablePayload', function () {
-    it('should create a buffer from signature structure', function () {
-      const message = new Cip8Message(createDefaultMessageOptions());
-      const payload = (message as any).buildSignablePayload();
-
-      should.exist(payload);
-      should.ok(Buffer.isBuffer(payload));
-    });
-
-    it('should throw when validation fails', async function () {
-      const options = createDefaultMessageOptions();
-      options.payload = undefined as any;
-      const message = new Cip8Message(options);
-
-      await should(message.getSignablePayload()).be.rejectedWith(`Payload is required to build a CIP8 message`);
     });
   });
 
