@@ -24,17 +24,8 @@ export class MockMessageBuilder extends BaseMessageBuilder {
     super(coinConfig, type);
   }
 
-  async build(): Promise<IMessage> {
-    return new MockMessage({
-      coinConfig: this.coinConfig,
-      payload: this.payload,
-      type: this.type,
-      signatures: this.signatures,
-      signers: this.signers,
-      metadata: {
-        ...this.metadata,
-      },
-    });
+  async buildMessage(options: MessageOptions): Promise<IMessage> {
+    return new MockMessage(options);
   }
 
   async fromBroadcastFormat(broadcastMessage: any): Promise<IMessage> {

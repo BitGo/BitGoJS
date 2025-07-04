@@ -73,7 +73,7 @@ describe('Base Message Builder', () => {
 
   it('should build a message with the correct properties', async () => {
     const payload = 'test message';
-    const metadata = { foo: 'bar' };
+    const metadata = { foo: 'bar', encoding: 'utf8' };
     const signatures = [
       {
         publicKey: { pub: 'pubKey1' },
@@ -107,7 +107,7 @@ describe('Base Message Builder', () => {
 
   it('should correctly handle toBroadcastFormat', async () => {
     const payload = 'hello world';
-    const metadata = { version: '1.0' };
+    const metadata = { version: '1.0', encoding: 'utf8' };
     const signatures = [
       {
         publicKey: { pub: 'pubKey1' },
@@ -152,7 +152,7 @@ describe('Base Message Builder', () => {
         },
       ],
       signers: ['addr1', 'addr2'],
-      metadata: { chainId: 1 },
+      metadata: { chainId: 1, encoding: 'utf8' },
     };
 
     const message = await builder.fromBroadcastFormat(broadcastMessage);
@@ -184,7 +184,7 @@ describe('Base Message Builder', () => {
       payload: payload,
       serializedSignatures: serializeSignatures(signatures),
       signers: signers,
-      metadata: {},
+      metadata: { encoding: 'utf8' },
     });
 
     should.equal(broadcastString, expectedJson);

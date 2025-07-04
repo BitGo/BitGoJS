@@ -14,53 +14,27 @@ export class Cip8Message extends BaseMessage {
   }
 
   /**
-   * Validates required fields and returns common setup objects
-   * @private
-   */
-  private validateAndGetCommonSetup() {
-    if (!this.payload) {
-      throw new Error('Payload is required to build a CIP8 message');
-    }
-    if (!this.signers || this.signers.length === 0) {
-      throw new Error('A signer address is required to build a CIP8 message');
-    }
-
-    let cslAddress: CardanoSL.Address;
-    try {
-      cslAddress = CardanoSL.Address.from_bech32(this.signers[0]);
-    } catch (error) {
-      // Convert string errors to proper Error objects
-      if (typeof error === 'string') {
-        throw new Error(`Invalid signer address: ${error}`);
-      }
-      throw error;
-    }
-
-    const addressCborBytes = cslAddress.to_bytes();
-
-    return { addressCborBytes };
-  }
-
-  /**
    * Returns the hash of the CIP-8 prefixed message
    */
   async getSignablePayload(): Promise<string | Buffer> {
     if (!this.signablePayload) {
-      this.signablePayload = this.buildSignablePayload();
+      const { addressCborBytes } = this.validateAndGetCommonSetup();
+      const { sigStructureCborBytes } = createCSLSigStructure(addressCborBytes, this.payload);
+      this.signablePayload = Buffer.from(sigStructureCborBytes);
     }
     return this.signablePayload;
   }
 
-  /**
-   * Builds the signable payload for a CIP8 message
-   * @returns The signable payload as a Buffer
+  /*
+   * Returns broadcastable signatures in COSE format according to CIP8 standard
+   *
+   * This method transforms the internal signatures into a format suitable for broadcasting
+   * by constructing COSE (CBOR Object Signing and Encryption) objects that comply with
+   * the CIP8 message signing specification.
+   *
+   * @returns Array of signatures with COSE-formatted signature data and public keys
+   * @throws Error if required setup validation fails
    */
-  buildSignablePayload(): string | Buffer {
-    const { addressCborBytes } = this.validateAndGetCommonSetup();
-    const { sigStructureCborBytes } = createCSLSigStructure(addressCborBytes, this.payload);
-    return Buffer.from(sigStructureCborBytes);
-  }
-
   getBroadcastableSignatures(): Signature[] {
     if (!this.signatures.length) {
       return [];
@@ -87,5 +61,32 @@ export class Cip8Message extends BaseMessage {
         },
       },
     ];
+  }
+
+  /**
+   * Validates required fields and returns common setup objects
+   * @private
+   */
+  private validateAndGetCommonSetup() {
+    if (!this.payload) {
+      throw new Error('Payload is required to build a CIP8 message');
+    }
+    if (!this.signers || this.signers.length === 0) {
+      throw new Error('A signer address is required to build a CIP8 message');
+    }
+
+    let cslAddress: CardanoSL.Address;
+    try {
+      cslAddress = CardanoSL.Address.from_bech32(this.signers[0]);
+    } catch (error) {
+      // Convert string errors to proper Error objects
+      if (typeof error === 'string') {
+        throw new Error(`Invalid signer address: ${error}`);
+      }
+      throw error;
+    }
+
+    const addressCborBytes = cslAddress.to_bytes();
+    return { addressCborBytes };
   }
 }

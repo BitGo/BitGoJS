@@ -1,6 +1,6 @@
 import { EIP191Message } from './eip191Message';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseMessageBuilder, IMessage, MessageStandardType } from '@bitgo/sdk-core';
+import { BaseMessageBuilder, IMessage, MessageOptions, MessageStandardType } from '@bitgo/sdk-core';
 
 /**
  * Builder for EIP-191 messages
@@ -15,30 +15,11 @@ export class Eip191MessageBuilder extends BaseMessageBuilder {
   }
 
   /**
-   * Build a signable message using the EIP-191 standard
-   * with previously set input and metadata
-   * @returns A signable message
+   * Builds an EIP-191 message instance with the provided options
+   * @param options Options to create the message
+   * @returns A Promise that resolves to an EIP191Message instance
    */
-  public async build(): Promise<IMessage> {
-    try {
-      if (!this.payload) {
-        throw new Error('Message payload must be set before building the message');
-      }
-      return new EIP191Message({
-        coinConfig: this.coinConfig,
-        payload: this.payload,
-        signatures: this.signatures,
-        signers: this.signers,
-        metadata: {
-          ...this.metadata,
-          encoding: 'utf8',
-        },
-      });
-    } catch (err) {
-      if (err instanceof Error) {
-        throw err;
-      }
-      throw new Error('Failed to build EIP-191 message');
-    }
+  async buildMessage(options: MessageOptions): Promise<IMessage> {
+    return new EIP191Message(options);
   }
 }
