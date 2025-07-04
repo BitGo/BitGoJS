@@ -1,4 +1,4 @@
-import * as execa from 'execa';
+import { execa } from 'execa';
 import { readFileSync } from 'fs';
 import * as path from 'path';
 import { getLernaModules, getDistTags } from './prepareRelease';
