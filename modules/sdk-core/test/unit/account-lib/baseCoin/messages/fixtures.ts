@@ -68,13 +68,23 @@ export const messageSamples = {
     type: MessageStandardType.EIP191,
     metadata: { chainId: 1 },
     signers: ['0x1234567890abcdef1234567890abcdef12345678'],
-    signatures: ['0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890'],
+    signatures: [
+      {
+        publicKey: { pub: '0x1234567890abcdef1234567890abcdef12345678' },
+        signature: Buffer.from('abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890', 'hex'),
+      },
+    ],
   },
   unknown: {
     payload: 'Unknown message type',
     type: MessageStandardType.UNKNOWN,
     metadata: { version: '1.0' },
     signers: ['12345'],
-    signatures: ['67890'],
+    signatures: [
+      {
+        publicKey: { pub: '12345' },
+        signature: Buffer.from('67890'),
+      },
+    ],
   },
 };

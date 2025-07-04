@@ -1,6 +1,6 @@
 import 'should';
 import sinon from 'sinon';
-import { MessageStandardType } from '@bitgo/sdk-core';
+import { MessageStandardType, serializeSignatures } from '@bitgo/sdk-core';
 import { fixtures } from '../fixtures';
 import { EIP191Message } from '../../../../src';
 
@@ -84,17 +84,33 @@ describe('EIP191 Message', () => {
     message.getSigners().should.containEql(fixtures.eip191.signer);
 
     // Test adding new ones
-    message.addSignature('new-signature');
+    message.addSignature({
+      publicKey: { pub: 'pub1' },
+      signature: Buffer.from('new-signature'),
+    });
     message.addSigner('new-signer');
 
-    message.getSignatures().should.containEql('new-signature');
+    message.getSignatures().should.containEql({
+      publicKey: { pub: 'pub1' },
+      signature: Buffer.from('new-signature'),
+    });
     message.getSigners().should.containEql('new-signer');
 
     // Test replacing all
-    message.setSignatures(['replaced-signature']);
+    message.setSignatures([
+      {
+        publicKey: { pub: 'pub2' },
+        signature: Buffer.from('replaced-signature'),
+      },
+    ]);
     message.setSigners(['replaced-signer']);
 
-    message.getSignatures().should.deepEqual(['replaced-signature']);
+    message.getSignatures().should.deepEqual([
+      {
+        publicKey: { pub: 'pub2' },
+        signature: Buffer.from('replaced-signature'),
+      },
+    ]);
     message.getSigners().should.deepEqual(['replaced-signer']);
   });
 
@@ -121,12 +137,13 @@ describe('EIP191 Message', () => {
 
       const broadcastFormat = await message.toBroadcastFormat();
 
+      const expectedSerializedSignatures = serializeSignatures([fixtures.eip191.signature]);
       broadcastFormat.type.should.equal(MessageStandardType.EIP191);
       broadcastFormat.payload.should.equal(fixtures.messages.validMessage);
-      broadcastFormat.signatures.should.deepEqual([fixtures.eip191.signature]);
+      broadcastFormat.serializedSignatures.should.deepEqual(expectedSerializedSignatures);
       broadcastFormat.signers.should.deepEqual([fixtures.eip191.signer]);
       broadcastFormat.metadata!.should.deepEqual(fixtures.eip191.metadata);
-      broadcastFormat.signablePayload!.should.equal('test-signable-payload');
+      broadcastFormat.signablePayload!.should.equal('dGVzdC1zaWduYWJsZS1wYXlsb2Fk');
     });
 
     it('should throw error when broadcasting without signatures', async () => {
@@ -164,10 +181,11 @@ describe('EIP191 Message', () => {
 
       const broadcastString = await message.toBroadcastString();
       const parsedBroadcast = JSON.parse(broadcastString);
+      const expectedSerializedSignatures = serializeSignatures([fixtures.eip191.signature]);
 
       parsedBroadcast.type.should.equal(MessageStandardType.EIP191);
       parsedBroadcast.payload.should.equal(fixtures.messages.validMessage);
-      parsedBroadcast.signatures.should.deepEqual([fixtures.eip191.signature]);
+      parsedBroadcast.serializedSignatures.should.deepEqual(expectedSerializedSignatures);
       parsedBroadcast.signers.should.deepEqual([fixtures.eip191.signer]);
       parsedBroadcast.metadata.should.deepEqual(fixtures.eip191.metadata);
     });

@@ -35,6 +35,33 @@ export type Signature = {
   signature: Buffer;
 };
 
+export type SerializedSignature = {
+  publicKey: string;
+  signature: string;
+};
+
+export function serializeSignature(signature: Signature): SerializedSignature {
+  return {
+    publicKey: signature.publicKey.pub,
+    signature: signature.signature.toString('base64'),
+  };
+}
+
+export function serializeSignatures(signatures: Signature[]): SerializedSignature[] {
+  return signatures.map(serializeSignature);
+}
+
+export function deserializeSignature(serialized: SerializedSignature): Signature {
+  return {
+    publicKey: { pub: serialized.publicKey },
+    signature: Buffer.from(serialized.signature, 'base64'),
+  };
+}
+
+export function deserializeSignatures(serialized: SerializedSignature[]): Signature[] {
+  return serialized.map(deserializeSignature);
+}
+
 export type KeyPairOptions = Seed | PrivateKey | PublicKey;
 
 export type BaseBuilder = BaseTransactionBuilder | BaseTransactionBuilderFactory;

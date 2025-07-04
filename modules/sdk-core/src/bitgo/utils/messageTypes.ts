@@ -1,4 +1,5 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { SerializedSignature, Signature } from '../../account-lib';
 
 /**
  * Supported message signing standard types
@@ -6,6 +7,7 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 export enum MessageStandardType {
   UNKNOWN = 'UNKNOWN',
   EIP191 = 'EIP191',
+  CIP8 = 'CIP8',
 }
 
 export type MessagePayload = string;
@@ -17,10 +19,10 @@ export type MessageMetadata = Record<string, unknown>;
 export interface BroadcastableMessage {
   type: MessageStandardType;
   payload: MessagePayload;
-  signatures: string[];
+  serializedSignatures: SerializedSignature[];
   signers: string[]; // list of addresses or public keys of the signers
   metadata?: MessageMetadata;
-  signablePayload?: string | Buffer;
+  signablePayload?: string;
 }
 
 /**
@@ -32,6 +34,6 @@ export interface MessageOptions {
   type?: MessageStandardType;
   signablePayload?: string | Buffer;
   metadata?: MessageMetadata;
-  signatures?: string[];
+  signatures?: Signature[];
   signers?: string[];
 }

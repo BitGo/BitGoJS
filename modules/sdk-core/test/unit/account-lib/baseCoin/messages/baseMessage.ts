@@ -1,7 +1,7 @@
 import { BaseCoin } from '@bitgo/statics';
 import sinon from 'sinon';
 import should from 'should';
-import { MessageStandardType } from '../../../../../src';
+import { MessageStandardType, serializeSignatures } from '../../../../../src';
 import { messageSamples, TestMessage } from './fixtures';
 
 describe('Base Message', () => {
@@ -74,8 +74,14 @@ describe('Base Message', () => {
     });
 
     it('should handle adding and getting signatures', () => {
-      const sig1 = 'signature1';
-      const sig2 = 'signature2';
+      const sig1 = {
+        publicKey: { pub: 'pub1' },
+        signature: Buffer.from('signature1'),
+      };
+      const sig2 = {
+        publicKey: { pub: 'pub2' },
+        signature: Buffer.from('signature2'),
+      };
 
       message.addSignature(sig1);
       should.deepEqual(message.getSignatures(), [sig1]);
@@ -84,14 +90,32 @@ describe('Base Message', () => {
       should.deepEqual(message.getSignatures(), [sig1, sig2]);
 
       // Set signatures should replace all existing signatures
-      const newSignatures = ['sig3', 'sig4'];
+      const newSignatures = [
+        {
+          publicKey: { pub: 'pub3' },
+          signature: Buffer.from('sig3'),
+        },
+        {
+          publicKey: { pub: 'pub4' },
+          signature: Buffer.from('sig4'),
+        },
+      ];
       message.setSignatures(newSignatures);
       should.deepEqual(message.getSignatures(), newSignatures);
     });
 
     it('should return copies of arrays to prevent mutation', () => {
       const signers = ['addr1', 'addr2'];
-      const signatures = ['sig1', 'sig2'];
+      const signatures = [
+        {
+          publicKey: { pub: 'pub1' },
+          signature: Buffer.from('sig1'),
+        },
+        {
+          publicKey: { pub: 'pub1' },
+          signature: Buffer.from('sig1'),
+        },
+      ];
 
       message.setSigners(signers);
       message.setSignatures(signatures);
@@ -101,7 +125,10 @@ describe('Base Message', () => {
       const returnedSignatures = message.getSignatures();
 
       returnedSigners.push('addr3');
-      returnedSignatures.push('sig3');
+      returnedSignatures.push({
+        publicKey: { pub: 'pub3' },
+        signature: Buffer.from('sig3'),
+      });
 
       should.deepEqual(message.getSigners(), signers);
       should.deepEqual(message.getSignatures(), signatures);
@@ -150,7 +177,12 @@ describe('Base Message', () => {
       const message = new TestMessage({
         coinConfig,
         payload: 'test',
-        signatures: ['sig1'],
+        signatures: [
+          {
+            publicKey: { pub: 'pub1' },
+            signature: Buffer.from('sig1'),
+          },
+        ],
       });
 
       await message
@@ -177,10 +209,10 @@ describe('Base Message', () => {
       should.deepEqual(broadcastFormat, {
         type,
         payload,
-        signatures,
+        serializedSignatures: serializeSignatures(signatures),
         signers,
         metadata,
-        signablePayload: customSignablePayload,
+        signablePayload: customSignablePayload.toString('base64'),
       });
     });
 
@@ -198,7 +230,12 @@ describe('Base Message', () => {
         payload: 'test',
         metadata: nestedMetadata,
         signers: ['addr1'],
-        signatures: ['sig1'],
+        signatures: [
+          {
+            publicKey: { pub: 'pub1' },
+            signature: Buffer.from('sig1'),
+          },
+        ],
       });
 
       const broadcastFormat = await message.toBroadcastFormat();
@@ -227,17 +264,18 @@ describe('Base Message', () => {
         signers,
         signatures,
       });
+      const expectedBroadcastString = {
+        type,
+        payload,
+        serializedSignatures: serializeSignatures(signatures),
+        signers,
+        metadata,
+      };
 
       const broadcastString = await message.toBroadcastString();
       const parsed = JSON.parse(broadcastString);
 
-      should.deepEqual(parsed, {
-        type,
-        payload,
-        signatures,
-        signers,
-        metadata,
-      });
+      should.deepEqual(parsed, expectedBroadcastString);
     });
   });
 });

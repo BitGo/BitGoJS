@@ -1,5 +1,5 @@
-import * as should from 'should';
-import { MessageStandardType, BroadcastableMessage } from '../../../../src/bitgo';
+import should from 'should';
+import { MessageStandardType, BroadcastableMessage } from '../../../../src';
 
 describe('Message Types', () => {
   describe('MessageStandardType', () => {
@@ -17,25 +17,43 @@ describe('Message Types', () => {
       const message: BroadcastableMessage = {
         type: MessageStandardType.EIP191,
         payload: 'Test payload',
-        signatures: ['signature1', 'signature2'],
+        serializedSignatures: [
+          {
+            publicKey: 'pub1',
+            signature: 'signature1',
+          },
+          {
+            publicKey: 'pub2',
+            signature: 'signature2',
+          },
+        ],
         signers: ['signer1', 'signer2'],
         metadata: { chainId: 1 },
-        signablePayload: Buffer.from('signable payload'),
+        signablePayload: 'signable payload',
       };
 
       should.equal(message.type, MessageStandardType.EIP191);
       should.equal(message.payload, 'Test payload');
-      should.deepEqual(message.signatures, ['signature1', 'signature2']);
+      should.deepEqual(message.serializedSignatures, [
+        {
+          publicKey: 'pub1',
+          signature: 'signature1',
+        },
+        {
+          publicKey: 'pub2',
+          signature: 'signature2',
+        },
+      ]);
       should.deepEqual(message.signers, ['signer1', 'signer2']);
       should.deepEqual(message.metadata, { chainId: 1 });
-      should.deepEqual(message.signablePayload, Buffer.from('signable payload'));
+      should.deepEqual(message.signablePayload, 'signable payload');
     });
 
     it('should allow optional fields to be undefined', () => {
       const message: BroadcastableMessage = {
         type: MessageStandardType.UNKNOWN,
         payload: 'Minimal message',
-        signatures: [],
+        serializedSignatures: [],
         signers: [],
       };
 

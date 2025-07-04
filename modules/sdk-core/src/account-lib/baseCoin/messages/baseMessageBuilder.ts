@@ -1,6 +1,7 @@
 import { BroadcastableMessage, MessagePayload, MessageStandardType } from '../../../bitgo';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { IMessage, IMessageBuilder } from './iface';
+import { Signature } from '../iface';
 
 /**
  * Base Message Builder
@@ -9,7 +10,7 @@ export abstract class BaseMessageBuilder implements IMessageBuilder {
   protected coinConfig: Readonly<CoinConfig>;
   protected payload: MessagePayload = '';
   protected type: MessageStandardType;
-  protected signatures: string[] = [];
+  protected signatures: Signature[] = [];
   protected signers: string[] = [];
   protected metadata?: Record<string, unknown> = {};
   protected digest?: string;
@@ -72,17 +73,21 @@ export abstract class BaseMessageBuilder implements IMessageBuilder {
     return this;
   }
 
-  public getSignatures(): string[] {
+  public getSignatures(): Signature[] {
     return this.signatures;
   }
 
-  public setSignatures(value: string[]): IMessageBuilder {
-    this.signatures = value;
+  public setSignatures(signatures: Signature[]): IMessageBuilder {
+    this.signatures = signatures;
     return this;
   }
 
-  public addSignature(signature: string): IMessageBuilder {
-    if (!this.signatures.includes(signature)) {
+  public addSignature(signature: Signature): IMessageBuilder {
+    if (
+      !this.signatures.some(
+        (sig) => sig.publicKey.pub === signature.publicKey.pub && sig.signature.equals(signature.signature)
+      )
+    ) {
       this.signatures.push(signature);
     }
     return this;

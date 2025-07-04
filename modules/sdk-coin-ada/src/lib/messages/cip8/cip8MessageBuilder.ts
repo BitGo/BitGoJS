@@ -1,4 +1,4 @@
-import { EIP191Message } from './eip191Message';
+import { Cip8Message } from './cip8Message';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import {
   BaseMessageBuilder,
@@ -9,19 +9,19 @@ import {
 } from '@bitgo/sdk-core';
 
 /**
- * Builder for EIP-191 messages
+ * Builder for CIP-8 messages
  */
-export class Eip191MessageBuilder extends BaseMessageBuilder {
+export class Cip8MessageBuilder extends BaseMessageBuilder {
   /**
    * Base constructor.
    * @param _coinConfig BaseCoin from statics library
    */
   public constructor(_coinConfig: Readonly<CoinConfig>) {
-    super(_coinConfig, MessageStandardType.EIP191);
+    super(_coinConfig, MessageStandardType.CIP8);
   }
 
   /**
-   * Build a signable message using the EIP-191 standard
+   * Build a signable message using the CIP-8 standard
    * with previously set input and metadata
    * @returns A signable message
    */
@@ -30,7 +30,7 @@ export class Eip191MessageBuilder extends BaseMessageBuilder {
       if (!this.payload) {
         throw new Error('Message payload must be set before building the message');
       }
-      return new EIP191Message({
+      return new Cip8Message({
         coinConfig: this.coinConfig,
         payload: this.payload,
         signatures: this.signatures,
@@ -44,7 +44,7 @@ export class Eip191MessageBuilder extends BaseMessageBuilder {
       if (err instanceof Error) {
         throw err;
       }
-      throw new Error('Failed to build EIP-191 message');
+      throw new Error('Failed to build CIP-8 message');
     }
   }
 
@@ -55,10 +55,10 @@ export class Eip191MessageBuilder extends BaseMessageBuilder {
    */
   public async fromBroadcastFormat(broadcastMessage: BroadcastableMessage): Promise<IMessage> {
     const { type, payload, serializedSignatures, signers, metadata } = broadcastMessage;
-    if (type !== MessageStandardType.EIP191) {
-      throw new Error(`Invalid message type, expected ${MessageStandardType.EIP191}`);
+    if (type !== MessageStandardType.CIP8) {
+      throw new Error(`Invalid message type, expected ${MessageStandardType.CIP8}`);
     }
-    return new EIP191Message({
+    return new Cip8Message({
       coinConfig: this.coinConfig,
       payload,
       signatures: deserializeSignatures(serializedSignatures),

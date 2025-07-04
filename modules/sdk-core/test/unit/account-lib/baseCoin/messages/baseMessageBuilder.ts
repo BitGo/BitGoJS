@@ -1,7 +1,7 @@
 import { BaseCoin } from '@bitgo/statics';
 import sinon from 'sinon';
 import should from 'should';
-import { MessageStandardType } from '../../../../../src';
+import { BroadcastableMessage, MessageStandardType, serializeSignatures } from '../../../../../src';
 import { TestMessageBuilder } from './fixtures';
 
 describe('Base Message Builder', () => {
@@ -41,7 +41,20 @@ describe('Base Message Builder', () => {
   });
 
   it('should set and get signatures', () => {
-    const signatures = ['sig1', 'sig2', 'sig3'];
+    const signatures = [
+      {
+        publicKey: { pub: 'pubKey1' },
+        signature: Buffer.from('sig1'),
+      },
+      {
+        publicKey: { pub: 'pubKey2' },
+        signature: Buffer.from('sig2'),
+      },
+      {
+        publicKey: { pub: 'pubKey3' },
+        signature: Buffer.from('sig3'),
+      },
+    ];
     builder.setSignatures(signatures);
     should.deepEqual(builder.getSignatures(), signatures);
   });
@@ -61,7 +74,16 @@ describe('Base Message Builder', () => {
   it('should build a message with the correct properties', async () => {
     const payload = 'test message';
     const metadata = { foo: 'bar' };
-    const signatures = ['sig1', 'sig2'];
+    const signatures = [
+      {
+        publicKey: { pub: 'pubKey1' },
+        signature: Buffer.from('sig1'),
+      },
+      {
+        publicKey: { pub: 'pubKey2' },
+        signature: Buffer.from('sig2'),
+      },
+    ];
     const signers = ['addr1', 'addr2'];
 
     builder
@@ -86,7 +108,12 @@ describe('Base Message Builder', () => {
   it('should correctly handle toBroadcastFormat', async () => {
     const payload = 'hello world';
     const metadata = { version: '1.0' };
-    const signatures = ['sig1'];
+    const signatures = [
+      {
+        publicKey: { pub: 'pubKey1' },
+        signature: Buffer.from('sig1'),
+      },
+    ];
     const signers = ['addr1'];
 
     builder
@@ -98,22 +125,32 @@ describe('Base Message Builder', () => {
 
     const message = await builder.build();
     const broadcastFormat = await message.toBroadcastFormat();
-
-    should.deepEqual(broadcastFormat, {
+    const expectedBroadcastFormat: BroadcastableMessage = {
       type: MessageStandardType.EIP191,
       payload: payload,
-      signatures: signatures,
+      serializedSignatures: serializeSignatures(signatures),
       signers: signers,
       metadata: metadata,
       signablePayload: undefined,
-    });
+    };
+
+    should.deepEqual(broadcastFormat, expectedBroadcastFormat);
   });
 
   it('should correctly handle fromBroadcastFormat', async () => {
     const broadcastMessage = {
       type: MessageStandardType.EIP191,
       payload: 'broadcast test',
-      signatures: ['sig1', 'sig2'],
+      signatures: [
+        {
+          publicKey: { pub: 'pubKey1' },
+          signature: Buffer.from('sig1'),
+        },
+        {
+          publicKey: { pub: 'pubKey2' },
+          signature: Buffer.from('sig2'),
+        },
+      ],
       signers: ['addr1', 'addr2'],
       metadata: { chainId: 1 },
     };
@@ -129,7 +166,12 @@ describe('Base Message Builder', () => {
 
   it('should correctly handle toBroadcastString', async () => {
     const payload = 'serialize me';
-    const signatures = ['sig1'];
+    const signatures = [
+      {
+        publicKey: { pub: 'pubKey1' },
+        signature: Buffer.from('sig1'),
+      },
+    ];
     const signers = ['addr1'];
 
     builder.setType(MessageStandardType.EIP191).setPayload(payload).setSignatures(signatures).setSigners(signers);
@@ -140,7 +182,7 @@ describe('Base Message Builder', () => {
     const expectedJson = JSON.stringify({
       type: MessageStandardType.EIP191,
       payload: payload,
-      signatures: signatures,
+      serializedSignatures: serializeSignatures(signatures),
       signers: signers,
       metadata: {},
     });
