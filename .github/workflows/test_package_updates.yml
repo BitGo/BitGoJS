@@ -41,14 +41,11 @@ jobs:
       - name: Fetch Base Ref
         run: git fetch origin $GITHUB_BASE_REF
 
-      - name: Remove yarn.lock to simulate downstream installs
-        run: rm yarn.lock
-
       - name: Install Packages
         env:
           # Workaround for https://github.com/nodejs/node/issues/51555
           DISABLE_V8_COMPILE_CACHE: '1'
-        run: yarn install
+        run: yarn install --with-frozen-lockfile --ignore-scripts
 
       - name: Unit test all
         run: yarn unit-test
