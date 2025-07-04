@@ -45,7 +45,7 @@ jobs:
         env:
           # Workaround for https://github.com/nodejs/node/issues/51555
           DISABLE_V8_COMPILE_CACHE: '1'
-        run: yarn install --with-frozen-lockfile --ignore-scripts
+        run: yarn install --frozen-lockfile
 
       - name: Unit test all
         run: yarn unit-test
