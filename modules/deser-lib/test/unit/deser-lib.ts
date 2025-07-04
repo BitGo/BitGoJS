@@ -1,4 +1,4 @@
-import { Cbor } from '../..';
+import { Cbor } from '../../src';
 import * as cborFixtures from '../cbor/fixtures.json';
 
 describe('deser-lib', function () {
