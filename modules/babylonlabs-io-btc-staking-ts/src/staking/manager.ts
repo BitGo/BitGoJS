@@ -1047,7 +1047,7 @@ export class BabylonBtcStakingManager {
    * delegation expansion.
    * @returns The protobuf message.
    */
-  private async createBtcDelegationMsg(
+  public async createBtcDelegationMsg(
     channel: 'delegation:create' | 'delegation:register' | 'delegation:expand',
     stakingInstance: Staking,
     stakingInput: StakingInputs,
