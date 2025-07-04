@@ -1,7 +1,7 @@
 import * as crypto from 'crypto';
+import * as assert from 'assert';
 
 import * as utxolib from '@bitgo/utxo-lib';
-import 'should';
 
 import { signMessage, verifyMessage } from '../src/bip32utils';
 
@@ -18,7 +18,8 @@ describe('bip32utils', function () {
 
         keys.forEach((otherKey) => {
           messages.forEach((otherMessage) => {
-            verifyMessage(otherMessage, otherKey, signature, utxolib.networks.bitcoin).should.eql(
+            assert.strictEqual(
+              verifyMessage(otherMessage, otherKey, signature, utxolib.networks.bitcoin),
               message === otherMessage && key === otherKey
             );
           });
