@@ -1,12 +1,6 @@
 import { EIP191Message } from './eip191Message';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import {
-  BaseMessageBuilder,
-  BroadcastableMessage,
-  deserializeSignatures,
-  IMessage,
-  MessageStandardType,
-} from '@bitgo/sdk-core';
+import { BaseMessageBuilder, IMessage, MessageStandardType } from '@bitgo/sdk-core';
 
 /**
  * Builder for EIP-191 messages
@@ -46,27 +40,5 @@ export class Eip191MessageBuilder extends BaseMessageBuilder {
       }
       throw new Error('Failed to build EIP-191 message');
     }
-  }
-
-  /**
-   * Parse a broadcastable message back into a message
-   * @param broadcastMessage The broadcastable message to parse
-   * @returns The parsed message
-   */
-  public async fromBroadcastFormat(broadcastMessage: BroadcastableMessage): Promise<IMessage> {
-    const { type, payload, serializedSignatures, signers, metadata } = broadcastMessage;
-    if (type !== MessageStandardType.EIP191) {
-      throw new Error(`Invalid message type, expected ${MessageStandardType.EIP191}`);
-    }
-    return new EIP191Message({
-      coinConfig: this.coinConfig,
-      payload,
-      signatures: deserializeSignatures(serializedSignatures),
-      signers,
-      metadata: {
-        ...metadata,
-        encoding: 'utf8',
-      },
-    });
   }
 }

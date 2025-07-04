@@ -1,7 +1,7 @@
 import { BroadcastableMessage, MessagePayload, MessageStandardType } from '../../../bitgo';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { IMessage, IMessageBuilder } from './iface';
-import { Signature } from '../iface';
+import { deserializeSignatures, Signature } from '../iface';
 
 /**
  * Base Message Builder
@@ -130,5 +130,18 @@ export abstract class BaseMessageBuilder implements IMessageBuilder {
    * @param broadcastMessage The broadcastable message to parse
    * @returns The parsed message
    */
-  abstract fromBroadcastFormat(broadcastMessage: BroadcastableMessage): Promise<IMessage>;
+  public async fromBroadcastFormat(broadcastMessage: BroadcastableMessage): Promise<IMessage> {
+    const { type, payload, serializedSignatures, signers, metadata } = broadcastMessage;
+    if (type !== this.type) {
+      throw new Error(`Invalid message type, expected ${this.type}`);
+    }
+    this.payload = payload;
+    this.signatures = deserializeSignatures(serializedSignatures);
+    this.signers = signers;
+    this.metadata = {
+      ...metadata,
+      encoding: 'utf8',
+    };
+    return this.build();
+  }
 }

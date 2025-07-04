@@ -14,7 +14,7 @@ import { IWebhooks } from '../webhook/iWebhooks';
 import { TransactionType } from '../../account-lib';
 import { IInscriptionBuilder } from '../inscriptionBuilder';
 import { Hash } from 'crypto';
-import { MPCTx, PopulatedIntent, TokenType } from '../utils';
+import { MessageStandardType, MPCTx, PopulatedIntent, TokenType } from '../utils';
 
 export const multisigTypes = {
   onchain: 'onchain',
@@ -301,6 +301,7 @@ export interface TransactionPrebuild extends BaseSignable {
 export interface Message extends BaseSignable {
   messageRaw: string;
   messageEncoded?: string;
+  messageStandardType?: MessageStandardType;
 }
 
 export interface MessageTypeProperty {

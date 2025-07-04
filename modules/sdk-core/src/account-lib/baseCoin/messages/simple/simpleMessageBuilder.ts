@@ -1,21 +1,23 @@
-import { Cip8Message } from './cip8Message';
+import { SimpleMessage } from './simpleMessage';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseMessageBuilder, IMessage, MessageStandardType } from '@bitgo/sdk-core';
+import { BaseMessageBuilder } from '../baseMessageBuilder';
+import { MessageStandardType } from '../../../../bitgo';
+import { IMessage } from '../iface';
 
 /**
- * Builder for CIP-8 messages
+ * Builder for string messages
  */
-export class Cip8MessageBuilder extends BaseMessageBuilder {
+export class SimpleMessageBuilder extends BaseMessageBuilder {
   /**
    * Base constructor.
    * @param _coinConfig BaseCoin from statics library
    */
   public constructor(_coinConfig: Readonly<CoinConfig>) {
-    super(_coinConfig, MessageStandardType.CIP8);
+    super(_coinConfig, MessageStandardType.SIMPLE);
   }
 
   /**
-   * Build a signable message using the CIP-8 standard
+   * Build a signable message using the EIP-191 standard
    * with previously set input and metadata
    * @returns A signable message
    */
@@ -24,7 +26,7 @@ export class Cip8MessageBuilder extends BaseMessageBuilder {
       if (!this.payload) {
         throw new Error('Message payload must be set before building the message');
       }
-      return new Cip8Message({
+      return new SimpleMessage({
         coinConfig: this.coinConfig,
         payload: this.payload,
         signatures: this.signatures,
@@ -38,7 +40,7 @@ export class Cip8MessageBuilder extends BaseMessageBuilder {
       if (err instanceof Error) {
         throw err;
       }
-      throw new Error('Failed to build CIP-8 message');
+      throw new Error('Failed to build EIP-191 message');
     }
   }
 }

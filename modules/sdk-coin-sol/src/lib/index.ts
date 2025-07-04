@@ -18,3 +18,4 @@ export { TransferBuilder } from './transferBuilder';
 export { TransferBuilderV2 } from './transferBuilderV2';
 export { WalletInitializationBuilder } from './walletInitializationBuilder';
 export { Interface, Utils };
+export { MessageBuilderFactory } from './messages';

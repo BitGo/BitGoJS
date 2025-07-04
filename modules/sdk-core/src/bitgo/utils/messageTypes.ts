@@ -6,6 +6,7 @@ import { SerializedSignature, Signature } from '../../account-lib';
  */
 export enum MessageStandardType {
   UNKNOWN = 'UNKNOWN',
+  SIMPLE = 'SIMPLE',
   EIP191 = 'EIP191',
   CIP8 = 'CIP8',
 }
