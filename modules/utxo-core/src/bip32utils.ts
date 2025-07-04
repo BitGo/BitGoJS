@@ -6,7 +6,7 @@ import { BIP32Interface } from '@bitgo/utxo-lib';
  * @see {bitcoinMessage.sign}
  */
 export function signMessage(
-  message: string,
+  message: string | Buffer,
   privateKey: BIP32Interface | Buffer,
   network: { messagePrefix: string }
 ): Buffer {
@@ -28,7 +28,7 @@ export function signMessage(
  * @see {bitcoinMessage.verify}
  */
 export function verifyMessage(
-  message: string,
+  message: string | Buffer,
   publicKey: BIP32Interface | Buffer,
   signature: Buffer,
   network: { messagePrefix: string }
