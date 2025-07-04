@@ -41,7 +41,7 @@ export class Transaction extends BaseTransaction {
   private _chainTag: number;
   private _blockRef: string;
   private _expiration: number;
-  private _clauses: TransactionClause[];
+  protected _clauses: TransactionClause[];
   private _gasPriceCoef: number;
   private _gas: number;
   private _dependsOn: string | null;
@@ -339,7 +339,7 @@ export class Transaction extends BaseTransaction {
    * Sets the transaction ID from the raw transaction if it is signed
    * @private
    */
-  private generateTxnId(): void {
+  protected generateTxnId(): void {
     // Check if we have a raw transaction
     if (!this.rawTransaction) {
       return;
