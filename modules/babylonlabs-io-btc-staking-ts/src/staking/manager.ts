@@ -40,11 +40,11 @@ import { createCovenantWitness } from "./transactions";
 
 export class BabylonBtcStakingManager {
   constructor(
-    private network: networks.Network,
-    private stakingParams: VersionedStakingParams[],
-    private btcProvider: BtcProvider,
-    private babylonProvider: BabylonProvider,
-    private ee?: Emitter<ManagerEvents>,
+    protected network: networks.Network,
+    protected stakingParams: VersionedStakingParams[],
+    protected btcProvider: BtcProvider,
+    protected babylonProvider: BabylonProvider,
+    protected ee?: Emitter<ManagerEvents>
   ) {
     this.network = network;
 
