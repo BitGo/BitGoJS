@@ -65,8 +65,24 @@ jobs:
           DISABLE_V8_COMPILE_CACHE: '1'
         run: yarn run postinstall
 
+      - name: Check for package.json changes
+        id: changed-package-json
+        uses: tj-actions/changed-files@v44
+        with:
+          files: |
+            **/package.json
+          files_ignore: |
+            **/node_modules/**
+
       - name: Unit Test
-        run: yarn run unit-test-changed
+        run: |
+          if [[ "${{ steps.changed-package-json.outputs.any_changed }}" == "true" ]]; then
+            echo "Running all unit tests because a package.json file changed."
+            yarn run unit-test
+          else
+            echo "Running changed unit tests."
+            yarn run unit-test-changed
+          fi
         env:
           BITGOJS_TEST_PASSWORD: ${{ secrets.BITGOJS_TEST_PASSWORD }}
 
