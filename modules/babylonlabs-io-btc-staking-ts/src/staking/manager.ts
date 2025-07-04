@@ -624,7 +624,8 @@ export class BabylonBtcStakingManager {
 
   /**
    * Creates a proof of possession for the staker based on ECDSA signature.
-   * @param bech32Address - The staker's bech32 address.
+   * @param bech32Address - The staker's bech32 address on the babylon chain
+   * @param stakerBtcAddress - The staker's BTC address.
    * @returns The proof of possession.
    */
   async createProofOfPossession(
