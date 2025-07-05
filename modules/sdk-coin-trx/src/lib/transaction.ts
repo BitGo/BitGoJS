@@ -28,6 +28,7 @@ import {
   UnfreezeBalanceV2Contract,
   WithdrawExpireUnfreezeContract,
   ResourceManagementContract,
+  WithdrawBalanceContract,
 } from './iface';
 
 /**
@@ -186,6 +187,18 @@ export class Transaction extends BaseTransaction {
         };
         input = {
           address: withdrawValues.owner_address,
+          value: '0',
+        };
+        break;
+      case ContractType.WithdrawBalance:
+        this._type = TransactionType.StakingClaim;
+        const withdrawBalanceValue = (rawData.contract[0] as WithdrawBalanceContract).parameter.value;
+        output = {
+          address: withdrawBalanceValue.owner_address,
+          value: '0', // no value field
+        };
+        input = {
+          address: withdrawBalanceValue.owner_address,
           value: '0',
         };
         break;
