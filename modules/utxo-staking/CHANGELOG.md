@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.17.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.16.3...@bitgo/utxo-staking@1.17.0) (2025-07-03)
+
+### Features
+
+- **utxo-staking:** improve error message for invalid params ([0834800](https://github.com/BitGo/BitGoJS/commit/0834800affecdbff86172dc0a58f919854b33255))
+- **utxo-staking:** simplify params fetching via babylon API ([5c64baf](https://github.com/BitGo/BitGoJS/commit/5c64baf6239d419eec65e26af4c64f4cad7a180f))
+
 ## [1.16.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.16.2...@bitgo/utxo-staking@1.16.3) (2025-06-24)
 
 **Note:** Version bump only for package @bitgo/utxo-staking

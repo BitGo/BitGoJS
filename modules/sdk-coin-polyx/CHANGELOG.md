@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polyx@1.4.2...@bitgo/sdk-coin-polyx@1.5.0) (2025-07-03)
+
+### Features
+
+- **sdk-coin-polyx:** implement unbond builder ([4d449f7](https://github.com/BitGo/BitGoJS/commit/4d449f71685856a20b47cbf5eb561999b71986e5))
+
+## [1.4.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polyx@1.4.1...@bitgo/sdk-coin-polyx@1.4.2) (2025-06-25)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-polyx
+
 ## [1.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polyx@1.4.0...@bitgo/sdk-coin-polyx@1.4.1) (2025-06-24)
 
 ### Bug Fixes

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@14.0.4...@bitgo/express@14.1.0) (2025-07-03)
+
+### Features
+
+- added withdrawStatus in response lightning ([8666309](https://github.com/BitGo/BitGoJS/commit/866630934dfdea696d5f185e18785278999bb9cc))
+- **express:** add name field with default name on error ([8987ab9](https://github.com/BitGo/BitGoJS/commit/8987ab9e1b1e426c6be92262fd7fbab01d73e504))
+
+## [14.0.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@14.0.3...@bitgo/express@14.0.4) (2025-06-25)
+
+**Note:** Version bump only for package @bitgo/express
+
 ## [14.0.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@14.0.2...@bitgo/express@14.0.3) (2025-06-24)
 
 **Note:** Version bump only for package @bitgo/express

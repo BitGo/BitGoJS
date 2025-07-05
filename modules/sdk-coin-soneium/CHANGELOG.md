@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-soneium@1.3.4...@bitgo/sdk-coin-soneium@1.4.0) (2025-07-03)
+
+### Features
+
+- **sdk-coin-soneium:** add gas limit validation in setGasLimit method ([3d57bce](https://github.com/BitGo/BitGoJS/commit/3d57bcebf8444c25ddb7d4ebcaf67395bd29fb70))
+
+## [1.3.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-soneium@1.3.3...@bitgo/sdk-coin-soneium@1.3.4) (2025-06-25)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-soneium
+
 ## [1.3.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-soneium@1.3.2...@bitgo/sdk-coin-soneium@1.3.3) (2025-06-24)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-soneium

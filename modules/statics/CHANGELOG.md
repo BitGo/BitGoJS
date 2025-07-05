@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [54.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@54.6.0...@bitgo/statics@54.7.0) (2025-07-03)
+
+### Bug Fixes
+
+- fixing decimal places for the world:usdc ([aa658b2](https://github.com/BitGo/BitGoJS/commit/aa658b212d92787173dc1b6be2419d0aede1872d))
+- **statics:** re-adds ofceth:gousd that was removed in an earlier commit ([d858a31](https://github.com/BitGo/BitGoJS/commit/d858a317967d3bb6091e5ceb8984033607edcb07))
+
+### Features
+
+- onboarding changes for USDCV token ([403ba41](https://github.com/BitGo/BitGoJS/commit/403ba41b2f481b264dd77e1f5884fb2ced187d3a))
+- **sdk-coin-xtz:** add custodial features to statics ([d2f9180](https://github.com/BitGo/BitGoJS/commit/d2f918012878de92365719a850dedffce75641a1))
+- **statics:** add non-packed encoding feature for Soneium ([ae0afae](https://github.com/BitGo/BitGoJS/commit/ae0afae5428fbc04836c71caf27413edab6822a2))
+- **statics:** add walletImplementationAddress for Soneium ([a901627](https://github.com/BitGo/BitGoJS/commit/a90162727d0b7e405b6730e7a688130bbfff643d))
+
+# [54.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@54.5.0...@bitgo/statics@54.6.0) (2025-06-25)
+
+### Bug Fixes
+
+- renaming the staked trx token ([43362d9](https://github.com/BitGo/BitGoJS/commit/43362d93a123d6057c301d0a2ddeba8f12bef119))
+
+### Features
+
+- **statics:** add go account support for cosmos batch ([a5f48dc](https://github.com/BitGo/BitGoJS/commit/a5f48dc023181683c1ee27dafd9a1fe6a47c3f81))
+
 # [54.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@54.4.0...@bitgo/statics@54.5.0) (2025-06-24)
 
 ### Bug Fixes

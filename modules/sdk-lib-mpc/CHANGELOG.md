@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@10.5.0...@bitgo/sdk-lib-mpc@10.6.0) (2025-07-03)
+
+### Features
+
+- store and restore ecdsa dkg sessions ([f715e71](https://github.com/BitGo/BitGoJS/commit/f715e7155e24956367f7812d5e241ffd030e988b))
+
 # [10.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@10.4.0...@bitgo/sdk-lib-mpc@10.5.0) (2025-06-05)
 
 ### Features

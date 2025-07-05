@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-asi@1.1.4...@bitgo/sdk-coin-asi@1.2.0) (2025-07-03)
+
+### Features
+
+- staking support for fetch ([57d2964](https://github.com/BitGo/BitGoJS/commit/57d296428646d04a2c2fa5d1d3c9747802b604c8))
+
+## [1.1.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-asi@1.1.3...@bitgo/sdk-coin-asi@1.1.4) (2025-06-25)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-asi
+
 ## [1.1.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-asi@1.1.2...@bitgo/sdk-coin-asi@1.1.3) (2025-06-24)
 
 ### Bug Fixes
