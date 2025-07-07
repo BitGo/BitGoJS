@@ -40,7 +40,6 @@ class BitGoStakingManager extends vendor.BabylonBtcStakingManager {
     sigType: BTCSigType
   ): Promise<ProofOfPossessionBTC> {
     const signedBabylonAddress = await this.btcProvider.signMessage(
-      vendor.SigningStep.PROOF_OF_POSSESSION,
       bech32Address,
       sigType === BTCSigType.BIP322 ? 'bip322-simple' : 'ecdsa'
     );

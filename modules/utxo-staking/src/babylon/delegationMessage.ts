@@ -148,36 +148,30 @@ export function getBtcProviderForECKey(
 
   return {
     /**
-     * @param signingStep
      * @param message
      * @param type
      * @returns Base64 encoded string
      */
-    async signMessage(
-      signingStep: vendor.SigningStep,
-      message: string,
-      type: 'ecdsa' | 'bip322-simple'
-    ): Promise<string> {
-      assert(signingStep === 'proof-of-possession');
+    async signMessage(message: string, type: 'ecdsa' | 'bip322-simple'): Promise<string> {
       switch (type) {
         case 'ecdsa':
           return toBase64(stakerKey.sign(Buffer.from(message, 'hex')));
         case 'bip322-simple':
           return toBase64(signBip322Simple(message));
         default:
-          throw new Error(`unexpected signing step: ${signingStep}`);
+          throw new Error(`unexpected type: ${type}`);
       }
     },
 
-    async signPsbt(signingStep: vendor.SigningStep, psbtHex: string): Promise<string> {
+    async signPsbt(psbtHex: string, options: vendor.SignPsbtOptions): Promise<string> {
       const psbt = bitcoinjslib.Psbt.fromHex(psbtHex);
-      switch (signingStep) {
-        case 'staking-slashing':
+      switch (options.action.name) {
+        case 'sign-btc-slashing-transaction':
           return signWithDescriptor(psbt, descriptorBuilder.getStakingDescriptor(), stakerKey).toHex();
-        case 'unbonding-slashing':
+        case 'sign-btc-unbonding-slashing-transaction':
           return signWithDescriptor(psbt, descriptorBuilder.getUnbondingDescriptor(), stakerKey).toHex();
         default:
-          throw new Error(`unexpected signing step: ${signingStep}`);
+          throw new Error(`unexpected signing step: ${options.action.name}`);
       }
     },
   };
@@ -225,7 +219,7 @@ export function createStaking(
     toBitcoinJsNetwork(network),
     stakerBtcInfo,
     params,
-    stakingInput.finalityProviderPkNoCoordHex,
+    stakingInput.finalityProviderPksNoCoordHex,
     stakingInput.stakingTimelock
   );
 }
@@ -265,6 +259,7 @@ export function toStakingTransaction(tx: TransactionLike): bitcoinjslib.Transact
  * The difference is that here we are returning an _unsigned_ delegation message.
  */
 export async function createDelegationMessageWithTransaction(
+  channel: 'delegation:create' | 'delegation:register',
   manager: vendor.BabylonBtcStakingManager,
   staking: vendor.Staking,
   stakingAmountSat: number,
@@ -276,10 +271,11 @@ export async function createDelegationMessageWithTransaction(
   }
   // Create delegation message without including inclusion proof
   return manager.createBtcDelegationMsg(
+    channel,
     staking,
     {
       stakingTimelock: staking.stakingTimelock,
-      finalityProviderPkNoCoordHex: staking.finalityProviderPkNoCoordHex,
+      finalityProviderPksNoCoordHex: staking.finalityProviderPksNoCoordHex,
       stakingAmountSat,
     },
     toStakingTransaction(transaction),
@@ -298,6 +294,7 @@ export async function createUnsignedPreStakeRegistrationBabylonTransactionWithBt
   inputUTXOs: vendor.UTXO[],
   feeRateSatB: number,
   babylonAddress: string,
+  channel: 'delegation:create' | 'delegation:register',
   stakingParams: vendor.VersionedStakingParams[] = getStakingParams(network)
 ): Promise<Result> {
   if (inputUTXOs.length === 0) {
@@ -308,6 +305,7 @@ export async function createUnsignedPreStakeRegistrationBabylonTransactionWithBt
   // Create unsigned staking transaction
   const { transaction } = staking.createStakingTransaction(stakingInput.stakingAmountSat, inputUTXOs, feeRateSatB);
   const unsignedDelegationMsg = await createDelegationMessageWithTransaction(
+    channel,
     manager,
     staking,
     stakingInput.stakingAmountSat,
