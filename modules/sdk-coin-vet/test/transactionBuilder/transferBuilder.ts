@@ -7,7 +7,6 @@ import { AddressInitializationTransaction } from '../../src/lib/transaction/addr
 
 describe('Vet Transfer Transaction', () => {
   const factory = new TransactionBuilderFactory(coins.get('tvet'));
-
   describe('Vet Coin Transfer Transaction', () => {
     describe('Succeed', () => {
       it('should build a transfer tx', async function () {
@@ -169,16 +168,14 @@ describe('Vet Transfer Transaction', () => {
         const txBuilder = factory.getAddressInitialisationBuilder(transaction);
         txBuilder.gas(21000);
         txBuilder.nonce(64248);
-        txBuilder.counter(64248);
         txBuilder.blockRef('0x014ead140e77bbc1');
         txBuilder.addFeePayerAddress(testData.feePayer.address);
         txBuilder.expiration(64);
         txBuilder.gasPriceCoef(128);
-        txBuilder.forwarderFactoryAddress('0xabc');
-        txBuilder.baseAddress('oxabc');
-        txBuilder.feeAddress('0xabc');
+        txBuilder.contract('0x65343e18c376d2fc8c3cf10cd146d63e2e0dc9ef');
+        txBuilder.baseAddress('0x55B00B5C807d5696197B48d4AFfA40bb876df240');
+        txBuilder.feeAddress('0x7C87B9Ffc6Fd6c167C0e4fa9418720f3D659358e');
         txBuilder.salt('0x');
-        txBuilder.sign({ key: '0xprv' });
         txBuilder.build();
       });
     });

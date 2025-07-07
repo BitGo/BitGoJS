@@ -51,6 +51,7 @@ export class Transaction extends BaseTransaction {
   private _feePayerAddress: string;
   private _feePayerSignature: Buffer;
   private _feePayerPubKey: PublicKey;
+  protected _contract: string;
 
   static EMPTY_PUBLIC_KEY = Buffer.alloc(32);
   static EMPTY_SIGNATURE = Buffer.alloc(64);
@@ -205,6 +206,14 @@ export class Transaction extends BaseTransaction {
 
   set feePayerPubKey(pubKey: PublicKey) {
     this._feePayerPubKey = pubKey;
+  }
+
+  get contract(): string {
+    return this._contract;
+  }
+
+  set contract(address: string) {
+    this._contract = address;
   }
 
   /**
@@ -391,24 +400,34 @@ export class Transaction extends BaseTransaction {
   }
 
   loadInputsAndOutputs(): void {
-    const totalAmount = this._recipients.reduce(
-      (accumulator, current) => accumulator.plus(current.amount),
-      new BigNumber('0')
-    );
-    this._inputs = [
-      {
-        address: this.sender,
-        value: totalAmount.toString(),
-        coin: this._coinConfig.name,
-      },
-    ];
-    this._outputs = this._recipients.map((recipient) => {
-      return {
-        address: recipient.address,
-        value: recipient.amount as string,
-        coin: this._coinConfig.name,
-      };
-    });
+    switch (this.type) {
+      case TransactionType.AddressInitialization:
+        this._type = TransactionType.AddressInitialization;
+        break;
+      case TransactionType.Send:
+        this._type = TransactionType.Send;
+        const totalAmount = this._recipients.reduce(
+          (accumulator, current) => accumulator.plus(current.amount),
+          new BigNumber('0')
+        );
+        this._inputs = [
+          {
+            address: this.sender,
+            value: totalAmount.toString(),
+            coin: this._coinConfig.name,
+          },
+        ];
+        this._outputs = this._recipients.map((recipient) => {
+          return {
+            address: recipient.address,
+            value: recipient.amount as string,
+            coin: this._coinConfig.name,
+          };
+        });
+        break;
+      default:
+        throw new InvalidTransactionError(`Unsupported transaction type: ${this.type}`);
+    }
   }
 
   fromRawTransaction(rawTransaction: string): void {

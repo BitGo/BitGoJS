@@ -93,6 +93,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this;
   }
 
+  contract(address: string): this {
+    this.validateAddress({ address });
+    this.transaction.contract = address;
+    return this;
+  }
+
   /** @inheritDoc */
   addSenderSignature(signature: Buffer): void {
     this.transaction.addSenderSignature(signature);
