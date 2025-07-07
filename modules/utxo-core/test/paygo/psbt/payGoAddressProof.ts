@@ -51,7 +51,7 @@ export const addressProofMsgBuffer = trimMessagePrefix(addressProofBuffer);
 export const addressProofEntropy = addressProofMsgBuffer.subarray(0, 65);
 
 // signature with the given msg addressProofBuffer
-export const sig = signMessage(addressProofMsgBuffer.toString(), attestationPrvKey!, network);
+export const sig = signMessage(addressProofMsgBuffer, attestationPrvKey!, network);
 
 function getTestPsbt() {
   return utxolib.testutil.constructPsbt(psbtInputs, psbtOutputs, network, rootWalletKeys, 'unsigned');
