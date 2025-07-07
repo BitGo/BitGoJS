@@ -1,5 +1,6 @@
-export { StakingScriptData, Staking } from "./staking";
+export { Staking, StakingScriptData } from "./staking";
 export type { StakingScripts } from "./staking";
+export * from "./staking/manager";
 export {
   ObservableStaking,
   ObservableStakingScriptData,
@@ -7,15 +8,10 @@ export {
 export * from "./staking/transactions";
 export * from "./types";
 export * from "./utils/btc";
-export * from "./utils/utxo/findInputUTXO";
-export * from "./utils/utxo/getPsbtInputFields";
-export * from "./utils/utxo/getScriptType";
 export {
   getBabylonParamByBtcHeight,
   getBabylonParamByVersion,
 } from "./utils/staking/param";
-export * from "./staking/manager";
-
-// BitGo-specific exports
-export * from "./utils/babylon";
-export * from "./utils/staking";
+export * from "./utils/utxo/findInputUTXO";
+export * from "./utils/utxo/getPsbtInputFields";
+export * from "./utils/utxo/getScriptType";

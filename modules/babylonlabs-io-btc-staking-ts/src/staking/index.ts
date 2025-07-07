@@ -1,31 +1,33 @@
 import { networks, Psbt, Transaction } from "bitcoinjs-lib";
-import { StakingParams } from "../types/params";
-import { UTXO } from "../types/UTXO";
-import { StakingScriptData, StakingScripts } from "./stakingScript";
 import { StakingError, StakingErrorCode } from "../error";
-import { 
-  slashEarlyUnbondedTransaction,
-  slashTimelockUnbondedTransaction,
-  stakingTransaction, unbondingTransaction,
-  withdrawEarlyUnbondedTransaction,
-  withdrawSlashingTransaction,
-  withdrawTimelockUnbondedTransaction
-} from "./transactions";
+import { StakingParams } from "../types/params";
+import { PsbtResult, TransactionResult } from "../types/transaction";
+import { UTXO } from "../types/UTXO";
 import {
   isTaproot,
-  isValidBitcoinAddress, isValidNoCoordPublicKey
+  isValidBitcoinAddress,
+  isValidNoCoordPublicKey,
 } from "../utils/btc";
-import { 
-  deriveStakingOutputInfo,
+import {
   deriveSlashingOutput,
+  deriveStakingOutputInfo,
   findMatchingTxOutputIndex,
+  toBuffers,
   validateParams,
   validateStakingTimelock,
   validateStakingTxInputData,
 } from "../utils/staking";
-import { PsbtResult, TransactionResult } from "../types/transaction";
-import { toBuffers } from "../utils/staking";
 import { stakingPsbt, unbondingPsbt } from "./psbt";
+import { StakingScriptData, StakingScripts } from "./stakingScript";
+import {
+  slashEarlyUnbondedTransaction,
+  slashTimelockUnbondedTransaction,
+  stakingTransaction,
+  unbondingTransaction,
+  withdrawEarlyUnbondedTransaction,
+  withdrawSlashingTransaction,
+  withdrawTimelockUnbondedTransaction,
+} from "./transactions";
 export * from "./stakingScript";
 
 export interface StakerInfo {
@@ -37,30 +39,36 @@ export class Staking {
   network: networks.Network;
   stakerInfo: StakerInfo;
   params: StakingParams;
-  finalityProviderPkNoCoordHex: string;
+  finalityProviderPksNoCoordHex: string[];
   stakingTimelock: number;
-  
+
   constructor(
     network: networks.Network,
     stakerInfo: StakerInfo,
     params: StakingParams,
-    finalityProviderPkNoCoordHex: string,
+    finalityProviderPksNoCoordHex: string[],
     stakingTimelock: number,
   ) {
     // Perform validations
     if (!isValidBitcoinAddress(stakerInfo.address, network)) {
       throw new StakingError(
-        StakingErrorCode.INVALID_INPUT, "Invalid staker bitcoin address",
+        StakingErrorCode.INVALID_INPUT,
+        "Invalid staker bitcoin address",
       );
     }
     if (!isValidNoCoordPublicKey(stakerInfo.publicKeyNoCoordHex)) {
       throw new StakingError(
-        StakingErrorCode.INVALID_INPUT, "Invalid staker public key",
+        StakingErrorCode.INVALID_INPUT,
+        "Invalid staker public key",
       );
     }
-    if (!isValidNoCoordPublicKey(finalityProviderPkNoCoordHex)) {
+    if (
+      finalityProviderPksNoCoordHex.length === 0 || 
+      !finalityProviderPksNoCoordHex.every(isValidNoCoordPublicKey)
+    ) {
       throw new StakingError(
-        StakingErrorCode.INVALID_INPUT, "Invalid finality provider public key",
+        StakingErrorCode.INVALID_INPUT,
+        "Invalid finality providers public keys",
       );
     }
     validateParams(params);
@@ -69,7 +77,7 @@ export class Staking {
     this.network = network;
     this.stakerInfo = stakerInfo;
     this.params = params;
-    this.finalityProviderPkNoCoordHex = finalityProviderPkNoCoordHex;
+    this.finalityProviderPksNoCoordHex = finalityProviderPksNoCoordHex;
     this.stakingTimelock = stakingTimelock;
   }
 
@@ -77,7 +85,7 @@ export class Staking {
    * buildScripts builds the staking scripts for the staking transaction.
    * Note: different staking types may have different scripts.
    * e.g the observable staking script has a data embed script.
-   * 
+   *
    * @returns {StakingScripts} - The staking scripts.
    */
   buildScripts(): StakingScripts {
@@ -87,15 +95,16 @@ export class Staking {
     try {
       stakingScriptData = new StakingScriptData(
         Buffer.from(this.stakerInfo.publicKeyNoCoordHex, "hex"),
-        [Buffer.from(this.finalityProviderPkNoCoordHex, "hex")],
+        this.finalityProviderPksNoCoordHex.map((pk) => Buffer.from(pk, "hex")),
         toBuffers(covenantNoCoordPks),
         covenantQuorum,
         this.stakingTimelock,
-        unbondingTime
+        unbondingTime,
       );
     } catch (error: unknown) {
       throw StakingError.fromUnknown(
-        error, StakingErrorCode.SCRIPT_FAILURE, 
+        error,
+        StakingErrorCode.SCRIPT_FAILURE,
         "Cannot build staking script data",
       );
     }
@@ -106,7 +115,8 @@ export class Staking {
       scripts = stakingScriptData.buildScripts();
     } catch (error: unknown) {
       throw StakingError.fromUnknown(
-        error, StakingErrorCode.SCRIPT_FAILURE,
+        error,
+        StakingErrorCode.SCRIPT_FAILURE,
         "Cannot build staking scripts",
       );
     }
@@ -115,9 +125,9 @@ export class Staking {
 
   /**
    * Create a staking transaction for staking.
-   * 
+   *
    * @param {number} stakingAmountSat - The amount to stake in satoshis.
-   * @param {UTXO[]} inputUTXOs - The UTXOs to use as inputs for the staking 
+   * @param {UTXO[]} inputUTXOs - The UTXOs to use as inputs for the staking
    * transaction.
    * @param {number} feeRate - The fee rate for the transaction in satoshis per byte.
    * @returns {TransactionResult} - An object containing the unsigned
@@ -154,25 +164,23 @@ export class Staking {
       };
     } catch (error: unknown) {
       throw StakingError.fromUnknown(
-        error, StakingErrorCode.BUILD_TRANSACTION_FAILURE,
+        error,
+        StakingErrorCode.BUILD_TRANSACTION_FAILURE,
         "Cannot build unsigned staking transaction",
       );
     }
-  };
+  }
 
   /**
    * Create a staking psbt based on the existing staking transaction.
-   * 
+   *
    * @param {Transaction} stakingTx - The staking transaction.
-   * @param {UTXO[]} inputUTXOs - The UTXOs to use as inputs for the staking 
+   * @param {UTXO[]} inputUTXOs - The UTXOs to use as inputs for the staking
    * transaction. The UTXOs that were used to create the staking transaction should
    * be included in this array.
    * @returns {Psbt} - The psbt.
    */
-  public toStakingPsbt(
-    stakingTx: Transaction,
-    inputUTXOs: UTXO[],
-  ): Psbt {
+  public toStakingPsbt(stakingTx: Transaction, inputUTXOs: UTXO[]): Psbt {
     // Check the staking output index can be found
     const scripts = this.buildScripts();
     const stakingOutputInfo = deriveStakingOutputInfo(scripts, this.network);
@@ -180,29 +188,27 @@ export class Staking {
       stakingTx,
       stakingOutputInfo.outputAddress,
       this.network,
-    )
-    
+    );
+
     return stakingPsbt(
       stakingTx,
       this.network,
       inputUTXOs,
-      isTaproot(
-        this.stakerInfo.address, this.network
-      ) ? Buffer.from(this.stakerInfo.publicKeyNoCoordHex, "hex") : undefined,
+      isTaproot(this.stakerInfo.address, this.network)
+        ? Buffer.from(this.stakerInfo.publicKeyNoCoordHex, "hex")
+        : undefined,
     );
   }
 
   /**
    * Create an unbonding transaction for staking.
-   * 
+   *
    * @param {Transaction} stakingTx - The staking transaction to unbond.
    * @returns {TransactionResult} - An object containing the unsigned
    * transaction, and fee
    * @throws {StakingError} - If the transaction cannot be built
    */
-  public createUnbondingTransaction(
-    stakingTx: Transaction,
-  ) : TransactionResult {    
+  public createUnbondingTransaction(stakingTx: Transaction): TransactionResult {
     // Build scripts
     const scripts = this.buildScripts();
     const { outputAddress } = deriveStakingOutputInfo(scripts, this.network);
@@ -211,7 +217,7 @@ export class Staking {
       stakingTx,
       outputAddress,
       this.network,
-    )
+    );
     // Create the unbonding transaction
     try {
       const { transaction } = unbondingTransaction(
@@ -227,7 +233,8 @@ export class Staking {
       };
     } catch (error) {
       throw StakingError.fromUnknown(
-        error, StakingErrorCode.BUILD_TRANSACTION_FAILURE,
+        error,
+        StakingErrorCode.BUILD_TRANSACTION_FAILURE,
         "Cannot build the unbonding transaction",
       );
     }
@@ -236,10 +243,10 @@ export class Staking {
   /**
    * Create an unbonding psbt based on the existing unbonding transaction and
    * staking transaction.
-   * 
+   *
    * @param {Transaction} unbondingTx - The unbonding transaction.
    * @param {Transaction} stakingTx - The staking transaction.
-   * 
+   *
    * @returns {Psbt} - The psbt.
    */
   public toUnbondingPsbt(
@@ -258,7 +265,7 @@ export class Staking {
    * Creates a withdrawal transaction that spends from an unbonding or slashing
    * transaction. The timelock on the input transaction must have expired before
    * this withdrawal can be valid.
-   * 
+   *
    * @param {Transaction} earlyUnbondedTx - The unbonding or slashing
    * transaction to withdraw from
    * @param {number} feeRate - Fee rate in satoshis per byte for the withdrawal
@@ -267,7 +274,7 @@ export class Staking {
    * @throws {StakingError} - If the input transaction is invalid or withdrawal
    * transaction cannot be built
    */
-  public createWithdrawEarlyUnbondedTransaction (
+  public createWithdrawEarlyUnbondedTransaction(
     earlyUnbondedTx: Transaction,
     feeRate: number,
   ): PsbtResult {
@@ -282,19 +289,20 @@ export class Staking {
         this.stakerInfo.address,
         this.network,
         feeRate,
-      );  
+      );
     } catch (error) {
       throw StakingError.fromUnknown(
-        error, StakingErrorCode.BUILD_TRANSACTION_FAILURE,
+        error,
+        StakingErrorCode.BUILD_TRANSACTION_FAILURE,
         "Cannot build unsigned withdraw early unbonded transaction",
       );
     }
   }
 
   /**
-   * Create a withdrawal psbt that spends a naturally expired staking 
+   * Create a withdrawal psbt that spends a naturally expired staking
    * transaction.
-   * 
+   *
    * @param {Transaction} stakingTx - The staking transaction to withdraw from.
    * @param {number} feeRate - The fee rate for the transaction in satoshis per byte.
    * @returns {PsbtResult} - An object containing the unsigned psbt and fee
@@ -312,7 +320,7 @@ export class Staking {
       stakingTx,
       outputAddress,
       this.network,
-    )
+    );
 
     // Create the timelock unbonded transaction
     try {
@@ -323,10 +331,11 @@ export class Staking {
         this.network,
         feeRate,
         stakingOutputIndex,
-      );  
+      );
     } catch (error) {
       throw StakingError.fromUnknown(
-        error, StakingErrorCode.BUILD_TRANSACTION_FAILURE,
+        error,
+        StakingErrorCode.BUILD_TRANSACTION_FAILURE,
         "Cannot build unsigned timelock unbonded transaction",
       );
     }
@@ -334,23 +343,31 @@ export class Staking {
 
   /**
    * Create a slashing psbt spending from the staking output.
-   * 
+   *
    * @param {Transaction} stakingTx - The staking transaction to slash.
    * @returns {PsbtResult} - An object containing the unsigned psbt and fee
    * @throws {StakingError} - If the delegation is invalid or the transaction cannot be built
    */
-  public createStakingOutputSlashingPsbt(
-    stakingTx: Transaction,
-  ) : PsbtResult {
+  public createStakingOutputSlashingPsbt(stakingTx: Transaction): PsbtResult {
     if (!this.params.slashing) {
       throw new StakingError(
         StakingErrorCode.INVALID_PARAMS,
         "Slashing parameters are missing",
       );
     }
-    
+
     // Build scripts
     const scripts = this.buildScripts();
+
+    // Get the staking output address
+    const { outputAddress } = deriveStakingOutputInfo(scripts, this.network);
+
+    // Reconstruct the stakingOutputIndex
+    const stakingOutputIndex = findMatchingTxOutputIndex(
+      stakingTx,
+      outputAddress,
+      this.network,
+    )
 
     // create the slash timelock unbonded transaction
     try {
@@ -361,6 +378,7 @@ export class Staking {
         this.params.slashing.slashingRate,
         this.params.slashing.minSlashingTxFeeSat,
         this.network,
+        stakingOutputIndex,
       );
       return {
         psbt,
@@ -368,7 +386,8 @@ export class Staking {
       };
     } catch (error) {
       throw StakingError.fromUnknown(
-        error, StakingErrorCode.BUILD_TRANSACTION_FAILURE,
+        error,
+        StakingErrorCode.BUILD_TRANSACTION_FAILURE,
         "Cannot build the slash timelock unbonded transaction",
       );
     }
@@ -376,7 +395,7 @@ export class Staking {
 
   /**
    * Create a slashing psbt for an unbonding output.
-   * 
+   *
    * @param {Transaction} unbondingTx - The unbonding transaction to slash.
    * @returns {PsbtResult} - An object containing the unsigned psbt and fee
    * @throws {StakingError} - If the delegation is invalid or the transaction cannot be built
@@ -409,7 +428,8 @@ export class Staking {
       };
     } catch (error) {
       throw StakingError.fromUnknown(
-        error, StakingErrorCode.BUILD_TRANSACTION_FAILURE,
+        error,
+        StakingErrorCode.BUILD_TRANSACTION_FAILURE,
         "Cannot build the slash early unbonded transaction",
       );
     }
@@ -418,7 +438,7 @@ export class Staking {
   /**
    * Create a withdraw slashing psbt that spends a slashing transaction from the
    * staking output.
-   * 
+   *
    * @param {Transaction} slashingTx - The slashing transaction.
    * @param {number} feeRate - The fee rate for the transaction in satoshis per byte.
    * @returns {PsbtResult} - An object containing the unsigned psbt and fee
@@ -437,7 +457,7 @@ export class Staking {
       slashingTx,
       slashingOutputInfo.outputAddress,
       this.network,
-    )
+    );
 
     // Create the withdraw slashed transaction
     try {
@@ -448,10 +468,11 @@ export class Staking {
         this.network,
         feeRate,
         slashingOutputIndex,
-      );  
+      );
     } catch (error) {
       throw StakingError.fromUnknown(
-        error, StakingErrorCode.BUILD_TRANSACTION_FAILURE,
+        error,
+        StakingErrorCode.BUILD_TRANSACTION_FAILURE,
         "Cannot build withdraw slashing transaction",
       );
     }

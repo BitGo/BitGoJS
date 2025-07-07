@@ -1,12 +1,12 @@
 import { address, networks, payments, Transaction } from "bitcoinjs-lib";
 import { Taptree } from "bitcoinjs-lib/src/types";
 import { internalPubkey } from "../../constants/internalPubkey";
-import { TransactionOutput } from "../../types/psbtOutputs";
+import { MIN_UNBONDING_OUTPUT_VALUE } from "../../constants/unbonding";
 import { StakingError, StakingErrorCode } from "../../error";
+import { StakingParams } from "../../types/params";
+import { TransactionOutput } from "../../types/psbtOutputs";
 import { UTXO } from "../../types/UTXO";
 import { isValidNoCoordPublicKey } from "../btc";
-import { StakingParams } from "../../types/params";
-import { MIN_UNBONDING_OUTPUT_VALUE } from "../../constants/unbonding";
 
 export interface OutputInfo {
   scriptPubKey: Buffer;
@@ -14,9 +14,9 @@ export interface OutputInfo {
 }
 
 /**
- * Build the staking output for the transaction which contains p2tr output 
+ * Build the staking output for the transaction which contains p2tr output
  * with staking scripts.
- * 
+ *
  * @param {StakingScripts} scripts - The staking scripts.
  * @param {networks.Network} network - The Bitcoin network.
  * @param {number} amount - The amount to stake.
@@ -34,7 +34,7 @@ export const buildStakingTransactionOutputs = (
   amount: number,
 ): TransactionOutput[] => {
   const stakingOutputInfo = deriveStakingOutputInfo(scripts, network);
-  const transactionOutputs: {scriptPubKey: Buffer, value: number}[] = [
+  const transactionOutputs: { scriptPubKey: Buffer; value: number }[] = [
     {
       scriptPubKey: stakingOutputInfo.scriptPubKey,
       value: amount,
@@ -52,7 +52,7 @@ export const buildStakingTransactionOutputs = (
 
 /**
  * Derive the staking output address from the staking scripts.
- * 
+ *
  * @param {StakingScripts} scripts - The staking scripts.
  * @param {networks.Network} network - The Bitcoin network.
  * @returns {StakingOutput} - The staking output address and scriptPubKey.
@@ -87,7 +87,7 @@ export const deriveStakingOutputInfo = (
       "Failed to build staking output",
     );
   }
-  
+
   return {
     outputAddress: stakingOutput.address,
     scriptPubKey: address.toOutputScript(stakingOutput.address, network),
@@ -96,7 +96,7 @@ export const deriveStakingOutputInfo = (
 
 /**
  * Derive the unbonding output address and scriptPubKey from the staking scripts.
- * 
+ *
  * @param {StakingScripts} scripts - The staking scripts.
  * @param {networks.Network} network - The Bitcoin network.
  * @returns {OutputInfo} - The unbonding output address and scriptPubKey.
@@ -133,11 +133,11 @@ export const deriveUnbondingOutputInfo = (
     outputAddress: unbondingOutput.address,
     scriptPubKey: address.toOutputScript(unbondingOutput.address, network),
   };
-}
+};
 
 /**
  * Derive the slashing output address and scriptPubKey from the staking scripts.
- * 
+ *
  * @param {StakingScripts} scripts - The unbonding timelock scripts, we use the
  * unbonding timelock script as the timelock of the slashing transaction.
  * This is due to slashing tx timelock is the same as the unbonding timelock.
@@ -164,16 +164,16 @@ export const deriveSlashingOutput = (
       "Failed to build slashing output address",
     );
   }
-  
+
   return {
     outputAddress: slashingOutputAddress,
     scriptPubKey: address.toOutputScript(slashingOutputAddress, network),
   };
-}
+};
 
 /**
  * Find the matching output index for the given transaction.
- * 
+ *
  * @param {Transaction} tx - The transaction.
  * @param {string} outputAddress - The output address.
  * @param {networks.Network} network - The Bitcoin network.
@@ -185,8 +185,12 @@ export const findMatchingTxOutputIndex = (
   outputAddress: string,
   network: networks.Network,
 ) => {
-  const index = tx.outs.findIndex(output => {
-    return address.fromOutputScript(output.script, network) === outputAddress;
+  const index = tx.outs.findIndex((output) => {
+    try {
+      return address.fromOutputScript(output.script, network) === outputAddress;
+    } catch (error) {
+      return false;
+    }
   });
 
   if (index === -1) {
@@ -197,7 +201,7 @@ export const findMatchingTxOutputIndex = (
   }
 
   return index;
-}
+};
 
 /**
  * Validate the staking transaction input data.
@@ -221,7 +225,8 @@ export const validateStakingTxInputData = (
     stakingAmountSat > params.maxStakingAmountSat
   ) {
     throw new StakingError(
-      StakingErrorCode.INVALID_INPUT, "Invalid staking amount",
+      StakingErrorCode.INVALID_INPUT,
+      "Invalid staking amount",
     );
   }
 
@@ -229,22 +234,19 @@ export const validateStakingTxInputData = (
     timelock < params.minStakingTimeBlocks ||
     timelock > params.maxStakingTimeBlocks
   ) {
-    throw new StakingError(
-      StakingErrorCode.INVALID_INPUT, "Invalid timelock",
-    );
+    throw new StakingError(StakingErrorCode.INVALID_INPUT, "Invalid timelock");
   }
 
   if (inputUTXOs.length == 0) {
     throw new StakingError(
-      StakingErrorCode.INVALID_INPUT, "No input UTXOs provided",
+      StakingErrorCode.INVALID_INPUT,
+      "No input UTXOs provided",
     );
   }
   if (feeRate <= 0) {
-    throw new StakingError(
-      StakingErrorCode.INVALID_INPUT, "Invalid fee rate",
-    );
+    throw new StakingError(StakingErrorCode.INVALID_INPUT, "Invalid fee rate");
   }
-}
+};
 
 /**
  * Validate the staking parameters.
@@ -294,7 +296,10 @@ export const validateParams = (params: StakingParams) => {
       "Max staking amount must be greater or equal to min staking amount",
     );
   }
-  if (params.minStakingAmountSat < params.unbondingFeeSat + MIN_UNBONDING_OUTPUT_VALUE) {
+  if (
+    params.minStakingAmountSat <
+    params.unbondingFeeSat + MIN_UNBONDING_OUTPUT_VALUE
+  ) {
     throw new StakingError(
       StakingErrorCode.INVALID_PARAMS,
       `Min staking amount must be greater than unbonding fee plus ${MIN_UNBONDING_OUTPUT_VALUE}`,
@@ -344,17 +349,18 @@ export const validateParams = (params: StakingParams) => {
       );
     }
   }
-}
+};
 
 /**
  * Validate the staking timelock.
- * 
+ *
  * @param {number} stakingTimelock - The staking timelock.
  * @param {StakingParams} params - The staking parameters.
  * @throws {StakingError} - If the staking timelock is invalid.
  */
 export const validateStakingTimelock = (
-  stakingTimelock: number, params: StakingParams,
+  stakingTimelock: number,
+  params: StakingParams,
 ) => {
   if (
     stakingTimelock < params.minStakingTimeBlocks ||
@@ -369,20 +375,19 @@ export const validateStakingTimelock = (
 
 /**
  * toBuffers converts an array of strings to an array of buffers.
- * 
+ *
  * @param {string[]} inputs - The input strings.
  * @returns {Buffer[]} - The buffers.
  * @throws {StakingError} - If the values cannot be converted to buffers.
  */
 export const toBuffers = (inputs: string[]): Buffer[] => {
   try {
-    return inputs.map((i) =>
-      Buffer.from(i, "hex")
-    );
+    return inputs.map((i) => Buffer.from(i, "hex"));
   } catch (error) {
     throw StakingError.fromUnknown(
-      error, StakingErrorCode.INVALID_INPUT,
+      error,
+      StakingErrorCode.INVALID_INPUT,
       "Cannot convert values to buffers",
     );
   }
-}
+};
