@@ -449,7 +449,7 @@ export class Transaction extends BaseTransaction {
   }
 
   public get signablePayload(): Buffer {
-    return Buffer.from(this.rawTransaction.getTransactionHash().bytes);
+    return Buffer.from(this.rawTransaction.encoded);
   }
 
   /** @inheritdoc */
