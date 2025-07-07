@@ -419,6 +419,7 @@ export interface SignedMessage {
   signature: string;
   messageRaw: string;
   messageEncoded?: string;
+  messageStandardType?: MessageStandardType;
   txRequestId: string;
 }
 

@@ -9,6 +9,7 @@ import { KeyShare } from './ecdsa';
 import { EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 import { TssEcdsaStep1ReturnMessage, TssEcdsaStep2ReturnMessage, TxRequestChallengeResponse } from '../../tss/types';
 import { AShare, DShare, SShare } from '../../tss/ecdsa/types';
+import { MessageStandardType } from '../messageTypes';
 
 export type TxRequestVersion = 'full' | 'lite';
 export interface HopParams {
@@ -172,6 +173,7 @@ interface IntentOptionsBase {
 export interface IntentOptionsForMessage extends IntentOptionsBase {
   messageRaw: string;
   messageEncoded?: string;
+  messageStandardType?: MessageStandardType;
 }
 
 export interface IntentOptionsForTypedData extends IntentOptionsBase {
@@ -226,6 +228,7 @@ export interface PopulatedIntentForMessageSigning extends PopulatedIntentBase {
   messageRaw: string;
   messageEncoded: string;
   custodianMessageId?: string;
+  messageStandardType?: MessageStandardType;
 }
 
 export interface PopulatedIntentForTypedDataSigning extends PopulatedIntentBase {
