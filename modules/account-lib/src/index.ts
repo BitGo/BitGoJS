@@ -124,6 +124,9 @@ export { Asi };
 import * as Sol from '@bitgo/sdk-coin-sol';
 export { Sol };
 
+import * as Ada from '@bitgo/sdk-coin-ada';
+export { Ada };
+
 import * as Dot from '@bitgo/sdk-coin-dot';
 export { Dot };
 
@@ -316,6 +319,10 @@ const coinBuilderMap = {
 const coinMessageBuilderFactoryMap = {
   eth: Eth.MessageBuilderFactory,
   hteth: Eth.MessageBuilderFactory,
+  ada: Ada.MessageBuilderFactory,
+  tada: Ada.MessageBuilderFactory,
+  sol: Sol.MessageBuilderFactory,
+  tsol: Sol.MessageBuilderFactory,
 };
 
 coins
