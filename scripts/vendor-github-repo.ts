@@ -187,8 +187,8 @@ const vendorConfigs: VendorConfig[] = [
       'README.md',
     ],
     cherryPick: {
-      start: '8b8261b8b639d09cbe1223615797c18a2788cd89',
-      end: '06110dd3e892df326261cd79ead158c28370add7',
+      start: '161a937c4303d8273922ebfd04640d2391aca246',
+      end: '8d84d9b02af73d7c216d87aceca3dec0baabfecf',
     },
   },
 ];
