@@ -10754,6 +10754,118 @@ export const erc20Coins = [
     '0x5422374b27757da72d5265cc745ea906e0446634',
     UnderlyingAsset['eth:usdcv']
   ),
+  erc20(
+    'e18703e9-f9d7-4454-baea-737a5469f37e',
+    'eth:cake',
+    'PancakeSwap Token',
+    18,
+    '0x152649ea73beab28c5b49b26eb48f7ead6d4c898',
+    UnderlyingAsset['eth:cake']
+  ),
+  erc20(
+    '474629ab-83ea-4d28-b021-72b3d3e91034',
+    'eth:nft',
+    'APENFT',
+    6,
+    '0x198d14f2ad9ce69e76ea330b374de4957c3f850a',
+    UnderlyingAsset['eth:nft']
+  ),
+  erc20(
+    'd4e33a82-915c-466f-99d1-e23f95098ce4',
+    'eth:morpho',
+    'Morpho Token',
+    18,
+    '0x58d97b57bb95320f9a05dc918aef65434969c2b2',
+    UnderlyingAsset['eth:morpho']
+  ),
+  erc20(
+    '784858c8-c97d-490b-b035-7d22b8a4afb6',
+    'eth:usdd',
+    'Decentralized USD',
+    18,
+    '0x3d7975eccfc61a2102b08925cbba0a4d4dbb6555',
+    UnderlyingAsset['eth:usdd']
+  ),
+  erc20(
+    '46761c18-9a0d-4482-9abe-83415b79572f',
+    'eth:mx',
+    'MX Token',
+    18,
+    '0x11eef04c884e24d9b7b4760e7476d06ddf797f36',
+    UnderlyingAsset['eth:mx']
+  ),
+  erc20(
+    'be74b6ca-6f79-4310-9a9a-d53fbfe9c61b',
+    'eth:flz',
+    'Fellaz Token',
+    18,
+    '0x8e964e35a76103af4c7d7318e1b1a82c682ae296',
+    UnderlyingAsset['eth:flz']
+  ),
+  erc20(
+    '34dc5d74-1bce-4fd4-85e1-acb7d2f942a4',
+    'eth:usd0',
+    'Usual USD',
+    18,
+    '0x73a15fed60bf67631dc6cd7bc5b6e8da8190acf5',
+    UnderlyingAsset['eth:usd0']
+  ),
+  erc20(
+    'b23d4371-84a8-4780-bb51-f41813e8cda0',
+    'eth:white',
+    'WhiteRock',
+    18,
+    '0x9cdf242ef7975d8c68d5c1f5b6905801699b1940',
+    UnderlyingAsset['eth:white']
+  ),
+  erc20(
+    '2eff8c63-59e2-4adc-9f24-b729e5a17d78',
+    'eth:upc',
+    'UPCX',
+    5,
+    '0x487d62468282bd04ddf976631c23128a425555ee',
+    UnderlyingAsset['eth:upc']
+  ),
+  erc20(
+    'f969b983-b5fb-4e0c-9235-5c9f4147df4f',
+    'eth:lgct',
+    'Legacy Token',
+    18,
+    '0xd38b305cac06990c0887032a02c03d6839f770a8',
+    UnderlyingAsset['eth:lgct']
+  ),
+  erc20(
+    '661a0b40-5b11-4995-87b6-3ccaf29fd688',
+    'eth:usdtb',
+    'Ethena Labs USDtb',
+    18,
+    '0xc139190f447e929f090edeb554d95abb8b18ac1c',
+    UnderlyingAsset['eth:usdtb']
+  ),
+  erc20(
+    '5b4eb27a-d409-42e4-8c29-d3eda4386ca2',
+    'eth:deusd',
+    'Elixir deUSD',
+    18,
+    '0x15700b564ca08d9439c58ca5053166e8317aa138',
+    UnderlyingAsset['eth:deusd']
+  ),
+  erc20(
+    'ae350e14-b74b-4b2f-8b78-b578d6075bf6',
+    'eth:neiro',
+    'Neiro (First Neiro On Ethereum)',
+    9,
+    '0x812ba41e071c7b7fa4ebcfb62df5f45f6fa853ee',
+    UnderlyingAsset['eth:neiro']
+  ),
+  erc20(
+    '7e5551ab-08b2-4ec0-b8a3-a68d0fd2fe33',
+    'eth:vana',
+    'Vana',
+    18,
+    '0x7ff7fa94b8b66ef313f7970d4eebd2cb3103a2c0',
+    UnderlyingAsset['eth:vana']
+  ),
   terc20(
     '0205f0d6-0647-47c9-ad8b-c48d048e54f3',
     'fixed',
