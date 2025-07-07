@@ -90,5 +90,16 @@ describe('Asset metadata service', () => {
       const coin = bitgo.coin(tokenName);
       should.exist(coin);
     });
+
+    it('should be able to register the ofc token', async () => {
+      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock', microservicesUri, useAms: true } as BitGoOptions);
+      bitgo.initializeTestVars();
+
+      const tokenName = 'ofc';
+
+      await bitgo.registerToken(tokenName);
+      const coin = bitgo.coin(tokenName);
+      should.exist(coin);
+    });
   });
 });

@@ -17,6 +17,7 @@ import {
   BaseCoin as StaticsBaseCoin,
 } from '@bitgo/statics';
 import { GlobalCoinFactory, registerCoinConstructors, getTokenConstructor, getCoinConstructor } from './v2/coinFactory';
+import { Ofc } from './v2/coins';
 
 // constructor params used exclusively for BitGo class
 export type BitGoOptions = BitGoAPIOptions & {
@@ -111,6 +112,11 @@ export class BitGo extends BitGoAPI {
       return;
     }
 
+    //ofc is not present in statics coin map
+    if (tokenName === 'ofc') {
+      this._coinFactory.register(tokenName, Ofc.createInstance);
+      return;
+    }
     // Get the coin/token details only if it's not present in statics library
     let staticsBaseCoin: Readonly<StaticsBaseCoin> | undefined;
     if (coins.has(tokenName)) {
