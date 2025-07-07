@@ -167,6 +167,30 @@ const vendorConfigs: VendorConfig[] = [
       end: '06110dd3e892df326261cd79ead158c28370add7',
     },
   },
+  {
+    org: 'babylonlabs-io',
+    repo: 'btc-staking-ts',
+    tag: 'v2.3.4',
+    targetDir: 'modules/babylonlabs-io-btc-staking-ts',
+    removeFiles: [
+      '.eslintrc.json',
+      '.github/',
+      '.husky/',
+      '.npmrc',
+      '.nvmrc',
+      '.prettierignore',
+      '.prettierrc.json',
+      'docs/',
+      'tests/',
+      '.releaserc.json',
+      '.commitlint.config.cjs',
+      'README.md',
+    ],
+    cherryPick: {
+      start: '8b8261b8b639d09cbe1223615797c18a2788cd89',
+      end: '06110dd3e892df326261cd79ead158c28370add7',
+    },
+  },
 ];
 
 function getMatches(name: string, version: string | undefined): VendorConfig[] {
