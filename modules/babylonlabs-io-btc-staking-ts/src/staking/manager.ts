@@ -93,10 +93,10 @@ interface InclusionProof {
 }
 
 export class BabylonBtcStakingManager {
-  protected stakingParams: VersionedStakingParams[];
-  protected btcProvider: BtcProvider;
-  protected network: networks.Network;
-  protected babylonProvider: BabylonProvider;
+  private stakingParams: VersionedStakingParams[];
+  private btcProvider: BtcProvider;
+  private network: networks.Network;
+  private babylonProvider: BabylonProvider;
 
   constructor(
     network: networks.Network,
@@ -624,8 +624,7 @@ export class BabylonBtcStakingManager {
 
   /**
    * Creates a proof of possession for the staker based on ECDSA signature.
-   * @param bech32Address - The staker's bech32 address on the babylon chain
-   * @param stakerBtcAddress - The staker's BTC address.
+   * @param bech32Address - The staker's bech32 address.
    * @returns The proof of possession.
    */
   async createProofOfPossession(
@@ -710,7 +709,7 @@ export class BabylonBtcStakingManager {
    * @param inclusionProof - The inclusion proof of the staking transaction.
    * @returns The protobuf message.
    */
-  public async createBtcDelegationMsg(
+  private async createBtcDelegationMsg(
     stakingInstance: Staking,
     stakingInput: StakingInputs,
     stakingTx: Transaction,
