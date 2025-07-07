@@ -1,0 +1,18 @@
+name: Semantic release
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+permissions:
+  contents: write
+jobs:
+  lint_test:
+    uses: babylonlabs-io/.github/.github/workflows/reusable_node_lint_test.yml@v0.13.1
+    secrets: inherit
+    with:
+      run-build: true
+      run-unit-tests: true
+      use-semantic-release: true
+      node-version: 24

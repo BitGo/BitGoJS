@@ -1,7 +1,3 @@
-import { networks, Psbt, Transaction } from "bitcoinjs-lib";
-import { StakingParams, VersionedStakingParams } from "../types/params";
-import { TransactionResult, UTXO } from "../types";
-import { StakerInfo, Staking } from ".";
 import {
   btccheckpoint,
   btcstaking,
@@ -12,101 +8,45 @@ import {
   BTCSigType,
   ProofOfPossessionBTC,
 } from "@babylonlabs-io/babylon-proto-ts/dist/generated/babylon/btcstaking/v1/pop";
+import { Psbt, Transaction, networks } from "bitcoinjs-lib";
+import type { Emitter } from "nanoevents";
+
+import { StakerInfo, Staking } from ".";
 import { BABYLON_REGISTRY_TYPE_URLS } from "../constants/registry";
-import { createCovenantWitness } from "./transactions";
-import { getBabylonParamByBtcHeight, getBabylonParamByVersion } from "../utils/staking/param";
+import { StakingError, StakingErrorCode } from "../error";
+import { TransactionResult, UTXO } from "../types";
+import { ActionName } from "../types/action";
+import { Contract, ContractId } from "../types/contract";
+import { ManagerEvents } from "../types/events";
+import {
+  BabylonProvider,
+  BtcProvider,
+  InclusionProof,
+  StakingInputs,
+} from "../types/manager";
+import { StakingParams, VersionedStakingParams } from "../types/params";
 import { reverseBuffer } from "../utils";
-import { deriveStakingOutputInfo } from "../utils/staking";
-import { findMatchingTxOutputIndex } from "../utils/staking";
 import { isValidBabylonAddress } from "../utils/babylon";
-import { StakingError } from "../error";
-import { StakingErrorCode } from "../error";
 import { isNativeSegwit, isTaproot } from "../utils/btc";
-
-export interface BtcProvider {
-  // Sign a PSBT
-  // Expecting the PSBT to be encoded in hex format.
-  signPsbt(signingStep: SigningStep, psbtHex: string): Promise<string>;
-  
-  // Signs a message using either ECDSA or BIP-322, depending on the address type.
-  // - Taproot and Native Segwit addresses will use BIP-322.
-  // - Legacy addresses will use ECDSA.
-  // Expecting the message to be encoded in base64 format.
-  signMessage: (
-    signingStep: SigningStep, message: string, type: "ecdsa" | "bip322-simple"
-  ) => Promise<string>;
-}
-
-export interface BabylonProvider {
-  /**
-   * Signs a Babylon chain transaction using the provided signing step.
-   * This is primarily used for signing MsgCreateBTCDelegation transactions
-   * which register the BTC delegation on the Babylon Genesis chain.
-   * 
-   * @param {SigningStep} signingStep - The current signing step context
-   * @param {object} msg - The Cosmos SDK transaction message to sign
-   * @param {string} msg.typeUrl - The Protobuf type URL identifying the message type
-   * @param {T} msg.value - The transaction message data matching the typeUrl
-   * @returns {Promise<Uint8Array>} The signed transaction bytes
-   */
-  signTransaction: <T extends object>(
-    signingStep: SigningStep,
-    msg: {
-      typeUrl: string;
-      value: T;
-    }
-  ) => Promise<Uint8Array>
-}
-
-// Event types for the Signing event
-export enum SigningStep {
-  STAKING_SLASHING = "staking-slashing",
-  UNBONDING_SLASHING = "unbonding-slashing",
-  PROOF_OF_POSSESSION = "proof-of-possession",
-  CREATE_BTC_DELEGATION_MSG = "create-btc-delegation-msg",
-  STAKING = "staking",
-  UNBONDING = "unbonding",
-  WITHDRAW_STAKING_EXPIRED = "withdraw-staking-expired",
-  WITHDRAW_EARLY_UNBONDED = "withdraw-early-unbonded",
-  WITHDRAW_SLASHING = "withdraw-slashing",
-}
-
-interface StakingInputs {
-  finalityProviderPkNoCoordHex: string;
-  stakingAmountSat: number;
-  stakingTimelock: number;
-}
-
-// Inclusion proof for a BTC staking transaction that is included in a BTC block
-// This is used for post-staking registration on the Babylon chain
-// You can refer to https://electrumx.readthedocs.io/en/latest/protocol-methods.html#blockchain-transaction-get-merkle
-// for more information on the inclusion proof format.
-interface InclusionProof {
-  // The 0-based index of the position of the transaction in the ordered list 
-  // of transactions in the block.
-  pos: number;
-  // A list of transaction hashes the current hash is paired with, recursively, 
-  // in order to trace up to obtain merkle root of the block, deepest pairing first.
-  merkle: string[];
-  // The block hash of the block that contains the transaction
-  blockHashHex: string;
-}
+import {
+  deriveStakingOutputInfo,
+  findMatchingTxOutputIndex,
+} from "../utils/staking";
+import {
+  getBabylonParamByBtcHeight,
+  getBabylonParamByVersion,
+} from "../utils/staking/param";
+import { createCovenantWitness } from "./transactions";
 
 export class BabylonBtcStakingManager {
-  protected stakingParams: VersionedStakingParams[];
-  protected btcProvider: BtcProvider;
-  protected network: networks.Network;
-  protected babylonProvider: BabylonProvider;
-
   constructor(
-    network: networks.Network,
-    stakingParams: VersionedStakingParams[],
-    btcProvider: BtcProvider,
-    babylonProvider: BabylonProvider,
+    private network: networks.Network,
+    private stakingParams: VersionedStakingParams[],
+    private btcProvider: BtcProvider,
+    private babylonProvider: BabylonProvider,
+    private ee?: Emitter<ManagerEvents>,
   ) {
     this.network = network;
-    this.btcProvider = btcProvider;
-    this.babylonProvider = babylonProvider;
 
     if (stakingParams.length === 0) {
       throw new Error("No staking parameters provided");
@@ -127,7 +67,7 @@ export class BabylonBtcStakingManager {
    * fee rate is above 1. If the fee rate is too low, the transaction will not
    * be included in a block.
    * @param babylonAddress - The Babylon bech32 encoded address of the staker.
-   * @returns The signed babylon pre-staking registration transaction in base64 
+   * @returns The signed babylon pre-staking registration transaction in base64
    * format.
    */
   async preStakeRegistrationBabylonTransaction(
@@ -161,7 +101,7 @@ export class BabylonBtcStakingManager {
       this.network,
       stakerBtcInfo,
       params,
-      stakingInput.finalityProviderPkNoCoordHex,
+      stakingInput.finalityProviderPksNoCoordHex,
       stakingInput.stakingTimelock,
     );
 
@@ -174,6 +114,7 @@ export class BabylonBtcStakingManager {
 
     // Create delegation message without including inclusion proof
     const msg = await this.createBtcDelegationMsg(
+      "delegation:create",
       staking,
       stakingInput,
       transaction,
@@ -181,24 +122,26 @@ export class BabylonBtcStakingManager {
       stakerBtcInfo,
       params,
     );
+
+    this.ee?.emit("delegation:create", {
+      type: "create-btc-delegation-msg",
+    });
+
     return {
-      signedBabylonTx: await this.babylonProvider.signTransaction(
-        SigningStep.CREATE_BTC_DELEGATION_MSG,
-        msg,
-      ),
+      signedBabylonTx: await this.babylonProvider.signTransaction(msg),
       stakingTx: transaction,
     };
   }
 
   /**
-   * Creates a signed post-staking registration transaction that is ready to be 
-   * sent to the Babylon chain. This is used when a staking transaction is 
-   * already created and included in a BTC block and we want to register it on 
+   * Creates a signed post-staking registration transaction that is ready to be
+   * sent to the Babylon chain. This is used when a staking transaction is
+   * already created and included in a BTC block and we want to register it on
    * the Babylon chain.
    * @param stakerBtcInfo - The staker BTC info which includes the BTC address
    * and the no-coord public key in hex format.
    * @param stakingTx - The staking transaction.
-   * @param stakingTxHeight - The BTC height in which the staking transaction 
+   * @param stakingTxHeight - The BTC height in which the staking transaction
    * is included.
    * @param stakingInput - The staking inputs.
    * @param inclusionProof - Merkle Proof of Inclusion: Verifies transaction
@@ -217,7 +160,10 @@ export class BabylonBtcStakingManager {
     signedBabylonTx: Uint8Array;
   }> {
     // Get the Babylon params at the time of the staking transaction
-    const params = getBabylonParamByBtcHeight(stakingTxHeight, this.stakingParams);
+    const params = getBabylonParamByBtcHeight(
+      stakingTxHeight,
+      this.stakingParams,
+    );
 
     if (!isValidBabylonAddress(babylonAddress)) {
       throw new Error("Invalid Babylon address");
@@ -227,7 +173,7 @@ export class BabylonBtcStakingManager {
       this.network,
       stakerBtcInfo,
       params,
-      stakingInput.finalityProviderPkNoCoordHex,
+      stakingInput.finalityProviderPksNoCoordHex,
       stakingInput.stakingTimelock,
     );
 
@@ -240,10 +186,11 @@ export class BabylonBtcStakingManager {
       stakingTx,
       stakingOutputInfo.outputAddress,
       this.network,
-    )
+    );
 
     // Create delegation message
     const delegationMsg = await this.createBtcDelegationMsg(
+      "delegation:register",
       stakingInstance,
       stakingInput,
       stakingTx,
@@ -252,11 +199,14 @@ export class BabylonBtcStakingManager {
       params,
       this.getInclusionProof(inclusionProof),
     );
+
+    this.ee?.emit("delegation:register", {
+      type: "create-btc-delegation-msg",
+    });
+
     return {
-      signedBabylonTx: await this.babylonProvider.signTransaction(
-        SigningStep.CREATE_BTC_DELEGATION_MSG,
-        delegationMsg,
-      ),
+      signedBabylonTx:
+        await this.babylonProvider.signTransaction(delegationMsg),
     };
   }
 
@@ -294,7 +244,7 @@ export class BabylonBtcStakingManager {
       this.network,
       stakerBtcInfo,
       params,
-      stakingInput.finalityProviderPkNoCoordHex,
+      stakingInput.finalityProviderPksNoCoordHex,
       stakingInput.stakingTimelock,
     );
 
@@ -308,7 +258,7 @@ export class BabylonBtcStakingManager {
   }
 
   /**
-   * Creates a signed staking transaction that is ready to be sent to the BTC 
+   * Creates a signed staking transaction that is ready to be sent to the BTC
    * network.
    * @param stakerBtcInfo - The staker BTC info which includes the BTC address
    * and the no-coord public key in hex format.
@@ -327,7 +277,11 @@ export class BabylonBtcStakingManager {
     inputUTXOs: UTXO[],
     stakingParamsVersion: number,
   ): Promise<Transaction> {
-    const params = getBabylonParamByVersion(stakingParamsVersion, this.stakingParams);
+    const params = getBabylonParamByVersion(
+      stakingParamsVersion,
+      this.stakingParams,
+    );
+
     if (inputUTXOs.length === 0) {
       throw new Error("No input UTXOs provided");
     }
@@ -336,19 +290,46 @@ export class BabylonBtcStakingManager {
       this.network,
       stakerBtcInfo,
       params,
-      stakingInput.finalityProviderPkNoCoordHex,
+      stakingInput.finalityProviderPksNoCoordHex,
       stakingInput.stakingTimelock,
     );
 
-    const stakingPsbt = staking.toStakingPsbt(
-      unsignedStakingTx,
-      inputUTXOs,
-    );
+    const stakingPsbt = staking.toStakingPsbt(unsignedStakingTx, inputUTXOs);
+
+    const contracts: Contract[] = [
+      {
+        id: ContractId.STAKING,
+        params: {
+          stakerPk: stakerBtcInfo.publicKeyNoCoordHex,
+          finalityProviders: stakingInput.finalityProviderPksNoCoordHex,
+          covenantPks: params.covenantNoCoordPks,
+          covenantThreshold: params.covenantQuorum,
+          minUnbondingTime: params.unbondingTime,
+          stakingDuration: stakingInput.stakingTimelock,
+        },
+      },
+    ];
+
+    this.ee?.emit("delegation:stake", {
+      stakerPk: stakerBtcInfo.publicKeyNoCoordHex,
+      finalityProviders: stakingInput.finalityProviderPksNoCoordHex,
+      covenantPks: params.covenantNoCoordPks,
+      covenantThreshold: params.covenantQuorum,
+      unbondingTimeBlocks: params.unbondingTime,
+      stakingDuration: stakingInput.stakingTimelock,
+      type: "staking",
+    });
 
     const signedStakingPsbtHex = await this.btcProvider.signPsbt(
-      SigningStep.STAKING,
-      stakingPsbt.toHex()
+      stakingPsbt.toHex(),
+      {
+        contracts,
+        action: {
+          name: ActionName.SIGN_BTC_STAKING_TRANSACTION,
+        },
+      },
     );
+
     return Psbt.fromHex(signedStakingPsbtHex).extractTransaction();
   }
 
@@ -377,28 +358,70 @@ export class BabylonBtcStakingManager {
       stakingParamsVersion,
       this.stakingParams,
     );
-  
+
     const staking = new Staking(
       this.network,
       stakerBtcInfo,
       params,
-      stakingInput.finalityProviderPkNoCoordHex,
+      stakingInput.finalityProviderPksNoCoordHex,
       stakingInput.stakingTimelock,
     );
-    const {
-      transaction: unbondingTx,
-      fee,
-    } = staking.createUnbondingTransaction(stakingTx);
+
+    const { transaction: unbondingTx, fee } =
+      staking.createUnbondingTransaction(stakingTx);
 
     const psbt = staking.toUnbondingPsbt(unbondingTx, stakingTx);
+
+    const contracts: Contract[] = [
+      {
+        id: ContractId.STAKING,
+        params: {
+          stakerPk: stakerBtcInfo.publicKeyNoCoordHex,
+          finalityProviders: stakingInput.finalityProviderPksNoCoordHex,
+          covenantPks: params.covenantNoCoordPks,
+          covenantThreshold: params.covenantQuorum,
+          minUnbondingTime: params.unbondingTime,
+          stakingDuration: stakingInput.stakingTimelock,
+        },
+      },
+      {
+        id: ContractId.UNBONDING,
+        params: {
+          stakerPk: stakerBtcInfo.publicKeyNoCoordHex,
+          finalityProviders: stakingInput.finalityProviderPksNoCoordHex,
+          covenantPks: params.covenantNoCoordPks,
+          covenantThreshold: params.covenantQuorum,
+          unbondingTimeBlocks: params.unbondingTime,
+          unbondingFeeSat: params.unbondingFeeSat,
+        },
+      },
+    ];
+
+    this.ee?.emit("delegation:unbond", {
+      stakerPk: stakerBtcInfo.publicKeyNoCoordHex,
+      finalityProviders: stakingInput.finalityProviderPksNoCoordHex,
+      covenantPks: params.covenantNoCoordPks,
+      covenantThreshold: params.covenantQuorum,
+      stakingDuration: stakingInput.stakingTimelock,
+      unbondingTimeBlocks: params.unbondingTime,
+      unbondingFeeSat: params.unbondingFeeSat,
+      type: "unbonding",
+    });
+
     const signedUnbondingPsbtHex = await this.btcProvider.signPsbt(
-      SigningStep.UNBONDING,
       psbt.toHex(),
+      {
+        contracts,
+        action: {
+          name: ActionName.SIGN_BTC_UNBONDING_TRANSACTION,
+        },
+      },
     );
+
     const signedUnbondingTx = Psbt.fromHex(
       signedUnbondingPsbtHex,
     ).extractTransaction();
-  
+
     return {
       transaction: signedUnbondingTx,
       fee,
@@ -406,7 +429,7 @@ export class BabylonBtcStakingManager {
   }
 
   /**
-   * Creates a signed unbonding transaction that is ready to be sent to the BTC 
+   * Creates a signed unbonding transaction that is ready to be sent to the BTC
    * network.
    * @param stakerBtcInfo - The staker BTC info which includes the BTC address
    * and the no-coord public key in hex format.
@@ -436,15 +459,13 @@ export class BabylonBtcStakingManager {
       this.stakingParams,
     );
 
-    const {
-      transaction: signedUnbondingTx,
-      fee,
-    } = await this.createPartialSignedBtcUnbondingTransaction(
-      stakerBtcInfo,
-      stakingInput,
-      stakingParamsVersion,
-      stakingTx,
-    );
+    const { transaction: signedUnbondingTx, fee } =
+      await this.createPartialSignedBtcUnbondingTransaction(
+        stakerBtcInfo,
+        stakingInput,
+        stakingParamsVersion,
+        stakingTx,
+      );
 
     // Check the computed txid of the signed unbonding transaction is the same as
     // the txid of the unsigned unbonding transaction
@@ -478,7 +499,7 @@ export class BabylonBtcStakingManager {
   }
 
   /**
-   * Creates a signed withdrawal transaction on the unbodning output expiry path 
+   * Creates a signed withdrawal transaction on the unbodning output expiry path
    * that is ready to be sent to the BTC network.
    * @param stakingInput - The staking inputs.
    * @param stakingParamsVersion - The params version that was used to create the
@@ -505,19 +526,39 @@ export class BabylonBtcStakingManager {
       this.network,
       stakerBtcInfo,
       params,
-      stakingInput.finalityProviderPkNoCoordHex,
+      stakingInput.finalityProviderPksNoCoordHex,
       stakingInput.stakingTimelock,
     );
 
-    const { psbt: unbondingPsbt, fee } = staking.createWithdrawEarlyUnbondedTransaction(
-      earlyUnbondingTx,
-      feeRate,
-    );
+    const { psbt: unbondingPsbt, fee } =
+      staking.createWithdrawEarlyUnbondedTransaction(earlyUnbondingTx, feeRate);
+
+    const contracts: Contract[] = [
+      {
+        id: ContractId.WITHDRAW,
+        params: {
+          stakerPk: stakerBtcInfo.publicKeyNoCoordHex,
+          timelockBlocks: params.unbondingTime,
+        },
+      },
+    ];
+
+    this.ee?.emit("delegation:withdraw", {
+      stakerPk: stakerBtcInfo.publicKeyNoCoordHex,
+      timelockBlocks: params.unbondingTime,
+      type: "early-unbonded",
+    });
 
     const signedWithdrawalPsbtHex = await this.btcProvider.signPsbt(
-      SigningStep.WITHDRAW_EARLY_UNBONDED,
-      unbondingPsbt.toHex()
+      unbondingPsbt.toHex(),
+      {
+        contracts,
+        action: {
+          name: ActionName.SIGN_BTC_WITHDRAW_TRANSACTION,
+        },
+      },
     );
+
     return {
       transaction: Psbt.fromHex(signedWithdrawalPsbtHex).extractTransaction(),
       fee,
@@ -525,7 +566,7 @@ export class BabylonBtcStakingManager {
   }
 
   /**
-   * Creates a signed withdrawal transaction on the staking output expiry path 
+   * Creates a signed withdrawal transaction on the staking output expiry path
    * that is ready to be sent to the BTC network.
    * @param stakerBtcInfo - The staker BTC info which includes the BTC address
    * and the no-coord public key in hex format.
@@ -554,7 +595,7 @@ export class BabylonBtcStakingManager {
       this.network,
       stakerBtcInfo,
       params,
-      stakingInput.finalityProviderPkNoCoordHex,
+      stakingInput.finalityProviderPksNoCoordHex,
       stakingInput.stakingTimelock,
     );
 
@@ -563,10 +604,32 @@ export class BabylonBtcStakingManager {
       feeRate,
     );
 
+    const contracts: Contract[] = [
+      {
+        id: ContractId.WITHDRAW,
+        params: {
+          stakerPk: stakerBtcInfo.publicKeyNoCoordHex,
+          timelockBlocks: stakingInput.stakingTimelock,
+        },
+      },
+    ];
+
+    this.ee?.emit("delegation:withdraw", {
+      stakerPk: stakerBtcInfo.publicKeyNoCoordHex,
+      timelockBlocks: stakingInput.stakingTimelock,
+      type: "staking-expired",
+    });
+
     const signedWithdrawalPsbtHex = await this.btcProvider.signPsbt(
-      SigningStep.WITHDRAW_STAKING_EXPIRED,
-      psbt.toHex()
+      psbt.toHex(),
+      {
+        contracts,
+        action: {
+          name: ActionName.SIGN_BTC_WITHDRAW_TRANSACTION,
+        },
+      },
     );
+
     return {
       transaction: Psbt.fromHex(signedWithdrawalPsbtHex).extractTransaction(),
       fee,
@@ -574,7 +637,7 @@ export class BabylonBtcStakingManager {
   }
 
   /**
-   * Creates a signed withdrawal transaction for the expired slashing output that 
+   * Creates a signed withdrawal transaction for the expired slashing output that
    * is ready to be sent to the BTC network.
    * @param stakerBtcInfo - The staker BTC info which includes the BTC address
    * and the no-coord public key in hex format.
@@ -603,7 +666,7 @@ export class BabylonBtcStakingManager {
       this.network,
       stakerBtcInfo,
       params,
-      stakingInput.finalityProviderPkNoCoordHex,
+      stakingInput.finalityProviderPksNoCoordHex,
       stakingInput.stakingTimelock,
     );
 
@@ -612,23 +675,47 @@ export class BabylonBtcStakingManager {
       feeRate,
     );
 
-    const signedSlashingPsbtHex = await this.btcProvider.signPsbt(
-      SigningStep.WITHDRAW_SLASHING,
-      psbt.toHex()
+    const contracts: Contract[] = [
+      {
+        id: ContractId.WITHDRAW,
+        params: {
+          stakerPk: stakerBtcInfo.publicKeyNoCoordHex,
+          timelockBlocks: params.unbondingTime,
+        },
+      },
+    ];
+
+    this.ee?.emit("delegation:withdraw", {
+      stakerPk: stakerBtcInfo.publicKeyNoCoordHex,
+      timelockBlocks: params.unbondingTime,
+      type: "slashing",
+    });
+
+    const signedWithrawSlashingPsbtHex = await this.btcProvider.signPsbt(
+      psbt.toHex(),
+      {
+        contracts,
+        action: {
+          name: ActionName.SIGN_BTC_WITHDRAW_TRANSACTION,
+        },
+      },
     );
+
     return {
-      transaction: Psbt.fromHex(signedSlashingPsbtHex).extractTransaction(),
+      transaction: Psbt.fromHex(
+        signedWithrawSlashingPsbtHex,
+      ).extractTransaction(),
       fee,
     };
   }
 
   /**
    * Creates a proof of possession for the staker based on ECDSA signature.
-   * @param bech32Address - The staker's bech32 address on the babylon chain
-   * @param stakerBtcAddress - The staker's BTC address.
+   * @param bech32Address - The staker's bech32 address.
    * @returns The proof of possession.
    */
   async createProofOfPossession(
+    channel: "delegation:create" | "delegation:register",
     bech32Address: string,
     stakerBtcAddress: string,
   ): Promise<ProofOfPossessionBTC> {
@@ -638,14 +725,18 @@ export class BabylonBtcStakingManager {
     // in the proof of possession as it uses the same signature type as the regular
     // input UTXO spend. For legacy addresses, use the ECDSA signature scheme.
     if (
-      isTaproot(stakerBtcAddress, this.network) 
-        || isNativeSegwit(stakerBtcAddress, this.network)
+      isTaproot(stakerBtcAddress, this.network) ||
+      isNativeSegwit(stakerBtcAddress, this.network)
     ) {
       sigType = BTCSigType.BIP322;
     }
 
+    this.ee?.emit(channel, {
+      bech32Address,
+      type: "proof-of-possession",
+    });
+
     const signedBabylonAddress = await this.btcProvider.signMessage(
-      SigningStep.PROOF_OF_POSSESSION,
       bech32Address,
       sigType === BTCSigType.BIP322 ? "bip322-simple" : "ecdsa",
     );
@@ -665,16 +756,16 @@ export class BabylonBtcStakingManager {
 
     return {
       btcSigType: sigType,
-      btcSig
+      btcSig,
     };
   }
 
   /**
-   * Creates the unbonding, slashing, and unbonding slashing transactions and 
+   * Creates the unbonding, slashing, and unbonding slashing transactions and
    * PSBTs.
    * @param stakingInstance - The staking instance.
    * @param stakingTx - The staking transaction.
-   * @returns The unbonding, slashing, and unbonding slashing transactions and 
+   * @returns The unbonding, slashing, and unbonding slashing transactions and
    * PSBTs.
    */
   private async createDelegationTransactionsAndPsbts(
@@ -682,14 +773,14 @@ export class BabylonBtcStakingManager {
     stakingTx: Transaction,
   ) {
     const { transaction: unbondingTx } =
-    stakingInstance.createUnbondingTransaction(stakingTx);
+      stakingInstance.createUnbondingTransaction(stakingTx);
 
     // Create slashing transactions and extract signatures
     const { psbt: slashingPsbt } =
       stakingInstance.createStakingOutputSlashingPsbt(stakingTx);
 
     const { psbt: unbondingSlashingPsbt } =
-    stakingInstance.createUnbondingOutputSlashingPsbt(unbondingTx);
+      stakingInstance.createUnbondingOutputSlashingPsbt(unbondingTx);
 
     return {
       unbondingTx,
@@ -704,13 +795,14 @@ export class BabylonBtcStakingManager {
    * @param stakingInput - The staking inputs.
    * @param stakingTx - The staking transaction.
    * @param bech32Address - The staker's babylon chain bech32 address
-   * @param stakerBtcInfo - The staker's BTC information such as address and 
+   * @param stakerBtcInfo - The staker's BTC information such as address and
    * public key
    * @param params - The staking parameters.
    * @param inclusionProof - The inclusion proof of the staking transaction.
    * @returns The protobuf message.
    */
-  public async createBtcDelegationMsg(
+  private async createBtcDelegationMsg(
+    channel: "delegation:create" | "delegation:register",
     stakingInstance: Staking,
     stakingInput: StakingInputs,
     stakingTx: Transaction,
@@ -719,35 +811,132 @@ export class BabylonBtcStakingManager {
     params: StakingParams,
     inclusionProof?: btcstaking.InclusionProof,
   ) {
-    const {
-      unbondingTx,
-      slashingPsbt,
-      unbondingSlashingPsbt
-    } = await this.createDelegationTransactionsAndPsbts(
-      stakingInstance,
-      stakingTx,
-    );
+    if (!params.slashing) {
+      throw new StakingError(
+        StakingErrorCode.INVALID_PARAMS,
+        "Slashing parameters are required for creating delegation message",
+      );
+    }
+
+    const { unbondingTx, slashingPsbt, unbondingSlashingPsbt } =
+      await this.createDelegationTransactionsAndPsbts(
+        stakingInstance,
+        stakingTx,
+      );
+
+    const slashingContracts: Contract[] = [
+      {
+        id: ContractId.STAKING,
+        params: {
+          stakerPk: stakerBtcInfo.publicKeyNoCoordHex,
+          finalityProviders: stakingInput.finalityProviderPksNoCoordHex,
+          covenantPks: params.covenantNoCoordPks,
+          covenantThreshold: params.covenantQuorum,
+          minUnbondingTime: params.unbondingTime,
+          stakingDuration: stakingInput.stakingTimelock,
+        },
+      },
+      {
+        id: ContractId.SLASHING,
+        params: {
+          stakerPk: stakerBtcInfo.publicKeyNoCoordHex,
+          unbondingTimeBlocks: params.unbondingTime,
+          slashingFeeSat: params.slashing.minSlashingTxFeeSat,
+        },
+      },
+      {
+        id: ContractId.SLASHING_BURN,
+        params: {
+          stakerPk: stakerBtcInfo.publicKeyNoCoordHex,
+          slashingPkScriptHex: params.slashing.slashingPkScriptHex,
+        },
+      },
+    ];
 
     // Sign the slashing PSBT
+    this.ee?.emit(channel, {
+      stakerPk: stakerBtcInfo.publicKeyNoCoordHex,
+      finalityProviders: stakingInput.finalityProviderPksNoCoordHex,
+      covenantPks: params.covenantNoCoordPks,
+      covenantThreshold: params.covenantQuorum,
+      unbondingTimeBlocks: params.unbondingTime,
+      stakingDuration: stakingInput.stakingTimelock,
+      slashingFeeSat: params.slashing.minSlashingTxFeeSat,
+      slashingPkScriptHex: params.slashing.slashingPkScriptHex,
+      type: "staking-slashing",
+    });
+
     const signedSlashingPsbtHex = await this.btcProvider.signPsbt(
-      SigningStep.STAKING_SLASHING,
       slashingPsbt.toHex(),
+      {
+        contracts: slashingContracts,
+        action: {
+          name: ActionName.SIGN_BTC_SLASHING_TRANSACTION,
+        },
+      },
     );
+
     const signedSlashingTx = Psbt.fromHex(
       signedSlashingPsbtHex,
     ).extractTransaction();
-    const slashingSig = extractFirstSchnorrSignatureFromTransaction(
-      signedSlashingTx
-    );
+    const slashingSig =
+      extractFirstSchnorrSignatureFromTransaction(signedSlashingTx);
     if (!slashingSig) {
       throw new Error("No signature found in the staking output slashing PSBT");
     }
 
+    const unbondingSlashingContracts: Contract[] = [
+      {
+        id: ContractId.UNBONDING,
+        params: {
+          stakerPk: stakerBtcInfo.publicKeyNoCoordHex,
+          finalityProviders: stakingInput.finalityProviderPksNoCoordHex,
+          covenantPks: params.covenantNoCoordPks,
+          covenantThreshold: params.covenantQuorum,
+          unbondingTimeBlocks: params.unbondingTime,
+          unbondingFeeSat: params.unbondingFeeSat,
+        },
+      },
+      {
+        id: ContractId.SLASHING,
+        params: {
+          stakerPk: stakerBtcInfo.publicKeyNoCoordHex,
+          unbondingTimeBlocks: params.unbondingTime,
+          slashingFeeSat: params.slashing.minSlashingTxFeeSat,
+        },
+      },
+      {
+        id: ContractId.SLASHING_BURN,
+        params: {
+          stakerPk: stakerBtcInfo.publicKeyNoCoordHex,
+          slashingPkScriptHex: params.slashing.slashingPkScriptHex,
+        },
+      },
+    ];
+
     // Sign the unbonding slashing PSBT
+    this.ee?.emit(channel, {
+      stakerPk: stakerBtcInfo.publicKeyNoCoordHex,
+      finalityProviders: stakingInput.finalityProviderPksNoCoordHex,
+      covenantPks: params.covenantNoCoordPks,
+      covenantThreshold: params.covenantQuorum,
+      unbondingTimeBlocks: params.unbondingTime,
+      unbondingFeeSat: params.unbondingFeeSat,
+      slashingFeeSat: params.slashing.minSlashingTxFeeSat,
+      slashingPkScriptHex: params.slashing.slashingPkScriptHex,
+      type: "unbonding-slashing",
+    });
+
     const signedUnbondingSlashingPsbtHex = await this.btcProvider.signPsbt(
-      SigningStep.UNBONDING_SLASHING,
       unbondingSlashingPsbt.toHex(),
+      {
+        contracts: unbondingSlashingContracts,
+        action: {
+          name: ActionName.SIGN_BTC_UNBONDING_SLASHING_TRANSACTION,
+        },
+      },
     );
+
     const signedUnbondingSlashingTx = Psbt.fromHex(
       signedUnbondingSlashingPsbtHex,
     ).extractTransaction();
@@ -755,11 +944,14 @@ export class BabylonBtcStakingManager {
       signedUnbondingSlashingTx,
     );
     if (!unbondingSignatures) {
-      throw new Error("No signature found in the unbonding output slashing PSBT");
+      throw new Error(
+        "No signature found in the unbonding output slashing PSBT",
+      );
     }
 
     // Create proof of possession
     const proofOfPossession = await this.createProofOfPossession(
+      channel,
       bech32Address,
       stakerBtcInfo.address,
     );
@@ -772,11 +964,9 @@ export class BabylonBtcStakingManager {
         btcPk: Uint8Array.from(
           Buffer.from(stakerBtcInfo.publicKeyNoCoordHex, "hex"),
         ),
-        fpBtcPkList: [
-          Uint8Array.from(
-            Buffer.from(stakingInput.finalityProviderPkNoCoordHex, "hex"),
-          ),
-        ],
+        fpBtcPkList: stakingInput.finalityProviderPksNoCoordHex.map((pk) =>
+          Uint8Array.from(Buffer.from(pk, "hex")),
+        ),
         stakingTime: stakingInput.stakingTimelock,
         stakingValue: stakingInput.stakingAmountSat,
         stakingTx: Uint8Array.from(stakingTx.toBuffer()),
@@ -801,7 +991,7 @@ export class BabylonBtcStakingManager {
       typeUrl: BABYLON_REGISTRY_TYPE_URLS.MsgCreateBTCDelegation,
       value: msg,
     };
-  };
+  }
 
   /**
    * Gets the inclusion proof for the staking transaction.
@@ -812,14 +1002,12 @@ export class BabylonBtcStakingManager {
   private getInclusionProof(
     inclusionProof: InclusionProof,
   ): btcstaking.InclusionProof {
-    const {
-      pos,
-      merkle,
-      blockHashHex
-    } = inclusionProof;
+    const { pos, merkle, blockHashHex } = inclusionProof;
     const proofHex = deriveMerkleProof(merkle);
-  
-    const hash = reverseBuffer(Uint8Array.from(Buffer.from(blockHashHex, "hex")));
+
+    const hash = reverseBuffer(
+      Uint8Array.from(Buffer.from(blockHashHex, "hex")),
+    );
     const inclusionProofKey: btccheckpoint.TransactionKey =
       btccheckpoint.TransactionKey.fromPartial({
         index: pos,
@@ -829,16 +1017,16 @@ export class BabylonBtcStakingManager {
       key: inclusionProofKey,
       proof: Uint8Array.from(Buffer.from(proofHex, "hex")),
     });
-  };
+  }
 }
 
 /**
  * Extracts the first valid Schnorr signature from a signed transaction.
- * 
+ *
  * Since we only handle transactions with a single input and request a signature
  * for one public key, there can be at most one signature from the Bitcoin node.
  * A valid Schnorr signature is exactly 64 bytes in length.
- * 
+ *
  * @param singedTransaction - The signed Bitcoin transaction to extract the signature from
  * @returns The first valid 64-byte Schnorr signature found in the transaction witness data,
  *          or undefined if no valid signature exists
@@ -861,9 +1049,9 @@ const extractFirstSchnorrSignatureFromTransaction = (
 };
 
 /**
- * Strips all signatures from a transaction by clearing both the script and 
- * witness data. This is due to the fact that we only need the raw unsigned 
- * transaction structure. The signatures are sent in a separate protobuf field 
+ * Strips all signatures from a transaction by clearing both the script and
+ * witness data. This is due to the fact that we only need the raw unsigned
+ * transaction structure. The signatures are sent in a separate protobuf field
  * when creating the delegation message in the Babylon.
  * @param tx - The transaction to strip signatures from
  * @returns A copy of the transaction with all signatures removed
@@ -895,13 +1083,16 @@ const deriveMerkleProof = (merkle: string[]) => {
  * @param unbondingTx - The unbonding transaction
  * @returns The staker signature
  */
-export const getUnbondingTxStakerSignature = (unbondingTx: Transaction): string => {
+export const getUnbondingTxStakerSignature = (
+  unbondingTx: Transaction,
+): string => {
   try {
     // There is only one input and one output in the unbonding transaction
     return unbondingTx.ins[0].witness[0].toString("hex");
   } catch (error) {
     throw StakingError.fromUnknown(
-      error, StakingErrorCode.INVALID_INPUT,
+      error,
+      StakingErrorCode.INVALID_INPUT,
       "Failed to get staker signature",
     );
   }
