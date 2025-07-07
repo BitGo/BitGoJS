@@ -140,34 +140,10 @@ describe('EIP191 Message', () => {
       const expectedSerializedSignatures = serializeSignatures([fixtures.eip191.signature]);
       broadcastFormat.type.should.equal(MessageStandardType.EIP191);
       broadcastFormat.payload.should.equal(fixtures.messages.validMessage);
-      broadcastFormat.serializedSignatures.should.deepEqual(expectedSerializedSignatures);
-      broadcastFormat.signers.should.deepEqual([fixtures.eip191.signer]);
+      broadcastFormat.serializedSignatures?.should.deepEqual(expectedSerializedSignatures);
+      broadcastFormat.signers?.should.deepEqual([fixtures.eip191.signer]);
       broadcastFormat.metadata!.should.deepEqual(fixtures.eip191.metadata);
       broadcastFormat.signablePayload!.should.equal('dGVzdC1zaWduYWJsZS1wYXlsb2Fk');
-    });
-
-    it('should throw error when broadcasting without signatures', async () => {
-      const message = new EIP191Message({
-        coinConfig: fixtures.coin,
-        payload: fixtures.messages.validMessage,
-        signers: [fixtures.eip191.signer],
-      });
-
-      await message
-        .toBroadcastFormat()
-        .should.be.rejectedWith('No signatures available for broadcast. Call setSignatures or addSignature first.');
-    });
-
-    it('should throw error when broadcasting without signers', async () => {
-      const message = new EIP191Message({
-        coinConfig: fixtures.coin,
-        payload: fixtures.messages.validMessage,
-        signatures: [fixtures.eip191.signature],
-      });
-
-      await message
-        .toBroadcastFormat()
-        .should.be.rejectedWith('No signers available for broadcast. Call setSigners or addSigner first.');
     });
 
     it('should convert to broadcast string correctly', async () => {

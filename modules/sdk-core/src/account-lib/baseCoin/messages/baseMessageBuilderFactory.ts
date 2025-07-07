@@ -1,6 +1,7 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { IMessageBuilder, IMessageBuilderFactory } from './iface';
 import { BroadcastableMessage, MessageStandardType } from '../../../bitgo';
+import { deserializeSignatures } from '../iface';
 
 /**
  * Base Message Builder
@@ -29,7 +30,16 @@ export abstract class BaseMessageBuilderFactory implements IMessageBuilderFactor
    * @returns A message builder instance for the broadcastable message type
    */
   fromBroadcastFormat(broadcastMessage: BroadcastableMessage): IMessageBuilder {
-    return this.getMessageBuilder(broadcastMessage.type);
+    const builder = this.getMessageBuilder(broadcastMessage.type);
+    builder.setPayload(broadcastMessage.payload);
+    builder.setMetadata(broadcastMessage.metadata || {});
+    if (broadcastMessage.signers) {
+      builder.setSigners(broadcastMessage.signers);
+    }
+    if (broadcastMessage.serializedSignatures) {
+      builder.setSignatures(deserializeSignatures(broadcastMessage.serializedSignatures));
+    }
+    return builder;
   }
 
   /**

@@ -131,7 +131,7 @@ describe('Base Message Builder', () => {
       serializedSignatures: serializeSignatures(signatures),
       signers: signers,
       metadata: metadata,
-      signablePayload: undefined,
+      signablePayload: 'aGVsbG8gd29ybGQ=',
     };
 
     should.deepEqual(broadcastFormat, expectedBroadcastFormat);
@@ -185,6 +185,7 @@ describe('Base Message Builder', () => {
       serializedSignatures: serializeSignatures(signatures),
       signers: signers,
       metadata: { encoding: 'utf8' },
+      signablePayload: 'c2VyaWFsaXplIG1l',
     });
 
     should.equal(broadcastString, expectedJson);

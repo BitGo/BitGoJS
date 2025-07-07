@@ -1,6 +1,7 @@
 account-lib
 sdk-coin-ada
 sdk-coin-rune
+sdk-coin-sol
 sdk-coin-sui
 sdk-core
 statics
