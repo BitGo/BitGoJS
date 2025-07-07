@@ -160,7 +160,7 @@ export abstract class BaseMessageBuilder implements IMessageBuilder {
     }
     this.payload = payload;
     this.signatures = deserializeSignatures(serializedSignatures);
-    this.signers = signers;
+    this.signers = signers || [];
     this.metadata = {
       ...metadata,
       encoding: 'utf8',

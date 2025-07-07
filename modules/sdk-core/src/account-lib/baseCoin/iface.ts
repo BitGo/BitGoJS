@@ -58,8 +58,8 @@ export function deserializeSignature(serialized: SerializedSignature): Signature
   };
 }
 
-export function deserializeSignatures(serialized: SerializedSignature[]): Signature[] {
-  return serialized.map(deserializeSignature);
+export function deserializeSignatures(serialized?: SerializedSignature[]): Signature[] {
+  return serialized?.map(deserializeSignature) || [];
 }
 
 export type KeyPairOptions = Seed | PrivateKey | PublicKey;

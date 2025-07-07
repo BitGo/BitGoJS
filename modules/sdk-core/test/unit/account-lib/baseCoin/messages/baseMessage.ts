@@ -161,35 +161,6 @@ describe('Base Message', () => {
   });
 
   describe('toBroadcastFormat', () => {
-    it('should throw an error if no signatures are available', async () => {
-      const message = new TestMessage({
-        coinConfig,
-        payload: 'test',
-        signers: ['addr1'],
-      });
-
-      await message
-        .toBroadcastFormat()
-        .should.be.rejectedWith('No signatures available for broadcast. Call setSignatures or addSignature first.');
-    });
-
-    it('should throw an error if no signers are available', async () => {
-      const message = new TestMessage({
-        coinConfig,
-        payload: 'test',
-        signatures: [
-          {
-            publicKey: { pub: 'pub1' },
-            signature: Buffer.from('sig1'),
-          },
-        ],
-      });
-
-      await message
-        .toBroadcastFormat()
-        .should.be.rejectedWith('No signers available for broadcast. Call setSigners or addSigner first.');
-    });
-
     it('should create a proper broadcastable format with all fields', async () => {
       const { payload, type, metadata, signers, signatures } = messageSamples.eip191;
       const customSignablePayload = Buffer.from('custom signable payload');
@@ -270,6 +241,7 @@ describe('Base Message', () => {
         serializedSignatures: serializeSignatures(signatures),
         signers,
         metadata,
+        signablePayload: 'SGVsbG8gQml0R28h',
       };
 
       const broadcastString = await message.toBroadcastString();

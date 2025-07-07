@@ -20,10 +20,10 @@ export type MessageMetadata = Record<string, unknown>;
 export interface BroadcastableMessage {
   type: MessageStandardType;
   payload: MessagePayload;
-  serializedSignatures: SerializedSignature[];
-  signers: string[]; // list of addresses or public keys of the signers
-  metadata?: MessageMetadata;
   signablePayload?: string;
+  serializedSignatures?: SerializedSignature[];
+  signers?: string[]; // list of addresses or public keys of the signers
+  metadata?: MessageMetadata;
 }
 
 /**

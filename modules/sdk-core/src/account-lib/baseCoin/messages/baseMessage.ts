@@ -130,20 +130,15 @@ export abstract class BaseMessage implements IMessage {
    * @returns A broadcastable message
    */
   async toBroadcastFormat(): Promise<BroadcastableMessage> {
-    if (this.signatures.length === 0) {
-      throw new Error('No signatures available for broadcast. Call setSignatures or addSignature first.');
+    if (!this.payload) {
+      throw new Error('Message payload must be set before converting to broadcast format');
     }
-    if (this.signers.length === 0) {
-      throw new Error('No signers available for broadcast. Call setSigners or addSigner first.');
-    }
-
-    let signablePayload: string | undefined;
-    if (this.signablePayload) {
-      if (Buffer.isBuffer(this.signablePayload)) {
-        signablePayload = this.signablePayload.toString('base64');
-      } else {
-        signablePayload = Buffer.from(String(this.signablePayload)).toString('base64');
-      }
+    const signablePayload = await this.getSignablePayload();
+    let serializedSignablePayload: string;
+    if (Buffer.isBuffer(signablePayload)) {
+      serializedSignablePayload = signablePayload.toString('base64');
+    } else {
+      serializedSignablePayload = Buffer.from(String(signablePayload)).toString('base64');
     }
 
     return {
@@ -154,7 +149,7 @@ export abstract class BaseMessage implements IMessage {
       metadata: {
         ...(this.metadata ? JSON.parse(JSON.stringify(this.metadata)) : {}), // deep copy to avoid mutation
       },
-      signablePayload,
+      signablePayload: serializedSignablePayload,
     };
   }
 
