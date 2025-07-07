@@ -1033,6 +1033,7 @@ export class BabylonBtcStakingManager {
 
   /**
    * Creates a protobuf message for the BTC delegation.
+   * @param channel - The event channel to emit the message on.
    * @param stakingInstance - The staking instance.
    * @param stakingInput - The staking inputs.
    * @param stakingTx - The staking transaction.
