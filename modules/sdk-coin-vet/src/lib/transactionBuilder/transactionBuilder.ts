@@ -180,4 +180,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   validateKey(key: BaseKey): void {
     throw new Error('Method not implemented.');
   }
+
+  /** @inheritdoc */
+  protected fromImplementation(rawTransaction: string): Transaction {
+    this.validateRawTransaction(rawTransaction);
+    this.transaction.fromRawTransaction(rawTransaction);
+    return this.transaction;
+  }
 }

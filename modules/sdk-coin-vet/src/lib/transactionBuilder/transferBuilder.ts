@@ -17,17 +17,6 @@ export class TransferBuilder extends TransactionBuilder {
     return TransactionType.Send;
   }
 
-  /** @inheritdoc */
-  protected fromImplementation(rawTransaction: string): Transaction {
-    const tx = new Transaction(this._coinConfig);
-    this.validateRawTransaction(rawTransaction);
-
-    tx.fromRawTransaction(rawTransaction);
-    this.initBuilder(tx);
-    this.validateTransaction(tx);
-    return this.transaction;
-  }
-
   protected isValidTransactionClauses(clauses: TransactionClause[]): boolean {
     try {
       if (!clauses || !Array.isArray(clauses) || clauses.length === 0) {

@@ -23,6 +23,7 @@ export interface VetTransactionData {
   value?: string;
   deployedAddress?: string;
   to?: string;
+  tokenAddress?: string;
 }
 
 export interface VetTransactionExplanation extends BaseTransactionExplanation {

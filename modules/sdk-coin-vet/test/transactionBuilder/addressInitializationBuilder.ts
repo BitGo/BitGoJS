@@ -32,7 +32,7 @@ describe('Address Initialisation Transaction', () => {
       should.equal(tx.clauses[0].to, testData.FORWARDER_FACTORY_ADDRESS);
       should.equal(tx.clauses[0].data, testData.ADDRESS_INITIALIZATION_DATA);
       should.equal(tx.clauses[0].value, '0x0');
-      should.equal(tx.deployedAddress, testData.DEPLOYED_ADDRESS);
+      should.equal(tx.deployedAddress, testData.FORWARDER_ADDRESS);
       const rawTx = tx.toBroadcastFormat();
       should.equal(txBuilder.isValidRawTransaction(rawTx), true);
       rawTx.should.equal(testData.ADDRESS_INITIALIZATION_TRANSACTION);
@@ -80,7 +80,7 @@ describe('Address Initialisation Transaction', () => {
       should.equal(toJson.expiration, 64);
       should.equal(toJson.data, testData.ADDRESS_INITIALIZATION_DATA);
       should.equal(toJson.to, testData.FORWARDER_FACTORY_ADDRESS);
-      should.equal(toJson.deployedAddress, testData.DEPLOYED_ADDRESS);
+      should.equal(toJson.deployedAddress, testData.FORWARDER_ADDRESS);
       should.equal(toJson.value, '0');
     });
   });

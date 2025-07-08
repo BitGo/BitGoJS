@@ -1,83 +1,33 @@
 import { TransactionType, InvalidTransactionError } from '@bitgo/sdk-core';
-import { getCreateForwarderParamsAndTypes, calculateForwarderV1Address } from '@bitgo/abstract-eth';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import * as ethUtil from 'ethereumjs-util';
-import EthereumAbi from 'ethereumjs-abi';
 import { Transaction as VetTransaction, Secp256k1 } from '@vechain/sdk-core';
+
 import { Transaction } from './transaction';
 import { VetTransactionData } from '../iface';
 
-export class AddressInitializationTransaction extends Transaction {
-  private _baseAddress: string;
-  private _feeAddress: string;
-  private _salt: string;
-  private _initCode: string;
-  private _deployedAddress: string;
+export class FlushTokenTransaction extends Transaction {
+  private _forwarderVersion: number;
+  private _tokenAddress: string;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-    this._type = TransactionType.AddressInitialization;
+    this._type = TransactionType.FlushTokens;
   }
 
-  get baseAddress(): string {
-    return this._baseAddress;
+  get forwarderVersion(): number {
+    return this._forwarderVersion;
   }
 
-  set baseAddress(address: string) {
-    this._baseAddress = address;
+  set forwarderVersion(forwarderVersion: number) {
+    this._forwarderVersion = forwarderVersion;
   }
 
-  get feeAddress(): string {
-    return this._feeAddress;
+  get tokenAddress(): string {
+    return this._tokenAddress;
   }
 
-  set feeAddress(address: string) {
-    this._feeAddress = address;
-  }
-
-  get salt(): string {
-    return this._salt;
-  }
-
-  set salt(salt: string) {
-    this._salt = salt;
-  }
-
-  get initCode(): string {
-    return this._initCode;
-  }
-
-  set initCode(initCode: string) {
-    this._initCode = initCode;
-  }
-
-  get deployedAddress(): string {
-    return this._deployedAddress;
-  }
-
-  set deployedAddress(address: string) {
-    this._deployedAddress = address;
-  }
-
-  /** @inheritdoc */
-  async build(): Promise<void> {
-    super.build();
-
-    if (this._salt && this._initCode) {
-      const saltBuffer = ethUtil.setLengthLeft(ethUtil.toBuffer(this._salt), 32);
-
-      const { createForwarderParams, createForwarderTypes } = getCreateForwarderParamsAndTypes(
-        this._baseAddress,
-        saltBuffer,
-        this._feeAddress
-      );
-
-      // Hash the wallet base address and fee address if present with the given salt, so the address directly relies on the base address and fee address
-      const calculationSalt = ethUtil.bufferToHex(
-        EthereumAbi.soliditySHA3(createForwarderTypes, createForwarderParams)
-      );
-      this.deployedAddress = calculateForwarderV1Address(this._contract, calculationSalt, this._initCode);
-    }
+  set tokenAddress(address: string) {
+    this._tokenAddress = address;
   }
 
   /** @inheritdoc */
@@ -106,7 +56,7 @@ export class AddressInitializationTransaction extends Transaction {
       value: '0',
       sender: this.sender,
       to: this.contract,
-      deployedAddress: this.deployedAddress,
+      tokenAddress: this.tokenAddress,
     };
     return json;
   }
