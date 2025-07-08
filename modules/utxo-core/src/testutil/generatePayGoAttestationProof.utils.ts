@@ -1,6 +1,9 @@
 import crypto from 'crypto';
 
 import { bufferutils } from '@bitgo/utxo-lib';
+
+import { Prefix } from '../paygo';
+
 /** We have a mirrored function similar to our hsm that generates our Bitcoin signed
  * message so that we can use for testing. This creates a random entropy as well using
  * the nilUUID structure to construct our uuid buffer and given our address we can
@@ -11,7 +14,7 @@ import { bufferutils } from '@bitgo/utxo-lib';
  * @param address
  * @returns
  */
-export function generatePayGoAttestationProof(uuid: string, address: Buffer): Buffer {
+export function generatePayGoAttestationProof(uuid: string, address: Buffer, hasPrefix = true): Buffer {
   // <ENTROPY>
   const entropyLength = 64;
   const entropy = crypto.randomBytes(entropyLength);
@@ -27,8 +30,10 @@ export function generatePayGoAttestationProof(uuid: string, address: Buffer): Bu
   const msgLength = entropyLength + addressBufferLength + uuidBufferLength;
   const msgLengthBuffer = bufferutils.varuint.encode(msgLength);
 
-  // <0x18Bitcoin Signed Message:\n<LENGTH><ENTROPY><ADDRESS><UUID>
+  // <LENGTH><ENTROPY><ADDRESS><UUID>
   const proofMessage = Buffer.concat([msgLengthBuffer, entropy, address, uuidBuffer]);
 
-  return proofMessage;
+  // If hasPrefix, we return 0x18Bitcoin Signed Message:\n<proof> otherwise its just <proof>
+  // where <proof> = <VARINT_LEN><ENTROPY><ADDRESS><UUID>
+  return hasPrefix ? Buffer.concat([Prefix, proofMessage]) : proofMessage;
 }
