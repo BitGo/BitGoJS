@@ -3,7 +3,8 @@ import assert from 'assert';
 import { bufferutils } from '@bitgo/utxo-lib';
 
 // The signed address will always have the following structure:
-// <varint_length><ENTROPY><ADDRESS><UUID>
+// 0x18Bitcoin Signed Message:\n<varint_length><ENTROPY><ADDRESS><UUID>
+export const Prefix = Buffer.from('\u0018Bitcoin Signed Message:\n', 'utf-8');
 
 // UUID has the structure 00000000-0000-0000-0000-000000000000, and after
 // we Buffer.from and get it's length its 36.
@@ -32,6 +33,9 @@ export function parsePayGoAttestation(message: Buffer): {
   // This generates the first part before the varint length so that we can
   // determine how many bytes this is and iterate through the Buffer.
   let offset = 0;
+  if (message.toString('hex').startsWith(Prefix.toString('hex'))) {
+    offset = Prefix.length;
+  }
 
   // we decode the varint of the message which is uint32
   // https://en.bitcoin.it/wiki/Protocol_documentation
