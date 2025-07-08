@@ -15,10 +15,8 @@ export class EIP191Message extends BaseMessage {
    * Returns the hash of the EIP-191 prefixed message
    */
   async getSignablePayload(): Promise<string | Buffer> {
-    if (!this.signablePayload) {
-      const prefix = `\u0019Ethereum Signed Message:\n${this.payload.length}`;
-      this.signablePayload = Buffer.from(prefix.concat(this.payload)).toString('hex');
-    }
+    const prefix = `\u0019Ethereum Signed Message:\n${this.payload.length}`;
+    this.signablePayload = Buffer.from(prefix.concat(this.payload)).toString('hex');
     return this.signablePayload;
   }
 }

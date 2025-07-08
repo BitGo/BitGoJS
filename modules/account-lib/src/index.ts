@@ -9,6 +9,7 @@ import {
   acountLibCrypto,
   BaseMessageBuilderFactory,
   BuildMessageError,
+  MessageStandardType,
 } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig, CoinFeature, coins } from '@bitgo/statics';
 export { Ed25519BIP32, Eddsa };
@@ -202,6 +203,8 @@ export { Soneium };
 import * as Vet from '@bitgo/sdk-coin-vet';
 export { Vet };
 
+import { validateAgainstMessageTemplates } from './utils';
+
 const coinBuilderMap = {
   trx: Trx.WrappedBuilder,
   ttrx: Trx.WrappedBuilder,
@@ -392,4 +395,37 @@ export function registerMessageBuilderFactory<T extends BaseMessageBuilderFactor
   const factory = new messageBuilderFactory(coinConfig);
   coinMessageBuilderFactoryMap[coinName] = messageBuilderFactory;
   return factory;
+}
+
+/**
+ * Verify a message against the given encoded payload.
+ *
+ * @param {string} coinName - The name of the coin.
+ * @param {string} messageRaw - The raw message to verify.
+ * @param {string} messageEncoded - The encoded message to verify against.
+ * @param {MessageStandardType} messageStandardType - The type of message standard.
+ * @param {Record<string, unknown>} [metadata] - Optional metadata for verification.
+ * @returns {Promise<boolean>} - Returns true if the verification is successful, false otherwise.
+ */
+export async function verifyMessage(
+  coinName: string,
+  messageRaw: string,
+  messageEncoded: string,
+  messageStandardType: MessageStandardType,
+  metadata?: Record<string, unknown>,
+): Promise<boolean> {
+  try {
+    const messageBuilderFactory = getMessageBuilderFactory(coinName);
+    const messageBuilder = messageBuilderFactory.getMessageBuilder(messageStandardType);
+    messageBuilder.setPayload(messageRaw);
+    const message = await messageBuilder.build();
+    const isValidMessageEncoded = await message.verifyEncodedPayload(messageEncoded, metadata);
+    if (!isValidMessageEncoded) {
+      return false;
+    }
+    return validateAgainstMessageTemplates(messageRaw);
+  } catch (e) {
+    console.error(`Error verifying message for coin ${coinName}:`, e);
+    return false;
+  }
 }

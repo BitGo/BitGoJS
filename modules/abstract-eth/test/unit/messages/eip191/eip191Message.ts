@@ -61,17 +61,6 @@ describe('EIP191 Message', () => {
     signablePayload.should.equal(expectedPayload);
   });
 
-  it('should reuse existing signable payload if already set', async () => {
-    const message = new EIP191Message({
-      coinConfig: fixtures.coin,
-      payload: fixtures.messages.validMessage,
-      signablePayload: 'predefined-payload',
-    });
-
-    const signablePayload = await message.getSignablePayload();
-    signablePayload.should.equal('predefined-payload');
-  });
-
   it('should maintain signatures and signers correctly', () => {
     const message = new EIP191Message({
       coinConfig: fixtures.coin,
@@ -132,7 +121,6 @@ describe('EIP191 Message', () => {
         signatures: [fixtures.eip191.signature],
         signers: [fixtures.eip191.signer],
         metadata: fixtures.eip191.metadata,
-        signablePayload: 'test-signable-payload',
       });
 
       const broadcastFormat = await message.toBroadcastFormat();
@@ -143,7 +131,9 @@ describe('EIP191 Message', () => {
       broadcastFormat.serializedSignatures?.should.deepEqual(expectedSerializedSignatures);
       broadcastFormat.signers?.should.deepEqual([fixtures.eip191.signer]);
       broadcastFormat.metadata!.should.deepEqual(fixtures.eip191.metadata);
-      broadcastFormat.signablePayload!.should.equal('dGVzdC1zaWduYWJsZS1wYXlsb2Fk');
+      broadcastFormat.signablePayload!.should.equal(
+        'MTk0NTc0Njg2NTcyNjU3NTZkMjA1MzY5Njc2ZTY1NjQyMDRkNjU3MzczNjE2NzY1M2EwYTMxMzM0ODY1NmM2YzZmMmMyMDc3NmY3MjZjNjQyMQ=='
+      );
     });
 
     it('should convert to broadcast string correctly', async () => {
