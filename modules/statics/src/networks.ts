@@ -1513,18 +1513,24 @@ class PolymeshTestnet extends Testnet implements AccountNetwork {
   txVersion = 7;
 }
 
-class Vet extends Mainnet implements AccountNetwork {
+class Vet extends Mainnet implements EthereumNetwork {
   name = 'VeChain';
   family = CoinFamily.VET;
   explorerUrl = 'https://explore.vechain.org/transactions/';
   accountExplorerUrl = 'https://explore.vechain.org/accounts/';
+  chainId = 100009;
+  forwarderFactoryAddress = '0x65343e18c376d2fc8c3cf10cd146d63e2e0dc9ef';
+  forwarderImplementationAddress = '0x62de34c87f847d385af07f6c25dbd97b1fffefc0';
 }
 
-class VetTestnet extends Testnet implements AccountNetwork {
+class VetTestnet extends Testnet implements EthereumNetwork {
   name = 'VeChainTestnet';
   family = CoinFamily.VET;
   explorerUrl = 'https://explore-testnet.vechain.org/transactions/';
   accountExplorerUrl = 'https://explore-testnet.vechain.org/accounts/';
+  chainId = 100010;
+  forwarderFactoryAddress = '0x65343e18c376d2fc8c3cf10cd146d63e2e0dc9ef';
+  forwarderImplementationAddress = '0x62de34c87f847d385af07f6c25dbd97b1fffefc0';
 }
 
 export const Networks = {

@@ -16,21 +16,7 @@ import {
 } from '@vechain/sdk-core';
 import * as nc_utils from '@noble/curves/abstract/utils';
 import utils from '../utils';
-import { VetTransactionExplanation } from '../iface';
-
-export interface VetTransactionData {
-  id: string;
-  chainTag: number;
-  blockRef: string;
-  expiration: number;
-  gasPriceCoef: number;
-  gas: number;
-  dependsOn: string | null;
-  nonce: number;
-  sender: string;
-  feePayer: string;
-  recipients: TransactionRecipient[];
-}
+import { VetTransactionExplanation, VetTransactionData } from '../iface';
 
 const gasPrice = 1e13;
 
@@ -38,10 +24,11 @@ export class Transaction extends BaseTransaction {
   protected _rawTransaction: VetTransaction;
   protected _type: TransactionType;
   protected _recipients: TransactionRecipient[];
+  protected _clauses: TransactionClause[];
+  protected _contract: string;
   private _chainTag: number;
   private _blockRef: string;
   private _expiration: number;
-  private _clauses: TransactionClause[];
   private _gasPriceCoef: number;
   private _gas: number;
   private _dependsOn: string | null;
@@ -207,6 +194,14 @@ export class Transaction extends BaseTransaction {
     this._feePayerPubKey = pubKey;
   }
 
+  get contract(): string {
+    return this._contract;
+  }
+
+  set contract(address: string) {
+    this._contract = address;
+  }
+
   /**
    * Get all signatures associated with this transaction
    * Required by BaseTransaction
@@ -337,9 +332,9 @@ export class Transaction extends BaseTransaction {
 
   /**
    * Sets the transaction ID from the raw transaction if it is signed
-   * @private
+   * @protected
    */
-  private generateTxnId(): void {
+  protected generateTxnId(): void {
     // Check if we have a raw transaction
     if (!this.rawTransaction) {
       return;
@@ -382,33 +377,46 @@ export class Transaction extends BaseTransaction {
       gas: this.gas,
       dependsOn: null,
       nonce: this.nonce,
-      reserved: {
-        features: 1, // mark transaction as delegated i.e. will use gas payer
-      },
     };
+
+    if (this.type === TransactionType.Send) {
+      transactionBody.reserved = {
+        features: 1, // mark transaction as delegated i.e. will use gas payer
+      };
+    }
 
     this.rawTransaction = VetTransaction.of(transactionBody);
   }
 
   loadInputsAndOutputs(): void {
-    const totalAmount = this._recipients.reduce(
-      (accumulator, current) => accumulator.plus(current.amount),
-      new BigNumber('0')
-    );
-    this._inputs = [
-      {
-        address: this.sender,
-        value: totalAmount.toString(),
-        coin: this._coinConfig.name,
-      },
-    ];
-    this._outputs = this._recipients.map((recipient) => {
-      return {
-        address: recipient.address,
-        value: recipient.amount as string,
-        coin: this._coinConfig.name,
-      };
-    });
+    switch (this.type) {
+      case TransactionType.AddressInitialization:
+        this._type = TransactionType.AddressInitialization;
+        break;
+      case TransactionType.Send:
+        this._type = TransactionType.Send;
+        const totalAmount = this._recipients.reduce(
+          (accumulator, current) => accumulator.plus(current.amount),
+          new BigNumber('0')
+        );
+        this._inputs = [
+          {
+            address: this.sender,
+            value: totalAmount.toString(),
+            coin: this._coinConfig.name,
+          },
+        ];
+        this._outputs = this._recipients.map((recipient) => {
+          return {
+            address: recipient.address,
+            value: recipient.amount as string,
+            coin: this._coinConfig.name,
+          };
+        });
+        break;
+      default:
+        throw new InvalidTransactionError(`Unsupported transaction type: ${this.type}`);
+    }
   }
 
   fromRawTransaction(rawTransaction: string): void {

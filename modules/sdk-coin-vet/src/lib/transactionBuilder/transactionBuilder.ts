@@ -27,10 +27,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this.transaction.nonce;
   }
 
-  initBuilder(tx: Transaction): void {
-    this._transaction = tx;
-  }
-
   /** @inheritdoc */
   get transaction(): Transaction {
     return this._transaction;
@@ -39,6 +35,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /** @inheritdoc */
   protected set transaction(transaction: Transaction) {
     this._transaction = transaction;
+  }
+
+  initBuilder(tx: Transaction): void {
+    this._transaction = tx;
   }
 
   /**
@@ -93,6 +93,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this;
   }
 
+  contract(address: string): this {
+    this.validateAddress({ address });
+    this.transaction.contract = address;
+    return this;
+  }
+
   /** @inheritDoc */
   addSenderSignature(signature: Buffer): void {
     this.transaction.addSenderSignature(signature);
@@ -100,13 +106,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   addFeePayerSignature(publicKey: PublicKey, signature: Buffer): void {
     this.transaction.addFeePayerSignature(publicKey, signature);
-  }
-
-  /** @inheritdoc */
-  protected fromImplementation(rawTransaction: string): Transaction {
-    this.transaction.fromRawTransaction(rawTransaction);
-    this.transaction.type = this.transactionType;
-    return this.transaction;
   }
 
   /** @inheritdoc */
@@ -162,10 +161,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     } else if (value.isLessThan(0)) {
       throw new BuildTransactionError('Value cannot be less than zero');
     }
-  }
-
-  private validateGas(gas: number): void {
-    this.validateValue(new BigNumber(gas));
   }
 
   addFeePayerAddress(address: string): void {
