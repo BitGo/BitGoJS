@@ -3,8 +3,20 @@ import { InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { construct, decode } from '@substrate/txwrapper-polkadot';
 import { decodeAddress } from '@polkadot/keyring';
 import { DecodedTx, RegisterDidWithCDDArgs } from './iface';
+import polyxUtils from './utils';
 
 export class Transaction extends SubstrateTransaction {
+  /**
+   * Override the getAddressFormat method to return different values based on network type
+   * Returns 12 for mainnet and 42 for testnet
+   *
+   * @returns {number} The address format to use
+   * @override
+   */
+  protected getAddressFormat(): number {
+    return polyxUtils.getAddressFormat(this._coinConfig.name);
+  }
+
   /** @inheritdoc */
   toJson(): Interface.TxData {
     if (!this._substrateTransaction) {
@@ -40,7 +52,7 @@ export class Transaction extends SubstrateTransaction {
       result.to = keypairDest.getAddress(this.getAddressFormat());
       result.amount = '0'; // RegisterDidWithCDD does not transfer any value
     } else {
-      super.toJson();
+      return super.toJson();
     }
 
     return result;

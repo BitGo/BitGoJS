@@ -1,4 +1,5 @@
-import { TransactionBuilder, Transaction } from '@bitgo/abstract-substrate';
+import { Transaction } from './transaction';
+import { PolyxBaseBuilder } from './baseBuilder';
 import { DecodedSignedTx, DecodedSigningPayload, UnsignedTransaction } from '@substrate/txwrapper-core';
 import { methods } from '@substrate/txwrapper-polkadot';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
@@ -24,7 +25,7 @@ type ControllerValue = string | DecodedController;
 type PayeeValue = string | DecodedPayee;
 type AmountValue = string | number;
 
-export class BatchStakingBuilder extends TransactionBuilder {
+export class BatchStakingBuilder extends PolyxBaseBuilder {
   // For bond operation
   protected _amount: string;
   protected _controller: string;

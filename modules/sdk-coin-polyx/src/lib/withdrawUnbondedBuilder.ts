@@ -3,11 +3,12 @@ import { methods } from '@substrate/txwrapper-polkadot';
 import { UnsignedTransaction, DecodedSigningPayload, DecodedSignedTx } from '@substrate/txwrapper-core';
 import { InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import BigNumber from 'bignumber.js';
-import { TransactionBuilder, Transaction } from '@bitgo/abstract-substrate';
+import { Transaction } from './transaction';
+import { PolyxBaseBuilder } from './baseBuilder';
 import { WithdrawUnbondedTransactionSchema } from './txnSchema';
 import { WithdrawUnbondedArgs } from './iface';
 
-export class WithdrawUnbondedBuilder extends TransactionBuilder {
+export class WithdrawUnbondedBuilder extends PolyxBaseBuilder {
   protected _slashingSpans = 0;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {

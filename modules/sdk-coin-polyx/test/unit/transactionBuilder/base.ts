@@ -15,6 +15,10 @@ export const buildTestConfig = (): Readonly<CoinConfig> => {
   return coins.get('tpolyx');
 };
 
+export const buildMainnetConfig = (): Readonly<CoinConfig> => {
+  return coins.get('polyx');
+};
+
 class StubTransactionBuilder extends TransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
