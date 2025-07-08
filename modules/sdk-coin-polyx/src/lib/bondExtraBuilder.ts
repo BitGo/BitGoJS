@@ -1,4 +1,5 @@
-import { TransactionBuilder, Transaction } from '@bitgo/abstract-substrate';
+import { Transaction } from './transaction';
+import { PolyxBaseBuilder } from './baseBuilder';
 import { DecodedSignedTx, DecodedSigningPayload, UnsignedTransaction } from '@substrate/txwrapper-core';
 import { methods } from '@substrate/txwrapper-polkadot';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
@@ -8,7 +9,7 @@ import utils from './utils';
 import { BondExtraArgs } from './iface';
 import BigNumber from 'bignumber.js';
 
-export class BondExtraBuilder extends TransactionBuilder {
+export class BondExtraBuilder extends PolyxBaseBuilder {
   protected _amount: string;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {

@@ -35,6 +35,18 @@ export const accounts = {
     publicKey: '8493ec2c20033def7f310c5670813ba09406100ad583d501ec299032a8352b32',
     address: '5F4Y7vKt46p6i2ZBeWTUgebJ4WHm2tLFmLzdicHebWzQ1U25',
   },
+  account5Mainnet: {
+    secretKey:
+      '52c596e8b3929ea0d98779c438ed5b5fb9377790e02d22f94169191015fcdc06e807800a3dd78c005e144f20df05dba7ffe20b4bcb29f158da3bc30f6d557991',
+    publicKey: 'e807800a3dd78c005e144f20df05dba7ffe20b4bcb29f158da3bc30f6d557991',
+    address: '2Hh9SU3wwGERBGp1T8BY1T8xp7krH7urC9FsNGSfsyTyED8D',
+  },
+  account6Mainnet: {
+    secretKey:
+      '13dcc892835e91ea9e0ed434660aefcea60d1e57187f31fc610a60977586c0bbb5dda9aad5129b4c77b84bb08e662fc1c863a6a16f557a734375edad6d3ccbf7',
+    publicKey: 'b5dda9aad5129b4c77b84bb08e662fc1c863a6a16f557a734375edad6d3ccbf7',
+    address: '2GZNcm36nErZD3mi619C2iqYWQBRMmeWky9cLnbd2DcAvdxm',
+  },
 };
 
 export const rawTx = {
@@ -100,3 +112,10 @@ export const stakingTx = {
 };
 
 export const { txVersion, specVersion, genesisHash, chainName, specName } = Networks.test.polyx;
+export const {
+  txVersion: mainTxVersion,
+  specVersion: mainSpecVersion,
+  genesisHash: mainGenesisHash,
+  chainName: mainChainName,
+  specName: mainSpecName,
+} = Networks.main.polyx;

@@ -9,6 +9,7 @@ export {
 } from '@bitgo/abstract-substrate';
 
 export { TransactionBuilderFactory } from './transactionBuilderFactory';
+export { PolyxBaseBuilder } from './baseBuilder';
 export { TransferBuilder } from './transferBuilder';
 export { RegisterDidWithCDDBuilder } from './registerDidWithCDDBuilder';
 export { Transaction as PolyxTransaction } from './transaction';

@@ -1495,6 +1495,11 @@ class Polymesh extends Mainnet implements AccountNetwork {
   name = 'Polymesh';
   family = CoinFamily.POLYX;
   explorerUrl = 'https://polymesh.subscan.io/extrinsic/';
+  specName = 'polymesh_mainnet';
+  genesisHash = '0x6fbd74e5e1d0a61d52ccfe9d4adaed16dd3a7caa37c6bc4d0c2fa12e8b2f4063';
+  specVersion = 7002000;
+  chainName = 'Polymesh Mainnet';
+  txVersion = 7;
 }
 
 class PolymeshTestnet extends Testnet implements AccountNetwork {

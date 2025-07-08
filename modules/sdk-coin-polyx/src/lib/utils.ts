@@ -5,6 +5,18 @@ import { mainnetMaterial, testnetMaterial } from '../resources';
 import { BatchCallObject } from './iface';
 
 export class Utils extends SubstrateUtils {
+  /**
+   * Get the appropriate address format based on network type
+   * Returns 12 for mainnet and 42 for testnet
+   *
+   * @param coinName The name of the coin
+   * @returns The address format to use
+   */
+  getAddressFormat(coinName: string): number {
+    const isMainnet = coinName.toLowerCase() === 'polyx';
+    return isMainnet ? 12 : 42;
+  }
+
   getMaterial(networkType: NetworkType): Interface.Material {
     return (networkType === NetworkType.MAINNET ? mainnetMaterial : testnetMaterial) as unknown as Interface.Material;
   }
