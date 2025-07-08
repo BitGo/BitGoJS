@@ -1,4 +1,5 @@
-import { TransactionBuilder, Interface, utils } from '@bitgo/abstract-substrate';
+import { Interface, utils } from '@bitgo/abstract-substrate';
+import { PolyxBaseBuilder } from './baseBuilder';
 import { DecodedSignedTx, DecodedSigningPayload, defineMethod, UnsignedTransaction } from '@substrate/txwrapper-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { TransactionType, BaseAddress, InvalidTransactionError } from '@bitgo/sdk-core';
@@ -6,7 +7,7 @@ import { RegisterDidWithCDDArgs, TxMethod } from './iface';
 import { RegisterDidWithCDDTransactionSchema } from './txnSchema';
 import { Transaction } from './transaction';
 
-export class RegisterDidWithCDDBuilder extends TransactionBuilder<TxMethod, Transaction> {
+export class RegisterDidWithCDDBuilder extends PolyxBaseBuilder<TxMethod, Transaction> {
   protected _to: string;
   protected _method: TxMethod;
 
