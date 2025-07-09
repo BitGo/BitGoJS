@@ -52,7 +52,11 @@ export abstract class TransactionBuilder<T = SuiProgrammableTransaction> extends
   protected signImplementation(key: BaseKey): Transaction<T> {
     const signer = new KeyPair({ prv: key.key });
     this._signer = signer;
-    this.transaction.sign(signer);
+    const signable = this.transaction.signablePayload;
+    const signature = signer.signMessageinUint8Array(signable);
+    const signatureBuffer = Buffer.from(signature);
+    this.transaction.addSignature({ pub: signer.getKeys().pub }, signatureBuffer);
+    this.transaction.setSerializedSig({ pub: signer.getKeys().pub }, signatureBuffer);
     return this.transaction;
   }
 
