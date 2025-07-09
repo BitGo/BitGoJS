@@ -63,6 +63,41 @@ describe('Sui Transaction Builder', async () => {
       reserialized.toBroadcastFormat().should.equal(rawSignedTx);
     });
 
+    it('should build and sign a transfer tx with gasPayment as different owner', async function () {
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send(recipients);
+      txBuilder.gasData(testData.gasDataHavingDifferentOwner);
+      const tx = await txBuilder.build();
+      should.equal(tx.id, 'UNAVAILABLE');
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(rawTx, testData.FEE_SPONSOR_TRANSFER);
+
+      const txBuilder2 = await factory.from(rawTx);
+      await txBuilder2.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+      await txBuilder2.addFeePayerSignature(
+        { pub: testData.feePayer.publicKey },
+        Buffer.from(testData.feePayer.signatureHex)
+      );
+      const signedTx = await txBuilder2.build();
+      should.equal(signedTx.type, TransactionType.Send);
+      should.equal(signedTx.id, 'Co5d6tiLQuwUPrfPp7vfmcJMNK5gWZ3StFR6cvzq6R12');
+
+      const rawSignedTx = signedTx.toBroadcastFormat();
+      should.equal(rawSignedTx, testData.FEE_SPONSOR_TRANSFER);
+      const reserializedTxBuilder = factory.from(rawSignedTx);
+      reserializedTxBuilder.addSignature({ pub: testData.sender.publicKey }, Buffer.from(testData.sender.signatureHex));
+      reserializedTxBuilder.addFeePayerSignature(
+        { pub: testData.feePayer.publicKey },
+        Buffer.from(testData.feePayer.signatureHex)
+      );
+      const reserialized = await reserializedTxBuilder.build();
+
+      reserialized.should.be.deepEqual(signedTx);
+      reserialized.toBroadcastFormat().should.equal(rawSignedTx);
+    });
+
     it('should submit a transfer transaction with private keys', async () => {
       const keyPairSender = new KeyPair({ prv: testData.privateKeys.prvKey1 });
       const keyPairRecipient = new KeyPair({ prv: testData.privateKeys.prvKey2 });

@@ -63,6 +63,12 @@ export abstract class TransactionBuilder<T = SuiProgrammableTransaction> extends
     this.transaction.setSerializedSig(publicKey, signature);
   }
 
+  addFeePayerSignature(publicKey: BasePublicKey, signature: Buffer): void {
+    this._signatures.push({ publicKey, signature });
+    this.transaction.addFeePayerSignature(publicKey, signature);
+    this.transaction.setSerializedFeePayerSig(publicKey, signature);
+  }
+
   /**
    * Sets the sender of this transaction.
    * This account will be responsible for paying transaction fees.

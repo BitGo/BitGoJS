@@ -39,6 +39,12 @@ export const sender = {
     'AETvicGY1HwWjQokRg2HgbQeu+QQZP4ejZQGjmfWvPUd2WkzBudVlaSzjiS1btS2/34Laf6rfkNKYD540crafAxzTVAmV/9J1skZyoX4AWkJM/R4Y1FfV36atFLbCwUVqQ==',
 };
 
+export const feePayer = {
+  address: '0x77291376d885efa752ed921b48d1aa1a65a389bf214ec0eab8b31970c9ab3618',
+  publicKey: 'TBP5Vc7o+A1dlVd7B/YktCMi2K4frfBqG5FoKAlSRyI=',
+  signatureHex: '0sQRp5hwfSnjOXx/hofBbzR/AOmDmeIexKYYzqf9T/xPXx8/TTGlvOS6P+fvzQhSPyCi0BV8DKPkgC0DEDqXAg==',
+};
+
 export const recipients: Recipient[] = [
   {
     address: addresses.validAddresses[0],
@@ -326,6 +332,13 @@ export const gasData = {
   budget: GAS_BUDGET,
 };
 
+export const gasDataHavingDifferentOwner = {
+  payment: coinsGasPayment,
+  owner: feePayer.address,
+  price: DUMMY_SUI_GAS_PRICE,
+  budget: GAS_BUDGET,
+};
+
 export const gasDataWithoutGasPayment = {
   owner: sender.address,
   price: DUMMY_SUI_GAS_PRICE,
@@ -384,6 +397,9 @@ export const CUSTOM_TX_PUBLIC_TRANSFER =
 
 export const UNSUPPORTED_TX =
   'AAADAQB8/cv/rmQ4SGTkEEwSbyfbLPq1wUyg1W6IvFtoo+8KqlC2vgAAAAAAICf6QebgEjDOJoW4sw5jWv5y/UufjHTKEBOHgJuTvJUiAQCxKLKh9y8GFhre5P0lgTbBRPtAyf0t8qUokHbou50E7NKapQAAAAAAIOQxj17At6WByUlaVwW8ARhUgNYg+4piw4zD/Y0NmkGkACD2MpmTSjDA8xA/Swgzt0TpPwDQMzvfr4FvB1MJAXguuAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMMc3Rha2luZ19wb29sEHNwbGl0X3N0YWtlZF9zdWkAAgEAAAEBAAEBAgAAAQIA07HNlidQ0GBG1SOg7xObuweDJ/1vEx0EdAuFFDmMwsEBG9JpdXApX73818xmw/q0XMj4sGCPGfoT7IqE5kfKbrgJAAAAAAAAACBx2foz6S5yGPqcihv4KTDtuVntp4JleEuKIOTdKq6RONOxzZYnUNBgRtUjoO8Tm7sHgyf9bxMdBHQLhRQ5jMLB6AMAAAAAAAAAypo7AAAAAAA=';
+
+export const FEE_SPONSOR_TRANSFER =
+  'AAAEAAhkAAAAAAAAAAAg+UGuPL5WRdzMFdqDRrUz9/kfICCJpVIWU8Bisv8QswQACGQAAAAAAAAAACB3w7WyESl5PEpWAiIKS5cAB8VNSplt6UHltxNxmkL4/gQCAAEBAAABAQIAAAEBAAIAAQECAAEBAgIAAQMAmIIYi6PoBwqbsGrpRGz2B5FO6O5Y7YMGo+Ov/1obu3ECCcQFIq7VS87PpINgXF2lghsXGsGqG2FZcfuN/iftE/1RBAAAAAAAACC2RGfJXC7cVwfXSDKdKwQB/rPC0/3tdlzDSomluG57sifdAOf8zch7TZW2OEtzkRm5HyqBoWuu3qf04AaOUpQ32QAAAAAAAAAgvik+0ypZjmC8kkbE4BtuQpN/FomQiDpqIFB6wsFNJyd3KRN22IXvp1LtkhtI0aoaZaOJvyFOwOq4sxlwyas2GOgDAAAAAAAAAC0xAQAAAAAA';
 
 export const invalidRecipients: Recipient[] = [
   {
