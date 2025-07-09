@@ -28,7 +28,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
         case TransactionType.AddressInitialization:
           const addressInitializationTx = new AddressInitializationTransaction(this._coinConfig);
           addressInitializationTx.fromDeserializedSignedTransaction(signedTx);
-          return this.getAddressInitialisationBuilder(addressInitializationTx);
+          return this.getAddressInitializationBuilder(addressInitializationTx);
         case TransactionType.FlushTokens:
           const flushTokenTx = new FlushTokenTransaction(this._coinConfig);
           flushTokenTx.fromDeserializedSignedTransaction(signedTx);
@@ -46,7 +46,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     return this.initializeBuilder(tx, new TransferBuilder(this._coinConfig));
   }
 
-  getAddressInitialisationBuilder(tx?: AddressInitializationTransaction): AddressInitializationBuilder {
+  getAddressInitializationBuilder(tx?: AddressInitializationTransaction): AddressInitializationBuilder {
     return this.initializeBuilder(tx, new AddressInitializationBuilder(this._coinConfig));
   }
 

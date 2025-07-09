@@ -11,7 +11,7 @@ describe('Address Initialisation Transaction', () => {
   describe('Succeed', () => {
     it('should build an address initialisation transaction', async function () {
       const transaction = new AddressInitializationTransaction(coins.get('tvet'));
-      const txBuilder = factory.getAddressInitialisationBuilder(transaction);
+      const txBuilder = factory.getAddressInitializationBuilder(transaction);
       txBuilder.gas(21000);
       txBuilder.nonce(64248);
       txBuilder.blockRef('0x014ead140e77bbc1');
@@ -40,7 +40,7 @@ describe('Address Initialisation Transaction', () => {
 
     it('should succeed to validate a valid signablePayload', async function () {
       const transaction = new AddressInitializationTransaction(coins.get('tvet'));
-      const txBuilder = factory.getAddressInitialisationBuilder(transaction);
+      const txBuilder = factory.getAddressInitializationBuilder(transaction);
       txBuilder.gas(21000);
       txBuilder.nonce(64248);
       txBuilder.blockRef('0x014ead140e77bbc1');
@@ -59,7 +59,7 @@ describe('Address Initialisation Transaction', () => {
 
     it('should build a unsigned tx and validate its toJson', async function () {
       const transaction = new AddressInitializationTransaction(coins.get('tvet'));
-      const txBuilder = factory.getAddressInitialisationBuilder(transaction);
+      const txBuilder = factory.getAddressInitializationBuilder(transaction);
       txBuilder.gas(21000);
       txBuilder.nonce(64248);
       txBuilder.blockRef('0x014ead140e77bbc1');
@@ -88,7 +88,7 @@ describe('Address Initialisation Transaction', () => {
   describe('Fail', () => {
     it('should fail if invalid params are used to build a tx', async function () {
       const transaction = new AddressInitializationTransaction(coins.get('tvet'));
-      const txBuilder = factory.getAddressInitialisationBuilder(transaction);
+      const txBuilder = factory.getAddressInitializationBuilder(transaction);
 
       should(() => txBuilder.baseAddress('randomString')).throwError('Invalid address randomString');
       should(() => txBuilder.contract('randomString')).throwError('Invalid address randomString');
