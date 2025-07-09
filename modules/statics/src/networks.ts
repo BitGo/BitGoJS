@@ -1292,6 +1292,24 @@ class PharosTestnet extends Testnet implements EthereumNetwork {
   nativeCoinOperationHashPrefix = '688688';
 }
 
+class Creditcoin extends Mainnet implements EthereumNetwork {
+  name = 'Creditcoin';
+  family = CoinFamily.CTC;
+  explorerUrl = 'https://creditcoin.blockscout.com/tx/';
+  accountExplorerUrl = 'https://creditcoin.blockscout.com/address/';
+  chainId = 102030;
+  nativeCoinOperationHashPrefix = '102030';
+}
+
+class CreditcoinTestnet extends Testnet implements EthereumNetwork {
+  name = 'CreditcoinTestnet';
+  family = CoinFamily.CTC;
+  explorerUrl = 'https://creditcoin-testnet.blockscout.com/tx/';
+  accountExplorerUrl = 'https://creditcoin-testnet.blockscout.com/address/';
+  chainId = 102031;
+  nativeCoinOperationHashPrefix = '102031';
+}
+
 class Xdc extends Mainnet implements EthereumNetwork {
   name = 'XdcChain';
   family = CoinFamily.XDC;
@@ -1602,6 +1620,7 @@ export const Networks = {
     polygon: Object.freeze(new Polygon()),
     polyx: Object.freeze(new Polymesh()),
     phrs: Object.freeze(new Pharos()),
+    ctc: Object.freeze(new Creditcoin()),
     oas: Object.freeze(new Oas()),
     ofc: Object.freeze(new Ofc()),
     optimism: Object.freeze(new Optimism()),
@@ -1685,6 +1704,7 @@ export const Networks = {
     polygon: Object.freeze(new PolygonTestnet()),
     polyx: Object.freeze(new PolymeshTestnet()),
     phrs: Object.freeze(new PharosTestnet()),
+    ctc: Object.freeze(new CreditcoinTestnet()),
     oas: Object.freeze(new OasTestnet()),
     ofc: Object.freeze(new OfcTestnet()),
     optimism: Object.freeze(new OptimismTestnet()),

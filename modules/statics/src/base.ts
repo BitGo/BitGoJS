@@ -69,6 +69,7 @@ export enum CoinFamily {
   POLYGON = 'polygon',
   POLYX = 'polyx',
   PHRS = 'phrs',
+  CTC = 'ctc',
   NEAR = 'near',
   OAS = 'oas',
   OFC = 'ofc',
@@ -471,6 +472,7 @@ export enum UnderlyingAsset {
   OSMO = 'osmo',
   POLYGON = 'polygon',
   PHRS = 'phrs',
+  CTC = 'ctc',
   RBTC = 'rbtc', // RSK main coin
   SEI = 'sei',
   SGB = 'sgb',
