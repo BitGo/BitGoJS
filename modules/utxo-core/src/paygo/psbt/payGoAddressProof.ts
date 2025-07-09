@@ -71,8 +71,7 @@ export function verifyPayGoAddressProof(
   if (outputIndex >= txOutputs.length) {
     throw new ErrorOutputIndexOutOfBounds(outputIndex);
   }
-  const output = txOutputs[outputIndex];
-  const addressFromOutput = utxolib.address.fromOutputScript(output.script, psbt.network);
+  const addressFromOutput = txOutputs[outputIndex].script;
 
   // We construct our message <ENTROPY><ADDRESS><UUID>
   const message = createPayGoAttestationBuffer(addressFromOutput, entropy, psbt.network);

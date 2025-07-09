@@ -10,10 +10,9 @@ export const NIL_UUID = '00000000-0000-0000-0000-000000000000';
  * @param entropy
  * @returns
  */
-export function createPayGoAttestationBuffer(address: string, entropy: Buffer, network: utxolib.Network): Buffer {
+export function createPayGoAttestationBuffer(address: Buffer, entropy: Buffer, network: utxolib.Network): Buffer {
   assert(address.length > 0);
-  const isValidAddress = utxolib.address.toOutputScript(address, network);
-  assert(isValidAddress, `Address ${address} is not a valid address.`);
-  const addressBuffer = Buffer.from(address);
-  return Buffer.concat([entropy, addressBuffer, Buffer.from(NIL_UUID)]);
+  const isValidAddress = utxolib.address.fromOutputScript(address, network);
+  assert(isValidAddress, `Address ${isValidAddress} is not a valid address.`);
+  return Buffer.concat([entropy, address, Buffer.from(NIL_UUID)]);
 }

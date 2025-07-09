@@ -44,8 +44,10 @@ export const addressToVerify = utxolib.address.toBase58Check(
   utxolib.networks.bitcoin
 );
 
+export const addressToVerifyScriptPubkey = utxolib.address.toOutputScript(addressToVerify, network);
+
 // this should be retuning a Buffer
-export const addressProofBuffer = generatePayGoAttestationProof(NIL_UUID, Buffer.from(addressToVerify));
+export const addressProofBuffer = generatePayGoAttestationProof(NIL_UUID, addressToVerifyScriptPubkey);
 export const addressProofMsgBuffer = trimMessagePrefix(addressProofBuffer);
 // We know that that the entropy is a set 64 bytes.
 export const addressProofEntropy = addressProofMsgBuffer.subarray(0, 65);
@@ -73,7 +75,7 @@ describe('addPaygoAddressProof and verifyPaygoAddressProof', () => {
 
   it('should add and verify a valid paygo address proof on the PSBT', () => {
     const psbt = getTestPsbt();
-    psbt.addOutput({ script: utxolib.address.toOutputScript(addressToVerify, network), value: BigInt(10000) });
+    psbt.addOutput({ script: addressToVerifyScriptPubkey, value: BigInt(10000) });
     const outputIndex = psbt.data.outputs.length - 1;
     addPayGoAddressProof(psbt, outputIndex, sig, addressProofEntropy);
     verifyPayGoAddressProof(psbt, outputIndex, attestationPubKey);
