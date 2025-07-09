@@ -142,6 +142,7 @@ export class InscriptionBuilder implements IInscriptionBuilder {
       inscriptionConstraints = DefaultInscriptionConstraints,
       changeAddressType = 'p2wsh',
       txFormat = 'psbt',
+      forceFeeFromOtherUnspent = false,
     }: {
       signer?: utxolib.bitgo.KeyName;
       cosigner?: utxolib.bitgo.KeyName;
@@ -152,6 +153,7 @@ export class InscriptionBuilder implements IInscriptionBuilder {
       };
       changeAddressType?: utxolib.bitgo.outputScripts.ScriptType2Of3;
       txFormat?: 'psbt' | 'legacy';
+      forceFeeFromOtherUnspent?: boolean; // If true, will try to use unspents other than the inscription unspent to pay for the fee
     }
   ): Promise<PrebuildTransactionResult> {
     assert(isSatPoint(satPoint));
@@ -174,6 +176,9 @@ export class InscriptionBuilder implements IInscriptionBuilder {
     };
 
     for (const supplementaryUnspentsMinValue of SUPPLEMENTARY_UNSPENTS_MIN_VALUE_SATS) {
+      if (forceFeeFromOtherUnspent && supplementaryUnspentsMinValue === 0) {
+        continue; // Skip the attempt with 0
+      }
       try {
         return await this.prepareTransferWithExtraInputs(
           satPoint,
