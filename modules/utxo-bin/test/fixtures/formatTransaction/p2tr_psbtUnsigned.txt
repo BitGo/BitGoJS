@@ -1,4 +1,4 @@
-transaction: 3fb41f61475637862d825d1823b4a15a34a22f40e4e7f9f6f100d442f6575274
+transaction: c7d9ad877dfd17de6625dbb5202768499c111d27c344ffe2033b317866d82f03
 ├── format: psbt
 ├── complete: false
 ├── parsedAs: bitcoin testnet
@@ -9,7 +9,7 @@ transaction: 3fb41f61475637862d825d1823b4a15a34a22f40e4e7f9f6f100d442f6575274
 ├── fee [btc]: 0.00001000
 ├── feeRate [sat/vbyte]: 10.64
 ├─┬ inputs: 1 sum=0.00010000
-│ └─┬ 0: 95b1cabf19cdfbbf4e63b25249e518488f2e87d84cf976365ae85840098f5f59:0
+│ └─┬ 0: 77ed8d0d4cb55d891dab34ba6fa20486a7b05287ab5dbaf30e639900e6e2eebc:0
 │   ├─┬ sigScript: taprootScriptPathSpend
 │   │ └── signatures: undefined
 │   ├── value: 0.0001

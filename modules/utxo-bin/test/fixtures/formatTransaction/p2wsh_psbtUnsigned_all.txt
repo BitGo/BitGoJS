@@ -1,4 +1,4 @@
-transaction: 62dbd6ca75327521321b1267ad78bbaed29e0873ebe0fe7d5972b25e863793ed
+transaction: 91d1162f0975c30e2422f2b6e3d0cf6174ce217d2987519f1e7d3894e035a721
 ├── format: psbt
 ├── complete: false
 ├── parsedAs: bitcoin testnet
@@ -10,7 +10,7 @@ transaction: 62dbd6ca75327521321b1267ad78bbaed29e0873ebe0fe7d5972b25e863793ed
 ├── fee [btc]: 0.00001000
 ├── feeRate [sat/vbyte]: 10.64
 ├─┬ inputs: 1 sum=0.00010000
-│ └─┬ 0: b5cb290dd25beea476eadaaea1ccd4ef6611ddcc86982e942d66361edb9c1aca:0
+│ └─┬ 0: 38cb21a22f55d0cbea0945a4f0702df894f935168add0ad09070135617a2983a:0
 │   ├── sequence: ffffffff (4 bytes)
 │   ├── scriptSig: undefined
 │   ├─┬ witness: nonstandard

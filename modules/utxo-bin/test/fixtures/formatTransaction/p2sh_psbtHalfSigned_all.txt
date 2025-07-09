@@ -1,4 +1,4 @@
-transaction: 5cfca0c380bcba7843849fd13c5c0a356d831d4d46c3fd6ae8aa7e90fce6d6c2
+transaction: e97e9dfaff81a6c4ef02fa48c2af420639dd24921e25985af234599cdbb3134d
 ├── format: psbt
 ├── complete: false
 ├── parsedAs: bitcoin testnet
@@ -10,7 +10,7 @@ transaction: 5cfca0c380bcba7843849fd13c5c0a356d831d4d46c3fd6ae8aa7e90fce6d6c2
 ├── fee [btc]: 0.00001000
 ├── feeRate [sat/vbyte]: 12.05
 ├─┬ inputs: 1 sum=0.00010000
-│ └─┬ 0: a0ed24c0b95caf63af50c9772e9dfb5d8d1a17bc9dc0eb610982a4c2114c4778:0
+│ └─┬ 0: 4fa762cf9b41169acf660c806f51a0817e4c50a1e16aab5757e2eb4b6daa4793:0
 │   ├── sequence: ffffffff (4 bytes)
 │   ├─┬ scriptSig: nonstandard
 │   │ ├── 0: 82
@@ -28,11 +28,11 @@ transaction: 5cfca0c380bcba7843849fd13c5c0a356d831d4d46c3fd6ae8aa7e90fce6d6c2
 │   │ └─┬ signatures: [71byte]
 │   │   ├── signed by: [0]
 │   │   └─┬ 0
-│   │     ├── bytes: 304402202047ee7a7f7d5d48c57074fcd1be5c361eb2e50e2c32fb88e144afd4b06dc562022000cf543ff78624ffcf12cbf804fc26a4b476072104903449ea4c34ce5a1c81e501 (71 bytes)
+│   │     ├── bytes: 3044022044d9ee7818eab6a80ba2c80d2489ac310c78310005d365803c25ee7aca4f087a02206e3d4c3721cd33b41dae9025be1b55e8b4bc2d96319f4930b8d4ff6660f1658e01 (71 bytes)
 │   │     ├── isCanonical: true
 │   │     ├── hashType: 1
-│   │     ├── r: 2047ee7a7f7d5d48c57074fcd1be5c361eb2e50e2c32fb88e144afd4b06dc562 (32 bytes)
-│   │     ├── s: 00cf543ff78624ffcf12cbf804fc26a4b476072104903449ea4c34ce5a1c81e5 (32 bytes)
+│   │     ├── r: 44d9ee7818eab6a80ba2c80d2489ac310c78310005d365803c25ee7aca4f087a (32 bytes)
+│   │     ├── s: 6e3d4c3721cd33b41dae9025be1b55e8b4bc2d96319f4930b8d4ff6660f1658e (32 bytes)
 │   │     └── highS: false
 │   ├── value: 0.0001
 │   └─┬ pubScript: a914567cd7b44f9f3a07c3138f37bf984b60fbbaf24387 (23 bytes)

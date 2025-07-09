@@ -1,4 +1,4 @@
-transaction: a09c2df0ca5cb40e1b7b9be851ad1f7c87f51ff54b27f096a991edd1ae78f9b2
+transaction: 8af4ce3029dd30e22f9e485bda025b043d8b1d8f83f2b6cd90d6c0b4975a67c1
 ├── format: psbt
 ├── complete: false
 ├── parsedAs: bitcoin testnet
@@ -9,7 +9,7 @@ transaction: a09c2df0ca5cb40e1b7b9be851ad1f7c87f51ff54b27f096a991edd1ae78f9b2
 ├── fee [btc]: 0.00001000
 ├── feeRate [sat/vbyte]: 10.64
 ├─┬ inputs: 1 sum=0.00010000
-│ └─┬ 0: 378f08e26fc05c84b138264ca2e717b68b9d267550bae85acf6f8ad1465ad4b3:0
+│ └─┬ 0: f3b21118def8ef6be2c3f6f444fded659a97e4a025d5a3865b4a670453ba5aac:0
 │   ├─┬ sigScript: taprootScriptPathSpend
 │   │ └── signatures: undefined
 │   ├── value: 0.0001
