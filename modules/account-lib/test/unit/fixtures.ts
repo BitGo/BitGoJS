@@ -46,9 +46,7 @@ export class MockMessage extends BaseMessage {
   }
 
   async getSignablePayload(): Promise<string | Buffer> {
-    if (this.signablePayload) {
-      return this.signablePayload;
-    }
-    return Buffer.from(this.payload);
+    this.signablePayload = Buffer.from(this.payload);
+    return this.signablePayload;
   }
 }

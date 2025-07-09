@@ -17,11 +17,9 @@ export class Cip8Message extends BaseMessage {
    * Returns the hash of the CIP-8 prefixed message
    */
   async getSignablePayload(): Promise<string | Buffer> {
-    if (!this.signablePayload) {
-      const { addressCborBytes } = this.validateAndGetCommonSetup();
-      const { sigStructureCborBytes } = createCSLSigStructure(addressCborBytes, this.payload);
-      this.signablePayload = Buffer.from(sigStructureCborBytes);
-    }
+    const { addressCborBytes } = this.validateAndGetCommonSetup();
+    const { sigStructureCborBytes } = createCSLSigStructure(addressCborBytes, this.payload);
+    this.signablePayload = Buffer.from(sigStructureCborBytes);
     return this.signablePayload;
   }
 
@@ -61,6 +59,31 @@ export class Cip8Message extends BaseMessage {
         },
       },
     ];
+  }
+
+  /**
+   * Verifies the encoded payload against the provided metadata
+   * @param messageEncodedHex The hex-encoded message to verify
+   * @param metadata Metadata containing signer addresses
+   * @returns True if the encoded payload matches the expected format, false otherwise
+   */
+  async verifyEncodedPayload(messageEncodedHex: string, metadata?: Record<string, unknown>): Promise<boolean> {
+    if (!metadata) {
+      throw new Error('Metadata is required for verifying the encoded payload');
+    }
+    const signers = metadata.signers as string[];
+    if (signers.length === 0) {
+      throw new Error('At least one signer address is required in metadata for verification');
+    }
+    this.addSigner(signers[0]);
+    const signablePayload = await this.getSignablePayload();
+    let signablePayloadHex: string;
+    if (Buffer.isBuffer(signablePayload)) {
+      signablePayloadHex = signablePayload.toString('hex');
+    } else {
+      signablePayloadHex = signablePayload;
+    }
+    return signablePayloadHex === messageEncodedHex;
   }
 
   /**

@@ -162,4 +162,21 @@ export abstract class BaseMessage implements IMessage {
     const broadcastable = await this.toBroadcastFormat();
     return JSON.stringify(broadcastable);
   }
+
+  /**
+   * Verifies if the provided encoded message matches the signable payload
+   * @param messageEncodedHex The encoded message in hex format
+   * @param metadata Optional metadata for additional verification context
+   * @returns True if the encoded message matches the signable payload, false otherwise
+   */
+  async verifyEncodedPayload(messageEncodedHex: string, metadata?: Record<string, unknown>): Promise<boolean> {
+    const signablePayload = await this.getSignablePayload();
+    let signablePayloadHex: string;
+    if (Buffer.isBuffer(signablePayload)) {
+      signablePayloadHex = signablePayload.toString('hex');
+    } else {
+      signablePayloadHex = signablePayload;
+    }
+    return signablePayloadHex === messageEncodedHex;
+  }
 }
