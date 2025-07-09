@@ -1236,7 +1236,8 @@ export const erc20Coins = [
     'Compound BAT',
     8,
     '0x6c8c6b02e7b2be14d4fa6022dfd6d75921d90e4e',
-    UnderlyingAsset.CBAT
+    UnderlyingAsset.CBAT,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '6c9c046a-2d9e-425c-9408-5db99e0ce1a7',
@@ -1317,7 +1318,8 @@ export const erc20Coins = [
     'Compound Ether',
     8,
     '0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5',
-    UnderlyingAsset.CETH
+    UnderlyingAsset.CETH,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'fd41106e-cf6f-4f0c-9868-a41fbcec8a49',
@@ -1715,7 +1717,8 @@ export const erc20Coins = [
     'DATAECON',
     18,
     '0x33d63ba1e57e54779f7ddaeaa7109349344cf5f1',
-    UnderlyingAsset.DATAECON
+    UnderlyingAsset.DATAECON,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '61e56de0-9325-4f78-8c3c-0f5778929539',
@@ -1886,7 +1889,8 @@ export const erc20Coins = [
     'DeFi Pulse Index',
     18,
     '0x1494ca1f11d487c2bbe4543e90080aeba4ba3c2b',
-    UnderlyingAsset.DPI
+    UnderlyingAsset.DPI,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '1ac0596d-5b05-4c4e-b6b4-4a5eb0310944',
@@ -2440,7 +2444,8 @@ export const erc20Coins = [
     'Two Prime FF1',
     18,
     '0x59af0356cdebd1fa23ae5dadff9170bbfc31278c',
-    UnderlyingAsset.FF1
+    UnderlyingAsset.FF1,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '7c62369d-91e6-45f0-874b-4ce43c86ffe5',
@@ -4603,7 +4608,8 @@ export const erc20Coins = [
     'Protos',
     0,
     '0x835a44027ee4e92bbd8874e5ede9e5148b069e96',
-    UnderlyingAsset.PRTS
+    UnderlyingAsset.PRTS,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '5152d598-1f7a-4de1-90a1-0e14e07eed9e',
@@ -5433,7 +5439,8 @@ export const erc20Coins = [
     'Stobox Token',
     18,
     '0x212dd60d4bf0da8372fe8116474602d429e5735f',
-    UnderlyingAsset.STBU
+    UnderlyingAsset.STBU,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '189f7974-5264-4716-ad8c-bb62d364e8c6',
@@ -5523,7 +5530,8 @@ export const erc20Coins = [
     'stakedZEN',
     8,
     '0x31b595e7cfdb624d10a3e7a562ed98c3567e3865',
-    UnderlyingAsset.STZEN
+    UnderlyingAsset.STZEN,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '097330e3-2be4-4b1f-a87f-71b02e7ef564',
@@ -6612,7 +6620,8 @@ export const erc20Coins = [
     'xSUSHI',
     18,
     '0x8798249c2e607446efb7ad49ec89dd1865ff4272',
-    UnderlyingAsset.XSUSHI
+    UnderlyingAsset.XSUSHI,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '119a1bdc-5571-4945-b4a1-82301758619a',
@@ -10688,7 +10697,8 @@ export const erc20Coins = [
     'EasyFi',
     18,
     '0x00aba6fe5557de1a1d565658cbddddf7c710a1eb',
-    UnderlyingAsset['eth:ez']
+    UnderlyingAsset['eth:ez'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '93678c40-bc4d-4d06-be96-71b13ae7d7ec',
