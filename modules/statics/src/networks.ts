@@ -1183,8 +1183,8 @@ class ZkSyncTestnet extends Testnet implements EthereumNetwork {
 class Berachain extends Mainnet implements EthereumNetwork {
   name = 'Bera';
   family = CoinFamily.BERA;
-  explorerUrl = 'https://80094.routescan.io/tx/';
-  accountExplorerUrl = 'https://80094.routescan.io/address/';
+  explorerUrl = 'https://berascan.com/tx/';
+  accountExplorerUrl = 'https://berascan.com/address/';
   chainId = 80094;
   nativeCoinOperationHashPrefix = '80094';
   tokenOperationHashPrefix = '80094-ERC20';
@@ -1196,8 +1196,8 @@ class Berachain extends Mainnet implements EthereumNetwork {
 class BerachainTestnet extends Testnet implements EthereumNetwork {
   name = 'BeraTestnet';
   family = CoinFamily.BERA;
-  explorerUrl = 'https://80000.testnet.routescan.io/tx/';
-  accountExplorerUrl = 'https://80000.testnet.routescan.io/address/';
+  explorerUrl = 'https://testnet.berascan.com/tx/';
+  accountExplorerUrl = 'https://testnet.berascan.com/address/';
   chainId = 80000;
   nativeCoinOperationHashPrefix = '80000';
   tokenOperationHashPrefix = '80000-ERC20';
