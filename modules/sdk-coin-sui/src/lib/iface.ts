@@ -3,14 +3,20 @@ import {
   TransactionType as BitGoTransactionType,
 } from '@bitgo/sdk-core';
 import BigNumber from 'bignumber.js';
-import {
-  CallArg,
-  GasData,
-  ProgrammableTransaction,
-  SuiAddress,
-  SuiObjectRef,
-  TransactionExpiration,
-} from './mystenlab/types';
+import { CallArg, ProgrammableTransaction, SuiAddress, SuiObjectRef, TransactionExpiration } from './mystenlab/types';
+
+/**
+ * Gas data for Sui transactions.
+ * For sponsored transactions, the sponsor field must be set.
+ */
+export interface GasData {
+  payment: SuiObjectRef[];
+  owner: SuiAddress;
+  price: number;
+  budget: number;
+  sponsor?: SuiAddress;
+}
+
 import { TransactionBlockInput, TransactionType } from './mystenlab/builder';
 
 export enum SuiTransactionType {
