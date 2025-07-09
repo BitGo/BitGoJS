@@ -43,6 +43,7 @@ const GasConfig = object({
   price: optional(StringEncodedBigint),
   payment: optional(array(SuiObjectRef)),
   owner: optional(SuiAddress),
+  sponsor: optional(SuiAddress),
 });
 type GasConfig = Infer<typeof GasConfig>;
 
@@ -213,6 +214,9 @@ export class TransactionBlockDataBuilder {
         owner: prepareSuiAddress(this.gasConfig.owner ?? sender),
         price: BigInt(gasConfig.price),
         budget: BigInt(gasConfig.budget),
+        ...(gasConfig.sponsor && {
+          sponsor: prepareSuiAddress(gasConfig.sponsor),
+        }),
       },
       kind: {
         ProgrammableTransaction: {

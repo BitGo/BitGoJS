@@ -6,10 +6,10 @@ import {
   Signature,
   TransactionType as BitGoTransactionType,
 } from '@bitgo/sdk-core';
-import { SuiProgrammableTransaction, SuiTransaction, SuiTransactionType, TxData } from './iface';
+import { SuiProgrammableTransaction, SuiTransaction, SuiTransactionType, TxData, GasData } from './iface';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import utils, { AppId, Intent, IntentScope, IntentVersion, isImmOrOwnedObj } from './utils';
-import { GasData, normalizeSuiAddress, normalizeSuiObjectId, SuiObjectRef } from './mystenlab/types';
+import { normalizeSuiAddress, normalizeSuiObjectId, SuiObjectRef } from './mystenlab/types';
 import { SIGNATURE_SCHEME_BYTES } from './constants';
 import { Buffer } from 'buffer';
 import { fromB64, toB64 } from '@mysten/bcs';
@@ -178,6 +178,9 @@ export abstract class Transaction<T> extends BaseTransaction {
         owner: normalizeSuiAddress(transactionBlock.gasConfig.owner!),
         price: Number(transactionBlock.gasConfig.price as string),
         budget: Number(transactionBlock.gasConfig.budget as string),
+        ...(transactionBlock.gasConfig.sponsor && {
+          sponsor: normalizeSuiAddress(transactionBlock.gasConfig.sponsor),
+        }),
       },
     };
   }
@@ -213,12 +216,20 @@ export abstract class Transaction<T> extends BaseTransaction {
   }
 
   static getProperGasData(k: any): GasData {
-    return {
-      payment: [this.normalizeSuiObjectRef(k.gasData.payment)],
+    const gasData: GasData = {
+      payment: Array.isArray(k.gasData.payment)
+        ? k.gasData.payment.map((p: any) => this.normalizeSuiObjectRef(p))
+        : [this.normalizeSuiObjectRef(k.gasData.payment)],
       owner: utils.normalizeHexId(k.gasData.owner),
       price: Number(k.gasData.price),
       budget: Number(k.gasData.budget),
     };
+
+    if (k.gasData.sponsor) {
+      gasData.sponsor = utils.normalizeHexId(k.gasData.sponsor);
+    }
+
+    return gasData;
   }
 
   private static normalizeCoins(coins: any[]): SuiObjectRef[] {
