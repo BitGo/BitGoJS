@@ -1,4 +1,4 @@
-transaction: a09c2df0ca5cb40e1b7b9be851ad1f7c87f51ff54b27f096a991edd1ae78f9b2
+transaction: 8af4ce3029dd30e22f9e485bda025b043d8b1d8f83f2b6cd90d6c0b4975a67c1
 ├── format: psbt
 ├── complete: true
 ├── parsedAs: bitcoin testnet
@@ -10,7 +10,7 @@ transaction: a09c2df0ca5cb40e1b7b9be851ad1f7c87f51ff54b27f096a991edd1ae78f9b2
 ├── fee [btc]: 0.00001000
 ├── feeRate [sat/vbyte]: 9.01
 ├─┬ inputs: 1 sum=0.00010000
-│ └─┬ 0: 378f08e26fc05c84b138264ca2e717b68b9d267550bae85acf6f8ad1465ad4b3:0
+│ └─┬ 0: f3b21118def8ef6be2c3f6f444fded659a97e4a025d5a3865b4a670453ba5aac:0
 │   ├── sequence: ffffffff (4 bytes)
 │   ├── scriptSig: undefined
 │   ├── witness: []
@@ -20,9 +20,9 @@ transaction: a09c2df0ca5cb40e1b7b9be851ad1f7c87f51ff54b27f096a991edd1ae78f9b2
 │   │ └─┬ signatures: [32byte] [32byte]
 │   │   ├── signed by: []
 │   │   ├─┬ 0
-│   │   │ └── bytes: a1d7710fc064bfa57698b3cb5eda8cd244296465fcfea1a54e5b17b29c5c8817 (32 bytes)
+│   │   │ └── bytes: 7c27bf59f35d3246958494f7dbfc2896222103b60a1ac0d07065a37efd325f41 (32 bytes)
 │   │   └─┬ 1
-│   │     └── bytes: 6d629b8e9f7da45f4da21829ce1c42f026a6645d8678854ca4a08e4316b50940 (32 bytes)
+│   │     └── bytes: 446e4c59091e2493de6ecbe19d58e18b5264faa45701f6f94b0a4b2c64a7e576 (32 bytes)
 │   ├── value: 0.0001
 │   ├─┬ pubScript: 5120e1f6524a676119d4e39a48f1c69c821b449346aff7c6b9f55169981b00c63800 (34 bytes)
 │   │ └── address: tb1pu8m9yjn8vyvafcu6frcud8yzrdzfx3407lrtna23dxvpkqxx8qqqufaasa
@@ -36,20 +36,20 @@ transaction: a09c2df0ca5cb40e1b7b9be851ad1f7c87f51ff54b27f096a991edd1ae78f9b2
 │   │ ├─┬ 0
 │   │ │ ├── participantPubKey: 0263fe2086c9ee59d2898c89c406062dc12be86178f36fa8bdc2207ef50de6c10a (33 bytes)
 │   │ │ ├── tapOutputKey: e1f6524a676119d4e39a48f1c69c821b449346aff7c6b9f55169981b00c63800 (32 bytes)
-│   │ │ └── pubNonce: 028b327c0c03556b2318b385b90c3f9bd730dc30b62af48186662c39c5b44798c503ff577d6408b020b81e06bb41d92483dd65a9ca6f2a4a98646a21eae834554aa3 (66 bytes)
+│   │ │ └── pubNonce: 039f05281cb8a11f6194def6ae461a35e9ea6e5d6c53a56eaad69b739d5425d02403f9fadf22f0385ada2a6df0663e64a51b142a55afd6daae470ba6dddc8c334867 (66 bytes)
 │   │ └─┬ 1
 │   │   ├── participantPubKey: 0397f6fda272efbf9d9502e40b1a6da60b7dcfcd883fb371b0765c18523be5e9bc (33 bytes)
 │   │   ├── tapOutputKey: e1f6524a676119d4e39a48f1c69c821b449346aff7c6b9f55169981b00c63800 (32 bytes)
-│   │   └── pubNonce: 032b6ef6e4fdacc0bc95b9872c66234229e3c51dc95aea26b62c1d3cdf0b16201a0336f7e1679a879948849897d1a31a969b3f8eb349d91429fbe6c76dd15d9f4a11 (66 bytes)
+│   │   └── pubNonce: 03d7df51667e6ae36046e118303ef068492606bbd403d257b20b4c30b2ab87ec6b028cd4b0bccc7c989af453a40aac96e98a0ab2637730274d43bff3ea329e424445 (66 bytes)
 │   └─┬ musig2PartialSignatures: length: 2
 │     ├─┬ 0
 │     │ ├── participantPubKey: 0263fe2086c9ee59d2898c89c406062dc12be86178f36fa8bdc2207ef50de6c10a (33 bytes)
 │     │ ├── tapOutputKey: e1f6524a676119d4e39a48f1c69c821b449346aff7c6b9f55169981b00c63800 (32 bytes)
-│     │ └── partialSig: a1d7710fc064bfa57698b3cb5eda8cd244296465fcfea1a54e5b17b29c5c8817 (32 bytes)
+│     │ └── partialSig: 7c27bf59f35d3246958494f7dbfc2896222103b60a1ac0d07065a37efd325f41 (32 bytes)
 │     └─┬ 1
 │       ├── participantPubKey: 0397f6fda272efbf9d9502e40b1a6da60b7dcfcd883fb371b0765c18523be5e9bc (33 bytes)
 │       ├── tapOutputKey: e1f6524a676119d4e39a48f1c69c821b449346aff7c6b9f55169981b00c63800 (32 bytes)
-│       └── partialSig: 6d629b8e9f7da45f4da21829ce1c42f026a6645d8678854ca4a08e4316b50940 (32 bytes)
+│       └── partialSig: 446e4c59091e2493de6ecbe19d58e18b5264faa45701f6f94b0a4b2c64a7e576 (32 bytes)
 └─┬ outputs: 1 sum=0.00009000
   └─┬ 0: tb1pzqezqx02rhqf5mspjppjjkwnyuylacdyxcgaz8jg3wnfvaf7hpfspx744m
     ├── value: 0.00009000

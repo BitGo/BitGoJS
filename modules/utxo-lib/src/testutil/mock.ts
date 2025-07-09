@@ -38,7 +38,7 @@ export function mockPrevTx(
   const keypair = getKey('mock-prev-tx');
   const pubkey = keypair.publicKey;
   assert(keypair.privateKey);
-  const payment = utxolib.payments.p2wpkh({ pubkey });
+  const payment = utxolib.payments.p2pkh({ pubkey });
   const destOutput = payment.output;
   if (!destOutput) throw new Error('Impossible, payment we just constructed has no output');
 
@@ -54,13 +54,16 @@ export function mockPrevTx(
     index: 0,
     witnessUtxo: { script: destOutput, value: value * (BigInt(vout) + BigInt(1)) + BigInt(1000) },
   });
-  psbtFromNetwork.signInput(0, {
-    publicKey: pubkey,
-    sign: (hash: Buffer, lowR?: boolean) =>
-      Buffer.from(noble.signSync(hash, keypair.privateKey as Buffer, { canonical: !lowR, der: false })),
+  // Don't require the prevTx for signing and finalizing for non-segwit input
+  utxolib.bitgo.withUnsafeNonSegwit(psbtFromNetwork, () => {
+    psbtFromNetwork.signInput(0, {
+      publicKey: pubkey,
+      sign: (hash: Buffer, lowR?: boolean) =>
+        Buffer.from(noble.signSync(hash, keypair.privateKey as Buffer, { canonical: !lowR, der: false })),
+    });
+    psbtFromNetwork.validateSignaturesOfAllInputs();
+    psbtFromNetwork.finalizeAllInputs();
   });
-  psbtFromNetwork.validateSignaturesOfAllInputs();
-  psbtFromNetwork.finalizeAllInputs();
   return psbtFromNetwork.extractTransaction();
 }
 
