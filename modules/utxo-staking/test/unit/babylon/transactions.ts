@@ -112,7 +112,7 @@ function getStakingTransactionTreeVendor(
 
 function createUnstakingTransaction(
   stakingTx: vendor.TransactionResult,
-  stakingDescriptor: Descriptor,
+  descriptorBuilder: BabylonDescriptorBuilder,
   changeAddress: string,
   { sequence }: { sequence: number }
 ): utxolib.Psbt {
@@ -131,7 +131,11 @@ function createUnstakingTransaction(
         hash: stakingTx.transaction.getId(),
         index: 0,
         witnessUtxo,
-        descriptor: stakingDescriptor,
+        descriptor: descriptorBuilder.getStakingDescriptor(),
+        selectTapLeafScript: Miniscript.fromString(
+          ast.formatNode(descriptorBuilder.getTimelockMiniscriptNode()),
+          'tap'
+        ),
         sequence,
       },
     ],
@@ -419,12 +423,9 @@ function describeWithKeys(
       });
 
       it('creates unstaking transaction', async function () {
-        const unstakingPsbt = createUnstakingTransaction(
-          stakingTx,
-          descriptorBuilder.getStakingDescriptor(),
-          changeAddress,
-          { sequence: stakingParams.minStakingTimeBlocks }
-        );
+        const unstakingPsbt = createUnstakingTransaction(stakingTx, descriptorBuilder, changeAddress, {
+          sequence: stakingParams.minStakingTimeBlocks,
+        });
         const wrappedPsbt = toWrappedPsbt(unstakingPsbt);
         assert(getNewSignatureCount(signWithKey(wrappedPsbt, stakerKey)) > 0);
         wrappedPsbt.finalize();
