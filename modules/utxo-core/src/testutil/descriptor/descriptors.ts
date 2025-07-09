@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import { Descriptor, ast } from '@bitgo/wasm-miniscript';
+import { Miniscript, Descriptor, ast } from '@bitgo/wasm-miniscript';
 import { bip32, BIP32Interface } from '@bitgo/utxo-lib';
 
 import { DescriptorMap, PsbtParams } from '../../descriptor';
@@ -132,6 +132,50 @@ function getDescriptorNode(
       };
   }
   throw new Error(`Unknown descriptor template: ${template}`);
+}
+
+type TapTree = [TapTree, TapTree] | ast.MiniscriptNode;
+
+function getTapLeafScriptNodes(t: ast.DescriptorNode | TapTree): ast.MiniscriptNode[] {
+  if (Array.isArray(t)) {
+    if (t.length !== 2) {
+      throw new Error(`expected tuple, got: ${JSON.stringify(t)}`);
+    }
+    return t.map((v) => (Array.isArray(v) ? getTapLeafScriptNodes(v) : v)).flat();
+  }
+
+  if (typeof t === 'object') {
+    const node = t;
+    if (!('tr' in node)) {
+      throw new Error(`TapLeafScripts are only supported for Taproot descriptors, got: ${t}`);
+    }
+    if (!Array.isArray(node.tr) || node.tr.length !== 2) {
+      throw new Error(`expected tuple, got: ${JSON.stringify(node.tr)}`);
+    }
+    const tapscript = node.tr[1];
+    if (!Array.isArray(tapscript)) {
+      throw new Error(`expected tapscript to be an array, got: ${JSON.stringify(tapscript)}`);
+    }
+    return getTapLeafScriptNodes(tapscript);
+  }
+
+  throw new Error(`Invalid input: ${JSON.stringify(t)}`);
+}
+
+export function containsKey(script: Miniscript | ast.MiniscriptNode, key: BIP32Interface | string): boolean {
+  if (script instanceof Miniscript) {
+    script = ast.fromMiniscript(script);
+  }
+  if ('pk' in script) {
+    return script.pk === toXOnly(key);
+  }
+  throw new Error(`Unsupported script type: ${JSON.stringify(script)}`);
+}
+
+export function getTapLeafScripts(d: Descriptor): string[] {
+  return getTapLeafScriptNodes(ast.fromDescriptor(d)).map((n) =>
+    Miniscript.fromString(ast.formatNode(n), 'tap').toString()
+  );
 }
 
 export function getDescriptor(
