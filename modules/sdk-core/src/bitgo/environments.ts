@@ -203,6 +203,9 @@ const mainnetBase: EnvironmentTemplate = {
     phrs: {
       baseUrl: 'https://testnet.dplabs-internal.com', // TODO: WIN-5787 add mainnet url when its available
     },
+    ctc: {
+      baseUrl: 'https://mainnet3.creditcoin.network',
+    },
   },
   icpNodeUrl: 'https://ic0.app',
   worldExplorerBaseUrl: 'https://worldscan.org/',
@@ -284,6 +287,9 @@ const testnetBase: EnvironmentTemplate = {
   evm: {
     phrs: {
       baseUrl: 'https://testnet.dplabs-internal.com',
+    },
+    ctc: {
+      baseUrl: 'https://rpc.cc3-testnet.creditcoin.network',
     },
   },
   stxNodeUrl: 'https://api.testnet.hiro.so',
