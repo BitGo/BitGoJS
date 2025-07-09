@@ -232,16 +232,16 @@ function assertEqualScripts(descriptorBuilder: BabylonDescriptorBuilder, builder
   for (const [key, script] of Object.entries(builder) as [keyof vendor.StakingScripts, Buffer][]) {
     switch (key) {
       case 'timelockScript':
-        assertEqualsMiniscript(script, descriptorBuilder.getTimelockMiniscript());
+        assertEqualsMiniscript(script, descriptorBuilder.getTimelockMiniscriptNode());
         break;
       case 'unbondingScript':
-        assertEqualsMiniscript(script, descriptorBuilder.getUnbondingMiniscript());
+        assertEqualsMiniscript(script, descriptorBuilder.getUnbondingMiniscriptNode());
         break;
       case 'slashingScript':
-        assertEqualsMiniscript(script, descriptorBuilder.getSlashingMiniscript());
+        assertEqualsMiniscript(script, descriptorBuilder.getSlashingMiniscriptNode());
         break;
       case 'unbondingTimelockScript':
-        assertEqualsMiniscript(script, descriptorBuilder.getUnbondingTimelockMiniscript());
+        assertEqualsMiniscript(script, descriptorBuilder.getUnbondingTimelockMiniscriptNode());
         break;
       default:
         throw new Error(`unexpected script key: ${key}`);
