@@ -1274,6 +1274,24 @@ class ApeChainTestnet extends Testnet implements EthereumNetwork {
   nativeCoinOperationHashPrefix = '33111';
 }
 
+class Pharos extends Mainnet implements EthereumNetwork {
+  name = 'Pharos';
+  family = CoinFamily.PHRS;
+  explorerUrl = ''; // TODO: WIN-5787 Add mainnet url when available
+  accountExplorerUrl = ''; // TODO: WIN-5787 Add mainnet url when available
+  chainId = 688688; // TODO: WIN-5787 Add mainnet id when available
+  nativeCoinOperationHashPrefix = '688688';
+}
+
+class PharosTestnet extends Testnet implements EthereumNetwork {
+  name = 'PharosTestnet';
+  family = CoinFamily.PHRS;
+  explorerUrl = 'https://testnet.pharosscan.xyz/tx/';
+  accountExplorerUrl = 'https://testnet.pharosscan.xyz/address/';
+  chainId = 688688;
+  nativeCoinOperationHashPrefix = '688688';
+}
+
 class Xdc extends Mainnet implements EthereumNetwork {
   name = 'XdcChain';
   family = CoinFamily.XDC;
@@ -1583,6 +1601,7 @@ export const Networks = {
     mantra: Object.freeze(new Mantra()),
     polygon: Object.freeze(new Polygon()),
     polyx: Object.freeze(new Polymesh()),
+    phrs: Object.freeze(new Pharos()),
     oas: Object.freeze(new Oas()),
     ofc: Object.freeze(new Ofc()),
     optimism: Object.freeze(new Optimism()),
@@ -1665,6 +1684,7 @@ export const Networks = {
     mantra: Object.freeze(new MantraTestnet()),
     polygon: Object.freeze(new PolygonTestnet()),
     polyx: Object.freeze(new PolymeshTestnet()),
+    phrs: Object.freeze(new PharosTestnet()),
     oas: Object.freeze(new OasTestnet()),
     ofc: Object.freeze(new OfcTestnet()),
     optimism: Object.freeze(new OptimismTestnet()),
