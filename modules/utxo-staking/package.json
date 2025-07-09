@@ -44,7 +44,6 @@
   "dependencies": {
     "@babylonlabs-io/babylon-proto-ts": "1.0.0",
     "@bitgo/babylonlabs-io-btc-staking-ts": "^2.3.4",
-    "@bitgo/unspents": "^0.48.3",
     "@bitgo/utxo-core": "^1.11.0",
     "@bitgo/utxo-lib": "^11.6.1",
     "@bitgo/wasm-miniscript": "2.0.0-beta.7",
