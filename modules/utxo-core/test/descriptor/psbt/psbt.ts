@@ -2,14 +2,16 @@ import assert from 'assert';
 
 import * as utxolib from '@bitgo/utxo-lib';
 import { BIP32Interface, ECPair, ECPairInterface } from '@bitgo/utxo-lib';
-import { Descriptor } from '@bitgo/wasm-miniscript';
+import { Descriptor, Miniscript } from '@bitgo/wasm-miniscript';
 
 import { PsbtParams, parse, toUtxoPsbt, toWrappedPsbt, ParsedDescriptorTransaction } from '../../../src/descriptor';
 import { getFixture, getKeyTriple } from '../../../src/testutil';
 import {
+  containsKey,
   DescriptorTemplate,
   getDescriptor,
   getPsbtParams,
+  getTapLeafScripts,
   mockPsbt,
   mockPsbtDefault,
   toPlainObjectFromPsbt,
@@ -157,6 +159,39 @@ function describeCreatePsbt2Of3(t: DescriptorTemplate) {
   });
 }
 
+function describeCreatePsbtSelectTapLeafScript(
+  t: DescriptorTemplate,
+  selfDescriptor: Descriptor,
+  selectTapLeafScript: Miniscript,
+  tapLeafName: string
+) {
+  const otherDescriptor = getDescriptor('Wsh2Of3', otherKeys);
+  const signKeys = selfKeys.filter((k) => containsKey(selectTapLeafScript, k)).map((k) => toPlain(k));
+  assert(signKeys.length === 1);
+  describeCreatePsbt(`${t}-${tapLeafName}`, {
+    descriptorSelf: selfDescriptor,
+    psbt: mockPsbt(
+      [
+        { descriptor: selfDescriptor, index: 0, selectTapLeafScript },
+        { descriptor: selfDescriptor, index: 1, id: { vout: 1 }, selectTapLeafScript },
+      ],
+      [
+        {
+          descriptor: otherDescriptor,
+          index: 0,
+          value: BigInt(4e5),
+          external: true,
+        },
+        { descriptor: selfDescriptor, index: 0, value: BigInt(4e5) },
+      ]
+    ),
+    stages: [
+      { name: 'unsigned', keys: [] },
+      { name: 'signed', keys: signKeys },
+    ],
+  });
+}
+
 describeCreatePsbt2Of3('Wsh2Of3');
 describeCreatePsbt2Of3('Wsh2Of3CltvDrop');
 describeCreatePsbt2Of3('Tr2Of3-NoKeyPath');
@@ -165,6 +200,20 @@ describeCreatePsbt('Tr1Of3-NoKeyPath-Tree', {
   psbtParams: {},
   stages: getDefaultStagesSeparateAB(),
 });
+
+{
+  const t: DescriptorTemplate = 'Tr1Of3-NoKeyPath-Tree-Plain';
+  const selfDescriptor = getDescriptor(t, selfKeys);
+  getTapLeafScripts(selfDescriptor).forEach((selectTapLeafScript, i) => {
+    describeCreatePsbtSelectTapLeafScript(
+      t,
+      selfDescriptor,
+      Miniscript.fromString(selectTapLeafScript, 'tap'),
+      `TapLeafScript${i}`
+    );
+  });
+}
+
 describeCreatePsbt('Tr1Of3-NoKeyPath-Tree-PlainKeys', {
   descriptorSelf: getDescriptor('Tr1Of3-NoKeyPath-Tree-Plain', selfKeys),
   psbtParams: {},

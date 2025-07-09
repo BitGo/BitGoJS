@@ -1,4 +1,4 @@
-import { Descriptor } from '@bitgo/wasm-miniscript';
+import { Descriptor, Miniscript } from '@bitgo/wasm-miniscript';
 import * as utxolib from '@bitgo/utxo-lib';
 
 import {
@@ -17,6 +17,7 @@ type BaseMockDescriptorOutputParams = {
   index?: number;
   value?: bigint;
   sequence?: number;
+  selectTapLeafScript?: Miniscript;
 };
 
 function mockOutputId(id?: MockOutputIdParams): {
@@ -42,6 +43,7 @@ export function mockDerivedDescriptorWalletOutput(
       value,
     },
     descriptor,
+    selectTapLeafScript: outputParams.selectTapLeafScript,
     sequence: outputParams.sequence,
   };
 }
@@ -49,6 +51,7 @@ export function mockDerivedDescriptorWalletOutput(
 type MockInput = BaseMockDescriptorOutputParams & {
   index: number;
   descriptor: Descriptor;
+  selectTapLeafScript?: Miniscript;
 };
 
 type MockOutput = {
