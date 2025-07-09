@@ -31,18 +31,18 @@ jobs:
           ref: ${{ github.sha }}
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@181d5eefc20863364f96762470ba6f862bdef56b # v3.29.2
         continue-on-error: true
         with:
           languages: ${{ matrix.language }}
           queries: security-extended,security-and-quality
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@v3
+        uses: github/codeql-action/autobuild@181d5eefc20863364f96762470ba6f862bdef56b #  v3.29.2
         continue-on-error: true
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@181d5eefc20863364f96762470ba6f862bdef56b #  v3.29.2
         continue-on-error: true
         with:
           category: '/language:${{matrix.language}}'
