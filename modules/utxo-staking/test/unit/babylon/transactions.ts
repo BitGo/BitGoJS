@@ -419,17 +419,18 @@ function describeWithKeys(
       });
 
       it('creates unstaking transaction', async function () {
-        const unstaking = createUnstakingTransaction(
+        const unstakingPsbt = createUnstakingTransaction(
           stakingTx,
           descriptorBuilder.getStakingDescriptor(),
           changeAddress,
           { sequence: stakingParams.minStakingTimeBlocks }
         );
-        const wrappedPsbt = toWrappedPsbt(unstaking);
+        const wrappedPsbt = toWrappedPsbt(unstakingPsbt);
         assert(getNewSignatureCount(signWithKey(wrappedPsbt, stakerKey)) > 0);
         wrappedPsbt.finalize();
         const tx = toUtxoPsbt(wrappedPsbt, utxolib.networks.bitcoin).extractTransaction();
         await assertTransactionEqualsFixture(`test/fixtures/babylon/unstakingTransaction.${tag}.json`, {
+          psbt: unstakingPsbt,
           transaction: tx,
         });
       });
