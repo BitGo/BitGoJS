@@ -2,6 +2,17 @@
   "extends": "../../.eslintrc.json",
   "rules": {
     "@typescript-eslint/explicit-module-boundary-types": "error",
+    "import/no-internal-modules": [
+      "error",
+      {
+        // these are false-positives
+        // certain packages explicitly ALLOW deep imports via the `exports` directive in package.json
+        "allow": [
+          "@bitgo/utxo-core/*",
+          "@noble/curves/*"
+        ]
+      }
+    ],
     "indent": "off"
   }
 }
