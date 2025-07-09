@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/babylonlabs-io-btc-staking-ts",
-  "version": "1.2.0",
+  "version": "2.3.4",
   "description": "Library exposing methods for the creation and consumption of Bitcoin transactions pertaining to Babylon's Bitcoin Staking protocol.",
   "module": "dist/index.js",
   "main": "dist/index.cjs",
@@ -33,7 +33,8 @@
   "license": "SEE LICENSE IN LICENSE",
   "devDependencies": {
     "dts-bundle-generator": "^9.3.1",
-    "esbuild": "^0.20.2"
+    "esbuild": "^0.20.2",
+    "nanoevents": "^9.1.0"
   },
   "dependencies": {
     "@babylonlabs-io/babylon-proto-ts": "1.0.0",

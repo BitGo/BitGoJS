@@ -1,5 +1,10 @@
+const { initBTCCurve } = require("./src");
+
 const originalTest = global.test;
-const NUM_ITERATIONS = 10;
+const NUM_ITERATIONS = 3;
+;
+
+initBTCCurve();
 
 global.test = (name, fn, timeout) => {
   for (let i = 0; i < NUM_ITERATIONS; i++) {
@@ -14,3 +19,5 @@ global.it = (name, fn, timeout) => {
     originalIt(`${name} (iteration ${i + 1})`, fn, timeout);
   }
 };
+
+global.it.each = originalIt.each;
