@@ -13,7 +13,7 @@ const rootWalletKeys = getDefaultWalletKeys();
 describe('Zcash PSBT', function () {
   let psbt: utxolib.bitgo.ZcashPsbt;
   before(async function () {
-    const unspents = mockUnspents(rootWalletKeys, ['p2sh'], BigInt('10000000000000000'), network);
+    const unspents = mockUnspents(rootWalletKeys, ['p2sh'], BigInt('1000000000000000'), network);
     psbt = await utxolib.bitgo.ZcashPsbt.createPsbt({ network });
 
     unspents.forEach((unspent) => {
