@@ -175,15 +175,4 @@ export class AddressInitializationBuilder extends TransactionBuilder {
     const args = EthereumAbi.rawEncode(createForwarderTypes, createForwarderParams);
     return addHexPrefix(Buffer.concat([method, args]).toString('hex'));
   }
-
-  /** @inheritdoc */
-  protected fromImplementation(rawTransaction: string): Transaction {
-    const tx = new AddressInitializationTransaction(this._coinConfig);
-    this.validateRawTransaction(rawTransaction);
-
-    tx.fromRawTransaction(rawTransaction);
-    this.initBuilder(tx);
-    this.validateTransaction(tx);
-    return this.transaction;
-  }
 }

@@ -26,6 +26,7 @@ export class Transaction extends BaseTransaction {
   protected _recipients: TransactionRecipient[];
   protected _clauses: TransactionClause[];
   protected _contract: string;
+  protected _transactionData: string;
   private _chainTag: number;
   private _blockRef: string;
   private _expiration: number;
@@ -200,6 +201,14 @@ export class Transaction extends BaseTransaction {
 
   set contract(address: string) {
     this._contract = address;
+  }
+
+  get transactionData(): string {
+    return this._transactionData;
+  }
+
+  set transactionData(transactionData: string) {
+    this._transactionData = transactionData;
   }
 
   /**
@@ -392,6 +401,9 @@ export class Transaction extends BaseTransaction {
     switch (this.type) {
       case TransactionType.AddressInitialization:
         this._type = TransactionType.AddressInitialization;
+        break;
+      case TransactionType.FlushTokens:
+        this._type = TransactionType.FlushTokens;
         break;
       case TransactionType.Send:
         this._type = TransactionType.Send;
