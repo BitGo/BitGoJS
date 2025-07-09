@@ -81,6 +81,10 @@ export interface SuiParsedTransaction extends ParsedTransaction {
 
 export type SuiTransactionExplanation = TransactionExplanation;
 
+export interface SuiMPCTx extends MPCTx {
+  feePayerSignature?: string;
+}
+
 export class Sui extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
   protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
@@ -647,9 +651,18 @@ export class Sui extends BaseCoin {
     const url = this.getPublicNodeUrl();
     let digest = '';
     if (!!transactions) {
-      for (const txn of transactions) {
+      for (const txn of transactions as SuiMPCTx[]) {
         try {
-          digest = await utils.executeTransactionBlock(url, txn.serializedTx, [txn.signature!]);
+          if (txn.feePayerSignature) {
+            digest = await utils.executeTransactionBlockWithMultipleSigners(
+              url,
+              txn.serializedTx,
+              txn.signature!,
+              txn.feePayerSignature
+            );
+          } else {
+            digest = await utils.executeTransactionBlock(url, txn.serializedTx, [txn.signature!]);
+          }
         } catch (e) {
           throw new Error(`Failed to broadcast transaction, error: ${e.message}`);
         }
