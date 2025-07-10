@@ -1,6 +1,11 @@
 import { TransactionType, InvalidTransactionError } from '@bitgo/sdk-core';
-import { getCreateForwarderParamsAndTypes, calculateForwarderV1Address } from '@bitgo/abstract-eth';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import {
+  getCreateForwarderParamsAndTypes,
+  calculateForwarderV1Address,
+  decodeForwarderCreationData,
+  getProxyInitcode,
+} from '@bitgo/abstract-eth';
+import { BaseCoin as CoinConfig, EthereumNetwork } from '@bitgo/statics';
 import * as ethUtil from 'ethereumjs-util';
 import EthereumAbi from 'ethereumjs-abi';
 import { Transaction as VetTransaction, Secp256k1 } from '@vechain/sdk-core';
@@ -62,7 +67,6 @@ export class AddressInitializationTransaction extends Transaction {
   /** @inheritdoc */
   async build(): Promise<void> {
     super.build();
-
     if (this._salt && this._initCode) {
       const saltBuffer = ethUtil.setLengthLeft(ethUtil.toBuffer(this._salt), 32);
 
@@ -134,6 +138,15 @@ export class AddressInitializationTransaction extends Transaction {
       // Set data from clauses
       this.contract = body.clauses[0]?.to || '0x0';
       this.transactionData = body.clauses[0]?.data || '0x0';
+      this.type = TransactionType.AddressInitialization;
+      const { baseAddress, addressCreationSalt, feeAddress } = decodeForwarderCreationData(this.transactionData);
+
+      this.baseAddress = baseAddress as string;
+      this.salt = addressCreationSalt as string;
+      this.feeAddress = feeAddress as string;
+      const forwarderImplementationAddress = (this._coinConfig.network as EthereumNetwork)
+        .forwarderImplementationAddress as string;
+      this.initCode = getProxyInitcode(forwarderImplementationAddress);
 
       // Set sender address
       if (signedTx.origin) {

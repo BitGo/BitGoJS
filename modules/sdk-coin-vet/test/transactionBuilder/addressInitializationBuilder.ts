@@ -83,6 +83,20 @@ describe('Address Initialisation Transaction', () => {
       should.equal(toJson.deployedAddress, testData.FORWARDER_ADDRESS);
       should.equal(toJson.value, '0');
     });
+
+    it('should build properly from serialized', async () => {
+      const txBuilder = factory.from(testData.SERIALIZED_SIGNED_ADDRESS_INIT_TX);
+      const signedTx = await txBuilder.build();
+      const signedtxJson = signedTx.toJson();
+      should.equal(signedtxJson.gas, 150000);
+
+      txBuilder.gas(180000);
+      const tx = await txBuilder.build();
+      const txJson = tx.toJson();
+      should.equal(txJson.to, testData.FORWARDER_FACTORY_ADDRESS);
+      should.equal(txJson.gas, 180000);
+      console.log('txJson:', txJson);
+    });
   });
 
   describe('Fail', () => {

@@ -398,37 +398,24 @@ export class Transaction extends BaseTransaction {
   }
 
   loadInputsAndOutputs(): void {
-    switch (this.type) {
-      case TransactionType.AddressInitialization:
-        this._type = TransactionType.AddressInitialization;
-        break;
-      case TransactionType.FlushTokens:
-        this._type = TransactionType.FlushTokens;
-        break;
-      case TransactionType.Send:
-        this._type = TransactionType.Send;
-        const totalAmount = this._recipients.reduce(
-          (accumulator, current) => accumulator.plus(current.amount),
-          new BigNumber('0')
-        );
-        this._inputs = [
-          {
-            address: this.sender,
-            value: totalAmount.toString(),
-            coin: this._coinConfig.name,
-          },
-        ];
-        this._outputs = this._recipients.map((recipient) => {
-          return {
-            address: recipient.address,
-            value: recipient.amount as string,
-            coin: this._coinConfig.name,
-          };
-        });
-        break;
-      default:
-        throw new InvalidTransactionError(`Unsupported transaction type: ${this.type}`);
-    }
+    const totalAmount = this._recipients.reduce(
+      (accumulator, current) => accumulator.plus(current.amount),
+      new BigNumber('0')
+    );
+    this._inputs = [
+      {
+        address: this.sender,
+        value: totalAmount.toString(),
+        coin: this._coinConfig.name,
+      },
+    ];
+    this._outputs = this._recipients.map((recipient) => {
+      return {
+        address: recipient.address,
+        value: recipient.amount as string,
+        coin: this._coinConfig.name,
+      };
+    });
   }
 
   fromRawTransaction(rawTransaction: string): void {

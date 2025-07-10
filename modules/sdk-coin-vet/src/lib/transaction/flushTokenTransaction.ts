@@ -1,6 +1,7 @@
 import { TransactionType, InvalidTransactionError } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { Transaction as VetTransaction, Secp256k1 } from '@vechain/sdk-core';
+import { decodeFlushTokensData } from '@bitgo/abstract-eth';
 
 import { Transaction } from './transaction';
 import { VetTransactionData } from '../iface';
@@ -84,6 +85,9 @@ export class FlushTokenTransaction extends Transaction {
       // Set data from clauses
       this.contract = body.clauses[0]?.to || '0x0';
       this.transactionData = body.clauses[0]?.data || '0x0';
+      this.type = TransactionType.FlushTokens;
+      const { tokenAddress } = decodeFlushTokensData(this.transactionData, this.contract);
+      this.tokenAddress = tokenAddress;
 
       // Set sender address
       if (signedTx.origin) {
