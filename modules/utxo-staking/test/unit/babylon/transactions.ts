@@ -110,11 +110,12 @@ function getStakingTransactionTreeVendor(
   };
 }
 
-function createUnstakingTransaction(
+function spendStakingOutput(
   stakingTx: vendor.TransactionResult,
   descriptorBuilder: BabylonDescriptorBuilder,
+  type: 'unstaking' | 'unbonding',
   changeAddress: string,
-  { sequence }: { sequence: number }
+  { sequence }: { sequence?: number }
 ): utxolib.Psbt {
   const network = utxolib.networks.bitcoin;
   const witnessUtxoNumber = stakingTx.transaction.outs[0];
@@ -122,6 +123,14 @@ function createUnstakingTransaction(
     script: witnessUtxoNumber.script,
     value: BigInt(witnessUtxoNumber.value),
   };
+  const selectTapLeafScript = Miniscript.fromString(
+    ast.formatNode(
+      type === 'unstaking'
+        ? descriptorBuilder.getTimelockMiniscriptNode()
+        : descriptorBuilder.getUnbondingMiniscriptNode()
+    ),
+    'tap'
+  );
   return createPsbt(
     {
       network,
@@ -132,10 +141,7 @@ function createUnstakingTransaction(
         index: 0,
         witnessUtxo,
         descriptor: descriptorBuilder.getStakingDescriptor(),
-        selectTapLeafScript: Miniscript.fromString(
-          ast.formatNode(descriptorBuilder.getTimelockMiniscriptNode()),
-          'tap'
-        ),
+        selectTapLeafScript,
         sequence,
       },
     ],
@@ -422,18 +428,51 @@ function describeWithKeys(
         }
       });
 
-      it('creates unstaking transaction', async function () {
-        const unstakingPsbt = createUnstakingTransaction(stakingTx, descriptorBuilder, changeAddress, {
-          sequence: stakingParams.minStakingTimeBlocks,
-        });
+      async function testCreateTransaction(
+        type: 'unstaking' | 'unbonding',
+        params: {
+          sequence?: number;
+          signers: utxolib.ECPairInterface[];
+          finalize: boolean;
+        }
+      ) {
+        const unstakingPsbt = spendStakingOutput(stakingTx, descriptorBuilder, type, changeAddress, params);
         const wrappedPsbt = toWrappedPsbt(unstakingPsbt);
-        assert(getNewSignatureCount(signWithKey(wrappedPsbt, stakerKey)) > 0);
+        params.signers.forEach((signer) => {
+          assert(getNewSignatureCount(signWithKey(wrappedPsbt, signer)) > 0);
+        });
+        if (!params.finalize) {
+          return;
+        }
         wrappedPsbt.finalize();
         const tx = toUtxoPsbt(wrappedPsbt, utxolib.networks.bitcoin).extractTransaction();
-        await assertTransactionEqualsFixture(`test/fixtures/babylon/unstakingTransaction.${tag}.json`, {
+        await assertTransactionEqualsFixture(`test/fixtures/babylon/${type}Transaction.${tag}.json`, {
           psbt: unstakingPsbt,
           transaction: tx,
         });
+      }
+
+      it('creates unstaking transaction', async function () {
+        await testCreateTransaction('unstaking', {
+          sequence: stakingParams.minStakingTimeBlocks,
+          signers: [stakerKey],
+          finalize: true,
+        });
+      });
+
+      it('creates unbonding transaction', async function () {
+        await testCreateTransaction(
+          'unbonding',
+          signIntermediateTxs
+            ? {
+                signers: [stakerKey, ...covenantKeys],
+                finalize: true,
+              }
+            : {
+                signers: [stakerKey],
+                finalize: false,
+              }
+        );
       });
     });
   });
