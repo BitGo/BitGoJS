@@ -1115,7 +1115,8 @@ export const erc20Coins = [
     'BlackRock USD Institutional Digital Liquidity Fund',
     6,
     '0x7712c34205737192402172409a8f7ccef8aa2aec',
-    UnderlyingAsset.BUIDL
+    UnderlyingAsset.BUIDL,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '43a646c7-f137-4f02-ba36-a98a5c72bf45',
@@ -10252,7 +10253,8 @@ export const erc20Coins = [
     'Rolling T-bill',
     6,
     '0x526be1c610616be0e8e69893fc6766fddfbada61',
-    UnderlyingAsset['eth:rtbl']
+    UnderlyingAsset['eth:rtbl'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '147e1c0b-20a4-4862-9038-42a6fb7894d0',
@@ -10421,7 +10423,8 @@ export const erc20Coins = [
     'WisdomTree Floating Rate Treasury Digital Fund',
     18,
     '0x98f865bd2e5a3e289b8cca54f24a7eeb2bba56ce',
-    UnderlyingAsset['eth:flttx']
+    UnderlyingAsset['eth:flttx'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'b3aa443c-30f3-4369-9a09-c5cd51f1789d',
@@ -10429,7 +10432,8 @@ export const erc20Coins = [
     'WisdomTree Short-Duration Income Digital Fund',
     18,
     '0x518fb6afefea9bb0a5135014d8032edee4a8b1ec',
-    UnderlyingAsset['eth:wtsix']
+    UnderlyingAsset['eth:wtsix'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '69c59d2c-2e9a-4fea-9cdc-18e89d1e8df6',
@@ -10437,7 +10441,8 @@ export const erc20Coins = [
     'WisdomTree Siegel Moderate Digital Fund',
     18,
     '0xfb20015fb2047320a0f1c209f35c6432147770e8',
-    UnderlyingAsset['eth:modrx']
+    UnderlyingAsset['eth:modrx'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '88baf298-5ed4-4767-a44c-6312a4ce4c3f',
@@ -10445,7 +10450,8 @@ export const erc20Coins = [
     'WisdomTree Technology & Innovation 100 Digital Fund',
     18,
     '0x1a17f2bdb023e516f1b32b121f332fa931802a9f',
-    UnderlyingAsset['eth:techx']
+    UnderlyingAsset['eth:techx'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'c8d27e15-dc81-490a-9bbf-20e051ff8e4a',
@@ -10453,7 +10459,8 @@ export const erc20Coins = [
     'WisdomTree Short-Term Treasury Digital Fund',
     18,
     '0x3340e2c0ddcc4a035737bc1f5445c7d0fa6cbf5c',
-    UnderlyingAsset['eth:wtsyx']
+    UnderlyingAsset['eth:wtsyx'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '3dc5f6ed-ca1a-45e6-9b1c-c4085c25900e',
@@ -10461,7 +10468,8 @@ export const erc20Coins = [
     'WisdomTree Long Term Treasury Digital Fund',
     18,
     '0x4d682cbd74a67b1ffe97a2bb78475a16efe23e8a',
-    UnderlyingAsset['eth:wtlgx']
+    UnderlyingAsset['eth:wtlgx'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'bd6c8c3a-9253-40eb-915e-20e01735be32',
@@ -10469,7 +10477,8 @@ export const erc20Coins = [
     'WisdomTree 3-7 Year Treasury Digital Fund',
     18,
     '0xe7d2e561b8e3b1a0125f45da596706110f8953be',
-    UnderlyingAsset['eth:wttsx']
+    UnderlyingAsset['eth:wttsx'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '843ed917-4fc7-4e2c-97a5-4c9f293aac4b',
@@ -10477,7 +10486,8 @@ export const erc20Coins = [
     'WisdomTree TIPS Digital Fund',
     18,
     '0xa4964a2fe606f1d445e36006bcb7f7faee580042',
-    UnderlyingAsset['eth:tipsx']
+    UnderlyingAsset['eth:tipsx'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'b0164bbb-757b-4973-b54d-a2f751946c98',
@@ -10485,7 +10495,8 @@ export const erc20Coins = [
     'WisdomTree 7-10 Year Treasury Digital Fund',
     18,
     '0xa58b23027cdeb442854bb8063164d1fd48f37707',
-    UnderlyingAsset['eth:wtstx']
+    UnderlyingAsset['eth:wtstx'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '49f8d4e5-995f-453b-a4c0-77867e304702',
@@ -10493,7 +10504,8 @@ export const erc20Coins = [
     'WisdomTree Siegel Longevity Digital Fund',
     18,
     '0x2ecad4280b7720ba4f3830b47ab8ef2da4763f04',
-    UnderlyingAsset['eth:lngvx']
+    UnderlyingAsset['eth:lngvx'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '894ec30f-10c6-479b-8291-fac4af4a44a3',
@@ -10501,7 +10513,8 @@ export const erc20Coins = [
     'WisdomTree Siegel Global Equity Digital Fund',
     18,
     '0xa14669a76b12f94d6ad09304ad15905e900a6e25',
-    UnderlyingAsset['eth:eqtyx']
+    UnderlyingAsset['eth:eqtyx'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '23e6a094-16ee-4604-88c2-42b73b765fd6',

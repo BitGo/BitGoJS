@@ -2912,7 +2912,8 @@ export const coins = CoinMap.fromCoins([
     'WisdomTree Floating Rate Treasury Digital Fund',
     18,
     '0x3b9c11cb16b4c9eeb1408dad409afbe800abde3f',
-    UnderlyingAsset['arbeth:flttx']
+    UnderlyingAsset['arbeth:flttx'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   arbethErc20(
     '5f1c54f1-3cc5-48b4-9aa4-668d84cca4fb',
@@ -2928,7 +2929,8 @@ export const coins = CoinMap.fromCoins([
     'WisdomTree Siegel Moderate Digital Fund',
     18,
     '0x496d35292d68c988ba37668ca92aafdaf5c35415',
-    UnderlyingAsset['arbeth:modrx']
+    UnderlyingAsset['arbeth:modrx'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   arbethErc20(
     '59c4e660-9d23-458f-81fc-69456aefb811',
@@ -2936,7 +2938,8 @@ export const coins = CoinMap.fromCoins([
     'WisdomTree Technology & Innovation 100 Digital Fund',
     18,
     '0x5ef799dce2e8272b4a72a62c0d34250ef7e42ac0',
-    UnderlyingAsset['arbeth:techx']
+    UnderlyingAsset['arbeth:techx'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   arbethErc20(
     '99cdac69-d7d9-46ec-adc3-374643983f40',
@@ -2944,7 +2947,8 @@ export const coins = CoinMap.fromCoins([
     'WisdomTree Short-Term Treasury Digital Fund',
     18,
     '0xeac8180e6c03bb5e8ed11b1c09e06d4a7a6fecc4',
-    UnderlyingAsset['arbeth:wtsyx']
+    UnderlyingAsset['arbeth:wtsyx'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   arbethErc20(
     '10fda1b7-4d07-47ba-996b-f8c9bca4c128',
@@ -2952,7 +2956,8 @@ export const coins = CoinMap.fromCoins([
     'WisdomTree Long Term Treasury Digital Fund',
     18,
     '0xf9cbf82f5a609a59fb53864fe1b01e010daf6c27',
-    UnderlyingAsset['arbeth:wtlgx']
+    UnderlyingAsset['arbeth:wtlgx'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   arbethErc20(
     '36548ee4-dacb-49ac-9319-779679ed5c47',
@@ -2960,7 +2965,8 @@ export const coins = CoinMap.fromCoins([
     'WisdomTree 3-7 Year Treasury Digital Fund',
     18,
     '0xc66bb5e302e6948a5a902cc17f1894250ca82500',
-    UnderlyingAsset['arbeth:wttsx']
+    UnderlyingAsset['arbeth:wttsx'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   arbethErc20(
     '7de0b5db-c86b-4330-b3d4-6e5106dd496c',
@@ -2968,7 +2974,8 @@ export const coins = CoinMap.fromCoins([
     'WisdomTree TIPS Digital Fund',
     18,
     '0x4e933c45e1cfdd309eeef439bf0ec481c38849da',
-    UnderlyingAsset['arbeth:tipsx']
+    UnderlyingAsset['arbeth:tipsx'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   arbethErc20(
     '6dc4cf2d-2c69-4334-a66d-95be36633f09',
@@ -2976,7 +2983,8 @@ export const coins = CoinMap.fromCoins([
     'WisdomTree 7-10 Year Treasury Digital Fund',
     18,
     '0x19842916b4f346d48526d5bc3ebbc540b408a647',
-    UnderlyingAsset['arbeth:wtstx']
+    UnderlyingAsset['arbeth:wtstx'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   arbethErc20(
     'aae6325b-573f-47bc-9e5b-98d5223aaf80',
@@ -2993,7 +3001,8 @@ export const coins = CoinMap.fromCoins([
     'WisdomTree Siegel Longevity Digital Fund',
     18,
     '0x777a4d310cf66c1d272c7cd17bd054a456a26d34',
-    UnderlyingAsset['arbeth:lngvx']
+    UnderlyingAsset['arbeth:lngvx'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   arbethErc20(
     '4d3dce6a-3829-44bd-90a1-0c172dadbb1f',
@@ -3001,7 +3010,8 @@ export const coins = CoinMap.fromCoins([
     'WisdomTree Siegel Global Equity Digital Fund',
     18,
     '0x6bb04085922d08d1c7de0cfe95f7626a6f54be95',
-    UnderlyingAsset['arbeth:eqtyx']
+    UnderlyingAsset['arbeth:eqtyx'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   arbethErc20(
     'd915f6a3-f37e-4da1-b38e-c8c08cae8365',
@@ -3099,7 +3109,8 @@ export const coins = CoinMap.fromCoins([
     'WisdomTree Floating Rate Treasury Digital Fund',
     18,
     '0xdc8e5a4954b1b4245e910fc17c9b4e4aa407595d',
-    UnderlyingAsset['opeth:flttx']
+    UnderlyingAsset['opeth:flttx'],
+    AccountCoin.getFeaturesExcluding([CoinFeature.CUSTODY_BITGO_SINGAPORE])
   ),
   opethErc20(
     '1066c0f3-4aab-4e5c-8ca2-a52da00d7b36',
@@ -3115,7 +3126,8 @@ export const coins = CoinMap.fromCoins([
     'WisdomTree Siegel Moderate Digital Fund',
     18,
     '0x06ee92531ff2c8fdb5348b31b41df0f9a3a1ca97',
-    UnderlyingAsset['opeth:modrx']
+    UnderlyingAsset['opeth:modrx'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   opethErc20(
     '31caf4ac-34e3-4da4-afef-16461632821d',
@@ -3123,7 +3135,8 @@ export const coins = CoinMap.fromCoins([
     'WisdomTree Technology & Innovation 100 Digital Fund',
     18,
     '0x7f259541089253a037e1367ac09beed98f1a7974',
-    UnderlyingAsset['opeth:techx']
+    UnderlyingAsset['opeth:techx'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   opethErc20(
     'c5ad389e-ce78-4e31-befc-3f380ba36987',
@@ -3131,7 +3144,8 @@ export const coins = CoinMap.fromCoins([
     'WisdomTree Short-Term Treasury Digital Fund',
     18,
     '0xbe310315ef22d0eb8a91c211a7286b10d21be7fc',
-    UnderlyingAsset['opeth:wtsyx']
+    UnderlyingAsset['opeth:wtsyx'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   opethErc20(
     'd668023a-aee7-4415-9aec-235c4864368b',
@@ -3139,7 +3153,8 @@ export const coins = CoinMap.fromCoins([
     'WisdomTree Long Term Treasury Digital Fund',
     18,
     '0x449331e1f93b0dbe0d54a7ce8bb3a5585f27848a',
-    UnderlyingAsset['opeth:wtlgx']
+    UnderlyingAsset['opeth:wtlgx'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   opethErc20(
     '52fcc1be-29cd-4244-b8a2-0b0a4e4be160',
@@ -3147,7 +3162,8 @@ export const coins = CoinMap.fromCoins([
     'WisdomTree 3-7 Year Treasury Digital Fund',
     18,
     '0x401e7e6558507764805a545f61c049361aa7a7cb',
-    UnderlyingAsset['opeth:wttsx']
+    UnderlyingAsset['opeth:wttsx'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   opethErc20(
     'a93b6916-2d6e-4034-9b2e-59f9da648447',
@@ -3155,7 +3171,8 @@ export const coins = CoinMap.fromCoins([
     'WisdomTree TIPS Digital Fund',
     18,
     '0xbe0917f9d9d8a97e5ee0796831e0b05a1edc8437',
-    UnderlyingAsset['opeth:tipsx']
+    UnderlyingAsset['opeth:tipsx'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   opethErc20(
     'ceb36c00-87b1-4617-8380-a744bbf21dea',
@@ -3163,7 +3180,8 @@ export const coins = CoinMap.fromCoins([
     'WisdomTree 7-10 Year Treasury Digital Fund',
     18,
     '0x15f0fb408097ce442482a127edc23371b0201964',
-    UnderlyingAsset['opeth:wtstx']
+    UnderlyingAsset['opeth:wtstx'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   opethErc20(
     '669694f3-94ed-43da-a35a-cb03a721e9da',
@@ -3180,7 +3198,8 @@ export const coins = CoinMap.fromCoins([
     'WisdomTree Siegel Longevity Digital Fund',
     18,
     '0xf5fe77f469e598ecd2c08e5f874c206f8cfee807',
-    UnderlyingAsset['opeth:lngvx']
+    UnderlyingAsset['opeth:lngvx'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   opethErc20(
     '3b200233-f137-4b3c-80fe-16e7beb637b6',
@@ -3188,7 +3207,8 @@ export const coins = CoinMap.fromCoins([
     'WisdomTree Siegel Global Equity Digital Fund',
     18,
     '0x8ac0d6b94ae23ad40407bc4dc16d74f09131eb48',
-    UnderlyingAsset['opeth:eqtyx']
+    UnderlyingAsset['opeth:eqtyx'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   topethErc20(
     '3c06bc28-1af2-4869-a632-bd081376fb46',
