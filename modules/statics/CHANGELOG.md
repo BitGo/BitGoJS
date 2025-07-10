@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [55.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@54.7.0...@bitgo/statics@55.0.0) (2025-07-10)
+
+### Bug Fixes
+
+- **sdk-coin-polyx:** add mainnet address format ([4d02932](https://github.com/BitGo/BitGoJS/commit/4d02932045d5d6f02a9127cb189a5e71dc803f38))
+- **statics:** correct berachain url ([6135edc](https://github.com/BitGo/BitGoJS/commit/6135edc946a775a476d96be7adc0fe80f06122de))
+
+### Features
+
+- added a new batch of eth tokens ([a056491](https://github.com/BitGo/BitGoJS/commit/a05649116efaf2252c32ba1b21d90e76411469a4))
+- gate certain high risk tokens from Singapore custody ([9ae418a](https://github.com/BitGo/BitGoJS/commit/9ae418a1a6eba8d51e174b135d45795752e9a630))
+- **sdk-coin-vet:** add address init builder ([09f5b21](https://github.com/BitGo/BitGoJS/commit/09f5b211deb3ee0b29b13d9844937ea02d712525))
+- **statics:** add creditcoin chain config ([104014d](https://github.com/BitGo/BitGoJS/commit/104014d70bfabb3962172af98501a85410c16f9c))
+- **statics:** add pharos chain config ([9dd76f9](https://github.com/BitGo/BitGoJS/commit/9dd76f9d7e7328d1999131b270efafa092720005))
+
+### BREAKING CHANGES
+
+- **sdk-coin-vet:** interface TxData has been removed from sdk-coin-vet
+
+interface VetTransactionData has been moved from modules/sdk-coin-vet/src/lib/transaction/transaction.ts to modules/sdk-coin-vet/src/lib/iface.ts
+
+fromImplementation method has been moved from modules/sdk-coin-vet/src/lib/transactionBuilder/transactionBuilder.ts to modules/sdk-coin-vet/src/lib/transactionBuilder/transferBuilder.ts
+
 # [54.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@54.6.0...@bitgo/statics@54.7.0) (2025-07-03)
 
 ### Bug Fixes

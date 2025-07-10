@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [35.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@35.5.0...@bitgo/sdk-core@35.6.0) (2025-07-10)
+
+### Features
+
+- **account-lib:** verify encoded message ([71a7dd6](https://github.com/BitGo/BitGoJS/commit/71a7dd6cf56010c94364483b7c83221d9a26688e))
+- **sdk-coin-ada:** add CIP-8 message builder ([50c53ec](https://github.com/BitGo/BitGoJS/commit/50c53ecc998815ad25a0b08f27a167a9d2d8d948))
+- **sdk-core:** add simple message builder for sol ([d5af5c8](https://github.com/BitGo/BitGoJS/commit/d5af5c8d45f88feb01387b45f9b1e2cfeb70a2e8))
+- **sdk-core:** create message sign request ([2152ad4](https://github.com/BitGo/BitGoJS/commit/2152ad4bb03851f0a14a1523219dc8052c773750))
+- **statics:** add creditcoin chain config ([104014d](https://github.com/BitGo/BitGoJS/commit/104014d70bfabb3962172af98501a85410c16f9c))
+- **statics:** add pharos chain config ([9dd76f9](https://github.com/BitGo/BitGoJS/commit/9dd76f9d7e7328d1999131b270efafa092720005))
+
 # [35.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@35.4.1...@bitgo/sdk-core@35.5.0) (2025-07-03)
 
 ### Features

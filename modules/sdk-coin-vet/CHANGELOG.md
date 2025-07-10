@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@1.6.2...@bitgo/sdk-coin-vet@2.0.0) (2025-07-10)
+
+### Bug Fixes
+
+- **sdk-coin-vet:** correct signable payload for vechain transaction ([9152ce6](https://github.com/BitGo/BitGoJS/commit/9152ce6cf781a69762d0298aa88133438f70fda9))
+- **sdk-coin-vet:** fix issues in addressinit builder and flushtoken builder ([ac55b9f](https://github.com/BitGo/BitGoJS/commit/ac55b9ff10331bdd864ea7e903ee983944ca4cd0))
+- **sdk-coin-vet:** fix issues in fromRawTransaction ([3502030](https://github.com/BitGo/BitGoJS/commit/35020301db5ea6ef21afa44c5830d6a53a624174))
+
+### Features
+
+- **sdk-coin-vet:** add address init builder ([09f5b21](https://github.com/BitGo/BitGoJS/commit/09f5b211deb3ee0b29b13d9844937ea02d712525))
+- **sdk-coin-vet:** add flushtoken txbuilder ([f28db93](https://github.com/BitGo/BitGoJS/commit/f28db93b1a2a48dca326e4a01fcc2bac00b458e0))
+
+### BREAKING CHANGES
+
+- **sdk-coin-vet:** interface TxData has been removed from sdk-coin-vet
+
+interface VetTransactionData has been moved from modules/sdk-coin-vet/src/lib/transaction/transaction.ts to modules/sdk-coin-vet/src/lib/iface.ts
+
+fromImplementation method has been moved from modules/sdk-coin-vet/src/lib/transactionBuilder/transactionBuilder.ts to modules/sdk-coin-vet/src/lib/transactionBuilder/transferBuilder.ts
+
 ## [1.6.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@1.6.1...@bitgo/sdk-coin-vet@1.6.2) (2025-07-03)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-vet

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.5.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polyx@1.5.0...@bitgo/sdk-coin-polyx@1.5.1) (2025-07-10)
+
+### Bug Fixes
+
+- **sdk-coin-polyx:** add mainnet address format ([4d02932](https://github.com/BitGo/BitGoJS/commit/4d02932045d5d6f02a9127cb189a5e71dc803f38))
+
 # [1.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polyx@1.4.2...@bitgo/sdk-coin-polyx@1.5.0) (2025-07-03)
 
 ### Features

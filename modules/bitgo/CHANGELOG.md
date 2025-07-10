@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [48.4.0](https://github.com/BitGo/BitGoJS/compare/bitgo@48.3.0...bitgo@48.4.0) (2025-07-10)
+
+### Bug Fixes
+
+- **bitgo:** register ofc constructor without using AMS api ([d327755](https://github.com/BitGo/BitGoJS/commit/d3277555aa506b3f7e71104eaa44ca94d9e1b5e5))
+
+### Features
+
+- enable message signing for ADA and SOL ([1ee3499](https://github.com/BitGo/BitGoJS/commit/1ee349934b497e3ef3dad8a33664f479f8247dfe))
+- **sdk-core:** create message sign request ([2152ad4](https://github.com/BitGo/BitGoJS/commit/2152ad4bb03851f0a14a1523219dc8052c773750))
+- **statics:** add creditcoin chain config ([104014d](https://github.com/BitGo/BitGoJS/commit/104014d70bfabb3962172af98501a85410c16f9c))
+- **statics:** add pharos chain config ([9dd76f9](https://github.com/BitGo/BitGoJS/commit/9dd76f9d7e7328d1999131b270efafa092720005))
+
 # [48.3.0](https://github.com/BitGo/BitGoJS/compare/bitgo@48.2.1...bitgo@48.3.0) (2025-07-03)
 
 ### Features

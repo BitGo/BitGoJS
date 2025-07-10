@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [24.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.6.0...@bitgo/abstract-eth@24.7.0) (2025-07-10)
+
+### Features
+
+- **account-lib:** verify encoded message ([71a7dd6](https://github.com/BitGo/BitGoJS/commit/71a7dd6cf56010c94364483b7c83221d9a26688e))
+- **sdk-coin-ada:** add CIP-8 message builder ([50c53ec](https://github.com/BitGo/BitGoJS/commit/50c53ecc998815ad25a0b08f27a167a9d2d8d948))
+- **sdk-core:** add simple message builder for sol ([d5af5c8](https://github.com/BitGo/BitGoJS/commit/d5af5c8d45f88feb01387b45f9b1e2cfeb70a2e8))
+
 # [24.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.5.4...@bitgo/abstract-eth@24.6.0) (2025-07-03)
 
 ### Features

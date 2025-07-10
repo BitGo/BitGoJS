@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@3.7.3...@bitgo/utxo-bin@3.8.0) (2025-07-10)
+
+### Features
+
+- **utxo-bin:** add descriptor fromFixedScript command ([e69228d](https://github.com/BitGo/BitGoJS/commit/e69228d5a0dfe7e05cdc6e9220f25975bc8d1fb6))
+- **utxo-bin:** add formatObjAsTree helper ([9da8738](https://github.com/BitGo/BitGoJS/commit/9da8738b3bee8dda871586467ca813625d0c7a6a))
+- **utxo-bin:** add network support to fromFixedScript command ([7c927ff](https://github.com/BitGo/BitGoJS/commit/7c927ffe7406ac8e2254f8965842dcad9a13f802))
+- **utxo-bin:** add utility for capturing console output in tests ([593afab](https://github.com/BitGo/BitGoJS/commit/593afab809ba655608700105084a02925974626f))
+- **utxo-bin:** allow imports from utxo-core and noble/curves ([184859d](https://github.com/BitGo/BitGoJS/commit/184859d29be88e588ec49f059d50eb24b14c9abb))
+
 ## [3.7.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@3.7.2...@bitgo/utxo-bin@3.7.3) (2025-07-03)
 
 **Note:** Version bump only for package @bitgo/utxo-bin

@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.11.5...@bitgo/sdk-coin-ada@4.12.0) (2025-07-10)
+
+### Features
+
+- **account-lib:** verify encoded message ([71a7dd6](https://github.com/BitGo/BitGoJS/commit/71a7dd6cf56010c94364483b7c83221d9a26688e))
+- enable message signing for ADA and SOL ([1ee3499](https://github.com/BitGo/BitGoJS/commit/1ee349934b497e3ef3dad8a33664f479f8247dfe))
+- **sdk-coin-ada:** add CIP-8 message builder ([e6814dc](https://github.com/BitGo/BitGoJS/commit/e6814dcb25fff07d359e7ecdad214f78376f33ae))
+- **sdk-coin-ada:** add CIP-8 message builder ([50c53ec](https://github.com/BitGo/BitGoJS/commit/50c53ecc998815ad25a0b08f27a167a9d2d8d948))
+- **sdk-core:** add simple message builder for sol ([d5af5c8](https://github.com/BitGo/BitGoJS/commit/d5af5c8d45f88feb01387b45f9b1e2cfeb70a2e8))
+
 ## [4.11.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.11.4...@bitgo/sdk-coin-ada@4.11.5) (2025-07-03)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ada
