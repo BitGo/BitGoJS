@@ -133,12 +133,14 @@ export function toPsbtBuffer(data: Buffer | string): Buffer {
  * This function allows signing or validating a psbt with non-segwit inputs those do not contain nonWitnessUtxo.
  */
 export function withUnsafeNonSegwit<T>(psbt: Psbt, fn: () => T, unsafe = true): T {
+  const prevValue = (psbt as any).__CACHE.__UNSAFE_SIGN_NONSEGWIT;
+  const prevValueWarn = (psbt as any).__CACHE.__WARN_UNSAFE_SIGN_NONSEGWIT;
   (psbt as any).__CACHE.__UNSAFE_SIGN_NONSEGWIT = unsafe;
   (psbt as any).__CACHE.__WARN_UNSAFE_SIGN_NONSEGWIT = !unsafe;
   try {
     return fn();
   } finally {
-    (psbt as any).__CACHE.__UNSAFE_SIGN_NONSEGWIT = false;
-    (psbt as any).__CACHE.__WARN_UNSAFE_SIGN_NONSEGWIT = true;
+    (psbt as any).__CACHE.__UNSAFE_SIGN_NONSEGWIT = prevValue;
+    (psbt as any).__CACHE.__WARN_UNSAFE_SIGN_NONSEGWIT = prevValueWarn;
   }
 }
