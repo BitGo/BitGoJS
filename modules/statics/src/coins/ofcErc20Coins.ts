@@ -2983,6 +2983,80 @@ export const ofcErc20Coins = [
     underlyingAssetForSymbol('eth:usdg')
   ),
   ofcerc20(
+    '597fa9d6-2cc5-451e-b964-c18ca41ef3df',
+    'ofceth:cake',
+    'PancakeSwap Token',
+    18,
+    underlyingAssetForSymbol('eth:cake')
+  ),
+  ofcerc20('82276898-2553-4cc7-b656-63d65ce72276', 'ofceth:nft', 'APENFT', 6, underlyingAssetForSymbol('eth:nft')),
+  ofcerc20(
+    '6ee6e08d-4bf3-4f6e-9505-9fd1a7931858',
+    'ofceth:morpho',
+    'Morpho Token',
+    18,
+    underlyingAssetForSymbol('eth:morpho')
+  ),
+  ofcerc20(
+    'c60b56e8-68ea-4b4c-83a5-4c18116c66fa',
+    'ofceth:usdd',
+    'Decentralized USD',
+    18,
+    underlyingAssetForSymbol('eth:usdd')
+  ),
+  ofcerc20('2732c732-1c77-4638-92a2-b2a6771e584b', 'ofceth:mx', 'MX Token', 18, underlyingAssetForSymbol('eth:mx')),
+  ofcerc20(
+    '46b59c47-1d86-4532-a1a3-c1f144219665',
+    'ofceth:flz',
+    'Fellaz Token',
+    18,
+    underlyingAssetForSymbol('eth:flz')
+  ),
+  ofcerc20(
+    '58fbf8bd-21c0-471e-9fea-738c74f876ea',
+    'ofceth:usd0',
+    'Usual USD',
+    18,
+    underlyingAssetForSymbol('eth:usd0')
+  ),
+  ofcerc20(
+    'f0c97bb2-a778-4605-94d6-e3c82bf68821',
+    'ofceth:white',
+    'WhiteRock',
+    18,
+    underlyingAssetForSymbol('eth:white')
+  ),
+  ofcerc20('1e6d4305-17fa-4384-90c8-2ead39487fa1', 'ofceth:upc', 'UPCX', 5, underlyingAssetForSymbol('eth:upc')),
+  ofcerc20(
+    'ea9767c2-c853-40e3-9c13-996e9ba08773',
+    'ofceth:lgct',
+    'Legacy Token',
+    18,
+    underlyingAssetForSymbol('eth:lgct')
+  ),
+  ofcerc20(
+    '291d2479-dfc5-4b20-bc64-bfeb8678e2e2',
+    'ofceth:usdtb',
+    'Ethena Labs USDtb',
+    18,
+    underlyingAssetForSymbol('eth:usdtb')
+  ),
+  ofcerc20(
+    '4f5f7e1e-b595-4fab-897b-a9293e9578e6',
+    'ofceth:deusd',
+    'Elixir deUSD',
+    18,
+    underlyingAssetForSymbol('eth:deusd')
+  ),
+  ofcerc20(
+    '62f1cd68-6ded-4bc8-8741-d15714f8d3c6',
+    'ofceth:neiro',
+    'Neiro (First Neiro On Ethereum)',
+    9,
+    underlyingAssetForSymbol('eth:neiro')
+  ),
+  ofcerc20('390fe96c-4b5c-4420-85d7-2dcfa9613bd5', 'ofceth:vana', 'Vana', 18, underlyingAssetForSymbol('eth:vana')),
+  ofcerc20(
     '2af4bdb7-18eb-46d5-a31a-22e297f12de9',
     'ofceth:spxux',
     'WisdomTree 500 Digital Fund',
