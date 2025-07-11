@@ -186,6 +186,7 @@ export const ofcCoins = [
   ofc('6f1f9d82-dc02-4448-b289-84e246a921f8', 'ofcbera', 'Bera', 18, UnderlyingAsset.BERA, CoinKind.CRYPTO),
   ofc('ecc046f9-eb9c-479d-943f-9fe0633ea212', 'ofcoas', 'oaschain', 18, UnderlyingAsset.OAS, CoinKind.CRYPTO),
   ofc('24c3b525-b5d3-45c0-9280-599db27c0fab', 'ofctao', 'Bittensor', 9, UnderlyingAsset.TAO, CoinKind.CRYPTO),
+  ofc('deb7cd02-7c4c-4f97-bc85-40aa5405e4db', 'ofcpolyx', 'Polymesh', 6, UnderlyingAsset.POLYX, CoinKind.CRYPTO),
   tofc(
     'a1f4bfa3-c493-4f9f-bb1b-06c5f526d5b2',
     'ofctpolyx',
