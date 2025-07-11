@@ -626,6 +626,14 @@ export const ofcCoins = [
     SOL_OFC_TOKEN_FEATURES
   ),
   ofcsolToken(
+    '65d92f2d-8488-4005-8eec-b8b2bfe9a4a9',
+    'ofcsol:pump',
+    'Pump',
+    6,
+    UnderlyingAsset['sol:pump'],
+    SOL_OFC_TOKEN_FEATURES
+  ),
+  ofcsolToken(
     '989eec31-a0d5-4cdc-b4de-6fca30cde366',
     'ofcsol:popcat',
     'POPCAT',

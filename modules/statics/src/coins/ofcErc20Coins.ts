@@ -2966,6 +2966,7 @@ export const ofcErc20Coins = [
   ofcerc20('242d03f9-34b9-4ed6-8fd3-de343b1c532e', 'ofcbigtime', 'Big Time', 18, underlyingAssetForSymbol('bigtime')),
   ofcerc20('c98091ab-9744-4705-9567-cc15f383c573', 'ofceth:aevo', 'Aevo', 18, underlyingAssetForSymbol('eth:aevo')),
   ofcerc20('b3590232-8360-4c0b-ab0e-c48c4e541d49', 'ofceth:alt', 'AltLayer', 18, underlyingAssetForSymbol('eth:alt')),
+  ofcerc20('45824966-9b29-4805-8c98-f0f21b63668f', 'ofceth:eco', 'ECO', 18, underlyingAssetForSymbol('eth:eco')),
   ofcerc20(
     'b75bff33-9720-469c-9ad7-f9f3c7b27f4d',
     'ofceth:rtbl',
