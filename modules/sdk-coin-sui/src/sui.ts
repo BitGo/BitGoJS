@@ -42,7 +42,7 @@ import {
 } from './lib';
 import utils from './lib/utils';
 import * as _ from 'lodash';
-import { SuiObjectInfo, SuiTransactionType } from './lib/iface';
+import { GasDataWithSponsor, SuiObjectInfo, SuiTransactionType } from './lib/iface';
 import {
   DEFAULT_GAS_OVERHEAD,
   DEFAULT_GAS_PRICE,
@@ -56,6 +56,20 @@ import { auditEddsaPrivateKey, getDerivationPath } from '@bitgo/sdk-lib-mpc';
 
 export interface ExplainTransactionOptions {
   txHex: string;
+}
+
+export interface CreateSponsoredTransactionOptions {
+  sender: string;
+  sponsor: string;
+  recipients: {
+    address: string;
+    amount: string;
+  }[];
+  gasData: {
+    price: number;
+    budget: number;
+    payment: SuiObjectInfo[];
+  };
 }
 
 export interface SuiParseTransactionOptions extends BaseParseTransactionOptions {
@@ -278,6 +292,31 @@ export class Sui extends BaseCoin {
 
   private getBuilder(): TransactionBuilderFactory {
     return new TransactionBuilderFactory(coins.get(this.getChain()));
+  }
+
+  /**
+   * Create a sponsored transaction where gas is paid by a different account
+   * @param params Parameters for creating a sponsored transaction
+   * @returns The built transaction ready for signing
+   */
+  async createSponsoredTransaction(params: CreateSponsoredTransactionOptions): Promise<TransferTransaction> {
+    const factory = this.getBuilder();
+    const gasData: GasDataWithSponsor = {
+      owner: params.sponsor,
+      price: params.gasData.price,
+      budget: params.gasData.budget,
+      payment: params.gasData.payment,
+      sponsor: params.sponsor,
+    };
+
+    const txBuilder = factory
+      .getTransferBuilder()
+      .type(SuiTransactionType.Transfer)
+      .sender(params.sender)
+      .send(params.recipients)
+      .gasData(gasData);
+
+    return (await txBuilder.build()) as TransferTransaction;
   }
 
   private getAddressFromPublicKey(derivedPublicKey: string) {
