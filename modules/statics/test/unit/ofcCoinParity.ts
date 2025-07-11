@@ -13,6 +13,11 @@ const EXCLUDED_ASSETS = new Set<string>([
   'tgbp', // confusion with the fiat version
 ]);
 
+const EXCLUDED_ASSETS_FOR_DECIMAL_CHECK = new Set<string>([
+  'ofctusd', // Not sure why decimalPlaces is set to 2 instead of 18.
+  'ofctgbp', // Not sure why decimalPlaces is set to 2 instead of 18.
+]);
+
 describe('OFC Coin parity tests', function () {
   it('should have parity with OFC for ERC20 tokens', function () {
     const ofcCoinsWithInvalidAssets = ofcErc20Coins
@@ -50,4 +55,33 @@ describe('OFC Coin parity tests', function () {
       // should(addedOfcErc20s.length).equal(0, 'Missing OFC ERC20s');
     }
   });
+
+  it('validate the decimalPlaces for ofc token', function () {
+    const ofcCoins = coins.filter((coin) => coin.family === 'ofc');
+    ofcCoins.forEach((ofcCoin) => {
+      const baseTokenName = ofcCoin.name.replace(/^ofc/, '');
+      const baseCoin = getCoin(baseTokenName);
+      if (
+        baseCoin &&
+        !EXCLUDED_ASSETS_FOR_DECIMAL_CHECK.has(ofcCoin.name) &&
+        baseCoin.decimalPlaces !== ofcCoin.decimalPlaces
+      ) {
+        baseCoin.decimalPlaces.should.equal(ofcCoin.decimalPlaces);
+      }
+    });
+  });
+
+  function getCoin(coinName: string) {
+    try {
+      {
+        const coin = coins.get(coinName);
+        if (!coin) {
+          return undefined;
+        }
+        return coin;
+      }
+    } catch (e) {
+      return undefined;
+    }
+  }
 });

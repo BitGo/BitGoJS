@@ -912,7 +912,7 @@ export const ofcCoins = [
     '6fd31137-ab29-441e-9136-8b4bad4f0477',
     'ofctsol:usdc',
     'testnet USD Coin',
-    6,
+    9,
     UnderlyingAsset['tsol:usdc'],
     SOL_TOKEN_FEATURES
   ),
@@ -979,7 +979,7 @@ export const ofcCoins = [
   ofcTronToken('d953a72b-b7b9-4c8d-97bd-f03394e30608', 'ofctrx:trxs', 'Staked TRX', 18, UnderlyingAsset['trx:trxs']),
   ofcXrpToken('6a173023-5faf-4a0a-af38-b8be98abe94f', 'ofcxrp:rlusd', 'Ripple USD', 15, UnderlyingAsset['xrp:rlusd']),
   tofcXrpToken('bd406dab-3b55-4ab5-b0a5-74b9f94268a3', 'ofctxrp:rlusd', 'RLUSD', 15, UnderlyingAsset['txrp:rlusd']),
-  ofcXrpToken('eb3c02de-7221-4fde-9235-5cc576eb7c8b', 'ofcxrp:xsgd', 'XSGD', 6, UnderlyingAsset['xrp:xsgd']),
+  ofcXrpToken('eb3c02de-7221-4fde-9235-5cc576eb7c8b', 'ofcxrp:xsgd', 'XSGD', 15, UnderlyingAsset['xrp:xsgd']),
   ofcXrpToken(
     '46c75216-5498-4417-b73c-a08c11d693ad',
     'ofcxrp:tbill',
