@@ -35,7 +35,7 @@
     "@noble/curves": "1.8.1",
     "archy": "^1.0.0",
     "bech32": "^2.0.0",
-    "bitcoinjs-lib": "npm:@bitgo-forks/bitcoinjs-lib@7.1.0-master.2",
+    "bitcoinjs-lib": "npm:@bitgo-forks/bitcoinjs-lib@7.1.0-master.11",
     "bs58": "^5.0.0",
     "bs58check": "^2.1.2",
     "cashaddress": "^1.1.0",

@@ -10778,6 +10778,14 @@ export const erc20Coins = [
     UnderlyingAsset['eth:usdcv']
   ),
   erc20(
+    '12fdbdb5-1e93-4a70-b651-8017959e12da',
+    'eth:eco',
+    'ECO',
+    18,
+    '0x892e0aea725d365c2619282ea7a974e1ddaec821',
+    UnderlyingAsset['eth:eco']
+  ),
+  erc20(
     'e18703e9-f9d7-4454-baea-737a5469f37e',
     'eth:cake',
     'PancakeSwap Token',
@@ -10888,6 +10896,22 @@ export const erc20Coins = [
     18,
     '0x7ff7fa94b8b66ef313f7970d4eebd2cb3103a2c0',
     UnderlyingAsset['eth:vana']
+  ),
+  erc20(
+    '65e96474-3e1f-433a-990b-db78f4de7a97',
+    'eth:eurau',
+    'AllUnity EUR',
+    6,
+    '0x4933a85b5b5466fbaf179f72d3de273c287ec2c2',
+    UnderlyingAsset['eth:eurau']
+  ),
+  erc20(
+    'e2c62e37-fc8e-43c1-9a1c-47395c51fc61',
+    'eth:insur',
+    'InsurAce',
+    18,
+    '0x544c42fbb96b39b21df61cf322b5edc285ee7429',
+    UnderlyingAsset['eth:insur']
   ),
   terc20(
     '0205f0d6-0647-47c9-ad8b-c48d048e54f3',

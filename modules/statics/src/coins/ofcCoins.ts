@@ -626,6 +626,14 @@ export const ofcCoins = [
     SOL_OFC_TOKEN_FEATURES
   ),
   ofcsolToken(
+    '65d92f2d-8488-4005-8eec-b8b2bfe9a4a9',
+    'ofcsol:pump',
+    'Pump',
+    6,
+    UnderlyingAsset['sol:pump'],
+    SOL_OFC_TOKEN_FEATURES
+  ),
+  ofcsolToken(
     '989eec31-a0d5-4cdc-b4de-6fca30cde366',
     'ofcsol:popcat',
     'POPCAT',
@@ -779,6 +787,111 @@ export const ofcCoins = [
     UnderlyingAsset['sol:superbonds'],
     SOL_TOKEN_FEATURES
   ),
+  ofcsolToken(
+    '84304532-c319-4d24-977c-63ab57330cf7',
+    'ofcsol:would',
+    'Would',
+    6,
+    UnderlyingAsset['sol:would'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '486c6fd0-ea58-44c5-acee-7a523337faf2',
+    'ofcsol:dog',
+    'Dog (Bitcoin)',
+    5,
+    UnderlyingAsset['sol:dog'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '3d4bfe68-49cb-4d30-aef0-d143a9e9d9a7',
+    'ofcsol:saros',
+    'Saros',
+    6,
+    UnderlyingAsset['sol:saros'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '791dc370-17c2-4c15-80b0-649889dd5b0a',
+    'ofcsol:babydoge',
+    'Baby Doge',
+    1,
+    UnderlyingAsset['sol:babydoge'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '3e11dbb8-99e2-46b6-8dac-5810ef90ab26',
+    'ofcsol:useless',
+    'Useless Coin',
+    6,
+    UnderlyingAsset['sol:useless'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '4fed6bd6-884c-4ac2-8c18-ecc9cc9350cc',
+    'ofcsol:gohome',
+    'GOHOME',
+    6,
+    UnderlyingAsset['sol:gohome'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '27f505d7-c642-478a-adef-d93df942e87d',
+    'ofcsol:aura',
+    'Aura',
+    6,
+    UnderlyingAsset['sol:aura'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '242556a0-a792-48e0-9527-5ae6a5d9b4c1',
+    'ofcsol:me',
+    'Magic Eden',
+    6,
+    UnderlyingAsset['sol:me'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '95e2526f-3500-42cf-8207-dab2c52de9aa',
+    'ofcsol:alch',
+    'Alchemist AI',
+    6,
+    UnderlyingAsset['sol:alch'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    'b291bc5e-374f-40b1-9f55-88f43c46079b',
+    'ofcsol:launchcoin',
+    'Launch Coin on Believe',
+    9,
+    UnderlyingAsset['sol:launchcoin'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken('5b739473-b679-47ef-8312-c63e61e2e00c', 'ofcsol:stik', 'Staika', 9, UnderlyingAsset['sol:stik']),
+  ofcsolToken(
+    '35196f56-2259-470b-9ff1-1d4271a518be',
+    'ofcsol:chill',
+    'Chillchat',
+    9,
+    UnderlyingAsset['sol:chill'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    'e7bd47d4-caf1-4308-b939-ac1a8c301b22',
+    'ofcsol:zbcn',
+    'Zebec Network',
+    6,
+    UnderlyingAsset['sol:zbcn'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '3eb1b663-f67f-4237-8dcd-e1490d07e4ff',
+    'ofcsol:benji',
+    'BENJI',
+    9,
+    UnderlyingAsset['sol:benji'],
+    SOL_TOKEN_FEATURES
+  ),
   tofcsolToken(
     '24d678cf-e0f0-4cde-a338-d754289c5b27',
     'ofctsol:slnd',
@@ -799,7 +912,7 @@ export const ofcCoins = [
     '6fd31137-ab29-441e-9136-8b4bad4f0477',
     'ofctsol:usdc',
     'testnet USD Coin',
-    6,
+    9,
     UnderlyingAsset['tsol:usdc'],
     SOL_TOKEN_FEATURES
   ),
@@ -866,7 +979,7 @@ export const ofcCoins = [
   ofcTronToken('d953a72b-b7b9-4c8d-97bd-f03394e30608', 'ofctrx:trxs', 'Staked TRX', 18, UnderlyingAsset['trx:trxs']),
   ofcXrpToken('6a173023-5faf-4a0a-af38-b8be98abe94f', 'ofcxrp:rlusd', 'Ripple USD', 15, UnderlyingAsset['xrp:rlusd']),
   tofcXrpToken('bd406dab-3b55-4ab5-b0a5-74b9f94268a3', 'ofctxrp:rlusd', 'RLUSD', 15, UnderlyingAsset['txrp:rlusd']),
-  ofcXrpToken('eb3c02de-7221-4fde-9235-5cc576eb7c8b', 'ofcxrp:xsgd', 'XSGD', 6, UnderlyingAsset['xrp:xsgd']),
+  ofcXrpToken('eb3c02de-7221-4fde-9235-5cc576eb7c8b', 'ofcxrp:xsgd', 'XSGD', 15, UnderlyingAsset['xrp:xsgd']),
   ofcXrpToken(
     '46c75216-5498-4417-b73c-a08c11d693ad',
     'ofcxrp:tbill',
@@ -1131,6 +1244,14 @@ export const ofcCoins = [
     'Franklin OnChain U.S. Government Money Fund',
     18,
     UnderlyingAsset['avaxc:benji']
+  ),
+  ofcAvaxErc20('bdfcfb36-ded1-495f-a1d4-37b645bdc091', 'ofcavaxc:emdx', 'EMDX', 18, UnderlyingAsset['avaxc:emdx']),
+  ofcAvaxErc20(
+    '7a52f3b4-ccdd-4362-b6bb-0d81b8e7c7c5',
+    'ofcavaxc:eurc',
+    'Circle: EURC',
+    6,
+    UnderlyingAsset['avaxc:eurc']
   ),
   ofcAvaxErc20('9fb77e47-8916-4dcb-ac10-e11fa07172fb', 'ofcavaxc:nxpc', 'NEXPACE', 18, UnderlyingAsset['avaxc:nxpc']),
   ofcOpethErc20('10259b23-2e2e-4574-b146-b49f1119600f', 'ofcopeth:op', 'Optimism', 18, UnderlyingAsset['opeth:op']),
@@ -2484,6 +2605,13 @@ export const ofcCoins = [
     'Bonzo Finance',
     8,
     UnderlyingAsset['hbar:bonzo']
+  ),
+  ofcHederaToken(
+    '3294e3f7-8996-4de8-8b56-fd0303080bbf',
+    'ofchbar:hsuite',
+    'HbarSuite',
+    4,
+    UnderlyingAsset['hbar:hsuite']
   ),
 
   tofcHederaToken(

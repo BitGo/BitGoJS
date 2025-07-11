@@ -27,6 +27,7 @@ export async function signTransaction<TNumber extends number | bigint>(
     txInfo: { unspents?: utxolib.bitgo.Unspent<TNumber>[] } | undefined;
     isLastSignature: boolean;
     signingStep: 'signerNonce' | 'cosignerNonce' | 'signerSignature' | undefined;
+    /** deprecated */
     allowNonSegwitSigningWithoutPrevTx: boolean;
     pubs: string[] | undefined;
     cosignerPub: string | undefined;
@@ -47,19 +48,11 @@ export async function signTransaction<TNumber extends number | bigint>(
     isLastSignature = params.isLastSignature;
   }
 
-  const setSignerMusigNonceWithOverride = (
-    psbt: utxolib.bitgo.UtxoPsbt,
-    signerKeychain: utxolib.BIP32Interface,
-    nonSegwitOverride: boolean
-  ) => {
-    utxolib.bitgo.withUnsafeNonSegwit(psbt, () => psbt.setAllInputsMusig2NonceHD(signerKeychain), nonSegwitOverride);
-  };
-
   if (tx instanceof bitgo.UtxoPsbt && isTxWithKeyPathSpendInput) {
     switch (params.signingStep) {
       case 'signerNonce':
         assert(signerKeychain);
-        setSignerMusigNonceWithOverride(tx, signerKeychain, params.allowNonSegwitSigningWithoutPrevTx);
+        tx.setAllInputsMusig2NonceHD(signerKeychain);
         PSBT_CACHE.set(tx.getUnsignedTx().getId(), tx);
         return { txHex: tx.toHex() };
       case 'cosignerNonce':
@@ -80,7 +73,7 @@ export async function signTransaction<TNumber extends number | bigint>(
         // this instance is not an external signer
         assert(params.walletId, 'walletId is required for MuSig2 bitgo nonce');
         assert(signerKeychain);
-        setSignerMusigNonceWithOverride(tx, signerKeychain, params.allowNonSegwitSigningWithoutPrevTx);
+        tx.setAllInputsMusig2NonceHD(signerKeychain);
         const response = await coin.signPsbt(tx.toHex(), params.walletId);
         tx.combine(bitgo.createPsbtFromHex(response.psbt, coin.network));
         break;
@@ -102,7 +95,6 @@ export async function signTransaction<TNumber extends number | bigint>(
     assert(signerKeychain);
     signedTransaction = signAndVerifyPsbt(tx, signerKeychain, {
       isLastSignature,
-      allowNonSegwitSigningWithoutPrevTx: params.allowNonSegwitSigningWithoutPrevTx,
     });
   } else {
     if (tx.ins.length !== params.txInfo?.unspents?.length) {

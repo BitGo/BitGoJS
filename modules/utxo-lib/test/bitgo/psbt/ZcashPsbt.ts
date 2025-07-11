@@ -45,14 +45,11 @@ describe('Zcash PSBT', function () {
   describe('should be able to sign the transaction', function () {
     it('can sign the inputs', async function () {
       psbt.signAllInputsHD(rootWalletKeys.user);
-      assert(!(psbt as any).__CACHE.__UNSAFE_SIGN_NONSEGWIT);
       psbt.signAllInputsHD(rootWalletKeys.bitgo);
-      assert(!(psbt as any).__CACHE.__UNSAFE_SIGN_NONSEGWIT);
     });
 
     it('can validate the signatures on the unspents', async function () {
       psbt.validateSignaturesOfAllInputs();
-      assert(!(psbt as any).__CACHE.__UNSAFE_SIGN_NONSEGWIT);
     });
 
     it('can finalize and extract the transaction', async function () {

@@ -662,6 +662,22 @@ export const avaxTokens = [
     '0xe08b4c1005603427420e64252a8b120cace4d122',
     UnderlyingAsset['avaxc:benji']
   ),
+  avaxErc20(
+    '51af7f61-8f35-4ac0-8003-d10d742b042e',
+    'avaxc:emdx',
+    'EMDX',
+    18,
+    '0xe533b81297b820d2eb2cd837263926596328e8d2',
+    UnderlyingAsset['avaxc:emdx']
+  ),
+  avaxErc20(
+    '24279b59-647d-44fb-9203-eaac19fa18db',
+    'avaxc:eurc',
+    'Circle: EURC',
+    6,
+    '0xc891eb4cbdeff6e073e859e987815ed1505c2acd',
+    UnderlyingAsset['avaxc:eurc']
+  ),
   // End FTX missing AVAXC tokens
   tavaxErc20(
     'cd107316-6e78-4936-946f-70e8fd5d8040',

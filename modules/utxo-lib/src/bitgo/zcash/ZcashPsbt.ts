@@ -4,11 +4,10 @@ import {
   getDefaultVersionGroupIdForVersion,
   ZcashTransaction,
 } from './ZcashTransaction';
-import { Network, PsbtTransaction, Signer } from '../../';
+import { Network, PsbtTransaction } from '../../';
 import { Psbt as PsbtBase } from 'bip174';
 import * as types from 'bitcoinjs-lib/src/types';
-import { ValidateSigFunction } from 'bitcoinjs-lib/src/psbt';
-import { ProprietaryKeySubtype, PSBT_PROPRIETARY_IDENTIFIER, withUnsafeNonSegwit } from '../PsbtUtil';
+import { ProprietaryKeySubtype, PSBT_PROPRIETARY_IDENTIFIER } from '../PsbtUtil';
 const typeforce = require('typeforce');
 
 const CONSENSUS_BRANCH_ID_KEY = Buffer.concat([
@@ -122,17 +121,6 @@ export class ZcashPsbt extends UtxoPsbt<ZcashTransaction<bigint>> {
 
     this.tx.versionGroupId = getDefaultVersionGroupIdForVersion(version);
     this.tx.consensusBranchId = getDefaultConsensusBranchIdForVersion(network, version);
-  }
-
-  // For Zcash transactions, we do not have to have non-witness UTXO data for non-segwit
-  // transactions because zcash hashes the value directly. Thus, it is unnecessary to have
-  // the previous transaction hash on the unspent.
-  signInput(inputIndex: number, keyPair: Signer, sighashTypes?: number[]): this {
-    return withUnsafeNonSegwit(this, super.signInput.bind(this, inputIndex, keyPair, sighashTypes));
-  }
-
-  validateSignaturesOfInput(inputIndex: number, validator: ValidateSigFunction, pubkey?: Buffer): boolean {
-    return withUnsafeNonSegwit(this, super.validateSignaturesOfInput.bind(this, inputIndex, validator, pubkey));
   }
 
   private setPropertyCheckSignatures(propName: keyof ZcashTransaction<bigint>, value: unknown) {

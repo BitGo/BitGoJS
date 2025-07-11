@@ -24,7 +24,6 @@ import {
   UtxoPsbt,
   UtxoTransaction,
   verifySignatureWithUnspent,
-  withUnsafeNonSegwit,
 } from '../bitgo';
 import { Network } from '../networks';
 import { mockReplayProtectionUnspent, mockWalletUnspent } from './mock';
@@ -115,32 +114,21 @@ export function signPsbtInput(
   params?: {
     signers?: { signerName: KeyName; cosignerName?: KeyName };
     deterministic?: boolean;
+    // For backwards compatibility keep this here.
     skipNonWitnessUtxo?: boolean;
   }
 ): void {
-  function signPsbt(psbt: UtxoPsbt, signFunc: () => void, skipNonWitnessUtxo?: boolean) {
-    if (skipNonWitnessUtxo) {
-      withUnsafeNonSegwit(psbt, signFunc);
-    } else {
-      signFunc();
-    }
-  }
-
-  const { signers, deterministic, skipNonWitnessUtxo } = params ?? {};
+  const { signers, deterministic } = params ?? {};
   const { signerName, cosignerName } = signers ? signers : getSigners(input.scriptType);
   if (sign === 'halfsigned') {
     if (input.scriptType === 'p2shP2pk') {
-      signPsbt(psbt, () => psbt.signInput(inputIndex, rootWalletKeys[signerName]), skipNonWitnessUtxo);
+      psbt.signInput(inputIndex, rootWalletKeys[signerName]);
     } else {
-      signPsbt(psbt, () => psbt.signInputHD(inputIndex, rootWalletKeys[signerName]), skipNonWitnessUtxo);
+      psbt.signInputHD(inputIndex, rootWalletKeys[signerName]);
     }
   }
   if (sign === 'fullsigned' && cosignerName && input.scriptType !== 'p2shP2pk') {
-    signPsbt(
-      psbt,
-      () => psbt.signInputHD(inputIndex, rootWalletKeys[cosignerName], { deterministic }),
-      skipNonWitnessUtxo
-    );
+    psbt.signInputHD(inputIndex, rootWalletKeys[cosignerName], { deterministic });
   }
 }
 
@@ -156,12 +144,13 @@ export function signAllPsbtInputs(
   params?: {
     signers?: { signerName: KeyName; cosignerName?: KeyName };
     deterministic?: boolean;
+    // For backwards compatibility keep this here.
     skipNonWitnessUtxo?: boolean;
   }
 ): void {
-  const { signers, deterministic, skipNonWitnessUtxo } = params ?? {};
+  const { signers, deterministic } = params ?? {};
   inputs.forEach((input, inputIndex) => {
-    signPsbtInput(psbt, input, inputIndex, rootWalletKeys, sign, { signers, deterministic, skipNonWitnessUtxo });
+    signPsbtInput(psbt, input, inputIndex, rootWalletKeys, sign, { signers, deterministic });
   });
 }
 
