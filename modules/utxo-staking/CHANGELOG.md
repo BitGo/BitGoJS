@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.18.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.17.0...@bitgo/utxo-staking@1.18.0) (2025-07-10)
+
+### Features
+
+- **utxo-staking:** remove babylonlabs-io-btc-staking-ts reference ([98cebdb](https://github.com/BitGo/BitGoJS/commit/98cebdb3c2559bfee9b244d064adc86f35ef38cc))
+- **utxo-staking:** remove transaction helper ([6e24157](https://github.com/BitGo/BitGoJS/commit/6e241574d3614be3e2d1a8e9429b3a61443738a5))
+- **utxo-staking:** update @bitgo/babylonlabs-io-btc-staking-ts to 2.3.4 ([3871add](https://github.com/BitGo/BitGoJS/commit/3871add0e5e09ce3e6a9c8124635b12a074669a8))
+
 # [1.17.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.16.3...@bitgo/utxo-staking@1.17.0) (2025-07-03)
 
 ### Features

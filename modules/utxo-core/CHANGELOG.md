@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.11.0...@bitgo/utxo-core@1.12.0) (2025-07-10)
+
+### Features
+
+- **utxo-core:** add selectTapLeafScript option to createPsbt ([b8ecac2](https://github.com/BitGo/BitGoJS/commit/b8ecac2cd5df48e6c773935e9dc6f20b9a33673c))
+- **utxo-core:** allow Buffer message type in signMessage/verifyMessage ([3c35f37](https://github.com/BitGo/BitGoJS/commit/3c35f37a539e59f9a6959414042dfb717fd93d5a))
+- **utxo-core:** remove lodash dependency ([b07644c](https://github.com/BitGo/BitGoJS/commit/b07644c99924a2ce64fbd052994fb647b3fdcca4))
+- **utxo-core:** replace lodash type checks with native JavaScript ([2265a49](https://github.com/BitGo/BitGoJS/commit/2265a499304c88fc605eb54d5d96971547a9e50e))
+- **utxo-core:** replace should.js with assert in bip32utils test ([62776df](https://github.com/BitGo/BitGoJS/commit/62776df6ae6c638f70c08c458f5faa6cab5ca98e))
+
 # [1.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.10.0...@bitgo/utxo-core@1.11.0) (2025-06-24)
 
 ### Features

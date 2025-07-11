@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [27.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.5.0...@bitgo/account-lib@27.6.0) (2025-07-10)
+
+### Features
+
+- **account-lib:** add MessageBuilderFactory mapping for ada and sol ([1ab0358](https://github.com/BitGo/BitGoJS/commit/1ab03583b54396106484009b65ee932cde5fb278))
+- **account-lib:** verify encoded message ([71a7dd6](https://github.com/BitGo/BitGoJS/commit/71a7dd6cf56010c94364483b7c83221d9a26688e))
+
 # [27.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.4.1...@bitgo/account-lib@27.5.0) (2025-07-03)
 
 ### Features

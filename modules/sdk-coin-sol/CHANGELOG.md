@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.12.5...@bitgo/sdk-coin-sol@4.13.0) (2025-07-10)
+
+### Features
+
+- enable message signing for ADA and SOL ([1ee3499](https://github.com/BitGo/BitGoJS/commit/1ee349934b497e3ef3dad8a33664f479f8247dfe))
+- **sdk-core:** add simple message builder for sol ([d5af5c8](https://github.com/BitGo/BitGoJS/commit/d5af5c8d45f88feb01387b45f9b1e2cfeb70a2e8))
+
 ## [4.12.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.12.4...@bitgo/sdk-coin-sol@4.12.5) (2025-07-03)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol

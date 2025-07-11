@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@3.3.5...@bitgo/sdk-coin-trx@3.4.0) (2025-07-10)
+
+### Features
+
+- **sdk-coin-trx:** add support for reward claim ([4962338](https://github.com/BitGo/BitGoJS/commit/49623382bc6855534d8e7f4bbd6fe177c2ebd47a))
+
 ## [3.3.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@3.3.4...@bitgo/sdk-coin-trx@3.3.5) (2025-07-03)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-trx
