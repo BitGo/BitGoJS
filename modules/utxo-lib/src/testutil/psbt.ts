@@ -24,6 +24,7 @@ import {
   UtxoPsbt,
   UtxoTransaction,
   verifySignatureWithUnspent,
+  addXpubsToPsbt,
 } from '../bitgo';
 import { Network } from '../networks';
 import { mockReplayProtectionUnspent, mockWalletUnspent } from './mock';
@@ -167,6 +168,7 @@ export function constructPsbt(
     signers?: { signerName: KeyName; cosignerName?: KeyName };
     deterministic?: boolean;
     skipNonWitnessUtxo?: boolean;
+    addGlobalXPubs?: boolean;
   }
 ): UtxoPsbt {
   const { signers, deterministic, skipNonWitnessUtxo } = params ?? {};
@@ -217,6 +219,10 @@ export function constructPsbt(
 
   if (sign === 'fullsigned') {
     signAllPsbtInputs(psbt, inputs, rootWalletKeys, sign, { signers, deterministic, skipNonWitnessUtxo });
+  }
+
+  if (params?.addGlobalXPubs) {
+    addXpubsToPsbt(psbt, rootWalletKeys);
   }
 
   return psbt;

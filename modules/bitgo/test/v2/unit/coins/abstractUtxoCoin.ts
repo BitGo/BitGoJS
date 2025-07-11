@@ -4,6 +4,7 @@ import * as sinon from 'sinon';
 import { Wallet, UnexpectedAddressError, VerificationOptions } from '@bitgo/sdk-core';
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src/bitgo';
+import { psbtTxHex } from './payGoPSBTHexFixture/psbtHexProof';
 import { AbstractUtxoCoin, UtxoWallet, Output, TransactionExplanation, TransactionParams } from '@bitgo/abstract-utxo';
 
 describe('Abstract UTXO Coin:', () => {
@@ -581,6 +582,20 @@ describe('Abstract UTXO Coin:', () => {
 
       coinMock.restore();
       bitcoinMock.restore();
+    });
+  });
+
+  describe('Verify paygo output when explaining psbt transaction', function () {
+    const bitgo: BitGo = TestBitGo.decorate(BitGo, { env: 'mock' });
+    let coin: AbstractUtxoCoin;
+
+    beforeEach(() => {
+      coin = bitgo.coin('tbtc4') as AbstractUtxoCoin;
+    });
+
+    it('should detect and verify paygo address proof in PSBT', async function () {
+      // Call explainTransaction
+      await coin.explainTransaction(psbtTxHex);
     });
   });
 });
