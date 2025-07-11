@@ -3355,6 +3355,17 @@ export class Wallet implements IWallet {
           params.preview
         );
         break;
+      case 'tokenApproval':
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: 'tokenApproval',
+            tokenName: params.tokenName,
+          },
+          apiVersion,
+          params.preview
+        );
+        break;
       default:
         throw new Error(`transaction type not supported: ${params.type}`);
     }
