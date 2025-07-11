@@ -1,9 +1,11 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import { bip32, BIP32Interface, bitgo } from '@bitgo/utxo-lib';
 import { Triple } from '@bitgo/sdk-core';
+import * as utxocore from '@bitgo/utxo-core';
 
 import { Output, TransactionExplanation, FixedScriptWalletOutput } from '../../abstractUtxoCoin';
 import { toExtendedAddressFormat } from '../recipient';
+import { getPayGoVerificationPubkey } from '../getPayGoVerificationPubkey';
 
 export type ChangeAddressInfo = { address: string; chain: number; index: number };
 
@@ -144,7 +146,8 @@ export function explainPsbt<TNumber extends number | bigint, Tx extends bitgo.Ut
     pubs?: string[];
     txInfo?: { unspents?: bitgo.Unspent<TNumber>[] };
   },
-  network: utxolib.Network
+  network: utxolib.Network,
+  { strict = false }: { strict?: boolean } = {}
 ): TransactionExplanation {
   const txOutputs = psbt.txOutputs;
 
@@ -191,6 +194,51 @@ export function explainPsbt<TNumber extends number | bigint, Tx extends bitgo.Ut
       throw e;
     }
   }
+
+  /**
+   * Extract PayGo address proof information from the PSBT if present
+   * @returns Information about the PayGo proof, including the output index and address
+   */
+  function getPayGoVerificationInfo(): { outputIndex: number; verificationPubkey: string } | undefined {
+    let outputIndex: number | undefined = undefined;
+    let address: string | undefined = undefined;
+    // Check if this PSBT has any PayGo address proofs
+    if (!utxocore.paygo.psbtOutputIncludesPaygoAddressProof(psbt)) {
+      return undefined;
+    }
+
+    // This pulls the pubkey depending on given network
+    const verificationPubkey = getPayGoVerificationPubkey(network);
+    // find which output index that contains the PayGo proof
+    outputIndex = utxocore.paygo.getPayGoAddressProofOutputIndex(psbt);
+    if (outputIndex === undefined || !verificationPubkey) {
+      return undefined;
+    }
+    const output = txOutputs[outputIndex];
+    address = utxolib.address.fromOutputScript(output.script, network);
+    if (!address) {
+      throw new Error(`Can not derive address ${address} Pay Go Attestation.`);
+    }
+
+    return { outputIndex, verificationPubkey };
+  }
+
+  const payGoVerificationInfo = getPayGoVerificationInfo();
+  if (payGoVerificationInfo) {
+    try {
+      utxocore.paygo.verifyPayGoAddressProof(
+        psbt,
+        payGoVerificationInfo.outputIndex,
+        utxolib.bip32.fromBase58(payGoVerificationInfo.verificationPubkey, utxolib.networks.bitcoin).publicKey
+      );
+    } catch (e) {
+      if (strict) {
+        throw e;
+      }
+      console.error(e);
+    }
+  }
+
   const changeInfo = getChangeInfo();
   const tx = psbt.getUnsignedTx() as bitgo.UtxoTransaction<TNumber>;
   const common = explainCommon(tx, { ...params, changeInfo }, network);
