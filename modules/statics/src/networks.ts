@@ -1183,8 +1183,8 @@ class ZkSyncTestnet extends Testnet implements EthereumNetwork {
 class Berachain extends Mainnet implements EthereumNetwork {
   name = 'Bera';
   family = CoinFamily.BERA;
-  explorerUrl = 'https://80094.routescan.io/tx/';
-  accountExplorerUrl = 'https://80094.routescan.io/address/';
+  explorerUrl = 'https://berascan.com/tx/';
+  accountExplorerUrl = 'https://berascan.com/address/';
   chainId = 80094;
   nativeCoinOperationHashPrefix = '80094';
   tokenOperationHashPrefix = '80094-ERC20';
@@ -1196,8 +1196,8 @@ class Berachain extends Mainnet implements EthereumNetwork {
 class BerachainTestnet extends Testnet implements EthereumNetwork {
   name = 'BeraTestnet';
   family = CoinFamily.BERA;
-  explorerUrl = 'https://80000.testnet.routescan.io/tx/';
-  accountExplorerUrl = 'https://80000.testnet.routescan.io/address/';
+  explorerUrl = 'https://testnet.berascan.com/tx/';
+  accountExplorerUrl = 'https://testnet.berascan.com/address/';
   chainId = 80000;
   nativeCoinOperationHashPrefix = '80000';
   tokenOperationHashPrefix = '80000-ERC20';
@@ -1272,6 +1272,42 @@ class ApeChainTestnet extends Testnet implements EthereumNetwork {
   accountExplorerUrl = 'https://curtis.apescan.io/address/';
   chainId = 33111;
   nativeCoinOperationHashPrefix = '33111';
+}
+
+class Pharos extends Mainnet implements EthereumNetwork {
+  name = 'Pharos';
+  family = CoinFamily.PHRS;
+  explorerUrl = ''; // TODO: WIN-5787 Add mainnet url when available
+  accountExplorerUrl = ''; // TODO: WIN-5787 Add mainnet url when available
+  chainId = 688688; // TODO: WIN-5787 Add mainnet id when available
+  nativeCoinOperationHashPrefix = '688688';
+}
+
+class PharosTestnet extends Testnet implements EthereumNetwork {
+  name = 'PharosTestnet';
+  family = CoinFamily.PHRS;
+  explorerUrl = 'https://testnet.pharosscan.xyz/tx/';
+  accountExplorerUrl = 'https://testnet.pharosscan.xyz/address/';
+  chainId = 688688;
+  nativeCoinOperationHashPrefix = '688688';
+}
+
+class Creditcoin extends Mainnet implements EthereumNetwork {
+  name = 'Creditcoin';
+  family = CoinFamily.CTC;
+  explorerUrl = 'https://creditcoin.blockscout.com/tx/';
+  accountExplorerUrl = 'https://creditcoin.blockscout.com/address/';
+  chainId = 102030;
+  nativeCoinOperationHashPrefix = '102030';
+}
+
+class CreditcoinTestnet extends Testnet implements EthereumNetwork {
+  name = 'CreditcoinTestnet';
+  family = CoinFamily.CTC;
+  explorerUrl = 'https://creditcoin-testnet.blockscout.com/tx/';
+  accountExplorerUrl = 'https://creditcoin-testnet.blockscout.com/address/';
+  chainId = 102031;
+  nativeCoinOperationHashPrefix = '102031';
 }
 
 class Xdc extends Mainnet implements EthereumNetwork {
@@ -1495,6 +1531,11 @@ class Polymesh extends Mainnet implements AccountNetwork {
   name = 'Polymesh';
   family = CoinFamily.POLYX;
   explorerUrl = 'https://polymesh.subscan.io/extrinsic/';
+  specName = 'polymesh_mainnet';
+  genesisHash = '0x6fbd74e5e1d0a61d52ccfe9d4adaed16dd3a7caa37c6bc4d0c2fa12e8b2f4063';
+  specVersion = 7002000;
+  chainName = 'Polymesh Mainnet';
+  txVersion = 7;
 }
 
 class PolymeshTestnet extends Testnet implements AccountNetwork {
@@ -1508,18 +1549,24 @@ class PolymeshTestnet extends Testnet implements AccountNetwork {
   txVersion = 7;
 }
 
-class Vet extends Mainnet implements AccountNetwork {
+class Vet extends Mainnet implements EthereumNetwork {
   name = 'VeChain';
   family = CoinFamily.VET;
   explorerUrl = 'https://explore.vechain.org/transactions/';
   accountExplorerUrl = 'https://explore.vechain.org/accounts/';
+  chainId = 100009;
+  forwarderFactoryAddress = '0x65343e18c376d2fc8c3cf10cd146d63e2e0dc9ef';
+  forwarderImplementationAddress = '0x62de34c87f847d385af07f6c25dbd97b1fffefc0';
 }
 
-class VetTestnet extends Testnet implements AccountNetwork {
+class VetTestnet extends Testnet implements EthereumNetwork {
   name = 'VeChainTestnet';
   family = CoinFamily.VET;
   explorerUrl = 'https://explore-testnet.vechain.org/transactions/';
   accountExplorerUrl = 'https://explore-testnet.vechain.org/accounts/';
+  chainId = 100010;
+  forwarderFactoryAddress = '0x65343e18c376d2fc8c3cf10cd146d63e2e0dc9ef';
+  forwarderImplementationAddress = '0x62de34c87f847d385af07f6c25dbd97b1fffefc0';
 }
 
 export const Networks = {
@@ -1572,6 +1619,8 @@ export const Networks = {
     mantra: Object.freeze(new Mantra()),
     polygon: Object.freeze(new Polygon()),
     polyx: Object.freeze(new Polymesh()),
+    phrs: Object.freeze(new Pharos()),
+    ctc: Object.freeze(new Creditcoin()),
     oas: Object.freeze(new Oas()),
     ofc: Object.freeze(new Ofc()),
     optimism: Object.freeze(new Optimism()),
@@ -1654,6 +1703,8 @@ export const Networks = {
     mantra: Object.freeze(new MantraTestnet()),
     polygon: Object.freeze(new PolygonTestnet()),
     polyx: Object.freeze(new PolymeshTestnet()),
+    phrs: Object.freeze(new PharosTestnet()),
+    ctc: Object.freeze(new CreditcoinTestnet()),
     oas: Object.freeze(new OasTestnet()),
     ofc: Object.freeze(new OfcTestnet()),
     optimism: Object.freeze(new OptimismTestnet()),

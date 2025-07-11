@@ -13,7 +13,7 @@ const rootWalletKeys = getDefaultWalletKeys();
 describe('Zcash PSBT', function () {
   let psbt: utxolib.bitgo.ZcashPsbt;
   before(async function () {
-    const unspents = mockUnspents(rootWalletKeys, ['p2sh'], BigInt('10000000000000000'), network);
+    const unspents = mockUnspents(rootWalletKeys, ['p2sh'], BigInt('1000000000000000'), network);
     psbt = await utxolib.bitgo.ZcashPsbt.createPsbt({ network });
 
     unspents.forEach((unspent) => {
@@ -45,14 +45,11 @@ describe('Zcash PSBT', function () {
   describe('should be able to sign the transaction', function () {
     it('can sign the inputs', async function () {
       psbt.signAllInputsHD(rootWalletKeys.user);
-      assert(!(psbt as any).__CACHE.__UNSAFE_SIGN_NONSEGWIT);
       psbt.signAllInputsHD(rootWalletKeys.bitgo);
-      assert(!(psbt as any).__CACHE.__UNSAFE_SIGN_NONSEGWIT);
     });
 
     it('can validate the signatures on the unspents', async function () {
       psbt.validateSignaturesOfAllInputs();
-      assert(!(psbt as any).__CACHE.__UNSAFE_SIGN_NONSEGWIT);
     });
 
     it('can finalize and extract the transaction', async function () {

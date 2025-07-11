@@ -359,7 +359,7 @@ function describeWithKeys(
           bitcoinjslib.networks.bitcoin,
           toStakerInfo(stakerKey, changeAddress),
           stakingParams,
-          getXOnlyPubkey(finalityProvider).toString('hex'),
+          [getXOnlyPubkey(finalityProvider).toString('hex')],
           stakingParams.minStakingTimeBlocks
         );
 

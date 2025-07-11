@@ -3,8 +3,12 @@ import { BaseTransactionBuilderFactory, InvalidTransactionError, TransactionType
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { TransactionBuilder } from './transactionBuilder/transactionBuilder';
 import { TransferBuilder } from './transactionBuilder/transferBuilder';
+import { AddressInitializationBuilder } from './transactionBuilder/addressInitializationBuilder';
+import { FlushTokenTransactionBuilder } from './transactionBuilder/flushTokenTransactionBuilder';
 import { Transaction } from './transaction/transaction';
 import utils from './utils';
+import { AddressInitializationTransaction } from './transaction/addressInitializationTransaction';
+import { FlushTokenTransaction } from './transaction/flushTokenTransaction';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -21,6 +25,14 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           const transferTx = new Transaction(this._coinConfig);
           transferTx.fromDeserializedSignedTransaction(signedTx);
           return this.getTransferBuilder(transferTx);
+        case TransactionType.AddressInitialization:
+          const addressInitializationTx = new AddressInitializationTransaction(this._coinConfig);
+          addressInitializationTx.fromDeserializedSignedTransaction(signedTx);
+          return this.getAddressInitializationBuilder(addressInitializationTx);
+        case TransactionType.FlushTokens:
+          const flushTokenTx = new FlushTokenTransaction(this._coinConfig);
+          flushTokenTx.fromDeserializedSignedTransaction(signedTx);
+          return this.getFlushTokenTransactionBuilder(flushTokenTx);
         default:
           throw new InvalidTransactionError('Invalid transaction type');
       }
@@ -32,6 +44,14 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   /** @inheritdoc */
   getTransferBuilder(tx?: Transaction): TransferBuilder {
     return this.initializeBuilder(tx, new TransferBuilder(this._coinConfig));
+  }
+
+  getAddressInitializationBuilder(tx?: AddressInitializationTransaction): AddressInitializationBuilder {
+    return this.initializeBuilder(tx, new AddressInitializationBuilder(this._coinConfig));
+  }
+
+  getFlushTokenTransactionBuilder(tx?: FlushTokenTransaction): FlushTokenTransactionBuilder {
+    return this.initializeBuilder(tx, new FlushTokenTransactionBuilder(this._coinConfig));
   }
 
   /** @inheritdoc */

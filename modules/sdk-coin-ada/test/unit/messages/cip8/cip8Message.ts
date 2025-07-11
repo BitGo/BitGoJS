@@ -90,7 +90,6 @@ describe('Cip8Message', function () {
 
       should.exist(result);
       should.exist(result.addressCborBytes);
-      should.ok(Buffer.isBuffer(result.addressCborBytes) || result.addressCborBytes instanceof Uint8Array);
     });
   });
 
@@ -101,19 +100,6 @@ describe('Cip8Message', function () {
 
       should.exist(payload);
       should.ok(Buffer.isBuffer(payload));
-    });
-
-    it('should cache signable payload', async function () {
-      const message = new Cip8Message(createDefaultMessageOptions());
-
-      const payload1 = await message.getSignablePayload();
-      const payload2 = await message.getSignablePayload();
-
-      should.exist(payload1);
-      should.exist(payload2);
-
-      // Payloads should be the same
-      should.equal(payload1, payload2);
     });
   });
 

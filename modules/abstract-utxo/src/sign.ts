@@ -64,6 +64,7 @@ export function signAndVerifyPsbt(
   signerKeychain: utxolib.BIP32Interface,
   {
     isLastSignature,
+    /** deprecated */
     allowNonSegwitSigningWithoutPrevTx,
   }: { isLastSignature: boolean; allowNonSegwitSigningWithoutPrevTx?: boolean }
 ): utxolib.bitgo.UtxoPsbt | utxolib.bitgo.UtxoTransaction<bigint> {
@@ -85,11 +86,7 @@ export function signAndVerifyPsbt(
       }
 
       try {
-        utxolib.bitgo.withUnsafeNonSegwit(
-          psbt,
-          () => psbt.signInputHD(inputIndex, signerKeychain),
-          !!allowNonSegwitSigningWithoutPrevTx
-        );
+        psbt.signInputHD(inputIndex, signerKeychain);
         debug('Successfully signed input %d of %d', inputIndex + 1, psbt.data.inputs.length);
       } catch (e) {
         return new InputSigningError<bigint>(inputIndex, { id: outputId }, e);
@@ -111,13 +108,7 @@ export function signAndVerifyPsbt(
 
       const outputId = outputIds[inputIndex];
       try {
-        if (
-          !utxolib.bitgo.withUnsafeNonSegwit(
-            psbt,
-            () => psbt.validateSignaturesOfInputHD(inputIndex, signerKeychain),
-            !!allowNonSegwitSigningWithoutPrevTx
-          )
-        ) {
+        if (!psbt.validateSignaturesOfInputHD(inputIndex, signerKeychain)) {
           return new InputSigningError(inputIndex, { id: outputId }, new Error(`invalid signature`));
         }
       } catch (e) {

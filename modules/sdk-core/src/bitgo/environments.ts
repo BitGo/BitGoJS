@@ -86,6 +86,7 @@ interface EnvironmentTemplate {
   soneiumExplorerApiToken?: string;
   stxNodeUrl: string;
   vetNodeUrl: string;
+  // The key here is coinName and it will be same for both mainnet and testnet (eg: 'phrs')
   evm?: {
     [key: string]: {
       baseUrl: string;
@@ -198,6 +199,14 @@ const mainnetBase: EnvironmentTemplate = {
   xdcExplorerBaseUrl: 'https://api.etherscan.io/v2',
   wemixExplorerBaseUrl: 'https://api.etherscan.io/v2',
   sgbExplorerBaseUrl: 'https://songbird-explorer.flare.network',
+  evm: {
+    phrs: {
+      baseUrl: 'https://testnet.dplabs-internal.com', // TODO: WIN-5787 add mainnet url when its available
+    },
+    ctc: {
+      baseUrl: 'https://mainnet3.creditcoin.network',
+    },
+  },
   icpNodeUrl: 'https://ic0.app',
   worldExplorerBaseUrl: 'https://worldscan.org/',
   somniaExplorerBaseUrl: 'https://shannon-explorer.somnia.network/', //TODO: WIN-5278: change it with mainnet explorer, when its available
@@ -275,6 +284,14 @@ const testnetBase: EnvironmentTemplate = {
   worldExplorerBaseUrl: 'https://sepolia.worldscan.org/',
   somniaExplorerBaseUrl: 'https://shannon-explorer.somnia.network/',
   soneiumExplorerBaseUrl: 'https://soneium-minato.blockscout.com',
+  evm: {
+    phrs: {
+      baseUrl: 'https://testnet.dplabs-internal.com',
+    },
+    ctc: {
+      baseUrl: 'https://rpc.cc3-testnet.creditcoin.network',
+    },
+  },
   stxNodeUrl: 'https://api.testnet.hiro.so',
   vetNodeUrl: 'https://rpc-testnet.vechain.energy',
 };

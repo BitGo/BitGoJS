@@ -126,8 +126,8 @@ export function getDescriptorProviderForStakingParams(
   stakingParams: DescriptorStakingParams
 ): BabylonDescriptorBuilder {
   const userKey = Buffer.from(stakerBtcInfo.publicKeyNoCoordHex, 'hex');
-  const finalityProviderKey = Buffer.from(stakingInput.finalityProviderPkNoCoordHex, 'hex');
-  return getDescriptorBuilderForParams(userKey, [finalityProviderKey], stakingInput.stakingTimelock, stakingParams);
+  const finalityProviderKeys = stakingInput.finalityProviderPksNoCoordHex.map((pk) => Buffer.from(pk, 'hex'));
+  return getDescriptorBuilderForParams(userKey, finalityProviderKeys, stakingInput.stakingTimelock, stakingParams);
 }
 
 export function getTestnetDescriptorBuilder(

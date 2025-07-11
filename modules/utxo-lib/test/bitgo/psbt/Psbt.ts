@@ -32,7 +32,6 @@ import {
   clonePsbtWithoutNonWitnessUtxo,
   deleteWitnessUtxoForNonSegwitInputs,
   getPsbtInputScriptType,
-  withUnsafeNonSegwit,
   getTransactionAmountsFromPsbt,
   WalletUnspent,
   getDefaultSigHash,
@@ -289,18 +288,14 @@ function runBuildSignSendFlowTest(
       hex = psbtWithoutPrevTx.toHex();
 
       psbtAtHsm = createPsbtFromHex(hex, network);
-      withUnsafeNonSegwit(psbtAtHsm, () => {
-        testutil.signAllPsbtInputs(psbtAtHsm, inputs, rootWalletKeys, 'fullsigned', {
-          signers: {
-            signerName: 'user',
-            cosignerName: 'bitgo',
-          },
-          deterministic: true,
-        });
+      testutil.signAllPsbtInputs(psbtAtHsm, inputs, rootWalletKeys, 'fullsigned', {
+        signers: {
+          signerName: 'user',
+          cosignerName: 'bitgo',
+        },
+        deterministic: true,
       });
-      withUnsafeNonSegwit(psbtAtHsm, () => {
-        assertValidate(psbtAtHsm);
-      });
+      assertValidate(psbtAtHsm);
       hexAtHsm = psbtAtHsm.toHex();
 
       psbtFromHsm = createPsbtFromHex(hexAtHsm, network);

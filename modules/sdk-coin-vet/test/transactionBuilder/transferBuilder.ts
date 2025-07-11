@@ -90,7 +90,7 @@ describe('Vet Transfer Transaction', () => {
         const signablePayload = tx.signablePayload;
         should.equal(
           signablePayload.toString('hex'),
-          '90c5cd3e79059f65b32088c7d807b4c989c5c3051d5392827ec817ce2037c947'
+          'f72788014ead140e77bbc140e0df94e59f1cea4e0fef511e3d0f4eec44adf19c4cbeec88016345785d8a00008081808252088082faf8c101'
         );
       });
 

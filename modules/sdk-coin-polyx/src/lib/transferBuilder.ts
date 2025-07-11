@@ -1,13 +1,16 @@
 import BigNumber from 'bignumber.js';
 
-import { TransactionBuilder, Transaction, Interface, Schema } from '@bitgo/abstract-substrate';
+import { Interface, Schema } from '@bitgo/abstract-substrate';
+import { Transaction } from './transaction';
+import { TxMethod } from './iface';
+import { PolyxBaseBuilder } from './baseBuilder';
 import { DecodedSignedTx, DecodedSigningPayload, defineMethod, UnsignedTransaction } from '@substrate/txwrapper-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseAddress, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 
 import utils from './utils';
 
-export class TransferBuilder extends TransactionBuilder {
+export class TransferBuilder extends PolyxBaseBuilder<TxMethod, Transaction> {
   protected _amount: string;
   protected _to: string;
   protected _memo: string;
@@ -98,7 +101,9 @@ export class TransferBuilder extends TransactionBuilder {
     if (this._method?.name === Interface.MethodNames.TransferWithMemo) {
       const txMethod = this._method.args as Interface.TransferWithMemoArgs;
       this.amount(txMethod.value);
-      this.to({ address: utils.decodeSubstrateAddress(txMethod.dest.id, this.getAddressFormat()) });
+      this.to({
+        address: utils.decodeSubstrateAddress(txMethod.dest.id, utils.getAddressFormat(this._coinConfig.name)),
+      });
       this.memo(txMethod.memo);
     } else {
       throw new InvalidTransactionError(`Invalid Transaction Type: ${this._method?.name}. Expected transferWithMemo`);

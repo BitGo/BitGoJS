@@ -136,18 +136,6 @@ describe('Base Message', () => {
   });
 
   describe('getSignablePayload', () => {
-    it('should return the signablePayload if set', async () => {
-      const customSignablePayload = '0xabcdef123456';
-      const message = new TestMessage({
-        coinConfig,
-        payload: 'original payload',
-        signablePayload: customSignablePayload,
-      });
-
-      const result = await message.getSignablePayload();
-      should.equal(result, customSignablePayload);
-    });
-
     it('should return the payload as buffer if signablePayload is not set', async () => {
       const payload = 'test payload';
       const message = new TestMessage({
@@ -163,7 +151,6 @@ describe('Base Message', () => {
   describe('toBroadcastFormat', () => {
     it('should create a proper broadcastable format with all fields', async () => {
       const { payload, type, metadata, signers, signatures } = messageSamples.eip191;
-      const customSignablePayload = Buffer.from('custom signable payload');
 
       const message = new TestMessage({
         coinConfig,
@@ -172,7 +159,6 @@ describe('Base Message', () => {
         metadata,
         signers,
         signatures,
-        signablePayload: customSignablePayload,
       });
 
       const broadcastFormat = await message.toBroadcastFormat();
@@ -183,7 +169,7 @@ describe('Base Message', () => {
         serializedSignatures: serializeSignatures(signatures),
         signers,
         metadata,
-        signablePayload: customSignablePayload.toString('base64'),
+        signablePayload: 'SGVsbG8gQml0R28h',
       });
     });
 

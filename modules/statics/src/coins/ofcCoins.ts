@@ -859,12 +859,29 @@ export const ofcCoins = [
     UnderlyingAsset['sol:launchcoin'],
     SOL_TOKEN_FEATURES
   ),
+  ofcsolToken('5b739473-b679-47ef-8312-c63e61e2e00c', 'ofcsol:stik', 'Staika', 9, UnderlyingAsset['sol:stik']),
   ofcsolToken(
-    '5b739473-b679-47ef-8312-c63e61e2e00c',
-    'ofcsol:stik',
-    'Staika',
+    '35196f56-2259-470b-9ff1-1d4271a518be',
+    'ofcsol:chill',
+    'Chillchat',
     9,
-    UnderlyingAsset['sol:stik'],
+    UnderlyingAsset['sol:chill'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    'e7bd47d4-caf1-4308-b939-ac1a8c301b22',
+    'ofcsol:zbcn',
+    'Zebec Network',
+    6,
+    UnderlyingAsset['sol:zbcn'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '3eb1b663-f67f-4237-8dcd-e1490d07e4ff',
+    'ofcsol:benji',
+    'BENJI',
+    9,
+    UnderlyingAsset['sol:benji'],
     SOL_TOKEN_FEATURES
   ),
   tofcsolToken(
@@ -1219,6 +1236,14 @@ export const ofcCoins = [
     'Franklin OnChain U.S. Government Money Fund',
     18,
     UnderlyingAsset['avaxc:benji']
+  ),
+  ofcAvaxErc20('bdfcfb36-ded1-495f-a1d4-37b645bdc091', 'ofcavaxc:emdx', 'EMDX', 18, UnderlyingAsset['avaxc:emdx']),
+  ofcAvaxErc20(
+    '7a52f3b4-ccdd-4362-b6bb-0d81b8e7c7c5',
+    'ofcavaxc:eurc',
+    'Circle: EURC',
+    6,
+    UnderlyingAsset['avaxc:eurc']
   ),
   ofcAvaxErc20('9fb77e47-8916-4dcb-ac10-e11fa07172fb', 'ofcavaxc:nxpc', 'NEXPACE', 18, UnderlyingAsset['avaxc:nxpc']),
   ofcOpethErc20('10259b23-2e2e-4574-b146-b49f1119600f', 'ofcopeth:op', 'Optimism', 18, UnderlyingAsset['opeth:op']),
@@ -2572,6 +2597,13 @@ export const ofcCoins = [
     'Bonzo Finance',
     8,
     UnderlyingAsset['hbar:bonzo']
+  ),
+  ofcHederaToken(
+    '3294e3f7-8996-4de8-8b56-fd0303080bbf',
+    'ofchbar:hsuite',
+    'HbarSuite',
+    4,
+    UnderlyingAsset['hbar:hsuite']
   ),
 
   tofcHederaToken(

@@ -39,7 +39,7 @@ export async function getBitGoUtxoStakingMsgCreateBtcDelegation(
       publicKeyNoCoordHex: getXOnlyPubkey(stakerKey).toString('hex'),
     },
     {
-      finalityProviderPkNoCoordHex: getXOnlyPubkey(finalityProvider).toString('hex'),
+      finalityProviderPksNoCoordHex: [getXOnlyPubkey(finalityProvider).toString('hex')],
       stakingAmountSat: amount,
       stakingTimelock: getBabylonParamByBtcHeight(blockHeight, stakingParams).minStakingTimeBlocks,
     },
@@ -47,6 +47,7 @@ export async function getBitGoUtxoStakingMsgCreateBtcDelegation(
     [utxo],
     feeRateSatB,
     toBech32(Buffer.from('test'), 0, 'bbn'),
+    'delegation:create',
     stakingParams
   );
 }
@@ -64,7 +65,7 @@ export async function getVendorMsgCreateBtcDelegation(
   blockHeight: number
 ): Promise<Result> {
   const babylonProvider: vendor.BabylonProvider = {
-    async signTransaction(signingStep, msg) {
+    async signTransaction(msg) {
       // return unsigned payload
       return babylonProtobuf.btcstakingtx.MsgCreateBTCDelegation.encode(
         msg.value as babylonProtobuf.btcstakingtx.MsgCreateBTCDelegation
@@ -84,7 +85,7 @@ export async function getVendorMsgCreateBtcDelegation(
       publicKeyNoCoordHex: getXOnlyPubkey(stakerKey).toString('hex'),
     },
     {
-      finalityProviderPkNoCoordHex: getXOnlyPubkey(finalityProvider).toString('hex'),
+      finalityProviderPksNoCoordHex: [getXOnlyPubkey(finalityProvider).toString('hex')],
       stakingAmountSat: amount,
       stakingTimelock: getBabylonParamByBtcHeight(blockHeight, stakingParams).minStakingTimeBlocks,
     },

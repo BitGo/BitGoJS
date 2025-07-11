@@ -1,4 +1,5 @@
 import { BaseUtils, TransactionType } from '@bitgo/sdk-core';
+import { v4CreateForwarderMethodId, flushForwarderTokensMethodIdV4 } from '@bitgo/abstract-eth';
 import { VET_ADDRESS_LENGTH, VET_BLOCK_ID_LENGTH, VET_TRANSACTION_ID_LENGTH } from './constants';
 import { KeyPair } from './keyPair';
 import { HexUInt, Transaction, TransactionClause } from '@vechain/sdk-core';
@@ -59,6 +60,10 @@ export class Utils implements BaseUtils {
   getTransactionTypeFromClause(clauses: TransactionClause[]): TransactionType {
     if (clauses[0].data === '0x') {
       return TransactionType.Send;
+    } else if (clauses[0].data.startsWith(v4CreateForwarderMethodId)) {
+      return TransactionType.AddressInitialization;
+    } else if (clauses[0].data.startsWith(flushForwarderTokensMethodIdV4)) {
+      return TransactionType.FlushTokens;
     } else {
       return TransactionType.SendToken;
     }

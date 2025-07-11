@@ -18,3 +18,5 @@ export function register(coinName: string): BaseUtils {
   }
   throw new NotSupported(`${coinName} util factory not supported`);
 }
+
+export * from './messages';

@@ -19,6 +19,20 @@ export interface StakingParams {
 }
 
 /**
+ * Type for StakingParams where slashing is required
+ */
+export type StakingParamsWithSlashing = StakingParams & {
+  slashing: NonNullable<StakingParams['slashing']>;
+};
+
+/**
+ * Type guard to check if slashing exists in StakingParams
+ */
+export function hasSlashing(params: StakingParams): params is StakingParams & { slashing: NonNullable<StakingParams['slashing']> } {
+  return params.slashing !== undefined;
+}
+
+/**
  * Extension of StakingParams that includes activation height and version information.
  * These parameters are used to identify and select the appropriate staking rules at
  * different blockchain heights, but do not affect the actual staking transaction content.

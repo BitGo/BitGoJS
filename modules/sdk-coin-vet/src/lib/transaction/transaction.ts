@@ -16,21 +16,7 @@ import {
 } from '@vechain/sdk-core';
 import * as nc_utils from '@noble/curves/abstract/utils';
 import utils from '../utils';
-import { VetTransactionExplanation } from '../iface';
-
-export interface VetTransactionData {
-  id: string;
-  chainTag: number;
-  blockRef: string;
-  expiration: number;
-  gasPriceCoef: number;
-  gas: number;
-  dependsOn: string | null;
-  nonce: number;
-  sender: string;
-  feePayer: string;
-  recipients: TransactionRecipient[];
-}
+import { VetTransactionExplanation, VetTransactionData } from '../iface';
 
 const gasPrice = 1e13;
 
@@ -38,10 +24,12 @@ export class Transaction extends BaseTransaction {
   protected _rawTransaction: VetTransaction;
   protected _type: TransactionType;
   protected _recipients: TransactionRecipient[];
+  protected _clauses: TransactionClause[];
+  protected _contract: string;
+  protected _transactionData: string;
   private _chainTag: number;
   private _blockRef: string;
   private _expiration: number;
-  private _clauses: TransactionClause[];
   private _gasPriceCoef: number;
   private _gas: number;
   private _dependsOn: string | null;
@@ -207,6 +195,22 @@ export class Transaction extends BaseTransaction {
     this._feePayerPubKey = pubKey;
   }
 
+  get contract(): string {
+    return this._contract;
+  }
+
+  set contract(address: string) {
+    this._contract = address;
+  }
+
+  get transactionData(): string {
+    return this._transactionData;
+  }
+
+  set transactionData(transactionData: string) {
+    this._transactionData = transactionData;
+  }
+
   /**
    * Get all signatures associated with this transaction
    * Required by BaseTransaction
@@ -337,9 +341,9 @@ export class Transaction extends BaseTransaction {
 
   /**
    * Sets the transaction ID from the raw transaction if it is signed
-   * @private
+   * @protected
    */
-  private generateTxnId(): void {
+  protected generateTxnId(): void {
     // Check if we have a raw transaction
     if (!this.rawTransaction) {
       return;
@@ -382,10 +386,13 @@ export class Transaction extends BaseTransaction {
       gas: this.gas,
       dependsOn: null,
       nonce: this.nonce,
-      reserved: {
-        features: 1, // mark transaction as delegated i.e. will use gas payer
-      },
     };
+
+    if (this.type === TransactionType.Send) {
+      transactionBody.reserved = {
+        features: 1, // mark transaction as delegated i.e. will use gas payer
+      };
+    }
 
     this.rawTransaction = VetTransaction.of(transactionBody);
   }
@@ -449,7 +456,7 @@ export class Transaction extends BaseTransaction {
   }
 
   public get signablePayload(): Buffer {
-    return Buffer.from(this.rawTransaction.getTransactionHash().bytes);
+    return Buffer.from(this.rawTransaction.encoded);
   }
 
   /** @inheritdoc */

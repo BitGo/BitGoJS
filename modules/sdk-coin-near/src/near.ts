@@ -36,6 +36,7 @@ import {
   multisigTypes,
   AuditDecryptedKeyParams,
   TokenEnablementConfig,
+  MPCRecoveryOptions,
 } from '@bitgo/sdk-core';
 import * as nearAPI from 'near-api-js';
 import * as request from 'superagent';
@@ -81,17 +82,6 @@ export interface NearParseTransactionOptions extends BaseParseTransactionOptions
 interface TransactionOutput {
   address: string;
   amount: string;
-}
-
-interface RecoveryOptions {
-  userKey: string; // Box A
-  backupKey: string; // Box B
-  bitgoKey: string; // Box C
-  recoveryDestination: string;
-  krsProvider?: string;
-  walletPassphrase: string;
-  startingScanIndex?: number;
-  scan?: number;
 }
 
 interface NearTxBuilderParamsFromNode {
@@ -341,7 +331,7 @@ export class Near extends BaseCoin {
    * Builds a funds recovery transaction without BitGo
    * @param params
    */
-  async recover(params: RecoveryOptions): Promise<MPCTx | MPCSweepTxs> {
+  async recover(params: MPCRecoveryOptions): Promise<MPCTx | MPCSweepTxs> {
     if (!params.bitgoKey) {
       throw new Error('missing bitgoKey');
     }

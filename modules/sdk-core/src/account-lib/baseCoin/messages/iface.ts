@@ -74,6 +74,14 @@ export interface IMessage {
    * @returns A JSON string representation of the broadcastable message
    */
   toBroadcastString(): Promise<string>;
+
+  /**
+   * Verifies if the provided encoded message matches the expected format
+   * @param messageEncodedHex The encoded message in hex format to verify
+   * @param metadata Optional metadata to include in the verification
+   * @returns A Promise resolving to true if the message is valid, false otherwise
+   */
+  verifyEncodedPayload(messageEncodedHex: string, metadata?: Record<string, unknown>): Promise<boolean>;
 }
 
 /**

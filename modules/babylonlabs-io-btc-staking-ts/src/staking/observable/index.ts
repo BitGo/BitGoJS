@@ -26,14 +26,14 @@ export class ObservableStaking extends Staking {
     network: networks.Network,
     stakerInfo: StakerInfo,
     params: ObservableVersionedStakingParams,
-    finalityProviderPkNoCoordHex: string,
+    finalityProviderPksNoCoordHex: string[],
     stakingTimelock: number,
   ) {
     super(
       network,
       stakerInfo,
       params,
-      finalityProviderPkNoCoordHex,
+      finalityProviderPksNoCoordHex,
       stakingTimelock,
     );
     if (!params.tag) {
@@ -46,6 +46,14 @@ export class ObservableStaking extends Staking {
       throw new StakingError(
         StakingErrorCode.INVALID_INPUT,
         "Observable staking parameters must include a positive activation height",
+      );
+    }
+    // Observable is legacy phase-1 staking which require exactly 
+    // one finality provider public key
+    if (finalityProviderPksNoCoordHex.length !== 1) {
+      throw new StakingError(
+        StakingErrorCode.INVALID_INPUT,
+        "Observable staking requires exactly one finality provider public key",
       );
     }
     // Override the staking parameters type to ObservableStakingParams
@@ -67,7 +75,7 @@ export class ObservableStaking extends Staking {
     try {
       stakingScriptData = new ObservableStakingScriptData(
         Buffer.from(this.stakerInfo.publicKeyNoCoordHex, "hex"),
-        [Buffer.from(this.finalityProviderPkNoCoordHex, "hex")],
+        this.finalityProviderPksNoCoordHex.map((pk) => Buffer.from(pk, "hex")),
         toBuffers(covenantNoCoordPks),
         covenantQuorum,
         this.stakingTimelock,

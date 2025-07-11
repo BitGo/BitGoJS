@@ -3472,29 +3472,6 @@ describe('V2 Wallet:', function () {
         nock.cleanAll();
       });
 
-      describe('should throw error for unsupported coins', function () {
-        it('sol signMessage', async function () {
-          await tssSolWallet
-            .signMessage({
-              reqId,
-              message: { messageRaw },
-              prv: 'secretKey',
-            })
-            .should.be.rejectedWith('Message signing not supported for Testnet Solana');
-        });
-
-        it('sol create signMessage tx request', async function () {
-          await tssSolWallet
-            .buildSignMessageRequest({
-              message: {
-                messageRaw,
-                messageStandardType: MessageStandardType.EIP191,
-              },
-            })
-            .should.be.rejectedWith('Message signing not supported for Testnet Solana');
-        });
-      });
-
       messageSigningCoins.map((coinName) => {
         const expectedWithCoinField = { ...expected, coin: 'teth' };
 

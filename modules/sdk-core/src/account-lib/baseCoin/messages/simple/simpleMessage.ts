@@ -16,9 +16,6 @@ export class SimpleMessage extends BaseMessage {
    * Returns the signable payload for the message
    */
   async getSignablePayload(): Promise<string | Buffer> {
-    if (this.signablePayload) {
-      return this.signablePayload;
-    }
     if (!this.payload) {
       throw new Error('Message payload is missing');
     }

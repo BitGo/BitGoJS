@@ -1294,6 +1294,46 @@ export const coins = CoinMap.fromCoins([
     [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
   ),
   account(
+    'bc2c6d82-69ee-4745-b213-6f83e90199db',
+    'phrs',
+    'Pharos',
+    Networks.main.phrs,
+    18,
+    UnderlyingAsset.PHRS,
+    BaseUnit.ETH,
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK]
+  ),
+  account(
+    '06b62cc0-1ab1-4473-8d14-c86f31e0b224',
+    'tphrs',
+    'Pharos Testnet',
+    Networks.test.phrs,
+    18,
+    UnderlyingAsset.PHRS,
+    BaseUnit.ETH,
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK]
+  ),
+  account(
+    '7255f4f0-afd5-4521-9ae4-198e2e0c516c',
+    'ctc',
+    'Creditcoin',
+    Networks.main.ctc,
+    18,
+    UnderlyingAsset.CTC,
+    BaseUnit.ETH,
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK]
+  ),
+  account(
+    '25740604-3bcb-4171-8fbe-e4a20c2c98bb',
+    'tctc',
+    'Creditcoin Testnet',
+    Networks.test.ctc,
+    18,
+    UnderlyingAsset.CTC,
+    BaseUnit.ETH,
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK]
+  ),
+  account(
     '251b78df-90c5-4ff5-b07a-8cc23f27c5ff',
     'soneium',
     'Soneium',
@@ -1646,6 +1686,16 @@ export const coins = CoinMap.fromCoins([
     8,
     UnderlyingAsset['hbar:bonzo'],
     '0.0.8279134',
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  hederaToken(
+    '4da69de3-ad4e-41a5-be09-b6d6cbcc50ec',
+    'hbar:hsuite',
+    'HbarSuite',
+    Networks.main.hedera,
+    4,
+    UnderlyingAsset['hbar:hsuite'],
+    '0.0.786931',
     AccountCoin.DEFAULT_FEATURES
   ),
   hederaToken(

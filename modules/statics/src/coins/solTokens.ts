@@ -2844,6 +2844,37 @@ export const solTokens = [
     UnderlyingAsset['sol:stik'],
     SOL_TOKEN_FEATURES
   ),
+  solToken(
+    '4db0e9ca-61ba-496a-9013-d6b752f3dc8f',
+    'sol:chill',
+    'Chillchat',
+    9,
+    'CH1LLLLUjZBai91qiKhVrTtzKqLxF4FtVAommraUQ66o',
+    'CH1LLLLUjZBai91qiKhVrTtzKqLxF4FtVAommraUQ66o',
+    UnderlyingAsset['sol:chill'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '8fd8f41d-c894-4808-aa8a-6ee4b7c2575b',
+    'sol:zbcn',
+    'Zebec Network',
+    6,
+    'ZBCNpuD7YMXzTHB2fhGkGi78MNsHGLRXUhRewNRm9RU',
+    'ZBCNpuD7YMXzTHB2fhGkGi78MNsHGLRXUhRewNRm9RU',
+    UnderlyingAsset['sol:zbcn'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '14d02815-9642-4cc7-9f8c-136281e6b0af',
+    'sol:benji',
+    'BENJI',
+    9,
+    '5Tu84fKBpe9vfXeotjvfvWdWbAjy3hqsExvuHgFqFxA1',
+    '5Tu84fKBpe9vfXeotjvfvWdWbAjy3hqsExvuHgFqFxA1',
+    UnderlyingAsset['sol:benji'],
+    SOL_TOKEN_FEATURES,
+    ProgramID.Token2022ProgramId
+  ),
   tsolToken(
     'b98c5a7a-49c5-45f1-a6ee-b08dff596a7d',
     'tsol:srm',

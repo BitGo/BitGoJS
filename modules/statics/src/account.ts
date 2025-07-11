@@ -9,7 +9,7 @@ import {
 } from './coinFeatures';
 
 /**
- * This is the program id against sol tokem program.
+ * This is the program id against sol token program.
  */
 export enum ProgramID {
   TokenProgramId = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',

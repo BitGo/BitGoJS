@@ -46,6 +46,12 @@ export interface BitGoAPIOptions {
   validate?: boolean;
   cookiesPropagationEnabled?: boolean;
   getAdditionalHeadersCb?: AdditionalHeadersCallback;
+  evm?: {
+    [key: string]: {
+      baseUrl: string;
+      apiToken?: string;
+    };
+  };
 }
 
 export interface AccessTokenOptions {

@@ -19,6 +19,7 @@ async function main() {
     platform: "node", // for CJS
     outfile: "dist/index.cjs",
     format: "cjs",
+    sourcemap: true,
   });
 
   await build({
@@ -26,6 +27,7 @@ async function main() {
     platform: "node", // for ESM
     outfile: "dist/index.js",
     format: "esm",
+    sourcemap: true,
   });
 }
 

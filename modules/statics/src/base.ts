@@ -68,6 +68,8 @@ export enum CoinFamily {
   MON = 'mon',
   POLYGON = 'polygon',
   POLYX = 'polyx',
+  PHRS = 'phrs',
+  CTC = 'ctc',
   NEAR = 'near',
   OAS = 'oas',
   OFC = 'ofc',
@@ -469,6 +471,8 @@ export enum UnderlyingAsset {
   OPETH = 'opeth',
   OSMO = 'osmo',
   POLYGON = 'polygon',
+  PHRS = 'phrs',
+  CTC = 'ctc',
   RBTC = 'rbtc', // RSK main coin
   SEI = 'sei',
   SGB = 'sgb',
@@ -2009,6 +2013,7 @@ export enum UnderlyingAsset {
   'eth:neiro' = 'eth:neiro',
   'eth:vana' = 'eth:vana',
   'eth:eurau' = 'eth:eurau',
+  'eth:insur' = 'eth:insur',
   'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ' = 'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ',
   'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M' = 'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M',
   'xlm:SLT-GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP' = 'xlm:SLT-GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP',
@@ -2155,6 +2160,8 @@ export enum UnderlyingAsset {
   'avaxc:tico' = 'avaxc:tico',
   'avaxc:shrap' = 'avaxc:shrap',
   'avaxc:benji' = 'avaxc:benji',
+  'avaxc:emdx' = 'avaxc:emdx',
+  'avaxc:eurc' = 'avaxc:eurc',
   // End FTX missing AVAXC tokens
 
   // polygon Token ERC-20
@@ -2710,7 +2717,9 @@ export enum UnderlyingAsset {
   'sol:alch' = 'sol:alch',
   'sol:launchcoin' = 'sol:launchcoin',
   'sol:stik' = 'sol:stik',
-
+  'sol:chill' = 'sol:chill',
+  'sol:zbcn' = 'sol:zbcn',
+  'sol:benji' = 'sol:benji',
   // TRX tokens
   'trx:htx' = 'trx:htx',
   'trx:jst' = 'trx:jst',
@@ -2801,6 +2810,7 @@ export enum UnderlyingAsset {
   'hbar:berry' = 'hbar:berry',
   'hbar:bonzo' = 'hbar:bonzo',
   'hbar:co2e' = 'hbar:co2e',
+  'hbar:hsuite' = 'hbar:hsuite',
 
   // Hbar Testnet tokens
   'thbar:txsgd' = 'thbar:txsgd',

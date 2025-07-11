@@ -1,11 +1,11 @@
 import * as ecc from "@bitcoin-js/tiny-secp256k1-asmjs";
-import { initEccLib, address, networks } from "bitcoinjs-lib";
+import { address, initEccLib, networks } from "bitcoinjs-lib";
 import { NO_COORD_PK_BYTE_LENGTH } from "../constants/keys";
 
 // Initialize elliptic curve library
 export const initBTCCurve = () => {
   initEccLib(ecc);
-}
+};
 
 /**
  * Check whether the given address is a valid Bitcoin address.
@@ -50,7 +50,9 @@ export const isTaproot = (
       return taprootAddress.startsWith("bc1p");
     } else if (network.bech32 === networks.testnet.bech32) {
       // signet, regtest and testnet taproot addresses start with "tb1p" or "sb1p"
-      return taprootAddress.startsWith("tb1p") || taprootAddress.startsWith("sb1p");
+      return (
+        taprootAddress.startsWith("tb1p") || taprootAddress.startsWith("sb1p")
+      );
     }
     return false;
   } catch (error) {
@@ -74,7 +76,7 @@ export const isNativeSegwit = (
     if (decoded.version !== 0) {
       return false;
     }
-    
+
     // Compare network properties instead of object reference
     // The bech32 is hardcoded in the bitcoinjs-lib library.
     // https://github.com/bitcoinjs/bitcoinjs-lib/blob/master/ts_src/networks.ts#L36
@@ -94,26 +96,26 @@ export const isNativeSegwit = (
 /**
  * Check whether the given public key is a valid public key without a coordinate.
  *
- * @param {string} pkWithNoCoord - public key without the coordinate.  
+ * @param {string} pkWithNoCoord - public key without the coordinate.
  * @returns {boolean} - True if the public key without the coordinate is valid, otherwise false.
  */
 export const isValidNoCoordPublicKey = (pkWithNoCoord: string): boolean => {
   try {
-    const keyBuffer = Buffer.from(pkWithNoCoord, 'hex');
+    const keyBuffer = Buffer.from(pkWithNoCoord, "hex");
     return validateNoCoordPublicKeyBuffer(keyBuffer);
   } catch (error) {
     return false;
   }
-}
+};
 
 /**
  * Get the public key without the coordinate.
- * 
+ *
  * @param {string} pkHex - The public key in hex, with or without the coordinate.
  * @returns {string} - The public key without the coordinate in hex.
  * @throws {Error} - If the public key is invalid.
  */
-export const getPublicKeyNoCoord = (pkHex: string): String => {
+export const getPublicKeyNoCoord = (pkHex: string): string => {
   const publicKey = Buffer.from(pkHex, "hex");
 
   const publicKeyNoCoordBuffer =
@@ -138,14 +140,12 @@ const validateNoCoordPublicKeyBuffer = (pkBuffer: Buffer): boolean => {
   const compressedKeyEven = Buffer.concat([Buffer.from([0x02]), pkBuffer]);
   const compressedKeyOdd = Buffer.concat([Buffer.from([0x03]), pkBuffer]);
 
-  return (
-    ecc.isPoint(compressedKeyEven) || ecc.isPoint(compressedKeyOdd)
-  );
+  return ecc.isPoint(compressedKeyEven) || ecc.isPoint(compressedKeyOdd);
 };
 
 /**
  * Convert a transaction id to a hash. in buffer format.
- * 
+ *
  * @param {string} txId - The transaction id.
  * @returns {Buffer} - The transaction hash.
  */
@@ -153,5 +153,5 @@ export const transactionIdToHash = (txId: string): Buffer => {
   if (txId === "") {
     throw new Error("Transaction id cannot be empty");
   }
-  return Buffer.from(txId, 'hex').reverse();
+  return Buffer.from(txId, "hex").reverse();
 };
