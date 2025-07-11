@@ -258,6 +258,17 @@ export class BitGoAPI implements BitGoBase {
       }
     });
 
+    if (params.evm) {
+      const evmConfig = common.Environments[env]['evm'] || {};
+      Object.keys(params.evm).forEach((key) => {
+        if (params.evm?.[key] && params.evm[key]['apiToken']) {
+          evmConfig[key] = evmConfig[key] || {};
+          evmConfig[key]['apiToken'] = params.evm[key]['apiToken'];
+        }
+      });
+      common.Environments[env]['evm'] = evmConfig;
+    }
+
     common.setNetwork(common.Environments[env].network);
 
     this._baseApiUrl = this._baseUrl + '/api/v1';
