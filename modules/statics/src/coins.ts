@@ -1689,6 +1689,16 @@ export const coins = CoinMap.fromCoins([
     AccountCoin.DEFAULT_FEATURES
   ),
   hederaToken(
+    '4da69de3-ad4e-41a5-be09-b6d6cbcc50ec',
+    'hbar:hsuite',
+    'HbarSuite',
+    Networks.main.hedera,
+    4,
+    UnderlyingAsset['hbar:hsuite'],
+    '0.0.786931',
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  hederaToken(
     '842c2119-3071-409d-b86f-49f0b46b676e',
     'thbar:usdc',
     'Testnet Hedera USD Coin',
