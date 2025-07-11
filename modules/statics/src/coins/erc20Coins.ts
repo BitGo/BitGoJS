@@ -10889,6 +10889,14 @@ export const erc20Coins = [
     '0x7ff7fa94b8b66ef313f7970d4eebd2cb3103a2c0',
     UnderlyingAsset['eth:vana']
   ),
+  erc20(
+    'e2c62e37-fc8e-43c1-9a1c-47395c51fc61',
+    'eth:insur',
+    'InsurAce',
+    18,
+    '0x544c42fbb96b39b21df61cf322b5edc285ee7429',
+    UnderlyingAsset['eth:insur']
+  ),
   terc20(
     '0205f0d6-0647-47c9-ad8b-c48d048e54f3',
     'fixed',

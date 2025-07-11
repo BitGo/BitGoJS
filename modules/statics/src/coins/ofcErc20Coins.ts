@@ -3245,6 +3245,13 @@ export const ofcErc20Coins = [
     18,
     underlyingAssetForSymbol('eth:usdcv')
   ),
+  ofcerc20(
+    '650f3a39-cbee-48e7-8aeb-eaa181d3f11c',
+    'ofceth:insur',
+    'InsurAce',
+    18,
+    underlyingAssetForSymbol('eth:insur')
+  ),
 ];
 
 export const tOfcErc20Coins = [
