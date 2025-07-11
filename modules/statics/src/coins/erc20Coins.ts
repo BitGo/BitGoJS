@@ -10898,6 +10898,14 @@ export const erc20Coins = [
     UnderlyingAsset['eth:vana']
   ),
   erc20(
+    '65e96474-3e1f-433a-990b-db78f4de7a97',
+    'eth:eurau',
+    'AllUnity EUR',
+    6,
+    '0x4933a85b5b5466fbaf179f72d3de273c287ec2c2',
+    UnderlyingAsset['eth:eurau']
+  ),
+  erc20(
     'e2c62e37-fc8e-43c1-9a1c-47395c51fc61',
     'eth:insur',
     'InsurAce',
