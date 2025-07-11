@@ -1,9 +1,11 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import { bip32, BIP32Interface, bitgo } from '@bitgo/utxo-lib';
 import { Triple } from '@bitgo/sdk-core';
+import * as utxocore from '@bitgo/utxo-core';
 
 import { Output, TransactionExplanation, FixedScriptWalletOutput } from '../../abstractUtxoCoin';
 import { toExtendedAddressFormat } from '../recipient';
+import { Networks } from '../../../../statics/src/networks';
 
 export type ChangeAddressInfo = { address: string; chain: number; index: number };
 
@@ -191,6 +193,43 @@ export function explainPsbt<TNumber extends number | bigint, Tx extends bitgo.Ut
       throw e;
     }
   }
+
+  /**
+   * Extract PayGo address proof information from the PSBT if present
+   * @returns Information about the PayGo proof, including the output index and address
+   */
+  function getPayGoVerificationInfo():
+    | { outputIndex: number | undefined; verificationPubkey: string | undefined }
+    | undefined {
+    let outputIndex: number | undefined = undefined;
+    let address: string | undefined = undefined;
+    const verificationPubkey = Networks.test.bitcoin.paygoAddressAttestationPubkey;
+    // Check if this PSBT has any PayGo address proofs
+    if (!utxocore.paygo.psbtOutputIncludesPaygoAddressProof(psbt)) {
+      return undefined;
+    }
+
+    // find which output index that contains the PayGo proof
+    outputIndex = utxocore.paygo.getPayGoAddressProofOutputIndex(psbt);
+    if (outputIndex !== undefined) {
+      const output = txOutputs[outputIndex];
+      address = utxolib.address.fromOutputScript(output.script, network);
+      if (!address) {
+        return undefined;
+      }
+    }
+    return { outputIndex, verificationPubkey };
+  }
+
+  const payGoVerificationInfo = getPayGoVerificationInfo();
+  if (payGoVerificationInfo && payGoVerificationInfo.outputIndex && payGoVerificationInfo.verificationPubkey) {
+    utxocore.paygo.verifyPayGoAddressProof(
+      psbt,
+      payGoVerificationInfo.outputIndex,
+      Buffer.from(payGoVerificationInfo.verificationPubkey, 'utf-8')
+    );
+  }
+
   const changeInfo = getChangeInfo();
   const tx = psbt.getUnsignedTx() as bitgo.UtxoTransaction<TNumber>;
   const common = explainCommon(tx, { ...params, changeInfo }, network);
