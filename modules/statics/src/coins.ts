@@ -167,7 +167,7 @@ export const coins = CoinMap.fromCoins([
     'tada',
     'Testnet Cardano ADA',
     Networks.test.ada,
-    UnderlyingAsset.ADA,
+    UnderlyingAsset.TADA,
     ADA_FEATURES_WITH_FRANKFURT
   ),
   account(
@@ -187,7 +187,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Algorand',
     Networks.test.algorand,
     6,
-    UnderlyingAsset.ALGO,
+    UnderlyingAsset.TALGO,
     BaseUnit.ALGO,
     ALGO_FEATURES,
     KeyCurve.Ed25519
@@ -208,7 +208,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Avalanche C-Chain',
     Networks.test.avalancheC,
     18,
-    UnderlyingAsset.AVAXC,
+    UnderlyingAsset.TAVAXC,
     BaseUnit.ETH,
     AVAXC_FEATURES
   ),
@@ -235,7 +235,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Casper',
     Networks.test.casper,
     9,
-    UnderlyingAsset.CSPR,
+    UnderlyingAsset.TCSPR,
     BaseUnit.CSPR,
     CSPR_FEATURES
   ),
@@ -256,7 +256,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Polkadot',
     Networks.test.dot,
     12,
-    UnderlyingAsset.DOT,
+    UnderlyingAsset.TDOT,
     BaseUnit.DOT,
     DOT_FEATURES,
     KeyCurve.Ed25519
@@ -294,7 +294,7 @@ export const coins = CoinMap.fromCoins([
     'Kovan Testnet Ethereum (Deprecated)',
     Networks.test.kovan,
     18,
-    UnderlyingAsset.ETH,
+    UnderlyingAsset.TETH,
     BaseUnit.ETH,
     [...ETH_FEATURES, CoinFeature.DEPRECATED, CoinFeature.EIP1559]
   ),
@@ -304,7 +304,7 @@ export const coins = CoinMap.fromCoins([
     'Goerli Testnet Ethereum',
     Networks.test.goerli,
     18,
-    UnderlyingAsset.ETH,
+    UnderlyingAsset.GTETH,
     BaseUnit.ETH,
     [
       ...ETH_FEATURES_WITH_STAKING_AND_MMI,
@@ -327,7 +327,7 @@ export const coins = CoinMap.fromCoins([
     'Holesky Testnet Ethereum',
     Networks.test.holesky,
     18,
-    UnderlyingAsset.ETH,
+    UnderlyingAsset.HTETH,
     BaseUnit.ETH,
     [
       ...ETH_FEATURES_WITH_STAKING_AND_MMI,
@@ -394,7 +394,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Ethereum Classic',
     Networks.test.ethereumClassicTestnet,
     18,
-    UnderlyingAsset.ETC,
+    UnderlyingAsset.TETC,
     BaseUnit.ETH,
     ETC_FEATURES
   ),
@@ -414,7 +414,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Eos',
     Networks.test.eos,
     4,
-    UnderlyingAsset.EOS,
+    UnderlyingAsset.TEOS,
     BaseUnit.EOS,
     EOS_FEATURES
   ),
@@ -454,7 +454,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Tron',
     Networks.test.trx,
     6,
-    UnderlyingAsset.TRX,
+    UnderlyingAsset.TTRX,
     BaseUnit.TRX,
     TRX_FEATURES
   ),
@@ -474,7 +474,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Ripple',
     Networks.test.xrp,
     6,
-    UnderlyingAsset.XRP,
+    UnderlyingAsset.TXRP,
     BaseUnit.XRP,
     XRP_FEATURES
   ),
@@ -495,7 +495,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Stellar',
     Networks.test.stellar,
     7,
-    UnderlyingAsset.XLM,
+    UnderlyingAsset.TXLM,
     BaseUnit.XLM,
     XLM_FEATURES,
     KeyCurve.Ed25519
@@ -516,7 +516,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Tezos',
     Networks.test.xtz,
     6,
-    UnderlyingAsset.XTZ,
+    UnderlyingAsset.TXTZ,
     BaseUnit.XTZ,
     XTZ_FEATURES
   ),
@@ -554,7 +554,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Stacks',
     Networks.test.stx,
     6,
-    UnderlyingAsset.STX,
+    UnderlyingAsset.TSTX,
     BaseUnit.STX,
     STX_FEATURES
   ),
@@ -575,7 +575,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Solana',
     Networks.test.sol,
     9,
-    UnderlyingAsset.SOL,
+    UnderlyingAsset.TSOL,
     BaseUnit.SOL,
     TSOL_FEATURES,
     KeyCurve.Ed25519
@@ -597,7 +597,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Sui',
     Networks.test.sui,
     9,
-    UnderlyingAsset.SUI,
+    UnderlyingAsset.TSUI,
     BaseUnit.SUI,
     SUI_FEATURES,
     KeyCurve.Ed25519
@@ -618,7 +618,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Cosmos Hub ATOM',
     Networks.test.atom,
     6,
-    UnderlyingAsset.ATOM,
+    UnderlyingAsset.TATOM,
     BaseUnit.ATOM,
     ATOM_FEATURES
   ),
@@ -638,7 +638,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Osmosis',
     Networks.test.osmo,
     6,
-    UnderlyingAsset.OSMO,
+    UnderlyingAsset.TOSMO,
     BaseUnit.OSMO,
     COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
   ),
@@ -658,7 +658,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Celestia',
     Networks.test.tia,
     6,
-    UnderlyingAsset.TIA,
+    UnderlyingAsset.TTIA,
     BaseUnit.TIA,
     TIA_FEATURES
   ),
@@ -678,7 +678,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Provenance',
     Networks.test.hash,
     9,
-    UnderlyingAsset.HASH,
+    UnderlyingAsset.THASH,
     BaseUnit.HASH,
     COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
   ),
@@ -698,7 +698,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Agoric',
     Networks.test.bld,
     6,
-    UnderlyingAsset.BLD,
+    UnderlyingAsset.TBLD,
     BaseUnit.BLD,
     COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
   ),
@@ -718,7 +718,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Sei',
     Networks.test.sei,
     6,
-    UnderlyingAsset.SEI,
+    UnderlyingAsset.TSEI,
     BaseUnit.SEI,
     SEI_FEATURES
   ),
@@ -738,7 +738,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Zeta',
     Networks.test.zeta,
     18,
-    UnderlyingAsset.ZETA,
+    UnderlyingAsset.TZETA,
     BaseUnit.ZETA,
     [...ZETA_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT]
   ),
@@ -758,7 +758,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Injective',
     Networks.test.injective,
     18,
-    UnderlyingAsset.INJECTIVE,
+    UnderlyingAsset.TINJECTIVE,
     BaseUnit.INJECTIVE,
     INJECTIVE_FEATURES
   ),
@@ -805,7 +805,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Coreum',
     Networks.test.coreum,
     6,
-    UnderlyingAsset.COREUM,
+    UnderlyingAsset.TCOREUM,
     BaseUnit.TCOREUM,
     COREUM_FEATURES
   ),
@@ -845,7 +845,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Babylon',
     Networks.test.baby,
     6,
-    UnderlyingAsset.BABY,
+    UnderlyingAsset.TBABY,
     BaseUnit.BABY,
     COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
   ),
@@ -885,7 +885,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Cronos POS',
     Networks.test.cronos,
     8,
-    UnderlyingAsset.CRONOS,
+    UnderlyingAsset.TCRONOS,
     BaseUnit.CRONOS,
     COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
   ),
@@ -925,7 +925,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Initia',
     Networks.test.initia,
     6,
-    UnderlyingAsset.INITIA,
+    UnderlyingAsset.TINITIA,
     BaseUnit.INITIA,
     COSMOS_SIDECHAIN_FEATURES
   ),
@@ -945,7 +945,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Fetch Native',
     Networks.test.asi,
     18,
-    UnderlyingAsset.ASI,
+    UnderlyingAsset.TASI,
     BaseUnit.ASI,
     COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
   ),
@@ -986,7 +986,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Near',
     Networks.test.near,
     24,
-    UnderlyingAsset.NEAR,
+    UnderlyingAsset.TNEAR,
     BaseUnit.NEAR,
     NEAR_FEATURES,
     KeyCurve.Ed25519
@@ -1017,7 +1017,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Binance Smart Chain',
     Networks.test.bsc,
     18,
-    UnderlyingAsset.BSC,
+    UnderlyingAsset.TBSC,
     BaseUnit.BSC,
     [
       ...ETH_FEATURES_WITH_STAKING_AND_MMI,
@@ -1047,7 +1047,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Polygon',
     Networks.test.polygon,
     18,
-    UnderlyingAsset.POLYGON,
+    UnderlyingAsset.TPOLYGON,
     BaseUnit.ETH,
     [...POLYGON_FEATURES, CoinFeature.EIP1559]
   ),
@@ -1068,7 +1068,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Ton',
     Networks.test.ton,
     9,
-    UnderlyingAsset.TON,
+    UnderlyingAsset.TTON,
     BaseUnit.TON,
     TON_FEATURES,
     KeyCurve.Ed25519
@@ -1089,7 +1089,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Arbitrum Ethereum (L2 Chain)',
     Networks.test.arbitrum,
     18,
-    UnderlyingAsset.ARBETH,
+    UnderlyingAsset.TARBETH,
     BaseUnit.ETH,
     ARBETH_FEATURES
   ),
@@ -1109,7 +1109,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Optimism Ethereum (L2 Chain)',
     Networks.test.optimism,
     18,
-    UnderlyingAsset.OPETH,
+    UnderlyingAsset.TOPETH,
     BaseUnit.ETH,
     OPETH_FEATURES
   ),
@@ -1149,7 +1149,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Berachain',
     Networks.test.bera,
     18,
-    UnderlyingAsset.BERA,
+    UnderlyingAsset.TBERA,
     BaseUnit.ETH,
     BERA_FEATURES
   ),
@@ -1169,7 +1169,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Oasys',
     Networks.test.oas,
     18,
-    UnderlyingAsset.OAS,
+    UnderlyingAsset.TOAS,
     BaseUnit.ETH,
     OAS_FEATURES
   ),
@@ -1189,7 +1189,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Core',
     Networks.test.coredao,
     18,
-    UnderlyingAsset.COREDAO,
+    UnderlyingAsset.TCOREDAO,
     BaseUnit.ETH,
     COREDAO_FEATURES
   ),
@@ -1229,7 +1229,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet XDC',
     Networks.test.xdc,
     18,
-    UnderlyingAsset.XDC,
+    UnderlyingAsset.TXDC,
     BaseUnit.ETH,
     EVM_FEATURES.filter((feature) => feature !== CoinFeature.EIP1559)
   ),
@@ -1249,7 +1249,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet wemix',
     Networks.test.wemix,
     18,
-    UnderlyingAsset.WEMIX,
+    UnderlyingAsset.TWEMIX,
     BaseUnit.ETH,
     EVM_FEATURES
   ),
@@ -1269,7 +1269,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Monad',
     Networks.test.mon,
     18,
-    UnderlyingAsset.MON,
+    UnderlyingAsset.TMON,
     BaseUnit.ETH,
     [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK]
   ),
@@ -1289,7 +1289,7 @@ export const coins = CoinMap.fromCoins([
     'Worldchain Testnet',
     Networks.test.world,
     18,
-    UnderlyingAsset.WORLD,
+    UnderlyingAsset.TWORLD,
     BaseUnit.ETH,
     [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
   ),
@@ -1349,7 +1349,7 @@ export const coins = CoinMap.fromCoins([
     'Soneium Testnet',
     Networks.test.soneium,
     18,
-    UnderlyingAsset.SONEIUM,
+    UnderlyingAsset.TSONEIUM,
     BaseUnit.ETH,
     [...SONEIUM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
   ),
@@ -1369,7 +1369,7 @@ export const coins = CoinMap.fromCoins([
     'Somnia Testnet',
     Networks.test.stt,
     18,
-    UnderlyingAsset.STT,
+    UnderlyingAsset.TSTT,
     BaseUnit.ETH,
     [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
   ),
@@ -1389,7 +1389,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet flare',
     Networks.test.flr,
     18,
-    UnderlyingAsset.FLR,
+    UnderlyingAsset.TFLR,
     BaseUnit.ETH,
     [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
   ),
@@ -1409,7 +1409,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet songbird',
     Networks.test.sgb,
     18,
-    UnderlyingAsset.SGB,
+    UnderlyingAsset.TSGB,
     BaseUnit.ETH,
     [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
   ),
@@ -1432,7 +1432,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Aptos',
     Networks.test.apt,
     8,
-    UnderlyingAsset.APT,
+    UnderlyingAsset.TAPT,
     BaseUnit.APT,
     APT_FEATURES,
     KeyCurve.Ed25519,
@@ -1456,7 +1456,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Bittensor',
     Networks.test.tao,
     9,
-    UnderlyingAsset.TAO,
+    UnderlyingAsset.TTAO,
     BaseUnit.TAO,
     TAO_FEATURES,
     KeyCurve.Ed25519
@@ -1478,7 +1478,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Internet Computer',
     Networks.test.icp,
     8,
-    UnderlyingAsset.ICP,
+    UnderlyingAsset.TICP,
     BaseUnit.ICP,
     ICP_FEATURES,
     KeyCurve.Secp256k1
@@ -1500,7 +1500,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Polymesh',
     Networks.test.polyx,
     6,
-    UnderlyingAsset.POLYX,
+    UnderlyingAsset.TPOLYX,
     BaseUnit.POLYX,
     POLYX_FEATURES,
     KeyCurve.Ed25519
@@ -1545,7 +1545,7 @@ export const coins = CoinMap.fromCoins([
     Networks.test.celo,
     18,
     '0xf194afdf50b03e69bd7d057c1aa9e10c9954e4c9',
-    UnderlyingAsset.CELO,
+    UnderlyingAsset.TCELO,
     BaseUnit.ETH,
     CELO_FEATURES
   ),
@@ -1564,7 +1564,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Hedera HBAR',
     Networks.test.hedera,
     8,
-    UnderlyingAsset.HBAR,
+    UnderlyingAsset.THBAR,
     HBAR_FEATURES
   ),
   hederaToken(
@@ -1704,7 +1704,7 @@ export const coins = CoinMap.fromCoins([
     'Testnet Hedera USD Coin',
     Networks.test.hedera,
     6,
-    UnderlyingAsset.USDC,
+    UnderlyingAsset['thbar:usdc'],
     '0.0.429274',
     AccountCoin.DEFAULT_FEATURES
   ),

@@ -56,6 +56,9 @@ describe('OFC Coin parity tests', function () {
     }
   });
 
+  /**
+   * The decimalPlaces for OFC tokens should always match the actual decimal places of the underlying coin.
+   */
   it('validate the decimalPlaces for ofc token', function () {
     const ofcCoins = coins.filter((coin) => coin.family === 'ofc');
     ofcCoins.forEach((ofcCoin) => {
@@ -84,4 +87,21 @@ describe('OFC Coin parity tests', function () {
       return undefined;
     }
   }
+
+  /**
+   * The UnderlyingAsset for OFC tokens should always match the actual UnderlyingAsset of the underlying coin.
+   *
+   * Note: For now, this is limited to testnet coins. We'll enable it for mainnet once the current mainnet data is fixed.
+   */
+  it('validate the UnderlyingAsset for ofc token using actual coin', function () {
+    // check for testnet
+    const ofcCoins = coins.filter((coin) => coin.family === 'ofc' && coin.network.name === 'OfcTestnet');
+    ofcCoins.forEach((ofcCoin) => {
+      const baseTokenName = ofcCoin.name.replace(/^ofc/, '');
+      const baseCoin = getCoin(baseTokenName);
+      if (baseCoin) {
+        ofcCoin.asset.should.equal(baseCoin.asset);
+      }
+    });
+  });
 });

@@ -145,44 +145,51 @@ export const ofcCoins = [
     CoinKind.CRYPTO
   ),
   ofc('1c21ee76-2285-4bd6-855b-9fa5698ab78c', 'ofcxdc', 'XDC', 18, UnderlyingAsset.XDC, CoinKind.CRYPTO),
-  tofc('a4b3776d-aea6-4c07-968e-0e698c9aea91', 'ofctxdc', 'Testnet XDC', 18, UnderlyingAsset.XDC, CoinKind.CRYPTO),
+  tofc('a4b3776d-aea6-4c07-968e-0e698c9aea91', 'ofctxdc', 'Testnet XDC', 18, UnderlyingAsset.TXDC, CoinKind.CRYPTO),
   ofc('3c85e27d-ee16-468a-bab3-f44ef1642a8b', 'ofcwemix', 'Wemix', 18, UnderlyingAsset.WEMIX, CoinKind.CRYPTO),
   tofc(
     '80f8c9ac-0855-4dd6-894f-99e45e607504',
     'ofctwemix',
     'Testnet wemix',
     18,
-    UnderlyingAsset.WEMIX,
+    UnderlyingAsset.TWEMIX,
     CoinKind.CRYPTO
   ),
   ofc('1876cf96-a0b7-4b7b-9024-6bd89df9814b', 'ofcflr', 'Flare', 18, UnderlyingAsset.FLR, CoinKind.CRYPTO),
-  tofc('312ff039-2473-4a11-837f-4ec896a0483d', 'ofctflr', 'Testnet flare', 18, UnderlyingAsset.FLR, CoinKind.CRYPTO),
+  tofc('312ff039-2473-4a11-837f-4ec896a0483d', 'ofctflr', 'Testnet flare', 18, UnderlyingAsset.TFLR, CoinKind.CRYPTO),
   ofc('dd3f3d9a-8eae-4a7a-8178-88611687674d', 'ofcsgb', 'Songbird', 18, UnderlyingAsset.SGB, CoinKind.CRYPTO),
-  tofc('30e8f8d8-17e7-4af0-91cf-069724e05e65', 'ofctsgb', 'Testnet songbird', 18, UnderlyingAsset.SGB, CoinKind.CRYPTO),
+  tofc(
+    '30e8f8d8-17e7-4af0-91cf-069724e05e65',
+    'ofctsgb',
+    'Testnet songbird',
+    18,
+    UnderlyingAsset.TSGB,
+    CoinKind.CRYPTO
+  ),
   ofc('4bc9d629-cff8-4f1b-bb43-5424f7ed9a19', 'ofcmon', 'Monad', 18, UnderlyingAsset.MON, CoinKind.CRYPTO),
-  tofc('24f7dd79-7d03-4ce5-ac90-0572153f28f2', 'ofctmon', 'Testnet Monad', 18, UnderlyingAsset.MON, CoinKind.CRYPTO),
+  tofc('24f7dd79-7d03-4ce5-ac90-0572153f28f2', 'ofctmon', 'Testnet Monad', 18, UnderlyingAsset.TMON, CoinKind.CRYPTO),
   ofc('bf513cc9-7b75-42d2-a585-1a7c91801605', 'ofcworld', 'World', 18, UnderlyingAsset.WORLD, CoinKind.CRYPTO),
   tofc(
     'ca1f3c70-8f80-4feb-9be7-f2b716409027',
     'ofctworld',
     'Testnet world',
     18,
-    UnderlyingAsset.WORLD,
+    UnderlyingAsset.TWORLD,
     CoinKind.CRYPTO
   ),
   ofc('0ea1175d-63a2-4dd3-b963-24020a02eab3', 'ofcstt', 'Somnia', 18, UnderlyingAsset.STT, CoinKind.CRYPTO),
-  tofc('06eee147-1299-435d-843f-9eea958e2b2f', 'ofctstt', 'Testnet somnia', 18, UnderlyingAsset.STT, CoinKind.CRYPTO),
+  tofc('06eee147-1299-435d-843f-9eea958e2b2f', 'ofctstt', 'Testnet somnia', 18, UnderlyingAsset.TSTT, CoinKind.CRYPTO),
   ofc('cdc62abc-4748-48f4-8926-6ed42f6c86c9', 'ofcsoneium', 'Soneium', 18, UnderlyingAsset.SONEIUM, CoinKind.CRYPTO),
   tofc(
     '3df259c9-3b18-4611-a359-cf977c535a5f',
     'ofctsoneium',
     'Testnet soneium',
     18,
-    UnderlyingAsset.SONEIUM,
+    UnderlyingAsset.TSONEIUM,
     CoinKind.CRYPTO
   ),
   ofc('092cb24a-238d-4faa-bfc9-328ebb9cbcba', 'ofcicp', 'ICP', 8, UnderlyingAsset.ICP, CoinKind.CRYPTO),
-  tofc('f6877057-8ac9-4325-bfa9-b6a4fab7c3ee', 'ofcticp', 'Testnet ICP', 8, UnderlyingAsset.ICP, CoinKind.CRYPTO),
+  tofc('f6877057-8ac9-4325-bfa9-b6a4fab7c3ee', 'ofcticp', 'Testnet ICP', 8, UnderlyingAsset.TICP, CoinKind.CRYPTO),
   ofc('6f1f9d82-dc02-4448-b289-84e246a921f8', 'ofcbera', 'Bera', 18, UnderlyingAsset.BERA, CoinKind.CRYPTO),
   ofc('ecc046f9-eb9c-479d-943f-9fe0633ea212', 'ofcoas', 'oaschain', 18, UnderlyingAsset.OAS, CoinKind.CRYPTO),
   ofc('24c3b525-b5d3-45c0-9280-599db27c0fab', 'ofctao', 'Bittensor', 9, UnderlyingAsset.TAO, CoinKind.CRYPTO),
@@ -192,19 +199,26 @@ export const ofcCoins = [
     'ofctpolyx',
     'Testnet Polymesh',
     6,
-    UnderlyingAsset.POLYX,
+    UnderlyingAsset.TPOLYX,
     CoinKind.CRYPTO
   ),
   ofc('77661a48-865f-48ea-bb73-875744729a69', 'ofcbera:dolo', 'Dolomite', 18, UnderlyingAsset.BERA, CoinKind.CRYPTO),
   ofc('411fd61a-3571-41f4-b632-6058a30a66a2', 'ofcapt', 'Aptos', 8, UnderlyingAsset.APT, CoinKind.CRYPTO),
-  tofc('6677edac-c597-43ca-b8ff-6cdfa4e094a3', 'ofctapt', 'Testnet Aptos', 8, UnderlyingAsset.APT, CoinKind.CRYPTO),
-  tofc('81bd0c13-6531-42b9-a58a-b1e65d239f6f', 'ofctoas', 'Testnet oaschain', 18, UnderlyingAsset.OAS, CoinKind.CRYPTO),
+  tofc('6677edac-c597-43ca-b8ff-6cdfa4e094a3', 'ofctapt', 'Testnet Aptos', 8, UnderlyingAsset.TAPT, CoinKind.CRYPTO),
+  tofc(
+    '81bd0c13-6531-42b9-a58a-b1e65d239f6f',
+    'ofctoas',
+    'Testnet oaschain',
+    18,
+    UnderlyingAsset.TOAS,
+    CoinKind.CRYPTO
+  ),
   tofc(
     '6d2fcabc-5c58-4964-a4c9-d9d5c338a88a',
     'ofctbera',
     'Testnet Berachain',
     18,
-    UnderlyingAsset.BERA,
+    UnderlyingAsset.TBERA,
     CoinKind.CRYPTO
   ),
   tofc(
@@ -212,17 +226,17 @@ export const ofcCoins = [
     'ofctcoredao',
     'Testnet coredao chain',
     18,
-    UnderlyingAsset.COREDAO,
+    UnderlyingAsset.TCOREDAO,
     CoinKind.CRYPTO
   ),
-  tofc('e85d3b60-b6c8-4e29-b6db-38966125cfeb', 'ofctusd', 'Test USD', 2, UnderlyingAsset.USD, CoinKind.FIAT),
-  tofc('dbac74bb-5dbc-4cdd-ad66-f71315b53a3f', 'ofcteur', 'Test Euro', 2, UnderlyingAsset.EUR, CoinKind.FIAT),
+  tofc('e85d3b60-b6c8-4e29-b6db-38966125cfeb', 'ofctusd', 'Test USD', 2, UnderlyingAsset.TUSD, CoinKind.FIAT),
+  tofc('dbac74bb-5dbc-4cdd-ad66-f71315b53a3f', 'ofcteur', 'Test Euro', 2, UnderlyingAsset.TEUR, CoinKind.FIAT),
   tofc(
     'c916c733-2a4e-4b09-ab8d-38e891194016',
     'ofctsgd',
     'Testnet Singapore Dollar',
     2,
-    UnderlyingAsset.SGD,
+    UnderlyingAsset.TSGD,
     CoinKind.FIAT
   ),
   tofc(
@@ -230,7 +244,7 @@ export const ofcCoins = [
     'ofctaed',
     'Testnet United Arab Emirates Dirham',
     2,
-    UnderlyingAsset.SGD,
+    UnderlyingAsset.TAED,
     CoinKind.FIAT
   ),
   tofc(
@@ -238,21 +252,28 @@ export const ofcCoins = [
     'ofctgbp',
     'Test British Pound Sterling',
     2,
-    UnderlyingAsset.GBP,
+    UnderlyingAsset.TGBP,
     CoinKind.FIAT
   ),
-  tofc('e5e9dedb-4d72-4a44-a84c-32f46d275bdc', 'ofctcspr', 'Test Casper', 9, UnderlyingAsset.CSPR, CoinKind.CRYPTO),
-  tofc('b84e3f27-e521-4093-9616-fc92ba352cd9', 'ofctnear', 'Test Near', 24, UnderlyingAsset.NEAR, CoinKind.CRYPTO),
-  tofc('457d1c4e-5bf7-442a-90c9-dfd590f30925', 'ofctbtc', 'Test Bitcoin', 8, UnderlyingAsset.BTC, CoinKind.CRYPTO),
-  tofc('b4a75a39-3fd2-4866-aaed-75b969df1d98', 'ofctbtc4', 'Testnet4 Bitcoin', 8, UnderlyingAsset.BTC, CoinKind.CRYPTO),
-  tofc('4bf9d3a3-04f7-4c48-9a26-12b36bbecfb7', 'ofctdot', 'Test Polkadot', 12, UnderlyingAsset.DOT, CoinKind.CRYPTO),
-  tofc('e916ff23-7521-4046-9bea-b92788acc23b', 'ofcteth', 'Test Ether', 18, UnderlyingAsset.ETH, CoinKind.CRYPTO),
+  tofc('e5e9dedb-4d72-4a44-a84c-32f46d275bdc', 'ofctcspr', 'Test Casper', 9, UnderlyingAsset.TCSPR, CoinKind.CRYPTO),
+  tofc('b84e3f27-e521-4093-9616-fc92ba352cd9', 'ofctnear', 'Test Near', 24, UnderlyingAsset.TNEAR, CoinKind.CRYPTO),
+  tofc('457d1c4e-5bf7-442a-90c9-dfd590f30925', 'ofctbtc', 'Test Bitcoin', 8, UnderlyingAsset.TBTC, CoinKind.CRYPTO),
+  tofc(
+    'b4a75a39-3fd2-4866-aaed-75b969df1d98',
+    'ofctbtc4',
+    'Testnet4 Bitcoin',
+    8,
+    UnderlyingAsset.TBTC4,
+    CoinKind.CRYPTO
+  ),
+  tofc('4bf9d3a3-04f7-4c48-9a26-12b36bbecfb7', 'ofctdot', 'Test Polkadot', 12, UnderlyingAsset.TDOT, CoinKind.CRYPTO),
+  tofc('e916ff23-7521-4046-9bea-b92788acc23b', 'ofcteth', 'Test Ether', 18, UnderlyingAsset.TETH, CoinKind.CRYPTO),
   tofc(
     'a90ab5b8-e156-4d40-9cd7-b170416ba7de',
     'ofcgteth',
     'Test Goerli Ether',
     18,
-    UnderlyingAsset.ETH,
+    UnderlyingAsset.GTETH,
     CoinKind.CRYPTO
   ),
   tofc(
@@ -260,7 +281,7 @@ export const ofcCoins = [
     'ofchteth',
     'Test Holesky Ether',
     18,
-    UnderlyingAsset.ETH,
+    UnderlyingAsset.HTETH,
     CoinKind.CRYPTO
   ),
   tofc(
@@ -268,25 +289,39 @@ export const ofcCoins = [
     'ofctavaxc',
     'Test Avalanche C-Chain',
     18,
-    UnderlyingAsset.AVAXC,
+    UnderlyingAsset.TAVAXC,
     CoinKind.CRYPTO
   ),
-  tofc('96c298cb-7aaa-4beb-8edb-0f18b35fda89', 'ofctltc', 'Test Litecoin', 8, UnderlyingAsset.LTC, CoinKind.CRYPTO),
-  tofc('d76b04d1-baef-4bd7-ac49-b5900f8f0b67', 'ofctdash', 'Test Dash', 8, UnderlyingAsset.DASH, CoinKind.CRYPTO),
-  tofc('446a1812-d02c-47d5-b3d5-830e420fa274', 'ofctzec', 'Test ZCash', 8, UnderlyingAsset.ZEC, CoinKind.CRYPTO),
-  tofc('adfc43d8-e702-465d-af01-f1583fa00a5e', 'ofctxrp', 'Test Ripple', 6, UnderlyingAsset.XRP, CoinKind.CRYPTO),
-  tofc('3fb98e15-4e7d-4ab4-88cc-4a55746e6ffe', 'ofctxlm', 'Test Stellar', 7, UnderlyingAsset.XLM, CoinKind.CRYPTO),
-  tofc('7c42feed-31e2-4a77-a211-ab3f24c9af90', 'ofctbch', 'Test Bitcoin Cash', 8, UnderlyingAsset.BCH, CoinKind.CRYPTO),
-  tofc('4580a066-4a4b-4b6b-975f-b229170d72ba', 'ofctalgo', 'Test Algorand', 6, UnderlyingAsset.ALGO, CoinKind.CRYPTO),
-  tofc('2095d445-a298-4d64-a2fb-49765a648159', 'ofctbtg', 'Test Bitcoin Gold', 8, UnderlyingAsset.BTG, CoinKind.CRYPTO),
-  tofc('6162908d-9d98-4c73-a31d-d4387817e055', 'ofctbsv', 'Test Bitcoin SV', 8, UnderlyingAsset.BSV, CoinKind.CRYPTO),
-  tofc('bbf5aef3-f60a-40cf-b82d-972aa8b6860a', 'ofcteos', 'Test Eos', 4, UnderlyingAsset.EOS, CoinKind.CRYPTO),
+  tofc('96c298cb-7aaa-4beb-8edb-0f18b35fda89', 'ofctltc', 'Test Litecoin', 8, UnderlyingAsset.TLTC, CoinKind.CRYPTO),
+  tofc('d76b04d1-baef-4bd7-ac49-b5900f8f0b67', 'ofctdash', 'Test Dash', 8, UnderlyingAsset.TDASH, CoinKind.CRYPTO),
+  tofc('446a1812-d02c-47d5-b3d5-830e420fa274', 'ofctzec', 'Test ZCash', 8, UnderlyingAsset.TZEC, CoinKind.CRYPTO),
+  tofc('adfc43d8-e702-465d-af01-f1583fa00a5e', 'ofctxrp', 'Test Ripple', 6, UnderlyingAsset.TXRP, CoinKind.CRYPTO),
+  tofc('3fb98e15-4e7d-4ab4-88cc-4a55746e6ffe', 'ofctxlm', 'Test Stellar', 7, UnderlyingAsset.TXLM, CoinKind.CRYPTO),
+  tofc(
+    '7c42feed-31e2-4a77-a211-ab3f24c9af90',
+    'ofctbch',
+    'Test Bitcoin Cash',
+    8,
+    UnderlyingAsset.TBCH,
+    CoinKind.CRYPTO
+  ),
+  tofc('4580a066-4a4b-4b6b-975f-b229170d72ba', 'ofctalgo', 'Test Algorand', 6, UnderlyingAsset.TALGO, CoinKind.CRYPTO),
+  tofc(
+    '2095d445-a298-4d64-a2fb-49765a648159',
+    'ofctbtg',
+    'Test Bitcoin Gold',
+    8,
+    UnderlyingAsset.TBTG,
+    CoinKind.CRYPTO
+  ),
+  tofc('6162908d-9d98-4c73-a31d-d4387817e055', 'ofctbsv', 'Test Bitcoin SV', 8, UnderlyingAsset.TBSV, CoinKind.CRYPTO),
+  tofc('bbf5aef3-f60a-40cf-b82d-972aa8b6860a', 'ofcteos', 'Test Eos', 4, UnderlyingAsset.TEOS, CoinKind.CRYPTO),
   tofc(
     '90d83653-a4b3-4b78-9a87-97f908702aa6',
     'ofctetc',
     'Test Ethereum Classic',
     18,
-    UnderlyingAsset.ETC,
+    UnderlyingAsset.TETC,
     CoinKind.CRYPTO
   ),
   tofc(
@@ -294,27 +329,34 @@ export const ofcCoins = [
     'ofcthbar',
     'Testnet Hedera HBAR',
     8,
-    UnderlyingAsset.HBAR,
+    UnderlyingAsset.THBAR,
     CoinKind.CRYPTO
   ),
-  tofc('c2161656-219d-439a-be96-01fc67ed22a8', 'ofctstx', 'Test Stacks', 6, UnderlyingAsset.STX, CoinKind.CRYPTO),
-  tofc('916488ca-3607-4c3f-96b4-e5a97edc8767', 'ofctbld', 'Testnet Agoric', 6, UnderlyingAsset.BLD, CoinKind.CRYPTO),
-  tofc('ccf34023-f025-433a-8014-bda198907a3a', 'ofcttia', 'Testnet Celestia', 6, UnderlyingAsset.TIA, CoinKind.CRYPTO),
+  tofc('c2161656-219d-439a-be96-01fc67ed22a8', 'ofctstx', 'Test Stacks', 6, UnderlyingAsset.TSTX, CoinKind.CRYPTO),
+  tofc('916488ca-3607-4c3f-96b4-e5a97edc8767', 'ofctbld', 'Testnet Agoric', 6, UnderlyingAsset.TBLD, CoinKind.CRYPTO),
+  tofc('ccf34023-f025-433a-8014-bda198907a3a', 'ofcttia', 'Testnet Celestia', 6, UnderlyingAsset.TTIA, CoinKind.CRYPTO),
   tofc(
     'f6c23fad-16b6-4bf9-99ae-199ae8ac849d',
     'ofctatom',
     'Testnet Cosmos Hub ATOM',
     6,
-    UnderlyingAsset.ATOM,
+    UnderlyingAsset.TATOM,
     CoinKind.CRYPTO
   ),
-  tofc('db429b06-c128-461e-9401-0e9d96fe500f', 'ofctbaby', 'Testnet Babylon', 6, UnderlyingAsset.BABY, CoinKind.CRYPTO),
+  tofc(
+    'db429b06-c128-461e-9401-0e9d96fe500f',
+    'ofctbaby',
+    'Testnet Babylon',
+    6,
+    UnderlyingAsset.TBABY,
+    CoinKind.CRYPTO
+  ),
   tofc(
     'c1c90357-1026-4fc1-b465-05abe0232036',
     'ofctcronos',
     'Testnet Cronos POS',
     8,
-    UnderlyingAsset.CRONOS,
+    UnderlyingAsset.TCRONOS,
     CoinKind.CRYPTO
   ),
   tofc(
@@ -322,7 +364,7 @@ export const ofcCoins = [
     'ofctinitia',
     'Testnet Initia',
     6,
-    UnderlyingAsset.INITIA,
+    UnderlyingAsset.TINITIA,
     CoinKind.CRYPTO
   ),
   tofc(
@@ -330,7 +372,7 @@ export const ofcCoins = [
     'ofctasi',
     'Testnet Fetch Native',
     18,
-    UnderlyingAsset.ASI,
+    UnderlyingAsset.TASI,
     CoinKind.CRYPTO
   ),
   tofc(
@@ -338,39 +380,46 @@ export const ofcCoins = [
     'ofctinjective',
     'Testnet Injective',
     18,
-    UnderlyingAsset.INJECTIVE,
+    UnderlyingAsset.TINJECTIVE,
     CoinKind.CRYPTO
   ),
-  tofc('1573da4d-15a8-4dae-9368-84ec0507e251', 'ofctosmo', 'Testnet Osmosis', 6, UnderlyingAsset.OSMO, CoinKind.CRYPTO),
+  tofc(
+    '1573da4d-15a8-4dae-9368-84ec0507e251',
+    'ofctosmo',
+    'Testnet Osmosis',
+    6,
+    UnderlyingAsset.TOSMO,
+    CoinKind.CRYPTO
+  ),
   tofc(
     '4bbb64d1-6bd2-4c53-8be0-f99229362c3d',
     'ofcthash',
     'Testnet Provenance',
     9,
-    UnderlyingAsset.HASH,
+    UnderlyingAsset.THASH,
     CoinKind.CRYPTO
   ),
-  tofc('a7770053-4fe7-432e-a554-5d3ecc1cc4ad', 'ofctsei', 'Testnet Sei', 6, UnderlyingAsset.SEI, CoinKind.CRYPTO),
-  tofc('801c0437-d4fd-4e5a-8656-a6bb596f0640', 'ofctzeta', 'Testnet Zeta', 18, UnderlyingAsset.ZETA, CoinKind.CRYPTO),
+  tofc('a7770053-4fe7-432e-a554-5d3ecc1cc4ad', 'ofctsei', 'Testnet Sei', 6, UnderlyingAsset.TSEI, CoinKind.CRYPTO),
+  tofc('801c0437-d4fd-4e5a-8656-a6bb596f0640', 'ofctzeta', 'Testnet Zeta', 18, UnderlyingAsset.TZETA, CoinKind.CRYPTO),
   tofc(
     '52e600bb-b006-452b-9f82-f81c20d0168d',
     'ofctbsc',
     'Testnet Binance Smart Chain',
     18,
-    UnderlyingAsset.BSC,
+    UnderlyingAsset.TBSC,
     CoinKind.CRYPTO
   ),
-  tofc('89bfad1a-97f8-46f8-bec6-3faf145f3a74', 'ofctsui', 'Testnet Sui', 9, UnderlyingAsset.SUI, CoinKind.CRYPTO),
-  tofc('ac5b8544-6e98-4b74-9a60-9173ba226979', 'ofcttrx', 'Testnet Tron', 6, UnderlyingAsset.TRX, CoinKind.CRYPTO),
-  tofc('bc10ac8c-7786-4ba8-b2a5-009b478d7046', 'ofctsol', 'Test Solana', 9, UnderlyingAsset.SOL, CoinKind.CRYPTO),
-  tofc('b7dfb8c8-83e4-4b41-8782-49de832f9acf', 'ofctdoge', 'Test Dogecoin', 8, UnderlyingAsset.DOGE, CoinKind.CRYPTO),
-  tofc('22299e37-402d-4d4d-9cf8-2146b915eac3', 'ofctada', 'Test Cardano', 6, UnderlyingAsset.ADA, CoinKind.CRYPTO),
+  tofc('89bfad1a-97f8-46f8-bec6-3faf145f3a74', 'ofctsui', 'Testnet Sui', 9, UnderlyingAsset.TSUI, CoinKind.CRYPTO),
+  tofc('ac5b8544-6e98-4b74-9a60-9173ba226979', 'ofcttrx', 'Testnet Tron', 6, UnderlyingAsset.TTRX, CoinKind.CRYPTO),
+  tofc('bc10ac8c-7786-4ba8-b2a5-009b478d7046', 'ofctsol', 'Test Solana', 9, UnderlyingAsset.TSOL, CoinKind.CRYPTO),
+  tofc('b7dfb8c8-83e4-4b41-8782-49de832f9acf', 'ofctdoge', 'Test Dogecoin', 8, UnderlyingAsset.TDOGE, CoinKind.CRYPTO),
+  tofc('22299e37-402d-4d4d-9cf8-2146b915eac3', 'ofctada', 'Test Cardano', 6, UnderlyingAsset.TADA, CoinKind.CRYPTO),
   tofc(
     'b103d14f-1bad-49a3-afbe-418567680f02',
     'ofctpolygon',
     'Test Polygon (MATIC native)',
     18,
-    UnderlyingAsset.POLYGON,
+    UnderlyingAsset.TPOLYGON,
     CoinKind.CRYPTO
   ),
   tofc(
@@ -378,29 +427,43 @@ export const ofcCoins = [
     'ofctarbeth',
     'Testnet Arbitrum Ethereum (L2 Chain)',
     18,
-    UnderlyingAsset.ARBETH,
+    UnderlyingAsset.TARBETH,
     CoinKind.CRYPTO
   ),
-  tofc('3091d79a-7737-4493-b3e6-6765998b9486', 'ofctcoreum', 'Test Coreum', 6, UnderlyingAsset.COREUM, CoinKind.CRYPTO),
+  tofc(
+    '3091d79a-7737-4493-b3e6-6765998b9486',
+    'ofctcoreum',
+    'Test Coreum',
+    6,
+    UnderlyingAsset.TCOREUM,
+    CoinKind.CRYPTO
+  ),
   tofc(
     '90ac199d-4061-4c5f-9d48-4439c7ec2033',
     'ofctcelo',
     'Testnet Celo Gold',
     18,
-    UnderlyingAsset.CELO,
+    UnderlyingAsset.TCELO,
     CoinKind.CRYPTO
   ),
-  tofc('f5ad87e8-7c86-406b-9776-b7f6910b5e3b', 'ofctxtz', 'Testnet Tezos', 6, UnderlyingAsset.XTZ, CoinKind.CRYPTO),
+  tofc('f5ad87e8-7c86-406b-9776-b7f6910b5e3b', 'ofctxtz', 'Testnet Tezos', 6, UnderlyingAsset.TXTZ, CoinKind.CRYPTO),
   tofc(
     '3a8b240e-c8f9-48f4-9b6f-3f2ba64db07e',
     'ofctopeth',
     'Testnet Optimism Ethereum (L2 Chain)',
     18,
-    UnderlyingAsset.OPETH,
+    UnderlyingAsset.TOPETH,
     CoinKind.CRYPTO
   ),
-  tofc('b364799a-e6d1-4d84-afc9-588594e850f7', 'ofctton', 'Test Ton', 9, UnderlyingAsset.TON, CoinKind.CRYPTO),
-  tofc('d7ec69dc-619d-4c10-b269-75c2327bd69d', 'ofcttao', 'Testnet Bittensor', 9, UnderlyingAsset.TAO, CoinKind.CRYPTO),
+  tofc('b364799a-e6d1-4d84-afc9-588594e850f7', 'ofctton', 'Test Ton', 9, UnderlyingAsset.TTON, CoinKind.CRYPTO),
+  tofc(
+    'd7ec69dc-619d-4c10-b269-75c2327bd69d',
+    'ofcttao',
+    'Testnet Bittensor',
+    9,
+    UnderlyingAsset.TTAO,
+    CoinKind.CRYPTO
+  ),
   ofcsolToken(
     '7d1b17b3-d606-4ba7-82dc-3e3a0eede46a',
     'ofcsol:wsol',
@@ -963,7 +1026,7 @@ export const ofcCoins = [
     'ofctsol:hnt',
     'testnet Helium Network Token',
     8,
-    UnderlyingAsset['sol:hnt'],
+    UnderlyingAsset['tsol:hnt'],
     SOL_TOKEN_FEATURES
   ),
   tofcTronToken('937efe97-a17a-4d2a-aaf2-0ffdb529a943', 'ofcttrx:usdt', 'Tether USD', 6, UnderlyingAsset['ttrx:usdt']),
@@ -1223,7 +1286,7 @@ export const ofcCoins = [
     'ofctavaxc:link',
     'Test Chainlink',
     18,
-    UnderlyingAsset['avaxc:link']
+    UnderlyingAsset['tavaxc:link']
   ),
   ofcAvaxErc20(
     '49608052-e4ea-4623-9732-595368ff053b',
@@ -2620,7 +2683,7 @@ export const ofcCoins = [
     'ofcthbar:usdc',
     'Testnet Hedera USD Coin',
     6,
-    UnderlyingAsset.USDC
+    UnderlyingAsset['thbar:usdc']
   ),
 
   ofcStellarToken(

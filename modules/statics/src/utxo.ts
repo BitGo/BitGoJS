@@ -156,7 +156,7 @@ export const utxoCoins: Readonly<BaseCoin>[] = [
     'tbch',
     'Testnet Bitcoin Cash',
     Networks.test.bitcoinCash,
-    UnderlyingAsset.BCH,
+    UnderlyingAsset.TBCH,
     BaseUnit.BTC,
     BCH_FEATURES
   ),
@@ -190,7 +190,7 @@ export const utxoCoins: Readonly<BaseCoin>[] = [
     'tbsv',
     'Testnet Bitcoin SV',
     Networks.test.bitcoinSV,
-    UnderlyingAsset.BSV,
+    UnderlyingAsset.TBSV,
     BaseUnit.BTC,
     [CoinFeature.DEPRECATED, ...UtxoCoin.DEFAULT_FEATURES]
   ),
@@ -208,7 +208,7 @@ export const utxoCoins: Readonly<BaseCoin>[] = [
     'tbtc',
     'Testnet Bitcoin',
     Networks.test.bitcoin,
-    UnderlyingAsset.BTC,
+    UnderlyingAsset.TBTC,
     BaseUnit.BTC,
     BTC_FEATURES.filter((f) => f !== CoinFeature.STAKING)
   ),
@@ -226,7 +226,7 @@ export const utxoCoins: Readonly<BaseCoin>[] = [
     'tbtc4',
     'Testnet4 Bitcoin',
     Networks.test.bitcoinTestnet4,
-    UnderlyingAsset.BTC,
+    UnderlyingAsset.TBTC4,
     BaseUnit.BTC,
     BTC_FEATURES
   ),
@@ -253,7 +253,7 @@ export const utxoCoins: Readonly<BaseCoin>[] = [
     'tbtg',
     'Testnet Bitcoin Gold',
     Networks.test.bitcoinGold,
-    UnderlyingAsset.BTG,
+    UnderlyingAsset.TBTG,
     BaseUnit.BTC,
     BTG_FEATURES.filter((f) => f !== CoinFeature.MULTISIG_COLD)
   ),
@@ -271,7 +271,7 @@ export const utxoCoins: Readonly<BaseCoin>[] = [
     'tltc',
     'Testnet Litecoin',
     Networks.test.litecoin,
-    UnderlyingAsset.LTC,
+    UnderlyingAsset.TLTC,
     BaseUnit.LTC,
     LTC_FEATURES
   ),
@@ -296,7 +296,7 @@ export const utxoCoins: Readonly<BaseCoin>[] = [
     'tdash',
     'Testnet Dash',
     Networks.test.dash,
-    UnderlyingAsset.DASH,
+    UnderlyingAsset.TDASH,
     BaseUnit.DASH,
     TDASH_FEATURES
   ),
@@ -314,7 +314,7 @@ export const utxoCoins: Readonly<BaseCoin>[] = [
     'tzec',
     'Testnet ZCash',
     Networks.test.zCash,
-    UnderlyingAsset.ZEC,
+    UnderlyingAsset.TZEC,
     BaseUnit.ZEC,
     ZEC_FEATURES
   ),
@@ -332,7 +332,7 @@ export const utxoCoins: Readonly<BaseCoin>[] = [
     'tdoge',
     'Testnet Dogecoin',
     Networks.test.dogecoin,
-    UnderlyingAsset.DOGE,
+    UnderlyingAsset.TDOGE,
     BaseUnit.BTC,
     DOGE_FEATURES
   ),
