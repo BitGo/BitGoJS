@@ -44,7 +44,7 @@ async function syncParams(network: BabylonNetwork | undefined): Promise<void> {
   console.log(`Wrote ${allParams.length} params to ${filename}`);
 }
 
-async function syncDelegationResponse(network: BabylonNetwork | undefined, txid: string | string): Promise<void> {
+async function syncDelegationResponse(network: BabylonNetwork | undefined, txid: string | undefined): Promise<void> {
   if (network === undefined && txid === undefined) {
     console.log('Syncing delegation with default params');
     return syncDelegationResponse('testnet', '5d277e1b29e5589074aea95ac8c8230fd911c2ec3c58774aafdef915619b772c');
