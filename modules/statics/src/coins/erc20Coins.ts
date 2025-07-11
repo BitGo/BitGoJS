@@ -10778,6 +10778,14 @@ export const erc20Coins = [
     UnderlyingAsset['eth:usdcv']
   ),
   erc20(
+    '12fdbdb5-1e93-4a70-b651-8017959e12da',
+    'eth:eco',
+    'ECO',
+    18,
+    '0x892e0aea725d365c2619282ea7a974e1ddaec821',
+    UnderlyingAsset['eth:eco']
+  ),
+  erc20(
     'e18703e9-f9d7-4454-baea-737a5469f37e',
     'eth:cake',
     'PancakeSwap Token',

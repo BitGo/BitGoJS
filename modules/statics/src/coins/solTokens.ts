@@ -2307,6 +2307,16 @@ export const solTokens = [
     SOL_TOKEN_FEATURES
   ),
   solToken(
+    'a8ec90b0-5683-4a36-8ac6-637f66bf6ed1',
+    'sol:pump',
+    'Pump',
+    6,
+    'pumpCmXqMfrsAkQ5r49WcJnRayYRqmXz6ae8H7H9Dfn',
+    'pumpCmXqMfrsAkQ5r49WcJnRayYRqmXz6ae8H7H9Dfn',
+    UnderlyingAsset['sol:pump'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
     '34450f4a-1191-4a7b-a48a-2e5f4414aa02',
     'sol:jitosol',
     'Jito Staked SOL',
