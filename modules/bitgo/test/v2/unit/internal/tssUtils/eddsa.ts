@@ -122,9 +122,12 @@ describe('TSS Utils:', async function () {
     },
   };
 
+  const validTxHex =
+    '020104096f306776291ac74cd6da1787f7b5de1f103b92d21c240d30f608f974cadb33a8051a34bc8acd438763976f96876115050f73828553566d111d7ac8bffebf587c40a0c8fc599f0defd59b130ea61bf75f441683124b8f74ec9bd3ab44f5b0c2df4f5f5987bfe26aa66013efd96d36360f2b4336c91f993259fb56051305614d429b3d6e69f97bc63846ba524986cc3a04d006898dee0c8e72a0dbbb95edaf9ca800000000000000000000000000000000000000000000000000000000000000008001d74c358d532e3cb5a42cbcb4b6d15c7d93165375427b5ef1a092234b74ff06a7d517192c568ee08a845f73d29788cf035c3145b21ab344d8062ea940000006ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a90549d7ae1e24cd8bb16e36e0519c66fd8b7c5223d660a46a6e0fed7a5ab262be02050303070104040000000804040602000a0c009435770000000009';
+
   const txRequest = {
     txRequestId: 'randomId',
-    unsignedTxs: [{ signableHex: 'MPC on a Friday night', serializedTxHex: 'MPC on a Friday night' }],
+    unsignedTxs: [{ signableHex: validTxHex, serializedTxHex: validTxHex }],
     signatureShares: [
       {
         from: 'bitgo',
@@ -554,9 +557,9 @@ describe('TSS Utils:', async function () {
       transactions: [],
       unsignedTxs: [
         {
-          serializedTxHex: 'MPC on a Friday night',
-          signableHex: 'MPC on a Friday night',
-          derivationPath: 'm/0',
+          serializedTxHex: validTxHex,
+          signableHex: validTxHex,
+          derivationPath: 'm/4',
         },
       ],
       date: new Date().toISOString(),
@@ -643,9 +646,9 @@ describe('TSS Utils:', async function () {
       transactions: [],
       unsignedTxs: [
         {
-          serializedTxHex: 'MPC on a Friday night',
-          signableHex: 'MPC on a Friday night',
-          derivationPath: 'm/0',
+          serializedTxHex: validTxHex,
+          signableHex: validTxHex,
+          derivationPath: 'm/4',
         },
       ],
       date: new Date().toISOString(),
