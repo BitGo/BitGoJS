@@ -1,7 +1,14 @@
 import { Principal } from '@dfinity/principal';
 import { HttpAgent, replica, AgentCanister } from 'ic0';
 import utils from './utils';
-import { ACCOUNT_BALANCE_CALL, LEDGER_CANISTER_ID, ICRC1_FEE_KEY, METADATA_CALL, DEFAULT_SUBACCOUNT } from './iface';
+import {
+  ACCOUNT_BALANCE_CALL,
+  LEDGER_CANISTER_ID,
+  GOVERNANCE_CANISTER_ID,
+  ICRC1_FEE_KEY,
+  METADATA_CALL,
+  DEFAULT_SUBACCOUNT,
+} from './iface';
 import BigNumber from 'bignumber.js';
 
 export class IcpAgent {
@@ -36,6 +43,17 @@ export class IcpAgent {
     const agent = this.createAgent();
     const ic = replica(agent, { local: true });
     return ic(Principal.fromUint8Array(LEDGER_CANISTER_ID).toText());
+  }
+
+  /**
+   * Retrieves an instance of the governance canister agent.
+   *
+   * @returns {AgentCanister} An agent interface for interacting with the governance canister.
+   */
+  private getGovernanceCanister(): AgentCanister {
+    const agent = this.createAgent();
+    const ic = replica(agent, { local: true });
+    return ic(Principal.fromUint8Array(GOVERNANCE_CANISTER_ID).toText());
   }
 
   /**
