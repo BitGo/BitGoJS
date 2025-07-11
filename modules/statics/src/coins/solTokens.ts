@@ -2745,6 +2745,116 @@ export const solTokens = [
     SOL_TOKEN_FEATURES
   ),
   solToken(
+    'fadf9bb3-b5ce-4979-b501-bca3973b6f23',
+    'sol:would',
+    'Would',
+    6,
+    'J1Wpmugrooj1yMyQKrdZ2vwRXG5rhfx3vTnYE39gpump',
+    'J1Wpmugrooj1yMyQKrdZ2vwRXG5rhfx3vTnYE39gpump',
+    UnderlyingAsset['sol:would'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '7de29474-4b53-401e-bdc2-d99e3025372c',
+    'sol:dog',
+    'Dog (Bitcoin)',
+    5,
+    'dog1viwbb2vWDpER5FrJ4YFG6gq6XuyFohUe9TXN65u',
+    'dog1viwbb2vWDpER5FrJ4YFG6gq6XuyFohUe9TXN65u',
+    UnderlyingAsset['sol:dog'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    'a73223a4-e35f-4324-b0dd-21eb31d641db',
+    'sol:saros',
+    'Saros',
+    6,
+    'SarosY6Vscao718M4A778z4CGtvcwcGef5M9MEH1LGL',
+    'SarosY6Vscao718M4A778z4CGtvcwcGef5M9MEH1LGL',
+    UnderlyingAsset['sol:saros'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '7bde57be-7372-44de-bf77-615c2b884cea',
+    'sol:babydoge',
+    'Baby Doge',
+    1,
+    '7dUKUopcNWW6CcU4eRxCHh1uiMh32zDrmGf6ufqhxann',
+    '7dUKUopcNWW6CcU4eRxCHh1uiMh32zDrmGf6ufqhxann',
+    UnderlyingAsset['sol:babydoge'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '750496be-0099-420a-b674-a2d1105542a2',
+    'sol:useless',
+    'Useless Coin',
+    6,
+    'Dz9mQ9NzkBcCsuGPFJ3r1bS4wgqKMHBPiVuniW8Mbonk',
+    'Dz9mQ9NzkBcCsuGPFJ3r1bS4wgqKMHBPiVuniW8Mbonk',
+    UnderlyingAsset['sol:useless'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    'e0d62f42-5d1a-4213-b3d1-f1d41cac97bd',
+    'sol:gohome',
+    'GOHOME',
+    6,
+    '2Wu1g2ft7qZHfTpfzP3wLdfPeV1is4EwQ3CXBfRYAciD',
+    '2Wu1g2ft7qZHfTpfzP3wLdfPeV1is4EwQ3CXBfRYAciD',
+    UnderlyingAsset['sol:gohome'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '1c03d2a5-c9b6-499b-8dae-044d2021cb01',
+    'sol:aura',
+    'Aura',
+    6,
+    'DtR4D9FtVoTX2569gaL837ZgrB6wNjj6tkmnX9Rdk9B2',
+    'DtR4D9FtVoTX2569gaL837ZgrB6wNjj6tkmnX9Rdk9B2',
+    UnderlyingAsset['sol:aura'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '4e6eee4d-637e-42fd-bb4d-196337a2e302',
+    'sol:me',
+    'Magic Eden',
+    6,
+    'MEFNBXixkEbait3xn9bkm8WsJzXtVsaJEn4c8Sam21u',
+    'MEFNBXixkEbait3xn9bkm8WsJzXtVsaJEn4c8Sam21u',
+    UnderlyingAsset['sol:me'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '72cd46b2-8061-47aa-970c-f3a300c7f761',
+    'sol:alch',
+    'Alchemist AI',
+    6,
+    'HNg5PYJmtqcmzXrv6S9zP1CDKk5BgDuyFBxbvNApump',
+    'HNg5PYJmtqcmzXrv6S9zP1CDKk5BgDuyFBxbvNApump',
+    UnderlyingAsset['sol:alch'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '2ac60de9-914a-4df8-b15d-63646465420b',
+    'sol:launchcoin',
+    'Launch Coin on Believe',
+    9,
+    'Ey59PH7Z4BFU4HjyKnyMdWt5GGN76KazTAwQihoUXRnk',
+    'Ey59PH7Z4BFU4HjyKnyMdWt5GGN76KazTAwQihoUXRnk',
+    UnderlyingAsset['sol:launchcoin'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    'e7781249-86a0-4efe-beae-117b06233513',
+    'sol:stik',
+    'Staika',
+    9,
+    '8BMzMi2XxZn9afRaMx5Z6fauk9foHXqV5cLTCYWRcVje',
+    '8BMzMi2XxZn9afRaMx5Z6fauk9foHXqV5cLTCYWRcVje',
+    UnderlyingAsset['sol:stik'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
     '4db0e9ca-61ba-496a-9013-d6b752f3dc8f',
     'sol:chill',
     'Chillchat',
