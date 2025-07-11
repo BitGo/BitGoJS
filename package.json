@@ -88,7 +88,9 @@
     "canvg": "4.0.3",
     "**/stellar-sdk/**/bignumber.js": "4.1.0",
     "**/stellar-base/**/bignumber.js": "4.1.0",
-    "bignumber.js": "9.1.2"
+    "bignumber.js": "9.1.2",
+    "**/eth-lib/ws": "^5.2.4",
+    "**/avalanche/**/ws": "^5.2.4"
   },
   "workspaces": [
     "modules/*"
