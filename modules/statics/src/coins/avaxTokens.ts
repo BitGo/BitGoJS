@@ -685,7 +685,7 @@ export const avaxTokens = [
     'Test Chainlink',
     18,
     '0x0b9d5d9136855f6fec3c0993fee6e9ce8a297846',
-    UnderlyingAsset['avaxc:link']
+    UnderlyingAsset['tavaxc:link']
   ),
   tavaxErc20(
     'b44ff1b9-b4a8-4bd4-aa56-a663f3ee569e',
