@@ -210,7 +210,7 @@ describe('Base Message', () => {
   });
 
   describe('toBroadcastString', () => {
-    it('should serialize the broadcastable format to JSON string', async () => {
+    it('should serialize the broadcastable format to hex string', async () => {
       const { payload, type, metadata, signers, signatures } = messageSamples.eip191;
 
       const message = new TestMessage({
@@ -230,7 +230,8 @@ describe('Base Message', () => {
         signablePayload: 'SGVsbG8gQml0R28h',
       };
 
-      const broadcastString = await message.toBroadcastString();
+      const broadcastHex = await message.toBroadcastString();
+      const broadcastString = Buffer.from(broadcastHex, 'hex').toString();
       const parsed = JSON.parse(broadcastString);
 
       should.deepEqual(parsed, expectedBroadcastString);

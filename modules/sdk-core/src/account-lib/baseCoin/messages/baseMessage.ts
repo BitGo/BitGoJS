@@ -160,7 +160,8 @@ export abstract class BaseMessage implements IMessage {
    */
   async toBroadcastString(): Promise<string> {
     const broadcastable = await this.toBroadcastFormat();
-    return JSON.stringify(broadcastable);
+    const broadcastableStr = JSON.stringify(broadcastable);
+    return Buffer.from(broadcastableStr).toString('hex');
   }
 
   /**
