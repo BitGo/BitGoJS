@@ -83,6 +83,7 @@ export const expectedColdFeatures = {
     'sgb',
     'sei',
     'sol',
+    'sonic',
     'stt',
     'sui',
     'tao',
@@ -141,6 +142,7 @@ export const expectedColdFeatures = {
     'toas',
     'ton',
     'tton',
+    'tsonic',
   ],
   neither: [
     'baseeth',

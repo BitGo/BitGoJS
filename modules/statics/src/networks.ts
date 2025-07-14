@@ -1328,6 +1328,24 @@ class CreditcoinTestnet extends Testnet implements EthereumNetwork {
   nativeCoinOperationHashPrefix = '102031';
 }
 
+class Sonic extends Mainnet implements EthereumNetwork {
+  name = 'Sonic';
+  family = CoinFamily.SONIC;
+  explorerUrl = 'https://sonicscan.org/tx/';
+  accountExplorerUrl = 'https://sonicscan.org/address/';
+  chainId = 146;
+  nativeCoinOperationHashPrefix = '146';
+}
+
+class SonicTestnet extends Testnet implements EthereumNetwork {
+  name = 'SonicTestnet';
+  family = CoinFamily.SONIC;
+  explorerUrl = 'https://testnet.sonicscan.org/tx/';
+  accountExplorerUrl = 'https://testnet.sonicscan.org/address/';
+  chainId = 57054;
+  nativeCoinOperationHashPrefix = '57054';
+}
+
 class Xdc extends Mainnet implements EthereumNetwork {
   name = 'XdcChain';
   family = CoinFamily.XDC;
@@ -1650,6 +1668,7 @@ export const Networks = {
     sei: Object.freeze(new Sei()),
     sgb: Object.freeze(new Songbird()),
     sol: Object.freeze(new Sol()),
+    sonic: Object.freeze(new Sonic()),
     sui: Object.freeze(new Sui()),
     near: Object.freeze(new Near()),
     stx: Object.freeze(new Stx()),
@@ -1740,6 +1759,7 @@ export const Networks = {
     stx: Object.freeze(new StxTestnet()),
     stt: Object.freeze(new SomniaTestnet()),
     soneium: Object.freeze(new SoneiumTestnet()),
+    sonic: Object.freeze(new SonicTestnet()),
     susd: Object.freeze(new SUSDTestnet()),
     coreum: Object.freeze(new CoreumTestnet()),
     tao: Object.freeze(new BittensorTestnet()),

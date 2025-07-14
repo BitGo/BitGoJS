@@ -1360,6 +1360,26 @@ export const coins = CoinMap.fromCoins([
     [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK]
   ),
   account(
+    '23e7eca6-e862-4bc5-bf4f-65eeb8174171',
+    'sonic',
+    'Sonic',
+    Networks.main.sonic,
+    18,
+    UnderlyingAsset.SONIC,
+    BaseUnit.ETH,
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK]
+  ),
+  account(
+    'b150906d-f3e0-4e81-859d-c33d92c73afb',
+    'tsonic',
+    'Sonic Testnet',
+    Networks.test.sonic,
+    18,
+    UnderlyingAsset.TSONIC,
+    BaseUnit.ETH,
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK]
+  ),
+  account(
     '251b78df-90c5-4ff5-b07a-8cc23f27c5ff',
     'soneium',
     'Soneium',

@@ -209,6 +209,9 @@ const mainnetBase: EnvironmentTemplate = {
     hypeevm: {
       baseUrl: 'https://rpc.hyperliquid.xyz/evm',
     },
+    sonic: {
+      baseUrl: 'https://rpc.soniclabs.com',
+    },
   },
   icpNodeUrl: 'https://ic0.app',
   worldExplorerBaseUrl: 'https://worldscan.org/',
@@ -296,6 +299,9 @@ const testnetBase: EnvironmentTemplate = {
     },
     hypeevm: {
       baseUrl: 'https://rpc.hyperliquid-testnet.xyz/evm',
+    },
+    sonic: {
+      baseUrl: 'https://rpc.blaze.soniclabs.com',
     },
   },
   stxNodeUrl: 'https://api.testnet.hiro.so',
