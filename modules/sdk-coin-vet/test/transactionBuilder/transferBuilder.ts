@@ -138,6 +138,34 @@ describe('Vet Transfer Transaction', () => {
         should.equal(toJson.gasPriceCoef, 128);
         should.equal(toJson.expiration, 64);
       });
+
+      it('should build a unsigned tx then add sender sig and build again', async function () {
+        const transaction = new Transaction(coins.get('tvet'));
+        const txBuilder = factory.getTransferBuilder(transaction);
+        txBuilder.sender(testData.addresses.validAddresses[2]);
+        txBuilder.recipients(testData.recipients);
+        txBuilder.gas(21000);
+        txBuilder.nonce(64248);
+        txBuilder.blockRef('0x014ead140e77bbc1');
+        txBuilder.addFeePayerAddress(testData.feePayer.address);
+        txBuilder.expiration(64);
+        txBuilder.gasPriceCoef(128);
+        const tx = (await txBuilder.build()) as Transaction;
+        const unsignedSerializedTx = tx.toBroadcastFormat();
+
+        const builder1 = factory.from(unsignedSerializedTx);
+        builder1.addSenderSignature(Buffer.from(testData.senderSig, 'hex'));
+        const senderSignedTx = await builder1.build();
+        const senderSignedSerializedTx = senderSignedTx.toBroadcastFormat();
+        should.equal(senderSignedSerializedTx, testData.senderSignedSerializedTxHex);
+
+        const builder2 = factory.from(testData.senderSignedSerializedTxHex);
+        builder2.addSenderSignature(Buffer.from(testData.senderSig, 'hex'));
+        builder2.addFeePayerSignature(Buffer.from(testData.feePayerSig, 'hex'));
+        const completelySignedTx = await builder2.build();
+        should.equal(completelySignedTx.toBroadcastFormat(), testData.completeSignedSerializedHex);
+        should.equal(completelySignedTx.id, '0xb988d614d3c24420cb2183239ab601b53e63ff4c81cea1e4888bc9d0aa6aad13');
+      });
     });
 
     describe('Fail', () => {
