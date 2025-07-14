@@ -5,7 +5,7 @@ import * as utxocore from '@bitgo/utxo-core';
 
 import { Output, TransactionExplanation, FixedScriptWalletOutput } from '../../abstractUtxoCoin';
 import { toExtendedAddressFormat } from '../recipient';
-import { Networks } from '../../../../statics/src/networks';
+import { getPayGoVerificationPubkey } from '../getPayGoVerificationPubkey';
 
 export type ChangeAddressInfo = { address: string; chain: number; index: number };
 
@@ -198,35 +198,38 @@ export function explainPsbt<TNumber extends number | bigint, Tx extends bitgo.Ut
    * Extract PayGo address proof information from the PSBT if present
    * @returns Information about the PayGo proof, including the output index and address
    */
-  function getPayGoVerificationInfo():
-    | { outputIndex: number | undefined; verificationPubkey: string | undefined }
-    | undefined {
+  function getPayGoVerificationInfo(): { outputIndex: number; verificationPubkey: string } | undefined {
     let outputIndex: number | undefined = undefined;
     let address: string | undefined = undefined;
-    const verificationPubkey = Networks.test.bitcoin.paygoAddressAttestationPubkey;
     // Check if this PSBT has any PayGo address proofs
     if (!utxocore.paygo.psbtOutputIncludesPaygoAddressProof(psbt)) {
       return undefined;
     }
 
+    // This pulls the pubkey depending on given network
+    const verificationPubkey = getPayGoVerificationPubkey(network);
+
     // find which output index that contains the PayGo proof
     outputIndex = utxocore.paygo.getPayGoAddressProofOutputIndex(psbt);
-    if (outputIndex !== undefined) {
-      const output = txOutputs[outputIndex];
-      address = utxolib.address.fromOutputScript(output.script, network);
-      if (!address) {
-        return undefined;
-      }
+    if (!outputIndex || !verificationPubkey) {
+      return undefined;
     }
+    const output = txOutputs[outputIndex];
+    address = utxolib.address.fromOutputScript(output.script, network);
+    if (!address) {
+      throw new Error(`Can not derive address ${address} Pay Go Attestation.`);
+    }
+
     return { outputIndex, verificationPubkey };
   }
 
   const payGoVerificationInfo = getPayGoVerificationInfo();
-  if (payGoVerificationInfo && payGoVerificationInfo.outputIndex && payGoVerificationInfo.verificationPubkey) {
+  if (payGoVerificationInfo) {
     utxocore.paygo.verifyPayGoAddressProof(
       psbt,
       payGoVerificationInfo.outputIndex,
-      Buffer.from(payGoVerificationInfo.verificationPubkey, 'utf-8')
+      utxolib.bip32.fromBase58(payGoVerificationInfo.verificationPubkey, utxolib.networks.bitcoin).derivePath('0/0/0/0')
+        .publicKey
     );
   }
 

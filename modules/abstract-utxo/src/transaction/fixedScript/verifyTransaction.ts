@@ -3,7 +3,6 @@ import _ from 'lodash';
 import BigNumber from 'bignumber.js';
 import { BitGoBase } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
-import * as utxocore from '@bitgo/utxo-core';
 
 import { AbstractUtxoCoin, Output, ParsedTransaction, VerifyTransactionOptions } from '../../abstractUtxoCoin';
 import { verifyCustomChangeKeySignatures, verifyKeySignature, verifyUserPublicKey } from '../../verifyKey';
