@@ -5,7 +5,7 @@ import * as utxocore from '@bitgo/utxo-core';
 
 import { Output, TransactionExplanation, FixedScriptWalletOutput } from '../../abstractUtxoCoin';
 import { toExtendedAddressFormat } from '../recipient';
-import { Networks } from '../../../../statics/src/networks';
+import { getPayGoVerificationPubkey } from '../getPayGoVerificationPubkey';
 
 export type ChangeAddressInfo = { address: string; chain: number; index: number };
 
@@ -198,12 +198,11 @@ export function explainPsbt<TNumber extends number | bigint, Tx extends bitgo.Ut
    * Extract PayGo address proof information from the PSBT if present
    * @returns Information about the PayGo proof, including the output index and address
    */
-  function getPayGoVerificationInfo():
-    | { outputIndex: number | undefined; verificationPubkey: string | undefined }
-    | undefined {
+  function getPayGoVerificationInfo(): { outputIndex: number; verificationPubkey: string } | undefined {
     let outputIndex: number | undefined = undefined;
     let address: string | undefined = undefined;
-    const verificationPubkey = Networks.test.bitcoin.paygoAddressAttestationPubkey;
+    // We want to make a function that will get the verification pubkey depending on what network we are using
+    const verificationPubkey = getPayGoVerificationPubkey(network);
     // Check if this PSBT has any PayGo address proofs
     if (!utxocore.paygo.psbtOutputIncludesPaygoAddressProof(psbt)) {
       return undefined;
@@ -218,11 +217,16 @@ export function explainPsbt<TNumber extends number | bigint, Tx extends bitgo.Ut
         return undefined;
       }
     }
+
+    if (!outputIndex || !verificationPubkey) {
+      return undefined;
+    }
+
     return { outputIndex, verificationPubkey };
   }
 
   const payGoVerificationInfo = getPayGoVerificationInfo();
-  if (payGoVerificationInfo && payGoVerificationInfo.outputIndex && payGoVerificationInfo.verificationPubkey) {
+  if (payGoVerificationInfo) {
     utxocore.paygo.verifyPayGoAddressProof(
       psbt,
       payGoVerificationInfo.outputIndex,
