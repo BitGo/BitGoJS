@@ -24,6 +24,7 @@ import {
   toStakerInfo,
   forceFinalizePsbt,
 } from '../../../src/babylon';
+import { parseStakingDescriptor } from '../../../src/babylon/parseDescriptor';
 import { normalize } from '../fixtures.utils';
 
 import { fromXOnlyPublicKey, getECKey, getECKeys, getXOnlyPubkey } from './key.utils';
@@ -318,6 +319,16 @@ function describeWithKeys(
         vendor.deriveUnbondingOutputInfo(vendorBuilder.buildScripts(), bitcoinjslib.networks.bitcoin),
         descriptorBuilder.getUnbondingDescriptor()
       );
+    });
+
+    it('round-trip parseStakingDescriptor', function () {
+      const descriptor = descriptorBuilder.getStakingDescriptor();
+      const parsed = parseStakingDescriptor(descriptor);
+
+      assert(parsed);
+      assert.deepStrictEqual(parsed.slashingMiniscriptNode, descriptorBuilder.getSlashingMiniscriptNode());
+      assert.deepStrictEqual(parsed.unbondingMiniscriptNode, descriptorBuilder.getUnbondingMiniscriptNode());
+      assert.deepStrictEqual(parsed.unbondingTimelockMiniscriptNode, descriptorBuilder.getTimelockMiniscriptNode());
     });
 
     describe('Transaction Sets', async function () {
