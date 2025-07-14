@@ -7,7 +7,7 @@ export const SPONSORED_TRANSACTION =
   '0xf8bc2788014e9cad44bade0940e0df94e59f1cea4e0fef511e3d0f4eec44adf19c4cbeec88016345785d8a0000808180825208808302d6b5c101b882ee76129c1259eb0c8a2b3b3e5f2b089cd11068da1c0db32a9e22228db83dd4be5c721858bc813514141fbd5cf641d0972ce47ceb9be61133fa2ebf0ea37c1f290011fdce201f56d639d827035a5ed8bcef42a42f6eb562bc76a6d95c7736cf8cf340122d1e2fb034668dc491d47b7d3bb10724ba2338a6e79df87bce9617fdce9c00';
 
 export const UNSIGNED_TRANSACTION =
-  '0xf8772788014eabfe2b8fcc1440dddc94e59f1cea4e0fef511e3d0f4eec44adf19c4cbeec85e8d4a51000808180825208808301bff7c0b8414f4b195e2dd666a01c1186df341ff3c0cbe2d6b4a58dca3c8c484f3eac05c4100a165a2730fe67b4c11b4a6c78ea8ab0757bf59735adef327a36737e1694536b00';
+  '0xf4278801536ce9e9fb063840dddc94c52584d1c56e7bddcb6f65d50ff00f71e0ef897a85e8d4a510008081808252088083061c70c0';
 
 export const UNSIGNED_TRANSACTION_2 =
   '0xf72788014ead140e77bbc140e0df94e59f1cea4e0fef511e3d0f4eec44adf19c4cbeec88016345785d8a00008081808252088082faf8c101';
@@ -45,13 +45,29 @@ export const TRANSFER_CLAUSE = [
 ];
 
 export const addresses = {
-  validAddresses: ['0x7ca00e3bc8a836026c2917c6c7c6d049e52099dd', '0xe59f1cea4e0fef511e3d0f4eec44adf19c4cbeec'],
+  validAddresses: [
+    '0x7ca00e3bc8a836026c2917c6c7c6d049e52099dd',
+    '0xe59f1cea4e0fef511e3d0f4eec44adf19c4cbeec',
+    '0x7c87b9ffc6fd6c167c0e4fa9418720f3d659358e',
+  ],
   invalidAddresses: [
     'randomString',
     '0xc4173a804406a365e69dfb297ddfgsdcvf',
     '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
   ],
 };
+
+export const senderSig =
+  '062080cc77db9d5ce5db84f1cfb57c9906c9bfdce78e4d53757bbd3d536c731e1e5e406a4e783a4f63446aa28d21dc27796aae90fac79151c3d0b3ba68cde36801';
+
+export const feePayerSig =
+  '47ae79e23effd233206180ece3ab3d6d496310c03c55bd0566a54bb7d42095c97a90ca9ff4cfb94ec579a7ec7f79de4814dfc816d0a130189c07b746945482fb00';
+
+export const senderSignedSerializedTxHex =
+  '0xf72788014ead140e77bbc140e0df94e59f1cea4e0fef511e3d0f4eec44adf19c4cbeec88016345785d8a00008081808252088082faf8c101';
+
+export const completeSignedSerializedHex =
+  '0xf8bb2788014ead140e77bbc140e0df94e59f1cea4e0fef511e3d0f4eec44adf19c4cbeec88016345785d8a00008081808252088082faf8c101b882062080cc77db9d5ce5db84f1cfb57c9906c9bfdce78e4d53757bbd3d536c731e1e5e406a4e783a4f63446aa28d21dc27796aae90fac79151c3d0b3ba68cde3680147ae79e23effd233206180ece3ab3d6d496310c03c55bd0566a54bb7d42095c97a90ca9ff4cfb94ec579a7ec7f79de4814dfc816d0a130189c07b746945482fb00';
 
 export const blockIds: { validBlockIds: string[]; invalidBlockIds: string[] } = {
   validBlockIds: [
