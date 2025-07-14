@@ -4,10 +4,10 @@
 import assert from 'assert';
 import * as bs58 from 'bs58';
 import * as openpgp from 'openpgp';
-import Eddsa, { SignShare, GShare } from '../../../../account-lib/mpc/tss';
-import { AddKeychainOptions, Keychain, CreateBackupOptions } from '../../../keychain';
+import Eddsa, { GShare, SignShare } from '../../../../account-lib/mpc/tss';
+import { AddKeychainOptions, CreateBackupOptions, Keychain } from '../../../keychain';
 import { verifyWalletSignature } from '../../../tss/eddsa/eddsa';
-import { encryptText, getBitgoGpgPubKey, createShareProof, generateGPGKeyPair } from '../../opengpgUtils';
+import { createShareProof, encryptText, generateGPGKeyPair, getBitgoGpgPubKey } from '../../opengpgUtils';
 import {
   createUserSignShare,
   createUserToBitGoGShare,
@@ -26,10 +26,13 @@ import {
   CustomRShareGeneratingFunction,
   EncryptedSignerShareRecord,
   EncryptedSignerShareType,
+  RequestType,
   SignatureShareRecord,
   SignatureShareType,
+  TSSParamsForMessageWithPrv,
   TSSParamsWithPrv,
   TxRequest,
+  UnsignedTransactionTss,
 } from '../baseTypes';
 import { CreateEddsaBitGoKeychainParams, CreateEddsaKeychainParams, KeyShare, YShare } from './types';
 import baseTSSUtils from '../baseTSSUtils';
@@ -554,12 +557,17 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
   /**
    * Signs the transaction associated to the transaction request.
    *
-   * @param txRequest - transaction request object or id
-   * @param prv - decrypted private key
-   * @param reqId - request id
+   @param params - parameters for signing the transaction request
    * @returns {Promise<TxRequest>} fully signed TxRequest object
    */
   async signTxRequest(params: TSSParamsWithPrv): Promise<TxRequest> {
+    return this.signRequestBase(params, RequestType.tx);
+  }
+
+  private async signRequestBase(
+    params: TSSParamsWithPrv | TSSParamsForMessageWithPrv,
+    requestType: RequestType
+  ): Promise<TxRequest> {
     this.bitgo.setRequestTracer(params.reqId);
     let txRequestResolved: TxRequest;
     let txRequestId: string;
@@ -583,9 +591,25 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     }
 
     const { apiVersion } = txRequestResolved;
-    assert(txRequestResolved.transactions || txRequestResolved.unsignedTxs, 'Unable to find transactions in txRequest');
-    const unsignedTx =
-      apiVersion === 'full' ? txRequestResolved.transactions![0].unsignedTx : txRequestResolved.unsignedTxs[0];
+    let unsignedTx: UnsignedTransactionTss;
+    if (requestType === RequestType.tx) {
+      assert(
+        txRequestResolved.transactions || txRequestResolved.unsignedTxs,
+        'Unable to find transactions in txRequest'
+      );
+      unsignedTx =
+        apiVersion === 'full' ? txRequestResolved.transactions![0].unsignedTx : txRequestResolved.unsignedTxs[0];
+    } else if (requestType === RequestType.message) {
+      assert(txRequestResolved.messages?.length, 'Unable to find messages in txRequest for message signing');
+      const message = txRequestResolved.messages[0];
+      unsignedTx = {
+        signableHex: message.messageEncoded || '',
+        serializedTxHex: message.messageBroadcastable || '',
+        derivationPath: message.derivationPath || 'm/0',
+      };
+    } else {
+      throw new Error(`Unsupported request type: ${requestType}`);
+    }
 
     const signingKey = MPC.keyDerive(
       userSigningMaterial.uShare,
@@ -625,10 +649,17 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       userSignShare,
       userToBitgoEncryptedSignerShare,
       apiVersion,
-      params.reqId
+      params.reqId,
+      requestType
     );
 
-    const bitgoToUserRShare = await getBitgoToUserRShare(this.bitgo, this.wallet.id(), txRequestId, params.reqId);
+    const bitgoToUserRShare = await getBitgoToUserRShare(
+      this.bitgo,
+      this.wallet.id(),
+      txRequestId,
+      params.reqId,
+      requestType
+    );
 
     const userToBitGoGShare = await createUserToBitGoGShare(
       userSignShare,
@@ -639,9 +670,29 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
       bitgoToUserCommitment
     );
 
-    await sendUserToBitgoGShare(this.bitgo, this.wallet.id(), txRequestId, userToBitGoGShare, apiVersion, params.reqId);
+    await sendUserToBitgoGShare(
+      this.bitgo,
+      this.wallet.id(),
+      txRequestId,
+      userToBitGoGShare,
+      apiVersion,
+      params.reqId,
+      requestType
+    );
 
     return await getTxRequest(this.bitgo, this.wallet.id(), txRequestId, params.reqId);
+  }
+
+  /**
+   * Signs the message associated to the transaction request.
+   *
+   * @param {string | TxRequest} params.txRequest - transaction request object or id
+   * @param {string} params.prv - decrypted private key
+   * @param {string} params.reqId - request id
+   * @returns {Promise<TxRequest>} fully signed TxRequest object
+   */
+  async signTxRequestForMessage(params: TSSParamsForMessageWithPrv): Promise<TxRequest> {
+    return this.signRequestBase(params, RequestType.message);
   }
 
   /**

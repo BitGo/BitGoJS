@@ -1,4 +1,4 @@
-import { ExchangeCommitmentResponse, SignatureShareRecord } from '@bitgo/sdk-core';
+import { ExchangeCommitmentResponse, RequestType, SignatureShareRecord } from '@bitgo/sdk-core';
 import * as nock from 'nock';
 import * as _ from 'lodash';
 
@@ -19,10 +19,14 @@ export async function nockSendSignatureShare(
     signatureShare: unknown;
     signerShare?: string;
     tssType?: 'eddsa' | 'ecdsa';
+    requestType?: RequestType;
+    apiMode?: 'lite' | 'full';
   },
   status = 200
 ): Promise<nock.Scope> {
-  const transactions = getRoute(params.tssType);
+  params.requestType = params.requestType || RequestType.tx;
+  params.apiMode = params.apiMode || 'lite';
+  const transactions = getRoute(params.tssType, params.requestType, params.apiMode);
   return nock('https://bitgo.fakeurl')
     .persist(true)
     .post(`/api/v2/wallet/${params.walletId}/txrequests/${params.txRequestId + transactions}/signatureshares`)
@@ -97,10 +101,22 @@ export async function nockExchangeCommitments(params: {
     .reply(200, params.response);
 }
 
-export function getRoute(tssType: 'eddsa' | 'ecdsa' = 'eddsa'): string {
-  if (tssType === 'ecdsa') {
-    return '/transactions/0';
+export function getRoute(
+  tssType: 'eddsa' | 'ecdsa' = 'eddsa',
+  requestType: RequestType = RequestType.tx,
+  apiMode: 'full' | 'lite' = 'lite'
+): string {
+  switch (requestType) {
+    case RequestType.tx:
+      if (tssType === 'ecdsa' || apiMode === 'full') {
+        return '/transactions/0';
+      }
+      break;
+    case RequestType.message:
+      if (tssType === 'ecdsa' || apiMode === 'full') {
+        return '/messages/0';
+      }
+      break;
   }
-
   return '';
 }
