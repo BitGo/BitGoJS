@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [48.5.0](https://github.com/BitGo/BitGoJS/compare/bitgo@48.4.0...bitgo@48.5.0) (2025-07-15)
+
+### Features
+
+- **statics:** add hypeevm chain config ([64ebb46](https://github.com/BitGo/BitGoJS/commit/64ebb464a6ce1155779243599265d89ebf72c27e))
+- **statics:** add Sonic chain configs ([b6a27e0](https://github.com/BitGo/BitGoJS/commit/b6a27e033acb3268d4560bb0d2a0038ce326aff8))
+
 # [48.4.0](https://github.com/BitGo/BitGoJS/compare/bitgo@48.3.0...bitgo@48.4.0) (2025-07-10)
 
 ### Bug Fixes

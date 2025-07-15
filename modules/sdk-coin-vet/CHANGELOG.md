@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.0.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.0.0...@bitgo/sdk-coin-vet@2.0.1) (2025-07-15)
+
+### Bug Fixes
+
+- **sdk-coin-vet:** fix deserialization in vet sdk ([5a7ce8e](https://github.com/BitGo/BitGoJS/commit/5a7ce8e834b0815a0e8315869e6a13b5ba2af6ec))
+
 # [2.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@1.6.2...@bitgo/sdk-coin-vet@2.0.0) (2025-07-10)
 
 ### Bug Fixes

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.13.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.13.0...@bitgo/sdk-coin-sol@4.13.1) (2025-07-15)
+
+### Reverts
+
+- remove statics dependency from sol module ([3f0da6a](https://github.com/BitGo/BitGoJS/commit/3f0da6a6fd1399b2d9440410279399aa0e44096c))
+
 # [4.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.12.5...@bitgo/sdk-coin-sol@4.13.0) (2025-07-10)
 
 ### Features

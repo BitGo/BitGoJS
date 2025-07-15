@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.65.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.64.4...@bitgo/sdk-api@1.65.0) (2025-07-15)
+
+### Features
+
+- **sdk-api:** add EVM configuration support to BitGoAPI constructor ([25e88f7](https://github.com/BitGo/BitGoJS/commit/25e88f72bd2a657aeb84055cc7081ecb7fb8ae06))
+
 ## [1.64.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.64.3...@bitgo/sdk-api@1.64.4) (2025-07-10)
 
 **Note:** Version bump only for package @bitgo/sdk-api

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [11.6.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.6.2...@bitgo/utxo-lib@11.6.3) (2025-07-15)
+
+### Bug Fixes
+
+- **utxo-lib:** restore PSBT cache values after signing non-segwit ([8710cc5](https://github.com/BitGo/BitGoJS/commit/8710cc5ed9fe4a87162a402000958a576f04b941))
+
 ## [11.6.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.6.1...@bitgo/utxo-lib@11.6.2) (2025-07-10)
 
 **Note:** Version bump only for package @bitgo/utxo-lib
