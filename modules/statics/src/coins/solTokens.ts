@@ -75,7 +75,8 @@ export const solTokens = [
     '2u1tszSeqZ3qBWF3uNGPFc8TzMk2tdiwknnRMWGWjGWH', // https://solscan.io/token/2u1tszSeqZ3qBWF3uNGPFc8TzMk2tdiwknnRMWGWjGWH
     '2u1tszSeqZ3qBWF3uNGPFc8TzMk2tdiwknnRMWGWjGWH',
     UnderlyingAsset['sol:usdg'],
-    SOL_TOKEN_FEATURES
+    SOL_TOKEN_FEATURES,
+    ProgramID.Token2022ProgramId
   ),
   solToken(
     'eaa1bdb5-36cf-4c5b-b30c-8f156f366f47',
@@ -85,7 +86,8 @@ export const solTokens = [
     'AUSD1jCcCyPLybk1YnvPWsHQSrZ46dxwoMniN4N2UEB9', // https://solscan.io/token/AUSD1jCcCyPLybk1YnvPWsHQSrZ46dxwoMniN4N2UEB9
     'AUSD1jCcCyPLybk1YnvPWsHQSrZ46dxwoMniN4N2UEB9',
     UnderlyingAsset['sol:ausd'],
-    SOL_TOKEN_FEATURES
+    SOL_TOKEN_FEATURES,
+    ProgramID.Token2022ProgramId
   ),
   solToken(
     'a885f00b-d958-477d-9857-9d4f9c9bf66a',
@@ -2174,7 +2176,8 @@ export const solTokens = [
     '2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo',
     '2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo',
     UnderlyingAsset['sol:pyusd'],
-    SOL_TOKEN_FEATURES
+    SOL_TOKEN_FEATURES,
+    ProgramID.Token2022ProgramId
   ),
   solToken(
     '213c84a8-9114-46fb-b159-fafe8d30de9e',
@@ -2314,7 +2317,8 @@ export const solTokens = [
     'pumpCmXqMfrsAkQ5r49WcJnRayYRqmXz6ae8H7H9Dfn',
     'pumpCmXqMfrsAkQ5r49WcJnRayYRqmXz6ae8H7H9Dfn',
     UnderlyingAsset['sol:pump'],
-    SOL_TOKEN_FEATURES
+    SOL_TOKEN_FEATURES,
+    ProgramID.Token2022ProgramId
   ),
   solToken(
     '34450f4a-1191-4a7b-a48a-2e5f4414aa02',
