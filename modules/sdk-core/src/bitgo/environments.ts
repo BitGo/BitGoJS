@@ -211,7 +211,7 @@ const mainnetBase: EnvironmentTemplate = {
   worldExplorerBaseUrl: 'https://worldscan.org/',
   somniaExplorerBaseUrl: 'https://shannon-explorer.somnia.network/', //TODO: WIN-5278: change it with mainnet explorer, when its available
   soneiumExplorerBaseUrl: 'https://soneium-minato.blockscout.com',
-  monExplorerBaseUrl: 'https://testnet.monadexplorer.com/', //TODO:  WIN-5225: Adding it so its not missed when Monad mainet is avaiable.Change it with mainnet explorer, when its available
+  monExplorerBaseUrl: 'https://mainnet-beta.monvision.io',
   stxNodeUrl: 'https://api.hiro.so',
   vetNodeUrl: 'https://rpc-mainnet.vechain.energy',
 };
