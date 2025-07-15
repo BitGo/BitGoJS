@@ -72,9 +72,6 @@ export interface TokenTransfer {
     amount: string;
     tokenName: string;
     sourceAddress: string;
-    tokenAddress?: string;
-    decimalPlaces?: number;
-    programId?: string;
   };
 }
 
@@ -185,6 +182,4 @@ export class TokenAssociateRecipient {
   ownerAddress: string;
   tokenName: string;
   ataAddress?: string;
-  tokenAddress?: string;
-  programId?: string;
 }

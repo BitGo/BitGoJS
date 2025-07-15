@@ -42,8 +42,6 @@ export class AtaInitializationBuilder extends TransactionBuilder {
         this._tokenAssociateRecipients.push({
           ownerAddress: ataInitInstruction.params.ownerAddress,
           tokenName: ataInitInstruction.params.tokenName,
-          tokenAddress: ataInitInstruction.params.mintAddress,
-          programId: ataInitInstruction.params.programId,
         });
       }
     }
@@ -117,15 +115,10 @@ export class AtaInitializationBuilder extends TransactionBuilder {
     }
     validateOwnerAddress(recipient.ownerAddress);
     const token = getSolTokenFromTokenName(recipient.tokenName);
-    let tokenAddress: string;
-    if (recipient.tokenAddress) {
-      tokenAddress = recipient.tokenAddress;
-    } else if (token) {
-      tokenAddress = token.tokenAddress;
-    } else {
+    if (!token) {
       throw new BuildTransactionError('Invalid transaction: invalid token name, got: ' + recipient.tokenName);
     }
-    validateMintAddress(tokenAddress);
+    validateMintAddress(token.tokenAddress);
 
     this._tokenAssociateRecipients.push(recipient);
     return this;
@@ -148,33 +141,30 @@ export class AtaInitializationBuilder extends TransactionBuilder {
     await Promise.all(
       this._tokenAssociateRecipients.map(async (recipient) => {
         const token = getSolTokenFromTokenName(recipient.tokenName);
-        let tokenAddress: string;
-        let programId: string;
-        if (recipient.tokenAddress && recipient.programId) {
-          tokenAddress = recipient.tokenAddress;
-          programId = recipient.programId;
-        } else if (token) {
-          tokenAddress = token.tokenAddress;
-          programId = token.programId;
-        } else {
+        if (!token) {
           throw new BuildTransactionError('Invalid transaction: invalid token name, got: ' + recipient.tokenName);
         }
 
         // Use the provided ataAddress if it exists, otherwise calculate it
         let ataPk = recipient.ataAddress;
         if (!ataPk) {
-          ataPk = await getAssociatedTokenAccountAddress(tokenAddress, recipient.ownerAddress, false, programId);
+          ataPk = await getAssociatedTokenAccountAddress(
+            token.tokenAddress,
+            recipient.ownerAddress,
+            false,
+            token.programId
+          );
         }
 
         this._instructionsData.push({
           type: InstructionBuilderTypes.CreateAssociatedTokenAccount,
           params: {
-            mintAddress: tokenAddress,
+            mintAddress: token.tokenAddress,
             ataAddress: ataPk,
             ownerAddress: recipient.ownerAddress,
             payerAddress: this._sender,
             tokenName: recipient.tokenName,
-            programId: programId,
+            programId: token.programId,
           },
         });
       })

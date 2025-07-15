@@ -196,7 +196,6 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    */
   private parseTransaction(rawTransaction: string): Transaction {
     const tx = new Transaction(this._coinConfig);
-    tx.setUseTokenAddressTokenName(true);
     tx.fromRawTransaction(rawTransaction);
     return tx;
   }
