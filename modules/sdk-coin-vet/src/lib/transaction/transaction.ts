@@ -1,11 +1,5 @@
 import BigNumber from 'bignumber.js';
-import {
-  BaseTransaction,
-  TransactionType,
-  InvalidTransactionError,
-  TransactionRecipient,
-  PublicKey,
-} from '@bitgo/sdk-core';
+import { BaseTransaction, TransactionType, InvalidTransactionError, TransactionRecipient } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import {
   TransactionBody,
@@ -35,13 +29,9 @@ export class Transaction extends BaseTransaction {
   private _dependsOn: string | null;
   private _nonce: number;
   private _sender: string;
-  private _senderSignature: Buffer;
+  private _senderSignature: Buffer | null;
   private _feePayerAddress: string;
-  private _feePayerSignature: Buffer;
-  private _feePayerPubKey: PublicKey;
-
-  static EMPTY_PUBLIC_KEY = Buffer.alloc(32);
-  static EMPTY_SIGNATURE = Buffer.alloc(64);
+  private _feePayerSignature: Buffer | null;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -55,15 +45,12 @@ export class Transaction extends BaseTransaction {
     this._dependsOn = null;
     this._nonce = 0x0;
     this._recipients = [];
-    this._feePayerPubKey = {
-      pub: HexUInt.of(Transaction.EMPTY_PUBLIC_KEY).toString(),
-    };
-    this._senderSignature = Transaction.EMPTY_SIGNATURE;
-    this._feePayerSignature = Transaction.EMPTY_SIGNATURE;
+    this._senderSignature = null;
+    this._feePayerSignature = null;
   }
 
   public get id(): string {
-    this.generateTxnId();
+    this.generateTxnIdAndSetSender();
     return this._id ?? 'UNAVAILABLE';
   }
 
@@ -92,7 +79,11 @@ export class Transaction extends BaseTransaction {
   }
 
   get senderSignature(): Uint8Array | undefined {
-    return this._senderSignature;
+    if (this._senderSignature) {
+      return new Uint8Array(this._senderSignature);
+    } else {
+      return undefined;
+    }
   }
 
   set senderSignature(sig: Buffer) {
@@ -107,8 +98,12 @@ export class Transaction extends BaseTransaction {
     this._feePayerAddress = address;
   }
 
-  get feePayerSignature(): Uint8Array {
-    return this._feePayerSignature;
+  get feePayerSignature(): Uint8Array | undefined {
+    if (this._feePayerSignature) {
+      return new Uint8Array(this._feePayerSignature);
+    } else {
+      return undefined;
+    }
   }
 
   set feePayerSignature(sig: Buffer) {
@@ -185,14 +180,6 @@ export class Transaction extends BaseTransaction {
 
   set nonce(n: number) {
     this._nonce = n;
-  }
-
-  get feePayerPubKey(): PublicKey {
-    return this._feePayerPubKey;
-  }
-
-  set feePayerPubKey(pubKey: PublicKey) {
-    this._feePayerPubKey = pubKey;
   }
 
   get contract(): string {
@@ -300,7 +287,7 @@ export class Transaction extends BaseTransaction {
       this.loadInputsAndOutputs();
 
       // Set sender address
-      if (signedTx.origin) {
+      if (signedTx.signature && signedTx.origin) {
         this.sender = signedTx.origin.toString().toLowerCase();
       }
 
@@ -323,19 +310,14 @@ export class Transaction extends BaseTransaction {
     this.senderSignature = signature;
   }
 
-  getFeePayerPubKey(): string {
-    return this.feePayerPubKey.pub;
-  }
-
-  addFeePayerSignature(publicKey: PublicKey, signature: Buffer): void {
-    this.feePayerPubKey = publicKey;
+  addFeePayerSignature(signature: Buffer): void {
     this.feePayerSignature = signature;
   }
 
   async build(): Promise<void> {
     this.buildClauses();
     await this.buildRawTransaction();
-    this.generateTxnId();
+    this.generateTxnIdAndSetSender();
     this.loadInputsAndOutputs();
   }
 
@@ -343,36 +325,37 @@ export class Transaction extends BaseTransaction {
    * Sets the transaction ID from the raw transaction if it is signed
    * @protected
    */
-  protected generateTxnId(): void {
+  protected generateTxnIdAndSetSender(): void {
     // Check if we have a raw transaction
     if (!this.rawTransaction) {
       return;
     }
-
-    // Check if the transaction is signed by verifying signature exists
-    if (!this.senderSignature || !this.feePayerSignature) {
+    if (!this.senderSignature) {
       return;
-    }
-
-    const halfSignedTransaction: VetTransaction = VetTransaction.of(this.rawTransaction.body, this.senderSignature);
-    if (!halfSignedTransaction.signature) {
-      return;
-    }
-    const fullSignedTransaction: VetTransaction = VetTransaction.of(
-      halfSignedTransaction.body,
-      nc_utils.concatBytes(
-        // Drop any previous gas payer signature.
-        halfSignedTransaction.signature.slice(0, Secp256k1.SIGNATURE_LENGTH),
-        this.feePayerSignature
-      )
-    );
-    if (!fullSignedTransaction.signature) {
-      return;
-    }
-    try {
-      this._id = fullSignedTransaction.id.toString();
-    } catch (e) {
-      return;
+    } else {
+      const halfSignedTransaction: VetTransaction = VetTransaction.of(this.rawTransaction.body, this.senderSignature);
+      if (halfSignedTransaction.signature) {
+        this._rawTransaction = halfSignedTransaction;
+        this._sender = halfSignedTransaction.origin.toString().toLowerCase();
+      } else {
+        return;
+      }
+      if (this.feePayerSignature) {
+        const fullSignedTransaction: VetTransaction = VetTransaction.of(
+          halfSignedTransaction.body,
+          nc_utils.concatBytes(
+            // Drop any previous gas payer signature.
+            halfSignedTransaction.signature.slice(0, Secp256k1.SIGNATURE_LENGTH),
+            this.feePayerSignature
+          )
+        );
+        if (fullSignedTransaction.signature) {
+          this._rawTransaction = fullSignedTransaction;
+          this._id = fullSignedTransaction.id.toString();
+        } else {
+          return;
+        }
+      }
     }
   }
 
@@ -468,22 +451,34 @@ export class Transaction extends BaseTransaction {
   }
 
   serialize(): string {
-    const halfSignedTransaction: VetTransaction = VetTransaction.of(this.rawTransaction.body, this.senderSignature);
-    if (!halfSignedTransaction.signature) {
-      throw new InvalidTransactionError('Invalid sender signature in half-signed transaction');
+    if (!this.senderSignature) {
+      return HexUInt.of(this.rawTransaction.encoded).toString();
+    } else {
+      if (!this.feePayerSignature) {
+        const senderSignedTransaction: VetTransaction = VetTransaction.of(
+          this.rawTransaction.body,
+          this.senderSignature
+        );
+        return HexUInt.of(senderSignedTransaction.encoded).toString();
+      } else {
+        const senderSignedTransaction: VetTransaction = VetTransaction.of(
+          this.rawTransaction.body,
+          this.senderSignature
+        );
+        if (senderSignedTransaction.signature) {
+          const fullSignedTransaction: VetTransaction = VetTransaction.of(
+            senderSignedTransaction.body,
+            nc_utils.concatBytes(
+              senderSignedTransaction.signature.slice(0, Secp256k1.SIGNATURE_LENGTH),
+              this.feePayerSignature
+            )
+          );
+          return HexUInt.of(fullSignedTransaction.encoded).toString();
+        } else {
+          throw new InvalidTransactionError('Transaction is not signed properly');
+        }
+      }
     }
-    if (!this.feePayerSignature) {
-      throw new InvalidTransactionError('Missing fee payer signature');
-    }
-    const fullSignedTransaction: VetTransaction = VetTransaction.of(
-      halfSignedTransaction.body,
-      nc_utils.concatBytes(
-        // Drop any previous gas payer signature.
-        halfSignedTransaction.signature.slice(0, Secp256k1.SIGNATURE_LENGTH),
-        this.feePayerSignature
-      )
-    );
-    return HexUInt.of(fullSignedTransaction.encoded).toString();
   }
 
   static deserializeTransaction(rawTx: string): VetTransaction {

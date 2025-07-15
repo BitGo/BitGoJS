@@ -145,7 +145,8 @@ describe('EIP191 Message', () => {
         metadata: fixtures.eip191.metadata,
       });
 
-      const broadcastString = await message.toBroadcastString();
+      const broadcastHex = await message.toBroadcastString();
+      const broadcastString = Buffer.from(broadcastHex, 'hex').toString();
       const parsedBroadcast = JSON.parse(broadcastString);
       const expectedSerializedSignatures = serializeSignatures([fixtures.eip191.signature]);
 

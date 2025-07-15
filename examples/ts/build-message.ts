@@ -8,8 +8,9 @@
  */
 
 import {BitGoAPI} from '@bitgo/sdk-api';
+import {MessageStandardType} from "@bitgo/sdk-core";
+import {MIDNIGHT_TNC_HASH} from "@bitgo/account-lib/dist/src/utils";
 import {Hteth} from "@bitgo/sdk-coin-eth";
-import {MessageStandardType} from "@bitgo/sdk-core"; // Replace with your given coin (e.g. Ltc, Tltc)
 require('dotenv').config({ path: '../../.env' });
 
 const bitgo = new BitGoAPI({
@@ -28,9 +29,12 @@ async function main() {
   const wallet = await bitgo.coin(coin).wallets().get({ id });
   console.log(`Wallet label: ${wallet.label()}`);
 
+  const adaTestnetDestinationAddress = 'addr_test1vz7xs7ceu4xx9n5xn57lfe86vrwddqpp77vjwq5ptlkh49cqy3wur';
+  const testnetMessageRaw = `STAR 12345678 to ${adaTestnetDestinationAddress} ${MIDNIGHT_TNC_HASH}`;
+
   const txRequest = await wallet.buildSignMessageRequest({
     message: {
-      messageRaw: 'Hello, BitGo!',
+      messageRaw: testnetMessageRaw,
       messageStandardType: MessageStandardType.EIP191,
     },
   });
