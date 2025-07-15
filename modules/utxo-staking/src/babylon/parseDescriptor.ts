@@ -5,8 +5,8 @@ import { getUnspendableKey } from './descriptor';
 
 type ParsedStakingDescriptor = {
   slashingMiniscriptNode: ast.MiniscriptNode;
-  unbondingTimelockMiniscriptNode: ast.MiniscriptNode;
   unbondingMiniscriptNode: ast.MiniscriptNode;
+  timelockMiniscriptNode: ast.MiniscriptNode;
 };
 
 /**
@@ -16,10 +16,7 @@ export function parseStakingDescriptor(descriptor: Descriptor | ast.DescriptorNo
   const pattern: Pattern = {
     tr: [
       getUnspendableKey(),
-      [
-        { $var: 'slashingMiniscriptNode' },
-        [{ $var: 'unbondingMiniscriptNode' }, { $var: 'unbondingTimelockMiniscriptNode' }],
-      ],
+      [{ $var: 'slashingMiniscriptNode' }, [{ $var: 'unbondingMiniscriptNode' }, { $var: 'timelockMiniscriptNode' }]],
     ],
   };
 
@@ -33,7 +30,7 @@ export function parseStakingDescriptor(descriptor: Descriptor | ast.DescriptorNo
 
   const slashingNode = result.slashingMiniscriptNode as ast.MiniscriptNode;
   const unbondingNode = result.unbondingMiniscriptNode as ast.MiniscriptNode;
-  const unbondingTimelockNode = result.unbondingTimelockMiniscriptNode as ast.MiniscriptNode;
+  const timelockNode = result.timelockMiniscriptNode as ast.MiniscriptNode;
 
   // Verify slashing node shape: and_v([and_v([pk, pk/multi_a]), multi_a])
   const slashingPattern: Pattern = {
@@ -61,31 +58,31 @@ export function parseStakingDescriptor(descriptor: Descriptor | ast.DescriptorNo
   }
 
   // Verify unbonding timelock node shape: and_v([pk, older])
-  const unbondingTimelockPattern: Pattern = {
+  const timelockPattern: Pattern = {
     and_v: [{ 'v:pk': { $var: 'stakerKey3' } }, { older: { $var: 'unbondingTimeLockValue' } }],
   };
 
-  const unbondingTimelockMatch = matcher.match(unbondingTimelockNode, unbondingTimelockPattern);
-  if (!unbondingTimelockMatch) {
+  const timelockMatch = matcher.match(timelockNode, timelockPattern);
+  if (!timelockMatch) {
     throw new Error('Unbonding timelock node does not match expected pattern');
   }
 
   // Verify all staker keys are the same
   if (
     slashingMatch.stakerKey1 !== unbondingMatch.stakerKey2 ||
-    unbondingMatch.stakerKey2 !== unbondingTimelockMatch.stakerKey3
+    unbondingMatch.stakerKey2 !== timelockMatch.stakerKey3
   ) {
     throw new Error('Staker keys must be identical across all nodes');
   }
 
   // Verify timelock value is a number
-  if (typeof unbondingTimelockMatch.unbondingTimeLockValue !== 'number') {
+  if (typeof timelockMatch.unbondingTimeLockValue !== 'number') {
     throw new Error('Unbonding timelock value must be a number');
   }
 
   return {
     slashingMiniscriptNode: slashingNode,
     unbondingMiniscriptNode: unbondingNode,
-    unbondingTimelockMiniscriptNode: unbondingTimelockNode,
+    timelockMiniscriptNode: timelockNode,
   };
 }

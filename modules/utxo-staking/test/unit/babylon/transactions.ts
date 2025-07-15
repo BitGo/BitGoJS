@@ -308,7 +308,7 @@ function describeWithKeys(
       assert(parsed);
       assert.deepStrictEqual(parsed.slashingMiniscriptNode, descriptorBuilder.getSlashingMiniscriptNode());
       assert.deepStrictEqual(parsed.unbondingMiniscriptNode, descriptorBuilder.getUnbondingMiniscriptNode());
-      assert.deepStrictEqual(parsed.unbondingTimelockMiniscriptNode, descriptorBuilder.getTimelockMiniscriptNode());
+      assert.deepStrictEqual(parsed.timelockMiniscriptNode, descriptorBuilder.getTimelockMiniscriptNode());
     });
 
     describe('Transaction Sets', async function () {
