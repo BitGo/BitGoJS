@@ -132,7 +132,7 @@ function spendStakingOutput(
   const selectTapLeafScript = Miniscript.fromString(
     ast.formatNode(
       type === 'unstaking'
-        ? descriptorBuilder.getTimelockMiniscriptNode()
+        ? descriptorBuilder.getStakingTimelockMiniscriptNode()
         : descriptorBuilder.getUnbondingMiniscriptNode()
     ),
     'tap'
@@ -223,7 +223,7 @@ function assertEqualScripts(descriptorBuilder: BabylonDescriptorBuilder, builder
   for (const [key, script] of Object.entries(builder) as [keyof vendor.StakingScripts, Buffer][]) {
     switch (key) {
       case 'timelockScript':
-        assertEqualsMiniscript(script, descriptorBuilder.getTimelockMiniscriptNode());
+        assertEqualsMiniscript(script, descriptorBuilder.getStakingTimelockMiniscriptNode());
         break;
       case 'unbondingScript':
         assertEqualsMiniscript(script, descriptorBuilder.getUnbondingMiniscriptNode());
@@ -292,8 +292,9 @@ function describeWithKeys(
         descriptorBuilder.getStakingDescriptor()
       );
       assertEqualOutputScript(
+        /* I don't know why this is called deriveSlashingOutput */
         vendor.deriveSlashingOutput(vendorBuilder.buildScripts(), bitcoinjslib.networks.bitcoin),
-        descriptorBuilder.getSlashingDescriptor()
+        descriptorBuilder.getUnbondingTimelockDescriptor()
       );
       assertEqualOutputScript(
         vendor.deriveUnbondingOutputInfo(vendorBuilder.buildScripts(), bitcoinjslib.networks.bitcoin),
@@ -308,7 +309,7 @@ function describeWithKeys(
       assert(parsed);
       assert.deepStrictEqual(parsed.slashingMiniscriptNode, descriptorBuilder.getSlashingMiniscriptNode());
       assert.deepStrictEqual(parsed.unbondingMiniscriptNode, descriptorBuilder.getUnbondingMiniscriptNode());
-      assert.deepStrictEqual(parsed.timelockMiniscriptNode, descriptorBuilder.getTimelockMiniscriptNode());
+      assert.deepStrictEqual(parsed.timelockMiniscriptNode, descriptorBuilder.getStakingTimelockMiniscriptNode());
     });
 
     describe('Transaction Sets', async function () {
