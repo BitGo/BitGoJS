@@ -1,4 +1,4 @@
-import { SolCoin } from '@bitgo/statics';
+import { coins, SolCoin } from '@bitgo/statics';
 import {
   createAssociatedTokenAccountInstruction,
   createCloseAccountInstruction,
@@ -35,7 +35,6 @@ import {
   WalletInit,
   SetPriorityFee,
 } from './iface';
-import { getSolTokenFromTokenName } from './utils';
 
 /**
  * Construct Solana instructions from instructions params
@@ -158,43 +157,28 @@ function tokenTransferInstruction(data: TokenTransfer): TransactionInstruction[]
   assert(amount, 'Missing amount param');
   assert(tokenName, 'Missing token name');
   assert(sourceAddress, 'Missing ata address');
-  const token = getSolTokenFromTokenName(data.params.tokenName);
-  let tokenAddress: string;
-  let programId: string | undefined;
-  let decimalPlaces: number;
-  if (data.params.tokenAddress && data.params.decimalPlaces) {
-    tokenAddress = data.params.tokenAddress;
-    decimalPlaces = data.params.decimalPlaces;
-    programId = data.params.programId;
-  } else if (token) {
-    assert(token instanceof SolCoin);
-    tokenAddress = token.tokenAddress;
-    decimalPlaces = token.decimalPlaces;
-    programId = token.programId;
-  } else {
-    throw new Error('Invalid token name, got:' + data.params.tokenName);
-  }
-
+  const token = coins.get(data.params.tokenName);
+  assert(token instanceof SolCoin);
   let transferInstruction: TransactionInstruction;
-  if (programId === TOKEN_2022_PROGRAM_ID.toString()) {
+  if (token.programId === TOKEN_2022_PROGRAM_ID.toString()) {
     transferInstruction = createTransferCheckedInstruction(
       new PublicKey(sourceAddress),
-      new PublicKey(tokenAddress),
+      new PublicKey(token.tokenAddress),
       new PublicKey(toAddress),
       new PublicKey(fromAddress),
       BigInt(amount),
-      decimalPlaces,
+      token.decimalPlaces,
       [],
       TOKEN_2022_PROGRAM_ID
     );
   } else {
     transferInstruction = createTransferCheckedInstruction(
       new PublicKey(sourceAddress),
-      new PublicKey(tokenAddress),
+      new PublicKey(token.tokenAddress),
       new PublicKey(toAddress),
       new PublicKey(fromAddress),
       BigInt(amount),
-      decimalPlaces
+      token.decimalPlaces
     );
   }
   return [transferInstruction];
