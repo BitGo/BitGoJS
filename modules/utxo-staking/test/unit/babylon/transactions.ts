@@ -13,7 +13,7 @@ import {
   toUtxoPsbt,
   toWrappedPsbt,
 } from '@bitgo/utxo-core/descriptor';
-import { getFixture, toPlainObject } from '@bitgo/utxo-core/testutil';
+import { toPlainObject } from '@bitgo/utxo-core/testutil';
 import { getBabylonParamByVersion } from '@bitgo/babylonlabs-io-btc-staking-ts';
 
 import {
@@ -25,7 +25,12 @@ import {
   forceFinalizePsbt,
 } from '../../../src/babylon';
 import { parseStakingDescriptor } from '../../../src/babylon/parseDescriptor';
-import { normalize } from '../fixtures.utils';
+import {
+  normalize,
+  assertEqualsFixture,
+  assertEqualsMiniscript,
+  assertTransactionEqualsFixture,
+} from '../fixtures.utils';
 
 import { fromXOnlyPublicKey, getECKey, getECKeys, getXOnlyPubkey } from './key.utils';
 import { getBitGoUtxoStakingMsgCreateBtcDelegation, getVendorMsgCreateBtcDelegation } from './vendor.utils';
@@ -203,18 +208,6 @@ function parseScripts(scripts: unknown) {
   return Object.fromEntries(Object.entries(scripts).map(([key, value]) => [key, parseScript(key, value)]));
 }
 
-type EqualsAssertion = typeof assert.deepStrictEqual;
-
-async function assertEqualsFixture(
-  fixtureName: string,
-  value: unknown,
-  n = normalize,
-  eq: EqualsAssertion = assert.deepStrictEqual
-): Promise<void> {
-  value = n(value);
-  eq(await getFixture(fixtureName, value), value);
-}
-
 async function assertScriptsEqualFixture(
   fixtureName: string,
   builder: vendor.StakingScriptData,
@@ -224,19 +217,6 @@ async function assertScriptsEqualFixture(
     builder: toPlainObject(builder),
     scripts: parseScripts(scripts),
   });
-}
-
-async function assertTransactionEqualsFixture(fixtureName: string, tx: unknown): Promise<void> {
-  await assertEqualsFixture(fixtureName, normalize(tx));
-}
-
-function assertEqualsMiniscript(script: Buffer, miniscript: ast.MiniscriptNode): void {
-  const ms = Miniscript.fromBitcoinScript(script, 'tap');
-  assert.deepStrictEqual(ast.fromMiniscript(ms), miniscript);
-  assert.deepStrictEqual(
-    script.toString('hex'),
-    Buffer.from(Miniscript.fromString(ast.formatNode(miniscript), 'tap').encode()).toString('hex')
-  );
 }
 
 function assertEqualScripts(descriptorBuilder: BabylonDescriptorBuilder, builder: vendor.StakingScripts) {
