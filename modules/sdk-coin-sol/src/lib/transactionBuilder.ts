@@ -75,7 +75,13 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this.sender(sender);
     this.feePayer(txData.feePayer as string);
     this.nonce(txData.nonce, txData.durableNonce);
-    this._instructionsData = instructionParamsFactory(tx.type, tx.solTransaction.instructions, this._coinConfig.name);
+    this._instructionsData = instructionParamsFactory(
+      tx.type,
+      tx.solTransaction.instructions,
+      this._coinConfig.name,
+      txData.instructionsData,
+      tx.useTokenAddressTokenName
+    );
     // Parse priority fee instruction data
     const filteredPriorityFeeInstructionsData = txData.instructionsData.filter(
       (data) => data.type === InstructionBuilderTypes.SetPriorityFee
@@ -113,6 +119,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected async buildImplementation(): Promise<Transaction> {
     this.transaction.solTransaction = this.buildSolTransaction();
     this.transaction.setTransactionType(this.transactionType);
+    this.transaction.setInstructionsData(this._instructionsData);
     this.transaction.loadInputsAndOutputs();
     this._transaction.tokenAccountRentExemptAmount = this._tokenAccountRentExemptAmount;
     return this.transaction;
