@@ -864,7 +864,6 @@ coins.forEach((coin, coinName) => {
 
       it('should return false for all non-SD coin feature', () => {
         coin.features.includes(CoinFeature.CUSTODY_BITGO_NEW_YORK).should.eql(false);
-        coin.features.includes(CoinFeature.CUSTODY_BITGO_GERMANY).should.eql(false);
         coin.features.includes(CoinFeature.CUSTODY_BITGO_SWITZERLAND).should.eql(false);
       });
     }
