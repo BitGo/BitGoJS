@@ -212,6 +212,9 @@ const mainnetBase: EnvironmentTemplate = {
     sonic: {
       baseUrl: 'https://rpc.soniclabs.com',
     },
+    seievm: {
+      baseUrl: 'https://evm-rpc.sei-apis.com',
+    },
   },
   icpNodeUrl: 'https://ic0.app',
   worldExplorerBaseUrl: 'https://worldscan.org/',
@@ -302,6 +305,9 @@ const testnetBase: EnvironmentTemplate = {
     },
     sonic: {
       baseUrl: 'https://rpc.blaze.soniclabs.com',
+    },
+    seievm: {
+      baseUrl: 'https://evm-rpc-testnet.sei-apis.com',
     },
   },
   stxNodeUrl: 'https://api.testnet.hiro.so',

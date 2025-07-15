@@ -79,6 +79,7 @@ export enum CoinFamily {
   RBTC = 'rbtc',
   SGB = 'sgb',
   SEI = 'sei',
+  SEIEVM = 'seievm',
   SOL = 'sol',
   SONIC = 'sonic',
   SONEIUM = 'soneium',
@@ -489,6 +490,8 @@ export enum UnderlyingAsset {
   THYPEEVM = 'thypeevm',
   RBTC = 'rbtc', // RSK main coin
   SEI = 'sei',
+  SEIEVM = 'seievm',
+  TSEIEVM = 'tseievm',
   SGB = 'sgb',
   SOL = 'sol',
   SONIC = 'sonic',

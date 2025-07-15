@@ -1469,6 +1469,24 @@ class SoneiumTestnet extends Testnet implements EthereumNetwork {
   walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
 }
 
+class SeiEvm extends Mainnet implements EthereumNetwork {
+  name = 'Seievm';
+  family = CoinFamily.SEIEVM;
+  explorerUrl = 'https://seitrace.com/tx/';
+  accountExplorerUrl = 'https://seitrace.com/address/';
+  chainId = 1329;
+  nativeCoinOperationHashPrefix = '1329';
+}
+
+class SeiEvmTestnet extends Testnet implements EthereumNetwork {
+  name = 'SeiEvmTestnet';
+  family = CoinFamily.SEIEVM;
+  explorerUrl = 'https://seitrace.com/tx/';
+  accountExplorerUrl = 'https://seitrace.com/address/';
+  chainId = 1328;
+  nativeCoinOperationHashPrefix = '1328';
+}
+
 class Somnia extends Mainnet implements EthereumNetwork {
   name = 'Somnia';
   family = CoinFamily.STT;
@@ -1666,6 +1684,7 @@ export const Networks = {
     rune: Object.freeze(new Rune()),
     stellar: Object.freeze(new Stellar()),
     sei: Object.freeze(new Sei()),
+    seievm: Object.freeze(new SeiEvm()),
     sgb: Object.freeze(new Songbird()),
     sol: Object.freeze(new Sol()),
     sonic: Object.freeze(new Sonic()),
@@ -1753,6 +1772,7 @@ export const Networks = {
     sgb: Object.freeze(new SongbirdTestnet()),
     stellar: Object.freeze(new StellarTestnet()),
     sei: Object.freeze(new SeiTestnet()),
+    seievm: Object.freeze(new SeiEvmTestnet()),
     sol: Object.freeze(new SolTestnet()),
     sui: Object.freeze(new SuiTestnet()),
     near: Object.freeze(new NearTestnet()),
