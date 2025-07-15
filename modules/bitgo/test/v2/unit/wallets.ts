@@ -26,6 +26,7 @@ import {
   WalletWithKeychains,
   multisigTypes,
   IncorrectPasswordError,
+  NeedUserSignupError,
 } from '@bitgo/sdk-core';
 import { BitGo } from '../../../src';
 import { afterEach } from 'mocha';
@@ -2522,6 +2523,72 @@ describe('V2 Wallets:', function () {
         assert.fail('Expected error not thrown');
       } catch (error) {
         assert.strictEqual(error.message, 'shareOptions cannot be empty');
+      }
+    });
+
+    it('should throw NeedsUserSignup error if pubkey is missing', async () => {
+      const userId = 'user@example.com';
+      const permissions = ['view', 'spend'];
+      try {
+        await wallet.createBulkWalletShare({
+          walletPassphrase: 'Test',
+          keyShareOptions: [
+            {
+              userId: userId,
+              permissions: permissions,
+              path: 'm/999999/1/1',
+            },
+          ],
+        } as BulkWalletShareOptions);
+        assert.fail('Expected error not thrown');
+      } catch (error) {
+        assert(error instanceof NeedUserSignupError);
+        assert.strictEqual(error.name, 'NeedUserSignupError');
+        assert.strictEqual(error.message, userId);
+      }
+    });
+
+    it('should throw error if path is missing', async () => {
+      const userId = 'user@example.com';
+      const permissions = ['view', 'spend'];
+      try {
+        await wallet.createBulkWalletShare({
+          walletPassphrase: 'Test',
+          keyShareOptions: [
+            {
+              userId: userId,
+              permissions: permissions,
+              pubKey: 'm/999999/1/1',
+            },
+          ],
+        } as BulkWalletShareOptions);
+        assert.fail('Expected error not thrown');
+      } catch (error) {
+        assert.strictEqual(error.name, 'Error');
+        assert.strictEqual(error.message, 'Missing parameter: path');
+      }
+    });
+
+    it('should throw NeedsUserSignup error if pubkey is empty string', async () => {
+      const userId = 'user@example.com';
+      const permissions = ['view', 'spend'];
+      try {
+        await wallet.createBulkWalletShare({
+          walletPassphrase: 'Test',
+          keyShareOptions: [
+            {
+              userId: userId,
+              pubKey: '',
+              permissions: permissions,
+              path: 'm/999999/1/1',
+            },
+          ],
+        });
+        assert.fail('Expected error not thrown');
+      } catch (error) {
+        assert(error instanceof NeedUserSignupError);
+        assert.strictEqual(error.name, 'NeedUserSignupError');
+        assert.strictEqual(error.message, userId);
       }
     });
 
