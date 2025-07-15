@@ -868,7 +868,14 @@ export const ofcCoins = [
     UnderlyingAsset['sol:launchcoin'],
     SOL_TOKEN_FEATURES
   ),
-  ofcsolToken('5b739473-b679-47ef-8312-c63e61e2e00c', 'ofcsol:stik', 'Staika', 9, UnderlyingAsset['sol:stik']),
+  ofcsolToken(
+    '5b739473-b679-47ef-8312-c63e61e2e00c',
+    'ofcsol:stik',
+    'Staika',
+    9,
+    UnderlyingAsset['sol:stik'],
+    SOL_TOKEN_FEATURES
+  ),
   ofcsolToken(
     '35196f56-2259-470b-9ff1-1d4271a518be',
     'ofcsol:chill',
