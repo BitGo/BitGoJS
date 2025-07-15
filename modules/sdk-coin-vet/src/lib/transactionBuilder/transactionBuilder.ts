@@ -6,7 +6,6 @@ import {
   BuildTransactionError,
   Recipient,
   TransactionType,
-  PublicKey,
   ParseTransactionError,
 } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
@@ -39,6 +38,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   initBuilder(tx: Transaction): void {
     this._transaction = tx;
+  }
+
+  chainTag(tag: number): this {
+    this._transaction.chainTag = tag;
+    return this;
   }
 
   /**
@@ -104,8 +108,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this.transaction.addSenderSignature(signature);
   }
 
-  addFeePayerSignature(publicKey: PublicKey, signature: Buffer): void {
-    this.transaction.addFeePayerSignature(publicKey, signature);
+  addFeePayerSignature(signature: Buffer): void {
+    this.transaction.addFeePayerSignature(signature);
   }
 
   /** @inheritdoc */
@@ -129,7 +133,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     if (!transaction) {
       throw new Error('transaction not defined');
     }
-    this.validateAddress({ address: transaction.sender });
     for (const recipient of transaction.recipients) {
       this.validateAddress({ address: recipient.address });
       this.validateValue(new BigNumber(recipient.amount));
@@ -165,10 +168,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   addFeePayerAddress(address: string): void {
     this.transaction.feePayerAddress = address;
-  }
-
-  getFeePayerPubKey(): string {
-    return this.transaction.getFeePayerPubKey();
   }
 
   /** @inheritdoc */
