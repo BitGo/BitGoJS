@@ -2832,7 +2832,8 @@ export const solTokens = [
     'Ey59PH7Z4BFU4HjyKnyMdWt5GGN76KazTAwQihoUXRnk',
     'Ey59PH7Z4BFU4HjyKnyMdWt5GGN76KazTAwQihoUXRnk',
     UnderlyingAsset['sol:launchcoin'],
-    SOL_TOKEN_FEATURES
+    SOL_TOKEN_FEATURES,
+    ProgramID.Token2022ProgramId
   ),
   solToken(
     'e7781249-86a0-4efe-beae-117b06233513',
