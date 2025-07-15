@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [24.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.7.0...@bitgo/abstract-eth@24.8.0) (2025-07-15)
+
+### Features
+
+- **account-lib:** return hex broadcastable message string ([757d9f4](https://github.com/BitGo/BitGoJS/commit/757d9f4f4a17b58055153f900f09294faad52634))
+
 # [24.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.6.0...@bitgo/abstract-eth@24.7.0) (2025-07-10)
 
 ### Features

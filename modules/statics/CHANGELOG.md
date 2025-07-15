@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [55.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@55.0.0...@bitgo/statics@55.1.0) (2025-07-15)
+
+### Features
+
+- add staking feature to mainnet polyx ([828c22f](https://github.com/BitGo/BitGoJS/commit/828c22f7604f12d28893961d3cadc997464b3dcd))
+- added ofc tokens for new onboardings ([3a48a53](https://github.com/BitGo/BitGoJS/commit/3a48a531f328416786745dc1c867a1c600c52508))
+- added program 2022 id for sol:launchcoin ([58a5221](https://github.com/BitGo/BitGoJS/commit/58a5221917c624c68ded035254defcefdeb3bc2c))
+- added sol and eth tokens for new onboardings ([7f31b2e](https://github.com/BitGo/BitGoJS/commit/7f31b2ef76a74bb53dd4261e306d27b4c38d1121))
+- new tokens onboarding ([b2df525](https://github.com/BitGo/BitGoJS/commit/b2df525fb730bf8c3ba4dd797cd7aea9c206cefb))
+- onboarded new Solana and ETH tokens ([b2b004a](https://github.com/BitGo/BitGoJS/commit/b2b004adfb98e7e9b377b4e4dba6839b0cde62d9))
+- **statics:** add hypeevm chain config ([64ebb46](https://github.com/BitGo/BitGoJS/commit/64ebb464a6ce1155779243599265d89ebf72c27e))
+- **statics:** add Sonic chain configs ([b6a27e0](https://github.com/BitGo/BitGoJS/commit/b6a27e033acb3268d4560bb0d2a0038ce326aff8))
+- **statics:** adding new coin features for evm coin WRW support ([3ad54a7](https://github.com/BitGo/BitGoJS/commit/3ad54a70e61ff4f27b3ad0be42fe35a0e14b81b2))
+
 # [55.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@54.7.0...@bitgo/statics@55.0.0) (2025-07-10)
 
 ### Bug Fixes

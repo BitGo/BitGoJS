@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [35.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@35.6.0...@bitgo/sdk-core@35.7.0) (2025-07-15)
+
+### Features
+
+- **account-lib:** return hex broadcastable message string ([757d9f4](https://github.com/BitGo/BitGoJS/commit/757d9f4f4a17b58055153f900f09294faad52634))
+- **statics:** add hypeevm chain config ([64ebb46](https://github.com/BitGo/BitGoJS/commit/64ebb464a6ce1155779243599265d89ebf72c27e))
+- **statics:** add Sonic chain configs ([b6a27e0](https://github.com/BitGo/BitGoJS/commit/b6a27e033acb3268d4560bb0d2a0038ce326aff8))
+
 # [35.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@35.5.0...@bitgo/sdk-core@35.6.0) (2025-07-10)
 
 ### Features
