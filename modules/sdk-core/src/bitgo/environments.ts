@@ -206,6 +206,9 @@ const mainnetBase: EnvironmentTemplate = {
     ctc: {
       baseUrl: 'https://mainnet3.creditcoin.network',
     },
+    hypeevm: {
+      baseUrl: 'https://rpc.hyperliquid.xyz/evm',
+    },
   },
   icpNodeUrl: 'https://ic0.app',
   worldExplorerBaseUrl: 'https://worldscan.org/',
@@ -290,6 +293,9 @@ const testnetBase: EnvironmentTemplate = {
     },
     ctc: {
       baseUrl: 'https://rpc.cc3-testnet.creditcoin.network',
+    },
+    hypeevm: {
+      baseUrl: 'https://rpc.hyperliquid-testnet.xyz/evm',
     },
   },
   stxNodeUrl: 'https://api.testnet.hiro.so',

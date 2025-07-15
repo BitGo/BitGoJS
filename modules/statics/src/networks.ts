@@ -1301,6 +1301,24 @@ class Creditcoin extends Mainnet implements EthereumNetwork {
   nativeCoinOperationHashPrefix = '102030';
 }
 
+class HypeEVMTestnet extends Testnet implements EthereumNetwork {
+  name = 'HyperliquidEVMTestnet';
+  family = CoinFamily.HYPEEVM;
+  explorerUrl = 'https://testnet.purrsec.com/tx/';
+  accountExplorerUrl = 'https://testnet.purrsec.com/address/';
+  chainId = 998;
+  nativeCoinOperationHashPrefix = '998';
+}
+
+class HypeEVM extends Mainnet implements EthereumNetwork {
+  name = 'HyperliquidEVM';
+  family = CoinFamily.HYPEEVM;
+  explorerUrl = 'https://hyperevm-explorer.vercel.app/tx/';
+  accountExplorerUrl = 'https://hyperevm-explorer.vercel.app/address/';
+  chainId = 999;
+  nativeCoinOperationHashPrefix = '999';
+}
+
 class CreditcoinTestnet extends Testnet implements EthereumNetwork {
   name = 'CreditcoinTestnet';
   family = CoinFamily.CTC;
@@ -1621,6 +1639,7 @@ export const Networks = {
     polyx: Object.freeze(new Polymesh()),
     phrs: Object.freeze(new Pharos()),
     ctc: Object.freeze(new Creditcoin()),
+    hypeevm: Object.freeze(new HypeEVM()),
     oas: Object.freeze(new Oas()),
     ofc: Object.freeze(new Ofc()),
     optimism: Object.freeze(new Optimism()),
@@ -1705,6 +1724,7 @@ export const Networks = {
     polyx: Object.freeze(new PolymeshTestnet()),
     phrs: Object.freeze(new PharosTestnet()),
     ctc: Object.freeze(new CreditcoinTestnet()),
+    hypeevm: Object.freeze(new HypeEVMTestnet()),
     oas: Object.freeze(new OasTestnet()),
     ofc: Object.freeze(new OfcTestnet()),
     optimism: Object.freeze(new OptimismTestnet()),

@@ -1340,6 +1340,26 @@ export const coins = CoinMap.fromCoins([
     [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK]
   ),
   account(
+    'e907fdbd-2c5d-45d6-b622-9da38937da73',
+    'hypeevm',
+    'Hyperliquid EVM',
+    Networks.main.hypeevm,
+    18,
+    UnderlyingAsset.HYPEEVM,
+    BaseUnit.ETH,
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK]
+  ),
+  account(
+    'e0500947-1105-404c-af52-765b1cb2a7c1',
+    'thypeevm',
+    'Hyperliquid EVM Testnet',
+    Networks.test.hypeevm,
+    18,
+    UnderlyingAsset.THYPEEVM,
+    BaseUnit.ETH,
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK]
+  ),
+  account(
     '251b78df-90c5-4ff5-b07a-8cc23f27c5ff',
     'soneium',
     'Soneium',
