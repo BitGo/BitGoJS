@@ -2317,7 +2317,7 @@ export const solTokens = [
     'pumpCmXqMfrsAkQ5r49WcJnRayYRqmXz6ae8H7H9Dfn',
     'pumpCmXqMfrsAkQ5r49WcJnRayYRqmXz6ae8H7H9Dfn',
     UnderlyingAsset['sol:pump'],
-    SOL_TOKEN_FEATURES,
+    [...SOL_TOKEN_FEATURES, CoinFeature.CUSTODY_BITGO_GERMANY],
     ProgramID.Token2022ProgramId
   ),
   solToken(
