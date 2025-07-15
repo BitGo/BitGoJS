@@ -73,7 +73,24 @@
       },
       "opts": {
         "maximumFeeRate": 5000
-      }
+      },
+      "inputCount": 1,
+      "version": 2,
+      "locktime": 0,
+      "txInputs": [
+        {
+          "hash": "64da14050ffd0e6186c68a59f371a0adc95cc84b0502fe0915be7eba3f771bb3",
+          "index": 0,
+          "sequence": 10000
+        }
+      ],
+      "txOutputs": [
+        {
+          "script": "0014896f1ba65deaeb045bb3121e20e5744e66ca0e48",
+          "value": "55267",
+          "address": "bc1q39h3hfjaat4sgkanzg0zpet5fenv5rjg0lhnvy"
+        }
+      ]
     },
     "fee": 288
   },
@@ -147,7 +164,24 @@
       },
       "opts": {
         "maximumFeeRate": 5000
-      }
+      },
+      "inputCount": 1,
+      "version": 2,
+      "locktime": 0,
+      "txInputs": [
+        {
+          "hash": "c047c5904542017cfee57fdb350d6bf776a5ef8c46bc033f454a64b496d0ab9d",
+          "index": 0,
+          "sequence": 1008
+        }
+      ],
+      "txOutputs": [
+        {
+          "script": "0014896f1ba65deaeb045bb3121e20e5744e66ca0e48",
+          "value": "53267",
+          "address": "bc1q39h3hfjaat4sgkanzg0zpet5fenv5rjg0lhnvy"
+        }
+      ]
     },
     "fee": 288
   },
@@ -204,7 +238,29 @@
       },
       "opts": {
         "maximumFeeRate": 5000
-      }
+      },
+      "inputCount": 1,
+      "version": 2,
+      "locktime": 0,
+      "txInputs": [
+        {
+          "hash": "c047c5904542017cfee57fdb350d6bf776a5ef8c46bc033f454a64b496d0ab9d",
+          "index": 0,
+          "sequence": 4294967295
+        }
+      ],
+      "txOutputs": [
+        {
+          "script": "00145be12624d08a2b424095d7c07221c33450d14bf1",
+          "value": "2678",
+          "address": "bc1qt0sjvfxs3g45ysy46lq8ygwrx3gdzjl3kjg8ln"
+        },
+        {
+          "script": "5120d5238530e223ef1bd34a8a98ee1708f6a8a87e7a2589d88de6700b9973ffff46",
+          "value": "45877",
+          "address": "bc1p653c2v8zy0h3h56232vwu9cg7652sln6ykya3r0xwq9ejulllarq0n62h9"
+        }
+      ]
     },
     "fee": 5000
   },
@@ -256,7 +312,24 @@
       },
       "opts": {
         "maximumFeeRate": 5000
-      }
+      },
+      "inputCount": 1,
+      "version": 2,
+      "locktime": 0,
+      "txInputs": [
+        {
+          "hash": "ab10f226d4f6daeff01e35db4c3c643ba40ae3f29654a44543dc9e97907b991d",
+          "index": 1,
+          "sequence": 1008
+        }
+      ],
+      "txOutputs": [
+        {
+          "script": "0014896f1ba65deaeb045bb3121e20e5744e66ca0e48",
+          "value": "45589",
+          "address": "bc1q39h3hfjaat4sgkanzg0zpet5fenv5rjg0lhnvy"
+        }
+      ]
     },
     "fee": 288
   },
@@ -313,7 +386,29 @@
       },
       "opts": {
         "maximumFeeRate": 5000
-      }
+      },
+      "inputCount": 1,
+      "version": 2,
+      "locktime": 0,
+      "txInputs": [
+        {
+          "hash": "64da14050ffd0e6186c68a59f371a0adc95cc84b0502fe0915be7eba3f771bb3",
+          "index": 0,
+          "sequence": 4294967295
+        }
+      ],
+      "txOutputs": [
+        {
+          "script": "00145be12624d08a2b424095d7c07221c33450d14bf1",
+          "value": "2778",
+          "address": "bc1qt0sjvfxs3g45ysy46lq8ygwrx3gdzjl3kjg8ln"
+        },
+        {
+          "script": "5120d5238530e223ef1bd34a8a98ee1708f6a8a87e7a2589d88de6700b9973ffff46",
+          "value": "47777",
+          "address": "bc1p653c2v8zy0h3h56232vwu9cg7652sln6ykya3r0xwq9ejulllarq0n62h9"
+        }
+      ]
     },
     "fee": 5000
   },
@@ -504,7 +599,29 @@
     },
     "opts": {
       "maximumFeeRate": 5000
-    }
+    },
+    "inputCount": 1,
+    "version": 2,
+    "locktime": 0,
+    "txInputs": [
+      {
+        "hash": "64da14050ffd0e6186c68a59f371a0adc95cc84b0502fe0915be7eba3f771bb3",
+        "index": 0,
+        "sequence": 4294967295
+      }
+    ],
+    "txOutputs": [
+      {
+        "script": "00145be12624d08a2b424095d7c07221c33450d14bf1",
+        "value": "2778",
+        "address": "bc1qt0sjvfxs3g45ysy46lq8ygwrx3gdzjl3kjg8ln"
+      },
+      {
+        "script": "5120d5238530e223ef1bd34a8a98ee1708f6a8a87e7a2589d88de6700b9973ffff46",
+        "value": "47777",
+        "address": "bc1p653c2v8zy0h3h56232vwu9cg7652sln6ykya3r0xwq9ejulllarq0n62h9"
+      }
+    ]
   },
   "slashingSignedBase64": "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",
   "slashingWithdraw": {
@@ -555,7 +672,24 @@
       },
       "opts": {
         "maximumFeeRate": 5000
-      }
+      },
+      "inputCount": 1,
+      "version": 2,
+      "locktime": 0,
+      "txInputs": [
+        {
+          "hash": "0808ac7143d68ebfd3d8d841cdd3cf9b9da85f8ee47b77260fd44dd2c2a4bda9",
+          "index": 1,
+          "sequence": 1008
+        }
+      ],
+      "txOutputs": [
+        {
+          "script": "0014896f1ba65deaeb045bb3121e20e5744e66ca0e48",
+          "value": "47489",
+          "address": "bc1q39h3hfjaat4sgkanzg0zpet5fenv5rjg0lhnvy"
+        }
+      ]
     },
     "fee": 288
   }
