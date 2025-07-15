@@ -177,7 +177,7 @@ describe('Base Message Builder', () => {
     builder.setType(MessageStandardType.EIP191).setPayload(payload).setSignatures(signatures).setSigners(signers);
 
     const message = await builder.build();
-    const broadcastString = await message.toBroadcastString();
+    const broadcastHex = await message.toBroadcastString();
 
     const expectedJson = JSON.stringify({
       type: MessageStandardType.EIP191,
@@ -187,7 +187,8 @@ describe('Base Message Builder', () => {
       metadata: { encoding: 'utf8' },
       signablePayload: 'c2VyaWFsaXplIG1l',
     });
+    const expectedHex = Buffer.from(expectedJson).toString('hex');
 
-    should.equal(broadcastString, expectedJson);
+    should.equal(broadcastHex, expectedHex);
   });
 });
