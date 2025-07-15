@@ -13,7 +13,7 @@ import {
   toUtxoPsbt,
   toWrappedPsbt,
 } from '@bitgo/utxo-core/descriptor';
-import { getFixture, toPlainObject } from '@bitgo/utxo-core/testutil';
+import { toPlainObject } from '@bitgo/utxo-core/testutil';
 import { getBabylonParamByVersion } from '@bitgo/babylonlabs-io-btc-staking-ts';
 
 import {
@@ -24,7 +24,13 @@ import {
   toStakerInfo,
   forceFinalizePsbt,
 } from '../../../src/babylon';
-import { normalize } from '../fixtures.utils';
+import { parseStakingDescriptor } from '../../../src/babylon/parseDescriptor';
+import {
+  normalize,
+  assertEqualsFixture,
+  assertEqualsMiniscript,
+  assertTransactionEqualsFixture,
+} from '../fixtures.utils';
 
 import { fromXOnlyPublicKey, getECKey, getECKeys, getXOnlyPubkey } from './key.utils';
 import { getBitGoUtxoStakingMsgCreateBtcDelegation, getVendorMsgCreateBtcDelegation } from './vendor.utils';
@@ -110,11 +116,12 @@ function getStakingTransactionTreeVendor(
   };
 }
 
-function createUnstakingTransaction(
+function spendStakingOutput(
   stakingTx: vendor.TransactionResult,
-  stakingDescriptor: Descriptor,
+  descriptorBuilder: BabylonDescriptorBuilder,
+  type: 'unstaking' | 'unbonding',
   changeAddress: string,
-  { sequence }: { sequence: number }
+  { sequence }: { sequence?: number }
 ): utxolib.Psbt {
   const network = utxolib.networks.bitcoin;
   const witnessUtxoNumber = stakingTx.transaction.outs[0];
@@ -122,6 +129,14 @@ function createUnstakingTransaction(
     script: witnessUtxoNumber.script,
     value: BigInt(witnessUtxoNumber.value),
   };
+  const selectTapLeafScript = Miniscript.fromString(
+    ast.formatNode(
+      type === 'unstaking'
+        ? descriptorBuilder.getStakingTimelockMiniscriptNode()
+        : descriptorBuilder.getUnbondingMiniscriptNode()
+    ),
+    'tap'
+  );
   return createPsbt(
     {
       network,
@@ -131,7 +146,8 @@ function createUnstakingTransaction(
         hash: stakingTx.transaction.getId(),
         index: 0,
         witnessUtxo,
-        descriptor: stakingDescriptor,
+        descriptor: descriptorBuilder.getStakingDescriptor(),
+        selectTapLeafScript,
         sequence,
       },
     ],
@@ -192,18 +208,6 @@ function parseScripts(scripts: unknown) {
   return Object.fromEntries(Object.entries(scripts).map(([key, value]) => [key, parseScript(key, value)]));
 }
 
-type EqualsAssertion = typeof assert.deepStrictEqual;
-
-async function assertEqualsFixture(
-  fixtureName: string,
-  value: unknown,
-  n = normalize,
-  eq: EqualsAssertion = assert.deepStrictEqual
-): Promise<void> {
-  value = n(value);
-  eq(await getFixture(fixtureName, value), value);
-}
-
 async function assertScriptsEqualFixture(
   fixtureName: string,
   builder: vendor.StakingScriptData,
@@ -215,33 +219,20 @@ async function assertScriptsEqualFixture(
   });
 }
 
-async function assertTransactionEqualsFixture(fixtureName: string, tx: unknown): Promise<void> {
-  await assertEqualsFixture(fixtureName, normalize(tx));
-}
-
-function assertEqualsMiniscript(script: Buffer, miniscript: ast.MiniscriptNode): void {
-  const ms = Miniscript.fromBitcoinScript(script, 'tap');
-  assert.deepStrictEqual(ast.fromMiniscript(ms), miniscript);
-  assert.deepStrictEqual(
-    script.toString('hex'),
-    Buffer.from(Miniscript.fromString(ast.formatNode(miniscript), 'tap').encode()).toString('hex')
-  );
-}
-
 function assertEqualScripts(descriptorBuilder: BabylonDescriptorBuilder, builder: vendor.StakingScripts) {
   for (const [key, script] of Object.entries(builder) as [keyof vendor.StakingScripts, Buffer][]) {
     switch (key) {
       case 'timelockScript':
-        assertEqualsMiniscript(script, descriptorBuilder.getTimelockMiniscript());
+        assertEqualsMiniscript(script, descriptorBuilder.getStakingTimelockMiniscriptNode());
         break;
       case 'unbondingScript':
-        assertEqualsMiniscript(script, descriptorBuilder.getUnbondingMiniscript());
+        assertEqualsMiniscript(script, descriptorBuilder.getUnbondingMiniscriptNode());
         break;
       case 'slashingScript':
-        assertEqualsMiniscript(script, descriptorBuilder.getSlashingMiniscript());
+        assertEqualsMiniscript(script, descriptorBuilder.getSlashingMiniscriptNode());
         break;
       case 'unbondingTimelockScript':
-        assertEqualsMiniscript(script, descriptorBuilder.getUnbondingTimelockMiniscript());
+        assertEqualsMiniscript(script, descriptorBuilder.getUnbondingTimelockMiniscriptNode());
         break;
       default:
         throw new Error(`unexpected script key: ${key}`);
@@ -301,13 +292,24 @@ function describeWithKeys(
         descriptorBuilder.getStakingDescriptor()
       );
       assertEqualOutputScript(
+        /* I don't know why this is called deriveSlashingOutput */
         vendor.deriveSlashingOutput(vendorBuilder.buildScripts(), bitcoinjslib.networks.bitcoin),
-        descriptorBuilder.getSlashingDescriptor()
+        descriptorBuilder.getUnbondingTimelockDescriptor()
       );
       assertEqualOutputScript(
         vendor.deriveUnbondingOutputInfo(vendorBuilder.buildScripts(), bitcoinjslib.networks.bitcoin),
         descriptorBuilder.getUnbondingDescriptor()
       );
+    });
+
+    it('round-trip parseStakingDescriptor', function () {
+      const descriptor = descriptorBuilder.getStakingDescriptor();
+      const parsed = parseStakingDescriptor(descriptor);
+
+      assert(parsed);
+      assert.deepStrictEqual(parsed.slashingMiniscriptNode, descriptorBuilder.getSlashingMiniscriptNode());
+      assert.deepStrictEqual(parsed.unbondingMiniscriptNode, descriptorBuilder.getUnbondingMiniscriptNode());
+      assert.deepStrictEqual(parsed.timelockMiniscriptNode, descriptorBuilder.getStakingTimelockMiniscriptNode());
     });
 
     describe('Transaction Sets', async function () {
@@ -418,20 +420,51 @@ function describeWithKeys(
         }
       });
 
-      it('creates unstaking transaction', async function () {
-        const unstaking = createUnstakingTransaction(
-          stakingTx,
-          descriptorBuilder.getStakingDescriptor(),
-          changeAddress,
-          { sequence: stakingParams.minStakingTimeBlocks }
-        );
-        const wrappedPsbt = toWrappedPsbt(unstaking);
-        assert(getNewSignatureCount(signWithKey(wrappedPsbt, stakerKey)) > 0);
+      async function testCreateTransaction(
+        type: 'unstaking' | 'unbonding',
+        params: {
+          sequence?: number;
+          signers: utxolib.ECPairInterface[];
+          finalize: boolean;
+        }
+      ) {
+        const unstakingPsbt = spendStakingOutput(stakingTx, descriptorBuilder, type, changeAddress, params);
+        const wrappedPsbt = toWrappedPsbt(unstakingPsbt);
+        params.signers.forEach((signer) => {
+          assert(getNewSignatureCount(signWithKey(wrappedPsbt, signer)) > 0);
+        });
+        if (!params.finalize) {
+          return;
+        }
         wrappedPsbt.finalize();
         const tx = toUtxoPsbt(wrappedPsbt, utxolib.networks.bitcoin).extractTransaction();
-        await assertTransactionEqualsFixture(`test/fixtures/babylon/unstakingTransaction.${tag}.json`, {
+        await assertTransactionEqualsFixture(`test/fixtures/babylon/${type}Transaction.${tag}.json`, {
+          psbt: unstakingPsbt,
           transaction: tx,
         });
+      }
+
+      it('creates unstaking transaction', async function () {
+        await testCreateTransaction('unstaking', {
+          sequence: stakingParams.minStakingTimeBlocks,
+          signers: [stakerKey],
+          finalize: true,
+        });
+      });
+
+      it('creates unbonding transaction', async function () {
+        await testCreateTransaction(
+          'unbonding',
+          signIntermediateTxs
+            ? {
+                signers: [stakerKey, ...covenantKeys],
+                finalize: true,
+              }
+            : {
+                signers: [stakerKey],
+                finalize: false,
+              }
+        );
       });
     });
   });

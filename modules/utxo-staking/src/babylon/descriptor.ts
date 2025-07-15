@@ -55,15 +55,23 @@ export class BabylonDescriptorBuilder {
     );
   }
 
-  getTimelockMiniscript(): ast.MiniscriptNode {
+  /** Spend path with the staker key and the staking timelock */
+  getStakingTimelockMiniscriptNode(): ast.MiniscriptNode {
     return { and_v: [pk(this.stakerKey), { older: this.stakingTimeLock }] };
   }
 
-  getUnbondingMiniscript(): ast.MiniscriptNode {
+  /** Spend path with the staker key and the unbonding timelock */
+  getUnbondingTimelockMiniscriptNode(): ast.MiniscriptNode {
+    return { and_v: [pk(this.stakerKey), { older: this.unbondingTimeLock }] };
+  }
+
+  /** Spend path with the staker key and the covenant keys */
+  getUnbondingMiniscriptNode(): ast.MiniscriptNode {
     return { and_v: [pk(this.stakerKey), { multi_a: multiArgs(this.covenantThreshold, this.covenantKeys) }] };
   }
 
-  getSlashingMiniscript(): ast.MiniscriptNode {
+  /** Spend path with the finality provider keys and the covenant keys */
+  getSlashingMiniscriptNode(): ast.MiniscriptNode {
     return {
       and_v: [
         {
@@ -79,22 +87,32 @@ export class BabylonDescriptorBuilder {
     };
   }
 
-  getUnbondingTimelockMiniscript(): ast.MiniscriptNode {
-    return { and_v: [pk(this.stakerKey), { older: this.unbondingTimeLock }] };
-  }
-
+  /**
+   * Creates a descriptor for a staking output.
+   *
+   * Three spend paths:
+   * - the slashing script,
+   * - the unbonding script,
+   * - the timelocked unstaking script.
+   */
   getStakingDescriptor(): Descriptor {
     return taprootScriptOnlyFromAst([
-      this.getSlashingMiniscript(),
-      [this.getUnbondingMiniscript(), this.getTimelockMiniscript()],
+      this.getSlashingMiniscriptNode(),
+      [this.getUnbondingMiniscriptNode(), this.getStakingTimelockMiniscriptNode()],
     ]);
   }
 
-  getSlashingDescriptor(): Descriptor {
-    return taprootScriptOnlyFromAst(this.getUnbondingTimelockMiniscript());
+  /**
+   * Creates a descriptor for the timelocked unbonding script.
+   */
+  getUnbondingTimelockDescriptor(): Descriptor {
+    return taprootScriptOnlyFromAst(this.getUnbondingTimelockMiniscriptNode());
   }
 
+  /**
+   * Creates a descriptor with two script paths: the slashing script and the timelocked unbonding script.
+   */
   getUnbondingDescriptor(): Descriptor {
-    return taprootScriptOnlyFromAst([this.getSlashingMiniscript(), this.getUnbondingTimelockMiniscript()]);
+    return taprootScriptOnlyFromAst([this.getSlashingMiniscriptNode(), this.getUnbondingTimelockMiniscriptNode()]);
   }
 }
