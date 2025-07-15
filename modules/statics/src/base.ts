@@ -399,6 +399,16 @@ export enum CoinFeature {
   EVM_COMPATIBLE_IMS = 'evm-compatible-ims',
 
   /**
+   * This coin is an EVM compatible coin which supports unsigned sweep recovery
+   */
+  EVM_UNSIGNED_SWEEP_RECOVERY = 'evm-unsigned-sweep-recovery',
+
+  /**
+   * This coin is an EVM compatible coin which supports non-bitgo recovery
+   */
+  EVM_NON_BITGO_RECOVERY = 'evm-non-bitgo-recovery',
+
+  /**
    * This coin is a rebase token and should use the rebase token functionality
    */
   REBASE_TOKEN = 'rebase-token',

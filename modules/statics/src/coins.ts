@@ -1271,7 +1271,13 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.MON,
     BaseUnit.ETH,
-    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK]
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+    ]
   ),
   account(
     'd4f8e4f5-7060-44e3-aca1-e3ac11597ecb',
