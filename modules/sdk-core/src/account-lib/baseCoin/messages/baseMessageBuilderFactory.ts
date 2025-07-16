@@ -48,7 +48,7 @@ export abstract class BaseMessageBuilderFactory implements IMessageBuilderFactor
    * @returns A message builder instance for the parsed broadcastable message type
    */
   fromBroadcastString(broadcastHex: string): IMessageBuilder {
-    const broadcastStr = Buffer.from(broadcastHex).toString();
+    const broadcastStr = Buffer.from(broadcastHex, 'hex').toString();
     const broadcastMessage = JSON.parse(broadcastStr) as BroadcastableMessage;
     return this.fromBroadcastFormat(broadcastMessage);
   }

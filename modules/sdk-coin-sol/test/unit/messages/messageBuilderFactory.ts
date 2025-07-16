@@ -122,7 +122,8 @@ describe('Solana MessageBuilderFactory', function () {
   describe('fromBroadcastString', function () {
     it('should parse broadcastable string and return correct builder type', async function () {
       const broadcastString = JSON.stringify(testBroadcastMessage);
-      const builder = factory.fromBroadcastString(broadcastString);
+      const broadcastHex = Buffer.from(broadcastString).toString('hex');
+      const builder = factory.fromBroadcastString(broadcastHex);
 
       assertSimpleMessageBuilder(builder);
       const message = await assertBuilderMessageProperties(builder, 'test message');
@@ -132,7 +133,7 @@ describe('Solana MessageBuilderFactory', function () {
 
     it('should throw for invalid JSON string', function () {
       try {
-        factory.fromBroadcastString('{invalid json');
+        factory.fromBroadcastString('abcdefg'); // Invalid hex string
         fail('Expected error not thrown');
       } catch (error) {
         error.should.be.instanceof(SyntaxError);
