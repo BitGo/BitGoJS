@@ -69,7 +69,8 @@ describe('Base Message Builder Factory', () => {
       };
 
       const broadcastString = JSON.stringify(broadcastMessage);
-      const builder = factory.fromBroadcastString(broadcastString);
+      const broadcastHex = Buffer.from(broadcastString).toString('hex');
+      const builder = factory.fromBroadcastString(broadcastHex);
 
       should.exist(builder);
       // Since the TestMessageBuilder always returns the same type that was passed to constructor
@@ -90,7 +91,8 @@ describe('Base Message Builder Factory', () => {
       };
 
       const broadcastString = JSON.stringify(broadcastMessage);
-      const builder = factory.fromBroadcastString(broadcastString);
+      const broadcastHex = Buffer.from(broadcastString).toString('hex');
+      const builder = factory.fromBroadcastString(broadcastHex);
 
       should.exist(builder);
       should.equal(builder.getType(), MessageStandardType.UNKNOWN);
@@ -105,7 +107,8 @@ describe('Base Message Builder Factory', () => {
       };
 
       const broadcastString = JSON.stringify(broadcastMessage);
-      const builder = factory.fromBroadcastString(broadcastString);
+      const broadcastHex = Buffer.from(broadcastString).toString('hex');
+      const builder = factory.fromBroadcastString(broadcastHex);
 
       should.exist(builder);
       should.equal(builder.getType(), MessageStandardType.EIP191);
