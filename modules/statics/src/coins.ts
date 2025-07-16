@@ -723,6 +723,26 @@ export const coins = CoinMap.fromCoins([
     SEI_FEATURES
   ),
   account(
+    'e902894a-a4e5-4bb4-86a6-c7171b68c8b6',
+    'seievm',
+    'Sei EVM',
+    Networks.main.seievm,
+    18,
+    UnderlyingAsset.SEIEVM,
+    BaseUnit.ETH,
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK]
+  ),
+  account(
+    '42cd26d1-706d-40f6-bcce-7cb125e6f617',
+    'tseievm',
+    'Sei EVM Testnet',
+    Networks.test.seievm,
+    18,
+    UnderlyingAsset.TSEIEVM,
+    BaseUnit.ETH,
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK]
+  ),
+  account(
     '9fbfb875-fb80-4a37-b844-48b9e48dfcdd',
     'zeta',
     'Zeta',
