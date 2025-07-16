@@ -13,8 +13,11 @@ const KeyCard = () => {
     <React.Fragment>
       <h3>Key Card</h3>
       <br />
-      <button onClick={downloadKeycardForHotLtcWallet}>
-        Download for Hot LTC Wallet
+      <button onClick={() => downloadKeycardForHotLtcWallet('Hot LTC Wallet')}>
+        Download for Hot LTC Wallet (With Label)
+      </button>
+      <button onClick={() => downloadKeycardForHotLtcWallet('')}>
+        Download for Hot LTC Wallet (Without Label)
       </button>
       <button onClick={downloadKeycardForDKLsTSS}>
         Download for Hot DKLS Wallet
