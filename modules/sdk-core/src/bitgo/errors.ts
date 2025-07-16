@@ -169,6 +169,12 @@ export class IncorrectPasswordError extends Error {
   }
 }
 
+export class NeedUserSignupError extends BitGoJsError {
+  public constructor(message?: string) {
+    super(message || 'User signup is required');
+  }
+}
+
 export class ApiResponseError<ResponseBodyType = any> extends BitGoJsError {
   message: string;
   status: number;

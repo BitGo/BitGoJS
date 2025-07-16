@@ -23,6 +23,7 @@ import {
   IncorrectPasswordError,
   MethodNotImplementedError,
   MissingEncryptedKeychainError,
+  NeedUserSignupError,
 } from '../errors';
 import * as internal from '../internal/internal';
 import { drawKeycard } from '../internal';
@@ -1602,7 +1603,14 @@ export class Wallet implements IWallet {
     const bulkCreateShareOptions: BulkCreateShareOption[] = [];
 
     for (const shareOption of params.keyShareOptions) {
-      common.validateParams(shareOption, ['userId', 'pubKey', 'path'], []);
+      try {
+        common.validateParams(shareOption, ['userId', 'pubKey', 'path'], []);
+      } catch (e) {
+        if (!shareOption.pubKey) {
+          throw new NeedUserSignupError(shareOption.userId);
+        }
+        throw e;
+      }
 
       const needsKeychain = shareOption.permissions && shareOption.permissions.includes('spend');
 
