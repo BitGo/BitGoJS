@@ -35,10 +35,25 @@ function toPlainEntries(
   return [[key, toPlainObject(value, opts, [...path, key])]];
 }
 
+function getAllDescriptors(v: unknown): PropertyDescriptorMap {
+  if (v === null || typeof v !== 'object') {
+    return {};
+  }
+  const descriptors: PropertyDescriptorMap = Object.getOwnPropertyDescriptors(v);
+  const proto = Object.getPrototypeOf(v);
+  if (proto) {
+    Object.assign(descriptors, getAllDescriptors(proto));
+  }
+  return descriptors;
+}
+
 function toPlainObjectFromPropertyDescriptors(v: unknown, opts: ToPlainObjectOpts, path: PathElement[]) {
-  const descriptors = Object.getOwnPropertyDescriptors(v);
+  const descriptors = getAllDescriptors(v);
   return Object.fromEntries(
     Object.entries(descriptors).flatMap(([key, descriptor]) => {
+      if (typeof descriptor.value === 'function') {
+        return [];
+      }
       if (descriptor.value !== undefined) {
         return toPlainEntries(key, descriptor.value, opts, path);
       }

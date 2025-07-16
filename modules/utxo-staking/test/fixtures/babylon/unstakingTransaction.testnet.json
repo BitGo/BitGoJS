@@ -157,7 +157,43 @@
     },
     "opts": {
       "maximumFeeRate": 5000
-    }
+    },
+    "tx": {
+      "version": 2,
+      "locktime": 0,
+      "ins": [
+        {
+          "hash": "64da14050ffd0e6186c68a59f371a0adc95cc84b0502fe0915be7eba3f771bb3",
+          "index": 0,
+          "script": "",
+          "sequence": 10000,
+          "witness": []
+        }
+      ],
+      "outs": [
+        {
+          "script": "0014896f1ba65deaeb045bb3121e20e5744e66ca0e48",
+          "value": "54555"
+        }
+      ]
+    },
+    "inputCount": 1,
+    "version": 2,
+    "locktime": 0,
+    "txInputs": [
+      {
+        "hash": "64da14050ffd0e6186c68a59f371a0adc95cc84b0502fe0915be7eba3f771bb3",
+        "index": 0,
+        "sequence": 10000
+      }
+    ],
+    "txOutputs": [
+      {
+        "script": "0014896f1ba65deaeb045bb3121e20e5744e66ca0e48",
+        "value": "54555",
+        "address": "bc1q39h3hfjaat4sgkanzg0zpet5fenv5rjg0lhnvy"
+      }
+    ]
   },
   "transaction": {
     "version": 2,

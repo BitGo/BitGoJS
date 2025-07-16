@@ -115,7 +115,64 @@
       },
       "opts": {
         "maximumFeeRate": 5000
-      }
+      },
+      "tx": {
+        "version": 2,
+        "locktime": 1,
+        "ins": [
+          {
+            "hash": "0101010101010101010101010101010101010101010101010101010101010101",
+            "index": 0,
+            "script": "",
+            "sequence": 4294967293,
+            "witness": []
+          },
+          {
+            "hash": "0101010101010101010101010101010101010101010101010101010101010101",
+            "index": 1,
+            "script": "",
+            "sequence": 4294967293,
+            "witness": []
+          }
+        ],
+        "outs": [
+          {
+            "value": "400000",
+            "script": "002064d5e2fcca2e107ac79ef06388fa61e93ceaf31533a8d2a8c6e95423a1b1fdb8"
+          },
+          {
+            "value": "400000",
+            "script": "00203ab8b31b07c3b64804cff426e92a4b773dc28bc744bb00b36d1b0ad5af29753b"
+          }
+        ]
+      },
+      "inputCount": 2,
+      "version": 2,
+      "locktime": 1,
+      "txInputs": [
+        {
+          "hash": "0101010101010101010101010101010101010101010101010101010101010101",
+          "index": 0,
+          "sequence": 4294967293
+        },
+        {
+          "hash": "0101010101010101010101010101010101010101010101010101010101010101",
+          "index": 1,
+          "sequence": 4294967293
+        }
+      ],
+      "txOutputs": [
+        {
+          "script": "002064d5e2fcca2e107ac79ef06388fa61e93ceaf31533a8d2a8c6e95423a1b1fdb8",
+          "value": "400000",
+          "address": "bc1qvn279lx29cg843u77p3c37npay7w4uc4xw5d92xxa92z8gd3lkuq4w8477"
+        },
+        {
+          "script": "00203ab8b31b07c3b64804cff426e92a4b773dc28bc744bb00b36d1b0ad5af29753b",
+          "value": "400000",
+          "address": "bc1q82utxxc8cwmyspx07snwj2jtwu7u9z78gjaspvmdrv9dttefw5asfmk40j"
+        }
+      ]
     },
     "parsed": {
       "inputs": [
@@ -285,7 +342,64 @@
       },
       "opts": {
         "maximumFeeRate": 5000
-      }
+      },
+      "tx": {
+        "version": 2,
+        "locktime": 1,
+        "ins": [
+          {
+            "hash": "0101010101010101010101010101010101010101010101010101010101010101",
+            "index": 0,
+            "script": "",
+            "sequence": 4294967293,
+            "witness": []
+          },
+          {
+            "hash": "0101010101010101010101010101010101010101010101010101010101010101",
+            "index": 1,
+            "script": "",
+            "sequence": 4294967293,
+            "witness": []
+          }
+        ],
+        "outs": [
+          {
+            "value": "400000",
+            "script": "002064d5e2fcca2e107ac79ef06388fa61e93ceaf31533a8d2a8c6e95423a1b1fdb8"
+          },
+          {
+            "value": "400000",
+            "script": "00203ab8b31b07c3b64804cff426e92a4b773dc28bc744bb00b36d1b0ad5af29753b"
+          }
+        ]
+      },
+      "inputCount": 2,
+      "version": 2,
+      "locktime": 1,
+      "txInputs": [
+        {
+          "hash": "0101010101010101010101010101010101010101010101010101010101010101",
+          "index": 0,
+          "sequence": 4294967293
+        },
+        {
+          "hash": "0101010101010101010101010101010101010101010101010101010101010101",
+          "index": 1,
+          "sequence": 4294967293
+        }
+      ],
+      "txOutputs": [
+        {
+          "script": "002064d5e2fcca2e107ac79ef06388fa61e93ceaf31533a8d2a8c6e95423a1b1fdb8",
+          "value": "400000",
+          "address": "bc1qvn279lx29cg843u77p3c37npay7w4uc4xw5d92xxa92z8gd3lkuq4w8477"
+        },
+        {
+          "script": "00203ab8b31b07c3b64804cff426e92a4b773dc28bc744bb00b36d1b0ad5af29753b",
+          "value": "400000",
+          "address": "bc1q82utxxc8cwmyspx07snwj2jtwu7u9z78gjaspvmdrv9dttefw5asfmk40j"
+        }
+      ]
     },
     "parsed": {
       "inputs": [
@@ -463,7 +577,64 @@
       },
       "opts": {
         "maximumFeeRate": 5000
-      }
+      },
+      "tx": {
+        "version": 2,
+        "locktime": 1,
+        "ins": [
+          {
+            "hash": "0101010101010101010101010101010101010101010101010101010101010101",
+            "index": 0,
+            "script": "",
+            "sequence": 4294967293,
+            "witness": []
+          },
+          {
+            "hash": "0101010101010101010101010101010101010101010101010101010101010101",
+            "index": 1,
+            "script": "",
+            "sequence": 4294967293,
+            "witness": []
+          }
+        ],
+        "outs": [
+          {
+            "value": "400000",
+            "script": "002064d5e2fcca2e107ac79ef06388fa61e93ceaf31533a8d2a8c6e95423a1b1fdb8"
+          },
+          {
+            "value": "400000",
+            "script": "00203ab8b31b07c3b64804cff426e92a4b773dc28bc744bb00b36d1b0ad5af29753b"
+          }
+        ]
+      },
+      "inputCount": 2,
+      "version": 2,
+      "locktime": 1,
+      "txInputs": [
+        {
+          "hash": "0101010101010101010101010101010101010101010101010101010101010101",
+          "index": 0,
+          "sequence": 4294967293
+        },
+        {
+          "hash": "0101010101010101010101010101010101010101010101010101010101010101",
+          "index": 1,
+          "sequence": 4294967293
+        }
+      ],
+      "txOutputs": [
+        {
+          "script": "002064d5e2fcca2e107ac79ef06388fa61e93ceaf31533a8d2a8c6e95423a1b1fdb8",
+          "value": "400000",
+          "address": "bc1qvn279lx29cg843u77p3c37npay7w4uc4xw5d92xxa92z8gd3lkuq4w8477"
+        },
+        {
+          "script": "00203ab8b31b07c3b64804cff426e92a4b773dc28bc744bb00b36d1b0ad5af29753b",
+          "value": "400000",
+          "address": "bc1q82utxxc8cwmyspx07snwj2jtwu7u9z78gjaspvmdrv9dttefw5asfmk40j"
+        }
+      ]
     },
     "parsed": {
       "inputs": [
@@ -585,7 +756,64 @@
       },
       "opts": {
         "maximumFeeRate": 5000
-      }
+      },
+      "tx": {
+        "version": 2,
+        "locktime": 1,
+        "ins": [
+          {
+            "hash": "0101010101010101010101010101010101010101010101010101010101010101",
+            "index": 0,
+            "script": "",
+            "sequence": 4294967293,
+            "witness": []
+          },
+          {
+            "hash": "0101010101010101010101010101010101010101010101010101010101010101",
+            "index": 1,
+            "script": "",
+            "sequence": 4294967293,
+            "witness": []
+          }
+        ],
+        "outs": [
+          {
+            "value": "400000",
+            "script": "002064d5e2fcca2e107ac79ef06388fa61e93ceaf31533a8d2a8c6e95423a1b1fdb8"
+          },
+          {
+            "value": "400000",
+            "script": "00203ab8b31b07c3b64804cff426e92a4b773dc28bc744bb00b36d1b0ad5af29753b"
+          }
+        ]
+      },
+      "inputCount": 2,
+      "version": 2,
+      "locktime": 1,
+      "txInputs": [
+        {
+          "hash": "0101010101010101010101010101010101010101010101010101010101010101",
+          "index": 0,
+          "sequence": 4294967293
+        },
+        {
+          "hash": "0101010101010101010101010101010101010101010101010101010101010101",
+          "index": 1,
+          "sequence": 4294967293
+        }
+      ],
+      "txOutputs": [
+        {
+          "script": "002064d5e2fcca2e107ac79ef06388fa61e93ceaf31533a8d2a8c6e95423a1b1fdb8",
+          "value": "400000",
+          "address": "bc1qvn279lx29cg843u77p3c37npay7w4uc4xw5d92xxa92z8gd3lkuq4w8477"
+        },
+        {
+          "script": "00203ab8b31b07c3b64804cff426e92a4b773dc28bc744bb00b36d1b0ad5af29753b",
+          "value": "400000",
+          "address": "bc1q82utxxc8cwmyspx07snwj2jtwu7u9z78gjaspvmdrv9dttefw5asfmk40j"
+        }
+      ]
     },
     "networkTx": {
       "version": 2,

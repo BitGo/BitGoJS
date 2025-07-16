@@ -203,5 +203,41 @@
   },
   "opts": {
     "maximumFeeRate": 5000
-  }
+  },
+  "tx": {
+    "version": 2,
+    "locktime": 0,
+    "ins": [
+      {
+        "hash": "2c779b6115f9deaf4a77583cecc211d90f23c8c85aa9ae749058e5291b7e275d",
+        "index": 0,
+        "script": "",
+        "sequence": 4294967295,
+        "witness": []
+      }
+    ],
+    "outs": [
+      {
+        "value": "98000",
+        "script": "51205e319ea645643b8df9b60ecb9229a97bf318d945620c17d97a7d54e8c997e786"
+      }
+    ]
+  },
+  "inputCount": 1,
+  "version": 2,
+  "locktime": 0,
+  "txInputs": [
+    {
+      "hash": "2c779b6115f9deaf4a77583cecc211d90f23c8c85aa9ae749058e5291b7e275d",
+      "index": 0,
+      "sequence": 4294967295
+    }
+  ],
+  "txOutputs": [
+    {
+      "script": "51205e319ea645643b8df9b60ecb9229a97bf318d945620c17d97a7d54e8c997e786",
+      "value": "98000",
+      "address": "tb1ptcceafj9vsacm7dkpm9ey2df00e33k29vgxp0kt6042w3jvhu7rq8x744p"
+    }
+  ]
 }

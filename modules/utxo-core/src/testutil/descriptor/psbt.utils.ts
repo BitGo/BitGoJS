@@ -12,6 +12,7 @@ export function toPlainObjectFromPsbt(v: utxolib.Psbt): unknown {
           matchPath(path, ['__CACHE']) ||
           matchPath(path, ['opts', 'network']) ||
           matchPath(path, ['data', 'globalMap', 'unsignedTx', 'tx', 'network']) ||
+          matchPath(path, ['tx', 'network']) ||
           matchPath(path, ['network'])
         );
       },
