@@ -382,6 +382,11 @@ export enum CoinFeature {
   SHARED_EVM_SDK = 'shared-evm-sdk',
 
   /**
+   * This coin is a Cosmos coin and should use shared Cosmos SDK module
+   */
+  SHARED_COSMOS_SDK = 'shared-cosmos-sdk',
+
+  /**
    * This coin is EVM based coin
    */
   EVM_COIN = 'evm_coin',
