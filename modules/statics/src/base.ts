@@ -487,15 +487,12 @@ export enum UnderlyingAsset {
   PHRS = 'phrs',
   CTC = 'ctc',
   HYPEEVM = 'hypeevm',
-  THYPEEVM = 'thypeevm',
   RBTC = 'rbtc', // RSK main coin
   SEI = 'sei',
   SEIEVM = 'seievm',
-  TSEIEVM = 'tseievm',
   SGB = 'sgb',
   SOL = 'sol',
   SONIC = 'sonic',
-  TSONIC = 'tsonic',
   SUI = 'sui',
   STX = 'stx',
   TIA = 'tia', // Celestia

@@ -738,7 +738,7 @@ export const coins = CoinMap.fromCoins([
     'Sei EVM Testnet',
     Networks.test.seievm,
     18,
-    UnderlyingAsset.TSEIEVM,
+    UnderlyingAsset.SEIEVM,
     BaseUnit.ETH,
     [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK]
   ),
@@ -1375,7 +1375,7 @@ export const coins = CoinMap.fromCoins([
     'Hyperliquid EVM Testnet',
     Networks.test.hypeevm,
     18,
-    UnderlyingAsset.THYPEEVM,
+    UnderlyingAsset.HYPEEVM,
     BaseUnit.ETH,
     [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK]
   ),
@@ -1395,7 +1395,7 @@ export const coins = CoinMap.fromCoins([
     'Sonic Testnet',
     Networks.test.sonic,
     18,
-    UnderlyingAsset.TSONIC,
+    UnderlyingAsset.SONIC,
     BaseUnit.ETH,
     [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK]
   ),
