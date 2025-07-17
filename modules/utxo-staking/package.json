@@ -41,6 +41,7 @@
       ".ts"
     ]
   },
+  "type": "commonjs",
   "dependencies": {
     "@babylonlabs-io/babylon-proto-ts": "1.0.0",
     "@bitgo/babylonlabs-io-btc-staking-ts": "^1.2.0",
