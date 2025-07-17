@@ -2121,6 +2121,7 @@ export enum UnderlyingAsset {
   'tavaxc:cop2peq' = 'tavaxc:cop2peq',
   'tavaxc:xsgd' = 'tavaxc:xsgd',
   'tavaxc:bitgo' = 'tavaxc:bitgo',
+  'tavaxc:stavax' = 'tavaxc:stavax',
   // Begin FTX missing AVAXC tokens
   'avaxc:yeti' = 'avaxc:yeti',
   'avaxc:spell' = 'avaxc:spell',

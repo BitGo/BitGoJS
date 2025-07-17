@@ -719,4 +719,12 @@ export const avaxTokens = [
     '0x3ad5f9119ca063189095784b9a7d2bf80fc24de6',
     UnderlyingAsset['tavaxc:bitgo']
   ),
+  tavaxErc20(
+    '40ca65cc-7fc8-4f24-aa0d-fcd0fa8e2e03',
+    'tavaxc:stavax',
+    'Test Hypha staked AVAX ',
+    18,
+    '0x3f964a0630b429ffb1797f2ce9fd8e5a45c5ad18',
+    UnderlyingAsset['tavaxc:stavax']
+  ),
 ];
