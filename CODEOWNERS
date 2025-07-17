@@ -59,6 +59,7 @@
 /modules/sdk-coin-bera/ @BitGo/ethalt-team
 /modules/sdk-coin-bsc/ @BitGo/ethalt-team
 /modules/sdk-coin-coredao/ @BitGo/ethalt-team
+/modules/sdk-coin-cosmos/ @BitGo/ethalt-team
 /modules/sdk-coin-cronos/ @BitGo/ethalt-team
 /modules/sdk-coin-cspr/ @BitGo/ethalt-team
 /modules/sdk-coin-dot/ @BitGo/ethalt-team
