@@ -8,14 +8,14 @@
     "dist/src"
   ],
   "scripts": {
-    "build": "yarn tsc --build --incremental --verbose .",
+    "build": "yarn tsc --build --incremental --verbose . && cpx \"test/fixtures/**/*\" dist/test/fixtures",
     "fmt": "prettier --write .",
     "check-fmt": "prettier --check .",
     "clean": "rm -r ./dist",
     "lint": "eslint --quiet .",
     "prepare": "npm run build",
     "coverage": "nyc -- npm run unit-test",
-    "unit-test": "mocha --recursive test"
+    "unit-test": "mocha --recursive \"dist/test/**/*.js\""
   },
   "author": "BitGo SDK Team <sdkteam@bitgo.com>",
   "license": "MIT",
@@ -41,6 +41,7 @@
       ".ts"
     ]
   },
+  "type": "commonjs",
   "dependencies": {
     "@babylonlabs-io/babylon-proto-ts": "1.0.0",
     "@bitgo/babylonlabs-io-btc-staking-ts": "^2.4.0",
@@ -55,6 +56,7 @@
     "io-ts-types": "^0.5.19"
   },
   "devDependencies": {
+    "cpx": "^1.5.0",
     "yargs": "^17.7.2"
   }
 }
