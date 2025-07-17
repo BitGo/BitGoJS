@@ -93,6 +93,12 @@ interface EnvironmentTemplate {
       apiToken?: string;
     };
   };
+  // The key here is coinFamily and it will be same for both mainnet and testnet (eg: 'cronos')
+  cosmos?: {
+    [key: string]: {
+      nodeUrl: string;
+    };
+  };
 }
 
 export interface Environment extends EnvironmentTemplate {
