@@ -16,6 +16,8 @@ export const testnetCommon = EthereumCommon.custom(
 export const mainnetCommon = EthereumCommon.custom(
   {
     name: 'Mon mainnet',
+    networkId: (coins.get('mon').network as EthereumNetwork).chainId,
+    chainId: (coins.get('mon').network as EthereumNetwork).chainId,
   },
   {
     baseChain: 'mainnet',

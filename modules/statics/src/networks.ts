@@ -1406,9 +1406,9 @@ class MonadTestnet extends Testnet implements EthereumNetwork {
 class Monad extends Mainnet implements EthereumNetwork {
   name = 'Monad';
   family = CoinFamily.MON;
-  explorerUrl = 'https://testnet.monadexplorer.com/tx/'; //TODO: WIN-5225: change it with mainnet explorer, when its available
-  chainId = 10143; //TODO: WIN-5225: change it with mainnet explorer, when its available
-  nativeCoinOperationHashPrefix = '10143'; //TODO: WIN-5225: change it with mainnet explorer, when its available
+  explorerUrl = 'https://mainnet-beta.monvision.io/tx';
+  chainId = 143;
+  nativeCoinOperationHashPrefix = '143';
   walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
   batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
   forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
