@@ -2890,6 +2890,16 @@ export const solTokens = [
     SOL_TOKEN_FEATURES,
     ProgramID.Token2022ProgramId
   ),
+  solToken(
+    '2a5d3340-e68a-4baa-bae8-7bcc785d757f',
+    'sol:usd1',
+    'World Liberty Financial USD (USD1)',
+    6,
+    'USD1ttGY1N17NEEHLmELoaybftRBUSErhqYiQzvEmuB',
+    'USD1ttGY1N17NEEHLmELoaybftRBUSErhqYiQzvEmuB',
+    UnderlyingAsset['sol:usd1'],
+    SOL_TOKEN_FEATURES
+  ),
   tsolToken(
     'b98c5a7a-49c5-45f1-a6ee-b08dff596a7d',
     'tsol:srm',

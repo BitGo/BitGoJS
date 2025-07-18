@@ -995,6 +995,7 @@ export enum UnderlyingAsset {
   'GAME.COM' = 'game.com',
   GAMMA = 'gamma',
   'sol:gari' = 'sol:gari',
+  'sol:usd1' = 'sol:usd1',
   'tsol:slnd' = 'tsol:slnd',
   'tsol:orca' = 'tsol:orca',
   'tsol:usdc' = 'tsol:usdc',
