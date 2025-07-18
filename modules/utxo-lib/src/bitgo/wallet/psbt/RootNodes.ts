@@ -2,7 +2,7 @@
  * Contains helper methods for getting and sorting root nodes from a PSBT.
  */
 
-import * as assert from 'assert';
+import assert from 'assert';
 import * as bs58check from 'bs58check';
 
 import { UtxoPsbt } from '../../UtxoPsbt';

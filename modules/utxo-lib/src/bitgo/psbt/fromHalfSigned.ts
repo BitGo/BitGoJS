@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import assert from 'assert';
 import { PsbtInputUpdate, PartialSig } from 'bip174/src/lib/interfaces';
 import { ecc as eccLib, TxOutput, taproot, getMainnet, networks } from '../..';
 import { UtxoTransaction } from '../UtxoTransaction';

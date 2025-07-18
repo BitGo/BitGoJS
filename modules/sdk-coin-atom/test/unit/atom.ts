@@ -19,7 +19,7 @@ import {
   wrwUser,
   wrwUserDkls,
 } from '../resources/atom';
-import should = require('should');
+import should from 'should';
 
 describe('ATOM', function () {
   let bitgo: TestBitGoAPI;

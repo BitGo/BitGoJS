@@ -20,14 +20,14 @@
     "./testutil/descriptor": "./dist/src/testutil/descriptor/index.js"
   },
   "scripts": {
-    "build": "yarn tsc --build --incremental --verbose .",
+    "build": "yarn tsc --build --incremental --verbose . && cpx \"test/descriptor/psbt/fixtures/**/*\" dist/test/descriptor/psbt/fixtures",
     "fmt": "prettier --write .",
     "check-fmt": "prettier --check .",
     "clean": "rm -r ./dist",
     "lint": "eslint --quiet .",
     "prepare": "npm run build",
     "test": "npm run unit-test",
-    "unit-test": "mocha --recursive test/"
+    "unit-test": "mocha --recursive \"dist/test/**/*.js\""
   },
   "author": "BitGo SDK Team <sdkteam@bitgo.com>",
   "license": "MIT",
@@ -45,6 +45,7 @@
   "publishConfig": {
     "access": "public"
   },
+  "type": "commonjs",
   "nyc": {
     "extension": [
       ".ts"
@@ -57,5 +58,8 @@
     "bip174": "npm:@bitgo-forks/bip174@3.1.0-master.4",
     "bitcoinjs-message": "npm:@bitgo-forks/bitcoinjs-message@1.0.0-master.3"
   },
-  "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c"
+  "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c",
+  "devDependencies": {
+    "cpx": "^1.5.0"
+  }
 }

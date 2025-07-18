@@ -24,7 +24,7 @@
   "author": "BitGo SDK Team <sdkteam@bitgo.com>",
   "license": "ISC",
   "engines": {
-    "node": ">=18 <23"
+    "node": ">=18 < 25"
   },
   "dependencies": {
     "@bitgo/sdk-coin-ada": "^4.12.1",

@@ -31,7 +31,10 @@ export const UnspentTypePubKeyHash: {
 export type TestUnspentType = string | UnspentTypeOpReturn;
 
 export class UnspentTypeOpReturn {
-  constructor(public size: number) {}
+  public size: number;
+  constructor(size: number) {
+    this.size = size;
+  }
 
   public toString(): string {
     return `opReturn(${this.size})`;
