@@ -203,7 +203,8 @@ export { Soneium };
 import * as Vet from '@bitgo/sdk-coin-vet';
 export { Vet };
 
-import { validateAgainstMessageTemplates } from './utils';
+import { validateAgainstMessageTemplates, MIDNIGHT_TNC_HASH } from './utils';
+export { MIDNIGHT_TNC_HASH };
 
 const coinBuilderMap = {
   trx: Trx.WrappedBuilder,
