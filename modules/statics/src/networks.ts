@@ -79,6 +79,14 @@ export interface AccountNetwork extends BaseNetwork {
   readonly blockExplorerUrl?: string;
 }
 
+export interface CosmosNetwork extends AccountNetwork {
+  readonly addressPrefix: string;
+  readonly validatorPrefix: string;
+  readonly denom: string;
+  readonly gasAmount: string;
+  readonly gasLimit: number;
+}
+
 /**
  * Specification name type of the chain. Used in setting up the registry
  */
