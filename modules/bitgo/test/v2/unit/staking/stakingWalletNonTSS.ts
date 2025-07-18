@@ -242,7 +242,7 @@ describe('non-TSS Staking Wallet', function () {
         .reply(200, transaction);
 
       const prebuildTransaction = sandbox.stub(Wallet.prototype, 'prebuildTransaction');
-      const descriptor = sandbox.stub(StakingWallet.prototype, <any>'getDescriptorWallet');
+      const descriptor = sandbox.stub(StakingWallet.prototype, 'getDescriptorWallet' as any);
       await btcStakingWallet.build(transaction);
       prebuildTransaction.calledOnceWithExactly(transaction.buildParams).should.be.true;
       descriptor.notCalled.should.be.true;
