@@ -48,7 +48,7 @@ export interface BitGoAPIOptions {
   getAdditionalHeadersCb?: AdditionalHeadersCallback;
   evm?: {
     [key: string]: {
-      baseUrl: string;
+      baseUrl?: string;
       apiToken?: string;
     };
   };
