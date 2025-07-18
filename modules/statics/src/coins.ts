@@ -610,7 +610,12 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.ATOM,
     BaseUnit.ATOM,
-    ATOM_FEATURES
+    ATOM_FEATURES,
+    KeyCurve.Secp256k1,
+    '',
+    'ATOM',
+    false,
+    'cosmos1'
   ),
   account(
     '9869004c-d372-42e1-bdd5-9ac8716c86cb',
@@ -620,7 +625,12 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.ATOM,
     BaseUnit.ATOM,
-    ATOM_FEATURES
+    ATOM_FEATURES,
+    KeyCurve.Secp256k1,
+    '',
+    'TATOM',
+    false,
+    'cosmos1'
   ),
   account(
     '8352bdf2-71e7-4ff1-a5b0-9b88c61aef1d',
@@ -630,7 +640,12 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.OSMO,
     BaseUnit.OSMO,
-    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
+    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING,
+    KeyCurve.Secp256k1,
+    '',
+    'OSMO',
+    false,
+    'osmo1'
   ),
   account(
     'd813e9c9-f9b9-4d10-a4e2-57d9e3b65e2c',
@@ -640,7 +655,12 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.OSMO,
     BaseUnit.OSMO,
-    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
+    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING,
+    KeyCurve.Secp256k1,
+    '',
+    'TOSMO',
+    false,
+    'osmo1'
   ),
   account(
     '6e35c0dc-7ee8-4273-985d-254aa3641c9d',
@@ -650,7 +670,12 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.TIA,
     BaseUnit.TIA,
-    TIA_FEATURES
+    TIA_FEATURES,
+    KeyCurve.Secp256k1,
+    '',
+    'TIA',
+    false,
+    'celestia1'
   ),
   account(
     '6ea4f120-6d26-4070-a12a-a0cac39ea552',
@@ -660,7 +685,12 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.TIA,
     BaseUnit.TIA,
-    TIA_FEATURES
+    TIA_FEATURES,
+    KeyCurve.Secp256k1,
+    '',
+    'TTIA',
+    false,
+    'celestia1'
   ),
   account(
     '2e20e302-d743-457c-a023-58b80e8d3a15',
@@ -670,7 +700,12 @@ export const coins = CoinMap.fromCoins([
     9,
     UnderlyingAsset.HASH,
     BaseUnit.HASH,
-    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
+    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING,
+    KeyCurve.Secp256k1,
+    '',
+    'HASH',
+    false,
+    'pb1'
   ),
   account(
     'feadf3d5-5a9a-427e-8144-7a5085b4d258',
@@ -680,7 +715,12 @@ export const coins = CoinMap.fromCoins([
     9,
     UnderlyingAsset.HASH,
     BaseUnit.HASH,
-    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
+    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING,
+    KeyCurve.Secp256k1,
+    '',
+    'THASH',
+    false,
+    'tp1'
   ),
   account(
     '36700514-fa3c-42d8-9503-98cdcab0b3c3',
@@ -690,7 +730,12 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.BLD,
     BaseUnit.BLD,
-    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
+    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING,
+    KeyCurve.Secp256k1,
+    '',
+    'BLD',
+    false,
+    'agoric1'
   ),
   account(
     'e093184f-4134-455f-b870-da0bac213f00',
@@ -700,7 +745,12 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.BLD,
     BaseUnit.BLD,
-    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
+    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING,
+    KeyCurve.Secp256k1,
+    '',
+    'TBLD',
+    false,
+    'agoric1'
   ),
   account(
     '4777265e-37f4-44d8-bccd-13e56189fcae',
@@ -710,7 +760,12 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.SEI,
     BaseUnit.SEI,
-    SEI_FEATURES
+    SEI_FEATURES,
+    KeyCurve.Secp256k1,
+    '',
+    'SEI',
+    false,
+    'sei1'
   ),
   account(
     '5be8a3f3-5c71-41ff-8d87-1ade63ce2543',
@@ -720,7 +775,12 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.SEI,
     BaseUnit.SEI,
-    SEI_FEATURES
+    SEI_FEATURES,
+    KeyCurve.Secp256k1,
+    '',
+    'TSEI',
+    false,
+    'sei1'
   ),
   account(
     'e902894a-a4e5-4bb4-86a6-c7171b68c8b6',
@@ -750,7 +810,12 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.ZETA,
     BaseUnit.ZETA,
-    [...ZETA_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT]
+    [...ZETA_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT],
+    KeyCurve.Secp256k1,
+    '',
+    'ZETA',
+    false,
+    'zeta1'
   ),
   account(
     '1aeb7754-1518-4aac-8cc0-e4bb07713a31',
@@ -760,7 +825,12 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.ZETA,
     BaseUnit.ZETA,
-    [...ZETA_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT]
+    [...ZETA_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT],
+    KeyCurve.Secp256k1,
+    '',
+    'TZETA',
+    false,
+    'zeta1'
   ),
   account(
     '5f9506c5-f10a-43c2-92d3-52941083bbc7',
@@ -770,7 +840,12 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.INJECTIVE,
     BaseUnit.INJECTIVE,
-    INJECTIVE_FEATURES
+    INJECTIVE_FEATURES,
+    KeyCurve.Secp256k1,
+    '',
+    'INJECTIVE',
+    false,
+    'inj1'
   ),
   account(
     '6ae81d6a-011c-499c-a3c8-15ac7dcac48a',
@@ -780,7 +855,12 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.INJECTIVE,
     BaseUnit.INJECTIVE,
-    INJECTIVE_FEATURES
+    INJECTIVE_FEATURES,
+    KeyCurve.Secp256k1,
+    '',
+    'TINJECTIVE',
+    false,
+    'inj1'
   ),
   account(
     'c592d110-cf6d-4630-b6e8-cfe044db0be2',
@@ -790,7 +870,12 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.KAVA,
     BaseUnit.KAVA,
-    COSMOS_SIDECHAIN_FEATURES
+    COSMOS_SIDECHAIN_FEATURES,
+    KeyCurve.Secp256k1,
+    '',
+    'KAVA',
+    false,
+    'kava1'
   ),
   account(
     '62895d6b-6e99-4eba-82f1-9ce4e7658998',
@@ -800,7 +885,12 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.KAVA,
     BaseUnit.KAVA,
-    COSMOS_SIDECHAIN_FEATURES
+    COSMOS_SIDECHAIN_FEATURES,
+    KeyCurve.Secp256k1,
+    '',
+    'TKAVA',
+    false,
+    'kava1'
   ),
   account(
     '7df858d5-9da3-4071-ab06-399962ea87b7',
@@ -817,7 +907,12 @@ export const coins = CoinMap.fromCoins([
           CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
           CoinFeature.CUSTODY_BITGO_MENA_FZE,
         ].includes(feature)
-    )
+    ),
+    KeyCurve.Secp256k1,
+    '',
+    'COREUM',
+    false,
+    'core1'
   ),
   account(
     'df2f040b-89f3-4bb3-8da7-2445c7fdefca',
@@ -827,7 +922,12 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.COREUM,
     BaseUnit.TCOREUM,
-    COREUM_FEATURES
+    COREUM_FEATURES,
+    KeyCurve.Secp256k1,
+    '',
+    'TCOREUM',
+    false,
+    'testcore1'
   ),
   account(
     '9fa0f191-4eed-4030-864a-d14bbd98c8af',
@@ -837,7 +937,12 @@ export const coins = CoinMap.fromCoins([
     8,
     UnderlyingAsset.RUNE,
     BaseUnit.RUNE,
-    COSMOS_SIDECHAIN_FEATURES
+    COSMOS_SIDECHAIN_FEATURES,
+    KeyCurve.Secp256k1,
+    '',
+    'THORCHAIN:RUNE',
+    false,
+    'thor1'
   ),
   account(
     '7281ab3b-0451-4ef9-b367-8623d9bcfd87',
@@ -847,7 +952,12 @@ export const coins = CoinMap.fromCoins([
     8,
     UnderlyingAsset.RUNE,
     BaseUnit.RUNE,
-    COSMOS_SIDECHAIN_FEATURES
+    COSMOS_SIDECHAIN_FEATURES,
+    KeyCurve.Secp256k1,
+    '',
+    'TTHORCHAIN:RUNE',
+    false,
+    'thor1'
   ),
   account(
     '12194de6-b68f-4dfb-b74c-b18b1fbb29d6',
@@ -857,7 +967,12 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.BABY,
     BaseUnit.BABY,
-    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
+    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING,
+    KeyCurve.Secp256k1,
+    '',
+    'BABY',
+    false,
+    'bbn1'
   ),
   account(
     'ee22282b-c307-4861-b706-d9a178326ad5',
@@ -867,7 +982,12 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.BABY,
     BaseUnit.BABY,
-    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
+    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING,
+    KeyCurve.Secp256k1,
+    '',
+    'TBABY',
+    false,
+    'bbn1'
   ),
   account(
     '08ff6b77-4cfb-4dcd-9182-dd1cc6f92f70',
@@ -877,7 +997,12 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.MANTRA,
     BaseUnit.MANTRA,
-    COSMOS_SIDECHAIN_FEATURES
+    COSMOS_SIDECHAIN_FEATURES,
+    KeyCurve.Secp256k1,
+    '',
+    'MANTRA',
+    false,
+    'mantra1'
   ),
   account(
     'cc900f12-f229-4eb3-9ca7-2a05a445f362',
@@ -887,7 +1012,12 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.MANTRA,
     BaseUnit.MANTRA,
-    COSMOS_SIDECHAIN_FEATURES
+    COSMOS_SIDECHAIN_FEATURES,
+    KeyCurve.Secp256k1,
+    '',
+    'TMANTRA',
+    false,
+    'mantra1'
   ),
   account(
     '507492ba-d127-4fd8-b07d-9461f5887a26',
@@ -897,7 +1027,12 @@ export const coins = CoinMap.fromCoins([
     8,
     UnderlyingAsset.CRONOS,
     BaseUnit.CRONOS,
-    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
+    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING,
+    KeyCurve.Secp256k1,
+    '',
+    'CRONOS',
+    false,
+    'cro1'
   ),
   account(
     '49d56512-bddb-41aa-ac7f-f4a4c494b412',
@@ -907,7 +1042,12 @@ export const coins = CoinMap.fromCoins([
     8,
     UnderlyingAsset.CRONOS,
     BaseUnit.CRONOS,
-    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
+    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING,
+    KeyCurve.Secp256k1,
+    '',
+    'TCRONOS',
+    false,
+    'tcro1'
   ),
   account(
     '854513b2-cf1a-44b4-879b-e3aae0b5f227',
@@ -917,7 +1057,12 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.FETCHAI,
     BaseUnit.FETCHAI,
-    COSMOS_SIDECHAIN_FEATURES
+    COSMOS_SIDECHAIN_FEATURES,
+    KeyCurve.Secp256k1,
+    '',
+    'FETCHAI',
+    false,
+    'fetch1'
   ),
   account(
     'e285caf3-e9b8-407a-aa72-ee4094d1cf9f',
@@ -927,7 +1072,12 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.FETCHAI,
     BaseUnit.FETCHAI,
-    COSMOS_SIDECHAIN_FEATURES
+    COSMOS_SIDECHAIN_FEATURES,
+    KeyCurve.Secp256k1,
+    '',
+    'TFETCHAI',
+    false,
+    'fetch1'
   ),
   account(
     '2ec91758-fd84-44d5-92d3-7158903de278',
@@ -937,7 +1087,12 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.INITIA,
     BaseUnit.INITIA,
-    COSMOS_SIDECHAIN_FEATURES
+    COSMOS_SIDECHAIN_FEATURES,
+    KeyCurve.Secp256k1,
+    '',
+    'INITIA',
+    false,
+    'init1'
   ),
   account(
     '2d10a918-01f4-40a5-b1db-a5e5247d21d7',
@@ -947,7 +1102,12 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.INITIA,
     BaseUnit.INITIA,
-    COSMOS_SIDECHAIN_FEATURES
+    COSMOS_SIDECHAIN_FEATURES,
+    KeyCurve.Secp256k1,
+    '',
+    'TINITIA',
+    false,
+    'init1'
   ),
   account(
     '2999b6e6-c30e-4089-a67a-2012df2adfa0',
@@ -957,7 +1117,12 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.ASI,
     BaseUnit.ASI,
-    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
+    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING,
+    KeyCurve.Secp256k1,
+    '',
+    'ASI',
+    false,
+    'fetch1'
   ),
   account(
     '1b7dfc3e-3431-48ca-883a-e9e8e32b17f2',
@@ -967,7 +1132,12 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.ASI,
     BaseUnit.ASI,
-    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
+    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING,
+    KeyCurve.Secp256k1,
+    '',
+    'TASI',
+    false,
+    'fetch1'
   ),
   account(
     'b473d5f0-1590-4edf-bc9f-813aff515a23',
@@ -977,7 +1147,12 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.ISLM,
     BaseUnit.ISLM,
-    COSMOS_SIDECHAIN_FEATURES.filter((f) => f !== CoinFeature.SHA256_WITH_ECDSA_TSS)
+    COSMOS_SIDECHAIN_FEATURES.filter((f) => f !== CoinFeature.SHA256_WITH_ECDSA_TSS),
+    KeyCurve.Secp256k1,
+    '',
+    'ISLM',
+    false,
+    'haqq1'
   ),
   account(
     '02eced2c-cf1d-4660-832c-858685ae7107',
@@ -987,7 +1162,12 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.ISLM,
     BaseUnit.ISLM,
-    COSMOS_SIDECHAIN_FEATURES.filter((f) => f !== CoinFeature.SHA256_WITH_ECDSA_TSS)
+    COSMOS_SIDECHAIN_FEATURES.filter((f) => f !== CoinFeature.SHA256_WITH_ECDSA_TSS),
+    KeyCurve.Secp256k1,
+    '',
+    'TISLM',
+    false,
+    'haqq1'
   ),
   account(
     'e48baabf-5cc9-4011-b67e-6f6425753df2',

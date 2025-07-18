@@ -641,6 +641,7 @@ export class VetToken extends AccountCoinToken {
  * @param prefix? Optional coin prefix. Defaults to empty string
  * @param suffix? Optional coin suffix. Defaults to coin name.
  * @param isToken? Whether or not this account coin is a token of another coin
+ * @param addressPrefix? Optional address prefix. Defaults to empty string.
  */
 export function account(
   id: string,
@@ -654,7 +655,8 @@ export function account(
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1,
   prefix = '',
   suffix: string = name.toUpperCase(),
-  isToken = false
+  isToken = false,
+  addressPrefix = ''
 ) {
   return Object.freeze(
     new AccountCoin({
