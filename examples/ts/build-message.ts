@@ -9,8 +9,8 @@
 
 import {BitGoAPI} from '@bitgo/sdk-api';
 import {MessageStandardType} from "@bitgo/sdk-core";
-import {MIDNIGHT_TNC_HASH} from "@bitgo/account-lib/dist/src/utils";
 import {Hteth} from "@bitgo/sdk-coin-eth";
+import {MIDNIGHT_TNC_HASH} from "@bitgo/account-lib";
 require('dotenv').config({ path: '../../.env' });
 
 const bitgo = new BitGoAPI({
