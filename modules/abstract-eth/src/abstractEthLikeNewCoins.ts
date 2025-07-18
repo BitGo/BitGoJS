@@ -3,10 +3,6 @@
  */
 import {
   AddressCoinSpecific,
-  PresignTransactionOptions as BasePresignTransactionOptions,
-  SignTransactionOptions as BaseSignTransactionOptions,
-  TransactionPrebuild as BaseTransactionPrebuild,
-  VerifyAddressOptions as BaseVerifyAddressOptions,
   BitGoBase,
   BuildNftTransferDataOptions,
   common,
@@ -28,24 +24,29 @@ import {
   ParsedTransaction,
   ParseTransactionOptions,
   PrebuildTransactionResult,
+  PresignTransactionOptions as BasePresignTransactionOptions,
   Recipient,
+  SignTransactionOptions as BaseSignTransactionOptions,
   TransactionParams,
+  TransactionPrebuild as BaseTransactionPrebuild,
   TransactionRecipient,
   TypedData,
   UnexpectedAddressError,
   UnsignedTransactionTss,
   Util,
+  VerifyAddressOptions as BaseVerifyAddressOptions,
   VerifyTransactionOptions,
   Wallet,
 } from '@bitgo/sdk-core';
 import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
 import { bip32 } from '@bitgo/secp256k1';
 import {
+  BaseCoin as StaticsBaseCoin,
+  CoinFeature,
   CoinMap,
   coins,
-  ethGasConfigs,
   EthereumNetwork as EthLikeNetwork,
-  BaseCoin as StaticsBaseCoin,
+  ethGasConfigs,
 } from '@bitgo/statics';
 import type * as EthLikeCommon from '@ethereumjs/common';
 import type * as EthLikeTxLib from '@ethereumjs/tx';
@@ -475,13 +476,13 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
    * @param {ReplayProtectionOptions} replayProtectionOptions - check if chain id supports replay protection
    * @returns {EthLikeCommon.default}
    */
-  private static getEthLikeCommon(
+  protected getEthLikeCommon(
     eip1559?: EIP1559,
     replayProtectionOptions?: ReplayProtectionOptions
   ): EthLikeCommon.default {
     // if eip1559 params are specified, default to london hardfork, otherwise,
     // default to tangerine whistle to avoid replay protection issues
-    const defaultHardfork = !!eip1559 ? 'london' : optionalDeps.EthCommon.Hardfork.TangerineWhistle;
+    const defaultHardfork = !!eip1559 ? 'london' : optionalDeps.EthCommon.Hardfork.Petersburg;
     const ethLikeCommon = AbstractEthLikeNewCoins.getCustomChainCommon(replayProtectionOptions?.chain as number);
     ethLikeCommon.setHardfork(replayProtectionOptions?.hardfork ?? defaultHardfork);
     return ethLikeCommon;
@@ -492,12 +493,12 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
    * @param {BuildTransactionParams} params - params to build transaction
    * @returns {EthLikeTxLib.FeeMarketEIP1559Transaction | EthLikeTxLib.Transaction}
    */
-  static buildTransaction(
+  buildTransaction(
     params: BuildTransactionParams
   ): EthLikeTxLib.FeeMarketEIP1559Transaction | EthLikeTxLib.Transaction {
     // if eip1559 params are specified, default to london hardfork, otherwise,
     // default to tangerine whistle to avoid replay protection issues
-    const ethLikeCommon = AbstractEthLikeNewCoins.getEthLikeCommon(params.eip1559, params.replayProtectionOptions);
+    const ethLikeCommon = this.getEthLikeCommon(params.eip1559, params.replayProtectionOptions);
     const baseParams = {
       to: params.to,
       nonce: params.nonce,
@@ -1933,7 +1934,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       const unsignedTx = (await this.buildTssRecoveryTxn(baseAddress, gasPrice, gasLimit, params)).tx;
       const messageHash = unsignedTx.getMessageToSign(true);
       const signature = await ECDSAUtils.signRecoveryMpcV2(messageHash, userKeyShare, backupKeyShare, commonKeyChain);
-      const ethCommmon = AbstractEthLikeNewCoins.getEthLikeCommon(params.eip1559, params.replayProtectionOptions);
+      const ethCommmon = this.getEthLikeCommon(params.eip1559, params.replayProtectionOptions);
       const signedTx = this.getSignedTxFromSignature(ethCommmon, unsignedTx, signature);
 
       return {
@@ -2045,10 +2046,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       const derivedCommonKeyChain = MPC.deriveUnhardened(String(commonKeyChain), String(derivationPath));
       const derivedPublicKey = new KeyPairLib({ pub: derivedCommonKeyChain.slice(0, 66) });
       txBuilder.addSignature({ pub: derivedPublicKey.getKeys().pub }, signatureHex);
-      const ethCommmon = AbstractEthLikeNewCoins.getEthLikeCommon(
-        transaction.eip1559,
-        transaction.replayProtectionOptions
-      );
+      const ethCommmon = this.getEthLikeCommon(transaction.eip1559, transaction.replayProtectionOptions);
       let unsignedTx;
       if (transaction.eip1559) {
         unsignedTx = await FeeMarketEIP1559Transaction.fromSerializedTx(
@@ -2190,7 +2188,12 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       replayProtectionOptions: params.replayProtectionOptions,
     };
 
-    const tx = AbstractEthLikeNewCoins.buildTransaction(txParams);
+    if (!this.staticsCoin?.features.includes(CoinFeature.EIP1559)) {
+      delete txParams.eip1559;
+      delete params.eip1559;
+    }
+
+    const tx = this.buildTransaction(txParams);
     return { txInfo, tx, nonce };
   }
 

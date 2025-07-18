@@ -7,7 +7,11 @@ import {
   RecoverOptions,
   OfflineVaultTxInfo,
   VerifyEthTransactionOptions,
+  EIP1559,
+  ReplayProtectionOptions,
+  optionalDeps,
 } from '@bitgo/abstract-eth';
+import EthereumCommon from '@ethereumjs/common';
 import { TransactionBuilder } from './lib';
 
 export class Xdc extends AbstractEthLikeNewCoins {
@@ -36,6 +40,24 @@ export class Xdc extends AbstractEthLikeNewCoins {
   /** @inheritDoc */
   getMPCAlgorithm(): MPCAlgorithm {
     return 'ecdsa';
+  }
+
+  /** @inheritDoc */
+  getEthLikeCommon(eip1559?: EIP1559, replayProtectionOptions?: ReplayProtectionOptions): EthereumCommon {
+    const chainId = replayProtectionOptions?.chain
+      ? parseInt(replayProtectionOptions.chain as string, 10)
+      : this.getChainId();
+    // BSC uses a specific chain ID calculation for network ID: chainId * 2 + 35
+    const networkId = chainId;
+    return EthereumCommon.forCustomChain(
+      'mainnet',
+      {
+        name: 'xdc',
+        networkId: networkId,
+        chainId: chainId,
+      },
+      optionalDeps.EthCommon.Hardfork.Petersburg
+    );
   }
 
   protected async buildUnsignedSweepTxnTSS(params: RecoverOptions): Promise<OfflineVaultTxInfo | UnsignedSweepTxMPCv2> {

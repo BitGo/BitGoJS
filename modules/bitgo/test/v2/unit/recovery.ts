@@ -1075,6 +1075,7 @@ describe('Recovery:', function () {
         { coin: 'hteth', chain: 17000 },
         { coin: 'tpolygon', chain: 80002 },
         { coin: 'tbsc', chain: 97 },
+        { coin: 'txdc', chain: 51 },
       ]) {
         recoveryNocks.nockEthLikeRecovery(bitgo, nockTSSData);
         const basecoin = bitgo.coin(coin);

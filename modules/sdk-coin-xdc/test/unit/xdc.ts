@@ -8,7 +8,7 @@ import { UnsignedSweepTxMPCv2 } from '@bitgo/abstract-eth';
 import { mockDataUnsignedSweep, mockDataNonBitGoRecovery } from '../resources';
 import nock from 'nock';
 import { common } from '@bitgo/sdk-core';
-import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx';
+import { Transaction } from '@ethereumjs/tx';
 import { stripHexPrefix } from '@ethereumjs/util';
 
 const bitgo: TestBitGoAPI = TestBitGo.decorate(BitGoAPI, { env: 'test' });
@@ -140,7 +140,7 @@ describe('Non Bitgo Recovery for Hot Wallets', function () {
     should.exist(transaction);
     transaction.should.have.property('id');
     transaction.should.have.property('tx');
-    const tx = FeeMarketEIP1559Transaction.fromSerializedTx(Buffer.from(stripHexPrefix(transaction.tx), 'hex'));
+    const tx = Transaction.fromSerializedTx(Buffer.from(stripHexPrefix(transaction.tx), 'hex'));
     tx.getSenderAddress().toString().should.equal(mockDataNonBitGoRecovery.walletRootAddress);
     const jsonTx = tx.toJSON();
     jsonTx.to?.should.equal(mockDataNonBitGoRecovery.recoveryDestination);

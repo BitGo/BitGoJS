@@ -413,6 +413,8 @@ module.exports.nockEthLikeRecovery = function (bitgo, nockData = nockEthData) {
     nock('https://api.etherscan.io/v2').get('/api').query(data.params).reply(200, data.response);
     data.params[`chainid`] = '97';
     nock('https://api.etherscan.io/v2').get('/api').query(data.params).reply(200, data.response);
+    data.params[`chainid`] = '51';
+    nock('https://api.etherscan.io/v2').get('/api').query(data.params).reply(200, data.response);
   });
 };
 
