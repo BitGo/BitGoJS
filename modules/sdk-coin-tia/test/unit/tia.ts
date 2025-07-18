@@ -21,7 +21,7 @@ import {
   TEST_WITHDRAW_REWARDS_TX,
   wrwUser,
 } from '../resources/tia';
-import should = require('should');
+import should from 'should';
 import nock = require('nock');
 
 describe('TIA', function () {

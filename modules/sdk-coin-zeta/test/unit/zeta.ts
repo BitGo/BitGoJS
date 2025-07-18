@@ -20,7 +20,7 @@ import {
   mockAccountDetailsResponse,
   wrwUser,
 } from '../resources/zeta';
-import should = require('should');
+import should from 'should';
 import nock = require('nock');
 
 describe('Zeta', function () {
