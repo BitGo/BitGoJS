@@ -22,7 +22,7 @@ import {
   wrwUser,
 } from '../resources/tia';
 import should from 'should';
-import nock = require('nock');
+import nock from 'nock';
 
 describe('TIA', function () {
   let bitgo: TestBitGoAPI;

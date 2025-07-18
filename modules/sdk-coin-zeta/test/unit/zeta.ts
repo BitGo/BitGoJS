@@ -21,7 +21,7 @@ import {
   wrwUser,
 } from '../resources/zeta';
 import should from 'should';
-import nock = require('nock');
+import nock from 'nock';
 
 describe('Zeta', function () {
   let bitgo: TestBitGoAPI;
