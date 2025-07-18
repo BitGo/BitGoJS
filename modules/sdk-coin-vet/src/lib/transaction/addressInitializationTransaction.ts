@@ -134,7 +134,7 @@ export class AddressInitializationTransaction extends Transaction {
       this.gasPriceCoef = typeof body.gasPriceCoef === 'number' ? body.gasPriceCoef : 128;
       this.gas = typeof body.gas === 'number' ? body.gas : Number(body.gas) || 0;
       this.dependsOn = body.dependsOn || null;
-      this.nonce = typeof body.nonce === 'number' ? body.nonce : Number(body.nonce) || 0;
+      this.nonce = String(body.nonce);
       // Set data from clauses
       this.contract = body.clauses[0]?.to || '0x0';
       this.transactionData = body.clauses[0]?.data || '0x0';

@@ -15,7 +15,7 @@ export interface VetTransactionData {
   gasPriceCoef: number;
   gas: number;
   dependsOn: string | null;
-  nonce: number;
+  nonce: string;
   sender?: string;
   feePayer?: string;
   recipients?: TransactionRecipient[];

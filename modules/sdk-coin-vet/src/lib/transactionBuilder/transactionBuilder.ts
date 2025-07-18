@@ -22,7 +22,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   protected abstract get transactionType(): TransactionType;
 
-  getNonce(): number {
+  getNonce(): string {
     return this.transaction.nonce;
   }
 
@@ -72,7 +72,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this;
   }
 
-  nonce(n: number): this {
+  nonce(n: string): this {
     this.transaction.nonce = n;
     return this;
   }

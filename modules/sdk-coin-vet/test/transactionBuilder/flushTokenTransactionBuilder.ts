@@ -14,7 +14,7 @@ describe('Flush Token Transaction', () => {
       const transaction = new FlushTokenTransaction(coins.get('tvet'));
       const txBuilder = factory.getFlushTokenTransactionBuilder(transaction);
       txBuilder.gas(21000);
-      txBuilder.nonce(64248);
+      txBuilder.nonce('64248');
       txBuilder.blockRef('0x014ead140e77bbc1');
       txBuilder.expiration(64);
       txBuilder.gasPriceCoef(128);
@@ -23,7 +23,7 @@ describe('Flush Token Transaction', () => {
       txBuilder.forwarderVersion(4);
       const tx = (await txBuilder.build()) as FlushTokenTransaction;
       should.equal(tx.gas, 21000);
-      should.equal(tx.nonce, 64248);
+      should.equal(tx.nonce, '64248');
       should.equal(tx.expiration, 64);
       should.equal(tx.type, TransactionType.FlushTokens);
       should.equal(tx.blockRef, '0x014ead140e77bbc1');
@@ -40,7 +40,7 @@ describe('Flush Token Transaction', () => {
       const transaction = new FlushTokenTransaction(coins.get('tvet'));
       const txBuilder = factory.getFlushTokenTransactionBuilder(transaction);
       txBuilder.gas(21000);
-      txBuilder.nonce(64248);
+      txBuilder.nonce('64248');
       txBuilder.blockRef('0x014ead140e77bbc1');
       txBuilder.expiration(64);
       txBuilder.gasPriceCoef(128);
@@ -56,7 +56,7 @@ describe('Flush Token Transaction', () => {
       const transaction = new FlushTokenTransaction(coins.get('tvet'));
       const txBuilder = factory.getFlushTokenTransactionBuilder(transaction);
       txBuilder.gas(21000);
-      txBuilder.nonce(64248);
+      txBuilder.nonce('64248');
       txBuilder.blockRef('0x014ead140e77bbc1');
       txBuilder.expiration(64);
       txBuilder.gasPriceCoef(128);
@@ -66,7 +66,7 @@ describe('Flush Token Transaction', () => {
       const tx = (await txBuilder.build()) as FlushTokenTransaction;
 
       const toJson = tx.toJson();
-      should.equal(toJson.nonce, 64248);
+      should.equal(toJson.nonce, '64248');
       should.equal(toJson.gas, 21000);
       should.equal(toJson.gasPriceCoef, 128);
       should.equal(toJson.expiration, 64);

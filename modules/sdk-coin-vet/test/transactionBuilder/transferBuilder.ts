@@ -15,7 +15,7 @@ describe('Vet Transfer Transaction', () => {
         txBuilder.sender(testData.addresses.validAddresses[0]);
         txBuilder.recipients(testData.recipients);
         txBuilder.gas(21000);
-        txBuilder.nonce(64248);
+        txBuilder.nonce('64248');
         txBuilder.blockRef('0x014ead140e77bbc1');
         txBuilder.addFeePayerAddress(testData.feePayer.address);
         txBuilder.expiration(64);
@@ -26,7 +26,7 @@ describe('Vet Transfer Transaction', () => {
         should.equal(tx.recipients[0].amount, testData.recipients[0].amount);
         should.equal(tx.gas, 21000);
         should.equal(tx.getFee(), '315411764705882352');
-        should.equal(tx.nonce, 64248);
+        should.equal(tx.nonce, '64248');
         should.equal(tx.expiration, 64);
         should.equal(tx.type, TransactionType.Send);
         tx.inputs.length.should.equal(1);
@@ -48,7 +48,7 @@ describe('Vet Transfer Transaction', () => {
 
       it('should build and send a signed tx', async function () {
         const txBuilder = factory.from(testData.SPONSORED_TRANSACTION);
-        txBuilder.getNonce().should.equal(186037);
+        txBuilder.getNonce().should.equal('186037');
 
         const tx = (await txBuilder.build()) as Transaction;
         should.equal(tx.type, TransactionType.Send);
@@ -81,7 +81,7 @@ describe('Vet Transfer Transaction', () => {
         txBuilder.sender(testData.addresses.validAddresses[0]);
         txBuilder.recipients(testData.recipients);
         txBuilder.gas(21000);
-        txBuilder.nonce(64248);
+        txBuilder.nonce('64248');
         txBuilder.expiration(64);
         txBuilder.blockRef('0x014ead140e77bbc1');
         txBuilder.gasPriceCoef(128);
@@ -100,7 +100,7 @@ describe('Vet Transfer Transaction', () => {
         txBuilder.sender(testData.addresses.validAddresses[0]);
         txBuilder.recipients(testData.recipients);
         txBuilder.gas(21000);
-        txBuilder.nonce(64248);
+        txBuilder.nonce('64248');
         txBuilder.expiration(64);
         txBuilder.blockRef('0x014ead140e77bbc1');
         txBuilder.gasPriceCoef(128);
@@ -114,7 +114,7 @@ describe('Vet Transfer Transaction', () => {
             amount: testData.recipients[0].amount,
           },
         ]);
-        should.equal(toJson.nonce, 64248);
+        should.equal(toJson.nonce, '64248');
         should.equal(toJson.gas, 21000);
         should.equal(toJson.gasPriceCoef, 128);
         should.equal(toJson.expiration, 64);
@@ -133,7 +133,7 @@ describe('Vet Transfer Transaction', () => {
             amount: testData.AMOUNT.toString(),
           },
         ]);
-        should.equal(toJson.nonce, 186037);
+        should.equal(toJson.nonce, '186037');
         should.equal(toJson.gas, 21000);
         should.equal(toJson.gasPriceCoef, 128);
         should.equal(toJson.expiration, 64);
@@ -145,7 +145,7 @@ describe('Vet Transfer Transaction', () => {
         txBuilder.sender(testData.addresses.validAddresses[2]);
         txBuilder.recipients(testData.recipients);
         txBuilder.gas(21000);
-        txBuilder.nonce(64248);
+        txBuilder.nonce('64248');
         txBuilder.blockRef('0x014ead140e77bbc1');
         txBuilder.addFeePayerAddress(testData.feePayer.address);
         txBuilder.expiration(64);
