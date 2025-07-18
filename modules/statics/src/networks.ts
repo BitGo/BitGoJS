@@ -314,8 +314,8 @@ class AvalanchePTestnet extends Testnet implements AvalancheNetwork {
 class BinanceSmartChain extends Mainnet implements EthereumNetwork {
   name = 'BinanceSmartChain';
   family = CoinFamily.BSC;
-  explorerUrl = 'https://www.bscscan.com/tx/';
-  accountExplorerUrl = 'https://www.bscscan.com/address/';
+  explorerUrl = 'https://bscscan.com/tx/';
+  accountExplorerUrl = 'https://bscscan.com/address/';
   chainId = 56;
   nativeCoinOperationHashPrefix = '56';
   tokenOperationHashPrefix = '56-ERC20';
