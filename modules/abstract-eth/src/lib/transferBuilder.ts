@@ -126,7 +126,7 @@ export class TransferBuilder {
 
   setSignature(signature: string): TransferBuilder {
     this._signKey = null;
-    this._signature = signature;
+    this._signature = ethUtil.addHexPrefix(signature);
     return this;
   }
 
