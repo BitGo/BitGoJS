@@ -2,9 +2,13 @@ import { BaseCoin, BitGoBase, common, MPCAlgorithm, MultisigType, multisigTypes 
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import {
   AbstractEthLikeNewCoins,
+  EIP1559,
+  optionalDeps,
   recoveryBlockchainExplorerQuery,
+  ReplayProtectionOptions,
   VerifyEthTransactionOptions,
 } from '@bitgo/abstract-eth';
+import EthereumCommon from '@ethereumjs/common';
 import { TransactionBuilder } from './lib';
 
 export class Bsc extends AbstractEthLikeNewCoins {
@@ -38,6 +42,24 @@ export class Bsc extends AbstractEthLikeNewCoins {
   /** @inheritDoc */
   getMPCAlgorithm(): MPCAlgorithm {
     return 'ecdsa';
+  }
+
+  /** @inheritDoc */
+  getEthLikeCommon(eip1559?: EIP1559, replayProtectionOptions?: ReplayProtectionOptions): EthereumCommon {
+    const chainId = replayProtectionOptions?.chain
+      ? parseInt(replayProtectionOptions.chain as string, 10)
+      : this.getChainId();
+    // BSC uses a specific chain ID calculation for network ID: chainId * 2 + 35
+    const networkId = chainId;
+    return EthereumCommon.forCustomChain(
+      'mainnet',
+      {
+        name: 'bsc',
+        networkId: networkId,
+        chainId: chainId,
+      },
+      optionalDeps.EthCommon.Hardfork.Petersburg
+    );
   }
 
   async recoveryBlockchainExplorerQuery(query: Record<string, string>): Promise<Record<string, unknown>> {
