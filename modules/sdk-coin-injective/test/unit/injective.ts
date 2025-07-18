@@ -19,7 +19,7 @@ import {
   wrwUser,
 } from '../resources/injective';
 import should from 'should';
-import nock = require('nock');
+import nock from 'nock';
 
 describe('INJ', function () {
   let bitgo: TestBitGoAPI;
