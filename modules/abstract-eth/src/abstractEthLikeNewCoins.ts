@@ -42,6 +42,7 @@ import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
 import { bip32 } from '@bitgo/secp256k1';
 import {
   BaseCoin as StaticsBaseCoin,
+  CoinFeature,
   CoinMap,
   coins,
   EthereumNetwork as EthLikeNetwork,
@@ -50,12 +51,13 @@ import {
 import type * as EthLikeCommon from '@ethereumjs/common';
 import type * as EthLikeTxLib from '@ethereumjs/tx';
 import { FeeMarketEIP1559Transaction, Transaction as LegacyTransaction } from '@ethereumjs/tx';
+import { RLP } from '@ethereumjs/rlp';
 import { SignTypedDataVersion, TypedDataUtils, TypedMessage } from '@metamask/eth-sig-util';
 import { BigNumber } from 'bignumber.js';
 import BN from 'bn.js';
 import { randomBytes } from 'crypto';
 import debugLib from 'debug';
-import { addHexPrefix, stripHexPrefix } from 'ethereumjs-util';
+import { addHexPrefix, bufArrToArr, stripHexPrefix } from 'ethereumjs-util';
 import Keccak from 'keccak';
 import _ from 'lodash';
 import secp256k1 from 'secp256k1';
@@ -482,8 +484,8 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     replayProtectionOptions?: ReplayProtectionOptions
   ): EthLikeCommon.default {
     // if eip1559 params are specified, default to london hardfork, otherwise,
-    // default to tangerine whistle to avoid replay protection issues
-    const defaultHardfork = !!eip1559 ? 'london' : optionalDeps.EthCommon.Hardfork.TangerineWhistle;
+    // default to petersburg to avoid replay protection issues
+    const defaultHardfork = !!eip1559 ? 'london' : optionalDeps.EthCommon.Hardfork.Petersburg;
     const ethLikeCommon = AbstractEthLikeNewCoins.getCustomChainCommon(replayProtectionOptions?.chain as number);
     ethLikeCommon.setHardfork(replayProtectionOptions?.hardfork ?? defaultHardfork);
     return ethLikeCommon;
@@ -1108,6 +1110,15 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
 
     if (params.recoveryDestination === undefined || !this.isValidAddress(params.recoveryDestination)) {
       throw new Error('invalid recoveryDestination');
+    }
+
+    if (!this.staticsCoin?.features.includes(CoinFeature.EIP1559)) {
+      if (params.eip1559) {
+        throw new Error('Invalid fee params. EIP1559 not supported');
+      }
+      if (params.replayProtectionOptions?.hardfork === 'london') {
+        throw new Error('Invalid replayProtection options. Cannot use the hardfork "london" for this chain');
+      }
     }
   }
 
@@ -2034,7 +2045,6 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     let lastScanIndex = 0;
 
     for (let i = 0; i < req.length; i++) {
-      const MPC = new Ecdsa();
       const transaction = req[i]?.txRequest?.transactions?.[0]?.unsignedTx as unknown as UnsignedTransactionTss;
       if (!req[i].ovc || !req[i].ovc[0].ecdsaSignature) {
         throw new Error('Missing signature(s)');
@@ -2056,9 +2066,6 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
         s: shares[2],
         y: shares[3],
       } as unknown as ECDSAMethodTypes.Signature;
-      const signatureHex = Buffer.from(signature.toString(), 'hex');
-      const txBuilder = this.getTransactionBuilder(getCommon(this.getNetwork() as EthLikeNetwork));
-      txBuilder.from(transaction.serializedTxHex as string);
 
       if (!transaction.coinSpecific?.commonKeyChain) {
         throw new Error(`Missing common keychain for transaction at index ${i}`);
@@ -2071,29 +2078,23 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
         throw new Error(`Missing common key chain for transaction at index ${i}`);
       }
 
-      const derivationPath = transaction.derivationPath ?? 'm/0';
-      const derivedCommonKeyChain = MPC.deriveUnhardened(String(commonKeyChain), String(derivationPath));
-      const derivedPublicKey = new KeyPairLib({ pub: derivedCommonKeyChain.slice(0, 66) });
-      txBuilder.addSignature({ pub: derivedPublicKey.getKeys().pub }, signatureHex);
       const ethCommmon = AbstractEthLikeNewCoins.getEthLikeCommon(
         transaction.eip1559,
         transaction.replayProtectionOptions
       );
-      let unsignedTx;
+      let unsignedTx: EthLikeTxLib.FeeMarketEIP1559Transaction | EthLikeTxLib.Transaction;
       if (transaction.eip1559) {
-        unsignedTx = await FeeMarketEIP1559Transaction.fromSerializedTx(
-          Buffer.from(transaction.serializedTxHex, 'hex')
-        );
+        unsignedTx = FeeMarketEIP1559Transaction.fromSerializedTx(Buffer.from(transaction.serializedTxHex, 'hex'));
       } else {
-        unsignedTx = await LegacyTransaction.fromSerializedTx(Buffer.from(transaction.serializedTxHex, 'hex'));
+        unsignedTx = LegacyTransaction.fromSerializedTx(Buffer.from(transaction.serializedTxHex, 'hex'));
       }
       const signedTx = this.getSignedTxFromSignature(ethCommmon, unsignedTx, finalSignature);
       broadcastableTransactions.push({
         serializedTx: addHexPrefix(signedTx.serialize().toString('hex')),
       });
 
-      if (i === req.length - 1 && transaction.coinSpecific!.lastScanIndex) {
-        lastScanIndex = transaction.coinSpecific!.lastScanIndex as number;
+      if (i === req.length - 1 && transaction.coinSpecific?.lastScanIndex) {
+        lastScanIndex = transaction.coinSpecific?.lastScanIndex as number;
       }
     }
 
@@ -2112,11 +2113,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     if (!_.isUndefined(params.derivationSeed) && typeof params.derivationSeed !== 'string') {
       throw new Error('invalid derivationSeed');
     }
-    if (
-      _.isUndefined(params.bitgoDestinationAddress) ||
-      typeof params.bitgoDestinationAddress !== 'string' ||
-      !this.isValidAddress(params.bitgoDestinationAddress)
-    ) {
+    if (_.isUndefined(params.recoveryDestination) || !this.isValidAddress(params.recoveryDestination)) {
       throw new Error('missing or invalid destinationAddress');
     }
   }
@@ -2125,17 +2122,19 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
    * Helper function for recover()
    * This transforms the unsigned transaction information into a format the BitGo offline vault expects
    * @param {UnformattedTxInfo} txInfo - tx info
-   * @param {EthLikeTxLib.Transaction | EthLikeTxLib.FeeMarketEIP1559Transaction} ethTx - the ethereumjs tx object
+   * @param {LegacyTransaction | FeeMarketEIP1559Transaction} ethTx - the ethereumjs tx object
    * @param {string} derivationPath - the derivationPath
    * @param {number} nonce - the nonce of the backup key address
    * @param {Buffer} gasPrice - gas price for the tx
    * @param {number} gasLimit - gas limit for the tx
    * @param {EIP1559} eip1559 - eip1559 params
+   * @param replayProtectionOptions
+   * @param commonKeyChain
    * @returns {Promise<OfflineVaultTxInfo>}
    */
   private buildTxRequestForOfflineVaultMPCv2(
     txInfo: UnformattedTxInfo,
-    ethTx: EthLikeTxLib.Transaction | EthLikeTxLib.FeeMarketEIP1559Transaction,
+    ethTx: LegacyTransaction | FeeMarketEIP1559Transaction,
     derivationPath: string,
     nonce: number,
     gasPrice: Buffer,
@@ -2154,7 +2153,10 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
 
     const unsignedTx: UnsignedTransactionTss = {
       serializedTxHex: ethTx.serialize().toString('hex'),
-      signableHex: ethTx.getMessageToSign(false).toString('hex'),
+      signableHex:
+        ethTx instanceof FeeMarketEIP1559Transaction
+          ? ethTx.getMessageToSign(false).toString('hex')
+          : Buffer.from(RLP.encode(bufArrToArr(ethTx.getMessageToSign(false)))).toString('hex'),
       derivationPath: derivationPath,
       feeInfo: {
         fee: fee,
@@ -2194,8 +2196,8 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
   }
 
   private async buildTssRecoveryTxn(baseAddress: string, gasPrice: any, gasLimit: any, params: RecoverOptions) {
-    const nonce = await this.getAddressNonce(baseAddress, params.apiKey);
     const txAmount = await this.validateBalanceAndGetTxAmount(baseAddress, gasPrice, gasLimit, params.apiKey);
+    const nonce = await this.getAddressNonce(baseAddress, params.apiKey);
     const recipients = [
       {
         address: params.recoveryDestination,

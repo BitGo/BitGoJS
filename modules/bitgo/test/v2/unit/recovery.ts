@@ -1383,13 +1383,18 @@ describe('Recovery:', function () {
           walletPassphrase: ethLikeDKLSKeycard.walletPassphrase,
           eip1559: {
             maxPriorityFeePerGas: 3,
-            maxFeePerGas: 20,
+            maxFeePerGas: 20000000000,
           },
           isTss: true,
           replayProtectionOptions: {
             chain: chain,
           },
         };
+
+        if (coin === 'tbsc') {
+          recoveryParams.eip1559 = undefined;
+          recoveryParams['gasPrice'] = 20000000000;
+        }
 
         const recovery = await basecoin.recover(recoveryParams);
 
@@ -1404,7 +1409,7 @@ describe('Recovery:', function () {
         finalTx.common.chainIdBN().toNumber().should.equal(chain);
         baseAddress.should.equal(senderAddress);
         recoveryParams.recoveryDestination.should.equal(finalTx.to?.toString());
-        Number(finalTx.value).should.equal(999999999990000000);
+        Number(finalTx.value).should.equal(990000000000000000);
       }
     });
 
