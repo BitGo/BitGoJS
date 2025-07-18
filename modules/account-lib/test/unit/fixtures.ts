@@ -1,26 +1,22 @@
 import { BaseCoin } from '@bitgo/statics';
-import {
-  BaseMessage,
-  BaseMessageBuilder,
-  BaseMessageBuilderFactory,
-  IMessage,
-  IMessageBuilder,
-  MessageOptions,
-  MessageStandardType,
-} from '@bitgo/sdk-core';
+import * as sdkCore from '@bitgo/sdk-core';
+import type { IMessage, IMessageBuilder, MessageOptions } from '@bitgo/sdk-core';
+const { BaseMessage, BaseMessageBuilder, BaseMessageBuilderFactory, MessageStandardType } = sdkCore;
+
+type MessageStandardTypeValue = (typeof MessageStandardType)[keyof typeof MessageStandardType];
 
 export class MockMessageBuilderFactory extends BaseMessageBuilderFactory {
   constructor(coinConfig: Readonly<BaseCoin>) {
     super(coinConfig);
   }
 
-  getMessageBuilder(type: MessageStandardType): IMessageBuilder {
+  getMessageBuilder(type: MessageStandardTypeValue): IMessageBuilder {
     return new MockMessageBuilder(this.coinConfig, type);
   }
 }
 
 export class MockMessageBuilder extends BaseMessageBuilder {
-  constructor(coinConfig: Readonly<BaseCoin>, type: MessageStandardType = MessageStandardType.UNKNOWN) {
+  constructor(coinConfig: Readonly<BaseCoin>, type: MessageStandardTypeValue = MessageStandardType.UNKNOWN) {
     super(coinConfig, type);
   }
 
