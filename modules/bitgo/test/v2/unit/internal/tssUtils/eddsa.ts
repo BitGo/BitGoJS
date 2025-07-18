@@ -6,34 +6,35 @@ import * as should from 'should';
 import * as sinon from 'sinon';
 
 import { TestableBG, TestBitGo } from '@bitgo/sdk-test';
-import { BitGo } from '../../../../../src/bitgo';
+import { BitGo } from '../../../../../src';
 import {
+  BaseCoin,
+  CommitmentShareRecord,
+  CommitmentType,
   common,
+  createSharedDataProof,
+  Ed25519BIP32,
+  Eddsa,
+  EncryptedSignerShareType,
+  ExchangeCommitmentResponse,
   Keychain,
+  KeyShare,
   RequestTracer,
+  RequestType,
   SignatureShareRecord,
   SignatureShareType,
   TssUtils,
   TxRequest,
   Wallet,
-  Eddsa,
-  KeyShare,
-  Ed25519BIP32,
-  createSharedDataProof,
-  CommitmentShareRecord,
-  CommitmentType,
-  ExchangeCommitmentResponse,
-  EncryptedSignerShareType,
-  BaseCoin,
 } from '@bitgo/sdk-core';
 import { createWalletSignatures } from '../../tss/helpers';
 import {
-  nockSendSignatureShare,
-  nockGetTxRequest,
   nockCreateTxRequest,
   nockDeleteSignatureShare,
-  nockSendTxRequest,
   nockExchangeCommitments,
+  nockGetTxRequest,
+  nockSendSignatureShare,
+  nockSendTxRequest,
 } from './common';
 
 openpgp.config.rejectCurves = new Set();
@@ -719,6 +720,113 @@ describe('TSS Utils:', async function () {
         reqId,
       });
       signedTxRequest.unsignedTxs.should.deepEqual(txRequest.unsignedTxs);
+
+      sandbox.verifyAndRestore();
+    });
+  });
+
+  describe('signTxRequestForMessage:', function () {
+    const txRequestId = 'randomid-abc';
+    const messageRaw = 'hello world';
+    const messageEncoded = Buffer.from(`${messageRaw}`).toString('hex');
+    const bufferToSign = Buffer.from(messageEncoded, 'hex');
+    const txRequest: TxRequest = {
+      txRequestId,
+      transactions: [],
+      messages: [
+        {
+          state: 'pendingSignature',
+          signatureShares: [],
+          messageRaw,
+          messageEncoded,
+          derivationPath: 'm/0',
+        },
+      ],
+      unsignedTxs: [],
+      date: new Date().toISOString(),
+      intent: {
+        intentType: 'payment',
+      },
+      latest: true,
+      state: 'pendingUserSignature',
+      walletType: 'hot',
+      walletId: 'walletId',
+      policiesChecked: true,
+      version: 1,
+      userId: 'userId',
+      apiVersion: 'full',
+    };
+
+    beforeEach(async function () {
+      const rShare = validUserSignShare.rShares[3];
+      const signatureShare: SignatureShareRecord = {
+        from: SignatureShareType.USER,
+        to: SignatureShareType.BITGO,
+        share: rShare.r + rShare.R,
+      };
+
+      await nockSendSignatureShare({
+        walletId: wallet.id(),
+        txRequestId: txRequest.txRequestId,
+        signatureShare,
+        requestType: RequestType.message,
+        apiMode: 'full',
+      });
+
+      const signatureShare2: SignatureShareRecord = {
+        from: SignatureShareType.BITGO,
+        to: SignatureShareType.USER,
+        share: validBitgoToUserSignShare.rShares[1].r + validBitgoToUserSignShare.rShares[1].R,
+      };
+      txRequest.messages![0].signatureShares.push(signatureShare2);
+      const response = { txRequests: [{ ...txRequest, apiVersion: 'full' }] };
+      await nockGetTxRequest({ walletId: wallet.id(), txRequestId: txRequest.txRequestId, response });
+
+      const bitgoToUserCommitmentShare: CommitmentShareRecord = {
+        from: SignatureShareType.BITGO,
+        to: SignatureShareType.USER,
+        type: CommitmentType.COMMITMENT,
+        share: validBitgoToUserSignShare.rShares[1].commitment,
+      };
+      const exchangeCommitResponse: ExchangeCommitmentResponse = { commitmentShare: bitgoToUserCommitmentShare };
+      await nockExchangeCommitments({
+        walletId: wallet.id(),
+        txRequestId: txRequest.txRequestId,
+        response: exchangeCommitResponse,
+        apiMode: 'full',
+      });
+    });
+
+    afterEach(async function () {
+      txRequest.messages![0].signatureShares = [];
+    });
+
+    it('signTxRequest should succeed with txRequest object as input', async function () {
+      const signedTxRequest = await tssUtils.signTxRequestForMessage({
+        messageRaw,
+        bufferToSign,
+        txRequest,
+        prv: JSON.stringify(validUserSigningMaterial),
+        reqId,
+      });
+      signedTxRequest.messages!.should.deepEqual(txRequest.messages);
+
+      sandbox.verifyAndRestore();
+    });
+
+    it('signTxRequest should succeed with txRequest id as input', async function () {
+      const getTxRequest = sandbox.stub(tssUtils, 'getTxRequest');
+      getTxRequest.resolves(txRequest);
+      getTxRequest.calledWith(txRequestId);
+
+      const signedTxRequest = await tssUtils.signTxRequestForMessage({
+        txRequest: txRequestId,
+        prv: JSON.stringify(validUserSigningMaterial),
+        reqId,
+        messageRaw,
+        bufferToSign,
+      });
+      signedTxRequest.messages!.should.deepEqual(txRequest.messages);
 
       sandbox.verifyAndRestore();
     });

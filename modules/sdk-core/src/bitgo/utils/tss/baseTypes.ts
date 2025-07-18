@@ -355,9 +355,12 @@ export type TxRequest = {
     signatureShares: SignatureShareRecord[];
     messageRaw: string;
     messageEncoded?: string;
+    messageBroadcastable?: string;
+    messageStandardType?: MessageStandardType;
     derivationPath: string;
     combineSigShare?: string;
     txHash?: string;
+    commitmentShares?: CommitmentShareRecord[];
   }[];
   apiVersion?: TxRequestVersion;
   latest: boolean;

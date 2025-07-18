@@ -130,6 +130,7 @@ export async function createUserSignShare(signablePayload: Buffer, pShare: PShar
  * @param {SignShare} userSignShare - the User Sign Share
  * @param {SignatureShareRecord} bitgoToUserRShare - the Bitgo to User RShare
  * @param {YShare} backupToUserYShare - the backup key Y share received during wallet creation
+ * @param {YShare} bitgoToUserYShare - the Bitgo to User YShare
  * @param {Buffer} signablePayload - the signable payload from a tx
  * @param {CommitmentShareRecord} [bitgoToUserCommitment] - the Bitgo to User Commitment
  * @returns {Promise<GShare>} - the User to Bitgo GShare
@@ -193,8 +194,10 @@ export async function createUserToBitGoGShare(
  * @param {String} txRequestId - the txRequest Id
  * @param {SignShare} userSignShare - the user Sign Share
  * @param {String} encryptedSignerShare - signer share encrypted to bitgo key
+ * @param {String} apiMode - the api mode, defaults to 'lite'
  * @returns {Promise<void>}
  * @param {IRequestTracer} reqId - the request tracer request id
+ * @param {RequestType} requestType - the request type, defaults to RequestType.tx
  */
 export async function offerUserToBitgoRShare(
   bitgo: BitGoBase,
@@ -203,7 +206,8 @@ export async function offerUserToBitgoRShare(
   userSignShare: SignShare,
   encryptedSignerShare: string,
   apiMode: 'full' | 'lite' = 'lite',
-  reqId?: IRequestTracer
+  reqId?: IRequestTracer,
+  requestType: RequestType = RequestType.tx
 ): Promise<void> {
   const rShare: RShare = userSignShare.rShares[ShareKeyPosition.BITGO];
   if (_.isNil(rShare)) {
@@ -218,13 +222,12 @@ export async function offerUserToBitgoRShare(
     share: rShare.r + rShare.R,
   };
 
-  // TODO (BG-57944): implement message signing for EDDSA
   await sendSignatureShare(
     bitgo,
     walletId,
     txRequestId,
     signatureShare,
-    RequestType.tx,
+    requestType,
     encryptedSignerShare,
     'eddsa',
     apiMode,
@@ -240,19 +243,26 @@ export async function offerUserToBitgoRShare(
  * @param {String} walletId - the wallet id
  * @param {String} txRequestId - the txRequest Id
  * @param {IRequestTracer} reqId - the request tracer request id
+ * @param {RequestType} requestType - the request type, defaults to RequestType.tx
  * @returns {Promise<SignatureShareRecord>} - a Signature Share
  */
 export async function getBitgoToUserRShare(
   bitgo: BitGoBase,
   walletId: string,
   txRequestId: string,
-  reqId?: IRequestTracer
+  reqId?: IRequestTracer,
+  requestType: RequestType = RequestType.tx
 ): Promise<SignatureShareRecord> {
   const txRequest = await getTxRequest(bitgo, walletId, txRequestId, reqId);
   let signatureShares;
   if (txRequest.apiVersion === 'full') {
-    assert(txRequest.transactions, 'transactions required as part of txRequest');
-    signatureShares = txRequest.transactions[0].signatureShares;
+    if (requestType === RequestType.tx) {
+      assert(txRequest.transactions, 'transactions required as part of txRequest');
+      signatureShares = txRequest.transactions[0].signatureShares;
+    } else if (requestType === RequestType.message) {
+      assert(txRequest.messages, 'messages required as part of txRequest');
+      signatureShares = txRequest.messages[0].signatureShares;
+    }
   } else {
     signatureShares = txRequest.signatureShares;
   }
@@ -276,7 +286,9 @@ export async function getBitgoToUserRShare(
  * @param {String} walletId - the wallet id
  * @param {String} txRequestId - the txRequest Id
  * @param {GShare} userToBitgoGShare - the User to Bitgo GShare
+ * @param {String} apiMode - the api mode, defaults to 'lite'
  * @param {IRequestTracer} reqId - the request tracer request id
+ * @param {RequestType} requestType - the request type, defaults to RequestType.tx
  * @returns {Promise<void>}
  */
 export async function sendUserToBitgoGShare(
@@ -285,7 +297,8 @@ export async function sendUserToBitgoGShare(
   txRequestId: string,
   userToBitgoGShare: GShare,
   apiMode: 'full' | 'lite' = 'lite',
-  reqId?: IRequestTracer
+  reqId?: IRequestTracer,
+  requestType: RequestType = RequestType.tx
 ): Promise<void> {
   if (userToBitgoGShare.i !== ShareKeyPosition.USER) {
     throw new Error('Invalid GShare, doesnt belong to the User');
@@ -296,13 +309,12 @@ export async function sendUserToBitgoGShare(
     share: userToBitgoGShare.R + userToBitgoGShare.gamma,
   };
 
-  // TODO (BG-57944): implement message signing for EDDSA
   await sendSignatureShare(
     bitgo,
     walletId,
     txRequestId,
     signatureShare,
-    RequestType.tx,
+    requestType,
     undefined,
     'eddsa',
     apiMode,
