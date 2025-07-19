@@ -54,7 +54,7 @@ export interface IDrawKeyCard {
   keyCardImage?: HTMLImageElement;
   qrData: QrData;
   questions: FAQ[];
-  walletLabel: string;
+  walletLabel?: string;
   curve?: KeyCurve;
 }
 

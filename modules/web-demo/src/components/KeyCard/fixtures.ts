@@ -112,7 +112,7 @@ export async function downloadKeycardForDKLsTSS() {
   });
 }
 
-export async function downloadKeycardForHotLtcWallet() {
+export async function downloadKeycardForHotLtcWallet(walletLabel = '') {
   const userKeychain: Keychain = {
     id: '63e107b5ef7bba0007145e41065b26a6',
     pub: 'xpub661MyMwAqRbcFXFJ8wZhWjEiFg9wM89UamPyP3XsnEHg2VJ4m7wE7ALLszakPiEEy5cH9FCAvCrx1cL6rLE6jewaa1ubP8DjqsDtP4R7w5g',
@@ -142,7 +142,7 @@ export async function downloadKeycardForHotLtcWallet() {
     passcodeEncryptionCode: '654321',
     passphrase: 'test_wallet_passphrase',
     userKeychain,
-    walletLabel: 'Hot LTC Wallet',
+    walletLabel,
   });
 }
 

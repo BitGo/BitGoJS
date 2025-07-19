@@ -15,11 +15,13 @@ export async function generateKeycard(params: GenerateKeycardParams): Promise<vo
     const questions = generateFaq(params.coin.fullName);
     const qrData = generateQrData(params);
     const keycard = await drawKeycard({ ...params, questions, qrData });
-    keycard.save(`BitGo Keycard for ${params.walletLabel}.pdf`);
+    const label = params.walletLabel || params.coin.fullName;
+    keycard.save(`BitGo Keycard for ${label}.pdf`);
   } else if ('curve' in params) {
     const data = generateParamsForKeyCreation(params);
     const keycard = await drawKeycard(data);
-    keycard.save(`BitGo Keycard for ${params.walletLabel}.pdf`);
+    const label = params.walletLabel || params.curve;
+    keycard.save(`BitGo Keycard for ${label}.pdf`);
   } else {
     throw new Error('Either curve or coin must be provided');
   }

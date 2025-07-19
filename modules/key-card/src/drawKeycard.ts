@@ -149,12 +149,20 @@ export async function drawKeycard({
   const date = new Date().toDateString();
   y = moveDown(y, margin);
   doc.setFontSize(font.body).setTextColor(color.gray);
-  const title = curve ? KeyCurveName[curve] + ' key:' : 'wallet named:';
-  doc.text('Created on ' + date + ' for ' + title, left(0), y);
-  // copy
-  y = moveDown(y, 25);
-  doc.setFontSize(font.subheader).setTextColor(color.black);
-  doc.text(walletLabel, left(0), y);
+
+  if (curve || walletLabel) {
+    const title = curve ? KeyCurveName[curve] + ' key:' : 'wallet named:';
+    doc.text('Created on ' + date + ' for ' + title, left(0), y);
+    // copy
+    y = moveDown(y, 25);
+    if (walletLabel) {
+      doc.setFontSize(font.subheader).setTextColor(color.black);
+      doc.text(walletLabel, left(0), y);
+    }
+  } else {
+    doc.text('Created on ' + date, left(0), y);
+    y = moveDown(y, 25);
+  }
   if (!curve) {
     // Red Bar
     y = moveDown(y, 20);
