@@ -27,7 +27,7 @@ export class Transaction extends BaseTransaction {
   private _gasPriceCoef: number;
   private _gas: number;
   private _dependsOn: string | null;
-  private _nonce: number;
+  private _nonce: string;
   private _sender: string;
   private _senderSignature: Buffer | null;
   private _feePayerAddress: string;
@@ -43,7 +43,7 @@ export class Transaction extends BaseTransaction {
     this._gasPriceCoef = 128;
     this._gas = 0;
     this._dependsOn = null;
-    this._nonce = 0x0;
+    this._nonce = String(0);
     this._recipients = [];
     this._senderSignature = null;
     this._feePayerSignature = null;
@@ -174,11 +174,11 @@ export class Transaction extends BaseTransaction {
     this._dependsOn = dep;
   }
 
-  get nonce(): number {
+  get nonce(): string {
     return this._nonce;
   }
 
-  set nonce(n: number) {
+  set nonce(n: string) {
     this._nonce = n;
   }
 
@@ -278,7 +278,7 @@ export class Transaction extends BaseTransaction {
       this.gasPriceCoef = typeof body.gasPriceCoef === 'number' ? body.gasPriceCoef : 128;
       this.gas = typeof body.gas === 'number' ? body.gas : Number(body.gas) || 0;
       this.dependsOn = body.dependsOn || null;
-      this.nonce = typeof body.nonce === 'number' ? body.nonce : Number(body.nonce) || 0;
+      this.nonce = String(body.nonce);
       // Set recipients from clauses
       this.recipients = body.clauses.map((clause) => ({
         address: (clause.to || '0x0').toString().toLowerCase(),

@@ -13,7 +13,7 @@ describe('Address Initialisation Transaction', () => {
       const transaction = new AddressInitializationTransaction(coins.get('tvet'));
       const txBuilder = factory.getAddressInitializationBuilder(transaction);
       txBuilder.gas(21000);
-      txBuilder.nonce(64248);
+      txBuilder.nonce('64248');
       txBuilder.blockRef('0x014ead140e77bbc1');
       txBuilder.expiration(64);
       txBuilder.gasPriceCoef(128);
@@ -24,7 +24,7 @@ describe('Address Initialisation Transaction', () => {
       txBuilder.salt(testData.SALT);
       const tx = (await txBuilder.build()) as AddressInitializationTransaction;
       should.equal(tx.gas, 21000);
-      should.equal(tx.nonce, 64248);
+      should.equal(tx.nonce, '64248');
       should.equal(tx.expiration, 64);
       should.equal(tx.type, TransactionType.AddressInitialization);
       should.equal(tx.blockRef, '0x014ead140e77bbc1');
@@ -42,7 +42,7 @@ describe('Address Initialisation Transaction', () => {
       const transaction = new AddressInitializationTransaction(coins.get('tvet'));
       const txBuilder = factory.getAddressInitializationBuilder(transaction);
       txBuilder.gas(21000);
-      txBuilder.nonce(64248);
+      txBuilder.nonce('64248');
       txBuilder.blockRef('0x014ead140e77bbc1');
       txBuilder.addFeePayerAddress(testData.feePayer.address);
       txBuilder.expiration(64);
@@ -61,7 +61,7 @@ describe('Address Initialisation Transaction', () => {
       const transaction = new AddressInitializationTransaction(coins.get('tvet'));
       const txBuilder = factory.getAddressInitializationBuilder(transaction);
       txBuilder.gas(21000);
-      txBuilder.nonce(64248);
+      txBuilder.nonce('64248');
       txBuilder.blockRef('0x014ead140e77bbc1');
       txBuilder.addFeePayerAddress(testData.feePayer.address);
       txBuilder.expiration(64);
@@ -74,7 +74,7 @@ describe('Address Initialisation Transaction', () => {
 
       const tx = (await txBuilder.build()) as Transaction;
       const toJson = tx.toJson();
-      should.equal(toJson.nonce, 64248);
+      should.equal(toJson.nonce, '64248');
       should.equal(toJson.gas, 21000);
       should.equal(toJson.gasPriceCoef, 128);
       should.equal(toJson.expiration, 64);
