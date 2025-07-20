@@ -1,10 +1,8 @@
-import { TransactionBuilderFactory, Transaction } from '../../src';
-import { coins } from '@bitgo/statics';
-import * as testData from '../resources/vet';
 import should from 'should';
 import { TransactionType } from '@bitgo/sdk-core';
-
-import { AddressInitializationTransaction } from '../../src/lib/transaction/addressInitializationTransaction';
+import { coins } from '@bitgo/statics';
+import * as testData from '../resources/vet';
+import { TransactionBuilderFactory, Transaction, AddressInitializationTransaction } from '../../src';
 
 describe('Address Initialisation Transaction', () => {
   const factory = new TransactionBuilderFactory(coins.get('tvet'));

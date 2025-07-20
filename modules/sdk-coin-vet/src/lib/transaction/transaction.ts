@@ -363,7 +363,7 @@ export class Transaction extends BaseTransaction {
     const transactionBody: TransactionBody = {
       chainTag: this.chainTag,
       blockRef: this.blockRef,
-      expiration: 64, //move this value to constants
+      expiration: this.expiration,
       clauses: this.clauses,
       gasPriceCoef: this.gasPriceCoef,
       gas: this.gas,
@@ -371,7 +371,7 @@ export class Transaction extends BaseTransaction {
       nonce: this.nonce,
     };
 
-    if (this.type === TransactionType.Send) {
+    if (this.type === TransactionType.Send || this.type === TransactionType.SendToken) {
       transactionBody.reserved = {
         features: 1, // mark transaction as delegated i.e. will use gas payer
       };
