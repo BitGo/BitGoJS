@@ -101,7 +101,7 @@ describe('Vet Transfer Transaction', () => {
         txBuilder.recipients(testData.recipients);
         txBuilder.gas(21000);
         txBuilder.nonce('64248');
-        txBuilder.expiration(64);
+        txBuilder.expiration(400);
         txBuilder.blockRef('0x014ead140e77bbc1');
         txBuilder.gasPriceCoef(128);
         txBuilder.addFeePayerAddress(testData.feePayer.address);
@@ -117,7 +117,7 @@ describe('Vet Transfer Transaction', () => {
         should.equal(toJson.nonce, '64248');
         should.equal(toJson.gas, 21000);
         should.equal(toJson.gasPriceCoef, 128);
-        should.equal(toJson.expiration, 64);
+        should.equal(toJson.expiration, 400);
         should.equal(toJson.feePayer, testData.feePayer.address);
       });
 
