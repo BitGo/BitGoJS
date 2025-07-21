@@ -1,8 +1,8 @@
-import { TransactionBuilderFactory, Transaction } from '../../src';
-import { coins } from '@bitgo/statics';
-import * as testData from '../resources/vet';
 import should from 'should';
 import { TransactionType } from '@bitgo/sdk-core';
+import { coins } from '@bitgo/statics';
+import { TransactionBuilderFactory, Transaction } from '../../src';
+import * as testData from '../resources/vet';
 
 describe('Vet Transfer Transaction', () => {
   const factory = new TransactionBuilderFactory(coins.get('tvet'));

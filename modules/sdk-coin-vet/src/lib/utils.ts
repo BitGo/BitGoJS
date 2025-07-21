@@ -1,8 +1,20 @@
-import { BaseUtils, TransactionType } from '@bitgo/sdk-core';
-import { v4CreateForwarderMethodId, flushForwarderTokensMethodIdV4 } from '@bitgo/abstract-eth';
-import { VET_ADDRESS_LENGTH, VET_BLOCK_ID_LENGTH, VET_TRANSACTION_ID_LENGTH } from './constants';
-import { KeyPair } from './keyPair';
 import { HexUInt, Transaction, TransactionClause } from '@vechain/sdk-core';
+import EthereumAbi from 'ethereumjs-abi';
+import { addHexPrefix, BN } from 'ethereumjs-util';
+import { BaseUtils, TransactionRecipient, TransactionType } from '@bitgo/sdk-core';
+import {
+  v4CreateForwarderMethodId,
+  flushForwarderTokensMethodIdV4,
+  getRawDecoded,
+  getBufferedByteCode,
+} from '@bitgo/abstract-eth';
+import {
+  TRANSFER_TOKEN_METHOD_ID,
+  VET_ADDRESS_LENGTH,
+  VET_BLOCK_ID_LENGTH,
+  VET_TRANSACTION_ID_LENGTH,
+} from './constants';
+import { KeyPair } from './keyPair';
 
 export class Utils implements BaseUtils {
   isValidAddress(address: string): boolean {
@@ -64,9 +76,34 @@ export class Utils implements BaseUtils {
       return TransactionType.AddressInitialization;
     } else if (clauses[0].data.startsWith(flushForwarderTokensMethodIdV4)) {
       return TransactionType.FlushTokens;
+    } else if (clauses[0].data.startsWith(TRANSFER_TOKEN_METHOD_ID)) {
+      return TransactionType.SendToken;
     } else {
       return TransactionType.SendToken;
     }
+  }
+
+  getTransferTokenData(toAddress: string, amountWei: string): string {
+    const methodName = 'transfer';
+    const types = ['address', 'uint256'];
+    const params = [toAddress, new BN(amountWei)];
+
+    const method = EthereumAbi.methodID(methodName, types);
+    const args = EthereumAbi.rawEncode(types, params);
+
+    return addHexPrefix(Buffer.concat([method, args]).toString('hex'));
+  }
+
+  decodeTransferTokenData(data: string): TransactionRecipient {
+    const [address, amount] = getRawDecoded(
+      ['address', 'uint256'],
+      getBufferedByteCode(TRANSFER_TOKEN_METHOD_ID, data)
+    );
+    const recipientAddress = addHexPrefix(address.toString()).toLowerCase();
+    return {
+      address: recipientAddress,
+      amount: amount.toString(),
+    };
   }
 }
 

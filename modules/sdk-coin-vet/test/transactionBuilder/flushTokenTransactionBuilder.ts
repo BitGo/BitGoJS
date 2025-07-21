@@ -1,10 +1,8 @@
-import { TransactionBuilderFactory } from '../../src';
-import { coins } from '@bitgo/statics';
 import should from 'should';
+import { coins } from '@bitgo/statics';
 import { TransactionType } from '@bitgo/sdk-core';
-
+import { TransactionBuilderFactory, FlushTokenTransaction } from '../../src';
 import * as testData from '../resources/vet';
-import { FlushTokenTransaction } from '../../src/lib/transaction/flushTokenTransaction';
 
 describe('Flush Token Transaction', () => {
   const factory = new TransactionBuilderFactory(coins.get('tvet'));

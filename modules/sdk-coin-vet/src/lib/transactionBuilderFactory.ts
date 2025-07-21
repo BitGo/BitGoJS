@@ -9,6 +9,8 @@ import { Transaction } from './transaction/transaction';
 import utils from './utils';
 import { AddressInitializationTransaction } from './transaction/addressInitializationTransaction';
 import { FlushTokenTransaction } from './transaction/flushTokenTransaction';
+import { TokenTransactionBuilder } from './transactionBuilder/tokenTransactionBuilder';
+import { TokenTransaction } from './transaction/tokenTransaction';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -33,6 +35,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           const flushTokenTx = new FlushTokenTransaction(this._coinConfig);
           flushTokenTx.fromDeserializedSignedTransaction(signedTx);
           return this.getFlushTokenTransactionBuilder(flushTokenTx);
+        case TransactionType.SendToken:
+          const tokenTransferTx = new TokenTransaction(this._coinConfig);
+          tokenTransferTx.fromDeserializedSignedTransaction(signedTx);
+          return this.getTokenTransactionBuilder(tokenTransferTx);
         default:
           throw new InvalidTransactionError('Invalid transaction type');
       }
@@ -52,6 +58,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getFlushTokenTransactionBuilder(tx?: FlushTokenTransaction): FlushTokenTransactionBuilder {
     return this.initializeBuilder(tx, new FlushTokenTransactionBuilder(this._coinConfig));
+  }
+
+  getTokenTransactionBuilder(tx?: Transaction): TokenTransactionBuilder {
+    return this.initializeBuilder(tx, new TokenTransactionBuilder(this._coinConfig));
   }
 
   /** @inheritdoc */
