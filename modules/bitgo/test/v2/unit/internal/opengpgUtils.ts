@@ -1,11 +1,11 @@
 import * as openpgp from 'openpgp';
-import * as should from 'should';
+import should from 'should';
 import * as crypto from 'crypto';
 import assert from 'assert';
 
 import { openpgpUtils } from '@bitgo/sdk-core';
 import { ecc as secp256k1 } from '@bitgo/utxo-lib';
-import * as sinon from 'sinon';
+import sinon from 'sinon';
 
 import sodium from 'libsodium-wrappers-sumo';
 
