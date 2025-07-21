@@ -6,6 +6,7 @@ import {
   ACCOUNT_COIN_DEFAULT_FEATURES,
   ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE,
   CELO_TOKEN_FEATURES,
+  COSMOS_SIDECHAIN_FEATURES,
 } from './coinFeatures';
 
 /**
@@ -148,6 +149,9 @@ export interface Nep141TokenConstructorOptions extends AccountConstructorOptions
 
 export interface VetTokenConstructorOptions extends AccountConstructorOptions {
   contractAddress: string;
+}
+export interface CosmosTokenConstructorOptions extends AccountConstructorOptions {
+  denom: string;
 }
 
 export interface ContractAddress extends String {
@@ -624,6 +628,22 @@ export class VetToken extends AccountCoinToken {
       ...options,
     });
     this.contractAddress = options.contractAddress;
+  }
+}
+
+/**
+ * Cosmos network supports tokens
+ * Cosmos tokens work similar to native coins, but the token is determined by
+ * the denom on chain.
+ *
+ */
+export class CosmosChainToken extends AccountCoinToken {
+  public denom: string;
+  constructor(options: CosmosTokenConstructorOptions) {
+    super({
+      ...options,
+    });
+    this.denom = options.denom;
   }
 }
 
@@ -3204,4 +3224,53 @@ export function tvetToken(
   network: AccountNetwork = Networks.test.vet
 ) {
   return vetToken(id, name, fullName, decimalPlaces, contractAddress, asset, features, prefix, suffix, network);
+}
+
+/**
+ * Factory function for Cosmos chain token instances.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param denom denomination of this token which will act as a unique identifier for the token on chain
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param network Network (mainnet or testnet) for this token
+ * @param baseUnit Base unit of this token (native asset)
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param features Features of this coin. Defaults to the COSMOS_SIDECHAIN_FEATURES defined in `coinFeatures.ts`
+ * @param prefix Optional token prefix. Defaults to empty string
+ * @param suffix Optional token suffix. Defaults to token name.
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function cosmosToken(
+  id: string,
+  name: string,
+  fullName: string,
+  denom: string,
+  decimalPlaces: number,
+  network: AccountNetwork,
+  baseUnit: BaseUnit,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = COSMOS_SIDECHAIN_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
+) {
+  return Object.freeze(
+    new CosmosChainToken({
+      id,
+      name,
+      fullName,
+      denom,
+      decimalPlaces,
+      network,
+      baseUnit,
+      asset,
+      features,
+      prefix,
+      suffix,
+      primaryKeyCurve,
+      isToken: true,
+    })
+  );
 }
