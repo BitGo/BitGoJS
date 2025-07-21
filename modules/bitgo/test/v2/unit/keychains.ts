@@ -91,6 +91,7 @@ describe('V2 Keychains', function () {
         n.asset !== UnderlyingAsset.ASI &&
         n.asset !== UnderlyingAsset.SONIC &&
         n.asset !== UnderlyingAsset.SEIEVM &&
+        n.asset !== UnderlyingAsset.KAIA &&
         coinFamilyValues.includes(n.name)
     );
 

@@ -221,6 +221,9 @@ const mainnetBase: EnvironmentTemplate = {
     seievm: {
       baseUrl: 'https://evm-rpc.sei-apis.com',
     },
+    kaia: {
+      baseUrl: 'https://public-en.node.kaia.io',
+    },
   },
   icpNodeUrl: 'https://ic0.app',
   worldExplorerBaseUrl: 'https://worldscan.org/',
@@ -314,6 +317,9 @@ const testnetBase: EnvironmentTemplate = {
     },
     seievm: {
       baseUrl: 'https://evm-rpc-testnet.sei-apis.com',
+    },
+    kaia: {
+      baseUrl: 'https://public-en-kairos.node.kaia.io',
     },
   },
   stxNodeUrl: 'https://api.testnet.hiro.so',

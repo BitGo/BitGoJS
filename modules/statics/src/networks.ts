@@ -1354,6 +1354,24 @@ class SonicTestnet extends Testnet implements EthereumNetwork {
   nativeCoinOperationHashPrefix = '57054';
 }
 
+class Kaia extends Mainnet implements EthereumNetwork {
+  name = 'Kaia';
+  family = CoinFamily.KAIA;
+  explorerUrl = 'https://kaiascan.io/tx/';
+  accountExplorerUrl = 'https://kaiascan.io/address/';
+  chainId = 8217;
+  nativeCoinOperationHashPrefix = '8217';
+}
+
+class KaiaTestnet extends Testnet implements EthereumNetwork {
+  name = 'KaiaTestnet';
+  family = CoinFamily.KAIA;
+  explorerUrl = 'https://kairos.kaiascan.io/tx/';
+  accountExplorerUrl = 'https://kairos.kaiascan.io/address/';
+  chainId = 1001;
+  nativeCoinOperationHashPrefix = '1001';
+}
+
 class Xdc extends Mainnet implements EthereumNetwork {
   name = 'XdcChain';
   family = CoinFamily.XDC;
@@ -1674,6 +1692,7 @@ export const Networks = {
     initia: Object.freeze(new Initia()),
     injective: Object.freeze(new Injective()),
     islm: Object.freeze(new Islm()),
+    kaia: Object.freeze(new Kaia()),
     kava: Object.freeze(new Kava()),
     lnbtc: Object.freeze(new LightningBitcoin()),
     litecoin: Object.freeze(new Litecoin()),
@@ -1788,6 +1807,7 @@ export const Networks = {
     stt: Object.freeze(new SomniaTestnet()),
     soneium: Object.freeze(new SoneiumTestnet()),
     sonic: Object.freeze(new SonicTestnet()),
+    kaia: Object.freeze(new KaiaTestnet()),
     susd: Object.freeze(new SUSDTestnet()),
     coreum: Object.freeze(new CoreumTestnet()),
     tao: Object.freeze(new BittensorTestnet()),

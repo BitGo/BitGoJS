@@ -1400,6 +1400,26 @@ export const coins = CoinMap.fromCoins([
     [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK]
   ),
   account(
+    'd92cbc11-0135-4304-bc10-7cdf82543880',
+    'kaia',
+    'Kaia',
+    Networks.main.kaia,
+    18,
+    UnderlyingAsset.KAIA,
+    BaseUnit.ETH,
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK]
+  ),
+  account(
+    'f6be6f3d-ebac-49fc-8c73-e5b1fc115778',
+    'tkaia',
+    'Kaia Testnet',
+    Networks.test.kaia,
+    18,
+    UnderlyingAsset.KAIA,
+    BaseUnit.ETH,
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK]
+  ),
+  account(
     '251b78df-90c5-4ff5-b07a-8cc23f27c5ff',
     'soneium',
     'Soneium',
