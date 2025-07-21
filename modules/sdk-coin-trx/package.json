@@ -14,7 +14,7 @@
     "prepare": "npm run build-ts && shx cp -r ./resources ./dist",
     "test": "npm run coverage",
     "coverage": "nyc -- npm run unit-test",
-    "unit-test": "yarn run build && npx glob 'dist/test/**/*.js' | xargs node --test",
+    "unit-test": "yarn run build && node --test dist/test/**/*.js",
     "gen-protobuf": "pbjs -t static-module -w commonjs -o ./resources/protobuf/tron.js ./resources/protobuf/Discover.proto ./resources/protobuf/Contract.proto ./resources/protobuf/tron.proto",
     "gen-protobufts": "pbts -o ./resources/protobuf/tron.d.ts ./resources/protobuf/tron.js"
   },
@@ -62,7 +62,6 @@
   "devDependencies": {
     "@bitgo/sdk-api": "^1.65.0",
     "@bitgo/sdk-test": "^8.0.96",
-    "glob": "^11.0.3",
     "shx": "^0.3.4"
   },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c"
