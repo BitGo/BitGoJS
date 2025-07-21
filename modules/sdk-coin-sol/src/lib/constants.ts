@@ -9,6 +9,13 @@ export const STAKE_ACCOUNT_RENT_EXEMPT_AMOUNT = 2282880;
 
 export const UNAVAILABLE_TEXT = 'UNAVAILABLE';
 
+export const JITO_STAKE_POOL_ADDRESS = 'Jito4APyf642JPZPx3hGc6WWJ8zPKtRbRs4P815Awbb';
+export const JITOSOL_MINT_ADDRESS = 'J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn';
+export const JITO_STAKE_POOL_RESERVE_ACCOUNT = 'BgKUXdS29YcHCFrPm5M8oLHiTzZaMDjsebggjoaQ6KFL';
+export const JITO_STAKE_POOL_RESERVE_ACCOUNT_TESTNET = 'rrWBQqRqBXYZw3CmPCCcjFxQ2Ds4JFJd7oRQJ997dhz';
+export const JITO_MANAGER_FEE_ACCOUNT = 'feeeFLLsam6xZJFc6UQFrHqkvVt4jfmVvi2BRLkUZ4i';
+export const JITO_MANAGER_FEE_ACCOUNT_TESTNET = 'DH7tmjoQ5zjqcgfYJU22JqmXhP5EY1tkbYpgVWUS2oNo';
+
 // Sdk instructions, mainly to check decoded types.
 export enum ValidInstructionTypesEnum {
   AdvanceNonceAccount = 'AdvanceNonceAccount',
@@ -30,6 +37,7 @@ export enum ValidInstructionTypesEnum {
   SetPriorityFee = 'SetPriorityFee',
   MintTo = 'MintTo',
   Burn = 'Burn',
+  DepositSol = 'DepositSol',
 }
 
 // Internal instructions types
@@ -72,6 +80,7 @@ export const VALID_SYSTEM_INSTRUCTION_TYPES: ValidInstructionTypes[] = [
   ValidInstructionTypesEnum.SetPriorityFee,
   ValidInstructionTypesEnum.MintTo,
   ValidInstructionTypesEnum.Burn,
+  ValidInstructionTypesEnum.DepositSol,
 ];
 
 /** Const to check the order of the Wallet Init instructions when decode */
@@ -94,6 +103,12 @@ export const marinadeStakingActivateInstructionsIndexes = {
   Create: 0,
   Initialize: 1,
   Memo: 2,
+} as const;
+
+/** Const to check the order of the Jito Staking Activate instructions when decode */
+export const jitoStakingActivateInstructionsIndexes = {
+  AtaInit: 0,
+  DepositSol: 1,
 } as const;
 
 /** Const to check the order of the Staking Authorize instructions when decode */

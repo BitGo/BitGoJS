@@ -12,6 +12,9 @@ import {
   TOKEN_2022_PROGRAM_ID,
 } from '@solana/spl-token';
 import BigNumber from 'bignumber.js';
+import { coins } from '@bitgo/statics';
+
+const COIN_CONFIG = coins.get('tsol');
 
 describe('Instruction Builder Tests: ', function () {
   describe('Succeed ', function () {
@@ -22,7 +25,7 @@ describe('Instruction Builder Tests: ', function () {
         params: { memo },
       };
 
-      const result = solInstructionFactory(memoParams);
+      const result = solInstructionFactory(memoParams, COIN_CONFIG);
       should.deepEqual(result, [
         new TransactionInstruction({
           keys: [],
@@ -41,7 +44,7 @@ describe('Instruction Builder Tests: ', function () {
         params: { fromAddress, toAddress, amount },
       };
 
-      const result = solInstructionFactory(transferParams);
+      const result = solInstructionFactory(transferParams, COIN_CONFIG);
       should.deepEqual(result, [
         SystemProgram.transfer({
           fromPubkey: new PublicKey(fromAddress),
@@ -59,7 +62,7 @@ describe('Instruction Builder Tests: ', function () {
         params: { walletNonceAddress, authWalletAddress },
       };
 
-      const result = solInstructionFactory(nonceAdvanceParams);
+      const result = solInstructionFactory(nonceAdvanceParams, COIN_CONFIG);
       should.deepEqual(result, [
         SystemProgram.nonceAdvance({
           noncePubkey: new PublicKey(walletNonceAddress),
@@ -78,7 +81,7 @@ describe('Instruction Builder Tests: ', function () {
         params: { fromAddress, nonceAddress, authAddress, amount },
       };
 
-      const result = solInstructionFactory(createNonceAccountParams);
+      const result = solInstructionFactory(createNonceAccountParams, COIN_CONFIG);
       should.deepEqual(
         result,
         SystemProgram.createNonceAccount({
@@ -106,7 +109,7 @@ describe('Instruction Builder Tests: ', function () {
         },
       };
 
-      const result = solInstructionFactory(createATAParams);
+      const result = solInstructionFactory(createATAParams, COIN_CONFIG);
       should.deepEqual(result, [
         createAssociatedTokenAccountInstruction(
           new PublicKey(payerAddress),
@@ -136,7 +139,7 @@ describe('Instruction Builder Tests: ', function () {
         },
       };
 
-      const result = solInstructionFactory(transferParams);
+      const result = solInstructionFactory(transferParams, COIN_CONFIG);
       should.deepEqual(result, [
         createTransferCheckedInstruction(
           new PublicKey(sourceAddress),
@@ -169,7 +172,7 @@ describe('Instruction Builder Tests: ', function () {
         },
       };
 
-      const result = solInstructionFactory(mintParams);
+      const result = solInstructionFactory(mintParams, COIN_CONFIG);
       should.deepEqual(result, [
         createMintToInstruction(
           new PublicKey(mintAddress),
@@ -201,7 +204,7 @@ describe('Instruction Builder Tests: ', function () {
         },
       };
 
-      const result = solInstructionFactory(mintParams);
+      const result = solInstructionFactory(mintParams, COIN_CONFIG);
       should.deepEqual(result, [
         createMintToInstruction(
           new PublicKey(mintAddress),
@@ -234,7 +237,7 @@ describe('Instruction Builder Tests: ', function () {
         },
       };
 
-      const result = solInstructionFactory(burnParams);
+      const result = solInstructionFactory(burnParams, COIN_CONFIG);
       should.deepEqual(result, [
         createBurnInstruction(
           new PublicKey(accountAddress),
@@ -266,7 +269,7 @@ describe('Instruction Builder Tests: ', function () {
         },
       };
 
-      const result = solInstructionFactory(burnParams);
+      const result = solInstructionFactory(burnParams, COIN_CONFIG);
       should.deepEqual(result, [
         createBurnInstruction(
           new PublicKey(accountAddress),
@@ -297,7 +300,7 @@ describe('Instruction Builder Tests: ', function () {
         },
       };
 
-      const result = solInstructionFactory(mintParams);
+      const result = solInstructionFactory(mintParams, COIN_CONFIG);
       should.deepEqual(result, [
         createMintToInstruction(
           new PublicKey(mintAddress),
@@ -326,7 +329,7 @@ describe('Instruction Builder Tests: ', function () {
         },
       };
 
-      const result = solInstructionFactory(burnParams);
+      const result = solInstructionFactory(burnParams, COIN_CONFIG);
       should.deepEqual(result, [
         createBurnInstruction(
           new PublicKey(accountAddress),
@@ -341,7 +344,7 @@ describe('Instruction Builder Tests: ', function () {
   describe('Fail ', function () {
     it('Invalid type', () => {
       // @ts-expect-error Testing for an invalid type, should throw error
-      should(() => solInstructionFactory({ type: 'random', params: {} })).throwError(
+      should(() => solInstructionFactory({ type: 'random', params: {} }, COIN_CONFIG)).throwError(
         'Invalid instruction type or not supported'
       );
     });
