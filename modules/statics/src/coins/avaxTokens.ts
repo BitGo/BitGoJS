@@ -64,7 +64,8 @@ export const avaxTokens = [
     'Colony Avalanche Index',
     18,
     '0x48f88a3fe843ccb0b5003e70b4192c1d7448bef0',
-    UnderlyingAsset['avaxc:cai']
+    UnderlyingAsset['avaxc:cai'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   avaxErc20(
     '55d38f23-ed66-43b8-838c-e9df316c0140',
