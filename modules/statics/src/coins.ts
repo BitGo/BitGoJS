@@ -2319,6 +2319,18 @@ export const coins = CoinMap.fromCoins([
     '',
     Networks.test.holesky
   ),
+  erc721(
+    '30d034ae-41fd-4da2-bbb2-05fe1e301108',
+    'erc721:unsteth',
+    'Lido: stETH Withdrawal NFT',
+    '0x889edc2edab5f40e902b864ad4d7ade8e412f9b1'
+  ),
+  terc721(
+    '05ce9121-45e0-4e9c-941b-1aa95bedfcc5',
+    'terc721:unsteth',
+    'Test Lido: stETH Withdrawal NFT',
+    '0xc7cc160b58f8bb0bac94b80847e2cf2800565c50'
+  ),
   terc721(
     'e795fc78-b8a7-47a1-8294-5ecbe8a74c3a',
     'terc721:bitgoerc721',

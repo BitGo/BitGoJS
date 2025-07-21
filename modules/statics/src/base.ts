@@ -2585,6 +2585,10 @@ export enum UnderlyingAsset {
   'tsoneium:test721' = 'tsoneium:test721',
   'tsoneium:test1155' = 'tsoneium:test1155',
 
+  // Lido ETH NFTs
+  'erc721:unsteth' = 'erc721:unsteth',
+  'terc721:unsteth' = 'terc721:unsteth',
+
   // coredao mainnet tokens
   'coredao:stcore' = 'coredao:stcore',
 
