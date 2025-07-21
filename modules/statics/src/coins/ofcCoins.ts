@@ -900,6 +900,14 @@ export const ofcCoins = [
     UnderlyingAsset['sol:benji'],
     SOL_TOKEN_FEATURES
   ),
+  ofcsolToken(
+    'deaf138b-b1f7-476d-8de6-a268d56b8b0b',
+    'ofcsol:usd1',
+    'World Liberty Financial USD (USD1)',
+    6,
+    UnderlyingAsset['sol:usd1'],
+    SOL_TOKEN_FEATURES
+  ),
   tofcsolToken(
     '24d678cf-e0f0-4cde-a338-d754289c5b27',
     'ofctsol:slnd',
