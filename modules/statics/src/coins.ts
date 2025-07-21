@@ -1387,7 +1387,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.SONIC,
     BaseUnit.ETH,
-    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK]
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK, CoinFeature.EVM_COMPATIBLE_IMS]
   ),
   account(
     'b150906d-f3e0-4e81-859d-c33d92c73afb',
@@ -1397,7 +1397,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.SONIC,
     BaseUnit.ETH,
-    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK]
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK, CoinFeature.EVM_COMPATIBLE_IMS]
   ),
   account(
     '251b78df-90c5-4ff5-b07a-8cc23f27c5ff',
