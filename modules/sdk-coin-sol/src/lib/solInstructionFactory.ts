@@ -20,7 +20,15 @@ import {
 } from '@solana/web3.js';
 import assert from 'assert';
 import BigNumber from 'bignumber.js';
-import { InstructionBuilderTypes, MEMO_PROGRAM_PK } from './constants';
+import {
+  InstructionBuilderTypes,
+  JITO_MANAGER_FEE_ACCOUNT,
+  JITO_MANAGER_FEE_ACCOUNT_TESTNET,
+  JITO_STAKE_POOL_RESERVE_ACCOUNT,
+  JITO_STAKE_POOL_RESERVE_ACCOUNT_TESTNET,
+  JITOSOL_MINT_ADDRESS,
+  MEMO_PROGRAM_PK,
+} from './constants';
 import {
   AtaClose,
   AtaInit,
@@ -40,6 +48,7 @@ import {
   SetPriorityFee,
 } from './iface';
 import { getSolTokenFromTokenName } from './utils';
+import { depositSolInstructions } from './jitoStakePoolOperations';
 
 /**
  * Construct Solana instructions from instructions params
@@ -239,30 +248,59 @@ function createNonceAccountInstruction(data: WalletInit): TransactionInstruction
  */
 function stakingInitializeInstruction(data: StakingActivate): TransactionInstruction[] {
   const {
-    params: { fromAddress, stakingAddress, amount, validator, isMarinade },
+    params: { fromAddress, stakingAddress, amount, validator, isMarinade, isJito, isTestnet },
   } = data;
   assert(fromAddress, 'Missing fromAddress param');
   assert(stakingAddress, 'Missing stakingAddress param');
   assert(amount, 'Missing amount param');
   assert(validator, 'Missing validator param');
   assert(isMarinade !== undefined, 'Missing isMarinade param');
+  assert(isJito !== undefined, 'Missing isJito param');
+  assert([isMarinade, isJito].filter((x) => x).length <= 1, 'At most one of isMarinade and isJito can be true');
 
   const fromPubkey = new PublicKey(fromAddress);
   const stakePubkey = new PublicKey(stakingAddress);
   const validatorPubkey = new PublicKey(validator);
   const tx = new Transaction();
 
-  const stakerPubkey = isMarinade ? validatorPubkey : fromPubkey;
-  const walletInitStaking = StakeProgram.createAccount({
-    fromPubkey,
-    stakePubkey,
-    authorized: new Authorized(stakerPubkey, fromPubkey), // staker and withdrawer
-    lockup: new Lockup(0, 0, fromPubkey), // No minimum epoch to withdraw
-    lamports: new BigNumber(amount).toNumber(),
-  });
-  tx.add(walletInitStaking);
+  if (isJito) {
+    const stakePoolMint = new PublicKey(JITOSOL_MINT_ADDRESS);
+    const stakePoolReserveStake = new PublicKey(
+      isTestnet ? JITO_STAKE_POOL_RESERVE_ACCOUNT_TESTNET : JITO_STAKE_POOL_RESERVE_ACCOUNT
+    );
+    const stakePoolManagerFeeAccount = new PublicKey(
+      isTestnet ? JITO_MANAGER_FEE_ACCOUNT_TESTNET : JITO_MANAGER_FEE_ACCOUNT
+    );
+    const instructions = depositSolInstructions(
+      {
+        stakePoolAddress: stakePubkey,
+        from: fromPubkey,
+        lamports: BigInt(amount),
+      },
+      stakePoolMint,
+      stakePoolReserveStake,
+      stakePoolManagerFeeAccount
+    );
+    tx.add(...instructions);
+  } else if (isMarinade) {
+    const walletInitStaking = StakeProgram.createAccount({
+      fromPubkey,
+      stakePubkey,
+      authorized: new Authorized(validatorPubkey, fromPubkey), // staker and withdrawer
+      lockup: new Lockup(0, 0, fromPubkey), // No minimum epoch to withdraw
+      lamports: new BigNumber(amount).toNumber(),
+    });
+    tx.add(walletInitStaking);
+  } else {
+    const walletInitStaking = StakeProgram.createAccount({
+      fromPubkey,
+      stakePubkey,
+      authorized: new Authorized(fromPubkey, fromPubkey), // staker and withdrawer
+      lockup: new Lockup(0, 0, fromPubkey), // No minimum epoch to withdraw
+      lamports: new BigNumber(amount).toNumber(),
+    });
+    tx.add(walletInitStaking);
 
-  if (!isMarinade) {
     const delegateStaking = StakeProgram.delegate({
       stakePubkey: new PublicKey(stakingAddress),
       authorizedPubkey: new PublicKey(fromAddress),

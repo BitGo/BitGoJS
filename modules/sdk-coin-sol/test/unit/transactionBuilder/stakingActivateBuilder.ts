@@ -4,6 +4,7 @@ import * as testData from '../../resources/sol';
 import { getBuilderFactory } from '../getBuilderFactory';
 import { KeyPair, Utils, Transaction } from '../../../src';
 import { coins } from '@bitgo/statics';
+import { JITO_STAKE_POOL_ADDRESS, JITOSOL_MINT_ADDRESS } from '../../../src/lib/constants';
 
 describe('Sol Staking Activate Builder', () => {
   const factory = getBuilderFactory('tsol');
@@ -77,6 +78,7 @@ describe('Sol Staking Activate Builder', () => {
             amount: amount,
             validator: validator.pub,
             isMarinade: true,
+            isJito: false,
           },
         },
       ]);
@@ -91,6 +93,58 @@ describe('Sol Staking Activate Builder', () => {
       should.equal(Utils.isValidRawTransaction(rawTx), true);
       should.equal(rawTx, testData.MARINADE_STAKING_ACTIVATE_SIGNED_TX);
       factory.from(testData.MARINADE_STAKING_ACTIVATE_SIGNED_TX);
+      const coin = coins.get('tsol');
+      const tx2 = new Transaction(coin);
+      tx2.fromRawTransaction(rawTx);
+    });
+
+    it('Jito: build a create staking signed tx', async () => {
+      const txBuilder = factory.getStakingActivateBuilder();
+      txBuilder
+        .amount(amount)
+        .sender(wallet.pub)
+        .stakingAddress(JITO_STAKE_POOL_ADDRESS)
+        .validator(JITO_STAKE_POOL_ADDRESS)
+        .isJito(true)
+        .nonce(recentBlockHash);
+      txBuilder.sign({ key: wallet.prv });
+      const tx = await txBuilder.build();
+      const txJson = tx.toJson();
+      txJson.instructionsData.should.deepEqual([
+        {
+          type: 'CreateAssociatedTokenAccount',
+          params: {
+            ataAddress: '2vJrx2Bn7PifLZDRaSCpphE9WtZsx1k43SRyiQDhE1As',
+            mintAddress: JITOSOL_MINT_ADDRESS,
+            ownerAddress: wallet.pub,
+            payerAddress: wallet.pub,
+            tokenName: 'sol:jitosol',
+          },
+        },
+        {
+          type: 'Activate',
+          params: {
+            fromAddress: wallet.pub,
+            stakingAddress: JITO_STAKE_POOL_ADDRESS,
+            amount: amount,
+            validator: JITO_STAKE_POOL_ADDRESS,
+            isMarinade: false,
+            isJito: true,
+            isTestnet: true,
+          },
+        },
+      ]);
+      tx.inputs.length.should.equal(1);
+      tx.inputs[0].should.deepEqual({
+        address: wallet.pub,
+        value: amount,
+        coin: 'tsol',
+      });
+      tx.outputs.length.should.equal(1);
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(Utils.isValidRawTransaction(rawTx), true);
+      should.equal(rawTx, testData.JITO_STAKING_ACTIVATE_SIGNED_TX);
+      factory.from(testData.JITO_STAKING_ACTIVATE_SIGNED_TX);
       const coin = coins.get('tsol');
       const tx2 = new Transaction(coin);
       tx2.fromRawTransaction(rawTx);
@@ -154,6 +208,7 @@ describe('Sol Staking Activate Builder', () => {
             amount: amount,
             validator: validator.pub,
             isMarinade: true,
+            isJito: false,
           },
         },
       ]);
@@ -215,6 +270,7 @@ describe('Sol Staking Activate Builder', () => {
             amount: amount,
             validator: validator.pub,
             isMarinade: true,
+            isJito: false,
           },
         },
       ]);
@@ -279,6 +335,7 @@ describe('Sol Staking Activate Builder', () => {
             amount: amount,
             validator: validator.pub,
             isMarinade: true,
+            isJito: false,
           },
         },
       ]);
