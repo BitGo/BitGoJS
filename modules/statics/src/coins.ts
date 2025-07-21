@@ -73,7 +73,6 @@ import { vetTokens } from './coins/vetTokens';
 import {
   ADA_FEATURES_WITH_FRANKFURT,
   ALGO_FEATURES,
-  APECHAIN_FEATURES,
   APT_FEATURES,
   ARBETH_FEATURES,
   ATOM_FEATURES,
@@ -1221,7 +1220,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.APECHAIN,
     BaseUnit.ETH,
-    APECHAIN_FEATURES
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK, CoinFeature.EVM_COMPATIBLE_IMS]
   ),
   account(
     'b3610694-f960-4ef4-a714-c3cb9e02f4b6',
@@ -1231,7 +1230,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.APECHAIN,
     BaseUnit.ETH,
-    APECHAIN_FEATURES
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK, CoinFeature.EVM_COMPATIBLE_IMS]
   ),
   account(
     '0cdd9089-9ca6-41ea-ab2b-20211da4ac06',
@@ -1327,7 +1326,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.PHRS,
     BaseUnit.ETH,
-    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK]
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK, CoinFeature.EVM_COMPATIBLE_IMS]
   ),
   account(
     '06b62cc0-1ab1-4473-8d14-c86f31e0b224',
@@ -1337,7 +1336,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.PHRS,
     BaseUnit.ETH,
-    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK]
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK, CoinFeature.EVM_COMPATIBLE_IMS]
   ),
   account(
     '7255f4f0-afd5-4521-9ae4-198e2e0c516c',
@@ -1347,7 +1346,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.CTC,
     BaseUnit.ETH,
-    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK]
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK, CoinFeature.EVM_COMPATIBLE_IMS]
   ),
   account(
     '25740604-3bcb-4171-8fbe-e4a20c2c98bb',
@@ -1357,7 +1356,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.CTC,
     BaseUnit.ETH,
-    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK]
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK, CoinFeature.EVM_COMPATIBLE_IMS]
   ),
   account(
     'e907fdbd-2c5d-45d6-b622-9da38937da73',
@@ -1367,7 +1366,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.HYPEEVM,
     BaseUnit.ETH,
-    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK]
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK, CoinFeature.EVM_COMPATIBLE_IMS]
   ),
   account(
     'e0500947-1105-404c-af52-765b1cb2a7c1',
@@ -1377,7 +1376,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.HYPEEVM,
     BaseUnit.ETH,
-    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK]
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK, CoinFeature.EVM_COMPATIBLE_IMS]
   ),
   account(
     '23e7eca6-e862-4bc5-bf4f-65eeb8174171',
