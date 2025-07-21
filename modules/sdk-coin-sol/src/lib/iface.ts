@@ -2,6 +2,7 @@ import { TransactionExplanation as BaseTransactionExplanation, Recipient } from 
 import { DecodedCloseAccountInstruction } from '@solana/spl-token';
 import { Blockhash, StakeInstructionType, SystemInstructionType, TransactionSignature } from '@solana/web3.js';
 import { InstructionBuilderTypes } from './constants';
+import { StakePoolInstructionType } from '@solana/spl-stake-pool';
 
 // TODO(STLX-9890): Add the interfaces for validityWindow and SequenceId
 export interface SolanaKeys {
@@ -86,6 +87,8 @@ export interface StakingActivate {
     amount: string;
     validator: string;
     isMarinade?: boolean;
+    isJito?: boolean;
+    isTestnet?: boolean;
   };
 }
 
@@ -149,6 +152,7 @@ export interface AtaClose {
 export type ValidInstructionTypes =
   | SystemInstructionType
   | StakeInstructionType
+  | StakePoolInstructionType
   | 'Memo'
   | 'InitializeAssociatedTokenAccount'
   | 'CloseAssociatedTokenAccount'
