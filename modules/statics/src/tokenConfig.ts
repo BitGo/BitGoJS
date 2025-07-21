@@ -355,6 +355,7 @@ function getErc20TokenConfig(coin: Erc20Coin): Erc20TokenConfig {
       baseCoin = 'gteth';
       break;
     case Networks.test.holesky.name:
+    case Networks.test.hoodi.name:
       baseCoin = 'hteth';
       break;
     default:
