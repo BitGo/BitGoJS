@@ -363,7 +363,7 @@ export class Transaction extends BaseTransaction {
     const transactionBody: TransactionBody = {
       chainTag: this.chainTag,
       blockRef: this.blockRef,
-      expiration: 64, //move this value to constants
+      expiration: this.expiration,
       clauses: this.clauses,
       gasPriceCoef: this.gasPriceCoef,
       gas: this.gas,
