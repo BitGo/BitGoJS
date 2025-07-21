@@ -3593,6 +3593,17 @@ export const coins = CoinMap.fromCoins([
     'archax.com',
     UnderlyingAsset['xrp:aau']
   ),
+  xrpToken(
+    '69f31128-7f1c-4714-b0a5-7b93866a88e8',
+    'xrp:fiuaxrp',
+    'Archax',
+    15,
+    'rKCu4CucpepQ6N89c8T5GuX2jkxzCST18Q',
+    '4649554158525000000000000000000000000000',
+    'rKCu4CucpepQ6N89c8T5GuX2jkxzCST18Q::4649554158525000000000000000000000000000',
+    'archax.com',
+    UnderlyingAsset['xrp:fiuaxrp']
+  ),
   txrpToken(
     '80cbaecf-b1ea-4811-97ae-213c1ffc9175',
     'txrp:xsgd',
@@ -3758,6 +3769,18 @@ export const coins = CoinMap.fromCoins([
     'CETUS',
     '0x06864a6f921804860930db6ddbe2e16acdf8504495ea7481637a1c8b9a8fe54b::cetus::CETUS',
     UnderlyingAsset['sui:cetus'],
+    SUI_TOKEN_FEATURES
+  ),
+  suiToken(
+    '377bb66c-c6bd-4406-9844-01b279f7dad2',
+    'sui:xmn',
+    'xMoney',
+    9,
+    '0x97c7571f4406cdd7a95f3027075ab80d3e9c937c2a567690d31e14ab1872ccee',
+    'xmn',
+    'XMN',
+    '0x97c7571f4406cdd7a95f3027075ab80d3e9c937c2a567690d31e14ab1872ccee::xmn::XMN',
+    UnderlyingAsset['sui:xmn'],
     SUI_TOKEN_FEATURES
   ),
   suiToken(

@@ -2776,6 +2776,7 @@ export enum UnderlyingAsset {
   'xrp:vgbp' = 'xrp:vgbp',
   'xrp:solo' = 'xrp:solo',
   'xrp:aau' = 'xrp:aau',
+  'xrp:fiuaxrp' = 'xrp:fiuaxrp',
   // XRP testnet tokens
   'txrp:xsgd' = 'txrp:xsgd',
 
@@ -2794,6 +2795,7 @@ export enum UnderlyingAsset {
   'sui:send' = 'sui:send',
   'sui:cetus' = 'sui:cetus',
   'sui:wal' = 'sui:wal',
+  'sui:xmn' = 'sui:xmn',
 
   // Sui testnet tokens
   'tsui:deep' = 'tsui:deep',

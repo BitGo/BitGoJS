@@ -1014,6 +1014,7 @@ export const ofcCoins = [
   ofcXrpToken('54c3a5df-ad9f-42a9-82fc-ef8617ec6ebf', 'ofcxrp:vgbp', 'VNX Pound', 15, UnderlyingAsset['xrp:vgbp']),
   ofcXrpToken('1813238c-8cc5-4b79-9959-793c5c220b1d', 'ofcxrp:solo', 'Sologenic', 15, UnderlyingAsset['xrp:solo']),
   ofcXrpToken('4c875336-64dc-427b-bde7-eb25e2f20272', 'ofcxrp:aau', 'Archax', 15, UnderlyingAsset['xrp:aau']),
+  ofcXrpToken('2744ab2a-f7e6-4606-aed1-11d7dffca18e', 'ofcxrp:fiuaxrp', 'FIUAXRP', 15, UnderlyingAsset['xrp:fiuaxrp']),
   tofcXrpToken('0c22d8ef-4c27-4088-bd3d-eb76484d5edf', 'ofctxrp:xsgd', 'XSGB', 15, UnderlyingAsset['txrp:xsgd']),
   ofcArbethErc20(
     'df2296e6-366e-4707-bab0-bf16ce592601',
