@@ -1,6 +1,6 @@
-import * as assert from 'assert';
+import assert from 'assert';
 import { TestBitGo } from '@bitgo/sdk-test';
-import * as nock from 'nock';
+import nock from 'nock';
 import { BaseCoin, PendingApprovalData, State, Type } from '@bitgo/sdk-core';
 import {
   CreateInvoiceBody,

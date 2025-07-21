@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 
-import * as nock from 'nock';
+import nock from 'nock';
 import fixtures from '../../fixtures/staking/stakingWallet';
 
 import { Enterprise, Environments, Keychain, Keychains, StakingWallet, Wallet } from '@bitgo/sdk-core';

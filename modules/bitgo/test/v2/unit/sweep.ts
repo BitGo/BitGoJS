@@ -1,4 +1,4 @@
-import * as nock from 'nock';
+import nock from 'nock';
 
 import { Environments, Wallet } from '@bitgo/sdk-core';
 import { TestableBG, TestBitGo } from '@bitgo/sdk-test';

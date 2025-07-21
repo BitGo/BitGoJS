@@ -1,5 +1,5 @@
 import * as should from 'should';
-import * as nock from 'nock';
+import nock from 'nock';
 
 import { mockSerializedChallengeWithProofs, TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src';
