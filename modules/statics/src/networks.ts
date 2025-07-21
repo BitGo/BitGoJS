@@ -1372,6 +1372,24 @@ class KaiaTestnet extends Testnet implements EthereumNetwork {
   nativeCoinOperationHashPrefix = '1001';
 }
 
+class Irys extends Mainnet implements EthereumNetwork {
+  name = 'Irys';
+  family = CoinFamily.IRYS;
+  explorerUrl = ''; //WIN-6191 add mainnet url when available
+  accountExplorerUrl = ''; //WIN-6191 add mainnet url when available
+  chainId = 1270; //WIN-6191 add mainnet id when available
+  nativeCoinOperationHashPrefix = '1270';
+}
+
+class IrysTestnet extends Testnet implements EthereumNetwork {
+  name = 'IrysTestnet';
+  family = CoinFamily.IRYS;
+  explorerUrl = 'https://testnet-explorer.irys.xyz/tx/';
+  accountExplorerUrl = 'https://testnet-explorer.irys.xyz/address/';
+  chainId = 1270;
+  nativeCoinOperationHashPrefix = '1270';
+}
+
 class Xdc extends Mainnet implements EthereumNetwork {
   name = 'XdcChain';
   family = CoinFamily.XDC;
@@ -1691,6 +1709,7 @@ export const Networks = {
     icp: Object.freeze(new Icp()),
     initia: Object.freeze(new Initia()),
     injective: Object.freeze(new Injective()),
+    irys: Object.freeze(new Irys()),
     islm: Object.freeze(new Islm()),
     kaia: Object.freeze(new Kaia()),
     kava: Object.freeze(new Kava()),
@@ -1777,6 +1796,7 @@ export const Networks = {
     icp: Object.freeze(new IcpTestnet()),
     initia: Object.freeze(new InitiaTestnet()),
     injective: Object.freeze(new InjectiveTestnet()),
+    irys: Object.freeze(new IrysTestnet()),
     islm: Object.freeze(new IslmTestnet()),
     kava: Object.freeze(new KavaTestnet()),
     kovan: Object.freeze(new Kovan()),
