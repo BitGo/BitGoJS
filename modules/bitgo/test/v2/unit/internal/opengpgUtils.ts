@@ -7,7 +7,7 @@ import { openpgpUtils } from '@bitgo/sdk-core';
 import { ecc as secp256k1 } from '@bitgo/utxo-lib';
 import * as sinon from 'sinon';
 
-const sodium = require('libsodium-wrappers-sumo');
+import sodium from 'libsodium-wrappers-sumo';
 
 describe('OpenGPG Utils Tests', function () {
   let senderKey: { publicKey: string; privateKey: string };

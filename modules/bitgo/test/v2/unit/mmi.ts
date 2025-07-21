@@ -4,7 +4,7 @@ import { BitGo } from '../../../src/bitgo';
 import nock from 'nock';
 import { bip32 } from '@bitgo/utxo-lib';
 import { common, TransactionType } from '@bitgo/sdk-core';
-import { AvaxC as AvaxCAccountLib, getBuilder } from '@bitgo/account-lib';
+import { AvaxC as AvaxCAccountLib, getBuilder } from '../../../../account-lib';
 
 nock.enableNetConnect();
 

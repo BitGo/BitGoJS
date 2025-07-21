@@ -1,4 +1,4 @@
-import { ExchangeCommitmentResponse, RequestType, SignatureShareRecord } from '@bitgo/sdk-core';
+import { type ExchangeCommitmentResponse, RequestType, type SignatureShareRecord } from '@bitgo/sdk-core';
 import nock from 'nock';
 import * as _ from 'lodash';
 
