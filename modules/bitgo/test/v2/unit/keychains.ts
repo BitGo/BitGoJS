@@ -93,6 +93,7 @@ describe('V2 Keychains', function () {
         n.asset !== UnderlyingAsset.SEIEVM &&
         n.asset !== UnderlyingAsset.KAIA &&
         n.asset !== UnderlyingAsset.IRYS &&
+        n.asset !== UnderlyingAsset.FLRP &&
         coinFamilyValues.includes(n.name)
     );
 

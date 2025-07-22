@@ -311,6 +311,61 @@ class AvalanchePTestnet extends Testnet implements AvalancheNetwork {
   minDelegationFee = '2';
 }
 
+//TO BE CHECKED AGAIN
+class FlrP extends Mainnet implements AvalancheNetwork {
+  name = 'FlareP';
+  family = CoinFamily.FLRP;
+  explorerUrl = 'https://flare.space/dapp/p-chain-explorer';
+  accountExplorerUrl = 'https://subnets.avax.network/p-chain/address/'; // To be checked again
+  blockchainID = '11111111111111111111111111111111LpoYY'; // To be checked again
+  cChainBlockchainID = '2q9e4r6Mu3U68nU1fYjgbR6JvwrRx36CohpAX5UQxse55x1Q5'; // To be checked again
+  avaxAssetID = 'FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z'; // To be checked again
+  networkID = 1;
+  hrp = 'flare';
+  alias = 'P';
+  vm = 'platformvm';
+  txFee = '1000000';
+  maxImportFee = '10000000';
+  createSubnetTx = '1000000000';
+  createChainTx = '1000000000';
+  creationTxFee = '10000000';
+  minConsumption = '0.1';
+  maxConsumption = '0.12';
+  maxSupply = '720000000000000000';
+  minStake = '2000000000000';
+  minStakeDuration = '1209600';
+  maxStakeDuration = '31536000';
+  minDelegationStake = '25000000000';
+  minDelegationFee = '2';
+}
+
+//TO BE CHECKED AGAIN
+class FlrPTestnet extends Testnet implements AvalancheNetwork {
+  name = 'FlarePTestnet';
+  family = CoinFamily.FLRP;
+  explorerUrl = 'https://subnets-test.avax.network/p-chain/tx/';
+  accountExplorerUrl = 'https://subnets-test.avax.network/p-chain/address/';
+  blockchainID = '11111111111111111111111111111111LpoYY';
+  cChainBlockchainID = 'yH8D7ThNJkxmtkuv2jgBa4P1Rn3Qpr4pPr7QYNfcdoS6k6HWp';
+  avaxAssetID = 'U8iRqJoiJm8xZHAacmvYyZVwqQx6uDNtQeP3CQ6fcgQk3JqnK';
+  networkID = 5;
+  alias = 'P';
+  hrp = 'flare';
+  vm = 'platformvm';
+  txFee = '1000000';
+  maxImportFee = '10000000';
+  createSubnetTx = '1000000000';
+  createChainTx = '1000000000';
+  creationTxFee = '10000000';
+  minConsumption = '0.1';
+  maxConsumption = '0.12';
+  maxSupply = '720000000000000000';
+  minStake = '1000000000';
+  minStakeDuration = '86400';
+  maxStakeDuration = '31536000';
+  minDelegationStake = '1000000000';
+  minDelegationFee = '2';
+}
 class BinanceSmartChain extends Mainnet implements EthereumNetwork {
   name = 'BinanceSmartChain';
   family = CoinFamily.BSC;
@@ -1704,6 +1759,7 @@ export const Networks = {
     fiat: Object.freeze(new Fiat()),
     fetchai: Object.freeze(new FetchAi()),
     flr: Object.freeze(new Flare()),
+    flrp: Object.freeze(new FlrP()),
     hash: Object.freeze(new Hash()),
     hedera: Object.freeze(new Hedera()),
     icp: Object.freeze(new Icp()),
@@ -1788,6 +1844,7 @@ export const Networks = {
     fiat: Object.freeze(new FiatTestnet()),
     fetchai: Object.freeze(new FetchAiTestnet()),
     flr: Object.freeze(new FlareTestnet()),
+    flrp: Object.freeze(new FlrPTestnet()),
     mon: Object.freeze(new MonadTestnet()),
     pyrmont: Object.freeze(new Pyrmont()),
     ethereumClassicTestnet: Object.freeze(new EthereumClassicTestnet()),

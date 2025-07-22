@@ -71,6 +71,8 @@ interface EnvironmentTemplate {
   xdcExplorerApiToken?: string;
   flrExplorerBaseUrl?: string;
   flrExplorerApiToken?: string;
+  flrpExplorerBaseUrl?: string;
+  // flrpExplorerApiToken?: string;
   sgbExplorerBaseUrl?: string;
   sgbExplorerApiToken?: string;
   icpNodeUrl: string;
@@ -235,6 +237,7 @@ const mainnetBase: EnvironmentTemplate = {
   monExplorerBaseUrl: 'https://mainnet-beta.monvision.io',
   stxNodeUrl: 'https://api.hiro.so',
   vetNodeUrl: 'https://rpc-mainnet.vechain.energy',
+  flrpExplorerBaseUrl: 'https://coston2-rpc.flare.network',
 };
 
 const testnetBase: EnvironmentTemplate = {
@@ -305,6 +308,7 @@ const testnetBase: EnvironmentTemplate = {
   worldExplorerBaseUrl: 'https://sepolia.worldscan.org/',
   somniaExplorerBaseUrl: 'https://shannon-explorer.somnia.network/',
   soneiumExplorerBaseUrl: 'https://soneium-minato.blockscout.com',
+  flrpExplorerBaseUrl: 'https://coston2-explorer.flare.network', // To be checked again
   evm: {
     phrs: {
       baseUrl: 'https://testnet.dplabs-internal.com',
