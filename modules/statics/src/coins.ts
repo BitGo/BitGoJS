@@ -1406,7 +1406,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.KAIA,
     BaseUnit.ETH,
-    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK]
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK, CoinFeature.EVM_COMPATIBLE_IMS]
   ),
   account(
     'f6be6f3d-ebac-49fc-8c73-e5b1fc115778',
@@ -1416,7 +1416,27 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.KAIA,
     BaseUnit.ETH,
-    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK]
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK, CoinFeature.EVM_COMPATIBLE_IMS]
+  ),
+  account(
+    'bc8541c1-b552-48a6-9a43-1c9b11c43227',
+    'irys',
+    'Irys',
+    Networks.main.irys,
+    18,
+    UnderlyingAsset.IRYS,
+    BaseUnit.ETH,
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK, CoinFeature.EVM_COMPATIBLE_IMS]
+  ),
+  account(
+    '8861d96c-f1a1-436a-8eb7-950f73f53c3a',
+    'tirys',
+    'Irys Testnet',
+    Networks.test.irys,
+    18,
+    UnderlyingAsset.IRYS,
+    BaseUnit.ETH,
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK, CoinFeature.EVM_COMPATIBLE_IMS]
   ),
   account(
     '251b78df-90c5-4ff5-b07a-8cc23f27c5ff',

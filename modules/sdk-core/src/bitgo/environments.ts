@@ -224,6 +224,9 @@ const mainnetBase: EnvironmentTemplate = {
     kaia: {
       baseUrl: 'https://public-en.node.kaia.io',
     },
+    irys: {
+      baseUrl: 'https://testnet-rpc.irys.xyz/v1/execution-rpc', //TODO: WIN-6191 add mainnet url when available
+    },
   },
   icpNodeUrl: 'https://ic0.app',
   worldExplorerBaseUrl: 'https://worldscan.org/',
@@ -320,6 +323,9 @@ const testnetBase: EnvironmentTemplate = {
     },
     kaia: {
       baseUrl: 'https://public-en-kairos.node.kaia.io',
+    },
+    irys: {
+      baseUrl: 'https://testnet-rpc.irys.xyz/v1/execution-rpc',
     },
   },
   stxNodeUrl: 'https://api.testnet.hiro.so',
