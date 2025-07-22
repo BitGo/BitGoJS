@@ -2,48 +2,49 @@
  * @prettier
  */
 
-import BigNumber from 'bignumber.js';
 import * as _ from 'lodash';
+import BigNumber from 'bignumber.js';
 import * as base58 from 'bs58';
-import { Networks, BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
-
-import {
-  BaseCoin,
-  BitGoBase,
-  BaseTransaction,
-  KeyPair,
-  MethodNotImplementedError,
-  ParsedTransaction,
-  ParseTransactionOptions as BaseParseTransactionOptions,
-  SignedTransaction,
-  SignTransactionOptions as BaseSignTransactionOptions,
-  TransactionExplanation,
-  VerifyAddressOptions,
-  VerifyTransactionOptions,
-  Eddsa,
-  PublicKey,
-  Environments,
-  MPCAlgorithm,
-  EDDSAMethods,
-  EDDSAMethodTypes,
-  MPCTx,
-  MPCUnsignedTx,
-  RecoveryTxRequest,
-  MPCSweepTxs,
-  MPCSweepRecoveryOptions,
-  MPCTxs,
-  MultisigType,
-  multisigTypes,
-  AuditDecryptedKeyParams,
-  TokenEnablementConfig,
-  MPCRecoveryOptions,
-} from '@bitgo/sdk-core';
 import * as nearAPI from 'near-api-js';
 import * as request from 'superagent';
 
-import { KeyPair as NearKeyPair, Transaction, TransactionBuilderFactory } from './lib';
-import nearUtils from './lib/utils';
 import { auditEddsaPrivateKey } from '@bitgo/sdk-lib-mpc';
+import {
+  AuditDecryptedKeyParams,
+  BaseCoin,
+  BaseTransaction,
+  BitGoBase,
+  Eddsa,
+  EDDSAMethods,
+  EDDSAMethodTypes,
+  Environments,
+  KeyPair,
+  MethodNotImplementedError,
+  MPCAlgorithm,
+  MPCRecoveryOptions,
+  MPCSweepRecoveryOptions,
+  MPCSweepTxs,
+  MPCTx,
+  MPCTxs,
+  MPCUnsignedTx,
+  MultisigType,
+  multisigTypes,
+  ParsedTransaction,
+  ParseTransactionOptions as BaseParseTransactionOptions,
+  PublicKey,
+  RecoveryTxRequest,
+  SignedTransaction,
+  SignTransactionOptions as BaseSignTransactionOptions,
+  TokenEnablementConfig,
+  TransactionExplanation,
+  VerifyAddressOptions,
+  VerifyTransactionOptions,
+} from '@bitgo/sdk-core';
+import { BaseCoin as StaticsBaseCoin, CoinFamily, coins, Nep141Token, Networks } from '@bitgo/statics';
+
+import { KeyPair as NearKeyPair, Transaction, TransactionBuilder, TransactionBuilderFactory } from './lib';
+import nearUtils from './lib/utils';
+import { MAX_GAS_LIMIT_FOR_FT_TRANSFER } from './lib/constants';
 
 export interface SignTransactionOptions extends BaseSignTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -354,6 +355,15 @@ export class Near extends BaseCoin {
     const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
     const MPC = await EDDSAMethods.getInitializedMpcInstance();
     const { storageAmountPerByte, transferCost, receiptConfig } = await this.getProtocolConfig();
+    let isStorageDepositEnabled = false;
+
+    if (params.tokenContractAddress) {
+      // check if receiver storage deposit is enabled
+      isStorageDepositEnabled = await this.checkIfStorageDepositIsEnabled(
+        params.recoveryDestination,
+        params.tokenContractAddress
+      );
+    }
 
     for (let i = startIdx; i < numIteration + startIdx; i++) {
       const currPath = `m/${i}`;
@@ -371,6 +381,56 @@ export class Near extends BaseCoin {
       if (availableBalance.toNumber() <= 0) {
         continue;
       }
+      const feeReserve = BigNumber(Networks[this.network].near.feeReserve);
+      const storageReserve = BigNumber(Networks[this.network].near.storageReserve);
+
+      // check for possible token recovery, recover the token provided by the user
+      if (params.tokenContractAddress) {
+        const tokenName = nearUtils.findTokenNameFromContractAddress(params.tokenContractAddress);
+        if (!tokenName) {
+          throw new Error(
+            `Token name not found for contract address ${params.tokenContractAddress}. The address may be invalid or unsupported. Please refer to the supported tokens in the BitGo documentation for guidance.`
+          );
+        }
+        const token = nearUtils.getTokenInstanceFromTokenName(tokenName);
+        if (!token) {
+          throw new Error(
+            `Token instance could not be created for token name ${tokenName}. The token may be invalid or unsupported. Please refer to the supported tokens in the BitGo documentation for guidance.`
+          );
+        }
+        let availableTokenBalance: BigNumber;
+        try {
+          availableTokenBalance = new BigNumber(
+            await this.getAccountFungibleTokenBalance(accountId, params.tokenContractAddress)
+          );
+        } catch (e) {
+          throw e;
+        }
+        if (availableTokenBalance.toNumber() <= 0) {
+          continue;
+        }
+        const netAmount = availableBalance
+          .minus(nearUtils.convertGasUnitsToYoctoNear(MAX_GAS_LIMIT_FOR_FT_TRANSFER))
+          .minus(feeReserve)
+          .minus(storageReserve);
+        if (netAmount.toNumber() <= 0) {
+          throw new Error(
+            `Found address ${i} with non-zero fund but fund is insufficient to support a token recover ` +
+              `transaction. Please start the next scan at address index ${i + 1}.`
+          );
+        }
+        return this.recoverNearToken(
+          params,
+          token,
+          accountId,
+          currPath,
+          i,
+          bitgoKey,
+          isStorageDepositEnabled,
+          availableTokenBalance,
+          isUnsignedSweep
+        );
+      }
 
       // first build the unsigned txn
       const bs58EncodedPublicKey = nearAPI.utils.serialize.base_encode(new Uint8Array(Buffer.from(accountId, 'hex')));
@@ -384,8 +444,6 @@ export class Near extends BaseCoin {
         .plus(new BigNumber(transferCost.execution).plus(receiptConfig.execution).multipliedBy(gasPriceSecondBlock));
       // adding some padding to make sure the gas doesn't go below required gas by network
       const totalGasWithPadding = totalGasRequired.multipliedBy(1.5);
-      const feeReserve = BigNumber(Networks[this.network].near.feeReserve);
-      const storageReserve = BigNumber(Networks[this.network].near.storageReserve);
       const netAmount = availableBalance.minus(totalGasWithPadding).minus(feeReserve).minus(storageReserve);
       if (netAmount.toNumber() <= 0) {
         throw new Error(
@@ -404,102 +462,220 @@ export class Near extends BaseCoin {
       const unsignedTransaction = (await txBuilder.build()) as Transaction;
       let serializedTx = unsignedTransaction.toBroadcastFormat();
       if (!isUnsignedSweep) {
-        // Sign the txn
-        /* ***************** START **************************************/
-        // TODO(BG-51092): This looks like a common part which can be extracted out too
-        if (!params.userKey) {
-          throw new Error('missing userKey');
-        }
-        if (!params.backupKey) {
-          throw new Error('missing backupKey');
-        }
-        if (!params.walletPassphrase) {
-          throw new Error('missing wallet passphrase');
-        }
-
-        // Clean up whitespace from entered values
-        const userKey = params.userKey.replace(/\s/g, '');
-        const backupKey = params.backupKey.replace(/\s/g, '');
-
-        // Decrypt private keys from KeyCard values
-        let userPrv;
-        try {
-          userPrv = this.bitgo.decrypt({
-            input: userKey,
-            password: params.walletPassphrase,
-          });
-        } catch (e) {
-          throw new Error(`Error decrypting user keychain: ${e.message}`);
-        }
-        /** TODO BG-52419 Implement Codec for parsing */
-        const userSigningMaterial = JSON.parse(userPrv) as EDDSAMethodTypes.UserSigningMaterial;
-
-        let backupPrv;
-        try {
-          backupPrv = this.bitgo.decrypt({
-            input: backupKey,
-            password: params.walletPassphrase,
-          });
-        } catch (e) {
-          throw new Error(`Error decrypting backup keychain: ${e.message}`);
-        }
-        const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
-        /* ********************** END ***********************************/
-
-        // add signature
-        const signatureHex = await EDDSAMethods.getTSSSignature(
-          userSigningMaterial,
-          backupSigningMaterial,
-          currPath,
-          unsignedTransaction
-        );
-        const publicKeyObj = { pub: accountId };
-        txBuilder.addSignature(publicKeyObj as PublicKey, signatureHex);
-
-        const completedTransaction = await txBuilder.build();
-        serializedTx = completedTransaction.toBroadcastFormat();
+        serializedTx = await this.signRecoveryTransaction(txBuilder, params, currPath, accountId);
       } else {
-        const value = new BigNumber(netAmount); // Use the calculated netAmount for the transaction
-        const walletCoin = this.getChain();
-        const inputs = [
-          {
-            address: accountId, // The sender's account ID
-            valueString: value.toString(),
-            value: value.toNumber(),
-          },
-        ];
-        const outputs = [
-          {
-            address: params.recoveryDestination, // The recovery destination address
-            valueString: value.toString(),
-            coinName: walletCoin,
-          },
-        ];
-        const spendAmount = value.toString();
-        const parsedTx = { inputs: inputs, outputs: outputs, spendAmount: spendAmount, type: '' };
-        const feeInfo = { fee: totalGasWithPadding.toNumber(), feeString: totalGasWithPadding.toFixed() }; // Include gas fees
-
-        const transaction: MPCTx = {
-          serializedTx: serializedTx, // Serialized unsigned transaction
-          scanIndex: i, // Current index in the scan
-          coin: walletCoin,
-          signableHex: unsignedTransaction.signablePayload.toString('hex'), // Hex payload for signing
-          derivationPath: currPath, // Derivation path for the account
-          parsedTx: parsedTx,
-          feeInfo: feeInfo,
-          coinSpecific: { commonKeychain: bitgoKey }, // Include block hash for NEAR
-        };
-
-        const transactions: MPCUnsignedTx[] = [{ unsignedTx: transaction, signatureShares: [] }];
-        const txRequest: RecoveryTxRequest = {
-          transactions: transactions,
-          walletCoin: walletCoin,
-        };
-        return { txRequests: [txRequest] };
+        return this.buildUnsignedSweepTransaction(
+          txBuilder,
+          accountId,
+          params.recoveryDestination,
+          bitgoKey,
+          i,
+          currPath,
+          netAmount,
+          totalGasWithPadding
+        );
       }
       return { serializedTx: serializedTx, scanIndex: i };
     }
     throw new Error('Did not find an address with funds to recover');
+  }
+
+  /**
+   * Function to handle near token recovery
+   * @param {MPCRecoveryOptions} params mpc recovery options input
+   * @param {Nep141Token} token the token object
+   * @param {String} senderAddress sender address
+   * @param {String} derivationPath the derivation path
+   * @param {Number} idx current index
+   * @param {String} bitgoKey bitgo key
+   * @param {Boolean} isStorageDepositEnabled flag indicating whether storage deposit is enabled on the receiver
+   * @param {BigNumber} availableTokenBalance currently available token balance on the address
+   * @param {Boolean} isUnsignedSweep flag indicating whether it is an unsigned sweep
+   * @returns {Promise<MPCTx | MPCSweepTxs>}
+   */
+  private async recoverNearToken(
+    params: MPCRecoveryOptions,
+    token: Nep141Token,
+    senderAddress: string,
+    derivationPath: string,
+    idx: number,
+    bitgoKey: string,
+    isStorageDepositEnabled: boolean,
+    availableTokenBalance: BigNumber,
+    isUnsignedSweep: boolean
+  ): Promise<MPCTx | MPCSweepTxs> {
+    const factory = new TransactionBuilderFactory(token);
+    const bs58EncodedPublicKey = nearAPI.utils.serialize.base_encode(new Uint8Array(Buffer.from(senderAddress, 'hex')));
+    const { nonce, blockHash } = await this.getAccessKey({ accountId: senderAddress, bs58EncodedPublicKey });
+    const txBuilder = factory
+      .getFungibleTokenTransferBuilder()
+      .sender(senderAddress, senderAddress)
+      .nonce(nonce)
+      .receiverId(token.contractAddress)
+      .recentBlockHash(blockHash)
+      .ftReceiverId(params.recoveryDestination)
+      .gas(MAX_GAS_LIMIT_FOR_FT_TRANSFER)
+      .deposit('1')
+      .amount(availableTokenBalance.toString());
+    if (!isStorageDepositEnabled) {
+      txBuilder.addStorageDeposit({
+        deposit: BigInt(token.storageDepositAmount),
+        gas: BigInt(MAX_GAS_LIMIT_FOR_FT_TRANSFER),
+        accountId: params.recoveryDestination,
+      });
+    }
+    if (isUnsignedSweep) {
+      return this.buildUnsignedSweepTransaction(
+        txBuilder,
+        senderAddress,
+        params.recoveryDestination,
+        bitgoKey,
+        idx,
+        derivationPath,
+        availableTokenBalance,
+        new BigNumber(nearUtils.convertGasUnitsToYoctoNear(MAX_GAS_LIMIT_FOR_FT_TRANSFER)),
+        token
+      );
+    } else {
+      const serializedTx = await this.signRecoveryTransaction(txBuilder, params, derivationPath, senderAddress);
+      return { serializedTx: serializedTx, scanIndex: idx };
+    }
+  }
+
+  /**
+   * Function to build unsigned sweep transaction
+   * @param {TransactionBuilder} txBuilder the near transaction builder
+   * @param {String} senderAddress sender address
+   * @param {String} receiverAddress the receiver address
+   * @param {String} bitgoKey bitgo key
+   * @param {Number} index current index
+   * @param {String} derivationPath the derivation path
+   * @param {BigNumber} netAmount net amount to be recovered
+   * @param {BigNumber} netGas net gas required
+   * @param {Nep141Token} token optional nep141 token instance
+   * @returns {Promise<MPCSweepTxs>}
+   */
+  private async buildUnsignedSweepTransaction(
+    txBuilder: TransactionBuilder,
+    senderAddress: string,
+    receiverAddress: string,
+    bitgoKey: string,
+    index: number,
+    derivationPath: string,
+    netAmount: BigNumber,
+    netGas: BigNumber,
+    token?: Nep141Token
+  ): Promise<MPCSweepTxs> {
+    const isTokenTransaction = !!token;
+    const unsignedTransaction = (await txBuilder.build()) as Transaction;
+    const serializedTx = unsignedTransaction.toBroadcastFormat();
+    const walletCoin = isTokenTransaction ? token.name : this.getChain();
+    const inputs = [
+      {
+        address: senderAddress,
+        valueString: netAmount.toString(),
+        value: netAmount.toNumber(),
+      },
+    ];
+    const outputs = [
+      {
+        address: receiverAddress,
+        valueString: netAmount.toString(),
+        coinName: walletCoin,
+      },
+    ];
+    const spendAmount = netAmount.toString();
+    const parsedTx = { inputs: inputs, outputs: outputs, spendAmount: spendAmount, type: '' };
+    const feeInfo = { fee: netGas.toNumber(), feeString: netGas.toFixed() }; // Include gas fees
+
+    const transaction: MPCTx = {
+      serializedTx: serializedTx, // Serialized unsigned transaction
+      scanIndex: index, // Current index in the scan
+      coin: walletCoin,
+      signableHex: unsignedTransaction.signablePayload.toString('hex'), // Hex payload for signing
+      derivationPath: derivationPath, // Derivation path for the account
+      parsedTx: parsedTx,
+      feeInfo: feeInfo,
+      coinSpecific: { commonKeychain: bitgoKey }, // Include block hash for NEAR
+    };
+
+    const transactions: MPCUnsignedTx[] = [{ unsignedTx: transaction, signatureShares: [] }];
+    const txRequest: RecoveryTxRequest = {
+      transactions: transactions,
+      walletCoin: walletCoin,
+    };
+    return { txRequests: [txRequest] };
+  }
+
+  /**
+   * Function to sign the recovery transaction
+   * @param {TransactionBuilder} txBuilder the near transaction builder
+   * @param {MPCRecoveryOptions} params mpc recovery options input
+   * @param {String} derivationPath the derivation path
+   * @param {String} senderAddress the sender address
+   * @returns {Promise<String>}
+   */
+  private async signRecoveryTransaction(
+    txBuilder: TransactionBuilder,
+    params: MPCRecoveryOptions,
+    derivationPath: string,
+    senderAddress: string
+  ): Promise<string> {
+    const unsignedTransaction = (await txBuilder.build()) as Transaction;
+    // Sign the txn
+    /* ***************** START **************************************/
+    // TODO(BG-51092): This looks like a common part which can be extracted out too
+    if (!params.userKey) {
+      throw new Error('missing userKey');
+    }
+    if (!params.backupKey) {
+      throw new Error('missing backupKey');
+    }
+    if (!params.walletPassphrase) {
+      throw new Error('missing wallet passphrase');
+    }
+
+    // Clean up whitespace from entered values
+    const userKey = params.userKey.replace(/\s/g, '');
+    const backupKey = params.backupKey.replace(/\s/g, '');
+
+    // Decrypt private keys from KeyCard values
+    let userPrv;
+    try {
+      userPrv = this.bitgo.decrypt({
+        input: userKey,
+        password: params.walletPassphrase,
+      });
+    } catch (e) {
+      throw new Error(`Error decrypting user keychain: ${e.message}`);
+    }
+    /** TODO BG-52419 Implement Codec for parsing */
+    const userSigningMaterial = JSON.parse(userPrv) as EDDSAMethodTypes.UserSigningMaterial;
+
+    let backupPrv;
+    try {
+      backupPrv = this.bitgo.decrypt({
+        input: backupKey,
+        password: params.walletPassphrase,
+      });
+    } catch (e) {
+      throw new Error(`Error decrypting backup keychain: ${e.message}`);
+    }
+    const backupSigningMaterial = JSON.parse(backupPrv) as EDDSAMethodTypes.BackupSigningMaterial;
+    /* ********************** END ***********************************/
+
+    // add signature
+    const signatureHex = await EDDSAMethods.getTSSSignature(
+      userSigningMaterial,
+      backupSigningMaterial,
+      derivationPath,
+      unsignedTransaction
+    );
+    const publicKeyObj = { pub: senderAddress };
+    txBuilder.addSignature(publicKeyObj as PublicKey, signatureHex);
+
+    const completedTransaction = await txBuilder.build();
+    return completedTransaction.toBroadcastFormat();
   }
 
   async createBroadcastableSweepTransaction(params: MPCSweepRecoveryOptions): Promise<MPCTxs> {
@@ -640,6 +816,75 @@ export class Near extends BaseCoin {
     const totalBalance = new BigNumber(account.amount).plus(staked);
     const availableBalance = totalBalance.minus(BigNumber.max(staked, stateStaked));
     return availableBalance.toString();
+  }
+
+  /**
+   * Function to get the fungible token balance for an account
+   * @param {String} accountId account for which the ft balance to be fetched
+   * @param tokenContractAddress the token contract address
+   * @returns {Promise<String>}
+   */
+  protected async getAccountFungibleTokenBalance(accountId: string, tokenContractAddress: string): Promise<string> {
+    const base64Args = nearUtils.convertToBase64({ account_id: accountId });
+    const response = await this.getDataFromNode({
+      payload: {
+        jsonrpc: '2.0',
+        id: 'dontcare',
+        method: 'query',
+        params: {
+          request_type: 'call_function',
+          finality: 'final',
+          account_id: tokenContractAddress,
+          method_name: 'ft_balance_of',
+          args_base64: base64Args,
+        },
+      },
+    });
+    if (response.status !== 200) {
+      throw new Error('Failed to fetch ft balance of the account');
+    }
+    const errorCause = response.body.error?.cause?.name;
+    if (errorCause !== undefined) {
+      throw new Error(errorCause);
+    }
+    const resultUint8Array: Uint8Array = new Uint8Array(response.body.result.result);
+    const raw = new TextDecoder().decode(resultUint8Array);
+    return JSON.parse(raw);
+  }
+
+  /**
+   * Function to check if storage deposit is enabled on an address for a token
+   * @param {String} accountId account for which the storage balance to be fetched
+   * @param tokenContractAddress the token contract address
+   * @returns {Promise<Boolean>} true if we find the storage balance, false if response is null
+   */
+  protected async checkIfStorageDepositIsEnabled(accountId: string, tokenContractAddress: string): Promise<boolean> {
+    const base64Args = nearUtils.convertToBase64({ account_id: accountId });
+    const response = await this.getDataFromNode({
+      payload: {
+        jsonrpc: '2.0',
+        id: 'dontcare',
+        method: 'query',
+        params: {
+          request_type: 'call_function',
+          finality: 'final',
+          account_id: tokenContractAddress,
+          method_name: 'storage_balance_of',
+          args_base64: base64Args,
+        },
+      },
+    });
+    if (response.status !== 200) {
+      throw new Error('Failed to fetch storage deposit of the account');
+    }
+    const errorCause = response.body.error?.cause?.name;
+    if (errorCause !== undefined) {
+      throw new Error(errorCause);
+    }
+    const resultUint8Array: Uint8Array = new Uint8Array(response.body.result.result);
+    const raw = new TextDecoder().decode(resultUint8Array);
+    const decoded = JSON.parse(raw);
+    return decoded !== null;
   }
 
   protected async getProtocolConfig(): Promise<ProtocolConfigOutput> {

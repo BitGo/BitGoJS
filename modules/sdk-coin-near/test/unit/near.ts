@@ -9,6 +9,7 @@ import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { coins } from '@bitgo/statics';
 
 import { KeyPair, Near, TNear, Transaction } from '../../src';
+import nearUtils from '../../src/lib/utils';
 import { getBuilderFactory } from './getBuilderFactory';
 
 import {
@@ -803,7 +804,7 @@ describe('NEAR:', function () {
         userKey: keys.userKey,
         backupKey: keys.backupKey,
         bitgoKey: keys.bitgoKey,
-        recoveryDestination: 'abhay-near.testnet',
+        recoveryDestination: accountInfo.recoveryDestination,
         walletPassphrase: 'Ghghjkg!455544llll',
       });
       res.should.not.be.empty();
@@ -822,7 +823,7 @@ describe('NEAR:', function () {
     it('should recover a txn for unsigned sweep recoveries', async function () {
       const res = await basecoin.recover({
         bitgoKey: keys.bitgoKey,
-        recoveryDestination: 'abhay-near.testnet',
+        recoveryDestination: accountInfo.recoveryDestination,
       });
 
       // Assertions for the structure of the result
@@ -853,7 +854,7 @@ describe('NEAR:', function () {
       parsedTx.inputs[0].should.have.property('value', 1.9788550609486627e26);
 
       parsedTx.should.have.property('outputs').which.is.an.Array();
-      parsedTx.outputs[0].should.have.property('address', 'abhay-near.testnet');
+      parsedTx.outputs[0].should.have.property('address', accountInfo.recoveryDestination);
       parsedTx.outputs[0].should.have.property('valueString', '1.97885506094866269650000001e+26');
       parsedTx.outputs[0].should.have.property('coinName', 'tnear');
 
@@ -889,7 +890,7 @@ describe('NEAR:', function () {
   });
 
   describe('Recover Transactions for wallet with multiple addresses:', () => {
-    const destAddr = 'abhay-near.testnet';
+    const destAddr = accountInfo.recoveryDestination;
     const sandBox = sinon.createSandbox();
     const coin = coins.get('tnear');
     const address1Info = {
@@ -1010,7 +1011,7 @@ describe('NEAR:', function () {
 
   describe('Recover Transaction Failures:', () => {
     const sandBox = sinon.createSandbox();
-    const destAddr = 'abhay-near.testnet';
+    const destAddr = accountInfo.recoveryDestination;
     const numIteration = 10;
 
     beforeEach(function () {
@@ -1039,6 +1040,246 @@ describe('NEAR:', function () {
       // getDataFromNode should be called numIteration + 1 times since we initially
       // call getProtocolConfig
       sandBox.assert.callCount(basecoin.getDataFromNode, numIteration + 1);
+    });
+  });
+
+  describe('Recover Token Transactions:', () => {
+    const sandBox = sinon.createSandbox();
+    const coin = coins.get('tnear:tnep24dp');
+    function setUpMock(mockStorageDepositPresent = false) {
+      const callBack = sandBox.stub(Near.prototype, 'getDataFromNode' as keyof Near);
+      callBack
+        .withArgs({
+          payload: {
+            jsonrpc: '2.0',
+            id: 'dontcare',
+            method: 'query',
+            params: {
+              request_type: 'view_access_key',
+              finality: 'final',
+              account_id: accountInfo.accountId,
+              public_key: accountInfo.bs58EncodedPublicKey,
+            },
+          },
+        })
+        .resolves(NearResponses.getAccessKeyResponse);
+      callBack
+        .withArgs({
+          payload: {
+            jsonrpc: '2.0',
+            id: 'dontcare',
+            method: 'query',
+            params: {
+              request_type: 'view_account',
+              finality: 'final',
+              account_id: accountInfo.accountId,
+            },
+          },
+        })
+        .resolves(NearResponses.getAccountResponse);
+      callBack.withArgs().resolves(NearResponses.getProtocolConfigResp);
+      callBack
+        .withArgs({
+          payload: {
+            jsonrpc: '2.0',
+            id: 'dontcare',
+            method: 'query',
+            params: {
+              request_type: 'call_function',
+              finality: 'final',
+              account_id: accountInfo.tokenContractAddress,
+              method_name: 'ft_balance_of',
+              args_base64: nearUtils.convertToBase64({ account_id: accountInfo.accountId }),
+            },
+          },
+        })
+        .resolves(NearResponses.getAccountFungibleTokenBalanceResponse);
+      const storageDepositResponse = mockStorageDepositPresent
+        ? NearResponses.getStorageBalanceResponsePresent
+        : NearResponses.getStorageBalanceResponseNotPresent;
+      callBack
+        .withArgs({
+          payload: {
+            jsonrpc: '2.0',
+            id: 'dontcare',
+            method: 'query',
+            params: {
+              request_type: 'call_function',
+              finality: 'final',
+              account_id: accountInfo.tokenContractAddress,
+              method_name: 'storage_balance_of',
+              args_base64: nearUtils.convertToBase64({ account_id: accountInfo.recoveryDestination }),
+            },
+          },
+        })
+        .resolves(storageDepositResponse);
+    }
+
+    afterEach(() => {
+      sandBox.restore();
+    });
+
+    it('should recover near token for non-bitgo recoveries with storage deposit', async () => {
+      setUpMock();
+      const res = await basecoin.recover({
+        userKey: keys.userKey,
+        backupKey: keys.backupKey,
+        bitgoKey: keys.bitgoKey,
+        recoveryDestination: accountInfo.recoveryDestination,
+        walletPassphrase: 'Ghghjkg!455544llll',
+        tokenContractAddress: accountInfo.tokenContractAddress,
+      });
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('serializedTx');
+
+      const NonBitGoTxnDeserialize = new Transaction(coin);
+      NonBitGoTxnDeserialize.fromRawTransaction(res.serializedTx);
+      const NonBitGoTxnJson = NonBitGoTxnDeserialize.toJson();
+
+      should.equal(NonBitGoTxnJson.nonce, nonce);
+      should.equal(NonBitGoTxnJson.signerId, accountInfo.accountId);
+      should.equal(NonBitGoTxnJson.publicKey, 'ed25519:' + accountInfo.bs58EncodedPublicKey);
+      should.equal(NonBitGoTxnJson.actions.length, 2);
+      should.equal(NonBitGoTxnJson.actions[0]?.functionCall?.methodName, 'storage_deposit');
+      should.equal(NonBitGoTxnJson.actions[1]?.functionCall?.methodName, 'ft_transfer');
+      sandBox.assert.callCount(basecoin.getDataFromNode, 5);
+    });
+
+    it('should recover near token for non-bitgo recoveries without storage deposit', async () => {
+      setUpMock(true);
+      const res = await basecoin.recover({
+        userKey: keys.userKey,
+        backupKey: keys.backupKey,
+        bitgoKey: keys.bitgoKey,
+        recoveryDestination: accountInfo.recoveryDestination,
+        walletPassphrase: 'Ghghjkg!455544llll',
+        tokenContractAddress: accountInfo.tokenContractAddress,
+      });
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('serializedTx');
+
+      const NonBitGoTxnDeserialize = new Transaction(coin);
+      NonBitGoTxnDeserialize.fromRawTransaction(res.serializedTx);
+      const NonBitGoTxnJson = NonBitGoTxnDeserialize.toJson();
+
+      should.equal(NonBitGoTxnJson.nonce, nonce);
+      should.equal(NonBitGoTxnJson.signerId, accountInfo.accountId);
+      should.equal(NonBitGoTxnJson.publicKey, 'ed25519:' + accountInfo.bs58EncodedPublicKey);
+      should.equal(NonBitGoTxnJson.actions.length, 1);
+      should.equal(NonBitGoTxnJson.actions[0]?.functionCall?.methodName, 'ft_transfer');
+      sandBox.assert.callCount(basecoin.getDataFromNode, 5);
+    });
+
+    it('should recover near token for unsigned sweep recoveries with storage deposit', async function () {
+      setUpMock();
+      const res = await basecoin.recover({
+        bitgoKey: keys.bitgoKey,
+        recoveryDestination: accountInfo.recoveryDestination,
+        tokenContractAddress: accountInfo.tokenContractAddress,
+      });
+
+      // Assertions for the structure of the result
+      should.exist(res);
+      res.should.have.property('txRequests').which.is.an.Array();
+      res.txRequests[0].should.have.property('transactions').which.is.an.Array();
+      res.txRequests[0].transactions[0].should.have.property('unsignedTx');
+
+      // Assertions for the unsigned transaction
+      const unsignedTx = res.txRequests[0].transactions[0].unsignedTx;
+      unsignedTx.should.have.property('serializedTx').which.is.a.String();
+      unsignedTx.should.have.property('scanIndex', 0);
+      unsignedTx.should.have.property('coin', 'tnear:tnep24dp');
+      unsignedTx.should.have.property(
+        'signableHex',
+        'ba901a655bfff3683a37a70b7caf1c90c7f9c007b09c6a9bb74540ac611aeac0'
+      );
+      unsignedTx.should.have.property('derivationPath', 'm/0');
+
+      // Assertions for parsed transaction
+      const parsedTx = unsignedTx.parsedTx;
+      parsedTx.should.have.property('inputs').which.is.an.Array();
+      parsedTx.inputs[0].should.have.property(
+        'address',
+        'f256196dae617aa348149c1e61e997272492668d517506d7a6e2392e06ea532c'
+      );
+      parsedTx.inputs[0].should.have.property('valueString', '3.2899939469999999999981e+24');
+      parsedTx.inputs[0].should.have.property('value', 3.289993947e24);
+
+      parsedTx.should.have.property('outputs').which.is.an.Array();
+      parsedTx.outputs[0].should.have.property('address', accountInfo.recoveryDestination);
+      parsedTx.outputs[0].should.have.property('valueString', '3.2899939469999999999981e+24');
+      parsedTx.outputs[0].should.have.property('coinName', 'tnear:tnep24dp');
+
+      parsedTx.should.have.property('spendAmount', '3.2899939469999999999981e+24');
+      parsedTx.should.have.property('type', '');
+
+      // Assertions for fee info
+      unsignedTx.should.have.property('feeInfo');
+      unsignedTx.feeInfo.should.have.property('fee', 3e21);
+      unsignedTx.feeInfo.should.have.property('feeString', '3000000000000000000000');
+
+      // Assertions for coin-specific data
+      unsignedTx.should.have.property('coinSpecific');
+      unsignedTx.coinSpecific.should.have.property(
+        'commonKeychain',
+        '8699d2e05d60a3f7ab733a74ccf707f3407494b60f4253616187f5262e20737519a1763de0bcc4d165a7fa0e4dde67a1426ec4cc9fcd0820d749e6589dcfa08e'
+      );
+    });
+
+    it('should recover near token for unsigned sweep recoveries without storage deposit', async function () {
+      setUpMock(true);
+      const res = await basecoin.recover({
+        bitgoKey: keys.bitgoKey,
+        recoveryDestination: accountInfo.recoveryDestination,
+        tokenContractAddress: accountInfo.tokenContractAddress,
+      });
+
+      // Assertions for the structure of the result
+      should.exist(res);
+      res.should.have.property('txRequests').which.is.an.Array();
+      res.txRequests[0].should.have.property('transactions').which.is.an.Array();
+      res.txRequests[0].transactions[0].should.have.property('unsignedTx');
+
+      // Assertions for the unsigned transaction
+      const unsignedTx = res.txRequests[0].transactions[0].unsignedTx;
+      unsignedTx.should.have.property('serializedTx').which.is.a.String();
+      unsignedTx.should.have.property('scanIndex', 0);
+      unsignedTx.should.have.property('coin', 'tnear:tnep24dp');
+      unsignedTx.should.have.property(
+        'signableHex',
+        '2d5da3340c308bd2fce1e0805b890d63d8946cff61818c0960e87203919fffc7'
+      );
+      unsignedTx.should.have.property('derivationPath', 'm/0');
+
+      // Assertions for parsed transaction
+      const parsedTx = unsignedTx.parsedTx;
+      parsedTx.should.have.property('inputs').which.is.an.Array();
+      parsedTx.inputs[0].should.have.property(
+        'address',
+        'f256196dae617aa348149c1e61e997272492668d517506d7a6e2392e06ea532c'
+      );
+      parsedTx.inputs[0].should.have.property('valueString', '3.2899939469999999999981e+24');
+      parsedTx.inputs[0].should.have.property('value', 3.289993947e24);
+
+      parsedTx.should.have.property('outputs').which.is.an.Array();
+      parsedTx.outputs[0].should.have.property('address', accountInfo.recoveryDestination);
+      parsedTx.outputs[0].should.have.property('valueString', '3.2899939469999999999981e+24');
+      parsedTx.outputs[0].should.have.property('coinName', 'tnear:tnep24dp');
+
+      parsedTx.should.have.property('spendAmount', '3.2899939469999999999981e+24');
+      parsedTx.should.have.property('type', '');
+
+      // Assertions for fee info
+      unsignedTx.should.have.property('feeInfo');
+      unsignedTx.feeInfo.should.have.property('fee', 3e21);
+      unsignedTx.feeInfo.should.have.property('feeString', '3000000000000000000000');
+
+      // Assertions for coin-specific data
+      unsignedTx.should.have.property('coinSpecific');
+      unsignedTx.coinSpecific.should.have.property(
+        'commonKeychain',
+        '8699d2e05d60a3f7ab733a74ccf707f3407494b60f4253616187f5262e20737519a1763de0bcc4d165a7fa0e4dde67a1426ec4cc9fcd0820d749e6589dcfa08e'
+      );
     });
   });
 });
