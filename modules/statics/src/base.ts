@@ -487,6 +487,7 @@ export const UnderlyingAsset = {
   ICP: 'icp',
   INITIA: 'initia',
   INJECTIVE: 'injective',
+  IRYS: 'irys',
   ISLM: 'islm',
   KAIA: 'kaia',
   KAVA: 'kava',
