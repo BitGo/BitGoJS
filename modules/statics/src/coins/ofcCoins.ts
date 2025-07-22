@@ -2693,6 +2693,14 @@ export const ofcCoins = [
     APT_OFC_TOKEN_FEATURES
   ),
   ofcaptToken(
+    'f859a05e-8c4b-4e43-bc0c-f6444c44c8e3',
+    'ofcapt:pact',
+    'PACT',
+    8,
+    UnderlyingAsset['apt:pact'],
+    APT_OFC_TOKEN_FEATURES
+  ),
+  ofcaptToken(
     'd15ec98e-1c8f-4c2d-9ede-e34edb3980b5',
     'ofcapt:usdt',
     'USD Tether',
