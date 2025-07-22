@@ -1534,9 +1534,9 @@ class SeiEvmTestnet extends Testnet implements EthereumNetwork {
 class Somnia extends Mainnet implements EthereumNetwork {
   name = 'Somnia';
   family = CoinFamily.STT;
-  explorerUrl = 'https://shannon-explorer.somnia.network/tx/'; //TODO: WIN-5278: change it with mainnet explorer, when its available
-  chainId = 50312; //TODO: WIN-5278: change it with mainnet explorer, when its available
-  nativeCoinOperationHashPrefix = '50312'; //TODO: WIN-5278: change it with mainnet explorer, when its available
+  explorerUrl = 'https://mainnet.somnia.w3us.site/tx/';
+  chainId = 5031;
+  nativeCoinOperationHashPrefix = '5031';
 }
 
 class SomniaTestnet extends Testnet implements EthereumNetwork {

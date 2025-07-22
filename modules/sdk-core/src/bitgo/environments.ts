@@ -230,7 +230,7 @@ const mainnetBase: EnvironmentTemplate = {
   },
   icpNodeUrl: 'https://ic0.app',
   worldExplorerBaseUrl: 'https://worldscan.org/',
-  somniaExplorerBaseUrl: 'https://shannon-explorer.somnia.network/', //TODO: WIN-5278: change it with mainnet explorer, when its available
+  somniaExplorerBaseUrl: 'https://mainnet.somnia.w3us.site/',
   soneiumExplorerBaseUrl: 'https://soneium-minato.blockscout.com',
   monExplorerBaseUrl: 'https://mainnet-beta.monvision.io',
   stxNodeUrl: 'https://api.hiro.so',
