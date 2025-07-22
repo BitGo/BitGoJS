@@ -46,8 +46,11 @@ export class EthLikeCoin extends AbstractEthLikeNewCoins {
     return new EthLikeTransactionBuilder(coins.get(this.getBaseChain()), ethereumCommon);
   }
 
-  async recoveryBlockchainExplorerQuery(query: Record<string, string>): Promise<Record<string, unknown>> {
-    const apiToken = common.Environments[this.bitgo.getEnv()][this.getFamily().toLowerCase() + 'ApiToken'];
+  async recoveryBlockchainExplorerQuery(
+    query: Record<string, string>,
+    apiKey?: string
+  ): Promise<Record<string, unknown>> {
+    const apiToken = apiKey ?? common.Environments[this.bitgo.getEnv()][this.getFamily().toLowerCase() + 'ApiToken'];
     const explorerUrl = common.Environments[this.bitgo.getEnv()][this.getFamily().toLowerCase() + 'ExplorerUrl'];
     return await recoveryBlockchainExplorerQuery(query, explorerUrl as string, apiToken);
   }

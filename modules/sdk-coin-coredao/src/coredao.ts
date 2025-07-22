@@ -39,8 +39,17 @@ export class Coredao extends AbstractEthLikeNewCoins {
     return 'ecdsa';
   }
 
-  async recoveryBlockchainExplorerQuery(query: Record<string, string>): Promise<Record<string, unknown>> {
-    const apiToken = common.Environments[this.bitgo.getEnv()].coredaoExplorerApiToken;
+  /**
+   * Make a query to Coredao explorer for information such as balance, token balance, solidity calls
+   * @param {Object} query key-value pairs of parameters to append after /api
+   * @param {string} apiKey optional API key to use instead of the one from the environment
+   * @returns {Promise<Object>} response from Coredao explorer
+   */
+  async recoveryBlockchainExplorerQuery(
+    query: Record<string, string>,
+    apiKey?: string
+  ): Promise<Record<string, unknown>> {
+    const apiToken = apiKey || common.Environments[this.bitgo.getEnv()].coredaoExplorerApiToken;
     const explorerUrl = common.Environments[this.bitgo.getEnv()].coredaoExplorerBaseUrl;
     return await recoveryBlockchainExplorerQuery(query, explorerUrl as string, apiToken);
   }
