@@ -53,6 +53,7 @@ import {
 import { ofcToken } from './ofc';
 import { ada } from './ada';
 import { avaxp } from './avaxp';
+import { flrp } from './flrp';
 import { BaseCoin, BaseUnit, CoinFeature, KeyCurve, UnderlyingAsset } from './base';
 import { AmsTokenConfig, TrimmedAmsTokenConfig } from './tokenConfig';
 import { erc20Coins } from './coins/erc20Coins';
@@ -152,6 +153,14 @@ export const coins = CoinMap.fromCoins([
     'Testnet Avalanche P-Chain',
     Networks.test.avalancheP,
     UnderlyingAsset.AVAXP
+  ),
+  flrp('f90c4f28-447d-4b34-a75a-a94bbce97c14', 'flrp', 'Flare P Chain', Networks.main.flrp, UnderlyingAsset.FLRP),
+  flrp(
+    '80f08de8-a61f-4e25-bb06-866752b63382',
+    'tflrp',
+    'Flare P Chain Testnet',
+    Networks.test.flrp,
+    UnderlyingAsset.FLRP
   ),
   ada(
     'fd4d125e-f14f-414b-bd17-6cb1393265f0',
