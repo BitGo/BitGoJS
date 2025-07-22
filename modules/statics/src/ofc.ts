@@ -1304,7 +1304,7 @@ export function tofcStxToken(
   features: CoinFeature[] = OfcCoin.DEFAULT_FEATURES,
   prefix = '',
   suffix: string = name.replace(/^ofc/, '').toUpperCase(),
-  network: OfcNetwork = Networks.main.ofc,
+  network: OfcNetwork = Networks.test.ofc,
   isToken = true,
   addressCoin = 'tstx',
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
