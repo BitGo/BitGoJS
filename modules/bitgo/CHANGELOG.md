@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [48.6.0](https://github.com/BitGo/BitGoJS/compare/bitgo@48.5.0...bitgo@48.6.0) (2025-07-23)
+
+### Features
+
+- added new error NeedsUserSignupError ([8c9c64a](https://github.com/BitGo/BitGoJS/commit/8c9c64ac54db5fc85bbaaf652e25b0e47eadf702))
+- **sdk-core:** handle TSS EDDSA message signing ([b032e79](https://github.com/BitGo/BitGoJS/commit/b032e790f6aecaa02aa15ccf663b55929ea9509a))
+- **statics:** add irys chain configs ([89fb371](https://github.com/BitGo/BitGoJS/commit/89fb371a3d9e2b8137539450b8f6aad713a2a0f7))
+- **statics:** add kaia chain configs ([494066f](https://github.com/BitGo/BitGoJS/commit/494066fa94e362f09d27e2274178da5b89653087))
+- **statics:** add seievm chain configs ([6d618d0](https://github.com/BitGo/BitGoJS/commit/6d618d0d67d53d8cafd39bdfe4c8583a78ec8a59))
+
 # [48.5.0](https://github.com/BitGo/BitGoJS/compare/bitgo@48.4.0...bitgo@48.5.0) (2025-07-15)
 
 ### Features

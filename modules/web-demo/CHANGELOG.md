@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@3.0.14...@bitgo/web-demo@3.1.0) (2025-07-23)
+
+### Features
+
+- optional walletLabel key card ([ce1d32a](https://github.com/BitGo/BitGoJS/commit/ce1d32a8061f15cb85dfc268ba5850b1aa2782c3))
+
 ## [3.0.14](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@3.0.13...@bitgo/web-demo@3.0.14) (2025-07-15)
 
 **Note:** Version bump only for package @bitgo/web-demo

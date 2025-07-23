@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.13.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.13.1...@bitgo/sdk-coin-sol@4.13.2) (2025-07-23)
+
+### Bug Fixes
+
+- **account-lib:** create Buffer from hex string ([3c3c187](https://github.com/BitGo/BitGoJS/commit/3c3c187feab5ace123cdb47d7ca97ff253f8f783))
+
 ## [4.13.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.13.0...@bitgo/sdk-coin-sol@4.13.1) (2025-07-15)
 
 ### Reverts

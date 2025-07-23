@@ -3,6 +3,39 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [55.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@55.1.0...@bitgo/statics@55.2.0) (2025-07-23)
+
+### Bug Fixes
+
+- fix FIUAXRP token name ([ef30949](https://github.com/BitGo/BitGoJS/commit/ef3094996471c7784edf3a089312244c0c1e9b68))
+- fix the env for stx coin ([b3c9edc](https://github.com/BitGo/BitGoJS/commit/b3c9edc12bf0df9f65c23d2dae081e56be8cf2d0))
+- hoodi config ([c7eed0a](https://github.com/BitGo/BitGoJS/commit/c7eed0a6562fece458b857270faf6108b6ad1c66))
+- **sdk-coin-bsc:** fix mainnet explorer link ([fbcd868](https://github.com/BitGo/BitGoJS/commit/fbcd86871caa9a5a44a4ae2bb7d79ed1b133953d))
+- **statics:** remove token name trailing space ([106c02a](https://github.com/BitGo/BitGoJS/commit/106c02aa7aaa7179e89794fe914e28186aaee1ab))
+- **statics:** remove tokenId from hbar token initializer ([717cd48](https://github.com/BitGo/BitGoJS/commit/717cd489cd47094929de3f7e4430454460ae628c))
+- **statics:** update underlying asset references for EVM testnets ([4ac4236](https://github.com/BitGo/BitGoJS/commit/4ac4236a4be033bf138270148a80b31b0280824e))
+- **statics:** updated evm flags for evm batch chains ([1be56ee](https://github.com/BitGo/BitGoJS/commit/1be56eef814f13a093ddc749f748e0dea900e9b2))
+- **statics:** updated evm flags for seievm ([5a0e113](https://github.com/BitGo/BitGoJS/commit/5a0e113904e8f3134db6e8fcafb4bf8bd077204c))
+- **statics:** updated evm flags for sonic ([f5b8ec2](https://github.com/BitGo/BitGoJS/commit/f5b8ec251661f9f3119babb0d2b1590c6af1b19d))
+
+### Features
+
+- gate certain high risk tokens from Singapore custody ([7a41003](https://github.com/BitGo/BitGoJS/commit/7a41003fb60642645950a84b09bc2be5921176d4))
+- ofc tokens for nep141 ([2851167](https://github.com/BitGo/BitGoJS/commit/28511679c2d6db930e88b407f338f206c259325f))
+- onboarding xMoney token on SUI chain and FIUAXRP token on XRP chain ([c13a20e](https://github.com/BitGo/BitGoJS/commit/c13a20e35b42a29209085b388a9f122fae479924))
+- **statics:** add coin feature for new shared Cosmos sdk module ([781e8c5](https://github.com/BitGo/BitGoJS/commit/781e8c54b241189e341c436df5cfef31f0bbe728))
+- **statics:** add Cosmos token support TICKET: COIN-4914 ([9c2e613](https://github.com/BitGo/BitGoJS/commit/9c2e613a3185e6199d3f5292199ce49fc65e34f9))
+- **statics:** add go-account support for apt:pact ([fcf790b](https://github.com/BitGo/BitGoJS/commit/fcf790bf5404422c5f1fd06d51e0aa266df0cefb))
+- **statics:** add irys chain configs ([89fb371](https://github.com/BitGo/BitGoJS/commit/89fb371a3d9e2b8137539450b8f6aad713a2a0f7))
+- **statics:** add kaia chain configs ([494066f](https://github.com/BitGo/BitGoJS/commit/494066fa94e362f09d27e2274178da5b89653087))
+- **statics:** add seievm chain configs ([6d618d0](https://github.com/BitGo/BitGoJS/commit/6d618d0d67d53d8cafd39bdfe4c8583a78ec8a59))
+- **statics:** add stAvax test token ([bf8acdb](https://github.com/BitGo/BitGoJS/commit/bf8acdb7e11bbade932feff53857595d568f0916))
+- **statics:** add unstETH NFT to sdk ([5f7f4e4](https://github.com/BitGo/BitGoJS/commit/5f7f4e4965e05979c87dd849f8420a171b9b6903))
+- **statics:** added pending txn tab on wallet overview ([26a2a45](https://github.com/BitGo/BitGoJS/commit/26a2a45825d8a8b49d0444521fcd7745b0ebac45))
+- **statics:** added token sol:usd1 ([8dc7df2](https://github.com/BitGo/BitGoJS/commit/8dc7df256063b1208db3de13187f9d2495166801))
+- **statics:** enable staking in testnet ([4e593ff](https://github.com/BitGo/BitGoJS/commit/4e593ff1d836e9d4b024c408147a393a38b9d3f5))
+- **statics:** implement common Cosmos blockchain infrastructure ([22abed6](https://github.com/BitGo/BitGoJS/commit/22abed6977d6ba182801e4747ba3f08825aa2908))
+
 # [55.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@55.0.0...@bitgo/statics@55.1.0) (2025-07-15)
 
 ### Features
