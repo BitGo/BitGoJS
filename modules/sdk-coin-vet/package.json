@@ -40,6 +40,7 @@
     ]
   },
   "dependencies": {
+    "@bitgo/blake2b": "^3.2.4",
     "@bitgo/abstract-eth": "^24.8.1",
     "@bitgo/sdk-core": "^35.8.0",
     "@bitgo/secp256k1": "^1.4.0",
