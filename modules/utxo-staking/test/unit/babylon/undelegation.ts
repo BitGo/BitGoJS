@@ -7,8 +7,12 @@ import * as utxolib from '@bitgo/utxo-lib';
 import { ast, Descriptor } from '@bitgo/wasm-miniscript';
 import { PartialSig } from 'bip174/src/lib/interfaces';
 
-import { toPartialSig, UndelegationResponse } from '../../../src/babylon/undelegation/UndelegationResponse';
-import { assertValidSignatures, toUnbondingPsbtWithSignatures } from '../../../src/babylon/undelegation/unbonding';
+import {
+  toPartialSig,
+  UndelegationResponse,
+  assertValidSignatures,
+  toUnbondingPsbtWithSignatures,
+} from '../../../src/babylon/undelegation';
 import { assertTransactionEqualsFixture } from '../fixtures.utils';
 
 async function getFixture(txid: string): Promise<UndelegationResponse> {
