@@ -17,7 +17,7 @@ function pk(b: Buffer): ast.MiniscriptNode {
   return { 'v:pk': b.toString('hex') };
 }
 
-function sortedKeys(keys: Buffer[]): Buffer[] {
+export function sortedKeys(keys: Buffer[]): Buffer[] {
   return [...keys].sort((a, b) => a.compare(b));
 }
 
