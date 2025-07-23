@@ -45,7 +45,7 @@ function normalize(v: unknown): unknown {
 }
 
 async function assertEqualsFixture(t: string, filename: string, value: unknown) {
-  filename = __dirname + '/fixtures/' + t + '.' + filename;
+  filename = __dirname + '/../../../../test/descriptor/psbt/fixtures/' + t + '.' + filename;
   const nv = normalize(value);
   assert.deepStrictEqual(nv, await getFixture(filename, nv));
 }

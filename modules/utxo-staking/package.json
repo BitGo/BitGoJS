@@ -15,7 +15,7 @@
     "lint": "eslint --quiet .",
     "prepare": "npm run build",
     "coverage": "nyc -- npm run unit-test",
-    "unit-test": "mocha --recursive test"
+    "unit-test": "mocha --recursive \"dist/test/**/*.js\""
   },
   "author": "BitGo SDK Team <sdkteam@bitgo.com>",
   "license": "MIT",
@@ -41,6 +41,7 @@
       ".ts"
     ]
   },
+  "type": "commonjs",
   "dependencies": {
     "@babylonlabs-io/babylon-proto-ts": "1.0.0",
     "@bitgo/babylonlabs-io-btc-staking-ts": "^2.4.0",
