@@ -2349,7 +2349,7 @@ export const coins = CoinMap.fromCoins([
     '05ce9121-45e0-4e9c-941b-1aa95bedfcc5',
     'terc721:unsteth',
     'Test Lido: stETH Withdrawal NFT',
-    '0xc7cc160b58f8bb0bac94b80847e2cf2800565c50'
+    '0xfe56573178f1bcdf53f01a6e9977670dcbbd9186'
   ),
   terc721(
     'e795fc78-b8a7-47a1-8294-5ecbe8a74c3a',
