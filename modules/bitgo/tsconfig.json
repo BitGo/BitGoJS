@@ -10,7 +10,7 @@
       "../../node_modules/@types"
     ],
     "declarationDir": "./dist/types",
-    "esModuleInterop": false
+    "esModuleInterop": true
   },
   "include": [
     "src/**/*",

@@ -2,7 +2,7 @@ import * as should from 'should';
 import 'should-http';
 
 import { TestBitGo } from '../../../lib/test_bitgo';
-import * as nock from 'nock';
+import nock from 'nock';
 nock.restore();
 
 describe('ETH:', function () {

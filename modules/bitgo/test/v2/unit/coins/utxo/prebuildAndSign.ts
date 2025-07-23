@@ -1,11 +1,11 @@
 /**
  * @prettier
  */
-import * as assert from 'assert';
+import assert from 'assert';
 
 import { AbstractUtxoCoin, getReplayProtectionAddresses } from '@bitgo/abstract-utxo';
 import * as utxolib from '@bitgo/utxo-lib';
-import * as nock from 'nock';
+import nock from 'nock';
 
 import { encryptKeychain, getDefaultWalletKeys, getUtxoWallet, keychainsBase58, utxoCoins } from './util';
 import { common, HalfSignedUtxoTransaction, Wallet } from '@bitgo/sdk-core';

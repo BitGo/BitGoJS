@@ -3,7 +3,7 @@
  */
 
 import * as utxolib from '@bitgo/utxo-lib';
-import { BIP32Interface, ECPairInterface } from '@bitgo/utxo-lib';
+import type { BIP32Interface, ECPairInterface } from '@bitgo/utxo-lib';
 import * as common from '../common';
 import { V1Network } from './types';
 

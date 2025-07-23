@@ -6,13 +6,13 @@ import * as sinon from 'sinon';
 require('should-sinon');
 
 import '../lib/asserts';
-import * as nock from 'nock';
+import nock from 'nock';
 
 import { common, Wallet } from '@bitgo/sdk-core';
 
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src/bitgo';
-const algoFixtures = require('../../../../sdk-coin-algo/test/fixtures/algo');
+const algoFixtures = require('../../../../../sdk-coin-algo/test/fixtures/algo');
 
 nock.disableNetConnect();
 

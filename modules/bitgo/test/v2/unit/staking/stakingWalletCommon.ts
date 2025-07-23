@@ -1,4 +1,4 @@
-import * as nock from 'nock';
+import nock from 'nock';
 import * as should from 'should';
 import fixtures from '../../fixtures/staking/stakingWallet';
 

@@ -2,16 +2,18 @@
  * @prettier
  */
 import { bitgo } from '@bitgo/utxo-lib';
-import { AddressInfo, TransactionIO } from '@bitgo/blockapis';
-import { AbstractUtxoCoin, RecoveryProvider } from '@bitgo/abstract-utxo';
+import type { AddressInfo, TransactionIO } from '@bitgo/blockapis';
+import type { AbstractUtxoCoin, RecoveryProvider } from '@bitgo/abstract-utxo';
 import * as utxolib from '@bitgo/utxo-lib';
 import { Bch } from '@bitgo/sdk-coin-bch';
 import { Bsv } from '@bitgo/sdk-coin-bsv';
 
 type Unspent<TNumber extends number | bigint = number> = bitgo.Unspent<TNumber>;
 export class MockRecoveryProvider implements RecoveryProvider {
+  public unspents: Unspent<bigint>[];
   private prevTxCache: Record<string, string> = {};
-  constructor(public unspents: Unspent<bigint>[]) {
+  constructor(unspents: Unspent<bigint>[]) {
+    this.unspents = unspents;
     this.unspents.forEach((u) => {
       if (utxolib.bitgo.isUnspentWithPrevTx(u)) {
         const { txid } = bitgo.parseOutputId(u.id);
@@ -50,13 +52,15 @@ export class MockRecoveryProvider implements RecoveryProvider {
   }
 }
 export class MockCrossChainRecoveryProvider<TNumber extends number | bigint> implements RecoveryProvider {
+  public coin: AbstractUtxoCoin;
+  public unspents: Unspent<TNumber>[];
+  public tx: utxolib.bitgo.UtxoTransaction<TNumber>;
   private addressVersion: 'cashaddr' | 'base58';
   private addressFormat: utxolib.addressFormat.AddressFormat;
-  constructor(
-    public coin: AbstractUtxoCoin,
-    public unspents: Unspent<TNumber>[],
-    public tx: utxolib.bitgo.UtxoTransaction<TNumber>
-  ) {
+  constructor(coin: AbstractUtxoCoin, unspents: Unspent<TNumber>[], tx: utxolib.bitgo.UtxoTransaction<TNumber>) {
+    this.coin = coin;
+    this.unspents = unspents;
+    this.tx = tx;
     // this is how blockchair will return the data, as a cashaddr for BCH like coins
     // BSV supports cashaddr, but at the time of writing the SDK does not support cashaddr for bsv
     this.addressFormat = this.coin instanceof Bch && !(this.coin instanceof Bsv) ? 'cashaddr' : 'default';

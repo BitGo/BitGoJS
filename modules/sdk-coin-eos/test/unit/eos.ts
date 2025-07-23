@@ -126,7 +126,7 @@ describe('EOS:', function () {
 
     // mock responses to the block chain
     const sandBox = sinon.createSandbox();
-    const callBack = sandBox.stub(Eos.prototype, <any>'getDataFromNode');
+    const callBack = sandBox.stub(Eos.prototype, 'getDataFromNode' as any);
     callBack
       .withArgs({
         endpoint: '/v1/chain/get_account',
@@ -380,7 +380,7 @@ describe('EOS:', function () {
     beforeEach(async () => {
       // mock responses to the block chain
       sandBox = sinon.createSandbox();
-      const callBack = sandBox.stub(Eos.prototype, <any>'getDataFromNode');
+      const callBack = sandBox.stub(Eos.prototype, 'getDataFromNode' as any);
       callBack
         .withArgs({
           endpoint: '/v1/chain/get_info',
