@@ -23,8 +23,9 @@ import {
   getStakingParams,
   toStakerInfo,
   forceFinalizePsbt,
+  sortedKeys,
 } from '../../../src/babylon';
-import { parseStakingDescriptor } from '../../../src/babylon/parseDescriptor';
+import { parseStakingDescriptor, parseUnbondingDescriptor } from '../../../src/babylon/parseDescriptor';
 import {
   normalize,
   assertEqualsFixture,
@@ -310,6 +311,32 @@ function describeWithKeys(
       assert.deepStrictEqual(parsed.slashingMiniscriptNode, descriptorBuilder.getSlashingMiniscriptNode());
       assert.deepStrictEqual(parsed.unbondingMiniscriptNode, descriptorBuilder.getUnbondingMiniscriptNode());
       assert.deepStrictEqual(parsed.timelockMiniscriptNode, descriptorBuilder.getStakingTimelockMiniscriptNode());
+
+      assert.strictEqual(parseStakingDescriptor(descriptorBuilder.getUnbondingDescriptor()), null);
+      assert.strictEqual(parseStakingDescriptor(descriptorBuilder.getUnbondingTimelockDescriptor()), null);
+    });
+
+    it('round-trip parseUnbondingDescriptor', function () {
+      const descriptor = descriptorBuilder.getUnbondingDescriptor();
+      const parsed = parseUnbondingDescriptor(descriptor);
+
+      assert(parsed);
+      assert.deepStrictEqual(parsed.slashingMiniscriptNode, descriptorBuilder.getSlashingMiniscriptNode());
+      assert.deepStrictEqual(
+        parsed.unbondingTimelockMiniscriptNode,
+        descriptorBuilder.getUnbondingTimelockMiniscriptNode()
+      );
+      assert.deepStrictEqual(parsed.stakerKey, descriptorBuilder.stakerKey);
+      assert.deepStrictEqual(
+        sortedKeys(parsed.finalityProviderKeys),
+        sortedKeys(descriptorBuilder.finalityProviderKeys)
+      );
+      assert.deepStrictEqual(sortedKeys(parsed.covenantKeys), sortedKeys(descriptorBuilder.covenantKeys));
+      assert.strictEqual(parsed.covenantThreshold, descriptorBuilder.covenantThreshold);
+      assert.strictEqual(parsed.unbondingTimeLock, descriptorBuilder.unbondingTimeLock);
+
+      assert.strictEqual(parseUnbondingDescriptor(descriptorBuilder.getStakingDescriptor()), null);
+      assert.strictEqual(parseUnbondingDescriptor(descriptorBuilder.getUnbondingTimelockDescriptor()), null);
     });
 
     describe('Transaction Sets', async function () {
