@@ -4269,6 +4269,5 @@ function isRunningInStaging(): boolean {
     process.env.APP_ENV === 'staging' || process.env.APP_ENV === 'staging_internal',
     process.env.ENVIRONMENT === 'staging' || process.env.ENVIRONMENT === 'staging_internal',
   ];
-  console.info('Staging environment variables:', stagingEnvVars);
   return stagingEnvVars.some(Boolean);
 }
