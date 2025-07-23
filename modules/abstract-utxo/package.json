@@ -45,6 +45,7 @@
     "@bitgo/blockapis": "^1.10.20",
     "@bitgo/sdk-api": "^1.65.0",
     "@bitgo/sdk-core": "^35.7.0",
+    "@bitgo/statics": "^55.0.0",
     "@bitgo/unspents": "^0.48.5",
     "@bitgo/utxo-core": "^1.12.1",
     "@bitgo/utxo-lib": "^11.6.3",

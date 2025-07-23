@@ -1,4 +1,6 @@
 import * as utxolib from '@bitgo/utxo-lib';
+import * as utxocore from '@bitgo/utxo-core';
+// import * as transactionModule from '@bitgo/abstract-utxo/src/transaction';
 import * as should from 'should';
 import * as sinon from 'sinon';
 import { Wallet, UnexpectedAddressError, VerificationOptions } from '@bitgo/sdk-core';
@@ -581,6 +583,93 @@ describe('Abstract UTXO Coin:', () => {
 
       coinMock.restore();
       bitcoinMock.restore();
+    });
+  });
+
+  describe('Verify paygo output when explaining psbt transaction', function () {
+    const bitgo: BitGo = TestBitGo.decorate(BitGo, { env: 'mock' });
+    let coin: AbstractUtxoCoin;
+    const NIL_UUID = '00000000-0000-0000-0000-000000000000';
+
+    // let getPayGoVerificationPubkeyStub: sinon.SinonStub;
+    let verifyPayGoAddressProofStub: sinon.SinonStub;
+    let psbtOutputIncludesPaygoAddressProofStub: sinon.SinonStub;
+
+    before(() => {
+      coin = bitgo.coin('tbtc') as AbstractUtxoCoin;
+      // getPayGoVerificationPubkeyStub = sinon.stub(transactionModule, 'getPayGoVerificationPubkey').returns(xpub);
+      verifyPayGoAddressProofStub = sinon.stub(utxocore.paygo, 'verifyPayGoAddressProof');
+      psbtOutputIncludesPaygoAddressProofStub = sinon.stub(utxocore.paygo, 'psbtOutputIncludesPaygoAddressProof');
+    });
+
+    after(() => {
+      // getPayGoVerificationPubkeyStub.restore();
+      verifyPayGoAddressProofStub.restore();
+      psbtOutputIncludesPaygoAddressProofStub.restore();
+    });
+
+    const rootWalletKeys = utxolib.testutil.getDefaultWalletKeys();
+    const dummyPub1 = rootWalletKeys.deriveForChainAndIndex(50, 200);
+    const xpub = dummyPub1.user.neutered().toBase58();
+    const prvkey = dummyPub1.user.privateKey!;
+    // getPayGoVerificationPubkey.returns(xpub);
+
+    const psbt = utxolib.testutil.constructPsbt(
+      [{ scriptType: 'p2shP2wsh', value: BigInt(100000) }],
+      [],
+      utxolib.networks.bitcoin,
+      rootWalletKeys,
+      'unsigned'
+    );
+    utxolib.bitgo.addXpubsToPsbt(psbt, rootWalletKeys);
+
+    const addressToVerify = utxolib.address.toBase58Check(
+      utxolib.crypto.hash160(Buffer.from(dummyPub1.backup.publicKey)),
+      utxolib.networks.bitcoin.pubKeyHash,
+      utxolib.networks.bitcoin
+    );
+
+    const addressProofWithPrefix = utxocore.testutil.generatePayGoAttestationProof(
+      NIL_UUID,
+      Buffer.from(addressToVerify),
+      true
+    );
+
+    // THIS IS FOR WHEN WE GENERATE A FIXTURE THAT IS SIGNED BY THE VERIFICATION PUB KEY FROM OUR STATICS
+    // ==================================================================================================
+    // const fixtureProof = { vaspProof, signature };
+    // const  { entropy, address } = utxocore.paygo.parsePayGoAttestation(fixtureProof.vaspProof);
+    // const txHex = '';
+    // const newPsbt = utxolib.bitgo.createPsbtFromHex(txHex, utxolib.networks.bitcoin);
+    // psbt.addOutput({
+    //   script: utxolib.address.toOutputScript(address),
+    //   value: BigInt(10000),
+    // });
+    // utxocore.paygo.addPayGoAddressProof(psbt, psbt.data.outputs.length - 1, fixtureProof.signature);
+
+    const { entropy, address, uuid } = utxocore.paygo.parsePayGoAttestation(addressProofWithPrefix);
+    const addressProofMsg = Buffer.concat([entropy, address, uuid]);
+
+    psbt.addOutput({
+      script: utxolib.address.toOutputScript(addressToVerify, utxolib.networks.bitcoin),
+      value: BigInt(10000),
+    });
+    const signature = utxocore.bip32utils.signMessage(addressProofMsg, prvkey, utxolib.networks.bitcoin);
+    utxocore.paygo.addPayGoAddressProof(psbt, 0, signature, entropy);
+
+    it('should detect and verify paygo address proof in PSBT', async function () {
+      // Mock parameters for explainTransaction
+      const mockPsbtHex = psbt.toHex();
+      const mockParams = {
+        txHex: mockPsbtHex,
+      };
+      console.log(psbt.data.outputs);
+
+      // Call explainTransaction
+      const res = await coin.explainTransaction(mockParams);
+      console.log(res);
+      psbtOutputIncludesPaygoAddressProofStub.called.should.be.true();
+      // verifyPayGoAddressProofStub.called.should.be.true();
     });
   });
 });
