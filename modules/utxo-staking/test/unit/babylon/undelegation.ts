@@ -1,3 +1,4 @@
+import assert from 'assert';
 import { promises as fs } from 'fs';
 
 import * as t from 'io-ts';
@@ -7,29 +8,33 @@ import * as utxolib from '@bitgo/utxo-lib';
 import { ast, Descriptor } from '@bitgo/wasm-miniscript';
 import { PartialSig } from 'bip174/src/lib/interfaces';
 
+import { BabylonDescriptorBuilder } from '../../../src/babylon';
 import {
   toPartialSig,
   UndelegationResponse,
   assertValidSignatures,
   toUnbondingPsbtWithSignatures,
 } from '../../../src/babylon/undelegation';
+import { parseStakingDescriptor } from '../../../src/babylon/parseDescriptor';
 import { assertTransactionEqualsFixture } from '../fixtures.utils';
 
-async function getFixture(txid: string): Promise<UndelegationResponse> {
+const BtcDelegation = t.type({
+  unbonding_time: t.number,
+  undelegation_response: UndelegationResponse,
+});
+
+type BtcDelegation = t.TypeOf<typeof BtcDelegation>;
+
+async function getFixture(txid: string): Promise<BtcDelegation> {
   // As returned by https://babylon.nodes.guru/api#/Query/BTCDelegation
-  const BtcDelegationResponse = t.type(
-    {
-      btc_delegation: t.type({ undelegation_response: UndelegationResponse }),
-    },
-    'BtcDelegationResponse'
-  );
+  const BtcDelegationResponse = t.type({ btc_delegation: BtcDelegation }, 'BtcDelegationResponse');
   const filename = __dirname + `/../../fixtures/babylon/rpc/btc_delegation/testnet.${txid}.json`;
   const data = JSON.parse(await fs.readFile(filename, 'utf8'));
   const result = BtcDelegationResponse.decode(data);
   if (isLeft(result)) {
     throw new Error(`Failed to decode fixture data for txid ${txid}: ${PathReporter.report(result).join(', ')}`);
   }
-  return result.right.btc_delegation.undelegation_response;
+  return result.right.btc_delegation;
 }
 
 type DescriptorLike = Descriptor | ast.DescriptorNode | string;
@@ -42,16 +47,17 @@ function toDescriptor(descriptor: DescriptorLike): Descriptor {
 
 function runTest(network: utxolib.Network, txid: string, descriptor: Descriptor): void {
   describe(`Unbonding transaction ${txid}`, function () {
+    let fixture: BtcDelegation;
     let psbt: utxolib.bitgo.UtxoPsbt;
     let signatures: PartialSig[];
 
     before('should create a PSBT from the unbonding transaction', async function () {
-      const fixture = await getFixture(txid);
-      const txBuffer = Buffer.from(fixture.unbonding_tx_hex, 'hex');
+      fixture = await getFixture(txid);
+      const txBuffer = Buffer.from(fixture.undelegation_response.unbonding_tx_hex, 'hex');
       const tx = utxolib.bitgo.createTransactionFromBuffer(txBuffer, network, {
         amountType: 'bigint',
       });
-      signatures = fixture.covenant_unbonding_sig_list.map((sig) => toPartialSig(sig));
+      signatures = fixture.undelegation_response.covenant_unbonding_sig_list.map((sig) => toPartialSig(sig));
 
       psbt = toUnbondingPsbtWithSignatures(
         tx,
@@ -73,6 +79,33 @@ function runTest(network: utxolib.Network, txid: string, descriptor: Descriptor)
       await assertTransactionEqualsFixture(
         'test/fixtures/babylon/unbonding.' + txid.substring(0, 4) + '.psbt.json',
         psbt
+      );
+    });
+
+    it('can spend from unbonding output', async function () {
+      const parsed = parseStakingDescriptor(descriptor);
+      assert(parsed);
+
+      const descriptorBuilder = new BabylonDescriptorBuilder(
+        parsed.stakerKey,
+        parsed.finalityProviderKeys,
+        parsed.covenantKeys,
+        parsed.covenantThreshold,
+        parsed.stakingTimeLock,
+        fixture.unbonding_time
+      );
+
+      assert.deepStrictEqual(
+        descriptorBuilder.getUnbondingMiniscriptNode(),
+        parsed.unbondingMiniscriptNode,
+        'Unbonding miniscript node does not match expected value'
+      );
+
+      assert(psbt.txOutputs.length === 1, 'Unbonding transaction should have exactly one output');
+
+      assert.deepStrictEqual(
+        psbt.txOutputs[0].script,
+        Buffer.from(descriptorBuilder.getUnbondingDescriptor().scriptPubkey())
       );
     });
   });
