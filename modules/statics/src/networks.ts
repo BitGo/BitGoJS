@@ -617,6 +617,21 @@ class Holesky extends Testnet implements EthereumNetwork {
   tokenOperationHashPrefix = 'ERC20';
 }
 
+class Hoodi extends Testnet implements EthereumNetwork {
+  name = 'Hoodi';
+  family = CoinFamily.ETH;
+  explorerUrl = 'https://hoodi.etherscan.io/tx/';
+  accountExplorerUrl = 'https://hoodi.etherscan.io/address/';
+  blockExplorerUrl = 'https://hoodi.etherscan.io/block/';
+  // https://chainlist.org/chain/560048
+  chainId = 560048;
+  batcherContractAddress = '0xebe27913fcc7510eadf10643a8f86bf5492a9541'; // populate post contract creation
+  forwarderFactoryAddress = '0xffa397285ce46fb78c588a9e993286aac68c37cd';
+  forwarderImplementationAddress = '0x059ffafdc6ef594230de44f824e2bd0a51ca5ded';
+  nativeCoinOperationHashPrefix = 'ETHER';
+  tokenOperationHashPrefix = 'ERC20';
+}
+
 class EthereumClassic extends Mainnet implements EthereumNetwork {
   name = 'EthereumClassic';
   family = CoinFamily.ETC;
@@ -1802,6 +1817,7 @@ export const Networks = {
     kovan: Object.freeze(new Kovan()),
     goerli: Object.freeze(new Goerli()),
     holesky: Object.freeze(new Holesky()),
+    hoodi: Object.freeze(new Hoodi()),
     lnbtc: Object.freeze(new LightningBitcoinTestnet()),
     litecoin: Object.freeze(new LitecoinTestnet()),
     mantra: Object.freeze(new MantraTestnet()),

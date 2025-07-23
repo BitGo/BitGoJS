@@ -323,7 +323,7 @@ export const coins = CoinMap.fromCoins([
   account(
     '68aec0bd-1d9a-40fa-bcef-7fa9538f65d3',
     'hteth',
-    'Holesky Testnet Ethereum',
+    isRunningInStaging() ? 'Hoodi Testnet Ethereum' : 'Holesky Testnet Ethereum',
     Networks.test.holesky,
     18,
     UnderlyingAsset.ETH,
@@ -4254,4 +4254,16 @@ export function createTokenMapUsingTrimmedConfigDetails(
   }
 
   return createTokenMapUsingConfigDetails(amsTokenConfigMap);
+}
+
+function isRunningInStaging(): boolean {
+  // Check explicit staging environment variables
+  const stagingEnvVars = [
+    process.env.BITGO_ENV === 'staging' || process.env.BITGO_ENV === 'staging_internal',
+    process.env.NODE_ENV === 'staging' || process.env.NODE_ENV === 'staging_internal',
+    process.env.APP_ENV === 'staging' || process.env.APP_ENV === 'staging_internal',
+    process.env.ENVIRONMENT === 'staging' || process.env.ENVIRONMENT === 'staging_internal',
+  ];
+  console.info('Staging environment variables:', stagingEnvVars);
+  return stagingEnvVars.some(Boolean);
 }

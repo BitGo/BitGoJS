@@ -11468,6 +11468,18 @@ export const erc20Coins = [
     Networks.test.holesky
   ),
   terc20(
+    '6ba7b810-9dad-11d1-80b4-00c04fd430c8',
+    'hdterc18dp',
+    'TERC18DP',
+    18,
+    '0x9851cb80a008a0862f9dec41e2f554420cee56f4',
+    UnderlyingAsset.HDTERC18DP,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
+  terc20(
     '9d5730cf-a1c2-4d0e-9ee9-922add38a11e',
     'hteth:bgerchv2',
     'BG Test Token',
@@ -11478,6 +11490,18 @@ export const erc20Coins = [
     undefined,
     undefined,
     Networks.test.holesky
+  ),
+  terc20(
+    'f47ac10b-58cc-4372-a567-0e02b2c3d479',
+    'hteth:bgerchv3',
+    'BG Test Token',
+    18,
+    '0x0d142fd70826d9157c3ea2ea5e4d4b484ba86963',
+    UnderlyingAsset['hteth:bgerchv3'],
+    HTETH_TOKEN_FEATURES,
+    undefined,
+    undefined,
+    Networks.test.hoodi
   ),
   terc20(
     '29c9cb44-00a9-4740-8de0-abf0a321b830',
