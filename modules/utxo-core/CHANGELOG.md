@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.12.1...@bitgo/utxo-core@1.13.0) (2025-07-23)
+
+### Bug Fixes
+
+- **utxo-core:** improve property extraction in toPlainObject ([f0cad57](https://github.com/BitGo/BitGoJS/commit/f0cad5738c55dccc63d0618203dc8f96784fd0bf))
+
+### Features
+
+- **utxo-core:** implement pattern matcher for descriptor parsing ([9e528cc](https://github.com/BitGo/BitGoJS/commit/9e528cc79efcf519b98e3757f4164443f0e08821))
+
 ## [1.12.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.12.0...@bitgo/utxo-core@1.12.1) (2025-07-15)
 
 **Note:** Version bump only for package @bitgo/utxo-core

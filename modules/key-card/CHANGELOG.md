@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.25.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/key-card@0.24.14...@bitgo/key-card@0.25.0) (2025-07-23)
+
+### Features
+
+- optional walletLabel key card ([ce1d32a](https://github.com/BitGo/BitGoJS/commit/ce1d32a8061f15cb85dfc268ba5850b1aa2782c3))
+
 ## [0.24.14](https://github.com/BitGo/BitGoJS/compare/@bitgo/key-card@0.24.13...@bitgo/key-card@0.24.14) (2025-07-15)
 
 **Note:** Version bump only for package @bitgo/key-card
