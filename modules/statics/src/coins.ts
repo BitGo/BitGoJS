@@ -4257,6 +4257,11 @@ export function createTokenMapUsingTrimmedConfigDetails(
 }
 
 function isRunningInStaging(): boolean {
+  if (typeof process === 'undefined' || !process.env) {
+    // If process or process.env doesn't exist, we're likely in a browser.
+    // Return false as we can't determine the environment this way.
+    return false;
+  }
   // Check explicit staging environment variables
   const stagingEnvVars = [
     process.env.BITGO_ENV === 'staging' || process.env.BITGO_ENV === 'staging_internal',
