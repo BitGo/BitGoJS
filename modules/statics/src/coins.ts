@@ -324,7 +324,7 @@ export const coins = CoinMap.fromCoins([
     '68aec0bd-1d9a-40fa-bcef-7fa9538f65d3',
     'hteth',
     isRunningInStaging() ? 'Hoodi Testnet Ethereum' : 'Holesky Testnet Ethereum',
-    Networks.test.holesky,
+    isRunningInStaging() ? Networks.test.hoodi : Networks.test.holesky,
     18,
     UnderlyingAsset.ETH,
     BaseUnit.ETH,
