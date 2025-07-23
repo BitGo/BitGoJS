@@ -285,11 +285,13 @@ export const utxoCoins: Readonly<BaseCoin>[] = [
     BaseUnit.DASH,
     DASH_FEATURES.filter(
       (feature) =>
-        ![
-          CoinFeature.CUSTODY_BITGO_SINGAPORE,
-          CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
-          CoinFeature.CUSTODY_BITGO_MENA_FZE,
-        ].includes(feature)
+        !(
+          [
+            CoinFeature.CUSTODY_BITGO_SINGAPORE,
+            CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+            CoinFeature.CUSTODY_BITGO_MENA_FZE,
+          ] as CoinFeature[]
+        ).includes(feature)
     )
   ),
   utxo(
