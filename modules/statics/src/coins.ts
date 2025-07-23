@@ -4081,7 +4081,6 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
         token.network, // network
         token.decimalPlaces,
         token.asset,
-        token.tokenId, // tokenId
         token.contractAddress, // contractAddress
         ...commonArgs.slice(5, 8), // features, prefix, suffix
         token.primaryKeyCurve
