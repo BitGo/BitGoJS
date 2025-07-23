@@ -3627,7 +3627,7 @@ export const coins = CoinMap.fromCoins([
   xrpToken(
     '69f31128-7f1c-4714-b0a5-7b93866a88e8',
     'xrp:fiuaxrp',
-    'Archax',
+    'FIUAXRP',
     15,
     'rKCu4CucpepQ6N89c8T5GuX2jkxzCST18Q',
     '4649554158525000000000000000000000000000',
