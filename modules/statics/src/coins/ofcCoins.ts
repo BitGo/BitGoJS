@@ -25,6 +25,8 @@ import {
   tofcHederaToken,
   ofcaptToken,
   tofcStxToken,
+  ofcnep141Token,
+  tofcnep141Token,
 } from '../ofc';
 import { UnderlyingAsset, CoinKind } from '../base';
 
@@ -2723,4 +2725,22 @@ export const ofcCoins = [
   ),
   ofcStxToken('b4ef967b-7aa3-4252-9366-bbcffffd1c4d', 'ofcstx:usdh', 'USDH', 8, UnderlyingAsset['stx:usdh']),
   ofcStxToken('511fc482-d962-4c29-9921-4a7d99405e64', 'ofcstx:welsh', 'Welsh', 6, UnderlyingAsset['stx:welsh']),
+
+  //Nep141
+  ofcnep141Token('ae7413e9-147d-4f72-a180-e9d1ed4bb885', 'ofcnear:usdc', 'USD Coin', 6, UnderlyingAsset['near:usdc']),
+  ofcnep141Token('8e2467c9-f261-4e2e-abc6-cf08655359f8', 'ofcnear:usdt', 'Tether USD', 6, UnderlyingAsset['near:usdt']),
+  tofcnep141Token(
+    'a3a47204-c114-42d7-b673-0a5f60ca0d9e',
+    'ofctnear:tnep24dp',
+    'Test NEP141 Token 24 Decimals',
+    24,
+    UnderlyingAsset['tnear:tnep24dp']
+  ),
+  tofcnep141Token(
+    '09ebe08e-8b56-4d28-bf51-7c328e903aff',
+    'ofctnear:usdc',
+    'USD Coin',
+    6,
+    UnderlyingAsset['tnear:usdc']
+  ),
 ];
