@@ -5,6 +5,7 @@ import { PathReporter } from 'io-ts/lib/PathReporter';
 import { isLeft } from 'fp-ts/Either';
 import * as utxolib from '@bitgo/utxo-lib';
 import { ast, Descriptor } from '@bitgo/wasm-miniscript';
+import { PartialSig } from 'bip174/src/lib/interfaces';
 
 import { toPartialSig, UndelegationResponse } from '../../../src/babylon/undelegation/UndelegationResponse';
 import { assertValidSignatures, toUnbondingPsbtWithSignatures } from '../../../src/babylon/undelegation/unbonding';
@@ -37,15 +38,18 @@ function toDescriptor(descriptor: DescriptorLike): Descriptor {
 
 function runTest(network: utxolib.Network, txid: string, descriptor: Descriptor): void {
   describe(`Unbonding transaction ${txid}`, function () {
-    it('should create a PSBT from the unbonding transaction', async function () {
+    let psbt: utxolib.bitgo.UtxoPsbt;
+    let signatures: PartialSig[];
+
+    before('should create a PSBT from the unbonding transaction', async function () {
       const fixture = await getFixture(txid);
       const txBuffer = Buffer.from(fixture.unbonding_tx_hex, 'hex');
       const tx = utxolib.bitgo.createTransactionFromBuffer(txBuffer, network, {
         amountType: 'bigint',
       });
-      const signatures = fixture.covenant_unbonding_sig_list.map((sig) => toPartialSig(sig));
+      signatures = fixture.covenant_unbonding_sig_list.map((sig) => toPartialSig(sig));
 
-      const psbt = toUnbondingPsbtWithSignatures(
+      psbt = toUnbondingPsbtWithSignatures(
         tx,
         {
           script: Buffer.from('5120b81e8691ab3c46bddf8ea43f776e4d64abf417a0fa5a4d09976c8aaadabbb6a0', 'hex'),
@@ -55,9 +59,13 @@ function runTest(network: utxolib.Network, txid: string, descriptor: Descriptor)
         signatures,
         utxolib.networks.testnet
       );
+    });
 
+    it('should have valid signatures', async function () {
       assertValidSignatures(psbt, 0, signatures);
+    });
 
+    it('should match the fixture', async function () {
       await assertTransactionEqualsFixture(
         'test/fixtures/babylon/unbonding.' + txid.substring(0, 4) + '.psbt.json',
         psbt
