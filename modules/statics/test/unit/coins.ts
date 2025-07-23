@@ -300,39 +300,19 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
     ],
   },
   'sol:ustry': {
-    features: [
-      CoinFeature.CUSTODY_BITGO_FRANKFURT,
-      CoinFeature.CUSTODY_BITGO_GERMANY,
-      CoinFeature.CUSTODY_BITGO_SINGAPORE,
-    ],
+    features: [CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_GERMANY],
   },
   'sol:eurob': {
-    features: [
-      CoinFeature.CUSTODY_BITGO_FRANKFURT,
-      CoinFeature.CUSTODY_BITGO_GERMANY,
-      CoinFeature.CUSTODY_BITGO_SINGAPORE,
-    ],
+    features: [CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_GERMANY],
   },
   'sol:tesouro': {
-    features: [
-      CoinFeature.CUSTODY_BITGO_FRANKFURT,
-      CoinFeature.CUSTODY_BITGO_GERMANY,
-      CoinFeature.CUSTODY_BITGO_SINGAPORE,
-    ],
+    features: [CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_GERMANY],
   },
   'sol:cetes': {
-    features: [
-      CoinFeature.CUSTODY_BITGO_FRANKFURT,
-      CoinFeature.CUSTODY_BITGO_GERMANY,
-      CoinFeature.CUSTODY_BITGO_SINGAPORE,
-    ],
+    features: [CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_GERMANY],
   },
   'sol:gilts': {
-    features: [
-      CoinFeature.CUSTODY_BITGO_FRANKFURT,
-      CoinFeature.CUSTODY_BITGO_GERMANY,
-      CoinFeature.CUSTODY_BITGO_SINGAPORE,
-    ],
+    features: [CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_GERMANY],
   },
   'sol:muskit': {
     features: [

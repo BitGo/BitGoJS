@@ -2,6 +2,7 @@ import { ProgramID, solToken, tsolToken } from '../account';
 import { CoinFeature, UnderlyingAsset } from '../base';
 import {
   SOL_TOKEN_FEATURES,
+  SOL_TOKEN_FEATURES_EXCLUDE_SINGAPORE,
   SOL_TOKEN_FEATURES_WITH_FRANKFURT,
   SOL_TOKEN_FEATURES_WITH_FRANKFURT_GERMANY,
 } from '../coinFeatures';
@@ -2529,12 +2530,7 @@ export const solTokens = [
     'USTRYnGgcHAhdWsanv8BG6vHGd4p7UGgoB9NRd8ei7j',
     'USTRYnGgcHAhdWsanv8BG6vHGd4p7UGgoB9NRd8ei7j',
     UnderlyingAsset['sol:ustry'],
-    [
-      ...SOL_TOKEN_FEATURES,
-      CoinFeature.CUSTODY_BITGO_FRANKFURT,
-      CoinFeature.CUSTODY_BITGO_GERMANY,
-      CoinFeature.CUSTODY_BITGO_SINGAPORE,
-    ],
+    [...SOL_TOKEN_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.CUSTODY_BITGO_GERMANY],
     ProgramID.Token2022ProgramId
   ),
   solToken(
@@ -2545,12 +2541,7 @@ export const solTokens = [
     'EuroszHk1AL7fHBBsxgeGHsamUqwBpb26oEyt9BcfZ6G',
     'EuroszHk1AL7fHBBsxgeGHsamUqwBpb26oEyt9BcfZ6G',
     UnderlyingAsset['sol:eurob'],
-    [
-      ...SOL_TOKEN_FEATURES,
-      CoinFeature.CUSTODY_BITGO_FRANKFURT,
-      CoinFeature.CUSTODY_BITGO_GERMANY,
-      CoinFeature.CUSTODY_BITGO_SINGAPORE,
-    ],
+    [...SOL_TOKEN_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.CUSTODY_BITGO_GERMANY],
     ProgramID.Token2022ProgramId
   ),
   solToken(
@@ -2561,12 +2552,7 @@ export const solTokens = [
     'BRNTNaZeTJANz9PeuD8drNbBHwGgg7ZTjiQYrFgWQ48p',
     'BRNTNaZeTJANz9PeuD8drNbBHwGgg7ZTjiQYrFgWQ48p',
     UnderlyingAsset['sol:tesouro'],
-    [
-      ...SOL_TOKEN_FEATURES,
-      CoinFeature.CUSTODY_BITGO_FRANKFURT,
-      CoinFeature.CUSTODY_BITGO_GERMANY,
-      CoinFeature.CUSTODY_BITGO_SINGAPORE,
-    ],
+    [...SOL_TOKEN_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.CUSTODY_BITGO_GERMANY],
     ProgramID.Token2022ProgramId
   ),
   solToken(
@@ -2577,12 +2563,7 @@ export const solTokens = [
     'CETES7CKqqKQizuSN6iWQwmTeFRjbJR6Vw2XRKfEDR8f',
     'CETES7CKqqKQizuSN6iWQwmTeFRjbJR6Vw2XRKfEDR8f',
     UnderlyingAsset['sol:cetes'],
-    [
-      ...SOL_TOKEN_FEATURES,
-      CoinFeature.CUSTODY_BITGO_FRANKFURT,
-      CoinFeature.CUSTODY_BITGO_GERMANY,
-      CoinFeature.CUSTODY_BITGO_SINGAPORE,
-    ],
+    [...SOL_TOKEN_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.CUSTODY_BITGO_GERMANY],
     ProgramID.Token2022ProgramId
   ),
   solToken(
@@ -2593,12 +2574,7 @@ export const solTokens = [
     'GiLTSeSFnNse7xQVYeKdMyckGw66AoRmyggGg1NNd4yr',
     'GiLTSeSFnNse7xQVYeKdMyckGw66AoRmyggGg1NNd4yr',
     UnderlyingAsset['sol:gilts'],
-    [
-      ...SOL_TOKEN_FEATURES,
-      CoinFeature.CUSTODY_BITGO_FRANKFURT,
-      CoinFeature.CUSTODY_BITGO_GERMANY,
-      CoinFeature.CUSTODY_BITGO_SINGAPORE,
-    ],
+    [...SOL_TOKEN_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.CUSTODY_BITGO_GERMANY],
     ProgramID.Token2022ProgramId
   ),
   solToken(

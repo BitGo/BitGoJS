@@ -769,7 +769,8 @@ export const erc20Coins = [
     'BCAP',
     0,
     '0x1f41e42d0a9e3c0dd3ba15b527342783b43200a9',
-    UnderlyingAsset.BCAP
+    UnderlyingAsset.BCAP,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '8f3ba79b-4cf6-417f-a5bc-84c613a3c08e',
@@ -959,7 +960,8 @@ export const erc20Coins = [
     'Bankera',
     8,
     '0xc80c5e40220172b36adee2c951f26f2a577810c5',
-    UnderlyingAsset.BNK
+    UnderlyingAsset.BNK,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'fd39c546-52c8-4668-b30d-3397681ff9d3',
@@ -1262,7 +1264,8 @@ export const erc20Coins = [
     'Cyber Credit Token',
     0,
     '0x8469e5158fb3c043cf88ce769c94e4b9fc8d79b5',
-    UnderlyingAsset.CCT
+    UnderlyingAsset.CCT,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '3f222275-9456-4eff-840d-4fe873676619',
@@ -6261,7 +6264,8 @@ export const erc20Coins = [
     'Vinx Coin',
     18,
     '0x14f0a12a43c36c49d4b403dd6e1a9b8222be456c',
-    UnderlyingAsset.VXC
+    UnderlyingAsset.VXC,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '7733a50f-b06b-4ea2-94bb-d5a6c2999dc2',
@@ -6605,7 +6609,8 @@ export const erc20Coins = [
     'Rialto',
     9,
     '0xb24754be79281553dc1adc160ddf5cd9b74361a4',
-    UnderlyingAsset.XRL
+    UnderlyingAsset.XRL,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '0ef88852-b8d7-4260-818d-e626c913e56f',
@@ -10694,7 +10699,8 @@ export const erc20Coins = [
     'UBS uMINT',
     0,
     '0x3797c46db697c24a983222c335f17ba28e8c5b69',
-    UnderlyingAsset['eth:umint']
+    UnderlyingAsset['eth:umint'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '627ba0d4-29e6-48ec-b72b-e1124fcc5079',
