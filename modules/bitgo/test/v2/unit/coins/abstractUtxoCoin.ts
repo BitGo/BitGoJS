@@ -588,7 +588,7 @@ describe('Abstract UTXO Coin:', () => {
 
   describe('Verify paygo output when explaining psbt transaction', function () {
     const bitgo: BitGo = TestBitGo.decorate(BitGo, { env: 'mock' });
-    const coin = bitgo.coin('tbtc') as AbstractUtxoCoin;
+    let coin: AbstractUtxoCoin;
     const NIL_UUID = '00000000-0000-0000-0000-000000000000';
 
     // let getPayGoVerificationPubkeyStub: sinon.SinonStub;
@@ -596,6 +596,7 @@ describe('Abstract UTXO Coin:', () => {
     let psbtOutputIncludesPaygoAddressProofStub: sinon.SinonStub;
 
     before(() => {
+      coin = bitgo.coin('tbtc') as AbstractUtxoCoin;
       // getPayGoVerificationPubkeyStub = sinon.stub(transactionModule, 'getPayGoVerificationPubkey').returns(xpub);
       verifyPayGoAddressProofStub = sinon.stub(utxocore.paygo, 'verifyPayGoAddressProof');
       psbtOutputIncludesPaygoAddressProofStub = sinon.stub(utxocore.paygo, 'psbtOutputIncludesPaygoAddressProof');
@@ -638,6 +639,8 @@ describe('Abstract UTXO Coin:', () => {
     // ==================================================================================================
     // const fixtureProof = { vaspProof, signature };
     // const  { entropy, address } = utxocore.paygo.parsePayGoAttestation(fixtureProof.vaspProof);
+    // const txHex = '';
+    // const newPsbt = utxolib.bitgo.createPsbtFromHex(txHex, utxolib.networks.bitcoin);
     // psbt.addOutput({
     //   script: utxolib.address.toOutputScript(address),
     //   value: BigInt(10000),
@@ -652,16 +655,19 @@ describe('Abstract UTXO Coin:', () => {
       value: BigInt(10000),
     });
     const signature = utxocore.bip32utils.signMessage(addressProofMsg, prvkey, utxolib.networks.bitcoin);
-    utxocore.paygo.addPayGoAddressProof(psbt, psbt.data.outputs.length - 1, signature, entropy);
+    utxocore.paygo.addPayGoAddressProof(psbt, 0, signature, entropy);
+
     it('should detect and verify paygo address proof in PSBT', async function () {
       // Mock parameters for explainTransaction
       const mockPsbtHex = psbt.toHex();
       const mockParams = {
         txHex: mockPsbtHex,
       };
+      console.log(psbt.data.outputs);
 
       // Call explainTransaction
-      await coin.explainTransaction(mockParams);
+      const res = await coin.explainTransaction(mockParams);
+      console.log(res);
       psbtOutputIncludesPaygoAddressProofStub.called.should.be.true();
       // verifyPayGoAddressProofStub.called.should.be.true();
     });

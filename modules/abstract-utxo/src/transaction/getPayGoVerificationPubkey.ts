@@ -9,6 +9,8 @@ import { Networks } from '@bitgo/statics';
  */
 export function getPayGoVerificationPubkey(network: utxolib.Network): string | undefined {
   const networkName = utxolib.getNetworkName(network);
+  console.log(network);
+  console.log(networkName);
   if (utxolib.isTestnet(network)) {
     switch (networkName) {
       case 'testnet':

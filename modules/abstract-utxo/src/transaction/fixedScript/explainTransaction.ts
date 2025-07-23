@@ -211,7 +211,7 @@ export function explainPsbt<TNumber extends number | bigint, Tx extends bitgo.Ut
 
     // find which output index that contains the PayGo proof
     outputIndex = utxocore.paygo.getPayGoAddressProofOutputIndex(psbt);
-    if (!outputIndex || !verificationPubkey) {
+    if (outputIndex === undefined || !verificationPubkey) {
       return undefined;
     }
     const output = txOutputs[outputIndex];
