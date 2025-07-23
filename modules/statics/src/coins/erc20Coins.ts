@@ -11528,6 +11528,18 @@ export const erc20Coins = [
     Networks.test.holesky
   ),
   terc20(
+    '123e4567-e89b-12d3-a456-426614174000',
+    'hdterc6dp',
+    'TERC6DP',
+    6,
+    '0x6091cfbd9312377863060e792c4a5c3c5a1f00fe',
+    UnderlyingAsset.HDTERC6DP,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
+  terc20(
     'c316d8ef-20d6-40b7-b0c1-e3cc278d0c17',
     'hterc2dp',
     'TERC2DP',
@@ -11538,6 +11550,18 @@ export const erc20Coins = [
     undefined,
     undefined,
     Networks.test.holesky
+  ),
+  terc20(
+    '8c6b3e4f-5a23-41f0-8458-381a0a294b5e',
+    'hdterc2dp',
+    'TERC2DP',
+    2,
+    '0xcd161560612b039663e54679601defbe6b1cfffb',
+    UnderlyingAsset.HDTERC2DP,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.hoodi
   ),
   terc20(
     'f49e8632-7cd9-4e0b-a576-7e9cd12bcf82',
