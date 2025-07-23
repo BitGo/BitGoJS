@@ -10919,6 +10919,94 @@ export const erc20Coins = [
     '0x544c42fbb96b39b21df61cf322b5edc285ee7429',
     UnderlyingAsset['eth:insur']
   ),
+  erc20(
+    '57e56eb9-5e56-4dba-a8f4-42dd45913b9b',
+    'eth:xyo',
+    'XY Oracle',
+    18,
+    '0x55296f69f40ea6d20e478533c15a6b08b654e758',
+    UnderlyingAsset['eth:xyo']
+  ),
+  erc20(
+    'd349812b-833a-4358-a061-5b8d1549a1e9',
+    'eth:zig',
+    'ZigChain',
+    18,
+    '0xb2617246d0c6c0087f18703d576831899ca94f01',
+    UnderlyingAsset['eth:zig']
+  ),
+  erc20(
+    '42205617-6e50-4f2f-a77b-0c68dbd04bd7',
+    'eth:swftc',
+    'SwftCoin',
+    8,
+    '0x0bb217e40f8a5cb79adf04e1aab60e5abd0dfc1e',
+    UnderlyingAsset['eth:swftc']
+  ),
+  erc20(
+    '018fbebd-b082-4bca-a14d-666361b7d36f',
+    'eth:dsync',
+    'Destra Network',
+    18,
+    '0xf94e7d0710709388bce3161c32b4eea56d3f91cc',
+    UnderlyingAsset['eth:dsync']
+  ),
+  erc20(
+    'f8c2a984-f1ad-43b4-aef7-d996a69c3ad0',
+    'eth:orbr',
+    'Orbler',
+    18,
+    '0xda30f261a962d5aae94c9ecd170544600d193766',
+    UnderlyingAsset['eth:orbr']
+  ),
+  erc20(
+    '2b06fe46-2023-47dc-bf90-bb12fd04cdb4',
+    'eth:sxt',
+    'Space and Time',
+    18,
+    '0xe6bfd33f52d82ccb5b37e16d3dd81f9ffdabb195',
+    UnderlyingAsset['eth:sxt']
+  ),
+  erc20(
+    '83bb1689-5f6e-4b31-b88d-9b2cec24c05c',
+    'eth:paal',
+    'PAAL AI',
+    9,
+    '0x14fee680690900ba0cccfc76ad70fd1b95d10e16',
+    UnderlyingAsset['eth:paal']
+  ),
+  erc20(
+    'f74f17f3-d178-4184-bb2d-066d33918fd8',
+    'eth:wmtx',
+    'WorldMobile Token',
+    6,
+    '0xdbb5cf12408a3ac17d668037ce289f9ea75439d7',
+    UnderlyingAsset['eth:wmtx']
+  ),
+  erc20(
+    '8e37e725-c72c-49e1-a076-9e6bba17daf3',
+    'eth:anime',
+    'Animecoin',
+    18,
+    '0x4dc26fc5854e7648a064a4abd590bbe71724c277',
+    UnderlyingAsset['eth:anime']
+  ),
+  erc20(
+    '42a4bc3f-2853-49dd-975f-487dbf028774',
+    'eth:newt',
+    'Newton',
+    18,
+    '0xd0ec028a3d21533fdd200838f39c85b03679285d',
+    UnderlyingAsset['eth:newt']
+  ),
+  erc20(
+    '7c95a1da-dcdc-4305-83fc-761b49822955',
+    'eth:hsk',
+    'HashKey Platform Token',
+    18,
+    '0xe7c6bf469e97eeb0bfb74c8dbff5bd47d4c1c98a',
+    UnderlyingAsset['eth:hsk']
+  ),
   terc20(
     '0205f0d6-0647-47c9-ad8b-c48d048e54f3',
     'fixed',
