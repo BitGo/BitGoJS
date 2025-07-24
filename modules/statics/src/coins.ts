@@ -1649,7 +1649,7 @@ export const coins = CoinMap.fromCoins([
     POLYX_FEATURES,
     KeyCurve.Ed25519
   ),
-  account(
+  gasTankAccount(
     '98071460-1488-4edd-857f-0899bc5eee4f',
     'vet',
     'Mainnet VET',
@@ -1658,9 +1658,11 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.VET,
     BaseUnit.ETH, // The smallest unit of VET, similar to Ethereum, is called 'wei'.
     VET_FEATURES,
-    KeyCurve.Secp256k1
+    KeyCurve.Secp256k1,
+    80,
+    200
   ),
-  account(
+  gasTankAccount(
     'b3158e80-f6ea-4922-98ab-d773a680ce76',
     'tvet',
     'Testnet VET',
@@ -1669,7 +1671,9 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.VET,
     BaseUnit.ETH,
     VET_FEATURES,
-    KeyCurve.Secp256k1
+    KeyCurve.Secp256k1,
+    80,
+    200
   ),
   erc20CompatibleAccountCoin(
     'bfae821b-cf3a-4190-b1a8-a54af51d730e',
