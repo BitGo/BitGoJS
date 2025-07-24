@@ -1,5 +1,6 @@
 import should from 'should';
 import * as bs58 from 'bs58';
+import { Connection, clusterApiUrl } from '@solana/web3.js';
 
 import { getBuilderFactory } from '../getBuilderFactory';
 import { KeyPair, TokenTransferBuilder } from '../../../src';
@@ -10,19 +11,33 @@ import { Ed25519Bip32HdTree } from '@bitgo/sdk-lib-mpc';
 
 describe('Sol Transaction Builder', async () => {
   let builders;
+  let validBlockhash: string;
   const factory = getBuilderFactory('tsol');
   const authAccount = new KeyPair(testData.authAccount).getKeys();
   const nonceAccount = new KeyPair(testData.nonceAccount).getKeys();
-  const validBlockhash = 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi';
 
-  beforeEach(function (done) {
+  // Function to get latest blockhash
+  async function getLatestBlockhash(): Promise<string> {
+    try {
+      const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
+      const { blockhash } = await connection.getLatestBlockhash();
+      return blockhash;
+    } catch (error) {
+      // Fallback to hardcoded value if network call fails
+      return 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi';
+    }
+  }
+
+  beforeEach(async function () {
+    // Get fresh blockhash for each test
+    validBlockhash = await getLatestBlockhash();
+
     builders = [
       factory.getWalletInitializationBuilder(),
       factory.getTransferBuilder(),
       factory.getStakingActivateBuilder(),
       factory.getStakingWithdrawBuilder(),
     ];
-    done();
   });
 
   it('start and build an empty a transfer tx with fee', async () => {
@@ -362,6 +377,7 @@ describe('Sol Transaction Builder', async () => {
 
       // verify rebuilt transaction contains signature
       const rawTransaction = signedTransaction.toBroadcastFormat() as string;
+      // let base58 = bs58.encode(Buffer.from(rawTransaction, 'base64'));
       const rebuiltSignedTransaction = await factory.from(rawTransaction).build();
       rebuiltSignedTransaction.signature.should.deepEqual(signedTransaction.signature);
 

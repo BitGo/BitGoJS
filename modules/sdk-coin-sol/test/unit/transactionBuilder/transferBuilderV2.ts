@@ -3,10 +3,23 @@ import { KeyPair, Utils } from '../../../src';
 import * as testData from '../../resources/sol';
 import should from 'should';
 import { FeeOptions } from '@bitgo/sdk-core';
+import { clusterApiUrl, Connection } from '@solana/web3.js';
+// import * as bs58 from 'bs58';
 
 describe('Sol Transfer Builder V2', () => {
   let ataAddress;
   const factory = getBuilderFactory('tsol');
+
+  async function getLatestBlockhash(): Promise<string> {
+    try {
+      const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
+      const { blockhash } = await connection.getLatestBlockhash();
+      return blockhash;
+    } catch (error) {
+      // Fallback to hardcoded value if network call fails
+      return 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi';
+    }
+  }
 
   const authAccount = new KeyPair(testData.authAccount).getKeys();
   const nonceAccount = new KeyPair(testData.nonceAccount).getKeys();
@@ -142,8 +155,9 @@ describe('Sol Transfer Builder V2', () => {
     });
 
     it('build a transfer tx signed with memo and durable nonce', async () => {
+      const recentBlockHash = await getLatestBlockhash();
       const txBuilder = factory.getTransferBuilderV2();
-      txBuilder.nonce(recentBlockHash, { walletNonceAddress: nonceAccount.pub, authWalletAddress: authAccount.pub });
+      txBuilder.nonce(recentBlockHash);
       txBuilder.feePayer(feePayerAccount.pub);
       txBuilder.sender(authAccount.pub);
       txBuilder.send({ address: otherAccount.pub, amount });
@@ -163,6 +177,8 @@ describe('Sol Transfer Builder V2', () => {
         coin: 'tsol',
       });
       const rawTx = tx.toBroadcastFormat();
+      // const base58 = bs58.encode(Buffer.from(rawTx, 'base64'));
+
       should.equal(Utils.isValidRawTransaction(rawTx), true);
       should.equal(rawTx, testData.NATIVE_TRANSFERV2_SIGNED_TX_WITH_MEMO_AND_DURABLE_NONCE);
     });

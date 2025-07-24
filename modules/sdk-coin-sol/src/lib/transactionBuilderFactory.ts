@@ -2,6 +2,7 @@ import { BaseTransactionBuilderFactory, InvalidTransactionError, TransactionType
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { AtaInitializationBuilder } from './ataInitializationBuilder';
 import { CloseAtaBuilder } from './closeAtaBuilder';
+import { ContractCallBuilder } from './contractCallBuilder';
 import { StakingActivateBuilder } from './stakingActivateBuilder';
 import { StakingAuthorizeBuilder } from './stakingAuthorizeBuilder';
 import { StakingDeactivateBuilder } from './stakingDeactivateBuilder';
@@ -58,6 +59,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           return this.getStakingDelegateBuilder(tx);
         case TransactionType.CloseAssociatedTokenAccount:
           return this.getCloseAtaInitializationBuilder(tx);
+        case TransactionType.ContractCall:
+          return this.getContractCallBuilder(tx);
         default:
           throw new InvalidTransactionError('Invalid transaction');
       }
@@ -173,6 +176,13 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    */
   getCloseAtaInitializationBuilder(tx?: Transaction): CloseAtaBuilder {
     return this.initializeBuilder(tx, new CloseAtaBuilder(this._coinConfig));
+  }
+
+  /**
+   * Returns the builder to create a contract call transaction.
+   */
+  getContractCallBuilder(tx?: Transaction): ContractCallBuilder {
+    return this.initializeBuilder(tx, new ContractCallBuilder(this._coinConfig));
   }
 
   /**

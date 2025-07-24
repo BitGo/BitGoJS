@@ -27,6 +27,7 @@ import { InstructionBuilderTypes, ValidInstructionTypesEnum, walletInitInstructi
 import {
   AtaClose,
   AtaInit,
+  ContractCall,
   InstructionParams,
   Memo,
   Nonce,
@@ -77,6 +78,8 @@ export function instructionParamsFactory(
       return parseStakingAuthorizeRawInstructions(instructions);
     case TransactionType.StakingDelegate:
       return parseStakingDelegateInstructions(instructions);
+    case TransactionType.ContractCall:
+      return parseContractCallInstructions(instructions);
     default:
       throw new NotSupported('Invalid transaction, transaction type not supported: ' + type);
   }
@@ -892,4 +895,86 @@ function findTokenName(
   assert(token);
 
   return token;
+}
+
+/**
+ * Parses Solana instructions to contract call tx instructions params
+ * Supports Memo, Nonce, and contract call instructions
+ *
+ * @param {TransactionInstruction[]} instructions - an array of supported Solana instructions
+ * @returns {InstructionParams[]} An array containing instruction params for contract call tx
+ */
+function parseContractCallInstructions(instructions: TransactionInstruction[]): Array<Nonce | Memo | ContractCall> {
+  const instructionData: Array<Nonce | Memo | ContractCall> = [];
+  const contractInstructions: TransactionInstruction[] = [];
+  let primaryProgramId: string | null = null;
+
+  for (const instruction of instructions) {
+    const type = getInstructionType(instruction);
+    switch (type) {
+      case ValidInstructionTypesEnum.AdvanceNonceAccount:
+        const advanceNonceInstruction = SystemInstruction.decodeNonceAdvance(instruction);
+        const nonce: Nonce = {
+          type: InstructionBuilderTypes.NonceAdvance,
+          params: {
+            walletNonceAddress: advanceNonceInstruction.noncePubkey.toString(),
+            authWalletAddress: advanceNonceInstruction.authorizedPubkey.toString(),
+          },
+        };
+        instructionData.push(nonce);
+        break;
+
+      case ValidInstructionTypesEnum.Memo:
+        const memo: Memo = {
+          type: InstructionBuilderTypes.Memo,
+          params: { memo: instruction.data.toString() },
+        };
+        instructionData.push(memo);
+        break;
+
+      default:
+        // Collect contract instructions to group them by program ID
+        contractInstructions.push(instruction);
+        if (!primaryProgramId) {
+          primaryProgramId = instruction.programId.toString();
+        }
+        break;
+    }
+  }
+
+  // If we have contract instructions, create a ContractCall instruction parameter
+  if (contractInstructions.length > 0 && primaryProgramId) {
+    // Group instructions by program ID
+    const instructionsByProgram = new Map<string, TransactionInstruction[]>();
+
+    for (const instruction of contractInstructions) {
+      const programId = instruction.programId.toString();
+      if (!instructionsByProgram.has(programId)) {
+        instructionsByProgram.set(programId, []);
+      }
+      const existingInstructions = instructionsByProgram.get(programId);
+      if (existingInstructions) {
+        existingInstructions.push(instruction);
+      }
+    }
+
+    // Create ContractCall parameters for each program
+    for (const [programId, programInstructions] of instructionsByProgram) {
+      const contractCall: ContractCall = {
+        type: InstructionBuilderTypes.ContractCall,
+        params: {
+          programId,
+          instructions: programInstructions.map((instruction) => ({
+            type: InstructionBuilderTypes.Memo, // Fallback to memo for individual instructions
+            params: {
+              memo: `INSTRUCTION:${instruction.programId.toString()}:${Buffer.from(instruction.data).toString('hex')}`,
+            },
+          })),
+        },
+      };
+      instructionData.push(contractCall);
+    }
+  }
+
+  return instructionData;
 }

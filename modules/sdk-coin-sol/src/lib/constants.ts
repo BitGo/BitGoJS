@@ -45,6 +45,7 @@ export enum InstructionBuilderTypes {
   StakingAuthorize = 'Authorize',
   StakingDelegate = 'Delegate',
   SetPriorityFee = 'SetPriorityFee',
+  ContractCall = 'ContractCall',
 }
 
 export const VALID_SYSTEM_INSTRUCTION_TYPES: ValidInstructionTypes[] = [

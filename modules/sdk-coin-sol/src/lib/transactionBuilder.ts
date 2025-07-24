@@ -12,7 +12,7 @@ import {
   TransactionType,
 } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
-import { Blockhash, PublicKey, Transaction as SolTransaction } from '@solana/web3.js';
+import { Blockhash, clusterApiUrl, Connection, PublicKey, Transaction as SolTransaction } from '@solana/web3.js';
 import {
   isValidAddress,
   isValidAmount,
@@ -117,12 +117,25 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
+    // this._recentBlockhash = await this.getLatestBlockhash();
     this.transaction.solTransaction = this.buildSolTransaction();
     this.transaction.setTransactionType(this.transactionType);
     this.transaction.setInstructionsData(this._instructionsData);
     this.transaction.loadInputsAndOutputs();
     this._transaction.tokenAccountRentExemptAmount = this._tokenAccountRentExemptAmount;
     return this.transaction;
+  }
+  public async getLatestBlockhash(): Promise<string> {
+    try {
+      console.log('Fetching latest blockhash from Solana network...');
+      const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
+      const { blockhash } = await connection.getLatestBlockhash();
+      return blockhash;
+    } catch (error) {
+      // Fallback to hardcoded value if network call fails
+      console.log('Error fetching latest blockhash:', error);
+      return 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi';
+    }
   }
 
   /**
@@ -150,6 +163,33 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     for (const instruction of this._instructionsData) {
       tx.add(...solInstructionFactory(instruction));
     }
+
+    // const hardcodedInstruction = new TransactionInstruction({
+    //   keys: [
+    //     {
+    //       pubkey: new PublicKey(this._sender),
+    //       isSigner: true,
+    //       isWritable: true,
+    //     },
+    //   ],
+    //   programId: new PublicKey(MEMO_PROGRAM_PK), // System Program ID
+    //   data: Buffer.from('test'),
+    // });
+
+    // const hardcodedInstruction1 = new TransactionInstruction({
+    //   keys: [
+    //     {
+    //       pubkey: new PublicKey(this._sender),
+    //       isSigner: true,
+    //       isWritable: true,
+    //     },
+    //   ],
+    //   programId: new PublicKey(MEMO_PROGRAM_PK), // System Program ID
+    //   data: Buffer.from('Should be greater length'),
+    // });
+
+    // tx.add(hardcodedInstruction);
+    // tx.add(hardcodedInstruction1);
 
     if (this._memo) {
       const memoData: Memo = {

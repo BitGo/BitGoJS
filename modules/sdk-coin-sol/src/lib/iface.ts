@@ -38,7 +38,8 @@ export type InstructionParams =
   | AtaClose
   | TokenTransfer
   | StakingAuthorize
-  | StakingDelegate;
+  | StakingDelegate
+  | ContractCall;
 
 export interface Memo {
   type: InstructionBuilderTypes.Memo;
@@ -187,4 +188,12 @@ export class TokenAssociateRecipient {
   ataAddress?: string;
   tokenAddress?: string;
   programId?: string;
+}
+
+export interface ContractCall {
+  type: InstructionBuilderTypes.ContractCall;
+  params: {
+    programId: string;
+    instructions: InstructionParams[];
+  };
 }
