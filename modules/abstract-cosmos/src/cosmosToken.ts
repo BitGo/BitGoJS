@@ -53,8 +53,8 @@ export class CosmosToken extends CosmosCoin {
   }
 
   getFullName(): string {
-    // Eg - returns "Atom Token", "Osmo Token"
-    return `${this.tokenConfig.coin.charAt(0).toUpperCase()}${this.tokenConfig.coin.slice(1)} Token`;
+    const displayCoin = this.getFamily();
+    return `${displayCoin.charAt(0).toUpperCase() + displayCoin.slice(1)} Token`;
   }
 
   getBaseFactor(): number {
