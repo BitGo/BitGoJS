@@ -38,8 +38,10 @@
     ]
   },
   "dependencies": {
+    "@bitgo/sdk-api": "^1.65.1",
     "@bitgo/sdk-core": "^35.8.0",
     "@bitgo/sdk-lib-mpc": "^10.6.0",
+    "@bitgo/sdk-test": "^8.0.97",
     "@bitgo/secp256k1": "^1.4.0",
     "@bitgo/statics": "^55.2.0",
     "@cosmjs/amino": "^0.29.5",
