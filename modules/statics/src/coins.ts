@@ -729,7 +729,13 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.SEIEVM,
     BaseUnit.ETH,
-    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK, CoinFeature.EVM_COMPATIBLE_IMS]
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+    ]
   ),
   account(
     '42cd26d1-706d-40f6-bcce-7cb125e6f617',
@@ -739,7 +745,13 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.SEIEVM,
     BaseUnit.ETH,
-    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK, CoinFeature.EVM_COMPATIBLE_IMS]
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+    ]
   ),
   account(
     '9fbfb875-fb80-4a37-b844-48b9e48dfcdd',
@@ -1406,7 +1418,13 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.KAIA,
     BaseUnit.ETH,
-    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK, CoinFeature.EVM_COMPATIBLE_IMS]
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+    ]
   ),
   account(
     'f6be6f3d-ebac-49fc-8c73-e5b1fc115778',
@@ -1416,7 +1434,13 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.KAIA,
     BaseUnit.ETH,
-    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK, CoinFeature.EVM_COMPATIBLE_IMS]
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+    ]
   ),
   account(
     'bc8541c1-b552-48a6-9a43-1c9b11c43227',
@@ -1426,7 +1450,13 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.IRYS,
     BaseUnit.ETH,
-    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK, CoinFeature.EVM_COMPATIBLE_IMS]
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+    ]
   ),
   account(
     '8861d96c-f1a1-436a-8eb7-950f73f53c3a',
@@ -1436,7 +1466,13 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.IRYS,
     BaseUnit.ETH,
-    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_SDK, CoinFeature.EVM_COMPATIBLE_IMS]
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+    ]
   ),
   account(
     '251b78df-90c5-4ff5-b07a-8cc23f27c5ff',
