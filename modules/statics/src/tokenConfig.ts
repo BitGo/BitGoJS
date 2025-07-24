@@ -9,6 +9,7 @@ import {
   BscCoin,
   CeloCoin,
   CoredaoERC20Token,
+  CosmosChainToken,
   EosCoin,
   Erc1155Coin,
   Erc20Coin,
@@ -26,7 +27,6 @@ import {
   WorldERC20Token,
   XrpCoin,
   ZkethERC20Token,
-  CosmosChainToken,
 } from './account';
 import { CoinFamily, CoinKind, BaseCoin } from './base';
 import { coins } from './coins';
@@ -141,7 +141,8 @@ export type TokenConfig =
   | AptTokenConfig
   | AptNFTCollectionConfig
   | Sip10TokenConfig
-  | Nep141TokenConfig;
+  | Nep141TokenConfig
+  | CosmosTokenConfig;
 
 export interface Tokens {
   bitcoin: {
@@ -339,6 +340,7 @@ export interface AmsTokenConfig {
   currecnycode?: string;
   domain?: string;
   assetId?: string;
+  denom?: string;
   isToken: boolean;
   baseUnit?: string;
   kind?: string;
@@ -1181,6 +1183,8 @@ export function getFormattedTokenConfigForCoin(coin: Readonly<BaseCoin>): TokenC
     return getSip10TokenConfig(coin);
   } else if (coin instanceof Nep141Token) {
     return getNep141TokenConfig(coin);
+  } else if (coin instanceof CosmosChainToken) {
+    return getCosmosTokenConfig(coin);
   }
   return undefined;
 }

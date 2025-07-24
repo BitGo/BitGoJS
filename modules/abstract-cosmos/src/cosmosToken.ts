@@ -15,9 +15,11 @@ export class CosmosToken extends CosmosCoin {
     return (bitgo: BitGoBase) => new CosmosToken(bitgo, config);
   }
 
-  static createTokenConstructors(): NamedCoinConstructor[] {
+  static createTokenConstructors(
+    tokenConfigs: CosmosTokenConfig[] = [...tokens.bitcoin.cosmos.tokens, ...tokens.testnet.cosmos.tokens]
+  ): NamedCoinConstructor[] {
     const tokensCtors: NamedCoinConstructor[] = [];
-    for (const token of [...tokens.bitcoin.cosmos.tokens, ...tokens.testnet.cosmos.tokens]) {
+    for (const token of tokenConfigs) {
       const tokenConstructor = CosmosToken.createTokenConstructor(token);
       tokensCtors.push({ name: token.type, coinConstructor: tokenConstructor });
     }

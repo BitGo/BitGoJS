@@ -4194,6 +4194,29 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
         token.isToken, // isToken
         token.kind // kind
       );
+    case 'asi':
+    case 'atom':
+    case 'baby':
+    case 'bld':
+    case 'coreum':
+    case 'cronos':
+    case 'hash':
+    case 'injective':
+    case 'initia':
+    case 'osmo':
+    case 'thor':
+    case 'sei':
+    case 'tia':
+    case 'zeta':
+      return initializer(
+        ...commonArgs.slice(0, 3), // id, name, fullName
+        token.denom, // denom
+        token.decimalPlaces, // decimalPlaces
+        token.network, // network
+        token.baseUnit, // baseUnit
+        ...commonArgs.slice(4, 8), // asset, features, prefix, suffix
+        token.primaryKeyCurve // primaryKeyCurve
+      );
     default:
       return undefined;
   }
