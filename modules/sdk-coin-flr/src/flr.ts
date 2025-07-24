@@ -50,8 +50,17 @@ export class Flr extends AbstractEthLikeNewCoins {
     return this.buildUnsignedSweepTxnMPCv2(params);
   }
 
-  async recoveryBlockchainExplorerQuery(query: Record<string, string>): Promise<Record<string, unknown>> {
-    const apiToken = common.Environments[this.bitgo.getEnv()].flrExplorerApiToken;
+  /**
+   * Make a query to Flare explorer for information such as balance, token balance, solidity calls
+   * @param {Object} query key-value pairs of parameters to append after /api
+   * @param {string} apiKey optional API key to use instead of the one from the environment
+   * @returns {Promise<Object>} response from Flare explorer
+   */
+  async recoveryBlockchainExplorerQuery(
+    query: Record<string, string>,
+    apiKey?: string
+  ): Promise<Record<string, unknown>> {
+    const apiToken = apiKey || common.Environments[this.bitgo.getEnv()].flrExplorerApiToken;
     const explorerUrl = common.Environments[this.bitgo.getEnv()].flrExplorerBaseUrl;
     return await recoveryBlockchainExplorerQuery(query, explorerUrl as string, apiToken);
   }

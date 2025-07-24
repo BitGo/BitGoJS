@@ -207,12 +207,15 @@ export class Erc20Token extends Eth {
     // Get nonce for backup key (should be 0)
     let backupKeyNonce = 0;
 
-    const result = await this.recoveryBlockchainExplorerQuery({
-      chainid: this.getChainId().toString(),
-      module: 'account',
-      action: 'txlist',
-      address: backupKeyAddress,
-    });
+    const result = await this.recoveryBlockchainExplorerQuery(
+      {
+        chainid: this.getChainId().toString(),
+        module: 'account',
+        action: 'txlist',
+        address: backupKeyAddress,
+      },
+      params.apiKey
+    );
     const backupKeyTxList = result.result;
     if (backupKeyTxList.length > 0) {
       // Calculate last nonce used
@@ -221,7 +224,7 @@ export class Erc20Token extends Eth {
     }
 
     // get balance of backup key and make sure we can afford gas
-    const backupKeyBalance = await this.queryAddressBalance(backupKeyAddress);
+    const backupKeyBalance = await this.queryAddressBalance(backupKeyAddress, params.apiKey);
 
     if (backupKeyBalance.lt(gasPrice.mul(gasLimit))) {
       throw new Error(
@@ -232,7 +235,11 @@ export class Erc20Token extends Eth {
     }
 
     // get token balance of wallet
-    const txAmount = await this.queryAddressTokenBalance(this.tokenContractAddress, params.walletContractAddress);
+    const txAmount = await this.queryAddressTokenBalance(
+      this.tokenContractAddress,
+      params.walletContractAddress,
+      params.apiKey
+    );
     if (new BigNumber(txAmount).isLessThanOrEqualTo(0)) {
       throw new Error('Wallet does not have enough funds to recover');
     }
@@ -246,7 +253,7 @@ export class Erc20Token extends Eth {
     ];
 
     // Get sequence ID using contract call
-    const sequenceId = await this.querySequenceId(params.walletContractAddress);
+    const sequenceId = await this.querySequenceId(params.walletContractAddress, params.apiKey);
 
     let operationHash, signature;
     if (!isUnsignedSweep) {
@@ -288,7 +295,17 @@ export class Erc20Token extends Eth {
     });
 
     if (isUnsignedSweep) {
-      return this.formatForOfflineVault(txInfo, tx, userKey, backupKey, gasPrice, gasLimit, params.eip1559) as any;
+      return this.formatForOfflineVault(
+        txInfo,
+        tx,
+        userKey,
+        backupKey,
+        gasPrice,
+        gasLimit,
+        params.eip1559,
+        params.replayProtectionOptions,
+        params.apiKey
+      ) as any;
     }
 
     if (!isKrsRecovery) {

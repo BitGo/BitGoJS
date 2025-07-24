@@ -75,6 +75,13 @@ export function getIsKrsRecovery({ backupKey, userKey }: { backupKey: string; us
   return backupKey.startsWith('xpub') && !userKey.startsWith('xpub');
 }
 
+/**
+ * Determine if the recovery is an unsigned sweep.
+ * @deprecated Specify 'isUnsignedSweep' in params instead
+ * @param backupKey
+ * @param userKey
+ * @param isTss
+ */
 export function getIsUnsignedSweep({
   backupKey,
   userKey,
