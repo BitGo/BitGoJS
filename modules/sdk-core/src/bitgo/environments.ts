@@ -264,7 +264,7 @@ const testnetBase: EnvironmentTemplate = {
   // https://github.com/cryptokylin/CryptoKylin-Testnet#http-api-list
   // https://docs.liquidapps.io/liquidapps-documentation/eosio-guides/testnet-creation-guides/creating-cryptokylin-account#setup
   eosNodeUrls: ['https://kylin.eosn.io', 'https://api.kylin.alohaeos.com'],
-  nearNodeUrls: ['https://test.api.fastnear.com'],
+  nearNodeUrls: ['https://test.rpc.fastnear.com'],
   solNodeUrl: 'https://api.devnet.solana.com',
   adaNodeUrl: 'https://preprod.koios.rest/api/v1',
   hashNodeUrl: 'https://api.test.provenance.io',
