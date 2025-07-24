@@ -404,6 +404,11 @@ export enum CoinFeature {
   EVM_COMPATIBLE_IMS = 'evm-compatible-ims',
 
   /**
+   * This coin is an EVM compatible coin and should use common EVM logic in UI
+   */
+  EVM_COMPATIBLE_UI = 'evm-compatible-ui',
+
+  /**
    * This coin is an EVM compatible coin which supports unsigned sweep recovery
    */
   EVM_UNSIGNED_SWEEP_RECOVERY = 'evm-unsigned-sweep-recovery',
