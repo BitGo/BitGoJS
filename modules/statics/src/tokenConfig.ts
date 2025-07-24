@@ -26,6 +26,7 @@ import {
   WorldERC20Token,
   XrpCoin,
   ZkethERC20Token,
+  CosmosChainToken,
 } from './account';
 import { CoinFamily, CoinKind, BaseCoin } from './base';
 import { coins } from './coins';
@@ -116,6 +117,10 @@ export type Nep141TokenConfig = BaseNetworkConfig & {
 
 export type VetTokenConfig = BaseNetworkConfig & {
   contractAddress: string;
+};
+
+export type CosmosTokenConfig = BaseNetworkConfig & {
+  denom: string;
 };
 
 export type TokenConfig =
@@ -219,6 +224,9 @@ export interface Tokens {
     vet: {
       tokens: VetTokenConfig[];
     };
+    cosmos: {
+      tokens: CosmosTokenConfig[];
+    };
   };
   testnet: {
     eth: {
@@ -299,6 +307,9 @@ export interface Tokens {
     };
     vet: {
       tokens: VetTokenConfig[];
+    };
+    cosmos: {
+      tokens: CosmosTokenConfig[];
     };
   };
 }
@@ -878,6 +889,25 @@ const getFormattedVetTokens = (customCoinMap = coins) =>
     return acc;
   }, []);
 
+const getFormattedCosmosChainTokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: CosmosTokenConfig[], coin) => {
+    if (coin instanceof CosmosChainToken) {
+      acc.push(getCosmosTokenConfig(coin));
+    }
+    return acc;
+  }, []);
+
+function getCosmosTokenConfig(coin: CosmosChainToken): CosmosTokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.name.split(':')[0].toLowerCase(),
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    denom: coin.denom,
+    decimalPlaces: coin.decimalPlaces,
+  };
+}
+
 export const getFormattedTokens = (coinMap = coins): Tokens => {
   const formattedAptNFTCollections = getFormattedAptNFTCollections(coinMap);
   return {
@@ -965,6 +995,9 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
       vet: {
         tokens: getFormattedVetTokens(coinMap).filter((token) => token.network === 'Mainnet'),
       },
+      cosmos: {
+        tokens: getFormattedCosmosChainTokens(coinMap).filter((token) => token.network === 'Mainnet'),
+      },
     },
     testnet: {
       eth: {
@@ -1049,6 +1082,9 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
       },
       vet: {
         tokens: getFormattedVetTokens(coinMap).filter((token) => token.network === 'Testnet'),
+      },
+      cosmos: {
+        tokens: getFormattedCosmosChainTokens(coinMap).filter((token) => token.network === 'Testnet'),
       },
     },
   };
