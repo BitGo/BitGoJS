@@ -3334,6 +3334,53 @@ export const ofcErc20Coins = [
     18,
     underlyingAssetForSymbol('eth:insur')
   ),
+  ofcerc20('c425f078-b338-454c-90bb-b0221df909db', 'ofceth:xyo', 'XY Oracle', 18, underlyingAssetForSymbol('eth:xyo')),
+  ofcerc20('54852e5b-e999-42e1-a912-ecd38bf98462', 'ofceth:zig', 'ZigChain', 18, underlyingAssetForSymbol('eth:zig')),
+  ofcerc20(
+    'ff192a0b-98b5-426c-98eb-f37f0ae1be55',
+    'ofceth:swftc',
+    'SwftCoin',
+    8,
+    underlyingAssetForSymbol('eth:swftc')
+  ),
+  ofcerc20(
+    '53616a73-ad08-489d-89be-836db39241d9',
+    'ofceth:dsync',
+    'Destra Network',
+    18,
+    underlyingAssetForSymbol('eth:dsync')
+  ),
+  ofcerc20('06e2e41d-999e-4875-bcb0-023720be67b3', 'ofceth:orbr', 'Orbler', 18, underlyingAssetForSymbol('eth:orbr')),
+  ofcerc20(
+    '2b60bae4-3f71-4f8f-8013-9c2f18128e7f',
+    'ofceth:sxt',
+    'Space and Time',
+    18,
+    underlyingAssetForSymbol('eth:sxt')
+  ),
+  ofcerc20('47325d7e-bb7f-44fe-8153-6754b7aac296', 'ofceth:paal', 'PAAL AI', 9, underlyingAssetForSymbol('eth:paal')),
+  ofcerc20(
+    '76ca0cbc-8fef-4214-8376-f18142bd9ba7',
+    'ofceth:wmtx',
+    'WorldMobile Token',
+    6,
+    underlyingAssetForSymbol('eth:wmtx')
+  ),
+  ofcerc20(
+    'cbf90de8-530b-4844-b443-6017e5b03868',
+    'ofceth:anime',
+    'Animecoin',
+    18,
+    underlyingAssetForSymbol('eth:anime')
+  ),
+  ofcerc20('7b243fe0-983b-4c6c-a781-b1cc4ad410cc', 'ofceth:newt', 'Newton', 18, underlyingAssetForSymbol('eth:newt')),
+  ofcerc20(
+    '12bad7a8-28d4-4d5d-9481-eeb90d9b08a2',
+    'ofceth:hsk',
+    'HashKey Platform Token',
+    18,
+    underlyingAssetForSymbol('eth:hsk')
+  ),
 ];
 
 export const tOfcErc20Coins = [
