@@ -1,5 +1,6 @@
 import * as _ from 'lodash';
 import BigNumber from 'bignumber.js';
+import blake2b from '@bitgo/blake2b';
 import {
   AuditDecryptedKeyParams,
   BaseCoin,
@@ -19,7 +20,7 @@ import {
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import utils from './lib/utils';
 import { bip32 } from '@bitgo/secp256k1';
-import { randomBytes } from 'crypto';
+import { randomBytes, Hash } from 'crypto';
 import { KeyPair as EthKeyPair } from '@bitgo/abstract-eth';
 import { TransactionBuilderFactory } from './lib';
 import { ExplainTransactionOptions, VetParseTransactionOptions } from './lib/types';
@@ -215,5 +216,25 @@ export class Vet extends BaseCoin {
   auditDecryptedKey(params: AuditDecryptedKeyParams): void {
     /** https://bitgoinc.atlassian.net/browse/COIN-4213 */
     throw new Error('Method not implemented.');
+  }
+
+  /**
+   * Function to get coin specific hash function used to generate transaction digests.
+   * @returns {@see Hash} hash function if implemented, otherwise throws exception
+   */
+  getHashFunction(): Hash {
+    const blake = blake2b(32);
+
+    // We return an object that mimics the Hash interface
+    return {
+      update(data: Buffer | Uint8Array) {
+        blake.update(data);
+        return this;
+      },
+      digest() {
+        const uint8Result = blake.digest();
+        return Buffer.from(uint8Result);
+      },
+    } as unknown as Hash;
   }
 }
