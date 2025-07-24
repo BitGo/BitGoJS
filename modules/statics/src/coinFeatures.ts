@@ -14,6 +14,7 @@ export const ACCOUNT_COIN_DEFAULT_FEATURES = [
   CoinFeature.CUSTODY_BITGO_KOREA,
   CoinFeature.CUSTODY_BITGO_EUROPE_APS,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
+  CoinFeature.CUSTODY_BITGO_INDIA,
 ];
 
 export const ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE = ACCOUNT_COIN_DEFAULT_FEATURES.filter(
@@ -79,6 +80,7 @@ export const CELO_FEATURES = [
     feature !== CoinFeature.CUSTODY_BITGO_NEW_YORK &&
     feature !== CoinFeature.CUSTODY_BITGO_SWITZERLAND &&
     feature !== CoinFeature.CUSTODY_BITGO_SISTER_TRUST_ONE &&
+    feature !== CoinFeature.CUSTODY_BITGO_INDIA &&
     feature !== CoinFeature.DISTRIBUTED_CUSTODY
 );
 
@@ -91,7 +93,8 @@ export const CELO_TOKEN_FEATURES = [...ACCOUNT_COIN_DEFAULT_FEATURES].filter(
     feature !== CoinFeature.CUSTODY_BITGO_SINGAPORE &&
     feature !== CoinFeature.CUSTODY_BITGO_KOREA &&
     feature !== CoinFeature.CUSTODY_BITGO_EUROPE_APS &&
-    feature !== CoinFeature.CUSTODY_BITGO_FRANKFURT
+    feature !== CoinFeature.CUSTODY_BITGO_FRANKFURT &&
+    feature !== CoinFeature.CUSTODY_BITGO_INDIA
 );
 
 export const RBTC_FEATURES = [
