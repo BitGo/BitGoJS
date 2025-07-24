@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import assert from 'assert';
+import path from 'path';
 
 import * as bitcoinjs from 'bitcoinjs-lib';
 import * as utxolib from '@bitgo/utxo-lib';
@@ -9,8 +10,9 @@ import * as wasmMiniscript from '@bitgo/wasm-miniscript';
 describe('btc-staking-ts bug #71', function () {
   let buf: Buffer;
   before('load half-signed transaction', async function () {
+    const __dirname = path.dirname(__filename);
     const fixture = JSON.parse(
-      await fs.promises.readFile(__dirname + '/../../../../test/fixtures/babylon/txTree.testnet.json', 'utf-8')
+      await fs.promises.readFile(__dirname + '/../../fixtures/babylon/txTree.testnet.json', 'utf-8')
     );
     const base64 = fixture.slashingSignedBase64;
     assert(typeof base64 === 'string');

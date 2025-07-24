@@ -32,13 +32,25 @@ function taprootScriptOnlyFromAst(n: ast.TapTreeNode): Descriptor {
 }
 
 class StakingDescriptorBuilder {
+  public userKey: Buffer;
+  public providerKeys: Buffer[];
+  public guardianKeys: Buffer[];
+  public guardianThreshold: number;
+  public stakingTimeLock: number;
+
   constructor(
-    public userKey: Buffer,
-    public providerKeys: Buffer[],
-    public guardianKeys: Buffer[],
-    public guardianThreshold: number,
-    public stakingTimeLock: number
-  ) {}
+    userKey: Buffer,
+    providerKeys: Buffer[],
+    guardianKeys: Buffer[],
+    guardianThreshold: number,
+    stakingTimeLock: number
+  ) {
+    this.userKey = userKey;
+    this.providerKeys = providerKeys;
+    this.guardianKeys = guardianKeys;
+    this.guardianThreshold = guardianThreshold;
+    this.stakingTimeLock = stakingTimeLock;
+  }
 
   getTimelockMiniscriptNode(): ast.MiniscriptNode {
     return { and_v: [pk(this.userKey), { older: this.stakingTimeLock }] };
