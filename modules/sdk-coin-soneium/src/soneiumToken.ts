@@ -1,8 +1,8 @@
 import { coins, EthLikeTokenConfig } from '@bitgo/statics';
-import { BitGoBase, CoinConstructor, common, MPCAlgorithm, NamedCoinConstructor } from '@bitgo/sdk-core';
-import { CoinNames, EthLikeToken, recoveryBlockchainExplorerQuery } from '@bitgo/abstract-eth';
-
+import { BitGoBase, CoinConstructor, MPCAlgorithm, NamedCoinConstructor } from '@bitgo/sdk-core';
+import { CoinNames, EthLikeToken } from '@bitgo/abstract-eth';
 import { TransactionBuilder } from './lib';
+import * as utils from './lib/utils';
 
 export { EthLikeTokenConfig };
 
@@ -40,14 +40,12 @@ export class SoneiumToken extends EthLikeToken {
   }
 
   /**
-   * Make a query to Soneium blockchain explorer for information such as balance, token balance, solidity calls
-   * @param {Object} query key-value pairs of parameters to append after /api
-   * @returns {Promise<Object>} response Soneium explorer
+   * Make a query to soneium.network for information such as balance, token balance, solidity calls
+   * @param {Object} query — key-value pairs of parameters to append after /api
+   * @returns {Promise<Object>} response from soneium.network
    */
-  async recoveryBlockchainExplorerQuery(query: Record<string, string>): Promise<Record<string, unknown>> {
-    const apiToken = common.Environments[this.bitgo.getEnv()].soneiumExplorerApiToken;
-    const explorerUrl = common.Environments[this.bitgo.getEnv()].soneiumExplorerBaseUrl;
-    return await recoveryBlockchainExplorerQuery(query, explorerUrl as string, apiToken);
+  async recoveryBlockchainExplorerQuery(query: Record<string, any>): Promise<any> {
+    return await utils.recoveryBlockchainExplorerQuery(query, this.bitgo.getEnv());
   }
 
   getFullName(): string {
