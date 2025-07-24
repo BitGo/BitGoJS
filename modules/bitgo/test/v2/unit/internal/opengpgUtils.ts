@@ -1,13 +1,13 @@
 import * as openpgp from 'openpgp';
-import * as should from 'should';
+import should from 'should';
 import * as crypto from 'crypto';
-import * as assert from 'assert';
+import assert from 'assert';
 
 import { openpgpUtils } from '@bitgo/sdk-core';
 import { ecc as secp256k1 } from '@bitgo/utxo-lib';
-import * as sinon from 'sinon';
+import sinon from 'sinon';
 
-const sodium = require('libsodium-wrappers-sumo');
+import sodium from 'libsodium-wrappers-sumo';
 
 describe('OpenGPG Utils Tests', function () {
   let senderKey: { publicKey: string; privateKey: string };

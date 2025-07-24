@@ -5,7 +5,7 @@ import sinon from 'sinon';
 import { Mantra, Tmantra } from '../../src';
 import utils from '../../src/lib/utils';
 import { TEST_SEND_MANY_TX, TEST_SEND_TX, TEST_TX_WITH_MEMO, address } from '../resources/mantra';
-import should = require('should');
+import should from 'should';
 
 describe('Mantra', function () {
   let bitgo: TestBitGoAPI;

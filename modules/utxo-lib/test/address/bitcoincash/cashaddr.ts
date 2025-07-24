@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import assert from 'assert';
 
 import { getTestVectorsBitcoinCashAddressTranslations } from './fixtures';
 import { toOutputScriptFromCashAddress } from '../../../src/bitgo/bitcoincash/address';

@@ -10,7 +10,7 @@ However the generated fixtures have the same format as the RPC responses so we w
 */
 
 import * as fs from 'fs-extra';
-import * as assert from 'assert';
+import assert from 'assert';
 
 import { RpcTransaction } from './generate/RpcTypes';
 import { normalizeParsedTransaction, normalizeRpcTransaction } from './compare';

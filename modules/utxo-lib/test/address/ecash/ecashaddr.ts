@@ -1,6 +1,6 @@
 import { fromOutputScriptWithFormat, toOutputScriptWithFormat } from '../../../src/addressFormat';
 import { networks } from '../../../src/networks';
-import * as assert from 'assert';
+import assert from 'assert';
 
 // Addresses used from https://www.npmjs.com/package/ecashaddrjs
 const ecashAddress = 'ecash:qpadrekpz6gjd8w0zfedmtqyld0r2j4qmuthccqd8d',

@@ -2,7 +2,7 @@
  * @prettier
  */
 
-import { bip32, BIP32Interface } from '@bitgo/utxo-lib';
+import { bip32, type BIP32Interface } from '@bitgo/utxo-lib';
 import { BaseCoin } from '../baseCoin';
 import { BitGoBase } from '../bitgoBase';
 import { KrsProvider, krsProviders } from '../config';

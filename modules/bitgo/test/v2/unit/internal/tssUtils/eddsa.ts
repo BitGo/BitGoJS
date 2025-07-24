@@ -1,6 +1,6 @@
-import * as sodium from 'libsodium-wrappers-sumo';
+import sodium from 'libsodium-wrappers-sumo';
 import * as _ from 'lodash';
-import * as nock from 'nock';
+import nock from 'nock';
 import * as openpgp from 'openpgp';
 import * as should from 'should';
 import * as sinon from 'sinon';

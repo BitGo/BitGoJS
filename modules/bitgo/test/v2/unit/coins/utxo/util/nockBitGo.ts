@@ -1,4 +1,4 @@
-import * as nock from 'nock';
+import nock from 'nock';
 import { Environment, Environments } from '@bitgo/sdk-core';
 import { defaultBitGo } from './utxoCoins';
 

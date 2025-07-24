@@ -17,7 +17,7 @@ import {
   TEST_WITHDRAW_REWARDS_TX,
   wrwUser,
 } from '../resources/sei';
-import should = require('should');
+import should from 'should';
 
 describe('SEI', function () {
   let bitgo: TestBitGoAPI;

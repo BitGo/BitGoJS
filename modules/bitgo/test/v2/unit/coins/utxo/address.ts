@@ -2,7 +2,7 @@
  * @prettier
  */
 import 'should';
-import * as assert from 'assert';
+import assert from 'assert';
 import * as utxolib from '@bitgo/utxo-lib';
 const { chainCodes } = utxolib.bitgo;
 

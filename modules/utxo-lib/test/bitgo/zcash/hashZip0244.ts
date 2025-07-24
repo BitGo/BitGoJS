@@ -1,5 +1,5 @@
-import * as assert from 'assert';
-import * as vectors from './fixtures/vectorsZip0244.json';
+import assert from 'assert';
+import vectors from './fixtures/vectorsZip0244.json';
 import { UnsupportedTransactionError, ZcashTransaction } from '../../../src/bitgo';
 import { Transaction, networks } from '../../../src';
 

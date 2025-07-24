@@ -1,7 +1,7 @@
 import assert from 'assert';
 
 import * as utxolib from '@bitgo/utxo-lib';
-import { ECPairInterface } from '@bitgo/utxo-lib';
+import type { ECPairInterface } from '@bitgo/utxo-lib';
 import { getKey } from '@bitgo/utxo-core/testutil';
 
 export function getECKey(seed: string): ECPairInterface {

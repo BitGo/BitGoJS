@@ -5,7 +5,7 @@
 import * as should from 'should';
 import * as sinon from 'sinon';
 import '../lib/asserts';
-import * as nock from 'nock';
+import nock from 'nock';
 import * as _ from 'lodash';
 
 import {
