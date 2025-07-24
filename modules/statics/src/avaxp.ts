@@ -17,6 +17,7 @@ export class AVAXPCoin extends BaseCoin {
   public static readonly DEFAULT_FEATURES = [
     CoinFeature.UNSPENT_MODEL,
     CoinFeature.CUSTODY_BITGO_TRUST,
+    CoinFeature.CUSTODY_BITGO_INDIA,
     CoinFeature.CUSTODY_BITGO_MENA_FZE,
     CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
     CoinFeature.CUSTODY_BITGO_GERMANY,
