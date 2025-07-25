@@ -1,4 +1,4 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig, NetworkType } from '@bitgo/statics';
 import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
@@ -13,9 +13,12 @@ export class StakingActivateBuilder extends TransactionBuilder {
   protected _stakingAddress: string;
   protected _validator: string;
   protected _isMarinade = false;
+  protected _isJito = false;
+  protected _isTestnet: boolean;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
+    this._isTestnet = this._coinConfig.network.type === NetworkType.TESTNET;
   }
 
   protected get transactionType(): TransactionType {
@@ -33,6 +36,8 @@ export class StakingActivateBuilder extends TransactionBuilder {
         this.amount(activateInstruction.params.amount);
         this.validator(activateInstruction.params.validator);
         this.isMarinade(activateInstruction.params.isMarinade ?? false);
+        this.isJito(activateInstruction.params.isJito ?? false);
+        this.isTestnet(activateInstruction.params.isTestnet ?? this._coinConfig.network.type === NetworkType.TESTNET);
       }
     }
   }
@@ -89,6 +94,22 @@ export class StakingActivateBuilder extends TransactionBuilder {
     return this;
   }
 
+  /**
+   * Set isJito flag
+   * @param {boolean} flag - true if the transaction is for Jito, false by default if not set
+   * @returns {StakingActivateBuilder} This staking builder
+   */
+  isJito(flag: boolean): this {
+    this._isJito = flag;
+    // this._coinConfig.network.type === NetworkType.TESTNET
+    return this;
+  }
+
+  isTestnet(flag: boolean): this {
+    this._isTestnet = flag;
+    return this;
+  }
+
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     assert(this._sender, 'Sender must be set before building the transaction');
@@ -96,6 +117,11 @@ export class StakingActivateBuilder extends TransactionBuilder {
     assert(this._validator, 'Validator must be set before building the transaction');
     assert(this._amount, 'Amount must be set before building the transaction');
     assert(this._isMarinade !== undefined, 'isMarinade must be set before building the transaction');
+    assert(this._isJito !== undefined, 'isJito must be set before building the transaction');
+    assert(
+      [this._isMarinade, this._isJito].filter((x) => x).length <= 1,
+      'At most one of isMarinade and isJito can be true'
+    );
 
     if (this._sender === this._stakingAddress) {
       throw new BuildTransactionError('Sender address cannot be the same as the Staking address');
@@ -109,6 +135,8 @@ export class StakingActivateBuilder extends TransactionBuilder {
         amount: this._amount,
         validator: this._validator,
         isMarinade: this._isMarinade,
+        isJito: this._isJito,
+        isTestnet: this._isTestnet,
       },
     };
     this._instructionsData = [stakingAccountData];
