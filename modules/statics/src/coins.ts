@@ -4312,6 +4312,7 @@ function isRunningInStaging(): boolean {
     process.env.NODE_ENV === 'staging' || process.env.NODE_ENV === 'staging_internal',
     process.env.APP_ENV === 'staging' || process.env.APP_ENV === 'staging_internal',
     process.env.ENVIRONMENT === 'staging' || process.env.ENVIRONMENT === 'staging_internal',
+    process.env.NEXT_PUBLIC_APP_ENV === 'staging' || process.env.NEXT_PUBLIC_APP_ENV === 'staging_internal',
   ];
   return stagingEnvVars.some(Boolean);
 }
