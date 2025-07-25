@@ -28,7 +28,7 @@ type BtcDelegation = t.TypeOf<typeof BtcDelegation>;
 async function getFixture(txid: string): Promise<BtcDelegation> {
   // As returned by https://babylon.nodes.guru/api#/Query/BTCDelegation
   const BtcDelegationResponse = t.type({ btc_delegation: BtcDelegation }, 'BtcDelegationResponse');
-  const filename = __dirname + `/../../../../test/fixtures/babylon/rpc/btc_delegation/testnet.${txid}.json`;
+  const filename = __dirname + `/../../fixtures/babylon/rpc/btc_delegation/testnet.${txid}.json`;
   const data = JSON.parse(await fs.readFile(filename, 'utf8'));
   const result = BtcDelegationResponse.decode(data);
   if (isLeft(result)) {
