@@ -120,6 +120,8 @@ export interface EthereumNetwork extends AccountNetwork {
   readonly forwarderImplementationAddress?: string;
   readonly nativeCoinOperationHashPrefix?: string;
   readonly tokenOperationHashPrefix?: string;
+  readonly walletV4ForwarderFactoryAddress?: string;
+  readonly walletV4ForwarderImplementationAddress?: string;
 }
 
 export interface TronNetwork extends AccountNetwork {
@@ -544,6 +546,8 @@ class Ethereum extends Mainnet implements EthereumNetwork {
   forwarderImplementationAddress = '0x059ffafdc6ef594230de44f824e2bd0a51ca5ded';
   nativeCoinOperationHashPrefix = 'ETHER';
   tokenOperationHashPrefix = 'ERC20';
+  walletV4ForwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
+  walletV4ForwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
 
 class Ethereum2 extends Mainnet implements AccountNetwork {
@@ -615,6 +619,8 @@ class Holesky extends Testnet implements EthereumNetwork {
   forwarderImplementationAddress = '0x059ffafdc6ef594230de44f824e2bd0a51ca5ded';
   nativeCoinOperationHashPrefix = 'ETHER';
   tokenOperationHashPrefix = 'ERC20';
+  walletV4ForwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
+  walletV4ForwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
 
 class Hoodi extends Testnet implements EthereumNetwork {
