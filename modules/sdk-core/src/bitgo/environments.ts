@@ -231,7 +231,7 @@ const mainnetBase: EnvironmentTemplate = {
   icpNodeUrl: 'https://ic0.app',
   worldExplorerBaseUrl: 'https://worldscan.org/',
   somniaExplorerBaseUrl: 'https://mainnet.somnia.w3us.site/',
-  soneiumExplorerBaseUrl: 'https://soneium-minato.blockscout.com',
+  soneiumExplorerBaseUrl: 'https://soneium.blockscout.com',
   monExplorerBaseUrl: 'https://mainnet-beta.monvision.io',
   stxNodeUrl: 'https://api.hiro.so',
   vetNodeUrl: 'https://rpc-mainnet.vechain.energy',
