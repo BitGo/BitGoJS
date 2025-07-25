@@ -32,6 +32,7 @@ import {
   Sip10TokenConfig,
   CoinFeature,
   Nep141TokenConfig,
+  CosmosTokenConfig,
 } from '@bitgo/statics';
 import {
   Ada,
@@ -60,6 +61,7 @@ import {
   CeloToken,
   Coredao,
   CoredaoToken,
+  CosmosToken,
   Coreum,
   Cronos,
   Cspr,
@@ -494,6 +496,10 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   Nep141Token.createTokenConstructors([...tokens.bitcoin.near.tokens, ...tokens.testnet.near.tokens]).forEach(
     ({ name, coinConstructor }) => coinFactory.register(name, coinConstructor)
   );
+
+  CosmosToken.createTokenConstructors([...tokens.bitcoin.cosmos.tokens, ...tokens.testnet.cosmos.tokens]).forEach(
+    ({ name, coinConstructor }) => coinFactory.register(name, coinConstructor)
+  );
 }
 
 export function getCoinConstructor(coinName: string): CoinConstructor | undefined {
@@ -899,6 +905,35 @@ export function getTokenConstructor(tokenConfig: TokenConfig): CoinConstructor |
     case 'near':
     case 'tnear':
       return Nep141Token.createTokenConstructor(tokenConfig as Nep141TokenConfig);
+    case 'asi':
+    case 'tasi':
+    case 'atom':
+    case 'tatom':
+    case 'baby':
+    case 'tbaby':
+    case 'bld':
+    case 'tbld':
+    case 'coreum':
+    case 'tcoreum':
+    case 'cronos':
+    case 'tcronos':
+    case 'hash':
+    case 'thash':
+    case 'injective':
+    case 'tinjective':
+    case 'initia':
+    case 'tinitia':
+    case 'osmo':
+    case 'tosmo':
+    case 'thorchain:rune':
+    case 'tthorchain:rune':
+    case 'sei':
+    case 'tsei':
+    case 'tia':
+    case 'ttia':
+    case 'zeta':
+    case 'tzeta':
+      return CosmosToken.createTokenConstructor(tokenConfig as CosmosTokenConfig);
     default:
       return undefined;
   }
