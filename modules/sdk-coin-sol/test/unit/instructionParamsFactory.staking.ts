@@ -67,6 +67,7 @@ describe('Instruction Parser Staking Tests: ', function () {
           validator: validator.toString(),
           amount,
           isMarinade: false,
+          isJito: false,
         },
       };
 
@@ -137,6 +138,7 @@ describe('Instruction Parser Staking Tests: ', function () {
           validator: validator.toString(),
           amount,
           isMarinade: false,
+          isJito: false,
         },
       };
 
@@ -189,6 +191,7 @@ describe('Instruction Parser Staking Tests: ', function () {
           validator: validator.toString(),
           amount,
           isMarinade: false,
+          isJito: false,
         },
       };
 
@@ -236,6 +239,7 @@ describe('Instruction Parser Staking Tests: ', function () {
           validator: validator.toString(),
           amount,
           isMarinade: false,
+          isJito: false,
         },
       };
 

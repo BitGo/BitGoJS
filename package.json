@@ -129,6 +129,7 @@
     "test:prepare-release": "mocha --require ts-node/register ./scripts/tests/prepareRelease/prepare-release-main.test.ts"
   },
   "dependencies": {
+    "@solana/spl-stake-pool": "^1.1.8",
     "axios": "^1.8.2",
     "terser": "^5.14.2",
     "tmp": "^0.2.3"
