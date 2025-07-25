@@ -36,6 +36,16 @@ export interface BitGoAPIOptions {
   optimisticEtherscanApiToken?: string;
   zksyncExplorerApiToken?: string;
   bscscanApiToken?: string;
+  coredaoExplorerApiToken?: string;
+  oasExplorerApiToken?: string;
+  sgbExplorerApiToken?: string;
+  flrExplorerApiToken?: string;
+  xdcExplorerApiToken?: string;
+  wemixExplorerApiToken?: string;
+  monExplorerApiToken?: string;
+  worldExplorerApiToken?: string;
+  somniaExplorerApiToken?: string;
+  soneiumExplorerApiToken?: string;
   hmacVerification?: boolean;
   customProxyAgent?: Agent;
   refreshToken?: string;
