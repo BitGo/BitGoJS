@@ -1,7 +1,7 @@
 /**
  * Contains third-party test fixtures for nonstandard address formats
  */
-import * as assert from 'assert';
+import assert from 'assert';
 import { getMainnet, getNetworkList, getNetworkName, Network, networks } from '../../src';
 import { fromOutputScript } from '../../src/address';
 import {

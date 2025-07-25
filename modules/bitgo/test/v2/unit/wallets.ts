@@ -1,8 +1,8 @@
 //
 // Tests for Wallets
 //
-import * as assert from 'assert';
-import * as nock from 'nock';
+import assert from 'assert';
+import nock from 'nock';
 import * as sinon from 'sinon';
 import * as should from 'should';
 import * as _ from 'lodash';

@@ -3,9 +3,9 @@
 //
 
 import { CoinFamily, CoinKind, coins, KeyCurve, UnderlyingAsset } from '@bitgo/statics';
-import * as assert from 'assert';
+import assert from 'assert';
 import * as _ from 'lodash';
-import * as nock from 'nock';
+import nock from 'nock';
 import * as should from 'should';
 import * as sinon from 'sinon';
 

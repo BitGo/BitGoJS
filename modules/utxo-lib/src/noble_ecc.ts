@@ -1,5 +1,5 @@
-import * as createHash from 'create-hash';
-import * as createHmac from 'create-hmac';
+import createHash from 'create-hash';
+import createHmac from 'create-hmac';
 import { ECPairAPI, ECPairFactory, ECPairInterface } from 'ecpair';
 import * as necc from '@noble/secp256k1';
 import { BIP32API, BIP32Factory, BIP32Interface } from 'bip32';

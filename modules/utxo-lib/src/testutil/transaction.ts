@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import assert from 'assert';
 
 import { ScriptType, ScriptType2Of3, scriptTypeP2shP2pk, scriptTypes2Of3 } from '../bitgo/outputScripts';
 import {

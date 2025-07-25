@@ -1,11 +1,11 @@
-import * as assert from 'assert';
+import assert from 'assert';
 import axios, { AxiosError } from 'axios';
 import buildDebug from 'debug';
 
 import { Network, getMainnet, getNetworkName, isZcash } from '../../../src/networks';
 import { RpcTransaction } from './RpcTypes';
 
-const utxolib = require('../../../src');
+import * as utxolib from '../../../src';
 
 const debug = buildDebug('RpcClient');
 
@@ -16,8 +16,11 @@ function sleep(millis: number): Promise<void> {
 }
 
 export class RpcError extends Error {
-  constructor(public rpcError: { code: number; message: string }) {
+  public rpcError: { code: number; message: string };
+
+  constructor(rpcError: { code: number; message: string }) {
     super(`RPC error: ${rpcError.message} (code=${rpcError.code})`);
+    this.rpcError = rpcError;
   }
 
   static isRpcErrorWithCode(e: Error, code: number): boolean {
@@ -30,9 +33,16 @@ type NetworkInfo = { subversion: string };
 const BITCOIN_CORE_22_99 = '/Satoshi:22.99.0/';
 
 export class RpcClient {
+  protected network: Network;
+  protected url: string;
+  protected networkInfo?: NetworkInfo;
   id = 0;
 
-  constructor(protected network: Network, protected url: string, protected networkInfo?: NetworkInfo) {}
+  constructor(network: Network, url: string, networkInfo?: NetworkInfo) {
+    this.network = network;
+    this.url = url;
+    this.networkInfo = networkInfo;
+  }
 
   /**
    * Poor man's Bluebird.map(arr, f, { concurrency })
@@ -198,8 +208,10 @@ export class RpcClient {
 }
 
 export class RpcClientWithWallet extends RpcClient {
-  constructor(network: Network, url: string, networkInfo: NetworkInfo, private walletName?: string) {
+  private walletName?: string;
+  constructor(network: Network, url: string, networkInfo: NetworkInfo, walletName?: string) {
     super(network, url, networkInfo);
+    this.walletName = walletName;
   }
 
   protected getUrl(): string {

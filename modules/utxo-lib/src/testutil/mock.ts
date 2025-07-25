@@ -1,5 +1,5 @@
-import * as assert from 'assert';
-import { BIP32Interface } from 'bip32';
+import assert from 'assert';
+import type { BIP32Interface } from 'bip32';
 import * as noble from '@noble/secp256k1';
 import * as utxolib from '..';
 import { getMainnet, Network, networks } from '../networks';

@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import assert from 'assert';
 import { AbstractUtxoCoin } from '@bitgo/abstract-utxo';
 import { Keychain } from '@bitgo/sdk-core';
 

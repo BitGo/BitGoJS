@@ -1,9 +1,9 @@
 /**
  * @prettier
  */
-import * as assert from 'assert';
+import assert from 'assert';
 import * as should from 'should';
-import * as nock from 'nock';
+import nock from 'nock';
 import * as utxolib from '@bitgo/utxo-lib';
 import { Triple } from '@bitgo/sdk-core';
 import {

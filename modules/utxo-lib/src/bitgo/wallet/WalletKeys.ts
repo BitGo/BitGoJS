@@ -9,7 +9,7 @@
  * Since we never use other derivations for utxo address scripts, the classes defined here only
  * allow exactly one level of derivation.
  */
-import { BIP32Interface } from 'bip32';
+import type { BIP32Interface } from 'bip32';
 
 import { Triple } from '../types';
 

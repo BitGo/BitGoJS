@@ -28,7 +28,7 @@ import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src/bitgo';
 import { nockGetTxRequest, nockSendSignatureShare } from './helpers';
 import * as sinon from 'sinon';
-import nock = require('nock');
+import nock from 'nock';
 
 describe('test tss helper functions', function () {
   let mpc: Eddsa;

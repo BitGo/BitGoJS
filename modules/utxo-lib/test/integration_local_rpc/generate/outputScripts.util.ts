@@ -1,4 +1,4 @@
-import { BIP32Interface } from 'bip32';
+import type { BIP32Interface } from 'bip32';
 import { Transaction, TxOutput } from 'bitcoinjs-lib';
 import * as utxolib from '../../../src';
 import {

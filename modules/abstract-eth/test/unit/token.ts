@@ -1,5 +1,9 @@
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import * as sdkTest from '@bitgo/sdk-test';
+import type { TestBitGoAPI } from '@bitgo/sdk-test';
+
 import { BitGoAPI } from '@bitgo/sdk-api';
+
+const { TestBitGo } = sdkTest;
 
 export function runTokenTestInitialization(
   currentCoinToken,
