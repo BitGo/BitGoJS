@@ -6,7 +6,7 @@ import { Descriptor } from '@bitgo/wasm-miniscript';
 import {
   getDescriptorForScriptType,
   getNamedDescriptorsForRootWalletKeys,
-} from '../../src/descriptor/fromFixedScriptWallet';
+} from '../../src/descriptor/fromFixedScriptWallet.js';
 
 function getRootWalletKeys(derivationPrefixes?: utxolib.bitgo.Triple<string>): utxolib.bitgo.RootWalletKeys {
   // This is a fixed script wallet, so we use a fixed key triple.

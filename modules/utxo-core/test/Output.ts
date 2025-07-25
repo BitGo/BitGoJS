@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 
-import { getFixedOutputSum, getMaxOutput, getOutputSum, isMaxOutput, toFixedOutputs } from '../src';
+import { getFixedOutputSum, getMaxOutput, getOutputSum, isMaxOutput, toFixedOutputs } from '../src/index.js';
 
 describe('Output', function () {
   const oBigInt = { value: 1n };

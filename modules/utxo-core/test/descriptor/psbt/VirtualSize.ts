@@ -5,16 +5,16 @@ import {
   getInputVSizesForDescriptors,
   getVirtualSize,
   getVirtualSizeEstimateForPsbt,
-} from '../../../src/descriptor/VirtualSize';
+} from '../../../src/descriptor/VirtualSize.js';
 import {
   DescriptorTemplate,
   getDefaultXPubs,
   getDescriptor,
   getDescriptorMap,
   mockPsbtDefault,
-} from '../../../src/testutil/descriptor';
-import { getKeyTriple } from '../../../src/testutil';
-import { finalizePsbt } from '../../../src/descriptor';
+} from '../../../src/testutil/descriptor/index.js';
+import { getKeyTriple } from '../../../src/testutil/index.js';
+import { finalizePsbt } from '../../../src/descriptor/index.js';
 
 describe('VirtualSize', function () {
   describe('getInputVSizesForDescriptorWallet', function () {

@@ -2,8 +2,8 @@ import * as assert from 'assert';
 
 import { Descriptor } from '@bitgo/wasm-miniscript';
 
-import { getDefaultXPubs } from '../../../src/testutil/descriptor';
-import { getRequiredLocktime } from '../../../src/descriptor';
+import { getDefaultXPubs } from '../../../src/testutil/descriptor/index.js';
+import { getRequiredLocktime } from '../../../src/descriptor/index.js';
 
 function d(s: string): Descriptor {
   return Descriptor.fromString(s, 'derivable');

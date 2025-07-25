@@ -2,7 +2,7 @@ import assert from 'assert';
 
 import * as utxolib from '@bitgo/utxo-lib';
 
-import { getDustThresholdSat } from '../src/dustThreshold';
+import { getDustThresholdSat } from '../src/dustThreshold.js';
 
 describe('getDustThresholdSat', function () {
   it('has expected values', function () {
