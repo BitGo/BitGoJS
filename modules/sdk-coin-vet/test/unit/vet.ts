@@ -3,7 +3,7 @@ import assert from 'assert';
 import _ from 'lodash';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { coins } from '@bitgo/statics';
+import { coins, GasTankAccountCoin } from '@bitgo/statics';
 import { Vet, Tvet, Transaction } from '../../src';
 import * as testData from '../resources/vet';
 
@@ -39,6 +39,8 @@ describe('Vechain', function () {
   it('should return the right info', function () {
     const vet = bitgo.coin('vet');
     const tvet = bitgo.coin('tvet');
+    const vetStatics = coins.get('vet') as GasTankAccountCoin;
+    const tvetStatics = coins.get('tvet') as GasTankAccountCoin;
 
     vet.getChain().should.equal('vet');
     vet.getFamily().should.equal('vet');
@@ -49,6 +51,11 @@ describe('Vechain', function () {
     tvet.getFamily().should.equal('vet');
     tvet.getFullName().should.equal('Testnet VeChain');
     tvet.getBaseFactor().should.equal(1e18);
+
+    vetStatics.gasTankLowBalanceAlertFactor.should.equal(80);
+    tvetStatics.gasTankLowBalanceAlertFactor.should.equal(80);
+    vetStatics.gasTankMinBalanceRecommendationFactor.should.equal(200);
+    tvetStatics.gasTankMinBalanceRecommendationFactor.should.equal(200);
   });
 
   it('should validate address', function () {

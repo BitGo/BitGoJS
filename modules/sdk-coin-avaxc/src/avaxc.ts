@@ -307,9 +307,10 @@ export class AvaxC extends AbstractEthLikeNewCoins {
   /**
    * Make a query to avax.network for information such as balance, token balance, solidity calls
    * @param {Object} query — key-value pairs of parameters to append after /api
+   * @param {string} apiKey - optional API key to use instead of the one from the environment
    * @returns {Promise<Object>} response from avax.network
    */
-  async recoveryBlockchainExplorerQuery(query: Record<string, any>): Promise<any> {
+  async recoveryBlockchainExplorerQuery(query: Record<string, any>, apiKey?: string): Promise<any> {
     const response = await request
       .post(common.Environments[this.bitgo.getEnv()].avaxcNetworkBaseUrl + '/ext/bc/C/rpc')
       .send(query);

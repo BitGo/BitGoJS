@@ -266,6 +266,10 @@ export enum CoinFeature {
    * This coin supports custody in BitGo Custody MENA FZE entities
    */
   CUSTODY_BITGO_CUSTODY_MENA_FZE = 'custody-bitgo-custody-mena-fze',
+  /**
+   * This coin supports custody in BitGo India entities
+   */
+  CUSTODY_BITGO_INDIA = 'custody-bitgo-india',
   /*
    * This coin has transactions that expire after a certain amount of time.
    */
@@ -2878,6 +2882,12 @@ export enum UnderlyingAsset {
 
   // VET testnet tokens
   'tvet:vtho' = 'tvet:vtho',
+
+  // COSMOS tokens
+  'hash:ylds' = 'hash:ylds',
+
+  // COSMOS testnet tokens
+  'thash:ylds' = 'thash:ylds',
 
   // fiats
   AED = 'aed',

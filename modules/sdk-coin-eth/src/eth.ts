@@ -10,14 +10,14 @@ import {
   checkKrsProvider,
   common,
   FullySignedTransaction,
-  getIsUnsignedSweep,
   getIsKrsRecovery,
+  getIsUnsignedSweep,
   HalfSignedTransaction,
   MPCAlgorithm,
-  Recipient,
-  Util,
   MultisigType,
   multisigTypes,
+  Recipient,
+  Util,
 } from '@bitgo/sdk-core';
 import {
   AbstractEthLikeNewCoins,
@@ -27,16 +27,16 @@ import {
   FeesUsed,
   GetBatchExecutionInfoRT,
   GetSendMethodArgsOptions,
-  RecoveryInfo,
+  OfflineVaultTxInfo,
+  optionalDeps,
   RecoverOptions,
+  RecoveryInfo,
   ReplayProtectionOptions,
   SendMethodArgs,
   SignedTransaction,
   SignFinalOptions,
   SignTransactionOptions,
   TransactionPrebuild,
-  OfflineVaultTxInfo,
-  optionalDeps,
   UnsignedSweepTxMPCv2,
 } from '@bitgo/abstract-eth';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
@@ -157,10 +157,11 @@ export class Eth extends AbstractEthLikeNewCoins {
   /**
    * Make a query to Etherscan for information such as balance, token balance, solidity calls
    * @param query {Object} key-value pairs of parameters to append after /api
+   * @param apiKey {string} optional API key to use instead of the one from the environment
    * @returns {Object} response from Etherscan
    */
-  async recoveryBlockchainExplorerQuery(query: Record<string, string>): Promise<any> {
-    const token = common.Environments[this.bitgo.getEnv()].etherscanApiToken;
+  async recoveryBlockchainExplorerQuery(query: Record<string, string>, apiKey?: string): Promise<any> {
+    const token = apiKey || common.Environments[this.bitgo.getEnv()].etherscanApiToken;
     if (token) {
       query.apikey = token;
     }
@@ -189,7 +190,7 @@ export class Eth extends AbstractEthLikeNewCoins {
 
     this.validateRecoveryParams(params);
     const isKrsRecovery = getIsKrsRecovery(params);
-    const isUnsignedSweep = getIsUnsignedSweep(params);
+    const isUnsignedSweep = params.isUnsignedSweep ?? getIsUnsignedSweep(params);
 
     if (isKrsRecovery) {
       checkKrsProvider(this, params.krsProvider, { checkCoinFamilySupport: false });
@@ -205,7 +206,7 @@ export class Eth extends AbstractEthLikeNewCoins {
     const gasPrice = params.eip1559
       ? new optionalDeps.ethUtil.BN(params.eip1559.maxFeePerGas)
       : new optionalDeps.ethUtil.BN(this.setGasPrice(params.gasPrice));
-    if (!userKey.startsWith('xpub') && !userKey.startsWith('xprv')) {
+    if (!isUnsignedSweep) {
       try {
         userKey = this.bitgo.decrypt({
           input: userKey,
@@ -244,10 +245,10 @@ export class Eth extends AbstractEthLikeNewCoins {
       backupKeyAddress = `0x${optionalDeps.ethUtil.privateToAddress(backupSigningKey).toString('hex')}`;
     }
 
-    const backupKeyNonce = await this.getAddressNonce(backupKeyAddress);
+    const backupKeyNonce = await this.getAddressNonce(backupKeyAddress, params.apiKey);
 
     // get balance of backupKey to ensure funds are available to pay fees
-    const backupKeyBalance = await this.queryAddressBalance(backupKeyAddress);
+    const backupKeyBalance = await this.queryAddressBalance(backupKeyAddress, params.apiKey);
 
     const totalGasNeeded = gasPrice.mul(gasLimit);
     const weiToGwei = 10 ** 9;
@@ -260,7 +261,7 @@ export class Eth extends AbstractEthLikeNewCoins {
     }
 
     // get balance of wallet and deduct fees to get transaction amount
-    const txAmount = await this.queryAddressBalance(params.walletContractAddress);
+    const txAmount = await this.queryAddressBalance(params.walletContractAddress, params.apiKey);
     if (new BigNumber(txAmount).isLessThanOrEqualTo(0)) {
       throw new Error('Wallet does not have enough funds to recover');
     }
@@ -276,7 +277,7 @@ export class Eth extends AbstractEthLikeNewCoins {
     // Get sequence ID using contract call
     // we need to wait between making two etherscan calls to avoid getting banned
     await new Promise((resolve) => setTimeout(resolve, 1000));
-    const sequenceId = await this.querySequenceId(params.walletContractAddress);
+    const sequenceId = await this.querySequenceId(params.walletContractAddress, params.apiKey);
 
     let operationHash, signature;
     // Get operation hash and sign it
@@ -329,7 +330,8 @@ export class Eth extends AbstractEthLikeNewCoins {
         gasPrice,
         gasLimit,
         params.eip1559,
-        params.replayProtectionOptions
+        params.replayProtectionOptions,
+        params.apiKey
       );
     }
 

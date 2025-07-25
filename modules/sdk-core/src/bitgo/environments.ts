@@ -231,7 +231,7 @@ const mainnetBase: EnvironmentTemplate = {
   icpNodeUrl: 'https://ic0.app',
   worldExplorerBaseUrl: 'https://worldscan.org/',
   somniaExplorerBaseUrl: 'https://mainnet.somnia.w3us.site/',
-  soneiumExplorerBaseUrl: 'https://soneium-minato.blockscout.com',
+  soneiumExplorerBaseUrl: 'https://soneium.blockscout.com',
   monExplorerBaseUrl: 'https://mainnet-beta.monvision.io',
   stxNodeUrl: 'https://api.hiro.so',
   vetNodeUrl: 'https://rpc-mainnet.vechain.energy',
@@ -264,7 +264,7 @@ const testnetBase: EnvironmentTemplate = {
   // https://github.com/cryptokylin/CryptoKylin-Testnet#http-api-list
   // https://docs.liquidapps.io/liquidapps-documentation/eosio-guides/testnet-creation-guides/creating-cryptokylin-account#setup
   eosNodeUrls: ['https://kylin.eosn.io', 'https://api.kylin.alohaeos.com'],
-  nearNodeUrls: ['https://test.api.fastnear.com'],
+  nearNodeUrls: ['https://test.rpc.fastnear.com'],
   solNodeUrl: 'https://api.devnet.solana.com',
   adaNodeUrl: 'https://preprod.koios.rest/api/v1',
   hashNodeUrl: 'https://api.test.provenance.io',

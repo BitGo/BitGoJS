@@ -45,6 +45,7 @@
   },
   "dependencies": {
     "@bitgo/abstract-lightning": "^6.2.4",
+    "@bitgo/abstract-cosmos": "^11.9.8",
     "@bitgo/abstract-utxo": "^9.21.9",
     "@bitgo/account-lib": "^27.8.0",
     "@bitgo/blockapis": "^1.10.21",

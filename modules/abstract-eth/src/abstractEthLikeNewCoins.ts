@@ -3,10 +3,6 @@
  */
 import {
   AddressCoinSpecific,
-  PresignTransactionOptions as BasePresignTransactionOptions,
-  SignTransactionOptions as BaseSignTransactionOptions,
-  TransactionPrebuild as BaseTransactionPrebuild,
-  VerifyAddressOptions as BaseVerifyAddressOptions,
   BitGoBase,
   BuildNftTransferDataOptions,
   common,
@@ -28,24 +24,28 @@ import {
   ParsedTransaction,
   ParseTransactionOptions,
   PrebuildTransactionResult,
+  PresignTransactionOptions as BasePresignTransactionOptions,
   Recipient,
+  SignTransactionOptions as BaseSignTransactionOptions,
   TransactionParams,
+  TransactionPrebuild as BaseTransactionPrebuild,
   TransactionRecipient,
   TypedData,
   UnexpectedAddressError,
   UnsignedTransactionTss,
   Util,
+  VerifyAddressOptions as BaseVerifyAddressOptions,
   VerifyTransactionOptions,
   Wallet,
 } from '@bitgo/sdk-core';
 import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
 import { bip32 } from '@bitgo/secp256k1';
 import {
+  BaseCoin as StaticsBaseCoin,
   CoinMap,
   coins,
-  ethGasConfigs,
   EthereumNetwork as EthLikeNetwork,
-  BaseCoin as StaticsBaseCoin,
+  ethGasConfigs,
 } from '@bitgo/statics';
 import type * as EthLikeCommon from '@ethereumjs/common';
 import type * as EthLikeTxLib from '@ethereumjs/tx';
@@ -253,6 +253,8 @@ export type RecoverOptions = {
   intendedChain?: string;
   common?: EthLikeCommon.default;
   derivationSeed?: string;
+  apiKey?: string; // optional API key to use instead of the one from the environment
+  isUnsignedSweep?: boolean; // specify if this is an unsigned recovery
 } & TSSRecoverOptions;
 
 export type GetBatchExecutionInfoRT = {
@@ -529,15 +531,19 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
   /**
    * Query explorer for the balance of an address
    * @param {String} address - the ETHLike address
+   * @param {String} apiKey - optional API key to use instead of the one from the environment
    * @returns {BigNumber} address balance
    */
-  async queryAddressBalance(address: string): Promise<any> {
-    const result = await this.recoveryBlockchainExplorerQuery({
-      chainid: this.getChainId().toString(),
-      module: 'account',
-      action: 'balance',
-      address: address,
-    });
+  async queryAddressBalance(address: string, apiKey?: string): Promise<any> {
+    const result = await this.recoveryBlockchainExplorerQuery(
+      {
+        chainid: this.getChainId().toString(),
+        module: 'account',
+        action: 'balance',
+        address: address,
+      },
+      apiKey
+    );
     // throw if the result does not exist or the result is not a valid number
     if (!result || !result.result || isNaN(result.result)) {
       throw new Error(`Could not obtain address balance for ${address} from the explorer, got: ${result.result}`);
@@ -627,21 +633,25 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
   /**
    * Queries the contract (via explorer API) for the next sequence ID
    * @param {String} address - address of the contract
+   * @param {String} apiKey - optional API key to use instead of the one from the environment
    * @returns {Promise<Number>} sequence ID
    */
-  async querySequenceId(address: string): Promise<number> {
+  async querySequenceId(address: string, apiKey?: string): Promise<number> {
     // Get sequence ID using contract call
     const sequenceIdMethodSignature = optionalDeps.ethAbi.methodID('getNextSequenceId', []);
     const sequenceIdArgs = optionalDeps.ethAbi.rawEncode([], []);
     const sequenceIdData = Buffer.concat([sequenceIdMethodSignature, sequenceIdArgs]).toString('hex');
-    const result = await this.recoveryBlockchainExplorerQuery({
-      chainid: this.getChainId().toString(),
-      module: 'proxy',
-      action: 'eth_call',
-      to: address,
-      data: sequenceIdData,
-      tag: 'latest',
-    });
+    const result = await this.recoveryBlockchainExplorerQuery(
+      {
+        chainid: this.getChainId().toString(),
+        module: 'proxy',
+        action: 'eth_call',
+        to: address,
+        data: sequenceIdData,
+        tag: 'latest',
+      },
+      apiKey
+    );
     if (!result || !result.result) {
       throw new Error('Could not obtain sequence ID from explorer, got: ' + result.result);
     }
@@ -837,18 +847,22 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
   /**
    * Queries public block explorer to get the next ETHLike coin's nonce that should be used for the given ETH address
    * @param {string} address
+   * @param {string} apiKey - optional API key to use instead of the one from the environment
    * @returns {Promise<number>}
    */
-  async getAddressNonce(address: string): Promise<number> {
+  async getAddressNonce(address: string, apiKey?: string): Promise<number> {
     // Get nonce for backup key (should be 0)
     let nonce = 0;
 
-    const result = await this.recoveryBlockchainExplorerQuery({
-      chainid: this.getChainId().toString(),
-      module: 'account',
-      action: 'txlist',
-      address,
-    });
+    const result = await this.recoveryBlockchainExplorerQuery(
+      {
+        chainid: this.getChainId().toString(),
+        module: 'account',
+        action: 'txlist',
+        address,
+      },
+      apiKey
+    );
     if (!result || !Array.isArray(result.result)) {
       throw new Error('Unable to find next nonce from Etherscan, got: ' + JSON.stringify(result));
     }
@@ -872,6 +886,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
    * @param {number} gasLimit - gas limit for the tx
    * @param {EIP1559} eip1559 - eip1559 params
    * @param {ReplayProtectionOptions} replayProtectionOptions - replay protection options
+   * @param {apiKey} apiKey - optional apiKey to use when retrieving block chain data
    * @returns {Promise<OfflineVaultTxInfo>}
    */
   async formatForOfflineVault(
@@ -882,7 +897,8 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     gasPrice: Buffer,
     gasLimit: number,
     eip1559?: EIP1559,
-    replayProtectionOptions?: ReplayProtectionOptions
+    replayProtectionOptions?: ReplayProtectionOptions,
+    apiKey?: string
   ): Promise<OfflineVaultTxInfo> {
     if (!ethTx.to) {
       throw new Error('Eth tx must have a `to` address');
@@ -900,7 +916,8 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       walletContractAddress: ethTx.to.toString(),
       amount: txInfo.recipient.amount as string,
       backupKeyNonce: await this.getAddressNonce(
-        `0x${optionalDeps.ethUtil.publicToAddress(backupSigningKey, true).toString('hex')}`
+        `0x${optionalDeps.ethUtil.publicToAddress(backupSigningKey, true).toString('hex')}`,
+        apiKey
       ),
       eip1559,
       replayProtectionOptions,
@@ -1068,23 +1085,28 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
    * @returns {void}
    */
   validateRecoveryParams(params: RecoverOptions): void {
-    if (_.isUndefined(params.userKey)) {
+    if (params.userKey === undefined) {
       throw new Error('missing userKey');
     }
 
-    if (_.isUndefined(params.backupKey)) {
+    if (params.backupKey === undefined) {
       throw new Error('missing backupKey');
     }
 
-    if (_.isUndefined(params.walletPassphrase) && !params.userKey.startsWith('xpub') && !params.isTss) {
+    if (
+      !params.isUnsignedSweep &&
+      params.walletPassphrase === undefined &&
+      !params.userKey.startsWith('xpub') &&
+      !params.isTss
+    ) {
       throw new Error('missing wallet passphrase');
     }
 
-    if (_.isUndefined(params.walletContractAddress) || !this.isValidAddress(params.walletContractAddress)) {
+    if (params.walletContractAddress === undefined || !this.isValidAddress(params.walletContractAddress)) {
       throw new Error('invalid walletContractAddress');
     }
 
-    if (_.isUndefined(params.recoveryDestination) || !this.isValidAddress(params.recoveryDestination)) {
+    if (params.recoveryDestination === undefined || !this.isValidAddress(params.recoveryDestination)) {
       throw new Error('invalid recoveryDestination');
     }
   }
@@ -1180,7 +1202,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     }
 
     this.validateRecoveryParams(params);
-    const isUnsignedSweep = getIsUnsignedSweep(params);
+    const isUnsignedSweep = params.isUnsignedSweep ?? getIsUnsignedSweep(params);
 
     // Clean up whitespace from entered values
     let userKey = params.userKey.replace(/\s/g, '');
@@ -1227,9 +1249,9 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       backupKeyAddress = keyPair.getAddress();
     }
 
-    const backupKeyNonce = await this.getAddressNonce(backupKeyAddress);
+    const backupKeyNonce = await this.getAddressNonce(backupKeyAddress, params.apiKey);
     // get balance of backupKey to ensure funds are available to pay fees
-    const backupKeyBalance = await this.queryAddressBalance(backupKeyAddress);
+    const backupKeyBalance = await this.queryAddressBalance(backupKeyAddress, params.apiKey);
     let totalGasNeeded = gasPrice.mul(gasLimit);
 
     // On optimism chain, L1 fees is to be paid as well apart from L2 fees
@@ -1248,7 +1270,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     }
 
     // get balance of wallet
-    const txAmount = await this.queryAddressBalance(params.walletContractAddress);
+    const txAmount = await this.queryAddressBalance(params.walletContractAddress, params.apiKey);
     if (new BigNumber(txAmount).isLessThanOrEqualTo(0)) {
       throw new Error('Wallet does not have enough funds to recover');
     }
@@ -1461,7 +1483,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       ? new optionalDeps.ethUtil.BN(this.setGasPrice(params.gasPrice))
       : await this.getGasPriceFromExternalAPI(this.staticsCoin?.name as string);
 
-    const bitgoFeeAddressNonce = await this.getAddressNonce(bitgoFeeAddress);
+    const bitgoFeeAddressNonce = await this.getAddressNonce(bitgoFeeAddress, params.apiKey);
 
     if (tokenContractAddress) {
       return this.recoverEthLikeTokenforEvmBasedRecovery(
@@ -1475,7 +1497,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     }
 
     // get balance of wallet
-    const txAmount = await this.queryAddressBalance(walletContractAddress);
+    const txAmount = await this.queryAddressBalance(walletContractAddress, params.apiKey);
 
     const bitgoFeePercentage = 0; // TODO: BG-71912 can change the fee% here.
     const bitgoFeeAmount = txAmount * (bitgoFeePercentage / 100);
@@ -1630,9 +1652,14 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
    * Query explorer for the balance of an address for a token
    * @param {string} tokenContractAddress - address where the token smart contract is hosted
    * @param {string} walletContractAddress - address of the wallet
+   * @param {string} apiKey - optional API key to use instead of the one from the environment
    * @returns {BigNumber} token balaance in base units
    */
-  async queryAddressTokenBalance(tokenContractAddress: string, walletContractAddress: string): Promise<any> {
+  async queryAddressTokenBalance(
+    tokenContractAddress: string,
+    walletContractAddress: string,
+    apiKey?: string
+  ): Promise<any> {
     if (!optionalDeps.ethUtil.isValidAddress(tokenContractAddress)) {
       throw new Error('cannot get balance for invalid token address');
     }
@@ -1640,14 +1667,17 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       throw new Error('cannot get token balance for invalid wallet address');
     }
 
-    const result = await this.recoveryBlockchainExplorerQuery({
-      chainid: this.getChainId().toString(),
-      module: 'account',
-      action: 'tokenbalance',
-      contractaddress: tokenContractAddress,
-      address: walletContractAddress,
-      tag: 'latest',
-    });
+    const result = await this.recoveryBlockchainExplorerQuery(
+      {
+        chainid: this.getChainId().toString(),
+        module: 'account',
+        action: 'tokenbalance',
+        contractaddress: tokenContractAddress,
+        address: walletContractAddress,
+        tag: 'latest',
+      },
+      apiKey
+    );
     // throw if the result does not exist or the result is not a valid number
     if (!result || !result.result || isNaN(result.result)) {
       throw new Error(
@@ -2164,8 +2194,8 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
   }
 
   private async buildTssRecoveryTxn(baseAddress: string, gasPrice: any, gasLimit: any, params: RecoverOptions) {
-    const nonce = await this.getAddressNonce(baseAddress);
-    const txAmount = await this.validateBalanceAndGetTxAmount(baseAddress, gasPrice, gasLimit);
+    const nonce = await this.getAddressNonce(baseAddress, params.apiKey);
+    const txAmount = await this.validateBalanceAndGetTxAmount(baseAddress, gasPrice, gasLimit, params.apiKey);
     const recipients = [
       {
         address: params.recoveryDestination,
@@ -2194,8 +2224,8 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     return { txInfo, tx, nonce };
   }
 
-  async validateBalanceAndGetTxAmount(baseAddress: string, gasPrice: BN, gasLimit: BN) {
-    const baseAddressBalance = await this.queryAddressBalance(baseAddress);
+  async validateBalanceAndGetTxAmount(baseAddress: string, gasPrice: BN, gasLimit: BN, apiKey?: string) {
+    const baseAddressBalance = await this.queryAddressBalance(baseAddress, apiKey);
     const totalGasNeeded = gasPrice.mul(gasLimit);
     const weiToGwei = new BN(10 ** 9);
     if (baseAddressBalance.lt(totalGasNeeded)) {
@@ -2209,7 +2239,13 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     return txAmount;
   }
 
-  async recoveryBlockchainExplorerQuery(query: Record<string, string>): Promise<any> {
+  /**
+   * Make a query to blockchain explorer for information such as balance, token balance, solidity calls
+   * @param query {Object} key-value pairs of parameters to append after /api
+   * @param apiKey {string} optional API key to use instead of the one from the environment
+   * @returns {Object} response from the blockchain explorer
+   */
+  async recoveryBlockchainExplorerQuery(query: Record<string, string>, apiKey?: string): Promise<any> {
     throw new Error('method not implemented');
   }
 
@@ -2782,14 +2818,19 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
 
   /**
    * Fetch the gas price from the explorer
+   * @param {string} wrongChainCoin - the coin that we're getting gas price for
+   * @param {string} apiKey - optional API key to use instead of the one from the environment
    */
-  async getGasPriceFromExternalAPI(wrongChainCoin: string): Promise<BN> {
+  async getGasPriceFromExternalAPI(wrongChainCoin: string, apiKey?: string): Promise<BN> {
     try {
-      const res = await this.recoveryBlockchainExplorerQuery({
-        chainid: this.getChainId().toString(),
-        module: 'proxy',
-        action: 'eth_gasPrice',
-      });
+      const res = await this.recoveryBlockchainExplorerQuery(
+        {
+          chainid: this.getChainId().toString(),
+          module: 'proxy',
+          action: 'eth_gasPrice',
+        },
+        apiKey
+      );
       const gasPrice = new BN(res.result.slice(2), 16);
       console.log(` Got gas price: ${gasPrice}`);
       return gasPrice;
@@ -2804,17 +2845,27 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
    * @param from
    * @param to
    * @param data
+   * @param {string} apiKey - optional API key to use instead of the one from the environment
    */
-  async getGasLimitFromExternalAPI(intendedChain: string, from: string, to: string, data: string): Promise<BN> {
+  async getGasLimitFromExternalAPI(
+    intendedChain: string,
+    from: string,
+    to: string,
+    data: string,
+    apiKey?: string
+  ): Promise<BN> {
     try {
-      const res = await this.recoveryBlockchainExplorerQuery({
-        chainid: this.getChainId().toString(),
-        module: 'proxy',
-        action: 'eth_estimateGas',
-        from,
-        to,
-        data,
-      });
+      const res = await this.recoveryBlockchainExplorerQuery(
+        {
+          chainid: this.getChainId().toString(),
+          module: 'proxy',
+          action: 'eth_estimateGas',
+          from,
+          to,
+          data,
+        },
+        apiKey
+      );
       const gasLimit = new BN(res.result.slice(2), 16);
       console.log(`Got gas limit: ${gasLimit}`);
       return gasLimit;
@@ -2830,9 +2881,10 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
    * @param bitgoFeeAddress
    * @param gasPrice
    * @param gasLimit
+   * @param apiKey - optional API key to use instead of the one from the environment
    */
-  async ensureSufficientBalance(bitgoFeeAddress: string, gasPrice: BN, gasLimit: BN): Promise<void> {
-    const bitgoFeeAddressBalance = await this.queryAddressBalance(bitgoFeeAddress);
+  async ensureSufficientBalance(bitgoFeeAddress: string, gasPrice: BN, gasLimit: BN, apiKey?: string): Promise<void> {
+    const bitgoFeeAddressBalance = await this.queryAddressBalance(bitgoFeeAddress, apiKey);
     const totalGasNeeded = Number(gasPrice.mul(gasLimit));
     const weiToGwei = 10 ** 9;
     if (bitgoFeeAddressBalance.lt(totalGasNeeded)) {

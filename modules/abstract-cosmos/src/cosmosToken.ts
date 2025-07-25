@@ -15,9 +15,11 @@ export class CosmosToken extends CosmosCoin {
     return (bitgo: BitGoBase) => new CosmosToken(bitgo, config);
   }
 
-  static createTokenConstructors(): NamedCoinConstructor[] {
+  static createTokenConstructors(
+    tokenConfigs: CosmosTokenConfig[] = [...tokens.bitcoin.cosmos.tokens, ...tokens.testnet.cosmos.tokens]
+  ): NamedCoinConstructor[] {
     const tokensCtors: NamedCoinConstructor[] = [];
-    for (const token of [...tokens.bitcoin.cosmos.tokens, ...tokens.testnet.cosmos.tokens]) {
+    for (const token of tokenConfigs) {
       const tokenConstructor = CosmosToken.createTokenConstructor(token);
       tokensCtors.push({ name: token.type, coinConstructor: tokenConstructor });
     }
@@ -53,8 +55,8 @@ export class CosmosToken extends CosmosCoin {
   }
 
   getFullName(): string {
-    // Eg - returns "Atom Token", "Osmo Token"
-    return `${this.tokenConfig.coin.charAt(0).toUpperCase()}${this.tokenConfig.coin.slice(1)} Token`;
+    const displayCoin = this.getFamily();
+    return `${displayCoin.charAt(0).toUpperCase() + displayCoin.slice(1)} Token`;
   }
 
   getBaseFactor(): number {
