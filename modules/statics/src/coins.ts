@@ -1652,7 +1652,7 @@ export const coins = CoinMap.fromCoins([
   gasTankAccount(
     '98071460-1488-4edd-857f-0899bc5eee4f',
     'vet',
-    'Mainnet VET',
+    'VeChain',
     Networks.main.vet,
     18, // 1 VET = 10^18 wei
     UnderlyingAsset.VET,
@@ -1665,7 +1665,7 @@ export const coins = CoinMap.fromCoins([
   gasTankAccount(
     'b3158e80-f6ea-4922-98ab-d773a680ce76',
     'tvet',
-    'Testnet VET',
+    'Testnet VeChain',
     Networks.test.vet,
     18,
     UnderlyingAsset.VET,
