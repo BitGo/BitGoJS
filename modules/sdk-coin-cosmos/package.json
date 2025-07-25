@@ -42,7 +42,7 @@
   "dependencies": {
     "@bitgo/abstract-cosmos": "^11.10.0",
     "@bitgo/sdk-core": "^35.9.0",
-    "@bitgo/statics": "^55.2.0",
+    "@bitgo/statics": "^55.3.0",
     "@cosmjs/amino": "^0.29.5",
     "@cosmjs/stargate": "^0.29.5",
     "bignumber.js": "^9.1.1"
