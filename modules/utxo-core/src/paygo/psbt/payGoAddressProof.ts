@@ -1,8 +1,8 @@
 import * as utxolib from '@bitgo/utxo-lib';
-import { checkForOutput } from 'bip174/src/lib/utils';
+import { checkForOutput } from 'bip174/src/lib/utils.js';
 
-import { verifyMessage } from '../../bip32utils';
-import { createPayGoAttestationBuffer } from '../attestation';
+import { verifyMessage } from '../../bip32utils.js';
+import { createPayGoAttestationBuffer } from '../attestation.js';
 
 import {
   ErrorMultiplePayGoProof,
@@ -10,7 +10,7 @@ import {
   ErrorNoPayGoProof,
   ErrorOutputIndexOutOfBounds,
   ErrorPayGoAddressProofFailedVerification,
-} from './Errors';
+} from './Errors.js';
 
 /** This function adds the entropy and signature into the PSBT output unknown key vals.
  * We store the entropy so that we reconstruct the message <ENTROPY><ADDRESS><UUID>

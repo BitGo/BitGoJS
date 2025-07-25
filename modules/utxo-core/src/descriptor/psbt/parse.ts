@@ -1,11 +1,11 @@
 import { Descriptor } from '@bitgo/wasm-miniscript';
 import * as utxolib from '@bitgo/utxo-lib';
 
-import { DescriptorMap } from '../DescriptorMap';
-import { getVirtualSize } from '../VirtualSize';
+import { DescriptorMap } from '../DescriptorMap.js';
+import { getVirtualSize } from '../VirtualSize.js';
 
-import { findDescriptorForInput, findDescriptorForOutput } from './findDescriptors';
-import { assertSatisfiable } from './assertSatisfiable';
+import { findDescriptorForInput, findDescriptorForOutput } from './findDescriptors.js';
+import { assertSatisfiable } from './assertSatisfiable.js';
 
 export type ScriptId = { descriptor: Descriptor; index: number | undefined };
 

@@ -1,2 +1,2 @@
-export * from './parsePayGoAttestation';
-export * from './psbt';
+export * from './parsePayGoAttestation.js';
+export * from './psbt/index.js';

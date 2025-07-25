@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import { encodeLocktime } from '../../src/bip65/locktime';
+import { encodeLocktime } from '../../src/bip65/locktime.js';
 
 describe('locktime', function () {
   it('encodes relative and absolute locktimes', function () {

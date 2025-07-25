@@ -3,8 +3,8 @@ import assert from 'assert';
 import { Miniscript, Descriptor, ast } from '@bitgo/wasm-miniscript';
 import { bip32, BIP32Interface } from '@bitgo/utxo-lib';
 
-import { DescriptorMap, PsbtParams } from '../../descriptor';
-import { getKeyTriple, Triple, KeyTriple } from '../key.utils';
+import { DescriptorMap, PsbtParams } from '../../descriptor/index.js';
+import { getKeyTriple, Triple, KeyTriple } from '../key.utils.js';
 
 export function getDefaultXPubs(seed?: string): Triple<string> {
   return getKeyTriple(seed).map((k) => k.neutered().toBase58()) as Triple<string>;

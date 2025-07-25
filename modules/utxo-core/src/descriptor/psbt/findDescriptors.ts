@@ -9,10 +9,10 @@ It will probably only work correctly if all xpubs in the descriptor are derivabl
 We should take a look at a more robust and standard approach like this: https://github.com/bitcoin/bips/pull/1548
 
  */
-import { PsbtInput, PsbtOutput } from 'bip174/src/lib/interfaces';
+import { PsbtInput, PsbtOutput } from 'bip174/src/lib/interfaces.js';
 import { Descriptor } from '@bitgo/wasm-miniscript';
 
-import { DescriptorMap } from '../DescriptorMap';
+import { DescriptorMap } from '../DescriptorMap.js';
 
 type DescriptorWithoutIndex = { descriptor: Descriptor; index: undefined };
 

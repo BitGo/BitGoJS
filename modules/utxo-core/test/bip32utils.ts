@@ -3,7 +3,7 @@ import * as assert from 'assert';
 
 import * as utxolib from '@bitgo/utxo-lib';
 
-import { signMessage, verifyMessage } from '../src/bip32utils';
+import { signMessage, verifyMessage } from '../src/bip32utils.js';
 
 describe('bip32utils', function () {
   function getSeedBuffers(length: number) {
@@ -21,7 +21,12 @@ describe('bip32utils', function () {
             const expectValid = message === otherMessage && key === otherKey;
             assert.strictEqual(verifyMessage(otherMessage, otherKey, signature, utxolib.networks.bitcoin), expectValid);
             assert.strictEqual(
-              verifyMessage(Buffer.from(otherMessage), otherKey, signature, utxolib.networks.bitcoin),
+              verifyMessage(
+                typeof otherMessage === 'string' ? Buffer.from(otherMessage) : otherMessage,
+                otherKey,
+                signature,
+                utxolib.networks.bitcoin
+              ),
               expectValid
             );
           });

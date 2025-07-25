@@ -1,1 +1,1 @@
-export * from './payGoAddressProof';
+export * from './payGoAddressProof.js';

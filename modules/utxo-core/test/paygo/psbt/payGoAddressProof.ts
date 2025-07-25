@@ -2,20 +2,20 @@ import assert from 'assert';
 import crypto from 'crypto';
 
 import * as utxolib from '@bitgo/utxo-lib';
-import { decodeProprietaryKey } from 'bip174/src/lib/proprietaryKeyVal';
-import { KeyValue } from 'bip174/src/lib/interfaces';
-import { checkForOutput } from 'bip174/src/lib/utils';
+import { decodeProprietaryKey } from 'bip174/src/lib/proprietaryKeyVal.js';
+import { KeyValue } from 'bip174/src/lib/interfaces.js';
+import { checkForOutput } from 'bip174/src/lib/utils.js';
 
 import {
   addPayGoAddressProof,
   getPayGoAddressProofOutputIndex,
   psbtOutputIncludesPaygoAddressProof,
   verifyPayGoAddressProof,
-} from '../../../src/paygo/psbt/payGoAddressProof';
-import { generatePayGoAttestationProof } from '../../../src/testutil/generatePayGoAttestationProof.utils';
-import { trimMessagePrefix } from '../../../src/testutil/trimMessagePrefix';
-import { signMessage } from '../../../src/bip32utils';
-import { NIL_UUID } from '../../../src/paygo/attestation';
+} from '../../../src/paygo/psbt/payGoAddressProof.js';
+import { generatePayGoAttestationProof } from '../../../src/testutil/generatePayGoAttestationProof.utils.js';
+import { trimMessagePrefix } from '../../../src/testutil/trimMessagePrefix.js';
+import { signMessage } from '../../../src/bip32utils.js';
+import { NIL_UUID } from '../../../src/paygo/attestation.js';
 
 // To construct our PSBTs
 export const network = utxolib.networks.bitcoin;

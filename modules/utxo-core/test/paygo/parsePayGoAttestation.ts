@@ -1,8 +1,8 @@
 import * as assert from 'assert';
 
-import { parsePayGoAttestation } from '../../src/paygo';
-import { generatePayGoAttestationProof } from '../../src/testutil';
-import { NIL_UUID } from '../../src/paygo/attestation';
+import { parsePayGoAttestation } from '../../src/paygo/index.js';
+import { generatePayGoAttestationProof } from '../../src/testutil/index.js';
+import { NIL_UUID } from '../../src/paygo/attestation.js';
 
 const addressFromPubKeyBase58 = 'bitgoAddressToExtract';
 const bufferAddressPubKeyB58 = Buffer.from(addressFromPubKeyBase58);

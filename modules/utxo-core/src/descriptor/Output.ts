@@ -2,10 +2,10 @@ import assert from 'assert';
 
 import { Descriptor } from '@bitgo/wasm-miniscript';
 
-import { getFixedOutputSum, MaxOutput, Output, PrevOutput } from '../Output';
+import { getFixedOutputSum, MaxOutput, Output, PrevOutput } from '../Output.js';
 
-import { DescriptorMap } from './DescriptorMap';
-import { getDescriptorAtIndexCheckScript } from './derive';
+import { DescriptorMap } from './DescriptorMap.js';
+import { getDescriptorAtIndexCheckScript } from './derive.js';
 
 export type WithDescriptor<T> = T & {
   descriptor: Descriptor;

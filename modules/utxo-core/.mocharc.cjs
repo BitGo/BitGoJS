@@ -1,6 +1,6 @@
 'use strict';
 
 module.exports = {
-  require: 'ts-node/register',
+  "node-option": ["import=tsx"],
   extension: ['.js', '.ts'],
 };

@@ -1,6 +1,6 @@
 import * as utxolib from '@bitgo/utxo-lib';
 
-import { matchPath, PathElement, toPlainObject } from '../../../src/testutil';
+import { matchPath, PathElement, toPlainObject } from '../../../src/testutil/index.js';
 
 export function toPlainObjectFromPsbt(v: utxolib.Psbt): unknown {
   return toPlainObject(

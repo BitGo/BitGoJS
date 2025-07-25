@@ -2,7 +2,7 @@ import crypto from 'crypto';
 
 import { bufferutils } from '@bitgo/utxo-lib';
 
-import { Prefix } from '../paygo';
+import { Prefix } from '../paygo/index.js';
 
 /** We have a mirrored function similar to our hsm that generates our Bitcoin signed
  * message so that we can use for testing. This creates a random entropy as well using

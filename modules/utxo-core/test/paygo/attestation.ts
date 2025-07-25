@@ -1,9 +1,9 @@
 import assert from 'assert';
 
-import { createPayGoAttestationBuffer } from '../../src/paygo/attestation';
-import { generatePayGoAttestationProof } from '../../src/testutil';
+import { createPayGoAttestationBuffer } from '../../src/paygo/attestation.js';
+import { generatePayGoAttestationProof } from '../../src/testutil/index.js';
 
-import { addressProofEntropy, addressProofMsgBuffer, addressToVerify, network } from './psbt/payGoAddressProof';
+import { addressProofEntropy, addressProofMsgBuffer, addressToVerify, network } from './psbt/payGoAddressProof.js';
 
 describe('createPayGoAttestationBuffer', () => {
   it('should create a PayGo Attestation proof matching with original proof', () => {

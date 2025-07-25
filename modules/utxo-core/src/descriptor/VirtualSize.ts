@@ -2,8 +2,8 @@ import * as utxolib from '@bitgo/utxo-lib';
 import { Dimensions, VirtualSizes } from '@bitgo/unspents';
 import { Descriptor } from '@bitgo/wasm-miniscript';
 
-import { DescriptorMap } from './DescriptorMap';
-import { findDescriptorForInput } from './psbt';
+import { DescriptorMap } from './DescriptorMap.js';
+import { findDescriptorForInput } from './psbt/findDescriptors.js';
 
 function getScriptPubKeyLength(descType: string): number {
   // See https://bitcoinops.org/en/tools/calc-size/
