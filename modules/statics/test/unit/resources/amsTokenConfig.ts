@@ -663,6 +663,8 @@ export const amsTokenConfigWithCustomToken = {
         forwarderImplementationAddress: '0x7441f20a59be97011842404b9aefd8d85fd81aa6',
         nativeCoinOperationHashPrefix: 'ETHER',
         tokenOperationHashPrefix: 'ERC20',
+        walletV4ForwarderFactoryAddress: '0x37996e762fa8b671869740c79eb33f625b3bf92a',
+        walletV4ForwarderImplementationAddress: '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b',
       },
       primaryKeyCurve: 'secp256k1',
       contractAddress: '0x89a959b9184b4f8c8633646d5dfd049d2ebc983a',
