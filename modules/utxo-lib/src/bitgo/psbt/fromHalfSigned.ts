@@ -1,10 +1,9 @@
 import * as assert from 'assert';
 import { PsbtInputUpdate, PartialSig } from 'bip174/src/lib/interfaces';
-import { ecc as eccLib, TxOutput, taproot, getMainnet, networks } from '../..';
+import { ecc as eccLib, TxOutput, taproot } from '../..';
 import { UtxoTransaction } from '../UtxoTransaction';
 import { parseSignatureScript } from '../parseInput';
 import { getSignaturesWithPublicKeys } from '../signature';
-import { hasWitnessData } from '../outputScripts';
 
 function omitUndefined<T extends Record<string, unknown>>(v: Record<string, unknown>): T {
   return Object.fromEntries(Object.entries(v).filter(([k, v]) => v !== undefined)) as T;
@@ -36,17 +35,6 @@ export function getInputUpdate(
           ]
         : []
     );
-  }
-  // Because Zcash directly hashes the value for non-segwit transactions, we do not need to check indirectly
-  // with the previous transaction. Therefore, we can treat Zcash non-segwit transactions as Bitcoin
-  // segwit transactions
-  if (
-    parsedInput.scriptType !== 'taprootScriptPathSpend' &&
-    !hasWitnessData(parsedInput.scriptType) &&
-    !nonWitnessUtxo &&
-    getMainnet(tx.network) !== networks.zcash
-  ) {
-    throw new Error(`scriptType ${parsedInput.scriptType} requires prevTx Buffer`);
   }
 
   switch (parsedInput.scriptType) {

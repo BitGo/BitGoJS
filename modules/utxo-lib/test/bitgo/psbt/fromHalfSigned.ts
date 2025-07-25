@@ -81,6 +81,27 @@ function runTest(
           )
         );
       });
+
+      if (stage === 'halfSigned' && (['p2shP2pk', 'p2sh'] as outputScripts.ScriptType[]).includes(scriptType)) {
+        it(`has getInputUpdate with expected value without prevTx, stage=${stage}`, async function () {
+          const vin = 0;
+          const prevOutputsNoPrevTx = prevOutputs.map((prevOutput) => {
+            const { prevTx, ...rest } = prevOutput;
+            if (!prevTx) {
+              throw new Error(`Expected prevTx to be defined for ${scriptType}`);
+            }
+            return rest as PrevOutput<bigint>;
+          });
+          const inputUpdate = getInputUpdate(halfSigned, vin, prevOutputsNoPrevTx);
+          assert.deepStrictEqual(
+            normDefault(inputUpdate),
+            await readFixture(
+              `test/bitgo/fixtures/psbt/inputUpdate.${scriptType}-noPrevTx.${stage}.${signerName}-${cosignerName}.json`,
+              inputUpdate
+            )
+          );
+        });
+      }
     }
 
     testGetInputUpdateForStage('unsigned');
