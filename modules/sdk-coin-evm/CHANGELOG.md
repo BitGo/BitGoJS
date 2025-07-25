@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.2.4...@bitgo/sdk-coin-evm@1.4.0) (2025-07-25)
+
+### Features
+
+- **sdk-coin-evm:** implement coin specific register in EVM coin module ([84a36ae](https://github.com/BitGo/BitGoJS/commit/84a36ae5dd028f07a629734cb1f2dddb9f36124e))
+
 # [1.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.2.4...@bitgo/sdk-coin-evm@1.3.0) (2025-07-23)
 
 ### Features

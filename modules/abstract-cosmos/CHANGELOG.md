@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [11.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@11.9.8...@bitgo/abstract-cosmos@11.10.0) (2025-07-25)
+
+### Features
+
+- add cosmos chain token standard support ([b83d76d](https://github.com/BitGo/BitGoJS/commit/b83d76d4798b7d75aeabe7d9b2f44b564ef7ac2f))
+
 ## [11.9.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@11.9.7...@bitgo/abstract-cosmos@11.9.8) (2025-07-23)
 
 **Note:** Version bump only for package @bitgo/abstract-cosmos

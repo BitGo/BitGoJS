@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.0.1...@bitgo/sdk-coin-vet@2.2.0) (2025-07-25)
+
+### Bug Fixes
+
+- **sdk-coin-vet:** implement getHashFunction for vet sdk ([10e0db8](https://github.com/BitGo/BitGoJS/commit/10e0db869cdf5aa5ab2416b174c6b8357715819f))
+- **sdk-coin-vet:** make nonce field string type ([31e3a21](https://github.com/BitGo/BitGoJS/commit/31e3a21a4e99a132393efbc808d4735167b2a5d3))
+- **sdk-coin-vet:** use expiration variable in tx ([88b2765](https://github.com/BitGo/BitGoJS/commit/88b27650717370385475a35adfaeff61b19d5921))
+
+### Features
+
+- **sdk-coin-vet:** add token transaction builder for vechain ([86036b8](https://github.com/BitGo/BitGoJS/commit/86036b83f8d3c5c27dbe91e0cc915b2548b0a6ba))
+
 # [2.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.0.1...@bitgo/sdk-coin-vet@2.1.0) (2025-07-23)
 
 ### Bug Fixes
