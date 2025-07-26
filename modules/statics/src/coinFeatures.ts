@@ -61,12 +61,9 @@ export const AVAXC_FEATURES = [
   CoinFeature.MULTISIG,
   CoinFeature.EIP1559,
 ];
-export const CELO_FEATURES = [
-  ...ETH_FEATURES,
-  CoinFeature.MULTISIG_COLD,
-  CoinFeature.MULTISIG,
-  CoinFeature.EIP1559,
-].filter(
+export const CELO_FEATURES = (
+  [...ETH_FEATURES, CoinFeature.MULTISIG_COLD, CoinFeature.MULTISIG, CoinFeature.EIP1559] as CoinFeature[]
+).filter(
   (feature) =>
     feature !== CoinFeature.CUSTODY &&
     feature !== CoinFeature.CUSTODY_BITGO_GERMANY &&
@@ -245,7 +242,7 @@ export const SOL_FEATURES = [
   CoinFeature.BULK_TRANSACTION,
 ];
 export const TSOL_FEATURES = [...SOL_FEATURES, CoinFeature.BULK_TRANSACTION, CoinFeature.CUSTODY_BITGO_SINGAPORE];
-export const SOL_TOKEN_FEATURES = [
+export const SOL_TOKEN_FEATURES: CoinFeature[] = [
   ...ACCOUNT_COIN_DEFAULT_FEATURES,
   CoinFeature.TSS,
   CoinFeature.TSS_COLD,
