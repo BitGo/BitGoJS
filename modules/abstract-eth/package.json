@@ -46,6 +46,7 @@
     "@bitgo/statics": "^55.3.0",
     "@ethereumjs/common": "^2.6.5",
     "@ethereumjs/tx": "^3.3.0",
+    "@ethereumjs/rlp": "^4.0.0",
     "@metamask/eth-sig-util": "^5.0.2",
     "bignumber.js": "^9.1.1",
     "bn.js": "^5.2.1",
