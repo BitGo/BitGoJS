@@ -958,6 +958,14 @@ export const ofcCoins = [
     UnderlyingAsset['sol:wave'],
     SOL_TOKEN_FEATURES
   ),
+  ofcsolToken(
+    '37fcfc49-1579-429d-b82f-cf074e21f1f1',
+    'ofcsol:usdcv',
+    'USD CoinVertible',
+    2,
+    UnderlyingAsset['sol:usdcv'],
+    SOL_TOKEN_FEATURES
+  ),
   tofcsolToken(
     '24d678cf-e0f0-4cde-a338-d754289c5b27',
     'ofctsol:slnd',
