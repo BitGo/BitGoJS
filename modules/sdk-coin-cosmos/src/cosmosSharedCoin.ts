@@ -9,7 +9,8 @@ import { KeyPair, Utils, TransactionBuilderFactory } from './lib';
  * instead of requiring individual coin modules
  */
 export class CosmosSharedCoin extends CosmosCoin {
-  private readonly _network: CosmosNetwork;
+  protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
+  protected readonly _network: CosmosNetwork;
 
   protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo, staticsCoin);
@@ -17,7 +18,7 @@ export class CosmosSharedCoin extends CosmosCoin {
     if (!staticsCoin) {
       throw new Error('missing required constructor parameter staticsCoin');
     }
-
+    this._staticsCoin = staticsCoin;
     // Get the network configuration from statics
     const network = staticsCoin.network as CosmosNetwork;
     if (!network || !network.addressPrefix || !network.validatorPrefix) {

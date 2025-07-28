@@ -44,10 +44,8 @@ export class Utils extends CosmosUtils {
     if (!amount?.denom) {
       throw new InvalidTransactionError('Invalid amount: missing denom');
     }
-    if (amount.denom !== this._network.denom) {
-      throw new InvalidTransactionError(
-        `Invalid amount: denom '${amount.denom}' does not match network denom '${this._network.denom}'`
-      );
+    if (!this._network.validDenoms.includes(amount.denom)) {
+      throw new InvalidTransactionError(`Invalid amount: denom '${amount.denom}' is not a valid denomination`);
     }
     if (!amount?.amount) {
       throw new InvalidTransactionError('Invalid amount: missing amount');
