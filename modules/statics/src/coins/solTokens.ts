@@ -2938,6 +2938,17 @@ export const solTokens = [
     UnderlyingAsset['sol:wave'],
     SOL_TOKEN_FEATURES
   ),
+  solToken(
+    '1a8e047b-f1ee-437a-8894-30a0b4a9180f',
+    'sol:usdcv',
+    'USD CoinVertible',
+    2,
+    '8smindLdDuySY6i2bStQX9o8DVhALCXCMbNxD98unx35',
+    '8smindLdDuySY6i2bStQX9o8DVhALCXCMbNxD98unx35',
+    UnderlyingAsset['sol:usdcv'],
+    SOL_TOKEN_FEATURES,
+    ProgramID.Token2022ProgramId
+  ),
   tsolToken(
     'b98c5a7a-49c5-45f1-a6ee-b08dff596a7d',
     'tsol:srm',

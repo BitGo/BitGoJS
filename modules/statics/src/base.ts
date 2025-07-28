@@ -2779,6 +2779,7 @@ export enum UnderlyingAsset {
   'sol:usdk' = 'sol:usdk',
   'sol:usdky' = 'sol:usdky',
   'sol:wave' = 'sol:wave',
+  'sol:usdcv' = 'sol:usdcv',
   // TRX tokens
   'trx:htx' = 'trx:htx',
   'trx:jst' = 'trx:jst',
