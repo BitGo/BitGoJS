@@ -227,12 +227,15 @@ const mainnetBase: EnvironmentTemplate = {
     irys: {
       baseUrl: 'https://testnet-rpc.irys.xyz/v1/execution-rpc', //TODO: WIN-6191 add mainnet url when available
     },
+    mon: {
+      baseUrl: 'https://api.etherscan.io/v2',
+    },
   },
   icpNodeUrl: 'https://ic0.app',
   worldExplorerBaseUrl: 'https://worldscan.org/',
   somniaExplorerBaseUrl: 'https://mainnet.somnia.w3us.site/',
   soneiumExplorerBaseUrl: 'https://soneium.blockscout.com',
-  monExplorerBaseUrl: 'https://mainnet-beta.monvision.io',
+  monExplorerBaseUrl: 'https://api.etherscan.io/v2',
   stxNodeUrl: 'https://api.hiro.so',
   vetNodeUrl: 'https://rpc-mainnet.vechain.energy',
 };
@@ -301,7 +304,7 @@ const testnetBase: EnvironmentTemplate = {
   xdcExplorerBaseUrl: 'https://api.etherscan.io/v2',
   sgbExplorerBaseUrl: 'https://coston-explorer.flare.network',
   icpNodeUrl: 'https://exchanges.testnet.dfinity.network',
-  monExplorerBaseUrl: 'https://testnet.monadexplorer.com/',
+  monExplorerBaseUrl: 'https://api.etherscan.io/v2',
   worldExplorerBaseUrl: 'https://sepolia.worldscan.org/',
   somniaExplorerBaseUrl: 'https://shannon-explorer.somnia.network/',
   soneiumExplorerBaseUrl: 'https://soneium-minato.blockscout.com',
@@ -326,6 +329,9 @@ const testnetBase: EnvironmentTemplate = {
     },
     irys: {
       baseUrl: 'https://testnet-rpc.irys.xyz/v1/execution-rpc',
+    },
+    mon: {
+      baseUrl: 'https://api.etherscan.io/v2',
     },
   },
   stxNodeUrl: 'https://api.testnet.hiro.so',
