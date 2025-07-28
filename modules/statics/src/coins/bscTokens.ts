@@ -1243,6 +1243,15 @@ export const bscTokens = [
     UnderlyingAsset['bsc:sol'],
     BSC_TOKEN_FEATURES
   ),
+  bscToken(
+    'b8feb3bd-054d-4db7-977a-172938d2e198',
+    'bsc:cusdo',
+    'Compounding Open Dollar',
+    18,
+    '0x302e52aff9815b9d1682473dbfb9c74f9b750aa8',
+    UnderlyingAsset['bsc:cusdo'],
+    BSC_TOKEN_FEATURES
+  ),
   tbscToken(
     'b31aa2b5-8d8c-4ac1-b5e5-0f9d59377eab',
     'tbsc:busd',

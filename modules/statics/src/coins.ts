@@ -3849,7 +3849,7 @@ export const coins = CoinMap.fromCoins([
     '377bb66c-c6bd-4406-9844-01b279f7dad2',
     'sui:xmn',
     'xMoney',
-    9,
+    6,
     '0x97c7571f4406cdd7a95f3027075ab80d3e9c937c2a567690d31e14ab1872ccee',
     'xmn',
     'XMN',
@@ -3918,6 +3918,15 @@ export const coins = CoinMap.fromCoins([
     8,
     '0xc546cc2dd26d9e9a4516b4514288bedf1085259fcb106b84b6469337f527fb92',
     UnderlyingAsset['apt:pact'],
+    APT_FEATURES
+  ),
+  aptToken(
+    'a20dce15-86e4-4707-9fdd-405dfb29f4e1',
+    'apt:lsd',
+    'Pontem Liquidswap',
+    8,
+    '0x53a30a6e5936c0a4c5140daed34de39d17ca7fcae08f947c02e979cef98a3719',
+    UnderlyingAsset['apt:lsd'],
     APT_FEATURES
   ),
   aptToken(
