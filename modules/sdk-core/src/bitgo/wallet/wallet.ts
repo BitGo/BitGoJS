@@ -1598,7 +1598,7 @@ export class Wallet implements IWallet {
    */
   async createBulkWalletShare(params: BulkWalletShareOptions): Promise<CreateBulkWalletShareListResponse> {
     if (params.keyShareOptions.length === 0) {
-      throw new Error('shareOptions cannot be empty');
+      throw new Error('No share options provided');
     }
     const bulkCreateShareOptions: BulkCreateShareOption[] = [];
 

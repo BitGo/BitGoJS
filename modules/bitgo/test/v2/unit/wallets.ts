@@ -1704,13 +1704,19 @@ describe('V2 Wallets:', function () {
       it('should throw validation error for userPassword empty string', async () => {
         await wallets
           .bulkAcceptShare({ walletShareIds: [], userLoginPassword: '' })
-          .should.rejectedWith('Missing parameter: userLoginPassword');
+          .should.rejectedWith('Please provide a valid user login password');
+      });
+
+      it('should throw validation error for sending walletPassphrase empty string', async () => {
+        await wallets
+          .bulkAcceptShare({ walletShareIds: [], userLoginPassword: 'password', newWalletPassphrase: 123 })
+          .should.rejectedWith('Please provide a valid wallet passphrase');
       });
 
       it('should throw assertion error for empty walletShareIds', async () => {
         await wallets
           .bulkAcceptShare({ walletShareIds: [], userLoginPassword: 'dummy@123' })
-          .should.rejectedWith('no walletShareIds are passed');
+          .should.rejectedWith('Please provide at least one wallet share to accept');
       });
 
       it('should throw error for no valid wallet shares', async () => {
@@ -1734,7 +1740,7 @@ describe('V2 Wallets:', function () {
             walletShareIds: ['66a229dbdccdcfb95b44fc2745a60bd1'],
             userLoginPassword: 'dummy@123',
           })
-          .should.rejectedWith('invalid wallet shares provided');
+          .should.rejectedWith('No valid wallet shares found to accept');
       });
 
       it('should throw error for no valid walletShares with keychain', async () => {
@@ -1759,7 +1765,7 @@ describe('V2 Wallets:', function () {
             walletShareIds: ['66a229dbdccdcfb95b44fc2745a60bd4'],
             userLoginPassword: 'dummy@123',
           })
-          .should.rejectedWith('invalid wallet shares provided');
+          .should.rejectedWith('No valid wallet shares found to accept');
       });
 
       it('should throw error for ecdh keychain undefined', async () => {
@@ -2522,7 +2528,7 @@ describe('V2 Wallets:', function () {
         await wallet.createBulkWalletShare({ walletPassphrase: 'Test', keyShareOptions: [] });
         assert.fail('Expected error not thrown');
       } catch (error) {
-        assert.strictEqual(error.message, 'shareOptions cannot be empty');
+        assert.strictEqual(error.message, 'No share options provided');
       }
     });
 

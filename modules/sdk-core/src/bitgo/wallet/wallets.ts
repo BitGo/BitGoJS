@@ -849,8 +849,16 @@ export class Wallets implements IWallets {
    *@returns {Promise<BulkAcceptShareResponse>}
    */
   async bulkAcceptShare(params: BulkAcceptShareOptions): Promise<BulkAcceptShareResponse> {
-    common.validateParams(params, ['userLoginPassword'], ['newWalletPassphrase']);
-    assert(params.walletShareIds.length > 0, 'no walletShareIds are passed');
+    try {
+      common.validateParams(params, ['userLoginPassword'], ['newWalletPassphrase']);
+    } catch (e) {
+      if ('newWalletPassphrase' in params) {
+        throw new Error('Please provide a valid wallet passphrase');
+      }
+      throw new Error('Please provide a valid user login password');
+    }
+
+    assert(params.walletShareIds.length > 0, 'Please provide at least one wallet share to accept');
 
     const allWalletShares = await this.listSharesV2();
     const walletShareMap = allWalletShares.incoming.reduce(
@@ -861,9 +869,11 @@ export class Wallets implements IWallets {
     const walletShares = params.walletShareIds
       .map((walletShareId) => walletShareMap[walletShareId])
       .filter((walletShare) => walletShare && walletShare.keychain);
+
     if (!walletShares.length) {
-      throw new Error('invalid wallet shares provided');
+      throw new Error('No valid wallet shares found to accept');
     }
+
     const sharingKeychain = await this.bitgo.getECDHKeychain();
     if (_.isUndefined(sharingKeychain.encryptedXprv)) {
       throw new Error('encryptedXprv was not found on sharing keychain');
