@@ -10561,8 +10561,7 @@ export const erc20Coins = [
     'Gaia Token',
     18,
     '0x2ee7097bfdd98fce2ac08a1896038a7cd9aaed81',
-    UnderlyingAsset['eth:gaia'],
-    AccountCoin.getFeaturesExcluding([CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE, CoinFeature.CUSTODY_BITGO_MENA_FZE])
+    UnderlyingAsset['eth:gaia']
   ),
   erc20(
     '5d3311f4-2f92-450a-9b7f-ac9a8fc62765',

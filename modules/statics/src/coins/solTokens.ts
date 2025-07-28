@@ -2876,6 +2876,68 @@ export const solTokens = [
     UnderlyingAsset['sol:usd1'],
     SOL_TOKEN_FEATURES
   ),
+  solToken(
+    'c1890b01-02d5-456c-8aab-f9ba2a46496b',
+    'sol:dupe',
+    'Dupe',
+    9,
+    'fRfKGCriduzDwSudCwpL7ySCEiboNuryhZDVJtr1a1C',
+    'fRfKGCriduzDwSudCwpL7ySCEiboNuryhZDVJtr1a1C',
+    UnderlyingAsset['sol:dupe'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    'fc4be157-b0e6-4744-8842-efc4110107a7',
+    'sol:tank',
+    'AgentTank',
+    6,
+    'GAMwtMB6onAvBNBQJCJFuxoaqfPH8uCQ2dewNMVVpump',
+    'GAMwtMB6onAvBNBQJCJFuxoaqfPH8uCQ2dewNMVVpump',
+    UnderlyingAsset['sol:tank'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '64c16989-e138-4c82-841f-d45cb2559e20',
+    'sol:grift',
+    'Orbit',
+    6,
+    'GekTNfm84QfyP2GdAHZ5AgACBRd69aNmgA5FDhZupump',
+    'GekTNfm84QfyP2GdAHZ5AgACBRd69aNmgA5FDhZupump',
+    UnderlyingAsset['sol:grift'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '466a2968-2a8f-4ecc-ae55-c80716dbba89',
+    'sol:usdk',
+    'Kast USDK',
+    6,
+    'usdkbee86pkLyRmxfFCdkyySpxRb5ndCxVsK2BkRXwX',
+    'usdkbee86pkLyRmxfFCdkyySpxRb5ndCxVsK2BkRXwX',
+    UnderlyingAsset['sol:usdk'],
+    SOL_TOKEN_FEATURES,
+    ProgramID.Token2022ProgramId
+  ),
+  solToken(
+    'a4eaf43b-86c6-4446-8fbd-2b40341e183a',
+    'sol:usdky',
+    'Kast USDKY',
+    6,
+    'usdkyPPxgV7sfNyKb8eDz66ogPrkRXG3wS2FVb6LLUf',
+    'usdkyPPxgV7sfNyKb8eDz66ogPrkRXG3wS2FVb6LLUf',
+    UnderlyingAsset['sol:usdky'],
+    SOL_TOKEN_FEATURES,
+    ProgramID.Token2022ProgramId
+  ),
+  solToken(
+    '985f0250-6df3-4cc5-957d-badf6c26fdc2',
+    'sol:wave',
+    'Waveform',
+    6,
+    '5XUUN5z1yBPEwoLztu4qMenmFe6GQnZptBFsnFnEpump',
+    '5XUUN5z1yBPEwoLztu4qMenmFe6GQnZptBFsnFnEpump',
+    UnderlyingAsset['sol:wave'],
+    SOL_TOKEN_FEATURES
+  ),
   tsolToken(
     'b98c5a7a-49c5-45f1-a6ee-b08dff596a7d',
     'tsol:srm',

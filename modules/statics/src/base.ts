@@ -2473,6 +2473,7 @@ export enum UnderlyingAsset {
   'bsc:uni' = 'bsc:uni',
   'bsc:yfi' = 'bsc:yfi',
   'bsc:link' = 'bsc:link',
+  'bsc:cusdo' = 'bsc:cusdo',
   // BSC NFTs
   // generic NFTs
   'erc721:bsctoken' = 'erc721:bsctoken',
@@ -2772,6 +2773,12 @@ export enum UnderlyingAsset {
   'sol:chill' = 'sol:chill',
   'sol:zbcn' = 'sol:zbcn',
   'sol:benji' = 'sol:benji',
+  'sol:dupe' = 'sol:dupe',
+  'sol:tank' = 'sol:tank',
+  'sol:grift' = 'sol:grift',
+  'sol:usdk' = 'sol:usdk',
+  'sol:usdky' = 'sol:usdky',
+  'sol:wave' = 'sol:wave',
   // TRX tokens
   'trx:htx' = 'trx:htx',
   'trx:jst' = 'trx:jst',
@@ -2831,6 +2838,7 @@ export enum UnderlyingAsset {
   'apt:usdc' = 'apt:usdc',
   'apt:pact' = 'apt:pact',
   'apt:benji' = 'apt:benji',
+  'apt:lsd' = 'apt:lsd',
   // Apt mainnet NFT collections
   'apt:h00ts' = 'apt:h00ts',
 
