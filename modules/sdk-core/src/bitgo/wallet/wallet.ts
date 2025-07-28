@@ -3141,7 +3141,9 @@ export class Wallet implements IWallet {
     }
 
     const buildParams: PrebuildTransactionOptions = _.pick(params, this.prebuildWhitelistedParams());
-    buildParams.type = 'enabletoken';
+    if (!buildParams.type) {
+      buildParams.type = 'enabletoken';
+    }
     // Check if we build with intent
     if (this._wallet.multisigType === 'tss') {
       return [await this.prebuildTransaction(buildParams)];
