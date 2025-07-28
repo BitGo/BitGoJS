@@ -33,6 +33,7 @@ import {
   CoinFeature,
   Nep141TokenConfig,
   CosmosTokenConfig,
+  VetTokenConfig,
 } from '@bitgo/statics';
 import {
   Ada,
@@ -210,6 +211,7 @@ import {
   Zeta,
   Zketh,
   ZkethToken,
+  VetToken,
 } from './coins';
 
 export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: CoinMap = coins): void {
@@ -499,6 +501,10 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
 
   CosmosToken.createTokenConstructors([...tokens.bitcoin.cosmos.tokens, ...tokens.testnet.cosmos.tokens]).forEach(
     ({ name, coinConstructor }) => coinFactory.register(name, coinConstructor)
+  );
+
+  VetToken.createTokenConstructors().forEach(({ name, coinConstructor }) =>
+    coinFactory.register(name, coinConstructor)
   );
 }
 
@@ -905,6 +911,9 @@ export function getTokenConstructor(tokenConfig: TokenConfig): CoinConstructor |
     case 'near':
     case 'tnear':
       return Nep141Token.createTokenConstructor(tokenConfig as Nep141TokenConfig);
+    case 'vet':
+    case 'tvet':
+      return VetToken.createTokenConstructor(tokenConfig as VetTokenConfig);
     case 'asi':
     case 'tasi':
     case 'atom':

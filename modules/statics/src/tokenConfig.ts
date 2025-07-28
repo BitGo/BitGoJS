@@ -142,7 +142,8 @@ export type TokenConfig =
   | AptNFTCollectionConfig
   | Sip10TokenConfig
   | Nep141TokenConfig
-  | CosmosTokenConfig;
+  | CosmosTokenConfig
+  | VetTokenConfig;
 
 export interface Tokens {
   bitcoin: {
@@ -1185,6 +1186,8 @@ export function getFormattedTokenConfigForCoin(coin: Readonly<BaseCoin>): TokenC
     return getNep141TokenConfig(coin);
   } else if (coin instanceof CosmosChainToken) {
     return getCosmosTokenConfig(coin);
+  } else if (coin instanceof VetToken) {
+    return getVetTokenConfig(coin);
   }
   return undefined;
 }
