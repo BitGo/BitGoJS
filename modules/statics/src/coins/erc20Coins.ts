@@ -11463,7 +11463,7 @@ export const erc20Coins = [
     'hteth:tsteth',
     'Holesky Testnet STETH',
     18,
-    '0x3f1c547b21f65e10480de3ad8e19faac46c95034',
+    '0x3508a952176b3c15387c97be809eaffb1982176a',
     UnderlyingAsset['hteth:tsteth'],
     [...AccountCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION, CoinFeature.REBASE_TOKEN],
     undefined,
