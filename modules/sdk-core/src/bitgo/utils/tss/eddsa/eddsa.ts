@@ -40,6 +40,9 @@ import { KeychainsTriplet } from '../../../baseCoin';
 import { exchangeEddsaCommitments } from '../../../tss/common';
 import { Ed25519Bip32HdTree } from '@bitgo/sdk-lib-mpc';
 import { IRequestTracer } from '../../../../api';
+import { getBitgoMpcGpgPubKey } from '../../../tss/bitgoPubKeys';
+import { EnvironmentName } from '../../../environments';
+import { readKey } from 'openpgp';
 
 /**
  * Utility functions for TSS work flows.
@@ -51,12 +54,20 @@ export class EddsaUtils extends baseTSSUtils<KeyShare> {
     backupGpgPub: string,
     bitgoKeychain: Keychain,
     decryptedShare: string,
-    verifierIndex: 1 | 2
+    verifierIndex: 1 | 2,
+    useHardcodedBitGoKeys?: {
+      env: EnvironmentName;
+      pubKeyType: 'nitro' | 'onprem';
+    }
   ): Promise<void> {
     assert(bitgoKeychain.commonKeychain);
     assert(bitgoKeychain.walletHSMGPGPublicKeySigs);
 
-    const bitgoGpgKey = (await getBitgoGpgPubKey(this.bitgo)).mpcV1;
+    const bitgoGpgKey = useHardcodedBitGoKeys
+      ? await readKey({
+          armoredKey: getBitgoMpcGpgPubKey(useHardcodedBitGoKeys.env, useHardcodedBitGoKeys.pubKeyType, 'mpcv1'),
+        })
+      : (await getBitgoGpgPubKey(this.bitgo)).mpcV1;
 
     const userKeyPub = await openpgp.readKey({ armoredKey: userGpgPub });
     const userKeyId = userKeyPub.keyPacket.getFingerprint();
