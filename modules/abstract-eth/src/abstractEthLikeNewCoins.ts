@@ -1243,25 +1243,37 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     return calculateForwarderV1Address(forwarderFactoryAddress, calculationSalt, initCode);
   }
 
-  deriveAddressFromPublicKey(publicKey: string): string {
+  deriveAddressFromPublicKey(commonKeychain: string, index: number): string {
+    const derivationPath = `m/${index}`;
+    const pubkeySize = 33;
+
+    const ecdsaMpc = new Ecdsa();
+    const derivedPublicKey = Buffer.from(ecdsaMpc.deriveUnhardened(commonKeychain, derivationPath), 'hex')
+      .subarray(0, pubkeySize)
+      .toString('hex');
+
+    const publicKey = Buffer.from(derivedPublicKey, 'hex').slice(0, 66).toString('hex');
+
     const keyPair = new KeyPairLib({ pub: publicKey });
     const address = keyPair.getAddress();
     return address;
   }
 
-  getConsolidationAddress(params: EthConsolidationRecoveryOptions, index: number): string {
+  getConsolidationAddress(params: EthConsolidationRecoveryOptions, index: number): string[] {
+    const possibleConsolidationAddresses: string[] = [];
     if (params.walletContractAddress && params.bitgoFeeAddress) {
       const ethNetwork = this.getNetwork();
       const forwarderFactoryAddress = ethNetwork?.walletV4ForwarderFactoryAddress as string;
       const forwarderImplementationAddress = ethNetwork?.walletV4ForwarderImplementationAddress as string;
       try {
-        return this.generateForwarderAddress(
+        const forwarderAddress = this.generateForwarderAddress(
           params.walletContractAddress,
           params.bitgoFeeAddress,
           forwarderFactoryAddress,
           forwarderImplementationAddress,
           index
         );
+        possibleConsolidationAddresses.push(forwarderAddress);
       } catch (e) {
         console.log(`Failed to generate forwarder address: ${e.message}`);
       }
@@ -1269,14 +1281,19 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
 
     if (params.userKey) {
       try {
-        return this.deriveAddressFromPublicKey(params.userKey);
+        const derivedAddress = this.deriveAddressFromPublicKey(params.userKey, index);
+        possibleConsolidationAddresses.push(derivedAddress);
       } catch (e) {
-        console.log(`Failed to generate derived address: ${e.message}`);
+        console.log(`Failed to generate derived address: ${e}`);
       }
     }
-    throw new Error(
-      'Unable to generate consolidation address. Check that wallet contract address, fee address, or user key is valid.'
-    );
+
+    if (possibleConsolidationAddresses.length === 0) {
+      throw new Error(
+        'Unable to generate consolidation address. Check that wallet contract address, fee address, or user key is valid.'
+      );
+    }
+    return possibleConsolidationAddresses;
   }
 
   async recoverConsolidations(params: EthConsolidationRecoveryOptions): Promise<Record<string, unknown> | undefined> {
@@ -1303,50 +1320,49 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
 
     for (let i = startIdx; i < endIdx; i++) {
       const consolidationAddress = this.getConsolidationAddress(params, i);
-
-      const recoverParams = {
-        apiKey: params.apiKey,
-        backupKey: params.backupKey,
-        gasLimit: params.gasLimit,
-        recoveryDestination: params.recoveryDestination,
-        userKey: params.userKey,
-        walletContractAddress: consolidationAddress,
-        derivationSeed: '',
-        isTss: params.isTss,
-        eip1559: {
-          maxFeePerGas: params.eip1559?.maxFeePerGas || 20,
-          maxPriorityFeePerGas: params.eip1559?.maxPriorityFeePerGas || 200000,
-        },
-        replayProtectionOptions: {
-          chain: params.replayProtectionOptions?.chain || 0,
-          hardfork: params.replayProtectionOptions?.hardfork || 'london',
-        },
-        bitgoKey: '',
-        ignoreAddressTypes: [],
-      };
-
-      let recoveryTransaction;
-      try {
-        recoveryTransaction = await this.recover(recoverParams);
-      } catch (e) {
-        if (
-          e.message === 'Did not find address with funds to recover' ||
-          e.message === 'Did not find token account to recover tokens, please check token account' ||
-          e.message === 'Not enough token funds to recover'
-        ) {
-          lastScanIndex = i;
-          continue;
+      for (const address of consolidationAddress) {
+        const recoverParams = {
+          apiKey: params.apiKey,
+          backupKey: params.backupKey,
+          gasLimit: params.gasLimit,
+          recoveryDestination: params.recoveryDestination,
+          userKey: params.userKey,
+          walletContractAddress: address,
+          derivationSeed: '',
+          isTss: params.isTss,
+          eip1559: {
+            maxFeePerGas: params.eip1559?.maxFeePerGas || 20,
+            maxPriorityFeePerGas: params.eip1559?.maxPriorityFeePerGas || 200000,
+          },
+          replayProtectionOptions: {
+            chain: params.replayProtectionOptions?.chain || 0,
+            hardfork: params.replayProtectionOptions?.hardfork || 'london',
+          },
+          bitgoKey: '',
+          ignoreAddressTypes: [],
+        };
+        let recoveryTransaction;
+        try {
+          recoveryTransaction = await this.recover(recoverParams);
+        } catch (e) {
+          if (
+            e.message === 'Did not find address with funds to recover' ||
+            e.message === 'Did not find token account to recover tokens, please check token account' ||
+            e.message === 'Not enough token funds to recover'
+          ) {
+            lastScanIndex = i;
+            continue;
+          }
+          throw e;
         }
-        throw e;
+        if (isUnsignedSweep) {
+          consolidationTransactions.push((recoveryTransaction as MPCSweepTxs).txRequests[0]);
+        } else {
+          consolidationTransactions.push(recoveryTransaction);
+        }
       }
 
-      if (isUnsignedSweep) {
-        consolidationTransactions.push((recoveryTransaction as MPCSweepTxs).txRequests[0]);
-      } else {
-        consolidationTransactions.push(recoveryTransaction);
-      }
-
-      lastScanIndex = i;
+      // lastScanIndex = i;
     }
 
     if (consolidationTransactions.length === 0) {
