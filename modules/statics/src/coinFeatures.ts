@@ -590,6 +590,7 @@ export const VET_FEATURES = [
   CoinFeature.SUPPORTS_TOKENS,
   CoinFeature.ENTERPRISE_PAYS_FEES,
   CoinFeature.TSS_ENTERPRISE_PAYS_FEES,
+  CoinFeature.FEES_PAID_WITH_TOKEN,
   CoinFeature.MPCV2,
 ];
 export const VET_TOKEN_FEATURES = [
@@ -599,4 +600,5 @@ export const VET_TOKEN_FEATURES = [
   CoinFeature.ENTERPRISE_PAYS_FEES,
   CoinFeature.TSS_ENTERPRISE_PAYS_FEES,
   CoinFeature.MPCV2,
+  CoinFeature.FEES_PAID_WITH_TOKEN,
 ];
