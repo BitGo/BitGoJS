@@ -123,6 +123,9 @@
       "path": "../sdk-coin-coreum"
     },
     {
+      "path": "../sdk-coin-cosmos"
+    },
+    {
       "path": "../sdk-coin-cronos"
     },
     {

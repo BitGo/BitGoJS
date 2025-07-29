@@ -63,6 +63,7 @@ import {
   Coredao,
   CoredaoToken,
   CosmosToken,
+  CosmosSharedCoin,
   Coreum,
   Cronos,
   Cspr,
@@ -380,6 +381,12 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
       coinFactory.register(coin.name, EvmCoin.createInstance);
     });
 
+  coins
+    .filter((coin) => coin.features.includes(CoinFeature.SHARED_COSMOS_SDK))
+    .forEach((coin) => {
+      coinFactory.register(coin.name, CosmosSharedCoin.createInstance);
+    });
+
   const tokens = getFormattedTokens(coinMap);
 
   Erc20Token.createTokenConstructors([...tokens.bitcoin.eth.tokens, ...tokens.testnet.eth.tokens]).forEach(
@@ -510,8 +517,12 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
 
 export function getCoinConstructor(coinName: string): CoinConstructor | undefined {
   const evmCoins = coins.filter((coin) => coin.features.includes(CoinFeature.SHARED_EVM_SDK));
+  const cosmosSharedCoins = coins.filter((coin) => coin.features.includes(CoinFeature.SHARED_COSMOS_SDK));
   if (evmCoins.has(coinName)) {
     return EvmCoin.createInstance;
+  }
+  if (cosmosSharedCoins.has(coinName)) {
+    return CosmosSharedCoin.createInstance;
   }
   switch (coinName) {
     case 'ada':
