@@ -358,6 +358,11 @@ export enum CoinFeature {
   TSS_ENTERPRISE_PAYS_FEES = 'tss-enterprise-pays-fees',
 
   /**
+   * Indicates that fees for transactions on a wallet for this coin are paid with a token (not the native coin).
+   */
+  FEES_PAID_WITH_TOKEN = 'fees-paid-with-token',
+
+  /**
    * This coin supports alphanumeric memo id
    */
   ALPHANUMERIC_MEMO_ID = 'alphanumeric-memo-id',
