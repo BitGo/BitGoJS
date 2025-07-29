@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [27.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.6.1...@bitgo/account-lib@27.8.0) (2025-07-25)
+
+### Features
+
+- use a whitelisted message for signing ([996589b](https://github.com/BitGo/BitGoJS/commit/996589b2daeda92bd97f21fe18c1e43869ba4519))
+
 # [27.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.6.1...@bitgo/account-lib@27.7.0) (2025-07-23)
 
 ### Features

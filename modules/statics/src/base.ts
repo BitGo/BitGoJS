@@ -266,6 +266,10 @@ export enum CoinFeature {
    * This coin supports custody in BitGo Custody MENA FZE entities
    */
   CUSTODY_BITGO_CUSTODY_MENA_FZE = 'custody-bitgo-custody-mena-fze',
+  /**
+   * This coin supports custody in BitGo India entities
+   */
+  CUSTODY_BITGO_INDIA = 'custody-bitgo-india',
   /*
    * This coin has transactions that expire after a certain amount of time.
    */
@@ -2469,6 +2473,7 @@ export enum UnderlyingAsset {
   'bsc:uni' = 'bsc:uni',
   'bsc:yfi' = 'bsc:yfi',
   'bsc:link' = 'bsc:link',
+  'bsc:cusdo' = 'bsc:cusdo',
   // BSC NFTs
   // generic NFTs
   'erc721:bsctoken' = 'erc721:bsctoken',
@@ -2768,6 +2773,13 @@ export enum UnderlyingAsset {
   'sol:chill' = 'sol:chill',
   'sol:zbcn' = 'sol:zbcn',
   'sol:benji' = 'sol:benji',
+  'sol:dupe' = 'sol:dupe',
+  'sol:tank' = 'sol:tank',
+  'sol:grift' = 'sol:grift',
+  'sol:usdk' = 'sol:usdk',
+  'sol:usdky' = 'sol:usdky',
+  'sol:wave' = 'sol:wave',
+  'sol:usdcv' = 'sol:usdcv',
   // TRX tokens
   'trx:htx' = 'trx:htx',
   'trx:jst' = 'trx:jst',
@@ -2827,6 +2839,7 @@ export enum UnderlyingAsset {
   'apt:usdc' = 'apt:usdc',
   'apt:pact' = 'apt:pact',
   'apt:benji' = 'apt:benji',
+  'apt:lsd' = 'apt:lsd',
   // Apt mainnet NFT collections
   'apt:h00ts' = 'apt:h00ts',
 
@@ -2879,6 +2892,7 @@ export enum UnderlyingAsset {
   // VET testnet tokens
   'tvet:vtho' = 'tvet:vtho',
 
+
   'eth:0x0' = 'eth:0x0',
   'eth:vvs' = 'eth:vvs',
   'eth:bmc' = 'eth:bmc',
@@ -2889,6 +2903,13 @@ export enum UnderlyingAsset {
   'eth:rlb' = 'eth:rlb',
   'eth:neiro2' = 'eth:neiro2',
   'eth:sign' = 'eth:sign',
+
+  // COSMOS tokens
+  'hash:ylds' = 'hash:ylds',
+
+  // COSMOS testnet tokens
+  'thash:ylds' = 'thash:ylds',
+
 
   // fiats
   AED = 'aed',

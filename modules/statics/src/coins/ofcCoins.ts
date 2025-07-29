@@ -910,6 +910,62 @@ export const ofcCoins = [
     UnderlyingAsset['sol:usd1'],
     SOL_TOKEN_FEATURES
   ),
+  ofcsolToken(
+    'b08c09fd-73fb-4b7f-8377-72225cd8c256',
+    'ofcsol:dupe',
+    'Dupe',
+    9,
+    UnderlyingAsset['sol:dupe'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '2ffdb51c-0950-481a-b983-d8fc6f79e15d',
+    'ofcsol:tank',
+    'AgentTank',
+    6,
+    UnderlyingAsset['sol:tank'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    'a5bf88db-3b47-4c7a-8faa-89d46f533614',
+    'ofcsol:grift',
+    'Orbit',
+    6,
+    UnderlyingAsset['sol:grift'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    'ceb01fe5-edc8-4c2b-a27a-d2d10bb5c12d',
+    'ofcsol:usdk',
+    'Kast USDK',
+    6,
+    UnderlyingAsset['sol:usdk'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '6ac3b85c-0561-4ff1-a8be-12d23409c49b',
+    'ofcsol:usdky',
+    'Kast USDKY',
+    6,
+    UnderlyingAsset['sol:usdky'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '74c35273-927d-4ff2-8ca9-50481a1c7e43',
+    'ofcsol:wave',
+    'Waveform',
+    6,
+    UnderlyingAsset['sol:wave'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '37fcfc49-1579-429d-b82f-cf074e21f1f1',
+    'ofcsol:usdcv',
+    'USD CoinVertible',
+    2,
+    UnderlyingAsset['sol:usdcv'],
+    SOL_TOKEN_FEATURES
+  ),
   tofcsolToken(
     '24d678cf-e0f0-4cde-a338-d754289c5b27',
     'ofctsol:slnd',
@@ -1777,6 +1833,13 @@ export const ofcCoins = [
     UnderlyingAsset['bsc:aitech']
   ),
   ofcBscToken('16b3a242-d500-4930-884a-183aa9038609', 'ofcbsc:sol', 'Solana', 18, UnderlyingAsset['bsc:sol']),
+  ofcBscToken(
+    '5a8a03a2-2013-4096-92f7-80ab7a6b430d',
+    'ofcbsc:cusdo',
+    'Compounding Open Dollar',
+    18,
+    UnderlyingAsset['bsc:cusdo']
+  ),
   tofcBscToken(
     'bf8a52e5-f416-46ea-95c2-a920dc204233',
     'ofctbsc:usd1',
@@ -2709,6 +2772,14 @@ export const ofcCoins = [
     'USD Tether',
     6,
     UnderlyingAsset['apt:usdt'],
+    APT_OFC_TOKEN_FEATURES
+  ),
+  ofcaptToken(
+    '5ee043c0-d843-4ffa-920c-3099e9891f81',
+    'ofcapt:lsd',
+    'Pontem Liquidswap',
+    8,
+    UnderlyingAsset['apt:lsd'],
     APT_OFC_TOKEN_FEATURES
   ),
   ofcStxToken('2d2f9c7f-7d10-480e-a0ef-6893cf4d3493', 'ofcstx:sbtc', 'sBTC', 8, UnderlyingAsset['stx:sbtc']),

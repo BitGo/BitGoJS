@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.20.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.18.1...@bitgo/utxo-staking@1.20.0) (2025-07-25)
+
+### Bug Fixes
+
+- run test in /dist to avoid strip-only mode for node 24 ([868a01a](https://github.com/BitGo/BitGoJS/commit/868a01ab0a21fdf04fa352396c6a5cb825e01c36))
+- **utxo-core:** improve property extraction in toPlainObject ([f0cad57](https://github.com/BitGo/BitGoJS/commit/f0cad5738c55dccc63d0618203dc8f96784fd0bf))
+
+### Features
+
+- **utxo-staking:** add descriptor parser for Babylon staking ([6ac3718](https://github.com/BitGo/BitGoJS/commit/6ac3718d576d9ab47772f75980ef5150e8a11ef4))
+- **utxo-staking:** add parsing for unbonding descriptor ([b302afd](https://github.com/BitGo/BitGoJS/commit/b302afdc5a9c7b5e3747fbd72b7c132c8d2305f2))
+- **utxo-staking:** add PSBT data to Babylon unstaking test fixtures ([be5ee57](https://github.com/BitGo/BitGoJS/commit/be5ee57cc1629f64c37b16872ab90db41a6b1762))
+- **utxo-staking:** add separate tests for PSBT signature validation ([941989d](https://github.com/BitGo/BitGoJS/commit/941989db84b679e6c1001766b3cee7506cef6fd0))
+- **utxo-staking:** add test that validates unbonding output ([f2e2b13](https://github.com/BitGo/BitGoJS/commit/f2e2b135d6a0cbb3cf3ca8cebe71a0cbb37e919f))
+- **utxo-staking:** add unbonding transaction construction for staking ([2f5d6e1](https://github.com/BitGo/BitGoJS/commit/2f5d6e19c999ee9debf660524949eebbc4c72b0e))
+- **utxo-staking:** add unbonding transaction test and fixture ([65a53ed](https://github.com/BitGo/BitGoJS/commit/65a53ed11f437a3e6df250d3cab619663287e358))
+- **utxo-staking:** export sortedKeys function for use in unbonding ([bd62506](https://github.com/BitGo/BitGoJS/commit/bd62506f45e74ad87580b721f8d81f0cb37ac407))
+- **utxo-staking:** extract key details from parsed staking descriptors ([5869f53](https://github.com/BitGo/BitGoJS/commit/5869f533ec6eb673a161072213b92b7482e7d28b))
+- **utxo-staking:** include PSBT in unstaking transaction fixture ([8cb57a3](https://github.com/BitGo/BitGoJS/commit/8cb57a38e063bdc18f35aaf0e8e19b0342f17745))
+- **utxo-staking:** move assertion utils to fixtures.utils.ts ([1967e15](https://github.com/BitGo/BitGoJS/commit/1967e157a6c116f28f652f08a8bb2aecded7a604))
+- **utxo-staking:** rename and document descriptor methods ([251ced3](https://github.com/BitGo/BitGoJS/commit/251ced39d182f1b355ee0e9ff499c335e3ba135a))
+- **utxo-staking:** rename and enhance babylon scripts ([2ca1e4c](https://github.com/BitGo/BitGoJS/commit/2ca1e4c6dbc593bd913dbdde559eca02c78fce01))
+- **utxo-staking:** rename and enhance babylon scripts ([c05560b](https://github.com/BitGo/BitGoJS/commit/c05560b7f0ebd57c4e73ab1fc8cead26615b0745))
+- **utxo-staking:** update imports for undelegation files ([8f82377](https://github.com/BitGo/BitGoJS/commit/8f82377238f1180e058c762e901a97c08fac8abc))
+- **utxo-staking:** use select tap leaf script for unstaking ([3b3d43c](https://github.com/BitGo/BitGoJS/commit/3b3d43c83f65726f127d91557d0378b8df2312f8))
+
 # [1.19.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.18.1...@bitgo/utxo-staking@1.19.0) (2025-07-23)
 
 ### Bug Fixes

@@ -10,9 +10,13 @@ import { BaseCoin, BaseNetwork, CoinNotDefinedError, coins, SolCoin } from '@bit
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   decodeCloseAccountInstruction,
+  decodeBurnInstruction,
+  decodeMintToInstruction,
   getAssociatedTokenAddress,
   TOKEN_PROGRAM_ID,
   TOKEN_2022_PROGRAM_ID,
+  DecodedBurnInstruction,
+  DecodedMintToInstruction,
 } from '@solana/spl-token';
 import {
   Keypair,
@@ -279,7 +283,7 @@ export function getTransactionType(transaction: SolTransaction): TransactionType
   // check if deactivate instruction does not exist because deactivate can be include a transfer instruction
   const memoInstruction = instructions.find((instruction) => getInstructionType(instruction) === 'Memo');
   const memoData = memoInstruction?.data.toString('utf-8');
-  if (instructions.filter((instruction) => getInstructionType(instruction) === 'Deactivate').length == 0) {
+  if (instructions.filter((instruction) => getInstructionType(instruction) === 'Deactivate').length === 0) {
     for (const instruction of instructions) {
       const instructionType = getInstructionType(instruction);
       // Check if memo instruction is there and if it contains 'PrepareForRevoke' because Marinade staking deactivate transaction will have this
@@ -345,9 +349,40 @@ export function getInstructionType(instruction: TransactionInstruction): ValidIn
           return 'CloseAssociatedTokenAccount';
         }
       } catch (e) {
-        // ignore error and default to TokenTransfer
-        return 'TokenTransfer';
+        // ignore error and continue to check for other instruction types
       }
+
+      // Check for burn instructions (instruction code 8)
+      try {
+        let burnInstruction: DecodedBurnInstruction;
+        if (instruction.programId.toString() !== TOKEN_2022_PROGRAM_ID.toString()) {
+          burnInstruction = decodeBurnInstruction(instruction);
+        } else {
+          burnInstruction = decodeBurnInstruction(instruction, TOKEN_2022_PROGRAM_ID);
+        }
+        if (burnInstruction && burnInstruction.data.instruction === 8) {
+          return 'Burn';
+        }
+      } catch (e) {
+        // ignore error and continue to check for other instruction types
+      }
+
+      // Check for mint instructions (instruction code 7)
+      try {
+        let mintInstruction: DecodedMintToInstruction;
+        if (instruction.programId.toString() !== TOKEN_2022_PROGRAM_ID.toString()) {
+          mintInstruction = decodeMintToInstruction(instruction);
+        } else {
+          mintInstruction = decodeMintToInstruction(instruction, TOKEN_2022_PROGRAM_ID);
+        }
+        if (mintInstruction && mintInstruction.data.instruction === 7) {
+          return 'MintTo';
+        }
+      } catch (e) {
+        // ignore error and continue to check for other instruction types
+      }
+
+      // Default to TokenTransfer for other token instructions
       return 'TokenTransfer';
     case StakeProgram.programId.toString():
       return StakeInstruction.decodeInstructionType(instruction);
@@ -546,8 +581,8 @@ export async function getAssociatedTokenAccountAddress(
 
   if (!programId) {
     const coin = getSolTokenFromAddressOnly(tokenMintAddress);
-    if (coin && coin instanceof SolCoin && (coin as any).programId) {
-      programId = (coin as any).programId.toString();
+    if (coin && coin instanceof SolCoin && 'programId' in coin && coin.programId) {
+      programId = coin.programId.toString();
     } else {
       programId = TOKEN_PROGRAM_ID.toString();
     }
@@ -562,13 +597,13 @@ export async function getAssociatedTokenAccountAddress(
   return ataAddress.toString();
 }
 
-export function validateMintAddress(mintAddress: string) {
+export function validateMintAddress(mintAddress: string): void {
   if (!mintAddress || !isValidAddress(mintAddress)) {
     throw new BuildTransactionError('Invalid or missing mintAddress, got: ' + mintAddress);
   }
 }
 
-export function validateOwnerAddress(ownerAddress: string) {
+export function validateOwnerAddress(ownerAddress: string): void {
   if (!ownerAddress || !isValidAddress(ownerAddress)) {
     throw new BuildTransactionError('Invalid or missing ownerAddress, got: ' + ownerAddress);
   }

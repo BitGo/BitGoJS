@@ -8,7 +8,7 @@ import { UnsignedSweepTxMPCv2 } from '@bitgo/abstract-eth';
 import { mockDataUnsignedSweep, mockDataNonBitGoRecovery } from '../resources';
 import nock from 'nock';
 import { common } from '@bitgo/sdk-core';
-import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx';
+import { Transaction } from '@ethereumjs/tx';
 import { stripHexPrefix } from '@ethereumjs/util';
 
 const bitgo: TestBitGoAPI = TestBitGo.decorate(BitGoAPI, { env: 'test' });
@@ -49,9 +49,9 @@ describe('xdc', function () {
 
 describe('Build Unsigned Sweep for Self-Custody Cold Wallets - (MPCv2)', function () {
   const bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
+  bitgo.register('txdc', Txdc.createInstance);
   const explorerUrl = common.Environments[bitgo.getEnv()].xdcExplorerBaseUrl as string;
-  const maxFeePerGasvalue = 20000000000;
-  const maxPriorityFeePerGasValue = 10000000000;
+  const gasPrice = 20000000000;
   const gasLimitValue = 500000;
   const chain_id = 51;
 
@@ -73,11 +73,11 @@ describe('Build Unsigned Sweep for Self-Custody Cold Wallets - (MPCv2)', functio
       walletContractAddress: mockDataUnsignedSweep.walletBaseAddress,
       recoveryDestination: mockDataUnsignedSweep.recoveryDestination,
       isTss: true,
-      eip1559: { maxFeePerGas: maxFeePerGasvalue, maxPriorityFeePerGas: maxPriorityFeePerGasValue },
+      gasPrice: gasPrice,
       gasLimit: gasLimitValue,
       replayProtectionOptions: {
         chain: chain_id,
-        hardfork: 'london',
+        hardfork: 'petersburg',
       },
     })) as UnsignedSweepTxMPCv2;
     should.exist(transaction);
@@ -105,9 +105,9 @@ describe('Build Unsigned Sweep for Self-Custody Cold Wallets - (MPCv2)', functio
 
 describe('Non Bitgo Recovery for Hot Wallets', function () {
   const bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
+  bitgo.register('txdc', Txdc.createInstance);
   const explorerUrl = common.Environments[bitgo.getEnv()].xdcExplorerBaseUrl as string;
-  const maxFeePerGasvalue = 20000000000;
-  const maxPriorityFeePerGasValue = 10000000000;
+  const gasPrice = 20000000000;
   const chain_id = 51;
   const gasLimitvalue = 500000;
 
@@ -130,17 +130,17 @@ describe('Non Bitgo Recovery for Hot Wallets', function () {
       walletPassphrase: mockDataNonBitGoRecovery.walletPassphrase,
       recoveryDestination: mockDataNonBitGoRecovery.recoveryDestination,
       isTss: true,
-      eip1559: { maxFeePerGas: maxFeePerGasvalue, maxPriorityFeePerGas: maxPriorityFeePerGasValue },
+      gasPrice: gasPrice,
       gasLimit: gasLimitvalue,
       replayProtectionOptions: {
         chain: chain_id,
-        hardfork: 'london',
+        hardfork: 'petersburg',
       },
     });
     should.exist(transaction);
     transaction.should.have.property('id');
     transaction.should.have.property('tx');
-    const tx = FeeMarketEIP1559Transaction.fromSerializedTx(Buffer.from(stripHexPrefix(transaction.tx), 'hex'));
+    const tx = Transaction.fromSerializedTx(Buffer.from(stripHexPrefix(transaction.tx), 'hex'));
     tx.getSenderAddress().toString().should.equal(mockDataNonBitGoRecovery.walletRootAddress);
     const jsonTx = tx.toJSON();
     jsonTx.to?.should.equal(mockDataNonBitGoRecovery.recoveryDestination);

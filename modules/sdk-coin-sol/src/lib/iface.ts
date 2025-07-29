@@ -38,7 +38,9 @@ export type InstructionParams =
   | AtaClose
   | TokenTransfer
   | StakingAuthorize
-  | StakingDelegate;
+  | StakingDelegate
+  | MintTo
+  | Burn;
 
 export interface Memo {
   type: InstructionBuilderTypes.Memo;
@@ -73,6 +75,32 @@ export interface TokenTransfer {
     tokenName: string;
     sourceAddress: string;
     tokenAddress?: string;
+    decimalPlaces?: number;
+    programId?: string;
+  };
+}
+
+export interface MintTo {
+  type: InstructionBuilderTypes.MintTo;
+  params: {
+    mintAddress: string;
+    destinationAddress: string;
+    authorityAddress: string;
+    amount: string;
+    tokenName: string;
+    decimalPlaces?: number;
+    programId?: string;
+  };
+}
+
+export interface Burn {
+  type: InstructionBuilderTypes.Burn;
+  params: {
+    mintAddress: string;
+    accountAddress: string;
+    authorityAddress: string;
+    amount: string;
+    tokenName: string;
     decimalPlaces?: number;
     programId?: string;
   };
@@ -154,7 +182,9 @@ export type ValidInstructionTypes =
   | 'CloseAssociatedTokenAccount'
   | DecodedCloseAccountInstruction
   | 'TokenTransfer'
-  | 'SetPriorityFee';
+  | 'SetPriorityFee'
+  | 'MintTo'
+  | 'Burn';
 
 export type StakingAuthorizeParams = {
   stakingAddress: string;

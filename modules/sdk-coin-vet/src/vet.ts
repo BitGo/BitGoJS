@@ -94,19 +94,20 @@ export class Vet extends BaseCoin {
     if (!explainedTx) {
       throw new Error('failed to explain transaction');
     }
-    if (txParams.recipients !== undefined) {
+    if (txParams.recipients !== undefined && txParams.recipients.length > 0) {
       const filteredRecipients = txParams.recipients?.map((recipient) => {
         return {
-          address: recipient.address,
+          address: recipient.address.toLowerCase(),
           amount: BigInt(recipient.amount),
         };
       });
       const filteredOutputs = explainedTx.outputs.map((output) => {
         return {
-          address: output.address,
+          address: output.address.toLowerCase(),
           amount: BigInt(output.amount),
         };
       });
+
       if (!_.isEqual(filteredOutputs, filteredRecipients)) {
         throw new Error('Tx outputs does not match with expected txParams recipients');
       }

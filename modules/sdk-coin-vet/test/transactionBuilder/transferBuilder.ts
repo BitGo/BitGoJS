@@ -129,7 +129,7 @@ describe('Vet Transfer Transaction', () => {
         should.equal(toJson.sender, testData.addresses.validAddresses[0]);
         should.deepEqual(toJson.recipients, [
           {
-            address: testData.addresses.validAddresses[1],
+            address: testData.addresses.validAddresses[1].toLowerCase(),
             amount: testData.AMOUNT.toString(),
           },
         ]);

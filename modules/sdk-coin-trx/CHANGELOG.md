@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.4.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@3.4.1...@bitgo/sdk-coin-trx@3.4.3) (2025-07-25)
+
+### Bug Fixes
+
+- run test in /dist to avoid strip-only mode for node 24 ([868a01a](https://github.com/BitGo/BitGoJS/commit/868a01ab0a21fdf04fa352396c6a5cb825e01c36))
+
 ## [3.4.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@3.4.1...@bitgo/sdk-coin-trx@3.4.2) (2025-07-23)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-trx

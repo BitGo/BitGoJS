@@ -1,6 +1,10 @@
 import {
   DecodedTransferCheckedInstruction,
   decodeTransferCheckedInstruction,
+  DecodedBurnInstruction,
+  decodeBurnInstruction,
+  DecodedMintToInstruction,
+  decodeMintToInstruction,
   TOKEN_2022_PROGRAM_ID,
 } from '@solana/spl-token';
 import {
@@ -27,8 +31,10 @@ import { InstructionBuilderTypes, ValidInstructionTypesEnum, walletInitInstructi
 import {
   AtaClose,
   AtaInit,
+  Burn,
   InstructionParams,
   Memo,
+  MintTo,
   Nonce,
   StakingActivate,
   StakingAuthorize,
@@ -125,8 +131,10 @@ function parseSendInstructions(
   instructions: TransactionInstruction[],
   instructionMetadata?: InstructionParams[],
   _useTokenAddressTokenName?: boolean
-): Array<Nonce | Memo | Transfer | TokenTransfer | AtaInit | AtaClose | SetPriorityFee> {
-  const instructionData: Array<Nonce | Memo | Transfer | TokenTransfer | AtaInit | AtaClose | SetPriorityFee> = [];
+): Array<Nonce | Memo | Transfer | TokenTransfer | AtaInit | AtaClose | SetPriorityFee | MintTo | Burn> {
+  const instructionData: Array<
+    Nonce | Memo | Transfer | TokenTransfer | AtaInit | AtaClose | SetPriorityFee | MintTo | Burn
+  > = [];
   for (const instruction of instructions) {
     const type = getInstructionType(instruction);
     switch (type) {
@@ -231,6 +239,60 @@ function parseSendInstructions(
           },
         };
         instructionData.push(setPriorityFee);
+        break;
+      case ValidInstructionTypesEnum.MintTo:
+        let mintToInstruction: DecodedMintToInstruction;
+        if (instruction.programId.toString() !== TOKEN_2022_PROGRAM_ID.toString()) {
+          mintToInstruction = decodeMintToInstruction(instruction);
+        } else {
+          mintToInstruction = decodeMintToInstruction(instruction, TOKEN_2022_PROGRAM_ID);
+        }
+        const mintAddressForMint = mintToInstruction.keys.mint.pubkey.toString();
+        const tokenNameForMint = findTokenName(mintAddressForMint, instructionMetadata, _useTokenAddressTokenName);
+        let programIDForMint: string | undefined;
+        if (instruction.programId) {
+          programIDForMint = instruction.programId.toString();
+        }
+        const mintTo: MintTo = {
+          type: InstructionBuilderTypes.MintTo,
+          params: {
+            mintAddress: mintAddressForMint,
+            destinationAddress: mintToInstruction.keys.destination.pubkey.toString(),
+            authorityAddress: mintToInstruction.keys.authority.pubkey.toString(),
+            amount: mintToInstruction.data.amount.toString(),
+            tokenName: tokenNameForMint,
+            decimalPlaces: undefined,
+            programId: programIDForMint,
+          },
+        };
+        instructionData.push(mintTo);
+        break;
+      case ValidInstructionTypesEnum.Burn:
+        let burnInstruction: DecodedBurnInstruction;
+        if (instruction.programId.toString() !== TOKEN_2022_PROGRAM_ID.toString()) {
+          burnInstruction = decodeBurnInstruction(instruction);
+        } else {
+          burnInstruction = decodeBurnInstruction(instruction, TOKEN_2022_PROGRAM_ID);
+        }
+        const mintAddressForBurn = burnInstruction.keys.mint.pubkey.toString();
+        const tokenNameForBurn = findTokenName(mintAddressForBurn, instructionMetadata, _useTokenAddressTokenName);
+        let programIDForBurn: string | undefined;
+        if (instruction.programId) {
+          programIDForBurn = instruction.programId.toString();
+        }
+        const burn: Burn = {
+          type: InstructionBuilderTypes.Burn,
+          params: {
+            mintAddress: mintAddressForBurn,
+            accountAddress: burnInstruction.keys.account.pubkey.toString(),
+            authorityAddress: burnInstruction.keys.owner.pubkey.toString(),
+            amount: burnInstruction.data.amount.toString(),
+            tokenName: tokenNameForBurn,
+            decimalPlaces: undefined,
+            programId: programIDForBurn,
+          },
+        };
+        instructionData.push(burn);
         break;
       default:
         throw new NotSupported(

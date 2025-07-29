@@ -27,6 +27,7 @@ export {
   Sip10Token,
   Nep141Token,
   VetToken,
+  CosmosChainToken,
 } from './account';
 export { CoinMap } from './map';
 export { networkFeatureMapForTokens } from './networkFeatureMapForTokens';

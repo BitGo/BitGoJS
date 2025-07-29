@@ -15,7 +15,7 @@ export const vetTokens = [
   tvetToken(
     '27dd32d2-7311-4552-9beb-c57f76d09205',
     'tvet:vtho',
-    'VeThor Testnet',
+    'Testnet VeThor',
     18,
     '0x0000000000000000000000000000456e65726779',
     UnderlyingAsset['tvet:vtho'],

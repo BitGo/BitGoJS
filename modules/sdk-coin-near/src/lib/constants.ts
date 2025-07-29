@@ -14,3 +14,5 @@ export const STORAGE_DEPOSIT = 'storage_deposit';
 export const FUNGIBLE_TOKEN_RELATED_METHODS = [FT_TRANSFER, STORAGE_DEPOSIT];
 
 export const HEX_REGEX = /^[0-9a-fA-F]+$/;
+
+export const MAX_GAS_LIMIT_FOR_FT_TRANSFER = '30000000000000';

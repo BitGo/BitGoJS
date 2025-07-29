@@ -56,7 +56,7 @@ export const TRANSFER_CLAUSE = [
 export const addresses = {
   validAddresses: [
     '0x7ca00e3bc8a836026c2917c6c7c6d049e52099dd',
-    '0xe59f1cea4e0fef511e3d0f4eec44adf19c4cbeec',
+    '0xe59F1cea4e0FEf511e3d0f4EEc44ADf19C4cbeEC',
     '0x7c87b9ffc6fd6c167c0e4fa9418720f3d659358e',
   ],
   invalidAddresses: [
@@ -119,7 +119,7 @@ export const invalidRecipients: Recipient[] = [
 
 export const recipients: Recipient[] = [
   {
-    address: addresses.validAddresses[1],
+    address: addresses.validAddresses[1].toLowerCase(),
     amount: AMOUNT.toString(),
   },
 ];

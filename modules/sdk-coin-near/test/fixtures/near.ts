@@ -119,6 +119,20 @@ const getZeroBalanceAccountResponse = {
   },
 };
 
+const getZeroBalanceTokenResponse = {
+  status: 200,
+  body: {
+    jsonrpc: '2.0',
+    result: {
+      block_hash: 'ENEx8BfKHM7NVbP1DhsKs73e9hqWuCjYbFqHqeij7ESg',
+      block_height: 206258051,
+      logs: [],
+      result: [34, 48, 34],
+    },
+    id: 'dontcare',
+  },
+};
+
 const getProtocolConfigResp = {
   status: 200,
   body: {
@@ -346,6 +360,54 @@ const getGasPriceResponse = {
     id: 'dontcare',
   },
 };
+
+const getAccountFungibleTokenBalanceResponse = {
+  status: 200,
+  body: {
+    jsonrpc: '2.0',
+    result: {
+      block_hash: 'ENEx8BfKHM7NVbP1DhsKs73e9hqWuCjYbFqHqeij7ESg',
+      block_height: 206258051,
+      logs: [],
+      result: [
+        34, 51, 50, 56, 57, 57, 57, 51, 57, 52, 54, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 57, 56, 49, 48, 48, 34,
+      ],
+    },
+    id: 'dontcare',
+  },
+};
+
+const getStorageBalanceResponseNotPresent = {
+  status: 200,
+  body: {
+    jsonrpc: '2.0',
+    result: {
+      block_hash: '6EFYCxjyeK6qaDevTfykiiw1kcosoefeVLCJGKJUyFtd',
+      block_height: 206258238,
+      logs: [],
+      result: [110, 117, 108, 108],
+    },
+    id: 'dontcare',
+  },
+};
+
+const getStorageBalanceResponsePresent = {
+  status: 200,
+  body: {
+    jsonrpc: '2.0',
+    result: {
+      block_hash: '9zryuUFvabecdsoRDDXivkFfdLGriDNjVEJdbUnT6WVc',
+      block_height: 206267745,
+      logs: [],
+      result: [
+        123, 34, 116, 111, 116, 97, 108, 34, 58, 34, 49, 50, 53, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48,
+        48, 48, 48, 48, 48, 34, 44, 34, 97, 118, 97, 105, 108, 97, 98, 108, 101, 34, 58, 34, 48, 34, 125,
+      ],
+    },
+    id: 'dontcare',
+  },
+};
+
 export const ovcResponse = {
   signatureShares: [
     {
@@ -419,6 +481,10 @@ export const NearResponses = {
   getZeroBalanceAccountResponse,
   getGasPriceResponse,
   getProtocolConfigResp,
+  getAccountFungibleTokenBalanceResponse,
+  getStorageBalanceResponseNotPresent,
+  getStorageBalanceResponsePresent,
+  getZeroBalanceTokenResponse,
 } as const;
 
 export const keys = {
@@ -465,4 +531,6 @@ export const accountInfo = {
   accountId: 'f256196dae617aa348149c1e61e997272492668d517506d7a6e2392e06ea532c',
   bs58EncodedPublicKey: 'HJyoxJMxRHnAp3oE73kuKnNYtvFEmp7UkQZNDFRokLVH',
   blockHash: '844N9aWefd4TvJwdiBgXDVPz4W9z436kohTiXnp5y4fq',
+  tokenContractAddress: 'ft-tnep24dp.testnet',
+  recoveryDestination: 'abhay-near.testnet',
 };

@@ -580,6 +580,7 @@ const coinsWithExcludedFeatures: Record<string, { features: CoinFeature[] }> = {
       CoinFeature.TRANSACTION_DATA,
       CoinFeature.CUSTODY,
       CoinFeature.CUSTODY_BITGO_TRUST,
+      CoinFeature.CUSTODY_BITGO_INDIA,
       CoinFeature.CUSTODY_BITGO_KOREA,
       CoinFeature.CUSTODY_BITGO_EUROPE_APS,
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
@@ -592,6 +593,7 @@ const coinsWithExcludedFeatures: Record<string, { features: CoinFeature[] }> = {
       CoinFeature.VALUELESS_TRANSFER,
       CoinFeature.TRANSACTION_DATA,
       CoinFeature.CUSTODY_BITGO_TRUST,
+      CoinFeature.CUSTODY_BITGO_INDIA,
       CoinFeature.CUSTODY_BITGO_KOREA,
       CoinFeature.CUSTODY_BITGO_EUROPE_APS,
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
@@ -605,6 +607,7 @@ const coinsWithExcludedFeatures: Record<string, { features: CoinFeature[] }> = {
       CoinFeature.VALUELESS_TRANSFER,
       CoinFeature.TRANSACTION_DATA,
       CoinFeature.CUSTODY_BITGO_TRUST,
+      CoinFeature.CUSTODY_BITGO_INDIA,
       CoinFeature.CUSTODY_BITGO_KOREA,
       CoinFeature.CUSTODY_BITGO_EUROPE_APS,
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
@@ -619,6 +622,7 @@ const coinsWithExcludedFeatures: Record<string, { features: CoinFeature[] }> = {
       CoinFeature.TRANSACTION_DATA,
       CoinFeature.CUSTODY,
       CoinFeature.CUSTODY_BITGO_TRUST,
+      CoinFeature.CUSTODY_BITGO_INDIA,
       CoinFeature.CUSTODY_BITGO_KOREA,
       CoinFeature.CUSTODY_BITGO_EUROPE_APS,
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
@@ -632,6 +636,7 @@ const coinsWithExcludedFeatures: Record<string, { features: CoinFeature[] }> = {
       CoinFeature.TRANSACTION_DATA,
       CoinFeature.CUSTODY,
       CoinFeature.CUSTODY_BITGO_TRUST,
+      CoinFeature.CUSTODY_BITGO_INDIA,
       CoinFeature.CUSTODY_BITGO_SINGAPORE,
       CoinFeature.CUSTODY_BITGO_KOREA,
       CoinFeature.CUSTODY_BITGO_EUROPE_APS,
@@ -646,6 +651,7 @@ const coinsWithExcludedFeatures: Record<string, { features: CoinFeature[] }> = {
       CoinFeature.TRANSACTION_DATA,
       CoinFeature.CUSTODY,
       CoinFeature.CUSTODY_BITGO_TRUST,
+      CoinFeature.CUSTODY_BITGO_INDIA,
       CoinFeature.CUSTODY_BITGO_KOREA,
       CoinFeature.CUSTODY_BITGO_EUROPE_APS,
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
@@ -659,6 +665,7 @@ const coinsWithExcludedFeatures: Record<string, { features: CoinFeature[] }> = {
       CoinFeature.TRANSACTION_DATA,
       CoinFeature.CUSTODY,
       CoinFeature.CUSTODY_BITGO_TRUST,
+      CoinFeature.CUSTODY_BITGO_INDIA,
       CoinFeature.CUSTODY_BITGO_SINGAPORE,
       CoinFeature.CUSTODY_BITGO_KOREA,
       CoinFeature.CUSTODY_BITGO_EUROPE_APS,
@@ -673,6 +680,7 @@ const coinsWithExcludedFeatures: Record<string, { features: CoinFeature[] }> = {
       CoinFeature.TRANSACTION_DATA,
       CoinFeature.CUSTODY,
       CoinFeature.CUSTODY_BITGO_TRUST,
+      CoinFeature.CUSTODY_BITGO_INDIA,
       CoinFeature.CUSTODY_BITGO_KOREA,
       CoinFeature.CUSTODY_BITGO_EUROPE_APS,
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
@@ -685,6 +693,7 @@ const coinsWithExcludedFeatures: Record<string, { features: CoinFeature[] }> = {
       CoinFeature.VALUELESS_TRANSFER,
       CoinFeature.TRANSACTION_DATA,
       CoinFeature.CUSTODY_BITGO_TRUST,
+      CoinFeature.CUSTODY_BITGO_INDIA,
       CoinFeature.CUSTODY,
       CoinFeature.CUSTODY_BITGO_KOREA,
       CoinFeature.CUSTODY_BITGO_EUROPE_APS,
@@ -699,6 +708,7 @@ const coinsWithExcludedFeatures: Record<string, { features: CoinFeature[] }> = {
       CoinFeature.TRANSACTION_DATA,
       CoinFeature.CUSTODY,
       CoinFeature.CUSTODY_BITGO_TRUST,
+      CoinFeature.CUSTODY_BITGO_INDIA,
       CoinFeature.CUSTODY_BITGO_KOREA,
       CoinFeature.CUSTODY_BITGO_EUROPE_APS,
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
@@ -824,11 +834,15 @@ coins.forEach((coin, coinName) => {
       it(`should return true for CUSTODY_BITGO_TRUST ${coin.family} coin feature`, () => {
         coin.features.includes(CoinFeature.CUSTODY_BITGO_TRUST).should.eql(true);
       });
+      it(`should return true for CUSTODY_BITGO_INDIA ${coin.family} coin feature`, () => {
+        coin.features.includes(CoinFeature.CUSTODY_BITGO_INDIA).should.eql(true);
+      });
     } else if (coin.family === CoinFamily.XTZ || coin.features.includes(CoinFeature.GENERIC_TOKEN)) {
       it(`should return false for all custody ${coin.family} coin feature`, () => {
         coin.features.includes(CoinFeature.CUSTODY).should.eql(false);
         if (coin.family !== CoinFamily.XTZ) {
           coin.features.includes(CoinFeature.CUSTODY_BITGO_TRUST).should.eql(false);
+          coin.features.includes(CoinFeature.CUSTODY_BITGO_INDIA).should.eql(false);
         }
         coin.features.includes(CoinFeature.CUSTODY_BITGO_MENA_FZE).should.eql(false);
         coin.features.includes(CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE).should.eql(false);

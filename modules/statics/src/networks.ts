@@ -85,6 +85,7 @@ export interface CosmosNetwork extends AccountNetwork {
   readonly denom: string;
   readonly gasAmount: string;
   readonly gasLimit: number;
+  readonly validDenoms: string[];
 }
 
 /**

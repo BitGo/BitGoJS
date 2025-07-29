@@ -2,6 +2,8 @@ import { SolCoin } from '@bitgo/statics';
 import {
   createAssociatedTokenAccountInstruction,
   createCloseAccountInstruction,
+  createMintToInstruction,
+  createBurnInstruction,
   createTransferCheckedInstruction,
   TOKEN_2022_PROGRAM_ID,
 } from '@solana/spl-token';
@@ -24,6 +26,8 @@ import {
   AtaInit,
   InstructionParams,
   Memo,
+  MintTo,
+  Burn,
   Nonce,
   StakingActivate,
   StakingAuthorize,
@@ -71,6 +75,10 @@ export function solInstructionFactory(instructionToBuild: InstructionParams): Tr
       return stakingDelegateInstruction(instructionToBuild);
     case InstructionBuilderTypes.SetPriorityFee:
       return fetchPriorityFeeInstruction(instructionToBuild);
+    case InstructionBuilderTypes.MintTo:
+      return mintToInstruction(instructionToBuild);
+    case InstructionBuilderTypes.Burn:
+      return burnInstruction(instructionToBuild);
     default:
       throw new Error(`Invalid instruction type or not supported`);
   }
@@ -479,4 +487,62 @@ function stakingDelegateInstruction(data: StakingDelegate): TransactionInstructi
   tx.add(delegateStaking);
 
   return tx.instructions;
+}
+
+/**
+ * Construct MintTo Solana instructions
+ *
+ * @param {MintTo} data - the data to build the instruction
+ * @returns {TransactionInstruction[]} An array containing MintTo Solana instructions
+ */
+function mintToInstruction(data: MintTo): TransactionInstruction[] {
+  const {
+    params: { mintAddress, destinationAddress, authorityAddress, amount, programId },
+  } = data;
+  assert(mintAddress, 'Missing mintAddress param');
+  assert(destinationAddress, 'Missing destinationAddress param');
+  assert(authorityAddress, 'Missing authorityAddress param');
+  assert(amount, 'Missing amount param');
+
+  const mint = new PublicKey(mintAddress);
+  const destination = new PublicKey(destinationAddress);
+  const authority = new PublicKey(authorityAddress);
+
+  let mintToInstr: TransactionInstruction;
+  if (programId && programId === TOKEN_2022_PROGRAM_ID.toString()) {
+    mintToInstr = createMintToInstruction(mint, destination, authority, BigInt(amount), [], TOKEN_2022_PROGRAM_ID);
+  } else {
+    mintToInstr = createMintToInstruction(mint, destination, authority, BigInt(amount));
+  }
+
+  return [mintToInstr];
+}
+
+/**
+ * Construct Burn Solana instructions
+ *
+ * @param {Burn} data - the data to build the instruction
+ * @returns {TransactionInstruction[]} An array containing Burn Solana instructions
+ */
+function burnInstruction(data: Burn): TransactionInstruction[] {
+  const {
+    params: { mintAddress, accountAddress, authorityAddress, amount, programId },
+  } = data;
+  assert(mintAddress, 'Missing mintAddress param');
+  assert(accountAddress, 'Missing accountAddress param');
+  assert(authorityAddress, 'Missing authorityAddress param');
+  assert(amount, 'Missing amount param');
+
+  const mint = new PublicKey(mintAddress);
+  const account = new PublicKey(accountAddress);
+  const authority = new PublicKey(authorityAddress);
+
+  let burnInstr: TransactionInstruction;
+  if (programId && programId === TOKEN_2022_PROGRAM_ID.toString()) {
+    burnInstr = createBurnInstruction(account, mint, authority, BigInt(amount), [], TOKEN_2022_PROGRAM_ID);
+  } else {
+    burnInstr = createBurnInstruction(account, mint, authority, BigInt(amount));
+  }
+
+  return [burnInstr];
 }

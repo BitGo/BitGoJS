@@ -7,16 +7,11 @@
  * @coinWebsite https://docs.soneium.org/soneium-chain/quick-start/info
  */
 
-import { BaseCoin, BitGoBase, common, MPCAlgorithm, MultisigType, multisigTypes } from '@bitgo/sdk-core';
+import { BaseCoin, BitGoBase, MPCAlgorithm, MultisigType, multisigTypes } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins, ethGasConfigs } from '@bitgo/statics';
-import {
-  AbstractEthLikeNewCoins,
-  recoveryBlockchainExplorerQuery,
-  UnsignedSweepTxMPCv2,
-  RecoverOptions,
-  OfflineVaultTxInfo,
-} from '@bitgo/abstract-eth';
+import { AbstractEthLikeNewCoins, UnsignedSweepTxMPCv2, RecoverOptions, OfflineVaultTxInfo } from '@bitgo/abstract-eth';
 import { TransactionBuilder } from './lib';
+import * as utils from './lib/utils';
 
 export class Soneium extends AbstractEthLikeNewCoins {
   protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
@@ -50,10 +45,14 @@ export class Soneium extends AbstractEthLikeNewCoins {
     return this.buildUnsignedSweepTxnMPCv2(params);
   }
 
-  async recoveryBlockchainExplorerQuery(query: Record<string, string>): Promise<Record<string, unknown>> {
-    const apiToken = common.Environments[this.bitgo.getEnv()].soneiumExplorerApiToken;
-    const explorerUrl = common.Environments[this.bitgo.getEnv()].soneiumExplorerBaseUrl;
-    return await recoveryBlockchainExplorerQuery(query, explorerUrl as string, apiToken);
+  /**
+   * Make a query to Soneium explorer for information such as balance, token balance, solidity calls
+   * @param {Object} query key-value pairs of parameters to append after /api
+   * @param {string} apiKey optional API key to use instead of the one from the environment
+   * @returns {Promise<Object>} response from Soneium explorer
+   */
+  async recoveryBlockchainExplorerQuery(query: Record<string, any>): Promise<any> {
+    return await utils.recoveryBlockchainExplorerQuery(query, this.bitgo.getEnv());
   }
 
   /**

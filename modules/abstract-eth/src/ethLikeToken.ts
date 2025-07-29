@@ -204,7 +204,7 @@ export class EthLikeToken extends AbstractEthLikeNewCoins {
       throw new Error('invalid recoveryDestination');
     }
 
-    const isUnsignedSweep = getIsUnsignedSweep(params);
+    const isUnsignedSweep = params.isUnsignedSweep ?? getIsUnsignedSweep(params);
 
     // Clean up whitespace from entered values
     let userKey = params.userKey.replace(/\s/g, '');
@@ -272,7 +272,7 @@ export class EthLikeToken extends AbstractEthLikeNewCoins {
     }
 
     // get balance of backup key and make sure we can afford gas
-    const backupKeyBalance = await this.queryAddressBalance(backupKeyAddress);
+    const backupKeyBalance = await this.queryAddressBalance(backupKeyAddress, params.apiKey);
 
     let totalGasNeeded = gasPrice.mul(gasLimit);
 

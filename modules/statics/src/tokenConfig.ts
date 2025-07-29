@@ -9,6 +9,7 @@ import {
   BscCoin,
   CeloCoin,
   CoredaoERC20Token,
+  CosmosChainToken,
   EosCoin,
   Erc1155Coin,
   Erc20Coin,
@@ -118,6 +119,10 @@ export type VetTokenConfig = BaseNetworkConfig & {
   contractAddress: string;
 };
 
+export type CosmosTokenConfig = BaseNetworkConfig & {
+  denom: string;
+};
+
 export type TokenConfig =
   | Erc20TokenConfig
   | StellarTokenConfig
@@ -136,7 +141,9 @@ export type TokenConfig =
   | AptTokenConfig
   | AptNFTCollectionConfig
   | Sip10TokenConfig
-  | Nep141TokenConfig;
+  | Nep141TokenConfig
+  | CosmosTokenConfig
+  | VetTokenConfig;
 
 export interface Tokens {
   bitcoin: {
@@ -219,6 +226,9 @@ export interface Tokens {
     vet: {
       tokens: VetTokenConfig[];
     };
+    cosmos: {
+      tokens: CosmosTokenConfig[];
+    };
   };
   testnet: {
     eth: {
@@ -300,6 +310,9 @@ export interface Tokens {
     vet: {
       tokens: VetTokenConfig[];
     };
+    cosmos: {
+      tokens: CosmosTokenConfig[];
+    };
   };
 }
 
@@ -328,6 +341,7 @@ export interface AmsTokenConfig {
   currecnycode?: string;
   domain?: string;
   assetId?: string;
+  denom?: string;
   isToken: boolean;
   baseUnit?: string;
   kind?: string;
@@ -878,6 +892,25 @@ const getFormattedVetTokens = (customCoinMap = coins) =>
     return acc;
   }, []);
 
+const getFormattedCosmosChainTokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: CosmosTokenConfig[], coin) => {
+    if (coin instanceof CosmosChainToken) {
+      acc.push(getCosmosTokenConfig(coin));
+    }
+    return acc;
+  }, []);
+
+function getCosmosTokenConfig(coin: CosmosChainToken): CosmosTokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.name.split(':')[0].toLowerCase(),
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    denom: coin.denom,
+    decimalPlaces: coin.decimalPlaces,
+  };
+}
+
 export const getFormattedTokens = (coinMap = coins): Tokens => {
   const formattedAptNFTCollections = getFormattedAptNFTCollections(coinMap);
   return {
@@ -965,6 +998,9 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
       vet: {
         tokens: getFormattedVetTokens(coinMap).filter((token) => token.network === 'Mainnet'),
       },
+      cosmos: {
+        tokens: getFormattedCosmosChainTokens(coinMap).filter((token) => token.network === 'Mainnet'),
+      },
     },
     testnet: {
       eth: {
@@ -1049,6 +1085,9 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
       },
       vet: {
         tokens: getFormattedVetTokens(coinMap).filter((token) => token.network === 'Testnet'),
+      },
+      cosmos: {
+        tokens: getFormattedCosmosChainTokens(coinMap).filter((token) => token.network === 'Testnet'),
       },
     },
   };
@@ -1145,6 +1184,10 @@ export function getFormattedTokenConfigForCoin(coin: Readonly<BaseCoin>): TokenC
     return getSip10TokenConfig(coin);
   } else if (coin instanceof Nep141Token) {
     return getNep141TokenConfig(coin);
+  } else if (coin instanceof CosmosChainToken) {
+    return getCosmosTokenConfig(coin);
+  } else if (coin instanceof VetToken) {
+    return getVetTokenConfig(coin);
   }
   return undefined;
 }

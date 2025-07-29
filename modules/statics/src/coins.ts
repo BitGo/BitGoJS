@@ -29,6 +29,7 @@ import {
   stellarToken,
   suiToken,
   vetToken,
+  cosmosToken,
   talgoToken,
   taptNFTCollection,
   taptToken,
@@ -70,6 +71,7 @@ import { ofcCoins } from './coins/ofcCoins';
 import { sip10Tokens } from './coins/sip10Tokens';
 import { nep141Tokens } from './coins/nep141Tokens';
 import { vetTokens } from './coins/vetTokens';
+import { cosmosTokens } from './coins/cosmosTokens';
 import {
   ADA_FEATURES_WITH_FRANKFURT,
   ALGO_FEATURES,
@@ -139,6 +141,7 @@ export const coins = CoinMap.fromCoins([
   ...sip10Tokens,
   ...nep141Tokens,
   ...vetTokens,
+  ...cosmosTokens,
   avaxp(
     '5436386e-9e4d-4d82-92df-59d9720d1738',
     'avaxp',
@@ -1646,27 +1649,31 @@ export const coins = CoinMap.fromCoins([
     POLYX_FEATURES,
     KeyCurve.Ed25519
   ),
-  account(
+  gasTankAccount(
     '98071460-1488-4edd-857f-0899bc5eee4f',
     'vet',
-    'Mainnet VET',
+    'VeChain',
     Networks.main.vet,
     18, // 1 VET = 10^18 wei
     UnderlyingAsset.VET,
     BaseUnit.ETH, // The smallest unit of VET, similar to Ethereum, is called 'wei'.
     VET_FEATURES,
-    KeyCurve.Secp256k1
+    KeyCurve.Secp256k1,
+    80,
+    200
   ),
-  account(
+  gasTankAccount(
     'b3158e80-f6ea-4922-98ab-d773a680ce76',
     'tvet',
-    'Testnet VET',
+    'Testnet VeChain',
     Networks.test.vet,
     18,
     UnderlyingAsset.VET,
     BaseUnit.ETH,
     VET_FEATURES,
-    KeyCurve.Secp256k1
+    KeyCurve.Secp256k1,
+    80,
+    200
   ),
   erc20CompatibleAccountCoin(
     'bfae821b-cf3a-4190-b1a8-a54af51d730e',
@@ -3842,7 +3849,7 @@ export const coins = CoinMap.fromCoins([
     '377bb66c-c6bd-4406-9844-01b279f7dad2',
     'sui:xmn',
     'xMoney',
-    9,
+    6,
     '0x97c7571f4406cdd7a95f3027075ab80d3e9c937c2a567690d31e14ab1872ccee',
     'xmn',
     'XMN',
@@ -3911,6 +3918,15 @@ export const coins = CoinMap.fromCoins([
     8,
     '0xc546cc2dd26d9e9a4516b4514288bedf1085259fcb106b84b6469337f527fb92',
     UnderlyingAsset['apt:pact'],
+    APT_FEATURES
+  ),
+  aptToken(
+    'a20dce15-86e4-4707-9fdd-405dfb29f4e1',
+    'apt:lsd',
+    'Pontem Liquidswap',
+    8,
+    '0x53a30a6e5936c0a4c5140daed34de39d17ca7fcae08f947c02e979cef98a3719',
+    UnderlyingAsset['apt:lsd'],
     APT_FEATURES
   ),
   aptToken(
@@ -4039,6 +4055,7 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
     bera: beraErc20,
     bsc: bscToken,
     celo: celoToken,
+    cosmos: cosmosToken,
     eth: erc20,
     eos: eosToken,
     hbar: hederaToken,
@@ -4186,6 +4203,29 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
         token.isToken, // isToken
         token.kind // kind
       );
+    case 'asi':
+    case 'atom':
+    case 'baby':
+    case 'bld':
+    case 'coreum':
+    case 'cronos':
+    case 'hash':
+    case 'injective':
+    case 'initia':
+    case 'osmo':
+    case 'thor':
+    case 'sei':
+    case 'tia':
+    case 'zeta':
+      return initializer(
+        ...commonArgs.slice(0, 3), // id, name, fullName
+        token.denom, // denom
+        token.decimalPlaces, // decimalPlaces
+        token.network, // network
+        token.baseUnit, // baseUnit
+        ...commonArgs.slice(4, 8), // asset, features, prefix, suffix
+        token.primaryKeyCurve // primaryKeyCurve
+      );
     default:
       return undefined;
   }
@@ -4304,6 +4344,7 @@ function isRunningInStaging(): boolean {
     process.env.NODE_ENV === 'staging' || process.env.NODE_ENV === 'staging_internal',
     process.env.APP_ENV === 'staging' || process.env.APP_ENV === 'staging_internal',
     process.env.ENVIRONMENT === 'staging' || process.env.ENVIRONMENT === 'staging_internal',
+    process.env.NEXT_PUBLIC_APP_ENV === 'staging' || process.env.NEXT_PUBLIC_APP_ENV === 'staging_internal',
   ];
   return stagingEnvVars.some(Boolean);
 }

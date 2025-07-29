@@ -128,7 +128,7 @@ describe('tokenTransactionBuilder', () => {
       should.equal(toJson.sender, testData.addresses.validAddresses[2]);
       should.deepEqual(toJson.recipients, [
         {
-          address: testData.addresses.validAddresses[1],
+          address: testData.addresses.validAddresses[1].toLowerCase(),
           amount: testData.AMOUNT.toString(),
         },
       ]);

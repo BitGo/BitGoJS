@@ -702,6 +702,291 @@ describe('Recovery:', function () {
     });
   });
 
+  describe('API Key usage in recovery', function () {
+    let basecoin;
+    let sandbox;
+
+    before(function () {
+      basecoin = bitgo.coin('hteth');
+      sandbox = sinon.createSandbox();
+    });
+
+    afterEach(function () {
+      sandbox.restore();
+      nock.cleanAll();
+    });
+
+    it('Eth Recovery overrides env etherscan api key if provided ', async function () {
+      const customApiKey = 'custom-key'; // Custom API key for etherscan
+      const recoveryParams = {
+        userKey:
+          'xpub661MyMwAqRbcFjHW9Qv2wCGehMiQXYPuLKGdJRx9L9qvaGQfM7rCjvW1MQWZmi1arGK9PN6zPtkUvi8g3oNTkgR2dNg8HjGYW81jm68sCCy',
+        backupKey:
+          'xpub661MyMwAqRbcGTKcjByQ7nFJBiUBWQPKUEwsUZnw58RS5efcujUSxrQxjdRn1Rp5DGzRP8rkzqtHdUvJMH9Y2zvSV5JjsaBpFKWBwjTrMyC',
+        walletContractAddress: '0xff169682bfde5b811ba90a61aea39bedd78c2f75',
+        recoveryDestination: '0x33e6b4dd60a917d24170eb96d5eb25fa2277a92f',
+        isUnsignedSweep: true,
+        apiKey: customApiKey,
+      };
+
+      // Create spy on queryAddressBalance to verify apiKey usage
+      const queryAddressBalanceSpy = sandbox.spy(basecoin, 'queryAddressBalance');
+      const getAddressNonceSpy = sandbox.spy(basecoin, 'getAddressNonce');
+      const querySequenceIdSpy = sandbox.spy(basecoin, 'querySequenceId');
+      const recoveryBlockchainExplorerQuerySpy = sandbox.spy(basecoin, 'recoveryBlockchainExplorerQuery');
+
+      nock('https://api.etherscan.io')
+        .get('/api')
+        .query((actual) => {
+          return actual.module === 'account' && actual.action === 'txlist' && actual.apikey === customApiKey;
+        })
+        .reply(200, {
+          status: '1',
+          message: 'OK',
+          result: [
+            {
+              blockNumber: '1125356',
+              timeStamp: '1710252036',
+              hash: '0x01b0642c852592a772495b8b3b4fbd203c5b0142579801e1c223fe86700174c2',
+              nonce: '588543',
+              from: '0x6cc9397c3b38739dacbfaa68ead5f5d77ba5f455',
+              to: '0x56c879503c8e74dc1a9a140ab5a920b7cd9871e9',
+              value: '470779375000000000',
+              gas: '21000',
+              gasPrice: '6117622005',
+            },
+          ],
+        });
+
+      // Mock backup key balance check
+      nock('https://api.etherscan.io')
+        .get('/api')
+        .query((actual) => {
+          return (
+            actual.module === 'account' &&
+            actual.action === 'balance' &&
+            actual.apikey === customApiKey &&
+            actual.address === '0x56c879503c8e74dc1a9a140ab5a920b7cd9871e9'
+          );
+        })
+        .reply(200, {
+          status: '1',
+          message: 'OK',
+          result: '926211656736450471',
+        });
+
+      // Mock wallet contract balance check
+      nock('https://api.etherscan.io')
+        .get('/api')
+        .query((actual) => {
+          return (
+            actual.module === 'account' &&
+            actual.action === 'balance' &&
+            actual.apikey === customApiKey &&
+            actual.address === '0xff169682bfde5b811ba90a61aea39bedd78c2f75'
+          );
+        })
+        .reply(200, {
+          status: '1',
+          message: 'OK',
+          result: '518749999999999000',
+        });
+
+      // Mock sequence ID query
+      nock('https://api.etherscan.io')
+        .get('/api')
+        .query((actual) => {
+          return (
+            actual.module === 'proxy' &&
+            actual.action === 'eth_call' &&
+            actual.apikey === customApiKey &&
+            actual.data === 'a0b7967b'
+          );
+        })
+        .reply(200, {
+          jsonrpc: '2.0',
+          id: 1,
+          result: '0x0000000000000000000000000000000000000000000000000000000000000002',
+        });
+
+      // Additional nock for the v2 API endpoint with chainid parameter for txlist
+      nock('https://api.etherscan.io')
+        .get('/v2/api')
+        .query((actual) => {
+          return (
+            actual.chainid === '17000' &&
+            actual.module === 'account' &&
+            actual.action === 'txlist' &&
+            actual.address === '0x56c879503c8e74dc1a9a140ab5a920b7cd9871e9' &&
+            actual.apikey === customApiKey
+          );
+        })
+        .reply(200, {
+          status: '1',
+          message: 'OK',
+          result: [
+            {
+              blockNumber: '1125356',
+              timeStamp: '1710252036',
+              hash: '0x01b0642c852592a772495b8b3b4fbd203c5b0142579801e1c223fe86700174c2',
+              nonce: '588543',
+              blockHash: '0x172f67d8c9bc8ac181a83c8f9363e7365239f88b6fbdf851c1b354519be7287a',
+              transactionIndex: '3',
+              from: '0x6cc9397c3b38739dacbfaa68ead5f5d77ba5f455',
+              to: '0x56c879503c8e74dc1a9a140ab5a920b7cd9871e9',
+              value: '470779375000000000',
+              gas: '21000',
+              gasPrice: '6117622005',
+              isError: '0',
+              txreceipt_status: '1',
+              input: '0x',
+              contractAddress: '',
+              cumulativeGasUsed: '84000',
+              gasUsed: '21000',
+              confirmations: '3089935',
+              methodId: '0x',
+              functionName: '',
+            },
+          ],
+        });
+
+      // Additional nock for the v2 API endpoint with chainid parameter for backup key balance
+      nock('https://api.etherscan.io')
+        .get('/v2/api')
+        .query((actual) => {
+          return (
+            actual.chainid === '17000' &&
+            actual.module === 'account' &&
+            actual.action === 'balance' &&
+            actual.address === '0x56c879503c8e74dc1a9a140ab5a920b7cd9871e9' &&
+            actual.apikey === customApiKey
+          );
+        })
+        .reply(200, {
+          status: '1',
+          message: 'OK',
+          result: '926211656736450471',
+        });
+
+      // Additional nock for the v2 API endpoint with chainid parameter for wallet contract balance
+      nock('https://api.etherscan.io')
+        .get('/v2/api')
+        .query((actual) => {
+          return (
+            actual.chainid === '17000' &&
+            actual.module === 'account' &&
+            actual.action === 'balance' &&
+            actual.address === '0xff169682bfde5b811ba90a61aea39bedd78c2f75' &&
+            actual.apikey === customApiKey
+          );
+        })
+        .reply(200, {
+          status: '1',
+          message: 'OK',
+          result: '518749999999999000',
+        });
+
+      // Additional nock for the v2 API endpoint with chainid parameter for sequence ID query
+      nock('https://api.etherscan.io')
+        .get('/v2/api')
+        .query((actual) => {
+          return (
+            actual.chainid === '17000' &&
+            actual.module === 'proxy' &&
+            actual.action === 'eth_call' &&
+            actual.to === '0xff169682bfde5b811ba90a61aea39bedd78c2f75' &&
+            actual.data === 'a0b7967b' &&
+            actual.tag === 'latest' &&
+            actual.apikey === customApiKey
+          );
+        })
+        .reply(200, {
+          jsonrpc: '2.0',
+          id: 1,
+          result: '0x0000000000000000000000000000000000000000000000000000000000000002',
+        });
+
+      nock('https://api.etherscan.io')
+        .get('/v2/api')
+        .query((actual) => {
+          return (
+            actual.chainid === '17000' &&
+            actual.module === 'account' &&
+            actual.action === 'txlist' &&
+            actual.address === '0x56c879503c8e74dc1a9a140ab5a920b7cd9871e9' &&
+            actual.apikey === customApiKey
+          );
+        })
+        .reply(200, {
+          status: '1',
+          message: 'OK',
+          result: [
+            {
+              blockNumber: '4214015',
+              timeStamp: '1753283724',
+              hash: '0xd0b3a93ddfe62f533a36cf02c5ca9428967aca31fcce3c80159b5a958b298420',
+              nonce: '22',
+              blockHash: '0x588293d0274643abd0a121cf054f29842eabd400d0251527585bb5797183a814',
+              transactionIndex: '2',
+              from: '0x56c879503c8e74dc1a9a140ab5a920b7cd9871e9',
+              to: '0xff169682bfde5b811ba90a61aea39bedd78c2f75',
+              value: '0',
+              gas: '196618',
+              gasPrice: '1380010',
+              isError: '0',
+              txreceipt_status: '1',
+              input:
+                '0x39125215000000000000000000000000333eba73b8c96bd8ac2b19485ab8fc2b07973e6000000000000000000000000000000000000000000000000000000000000003e800000000000000000000000000000000000000000000000000000000000000c000000000000000000000000000000000000000000000000000000000688a3702000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000e0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000412870d16f7a02b8ae8809559ad6c7b3c7742fe57e4c068ee0ea20d5c71f9ec2c561a582d91a231cf0137b12d65058d50638d779f86f958c748cb988d4b68244311c00000000000000000000000000000000000000000000000000000000000000',
+              contractAddress: '',
+              cumulativeGasUsed: '767545',
+              gasUsed: '124463',
+              confirmations: '2245',
+              methodId: '0x39125215',
+              functionName:
+                'sendMultiSig(address toAddress,uint256 value,bytes data,uint256 expireTime,uint256 sequenceId,bytes signature)',
+            },
+          ],
+        });
+
+      try {
+        const recovery = await basecoin.recover(recoveryParams);
+        should.exist(recovery);
+        recovery.should.have.property('tx');
+        recovery.tx.should.match(/^f9012b.*808080$/); // Transaction hex format check
+        recovery.recipients[0].address.should.equal('0x33e6b4dd60a917d24170eb96d5eb25fa2277a92f');
+        recovery.recipients[0].amount.should.equal('518749999999999000');
+        recovery.contractSequenceId.should.equal(2);
+      } catch (e) {
+        sinon.assert.fail(e);
+      }
+
+      // Verify API key is correctly passed to each blockchain explorer query
+      sinon.assert.called(recoveryBlockchainExplorerQuerySpy);
+      const explorerQueryCalls = recoveryBlockchainExplorerQuerySpy.getCalls();
+
+      // Check that all calls used the custom API key
+      explorerQueryCalls.forEach((call) => {
+        call.args[1].should.equal(customApiKey);
+      });
+
+      // Verify specific functions received the API key
+      if (queryAddressBalanceSpy.called) {
+        const queryAddressBalanceCall = queryAddressBalanceSpy.getCall(0);
+        queryAddressBalanceCall.args[1].should.equal(customApiKey);
+      }
+
+      if (getAddressNonceSpy.called) {
+        const getAddressNonceCall = getAddressNonceSpy.getCall(0);
+        getAddressNonceCall.args[1].should.equal(customApiKey);
+      }
+
+      if (querySequenceIdSpy.called) {
+        const querySequenceIdCall = querySequenceIdSpy.getCall(0);
+        querySequenceIdCall.args[1].should.equal(customApiKey);
+      }
+    });
+  });
+
   describe('Recover Ethereum', function () {
     beforeEach(() => {
       nock.cleanAll();
@@ -1098,13 +1383,18 @@ describe('Recovery:', function () {
           walletPassphrase: ethLikeDKLSKeycard.walletPassphrase,
           eip1559: {
             maxPriorityFeePerGas: 3,
-            maxFeePerGas: 20,
+            maxFeePerGas: 20000000000,
           },
           isTss: true,
           replayProtectionOptions: {
             chain: chain,
           },
         };
+
+        if (coin === 'tbsc') {
+          recoveryParams.eip1559 = undefined;
+          recoveryParams['gasPrice'] = 20000000000;
+        }
 
         const recovery = await basecoin.recover(recoveryParams);
 
@@ -1119,7 +1409,7 @@ describe('Recovery:', function () {
         finalTx.common.chainIdBN().toNumber().should.equal(chain);
         baseAddress.should.equal(senderAddress);
         recoveryParams.recoveryDestination.should.equal(finalTx.to?.toString());
-        Number(finalTx.value).should.equal(999999999990000000);
+        Number(finalTx.value).should.equal(990000000000000000);
       }
     });
 

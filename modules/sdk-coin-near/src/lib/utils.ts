@@ -1,4 +1,5 @@
 import bs58 from 'bs58';
+import BigNumber from 'bignumber.js';
 
 import { BaseUtils, isBase58 } from '@bitgo/sdk-core';
 import { coins, Nep141Token } from '@bitgo/statics';
@@ -113,6 +114,35 @@ export class Utils implements BaseUtils {
       .filter((coin) => coin instanceof Nep141Token && coin.name === tokenName)
       .map((coin) => coin as Nep141Token);
     return token ? token[0] : undefined;
+  }
+
+  /**
+   * Convert from raw gas units to yocto Near value
+   *
+   * @param {String} gasUnits - raw gas units (e.g. "30000000000000" = 30TGas)
+   * @returns {String} value in yoctoNear as a string
+   */
+  convertGasUnitsToYoctoNear(gasUnits: string): string {
+    const YOCTO_PER_NEAR = new BigNumber('1e24');
+    const NEAR_PER_TGAS = new BigNumber('0.0001'); // 1 TGas = 0.0001 Near
+    const GAS_UNITS_PER_TGAS = new BigNumber('1e12'); // 1 TGas = 1e12 gas units
+
+    const gas = new BigNumber(gasUnits);
+    const tgas = gas.dividedBy(GAS_UNITS_PER_TGAS);
+    const nearCost = tgas.multipliedBy(NEAR_PER_TGAS);
+    const yoctoCost = nearCost.multipliedBy(YOCTO_PER_NEAR);
+
+    return yoctoCost.integerValue(BigNumber.ROUND_FLOOR).toString();
+  }
+
+  /**
+   * Convert the given record into base64 string
+   *
+   * @param {Record<String, String>} data the input in the form of a map
+   * @returns {String} base64 encoded string
+   */
+  convertToBase64(data: Record<string, string>): string {
+    return Buffer.from(JSON.stringify(data)).toString('base64');
   }
 }
 

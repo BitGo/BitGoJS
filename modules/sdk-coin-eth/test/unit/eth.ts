@@ -4,6 +4,7 @@ import nock from 'nock';
 import sinon from 'sinon';
 import { bip32 } from '@bitgo/secp256k1';
 import * as secp256k1 from 'secp256k1';
+import request from 'superagent';
 import {
   common,
   generateRandomPassword,
@@ -1051,6 +1052,52 @@ describe('ETH:', function () {
           'Error: invalid address'
         );
       });
+    });
+  });
+
+  describe('RecoveryBlockchainExplorerQuery', () => {
+    it('should override the token parameter with a custom API key', async function () {
+      const coin = bitgo.coin('teth') as Teth;
+      const query = {
+        module: 'account',
+        action: 'balance',
+        address: '0x1234567890123456789012345678901234567890',
+      };
+      const customApiKey = 'custom-api-key-for-test';
+
+      // Mock the environment API token
+      const originalApiToken = common.Environments.test.etherscanApiToken;
+      common.Environments.test.etherscanApiToken = 'default-environment-api-key';
+
+      // Mock the request.get function to capture the query parameters
+      const originalGet = request.get;
+      let capturedQuery;
+
+      request.get = function (url: string) {
+        return {
+          query: function (params: Record<string, any>) {
+            capturedQuery = params;
+            return {
+              ok: true,
+              body: { result: '100000000' },
+            } as any;
+          },
+        } as any;
+      };
+
+      try {
+        // Call with default API key
+        await coin.recoveryBlockchainExplorerQuery(query);
+        capturedQuery.should.have.property('apikey', 'default-environment-api-key');
+
+        // Call with custom API key
+        await coin.recoveryBlockchainExplorerQuery(query, customApiKey);
+        capturedQuery.should.have.property('apikey', customApiKey);
+      } finally {
+        // Restore original function and API token
+        request.get = originalGet;
+        common.Environments.test.etherscanApiToken = originalApiToken;
+      }
     });
   });
 

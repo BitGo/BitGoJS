@@ -227,12 +227,15 @@ const mainnetBase: EnvironmentTemplate = {
     irys: {
       baseUrl: 'https://testnet-rpc.irys.xyz/v1/execution-rpc', //TODO: WIN-6191 add mainnet url when available
     },
+    mon: {
+      baseUrl: 'https://api.etherscan.io/v2',
+    },
   },
   icpNodeUrl: 'https://ic0.app',
   worldExplorerBaseUrl: 'https://worldscan.org/',
   somniaExplorerBaseUrl: 'https://mainnet.somnia.w3us.site/',
-  soneiumExplorerBaseUrl: 'https://soneium-minato.blockscout.com',
-  monExplorerBaseUrl: 'https://mainnet-beta.monvision.io',
+  soneiumExplorerBaseUrl: 'https://soneium.blockscout.com',
+  monExplorerBaseUrl: 'https://api.etherscan.io/v2',
   stxNodeUrl: 'https://api.hiro.so',
   vetNodeUrl: 'https://rpc-mainnet.vechain.energy',
 };
@@ -264,7 +267,7 @@ const testnetBase: EnvironmentTemplate = {
   // https://github.com/cryptokylin/CryptoKylin-Testnet#http-api-list
   // https://docs.liquidapps.io/liquidapps-documentation/eosio-guides/testnet-creation-guides/creating-cryptokylin-account#setup
   eosNodeUrls: ['https://kylin.eosn.io', 'https://api.kylin.alohaeos.com'],
-  nearNodeUrls: ['https://test.api.fastnear.com'],
+  nearNodeUrls: ['https://test.rpc.fastnear.com'],
   solNodeUrl: 'https://api.devnet.solana.com',
   adaNodeUrl: 'https://preprod.koios.rest/api/v1',
   hashNodeUrl: 'https://api.test.provenance.io',
@@ -301,7 +304,7 @@ const testnetBase: EnvironmentTemplate = {
   xdcExplorerBaseUrl: 'https://api.etherscan.io/v2',
   sgbExplorerBaseUrl: 'https://coston-explorer.flare.network',
   icpNodeUrl: 'https://exchanges.testnet.dfinity.network',
-  monExplorerBaseUrl: 'https://testnet.monadexplorer.com/',
+  monExplorerBaseUrl: 'https://api.etherscan.io/v2',
   worldExplorerBaseUrl: 'https://sepolia.worldscan.org/',
   somniaExplorerBaseUrl: 'https://shannon-explorer.somnia.network/',
   soneiumExplorerBaseUrl: 'https://soneium-minato.blockscout.com',
@@ -326,6 +329,9 @@ const testnetBase: EnvironmentTemplate = {
     },
     irys: {
       baseUrl: 'https://testnet-rpc.irys.xyz/v1/execution-rpc',
+    },
+    mon: {
+      baseUrl: 'https://api.etherscan.io/v2',
     },
   },
   stxNodeUrl: 'https://api.testnet.hiro.so',

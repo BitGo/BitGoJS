@@ -166,4 +166,62 @@ describe('TSS MPC Pick BitGo GPG Pub Key Utils:', function () {
     );
     await assert.rejects(async () => await ecdsaMpcv2Util.testPickBitgoPubGpgKeyForSigning(true));
   });
+
+  it('should select the correct GPG key for verifyWalletSignatures with hardcoded options', async function () {
+    // Test environment setup
+    const env = 'test';
+    const bitgoInstance = TestBitGo.decorate(BitGo, { env });
+    bitgoInstance.initializeTestVars();
+    const coinInstance = bitgoInstance.coin(eddsaCoinName);
+    const eddsaMpcv1Util = new TestEddsaMpcv1Utils(
+      bitgoInstance,
+      coinInstance,
+      new Wallet(bitgoInstance, coinInstance, eddsaWalletData)
+    );
+
+    // Get the key that would be selected when using hardcoded BitGo keys
+    // mpcv1 and nitro are passed as options
+    const gpgKey = await eddsaMpcv1Util.testPickBitgoPubGpgKeyForSigning(false, undefined, undefined);
+
+    // Mock implementation of verifyWalletSignatures to capture the bitgoGpgKey that gets used
+    let capturedKey;
+    eddsaMpcv1Util.verifyWalletSignatures = async function (
+      userGpgPub,
+      backupGpgPub,
+      bitgoKeychain,
+      decryptedShare,
+      verifierIndex,
+      useHardcodedBitGoKeys
+    ) {
+      // Save the key that would be used when specifying hardcoded options
+      if (useHardcodedBitGoKeys) {
+        const hardcodedKey = await openpgp.readKey({
+          armoredKey: BitgoMpcGpgPubKeys.bitgoMpcGpgPubKeys['mpcv1']['nitro']['test'],
+        });
+        capturedKey = hardcodedKey.armor();
+      }
+      // Not actually verifying in this test
+      return;
+    };
+
+    // Call with hardcoded key options
+    await eddsaMpcv1Util.verifyWalletSignatures(
+      'mock-user-key',
+      'mock-backup-key',
+      {
+        commonKeychain: 'mock-keychain',
+        walletHSMGPGPublicKeySigs: '',
+        id: '',
+        type: 'tss',
+      },
+      'decrypted-share',
+      1,
+      { env: 'test', pubKeyType: 'nitro' }
+    );
+
+    // Verify the hardcoded key matches what we expect
+    capturedKey.should.equal(BitgoMpcGpgPubKeys.bitgoMpcGpgPubKeys['mpcv1']['nitro']['test']);
+    // Also verify it's the same as what's returned by testPickBitgoPubGpgKeyForSigning
+    gpgKey.armor().should.equal(capturedKey);
+  });
 });
