@@ -9,6 +9,8 @@ import BigNumber from 'bignumber.js';
 import {
   createAssociatedTokenAccountInstruction,
   createTransferCheckedInstruction,
+  createMintToInstruction,
+  createBurnInstruction,
   TOKEN_2022_PROGRAM_ID,
 } from '@solana/spl-token';
 
@@ -277,6 +279,199 @@ describe('Instruction Parser Tests: ', function () {
       });
       const result = instructionParamsFactory(TransactionType.AssociatedTokenAccountInitialization, ataInstructions);
       should.deepEqual(result, createATAParams);
+    });
+
+    it('Mint To - Standard SPL Token instruction parsing', () => {
+      const mintAddress = testData.tokenTransfers.mintUSDC;
+      const destinationAddress = testData.tokenTransfers.sourceUSDC;
+      const authorityAddress = testData.authAccount.pub;
+      const amount = '1000000';
+      const tokenName = testData.tokenTransfers.nameUSDC;
+
+      const mintInstruction = createMintToInstruction(
+        new PublicKey(mintAddress),
+        new PublicKey(destinationAddress),
+        new PublicKey(authorityAddress),
+        BigInt(amount)
+      );
+
+      const expectedMintParams: InstructionParams = {
+        type: InstructionBuilderTypes.MintTo,
+        params: {
+          mintAddress,
+          destinationAddress,
+          authorityAddress,
+          amount,
+          tokenName,
+          decimalPlaces: undefined,
+          programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+        },
+      };
+
+      const result = instructionParamsFactory(TransactionType.Send, [mintInstruction]);
+      should.deepEqual(result, [expectedMintParams]);
+    });
+
+    it('Mint To - Token-2022 Program instruction parsing', () => {
+      const mintAddress = testData.sol2022TokenTransfers.mint;
+      const destinationAddress = testData.sol2022TokenTransfers.source;
+      const authorityAddress = testData.authAccount.pub;
+      const amount = '2000000';
+      const tokenName = testData.sol2022TokenTransfers.name;
+
+      const mintInstruction = createMintToInstruction(
+        new PublicKey(mintAddress),
+        new PublicKey(destinationAddress),
+        new PublicKey(authorityAddress),
+        BigInt(amount),
+        undefined,
+        TOKEN_2022_PROGRAM_ID
+      );
+
+      const expectedMintParams: InstructionParams = {
+        type: InstructionBuilderTypes.MintTo,
+        params: {
+          mintAddress,
+          destinationAddress,
+          authorityAddress,
+          amount,
+          tokenName,
+          decimalPlaces: undefined,
+          programId: TOKEN_2022_PROGRAM_ID.toString(),
+        },
+      };
+
+      const result = instructionParamsFactory(TransactionType.Send, [mintInstruction]);
+      should.deepEqual(result, [expectedMintParams]);
+    });
+
+    it('Burn - Standard SPL Token instruction parsing', () => {
+      const mintAddress = testData.tokenTransfers.mintUSDC;
+      const accountAddress = testData.tokenTransfers.sourceUSDC;
+      const authorityAddress = testData.authAccount.pub;
+      const amount = '500000';
+      const tokenName = testData.tokenTransfers.nameUSDC;
+
+      const burnInstruction = createBurnInstruction(
+        new PublicKey(accountAddress),
+        new PublicKey(mintAddress),
+        new PublicKey(authorityAddress),
+        BigInt(amount)
+      );
+
+      const expectedBurnParams: InstructionParams = {
+        type: InstructionBuilderTypes.Burn,
+        params: {
+          mintAddress,
+          accountAddress,
+          authorityAddress,
+          amount,
+          tokenName,
+          decimalPlaces: undefined,
+          programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+        },
+      };
+
+      const result = instructionParamsFactory(TransactionType.Send, [burnInstruction]);
+      should.deepEqual(result, [expectedBurnParams]);
+    });
+
+    it('Burn - Token-2022 Program instruction parsing', () => {
+      const mintAddress = testData.sol2022TokenTransfers.mint;
+      const accountAddress = testData.sol2022TokenTransfers.source;
+      const authorityAddress = testData.authAccount.pub;
+      const amount = '750000';
+      const tokenName = testData.sol2022TokenTransfers.name;
+
+      const burnInstruction = createBurnInstruction(
+        new PublicKey(accountAddress),
+        new PublicKey(mintAddress),
+        new PublicKey(authorityAddress),
+        BigInt(amount),
+        undefined,
+        TOKEN_2022_PROGRAM_ID
+      );
+
+      const expectedBurnParams: InstructionParams = {
+        type: InstructionBuilderTypes.Burn,
+        params: {
+          mintAddress,
+          accountAddress,
+          authorityAddress,
+          amount,
+          tokenName,
+          decimalPlaces: undefined,
+          programId: TOKEN_2022_PROGRAM_ID.toString(),
+        },
+      };
+
+      const result = instructionParamsFactory(TransactionType.Send, [burnInstruction]);
+      should.deepEqual(result, [expectedBurnParams]);
+    });
+
+    it('Mixed instructions - Mint, Burn, and Transfer', () => {
+      const authAccount = testData.authAccount.pub;
+      const nonceAccount = testData.nonceAccount.pub;
+      const mintAddress = testData.tokenTransfers.mintUSDC;
+      const destinationAddress = testData.tokenTransfers.sourceUSDC;
+      const accountAddress = testData.tokenTransfers.sourceUSDC;
+      const tokenName = testData.tokenTransfers.nameUSDC;
+
+      // Nonce advance
+      const nonceAdvanceInstruction = SystemProgram.nonceAdvance({
+        noncePubkey: new PublicKey(nonceAccount),
+        authorizedPubkey: new PublicKey(authAccount),
+      });
+      const nonceAdvanceParams: InstructionParams = {
+        type: InstructionBuilderTypes.NonceAdvance,
+        params: { walletNonceAddress: nonceAccount, authWalletAddress: authAccount },
+      };
+
+      // Mint instruction
+      const mintInstruction = createMintToInstruction(
+        new PublicKey(mintAddress),
+        new PublicKey(destinationAddress),
+        new PublicKey(authAccount),
+        BigInt('1000000')
+      );
+      const expectedMintParams: InstructionParams = {
+        type: InstructionBuilderTypes.MintTo,
+        params: {
+          mintAddress,
+          destinationAddress,
+          authorityAddress: authAccount,
+          amount: '1000000',
+          tokenName,
+          decimalPlaces: undefined,
+          programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+        },
+      };
+
+      // Burn instruction
+      const burnInstruction = createBurnInstruction(
+        new PublicKey(accountAddress),
+        new PublicKey(mintAddress),
+        new PublicKey(authAccount),
+        BigInt('500000')
+      );
+      const expectedBurnParams: InstructionParams = {
+        type: InstructionBuilderTypes.Burn,
+        params: {
+          mintAddress,
+          accountAddress,
+          authorityAddress: authAccount,
+          amount: '500000',
+          tokenName,
+          decimalPlaces: undefined,
+          programId: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+        },
+      };
+
+      const instructions = [nonceAdvanceInstruction, mintInstruction, burnInstruction];
+      const expectedParams = [nonceAdvanceParams, expectedMintParams, expectedBurnParams];
+
+      const result = instructionParamsFactory(TransactionType.Send, instructions);
+      should.deepEqual(result, expectedParams);
     });
   });
   describe('Fail ', function () {
