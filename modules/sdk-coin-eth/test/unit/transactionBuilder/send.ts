@@ -84,7 +84,7 @@ describe('Eth transaction builder send', () => {
       txBuilder.sign({ key: testData.PRIVATE_KEY });
       const tx = await txBuilder.build();
 
-      should.equal(tx.toJson().chainId, 17000);
+      should.equal(tx.toJson().chainId, 560048);
       should.equal(tx.toBroadcastFormat(), testData.SEND_TX_BROADCAST_LEGACY);
       should.equal(tx.signature.length, 2);
       should.equal(tx.inputs.length, 1);
@@ -142,7 +142,7 @@ describe('Eth transaction builder send', () => {
       should.equal(decodedData[3].toString('hex'), '');
       should.equal(decodedData[4].toString(), expireTime);
       should.equal(decodedData[5].toString(), sequenceId);
-      should.equal(tx.toJson().chainId, 17000);
+      should.equal(tx.toJson().chainId, 560048);
       should.equal(tx.toBroadcastFormat(), testData.SEND_TX_BROADCAST_RECOVERY);
       should.equal(tx.signature.length, 0);
       should.equal(tx.inputs.length, 1);
@@ -211,7 +211,7 @@ describe('Eth transaction builder send', () => {
       txBuilder.sign({ key: testData.PRIVATE_KEY });
       await txBuilder.build();
       const operationData = txBuilder.transfer().getOperationData();
-      should.equal(operationData[1][0], '17000');
+      should.equal(operationData[1][0], '560048');
       should.equal(txBuilder.coinUsesNonPackedEncodingForTxData(), true);
     });
 
@@ -249,7 +249,7 @@ describe('Eth transaction builder send', () => {
       should.equal(tx.toJson().chainId, 5);
     });
 
-    it('Holesky chain id should be correct', async () => {
+    it('Hoodi chain id should be correct', async () => {
       const txBuilder = getBuilder('hteth') as TransactionBuilder;
       txBuilder.fee({
         fee: '1000000000',
@@ -267,7 +267,7 @@ describe('Eth transaction builder send', () => {
         .key(key);
       txBuilder.sign({ key: testData.PRIVATE_KEY });
       const tx = await txBuilder.build();
-      should.equal(tx.toJson().chainId, 17000);
+      should.equal(tx.toJson().chainId, 560048);
     });
 
     it('a send token transaction', async () => {

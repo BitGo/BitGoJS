@@ -326,8 +326,8 @@ export const coins = CoinMap.fromCoins([
   account(
     '68aec0bd-1d9a-40fa-bcef-7fa9538f65d3',
     'hteth',
-    isRunningInStaging() ? 'Hoodi Testnet Ethereum' : 'Holesky Testnet Ethereum',
-    isRunningInStaging() ? Networks.test.hoodi : Networks.test.holesky,
+    'Hoodi Testnet Ethereum',
+    Networks.test.hoodi,
     18,
     UnderlyingAsset.ETH,
     BaseUnit.ETH,
@@ -2428,7 +2428,7 @@ export const coins = CoinMap.fromCoins([
     GENERIC_TOKEN_FEATURES,
     '',
     '',
-    Networks.test.holesky
+    Networks.test.hoodi
   ),
   erc721(
     '30d034ae-41fd-4da2-bbb2-05fe1e301108',
@@ -4378,21 +4378,4 @@ export function createTokenMapUsingTrimmedConfigDetails(
   }
 
   return createTokenMapUsingConfigDetails(amsTokenConfigMap);
-}
-
-function isRunningInStaging(): boolean {
-  if (typeof process === 'undefined' || !process.env) {
-    // If process or process.env doesn't exist, we're likely in a browser.
-    // Return false as we can't determine the environment this way.
-    return false;
-  }
-  // Check explicit staging environment variables
-  const stagingEnvVars = [
-    process.env.BITGO_ENV === 'staging' || process.env.BITGO_ENV === 'staging_internal',
-    process.env.NODE_ENV === 'staging' || process.env.NODE_ENV === 'staging_internal',
-    process.env.APP_ENV === 'staging' || process.env.APP_ENV === 'staging_internal',
-    process.env.ENVIRONMENT === 'staging' || process.env.ENVIRONMENT === 'staging_internal',
-    process.env.NEXT_PUBLIC_APP_ENV === 'staging' || process.env.NEXT_PUBLIC_APP_ENV === 'staging_internal',
-  ];
-  return stagingEnvVars.some(Boolean);
 }

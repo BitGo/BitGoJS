@@ -3473,7 +3473,7 @@ export const tOfcErc20Coins = [
   tofcerc20(
     '0c90af13-2b65-4c13-ae1f-101531aa8e9b',
     'ofctgousd',
-    'Holesky Testnet GoUSD',
+    'Hoodi Testnet GoUSD',
     6,
     UnderlyingAsset.TGOUSD,
     undefined,
@@ -3487,7 +3487,7 @@ export const tOfcErc20Coins = [
   tofcerc20(
     'c1d2c09d-ac71-4cf6-9683-90d93b6afa09',
     'ofchteth:stgusd1',
-    'Holesky Testnet USD1',
+    'Hoodi Testnet USD1',
     18,
     UnderlyingAsset['hteth:stgusd1'],
     undefined,
@@ -3501,7 +3501,7 @@ export const tOfcErc20Coins = [
   tofcerc20(
     '72358644-ece4-41fd-9269-8d0bce6ff8cd',
     'ofchteth:tsteth',
-    'Holesky Testnet STETH',
+    'Hoodi Testnet STETH',
     18,
     UnderlyingAsset['hteth:tsteth'],
     undefined,
@@ -3515,7 +3515,7 @@ export const tOfcErc20Coins = [
   tofcerc20(
     'f0fdaaaa-7587-4cc4-a2b3-875085d81ac8',
     'ofchteth:gousd',
-    'Holesky Testnet GoUSD',
+    'Hoodi Testnet GoUSD',
     6,
     UnderlyingAsset['hteth:gousd'],
     undefined,
@@ -3529,7 +3529,7 @@ export const tOfcErc20Coins = [
   tofcerc20(
     '4dc4534c-72b8-4a68-a914-210dae1e5d4d',
     'ofchteth:usd1',
-    'Holesky Testnet USD1',
+    'Hoodi Testnet USD1',
     18,
     UnderlyingAsset['hteth:usd1'],
     undefined,

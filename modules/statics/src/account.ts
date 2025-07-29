@@ -878,7 +878,7 @@ export function erc721(
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
  * @param prefix? Optional token prefix. Defaults to empty string
  * @param suffix? Optional token suffix. Defaults to token name.
- * @param network? Optional token network. Defaults to Holesky test network.
+ * @param network? Optional token network. Defaults to Hoodi test network.
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function terc721(
@@ -889,7 +889,7 @@ export function terc721(
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix = '',
   suffix: string = name.toUpperCase(),
-  network: EthereumNetwork = Networks.test.holesky,
+  network: EthereumNetwork = Networks.test.hoodi,
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
   return erc721(id, name, fullName, contractAddress, features, prefix, suffix, network, primaryKeyCurve);
@@ -993,7 +993,7 @@ export function erc1155(
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
  * @param prefix? Optional token prefix. Defaults to empty string
  * @param suffix? Optional token suffix. Defaults to token name.
- * @param network? Optional token network. Defaults to Holesky test network.
+ * @param network? Optional token network. Defaults to Hoodi test network.
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function terc1155(
@@ -1004,7 +1004,7 @@ export function terc1155(
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix = '',
   suffix: string = name.toUpperCase(),
-  network: EthereumNetwork = Networks.test.holesky,
+  network: EthereumNetwork = Networks.test.hoodi,
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
   return erc1155(id, name, fullName, contractAddress, features, prefix, suffix, network, primaryKeyCurve);
