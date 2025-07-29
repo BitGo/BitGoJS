@@ -2892,7 +2892,6 @@ export enum UnderlyingAsset {
   // VET testnet tokens
   'tvet:vtho' = 'tvet:vtho',
 
-
   'eth:0x0' = 'eth:0x0',
   'eth:vvs' = 'eth:vvs',
   'eth:bmc' = 'eth:bmc',
@@ -2909,7 +2908,6 @@ export enum UnderlyingAsset {
 
   // COSMOS testnet tokens
   'thash:ylds' = 'thash:ylds',
-
 
   // fiats
   AED = 'aed',
