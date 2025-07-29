@@ -10,6 +10,7 @@ import assert from 'assert';
 import * as rippleBinaryCodec from 'ripple-binary-codec';
 import sinon from 'sinon';
 import * as testData from '../resources/xrp';
+import { SIGNER_USER, SIGNER_BACKUP, SIGNER_BITGO } from '../resources/xrp';
 import * as _ from 'lodash';
 import { XrpToken } from '../../src';
 import * as xrpl from 'xrpl';
@@ -222,6 +223,58 @@ describe('XRP:', function () {
     });
     coSignedHexTransaction.signedTransaction.should.equal(coSignedJsonTransaction.signedTransaction);
     coSignedHexTransaction.id.should.equal(coSignedJsonTransaction.id);
+  });
+
+  it('should correctly sort signers by numeric value of addresses', function () {
+    // Use the test signers from the test resources
+    // These are known valid key pairs where the private key corresponds to the address
+    const signers = [SIGNER_USER, SIGNER_BACKUP, SIGNER_BITGO];
+
+    // Unsigned transaction
+    const unsignedTxHex =
+      '120000228000000024000000072E00000000201B0018D07161400000000003DE2968400000000000002D8114726D0D8A26568D5D9680AC80577C912236717191831449EE221CCACC4DD2BF8862B22B0960A84FC771D9';
+
+    // Sign with first signer
+    let signedTx = ripple.signWithPrivateKey(unsignedTxHex, signers[0].prv, {
+      signAs: signers[0].address,
+    });
+
+    // Sign with second signer
+    signedTx = ripple.signWithPrivateKey(signedTx.signedTransaction, signers[1].prv, {
+      signAs: signers[1].address,
+    });
+
+    // Sign with third signer
+    signedTx = ripple.signWithPrivateKey(signedTx.signedTransaction, signers[2].prv, {
+      signAs: signers[2].address,
+    });
+
+    // Decode the signed transaction
+    const decodedTx = rippleBinaryCodec.decode(signedTx.signedTransaction);
+
+    // Verify that the Signers array exists and has the correct length
+    assert(Array.isArray(decodedTx.Signers));
+    (decodedTx.Signers as Array<any>).length.should.equal(3);
+
+    // Extract the addresses from the Signers array
+    const signerAddresses = (decodedTx.Signers as Array<any>).map((signer) => signer.Signer.Account);
+
+    // Convert addresses to BigNumber for numeric comparison
+    const addressToBigNumber = (address) => {
+      const hex = Buffer.from(xrpl.decodeAccountID(address)).toString('hex');
+      return BigInt('0x' + hex);
+    };
+
+    // Convert the addresses to BigNumber values
+    const signerValues = signerAddresses.map(addressToBigNumber);
+
+    // Verify that the Signers array is sorted in ascending order by numeric value
+    for (let i = 0; i < signerValues.length - 1; i++) {
+      assert(
+        signerValues[i] < signerValues[i + 1],
+        `Signers not properly sorted: ${signerValues[i]} should be less than ${signerValues[i + 1]}`
+      );
+    }
   });
 
   it('Should be unable to explain bogus XRP transaction', async function () {
