@@ -805,6 +805,7 @@ export class Sol extends BaseCoin {
 
     // check for possible token recovery, recover the token provide by user
     if (params.tokenContractAddress) {
+      let isUnsupportedToken = false;
       const tokenAccounts = await this.getTokenAccountsByOwner(bs58EncodedPublicKey, params.programId);
       if (tokenAccounts.length !== 0) {
         // there exists token accounts on the given address, but need to check certain conditions:
@@ -817,8 +818,11 @@ export class Sol extends BaseCoin {
             const network = this.getNetwork();
             const token = getSolTokenFromAddress(tokenAccount.info.mint, network); // todo(WIN-5894) fix for ams
 
-            if (!_.isUndefined(token) && tokenAmount.gt(new BigNumber(0))) {
-              tokenAccount.tokenName = token.name;
+            if (!token) {
+              isUnsupportedToken = true;
+            }
+            if (tokenAmount.gt(new BigNumber(0))) {
+              tokenAccount.tokenName = token?.name || 'Unsupported Token';
               recovereableTokenAccounts.push(tokenAccount);
             }
             break;
@@ -857,17 +861,26 @@ export class Sol extends BaseCoin {
               params.programId?.toString()
             );
             const tokenName = tokenAccount.tokenName as string;
-            txBuilder.send({
+            const sendParams = {
               address: recipientTokenAccount,
               amount: tokenAccount.info.tokenAmount.amount,
-              tokenName: tokenName,
-            });
+              tokenName,
+              ...(isUnsupportedToken
+                ? {
+                    tokenAddress: tokenAccount.info.mint,
+                    programId: params.programId?.toString(),
+                    decimalPlaces: tokenAccount.info.tokenAmount.decimals,
+                  }
+                : {}),
+            };
+            txBuilder.send(sendParams);
 
             if (!recipientTokenAccountExists) {
               // recipient token account does not exist for token and must be created
               txBuilder.createAssociatedTokenAccount({
                 ownerAddress: params.recoveryDestination,
                 tokenName: tokenName,
+                ...(isUnsupportedToken ? { tokenAddress: tokenAccount.info.mint } : {}),
                 programId:
                   params.programId?.toString().toLowerCase() === TOKEN_2022_PROGRAM_ID.toString().toLowerCase()
                     ? TOKEN_2022_PROGRAM_ID.toString()
