@@ -2908,6 +2908,7 @@ export enum UnderlyingAsset {
 
   // COSMOS testnet tokens
   'thash:ylds' = 'thash:ylds',
+
   'eth:0x0' = 'eth:0x0',
   'eth:vvs' = 'eth:vvs',
   'eth:bmc' = 'eth:bmc',
