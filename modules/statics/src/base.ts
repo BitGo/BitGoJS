@@ -2898,6 +2898,17 @@ export enum UnderlyingAsset {
   // COSMOS testnet tokens
   'thash:ylds' = 'thash:ylds',
 
+  'eth:0x0' = 'eth:0x0',
+  'eth:vvs' = 'eth:vvs',
+  'eth:bmc' = 'eth:bmc',
+  'eth:pro' = 'eth:pro',
+  'eth:prime' = 'eth:prime',
+  'eth:pokt' = 'eth:pokt',
+  'eth:lon' = 'eth:lon',
+  'eth:rlb' = 'eth:rlb',
+  'eth:neiro2' = 'eth:neiro2',
+  'eth:sign' = 'eth:sign',
+
   // fiats
   AED = 'aed',
   EUR = 'eur',
