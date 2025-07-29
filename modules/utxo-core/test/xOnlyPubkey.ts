@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import { toXOnlyPublicKey } from '../src';
+import { toXOnlyPublicKey } from '../src/index.js';
 
 describe('xOnlyPubkey', function () {
   it('converts to X-Only pubkey', function () {

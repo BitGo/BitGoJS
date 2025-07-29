@@ -1,3 +1,3 @@
-export * from './descriptors';
-export * from './mock.utils';
-export * from './psbt.utils';
+export * from './descriptors.js';
+export * from './mock.utils.js';
+export * from './psbt.utils.js';

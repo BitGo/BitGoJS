@@ -27,7 +27,7 @@
     "lint": "eslint --quiet .",
     "prepare": "npm run build",
     "test": "npm run unit-test",
-    "unit-test": "mocha --recursive \"dist/test/**/*.js\""
+    "unit-test": "mocha --recursive test"
   },
   "author": "BitGo SDK Team <sdkteam@bitgo.com>",
   "license": "MIT",
@@ -45,7 +45,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "type": "commonjs",
+  "type": "module",
   "nyc": {
     "extension": [
       ".ts"
@@ -58,5 +58,9 @@
     "bip174": "npm:@bitgo-forks/bip174@3.1.0-master.4",
     "bitcoinjs-message": "npm:@bitgo-forks/bitcoinjs-message@1.0.0-master.3"
   },
-  "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c"
+  "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c",
+  "devDependencies": {
+    "@types/node": "^24",
+    "tsx": "^4.20.3"
+  }
 }

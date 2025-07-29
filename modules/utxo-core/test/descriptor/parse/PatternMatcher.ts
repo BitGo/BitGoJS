@@ -2,9 +2,9 @@ import assert from 'assert';
 
 import { Descriptor, ast } from '@bitgo/wasm-miniscript';
 
-import { getKey } from '../../../src/testutil';
-import { toXOnlyPublicKey } from '../../../src';
-import { PatternMatcher, Pattern } from '../../../src/descriptor/parse/PatternMatcher';
+import { getKey } from '../../../src/testutil/index.js';
+import { toXOnlyPublicKey } from '../../../src/index.js';
+import { PatternMatcher, Pattern } from '../../../src/descriptor/parse/PatternMatcher.js';
 
 function key32(seed: string): Buffer {
   // return x-only public key from seed

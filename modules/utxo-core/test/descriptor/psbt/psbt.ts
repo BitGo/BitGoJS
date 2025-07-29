@@ -1,11 +1,19 @@
 import assert from 'assert';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 import * as utxolib from '@bitgo/utxo-lib';
 import { BIP32Interface, ECPair, ECPairInterface } from '@bitgo/utxo-lib';
 import { Descriptor, Miniscript } from '@bitgo/wasm-miniscript';
 
-import { PsbtParams, parse, toUtxoPsbt, toWrappedPsbt, ParsedDescriptorTransaction } from '../../../src/descriptor';
-import { getFixture, getKeyTriple } from '../../../src/testutil';
+import {
+  PsbtParams,
+  parse,
+  toUtxoPsbt,
+  toWrappedPsbt,
+  ParsedDescriptorTransaction,
+} from '../../../src/descriptor/index.js';
+import { getFixture, getKeyTriple } from '../../../src/testutil/index.js';
 import {
   containsKey,
   DescriptorTemplate,
@@ -16,8 +24,8 @@ import {
   mockPsbtDefault,
   toPlainObjectFromPsbt,
   toPlainObjectFromTx,
-} from '../../../src/testutil/descriptor';
-import { getNewSignatureCount, signWithKey } from '../../../src/descriptor/psbt/sign';
+} from '../../../src/testutil/descriptor/index.js';
+import { getNewSignatureCount, signWithKey } from '../../../src/descriptor/psbt/sign.js';
 
 function normalize(v: unknown): unknown {
   if (typeof v === 'bigint') {
@@ -45,7 +53,9 @@ function normalize(v: unknown): unknown {
 }
 
 async function assertEqualsFixture(t: string, filename: string, value: unknown) {
-  filename = __dirname + '/../../../../test/descriptor/psbt/fixtures/' + t + '.' + filename;
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+  filename = __dirname + '/fixtures/' + t + '.' + filename;
   const nv = normalize(value);
   assert.deepStrictEqual(nv, await getFixture(filename, nv));
 }

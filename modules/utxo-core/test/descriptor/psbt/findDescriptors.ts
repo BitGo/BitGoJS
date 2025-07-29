@@ -1,7 +1,12 @@
 import * as assert from 'assert';
 
-import { DescriptorTemplate, getDefaultXPubs, getDescriptor, mockPsbt } from '../../../src/testutil/descriptor';
-import { findDescriptorForInput, findDescriptorForOutput } from '../../../src/descriptor';
+import {
+  DescriptorTemplate,
+  getDefaultXPubs,
+  getDescriptor,
+  mockPsbt,
+} from '../../../src/testutil/descriptor/index.js';
+import { findDescriptorForInput, findDescriptorForOutput } from '../../../src/descriptor/index.js';
 
 function describeWithTemplates(templateSelf: DescriptorTemplate, templateOther: DescriptorTemplate) {
   describe(`parsePsbt [${templateSelf},${templateOther}]`, function () {

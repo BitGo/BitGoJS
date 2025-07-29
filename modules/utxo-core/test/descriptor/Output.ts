@@ -1,8 +1,8 @@
 import assert from 'assert';
 
-import { isExternalOutput, isInternalOutput, toDerivedDescriptorWalletOutput } from '../../src/descriptor/Output';
-import { getDescriptor } from '../../src/testutil/descriptor';
-import { createScriptPubKeyFromDescriptor } from '../../src/descriptor';
+import { isExternalOutput, isInternalOutput, toDerivedDescriptorWalletOutput } from '../../src/descriptor/Output.js';
+import { getDescriptor } from '../../src/testutil/descriptor/index.js';
+import { createScriptPubKeyFromDescriptor } from '../../src/descriptor/index.js';
 
 describe('decscriptor.Output', function () {
   const descriptor = getDescriptor('Wsh2Of3');

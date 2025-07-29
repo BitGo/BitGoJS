@@ -1,7 +1,7 @@
 import assert from 'assert';
 
-import { getDescriptor } from '../../src/testutil/descriptor';
-import { getDescriptorAtIndex, getDescriptorAtIndexCheckScript } from '../../src/descriptor/derive';
+import { getDescriptor } from '../../src/testutil/descriptor/index.js';
+import { getDescriptorAtIndex, getDescriptorAtIndexCheckScript } from '../../src/descriptor/derive.js';
 
 describe('derive', function () {
   const derivable = getDescriptor('Wsh2Of3');
