@@ -270,6 +270,14 @@ export const ofcCoins = [
     CoinKind.CRYPTO
   ),
   tofc(
+    '97f83379-a536-4977-a5e8-5a4dae5a3db7',
+    'ofchooditeth',
+    'Test Hoodi Ether',
+    18,
+    UnderlyingAsset.ETH,
+    CoinKind.CRYPTO
+  ),
+  tofc(
     'f43d0558-8c07-4927-af7f-33947fd310c9',
     'ofctavaxc',
     'Test Avalanche C-Chain',
