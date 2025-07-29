@@ -11437,26 +11437,26 @@ export const erc20Coins = [
   terc20(
     '17377290-40ff-47a3-8346-ba03885f7cc3',
     'tgousd',
-    'Holesky Testnet GoUSD',
+    'Hoodi Testnet GoUSD',
     6,
-    '0x51cef49e20d11a2735d09e3bb68d79ec490e3579',
+    '0x32275b636171ba98fec28e86ed5f0289bd42aeb9',
     UnderlyingAsset.TGOUSD,
     undefined,
     undefined,
     undefined,
-    Networks.test.holesky
+    Networks.test.hoodi
   ),
   terc20(
     '3502002c-0f27-46d0-9967-d34cd9290476',
     'hteth:stgusd1',
-    'Holesky Testnet USD1',
+    'Hoodi Testnet USD1',
     18,
-    '0x78f81399cd3bc0937ea9049cc6604fb6e67ebe83',
+    '0xe4cf91a5bf7cc3d75ac85639e591e51d34948954',
     UnderlyingAsset['hteth:stgusd1'],
     undefined,
     undefined,
     undefined,
-    Networks.test.holesky
+    Networks.test.hoodi
   ),
   terc20(
     '31eedb6e-3bd1-4407-b924-7136c4dc0483',
@@ -11473,26 +11473,26 @@ export const erc20Coins = [
   terc20(
     '49ff49ea-3355-4717-bbb0-5e8f5cae2202',
     'hteth:gousd',
-    'Holesky Testnet GoUSD',
+    'Hoodi Testnet GoUSD',
     6,
-    '0x65c959b9184b4f8c8633646d5dfd049d2ebc251a',
+    '0xd94dd81066271d0930e53cfd77f374e64ba306e9',
     UnderlyingAsset['hteth:gousd'],
     undefined,
     undefined,
     undefined,
-    Networks.test.holesky
+    Networks.test.hoodi
   ),
   terc20(
     '0354c858-912b-4a65-b3e1-9b29a5f8573a',
     'hteth:usd1',
-    'Holesky Testnet USD1',
+    'Hoodi Testnet USD1',
     18,
-    '0x978b411161325c7b689573396d717c828d9f480a',
+    '0xed9e025fc3fd4ab704378ff5486b596f00dbef1b',
     UnderlyingAsset['hteth:usd1'],
     undefined,
     undefined,
     undefined,
-    Networks.test.holesky
+    Networks.test.hoodi
   ),
   terc20(
     '30179af0-ca75-4cb1-99d9-028bc56bf10e',
