@@ -27,6 +27,8 @@ import {
   tofcStxToken,
   ofcnep141Token,
   tofcnep141Token,
+  ofcWorldErc20,
+  tofcWorldErc20,
 } from '../ofc';
 import { UnderlyingAsset, CoinKind } from '../base';
 
@@ -2813,5 +2815,21 @@ export const ofcCoins = [
     'USD Coin',
     6,
     UnderlyingAsset['tnear:usdc']
+  ),
+  ofcWorldErc20('809418f2-d9e7-4604-bc17-e7dc881324c3', 'ofcworld:wld', 'Worldcoin', 18, UnderlyingAsset['world:wld']),
+  ofcWorldErc20('b37a7ce1-3be3-4df1-808d-8cc9065c7ed7', 'ofcworld:usdc', 'USDC', 6, UnderlyingAsset['world:usdc']),
+  tofcWorldErc20(
+    'ed63bc0a-f979-4abb-953b-edb17cf9efd0',
+    'tofcworld:wld',
+    'Worldcoin Testnet',
+    18,
+    UnderlyingAsset['tworld:wld']
+  ),
+  tofcWorldErc20(
+    'c377fb3f-06fb-41bb-b875-13f92fde8875',
+    'tofcworld:usdc',
+    'USDC Testnet',
+    6,
+    UnderlyingAsset['tworld:usdc']
   ),
 ];
