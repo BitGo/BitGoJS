@@ -4,7 +4,13 @@ import { solInstructionFactory } from '../../src/lib/solInstructionFactory';
 import { InstructionBuilderTypes, MEMO_PROGRAM_PK } from '../../src/lib/constants';
 import { InstructionParams } from '../../src/lib/iface';
 import { PublicKey, SystemProgram, TransactionInstruction } from '@solana/web3.js';
-import { createAssociatedTokenAccountInstruction, createTransferCheckedInstruction } from '@solana/spl-token';
+import {
+  createAssociatedTokenAccountInstruction,
+  createTransferCheckedInstruction,
+  createMintToInstruction,
+  createBurnInstruction,
+  TOKEN_2022_PROGRAM_ID,
+} from '@solana/spl-token';
 import BigNumber from 'bignumber.js';
 
 describe('Instruction Builder Tests: ', function () {
@@ -139,6 +145,194 @@ describe('Instruction Builder Tests: ', function () {
           new PublicKey(fromAddress),
           BigInt(amount),
           9
+        ),
+      ]);
+    });
+
+    it('Mint To - Standard SPL Token', () => {
+      const mintAddress = testData.tokenTransfers.mintUSDC;
+      const destinationAddress = testData.tokenTransfers.sourceUSDC;
+      const authorityAddress = testData.authAccount.pub;
+      const amount = '1000000';
+      const tokenName = testData.tokenTransfers.nameUSDC;
+      const decimalPlaces = testData.tokenTransfers.decimals;
+
+      const mintParams: InstructionParams = {
+        type: InstructionBuilderTypes.MintTo,
+        params: {
+          mintAddress,
+          destinationAddress,
+          authorityAddress,
+          amount,
+          tokenName,
+          decimalPlaces,
+        },
+      };
+
+      const result = solInstructionFactory(mintParams);
+      should.deepEqual(result, [
+        createMintToInstruction(
+          new PublicKey(mintAddress),
+          new PublicKey(destinationAddress),
+          new PublicKey(authorityAddress),
+          BigInt(amount)
+        ),
+      ]);
+    });
+
+    it('Mint To - Token-2022 Program', () => {
+      const mintAddress = testData.sol2022TokenTransfers.mint;
+      const destinationAddress = testData.sol2022TokenTransfers.source;
+      const authorityAddress = testData.authAccount.pub;
+      const amount = '2000000';
+      const tokenName = testData.sol2022TokenTransfers.name;
+      const decimalPlaces = testData.sol2022TokenTransfers.decimals;
+
+      const mintParams: InstructionParams = {
+        type: InstructionBuilderTypes.MintTo,
+        params: {
+          mintAddress,
+          destinationAddress,
+          authorityAddress,
+          amount,
+          tokenName,
+          decimalPlaces,
+          programId: TOKEN_2022_PROGRAM_ID.toString(),
+        },
+      };
+
+      const result = solInstructionFactory(mintParams);
+      should.deepEqual(result, [
+        createMintToInstruction(
+          new PublicKey(mintAddress),
+          new PublicKey(destinationAddress),
+          new PublicKey(authorityAddress),
+          BigInt(amount),
+          undefined,
+          TOKEN_2022_PROGRAM_ID
+        ),
+      ]);
+    });
+
+    it('Burn - Standard SPL Token', () => {
+      const mintAddress = testData.tokenTransfers.mintUSDC;
+      const accountAddress = testData.tokenTransfers.sourceUSDC;
+      const authorityAddress = testData.authAccount.pub;
+      const amount = '500000';
+      const tokenName = testData.tokenTransfers.nameUSDC;
+      const decimalPlaces = testData.tokenTransfers.decimals;
+
+      const burnParams: InstructionParams = {
+        type: InstructionBuilderTypes.Burn,
+        params: {
+          mintAddress,
+          accountAddress,
+          authorityAddress,
+          amount,
+          tokenName,
+          decimalPlaces,
+        },
+      };
+
+      const result = solInstructionFactory(burnParams);
+      should.deepEqual(result, [
+        createBurnInstruction(
+          new PublicKey(accountAddress),
+          new PublicKey(mintAddress),
+          new PublicKey(authorityAddress),
+          BigInt(amount)
+        ),
+      ]);
+    });
+
+    it('Burn - Token-2022 Program', () => {
+      const mintAddress = testData.sol2022TokenTransfers.mint;
+      const accountAddress = testData.sol2022TokenTransfers.source;
+      const authorityAddress = testData.authAccount.pub;
+      const amount = '750000';
+      const tokenName = testData.sol2022TokenTransfers.name;
+      const decimalPlaces = testData.sol2022TokenTransfers.decimals;
+
+      const burnParams: InstructionParams = {
+        type: InstructionBuilderTypes.Burn,
+        params: {
+          mintAddress,
+          accountAddress,
+          authorityAddress,
+          amount,
+          tokenName,
+          decimalPlaces,
+          programId: TOKEN_2022_PROGRAM_ID.toString(),
+        },
+      };
+
+      const result = solInstructionFactory(burnParams);
+      should.deepEqual(result, [
+        createBurnInstruction(
+          new PublicKey(accountAddress),
+          new PublicKey(mintAddress),
+          new PublicKey(authorityAddress),
+          BigInt(amount),
+          undefined,
+          TOKEN_2022_PROGRAM_ID
+        ),
+      ]);
+    });
+
+    it('Mint To - Without decimal places', () => {
+      const mintAddress = testData.tokenTransfers.mintUSDC;
+      const destinationAddress = testData.tokenTransfers.sourceUSDC;
+      const authorityAddress = testData.authAccount.pub;
+      const amount = '1000000';
+      const tokenName = testData.tokenTransfers.nameUSDC;
+
+      const mintParams: InstructionParams = {
+        type: InstructionBuilderTypes.MintTo,
+        params: {
+          mintAddress,
+          destinationAddress,
+          authorityAddress,
+          amount,
+          tokenName,
+        },
+      };
+
+      const result = solInstructionFactory(mintParams);
+      should.deepEqual(result, [
+        createMintToInstruction(
+          new PublicKey(mintAddress),
+          new PublicKey(destinationAddress),
+          new PublicKey(authorityAddress),
+          BigInt(amount)
+        ),
+      ]);
+    });
+
+    it('Burn - Without decimal places', () => {
+      const mintAddress = testData.tokenTransfers.mintUSDC;
+      const accountAddress = testData.tokenTransfers.sourceUSDC;
+      const authorityAddress = testData.authAccount.pub;
+      const amount = '500000';
+      const tokenName = testData.tokenTransfers.nameUSDC;
+
+      const burnParams: InstructionParams = {
+        type: InstructionBuilderTypes.Burn,
+        params: {
+          mintAddress,
+          accountAddress,
+          authorityAddress,
+          amount,
+          tokenName,
+        },
+      };
+
+      const result = solInstructionFactory(burnParams);
+      should.deepEqual(result, [
+        createBurnInstruction(
+          new PublicKey(accountAddress),
+          new PublicKey(mintAddress),
+          new PublicKey(authorityAddress),
+          BigInt(amount)
         ),
       ]);
     });
