@@ -21,7 +21,12 @@ describe('bip32utils', function () {
             const expectValid = message === otherMessage && key === otherKey;
             assert.strictEqual(verifyMessage(otherMessage, otherKey, signature, utxolib.networks.bitcoin), expectValid);
             assert.strictEqual(
-              verifyMessage(Buffer.from(otherMessage), otherKey, signature, utxolib.networks.bitcoin),
+              verifyMessage(
+                typeof otherMessage === 'string' ? Buffer.from(otherMessage) : otherMessage,
+                otherKey,
+                signature,
+                utxolib.networks.bitcoin
+              ),
               expectValid
             );
           });
