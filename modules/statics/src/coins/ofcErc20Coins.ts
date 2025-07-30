@@ -3554,6 +3554,86 @@ export const tOfcErc20Coins = [
     undefined,
     'hteth'
   ),
+
+  ofcerc20(
+    'cc2a92cf-d799-463b-b08c-e9a4d5e87934',
+    'ofceth:0x0',
+    'Wrapped 0x0.ai',
+    9,
+    underlyingAssetForSymbol('eth:0x0')
+  ),
+
+  ofcerc20(
+    '007227e5-8762-4f9c-b152-85caf62e34a7',
+    'ofceth:vvs',
+    'Wrapped VVS',
+    18,
+    underlyingAssetForSymbol('eth:vvs')
+  ),
+
+  ofcerc20(
+    '8361c3bb-fc4e-4a67-8f3e-a2670312593c',
+    'ofceth:bmc',
+    'Wrapped BitMart Token',
+    18,
+    underlyingAssetForSymbol('eth:bmc')
+  ),
+
+  ofcerc20(
+    '3aa503a5-d559-4b87-b6b9-defc277e8e33',
+    'ofceth:pro',
+    'Wrapped Propy',
+    8,
+    underlyingAssetForSymbol('eth:pro')
+  ),
+
+  ofcerc20(
+    '8865c4a5-a4a6-4256-b0a0-71e0fb25ee32',
+    'ofceth:prime',
+    'Wrapped Echelon Prime',
+    18,
+    underlyingAssetForSymbol('eth:prime')
+  ),
+
+  ofcerc20(
+    '2c4ec5c2-9403-486d-b389-c2d034650653',
+    'ofceth:pokt',
+    'Wrapped Pocket Network',
+    6,
+    underlyingAssetForSymbol('eth:pokt')
+  ),
+
+  ofcerc20(
+    'de8fe485-c227-4ee3-a7c4-09ddea2ee81b',
+    'ofceth:lon',
+    'Wrapped Tokenlon Network',
+    18,
+    underlyingAssetForSymbol('eth:lon')
+  ),
+
+  ofcerc20(
+    '5397b444-803e-4344-9556-c8ab5305994e',
+    'ofceth:rlb',
+    'Wrapped Rollbit Coin',
+    18,
+    underlyingAssetForSymbol('eth:rlb')
+  ),
+
+  ofcerc20(
+    '6e606723-cf78-4a5c-90c0-c1925dc88094',
+    'ofceth:neiro2',
+    'Wrapped Neiro Ethereum',
+    9,
+    underlyingAssetForSymbol('eth:neiro2')
+  ),
+
+  ofcerc20(
+    '20011fd9-162a-4534-b4be-f0088f4b51a0',
+    'ofceth:sign',
+    'Wrapped Sign',
+    18,
+    underlyingAssetForSymbol('eth:sign')
+  ),
 ];
 
 function underlyingAssetForSymbol(underlyingAssetValue: string): UnderlyingAsset {
