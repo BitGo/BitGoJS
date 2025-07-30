@@ -348,6 +348,7 @@ export const coins = CoinMap.fromCoins([
       CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
       CoinFeature.EIP1559,
       CoinFeature.ERC20_BULK_TRANSACTION,
+      CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
     ]
   ),
   account(
