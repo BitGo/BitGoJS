@@ -375,7 +375,7 @@ export const Environments: Environments = {
   mock: Object.assign({}, devBase, {
     uri: 'https://bitgo.fakeurl',
     stellarFederationServerUrl: 'https://bitgo.fakeurl/api/v2/txlm/federation',
-    etherscanBaseUrl: 'https://api-holesky.etherscan.fakeurl',
+    etherscanBaseUrl: 'https://api-hoodi.etherscan.fakeurl',
     etherscanApiToken: process.env.ETHERSCAN_API_TOKEN,
     avaxcNetworkBaseUrl: 'https://api.avax-test.network.fakeurl',
     eth2ExplorerBaseUrl: 'https://beaconscan.com/api',
@@ -408,7 +408,7 @@ export const Environments: Environments = {
         : 'https://blockstream.info/api',
     etherscanBaseUrl:
       process.env.BITGO_CUSTOM_ETHEREUM_NETWORK !== 'ethereum'
-        ? 'https://api-holesky.etherscan.io'
+        ? 'https://api-hoodi.etherscan.io'
         : 'https://api.etherscan.io',
     stellarFederationServerUrl:
       process.env.BITGO_CUSTOM_STELLAR_NETWORK !== 'stellar'

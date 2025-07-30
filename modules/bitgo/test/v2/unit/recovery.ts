@@ -814,7 +814,7 @@ describe('Recovery:', function () {
         .get('/v2/api')
         .query((actual) => {
           return (
-            actual.chainid === '17000' &&
+            actual.chainid === '560048' &&
             actual.module === 'account' &&
             actual.action === 'txlist' &&
             actual.address === '0x56c879503c8e74dc1a9a140ab5a920b7cd9871e9' &&
@@ -855,7 +855,7 @@ describe('Recovery:', function () {
         .get('/v2/api')
         .query((actual) => {
           return (
-            actual.chainid === '17000' &&
+            actual.chainid === '560048' &&
             actual.module === 'account' &&
             actual.action === 'balance' &&
             actual.address === '0x56c879503c8e74dc1a9a140ab5a920b7cd9871e9' &&
@@ -873,7 +873,7 @@ describe('Recovery:', function () {
         .get('/v2/api')
         .query((actual) => {
           return (
-            actual.chainid === '17000' &&
+            actual.chainid === '560048' &&
             actual.module === 'account' &&
             actual.action === 'balance' &&
             actual.address === '0xff169682bfde5b811ba90a61aea39bedd78c2f75' &&
@@ -891,7 +891,7 @@ describe('Recovery:', function () {
         .get('/v2/api')
         .query((actual) => {
           return (
-            actual.chainid === '17000' &&
+            actual.chainid === '560048' &&
             actual.module === 'proxy' &&
             actual.action === 'eth_call' &&
             actual.to === '0xff169682bfde5b811ba90a61aea39bedd78c2f75' &&
@@ -910,7 +910,7 @@ describe('Recovery:', function () {
         .get('/v2/api')
         .query((actual) => {
           return (
-            actual.chainid === '17000' &&
+            actual.chainid === '560048' &&
             actual.module === 'account' &&
             actual.action === 'txlist' &&
             actual.address === '0x56c879503c8e74dc1a9a140ab5a920b7cd9871e9' &&
@@ -1357,7 +1357,7 @@ describe('Recovery:', function () {
 
     it('should construct a recovery tx with MPCv2 TSS', async function () {
       for (const { coin, chain } of [
-        { coin: 'hteth', chain: 17000 },
+        { coin: 'hteth', chain: 560048 },
         { coin: 'tpolygon', chain: 80002 },
         { coin: 'tbsc', chain: 97 },
       ]) {

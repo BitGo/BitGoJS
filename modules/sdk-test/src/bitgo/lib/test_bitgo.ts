@@ -553,7 +553,7 @@ export class TestBitGo {
         });
 
       const params: any = {
-        chainid: '17000',
+        chainid: '560048',
         module: 'account',
         action: 'tokenbalance',
         contractaddress: TestBitGo.V2.TEST_ERC20_TOKEN_ADDRESS,

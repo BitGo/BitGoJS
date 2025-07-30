@@ -164,7 +164,7 @@ export const amsTokenConfig = {
   'hteth:gousd': [
     {
       id: '49ff49ea-3355-4717-bbb0-5e8f5cae2202',
-      fullName: 'Holesky Testnet GoUSD',
+      fullName: 'Hoodi Testnet GoUSD',
       name: 'hteth:gousd',
       prefix: '',
       suffix: 'HTETH:GOUSD',
@@ -191,12 +191,12 @@ export const amsTokenConfig = {
       asset: 'hteth:gousd',
       network: {
         type: 'testnet',
-        name: 'Holesky',
+        name: 'Hoodi',
         family: 'eth',
-        explorerUrl: 'https://holesky.etherscan.io/tx/',
-        accountExplorerUrl: 'https://holesky.etherscan.io/address/',
-        blockExplorerUrl: 'https://holesky.etherscan.io/block/',
-        chainId: 17000,
+        explorerUrl: 'https://hoodi.etherscan.io/tx/',
+        accountExplorerUrl: 'https://hoodi.etherscan.io/address/',
+        blockExplorerUrl: 'https://hoodi.etherscan.io/block/',
+        chainId: 560048,
         batcherContractAddress: '0xb1b7e7cc1ecafbfd0771a5eb5454ab5b0356980d',
         forwarderFactoryAddress: '0xffa397285ce46fb78c588a9e993286aac68c37cd',
         forwarderImplementationAddress: '0x059ffafdc6ef594230de44f824e2bd0a51ca5ded',
@@ -625,7 +625,7 @@ export const amsTokenConfigWithCustomToken = {
   'hteth:faketoken': [
     {
       id: '49ff49ea-3355-4717-bbb0-5e8f5cae2201',
-      fullName: 'Holesky Testnet fake token',
+      fullName: 'Hoodi Testnet fake token',
       name: 'hteth:faketoken',
       prefix: '',
       suffix: 'HTETH:FAKETOKEN',
@@ -652,13 +652,13 @@ export const amsTokenConfigWithCustomToken = {
       asset: 'hteth:faketoken',
       network: {
         type: 'testnet',
-        name: 'Holesky',
+        name: 'Hoodi',
         family: 'eth',
-        explorerUrl: 'https://holesky.etherscan.io/tx/',
-        accountExplorerUrl: 'https://holesky.etherscan.io/address/',
-        blockExplorerUrl: 'https://holesky.etherscan.io/block/',
-        chainId: 17000,
-        batcherContractAddress: '0xebe27913fcc7510eadf10643a8f86bf5492a9541',
+        explorerUrl: 'https://hoodi.etherscan.io/tx/',
+        accountExplorerUrl: 'https://hoodi.etherscan.io/address/',
+        blockExplorerUrl: 'https://hoodi.etherscan.io/block/',
+        chainId: 560048,
+        batcherContractAddress: '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e',
         forwarderFactoryAddress: '0xffa397285ce46fb78c588a9e993286aac68c37cd',
         forwarderImplementationAddress: '0x059ffafdc6ef594230de44f824e2bd0a51ca5ded',
         nativeCoinOperationHashPrefix: 'ETHER',
@@ -750,7 +750,7 @@ export const reducedAmsTokenConfig = {
   'hteth:faketoken': [
     {
       id: '49ff49ea-3355-4717-bbb0-5e8f5cae2201',
-      fullName: 'Holesky Testnet fake token',
+      fullName: 'Hoodi Testnet fake token',
       name: 'hteth:faketoken',
       prefix: '',
       suffix: 'HTETH:FAKETOKEN',
@@ -763,7 +763,7 @@ export const reducedAmsTokenConfig = {
       decimalPlaces: 6,
       asset: 'hteth:faketoken',
       network: {
-        name: 'Holesky',
+        name: 'Hoodi',
       },
       primaryKeyCurve: 'secp256k1',
       contractAddress: '0x89a959b9184b4f8c8633646d5dfd049d2ebc983a',
@@ -798,7 +798,7 @@ export const amsTokenWithUnsupportedNetwork = {
   'hteth:faketoken': [
     {
       id: '49ff49ea-3355-4717-bbb0-5e8f5cae2201',
-      fullName: 'Holesky Testnet fake token',
+      fullName: 'Hoodi Testnet fake token',
       name: 'hteth:faketoken',
       prefix: '',
       suffix: 'HTETH:FAKETOKEN',

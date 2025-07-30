@@ -139,11 +139,11 @@ describe('V2 Base Coin:', function () {
       kovanToken.coin.should.equal('teth');
       kovanToken.network.should.equal('Testnet');
       kovanToken.getFamily().should.equal('eth');
-      // holesky token
-      const holeskyToken = bitgo.coin('bgerch');
-      holeskyToken.coin.should.equal('hteth');
-      holeskyToken.network.should.equal('Testnet');
-      holeskyToken.getFamily().should.equal('eth');
+      // hoodi token
+      const hoodiToken = bitgo.coin('bgerch');
+      hoodiToken.coin.should.equal('hteth');
+      hoodiToken.network.should.equal('Testnet');
+      hoodiToken.getFamily().should.equal('eth');
     });
   });
 });

@@ -407,7 +407,7 @@ module.exports.nockEthLikeRecovery = function (bitgo, nockData = nockEthData) {
     if (apiKey) {
       data.params.apiKey = apiKey;
     }
-    data.params[`chainid`] = '17000';
+    data.params[`chainid`] = '560048';
     nock('https://api.etherscan.io/v2').get('/api').query(data.params).reply(200, data.response);
     data.params[`chainid`] = '80002';
     nock('https://api.etherscan.io/v2').get('/api').query(data.params).reply(200, data.response);
@@ -424,7 +424,7 @@ module.exports.nockEtherscanRateLimitError = function () {
   };
 
   const params = {
-    chainid: '17000',
+    chainid: '560048',
     module: 'account',
     action: 'txlist',
     address: '0x74c2137d54b0fc9f907e13f14e0dd18485fee924',
