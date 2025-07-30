@@ -149,6 +149,7 @@ export interface Nep141TokenConstructorOptions extends AccountConstructorOptions
 
 export interface VetTokenConstructorOptions extends AccountConstructorOptions {
   contractAddress: string;
+  gasTankToken?: string;
 }
 export interface CosmosTokenConstructorOptions extends AccountConstructorOptions {
   denom: string;
@@ -623,11 +624,13 @@ export class Nep141Token extends AccountCoinToken {
 
 export class VetToken extends AccountCoinToken {
   public contractAddress: string;
+  public gasTankToken?: string;
   constructor(options: VetTokenConstructorOptions) {
     super({
       ...options,
     });
     this.contractAddress = options.contractAddress;
+    this.gasTankToken = options.gasTankToken;
   }
 }
 
@@ -3176,7 +3179,8 @@ export function vetToken(
   prefix = '',
   suffix: string = name.toUpperCase(),
   network: AccountNetwork = Networks.main.vet,
-  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1,
+  gasTankToken = 'VET:VTHO'
 ) {
   return Object.freeze(
     new VetToken({
@@ -3193,6 +3197,7 @@ export function vetToken(
       isToken: true,
       primaryKeyCurve,
       baseUnit: BaseUnit.VET,
+      gasTankToken,
     })
   );
 }
@@ -3221,9 +3226,23 @@ export function tvetToken(
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix = '',
   suffix: string = name.toUpperCase(),
-  network: AccountNetwork = Networks.test.vet
+  network: AccountNetwork = Networks.test.vet,
+  gasTankToken = 'TVET:VTHO' // For test environment
 ) {
-  return vetToken(id, name, fullName, decimalPlaces, contractAddress, asset, features, prefix, suffix, network);
+  return vetToken(
+    id,
+    name,
+    fullName,
+    decimalPlaces,
+    contractAddress,
+    asset,
+    features,
+    prefix,
+    suffix,
+    network,
+    KeyCurve.Secp256k1,
+    gasTankToken
+  );
 }
 
 /**
