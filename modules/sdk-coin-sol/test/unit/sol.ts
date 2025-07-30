@@ -1,5 +1,14 @@
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { generateRandomPassword, MPCSweepTxs, MPCTx, MPCTxs, TssUtils, TxRequest, Wallet } from '@bitgo/sdk-core';
+import {
+  generateRandomPassword,
+  MPCSweepTxs,
+  MPCTx,
+  MPCTxs,
+  TssUtils,
+  TxRequest,
+  Wallet,
+  Environments,
+} from '@bitgo/sdk-core';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { coins } from '@bitgo/statics';
 import assert from 'assert';
@@ -1484,12 +1493,27 @@ describe('SOL:', function () {
     });
   });
 
+  describe('API Key parameter:', () => {
+    // Test the getPublicNodeUrl method directly
+    it('should append apiKey to node URL when provided', function () {
+      // Access the protected method using type casting
+      const url = (basecoin as any).getPublicNodeUrl('test-api-key-123');
+      url.should.equal(`${Environments.test.solAlchemyNodeUrl}/test-api-key-123`);
+    });
+
+    it('should use regular node URL when apiKey is not provided', function () {
+      // Access the protected method using type casting
+      const url = (basecoin as any).getPublicNodeUrl();
+      url.should.equal(Environments.test.solNodeUrl);
+    });
+  });
+
   describe('Recover Transactions:', () => {
     const sandBox = sinon.createSandbox();
     const coin = coins.get('tsol');
     const usdtMintAddress = '9cgpBeNZ2HnLda7NWaaU1i3NyTstk2c4zCMUcoAGsi9C';
     const t22mintAddress = '5NR1bQwLWqjbkhbQ1hx72HKJybbuvwkDnUZNoAZ2VhW6';
-    let callBack;
+    let callBack: sinon.SinonStub;
 
     beforeEach(() => {
       callBack = sandBox.stub(Sol.prototype, 'getDataFromNode' as keyof Sol);
