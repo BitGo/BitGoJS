@@ -2062,7 +2062,6 @@ export enum UnderlyingAsset {
   'eth:anime' = 'eth:anime',
   'eth:newt' = 'eth:newt',
   'eth:hsk' = 'eth:hsk',
-  'eth:xcn' = 'eth:xcn',
   'eth:rog' = 'eth:rog',
   'eth:xaum' = 'eth:xaum',
   'eth:avail' = 'eth:avail',

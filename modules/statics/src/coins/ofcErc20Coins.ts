@@ -3381,7 +3381,6 @@ export const ofcErc20Coins = [
     18,
     underlyingAssetForSymbol('eth:hsk')
   ),
-  ofcerc20('cdfcf2a5-ed49-495e-8937-c4adc6620544', 'ofceth:xcn', 'Onyxcoin', 18, underlyingAssetForSymbol('eth:xcn')),
   ofcerc20('a96cc1dd-59ea-464f-9530-64cc5fc2af34', 'ofceth:rog', 'ROGIN.AI', 18, underlyingAssetForSymbol('eth:rog')),
   ofcerc20(
     'ff07a861-2241-46e5-ae71-3507750ba6a7',
