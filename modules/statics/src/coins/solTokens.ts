@@ -3050,4 +3050,24 @@ export const solTokens = [
     SOL_TOKEN_FEATURES,
     ProgramID.Token2022ProgramId
   ),
+  tsolToken(
+    'bb85cacd-7a49-457b-b3d6-dfca19a0181c',
+    'tsol:usd1',
+    'USD1',
+    6,
+    'F5eiWDW9nkme1gVYaZ4uBmw4RYH8qUdLwkAEQWh1mCPW',
+    'F5eiWDW9nkme1gVYaZ4uBmw4RYH8qUdLwkAEQWh1mCPW',
+    UnderlyingAsset['sol:usd1'],
+    SOL_TOKEN_FEATURES
+  ),
+  tsolToken(
+    '6405b589-e0cf-4481-a48f-60f8416e21ca',
+    'tsol:stgusd1',
+    'Staging USD1',
+    6,
+    '88FxbeGaabmx179rpYUzEkp8YAeLNPyLPa68wsEgukyQ',
+    '88FxbeGaabmx179rpYUzEkp8YAeLNPyLPa68wsEgukyQ',
+    UnderlyingAsset['sol:usd1'],
+    SOL_TOKEN_FEATURES
+  ),
 ];
