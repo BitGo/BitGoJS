@@ -3381,6 +3381,17 @@ export const ofcErc20Coins = [
     18,
     underlyingAssetForSymbol('eth:hsk')
   ),
+  ofcerc20('a96cc1dd-59ea-464f-9530-64cc5fc2af34', 'ofceth:rog', 'ROGIN.AI', 18, underlyingAssetForSymbol('eth:rog')),
+  ofcerc20(
+    'ff07a861-2241-46e5-ae71-3507750ba6a7',
+    'ofceth:xaum',
+    'Matrixdock Gold',
+    18,
+    underlyingAssetForSymbol('eth:xaum')
+  ),
+  ofcerc20('4dc35e5d-2f92-49de-a873-f61b0712290a', 'ofceth:dolo', 'Dolomite', 18, underlyingAssetForSymbol('eth:dolo')),
+  ofcerc20('a820df78-51fd-4918-b155-2518b7c21409', 'ofceth:avail', 'Avail', 18, underlyingAssetForSymbol('eth:avail')),
+  ofcerc20('0ca74cc5-fc6f-4119-9678-bbed45f5040d', 'ofceth:era', 'Caldera', 18, underlyingAssetForSymbol('eth:era')),
 ];
 
 export const tOfcErc20Coins = [

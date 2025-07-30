@@ -3247,6 +3247,14 @@ export const coins = CoinMap.fromCoins([
     '0xb9e4765bce2609bc1949592059b17ea72fee6c6a',
     UnderlyingAsset['arbeth:benji']
   ),
+  arbethErc20(
+    'fe2d6e73-208e-444e-af7a-7c9b098121bd',
+    'arbeth:dolo',
+    'Dolomite',
+    18,
+    '0x0f81001ef0a83ecce5ccebf63eb302c70a39a654',
+    UnderlyingAsset['arbeth:dolo']
+  ),
   opethErc20(
     '8d80fac6-4cbc-447c-b49b-4229cb8aa89d',
     'opeth:link',
