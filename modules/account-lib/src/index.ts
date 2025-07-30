@@ -323,6 +323,8 @@ const coinBuilderMap = {
 const coinMessageBuilderFactoryMap = {
   eth: Eth.MessageBuilderFactory,
   hteth: Eth.MessageBuilderFactory,
+  bsc: Bsc.MessageBuilderFactory,
+  tbsc: Bsc.MessageBuilderFactory,
   ada: Ada.MessageBuilderFactory,
   tada: Ada.MessageBuilderFactory,
   sol: Sol.MessageBuilderFactory,
