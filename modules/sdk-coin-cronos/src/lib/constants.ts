@@ -1,4 +1,13 @@
-export const validDenoms = ['cro', 'tcro', 'basecro', 'basetcro'];
+import { CosmosUtils } from '@bitgo/abstract-cosmos';
+
+const cosmosUtils = new CosmosUtils();
+export const validDenoms = [
+  'cro',
+  'tcro',
+  'basecro',
+  'basetcro',
+  ...cosmosUtils.getTokenDenomsUsingCoinFamily('cronos'),
+];
 
 export const mainnetAccountAddressRegex = /^(cro)1(['qpzry9x8gf2tvdw0s3jn54khce6mua7l]{38})$/;
 export const mainnetValidatorAddressRegex = /^(crocncl)1(['qpzry9x8gf2tvdw0s3jn54khce6mua7l]{38})$/;

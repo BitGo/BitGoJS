@@ -35,12 +35,7 @@ export class CoreumUtils extends CosmosUtils {
     if (amountBig.isLessThanOrEqualTo(0)) {
       throw new InvalidTransactionError('transactionBuilder: validateAmount: Invalid amount: ' + amount.amount);
     }
-    if (
-      (this.networkType === NetworkType.TESTNET &&
-        !constants.testnetValidDenoms.find((denom) => denom === amount.denom)) ||
-      (this.networkType === NetworkType.MAINNET &&
-        !constants.mainnetValidDenoms.find((denom) => denom === amount.denom))
-    ) {
+    if (!constants.validDenoms.find((denom) => denom === amount.denom)) {
       throw new InvalidTransactionError('transactionBuilder: validateAmount: Invalid denom: ' + amount.denom);
     }
   }

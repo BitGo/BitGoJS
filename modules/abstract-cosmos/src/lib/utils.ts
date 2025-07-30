@@ -19,6 +19,7 @@ import {
   Registry,
 } from '@cosmjs/proto-signing';
 import { Coin, defaultRegistryTypes } from '@cosmjs/stargate';
+import { coins } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
 import { SignDoc, TxRaw } from 'cosmjs-types/cosmos/tx/v1beta1/tx';
 import { Any } from 'cosmjs-types/google/protobuf/any';
@@ -932,6 +933,19 @@ export class CosmosUtils<CustomMessage = never> implements BaseUtils {
    */
   getHashFunction(): Hash {
     return createHash('sha256');
+  }
+
+  getTokenDenomsUsingCoinFamily(coinFamily: string): string[] {
+    // using set to remove duplicates as denom can be same on testnet and mainnet for a few tokens
+    return [
+      ...new Set(
+        coins
+          .filter(
+            (coin) => coin.family.toLowerCase() === coinFamily.toLowerCase() && coin.isToken && coin.denom !== undefined
+          )
+          .map((coin) => coin.denom as string)
+      ),
+    ];
   }
 }
 

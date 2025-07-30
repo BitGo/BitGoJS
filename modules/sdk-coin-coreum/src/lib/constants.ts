@@ -1,9 +1,10 @@
-export const mainnetValidDenoms = ['ucore'];
+import { CosmosUtils } from '@bitgo/abstract-cosmos';
+
+const cosmosUtils = new CosmosUtils();
+export const validDenoms = ['ucore', 'utestcore', ...cosmosUtils.getTokenDenomsUsingCoinFamily('coreum')];
 export const mainnetAccountAddressRegex = /^(core)1(['qpzry9x8gf2tvdw0s3jn54khce6mua7l]{38})$/;
 export const mainnetValidatorAddressRegex = /^(corevaloper)1(['qpzry9x8gf2tvdw0s3jn54khce6mua7l]{38})$/;
 export const MAINNET_ADDRESS_PREFIX = 'core';
-
-export const testnetValidDenoms = ['utestcore'];
 export const testnetAccountAddressRegex = /^(testcore)1(['qpzry9x8gf2tvdw0s3jn54khce6mua7l]{38})$/;
 export const testnetValidatorAddressRegex = /^(testcorevaloper)1(['qpzry9x8gf2tvdw0s3jn54khce6mua7l]{38})$/;
 export const TESTNET_ADDRESS_PREFIX = 'testcore';

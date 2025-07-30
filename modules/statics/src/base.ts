@@ -2990,6 +2990,7 @@ export interface BaseCoinConstructorOptions {
   alias?: string; // alternative name usually used during name migrations
   prefix?: string;
   suffix?: string;
+  denom?: string; // the denomination of the coin
   baseUnit: string; // the base unit for each coin. e.g. satoshi for BTC
   kind: CoinKind;
   isToken: boolean;
@@ -3012,6 +3013,7 @@ export abstract class BaseCoin {
   public readonly name: string;
   public readonly prefix?: string;
   public readonly suffix?: string;
+  public readonly denom?: string;
   public readonly baseUnit: string;
   /*
     Property to help during migration of token names.
@@ -3110,6 +3112,7 @@ export abstract class BaseCoin {
     this.alias = options.alias;
     this.prefix = options.prefix;
     this.suffix = options.suffix;
+    this.denom = options.denom;
     this.baseUnit = options.baseUnit;
     this.kind = options.kind;
     this.family = options.network.family;
