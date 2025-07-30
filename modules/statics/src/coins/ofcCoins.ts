@@ -917,7 +917,7 @@ export const ofcCoins = [
   ofcsolToken(
     'deaf138b-b1f7-476d-8de6-a268d56b8b0b',
     'ofcsol:usd1',
-    'World Liberty Financial USD (USD1)',
+    'USD1',
     6,
     UnderlyingAsset['sol:usd1'],
     SOL_TOKEN_FEATURES
