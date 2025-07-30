@@ -978,6 +978,14 @@ export const ofcCoins = [
     UnderlyingAsset['sol:usdcv'],
     SOL_TOKEN_FEATURES
   ),
+  ofcsolToken(
+    '696aa26f-332c-4a1e-a0bd-e3a80f4cac9b',
+    'ofcsol:2z',
+    'DoubleZero',
+    8,
+    UnderlyingAsset['sol:2z'],
+    SOL_TOKEN_FEATURES
+  ),
   tofcsolToken(
     '24d678cf-e0f0-4cde-a338-d754289c5b27',
     'ofctsol:slnd',
@@ -1255,6 +1263,13 @@ export const ofcCoins = [
     'Franklin OnChain U.S. Government Money Fund',
     18,
     UnderlyingAsset['arbeth:benji']
+  ),
+  ofcArbethErc20(
+    '2cca89a3-788d-499b-bb41-a35ce2428d9e',
+    'ofcarbeth:dolo',
+    'Dolomite',
+    18,
+    UnderlyingAsset['arbeth:dolo']
   ),
   ofcAvaxErc20('2bd6201d-c46c-481e-b82d-7cf3601679cb', 'ofcavaxc:aave-e', 'Aave', 18, UnderlyingAsset['avaxc:aave']),
   ofcAvaxErc20('515a5a74-54fe-4d73-bb12-8d1130f78692', 'ofcavaxc:btc-b', 'Bitcoin', 8, UnderlyingAsset['avaxc:btc']),
@@ -1852,6 +1867,7 @@ export const ofcCoins = [
     18,
     UnderlyingAsset['bsc:cusdo']
   ),
+  ofcBscToken('a7ac1127-84c8-4634-89ed-8d985b707e18', 'ofcbsc:unx', 'Unchain X', 18, UnderlyingAsset['bsc:unx']),
   tofcBscToken(
     'bf8a52e5-f416-46ea-95c2-a920dc204233',
     'ofctbsc:usd1',

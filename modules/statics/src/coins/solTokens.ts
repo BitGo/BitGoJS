@@ -2939,6 +2939,16 @@ export const solTokens = [
     SOL_TOKEN_FEATURES
   ),
   solToken(
+    'bce37e44-67d0-4ce1-9735-c3ede92cf905',
+    'sol:2z',
+    'DoubleZero',
+    8,
+    'J6pQQ3FAcJQeWPPGppWRb4nM8jU3wLyYbRrLh7feMfvd',
+    'J6pQQ3FAcJQeWPPGppWRb4nM8jU3wLyYbRrLh7feMfvd',
+    UnderlyingAsset['sol:2z'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
     '1a8e047b-f1ee-437a-8894-30a0b4a9180f',
     'sol:usdcv',
     'USD CoinVertible',

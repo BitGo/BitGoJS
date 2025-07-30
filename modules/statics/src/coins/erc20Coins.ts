@@ -11088,6 +11088,46 @@ export const erc20Coins = [
     UnderlyingAsset['eth:sign']
   ),
 
+  erc20(
+    '4deb5f7f-12de-4ffa-9d91-6703c11e1c9c',
+    'eth:rog',
+    'ROGIN.AI',
+    18,
+    '0x5d43b66da68706d39f6c97f7f1415615672b446b',
+    UnderlyingAsset['eth:rog']
+  ),
+  erc20(
+    '5edf68cf-c988-4973-bf33-adf25372313a',
+    'eth:xaum',
+    'Matrixdock Gold',
+    18,
+    '0x2103e845c5e135493bb6c2a4f0b8651956ea8682',
+    UnderlyingAsset['eth:xaum']
+  ),
+  erc20(
+    '573d94ea-2231-4e36-bdda-5bf84c7987e5',
+    'eth:avail',
+    'Avail',
+    18,
+    '0xeeb4d8400aeefafc1b2953e0094134a887c76bd8',
+    UnderlyingAsset['eth:avail']
+  ),
+  erc20(
+    '5a15f0d3-53b3-4453-937c-c244d3aa5836',
+    'eth:dolo',
+    'Dolomite',
+    18,
+    '0x0f81001ef0a83ecce5ccebf63eb302c70a39a654',
+    UnderlyingAsset['eth:dolo']
+  ),
+  erc20(
+    'b75f8df6-3ba3-4009-a030-674c3391ea19',
+    'eth:era',
+    'Caldera',
+    18,
+    '0xe2ad0bf751834f2fbdc62a41014f84d67ca1de2a',
+    UnderlyingAsset['eth:era']
+  ),
   terc20(
     '0205f0d6-0647-47c9-ad8b-c48d048e54f3',
     'fixed',
