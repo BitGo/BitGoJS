@@ -30,6 +30,11 @@ export class Bsc extends AbstractEthLikeNewCoins {
     return true;
   }
 
+  /** @inheritDoc */
+  supportsMessageSigning(): boolean {
+    return true;
+  }
+
   /** inherited doc */
   getDefaultMultisigType(): MultisigType {
     return multisigTypes.tss;
