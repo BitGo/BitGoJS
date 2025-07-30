@@ -47,6 +47,39 @@ export const TEST_SEND_TX = {
   },
 };
 
+export const TEST_SEND_TOKEN_TX = {
+  hash: 'A5EFED6B56EACCF531C9A7FC13731A9E0AF6F7101876995035D9AD6DA40C3B2D',
+  signature: 'JI7RpMouIn5VAoYpLH171tGogINLbQjDsyJ33lsWDPkYVF3kc39YDBo0sRq9fXEeZedP/pEh1f7fXPxaZisIFw==',
+  pubKey: 'Asujzd7qXNDrdmH8ZbeVDtZbunQiYhlZNt5Qw7J3E0Me',
+  privateKey: 'qp/Z1b0NeHgROzRAOqSxpBLZydY89cHSgWquf5/0nOs=',
+  signedTxBase64:
+    'CokBCoYBChwvY29zbW9zLmJhbmsudjFiZXRhMS5Nc2dTZW5kEmYKKXRwMWxmbXp4bG5wZjhrNXJxOThqeGV0ajUyZW5mMGFoenF6MDY5c3kzEil0cDEzZmE3amE4ZnhyejV3aDJka3dmZjlwbGNxZ2NqYTNycHkzeXFwORoOCgl1eWxkcy5mY2MSATESbQpQCkYKHy9jb3Ntb3MuY3J5cHRvLnNlY3AyNTZrMS5QdWJLZXkSIwohAsujzd7qXNDrdmH8ZbeVDtZbunQiYhlZNt5Qw7J3E0MeEgQKAggBGBISGQoTCgVuaGFzaBIKMzgxMDAwMDAwMBDAmgwaQCSO0aTKLiJ+VQKGKSx9e9bRqICDS20Iw7Mid95bFgz5GFRd5HN/WAwaNLEavX1xHmXnT/6RIdX+31z8WmYrCBc=',
+  sender: 'tp1lfmzxlnpf8k5rq98jxetj52enf0ahzqz069sy3',
+  recipient: 'tp13fa7ja8fxrz5wh2dkwff9plcqgcja3rpy3yqp9',
+  chainId: 'pio-testnet-1',
+  accountNumber: 235524,
+  sequence: 18,
+  sendAmount: '1',
+  feeAmount: '3810000000',
+  sendMessage: {
+    typeUrl: '/cosmos.bank.v1beta1.MsgSend',
+    value: {
+      amount: [
+        {
+          denom: 'uylds.fcc',
+          amount: '1',
+        },
+      ],
+      toAddress: 'tp13fa7ja8fxrz5wh2dkwff9plcqgcja3rpy3yqp9',
+      fromAddress: 'tp1lfmzxlnpf8k5rq98jxetj52enf0ahzqz069sy3',
+    },
+  },
+  gasBudget: {
+    amount: [{ denom: 'nhash', amount: '3810000000' }],
+    gasLimit: 200000,
+  },
+};
+
 export const TEST_DELEGATE_TX = {
   hash: 'BD887ADE5E10C378B4B3DB3E4E0D5D77F0C2F3DFEE1A352BF186B22A8F022967',
   signature: 'FMZqHoNhxzJRvhhZbiLLybgAHdkszEstxow2oj1T1It8OyEGLJ8o2jnUo9OuCfeCKBfcWrKAi4w9dwsC8rBChQ==',
@@ -188,6 +221,45 @@ export const TEST_TX_WITH_MEMO = {
       {
         denom: 'nhash',
         amount: '381000000',
+      },
+    ],
+    gasLimit: 200000,
+  },
+};
+
+export const TEST_TOKEN_TX_WITH_MEMO = {
+  hash: 'F4B979ECBF56EA203EA24ECE1F44AD621C5BC97955722C16AFBFC902E0001E5D',
+  signature: 'HkE/roZVKf3rj4RH07fPPLeSJzxSGmz+7FQJ6nom1e9pD/3QMLXVHLpswFJCNDwoS9kfeSifBFKgPc6dpOr+7w==',
+  pubKey: 'Asujzd7qXNDrdmH8ZbeVDtZbunQiYhlZNt5Qw7J3E0Me',
+  privateKey: 'qp/Z1b0NeHgROzRAOqSxpBLZydY89cHSgWquf5/0nOs=',
+  signedTxBase64:
+    'CowBCoYBChwvY29zbW9zLmJhbmsudjFiZXRhMS5Nc2dTZW5kEmYKKXRwMWxmbXp4bG5wZjhrNXJxOThqeGV0ajUyZW5mMGFoenF6MDY5c3kzEil0cDEzZmE3amE4ZnhyejV3aDJka3dmZjlwbGNxZ2NqYTNycHkzeXFwORoOCgl1eWxkcy5mY2MSATESATcSbQpQCkYKHy9jb3Ntb3MuY3J5cHRvLnNlY3AyNTZrMS5QdWJLZXkSIwohAsujzd7qXNDrdmH8ZbeVDtZbunQiYhlZNt5Qw7J3E0MeEgQKAggBGBESGQoTCgVuaGFzaBIKMzgxMDAwMDAwMBDAmgwaQB5BP66GVSn964+ER9O3zzy3kic8Uhps/uxUCep6JtXvaQ/90DC11Ry6bMBSQjQ8KEvZH3konwRSoD3OnaTq/u8=',
+  from: 'tp1lfmzxlnpf8k5rq98jxetj52enf0ahzqz069sy3',
+  to: 'tp13fa7ja8fxrz5wh2dkwff9plcqgcja3rpy3yqp9',
+  chainId: 'pio-testnet-1',
+  accountNumber: 235524,
+  sequence: 17,
+  sendAmount: '1',
+  feeAmount: '3810000000',
+  sendMessage: {
+    typeUrl: '/cosmos.bank.v1beta1.MsgSend',
+    value: {
+      amount: [
+        {
+          denom: 'uylds.fcc',
+          amount: '1',
+        },
+      ],
+      toAddress: 'tp13fa7ja8fxrz5wh2dkwff9plcqgcja3rpy3yqp9',
+      fromAddress: 'tp1lfmzxlnpf8k5rq98jxetj52enf0ahzqz069sy3',
+    },
+  },
+  memo: '7',
+  gasBudget: {
+    amount: [
+      {
+        denom: 'nhash',
+        amount: '3810000000',
       },
     ],
     gasLimit: 200000,

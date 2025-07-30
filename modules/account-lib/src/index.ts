@@ -203,6 +203,9 @@ export { Soneium };
 import * as Vet from '@bitgo/sdk-coin-vet';
 export { Vet };
 
+import * as CosmosSharedCoin from '@bitgo/sdk-coin-cosmos';
+export { CosmosSharedCoin };
+
 import { validateAgainstMessageTemplates, MIDNIGHT_TNC_HASH } from './utils';
 export { MIDNIGHT_TNC_HASH };
 
@@ -323,6 +326,8 @@ const coinBuilderMap = {
 const coinMessageBuilderFactoryMap = {
   eth: Eth.MessageBuilderFactory,
   hteth: Eth.MessageBuilderFactory,
+  bsc: Bsc.MessageBuilderFactory,
+  tbsc: Bsc.MessageBuilderFactory,
   ada: Ada.MessageBuilderFactory,
   tada: Ada.MessageBuilderFactory,
   sol: Sol.MessageBuilderFactory,
@@ -333,6 +338,12 @@ coins
   .filter((coin) => coin.features.includes(CoinFeature.SHARED_EVM_SDK))
   .forEach((coin) => {
     coinBuilderMap[coin.name] = EvmCoin.TransactionBuilder;
+  });
+
+coins
+  .filter((coin) => coin.features.includes(CoinFeature.SHARED_COSMOS_SDK))
+  .forEach((coin) => {
+    coinBuilderMap[coin.name] = CosmosSharedCoin.TransactionBuilder;
   });
 
 /**

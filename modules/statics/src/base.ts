@@ -1102,7 +1102,6 @@ export enum UnderlyingAsset {
   HTBULL = 'htbull',
   HTDOOM = 'htdoom',
   'hteth:bgerchv2' = 'hteth:bgerchv2',
-  'hteth:bgerchv3' = 'hteth:bgerchv3',
   'hteth:aut' = 'hteth:aut',
   HTHEDGE = 'hthedge',
   HTMOON = 'htmoon',
@@ -1662,11 +1661,8 @@ export enum UnderlyingAsset {
   TERC = 'terc',
   TEUROC = 'teuroc',
   TERC2DP = 'terc2dp',
-  HDTERC2DP = 'hdterc2dp',
   TERC6DP = 'terc6dp',
-  HDTERC6DP = 'hdterc6dp',
   TERC18DP = 'terc18DP',
-  HDTERC18DP = 'hdterc18DP',
   TERC20 = 'terc20',
   TERC2DP1 = 'terc2dp1',
   TERC2DP2 = 'terc2dp2',
@@ -2066,6 +2062,11 @@ export enum UnderlyingAsset {
   'eth:anime' = 'eth:anime',
   'eth:newt' = 'eth:newt',
   'eth:hsk' = 'eth:hsk',
+  'eth:rog' = 'eth:rog',
+  'eth:xaum' = 'eth:xaum',
+  'eth:avail' = 'eth:avail',
+  'eth:dolo' = 'eth:dolo',
+  'eth:era' = 'eth:era',
   'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ' = 'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ',
   'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M' = 'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M',
   'xlm:SLT-GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP' = 'xlm:SLT-GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP',
@@ -2479,6 +2480,7 @@ export enum UnderlyingAsset {
   'bsc:yfi' = 'bsc:yfi',
   'bsc:link' = 'bsc:link',
   'bsc:cusdo' = 'bsc:cusdo',
+  'bsc:unx' = 'bsc:unx',
   // BSC NFTs
   // generic NFTs
   'erc721:bsctoken' = 'erc721:bsctoken',
@@ -2555,6 +2557,7 @@ export enum UnderlyingAsset {
   'arbeth:eqtyx' = 'arbeth:eqtyx',
   'arbeth:anime' = 'arbeth:anime',
   'arbeth:benji' = 'arbeth:benji',
+  'arbeth:dolo' = 'arbeth:dolo',
 
   // Arbitrum testnet tokens
   'tarbeth:link' = 'tarbeth:link',
@@ -2785,6 +2788,7 @@ export enum UnderlyingAsset {
   'sol:usdky' = 'sol:usdky',
   'sol:wave' = 'sol:wave',
   'sol:usdcv' = 'sol:usdcv',
+  'sol:2z' = 'sol:2z',
   // TRX tokens
   'trx:htx' = 'trx:htx',
   'trx:jst' = 'trx:jst',
@@ -2902,6 +2906,17 @@ export enum UnderlyingAsset {
 
   // COSMOS testnet tokens
   'thash:ylds' = 'thash:ylds',
+
+  'eth:0x0' = 'eth:0x0',
+  'eth:vvs' = 'eth:vvs',
+  'eth:bmc' = 'eth:bmc',
+  'eth:pro' = 'eth:pro',
+  'eth:prime' = 'eth:prime',
+  'eth:pokt' = 'eth:pokt',
+  'eth:lon' = 'eth:lon',
+  'eth:rlb' = 'eth:rlb',
+  'eth:neiro2' = 'eth:neiro2',
+  'eth:sign' = 'eth:sign',
 
   // fiats
   AED = 'aed',

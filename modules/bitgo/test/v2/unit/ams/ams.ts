@@ -19,7 +19,7 @@ describe('Asset metadata service', () => {
     const coin = bitgo.coin('hteth:faketoken');
     should.exist(coin);
     coin.type.should.equal('hteth:faketoken');
-    coin.name.should.equal('Holesky Testnet fake token');
+    coin.name.should.equal('Hoodi Testnet fake token');
     coin.decimalPlaces.should.equal(6);
     coin.tokenContractAddress.should.equal('0x89a959b9184b4f8c8633646d5dfd049d2ebc983a');
   });
@@ -42,7 +42,7 @@ describe('Asset metadata service', () => {
     const coin = bitgo.coin(tokenName);
     should.exist(coin);
     coin.type.should.equal(tokenName);
-    coin.name.should.equal('Holesky Testnet fake token');
+    coin.name.should.equal('Hoodi Testnet fake token');
     coin.decimalPlaces.should.equal(6);
     coin.tokenContractAddress.should.equal('0x89a959b9184b4f8c8633646d5dfd049d2ebc983a');
   });

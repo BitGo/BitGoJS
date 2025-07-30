@@ -11006,6 +11006,128 @@ export const erc20Coins = [
     '0xe7c6bf469e97eeb0bfb74c8dbff5bd47d4c1c98a',
     UnderlyingAsset['eth:hsk']
   ),
+
+  erc20(
+    'e9f861f1-90db-43a1-a148-bedb8c1da99f',
+    'ETH:0X0',
+    '0x0.ai',
+    9,
+    '0x5a3e6a77ba2f983ec0d371ea3b475f8bc0811ad5',
+    UnderlyingAsset['eth:0x0']
+  ),
+  erc20(
+    '7839148f-7b3b-4926-a9d4-bdfe2e009abc',
+    'ETH:VVS',
+    'VVS',
+    18,
+    '0x839e71613f9aa06e5701cf6de63e303616b0dde3',
+    UnderlyingAsset['eth:vvs']
+  ),
+  erc20(
+    '395f00e4-aaf8-4a4b-8fa1-54dfd7543951',
+    'ETH:BMC',
+    'BitMart Token',
+    18,
+    '0x986ee2b944c42d017f52af21c4c69b84dbea35d8',
+    UnderlyingAsset['eth:bmc']
+  ),
+  erc20(
+    '28beb513-7190-4dd3-b73f-32289d07de23',
+    'ETH:PRO',
+    'Propy',
+    8,
+    '0x226bb599a12c826476e3a771454697ea52e9e220',
+    UnderlyingAsset['eth:pro']
+  ),
+  erc20(
+    'b447f1db-9f57-4b7d-b372-2abcb0db873b',
+    'ETH:PRIME',
+    'Echelon Prime',
+    18,
+    '0xb23d80f5fefcddaa212212f028021b41ded428cf',
+    UnderlyingAsset['eth:prime']
+  ),
+  erc20(
+    '356456e1-5b20-4f77-bfb5-799f78af4225',
+    'ETH:POKT',
+    'Pocket Network',
+    6,
+    '0x764a726d9ced0433a8d7643335919deb03a9a935',
+    UnderlyingAsset['eth:pokt']
+  ),
+  erc20(
+    '648bf099-cefc-4ed3-9af8-14feecc89503',
+    'ETH:LON',
+    'Tokenlon Network',
+    18,
+    '0x0000000000095413afc295d19edeb1ad7b71c952',
+    UnderlyingAsset['eth:lon']
+  ),
+  erc20(
+    'e691dbd8-840b-4ef1-8745-29f83fe091fb',
+    'ETH:RLB',
+    'Rollbit Coin',
+    18,
+    '0x046eee2cc3188071c02bfc1745a6b17c656e3f3d',
+    UnderlyingAsset['eth:rlb']
+  ),
+  erc20(
+    '5ef3ded1-1a49-45f6-80a5-7e4a6f397bcf',
+    'ETH:NEIRO2',
+    'Neiro Ethereum',
+    9,
+    '0xee2a03aa6dacf51c18679c516ad5283d8e7c2637',
+    UnderlyingAsset['eth:neiro2']
+  ),
+  erc20(
+    '3af75d75-0d80-4490-a92d-a52f0285fbfc',
+    'ETH:SIGN',
+    'Sign',
+    18,
+    '0x868fced65edbf0056c4163515dd840e9f287a4c3',
+    UnderlyingAsset['eth:sign']
+  ),
+
+  erc20(
+    '4deb5f7f-12de-4ffa-9d91-6703c11e1c9c',
+    'eth:rog',
+    'ROGIN.AI',
+    18,
+    '0x5d43b66da68706d39f6c97f7f1415615672b446b',
+    UnderlyingAsset['eth:rog']
+  ),
+  erc20(
+    '5edf68cf-c988-4973-bf33-adf25372313a',
+    'eth:xaum',
+    'Matrixdock Gold',
+    18,
+    '0x2103e845c5e135493bb6c2a4f0b8651956ea8682',
+    UnderlyingAsset['eth:xaum']
+  ),
+  erc20(
+    '573d94ea-2231-4e36-bdda-5bf84c7987e5',
+    'eth:avail',
+    'Avail',
+    18,
+    '0xeeb4d8400aeefafc1b2953e0094134a887c76bd8',
+    UnderlyingAsset['eth:avail']
+  ),
+  erc20(
+    '5a15f0d3-53b3-4453-937c-c244d3aa5836',
+    'eth:dolo',
+    'Dolomite',
+    18,
+    '0x0f81001ef0a83ecce5ccebf63eb302c70a39a654',
+    UnderlyingAsset['eth:dolo']
+  ),
+  erc20(
+    'b75f8df6-3ba3-4009-a030-674c3391ea19',
+    'eth:era',
+    'Caldera',
+    18,
+    '0xe2ad0bf751834f2fbdc62a41014f84d67ca1de2a',
+    UnderlyingAsset['eth:era']
+  ),
   terc20(
     '0205f0d6-0647-47c9-ad8b-c48d048e54f3',
     'fixed',
@@ -11461,14 +11583,14 @@ export const erc20Coins = [
   terc20(
     '31eedb6e-3bd1-4407-b924-7136c4dc0483',
     'hteth:tsteth',
-    'Holesky Testnet STETH',
+    'Hoodi Testnet STETH',
     18,
-    '0x3f1c547b21f65e10480de3ad8e19faac46c95034',
+    '0x3508a952176b3c15387c97be809eaffb1982176a',
     UnderlyingAsset['hteth:tsteth'],
     [...AccountCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION, CoinFeature.REBASE_TOKEN],
     undefined,
     undefined,
-    Networks.test.holesky
+    Networks.test.hoodi
   ),
   terc20(
     '49ff49ea-3355-4717-bbb0-5e8f5cae2202',
@@ -11547,20 +11669,8 @@ export const erc20Coins = [
     'hterc18dp',
     'TERC18DP',
     18,
-    '0x7ca1945d697ac04965774700db8d0b64d81b288d',
+    '0x21782ccd72a67223df0d5a7dfa4db2343e4ee6aa',
     UnderlyingAsset.TERC18DP,
-    undefined,
-    undefined,
-    undefined,
-    Networks.test.holesky
-  ),
-  terc20(
-    '6ba7b810-9dad-11d1-80b4-00c04fd430c8',
-    'hdterc18dp',
-    'TERC18DP',
-    18,
-    '0x9851cb80a008a0862f9dec41e2f554420cee56f4',
-    UnderlyingAsset.HDTERC18DP,
     undefined,
     undefined,
     undefined,
@@ -11571,20 +11681,8 @@ export const erc20Coins = [
     'hteth:bgerchv2',
     'BG Test Token',
     18,
-    '0xee4d03adfca9a902d09f6e3e09dbd5a8a5122fb6',
+    '0xd9327fd36c3312466efed23ff0493453ee32f551',
     UnderlyingAsset['hteth:bgerchv2'],
-    HTETH_TOKEN_FEATURES,
-    undefined,
-    undefined,
-    Networks.test.holesky
-  ),
-  terc20(
-    'f47ac10b-58cc-4372-a567-0e02b2c3d479',
-    'hteth:bgerchv3',
-    'BG Test Token',
-    18,
-    '0x0d142fd70826d9157c3ea2ea5e4d4b484ba86963',
-    UnderlyingAsset['hteth:bgerchv3'],
     HTETH_TOKEN_FEATURES,
     undefined,
     undefined,
@@ -11607,20 +11705,8 @@ export const erc20Coins = [
     'hterc6dp',
     'TERC6DP',
     6,
-    '0xdd415a799a11c2bcc380937b7c46d5035df4f1e2',
+    '0x76c57d19bd3529dadf4bb66e75f0808bc8264a5e',
     UnderlyingAsset.TERC6DP,
-    undefined,
-    undefined,
-    undefined,
-    Networks.test.holesky
-  ),
-  terc20(
-    '123e4567-e89b-12d3-a456-426614174000',
-    'hdterc6dp',
-    'TERC6DP',
-    6,
-    '0x6091cfbd9312377863060e792c4a5c3c5a1f00fe',
-    UnderlyingAsset.HDTERC6DP,
     undefined,
     undefined,
     undefined,
@@ -11631,20 +11717,8 @@ export const erc20Coins = [
     'hterc2dp',
     'TERC2DP',
     2,
-    '0x5b494aba42b752b46c91e35fc914b4c2f8d61a00',
+    '0x335f0741c9be939bc8226b31b79df9ca633f4559',
     UnderlyingAsset.TERC2DP,
-    undefined,
-    undefined,
-    undefined,
-    Networks.test.holesky
-  ),
-  terc20(
-    '8c6b3e4f-5a23-41f0-8458-381a0a294b5e',
-    'hdterc2dp',
-    'TERC2DP',
-    2,
-    '0xcd161560612b039663e54679601defbe6b1cfffb',
-    UnderlyingAsset.HDTERC2DP,
     undefined,
     undefined,
     undefined,
@@ -11973,13 +12047,13 @@ export const erc20Coins = [
   terc20(
     '031e6052-ed7a-42cf-a6e6-2107d8e448ed',
     'bgerch',
-    'Test ERC Token on Holesky',
+    'Test ERC Token on Hoodi',
     18,
-    '0xebe8b46a42f05072b723b00013ff822b2af1b5cb',
+    '0xe0111b7941adb4ef6c3ac0b86cbccbd23d23062f',
     UnderlyingAsset.BGERCH,
     undefined,
     undefined,
     undefined,
-    Networks.test.holesky
+    Networks.test.hoodi
   ),
 ];

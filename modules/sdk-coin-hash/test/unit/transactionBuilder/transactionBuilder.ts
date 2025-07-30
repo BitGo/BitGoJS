@@ -20,13 +20,19 @@ describe('Hash Transaction Builder', async () => {
   });
 
   const testTxData = testData.TEST_SEND_TX;
+  const tokenTestTxData = testData.TEST_SEND_TOKEN_TX;
   let data;
 
   beforeEach(() => {
     data = [
       {
         type: TransactionType.Send,
-        testTx: testData.TEST_SEND_TX,
+        testTx: testTxData,
+        builder: factory.getTransferBuilder(),
+      },
+      {
+        type: TransactionType.Send,
+        testTx: tokenTestTxData,
         builder: factory.getTransferBuilder(),
       },
       {
@@ -54,6 +60,15 @@ describe('Hash Transaction Builder', async () => {
     // Should recreate the same raw tx data when re-build and turned to broadcast format
     const rawTx = tx.toBroadcastFormat();
     should.equal(rawTx, testTxData.signedTxBase64);
+  });
+
+  it('should build a signed token tx from signed token tx data', async function () {
+    const txBuilder = factory.from(tokenTestTxData.signedTxBase64);
+    const tx = await txBuilder.build();
+    should.equal(tx.type, TransactionType.Send);
+    // Should recreate the same raw tx data when re-build and turned to broadcast format
+    const rawTx = tx.toBroadcastFormat();
+    should.equal(rawTx, tokenTestTxData.signedTxBase64);
   });
 
   describe('gasBudget tests', async () => {

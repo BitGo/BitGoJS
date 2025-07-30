@@ -1252,6 +1252,15 @@ export const bscTokens = [
     UnderlyingAsset['bsc:cusdo'],
     BSC_TOKEN_FEATURES
   ),
+  bscToken(
+    '94c40a09-1d9e-4623-8e74-58b604a041ab',
+    'bsc:unx',
+    'Unchain X',
+    18,
+    '0x4f0572ca0bf96f5ae17b7062d97cea3f35bdea6f',
+    UnderlyingAsset['bsc:unx'],
+    BSC_TOKEN_FEATURES
+  ),
   tbscToken(
     'b31aa2b5-8d8c-4ac1-b5e5-0f9d59377eab',
     'tbsc:busd',

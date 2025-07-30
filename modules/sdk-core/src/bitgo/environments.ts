@@ -37,6 +37,7 @@ interface EnvironmentTemplate {
   eosNodeUrls: string[];
   nearNodeUrls: string[];
   solNodeUrl: string;
+  solAlchemyNodeUrl: string;
   adaNodeUrl: string;
   hashNodeUrl: string;
   injNodeUrl: string;
@@ -171,6 +172,7 @@ const mainnetBase: EnvironmentTemplate = {
   eosNodeUrls: ['https://bp.cryptolions.io', 'https://api.eosnewyork.io', 'https://api.eosdetroit.io'],
   nearNodeUrls: ['https://api.fastnear.com'],
   solNodeUrl: 'https://api.mainnet-beta.solana.com',
+  solAlchemyNodeUrl: 'https://solana-mainnet.g.alchemy.com/v2',
   adaNodeUrl: 'https://api.koios.rest/api/v1',
   hashNodeUrl: 'https://api.provenance.io',
   injNodeUrl: 'https://sentry.lcd.injective.network', // reference https://docs.injective.network/develop/public-endpoints/
@@ -269,6 +271,7 @@ const testnetBase: EnvironmentTemplate = {
   eosNodeUrls: ['https://kylin.eosn.io', 'https://api.kylin.alohaeos.com'],
   nearNodeUrls: ['https://test.rpc.fastnear.com'],
   solNodeUrl: 'https://api.devnet.solana.com',
+  solAlchemyNodeUrl: 'https://solana-devnet.g.alchemy.com/v2',
   adaNodeUrl: 'https://preprod.koios.rest/api/v1',
   hashNodeUrl: 'https://api.test.provenance.io',
   injNodeUrl: 'https://testnet.sentry.lcd.injective.network', // COIN-1219 : reference  https://docs.injective.network/develop/public-endpoints/#testnet
@@ -372,7 +375,7 @@ export const Environments: Environments = {
   mock: Object.assign({}, devBase, {
     uri: 'https://bitgo.fakeurl',
     stellarFederationServerUrl: 'https://bitgo.fakeurl/api/v2/txlm/federation',
-    etherscanBaseUrl: 'https://api-holesky.etherscan.fakeurl',
+    etherscanBaseUrl: 'https://api-hoodi.etherscan.fakeurl',
     etherscanApiToken: process.env.ETHERSCAN_API_TOKEN,
     avaxcNetworkBaseUrl: 'https://api.avax-test.network.fakeurl',
     eth2ExplorerBaseUrl: 'https://beaconscan.com/api',
@@ -405,7 +408,7 @@ export const Environments: Environments = {
         : 'https://blockstream.info/api',
     etherscanBaseUrl:
       process.env.BITGO_CUSTOM_ETHEREUM_NETWORK !== 'ethereum'
-        ? 'https://api-holesky.etherscan.io'
+        ? 'https://api-hoodi.etherscan.io'
         : 'https://api.etherscan.io',
     stellarFederationServerUrl:
       process.env.BITGO_CUSTOM_STELLAR_NETWORK !== 'stellar'

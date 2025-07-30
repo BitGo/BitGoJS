@@ -1,6 +1,6 @@
 const should = require('should');
 import { AccountCoin, Networks, UnderlyingAsset } from '../../src';
-import { txrpToken, xrpToken } from '../../src/account';
+import { txrpToken, xrpToken, vetToken, tvetToken } from '../../src/account';
 
 describe('XRP', () => {
   it('should create a new XRP token with the correct properties', () => {
@@ -60,5 +60,33 @@ describe('XRP', () => {
     should(token.primaryKeyCurve).equal('secp256k1');
     should(token.isToken).equal(true);
     should(token.baseUnit).equal('drop');
+  });
+});
+
+describe('VET', () => {
+  it('should create a new VET token with the correct gastankTokenName for production', () => {
+    const token = vetToken(
+      'cebb0ba8-6736-46bb-a006-5db7b5b3c376',
+      'token-name',
+      'Token fullname',
+      15,
+      'contract-address',
+      UnderlyingAsset.VET
+    );
+    should(token.id).equal('cebb0ba8-6736-46bb-a006-5db7b5b3c376');
+    should(token.gasTankToken).equal('VET:VTHO');
+  });
+
+  it('should create a new TVET token with the correct gasTankToken for testnet', () => {
+    const token = tvetToken(
+      'cebb0ba8-6736-46bb-a006-5db7b5b3c376',
+      'token-name',
+      'Token fullname',
+      15,
+      'contract-address',
+      UnderlyingAsset.VET
+    );
+    should(token.id).equal('cebb0ba8-6736-46bb-a006-5db7b5b3c376');
+    should(token.gasTankToken).equal('TVET:VTHO');
   });
 });

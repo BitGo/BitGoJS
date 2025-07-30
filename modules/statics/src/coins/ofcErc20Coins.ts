@@ -3381,6 +3381,17 @@ export const ofcErc20Coins = [
     18,
     underlyingAssetForSymbol('eth:hsk')
   ),
+  ofcerc20('a96cc1dd-59ea-464f-9530-64cc5fc2af34', 'ofceth:rog', 'ROGIN.AI', 18, underlyingAssetForSymbol('eth:rog')),
+  ofcerc20(
+    'ff07a861-2241-46e5-ae71-3507750ba6a7',
+    'ofceth:xaum',
+    'Matrixdock Gold',
+    18,
+    underlyingAssetForSymbol('eth:xaum')
+  ),
+  ofcerc20('4dc35e5d-2f92-49de-a873-f61b0712290a', 'ofceth:dolo', 'Dolomite', 18, underlyingAssetForSymbol('eth:dolo')),
+  ofcerc20('a820df78-51fd-4918-b155-2518b7c21409', 'ofceth:avail', 'Avail', 18, underlyingAssetForSymbol('eth:avail')),
+  ofcerc20('0ca74cc5-fc6f-4119-9678-bbed45f5040d', 'ofceth:era', 'Caldera', 18, underlyingAssetForSymbol('eth:era')),
 ];
 
 export const tOfcErc20Coins = [
@@ -3473,7 +3484,7 @@ export const tOfcErc20Coins = [
   tofcerc20(
     '0c90af13-2b65-4c13-ae1f-101531aa8e9b',
     'ofctgousd',
-    'Holesky Testnet GoUSD',
+    'Hoodi Testnet GoUSD',
     6,
     UnderlyingAsset.TGOUSD,
     undefined,
@@ -3487,7 +3498,7 @@ export const tOfcErc20Coins = [
   tofcerc20(
     'c1d2c09d-ac71-4cf6-9683-90d93b6afa09',
     'ofchteth:stgusd1',
-    'Holesky Testnet USD1',
+    'Hoodi Testnet USD1',
     18,
     UnderlyingAsset['hteth:stgusd1'],
     undefined,
@@ -3501,7 +3512,7 @@ export const tOfcErc20Coins = [
   tofcerc20(
     '72358644-ece4-41fd-9269-8d0bce6ff8cd',
     'ofchteth:tsteth',
-    'Holesky Testnet STETH',
+    'Hoodi Testnet STETH',
     18,
     UnderlyingAsset['hteth:tsteth'],
     undefined,
@@ -3515,7 +3526,7 @@ export const tOfcErc20Coins = [
   tofcerc20(
     'f0fdaaaa-7587-4cc4-a2b3-875085d81ac8',
     'ofchteth:gousd',
-    'Holesky Testnet GoUSD',
+    'Hoodi Testnet GoUSD',
     6,
     UnderlyingAsset['hteth:gousd'],
     undefined,
@@ -3529,7 +3540,7 @@ export const tOfcErc20Coins = [
   tofcerc20(
     '4dc4534c-72b8-4a68-a914-210dae1e5d4d',
     'ofchteth:usd1',
-    'Holesky Testnet USD1',
+    'Hoodi Testnet USD1',
     18,
     UnderlyingAsset['hteth:usd1'],
     undefined,
@@ -3553,6 +3564,86 @@ export const tOfcErc20Coins = [
     undefined,
     undefined,
     'hteth'
+  ),
+
+  ofcerc20(
+    'cc2a92cf-d799-463b-b08c-e9a4d5e87934',
+    'ofceth:0x0',
+    'Wrapped 0x0.ai',
+    9,
+    underlyingAssetForSymbol('eth:0x0')
+  ),
+
+  ofcerc20(
+    '007227e5-8762-4f9c-b152-85caf62e34a7',
+    'ofceth:vvs',
+    'Wrapped VVS',
+    18,
+    underlyingAssetForSymbol('eth:vvs')
+  ),
+
+  ofcerc20(
+    '8361c3bb-fc4e-4a67-8f3e-a2670312593c',
+    'ofceth:bmc',
+    'Wrapped BitMart Token',
+    18,
+    underlyingAssetForSymbol('eth:bmc')
+  ),
+
+  ofcerc20(
+    '3aa503a5-d559-4b87-b6b9-defc277e8e33',
+    'ofceth:pro',
+    'Wrapped Propy',
+    8,
+    underlyingAssetForSymbol('eth:pro')
+  ),
+
+  ofcerc20(
+    '8865c4a5-a4a6-4256-b0a0-71e0fb25ee32',
+    'ofceth:prime',
+    'Wrapped Echelon Prime',
+    18,
+    underlyingAssetForSymbol('eth:prime')
+  ),
+
+  ofcerc20(
+    '2c4ec5c2-9403-486d-b389-c2d034650653',
+    'ofceth:pokt',
+    'Wrapped Pocket Network',
+    6,
+    underlyingAssetForSymbol('eth:pokt')
+  ),
+
+  ofcerc20(
+    'de8fe485-c227-4ee3-a7c4-09ddea2ee81b',
+    'ofceth:lon',
+    'Wrapped Tokenlon Network',
+    18,
+    underlyingAssetForSymbol('eth:lon')
+  ),
+
+  ofcerc20(
+    '5397b444-803e-4344-9556-c8ab5305994e',
+    'ofceth:rlb',
+    'Wrapped Rollbit Coin',
+    18,
+    underlyingAssetForSymbol('eth:rlb')
+  ),
+
+  ofcerc20(
+    '6e606723-cf78-4a5c-90c0-c1925dc88094',
+    'ofceth:neiro2',
+    'Wrapped Neiro Ethereum',
+    9,
+    underlyingAssetForSymbol('eth:neiro2')
+  ),
+
+  ofcerc20(
+    '20011fd9-162a-4534-b4be-f0088f4b51a0',
+    'ofceth:sign',
+    'Wrapped Sign',
+    18,
+    underlyingAssetForSymbol('eth:sign')
   ),
 ];
 

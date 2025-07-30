@@ -204,7 +204,7 @@ export interface SupplementGenerateWalletOptions {
   disableKRSEmail?: boolean;
   multisigType?: 'tss' | 'onchain' | 'blsdkg';
   type: 'hot' | 'cold' | 'custodial';
-  subType?: 'lightningCustody' | 'lightningSelfCustody';
+  subType?: 'lightningCustody' | 'lightningSelfCustody' | 'onPrem';
   coinSpecific?: { [coinName: string]: unknown };
 }
 

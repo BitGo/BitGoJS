@@ -2869,7 +2869,7 @@ export const solTokens = [
   solToken(
     '2a5d3340-e68a-4baa-bae8-7bcc785d757f',
     'sol:usd1',
-    'World Liberty Financial USD (USD1)',
+    'USD1',
     6,
     'USD1ttGY1N17NEEHLmELoaybftRBUSErhqYiQzvEmuB',
     'USD1ttGY1N17NEEHLmELoaybftRBUSErhqYiQzvEmuB',
@@ -2936,6 +2936,16 @@ export const solTokens = [
     '5XUUN5z1yBPEwoLztu4qMenmFe6GQnZptBFsnFnEpump',
     '5XUUN5z1yBPEwoLztu4qMenmFe6GQnZptBFsnFnEpump',
     UnderlyingAsset['sol:wave'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    'bce37e44-67d0-4ce1-9735-c3ede92cf905',
+    'sol:2z',
+    'DoubleZero',
+    8,
+    'J6pQQ3FAcJQeWPPGppWRb4nM8jU3wLyYbRrLh7feMfvd',
+    'J6pQQ3FAcJQeWPPGppWRb4nM8jU3wLyYbRrLh7feMfvd',
+    UnderlyingAsset['sol:2z'],
     SOL_TOKEN_FEATURES
   ),
   solToken(
@@ -3049,5 +3059,25 @@ export const solTokens = [
     UnderlyingAsset['tsol:slnd'],
     SOL_TOKEN_FEATURES,
     ProgramID.Token2022ProgramId
+  ),
+  tsolToken(
+    'bb85cacd-7a49-457b-b3d6-dfca19a0181c',
+    'tsol:usd1',
+    'USD1',
+    6,
+    'F5eiWDW9nkme1gVYaZ4uBmw4RYH8qUdLwkAEQWh1mCPW',
+    'F5eiWDW9nkme1gVYaZ4uBmw4RYH8qUdLwkAEQWh1mCPW',
+    UnderlyingAsset['sol:usd1'],
+    SOL_TOKEN_FEATURES
+  ),
+  tsolToken(
+    '6405b589-e0cf-4481-a48f-60f8416e21ca',
+    'tsol:stgusd1',
+    'Staging USD1',
+    6,
+    '88FxbeGaabmx179rpYUzEkp8YAeLNPyLPa68wsEgukyQ',
+    '88FxbeGaabmx179rpYUzEkp8YAeLNPyLPa68wsEgukyQ',
+    UnderlyingAsset['sol:usd1'],
+    SOL_TOKEN_FEATURES
   ),
 ];
