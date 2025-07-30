@@ -627,8 +627,8 @@ class Hoodi extends Testnet implements EthereumNetwork {
   // https://chainlist.org/chain/560048
   chainId = 560048;
   batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
-  forwarderFactoryAddress = '0xffa397285ce46fb78c588a9e993286aac68c37cd';
-  forwarderImplementationAddress = '0x059ffafdc6ef594230de44f824e2bd0a51ca5ded';
+  forwarderFactoryAddress = '0x7441f20a59be97011842404b9aefd8d85fd81aa6';
+  forwarderImplementationAddress = '0x0e2874d6824fae4f61e446012317a9b86384bd8e';
   nativeCoinOperationHashPrefix = 'ETHER';
   tokenOperationHashPrefix = 'ERC20';
 }
