@@ -49,6 +49,7 @@ export enum InstructionBuilderTypes {
   SetPriorityFee = 'SetPriorityFee',
   MintTo = 'MintTo',
   Burn = 'Burn',
+  SplTokenOps = 'SplTokenOps',
 }
 
 export const VALID_SYSTEM_INSTRUCTION_TYPES: ValidInstructionTypes[] = [

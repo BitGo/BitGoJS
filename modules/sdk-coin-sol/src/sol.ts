@@ -30,6 +30,7 @@ import {
   OvcInput,
   OvcOutput,
   ParsedTransaction,
+  PrebuildTransactionOptions,
   PresignTransactionOptions,
   PublicKey,
   RecoveryTxRequest,
@@ -43,6 +44,8 @@ import {
   MultisigType,
   multisigTypes,
   AuditDecryptedKeyParams,
+  PopulatedIntent,
+  PrebuildTransactionWithIntentOptions,
 } from '@bitgo/sdk-core';
 import { auditEddsaPrivateKey, getDerivationPath } from '@bitgo/sdk-lib-mpc';
 import { BaseNetwork, CoinFamily, coins, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
@@ -72,6 +75,27 @@ export interface ExplainTransactionOptions {
   txBase64: string;
   feeInfo: TransactionFee;
   tokenAccountRentExemptAmount?: string;
+}
+
+export interface SolPrebuildTransactionOptions extends PrebuildTransactionOptions {
+  splTokenOps?: {
+    type: 'mint' | 'burn';
+    mintAddress: string;
+    amount: string;
+    tokenName: string;
+    decimalPlaces?: number;
+    programId?: string;
+    // For mint operations
+    destinationAddress?: string;
+    // For burn operations
+    accountAddress?: string;
+    // Authority address for both mint and burn
+    authorityAddress: string;
+  }[];
+}
+
+export interface SolPopulatedIntent extends PopulatedIntent {
+  splTokenOps?: SolPrebuildTransactionOptions['splTokenOps'];
 }
 
 export interface TxInfo {
@@ -1412,5 +1436,17 @@ export class Sol extends BaseCoin {
       throw new Error('Unsupported multiSigType');
     }
     auditEddsaPrivateKey(prv, publicKey ?? '');
+  }
+
+  /** inherited doc */
+  setCoinSpecificFieldsInIntent(intent: PopulatedIntent, params: PrebuildTransactionWithIntentOptions): void {
+    // Handle Solana-specific intent fields
+    if (params.intentType === 'splTokenOps') {
+      const solParams = params as unknown as SolPrebuildTransactionOptions;
+      if (solParams.splTokenOps) {
+        // Cast intent to our extended interface and add the splTokenOps operations
+        (intent as SolPopulatedIntent).splTokenOps = solParams.splTokenOps;
+      }
+    }
   }
 }
