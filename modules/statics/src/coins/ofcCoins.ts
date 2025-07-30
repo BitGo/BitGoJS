@@ -2830,14 +2830,14 @@ export const ofcCoins = [
   ofcWorldErc20('b37a7ce1-3be3-4df1-808d-8cc9065c7ed7', 'ofcworld:usdc', 'USDC', 6, UnderlyingAsset['world:usdc']),
   tofcWorldErc20(
     'ed63bc0a-f979-4abb-953b-edb17cf9efd0',
-    'tofcworld:wld',
+    'ofctworld:wld',
     'Worldcoin Testnet',
     18,
     UnderlyingAsset['tworld:wld']
   ),
   tofcWorldErc20(
     'c377fb3f-06fb-41bb-b875-13f92fde8875',
-    'tofcworld:usdc',
+    'ofctworld:usdc',
     'USDC Testnet',
     6,
     UnderlyingAsset['tworld:usdc']
@@ -2851,7 +2851,7 @@ export const ofcCoins = [
   ),
   tofcCoredaoErc20(
     'db4127bd-7c90-47c5-a9d8-7ca0d7ee1d2c',
-    'tofccoredao:stcore',
+    'ofctcoredao:stcore',
     'Testnet stCore token',
     18,
     UnderlyingAsset['tcoredao:stcore']
