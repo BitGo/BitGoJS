@@ -2869,7 +2869,7 @@ export const solTokens = [
   solToken(
     '2a5d3340-e68a-4baa-bae8-7bcc785d757f',
     'sol:usd1',
-    'World Liberty Financial USD (USD1)',
+    'USD1',
     6,
     'USD1ttGY1N17NEEHLmELoaybftRBUSErhqYiQzvEmuB',
     'USD1ttGY1N17NEEHLmELoaybftRBUSErhqYiQzvEmuB',
