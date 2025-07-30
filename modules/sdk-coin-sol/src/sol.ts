@@ -157,6 +157,7 @@ export interface SolRecoveryOptions extends MPCRecoveryOptions {
   // destination address where token should be sent before closing the ATA address
   recoveryDestinationAtaAddress?: string;
   programId?: string; // programId of the token
+  apiKey?: string; // API key for node requests
 }
 
 export interface SolConsolidationRecoveryOptions extends MPCConsolidationRecoveryOptions {
@@ -165,6 +166,7 @@ export interface SolConsolidationRecoveryOptions extends MPCConsolidationRecover
     secretKey: string;
   };
   tokenContractAddress?: string;
+  apiKey?: string; // API key for node requests
 }
 
 const HEX_REGEX = /^[0-9a-fA-F]+$/;
@@ -534,7 +536,10 @@ export class Sol extends BaseCoin {
     });
   }
 
-  protected getPublicNodeUrl(): string {
+  protected getPublicNodeUrl(apiKey?: string): string {
+    if (apiKey) {
+      return Environments[this.bitgo.getEnv()].solAlchemyNodeUrl + `/${apiKey}`;
+    }
     return Environments[this.bitgo.getEnv()].solNodeUrl;
   }
 
@@ -542,8 +547,11 @@ export class Sol extends BaseCoin {
    * Make a request to one of the public SOL nodes available
    * @param params.payload
    */
-  protected async getDataFromNode(params: { payload?: Record<string, unknown> }): Promise<request.Response> {
-    const nodeUrl = this.getPublicNodeUrl();
+  protected async getDataFromNode(
+    params: { payload?: Record<string, unknown> },
+    apiKey?: string
+  ): Promise<request.Response> {
+    const nodeUrl = this.getPublicNodeUrl(apiKey);
     try {
       return await request.post(nodeUrl).send(params.payload);
     } catch (e) {
@@ -552,19 +560,22 @@ export class Sol extends BaseCoin {
     throw new Error(`Unable to call endpoint: '/' from node: ${nodeUrl}`);
   }
 
-  protected async getBlockhash(): Promise<string> {
-    const response = await this.getDataFromNode({
-      payload: {
-        id: '1',
-        jsonrpc: '2.0',
-        method: 'getLatestBlockhash',
-        params: [
-          {
-            commitment: 'finalized',
-          },
-        ],
+  protected async getBlockhash(apiKey?: string): Promise<string> {
+    const response = await this.getDataFromNode(
+      {
+        payload: {
+          id: '1',
+          jsonrpc: '2.0',
+          method: 'getLatestBlockhash',
+          params: [
+            {
+              commitment: 'finalized',
+            },
+          ],
+        },
       },
-    });
+      apiKey
+    );
     if (response.status !== 200) {
       throw new Error('Account not found');
     }
@@ -572,20 +583,23 @@ export class Sol extends BaseCoin {
     return response.body.result.value.blockhash;
   }
 
-  protected async getFeeForMessage(message: string): Promise<number> {
-    const response = await this.getDataFromNode({
-      payload: {
-        id: '1',
-        jsonrpc: '2.0',
-        method: 'getFeeForMessage',
-        params: [
-          message,
-          {
-            commitment: 'finalized',
-          },
-        ],
+  protected async getFeeForMessage(message: string, apiKey?: string): Promise<number> {
+    const response = await this.getDataFromNode(
+      {
+        payload: {
+          id: '1',
+          jsonrpc: '2.0',
+          method: 'getFeeForMessage',
+          params: [
+            message,
+            {
+              commitment: 'finalized',
+            },
+          ],
+        },
       },
-    });
+      apiKey
+    );
     if (response.status !== 200) {
       throw new Error('Account not found');
     }
@@ -593,15 +607,18 @@ export class Sol extends BaseCoin {
     return response.body.result.value;
   }
 
-  protected async getRentExemptAmount(): Promise<number> {
-    const response = await this.getDataFromNode({
-      payload: {
-        jsonrpc: '2.0',
-        id: '1',
-        method: 'getMinimumBalanceForRentExemption',
-        params: [165],
+  protected async getRentExemptAmount(apiKey?: string): Promise<number> {
+    const response = await this.getDataFromNode(
+      {
+        payload: {
+          jsonrpc: '2.0',
+          id: '1',
+          method: 'getMinimumBalanceForRentExemption',
+          params: [165],
+        },
       },
-    });
+      apiKey
+    );
     if (response.status !== 200 || response.error) {
       throw new Error(JSON.stringify(response.error));
     }
@@ -609,35 +626,41 @@ export class Sol extends BaseCoin {
     return response.body.result;
   }
 
-  protected async getAccountBalance(pubKey: string): Promise<number> {
-    const response = await this.getDataFromNode({
-      payload: {
-        id: '1',
-        jsonrpc: '2.0',
-        method: 'getBalance',
-        params: [pubKey],
+  protected async getAccountBalance(pubKey: string, apiKey?: string): Promise<number> {
+    const response = await this.getDataFromNode(
+      {
+        payload: {
+          id: '1',
+          jsonrpc: '2.0',
+          method: 'getBalance',
+          params: [pubKey],
+        },
       },
-    });
+      apiKey
+    );
     if (response.status !== 200) {
       throw new Error('Account not found');
     }
     return response.body.result.value;
   }
 
-  protected async getAccountInfo(pubKey: string): Promise<SolDurableNonceFromNode> {
-    const response = await this.getDataFromNode({
-      payload: {
-        id: '1',
-        jsonrpc: '2.0',
-        method: 'getAccountInfo',
-        params: [
-          pubKey,
-          {
-            encoding: 'jsonParsed',
-          },
-        ],
+  protected async getAccountInfo(pubKey: string, apiKey?: string): Promise<SolDurableNonceFromNode> {
+    const response = await this.getDataFromNode(
+      {
+        payload: {
+          id: '1',
+          jsonrpc: '2.0',
+          method: 'getAccountInfo',
+          params: [
+            pubKey,
+            {
+              encoding: 'jsonParsed',
+            },
+          ],
+        },
       },
-    });
+      apiKey
+    );
     if (response.status !== 200) {
       throw new Error('Account not found');
     }
@@ -647,26 +670,29 @@ export class Sol extends BaseCoin {
     };
   }
 
-  protected async getTokenAccountsByOwner(pubKey = '', programId = ''): Promise<[] | TokenAccount[]> {
-    const response = await this.getDataFromNode({
-      payload: {
-        id: '1',
-        jsonrpc: '2.0',
-        method: 'getTokenAccountsByOwner',
-        params: [
-          pubKey,
-          {
-            programId:
-              programId.toString().toLowerCase() === TOKEN_2022_PROGRAM_ID.toString().toLowerCase()
-                ? TOKEN_2022_PROGRAM_ID.toString()
-                : TOKEN_PROGRAM_ID.toString(),
-          },
-          {
-            encoding: 'jsonParsed',
-          },
-        ],
+  protected async getTokenAccountsByOwner(pubKey = '', programId = '', apiKey?: string): Promise<[] | TokenAccount[]> {
+    const response = await this.getDataFromNode(
+      {
+        payload: {
+          id: '1',
+          jsonrpc: '2.0',
+          method: 'getTokenAccountsByOwner',
+          params: [
+            pubKey,
+            {
+              programId:
+                programId.toString().toLowerCase() === TOKEN_2022_PROGRAM_ID.toString().toLowerCase()
+                  ? TOKEN_2022_PROGRAM_ID.toString()
+                  : TOKEN_PROGRAM_ID.toString(),
+            },
+            {
+              encoding: 'jsonParsed',
+            },
+          ],
+        },
       },
-    });
+      apiKey
+    );
     if (response.status !== 200) {
       throw new Error('Account not found');
     }
@@ -682,20 +708,23 @@ export class Sol extends BaseCoin {
     return [];
   }
 
-  protected async getTokenAccountInfo(pubKey: string): Promise<TokenAccount> {
-    const response = await this.getDataFromNode({
-      payload: {
-        id: '1',
-        jsonrpc: '2.0',
-        method: 'getAccountInfo',
-        params: [
-          pubKey,
-          {
-            encoding: 'jsonParsed',
-          },
-        ],
+  protected async getTokenAccountInfo(pubKey: string, apiKey?: string): Promise<TokenAccount> {
+    const response = await this.getDataFromNode(
+      {
+        payload: {
+          id: '1',
+          jsonrpc: '2.0',
+          method: 'getAccountInfo',
+          params: [
+            pubKey,
+            {
+              encoding: 'jsonParsed',
+            },
+          ],
+        },
       },
-    });
+      apiKey
+    );
     if (response.status !== 200) {
       throw new Error('Account not found');
     }
@@ -791,13 +820,13 @@ export class Sol extends BaseCoin {
     const accountId = MPC.deriveUnhardened(bitgoKey, currPath).slice(0, 64);
     const bs58EncodedPublicKey = new SolKeyPair({ pub: accountId }).getAddress();
 
-    balance = await this.getAccountBalance(bs58EncodedPublicKey);
+    balance = await this.getAccountBalance(bs58EncodedPublicKey, params.apiKey);
 
     const factory = this.getBuilder();
     const walletCoin = this.getChain();
 
     let txBuilder;
-    let blockhash = await this.getBlockhash();
+    let blockhash = await this.getBlockhash(params.apiKey);
     let rentExemptAmount;
     let authority = '';
     let totalFee = new BigNumber(0);
@@ -805,7 +834,7 @@ export class Sol extends BaseCoin {
 
     // check for possible token recovery, recover the token provide by user
     if (params.tokenContractAddress) {
-      const tokenAccounts = await this.getTokenAccountsByOwner(bs58EncodedPublicKey, params.programId);
+      const tokenAccounts = await this.getTokenAccountsByOwner(bs58EncodedPublicKey, params.programId, params.apiKey);
       if (tokenAccounts.length !== 0) {
         // there exists token accounts on the given address, but need to check certain conditions:
         // 1. if there is a recoverable balance
@@ -826,7 +855,7 @@ export class Sol extends BaseCoin {
         }
 
         if (recovereableTokenAccounts.length !== 0) {
-          rentExemptAmount = await this.getRentExemptAmount();
+          rentExemptAmount = await this.getRentExemptAmount(params.apiKey);
 
           txBuilder = factory
             .getTokenTransferBuilder()
@@ -838,7 +867,8 @@ export class Sol extends BaseCoin {
           // need to get all token accounts of the recipient address and need to create them if they do not exist
           const recipientTokenAccounts = await this.getTokenAccountsByOwner(
             params.recoveryDestination,
-            params.programId
+            params.programId,
+            params.apiKey
           );
 
           for (const tokenAccount of recovereableTokenAccounts) {
@@ -894,7 +924,7 @@ export class Sol extends BaseCoin {
     }
 
     if (params.durableNonce) {
-      const durableNonceInfo = await this.getAccountInfo(params.durableNonce.publicKey);
+      const durableNonceInfo = await this.getAccountInfo(params.durableNonce.publicKey, params.apiKey);
       blockhash = durableNonceInfo.blockhash;
       authority = durableNonceInfo.authority;
 
@@ -908,7 +938,7 @@ export class Sol extends BaseCoin {
     const unsignedTransactionWithoutFee = (await txBuilder.build()) as Transaction;
     const serializedMessage = unsignedTransactionWithoutFee.solTransaction.serializeMessage().toString('base64');
 
-    const baseFee = await this.getFeeForMessage(serializedMessage);
+    const baseFee = await this.getFeeForMessage(serializedMessage, params.apiKey);
     const feePerSignature = params.durableNonce ? baseFee / 2 : baseFee;
     totalFee = totalFee.plus(new BigNumber(baseFee));
     totalFeeForTokenRecovery = totalFeeForTokenRecovery.plus(new BigNumber(baseFee));
@@ -1118,7 +1148,7 @@ export class Sol extends BaseCoin {
         throw new Error('invalid recoveryDestinationAtaAddress');
       }
 
-      blockhash = await this.getBlockhash();
+      blockhash = await this.getBlockhash(params.apiKey);
 
       txBuilder = factory
         .getTokenTransferBuilder()
@@ -1128,7 +1158,7 @@ export class Sol extends BaseCoin {
         .feePayer(bs58EncodedPublicKey);
       const unsignedTransaction = (await txBuilder.build()) as Transaction;
       const serializedMessage = unsignedTransaction.solTransaction.serializeMessage().toString('base64');
-      const feePerSignature = await this.getFeeForMessage(serializedMessage);
+      const feePerSignature = await this.getFeeForMessage(serializedMessage, params.apiKey);
       const baseFee = params.durableNonce ? feePerSignature * 2 : feePerSignature;
       const totalFee = new BigNumber(baseFee);
       if (totalFee.gt(accountBalance)) {
@@ -1159,7 +1189,7 @@ export class Sol extends BaseCoin {
 
     // after recovering the token amount, attempting to close the ATA address
     if (params.closeAtaAddress) {
-      blockhash = await this.getBlockhash();
+      blockhash = await this.getBlockhash(params.apiKey);
 
       const ataCloseBuilder = () => {
         const txBuilder = factory.getCloseAtaInitializationBuilder();
@@ -1316,6 +1346,7 @@ export class Sol extends BaseCoin {
           secretKey: params.durableNonces.secretKey,
         },
         tokenContractAddress: params.tokenContractAddress,
+        apiKey: params.apiKey,
       };
 
       let recoveryTransaction;
