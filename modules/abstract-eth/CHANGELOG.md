@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [24.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.8.2...@bitgo/abstract-eth@24.9.0) (2025-07-30)
+
+### Bug Fixes
+
+- updating recovery tx building for EIP-155 txs ([acd7712](https://github.com/BitGo/BitGoJS/commit/acd77123ba48f06a96ff4d3214343ac62e809006))
+
+### Features
+
+- **root:** enable passing apiKey for recovery on eth likes ([dc8d3c2](https://github.com/BitGo/BitGoJS/commit/dc8d3c201b5ab82b05e1db69f310a0860e21bf78))
+
 ## [24.8.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.8.0...@bitgo/abstract-eth@24.8.2) (2025-07-25)
 
 **Note:** Version bump only for package @bitgo/abstract-eth

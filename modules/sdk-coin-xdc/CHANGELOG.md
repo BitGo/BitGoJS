@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.3.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xdc@1.3.9...@bitgo/sdk-coin-xdc@1.3.10) (2025-07-30)
+
+### Bug Fixes
+
+- updating recovery tx building for EIP-155 txs ([acd7712](https://github.com/BitGo/BitGoJS/commit/acd77123ba48f06a96ff4d3214343ac62e809006))
+
 ## [1.3.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xdc@1.3.7...@bitgo/sdk-coin-xdc@1.3.9) (2025-07-25)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-xdc

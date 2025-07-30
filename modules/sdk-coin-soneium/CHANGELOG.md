@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-soneium@1.4.4...@bitgo/sdk-coin-soneium@1.5.0) (2025-07-30)
+
+### Bug Fixes
+
+- **sdk-coin-soneium:** update recoveryBlockchainExplorerQuery ([fcb7ab4](https://github.com/BitGo/BitGoJS/commit/fcb7ab47e04e9164bf33a82aa4ab8ac7d6db30fa))
+
+### Features
+
+- **root:** enable passing apiKey for recovery on eth likes ([dc8d3c2](https://github.com/BitGo/BitGoJS/commit/dc8d3c201b5ab82b05e1db69f310a0860e21bf78))
+
 ## [1.4.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-soneium@1.4.2...@bitgo/sdk-coin-soneium@1.4.4) (2025-07-25)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-soneium

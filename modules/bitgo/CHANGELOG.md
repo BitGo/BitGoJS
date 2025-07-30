@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [48.8.0](https://github.com/BitGo/BitGoJS/compare/bitgo@48.7.0...bitgo@48.8.0) (2025-07-30)
+
+### Bug Fixes
+
+- **bitgo:** fix issue with vettoken register ([2413737](https://github.com/BitGo/BitGoJS/commit/24137374e57f9c623ec07270d3d7b50c28e18b70))
+- updating recovery tx building for EIP-155 txs ([acd7712](https://github.com/BitGo/BitGoJS/commit/acd77123ba48f06a96ff4d3214343ac62e809006))
+
+### Features
+
+- add cosmos token to coinFactory ([5245c50](https://github.com/BitGo/BitGoJS/commit/5245c50c637a8906c8f9be0d91e3aaae2d267e3b))
+- modify bulkCreate/Accept share error messages ([7bcd592](https://github.com/BitGo/BitGoJS/commit/7bcd592b9ffcfbbda1611ef9a13591ace31994d0))
+- **root:** align package versions for cosmos ([865b287](https://github.com/BitGo/BitGoJS/commit/865b287431ae743c99faaa50318857dff54dfa8b))
+- **root:** enable passing apiKey for recovery on eth likes ([dc8d3c2](https://github.com/BitGo/BitGoJS/commit/dc8d3c201b5ab82b05e1db69f310a0860e21bf78))
+- **sdk-coin-cosmos:** add cosmos shared coin functionalities ([a170bad](https://github.com/BitGo/BitGoJS/commit/a170bad860723b844ee12e3f257ea93df1831ee9))
+- **sdk-core:** enable hardcoded gpg keys for signature verification ([76eaa01](https://github.com/BitGo/BitGoJS/commit/76eaa019d199ea68511e1ac0960e335e32c39121))
+
 # [48.7.0](https://github.com/BitGo/BitGoJS/compare/bitgo@48.5.0...bitgo@48.7.0) (2025-07-25)
 
 ### Features

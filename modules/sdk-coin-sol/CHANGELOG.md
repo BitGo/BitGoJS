@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.13.3...@bitgo/sdk-coin-sol@4.14.0) (2025-07-30)
+
+### Features
+
+- add sol mint and burn instruction functions ([28dcc38](https://github.com/BitGo/BitGoJS/commit/28dcc38792a4aa5fa3aaae6e26faa82d04be9f2d))
+
 ## [4.13.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.13.1...@bitgo/sdk-coin-sol@4.13.3) (2025-07-25)
 
 ### Bug Fixes

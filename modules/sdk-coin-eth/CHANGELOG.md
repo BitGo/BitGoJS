@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [24.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@24.7.4...@bitgo/sdk-coin-eth@24.8.0) (2025-07-30)
+
+### Features
+
+- **root:** enable passing apiKey for recovery on eth likes ([dc8d3c2](https://github.com/BitGo/BitGoJS/commit/dc8d3c201b5ab82b05e1db69f310a0860e21bf78))
+
 ## [24.7.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@24.7.2...@bitgo/sdk-coin-eth@24.7.4) (2025-07-25)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-eth
