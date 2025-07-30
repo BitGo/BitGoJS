@@ -223,6 +223,9 @@ export class CosmosCoin<CustomMessage = never> extends BaseCoin {
 
     if (publicKey) {
       txnBuilder.publicKey(publicKey);
+    } else {
+      publicKey = MPC.deriveUnhardened(params.bitgoKey || '', ROOT_PATH).slice(0, 66);
+      txnBuilder.publicKey(publicKey);
     }
 
     const unsignedTransaction = (await txnBuilder.build()) as CosmosTransaction<CustomMessage>;
