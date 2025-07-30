@@ -41,7 +41,9 @@ async function transferIndividualOrdinal() {
 
   // Build the transaction to send the ordinal
   // Note that you can configure the structure of the transaction by passing in additional parameters
-  const buildResult = await inscriptionBuilder.prepareTransfer(satPoint, recipient, feeRateSatKb, {});
+  const buildResult = await inscriptionBuilder.prepareTransfer(satPoint, recipient, feeRateSatKb, {
+    forceFeeFromOtherUnspent: true,
+  });
 
   const sent = await inscriptionBuilder.signAndSendTransfer(walletPassphrase, buildResult);
   console.log('sent ' + JSON.stringify(sent, null, 2));
