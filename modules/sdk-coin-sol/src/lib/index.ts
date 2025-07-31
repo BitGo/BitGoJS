@@ -18,5 +18,7 @@ export { TransactionBuilderFactory } from './transactionBuilderFactory';
 export { TransferBuilder } from './transferBuilder';
 export { TransferBuilderV2 } from './transferBuilderV2';
 export { WalletInitializationBuilder } from './walletInitializationBuilder';
+export { MintTo, Burn, MintToParams, BurnParams } from './iface';
+export { InstructionBuilderTypes } from './constants';
 export { Interface, Utils };
 export { MessageBuilderFactory } from './messages';

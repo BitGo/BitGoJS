@@ -51,7 +51,7 @@ import { auditEddsaPrivateKey, getDerivationPath } from '@bitgo/sdk-lib-mpc';
 import { BaseNetwork, CoinFamily, coins, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import * as _ from 'lodash';
 import * as request from 'superagent';
-import { KeyPair as SolKeyPair, Transaction, TransactionBuilder, TransactionBuilderFactory } from './lib';
+import { KeyPair as SolKeyPair, Transaction, TransactionBuilder, TransactionBuilderFactory, MintTo, Burn } from './lib';
 import {
   getAssociatedTokenAccountAddress,
   getSolTokenFromAddress,
@@ -78,20 +78,7 @@ export interface ExplainTransactionOptions {
 }
 
 export interface SolPrebuildTransactionOptions extends PrebuildTransactionOptions {
-  splTokenOps?: {
-    type: 'mint' | 'burn';
-    mintAddress: string;
-    amount: string;
-    tokenName: string;
-    decimalPlaces?: number;
-    programId?: string;
-    // For mint operations
-    destinationAddress?: string;
-    // For burn operations
-    accountAddress?: string;
-    // Authority address for both mint and burn
-    authorityAddress: string;
-  }[];
+  splTokenOps?: (MintTo | Burn)[];
 }
 
 export interface SolPopulatedIntent extends PopulatedIntent {

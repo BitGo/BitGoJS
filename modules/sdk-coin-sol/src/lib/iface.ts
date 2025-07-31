@@ -40,8 +40,7 @@ export type InstructionParams =
   | StakingAuthorize
   | StakingDelegate
   | MintTo
-  | Burn
-  | SplTokenOps;
+  | Burn;
 
 export interface Memo {
   type: InstructionBuilderTypes.Memo;
@@ -81,52 +80,34 @@ export interface TokenTransfer {
   };
 }
 
-export interface MintTo {
-  type: InstructionBuilderTypes.MintTo;
-  params: {
-    mintAddress: string;
-    destinationAddress: string;
-    authorityAddress: string;
-    amount: string;
-    tokenName: string;
-    decimalPlaces?: number;
-    programId?: string;
-  };
-}
-
-export interface Burn {
-  type: InstructionBuilderTypes.Burn;
-  params: {
-    mintAddress: string;
-    accountAddress: string;
-    authorityAddress: string;
-    amount: string;
-    tokenName: string;
-    decimalPlaces?: number;
-    programId?: string;
-  };
-}
-
-export interface SplTokenOperation {
-  type: 'mint' | 'burn';
+export interface MintToParams {
   mintAddress?: string;
+  destinationAddress: string;
+  authorityAddress: string;
   amount: string;
   tokenName?: string;
   decimalPlaces?: number;
   programId?: string;
-  // For mint operations
-  destinationAddress?: string;
-  // For burn operations
-  accountAddress?: string;
-  // Authority address for both mint and burn
-  authorityAddress: string;
 }
 
-export interface SplTokenOps {
-  type: InstructionBuilderTypes.SplTokenOps;
-  params: {
-    operations: SplTokenOperation[];
-  };
+export interface BurnParams {
+  mintAddress?: string;
+  accountAddress: string;
+  authorityAddress: string;
+  amount: string;
+  tokenName?: string;
+  decimalPlaces?: number;
+  programId?: string;
+}
+
+export interface MintTo {
+  type: InstructionBuilderTypes.MintTo;
+  params: MintToParams;
+}
+
+export interface Burn {
+  type: InstructionBuilderTypes.Burn;
+  params: BurnParams;
 }
 
 export interface StakingActivate {
@@ -207,8 +188,7 @@ export type ValidInstructionTypes =
   | 'TokenTransfer'
   | 'SetPriorityFee'
   | 'MintTo'
-  | 'Burn'
-  | 'SplTokenOps';
+  | 'Burn';
 
 export type StakingAuthorizeParams = {
   stakingAddress: string;

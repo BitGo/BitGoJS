@@ -3,21 +3,16 @@ import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
 import { getSolTokenFromTokenName, isValidAmount, validateAddress, validateMintAddress } from './utils';
 import { InstructionBuilderTypes } from './constants';
-import { MintTo, Burn, SetPriorityFee, SplTokenOperation } from './iface';
+import { MintTo, Burn, SetPriorityFee, MintToParams, BurnParams } from './iface';
 import assert from 'assert';
 import { TransactionBuilder } from './transactionBuilder';
-
-/**
- * Valid SPL token operation types
- */
-const VALID_OPERATION_TYPES = ['mint', 'burn'] as const;
 
 /**
  * Transaction builder for SPL token mint and burn operations.
  * Supports mixed operations in a single transaction.
  */
 export class SplTokenOpsBuilder extends TransactionBuilder {
-  private _operations: SplTokenOperation[] = [];
+  private _operations: (MintTo | Burn)[] = [];
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -30,22 +25,30 @@ export class SplTokenOpsBuilder extends TransactionBuilder {
   /**
    * Add a mint operation to the transaction
    *
-   * @param operation - The mint operation parameters
+   * @param params - The mint operation parameters
    * @returns This transaction builder
    */
-  mint(operation: Omit<SplTokenOperation, 'type'>): this {
-    this.addOperation({ ...operation, type: 'mint' });
+  mint(params: MintToParams): this {
+    const operation: MintTo = {
+      type: InstructionBuilderTypes.MintTo,
+      params,
+    };
+    this.addOperation(operation);
     return this;
   }
 
   /**
    * Add a burn operation to the transaction
    *
-   * @param operation - The burn operation parameters
+   * @param params - The burn operation parameters
    * @returns This transaction builder
    */
-  burn(operation: Omit<SplTokenOperation, 'type'>): this {
-    this.addOperation({ ...operation, type: 'burn' });
+  burn(params: BurnParams): this {
+    const operation: Burn = {
+      type: InstructionBuilderTypes.Burn,
+      params,
+    };
+    this.addOperation(operation);
     return this;
   }
 
@@ -55,7 +58,7 @@ export class SplTokenOpsBuilder extends TransactionBuilder {
    * @param operation - The operation parameters
    * @returns This transaction builder
    */
-  addOperation(operation: SplTokenOperation): this {
+  addOperation(operation: MintTo | Burn): this {
     this.validateOperation(operation);
     this._operations.push(operation);
     return this;
@@ -65,7 +68,7 @@ export class SplTokenOpsBuilder extends TransactionBuilder {
    * Validates an SPL token operation
    * @param operation - The operation to validate
    */
-  private validateOperation(operation: SplTokenOperation): void {
+  private validateOperation(operation: MintTo | Burn): void {
     this.validateOperationType(operation.type);
     this.validateCommonFields(operation);
     this.validateOperationSpecificFields(operation);
@@ -75,79 +78,79 @@ export class SplTokenOpsBuilder extends TransactionBuilder {
   /**
    * Validates the operation type
    */
-  private validateOperationType(type: string): void {
-    if (!type || !(VALID_OPERATION_TYPES as readonly string[]).includes(type)) {
-      throw new BuildTransactionError(`Operation type must be one of: ${VALID_OPERATION_TYPES.join(', ')}`);
+  private validateOperationType(type: InstructionBuilderTypes): void {
+    const validTypes = [InstructionBuilderTypes.MintTo, InstructionBuilderTypes.Burn];
+    if (!type || !validTypes.includes(type)) {
+      throw new BuildTransactionError(`Operation type must be one of: ${validTypes.join(', ')}`);
     }
   }
 
   /**
    * Validates fields common to all operations
    */
-  private validateCommonFields(operation: SplTokenOperation): void {
-    if (!operation.amount || !isValidAmount(operation.amount)) {
-      throw new BuildTransactionError('Invalid amount: ' + operation.amount);
+  private validateCommonFields(operation: MintTo | Burn): void {
+    const params = operation.params;
+    if (!params.amount || !isValidAmount(params.amount)) {
+      throw new BuildTransactionError('Invalid amount: ' + params.amount);
     }
 
-    if (!operation.authorityAddress) {
+    if (!params.authorityAddress) {
       throw new BuildTransactionError('Operation requires authorityAddress');
     }
-    validateAddress(operation.authorityAddress, 'authorityAddress');
+    validateAddress(params.authorityAddress, 'authorityAddress');
   }
 
   /**
    * Validates operation-specific fields based on type
    */
-  private validateOperationSpecificFields(operation: SplTokenOperation): void {
-    switch (operation.type) {
-      case 'mint':
-        this.validateMintOperation(operation);
-        break;
-      case 'burn':
-        this.validateBurnOperation(operation);
-        break;
-      default:
-        throw new BuildTransactionError(`Unsupported operation type: ${operation.type}`);
+  private validateOperationSpecificFields(operation: MintTo | Burn): void {
+    if (operation.type === InstructionBuilderTypes.MintTo) {
+      this.validateMintOperation(operation);
+    } else if (operation.type === InstructionBuilderTypes.Burn) {
+      this.validateBurnOperation(operation);
+    } else {
+      throw new BuildTransactionError(`Unsupported operation type: ${String((operation as { type: string }).type)}`);
     }
   }
 
   /**
    * Validates mint-specific fields
    */
-  private validateMintOperation(operation: SplTokenOperation): void {
-    if (!operation.destinationAddress) {
+  private validateMintOperation(operation: MintTo): void {
+    if (!operation.params.destinationAddress) {
       throw new BuildTransactionError('Mint operation requires destinationAddress');
     }
-    validateAddress(operation.destinationAddress, 'destinationAddress');
+    validateAddress(operation.params.destinationAddress, 'destinationAddress');
   }
 
   /**
    * Validates burn-specific fields
    */
-  private validateBurnOperation(operation: SplTokenOperation): void {
-    if (!operation.accountAddress) {
+  private validateBurnOperation(operation: Burn): void {
+    if (!operation.params.accountAddress) {
       throw new BuildTransactionError('Burn operation requires accountAddress');
     }
-    validateAddress(operation.accountAddress, 'accountAddress');
+    validateAddress(operation.params.accountAddress, 'accountAddress');
   }
 
   /**
    * Validates token information (name or mint address)
    */
-  private validateTokenInformation(operation: SplTokenOperation): void {
-    if (!operation.tokenName && !operation.mintAddress) {
+  private validateTokenInformation(operation: MintTo | Burn): void {
+    const params = operation.params;
+    if (!params.tokenName && !params.mintAddress) {
       throw new BuildTransactionError('Either tokenName or mintAddress must be provided');
     }
 
-    if (operation.tokenName) {
-      const token = getSolTokenFromTokenName(operation.tokenName);
-      if (!token && !operation.mintAddress) {
-        throw new BuildTransactionError('Invalid token name or missing mintAddress: ' + operation.tokenName);
+    if (params.tokenName) {
+      const token = getSolTokenFromTokenName(params.tokenName);
+      if (!token && !params.mintAddress) {
+        throw new BuildTransactionError('Invalid token name or missing mintAddress: ' + params.tokenName);
       }
     }
 
-    if (operation.mintAddress) {
-      validateMintAddress(operation.mintAddress);
+    if (params.mintAddress) {
+      validateMintAddress(params.mintAddress);
     }
   }
 
@@ -156,27 +159,9 @@ export class SplTokenOpsBuilder extends TransactionBuilder {
 
     for (const instruction of this._instructionsData) {
       if (instruction.type === InstructionBuilderTypes.MintTo) {
-        const mintInstruction: MintTo = instruction;
-        this.addOperation({
-          type: 'mint',
-          mintAddress: mintInstruction.params.mintAddress,
-          destinationAddress: mintInstruction.params.destinationAddress,
-          authorityAddress: mintInstruction.params.authorityAddress,
-          amount: mintInstruction.params.amount,
-          tokenName: mintInstruction.params.tokenName,
-          programId: mintInstruction.params.programId,
-        });
+        this.addOperation(instruction as MintTo);
       } else if (instruction.type === InstructionBuilderTypes.Burn) {
-        const burnInstruction: Burn = instruction;
-        this.addOperation({
-          type: 'burn',
-          mintAddress: burnInstruction.params.mintAddress,
-          accountAddress: burnInstruction.params.accountAddress,
-          authorityAddress: burnInstruction.params.authorityAddress,
-          amount: burnInstruction.params.amount,
-          tokenName: burnInstruction.params.tokenName,
-          programId: burnInstruction.params.programId,
-        });
+        this.addOperation(instruction as Burn);
       }
     }
   }
@@ -185,7 +170,7 @@ export class SplTokenOpsBuilder extends TransactionBuilder {
   protected async buildImplementation(): Promise<Transaction> {
     assert(this._operations.length > 0, 'At least one SPL token operation must be specified');
 
-    const instructions = this._operations.map((operation) => this.createInstructionFromOperation(operation));
+    const instructions = this._operations.map((operation) => this.processOperation(operation));
 
     // Add priority fee instruction if needed
     if (this._priorityFee && this._priorityFee > 0) {
@@ -202,37 +187,38 @@ export class SplTokenOpsBuilder extends TransactionBuilder {
   }
 
   /**
-   * Creates an instruction from an operation
+   * Processes an operation to ensure it has complete token information
    */
-  private createInstructionFromOperation(operation: SplTokenOperation): MintTo | Burn {
+  private processOperation(operation: MintTo | Burn): MintTo | Burn {
     const tokenInfo = this.resolveTokenInfo(operation);
-
-    switch (operation.type) {
-      case 'mint':
-        return this.createMintInstruction(operation, tokenInfo);
-      case 'burn':
-        return this.createBurnInstruction(operation, tokenInfo);
+    const operationType = operation.type;
+    switch (operationType) {
+      case InstructionBuilderTypes.MintTo:
+        return this.enrichMintInstruction(operation, tokenInfo);
+      case InstructionBuilderTypes.Burn:
+        return this.enrichBurnInstruction(operation, tokenInfo);
       default:
-        throw new BuildTransactionError(`Unsupported operation type: ${operation.type}`);
+        throw new BuildTransactionError(`Unsupported operation type: ${operationType}`);
     }
   }
 
   /**
    * Resolves token information from operation
    */
-  private resolveTokenInfo(operation: SplTokenOperation): {
+  private resolveTokenInfo(operation: MintTo | Burn): {
     mintAddress: string;
     tokenName: string;
     programId?: string;
   } {
-    if (operation.mintAddress) {
+    const params = operation.params;
+    if (params.mintAddress) {
       return {
-        mintAddress: operation.mintAddress,
-        tokenName: operation.tokenName || operation.mintAddress,
-        programId: operation.programId,
+        mintAddress: params.mintAddress,
+        tokenName: params.tokenName || params.mintAddress,
+        programId: params.programId,
       };
-    } else if (operation.tokenName) {
-      const token = getSolTokenFromTokenName(operation.tokenName);
+    } else if (params.tokenName) {
+      const token = getSolTokenFromTokenName(params.tokenName);
       if (token) {
         return {
           mintAddress: token.tokenAddress,
@@ -240,7 +226,7 @@ export class SplTokenOpsBuilder extends TransactionBuilder {
           programId: token.programId,
         };
       } else {
-        throw new BuildTransactionError('Invalid token name: ' + operation.tokenName);
+        throw new BuildTransactionError('Invalid token name: ' + params.tokenName);
       }
     } else {
       throw new BuildTransactionError('Either tokenName or mintAddress must be provided');
@@ -248,24 +234,17 @@ export class SplTokenOpsBuilder extends TransactionBuilder {
   }
 
   /**
-   * Creates a mint instruction
+   * Enriches a mint instruction with complete token information
    */
-  private createMintInstruction(
-    operation: SplTokenOperation,
+  private enrichMintInstruction(
+    operation: MintTo,
     tokenInfo: { mintAddress: string; tokenName: string; programId?: string }
   ): MintTo {
-    if (!operation.destinationAddress) {
-      throw new BuildTransactionError('Mint operation requires destinationAddress');
-    }
-
     const params = {
+      ...operation.params,
       mintAddress: tokenInfo.mintAddress,
-      destinationAddress: operation.destinationAddress,
-      authorityAddress: operation.authorityAddress,
-      amount: operation.amount,
       tokenName: tokenInfo.tokenName,
-      programId: tokenInfo.programId,
-      ...(operation.decimalPlaces !== undefined && { decimalPlaces: operation.decimalPlaces }),
+      programId: tokenInfo.programId || operation.params.programId,
     };
 
     return {
@@ -275,26 +254,22 @@ export class SplTokenOpsBuilder extends TransactionBuilder {
   }
 
   /**
-   * Creates a burn instruction
+   * Enriches a burn instruction with complete token information
    */
-  private createBurnInstruction(
-    operation: SplTokenOperation,
+  private enrichBurnInstruction(
+    operation: Burn,
     tokenInfo: { mintAddress: string; tokenName: string; programId?: string }
   ): Burn {
-    if (!operation.accountAddress) {
-      throw new BuildTransactionError('Burn operation requires accountAddress');
-    }
+    const params = {
+      ...operation.params,
+      mintAddress: tokenInfo.mintAddress,
+      tokenName: tokenInfo.tokenName,
+      programId: tokenInfo.programId || operation.params.programId,
+    };
+
     return {
       type: InstructionBuilderTypes.Burn,
-      params: {
-        mintAddress: tokenInfo.mintAddress,
-        accountAddress: operation.accountAddress,
-        authorityAddress: operation.authorityAddress,
-        amount: operation.amount,
-        tokenName: tokenInfo.tokenName,
-        programId: tokenInfo.programId,
-        decimalPlaces: operation.decimalPlaces,
-      },
+      params,
     };
   }
 }

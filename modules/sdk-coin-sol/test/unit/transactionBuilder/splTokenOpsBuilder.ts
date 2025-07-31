@@ -1,5 +1,5 @@
 import { getBuilderFactory } from '../getBuilderFactory';
-import { KeyPair, Utils } from '../../../src';
+import { KeyPair, Utils, InstructionBuilderTypes } from '../../../src';
 import should from 'should';
 import * as testData from '../../resources/sol';
 import { TransactionType } from '@bitgo/sdk-core';
@@ -144,21 +144,25 @@ describe('Sol SPL Token Ops Builder', () => {
       txBuilder.sender(authAccount.pub);
 
       txBuilder.addOperation({
-        type: 'mint',
-        mintAddress: mintUSDC,
-        destinationAddress: otherAccount.pub,
-        authorityAddress: authAccount.pub,
-        amount: amount,
-        tokenName: nameUSDC,
+        type: InstructionBuilderTypes.MintTo,
+        params: {
+          mintAddress: mintUSDC,
+          destinationAddress: otherAccount.pub,
+          authorityAddress: authAccount.pub,
+          amount: amount,
+          tokenName: nameUSDC,
+        },
       });
 
       txBuilder.addOperation({
-        type: 'burn',
-        mintAddress: mintUSDC,
-        accountAddress: authAccount.pub,
-        authorityAddress: authAccount.pub,
-        amount: '250000',
-        tokenName: nameUSDC,
+        type: InstructionBuilderTypes.Burn,
+        params: {
+          mintAddress: mintUSDC,
+          accountAddress: authAccount.pub,
+          authorityAddress: authAccount.pub,
+          amount: '250000',
+          tokenName: nameUSDC,
+        },
       });
 
       const tx = await txBuilder.build();
@@ -270,13 +274,16 @@ describe('Sol SPL Token Ops Builder', () => {
 
       should(() =>
         txBuilder.addOperation({
-          type: 'invalid' as any,
-          mintAddress: mintUSDC,
-          destinationAddress: otherAccount.pub,
-          authorityAddress: authAccount.pub,
-          amount: amount,
-        })
-      ).throwError('Operation type must be one of: mint, burn');
+          type: 'invalid' as unknown as InstructionBuilderTypes,
+          params: {
+            mintAddress: mintUSDC,
+            destinationAddress: otherAccount.pub,
+            authorityAddress: authAccount.pub,
+            amount: amount,
+            tokenName: nameUSDC,
+          },
+        } as unknown as any)
+      ).throwError('Operation type must be one of: MintTo, Burn');
     });
 
     it('should fail mint operation without destination address', () => {
