@@ -1583,6 +1583,23 @@ class SeiEvmTestnet extends Testnet implements EthereumNetwork {
   nativeCoinOperationHashPrefix = '1328';
 }
 
+class IP extends Mainnet implements EthereumNetwork {
+  name = 'Story';
+  family = CoinFamily.IP;
+  explorerUrl = 'https://www.storyscan.io/tx/';
+  accountExplorerUrl = 'https://www.storyscan.io/address/';
+  chainId = 1514;
+  nativeCoinOperationHashPrefix = '1514';
+}
+
+class IPTestnet extends Testnet implements EthereumNetwork {
+  name = 'StoryTestnet';
+  family = CoinFamily.IP;
+  explorerUrl = 'https://aeneid.explorer.story.foundation/transactions/';
+  accountExplorerUrl = 'https://aeneid.storyscan.io/address/';
+  chainId = 1315;
+  nativeCoinOperationHashPrefix = '1315';
+}
 class Somnia extends Mainnet implements EthereumNetwork {
   name = 'Somnia';
   family = CoinFamily.STT;
@@ -1792,6 +1809,7 @@ export const Networks = {
     near: Object.freeze(new Near()),
     stx: Object.freeze(new Stx()),
     stt: Object.freeze(new Somnia()),
+    ip: Object.freeze(new IP()), // Chain Name: Story
     soneium: Object.freeze(new Soneium()),
     susd: Object.freeze(new SUSD()),
     tao: Object.freeze(new Bittensor()),
@@ -1883,6 +1901,7 @@ export const Networks = {
     stx: Object.freeze(new StxTestnet()),
     stt: Object.freeze(new SomniaTestnet()),
     soneium: Object.freeze(new SoneiumTestnet()),
+    ip: Object.freeze(new IPTestnet()), // Chain Name: StoryTestnet
     sonic: Object.freeze(new SonicTestnet()),
     kaia: Object.freeze(new KaiaTestnet()),
     susd: Object.freeze(new SUSDTestnet()),

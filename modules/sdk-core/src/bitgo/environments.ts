@@ -238,6 +238,9 @@ const mainnetBase: EnvironmentTemplate = {
     lineaeth: {
       baseUrl: 'https://api.etherscan.io/v2',
     },
+    ip: {
+      baseUrl: 'https://www.storyscan.io/api/v2/', // Chain Name: Story
+    },
   },
   icpNodeUrl: 'https://ic0.app',
   worldExplorerBaseUrl: 'https://worldscan.org/',
@@ -347,6 +350,9 @@ const testnetBase: EnvironmentTemplate = {
     },
     lineaeth: {
       baseUrl: 'https://api.etherscan.io/v2',
+    },
+    ip: {
+      baseUrl: 'https://www.storyscan.io/api/v2/', // Chain Name: Story
     },
   },
   stxNodeUrl: 'https://api.testnet.hiro.so',
