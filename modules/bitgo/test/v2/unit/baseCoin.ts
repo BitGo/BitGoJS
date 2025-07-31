@@ -3,7 +3,7 @@
 //
 
 import 'should';
-import * as nock from 'nock';
+import nock from 'nock';
 
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src/bitgo';

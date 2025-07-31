@@ -2,7 +2,7 @@
  * @prettier
  */
 import 'should';
-import * as nock from 'nock';
+import nock from 'nock';
 import * as sinon from 'sinon';
 import { TestableBG, TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src';

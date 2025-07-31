@@ -4,7 +4,7 @@
 
 import * as should from 'should';
 import * as _ from 'lodash';
-import * as nock from 'nock';
+import nock from 'nock';
 
 import { TestBitGo } from '../../lib/test_bitgo';
 

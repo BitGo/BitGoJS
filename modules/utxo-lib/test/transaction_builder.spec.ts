@@ -1,5 +1,5 @@
 import * as bitcoinjs from 'bitcoinjs-lib';
-import * as assert from 'assert';
+import assert from 'assert';
 import { beforeEach, describe, it } from 'mocha';
 import {
   address as baddress,

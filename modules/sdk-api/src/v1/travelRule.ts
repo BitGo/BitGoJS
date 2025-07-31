@@ -11,7 +11,7 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 import { common, getNetwork, getSharedSecret, makeRandomKey, sanitizeLegacyPath } from '@bitgo/sdk-core';
-import { bip32, BIP32Interface } from '@bitgo/utxo-lib';
+import { bip32, type BIP32Interface } from '@bitgo/utxo-lib';
 import * as utxolib from '@bitgo/utxo-lib';
 import _ from 'lodash';
 

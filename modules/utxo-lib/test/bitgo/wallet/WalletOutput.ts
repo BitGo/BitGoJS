@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import assert from 'assert';
 
 import { getScriptIdFromOutput, getPsbtBip32DerivationOutputUpdate } from '../../../src/bitgo/wallet/WalletOutput';
 import { getDefaultWalletKeys } from '../../../src/testutil/keys';

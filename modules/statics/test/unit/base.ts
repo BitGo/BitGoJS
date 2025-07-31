@@ -1,4 +1,4 @@
-const should = require('should');
+import should from 'should';
 const { UnderlyingAsset } = require('../../src/base');
 
 describe('UnderlyingAsset', function () {

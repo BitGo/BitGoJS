@@ -2,7 +2,7 @@
 // Tests for enterprises
 //
 
-import * as nock from 'nock';
+import nock from 'nock';
 import * as sinon from 'sinon';
 import { common, ECDSAUtils, Enterprise } from '@bitgo/sdk-core';
 

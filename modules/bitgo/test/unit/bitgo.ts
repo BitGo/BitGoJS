@@ -3,9 +3,9 @@
 //
 
 import * as crypto from 'crypto';
-import * as nock from 'nock';
+import nock from 'nock';
 import * as should from 'should';
-import assert = require('assert');
+import assert from 'assert';
 
 import { common, generateGPGKeyPair } from '@bitgo/sdk-core';
 import { bip32, ECPair } from '@bitgo/utxo-lib';

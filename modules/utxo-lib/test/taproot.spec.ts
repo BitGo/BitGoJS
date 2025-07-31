@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import assert from 'assert';
 import { ECPairAPI, ECPairFactory } from 'ecpair';
 import { ecc, taproot } from '../src';
 import { createTaprootOutputScript, getTaprootOutputKey } from '../src/taproot';

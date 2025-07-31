@@ -14,7 +14,7 @@
 
 import * as assert from 'assert';
 import * as secp256k1 from 'secp256k1';
-import { ECPairInterface, BIP32Interface, bip32, ECPair } from '@bitgo/utxo-lib';
+import { type ECPairInterface, type BIP32Interface, bip32, ECPair } from '@bitgo/utxo-lib';
 
 /**
  * Calculate the Elliptic Curve Diffie Hellman

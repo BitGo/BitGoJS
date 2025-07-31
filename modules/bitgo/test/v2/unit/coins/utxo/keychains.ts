@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import assert from 'assert';
 import 'should';
 import { AbstractUtxoCoin } from '@bitgo/abstract-utxo';
 import { utxoCoins } from './util';

@@ -1,8 +1,8 @@
-import * as assert from 'assert';
+import assert from 'assert';
 import * as _ from 'lodash';
-import * as nock from 'nock';
+import nock from 'nock';
 import * as openpgp from 'openpgp';
-import * as should from 'should';
+import should from 'should';
 import * as sinon from 'sinon';
 
 import {

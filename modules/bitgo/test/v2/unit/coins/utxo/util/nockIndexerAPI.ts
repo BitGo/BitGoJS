@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import * as nock from 'nock';
+import nock from 'nock';
 import * as utxolib from '@bitgo/utxo-lib';
 import { AbstractUtxoCoin } from '@bitgo/abstract-utxo';
 import { nockBitGo } from './nockBitGo';

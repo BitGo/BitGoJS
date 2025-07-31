@@ -18,8 +18,8 @@ import {
   TEST_WITHDRAW_REWARDS_TX,
   wrwUser,
 } from '../resources/injective';
-import should = require('should');
-import nock = require('nock');
+import should from 'should';
+import nock from 'nock';
 
 describe('INJ', function () {
   let bitgo: TestBitGoAPI;
