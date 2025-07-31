@@ -368,7 +368,7 @@ class BitcoinTestnet extends Testnet implements UtxoNetwork {
   explorerUrl = 'https://mempool.space/testnet/tx/';
   // Add our pubkey for our paygo wallet
   paygoAddressAttestationPubkey =
-    'xpub661MyMwAqRbcFU2Qx7pvGmmiQpVj8NcR7dSVpgqNChMkQyobpVWWERcrTb47WicmXwkhAY2VrC3hb29s18FDQWJf5pLm3saN6uLXAXpw1GV';
+    'xpub6BKRgmCPX5oQiJgJ6Vq6BF8tDvZhwQki5dVVQohckK2ZJXtxj8K6M9pavLwt9piW33hZz17SWmG8QWsjJ1tHdde2Fs5UA3DFbApCtbdaGKn';
 }
 
 class BitcoinPublicSignet extends Testnet implements UtxoNetwork {
