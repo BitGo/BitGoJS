@@ -20,6 +20,49 @@
     "@jridgewell/gen-mapping" "^0.3.5"
     "@jridgewell/trace-mapping" "^0.3.24"
 
+"@api-ts/io-ts-http@3.2.1", "@api-ts/io-ts-http@^3.2.1":
+  version "3.2.1"
+  resolved "https://registry.npmjs.org/@api-ts/io-ts-http/-/io-ts-http-3.2.1.tgz#a6fd62f71a60a3d7c8e0dcf30c32c64a537408f3"
+  integrity sha512-W18Oed6u1M8xu4jpemnh5V2cLbXqM7wPk8p2qQ39onC6+tBhaZmUBZ3dWhyM70ZdlANY4RqZRQ6ITuBwGiL7BA==
+  dependencies:
+    "@api-ts/response" "2.1.0"
+    fp-ts "^2.0.0"
+    io-ts "2.1.3"
+    io-ts-types "^0.5.15"
+
+"@api-ts/openapi-generator@^5.7.0":
+  version "5.10.1"
+  resolved "https://registry.npmjs.org/@api-ts/openapi-generator/-/openapi-generator-5.10.1.tgz#e30ecca52298b1745c2e2809b3b90e953989b276"
+  integrity sha512-tD+TS7npRHeHtKida+rs69q3gH/f/BZPu2YimT4wp0tpy/meuJBVQ81Nth2auHcqVd/Xjq9wOFXoXbD4ulzsqA==
+  dependencies:
+    "@swc/core" "1.5.7"
+    cmd-ts "0.13.0"
+    comment-parser "1.4.1"
+    fp-ts "2.16.9"
+    io-ts "2.1.3"
+    io-ts-types "0.5.19"
+    openapi-types "12.1.3"
+    resolve "1.22.10"
+  optionalDependencies:
+    "@swc/core-darwin-arm64" "1.5.7"
+    "@swc/core-linux-x64-gnu" "1.5.7"
+
+"@api-ts/response@2.1.0", "@api-ts/response@^2.1.0":
+  version "2.1.0"
+  resolved "https://registry.npmjs.org/@api-ts/response/-/response-2.1.0.tgz#9691128e02949cdc9b2cd3277133b2c7e68220b8"
+  integrity sha512-x9yt3IShvz9shSw4owsgC39zmPEBh9ha7MOXSMYFDsdZT7NCP4730w6fsGkYTkbQLpF3oNTMFqZONxOwE1aK5Q==
+
+"@api-ts/typed-express-router@^1.1.13":
+  version "1.1.14"
+  resolved "https://registry.npmjs.org/@api-ts/typed-express-router/-/typed-express-router-1.1.14.tgz#ac09eaa9eec1ffb4ecabe1064980fda1ff8a1f33"
+  integrity sha512-mbzFgpFec6yL+Lu3s2mSLPMo08Nf+WehGghhQLdhZLsOMjJKHheuu/iYPoYj+Q1FK9/f5pcs3YpHNSxIWPUcfQ==
+  dependencies:
+    "@api-ts/io-ts-http" "3.2.1"
+    "@types/express" "4.17.21"
+    express "4.21.2"
+    fp-ts "^2.0.0"
+    io-ts "2.1.3"
+
 "@aptos-labs/aptos-cli@^1.0.2":
   version "1.0.2"
   resolved "https://registry.npmjs.org/@aptos-labs/aptos-cli/-/aptos-cli-1.0.2.tgz#91bd1368cf808f715d102822b7d4032388cdad79"
@@ -5338,12 +5381,93 @@
   dependencies:
     "@substrate/txwrapper-core" "^7.5.3"
 
+"@swc/core-darwin-arm64@1.5.7":
+  version "1.5.7"
+  resolved "https://registry.npmjs.org/@swc/core-darwin-arm64/-/core-darwin-arm64-1.5.7.tgz#2b5cdbd34e4162e50de6147dd1a5cb12d23b08e8"
+  integrity sha512-bZLVHPTpH3h6yhwVl395k0Mtx8v6CGhq5r4KQdAoPbADU974Mauz1b6ViHAJ74O0IVE5vyy7tD3OpkQxL/vMDQ==
+
+"@swc/core-darwin-x64@1.5.7":
+  version "1.5.7"
+  resolved "https://registry.npmjs.org/@swc/core-darwin-x64/-/core-darwin-x64-1.5.7.tgz#6aa7e3c01ab8e5e41597f8a24ff24c4e50936a46"
+  integrity sha512-RpUyu2GsviwTc2qVajPL0l8nf2vKj5wzO3WkLSHAHEJbiUZk83NJrZd1RVbEknIMO7+Uyjh54hEh8R26jSByaw==
+
+"@swc/core-linux-arm-gnueabihf@1.5.7":
+  version "1.5.7"
+  resolved "https://registry.npmjs.org/@swc/core-linux-arm-gnueabihf/-/core-linux-arm-gnueabihf-1.5.7.tgz#160108633b9e1d1ad05f815bedc7e9eb5d59fc2a"
+  integrity sha512-cTZWTnCXLABOuvWiv6nQQM0hP6ZWEkzdgDvztgHI/+u/MvtzJBN5lBQ2lue/9sSFYLMqzqff5EHKlFtrJCA9dQ==
+
+"@swc/core-linux-arm64-gnu@1.5.7":
+  version "1.5.7"
+  resolved "https://registry.npmjs.org/@swc/core-linux-arm64-gnu/-/core-linux-arm64-gnu-1.5.7.tgz#cbfa512683c73227ad25552f3b3e722b0e7fbd1d"
+  integrity sha512-hoeTJFBiE/IJP30Be7djWF8Q5KVgkbDtjySmvYLg9P94bHg9TJPSQoC72tXx/oXOgXvElDe/GMybru0UxhKx4g==
+
+"@swc/core-linux-arm64-musl@1.5.7":
+  version "1.5.7"
+  resolved "https://registry.npmjs.org/@swc/core-linux-arm64-musl/-/core-linux-arm64-musl-1.5.7.tgz#80239cb58fe57f3c86b44617fe784530ec55ee2b"
+  integrity sha512-+NDhK+IFTiVK1/o7EXdCeF2hEzCiaRSrb9zD7X2Z7inwWlxAntcSuzZW7Y6BRqGQH89KA91qYgwbnjgTQ22PiQ==
+
+"@swc/core-linux-x64-gnu@1.5.7":
+  version "1.5.7"
+  resolved "https://registry.npmjs.org/@swc/core-linux-x64-gnu/-/core-linux-x64-gnu-1.5.7.tgz#a699c1632de60b6a63b7fdb7abcb4fef317e57ca"
+  integrity sha512-25GXpJmeFxKB+7pbY7YQLhWWjkYlR+kHz5I3j9WRl3Lp4v4UD67OGXwPe+DIcHqcouA1fhLhsgHJWtsaNOMBNg==
+
+"@swc/core-linux-x64-musl@1.5.7":
+  version "1.5.7"
+  resolved "https://registry.npmjs.org/@swc/core-linux-x64-musl/-/core-linux-x64-musl-1.5.7.tgz#8e4c203d6bc41e7f85d7d34d0fdf4ef751fa626c"
+  integrity sha512-0VN9Y5EAPBESmSPPsCJzplZHV26akC0sIgd3Hc/7S/1GkSMoeuVL+V9vt+F/cCuzr4VidzSkqftdP3qEIsXSpg==
+
+"@swc/core-win32-arm64-msvc@1.5.7":
+  version "1.5.7"
+  resolved "https://registry.npmjs.org/@swc/core-win32-arm64-msvc/-/core-win32-arm64-msvc-1.5.7.tgz#31e3d42b8c0aa79f0ea1a980c0dd1a999d378ed7"
+  integrity sha512-RtoNnstBwy5VloNCvmvYNApkTmuCe4sNcoYWpmY7C1+bPR+6SOo8im1G6/FpNem8AR5fcZCmXHWQ+EUmRWJyuA==
+
+"@swc/core-win32-ia32-msvc@1.5.7":
+  version "1.5.7"
+  resolved "https://registry.npmjs.org/@swc/core-win32-ia32-msvc/-/core-win32-ia32-msvc-1.5.7.tgz#a235285f9f62850aefcf9abb03420f2c54f63638"
+  integrity sha512-Xm0TfvcmmspvQg1s4+USL3x8D+YPAfX2JHygvxAnCJ0EHun8cm2zvfNBcsTlnwYb0ybFWXXY129aq1wgFC9TpQ==
+
+"@swc/core-win32-x64-msvc@1.5.7":
+  version "1.5.7"
+  resolved "https://registry.npmjs.org/@swc/core-win32-x64-msvc/-/core-win32-x64-msvc-1.5.7.tgz#f84641393b5223450d00d97bfff877b8b69d7c9b"
+  integrity sha512-tp43WfJLCsKLQKBmjmY/0vv1slVywR5Q4qKjF5OIY8QijaEW7/8VwPyUyVoJZEnDgv9jKtUTG5PzqtIYPZGnyg==
+
+"@swc/core@1.5.7":
+  version "1.5.7"
+  resolved "https://registry.npmjs.org/@swc/core/-/core-1.5.7.tgz#e1db7b9887d5f34eb4a3256a738d0c5f1b018c33"
+  integrity sha512-U4qJRBefIJNJDRCCiVtkfa/hpiZ7w0R6kASea+/KLp+vkus3zcLSB8Ub8SvKgTIxjWpwsKcZlPf5nrv4ls46SQ==
+  dependencies:
+    "@swc/counter" "^0.1.2"
+    "@swc/types" "0.1.7"
+  optionalDependencies:
+    "@swc/core-darwin-arm64" "1.5.7"
+    "@swc/core-darwin-x64" "1.5.7"
+    "@swc/core-linux-arm-gnueabihf" "1.5.7"
+    "@swc/core-linux-arm64-gnu" "1.5.7"
+    "@swc/core-linux-arm64-musl" "1.5.7"
+    "@swc/core-linux-x64-gnu" "1.5.7"
+    "@swc/core-linux-x64-musl" "1.5.7"
+    "@swc/core-win32-arm64-msvc" "1.5.7"
+    "@swc/core-win32-ia32-msvc" "1.5.7"
+    "@swc/core-win32-x64-msvc" "1.5.7"
+
+"@swc/counter@^0.1.2", "@swc/counter@^0.1.3":
+  version "0.1.3"
+  resolved "https://registry.npmjs.org/@swc/counter/-/counter-0.1.3.tgz#cc7463bd02949611c6329596fccd2b0ec782b0e9"
+  integrity sha512-e2BR4lsJkkRlKZ/qCHPw9ZaSxc0MVUd7gtbtaB7aMvHeJVYe8sOB8DBZkP2DtISHGSku9sCK6T6cnY0CtXrOCQ==
+
 "@swc/helpers@^0.5.11":
   version "0.5.15"
   resolved "https://registry.npmjs.org/@swc/helpers/-/helpers-0.5.15.tgz#79efab344c5819ecf83a43f3f9f811fc84b516d7"
   integrity sha512-JQ5TuMi45Owi4/BIMAJBoSQoOJu12oOk/gADqlcUL9JEdHB8vyjUSsxqeNXnmXHjYKMi2WcYtezGEEhqUI/E2g==
   dependencies:
     tslib "^2.8.0"
+
+"@swc/types@0.1.7":
+  version "0.1.7"
+  resolved "https://registry.npmjs.org/@swc/types/-/types-0.1.7.tgz#ea5d658cf460abff51507ca8d26e2d391bafb15e"
+  integrity sha512-scHWahbHF0eyj3JsxG9CFJgFdFNaVQCNAimBlT6PzS3n/HptxqREjsm4OH6AN3lYcffZYSPxXW8ua2BEHp0lJQ==
+  dependencies:
+    "@swc/counter" "^0.1.3"
 
 "@szmarczak/http-timer@^1.1.2":
   version "1.1.2"
@@ -5655,7 +5779,7 @@
     "@types/qs" "*"
     "@types/serve-static" "*"
 
-"@types/express@^4.17.13":
+"@types/express@4.17.21", "@types/express@^4.17.13":
   version "4.17.21"
   resolved "https://registry.npmjs.org/@types/express/-/express-4.17.21.tgz#c26d4a151e60efe0084b23dc3369ebc631ed192d"
   integrity sha512-ejlPM315qwLpaQlQDTjPdsUFSc6ZsP4AN6AlWnogPjQ7CVi7PYF3YVz+CY3jE2pwYf7E/7HlDAN0rV2GxTG0HQ==
@@ -8540,6 +8664,16 @@ cmd-shim@^5.0.0:
   dependencies:
     mkdirp-infer-owner "^2.0.0"
 
+cmd-ts@0.13.0:
+  version "0.13.0"
+  resolved "https://registry.npmjs.org/cmd-ts/-/cmd-ts-0.13.0.tgz#57bdbc5dc95eb5a3503ab3ac9591c91427a79fa1"
+  integrity sha512-nsnxf6wNIM/JAS7T/x/1JmbEsjH0a8tezXqqpaL0O6+eV0/aDEnRxwjxpu0VzDdRcaC1ixGSbRlUuf/IU59I4g==
+  dependencies:
+    chalk "^4.0.0"
+    debug "^4.3.4"
+    didyoumean "^1.2.2"
+    strip-ansi "^6.0.0"
+
 color-convert@^1.9.0:
   version "1.9.3"
   resolved "https://registry.npmjs.org/color-convert/-/color-convert-1.9.3.tgz#bb71850690e1f136567de629d2d5471deda4c1e8"
@@ -8644,7 +8778,7 @@ comment-parser@1.1.5:
   resolved "https://registry.npmjs.org/comment-parser/-/comment-parser-1.1.5.tgz#453627ef8f67dbcec44e79a9bd5baa37f0bce9b2"
   integrity sha512-RePCE4leIhBlmrqiYTvaqEeGYg7qpSl4etaIabKtdOQVi+mSTIBBklGUwIr79GXYnl3LpMwmDw4KeR2stNc6FA==
 
-comment-parser@^1.1.5:
+comment-parser@1.4.1, comment-parser@^1.1.5:
   version "1.4.1"
   resolved "https://registry.npmjs.org/comment-parser/-/comment-parser-1.4.1.tgz#bdafead37961ac079be11eb7ec65c4d021eaf9cc"
   integrity sha512-buhp5kePrmda3vhc5B9t7pUQXAb2Tnd0qgpkIhPhkHXxJpiPJ11H0ZEU0oBpJ2QztSbzG/ZxMj/CHsYJqRHmyg==
@@ -9788,6 +9922,11 @@ di@^0.0.1:
   version "0.0.1"
   resolved "https://registry.npmjs.org/di/-/di-0.0.1.tgz#806649326ceaa7caa3306d75d985ea2748ba913c"
   integrity sha512-uJaamHkagcZtHPqCIHZxnFrXlunQXgBOsZSUOWwFw31QJCAbyTBoHMW75YOTur5ZNx8pIeAKgf6GWIgaqqiLhA==
+
+didyoumean@^1.2.2:
+  version "1.2.2"
+  resolved "https://registry.npmjs.org/didyoumean/-/didyoumean-1.2.2.tgz#989346ffe9e839b4555ecf5666edea0d3e8ad037"
+  integrity sha512-gxtyfqMg7GKyhQmb056K7M3xszy/myH8w+B4RT+QXBQsvAOdc3XymqDDPHx1BgPgsdAA5SIifona89YtRATDzw==
 
 diff@5.0.0:
   version "5.0.0"
@@ -11162,7 +11301,7 @@ express@4.17.3:
     utils-merge "1.0.1"
     vary "~1.1.2"
 
-express@^4.14.0, express@^4.17.3:
+express@4.21.2, express@^4.14.0, express@^4.17.3:
   version "4.21.2"
   resolved "https://registry.npmjs.org/express/-/express-4.21.2.tgz#cf250e48362174ead6cea4a566abef0162c1ec32"
   integrity sha512-28HqgMZAmih1Czt9ny7qr6ek2qddF4FclbMzwhCREB6OFfH+rXAnuNCwo1/wFvrtbgsQDb4kSbX9de9lFbrXnA==
@@ -11646,7 +11785,7 @@ fp-ts@2.16.2:
   resolved "https://registry.npmjs.org/fp-ts/-/fp-ts-2.16.2.tgz#7faa90f6fc2e8cf84c711d2c4e606afe2be9e342"
   integrity sha512-CkqAjnIKFqvo3sCyoBTqgJvF+bHrSik584S9nhTjtBESLx26cbtVMR/T9a6ApChOcSDAaM3JydDmWDUn4EEXng==
 
-fp-ts@^2.0.0, fp-ts@^2.12.2, fp-ts@^2.16.2:
+fp-ts@2.16.9, fp-ts@^2.0.0, fp-ts@^2.12.2, fp-ts@^2.16.2:
   version "2.16.9"
   resolved "https://registry.npmjs.org/fp-ts/-/fp-ts-2.16.9.tgz#99628fc5e0bb3b432c4a16d8f4455247380bae8a"
   integrity sha512-+I2+FnVB+tVaxcYyQkHUq7ZdKScaBlX53A41mxQtpIccsfyv8PzdzP7fzp2AY832T4aoK6UZ5WRX/ebGd8uZuQ==
@@ -12967,12 +13106,12 @@ invariant@^2.2.4:
   dependencies:
     loose-envify "^1.0.0"
 
-io-ts-types@^0.5.16, io-ts-types@^0.5.19:
+io-ts-types@0.5.19, io-ts-types@^0.5.15, io-ts-types@^0.5.16, io-ts-types@^0.5.19:
   version "0.5.19"
   resolved "https://registry.npmjs.org/io-ts-types/-/io-ts-types-0.5.19.tgz#9c04fa73f15992436605218a5686b610efa7a5d3"
   integrity sha512-kQOYYDZG5vKre+INIDZbLeDJe+oM+4zLpUkjXyTMyUfoCpjJNyi29ZLkuEAwcPufaYo3yu/BsemZtbdD+NtRfQ==
 
-io-ts@2.0.1, "io-ts@npm:@bitgo-forks/io-ts@2.1.4":
+io-ts@2.0.1, io-ts@2.1.3, "io-ts@npm:@bitgo-forks/io-ts@2.1.4":
   version "2.1.4"
   resolved "https://registry.npmjs.org/@bitgo-forks/io-ts/-/io-ts-2.1.4.tgz#a7431bb5473c5d5f9a94de8f8b058e189a298423"
   integrity sha512-jCt3WPfDM+wM0SJMGJkY0TS6JmaQ78ATAYtsppJYJfts8geOS/N/UftwAROXwv6azKAMz8uo163t6dWWwfsYug==
@@ -16051,6 +16190,11 @@ open@^8.0.9, open@^8.4.0:
     is-docker "^2.1.1"
     is-wsl "^2.2.0"
 
+openapi-types@12.1.3:
+  version "12.1.3"
+  resolved "https://registry.npmjs.org/openapi-types/-/openapi-types-12.1.3.tgz#471995eb26c4b97b7bd356aacf7b91b73e777dd3"
+  integrity sha512-N4YtSYJqghVu4iek2ZUvcN/0aqH1kRDuNqzcycDxhOUpg7GdvLa2F3DgS6yBNhInhv2r/6I0Flkn7CqL8+nIcw==
+
 openpgp@5.11.3:
   version "5.11.3"
   resolved "https://registry.npmjs.org/openpgp/-/openpgp-5.11.3.tgz#a2532aa973f1f6413556eaf328b97a6955b1d8a3"
@@ -18067,7 +18211,7 @@ resolve@1.1.7:
   resolved "https://registry.npmjs.org/resolve/-/resolve-1.1.7.tgz#203114d82ad2c5ed9e8e0411b3932875e889e97b"
   integrity sha512-9znBF0vBcaSN3W2j7wKvdERPwqTxSpCq+if5C0WoTCyV9n24rua28jeuQ2pL/HOf+yUe/Mef+H/5p60K0Id3bg==
 
-resolve@^1.1.3, resolve@^1.1.4, resolve@^1.1.6, resolve@^1.10.0, resolve@^1.11.1, resolve@^1.14.2, resolve@^1.17.0, resolve@^1.22.3, resolve@^1.22.4, resolve@^1.9.0, resolve@~1.22.6:
+resolve@1.22.10, resolve@^1.1.3, resolve@^1.1.4, resolve@^1.1.6, resolve@^1.10.0, resolve@^1.11.1, resolve@^1.14.2, resolve@^1.17.0, resolve@^1.22.3, resolve@^1.22.4, resolve@^1.9.0, resolve@~1.22.6:
   version "1.22.10"
   resolved "https://registry.npmjs.org/resolve/-/resolve-1.22.10.tgz#b663e83ffb09bbf2386944736baae803029b8b39"
   integrity sha512-NPRy+/ncIMeDlTAsuqwKIiferiawhefFJtkNSW0qZJEqMEb+qBt/77B/jGeeek+F0uOeN05CDa6HXbbIgtVX4w==
