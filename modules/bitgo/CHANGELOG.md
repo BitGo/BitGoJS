@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [49.0.0](https://github.com/BitGo/BitGoJS/compare/bitgo@48.8.0...bitgo@49.0.0) (2025-07-31)
+
+### Features
+
+- deprecate holesky and onboard hoodi testnet ([88c1f1e](https://github.com/BitGo/BitGoJS/commit/88c1f1edc98b1429d237259d95323b1b7f2939d0))
+- **sdk-coin-cosmos:** integration of cosmos module ([9d2e614](https://github.com/BitGo/BitGoJS/commit/9d2e614b987835896259e17b3716be3b2e40a279))
+
+### BREAKING CHANGES
+
+- deprecate holesky and onboard hoodi for ethereum testnet
+
+Ticket: COIN-5021
+
 # [48.8.0](https://github.com/BitGo/BitGoJS/compare/bitgo@48.7.0...bitgo@48.8.0) (2025-07-30)
 
 ### Bug Fixes

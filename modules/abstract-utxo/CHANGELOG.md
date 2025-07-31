@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [9.21.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.21.10...@bitgo/abstract-utxo@9.21.11) (2025-07-31)
+
+**Note:** Version bump only for package @bitgo/abstract-utxo
+
 ## [9.21.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.21.9...@bitgo/abstract-utxo@9.21.10) (2025-07-30)
 
 **Note:** Version bump only for package @bitgo/abstract-utxo

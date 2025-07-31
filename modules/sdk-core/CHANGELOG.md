@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [36.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@35.10.0...@bitgo/sdk-core@36.0.0) (2025-07-31)
+
+### Features
+
+- deprecate holesky and onboard hoodi testnet ([88c1f1e](https://github.com/BitGo/BitGoJS/commit/88c1f1edc98b1429d237259d95323b1b7f2939d0))
+- **sdk-coin-sol:** added api key for full node ([7b301db](https://github.com/BitGo/BitGoJS/commit/7b301db27714ae82bfa440c5b1aef0c980b81741))
+- **sdk-core:** add on-prem subType to wallet generate types ([f686e70](https://github.com/BitGo/BitGoJS/commit/f686e70aa9f0e2c3cab1e087ba167c0fc2ace5f5))
+
+### BREAKING CHANGES
+
+- deprecate holesky and onboard hoodi for ethereum testnet
+
+Ticket: COIN-5021
+
 # [35.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@35.9.0...@bitgo/sdk-core@35.10.0) (2025-07-30)
 
 ### Bug Fixes

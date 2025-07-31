@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.14.0...@bitgo/sdk-coin-sol@4.15.0) (2025-07-31)
+
+### Features
+
+- **sdk-coin-sol:** added api key for full node ([7b301db](https://github.com/BitGo/BitGoJS/commit/7b301db27714ae82bfa440c5b1aef0c980b81741))
+
 # [4.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.13.3...@bitgo/sdk-coin-sol@4.14.0) (2025-07-30)
 
 ### Features

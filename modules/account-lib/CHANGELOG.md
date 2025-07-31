@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [27.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.8.1...@bitgo/account-lib@27.9.0) (2025-07-31)
+
+### Features
+
+- **sdk-coin-bsc:** add message builder factory ([c5bb08e](https://github.com/BitGo/BitGoJS/commit/c5bb08ec76334117850c3a9b5df6955ce04fed93))
+- **sdk-coin-cosmos:** integration of cosmos module ([9d2e614](https://github.com/BitGo/BitGoJS/commit/9d2e614b987835896259e17b3716be3b2e40a279))
+
 ## [27.8.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.8.0...@bitgo/account-lib@27.8.1) (2025-07-30)
 
 **Note:** Version bump only for package @bitgo/account-lib

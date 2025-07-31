@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-cosmos@1.3.0...@bitgo/sdk-coin-cosmos@1.4.0) (2025-07-31)
+
+### Features
+
+- **sdk-coin-cosmos:** generic config driven tests for shared cosmos ([b181c59](https://github.com/BitGo/BitGoJS/commit/b181c5924002196e365341cf573dd35dcd7cd6cc))
+- **sdk-coin-cosmos:** integration of cosmos module ([9d2e614](https://github.com/BitGo/BitGoJS/commit/9d2e614b987835896259e17b3716be3b2e40a279))
+
 # [1.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-cosmos@1.2.0...@bitgo/sdk-coin-cosmos@1.3.0) (2025-07-30)
 
 ### Bug Fixes

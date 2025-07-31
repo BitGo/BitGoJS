@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [57.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@56.0.0...@bitgo/statics@57.0.0) (2025-07-31)
+
+### Bug Fixes
+
+- fix the naming of the ofc tokens of world and coredao ([99c6b97](https://github.com/BitGo/BitGoJS/commit/99c6b973176c2400c65a3e576cd87cb1a29cfd78))
+- removed xcn token as they were already onboarded ([5364536](https://github.com/BitGo/BitGoJS/commit/536453677a4342945ae069757a1db08e80ae8f26))
+
+### Features
+
+- add all tokens ([8a1515a](https://github.com/BitGo/BitGoJS/commit/8a1515a813a0d48c375c04ea662e72f776f108c3))
+- add gasTankTokenName coin property ([5c9be27](https://github.com/BitGo/BitGoJS/commit/5c9be278219210da05fa49827642a0cf7d093583))
+- add solana usd1 testnet solTokens ([37d7550](https://github.com/BitGo/BitGoJS/commit/37d75503ff28485fd7429ccc50ac8282c59ca6d1))
+- deprecate holesky and onboard hoodi testnet ([88c1f1e](https://github.com/BitGo/BitGoJS/commit/88c1f1edc98b1429d237259d95323b1b7f2939d0))
+- onboard new ofc testnet hoodi coin ([e7800ca](https://github.com/BitGo/BitGoJS/commit/e7800cafa50638c8d79f66cb991fb3ed88bb8dfd))
+- **statics:** add new eth tokens ([6996038](https://github.com/BitGo/BitGoJS/commit/6996038526a56de59c43beacfbc5855f226efab9))
+- update the token fullname for usd1 ([26c919a](https://github.com/BitGo/BitGoJS/commit/26c919a13ceb27198616a4039c05913a98e0f4c7))
+
+### BREAKING CHANGES
+
+- The token fullname for usd1 has
+  been updated.
+  TICKET: TMS-1223
+- deprecate holesky and onboard hoodi for ethereum testnet
+
+Ticket: COIN-5021
+
 # [56.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@55.3.0...@bitgo/statics@56.0.0) (2025-07-30)
 
 ### Bug Fixes
