@@ -1,6 +1,6 @@
 const should = require('should');
-import { AccountCoin, Networks, UnderlyingAsset } from '../../src';
-import { txrpToken, xrpToken, vetToken, tvetToken } from '../../src/account';
+import { AccountCoin, coins, Networks, UnderlyingAsset } from '../../src';
+import { txrpToken, xrpToken, vetToken, tvetToken, GasTankAccountCoin } from '../../src/account';
 
 describe('XRP', () => {
   it('should create a new XRP token with the correct properties', () => {
@@ -88,5 +88,16 @@ describe('VET', () => {
     );
     should(token.id).equal('cebb0ba8-6736-46bb-a006-5db7b5b3c376');
     should(token.gasTankToken).equal('TVET:VTHO');
+  });
+
+  it('should create a base VET coin with the correct gasTankToken property', () => {
+    // Get the base VET coin
+    const vetCoin = coins.get('vet') as GasTankAccountCoin;
+    should(vetCoin).not.be.undefined();
+    should(vetCoin.gasTankToken).equal('VET:VTHO');
+    // Get the testnet VET coin
+    const tvetCoin = coins.get('tvet') as GasTankAccountCoin;
+    should(tvetCoin).not.be.undefined();
+    should(tvetCoin.gasTankToken).equal('TVET:VTHO');
   });
 });
