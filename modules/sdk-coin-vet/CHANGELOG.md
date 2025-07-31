@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.2.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.2.1...@bitgo/sdk-coin-vet@2.2.2) (2025-07-31)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-vet
+
+## [2.2.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.2.0...@bitgo/sdk-coin-vet@2.2.1) (2025-07-30)
+
+### Bug Fixes
+
+- **sdk-coin-vet:** add gastankfactor vet ([4120bf7](https://github.com/BitGo/BitGoJS/commit/4120bf70d3df6b7af722f97f3e55ebc6640e33d7))
+- **sdk-coin-vet:** fix issue in verifyTx ([67e2258](https://github.com/BitGo/BitGoJS/commit/67e225830b43f834087a68eb4f360524529a2c2d))
+- **sdk-coin-vet:** fix issue with consolidation tx ([bd7c37e](https://github.com/BitGo/BitGoJS/commit/bd7c37ea4c74edfca475ba990afe65a97a86061e))
+
 # [2.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.0.1...@bitgo/sdk-coin-vet@2.2.0) (2025-07-25)
 
 ### Bug Fixes

@@ -3,6 +3,35 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [36.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@35.10.0...@bitgo/sdk-core@36.0.0) (2025-07-31)
+
+### Features
+
+- deprecate holesky and onboard hoodi testnet ([88c1f1e](https://github.com/BitGo/BitGoJS/commit/88c1f1edc98b1429d237259d95323b1b7f2939d0))
+- **sdk-coin-sol:** added api key for full node ([7b301db](https://github.com/BitGo/BitGoJS/commit/7b301db27714ae82bfa440c5b1aef0c980b81741))
+- **sdk-core:** add on-prem subType to wallet generate types ([f686e70](https://github.com/BitGo/BitGoJS/commit/f686e70aa9f0e2c3cab1e087ba167c0fc2ace5f5))
+
+### BREAKING CHANGES
+
+- deprecate holesky and onboard hoodi for ethereum testnet
+
+Ticket: COIN-5021
+
+# [35.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@35.9.0...@bitgo/sdk-core@35.10.0) (2025-07-30)
+
+### Bug Fixes
+
+- build token enable hard code error ([b31452b](https://github.com/BitGo/BitGoJS/commit/b31452b6bfd7cb88d634bdcd7ee1496da8e1f33a))
+- **sdk-coin-soneium:** update recoveryBlockchainExplorerQuery ([fcb7ab4](https://github.com/BitGo/BitGoJS/commit/fcb7ab47e04e9164bf33a82aa4ab8ac7d6db30fa))
+- update api url for Monad ([1ed0c3d](https://github.com/BitGo/BitGoJS/commit/1ed0c3d19dbbdb8f84c0e360b9077f95971288d2))
+
+### Features
+
+- modify bulkCreate/Accept share error messages ([7bcd592](https://github.com/BitGo/BitGoJS/commit/7bcd592b9ffcfbbda1611ef9a13591ace31994d0))
+- **root:** enable passing apiKey for recovery on eth likes ([dc8d3c2](https://github.com/BitGo/BitGoJS/commit/dc8d3c201b5ab82b05e1db69f310a0860e21bf78))
+- **sdk-coin-near:** handle near token recoveries ([675f3b4](https://github.com/BitGo/BitGoJS/commit/675f3b44c94a762591bc79deee8d2cbd362cfa85))
+- **sdk-core:** enable hardcoded gpg keys for signature verification ([76eaa01](https://github.com/BitGo/BitGoJS/commit/76eaa019d199ea68511e1ac0960e335e32c39121))
+
 # [35.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@35.7.0...@bitgo/sdk-core@35.9.0) (2025-07-25)
 
 ### Bug Fixes

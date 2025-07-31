@@ -3,6 +3,61 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [57.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@56.0.0...@bitgo/statics@57.0.0) (2025-07-31)
+
+### Bug Fixes
+
+- fix the naming of the ofc tokens of world and coredao ([99c6b97](https://github.com/BitGo/BitGoJS/commit/99c6b973176c2400c65a3e576cd87cb1a29cfd78))
+- removed xcn token as they were already onboarded ([5364536](https://github.com/BitGo/BitGoJS/commit/536453677a4342945ae069757a1db08e80ae8f26))
+
+### Features
+
+- add all tokens ([8a1515a](https://github.com/BitGo/BitGoJS/commit/8a1515a813a0d48c375c04ea662e72f776f108c3))
+- add gasTankTokenName coin property ([5c9be27](https://github.com/BitGo/BitGoJS/commit/5c9be278219210da05fa49827642a0cf7d093583))
+- add solana usd1 testnet solTokens ([37d7550](https://github.com/BitGo/BitGoJS/commit/37d75503ff28485fd7429ccc50ac8282c59ca6d1))
+- deprecate holesky and onboard hoodi testnet ([88c1f1e](https://github.com/BitGo/BitGoJS/commit/88c1f1edc98b1429d237259d95323b1b7f2939d0))
+- onboard new ofc testnet hoodi coin ([e7800ca](https://github.com/BitGo/BitGoJS/commit/e7800cafa50638c8d79f66cb991fb3ed88bb8dfd))
+- **statics:** add new eth tokens ([6996038](https://github.com/BitGo/BitGoJS/commit/6996038526a56de59c43beacfbc5855f226efab9))
+- update the token fullname for usd1 ([26c919a](https://github.com/BitGo/BitGoJS/commit/26c919a13ceb27198616a4039c05913a98e0f4c7))
+
+### BREAKING CHANGES
+
+- The token fullname for usd1 has
+  been updated.
+  TICKET: TMS-1223
+- deprecate holesky and onboard hoodi for ethereum testnet
+
+Ticket: COIN-5021
+
+# [56.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@55.3.0...@bitgo/statics@56.0.0) (2025-07-30)
+
+### Bug Fixes
+
+- **bitgo:** fix issue with vettoken register ([2413737](https://github.com/BitGo/BitGoJS/commit/24137374e57f9c623ec07270d3d7b50c28e18b70))
+- **sdk-coin-cosmos:** utils and cosmosSharedCoin fixes ([e58c0e8](https://github.com/BitGo/BitGoJS/commit/e58c0e838f768520814ca5e6697be272ef49049a))
+- **sdk-coin-vet:** add gastankfactor vet ([4120bf7](https://github.com/BitGo/BitGoJS/commit/4120bf70d3df6b7af722f97f3e55ebc6640e33d7))
+- **statics:** correct name of vechain assets ([ede7a12](https://github.com/BitGo/BitGoJS/commit/ede7a12c5c7bb99f9d19ead80e32fe52682cd8e5))
+- **statics:** updated evm ui flag for evm batch chains ([70cb2d6](https://github.com/BitGo/BitGoJS/commit/70cb2d689ce8c0fd0e2fd4442b470abfc320844d))
+
+### Features
+
+- add coin feature for coins who pay fee with token ([5355259](https://github.com/BitGo/BitGoJS/commit/5355259d97ddf0417d0379245919bc83bc5197e6))
+- add cosmos token to coinFactory ([5245c50](https://github.com/BitGo/BitGoJS/commit/5245c50c637a8906c8f9be0d91e3aaae2d267e3b))
+- add statics for eth, sol, apt and bsc tokens ([a577ed8](https://github.com/BitGo/BitGoJS/commit/a577ed890ad3994dcd12257791626e4e3961245e))
+- adding ofc support for COREDAOERC20 tokens ([fb6ad00](https://github.com/BitGo/BitGoJS/commit/fb6ad0032b7e53fee43c6b98895187bb83b83c76))
+- adding ofc support for WORLDERC20 tokens ([9930923](https://github.com/BitGo/BitGoJS/commit/9930923960e0c7d222fb2677f08bd6e5333b1c42))
+- onboard SOL:USDCV token ([22f4521](https://github.com/BitGo/BitGoJS/commit/22f4521df441f68a1c13e64b455514263c1e8c04))
+- onboard YLDS token ([4ffa1d0](https://github.com/BitGo/BitGoJS/commit/4ffa1d00233a4f492d161148ecabf489173b4e35))
+- onboarding ofc coredao tokens ([c17a879](https://github.com/BitGo/BitGoJS/commit/c17a879e1c05ad16201a719f07a192559c07d1ac))
+- onboarding ofc tokens for WORLD:WLD and WORLD:USDC ([4316adc](https://github.com/BitGo/BitGoJS/commit/4316adccbfb58d917084f80f3e88065c95401dcf))
+- **statics:** add BITGO INDIA entity ([a39ba30](https://github.com/BitGo/BitGoJS/commit/a39ba3029388b4cc78cae3de14e1e32a51c599c3))
+- update hoodi testnet contracts ([04cc956](https://github.com/BitGo/BitGoJS/commit/04cc956572cc10f101d155cf5be29b1d48844407))
+
+### BREAKING CHANGES
+
+- updates usd1 / gousd test contracts
+  TICKET: TMS-1191
+
 # [55.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@55.1.0...@bitgo/statics@55.3.0) (2025-07-25)
 
 ### Bug Fixes

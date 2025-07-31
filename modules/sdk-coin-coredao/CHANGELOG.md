@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-coredao@2.4.0...@bitgo/sdk-coin-coredao@2.4.1) (2025-07-31)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-coredao
+
+# [2.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-coredao@2.3.9...@bitgo/sdk-coin-coredao@2.4.0) (2025-07-30)
+
+### Features
+
+- **root:** enable passing apiKey for recovery on eth likes ([dc8d3c2](https://github.com/BitGo/BitGoJS/commit/dc8d3c201b5ab82b05e1db69f310a0860e21bf78))
+
 ## [2.3.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-coredao@2.3.7...@bitgo/sdk-coin-coredao@2.3.9) (2025-07-25)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-coredao

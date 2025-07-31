@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [11.11.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@11.11.0...@bitgo/abstract-cosmos@11.11.1) (2025-07-31)
+
+**Note:** Version bump only for package @bitgo/abstract-cosmos
+
+# [11.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@11.10.0...@bitgo/abstract-cosmos@11.11.0) (2025-07-30)
+
+### Bug Fixes
+
+- **abstract-cosmos:** move sdk-test to dev deps ([811286d](https://github.com/BitGo/BitGoJS/commit/811286db5e8394a5438e0fc3d5709f393d9cb64a))
+- **abstract-cosmos:** resolve dependency issues ([63c83eb](https://github.com/BitGo/BitGoJS/commit/63c83ebfe9b07bfa5ba3bd7ea1633a791da3bd8d))
+
+### Features
+
+- add cosmos token to coinFactory ([5245c50](https://github.com/BitGo/BitGoJS/commit/5245c50c637a8906c8f9be0d91e3aaae2d267e3b))
+- onboard YLDS token on testnet and mainnet ([8d762a4](https://github.com/BitGo/BitGoJS/commit/8d762a413e03a94e5bdaf27e7fc8e7b23beab594))
+- **root:** align package versions for cosmos ([865b287](https://github.com/BitGo/BitGoJS/commit/865b287431ae743c99faaa50318857dff54dfa8b))
+
 # [11.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@11.9.8...@bitgo/abstract-cosmos@11.10.0) (2025-07-25)
 
 ### Features

@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.9.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@3.9.10...@bitgo/sdk-coin-xrp@3.9.11) (2025-07-31)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-xrp
+
+## [3.9.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@3.9.9...@bitgo/sdk-coin-xrp@3.9.10) (2025-07-30)
+
+### Bug Fixes
+
+- **sdk-coin-xrp:** update XRP signers sorting to use numeric comparison ([eef8b0d](https://github.com/BitGo/BitGoJS/commit/eef8b0d1ae911d83327c798b0778a3cebecc69e2))
+
 ## [3.9.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@3.9.7...@bitgo/sdk-coin-xrp@3.9.9) (2025-07-25)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-xrp

@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-test@8.0.99...@bitgo/sdk-test@9.0.0) (2025-07-31)
+
+### Features
+
+- deprecate holesky and onboard hoodi testnet ([88c1f1e](https://github.com/BitGo/BitGoJS/commit/88c1f1edc98b1429d237259d95323b1b7f2939d0))
+
+### BREAKING CHANGES
+
+- deprecate holesky and onboard hoodi for ethereum testnet
+
+Ticket: COIN-5021
+
+## [8.0.99](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-test@8.0.98...@bitgo/sdk-test@8.0.99) (2025-07-30)
+
+**Note:** Version bump only for package @bitgo/sdk-test
+
 ## [8.0.98](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-test@8.0.96...@bitgo/sdk-test@8.0.98) (2025-07-25)
 
 **Note:** Version bump only for package @bitgo/sdk-test
