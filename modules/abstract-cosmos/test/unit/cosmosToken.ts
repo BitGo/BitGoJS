@@ -3,6 +3,7 @@ import 'should';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { CosmosToken } from '../../src';
+import CosmosUtils from '../../src/lib/utils';
 
 describe('Cosmos Tokens', function () {
   let bitgo: TestBitGoAPI;
@@ -45,5 +46,9 @@ describe('Cosmos Tokens', function () {
     mainnetCosmosToken.network.should.equal('Mainnet');
     mainnetCosmosToken.denom.should.equal('uylds.fcc');
     mainnetCosmosToken.decimalPlaces.should.equal(6);
+  });
+
+  it('should return denomination for YLDS token on hash using hash as coinFamily', function () {
+    CosmosUtils.getTokenDenomsUsingCoinFamily('hash').should.deepEqual(['uylds.fcc']);
   });
 });

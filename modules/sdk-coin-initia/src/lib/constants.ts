@@ -1,4 +1,7 @@
-export const validDenoms = ['init', 'tinit', 'uinit'];
+import { CosmosUtils } from '@bitgo/abstract-cosmos';
+
+const cosmosUtils = new CosmosUtils();
+export const validDenoms = ['init', 'tinit', 'uinit', ...cosmosUtils.getTokenDenomsUsingCoinFamily('initia')];
 export const accountAddressRegex = /^(init)1(['qpzry9x8gf2tvdw0s3jn54khce6mua7l]{38})$/;
 export const validatorAddressRegex = /^(initvaloper)1(['qpzry9x8gf2tvdw0s3jn54khce6mua7l]{38})$/;
 export const contractAddressRegex = /^(init)1(['qpzry9x8gf2tvdw0s3jn54khce6mua7l]+)$/;

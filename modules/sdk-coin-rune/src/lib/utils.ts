@@ -152,11 +152,7 @@ export class RuneUtils extends CosmosUtils {
   }
 
   validateDenomination(amountDenom: string): void {
-    if (
-      (this.networkType === NetworkType.TESTNET &&
-        !constants.testnetValidDenoms.find((denom) => denom === amountDenom)) ||
-      (this.networkType === NetworkType.MAINNET && !constants.mainnetValidDenoms.find((denom) => denom === amountDenom))
-    ) {
+    if (!constants.validDenoms.find((denom) => denom === amountDenom)) {
       throw new InvalidTransactionError('transactionBuilder: validateAmount: Invalid denom: ' + amountDenom);
     }
   }

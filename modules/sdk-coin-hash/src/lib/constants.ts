@@ -1,4 +1,7 @@
-export const validDenoms = ['nhash', 'uhash', 'mhash', 'hash', 'uylds.fcc'];
+import { CosmosUtils } from '@bitgo/abstract-cosmos';
+
+const cosmosUtils = new CosmosUtils();
+export const validDenoms = ['nhash', 'uhash', 'mhash', 'hash', ...cosmosUtils.getTokenDenomsUsingCoinFamily('hash')];
 export const mainnetAccountAddressRegex = /^(pb)1(['qpzry9x8gf2tvdw0s3jn54khce6mua7l]{38})$/;
 export const mainnetValidatorAddressRegex = /^(pbvaloper)1(['qpzry9x8gf2tvdw0s3jn54khce6mua7l]{38})$/;
 export const mainnetContractAddressRegex = /^(pb)1(['qpzry9x8gf2tvdw0s3jn54khce6mua7l]+)$/;
