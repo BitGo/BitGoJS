@@ -17,6 +17,11 @@ export class TransferBuilder extends EthTransferBuilder {
    * @returns the string prefix
    */
   protected getNativeOperationHashPrefix(): string {
+    // TODO: if testnet, return '560048'
+    // else, return 'ETHER'
+    if (this._chainId === '560048') {
+      return '560048';
+    }
     return 'ETHER';
   }
 }
