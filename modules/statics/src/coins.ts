@@ -1718,7 +1718,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.VET,
     BaseUnit.ETH,
-    VET_FEATURES,
+    [...VET_FEATURES, CoinFeature.STAKING],
     KeyCurve.Secp256k1,
     80,
     200
