@@ -1,6 +1,8 @@
 import assert from 'assert';
 
-import { hashMessageWithTag } from '../../src/bip322';
+import { payments, Transaction } from '@bitgo/utxo-lib';
+
+import { buildToSpendTransaction, hashMessageWithTag } from '../../src/bip322';
 
 describe('to_spend', function () {
   describe('Message hashing', function () {
@@ -24,6 +26,32 @@ describe('to_spend', function () {
           hash,
           `Hash for message "${message}" does not match expected value`
         );
+      });
+    });
+  });
+
+  describe('build to_spend transaction', function () {
+    const scriptPubKey = payments.p2wpkh({
+      address: 'bc1q9vza2e8x573nczrlzms0wvx3gsqjx7vavgkx0l',
+    }).output as Buffer;
+
+    // Source: https://github.com/bitcoin/bips/blob/master/bip-0322.mediawiki#transaction-hashes
+    const fixtures = [
+      {
+        message: '',
+        txid: 'c5680aa69bb8d860bf82d4e9cd3504b55dde018de765a91bb566283c545a99a7',
+      },
+      {
+        message: 'Hello World',
+        txid: 'b79d196740ad5217771c1098fc4a4b51e0535c32236c71f1ea4d61a2d603352b',
+      },
+    ];
+
+    fixtures.forEach(({ message, txid }) => {
+      it(`should build a to_spend transaction for message "${message}"`, function () {
+        const result = buildToSpendTransaction(scriptPubKey, Buffer.from(message));
+        const computedTxid = Transaction.fromHex(result).getId();
+        assert.strictEqual(computedTxid, txid, `Transaction ID for message "${message}" does not match expected value`);
       });
     });
   });
