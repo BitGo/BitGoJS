@@ -4,6 +4,7 @@ import * as Utils from './utils';
 export { AtaInitializationBuilder } from './ataInitializationBuilder';
 export { CloseAtaBuilder } from './closeAtaBuilder';
 export { KeyPair } from './keyPair';
+export { SplTokenOpsBuilder } from './splTokenOpsBuilder';
 export { StakingActivateBuilder } from './stakingActivateBuilder';
 export { StakingAuthorizeBuilder } from './stakingAuthorizeBuilder';
 export { StakingDeactivateBuilder } from './stakingDeactivateBuilder';

@@ -40,7 +40,8 @@ export type InstructionParams =
   | StakingAuthorize
   | StakingDelegate
   | MintTo
-  | Burn;
+  | Burn
+  | SplTokenOps;
 
 export interface Memo {
   type: InstructionBuilderTypes.Memo;
@@ -103,6 +104,28 @@ export interface Burn {
     tokenName: string;
     decimalPlaces?: number;
     programId?: string;
+  };
+}
+
+export interface SplTokenOperation {
+  type: 'mint' | 'burn';
+  mintAddress?: string;
+  amount: string;
+  tokenName?: string;
+  decimalPlaces?: number;
+  programId?: string;
+  // For mint operations
+  destinationAddress?: string;
+  // For burn operations
+  accountAddress?: string;
+  // Authority address for both mint and burn
+  authorityAddress: string;
+}
+
+export interface SplTokenOps {
+  type: InstructionBuilderTypes.SplTokenOps;
+  params: {
+    operations: SplTokenOperation[];
   };
 }
 
@@ -184,7 +207,8 @@ export type ValidInstructionTypes =
   | 'TokenTransfer'
   | 'SetPriorityFee'
   | 'MintTo'
-  | 'Burn';
+  | 'Burn'
+  | 'SplTokenOps';
 
 export type StakingAuthorizeParams = {
   stakingAddress: string;

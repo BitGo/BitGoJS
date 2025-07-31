@@ -2,6 +2,7 @@ import { BaseTransactionBuilderFactory, InvalidTransactionError, TransactionType
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { AtaInitializationBuilder } from './ataInitializationBuilder';
 import { CloseAtaBuilder } from './closeAtaBuilder';
+import { SplTokenOpsBuilder } from './splTokenOpsBuilder';
 import { StakingActivateBuilder } from './stakingActivateBuilder';
 import { StakingAuthorizeBuilder } from './stakingAuthorizeBuilder';
 import { StakingDeactivateBuilder } from './stakingDeactivateBuilder';
@@ -173,6 +174,13 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    */
   getCloseAtaInitializationBuilder(tx?: Transaction): CloseAtaBuilder {
     return this.initializeBuilder(tx, new CloseAtaBuilder(this._coinConfig));
+  }
+
+  /**
+   * Returns the builder to create SPL token mint and burn operations.
+   */
+  getSplTokenOpsBuilder(tx?: Transaction): SplTokenOpsBuilder {
+    return this.initializeBuilder(tx, new SplTokenOpsBuilder(this._coinConfig));
   }
 
   /**
