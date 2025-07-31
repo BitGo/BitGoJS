@@ -1708,7 +1708,11 @@ export const coins = CoinMap.fromCoins([
     VET_FEATURES,
     KeyCurve.Secp256k1,
     80,
-    200
+    200,
+    '',
+    'VET',
+    false,
+    'VET:VTHO'
   ),
   gasTankAccount(
     'b3158e80-f6ea-4922-98ab-d773a680ce76',
@@ -1721,7 +1725,11 @@ export const coins = CoinMap.fromCoins([
     VET_FEATURES,
     KeyCurve.Secp256k1,
     80,
-    200
+    200,
+    '',
+    'TVET',
+    false,
+    'TVET:VTHO'
   ),
   erc20CompatibleAccountCoin(
     'bfae821b-cf3a-4190-b1a8-a54af51d730e',

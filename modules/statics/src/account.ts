@@ -75,6 +75,8 @@ export interface GasTankAccountConstructorOptions extends AccountConstructorOpti
   gasTankLowBalanceAlertFactor: number;
   // min gas tank balance recommendation is calculated as (feeEstimate x gasTankMinBalanceRecommendationFactor)
   gasTankMinBalanceRecommendationFactor: number;
+  // gas tank token is the token used to pay for gas
+  gasTankToken?: string;
 }
 
 export interface Erc20ConstructorOptions extends AccountConstructorOptions {
@@ -170,12 +172,14 @@ export class AccountCoinToken extends AccountCoin {
 export class GasTankAccountCoin extends AccountCoin {
   public gasTankLowBalanceAlertFactor: number;
   public gasTankMinBalanceRecommendationFactor: number;
+  public gasTankToken?: string;
   constructor(options: GasTankAccountConstructorOptions) {
     super({
       ...options,
     });
     this.gasTankLowBalanceAlertFactor = options.gasTankLowBalanceAlertFactor;
     this.gasTankMinBalanceRecommendationFactor = options.gasTankMinBalanceRecommendationFactor;
+    this.gasTankToken = options?.gasTankToken;
   }
 }
 
@@ -729,7 +733,8 @@ export function gasTankAccount(
   gasTankMinBalanceRecommendationFactor = 10,
   prefix = '',
   suffix: string = name.toUpperCase(),
-  isToken = false
+  isToken = false,
+  gasTankToken?: string
 ) {
   return Object.freeze(
     new GasTankAccountCoin({
@@ -747,6 +752,7 @@ export function gasTankAccount(
       primaryKeyCurve,
       gasTankLowBalanceAlertFactor,
       gasTankMinBalanceRecommendationFactor,
+      gasTankToken,
     })
   );
 }
