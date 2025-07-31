@@ -1,6 +1,12 @@
 import { TransactionExplanation as BaseTransactionExplanation, Recipient } from '@bitgo/sdk-core';
 import { DecodedCloseAccountInstruction } from '@solana/spl-token';
-import { Blockhash, StakeInstructionType, SystemInstructionType, TransactionSignature } from '@solana/web3.js';
+import {
+  Blockhash,
+  StakeInstructionType,
+  SystemInstructionType,
+  TransactionInstruction,
+  TransactionSignature,
+} from '@solana/web3.js';
 import { InstructionBuilderTypes } from './constants';
 
 // TODO(STLX-9890): Add the interfaces for validityWindow and SequenceId
@@ -40,7 +46,8 @@ export type InstructionParams =
   | StakingAuthorize
   | StakingDelegate
   | MintTo
-  | Burn;
+  | Burn
+  | CustomInstruction;
 
 export interface Memo {
   type: InstructionBuilderTypes.Memo;
@@ -200,6 +207,13 @@ export type StakingDelegateParams = {
   fromAddress: string;
   validator: string;
 };
+
+export interface CustomInstruction {
+  type: InstructionBuilderTypes.CustomInstruction;
+  params: {
+    instruction: TransactionInstruction;
+  };
+}
 
 export interface TransactionExplanation extends BaseTransactionExplanation {
   type: string;
