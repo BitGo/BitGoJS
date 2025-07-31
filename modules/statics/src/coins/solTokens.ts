@@ -2853,7 +2853,7 @@ export const solTokens = [
     'ZBCNpuD7YMXzTHB2fhGkGi78MNsHGLRXUhRewNRm9RU',
     'ZBCNpuD7YMXzTHB2fhGkGi78MNsHGLRXUhRewNRm9RU',
     UnderlyingAsset['sol:zbcn'],
-    SOL_TOKEN_FEATURES
+    SOL_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   solToken(
     '14d02815-9642-4cc7-9f8c-136281e6b0af',
