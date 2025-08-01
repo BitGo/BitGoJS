@@ -965,6 +965,40 @@ describe('ETH:', function () {
         basecoin = bitgo.coin('hteth') as Hteth;
       });
 
+      it('should construct a recovery transaction without BitGo', async function () {
+        const basecoin = bitgo.coin('hteth');
+        const recovery = await (basecoin as any).recover({
+          userKey:
+            '{"iv":"aqsg7l4QYJuQ1MgJ4TYJQg==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
+            ':"ccm","adata":"","cipher":"aes","salt":"I9terSX4xiI=","ct":"hqg1i8pZHtjo8+\n' +
+            'kjIu5AsO782ddwQ5CGerz7zbEoSbFkVcMzQtrf6BYD+XpaYUUw8c/hSR3vlwvquGNoFDCXna355\n' +
+            'pQUYLLY7GDgDD33oznFj3HrP5y2acudAStuPkxz5Eu34WUnYac15Tts9oFaCO8vMgWgbYo="}',
+          backupKey:
+            '{"iv":"8zW3vgZRkHLKxNj9SXNm8g==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
+            ':"ccm","adata":"","cipher":"aes","salt":"T8R4dMWbU2s=","ct":"J3eXZKbdIrqvXd\n' +
+            '3h/0enOQe2orKZPCI7fYqkMyPOQRiFVp2b9k790lM2arJ9lt4yM1aTAcRIlJ9ypVMdHppZreGZ0\n' +
+            'TOxtXg3I3yF8BHPdv0QrlR/ok6m67YHsqoY23OqnRiuAjR93DlWcHDDXrz7XF+xVmwdCcI="}',
+          walletContractAddress: '0xda7d06fb9c0369e824ed6ebd6b1c07fcd3b7ad1c',
+          walletPassphrase: 'kLghyj07=b5cBY;^q7Z1',
+          recoveryDestination: '0xDb2Dc32d8ade2bc922b4A46714C87282B1BD9d65',
+          apiKey: 'RBXDGS4EY2HM3A2MC89FCU2YTHCDX6QUIW',
+          eip1559: {
+            maxFeePerGas: 20000000000,
+            maxPriorityFeePerGas: 10000000000,
+          },
+          replayProtectionOptions: {
+            chain: '560048',
+            hardfork: 'london',
+          },
+        });
+
+        // id and tx will always be different because of expireTime
+        should.exist(recovery);
+        console.log('recovery', recovery);
+        recovery.should.have.property('id');
+        recovery.should.have.property('tx');
+      });
+
       it('should generate an unsigned sweep without derivation seed', async function () {
         nock(baseUrl)
           .get('/api')
