@@ -1343,6 +1343,24 @@ class HypeEVM extends Mainnet implements EthereumNetwork {
   nativeCoinOperationHashPrefix = '999';
 }
 
+class LineaETH extends Mainnet implements EthereumNetwork {
+  name = 'Linea Ethereum Testnet';
+  family = CoinFamily.LINEAETH;
+  explorerUrl = 'https://lineascan.build/tx/';
+  accountExplorerUrl = 'https://lineascan.build/address/';
+  chainId = 59144;
+  nativeCoinOperationHashPrefix = '59144';
+}
+
+class LineaETHTestnet extends Testnet implements EthereumNetwork {
+  name = 'Linea Ethereum Testnet';
+  family = CoinFamily.LINEAETH;
+  explorerUrl = 'https://sepolia.lineascan.build/tx/';
+  accountExplorerUrl = 'https://sepolia.lineascan.build/address/';
+  chainId = 59141;
+  nativeCoinOperationHashPrefix = '59141';
+}
+
 class CreditcoinTestnet extends Testnet implements EthereumNetwork {
   name = 'CreditcoinTestnet';
   family = CoinFamily.CTC;
@@ -1738,6 +1756,7 @@ export const Networks = {
     phrs: Object.freeze(new Pharos()),
     ctc: Object.freeze(new Creditcoin()),
     hypeevm: Object.freeze(new HypeEVM()),
+    lineaeth: Object.freeze(new LineaETH()),
     oas: Object.freeze(new Oas()),
     ofc: Object.freeze(new Ofc()),
     optimism: Object.freeze(new Optimism()),
@@ -1827,6 +1846,7 @@ export const Networks = {
     phrs: Object.freeze(new PharosTestnet()),
     ctc: Object.freeze(new CreditcoinTestnet()),
     hypeevm: Object.freeze(new HypeEVMTestnet()),
+    lineaeth: Object.freeze(new LineaETHTestnet()),
     oas: Object.freeze(new OasTestnet()),
     ofc: Object.freeze(new OfcTestnet()),
     optimism: Object.freeze(new OptimismTestnet()),
