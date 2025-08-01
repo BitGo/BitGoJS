@@ -526,7 +526,10 @@ export const TAO_FEATURES = [
   CoinFeature.TSS,
   CoinFeature.TSS_COLD,
   CoinFeature.STAKING,
+  CoinFeature.SUPPORTS_TOKENS,
 ];
+
+export const TAO_TOKEN_FEATURES = [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.TSS, CoinFeature.TSS_COLD];
 
 export const SONEIUM_FEATURES = [
   ...ETH_FEATURES,

@@ -21,6 +21,7 @@ export {
   HederaToken,
   TronErc20Coin,
   SuiCoin,
+  TaoCoin,
   XrpCoin,
   AptCoin,
   AptNFTCollection,
