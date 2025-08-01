@@ -1,5 +1,4 @@
 import { Recipient } from '@bitgo/sdk-core';
-import { Networks } from '@bitgo/statics';
 
 export const AMOUNT = 100000000000000000; // 0.1 VET in base units
 
@@ -128,9 +127,10 @@ export const feePayer = {
   address: '0xdc9fef0b84a0ccf3f1bd4b84e41743e3e051a083',
 };
 
-export const FORWARDER_FACTORY_ADDRESS = Networks.test.vet.forwarderFactoryAddress;
+// Use the hardcoded values from the VetTestnet class in networks.ts
+export const FORWARDER_FACTORY_ADDRESS = '0x65343e18c376d2fc8c3cf10cd146d63e2e0dc9ef';
 
-export const FORWARDER_IMPLEMENTATION_ADDRESS = Networks.test.vet.forwarderImplementationAddress;
+export const FORWARDER_IMPLEMENTATION_ADDRESS = '0x62de34c87f847d385af07f6c25dbd97b1fffefc0';
 
 export const CREATE_FORWARDER_METHOD = '0x13b2f75c';
 

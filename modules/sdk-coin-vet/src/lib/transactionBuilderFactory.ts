@@ -11,6 +11,8 @@ import { AddressInitializationTransaction } from './transaction/addressInitializ
 import { FlushTokenTransaction } from './transaction/flushTokenTransaction';
 import { TokenTransactionBuilder } from './transactionBuilder/tokenTransactionBuilder';
 import { TokenTransaction } from './transaction/tokenTransaction';
+import { StakingBuilder } from './transactionBuilder/stakingBuilder';
+import { StakingTransaction } from './transaction/stakingTransaction';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -39,6 +41,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           const tokenTransferTx = new TokenTransaction(this._coinConfig);
           tokenTransferTx.fromDeserializedSignedTransaction(signedTx);
           return this.getTokenTransactionBuilder(tokenTransferTx);
+        case TransactionType.ContractCall:
+          const stakingTx = new StakingTransaction(this._coinConfig);
+          stakingTx.fromDeserializedSignedTransaction(signedTx);
+          return this.getStakingBuilder(stakingTx);
         default:
           throw new InvalidTransactionError('Invalid transaction type');
       }
@@ -62,6 +68,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getTokenTransactionBuilder(tx?: Transaction): TokenTransactionBuilder {
     return this.initializeBuilder(tx, new TokenTransactionBuilder(this._coinConfig));
+  }
+
+  getStakingBuilder(tx?: StakingTransaction): StakingBuilder {
+    return this.initializeBuilder(tx, new StakingBuilder(this._coinConfig));
   }
 
   /** @inheritdoc */
