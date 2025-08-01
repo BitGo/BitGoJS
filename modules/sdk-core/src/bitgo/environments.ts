@@ -217,6 +217,9 @@ const mainnetBase: EnvironmentTemplate = {
     hypeevm: {
       baseUrl: 'https://rpc.hyperliquid.xyz/evm',
     },
+    og: {
+      baseUrl: '', //TODO- WIN-6519 when mainnet details available
+    },
     sonic: {
       baseUrl: 'https://rpc.soniclabs.com',
     },
@@ -320,6 +323,9 @@ const testnetBase: EnvironmentTemplate = {
     },
     hypeevm: {
       baseUrl: 'https://rpc.hyperliquid-testnet.xyz/evm',
+    },
+    og: {
+      baseUrl: 'https://chainscan-test.0g.ai/open/api',
     },
     sonic: {
       baseUrl: 'https://rpc.blaze.soniclabs.com',

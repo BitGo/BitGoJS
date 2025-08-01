@@ -1406,6 +1406,24 @@ class IrysTestnet extends Testnet implements EthereumNetwork {
   nativeCoinOperationHashPrefix = '1270';
 }
 
+class Og extends Mainnet implements EthereumNetwork {
+  name = 'Zero Gravity';
+  family = CoinFamily.OG;
+  explorerUrl = ''; //TODO- WIN-6519 when mainnet details available
+  accountExplorerUrl = ''; //TODO- WIN-6519 when mainnet details available
+  chainId = 9999999999999; //TODO- WIN-6519 when mainnet details available ,this is a dummy value
+  nativeCoinOperationHashPrefix = ''; //TODO- WIN-6519 when mainnet details available
+}
+
+class OgTestnet extends Testnet implements EthereumNetwork {
+  name = 'Zero Gravity Testnet';
+  family = CoinFamily.OG;
+  explorerUrl = 'https://chainscan-galileo.0g.ai/tx/';
+  accountExplorerUrl = 'https://chainscan-galileo.0g.ai/address/';
+  chainId = 16601;
+  nativeCoinOperationHashPrefix = '16601';
+}
+
 class Xdc extends Mainnet implements EthereumNetwork {
   name = 'XdcChain';
   family = CoinFamily.XDC;
@@ -1739,6 +1757,7 @@ export const Networks = {
     ctc: Object.freeze(new Creditcoin()),
     hypeevm: Object.freeze(new HypeEVM()),
     oas: Object.freeze(new Oas()),
+    og: Object.freeze(new Og()),
     ofc: Object.freeze(new Ofc()),
     optimism: Object.freeze(new Optimism()),
     osmo: Object.freeze(new Osmo()),
@@ -1828,6 +1847,7 @@ export const Networks = {
     ctc: Object.freeze(new CreditcoinTestnet()),
     hypeevm: Object.freeze(new HypeEVMTestnet()),
     oas: Object.freeze(new OasTestnet()),
+    og: Object.freeze(new OgTestnet()),
     ofc: Object.freeze(new OfcTestnet()),
     optimism: Object.freeze(new OptimismTestnet()),
     osmo: Object.freeze(new OsmoTestnet()),

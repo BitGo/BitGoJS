@@ -78,6 +78,7 @@ describe('V2 Keychains', function () {
         n.asset !== UnderlyingAsset.ICP &&
         n.asset !== UnderlyingAsset.MANTRA &&
         n.asset !== UnderlyingAsset.MON &&
+        n.asset !== UnderlyingAsset.OG &&
         n.asset !== UnderlyingAsset.WORLD &&
         n.asset !== UnderlyingAsset.PHRS &&
         n.asset !== UnderlyingAsset.CTC &&
