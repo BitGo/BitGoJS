@@ -142,13 +142,13 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     if (this._nonceInfo) {
       tx.nonceInfo = {
         nonce: this._recentBlockhash,
-        nonceInstruction: solInstructionFactory(this._nonceInfo)[0],
+        nonceInstruction: solInstructionFactory(this._nonceInfo, this._coinConfig)[0],
       };
     } else {
       tx.recentBlockhash = this._recentBlockhash;
     }
     for (const instruction of this._instructionsData) {
-      tx.add(...solInstructionFactory(instruction));
+      tx.add(...solInstructionFactory(instruction, this._coinConfig));
     }
 
     if (this._memo) {
@@ -159,7 +159,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         },
       };
       this._instructionsData.push(memoData);
-      tx.add(...solInstructionFactory(memoData));
+      tx.add(...solInstructionFactory(memoData, this._coinConfig));
     }
 
     this._transaction.lamportsPerSignature = this._lamportsPerSignature;

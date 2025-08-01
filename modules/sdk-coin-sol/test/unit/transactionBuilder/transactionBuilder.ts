@@ -108,6 +108,7 @@ describe('Sol Transaction Builder', async () => {
           amount: '300000',
           validator: 'CyjoLt3kjqB57K7ewCBHmnHq3UgEj3ak6A7m6EsBsuhA',
           isMarinade: false,
+          isJito: false,
         },
       },
     ]);

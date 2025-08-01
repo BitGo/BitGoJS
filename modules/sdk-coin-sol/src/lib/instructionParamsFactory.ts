@@ -27,7 +27,12 @@ import {
 import { NotSupported, TransactionType } from '@bitgo/sdk-core';
 import { coins, SolCoin } from '@bitgo/statics';
 import assert from 'assert';
-import { InstructionBuilderTypes, ValidInstructionTypesEnum, walletInitInstructionIndexes } from './constants';
+import {
+  InstructionBuilderTypes,
+  JITO_STAKE_POOL_ADDRESS,
+  ValidInstructionTypesEnum,
+  walletInitInstructionIndexes,
+} from './constants';
 import {
   AtaClose,
   AtaInit,
@@ -47,6 +52,8 @@ import {
   SetPriorityFee,
 } from './iface';
 import { getInstructionType } from './utils';
+import { DepositSolParams } from '@solana/spl-stake-pool';
+import { decodeDepositSol } from './jitoStakePoolOperations';
 
 /**
  * Construct instructions params from Solana instructions
@@ -303,6 +310,14 @@ function parseSendInstructions(
   return instructionData;
 }
 
+function stakingInstructionsIsMarinade(si: StakingInstructions): boolean {
+  return !!(si.delegate === undefined && si.depositSol === undefined);
+}
+
+function stakingInstructionsIsJito(si: StakingInstructions): boolean {
+  return !!(si.delegate === undefined && si.depositSol?.stakePool.toString() === JITO_STAKE_POOL_ADDRESS);
+}
+
 /**
  * Parses Solana instructions to create staking tx and delegate tx instructions params
  * Only supports Nonce, StakingActivate and Memo Solana instructions
@@ -312,8 +327,8 @@ function parseSendInstructions(
  */
 function parseStakingActivateInstructions(
   instructions: TransactionInstruction[]
-): Array<Nonce | StakingActivate | Memo> {
-  const instructionData: Array<Nonce | StakingActivate | Memo> = [];
+): Array<Nonce | StakingActivate | Memo | AtaInit> {
+  const instructionData: Array<Nonce | StakingActivate | Memo | AtaInit> = [];
   const stakingInstructions = {} as StakingInstructions;
   for (const instruction of instructions) {
     const type = getInstructionType(instruction);
@@ -346,21 +361,48 @@ function parseStakingActivateInstructions(
       case ValidInstructionTypesEnum.StakingDelegate:
         stakingInstructions.delegate = StakeInstruction.decodeDelegate(instruction);
         break;
+
+      case ValidInstructionTypesEnum.DepositSol:
+        stakingInstructions.depositSol = decodeDepositSol(instruction);
+        break;
+
+      case ValidInstructionTypesEnum.InitializeAssociatedTokenAccount:
+        instructionData.push({
+          type: InstructionBuilderTypes.CreateAssociatedTokenAccount,
+          params: {
+            mintAddress: instruction.keys[ataInitInstructionKeysIndexes.MintAddress].pubkey.toString(),
+            ataAddress: instruction.keys[ataInitInstructionKeysIndexes.ATAAddress].pubkey.toString(),
+            ownerAddress: instruction.keys[ataInitInstructionKeysIndexes.OwnerAddress].pubkey.toString(),
+            payerAddress: instruction.keys[ataInitInstructionKeysIndexes.PayerAddress].pubkey.toString(),
+            tokenName: findTokenName(instruction.keys[ataInitInstructionKeysIndexes.MintAddress].pubkey.toString()),
+          },
+        });
+        break;
     }
   }
 
   validateStakingInstructions(stakingInstructions);
+
   const stakingActivate: StakingActivate = {
     type: InstructionBuilderTypes.StakingActivate,
     params: {
-      fromAddress: stakingInstructions.create?.fromPubkey.toString() || '',
-      stakingAddress: stakingInstructions.initialize?.stakePubkey.toString() || '',
-      amount: stakingInstructions.create?.lamports.toString() || '',
+      fromAddress:
+        stakingInstructions.create?.fromPubkey.toString() ||
+        stakingInstructions.depositSol?.fundingAccount.toString() ||
+        '',
+      stakingAddress:
+        stakingInstructions.initialize?.stakePubkey.toString() ||
+        stakingInstructions.depositSol?.stakePool.toString() ||
+        '',
+      amount:
+        stakingInstructions.create?.lamports.toString() || stakingInstructions.depositSol?.lamports.toString() || '',
       validator:
         stakingInstructions.delegate?.votePubkey.toString() ||
         stakingInstructions.initialize?.authorized.staker.toString() ||
+        stakingInstructions.depositSol?.stakePool.toString() ||
         '',
-      isMarinade: stakingInstructions.delegate === undefined,
+      isMarinade: stakingInstructionsIsMarinade(stakingInstructions),
+      isJito: stakingInstructionsIsJito(stakingInstructions),
     },
   };
   instructionData.push(stakingActivate);
@@ -413,22 +455,23 @@ interface StakingInstructions {
   initialize?: InitializeStakeParams;
   delegate?: DelegateStakeParams;
   authorize?: AuthorizeStakeParams[];
+  depositSol?: DepositSolParams;
 }
 
 function validateStakingInstructions(stakingInstructions: StakingInstructions) {
-  if (!stakingInstructions.create) {
-    throw new NotSupported('Invalid staking activate transaction, missing create stake account instruction');
-  }
-
-  if (!stakingInstructions.initialize && stakingInstructions.delegate) {
-    return;
-  } else if (!stakingInstructions.delegate && stakingInstructions.initialize) {
-    return;
-  } else if (!stakingInstructions.delegate && !stakingInstructions.initialize) {
-    // If both are missing something is wrong
-    throw new NotSupported(
-      'Invalid staking activate transaction, missing initialize stake account/delegate instruction'
-    );
+  if (stakingInstructionsIsJito(stakingInstructions)) {
+    if (!stakingInstructions.depositSol) {
+      throw new NotSupported('Invalid staking activate transaction, missing deposit sol instruction');
+    }
+  } else {
+    if (!stakingInstructions.create) {
+      throw new NotSupported('Invalid staking activate transaction, missing create stake account instruction');
+    }
+    if (!stakingInstructions.delegate && !stakingInstructions.initialize) {
+      throw new NotSupported(
+        'Invalid staking activate transaction, missing initialize stake account/delegate instruction'
+      );
+    }
   }
 }
 
@@ -775,6 +818,9 @@ function parseAtaInitInstructions(
           },
         };
         instructionData.push(ataInit);
+        break;
+      case ValidInstructionTypesEnum.DepositSol:
+        // AtaInit is a part of spl-stake-pool's depositSol process
         break;
       default:
         throw new NotSupported(

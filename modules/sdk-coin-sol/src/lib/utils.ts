@@ -17,6 +17,7 @@ import {
   TOKEN_2022_PROGRAM_ID,
   DecodedBurnInstruction,
   DecodedMintToInstruction,
+  DecodedCloseAccountInstruction,
 } from '@solana/spl-token';
 import {
   Keypair,
@@ -52,8 +53,10 @@ import {
   validInstructionData2,
   ValidInstructionTypesEnum,
   walletInitInstructionIndexes,
+  jitoStakingActivateInstructionsIndexes,
 } from './constants';
 import { ValidInstructionTypes } from './iface';
+import { STAKE_POOL_INSTRUCTION_LAYOUTS, STAKE_POOL_PROGRAM_ID } from '@solana/spl-stake-pool';
 
 const DECODED_BLOCK_HASH_LENGTH = 32; // https://docs.solana.com/developing/programming-model/transactions#blockhash-format
 const DECODED_SIGNATURE_LENGTH = 64; // https://docs.solana.com/terminology#signature
@@ -299,6 +302,7 @@ export function getTransactionType(transaction: SolTransaction): TransactionType
     return TransactionType.WalletInitialization;
   } else if (
     matchTransactionTypeByInstructionsOrder(instructions, marinadeStakingActivateInstructionsIndexes) ||
+    matchTransactionTypeByInstructionsOrder(instructions, jitoStakingActivateInstructionsIndexes) ||
     matchTransactionTypeByInstructionsOrder(instructions, stakingActivateInstructionsIndexes)
   ) {
     return TransactionType.StakingActivate;
@@ -339,7 +343,7 @@ export function getInstructionType(instruction: TransactionInstruction): ValidIn
     case TOKEN_PROGRAM_ID.toString():
     case TOKEN_2022_PROGRAM_ID.toString():
       try {
-        let decodedInstruction;
+        let decodedInstruction: DecodedCloseAccountInstruction | undefined;
         if (instruction.programId.toString() !== TOKEN_2022_PROGRAM_ID.toString()) {
           decodedInstruction = decodeCloseAccountInstruction(instruction);
         } else {
@@ -384,6 +388,14 @@ export function getInstructionType(instruction: TransactionInstruction): ValidIn
 
       // Default to TokenTransfer for other token instructions
       return 'TokenTransfer';
+    case STAKE_POOL_PROGRAM_ID.toString():
+      const discriminator = instruction.data.readUint8(0);
+      const layoutKey = Object.entries(STAKE_POOL_INSTRUCTION_LAYOUTS).find(([_, v]) => v.index === discriminator)?.[0];
+      if (layoutKey === undefined) {
+        throw new Error('Instruction type incorrect; unknown discriminator');
+      }
+      const instructionKey = layoutKey as keyof typeof STAKE_POOL_INSTRUCTION_LAYOUTS;
+      return instructionKey;
     case StakeProgram.programId.toString():
       return StakeInstruction.decodeInstructionType(instruction);
     case ASSOCIATED_TOKEN_PROGRAM_ID.toString():
