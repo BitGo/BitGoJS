@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import { payments, Transaction } from '@bitgo/utxo-lib';
+import { payments } from '@bitgo/utxo-lib';
 
 import { buildToSpendTransaction, hashMessageWithTag } from '../../src/bip322';
 
@@ -50,7 +50,7 @@ describe('to_spend', function () {
     fixtures.forEach(({ message, txid }) => {
       it(`should build a to_spend transaction for message "${message}"`, function () {
         const result = buildToSpendTransaction(scriptPubKey, Buffer.from(message));
-        const computedTxid = Transaction.fromHex(result).getId();
+        const computedTxid = result.getId();
         assert.strictEqual(computedTxid, txid, `Transaction ID for message "${message}" does not match expected value`);
       });
     });
