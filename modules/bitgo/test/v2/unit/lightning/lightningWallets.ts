@@ -825,6 +825,7 @@ describe('Lightning wallets', function () {
           },
         ],
         satsPerVbyte: 15n,
+        passphrase: 'password123',
       };
 
       const txRequestResponse = {
@@ -973,6 +974,7 @@ describe('Lightning wallets', function () {
           },
         ],
         satsPerVbyte: 15n,
+        passphrase: 'password123',
       };
 
       const txRequestResponse = {

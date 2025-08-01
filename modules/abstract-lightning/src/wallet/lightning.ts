@@ -29,7 +29,7 @@ import {
   ListPaymentsResponse,
   LndCreateWithdrawResponse,
 } from '../codecs';
-import { LightningPaymentIntent, LightningPaymentRequest } from '@bitgo/public-types';
+import { LightningPaymentIntent, LightningPaymentRequest, LightningOnchainRequest } from '@bitgo/public-types';
 
 export type PayInvoiceResponse = {
   /**
@@ -167,6 +167,9 @@ export interface ILightningWallet {
    * @param {LightningOnchainWithdrawParams} params - Withdraw parameters
    * @param {LightningOnchainRecipient[]} params.recipients - The recipients to pay
    * @param {bigint} params.satsPerVbyte - Value for sats per virtual byte
+   * @param {string} params.passphrase - The wallet passphrase
+   * @param {string} [params.sequenceId] - Optional sequence ID for the respective withdraw transfer
+   * @param {string} [params.comment] - Optional comment for the respective withdraw transfer
    * @returns {Promise<LightningOnchainWithdrawResponse>} Withdraw result containing transaction request details and status
    */
   withdrawOnchain(params: LightningOnchainWithdrawParams): Promise<LightningOnchainWithdrawResponse>;
@@ -336,12 +339,25 @@ export class LightningWallet implements ILightningWallet {
     const reqId = new RequestTracer();
     this.wallet.bitgo.setRequestTracer(reqId);
 
+    const { userAuthKey } = await getLightningAuthKeychains(this.wallet);
+    const userAuthKeyEncryptedPrv = userAuthKey.encryptedPrv;
+    if (!userAuthKeyEncryptedPrv) {
+      throw new Error(`user auth key is missing encrypted private key`);
+    }
+    const signature = createMessageSignature(
+      t.exact(LightningOnchainRequest).encode(params),
+      this.wallet.bitgo.decrypt({ password: params.passphrase, input: userAuthKeyEncryptedPrv })
+    );
+
     const paymentIntent: { intent: LightningPaymentIntent } = {
       intent: {
-        onchainRequest: {
+        comment: params.comment,
+        sequenceId: params.sequenceId,
+        signedRequest: {
           recipients: params.recipients,
           satsPerVbyte: params.satsPerVbyte,
         },
+        signature,
         intentType: 'payment',
       },
     };
