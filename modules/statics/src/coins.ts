@@ -31,6 +31,7 @@ import {
   vetToken,
   cosmosToken,
   talgoToken,
+  taoToken,
   taptNFTCollection,
   taptToken,
   tarbethErc20,
@@ -44,6 +45,7 @@ import {
   tronToken,
   tstellarToken,
   tsuiToken,
+  ttaoToken,
   ttronToken,
   txrpToken,
   tworldErc20,
@@ -112,6 +114,7 @@ import {
   SUI_TOKEN_FEATURES,
   SUI_TOKEN_FEATURES_STAKING,
   TAO_FEATURES,
+  TAO_TOKEN_FEATURES,
   TIA_FEATURES,
   TOKEN_FEATURES_WITH_FRANKFURT,
   TON_FEATURES,
@@ -3957,6 +3960,15 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['tsui:wal'],
     SUI_TOKEN_FEATURES_STAKING
   ),
+  ttaoToken(
+    'b8b5fded-65f8-49eb-8f83-ad97d08d07f2',
+    'ttao:apex',
+    'Apex',
+    9,
+    '1',
+    UnderlyingAsset['ttao:apex'],
+    TAO_TOKEN_FEATURES
+  ),
   aptToken(
     'e8bfdab3-4ef6-4b39-9450-d9cb59593f7a',
     'apt:usdt',
@@ -4129,6 +4141,7 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
     sol: solToken,
     stx: sip10Token,
     sui: suiToken,
+    tao: taoToken,
     trx: tronToken,
     vet: vetToken,
     xlm: stellarToken,
@@ -4241,6 +4254,13 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
         token.module, // module
         token.symbol, // symbol
         token.contractAddress, // contractAddress
+        ...commonArgs.slice(4) // asset, features, prefix, suffix, network, primaryKeyCurve
+      );
+
+    case 'tao':
+      return initializer(
+        ...commonArgs.slice(0, 4), // id, name, fullName, decimalPlaces
+        token.subnetId, // subnetId
         ...commonArgs.slice(4) // asset, features, prefix, suffix, network, primaryKeyCurve
       );
 

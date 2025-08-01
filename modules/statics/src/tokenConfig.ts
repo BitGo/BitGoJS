@@ -22,6 +22,7 @@ import {
   SolCoin,
   StellarCoin,
   SuiCoin,
+  TaoCoin,
   TronErc20Coin,
   VetToken,
   WorldERC20Token,
@@ -110,6 +111,10 @@ export type Sip10TokenConfig = BaseNetworkConfig & {
   assetId: string;
 };
 
+export type TaoTokenConfig = BaseNetworkConfig & {
+  subnetId: string;
+};
+
 export type Nep141TokenConfig = BaseNetworkConfig & {
   contractAddress: string;
   storageDepositAmount: string;
@@ -143,7 +148,8 @@ export type TokenConfig =
   | Sip10TokenConfig
   | Nep141TokenConfig
   | CosmosTokenConfig
-  | VetTokenConfig;
+  | VetTokenConfig
+  | TaoTokenConfig;
 
 export interface Tokens {
   bitcoin: {
@@ -209,6 +215,9 @@ export interface Tokens {
     };
     sui: {
       tokens: SuiTokenConfig[];
+    };
+    tao: {
+      tokens: TaoTokenConfig[];
     };
     bera: {
       tokens: EthLikeTokenConfig[];
@@ -288,6 +297,9 @@ export interface Tokens {
     sui: {
       tokens: SuiTokenConfig[];
     };
+    tao: {
+      tokens: TaoTokenConfig[];
+    };
     bera: {
       tokens: EthLikeTokenConfig[];
     };
@@ -345,6 +357,7 @@ export interface AmsTokenConfig {
   isToken: boolean;
   baseUnit?: string;
   kind?: string;
+  subnetId?: string;
 }
 
 export interface TrimmedAmsNetworkConfig {
@@ -800,6 +813,24 @@ const getFormattedSuiTokens = (customCoinMap = coins) =>
     return acc;
   }, []);
 
+function getTaoTokenConfig(coin: TaoCoin): TaoTokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'tao' : 'ttao',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    decimalPlaces: coin.decimalPlaces,
+    subnetId: coin.subnetId,
+  };
+}
+const getFormattedTaoTokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: TaoTokenConfig[], coin) => {
+    if (coin instanceof TaoCoin) {
+      acc.push(getTaoTokenConfig(coin));
+    }
+    return acc;
+  }, []);
+
 function getAptTokenConfig(coin: AptCoin): AptTokenConfig {
   return {
     type: coin.name,
@@ -974,6 +1005,9 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
       sui: {
         tokens: getFormattedSuiTokens(coinMap).filter((token) => token.network === 'Mainnet'),
       },
+      tao: {
+        tokens: getFormattedTaoTokens(coinMap).filter((token) => token.network === 'Mainnet'),
+      },
       bera: {
         tokens: getFormattedBeraTokens(coinMap).filter((token) => token.network === 'Mainnet'),
       },
@@ -1061,6 +1095,9 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
       },
       sui: {
         tokens: getFormattedSuiTokens(coinMap).filter((token) => token.network === 'Testnet'),
+      },
+      tao: {
+        tokens: getFormattedTaoTokens(coinMap).filter((token) => token.network === 'Testnet'),
       },
       bera: {
         tokens: getFormattedBeraTokens(coinMap).filter((token) => token.network === 'Testnet'),
@@ -1176,6 +1213,8 @@ export function getFormattedTokenConfigForCoin(coin: Readonly<BaseCoin>): TokenC
     return getXrpTokenConfig(coin);
   } else if (coin instanceof SuiCoin) {
     return getSuiTokenConfig(coin);
+  } else if (coin instanceof TaoCoin) {
+    return getTaoTokenConfig(coin);
   } else if (coin instanceof AptCoin) {
     return getAptTokenConfig(coin);
   } else if (coin instanceof AptNFTCollection) {

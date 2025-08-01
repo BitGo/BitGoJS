@@ -2873,6 +2873,9 @@ export enum UnderlyingAsset {
   'tstx:tsip6dp' = 'tstx:tsip6dp',
   'tstx:tsip8dp' = 'tstx:tsip8dp',
 
+  // TAO testnet tokens
+  'ttao:apex' = 'ttao:apex',
+
   // Hbar tokens
   'hbar:karate' = 'hbar:karate',
   'hbar:sauce' = 'hbar:sauce',
