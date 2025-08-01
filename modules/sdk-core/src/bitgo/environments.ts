@@ -232,6 +232,9 @@ const mainnetBase: EnvironmentTemplate = {
     mon: {
       baseUrl: 'https://api.etherscan.io/v2',
     },
+    lineaeth: {
+      baseUrl: 'https://api.lineascan.build/api',
+    },
   },
   icpNodeUrl: 'https://ic0.app',
   worldExplorerBaseUrl: 'https://worldscan.org/',
@@ -335,6 +338,9 @@ const testnetBase: EnvironmentTemplate = {
     },
     mon: {
       baseUrl: 'https://api.etherscan.io/v2',
+    },
+    lineaeth: {
+      baseUrl: 'https://api-sepolia.lineascan.build/api',
     },
   },
   stxNodeUrl: 'https://api.testnet.hiro.so',
