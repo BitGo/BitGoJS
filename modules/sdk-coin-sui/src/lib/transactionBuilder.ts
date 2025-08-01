@@ -14,10 +14,10 @@ import { Transaction } from './transaction';
 import utils from './utils';
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { SuiProgrammableTransaction, SuiTransactionType } from './iface';
+import { GasData, SuiProgrammableTransaction, SuiTransactionType } from './iface';
 import { DUMMY_SUI_GAS_PRICE } from './constants';
 import { KeyPair } from './keyPair';
-import { GasData, SuiObjectRef } from './mystenlab/types';
+import { SuiObjectRef } from './mystenlab/types';
 
 export abstract class TransactionBuilder<T = SuiProgrammableTransaction> extends BaseTransactionBuilder {
   protected _transaction: Transaction<T>;
@@ -52,7 +52,34 @@ export abstract class TransactionBuilder<T = SuiProgrammableTransaction> extends
   protected signImplementation(key: BaseKey): Transaction<T> {
     const signer = new KeyPair({ prv: key.key });
     this._signer = signer;
-    this.transaction.sign(signer);
+    const signable = this.transaction.signablePayload;
+    const signature = signer.signMessageinUint8Array(signable);
+    const signatureBuffer = Buffer.from(signature);
+    this.transaction.addSignature({ pub: signer.getKeys().pub }, signatureBuffer);
+    this.transaction.setSerializedSig({ pub: signer.getKeys().pub }, signatureBuffer);
+    return this.transaction;
+  }
+
+  /**
+   * Signs the transaction as a fee payer.
+   *
+   * @param {BaseKey} key - The private key to sign the transaction with.
+   * @returns {Transaction<T>} - The signed transaction.
+   */
+  signFeePayer(key: BaseKey): Transaction<T> {
+    this.validateKey(key);
+
+    // Check if gasData exists and has a sponsor
+    if (!this._gasData?.sponsor) {
+      throw new BuildTransactionError('Transaction must have a fee payer (sponsor) to sign as fee payer');
+    }
+
+    const signer = new KeyPair({ prv: key.key });
+    const signable = this.transaction.signablePayload;
+    const signature = signer.signMessageinUint8Array(signable);
+    const signatureBuffer = Buffer.from(signature);
+    this.transaction.addFeePayerSignature({ pub: signer.getKeys().pub }, signatureBuffer);
+
     return this.transaction;
   }
 
@@ -88,6 +115,30 @@ export abstract class TransactionBuilder<T = SuiProgrammableTransaction> extends
   }
 
   /**
+   * Sets the gas sponsor (fee payer) address for this transaction.
+   * When specified, the sponsor will be responsible for paying transaction fees.
+   *
+   * @param {string} sponsorAddress the account that will pay for this transaction
+   * @returns {TransactionBuilder} This transaction builder
+   */
+  sponsor(sponsorAddress: string): this {
+    if (!utils.isValidAddress(sponsorAddress)) {
+      throw new BuildTransactionError('Invalid or missing sponsor, got: ' + sponsorAddress);
+    }
+    if (!this._gasData) {
+      throw new BuildTransactionError('gasData must be set before setting sponsor');
+    }
+
+    // Update the gasData with the sponsor
+    this._gasData = {
+      ...this._gasData,
+      sponsor: sponsorAddress,
+    };
+
+    return this;
+  }
+
+  /**
    * Initialize the transaction builder fields using the decoded transaction data
    *
    * @param {Transaction} tx the transaction data
@@ -117,6 +168,14 @@ export abstract class TransactionBuilder<T = SuiProgrammableTransaction> extends
     if (!utils.isValidAddress(gasData.owner)) {
       throw new BuildTransactionError('Invalid gas address ' + gasData.owner);
     }
+
+    // Validate sponsor address if present
+    if ('sponsor' in gasData && gasData.sponsor !== undefined) {
+      if (!utils.isValidAddress(gasData.sponsor)) {
+        throw new BuildTransactionError('Invalid sponsor address ' + gasData.sponsor);
+      }
+    }
+
     this.validateGasPayment(gasData.payment);
     this.validateGasBudget(gasData.budget);
     this.validateGasPrice(gasData.price);
