@@ -38,6 +38,7 @@ import {
   Transfer,
   WalletInit,
   SetPriorityFee,
+  CustomInstruction,
 } from './iface';
 import { getSolTokenFromTokenName } from './utils';
 
@@ -79,6 +80,8 @@ export function solInstructionFactory(instructionToBuild: InstructionParams): Tr
       return mintToInstruction(instructionToBuild);
     case InstructionBuilderTypes.Burn:
       return burnInstruction(instructionToBuild);
+    case InstructionBuilderTypes.CustomInstruction:
+      return customInstruction(instructionToBuild);
     default:
       throw new Error(`Invalid instruction type or not supported`);
   }
@@ -545,4 +548,18 @@ function burnInstruction(data: Burn): TransactionInstruction[] {
   }
 
   return [burnInstr];
+}
+
+/**
+ * Process custom instruction - simply returns the raw instruction
+ *
+ * @param {CustomInstruction} data - the data containing the custom instruction
+ * @returns {TransactionInstruction[]} An array containing the custom instruction
+ */
+function customInstruction(data: InstructionParams): TransactionInstruction[] {
+  const {
+    params: { instruction },
+  } = data as CustomInstruction;
+  assert(instruction, 'Missing instruction param');
+  return [instruction];
 }
