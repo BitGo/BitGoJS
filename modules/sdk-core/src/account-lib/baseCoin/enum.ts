@@ -66,6 +66,8 @@ export enum TransactionType {
   StakingDelegate,
   // Custom transaction (e.g. SUI)
   CustomTx,
+  // Custom Solana instructions
+  SolanaCustomInstructions,
   StakingRedelegate,
   AddPermissionlessDelegator,
   AddPermissionlessValidator,

@@ -117,7 +117,16 @@ export abstract class MpcUtils {
   populateIntent(baseCoin: IBaseCoin, params: PrebuildTransactionWithIntentOptions): PopulatedIntent {
     const chain = this.baseCoin.getChain();
 
-    if (!['acceleration', 'fillNonce', 'transferToken', 'tokenApproval'].includes(params.intentType)) {
+    if (params.intentType === 'solInstruction') {
+      assert(
+        params.solInstructions && params.solInstructions.length > 0,
+        `'solInstructions' is a required parameter for solInstruction intent`
+      );
+    }
+
+    if (
+      !['acceleration', 'fillNonce', 'transferToken', 'tokenApproval', 'customInstructions'].includes(params.intentType)
+    ) {
       assert(params.recipients, `'recipients' is a required parameter for ${params.intentType} intent`);
     }
     const intentRecipients = params.recipients?.map((recipient) => {
