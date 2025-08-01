@@ -148,6 +148,29 @@ export function isValidMemo(memo: string): boolean {
 }
 
 /**
+ * Checks if a string is valid base64 encoded data
+ * @param str - The string to validate
+ * @returns True if the string is valid base64, false otherwise
+ */
+export function isValidBase64(str: string): boolean {
+  try {
+    const decoded = Buffer.from(str, 'base64').toString('base64');
+    return decoded === str;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Checks if a string is valid hexadecimal data
+ * @param str - The string to validate
+ * @returns True if the string is valid hex, false otherwise
+ */
+export function isValidHex(str: string): boolean {
+  return /^[0-9A-Fa-f]*$/.test(str) && str.length % 2 === 0;
+}
+
+/**
  * Checks if raw transaction can be deserialized
  *
  * @param {string} rawTransaction - transaction in base64 string format

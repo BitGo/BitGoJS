@@ -19,6 +19,17 @@ describe('Sol Custom Instruction Builder', () => {
   const recentBlockHash = 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi';
   const memo = 'test memo';
 
+  // Helper function to convert TransactionInstruction to the expected format
+  const convertInstructionToParams = (instruction: TransactionInstruction) => ({
+    programId: instruction.programId.toString(),
+    keys: instruction.keys.map((key) => ({
+      pubkey: key.pubkey.toString(),
+      isSigner: key.isSigner,
+      isWritable: key.isWritable,
+    })),
+    data: instruction.data.toString('hex'),
+  });
+
   describe('Succeed', () => {
     it('build a transaction with a single custom instruction', async () => {
       const transferInstruction = SystemProgram.transfer({
@@ -28,21 +39,10 @@ describe('Sol Custom Instruction Builder', () => {
       });
 
       const txBuilder = customInstructionBuilder();
-      txBuilder.addCustomInstruction(transferInstruction);
+      txBuilder.addCustomInstruction(convertInstructionToParams(transferInstruction));
       const tx = await txBuilder.build();
 
-      tx.inputs.length.should.equal(1);
-      tx.inputs[0].should.deepEqual({
-        address: authAccount.pub,
-        value: '1000000',
-        coin: 'tsol',
-      });
-      tx.outputs.length.should.equal(1);
-      tx.outputs[0].should.deepEqual({
-        address: otherAccount.pub,
-        value: '1000000',
-        coin: 'tsol',
-      });
+      tx.inputs.length.should.equal(0);
 
       const rawTx = tx.toBroadcastFormat();
       should.equal(Utils.isValidRawTransaction(rawTx), true);
@@ -60,11 +60,14 @@ describe('Sol Custom Instruction Builder', () => {
       });
 
       const txBuilder = customInstructionBuilder();
-      txBuilder.addCustomInstructions([transferInstruction, priorityFeeInstruction]);
+      txBuilder.addCustomInstructions([
+        convertInstructionToParams(transferInstruction),
+        convertInstructionToParams(priorityFeeInstruction),
+      ]);
       const tx = await txBuilder.build();
 
-      tx.inputs.length.should.equal(1);
-      tx.outputs.length.should.equal(1);
+      tx.inputs.length.should.equal(0);
+      tx.outputs.length.should.equal(0);
 
       const rawTx = tx.toBroadcastFormat();
       should.equal(Utils.isValidRawTransaction(rawTx), true);
@@ -81,7 +84,7 @@ describe('Sol Custom Instruction Builder', () => {
       });
 
       const txBuilder = customInstructionBuilder();
-      txBuilder.addCustomInstruction(transferInstruction);
+      txBuilder.addCustomInstruction(convertInstructionToParams(transferInstruction));
       txBuilder.memo(memo);
       const tx = await txBuilder.build();
 
@@ -100,7 +103,7 @@ describe('Sol Custom Instruction Builder', () => {
       });
 
       const txBuilder = customInstructionBuilder();
-      txBuilder.addCustomInstruction(transferInstruction);
+      txBuilder.addCustomInstruction(convertInstructionToParams(transferInstruction));
       txBuilder.sign({ key: authAccount.prv });
       const tx = await txBuilder.build();
 
@@ -119,7 +122,7 @@ describe('Sol Custom Instruction Builder', () => {
       });
 
       const txBuilder = customInstructionBuilder();
-      txBuilder.addCustomInstruction(transferInstruction);
+      txBuilder.addCustomInstruction(convertInstructionToParams(transferInstruction));
       txBuilder.getInstructions().should.have.length(1);
 
       txBuilder.clearInstructions();
@@ -127,62 +130,71 @@ describe('Sol Custom Instruction Builder', () => {
     });
   });
 
+  // Type for testing invalid instruction formats
+  interface InvalidInstruction {
+    programId?: string;
+    keys?: unknown;
+    data?: unknown;
+  }
+
   describe('Fail', () => {
     it('for null instruction', () => {
       const txBuilder = customInstructionBuilder();
-      should(() => txBuilder.addCustomInstruction(null as unknown as TransactionInstruction)).throwError(
-        'Instruction cannot be null or undefined'
-      );
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      should(() => txBuilder.addCustomInstruction(null as any)).throwError('Instruction cannot be null or undefined');
     });
 
     it('for undefined instruction', () => {
       const txBuilder = customInstructionBuilder();
-      should(() => txBuilder.addCustomInstruction(undefined as unknown as TransactionInstruction)).throwError(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      should(() => txBuilder.addCustomInstruction(undefined as any)).throwError(
         'Instruction cannot be null or undefined'
       );
     });
 
     it('for instruction without programId', () => {
       const txBuilder = customInstructionBuilder();
-      const invalidInstruction = {
+      const invalidInstruction: InvalidInstruction = {
         keys: [],
-        data: Buffer.alloc(0),
-      } as unknown as TransactionInstruction;
+        data: '',
+      };
 
-      should(() => txBuilder.addCustomInstruction(invalidInstruction)).throwError(
-        'Instruction must have a valid programId'
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      should(() => txBuilder.addCustomInstruction(invalidInstruction as any)).throwError(
+        'Instruction must have a valid programId string'
       );
     });
 
     it('for instruction without keys', () => {
       const txBuilder = customInstructionBuilder();
-      const invalidInstruction = {
-        programId: new PublicKey('11111111111111111111111111111112'),
-        data: Buffer.alloc(0),
-      } as TransactionInstruction;
+      const invalidInstruction: InvalidInstruction = {
+        programId: '11111111111111111111111111111112',
+        data: '',
+      };
 
-      should(() => txBuilder.addCustomInstruction(invalidInstruction)).throwError(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      should(() => txBuilder.addCustomInstruction(invalidInstruction as any)).throwError(
         'Instruction must have valid keys array'
       );
     });
 
     it('for instruction without data', () => {
       const txBuilder = customInstructionBuilder();
-      const invalidInstruction = {
-        programId: new PublicKey('11111111111111111111111111111112'),
+      const invalidInstruction: InvalidInstruction = {
+        programId: '11111111111111111111111111111112',
         keys: [],
-      } as unknown as TransactionInstruction;
+      };
 
-      should(() => txBuilder.addCustomInstruction(invalidInstruction)).throwError(
-        'Instruction must have valid data buffer'
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      should(() => txBuilder.addCustomInstruction(invalidInstruction as any)).throwError(
+        'Instruction must have valid data string'
       );
     });
 
     it('for non-array in addCustomInstructions', () => {
       const txBuilder = customInstructionBuilder();
-      should(() => txBuilder.addCustomInstructions('invalid' as unknown as TransactionInstruction[])).throwError(
-        'Instructions must be an array'
-      );
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      should(() => txBuilder.addCustomInstructions('invalid' as any)).throwError('Instructions must be an array');
     });
 
     it('when building without instructions', async () => {
@@ -199,7 +211,7 @@ describe('Sol Custom Instruction Builder', () => {
 
       const txBuilder = factory.getCustomInstructionBuilder();
       txBuilder.nonce(recentBlockHash);
-      txBuilder.addCustomInstruction(transferInstruction);
+      txBuilder.addCustomInstruction(convertInstructionToParams(transferInstruction));
 
       await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing sender');
     });
@@ -213,7 +225,7 @@ describe('Sol Custom Instruction Builder', () => {
 
       const txBuilder = factory.getCustomInstructionBuilder();
       txBuilder.sender(authAccount.pub);
-      txBuilder.addCustomInstruction(transferInstruction);
+      txBuilder.addCustomInstruction(convertInstructionToParams(transferInstruction));
 
       await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing nonce blockhash');
     });

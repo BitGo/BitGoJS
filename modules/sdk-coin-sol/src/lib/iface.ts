@@ -1,12 +1,6 @@
-import { TransactionExplanation as BaseTransactionExplanation, Recipient } from '@bitgo/sdk-core';
+import { TransactionExplanation as BaseTransactionExplanation, Recipient, SolInstruction } from '@bitgo/sdk-core';
 import { DecodedCloseAccountInstruction } from '@solana/spl-token';
-import {
-  Blockhash,
-  StakeInstructionType,
-  SystemInstructionType,
-  TransactionInstruction,
-  TransactionSignature,
-} from '@solana/web3.js';
+import { Blockhash, StakeInstructionType, SystemInstructionType, TransactionSignature } from '@solana/web3.js';
 import { InstructionBuilderTypes } from './constants';
 import { StakePoolInstructionType } from '@solana/spl-stake-pool';
 
@@ -15,7 +9,6 @@ export interface SolanaKeys {
   prv?: Uint8Array | string;
   pub: string;
 }
-
 export interface DurableNonceParams {
   walletNonceAddress: string;
   authWalletAddress: string;
@@ -213,9 +206,7 @@ export type StakingDelegateParams = {
 
 export interface CustomInstruction {
   type: InstructionBuilderTypes.CustomInstruction;
-  params: {
-    instruction: TransactionInstruction;
-  };
+  params: SolInstruction;
 }
 
 export interface TransactionExplanation extends BaseTransactionExplanation {

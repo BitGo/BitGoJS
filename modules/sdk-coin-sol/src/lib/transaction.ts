@@ -235,6 +235,9 @@ export class Transaction extends BaseTransaction {
         case TransactionType.StakingDelegate:
           this.setTransactionType(TransactionType.StakingDelegate);
           break;
+        case TransactionType.CustomTx:
+          this.setTransactionType(TransactionType.CustomTx);
+          break;
       }
       if (transactionType !== TransactionType.StakingAuthorizeRaw) {
         this.loadInputsAndOutputs();
@@ -398,6 +401,8 @@ export class Transaction extends BaseTransaction {
           break;
         case InstructionBuilderTypes.SetPriorityFee:
           break;
+        case InstructionBuilderTypes.CustomInstruction:
+          break;
       }
     }
     this._outputs = outputs;
@@ -472,6 +477,9 @@ export class Transaction extends BaseTransaction {
           outputAmount = outputAmount.plus(stakingWithdrawInstruction.params.amount);
           break;
         case InstructionBuilderTypes.CreateAssociatedTokenAccount:
+          break;
+        case InstructionBuilderTypes.CustomInstruction:
+          // Custom instructions are arbitrary and cannot be explained
           break;
         default:
           continue;

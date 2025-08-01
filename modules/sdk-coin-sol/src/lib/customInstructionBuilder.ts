@@ -1,6 +1,6 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
-import { TransactionInstruction } from '@solana/web3.js';
+import { BuildTransactionError, SolInstruction, TransactionType } from '@bitgo/sdk-core';
+import { PublicKey } from '@solana/web3.js';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import { InstructionBuilderTypes } from './constants';
@@ -19,7 +19,7 @@ export class CustomInstructionBuilder extends TransactionBuilder {
   }
 
   protected get transactionType(): TransactionType {
-    return TransactionType.Send;
+    return TransactionType.CustomTx;
   }
 
   /**
@@ -31,67 +31,44 @@ export class CustomInstructionBuilder extends TransactionBuilder {
     for (const instruction of this._instructionsData) {
       if (instruction.type === InstructionBuilderTypes.CustomInstruction) {
         const customInstruction = instruction as CustomInstruction;
-        this.addCustomInstruction(customInstruction.params.instruction);
+        this.addCustomInstruction(customInstruction.params);
       }
     }
   }
 
   /**
-   * Add a custom Solana instruction to the transaction
-   *
-   * @param instruction - The raw Solana TransactionInstruction
-   * @returns This transaction builder
+   * Add a custom instruction to the transaction
+   * @param instruction - The custom instruction to add
+   * @returns This builder instance
    */
-  addCustomInstruction(instruction: TransactionInstruction): this {
-    if (!instruction) {
-      throw new BuildTransactionError('Instruction cannot be null or undefined');
-    }
-
-    if (!instruction.programId) {
-      throw new BuildTransactionError('Instruction must have a valid programId');
-    }
-
-    if (!instruction.keys || !Array.isArray(instruction.keys)) {
-      throw new BuildTransactionError('Instruction must have valid keys array');
-    }
-
-    if (!instruction.data || !Buffer.isBuffer(instruction.data)) {
-      throw new BuildTransactionError('Instruction must have valid data buffer');
-    }
-
+  addCustomInstruction(instruction: SolInstruction): this {
+    this.validateInstruction(instruction);
     const customInstruction: CustomInstruction = {
       type: InstructionBuilderTypes.CustomInstruction,
-      params: {
-        instruction,
-      },
+      params: instruction,
     };
-
     this._customInstructions.push(customInstruction);
     return this;
   }
 
   /**
-   * Add multiple custom Solana instructions to the transaction
-   *
-   * @param instructions - Array of raw Solana TransactionInstructions
-   * @returns This transaction builder
+   * Add multiple custom instructions to the transaction
+   * @param instructions - Array of custom instructions to add
+   * @returns This builder instance
    */
-  addCustomInstructions(instructions: TransactionInstruction[]): this {
+  addCustomInstructions(instructions: SolInstruction[]): this {
     if (!Array.isArray(instructions)) {
       throw new BuildTransactionError('Instructions must be an array');
     }
-
     for (const instruction of instructions) {
       this.addCustomInstruction(instruction);
     }
-
     return this;
   }
 
   /**
    * Clear all custom instructions
-   *
-   * @returns This transaction builder
+   * @returns This builder instance
    */
   clearInstructions(): this {
     this._customInstructions = [];
@@ -100,11 +77,60 @@ export class CustomInstructionBuilder extends TransactionBuilder {
 
   /**
    * Get the current custom instructions
-   *
    * @returns Array of custom instructions
    */
   getInstructions(): CustomInstruction[] {
     return [...this._customInstructions];
+  }
+
+  /**
+   * Validate custom instruction format
+   * @param instruction - The instruction to validate
+   */
+  private validateInstruction(instruction: SolInstruction): void {
+    if (!instruction) {
+      throw new BuildTransactionError('Instruction cannot be null or undefined');
+    }
+
+    if (!instruction.programId || typeof instruction.programId !== 'string') {
+      throw new BuildTransactionError('Instruction must have a valid programId string');
+    }
+
+    // Validate that programId is a valid Solana public key
+    try {
+      new PublicKey(instruction.programId);
+    } catch (error) {
+      throw new BuildTransactionError('Invalid programId format');
+    }
+
+    if (!instruction.keys || !Array.isArray(instruction.keys)) {
+      throw new BuildTransactionError('Instruction must have valid keys array');
+    }
+
+    // Validate each key
+    for (const key of instruction.keys) {
+      if (!key.pubkey || typeof key.pubkey !== 'string') {
+        throw new BuildTransactionError('Each key must have a valid pubkey string');
+      }
+
+      try {
+        new PublicKey(key.pubkey);
+      } catch (error) {
+        throw new BuildTransactionError('Invalid pubkey format in keys');
+      }
+
+      if (typeof key.isSigner !== 'boolean') {
+        throw new BuildTransactionError('Each key must have a boolean isSigner field');
+      }
+
+      if (typeof key.isWritable !== 'boolean') {
+        throw new BuildTransactionError('Each key must have a boolean isWritable field');
+      }
+    }
+
+    if (instruction.data === undefined || typeof instruction.data !== 'string') {
+      throw new BuildTransactionError('Instruction must have valid data string');
+    }
   }
 
   /** @inheritdoc */

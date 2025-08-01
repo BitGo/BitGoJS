@@ -2780,6 +2780,285 @@ describe('V2 Wallet:', function () {
         });
       });
 
+      it('should build a custom instruction transaction', async function () {
+        const recipients = [
+          {
+            address: '6DadkZcx9JZgeQUDbHh12cmqCpaqehmVxv6sGy49jrah',
+            amount: '1000',
+          },
+        ];
+        const solInstructions = [
+          {
+            programId: '11111111111111111111111111111112',
+            keys: [
+              {
+                pubkey: '6DadkZcx9JZgeQUDbHh12cmqCpaqehmVxv6sGy49jrah',
+                isSigner: true,
+                isWritable: true,
+              },
+            ],
+            data: 'SGVsbG8gV29ybGQ=',
+          },
+        ];
+
+        const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(txRequest);
+        prebuildTxWithIntent.calledOnceWithExactly({
+          reqId,
+          intentType: 'customTx',
+          solInstructions,
+          recipients,
+        });
+
+        const txPrebuild = await tssSolWallet.prebuildTransaction({
+          reqId,
+          recipients,
+          type: 'customTx',
+          solInstructions,
+        });
+
+        txPrebuild.should.deepEqual({
+          walletId: tssSolWallet.id(),
+          wallet: tssSolWallet,
+          txRequestId: 'id',
+          txHex: 'ababcdcd',
+          buildParams: {
+            recipients,
+            type: 'customTx',
+            solInstructions,
+          },
+          feeInfo: {
+            fee: 5000,
+            feeString: '5000',
+          },
+        });
+      });
+
+      it('should build a custom instruction transaction with multiple instructions', async function () {
+        const recipients = [];
+        const solInstructions = [
+          {
+            programId: '11111111111111111111111111111112',
+            keys: [
+              {
+                pubkey: '6DadkZcx9JZgeQUDbHh12cmqCpaqehmVxv6sGy49jrah',
+                isSigner: true,
+                isWritable: true,
+              },
+            ],
+            data: 'SGVsbG8gV29ybGQ=',
+          },
+          {
+            programId: 'ComputeBudget111111111111111111111111111111',
+            keys: [],
+            data: 'AwAA6AMAAAAA',
+          },
+        ];
+
+        const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(txRequest);
+        prebuildTxWithIntent.calledOnceWithExactly({
+          reqId,
+          intentType: 'customTx',
+          solInstructions,
+          recipients,
+        });
+
+        const txPrebuild = await tssSolWallet.prebuildTransaction({
+          reqId,
+          recipients,
+          type: 'customTx',
+          solInstructions,
+        });
+
+        txPrebuild.should.deepEqual({
+          walletId: tssSolWallet.id(),
+          wallet: tssSolWallet,
+          txRequestId: 'id',
+          txHex: 'ababcdcd',
+          buildParams: {
+            recipients,
+            type: 'customTx',
+            solInstructions,
+          },
+          feeInfo: {
+            fee: 5000,
+            feeString: '5000',
+          },
+        });
+      });
+
+      it('should build a custom instruction transaction with memo', async function () {
+        const recipients = [
+          {
+            address: '6DadkZcx9JZgeQUDbHh12cmqCpaqehmVxv6sGy49jrah',
+            amount: '1000',
+          },
+        ];
+        const solInstructions = [
+          {
+            programId: '11111111111111111111111111111112',
+            keys: [
+              {
+                pubkey: '6DadkZcx9JZgeQUDbHh12cmqCpaqehmVxv6sGy49jrah',
+                isSigner: true,
+                isWritable: true,
+              },
+            ],
+            data: 'SGVsbG8gV29ybGQ=',
+          },
+        ];
+
+        const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(txRequest);
+        prebuildTxWithIntent.calledOnceWithExactly({
+          reqId,
+          intentType: 'customTx',
+          solInstructions,
+          recipients,
+          memo: {
+            type: 'type',
+            value: 'test memo',
+          },
+        });
+
+        const txPrebuild = await tssSolWallet.prebuildTransaction({
+          reqId,
+          recipients,
+          type: 'customTx',
+          solInstructions,
+          memo: {
+            type: 'type',
+            value: 'test memo',
+          },
+        });
+
+        txPrebuild.should.deepEqual({
+          walletId: tssSolWallet.id(),
+          wallet: tssSolWallet,
+          txRequestId: 'id',
+          txHex: 'ababcdcd',
+          buildParams: {
+            recipients,
+            type: 'customTx',
+            solInstructions,
+            memo: {
+              type: 'type',
+              value: 'test memo',
+            },
+          },
+          feeInfo: {
+            fee: 5000,
+            feeString: '5000',
+          },
+        });
+      });
+
+      it('should build a custom instruction transaction with pending approval id', async function () {
+        const recipients = [
+          {
+            address: '6DadkZcx9JZgeQUDbHh12cmqCpaqehmVxv6sGy49jrah',
+            amount: '1000',
+          },
+        ];
+        const solInstructions = [
+          {
+            programId: '11111111111111111111111111111112',
+            keys: [
+              {
+                pubkey: '6DadkZcx9JZgeQUDbHh12cmqCpaqehmVxv6sGy49jrah',
+                isSigner: true,
+                isWritable: true,
+              },
+            ],
+            data: 'SGVsbG8gV29ybGQ=',
+          },
+        ];
+
+        const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves({ ...txRequest, state: 'pendingApproval', pendingApprovalId: 'some-id' });
+        prebuildTxWithIntent.calledOnceWithExactly({
+          reqId,
+          intentType: 'customTx',
+          solInstructions,
+          recipients,
+        });
+
+        const txPrebuild = await custodialTssSolWallet.prebuildTransaction({
+          reqId,
+          recipients,
+          type: 'customTx',
+          solInstructions,
+        });
+
+        txPrebuild.should.deepEqual({
+          walletId: custodialTssSolWallet.id(),
+          wallet: custodialTssSolWallet,
+          txRequestId: 'id',
+          txHex: 'ababcdcd',
+          pendingApprovalId: 'some-id',
+          buildParams: {
+            recipients,
+            type: 'customTx',
+            solInstructions,
+          },
+          feeInfo: {
+            fee: 5000,
+            feeString: '5000',
+          },
+        });
+      });
+
+      it('should build a custom instruction transaction for cold wallets', async function () {
+        const recipients = [];
+        const solInstructions = [
+          {
+            programId: '11111111111111111111111111111112',
+            keys: [
+              {
+                pubkey: '6DadkZcx9JZgeQUDbHh12cmqCpaqehmVxv6sGy49jrah',
+                isSigner: true,
+                isWritable: true,
+              },
+            ],
+            data: 'SGVsbG8gV29ybGQ=',
+          },
+        ];
+
+        const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
+        txRequest.walletType = 'cold';
+        prebuildTxWithIntent.resolves(txRequest);
+        prebuildTxWithIntent.calledOnceWithExactly({
+          reqId,
+          intentType: 'customTx',
+          solInstructions,
+          recipients,
+        });
+
+        const txPrebuild = await tssSolWallet.prebuildTransaction({
+          reqId,
+          recipients,
+          type: 'customTx',
+          solInstructions,
+        });
+
+        txPrebuild.should.deepEqual({
+          walletId: tssSolWallet.id(),
+          wallet: tssSolWallet,
+          txRequestId: 'id',
+          txHex: 'ababcdcd',
+          buildParams: {
+            recipients,
+            type: 'customTx',
+            solInstructions,
+          },
+          feeInfo: {
+            fee: 5000,
+            feeString: '5000',
+          },
+        });
+      });
+
       it('should fail for non-transfer transaction types', async function () {
         await tssSolWallet
           .prebuildTransaction({
@@ -5098,6 +5377,328 @@ describe('V2 Wallet:', function () {
 
     afterEach(function () {
       sinon.restore();
+    });
+  });
+
+  describe('Solana Instruction Flow', function () {
+    const sandbox = sinon.createSandbox();
+
+    // Set up test data and wallets
+    const tsol = bitgo.coin('tsol');
+    const walletData = {
+      id: '5b34252f1bf349930e34020a00000000',
+      coin: 'tsol',
+      keys: [
+        '598f606cd8fc24710d2ebad89dce86c2',
+        '598f606cc8e43aef09fcb785221d9dd2',
+        '5935d59cf660764331bafcade1855fd7',
+      ],
+      coinSpecific: {},
+      multisigType: 'tss',
+    };
+
+    const tssSolWallet = new Wallet(bitgo, tsol, walletData);
+    const custodialTssSolWallet = new Wallet(bitgo, tsol, {
+      ...walletData,
+      type: 'custodial',
+    });
+
+    const reqId = new RequestTracer();
+
+    const txRequest: TxRequest = {
+      txRequestId: 'id',
+      transactions: [],
+      intent: {
+        intentType: 'customTx',
+      },
+      date: new Date().toISOString(),
+      latest: true,
+      state: 'pendingUserSignature',
+      userId: 'userId',
+      walletType: 'hot',
+      policiesChecked: false,
+      version: 1,
+      walletId: 'walletId',
+      unsignedTxs: [
+        {
+          serializedTxHex: 'ababcdcd',
+          signableHex: 'deadbeef',
+          feeInfo: {
+            fee: 5000,
+            feeString: '5000',
+          },
+          derivationPath: 'm/0',
+        },
+      ],
+    };
+
+    afterEach(function () {
+      sandbox.verifyAndRestore();
+    });
+
+    const testCustomInstruction = {
+      programId: '11111111111111111111111111111111',
+      keys: [
+        {
+          pubkey: 'DfXygSm4jCyNCybVYYK6DwvWqjKee8pbDmJGcLWNDXjh',
+          isSigner: true,
+          isWritable: true,
+        },
+        {
+          pubkey: 'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB',
+          isSigner: false,
+          isWritable: false,
+        },
+      ],
+      data: '3Bxs3zt6KK5hN',
+    };
+
+    const testRecipients = [
+      {
+        address: 'DfXygSm4jCyNCybVYYK6DwvWqjKee8pbDmJGcLWNDXjh',
+        amount: '1000000',
+      },
+    ];
+
+    describe('prebuildTransaction with solInstruction type', function () {
+      it('should call prebuildTxWithIntent with correct parameters for custom instruction', async function () {
+        const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(txRequest);
+        prebuildTxWithIntent.calledOnceWithExactly({
+          reqId,
+          intentType: 'customTx',
+          solInstructions: [testCustomInstruction],
+          recipients: testRecipients,
+        });
+
+        const txPrebuild = await tssSolWallet.prebuildTransaction({
+          reqId,
+          type: 'customTx',
+          solInstructions: [testCustomInstruction],
+          recipients: testRecipients,
+        });
+
+        txPrebuild.should.deepEqual({
+          walletId: tssSolWallet.id(),
+          wallet: tssSolWallet,
+          txRequestId: 'id',
+          txHex: 'ababcdcd',
+          buildParams: {
+            type: 'customTx',
+            solInstructions: [testCustomInstruction],
+            recipients: testRecipients,
+          },
+          feeInfo: {
+            fee: 5000,
+            feeString: '5000',
+          },
+        });
+      });
+
+      it('should handle solInstruction with empty recipients', async function () {
+        const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(txRequest);
+        prebuildTxWithIntent.calledOnceWithExactly({
+          reqId,
+          intentType: 'customTx',
+          solInstructions: [testCustomInstruction],
+          recipients: [],
+        });
+
+        const txPrebuild = await tssSolWallet.prebuildTransaction({
+          reqId,
+          type: 'customTx',
+          solInstructions: [testCustomInstruction],
+        });
+
+        txPrebuild.should.deepEqual({
+          walletId: tssSolWallet.id(),
+          wallet: tssSolWallet,
+          txRequestId: 'id',
+          txHex: 'ababcdcd',
+          buildParams: {
+            type: 'customTx',
+            solInstructions: [testCustomInstruction],
+          },
+          feeInfo: {
+            fee: 5000,
+            feeString: '5000',
+          },
+        });
+      });
+
+      it('should handle multiple custom instructions', async function () {
+        const secondInstruction = {
+          programId: '22222222222222222222222222222222',
+          keys: [
+            {
+              pubkey: 'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB',
+              isSigner: false,
+              isWritable: true,
+            },
+          ],
+          data: 'testData123',
+        };
+
+        const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(txRequest);
+        prebuildTxWithIntent.calledOnceWithExactly({
+          reqId,
+          intentType: 'customTx',
+          solInstructions: [testCustomInstruction, secondInstruction],
+          recipients: testRecipients,
+        });
+
+        const txPrebuild = await tssSolWallet.prebuildTransaction({
+          reqId,
+          type: 'customTx',
+          solInstructions: [testCustomInstruction, secondInstruction],
+          recipients: testRecipients,
+        });
+
+        txPrebuild.should.deepEqual({
+          walletId: tssSolWallet.id(),
+          wallet: tssSolWallet,
+          txRequestId: 'id',
+          txHex: 'ababcdcd',
+          buildParams: {
+            type: 'customTx',
+            solInstructions: [testCustomInstruction, secondInstruction],
+            recipients: testRecipients,
+          },
+          feeInfo: {
+            fee: 5000,
+            feeString: '5000',
+          },
+        });
+      });
+
+      it('should handle solInstruction with memo parameter', async function () {
+        const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(txRequest);
+        prebuildTxWithIntent.calledOnceWithExactly({
+          reqId,
+          intentType: 'customTx',
+          solInstructions: [testCustomInstruction],
+          recipients: testRecipients,
+          memo: {
+            type: 'type',
+            value: 'test memo',
+          },
+        });
+
+        const txPrebuild = await tssSolWallet.prebuildTransaction({
+          reqId,
+          type: 'customTx',
+          solInstructions: [testCustomInstruction],
+          recipients: testRecipients,
+          memo: {
+            type: 'type',
+            value: 'test memo',
+          },
+        });
+
+        txPrebuild.should.deepEqual({
+          walletId: tssSolWallet.id(),
+          wallet: tssSolWallet,
+          txRequestId: 'id',
+          txHex: 'ababcdcd',
+          buildParams: {
+            type: 'customTx',
+            solInstructions: [testCustomInstruction],
+            recipients: testRecipients,
+            memo: {
+              type: 'type',
+              value: 'test memo',
+            },
+          },
+          feeInfo: {
+            fee: 5000,
+            feeString: '5000',
+          },
+        });
+      });
+
+      it('should handle solInstruction with pending approval ID', async function () {
+        const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves({ ...txRequest, state: 'pendingApproval', pendingApprovalId: 'some-id' });
+        prebuildTxWithIntent.calledOnceWithExactly({
+          reqId,
+          intentType: 'customTx',
+          solInstructions: [testCustomInstruction],
+          recipients: testRecipients,
+        });
+
+        const txPrebuild = await custodialTssSolWallet.prebuildTransaction({
+          reqId,
+          type: 'customTx',
+          solInstructions: [testCustomInstruction],
+          recipients: testRecipients,
+        });
+
+        txPrebuild.should.deepEqual({
+          walletId: custodialTssSolWallet.id(),
+          wallet: custodialTssSolWallet,
+          txRequestId: 'id',
+          txHex: 'ababcdcd',
+          pendingApprovalId: 'some-id',
+          buildParams: {
+            type: 'customTx',
+            solInstructions: [testCustomInstruction],
+            recipients: testRecipients,
+          },
+          feeInfo: {
+            fee: 5000,
+            feeString: '5000',
+          },
+        });
+      });
+
+      it('should throw error for empty solInstructions array', async function () {
+        await tssSolWallet
+          .prebuildTransaction({
+            reqId,
+            type: 'customTx',
+            solInstructions: [],
+            recipients: testRecipients,
+          })
+          .should.be.rejectedWith(`'solInstructions' is a required parameter for customTx intent`);
+      });
+
+      it('should support solInstruction for cold wallets', async function () {
+        const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
+        txRequest.walletType = 'cold';
+        prebuildTxWithIntent.resolves(txRequest);
+        prebuildTxWithIntent.calledOnceWithExactly({
+          reqId,
+          intentType: 'customTx',
+          solInstructions: [testCustomInstruction],
+          recipients: testRecipients,
+        });
+
+        const txPrebuild = await tssSolWallet.prebuildTransaction({
+          reqId,
+          type: 'customTx',
+          solInstructions: [testCustomInstruction],
+          recipients: testRecipients,
+        });
+
+        txPrebuild.should.deepEqual({
+          walletId: tssSolWallet.id(),
+          wallet: tssSolWallet,
+          txRequestId: 'id',
+          txHex: 'ababcdcd',
+          buildParams: {
+            type: 'customTx',
+            solInstructions: [testCustomInstruction],
+            recipients: testRecipients,
+          },
+          feeInfo: {
+            fee: 5000,
+            feeString: '5000',
+          },
+        });
+      });
     });
   });
 });

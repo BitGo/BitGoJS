@@ -167,6 +167,19 @@ export interface PrebuildTransactionOptions {
    * the legacy format defined by bitcoinjs-lib, or the 'psbt' format, which follows the BIP-174.
    */
   txFormat?: 'legacy' | 'psbt';
+  /**
+   * Custom Solana instructions to include in the transaction.
+   * Each instruction contains a program ID, accounts array, and data buffer.
+   */
+  solInstructions?: {
+    programId: string;
+    keys: {
+      pubkey: string;
+      isSigner: boolean;
+      isWritable: boolean;
+    }[];
+    data: string;
+  }[];
 }
 
 export interface PrebuildAndSignTransactionOptions extends PrebuildTransactionOptions, WalletSignTransactionOptions {
