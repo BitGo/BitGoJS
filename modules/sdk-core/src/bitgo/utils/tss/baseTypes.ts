@@ -204,6 +204,19 @@ export interface PrebuildTransactionWithIntentOptions extends IntentOptionsBase 
    * This feature is supported only for specific coins, like ADA.
    */
   senderAddress?: string;
+  /**
+   * Custom Solana instructions for use with the customInstructions intent type.
+   * Each instruction should contain programId, keys, and data fields.
+   */
+  solInstructions?: {
+    programId: string;
+    keys: Array<{
+      pubkey: string;
+      isSigner: boolean;
+      isWritable: boolean;
+    }>;
+    data: string;
+  }[];
 }
 export interface IntentRecipient {
   address: {
@@ -257,6 +270,19 @@ export interface PopulatedIntent extends PopulatedIntentBase {
   custodianTransactionId?: string;
   custodianMessageId?: string;
   tokenName?: string;
+  /**
+   * Custom Solana instructions for use with the customInstructions intent type.
+   * Each instruction should contain programId, keys, and data fields.
+   */
+  solInstructions?: {
+    programId: string;
+    keys: Array<{
+      pubkey: string;
+      isSigner: boolean;
+      isWritable: boolean;
+    }>;
+    data: string;
+  }[];
 }
 
 export type TxRequestState =

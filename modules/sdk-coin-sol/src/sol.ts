@@ -43,6 +43,8 @@ import {
   MultisigType,
   multisigTypes,
   AuditDecryptedKeyParams,
+  PopulatedIntent,
+  PrebuildTransactionWithIntentOptions,
 } from '@bitgo/sdk-core';
 import { auditEddsaPrivateKey, getDerivationPath } from '@bitgo/sdk-lib-mpc';
 import { BaseNetwork, CoinFamily, coins, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
@@ -1443,5 +1445,13 @@ export class Sol extends BaseCoin {
       throw new Error('Unsupported multiSigType');
     }
     auditEddsaPrivateKey(prv, publicKey ?? '');
+  }
+
+  /** @inheritDoc */
+  setCoinSpecificFieldsInIntent(intent: PopulatedIntent, params: PrebuildTransactionWithIntentOptions): void {
+    // Handle custom instructions for Solana
+    if (params.solInstructions) {
+      intent.solInstructions = params.solInstructions;
+    }
   }
 }

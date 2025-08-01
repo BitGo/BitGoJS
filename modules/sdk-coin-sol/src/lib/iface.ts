@@ -1,12 +1,6 @@
 import { TransactionExplanation as BaseTransactionExplanation, Recipient } from '@bitgo/sdk-core';
 import { DecodedCloseAccountInstruction } from '@solana/spl-token';
-import {
-  Blockhash,
-  StakeInstructionType,
-  SystemInstructionType,
-  TransactionInstruction,
-  TransactionSignature,
-} from '@solana/web3.js';
+import { Blockhash, StakeInstructionType, SystemInstructionType, TransactionSignature } from '@solana/web3.js';
 import { InstructionBuilderTypes } from './constants';
 import { StakePoolInstructionType } from '@solana/spl-stake-pool';
 
@@ -214,7 +208,13 @@ export type StakingDelegateParams = {
 export interface CustomInstruction {
   type: InstructionBuilderTypes.CustomInstruction;
   params: {
-    instruction: TransactionInstruction;
+    programId: string;
+    keys: Array<{
+      pubkey: string;
+      isSigner: boolean;
+      isWritable: boolean;
+    }>;
+    data: string;
   };
 }
 

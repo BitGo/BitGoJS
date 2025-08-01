@@ -48,7 +48,7 @@ import {
   SetPriorityFee,
   CustomInstruction,
 } from './iface';
-import { getSolTokenFromTokenName } from './utils';
+import { getSolTokenFromTokenName, isValidBase64, isValidHex } from './utils';
 import { depositSolInstructions } from './jitoStakePoolOperations';
 
 /**
@@ -593,15 +593,40 @@ function burnInstruction(data: Burn): TransactionInstruction[] {
 }
 
 /**
- * Process custom instruction - simply returns the raw instruction
+ * Process custom instruction - converts to TransactionInstruction
+ * Handles conversion from string-based format to TransactionInstruction format
  *
  * @param {CustomInstruction} data - the data containing the custom instruction
  * @returns {TransactionInstruction[]} An array containing the custom instruction
  */
 function customInstruction(data: InstructionParams): TransactionInstruction[] {
-  const {
-    params: { instruction },
-  } = data as CustomInstruction;
-  assert(instruction, 'Missing instruction param');
-  return [instruction];
+  const { params } = data as CustomInstruction;
+  assert(params.programId, 'Missing programId in custom instruction');
+  assert(params.keys && Array.isArray(params.keys), 'Missing or invalid keys in custom instruction');
+  assert(params.data !== undefined, 'Missing data in custom instruction');
+
+  // Convert string data to Buffer
+  let dataBuffer: Buffer;
+
+  if (isValidBase64(params.data)) {
+    dataBuffer = Buffer.from(params.data, 'base64');
+  } else if (isValidHex(params.data)) {
+    dataBuffer = Buffer.from(params.data, 'hex');
+  } else {
+    // Fallback to UTF-8
+    dataBuffer = Buffer.from(params.data, 'utf8');
+  }
+
+  // Create a new TransactionInstruction with the converted data
+  const convertedInstruction = new TransactionInstruction({
+    programId: new PublicKey(params.programId),
+    keys: params.keys.map((key) => ({
+      pubkey: new PublicKey(key.pubkey),
+      isSigner: key.isSigner,
+      isWritable: key.isWritable,
+    })),
+    data: dataBuffer,
+  });
+
+  return [convertedInstruction];
 }
