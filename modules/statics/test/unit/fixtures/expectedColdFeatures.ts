@@ -88,6 +88,7 @@ export const expectedColdFeatures = {
     'sol',
     'sonic',
     'stt',
+    'ip', // Chain Name : Story
     'sui',
     'tao',
     'vet',
@@ -136,6 +137,7 @@ export const expectedColdFeatures = {
     'tsgb',
     'tsol',
     'tstt',
+    'tip', // Chain Name : Story Testnet
     'tsui',
     'ttao',
     'tthorchain:rune',
