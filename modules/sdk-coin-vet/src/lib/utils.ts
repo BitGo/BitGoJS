@@ -10,6 +10,7 @@ import {
 } from '@bitgo/abstract-eth';
 import {
   TRANSFER_TOKEN_METHOD_ID,
+  STAKING_METHOD_ID,
   VET_ADDRESS_LENGTH,
   VET_BLOCK_ID_LENGTH,
   VET_TRANSACTION_ID_LENGTH,
@@ -78,8 +79,11 @@ export class Utils implements BaseUtils {
       return TransactionType.FlushTokens;
     } else if (clauses[0].data.startsWith(TRANSFER_TOKEN_METHOD_ID)) {
       return TransactionType.SendToken;
+    } else if (clauses[0].data.startsWith(STAKING_METHOD_ID)) {
+      return TransactionType.ContractCall;
     } else {
-      return TransactionType.SendToken;
+      // Default for other contract calls
+      return TransactionType.ContractCall;
     }
   }
 
