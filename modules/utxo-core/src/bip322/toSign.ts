@@ -14,12 +14,10 @@ export type AddressDetails = {
  * @param {AddressDetails} addressDetails - The details of the address, including redeemScript and/or witnessScript.
  * @returns {string} - The hex representation of the constructed PSBT.
  */
-export function buildToSignPsbt(toSpendTxHex: string, addressDetails: AddressDetails): string {
+export function buildToSignPsbt(toSpendTx: Transaction<bigint>, addressDetails: AddressDetails): Psbt {
   if (!addressDetails.redeemScript && !addressDetails.witnessScript) {
     throw new Error('redeemScript and/or witnessScript must be provided');
   }
-
-  const toSpendTx = Transaction.fromHex(toSpendTxHex);
 
   // Create PSBT object for constructing the transaction
   const psbt = new Psbt();
@@ -37,7 +35,9 @@ export function buildToSignPsbt(toSpendTxHex: string, addressDetails: AddressDet
     psbt.updateInput(0, { redeemScript: addressDetails.redeemScript });
   }
   if (addressDetails.witnessScript) {
-    psbt.updateInput(0, { witnessUtxo: { value: BigInt(0), script: addressDetails.witnessScript } });
+    psbt.updateInput(0, {
+      witnessUtxo: { value: BigInt(0), script: addressDetails.witnessScript },
+    });
   }
 
   // Set the output
@@ -45,5 +45,5 @@ export function buildToSignPsbt(toSpendTxHex: string, addressDetails: AddressDet
     value: BigInt(0), // vout[0].nValue = 0
     script: Buffer.from([0x6a]), // vout[0].scriptPubKey = OP_RETURN
   });
-  return psbt.toHex();
+  return psbt;
 }

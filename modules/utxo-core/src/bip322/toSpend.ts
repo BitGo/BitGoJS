@@ -1,5 +1,5 @@
 import { Hash } from 'fast-sha256';
-import { Psbt } from '@bitgo/utxo-lib';
+import { Psbt, Transaction } from '@bitgo/utxo-lib';
 
 export const BIP322_TAG = 'BIP0322-signed-message';
 
@@ -31,9 +31,13 @@ export function hashMessageWithTag(message: string | Buffer, tag = BIP322_TAG): 
  * @param {Buffer} scriptPubKey - The scriptPubKey to use for the output
  * @param {string | Buffer} message - The message to include in the transaction
  * @param {Buffer} [tag=BIP322_TAG] - The tag to use for hashing, defaults to BIP322_TAG.
- * @returns {string} - The hex representation of the constructed transaction
+ * @returns {Transaction} - The constructed transaction
  */
-export function buildToSpendTransaction(scriptPubKey: Buffer, message: string | Buffer, tag = BIP322_TAG): string {
+export function buildToSpendTransaction(
+  scriptPubKey: Buffer,
+  message: string | Buffer,
+  tag = BIP322_TAG
+): Transaction<bigint> {
   // Create PSBT object for constructing the transaction
   const psbt = new Psbt();
   // Set default value for nVersion and nLockTime
@@ -60,5 +64,5 @@ export function buildToSpendTransaction(scriptPubKey: Buffer, message: string | 
     script: scriptPubKey, // vout[0].scriptPubKey = message_challenge
   });
   // Return transaction
-  return psbt.extractTransaction().toHex();
+  return psbt.extractTransaction();
 }

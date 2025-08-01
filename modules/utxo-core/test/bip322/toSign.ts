@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import { payments, Psbt, ECPair, Transaction } from '@bitgo/utxo-lib';
+import { payments, ECPair, Transaction } from '@bitgo/utxo-lib';
 
 import * as bip322 from '../../src/bip322';
 
@@ -26,12 +26,12 @@ describe('BIP322 toSign', function () {
 
     fixtures.forEach(({ message, txid }) => {
       it(`should build a to_sign PSBT for message "${message}"`, function () {
-        const toSpendTxHex = bip322.buildToSpendTransaction(scriptPubKey, Buffer.from(message));
+        const toSpendTx = bip322.buildToSpendTransaction(scriptPubKey, Buffer.from(message));
         const addressDetails = {
           witnessScript: scriptPubKey,
         };
-        const result = bip322.buildToSignPsbt(toSpendTxHex, addressDetails);
-        const computedTxid = Psbt.fromHex(result)
+        const result = bip322.buildToSignPsbt(toSpendTx, addressDetails);
+        const computedTxid = result
           .signAllInputs(prv, [Transaction.SIGHASH_ALL])
           .finalizeAllInputs()
           .extractTransaction()
