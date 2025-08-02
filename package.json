@@ -89,7 +89,10 @@
     "**/stellar-sdk/**/bignumber.js": "4.1.0",
     "**/stellar-base/**/bignumber.js": "4.1.0",
     "bignumber.js": "9.1.2",
-    "form-data": "4.0.4"
+    "form-data": "4.0.4",
+    "**/avalanche/**/ws": "8.18.3",
+    "**/ethers/**/ws": "7.5.10",
+    "**/swarm-js/**/ws": "5.2.4"
   },
   "workspaces": [
     "modules/*"
