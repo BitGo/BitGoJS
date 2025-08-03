@@ -34,6 +34,7 @@ import {
   Nep141TokenConfig,
   CosmosTokenConfig,
   VetTokenConfig,
+  TaoTokenConfig,
 } from '@bitgo/statics';
 import {
   Ada,
@@ -121,6 +122,7 @@ import {
   SuiToken,
   Susd,
   Tao,
+  TaoToken,
   Ton,
   Tada,
   Talgo,
@@ -487,6 +489,10 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   );
 
   SuiToken.createTokenConstructors([...tokens.bitcoin.sui.tokens, ...tokens.testnet.sui.tokens]).forEach(
+    ({ name, coinConstructor }) => coinFactory.register(name, coinConstructor)
+  );
+
+  TaoToken.createTokenConstructors([...tokens.bitcoin.tao.tokens, ...tokens.testnet.tao.tokens]).forEach(
     ({ name, coinConstructor }) => coinFactory.register(name, coinConstructor)
   );
 
@@ -910,6 +916,9 @@ export function getTokenConstructor(tokenConfig: TokenConfig): CoinConstructor |
     case 'sui':
     case 'tsui':
       return SuiToken.createTokenConstructor(tokenConfig as SuiTokenConfig);
+    case 'tao':
+    case 'ttao':
+      return TaoToken.createTokenConstructor(tokenConfig as TaoTokenConfig);
     case 'xrp':
     case 'txrp':
       return XrpToken.createTokenConstructor(tokenConfig as XrpTokenConfig);
