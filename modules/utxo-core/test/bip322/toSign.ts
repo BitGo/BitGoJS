@@ -1,17 +1,13 @@
 import assert from 'assert';
 
-import { payments, ECPair, Transaction } from '@bitgo/utxo-lib';
+import { Transaction } from '@bitgo/utxo-lib';
 
 import * as bip322 from '../../src/bip322';
 
+import { BIP322_PAYMENT_P2WPKH_FIXTURE, BIP322_PRV_FIXTURE as prv } from './bip322.utils';
 describe('BIP322 toSign', function () {
   describe('buildToSignPsbt', function () {
-    const WIF = 'L3VFeEujGtevx9w18HD1fhRbCH67Az2dpCymeRE1SoPK6XQtaN2k';
-    const prv = ECPair.fromWIF(WIF);
-    const scriptPubKey = payments.p2wpkh({
-      address: 'bc1q9vza2e8x573nczrlzms0wvx3gsqjx7vavgkx0l',
-    }).output as Buffer;
-
+    const scriptPubKey = BIP322_PAYMENT_P2WPKH_FIXTURE.output as Buffer;
     // Source: https://github.com/bitcoin/bips/blob/master/bip-0322.mediawiki#transaction-hashes
     const fixtures = [
       {
