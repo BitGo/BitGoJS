@@ -101,6 +101,8 @@ interface EnvironmentTemplate {
       nodeUrl: string;
     };
   };
+  xtzExplorerBaseUrl?: string;
+  xtzRpcUrl?: string;
 }
 
 export interface Environment extends EnvironmentTemplate {
@@ -257,6 +259,8 @@ const mainnetBase: EnvironmentTemplate = {
   monExplorerBaseUrl: 'https://api.etherscan.io/v2',
   stxNodeUrl: 'https://api.hiro.so',
   vetNodeUrl: 'https://rpc-mainnet.vechain.energy',
+  xtzExplorerBaseUrl: 'https://api.tzkt.io',
+  xtzRpcUrl: 'https://rpc.tzkt.io/mainnet',
 };
 
 const testnetBase: EnvironmentTemplate = {
@@ -369,6 +373,8 @@ const testnetBase: EnvironmentTemplate = {
   },
   stxNodeUrl: 'https://api.testnet.hiro.so',
   vetNodeUrl: 'https://rpc-testnet.vechain.energy',
+  xtzExplorerBaseUrl: 'https://api.ghostnet.tzkt.io',
+  xtzRpcUrl: 'https://rpc.tzkt.io/ghostnet',
 };
 
 const devBase: EnvironmentTemplate = Object.assign({}, testnetBase, {

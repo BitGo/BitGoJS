@@ -50,7 +50,8 @@
     "bignumber.js": "^9.0.0",
     "bs58check": "^2.1.2",
     "libsodium-wrappers": "^0.7.6",
-    "lodash": "^4.17.15"
+    "lodash": "^4.17.15",
+    "superagent": "^9.0.1"
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.66.1",

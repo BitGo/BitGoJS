@@ -20,3 +20,377 @@ export const fullySignedTransactionWithTwoTransfersHex =
 
 export const testDataToSign =
   '0507070a000000160196369c90625575ba44594b23794832a9337f7a2d0007070000050502000000320320053d036d0743035d0a00000015006b5ddaef3fb5d7c151cfb36fbe43a7a066777394031e0743036a0001034f034d031b';
+
+export const paramsDetailsForRecovery = {
+  userKey:
+    '{"iv":"GneZQBe2NNUTVeNQd1P0Mg==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"k4GRre9xDvg=","ct":"ZY6c5UJ/uTyqdSyupKBQxOrZiPLzG+xcfsp70Gidpcj4YRxytRiE4yDqJDedFfPsP7vLiiK75QZpaOxrGJ6i26FpIe9IfAfCyGFvGpf+Me2JN++LFHM8HqYak5W0ikPqJBvAX8E4TIbdzjCzIS8SNV5jXBoJWmc="}',
+  backupKey:
+    '{"iv":"Z072Y7z+y4ljnh0irf+K4w==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"tS6ef4YIlV8=","ct":"C1piymQ3G6PvF5OZYtFTJH4ypt91dKLmCMWL1RN5GGU/pxRaURomamRmwie53Tjbg0DZHwA0dnTW1Tj82ahzTxCyxAV9A7414b4uCu47OqD0PZQwY/ffp/qGLcF3sGwFoyOW1B9uOuRSVTYt69nD6Svc911icH0="}',
+  walletPassphrase: 'wallet@coin001',
+  walletContractAddress: 'KT1RsZPTQ9BCmL6RMDgJuPdVPwAEERSoqmJi',
+  recoveryDestination: 'tz2RtnvELVAW5dUTtsBNG6cbSA2eQFiYt4Rp',
+  feeAddress: 'tz2SP9MrXrhnsynZEXx2hyShyS3fxKJXVHs9',
+};
+
+export const contractAddressDetails = {
+  id: 714909,
+  type: 'contract',
+  address: 'KT1RsZPTQ9BCmL6RMDgJuPdVPwAEERSoqmJi',
+  kind: 'smart_contract',
+  balance: 18849940,
+  creator: {
+    address: 'tz2JAsQV4rzh7z5FQrnL2ZFYaCwnD2tqWG74',
+  },
+  delegate: {
+    alias: 'A Kishino',
+    address: 'tz1aWXP237BLwNHJcCD4b3DutCevhqq2T1Z9',
+    active: true,
+  },
+  delegationLevel: 14063751,
+  delegationTime: '2025-07-31T08:46:24Z',
+  numContracts: 0,
+  tokensCount: 0,
+  activeTokensCount: 0,
+  tokenBalancesCount: 0,
+  tokenTransfersCount: 0,
+  ticketsCount: 0,
+  activeTicketsCount: 0,
+  ticketBalancesCount: 0,
+  ticketTransfersCount: 0,
+  numDelegations: 0,
+  numOriginations: 1,
+  numTransactions: 5,
+  numReveals: 0,
+  numMigrations: 0,
+  transferTicketCount: 0,
+  increasePaidStorageCount: 0,
+  eventsCount: 0,
+  firstActivity: 14063751,
+  firstActivityTime: '2025-07-31T08:46:24Z',
+  lastActivity: 14081923,
+  lastActivityTime: '2025-08-01T04:57:52Z',
+  typeHash: -486012176,
+  codeHash: -655621303,
+};
+
+export const recoveryAddressDetails = {
+  id: 714868,
+  type: 'user',
+  address: 'tz2RtnvELVAW5dUTtsBNG6cbSA2eQFiYt4Rp',
+  publicKey: 'sppk7bkiSQrH8qtsz9HSwXDX4egeTyQmgKrALx8PCuLfphRvtktWshH',
+  revealed: true,
+  balance: 1000,
+  rollupBonds: 0,
+  smartRollupBonds: 0,
+  stakedBalance: 0,
+  unstakedBalance: 0,
+  counter: 54266232,
+  numContracts: 0,
+  rollupsCount: 0,
+  smartRollupsCount: 0,
+  activeTokensCount: 0,
+  tokenBalancesCount: 0,
+  tokenTransfersCount: 0,
+  activeTicketsCount: 0,
+  ticketBalancesCount: 0,
+  ticketTransfersCount: 0,
+  numActivations: 0,
+  numDelegations: 0,
+  numOriginations: 0,
+  numTransactions: 2,
+  numReveals: 1,
+  numRegisterConstants: 0,
+  numSetDepositsLimits: 0,
+  numMigrations: 0,
+  txRollupOriginationCount: 0,
+  txRollupSubmitBatchCount: 0,
+  txRollupCommitCount: 0,
+  txRollupReturnBondCount: 0,
+  txRollupFinalizeCommitmentCount: 0,
+  txRollupRemoveCommitmentCount: 0,
+  txRollupRejectionCount: 0,
+  txRollupDispatchTicketsCount: 0,
+  transferTicketCount: 0,
+  increasePaidStorageCount: 0,
+  drainDelegateCount: 0,
+  smartRollupAddMessagesCount: 0,
+  smartRollupCementCount: 0,
+  smartRollupExecuteCount: 0,
+  smartRollupOriginateCount: 0,
+  smartRollupPublishCount: 0,
+  smartRollupRecoverBondCount: 0,
+  smartRollupRefuteCount: 0,
+  refutationGamesCount: 0,
+  activeRefutationGamesCount: 0,
+  stakingOpsCount: 0,
+  stakingUpdatesCount: 0,
+  setDelegateParametersOpsCount: 0,
+  dalPublishCommitmentOpsCount: 0,
+  firstActivity: 14060244,
+  firstActivityTime: '2025-07-31T04:52:36Z',
+  lastActivity: 14061018,
+  lastActivityTime: '2025-07-31T05:44:12Z',
+  lostBalance: 0,
+};
+
+export const feeAddressDetails = {
+  id: 715525,
+  type: 'user',
+  address: 'tz2SP9MrXrhnsynZEXx2hyShyS3fxKJXVHs9',
+  revealed: false,
+  balance: 15000000,
+  rollupBonds: 0,
+  smartRollupBonds: 0,
+  stakedBalance: 0,
+  unstakedBalance: 0,
+  counter: 54622912,
+  numContracts: 0,
+  rollupsCount: 0,
+  smartRollupsCount: 0,
+  activeTokensCount: 0,
+  tokenBalancesCount: 0,
+  tokenTransfersCount: 0,
+  activeTicketsCount: 0,
+  ticketBalancesCount: 0,
+  ticketTransfersCount: 0,
+  numActivations: 0,
+  numDelegations: 0,
+  numOriginations: 0,
+  numTransactions: 1,
+  numReveals: 0,
+  numRegisterConstants: 0,
+  numSetDepositsLimits: 0,
+  numMigrations: 0,
+  txRollupOriginationCount: 0,
+  txRollupSubmitBatchCount: 0,
+  txRollupCommitCount: 0,
+  txRollupReturnBondCount: 0,
+  txRollupFinalizeCommitmentCount: 0,
+  txRollupRemoveCommitmentCount: 0,
+  txRollupRejectionCount: 0,
+  txRollupDispatchTicketsCount: 0,
+  transferTicketCount: 0,
+  increasePaidStorageCount: 0,
+  drainDelegateCount: 0,
+  smartRollupAddMessagesCount: 0,
+  smartRollupCementCount: 0,
+  smartRollupExecuteCount: 0,
+  smartRollupOriginateCount: 0,
+  smartRollupPublishCount: 0,
+  smartRollupRecoverBondCount: 0,
+  smartRollupRefuteCount: 0,
+  refutationGamesCount: 0,
+  activeRefutationGamesCount: 0,
+  stakingOpsCount: 0,
+  stakingUpdatesCount: 0,
+  setDelegateParametersOpsCount: 0,
+  dalPublishCommitmentOpsCount: 0,
+  firstActivity: 14189599,
+  firstActivityTime: '2025-08-06T06:26:33Z',
+  lastActivity: 14189599,
+  lastActivityTime: '2025-08-06T06:26:33Z',
+  lostBalance: 0,
+};
+
+export const chainheadData = {
+  chain: 'ghostnet',
+  chainId: 'NetXnHfVqm9iesp',
+  cycle: 1698,
+  level: 14459446,
+  hash: 'BMWuVUCyg5gruMRzhsQMPkF47WEG8Z2BgSxfBnoLBvzvq977XPi',
+  protocol: 'PsRiotumaAMotcRoDWW1bysEhQy2n1M5fy8JgRp8jjRfHGmfeA7',
+  nextProtocol: 'PsRiotumaAMotcRoDWW1bysEhQy2n1M5fy8JgRp8jjRfHGmfeA7',
+  timestamp: '2025-08-19T03:56:19Z',
+  votingEpoch: 1350,
+  votingPeriod: 1353,
+  knownLevel: 14459446,
+  lastSync: '2025-08-19T03:56:19Z',
+  synced: true,
+  quoteLevel: 14459446,
+  quoteBtc: 7.021108204014294e-6,
+  quoteEur: 0.6924987881511668,
+  quoteUsd: 0.8073377372483159,
+  quoteCny: 5.798784031559758,
+  quoteJpy: 119.34085592551132,
+  quoteKrw: 1121.3119427492386,
+  quoteEth: 0.00019104127210156323,
+  quoteGbp: 0.5978650806041309,
+};
+
+export const contractAddressDetails2 = {
+  id: 714909,
+  type: 'contract',
+  address: 'KT1RsZPTQ9BCmL6RMDgJuPdVPwAEERSoqmJi',
+  kind: 'smart_contract',
+  balance: 18849940,
+  creator: {
+    address: 'tz2JAsQV4rzh7z5FQrnL2ZFYaCwnD2tqWG74',
+  },
+  delegate: {
+    alias: 'A Kishino',
+    address: 'tz1aWXP237BLwNHJcCD4b3DutCevhqq2T1Z9',
+    active: true,
+  },
+  delegationLevel: 14063751,
+  delegationTime: '2025-07-31T08:46:24Z',
+  numContracts: 0,
+  tokensCount: 0,
+  activeTokensCount: 0,
+  tokenBalancesCount: 0,
+  tokenTransfersCount: 0,
+  ticketsCount: 0,
+  activeTicketsCount: 0,
+  ticketBalancesCount: 0,
+  ticketTransfersCount: 0,
+  numDelegations: 0,
+  numOriginations: 1,
+  numTransactions: 5,
+  numReveals: 0,
+  numMigrations: 0,
+  transferTicketCount: 0,
+  increasePaidStorageCount: 0,
+  eventsCount: 0,
+  firstActivity: 14063751,
+  firstActivityTime: '2025-07-31T08:46:24Z',
+  lastActivity: 14081923,
+  lastActivityTime: '2025-08-01T04:57:52Z',
+  typeHash: -486012176,
+  codeHash: -655621303,
+};
+
+export const dataToPack = {
+  data: {
+    prim: 'Pair',
+    args: [
+      {
+        string: 'KT1RsZPTQ9BCmL6RMDgJuPdVPwAEERSoqmJi',
+      },
+      {
+        prim: 'Pair',
+        args: [
+          {
+            int: '54622913',
+          },
+          {
+            prim: 'Left',
+            args: [
+              [
+                {
+                  prim: 'DROP',
+                },
+                {
+                  prim: 'NIL',
+                  args: [
+                    {
+                      prim: 'operation',
+                    },
+                  ],
+                },
+                {
+                  prim: 'PUSH',
+                  args: [
+                    {
+                      prim: 'key_hash',
+                    },
+                    {
+                      string: 'tz2RtnvELVAW5dUTtsBNG6cbSA2eQFiYt4Rp',
+                    },
+                  ],
+                },
+                {
+                  prim: 'IMPLICIT_ACCOUNT',
+                },
+                {
+                  prim: 'PUSH',
+                  args: [
+                    {
+                      prim: 'mutez',
+                    },
+                    {
+                      int: '18849940',
+                    },
+                  ],
+                },
+                {
+                  prim: 'UNIT',
+                },
+                {
+                  prim: 'TRANSFER_TOKENS',
+                },
+                {
+                  prim: 'CONS',
+                },
+              ],
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  type: {
+    prim: 'pair',
+    args: [
+      {
+        prim: 'address',
+      },
+      {
+        prim: 'pair',
+        args: [
+          {
+            prim: 'nat',
+            annots: ['%counter'],
+          },
+          {
+            prim: 'or',
+            args: [
+              {
+                prim: 'lambda',
+                args: [
+                  {
+                    prim: 'unit',
+                  },
+                  {
+                    prim: 'list',
+                    args: [
+                      {
+                        prim: 'operation',
+                      },
+                    ],
+                  },
+                ],
+                annots: ['%operation'],
+              },
+              {
+                prim: 'pair',
+                args: [
+                  {
+                    prim: 'nat',
+                    annots: ['%threshold'],
+                  },
+                  {
+                    prim: 'list',
+                    args: [
+                      {
+                        prim: 'key',
+                      },
+                    ],
+                    annots: ['%keys'],
+                  },
+                ],
+                annots: ['%change_keys'],
+              },
+            ],
+            annots: [':action'],
+          },
+        ],
+        annots: [':payload'],
+      },
+    ],
+  },
+};
+
+export const packDataToSign = {
+  packed:
+    '0507070a0000001601bda70b50cf607aee95c10322a8bff9fc4df50f85000707009b9ad933050502000000350320053d036d0743035d0a0000001501c0d2caabc69b734fc54453ba5fab901b4fbec41b031e0743036a009482fd11034f034d031b',
+  gas: 'unaccounted',
+};
