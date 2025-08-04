@@ -21,6 +21,7 @@ export enum ProprietaryKeySubtype {
   MUSIG2_PUB_NONCE = 0x02,
   MUSIG2_PARTIAL_SIG = 0x03,
   PAYGO_ADDRESS_ATTESTATION_PROOF = 0x04,
+  BIP322_MESSAGE = 0x05,
 }
 
 /**
