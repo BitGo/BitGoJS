@@ -1032,7 +1032,11 @@ export class AvaxC extends AbstractEthLikeNewCoins {
     }
     const transaction = await txBuilder.build();
 
-    const recipients = transaction.outputs.map((output) => ({ address: output.address, amount: output.value }));
+    // we need to preserve the calldata of the recipients specified in the request for custodial transactions
+    let recipients = params.txPrebuild.recipients || (params.recipients as Recipient[] | undefined);
+    if (recipients === undefined) {
+      recipients = transaction.outputs.map((output) => ({ address: output.address, amount: output.value }));
+    }
 
     const txParams = {
       eip1559: params.txPrebuild.eip1559,

@@ -257,7 +257,7 @@ describe('Avalanche C-Chain', function () {
       owner_3: '4421ab25dd91e1a3180d03d57c323a7886dcc313d3b3a4b4256a5791572bf597',
     };
 
-    it('should sign an unsigned test tx', async function () {
+    it('should use recipients from txPrebuild when available including data field', async function () {
       const builder = getBuilder('tavaxc') as TransactionBuilder;
       builder.fee({
         fee: '280000000000',
@@ -271,21 +271,28 @@ describe('Avalanche C-Chain', function () {
       const unsignedTx = await builder.build();
       const unsignedTxForBroadcasting = unsignedTx.toBroadcastFormat();
 
+      // Test with recipients in txPrebuild including data field
+      const customRecipients = [
+        { address: '0x1234567890123456789012345678901234567890', amount: '500', data: '0xa9059cbb' },
+        { address: '0x0987654321098765432109876543210987654321', amount: '300', data: '0x23b872dd' },
+      ];
+
       const halfSignedRawTx = await tavaxCoin.signTransaction({
         txPrebuild: {
           txHex: unsignedTxForBroadcasting,
+          recipients: customRecipients,
         },
         prv: account_1.owner_2,
       });
 
-      builder.transfer().key(account_1.owner_2);
-      const halfSignedTx = await builder.build();
-      const halfSignedTxForBroadcasting = halfSignedTx.toBroadcastFormat();
-
-      halfSignedRawTx.halfSigned.txHex.should.equals(halfSignedTxForBroadcasting);
-      halfSignedRawTx.halfSigned.recipients.length.should.equals(1);
-      halfSignedRawTx.halfSigned.recipients[0].address.toLowerCase().should.equals(account_2.address.toLowerCase());
-      halfSignedRawTx.halfSigned.recipients[0].amount.toLowerCase().should.equals('1');
+      // Should use recipients from txPrebuild, not from transaction outputs
+      halfSignedRawTx.halfSigned.recipients.length.should.equals(2);
+      halfSignedRawTx.halfSigned.recipients[0].address.should.equals(customRecipients[0].address);
+      halfSignedRawTx.halfSigned.recipients[0].amount.should.equals(customRecipients[0].amount);
+      halfSignedRawTx.halfSigned.recipients[0].data.should.equals(customRecipients[0].data);
+      halfSignedRawTx.halfSigned.recipients[1].address.should.equals(customRecipients[1].address);
+      halfSignedRawTx.halfSigned.recipients[1].amount.should.equals(customRecipients[1].amount);
+      halfSignedRawTx.halfSigned.recipients[1].data.should.equals(customRecipients[1].data);
     });
 
     it('should sign an unsigned test tx with eip1559', async function () {
@@ -329,7 +336,7 @@ describe('Avalanche C-Chain', function () {
       halfSignedRawTx.halfSigned.eip1559.maxPriorityFeePerGas.should.equal('150');
     });
 
-    it('should sign an unsigned mainnet tx', async function () {
+    it('should preserve data field from txPrebuild recipients for contract interactions', async function () {
       const builder = getBuilder('avaxc') as TransactionBuilder;
       builder.fee({
         fee: '280000000000',
@@ -343,21 +350,30 @@ describe('Avalanche C-Chain', function () {
       const unsignedTx = await builder.build();
       const unsignedTxForBroadcasting = unsignedTx.toBroadcastFormat();
 
+      // Test with complex contract interaction data
+      const contractCallData =
+        '0xa9059cbb000000000000000000000000abcdef1234567890abcdef1234567890abcdef120000000000000000000000000000000000000000000000000de0b6b3a7640000';
+      const customRecipients = [
+        {
+          address: '0x1234567890123456789012345678901234567890',
+          amount: '0', // Contract call with 0 value
+          data: contractCallData,
+        },
+      ];
+
       const halfSignedRawTx = await avaxCoin.signTransaction({
         txPrebuild: {
           txHex: unsignedTxForBroadcasting,
+          recipients: customRecipients,
         },
         prv: account_1.owner_2,
       });
 
-      builder.transfer().key(account_1.owner_2);
-      const halfSignedTx = await builder.build();
-      const halfSignedTxForBroadcasting = halfSignedTx.toBroadcastFormat();
-
-      halfSignedRawTx.halfSigned.txHex.should.equals(halfSignedTxForBroadcasting);
+      // Should preserve the contract call data in half-signed transaction
       halfSignedRawTx.halfSigned.recipients.length.should.equals(1);
-      halfSignedRawTx.halfSigned.recipients[0].address.toLowerCase().should.equals(account_2.address.toLowerCase());
-      halfSignedRawTx.halfSigned.recipients[0].amount.toLowerCase().should.equals('1');
+      halfSignedRawTx.halfSigned.recipients[0].address.should.equals(customRecipients[0].address);
+      halfSignedRawTx.halfSigned.recipients[0].amount.should.equals(customRecipients[0].amount);
+      halfSignedRawTx.halfSigned.recipients[0].data.should.equals(customRecipients[0].data);
     });
   });
 

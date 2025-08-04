@@ -150,6 +150,7 @@ export interface TxPreBuild extends BaseTransactionPrebuild {
   expireTime?: number;
   hopTransaction?: string;
   eip1559?: EIP1559;
+  recipients?: Recipient[];
   txPrebuild?: {
     halfSigned: {
       txHex: string;
