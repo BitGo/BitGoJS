@@ -708,6 +708,44 @@ export const coins = CoinMap.fromCoins([
     COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
   ),
   account(
+    '0d2d6a7f-70a9-4475-afca-2af5cfaddff6',
+    'tog',
+    'Zero Gravity Testnet',
+    Networks.test.og,
+    18,
+    UnderlyingAsset.OG,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+    ],
+    KeyCurve.Secp256k1,
+    '',
+    't0G'
+  ),
+  account(
+    'f180825c-a79c-4e4d-8c91-ebeffbd19819',
+    'og',
+    'Zero Gravity',
+    Networks.main.og,
+    18,
+    UnderlyingAsset.OG,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+    ],
+    KeyCurve.Secp256k1,
+    '',
+    '0G'
+  ),
+  account(
     '4777265e-37f4-44d8-bccd-13e56189fcae',
     'sei',
     'Sei',
