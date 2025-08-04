@@ -2916,7 +2916,7 @@ export enum UnderlyingAsset {
 
   'eth:0x0' = 'eth:0x0',
   'eth:vvs' = 'eth:vvs',
-  'eth:bmc' = 'eth:bmc',
+  'eth:bmx' = 'eth:bmx',
   'eth:pro' = 'eth:pro',
   'eth:prime' = 'eth:prime',
   'eth:pokt' = 'eth:pokt',
