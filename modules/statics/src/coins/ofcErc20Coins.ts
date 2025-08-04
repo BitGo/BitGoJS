@@ -3583,11 +3583,11 @@ export const tOfcErc20Coins = [
   ),
 
   ofcerc20(
-    '8361c3bb-fc4e-4a67-8f3e-a2670312593c',
-    'ofceth:bmc',
+    '509f5815-1db1-4a59-8cc2-da4d5a1eabee',
+    'ofceth:bmx',
     'Wrapped BitMart Token',
     18,
-    underlyingAssetForSymbol('eth:bmc')
+    underlyingAssetForSymbol('eth:bmx')
   ),
 
   ofcerc20(

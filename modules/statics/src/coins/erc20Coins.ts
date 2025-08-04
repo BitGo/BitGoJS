@@ -11024,12 +11024,12 @@ export const erc20Coins = [
     UnderlyingAsset['eth:vvs']
   ),
   erc20(
-    '395f00e4-aaf8-4a4b-8fa1-54dfd7543951',
-    'ETH:BMC',
+    'a59b4f14-248b-4556-9975-93a2fe14ab58',
+    'ETH:BMX',
     'BitMart Token',
     18,
     '0x986ee2b944c42d017f52af21c4c69b84dbea35d8',
-    UnderlyingAsset['eth:bmc']
+    UnderlyingAsset['eth:bmx']
   ),
   erc20(
     '28beb513-7190-4dd3-b73f-32289d07de23',
