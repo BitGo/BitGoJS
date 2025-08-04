@@ -59,6 +59,9 @@ import { handleUpdateLightningWalletCoinSpecific } from './lightning/lightningWa
 import { ProxyAgent } from 'proxy-agent';
 import { isLightningCoinName } from '@bitgo/abstract-lightning';
 import { handleLightningWithdraw } from './lightning/lightningWithdrawRoutes';
+import createExpressRouter from './typedRoutes';
+import { ExpressApiRouteRequest } from './typedRoutes/api';
+import { TypedRequestHandler, WrappedRequest, WrappedResponse } from '@api-ts/typed-express-router';
 
 const { version } = require('bitgo/package.json');
 const pjson = require('../package.json');
@@ -66,11 +69,15 @@ const debug = debugLib('bitgo:express');
 
 const BITGOEXPRESS_USER_AGENT = `BitGoExpress/${pjson.version} BitGoJS/${version}`;
 
-function handlePing(req: express.Request, res: express.Response, next: express.NextFunction) {
+function handlePing(
+  req: ExpressApiRouteRequest<'express.ping', 'get'>,
+  res: express.Response,
+  next: express.NextFunction
+) {
   return req.bitgo.ping();
 }
 
-function handlePingExpress(req: express.Request) {
+function handlePingExpress(req: ExpressApiRouteRequest<'express.pingExpress', 'get'>) {
   return {
     status: 'express server is ok!',
   };
@@ -1358,6 +1365,23 @@ export function promiseWrapper(promiseRequestHandler: RequestHandler) {
   };
 }
 
+export function typedPromiseWrapper(promiseRequestHandler: TypedRequestHandler) {
+  return async function (req: WrappedRequest, res: WrappedResponse, next: express.NextFunction) {
+    debug(`handle: ${req.method} ${req.originalUrl}`);
+    try {
+      const result = await promiseRequestHandler(req, res, next);
+      if (typeof result === 'object' && result !== null && 'body' in result && 'status' in result) {
+        const { status, body } = result as { status: number; body: unknown };
+        res.status(status).send(body);
+      } else {
+        res.status(200).send(result);
+      }
+    } catch (e) {
+      handleRequestHandlerError(res, e);
+    }
+  };
+}
+
 export function createCustomSigningFunction(externalSignerUrl: string): CustomSigningFunction {
   return async function (params): Promise<SignedTransaction> {
     const { body: signedTx } = await retryPromise(
@@ -1530,8 +1554,11 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   // ping
   // /api/v[12]/pingexpress is the only exception to the rule above, as it explicitly checks the health of the
   // express server without running into rate limiting with the BitGo server.
-  app.get('/api/v[12]/ping', prepareBitGo(config), promiseWrapper(handlePing));
-  app.get('/api/v[12]/pingexpress', promiseWrapper(handlePingExpress));
+  const router = createExpressRouter();
+  app.use(router);
+
+  router.get('express.ping', [prepareBitGo(config), typedPromiseWrapper(handlePing)]);
+  router.get('express.pingExpress', [typedPromiseWrapper(handlePingExpress)]);
 
   // auth
   app.post('/api/v[12]/user/login', parseBody, prepareBitGo(config), promiseWrapper(handleLogin));
