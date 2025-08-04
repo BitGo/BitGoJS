@@ -106,6 +106,7 @@ export enum CoinFamily {
   ZETA = 'zeta',
   ZKETH = 'zketh',
   LINEAETH = 'lineaeth',
+  IP = 'ip', // Story Chain
 }
 
 /**
@@ -489,6 +490,7 @@ export enum UnderlyingAsset {
   HASH = 'hash', // Provenance
   HBAR = 'hbar', // Hedera main coin
   ICP = 'icp',
+  IP = 'ip', // Story Chain
   INITIA = 'initia',
   INJECTIVE = 'injective',
   IRYS = 'irys',

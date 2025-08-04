@@ -70,6 +70,7 @@ export const expectedColdFeatures = {
     'flr',
     'hash',
     'icp',
+    'ip', // Story chain
     'initia',
     'irys',
     'islm',
@@ -126,6 +127,7 @@ export const expectedColdFeatures = {
     'thorchain:rune',
     'tia',
     'ticp',
+    'tip', // Story chain
     'tinitia',
     'tirys',
     'tislm',

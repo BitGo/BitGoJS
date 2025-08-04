@@ -1280,6 +1280,24 @@ class CoredaoTestnet extends Testnet implements EthereumNetwork {
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
 
+class IP extends Mainnet implements EthereumNetwork {
+  name = 'Story';
+  family = CoinFamily.IP;
+  explorerUrl = 'https://www.storyscan.io/tx/';
+  accountExplorerUrl = 'https://www.storyscan.io/address/';
+  chainId = 1514;
+  nativeCoinOperationHashPrefix = '1514';
+}
+
+class IPTestnet extends Testnet implements EthereumNetwork {
+  name = 'StoryTestnet';
+  family = CoinFamily.IP;
+  explorerUrl = 'https://aeneid.explorer.story.foundation/transactions/';
+  accountExplorerUrl = 'https://aeneid.storyscan.io/address/';
+  chainId = 1315;
+  nativeCoinOperationHashPrefix = '1315';
+}
+
 class ApeChain extends Mainnet implements EthereumNetwork {
   name = 'ApeChain';
   family = CoinFamily.APECHAIN;
@@ -1759,6 +1777,7 @@ export const Networks = {
     hash: Object.freeze(new Hash()),
     hedera: Object.freeze(new Hedera()),
     icp: Object.freeze(new Icp()),
+    ip: Object.freeze(new IP()),
     initia: Object.freeze(new Initia()),
     injective: Object.freeze(new Injective()),
     irys: Object.freeze(new Irys()),
@@ -1848,6 +1867,7 @@ export const Networks = {
     hash: Object.freeze(new HashTestnet()),
     hedera: Object.freeze(new HederaTestnet()),
     icp: Object.freeze(new IcpTestnet()),
+    ip: Object.freeze(new IPTestnet()),
     initia: Object.freeze(new InitiaTestnet()),
     injective: Object.freeze(new InjectiveTestnet()),
     irys: Object.freeze(new IrysTestnet()),
