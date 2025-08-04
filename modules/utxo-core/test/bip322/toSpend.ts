@@ -1,8 +1,8 @@
 import assert from 'assert';
 
-import { payments } from '@bitgo/utxo-lib';
-
 import { buildToSpendTransaction, hashMessageWithTag } from '../../src/bip322';
+
+import { BIP322_PAYMENT_P2WPKH_FIXTURE } from './bip322.utils';
 
 describe('to_spend', function () {
   describe('Message hashing', function () {
@@ -31,9 +31,7 @@ describe('to_spend', function () {
   });
 
   describe('build to_spend transaction', function () {
-    const scriptPubKey = payments.p2wpkh({
-      address: 'bc1q9vza2e8x573nczrlzms0wvx3gsqjx7vavgkx0l',
-    }).output as Buffer;
+    const scriptPubKey = BIP322_PAYMENT_P2WPKH_FIXTURE.output as Buffer;
 
     // Source: https://github.com/bitcoin/bips/blob/master/bip-0322.mediawiki#transaction-hashes
     const fixtures = [
