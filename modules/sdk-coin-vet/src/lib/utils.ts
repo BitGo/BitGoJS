@@ -10,6 +10,8 @@ import {
 } from '@bitgo/abstract-eth';
 import {
   TRANSFER_TOKEN_METHOD_ID,
+  EXIT_DELEGATION_METHOD_ID,
+  BURN_NFT_METHOD_ID,
   VET_ADDRESS_LENGTH,
   VET_BLOCK_ID_LENGTH,
   VET_TRANSACTION_ID_LENGTH,
@@ -78,6 +80,10 @@ export class Utils implements BaseUtils {
       return TransactionType.FlushTokens;
     } else if (clauses[0].data.startsWith(TRANSFER_TOKEN_METHOD_ID)) {
       return TransactionType.SendToken;
+    } else if (clauses[0].data.startsWith(EXIT_DELEGATION_METHOD_ID)) {
+      return TransactionType.StakingUnlock; // Using StakingUnlock for exit delegation
+    } else if (clauses[0].data.startsWith(BURN_NFT_METHOD_ID)) {
+      return TransactionType.StakingWithdraw; // Using StakingWithdraw for burn NFT
     } else {
       return TransactionType.SendToken;
     }

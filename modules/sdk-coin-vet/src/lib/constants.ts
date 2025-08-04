@@ -3,3 +3,8 @@ export const VET_ADDRESS_LENGTH = 40;
 export const VET_BLOCK_ID_LENGTH = 64;
 
 export const TRANSFER_TOKEN_METHOD_ID = '0xa9059cbb';
+export const EXIT_DELEGATION_METHOD_ID = '0x32b7006d';
+export const BURN_NFT_METHOD_ID = '0x42966c68';
+
+export const STARGATE_NFT_ADDRESS = '0x1856c533ac2d94340aaa8544d35a5c1d4a21dee7';
+export const STARGATE_DELEGATION_ADDRESS = '0x4cb1c9ef05b529c093371264fab2c93cc6cddb0e';
