@@ -1491,6 +1491,38 @@ export const coins = CoinMap.fromCoins([
     ]
   ),
   account(
+    'ead0435a-ee3f-4dc5-91fd-8897f1811701',
+    'ip',
+    'Story',
+    Networks.main.ip,
+    18,
+    UnderlyingAsset.IP,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+    ]
+  ),
+  account(
+    '86e7b7d6-02db-4ef7-9552-e8aeeeec2d52',
+    'tip',
+    'Story Testnet',
+    Networks.test.ip,
+    18,
+    UnderlyingAsset.IP,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+    ]
+  ),
+  account(
     'e907fdbd-2c5d-45d6-b622-9da38937da73',
     'hypeevm',
     'Hyperliquid EVM',
