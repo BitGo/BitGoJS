@@ -434,6 +434,11 @@ export enum CoinFeature {
    * This coin is a rebase token and should use the rebase token functionality
    */
   REBASE_TOKEN = 'rebase-token',
+
+  /**
+   * This coin is an EVM compatible coin and should use common EVM logic in WP
+   */
+  EVM_COMPATIBLE_WP = 'evm-compatible-wp',
 }
 
 /**
