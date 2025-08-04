@@ -104,6 +104,7 @@ export enum CoinFamily {
   ZEC = 'zec',
   ZETA = 'zeta',
   ZKETH = 'zketh',
+  LINEAETH = 'lineaeth',
 }
 
 /**
@@ -495,6 +496,7 @@ export enum UnderlyingAsset {
   KAVA = 'kava',
   LNBTC = 'lnbtc',
   LTC = 'ltc',
+  LINEAETH = 'lineaeth',
   MANTRA = 'mantra',
   MON = 'mon',
   NEAR = 'near',

@@ -232,6 +232,9 @@ const mainnetBase: EnvironmentTemplate = {
     mon: {
       baseUrl: 'https://api.etherscan.io/v2',
     },
+    lineaeth: {
+      baseUrl: 'https://api.etherscan.io/v2',
+    },
   },
   icpNodeUrl: 'https://ic0.app',
   worldExplorerBaseUrl: 'https://worldscan.org/',
@@ -334,6 +337,9 @@ const testnetBase: EnvironmentTemplate = {
       baseUrl: 'https://testnet-rpc.irys.xyz/v1/execution-rpc',
     },
     mon: {
+      baseUrl: 'https://api.etherscan.io/v2',
+    },
+    lineaeth: {
       baseUrl: 'https://api.etherscan.io/v2',
     },
   },

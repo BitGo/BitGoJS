@@ -744,6 +744,46 @@ export const coins = CoinMap.fromCoins([
     ]
   ),
   account(
+    'f21730f2-b0ce-40fe-ba6f-104ba5393af1',
+    'lineaeth',
+    'Linea Ethereum',
+    Networks.main.lineaeth,
+    18,
+    UnderlyingAsset.LINEAETH,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+    ],
+    KeyCurve.Secp256k1,
+    '',
+    'LineaETH'
+  ),
+
+  account(
+    '700a7869-1493-4d91-ab9b-465480bcab0c',
+    'tlineaeth',
+    'Linea Ethereum Testnet',
+    Networks.test.lineaeth,
+    18,
+    UnderlyingAsset.LINEAETH,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+    ],
+    KeyCurve.Secp256k1,
+    '',
+    'tLineaETH'
+  ),
+
+  account(
     '42cd26d1-706d-40f6-bcce-7cb125e6f617',
     'tseievm',
     'Sei EVM Testnet',
