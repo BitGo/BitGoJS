@@ -215,7 +215,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.AVAXC,
     BaseUnit.ETH,
-    [...AVAXC_FEATURES, CoinFeature.STAKING]
+    AVAXC_FEATURES
   ),
   account(
     'f3f0f790-fc53-40ba-a9cc-71909fc50566',

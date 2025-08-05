@@ -60,6 +60,7 @@ export const AVAXC_FEATURES = [
   CoinFeature.MULTISIG_COLD,
   CoinFeature.MULTISIG,
   CoinFeature.EIP1559,
+  CoinFeature.STAKING,
 ];
 export const CELO_FEATURES = [
   ...ETH_FEATURES,
