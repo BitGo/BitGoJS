@@ -15,6 +15,8 @@ import { ExitDelegationTransaction } from './transaction/exitDelegation';
 import { BurnNftTransaction } from './transaction/burnNftTransaction';
 import { TokenTransactionBuilder } from './transactionBuilder/tokenTransactionBuilder';
 import { TokenTransaction } from './transaction/tokenTransaction';
+import { StakingBuilder } from './transactionBuilder/stakingBuilder';
+import { StakingTransaction } from './transaction/stakingTransaction';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -43,6 +45,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           const tokenTransferTx = new TokenTransaction(this._coinConfig);
           tokenTransferTx.fromDeserializedSignedTransaction(signedTx);
           return this.getTokenTransactionBuilder(tokenTransferTx);
+        case TransactionType.ContractCall:
+          const stakingTx = new StakingTransaction(this._coinConfig);
+          stakingTx.fromDeserializedSignedTransaction(signedTx);
+          return this.getStakingBuilder(stakingTx);
         case TransactionType.StakingUnlock:
           const exitDelegationTx = new ExitDelegationTransaction(this._coinConfig);
           exitDelegationTx.fromDeserializedSignedTransaction(signedTx);
@@ -74,6 +80,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getTokenTransactionBuilder(tx?: Transaction): TokenTransactionBuilder {
     return this.initializeBuilder(tx, new TokenTransactionBuilder(this._coinConfig));
+  }
+
+  getStakingBuilder(tx?: StakingTransaction): StakingBuilder {
+    return this.initializeBuilder(tx, new StakingBuilder(this._coinConfig));
   }
 
   /**

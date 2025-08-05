@@ -10,6 +10,7 @@ import {
 } from '@bitgo/abstract-eth';
 import {
   TRANSFER_TOKEN_METHOD_ID,
+  STAKING_METHOD_ID,
   EXIT_DELEGATION_METHOD_ID,
   BURN_NFT_METHOD_ID,
   VET_ADDRESS_LENGTH,
@@ -80,6 +81,8 @@ export class Utils implements BaseUtils {
       return TransactionType.FlushTokens;
     } else if (clauses[0].data.startsWith(TRANSFER_TOKEN_METHOD_ID)) {
       return TransactionType.SendToken;
+    } else if (clauses[0].data.startsWith(STAKING_METHOD_ID)) {
+      return TransactionType.ContractCall;
     } else if (clauses[0].data.startsWith(EXIT_DELEGATION_METHOD_ID)) {
       return TransactionType.StakingUnlock; // Using StakingUnlock for exit delegation
     } else if (clauses[0].data.startsWith(BURN_NFT_METHOD_ID)) {
@@ -93,6 +96,23 @@ export class Utils implements BaseUtils {
     const methodName = 'transfer';
     const types = ['address', 'uint256'];
     const params = [toAddress, new BN(amountWei)];
+
+    const method = EthereumAbi.methodID(methodName, types);
+    const args = EthereumAbi.rawEncode(types, params);
+
+    return addHexPrefix(Buffer.concat([method, args]).toString('hex'));
+  }
+
+  /**
+   * Encodes staking transaction data using ethereumjs-abi
+   *
+   * @param {string} stakingAmount - The amount to stake in wei
+   * @returns {string} - The encoded transaction data
+   */
+  getStakingData(stakingAmount: string): string {
+    const methodName = 'stake';
+    const types = ['uint256'];
+    const params = [new BN(stakingAmount)];
 
     const method = EthereumAbi.methodID(methodName, types);
     const args = EthereumAbi.rawEncode(types, params);

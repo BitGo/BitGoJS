@@ -5,6 +5,40 @@ import {
 } from '@bitgo/sdk-core';
 
 /**
+ * Interface for ABI input parameter
+ */
+export interface AbiInput {
+  internalType: string;
+  name: string;
+  type: string;
+}
+
+/**
+ * Interface for ABI output parameter
+ */
+export interface AbiOutput {
+  internalType?: string;
+  name?: string;
+  type: string;
+}
+
+/**
+ * Interface for ABI function definition
+ */
+export interface AbiFunction {
+  inputs: AbiInput[];
+  name: string;
+  outputs: AbiOutput[];
+  stateMutability: string;
+  type: string;
+}
+
+/**
+ * Type for contract ABI
+ */
+export type ContractAbi = AbiFunction[];
+
+/**
  * The transaction data returned from the toJson() function of a transaction
  */
 export interface VetTransactionData {
@@ -25,6 +59,8 @@ export interface VetTransactionData {
   to?: string;
   tokenAddress?: string;
   tokenId?: string; // Added for unstaking and burn NFT transactions
+  stakingContractAddress?: string;
+  amountToStake?: string;
 }
 
 export interface VetTransactionExplanation extends BaseTransactionExplanation {
