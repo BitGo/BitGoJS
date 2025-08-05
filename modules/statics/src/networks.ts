@@ -1668,6 +1668,7 @@ class SongbirdTestnet extends Testnet implements EthereumNetwork {
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
 class BaseChainTestnet extends Testnet implements EthereumNetwork {
+  //BaseETH testnet
   name = 'BaseChainTestnet';
   family = CoinFamily.BASEETH;
   explorerUrl = 'https://sepolia.basescan.org/tx/';
@@ -1682,6 +1683,7 @@ class BaseChainTestnet extends Testnet implements EthereumNetwork {
 }
 
 class BaseChain extends Mainnet implements EthereumNetwork {
+  //BaseETH
   name = 'BaseChain';
   family = CoinFamily.BASEETH;
   explorerUrl = 'https://basescan.org/tx/';
