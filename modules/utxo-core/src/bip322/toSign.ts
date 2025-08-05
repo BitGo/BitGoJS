@@ -3,6 +3,7 @@ import { Psbt, Transaction } from '@bitgo/utxo-lib';
 export type AddressDetails = {
   redeemScript?: Buffer;
   witnessScript?: Buffer;
+  scriptPubKey: Buffer;
 };
 
 /**
@@ -15,10 +16,6 @@ export type AddressDetails = {
  * @returns {string} - The hex representation of the constructed PSBT.
  */
 export function buildToSignPsbt(toSpendTx: Transaction<bigint>, addressDetails: AddressDetails): Psbt {
-  if (!addressDetails.redeemScript && !addressDetails.witnessScript) {
-    throw new Error('redeemScript and/or witnessScript must be provided');
-  }
-
   // Create PSBT object for constructing the transaction
   const psbt = new Psbt();
   // Set default value for nVersion and nLockTime
@@ -31,13 +28,15 @@ export function buildToSignPsbt(toSpendTx: Transaction<bigint>, addressDetails: 
     sequence: 0, // vin[0].nSequence = 0
     nonWitnessUtxo: toSpendTx.toBuffer(), // previous transaction for us to rebuild later to verify
   });
+  psbt.updateInput(0, {
+    witnessUtxo: { value: BigInt(0), script: addressDetails.scriptPubKey },
+  });
+
   if (addressDetails.redeemScript) {
     psbt.updateInput(0, { redeemScript: addressDetails.redeemScript });
   }
   if (addressDetails.witnessScript) {
-    psbt.updateInput(0, {
-      witnessUtxo: { value: BigInt(0), script: addressDetails.witnessScript },
-    });
+    psbt.updateInput(0, { witnessScript: addressDetails.witnessScript });
   }
 
   // Set the output

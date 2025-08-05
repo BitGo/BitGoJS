@@ -24,7 +24,7 @@ describe('BIP322 toSign', function () {
       it(`should build a to_sign PSBT for message "${message}"`, function () {
         const toSpendTx = bip322.buildToSpendTransaction(scriptPubKey, Buffer.from(message));
         const addressDetails = {
-          witnessScript: scriptPubKey,
+          scriptPubKey,
         };
         const result = bip322.buildToSignPsbt(toSpendTx, addressDetails);
         const computedTxid = result

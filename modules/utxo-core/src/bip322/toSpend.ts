@@ -1,5 +1,5 @@
 import { Hash } from 'fast-sha256';
-import { Psbt, Transaction } from '@bitgo/utxo-lib';
+import { Psbt, Transaction, bitgo, networks } from '@bitgo/utxo-lib';
 
 export const BIP322_TAG = 'BIP0322-signed-message';
 
@@ -65,4 +65,24 @@ export function buildToSpendTransaction(
   });
   // Return transaction
   return psbt.extractTransaction();
+}
+
+export function buildToSpendTransactionFromChainAndIndex(
+  rootWalletKeys: bitgo.RootWalletKeys,
+  chain: bitgo.ChainCode,
+  index: number,
+  message: string | Buffer,
+  tag = BIP322_TAG
+): Transaction<bigint> {
+  const taprootChains = [...bitgo.chainCodesP2tr, ...bitgo.chainCodesP2trMusig2];
+  if (taprootChains.some((tc) => tc === chain)) {
+    throw new Error('BIP322 is not supported for Taproot script types.');
+  }
+
+  const outputScript = bitgo.outputScripts.createOutputScript2of3(
+    rootWalletKeys.deriveForChainAndIndex(chain, index).publicKeys,
+    bitgo.scriptTypeForChain(chain),
+    networks.bitcoin
+  );
+  return buildToSpendTransaction(outputScript.scriptPubKey, message, tag);
 }

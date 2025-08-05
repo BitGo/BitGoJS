@@ -1,6 +1,12 @@
 import assert from 'assert';
 
-import { buildToSpendTransaction, hashMessageWithTag } from '../../src/bip322';
+import { testutil, bitgo } from '@bitgo/utxo-lib';
+
+import {
+  buildToSpendTransaction,
+  hashMessageWithTag,
+  buildToSpendTransactionFromChainAndIndex,
+} from '../../src/bip322';
 
 import { BIP322_PAYMENT_P2WPKH_FIXTURE } from './bip322.utils';
 
@@ -50,6 +56,48 @@ describe('to_spend', function () {
         const result = buildToSpendTransaction(scriptPubKey, Buffer.from(message));
         const computedTxid = result.getId();
         assert.strictEqual(computedTxid, txid, `Transaction ID for message "${message}" does not match expected value`);
+      });
+    });
+  });
+
+  describe('buildToSpendTransactionFromChainAndIndex', function () {
+    it('should throw an error for Taproot chains', function () {
+      const taprootChains = [...bitgo.chainCodesP2tr, ...bitgo.chainCodesP2trMusig2];
+      taprootChains.forEach((chain) => {
+        assert.throws(() => {
+          buildToSpendTransactionFromChainAndIndex(
+            testutil.getDefaultWalletKeys(),
+            chain,
+            0,
+            Buffer.from('Hello World')
+          );
+        }, /BIP322 is not supported for Taproot script types/);
+      });
+    });
+
+    describe('should build a to_spend transaction for a non-Taproot chain', function () {
+      function run(chain: bitgo.ChainCode) {
+        it(`scriptType: ${bitgo.scriptTypeForChain(chain)}, chain ${chain}`, function () {
+          const tx = buildToSpendTransactionFromChainAndIndex(
+            testutil.getDefaultWalletKeys(),
+            20,
+            0,
+            Buffer.from('Hello World')
+          );
+          const expectedScriptPubKey = bitgo.outputScripts
+            .createOutputScript2of3(testutil.getDefaultWalletKeys().deriveForChainAndIndex(20, 0).publicKeys, 'p2wsh')
+            .scriptPubKey.toString();
+          const scriptPubKeyFromTx = tx.outs[0].script.toString();
+          assert.deepStrictEqual(
+            scriptPubKeyFromTx,
+            expectedScriptPubKey,
+            'ScriptPubKey does not match expected value'
+          );
+        });
+      }
+
+      ([0, 1, 10, 11, 20, 21] as bitgo.ChainCode[]).forEach((chain) => {
+        run(chain);
       });
     });
   });
