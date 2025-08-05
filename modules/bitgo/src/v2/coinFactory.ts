@@ -75,6 +75,7 @@ import {
   Eos,
   EosToken,
   Erc20Token,
+  Erc721Token,
   Etc,
   Eth,
   Ethw,
@@ -394,6 +395,12 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   const tokens = getFormattedTokens(coinMap);
 
   Erc20Token.createTokenConstructors([...tokens.bitcoin.eth.tokens, ...tokens.testnet.eth.tokens]).forEach(
+    ({ name, coinConstructor }) => {
+      coinFactory.register(name, coinConstructor);
+    }
+  );
+
+  Erc721Token.createTokenConstructors([...tokens.bitcoin.eth.nfts, ...tokens.testnet.eth.nfts]).forEach(
     ({ name, coinConstructor }) => {
       coinFactory.register(name, coinConstructor);
     }
@@ -862,7 +869,11 @@ export function getTokenConstructor(tokenConfig: TokenConfig): CoinConstructor |
   switch (tokenConfig.coin) {
     case 'eth':
     case 'hteth':
-      return Erc20Token.createTokenConstructor(tokenConfig as Erc20TokenConfig);
+      if (tokenConfig.type.includes('erc721')) {
+        return Erc721Token.createTokenConstructor(tokenConfig as EthLikeTokenConfig);
+      } else {
+        return Erc20Token.createTokenConstructor(tokenConfig as Erc20TokenConfig);
+      }
     case 'xlm':
     case 'txlm':
       return StellarToken.createTokenConstructor(tokenConfig as StellarTokenConfig);

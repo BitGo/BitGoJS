@@ -162,6 +162,7 @@ export interface Tokens {
   bitcoin: {
     eth: {
       tokens: Erc20TokenConfig[];
+      nfts: EthLikeTokenConfig[];
     };
     xlm: {
       tokens: StellarTokenConfig[];
@@ -252,6 +253,7 @@ export interface Tokens {
   testnet: {
     eth: {
       tokens: Erc20TokenConfig[];
+      nfts: EthLikeTokenConfig[];
     };
     xlm: {
       tokens: StellarTokenConfig[];
@@ -579,6 +581,24 @@ const getFormattedSoneiumTokens = (customCoinMap = coins) =>
   customCoinMap.reduce((acc: EthLikeTokenConfig[], coin) => {
     if ((coin instanceof Erc721Coin || coin instanceof Erc1155Coin) && coin.family === CoinFamily.SONEIUM) {
       acc.push(getSoneiumTokenConfig(coin));
+    }
+    return acc;
+  }, []);
+
+function getErc721TokenConfig(coin: Erc721Coin): EthLikeTokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'eth' : 'hteth',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+    decimalPlaces: coin.decimalPlaces,
+  };
+}
+const getFormattedErc721Tokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: EthLikeTokenConfig[], coin) => {
+    if (coin instanceof Erc721Coin && coin.family === CoinFamily.ETH) {
+      acc.push(getErc721TokenConfig(coin));
     }
     return acc;
   }, []);
@@ -981,6 +1001,7 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
     bitcoin: {
       eth: {
         tokens: getFormattedErc20Tokens(coinMap).filter((token) => token.network === 'Mainnet'),
+        nfts: getFormattedErc721Tokens(coinMap).filter((token) => token.network === 'Mainnet'),
       },
       xlm: {
         tokens: getFormattedStellarTokens(coinMap).filter((token) => token.network === 'Mainnet'),
@@ -1075,6 +1096,7 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
     testnet: {
       eth: {
         tokens: getFormattedErc20Tokens(coinMap).filter((token) => token.network === 'Testnet'),
+        nfts: getFormattedErc721Tokens(coinMap).filter((token) => token.network === 'Testnet'),
       },
       xlm: {
         tokens: getFormattedStellarTokens(coinMap).filter((token) => token.network === 'Testnet'),
@@ -1234,6 +1256,8 @@ export function getFormattedTokenConfigForCoin(coin: Readonly<BaseCoin>): TokenC
     return getPolygonTokenConfig(coin);
   } else if ((coin instanceof Erc721Coin || coin instanceof Erc1155Coin) && coin.family === CoinFamily.SONEIUM) {
     return getSoneiumTokenConfig(coin);
+  } else if (coin instanceof Erc721Coin && coin.family === CoinFamily.ETH) {
+    return getErc721TokenConfig(coin);
   } else if (coin instanceof ArbethERC20Token) {
     return getArbethTokenConfig(coin);
   } else if (coin instanceof OpethERC20Token) {

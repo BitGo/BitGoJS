@@ -25,11 +25,11 @@ describe('Asset metadata service', () => {
   });
 
   it('should not fetch coin from custom coin factory when useAms is false', async () => {
-    const bitgo = TestBitGo.decorate(BitGo, { env: 'mock', microservicesUri, useAms: false } as any);
-    bitgo.initializeTestVars();
-    bitgo.initCoinFactory(reducedAmsTokenConfig);
+    const bitgoNoAms = TestBitGo.decorate(BitGo, { env: 'mock', microservicesUri, useAms: false } as any);
+    bitgoNoAms.initializeTestVars();
+    bitgoNoAms.initCoinFactory(reducedAmsTokenConfig);
     (() => {
-      bitgo.coin('hteth:faketoken');
+      bitgoNoAms.coin('hteth:faketoken');
     }).should.throw(
       'Coin or token type hteth:faketoken not supported or not compiled. Please be sure that you are using the latest version of BitGoJS. If using @bitgo/sdk-api, please confirm you have registered hteth:faketoken first.'
     );
@@ -37,14 +37,60 @@ describe('Asset metadata service', () => {
 
   it('should be able to register a token in the coin factory', () => {
     const tokenName = 'hteth:faketoken';
-    const amsToken = reducedAmsTokenConfig[tokenName][0];
-    bitgo.registerToken(amsToken);
+    bitgo.registerToken(tokenName);
     const coin = bitgo.coin(tokenName);
     should.exist(coin);
     coin.type.should.equal(tokenName);
     coin.name.should.equal('Hoodi Testnet fake token');
     coin.decimalPlaces.should.equal(6);
     coin.tokenContractAddress.should.equal('0x89a959b9184b4f8c8633646d5dfd049d2ebc983a');
+  });
+
+  describe('ERC721 NFTs', () => {
+    it('should create a custom coin factory from ams response', async () => {
+      bitgo.initCoinFactory(reducedAmsTokenConfig);
+      const coin = bitgo.coin('erc721:unsteth');
+      should.exist(coin);
+      coin.type.should.equal('erc721:unsteth');
+      coin.name.should.equal('Lido: stETH Withdrawal NFT');
+      coin.decimalPlaces.should.equal(0);
+      coin.tokenContractAddress.should.equal('0x889edc2edab5f40e902b864ad4d7ade8e412f9b1');
+    });
+
+    it('should be able to register an nft in the coin factory', () => {
+      const nftName = 'terc721:unsteth';
+      bitgo.registerToken(nftName);
+      const coin = bitgo.coin(nftName);
+      should.exist(coin);
+      coin.type.should.equal(nftName);
+      coin.name.should.equal('Test Lido: stETH Withdrawal NFT');
+      coin.decimalPlaces.should.equal(0);
+      coin.tokenContractAddress.should.equal('0xfe56573178f1bcdf53f01a6e9977670dcbbd9186');
+    });
+
+    it('should fetch all assets from AMS and initialize the coin factory', async () => {
+      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock', microservicesUri, useAms: true } as BitGoOptions);
+      bitgo.initializeTestVars();
+
+      // Setup nocks
+      nock(microservicesUri).get('/api/v1/assets/list/testnet').reply(200, reducedAmsTokenConfig);
+
+      await bitgo.registerAllTokens();
+      const coin = bitgo.coin('terc721:unsteth');
+      should.exist(coin);
+    });
+
+    it('should fetch nft from default coin factory when useAms is false', () => {
+      const bitgoNoAms = TestBitGo.decorate(BitGo, { env: 'mock', microservicesUri, useAms: false } as BitGoOptions);
+      bitgoNoAms.initializeTestVars();
+      bitgoNoAms.initCoinFactory(reducedAmsTokenConfig);
+      const coin: any = bitgoNoAms.coin('erc721:unsteth');
+      should.exist(coin);
+      coin.type.should.equal('erc721:unsteth');
+      coin.name.should.equal('Lido: stETH Withdrawal NFT');
+      coin.decimalPlaces.should.equal(0);
+      coin.tokenContractAddress.should.equal('0x889edc2edab5f40e902b864ad4d7ade8e412f9b1');
+    });
   });
 
   it('should fetch all assets from AMS and initialize the coin factory', async () => {
@@ -61,10 +107,10 @@ describe('Asset metadata service', () => {
 
   describe('registerToken', () => {
     it('should throw an error when useAms is false', async () => {
-      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock', microservicesUri, useAms: false } as BitGoOptions);
-      bitgo.initializeTestVars();
+      const bitgoNoAms = TestBitGo.decorate(BitGo, { env: 'mock', microservicesUri, useAms: false } as BitGoOptions);
+      bitgoNoAms.initializeTestVars();
 
-      await bitgo
+      await bitgoNoAms
         .registerToken('hteth:faketoken')
         .should.be.rejectedWith('registerToken is only supported when useAms is set to true');
     });
