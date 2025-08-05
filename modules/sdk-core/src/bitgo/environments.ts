@@ -167,7 +167,7 @@ const mainnetBase: EnvironmentTemplate = {
   optimisticEtherscanApiToken: process.env.OPTIMISTIC_ETHERSCAN_API_TOKEN,
   zksyncExplorerBaseUrl: 'https://block-explorer-api.mainnet.zksync.io',
   zksyncExplorerApiToken: process.env.ZKSYNC_EXPLORER_API_TOKEN,
-  baseethExplorerUrl: 'https://api.basescan.org',
+  baseethExplorerUrl: 'https://api.basescan.org', //BaseETH explorer api url
   baseethApiToken: process.env.BASESCAN_API_TOKEN,
   eosNodeUrls: ['https://bp.cryptolions.io', 'https://api.eosnewyork.io', 'https://api.eosdetroit.io'],
   nearNodeUrls: ['https://api.fastnear.com'],

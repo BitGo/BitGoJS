@@ -371,7 +371,17 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.BASEETH,
     BaseUnit.ETH,
-    [...ETH_FEATURES, CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA, CoinFeature.EIP1559]
+    [
+      ...EVM_FEATURES,
+      CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+    ],
+    KeyCurve.Secp256k1,
+    '',
+    'tBaseETH'
   ),
   account(
     'd51fe324-1e01-4630-9b04-c724fe495a1c',
@@ -381,7 +391,17 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.BASEETH,
     BaseUnit.ETH,
-    [...ETH_FEATURES, CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA, CoinFeature.EIP1559]
+    [
+      ...EVM_FEATURES,
+      CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+    ],
+    KeyCurve.Secp256k1,
+    '',
+    'BaseETH'
   ),
   account(
     'ffc472f5-27c6-49f8-ad9a-f57659258fb9',

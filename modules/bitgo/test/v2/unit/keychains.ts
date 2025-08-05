@@ -96,6 +96,7 @@ describe('V2 Keychains', function () {
         n.asset !== UnderlyingAsset.IRYS &&
         n.asset !== UnderlyingAsset.LINEAETH &&
         n.asset !== UnderlyingAsset.IP && // Story Chain
+        n.asset !== UnderlyingAsset.BASEETH &&
         coinFamilyValues.includes(n.name)
     );
 

@@ -29,7 +29,7 @@ export enum CoinFamily {
   ATOM = 'atom',
   AVAXC = 'avaxc',
   AVAXP = 'avaxp',
-  BASEETH = 'baseeth',
+  BASEETH = 'baseeth', // Base Ethereum
   BABY = 'baby',
   BCH = 'bch',
   BCHA = 'bcha',
@@ -456,7 +456,7 @@ export enum UnderlyingAsset {
   APECHAIN = 'apechain',
   API3 = 'api3',
   ARBETH = 'arbeth',
-  BASEETH = 'baseeth',
+  BASEETH = 'baseeth', // Base Ethereum
   ASI = 'asi',
   ATOM = 'atom',
   AVAXC = 'avaxc',
