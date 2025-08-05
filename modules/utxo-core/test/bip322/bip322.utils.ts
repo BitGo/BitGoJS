@@ -14,5 +14,5 @@ export const BIP322_FIXTURE_HELLO_WORLD_TOSPEND_TX = buildToSpendTransaction(
 );
 
 export const BIP322_FIXTURE_HELLOW_WORLD_TOSIGN_PSBT = buildToSignPsbt(BIP322_FIXTURE_HELLO_WORLD_TOSPEND_TX, {
-  witnessScript: BIP322_PAYMENT_P2WPKH_FIXTURE.output as Buffer,
+  scriptPubKey: BIP322_PAYMENT_P2WPKH_FIXTURE.output as Buffer,
 });
