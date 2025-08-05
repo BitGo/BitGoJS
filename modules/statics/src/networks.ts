@@ -100,7 +100,8 @@ export type SubstrateSpecNameType =
   | 'statemint'
   | 'statemine'
   | 'node-subtensor'
-  | 'polymesh_testnet';
+  | 'polymesh_testnet'
+  | 'polymesh_mainnet';
 
 export interface DotNetwork extends AccountNetwork {
   // some chains pay fees via an enterprise gas task. The account explorer url

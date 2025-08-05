@@ -58,6 +58,7 @@ interface EnvironmentTemplate {
   islmNodeUrl: string;
   dotNodeUrls: string[];
   substrateNodeUrls: string[];
+  polymeshNodeUrls: string[];
   tronNodes: {
     full: string;
     solidity: string;
@@ -192,7 +193,8 @@ const mainnetBase: EnvironmentTemplate = {
   initiaNodeUrl: 'https://rest.initia.xyz/',
   asiNodeUrl: 'https://rest-fetchhub.fetch.ai/',
   dotNodeUrls: ['wss://rpc.polkadot.io'],
-  substrateNodeUrls: ['wss://entrypoint-finney.opentensor.ai/'],
+  substrateNodeUrls: ['wss://entrypoint-finney.opentensor.ai'],
+  polymeshNodeUrls: ['wss://mainnet-rpc.polymesh.network'],
   tronNodes: {
     full: 'https://api.trongrid.io',
     solidity: 'https://api.trongrid.io',
@@ -301,6 +303,7 @@ const testnetBase: EnvironmentTemplate = {
   asiNodeUrl: 'https://rest-dorado.fetch.ai/',
   dotNodeUrls: ['wss://westend-rpc.polkadot.io'],
   substrateNodeUrls: ['wss://test.finney.opentensor.ai'],
+  polymeshNodeUrls: ['wss://testnet-rpc.polymesh.live'],
   tronNodes: {
     full: 'https://api.shasta.trongrid.io',
     solidity: 'https://api.shasta.trongrid.io',
