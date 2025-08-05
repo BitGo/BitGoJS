@@ -1,5 +1,5 @@
 import * as t from 'io-ts';
-import { LightningOnchainRecipient } from '@bitgo/public-types';
+import { LightningOnchainRecipient, LightningOnchainRequest } from '@bitgo/public-types';
 import { PendingApprovalData, TxRequestState } from '@bitgo/sdk-core';
 import { BigIntFromString } from 'io-ts-types';
 
@@ -80,6 +80,9 @@ export const SignPsbtRequest = t.type(
   {
     fundedPsbt: t.string,
     txRequestId: t.string,
+    signedRequest: LightningOnchainRequest,
+    signature: t.string,
+    userAuthKey: t.string,
   },
   'SendPsbtRequest'
 );
@@ -98,6 +101,9 @@ export const SendPsbtRequest = t.type(
   {
     signedTxHex: t.string,
     txRequestId: t.string,
+    signedRequest: LightningOnchainRequest,
+    signature: t.string,
+    userAuthKey: t.string,
   },
   'SendPsbtRequest'
 );
