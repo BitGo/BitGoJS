@@ -24,6 +24,7 @@ export interface VetTransactionData {
   deployedAddress?: string;
   to?: string;
   tokenAddress?: string;
+  tokenId?: string; // Added for unstaking and burn NFT transactions
 }
 
 export interface VetTransactionExplanation extends BaseTransactionExplanation {

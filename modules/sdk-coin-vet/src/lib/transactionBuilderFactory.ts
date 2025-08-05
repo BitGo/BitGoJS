@@ -5,10 +5,14 @@ import { TransactionBuilder } from './transactionBuilder/transactionBuilder';
 import { TransferBuilder } from './transactionBuilder/transferBuilder';
 import { AddressInitializationBuilder } from './transactionBuilder/addressInitializationBuilder';
 import { FlushTokenTransactionBuilder } from './transactionBuilder/flushTokenTransactionBuilder';
+import { ExitDelegationBuilder } from './transactionBuilder/exitDelegationBuilder';
+import { BurnNftBuilder } from './transactionBuilder/burnNftBuilder';
 import { Transaction } from './transaction/transaction';
 import utils from './utils';
 import { AddressInitializationTransaction } from './transaction/addressInitializationTransaction';
 import { FlushTokenTransaction } from './transaction/flushTokenTransaction';
+import { ExitDelegationTransaction } from './transaction/exitDelegation';
+import { BurnNftTransaction } from './transaction/burnNftTransaction';
 import { TokenTransactionBuilder } from './transactionBuilder/tokenTransactionBuilder';
 import { TokenTransaction } from './transaction/tokenTransaction';
 
@@ -39,6 +43,14 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           const tokenTransferTx = new TokenTransaction(this._coinConfig);
           tokenTransferTx.fromDeserializedSignedTransaction(signedTx);
           return this.getTokenTransactionBuilder(tokenTransferTx);
+        case TransactionType.StakingUnlock:
+          const exitDelegationTx = new ExitDelegationTransaction(this._coinConfig);
+          exitDelegationTx.fromDeserializedSignedTransaction(signedTx);
+          return this.getExitDelegationBuilder(exitDelegationTx);
+        case TransactionType.StakingWithdraw:
+          const burnNftTx = new BurnNftTransaction(this._coinConfig);
+          burnNftTx.fromDeserializedSignedTransaction(signedTx);
+          return this.getBurnNftBuilder(burnNftTx);
         default:
           throw new InvalidTransactionError('Invalid transaction type');
       }
@@ -62,6 +74,26 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getTokenTransactionBuilder(tx?: Transaction): TokenTransactionBuilder {
     return this.initializeBuilder(tx, new TokenTransactionBuilder(this._coinConfig));
+  }
+
+  /**
+   * Gets an exit delegation transaction builder.
+   *
+   * @param {ExitDelegationTransaction} tx - The exit delegation transaction to use
+   * @returns {ExitDelegationBuilder} The exit delegation transaction builder
+   */
+  getExitDelegationBuilder(tx?: ExitDelegationTransaction): ExitDelegationBuilder {
+    return this.initializeBuilder(tx, new ExitDelegationBuilder(this._coinConfig));
+  }
+
+  /**
+   * Gets a burn NFT transaction builder.
+   *
+   * @param {BurnNftTransaction} tx - The burn NFT transaction to use
+   * @returns {BurnNftBuilder} The burn NFT transaction builder
+   */
+  getBurnNftBuilder(tx?: BurnNftTransaction): BurnNftBuilder {
+    return this.initializeBuilder(tx, new BurnNftBuilder(this._coinConfig));
   }
 
   /** @inheritdoc */
