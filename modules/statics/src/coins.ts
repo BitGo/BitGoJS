@@ -24,6 +24,7 @@ import {
   nonstandardToken,
   opethErc20,
   polygonErc20,
+  polyxToken,
   sip10Token,
   solToken,
   stellarToken,
@@ -42,6 +43,7 @@ import {
   terc1155,
   terc721,
   topethErc20,
+  tpolyxToken,
   tronToken,
   tstellarToken,
   tsuiToken,
@@ -105,6 +107,7 @@ import {
   POLYGON_FEATURES,
   POLYGON_TOKEN_FEATURES,
   POLYX_FEATURES,
+  POLYX_TOKEN_FEATURES,
   RBTC_FEATURES,
   SEI_FEATURES,
   SOL_FEATURES,
@@ -4099,6 +4102,16 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['ttao:apex'],
     TAO_TOKEN_FEATURES
   ),
+  tpolyxToken(
+    'a63b4f8d-84d6-45d3-bc67-625239e40811',
+    'tpolyx:rbitgot',
+    'R BitGo Test',
+    6,
+    'RBITGOT',
+    '2ffe769d-862a-8994-8e1c-cf1423bfc7f8',
+    UnderlyingAsset['tpolyx:rbitgot'],
+    POLYX_TOKEN_FEATURES
+  ),
   aptToken(
     'e8bfdab3-4ef6-4b39-9450-d9cb59593f7a',
     'apt:usdt',
@@ -4272,6 +4285,7 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
     stx: sip10Token,
     sui: suiToken,
     tao: taoToken,
+    polyx: polyxToken,
     trx: tronToken,
     vet: vetToken,
     xlm: stellarToken,
@@ -4391,6 +4405,13 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
       return initializer(
         ...commonArgs.slice(0, 4), // id, name, fullName, decimalPlaces
         token.subnetId, // subnetId
+        ...commonArgs.slice(4) // asset, features, prefix, suffix, network, primaryKeyCurve
+      );
+    case 'polyx':
+      return initializer(
+        ...commonArgs.slice(0, 4), // id, name, fullName, decimalPlaces
+        token.ticker, // ticker
+        token.assetId, // assetId
         ...commonArgs.slice(4) // asset, features, prefix, suffix, network, primaryKeyCurve
       );
 

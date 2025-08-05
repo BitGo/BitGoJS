@@ -2887,6 +2887,9 @@ export enum UnderlyingAsset {
   // TAO testnet tokens
   'ttao:apex' = 'ttao:apex',
 
+  // Polymesh testnet tokens
+  'tpolyx:rbitgot' = 'tpolyx:rbitgot',
+
   // Hbar tokens
   'hbar:karate' = 'hbar:karate',
   'hbar:sauce' = 'hbar:sauce',

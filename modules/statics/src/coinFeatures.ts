@@ -551,7 +551,10 @@ export const POLYX_FEATURES = [
   CoinFeature.TSS,
   CoinFeature.TSS_COLD,
   CoinFeature.STAKING,
+  CoinFeature.SUPPORTS_TOKENS,
 ];
+
+export const POLYX_TOKEN_FEATURES = [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.TSS];
 
 export const ETH_FEATURES_WITH_FRANKFURT = [...ETH_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT];
 export const ETH_FEATURES_WITH_GERMANY = [...ETH_FEATURES, CoinFeature.CUSTODY_BITGO_GERMANY];
