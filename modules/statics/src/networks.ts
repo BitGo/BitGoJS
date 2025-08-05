@@ -1273,8 +1273,6 @@ class CoredaoTestnet extends Testnet implements EthereumNetwork {
   accountExplorerUrl = 'https://scan.test2.btcs.network/address/';
   chainId = 1114;
   nativeCoinOperationHashPrefix = '1114';
-
-  // TODO (SC-1024) Update contract addresses to new testnet when they are deployed
   batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
   forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
