@@ -54,6 +54,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
       CoinFeature.CUSTODY_BITGO_GERMANY,
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
       CoinFeature.CUSTODY_BITGO_SWITZERLAND,
+      CoinFeature.STAKING,
     ],
   },
   avaxp: {
