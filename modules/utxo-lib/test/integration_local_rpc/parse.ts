@@ -302,7 +302,7 @@ describe(`regtest fixtures`, function () {
     it('tests default version', function () {
       // FIXME(BTC-1633): fix generating fixtures for version 455 NU6
       if (networks.zcashTest === network) {
-        assert.strictEqual(getDefaultTransactionVersion(network), 455);
+        assert.strictEqual(getDefaultTransactionVersion(network), 456);
       } else {
         assert.strictEqual(allVersions.filter((v) => v === getDefaultTransactionVersion(network)).length, 1);
       }
