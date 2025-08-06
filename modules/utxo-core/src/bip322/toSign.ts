@@ -1,6 +1,7 @@
-import { Psbt, Transaction, bitgo } from '@bitgo/utxo-lib';
+import { Psbt, bitgo } from '@bitgo/utxo-lib';
 
-import { isTaprootChain } from './utils';
+import { addBip322ProofMessage, isTaprootChain } from './utils';
+import { BIP322_TAG, buildToSpendTransaction } from './toSpend';
 
 export type AddressDetails = {
   redeemScript?: Buffer;
@@ -13,11 +14,14 @@ export type AddressDetails = {
  * Source implementation:
  * https://github.com/bitcoin/bips/blob/master/bip-0322.mediawiki#full
  *
- * @param {string} toSpendTxHex - The hex representation of the `toSpend` transaction.
+ * @param {string} message - The message that is hashed into the `to_spend` transaction.
  * @param {AddressDetails} addressDetails - The details of the address, including redeemScript and/or witnessScript.
- * @returns {string} - The hex representation of the constructed PSBT.
+ * @param {string} [tag=BIP322_TAG] - The tag to use for hashing, defaults to BIP322_TAG.
+ * @returns {Psbt} - The hex representation of the constructed PSBT.
  */
-export function buildToSignPsbt(toSpendTx: Transaction<bigint>, addressDetails: AddressDetails): Psbt {
+export function buildToSignPsbt(message: string, addressDetails: AddressDetails, tag = BIP322_TAG): Psbt {
+  const toSpendTx = buildToSpendTransaction(addressDetails.scriptPubKey, message, tag);
+
   // Create PSBT object for constructing the transaction
   const psbt = new Psbt();
   // Set default value for nVersion and nLockTime
@@ -41,6 +45,9 @@ export function buildToSignPsbt(toSpendTx: Transaction<bigint>, addressDetails: 
     psbt.updateInput(0, { witnessScript: addressDetails.witnessScript });
   }
 
+  // Add the message as a proprietary key value to the PSBT so we can verify it later
+  addBip322ProofMessage(psbt as bitgo.UtxoPsbt, 0, Buffer.from(message));
+
   // Set the output
   psbt.addOutput({
     value: BigInt(0), // vout[0].nValue = 0
@@ -50,7 +57,7 @@ export function buildToSignPsbt(toSpendTx: Transaction<bigint>, addressDetails: 
 }
 
 export function buildToSignPsbtForChainAndIndex(
-  toSpendTx: Transaction<bigint>,
+  message: string,
   rootWalletKeys: bitgo.RootWalletKeys,
   chain: bitgo.ChainCode,
   index: number
@@ -63,12 +70,7 @@ export function buildToSignPsbtForChainAndIndex(
     bitgo.scriptTypeForChain(chain)
   );
 
-  const toSpendScriptPubKey = toSpendTx.outs[0].script;
-  if (!toSpendScriptPubKey.equals(output.scriptPubKey)) {
-    throw new Error('Output scriptPubKey does not match the expected output script for the chain and index.');
-  }
-
-  return buildToSignPsbt(toSpendTx, {
+  return buildToSignPsbt(message, {
     scriptPubKey: output.scriptPubKey,
     redeemScript: output.redeemScript,
     witnessScript: output.witnessScript,

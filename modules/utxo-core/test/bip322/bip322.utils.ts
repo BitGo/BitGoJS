@@ -13,6 +13,6 @@ export const BIP322_FIXTURE_HELLO_WORLD_TOSPEND_TX = buildToSpendTransaction(
   Buffer.from('Hello World')
 );
 
-export const BIP322_FIXTURE_HELLOW_WORLD_TOSIGN_PSBT = buildToSignPsbt(BIP322_FIXTURE_HELLO_WORLD_TOSPEND_TX, {
+export const BIP322_FIXTURE_HELLO_WORLD_TOSIGN_PSBT = buildToSignPsbt('Hello World', {
   scriptPubKey: BIP322_PAYMENT_P2WPKH_FIXTURE.output as Buffer,
 });
