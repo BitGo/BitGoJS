@@ -12055,4 +12055,238 @@ export const erc20Coins = [
     undefined,
     Networks.test.hoodi
   ),
+
+  // Ondo Tokenized Assets
+  erc20(
+    '1c2ed80e-c485-4c67-9dc3-22b7d23219f1',
+    'eth:qqqon',
+    'Invesco QQQ (Ondo Tokenized)',
+    18,
+    '0x0e397938c1aa0680954093495b70a9f5e2249aba',
+    UnderlyingAsset['eth:qqqon']
+  ),
+  erc20(
+    'e13d7445-f465-4a45-aef1-3e32d4bd0f9c',
+    'eth:spyon',
+    'SPDR S&P 500 ETF (Ondo Tokenized)',
+    18,
+    '0xfedc5f4a6c38211c1338aa411018dfaf26612c08',
+    UnderlyingAsset['eth:spyon']
+  ),
+  erc20(
+    'f5d7b0b3-42de-4555-8b14-82430b6ac372',
+    'eth:nvdaon',
+    'NVIDIA (Ondo Tokenized)',
+    18,
+    '0x2d1f7226bd1f780af6b9a49dcc0ae00e8df4bdee',
+    UnderlyingAsset['eth:nvdaon']
+  ),
+  erc20(
+    '70493e8f-4ee7-4eaf-b115-f7f64c7cbb9c',
+    'eth:tslaon',
+    'Tesla (Ondo Tokenized)',
+    18,
+    '0xf6b1117ec07684d3958cad8beb1b302bfd21103f',
+    UnderlyingAsset['eth:tslaon']
+  ),
+  erc20(
+    'c7a9ac82-3d84-4e88-86d6-0c5c69b717d5',
+    'eth:aaplon',
+    'Apple (Ondo Tokenized)',
+    18,
+    '0x14c3abf95cb9c93a8b82c1cdcb76d72cb87b2d4c',
+    UnderlyingAsset['eth:aaplon']
+  ),
+  erc20(
+    'bcead26f-3bba-4fa4-bf4a-f3cb93a5c1d7',
+    'eth:mstron',
+    'MicroStrategy (Ondo Tokenized)',
+    18,
+    '0xcabd955322dfbf94c084929ac5e9eca3feb5556f',
+    UnderlyingAsset['eth:mstron']
+  ),
+  erc20(
+    '47ece7cd-2e8c-4ca7-8e7b-3c40c54d9e24',
+    'eth:pltron',
+    'Palantir Technologies (Ondo Tokenized)',
+    18,
+    '0x0c666485b02f7a87d21add7aeb9f5e64975aa490',
+    UnderlyingAsset['eth:pltron']
+  ),
+  erc20(
+    'a9f5d8e4-28b0-4f89-9b7a-c8c75e415f9e',
+    'eth:hoodon',
+    'Robinhood Markets (Ondo Tokenized)',
+    18,
+    '0x998f02a9e343ef6e3e6f28700d5a20f839fd74e6',
+    UnderlyingAsset['eth:hoodon']
+  ),
+  erc20(
+    'e6b47c58-fb0a-4b92-a2c6-7f1c3d5b11d6',
+    'eth:crclon',
+    'Circle Internet Group (Ondo Tokenized)',
+    18,
+    '0x3632dea96a953c11dac2f00b4a05a32cd1063fae',
+    UnderlyingAsset['eth:crclon']
+  ),
+  erc20(
+    'c13df8a2-eb9b-4c5c-92bd-68a73abb19e0',
+    'eth:coinon',
+    'Coinbase (Ondo Tokenized)',
+    18,
+    '0xf042cfa86cf1d598a75bdb55c3507a1f39f9493b',
+    UnderlyingAsset['eth:coinon']
+  ),
+  erc20(
+    '93ba482c-0152-48d1-96c4-678d8a1a3c7f',
+    'eth:amznon',
+    'Amazon (Ondo Tokenized)',
+    18,
+    '0xbb8774fb97436d23d74c1b882e8e9a69322cfd31',
+    UnderlyingAsset['eth:amznon']
+  ),
+  erc20(
+    '16a4d879-62ca-4f20-a8d0-2c8d7e2a25a9',
+    'eth:googlon',
+    'Alphabet Class A (Ondo Tokenized)',
+    18,
+    '0xba47214edd2bb43099611b208f75e4b42fdcfedc',
+    UnderlyingAsset['eth:googlon']
+  ),
+  erc20(
+    '29fb5687-d0f9-4ccd-8fa9-6b3e2d83695a',
+    'eth:metaon',
+    'Meta Platforms (Ondo Tokenized)',
+    18,
+    '0x59644165402b611b350645555b50afb581c71eb2',
+    UnderlyingAsset['eth:metaon']
+  ),
+  erc20(
+    '452b7183-a1d2-4d6c-aad7-5e2b5f3e076d',
+    'eth:babaon',
+    'Alibaba (Ondo Tokenized)',
+    18,
+    '0x41765f0fcddc276309195166c7a62ae522fa09ef',
+    UnderlyingAsset['eth:babaon']
+  ),
+  erc20(
+    'bff5ad0c-cb1c-4a15-ba6e-45f3af5b9aea',
+    'eth:msfton',
+    'Microsoft (Ondo Tokenized)',
+    18,
+    '0xb812837b81a3a6b81d7cd74cfb19a7f2784555e5',
+    UnderlyingAsset['eth:msfton']
+  ),
+  erc20(
+    '8d7c3e9f-6ae4-4f8a-9d17-d1c3a4f72ae9',
+    'eth:spgion',
+    'S&P Global (Ondo Tokenized)',
+    18,
+    '0xbc843b147db4c7e00721d76037b8b92e13afe13f',
+    UnderlyingAsset['eth:spgion']
+  ),
+  erc20(
+    '7a2be40d-1f5e-45d3-81a9-3642c57a9f8b',
+    'eth:tsmon',
+    'Taiwan Semiconductor Manufacturing (Ondo Tokenized)',
+    18,
+    '0x3cafdbfe682aec17d5ace2f97a2f3ab3dcf6a4a9',
+    UnderlyingAsset['eth:tsmon']
+  ),
+  erc20(
+    '6a9e0c2f-1d7a-4b83-ba5e-9fd3e78a4d5e',
+    'eth:amdon',
+    'AMD (Ondo Tokenized)',
+    18,
+    '0x0c1f3412a44ff99e40bf14e06e5ea321ae7b3938',
+    UnderlyingAsset['eth:amdon']
+  ),
+  erc20(
+    'b9c12a83-4e5f-47d2-a8b6-2c9e3d8c4f7e',
+    'eth:unhon',
+    'UnitedHealth (Ondo Tokenized)',
+    18,
+    '0x075756f3b6381a79633438faa8964946bf40163d',
+    UnderlyingAsset['eth:unhon']
+  ),
+  erc20(
+    'e8f5a7c2-d3b9-41e6-9c8a-7d0f2e9b1a5c',
+    'eth:jpmon',
+    'JPMorgan Chase (Ondo Tokenized)',
+    18,
+    '0x03c1ec4ca9dbb168e6db0def827c085999cbffaf',
+    UnderlyingAsset['eth:jpmon']
+  ),
+  erc20(
+    '2f7d9e6a-1c4b-48a3-9e5d-7b8c3f2a1d9e',
+    'eth:orclon',
+    'Oracle (Ondo Tokenized)',
+    18,
+    '0x8a23c6baadb88512b30475c83df6a63881e33e1e',
+    UnderlyingAsset['eth:orclon']
+  ),
+  erc20(
+    'c1a9e7d8-3f5b-42e6-8d7a-9c4f2e3b1d5a',
+    'eth:von',
+    'Visa (Ondo Tokenized)',
+    18,
+    '0xac37c20c1d0e5285035e056101a64e263ff94a41',
+    UnderlyingAsset['eth:von']
+  ),
+  erc20(
+    'd7e9a6c2-4f8b-4e3d-8a1c-9b8e7a4f6d3c',
+    'eth:maon',
+    'Mastercard (Ondo Tokenized)',
+    18,
+    '0xa29dc2102dfc2a0a4a5dcb84af984315567c9858',
+    UnderlyingAsset['eth:maon']
+  ),
+  erc20(
+    '3e8f7c9a-6d2b-4a5c-9e1d-8f7a6b3c2e9d',
+    'eth:llyon',
+    'Eli Lilly (Ondo Tokenized)',
+    18,
+    '0xf192957ae52db3eb088654403cc2eded014ae556',
+    UnderlyingAsset['eth:llyon']
+  ),
+  erc20(
+    'f6a9d8c7-3e5b-4a2d-9f7c-1e8a6d9b3c5f',
+    'eth:nflxon',
+    'Netflix (Ondo Tokenized)',
+    18,
+    '0x032dec3372f25c41ea8054b4987a7c4832cdb338',
+    UnderlyingAsset['eth:nflxon']
+  ),
+  erc20(
+    '9d8e7f6a-5c4b-4e2d-9a9f-8b7c6e5d4a3b',
+    'eth:coston',
+    'Costco (Ondo Tokenized)',
+    18,
+    '0x0c8276e4fec072cf7854be69c70f7773d1610857',
+    UnderlyingAsset['eth:coston']
+  ),
+  erc20(
+    'a3b9c8d7-6e5f-4a2d-9c9e-8f7b6a5d4c3e',
+    'eth:iauon',
+    'iShares Gold Trust (Ondo Tokenized)',
+    18,
+    '0x4f0ca3df1c2e6b943cf82e649d576ffe7b2fabcf',
+    UnderlyingAsset['eth:iauon']
+  ),
+  erc20(
+    'e7d9c8b6-5a4f-4e2d-9b9a-7c6f5e4d3b2a',
+    'eth:ivvon',
+    'iShares Core S&P 500 ETF (Ondo Tokenized)',
+    18,
+    '0x62ca254a363dc3c748e7e955c20447ab5bf06ff7',
+    UnderlyingAsset['eth:ivvon']
+  ),
+  erc20(
+    'c9b8a7d6-5e4f-4a2d-9b9c-8e7f6a5d4b3c',
+    'eth:slvon',
+    'iShares Silver Trust (Ondo Tokenized)',
+    18,
+    '0xf3e4872e6a4cf365888d93b6146a2baa7348f1a4',
+    UnderlyingAsset['eth:slvon']
+  ),
 ];
