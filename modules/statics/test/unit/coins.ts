@@ -792,6 +792,15 @@ describe('CoinMap', function () {
     coinMap.addCoin(token);
     coinMap.has(token.name).should.be.true();
   });
+
+  it('should replace a coin', () => {
+    const coinMap = CoinMap.fromCoins([]);
+    const coin = coins.get('btc');
+    const newCoin = { ...coin, name: 'btc2' };
+    coinMap.replace(newCoin);
+    coinMap.has(coin.name).should.be.false();
+    coinMap.has(newCoin.name).should.be.true();
+  });
 });
 
 coins.forEach((coin, coinName) => {
