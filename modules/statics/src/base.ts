@@ -401,6 +401,11 @@ export enum CoinFeature {
   SHARED_COSMOS_SDK = 'shared-cosmos-sdk',
 
   /**
+   * This coin is a Cosmos coin and should use shared Cosmos Functionality in WP
+   */
+  SHARED_COSMOS_WP = 'shared-cosmos-wp',
+
+  /**
    * This coin is EVM based coin
    */
   EVM_COIN = 'evm_coin',
