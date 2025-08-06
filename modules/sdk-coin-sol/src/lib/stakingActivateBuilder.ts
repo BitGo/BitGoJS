@@ -14,6 +14,7 @@ export class StakingActivateBuilder extends TransactionBuilder {
   protected _validator: string;
   protected _isMarinade = false;
   protected _isJito = false;
+  protected _jitoParams?: StakingActivate['params']['jitoParams'];
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -35,6 +36,7 @@ export class StakingActivateBuilder extends TransactionBuilder {
         this.validator(activateInstruction.params.validator);
         this.isMarinade(activateInstruction.params.isMarinade ?? false);
         this.isJito(activateInstruction.params.isJito ?? false);
+        this.jitoParams(activateInstruction.params.jitoParams);
       }
     }
   }
@@ -102,6 +104,17 @@ export class StakingActivateBuilder extends TransactionBuilder {
     return this;
   }
 
+  /**
+   * Set parameters specific to Jito staking.
+   *
+   * @param {string} jitoParams parameters specific to Jito staking.
+   * @returns {StakingActivateBuilder} This staking builder.
+   */
+  jitoParams(jitoParams: StakingActivate['params']['jitoParams']): this {
+    this._jitoParams = jitoParams;
+    return this;
+  }
+
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     assert(this._sender, 'Sender must be set before building the transaction');
@@ -128,6 +141,7 @@ export class StakingActivateBuilder extends TransactionBuilder {
         validator: this._validator,
         isMarinade: this._isMarinade,
         isJito: this._isJito,
+        jitoParams: this._jitoParams,
       },
     };
     this._instructionsData = [stakingAccountData];
