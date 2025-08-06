@@ -553,6 +553,12 @@ export class BitGoAPI implements BitGoBase {
     if (this._customProxyAgent) {
       resultPromise.agent(this._customProxyAgent);
     }
+    if (this.getAdditionalHeadersCb) {
+      const additionalHeaders = this.getAdditionalHeadersCb('get', this.url('/client/constants'));
+      for (const { key, value } of additionalHeaders) {
+        resultPromise.set(key, value);
+      }
+    }
     const result = await resultPromise;
     BitGoAPI._constants[env] = result.body.constants;
 
