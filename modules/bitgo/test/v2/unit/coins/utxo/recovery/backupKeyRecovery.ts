@@ -284,7 +284,6 @@ function run(
 
 utxoCoins.forEach((coin) => {
   const walletKeys = getDefaultWalletKeys();
-
   getScriptTypes2Of3().forEach((scriptType) => {
     run(
       coin,
