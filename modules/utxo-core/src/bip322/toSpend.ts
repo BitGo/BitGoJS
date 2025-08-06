@@ -1,6 +1,8 @@
 import { Hash } from 'fast-sha256';
 import { Psbt, Transaction, bitgo, networks } from '@bitgo/utxo-lib';
 
+import { isTaprootChain } from './utils';
+
 export const BIP322_TAG = 'BIP0322-signed-message';
 
 /**
@@ -74,8 +76,7 @@ export function buildToSpendTransactionFromChainAndIndex(
   message: string | Buffer,
   tag = BIP322_TAG
 ): Transaction<bigint> {
-  const taprootChains = [...bitgo.chainCodesP2tr, ...bitgo.chainCodesP2trMusig2];
-  if (taprootChains.some((tc) => tc === chain)) {
+  if (isTaprootChain(chain)) {
     throw new Error('BIP322 is not supported for Taproot script types.');
   }
 
