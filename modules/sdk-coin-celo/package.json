@@ -58,5 +58,8 @@
     "@bitgo/sdk-api": "^1.65.4",
     "@bitgo/sdk-test": "^9.0.0"
   },
+  "resolutions": {
+    "form-data": "^4.0.4"
+  },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c"
 }
