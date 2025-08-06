@@ -3,6 +3,7 @@ import { DecodedCloseAccountInstruction } from '@solana/spl-token';
 import { Blockhash, StakeInstructionType, SystemInstructionType, TransactionSignature } from '@solana/web3.js';
 import { InstructionBuilderTypes } from './constants';
 import { StakePoolInstructionType } from '@solana/spl-stake-pool';
+import { DepositSolStakePoolData, WithdrawStakeStakePoolData } from './jitoStakePoolOperations';
 
 // TODO(STLX-9890): Add the interfaces for validityWindow and SequenceId
 export interface SolanaKeys {
@@ -41,6 +42,7 @@ export type InstructionParams =
   | StakingDelegate
   | MintTo
   | Burn
+  | Approve
   | CustomInstruction;
 
 export interface Memo {
@@ -107,6 +109,17 @@ export interface Burn {
   };
 }
 
+export interface Approve {
+  type: InstructionBuilderTypes.Approve;
+  params: {
+    accountAddress: string;
+    delegateAddress: string;
+    ownerAddress: string;
+    amount: string;
+    programId?: string;
+  };
+}
+
 export interface StakingActivate {
   type: InstructionBuilderTypes.StakingActivate;
   params: {
@@ -116,6 +129,9 @@ export interface StakingActivate {
     validator: string;
     isMarinade?: boolean;
     isJito?: boolean;
+    jitoParams?: {
+      stakePoolData: DepositSolStakePoolData;
+    };
   };
 }
 
@@ -132,6 +148,12 @@ export interface StakingDeactivate {
     amount?: string;
     unstakingAddress?: string;
     isMarinade?: boolean;
+    isJito?: boolean;
+    jitoParams?: {
+      stakePoolData: WithdrawStakeStakePoolData;
+      validatorAddress: string;
+      transferAuthorityAddress: string;
+    };
     recipients?: Recipient[];
   };
 }
@@ -187,7 +209,8 @@ export type ValidInstructionTypes =
   | 'TokenTransfer'
   | 'SetPriorityFee'
   | 'MintTo'
-  | 'Burn';
+  | 'Burn'
+  | 'Approve';
 
 export type StakingAuthorizeParams = {
   stakingAddress: string;

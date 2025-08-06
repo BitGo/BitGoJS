@@ -5,6 +5,7 @@ import { KeyPair, Utils } from '../../../src';
 import * as testData from '../../resources/sol';
 import { Recipient, TransactionType } from '@bitgo/sdk-core';
 import * as bs58 from 'bs58';
+import { JITO_STAKE_POOL_ADDRESS } from '../../../src/lib/constants';
 
 describe('Sol Staking Deactivate Builder', () => {
   const factory = getBuilderFactory('tsol');
@@ -120,6 +121,63 @@ describe('Sol Staking Deactivate Builder', () => {
 
       const rawSignedTx = signedTx.toBroadcastFormat();
       should.equal(rawSignedTx, testData.MARINADE_STAKING_DEACTIVATE_SIGNED_TX);
+    });
+
+    it('Jito: build and sign a staking deactivate tx', async () => {
+      const txBuilder = factory.getStakingDeactivateBuilder();
+      const transferAuthority = new KeyPair(testData.splitStakeAccount).getKeys();
+      txBuilder
+        .sender(wallet.pub)
+        .isJito(true)
+        .stakingAddress(JITO_STAKE_POOL_ADDRESS)
+        .unstakingAddress(stakeAccount.pub)
+        .jitoParams({
+          validatorAddress: testData.JITO_STAKE_POOL_VALIDATOR_ADDRESS,
+          transferAuthorityAddress: transferAuthority.pub,
+          stakePoolData: {
+            managerFeeAccount: testData.JITO_STAKE_POOL_DATA_PARSED.managerFeeAccount.toString(),
+            poolMint: testData.JITO_STAKE_POOL_DATA_PARSED.poolMint.toString(),
+            validatorList: testData.JITO_STAKE_POOL_DATA_PARSED.validatorList.toString(),
+          },
+        })
+        .amount('1000')
+        .nonce(recentBlockHash);
+      const txUnsigned = await txBuilder.build();
+      txBuilder.sign({ key: wallet.prv });
+      txBuilder.sign({ key: stakeAccount.prv });
+      txBuilder.sign({ key: transferAuthority.prv });
+      const tx = await txBuilder.build();
+      const txJson = tx.toJson();
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(Utils.isValidRawTransaction(rawTx), true);
+      txJson.instructionsData.should.deepEqual([
+        {
+          type: 'Deactivate',
+          params: {
+            fromAddress: wallet.pub,
+            isMarinade: false,
+            isJito: true,
+            stakingAddress: JITO_STAKE_POOL_ADDRESS,
+            unstakingAddress: stakeAccount.pub,
+            amount: '1000',
+            recipients: undefined,
+            jitoParams: {
+              validatorAddress: testData.JITO_STAKE_POOL_VALIDATOR_ADDRESS,
+              transferAuthorityAddress: transferAuthority.pub,
+              stakePoolData: {
+                managerFeeAccount: testData.JITO_STAKE_POOL_DATA_PARSED.managerFeeAccount.toString(),
+                poolMint: testData.JITO_STAKE_POOL_DATA_PARSED.poolMint.toString(),
+                validatorList: testData.JITO_STAKE_POOL_DATA_PARSED.validatorList.toString(),
+              },
+            },
+          },
+        },
+      ]);
+      should.equal(rawTx, testData.JITO_STAKING_DEACTIVATE_SIGNED_TX);
+
+      const tx2 = await factory.from(txUnsigned.toBroadcastFormat()).build();
+      should.equal(tx2.toBroadcastFormat(), txUnsigned.toBroadcastFormat());
+      should.equal(tx2.signablePayload.toString('hex'), txUnsigned.signablePayload.toString('hex'));
     });
 
     it('building a staking multi deactivate tx', async () => {

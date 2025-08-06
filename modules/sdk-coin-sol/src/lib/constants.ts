@@ -38,6 +38,8 @@ export enum ValidInstructionTypesEnum {
   MintTo = 'MintTo',
   Burn = 'Burn',
   DepositSol = 'DepositSol',
+  WithdrawStake = 'WithdrawStake',
+  Approve = 'Approve',
 }
 
 // Internal instructions types
@@ -58,6 +60,8 @@ export enum InstructionBuilderTypes {
   MintTo = 'MintTo',
   Burn = 'Burn',
   CustomInstruction = 'CustomInstruction',
+  Approve = 'Approve',
+  WithdrawStake = 'WithdrawStake',
 }
 
 export const VALID_SYSTEM_INSTRUCTION_TYPES: ValidInstructionTypes[] = [
@@ -80,7 +84,9 @@ export const VALID_SYSTEM_INSTRUCTION_TYPES: ValidInstructionTypes[] = [
   ValidInstructionTypesEnum.SetPriorityFee,
   ValidInstructionTypesEnum.MintTo,
   ValidInstructionTypesEnum.Burn,
+  ValidInstructionTypesEnum.Approve,
   ValidInstructionTypesEnum.DepositSol,
+  ValidInstructionTypesEnum.WithdrawStake,
 ];
 
 /** Const to check the order of the Wallet Init instructions when decode */
@@ -109,6 +115,13 @@ export const marinadeStakingActivateInstructionsIndexes = {
 export const jitoStakingActivateInstructionsIndexes = {
   AtaInit: 0,
   DepositSol: 1,
+} as const;
+
+/** Const to check the order of the Jito Staking Activate instructions when decode */
+export const jitoStakingDeactivateInstructionsIndexes = {
+  Approve: 0,
+  Create: 1,
+  WithdrawStake: 2,
 } as const;
 
 /** Const to check the order of the Staking Authorize instructions when decode */

@@ -105,6 +105,13 @@ describe('Sol Staking Activate Builder', () => {
         .sender(wallet.pub)
         .stakingAddress(JITO_STAKE_POOL_ADDRESS)
         .validator(JITO_STAKE_POOL_ADDRESS)
+        .jitoParams({
+          stakePoolData: {
+            managerFeeAccount: testData.JITO_STAKE_POOL_DATA_PARSED.managerFeeAccount.toString(),
+            poolMint: testData.JITO_STAKE_POOL_DATA_PARSED.poolMint.toString(),
+            reserveStake: testData.JITO_STAKE_POOL_DATA_PARSED.reserveStake.toString(),
+          },
+        })
         .isJito(true)
         .nonce(recentBlockHash);
       txBuilder.sign({ key: wallet.prv });
@@ -130,6 +137,13 @@ describe('Sol Staking Activate Builder', () => {
             validator: JITO_STAKE_POOL_ADDRESS,
             isMarinade: false,
             isJito: true,
+            jitoParams: {
+              stakePoolData: {
+                managerFeeAccount: testData.JITO_STAKE_POOL_DATA_PARSED.managerFeeAccount.toString(),
+                poolMint: testData.JITO_STAKE_POOL_DATA_PARSED.poolMint.toString(),
+                reserveStake: testData.JITO_STAKE_POOL_DATA_PARSED.reserveStake.toString(),
+              },
+            },
           },
         },
       ]);

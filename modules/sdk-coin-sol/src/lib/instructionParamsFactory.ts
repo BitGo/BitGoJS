@@ -6,6 +6,7 @@ import {
   DecodedMintToInstruction,
   decodeMintToInstruction,
   TOKEN_2022_PROGRAM_ID,
+  decodeApproveInstruction,
 } from '@solana/spl-token';
 import {
   AllocateParams,
@@ -51,10 +52,11 @@ import {
   WalletInit,
   SetPriorityFee,
   CustomInstruction,
+  Approve,
 } from './iface';
 import { getInstructionType } from './utils';
-import { DepositSolParams } from '@solana/spl-stake-pool';
-import { decodeDepositSol } from './jitoStakePoolOperations';
+import { DepositSolParams, WithdrawStakeParams } from '@solana/spl-stake-pool';
+import { decodeDepositSol, decodeWithdrawStake } from './jitoStakePoolOperations';
 
 /**
  * Construct instructions params from Solana instructions
@@ -141,9 +143,9 @@ function parseSendInstructions(
   instructions: TransactionInstruction[],
   instructionMetadata?: InstructionParams[],
   _useTokenAddressTokenName?: boolean
-): Array<Nonce | Memo | Transfer | TokenTransfer | AtaInit | AtaClose | SetPriorityFee | MintTo | Burn> {
+): Array<Nonce | Memo | Transfer | TokenTransfer | AtaInit | AtaClose | SetPriorityFee | MintTo | Burn | Approve> {
   const instructionData: Array<
-    Nonce | Memo | Transfer | TokenTransfer | AtaInit | AtaClose | SetPriorityFee | MintTo | Burn
+    Nonce | Memo | Transfer | TokenTransfer | AtaInit | AtaClose | SetPriorityFee | MintTo | Burn | Approve
   > = [];
   for (const instruction of instructions) {
     const type = getInstructionType(instruction);
@@ -202,6 +204,21 @@ function parseSendInstructions(
           },
         };
         instructionData.push(tokenTransfer);
+        break;
+      case ValidInstructionTypesEnum.Approve:
+        const programId = instruction.programId.equals(TOKEN_2022_PROGRAM_ID) ? TOKEN_2022_PROGRAM_ID : undefined;
+        const approveInstruction = decodeApproveInstruction(instruction, programId);
+        const approve: Approve = {
+          type: InstructionBuilderTypes.Approve,
+          params: {
+            accountAddress: approveInstruction.keys.account.toString(),
+            delegateAddress: approveInstruction.keys.delegate.toString(),
+            ownerAddress: approveInstruction.keys.owner.toString(),
+            amount: approveInstruction.data.amount.toString(),
+            programId: programId && programId.toString(),
+          },
+        };
+        instructionData.push(approve);
         break;
       case ValidInstructionTypesEnum.InitializeAssociatedTokenAccount:
         const mintAddress = instruction.keys[ataInitInstructionKeysIndexes.MintAddress].pubkey.toString();
@@ -406,6 +423,17 @@ function parseStakingActivateInstructions(
         '',
       isMarinade: stakingInstructionsIsMarinade(stakingInstructions),
       isJito: stakingInstructionsIsJito(stakingInstructions),
+      ...(stakingInstructions.depositSol && stakingInstructionsIsJito(stakingInstructions)
+        ? {
+            jitoParams: {
+              stakePoolData: {
+                managerFeeAccount: stakingInstructions.depositSol.managerFeeAccount.toString(),
+                poolMint: stakingInstructions.depositSol.poolMint.toString(),
+                reserveStake: stakingInstructions.depositSol.reserveStake.toString(),
+              },
+            },
+          }
+        : {}),
     },
   };
   instructionData.push(stakingActivate);
@@ -588,31 +616,66 @@ function parseStakingDeactivateInstructions(
           });
         }
         break;
+
+      case ValidInstructionTypesEnum.WithdrawStake:
+        if (
+          unstakingInstructions.length > 0 &&
+          unstakingInstructions[unstakingInstructions.length - 1].withdrawStake === undefined
+        ) {
+          unstakingInstructions[unstakingInstructions.length - 1].withdrawStake = decodeWithdrawStake(instruction);
+        } else {
+          unstakingInstructions.push({
+            withdrawStake: decodeWithdrawStake(instruction),
+          });
+        }
+        break;
     }
   }
 
   for (const unstakingInstruction of unstakingInstructions) {
     validateUnstakingInstructions(unstakingInstruction);
+    const isMarinade =
+      unstakingInstruction.deactivate === undefined && unstakingInstruction.withdrawStake === undefined;
     const stakingDeactivate: StakingDeactivate = {
       type: InstructionBuilderTypes.StakingDeactivate,
       params: {
-        fromAddress: unstakingInstruction.deactivate?.authorizedPubkey.toString() || '',
+        fromAddress:
+          unstakingInstruction.deactivate?.authorizedPubkey.toString() ||
+          unstakingInstruction.withdrawStake?.destinationStakeAuthority.toString() ||
+          '',
         stakingAddress:
           unstakingInstruction.split?.stakePubkey.toString() ||
           unstakingInstruction.deactivate?.stakePubkey.toString() ||
+          unstakingInstruction.withdrawStake?.stakePool.toString() ||
           '',
-        amount: unstakingInstruction.split?.lamports.toString(),
-        unstakingAddress: unstakingInstruction.split?.splitStakePubkey.toString(),
-        isMarinade: unstakingInstruction.deactivate === undefined,
-        recipients:
-          unstakingInstruction.deactivate === undefined
-            ? [
-                {
-                  address: unstakingInstruction.transfer?.toPubkey.toString() || '',
-                  amount: unstakingInstruction.transfer?.lamports.toString() || '',
+        amount:
+          unstakingInstruction.split?.lamports.toString() || unstakingInstruction.withdrawStake?.poolTokens.toString(),
+        unstakingAddress:
+          unstakingInstruction.split?.splitStakePubkey.toString() ||
+          unstakingInstruction.withdrawStake?.destinationStake.toString(),
+        isMarinade: isMarinade,
+        recipients: isMarinade
+          ? [
+              {
+                address: unstakingInstruction.transfer?.toPubkey.toString() || '',
+                amount: unstakingInstruction.transfer?.lamports.toString() || '',
+              },
+            ]
+          : undefined,
+        ...(unstakingInstruction.withdrawStake !== undefined
+          ? {
+              isJito: unstakingInstruction.withdrawStake !== undefined,
+              jitoParams: unstakingInstruction.withdrawStake && {
+                stakePoolData: {
+                  managerFeeAccount: unstakingInstruction.withdrawStake.managerFeeAccount.toString(),
+                  poolMint: unstakingInstruction.withdrawStake.poolMint.toString(),
+                  validatorList: unstakingInstruction.withdrawStake.validatorList.toString(),
                 },
-              ]
-            : undefined,
+                validatorAddress: unstakingInstruction.withdrawStake.validatorStake.toString(),
+                transferAuthorityAddress: unstakingInstruction.withdrawStake.sourceTransferAuthority.toString(),
+              },
+            }
+          : {}),
       },
     };
     instructionData.push(stakingDeactivate);
@@ -627,65 +690,70 @@ interface UnstakingInstructions {
   split?: SplitStakeParams;
   deactivate?: DeactivateStakeParams;
   transfer?: DecodedTransferInstruction;
+  withdrawStake?: WithdrawStakeParams;
 }
 
 function validateUnstakingInstructions(unstakingInstructions: UnstakingInstructions) {
+  // Cases where exactly one field should be present
+  const unstakingInstructionsKeys: (keyof UnstakingInstructions)[] = [
+    'allocate',
+    'assign',
+    'split',
+    'deactivate',
+    'transfer',
+    'withdrawStake',
+  ] as const;
+  if (unstakingInstructionsKeys.every((k) => !!unstakingInstructions[k] === (k === 'transfer'))) {
+    return;
+  }
+  if (unstakingInstructionsKeys.every((k) => !!unstakingInstructions[k] === (k === 'withdrawStake'))) {
+    return;
+  }
+  if (unstakingInstructionsKeys.every((k) => !!unstakingInstructions[k] === (k === 'deactivate'))) {
+    return;
+  }
+
+  // Cases where deactivate field must be present with another field
   if (!unstakingInstructions.deactivate) {
-    if (
-      unstakingInstructions.transfer &&
-      !unstakingInstructions.allocate &&
-      !unstakingInstructions.assign &&
-      !unstakingInstructions.split
-    ) {
-      return;
-    }
     throw new NotSupported('Invalid deactivate stake transaction, missing deactivate stake account instruction');
+  }
+
+  if (!unstakingInstructions.allocate) {
+    throw new NotSupported(
+      'Invalid partial deactivate stake transaction, missing allocate unstake account instruction'
+    );
+  } else if (!unstakingInstructions.assign) {
+    throw new NotSupported('Invalid partial deactivate stake transaction, missing assign unstake account instruction');
+  } else if (!unstakingInstructions.split) {
+    throw new NotSupported('Invalid partial deactivate stake transaction, missing split stake account instruction');
   } else if (
-    unstakingInstructions.allocate ||
-    unstakingInstructions.assign ||
-    unstakingInstructions.split ||
-    unstakingInstructions.transfer
+    unstakingInstructions.allocate.accountPubkey.toString() !== unstakingInstructions.assign.accountPubkey.toString()
   ) {
-    if (!unstakingInstructions.allocate) {
-      throw new NotSupported(
-        'Invalid partial deactivate stake transaction, missing allocate unstake account instruction'
-      );
-    } else if (!unstakingInstructions.assign) {
-      throw new NotSupported(
-        'Invalid partial deactivate stake transaction, missing assign unstake account instruction'
-      );
-    } else if (!unstakingInstructions.split) {
-      throw new NotSupported('Invalid partial deactivate stake transaction, missing split stake account instruction');
-    } else if (
-      unstakingInstructions.allocate.accountPubkey.toString() !== unstakingInstructions.assign.accountPubkey.toString()
-    ) {
-      throw new NotSupported(
-        'Invalid partial deactivate stake transaction, must allocate and assign the same public key'
-      );
-    } else if (unstakingInstructions.allocate.space !== StakeProgram.space) {
-      throw new NotSupported(
-        `Invalid partial deactivate stake transaction, unstaking account must allocate ${StakeProgram.space} bytes`
-      );
-    } else if (unstakingInstructions.assign.programId.toString() !== StakeProgram.programId.toString()) {
-      throw new NotSupported(
-        'Invalid partial deactivate stake transaction, the unstake account must be assigned to the Stake Program'
-      );
-    } else if (
-      unstakingInstructions.allocate.accountPubkey.toString() !==
-      unstakingInstructions.split.splitStakePubkey.toString()
-    ) {
-      throw new NotSupported('Invalid partial deactivate stake transaction, must allocate the unstaking account');
-    } else if (
-      unstakingInstructions.split.stakePubkey.toString() === unstakingInstructions.split.splitStakePubkey.toString()
-    ) {
-      throw new NotSupported(
-        'Invalid partial deactivate stake transaction, the unstaking account must be different from the Stake Account'
-      );
-    } else if (!unstakingInstructions.transfer) {
-      throw new NotSupported(
-        'Invalid partial deactivate stake transaction, missing funding of unstake address instruction'
-      );
-    }
+    throw new NotSupported(
+      'Invalid partial deactivate stake transaction, must allocate and assign the same public key'
+    );
+  } else if (unstakingInstructions.allocate.space !== StakeProgram.space) {
+    throw new NotSupported(
+      `Invalid partial deactivate stake transaction, unstaking account must allocate ${StakeProgram.space} bytes`
+    );
+  } else if (unstakingInstructions.assign.programId.toString() !== StakeProgram.programId.toString()) {
+    throw new NotSupported(
+      'Invalid partial deactivate stake transaction, the unstake account must be assigned to the Stake Program'
+    );
+  } else if (
+    unstakingInstructions.allocate.accountPubkey.toString() !== unstakingInstructions.split.splitStakePubkey.toString()
+  ) {
+    throw new NotSupported('Invalid partial deactivate stake transaction, must allocate the unstaking account');
+  } else if (
+    unstakingInstructions.split.stakePubkey.toString() === unstakingInstructions.split.splitStakePubkey.toString()
+  ) {
+    throw new NotSupported(
+      'Invalid partial deactivate stake transaction, the unstaking account must be different from the Stake Account'
+    );
+  } else if (!unstakingInstructions.transfer) {
+    throw new NotSupported(
+      'Invalid partial deactivate stake transaction, missing funding of unstake address instruction'
+    );
   }
 }
 
