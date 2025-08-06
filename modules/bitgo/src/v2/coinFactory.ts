@@ -35,6 +35,7 @@ import {
   CosmosTokenConfig,
   VetTokenConfig,
   TaoTokenConfig,
+  PolyxTokenConfig,
 } from '@bitgo/statics';
 import {
   Ada,
@@ -107,6 +108,7 @@ import {
   Polygon,
   PolygonToken,
   Polyx,
+  PolyxToken,
   Rune,
   Rbtc,
   Sei,
@@ -493,6 +495,10 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   );
 
   TaoToken.createTokenConstructors([...tokens.bitcoin.tao.tokens, ...tokens.testnet.tao.tokens]).forEach(
+    ({ name, coinConstructor }) => coinFactory.register(name, coinConstructor)
+  );
+
+  PolyxToken.createTokenConstructors([...tokens.bitcoin.polyx.tokens, ...tokens.testnet.polyx.tokens]).forEach(
     ({ name, coinConstructor }) => coinFactory.register(name, coinConstructor)
   );
 
@@ -919,6 +925,9 @@ export function getTokenConstructor(tokenConfig: TokenConfig): CoinConstructor |
     case 'tao':
     case 'ttao':
       return TaoToken.createTokenConstructor(tokenConfig as TaoTokenConfig);
+    case 'polyx':
+    case 'tpolyx':
+      return PolyxToken.createTokenConstructor(tokenConfig as PolyxTokenConfig);
     case 'xrp':
     case 'txrp':
       return XrpToken.createTokenConstructor(tokenConfig as XrpTokenConfig);
