@@ -930,16 +930,30 @@ class MantraTestnet extends Testnet implements AccountNetwork {
   explorerUrl = 'https://explorer.mantrachain.io/MANTRA-Dukong/tx/';
 }
 
-class Cronos extends Mainnet implements AccountNetwork {
+class Cronos extends Mainnet implements CosmosNetwork {
   name = 'Cronos POS';
   family = CoinFamily.CRONOS;
   explorerUrl = 'https://cronos-pos.org/explorer/tx/';
+  // Add these properties to implement CosmosNetwork interface
+  addressPrefix = 'cro';
+  validatorPrefix = 'crocncl';
+  denom = 'basecro';
+  gasAmount = '30000';
+  gasLimit = 500000;
+  validDenoms = ['cro', 'basecro'];
 }
 
-class CronosTestnet extends Testnet implements AccountNetwork {
+class CronosTestnet extends Testnet implements CosmosNetwork {
   name = 'Testnet Cronos POS';
   family = CoinFamily.CRONOS;
   explorerUrl = 'https://cronos-pos.org/explorer/croeseid4/tx/';
+  // Add these properties to implement CosmosNetwork interface
+  addressPrefix = 'tcro';
+  validatorPrefix = 'tcrocncl';
+  denom = 'basetcro';
+  gasAmount = '30000';
+  gasLimit = 500000;
+  validDenoms = ['tcro', 'basetcro'];
 }
 
 class FetchAi extends Mainnet implements AccountNetwork {
