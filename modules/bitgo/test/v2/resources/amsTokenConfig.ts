@@ -21,4 +21,25 @@ export const reducedAmsTokenConfig = {
       contractAddress: '0x89a959b9184b4f8c8633646d5dfd049d2ebc983a',
     },
   ],
+  'terc721:unsteth': [
+    {
+      id: '49ff49ea-3355-4717-bbb0-5e8f5cae2201',
+      fullName: 'Test Lido: stETH Withdrawal NFT',
+      name: 'terc721:unsteth',
+      prefix: '',
+      suffix: '',
+      baseUnit: 'wei',
+      kind: 'crypto',
+      family: 'eth',
+      isToken: true,
+      additionalFeatures: [],
+      excludedFeatures: [],
+      decimalPlaces: 0,
+      asset: 'terc721:unsteth',
+      network: {
+        name: 'Hoodi',
+      },
+      contractAddress: '0xfe56573178f1bcdf53f01a6e9977670dcbbd9186',
+    },
+  ],
 };
