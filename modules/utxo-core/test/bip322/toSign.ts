@@ -23,11 +23,9 @@ describe('BIP322 toSign', function () {
 
     fixtures.forEach(({ message, txid }) => {
       it(`should build a to_sign PSBT for message "${message}"`, function () {
-        const toSpendTx = bip322.buildToSpendTransaction(scriptPubKey, Buffer.from(message));
-        const addressDetails = {
+        const result = bip322.buildToSignPsbt(message, {
           scriptPubKey,
-        };
-        const result = bip322.buildToSignPsbt(toSpendTx, addressDetails);
+        });
         const computedTxid = result
           .signAllInputs(prv, [utxolib.Transaction.SIGHASH_ALL])
           .finalizeAllInputs()
@@ -41,13 +39,6 @@ describe('BIP322 toSign', function () {
   describe('buildToSignPsbtForChainAndIndex', function () {
     const rootWalletKeys = utxolib.testutil.getDefaultWalletKeys();
 
-    it('should fail when scriptPubKey of to_spend is different than to_sign', function () {
-      const toSpendTx = bip322.buildToSpendTransaction(BIP322_PAYMENT_P2WPKH_FIXTURE.output as Buffer, 'Hello World');
-      assert.throws(() => {
-        bip322.buildToSignPsbtForChainAndIndex(toSpendTx, rootWalletKeys, 0, 0);
-      }, /Output scriptPubKey does not match the expected output script for the chain and index./);
-    });
-
     function run(chain: utxolib.bitgo.ChainCode, shouldFail: boolean, index: number) {
       it(`should${
         shouldFail ? ' fail to' : ''
@@ -60,7 +51,7 @@ describe('BIP322 toSign', function () {
           return;
         }
         const toSpendTx = bip322.buildToSpendTransactionFromChainAndIndex(rootWalletKeys, chain, index, message);
-        const toSignPsbt = bip322.buildToSignPsbtForChainAndIndex(toSpendTx, rootWalletKeys, chain, index);
+        const toSignPsbt = bip322.buildToSignPsbtForChainAndIndex(message, rootWalletKeys, chain, index);
 
         const derivedKeys = rootWalletKeys.deriveForChainAndIndex(chain, index);
         const prv1 = derivedKeys.triple[0];
