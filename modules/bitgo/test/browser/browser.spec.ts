@@ -30,6 +30,7 @@ describe('Coins', () => {
       ZkethToken: 1,
       SuiToken: 1,
       TaoToken: 1,
+      PolyxToken: 1,
       BeraToken: 1,
       XrpToken: 1,
       Rune: 1,
