@@ -9,15 +9,11 @@ import {
 import { BaseCoin, BaseNetwork, CoinNotDefinedError, coins, SolCoin } from '@bitgo/statics';
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
-  decodeCloseAccountInstruction,
-  decodeBurnInstruction,
-  decodeMintToInstruction,
   getAssociatedTokenAddress,
   TOKEN_PROGRAM_ID,
   TOKEN_2022_PROGRAM_ID,
-  DecodedBurnInstruction,
-  DecodedMintToInstruction,
-  DecodedCloseAccountInstruction,
+  decodeInstruction,
+  TokenInstruction,
 } from '@solana/spl-token';
 import {
   Keypair,
@@ -54,6 +50,7 @@ import {
   ValidInstructionTypesEnum,
   walletInitInstructionIndexes,
   jitoStakingActivateInstructionsIndexes,
+  jitoStakingDeactivateInstructionsIndexes,
 } from './constants';
 import { ValidInstructionTypes } from './iface';
 import { STAKE_POOL_INSTRUCTION_LAYOUTS, STAKE_POOL_PROGRAM_ID } from '@solana/spl-stake-pool';
@@ -336,7 +333,8 @@ export function getTransactionType(transaction: SolTransaction): TransactionType
   } else if (
     matchTransactionTypeByInstructionsOrder(instructions, marinadeStakingDeactivateInstructionsIndexes) ||
     matchTransactionTypeByInstructionsOrder(instructions, stakingDeactivateInstructionsIndexes) ||
-    matchTransactionTypeByInstructionsOrder(instructions, stakingPartialDeactivateInstructionsIndexes)
+    matchTransactionTypeByInstructionsOrder(instructions, stakingPartialDeactivateInstructionsIndexes) ||
+    matchTransactionTypeByInstructionsOrder(instructions, jitoStakingDeactivateInstructionsIndexes)
   ) {
     return TransactionType.StakingDeactivate;
   } else if (matchTransactionTypeByInstructionsOrder(instructions, stakingWithdrawInstructionsIndexes)) {
@@ -365,52 +363,18 @@ export function getInstructionType(instruction: TransactionInstruction): ValidIn
       return SystemInstruction.decodeInstructionType(instruction);
     case TOKEN_PROGRAM_ID.toString():
     case TOKEN_2022_PROGRAM_ID.toString():
-      try {
-        let decodedInstruction: DecodedCloseAccountInstruction | undefined;
-        if (instruction.programId.toString() !== TOKEN_2022_PROGRAM_ID.toString()) {
-          decodedInstruction = decodeCloseAccountInstruction(instruction);
-        } else {
-          decodedInstruction = decodeCloseAccountInstruction(instruction, TOKEN_2022_PROGRAM_ID);
-        }
-        if (decodedInstruction && decodedInstruction.data.instruction === 9) {
-          return 'CloseAssociatedTokenAccount';
-        }
-      } catch (e) {
-        // ignore error and continue to check for other instruction types
+      const decodedInstruction = decodeInstruction(instruction, instruction.programId);
+      const instructionTypeMap: Map<TokenInstruction, ValidInstructionTypes> = new Map();
+      instructionTypeMap.set(TokenInstruction.CloseAccount, 'CloseAssociatedTokenAccount');
+      instructionTypeMap.set(TokenInstruction.Burn, 'Burn');
+      instructionTypeMap.set(TokenInstruction.MintTo, 'MintTo');
+      instructionTypeMap.set(TokenInstruction.Approve, 'Approve');
+      instructionTypeMap.set(TokenInstruction.TransferChecked, 'TokenTransfer');
+      const validInstruction = instructionTypeMap.get(decodedInstruction.data.instruction);
+      if (validInstruction === undefined) {
+        throw new Error(`Unsupported token instruction type ${decodedInstruction.data.instruction}`);
       }
-
-      // Check for burn instructions (instruction code 8)
-      try {
-        let burnInstruction: DecodedBurnInstruction;
-        if (instruction.programId.toString() !== TOKEN_2022_PROGRAM_ID.toString()) {
-          burnInstruction = decodeBurnInstruction(instruction);
-        } else {
-          burnInstruction = decodeBurnInstruction(instruction, TOKEN_2022_PROGRAM_ID);
-        }
-        if (burnInstruction && burnInstruction.data.instruction === 8) {
-          return 'Burn';
-        }
-      } catch (e) {
-        // ignore error and continue to check for other instruction types
-      }
-
-      // Check for mint instructions (instruction code 7)
-      try {
-        let mintInstruction: DecodedMintToInstruction;
-        if (instruction.programId.toString() !== TOKEN_2022_PROGRAM_ID.toString()) {
-          mintInstruction = decodeMintToInstruction(instruction);
-        } else {
-          mintInstruction = decodeMintToInstruction(instruction, TOKEN_2022_PROGRAM_ID);
-        }
-        if (mintInstruction && mintInstruction.data.instruction === 7) {
-          return 'MintTo';
-        }
-      } catch (e) {
-        // ignore error and continue to check for other instruction types
-      }
-
-      // Default to TokenTransfer for other token instructions
-      return 'TokenTransfer';
+      return validInstruction;
     case STAKE_POOL_PROGRAM_ID.toString():
       const discriminator = instruction.data.readUint8(0);
       const layoutKey = Object.entries(STAKE_POOL_INSTRUCTION_LAYOUTS).find(([_, v]) => v.index === discriminator)?.[0];

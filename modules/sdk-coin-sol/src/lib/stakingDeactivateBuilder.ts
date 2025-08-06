@@ -14,7 +14,9 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
   protected _amount?: string;
   protected _unstakingAddress: string;
   protected _isMarinade = false;
+  protected _isJito = false;
   protected _recipients: Recipient[];
+  protected _jitoParams?: StakingDeactivate['params']['jitoParams'];
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -31,18 +33,65 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
     for (const instruction of this._instructionsData) {
       if (instruction.type === InstructionBuilderTypes.StakingDeactivate) {
         const deactivateInstruction: StakingDeactivate = instruction;
-        this.isMarinade(deactivateInstruction.params.isMarinade ?? false);
+        // Since _stakingAddresses needs to be populated, it gets special treatment.
+        stakingAddresses.push(deactivateInstruction.params.stakingAddress);
+
+        // Marinade staking also cares about sender.
         if (!deactivateInstruction.params.isMarinade) {
           this.sender(deactivateInstruction.params.fromAddress);
         }
-        if (deactivateInstruction.params.isMarinade) {
-          this.recipients(deactivateInstruction.params.recipients ?? []);
-        }
-        stakingAddresses.push(deactivateInstruction.params.stakingAddress);
-        if (deactivateInstruction.params.amount && deactivateInstruction.params.unstakingAddress) {
+
+        // The other values can just be copied.
+        if (deactivateInstruction.params.amount !== undefined) {
           this.amount(deactivateInstruction.params.amount);
+        }
+        if (deactivateInstruction.params.unstakingAddress !== undefined) {
           this.unstakingAddress(deactivateInstruction.params.unstakingAddress);
         }
+        if (deactivateInstruction.params.isMarinade !== undefined) {
+          this.isMarinade(deactivateInstruction.params.isMarinade);
+        }
+        if (deactivateInstruction.params.isJito !== undefined) {
+          this.isJito(deactivateInstruction.params.isJito);
+        }
+        if (deactivateInstruction.params.recipients !== undefined) {
+          this.recipients(deactivateInstruction.params.recipients);
+        }
+        if (deactivateInstruction.params.jitoParams !== undefined) {
+          this.jitoParams(deactivateInstruction.params.jitoParams);
+        }
+        // // Marinade params
+        // this.isMarinade(deactivateInstruction.params.isMarinade ?? false);
+        // if (deactivateInstruction.params.isMarinade) {
+        //   this.recipients(deactivateInstruction.params.recipients ?? []);
+        // }
+
+        // if (!deactivateInstruction.params.isMarinade) {
+        //   this.sender(deactivateInstruction.params.fromAddress);
+        // }
+
+        // stakingAddresses.push(deactivateInstruction.params.stakingAddress);
+
+        // // Partial unstaking
+        // if (deactivateInstruction.params.amount && deactivateInstruction.params.unstakingAddress) {
+        //   this.amount(deactivateInstruction.params.amount);
+        //   this.unstakingAddress(deactivateInstruction.params.unstakingAddress);
+        // }
+
+        // // Jito params
+        // this.isJito(deactivateInstruction.params.isJito ?? false);
+        // if (deactivateInstruction.params.isJito) {
+        //   this.recipients(deactivateInstruction.params.recipients ?? []);
+        //   if (deactivateInstruction.params.validatorAddress !== undefined) {
+        //     this.validatorAddress(deactivateInstruction.params.validatorAddress);
+        //   }
+        //   if (deactivateInstruction.params.stakePoolData !== undefined) {
+        //     this.stakePoolData(deactivateInstruction.params.stakePoolData);
+        //   }
+        //   if (deactivateInstruction.params.transferAuthorityAddress !== undefined) {
+        //     this.transferAuthorityAddress(deactivateInstruction.params.transferAuthorityAddress);
+        //   }
+        // }
       }
     }
     if (stakingAddresses.length > 1) {
@@ -130,10 +179,31 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
   /**
    * Set isMarinade flag
    * @param {boolean} flag - true if the transaction is for Marinade, false by default if not set
-   * @returns {StakingActivateBuilder} This staking builder
+   * @returns {StakingDectivateBuilder} This staking builder
    */
   isMarinade(flag: boolean): this {
     this._isMarinade = flag;
+    return this;
+  }
+
+  /**
+   * Set isJito flag
+   * @param {boolean} flag - true if the transaction is for Jito, false by default if not set
+   * @returns {StakingDeactivateBuilder} This staking builder
+   */
+  isJito(flag: boolean): this {
+    this._isJito = flag;
+    return this;
+  }
+
+  /**
+   * Set parameters specific to Jito unstaking.
+   *
+   * @param {string} jitoParams parameters specific to Jito unstaking.
+   * @returns {StakingDeactivateBuilder} This staking builder.
+   */
+  jitoParams(jitoParams: StakingDeactivate['params']['jitoParams']): this {
+    this._jitoParams = jitoParams;
     return this;
   }
 
@@ -155,7 +225,7 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
         this._instructionsData.push(stakingDeactivateData);
       }
     } else {
-      if (!this._isMarinade) {
+      if (!this._isMarinade && !this._isJito) {
         // we don't need stakingAddress in marinade staking deactivate txn
         assert(this._stakingAddress, 'Staking address must be set before building the transaction');
       }
@@ -164,14 +234,15 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
         throw new BuildTransactionError('Sender address cannot be the same as the Staking address');
       }
 
-      if (this._amount && !this._isMarinade) {
+      if (this._amount && !this._isMarinade && !this._isJito) {
         assert(
           this._unstakingAddress,
           'When partially unstaking the unstaking address must be set before building the transaction'
         );
       }
+
       this._instructionsData = [];
-      if (this._unstakingAddress && !this._isMarinade) {
+      if (this._unstakingAddress && !this._isMarinade && !this._isJito) {
         assert(
           this._amount,
           'If an unstaking address is given then a partial amount to unstake must also be set before building the transaction'
@@ -195,11 +266,14 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
           amount: this._amount,
           unstakingAddress: this._unstakingAddress,
           isMarinade: this._isMarinade,
+          isJito: this._isJito,
           recipients: this._recipients,
+          jitoParams: this._jitoParams,
         },
       };
       this._instructionsData.push(stakingDeactivateData);
     }
+
     return await super.buildImplementation();
   }
 }
