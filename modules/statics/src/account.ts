@@ -139,6 +139,11 @@ export interface TaoCoinConstructorOptions extends AccountConstructorOptions {
   subnetId: string;
 }
 
+export interface PolyxCoinConstructorOptions extends AccountConstructorOptions {
+  ticker: string;
+  assetId: string;
+}
+
 type FiatCoinName = `fiat${string}` | `tfiat${string}`;
 export interface FiatCoinConstructorOptions extends AccountConstructorOptions {
   name: FiatCoinName;
@@ -669,6 +674,23 @@ export class TaoCoin extends AccountCoinToken {
       ...options,
     });
     this.subnetId = options.subnetId;
+  }
+}
+
+/**
+ * The Bittensor network supports tokens
+ * The token name is determined by the subnetId on chain.
+ */
+export class PolyxCoin extends AccountCoinToken {
+  public ticker: string;
+  public assetId: string;
+
+  constructor(options: PolyxCoinConstructorOptions) {
+    super({
+      ...options,
+    });
+    this.ticker = options.ticker;
+    this.assetId = options.assetId;
   }
 }
 
@@ -3400,6 +3422,101 @@ export function ttaoToken(
     fullName,
     decimalPlaces,
     subnetId,
+    asset,
+    features,
+    prefix,
+    suffix,
+    network,
+    primaryKeyCurve
+  );
+}
+
+/**
+ * Factory function for tao token instances.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param subnetId The uid of the subnet this token belongs to, numerical string
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES
+ * @param prefix? Optional token prefix. Defaults to empty string
+ * @param suffix? Optional token suffix. Defaults to token name.
+ * @param network? Optional token network. Defaults to TAO main network.
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function polyxToken(
+  id: string,
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  ticker: string,
+  assetId: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.main.tao,
+  primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
+): Readonly<PolyxCoin> {
+  return Object.freeze(
+    new PolyxCoin({
+      id,
+      name,
+      fullName,
+      network,
+      ticker,
+      assetId,
+      prefix,
+      suffix,
+      features,
+      decimalPlaces,
+      asset,
+      isToken: true,
+      primaryKeyCurve,
+      baseUnit: BaseUnit.TAO,
+    })
+  );
+}
+
+/**
+ * Factory function for testnet tao token instances.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param subnetId The uid of the subnet this token belongs to, numerical string
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES
+ * @param prefix? Optional token prefix. Defaults to empty string
+ * @param suffix? Optional token suffix. Defaults to token name.
+ * @param network? Optional token network. Defaults to TAO test network.
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+
+export function tpolyxToken(
+  id: string,
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  ticker: string,
+  assetId: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.test.tao,
+  primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
+): Readonly<PolyxCoin> {
+  return polyxToken(
+    id,
+    name,
+    fullName,
+    decimalPlaces,
+    ticker,
+    assetId,
     asset,
     features,
     prefix,

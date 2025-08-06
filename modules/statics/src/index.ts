@@ -22,6 +22,7 @@ export {
   TronErc20Coin,
   SuiCoin,
   TaoCoin,
+  PolyxCoin,
   XrpCoin,
   AptCoin,
   AptNFTCollection,

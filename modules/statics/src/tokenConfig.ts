@@ -23,6 +23,7 @@ import {
   StellarCoin,
   SuiCoin,
   TaoCoin,
+  PolyxCoin,
   TronErc20Coin,
   VetToken,
   WorldERC20Token,
@@ -115,6 +116,11 @@ export type TaoTokenConfig = BaseNetworkConfig & {
   subnetId: string;
 };
 
+export type PolyxTokenConfig = BaseNetworkConfig & {
+  ticker: string;
+  assetId: string;
+};
+
 export type Nep141TokenConfig = BaseNetworkConfig & {
   contractAddress: string;
   storageDepositAmount: string;
@@ -149,7 +155,8 @@ export type TokenConfig =
   | Nep141TokenConfig
   | CosmosTokenConfig
   | VetTokenConfig
-  | TaoTokenConfig;
+  | TaoTokenConfig
+  | PolyxTokenConfig;
 
 export interface Tokens {
   bitcoin: {
@@ -218,6 +225,9 @@ export interface Tokens {
     };
     tao: {
       tokens: TaoTokenConfig[];
+    };
+    polyx: {
+      tokens: PolyxTokenConfig[];
     };
     bera: {
       tokens: EthLikeTokenConfig[];
@@ -300,6 +310,9 @@ export interface Tokens {
     tao: {
       tokens: TaoTokenConfig[];
     };
+    polyx: {
+      tokens: PolyxTokenConfig[];
+    };
     bera: {
       tokens: EthLikeTokenConfig[];
     };
@@ -358,6 +371,7 @@ export interface AmsTokenConfig {
   baseUnit?: string;
   kind?: string;
   subnetId?: string;
+  ticker?: string;
 }
 
 export interface TrimmedAmsNetworkConfig {
@@ -831,6 +845,25 @@ const getFormattedTaoTokens = (customCoinMap = coins) =>
     return acc;
   }, []);
 
+function getPolyxTokenConfig(coin: PolyxCoin): PolyxTokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'polyx' : 'tpolyx',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    decimalPlaces: coin.decimalPlaces,
+    ticker: coin.ticker,
+    assetId: coin.assetId,
+  };
+}
+const getFormattedPolyxTokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: PolyxTokenConfig[], coin) => {
+    if (coin instanceof PolyxCoin) {
+      acc.push(getPolyxTokenConfig(coin));
+    }
+    return acc;
+  }, []);
+
 function getAptTokenConfig(coin: AptCoin): AptTokenConfig {
   return {
     type: coin.name,
@@ -1008,6 +1041,9 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
       tao: {
         tokens: getFormattedTaoTokens(coinMap).filter((token) => token.network === 'Mainnet'),
       },
+      polyx: {
+        tokens: getFormattedPolyxTokens(coinMap).filter((token) => token.network === 'Mainnet'),
+      },
       bera: {
         tokens: getFormattedBeraTokens(coinMap).filter((token) => token.network === 'Mainnet'),
       },
@@ -1098,6 +1134,9 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
       },
       tao: {
         tokens: getFormattedTaoTokens(coinMap).filter((token) => token.network === 'Testnet'),
+      },
+      polyx: {
+        tokens: getFormattedPolyxTokens(coinMap).filter((token) => token.network === 'Testnet'),
       },
       bera: {
         tokens: getFormattedBeraTokens(coinMap).filter((token) => token.network === 'Testnet'),
@@ -1215,6 +1254,8 @@ export function getFormattedTokenConfigForCoin(coin: Readonly<BaseCoin>): TokenC
     return getSuiTokenConfig(coin);
   } else if (coin instanceof TaoCoin) {
     return getTaoTokenConfig(coin);
+  } else if (coin instanceof PolyxCoin) {
+    return getPolyxTokenConfig(coin);
   } else if (coin instanceof AptCoin) {
     return getAptTokenConfig(coin);
   } else if (coin instanceof AptNFTCollection) {
