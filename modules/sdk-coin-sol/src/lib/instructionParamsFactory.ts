@@ -50,6 +50,7 @@ import {
   Transfer,
   WalletInit,
   SetPriorityFee,
+  CustomInstruction,
 } from './iface';
 import { getInstructionType } from './utils';
 import { DepositSolParams } from '@solana/spl-stake-pool';
@@ -90,6 +91,8 @@ export function instructionParamsFactory(
       return parseStakingAuthorizeRawInstructions(instructions);
     case TransactionType.StakingDelegate:
       return parseStakingDelegateInstructions(instructions);
+    case TransactionType.CustomTx:
+      return parseCustomInstructions(instructions, instructionMetadata);
     default:
       throw new NotSupported('Invalid transaction, transaction type not supported: ' + type);
   }
@@ -961,6 +964,50 @@ function parseStakingAuthorizeRawInstructions(instructions: TransactionInstructi
       custodianAddress: authorize.keys[4].pubkey.toString(),
     },
   });
+  return instructionData;
+}
+
+/**
+ * Parses Solana instructions to custom instruction params
+ *
+ * @param {TransactionInstruction[]} instructions - containing custom solana instructions
+ * @param {InstructionParams[]} instructionMetadata - the instruction metadata for the transaction
+ * @returns {InstructionParams[]} An array containing instruction params for custom instructions
+ */
+function parseCustomInstructions(
+  instructions: TransactionInstruction[],
+  instructionMetadata?: InstructionParams[]
+): CustomInstruction[] {
+  const instructionData: CustomInstruction[] = [];
+
+  for (let i = 0; i < instructions.length; i++) {
+    const instruction = instructions[i];
+
+    // Check if we have metadata for this instruction position
+    if (
+      instructionMetadata &&
+      instructionMetadata[i] &&
+      instructionMetadata[i].type === InstructionBuilderTypes.CustomInstruction
+    ) {
+      instructionData.push(instructionMetadata[i] as CustomInstruction);
+    } else {
+      // Convert the raw instruction to CustomInstruction format
+      const customInstruction: CustomInstruction = {
+        type: InstructionBuilderTypes.CustomInstruction,
+        params: {
+          programId: instruction.programId.toString(),
+          keys: instruction.keys.map((key) => ({
+            pubkey: key.pubkey.toString(),
+            isSigner: key.isSigner,
+            isWritable: key.isWritable,
+          })),
+          data: instruction.data.toString('base64'),
+        },
+      };
+      instructionData.push(customInstruction);
+    }
+  }
+
   return instructionData;
 }
 

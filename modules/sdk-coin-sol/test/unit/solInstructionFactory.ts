@@ -339,6 +339,98 @@ describe('Instruction Builder Tests: ', function () {
         ),
       ]);
     });
+
+    it('Custom instruction with TSS format', () => {
+      const tssInstruction = {
+        programId: '11111111111111111111111111111112',
+        keys: [
+          {
+            pubkey: 'CyjoLt3kjqB57K7ewCBHmnHq3UgEj3ak6A7m6EsBsuhA',
+            isSigner: true,
+            isWritable: true,
+          },
+        ],
+        data: 'dGVzdCBpbnN0cnVjdGlvbiBkYXRh', // "test instruction data" in base64
+      };
+
+      const customInstructionParams: InstructionParams = {
+        type: InstructionBuilderTypes.CustomInstruction,
+        params: {
+          ...tssInstruction,
+        },
+      };
+
+      const result = solInstructionFactory(customInstructionParams, COIN_CONFIG);
+
+      result.should.have.length(1);
+      const resultInstruction = result[0];
+
+      resultInstruction.programId.toString().should.equal('11111111111111111111111111111112');
+      resultInstruction.keys.should.have.length(1);
+      resultInstruction.keys[0].pubkey.toString().should.equal('CyjoLt3kjqB57K7ewCBHmnHq3UgEj3ak6A7m6EsBsuhA');
+      resultInstruction.keys[0].isSigner.should.equal(true);
+      resultInstruction.keys[0].isWritable.should.equal(true);
+      resultInstruction.data.toString().should.equal('test instruction data');
+    });
+
+    it('Custom instruction with TSS format - hex data', () => {
+      const tssInstruction = {
+        programId: '11111111111111111111111111111112',
+        keys: [
+          {
+            pubkey: 'CyjoLt3kjqB57K7ewCBHmnHq3UgEj3ak6A7m6EsBsuhA',
+            isSigner: false,
+            isWritable: false,
+          },
+        ],
+        data: '74657374', // "test" in hex
+      };
+
+      const customInstructionParams: InstructionParams = {
+        type: InstructionBuilderTypes.CustomInstruction,
+        params: {
+          ...tssInstruction,
+        },
+      };
+
+      const result = solInstructionFactory(customInstructionParams, COIN_CONFIG);
+
+      result.should.have.length(1);
+      const resultInstruction = result[0];
+
+      resultInstruction.programId.toString().should.equal('11111111111111111111111111111112');
+      resultInstruction.keys.should.have.length(1);
+      resultInstruction.keys[0].pubkey.toString().should.equal('CyjoLt3kjqB57K7ewCBHmnHq3UgEj3ak6A7m6EsBsuhA');
+      resultInstruction.keys[0].isSigner.should.equal(false);
+      resultInstruction.keys[0].isWritable.should.equal(false);
+      // Note: hex data will fall back to base64 then UTF-8, so it should contain the hex string
+      resultInstruction.data.should.be.instanceOf(Buffer);
+    });
+
+    it('Custom instruction with TSS format - UTF-8 fallback', () => {
+      const tssInstruction = {
+        programId: '11111111111111111111111111111112',
+        keys: [],
+        data: 'hello world', // plain text, should use UTF-8 encoding
+      };
+
+      const customInstructionParams: InstructionParams = {
+        type: InstructionBuilderTypes.CustomInstruction,
+        params: {
+          ...tssInstruction,
+        },
+      };
+
+      const result = solInstructionFactory(customInstructionParams, COIN_CONFIG);
+
+      result.should.have.length(1);
+      const resultInstruction = result[0];
+
+      resultInstruction.programId.toString().should.equal('11111111111111111111111111111112');
+      resultInstruction.keys.should.have.length(0);
+      // Since "hello world" is not valid base64, it should fall back to UTF-8
+      resultInstruction.data.toString('utf8').should.equal('hello world');
+    });
   });
 
   describe('Fail ', function () {
@@ -346,6 +438,54 @@ describe('Instruction Builder Tests: ', function () {
       // @ts-expect-error Testing for an invalid type, should throw error
       should(() => solInstructionFactory({ type: 'random', params: {} }, COIN_CONFIG)).throwError(
         'Invalid instruction type or not supported'
+      );
+    });
+
+    it('Custom instruction - missing programId', () => {
+      const customInstructionParams = {
+        type: InstructionBuilderTypes.CustomInstruction,
+        params: {
+          keys: [],
+          data: 'test',
+        },
+      } as unknown as InstructionParams;
+
+      should(() => solInstructionFactory(customInstructionParams, COIN_CONFIG)).throwError(
+        'Missing programId in custom instruction'
+      );
+    });
+
+    it('Custom instruction - missing keys', () => {
+      const customInstructionParams = {
+        type: InstructionBuilderTypes.CustomInstruction,
+        params: {
+          programId: '11111111111111111111111111111112',
+          data: 'test',
+        },
+      } as unknown as InstructionParams;
+
+      should(() => solInstructionFactory(customInstructionParams, COIN_CONFIG)).throwError(
+        'Missing or invalid keys in custom instruction'
+      );
+    });
+
+    it('Custom instruction - missing data', () => {
+      const customInstructionParams = {
+        type: InstructionBuilderTypes.CustomInstruction,
+        params: {
+          programId: '11111111111111111111111111111112',
+          keys: [
+            {
+              pubkey: 'CyjoLt3kjqB57K7ewCBHmnHq3UgEj3ak6A7m6EsBsuhA',
+              isSigner: true,
+              isWritable: true,
+            },
+          ],
+        },
+      } as unknown as InstructionParams;
+
+      should(() => solInstructionFactory(customInstructionParams, COIN_CONFIG)).throwError(
+        'Missing data in custom instruction'
       );
     });
   });
