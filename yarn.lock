@@ -35,10 +35,10 @@
   resolved "https://registry.npmjs.org/@api-ts/response/-/response-2.1.0.tgz#9691128e02949cdc9b2cd3277133b2c7e68220b8"
   integrity sha512-x9yt3IShvz9shSw4owsgC39zmPEBh9ha7MOXSMYFDsdZT7NCP4730w6fsGkYTkbQLpF3oNTMFqZONxOwE1aK5Q==
 
-"@api-ts/typed-express-router@^1.1.13":
-  version "1.1.14"
-  resolved "https://registry.npmjs.org/@api-ts/typed-express-router/-/typed-express-router-1.1.14.tgz#ac09eaa9eec1ffb4ecabe1064980fda1ff8a1f33"
-  integrity sha512-mbzFgpFec6yL+Lu3s2mSLPMo08Nf+WehGghhQLdhZLsOMjJKHheuu/iYPoYj+Q1FK9/f5pcs3YpHNSxIWPUcfQ==
+"@api-ts/typed-express-router@2.0.0":
+  version "2.0.0"
+  resolved "https://registry.npmjs.org/@api-ts/typed-express-router/-/typed-express-router-2.0.0.tgz#36acad8b404b75efca2eef7bff4fb4ca3149d3ee"
+  integrity sha512-aCZYsgMdulvd78A3xFv7/D1FKLpuQLqdbC/qtKm0JP71Q2+rRaYm1AFA81wnbBUzlHXnwvbdqaIxWX8KX7n0HQ==
   dependencies:
     "@api-ts/io-ts-http" "3.2.1"
     "@types/express" "4.17.21"
