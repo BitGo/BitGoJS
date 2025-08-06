@@ -51,6 +51,30 @@ export class CoinMap {
     }
   }
 
+  /**
+   * Replace a Base coin object completely from the CoinMap using its ID.
+   * @param {string} key key to search the old coin object
+   * @param {Readonly<BaseCoin>} coin new coin object
+   */
+  public replace(coin: Readonly<BaseCoin>): void {
+    if (this.has(coin.id)) {
+      const oldCoin = this.get(coin.id);
+      this._map.delete(oldCoin.name);
+      this._coinByIds.delete(oldCoin.id);
+      if (oldCoin.alias) {
+        this._coinByAliases.delete(oldCoin.alias);
+      }
+      if (oldCoin.isToken) {
+        if (oldCoin instanceof ContractAddressDefinedToken) {
+          this._coinByContractAddress.delete(`${oldCoin.family}:${oldCoin.contractAddress}`);
+        } else if (oldCoin instanceof NFTCollectionIdDefinedToken) {
+          this._coinByNftCollectionID.delete(`${oldCoin.prefix}${oldCoin.family}:${oldCoin.nftCollectionId}`);
+        }
+      }
+    }
+    this.addCoin(coin);
+  }
+
   static coinNameFromChainId(chainId: number): string {
     const ethLikeCoinFromChainId: Record<number, string> = {
       1: 'eth',
