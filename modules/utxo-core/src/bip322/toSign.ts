@@ -1,4 +1,6 @@
-import { Psbt, Transaction } from '@bitgo/utxo-lib';
+import { Psbt, Transaction, bitgo } from '@bitgo/utxo-lib';
+
+import { isTaprootChain } from './utils';
 
 export type AddressDetails = {
   redeemScript?: Buffer;
@@ -45,4 +47,30 @@ export function buildToSignPsbt(toSpendTx: Transaction<bigint>, addressDetails: 
     script: Buffer.from([0x6a]), // vout[0].scriptPubKey = OP_RETURN
   });
   return psbt;
+}
+
+export function buildToSignPsbtForChainAndIndex(
+  toSpendTx: Transaction<bigint>,
+  rootWalletKeys: bitgo.RootWalletKeys,
+  chain: bitgo.ChainCode,
+  index: number
+): Psbt {
+  if (isTaprootChain(chain)) {
+    throw new Error('BIP322 is not supported for Taproot script types.');
+  }
+  const output = bitgo.outputScripts.createOutputScript2of3(
+    rootWalletKeys.deriveForChainAndIndex(chain, index).publicKeys,
+    bitgo.scriptTypeForChain(chain)
+  );
+
+  const toSpendScriptPubKey = toSpendTx.outs[0].script;
+  if (!toSpendScriptPubKey.equals(output.scriptPubKey)) {
+    throw new Error('Output scriptPubKey does not match the expected output script for the chain and index.');
+  }
+
+  return buildToSignPsbt(toSpendTx, {
+    scriptPubKey: output.scriptPubKey,
+    redeemScript: output.redeemScript,
+    witnessScript: output.witnessScript,
+  });
 }
