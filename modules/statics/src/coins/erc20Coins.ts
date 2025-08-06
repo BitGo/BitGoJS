@@ -11009,7 +11009,7 @@ export const erc20Coins = [
 
   erc20(
     'e9f861f1-90db-43a1-a148-bedb8c1da99f',
-    'ETH:0X0',
+    'eth:0x0',
     '0x0.ai',
     9,
     '0x5a3e6a77ba2f983ec0d371ea3b475f8bc0811ad5',
@@ -11017,7 +11017,7 @@ export const erc20Coins = [
   ),
   erc20(
     '7839148f-7b3b-4926-a9d4-bdfe2e009abc',
-    'ETH:VVS',
+    'eth:vvs',
     'VVS',
     18,
     '0x839e71613f9aa06e5701cf6de63e303616b0dde3',
@@ -11025,7 +11025,7 @@ export const erc20Coins = [
   ),
   erc20(
     'a59b4f14-248b-4556-9975-93a2fe14ab58',
-    'ETH:BMX',
+    'eth:bmx',
     'BitMart Token',
     18,
     '0x986ee2b944c42d017f52af21c4c69b84dbea35d8',
@@ -11033,7 +11033,7 @@ export const erc20Coins = [
   ),
   erc20(
     '28beb513-7190-4dd3-b73f-32289d07de23',
-    'ETH:PRO',
+    'eth:pro',
     'Propy',
     8,
     '0x226bb599a12c826476e3a771454697ea52e9e220',
@@ -11041,7 +11041,7 @@ export const erc20Coins = [
   ),
   erc20(
     'b447f1db-9f57-4b7d-b372-2abcb0db873b',
-    'ETH:PRIME',
+    'eth:prime',
     'Echelon Prime',
     18,
     '0xb23d80f5fefcddaa212212f028021b41ded428cf',
@@ -11049,7 +11049,7 @@ export const erc20Coins = [
   ),
   erc20(
     '356456e1-5b20-4f77-bfb5-799f78af4225',
-    'ETH:POKT',
+    'eth:pokt',
     'Pocket Network',
     6,
     '0x764a726d9ced0433a8d7643335919deb03a9a935',
@@ -11057,7 +11057,7 @@ export const erc20Coins = [
   ),
   erc20(
     '648bf099-cefc-4ed3-9af8-14feecc89503',
-    'ETH:LON',
+    'eth:lon',
     'Tokenlon Network',
     18,
     '0x0000000000095413afc295d19edeb1ad7b71c952',
@@ -11065,7 +11065,7 @@ export const erc20Coins = [
   ),
   erc20(
     'e691dbd8-840b-4ef1-8745-29f83fe091fb',
-    'ETH:RLB',
+    'eth:rlb',
     'Rollbit Coin',
     18,
     '0x046eee2cc3188071c02bfc1745a6b17c656e3f3d',
@@ -11073,7 +11073,7 @@ export const erc20Coins = [
   ),
   erc20(
     '5ef3ded1-1a49-45f6-80a5-7e4a6f397bcf',
-    'ETH:NEIRO2',
+    'eth:neiro2',
     'Neiro Ethereum',
     9,
     '0xee2a03aa6dacf51c18679c516ad5283d8e7c2637',
@@ -11081,13 +11081,12 @@ export const erc20Coins = [
   ),
   erc20(
     '3af75d75-0d80-4490-a92d-a52f0285fbfc',
-    'ETH:SIGN',
+    'eth:sign',
     'Sign',
     18,
     '0x868fced65edbf0056c4163515dd840e9f287a4c3',
     UnderlyingAsset['eth:sign']
   ),
-
   erc20(
     '4deb5f7f-12de-4ffa-9d91-6703c11e1c9c',
     'eth:rog',
