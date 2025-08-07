@@ -17,6 +17,7 @@ export * from './keychain';
 export * as bitcoin from './legacyBitcoin';
 export * from './market';
 export * from './pendingApproval';
+export { WalletProofs } from './proofs';
 export * from './recovery';
 export * from './staking';
 export * from './trading';

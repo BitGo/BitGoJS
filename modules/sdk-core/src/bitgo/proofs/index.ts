@@ -1,0 +1,1 @@
+export { WalletProofs } from './WalletProofs';
