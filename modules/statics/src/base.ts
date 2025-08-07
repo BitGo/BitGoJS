@@ -107,6 +107,7 @@ export enum CoinFamily {
   ZKETH = 'zketh',
   LINEAETH = 'lineaeth',
   IP = 'ip', // Story Chain
+  SOMI = 'somi', // Somnia Chain
 }
 
 /**
@@ -539,6 +540,7 @@ export enum UnderlyingAsset {
   TRX = 'trx',
   SONEIUM = 'soneium',
   STT = 'stt',
+  SOMI = 'somi', // Somnia Chain
   VET = 'vet',
   WEMIX = 'wemix',
   WORLD = 'world',

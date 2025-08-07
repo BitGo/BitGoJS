@@ -243,6 +243,9 @@ const mainnetBase: EnvironmentTemplate = {
     ip: {
       baseUrl: 'https://api.storyscan.app/',
     },
+    somi: {
+      baseUrl: 'https://mainnet.somnia.w3us.site/',
+    },
   },
   icpNodeUrl: 'https://ic0.app',
   worldExplorerBaseUrl: 'https://worldscan.org/',

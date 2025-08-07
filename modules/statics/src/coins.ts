@@ -1689,7 +1689,10 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.STT,
     BaseUnit.ETH,
-    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING],
+    KeyCurve.Secp256k1,
+    '',
+    'Somi'
   ),
   account(
     '1bf486a9-47ed-4bea-8e9a-a23a074cdc9a',
@@ -1700,6 +1703,22 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset.STT,
     BaseUnit.ETH,
     [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
+  ),
+  account(
+    'aaa25f54-24f8-41d9-ba4e-83465d7cc2ec',
+    'somi',
+    'Somnia',
+    Networks.main.somi,
+    18,
+    UnderlyingAsset.SOMI,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+    ]
   ),
   account(
     '202caf8f-4d43-4208-b206-8231f555c518',
