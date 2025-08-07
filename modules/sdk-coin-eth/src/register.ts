@@ -4,6 +4,7 @@ import { Eth } from './eth';
 import { Gteth } from './gteth';
 import { Hteth } from './hteth';
 import { Teth } from './teth';
+import { Erc721Token } from './erc721Token';
 
 export const register = (sdk: BitGoBase): void => {
   sdk.register('eth', Eth.createInstance);
@@ -11,6 +12,9 @@ export const register = (sdk: BitGoBase): void => {
   sdk.register('teth', Teth.createInstance);
   sdk.register('hteth', Hteth.createInstance);
   Erc20Token.createTokenConstructors().forEach(({ name, coinConstructor }) => {
+    sdk.register(name, coinConstructor);
+  });
+  Erc721Token.createTokenConstructors().forEach(({ name, coinConstructor }) => {
     sdk.register(name, coinConstructor);
   });
 };

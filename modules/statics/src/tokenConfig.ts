@@ -1222,12 +1222,14 @@ export const tokens = getFormattedTokens();
 export const formattedAlgoTokens = getFormattedAlgoTokens();
 
 const mainnetErc20Tokens = verifyTokens(tokens.bitcoin.eth.tokens);
+const mainnetErc721Tokens = verifyTokens(tokens.bitcoin.eth.nfts);
 const mainnetStellarTokens = verifyTokens(tokens.bitcoin.xlm.tokens);
-export const mainnetTokens = { ...mainnetErc20Tokens, ...mainnetStellarTokens };
+export const mainnetTokens = { ...mainnetErc20Tokens, ...mainnetErc721Tokens, ...mainnetStellarTokens };
 
 const testnetErc20Tokens = verifyTokens(tokens.testnet.eth.tokens);
+const testnetErc721Tokens = verifyTokens(tokens.testnet.eth.nfts);
 const testnetStellarTokens = verifyTokens(tokens.testnet.xlm.tokens);
-export const testnetTokens = { ...testnetErc20Tokens, ...testnetStellarTokens };
+export const testnetTokens = { ...testnetErc20Tokens, ...testnetErc721Tokens, ...testnetStellarTokens };
 
 /**
  * Get formatted token configuration for a single coin
