@@ -1248,7 +1248,7 @@ export const bscTokens = [
     'bsc:cusdo',
     'Compounding Open Dollar',
     18,
-    '0x302e52aff9815b9d1682473dbfb9c74f9b750aa8',
+    '0x64748ea3e31d0b7916f0ff91b017b9f404ded8ef',
     UnderlyingAsset['bsc:cusdo'],
     BSC_TOKEN_FEATURES
   ),
