@@ -1624,6 +1624,14 @@ class SomniaTestnet extends Testnet implements EthereumNetwork {
   walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
 }
 
+class Somi extends Mainnet implements EthereumNetwork {
+  name = 'Somnia';
+  family = CoinFamily.SOMI;
+  explorerUrl = 'https://mainnet.somnia.w3us.site/tx/';
+  chainId = 5031;
+  nativeCoinOperationHashPrefix = '5031';
+}
+
 class Flare extends Mainnet implements EthereumNetwork {
   name = 'Flarechain';
   family = CoinFamily.FLR;
@@ -1814,6 +1822,7 @@ export const Networks = {
     near: Object.freeze(new Near()),
     stx: Object.freeze(new Stx()),
     stt: Object.freeze(new Somnia()),
+    somi: Object.freeze(new Somi()),
     soneium: Object.freeze(new Soneium()),
     susd: Object.freeze(new SUSD()),
     tao: Object.freeze(new Bittensor()),

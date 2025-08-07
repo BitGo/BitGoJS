@@ -91,6 +91,7 @@ export const expectedColdFeatures = {
     'sol',
     'sonic',
     'stt',
+    'somi',
     'sui',
     'tao',
     'vet',
