@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [49.1.0](https://github.com/BitGo/BitGoJS/compare/bitgo@49.0.0...bitgo@49.1.0) (2025-08-07)
+
+### Bug Fixes
+
+- **statics:** fix unstETH support ([0e57013](https://github.com/BitGo/BitGoJS/commit/0e57013b963751c51718dec8e00925147586d2b3))
+
+### Features
+
+- add polyxToken skeleton ([c7be0ef](https://github.com/BitGo/BitGoJS/commit/c7be0efb003c720e9da732b627576336c7fc9e52))
+- add taoToken skeleton ([c3d65a2](https://github.com/BitGo/BitGoJS/commit/c3d65a29d8e4404e0157d8a8d825465f3c9cc693))
+- added custom tx builder for sol ([6139616](https://github.com/BitGo/BitGoJS/commit/61396169f582a007c8032d777d543c566683b3d5))
+- adding configs for LINEA ETHEREUM ([b18efc0](https://github.com/BitGo/BitGoJS/commit/b18efc03de71d2f877973a694f13b17b12429551))
+- adding configs for ZERO GRAVITY chain ([7c4b83e](https://github.com/BitGo/BitGoJS/commit/7c4b83e7ffb7732465709f29474f4c6c3fdb5f02))
+- adding story chain config ([3d2d7b0](https://github.com/BitGo/BitGoJS/commit/3d2d7b00f93e6b4dae5ce38193a6e371fdd06efd))
+- onboarding somi evm chain config ([66ab393](https://github.com/BitGo/BitGoJS/commit/66ab393d103cdbd78643ea15d7187761e421e761))
+
 # [49.0.0](https://github.com/BitGo/BitGoJS/compare/bitgo@48.8.0...bitgo@49.0.0) (2025-07-31)
 
 ### Features

@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.14.0...@bitgo/utxo-core@1.15.0) (2025-08-07)
+
+### Bug Fixes
+
+- **utxo-core:** update toSignPsbt to properly set witnessUtxo ([c3c0bfa](https://github.com/BitGo/BitGoJS/commit/c3c0bfa5cc6322dee5e0c0c542899c179702766f))
+
+### Features
+
+- **utxo-core:** add BIP322 message tagged hash implementation ([364ad84](https://github.com/BitGo/BitGoJS/commit/364ad84f7a0b3ccda00b5ed9f5171c9bf684fee7))
+- **utxo-core:** add buildToSpendTransactionFromChainAndIndex function ([093f4c8](https://github.com/BitGo/BitGoJS/commit/093f4c87fda1c1ee9756822e3a3ecea1ee3f6af4))
+- **utxo-core:** add helper to build signing PSBT by chain and index ([496f98c](https://github.com/BitGo/BitGoJS/commit/496f98c7a222ed0a480cc91ce9247c0287020632))
+- **utxo-core:** add utility function to check for taproot chain ([244fd8d](https://github.com/BitGo/BitGoJS/commit/244fd8dd197fd4af6eb13e8085ffc1dc5a141d54))
+- **utxo-core:** add utility functions for PSBT message proofs ([f6d0d8b](https://github.com/BitGo/BitGoJS/commit/f6d0d8b3185e3808ad43b84ea6539ad7e0f43385))
+- **utxo-core:** implement BIP322 to_spend transaction builder ([1d989a5](https://github.com/BitGo/BitGoJS/commit/1d989a57e50debf7d963bfc04b99d609acad0aeb))
+- **utxo-core:** implement buildToSignPsbt for BIP322 message signing ([11993ae](https://github.com/BitGo/BitGoJS/commit/11993aed2da9b8052076da42928f9e0972b7405d))
+- **utxo-core:** improve bip322 transaction handling ([16c29d1](https://github.com/BitGo/BitGoJS/commit/16c29d104fe83107f7b1eea845c6d3a36c5566de))
+- **utxo-core:** simplify signature process with direct message param ([2641f25](https://github.com/BitGo/BitGoJS/commit/2641f250bb5ec7e8d0cbd12d146bc88d8a161df9))
+
 # [1.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.12.1...@bitgo/utxo-core@1.14.0) (2025-07-25)
 
 ### Bug Fixes

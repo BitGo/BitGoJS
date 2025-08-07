@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-asi@1.2.6...@bitgo/sdk-coin-asi@1.3.0) (2025-08-07)
+
+### Features
+
+- use statics to get denom of tokens ([e89d793](https://github.com/BitGo/BitGoJS/commit/e89d79365086512d845bb498deed7ee66ecd2fc0))
+
 ## [1.2.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-asi@1.2.5...@bitgo/sdk-coin-asi@1.2.6) (2025-07-31)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-asi

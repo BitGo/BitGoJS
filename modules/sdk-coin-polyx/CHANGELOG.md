@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polyx@1.5.6...@bitgo/sdk-coin-polyx@1.6.0) (2025-08-07)
+
+### Features
+
+- add polyxToken skeleton ([c7be0ef](https://github.com/BitGo/BitGoJS/commit/c7be0efb003c720e9da732b627576336c7fc9e52))
+- **sdk-coin-polyx:** add wrw support ([24ec106](https://github.com/BitGo/BitGoJS/commit/24ec106158e0f7330dc61c467b466904fb9e068b))
+
 ## [1.5.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polyx@1.5.5...@bitgo/sdk-coin-polyx@1.5.6) (2025-07-31)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-polyx

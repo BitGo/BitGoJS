@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [25.0.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@25.0.0...@bitgo/sdk-coin-eth@25.0.1) (2025-08-07)
+
+### Bug Fixes
+
+- **sdk-coin-eth:** add missing logic for ERC721 token registration ([efb110f](https://github.com/BitGo/BitGoJS/commit/efb110fc6b3d61252159d53ddaee2dd5ac0a9521))
+- **statics:** fix unstETH support ([0e57013](https://github.com/BitGo/BitGoJS/commit/0e57013b963751c51718dec8e00925147586d2b3))
+
 # [25.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@24.8.0...@bitgo/sdk-coin-eth@25.0.0) (2025-07-31)
 
 ### Features

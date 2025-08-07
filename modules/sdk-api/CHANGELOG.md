@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.66.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.65.4...@bitgo/sdk-api@1.66.0) (2025-08-07)
+
+### Features
+
+- **root:** use additonal headers on constants fetch ([bb229c9](https://github.com/BitGo/BitGoJS/commit/bb229c9f73ecf0a32d9c044d900552a82e6a9e1a))
+
 ## [1.65.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.65.3...@bitgo/sdk-api@1.65.4) (2025-07-31)
 
 **Note:** Version bump only for package @bitgo/sdk-api
