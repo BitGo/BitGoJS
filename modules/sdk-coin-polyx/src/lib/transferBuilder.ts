@@ -98,6 +98,10 @@ export class TransferBuilder extends PolyxBaseBuilder<TxMethod, Transaction> {
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string): Transaction {
     const tx = super.fromImplementation(rawTransaction);
+    if (!this._method || !this._method.args) {
+      throw new InvalidTransactionError('Transaction method or args are undefined');
+    }
+
     if (this._method?.name === Interface.MethodNames.TransferWithMemo) {
       const txMethod = this._method.args as Interface.TransferWithMemoArgs;
       this.amount(txMethod.value);
@@ -106,7 +110,7 @@ export class TransferBuilder extends PolyxBaseBuilder<TxMethod, Transaction> {
       });
       this.memo(txMethod.memo);
     } else {
-      throw new InvalidTransactionError(`Invalid Transaction Type: ${this._method?.name}. Expected transferWithMemo`);
+      throw new InvalidTransactionError(`Invalid Transaction Type: ${this._method.name}. Expected transferWithMemo`);
     }
     return tx;
   }

@@ -47,6 +47,13 @@ export const accounts = {
     publicKey: 'b5dda9aad5129b4c77b84bb08e662fc1c863a6a16f557a734375edad6d3ccbf7',
     address: '2GZNcm36nErZD3mi619C2iqYWQBRMmeWky9cLnbd2DcAvdxm',
   },
+  rbitgoTokenOwner: {
+    mnemonic: 'size merry rare ***ory egg aff** orbit mu****** angry miss of*** bu******',
+    secretKey:
+      '8a09aff194b11b9640d3fe966c056a9ec5aa986a6b9ee66dad1b726f6f35919b96c86fef593f9d35ea70dd519e80dcf50d93630954f8d5c83414ae731129655f',
+    publicKey: '96c86fef593f9d35ea70dd519e80dcf50d93630954f8d5c83414ae731129655f',
+    address: '5FUQaif4s79d8sibGNdfLHuiyCqh2EmDpyWkjj8yQ5GtUpMV',
+  },
 };
 
 export const rawTx = {

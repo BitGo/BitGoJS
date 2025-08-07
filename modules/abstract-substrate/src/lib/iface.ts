@@ -17,70 +17,74 @@ export enum SectionNames {
 
 /**
  * Method names for the transaction method. Names change based on the type of transaction e.g 'bond' for the staking transaction
+ *
+ * This is implemented as a const object with string literals to allow for extension in derived modules.
  */
-export enum MethodNames {
+export const MethodNames = {
   /**
    * Transfer the entire transferable balance from the caller account.
    *
    * @see https://polkadot.js.org/docs/substrate/extrinsics/#transferalldest-multiaddress-keep_alive-bool
    */
-  TransferAll = 'transferAll',
+  TransferAll: 'transferAll' as const,
   /**
    * Same as the transfer call, but with a check that the transfer will not kill the origin account.
    *
    * @see https://polkadot.js.org/docs/substrate/extrinsics/#transferkeepalivedest-multiaddress-value-compactu128
    */
-  TransferKeepAlive = 'transferKeepAlive',
+  TransferKeepAlive: 'transferKeepAlive' as const,
   /**
    * Transfer funds with an optional memo attached.
    * The memo allows adding context or metadata to the transaction, commonly used for recordkeeping or identification.
    *
    * @see https://developers.polymesh.network/sdk-docs/enums/Generated/Types/BalancesTx/#transferwithmemo
    */
-  TransferWithMemo = 'transferWithMemo',
-  AddStake = 'addStake',
-  RemoveStake = 'removeStake',
-
+  TransferWithMemo: 'transferWithMemo' as const,
+  AddStake: 'addStake' as const,
+  RemoveStake: 'removeStake' as const,
   /**
    * Take the origin account as a stash and lock up value of its balance.
    */
-  Bond = 'bond',
+  Bond: 'bond' as const,
   /**
    * Add some extra amount that have appeared in the stash free_balance into the balance up for staking.
    */
-  BondExtra = 'bondExtra',
+  BondExtra: 'bondExtra' as const,
   /**
    * Declare the desire to nominate targets for the origin controller.
    */
-  Nominate = 'nominate',
+  Nominate: 'nominate' as const,
   /**
    * Declare no desire to either validate or nominate.
    */
-  Chill = 'chill',
+  Chill: 'chill' as const,
   /**
    * Schedule a portion of the stash to be unlocked ready for transfer out after the bond period ends.
    */
-  Unbond = 'unbond',
+  Unbond: 'unbond' as const,
   /**
    * Remove any unlocked chunks from the unlocking queue from our management.
    */
-  WithdrawUnbonded = 'withdrawUnbonded',
+  WithdrawUnbonded: 'withdrawUnbonded' as const,
   /**
    * Send a batch of dispatch calls.
    */
-  Batch = 'batch',
+  Batch: 'batch' as const,
   /**
    * Send a batch of dispatch calls and atomically execute them.
    */
-  BatchAll = 'batchAll',
+  BatchAll: 'batchAll' as const,
+} as const;
 
-  /**
-   * Registers a Decentralized Identifier (DID) along with Customer Due Diligence (CDD) information.
-   *
-   * @see https://developers.polymesh.network/sdk-docs/enums/Generated/Types/IdentityTx/#cddregisterdidwithcdd
-   */
-  RegisterDidWithCDD = 'cddRegisterDidWithCdd',
-}
+/**
+ * Type representing the keys of the MethodNames object
+ */
+export type MethodNamesType = keyof typeof MethodNames;
+
+/**
+ * Type representing the values of the MethodNames object
+ */
+export type MethodNamesValues = (typeof MethodNames)[MethodNamesType];
 
 /**
  * The transaction data returned from the toJson() function of a transaction
@@ -106,6 +110,7 @@ export interface TxData {
   netuid?: string;
   numSlashingSpans?: number;
   batchCalls?: BatchCallObject[];
+  memo?: string;
 }
 
 /**
@@ -193,7 +198,7 @@ export interface TxMethod {
     | UnbondArgs
     | WithdrawUnbondedArgs
     | BatchArgs;
-  name: MethodNames;
+  name: MethodNamesValues;
   pallet: string;
 }
 

@@ -1,8 +1,8 @@
-import { Transaction as SubstrateTransaction, Interface, utils, KeyPair } from '@bitgo/abstract-substrate';
+import { Transaction as SubstrateTransaction, utils, KeyPair } from '@bitgo/abstract-substrate';
 import { InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { construct, decode } from '@substrate/txwrapper-polkadot';
 import { decodeAddress } from '@polkadot/keyring';
-import { DecodedTx, RegisterDidWithCDDArgs } from './iface';
+import { DecodedTx, RegisterDidWithCDDArgs, PreApproveAssetArgs, TxData, AddAndAffirmWithMediatorsArgs } from './iface';
 import polyxUtils from './utils';
 
 export class Transaction extends SubstrateTransaction {
@@ -18,7 +18,7 @@ export class Transaction extends SubstrateTransaction {
   }
 
   /** @inheritdoc */
-  toJson(): Interface.TxData {
+  toJson(): TxData {
     if (!this._substrateTransaction) {
       throw new InvalidTransactionError('Empty transaction');
     }
@@ -29,7 +29,7 @@ export class Transaction extends SubstrateTransaction {
       isImmortalEra: utils.isZeroHex(this._substrateTransaction.era),
     }) as unknown as DecodedTx;
 
-    const result: Interface.TxData = {
+    const result: TxData = {
       id: construct.txHash(this.toBroadcastFormat()),
       sender: decodedTx.address,
       referenceBlock: decodedTx.blockHash,
@@ -51,8 +51,20 @@ export class Transaction extends SubstrateTransaction {
       });
       result.to = keypairDest.getAddress(this.getAddressFormat());
       result.amount = '0'; // RegisterDidWithCDD does not transfer any value
+    } else if (this.type === TransactionType.TrustLine) {
+      const { assetId } = txMethod as PreApproveAssetArgs;
+      result.assetId = assetId;
+      result.sender = decodedTx.address;
+      result.amount = '0'; // Pre-approval does not transfer any value
+    } else if (this.type === TransactionType.SendToken) {
+      const sendTokenArgs = txMethod as AddAndAffirmWithMediatorsArgs;
+      result.fromDID = sendTokenArgs.legs[0].fungible.sender.did;
+      result.toDID = sendTokenArgs.legs[0].fungible.receiver.did;
+      result.amount = sendTokenArgs.legs[0].fungible.amount.toString();
+      result.assetId = sendTokenArgs.legs[0].fungible.assetId;
+      result.memo = sendTokenArgs.instructionMemo;
     } else {
-      return super.toJson();
+      return super.toJson() as TxData;
     }
 
     return result;
@@ -72,6 +84,10 @@ export class Transaction extends SubstrateTransaction {
 
     if (this.type === TransactionType.WalletInitialization) {
       this.decodeInputsAndOutputsForRegisterDidWithCDD(decodedTx);
+    } else if (this.type === TransactionType.TrustLine) {
+      this.decodeInputsAndOutputsForPreApproveAsset(decodedTx);
+    } else if (this.type === TransactionType.SendToken) {
+      this.decodeInputsAndOutputsForSendToken(decodedTx);
     }
   }
 
@@ -93,6 +109,42 @@ export class Transaction extends SubstrateTransaction {
     this._outputs.push({
       address: to,
       value,
+      coin: this._coinConfig.name,
+    });
+  }
+
+  private decodeInputsAndOutputsForPreApproveAsset(decodedTx: DecodedTx) {
+    const sender = decodedTx.address;
+    const value = '0'; // Pre-approval does not transfer any value
+
+    this._inputs.push({
+      address: sender,
+      value,
+      coin: this._coinConfig.name,
+    });
+
+    this._outputs.push({
+      address: sender, // In pre-approval, the output is the same as the input
+      value,
+      coin: this._coinConfig.name,
+    });
+  }
+
+  private decodeInputsAndOutputsForSendToken(decodedTx: DecodedTx) {
+    const txMethod = decodedTx.method.args as AddAndAffirmWithMediatorsArgs;
+    const fromDID = txMethod.legs[0].fungible.sender.did;
+    const toDID = txMethod.legs[0].fungible.receiver.did;
+    const amount = txMethod.legs[0].fungible.amount.toString();
+
+    this._inputs.push({
+      address: fromDID,
+      value: amount,
+      coin: this._coinConfig.name,
+    });
+
+    this._outputs.push({
+      address: toDID,
+      value: amount,
       coin: this._coinConfig.name,
     });
   }

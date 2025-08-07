@@ -12,6 +12,8 @@ export { TransactionBuilderFactory } from './transactionBuilderFactory';
 export { PolyxBaseBuilder } from './baseBuilder';
 export { TransferBuilder } from './transferBuilder';
 export { RegisterDidWithCDDBuilder } from './registerDidWithCDDBuilder';
+export { PreApproveAssetBuilder } from './preApproveAssetBuilder';
+export { TokenTransferBuilder } from './tokenTransferBuilder';
 export { Transaction as PolyxTransaction } from './transaction';
 export { BondExtraBuilder } from './bondExtraBuilder';
 export { BatchStakingBuilder as BatchBuilder } from './batchStakingBuilder';

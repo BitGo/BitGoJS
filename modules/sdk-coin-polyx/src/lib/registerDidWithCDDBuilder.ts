@@ -3,7 +3,7 @@ import { PolyxBaseBuilder } from './baseBuilder';
 import { DecodedSignedTx, DecodedSigningPayload, defineMethod, UnsignedTransaction } from '@substrate/txwrapper-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { TransactionType, BaseAddress, InvalidTransactionError } from '@bitgo/sdk-core';
-import { RegisterDidWithCDDArgs, TxMethod } from './iface';
+import { RegisterDidWithCDDArgs, TxMethod, MethodNames } from './iface';
 import { RegisterDidWithCDDTransactionSchema } from './txnSchema';
 import { Transaction } from './transaction';
 
@@ -48,18 +48,18 @@ export class RegisterDidWithCDDBuilder extends PolyxBaseBuilder<TxMethod, Transa
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string): Transaction {
     const tx = super.fromImplementation(rawTransaction);
-    if (this._method?.name === Interface.MethodNames.RegisterDidWithCDD) {
+    if (this._method?.name === MethodNames.RegisterDidWithCDD) {
       const txMethod = this._method.args as RegisterDidWithCDDArgs;
       this.to({ address: utils.decodeSubstrateAddress(txMethod.targetAccount, this.getAddressFormat()) });
     } else {
-      throw new InvalidTransactionError(`Invalid Transaction Type: ${this._method?.name}. Expected transferWithMemo`);
+      throw new InvalidTransactionError(`Invalid Transaction Type: ${this._method?.name}. Expected RegisterDidWithCDD`);
     }
     return tx;
   }
 
   /** @inheritdoc */
   validateDecodedTransaction(decodedTxn: DecodedSigningPayload | DecodedSignedTx, rawTransaction?: string): void {
-    if (decodedTxn.method?.name === Interface.MethodNames.RegisterDidWithCDD) {
+    if (decodedTxn.method?.name === MethodNames.RegisterDidWithCDD) {
       const txMethod = decodedTxn.method.args as RegisterDidWithCDDArgs;
       const targetAccount = txMethod.targetAccount;
       const secondaryKeys = txMethod.secondaryKeys;

@@ -10,9 +10,11 @@ import { UnbondBuilder } from './unbondBuilder';
 import { WithdrawUnbondedBuilder } from './withdrawUnbondedBuilder';
 import utils from './utils';
 import { Interface, SingletonRegistry, TransactionBuilder } from './';
-import { TxMethod, BatchCallObject } from './iface';
+import { TxMethod, BatchCallObject, MethodNames } from './iface';
 import { Transaction as BaseTransaction } from '@bitgo/abstract-substrate';
 import { Transaction as PolyxTransaction } from './transaction';
+import { PreApproveAssetBuilder } from './preApproveAssetBuilder';
+import { TokenTransferBuilder } from './tokenTransferBuilder';
 
 export type SupportedTransaction = BaseTransaction | PolyxTransaction;
 
@@ -30,6 +32,14 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getRegisterDidWithCDDBuilder(): RegisterDidWithCDDBuilder {
     return new RegisterDidWithCDDBuilder(this._coinConfig).material(this._material);
+  }
+
+  getPreApproveAssetBuilder(): PreApproveAssetBuilder {
+    return new PreApproveAssetBuilder(this._coinConfig).material(this._material);
+  }
+
+  getTokenTransferBuilder(): TokenTransferBuilder {
+    return new TokenTransferBuilder(this._coinConfig).material(this._material);
   }
 
   getBondExtraBuilder(): BondExtraBuilder {
@@ -77,8 +87,12 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     const methodName = decodedTxn.method?.name;
     if (methodName === Interface.MethodNames.TransferWithMemo) {
       return this.getTransferBuilder();
-    } else if (methodName === Interface.MethodNames.RegisterDidWithCDD) {
+    } else if (methodName === MethodNames.RegisterDidWithCDD) {
       return this.getRegisterDidWithCDDBuilder();
+    } else if (methodName === MethodNames.PreApproveAsset) {
+      return this.getPreApproveAssetBuilder();
+    } else if (methodName === MethodNames.AddAndAffirmWithMediators) {
+      return this.getTokenTransferBuilder();
     } else if (methodName === 'bondExtra') {
       return this.getBondExtraBuilder();
     } else if (methodName === 'batchAll') {
