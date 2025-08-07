@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.2.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxc@6.2.1...@bitgo/sdk-coin-avaxc@6.2.2) (2025-08-07)
+
+### Bug Fixes
+
+- **sdk-coin-avaxc:** fix missing data for signTx ([78c5db8](https://github.com/BitGo/BitGoJS/commit/78c5db815060403d875c6f566a8badb79c6927de))
+
 ## [6.2.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxc@6.2.0...@bitgo/sdk-coin-avaxc@6.2.1) (2025-07-31)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-avaxc

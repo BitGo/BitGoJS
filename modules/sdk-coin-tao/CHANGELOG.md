@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tao@1.8.11...@bitgo/sdk-coin-tao@1.9.0) (2025-08-07)
+
+### Features
+
+- add taoToken skeleton ([c3d65a2](https://github.com/BitGo/BitGoJS/commit/c3d65a29d8e4404e0157d8a8d825465f3c9cc693))
+
 ## [1.8.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tao@1.8.10...@bitgo/sdk-coin-tao@1.8.11) (2025-07-31)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-tao

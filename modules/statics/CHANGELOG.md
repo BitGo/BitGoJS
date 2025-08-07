@@ -3,6 +3,35 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [57.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@57.0.0...@bitgo/statics@57.1.0) (2025-08-07)
+
+### Bug Fixes
+
+- correct bsc:cusdo contract address ([4527a36](https://github.com/BitGo/BitGoJS/commit/4527a362dacd2d86f3a62e7575060c323ea6f87e))
+- correct eth tokens names to lowercase ([7fdb3c2](https://github.com/BitGo/BitGoJS/commit/7fdb3c201b69c84d701e38189f81956cd908dc6f))
+- **sdk-coin-eth:** add missing logic for ERC721 token registration ([efb110f](https://github.com/BitGo/BitGoJS/commit/efb110fc6b3d61252159d53ddaee2dd5ac0a9521))
+- **statics:** fix unstETH support ([0e57013](https://github.com/BitGo/BitGoJS/commit/0e57013b963751c51718dec8e00925147586d2b3))
+- **statics:** update derived xpub ([0abedd1](https://github.com/BitGo/BitGoJS/commit/0abedd1dd2f63dfdb16bf50feeefdb8b69f665d6))
+
+### Features
+
+- add evm compatible wp feature flag ([758a523](https://github.com/BitGo/BitGoJS/commit/758a52352ac4df9058f6abc1d6db29471f4a8f43))
+- add gasTankToken for vet in statics ([ef3453b](https://github.com/BitGo/BitGoJS/commit/ef3453b8b79ca5924453aa4d82583d1747fa069f))
+- add staking feature to testnet vechain ([628f7d6](https://github.com/BitGo/BitGoJS/commit/628f7d6121b7d0ef150472d05836592bfe83ace8))
+- adding configs for LINEA ETHEREUM ([b18efc0](https://github.com/BitGo/BitGoJS/commit/b18efc03de71d2f877973a694f13b17b12429551))
+- adding configs for ZERO GRAVITY chain ([7c4b83e](https://github.com/BitGo/BitGoJS/commit/7c4b83e7ffb7732465709f29474f4c6c3fdb5f02))
+- adding story chain config ([3d2d7b0](https://github.com/BitGo/BitGoJS/commit/3d2d7b00f93e6b4dae5ce38193a6e371fdd06efd))
+- onboarding somi evm chain config ([66ab393](https://github.com/BitGo/BitGoJS/commit/66ab393d103cdbd78643ea15d7187761e421e761))
+- **sdk-coin-polyx:** add wrw support ([24ec106](https://github.com/BitGo/BitGoJS/commit/24ec106158e0f7330dc61c467b466904fb9e068b))
+- **statics:** add method to replace coin object in coin map ([3d86e26](https://github.com/BitGo/BitGoJS/commit/3d86e260bbb1cbe2185e80aebe361ce03c1b6cac))
+- **statics:** add polyx token support ([ce4bfa3](https://github.com/BitGo/BitGoJS/commit/ce4bfa30032382ac0844d420c459ec20dbc0f677))
+- **statics:** add tao token support ([2596328](https://github.com/BitGo/BitGoJS/commit/2596328231de802803c09e104234584d38d1b14e))
+- **statics:** enable avax liquid staking in prod ([2ac0b7b](https://github.com/BitGo/BitGoJS/commit/2ac0b7b351df977971fb0978942f3c67bced3410))
+- **statics:** new coin feature for cosmos coins ([4d4709c](https://github.com/BitGo/BitGoJS/commit/4d4709cffaab6d75de4e100f800e34c31e27089a))
+- **statics:** onboard ondo tokens ([6ae86a2](https://github.com/BitGo/BitGoJS/commit/6ae86a23e458565975f271b27ee43c4868d23a67))
+- **statics:** onboarding BitMart Token (BMX) ([8cc37a1](https://github.com/BitGo/BitGoJS/commit/8cc37a112b53fbb250ac25ca72470be849583561))
+- use statics to get denom of tokens ([e89d793](https://github.com/BitGo/BitGoJS/commit/e89d79365086512d845bb498deed7ee66ecd2fc0))
+
 # [57.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@56.0.0...@bitgo/statics@57.0.0) (2025-07-31)
 
 ### Bug Fixes

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.15.12](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.15.11...@bitgo/sdk-coin-sui@5.15.12) (2025-08-07)
+
+### Bug Fixes
+
+- **root:** bump axios version for form-data vuln ([18ce88b](https://github.com/BitGo/BitGoJS/commit/18ce88b51958bec7b29d30c683c3842d022dd674))
+
 ## [5.15.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.15.10...@bitgo/sdk-coin-sui@5.15.11) (2025-07-31)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sui

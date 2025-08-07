@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-initia@2.1.11...@bitgo/sdk-coin-initia@2.2.0) (2025-08-07)
+
+### Features
+
+- use statics to get denom of tokens ([e89d793](https://github.com/BitGo/BitGoJS/commit/e89d79365086512d845bb498deed7ee66ecd2fc0))
+
 ## [2.1.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-initia@2.1.10...@bitgo/sdk-coin-initia@2.1.11) (2025-07-31)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-initia

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [36.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.0.0...@bitgo/sdk-core@36.1.0) (2025-08-07)
+
+### Features
+
+- added custom tx builder for sol ([6139616](https://github.com/BitGo/BitGoJS/commit/61396169f582a007c8032d777d543c566683b3d5))
+- adding configs for LINEA ETHEREUM ([b18efc0](https://github.com/BitGo/BitGoJS/commit/b18efc03de71d2f877973a694f13b17b12429551))
+- adding configs for ZERO GRAVITY chain ([7c4b83e](https://github.com/BitGo/BitGoJS/commit/7c4b83e7ffb7732465709f29474f4c6c3fdb5f02))
+- adding story chain config ([3d2d7b0](https://github.com/BitGo/BitGoJS/commit/3d2d7b00f93e6b4dae5ce38193a6e371fdd06efd))
+- onboarding somi evm chain config ([66ab393](https://github.com/BitGo/BitGoJS/commit/66ab393d103cdbd78643ea15d7187761e421e761))
+- **sdk-coin-polyx:** add wrw support ([24ec106](https://github.com/BitGo/BitGoJS/commit/24ec106158e0f7330dc61c467b466904fb9e068b))
+
 # [36.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@35.10.0...@bitgo/sdk-core@36.0.0) (2025-07-31)
 
 ### Features

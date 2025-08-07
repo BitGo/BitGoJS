@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.2.2...@bitgo/sdk-coin-vet@2.3.0) (2025-08-07)
+
+### Features
+
+- add stakingBuilder for vechain ([e006cf2](https://github.com/BitGo/BitGoJS/commit/e006cf292200283add118a90adb646a694399a3d))
+- build unstaking txns for vechain ([f939cfe](https://github.com/BitGo/BitGoJS/commit/f939cfec5b1e9b83a630547438ccff0a54ff4df3))
+
 ## [2.2.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.2.1...@bitgo/sdk-coin-vet@2.2.2) (2025-07-31)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-vet

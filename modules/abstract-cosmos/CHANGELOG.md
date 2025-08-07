@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [11.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@11.11.1...@bitgo/abstract-cosmos@11.12.0) (2025-08-07)
+
+### Features
+
+- **abstract-cosmos:** fix the public key in usigned sweep ([ca64c83](https://github.com/BitGo/BitGoJS/commit/ca64c83d56eef9cc364d42d05cce18e01a4234a0))
+- use statics to get denom of tokens ([e89d793](https://github.com/BitGo/BitGoJS/commit/e89d79365086512d845bb498deed7ee66ecd2fc0))
+
 ## [11.11.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@11.11.0...@bitgo/abstract-cosmos@11.11.1) (2025-07-31)
 
 **Note:** Version bump only for package @bitgo/abstract-cosmos

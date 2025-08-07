@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.15.0...@bitgo/sdk-coin-sol@4.16.0) (2025-08-07)
+
+### Features
+
+- add custom instruction tx builder for sol ([4774c05](https://github.com/BitGo/BitGoJS/commit/4774c0554c3df9fb51ceb2aeaa6da8a70b88f724))
+- added custom tx builder for sol ([6139616](https://github.com/BitGo/BitGoJS/commit/61396169f582a007c8032d777d543c566683b3d5))
+- **sdk-coin-sol:** implement staking activate for jito ([f2072d3](https://github.com/BitGo/BitGoJS/commit/f2072d3455b4f6826c55688a9d3f513abf4387f3))
+
 # [4.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.14.0...@bitgo/sdk-coin-sol@4.15.0) (2025-07-31)
 
 ### Features

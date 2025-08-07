@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [11.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.6.3...@bitgo/utxo-lib@11.7.0) (2025-08-07)
+
+### Bug Fixes
+
+- **root:** bump axios version for form-data vuln ([18ce88b](https://github.com/BitGo/BitGoJS/commit/18ce88b51958bec7b29d30c683c3842d022dd674))
+
+### Features
+
+- **utxo-lib:** add BIP322 message subtype to PsbtUtil ([76a9583](https://github.com/BitGo/BitGoJS/commit/76a9583e333b4910b43f3a2c5616ca9b75f25bec))
+
 ## [11.6.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.6.2...@bitgo/utxo-lib@11.6.3) (2025-07-15)
 
 ### Bug Fixes
