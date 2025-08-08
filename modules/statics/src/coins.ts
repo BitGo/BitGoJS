@@ -85,6 +85,7 @@ import {
   AVAXC_FEATURES,
   BERA_BGT_FEATURES,
   BERA_FEATURES,
+  BSC_FEATURES,
   CELO_FEATURES,
   COREDAO_FEATURES,
   COREUM_FEATURES,
@@ -1137,17 +1138,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.BSC,
     BaseUnit.BSC,
-    [
-      ...ETH_FEATURES_WITH_STAKING_AND_MMI,
-      CoinFeature.TSS,
-      CoinFeature.TSS_COLD,
-      CoinFeature.EVM_WALLET,
-      CoinFeature.MPCV2,
-      CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
-      CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
-      CoinFeature.CUSTODY_BITGO_FRANKFURT,
-      CoinFeature.BULK_TRANSACTION,
-    ]
+    BSC_FEATURES
   ),
   account(
     '0a205427-f7c9-48a4-a238-c4b33ba6384d',
@@ -1157,17 +1148,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.BSC,
     BaseUnit.BSC,
-    [
-      ...ETH_FEATURES_WITH_STAKING_AND_MMI,
-      CoinFeature.TSS,
-      CoinFeature.TSS_COLD,
-      CoinFeature.EVM_WALLET,
-      CoinFeature.MPCV2,
-      CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
-      CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
-      CoinFeature.CUSTODY_BITGO_FRANKFURT,
-      CoinFeature.BULK_TRANSACTION,
-    ]
+    BSC_FEATURES
   ),
   account(
     'f0e226b6-6cd8-4384-b0a5-ba8e4148a049',

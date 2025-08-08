@@ -1045,16 +1045,24 @@ describe('Bulk Transaction Features', () => {
 
 describe('ERC20 Bulk Transaction Feature', () => {
   it('should have ERC20_BULK_TRANSACTION feature for appropriate coins', () => {
-    const erc20BulkTransactionCoins = ['eth', 'hteth', 'opeth', 'topeth', 'arbeth', 'tarbeth', 'polygon', 'tpolygon'];
+    const erc20BulkTransactionCoins = [
+      'eth',
+      'hteth',
+      'opeth',
+      'topeth',
+      'arbeth',
+      'tarbeth',
+      'polygon',
+      'tpolygon',
+      'coredao',
+      'tcoredao',
+      'bsc',
+      'tbsc',
+    ];
     erc20BulkTransactionCoins.forEach((coinName) => {
       const coin = coins.get(coinName);
       coin.features.includes(CoinFeature.ERC20_BULK_TRANSACTION).should.eql(true);
     });
-  });
-
-  it('should not have ERC20_BULK_TRANSACTION feature for BSC', () => {
-    const coin = coins.get('bsc');
-    coin.features.includes(CoinFeature.ERC20_BULK_TRANSACTION).should.eql(false);
   });
 });
 
