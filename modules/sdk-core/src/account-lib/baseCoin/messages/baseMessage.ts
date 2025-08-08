@@ -180,4 +180,14 @@ export abstract class BaseMessage implements IMessage {
     }
     return signablePayloadHex === messageEncodedHex;
   }
+
+  /**
+   * Verifies whether a raw message payload meets coin-specific format requirements
+   * Base implementation validates that the message is not null, undefined, or empty
+   * @param rawMessage The raw message content to verify as a string
+   * @returns True if the raw message is valid and can be safely processed, false otherwise
+   */
+  verifyRawMessage(rawMessage: string): boolean {
+    return Boolean(rawMessage?.trim());
+  }
 }

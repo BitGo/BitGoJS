@@ -206,7 +206,7 @@ export { Vet };
 import * as CosmosSharedCoin from '@bitgo/sdk-coin-cosmos';
 export { CosmosSharedCoin };
 
-import { validateAgainstMessageTemplates, MIDNIGHT_TNC_HASH } from './utils';
+import { MIDNIGHT_TNC_HASH } from './utils';
 export { MIDNIGHT_TNC_HASH };
 
 const coinBuilderMap = {
@@ -431,11 +431,11 @@ export async function verifyMessage(
     const messageBuilder = messageBuilderFactory.getMessageBuilder(messageStandardType);
     messageBuilder.setPayload(messageRaw);
     const message = await messageBuilder.build();
-    const isValidMessageEncoded = await message.verifyEncodedPayload(messageEncoded, metadata);
-    if (!isValidMessageEncoded) {
+    const isValidRawMessage = message.verifyRawMessage(messageRaw);
+    if (!isValidRawMessage) {
       return false;
     }
-    return validateAgainstMessageTemplates(messageRaw);
+    return await message.verifyEncodedPayload(messageEncoded, metadata);
   } catch (e) {
     console.error(`Error verifying message for coin ${coinName}:`, e);
     return false;

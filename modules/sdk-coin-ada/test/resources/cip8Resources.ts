@@ -45,4 +45,33 @@ export const cip8TestResources = {
   signablePayloads: {
     simple: 'a0', // Example CBOR hex for simple message (will be replaced with actual values)
   },
+
+  // Midnight Glacier Drop claim message test data
+  midnightGlacierDrop: {
+    validMessages: {
+      mainnet:
+        'STAR 100 to addr1qxy2lshz9na88lslkj8gzd0y7t9h8j7jr0sgg30qnrylvfx4u2hwvqalq5fj9vmhxf06jgz0zt2j2qxjmzwf3rhqzqsehw0an 31a6bab50a84b8439adcfb786bb2020f6807e6e8fda629b424110fc7bb1c6b8b',
+      testnet:
+        'STAR 250 to addr_test1qpxecfjurjtcnalwy6gxcqzp09je55gvfv79hghqst8p7p6dnsn9c8yh38m7uf5sdsqyz7t9nfgscjeutw3wpqkwrursutfm7h 31a6bab50a84b8439adcfb786bb2020f6807e6e8fda629b424110fc7bb1c6b8b',
+    },
+    invalidMessages: {
+      missingStarPrefix:
+        '100 to addr1qxy2lshz9na88lslkj8gzd0y7t9h8j7jr0sgg30qnrylvfx4u2hwvqalq5fj9vmhxf06jgz0zt2j2qxjmzwf3rhqzqsehw0an 31a6bab50a84b8439adcfb786bb2020f6807e6e8fda629b424110fc7bb1c6b8b',
+      invalidNumber:
+        'STAR abc to addr1qxy2lshz9na88lslkj8gzd0y7t9h8j7jr0sgg30qnrylvfx4u2hwvqalq5fj9vmhxf06jgz0zt2j2qxjmzwf3rhqzqsehw0an 31a6bab50a84b8439adcfb786bb2020f6807e6e8fda629b424110fc7bb1c6b8b',
+      invalidAddress: 'STAR 100 to invalid_address 31a6bab50a84b8439adcfb786bb2020f6807e6e8fda629b424110fc7bb1c6b8b',
+      shortAddress: 'STAR 100 to addr1short 31a6bab50a84b8439adcfb786bb2020f6807e6e8fda629b424110fc7bb1c6b8b',
+      wrongHash:
+        'STAR 100 to addr1qxy2lshz9na88lslkj8gzd0y7t9h8j7jr0sgg30qnrylvfx4u2hwvqalq5fj9vmhxf06jgz0zt2j2qxjmzwf3rhqzqsehw0an wronghashhere',
+      missingHash:
+        'STAR 100 to addr1qxy2lshz9na88lslkj8gzd0y7t9h8j7jr0sgg30qnrylvfx4u2hwvqalq5fj9vmhxf06jgz0zt2j2qxjmzwf3rhqzqsehw0an',
+      extraContent:
+        'STAR 100 to addr1qxy2lshz9na88lslkj8gzd0y7t9h8j7jr0sgg30qnrylvfx4u2hwvqalq5fj9vmhxf06jgz0zt2j2qxjmzwf3rhqzqsehw0an 31a6bab50a84b8439adcfb786bb2020f6807e6e8fda629b424110fc7bb1c6b8b extra content',
+      caseSensitive:
+        'star 100 to addr1qxy2lshz9na88lslkj8gzd0y7t9h8j7jr0sgg30qnrylvfx4u2hwvqalq5fj9vmhxf06jgz0zt2j2qxjmzwf3rhqzqsehw0an 31a6bab50a84b8439adcfb786bb2020f6807e6e8fda629b424110fc7bb1c6b8b',
+    },
+    tnc: {
+      hash: '31a6bab50a84b8439adcfb786bb2020f6807e6e8fda629b424110fc7bb1c6b8b',
+    },
+  },
 };

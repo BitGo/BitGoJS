@@ -53,6 +53,20 @@ describe('verifyMessage', () => {
       );
       should.equal(result, false);
     });
+
+    it('should return false if encoded payload verification fails', async () => {
+      const coinName = 'eth';
+      const messageRaw = testnetMessageRaw;
+      const invalidEncodedHex = '0123456789abcdef'; // Invalid encoded payload
+
+      const result = await accountLib.verifyMessage(
+        coinName,
+        messageRaw,
+        invalidEncodedHex,
+        MessageStandardType.EIP191,
+      );
+      should.equal(result, false);
+    });
   });
 
   describe('CIP8 Message', function () {
@@ -85,6 +99,27 @@ describe('verifyMessage', () => {
         metadata,
       );
       should.equal(result, true);
+    });
+
+    it('should return false when raw message validation fails for ADA', async () => {
+      const coinName = 'ada';
+      const invalidMessageRaw = 'Invalid ADA message format';
+      cip8MessageBuilder.setPayload(testnetMessageRaw);
+      cip8MessageBuilder.addSigner(adaTestnetOriginAddress);
+      const message = await cip8MessageBuilder.build();
+      const messageEncodedHex = (await message.getSignablePayload()).toString('hex');
+
+      const metadata = {
+        signers: [adaTestnetOriginAddress],
+      };
+      const result = await accountLib.verifyMessage(
+        coinName,
+        invalidMessageRaw,
+        messageEncodedHex,
+        MessageStandardType.CIP8,
+        metadata,
+      );
+      should.equal(result, false);
     });
   });
 });
