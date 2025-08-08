@@ -1,5 +1,5 @@
 /**
- * Initiate a Mint Order for a Stablecoin
+ * Initiate a Burn Order for a Stablecoin
  *
  * Copyright 2025, BitGo, Inc.  All Rights Reserved.
  */
@@ -22,14 +22,14 @@ const enterpriseId = '';
 const walletId = ''; // GoAccount Wallet ID
 const walletPassphrase = ''; // Wallet passphrase
 const usdcoin = 'tfiatusd';
-const ofcUsdCoin = 'ofctusd';
 const stablecoin = 'tbsc:usd1';
-const fromAmount = '3000'; // in base units, e.g., 3000 for 30 USD
+const ofcStablecoin = 'ofctbsc:usd1';
+const fromAmount = '3000000000000000000'; // in base units, e.g., 3000000000000000000 for 3 TBSC:USD1
 
 const bitgo = new BitGoJS.BitGo({ env: environment });
 bitgo.authenticateWithAccessToken({ accessToken: accessToken });
 
-const basecoin = bitgo.coin(ofcUsdCoin);
+const basecoin = bitgo.coin(ofcStablecoin);
 
 async function main() {
   try {
@@ -42,7 +42,7 @@ async function main() {
     const assets = await bitgo.get(stablecoinUrl('/assets'));
     console.log('assets:', assets.body);
     
-    // Finds the USD and Stablecoin assets from above response to use in initiating the mint order
+    // Finds the USD and Stablecoin assets from above response to use in initiating the burn order
     const usdAsset = assets.body.find((asset: any) => asset.token === usdcoin);
     const stablecoinAsset = assets.body.find((asset: any) => asset.token === stablecoin);
     if (!usdAsset || !stablecoinAsset) {
@@ -58,15 +58,15 @@ async function main() {
       throw new Error(`Trust account wallet ID not found for ${stablecoin}`);
     }
 
-    // STEP - 3: Initiates the mint order
+    // STEP - 3: Initiates the burn order
     const orderRequestBody = {
       sourceWalletId: walletId,
       destinationWalletId: walletId,
       destinationType: "go_account",
-      toAssetId: stablecoinAsset.id,
-      fromAssetId: usdAsset.id,
+      fromAssetId: stablecoinAsset.id,
+      toAssetId: usdAsset.id,
       fromAmount,
-      type: "mint",
+      type: "burn",
     };
     const postOrderResponse = await bitgo.post(stablecoinUrl(`/enterprise/${enterpriseId}/order`)).send(orderRequestBody);
     const newOrder = postOrderResponse.body;
@@ -84,14 +84,14 @@ async function main() {
       sequenceId: newOrder.id, // IMPORTANT: Use the order ID as the sequence ID
       walletPassphrase,
     });
-    console.log('Mint order process completed successfully!');
+    console.log('Burn order process completed successfully!');
     console.log('New Transaction:', JSON.stringify(transaction, null, 4));
 
     const order = await bitgo.get(stablecoinUrl(`/enterprise/${enterpriseId}/orders?ids=${newOrder.id}`)).send();
     console.log('Order details:', JSON.stringify(order.body, null, 4));
 
   } catch (error) {
-    console.error('Error in mint order process:', error);
+    console.error('Error in burn order process:', error);
     throw error;
   }
 }
