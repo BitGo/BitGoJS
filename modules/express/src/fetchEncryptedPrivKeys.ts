@@ -94,12 +94,20 @@ export async function fetchKeys(ids: WalletIds, token: string, accessToken?: str
 
   const data = JSON.stringify(output, null, '\t');
   const fileName = 'encryptedPrivKeys.json';
-  writeFile(fileName, data, (err) => {
-    if (err) {
-      throw err;
+  writeFile(
+    fileName,
+    data,
+    {
+      // Read & Write permissions for the file owner *only*
+      mode: 0o600,
+    },
+    (err) => {
+      if (err) {
+        throw err;
+      }
+      console.log(`Wallet IDs and encrypted private keys saved to ${fileName}`);
     }
-    console.log(`Wallet IDs and encrypted private keys saved to ${fileName}`);
-  });
+  );
 
   return Promise.resolve(output);
 }
