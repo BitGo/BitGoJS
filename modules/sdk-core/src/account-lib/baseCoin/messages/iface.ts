@@ -137,6 +137,13 @@ export interface IMessageBuilder {
   getPayload(): MessagePayload | undefined;
 
   /**
+   * Validates the signable payload
+   * @param message The message to validate
+   * @returns A boolean indicating whether the signable payload is valid
+   */
+  validateSignablePayload(message: string | Buffer): boolean;
+
+  /**
    * Gets the current metadata
    * @returns The current metadata
    */

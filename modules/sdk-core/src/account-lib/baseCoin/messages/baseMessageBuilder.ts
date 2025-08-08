@@ -119,6 +119,15 @@ export abstract class BaseMessageBuilder implements IMessageBuilder {
   }
 
   /**
+   * Validates the signable payload
+   * @param message The message to validate
+   * @returns A boolean indicating whether the signable payload is valid
+   */
+  public validateSignablePayload(message: string | Buffer): boolean {
+    return true;
+  }
+
+  /**
    * Builds a message using the previously set payload and metadata
    * @returns A Promise resolving to the built IMessage
    */
