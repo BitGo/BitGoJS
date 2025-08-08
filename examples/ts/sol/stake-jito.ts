@@ -59,8 +59,8 @@ async function main() {
     .sender(account.publicKey.toBase58())
     .stakingAddress(JITO_STAKE_POOL_ADDRESS)
     .validator(JITO_STAKE_POOL_ADDRESS)
-    .isJito(true)
-    .jitoParams({
+    .stakingTypeParams({
+      type: 'JITO',
       stakePoolData: {
         managerFeeAccount: stakePoolAccount.account.data.managerFeeAccount.toString(),
         poolMint: stakePoolAccount.account.data.poolMint.toString(),

@@ -421,19 +421,22 @@ function parseStakingActivateInstructions(
         stakingInstructions.initialize?.authorized.staker.toString() ||
         stakingInstructions.depositSol?.stakePool.toString() ||
         '',
-      isMarinade: stakingInstructionsIsMarinade(stakingInstructions),
-      isJito: stakingInstructionsIsJito(stakingInstructions),
-      ...(stakingInstructions.depositSol && stakingInstructionsIsJito(stakingInstructions)
+      stakingTypeParams: stakingInstructionsIsMarinade(stakingInstructions)
         ? {
-            jitoParams: {
-              stakePoolData: {
-                managerFeeAccount: stakingInstructions.depositSol.managerFeeAccount.toString(),
-                poolMint: stakingInstructions.depositSol.poolMint.toString(),
-                reserveStake: stakingInstructions.depositSol.reserveStake.toString(),
-              },
+            type: 'MARINADE',
+          }
+        : stakingInstructions.depositSol && stakingInstructionsIsJito(stakingInstructions)
+        ? {
+            type: 'JITO',
+            stakePoolData: {
+              managerFeeAccount: stakingInstructions.depositSol.managerFeeAccount.toString(),
+              poolMint: stakingInstructions.depositSol.poolMint.toString(),
+              reserveStake: stakingInstructions.depositSol.reserveStake.toString(),
             },
           }
-        : {}),
+        : {
+            type: 'NATIVE',
+          },
     },
   };
   instructionData.push(stakingActivate);
@@ -653,7 +656,24 @@ function parseStakingDeactivateInstructions(
         unstakingAddress:
           unstakingInstruction.split?.splitStakePubkey.toString() ||
           unstakingInstruction.withdrawStake?.destinationStake.toString(),
-        isMarinade: isMarinade,
+        stakingTypeParams: isMarinade
+          ? {
+              type: 'MARINADE',
+            }
+          : unstakingInstruction.withdrawStake !== undefined
+          ? {
+              type: 'JITO',
+              stakePoolData: {
+                managerFeeAccount: unstakingInstruction.withdrawStake.managerFeeAccount.toString(),
+                poolMint: unstakingInstruction.withdrawStake.poolMint.toString(),
+                validatorList: unstakingInstruction.withdrawStake.validatorList.toString(),
+              },
+              validatorAddress: unstakingInstruction.withdrawStake.validatorStake.toString(),
+              transferAuthorityAddress: unstakingInstruction.withdrawStake.sourceTransferAuthority.toString(),
+            }
+          : {
+              type: 'NATIVE',
+            },
         recipients: isMarinade
           ? [
               {
@@ -662,20 +682,6 @@ function parseStakingDeactivateInstructions(
               },
             ]
           : undefined,
-        ...(unstakingInstruction.withdrawStake !== undefined
-          ? {
-              isJito: unstakingInstruction.withdrawStake !== undefined,
-              jitoParams: unstakingInstruction.withdrawStake && {
-                stakePoolData: {
-                  managerFeeAccount: unstakingInstruction.withdrawStake.managerFeeAccount.toString(),
-                  poolMint: unstakingInstruction.withdrawStake.poolMint.toString(),
-                  validatorList: unstakingInstruction.withdrawStake.validatorList.toString(),
-                },
-                validatorAddress: unstakingInstruction.withdrawStake.validatorStake.toString(),
-                transferAuthorityAddress: unstakingInstruction.withdrawStake.sourceTransferAuthority.toString(),
-              },
-            }
-          : {}),
       },
     };
     instructionData.push(stakingDeactivate);

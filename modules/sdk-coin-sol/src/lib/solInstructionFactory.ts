@@ -274,34 +274,30 @@ function createNonceAccountInstruction(data: WalletInit): TransactionInstruction
  */
 function stakingInitializeInstruction(data: StakingActivate): TransactionInstruction[] {
   const {
-    params: { fromAddress, stakingAddress, amount, validator, isMarinade, isJito, jitoParams },
+    params: { fromAddress, stakingAddress, amount, validator, stakingTypeParams },
   } = data;
   assert(fromAddress, 'Missing fromAddress param');
   assert(stakingAddress, 'Missing stakingAddress param');
   assert(amount, 'Missing amount param');
   assert(validator, 'Missing validator param');
-  assert(isMarinade !== undefined, 'Missing isMarinade param');
-  assert(isJito !== undefined, 'Missing isJito param');
-  assert([isMarinade, isJito].filter((x) => x).length <= 1, 'At most one of isMarinade and isJito can be true');
+  assert(stakingTypeParams !== undefined, 'Missing stakingTypeParams param');
 
   const fromPubkey = new PublicKey(fromAddress);
   const stakePubkey = new PublicKey(stakingAddress);
   const validatorPubkey = new PublicKey(validator);
   const tx = new Transaction();
 
-  if (isJito) {
-    assert(jitoParams, 'missing jitoParams param');
-
+  if (stakingTypeParams.type === 'JITO') {
     const instructions = depositSolInstructions(
       {
         stakePoolAddress: stakePubkey,
         from: fromPubkey,
         lamports: BigInt(amount),
       },
-      jitoParams.stakePoolData
+      stakingTypeParams.stakePoolData
     );
     tx.add(...instructions);
-  } else if (isMarinade) {
+  } else if (stakingTypeParams.type === 'MARINADE') {
     const walletInitStaking = StakeProgram.createAccount({
       fromPubkey,
       stakePubkey,
@@ -339,18 +335,16 @@ function stakingInitializeInstruction(data: StakingActivate): TransactionInstruc
  */
 function stakingDeactivateInstruction(data: StakingDeactivate): TransactionInstruction[] {
   const {
-    params: { fromAddress, stakingAddress, amount, unstakingAddress, isMarinade, isJito, recipients, jitoParams },
+    params: { fromAddress, stakingAddress, amount, unstakingAddress, recipients, stakingTypeParams },
   } = data;
   assert(fromAddress, 'Missing fromAddress param');
-  if (!isMarinade) {
+  if (stakingTypeParams.type !== 'MARINADE') {
     assert(stakingAddress, 'Missing stakingAddress param');
   }
-  assert([isMarinade, isJito].filter((x) => x).length <= 1, 'At most one of isMarinade and isJito can be true');
 
-  if (isJito) {
+  if (stakingTypeParams.type === 'JITO') {
     assert(unstakingAddress, 'Missing unstakingAddress param');
     assert(amount, 'Missing amount param');
-    assert(jitoParams, 'Missing jitoParams param');
 
     const tx = new Transaction();
     tx.add(
@@ -359,15 +353,15 @@ function stakingDeactivateInstruction(data: StakingDeactivate): TransactionInstr
           stakePoolAddress: new PublicKey(stakingAddress),
           tokenOwner: new PublicKey(fromAddress),
           destinationStakeAccount: new PublicKey(unstakingAddress),
-          validatorAddress: new PublicKey(jitoParams.validatorAddress),
-          transferAuthority: new PublicKey(jitoParams.transferAuthorityAddress),
+          validatorAddress: new PublicKey(stakingTypeParams.validatorAddress),
+          transferAuthority: new PublicKey(stakingTypeParams.transferAuthorityAddress),
           poolAmount: amount,
         },
-        jitoParams.stakePoolData
+        stakingTypeParams.stakePoolData
       )
     );
     return tx.instructions;
-  } else if (isMarinade) {
+  } else if (stakingTypeParams.type === 'MARINADE') {
     assert(recipients, 'Missing recipients param');
 
     const tx = new Transaction();

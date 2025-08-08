@@ -120,6 +120,24 @@ export interface Approve {
   };
 }
 
+export interface JitoStakingActivateParams {
+  type: 'JITO';
+  stakePoolData: DepositSolStakePoolData;
+}
+
+export interface MarinadeStakingActivateParams {
+  type: 'MARINADE';
+}
+
+export interface NativeStakingActivateParams {
+  type: 'NATIVE';
+}
+
+export type StakingActivateStakingTypeParams =
+  | JitoStakingActivateParams
+  | MarinadeStakingActivateParams
+  | NativeStakingActivateParams;
+
 export interface StakingActivate {
   type: InstructionBuilderTypes.StakingActivate;
   params: {
@@ -127,11 +145,7 @@ export interface StakingActivate {
     stakingAddress: string;
     amount: string;
     validator: string;
-    isMarinade?: boolean;
-    isJito?: boolean;
-    jitoParams?: {
-      stakePoolData: DepositSolStakePoolData;
-    };
+    stakingTypeParams: StakingActivateStakingTypeParams;
   };
 }
 
@@ -140,6 +154,26 @@ export interface StakingDelegate {
   params: { stakingAddress: string; fromAddress: string; validator: string };
 }
 
+export interface JitoStakingDeactivateParams {
+  type: 'JITO';
+  stakePoolData: WithdrawStakeStakePoolData;
+  validatorAddress: string;
+  transferAuthorityAddress: string;
+}
+
+export interface MarinadeStakingDeactivateParams {
+  type: 'MARINADE';
+}
+
+export interface NativeStakingDeactivateParams {
+  type: 'NATIVE';
+}
+
+export type StakingDeactivateStakingTypeParams =
+  | JitoStakingDeactivateParams
+  | MarinadeStakingDeactivateParams
+  | NativeStakingDeactivateParams;
+
 export interface StakingDeactivate {
   type: InstructionBuilderTypes.StakingDeactivate;
   params: {
@@ -147,13 +181,7 @@ export interface StakingDeactivate {
     stakingAddress: string;
     amount?: string;
     unstakingAddress?: string;
-    isMarinade?: boolean;
-    isJito?: boolean;
-    jitoParams?: {
-      stakePoolData: WithdrawStakeStakePoolData;
-      validatorAddress: string;
-      transferAuthorityAddress: string;
-    };
+    stakingTypeParams: StakingDeactivateStakingTypeParams;
     recipients?: Recipient[];
   };
 }
