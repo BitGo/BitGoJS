@@ -5,15 +5,14 @@ import { TransactionBuilder } from './transactionBuilder';
 import { InstructionBuilderTypes } from './constants';
 
 import assert from 'assert';
-import { StakingActivate } from './iface';
+import { StakingActivate, StakingActivateStakingTypeParams } from './iface';
 import { isValidStakingAmount, validateAddress } from './utils';
 
 export class StakingActivateBuilder extends TransactionBuilder {
   protected _amount: string;
   protected _stakingAddress: string;
   protected _validator: string;
-  protected _isMarinade = false;
-  protected _isJito = false;
+  protected _stakingTypeParams: StakingActivateStakingTypeParams = { type: 'NATIVE' };
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -33,8 +32,7 @@ export class StakingActivateBuilder extends TransactionBuilder {
         this.stakingAddress(activateInstruction.params.stakingAddress);
         this.amount(activateInstruction.params.amount);
         this.validator(activateInstruction.params.validator);
-        this.isMarinade(activateInstruction.params.isMarinade ?? false);
-        this.isJito(activateInstruction.params.isJito ?? false);
+        this.stakingTypeParams(activateInstruction.params.stakingTypeParams);
       }
     }
   }
@@ -82,23 +80,13 @@ export class StakingActivateBuilder extends TransactionBuilder {
   }
 
   /**
-   * Set isMarinade flag
-   * @param {boolean} flag - true if the transaction is for Marinade, false by default if not set
-   * @returns {StakingActivateBuilder} This staking builder
+   * Set parameters specific to a staking type.
+   *
+   * @param {StakingActivateStakingTypeParams} stakingTypeParams parameters specific to a staking type.
+   * @returns {StakingActivateBuilder} This staking builder.
    */
-  isMarinade(flag: boolean): this {
-    this._isMarinade = flag;
-    return this;
-  }
-
-  /**
-   * Set isJito flag
-   * @param {boolean} flag - true if the transaction is for Jito, false by default if not set
-   * @returns {StakingActivateBuilder} This staking builder
-   */
-  isJito(flag: boolean): this {
-    this._isJito = flag;
-    // this._coinConfig.network.type === NetworkType.TESTNET
+  stakingTypeParams(stakingTypeParams: StakingActivateStakingTypeParams): this {
+    this._stakingTypeParams = stakingTypeParams;
     return this;
   }
 
@@ -108,12 +96,7 @@ export class StakingActivateBuilder extends TransactionBuilder {
     assert(this._stakingAddress, 'Staking Address must be set before building the transaction');
     assert(this._validator, 'Validator must be set before building the transaction');
     assert(this._amount, 'Amount must be set before building the transaction');
-    assert(this._isMarinade !== undefined, 'isMarinade must be set before building the transaction');
-    assert(this._isJito !== undefined, 'isJito must be set before building the transaction');
-    assert(
-      [this._isMarinade, this._isJito].filter((x) => x).length <= 1,
-      'At most one of isMarinade and isJito can be true'
-    );
+    assert(this._stakingTypeParams, 'Staking type params must be set before building the transaction');
 
     if (this._sender === this._stakingAddress) {
       throw new BuildTransactionError('Sender address cannot be the same as the Staking address');
@@ -126,8 +109,7 @@ export class StakingActivateBuilder extends TransactionBuilder {
         stakingAddress: this._stakingAddress,
         amount: this._amount,
         validator: this._validator,
-        isMarinade: this._isMarinade,
-        isJito: this._isJito,
+        stakingTypeParams: this._stakingTypeParams,
       },
     };
     this._instructionsData = [stakingAccountData];

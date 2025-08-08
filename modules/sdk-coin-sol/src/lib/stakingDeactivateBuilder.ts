@@ -3,7 +3,7 @@ import assert from 'assert';
 
 import { BuildTransactionError, Recipient, TransactionType } from '@bitgo/sdk-core';
 import { InstructionBuilderTypes, STAKE_ACCOUNT_RENT_EXEMPT_AMOUNT } from './constants';
-import { StakingDeactivate, Transfer } from './iface';
+import { StakingDeactivate, StakingDeactivateStakingTypeParams, Transfer } from './iface';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import { isValidStakingAmount, validateAddress } from './utils';
@@ -13,8 +13,8 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
   protected _stakingAddresses: string[];
   protected _amount?: string;
   protected _unstakingAddress: string;
-  protected _isMarinade = false;
   protected _recipients: Recipient[];
+  protected _stakingTypeParams: StakingDeactivateStakingTypeParams = { type: 'NATIVE' };
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -31,24 +31,33 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
     for (const instruction of this._instructionsData) {
       if (instruction.type === InstructionBuilderTypes.StakingDeactivate) {
         const deactivateInstruction: StakingDeactivate = instruction;
-        this.isMarinade(deactivateInstruction.params.isMarinade ?? false);
-        if (!deactivateInstruction.params.isMarinade) {
+        // Since _stakingAddresses needs to be populated, it gets special treatment.
+        stakingAddresses.push(deactivateInstruction.params.stakingAddress);
+
+        // Marinade staking also cares about sender.
+        if (deactivateInstruction.params.stakingTypeParams.type !== 'MARINADE') {
           this.sender(deactivateInstruction.params.fromAddress);
         }
-        if (deactivateInstruction.params.isMarinade) {
-          this.recipients(deactivateInstruction.params.recipients ?? []);
-        }
-        stakingAddresses.push(deactivateInstruction.params.stakingAddress);
-        if (deactivateInstruction.params.amount && deactivateInstruction.params.unstakingAddress) {
+
+        // The other values can just be copied.
+        if (deactivateInstruction.params.amount !== undefined) {
           this.amount(deactivateInstruction.params.amount);
+        }
+        if (deactivateInstruction.params.unstakingAddress !== undefined) {
           this.unstakingAddress(deactivateInstruction.params.unstakingAddress);
+        }
+        if (deactivateInstruction.params.recipients !== undefined) {
+          this.recipients(deactivateInstruction.params.recipients);
+        }
+        if (deactivateInstruction.params.stakingTypeParams !== undefined) {
+          this.stakingTypeParams(deactivateInstruction.params.stakingTypeParams);
         }
       }
     }
     if (stakingAddresses.length > 1) {
       this.stakingAddresses(stakingAddresses);
     } else {
-      if (!this._isMarinade) {
+      if (this._stakingTypeParams.type !== 'MARINADE') {
         this.stakingAddress(stakingAddresses[0]);
       }
     }
@@ -128,19 +137,20 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
   }
 
   /**
-   * Set isMarinade flag
-   * @param {boolean} flag - true if the transaction is for Marinade, false by default if not set
-   * @returns {StakingActivateBuilder} This staking builder
+   * Set parameters specific to a staking type.
+   *
+   * @param {StakingDeactivateStakingTypeParams} stakingTypeParams parameters specific to a staking type.
+   * @returns {StakingDeactivateBuilder} This staking builder.
    */
-  isMarinade(flag: boolean): this {
-    this._isMarinade = flag;
+  stakingTypeParams(stakingTypeParams: StakingDeactivateStakingTypeParams): this {
+    this._stakingTypeParams = stakingTypeParams;
     return this;
   }
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     assert(this._sender, 'Sender must be set before building the transaction');
-    assert(this._isMarinade !== undefined, 'isMarinade must be set before building the transaction');
+    assert(this._stakingTypeParams !== undefined, 'stakingTypeParams must be set before building the transaction');
 
     if (this._stakingAddresses && this._stakingAddresses.length > 0) {
       this._instructionsData = [];
@@ -150,12 +160,15 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
           params: {
             fromAddress: this._sender,
             stakingAddress: stakingAddress,
+            stakingTypeParams: {
+              type: 'NATIVE',
+            },
           },
         };
         this._instructionsData.push(stakingDeactivateData);
       }
     } else {
-      if (!this._isMarinade) {
+      if (this._stakingTypeParams.type === 'NATIVE') {
         // we don't need stakingAddress in marinade staking deactivate txn
         assert(this._stakingAddress, 'Staking address must be set before building the transaction');
       }
@@ -164,14 +177,15 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
         throw new BuildTransactionError('Sender address cannot be the same as the Staking address');
       }
 
-      if (this._amount && !this._isMarinade) {
+      if (this._stakingTypeParams.type === 'NATIVE' && this._amount) {
         assert(
           this._unstakingAddress,
           'When partially unstaking the unstaking address must be set before building the transaction'
         );
       }
+
       this._instructionsData = [];
-      if (this._unstakingAddress && !this._isMarinade) {
+      if (this._stakingTypeParams.type === 'NATIVE' && this._unstakingAddress) {
         assert(
           this._amount,
           'If an unstaking address is given then a partial amount to unstake must also be set before building the transaction'
@@ -194,12 +208,13 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
           stakingAddress: this._stakingAddress,
           amount: this._amount,
           unstakingAddress: this._unstakingAddress,
-          isMarinade: this._isMarinade,
           recipients: this._recipients,
+          stakingTypeParams: this._stakingTypeParams,
         },
       };
       this._instructionsData.push(stakingDeactivateData);
     }
+
     return await super.buildImplementation();
   }
 }
