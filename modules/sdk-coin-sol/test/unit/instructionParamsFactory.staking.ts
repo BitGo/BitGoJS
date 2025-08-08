@@ -2,7 +2,14 @@ import should from 'should';
 import * as testData from '../resources/sol';
 import { instructionParamsFactory } from '../../src/lib/instructionParamsFactory';
 import { TransactionType } from '@bitgo/sdk-core';
-import { InstructionParams, Nonce, StakingActivate, StakingDeactivate, StakingWithdraw } from '../../src/lib/iface';
+import {
+  InstructionParams,
+  Nonce,
+  StakingActivate,
+  StakingDeactivate,
+  StakingType,
+  StakingWithdraw,
+} from '../../src/lib/iface';
 import { InstructionBuilderTypes, MEMO_PROGRAM_PK, STAKE_ACCOUNT_RENT_EXEMPT_AMOUNT } from '../../src/lib/constants';
 import {
   Keypair as SolKeypair,
@@ -66,8 +73,7 @@ describe('Instruction Parser Staking Tests: ', function () {
           stakingAddress: stakingAccount.toString(),
           validator: validator.toString(),
           amount,
-          isMarinade: false,
-          isJito: false,
+          stakingType: StakingType.NATIVE,
         },
       };
 
@@ -137,8 +143,7 @@ describe('Instruction Parser Staking Tests: ', function () {
           stakingAddress: stakingAccount.toString(),
           validator: validator.toString(),
           amount,
-          isMarinade: false,
-          isJito: false,
+          stakingType: StakingType.NATIVE,
         },
       };
 
@@ -190,8 +195,7 @@ describe('Instruction Parser Staking Tests: ', function () {
           stakingAddress: stakingAccount.toString(),
           validator: validator.toString(),
           amount,
-          isMarinade: false,
-          isJito: false,
+          stakingType: StakingType.NATIVE,
         },
       };
 
@@ -238,8 +242,7 @@ describe('Instruction Parser Staking Tests: ', function () {
           stakingAddress: stakingAccount.toString(),
           validator: validator.toString(),
           amount,
-          isMarinade: false,
-          isJito: false,
+          stakingType: StakingType.NATIVE,
         },
       };
 
@@ -326,8 +329,7 @@ describe('Instruction Parser Staking Tests: ', function () {
           stakingAddress: stakingAccount.toString(),
           amount: undefined,
           unstakingAddress: undefined,
-          isMarinade: false,
-          recipients: undefined,
+          stakingType: StakingType.NATIVE,
         },
       };
 
@@ -378,8 +380,7 @@ describe('Instruction Parser Staking Tests: ', function () {
           stakingAddress: stakingAccount.toString(),
           amount: undefined,
           unstakingAddress: undefined,
-          isMarinade: false,
-          recipients: undefined,
+          stakingType: StakingType.NATIVE,
         },
       };
 
@@ -412,8 +413,7 @@ describe('Instruction Parser Staking Tests: ', function () {
           stakingAddress: stakingAccount.toString(),
           amount: undefined,
           unstakingAddress: undefined,
-          isMarinade: false,
-          recipients: undefined,
+          stakingType: StakingType.NATIVE,
         },
       };
 
@@ -460,8 +460,7 @@ describe('Instruction Parser Staking Tests: ', function () {
           stakingAddress: stakingAccount.toString(),
           amount: undefined,
           unstakingAddress: undefined,
-          isMarinade: false,
-          recipients: undefined,
+          stakingType: StakingType.NATIVE,
         },
       };
 
@@ -1033,8 +1032,7 @@ describe('Instruction Parser Staking Tests: ', function () {
             stakingAddress: stakingAccount.toString(),
             amount: '100000',
             unstakingAddress: splitStakeAccount.toString(),
-            isMarinade: false,
-            recipients: undefined,
+            stakingType: StakingType.NATIVE,
           },
         };
 

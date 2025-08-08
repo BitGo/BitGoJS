@@ -6,6 +6,7 @@ import * as testData from '../../resources/sol';
 import { Recipient, TransactionType } from '@bitgo/sdk-core';
 import * as bs58 from 'bs58';
 import { JITO_STAKE_POOL_ADDRESS } from '../../../src/lib/constants';
+import { StakingType } from '../../../src/lib/iface';
 
 describe('Sol Staking Deactivate Builder', () => {
   const factory = getBuilderFactory('tsol');
@@ -42,8 +43,7 @@ describe('Sol Staking Deactivate Builder', () => {
             stakingAddress: stakeAccount.pub,
             amount: undefined,
             unstakingAddress: undefined,
-            isMarinade: false,
-            recipients: undefined,
+            stakingType: StakingType.NATIVE,
           },
         },
       ]);
@@ -71,7 +71,7 @@ describe('Sol Staking Deactivate Builder', () => {
         .sender(wallet.pub)
         .stakingAddress(stakeAccount.pub)
         .nonce(recentBlockHash)
-        .isMarinade(true)
+        .stakingType(StakingType.MARINADE)
         .memo(marinadeMemo)
         .recipients(marinadeRecipientsObject);
       const txUnsigned = await txBuilder.build();
@@ -92,9 +92,7 @@ describe('Sol Staking Deactivate Builder', () => {
           params: {
             fromAddress: '',
             stakingAddress: '',
-            amount: undefined,
-            unstakingAddress: undefined,
-            isMarinade: true,
+            stakingType: StakingType.MARINADE,
             recipients: marinadeRecipientsObject,
           },
         },
@@ -112,7 +110,7 @@ describe('Sol Staking Deactivate Builder', () => {
         .sender(wallet.pub)
         .stakingAddress(stakeAccount.pub)
         .nonce(recentBlockHash)
-        .isMarinade(true)
+        .stakingType(StakingType.MARINADE)
         .memo(marinadeMemo)
         .recipients(marinadeRecipientsObject);
       await txBuilder2.addSignature({ pub: wallet.pub }, Buffer.from(bs58.decode(signed)));
@@ -128,16 +126,16 @@ describe('Sol Staking Deactivate Builder', () => {
       const transferAuthority = new KeyPair(testData.splitStakeAccount).getKeys();
       txBuilder
         .sender(wallet.pub)
-        .isJito(true)
         .stakingAddress(JITO_STAKE_POOL_ADDRESS)
         .unstakingAddress(stakeAccount.pub)
-        .jitoParams({
+        .stakingType(StakingType.JITO)
+        .extraParams({
           validatorAddress: testData.JITO_STAKE_POOL_VALIDATOR_ADDRESS,
           transferAuthorityAddress: transferAuthority.pub,
           stakePoolData: {
             managerFeeAccount: testData.JITO_STAKE_POOL_DATA_PARSED.managerFeeAccount.toString(),
             poolMint: testData.JITO_STAKE_POOL_DATA_PARSED.poolMint.toString(),
-            validatorList: testData.JITO_STAKE_POOL_DATA_PARSED.validatorList.toString(),
+            validatorListAccount: testData.JITO_STAKE_POOL_DATA_PARSED.validatorList.toString(),
           },
         })
         .amount('1000')
@@ -155,19 +153,17 @@ describe('Sol Staking Deactivate Builder', () => {
           type: 'Deactivate',
           params: {
             fromAddress: wallet.pub,
-            isMarinade: false,
-            isJito: true,
             stakingAddress: JITO_STAKE_POOL_ADDRESS,
             unstakingAddress: stakeAccount.pub,
             amount: '1000',
-            recipients: undefined,
-            jitoParams: {
+            stakingType: StakingType.JITO,
+            extraParams: {
               validatorAddress: testData.JITO_STAKE_POOL_VALIDATOR_ADDRESS,
               transferAuthorityAddress: transferAuthority.pub,
               stakePoolData: {
                 managerFeeAccount: testData.JITO_STAKE_POOL_DATA_PARSED.managerFeeAccount.toString(),
                 poolMint: testData.JITO_STAKE_POOL_DATA_PARSED.poolMint.toString(),
-                validatorList: testData.JITO_STAKE_POOL_DATA_PARSED.validatorList.toString(),
+                validatorListAccount: testData.JITO_STAKE_POOL_DATA_PARSED.validatorList.toString(),
               },
             },
           },
@@ -197,8 +193,7 @@ describe('Sol Staking Deactivate Builder', () => {
             stakingAddress: stakeAccount.pub,
             amount: undefined,
             unstakingAddress: undefined,
-            isMarinade: false,
-            recipients: undefined,
+            stakingType: StakingType.NATIVE,
           },
         },
         {
@@ -208,8 +203,7 @@ describe('Sol Staking Deactivate Builder', () => {
             stakingAddress: splitAccount.pub,
             amount: undefined,
             unstakingAddress: undefined,
-            isMarinade: false,
-            recipients: undefined,
+            stakingType: StakingType.NATIVE,
           },
         },
       ]);
@@ -247,8 +241,7 @@ describe('Sol Staking Deactivate Builder', () => {
             stakingAddress: stakeAccount.pub,
             amount: undefined,
             unstakingAddress: undefined,
-            isMarinade: false,
-            recipients: undefined,
+            stakingType: StakingType.NATIVE,
           },
         },
       ]);
@@ -318,8 +311,7 @@ describe('Sol Staking Deactivate Builder', () => {
             stakingAddress: stakeAccount.pub,
             amount: undefined,
             unstakingAddress: undefined,
-            isMarinade: false,
-            recipients: undefined,
+            stakingType: StakingType.NATIVE,
           },
         },
       ]);
@@ -341,8 +333,7 @@ describe('Sol Staking Deactivate Builder', () => {
             stakingAddress: stakeAccount.pub,
             amount: undefined,
             unstakingAddress: undefined,
-            isMarinade: false,
-            recipients: undefined,
+            stakingType: StakingType.NATIVE,
           },
         },
       ]);
@@ -370,8 +361,7 @@ describe('Sol Staking Deactivate Builder', () => {
             stakingAddress: stakeAccount.pub,
             amount: undefined,
             unstakingAddress: undefined,
-            isMarinade: false,
-            recipients: undefined,
+            stakingType: StakingType.NATIVE,
           },
         },
       ]);
@@ -413,8 +403,7 @@ describe('Sol Staking Deactivate Builder', () => {
             stakingAddress: stakeAccount.pub,
             amount: '100000',
             unstakingAddress: testData.splitStakeAccount.pub,
-            isMarinade: false,
-            recipients: undefined,
+            stakingType: StakingType.NATIVE,
           },
         },
       ]);

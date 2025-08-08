@@ -120,6 +120,18 @@ export interface Approve {
   };
 }
 
+export enum StakingType {
+  NATIVE = 'NATIVE',
+  MARINADE = 'MARINADE',
+  JITO = 'JITO',
+}
+
+export interface JitoStakingActivateParams {
+  stakePoolData: DepositSolStakePoolData;
+}
+
+export type StakingActivateExtraParams = JitoStakingActivateParams;
+
 export interface StakingActivate {
   type: InstructionBuilderTypes.StakingActivate;
   params: {
@@ -127,11 +139,8 @@ export interface StakingActivate {
     stakingAddress: string;
     amount: string;
     validator: string;
-    isMarinade?: boolean;
-    isJito?: boolean;
-    jitoParams?: {
-      stakePoolData: DepositSolStakePoolData;
-    };
+    stakingType: StakingType;
+    extraParams?: StakingActivateExtraParams;
   };
 }
 
@@ -140,6 +149,14 @@ export interface StakingDelegate {
   params: { stakingAddress: string; fromAddress: string; validator: string };
 }
 
+export interface JitoStakingDeactivateParams {
+  stakePoolData: WithdrawStakeStakePoolData;
+  validatorAddress: string;
+  transferAuthorityAddress: string;
+}
+
+export type StakingDeactivateExtraParams = JitoStakingDeactivateParams;
+
 export interface StakingDeactivate {
   type: InstructionBuilderTypes.StakingDeactivate;
   params: {
@@ -147,13 +164,8 @@ export interface StakingDeactivate {
     stakingAddress: string;
     amount?: string;
     unstakingAddress?: string;
-    isMarinade?: boolean;
-    isJito?: boolean;
-    jitoParams?: {
-      stakePoolData: WithdrawStakeStakePoolData;
-      validatorAddress: string;
-      transferAuthorityAddress: string;
-    };
+    stakingType: StakingType;
+    extraParams?: StakingDeactivateExtraParams;
     recipients?: Recipient[];
   };
 }

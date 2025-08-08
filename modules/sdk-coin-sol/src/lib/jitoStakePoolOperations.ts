@@ -47,7 +47,7 @@ export interface StakePoolData {
   staker: string;
   stakeDepositAuthority: string;
   stakeWithdrawBumpSeed: number;
-  validatorList: string;
+  validatorListAccount: string;
   reserveStake: string;
   poolMint: string;
   managerFeeAccount: string;
@@ -209,7 +209,7 @@ export interface WithdrawStakeInstructionsParams {
   poolAmount: string;
 }
 
-export type WithdrawStakeStakePoolData = Pick<StakePoolData, 'poolMint' | 'validatorList' | 'managerFeeAccount'>;
+export type WithdrawStakeStakePoolData = Pick<StakePoolData, 'poolMint' | 'validatorListAccount' | 'managerFeeAccount'>;
 
 /**
  * Construct Solana depositSol stake pool instruction from parameters.
@@ -234,7 +234,7 @@ export function withdrawStakeInstructions(
   } = params;
 
   const poolMint = new PublicKey(stakePool.poolMint);
-  const validatorList = new PublicKey(stakePool.validatorList);
+  const validatorList = new PublicKey(stakePool.validatorListAccount);
   const managerFeeAccount = new PublicKey(stakePool.managerFeeAccount);
 
   const poolTokenAccount = getAssociatedTokenAddressSync(poolMint, tokenOwner);
@@ -291,9 +291,9 @@ export function decodeWithdrawStake(instruction: TransactionInstruction): Withdr
   const validatorList = parseKey(keys[i++], { isSigner: false, isWritable: true });
   const withdrawAuthority = parseKey(keys[i++], { isSigner: false, isWritable: false });
   const validatorStake = parseKey(keys[i++], { isSigner: false, isWritable: true });
-  const destinationStake = keys[i++].pubkey; // parseKey(keys[i++], { isSigner: false, isWritable: true });
-  const destinationStakeAuthority = keys[i++].pubkey; // parseKey(keys[i++], { isSigner: false, isWritable: false });
-  const sourceTransferAuthority = keys[i++].pubkey; // parseKey(keys[i++], { isSigner: true, isWritable: false });
+  const destinationStake = keys[i++].pubkey;
+  const destinationStakeAuthority = keys[i++].pubkey;
+  const sourceTransferAuthority = parseKey(keys[i++], { isSigner: true, isWritable: false });
   const sourcePoolAccount = parseKey(keys[i++], { isSigner: false, isWritable: true });
   const managerFeeAccount = parseKey(keys[i++], { isSigner: false, isWritable: true });
   const poolMint = parseKey(keys[i++], { isSigner: false, isWritable: true });

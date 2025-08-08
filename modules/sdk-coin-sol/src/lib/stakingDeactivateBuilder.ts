@@ -3,7 +3,7 @@ import assert from 'assert';
 
 import { BuildTransactionError, Recipient, TransactionType } from '@bitgo/sdk-core';
 import { InstructionBuilderTypes, STAKE_ACCOUNT_RENT_EXEMPT_AMOUNT } from './constants';
-import { StakingDeactivate, Transfer } from './iface';
+import { StakingDeactivate, StakingDeactivateExtraParams, StakingType, Transfer } from './iface';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import { isValidStakingAmount, validateAddress } from './utils';
@@ -13,10 +13,9 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
   protected _stakingAddresses: string[];
   protected _amount?: string;
   protected _unstakingAddress: string;
-  protected _isMarinade = false;
-  protected _isJito = false;
   protected _recipients: Recipient[];
-  protected _jitoParams?: StakingDeactivate['params']['jitoParams'];
+  protected _stakingType: StakingType = StakingType.NATIVE;
+  protected _extraParams?: StakingDeactivateExtraParams;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -37,7 +36,7 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
         stakingAddresses.push(deactivateInstruction.params.stakingAddress);
 
         // Marinade staking also cares about sender.
-        if (!deactivateInstruction.params.isMarinade) {
+        if (deactivateInstruction.params.stakingType !== StakingType.MARINADE) {
           this.sender(deactivateInstruction.params.fromAddress);
         }
 
@@ -48,24 +47,21 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
         if (deactivateInstruction.params.unstakingAddress !== undefined) {
           this.unstakingAddress(deactivateInstruction.params.unstakingAddress);
         }
-        if (deactivateInstruction.params.isMarinade !== undefined) {
-          this.isMarinade(deactivateInstruction.params.isMarinade);
-        }
-        if (deactivateInstruction.params.isJito !== undefined) {
-          this.isJito(deactivateInstruction.params.isJito);
-        }
         if (deactivateInstruction.params.recipients !== undefined) {
           this.recipients(deactivateInstruction.params.recipients);
         }
-        if (deactivateInstruction.params.jitoParams !== undefined) {
-          this.jitoParams(deactivateInstruction.params.jitoParams);
+        if (deactivateInstruction.params.stakingType !== undefined) {
+          this.stakingType(deactivateInstruction.params.stakingType);
+        }
+        if (deactivateInstruction.params.extraParams !== undefined) {
+          this.extraParams(deactivateInstruction.params.extraParams);
         }
       }
     }
     if (stakingAddresses.length > 1) {
       this.stakingAddresses(stakingAddresses);
     } else {
-      if (!this._isMarinade) {
+      if (this._stakingType !== StakingType.MARINADE) {
         this.stakingAddress(stakingAddresses[0]);
       }
     }
@@ -145,40 +141,30 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
   }
 
   /**
-   * Set isMarinade flag
-   * @param {boolean} flag - true if the transaction is for Marinade, false by default if not set
-   * @returns {StakingDectivateBuilder} This staking builder
-   */
-  isMarinade(flag: boolean): this {
-    this._isMarinade = flag;
-    return this;
-  }
-
-  /**
-   * Set isJito flag
-   * @param {boolean} flag - true if the transaction is for Jito, false by default if not set
-   * @returns {StakingDeactivateBuilder} This staking builder
-   */
-  isJito(flag: boolean): this {
-    this._isJito = flag;
-    return this;
-  }
-
-  /**
-   * Set parameters specific to Jito unstaking.
+   * Set staking type.
    *
-   * @param {string} jitoParams parameters specific to Jito unstaking.
+   * @param {StakingType} stakingType a staking type.
    * @returns {StakingDeactivateBuilder} This staking builder.
    */
-  jitoParams(jitoParams: StakingDeactivate['params']['jitoParams']): this {
-    this._jitoParams = jitoParams;
+  stakingType(stakingType: StakingType): this {
+    this._stakingType = stakingType;
+    return this;
+  }
+
+  /**
+   * Set parameters specific to a staking type.
+   *
+   * @param {StakingDeactivateExtraParams} extraParams parameters specific to a staking type.
+   * @returns {StakingDeactivateBuilder} This staking builder.
+   */
+  extraParams(extraParams?: StakingDeactivateExtraParams): this {
+    this._extraParams = extraParams;
     return this;
   }
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     assert(this._sender, 'Sender must be set before building the transaction');
-    assert(this._isMarinade !== undefined, 'isMarinade must be set before building the transaction');
 
     if (this._stakingAddresses && this._stakingAddresses.length > 0) {
       this._instructionsData = [];
@@ -188,12 +174,13 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
           params: {
             fromAddress: this._sender,
             stakingAddress: stakingAddress,
+            stakingType: StakingType.NATIVE,
           },
         };
         this._instructionsData.push(stakingDeactivateData);
       }
     } else {
-      if (!this._isMarinade && !this._isJito) {
+      if (this._stakingType === StakingType.NATIVE) {
         // we don't need stakingAddress in marinade staking deactivate txn
         assert(this._stakingAddress, 'Staking address must be set before building the transaction');
       }
@@ -202,7 +189,7 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
         throw new BuildTransactionError('Sender address cannot be the same as the Staking address');
       }
 
-      if (this._amount && !this._isMarinade && !this._isJito) {
+      if (this._stakingType === StakingType.NATIVE && this._amount) {
         assert(
           this._unstakingAddress,
           'When partially unstaking the unstaking address must be set before building the transaction'
@@ -210,7 +197,7 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
       }
 
       this._instructionsData = [];
-      if (this._unstakingAddress && !this._isMarinade && !this._isJito) {
+      if (this._stakingType === StakingType.NATIVE && this._unstakingAddress) {
         assert(
           this._amount,
           'If an unstaking address is given then a partial amount to unstake must also be set before building the transaction'
@@ -233,10 +220,9 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
           stakingAddress: this._stakingAddress,
           amount: this._amount,
           unstakingAddress: this._unstakingAddress,
-          isMarinade: this._isMarinade,
-          isJito: this._isJito,
           recipients: this._recipients,
-          jitoParams: this._jitoParams,
+          stakingType: this._stakingType,
+          extraParams: this._extraParams,
         },
       };
       this._instructionsData.push(stakingDeactivateData);

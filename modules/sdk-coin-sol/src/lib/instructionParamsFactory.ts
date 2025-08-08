@@ -11,7 +11,6 @@ import {
 import {
   AllocateParams,
   AssignParams,
-  AuthorizeStakeParams,
   CreateAccountParams,
   DeactivateStakeParams,
   DecodedTransferInstruction,
@@ -28,12 +27,7 @@ import {
 import { NotSupported, TransactionType } from '@bitgo/sdk-core';
 import { coins, SolCoin } from '@bitgo/statics';
 import assert from 'assert';
-import {
-  InstructionBuilderTypes,
-  JITO_STAKE_POOL_ADDRESS,
-  ValidInstructionTypesEnum,
-  walletInitInstructionIndexes,
-} from './constants';
+import { InstructionBuilderTypes, ValidInstructionTypesEnum, walletInitInstructionIndexes } from './constants';
 import {
   AtaClose,
   AtaInit,
@@ -53,6 +47,7 @@ import {
   SetPriorityFee,
   CustomInstruction,
   Approve,
+  StakingType,
 } from './iface';
 import { getInstructionType } from './utils';
 import { DepositSolParams, WithdrawStakeParams } from '@solana/spl-stake-pool';
@@ -330,12 +325,49 @@ function parseSendInstructions(
   return instructionData;
 }
 
-function stakingInstructionsIsMarinade(si: StakingInstructions): boolean {
-  return !!(si.delegate === undefined && si.depositSol === undefined);
+type StakingInstructions = {
+  depositSol?: DepositSolParams;
+  create?: CreateAccountParams;
+  initialize?: InitializeStakeParams;
+  delegate?: DelegateStakeParams;
+};
+
+type JitoStakingInstructions = StakingInstructions & {
+  depositSol: NonNullable<StakingInstructions['depositSol']>;
+};
+
+function isJitoStakingInstructions(si: StakingInstructions): si is JitoStakingInstructions {
+  return si.depositSol !== undefined;
 }
 
-function stakingInstructionsIsJito(si: StakingInstructions): boolean {
-  return !!(si.delegate === undefined && si.depositSol?.stakePool.toString() === JITO_STAKE_POOL_ADDRESS);
+type MarinadeStakingInstructions = StakingInstructions & {
+  create: NonNullable<StakingInstructions['create']>;
+  initialize: NonNullable<StakingInstructions['initialize']>;
+};
+
+function isMarinadeStakingInstructions(si: StakingInstructions): si is MarinadeStakingInstructions {
+  return si.create !== undefined && si.initialize !== undefined && si.delegate === undefined;
+}
+
+type NativeStakingInstructions = StakingInstructions & {
+  create: NonNullable<StakingInstructions['create']>;
+  initialize: NonNullable<StakingInstructions['initialize']>;
+  delegate: NonNullable<StakingInstructions['delegate']>;
+};
+
+function isNativeStakingInstructions(si: StakingInstructions): si is NativeStakingInstructions {
+  return si.create !== undefined && si.initialize !== undefined && si.delegate !== undefined;
+}
+
+function getStakingTypeFromStakingInstructions(si: StakingInstructions): StakingType {
+  const isJito = isJitoStakingInstructions(si);
+  const isMarinade = isMarinadeStakingInstructions(si);
+  const isNative = isNativeStakingInstructions(si);
+  assert([isJito, isMarinade, isNative].filter((x) => x).length === 1, 'StakingType is ambiguous');
+  if (isJito) return StakingType.JITO;
+  if (isMarinade) return StakingType.MARINADE;
+  if (isNative) return StakingType.NATIVE;
+  assert(false, 'No StakingType found');
 }
 
 /**
@@ -402,40 +434,72 @@ function parseStakingActivateInstructions(
   }
 
   validateStakingInstructions(stakingInstructions);
+  const stakingType = getStakingTypeFromStakingInstructions(stakingInstructions);
 
-  const stakingActivate: StakingActivate = {
-    type: InstructionBuilderTypes.StakingActivate,
-    params: {
-      fromAddress:
-        stakingInstructions.create?.fromPubkey.toString() ||
-        stakingInstructions.depositSol?.fundingAccount.toString() ||
-        '',
-      stakingAddress:
-        stakingInstructions.initialize?.stakePubkey.toString() ||
-        stakingInstructions.depositSol?.stakePool.toString() ||
-        '',
-      amount:
-        stakingInstructions.create?.lamports.toString() || stakingInstructions.depositSol?.lamports.toString() || '',
-      validator:
-        stakingInstructions.delegate?.votePubkey.toString() ||
-        stakingInstructions.initialize?.authorized.staker.toString() ||
-        stakingInstructions.depositSol?.stakePool.toString() ||
-        '',
-      isMarinade: stakingInstructionsIsMarinade(stakingInstructions),
-      isJito: stakingInstructionsIsJito(stakingInstructions),
-      ...(stakingInstructions.depositSol && stakingInstructionsIsJito(stakingInstructions)
-        ? {
-            jitoParams: {
-              stakePoolData: {
-                managerFeeAccount: stakingInstructions.depositSol.managerFeeAccount.toString(),
-                poolMint: stakingInstructions.depositSol.poolMint.toString(),
-                reserveStake: stakingInstructions.depositSol.reserveStake.toString(),
-              },
+  let stakingActivate: StakingActivate | undefined;
+
+  switch (stakingType) {
+    case StakingType.JITO: {
+      assert(isJitoStakingInstructions(stakingInstructions));
+      const { depositSol } = stakingInstructions;
+      stakingActivate = {
+        type: InstructionBuilderTypes.StakingActivate,
+        params: {
+          stakingType,
+          fromAddress: depositSol.fundingAccount.toString(),
+          stakingAddress: depositSol.stakePool.toString(),
+          amount: depositSol.lamports.toString(),
+          validator: depositSol.stakePool.toString(),
+          extraParams: {
+            stakePoolData: {
+              managerFeeAccount: depositSol.managerFeeAccount.toString(),
+              poolMint: depositSol.poolMint.toString(),
+              reserveStake: depositSol.reserveStake.toString(),
             },
-          }
-        : {}),
-    },
-  };
+          },
+        },
+      };
+      break;
+    }
+
+    case StakingType.MARINADE: {
+      assert(isMarinadeStakingInstructions(stakingInstructions));
+      const { create, initialize } = stakingInstructions;
+      stakingActivate = {
+        type: InstructionBuilderTypes.StakingActivate,
+        params: {
+          stakingType,
+          fromAddress: create.fromPubkey.toString(),
+          stakingAddress: initialize.stakePubkey.toString(),
+          amount: create.lamports.toString(),
+          validator: initialize.authorized.staker.toString(),
+        },
+      };
+      break;
+    }
+
+    case StakingType.NATIVE: {
+      assert(isNativeStakingInstructions(stakingInstructions));
+      const { create, initialize, delegate } = stakingInstructions;
+      stakingActivate = {
+        type: InstructionBuilderTypes.StakingActivate,
+        params: {
+          stakingType,
+          fromAddress: create.fromPubkey.toString(),
+          stakingAddress: initialize.stakePubkey.toString(),
+          amount: create.lamports.toString(),
+          validator: delegate.votePubkey.toString(),
+        },
+      };
+      break;
+    }
+
+    default: {
+      const unreachable: never = stakingType;
+      throw new Error(`Unknown staking type ${unreachable}`);
+    }
+  }
+
   instructionData.push(stakingActivate);
 
   return instructionData;
@@ -481,29 +545,65 @@ function parseStakingDelegateInstructions(instructions: TransactionInstruction[]
   return instructionData;
 }
 
-interface StakingInstructions {
-  create?: CreateAccountParams;
-  initialize?: InitializeStakeParams;
-  delegate?: DelegateStakeParams;
-  authorize?: AuthorizeStakeParams[];
-  depositSol?: DepositSolParams;
+function validateStakingInstructions(stakingInstructions: StakingInstructions) {
+  if (stakingInstructions.delegate === undefined && stakingInstructions.depositSol !== undefined) {
+    return;
+  }
+
+  if (!stakingInstructions.create) {
+    throw new NotSupported('Invalid staking activate transaction, missing create stake account instruction');
+  }
+
+  if (!stakingInstructions.delegate && !stakingInstructions.initialize) {
+    throw new NotSupported(
+      'Invalid staking activate transaction, missing initialize stake account/delegate instruction'
+    );
+  }
 }
 
-function validateStakingInstructions(stakingInstructions: StakingInstructions) {
-  if (stakingInstructionsIsJito(stakingInstructions)) {
-    if (!stakingInstructions.depositSol) {
-      throw new NotSupported('Invalid staking activate transaction, missing deposit sol instruction');
-    }
-  } else {
-    if (!stakingInstructions.create) {
-      throw new NotSupported('Invalid staking activate transaction, missing create stake account instruction');
-    }
-    if (!stakingInstructions.delegate && !stakingInstructions.initialize) {
-      throw new NotSupported(
-        'Invalid staking activate transaction, missing initialize stake account/delegate instruction'
-      );
-    }
-  }
+type UnstakingInstructions = {
+  allocate?: AllocateParams;
+  assign?: AssignParams;
+  split?: SplitStakeParams;
+  deactivate?: DeactivateStakeParams;
+  transfer?: DecodedTransferInstruction;
+  withdrawStake?: WithdrawStakeParams;
+};
+
+type JitoUnstakingInstructions = UnstakingInstructions & {
+  withdrawStake: NonNullable<UnstakingInstructions['withdrawStake']>;
+};
+
+function isJitoUnstakingInstructions(ui: UnstakingInstructions): ui is JitoUnstakingInstructions {
+  return ui.withdrawStake !== undefined;
+}
+
+type MarinadeUnstakingInstructions = UnstakingInstructions & {
+  transfer: NonNullable<UnstakingInstructions['transfer']>;
+};
+
+function isMarinadeUnstakingInstructions(ui: UnstakingInstructions): ui is MarinadeUnstakingInstructions {
+  return ui.transfer !== undefined && ui.deactivate === undefined;
+}
+
+type NativeUnstakingInstructions = UnstakingInstructions & {
+  deactivate: NonNullable<UnstakingInstructions['deactivate']>;
+  split: UnstakingInstructions['split'];
+};
+
+function isNativeUnstakingInstructions(ui: UnstakingInstructions): ui is NativeUnstakingInstructions {
+  return ui.deactivate !== undefined;
+}
+
+function getStakingTypeFromUnstakingInstructions(ui: UnstakingInstructions): StakingType {
+  const isJito = isJitoUnstakingInstructions(ui);
+  const isMarinade = isMarinadeUnstakingInstructions(ui);
+  const isNative = isNativeUnstakingInstructions(ui);
+  assert([isJito, isMarinade, isNative].filter((x) => x).length === 1, 'StakingType is ambiguous');
+  if (isJito) return StakingType.JITO;
+  if (isMarinade) return StakingType.MARINADE;
+  if (isNative) return StakingType.NATIVE;
+  assert(false, 'No StakingType found');
 }
 
 /**
@@ -634,63 +734,83 @@ function parseStakingDeactivateInstructions(
 
   for (const unstakingInstruction of unstakingInstructions) {
     validateUnstakingInstructions(unstakingInstruction);
-    const isMarinade =
-      unstakingInstruction.deactivate === undefined && unstakingInstruction.withdrawStake === undefined;
-    const stakingDeactivate: StakingDeactivate = {
-      type: InstructionBuilderTypes.StakingDeactivate,
-      params: {
-        fromAddress:
-          unstakingInstruction.deactivate?.authorizedPubkey.toString() ||
-          unstakingInstruction.withdrawStake?.destinationStakeAuthority.toString() ||
-          '',
-        stakingAddress:
-          unstakingInstruction.split?.stakePubkey.toString() ||
-          unstakingInstruction.deactivate?.stakePubkey.toString() ||
-          unstakingInstruction.withdrawStake?.stakePool.toString() ||
-          '',
-        amount:
-          unstakingInstruction.split?.lamports.toString() || unstakingInstruction.withdrawStake?.poolTokens.toString(),
-        unstakingAddress:
-          unstakingInstruction.split?.splitStakePubkey.toString() ||
-          unstakingInstruction.withdrawStake?.destinationStake.toString(),
-        isMarinade: isMarinade,
-        recipients: isMarinade
-          ? [
+    const stakingType = getStakingTypeFromUnstakingInstructions(unstakingInstruction);
+
+    let stakingDeactivate: StakingDeactivate | undefined;
+
+    switch (stakingType) {
+      case StakingType.JITO: {
+        assert(isJitoUnstakingInstructions(unstakingInstruction));
+        const { withdrawStake } = unstakingInstruction;
+        stakingDeactivate = {
+          type: InstructionBuilderTypes.StakingDeactivate,
+          params: {
+            stakingType,
+            fromAddress: withdrawStake.destinationStakeAuthority.toString(),
+            stakingAddress: withdrawStake.stakePool.toString(),
+            amount: withdrawStake.poolTokens.toString(),
+            unstakingAddress: withdrawStake.destinationStake.toString(),
+            extraParams: {
+              stakePoolData: {
+                managerFeeAccount: withdrawStake.managerFeeAccount.toString(),
+                poolMint: withdrawStake.poolMint.toString(),
+                validatorListAccount: withdrawStake.validatorList.toString(),
+              },
+              validatorAddress: withdrawStake.validatorStake.toString(),
+              transferAuthorityAddress: withdrawStake.sourceTransferAuthority.toString(),
+            },
+          },
+        };
+        break;
+      }
+
+      case StakingType.MARINADE: {
+        assert(isMarinadeUnstakingInstructions(unstakingInstruction));
+        const { transfer } = unstakingInstruction;
+
+        stakingDeactivate = {
+          type: InstructionBuilderTypes.StakingDeactivate,
+          params: {
+            stakingType,
+            fromAddress: '',
+            stakingAddress: '',
+            recipients: [
               {
-                address: unstakingInstruction.transfer?.toPubkey.toString() || '',
-                amount: unstakingInstruction.transfer?.lamports.toString() || '',
+                address: transfer.toPubkey.toString() || '',
+                amount: transfer.lamports.toString() || '',
               },
-            ]
-          : undefined,
-        ...(unstakingInstruction.withdrawStake !== undefined
-          ? {
-              isJito: unstakingInstruction.withdrawStake !== undefined,
-              jitoParams: unstakingInstruction.withdrawStake && {
-                stakePoolData: {
-                  managerFeeAccount: unstakingInstruction.withdrawStake.managerFeeAccount.toString(),
-                  poolMint: unstakingInstruction.withdrawStake.poolMint.toString(),
-                  validatorList: unstakingInstruction.withdrawStake.validatorList.toString(),
-                },
-                validatorAddress: unstakingInstruction.withdrawStake.validatorStake.toString(),
-                transferAuthorityAddress: unstakingInstruction.withdrawStake.sourceTransferAuthority.toString(),
-              },
-            }
-          : {}),
-      },
-    };
+            ],
+          },
+        };
+        break;
+      }
+
+      case StakingType.NATIVE: {
+        assert(isNativeUnstakingInstructions(unstakingInstruction));
+        const { deactivate, split } = unstakingInstruction;
+        stakingDeactivate = {
+          type: InstructionBuilderTypes.StakingDeactivate,
+          params: {
+            stakingType,
+            fromAddress: deactivate.authorizedPubkey.toString() || '',
+            stakingAddress: split?.stakePubkey.toString() || deactivate.stakePubkey.toString(),
+            amount: split?.lamports.toString(),
+            unstakingAddress: split?.splitStakePubkey.toString(),
+          },
+        };
+        break;
+      }
+
+      default: {
+        const unreachable: never = stakingType;
+        throw new Error(`Unknown staking type ${unreachable}`);
+      }
+    }
+
     instructionData.push(stakingDeactivate);
   }
 
   return instructionData;
-}
-
-interface UnstakingInstructions {
-  allocate?: AllocateParams;
-  assign?: AssignParams;
-  split?: SplitStakeParams;
-  deactivate?: DeactivateStakeParams;
-  transfer?: DecodedTransferInstruction;
-  withdrawStake?: WithdrawStakeParams;
 }
 
 function validateUnstakingInstructions(unstakingInstructions: UnstakingInstructions) {

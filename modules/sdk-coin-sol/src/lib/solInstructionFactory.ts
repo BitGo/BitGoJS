@@ -41,6 +41,7 @@ import {
   SetPriorityFee,
   CustomInstruction,
   Approve,
+  StakingType,
 } from './iface';
 import { getSolTokenFromTokenName, isValidBase64, isValidHex } from './utils';
 import { depositSolInstructions, withdrawStakeInstructions } from './jitoStakePoolOperations';
@@ -274,58 +275,68 @@ function createNonceAccountInstruction(data: WalletInit): TransactionInstruction
  */
 function stakingInitializeInstruction(data: StakingActivate): TransactionInstruction[] {
   const {
-    params: { fromAddress, stakingAddress, amount, validator, isMarinade, isJito, jitoParams },
+    params: { fromAddress, stakingAddress, amount, validator, stakingType, extraParams },
   } = data;
   assert(fromAddress, 'Missing fromAddress param');
   assert(stakingAddress, 'Missing stakingAddress param');
   assert(amount, 'Missing amount param');
   assert(validator, 'Missing validator param');
-  assert(isMarinade !== undefined, 'Missing isMarinade param');
-  assert(isJito !== undefined, 'Missing isJito param');
-  assert([isMarinade, isJito].filter((x) => x).length <= 1, 'At most one of isMarinade and isJito can be true');
 
   const fromPubkey = new PublicKey(fromAddress);
   const stakePubkey = new PublicKey(stakingAddress);
   const validatorPubkey = new PublicKey(validator);
   const tx = new Transaction();
 
-  if (isJito) {
-    assert(jitoParams, 'missing jitoParams param');
+  switch (stakingType) {
+    case StakingType.JITO: {
+      assert(extraParams !== undefined, 'Missing extraParams param');
+      const instructions = depositSolInstructions(
+        {
+          stakePoolAddress: stakePubkey,
+          from: fromPubkey,
+          lamports: BigInt(amount),
+        },
+        extraParams.stakePoolData
+      );
+      tx.add(...instructions);
+      break;
+    }
 
-    const instructions = depositSolInstructions(
-      {
-        stakePoolAddress: stakePubkey,
-        from: fromPubkey,
-        lamports: BigInt(amount),
-      },
-      jitoParams.stakePoolData
-    );
-    tx.add(...instructions);
-  } else if (isMarinade) {
-    const walletInitStaking = StakeProgram.createAccount({
-      fromPubkey,
-      stakePubkey,
-      authorized: new Authorized(validatorPubkey, fromPubkey), // staker and withdrawer
-      lockup: new Lockup(0, 0, fromPubkey), // No minimum epoch to withdraw
-      lamports: new BigNumber(amount).toNumber(),
-    });
-    tx.add(walletInitStaking);
-  } else {
-    const walletInitStaking = StakeProgram.createAccount({
-      fromPubkey,
-      stakePubkey,
-      authorized: new Authorized(fromPubkey, fromPubkey), // staker and withdrawer
-      lockup: new Lockup(0, 0, fromPubkey), // No minimum epoch to withdraw
-      lamports: new BigNumber(amount).toNumber(),
-    });
-    tx.add(walletInitStaking);
+    case StakingType.MARINADE: {
+      const walletInitStaking = StakeProgram.createAccount({
+        fromPubkey,
+        stakePubkey,
+        authorized: new Authorized(validatorPubkey, fromPubkey), // staker and withdrawer
+        lockup: new Lockup(0, 0, fromPubkey), // No minimum epoch to withdraw
+        lamports: new BigNumber(amount).toNumber(),
+      });
+      tx.add(walletInitStaking);
+      break;
+    }
 
-    const delegateStaking = StakeProgram.delegate({
-      stakePubkey: new PublicKey(stakingAddress),
-      authorizedPubkey: new PublicKey(fromAddress),
-      votePubkey: new PublicKey(validator),
-    });
-    tx.add(delegateStaking);
+    case StakingType.NATIVE: {
+      const walletInitStaking = StakeProgram.createAccount({
+        fromPubkey,
+        stakePubkey,
+        authorized: new Authorized(fromPubkey, fromPubkey), // staker and withdrawer
+        lockup: new Lockup(0, 0, fromPubkey), // No minimum epoch to withdraw
+        lamports: new BigNumber(amount).toNumber(),
+      });
+      tx.add(walletInitStaking);
+
+      const delegateStaking = StakeProgram.delegate({
+        stakePubkey: new PublicKey(stakingAddress),
+        authorizedPubkey: new PublicKey(fromAddress),
+        votePubkey: new PublicKey(validator),
+      });
+      tx.add(delegateStaking);
+      break;
+    }
+
+    default: {
+      const unreachable: never = stakingType;
+      throw new Error(`Unknown staking type ${unreachable}`);
+    }
   }
 
   return tx.instructions;
@@ -339,88 +350,100 @@ function stakingInitializeInstruction(data: StakingActivate): TransactionInstruc
  */
 function stakingDeactivateInstruction(data: StakingDeactivate): TransactionInstruction[] {
   const {
-    params: { fromAddress, stakingAddress, amount, unstakingAddress, isMarinade, isJito, recipients, jitoParams },
+    params: { fromAddress, stakingAddress, amount, unstakingAddress, recipients, stakingType, extraParams },
   } = data;
   assert(fromAddress, 'Missing fromAddress param');
-  if (!isMarinade) {
-    assert(stakingAddress, 'Missing stakingAddress param');
-  }
-  assert([isMarinade, isJito].filter((x) => x).length <= 1, 'At most one of isMarinade and isJito can be true');
 
-  if (isJito) {
-    assert(unstakingAddress, 'Missing unstakingAddress param');
-    assert(amount, 'Missing amount param');
-    assert(jitoParams, 'Missing jitoParams param');
+  switch (stakingType) {
+    case StakingType.JITO: {
+      assert(stakingAddress, 'Missing stakingAddress param');
+      assert(unstakingAddress, 'Missing unstakingAddress param');
+      assert(amount, 'Missing amount param');
+      assert(extraParams, 'Missing extraParams param');
 
-    const tx = new Transaction();
-    tx.add(
-      ...withdrawStakeInstructions(
-        {
-          stakePoolAddress: new PublicKey(stakingAddress),
-          tokenOwner: new PublicKey(fromAddress),
-          destinationStakeAccount: new PublicKey(unstakingAddress),
-          validatorAddress: new PublicKey(jitoParams.validatorAddress),
-          transferAuthority: new PublicKey(jitoParams.transferAuthorityAddress),
-          poolAmount: amount,
-        },
-        jitoParams.stakePoolData
-      )
-    );
-    return tx.instructions;
-  } else if (isMarinade) {
-    assert(recipients, 'Missing recipients param');
+      const tx = new Transaction();
+      tx.add(
+        ...withdrawStakeInstructions(
+          {
+            stakePoolAddress: new PublicKey(stakingAddress),
+            tokenOwner: new PublicKey(fromAddress),
+            destinationStakeAccount: new PublicKey(unstakingAddress),
+            validatorAddress: new PublicKey(extraParams.validatorAddress),
+            transferAuthority: new PublicKey(extraParams.transferAuthorityAddress),
+            poolAmount: amount,
+          },
+          extraParams.stakePoolData
+        )
+      );
+      return tx.instructions;
+    }
 
-    const tx = new Transaction();
-    const toPubkeyAddress = new PublicKey(recipients[0].address || '');
-    const transferInstruction = SystemProgram.transfer({
-      fromPubkey: new PublicKey(fromAddress),
-      toPubkey: toPubkeyAddress,
-      lamports: parseInt(recipients[0].amount, 10),
-    });
+    case StakingType.MARINADE: {
+      assert(recipients, 'Missing recipients param');
 
-    tx.add(transferInstruction);
-    return tx.instructions;
-  } else if (data.params.amount && data.params.unstakingAddress) {
-    const tx = new Transaction();
-    const unstakingAddress = new PublicKey(data.params.unstakingAddress);
+      const tx = new Transaction();
+      const toPubkeyAddress = new PublicKey(recipients[0].address || '');
+      const transferInstruction = SystemProgram.transfer({
+        fromPubkey: new PublicKey(fromAddress),
+        toPubkey: toPubkeyAddress,
+        lamports: parseInt(recipients[0].amount, 10),
+      });
 
-    const allocateAccount = SystemProgram.allocate({
-      accountPubkey: unstakingAddress,
-      space: StakeProgram.space,
-    });
-    tx.add(allocateAccount);
+      tx.add(transferInstruction);
+      return tx.instructions;
+    }
 
-    const assignAccount = SystemProgram.assign({
-      accountPubkey: unstakingAddress,
-      programId: StakeProgram.programId,
-    });
-    tx.add(assignAccount);
+    case StakingType.NATIVE: {
+      assert(stakingAddress, 'Missing stakingAddress param');
 
-    const splitStake = StakeProgram.split(
-      {
-        stakePubkey: new PublicKey(stakingAddress),
-        authorizedPubkey: new PublicKey(fromAddress),
-        splitStakePubkey: unstakingAddress,
-        lamports: new BigNumber(data.params.amount).toNumber(),
-      },
-      0
-    );
-    tx.add(splitStake.instructions[1]);
+      if (data.params.amount && data.params.unstakingAddress) {
+        const tx = new Transaction();
+        const unstakingAddress = new PublicKey(data.params.unstakingAddress);
 
-    const deactivateStaking = StakeProgram.deactivate({
-      stakePubkey: unstakingAddress,
-      authorizedPubkey: new PublicKey(fromAddress),
-    });
-    tx.add(deactivateStaking);
+        const allocateAccount = SystemProgram.allocate({
+          accountPubkey: unstakingAddress,
+          space: StakeProgram.space,
+        });
+        tx.add(allocateAccount);
 
-    return tx.instructions;
-  } else {
-    const deactivateStaking = StakeProgram.deactivate({
-      stakePubkey: new PublicKey(stakingAddress),
-      authorizedPubkey: new PublicKey(fromAddress),
-    });
+        const assignAccount = SystemProgram.assign({
+          accountPubkey: unstakingAddress,
+          programId: StakeProgram.programId,
+        });
+        tx.add(assignAccount);
 
-    return deactivateStaking.instructions;
+        const splitStake = StakeProgram.split(
+          {
+            stakePubkey: new PublicKey(stakingAddress),
+            authorizedPubkey: new PublicKey(fromAddress),
+            splitStakePubkey: unstakingAddress,
+            lamports: new BigNumber(data.params.amount).toNumber(),
+          },
+          0
+        );
+        tx.add(splitStake.instructions[1]);
+
+        const deactivateStaking = StakeProgram.deactivate({
+          stakePubkey: unstakingAddress,
+          authorizedPubkey: new PublicKey(fromAddress),
+        });
+        tx.add(deactivateStaking);
+
+        return tx.instructions;
+      } else {
+        const deactivateStaking = StakeProgram.deactivate({
+          stakePubkey: new PublicKey(stakingAddress),
+          authorizedPubkey: new PublicKey(fromAddress),
+        });
+
+        return deactivateStaking.instructions;
+      }
+    }
+
+    default: {
+      const unreachable: never = stakingType;
+      throw new Error(`Unknown staking type ${unreachable}`);
+    }
   }
 }
 
