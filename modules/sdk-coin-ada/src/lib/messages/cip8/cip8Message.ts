@@ -87,6 +87,27 @@ export class Cip8Message extends BaseMessage {
   }
 
   /**
+   * Verifies whether a raw message meets CIP-8 specific requirements for Midnight Glacier Drop claims
+   * Only allows messages that match the exact Midnight Glacier Drop claim format
+   * @param rawMessage The raw message content to verify as a string
+   * @returns True if the raw message matches the expected Midnight Glacier Drop claim format, false otherwise
+   * @example
+   * ```typescript
+   * // Valid format: "STAR 100 to addr1abc123... 31a6bab50a84b8439adcfb786bb2020f6807e6e8fda629b424110fc7bb1c6b8b"
+   * const message = await builder.build();
+   * const isValid = message.verifyRawMessage("STAR 100 to addr1xyz... 31a6bab50a84b8439adcfb786bb2020f6807e6e8fda629b424110fc7bb1c6b8b");
+   * // Returns true only for properly formatted Midnight Glacier Drop claims
+   * ```
+   */
+  verifyRawMessage(rawMessage: string): boolean {
+    const MIDNIGHT_TNC_HASH = '31a6bab50a84b8439adcfb786bb2020f6807e6e8fda629b424110fc7bb1c6b8b';
+    const MIDNIGHT_GLACIER_DROP_CLAIM_MESSAGE_TEMPLATE = `STAR \\d+ to addr(?:1|_test1)[a-z0-9]{50,} ${MIDNIGHT_TNC_HASH}`;
+
+    const regex = new RegExp(`^${MIDNIGHT_GLACIER_DROP_CLAIM_MESSAGE_TEMPLATE}$`, 's');
+    return regex.test(rawMessage);
+  }
+
+  /**
    * Validates required fields and returns common setup objects
    * @private
    */

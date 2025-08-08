@@ -431,6 +431,10 @@ export async function verifyMessage(
     const messageBuilder = messageBuilderFactory.getMessageBuilder(messageStandardType);
     messageBuilder.setPayload(messageRaw);
     const message = await messageBuilder.build();
+    const isValidRawMessage = message.verifyRawMessage(messageRaw);
+    if (!isValidRawMessage) {
+      return false;
+    }
     const isValidMessageEncoded = await message.verifyEncodedPayload(messageEncoded, metadata);
     if (!isValidMessageEncoded) {
       return false;
