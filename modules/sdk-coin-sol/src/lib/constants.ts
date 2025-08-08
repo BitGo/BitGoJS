@@ -40,6 +40,7 @@ export enum ValidInstructionTypesEnum {
   DepositSol = 'DepositSol',
   WithdrawStake = 'WithdrawStake',
   Approve = 'Approve',
+  CustomInstruction = 'CustomInstruction',
 }
 
 // Internal instructions types
@@ -87,6 +88,7 @@ export const VALID_SYSTEM_INSTRUCTION_TYPES: ValidInstructionTypes[] = [
   ValidInstructionTypesEnum.Approve,
   ValidInstructionTypesEnum.DepositSol,
   ValidInstructionTypesEnum.WithdrawStake,
+  ValidInstructionTypesEnum.CustomInstruction,
 ];
 
 /** Const to check the order of the Wallet Init instructions when decode */

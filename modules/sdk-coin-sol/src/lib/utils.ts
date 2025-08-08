@@ -344,7 +344,7 @@ export function getTransactionType(transaction: SolTransaction): TransactionType
   } else if (matchTransactionTypeByInstructionsOrder(instructions, ataCloseInstructionIndexes)) {
     return TransactionType.CloseAssociatedTokenAccount;
   } else {
-    throw new NotSupported('Invalid transaction, transaction not supported or invalid');
+    return TransactionType.CustomTx;
   }
 }
 
@@ -371,8 +371,8 @@ export function getInstructionType(instruction: TransactionInstruction): ValidIn
       instructionTypeMap.set(TokenInstruction.Approve, 'Approve');
       instructionTypeMap.set(TokenInstruction.TransferChecked, 'TokenTransfer');
       const validInstruction = instructionTypeMap.get(decodedInstruction.data.instruction);
-      if (validInstruction === undefined) {
-        throw new Error(`Unsupported token instruction type ${decodedInstruction.data.instruction}`);
+      if (!validInstruction) {
+        return 'CustomInstruction';
       }
       return validInstruction;
     case STAKE_POOL_PROGRAM_ID.toString():
@@ -397,9 +397,7 @@ export function getInstructionType(instruction: TransactionInstruction): ValidIn
     case COMPUTE_BUDGET:
       return 'SetPriorityFee';
     default:
-      throw new NotSupported(
-        'Invalid transaction, instruction program id not supported: ' + instruction.programId.toString()
-      );
+      return 'CustomInstruction';
   }
 }
 

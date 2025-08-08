@@ -235,16 +235,14 @@ describe('SOL util library', function () {
       });
       Utils.getInstructionType(transferInstruction).should.equal('Transfer');
     });
-    it('should fail for invalid type ', function () {
+    it('should fallback to customInstruction for unsupported instructionType', function () {
       const voteAddress = 'Vote111111111111111111111111111111111111111';
       const invalidInstruction = new TransactionInstruction({
         keys: [],
         programId: new PublicKey(voteAddress),
         data: Buffer.from('random memo'),
       });
-      should(() => Utils.getInstructionType(invalidInstruction)).throwError(
-        'Invalid transaction, instruction program id not supported: ' + voteAddress
-      );
+      Utils.getInstructionType(invalidInstruction).should.equal('CustomInstruction');
     });
   });
 
