@@ -1,4 +1,4 @@
-import should = require('should');
+import should from 'should';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { Polyx, Tpolyx } from '../../src';

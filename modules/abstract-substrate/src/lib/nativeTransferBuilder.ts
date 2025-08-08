@@ -121,13 +121,16 @@ export abstract class NativeTransferBuilder extends TransactionBuilder {
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string): Transaction {
     const tx = super.fromImplementation(rawTransaction);
-    if (this._method?.name === MethodNames.TransferKeepAlive) {
+    if (!this._method || !this._method.args) {
+      throw new InvalidTransactionError('Transaction method or args are undefined');
+    }
+    if (this._method.name === MethodNames.TransferKeepAlive) {
       const txMethod = this._method.args as TransferArgs;
       this.amount(txMethod.value);
       this.to({
         address: utils.decodeSubstrateAddress(txMethod.dest.id, this.getAddressFormat()),
       });
-    } else if (this._method?.name === MethodNames.TransferAll) {
+    } else if (this._method.name === MethodNames.TransferAll) {
       this._sweepFreeBalance = true;
       const txMethod = this._method.args as TransferAllArgs;
       this.sweep(txMethod.keepAlive);
@@ -136,7 +139,7 @@ export abstract class NativeTransferBuilder extends TransactionBuilder {
       });
     } else {
       throw new InvalidTransactionError(
-        `Invalid Transaction Type: ${this._method?.name}. Expected a transferKeepAlive or a proxy transferKeepAlive transaction`
+        `Invalid Transaction Type: ${this._method.name}. Expected a transferKeepAlive or a proxy transferKeepAlive transaction`
       );
     }
     return tx;

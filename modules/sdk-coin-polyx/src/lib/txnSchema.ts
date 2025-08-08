@@ -30,6 +30,53 @@ export const RegisterDidWithCDDTransactionSchema = joi.object({
   expiry: joi.valid(null).required(),
 });
 
+export const PreApproveAssetTransactionSchema = joi.object({
+  assetId: joi.string().required(),
+});
+
+export const AddAndAffirmWithMediatorsTransactionSchema = joi.object({
+  venueId: joi.valid(null).required(),
+  settlementType: joi.string().valid('SettleOnAffirmation').required(),
+  tradeDate: joi.valid(null).required(),
+  valueDate: joi.valid(null).required(),
+  legs: joi
+    .array()
+    .items(
+      joi.object({
+        Fungible: joi
+          .object({
+            sender: joi
+              .object({
+                did: addressSchema.required(),
+                kind: joi.string().valid('Default').required(),
+              })
+              .required(),
+            receiver: joi
+              .object({
+                did: addressSchema.required(),
+                kind: joi.string().valid('Default').required(),
+              })
+              .required(),
+            assetId: joi.string().required(),
+            amount: joi.string().required(),
+          })
+          .required(),
+      })
+    )
+    .required(),
+  portfolios: joi
+    .array()
+    .items(
+      joi.object({
+        did: addressSchema.required(),
+        kind: joi.string().valid('Default').required(),
+      })
+    )
+    .required(),
+  instructionMemo: joi.string().required(),
+  mediators: joi.array().length(0).required(),
+});
+
 // For standalone bondExtra transactions
 export const BondExtraTransactionSchema = joi.object({
   value: joi.string().required(),
