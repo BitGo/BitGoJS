@@ -11632,36 +11632,36 @@ export const erc20Coins = [
     'txsgd',
     'XSGD',
     6,
-    '0x3f811bb6e605ef518b0cd9281eb4d9ad88a3953f',
+    '0x63681558c1b680e43bbcadc0ced21075854bba87',
     UnderlyingAsset.TXSGD,
     undefined,
     undefined,
     undefined,
-    Networks.test.holesky
+    Networks.test.hoodi
   ),
   terc20(
     'd48aae8b-3a3c-46b7-a98f-ea7347dc5b45',
     'txusd',
-    'XUSD Holesky',
+    'XUSD Hoodi',
     6,
-    '0x6d41906cce58491daf2ca8141a1c4b180fa6e7b9',
+    '0x37557a96ea4415af2d96a6f896fa8281a22802ce',
     UnderlyingAsset.TXUSD,
     undefined,
     undefined,
     undefined,
-    Networks.test.holesky
+    Networks.test.hoodi
   ),
   terc20(
     '346e3e87-1ac6-45fd-afa6-cad66872ebc1',
     'tweth',
     'Wrapped Ether',
     18,
-    '0x94373a4919b3240d86ea41593d5eba789fef3848',
+    '0x2387fd72c1da19f6486b843f5da562679fbb4057',
     UnderlyingAsset.TWETH,
     TWETH_FEATURES,
     undefined,
     undefined,
-    Networks.test.holesky
+    Networks.test.hoodi
   ),
   terc20(
     '95f5bf48-f2bb-4c64-a851-4f95ddce2fcf',
@@ -12024,12 +12024,12 @@ export const erc20Coins = [
     'teigen',
     'Test Eigen',
     18,
-    '0x3b78576f7d6837500ba3de27a60c7f594934027e',
+    '0x15d7d3408b2d5a1e6bcfae9e121d1ddacea8d7f8',
     UnderlyingAsset.TEIGEN,
     undefined,
     undefined,
     undefined,
-    Networks.test.holesky
+    Networks.test.hoodi
   ),
   terc20(
     '49fde5ac-1204-4c5c-b62b-cc1363592193',
