@@ -770,9 +770,18 @@ describe('TSS Ecdsa Utils:', async function () {
       userGpgActual.should.startWith('-----BEGIN PGP PUBLIC KEY BLOCK-----');
     });
 
-    // TODO(COIN-5030): fix this test as disabled this during hoodi onboarding
-    xit('signTxRequest should fail with wrong recipient', async function () {
-      await setupSignTxRequestNocks(true, userSignShare, aShare, dShare, enterpriseData);
+    it('signTxRequest should fail with wrong recipient', async function () {
+      // To generate these Hex values, we used the bitgo-ui to create a transaction and then
+      // used the `signableHex` and `serializedTxHex` values from the prebuild.
+      const signableHex =
+        '02f283088bb0038406f18758847f3443c683016378949726ea58be57b153791a8ff5b282d776aaf28e3c87038d7ea4c6800080c0';
+      const serializedTxHex =
+        '02f583088bb0038406f18758847f3443c683016378949726ea58be57b153791a8ff5b282d776aaf28e3c87038d7ea4c6800080c0808080';
+      await setupSignTxRequestNocks(true, userSignShare, aShare, dShare, enterpriseData, {
+        signableHex,
+        serializedTxHex,
+        apiVersion: 'full',
+      });
       await tssUtils
         .signTxRequest({
           txRequest: txRequestId,
@@ -782,14 +791,24 @@ describe('TSS Ecdsa Utils:', async function () {
             backupNShare: backupKeyShare.nShares[1],
           }),
           reqId,
-          txParams: { recipients: [{ address: '0x1234', amount: '100000000000000' }], type: 'transfer' },
+          txParams: { recipients: [{ address: '0x1234', amount: '1000000000000000' }], type: 'transfer' },
         })
         .should.be.rejectedWith('destination address does not match with the recipient address');
     });
 
-    // TODO(COIN-5030): fix this test as disabled this during hoodi onboarding
-    xit('signTxRequest should fail with incorrect value', async function () {
-      await setupSignTxRequestNocks(true, userSignShare, aShare, dShare, enterpriseData);
+    it('signTxRequest should fail with incorrect value', async function () {
+      nock.cleanAll();
+      // To generate these Hex values, we used the bitgo-ui to create a transaction and then
+      // used the `signableHex` and `serializedTxHex` values from the prebuild.
+      const signableHex =
+        '02f283088bb0038406f18758847f3443c683016378949726ea58be57b153791a8ff5b282d776aaf28e3c87038d7ea4c6800080c0';
+      const serializedTxHex =
+        '02f583088bb0038406f18758847f3443c683016378949726ea58be57b153791a8ff5b282d776aaf28e3c87038d7ea4c6800080c0808080';
+      await setupSignTxRequestNocks(true, userSignShare, aShare, dShare, enterpriseData, {
+        signableHex,
+        serializedTxHex,
+        apiVersion: 'full',
+      });
       await tssUtils
         .signTxRequest({
           txRequest: txRequestId,
@@ -807,12 +826,14 @@ describe('TSS Ecdsa Utils:', async function () {
         .should.be.rejectedWith('the transaction amount in txPrebuild does not match the value given by client');
     });
 
-    // TODO(COIN-5030): fix this test as disabled this during hoodi onboarding
-    xit('signTxRequest should fail with incorrect value for token txn', async function () {
+    it('signTxRequest should fail with incorrect value for token txn', async function () {
+      nock.cleanAll();
+      // To generate these Hex values, we used the bitgo-ui to create a transaction and then
+      // used the `signableHex` and `serializedTxHex` values from the prebuild.
       const signableHex =
-        '02f86d8242681083122c9e83122cae8301e04994ebe8b46a42f05072b723b00013ff822b2af1b5cb80b844a9059cbb0000000000000000000000002b0d6cb2f8c388757f4d7ad857fccab18290dbc900000000000000000000000000000000000000000000000000000000000186a0c0';
+        '02f86f83088bb00283e1d7dd84768ea6898301e04b94d9327fd36c3312466efed23ff0493453ee32f55180b844a9059cbb0000000000000000000000007d7e63af583ba73ba5c927dbd028153963566bef00000000000000000000000000000000000000000000000000470de4df820000c0';
       const serializedTxHex =
-        '02f8708242681083122c9e83122cae8301e04994ebe8b46a42f05072b723b00013ff822b2af1b5cb80b844a9059cbb0000000000000000000000002b0d6cb2f8c388757f4d7ad857fccab18290dbc900000000000000000000000000000000000000000000000000000000000186a0c0808080';
+        '02f87283088bb00283e1d7dd84768ea6898301e04b94d9327fd36c3312466efed23ff0493453ee32f55180b844a9059cbb0000000000000000000000007d7e63af583ba73ba5c927dbd028153963566bef00000000000000000000000000000000000000000000000000470de4df820000c0808080';
       await setupSignTxRequestNocks(true, userSignShare, aShare, dShare, enterpriseData, {
         signableHex,
         serializedTxHex,
