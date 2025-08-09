@@ -1,7 +1,12 @@
 import { Cip8Message } from './cip8Message';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseMessageBuilder, IMessage, MessageOptions, MessageStandardType } from '@bitgo/sdk-core';
-import { MIDNIGHT_GLACIER_DROP_CLAIM_MESSAGE_TEMPLATE } from '@bitgo/account-lib';
+import {
+  BaseMessageBuilder,
+  IMessage,
+  MessageOptions,
+  MessageStandardType,
+  MIDNIGHT_GLACIER_DROP_CLAIM_MESSAGE_TEMPLATE,
+} from '@bitgo/sdk-core';
 
 /**
  * Builder for CIP-8 messages

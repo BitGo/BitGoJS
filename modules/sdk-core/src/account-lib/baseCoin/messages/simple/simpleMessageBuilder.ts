@@ -1,9 +1,9 @@
 import { SimpleMessage } from './simpleMessage';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseMessageBuilder } from '../baseMessageBuilder';
-import { MessageOptions, MessageStandardType } from '../../../../bitgo';
+import { MessageOptions, MessageStandardType } from '../messageTypes';
 import { IMessage } from '../iface';
-import { MIDNIGHT_GLACIER_DROP_CLAIM_MESSAGE_TEMPLATE } from '@bitgo/account-lib';
+import { MIDNIGHT_GLACIER_DROP_CLAIM_MESSAGE_TEMPLATE } from '../midnight';
 
 /**
  * Builder for string messages

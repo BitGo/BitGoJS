@@ -1,8 +1,8 @@
-import { BroadcastableMessage, MessageOptions, MessagePayload, MessageStandardType } from '../../../bitgo';
+import { BroadcastableMessage, MessageOptions, MessagePayload, MessageStandardType } from './messageTypes';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { IMessage, IMessageBuilder } from './iface';
 import { deserializeSignatures, Signature } from '../iface';
-import { isMessageWhitelisted } from '@bitgo/account-lib';
+import { isMessageWhitelisted } from './index';
 
 /**
  * Base Message Builder

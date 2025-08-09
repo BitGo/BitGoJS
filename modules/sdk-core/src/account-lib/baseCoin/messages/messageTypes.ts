@@ -1,5 +1,5 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { SerializedSignature, Signature } from '../../account-lib';
+import { SerializedSignature, Signature } from '../iface';
 
 /**
  * Supported message signing standard types

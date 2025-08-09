@@ -8,9 +8,8 @@
  */
 
 import {BitGoAPI} from '@bitgo/sdk-api';
-import {MessageStandardType} from "@bitgo/sdk-core";
+import {MessageStandardType, getMidnightGlacierDropMsg} from "@bitgo/sdk-core";
 import {Hteth} from "@bitgo/sdk-coin-eth";
-import {MIDNIGHT_TNC_HASH} from "@bitgo/account-lib";
 require('dotenv').config({ path: '../../.env' });
 
 const bitgo = new BitGoAPI({
@@ -30,7 +29,8 @@ async function main() {
   console.log(`Wallet label: ${wallet.label()}`);
 
   const adaTestnetDestinationAddress = 'addr_test1vz7xs7ceu4xx9n5xn57lfe86vrwddqpp77vjwq5ptlkh49cqy3wur';
-  const testnetMessageRaw = `STAR 12345678 to ${adaTestnetDestinationAddress} ${MIDNIGHT_TNC_HASH}`;
+  const allocationAmt = 12345678;
+  const testnetMessageRaw = getMidnightGlacierDropMsg(adaTestnetDestinationAddress, allocationAmt);
 
   const txRequest = await wallet.buildSignMessageRequest({
     message: {

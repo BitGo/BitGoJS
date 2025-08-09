@@ -1,5 +1,5 @@
 import { BaseMessage } from '../baseMessage';
-import { MessageOptions, MessageStandardType } from '../../../../bitgo';
+import { MessageOptions, MessageStandardType } from '../messageTypes';
 
 /**
  * Implementation of String Message

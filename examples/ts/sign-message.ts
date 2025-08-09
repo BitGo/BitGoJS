@@ -4,8 +4,7 @@
  * Copyright 2025, BitGo, Inc.  All Rights Reserved.
  */
 import { BitGo } from 'bitgo';
-import { MessageStandardType } from '@bitgo/sdk-core';
-import { MIDNIGHT_TNC_HASH } from "@bitgo/account-lib";
+import { getMidnightGlacierDropMsg, MessageStandardType } from '@bitgo/sdk-core';
 
 const bitgo = new BitGo({ env: 'test' });
 
@@ -20,7 +19,8 @@ async function signMessage(): Promise<void> {
   const walletInstance = await basecoin.wallets().get({ id: walletId });
 
   const adaTestnetDestinationAddress = 'addr_test1vz7xs7ceu4xx9n5xn57lfe86vrwddqpp77vjwq5ptlkh49cqy3wur';
-  const testnetMessageRaw = `STAR 12345678 to ${adaTestnetDestinationAddress} ${MIDNIGHT_TNC_HASH}`;
+  const allocationAmt = 12345678;
+  const testnetMessageRaw = getMidnightGlacierDropMsg(adaTestnetDestinationAddress, allocationAmt);
 
   const messageTxn = await walletInstance.signMessage({
     message: {

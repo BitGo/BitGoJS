@@ -203,9 +203,6 @@ export { Vet };
 import * as CosmosSharedCoin from '@bitgo/sdk-coin-cosmos';
 export { CosmosSharedCoin };
 
-import { isMessageWhitelisted, MIDNIGHT_TNC_HASH, MIDNIGHT_GLACIER_DROP_CLAIM_MESSAGE_TEMPLATE } from './utils';
-export { isMessageWhitelisted, MIDNIGHT_TNC_HASH, MIDNIGHT_GLACIER_DROP_CLAIM_MESSAGE_TEMPLATE };
-
 const coinBuilderMap = {
   trx: Trx.WrappedBuilder,
   ttrx: Trx.WrappedBuilder,

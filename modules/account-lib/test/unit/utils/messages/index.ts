@@ -1,9 +1,10 @@
 import should from 'should';
 import {
-  MIDNIGHT_TNC_HASH,
+  getMidnightGlacierDropMsg,
   isMessageWhitelisted,
   MIDNIGHT_GLACIER_DROP_CLAIM_MESSAGE_TEMPLATE,
-} from '../../../../src/utils';
+  MIDNIGHT_TNC_HASH,
+} from '@bitgo/sdk-core';
 
 describe('Message validation', () => {
   describe('isMessageWhitelisted', () => {
@@ -12,9 +13,10 @@ describe('Message validation', () => {
     const adaTestnetDestinationAddress = 'addr_test1vz7xs7ceu4xx9n5xn57lfe86vrwddqpp77vjwq5ptlkh49cqy3wur';
     const adaMainnetDestinationAddress =
       'addr1q9k6u7lhf467y2f8skr2dafldx2npsd8fymq0mslnj0t44nd4ealwnt4ug5j0pvx5m6n76v4xrq6wjfkqlhpl8y7httq2m9cmu';
+    const allocationAmt = 100;
 
     it('should validate testnet message matching the Midnight glacier drop claim template', () => {
-      const messageRaw = `STAR 100 to ${adaTestnetDestinationAddress} ${MIDNIGHT_TNC_HASH}`;
+      const messageRaw = getMidnightGlacierDropMsg(adaTestnetDestinationAddress, allocationAmt);
 
       const result = isMessageWhitelisted(whitelistedMessageTemplates, messageRaw);
 
@@ -22,7 +24,7 @@ describe('Message validation', () => {
     });
 
     it('should validate mainnet message matching the Midnight glacier drop claim template', () => {
-      const messageRaw = `STAR 100 to ${adaMainnetDestinationAddress} ${MIDNIGHT_TNC_HASH}`;
+      const messageRaw = getMidnightGlacierDropMsg(adaMainnetDestinationAddress, allocationAmt);
 
       const result = isMessageWhitelisted(whitelistedMessageTemplates, messageRaw);
 

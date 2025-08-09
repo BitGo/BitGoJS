@@ -1,4 +1,4 @@
-import { BroadcastableMessage, MessageMetadata, MessagePayload, MessageStandardType } from '../../../bitgo';
+import { BroadcastableMessage, MessageMetadata, MessagePayload, MessageStandardType } from './messageTypes';
 import { Signature } from '../iface';
 
 /**

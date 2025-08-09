@@ -10,6 +10,5 @@ export * from './util';
 export * from './decode';
 export * from './notEmpty';
 export * from './wallet';
-export * from './messageTypes';
 
 export { openpgpUtils };

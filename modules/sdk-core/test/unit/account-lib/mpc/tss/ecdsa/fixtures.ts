@@ -1,4 +1,4 @@
-import { KeyPair, PrivateKey, PublicKey } from 'paillier-bigint';
+import { PrivateKey, PublicKey } from 'paillier-bigint';
 
 const publicKeys: PublicKey[] = [
   new PublicKey(
@@ -27,7 +27,7 @@ const publicKeys: PublicKey[] = [
   ),
 ];
 
-export const paillierKeyPairs: KeyPair[] = [
+export const paillierKeyPairs: { publicKey: PublicKey; privateKey: PrivateKey }[] = [
   {
     publicKey: publicKeys[0],
     privateKey: new PrivateKey(
