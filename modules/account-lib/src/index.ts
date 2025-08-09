@@ -203,8 +203,8 @@ export { Vet };
 import * as CosmosSharedCoin from '@bitgo/sdk-coin-cosmos';
 export { CosmosSharedCoin };
 
-import { validateAgainstMessageTemplates, MIDNIGHT_TNC_HASH } from './utils';
-export { MIDNIGHT_TNC_HASH };
+import { isMessageWhitelisted, MIDNIGHT_TNC_HASH, MIDNIGHT_GLACIER_DROP_CLAIM_MESSAGE_TEMPLATE } from './utils';
+export { isMessageWhitelisted, MIDNIGHT_TNC_HASH, MIDNIGHT_GLACIER_DROP_CLAIM_MESSAGE_TEMPLATE };
 
 const coinBuilderMap = {
   trx: Trx.WrappedBuilder,
@@ -429,7 +429,7 @@ export async function verifyMessage(
     if (!isValidMessageEncoded) {
       return false;
     }
-    return validateAgainstMessageTemplates(messageRaw);
+    return messageBuilder.isMessageWhitelisted(messageRaw);
   } catch (e) {
     console.error(`Error verifying message for coin ${coinName}:`, e);
     return false;

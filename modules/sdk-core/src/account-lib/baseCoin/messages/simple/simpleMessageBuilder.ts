@@ -3,6 +3,7 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseMessageBuilder } from '../baseMessageBuilder';
 import { MessageOptions, MessageStandardType } from '../../../../bitgo';
 import { IMessage } from '../iface';
+import { MIDNIGHT_GLACIER_DROP_CLAIM_MESSAGE_TEMPLATE } from '@bitgo/account-lib';
 
 /**
  * Builder for string messages
@@ -14,6 +15,10 @@ export class SimpleMessageBuilder extends BaseMessageBuilder {
    */
   public constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig, MessageStandardType.SIMPLE);
+    this.whitelistedMessageTemplates = [
+      MIDNIGHT_GLACIER_DROP_CLAIM_MESSAGE_TEMPLATE,
+      // Add more templates as needed
+    ];
   }
 
   /**

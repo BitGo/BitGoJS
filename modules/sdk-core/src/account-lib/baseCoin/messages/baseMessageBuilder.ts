@@ -2,6 +2,7 @@ import { BroadcastableMessage, MessageOptions, MessagePayload, MessageStandardTy
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { IMessage, IMessageBuilder } from './iface';
 import { deserializeSignatures, Signature } from '../iface';
+import { isMessageWhitelisted } from '@bitgo/account-lib';
 
 /**
  * Base Message Builder
@@ -12,6 +13,7 @@ export abstract class BaseMessageBuilder implements IMessageBuilder {
   protected type: MessageStandardType;
   protected signatures: Signature[] = [];
   protected signers: string[] = [];
+  protected whitelistedMessageTemplates: string[] = [];
   protected metadata?: Record<string, unknown> = {};
   protected digest?: string;
 
@@ -118,13 +120,8 @@ export abstract class BaseMessageBuilder implements IMessageBuilder {
     return this;
   }
 
-  /**
-   * Validates the signable payload
-   * @param message The message to validate
-   * @returns A boolean indicating whether the signable payload is valid
-   */
-  public validateSignablePayload(message: string | Buffer): boolean {
-    return true;
+  public isMessageWhitelisted(messageRaw: string): boolean {
+    return isMessageWhitelisted(this.whitelistedMessageTemplates, messageRaw);
   }
 
   /**

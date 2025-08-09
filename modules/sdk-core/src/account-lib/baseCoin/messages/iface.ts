@@ -137,11 +137,11 @@ export interface IMessageBuilder {
   getPayload(): MessagePayload | undefined;
 
   /**
-   * Validates the signable payload
-   * @param message The message to validate
-   * @returns A boolean indicating whether the signable payload is valid
+   * Checks if the message string is whitelisted
+   * @param messageRaw The raw message string to check
+   * @return True if the message is whitelisted, false otherwise
    */
-  validateSignablePayload(message: string | Buffer): boolean;
+  isMessageWhitelisted(messageRaw: string): boolean;
 
   /**
    * Gets the current metadata
