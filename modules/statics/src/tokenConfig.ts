@@ -30,7 +30,7 @@ import {
   XrpCoin,
   ZkethERC20Token,
 } from './account';
-import { CoinFamily, CoinKind, BaseCoin } from './base';
+import { CoinFamily, CoinKind, BaseCoin, CoinFeature } from './base';
 import { coins } from './coins';
 import { Networks, NetworkType } from './networks';
 import { OfcCoin } from './ofc';
@@ -748,6 +748,23 @@ export const getFormattedAlgoTokens = (customCoinMap = coins) =>
     return acc;
   }, []);
 
+// Get the list of ERC-20 tokens from statics and format it properly
+// TODO: use it instead of getFormatteCoredaoTokens
+// const getFormattedEthLikeTokens = (customCoinMap = coins) =>
+//     customCoinMap.reduce((acc: EthLikeTokenConfig[], coin) => {
+//       if (coin instanceof EthLikeERC20Token && coin.features.includes(CoinFeature.SHARED_EVM_SDK)) {
+//         acc.push({
+//           type: coin.name,
+//           coin: coin.network.type === NetworkType.MAINNET ? coin.coinNames.Mainnet : coin.coinNames.Testnet,
+//           network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+//           name: coin.fullName,
+//           tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+//           decimalPlaces: coin.decimalPlaces,
+//         });
+//       }
+//       return acc;
+//     }, []);
+
 function getHbarTokenConfig(coin: HederaToken): HbarTokenConfig {
   return {
     type: coin.name,
@@ -995,6 +1012,59 @@ function getCosmosTokenConfig(coin: CosmosChainToken): CosmosTokenConfig {
   };
 }
 
+export interface FormattedTokensByChain {
+  bitcoin: {
+    [chainName: string]: {
+      tokens: EthLikeTokenConfig[];
+      nfts?: EthLikeTokenConfig[];
+    };
+  };
+  testnet: {
+    [chainName: string]: {
+      tokens: EthLikeTokenConfig[];
+      nfts?: EthLikeTokenConfig[];
+    };
+  };
+}
+
+/**
+ * Dynamically populate tokens by looping through coins once
+ */
+function populateEthLikeTokens(customCoinMap = coins): FormattedTokensByChain {
+  const tokensMap: FormattedTokensByChain = {
+    bitcoin: {},
+    testnet: {},
+  };
+
+  customCoinMap.forEach((coin) => {
+    if (coin.features.includes(CoinFeature.SUPPORTS_ERC20)) {
+      const isMainnet = coin.network.type === NetworkType.MAINNET;
+      const networkKey = isMainnet ? 'bitcoin' : 'testnet';
+      const chainKey = isMainnet ? coin.coinNames.Mainnet : coin.coinNames.Testnet;
+
+      const formattedToken: EthLikeTokenConfig = {
+        type: coin.name,
+        coin: chainKey,
+        network: isMainnet ? 'Mainnet' : 'Testnet',
+        name: coin.fullName,
+        tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+        decimalPlaces: coin.decimalPlaces,
+      };
+
+      // Initialize chain tokens array if it doesn't exist
+      if (!tokensMap[networkKey][chainKey]) {
+        tokensMap[networkKey][chainKey] = { tokens: [] };
+      }
+
+      tokensMap[networkKey][chainKey].tokens.push(formattedToken);
+    }
+  });
+
+  return tokensMap;
+}
+
+const ethLikeTokens = populateEthLikeTokens(coins);
+
 export const getFormattedTokens = (coinMap = coins): Tokens => {
   const formattedAptNFTCollections = getFormattedAptNFTCollections(coinMap);
   return {
@@ -1092,6 +1162,7 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
       cosmos: {
         tokens: getFormattedCosmosChainTokens(coinMap).filter((token) => token.network === 'Mainnet'),
       },
+      ...ethLikeTokens.bitcoin,
     },
     testnet: {
       eth: {
@@ -1187,6 +1258,7 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
       cosmos: {
         tokens: getFormattedCosmosChainTokens(coinMap).filter((token) => token.network === 'Testnet'),
       },
+      ...ethLikeTokens.testnet,
     },
   };
 };
