@@ -1,4 +1,4 @@
-import { BroadcastableMessage, MessageMetadata, MessagePayload, MessageStandardType } from '../../../bitgo';
+import { BroadcastableMessage, MessageMetadata, MessagePayload, MessageStandardType } from './messageTypes';
 import { Signature } from '../iface';
 
 /**
@@ -135,6 +135,15 @@ export interface IMessageBuilder {
    * @returns The current message payload
    */
   getPayload(): MessagePayload | undefined;
+
+  /**
+   * Checks if the message string is whitelisted.
+   * Some message standards like EIP-191 allow any message
+   *
+   * @param messageRaw The raw message string to check
+   * @return True if the message builder allows any message or the message is whitelisted, false otherwise
+   */
+  isMessageWhitelisted(messageRaw: string): boolean;
 
   /**
    * Gets the current metadata

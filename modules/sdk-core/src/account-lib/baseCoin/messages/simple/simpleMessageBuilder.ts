@@ -1,7 +1,7 @@
 import { SimpleMessage } from './simpleMessage';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseMessageBuilder } from '../baseMessageBuilder';
-import { MessageOptions, MessageStandardType } from '../../../../bitgo';
+import { MessageOptions, MessageStandardType } from '../messageTypes';
 import { IMessage } from '../iface';
 
 /**

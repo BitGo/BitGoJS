@@ -5,7 +5,7 @@ import {
   MessageOptions,
   MessagePayload,
   MessageStandardType,
-} from '../../../bitgo';
+} from './messageTypes';
 import { IMessage } from './iface';
 import { serializeSignatures, Signature } from '../iface';
 
