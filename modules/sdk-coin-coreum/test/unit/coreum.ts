@@ -19,7 +19,7 @@ import {
   testnetAddress,
   wrwUser,
 } from '../resources/tcoreum';
-import should = require('should');
+import should from 'should';
 
 describe('Coreum', function () {
   let bitgo: TestBitGoAPI;

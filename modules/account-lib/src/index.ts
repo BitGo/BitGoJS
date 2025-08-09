@@ -10,7 +10,10 @@ import {
   BaseMessageBuilderFactory,
   BuildMessageError,
   MessageStandardType,
+  MIDNIGHT_TNC_HASH,
 } from '@bitgo/sdk-core';
+export { MIDNIGHT_TNC_HASH };
+
 import { BaseCoin as CoinConfig, CoinFeature, coins } from '@bitgo/statics';
 export { Ed25519BIP32, Eddsa };
 

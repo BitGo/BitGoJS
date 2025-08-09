@@ -10,7 +10,7 @@ import { RuneUtils } from '../../src/lib/utils';
 import { mainnetAddress } from '../resources/rune';
 import { TEST_SEND_TX, TEST_TX_WITH_MEMO, testnetAddress, wrwUser } from '../resources/trune';
 const bech32 = require('bech32-buffer');
-import should = require('should');
+import should from 'should';
 
 describe('Rune', function () {
   let bitgo: TestBitGoAPI;

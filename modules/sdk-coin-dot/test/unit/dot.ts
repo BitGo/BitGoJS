@@ -1,7 +1,7 @@
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { randomBytes } from 'crypto';
-import should = require('should');
+import should from 'should';
 import { Dot, Tdot, KeyPair } from '../../src';
 import * as testData from '../fixtures';
 import { chainName, txVersion, genesisHash, specVersion } from '../resources';
