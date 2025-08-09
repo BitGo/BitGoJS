@@ -1,6 +1,6 @@
 import should from 'should';
 import {
-  getMidnightGlacierDropMsg,
+  getMidnightGlacierDropClaimMsg,
   isMessageWhitelisted,
   MIDNIGHT_GLACIER_DROP_CLAIM_MESSAGE_TEMPLATE,
   MIDNIGHT_TNC_HASH,
@@ -8,7 +8,9 @@ import {
 
 describe('Message validation', () => {
   describe('isMessageWhitelisted', () => {
-    const whitelistedMessageTemplates = [MIDNIGHT_GLACIER_DROP_CLAIM_MESSAGE_TEMPLATE];
+    const whitelistedMessageTemplates: Record<string, string> = {
+      midnightGDClaimMsgTemplate: MIDNIGHT_GLACIER_DROP_CLAIM_MESSAGE_TEMPLATE,
+    };
 
     const adaTestnetDestinationAddress = 'addr_test1vz7xs7ceu4xx9n5xn57lfe86vrwddqpp77vjwq5ptlkh49cqy3wur';
     const adaMainnetDestinationAddress =
@@ -16,7 +18,7 @@ describe('Message validation', () => {
     const allocationAmt = 100;
 
     it('should validate testnet message matching the Midnight glacier drop claim template', () => {
-      const messageRaw = getMidnightGlacierDropMsg(adaTestnetDestinationAddress, allocationAmt);
+      const messageRaw = getMidnightGlacierDropClaimMsg(adaTestnetDestinationAddress, allocationAmt);
 
       const result = isMessageWhitelisted(whitelistedMessageTemplates, messageRaw);
 
@@ -24,7 +26,7 @@ describe('Message validation', () => {
     });
 
     it('should validate mainnet message matching the Midnight glacier drop claim template', () => {
-      const messageRaw = getMidnightGlacierDropMsg(adaMainnetDestinationAddress, allocationAmt);
+      const messageRaw = getMidnightGlacierDropClaimMsg(adaMainnetDestinationAddress, allocationAmt);
 
       const result = isMessageWhitelisted(whitelistedMessageTemplates, messageRaw);
 

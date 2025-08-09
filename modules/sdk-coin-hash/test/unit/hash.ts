@@ -18,7 +18,7 @@ import {
   testnetAddress,
   wrwUser,
 } from '../resources/hash';
-import should from 'should';
+import should = require('should');
 
 describe('HASH', function () {
   let bitgo: TestBitGoAPI;

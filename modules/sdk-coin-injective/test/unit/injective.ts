@@ -18,7 +18,7 @@ import {
   TEST_WITHDRAW_REWARDS_TX,
   wrwUser,
 } from '../resources/injective';
-import should from 'should';
+import should = require('should');
 import nock = require('nock');
 
 describe('INJ', function () {

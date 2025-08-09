@@ -4,7 +4,7 @@ import BigNumber from 'bignumber.js';
 import sinon from 'sinon';
 import { Baby, Tbaby } from '../../src';
 import { TEST_SEND_MANY_TX, TEST_SEND_TX, TEST_TX_WITH_MEMO, address } from '../resources/baby';
-import should from 'should';
+import should = require('should');
 import utils from '../../src/lib/utils';
 
 describe('Babylon', function () {

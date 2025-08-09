@@ -18,7 +18,7 @@ import {
   TEST_WITHDRAW_REWARDS_TX,
   wrwUser,
 } from '../resources/osmo';
-import should from 'should';
+import should = require('should');
 
 describe('OSMO', function () {
   let bitgo: TestBitGoAPI;

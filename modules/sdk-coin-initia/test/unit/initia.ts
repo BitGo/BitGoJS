@@ -1,4 +1,4 @@
-import should from 'should';
+import should = require('should');
 import BigNumber from 'bignumber.js';
 import sinon from 'sinon';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';

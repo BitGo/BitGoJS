@@ -137,9 +137,11 @@ export interface IMessageBuilder {
   getPayload(): MessagePayload | undefined;
 
   /**
-   * Checks if the message string is whitelisted
+   * Checks if the message string is whitelisted.
+   * Some message standards like EIP-191 allow any message
+   *
    * @param messageRaw The raw message string to check
-   * @return True if the message is whitelisted, false otherwise
+   * @return True if the message builder allows any message or the message is whitelisted, false otherwise
    */
   isMessageWhitelisted(messageRaw: string): boolean;
 

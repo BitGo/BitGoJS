@@ -13,7 +13,7 @@ export abstract class BaseMessageBuilder implements IMessageBuilder {
   protected type: MessageStandardType;
   protected signatures: Signature[] = [];
   protected signers: string[] = [];
-  protected whitelistedMessageTemplates: string[] = [];
+  protected whitelistedMessageTemplates: Record<string, string> = {};
   protected metadata?: Record<string, unknown> = {};
   protected digest?: string;
 
@@ -28,6 +28,7 @@ export abstract class BaseMessageBuilder implements IMessageBuilder {
   ) {
     this.coinConfig = coinConfig;
     this.type = messageType;
+    this.whitelistedMessageTemplates = this.getWhitelistedMessageTemplates();
   }
 
   /**
@@ -172,5 +173,17 @@ export abstract class BaseMessageBuilder implements IMessageBuilder {
       encoding: 'utf8',
     };
     return this.build();
+  }
+
+  protected getWhitelistedMessageTemplates(): Record<string, string> {
+    // By default, all messages are allowed
+    return {};
+
+    // Example of adding a whitelisted message template
+    // Uncomment and modify as needed
+    // return {
+    //   midnightGDClaimMsgTemplate: MIDNIGHT_GLACIER_DROP_CLAIM_MESSAGE_TEMPLATE,
+    //   // Add more whitelisted templates as needed
+    // };
   }
 }

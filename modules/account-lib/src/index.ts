@@ -423,15 +423,13 @@ export async function verifyMessage(
   try {
     const messageBuilderFactory = getMessageBuilderFactory(coinName);
     const messageBuilder = messageBuilderFactory.getMessageBuilder(messageStandardType);
-    messageBuilder.setPayload(messageRaw);
-    const message = await messageBuilder.build();
-    const isValidMessageEncoded = await message.verifyEncodedPayload(messageEncoded, metadata);
-    if (!isValidMessageEncoded) {
+    if (!messageBuilder || !messageBuilder.isMessageWhitelisted(messageRaw)) {
       return false;
     }
-    return messageBuilder.isMessageWhitelisted(messageRaw);
+    messageBuilder.setPayload(messageRaw);
+    const message = await messageBuilder.build();
+    return await message.verifyEncodedPayload(messageEncoded, metadata);
   } catch (e) {
-    console.error(`Error verifying message for coin ${coinName}:`, e);
     return false;
   }
 }

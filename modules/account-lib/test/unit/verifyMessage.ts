@@ -1,12 +1,12 @@
 import should from 'should';
 import * as accountLib from '../../src';
-import { getMidnightGlacierDropMsg, MessageStandardType } from '@bitgo/sdk-core';
+import { getMidnightGlacierDropClaimMsg, MessageStandardType } from '@bitgo/sdk-core';
 
 describe('verifyMessage', () => {
   const adaTestnetOriginAddress = 'addr_test1wz4h6068hs93n8j5ar88fgzz6sfnw8krng09xx0mmf36m8c7j9yap';
   const adaTestnetDestinationAddress = 'addr_test1vz7xs7ceu4xx9n5xn57lfe86vrwddqpp77vjwq5ptlkh49cqy3wur';
   const allocationAmt = 100;
-  const testnetMessageRaw = getMidnightGlacierDropMsg(adaTestnetDestinationAddress, allocationAmt);
+  const testnetMessageRaw = getMidnightGlacierDropClaimMsg(adaTestnetDestinationAddress, allocationAmt);
 
   describe('EIP191 Message', function () {
     const eip191MessageBuilder = accountLib

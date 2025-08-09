@@ -12,7 +12,7 @@ import {
   TEST_WITHDRAW_REWARDS_TX,
   address,
 } from '../resources/islm';
-import should from 'should';
+import should = require('should');
 
 describe('Islm', function () {
   let bitgo: TestBitGoAPI;

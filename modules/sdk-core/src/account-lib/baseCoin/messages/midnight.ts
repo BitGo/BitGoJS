@@ -7,6 +7,6 @@ export const MIDNIGHT_TNC_HASH = '31a6bab50a84b8439adcfb786bb2020f6807e6e8fda629
  */
 export const MIDNIGHT_GLACIER_DROP_CLAIM_MESSAGE_TEMPLATE = `STAR \\d+ to addr(?:1|_test1)[a-z0-9]{50,} ${MIDNIGHT_TNC_HASH}`;
 
-export function getMidnightGlacierDropMsg(cardanoDestAddr: string, allocationAmt: number): string {
+export function getMidnightGlacierDropClaimMsg(cardanoDestAddr: string, allocationAmt: number): string {
   return `STAR ${allocationAmt} to ${cardanoDestAddr} ${MIDNIGHT_TNC_HASH}`;
 }
