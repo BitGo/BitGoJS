@@ -154,4 +154,111 @@ describe('Cip8Message', function () {
       should.throws(() => message.getBroadcastableSignatures(), /Payload is required to build a CIP8 message/);
     });
   });
+
+  describe('verifyRawMessage', function () {
+    it('should return true for valid Midnight Glacier Drop claim message', function () {
+      const message = new Cip8Message(createDefaultMessageOptions());
+      const validMessage =
+        'STAR 100 to addr1qxy2lshz9na88lslkj8gzd0y7t9h8j7jr0sgg30qnrylvfx4u2hwvqalq5fj9vmhxf06jgz0zt2j2qxjmzwf3rhqzqsehw0an 31a6bab50a84b8439adcfb786bb2020f6807e6e8fda629b424110fc7bb1c6b8b';
+
+      const result = message.verifyRawMessage(validMessage);
+      result.should.be.true();
+    });
+
+    it('should return true for valid Midnight Glacier Drop claim message with testnet address', function () {
+      const message = new Cip8Message(createDefaultMessageOptions());
+      const validTestnetMessage =
+        'STAR 250 to addr_test1qpxecfjurjtcnalwy6gxcqzp09je55gvfv79hghqst8p7p6dnsn9c8yh38m7uf5sdsqyz7t9nfgscjeutw3wpqkwrursutfm7h 31a6bab50a84b8439adcfb786bb2020f6807e6e8fda629b424110fc7bb1c6b8b';
+
+      const result = message.verifyRawMessage(validTestnetMessage);
+      result.should.be.true();
+    });
+
+    it('should return false for message without STAR prefix', function () {
+      const message = new Cip8Message(createDefaultMessageOptions());
+      const invalidMessage =
+        '100 to addr1qxy2lshz9na88lslkj8gzd0y7t9h8j7jr0sgg30qnrylvfx4u2hwvqalq5fj9vmhxf06jgz0zt2j2qxjmzwf3rhqzqsehw0an 31a6bab50a84b8439adcfb786bb2020f6807e6e8fda629b424110fc7bb1c6b8b';
+
+      const result = message.verifyRawMessage(invalidMessage);
+      result.should.be.false();
+    });
+
+    it('should return false for message with invalid number format', function () {
+      const message = new Cip8Message(createDefaultMessageOptions());
+      const invalidMessage =
+        'STAR abc to addr1qxy2lshz9na88lslkj8gzd0y7t9h8j7jr0sgg30qnrylvfx4u2hwvqalq5fj9vmhxf06jgz0zt2j2qxjmzwf3rhqzqsehw0an 31a6bab50a84b8439adcfb786bb2020f6807e6e8fda629b424110fc7bb1c6b8b';
+
+      const result = message.verifyRawMessage(invalidMessage);
+      result.should.be.false();
+    });
+
+    it('should return false for message with invalid address format', function () {
+      const message = new Cip8Message(createDefaultMessageOptions());
+      const invalidMessage =
+        'STAR 100 to invalid_address 31a6bab50a84b8439adcfb786bb2020f6807e6e8fda629b424110fc7bb1c6b8b';
+
+      const result = message.verifyRawMessage(invalidMessage);
+      result.should.be.false();
+    });
+
+    it('should return false for message with short address', function () {
+      const message = new Cip8Message(createDefaultMessageOptions());
+      const invalidMessage = 'STAR 100 to addr1short 31a6bab50a84b8439adcfb786bb2020f6807e6e8fda629b424110fc7bb1c6b8b';
+
+      const result = message.verifyRawMessage(invalidMessage);
+      result.should.be.false();
+    });
+
+    it('should return false for message with wrong TnC hash', function () {
+      const message = new Cip8Message(createDefaultMessageOptions());
+      const invalidMessage =
+        'STAR 100 to addr1qxy2lshz9na88lslkj8gzd0y7t9h8j7jr0sgg30qnrylvfx4u2hwvqalq5fj9vmhxf06jgz0zt2j2qxjmzwf3rhqzqsehw0an wronghashhere';
+
+      const result = message.verifyRawMessage(invalidMessage);
+      result.should.be.false();
+    });
+
+    it('should return false for message with missing TnC hash', function () {
+      const message = new Cip8Message(createDefaultMessageOptions());
+      const invalidMessage =
+        'STAR 100 to addr1qxy2lshz9na88lslkj8gzd0y7t9h8j7jr0sgg30qnrylvfx4u2hwvqalq5fj9vmhxf06jgz0zt2j2qxjmzwf3rhqzqsehw0an';
+
+      const result = message.verifyRawMessage(invalidMessage);
+      result.should.be.false();
+    });
+
+    it('should return false for message with extra content', function () {
+      const message = new Cip8Message(createDefaultMessageOptions());
+      const invalidMessage =
+        'STAR 100 to addr1qxy2lshz9na88lslkj8gzd0y7t9h8j7jr0sgg30qnrylvfx4u2hwvqalq5fj9vmhxf06jgz0zt2j2qxjmzwf3rhqzqsehw0an 31a6bab50a84b8439adcfb786bb2020f6807e6e8fda629b424110fc7bb1c6b8b extra content';
+
+      const result = message.verifyRawMessage(invalidMessage);
+      result.should.be.false();
+    });
+
+    it('should return false for empty message', function () {
+      const message = new Cip8Message(createDefaultMessageOptions());
+      const emptyMessage = '';
+
+      const result = message.verifyRawMessage(emptyMessage);
+      result.should.be.false();
+    });
+
+    it('should return false for completely different message format', function () {
+      const message = new Cip8Message(createDefaultMessageOptions());
+      const differentMessage = 'Hello, this is a regular message';
+
+      const result = message.verifyRawMessage(differentMessage);
+      result.should.be.false();
+    });
+
+    it('should handle case sensitivity correctly', function () {
+      const message = new Cip8Message(createDefaultMessageOptions());
+      const caseInsensitiveMessage =
+        'star 100 to addr1qxy2lshz9na88lslkj8gzd0y7t9h8j7jr0sgg30qnrylvfx4u2hwvqalq5fj9vmhxf06jgz0zt2j2qxjmzwf3rhqzqsehw0an 31a6bab50a84b8439adcfb786bb2020f6807e6e8fda629b424110fc7bb1c6b8b';
+
+      const result = message.verifyRawMessage(caseInsensitiveMessage);
+      result.should.be.false(); // Should be case sensitive
+    });
+  });
 });
