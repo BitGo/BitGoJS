@@ -346,7 +346,7 @@ export function getTransactionType(transaction: SolTransaction): TransactionType
   } else if (matchTransactionTypeByInstructionsOrder(instructions, ataCloseInstructionIndexes)) {
     return TransactionType.CloseAssociatedTokenAccount;
   } else {
-    throw new NotSupported('Invalid transaction, transaction not supported or invalid');
+    return TransactionType.CustomTx;
   }
 }
 
