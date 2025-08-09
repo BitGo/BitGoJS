@@ -58,6 +58,14 @@ export class CustomTransactionBuilder extends TransactionBuilder<CustomProgramma
       });
     }
 
+    // Ensure the transaction includes the fee payer signature if present
+    if (this._gasData && 'sponsor' in this._gasData && this._gasData.sponsor && this.transaction.feePayerSignature) {
+      this.transaction.addFeePayerSignature(
+        this.transaction.feePayerSignature.publicKey,
+        this.transaction.feePayerSignature.signature
+      );
+    }
+
     this.transaction.loadInputsAndOutputs();
     return this.transaction;
   }
