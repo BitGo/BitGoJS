@@ -2123,6 +2123,7 @@ export enum UnderlyingAsset {
   'eth:ivvon' = 'ivvon',
   'eth:slvon' = 'slvon',
 
+  'eth:usdo' = 'eth:usdo',
   'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ' = 'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ',
   'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M' = 'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M',
   'xlm:SLT-GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP' = 'xlm:SLT-GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP',
@@ -2538,6 +2539,7 @@ export enum UnderlyingAsset {
   'bsc:link' = 'bsc:link',
   'bsc:cusdo' = 'bsc:cusdo',
   'bsc:unx' = 'bsc:unx',
+  'bsc:usdo' = 'bsc:usdo',
   // BSC NFTs
   // generic NFTs
   'erc721:bsctoken' = 'erc721:bsctoken',

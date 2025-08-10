@@ -11159,6 +11159,15 @@ export const erc20Coins = [
     '0xe33fbe7584eb79e2673abe576b7ac8c0de62565c',
     UnderlyingAsset['eth:hpp']
   ),
+  erc20(
+    '0947f572-1617-43e5-b065-5bb064e27566',
+    'eth:usdo',
+    'OpenEden Open Dollar',
+    18,
+    '0x8238884ec9668ef77b90c6dff4d1a9f4f4823bfe',
+    UnderlyingAsset['eth:usdo'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION, CoinFeature.REBASE_TOKEN]
+  ),
   terc20(
     '0205f0d6-0647-47c9-ad8b-c48d048e54f3',
     'fixed',
