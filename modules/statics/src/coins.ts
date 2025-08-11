@@ -1714,10 +1714,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.STT,
     BaseUnit.ETH,
-    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING],
-    KeyCurve.Secp256k1,
-    '',
-    'Somi'
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
   ),
   account(
     '1bf486a9-47ed-4bea-8e9a-a23a074cdc9a',
