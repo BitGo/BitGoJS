@@ -83,8 +83,8 @@ function handlePingExpress(req: ExpressApiRouteRequest<'express.pingExpress', 'g
   };
 }
 
-function handleLogin(req: express.Request) {
-  const username = req.body.username || req.body.email;
+function handleLogin(req: ExpressApiRouteRequest<'express.login', 'post'>) {
+  const username = req.decoded.username || req.decoded.email;
   const body = req.body;
   body.username = username;
   return req.bitgo.authenticate(body);
@@ -1561,7 +1561,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   router.get('express.pingExpress', [typedPromiseWrapper(handlePingExpress)]);
 
   // auth
-  app.post('/api/v[12]/user/login', parseBody, prepareBitGo(config), promiseWrapper(handleLogin));
+  router.post('express.login', [prepareBitGo(config), typedPromiseWrapper(handleLogin)]);
 
   app.post('/api/v[12]/decrypt', parseBody, prepareBitGo(config), promiseWrapper(handleDecrypt));
   app.post('/api/v[12]/encrypt', parseBody, prepareBitGo(config), promiseWrapper(handleEncrypt));

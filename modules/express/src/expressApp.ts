@@ -11,6 +11,7 @@ import * as morgan from 'morgan';
 import * as fs from 'fs';
 import type { Request as StaticRequest } from 'express-serve-static-core';
 import * as timeout from 'connect-timeout';
+import * as bodyParser from 'body-parser';
 
 import { Config, config } from './config';
 
@@ -317,6 +318,8 @@ export function app(cfg: Config): express.Application {
 
   checkPreconditions(cfg);
   debug('preconditions satisfied');
+
+  app.use(bodyParser.json({ limit: '20mb' }));
 
   // Be more robust about accepting URLs with double slashes
   app.use(function replaceUrlSlashes(req, res, next) {
