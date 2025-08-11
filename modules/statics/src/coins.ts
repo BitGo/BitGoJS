@@ -1591,6 +1591,38 @@ export const coins = CoinMap.fromCoins([
     ]
   ),
   account(
+    'df01a650-3c8b-4182-a7cb-8ee7ad115c21',
+    'xpl',
+    'Plasma',
+    Networks.main.plasma,
+    18,
+    UnderlyingAsset.PLASMA,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+    ]
+  ),
+  account(
+    'f99e8326-ea4f-4a84-8033-194d421daedb',
+    'txpl',
+    'Plasma Testnet',
+    Networks.test.plasma,
+    18,
+    UnderlyingAsset.PLASMA,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+    ]
+  ),
+  account(
     'd92cbc11-0135-4304-bc10-7cdf82543880',
     'kaia',
     'Kaia',
