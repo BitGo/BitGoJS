@@ -222,6 +222,9 @@ const mainnetBase: EnvironmentTemplate = {
     og: {
       baseUrl: '', //TODO- WIN-6519 when mainnet details available
     },
+    xpl: {
+      baseUrl: '', //TODO- WIN-6654 when mainnet details available
+    },
     sonic: {
       baseUrl: 'https://rpc.soniclabs.com',
     },
@@ -338,6 +341,9 @@ const testnetBase: EnvironmentTemplate = {
     },
     og: {
       baseUrl: 'https://chainscan-test.0g.ai/open/api',
+    },
+    xpl: {
+      baseUrl: 'https://testnet-rpc.plasma.to',
     },
     sonic: {
       baseUrl: 'https://rpc.blaze.soniclabs.com',
