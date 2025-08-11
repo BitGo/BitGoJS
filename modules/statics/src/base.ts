@@ -2085,6 +2085,10 @@ export enum UnderlyingAsset {
   'eth:avail' = 'eth:avail',
   'eth:dolo' = 'eth:dolo',
   'eth:era' = 'eth:era',
+  'eth:ugold' = 'eth:ugold',
+  'eth:seda' = 'eth:seda',
+  'eth:enso' = 'eth:enso',
+  'eth:hpp' = 'eth:hpp',
 
   // Ondo Tokenized Assets
   'eth:qqqon' = 'qqqon',
@@ -2382,6 +2386,7 @@ export enum UnderlyingAsset {
   'polygon:buidl' = 'polygon:buidl',
   'polygon:benji' = 'polygon:benji',
   'polygon:naka' = 'polygon:naka',
+  'polygon:xusd' = 'polygon:xusd',
   // Polygon NFTs
   // generic NFTs
   'erc721:polygontoken' = 'erc721:polygontoken',
@@ -2839,6 +2844,8 @@ export enum UnderlyingAsset {
   'sol:wave' = 'sol:wave',
   'sol:usdcv' = 'sol:usdcv',
   'sol:2z' = 'sol:2z',
+  'sol:cloud' = 'sol:cloud',
+  'sol:eliza' = 'sol:eliza',
   // TRX tokens
   'trx:htx' = 'trx:htx',
   'trx:jst' = 'trx:jst',

@@ -11127,6 +11127,38 @@ export const erc20Coins = [
     '0xe2ad0bf751834f2fbdc62a41014f84d67ca1de2a',
     UnderlyingAsset['eth:era']
   ),
+  erc20(
+    'dda22f9a-f2c1-453b-a45b-008da115351e',
+    'eth:ugold',
+    'UGOLD Inc.',
+    18,
+    '0xa6089dbfed19d1bcd43146bbdca2b8f9d9f84a9a',
+    UnderlyingAsset['eth:ugold']
+  ),
+  erc20(
+    '5e8fbbd9-1696-4f60-90f3-0f8032614476',
+    'eth:seda',
+    'SEDA Protocol',
+    18,
+    '0x14862c03a0caccc1ab328b062e64e31b2a1afcd7',
+    UnderlyingAsset['eth:seda']
+  ),
+  erc20(
+    'd9a7e07c-7aaf-4cc4-b87d-da11aa65c401',
+    'eth:enso',
+    'Enso',
+    18,
+    '0x699f088b5dddcafb7c4824db5b10b57b37cb0c66',
+    UnderlyingAsset['eth:enso']
+  ),
+  erc20(
+    '3be7024f-0209-4621-8165-fb1ded16a5b6',
+    'eth:hpp',
+    'House Party Protocol',
+    18,
+    '0xe33fbe7584eb79e2673abe576b7ac8c0de62565c',
+    UnderlyingAsset['eth:hpp']
+  ),
   terc20(
     '0205f0d6-0647-47c9-ad8b-c48d048e54f3',
     'fixed',

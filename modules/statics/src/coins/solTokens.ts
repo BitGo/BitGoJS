@@ -2959,6 +2959,26 @@ export const solTokens = [
     SOL_TOKEN_FEATURES,
     ProgramID.Token2022ProgramId
   ),
+  solToken(
+    '5dfb9884-d1db-4c7e-a6a7-92c4ab128de6',
+    'sol:cloud',
+    'Cloud',
+    9,
+    'CLoUDKc4Ane7HeQcPpE3YHnznRxhMimJ4MyaUqyHFzAu',
+    'CLoUDKc4Ane7HeQcPpE3YHnznRxhMimJ4MyaUqyHFzAu',
+    UnderlyingAsset['sol:cloud'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    'ffdff26e-a20f-44a8-9141-dcdc5d8f050c',
+    'sol:eliza',
+    'Eliza',
+    9,
+    'DuMbhu7mvQvqQHGcnikDgb4XegXJRyhUBfdU22uELiZA',
+    'DuMbhu7mvQvqQHGcnikDgb4XegXJRyhUBfdU22uELiZA',
+    UnderlyingAsset['sol:eliza'],
+    SOL_TOKEN_FEATURES
+  ),
   tsolToken(
     'b98c5a7a-49c5-45f1-a6ee-b08dff596a7d',
     'tsol:srm',
