@@ -398,6 +398,11 @@ export enum CoinFeature {
   SHARED_EVM_SDK = 'shared-evm-sdk',
 
   /**
+   * This coin supports erc20 tokens
+   */
+  SUPPORTS_ERC20 = 'supports-erc20-token',
+
+  /**
    * This coin is a Cosmos coin and should use shared Cosmos SDK module
    */
   SHARED_COSMOS_SDK = 'shared-cosmos-sdk',
