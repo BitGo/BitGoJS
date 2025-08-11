@@ -31,6 +31,8 @@ import {
   tofcWorldErc20,
   ofcCoredaoErc20,
   tofcCoredaoErc20,
+  ofcVetToken,
+  tofcVetToken,
 } from '../ofc';
 import { UnderlyingAsset, CoinKind } from '../base';
 
@@ -203,6 +205,8 @@ export const ofcCoins = [
   ),
   ofc('77661a48-865f-48ea-bb73-875744729a69', 'ofcbera:dolo', 'Dolomite', 18, UnderlyingAsset.BERA, CoinKind.CRYPTO),
   ofc('411fd61a-3571-41f4-b632-6058a30a66a2', 'ofcapt', 'Aptos', 8, UnderlyingAsset.APT, CoinKind.CRYPTO),
+  ofc('2fee34a2-cfb8-4882-953a-ac02f2c1577d', 'ofcvet', 'VeChain', 18, UnderlyingAsset.VET, CoinKind.CRYPTO),
+  tofc('49ee4baa-a5a7-47f1-b660-7031be7ef310', 'ofctvet', 'Testnet VeChain', 18, UnderlyingAsset.VET, CoinKind.CRYPTO),
   tofc('6677edac-c597-43ca-b8ff-6cdfa4e094a3', 'ofctapt', 'Testnet Aptos', 8, UnderlyingAsset.APT, CoinKind.CRYPTO),
   tofc('81bd0c13-6531-42b9-a58a-b1e65d239f6f', 'ofctoas', 'Testnet oaschain', 18, UnderlyingAsset.OAS, CoinKind.CRYPTO),
   tofc(
@@ -2871,5 +2875,13 @@ export const ofcCoins = [
     'Testnet stCore token',
     18,
     UnderlyingAsset['tcoredao:stcore']
+  ),
+  ofcVetToken('6a41f407-c05c-4038-9175-67ffe7a26410', 'ofcvet:vtho', 'VeThor', 18, UnderlyingAsset['vet:vtho']),
+  tofcVetToken(
+    '60966c89-d54a-40fb-abf5-08b7b0b1bb79',
+    'ofctvet:vtho',
+    'Testnet VeThor',
+    18,
+    UnderlyingAsset['tvet:vtho']
   ),
 ];
