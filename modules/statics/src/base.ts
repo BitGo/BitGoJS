@@ -451,6 +451,11 @@ export enum CoinFeature {
    * This coin is an EVM compatible coin and should use common EVM logic in WP
    */
   EVM_COMPATIBLE_WP = 'evm-compatible-wp',
+
+  /**
+   * This token is internal and shouldn't be exposed to users
+   */
+  RESTRICTED = 'restricted',
 }
 
 /**
