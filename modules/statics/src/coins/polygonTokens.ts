@@ -1065,6 +1065,15 @@ export const polygonTokens = [
     UnderlyingAsset['polygon:benji'],
     POLYGON_TOKEN_FEATURES
   ),
+  polygonErc20(
+    '9449dd85-a993-482a-85fa-f1c08331f39b',
+    'polygon:xusd',
+    'StraitsX USD',
+    6,
+    '0x5c3552f94a322c4e8d4d4c627a3badf8257d1499',
+    UnderlyingAsset['polygon:xusd'],
+    POLYGON_TOKEN_FEATURES
+  ),
   // testnet polygon tokens
   tpolygonErc20(
     '09ba76d0-331e-4b75-bb75-739285c3e03a',

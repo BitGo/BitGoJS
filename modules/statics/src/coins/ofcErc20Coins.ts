@@ -3878,6 +3878,32 @@ export const tOfcErc20Coins = [
     18,
     underlyingAssetForSymbol('eth:slvon')
   ),
+
+  ofcerc20(
+    '4139c3f1-31ff-44b8-b503-893ee4d76242',
+    'ofceth:ugold',
+    'UGOLD Inc.',
+    18,
+    underlyingAssetForSymbol('eth:ugold')
+  ),
+
+  ofcerc20(
+    'e6765d71-3200-45a4-9314-354e67443dfa',
+    'ofceth:seda',
+    'SEDA Protocol',
+    18,
+    underlyingAssetForSymbol('eth:seda')
+  ),
+
+  ofcerc20('2c3f951e-952e-4ed1-8f09-0af36092b29e', 'ofceth:enso', 'Enso', 18, underlyingAssetForSymbol('eth:enso')),
+
+  ofcerc20(
+    '1ffe161e-0388-4e6b-9f4e-84a855349563',
+    'ofceth:hpp',
+    'House Party Protocol',
+    18,
+    underlyingAssetForSymbol('eth:hpp')
+  ),
 ];
 
 function underlyingAssetForSymbol(underlyingAssetValue: string): UnderlyingAsset {

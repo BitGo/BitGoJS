@@ -990,6 +990,22 @@ export const ofcCoins = [
     UnderlyingAsset['sol:2z'],
     SOL_TOKEN_FEATURES
   ),
+  ofcsolToken(
+    'fa0722c2-8acd-4266-95dd-ba0edc326367',
+    'ofcsol:cloud',
+    'Cloud',
+    9,
+    UnderlyingAsset['sol:cloud'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '6a46ca44-5d92-4b18-973c-9cef3d18bf5f',
+    'ofcsol:eliza',
+    'Eliza',
+    9,
+    UnderlyingAsset['sol:eliza'],
+    SOL_TOKEN_FEATURES
+  ),
   tofcsolToken(
     '24d678cf-e0f0-4cde-a338-d754289c5b27',
     'ofctsol:slnd',
@@ -2629,6 +2645,13 @@ export const ofcCoins = [
     UnderlyingAsset['polygon:wrx']
   ),
   ofcPolygonErc20('c0556aae-6646-4160-b4cc-db361af3019c', 'ofcpolygon:zrx', 'ZRX', 18, UnderlyingAsset['polygon:zrx']),
+  ofcPolygonErc20(
+    'aad4471b-6949-432f-814a-d888e50bb957',
+    'ofcpolygon:xusd',
+    'StraitsX USD',
+    6,
+    UnderlyingAsset['polygon:xusd']
+  ),
   tofcPolygonErc20(
     '62f4329d-11cd-4875-b91b-9ceae66c9439',
     'ofctpolygon:link',
