@@ -18,7 +18,7 @@ describe('soneium', function () {
       soneium.should.be.an.instanceof(Soneium);
       soneium.getChain().should.equal('soneium');
       soneium.getFamily().should.equal('soneium');
-      soneium.getFullName().should.equal('Soneium');
+      soneium.getFullName().should.equal('Soneium Ethereum');
       soneium.getBaseFactor().should.equal(1e18);
       soneium.supportsTss().should.equal(true);
       soneium.allowsAccountConsolidations().should.equal(false);

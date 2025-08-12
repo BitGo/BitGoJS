@@ -1415,7 +1415,7 @@ export const coins = CoinMap.fromCoins([
   account(
     'd4f8e4f5-7060-44e3-aca1-e3ac11597ecb',
     'world',
-    'Worldchain',
+    'Worldchain Ethereum',
     Networks.main.world,
     18,
     UnderlyingAsset.WORLD,
@@ -1691,7 +1691,7 @@ export const coins = CoinMap.fromCoins([
   account(
     '251b78df-90c5-4ff5-b07a-8cc23f27c5ff',
     'soneium',
-    'Soneium',
+    'Soneium Ethereum',
     Networks.main.soneium,
     18,
     UnderlyingAsset.SONEIUM,
@@ -1935,7 +1935,7 @@ export const coins = CoinMap.fromCoins([
   hederaCoin(
     '98aad956-27ee-45dd-aa43-6a23c9a1d1d0',
     'hbar',
-    'Mainnet Hedera HBAR',
+    'Hedera',
     Networks.main.hedera,
     8,
     UnderlyingAsset.HBAR,
