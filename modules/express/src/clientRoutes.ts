@@ -90,7 +90,7 @@ function handleLogin(req: ExpressApiRouteRequest<'express.login', 'post'>) {
   return req.bitgo.authenticate(body);
 }
 
-function handleDecrypt(req: express.Request) {
+function handleDecrypt(req: ExpressApiRouteRequest<'express.decrypt', 'post'>) {
   return {
     decrypted: req.bitgo.decrypt(req.body),
   };
@@ -1563,7 +1563,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   // auth
   router.post('express.login', [prepareBitGo(config), typedPromiseWrapper(handleLogin)]);
 
-  app.post('/api/v[12]/decrypt', parseBody, prepareBitGo(config), promiseWrapper(handleDecrypt));
+  router.post('express.decrypt', [prepareBitGo(config), typedPromiseWrapper(handleDecrypt)]);
   app.post('/api/v[12]/encrypt', parseBody, prepareBitGo(config), promiseWrapper(handleEncrypt));
   app.post('/api/v[12]/verifyaddress', parseBody, prepareBitGo(config), promiseWrapper(handleVerifyAddress));
   app.post(

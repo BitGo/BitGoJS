@@ -5,6 +5,7 @@ import * as express from 'express';
 import { GetPing } from './common/ping';
 import { GetPingExpress } from './common/pingExpress';
 import { PostLogin } from './common/login';
+import { PostDecrypt } from './common/decrypt';
 
 export const ExpressApi = apiSpec({
   'express.ping': {
@@ -15,6 +16,9 @@ export const ExpressApi = apiSpec({
   },
   'express.login': {
     post: PostLogin,
+  },
+  'express.decrypt': {
+    post: PostDecrypt,
   },
 });
 
