@@ -1349,7 +1349,7 @@ class Creditcoin extends Mainnet implements EthereumNetwork {
 
 class Plasma extends Mainnet implements EthereumNetwork {
   name = 'Plasma';
-  family = CoinFamily.PLASMA;
+  family = CoinFamily.XPL;
   explorerUrl = ''; //TODO- WIN-6654 when mainnet details available
   accountExplorerUrl = ''; //TODO- WIN-6654 when mainnet details available
   chainId = 9999999999999; //TODO- WIN-6654 when mainnet details available ,this is a dummy value
@@ -1358,7 +1358,7 @@ class Plasma extends Mainnet implements EthereumNetwork {
 
 class PlasmaTestnet extends Testnet implements EthereumNetwork {
   name = 'PlasmaTestnet';
-  family = CoinFamily.PLASMA;
+  family = CoinFamily.XPL;
   explorerUrl = 'https://testnet.plasmascan.to/blockchain/transactions';
   accountExplorerUrl = 'http://testnet.plasmaexplorer.io/address/';
   chainId = 9746;
@@ -1864,7 +1864,7 @@ export const Networks = {
     wemix: Object.freeze(new Wemix()),
     world: Object.freeze(new World()),
     xdc: Object.freeze(new Xdc()),
-    plasma: Object.freeze(new Plasma()),
+    xpl: Object.freeze(new Plasma()),
     xrp: Object.freeze(new Xrp()),
     xtz: Object.freeze(new Xtz()),
     zCash: Object.freeze(new ZCash()),
@@ -1959,7 +1959,7 @@ export const Networks = {
     wemix: Object.freeze(new WemixTestnet()),
     world: Object.freeze(new WorldTestnet()),
     xdc: Object.freeze(new XdcTestnet()),
-    plasma: Object.freeze(new PlasmaTestnet()),
+    xpl: Object.freeze(new PlasmaTestnet()),
     xrp: Object.freeze(new XrpTestnet()),
     xtz: Object.freeze(new XtzTestnet()),
     zCash: Object.freeze(new ZCashTestnet()),
