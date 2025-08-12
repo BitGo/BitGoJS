@@ -74,16 +74,15 @@ describe('Polyx Pre Approve Asset Builder - Testnet', () => {
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
-    it.skip('should build from raw signed tx', async () => {
-      builder.from(rawTx.cddTransaction.signed);
+    it('should build from raw signed tx', async () => {
+      builder.from(rawTx.preApproveAsset.signed);
       builder
         .validity({ firstValid: 3933, maxDuration: 64 })
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.amount, '0');
-      should.deepEqual(txJson.to, '5EFWg5wKTgkFE9XCxigBYPYKQg173djwSmRbkALCdL1jFVUU');
-      should.deepEqual(txJson.sender, '5E7XWJRysj27EzibT4duRxrBQT9Qfa7Z5nAAvJmvd32nhkjH');
+      should.deepEqual(txJson.sender, '5DUjX9W4WGN5oU76FBR1tYj7TG6L82Ndagd8RYjpKmu7QNaP');
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');
       should.deepEqual(txJson.genesisHash, genesisHash);
@@ -95,8 +94,8 @@ describe('Polyx Pre Approve Asset Builder - Testnet', () => {
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
-    it.skip('should build from raw unsigned tx', async () => {
-      builder.from(rawTx.cddTransaction.unsigned);
+    it('should build from raw unsigned tx', async () => {
+      builder.from(rawTx.preApproveAsset.unsigned);
       builder
         .validity({ firstValid: 3933, maxDuration: 64 })
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
@@ -106,7 +105,6 @@ describe('Polyx Pre Approve Asset Builder - Testnet', () => {
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.amount, '0');
-      should.deepEqual(txJson.to, '5EFWg5wKTgkFE9XCxigBYPYKQg173djwSmRbkALCdL1jFVUU');
       should.deepEqual(txJson.sender, sender.address);
       should.deepEqual(txJson.blockNumber, 3933);
       should.deepEqual(txJson.referenceBlock, '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d');

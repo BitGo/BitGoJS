@@ -137,18 +137,25 @@ export class TokenTransferBuilder extends PolyxBaseBuilder<TxMethod, Transaction
   validateDecodedTransaction(decodedTxn: DecodedSigningPayload | DecodedSignedTx, rawTransaction?: string): void {
     if (decodedTxn.method?.name === MethodNames.AddAndAffirmWithMediators) {
       const txMethod = decodedTxn.method.args as AddAndAffirmWithMediatorsArgs;
-      const assetId = txMethod.legs[0].fungible.assetId;
-      const amount = txMethod.legs[0].fungible.amount;
-      const memo = txMethod.instructionMemo;
-      const fromDID = txMethod.legs[0].fungible.sender.did;
-      const toDID = txMethod.legs[0].fungible.receiver.did;
+      console.log(`Validating transaction: ${JSON.stringify(txMethod)}`);
+      const venueId = txMethod.venueId;
+      const settlementType = txMethod.settlementType;
+      const tradeDate = txMethod.tradeDate;
+      const valueDate = txMethod.valueDate;
+      const legs = txMethod.legs;
+      const portfolios = txMethod.portfolios;
+      const instructionMemo = txMethod.instructionMemo;
+      const mediators = txMethod.mediators;
 
       const validationResult = AddAndAffirmWithMediatorsTransactionSchema.validate({
-        assetId,
-        amount,
-        memo,
-        fromDID,
-        toDID,
+        venueId,
+        settlementType,
+        tradeDate,
+        valueDate,
+        legs,
+        portfolios,
+        instructionMemo,
+        mediators,
       });
       if (validationResult.error) {
         throw new Error(`Invalid transaction: ${validationResult.error.message}`);

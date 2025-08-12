@@ -36,29 +36,41 @@ export const PreApproveAssetTransactionSchema = joi.object({
 
 export const AddAndAffirmWithMediatorsTransactionSchema = joi.object({
   venueId: joi.valid(null).required(),
-  settlementType: joi.string().valid('SettleOnAffirmation').required(),
+  settlementType: joi
+    .object({
+      settleOnAffirmation: joi.valid(null),
+    })
+    .required(),
   tradeDate: joi.valid(null).required(),
   valueDate: joi.valid(null).required(),
   legs: joi
     .array()
     .items(
       joi.object({
-        Fungible: joi
+        fungible: joi
           .object({
             sender: joi
               .object({
                 did: addressSchema.required(),
-                kind: joi.string().valid('Default').required(),
+                kind: joi
+                  .object({
+                    default: joi.valid(null),
+                  })
+                  .required(),
               })
               .required(),
             receiver: joi
               .object({
                 did: addressSchema.required(),
-                kind: joi.string().valid('Default').required(),
+                kind: joi
+                  .object({
+                    default: joi.valid(null),
+                  })
+                  .required(),
               })
               .required(),
             assetId: joi.string().required(),
-            amount: joi.string().required(),
+            amount: joi.number().required(),
           })
           .required(),
       })
@@ -69,7 +81,11 @@ export const AddAndAffirmWithMediatorsTransactionSchema = joi.object({
     .items(
       joi.object({
         did: addressSchema.required(),
-        kind: joi.string().valid('Default').required(),
+        kind: joi
+          .object({
+            default: joi.valid(null),
+          })
+          .required(),
       })
     )
     .required(),

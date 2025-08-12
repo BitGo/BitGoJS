@@ -4147,12 +4147,12 @@ export const coins = CoinMap.fromCoins([
   ),
   tpolyxToken(
     'a63b4f8d-84d6-45d3-bc67-625239e40811',
-    'tpolyx:rbitgot',
-    'R BitGo Test',
+    'tpolyx:nvbitgot',
+    'NVBITGOT Fungible Asset',
     6,
-    'RBITGOT',
-    '2ffe769d-862a-8994-8e1c-cf1423bfc7f8',
-    UnderlyingAsset['tpolyx:rbitgot'],
+    'NVBITGOT',
+    '0x780602887b358cf48989d0d9aa6c8d28',
+    UnderlyingAsset['tpolyx:nvbitgot'],
     POLYX_TOKEN_FEATURES
   ),
   aptToken(
