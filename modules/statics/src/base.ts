@@ -319,6 +319,11 @@ export enum CoinFeature {
   ERC20_BULK_TRANSACTION = 'erc20-bulk-transaction',
 
   /**
+   * This coin supports bulk custody transaction creation
+   */
+  CUSTODY_BULK_TRANSACTION = 'custody-bulk-transaction',
+
+  /**
    * This coin supports distributed custody wallets
    */
   DISTRIBUTED_CUSTODY = 'distributed-custody',
