@@ -1261,6 +1261,15 @@ export const bscTokens = [
     UnderlyingAsset['bsc:unx'],
     BSC_TOKEN_FEATURES
   ),
+  bscToken(
+    'd3fa67eb-9420-4243-acac-d420a3d47dac',
+    'bsc:usdo',
+    'OpenEden Open Dollar',
+    18,
+    '0x302e52aff9815b9d1682473dbfb9c74f9b750aa8',
+    UnderlyingAsset['bsc:usdo'],
+    [...BSC_TOKEN_FEATURES, CoinFeature.REBASE_TOKEN]
+  ),
   tbscToken(
     'b31aa2b5-8d8c-4ac1-b5e5-0f9d59377eab',
     'tbsc:busd',

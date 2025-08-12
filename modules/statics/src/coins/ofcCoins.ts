@@ -1888,6 +1888,13 @@ export const ofcCoins = [
     UnderlyingAsset['bsc:cusdo']
   ),
   ofcBscToken('a7ac1127-84c8-4634-89ed-8d985b707e18', 'ofcbsc:unx', 'Unchain X', 18, UnderlyingAsset['bsc:unx']),
+  ofcBscToken(
+    '1db5b688-ff72-4835-8a7a-8071ee9e0fe5',
+    'ofcbsc:usdo',
+    'OpenEden Open Dollar',
+    18,
+    UnderlyingAsset['bsc:usdo']
+  ),
   tofcBscToken(
     'bf8a52e5-f416-46ea-95c2-a920dc204233',
     'ofctbsc:usd1',
