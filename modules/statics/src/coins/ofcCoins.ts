@@ -76,14 +76,7 @@ export const ofcCoins = [
   ofc('f1ed2667-fed1-4db8-87f5-061282d6147b', 'ofceos', 'Eos', 4, UnderlyingAsset.EOS, CoinKind.CRYPTO),
   ofc('6c0714f3-fb74-4bb7-b17d-e34e48821890', 'ofcetc', 'Ethereum Classic', 18, UnderlyingAsset.ETC, CoinKind.CRYPTO),
   ofc('49bc92d3-3085-4124-bdb3-df86385dd9b5', 'ofcstx', 'Stacks', 6, UnderlyingAsset.STX, CoinKind.CRYPTO),
-  ofc(
-    '181974a6-b042-460e-acec-46733f8af941',
-    'ofchbar',
-    'Mainnet Hedera HBAR',
-    8,
-    UnderlyingAsset.HBAR,
-    CoinKind.CRYPTO
-  ),
+  ofc('181974a6-b042-460e-acec-46733f8af941', 'ofchbar', 'Hedera', 8, UnderlyingAsset.HBAR, CoinKind.CRYPTO),
   ofc('140ac16e-e39a-49d0-ae69-60019ff35727', 'ofcbld', 'Agoric', 6, UnderlyingAsset.BLD, CoinKind.CRYPTO),
   ofc('8b4f4051-b447-479b-bc3e-88e30a496599', 'ofcbaby', 'Babylon', 6, UnderlyingAsset.BABY, CoinKind.CRYPTO),
   ofc('74cc3b48-25be-4477-8782-cbb1ea070eab', 'ofccronos', 'Cronos POS', 8, UnderlyingAsset.CRONOS, CoinKind.CRYPTO),
@@ -169,7 +162,14 @@ export const ofcCoins = [
   tofc('30e8f8d8-17e7-4af0-91cf-069724e05e65', 'ofctsgb', 'Testnet songbird', 18, UnderlyingAsset.SGB, CoinKind.CRYPTO),
   ofc('4bc9d629-cff8-4f1b-bb43-5424f7ed9a19', 'ofcmon', 'Monad', 18, UnderlyingAsset.MON, CoinKind.CRYPTO),
   tofc('24f7dd79-7d03-4ce5-ac90-0572153f28f2', 'ofctmon', 'Testnet Monad', 18, UnderlyingAsset.MON, CoinKind.CRYPTO),
-  ofc('bf513cc9-7b75-42d2-a585-1a7c91801605', 'ofcworld', 'World', 18, UnderlyingAsset.WORLD, CoinKind.CRYPTO),
+  ofc(
+    'bf513cc9-7b75-42d2-a585-1a7c91801605',
+    'ofcworld',
+    'Worldchain Ethereum',
+    18,
+    UnderlyingAsset.WORLD,
+    CoinKind.CRYPTO
+  ),
   tofc(
     'ca1f3c70-8f80-4feb-9be7-f2b716409027',
     'ofctworld',
@@ -180,7 +180,14 @@ export const ofcCoins = [
   ),
   ofc('0ea1175d-63a2-4dd3-b963-24020a02eab3', 'ofcstt', 'Somnia', 18, UnderlyingAsset.STT, CoinKind.CRYPTO),
   tofc('06eee147-1299-435d-843f-9eea958e2b2f', 'ofctstt', 'Testnet somnia', 18, UnderlyingAsset.STT, CoinKind.CRYPTO),
-  ofc('cdc62abc-4748-48f4-8926-6ed42f6c86c9', 'ofcsoneium', 'Soneium', 18, UnderlyingAsset.SONEIUM, CoinKind.CRYPTO),
+  ofc(
+    'cdc62abc-4748-48f4-8926-6ed42f6c86c9',
+    'ofcsoneium',
+    'Soneium Ethereum',
+    18,
+    UnderlyingAsset.SONEIUM,
+    CoinKind.CRYPTO
+  ),
   tofc(
     '3df259c9-3b18-4611-a359-cf977c535a5f',
     'ofctsoneium',

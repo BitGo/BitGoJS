@@ -19,7 +19,7 @@ describe('world', function () {
       world.should.be.an.instanceof(World);
       world.getChain().should.equal('world');
       world.getFamily().should.equal('world');
-      world.getFullName().should.equal('Worldchain');
+      world.getFullName().should.equal('Worldchain Ethereum');
       world.getBaseFactor().should.equal(1e18);
       world.supportsTss().should.equal(true);
       world.allowsAccountConsolidations().should.equal(false);
