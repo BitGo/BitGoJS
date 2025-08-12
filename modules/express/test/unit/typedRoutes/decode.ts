@@ -1,5 +1,6 @@
 import * as assert from 'assert';
 import * as t from 'io-ts';
+import { DecryptRequestBody } from '../../../src/typedRoutes/api/common/decrypt';
 import { LoginRequest } from '../../../src/typedRoutes/api/common/login';
 
 export function assertDecode<T>(codec: t.Type<T, unknown>, input: unknown): T {
@@ -22,6 +23,19 @@ describe('io-ts decode tests', function () {
 
     assertDecode(t.type(LoginRequest), {
       username: 'user',
+      password: 'password',
+    });
+  });
+  it('express.decrypt', function () {
+    // input is required field
+    assert.throws(() =>
+      assertDecode(t.type(DecryptRequestBody), {
+        password: 'hello',
+      })
+    );
+
+    assertDecode(t.type(DecryptRequestBody), {
+      input: 'input',
       password: 'password',
     });
   });
