@@ -456,6 +456,11 @@ export enum CoinFeature {
    * This token is internal and shouldn't be exposed to users
    */
   RESTRICTED = 'restricted',
+
+  /**
+   * This coin is an EVM compatible coin and should use common EVM message signing functionality
+   */
+  SHARED_EVM_MESSAGE_SIGNING = 'shared-evm-message-signing',
 }
 
 /**
