@@ -6,32 +6,32 @@ import {
   CoinFeature,
   CoinMap,
   coins,
-  Erc20Coin,
-  EthereumNetwork,
-  Networks,
-  NetworkType,
-  UnderlyingAsset,
-  UtxoCoin,
-  SuiCoin,
-  HederaToken,
-  EosCoin,
-  SolCoin,
-  XrpCoin,
-  tokens,
-  getFormattedTokens,
+  createToken,
   createTokenMapUsingConfigDetails,
   createTokenMapUsingTrimmedConfigDetails,
-  createToken,
+  EosCoin,
+  Erc20Coin,
+  EthereumNetwork,
   getFormattedTokenConfigForCoin,
+  getFormattedTokens,
+  HederaToken,
+  Networks,
+  NetworkType,
+  SolCoin,
+  SuiCoin,
+  tokens,
+  UnderlyingAsset,
+  UtxoCoin,
+  XrpCoin,
 } from '../../src';
 import { utxo } from '../../src/utxo';
 import { expectedColdFeatures } from './fixtures/expectedColdFeatures';
 import {
   amsTokenConfig,
   amsTokenConfigWithCustomToken,
+  amsTokenWithUnsupportedNetwork,
   incorrectAmsTokenConfig,
   reducedAmsTokenConfig,
-  amsTokenWithUnsupportedNetwork,
 } from './resources/amsTokenConfig';
 
 interface DuplicateCoinObject {
@@ -1065,6 +1065,31 @@ describe('ERC20 Bulk Transaction Feature', () => {
     it('should not have ERC20_BULK_TRANSACTION feature for BSC', () => {
       const coin = coins.get('bsc');
       coin.features.includes(CoinFeature.ERC20_BULK_TRANSACTION).should.eql(false);
+    });
+  });
+});
+
+describe('Custody Bulk Withdrawal Features', () => {
+  it('should have CUSTODY_BULK_TRANSACTION feature for appropriate coins', () => {
+    const custodyBulkWithdrawalCoins = [
+      'sui',
+      'tsui',
+      'bera',
+      'tbera',
+      'baby',
+      'tbaby',
+      'eth',
+      'hteth',
+      'asi',
+      'tasi',
+      'cronos',
+      'tcronos',
+      'initia',
+      'tinitia',
+    ];
+    custodyBulkWithdrawalCoins.forEach((coinName) => {
+      const coin = coins.get(coinName);
+      coin.features.includes(CoinFeature.CUSTODY_BULK_TRANSACTION).should.eql(true);
     });
   });
 });

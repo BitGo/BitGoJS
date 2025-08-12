@@ -10,7 +10,7 @@ import {
   bscToken,
   celoToken,
   coredaoErc20,
-  worldErc20,
+  cosmosToken,
   eosToken,
   erc1155,
   erc20,
@@ -29,8 +29,6 @@ import {
   solToken,
   stellarToken,
   suiToken,
-  vetToken,
-  cosmosToken,
   talgoToken,
   taoToken,
   taptNFTCollection,
@@ -49,9 +47,11 @@ import {
   tsuiToken,
   ttaoToken,
   ttronToken,
-  txrpToken,
   tworldErc20,
+  txrpToken,
   tzkethErc20,
+  vetToken,
+  worldErc20,
   xrpToken,
   zkethErc20,
 } from './account';
@@ -295,6 +295,7 @@ export const coins = CoinMap.fromCoins([
       CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
       CoinFeature.EIP1559,
       CoinFeature.ERC20_BULK_TRANSACTION,
+      CoinFeature.CUSTODY_BULK_TRANSACTION,
     ]
   ), // we should probably refactor this into a eth() method
   account(
@@ -355,6 +356,7 @@ export const coins = CoinMap.fromCoins([
       CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
       CoinFeature.EIP1559,
       CoinFeature.ERC20_BULK_TRANSACTION,
+      CoinFeature.CUSTODY_BULK_TRANSACTION,
     ]
   ),
   account(
@@ -976,7 +978,7 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.BABY,
     BaseUnit.BABY,
-    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
+    [...COSMOS_SIDECHAIN_FEATURES_WITH_STAKING, CoinFeature.CUSTODY_BULK_TRANSACTION]
   ),
   account(
     'ee22282b-c307-4861-b706-d9a178326ad5',
@@ -986,7 +988,7 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.BABY,
     BaseUnit.BABY,
-    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
+    [...COSMOS_SIDECHAIN_FEATURES_WITH_STAKING, CoinFeature.CUSTODY_BULK_TRANSACTION]
   ),
   account(
     '08ff6b77-4cfb-4dcd-9182-dd1cc6f92f70',
@@ -1016,7 +1018,7 @@ export const coins = CoinMap.fromCoins([
     8,
     UnderlyingAsset.CRONOS,
     BaseUnit.CRONOS,
-    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
+    [...COSMOS_SIDECHAIN_FEATURES_WITH_STAKING, CoinFeature.CUSTODY_BULK_TRANSACTION]
   ),
   account(
     '49d56512-bddb-41aa-ac7f-f4a4c494b412',
@@ -1026,7 +1028,7 @@ export const coins = CoinMap.fromCoins([
     8,
     UnderlyingAsset.CRONOS,
     BaseUnit.CRONOS,
-    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
+    [...COSMOS_SIDECHAIN_FEATURES_WITH_STAKING, CoinFeature.CUSTODY_BULK_TRANSACTION]
   ),
   account(
     '854513b2-cf1a-44b4-879b-e3aae0b5f227',
@@ -1056,7 +1058,7 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.INITIA,
     BaseUnit.INITIA,
-    COSMOS_SIDECHAIN_FEATURES
+    [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.CUSTODY_BULK_TRANSACTION]
   ),
   account(
     '2d10a918-01f4-40a5-b1db-a5e5247d21d7',
@@ -1066,7 +1068,7 @@ export const coins = CoinMap.fromCoins([
     6,
     UnderlyingAsset.INITIA,
     BaseUnit.INITIA,
-    COSMOS_SIDECHAIN_FEATURES
+    [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.CUSTODY_BULK_TRANSACTION]
   ),
   account(
     '2999b6e6-c30e-4089-a67a-2012df2adfa0',
@@ -1076,7 +1078,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.ASI,
     BaseUnit.ASI,
-    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
+    [...COSMOS_SIDECHAIN_FEATURES_WITH_STAKING, CoinFeature.CUSTODY_BULK_TRANSACTION]
   ),
   account(
     '1b7dfc3e-3431-48ca-883a-e9e8e32b17f2',
@@ -1086,7 +1088,7 @@ export const coins = CoinMap.fromCoins([
     18,
     UnderlyingAsset.ASI,
     BaseUnit.ASI,
-    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
+    [...COSMOS_SIDECHAIN_FEATURES_WITH_STAKING, CoinFeature.CUSTODY_BULK_TRANSACTION]
   ),
   account(
     'b473d5f0-1590-4edf-bc9f-813aff515a23',
