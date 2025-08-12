@@ -1596,9 +1596,9 @@ export const coins = CoinMap.fromCoins([
     'df01a650-3c8b-4182-a7cb-8ee7ad115c21',
     'xpl',
     'Plasma',
-    Networks.main.plasma,
+    Networks.main.xpl,
     18,
-    UnderlyingAsset.PLASMA,
+    UnderlyingAsset.XPL,
     BaseUnit.ETH,
     [
       ...EVM_FEATURES,
@@ -1612,9 +1612,9 @@ export const coins = CoinMap.fromCoins([
     'f99e8326-ea4f-4a84-8033-194d421daedb',
     'txpl',
     'Plasma Testnet',
-    Networks.test.plasma,
+    Networks.test.xpl,
     18,
-    UnderlyingAsset.PLASMA,
+    UnderlyingAsset.XPL,
     BaseUnit.ETH,
     [
       ...EVM_FEATURES,

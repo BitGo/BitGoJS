@@ -68,7 +68,7 @@ export enum CoinFamily {
   LTC = 'ltc',
   MANTRA = 'mantra',
   MON = 'mon',
-  PLASMA = 'xpl', // Plasma Network
+  XPL = 'xpl', // Plasma Network
   POLYGON = 'polygon',
   POLYX = 'polyx',
   PHRS = 'phrs',
@@ -524,7 +524,7 @@ export enum UnderlyingAsset {
   OG = 'og',
   OPETH = 'opeth',
   OSMO = 'osmo',
-  PLASMA = 'xpl', // Plasma Network
+  XPL = 'xpl', // Plasma Network
   POLYGON = 'polygon',
   PHRS = 'phrs',
   CTC = 'ctc',
