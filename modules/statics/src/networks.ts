@@ -1426,6 +1426,11 @@ class SonicTestnet extends Testnet implements EthereumNetwork {
   accountExplorerUrl = 'https://testnet.sonicscan.org/address/';
   chainId = 57054;
   nativeCoinOperationHashPrefix = '57054';
+  walletFactoryAddress = '0x809ee567e413543af1caebcdb247f6a67eafc8dd';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
+  forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
+  forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
+  walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
 }
 
 class Kaia extends Mainnet implements EthereumNetwork {
@@ -1444,6 +1449,11 @@ class KaiaTestnet extends Testnet implements EthereumNetwork {
   accountExplorerUrl = 'https://kairos.kaiascan.io/address/';
   chainId = 1001;
   nativeCoinOperationHashPrefix = '1001';
+  walletFactoryAddress = '0x809ee567e413543af1caebcdb247f6a67eafc8dd';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
+  forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
+  forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
+  walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
 }
 
 class Irys extends Mainnet implements EthereumNetwork {
@@ -1462,6 +1472,11 @@ class IrysTestnet extends Testnet implements EthereumNetwork {
   accountExplorerUrl = 'https://testnet-explorer.irys.xyz/address/';
   chainId = 1270;
   nativeCoinOperationHashPrefix = '1270';
+  walletFactoryAddress = '0x809ee567e413543af1caebcdb247f6a67eafc8dd';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
+  forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
+  forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
+  walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
 }
 
 class Og extends Mainnet implements EthereumNetwork {
@@ -1621,6 +1636,11 @@ class SeiEvmTestnet extends Testnet implements EthereumNetwork {
   accountExplorerUrl = 'https://seitrace.com/address/';
   chainId = 1328;
   nativeCoinOperationHashPrefix = '1328';
+  walletFactoryAddress = '0x809ee567e413543af1caebcdb247f6a67eafc8dd';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
+  forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
+  forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
+  walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
 }
 
 class Somnia extends Mainnet implements EthereumNetwork {
