@@ -31,7 +31,6 @@
     io-ts-types "^0.5.15"
 
 "@api-ts/response@2.1.0":
-"@api-ts/response@2.1.0":
   version "2.1.0"
   resolved "https://registry.npmjs.org/@api-ts/response/-/response-2.1.0.tgz#9691128e02949cdc9b2cd3277133b2c7e68220b8"
   integrity sha512-x9yt3IShvz9shSw4owsgC39zmPEBh9ha7MOXSMYFDsdZT7NCP4730w6fsGkYTkbQLpF3oNTMFqZONxOwE1aK5Q==
