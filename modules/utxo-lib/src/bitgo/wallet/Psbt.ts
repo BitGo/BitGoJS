@@ -5,6 +5,7 @@ import { checkForInput } from 'bip174/src/lib/utils';
 import { BIP32Interface } from 'bip32';
 import * as bs58check from 'bs58check';
 import { UtxoPsbt } from '../UtxoPsbt';
+import { Psbt } from '../../';
 import { UtxoTransaction } from '../UtxoTransaction';
 import {
   createOutputScript2of3,
@@ -495,7 +496,7 @@ export function isTransactionWithKeyPathSpendInput(
  * We do all the matching of the (tap)bip32Derivations masterFingerprint to the fingerprint of the
  * extendedPubkey.
  */
-export function addXpubsToPsbt(psbt: UtxoPsbt, rootWalletKeys: RootWalletKeys): void {
+export function addXpubsToPsbt(psbt: Psbt, rootWalletKeys: RootWalletKeys): void {
   const safeRootWalletKeys = new RootWalletKeys(
     rootWalletKeys.triple.map((bip32) => bip32.neutered()) as Triple<BIP32Interface>,
     rootWalletKeys.derivationPrefixes
