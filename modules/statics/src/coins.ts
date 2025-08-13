@@ -2708,7 +2708,7 @@ export const coins = CoinMap.fromCoins([
   ttronToken(
     '4853b203-e475-4538-bcba-f69da0e45d4b',
     'ttrx:stgusd1',
-    'Staging USD1 Token',
+    'Test USD1 Token',
     18,
     'TPEwuCefwvzBcr9BHvg2xhJCaf499uGMZx',
     UnderlyingAsset['ttrx:stgusd1']

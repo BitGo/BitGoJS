@@ -42,8 +42,8 @@ describe('OFC Token Naming Convention Tests', function () {
       // Known exceptions that don't follow the "Test" or "Testnet" pattern
       const knownExceptions = [
         'ofcttrx:usdt', // "Tether USD"
-        'ofcttrx:usd1', // "USD1 Token"
-        'ofcttrx:stgusd1', // "Staging USD1 Token"
+        'ofcttrx:usd1', // "Test USD1 Token"
+        'ofcttrx:stgusd1', // "Test USD1 Token"
         'ofctxrp:rlusd', // "RLUSD"
         'ofctxrp:xsgd', // "XSGB"
         'ofctpolygon:usdc', // "USD Coin"

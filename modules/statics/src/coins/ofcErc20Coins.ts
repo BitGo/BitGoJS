@@ -3505,7 +3505,7 @@ export const tOfcErc20Coins = [
   tofcerc20(
     'c1d2c09d-ac71-4cf6-9683-90d93b6afa09',
     'ofchteth:stgusd1',
-    'Hoodi Testnet USD1',
+    'Test USD1 Token',
     18,
     UnderlyingAsset['hteth:stgusd1'],
     undefined,
@@ -3547,7 +3547,7 @@ export const tOfcErc20Coins = [
   tofcerc20(
     '4dc4534c-72b8-4a68-a914-210dae1e5d4d',
     'ofchteth:usd1',
-    'Hoodi Testnet USD1',
+    'Test USD1 Token',
     18,
     UnderlyingAsset['hteth:usd1'],
     undefined,
