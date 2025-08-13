@@ -1086,12 +1086,34 @@ export const ofcCoins = [
     UnderlyingAsset['sol:hnt'],
     SOL_TOKEN_FEATURES
   ),
+  tofcsolToken(
+    'fb69f06b-d5a1-4b97-b40f-736174ccb53f',
+    'ofctsol:usd1',
+    'Test USD1 Token',
+    6,
+    UnderlyingAsset['sol:usd1'],
+    SOL_TOKEN_FEATURES
+  ),
+  tofcsolToken(
+    '750f0e40-c5b9-464f-874f-dc455cf1494b',
+    'ofctsol:stgusd1',
+    'Test USD1 Token',
+    6,
+    UnderlyingAsset['sol:usd1'],
+    SOL_TOKEN_FEATURES
+  ),
   tofcTronToken('937efe97-a17a-4d2a-aaf2-0ffdb529a943', 'ofcttrx:usdt', 'Tether USD', 6, UnderlyingAsset['ttrx:usdt']),
-  tofcTronToken('26d82f2c-47fd-474f-be79-246117214e0e', 'ofcttrx:usd1', 'USD1 Token', 18, UnderlyingAsset['ttrx:usd1']),
+  tofcTronToken(
+    '26d82f2c-47fd-474f-be79-246117214e0e',
+    'ofcttrx:usd1',
+    'Test USD1 Token',
+    18,
+    UnderlyingAsset['ttrx:usd1']
+  ),
   tofcTronToken(
     '8e2ca812-2dee-4264-b5da-20d52a9194c8',
     'ofcttrx:stgusd1',
-    'Staging USD1 Token',
+    'Test USD1 Token',
     18,
     UnderlyingAsset['ttrx:stgusd1']
   ),

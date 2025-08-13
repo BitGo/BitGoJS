@@ -11611,7 +11611,7 @@ export const erc20Coins = [
   terc20(
     '3502002c-0f27-46d0-9967-d34cd9290476',
     'hteth:stgusd1',
-    'Hoodi Testnet USD1',
+    'Test USD1 Token',
     18,
     '0xe4cf91a5bf7cc3d75ac85639e591e51d34948954',
     UnderlyingAsset['hteth:stgusd1'],
@@ -11647,7 +11647,7 @@ export const erc20Coins = [
   terc20(
     '0354c858-912b-4a65-b3e1-9b29a5f8573a',
     'hteth:usd1',
-    'Hoodi Testnet USD1',
+    'Test USD1 Token',
     18,
     '0xed9e025fc3fd4ab704378ff5486b596f00dbef1b',
     UnderlyingAsset['hteth:usd1'],
