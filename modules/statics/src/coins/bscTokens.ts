@@ -1268,7 +1268,7 @@ export const bscTokens = [
     18,
     '0x302e52aff9815b9d1682473dbfb9c74f9b750aa8',
     UnderlyingAsset['bsc:usdo'],
-    [...BSC_TOKEN_FEATURES, CoinFeature.REBASE_TOKEN]
+    [...BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.REBASE_TOKEN]
   ),
   tbscToken(
     'b31aa2b5-8d8c-4ac1-b5e5-0f9d59377eab',
