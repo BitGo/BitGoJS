@@ -3,6 +3,7 @@ import { DecodedCloseAccountInstruction } from '@solana/spl-token';
 import { Blockhash, StakeInstructionType, SystemInstructionType, TransactionSignature } from '@solana/web3.js';
 import { InstructionBuilderTypes } from './constants';
 import { StakePoolInstructionType } from '@solana/spl-stake-pool';
+import { DepositSolStakePoolData, WithdrawStakeStakePoolData } from './jitoStakePoolOperations';
 
 // TODO(STLX-9890): Add the interfaces for validityWindow and SequenceId
 export interface SolanaKeys {
@@ -41,6 +42,7 @@ export type InstructionParams =
   | StakingDelegate
   | MintTo
   | Burn
+  | Approve
   | CustomInstruction;
 
 export interface Memo {
@@ -107,6 +109,29 @@ export interface Burn {
   };
 }
 
+export interface Approve {
+  type: InstructionBuilderTypes.Approve;
+  params: {
+    accountAddress: string;
+    delegateAddress: string;
+    ownerAddress: string;
+    amount: string;
+    programId?: string;
+  };
+}
+
+export enum StakingType {
+  NATIVE = 'NATIVE',
+  MARINADE = 'MARINADE',
+  JITO = 'JITO',
+}
+
+export interface JitoStakingActivateParams {
+  stakePoolData: DepositSolStakePoolData;
+}
+
+export type StakingActivateExtraParams = JitoStakingActivateParams;
+
 export interface StakingActivate {
   type: InstructionBuilderTypes.StakingActivate;
   params: {
@@ -114,8 +139,8 @@ export interface StakingActivate {
     stakingAddress: string;
     amount: string;
     validator: string;
-    isMarinade?: boolean;
-    isJito?: boolean;
+    stakingType: StakingType;
+    extraParams?: StakingActivateExtraParams;
   };
 }
 
@@ -124,6 +149,14 @@ export interface StakingDelegate {
   params: { stakingAddress: string; fromAddress: string; validator: string };
 }
 
+export interface JitoStakingDeactivateParams {
+  stakePoolData: WithdrawStakeStakePoolData;
+  validatorAddress: string;
+  transferAuthorityAddress: string;
+}
+
+export type StakingDeactivateExtraParams = JitoStakingDeactivateParams;
+
 export interface StakingDeactivate {
   type: InstructionBuilderTypes.StakingDeactivate;
   params: {
@@ -131,7 +164,8 @@ export interface StakingDeactivate {
     stakingAddress: string;
     amount?: string;
     unstakingAddress?: string;
-    isMarinade?: boolean;
+    stakingType: StakingType;
+    extraParams?: StakingDeactivateExtraParams;
     recipients?: Recipient[];
   };
 }
@@ -187,7 +221,8 @@ export type ValidInstructionTypes =
   | 'TokenTransfer'
   | 'SetPriorityFee'
   | 'MintTo'
-  | 'Burn';
+  | 'Burn'
+  | 'Approve';
 
 export type StakingAuthorizeParams = {
   stakingAddress: string;

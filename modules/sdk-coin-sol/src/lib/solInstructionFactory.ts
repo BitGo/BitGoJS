@@ -1,4 +1,4 @@
-import { BaseCoin, NetworkType, SolCoin } from '@bitgo/statics';
+import { SolCoin } from '@bitgo/statics';
 import {
   createAssociatedTokenAccountInstruction,
   createCloseAccountInstruction,
@@ -6,6 +6,7 @@ import {
   createBurnInstruction,
   createTransferCheckedInstruction,
   TOKEN_2022_PROGRAM_ID,
+  createApproveInstruction,
 } from '@solana/spl-token';
 import {
   Authorized,
@@ -20,15 +21,7 @@ import {
 } from '@solana/web3.js';
 import assert from 'assert';
 import BigNumber from 'bignumber.js';
-import {
-  InstructionBuilderTypes,
-  JITO_MANAGER_FEE_ACCOUNT,
-  JITO_MANAGER_FEE_ACCOUNT_TESTNET,
-  JITO_STAKE_POOL_RESERVE_ACCOUNT,
-  JITO_STAKE_POOL_RESERVE_ACCOUNT_TESTNET,
-  JITOSOL_MINT_ADDRESS,
-  MEMO_PROGRAM_PK,
-} from './constants';
+import { InstructionBuilderTypes, MEMO_PROGRAM_PK } from './constants';
 import {
   AtaClose,
   AtaInit,
@@ -47,9 +40,11 @@ import {
   WalletInit,
   SetPriorityFee,
   CustomInstruction,
+  Approve,
+  StakingType,
 } from './iface';
 import { getSolTokenFromTokenName, isValidBase64, isValidHex } from './utils';
-import { depositSolInstructions } from './jitoStakePoolOperations';
+import { depositSolInstructions, withdrawStakeInstructions } from './jitoStakePoolOperations';
 
 /**
  * Construct Solana instructions from instructions params
@@ -57,10 +52,7 @@ import { depositSolInstructions } from './jitoStakePoolOperations';
  * @param {InstructionParams} instructionToBuild - the data containing the instruction params
  * @returns {TransactionInstruction[]} An array containing supported Solana instructions
  */
-export function solInstructionFactory(
-  instructionToBuild: InstructionParams,
-  coinConfig: Readonly<BaseCoin>
-): TransactionInstruction[] {
+export function solInstructionFactory(instructionToBuild: InstructionParams): TransactionInstruction[] {
   switch (instructionToBuild.type) {
     case InstructionBuilderTypes.NonceAdvance:
       return advanceNonceInstruction(instructionToBuild);
@@ -70,10 +62,12 @@ export function solInstructionFactory(
       return transferInstruction(instructionToBuild);
     case InstructionBuilderTypes.TokenTransfer:
       return tokenTransferInstruction(instructionToBuild);
+    case InstructionBuilderTypes.Approve:
+      return approveInstruction(instructionToBuild);
     case InstructionBuilderTypes.CreateNonceAccount:
       return createNonceAccountInstruction(instructionToBuild);
     case InstructionBuilderTypes.StakingActivate:
-      return stakingInitializeInstruction(instructionToBuild, coinConfig);
+      return stakingInitializeInstruction(instructionToBuild);
     case InstructionBuilderTypes.StakingDeactivate:
       return stakingDeactivateInstruction(instructionToBuild);
     case InstructionBuilderTypes.StakingWithdraw:
@@ -224,6 +218,33 @@ function tokenTransferInstruction(data: TokenTransfer): TransactionInstruction[]
 }
 
 /**
+ * Construct Transfer Solana instructions
+ *
+ * @param {Transfer} data - the data to build the instruction
+ * @returns {TransactionInstruction[]} An array containing Transfer Solana instruction
+ */
+function approveInstruction(data: Approve): TransactionInstruction[] {
+  const {
+    params: { accountAddress, delegateAddress, ownerAddress, amount, programId },
+  } = data;
+  assert(accountAddress, 'Missing fromAddress (owner) param');
+  assert(delegateAddress, 'Missing toAddress param');
+  assert(ownerAddress, 'Missing ownerAddress param');
+  assert(programId, 'Missing programId param');
+  assert(amount, 'Missing amount param');
+  return [
+    createApproveInstruction(
+      new PublicKey(accountAddress),
+      new PublicKey(delegateAddress),
+      new PublicKey(ownerAddress),
+      BigInt(amount),
+      undefined,
+      programId === undefined ? undefined : new PublicKey(programId)
+    ),
+  ];
+}
+
+/**
  * Construct Create and Initialize Nonce Solana instructions
  *
  * @param {WalletInit} data - the data to build the instruction
@@ -252,68 +273,70 @@ function createNonceAccountInstruction(data: WalletInit): TransactionInstruction
  * @param {StakingActivate} data - the data to build the instruction
  * @returns {TransactionInstruction[]} An array containing Create Staking Account and Delegate Solana instructions
  */
-function stakingInitializeInstruction(data: StakingActivate, coinConfig: Readonly<BaseCoin>): TransactionInstruction[] {
+function stakingInitializeInstruction(data: StakingActivate): TransactionInstruction[] {
   const {
-    params: { fromAddress, stakingAddress, amount, validator, isMarinade, isJito },
+    params: { fromAddress, stakingAddress, amount, validator, stakingType, extraParams },
   } = data;
   assert(fromAddress, 'Missing fromAddress param');
   assert(stakingAddress, 'Missing stakingAddress param');
   assert(amount, 'Missing amount param');
   assert(validator, 'Missing validator param');
-  assert(isMarinade !== undefined, 'Missing isMarinade param');
-  assert(isJito !== undefined, 'Missing isJito param');
-  assert([isMarinade, isJito].filter((x) => x).length <= 1, 'At most one of isMarinade and isJito can be true');
 
   const fromPubkey = new PublicKey(fromAddress);
   const stakePubkey = new PublicKey(stakingAddress);
   const validatorPubkey = new PublicKey(validator);
   const tx = new Transaction();
 
-  if (isJito) {
-    const isTestnet = coinConfig.network.type === NetworkType.TESTNET;
-    const stakePoolMint = new PublicKey(JITOSOL_MINT_ADDRESS);
-    const stakePoolReserveStake = new PublicKey(
-      isTestnet ? JITO_STAKE_POOL_RESERVE_ACCOUNT_TESTNET : JITO_STAKE_POOL_RESERVE_ACCOUNT
-    );
-    const stakePoolManagerFeeAccount = new PublicKey(
-      isTestnet ? JITO_MANAGER_FEE_ACCOUNT_TESTNET : JITO_MANAGER_FEE_ACCOUNT
-    );
-    const instructions = depositSolInstructions(
-      {
-        stakePoolAddress: stakePubkey,
-        from: fromPubkey,
-        lamports: BigInt(amount),
-      },
-      stakePoolMint,
-      stakePoolReserveStake,
-      stakePoolManagerFeeAccount
-    );
-    tx.add(...instructions);
-  } else if (isMarinade) {
-    const walletInitStaking = StakeProgram.createAccount({
-      fromPubkey,
-      stakePubkey,
-      authorized: new Authorized(validatorPubkey, fromPubkey), // staker and withdrawer
-      lockup: new Lockup(0, 0, fromPubkey), // No minimum epoch to withdraw
-      lamports: new BigNumber(amount).toNumber(),
-    });
-    tx.add(walletInitStaking);
-  } else {
-    const walletInitStaking = StakeProgram.createAccount({
-      fromPubkey,
-      stakePubkey,
-      authorized: new Authorized(fromPubkey, fromPubkey), // staker and withdrawer
-      lockup: new Lockup(0, 0, fromPubkey), // No minimum epoch to withdraw
-      lamports: new BigNumber(amount).toNumber(),
-    });
-    tx.add(walletInitStaking);
+  switch (stakingType) {
+    case StakingType.JITO: {
+      assert(extraParams !== undefined, 'Missing extraParams param');
+      const instructions = depositSolInstructions(
+        {
+          stakePoolAddress: stakePubkey,
+          from: fromPubkey,
+          lamports: BigInt(amount),
+        },
+        extraParams.stakePoolData
+      );
+      tx.add(...instructions);
+      break;
+    }
 
-    const delegateStaking = StakeProgram.delegate({
-      stakePubkey: new PublicKey(stakingAddress),
-      authorizedPubkey: new PublicKey(fromAddress),
-      votePubkey: new PublicKey(validator),
-    });
-    tx.add(delegateStaking);
+    case StakingType.MARINADE: {
+      const walletInitStaking = StakeProgram.createAccount({
+        fromPubkey,
+        stakePubkey,
+        authorized: new Authorized(validatorPubkey, fromPubkey), // staker and withdrawer
+        lockup: new Lockup(0, 0, fromPubkey), // No minimum epoch to withdraw
+        lamports: new BigNumber(amount).toNumber(),
+      });
+      tx.add(walletInitStaking);
+      break;
+    }
+
+    case StakingType.NATIVE: {
+      const walletInitStaking = StakeProgram.createAccount({
+        fromPubkey,
+        stakePubkey,
+        authorized: new Authorized(fromPubkey, fromPubkey), // staker and withdrawer
+        lockup: new Lockup(0, 0, fromPubkey), // No minimum epoch to withdraw
+        lamports: new BigNumber(amount).toNumber(),
+      });
+      tx.add(walletInitStaking);
+
+      const delegateStaking = StakeProgram.delegate({
+        stakePubkey: new PublicKey(stakingAddress),
+        authorizedPubkey: new PublicKey(fromAddress),
+        votePubkey: new PublicKey(validator),
+      });
+      tx.add(delegateStaking);
+      break;
+    }
+
+    default: {
+      const unreachable: never = stakingType;
+      throw new Error(`Unknown staking type ${unreachable}`);
+    }
   }
 
   return tx.instructions;
@@ -327,68 +350,100 @@ function stakingInitializeInstruction(data: StakingActivate, coinConfig: Readonl
  */
 function stakingDeactivateInstruction(data: StakingDeactivate): TransactionInstruction[] {
   const {
-    params: { fromAddress, stakingAddress, isMarinade, recipients },
+    params: { fromAddress, stakingAddress, amount, unstakingAddress, recipients, stakingType, extraParams },
   } = data;
   assert(fromAddress, 'Missing fromAddress param');
-  if (!isMarinade) {
-    assert(stakingAddress, 'Missing stakingAddress param');
-  }
 
-  if (isMarinade) {
-    const tx = new Transaction();
-    assert(recipients, 'Missing recipients param');
-    const toPubkeyAddress = new PublicKey(recipients[0].address || '');
-    const transferInstruction = SystemProgram.transfer({
-      fromPubkey: new PublicKey(fromAddress),
-      toPubkey: toPubkeyAddress,
-      lamports: parseInt(recipients[0].amount, 10),
-    });
+  switch (stakingType) {
+    case StakingType.JITO: {
+      assert(stakingAddress, 'Missing stakingAddress param');
+      assert(unstakingAddress, 'Missing unstakingAddress param');
+      assert(amount, 'Missing amount param');
+      assert(extraParams, 'Missing extraParams param');
 
-    tx.add(transferInstruction);
-    return tx.instructions;
-  }
+      const tx = new Transaction();
+      tx.add(
+        ...withdrawStakeInstructions(
+          {
+            stakePoolAddress: new PublicKey(stakingAddress),
+            tokenOwner: new PublicKey(fromAddress),
+            destinationStakeAccount: new PublicKey(unstakingAddress),
+            validatorAddress: new PublicKey(extraParams.validatorAddress),
+            transferAuthority: new PublicKey(extraParams.transferAuthorityAddress),
+            poolAmount: amount,
+          },
+          extraParams.stakePoolData
+        )
+      );
+      return tx.instructions;
+    }
 
-  if (data.params.amount && data.params.unstakingAddress) {
-    const tx = new Transaction();
-    const unstakingAddress = new PublicKey(data.params.unstakingAddress);
+    case StakingType.MARINADE: {
+      assert(recipients, 'Missing recipients param');
 
-    const allocateAccount = SystemProgram.allocate({
-      accountPubkey: unstakingAddress,
-      space: StakeProgram.space,
-    });
-    tx.add(allocateAccount);
+      const tx = new Transaction();
+      const toPubkeyAddress = new PublicKey(recipients[0].address || '');
+      const transferInstruction = SystemProgram.transfer({
+        fromPubkey: new PublicKey(fromAddress),
+        toPubkey: toPubkeyAddress,
+        lamports: parseInt(recipients[0].amount, 10),
+      });
 
-    const assignAccount = SystemProgram.assign({
-      accountPubkey: unstakingAddress,
-      programId: StakeProgram.programId,
-    });
-    tx.add(assignAccount);
+      tx.add(transferInstruction);
+      return tx.instructions;
+    }
 
-    const splitStake = StakeProgram.split(
-      {
-        stakePubkey: new PublicKey(stakingAddress),
-        authorizedPubkey: new PublicKey(fromAddress),
-        splitStakePubkey: unstakingAddress,
-        lamports: new BigNumber(data.params.amount).toNumber(),
-      },
-      0
-    );
-    tx.add(splitStake.instructions[1]);
+    case StakingType.NATIVE: {
+      assert(stakingAddress, 'Missing stakingAddress param');
 
-    const deactivateStaking = StakeProgram.deactivate({
-      stakePubkey: unstakingAddress,
-      authorizedPubkey: new PublicKey(fromAddress),
-    });
-    tx.add(deactivateStaking);
+      if (data.params.amount && data.params.unstakingAddress) {
+        const tx = new Transaction();
+        const unstakingAddress = new PublicKey(data.params.unstakingAddress);
 
-    return tx.instructions;
-  } else {
-    const deactivateStaking = StakeProgram.deactivate({
-      stakePubkey: new PublicKey(stakingAddress),
-      authorizedPubkey: new PublicKey(fromAddress),
-    });
+        const allocateAccount = SystemProgram.allocate({
+          accountPubkey: unstakingAddress,
+          space: StakeProgram.space,
+        });
+        tx.add(allocateAccount);
 
-    return deactivateStaking.instructions;
+        const assignAccount = SystemProgram.assign({
+          accountPubkey: unstakingAddress,
+          programId: StakeProgram.programId,
+        });
+        tx.add(assignAccount);
+
+        const splitStake = StakeProgram.split(
+          {
+            stakePubkey: new PublicKey(stakingAddress),
+            authorizedPubkey: new PublicKey(fromAddress),
+            splitStakePubkey: unstakingAddress,
+            lamports: new BigNumber(data.params.amount).toNumber(),
+          },
+          0
+        );
+        tx.add(splitStake.instructions[1]);
+
+        const deactivateStaking = StakeProgram.deactivate({
+          stakePubkey: unstakingAddress,
+          authorizedPubkey: new PublicKey(fromAddress),
+        });
+        tx.add(deactivateStaking);
+
+        return tx.instructions;
+      } else {
+        const deactivateStaking = StakeProgram.deactivate({
+          stakePubkey: new PublicKey(stakingAddress),
+          authorizedPubkey: new PublicKey(fromAddress),
+        });
+
+        return deactivateStaking.instructions;
+      }
+    }
+
+    default: {
+      const unreachable: never = stakingType;
+      throw new Error(`Unknown staking type ${unreachable}`);
+    }
   }
 }
 

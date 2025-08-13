@@ -5,6 +5,7 @@ import { getBuilderFactory } from '../getBuilderFactory';
 import { KeyPair, Utils, Transaction } from '../../../src';
 import { coins } from '@bitgo/statics';
 import { JITO_STAKE_POOL_ADDRESS, JITOSOL_MINT_ADDRESS } from '../../../src/lib/constants';
+import { StakingType } from '../../../src/lib/iface';
 
 describe('Sol Staking Activate Builder', () => {
   const factory = getBuilderFactory('tsol');
@@ -63,7 +64,7 @@ describe('Sol Staking Activate Builder', () => {
         .sender(wallet.pub)
         .stakingAddress(stakeAccount.pub)
         .validator(validator.pub)
-        .isMarinade(true)
+        .stakingType(StakingType.MARINADE)
         .nonce(recentBlockHash);
       txBuilder.sign({ key: wallet.prv });
       txBuilder.sign({ key: stakeAccount.prv });
@@ -77,8 +78,7 @@ describe('Sol Staking Activate Builder', () => {
             stakingAddress: stakeAccount.pub,
             amount: amount,
             validator: validator.pub,
-            isMarinade: true,
-            isJito: false,
+            stakingType: StakingType.MARINADE,
           },
         },
       ]);
@@ -105,7 +105,14 @@ describe('Sol Staking Activate Builder', () => {
         .sender(wallet.pub)
         .stakingAddress(JITO_STAKE_POOL_ADDRESS)
         .validator(JITO_STAKE_POOL_ADDRESS)
-        .isJito(true)
+        .stakingType(StakingType.JITO)
+        .extraParams({
+          stakePoolData: {
+            managerFeeAccount: testData.JITO_STAKE_POOL_DATA_PARSED.managerFeeAccount.toString(),
+            poolMint: testData.JITO_STAKE_POOL_DATA_PARSED.poolMint.toString(),
+            reserveStake: testData.JITO_STAKE_POOL_DATA_PARSED.reserveStake.toString(),
+          },
+        })
         .nonce(recentBlockHash);
       txBuilder.sign({ key: wallet.prv });
       const tx = await txBuilder.build();
@@ -128,8 +135,14 @@ describe('Sol Staking Activate Builder', () => {
             stakingAddress: JITO_STAKE_POOL_ADDRESS,
             amount: amount,
             validator: JITO_STAKE_POOL_ADDRESS,
-            isMarinade: false,
-            isJito: true,
+            stakingType: StakingType.JITO,
+            extraParams: {
+              stakePoolData: {
+                managerFeeAccount: testData.JITO_STAKE_POOL_DATA_PARSED.managerFeeAccount.toString(),
+                poolMint: testData.JITO_STAKE_POOL_DATA_PARSED.poolMint.toString(),
+                reserveStake: testData.JITO_STAKE_POOL_DATA_PARSED.reserveStake.toString(),
+              },
+            },
           },
         },
       ]);
@@ -186,7 +199,7 @@ describe('Sol Staking Activate Builder', () => {
         .stakingAddress(stakeAccount.pub)
         .validator(validator.pub)
         .memo('test memo')
-        .isMarinade(true)
+        .stakingType(StakingType.MARINADE)
         .nonce(recentBlockHash);
       txBuilder.sign({ key: wallet.prv });
       txBuilder.sign({ key: stakeAccount.prv });
@@ -206,8 +219,7 @@ describe('Sol Staking Activate Builder', () => {
             stakingAddress: stakeAccount.pub,
             amount: amount,
             validator: validator.pub,
-            isMarinade: true,
-            isJito: false,
+            stakingType: StakingType.MARINADE,
           },
         },
       ]);
@@ -256,7 +268,7 @@ describe('Sol Staking Activate Builder', () => {
         .sender(wallet.pub)
         .stakingAddress(stakeAccount.pub)
         .validator(validator.pub)
-        .isMarinade(true)
+        .stakingType(StakingType.MARINADE)
         .nonce(recentBlockHash);
       const tx = await txBuilder.build();
       const txJson = tx.toJson();
@@ -268,8 +280,7 @@ describe('Sol Staking Activate Builder', () => {
             stakingAddress: stakeAccount.pub,
             amount: amount,
             validator: validator.pub,
-            isMarinade: true,
-            isJito: false,
+            stakingType: StakingType.MARINADE,
           },
         },
       ]);
@@ -315,7 +326,7 @@ describe('Sol Staking Activate Builder', () => {
         .stakingAddress(stakeAccount.pub)
         .validator(validator.pub)
         .memo('test memo')
-        .isMarinade(true)
+        .stakingType(StakingType.MARINADE)
         .nonce(recentBlockHash);
       const tx = await txBuilder.build();
       const txJson = tx.toJson();
@@ -333,8 +344,7 @@ describe('Sol Staking Activate Builder', () => {
             stakingAddress: stakeAccount.pub,
             amount: amount,
             validator: validator.pub,
-            isMarinade: true,
-            isJito: false,
+            stakingType: StakingType.MARINADE,
           },
         },
       ]);

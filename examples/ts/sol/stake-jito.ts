@@ -59,7 +59,14 @@ async function main() {
     .sender(account.publicKey.toBase58())
     .stakingAddress(JITO_STAKE_POOL_ADDRESS)
     .validator(JITO_STAKE_POOL_ADDRESS)
-    .isJito(true)
+    .stakingTypeParams({
+      type: 'JITO',
+      stakePoolData: {
+        managerFeeAccount: stakePoolAccount.account.data.managerFeeAccount.toString(),
+        poolMint: stakePoolAccount.account.data.poolMint.toString(),
+        reserveStake: stakePoolAccount.account.data.toString(),
+      }
+    })
     .nonce(recentBlockhash.blockhash)
   txBuilder.sign({ key: account.secretKey })
   const tx = await txBuilder.build()
@@ -85,7 +92,7 @@ const getAccount = () => {
   const secretKey = process.env.ACCOUNT_SECRET_KEY
   if (publicKey === undefined || secretKey === undefined) {
     const { publicKey, secretKey } = Keypair.generate()
-    console.log('Here is a new account to save into your .env file.')
+    console.log('# Here is a new account to save into your .env file.')
     console.log(`ACCOUNT_PUBLIC_KEY=${publicKey.toBase58()}`)
     console.log(`ACCOUNT_SECRET_KEY=${bs58.encode(secretKey)}`)
     throw new Error("Missing account information")
