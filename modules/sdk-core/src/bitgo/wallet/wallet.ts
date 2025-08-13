@@ -122,6 +122,7 @@ import { IRequestTracer } from '../../api';
 import { getTxRequestApiVersion, validateTxRequestApiVersion } from '../utils/txRequest';
 import { getLightningAuthKey } from '../lightning/lightningWalletUtil';
 import { SubmitTransactionResponse } from '../inscriptionBuilder';
+import { CoinFamily } from '@bitgo/statics';
 
 const debug = require('debug')('bitgo:v2:wallet');
 
@@ -3662,10 +3663,12 @@ export class Wallet implements IWallet {
         bufferToSign: Buffer.from(messageEncoded, 'hex'),
       });
       assert(signedMessageRequest.messages, 'Unable to find messages in signedMessageRequest');
-      assert(
-        signedMessageRequest.messages[0].combineSigShare,
-        'Unable to find combineSigShare in signedMessageRequest.messages'
-      );
+      if (this.baseCoin.getFamily() === CoinFamily.ETH) {
+        assert(
+          signedMessageRequest.messages[0].combineSigShare,
+          'Unable to find combineSigShare in signedMessageRequest.messages'
+        );
+      }
       assert(signedMessageRequest.messages[0].txHash, 'Unable to find txHash in signedMessageRequest.messages');
       return {
         coin: this.coin(),
