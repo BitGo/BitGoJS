@@ -6,6 +6,7 @@ import { TransferBuilder } from './transferBuilder';
 import utils from './utils';
 import { StakingBuilder } from './stakingBuilder';
 import { UnstakeBuilder } from './unstakeBuilder';
+import { TokenTransferBuilder } from './tokenTransferBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   protected _material: Interface.Material;
@@ -25,6 +26,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getUnstakingBuilder(): UnstakeBuilder {
     return new UnstakeBuilder(this._coinConfig).material(this._material);
+  }
+
+  getTokenTransferBuilder(): TransactionBuilder {
+    return new TokenTransferBuilder(this._coinConfig).material(this._material);
   }
 
   getWalletInitializationBuilder(): void {
@@ -56,6 +61,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
       return this.getStakingBuilder();
     } else if (methodName === Interface.MethodNames.RemoveStake) {
       return this.getUnstakingBuilder();
+    } else if (methodName === Interface.MethodNames.TransferStake) {
+      return this.getTokenTransferBuilder();
     } else {
       throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
     }

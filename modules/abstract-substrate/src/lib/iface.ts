@@ -74,6 +74,11 @@ export const MethodNames = {
    * Send a batch of dispatch calls and atomically execute them.
    */
   BatchAll: 'batchAll' as const,
+
+  /**
+   * Transfer stake from one validator to another.
+   */
+  TransferStake: 'transferStake' as const,
 } as const;
 
 /**
@@ -182,6 +187,14 @@ export interface BatchArgs {
   calls: BatchCallObject[];
 }
 
+export interface TransferStakeArgs extends Args {
+  destinationColdkey: string;
+  hotkey: string;
+  originNetuid: string;
+  destinationNetuid: string;
+  alphaAmount: string;
+}
+
 /**
  * Decoded TxMethod from a transaction hex
  */
@@ -197,7 +210,8 @@ export interface TxMethod {
     | ChillArgs
     | UnbondArgs
     | WithdrawUnbondedArgs
-    | BatchArgs;
+    | BatchArgs
+    | TransferStakeArgs;
   name: MethodNamesValues;
   pallet: string;
 }
