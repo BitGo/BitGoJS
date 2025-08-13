@@ -1,6 +1,6 @@
 import { PsbtInput, PsbtOutput } from 'bip174/src/lib/interfaces';
 import { decodeProprietaryKey, encodeProprietaryKey, ProprietaryKey } from 'bip174/src/lib/proprietaryKeyVal';
-import { UtxoPsbt } from './UtxoPsbt';
+import { Psbt } from '../';
 
 /**
  * Psbt proprietary keydata object search fields.
@@ -88,7 +88,7 @@ export function updateProprietaryKeyValuesFromUnknownKeyValues(
 }
 
 export function addProprietaryKeyValuesFromUnknownKeyValues(
-  psbt: UtxoPsbt,
+  psbt: Psbt,
   entry: string,
   index: number,
   keyValueData: ProprietaryKeyValue
