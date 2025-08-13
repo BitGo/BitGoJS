@@ -46,7 +46,7 @@ export function buildToSignPsbt(message: string, addressDetails: AddressDetails,
   }
 
   // Add the message as a proprietary key value to the PSBT so we can verify it later
-  addBip322ProofMessage(psbt as bitgo.UtxoPsbt, 0, Buffer.from(message));
+  addBip322ProofMessage(psbt, 0, Buffer.from(message));
 
   // Set the output
   psbt.addOutput({
