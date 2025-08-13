@@ -1651,19 +1651,6 @@ class SeiEvmTestnet extends Testnet implements EthereumNetwork {
   walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
 }
 
-class Somnia extends Mainnet implements EthereumNetwork {
-  name = 'Somnia';
-  family = CoinFamily.STT;
-  explorerUrl = 'https://mainnet.somnia.w3us.site/tx/';
-  chainId = 5031;
-  nativeCoinOperationHashPrefix = '5031';
-  walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
-  walletFactoryAddress = '0x809ee567e413543af1caebcdb247f6a67eafc8dd';
-  forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
-  forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
-  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
-}
-
 class SomniaTestnet extends Testnet implements EthereumNetwork {
   name = 'SomniaTestnet';
   family = CoinFamily.STT;
@@ -1880,7 +1867,6 @@ export const Networks = {
     sui: Object.freeze(new Sui()),
     near: Object.freeze(new Near()),
     stx: Object.freeze(new Stx()),
-    stt: Object.freeze(new Somnia()),
     somi: Object.freeze(new Somi()),
     soneium: Object.freeze(new Soneium()),
     susd: Object.freeze(new SUSD()),

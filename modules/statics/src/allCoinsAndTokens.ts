@@ -1693,16 +1693,6 @@ export const allCoinsAndTokens = [
     [...SONEIUM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
   ),
   account(
-    '87c104ca-6b49-479e-87fb-9253b095158c',
-    'stt',
-    'DepricatedSom',
-    Networks.main.stt,
-    18,
-    UnderlyingAsset.STT,
-    BaseUnit.ETH,
-    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
-  ),
-  account(
     '1bf486a9-47ed-4bea-8e9a-a23a074cdc9a',
     'tstt',
     'Somnia Testnet',

@@ -13,7 +13,8 @@ describe('Key Pair Factory', () => {
     const supportedCoinsExceptTestnet = Object.keys(coinModules)
       // TODO(BG-40990): temporarily disable eth2 from the test for bls not initialized error
       .filter(
-        (k) => coinModules[k].KeyPair && !['eth2', 'evmcoin', 'cosmossharedcoin'].includes(k.trim().toLowerCase()),
+        (k) =>
+          coinModules[k].KeyPair && !['eth2', 'evmcoin', 'cosmossharedcoin', 'stt'].includes(k.trim().toLowerCase()),
       );
 
     supportedCoinsExceptTestnet.forEach((coinName) => {

@@ -1,10 +1,9 @@
 import { NetworkType } from '@bitgo/statics';
 import EthereumCommon from '@ethereumjs/common';
 import { InvalidTransactionError } from '@bitgo/sdk-core';
-import { mainnetCommon, testnetCommon } from './resources';
+import { testnetCommon } from './resources';
 
 const commons: Map<NetworkType, EthereumCommon> = new Map<NetworkType, EthereumCommon>([
-  [NetworkType.MAINNET, mainnetCommon],
   [NetworkType.TESTNET, testnetCommon],
 ]);
 
