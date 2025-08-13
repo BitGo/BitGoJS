@@ -71,6 +71,26 @@ describe('OFC Coin parity tests', function () {
     });
   });
 
+  it('ofc token/coin features should be equal to native coin/token', function () {
+    const ofcCoins = coins.filter((coin) => coin.family === 'ofc');
+    ofcCoins.forEach((ofcCoin) => {
+      const baseTokenName = ofcCoin.name.replace(/^ofc/, '');
+      const baseCoin = getCoin(baseTokenName);
+
+      if (baseCoin && baseCoin.features) {
+        compareAndPrint(ofcCoin.name, baseCoin.features, ofcCoin.features);
+      }
+    });
+  });
+
+  function compareAndPrint(coinName: string, baseFeatures: string[], ofcFeatures: string[]) {
+    const ofcFeatureSet = new Set(ofcFeatures);
+    const baseFeatureSet = new Set(baseFeatures);
+    const missingFeatures = Array.from(baseFeatureSet).filter(
+      (feature) => !ofcFeatureSet.has(feature) && feature.startsWith('custody')
+    );
+    missingFeatures.length.should.equal(0, `Missing features for ${coinName}`);
+  }
   function getCoin(coinName: string) {
     try {
       {
