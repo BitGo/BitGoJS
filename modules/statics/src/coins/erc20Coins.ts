@@ -11166,7 +11166,7 @@ export const erc20Coins = [
     18,
     '0x8238884ec9668ef77b90c6dff4d1a9f4f4823bfe',
     UnderlyingAsset['eth:usdo'],
-    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION, CoinFeature.REBASE_TOKEN]
+    [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.BULK_TRANSACTION, CoinFeature.REBASE_TOKEN]
   ),
   terc20(
     '0205f0d6-0647-47c9-ad8b-c48d048e54f3',
