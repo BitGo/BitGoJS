@@ -862,14 +862,13 @@ coins.forEach((coin, coinName) => {
       });
     } else {
       it('should return true for CUSTODY and CUSTODY_BITGO_TRUST coin feature', () => {
-        const coinSupportsCustody = coin.family !== CoinFamily.LNBTC && coin.family !== CoinFamily.CELO;
+        const coinSupportsCustody =
+          coin.family !== CoinFamily.LNBTC &&
+          coin.family !== CoinFamily.CELO &&
+          coin.name !== 'ofccelo' &&
+          coin.name !== 'ofctcelo';
         coin.features.includes(CoinFeature.CUSTODY).should.eql(coinSupportsCustody);
         coin.features.includes(CoinFeature.CUSTODY_BITGO_TRUST).should.eql(coinSupportsCustody);
-      });
-
-      it('should return false for all non-SD coin feature', () => {
-        coin.features.includes(CoinFeature.CUSTODY_BITGO_NEW_YORK).should.eql(false);
-        coin.features.includes(CoinFeature.CUSTODY_BITGO_SWITZERLAND).should.eql(false);
       });
     }
   });

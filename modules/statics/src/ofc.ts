@@ -1,5 +1,7 @@
 import { BaseCoin, BaseUnit, CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
 import { BaseNetwork, Networks, OfcNetwork } from './networks';
+import { allCoinsAndTokens } from './allCoinsAndTokens';
+import { CoinMap } from './map';
 
 export interface OfcConstructorOptions {
   id: string;
@@ -16,6 +18,40 @@ export interface OfcConstructorOptions {
   suffix?: string;
   addressCoin?: string;
   primaryKeyCurve: KeyCurve;
+}
+
+// Function to get coins map - will be called lazily to avoid circular dependency
+let allCoinsAndTokensMap: CoinMap | undefined;
+
+const getAllCoinsAndTokensMap = (): CoinMap => {
+  if (!allCoinsAndTokensMap) {
+    allCoinsAndTokensMap = CoinMap.fromCoins(allCoinsAndTokens);
+  }
+  return allCoinsAndTokensMap;
+};
+
+const DISALLOWED_FEATURES = [
+  CoinFeature.UNSPENT_MODEL,
+  CoinFeature.CHILD_PAYS_FOR_PARENT,
+  CoinFeature.PAYGO,
+  CoinFeature.SUPPORTS_TOKENS,
+];
+
+const REQUIRED_FEATURES = [CoinFeature.ACCOUNT_MODEL, CoinFeature.REQUIRES_BIG_NUMBER];
+/**
+ * Get filtered features for a coin based on its suffix
+ * @param suffix The coin suffix to look up
+ * @returns Filtered array of CoinFeatures excluding the ones in the exclude list
+ */
+export function getFilteredFeatures(suffix: string): CoinFeature[] {
+  const coinsMap = getAllCoinsAndTokensMap();
+  if (coinsMap.has(suffix.toLowerCase())) {
+    const filteredFeatures = coinsMap
+      .get(suffix.toLowerCase())
+      .features.filter((feature) => !DISALLOWED_FEATURES.includes(feature));
+    return [...filteredFeatures, ...REQUIRED_FEATURES];
+  }
+  return [];
 }
 
 /**
@@ -35,7 +71,6 @@ export class OfcCoin extends BaseCoin {
   // If set, this coin is the native address format for this token.
   public readonly addressCoin?: string;
   public readonly minimumDenomination: number;
-
   constructor(options: OfcConstructorOptions) {
     const { addressCoin, ...baseOptions } = options;
     super(baseOptions);
@@ -44,19 +79,13 @@ export class OfcCoin extends BaseCoin {
   }
 
   protected requiredFeatures(): Set<CoinFeature> {
-    return new Set<CoinFeature>([CoinFeature.ACCOUNT_MODEL, CoinFeature.REQUIRES_BIG_NUMBER]);
+    return new Set<CoinFeature>(REQUIRED_FEATURES);
   }
 
   protected disallowedFeatures(): Set<CoinFeature> {
-    return new Set<CoinFeature>([
-      CoinFeature.UNSPENT_MODEL,
-      CoinFeature.CHILD_PAYS_FOR_PARENT,
-      CoinFeature.PAYGO,
-      CoinFeature.SUPPORTS_TOKENS,
-    ]);
+    return new Set<CoinFeature>(DISALLOWED_FEATURES);
   }
 }
-
 /**
  * Function to convert AMS inputs into OFC coin instance.
  *
@@ -90,6 +119,10 @@ export function ofcToken(
   isToken = true,
   kind: CoinKind = CoinKind.CRYPTO
 ): Readonly<OfcCoin> {
+  const filteredFeatures = getFilteredFeatures(suffix);
+  if (filteredFeatures.length > 0) {
+    features = filteredFeatures;
+  }
   return Object.freeze(
     new OfcCoin({
       id,
@@ -140,6 +173,10 @@ export function ofc(
   /** OFC tokens use SECP256K1 under the hood even if the chain doesn't **/
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
+  const filteredFeatures = getFilteredFeatures(suffix);
+  if (filteredFeatures.length > 0) {
+    features = filteredFeatures;
+  }
   return Object.freeze(
     new OfcCoin({
       id,
@@ -189,6 +226,10 @@ export function tofc(
   isToken = true,
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
+  const filteredFeatures = getFilteredFeatures(suffix);
+  if (filteredFeatures.length > 0) {
+    features = filteredFeatures;
+  }
   return Object.freeze(
     new OfcCoin({
       id,
@@ -238,6 +279,10 @@ export function ofcerc20(
   addressCoin = 'eth',
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
+  const filteredFeatures = getFilteredFeatures(suffix);
+  if (filteredFeatures.length > 0) {
+    features = filteredFeatures;
+  }
   return Object.freeze(
     new OfcCoin({
       id,
@@ -288,6 +333,10 @@ export function tofcerc20(
   addressCoin = 'teth',
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
+  const filteredFeatures = getFilteredFeatures(suffix);
+  if (filteredFeatures.length > 0) {
+    features = filteredFeatures;
+  }
   return Object.freeze(
     new OfcCoin({
       id,
@@ -341,6 +390,10 @@ export function ofcsolToken(
   addressCoin = 'sol',
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
+  const filteredFeatures = getFilteredFeatures(suffix);
+  if (filteredFeatures.length > 0) {
+    features = filteredFeatures;
+  }
   return Object.freeze(
     new OfcCoin({
       id,
@@ -394,6 +447,10 @@ export function tofcsolToken(
   addressCoin = 'tsol',
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
+  const filteredFeatures = getFilteredFeatures(suffix);
+  if (filteredFeatures.length > 0) {
+    features = filteredFeatures;
+  }
   return Object.freeze(
     new OfcCoin({
       id,
@@ -445,6 +502,10 @@ export function ofcStellarToken(
   addressCoin = 'xlm',
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
+  const filteredFeatures = getFilteredFeatures(suffix);
+  if (filteredFeatures.length > 0) {
+    features = filteredFeatures;
+  }
   return Object.freeze(
     new OfcCoin({
       id,
@@ -495,6 +556,10 @@ export function tofcStellarToken(
   addressCoin = 'txlm',
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
+  const filteredFeatures = getFilteredFeatures(suffix);
+  if (filteredFeatures.length > 0) {
+    features = filteredFeatures;
+  }
   return Object.freeze(
     new OfcCoin({
       id,
@@ -546,6 +611,10 @@ export function ofcAlgoToken(
   addressCoin = 'algo',
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
+  const filteredFeatures = getFilteredFeatures(suffix);
+  if (filteredFeatures.length > 0) {
+    features = filteredFeatures;
+  }
   return Object.freeze(
     new OfcCoin({
       id,
@@ -596,6 +665,10 @@ export function tofcAlgoToken(
   addressCoin = 'talgo',
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
+  const filteredFeatures = getFilteredFeatures(suffix);
+  if (filteredFeatures.length > 0) {
+    features = filteredFeatures;
+  }
   return Object.freeze(
     new OfcCoin({
       id,
@@ -647,6 +720,10 @@ export function ofcHederaToken(
   addressCoin = 'hbar',
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
+  const filteredFeatures = getFilteredFeatures(suffix);
+  if (filteredFeatures.length > 0) {
+    features = filteredFeatures;
+  }
   return Object.freeze(
     new OfcCoin({
       id,
@@ -697,6 +774,10 @@ export function tofcHederaToken(
   addressCoin = 'thbar',
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
+  const filteredFeatures = getFilteredFeatures(suffix);
+  if (filteredFeatures.length > 0) {
+    features = filteredFeatures;
+  }
   return Object.freeze(
     new OfcCoin({
       id,
@@ -748,6 +829,10 @@ export function ofcArbethErc20(
   addressCoin = 'arbeth',
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
+  const filteredFeatures = getFilteredFeatures(suffix);
+  if (filteredFeatures.length > 0) {
+    features = filteredFeatures;
+  }
   return Object.freeze(
     new OfcCoin({
       id,
@@ -799,6 +884,10 @@ export function tofcArbethErc20(
   addressCoin = 'tarbeth',
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
+  const filteredFeatures = getFilteredFeatures(suffix);
+  if (filteredFeatures.length > 0) {
+    features = filteredFeatures;
+  }
   return Object.freeze(
     new OfcCoin({
       id,
@@ -850,6 +939,10 @@ export function ofcAvaxErc20(
   addressCoin = 'avaxc',
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
+  const filteredFeatures = getFilteredFeatures(suffix);
+  if (filteredFeatures.length > 0) {
+    features = filteredFeatures;
+  }
   return Object.freeze(
     new OfcCoin({
       id,
@@ -901,6 +994,10 @@ export function tofcAvaxErc20(
   addressCoin = 'tavaxc',
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
+  const filteredFeatures = getFilteredFeatures(suffix);
+  if (filteredFeatures.length > 0) {
+    features = filteredFeatures;
+  }
   return Object.freeze(
     new OfcCoin({
       id,
@@ -952,6 +1049,10 @@ export function ofcPolygonErc20(
   addressCoin = 'polygon',
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
+  const filteredFeatures = getFilteredFeatures(suffix);
+  if (filteredFeatures.length > 0) {
+    features = filteredFeatures;
+  }
   return Object.freeze(
     new OfcCoin({
       id,
@@ -1003,6 +1104,10 @@ export function tofcPolygonErc20(
   addressCoin = 'tpolygon',
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
+  const filteredFeatures = getFilteredFeatures(suffix);
+  if (filteredFeatures.length > 0) {
+    features = filteredFeatures;
+  }
   return Object.freeze(
     new OfcCoin({
       id,
@@ -1054,6 +1159,10 @@ export function ofcBscToken(
   addressCoin = 'bsc',
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
+  const filteredFeatures = getFilteredFeatures(suffix);
+  if (filteredFeatures.length > 0) {
+    features = filteredFeatures;
+  }
   return Object.freeze(
     new OfcCoin({
       id,
@@ -1105,6 +1214,10 @@ export function tofcBscToken(
   addressCoin = 'tbsc',
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
+  const filteredFeatures = getFilteredFeatures(suffix);
+  if (filteredFeatures.length > 0) {
+    features = filteredFeatures;
+  }
   return Object.freeze(
     new OfcCoin({
       id,
@@ -1156,6 +1269,10 @@ export function ofcXrpToken(
   addressCoin = 'xrp',
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
+  const filteredFeatures = getFilteredFeatures(suffix);
+  if (filteredFeatures.length > 0) {
+    features = filteredFeatures;
+  }
   return Object.freeze(
     new OfcCoin({
       id,
@@ -1207,6 +1324,10 @@ export function tofcXrpToken(
   addressCoin = 'txrp',
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
+  const filteredFeatures = getFilteredFeatures(suffix);
+  if (filteredFeatures.length > 0) {
+    features = filteredFeatures;
+  }
   return Object.freeze(
     new OfcCoin({
       id,
@@ -1258,6 +1379,10 @@ export function ofcStxToken(
   addressCoin = 'stx',
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
+  const filteredFeatures = getFilteredFeatures(suffix);
+  if (filteredFeatures.length > 0) {
+    features = filteredFeatures;
+  }
   return Object.freeze(
     new OfcCoin({
       id,
@@ -1309,6 +1434,10 @@ export function tofcStxToken(
   addressCoin = 'tstx',
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
+  const filteredFeatures = getFilteredFeatures(suffix);
+  if (filteredFeatures.length > 0) {
+    features = filteredFeatures;
+  }
   return Object.freeze(
     new OfcCoin({
       id,
@@ -1360,6 +1489,10 @@ export function ofcOpethErc20(
   addressCoin = 'opeth',
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
+  const filteredFeatures = getFilteredFeatures(suffix);
+  if (filteredFeatures.length > 0) {
+    features = filteredFeatures;
+  }
   return Object.freeze(
     new OfcCoin({
       id,
@@ -1411,6 +1544,10 @@ export function ofcTronToken(
   addressCoin = 'trx',
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
+  const filteredFeatures = getFilteredFeatures(suffix);
+  if (filteredFeatures.length > 0) {
+    features = filteredFeatures;
+  }
   return Object.freeze(
     new OfcCoin({
       id,
@@ -1462,6 +1599,10 @@ export function tofcTronToken(
   addressCoin = 'ttrx',
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
+  const filteredFeatures = getFilteredFeatures(suffix);
+  if (filteredFeatures.length > 0) {
+    features = filteredFeatures;
+  }
   return Object.freeze(
     new OfcCoin({
       id,
@@ -1515,6 +1656,10 @@ export function ofcaptToken(
   addressCoin = 'apt',
   primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
 ) {
+  const filteredFeatures = getFilteredFeatures(suffix);
+  if (filteredFeatures.length > 0) {
+    features = filteredFeatures;
+  }
   return Object.freeze(
     new OfcCoin({
       id,
@@ -1568,6 +1713,10 @@ export function tofcaptToken(
   addressCoin = 'tapt',
   primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
 ) {
+  const filteredFeatures = getFilteredFeatures(suffix);
+  if (filteredFeatures.length > 0) {
+    features = filteredFeatures;
+  }
   return Object.freeze(
     new OfcCoin({
       id,
@@ -1621,6 +1770,10 @@ export function ofcnep141Token(
   addressCoin = 'near',
   primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
 ) {
+  const filteredFeatures = getFilteredFeatures(suffix);
+  if (filteredFeatures.length > 0) {
+    features = filteredFeatures;
+  }
   return Object.freeze(
     new OfcCoin({
       id,
@@ -1674,6 +1827,10 @@ export function tofcnep141Token(
   addressCoin = 'tnear',
   primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
 ) {
+  const filteredFeatures = getFilteredFeatures(suffix);
+  if (filteredFeatures.length > 0) {
+    features = filteredFeatures;
+  }
   return Object.freeze(
     new OfcCoin({
       id,
@@ -1725,6 +1882,10 @@ export function ofcWorldErc20(
   addressCoin = 'world',
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
+  const filteredFeatures = getFilteredFeatures(suffix);
+  if (filteredFeatures.length > 0) {
+    features = filteredFeatures;
+  }
   return Object.freeze(
     new OfcCoin({
       id,
@@ -1776,6 +1937,10 @@ export function tofcWorldErc20(
   addressCoin = 'tworld',
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
+  const filteredFeatures = getFilteredFeatures(suffix);
+  if (filteredFeatures.length > 0) {
+    features = filteredFeatures;
+  }
   return Object.freeze(
     new OfcCoin({
       id,
@@ -1827,6 +1992,10 @@ export function ofcCoredaoErc20(
   addressCoin = 'coredao',
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
+  const filteredFeatures = getFilteredFeatures(suffix);
+  if (filteredFeatures.length > 0) {
+    features = filteredFeatures;
+  }
   return Object.freeze(
     new OfcCoin({
       id,
@@ -1878,6 +2047,10 @@ export function tofcCoredaoErc20(
   addressCoin = 'tcoredao',
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
+  const filteredFeatures = getFilteredFeatures(suffix);
+  if (filteredFeatures.length > 0) {
+    features = filteredFeatures;
+  }
   return Object.freeze(
     new OfcCoin({
       id,
@@ -1929,6 +2102,10 @@ export function ofcVetToken(
   addressCoin = 'vet',
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
+  const filteredFeatures = getFilteredFeatures(suffix);
+  if (filteredFeatures.length > 0) {
+    features = filteredFeatures;
+  }
   return Object.freeze(
     new OfcCoin({
       id,
@@ -1980,6 +2157,10 @@ export function tofcVetToken(
   addressCoin = 'tvet',
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
+  const filteredFeatures = getFilteredFeatures(suffix);
+  if (filteredFeatures.length > 0) {
+    features = filteredFeatures;
+  }
   return Object.freeze(
     new OfcCoin({
       id,
