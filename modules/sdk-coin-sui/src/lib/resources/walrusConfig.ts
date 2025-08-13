@@ -37,6 +37,6 @@ export const WALRUS_PROD_CONFIG = {
     mutable: true,
   } as SharedObjectRef,
 
-  WALRUS_PKG_ID: '0xfdc88f7d7cf30afab2f82e8380d11ee8f70efb90e863d1de8616fae1bb09ea77',
+  WALRUS_PKG_ID: '0xfa65cb2d62f4d39e60346fb7d501c12538ca2bbc646eaa37ece2aec5f897814e',
   WAL_PKG_ID: '0x356a26eb9e012a68958082340d4c4116e7f55615cf27affcff209cf0ae544f59',
 };
