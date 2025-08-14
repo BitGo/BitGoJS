@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [49.2.0](https://github.com/BitGo/BitGoJS/compare/bitgo@49.1.0...bitgo@49.2.0) (2025-08-14)
+
+### Bug Fixes
+
+- skipped tests fix for ecdsa ([060cb25](https://github.com/BitGo/BitGoJS/commit/060cb2544ce7ab324e32e24e80a3064c2ef1e1b6))
+
+### Features
+
+- **abstract-utxo:** verify paygo ([a3203bc](https://github.com/BitGo/BitGoJS/commit/a3203bc59a04bf5ae7b573eb4b911a3425df21b7))
+- add plasma config in sdk ([873d57f](https://github.com/BitGo/BitGoJS/commit/873d57fde388efcc5d3142892962c6788e341e77))
+- **sdk-core:** add retry logic for bulk accept share requests ([87357ac](https://github.com/BitGo/BitGoJS/commit/87357acc14b30a9ba1cae1db2839801306a26b4c))
+
 # [49.1.0](https://github.com/BitGo/BitGoJS/compare/bitgo@49.0.0...bitgo@49.1.0) (2025-08-07)
 
 ### Bug Fixes

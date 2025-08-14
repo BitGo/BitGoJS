@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polyx@1.6.0...@bitgo/sdk-coin-polyx@1.7.0) (2025-08-14)
+
+### Bug Fixes
+
+- **sdk-coin-polyx:** add test token and update the tests ([1f8af7d](https://github.com/BitGo/BitGoJS/commit/1f8af7d620b5d603a4e27c15276f518e6ff4f349))
+
+### Features
+
+- **sdk-coin-polyx:** add token builders ([6860780](https://github.com/BitGo/BitGoJS/commit/68607804efc1191ff396e05f20466526246b7d87))
+
 # [1.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polyx@1.5.6...@bitgo/sdk-coin-polyx@1.6.0) (2025-08-07)
 
 ### Features

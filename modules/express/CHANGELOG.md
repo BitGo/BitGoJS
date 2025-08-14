@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@14.1.7...@bitgo/express@14.2.0) (2025-08-14)
+
+### Bug Fixes
+
+- **express:** generated xprv is permissioned only for owner ([36309f3](https://github.com/BitGo/BitGoJS/commit/36309f3badfa255e4623f352acbaea1c37b1852d))
+
+### Features
+
+- **express:** migrate decrypt to typed routes ([dcddaf6](https://github.com/BitGo/BitGoJS/commit/dcddaf63c3b86df72151ad96be9d64a6251058e8))
+- **express:** migrate user.login to typed routes ([917dc0f](https://github.com/BitGo/BitGoJS/commit/917dc0f4876b5e77479c0872dce37e6b2f3a7fb8))
+- **express:** migrate verify address to typed routes ([eacbff8](https://github.com/BitGo/BitGoJS/commit/eacbff8e533ca6cad6f170d8016ca06ba654b77a))
+
 ## [14.1.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@14.1.6...@bitgo/express@14.1.7) (2025-08-07)
 
 **Note:** Version bump only for package @bitgo/express

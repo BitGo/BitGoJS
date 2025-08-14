@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.16.0...@bitgo/sdk-coin-sol@5.0.0) (2025-08-14)
+
+### Code Refactoring
+
+- **sdk-coin-sol:** change marinade and jito flags to enum ([5cc2722](https://github.com/BitGo/BitGoJS/commit/5cc2722a19bae5c195d52eaccc973f9c64a08abf))
+
+### Features
+
+- add customTx transactionType support for sol ([00fe22f](https://github.com/BitGo/BitGoJS/commit/00fe22fdd6df072890698f7335a3731147aec3f5))
+- **sdk-coin-sol:** implements staking deactivate for jito ([bb9af1e](https://github.com/BitGo/BitGoJS/commit/bb9af1ea4678f2af336cf1e458a2b2b9e026a225))
+
+### BREAKING CHANGES
+
+- **sdk-coin-sol:** the `isMarinade` setter in transaction builders has been
+  removed. Existing calls to `txBuilder.isMarinade` will have to be replaced
+  with `txBuilder.stakingType(StakingType.MARINADE)`.
+
+Ticket: SC-2620
+
 # [4.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.15.0...@bitgo/sdk-coin-sol@4.16.0) (2025-08-07)
 
 ### Features
