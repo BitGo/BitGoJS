@@ -90,7 +90,6 @@ export const expectedColdFeatures = {
     'seievm',
     'sol',
     'sonic',
-    'stt',
     'somi',
     'sui',
     'tao',

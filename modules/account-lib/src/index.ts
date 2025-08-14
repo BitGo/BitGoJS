@@ -194,9 +194,6 @@ export { Wemix };
 import * as World from '@bitgo/sdk-coin-world';
 export { World };
 
-import * as Stt from '@bitgo/sdk-coin-stt';
-export { Stt };
-
 import * as Soneium from '@bitgo/sdk-coin-soneium';
 export { Soneium };
 
@@ -313,8 +310,6 @@ const coinBuilderMap = {
   tmon: Mon.TransactionBuilder,
   world: World.TransactionBuilder,
   tworld: World.TransactionBuilder,
-  stt: Stt.TransactionBuilder,
-  tstt: Stt.TransactionBuilder,
   soneium: Soneium.TransactionBuilder,
   tsoneium: Soneium.TransactionBuilder,
   polyx: Polyx.TransactionBuilderFactory,
