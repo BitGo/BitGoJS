@@ -1,6 +1,7 @@
-import { Psbt, bitgo } from '@bitgo/utxo-lib';
+import { Psbt, bitgo, networks } from '@bitgo/utxo-lib';
+import { toXOnlyPublicKey } from '@bitgo/utxo-lib/dist/src/bitgo/outputScripts';
 
-import { addBip322ProofMessage, isTaprootChain } from './utils';
+import { addBip322ProofMessage } from './utils';
 import { BIP322_TAG, buildToSpendTransaction } from './toSpend';
 
 export type AddressDetails = {
@@ -14,9 +15,9 @@ export const MAX_NUM_BIP322_INPUTS = 200;
  * Create the base PSBT for the to_sign transaction for BIP322 signing.
  * There will be ever 1 output.
  */
-export function createBaseToSignPsbt(rootWalletKeys?: bitgo.RootWalletKeys): Psbt {
+export function createBaseToSignPsbt(rootWalletKeys?: bitgo.RootWalletKeys): bitgo.UtxoPsbt {
   // Create PSBT object for constructing the transaction
-  const psbt = new Psbt();
+  const psbt = bitgo.createPsbtForNetwork({ network: networks.bitcoin });
   // Set default value for nVersion and nLockTime
   psbt.setVersion(0); // nVersion = 0
   psbt.setLocktime(0); // nLockTime = 0
@@ -76,29 +77,82 @@ export function addBip322Input(psbt: Psbt, message: string, addressDetails: Addr
 }
 
 export function addBip322InputWithChainAndIndex(
-  psbt: Psbt,
+  psbt: bitgo.UtxoPsbt,
   message: string,
   rootWalletKeys: bitgo.RootWalletKeys,
-  chain: bitgo.ChainCode,
-  index: number
-): Psbt {
-  if (isTaprootChain(chain)) {
-    throw new Error('BIP322 is not supported for Taproot script types.');
-  }
-  const walletKeys = rootWalletKeys.deriveForChainAndIndex(chain, index);
-  const output = bitgo.outputScripts.createOutputScript2of3(walletKeys.publicKeys, bitgo.scriptTypeForChain(chain));
+  scriptId: bitgo.ScriptId
+): void {
+  const scriptType = bitgo.scriptTypeForChain(scriptId.chain);
+  const walletKeys = rootWalletKeys.deriveForChainAndIndex(scriptId.chain, scriptId.index);
+  const output = bitgo.outputScripts.createOutputScript2of3(
+    walletKeys.publicKeys,
+    bitgo.scriptTypeForChain(scriptId.chain)
+  );
 
-  addBip322Input(psbt, message, {
+  addBip322Input(psbt as Psbt, message, {
     scriptPubKey: output.scriptPubKey,
     redeemScript: output.redeemScript,
     witnessScript: output.witnessScript,
   });
 
   const inputIndex = psbt.data.inputs.length - 1;
-  psbt.updateInput(
-    inputIndex,
-    bitgo.getPsbtBip32DerivationOutputUpdate(rootWalletKeys, walletKeys, bitgo.scriptTypeForChain(chain))
-  );
 
-  return psbt;
+  // When adding the taproot metadata, we assume that we are NOT using the backup path
+  // For script type p2tr, it means that we are using signer and bitgo keys when creating the tap tree
+  // spending paths. For p2trMusig2, it means that we are using the taproot key path spending
+  const keyNames = ['user', 'bitgo'] as bitgo.KeyName[];
+  if (scriptType === 'p2tr') {
+    const { controlBlock, witnessScript, leafVersion, leafHash } = bitgo.outputScripts.createSpendScriptP2tr(
+      walletKeys.publicKeys,
+      [walletKeys.user.publicKey, walletKeys.bitgo.publicKey]
+    );
+    psbt.updateInput(inputIndex, {
+      tapLeafScript: [{ controlBlock, script: witnessScript, leafVersion }],
+    });
+
+    psbt.updateInput(inputIndex, {
+      tapBip32Derivation: keyNames.map((key) => ({
+        leafHashes: [leafHash],
+        pubkey: toXOnlyPublicKey(walletKeys[key].publicKey),
+        path: rootWalletKeys.getDerivationPath(rootWalletKeys[key], scriptId.chain, scriptId.index),
+        masterFingerprint: rootWalletKeys[key].fingerprint,
+      })),
+    });
+  } else if (scriptType === 'p2trMusig2') {
+    const {
+      internalPubkey: tapInternalKey,
+      outputPubkey: tapOutputKey,
+      taptreeRoot,
+    } = bitgo.outputScripts.createKeyPathP2trMusig2(walletKeys.publicKeys);
+
+    const participantsKeyValData = bitgo.musig2.encodePsbtMusig2Participants({
+      tapOutputKey,
+      tapInternalKey,
+      participantPubKeys: [walletKeys.user.publicKey, walletKeys.bitgo.publicKey],
+    });
+    bitgo.addProprietaryKeyValuesFromUnknownKeyValues(psbt, 'input', inputIndex, participantsKeyValData);
+
+    psbt.updateInput(inputIndex, {
+      tapInternalKey: tapInternalKey,
+    });
+
+    psbt.updateInput(inputIndex, {
+      tapMerkleRoot: taptreeRoot,
+    });
+
+    psbt.updateInput(inputIndex, {
+      tapBip32Derivation: keyNames.map((key) => ({
+        leafHashes: [],
+        pubkey: toXOnlyPublicKey(walletKeys[key].publicKey),
+        path: rootWalletKeys.getDerivationPath(rootWalletKeys[key], scriptId.chain, scriptId.index),
+        masterFingerprint: rootWalletKeys[key].fingerprint,
+      })),
+    });
+  } else {
+    // Add bip32 derivation information for the input
+    psbt.updateInput(
+      inputIndex,
+      bitgo.getPsbtBip32DerivationOutputUpdate(rootWalletKeys, walletKeys, bitgo.scriptTypeForChain(scriptId.chain))
+    );
+  }
 }
