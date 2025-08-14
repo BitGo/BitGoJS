@@ -23,7 +23,8 @@ describe('BIP322 toSign', function () {
 
     fixtures.forEach(({ message, txid }) => {
       it(`should build a to_sign PSBT for message "${message}"`, function () {
-        const result = bip322.buildToSignPsbt(message, {
+        const result = bip322.createBaseToSignPsbt();
+        bip322.addBip322Input(result, message, {
           scriptPubKey,
         });
         const computedTxid = result
@@ -51,7 +52,8 @@ describe('BIP322 toSign', function () {
           return;
         }
         const toSpendTx = bip322.buildToSpendTransactionFromChainAndIndex(rootWalletKeys, chain, index, message);
-        const toSignPsbt = bip322.buildToSignPsbtForChainAndIndex(message, rootWalletKeys, chain, index);
+        const toSignPsbt = bip322.createBaseToSignPsbt(rootWalletKeys);
+        bip322.addBip322InputWithChainAndIndex(toSignPsbt, message, rootWalletKeys, chain, index);
 
         // Can sign the PSBT with the keys
         // Should be able to use HD because we have the bip32Derivation information
