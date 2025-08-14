@@ -1711,7 +1711,7 @@ export const coins = CoinMap.fromCoins([
   account(
     '87c104ca-6b49-479e-87fb-9253b095158c',
     'stt',
-    'Somnia',
+    'DepricatedSom',
     Networks.main.stt,
     18,
     UnderlyingAsset.STT,

@@ -18,7 +18,7 @@ describe('stt', function () {
       stt.should.be.an.instanceof(Stt);
       stt.getChain().should.equal('stt');
       stt.getFamily().should.equal('stt');
-      stt.getFullName().should.equal('Somnia');
+      stt.getFullName().should.equal('DepricatedSom');
       stt.getBaseFactor().should.equal(1e18);
       stt.supportsTss().should.equal(true);
       stt.allowsAccountConsolidations().should.equal(false);
