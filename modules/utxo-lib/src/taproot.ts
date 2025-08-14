@@ -3,7 +3,7 @@
 // https://github.com/bitcoin/bips/blob/master/bip-0341.mediawiki
 
 import { TapTree as PsbtTapTree, TapLeaf as PsbtTapLeaf } from 'bip174/src/lib/interfaces';
-import assert = require('assert');
+import * as assert from 'assert';
 import FastPriorityQueue = require('fastpriorityqueue');
 import { script as bscript, crypto as bcrypto, payments as bpayments } from 'bitcoinjs-lib';
 import { ecc as eccLib } from './noble_ecc';
