@@ -222,7 +222,8 @@ export type ValidInstructionTypes =
   | 'SetPriorityFee'
   | 'MintTo'
   | 'Burn'
-  | 'Approve';
+  | 'Approve'
+  | 'CustomInstruction';
 
 export type StakingAuthorizeParams = {
   stakingAddress: string;
