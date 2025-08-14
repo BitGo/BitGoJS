@@ -4,7 +4,7 @@
 import assert from 'assert';
 import { BigNumber } from 'bignumber.js';
 import { bip32 } from '@bitgo/utxo-lib';
-import * as _ from 'lodash';
+import _ from 'lodash';
 import { CoinFeature } from '@bitgo/statics';
 
 import { sanitizeLegacyPath } from '../../api';
@@ -17,6 +17,7 @@ import { decodeOrElse, promiseProps, RequestTracer } from '../utils';
 import {
   AcceptShareOptions,
   AcceptShareOptionsRequest,
+  AcceptShareResponse,
   AddWalletOptions,
   BulkAcceptShareOptions,
   BulkAcceptShareResponse,
@@ -38,7 +39,7 @@ import {
   WalletShares,
   WalletWithKeychains,
 } from './iWallets';
-import { WalletShare } from './iWallet';
+import { IWallet, WalletShare } from './iWallet';
 import { Wallet } from './wallet';
 import { TssSettings } from '@bitgo/public-types';
 
@@ -77,9 +78,11 @@ export class Wallets implements IWallets {
     if (params.skip && params.prevId) {
       throw new Error('cannot specify both skip and prevId');
     }
-    const body = (await this.bitgo.get(this.baseCoin.url('/wallet')).query(params).result()) as any;
-    body.wallets = body.wallets.map((w) => new Wallet(this.bitgo, this.baseCoin, w));
-    return body;
+    const result = (await this.bitgo.get(this.baseCoin.url('/wallet')).query(params).result()) as {
+      wallets: IWallet[];
+    };
+    const wallets = result.wallets.map((w: IWallet) => new Wallet(this.bitgo, this.baseCoin, w));
+    return { ...result, wallets };
   }
 
   /**
@@ -92,7 +95,7 @@ export class Wallets implements IWallets {
    *    "n": number of keys available on the wallet (3)
    *    "keys": array of keychain ids
    */
-  async add(params: AddWalletOptions): Promise<any> {
+  async add(params: AddWalletOptions): Promise<IWallet> {
     params = params || {};
 
     common.validateParams(params, [], ['label', 'enterprise', 'type']);
@@ -154,9 +157,7 @@ export class Wallets implements IWallets {
     }
 
     const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet/add')).send(params).result();
-    return {
-      wallet: new Wallet(this.bitgo, this.baseCoin, newWallet),
-    };
+    return newWallet;
   }
 
   private async generateLightningWallet(params: GenerateLightningWalletOptions): Promise<LightningWalletWithKeychains> {
@@ -595,7 +596,7 @@ export class Wallets implements IWallets {
    * List the user's wallet shares
    * @param params
    */
-  async listShares(params: Record<string, unknown> = {}): Promise<any> {
+  async listShares(_params: Record<string, unknown> = {}): Promise<WalletShares> {
     return await this.bitgo.get(this.baseCoin.url('/walletshare')).result();
   }
 
@@ -612,7 +613,7 @@ export class Wallets implements IWallets {
    * @param params
    * @param params.walletShareId - the wallet share to get information on
    */
-  async getShare(params: { walletShareId?: string } = {}): Promise<any> {
+  async getShare(params: { walletShareId?: string } = {}): Promise<WalletShare> {
     common.validateParams(params, ['walletShareId'], []);
 
     return await this.bitgo.get(this.baseCoin.url('/walletshare/' + params.walletShareId)).result();
@@ -624,7 +625,7 @@ export class Wallets implements IWallets {
    * @param params.state - the new state of the wallet share
    * @param params
    */
-  async updateShare(params: UpdateShareOptions = {}): Promise<any> {
+  async updateShare(params: UpdateShareOptions = {}): Promise<WalletShare> {
     common.validateParams(params, ['walletShareId'], []);
 
     return await this.bitgo
@@ -643,59 +644,130 @@ export class Wallets implements IWallets {
   }
 
   private async bulkAcceptShareRequestWithRetry(params: AcceptShareOptionsRequest[]): Promise<BulkAcceptShareResponse> {
-    // Server has a limit of approximately 1MB for payload size
-    let MAX_PAYLOAD_SIZE = 950000; // ~950KB to leave some buffer
-
-    // Function to calculate the size of a payload
-    const calculatePayloadSize = (items: AcceptShareOptionsRequest[]): number => {
-      return Buffer.byteLength(JSON.stringify({ keysForWalletShares: items }), 'utf8');
-    };
-
-    const results: any[] = [];
-    const remainingParams = [...params];
-
-    while (remainingParams.length > 0) {
-      // Build optimal batch by adding items until we reach size limit
-      const batch: AcceptShareOptionsRequest[] = [];
-      // Start with empty batch
-
-      // Add items one by one while monitoring payload size
-      while (remainingParams.length > 0) {
-        // Test adding the next item
-        const testBatch = [...batch, remainingParams[0]];
-        const testSize = calculatePayloadSize(testBatch);
-
-        // If adding this item would exceed the size limit, stop adding
-        if (testSize > MAX_PAYLOAD_SIZE && batch.length > 0) {
-          break;
-        }
-
-        // Otherwise, add the item to the batch
-        batch.push(remainingParams.shift()!);
-      }
-
-      // Handle case where even a single item is too large
-      if (batch.length === 0 && remainingParams.length > 0) {
-        // Send just the first item even if it's oversized
-        batch.push(remainingParams.shift()!);
-      }
-
-      const payloadObj = { keysForWalletShares: batch };
-
-      try {
-        const result = await this.bitgo.put(this.bitgo.url('/walletshares/accept', 2)).send(payloadObj).result();
-
-        if (result.acceptedWalletShares && Array.isArray(result.acceptedWalletShares)) {
-          results.push(...result.acceptedWalletShares);
-        }
-      } catch (error: any) {
-        if (error.status === 413 && batch.length > 1) {
-          // If we still get 413 with multiple items, put them back and try with half the batch size
-          remainingParams.unshift(...batch);
-          MAX_PAYLOAD_SIZE = Math.floor(MAX_PAYLOAD_SIZE / 2); // Reduce size limit for next attempt
-          continue;
-        }
+    const results: AcceptShareResponse[] = [];
+    // Try sending all params at once first (optimistic approach)
+    try {
+      const result = await this.bitgo
+        .put(this.bitgo.url('/walletshares/accept', 2))
+        .send({ keysForWalletShares: params })
+        .result();
+      return result;
+    } catch (error: unknown) {
+      if ((error as { status?: number }).status !== 413) {
         throw error;
+      }
+      // If we get 413, continue with adaptive batching
+    }
+
+    // Group shares by coin type for more efficient batching
+    const coinGroups = new Map<string, AcceptShareOptionsRequest[]>();
+    for (const param of params) {
+      const coin = (param as unknown as { coin?: string }).coin || 'unknown';
+      if (!coinGroups.has(coin)) {
+        coinGroups.set(coin, []);
+      }
+      const group = coinGroups.get(coin);
+      if (group) {
+        group.push(param);
+      }
+    }
+
+    // Process each coin group with adaptive batch sizing
+    for (const [, items] of coinGroups) {
+      let remaining = [...items];
+      let optimalBatchSize: number | null = null;
+
+      while (remaining.length > 0) {
+        let batchSize: number;
+        // If we've found an optimal size for this coin, use it
+        if (optimalBatchSize !== null) {
+          batchSize = Math.min(optimalBatchSize, remaining.length);
+        } else {
+          // Start with all remaining items for this coin
+          batchSize = remaining.length;
+        }
+
+        let lastFailedSize = optimalBatchSize === null ? remaining.length + 1 : optimalBatchSize + 1;
+        let lastSuccessSize = optimalBatchSize || 0;
+
+        // Binary search for optimal batch size (only if we haven't found it yet)
+        while (optimalBatchSize === null && lastFailedSize - lastSuccessSize > 1) {
+          const batch = remaining.slice(0, batchSize);
+
+          try {
+            const result = await this.bitgo
+              .put(this.bitgo.url('/walletshares/accept', 2))
+              .send({ keysForWalletShares: batch })
+              .result();
+
+            if (result.acceptedWalletShares && Array.isArray(result.acceptedWalletShares)) {
+              results.push(...result.acceptedWalletShares);
+            }
+
+            remaining = remaining.slice(batchSize);
+            lastSuccessSize = batchSize;
+            // We found a working size, remember it for this coin type
+            if (batchSize === items.length || lastFailedSize === batchSize + 1) {
+              // This is the optimal size (either all items worked, or we know the next size up fails)
+              optimalBatchSize = batchSize;
+            }
+            break; // Success! Move to next batch
+          } catch (error: unknown) {
+            if ((error as { status?: number }).status === 413) {
+              lastFailedSize = batchSize;
+              batchSize = Math.floor((lastSuccessSize + batchSize) / 2);
+              if (batchSize === 0) {
+                batchSize = 1;
+              }
+            } else {
+              throw error;
+            }
+          }
+        }
+
+        // If we couldn't find a working size through binary search, try one at a time
+        if (lastSuccessSize === 0 && remaining.length > 0) {
+          try {
+            const result = await this.bitgo
+              .put(this.bitgo.url('/walletshares/accept', 2))
+              .send({ keysForWalletShares: [remaining[0]] })
+              .result();
+
+            if (result.acceptedWalletShares && Array.isArray(result.acceptedWalletShares)) {
+              results.push(...result.acceptedWalletShares);
+            }
+            remaining.shift();
+            optimalBatchSize = 1; // Remember that this coin can only go one at a time
+          } catch (error: unknown) {
+            // If even a single item fails, throw the error
+            throw error;
+          }
+        }
+
+        // If we found an optimal batch size through binary search, use it for remaining items
+        if (optimalBatchSize !== null && remaining.length > 0) {
+          const batch = remaining.slice(0, optimalBatchSize);
+          try {
+            const result = await this.bitgo
+              .put(this.bitgo.url('/walletshares/accept', 2))
+              .send({ keysForWalletShares: batch })
+              .result();
+
+            if (result.acceptedWalletShares && Array.isArray(result.acceptedWalletShares)) {
+              results.push(...result.acceptedWalletShares);
+            }
+            remaining = remaining.slice(optimalBatchSize);
+          } catch (error: unknown) {
+            // If optimal size fails, reset and try binary search again
+            if ((error as { status?: number }).status === 413) {
+              optimalBatchSize = null;
+              lastFailedSize = batch.length;
+              lastSuccessSize = 0;
+            } else {
+              throw error;
+            }
+          }
+        }
       }
     }
 
@@ -720,7 +792,7 @@ export class Wallets implements IWallets {
    * @param params
    * @param params.walletShareId - the wallet share whose invitiation should be resent
    */
-  async resendShareInvite(params: { walletShareId?: string } = {}): Promise<any> {
+  async resendShareInvite(params: { walletShareId?: string } = {}): Promise<WalletShare> {
     common.validateParams(params, ['walletShareId'], []);
 
     const urlParts = params.walletShareId + '/resendemail';
@@ -732,7 +804,7 @@ export class Wallets implements IWallets {
    * @param params
    * @param params.walletShareId - the wallet share to update
    */
-  async cancelShare(params: { walletShareId?: string } = {}): Promise<any> {
+  async cancelShare(params: { walletShareId?: string } = {}): Promise<WalletShare> {
     common.validateParams(params, ['walletShareId'], []);
 
     return await this.bitgo
@@ -791,7 +863,7 @@ export class Wallets implements IWallets {
    *                                     then the user's login password is used.
    * @param params.overrideEncryptedPrv - set only if the prv was received out-of-band.
    */
-  async acceptShare(params: AcceptShareOptions = {}): Promise<any> {
+  async acceptShare(params: AcceptShareOptions = {}): Promise<IWallet> {
     common.validateParams(params, ['walletShareId'], ['overrideEncryptedPrv', 'userPassword', 'newWalletPassphrase']);
 
     let encryptedPrv = params.overrideEncryptedPrv;
@@ -830,8 +902,8 @@ export class Wallets implements IWallets {
         signature: signature.toString('hex'),
         payload: payloadString,
       });
-      // If the wallet share was accepted successfully (changed=true), reshare the wallet with the spenders
-      if (response.changed && response.state === 'accepted') {
+      // If the wallet share was accepted successfully (state=accepted), reshare the wallet with the spenders
+      if (response.state === 'accepted') {
         try {
           await this.reshareWalletWithSpenders(walletShare.wallet, params.userPassword);
         } catch (e) {
@@ -839,14 +911,15 @@ export class Wallets implements IWallets {
           // Do nothing
         }
       }
-      return response;
+      return this.getWallet({ id: response.wallet });
     }
     // Return right away if there is no keychain to decrypt, or if explicit encryptedPrv was provided
     if (!walletShare.keychain || !walletShare.keychain.encryptedPrv || encryptedPrv) {
-      return this.updateShare({
+      const response = await this.updateShare({
         walletShareId: params.walletShareId,
         state: 'accepted',
       });
+      return this.getWallet({ id: response.wallet });
     }
 
     // More than viewing was requested, so we need to process the wallet keys using the shared ecdh scheme
@@ -854,7 +927,7 @@ export class Wallets implements IWallets {
       throw new Error('userPassword param must be provided to decrypt shared key');
     }
 
-    const sharingKeychain = (await this.bitgo.getECDHKeychain()) as any;
+    const sharingKeychain = (await this.bitgo.getECDHKeychain()) as { encryptedXprv?: string; prv?: string };
     if (_.isUndefined(sharingKeychain.encryptedXprv)) {
       throw new Error('encryptedXprv was not found on sharing keychain');
     }
@@ -890,7 +963,8 @@ export class Wallets implements IWallets {
     if (encryptedPrv) {
       updateParams.encryptedPrv = encryptedPrv;
     }
-    return this.updateShare(updateParams);
+    const response = await this.updateShare(updateParams);
+    return this.getWallet({ id: response.wallet });
   }
 
   /**
@@ -1132,7 +1206,7 @@ export class Wallets implements IWallets {
             await this.reshareWalletWithSpenders(walletId, userLoginPassword);
           } catch (e) {
             // Log error but continue processing other shares
-            console.error(`Error resharing wallet ${walletId} with spenders: ${e?.message}`);
+            // Error resharing wallet with spenders
           }
         }
       }
@@ -1301,7 +1375,9 @@ export class Wallets implements IWallets {
    * @param params
    * @returns {*}
    */
-  async getTotalBalances(params: Record<string, never> = {}): Promise<any> {
+  async getTotalBalances(
+    _params: Record<string, never> = {}
+  ): Promise<{ [coinType: string]: { balance: number; confirmedBalance: number } }> {
     return await this.bitgo.get(this.baseCoin.url('/wallet/balances')).result();
   }
 
