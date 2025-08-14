@@ -1,7 +1,7 @@
 import { KeyPair, TransactionBuilderFactory, WalletInitializationBuilder } from "@bitgo/sdk-coin-sol";
 import { coins } from '@bitgo/statics';
 import { Connection, NONCE_ACCOUNT_LENGTH, PublicKey, clusterApiUrl, LAMPORTS_PER_SOL } from "@solana/web3.js";
-import assert = require("assert");
+import * as assert from 'assert';
 import { readFileSync, writeFileSync } from "fs";
 
 // This script will generate nonce accounts for a given main account

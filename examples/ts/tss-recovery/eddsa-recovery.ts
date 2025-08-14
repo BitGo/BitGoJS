@@ -1,6 +1,6 @@
 import { Eddsa } from '@bitgo/sdk-core';
 import * as fs from 'fs';
-import assert = require('assert');
+import * as assert from 'assert';
 import { bigIntFromBufferBE, bigIntFromBufferLE, Ed25519Bip32HdTree } from '@bitgo/sdk-lib-mpc';
 import sjcl = require('sjcl');
 

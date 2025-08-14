@@ -2,7 +2,7 @@ import { ECDSAUtils } from '@bitgo/sdk-core';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as secp256k1 from 'secp256k1';
-import assert = require('assert');
+import * as assert from 'assert';
 import { bigIntFromBufferBE, bigIntToBufferBE, HDTree, Secp256k1Bip32HdTree } from '@bitgo/sdk-lib-mpc';
 
 const sampleMessage = "Hello, World!";
