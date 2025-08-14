@@ -6,6 +6,7 @@ import { GetPing } from './common/ping';
 import { GetPingExpress } from './common/pingExpress';
 import { PostLogin } from './common/login';
 import { PostDecrypt } from './common/decrypt';
+import { PostVerifyAddress } from './common/verifyAddress';
 
 export const ExpressApi = apiSpec({
   'express.ping': {
@@ -19,6 +20,9 @@ export const ExpressApi = apiSpec({
   },
   'express.decrypt': {
     post: PostDecrypt,
+  },
+  'express.verifyaddress': {
+    post: PostVerifyAddress,
   },
 });
 
