@@ -1,7 +1,7 @@
 import 'should';
 import sinon from 'sinon';
 import { MessageStandardType, serializeSignatures } from '@bitgo/sdk-core';
-import { fixtures } from '../fixtures';
+import { eip191Fixtures as fixtures } from '../fixtures';
 import { EIP191Message } from '../../../../src';
 
 describe('EIP191 Message', () => {

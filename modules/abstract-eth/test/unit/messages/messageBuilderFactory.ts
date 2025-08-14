@@ -1,8 +1,8 @@
 import 'should';
 import sinon from 'sinon';
 import { MessageStandardType } from '@bitgo/sdk-core';
-import { fixtures } from './fixtures';
-import { Eip191MessageBuilder, MessageBuilderFactory } from '../../../src';
+import { eip191Fixtures as fixtures } from './fixtures';
+import { Eip191MessageBuilder, Eip712MessageBuilder, MessageBuilderFactory } from '../../../src';
 
 describe('Message Builder Factory', () => {
   const sandbox = sinon.createSandbox();
@@ -18,6 +18,14 @@ describe('Message Builder Factory', () => {
       const builder = factory.getMessageBuilder(MessageStandardType.EIP191);
 
       builder.should.be.instanceof(Eip191MessageBuilder);
+    });
+
+    it('should return the correct builder for EIP712 message type', () => {
+      const factory = new MessageBuilderFactory(fixtures.coin);
+
+      const builder = factory.getMessageBuilder(MessageStandardType.EIP712);
+
+      builder.should.be.instanceof(Eip712MessageBuilder);
     });
 
     it('should throw an error for unsupported message types', () => {
