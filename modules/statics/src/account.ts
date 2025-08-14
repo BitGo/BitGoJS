@@ -158,6 +158,10 @@ export interface Nep141TokenConstructorOptions extends AccountConstructorOptions
   storageDepositAmount: string;
 }
 
+export interface TonTokenConstructorOptions extends AccountConstructorOptions {
+  jettonMaster: string;
+}
+
 export interface VetTokenConstructorOptions extends AccountConstructorOptions {
   contractAddress: string;
   gasTankToken?: string;
@@ -632,6 +636,18 @@ export class Nep141Token extends AccountCoinToken {
 
     this.contractAddress = options.contractAddress;
     this.storageDepositAmount = options.storageDepositAmount;
+  }
+}
+
+export class TonToken extends AccountCoinToken {
+  public jettonMaster: string;
+
+  constructor(options: TonTokenConstructorOptions) {
+    super({
+      ...options,
+    });
+
+    this.jettonMaster = options.jettonMaster;
   }
 }
 
@@ -3091,6 +3107,95 @@ export function sip10Token(
  * @param network? Optional token network. Defaults to the testnet Stacks network.
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
  */
+/**
+ * Factory function for TON token instances.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param jettonMaster Jetton master address of this token
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param features Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param prefix Optional token prefix. Defaults to empty string
+ * @param suffix Optional token suffix. Defaults to token name.
+ * @param network Optional token network. Defaults to TON main network.
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function tonToken(
+  id: string,
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  jettonMaster: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.main.ton,
+  primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
+) {
+  return Object.freeze(
+    new TonToken({
+      id,
+      name,
+      fullName,
+      network,
+      jettonMaster,
+      prefix,
+      suffix,
+      features,
+      decimalPlaces,
+      asset,
+      isToken: true,
+      primaryKeyCurve,
+      baseUnit: BaseUnit.TON,
+    })
+  );
+}
+
+/**
+ * Factory function for testnet TON token instances.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param jettonMaster Jetton master address of this token
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param features Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param prefix Optional token prefix. Defaults to empty string
+ * @param suffix Optional token suffix. Defaults to token name.
+ * @param network Optional token network. Defaults to the testnet TON network.
+ */
+export function ttonToken(
+  id: string,
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  jettonMaster: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.test.ton,
+  primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
+) {
+  return tonToken(
+    id,
+    name,
+    fullName,
+    decimalPlaces,
+    jettonMaster,
+    asset,
+    features,
+    prefix,
+    suffix,
+    network,
+    primaryKeyCurve
+  );
+}
+
 export function tsip10Token(
   id: string,
   name: string,

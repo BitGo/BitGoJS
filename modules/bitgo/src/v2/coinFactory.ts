@@ -6,6 +6,7 @@ import { AlgoToken } from '@bitgo/sdk-coin-algo';
 import { Bcha, Tbcha } from '@bitgo/sdk-coin-bcha';
 import { HbarToken } from '@bitgo/sdk-coin-hbar';
 import { Near, TNear, Nep141Token } from '@bitgo/sdk-coin-near';
+import { TonToken } from '@bitgo/sdk-coin-ton';
 import { SolToken } from '@bitgo/sdk-coin-sol';
 import { TrxToken } from '@bitgo/sdk-coin-trx';
 import { CoinFactory, CoinConstructor } from '@bitgo/sdk-core';
@@ -36,6 +37,7 @@ import {
   VetTokenConfig,
   TaoTokenConfig,
   PolyxTokenConfig,
+  TonTokenConfig,
 } from '@bitgo/statics';
 import {
   Ada,
@@ -532,6 +534,10 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   VetToken.createTokenConstructors().forEach(({ name, coinConstructor }) =>
     coinFactory.register(name, coinConstructor)
   );
+
+  TonToken.createTokenConstructors([...tokens.bitcoin.ton.tokens, ...tokens.testnet.ton.tokens]).forEach(
+    ({ name, coinConstructor }) => coinFactory.register(name, coinConstructor)
+  );
 }
 
 export function getCoinConstructor(coinName: string): CoinConstructor | undefined {
@@ -983,6 +989,9 @@ export function getTokenConstructor(tokenConfig: TokenConfig): CoinConstructor |
     case 'zeta':
     case 'tzeta':
       return CosmosToken.createTokenConstructor(tokenConfig as CosmosTokenConfig);
+    case 'ton':
+    case 'tton':
+      return TonToken.createTokenConstructor(tokenConfig as TonTokenConfig);
     default:
       return undefined;
   }
