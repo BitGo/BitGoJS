@@ -61,20 +61,6 @@ describe('to_spend', function () {
   });
 
   describe('buildToSpendTransactionFromChainAndIndex', function () {
-    it('should throw an error for Taproot chains', function () {
-      const taprootChains = [...bitgo.chainCodesP2tr, ...bitgo.chainCodesP2trMusig2];
-      taprootChains.forEach((chain) => {
-        assert.throws(() => {
-          buildToSpendTransactionFromChainAndIndex(
-            testutil.getDefaultWalletKeys(),
-            chain,
-            0,
-            Buffer.from('Hello World')
-          );
-        }, /BIP322 is not supported for Taproot script types/);
-      });
-    });
-
     describe('should build a to_spend transaction for a non-Taproot chain', function () {
       function run(chain: bitgo.ChainCode) {
         it(`scriptType: ${bitgo.scriptTypeForChain(chain)}, chain ${chain}`, function () {

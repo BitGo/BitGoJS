@@ -28,8 +28,3 @@ export function getBip322ProofInputIndex(psbt: utxolib.Psbt): number | undefined
 export function psbtIsBip322Proof(psbt: utxolib.Psbt): boolean {
   return getBip322ProofInputIndex(psbt) !== undefined;
 }
-
-export function isTaprootChain(chain: utxolib.bitgo.ChainCode): boolean {
-  const taprootChains = [...utxolib.bitgo.chainCodesP2tr, ...utxolib.bitgo.chainCodesP2trMusig2];
-  return taprootChains.some((tc) => tc === chain);
-}

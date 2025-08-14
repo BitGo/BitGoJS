@@ -40,25 +40,23 @@ describe('BIP322 toSign', function () {
   describe('buildToSignPsbtForChainAndIndex', function () {
     const rootWalletKeys = utxolib.testutil.getDefaultWalletKeys();
 
-    function run(chain: utxolib.bitgo.ChainCode, shouldFail: boolean, index: number) {
-      it(`should${
-        shouldFail ? ' fail to' : ''
-      } build and sign a to_sign PSBT for chain ${chain}, index ${index}`, function () {
+    function run(chain: utxolib.bitgo.ChainCode, index: number) {
+      const scriptType = utxolib.bitgo.scriptTypeForChain(chain);
+      it(`should build and sign a to_sign PSBT for chain ${chain}, index ${index}`, function () {
         const message = 'I can believe it is not butter';
-        if (shouldFail) {
-          assert.throws(() => {
-            bip322.buildToSpendTransactionFromChainAndIndex(rootWalletKeys, chain, index, message);
-          }, /BIP322 is not supported for Taproot script types./);
-          return;
-        }
+
         const toSpendTx = bip322.buildToSpendTransactionFromChainAndIndex(rootWalletKeys, chain, index, message);
         const toSignPsbt = bip322.createBaseToSignPsbt(rootWalletKeys);
         bip322.addBip322InputWithChainAndIndex(toSignPsbt, message, rootWalletKeys, { chain, index });
 
         // Can sign the PSBT with the keys
-        // Should be able to use HD because we have the bip32Derivation information
-        toSignPsbt.signAllInputsHD(rootWalletKeys.triple[0]);
-        toSignPsbt.signAllInputsHD(rootWalletKeys.triple[1]);
+        // Should be able to use HD because we have the (tap)bip32Derivation information
+        if (scriptType === 'p2trMusig2') {
+          toSignPsbt.setAllInputsMusig2NonceHD(rootWalletKeys.user);
+          toSignPsbt.setAllInputsMusig2NonceHD(rootWalletKeys.bitgo);
+        }
+        toSignPsbt.signAllInputsHD(rootWalletKeys.user);
+        toSignPsbt.signAllInputsHD(rootWalletKeys.bitgo);
 
         // Wrap the PSBT as a UtxoPsbt so that we can use the validateSignaturesOfInputCommon method
         const utxopsbt = utxolib.bitgo.createPsbtFromBuffer(toSignPsbt.toBuffer(), utxolib.networks.bitcoin);
@@ -127,7 +125,7 @@ describe('BIP322 toSign', function () {
     }
 
     utxolib.bitgo.chainCodes.forEach((chain, i) => {
-      run(chain, bip322.isTaprootChain(chain), i);
+      run(chain, i);
     });
   });
 });
