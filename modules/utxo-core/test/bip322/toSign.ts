@@ -53,7 +53,7 @@ describe('BIP322 toSign', function () {
         }
         const toSpendTx = bip322.buildToSpendTransactionFromChainAndIndex(rootWalletKeys, chain, index, message);
         const toSignPsbt = bip322.createBaseToSignPsbt(rootWalletKeys);
-        bip322.addBip322InputWithChainAndIndex(toSignPsbt, message, rootWalletKeys, chain, index);
+        bip322.addBip322InputWithChainAndIndex(toSignPsbt, message, rootWalletKeys, { chain, index });
 
         // Can sign the PSBT with the keys
         // Should be able to use HD because we have the bip32Derivation information

@@ -79,14 +79,16 @@ export function addBip322InputWithChainAndIndex(
   psbt: Psbt,
   message: string,
   rootWalletKeys: bitgo.RootWalletKeys,
-  chain: bitgo.ChainCode,
-  index: number
+  scriptId: bitgo.ScriptId
 ): Psbt {
-  if (isTaprootChain(chain)) {
+  if (isTaprootChain(scriptId.chain)) {
     throw new Error('BIP322 is not supported for Taproot script types.');
   }
-  const walletKeys = rootWalletKeys.deriveForChainAndIndex(chain, index);
-  const output = bitgo.outputScripts.createOutputScript2of3(walletKeys.publicKeys, bitgo.scriptTypeForChain(chain));
+  const walletKeys = rootWalletKeys.deriveForChainAndIndex(scriptId.chain, scriptId.index);
+  const output = bitgo.outputScripts.createOutputScript2of3(
+    walletKeys.publicKeys,
+    bitgo.scriptTypeForChain(scriptId.chain)
+  );
 
   addBip322Input(psbt, message, {
     scriptPubKey: output.scriptPubKey,
@@ -97,7 +99,7 @@ export function addBip322InputWithChainAndIndex(
   const inputIndex = psbt.data.inputs.length - 1;
   psbt.updateInput(
     inputIndex,
-    bitgo.getPsbtBip32DerivationOutputUpdate(rootWalletKeys, walletKeys, bitgo.scriptTypeForChain(chain))
+    bitgo.getPsbtBip32DerivationOutputUpdate(rootWalletKeys, walletKeys, bitgo.scriptTypeForChain(scriptId.chain))
   );
 
   return psbt;
