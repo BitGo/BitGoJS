@@ -12,7 +12,7 @@ import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../../src';
 import * as openpgp from 'openpgp';
 import nock = require('nock');
-import assert = require('assert');
+import * as assert from 'assert';
 
 class TestEcdsaMpcv2Utils extends ECDSAUtils.EcdsaMPCv2Utils {
   public async testPickBitgoPubGpgKeyForSigning(
