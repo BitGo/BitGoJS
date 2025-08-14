@@ -22,6 +22,7 @@ import {
   makeRandomKey,
   getSharedSecret,
   BulkWalletShareOptions,
+  AcceptShareOptionsRequest,
   KeychainWithEncryptedPrv,
   WalletWithKeychains,
   multisigTypes,
@@ -1871,6 +1872,283 @@ describe('V2 Wallets:', function () {
             },
           ],
         });
+      });
+
+      it('should handle 413 payload too large error with smart retry', async () => {
+        const walletPassphrase = 'bitgo1234';
+        const fromUserPrv = Math.random();
+        const keychainTest: OptionalKeychainEncryptedKey = {
+          encryptedPrv: bitgo.encrypt({ input: fromUserPrv.toString(), password: walletPassphrase }),
+        };
+        const userPrv = decryptKeychainPrivateKey(bitgo, keychainTest, walletPassphrase);
+        if (!userPrv) {
+          throw new Error('Unable to decrypt user keychain');
+        }
+
+        const toKeychain = utxoLib.bip32.fromSeed(Buffer.from('deadbeef02deadbeef02deadbeef02deadbeef02', 'hex'));
+        const path = 'm/999999/1/1';
+        const pubkey = toKeychain.derivePath(path).publicKey.toString('hex');
+
+        const eckey = makeRandomKey();
+        const secret = getSharedSecret(eckey, Buffer.from(pubkey, 'hex')).toString('hex');
+        // Pad the private key with additional data to make it larger before encrypting
+        const newEncryptedPrv = bitgo.encrypt({ password: secret, input: userPrv });
+        const keychain = {
+          path: path,
+          fromPubKey: eckey.publicKey.toString('hex'),
+          encryptedPrv: newEncryptedPrv,
+          toPubKey: pubkey,
+          pub: pubkey,
+        };
+        const shareIds = Array.from({ length: 20 }, (_, i) => `share${i + 1}`);
+
+        // Mock listSharesV2 to return 25 shares
+        const shares = shareIds.map((id, index) => ({
+          id,
+          coin: 'tsol',
+          walletLabel: `testing${index}`,
+          fromUser: 'dummyFromUser',
+          toUser: 'dummyToUser',
+          wallet: `wallet${index}`,
+          permissions: ['spend'],
+          state: 'active' as const,
+          keychain: keychain,
+        }));
+
+        sinon.stub(Wallets.prototype, 'listSharesV2').resolves({
+          incoming: shares,
+          outgoing: [],
+        });
+
+        const myEcdhKeychain = await bitgo.keychains().create();
+        sinon.stub(bitgo, 'getECDHKeychain').resolves({
+          encryptedXprv: bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
+        });
+
+        const prvKey = bitgo.decrypt({
+          password: walletPassphrase,
+          input: bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
+        });
+        sinon.stub(bitgo, 'decrypt').returns(prvKey);
+        sinon.stub(bitgo, 'encrypt').returns(userPrv + 'X'.repeat(100000));
+        sinon.stub(moduleBitgo, 'getSharedSecret').resolves('fakeSharedSecret');
+
+        // Mock bulkAcceptShareRequestWithRetry to track batch sizes
+        const batchSizes: number[] = [];
+
+        nock(bgUrl)
+          .persist() // This ensures the interceptor remains active for multiple requests
+          .put('/api/v2/walletshares/accept')
+          .reply(function (_, requestBody, cb) {
+            const params = requestBody['keysForWalletShares'] as AcceptShareOptionsRequest[];
+            batchSizes.push(params.length);
+            if (Buffer.byteLength(JSON.stringify(requestBody), 'utf8') > 950000) {
+              // Simulate 413 error
+              return cb(null, [413, { error: 'Request Entity Too Large' }]);
+            }
+            // Return success for smaller batches
+            return cb(null, [
+              200,
+              {
+                acceptedWalletShares: params.map((param) => ({
+                  walletShareId: param.walletShareId,
+                })),
+              },
+            ]);
+          });
+
+        const result = await wallets.bulkAcceptShare({
+          walletShareIds: shareIds,
+          userLoginPassword: walletPassphrase,
+        });
+
+        // Should have tried with 20 (initial batch size for 25 items), then retried with smaller batches
+        batchSizes.length.should.be.greaterThan(1);
+        batchSizes.should.deepEqual([9, 9, 2]); // Initial batch size// Retry batches should be smaller
+
+        result.should.have.property('acceptedWalletShares');
+        result.acceptedWalletShares.should.be.an.Array();
+        result.acceptedWalletShares.length.should.equal(20);
+        result.acceptedWalletShares.forEach((share) => {
+          share.should.have.property('walletShareId');
+          share.walletShareId.should.match(/^share\d+$/);
+        });
+      });
+
+      it('should retry with progressively smaller batch sizes on 413 errors', async () => {
+        const walletPassphrase = 'bitgo1234';
+        const fromUserPrv = Math.random();
+        const keychainTest: OptionalKeychainEncryptedKey = {
+          encryptedPrv: bitgo.encrypt({ input: fromUserPrv.toString(), password: walletPassphrase }),
+        };
+        const userPrv = decryptKeychainPrivateKey(bitgo, keychainTest, walletPassphrase);
+        if (!userPrv) {
+          throw new Error('Unable to decrypt user keychain');
+        }
+
+        const toKeychain = utxoLib.bip32.fromSeed(Buffer.from('deadbeef02deadbeef02deadbeef02deadbeef02', 'hex'));
+        const path = 'm/999999/1/1';
+        const pubkey = toKeychain.derivePath(path).publicKey.toString('hex');
+
+        const eckey = makeRandomKey();
+        const secret = getSharedSecret(eckey, Buffer.from(pubkey, 'hex')).toString('hex');
+        const newEncryptedPrv = bitgo.encrypt({ password: secret, input: userPrv });
+        const keychain = {
+          path: path,
+          fromPubKey: eckey.publicKey.toString('hex'),
+          encryptedPrv: newEncryptedPrv,
+          toPubKey: pubkey,
+          pub: pubkey,
+        };
+        const shareIds = Array.from({ length: 20 }, (_, i) => `share${i + 1}`);
+
+        // Mock listSharesV2
+        const shares = shareIds.map((id, index) => ({
+          id,
+          coin: 'tsol',
+          walletLabel: `testing${index}`,
+          fromUser: 'dummyFromUser',
+          toUser: 'dummyToUser',
+          wallet: `wallet${index}`,
+          permissions: ['spend'],
+          state: 'active' as const,
+          keychain: keychain,
+        }));
+
+        sinon.stub(Wallets.prototype, 'listSharesV2').resolves({
+          incoming: shares,
+          outgoing: [],
+        });
+
+        const myEcdhKeychain = await bitgo.keychains().create();
+        sinon.stub(bitgo, 'getECDHKeychain').resolves({
+          encryptedXprv: bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
+        });
+
+        const prvKey = bitgo.decrypt({
+          password: walletPassphrase,
+          input: bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
+        });
+        sinon.stub(bitgo, 'decrypt').returns(prvKey);
+        sinon.stub(bitgo, 'encrypt').returns(userPrv + 'X'.repeat(100000));
+        sinon.stub(moduleBitgo, 'getSharedSecret').resolves('fakeSharedSecret');
+
+        // Track the sequence of batch sizes attempted
+        const batchSizeAttempts: number[] = [];
+
+        nock(bgUrl)
+          .persist() // This ensures the interceptor remains active for multiple requests
+          .put('/api/v2/walletshares/accept')
+          .reply(function (_, requestBody: any, cb) {
+            const params = requestBody['keysForWalletShares'] as AcceptShareOptionsRequest[];
+            batchSizeAttempts.push(params.length);
+
+            // Simulate 413 for batches > 5, success for batches <= 5
+            if (Buffer.byteLength(JSON.stringify(requestBody), 'utf8') > 600000) {
+              // Simulate 413 error
+              return cb(null, [413, { error: 'Request Entity Too Large' }]);
+            }
+
+            // Return success for smaller batches
+            return cb(null, [
+              200,
+              {
+                acceptedWalletShares: params.map((param) => ({
+                  walletShareId: param.walletShareId || 'test',
+                })),
+              },
+            ]);
+          });
+
+        const result = await wallets.bulkAcceptShare({
+          walletShareIds: shareIds,
+          userLoginPassword: walletPassphrase,
+        });
+
+        // Should see progressive batch size reduction: 20 -> 10 -> 5 (success)
+        batchSizeAttempts.should.containDeep([9, 4, 4, 4, 4, 4]);
+
+        result.should.have.property('acceptedWalletShares');
+        result.acceptedWalletShares.should.be.an.Array();
+        result.acceptedWalletShares.length.should.equal(20);
+        result.acceptedWalletShares.forEach((share) => {
+          share.should.have.property('walletShareId');
+          share.walletShareId.should.match(/^share\d+$/);
+        });
+      });
+
+      it('should throw error when batch size cannot be reduced further', async () => {
+        const walletPassphrase = 'bitgo1234';
+        const fromUserPrv = Math.random();
+        const keychainTest: OptionalKeychainEncryptedKey = {
+          encryptedPrv: bitgo.encrypt({ input: fromUserPrv.toString(), password: walletPassphrase }),
+        };
+        const userPrv = decryptKeychainPrivateKey(bitgo, keychainTest, walletPassphrase);
+        if (!userPrv) {
+          throw new Error('Unable to decrypt user keychain');
+        }
+
+        const toKeychain = utxoLib.bip32.fromSeed(Buffer.from('deadbeef02deadbeef02deadbeef02deadbeef02', 'hex'));
+        const path = 'm/999999/1/1';
+        const pubkey = toKeychain.derivePath(path).publicKey.toString('hex');
+
+        const eckey = makeRandomKey();
+        const secret = getSharedSecret(eckey, Buffer.from(pubkey, 'hex')).toString('hex');
+        const newEncryptedPrv = bitgo.encrypt({ password: secret, input: userPrv });
+        const keychain = {
+          path: path,
+          fromPubKey: eckey.publicKey.toString('hex'),
+          encryptedPrv: newEncryptedPrv,
+          toPubKey: pubkey,
+          pub: pubkey,
+        };
+        const shareIds = ['share1'];
+
+        // Mock listSharesV2
+        sinon.stub(Wallets.prototype, 'listSharesV2').resolves({
+          incoming: [
+            {
+              id: 'share1',
+              coin: 'tsol',
+              walletLabel: 'testing',
+              fromUser: 'dummyFromUser',
+              toUser: 'dummyToUser',
+              wallet: 'wallet1',
+              permissions: ['spend'],
+              state: 'active',
+              keychain: keychain,
+            },
+          ],
+          outgoing: [],
+        });
+
+        const myEcdhKeychain = await bitgo.keychains().create();
+        sinon.stub(bitgo, 'getECDHKeychain').resolves({
+          encryptedXprv: bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
+        });
+
+        const prvKey = bitgo.decrypt({
+          password: walletPassphrase,
+          input: bitgo.encrypt({ input: myEcdhKeychain.xprv, password: walletPassphrase }),
+        });
+        sinon.stub(bitgo, 'decrypt').returns(prvKey);
+        sinon.stub(moduleBitgo, 'getSharedSecret').resolves('fakeSharedSecret');
+
+        // Always throw 413 error, even for batch size 1
+        nock(bgUrl)
+          .persist()
+          .put('/api/v2/walletshares/accept')
+          .reply(function (_, _requestBody, cb) {
+            // Always respond with 413 error
+            return cb(null, [413, { error: 'Request Entity Too Large' }]);
+          });
+
+        await wallets
+          .bulkAcceptShare({
+            walletShareIds: shareIds,
+            userLoginPassword: walletPassphrase,
+          })
+          .should.be.rejectedWith('Request Entity Too Large');
       });
     });
 

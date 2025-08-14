@@ -639,12 +639,69 @@ export class Wallets implements IWallets {
    * @returns {Promise<BulkAcceptShareResponse>}
    */
   async bulkAcceptShareRequest(params: AcceptShareOptionsRequest[]): Promise<BulkAcceptShareResponse> {
-    return await this.bitgo
-      .put(this.bitgo.url('/walletshares/accept', 2))
-      .send({
-        keysForWalletShares: params,
-      })
-      .result();
+    return await this.bulkAcceptShareRequestWithRetry(params);
+  }
+
+  private async bulkAcceptShareRequestWithRetry(params: AcceptShareOptionsRequest[]): Promise<BulkAcceptShareResponse> {
+    // Server has a limit of approximately 1MB for payload size
+    let MAX_PAYLOAD_SIZE = 950000; // ~950KB to leave some buffer
+
+    // Function to calculate the size of a payload
+    const calculatePayloadSize = (items: AcceptShareOptionsRequest[]): number => {
+      return Buffer.byteLength(JSON.stringify({ keysForWalletShares: items }), 'utf8');
+    };
+
+    const results: any[] = [];
+    const remainingParams = [...params];
+
+    while (remainingParams.length > 0) {
+      // Build optimal batch by adding items until we reach size limit
+      const batch: AcceptShareOptionsRequest[] = [];
+      // Start with empty batch
+
+      // Add items one by one while monitoring payload size
+      while (remainingParams.length > 0) {
+        // Test adding the next item
+        const testBatch = [...batch, remainingParams[0]];
+        const testSize = calculatePayloadSize(testBatch);
+
+        // If adding this item would exceed the size limit, stop adding
+        if (testSize > MAX_PAYLOAD_SIZE && batch.length > 0) {
+          break;
+        }
+
+        // Otherwise, add the item to the batch
+        batch.push(remainingParams.shift()!);
+      }
+
+      // Handle case where even a single item is too large
+      if (batch.length === 0 && remainingParams.length > 0) {
+        // Send just the first item even if it's oversized
+        batch.push(remainingParams.shift()!);
+      }
+
+      const payloadObj = { keysForWalletShares: batch };
+
+      try {
+        const result = await this.bitgo.put(this.bitgo.url('/walletshares/accept', 2)).send(payloadObj).result();
+
+        if (result.acceptedWalletShares && Array.isArray(result.acceptedWalletShares)) {
+          results.push(...result.acceptedWalletShares);
+        }
+      } catch (error: any) {
+        if (error.status === 413 && batch.length > 1) {
+          // If we still get 413 with multiple items, put them back and try with half the batch size
+          remainingParams.unshift(...batch);
+          MAX_PAYLOAD_SIZE = Math.floor(MAX_PAYLOAD_SIZE / 2); // Reduce size limit for next attempt
+          continue;
+        }
+        throw error;
+      }
+    }
+
+    return {
+      acceptedWalletShares: results,
+    };
   }
 
   async bulkUpdateWalletShareRequest(
