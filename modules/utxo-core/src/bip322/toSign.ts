@@ -65,14 +65,20 @@ export function buildToSignPsbtForChainAndIndex(
   if (isTaprootChain(chain)) {
     throw new Error('BIP322 is not supported for Taproot script types.');
   }
-  const output = bitgo.outputScripts.createOutputScript2of3(
-    rootWalletKeys.deriveForChainAndIndex(chain, index).publicKeys,
-    bitgo.scriptTypeForChain(chain)
-  );
+  const walletKeys = rootWalletKeys.deriveForChainAndIndex(chain, index);
+  const output = bitgo.outputScripts.createOutputScript2of3(walletKeys.publicKeys, bitgo.scriptTypeForChain(chain));
 
-  return buildToSignPsbt(message, {
+  const psbt = buildToSignPsbt(message, {
     scriptPubKey: output.scriptPubKey,
     redeemScript: output.redeemScript,
     witnessScript: output.witnessScript,
   });
+
+  psbt.updateInput(
+    0,
+    bitgo.getPsbtBip32DerivationOutputUpdate(rootWalletKeys, walletKeys, bitgo.scriptTypeForChain(chain))
+  );
+  bitgo.addXpubsToPsbt(psbt, rootWalletKeys);
+
+  return psbt;
 }

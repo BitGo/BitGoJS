@@ -53,25 +53,14 @@ describe('BIP322 toSign', function () {
         const toSpendTx = bip322.buildToSpendTransactionFromChainAndIndex(rootWalletKeys, chain, index, message);
         const toSignPsbt = bip322.buildToSignPsbtForChainAndIndex(message, rootWalletKeys, chain, index);
 
-        const derivedKeys = rootWalletKeys.deriveForChainAndIndex(chain, index);
-        const prv1 = derivedKeys.triple[0];
-        const prv2 = derivedKeys.triple[1];
-        assert.ok(prv1);
-        assert.ok(prv2);
-
         // Can sign the PSBT with the keys
-        toSignPsbt.signAllInputs(prv1, [utxolib.Transaction.SIGHASH_ALL]);
-        toSignPsbt.signAllInputs(prv2, [utxolib.Transaction.SIGHASH_ALL]);
+        // Should be able to use HD because we have the bip32Derivation information
+        toSignPsbt.signAllInputsHD(rootWalletKeys.triple[0]);
+        toSignPsbt.signAllInputsHD(rootWalletKeys.triple[1]);
 
         // Wrap the PSBT as a UtxoPsbt so that we can use the validateSignaturesOfInputCommon method
         const utxopsbt = utxolib.bitgo.createPsbtFromBuffer(toSignPsbt.toBuffer(), utxolib.networks.bitcoin);
-        derivedKeys.publicKeys.forEach((pubkey, i) => {
-          assert.deepStrictEqual(
-            utxopsbt.validateSignaturesOfInputCommon(0, pubkey),
-            i !== 2,
-            `Signature validation failed for public key at index ${i}`
-          );
-        });
+        utxopsbt.validateSignaturesOfAllInputs();
 
         // finalize and extract
         const tx = toSignPsbt.finalizeAllInputs().extractTransaction();
@@ -100,6 +89,7 @@ describe('BIP322 toSign', function () {
         assert.deepStrictEqual(toSpendTx.ins.length, 1, 'to_spend transaction must have one input');
         assert.deepStrictEqual(toSpendTx.outs.length, 1, 'to_spend transaction must have one output');
         assert.deepStrictEqual(toSpendTx.outs[0].value, BigInt(0), 'output value must be 0');
+        const derivedKeys = rootWalletKeys.deriveForChainAndIndex(chain, index);
         assert.deepStrictEqual(
           toSpendTx.outs[0].script.toString('hex'),
           utxolib.bitgo.outputScripts
