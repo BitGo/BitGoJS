@@ -10,7 +10,10 @@ import {
   BaseMessageBuilderFactory,
   BuildMessageError,
   MessageStandardType,
+  MIDNIGHT_TNC_HASH,
 } from '@bitgo/sdk-core';
+export { MIDNIGHT_TNC_HASH };
+
 import { BaseCoin as CoinConfig, CoinFeature, coins } from '@bitgo/statics';
 export { Ed25519BIP32, Eddsa };
 
@@ -205,9 +208,6 @@ export { Vet };
 
 import * as CosmosSharedCoin from '@bitgo/sdk-coin-cosmos';
 export { CosmosSharedCoin };
-
-import { validateAgainstMessageTemplates, MIDNIGHT_TNC_HASH } from './utils';
-export { MIDNIGHT_TNC_HASH };
 
 const coinBuilderMap = {
   trx: Trx.WrappedBuilder,
@@ -429,15 +429,13 @@ export async function verifyMessage(
   try {
     const messageBuilderFactory = getMessageBuilderFactory(coinName);
     const messageBuilder = messageBuilderFactory.getMessageBuilder(messageStandardType);
-    messageBuilder.setPayload(messageRaw);
-    const message = await messageBuilder.build();
-    const isValidMessageEncoded = await message.verifyEncodedPayload(messageEncoded, metadata);
-    if (!isValidMessageEncoded) {
+    if (!messageBuilder || !messageBuilder.isMessageWhitelisted(messageRaw)) {
       return false;
     }
-    return validateAgainstMessageTemplates(messageRaw);
+    messageBuilder.setPayload(messageRaw);
+    const message = await messageBuilder.build();
+    return await message.verifyEncodedPayload(messageEncoded, metadata);
   } catch (e) {
-    console.error(`Error verifying message for coin ${coinName}:`, e);
     return false;
   }
 }

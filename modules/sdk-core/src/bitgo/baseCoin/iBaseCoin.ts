@@ -11,10 +11,10 @@ import EddsaUtils, { PrebuildTransactionWithIntentOptions, TxRequest } from '../
 import { CreateAddressFormat, CustomSigningFunction, IWallet, IWallets, Wallet, WalletData, Memo } from '../wallet';
 
 import { IWebhooks } from '../webhook/iWebhooks';
-import { TransactionType } from '../../account-lib';
+import { MessageStandardType, TransactionType } from '../../account-lib';
 import { IInscriptionBuilder } from '../inscriptionBuilder';
 import { Hash } from 'crypto';
-import { MessageStandardType, MPCTx, PopulatedIntent, TokenType } from '../utils';
+import { MPCTx, PopulatedIntent, TokenType } from '../utils';
 
 export const multisigTypes = {
   onchain: 'onchain',
