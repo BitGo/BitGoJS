@@ -2,7 +2,7 @@ import assert from 'assert';
 
 import * as utxolib from '@bitgo/utxo-lib';
 
-import { getBip322ProofInputIndex, psbtIsBip322Proof } from '../../src/bip322';
+import { getBip322ProofMessageAtIndex } from '../../src/bip322';
 
 import { BIP322_FIXTURE_HELLO_WORLD_TOSIGN_PSBT } from './bip322.utils';
 
@@ -31,8 +31,8 @@ describe('BIP322 Proof utils', function () {
       utxolib.networks.bitcoin
     );
 
-    const resultIndex = getBip322ProofInputIndex(psbt);
-    assert.strictEqual(resultIndex, 0);
-    assert.ok(psbtIsBip322Proof(psbt));
+    const messageBuffer = getBip322ProofMessageAtIndex(psbt, 0);
+    assert.ok(messageBuffer, 'Message buffer should not be undefined');
+    assert.deepStrictEqual(messageBuffer.toString('utf-8'), 'Hello World', 'Message does not match expected value');
   });
 });
