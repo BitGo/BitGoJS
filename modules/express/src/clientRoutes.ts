@@ -106,7 +106,7 @@ function handleEncrypt(req: express.Request) {
  * @deprecated
  * @param req
  */
-function handleVerifyAddress(req: express.Request) {
+function handleVerifyAddress(req: ExpressApiRouteRequest<'express.verifyaddress', 'post'>) {
   return {
     verified: req.bitgo.verifyAddress(req.body),
   };
@@ -1565,7 +1565,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
 
   router.post('express.decrypt', [prepareBitGo(config), typedPromiseWrapper(handleDecrypt)]);
   app.post('/api/v[12]/encrypt', parseBody, prepareBitGo(config), promiseWrapper(handleEncrypt));
-  app.post('/api/v[12]/verifyaddress', parseBody, prepareBitGo(config), promiseWrapper(handleVerifyAddress));
+  router.post('express.verifyaddress', [prepareBitGo(config), typedPromiseWrapper(handleVerifyAddress)]);
   app.post(
     '/api/v[12]/calculateminerfeeinfo',
     parseBody,

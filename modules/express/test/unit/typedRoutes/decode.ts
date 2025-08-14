@@ -2,6 +2,7 @@ import * as assert from 'assert';
 import * as t from 'io-ts';
 import { DecryptRequestBody } from '../../../src/typedRoutes/api/common/decrypt';
 import { LoginRequest } from '../../../src/typedRoutes/api/common/login';
+import { VerifyAddressBody } from '../../../src/typedRoutes/api/common/verifyAddress';
 
 export function assertDecode<T>(codec: t.Type<T, unknown>, input: unknown): T {
   const result = codec.decode(input);
@@ -37,6 +38,16 @@ describe('io-ts decode tests', function () {
     assertDecode(t.type(DecryptRequestBody), {
       input: 'input',
       password: 'password',
+    });
+  });
+  it('express.verifyaddress', function () {
+    assert.throws(() =>
+      assertDecode(t.type(VerifyAddressBody), {
+        address: 1123,
+      })
+    );
+    assertDecode(t.type(VerifyAddressBody), {
+      address: 'some-address',
     });
   });
 });
