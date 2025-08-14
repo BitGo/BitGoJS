@@ -1,4 +1,5 @@
 import { Eip191MessageBuilder } from './eip191';
+import { Eip712MessageBuilder } from './eip712';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseMessageBuilderFactory, IMessageBuilder, MessageStandardType } from '@bitgo/sdk-core';
 
@@ -11,6 +12,8 @@ export class MessageBuilderFactory extends BaseMessageBuilderFactory {
     switch (type) {
       case MessageStandardType.EIP191:
         return new Eip191MessageBuilder(this.coinConfig);
+      case MessageStandardType.EIP712:
+        return new Eip712MessageBuilder(this.coinConfig);
       default:
         throw new Error(`Invalid message standard ${type}`);
     }
