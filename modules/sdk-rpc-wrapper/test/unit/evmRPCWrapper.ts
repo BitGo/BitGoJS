@@ -22,7 +22,7 @@ import {
   txRequestForTypedDataSigning,
   transactionOptions,
 } from '../fixtures/evmRPCWrapperFixtures';
-import nock = require('nock');
+import nock from 'nock';
 import { personal_sign, eth_signTypedData, eth_sendTransaction } from '../../src/constants';
 
 describe('EVMRPCWrapper handleRPCCall', function () {

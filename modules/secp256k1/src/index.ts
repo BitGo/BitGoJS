@@ -8,7 +8,7 @@ import type { BIP32API, BIP32Interface } from 'bip32';
 import * as baseCrypto from '@brandonblack/musig/base_crypto';
 import { MuSig, MuSigFactory } from '@brandonblack/musig';
 
-const createHash = require('create-hash');
+import * as createHash from 'create-hash';
 
 necc.utils.sha256Sync = (...messages: Uint8Array[]): Uint8Array => {
   const sha256 = createHash('sha256');

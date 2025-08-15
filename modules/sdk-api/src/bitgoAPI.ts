@@ -83,13 +83,13 @@ import {
   VerifyShardsOptions,
   WebhookOptions,
 } from './types';
-import shamir = require('secrets.js-grempe');
-import pjson = require('../package.json');
+import shamir from 'secrets.js-grempe';
+import pjson from '../package.json' assert { type: 'json' };
 const debug = debugLib('bitgo:api');
 
 const Blockchain = require('./v1/blockchain');
 const Keychains = require('./v1/keychains');
-import Wallet = require('./v1/wallet');
+import Wallet from './v1/wallet';
 
 const Wallets = require('./v1/wallets');
 const Markets = require('./v1/markets');

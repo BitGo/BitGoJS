@@ -4,10 +4,10 @@
 
 import { TapTree as PsbtTapTree, TapLeaf as PsbtTapLeaf } from 'bip174/src/lib/interfaces';
 import * as assert from 'assert';
-import FastPriorityQueue = require('fastpriorityqueue');
+import FastPriorityQueue from 'fastpriorityqueue';
 import { script as bscript, crypto as bcrypto, payments as bpayments } from 'bitcoinjs-lib';
 import { ecc as eccLib } from './noble_ecc';
-const varuint = require('varuint-bitcoin');
+import * as varuint from 'varuint-bitcoin';
 
 /**
  * The 0x02 prefix indicating an even Y coordinate which is implicitly assumed

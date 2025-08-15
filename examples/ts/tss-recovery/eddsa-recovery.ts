@@ -2,7 +2,7 @@ import { Eddsa } from '@bitgo/sdk-core';
 import * as fs from 'fs';
 import * as assert from 'assert';
 import { bigIntFromBufferBE, bigIntFromBufferLE, Ed25519Bip32HdTree } from '@bitgo/sdk-lib-mpc';
-import sjcl = require('sjcl');
+import sjcl from 'sjcl';
 
 const sampleMessage = "Hello, World!";
 const derivationPath = "m/0";

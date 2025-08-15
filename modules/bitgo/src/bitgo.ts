@@ -3,7 +3,7 @@
 //
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
-import pjson = require('../package.json');
+import pjson from '../package.json' assert { type: 'json' };
 import * as _ from 'lodash';
 
 import { BaseCoin, CoinFactory, common, UnsupportedCoinError } from '@bitgo/sdk-core';

@@ -2,7 +2,7 @@ import { Transaction, crypto } from 'bitcoinjs-lib';
 import * as types from 'bitcoinjs-lib/src/types';
 import { BufferReader, BufferWriter } from 'bitcoinjs-lib/src/bufferutils';
 
-const varuint = require('varuint-bitcoin');
+import * as varuint from 'varuint-bitcoin';
 const typeforce = require('typeforce');
 
 import { networks } from '../../networks';
