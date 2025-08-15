@@ -6,10 +6,10 @@ import {
   Signature,
   TransactionType as BitGoTransactionType,
 } from '@bitgo/sdk-core';
-import { SuiProgrammableTransaction, SuiTransaction, SuiTransactionType, TxData } from './iface';
+import { SuiProgrammableTransaction, SuiTransaction, SuiTransactionType, TxData, GasData } from './iface';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import utils, { AppId, Intent, IntentScope, IntentVersion, isImmOrOwnedObj } from './utils';
-import { GasData, normalizeSuiAddress, normalizeSuiObjectId, SuiObjectRef } from './mystenlab/types';
+import { normalizeSuiAddress, normalizeSuiObjectId, SuiObjectRef } from './mystenlab/types';
 import { SIGNATURE_SCHEME_BYTES } from './constants';
 import { Buffer } from 'buffer';
 import { fromB64, toB64 } from '@mysten/bcs';
@@ -20,10 +20,12 @@ import { builder, MergeCoinsTransaction, TransactionType } from './mystenlab/bui
 import blake2b from '@bitgo/blake2b';
 import { hashTypedData } from './mystenlab/cryptography/hash';
 
-export abstract class Transaction<T> extends BaseTransaction {
+export abstract class Transaction<T = SuiProgrammableTransaction> extends BaseTransaction {
   protected _suiTransaction: SuiTransaction<T>;
   protected _signature: Signature;
+  protected _feePayerSignature: Signature;
   private _serializedSig: Uint8Array;
+  private _serializedFeePayerSig: Uint8Array;
 
   protected constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -48,15 +50,29 @@ export abstract class Transaction<T> extends BaseTransaction {
   addSignature(publicKey: BasePublicKey, signature: Buffer): void {
     this._signatures.push(signature.toString('hex'));
     this._signature = { publicKey, signature };
+    this.setSerializedSig(publicKey, signature);
     this.serialize();
+  }
+
+  addFeePayerSignature(publicKey: BasePublicKey, signature: Buffer): void {
+    this._feePayerSignature = { publicKey, signature };
+    this.setSerializedFeePayerSig(publicKey, signature);
   }
 
   get suiSignature(): Signature {
     return this._signature;
   }
 
+  get feePayerSignature(): Signature {
+    return this._feePayerSignature;
+  }
+
   get serializedSig(): Uint8Array {
     return this._serializedSig;
+  }
+
+  get serializedFeePayerSig(): Uint8Array {
+    return this._serializedFeePayerSig;
   }
 
   setSerializedSig(publicKey: BasePublicKey, signature: Buffer): void {
@@ -66,6 +82,15 @@ export abstract class Transaction<T> extends BaseTransaction {
     serialized_sig.set(signature, 1);
     serialized_sig.set(pubKey, 1 + signature.length);
     this._serializedSig = serialized_sig;
+  }
+
+  setSerializedFeePayerSig(publicKey: BasePublicKey, signature: Buffer): void {
+    const pubKey = Buffer.from(publicKey.pub, 'hex');
+    const serialized_sig = new Uint8Array(1 + signature.length + pubKey.length);
+    serialized_sig.set(SIGNATURE_SCHEME_BYTES);
+    serialized_sig.set(signature, 1);
+    serialized_sig.set(pubKey, 1 + signature.length);
+    this._serializedFeePayerSig = serialized_sig;
   }
 
   /** @inheritdoc */
@@ -78,7 +103,6 @@ export abstract class Transaction<T> extends BaseTransaction {
    *
    * @param {KeyPair} signer key
    */
-
   sign(signer: KeyPair): void {
     if (!this._suiTransaction) {
       throw new InvalidTransactionError('empty transaction to sign');
@@ -87,8 +111,31 @@ export abstract class Transaction<T> extends BaseTransaction {
     const intentMessage = this.signablePayload;
     const signature = signer.signMessageinUint8Array(intentMessage);
 
-    this.setSerializedSig({ pub: signer.getKeys().pub }, Buffer.from(signature));
     this.addSignature({ pub: signer.getKeys().pub }, Buffer.from(signature));
+  }
+
+  /**
+   * Sign this transaction as a fee payer
+   *
+   * @param {KeyPair} signer key
+   */
+  signFeePayer(signer: KeyPair): void {
+    if (!this._suiTransaction) {
+      throw new InvalidTransactionError('empty transaction to sign');
+    }
+
+    if (
+      !this._suiTransaction.gasData ||
+      !('sponsor' in this._suiTransaction.gasData) ||
+      !this._suiTransaction.gasData.sponsor
+    ) {
+      throw new InvalidTransactionError('transaction does not have a fee payer');
+    }
+
+    const intentMessage = this.signablePayload;
+    const signature = signer.signMessageinUint8Array(intentMessage);
+
+    this.addFeePayerSignature({ pub: signer.getKeys().pub }, Buffer.from(signature));
   }
 
   /** @inheritdoc */
@@ -96,7 +143,39 @@ export abstract class Transaction<T> extends BaseTransaction {
     if (!this._suiTransaction) {
       throw new InvalidTransactionError('Empty transaction');
     }
+
+    if (!this._serializedSig) {
+      throw new InvalidTransactionError('Transaction must be signed');
+    }
+    // Return only the raw transaction bytes (base64)
     return this.serialize();
+  }
+
+  /**
+   * Get the full broadcast payload including signatures for Sui RPC
+   */
+  toBroadcastPayload(): string {
+    if (!this._suiTransaction) {
+      throw new InvalidTransactionError('Empty transaction');
+    }
+
+    if (!this._serializedSig) {
+      throw new InvalidTransactionError('Transaction must be signed');
+    }
+
+    const result = {
+      txBytes: this.serialize(),
+      senderSignature: toB64(this._serializedSig),
+    };
+
+    if (this._suiTransaction.gasData?.sponsor) {
+      if (!this._serializedFeePayerSig) {
+        throw new InvalidTransactionError('Sponsored transaction must have fee payer signature');
+      }
+      result['sponsorSignature'] = toB64(this._serializedFeePayerSig);
+    }
+
+    return JSON.stringify(result);
   }
 
   /** @inheritdoc */
@@ -165,6 +244,19 @@ export abstract class Transaction<T> extends BaseTransaction {
     const inputs = transactionBlock.inputs.map((txInput) => txInput.value);
     const transactions = transactionBlock.transactions;
     const txType = this.getSuiTransactionType(transactions);
+
+    const gasData: GasData = {
+      payment: this.normalizeCoins(transactionBlock.gasConfig.payment!),
+      owner: normalizeSuiAddress(transactionBlock.gasConfig.owner!),
+      price: Number(transactionBlock.gasConfig.price as string),
+      budget: Number(transactionBlock.gasConfig.budget as string),
+    };
+
+    // Only add sponsor if it exists
+    if (transactionBlock.gasConfig.sponsor) {
+      gasData.sponsor = normalizeSuiAddress(transactionBlock.gasConfig.sponsor);
+    }
+
     return {
       id: transactionBlock.getDigest(),
       type: txType,
@@ -173,12 +265,7 @@ export abstract class Transaction<T> extends BaseTransaction {
         inputs: inputs,
         transactions: transactions,
       },
-      gasData: {
-        payment: this.normalizeCoins(transactionBlock.gasConfig.payment!),
-        owner: normalizeSuiAddress(transactionBlock.gasConfig.owner!),
-        price: Number(transactionBlock.gasConfig.price as string),
-        budget: Number(transactionBlock.gasConfig.budget as string),
-      },
+      gasData: gasData,
     };
   }
 
@@ -213,12 +300,20 @@ export abstract class Transaction<T> extends BaseTransaction {
   }
 
   static getProperGasData(k: any): GasData {
-    return {
-      payment: [this.normalizeSuiObjectRef(k.gasData.payment)],
+    const gasData: GasData = {
+      payment: Array.isArray(k.gasData.payment)
+        ? k.gasData.payment.map((p: any) => this.normalizeSuiObjectRef(p))
+        : [this.normalizeSuiObjectRef(k.gasData.payment)],
       owner: utils.normalizeHexId(k.gasData.owner),
       price: Number(k.gasData.price),
       budget: Number(k.gasData.budget),
     };
+
+    if (k.gasData.sponsor) {
+      gasData.sponsor = utils.normalizeHexId(k.gasData.sponsor);
+    }
+
+    return gasData;
   }
 
   private static normalizeCoins(coins: any[]): SuiObjectRef[] {
@@ -266,5 +361,16 @@ export abstract class Transaction<T> extends BaseTransaction {
     });
 
     return inputGasPaymentObjects;
+  }
+
+  hasFeePayerSig(): boolean {
+    return this._feePayerSignature !== undefined;
+  }
+
+  getFeePayerPubKey(): string | undefined {
+    if (!this._feePayerSignature || !this._feePayerSignature.publicKey) {
+      return undefined;
+    }
+    return this._feePayerSignature.publicKey.pub;
   }
 }

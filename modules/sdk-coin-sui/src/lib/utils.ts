@@ -549,6 +549,16 @@ export class Utils implements BaseUtils {
     return result.digest;
   }
 
+  async executeTransactionBlockWithMultipleSigners(
+    url: string,
+    serializedTx: string,
+    senderSignature: string,
+    feePayerSignature?: string
+  ): Promise<string> {
+    const signatures = feePayerSignature ? [senderSignature, feePayerSignature] : [senderSignature];
+    return this.executeTransactionBlock(url, serializedTx, signatures);
+  }
+
   validateNonNegativeNumber(defaultVal: number, errorMsg: string, inputVal?: number): number {
     if (inputVal === undefined) {
       return defaultVal;
