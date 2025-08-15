@@ -10,7 +10,8 @@ import {
 import { checkForInput } from 'bip174/src/lib/utils';
 import { BufferWriter, varuint } from 'bitcoinjs-lib/src/bufferutils';
 import { SessionKey } from '@brandonblack/musig';
-import { BIP32Factory, BIP32Interface } from 'bip32';
+import BIP32Factory from 'bip32';
+import type { BIP32Interface } from 'bip32';
 import * as bs58check from 'bs58check';
 import { decodeProprietaryKey, encodeProprietaryKey } from 'bip174/src/lib/proprietaryKeyVal';
 

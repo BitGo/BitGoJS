@@ -5,7 +5,7 @@
 import { isBufferArray, Triple } from '../../types';
 import { createOutputScript2of3, scriptTypes2Of3 } from '../../outputScripts';
 import { UtxoPsbt } from '../../UtxoPsbt';
-import { BIP32Interface } from 'bip32';
+import type { BIP32Interface } from 'bip32';
 import { checkForOutput } from 'bip174/src/lib/utils';
 import { PsbtOutput } from 'bip174/src/lib/interfaces';
 import { getSortedRootNodes } from './RootNodes';

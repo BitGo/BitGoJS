@@ -33,7 +33,7 @@ import {
 } from '../../../src/bitgo/outputScripts';
 import { mockWalletUnspent, replayProtectionKeyPair } from '../../../src/testutil';
 import { bip32, networks } from '../../../src';
-import { BIP32Interface } from 'bip32';
+import type { BIP32Interface } from 'bip32';
 import { isPsbtInputFinalized } from '../../../src/bitgo/PsbtUtil';
 
 export const network = networks.bitcoin;

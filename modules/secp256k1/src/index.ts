@@ -1,7 +1,8 @@
 import * as createHmac from 'create-hmac';
 import { ECPairAPI, ECPairFactory, ECPairInterface } from 'ecpair';
 import * as necc from '@noble/secp256k1';
-import { BIP32API, BIP32Factory, BIP32Interface } from 'bip32';
+import BIP32Factory from 'bip32';
+import type { BIP32API, BIP32Interface } from 'bip32';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore base_crypto is exported as a subPath export, ignoring since compiler complains about importing like this
 import * as baseCrypto from '@brandonblack/musig/base_crypto';
