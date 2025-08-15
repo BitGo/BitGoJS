@@ -1,7 +1,7 @@
 import 'should';
 import sinon from 'sinon';
 import { BroadcastableMessage, MessageStandardType, serializeSignatures } from '@bitgo/sdk-core';
-import { fixtures } from '../fixtures';
+import { eip191Fixtures as fixtures } from '../fixtures';
 import { EIP191Message, Eip191MessageBuilder, MessageBuilderFactory } from '../../../../src';
 import { BaseCoin } from '@bitgo/statics';
 
