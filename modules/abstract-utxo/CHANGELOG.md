@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.22.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.21.12...@bitgo/abstract-utxo@9.22.0) (2025-08-14)
+
+### Features
+
+- **abstract-utxo:** verify paygo ([a3203bc](https://github.com/BitGo/BitGoJS/commit/a3203bc59a04bf5ae7b573eb4b911a3425df21b7))
+
 ## [9.21.12](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.21.11...@bitgo/abstract-utxo@9.21.12) (2025-08-07)
 
 **Note:** Version bump only for package @bitgo/abstract-utxo

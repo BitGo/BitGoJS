@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [36.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.1.0...@bitgo/sdk-core@36.2.0) (2025-08-14)
+
+### Bug Fixes
+
+- skip combineSigShare check for non-EIP191 message signing ([d09bd9d](https://github.com/BitGo/BitGoJS/commit/d09bd9dc58a41291147d45a9a945e0296516a899))
+
+### Features
+
+- add plasma config in sdk ([873d57f](https://github.com/BitGo/BitGoJS/commit/873d57fde388efcc5d3142892962c6788e341e77))
+- **sdk-core:** add retry logic for bulk accept share requests ([87357ac](https://github.com/BitGo/BitGoJS/commit/87357acc14b30a9ba1cae1db2839801306a26b4c))
+
 # [36.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.0.0...@bitgo/sdk-core@36.1.0) (2025-08-07)
 
 ### Features

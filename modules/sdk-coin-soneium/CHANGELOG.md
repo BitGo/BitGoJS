@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-soneium@1.5.2...@bitgo/sdk-coin-soneium@1.6.0) (2025-08-14)
+
+### Features
+
+- **statics:** update asset names ([d92eb15](https://github.com/BitGo/BitGoJS/commit/d92eb151d14357f2b7f502a0036fe417d2db77e6))
+
 ## [1.5.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-soneium@1.5.1...@bitgo/sdk-coin-soneium@1.5.2) (2025-08-07)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-soneium

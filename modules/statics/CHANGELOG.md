@@ -3,6 +3,33 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [57.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@57.1.0...@bitgo/statics@57.2.0) (2025-08-14)
+
+### Bug Fixes
+
+- add EVM_COMPATIBLE_UI feature to coin configurations ([07ae91a](https://github.com/BitGo/BitGoJS/commit/07ae91aa27b81f393da9f0ed60a053a84de645b6))
+- fix the suffix ([b3e0092](https://github.com/BitGo/BitGoJS/commit/b3e00924e5884d749791f41b1d3885d56eb251f8))
+- remove erc20 bulk feature for bsc ([3625d17](https://github.com/BitGo/BitGoJS/commit/3625d17e81b508e4bf2fac283bdbc17b88a4ee7f))
+- remove suffix param ([2990854](https://github.com/BitGo/BitGoJS/commit/2990854a235452cb730af5483b8043ae183f190e))
+- **sdk-coin-polyx:** add test token and update the tests ([1f8af7d](https://github.com/BitGo/BitGoJS/commit/1f8af7d620b5d603a4e27c15276f518e6ff4f349))
+- update hoodi v1 forwarder contracts ([bdaee4f](https://github.com/BitGo/BitGoJS/commit/bdaee4f4fae55045e3af3ff11ab2e11b09116e89))
+
+### Features
+
+- add plasma config in sdk ([873d57f](https://github.com/BitGo/BitGoJS/commit/873d57fde388efcc5d3142892962c6788e341e77))
+- add USDO (Open eden dollar) token statics ([0e5262c](https://github.com/BitGo/BitGoJS/commit/0e5262c692c8ea7323447f5652f8fec14ec8dc0d))
+- enable bulk erc20 for bsc and coredao chains ([7dacd57](https://github.com/BitGo/BitGoJS/commit/7dacd57a38d1f9c2675783b1043a3da65ef5fe0b))
+- gate USDO tokens on eth and bsc for singapore ([4fb9068](https://github.com/BitGo/BitGoJS/commit/4fb90686ad279fce14848355b4567bd72fbe9a5e))
+- ofc tokens for vet ([22347e0](https://github.com/BitGo/BitGoJS/commit/22347e05de7479943f2ebab38233507b10874912))
+- ofc tokens for vet ([2c01106](https://github.com/BitGo/BitGoJS/commit/2c0110680ddfb43ad5321bb6036b1ab61dba97f7))
+- onboard new batch of tokens ([607bb2d](https://github.com/BitGo/BitGoJS/commit/607bb2d02dc95a5bbe5d0f00247e9853ecae533c))
+- **statics:** add coin feature for custody bulk tx ([7cc25e4](https://github.com/BitGo/BitGoJS/commit/7cc25e47dea8ce43b24c0378ac39f23a6003d2fc))
+- **statics:** add coin feature to be hidden in IMS balance fetches ([b2ce26f](https://github.com/BitGo/BitGoJS/commit/b2ce26f3d1343370d04f04da4ebf76576a3d5548))
+- **statics:** add SHARED_EVM_MESSAGE_SIGNING coin feature to BSC ([962eea9](https://github.com/BitGo/BitGoJS/commit/962eea9df60b1a6e977ed10cba119063ee5c1922))
+- **statics:** added tokens tsol:usd1 and tsol:stgusd1 token ([9a6b02f](https://github.com/BitGo/BitGoJS/commit/9a6b02f03ad4130954aa5af13a5b142a4939dcb7))
+- **statics:** update asset names ([d92eb15](https://github.com/BitGo/BitGoJS/commit/d92eb151d14357f2b7f502a0036fe417d2db77e6))
+- updated token address for tweth, teigen, txusd, txsgd for hoodi ([5251c76](https://github.com/BitGo/BitGoJS/commit/5251c76b87c22b8e0aada470a4a3bb55c981f272))
+
 # [57.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@57.0.0...@bitgo/statics@57.1.0) (2025-08-07)
 
 ### Bug Fixes

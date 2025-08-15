@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.15.0...@bitgo/utxo-core@1.16.0) (2025-08-14)
+
+### Features
+
+- **utxo-core:** accept scriptId instead of chain and index params ([0257f73](https://github.com/BitGo/BitGoJS/commit/0257f73a3f1830a6a434ae7548838382919958e4))
+- **utxo-core:** add bip32derivation fields to BIP322 message signing ([fd96317](https://github.com/BitGo/BitGoJS/commit/fd96317b5bf2e4c1b92bb8143df0fdbf9dc64d36))
+- **utxo-core:** add support for taproot script types ([656ec5e](https://github.com/BitGo/BitGoJS/commit/656ec5efbec4a508e1d10b4b7155d395b374725c))
+- **utxo-core:** implement function to extract BIP322 message by index ([2666645](https://github.com/BitGo/BitGoJS/commit/2666645a81a347b8774c970e9cdd6bb41a8c23af))
+- **utxo-core:** use standard Psbt type for BIP322 functions ([b491a42](https://github.com/BitGo/BitGoJS/commit/b491a4258d7263b2c17c4dedf256d6e664dfd867))
+
 # [1.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.14.0...@bitgo/utxo-core@1.15.0) (2025-08-07)
 
 ### Bug Fixes

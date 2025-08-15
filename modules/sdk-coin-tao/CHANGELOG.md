@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tao@1.9.0...@bitgo/sdk-coin-tao@1.10.0) (2025-08-14)
+
+### Features
+
+- **sdk-coin-polyx:** add token builders ([6860780](https://github.com/BitGo/BitGoJS/commit/68607804efc1191ff396e05f20466526246b7d87))
+- **sdk-coin-tao:** add tokenTransferBuilder ([43fc839](https://github.com/BitGo/BitGoJS/commit/43fc839f87e81d2592bcd249b14d7aef815a0927))
+
 # [1.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tao@1.8.11...@bitgo/sdk-coin-tao@1.9.0) (2025-08-07)
 
 ### Features
