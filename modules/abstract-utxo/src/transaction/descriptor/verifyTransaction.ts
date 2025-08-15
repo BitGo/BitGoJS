@@ -13,20 +13,29 @@ export class ValidationError extends Error {
 }
 
 export class ErrorMissingOutputs extends ValidationError {
-  constructor(public missingOutputs: BaseOutput<bigint | 'max'>[]) {
+  public missingOutputs: BaseOutput<bigint | 'max'>[];
+
+  constructor(missingOutputs: BaseOutput<bigint | 'max'>[]) {
     super(`missing outputs (count=${missingOutputs.length})`);
+    this.missingOutputs = missingOutputs;
   }
 }
 
 export class ErrorImplicitExternalOutputs extends ValidationError {
-  constructor(public implicitExternalOutputs: BaseOutput<bigint | 'max'>[]) {
+  public implicitExternalOutputs: BaseOutput<bigint | 'max'>[];
+
+  constructor(implicitExternalOutputs: BaseOutput<bigint | 'max'>[]) {
     super(`unexpected implicit external outputs (count=${implicitExternalOutputs.length})`);
+    this.implicitExternalOutputs = implicitExternalOutputs;
   }
 }
 
 export class AggregateValidationError extends ValidationError {
-  constructor(public errors: ValidationError[]) {
+  public errors: ValidationError[];
+
+  constructor(errors: ValidationError[]) {
     super(`aggregate validation error (count=${errors.length})`);
+    this.errors = errors;
   }
 }
 

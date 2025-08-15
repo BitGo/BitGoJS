@@ -19,9 +19,13 @@ import { decodeOrElse, Keychain } from '../../../..';
 import { EcdsaMPCv2KeyGenSendFn, KeyGenSenderForEnterprise } from '../ecdsaMPCv2KeyGenSender';
 
 export class MPCv2SMCUtils {
+  private bitgo: BitGoBase;
+  private baseCoin: IBaseCoin;
   private MPCv2Utils: EcdsaMPCv2Utils;
 
-  constructor(private bitgo: BitGoBase, private baseCoin: IBaseCoin) {
+  constructor(bitgo: BitGoBase, baseCoin: IBaseCoin) {
+    this.bitgo = bitgo;
+    this.baseCoin = baseCoin;
     this.MPCv2Utils = new EcdsaMPCv2Utils(bitgo, baseCoin);
   }
 

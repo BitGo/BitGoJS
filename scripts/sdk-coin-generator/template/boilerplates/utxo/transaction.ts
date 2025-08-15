@@ -13,7 +13,10 @@ export class UnsupportedTransactionError extends Error {
 }
 
 export class <%= constructor %>Transaction extends UtxoTransaction {
-  constructor(public network: <%= constructor %>Network, tx?: <%= constructor %>Transaction) {
+  public network: <%= constructor %>Network;
+
+  constructor(network: <%= constructor %>Network, tx?: <%= constructor %>Transaction) {
     super(network, tx);
+    this.network = network;
   }
 }

@@ -53,8 +53,13 @@ createOutputs(
 import { SatRange } from './SatRange';
 
 export class InvalidOrdOutput extends Error {
-  constructor(message: string, public value: bigint, public ordinals: SatRange[]) {
+  public value: bigint;
+  public ordinals: SatRange[];
+
+  constructor(message: string, value: bigint, ordinals: SatRange[]) {
     super(message);
+    this.value = value;
+    this.ordinals = ordinals;
   }
 }
 
@@ -62,13 +67,18 @@ export class InvalidOrdOutput extends Error {
  * The ordinal metadata for an output
  */
 export class OrdOutput {
+  public value: bigint;
+  public ordinals: SatRange[];
+
   /**
    * @param value - the input value
    * @param ordinals - The ordinal ranges of an output, relative to the first satoshi.
    *                   Required to be ordered and non-overlapping.
    *                   Not required to be exhaustive.
    */
-  constructor(public value: bigint, public ordinals: SatRange[] = []) {
+  constructor(value: bigint, ordinals: SatRange[] = []) {
+    this.value = value;
+    this.ordinals = ordinals;
     const maxRange = this.asSatRange();
     ordinals.forEach((r, i) => {
       if (!maxRange.isSupersetOf(r)) {

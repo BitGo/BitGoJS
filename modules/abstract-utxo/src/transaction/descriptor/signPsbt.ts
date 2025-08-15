@@ -2,8 +2,11 @@ import * as utxolib from '@bitgo/utxo-lib';
 import { DescriptorMap, findDescriptorForInput } from '@bitgo/utxo-core/descriptor';
 
 export class ErrorUnknownInput extends Error {
-  constructor(public vin: number) {
+  public vin: number;
+
+  constructor(vin: number) {
     super(`missing descriptor for input ${vin}`);
+    this.vin = vin;
   }
 }
 

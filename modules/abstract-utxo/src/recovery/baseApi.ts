@@ -30,7 +30,10 @@ export type Response<T> = {
 };
 
 export class BaseApi {
-  constructor(public baseUrl: string) {
+  public baseUrl: string;
+
+  constructor(baseUrl: string) {
+    this.baseUrl = baseUrl;
     if (!baseUrl.startsWith('https://')) {
       throw new Error(`baseUrl must start with https://`);
     }

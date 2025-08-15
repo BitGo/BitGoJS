@@ -87,9 +87,11 @@ export class ZcashTransaction<TNumber extends number | bigint = number> extends 
   // Block height after which this transactions will expire, or 0 to disable expiry
   expiryHeight = 0;
   consensusBranchId: number;
+  public network: ZcashNetwork;
 
-  constructor(public network: ZcashNetwork, tx?: ZcashTransaction<bigint | number>, amountType?: 'bigint' | 'number') {
+  constructor(network: ZcashNetwork, tx?: ZcashTransaction<bigint | number>, amountType?: 'bigint' | 'number') {
     super(network, tx, amountType);
+    this.network = network;
 
     let consensusBranchId;
     if (tx) {

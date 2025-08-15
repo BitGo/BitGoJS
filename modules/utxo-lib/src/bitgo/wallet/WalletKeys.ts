@@ -24,12 +24,14 @@ export function eqPublicKey(a: BIP32Interface, b: BIP32Interface): boolean {
  * Keys can be either public keys or private keys.
  */
 export class WalletKeys {
+  public readonly triple: Triple<BIP32Interface>;
   public readonly publicKeys: Triple<Buffer>;
 
   /**
    * @param triple - bip32 key triple
    */
-  constructor(public readonly triple: Triple<BIP32Interface>) {
+  constructor(triple: Triple<BIP32Interface>) {
+    this.triple = triple;
     triple.forEach((a, i) => {
       triple.forEach((b, j) => {
         if (eqPublicKey(a, b) && i !== j) {
@@ -60,12 +62,17 @@ export class WalletKeys {
  * for derivation.
  */
 export class DerivedWalletKeys extends WalletKeys {
+  public parent: RootWalletKeys;
+  public paths: Triple<string>;
+
   /**
    * @param parent - wallet keys to derive from
    * @param paths - paths to derive with
    */
-  constructor(public parent: RootWalletKeys, public paths: Triple<string>) {
+  constructor(parent: RootWalletKeys, paths: Triple<string>) {
     super(parent.triple.map((k, i) => k.derivePath(paths[i])) as Triple<BIP32Interface>);
+    this.parent = parent;
+    this.paths = paths;
   }
 }
 
@@ -75,6 +82,8 @@ export class DerivedWalletKeys extends WalletKeys {
 export class RootWalletKeys extends WalletKeys {
   static readonly defaultPrefix = '0/0';
 
+  public readonly derivationPrefixes: Triple<string>;
+
   /**
    * @param triple - bip32 key triple
    * @param derivationPrefixes - Certain v1 wallets or their migrated v2 counterparts
@@ -82,13 +91,14 @@ export class RootWalletKeys extends WalletKeys {
    */
   constructor(
     triple: Triple<BIP32Interface>,
-    public readonly derivationPrefixes: Triple<string> = [
+    derivationPrefixes: Triple<string> = [
       RootWalletKeys.defaultPrefix,
       RootWalletKeys.defaultPrefix,
       RootWalletKeys.defaultPrefix,
     ]
   ) {
     super(triple);
+    this.derivationPrefixes = derivationPrefixes;
 
     derivationPrefixes.forEach((p) => {
       if (p.startsWith('/') || p.endsWith('/')) {
