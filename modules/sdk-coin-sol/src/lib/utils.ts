@@ -282,7 +282,11 @@ export function matchTransactionTypeByInstructionsOrder(
 
   // Check instructions by order using the index.
   for (const keyName of instructionsKeys) {
-    const result = getInstructionType(instructionsCopy[instructionIndexes[keyName]]);
+    const index = instructionIndexes[keyName];
+    if (index >= instructionsCopy.length) {
+      return false;
+    }
+    const result = getInstructionType(instructionsCopy[index]);
     if (result !== keyName) {
       return false;
     }
