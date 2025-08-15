@@ -84,7 +84,7 @@ import {
   WebhookOptions,
 } from './types';
 import shamir from 'secrets.js-grempe';
-import pjson from '../package.json' assert { type: 'json' };
+const pjson = require('../package.json');
 const debug = debugLib('bitgo:api');
 
 const Blockchain = require('./v1/blockchain');

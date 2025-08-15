@@ -33,7 +33,7 @@ import {
   mockSignWithPaillierChallengeRT,
 } from '../../fixtures/tss/ecdsaFixtures';
 
-import nock from 'nock';
+import * as nock from 'nock';
 
 type KeyShare = ECDSA.KeyShare;
 const encryptNShare = ECDSAMethods.encryptNShare;

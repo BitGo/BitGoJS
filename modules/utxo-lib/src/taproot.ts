@@ -4,7 +4,7 @@
 
 import { TapTree as PsbtTapTree, TapLeaf as PsbtTapLeaf } from 'bip174/src/lib/interfaces';
 import * as assert from 'assert';
-import FastPriorityQueue from 'fastpriorityqueue';
+const FastPriorityQueue: typeof import('fastpriorityqueue') = require('fastpriorityqueue');
 import { script as bscript, crypto as bcrypto, payments as bpayments } from 'bitcoinjs-lib';
 import { ecc as eccLib } from './noble_ecc';
 import * as varuint from 'varuint-bitcoin';
