@@ -4,7 +4,8 @@
  */
 import { createHash } from 'crypto';
 import { BaseCurve } from '../../curves';
-import { PublicKey } from 'paillier-bigint';
+import * as paillierBigint from 'paillier-bigint';
+const { PublicKey } = paillierBigint;
 import { bitLength, randBetween } from 'bigint-crypto-utils';
 import { modInv, modPow } from 'bigint-mod-arith';
 import {
@@ -196,7 +197,7 @@ export async function verifyNtildeProof(
  * Generate a zero-knowledge range proof that an encrypted value is "small".
  * @param {BaseCurve} curve An elliptic curve to use for group operations.
  * @param {number} modulusBits The bit count of the prover's public key.
- * @param {PublicKey} pk The prover's public key.
+ * @param {InstanceType<typeof PublicKey>} pk The prover's public key.
  * @param {DeserializedNtilde} ntilde The verifier's Ntilde values.
  * @param {bigint} c The ciphertext.
  * @param {bigint} m The plaintext.
@@ -206,7 +207,7 @@ export async function verifyNtildeProof(
 export async function prove(
   curve: BaseCurve,
   modulusBits: number,
-  pk: PublicKey,
+  pk: InstanceType<typeof PublicKey>,
   ntilde: DeserializedNtilde,
   c: bigint,
   m: bigint,
@@ -249,7 +250,7 @@ export async function prove(
  * Verify a zero-knowledge range proof that an encrypted value is "small".
  * @param {BaseCurve} curve An elliptic curve to use for group operations.
  * @param {number} modulusBits The bit count of the prover's public key.
- * @param {PublicKey} pk The prover's public key.
+ * @param {InstanceType<typeof PublicKey>} pk The prover's public key.
  * @param {DeserializedNtilde} ntilde The verifier's Ntilde values.
  * @param {RangeProof} proof The range proof.
  * @param {bigint} c The ciphertext.
@@ -258,7 +259,7 @@ export async function prove(
 export function verify(
   curve: BaseCurve,
   modulusBits: number,
-  pk: PublicKey,
+  pk: InstanceType<typeof PublicKey>,
   ntilde: DeserializedNtilde,
   proof: RangeProof,
   c: bigint
@@ -303,7 +304,7 @@ export function verify(
  * Generate a zero-knowledge range proof that a homomorphically manipulated value is "small".
  * @param {BaseCurve} curve An elliptic curve to use for group operations.
  * @param {number} modulusBits The bit count of the prover's public key.
- * @param {PublicKey} pk The prover's public key.
+ * @param {InstanceType<typeof PublicKey>} pk The prover's public key.
  * @param {DeserializedNtilde} ntilde The verifier's Ntilde values.
  * @param {bigint} c1 The original ciphertext.
  * @param {bigint} c2 The manipulated ciphertext.
@@ -316,7 +317,7 @@ export function verify(
 export async function proveWithCheck(
   curve: BaseCurve,
   modulusBits: number,
-  pk: PublicKey,
+  pk: InstanceType<typeof PublicKey>,
   ntilde: DeserializedNtilde,
   c1: bigint,
   c2: bigint,
@@ -382,7 +383,7 @@ export async function proveWithCheck(
  * Verify a zero-knowledge range proof that a homomorphically manipulated value is "small".
  * @param {BaseCurve} curve An elliptic curve to use for group operations.
  * @param {number} modulusBits The bit count of the prover's public key.
- * @param {PublicKey} pk The prover's public key.
+ * @param {InstanceType<typeof PublicKey>} pk The prover's public key.
  * @param {DeserializedNtilde} ntilde The verifier's Ntilde values.
  * @param {RangeProofWithCheck} proof The range proof.
  * @param {bigint} c1 The original ciphertext.
@@ -393,7 +394,7 @@ export async function proveWithCheck(
 export function verifyWithCheck(
   curve: BaseCurve,
   modulusBits: number,
-  pk: PublicKey,
+  pk: InstanceType<typeof PublicKey>,
   ntilde: DeserializedNtilde,
   proof: RangeProofWithCheck,
   c1: bigint,

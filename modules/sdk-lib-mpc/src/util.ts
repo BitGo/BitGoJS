@@ -1,4 +1,5 @@
-import { PublicKey } from 'paillier-bigint';
+import * as paillierBigint from 'paillier-bigint';
+const { PublicKey } = paillierBigint;
 import { bitLength, randBits } from 'bigint-crypto-utils';
 import { gcd } from 'bigint-mod-arith';
 import crypto from 'crypto';
@@ -95,7 +96,7 @@ export function clamp(u: bigint): bigint {
  * @param {bigint} n
  * @returns {bigint}
  */
-export function getPaillierPublicKey(n: bigint): PublicKey {
+export function getPaillierPublicKey(n: bigint): InstanceType<typeof PublicKey> {
   return new PublicKey(n, n + BigInt(1));
 }
 
