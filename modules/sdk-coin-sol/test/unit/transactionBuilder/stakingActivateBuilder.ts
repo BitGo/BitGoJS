@@ -156,10 +156,9 @@ describe('Sol Staking Activate Builder', () => {
       const rawTx = tx.toBroadcastFormat();
       should.equal(Utils.isValidRawTransaction(rawTx), true);
       should.equal(rawTx, testData.JITO_STAKING_ACTIVATE_SIGNED_TX);
-      factory.from(testData.JITO_STAKING_ACTIVATE_SIGNED_TX);
-      const coin = coins.get('tsol');
-      const tx2 = new Transaction(coin);
-      tx2.fromRawTransaction(rawTx);
+      const builderFromRawTx = factory.from(rawTx);
+      const rebuiltTx = await builderFromRawTx.build();
+      rebuiltTx.toJson().instructionsData.should.deepEqual(txJson.instructionsData);
     });
 
     it('build a create and delegate staking signed tx with memo', async () => {
