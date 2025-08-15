@@ -15,7 +15,7 @@ import { bip32 } from '@bitgo/utxo-lib';
 import * as utxolib from '@bitgo/utxo-lib';
 import _ from 'lodash';
 import { VirtualSizes } from '@bitgo/unspents';
-import debugLib = require('debug');
+import debugLib from 'debug';
 const debug = debugLib('bitgo:v1:txb');
 import { common, getAddressP2PKH, getNetwork, sanitizeLegacyPath } from '@bitgo/sdk-core';
 import { verifyAddress } from './verifyAddress';

@@ -1,4 +1,4 @@
-import { BIP32Interface } from 'bip32';
+import type { BIP32Interface } from 'bip32';
 import * as assert from 'assert';
 import { TxOutput } from 'bitcoinjs-lib';
 

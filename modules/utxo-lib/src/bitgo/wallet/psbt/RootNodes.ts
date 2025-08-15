@@ -7,7 +7,8 @@ import * as bs58check from 'bs58check';
 
 import { UtxoPsbt } from '../../UtxoPsbt';
 import { isTriple, Triple } from '../../types';
-import { BIP32Factory, BIP32Interface } from 'bip32';
+import BIP32Factory from 'bip32';
+import type { BIP32Interface } from 'bip32';
 import { ecc as eccLib } from '../../../noble_ecc';
 import { ParsedScriptType2Of3 } from '../../parseInput';
 import { Network } from '../../../networks';

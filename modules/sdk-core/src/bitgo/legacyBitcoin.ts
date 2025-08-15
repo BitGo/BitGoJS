@@ -23,7 +23,11 @@ export function makeRandomKey(): ECPairCompat {
  * Implementation of legacy "HDNode" class as used by certain components
  */
 export class HDNode {
-  constructor(private bip32: BIP32Interface) {}
+  private bip32: BIP32Interface;
+
+  constructor(bip32: BIP32Interface) {
+    this.bip32 = bip32;
+  }
 
   get publicKey(): Buffer {
     return this.bip32.publicKey;

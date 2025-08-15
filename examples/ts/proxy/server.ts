@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import express = require('express');
+import express from 'express';
 const app = express();
 const { createProxyMiddleware } = require('http-proxy-middleware');
 

@@ -78,6 +78,7 @@ type BlockchairRawTransaction = {
 };
 
 export class BlockchairApi implements AddressApi, UtxoApi {
+  public client: HttpClient;
   protected readonly apiToken?: string;
 
   static forCoin(coinName: string, params: { apiToken?: string; httpClient?: HttpClient } = {}): BlockchairApi {
@@ -118,7 +119,8 @@ export class BlockchairApi implements AddressApi, UtxoApi {
     return new BlockchairApi(httpClient.withBaseUrl(`https://api.blockchair.com/${blockchain}`), params.apiToken);
   }
 
-  constructor(public client: HttpClient, apiToken?: string) {
+  constructor(client: HttpClient, apiToken?: string) {
+    this.client = client;
     this.apiToken = apiToken ?? process.env.BLOCKCHAIR_TOKEN;
   }
 

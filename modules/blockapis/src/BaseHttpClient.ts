@@ -1,8 +1,13 @@
 import * as superagent from 'superagent';
 
 export class ApiRequestError extends Error {
-  constructor(public url: string, public reason: Error | string) {
+  public url: string;
+  public reason: Error | string;
+
+  constructor(url: string, reason: Error | string) {
     super(`error in API request: ${url}: ${reason}`);
+    this.url = url;
+    this.reason = reason;
   }
 
   static forRequest(req: superagent.Request, reason: Error | string): ApiRequestError {
@@ -37,7 +42,10 @@ export async function mapSeries<T, U>(arr: T[], f: (v: T, i: number) => Promise<
 }
 
 export class BaseHttpClient implements HttpClient {
-  constructor(public baseUrl?: string) {
+  public baseUrl?: string;
+
+  constructor(baseUrl?: string) {
+    this.baseUrl = baseUrl;
     if (baseUrl) {
       if (!baseUrl.startsWith('https://')) {
         throw new Error(`baseUrl must start with https://`);

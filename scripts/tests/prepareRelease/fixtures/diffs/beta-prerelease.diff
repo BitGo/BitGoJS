@@ -570,7 +570,7 @@ index adcd1a70e..c17617aa9 100644
 +++ b/modules/bitgo/test/unit/bitgo.ts
 @@ -7,13 +7,13 @@ import * as nock from 'nock';
  import * as should from 'should';
- import assert = require('assert');
+ import * as assert from 'assert';
  
 -import { common, generateGPGKeyPair } from '@bitgo/sdk-core';
 -import { bip32, ECPair } from '@bitgo/utxo-lib';
@@ -1318,7 +1318,7 @@ index c605d07fa..e96309659 100644
  import { BitGo } from '../../../../src';
 -import { BlsUtils, common, IBlsKeyPair, Keychain } from '@bitgo/sdk-core';
 +import { BlsUtils, common, IBlsKeyPair, Keychain } from '@bitgo-beta/sdk-core';
- import assert = require('assert');
+ import * as assert from 'assert';
 -import { Eth2 } from '@bitgo/sdk-coin-eth2';
 +import { Eth2 } from '@bitgo-beta/sdk-coin-eth2';
  

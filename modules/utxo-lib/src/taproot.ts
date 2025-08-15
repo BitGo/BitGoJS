@@ -3,11 +3,11 @@
 // https://github.com/bitcoin/bips/blob/master/bip-0341.mediawiki
 
 import { TapTree as PsbtTapTree, TapLeaf as PsbtTapLeaf } from 'bip174/src/lib/interfaces';
-import assert = require('assert');
-import FastPriorityQueue = require('fastpriorityqueue');
+import * as assert from 'assert';
+const FastPriorityQueue: typeof import('fastpriorityqueue') = require('fastpriorityqueue');
 import { script as bscript, crypto as bcrypto, payments as bpayments } from 'bitcoinjs-lib';
 import { ecc as eccLib } from './noble_ecc';
-const varuint = require('varuint-bitcoin');
+import * as varuint from 'varuint-bitcoin';
 
 /**
  * The 0x02 prefix indicating an even Y coordinate which is implicitly assumed

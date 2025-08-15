@@ -72,6 +72,8 @@ type EsploraTransaction = {
 };
 
 export class BlockstreamApi implements AddressApi, BlockApi, UtxoApi {
+  public client: HttpClient;
+
   static forCoin(coinName: string, params: { httpClient?: HttpClient } = {}): BlockstreamApi {
     const { httpClient = new BaseHttpClient() } = params;
     switch (coinName) {
@@ -84,7 +86,9 @@ export class BlockstreamApi implements AddressApi, BlockApi, UtxoApi {
     throw new ApiNotImplementedError(coinName);
   }
 
-  constructor(public client: HttpClient) {}
+  constructor(client: HttpClient) {
+    this.client = client;
+  }
 
   async getBlockIdAtHeight(height: number): Promise<string> {
     // https://github.com/Blockstream/esplora/blob/master/API.md#get-block-heightheight

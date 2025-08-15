@@ -2,7 +2,7 @@
  * @prettier
  */
 
-import should = require('should');
+import should from 'should';
 import { randomBytes } from 'crypto';
 import * as sinon from 'sinon';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';

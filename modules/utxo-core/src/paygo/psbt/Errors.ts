@@ -6,8 +6,11 @@ export class PayGoError extends Error {
 }
 
 export class ErrorNoPayGoProof extends PayGoError {
-  constructor(public outputIndex: number) {
+  public outputIndex: number;
+
+  constructor(outputIndex: number) {
     super(`There is no paygo address proof encoded in the PSBT at output ${outputIndex}.`);
+    this.outputIndex = outputIndex;
   }
 }
 
@@ -24,13 +27,19 @@ export class ErrorPayGoAddressProofFailedVerification extends PayGoError {
 }
 
 export class ErrorOutputIndexOutOfBounds extends PayGoError {
-  constructor(public outputIndex: number) {
+  public outputIndex: number;
+
+  constructor(outputIndex: number) {
     super(`Output index ${outputIndex} is out of bounds for PSBT outputs.`);
+    this.outputIndex = outputIndex;
   }
 }
 
 export class ErrorMultiplePayGoProofAtPsbtIndex extends PayGoError {
-  constructor(public outputIndex: number) {
+  public outputIndex: number;
+
+  constructor(outputIndex: number) {
     super(`There are multiple PayGo addresses in the PSBT output ${outputIndex}.`);
+    this.outputIndex = outputIndex;
   }
 }

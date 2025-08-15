@@ -41,6 +41,7 @@ export type ChainInfo = {
 };
 
 export class TxParser extends Parser {
+  private params: TxParserArgs;
   static PARSE_ALL: TxParserArgs = {
     parseScriptData: true,
     parseScriptAsm: true,
@@ -53,8 +54,9 @@ export class TxParser extends Parser {
     parseAsUnknown: false,
   };
 
-  constructor(private params: TxParserArgs) {
+  constructor(params: TxParserArgs) {
     super(params);
+    this.params = params;
   }
 
   parseIns(ins: ParserTxInput[], tx: ParserTx, txid: string, outputInfo: ChainInfo): ParserNode[] {

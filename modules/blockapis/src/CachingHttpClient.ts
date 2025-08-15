@@ -12,10 +12,12 @@ function stripApiTokens(uri: string): string {
 }
 
 export class CachingHttpClient implements HttpClient {
+  private cacheDir: string;
   client: BaseHttpClient;
   isHttpEnabled: boolean;
 
-  constructor(private cacheDir: string, { client = new BaseHttpClient(), isHttpEnabled = true } = {}) {
+  constructor(cacheDir: string, { client = new BaseHttpClient(), isHttpEnabled = true } = {}) {
+    this.cacheDir = cacheDir;
     this.client = client;
     this.isHttpEnabled = isHttpEnabled;
   }

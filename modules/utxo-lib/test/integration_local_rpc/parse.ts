@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import { describe, it } from 'mocha';
-import { BIP32Interface } from 'bip32';
+import type { BIP32Interface } from 'bip32';
 
 import { isTestnet, TxOutput, getNetworkList, getNetworkName, networks } from '../../src';
 import { getDefaultCosigner } from '../../src/testutil';

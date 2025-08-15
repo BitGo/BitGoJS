@@ -17,7 +17,7 @@ import {
   TEST_WITHDRAW_REWARDS_TX,
   wrwUser,
 } from '../resources/bld';
-import should = require('should');
+import should from 'should';
 
 describe('BLD', function () {
   let bitgo: TestBitGoAPI;
