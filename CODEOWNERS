@@ -106,6 +106,10 @@
 /modules/sdk-core/src/bitgo/address-book/ @BitGo/prime
 /modules/sdk-core/src/bitgo/trading/ @BitGo/prime
 
+# Asset Metadata Service
+/modules/statics/src/coins/botTokens.ts @BitGo/ams
+/modules/statics/src/coins/botOfcTokens.ts @BitGo/ams
+
 # Core Modules
 /modules/bitgo/ @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform
 /modules/bitgo/test/v2/unit/lightning/ @BitGo/btc-team
