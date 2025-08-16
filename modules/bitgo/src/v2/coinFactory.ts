@@ -9,6 +9,7 @@ import { Near, TNear, Nep141Token } from '@bitgo/sdk-coin-near';
 import { SolToken } from '@bitgo/sdk-coin-sol';
 import { TrxToken } from '@bitgo/sdk-coin-trx';
 import { CoinFactory, CoinConstructor } from '@bitgo/sdk-core';
+import { EthLikeErc20Token } from '@bitgo/sdk-coin-evm';
 import {
   CoinMap,
   coins,
@@ -532,6 +533,20 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   VetToken.createTokenConstructors().forEach(({ name, coinConstructor }) =>
     coinFactory.register(name, coinConstructor)
   );
+
+  // Generic ERC20 token registration for coins with SUPPORTS_ERC20 feature
+  coins
+    .filter((coin) => coin.features.includes(CoinFeature.SUPPORTS_ERC20) && !coin.isToken)
+    .forEach((coin) => {
+      const coinNames = {
+        Mainnet: `${coin.name}`,
+        Testnet: `t${coin.name}`,
+      };
+
+      EthLikeErc20Token.createTokenConstructors(coinNames).forEach(({ name, coinConstructor }) => {
+        coinFactory.register(name, coinConstructor);
+      });
+    });
 }
 
 export function getCoinConstructor(coinName: string): CoinConstructor | undefined {

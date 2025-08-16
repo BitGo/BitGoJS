@@ -431,6 +431,12 @@ export class AdaCoin extends AccountCoinToken {
   }
 }
 
+export class EthLikeERC20Token extends ContractAddressDefinedToken {
+  constructor(options: Erc20ConstructorOptions) {
+    super(options);
+  }
+}
+
 /**
  * The AVAX C Chain network support tokens
  * AVAX C Chain Tokens are ERC20 coins
@@ -793,6 +799,54 @@ export function gasTankAccount(
       gasTankLowBalanceAlertFactor,
       gasTankMinBalanceRecommendationFactor,
       gasTankToken,
+    })
+  );
+}
+
+/**
+ * Factory function for ethLikeErc20 token instances.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports
+ * @param contractAddress Contract address of this token
+ * @param asset Asset which this coin represents
+ * @param network Optional token network
+ * @param coinNames The parent coin names for mainnet and testnet
+ * @param features Features of this coin
+ * @param prefix Optional token prefix
+ * @param suffix Optional token suffix
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function erc20Token(
+  id: string,
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  contractAddress: string,
+  asset: UnderlyingAsset,
+  network: AccountNetwork,
+  features: CoinFeature[] = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.EIP1559],
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
+) {
+  return Object.freeze(
+    new EthLikeERC20Token({
+      id,
+      name,
+      fullName,
+      network,
+      contractAddress,
+      decimalPlaces,
+      asset,
+      features,
+      prefix,
+      suffix,
+      primaryKeyCurve,
+      isToken: true,
+      baseUnit: BaseUnit.ETH,
     })
   );
 }
