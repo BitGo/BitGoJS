@@ -8,6 +8,7 @@ import { PostLogin } from './common/login';
 import { PostDecrypt } from './common/decrypt';
 import { PostVerifyAddress } from './common/verifyAddress';
 import { PostAcceptShare } from './common/acceptShare';
+import { PostSimpleCreate } from './v1/simpleCreate';
 
 export const ExpressApi = apiSpec({
   'express.ping': {
@@ -27,6 +28,9 @@ export const ExpressApi = apiSpec({
   },
   'express.v1.wallet.acceptShare': {
     post: PostAcceptShare,
+  },
+  'express.v1.wallet.simplecreate': {
+    post: PostSimpleCreate,
   },
 });
 

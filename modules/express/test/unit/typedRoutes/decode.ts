@@ -3,6 +3,7 @@ import * as t from 'io-ts';
 import { DecryptRequestBody } from '../../../src/typedRoutes/api/common/decrypt';
 import { LoginRequest } from '../../../src/typedRoutes/api/common/login';
 import { VerifyAddressBody } from '../../../src/typedRoutes/api/common/verifyAddress';
+import { SimpleCreateRequestBody } from '../../../src/typedRoutes/api/v1/simpleCreate';
 
 export function assertDecode<T>(codec: t.Type<T, unknown>, input: unknown): T {
   const result = codec.decode(input);
@@ -48,6 +49,14 @@ describe('io-ts decode tests', function () {
     );
     assertDecode(t.type(VerifyAddressBody), {
       address: 'some-address',
+    });
+  });
+  it('express.v1.wallet.simplecreate', function () {
+    // passphrase is required
+    assert.throws(() => assertDecode(t.type(SimpleCreateRequestBody), {}));
+
+    assertDecode(t.type(SimpleCreateRequestBody), {
+      passphrase: 'pass',
     });
   });
 });
