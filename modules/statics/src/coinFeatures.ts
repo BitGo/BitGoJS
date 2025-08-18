@@ -269,6 +269,7 @@ export const BSC_FEATURES = [
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
   CoinFeature.BULK_TRANSACTION,
   CoinFeature.SHARED_EVM_MESSAGE_SIGNING,
+  CoinFeature.ERC20_BULK_TRANSACTION,
 ];
 export const BSC_TOKEN_FEATURES = [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION];
 export const BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE = [
@@ -618,3 +619,14 @@ export const VET_FEATURES = [
   CoinFeature.MPCV2,
 ];
 export const VET_TOKEN_FEATURES = VET_FEATURES.filter((feature) => feature !== CoinFeature.SUPPORTS_TOKENS);
+
+export const XDC_FEATURES = [
+  ...EVM_FEATURES.filter((feature) => feature !== CoinFeature.EIP1559),
+  CoinFeature.ERC20_BULK_TRANSACTION,
+];
+
+export const SGB_FEATURES = [...EVM_FEATURES, CoinFeature.ERC20_BULK_TRANSACTION];
+
+export const FLR_FEATURES = [...EVM_FEATURES, CoinFeature.ERC20_BULK_TRANSACTION];
+
+export const WEMIX_FEATURES = [...EVM_FEATURES, CoinFeature.ERC20_BULK_TRANSACTION];
