@@ -1282,7 +1282,7 @@ class CoredaoTestnet extends Testnet implements EthereumNetwork {
   accountExplorerUrl = 'https://scan.test2.btcs.network/address/';
   chainId = 1114;
   nativeCoinOperationHashPrefix = '1114';
-  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
+  batcherContractAddress = '0xc5d7a3b4c490C6242FB28F20e5fE33CD983372a3';
   forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
@@ -1523,7 +1523,7 @@ class XdcTestnet extends Testnet implements EthereumNetwork {
   accountExplorerUrl = 'https://testnet.xdcscan.com/address/';
   chainId = 51;
   nativeCoinOperationHashPrefix = '51';
-  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
+  batcherContractAddress = '0xebe27913fcc7510eAdf10643A8F86Bf5492A9541';
   forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
@@ -1545,7 +1545,7 @@ class WemixTestnet extends Testnet implements EthereumNetwork {
   accountExplorerUrl = 'https://explorer.test.wemix.com/address/';
   chainId = 1112;
   nativeCoinOperationHashPrefix = '1112';
-  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
+  batcherContractAddress = '0xc5d7a3b4c490C6242FB28F20e5fE33CD983372a3';
   forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
@@ -1709,7 +1709,7 @@ class FlareTestnet extends Testnet implements EthereumNetwork {
   accountExplorerUrl = 'https://coston2-explorer.flare.network/address/';
   chainId = 114;
   nativeCoinOperationHashPrefix = '114';
-  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
+  batcherContractAddress = '0xc5d7a3b4c490C6242FB28F20e5fE33CD983372a3';
   forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
@@ -1731,7 +1731,7 @@ class SongbirdTestnet extends Testnet implements EthereumNetwork {
   accountExplorerUrl = 'https://coston-explorer.flare.network/address/';
   chainId = 16;
   nativeCoinOperationHashPrefix = '16';
-  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
+  batcherContractAddress = '0xc5d7a3b4c490C6242FB28F20e5fE33CD983372a3';
   forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }

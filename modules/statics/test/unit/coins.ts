@@ -1055,6 +1055,11 @@ describe('ERC20 Bulk Transaction Feature', () => {
       'tpolygon',
       'coredao',
       'tcoredao',
+      'tsgb',
+      'twemix',
+      'tflr',
+      'txdc',
+      'tbsc',
     ];
     erc20BulkTransactionCoins.forEach((coinName) => {
       const coin = coins.get(coinName);
