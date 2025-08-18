@@ -133,6 +133,8 @@ import {
   ZETA_FEATURES,
   ZKETH_FEATURES,
 } from './coinFeatures';
+import { botTokens } from './coins/botTokens';
+import { botOfcTokens } from './coins/botOfcTokens';
 
 export const coins = CoinMap.fromCoins([
   ...lightningCoins,
@@ -149,6 +151,8 @@ export const coins = CoinMap.fromCoins([
   ...nep141Tokens,
   ...vetTokens,
   ...cosmosTokens,
+  ...botTokens,
+  ...botOfcTokens,
   avaxp(
     '5436386e-9e4d-4d82-92df-59d9720d1738',
     'avaxp',
