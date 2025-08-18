@@ -1,8 +1,9 @@
 import { erc20Coins } from '../../src/coins/erc20Coins';
+import { cosmosTokens } from '../../src/coins/cosmosTokens';
 import { NetworkType } from '../../src/networks';
 
 describe('Token Naming Convention Tests', function () {
-  const allTokens = erc20Coins; //TODO: Include other token sources
+  const allTokens = [...erc20Coins, ...cosmosTokens];
 
   // Helper function to filter tokens by network type
   function getTokensByNetworkType(networkType: NetworkType) {
@@ -197,8 +198,11 @@ describe('Token Naming Convention Tests', function () {
         if (testnetVersions.length > 0 && mainnetVersions.length > 0) {
           testnetVersions.forEach((testnetVersion: any) => {
             mainnetVersions.forEach((mainnetVersion: any) => {
-              // Special case for ofcerc20 tokens which don't follow the pattern
-              if (testnetVersion.networkPrefix === 'ofct' && mainnetVersion.networkPrefix === 'ofc') {
+              // Special cases for tokens which don't follow the pattern
+              if (
+                (testnetVersion.networkPrefix === 'ofct' && mainnetVersion.networkPrefix === 'ofc') ||
+                (testnetVersion.networkPrefix === 'thash' && mainnetVersion.networkPrefix === 'hash')
+              ) {
                 return; // Skip the check for these special cases
               }
 
