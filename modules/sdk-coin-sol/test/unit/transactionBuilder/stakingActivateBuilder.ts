@@ -2,10 +2,10 @@ import should from 'should';
 
 import * as testData from '../../resources/sol';
 import { getBuilderFactory } from '../getBuilderFactory';
-import { KeyPair, Utils, Transaction } from '../../../src';
-import { coins } from '@bitgo/statics';
+import { KeyPair, Utils, StakingActivateBuilder } from '../../../src';
 import { JITO_STAKE_POOL_ADDRESS, JITOSOL_MINT_ADDRESS } from '../../../src/lib/constants';
 import { StakingType } from '../../../src/lib/iface';
+import { BaseTransaction } from '@bitgo/sdk-core';
 
 describe('Sol Staking Activate Builder', () => {
   const factory = getBuilderFactory('tsol');
@@ -29,334 +29,255 @@ describe('Sol Staking Activate Builder', () => {
   const recentBlockHash = 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi';
   const amount = '300000';
 
-  describe('Succeed', () => {
-    it('build a create and delegate staking signed tx', async () => {
-      const txBuilder = factory.getStakingActivateBuilder();
-      txBuilder
-        .amount(amount)
-        .sender(wallet.pub)
-        .stakingAddress(stakeAccount.pub)
-        .validator(validator.pub)
-        .nonce(recentBlockHash);
-      txBuilder.sign({ key: wallet.prv });
-      txBuilder.sign({ key: stakeAccount.prv });
-      const tx = await txBuilder.build();
-      tx.inputs.length.should.equal(1);
-      tx.inputs[0].should.deepEqual({
-        address: wallet.pub,
-        value: amount,
-        coin: 'tsol',
-      });
-      tx.outputs.length.should.equal(1);
-      const rawTx = tx.toBroadcastFormat();
-      should.equal(Utils.isValidRawTransaction(rawTx), true);
-      should.equal(rawTx, testData.STAKING_ACTIVATE_SIGNED_TX);
-      factory.from(testData.STAKING_ACTIVATE_SIGNED_TX);
-      const coin = coins.get('tsol');
-      const tx2 = new Transaction(coin);
-      tx2.fromRawTransaction(rawTx);
-    });
+  const performTest = async ({
+    signBuilder,
+    knownRawTx,
+    makeUnsignedBuilder,
+    verifyBuiltTransaction,
+  }: {
+    signBuilder?: undefined | ((x: StakingActivateBuilder) => StakingActivateBuilder);
+    knownRawTx: string;
+    makeUnsignedBuilder: () => StakingActivateBuilder;
+    verifyBuiltTransaction: (x: BaseTransaction) => void;
+  }) => {
+    // Build transaction
+    const txBuilder = makeUnsignedBuilder();
+    const unsignedTx = await txBuilder.build();
+    const tx = signBuilder ? await signBuilder(txBuilder).build() : unsignedTx;
 
-    it('Marinade: build a create staking signed tx', async () => {
-      const txBuilder = factory.getStakingActivateBuilder();
-      txBuilder
-        .amount(amount)
-        .sender(wallet.pub)
-        .stakingAddress(stakeAccount.pub)
-        .validator(validator.pub)
-        .stakingType(StakingType.MARINADE)
-        .nonce(recentBlockHash);
-      txBuilder.sign({ key: wallet.prv });
-      txBuilder.sign({ key: stakeAccount.prv });
-      const tx = await txBuilder.build();
-      const txJson = tx.toJson();
-      txJson.instructionsData.should.deepEqual([
-        {
-          type: 'Activate',
-          params: {
-            fromAddress: wallet.pub,
-            stakingAddress: stakeAccount.pub,
-            amount: amount,
-            validator: validator.pub,
-            stakingType: StakingType.MARINADE,
-          },
-        },
-      ]);
-      tx.inputs.length.should.equal(1);
-      tx.inputs[0].should.deepEqual({
-        address: wallet.pub,
-        value: amount,
-        coin: 'tsol',
-      });
-      tx.outputs.length.should.equal(1);
-      const rawTx = tx.toBroadcastFormat();
-      should.equal(Utils.isValidRawTransaction(rawTx), true);
-      should.equal(rawTx, testData.MARINADE_STAKING_ACTIVATE_SIGNED_TX);
-      factory.from(testData.MARINADE_STAKING_ACTIVATE_SIGNED_TX);
-      const coin = coins.get('tsol');
-      const tx2 = new Transaction(coin);
-      tx2.fromRawTransaction(rawTx);
-    });
+    // Verify built transaction
+    verifyBuiltTransaction(tx);
 
-    it('Jito: build a create staking signed tx', async () => {
-      const txBuilder = factory.getStakingActivateBuilder();
-      txBuilder
-        .amount(amount)
-        .sender(wallet.pub)
-        .stakingAddress(JITO_STAKE_POOL_ADDRESS)
-        .validator(JITO_STAKE_POOL_ADDRESS)
-        .stakingType(StakingType.JITO)
-        .extraParams({
-          stakePoolData: {
-            managerFeeAccount: testData.JITO_STAKE_POOL_DATA_PARSED.managerFeeAccount.toString(),
-            poolMint: testData.JITO_STAKE_POOL_DATA_PARSED.poolMint.toString(),
-            reserveStake: testData.JITO_STAKE_POOL_DATA_PARSED.reserveStake.toString(),
-          },
-        })
-        .nonce(recentBlockHash);
-      txBuilder.sign({ key: wallet.prv });
-      const tx = await txBuilder.build();
-      const txJson = tx.toJson();
-      txJson.instructionsData.should.deepEqual([
-        {
-          type: 'CreateAssociatedTokenAccount',
-          params: {
-            ataAddress: '2vJrx2Bn7PifLZDRaSCpphE9WtZsx1k43SRyiQDhE1As',
-            mintAddress: JITOSOL_MINT_ADDRESS,
-            ownerAddress: wallet.pub,
-            payerAddress: wallet.pub,
-            tokenName: 'sol:jitosol',
-          },
-        },
-        {
-          type: 'Activate',
-          params: {
-            fromAddress: wallet.pub,
-            stakingAddress: JITO_STAKE_POOL_ADDRESS,
-            amount: amount,
-            validator: JITO_STAKE_POOL_ADDRESS,
-            stakingType: StakingType.JITO,
-            extraParams: {
-              stakePoolData: {
-                managerFeeAccount: testData.JITO_STAKE_POOL_DATA_PARSED.managerFeeAccount.toString(),
-                poolMint: testData.JITO_STAKE_POOL_DATA_PARSED.poolMint.toString(),
-                reserveStake: testData.JITO_STAKE_POOL_DATA_PARSED.reserveStake.toString(),
+    // Verify raw transaction
+    const rawTx = tx.toBroadcastFormat();
+    should.equal(Utils.isValidRawTransaction(rawTx), true);
+    should.equal(rawTx, knownRawTx);
+
+    // Rebuild transaction and verify
+    const builderFromRawTx = factory.from(rawTx);
+    const rebuiltTx = await builderFromRawTx.build();
+
+    should.equal(rebuiltTx.toBroadcastFormat(), unsignedTx.toBroadcastFormat());
+    should.equal(rebuiltTx.signablePayload.toString('hex'), unsignedTx.signablePayload.toString('hex'));
+    should.deepEqual(rebuiltTx.toJson().instructionsData, tx.toJson().instructionsData);
+  };
+
+  const makeUnsignedBuilderNative = (doMemo: boolean) => {
+    const txBuilder = factory.getStakingActivateBuilder();
+    txBuilder
+      .amount(amount)
+      .sender(wallet.pub)
+      .stakingAddress(stakeAccount.pub)
+      .validator(validator.pub)
+      .nonce(recentBlockHash);
+    if (doMemo) {
+      txBuilder.memo('test memo');
+    }
+    return txBuilder;
+  };
+
+  const verifyBuiltTransactionNativeOrMarinade = (
+    tx: BaseTransaction,
+    doMemo: boolean,
+    stakingType: StakingType.NATIVE | StakingType.MARINADE
+  ) => {
+    const txJson = tx.toJson();
+    txJson.instructionsData.should.deepEqual([
+      ...(doMemo
+        ? [
+            {
+              type: 'Memo',
+              params: {
+                memo: 'test memo',
               },
+            },
+          ]
+        : []),
+      {
+        type: 'Activate',
+        params: {
+          fromAddress: wallet.pub,
+          stakingAddress: stakeAccount.pub,
+          amount: amount,
+          validator: validator.pub,
+          stakingType,
+        },
+      },
+    ]);
+    tx.inputs.length.should.equal(1);
+    tx.inputs[0].should.deepEqual({
+      address: wallet.pub,
+      value: amount,
+      coin: 'tsol',
+    });
+    tx.outputs.length.should.equal(1);
+    tx.outputs[0].should.deepEqual({
+      address: stakeAccount.pub,
+      value: amount,
+      coin: 'tsol',
+    });
+  };
+
+  const signBuilderNativeOrMarinade = (txBuilder: StakingActivateBuilder) => {
+    txBuilder.sign({ key: wallet.prv });
+    txBuilder.sign({ key: stakeAccount.prv });
+    return txBuilder;
+  };
+
+  const makeUnsignedBuilderMarinade = (doMemo: boolean) => {
+    return makeUnsignedBuilderNative(doMemo).stakingType(StakingType.MARINADE);
+  };
+
+  const makeUnsignedBuilderJito = (doMemo: boolean) => {
+    const txBuilder = factory.getStakingActivateBuilder();
+    txBuilder
+      .amount(amount)
+      .sender(wallet.pub)
+      .stakingAddress(JITO_STAKE_POOL_ADDRESS)
+      .validator(JITO_STAKE_POOL_ADDRESS)
+      .stakingType(StakingType.JITO)
+      .extraParams({
+        stakePoolData: {
+          managerFeeAccount: testData.JITO_STAKE_POOL_DATA_PARSED.managerFeeAccount.toString(),
+          poolMint: testData.JITO_STAKE_POOL_DATA_PARSED.poolMint.toString(),
+          reserveStake: testData.JITO_STAKE_POOL_DATA_PARSED.reserveStake.toString(),
+        },
+      })
+      .nonce(recentBlockHash);
+    if (doMemo) {
+      txBuilder.memo('test memo');
+    }
+    return txBuilder;
+  };
+
+  const signBuilderJito = (txBuilder: StakingActivateBuilder) => {
+    txBuilder.sign({ key: wallet.prv });
+    return txBuilder;
+  };
+
+  const verifyBuiltTransactionJito = (tx: BaseTransaction, doMemo: boolean) => {
+    const txJson = tx.toJson();
+    txJson.instructionsData.should.deepEqual([
+      {
+        type: 'CreateAssociatedTokenAccount',
+        params: {
+          ataAddress: '2vJrx2Bn7PifLZDRaSCpphE9WtZsx1k43SRyiQDhE1As',
+          mintAddress: JITOSOL_MINT_ADDRESS,
+          ownerAddress: wallet.pub,
+          payerAddress: wallet.pub,
+          tokenName: 'sol:jitosol',
+        },
+      },
+      ...(doMemo
+        ? [
+            {
+              type: 'Memo',
+              params: {
+                memo: 'test memo',
+              },
+            },
+          ]
+        : []),
+      {
+        type: 'Activate',
+        params: {
+          fromAddress: wallet.pub,
+          stakingAddress: JITO_STAKE_POOL_ADDRESS,
+          amount: amount,
+          validator: JITO_STAKE_POOL_ADDRESS,
+          stakingType: StakingType.JITO,
+          extraParams: {
+            stakePoolData: {
+              managerFeeAccount: testData.JITO_STAKE_POOL_DATA_PARSED.managerFeeAccount.toString(),
+              poolMint: testData.JITO_STAKE_POOL_DATA_PARSED.poolMint.toString(),
+              reserveStake: testData.JITO_STAKE_POOL_DATA_PARSED.reserveStake.toString(),
             },
           },
         },
-      ]);
-      tx.inputs.length.should.equal(1);
-      tx.inputs[0].should.deepEqual({
-        address: wallet.pub,
-        value: amount,
-        coin: 'tsol',
-      });
-      tx.outputs.length.should.equal(1);
-      const rawTx = tx.toBroadcastFormat();
-      should.equal(Utils.isValidRawTransaction(rawTx), true);
-      should.equal(rawTx, testData.JITO_STAKING_ACTIVATE_SIGNED_TX);
-      const builderFromRawTx = factory.from(rawTx);
-      const rebuiltTx = await builderFromRawTx.build();
-      rebuiltTx.toJson().instructionsData.should.deepEqual(txJson.instructionsData);
+      },
+    ]);
+    tx.inputs.length.should.equal(1);
+    tx.inputs[0].should.deepEqual({
+      address: wallet.pub,
+      value: amount,
+      coin: 'tsol',
+    });
+    tx.outputs.length.should.equal(1);
+    tx.outputs[0].should.deepEqual({
+      address: JITO_STAKE_POOL_ADDRESS,
+      value: amount,
+      coin: 'tsol',
+    });
+  };
+
+  describe('Succeed', () => {
+    describe('Native staking tests', () => {
+      const performTestNative = async (doMemo: boolean, doSign: boolean, knownRawTx: string) => {
+        await performTest({
+          signBuilder: doSign ? signBuilderNativeOrMarinade : undefined,
+          knownRawTx,
+          makeUnsignedBuilder: () => makeUnsignedBuilderNative(doMemo),
+          verifyBuiltTransaction: (x) => verifyBuiltTransactionNativeOrMarinade(x, doMemo, StakingType.NATIVE),
+        });
+      };
+
+      it('build a create and delegate staking signed tx', async () =>
+        performTestNative(false, true, testData.STAKING_ACTIVATE_SIGNED_TX));
+
+      it('build a create and delegate staking signed tx with memo', async () =>
+        performTestNative(true, true, testData.STAKING_ACTIVATE_SIGNED_TX_WITH_MEMO));
+
+      it('build a create and delegate staking unsigned tx', async () =>
+        performTestNative(false, false, testData.STAKING_ACTIVATE_UNSIGNED_TX));
+
+      it('build a create and delegate staking unsigned tx with memo', async () =>
+        performTestNative(true, false, testData.STAKING_ACTIVATE_UNSIGNED_TX_WITH_MEMO));
     });
 
-    it('build a create and delegate staking signed tx with memo', async () => {
-      const txBuilder = factory.getStakingActivateBuilder();
-      txBuilder
-        .amount(amount)
-        .sender(wallet.pub)
-        .stakingAddress(stakeAccount.pub)
-        .validator(validator.pub)
-        .memo('test memo')
-        .nonce(recentBlockHash);
-      txBuilder.sign({ key: wallet.prv });
-      txBuilder.sign({ key: stakeAccount.prv });
-      const tx = await txBuilder.build();
-      tx.inputs.length.should.equal(1);
-      tx.inputs[0].should.deepEqual({
-        address: wallet.pub,
-        value: amount,
-        coin: 'tsol',
-      });
-      tx.outputs.length.should.equal(1);
-      tx.outputs[0].should.deepEqual({
-        address: stakeAccount.pub,
-        value: amount,
-        coin: 'tsol',
-      });
-      const rawTx = tx.toBroadcastFormat();
-      should.equal(Utils.isValidRawTransaction(rawTx), true);
-      should.equal(rawTx, testData.STAKING_ACTIVATE_SIGNED_TX_WITH_MEMO);
+    describe('Marinade staking tests', () => {
+      const performTestMarinade = async (doMemo: boolean, doSign: boolean, knownRawTx: string) => {
+        await performTest({
+          signBuilder: doSign ? signBuilderNativeOrMarinade : undefined,
+          knownRawTx,
+          makeUnsignedBuilder: () => makeUnsignedBuilderMarinade(doMemo),
+          verifyBuiltTransaction: (x) => verifyBuiltTransactionNativeOrMarinade(x, doMemo, StakingType.MARINADE),
+        });
+      };
+
+      it('build a create staking signed tx', async () =>
+        performTestMarinade(false, true, testData.MARINADE_STAKING_ACTIVATE_SIGNED_TX));
+
+      it('build a create signed tx with memo', async () =>
+        performTestMarinade(true, true, testData.MARINADE_STAKING_ACTIVATE_SIGNED_TX_WITH_MEMO));
+
+      it('build a create unsigned tx', async () =>
+        performTestMarinade(false, false, testData.MARINADE_STAKING_ACTIVATE_UNSIGNED_TX));
+
+      it('build a create unsigned tx with memo', async () =>
+        performTestMarinade(true, false, testData.MARINADE_STAKING_ACTIVATE_UNSIGNED_TX_WITH_MEMO));
     });
 
-    it('Marinade: build a create staking signed tx with memo', async () => {
-      const txBuilder = factory.getStakingActivateBuilder();
-      txBuilder
-        .amount(amount)
-        .sender(wallet.pub)
-        .stakingAddress(stakeAccount.pub)
-        .validator(validator.pub)
-        .memo('test memo')
-        .stakingType(StakingType.MARINADE)
-        .nonce(recentBlockHash);
-      txBuilder.sign({ key: wallet.prv });
-      txBuilder.sign({ key: stakeAccount.prv });
-      const tx = await txBuilder.build();
-      const txJson = tx.toJson();
-      txJson.instructionsData.should.deepEqual([
-        {
-          type: 'Memo',
-          params: {
-            memo: 'test memo',
-          },
-        },
-        {
-          type: 'Activate',
-          params: {
-            fromAddress: wallet.pub,
-            stakingAddress: stakeAccount.pub,
-            amount: amount,
-            validator: validator.pub,
-            stakingType: StakingType.MARINADE,
-          },
-        },
-      ]);
-      tx.inputs.length.should.equal(1);
-      tx.inputs[0].should.deepEqual({
-        address: wallet.pub,
-        value: amount,
-        coin: 'tsol',
-      });
-      tx.outputs.length.should.equal(1);
-      tx.outputs[0].should.deepEqual({
-        address: stakeAccount.pub,
-        value: amount,
-        coin: 'tsol',
-      });
-      const rawTx = tx.toBroadcastFormat();
-      should.equal(Utils.isValidRawTransaction(rawTx), true);
-      should.equal(rawTx, testData.MARINADE_STAKING_ACTIVATE_SIGNED_TX_WITH_MEMO);
-    });
+    describe('Jito staking tests', () => {
+      const performTestJito = async (doMemo: boolean, doSign: boolean, knownRawTx: string) => {
+        await performTest({
+          signBuilder: doSign ? signBuilderJito : undefined,
+          knownRawTx,
+          makeUnsignedBuilder: () => makeUnsignedBuilderJito(doMemo),
+          verifyBuiltTransaction: (x) => verifyBuiltTransactionJito(x, doMemo),
+        });
+      };
 
-    it('build a create and delegate staking unsigned tx', async () => {
-      const txBuilder = factory.getStakingActivateBuilder();
-      txBuilder
-        .amount(amount)
-        .sender(wallet.pub)
-        .stakingAddress(stakeAccount.pub)
-        .validator(validator.pub)
-        .nonce(recentBlockHash);
-      const tx = await txBuilder.build();
-      tx.inputs.length.should.equal(1);
-      tx.inputs[0].should.deepEqual({
-        address: wallet.pub,
-        value: amount,
-        coin: 'tsol',
-      });
-      tx.outputs.length.should.equal(1);
-      const rawTx = tx.toBroadcastFormat();
-      should.equal(Utils.isValidRawTransaction(rawTx), true);
-      should.equal(rawTx, testData.STAKING_ACTIVATE_UNSIGNED_TX);
-    });
+      it('build a create staking signed tx', async () =>
+        performTestJito(false, true, testData.JITO_STAKING_ACTIVATE_SIGNED_TX));
 
-    it('Marinade: build a create staking unsigned tx', async () => {
-      const txBuilder = factory.getStakingActivateBuilder();
-      txBuilder
-        .amount(amount)
-        .sender(wallet.pub)
-        .stakingAddress(stakeAccount.pub)
-        .validator(validator.pub)
-        .stakingType(StakingType.MARINADE)
-        .nonce(recentBlockHash);
-      const tx = await txBuilder.build();
-      const txJson = tx.toJson();
-      txJson.instructionsData.should.deepEqual([
-        {
-          type: 'Activate',
-          params: {
-            fromAddress: wallet.pub,
-            stakingAddress: stakeAccount.pub,
-            amount: amount,
-            validator: validator.pub,
-            stakingType: StakingType.MARINADE,
-          },
-        },
-      ]);
-      tx.inputs.length.should.equal(1);
-      tx.inputs[0].should.deepEqual({
-        address: wallet.pub,
-        value: amount,
-        coin: 'tsol',
-      });
-      tx.outputs.length.should.equal(1);
-      const rawTx = tx.toBroadcastFormat();
-      should.equal(Utils.isValidRawTransaction(rawTx), true);
-      should.equal(rawTx, testData.MARINADE_STAKING_ACTIVATE_UNSIGNED_TX);
-    });
+      it('build a create signed tx with memo', async () =>
+        performTestJito(true, true, testData.JITO_STAKING_ACTIVATE_SIGNED_TX_WITH_MEMO));
 
-    it('build a create and delegate staking unsigned tx with memo', async () => {
-      const txBuilder = factory.getStakingActivateBuilder();
-      txBuilder
-        .amount(amount)
-        .sender(wallet.pub)
-        .stakingAddress(stakeAccount.pub)
-        .validator(validator.pub)
-        .memo('test memo')
-        .nonce(recentBlockHash);
-      const tx = await txBuilder.build();
-      tx.inputs.length.should.equal(1);
-      tx.inputs[0].should.deepEqual({
-        address: wallet.pub,
-        value: amount,
-        coin: 'tsol',
-      });
-      tx.outputs.length.should.equal(1);
-      const rawTx = tx.toBroadcastFormat();
-      should.equal(Utils.isValidRawTransaction(rawTx), true);
-      should.equal(rawTx, testData.STAKING_ACTIVATE_UNSIGNED_TX_WITH_MEMO);
-    });
+      it('build a create unsigned tx', async () =>
+        performTestJito(false, false, testData.JITO_STAKING_ACTIVATE_UNSIGNED_TX));
 
-    it('Marinade: build a create staking unsigned tx with memo', async () => {
-      const txBuilder = factory.getStakingActivateBuilder();
-      txBuilder
-        .amount(amount)
-        .sender(wallet.pub)
-        .stakingAddress(stakeAccount.pub)
-        .validator(validator.pub)
-        .memo('test memo')
-        .stakingType(StakingType.MARINADE)
-        .nonce(recentBlockHash);
-      const tx = await txBuilder.build();
-      const txJson = tx.toJson();
-      txJson.instructionsData.should.deepEqual([
-        {
-          type: 'Memo',
-          params: {
-            memo: 'test memo',
-          },
-        },
-        {
-          type: 'Activate',
-          params: {
-            fromAddress: wallet.pub,
-            stakingAddress: stakeAccount.pub,
-            amount: amount,
-            validator: validator.pub,
-            stakingType: StakingType.MARINADE,
-          },
-        },
-      ]);
-      tx.inputs.length.should.equal(1);
-      tx.inputs[0].should.deepEqual({
-        address: wallet.pub,
-        value: amount,
-        coin: 'tsol',
-      });
-      tx.outputs.length.should.equal(1);
-      const rawTx = tx.toBroadcastFormat();
-      should.equal(Utils.isValidRawTransaction(rawTx), true);
-      should.equal(rawTx, testData.MARINADE_STAKING_ACTIVATE_UNSIGNED_TX_WITH_MEMO);
+      it('build a create unsigned tx with memo', async () =>
+        performTestJito(true, false, testData.JITO_STAKING_ACTIVATE_UNSIGNED_TX_WITH_MEMO));
     });
   });
 

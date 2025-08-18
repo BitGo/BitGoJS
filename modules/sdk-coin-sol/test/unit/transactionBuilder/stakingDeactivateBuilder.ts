@@ -1,9 +1,9 @@
 import should from 'should';
 
 import { getBuilderFactory } from '../getBuilderFactory';
-import { KeyPair, Utils } from '../../../src';
+import { KeyPair, StakingDeactivateBuilder, Utils } from '../../../src';
 import * as testData from '../../resources/sol';
-import { Recipient, TransactionType } from '@bitgo/sdk-core';
+import { BaseTransaction, Recipient, TransactionType } from '@bitgo/sdk-core';
 import * as bs58 from 'bs58';
 import { JITO_STAKE_POOL_ADDRESS } from '../../../src/lib/constants';
 import { StakingType } from '../../../src/lib/iface';
@@ -18,406 +18,338 @@ describe('Sol Staking Deactivate Builder', () => {
   const recentBlockHash = 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi';
   const invalidPubKey = testData.pubKeys.invalidPubKeys[0];
 
-  describe('Should succeed', () => {
-    const marinadeRecipientsObject: Recipient[] = [];
-    marinadeRecipientsObject.push({
-      address: 'opNS8ENpEMWdXcJUgJCsJTDp7arTXayoBEeBUg6UezP',
-      amount: '2300000',
-    });
-    const marinadeMemo = `{\\"PrepareForRevoke\\":{\\"user\\":\\"${wallet.pub}}\\",\\"amount\\":\\"500000000000\\"}`;
+  const performTest = async ({
+    makeUnsignedBuilder,
+    signBuilder,
+    addSignatures,
+    verifyBuiltTransaction,
+    knownRawTx,
+  }: {
+    makeUnsignedBuilder: () => StakingDeactivateBuilder;
+    signBuilder?: undefined | ((x: StakingDeactivateBuilder) => StakingDeactivateBuilder);
+    addSignatures?: undefined | ((x: StakingDeactivateBuilder, signature: string[]) => StakingDeactivateBuilder);
+    verifyBuiltTransaction: (x: BaseTransaction) => void;
+    knownRawTx?: string;
+  }) => {
+    // Build transaction
+    const txBuilder = makeUnsignedBuilder();
+    const unsignedTx = await txBuilder.build();
+    const tx = signBuilder ? await signBuilder(txBuilder).build() : unsignedTx;
 
-    it('building a staking deactivate tx', async () => {
-      const txBuilder = factory.getStakingDeactivateBuilder();
-      txBuilder.sender(wallet.pub).stakingAddress(stakeAccount.pub).nonce(recentBlockHash);
-      const txUnsigned = await txBuilder.build();
-      txBuilder.sign({ key: wallet.prv });
-      const tx = await txBuilder.build();
-      const txJson = tx.toJson();
-      const rawTx = tx.toBroadcastFormat();
-      should.equal(Utils.isValidRawTransaction(rawTx), true);
-      txJson.instructionsData.should.deepEqual([
-        {
-          type: 'Deactivate',
-          params: {
-            fromAddress: wallet.pub,
-            stakingAddress: stakeAccount.pub,
-            amount: undefined,
-            unstakingAddress: undefined,
-            stakingType: StakingType.NATIVE,
-          },
-        },
-      ]);
-      should.equal(rawTx, testData.STAKING_DEACTIVATE_SIGNED_TX);
+    // Verify built transaction
+    verifyBuiltTransaction(tx);
 
-      const tx2 = await factory.from(txUnsigned.toBroadcastFormat()).build();
-      const signed = tx.signature[0];
+    // Verify raw transaction
+    const rawTx = tx.toBroadcastFormat();
+    should.equal(Utils.isValidRawTransaction(rawTx), true);
+    if (knownRawTx !== undefined) {
+      should.equal(rawTx, knownRawTx);
+    }
 
-      should.equal(tx2.toBroadcastFormat(), txUnsigned.toBroadcastFormat());
-      should.equal(tx2.signablePayload.toString('hex'), txUnsigned.signablePayload.toString('hex'));
+    // Rebuild transaction and verify
+    const builderFromRawTx = factory.from(rawTx);
+    const rebuiltTx = await builderFromRawTx.build();
 
-      const txBuilder2 = factory.getStakingDeactivateBuilder();
-      txBuilder2.sender(wallet.pub).stakingAddress(stakeAccount.pub).nonce(recentBlockHash);
-      await txBuilder2.addSignature({ pub: wallet.pub }, Buffer.from(bs58.decode(signed)));
-      const signedTx = await txBuilder2.build();
-      should.equal(signedTx.type, TransactionType.StakingDeactivate);
+    should.equal(rebuiltTx.toBroadcastFormat(), unsignedTx.toBroadcastFormat());
+    should.equal(rebuiltTx.signablePayload.toString('hex'), unsignedTx.signablePayload.toString('hex'));
+    should.deepEqual(rebuiltTx.toJson().instructionsData, tx.toJson().instructionsData);
 
-      const rawSignedTx = signedTx.toBroadcastFormat();
-      should.equal(rawSignedTx, testData.STAKING_DEACTIVATE_SIGNED_TX);
-    });
+    // Verify addSignature
+    if (addSignatures) {
+      const txBuilder2 = makeUnsignedBuilder();
+      addSignatures(txBuilder2, tx.signature);
+      const tx2 = await txBuilder2.build();
+      should.equal(tx2.type, TransactionType.StakingDeactivate);
+      const rawTx2 = tx2.toBroadcastFormat();
+      should.deepEqual(tx2.toJson().instructionsData, tx.toJson().instructionsData);
+      if (knownRawTx !== undefined) {
+        should.equal(rawTx2, knownRawTx);
+      }
+    }
+  };
 
-    it('Marinade: build and sign a staking deactivate tx', async () => {
-      const txBuilder = factory.getStakingDeactivateBuilder();
-      txBuilder
-        .sender(wallet.pub)
-        .stakingAddress(stakeAccount.pub)
-        .nonce(recentBlockHash)
-        .stakingType(StakingType.MARINADE)
-        .memo(marinadeMemo)
-        .recipients(marinadeRecipientsObject);
-      const txUnsigned = await txBuilder.build();
-      txBuilder.sign({ key: wallet.prv });
-      const tx = await txBuilder.build();
-      const txJson = tx.toJson();
-      const rawTx = tx.toBroadcastFormat();
-      should.equal(Utils.isValidRawTransaction(rawTx), true);
-      txJson.instructionsData.should.deepEqual([
-        {
-          params: {
-            memo: marinadeMemo,
-          },
-          type: 'Memo',
-        },
-        {
-          type: 'Deactivate',
-          params: {
-            fromAddress: '',
-            stakingAddress: '',
-            stakingType: StakingType.MARINADE,
-            recipients: marinadeRecipientsObject,
-          },
-        },
-      ]);
-      should.equal(rawTx, testData.MARINADE_STAKING_DEACTIVATE_SIGNED_TX);
+  const makeUnsignedBuilderNativeGeneric = (doMemo: boolean, stakingAddress: string | string[]) => {
+    const txBuilder = factory.getStakingDeactivateBuilder();
+    txBuilder.sender(wallet.pub);
+    if (typeof stakingAddress === 'string') {
+      txBuilder.stakingAddress(stakingAddress);
+    } else {
+      txBuilder.stakingAddresses(stakingAddress);
+    }
+    txBuilder.nonce(recentBlockHash);
+    if (doMemo) {
+      txBuilder.memo('Test deactivate');
+    }
+    return txBuilder;
+  };
 
-      const tx2 = await factory.from(txUnsigned.toBroadcastFormat()).build();
-      const signed = tx.signature[0];
+  const signBuilderNative = (txBuilder: StakingDeactivateBuilder) => {
+    txBuilder.sign({ key: wallet.prv });
+    return txBuilder;
+  };
 
-      should.equal(tx2.toBroadcastFormat(), txUnsigned.toBroadcastFormat());
-      should.equal(tx2.signablePayload.toString('hex'), txUnsigned.signablePayload.toString('hex'));
+  const addSignaturesNative = (txBuilder: StakingDeactivateBuilder, signature: string[]) => {
+    txBuilder.addSignature({ pub: wallet.pub }, Buffer.from(bs58.decode(signature[0])));
+    return txBuilder;
+  };
 
-      const txBuilder2 = factory.getStakingDeactivateBuilder();
-      txBuilder2
-        .sender(wallet.pub)
-        .stakingAddress(stakeAccount.pub)
-        .nonce(recentBlockHash)
-        .stakingType(StakingType.MARINADE)
-        .memo(marinadeMemo)
-        .recipients(marinadeRecipientsObject);
-      await txBuilder2.addSignature({ pub: wallet.pub }, Buffer.from(bs58.decode(signed)));
-      const signedTx = await txBuilder2.build();
-      should.equal(signedTx.type, TransactionType.StakingDeactivate);
-
-      const rawSignedTx = signedTx.toBroadcastFormat();
-      should.equal(rawSignedTx, testData.MARINADE_STAKING_DEACTIVATE_SIGNED_TX);
-    });
-
-    it('Jito: build and sign a staking deactivate tx', async () => {
-      const txBuilder = factory.getStakingDeactivateBuilder();
-      const transferAuthority = new KeyPair(testData.splitStakeAccount).getKeys();
-      txBuilder
-        .sender(wallet.pub)
-        .stakingAddress(JITO_STAKE_POOL_ADDRESS)
-        .unstakingAddress(stakeAccount.pub)
-        .stakingType(StakingType.JITO)
-        .extraParams({
-          validatorAddress: testData.JITO_STAKE_POOL_VALIDATOR_ADDRESS,
-          transferAuthorityAddress: transferAuthority.pub,
-          stakePoolData: {
-            managerFeeAccount: testData.JITO_STAKE_POOL_DATA_PARSED.managerFeeAccount.toString(),
-            poolMint: testData.JITO_STAKE_POOL_DATA_PARSED.poolMint.toString(),
-            validatorListAccount: testData.JITO_STAKE_POOL_DATA_PARSED.validatorList.toString(),
-          },
-        })
-        .amount('1000')
-        .nonce(recentBlockHash);
-      const txUnsigned = await txBuilder.build();
-      txBuilder.sign({ key: wallet.prv });
-      txBuilder.sign({ key: stakeAccount.prv });
-      txBuilder.sign({ key: transferAuthority.prv });
-      const tx = await txBuilder.build();
-      const txJson = tx.toJson();
-      const rawTx = tx.toBroadcastFormat();
-      should.equal(Utils.isValidRawTransaction(rawTx), true);
-      txJson.instructionsData.should.deepEqual([
-        {
-          type: 'Deactivate',
-          params: {
-            fromAddress: wallet.pub,
-            stakingAddress: JITO_STAKE_POOL_ADDRESS,
-            unstakingAddress: stakeAccount.pub,
-            amount: '1000',
-            stakingType: StakingType.JITO,
-            extraParams: {
-              validatorAddress: testData.JITO_STAKE_POOL_VALIDATOR_ADDRESS,
-              transferAuthorityAddress: transferAuthority.pub,
-              stakePoolData: {
-                managerFeeAccount: testData.JITO_STAKE_POOL_DATA_PARSED.managerFeeAccount.toString(),
-                poolMint: testData.JITO_STAKE_POOL_DATA_PARSED.poolMint.toString(),
-                validatorListAccount: testData.JITO_STAKE_POOL_DATA_PARSED.validatorList.toString(),
+  const verifyBuiltTransactionNativeGeneric = (tx: BaseTransaction, doMemo: boolean, stakingAddresses: string[]) => {
+    const txJson = tx.toJson();
+    txJson.instructionsData.should.deepEqual([
+      ...(doMemo
+        ? [
+            {
+              type: 'Memo',
+              params: {
+                memo: 'Test deactivate',
               },
             },
-          },
+          ]
+        : []),
+      ...stakingAddresses.map((stakingAddress) => ({
+        type: 'Deactivate',
+        params: {
+          stakingAddress,
+          amount: undefined,
+          fromAddress: wallet.pub,
+          unstakingAddress: undefined,
+          stakingType: StakingType.NATIVE,
         },
-      ]);
-      should.equal(rawTx, testData.JITO_STAKING_DEACTIVATE_SIGNED_TX);
+      })),
+    ]);
+  };
 
-      const tx2 = await factory.from(txUnsigned.toBroadcastFormat()).build();
-      should.equal(tx2.toBroadcastFormat(), txUnsigned.toBroadcastFormat());
-      should.equal(tx2.signablePayload.toString('hex'), txUnsigned.signablePayload.toString('hex'));
+  describe('Should succeed', () => {
+    describe('Native staking deactivate', () => {
+      const performTestNative = async (
+        doMemo: boolean,
+        stakingAddress: string | string[],
+        doSign: boolean,
+        knownRawTx: string | undefined
+      ) => {
+        const stakingAddresses = typeof stakingAddress === 'string' ? [stakingAddress] : stakingAddress;
+        await performTest({
+          makeUnsignedBuilder: () => makeUnsignedBuilderNativeGeneric(doMemo, stakingAddress),
+          signBuilder: doSign ? signBuilderNative : undefined,
+          addSignatures: doSign ? addSignaturesNative : undefined,
+          verifyBuiltTransaction: (tx) => verifyBuiltTransactionNativeGeneric(tx, doMemo, stakingAddresses),
+          knownRawTx,
+        });
+      };
+
+      it('building a staking deactivate tx', async () => {
+        await performTestNative(false, stakeAccount.pub, true, testData.STAKING_DEACTIVATE_SIGNED_TX);
+      });
+
+      it('building a staking multi deactivate tx', async () => {
+        await performTestNative(
+          false,
+          [stakeAccount.pub, splitAccount.pub],
+          true,
+          testData.STAKING_MULTI_DEACTIVATE_SIGNED_TX
+        );
+      });
+
+      it('should build and sign a multi deactivate single', async function () {
+        await performTestNative(false, [stakeAccount.pub], true, testData.STAKING_MULTI_DEACTIVATE_SIGNED_TX_single);
+      });
+
+      it('should build and sign a deactivate single', async function () {
+        await performTestNative(false, stakeAccount.pub, true, testData.STAKING_DEACTIVATE_SIGNED_TX_single);
+      });
+
+      it('building a staking deactivate signed tx with memo', async () => {
+        await performTestNative(true, stakeAccount.pub, true, testData.STAKING_DEACTIVATE_SIGNED_TX_WITH_MEMO);
+      });
+
+      it('building a staking deactivate unsigned tx', async () => {
+        await performTestNative(false, stakeAccount.pub, false, testData.STAKING_DEACTIVATE_UNSIGNED_TX);
+      });
+
+      it('building a staking deactivate unsigned tx with memo', async () => {
+        await performTestNative(true, stakeAccount.pub, false, testData.STAKING_DEACTIVATE_UNSIGNED_TX_WITH_MEMO);
+      });
+
+      it('building a staking deactivate unsigned tx with memo', async () => {
+        await performTestNative(true, stakeAccount.pub, false, testData.STAKING_DEACTIVATE_UNSIGNED_TX_WITH_MEMO);
+      });
+
+      it('all combinations', async () => {
+        for (const doMemo of [false, true]) {
+          for (const stakingAddress of [stakeAccount.pub, [stakeAccount.pub], [stakeAccount.pub, splitAccount.pub]]) {
+            for (const doSign of [false, true]) {
+              await performTestNative(doMemo, stakingAddress, doSign, undefined);
+            }
+          }
+        }
+      });
+
+      it('building an encoded signed transaction', async () => {
+        const txBuilder = factory.from(testData.STAKING_DEACTIVATE_SIGNED_TX_WITH_MEMO);
+        txBuilder.sign({ key: wallet.prv });
+        const tx = await txBuilder.build();
+        should.equal(tx.toBroadcastFormat(), testData.STAKING_DEACTIVATE_SIGNED_TX_WITH_MEMO);
+      });
+
+      it('building an encoded unsigned transaction and signing it', async () => {
+        const txBuilder = factory.from(testData.STAKING_DEACTIVATE_UNSIGNED_TX_WITH_MEMO);
+        txBuilder.sign({ key: wallet.prv });
+        const tx = await txBuilder.build();
+        should.equal(tx.toBroadcastFormat(), testData.STAKING_DEACTIVATE_SIGNED_TX_WITH_MEMO);
+      });
+
+      it('building a partial staking deactivate tx', async () => {
+        const txBuilder = factory
+          .getStakingDeactivateBuilder()
+          .sender(wallet.pub)
+          .stakingAddress(stakeAccount.pub)
+          .unstakingAddress(testData.splitStakeAccount.pub)
+          .amount('100000')
+          .nonce(recentBlockHash);
+        txBuilder.sign({ key: wallet.prv });
+        const tx = await txBuilder.build();
+        const txJson = tx.toJson();
+        const rawTx = tx.toBroadcastFormat();
+        should.equal(Utils.isValidRawTransaction(rawTx), true);
+        txJson.instructionsData.should.deepEqual([
+          {
+            type: 'Deactivate',
+            params: {
+              fromAddress: wallet.pub,
+              stakingAddress: stakeAccount.pub,
+              amount: '100000',
+              unstakingAddress: testData.splitStakeAccount.pub,
+              stakingType: StakingType.NATIVE,
+            },
+          },
+        ]);
+        should.equal(rawTx, testData.STAKING_PARTIAL_DEACTIVATE_SIGNED_TX);
+
+        const tx2 = await factory.from(testData.STAKING_PARTIAL_DEACTIVATE_SIGNED_TX).build();
+        const txJson2 = tx2.toJson();
+        tx2.toBroadcastFormat();
+
+        delete tx['_id'];
+        delete tx2['_id'];
+
+        // should.deepEqual(tx, tx2) // _useTokenAddressTokenName true for tx2
+        should.deepEqual(txJson2, txJson2);
+      });
     });
 
-    it('building a staking multi deactivate tx', async () => {
-      const txBuilder = factory.getStakingDeactivateBuilder();
-      txBuilder.sender(wallet.pub).stakingAddresses([stakeAccount.pub, splitAccount.pub]).nonce(recentBlockHash);
-      const txUnsigned = await txBuilder.build();
-      txBuilder.sign({ key: wallet.prv });
-      const tx = await txBuilder.build();
-      const txJson = tx.toJson();
-      const rawTx = tx.toBroadcastFormat();
-      should.equal(Utils.isValidRawTransaction(rawTx), true);
-      txJson.instructionsData.should.deepEqual([
-        {
-          type: 'Deactivate',
-          params: {
-            fromAddress: wallet.pub,
-            stakingAddress: stakeAccount.pub,
-            amount: undefined,
-            unstakingAddress: undefined,
-            stakingType: StakingType.NATIVE,
+    describe('Marinade staking deactivate', () => {
+      const marinadeRecipientsObject: Recipient[] = [];
+      marinadeRecipientsObject.push({
+        address: 'opNS8ENpEMWdXcJUgJCsJTDp7arTXayoBEeBUg6UezP',
+        amount: '2300000',
+      });
+
+      const marinadeMemo = `{\\"PrepareForRevoke\\":{\\"user\\":\\"${wallet.pub}}\\",\\"amount\\":\\"500000000000\\"}`;
+
+      it('Marinade: build and sign a staking deactivate tx', async () => {
+        await performTest({
+          makeUnsignedBuilder: () => {
+            const txBuilder = factory.getStakingDeactivateBuilder();
+            txBuilder
+              .sender(wallet.pub)
+              .stakingAddress(stakeAccount.pub)
+              .nonce(recentBlockHash)
+              .stakingType(StakingType.MARINADE)
+              .memo(marinadeMemo)
+              .recipients(marinadeRecipientsObject);
+            return txBuilder;
           },
-        },
-        {
-          type: 'Deactivate',
-          params: {
-            fromAddress: wallet.pub,
-            stakingAddress: splitAccount.pub,
-            amount: undefined,
-            unstakingAddress: undefined,
-            stakingType: StakingType.NATIVE,
+          signBuilder: signBuilderNative,
+          addSignatures: addSignaturesNative,
+          verifyBuiltTransaction: (tx: BaseTransaction) => {
+            const txJson = tx.toJson();
+            txJson.instructionsData.should.deepEqual([
+              {
+                params: {
+                  memo: marinadeMemo,
+                },
+                type: 'Memo',
+              },
+              {
+                type: 'Deactivate',
+                params: {
+                  fromAddress: '',
+                  stakingAddress: '',
+                  stakingType: StakingType.MARINADE,
+                  recipients: marinadeRecipientsObject,
+                },
+              },
+            ]);
           },
-        },
-      ]);
-      should.equal(rawTx, testData.STAKING_MULTI_DEACTIVATE_UNSIGNED_TX);
-
-      const tx2 = await factory.from(txUnsigned.toBroadcastFormat()).build();
-      const signed = tx.signature[0];
-
-      should.equal(tx2.toBroadcastFormat(), txUnsigned.toBroadcastFormat());
-      should.equal(tx2.signablePayload.toString('hex'), txUnsigned.signablePayload.toString('hex'));
-
-      const txBuilder2 = factory.getStakingDeactivateBuilder();
-      txBuilder2.sender(wallet.pub).stakingAddresses([stakeAccount.pub, splitAccount.pub]).nonce(recentBlockHash);
-      await txBuilder2.addSignature({ pub: wallet.pub }, Buffer.from(bs58.decode(signed)));
-      const signedTx = await txBuilder2.build();
-      should.equal(signedTx.type, TransactionType.StakingDeactivate);
-
-      const rawSignedTx = signedTx.toBroadcastFormat();
-      should.equal(rawSignedTx, testData.STAKING_MULTI_DEACTIVATE_SIGNED_TX);
+          knownRawTx: testData.MARINADE_STAKING_DEACTIVATE_SIGNED_TX,
+        });
+      });
     });
 
-    it('should build and sign a multi deactivate single', async function () {
-      const txBuilder = factory.getStakingDeactivateBuilder();
-      txBuilder.sender(wallet.pub).stakingAddresses([stakeAccount.pub]).nonce(recentBlockHash);
-      const txUnsigned = await txBuilder.build();
-      txBuilder.sign({ key: wallet.prv });
-      const tx = await txBuilder.build();
-      const txJson = tx.toJson();
-      const rawTx = tx.toBroadcastFormat();
-      txJson.instructionsData.should.deepEqual([
-        {
-          type: 'Deactivate',
-          params: {
-            fromAddress: wallet.pub,
-            stakingAddress: stakeAccount.pub,
-            amount: undefined,
-            unstakingAddress: undefined,
-            stakingType: StakingType.NATIVE,
+    describe('Jito staking deactivate', () => {
+      it('Jito: build and sign a staking deactivate tx', async () => {
+        const transferAuthority = new KeyPair(testData.splitStakeAccount).getKeys();
+
+        await performTest({
+          makeUnsignedBuilder: () => {
+            const txBuilder = factory.getStakingDeactivateBuilder();
+            txBuilder
+              .sender(wallet.pub)
+              .stakingAddress(JITO_STAKE_POOL_ADDRESS)
+              .unstakingAddress(stakeAccount.pub)
+              .stakingType(StakingType.JITO)
+              .extraParams({
+                validatorAddress: testData.JITO_STAKE_POOL_VALIDATOR_ADDRESS,
+                transferAuthorityAddress: transferAuthority.pub,
+                stakePoolData: {
+                  managerFeeAccount: testData.JITO_STAKE_POOL_DATA_PARSED.managerFeeAccount.toString(),
+                  poolMint: testData.JITO_STAKE_POOL_DATA_PARSED.poolMint.toString(),
+                  validatorListAccount: testData.JITO_STAKE_POOL_DATA_PARSED.validatorList.toString(),
+                },
+              })
+              .amount('1000')
+              .nonce(recentBlockHash);
+            return txBuilder;
           },
-        },
-      ]);
-      should.equal(rawTx, testData.STAKING_MULTI_DEACTIVATE_SIGNED_TX_single);
-      should.equal(Utils.isValidRawTransaction(rawTx), true);
-
-      const tx2 = await factory.from(txUnsigned.toBroadcastFormat()).build();
-      const signed = tx.signature[0];
-      should.equal(tx2.toBroadcastFormat(), txUnsigned.toBroadcastFormat());
-      should.equal(tx2.signablePayload.toString('hex'), txUnsigned.signablePayload.toString('hex'));
-
-      const txBuilder2 = factory.getStakingDeactivateBuilder();
-      txBuilder2.sender(wallet.pub).stakingAddresses([stakeAccount.pub]).nonce(recentBlockHash);
-      await txBuilder2.addSignature({ pub: wallet.pub }, Buffer.from(bs58.decode(signed)));
-      const signedTx = await txBuilder2.build();
-      should.equal(signedTx.type, TransactionType.StakingDeactivate);
-
-      const rawSignedTx = signedTx.toBroadcastFormat();
-      should.equal(rawSignedTx, testData.STAKING_MULTI_DEACTIVATE_SIGNED_TX_single);
-    });
-
-    it('should build and sign a deactivate single', async function () {
-      const txBuilder = factory.getStakingDeactivateBuilder();
-      txBuilder.sender(wallet.pub).stakingAddress(stakeAccount.pub).nonce(recentBlockHash);
-      txBuilder.sign({ key: wallet.prv });
-      const txUnsigned = await txBuilder.build();
-      const tx = await txBuilder.build();
-      const rawTx = tx.toBroadcastFormat();
-      should.equal(rawTx, testData.STAKING_DEACTIVATE_SIGNED_TX_single);
-      should.equal(Utils.isValidRawTransaction(rawTx), true);
-
-      const tx2 = await factory.from(testData.STAKING_DEACTIVATE_UNSIGNED_TX_single).build();
-      const signed = tx.signature[0];
-
-      should.equal(tx2.toBroadcastFormat(), txUnsigned.toBroadcastFormat());
-      should.equal(tx2.signablePayload.toString('hex'), txUnsigned.signablePayload.toString('hex'));
-
-      const txBuilder2 = factory.getStakingDeactivateBuilder();
-      txBuilder2.sender(wallet.pub).stakingAddress(stakeAccount.pub).nonce(recentBlockHash);
-      await txBuilder2.addSignature({ pub: wallet.pub }, Buffer.from(bs58.decode(signed)));
-      const signedTx = await txBuilder2.build();
-      should.equal(signedTx.type, TransactionType.StakingDeactivate);
-
-      const rawSignedTx = signedTx.toBroadcastFormat();
-      should.equal(rawSignedTx, testData.STAKING_DEACTIVATE_SIGNED_TX_single);
-    });
-
-    it('building a staking deactivate signed tx with memo', async () => {
-      const txBuilder = factory.getStakingDeactivateBuilder();
-      txBuilder.sender(wallet.pub).stakingAddress(stakeAccount.pub).nonce(recentBlockHash).memo('Test deactivate');
-      txBuilder.sign({ key: wallet.prv });
-      const tx = await txBuilder.build();
-      const rawTx = tx.toBroadcastFormat();
-      should.equal(Utils.isValidRawTransaction(rawTx), true);
-      const txJson = tx.toJson();
-      txJson.instructionsData.should.deepEqual([
-        {
-          type: 'Memo',
-          params: {
-            memo: 'Test deactivate',
+          signBuilder: (txBuilder: StakingDeactivateBuilder) => {
+            txBuilder.sign({ key: wallet.prv });
+            txBuilder.sign({ key: stakeAccount.prv });
+            txBuilder.sign({ key: transferAuthority.prv });
+            return txBuilder;
           },
-        },
-        {
-          type: 'Deactivate',
-          params: {
-            fromAddress: wallet.pub,
-            stakingAddress: stakeAccount.pub,
-            amount: undefined,
-            unstakingAddress: undefined,
-            stakingType: StakingType.NATIVE,
+          addSignatures: (txBuilder: StakingDeactivateBuilder, signature: string[]) => {
+            txBuilder.addSignature({ pub: wallet.pub }, Buffer.from(bs58.decode(signature[0])));
+            txBuilder.addSignature({ pub: stakeAccount.pub }, Buffer.from(bs58.decode(signature[1])));
+            txBuilder.addSignature({ pub: transferAuthority.pub }, Buffer.from(bs58.decode(signature[2])));
+            return txBuilder;
           },
-        },
-      ]);
-      should.equal(rawTx, testData.STAKING_DEACTIVATE_SIGNED_TX_WITH_MEMO);
-    });
-
-    it('building a staking deactivate unsigned tx', async () => {
-      const txBuilder = factory.getStakingDeactivateBuilder();
-      txBuilder.sender(wallet.pub).stakingAddress(stakeAccount.pub).nonce(recentBlockHash);
-      const tx = await txBuilder.build();
-      const rawTx = tx.toBroadcastFormat();
-      should.equal(Utils.isValidRawTransaction(rawTx), true);
-      const txJson = tx.toJson();
-      txJson.instructionsData.should.deepEqual([
-        {
-          type: 'Deactivate',
-          params: {
-            fromAddress: wallet.pub,
-            stakingAddress: stakeAccount.pub,
-            amount: undefined,
-            unstakingAddress: undefined,
-            stakingType: StakingType.NATIVE,
+          verifyBuiltTransaction: (tx: BaseTransaction) => {
+            const txJson = tx.toJson();
+            txJson.instructionsData.should.deepEqual([
+              {
+                type: 'Deactivate',
+                params: {
+                  fromAddress: wallet.pub,
+                  stakingAddress: JITO_STAKE_POOL_ADDRESS,
+                  unstakingAddress: stakeAccount.pub,
+                  amount: '1000',
+                  stakingType: StakingType.JITO,
+                  extraParams: {
+                    validatorAddress: testData.JITO_STAKE_POOL_VALIDATOR_ADDRESS,
+                    transferAuthorityAddress: transferAuthority.pub,
+                    stakePoolData: {
+                      managerFeeAccount: testData.JITO_STAKE_POOL_DATA_PARSED.managerFeeAccount.toString(),
+                      poolMint: testData.JITO_STAKE_POOL_DATA_PARSED.poolMint.toString(),
+                      validatorListAccount: testData.JITO_STAKE_POOL_DATA_PARSED.validatorList.toString(),
+                    },
+                  },
+                },
+              },
+            ]);
           },
-        },
-      ]);
-      should.equal(rawTx, testData.STAKING_DEACTIVATE_UNSIGNED_TX);
-    });
-
-    it('building a staking deactivate unsigned tx with memo', async () => {
-      const txBuilder = factory.getStakingDeactivateBuilder();
-      txBuilder.sender(wallet.pub).stakingAddress(stakeAccount.pub).nonce(recentBlockHash).memo('Test deactivate');
-      const tx = await txBuilder.build();
-      const rawTx = tx.toBroadcastFormat();
-      should.equal(Utils.isValidRawTransaction(rawTx), true);
-      const txJson = tx.toJson();
-      txJson.instructionsData.should.deepEqual([
-        {
-          type: 'Memo',
-          params: {
-            memo: 'Test deactivate',
-          },
-        },
-        {
-          type: 'Deactivate',
-          params: {
-            fromAddress: wallet.pub,
-            stakingAddress: stakeAccount.pub,
-            amount: undefined,
-            unstakingAddress: undefined,
-            stakingType: StakingType.NATIVE,
-          },
-        },
-      ]);
-      should.equal(rawTx, testData.STAKING_DEACTIVATE_UNSIGNED_TX_WITH_MEMO);
-    });
-
-    it('building an encoded unsigned transaction and signing it', async () => {
-      const txBuilder = factory.from(testData.STAKING_DEACTIVATE_UNSIGNED_TX_WITH_MEMO);
-      txBuilder.sign({ key: wallet.prv });
-      const tx = await txBuilder.build();
-      should.equal(tx.toBroadcastFormat(), testData.STAKING_DEACTIVATE_SIGNED_TX_WITH_MEMO);
-    });
-
-    it('building an encoded signed transaction', async () => {
-      const txBuilder = factory.from(testData.STAKING_DEACTIVATE_SIGNED_TX_WITH_MEMO);
-      txBuilder.sign({ key: wallet.prv });
-      const tx = await txBuilder.build();
-      should.equal(tx.toBroadcastFormat(), testData.STAKING_DEACTIVATE_SIGNED_TX_WITH_MEMO);
-    });
-
-    it('building a partial staking deactivate tx', async () => {
-      const txBuilder = factory
-        .getStakingDeactivateBuilder()
-        .sender(wallet.pub)
-        .stakingAddress(stakeAccount.pub)
-        .unstakingAddress(testData.splitStakeAccount.pub)
-        .amount('100000')
-        .nonce(recentBlockHash);
-      txBuilder.sign({ key: wallet.prv });
-      const tx = await txBuilder.build();
-      const txJson = tx.toJson();
-      const rawTx = tx.toBroadcastFormat();
-      should.equal(Utils.isValidRawTransaction(rawTx), true);
-      txJson.instructionsData.should.deepEqual([
-        {
-          type: 'Deactivate',
-          params: {
-            fromAddress: wallet.pub,
-            stakingAddress: stakeAccount.pub,
-            amount: '100000',
-            unstakingAddress: testData.splitStakeAccount.pub,
-            stakingType: StakingType.NATIVE,
-          },
-        },
-      ]);
-      should.equal(rawTx, testData.STAKING_PARTIAL_DEACTIVATE_SIGNED_TX);
-
-      const tx2 = await factory.from(testData.STAKING_PARTIAL_DEACTIVATE_SIGNED_TX).build();
-      const txJson2 = tx2.toJson();
-      tx2.toBroadcastFormat();
-
-      delete tx['_id'];
-      delete tx2['_id'];
-
-      // should.deepEqual(tx, tx2) // _useTokenAddressTokenName true for tx2
-      should.deepEqual(txJson2, txJson2);
+          knownRawTx: testData.JITO_STAKING_DEACTIVATE_SIGNED_TX,
+        });
+      });
     });
   });
 
