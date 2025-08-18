@@ -109,6 +109,7 @@ import {
   TSOL_FEATURES,
   VET_FEATURES,
   WCT_FEATURES,
+  XDC_FEATURES,
   XLM_FEATURES,
   XLM_TOKEN_FEATURES_WITH_FRANKFURT,
   XRP_FEATURES,
@@ -1134,7 +1135,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.BSC,
     BaseUnit.BSC,
-    BSC_FEATURES
+    [...BSC_FEATURES, CoinFeature.ERC20_BULK_TRANSACTION]
   ),
   account(
     'f0e226b6-6cd8-4384-b0a5-ba8e4148a049',
@@ -1338,7 +1339,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.XDC,
     BaseUnit.ETH,
-    EVM_FEATURES.filter((feature) => feature !== CoinFeature.EIP1559)
+    XDC_FEATURES
   ),
   account(
     'e6ecb22e-0ae8-463a-b2fb-61502fd54240',
@@ -1348,7 +1349,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.XDC,
     BaseUnit.ETH,
-    EVM_FEATURES.filter((feature) => feature !== CoinFeature.EIP1559)
+    [...XDC_FEATURES, CoinFeature.ERC20_BULK_TRANSACTION]
   ),
   account(
     '297edf01-b166-45fb-be6f-da6680635f72',
@@ -1368,7 +1369,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.WEMIX,
     BaseUnit.ETH,
-    EVM_FEATURES
+    [...EVM_FEATURES, CoinFeature.ERC20_BULK_TRANSACTION]
   ),
   account(
     'c315bdbb-4e77-4eeb-a625-92f4defc3e42',
@@ -1746,7 +1747,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.FLR,
     BaseUnit.ETH,
-    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.ERC20_BULK_TRANSACTION]
   ),
   account(
     '321a3168-4669-4ed0-a767-8f35111bb576',
@@ -1766,7 +1767,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.SGB,
     BaseUnit.ETH,
-    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.ERC20_BULK_TRANSACTION]
   ),
   gasTankAccount(
     '75a71e9c-e3a0-4852-8e4b-9613ffed2a4c',

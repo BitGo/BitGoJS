@@ -618,3 +618,5 @@ export const VET_FEATURES = [
   CoinFeature.MPCV2,
 ];
 export const VET_TOKEN_FEATURES = VET_FEATURES.filter((feature) => feature !== CoinFeature.SUPPORTS_TOKENS);
+
+export const XDC_FEATURES = EVM_FEATURES.filter((feature) => feature !== CoinFeature.EIP1559);
