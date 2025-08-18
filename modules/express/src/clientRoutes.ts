@@ -229,9 +229,9 @@ function handleShareWallet(req: express.Request) {
  * @deprecated
  * @param req
  */
-function handleAcceptShare(req: express.Request) {
+function handleAcceptShare(req: ExpressApiRouteRequest<'express.v1.wallet.acceptShare', 'post'>) {
   const params = req.body || {};
-  params.walletShareId = req.params.shareId;
+  params.walletShareId = req.decoded.shareId;
   return req.bitgo.wallets().acceptShare(params);
 }
 
@@ -1598,12 +1598,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   );
 
   app.post('/api/v1/wallet/:id/simpleshare', parseBody, prepareBitGo(config), promiseWrapper(handleShareWallet));
-  app.post(
-    '/api/v1/walletshare/:shareId/acceptShare',
-    parseBody,
-    prepareBitGo(config),
-    promiseWrapper(handleAcceptShare)
-  );
+  router.post('express.v1.wallet.acceptShare', [prepareBitGo(config), typedPromiseWrapper(handleAcceptShare)]);
 
   app.put(
     '/api/v1/pendingapprovals/:id/express',

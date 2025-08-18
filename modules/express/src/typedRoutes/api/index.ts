@@ -7,6 +7,7 @@ import { GetPingExpress } from './common/pingExpress';
 import { PostLogin } from './common/login';
 import { PostDecrypt } from './common/decrypt';
 import { PostVerifyAddress } from './common/verifyAddress';
+import { PostAcceptShare } from './common/acceptShare';
 
 export const ExpressApi = apiSpec({
   'express.ping': {
@@ -23,6 +24,9 @@ export const ExpressApi = apiSpec({
   },
   'express.verifyaddress': {
     post: PostVerifyAddress,
+  },
+  'express.v1.wallet.acceptShare': {
+    post: PostAcceptShare,
   },
 });
 
