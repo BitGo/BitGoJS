@@ -12,6 +12,7 @@
     "noImplicitThis": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
+    "isolatedModules": false,
     "strictBindCallApply": true,
     "strictFunctionTypes": true,
     "strictNullChecks": true,
