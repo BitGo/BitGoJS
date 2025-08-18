@@ -172,6 +172,7 @@ export interface UnstakeOptions {
 export interface EthUnstakeOptions {
   clientId?: string;
   delegationIds?: string[];
+  unstakeAll?: boolean;
 }
 
 export interface SwitchValidatorOptions {
