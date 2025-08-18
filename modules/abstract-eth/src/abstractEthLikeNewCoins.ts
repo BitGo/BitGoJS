@@ -1503,7 +1503,8 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
         gasLimit,
         gasPrice,
         userKey,
-        userSigningKey
+        userSigningKey,
+        params.apiKey
       );
     }
 
@@ -1543,7 +1544,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     // Get sequence ID using contract call
     // we need to wait between making two explorer api calls to avoid getting banned
     await new Promise((resolve) => setTimeout(resolve, 1000));
-    const sequenceId = await this.querySequenceId(walletContractAddress);
+    const sequenceId = await this.querySequenceId(walletContractAddress, params.apiKey);
 
     const network = this.getNetwork();
     const batcherContractAddress = network?.batcherContractAddress as string;
@@ -1602,7 +1603,8 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
         params.intendedChain as string,
         params.bitgoFeeAddress as string,
         params.walletContractAddress,
-        sendData
+        sendData,
+        params.apiKey
       );
       txBuilder.fee({
         ...txFee,
@@ -1611,7 +1613,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     }
 
     // Get the balance of bitgoFeeAddress to ensure funds are available to pay fees
-    await this.ensureSufficientBalance(bitgoFeeAddress, gasPrice, gasLimit);
+    await this.ensureSufficientBalance(bitgoFeeAddress, gasPrice, gasLimit, params.apiKey);
 
     const tx = await txBuilder.build();
 
@@ -1704,12 +1706,14 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     gasLimit,
     gasPrice,
     userKey,
-    userSigningKey
+    userSigningKey,
+    apiKey?: string
   ) {
     // get token balance of wallet
     const txAmount = await this.queryAddressTokenBalance(
       params.tokenContractAddress as string,
-      params.walletContractAddress
+      params.walletContractAddress,
+      apiKey
     );
 
     // build recipients object
