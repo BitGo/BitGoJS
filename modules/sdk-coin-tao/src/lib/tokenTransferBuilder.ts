@@ -1,8 +1,9 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { defineMethod, UnsignedTransaction, DecodedSignedTx, DecodedSigningPayload } from '@substrate/txwrapper-core';
-import BigNumber from 'bignumber.js';
+import { Interface, Schema, Transaction, TransactionBuilder } from '@bitgo/abstract-substrate';
 import { InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
-import { TransactionBuilder, Interface, Schema, Transaction } from '@bitgo/abstract-substrate';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { DecodedSignedTx, DecodedSigningPayload, defineMethod, UnsignedTransaction } from '@substrate/txwrapper-core';
+import BigNumber from 'bignumber.js';
+import { TokenTransferTransaction } from './tokenTransferTransaction';
 
 export class TokenTransferBuilder extends TransactionBuilder {
   protected _destinationColdkey: string;
@@ -13,6 +14,7 @@ export class TokenTransferBuilder extends TransactionBuilder {
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
+    this._transaction = new TokenTransferTransaction(_coinConfig);
   }
 
   /**

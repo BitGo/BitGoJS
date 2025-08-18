@@ -1,10 +1,19 @@
-import { Utils as SubstrateUtils, Interface } from '@bitgo/abstract-substrate';
-import { NetworkType } from '@bitgo/statics';
+import { Interface, Utils as SubstrateUtils } from '@bitgo/abstract-substrate';
+import { BaseCoin as CoinConfig, coins, NetworkType, TaoCoin } from '@bitgo/statics';
+import assert from 'assert';
 import { mainnetMaterial, testnetMaterial } from '../resources';
 
 export class Utils extends SubstrateUtils {
   getMaterial(networkType: NetworkType): Interface.Material {
     return (networkType === NetworkType.MAINNET ? mainnetMaterial : testnetMaterial) as unknown as Interface.Material;
+  }
+
+  getTaoTokenBySubnetId(subnetId: string): Readonly<CoinConfig> {
+    const tokens = coins.filter((coin) => coin instanceof TaoCoin && coin.subnetId === subnetId).map((coin) => coin);
+
+    assert(tokens.length > 0, `No Tao token found for subnetId: ${subnetId}`);
+    assert(tokens.length === 1, `Multiple Tao tokens found for subnetId: ${subnetId}`);
+    return tokens[0];
   }
 }
 
