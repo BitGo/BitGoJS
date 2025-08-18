@@ -2989,6 +2989,12 @@ export enum UnderlyingAsset {
   // VET testnet tokens
   'tvet:vtho' = 'tvet:vtho',
 
+  // Vet mainnet NFTs
+  'vet:sdt' = 'vet:sdt',
+
+  // Vet testnet NFTs
+  'tvet:sdt' = 'tvet:sdt',
+
   // COSMOS tokens
   'hash:ylds' = 'hash:ylds',
 
