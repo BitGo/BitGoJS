@@ -1,13 +1,13 @@
 import should from 'should';
 import * as bs58 from 'bs58';
 
+import { SolStakingTypeEnum } from '@bitgo/public-types';
 import { getBuilderFactory } from '../getBuilderFactory';
 import { KeyPair, TokenTransferBuilder } from '../../../src';
 import { Eddsa, TransactionType } from '@bitgo/sdk-core';
 import * as testData from '../../resources/sol';
 import BigNumber from 'bignumber.js';
 import { Ed25519Bip32HdTree } from '@bitgo/sdk-lib-mpc';
-import { StakingType } from '../../../src/lib/iface';
 
 describe('Sol Transaction Builder', async () => {
   let builders;
@@ -108,7 +108,7 @@ describe('Sol Transaction Builder', async () => {
           stakingAddress: '7dRuGFbU2y2kijP6o1LYNzVyz4yf13MooqoionCzv5Za',
           amount: '300000',
           validator: 'CyjoLt3kjqB57K7ewCBHmnHq3UgEj3ak6A7m6EsBsuhA',
-          stakingType: StakingType.NATIVE,
+          stakingType: SolStakingTypeEnum.NATIVE,
         },
       },
     ]);

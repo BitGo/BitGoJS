@@ -3,10 +3,10 @@ import should from 'should';
 import { getBuilderFactory } from '../getBuilderFactory';
 import { KeyPair, StakingDeactivateBuilder, Utils } from '../../../src';
 import * as testData from '../../resources/sol';
+import { SolStakingTypeEnum } from '@bitgo/public-types';
 import { BaseTransaction, Recipient, TransactionType } from '@bitgo/sdk-core';
 import * as bs58 from 'bs58';
 import { JITO_STAKE_POOL_ADDRESS } from '../../../src/lib/constants';
-import { StakingType } from '../../../src/lib/iface';
 
 describe('Sol Staking Deactivate Builder', () => {
   const factory = getBuilderFactory('tsol');
@@ -113,7 +113,7 @@ describe('Sol Staking Deactivate Builder', () => {
           amount: undefined,
           fromAddress: wallet.pub,
           unstakingAddress: undefined,
-          stakingType: StakingType.NATIVE,
+          stakingType: SolStakingTypeEnum.NATIVE,
         },
       })),
     ]);
@@ -219,7 +219,7 @@ describe('Sol Staking Deactivate Builder', () => {
               stakingAddress: stakeAccount.pub,
               amount: '100000',
               unstakingAddress: testData.splitStakeAccount.pub,
-              stakingType: StakingType.NATIVE,
+              stakingType: SolStakingTypeEnum.NATIVE,
             },
           },
         ]);
@@ -254,7 +254,7 @@ describe('Sol Staking Deactivate Builder', () => {
               .sender(wallet.pub)
               .stakingAddress(stakeAccount.pub)
               .nonce(recentBlockHash)
-              .stakingType(StakingType.MARINADE)
+              .stakingType(SolStakingTypeEnum.MARINADE)
               .memo(marinadeMemo)
               .recipients(marinadeRecipientsObject);
             return txBuilder;
@@ -275,7 +275,7 @@ describe('Sol Staking Deactivate Builder', () => {
                 params: {
                   fromAddress: '',
                   stakingAddress: '',
-                  stakingType: StakingType.MARINADE,
+                  stakingType: SolStakingTypeEnum.MARINADE,
                   recipients: marinadeRecipientsObject,
                 },
               },
@@ -297,7 +297,7 @@ describe('Sol Staking Deactivate Builder', () => {
               .sender(wallet.pub)
               .stakingAddress(JITO_STAKE_POOL_ADDRESS)
               .unstakingAddress(stakeAccount.pub)
-              .stakingType(StakingType.JITO)
+              .stakingType(SolStakingTypeEnum.JITO)
               .extraParams({
                 validatorAddress: testData.JITO_STAKE_POOL_VALIDATOR_ADDRESS,
                 transferAuthorityAddress: transferAuthority.pub,
@@ -333,7 +333,7 @@ describe('Sol Staking Deactivate Builder', () => {
                   stakingAddress: JITO_STAKE_POOL_ADDRESS,
                   unstakingAddress: stakeAccount.pub,
                   amount: '1000',
-                  stakingType: StakingType.JITO,
+                  stakingType: SolStakingTypeEnum.JITO,
                   extraParams: {
                     validatorAddress: testData.JITO_STAKE_POOL_VALIDATOR_ADDRESS,
                     transferAuthorityAddress: transferAuthority.pub,

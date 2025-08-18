@@ -1,3 +1,4 @@
+import { SolStakingTypeEnum } from '@bitgo/public-types';
 import { TransactionExplanation as BaseTransactionExplanation, Recipient, SolInstruction } from '@bitgo/sdk-core';
 import { DecodedCloseAccountInstruction } from '@solana/spl-token';
 import { Blockhash, StakeInstructionType, SystemInstructionType, TransactionSignature } from '@solana/web3.js';
@@ -120,12 +121,6 @@ export interface Approve {
   };
 }
 
-export enum StakingType {
-  NATIVE = 'NATIVE',
-  MARINADE = 'MARINADE',
-  JITO = 'JITO',
-}
-
 export interface JitoStakingActivateParams {
   stakePoolData: DepositSolStakePoolData;
 }
@@ -139,7 +134,7 @@ export interface StakingActivate {
     stakingAddress: string;
     amount: string;
     validator: string;
-    stakingType: StakingType;
+    stakingType: SolStakingTypeEnum;
     extraParams?: StakingActivateExtraParams;
   };
 }
@@ -164,7 +159,7 @@ export interface StakingDeactivate {
     stakingAddress: string;
     amount?: string;
     unstakingAddress?: string;
-    stakingType: StakingType;
+    stakingType: SolStakingTypeEnum;
     extraParams?: StakingDeactivateExtraParams;
     recipients?: Recipient[];
   };

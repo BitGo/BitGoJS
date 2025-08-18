@@ -1,9 +1,10 @@
+import { SolStakingTypeEnum } from '@bitgo/public-types';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import assert from 'assert';
 
 import { BuildTransactionError, Recipient, TransactionType } from '@bitgo/sdk-core';
 import { InstructionBuilderTypes, STAKE_ACCOUNT_RENT_EXEMPT_AMOUNT } from './constants';
-import { StakingDeactivate, StakingDeactivateExtraParams, StakingType, Transfer } from './iface';
+import { StakingDeactivate, StakingDeactivateExtraParams, Transfer } from './iface';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import { isValidStakingAmount, validateAddress } from './utils';
@@ -14,7 +15,7 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
   protected _amount?: string;
   protected _unstakingAddress: string;
   protected _recipients: Recipient[];
-  protected _stakingType: StakingType = StakingType.NATIVE;
+  protected _stakingType: SolStakingTypeEnum = SolStakingTypeEnum.NATIVE;
   protected _extraParams?: StakingDeactivateExtraParams;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -36,7 +37,7 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
         stakingAddresses.push(deactivateInstruction.params.stakingAddress);
 
         // Marinade staking also cares about sender.
-        if (deactivateInstruction.params.stakingType !== StakingType.MARINADE) {
+        if (deactivateInstruction.params.stakingType !== SolStakingTypeEnum.MARINADE) {
           this.sender(deactivateInstruction.params.fromAddress);
         }
 
@@ -61,7 +62,7 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
     if (stakingAddresses.length > 1) {
       this.stakingAddresses(stakingAddresses);
     } else {
-      if (this._stakingType !== StakingType.MARINADE) {
+      if (this._stakingType !== SolStakingTypeEnum.MARINADE) {
         this.stakingAddress(stakingAddresses[0]);
       }
     }
@@ -143,10 +144,10 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
   /**
    * Set staking type.
    *
-   * @param {StakingType} stakingType a staking type.
+   * @param {SolStakingType} stakingType a staking type.
    * @returns {StakingDeactivateBuilder} This staking builder.
    */
-  stakingType(stakingType: StakingType): this {
+  stakingType(stakingType: SolStakingTypeEnum): this {
     this._stakingType = stakingType;
     return this;
   }
@@ -174,13 +175,13 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
           params: {
             fromAddress: this._sender,
             stakingAddress: stakingAddress,
-            stakingType: StakingType.NATIVE,
+            stakingType: SolStakingTypeEnum.NATIVE,
           },
         };
         this._instructionsData.push(stakingDeactivateData);
       }
     } else {
-      if (this._stakingType === StakingType.NATIVE) {
+      if (this._stakingType === SolStakingTypeEnum.NATIVE) {
         // we don't need stakingAddress in marinade staking deactivate txn
         assert(this._stakingAddress, 'Staking address must be set before building the transaction');
       }
@@ -189,7 +190,7 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
         throw new BuildTransactionError('Sender address cannot be the same as the Staking address');
       }
 
-      if (this._stakingType === StakingType.NATIVE && this._amount) {
+      if (this._stakingType === SolStakingTypeEnum.NATIVE && this._amount) {
         assert(
           this._unstakingAddress,
           'When partially unstaking the unstaking address must be set before building the transaction'
@@ -197,7 +198,7 @@ export class StakingDeactivateBuilder extends TransactionBuilder {
       }
 
       this._instructionsData = [];
-      if (this._stakingType === StakingType.NATIVE && this._unstakingAddress) {
+      if (this._stakingType === SolStakingTypeEnum.NATIVE && this._unstakingAddress) {
         assert(
           this._amount,
           'If an unstaking address is given then a partial amount to unstake must also be set before building the transaction'

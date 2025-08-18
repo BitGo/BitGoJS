@@ -1,3 +1,4 @@
+import { SolStakingTypeEnum } from '@bitgo/public-types';
 import { SolCoin } from '@bitgo/statics';
 import {
   createAssociatedTokenAccountInstruction,
@@ -41,7 +42,6 @@ import {
   SetPriorityFee,
   CustomInstruction,
   Approve,
-  StakingType,
 } from './iface';
 import { getSolTokenFromTokenName, isValidBase64, isValidHex } from './utils';
 import { depositSolInstructions, withdrawStakeInstructions } from './jitoStakePoolOperations';
@@ -288,7 +288,7 @@ function stakingInitializeInstruction(data: StakingActivate): TransactionInstruc
   const tx = new Transaction();
 
   switch (stakingType) {
-    case StakingType.JITO: {
+    case SolStakingTypeEnum.JITO: {
       assert(extraParams !== undefined, 'Missing extraParams param');
       const instructions = depositSolInstructions(
         {
@@ -302,7 +302,7 @@ function stakingInitializeInstruction(data: StakingActivate): TransactionInstruc
       break;
     }
 
-    case StakingType.MARINADE: {
+    case SolStakingTypeEnum.MARINADE: {
       const walletInitStaking = StakeProgram.createAccount({
         fromPubkey,
         stakePubkey,
@@ -314,7 +314,7 @@ function stakingInitializeInstruction(data: StakingActivate): TransactionInstruc
       break;
     }
 
-    case StakingType.NATIVE: {
+    case SolStakingTypeEnum.NATIVE: {
       const walletInitStaking = StakeProgram.createAccount({
         fromPubkey,
         stakePubkey,
@@ -355,7 +355,7 @@ function stakingDeactivateInstruction(data: StakingDeactivate): TransactionInstr
   assert(fromAddress, 'Missing fromAddress param');
 
   switch (stakingType) {
-    case StakingType.JITO: {
+    case SolStakingTypeEnum.JITO: {
       assert(stakingAddress, 'Missing stakingAddress param');
       assert(unstakingAddress, 'Missing unstakingAddress param');
       assert(amount, 'Missing amount param');
@@ -378,7 +378,7 @@ function stakingDeactivateInstruction(data: StakingDeactivate): TransactionInstr
       return tx.instructions;
     }
 
-    case StakingType.MARINADE: {
+    case SolStakingTypeEnum.MARINADE: {
       assert(recipients, 'Missing recipients param');
 
       const tx = new Transaction();
@@ -393,7 +393,7 @@ function stakingDeactivateInstruction(data: StakingDeactivate): TransactionInstr
       return tx.instructions;
     }
 
-    case StakingType.NATIVE: {
+    case SolStakingTypeEnum.NATIVE: {
       assert(stakingAddress, 'Missing stakingAddress param');
 
       if (data.params.amount && data.params.unstakingAddress) {

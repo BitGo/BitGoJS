@@ -24,6 +24,7 @@ import {
   ComputeBudgetInstruction,
 } from '@solana/web3.js';
 
+import { SolStakingTypeEnum } from '@bitgo/public-types';
 import { NotSupported, TransactionType } from '@bitgo/sdk-core';
 import { coins, SolCoin } from '@bitgo/statics';
 import assert from 'assert';
@@ -47,7 +48,6 @@ import {
   SetPriorityFee,
   CustomInstruction,
   Approve,
-  StakingType,
 } from './iface';
 import { getInstructionType } from './utils';
 import { DepositSolParams, WithdrawStakeParams } from '@solana/spl-stake-pool';
@@ -359,14 +359,14 @@ function isNativeStakingInstructions(si: StakingInstructions): si is NativeStaki
   return si.create !== undefined && si.initialize !== undefined && si.delegate !== undefined;
 }
 
-function getStakingTypeFromStakingInstructions(si: StakingInstructions): StakingType {
+function getStakingTypeFromStakingInstructions(si: StakingInstructions): SolStakingTypeEnum {
   const isJito = isJitoStakingInstructions(si);
   const isMarinade = isMarinadeStakingInstructions(si);
   const isNative = isNativeStakingInstructions(si);
   assert([isJito, isMarinade, isNative].filter((x) => x).length === 1, 'StakingType is ambiguous');
-  if (isJito) return StakingType.JITO;
-  if (isMarinade) return StakingType.MARINADE;
-  if (isNative) return StakingType.NATIVE;
+  if (isJito) return SolStakingTypeEnum.JITO;
+  if (isMarinade) return SolStakingTypeEnum.MARINADE;
+  if (isNative) return SolStakingTypeEnum.NATIVE;
   assert(false, 'No StakingType found');
 }
 
@@ -439,7 +439,7 @@ function parseStakingActivateInstructions(
   let stakingActivate: StakingActivate | undefined;
 
   switch (stakingType) {
-    case StakingType.JITO: {
+    case SolStakingTypeEnum.JITO: {
       assert(isJitoStakingInstructions(stakingInstructions));
       const { depositSol } = stakingInstructions;
       stakingActivate = {
@@ -462,7 +462,7 @@ function parseStakingActivateInstructions(
       break;
     }
 
-    case StakingType.MARINADE: {
+    case SolStakingTypeEnum.MARINADE: {
       assert(isMarinadeStakingInstructions(stakingInstructions));
       const { create, initialize } = stakingInstructions;
       stakingActivate = {
@@ -478,7 +478,7 @@ function parseStakingActivateInstructions(
       break;
     }
 
-    case StakingType.NATIVE: {
+    case SolStakingTypeEnum.NATIVE: {
       assert(isNativeStakingInstructions(stakingInstructions));
       const { create, initialize, delegate } = stakingInstructions;
       stakingActivate = {
@@ -595,14 +595,14 @@ function isNativeUnstakingInstructions(ui: UnstakingInstructions): ui is NativeU
   return ui.deactivate !== undefined;
 }
 
-function getStakingTypeFromUnstakingInstructions(ui: UnstakingInstructions): StakingType {
+function getStakingTypeFromUnstakingInstructions(ui: UnstakingInstructions): SolStakingTypeEnum {
   const isJito = isJitoUnstakingInstructions(ui);
   const isMarinade = isMarinadeUnstakingInstructions(ui);
   const isNative = isNativeUnstakingInstructions(ui);
   assert([isJito, isMarinade, isNative].filter((x) => x).length === 1, 'StakingType is ambiguous');
-  if (isJito) return StakingType.JITO;
-  if (isMarinade) return StakingType.MARINADE;
-  if (isNative) return StakingType.NATIVE;
+  if (isJito) return SolStakingTypeEnum.JITO;
+  if (isMarinade) return SolStakingTypeEnum.MARINADE;
+  if (isNative) return SolStakingTypeEnum.NATIVE;
   assert(false, 'No StakingType found');
 }
 
@@ -739,7 +739,7 @@ function parseStakingDeactivateInstructions(
     let stakingDeactivate: StakingDeactivate | undefined;
 
     switch (stakingType) {
-      case StakingType.JITO: {
+      case SolStakingTypeEnum.JITO: {
         assert(isJitoUnstakingInstructions(unstakingInstruction));
         const { withdrawStake } = unstakingInstruction;
         stakingDeactivate = {
@@ -764,7 +764,7 @@ function parseStakingDeactivateInstructions(
         break;
       }
 
-      case StakingType.MARINADE: {
+      case SolStakingTypeEnum.MARINADE: {
         assert(isMarinadeUnstakingInstructions(unstakingInstruction));
         const { transfer } = unstakingInstruction;
 
@@ -785,7 +785,7 @@ function parseStakingDeactivateInstructions(
         break;
       }
 
-      case StakingType.NATIVE: {
+      case SolStakingTypeEnum.NATIVE: {
         assert(isNativeUnstakingInstructions(unstakingInstruction));
         const { deactivate, split } = unstakingInstruction;
         stakingDeactivate = {
