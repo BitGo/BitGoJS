@@ -12096,6 +12096,18 @@ export const erc20Coins = [
     undefined,
     Networks.test.hoodi
   ),
+  terc20(
+    '3b18a3d7-4a10-41ce-b763-42925da720f4',
+    'hteth:amstest',
+    'AMS test token',
+    18,
+    '0x6cab19bb0b986c252da86f859feb048ad8994ae3',
+    UnderlyingAsset.AMSTEST,
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
 
   // Ondo Tokenized Assets
   erc20(
