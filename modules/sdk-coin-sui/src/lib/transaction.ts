@@ -24,6 +24,8 @@ export abstract class Transaction<T> extends BaseTransaction {
   protected _suiTransaction: SuiTransaction<T>;
   protected _signature: Signature;
   private _serializedSig: Uint8Array;
+  protected _feePayerSignature: Signature;
+  private _serializedFeePayerSig: Uint8Array;
 
   protected constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -51,12 +53,22 @@ export abstract class Transaction<T> extends BaseTransaction {
     this.serialize();
   }
 
+  addFeePayerSignature(publicKey: BasePublicKey, signature: Buffer): void {
+    this._signatures.push(signature.toString('hex'));
+    this._feePayerSignature = { publicKey, signature };
+    this.serialize();
+  }
+
   get suiSignature(): Signature {
     return this._signature;
   }
 
   get serializedSig(): Uint8Array {
     return this._serializedSig;
+  }
+
+  get serializedFeePayerSig(): Uint8Array {
+    return this._serializedFeePayerSig;
   }
 
   setSerializedSig(publicKey: BasePublicKey, signature: Buffer): void {
@@ -66,6 +78,15 @@ export abstract class Transaction<T> extends BaseTransaction {
     serialized_sig.set(signature, 1);
     serialized_sig.set(pubKey, 1 + signature.length);
     this._serializedSig = serialized_sig;
+  }
+
+  setSerializedFeePayerSig(publicKey: BasePublicKey, signature: Buffer): void {
+    const pubKey = Buffer.from(publicKey.pub, 'hex');
+    const serialized_sig = new Uint8Array(1 + signature.length + pubKey.length);
+    serialized_sig.set(SIGNATURE_SCHEME_BYTES);
+    serialized_sig.set(signature, 1);
+    serialized_sig.set(pubKey, 1 + signature.length);
+    this._serializedFeePayerSig = serialized_sig;
   }
 
   /** @inheritdoc */
@@ -89,6 +110,28 @@ export abstract class Transaction<T> extends BaseTransaction {
 
     this.setSerializedSig({ pub: signer.getKeys().pub }, Buffer.from(signature));
     this.addSignature({ pub: signer.getKeys().pub }, Buffer.from(signature));
+  }
+
+  /**
+   * Sign transaction as the gas owner (fee payer).
+   *
+   * @param {KeyPair} ownerKey - Key for gas owner.
+   */
+  signAsFeePayer(signer: KeyPair): void {
+    if (!this._suiTransaction) {
+      throw new InvalidTransactionError('empty transaction to sign');
+    }
+
+    const intentMessage = this.signablePayload;
+    const signature = signer.signMessageinUint8Array(intentMessage);
+
+    this._feePayerSignature = {
+      publicKey: { pub: signer.getKeys().pub },
+      signature: Buffer.from(signature),
+    };
+
+    // Set serialized signature for fee payer
+    this.setSerializedFeePayerSig({ pub: signer.getKeys().pub }, Buffer.from(signature));
   }
 
   /** @inheritdoc */
