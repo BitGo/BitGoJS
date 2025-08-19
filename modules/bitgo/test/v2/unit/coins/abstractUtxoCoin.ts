@@ -585,17 +585,19 @@ describe('Abstract UTXO Coin:', () => {
     });
   });
 
-  describe('Verify paygo output when explaining psbt transaction', function () {
-    const bitgo: BitGo = TestBitGo.decorate(BitGo, { env: 'mock' });
-    let coin: AbstractUtxoCoin;
+  describe('Explain Transaction', function () {
+    describe('Verify paygo output when explaining psbt transaction', function () {
+      const bitgo: BitGo = TestBitGo.decorate(BitGo, { env: 'mock' });
+      let coin: AbstractUtxoCoin;
 
-    beforeEach(() => {
-      coin = bitgo.coin('tbtc4') as AbstractUtxoCoin;
-    });
+      beforeEach(() => {
+        coin = bitgo.coin('tbtc4') as AbstractUtxoCoin;
+      });
 
-    it('should detect and verify paygo address proof in PSBT', async function () {
-      // Call explainTransaction
-      await coin.explainTransaction(psbtTxHex);
+      it('should detect and verify paygo address proof in PSBT', async function () {
+        // Call explainTransaction
+        await coin.explainTransaction(psbtTxHex);
+      });
     });
   });
 });
