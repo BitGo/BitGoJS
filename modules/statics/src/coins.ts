@@ -1024,7 +1024,12 @@ export const coins = CoinMap.fromCoins([
     8,
     UnderlyingAsset.CRONOS,
     BaseUnit.CRONOS,
-    [...COSMOS_SIDECHAIN_FEATURES_WITH_STAKING, CoinFeature.CUSTODY_BULK_TRANSACTION]
+    [
+      ...COSMOS_SIDECHAIN_FEATURES_WITH_STAKING,
+      CoinFeature.CUSTODY_BULK_TRANSACTION,
+      CoinFeature.SHARED_COSMOS_SDK,
+      CoinFeature.SHARED_COSMOS_WP,
+    ]
   ),
   account(
     '49d56512-bddb-41aa-ac7f-f4a4c494b412',
@@ -1034,7 +1039,12 @@ export const coins = CoinMap.fromCoins([
     8,
     UnderlyingAsset.CRONOS,
     BaseUnit.CRONOS,
-    [...COSMOS_SIDECHAIN_FEATURES_WITH_STAKING, CoinFeature.CUSTODY_BULK_TRANSACTION]
+    [
+      ...COSMOS_SIDECHAIN_FEATURES_WITH_STAKING,
+      CoinFeature.CUSTODY_BULK_TRANSACTION,
+      CoinFeature.SHARED_COSMOS_SDK,
+      CoinFeature.SHARED_COSMOS_WP,
+    ]
   ),
   account(
     '854513b2-cf1a-44b4-879b-e3aae0b5f227',
