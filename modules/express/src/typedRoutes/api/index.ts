@@ -9,7 +9,7 @@ import { PostDecrypt } from './common/decrypt';
 import { PostVerifyAddress } from './common/verifyAddress';
 import { PostAcceptShare } from './common/acceptShare';
 import { PostSimpleCreate } from './v1/simpleCreate';
-
+import { PutPendingApproval } from './v1/pendingApproval';
 export const ExpressApi = apiSpec({
   'express.ping': {
     get: GetPing,
@@ -31,6 +31,9 @@ export const ExpressApi = apiSpec({
   },
   'express.v1.wallet.simplecreate': {
     post: PostSimpleCreate,
+  },
+  'express.v1.pendingapprovals': {
+    put: PutPendingApproval,
   },
 });
 
