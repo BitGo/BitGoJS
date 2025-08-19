@@ -3118,6 +3118,12 @@ export class Wallet implements IWallet {
     if (!teConfig.requiresTokenEnablement) {
       throw new Error(`${this.baseCoin.getFullName()} does not require token enablements`);
     }
+
+    // Validate wallet type if coin requires it
+    if (typeof teConfig.validateWallet === 'function' && this._wallet.type) {
+      teConfig.validateWallet(this._wallet.type);
+    }
+
     if (params.enableTokens.length === 0) {
       throw new Error('No tokens are being specified');
     }
@@ -3183,6 +3189,11 @@ export class Wallet implements IWallet {
     const teConfig = this.baseCoin.getTokenEnablementConfig();
     if (!teConfig.requiresTokenEnablement) {
       throw new Error(`${this.baseCoin.getFullName()} does not require token enablement transactions`);
+    }
+
+    // Validate wallet type if coin requires it
+    if (teConfig.validateWallet && this._wallet.type) {
+      teConfig.validateWallet(this._wallet.type);
     }
 
     if (typeof params.prebuildTx === 'string' || params.prebuildTx?.buildParams?.type !== 'enabletoken') {

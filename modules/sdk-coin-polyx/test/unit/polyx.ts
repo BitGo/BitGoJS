@@ -179,4 +179,24 @@ describe('Polyx:', function () {
       should.deepEqual(txJson.eraPeriod, baseCoin.SWEEP_TXN_DURATION);
     });
   });
+
+  describe('Token Enablement:', function () {
+    it('should have correct token enablement config', function () {
+      const config = baseCoin.getTokenEnablementConfig();
+      should.exist(config);
+      config.requiresTokenEnablement.should.equal(true);
+      config.supportsMultipleTokenEnablements.should.equal(false);
+    });
+
+    it('should validate wallet type for token enablement', function () {
+      const config = baseCoin.getTokenEnablementConfig();
+      (() => config.validateWallet('custodial')).should.not.throw();
+      (() => config.validateWallet('hot')).should.throw(
+        /Token enablement for Polymesh \(polyx\) is only supported for custodial wallets/
+      );
+      (() => config.validateWallet('cold')).should.throw(
+        /Token enablement for Polymesh \(polyx\) is only supported for custodial wallets/
+      );
+    });
+  });
 });

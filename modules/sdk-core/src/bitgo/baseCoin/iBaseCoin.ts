@@ -455,6 +455,7 @@ export interface RecoverTokenTransaction {
 export interface TokenEnablementConfig {
   requiresTokenEnablement: boolean;
   supportsMultipleTokenEnablements: boolean;
+  validateWallet?: (walletType: string) => void;
 }
 
 export interface MessagePrep {
