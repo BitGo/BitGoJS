@@ -589,13 +589,11 @@ export class AptNFTCollection extends NFTCollectionIdDefinedToken {}
  * The Vechain network supports non-fungible tokens
  * Every NFT belongs to an NFT collection(contract).
  */
-export class VetNFTCollection extends AccountCoinToken {
-  public nftCollectionId: string;
+export class VetNFTCollection extends NFTCollectionIdDefinedToken {
   public gasTankToken?: string;
 
   constructor(options: NFTCollectionIdConstructorOptions & { gasTankToken?: string }) {
     super(options);
-    this.nftCollectionId = options.nftCollectionId;
     this.gasTankToken = options.gasTankToken;
   }
 }
