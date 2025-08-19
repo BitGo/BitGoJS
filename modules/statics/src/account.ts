@@ -586,6 +586,21 @@ export class AptCoin extends AccountCoinToken {
 export class AptNFTCollection extends NFTCollectionIdDefinedToken {}
 
 /**
+ * The Vechain network supports non-fungible tokens
+ * Every NFT belongs to an NFT collection(contract).
+ */
+export class VetNFTCollection extends AccountCoinToken {
+  public nftCollectionId: string;
+  public gasTankToken?: string;
+
+  constructor(options: NFTCollectionIdConstructorOptions & { gasTankToken?: string }) {
+    super(options);
+    this.nftCollectionId = options.nftCollectionId;
+    this.gasTankToken = options.gasTankToken;
+  }
+}
+
+/**
  * Fiat currencies, such as USD, EUR, or YEN.
  */
 export class FiatCoin extends BaseCoin {
@@ -3267,6 +3282,7 @@ export function tnep141Token(
  * @param suffix Optional token suffix. Defaults to token name.
  * @param network Optional token network. Defaults to Near main network.
  * @param primaryKeyCurve The elliptic curve for this chain/token
+ * @param gasTankToken representing the token with which gas is paid on the network, defaults to 'VET:VTHO'
  */
 export function vetToken(
   id: string,
@@ -3315,6 +3331,7 @@ export function vetToken(
  * @param prefix Optional token prefix. Defaults to empty string
  * @param suffix Optional token suffix. Defaults to token name.
  * @param network Optional token network. Defaults to the testnet Near network.
+ * @param gasTankToken representing the token with which gas is paid on the network, defaults to 'TVET:VTHO'
  */
 export function tvetToken(
   id: string,
@@ -3341,6 +3358,97 @@ export function tvetToken(
     suffix,
     network,
     KeyCurve.Secp256k1,
+    gasTankToken
+  );
+}
+
+/**
+ * Factory function for Vet NFT collections.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the NFT collection
+ * @param fullName Complete human-readable name of the NFT collection
+ * @param nftCollectionId collection ID of the non-fungible tokens (NFTs)
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param prefix Optional token prefix. Defaults to empty string
+ * @param suffix Optional token suffix. Defaults to token name.
+ * @param network Optional token network. Defaults to VET main network.
+ * @param features Features of this coin. Defaults to the DEFAULT_FEATURES and REQUIRES_RESERVE defined in `AccountCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ * @param gasTankToken representing the token with which gas is paid on the network, defaults to 'VET:VTHO'
+ */
+export function vetNFTCollection(
+  id: string,
+  name: string,
+  fullName: string,
+  nftCollectionId: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.main.vet,
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1,
+  gasTankToken = 'VET:VTHO'
+) {
+  return Object.freeze(
+    new VetNFTCollection({
+      id,
+      name,
+      fullName,
+      network,
+      nftCollectionId,
+      prefix,
+      suffix,
+      features,
+      decimalPlaces: 0,
+      asset,
+      isToken: true,
+      primaryKeyCurve,
+      baseUnit: BaseUnit.VET,
+      gasTankToken,
+    })
+  );
+}
+
+/**
+ * Factory function for testnet Vet NFT collections.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the NFT collection
+ * @param fullName Complete human-readable name of the NFT collection
+ * @param nftCollectionId collection ID of the non-fungible tokens (NFTs)
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param prefix Optional token prefix. Defaults to empty string
+ * @param suffix Optional token suffix. Defaults to token name.
+ * @param network Optional token network. Defaults to VET test network.
+ * @param features Features of this coin. Defaults to the DEFAULT_FEATURES and REQUIRES_RESERVE defined in `AccountCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ * @param gasTankToken representing the token with which gas is paid on the network, defaults to 'TVET:VTHO'
+ */
+export function tvetNFTCollection(
+  id: string,
+  name: string,
+  fullName: string,
+  nftCollectionId: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix = 't',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.test.vet,
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1,
+  gasTankToken = 'TVET:VTHO'
+) {
+  return vetNFTCollection(
+    id,
+    name,
+    fullName,
+    nftCollectionId,
+    asset,
+    features,
+    prefix,
+    suffix,
+    network,
+    primaryKeyCurve,
     gasTankToken
   );
 }

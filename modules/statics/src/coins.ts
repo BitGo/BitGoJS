@@ -47,9 +47,11 @@ import {
   tsuiToken,
   ttaoToken,
   ttronToken,
+  tvetNFTCollection,
   tworldErc20,
   txrpToken,
   tzkethErc20,
+  vetNFTCollection,
   vetToken,
   worldErc20,
   xrpToken,
@@ -4239,6 +4241,22 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['tapt:beta3loanbook'],
     APT_FEATURES
   ),
+  vetNFTCollection(
+    '4f56375d-f682-4045-a3a2-cabb29556c07',
+    'vet:sdt',
+    'StarGate Delegator Token',
+    '0x1856c533ac2d94340aaa8544d35a5c1d4a21dee7',
+    UnderlyingAsset['vet:sdt'],
+    VET_FEATURES
+  ),
+  tvetNFTCollection(
+    'dd710759-1b87-4435-bef5-db377040deaf',
+    'tvet:sdt',
+    'Testnet StarGate Delegator Token',
+    '0x1ec1d168574603ec35b9d229843b7c2b44bcb770',
+    UnderlyingAsset['tvet:sdt'],
+    VET_FEATURES
+  ),
   fiat('3f89b1f5-4ada-49c0-a613-15e484d42426', 'fiatusd', 'US Dollar', Networks.main.fiat, 2, UnderlyingAsset.USD),
   fiat(
     '8691cc4f-a425-4192-b6cb-3b0b6f646cbc',
@@ -4397,6 +4415,22 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
         ...commonArgs.slice(4) // asset, features, prefix, suffix, network, primaryKeyCurve
       );
 
+    case 'vet':
+      const { vetInitFunc, vetObjectId, isNFT } = getVetTokenInitializer(token);
+      if (isNFT) {
+        return vetInitFunc(
+          ...commonArgs.slice(0, 3), // id, name, fullName
+          vetObjectId,
+          ...commonArgs.slice(4) // asset, features, prefix, suffix, network, primaryKeyCurve
+        );
+      } else {
+        return vetInitFunc(
+          ...commonArgs.slice(0, 4), // id, name, fullName, decimalPlaces
+          vetObjectId,
+          ...commonArgs.slice(4) // asset, features, prefix, suffix, network, primaryKeyCurve
+        );
+      }
+
     case 'stx':
       return initializer(
         ...commonArgs.slice(0, 4), // id, name, fullName, decimalPlaces
@@ -4527,6 +4561,22 @@ function getAptTokenInitializer(token: AmsTokenConfig) {
   return {
     initFunc: aptNFTCollection as (...args: unknown[]) => Readonly<BaseCoin>,
     objectId: token.nftCollectionId,
+  };
+}
+
+function getVetTokenInitializer(token: AmsTokenConfig) {
+  if (token.nftCollectionId) {
+    return {
+      vetInitFunc: vetNFTCollection as (...args: unknown[]) => Readonly<BaseCoin>,
+      vetObjectId: token.nftCollectionId,
+      isNFT: true,
+    };
+  }
+
+  return {
+    vetInitFunc: vetToken as (...args: unknown[]) => Readonly<BaseCoin>,
+    vetObjectId: token.contractAddress,
+    isNFT: false,
   };
 }
 
