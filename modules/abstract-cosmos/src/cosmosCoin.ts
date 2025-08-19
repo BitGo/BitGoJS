@@ -81,12 +81,12 @@ export class CosmosCoin<CustomMessage = never> extends BaseCoin {
    * Creates an instance of TransactionBuilderFactory for the coin specific sdk
    */
   getBuilder(): any {
-    throw new Error('Method not implemented.');
+    throw new Error('Builder Method not implemented.');
   }
 
   /** @inheritDoc **/
   getBaseFactor(): string | number {
-    throw new Error('Method not implemented');
+    throw new Error('Base Factor Method not implemented');
   }
 
   /** @inheritDoc **/
@@ -130,7 +130,7 @@ export class CosmosCoin<CustomMessage = never> extends BaseCoin {
   }
 
   isValidAddress(address: string): boolean {
-    throw new Error('Method not implemented.');
+    throw new Error('isValidAddress Method not implemented.');
   }
 
   /**
@@ -464,7 +464,7 @@ export class CosmosCoin<CustomMessage = never> extends BaseCoin {
    * Get the public node url from the Environments constant we have defined
    */
   protected getPublicNodeUrl(): string {
-    throw new Error('Method not implemented.');
+    throw new Error('getPublicNodeUrlMethod not implemented.');
   }
 
   /**
@@ -567,7 +567,7 @@ export class CosmosCoin<CustomMessage = never> extends BaseCoin {
    * @returns {string} The corresponding address.
    */
   getAddressFromPublicKey(pubKey: string): string {
-    throw new Error('Method not implemented');
+    throw new Error('getAddressFromPublicKeyMethod not implemented');
   }
 
   /** @inheritDoc **/
@@ -653,14 +653,14 @@ export class CosmosCoin<CustomMessage = never> extends BaseCoin {
    * Helper method to return the respective coin's base unit
    */
   getDenomination(): string {
-    throw new Error('Method not implemented');
+    throw new Error('getDenomination Method not implemented');
   }
 
   /**
    * Helper method to fetch gas amount details for respective coin
    */
   getGasAmountDetails(): GasAmountDetails {
-    throw new Error('Method not implemented');
+    throw new Error('getGasAmountDetails Method not implemented');
   }
 
   /**
@@ -668,7 +668,7 @@ export class CosmosCoin<CustomMessage = never> extends BaseCoin {
    * @param publicKey
    */
   getKeyPair(publicKey: string): CosmosKeyPair {
-    throw new Error('Method not implemented');
+    throw new Error('getKeyPair Method not implemented');
   }
 
   /** @inheritDoc **/
