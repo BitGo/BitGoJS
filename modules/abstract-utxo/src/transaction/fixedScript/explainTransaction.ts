@@ -1,13 +1,18 @@
 import * as utxolib from '@bitgo/utxo-lib';
+import { bip322 } from '@bitgo/utxo-core';
 import { bip32, BIP32Interface, bitgo } from '@bitgo/utxo-lib';
 import { Triple } from '@bitgo/sdk-core';
 import * as utxocore from '@bitgo/utxo-core';
 
-import { Output, TransactionExplanation, FixedScriptWalletOutput } from '../../abstractUtxoCoin';
+import { Output, TransactionExplanation, Bip322Message, FixedScriptWalletOutput } from '../../abstractUtxoCoin';
 import { toExtendedAddressFormat } from '../recipient';
 import { getPayGoVerificationPubkey } from '../getPayGoVerificationPubkey';
 
-export type ChangeAddressInfo = { address: string; chain: number; index: number };
+export type ChangeAddressInfo = {
+  address: string;
+  chain: number;
+  index: number;
+};
 
 function explainCommon<TNumber extends number | bigint>(
   tx: bitgo.UtxoTransaction<TNumber>,
@@ -150,6 +155,7 @@ export function explainPsbt<TNumber extends number | bigint, Tx extends bitgo.Ut
   { strict = false }: { strict?: boolean } = {}
 ): TransactionExplanation {
   const txOutputs = psbt.txOutputs;
+  const txInputs = psbt.txInputs;
 
   function getChainAndIndexFromBip32Derivations(output: bitgo.PsbtOutput) {
     const derivations = output.bip32Derivation ?? output.tapBip32Derivation ?? undefined;
@@ -223,6 +229,73 @@ export function explainPsbt<TNumber extends number | bigint, Tx extends bitgo.Ut
     return { outputIndex, verificationPubkey };
   }
 
+  /**
+   * Extract the BIP322 messages and addresses from the PSBT inputs and perform
+   * verification on the transaction to ensure that it meets the BIP322 requirements.
+   * @returns An array of objects containing the message and address for each input,
+   *          or undefined if no BIP322 messages are found.
+   */
+  function getBip322MessageInfoAndVerify(): Bip322Message[] | undefined {
+    const bip322Messages: { message: string; address: string }[] = [];
+    for (let i = 0; i < psbt.data.inputs.length; i++) {
+      const message = bip322.getBip322ProofMessageAtIndex(psbt, i);
+      if (message) {
+        const input = psbt.data.inputs[i];
+        if (!input.witnessUtxo) {
+          throw new Error(`Missing witnessUtxo for input index ${i}`);
+        }
+        if (!input.nonWitnessUtxo) {
+          throw new Error(`Missing nonWitnessUtxo for input index ${i}`);
+        }
+        const scriptPubKey = input.witnessUtxo.script;
+
+        // Verify that the toSpend transaction can be recreated in the PSBT and is encoded correctly in the nonWitnessUtxo
+        const toSpend = bip322.buildToSpendTransaction(scriptPubKey, message);
+        const toSpendB64 = toSpend.toBuffer().toString('base64');
+        if (input.nonWitnessUtxo.toString('base64') !== toSpendB64) {
+          throw new Error(`Non-witness UTXO does not match the expected toSpend transaction at input index ${i}`);
+        }
+
+        // Verify that the toSpend transaction ID matches the input's referenced transaction ID
+        if (toSpend.getId() !== utxolib.bitgo.getOutputIdForInput(txInputs[i]).txid) {
+          throw new Error(`ToSpend transaction ID does not match the input at index ${i}`);
+        }
+
+        // Verify the input specifics
+        if (txInputs[i].sequence !== 0) {
+          throw new Error(`Unexpected sequence number at input index ${i}: ${txInputs[i].sequence}. Expected 0.`);
+        }
+        if (txInputs[i].index !== 0) {
+          throw new Error(`Unexpected input index at position ${i}: ${txInputs[i].index}. Expected 0.`);
+        }
+
+        bip322Messages.push({
+          message: message.toString('utf8'),
+          address: utxolib.address.fromOutputScript(scriptPubKey, network),
+        });
+      }
+    }
+
+    if (bip322Messages.length > 0) {
+      // If there is a BIP322 message in any input, all inputs must have one.
+      if (bip322Messages.length !== psbt.data.inputs.length) {
+        throw new Error('Inconsistent BIP322 messages across inputs.');
+      }
+
+      // Verify the transaction specifics for BIP322
+      if (psbt.version !== 0 && psbt.version !== 2) {
+        throw new Error(`Unsupported PSBT version for BIP322: ${psbt.version}. Expected 0 `);
+      }
+      if (psbt.data.outputs.length !== 1 || txOutputs[0].script.toString('hex') !== '6a' || txOutputs[0].value !== 0n) {
+        throw new Error(`Invalid PSBT outputs for BIP322. Expected exactly one OP_RETURN output with zero value.`);
+      }
+
+      return bip322Messages;
+    }
+
+    return undefined;
+  }
+
   const payGoVerificationInfo = getPayGoVerificationInfo();
   if (payGoVerificationInfo) {
     try {
@@ -239,6 +312,7 @@ export function explainPsbt<TNumber extends number | bigint, Tx extends bitgo.Ut
     }
   }
 
+  const messages = getBip322MessageInfoAndVerify();
   const changeInfo = getChangeInfo();
   const tx = psbt.getUnsignedTx() as bitgo.UtxoTransaction<TNumber>;
   const common = explainCommon(tx, { ...params, changeInfo }, network);
@@ -263,6 +337,7 @@ export function explainPsbt<TNumber extends number | bigint, Tx extends bitgo.Ut
     fee: (inputAmount - outputAmount).toString(),
     inputSignatures: inputSignaturesCount,
     signatures: inputSignaturesCount.reduce((prev, curr) => (curr > prev ? curr : prev), 0),
+    messages,
   } as TransactionExplanation;
 }
 

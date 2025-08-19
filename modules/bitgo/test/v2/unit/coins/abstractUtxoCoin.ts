@@ -1,10 +1,11 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import * as should from 'should';
 import * as sinon from 'sinon';
-import { Wallet, UnexpectedAddressError, VerificationOptions } from '@bitgo/sdk-core';
+import { Wallet, UnexpectedAddressError, VerificationOptions, Triple } from '@bitgo/sdk-core';
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src/bitgo';
 import { psbtTxHex } from './payGoPSBTHexFixture/psbtHexProof';
+import { bip322Fixtures } from '../../fixtures/bip322/fixtures';
 import { AbstractUtxoCoin, UtxoWallet, Output, TransactionExplanation, TransactionParams } from '@bitgo/abstract-utxo';
 
 describe('Abstract UTXO Coin:', () => {
@@ -101,7 +102,10 @@ describe('Abstract UTXO Coin:', () => {
 
     it('should accept a custom change address', async function () {
       const changeAddress = '2NAuziD75WnPPHJVwnd4ckgY4SuJaDVVbMD';
-      return runClassifyOutputsTest(changeAddress, verification, false, { changeAddress, recipients: [] });
+      return runClassifyOutputsTest(changeAddress, verification, false, {
+        changeAddress,
+        recipients: [],
+      });
     });
 
     it('should classify outputs with external address in recipients as explicit', async function () {
@@ -211,7 +215,9 @@ describe('Abstract UTXO Coin:', () => {
         ],
       } as any);
 
-      signedSendingWallet._wallet = signedSendingWallet._wallet || { customChangeKeySignatures };
+      signedSendingWallet._wallet = signedSendingWallet._wallet || {
+        customChangeKeySignatures,
+      };
 
       const parsedTransaction = await coin.parseTransaction({
         txParams: { changeAddress, recipients },
@@ -271,7 +277,10 @@ describe('Abstract UTXO Coin:', () => {
             // user public key swapped out
             user: {
               pub: otherKeychain.pub,
-              encryptedPrv: bitgo.encrypt({ input: userKeychain.prv, password: passphrase }),
+              encryptedPrv: bitgo.encrypt({
+                input: userKeychain.prv,
+                password: passphrase,
+              }),
             },
           },
           needsCustomChangeKeySignatureVerification: true,
@@ -585,17 +594,80 @@ describe('Abstract UTXO Coin:', () => {
     });
   });
 
-  describe('Verify paygo output when explaining psbt transaction', function () {
-    const bitgo: BitGo = TestBitGo.decorate(BitGo, { env: 'mock' });
-    let coin: AbstractUtxoCoin;
+  describe('Explain Transaction', function () {
+    describe('Verify paygo output when explaining psbt transaction', function () {
+      const bitgo: BitGo = TestBitGo.decorate(BitGo, { env: 'mock' });
+      let coin: AbstractUtxoCoin;
 
-    beforeEach(() => {
-      coin = bitgo.coin('tbtc4') as AbstractUtxoCoin;
+      beforeEach(() => {
+        coin = bitgo.coin('tbtc4') as AbstractUtxoCoin;
+      });
+
+      it('should detect and verify paygo address proof in PSBT', async function () {
+        // Call explainTransaction
+        await coin.explainTransaction(psbtTxHex);
+      });
     });
 
-    it('should detect and verify paygo address proof in PSBT', async function () {
-      // Call explainTransaction
-      await coin.explainTransaction(psbtTxHex);
+    describe('BIP322 Proof', function () {
+      const bitgo: BitGo = TestBitGo.decorate(BitGo, { env: 'mock' });
+      let coin: AbstractUtxoCoin;
+      const pubs = bip322Fixtures.valid.rootWalletKeys.triple.map((b) => b.neutered().toBase58()) as Triple<string>;
+
+      beforeEach(() => {
+        coin = bitgo.coin('btc') as AbstractUtxoCoin;
+      });
+
+      it('should successfully run with a user nonce', async function () {
+        const psbtHex = bip322Fixtures.valid.userNonce;
+        const result = await coin.explainTransaction({ txHex: psbtHex, pubs });
+        should.equal(result.outputAmount, '0');
+        should.equal(result.changeAmount, '0');
+        should.equal(result.outputs.length, 1);
+        should.equal(result.outputs[0].address, 'scriptPubKey:6a');
+        should.equal(result.fee, '0');
+        should.equal(result.signatures, 0);
+        should.exist(result.messages);
+        result.messages?.forEach((obj) => {
+          should.exist(obj.address);
+          should.exist(obj.message);
+          should.equal(obj.message, bip322Fixtures.valid.message);
+        });
+      });
+
+      it('should successfully run with a user signature', async function () {
+        const psbtHex = bip322Fixtures.valid.userSignature;
+        const result = await coin.explainTransaction({ txHex: psbtHex, pubs });
+        should.equal(result.outputAmount, '0');
+        should.equal(result.changeAmount, '0');
+        should.equal(result.outputs.length, 1);
+        should.equal(result.outputs[0].address, 'scriptPubKey:6a');
+        should.equal(result.fee, '0');
+        should.equal(result.signatures, 1);
+        should.exist(result.messages);
+        result.messages?.forEach((obj) => {
+          should.exist(obj.address);
+          should.exist(obj.message);
+          should.equal(obj.message, bip322Fixtures.valid.message);
+        });
+      });
+
+      it('should successfully run with a hsm signature', async function () {
+        const psbtHex = bip322Fixtures.valid.hsmSignature;
+        const result = await coin.explainTransaction({ txHex: psbtHex, pubs });
+        should.equal(result.outputAmount, '0');
+        should.equal(result.changeAmount, '0');
+        should.equal(result.outputs.length, 1);
+        should.equal(result.outputs[0].address, 'scriptPubKey:6a');
+        should.equal(result.fee, '0');
+        should.equal(result.signatures, 2);
+        should.exist(result.messages);
+        result.messages?.forEach((obj) => {
+          should.exist(obj.address);
+          should.exist(obj.message);
+          should.equal(obj.message, bip322Fixtures.valid.message);
+        });
+      });
     });
   });
 });
