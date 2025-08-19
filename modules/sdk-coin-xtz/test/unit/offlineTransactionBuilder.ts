@@ -14,6 +14,12 @@ import {
   feeAddressDetails,
   packDataToSign,
   paramsDetailsForRecovery,
+  paramsDetailsForUnsignedSweepRecovery,
+  unsignedSweepContractDetails,
+  unsignedSweepContractDetails2,
+  unsignedSweepDataToPack,
+  unsignedSweepFeeAddressDetails,
+  unsignedSweepPackDataToSign,
 } from '../fixtures';
 
 describe('Offline Tezos Transaction builder', function () {
@@ -282,7 +288,7 @@ describe('Offline Tezos Transaction builder', function () {
         );
     });
 
-    it('build a fully signed recovery transaction', async function () {
+    it('should build a fully signed recovery transaction', async function () {
       const basecoin = bitgo.coin('txtz') as Xtz;
       const params = paramsDetailsForRecovery;
 
@@ -308,6 +314,46 @@ describe('Offline Tezos Transaction builder', function () {
       consolidationResult.tx.should.equal(
         'ed8f6833f4db890c1f923d51074aa7b3982f7281f42da80212b819ad68c223776b01c62f80a80ce748a8b5ffcf97004b9807cb59b0b78c0bc1f5851ae852000102e8c94e3e18d8a493a2f0baa81eb0ab7fac5d23fe672f9133048ebc8cccc6f5066c01c62f80a80ce748a8b5ffcf97004b9807cb59b0b798f402c2f5851af02eac020001bda70b50cf607aee95c10322a8bff9fc4df50f8500ffff046d61696e0000005f070707070081eb8b34050502000000440320053d036d0743035d0100000024747a3252746e76454c564157356455547473424e47366362534132655146695974345270031e0743036a009482fd11034f034d031b020000000603060306030661836db09de792bfba0cb422fbb61c77b77fd80e22386cc9d7380fb7da67347f594bd8d809bfaf3d1ff172b329263ac1ad9ef2e3eacf1a199f918e33c2bd4adb'
       );
+    });
+
+    it('should build an unsigned recovery transaction', async function () {
+      const basecoin = bitgo.coin('txtz') as Xtz;
+      const params = paramsDetailsForUnsignedSweepRecovery;
+
+      nock(baseUrl)
+        .get(`/v1/accounts/${params.walletContractAddress}`)
+        .times(1)
+        .reply(200, unsignedSweepContractDetails);
+      nock(baseUrl).get(`/v1/accounts/${params.feeAddress}`).times(1).reply(200, unsignedSweepFeeAddressDetails);
+      nock(baseUrl).get(`/v1/head`).times(1).reply(200, chainheadData);
+      nock(baseUrl)
+        .get(`/v1/contracts/${params.walletContractAddress}`)
+        .times(2)
+        .reply(200, unsignedSweepContractDetails2);
+      nock(common.Environments.test.xtzRpcUrl as string)
+        .post(`/chains/main/blocks/head/helpers/scripts/pack_data`, unsignedSweepDataToPack)
+        .times(1)
+        .reply(200, unsignedSweepPackDataToSign);
+
+      const consolidationResult: any = await (basecoin as Xtz).recover({
+        userKey: params.userKey,
+        backupKey: params.backupKey, // Box B Data
+        recoveryDestination: params.recoveryDestination, // Destination Address
+        walletContractAddress: params.walletContractAddress,
+        isUnsignedSweep: true,
+      });
+
+      should.exist(consolidationResult);
+      consolidationResult.txHex.should.equal(
+        'ed8f6833f4db890c1f923d51074aa7b3982f7281f42da80212b819ad68c223776b01b6da9737d1b4b75053a387d9122c22598ead2d3d8c0bcfda9c1ae852000102f1eb6b09e45afffb3aca4215637edf54d2ea3c4491726128ce5a6071a57dac0e6c01b6da9737d1b4b75053a387d9122c22598ead2d3d98f402d0da9c1af02eac020001ea4d295f3387e9efbf6d791475cb936839eb8d5800ffff046d61696e0000005e07070707008fb5b934050502000000430320053d036d0743035d0100000024747a3252746e76454c564157356455547473424e47366362534132655146695974345270031e0743036a0080897a034f034d031b0200000006030603060306'
+      );
+      consolidationResult.source.should.equal('KT1Vwe7wFy6JmspMv4UmFFJU3JLtbfghBTBM');
+      consolidationResult.dataToSign.should.equal(
+        '0507070a0000001601ea4d295f3387e9efbf6d791475cb936839eb8d58000707008fb5b934050502000000340320053d036d0743035d0a0000001501c0d2caabc69b734fc54453ba5fab901b4fbec41b031e0743036a0080897a034f034d031b'
+      );
+      consolidationResult.txInfo.branch.should.equal('BMWuVUCyg5gruMRzhsQMPkF47WEG8Z2BgSxfBnoLBvzvq977XPi');
+      consolidationResult.sourceCounter.should.equal('54996303');
+      consolidationResult.transferCounters[0].should.equal('54996303');
     });
   });
 });

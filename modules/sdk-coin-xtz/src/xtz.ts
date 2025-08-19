@@ -330,10 +330,10 @@ export class Xtz extends BaseCoin {
    * @param params
    */
   async recover(params: RecoverOptions): Promise<unknown> {
+    const isUnsignedSweep = params.isUnsignedSweep;
     this.validateRecoveryParams(params);
 
     // Clean up whitespace from entered values
-
     const backupKey = params.backupKey.replace(/\s/g, '');
 
     const userAddressDetails = await this.getAddressDetails(params.walletContractAddress, params.apiKey);
@@ -344,26 +344,32 @@ export class Xtz extends BaseCoin {
 
     // Decrypt backup private key and get address
     let backupPrv;
+    let keyPair;
+    let backupSigningKey;
 
-    try {
-      backupPrv = this.bitgo.decrypt({
-        input: backupKey,
-        password: params.walletPassphrase,
-      });
-    } catch (e) {
-      throw new Error(`Error decrypting backup keychain: ${e.message}`);
+    if (isUnsignedSweep) {
+      keyPair = new KeyPair({ pub: backupKey });
+    } else {
+      try {
+        backupPrv = this.bitgo.decrypt({
+          input: backupKey,
+          password: params.walletPassphrase,
+        });
+      } catch (e) {
+        throw new Error(`Error decrypting backup keychain: ${e.message}`);
+      }
+      keyPair = new KeyPair({ prv: backupPrv });
+      backupSigningKey = keyPair.getKeys().prv;
+      if (!backupSigningKey) {
+        throw new Error('no private key');
+      }
     }
-    const keyPair = new KeyPair({ prv: backupPrv });
-    const backupSigningKey = keyPair.getKeys().prv;
-    if (!backupSigningKey) {
-      throw new Error('no private key');
-    }
+
     const backupKeyAddress = keyPair.getAddress();
-
     const backupAddressDetails = await this.getAddressDetails(backupKeyAddress, params.apiKey || '');
 
     if (!backupAddressDetails.counter || !backupAddressDetails.balance) {
-      throw new Error(`Missing required detail(s): counter, balance`);
+      throw new Error(`Missing required detail(s) for ${backupKeyAddress}: counter, balance`);
     }
     const backupKeyNonce = new BigNumber(backupAddressDetails.counter + 1, 10);
 
@@ -444,6 +450,21 @@ export class Xtz extends BaseCoin {
       .storageLimit(TRANSACTION_STORAGE_LIMIT.TRANSFER.toString())
       .gasLimit(gasLimit.toString())
       .dataToSign(packedDataToSign);
+
+    if (isUnsignedSweep) {
+      const tx = await txBuilder.build();
+      const txInfo = tx.toJson();
+
+      return {
+        txHex: tx.toBroadcastFormat(),
+        txInfo,
+        source: params.walletContractAddress,
+        dataToSign: packedDataToSign,
+        feeInfo,
+        sourceCounter: backupKeyNonce.toString(),
+        transferCounters: [backupKeyNonce.toString()],
+      };
+    }
 
     txBuilder.sign({ key: backupSigningKey });
     const signedTx = await txBuilder.build();

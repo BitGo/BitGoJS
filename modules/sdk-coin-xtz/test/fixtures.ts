@@ -394,3 +394,291 @@ export const packDataToSign = {
     '0507070a0000001601bda70b50cf607aee95c10322a8bff9fc4df50f85000707009b9ad933050502000000350320053d036d0743035d0a0000001501c0d2caabc69b734fc54453ba5fab901b4fbec41b031e0743036a009482fd11034f034d031b',
   gas: 'unaccounted',
 };
+
+export const paramsDetailsForUnsignedSweepRecovery = {
+  userKey:
+    'xpub661MyMwAqRbcGoAY7mg48rRvzTYyhNVjgLxHRxiTkga4TaGoaFtCwoDYWm7UMExhvxCBZ5Wf5o25n52iXVvwuUH53NYnDE1j3KJjhn7EdxA',
+  backupKey:
+    'xpub661MyMwAqRbcFjZuqhcenh2wHQgweVaBWvGTzwRXhkozW5XoVdyLkzbeenv8RHeA5YD6xu8DgHLQE4Tatsn126SSNnbP3GHKuZy3j6YiZvp',
+  walletContractAddress: 'KT1Vwe7wFy6JmspMv4UmFFJU3JLtbfghBTBM',
+  recoveryDestination: 'tz2RtnvELVAW5dUTtsBNG6cbSA2eQFiYt4Rp',
+  feeAddress: 'tz2Qz5WCPw6VcBUjV9fRf15YgZxYcD6NsHeC',
+};
+
+export const unsignedSweepContractDetails = {
+  id: 714869,
+  type: 'contract',
+  address: 'KT1Vwe7wFy6JmspMv4UmFFJU3JLtbfghBTBM',
+  kind: 'smart_contract',
+  balance: 1000000,
+  creator: {
+    address: 'tz2JAsQV4rzh7z5FQrnL2ZFYaCwnD2tqWG74',
+  },
+  delegate: {
+    alias: 'A Kishino',
+    address: 'tz1aWXP237BLwNHJcCD4b3DutCevhqq2T1Z9',
+    active: true,
+  },
+  delegationLevel: 14060554,
+  delegationTime: '2025-07-31T05:13:16Z',
+  numContracts: 0,
+  tokensCount: 0,
+  activeTokensCount: 0,
+  tokenBalancesCount: 0,
+  tokenTransfersCount: 0,
+  ticketsCount: 0,
+  activeTicketsCount: 0,
+  ticketBalancesCount: 0,
+  ticketTransfersCount: 0,
+  numDelegations: 0,
+  numOriginations: 1,
+  numTransactions: 1,
+  numReveals: 0,
+  numMigrations: 0,
+  transferTicketCount: 0,
+  increasePaidStorageCount: 0,
+  eventsCount: 0,
+  firstActivity: 14060554,
+  firstActivityTime: '2025-07-31T05:13:16Z',
+  lastActivity: 14464067,
+  lastActivityTime: '2025-08-19T09:04:23Z',
+  typeHash: -486012176,
+  codeHash: -655621303,
+};
+
+export const unsignedSweepContractDetails2 = {
+  id: 714869,
+  type: 'contract',
+  address: 'KT1Vwe7wFy6JmspMv4UmFFJU3JLtbfghBTBM',
+  kind: 'smart_contract',
+  balance: 1000000,
+  creator: {
+    address: 'tz2JAsQV4rzh7z5FQrnL2ZFYaCwnD2tqWG74',
+  },
+  delegate: {
+    alias: 'A Kishino',
+    address: 'tz1aWXP237BLwNHJcCD4b3DutCevhqq2T1Z9',
+    active: true,
+  },
+  delegationLevel: 14060554,
+  delegationTime: '2025-07-31T05:13:16Z',
+  numContracts: 0,
+  tokensCount: 0,
+  activeTokensCount: 0,
+  tokenBalancesCount: 0,
+  tokenTransfersCount: 0,
+  ticketsCount: 0,
+  activeTicketsCount: 0,
+  ticketBalancesCount: 0,
+  ticketTransfersCount: 0,
+  numDelegations: 0,
+  numOriginations: 1,
+  numTransactions: 1,
+  numReveals: 0,
+  numMigrations: 0,
+  transferTicketCount: 0,
+  increasePaidStorageCount: 0,
+  eventsCount: 0,
+  firstActivity: 14060554,
+  firstActivityTime: '2025-07-31T05:13:16Z',
+  lastActivity: 14464067,
+  lastActivityTime: '2025-08-19T09:04:23Z',
+  typeHash: -486012176,
+  codeHash: -655621303,
+};
+
+export const unsignedSweepFeeAddressDetails = {
+  id: 715922,
+  type: 'user',
+  address: 'tz2Qz5WCPw6VcBUjV9fRf15YgZxYcD6NsHeC',
+  revealed: false,
+  balance: 20000000,
+  rollupBonds: 0,
+  smartRollupBonds: 0,
+  stakedBalance: 0,
+  unstakedBalance: 0,
+  counter: 54996302,
+  numContracts: 0,
+  rollupsCount: 0,
+  smartRollupsCount: 0,
+  activeTokensCount: 0,
+  tokenBalancesCount: 0,
+  tokenTransfersCount: 0,
+  activeTicketsCount: 0,
+  ticketBalancesCount: 0,
+  ticketTransfersCount: 0,
+  numActivations: 0,
+  numDelegations: 0,
+  numOriginations: 0,
+  numTransactions: 1,
+  numReveals: 0,
+  numRegisterConstants: 0,
+  numSetDepositsLimits: 0,
+  numMigrations: 0,
+  txRollupOriginationCount: 0,
+  txRollupSubmitBatchCount: 0,
+  txRollupCommitCount: 0,
+  txRollupReturnBondCount: 0,
+  txRollupFinalizeCommitmentCount: 0,
+  txRollupRemoveCommitmentCount: 0,
+  txRollupRejectionCount: 0,
+  txRollupDispatchTicketsCount: 0,
+  transferTicketCount: 0,
+  increasePaidStorageCount: 0,
+  drainDelegateCount: 0,
+  smartRollupAddMessagesCount: 0,
+  smartRollupCementCount: 0,
+  smartRollupExecuteCount: 0,
+  smartRollupOriginateCount: 0,
+  smartRollupPublishCount: 0,
+  smartRollupRecoverBondCount: 0,
+  smartRollupRefuteCount: 0,
+  refutationGamesCount: 0,
+  activeRefutationGamesCount: 0,
+  stakingOpsCount: 0,
+  stakingUpdatesCount: 0,
+  setDelegateParametersOpsCount: 0,
+  dalPublishCommitmentOpsCount: 0,
+  firstActivity: 14321474,
+  firstActivityTime: '2025-08-12T11:12:05Z',
+  lastActivity: 14321474,
+  lastActivityTime: '2025-08-12T11:12:05Z',
+  lostBalance: 0,
+};
+
+export const unsignedSweepDataToPack = {
+  data: {
+    prim: 'Pair',
+    args: [
+      {
+        string: 'KT1Vwe7wFy6JmspMv4UmFFJU3JLtbfghBTBM',
+      },
+      {
+        prim: 'Pair',
+        args: [
+          {
+            int: '54996303',
+          },
+          {
+            prim: 'Left',
+            args: [
+              [
+                {
+                  prim: 'DROP',
+                },
+                {
+                  prim: 'NIL',
+                  args: [
+                    {
+                      prim: 'operation',
+                    },
+                  ],
+                },
+                {
+                  prim: 'PUSH',
+                  args: [
+                    {
+                      prim: 'key_hash',
+                    },
+                    {
+                      string: 'tz2RtnvELVAW5dUTtsBNG6cbSA2eQFiYt4Rp',
+                    },
+                  ],
+                },
+                {
+                  prim: 'IMPLICIT_ACCOUNT',
+                },
+                {
+                  prim: 'PUSH',
+                  args: [
+                    {
+                      prim: 'mutez',
+                    },
+                    {
+                      int: '1000000',
+                    },
+                  ],
+                },
+                {
+                  prim: 'UNIT',
+                },
+                {
+                  prim: 'TRANSFER_TOKENS',
+                },
+                {
+                  prim: 'CONS',
+                },
+              ],
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  type: {
+    prim: 'pair',
+    args: [
+      {
+        prim: 'address',
+      },
+      {
+        prim: 'pair',
+        args: [
+          {
+            prim: 'nat',
+            annots: ['%counter'],
+          },
+          {
+            prim: 'or',
+            args: [
+              {
+                prim: 'lambda',
+                args: [
+                  {
+                    prim: 'unit',
+                  },
+                  {
+                    prim: 'list',
+                    args: [
+                      {
+                        prim: 'operation',
+                      },
+                    ],
+                  },
+                ],
+                annots: ['%operation'],
+              },
+              {
+                prim: 'pair',
+                args: [
+                  {
+                    prim: 'nat',
+                    annots: ['%threshold'],
+                  },
+                  {
+                    prim: 'list',
+                    args: [
+                      {
+                        prim: 'key',
+                      },
+                    ],
+                    annots: ['%keys'],
+                  },
+                ],
+                annots: ['%change_keys'],
+              },
+            ],
+            annots: [':action'],
+          },
+        ],
+        annots: [':payload'],
+      },
+    ],
+  },
+};
+
+export const unsignedSweepPackDataToSign = {
+  packed:
+    '0507070a0000001601ea4d295f3387e9efbf6d791475cb936839eb8d58000707008fb5b934050502000000340320053d036d0743035d0a0000001501c0d2caabc69b734fc54453ba5fab901b4fbec41b031e0743036a0080897a034f034d031b',
+  gas: 'unaccounted',
+};
