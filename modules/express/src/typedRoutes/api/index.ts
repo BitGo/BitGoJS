@@ -7,7 +7,7 @@ import { GetPingExpress } from './common/pingExpress';
 import { PostLogin } from './common/login';
 import { PostDecrypt } from './common/decrypt';
 import { PostVerifyAddress } from './common/verifyAddress';
-import { PostAcceptShare } from './common/acceptShare';
+import { PostAcceptShare } from './v1/acceptShare';
 import { PostSimpleCreate } from './v1/simpleCreate';
 import { PutPendingApproval } from './v1/pendingApproval';
 export const ExpressApi = apiSpec({
