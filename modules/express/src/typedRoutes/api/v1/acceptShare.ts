@@ -10,7 +10,6 @@ export const AcceptShareRequestBody = {
   userPassword: optional(t.string),
   newWalletPassphrase: optional(t.string),
   overrideEncryptedXprv: optional(t.string),
-  walletShareId: t.string,
 };
 
 /**

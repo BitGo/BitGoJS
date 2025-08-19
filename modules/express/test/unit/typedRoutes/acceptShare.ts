@@ -4,7 +4,7 @@ import {
   AcceptShareRequestParams,
   AcceptShareRequestBody,
   PostAcceptShare,
-} from '../../../src/typedRoutes/api/common/acceptShare';
+} from '../../../src/typedRoutes/api/v1/acceptShare';
 
 /**
  * Helper function to test io-ts codec decoding
@@ -54,53 +54,26 @@ describe('AcceptShare codec tests', function () {
         userPassword: 'mySecurePassword',
         newWalletPassphrase: 'myNewPassphrase',
         overrideEncryptedXprv: 'encryptedXprvString',
-        walletShareId: 'walletShare123',
       };
 
       const decoded = assertDecode(t.type(AcceptShareRequestBody), validBody);
       assert.strictEqual(decoded.userPassword, validBody.userPassword);
       assert.strictEqual(decoded.newWalletPassphrase, validBody.newWalletPassphrase);
       assert.strictEqual(decoded.overrideEncryptedXprv, validBody.overrideEncryptedXprv);
-      assert.strictEqual(decoded.walletShareId, validBody.walletShareId);
     });
 
-    it('should validate body with only required fields', function () {
-      const validBody = {
-        walletShareId: 'walletShare123',
-      };
+    it('should validate empty body since all fields are optional', function () {
+      const validBody = {};
 
       const decoded = assertDecode(t.type(AcceptShareRequestBody), validBody);
-      assert.strictEqual(decoded.walletShareId, validBody.walletShareId);
       assert.strictEqual(decoded.userPassword, undefined);
       assert.strictEqual(decoded.newWalletPassphrase, undefined);
       assert.strictEqual(decoded.overrideEncryptedXprv, undefined);
     });
 
-    it('should reject body with missing walletShareId', function () {
-      const invalidBody = {
-        userPassword: 'mySecurePassword',
-        newWalletPassphrase: 'myNewPassphrase',
-      };
-
-      assert.throws(() => {
-        assertDecode(t.type(AcceptShareRequestBody), invalidBody);
-      });
-    });
-
-    it('should reject body with non-string walletShareId', function () {
-      const invalidBody = {
-        walletShareId: 12345, // number instead of string
-      };
-
-      assert.throws(() => {
-        assertDecode(t.type(AcceptShareRequestBody), invalidBody);
-      });
-    });
-
     it('should reject body with non-string optional fields', function () {
       const invalidBody = {
         userPassword: 12345, // number instead of string
-        walletShareId: 'walletShare123',
       };
 
       assert.throws(() => {
@@ -110,16 +83,6 @@ describe('AcceptShare codec tests', function () {
   });
 
   describe('Edge cases', function () {
-    it('should handle empty strings for required fields', function () {
-      const body = {
-        walletShareId: '', // empty string
-      };
-
-      // Empty strings are still valid strings
-      const decoded = assertDecode(t.type(AcceptShareRequestBody), body);
-      assert.strictEqual(decoded.walletShareId, '');
-    });
-
     describe('PostAcceptShare route definition', function () {
       it('should have the correct path', function () {
         assert.strictEqual(PostAcceptShare.path, '/api/v1/walletshare/:shareId/acceptShare');
@@ -146,7 +109,6 @@ describe('AcceptShare codec tests', function () {
         userPassword: '',
         newWalletPassphrase: '',
         overrideEncryptedXprv: '',
-        walletShareId: 'walletShare123',
       };
 
       const decoded = assertDecode(t.type(AcceptShareRequestBody), body);
@@ -157,13 +119,13 @@ describe('AcceptShare codec tests', function () {
 
     it('should handle additional unknown properties', function () {
       const body = {
-        walletShareId: 'walletShare123',
+        userPassword: 'password123',
         unknownProperty: 'some value',
       };
 
       // io-ts with t.exact() strips out additional properties
       const decoded = assertDecode(t.exact(t.type(AcceptShareRequestBody)), body);
-      assert.strictEqual(decoded.walletShareId, 'walletShare123');
+      assert.strictEqual(decoded.userPassword, 'password123');
       // @ts-expect-error - unknownProperty doesn't exist on the type
       assert.strictEqual(decoded.unknownProperty, undefined);
     });
