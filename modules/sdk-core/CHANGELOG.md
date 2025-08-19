@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [36.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.2.0...@bitgo/sdk-core@36.3.0) (2025-08-19)
+
+### Features
+
+- **sdk-coin-xtz:** add xtz recovery ([8875500](https://github.com/BitGo/BitGoJS/commit/8875500a979e61c51a092c1e9c48810b906e1c16))
+- **sdk-core:** add unstakeAll to EthUnstakeOptions interface ([39178bd](https://github.com/BitGo/BitGoJS/commit/39178bd6fe7291b08c6c780dcbb3cdf69ce7b038))
+
 # [36.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.1.0...@bitgo/sdk-core@36.2.0) (2025-08-14)
 
 ### Bug Fixes

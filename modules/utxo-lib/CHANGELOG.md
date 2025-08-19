@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [11.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.8.0...@bitgo/utxo-lib@11.9.0) (2025-08-19)
+
+### Features
+
+- add support for zcash NU6_1 branch ([302896e](https://github.com/BitGo/BitGoJS/commit/302896e19c7cba3c3883175e0b785301656d1152))
+
 # [11.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.7.0...@bitgo/utxo-lib@11.8.0) (2025-08-14)
 
 ### Features

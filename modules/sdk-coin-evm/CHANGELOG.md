@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.4.4...@bitgo/sdk-coin-evm@1.5.0) (2025-08-19)
+
+### Features
+
+- automate ERC20 automation ([4287e7a](https://github.com/BitGo/BitGoJS/commit/4287e7a9739e0f908011a8ab6419d6468a1188a2))
+
 ## [1.4.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.4.3...@bitgo/sdk-coin-evm@1.4.4) (2025-08-14)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-evm

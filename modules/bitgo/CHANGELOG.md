@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [49.3.0](https://github.com/BitGo/BitGoJS/compare/bitgo@49.2.0...bitgo@49.3.0) (2025-08-19)
+
+### Features
+
+- add support for zcash NU6_1 branch ([302896e](https://github.com/BitGo/BitGoJS/commit/302896e19c7cba3c3883175e0b785301656d1152))
+- automate ERC20 automation ([4287e7a](https://github.com/BitGo/BitGoJS/commit/4287e7a9739e0f908011a8ab6419d6468a1188a2))
+
 # [49.2.0](https://github.com/BitGo/BitGoJS/compare/bitgo@49.1.0...bitgo@49.2.0) (2025-08-14)
 
 ### Bug Fixes

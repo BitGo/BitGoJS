@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [24.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.9.3...@bitgo/abstract-eth@24.10.0) (2025-08-19)
+
+### Features
+
+- **abstract-eth:** add recover consolidation for eth ([4851e67](https://github.com/BitGo/BitGoJS/commit/4851e672cb59bfaff6d31181bceaddd26ad6e208))
+
 ## [24.9.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.9.2...@bitgo/abstract-eth@24.9.3) (2025-08-14)
 
 **Note:** Version bump only for package @bitgo/abstract-eth

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.10.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tao@1.10.0...@bitgo/sdk-coin-tao@1.10.1) (2025-08-19)
+
+### Bug Fixes
+
+- **sdk-coin-tao:** fix toJson & explainTransaction for token transfers ([34a8175](https://github.com/BitGo/BitGoJS/commit/34a81751fd982a7ebd7449f8036d6d19b501780a))
+
 # [1.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tao@1.9.0...@bitgo/sdk-coin-tao@1.10.0) (2025-08-14)
 
 ### Features
