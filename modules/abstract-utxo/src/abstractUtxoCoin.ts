@@ -143,6 +143,11 @@ export interface FixedScriptWalletOutput<TAmount = string | number> extends Base
 
 export type Output<TAmount = string | number> = BaseOutput<TAmount> | FixedScriptWalletOutput<TAmount>;
 
+export type Bip322Message = {
+  address: string;
+  message: string;
+};
+
 export function isWalletOutput(output: Output): output is FixedScriptWalletOutput {
   return (
     (output as FixedScriptWalletOutput).chain !== undefined && (output as FixedScriptWalletOutput).index !== undefined
@@ -164,6 +169,12 @@ export interface TransactionExplanation extends BaseTransactionExplanation<strin
    * Highest input signature count for the transaction
    */
   signatures: number;
+
+  /**
+   * BIP322 messages extracted from the transaction inputs.
+   * These messages are used for verifying the transaction against the BIP322 standard.
+   */
+  messages?: Bip322Message[];
 }
 
 export interface TransactionInfo<TNumber extends number | bigint = number> {
