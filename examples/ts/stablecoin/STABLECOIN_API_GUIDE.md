@@ -21,7 +21,7 @@ This documentation provides comprehensive API-only workflows for creating stable
 
 ## Setup BitGo Express
 
-BitGo Express is required for GoAccount transfers. You can install it via npm or Docker (recommended).
+[BitGo Express](https://developers.bitgo.com/guides/get-started/express/install) is required for GoAccount transfers. You can install it via npm or Docker (recommended).
 
 ### Option 1: Install via Docker (Recommended)
 
@@ -258,12 +258,11 @@ Expected Response:
 {
   "id": "order_id_12345",
   "type": "mint",
-  "status": "completed", 
+  "status": "fulfilled",
   "fromAssetId": "usd_asset_id",
   "toAssetId": "stablecoin_asset_id",
   "fromAmount": "10000",
-  "toAmount": "100000000",
-  "completedAt": "2025-08-19T10:05:00.000Z"
+  "toAmount": "100000000"
 }
 ```
 
