@@ -1,0 +1,1 @@
+This is a harmless test file created by asset-metadata-service to validate dev-portal-updater.
