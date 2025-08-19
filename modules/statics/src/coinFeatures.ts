@@ -610,18 +610,11 @@ export const VET_FEATURES = [
   ...ACCOUNT_COIN_DEFAULT_FEATURES,
   CoinFeature.TSS,
   CoinFeature.TSS_COLD,
+  CoinFeature.BULK_TRANSACTION,
   CoinFeature.SUPPORTS_TOKENS,
   CoinFeature.ENTERPRISE_PAYS_FEES,
   CoinFeature.TSS_ENTERPRISE_PAYS_FEES,
   CoinFeature.FEES_PAID_WITH_TOKEN,
   CoinFeature.MPCV2,
 ];
-export const VET_TOKEN_FEATURES = [
-  ...ACCOUNT_COIN_DEFAULT_FEATURES,
-  CoinFeature.TSS,
-  CoinFeature.TSS_COLD,
-  CoinFeature.ENTERPRISE_PAYS_FEES,
-  CoinFeature.TSS_ENTERPRISE_PAYS_FEES,
-  CoinFeature.MPCV2,
-  CoinFeature.FEES_PAID_WITH_TOKEN,
-];
+export const VET_TOKEN_FEATURES = VET_FEATURES.filter((feature) => feature !== CoinFeature.SUPPORTS_TOKENS);
