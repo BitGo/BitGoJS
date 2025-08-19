@@ -1,15 +1,33 @@
 import should from 'should';
 
-import { TransactionType } from '@bitgo/sdk-core';
+import { common, TransactionType } from '@bitgo/sdk-core';
 import { coins } from '@bitgo/statics';
-import { XtzLib } from '../../src';
+import { Txtz, Xtz, XtzLib } from '../../src';
+import nock from 'nock';
+import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { BitGoAPI } from '@bitgo/sdk-api';
+import {
+  chainheadData,
+  contractAddressDetails,
+  contractAddressDetails2,
+  dataToPack,
+  feeAddressDetails,
+  packDataToSign,
+  paramsDetailsForRecovery,
+} from '../fixtures';
 
 describe('Offline Tezos Transaction builder', function () {
+  let bitgo: TestBitGoAPI;
+  before(() => {
+    bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
+    bitgo.safeRegister('txtz', Txtz.createInstance);
+  });
   const defaultKeyPair = new XtzLib.KeyPair({
     prv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
   });
 
   describe('should build and sign', () => {
+    const baseUrl = common.Environments.test.xtzExplorerBaseUrl as string;
     it('an init transaction', async () => {
       const txBuilder: any = new XtzLib.TransactionBuilder(coins.get('xtz'));
       txBuilder.type(TransactionType.WalletInitialization);
@@ -262,6 +280,34 @@ describe('Offline Tezos Transaction builder', function () {
         .should.equal(
           'ba7a04fab1a3f77eda96b551947dd343e165d1b91b6f9f806648b63e57c88cc86c01aaca87bdbcdc4e6117b667e29f9b504362c831bb9c2500e8528102000196369c90625575ba44594b23794832a9337f7a2d00ffff046d61696e000001400707070700010505020000005e0320053d036d0743036e01000000244b543148557274366b66765979444559434a3247536a7654505a364b6d5266784c4255380555036c0200000015072f02000000090200000004034f032702000000000743036a00a401034f034d031b02000000d0050901000000607369674e6a4436344e75566e554b376f56423263325350333256596a376454796b626e527879446f5339424776676167766e4d6354346859636361626246476f397464565154344d3436657a594a644c32707a594453776b665236797270705905090100000060736967596656594a5561694b4b5a58347a737a575a3752463239326e56325036584d346e4b656b325967575138424c533172323275346139534376474d63623839426a546674546e327667557a435451475332634a4e766259747547516a475003066c01aaca87bdbcdc4e6117b667e29f9b504362c831bb9c2501e8528102000196369c90625575ba44594b23794832a9337f7a2d00ffff046d61696e00000124070707070002050502000000420320053d036d0743035d0100000024747a3156526a5270564b6e76313641567072464831746b446e3454446656714138393341031e0743036a00a401034f034d031b02000000d0050901000000607369674e6a4436344e75566e554b376f56423263325350333256596a376454796b626e527879446f5339424776676167766e4d6354346859636361626246476f397464565154344d3436657a594a644c32707a594453776b665236797270705905090100000060736967596656594a5561694b4b5a58347a737a575a3752463239326e56325036584d346e4b656b325967575138424c533172323275346139534376474d63623839426a546674546e327667557a435451475332634a4e766259747547516a47500306766a0b1f6cb035bf537887ba9004c489bb458d8c8e72b5033b6cee8ad52f84ec27b719f5d0b98cdf2d0744b255301263688692645eafc9cdf1b48b5053c51dca'
         );
+    });
+
+    it('build a fully signed recovery transaction', async function () {
+      const basecoin = bitgo.coin('txtz') as Xtz;
+      const params = paramsDetailsForRecovery;
+
+      nock(baseUrl).get(`/v1/accounts/${params.walletContractAddress}`).times(1).reply(200, contractAddressDetails);
+      nock(baseUrl).get(`/v1/accounts/${params.feeAddress}`).times(1).reply(200, feeAddressDetails);
+      nock(baseUrl).get(`/v1/head`).times(1).reply(200, chainheadData);
+      nock(baseUrl).get(`/v1/contracts/${params.walletContractAddress}`).times(2).reply(200, contractAddressDetails2);
+      nock(common.Environments.test.xtzRpcUrl as string)
+        .post(`/chains/main/blocks/head/helpers/scripts/pack_data`, dataToPack)
+        .times(1)
+        .reply(200, packDataToSign);
+
+      const consolidationResult: any = await (basecoin as Xtz).recover({
+        userKey: params.userKey,
+        backupKey: params.backupKey, // Box B Data
+        recoveryDestination: params.recoveryDestination, // Destination Address
+        walletContractAddress: params.walletContractAddress,
+        walletPassphrase: params.walletPassphrase,
+      });
+
+      should.exist(consolidationResult);
+      consolidationResult.id.should.equal('opNrMMvnmQ6cE9JqRD8g14B6XfwGEUs7L9Bgn9qEkTtLeFEX9Tk');
+      consolidationResult.tx.should.equal(
+        'ed8f6833f4db890c1f923d51074aa7b3982f7281f42da80212b819ad68c223776b01c62f80a80ce748a8b5ffcf97004b9807cb59b0b78c0bc1f5851ae852000102e8c94e3e18d8a493a2f0baa81eb0ab7fac5d23fe672f9133048ebc8cccc6f5066c01c62f80a80ce748a8b5ffcf97004b9807cb59b0b798f402c2f5851af02eac020001bda70b50cf607aee95c10322a8bff9fc4df50f8500ffff046d61696e0000005f070707070081eb8b34050502000000440320053d036d0743035d0100000024747a3252746e76454c564157356455547473424e47366362534132655146695974345270031e0743036a009482fd11034f034d031b020000000603060306030661836db09de792bfba0cb422fbb61c77b77fd80e22386cc9d7380fb7da67347f594bd8d809bfaf3d1ff172b329263ac1ad9ef2e3eacf1a199f918e33c2bd4adb'
+      );
     });
   });
 });

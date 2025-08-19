@@ -135,3 +135,39 @@ export interface Key extends BaseKey, IndexedData {}
 export interface IndexedSignature extends IndexedData {
   signature: string;
 }
+
+export type RecoverOptions = {
+  userKey: string;
+  backupKey: string;
+  walletPassphrase?: string;
+  walletContractAddress: string; // use this as walletBaseAddress for TSS
+  recoveryDestination: string;
+  krsProvider?: string;
+  gasPrice?: number;
+  gasLimit?: number;
+  bitgoFeeAddress?: string;
+  bitgoDestinationAddress?: string;
+  tokenContractAddress?: string;
+  intendedChain?: string;
+  derivationSeed?: string;
+  apiKey?: string;
+  isUnsignedSweep?: boolean;
+};
+
+export interface OfflineVaultTxInfo {
+  nextContractSequenceId?: string;
+  contractSequenceId?: string;
+  tx?: string;
+  txHex?: string;
+  userKey?: string;
+  backupKey?: string;
+  coin: string;
+  gasPrice: number;
+  gasLimit: number;
+  recipients: Recipient[];
+  walletContractAddress: string;
+  amount: string;
+  backupKeyNonce: number;
+  isEvmBasedCrossChainRecovery?: boolean;
+  walletVersion?: number;
+}
