@@ -2,11 +2,14 @@
  * @prettier
  */
 
-import should = require('should');
+import should from 'should';
 import { randomBytes } from 'crypto';
 import * as sinon from 'sinon';
+import * as _ from 'lodash';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
+import { TransactionType } from '@bitgo/sdk-core';
+
 import {
   rawTx,
   enterpriseAccounts as accounts,
@@ -20,10 +23,7 @@ import {
   ovcResponse,
   ovcResponse2,
 } from '../resources';
-import * as _ from 'lodash';
-import { Ada, KeyPair, Tada } from '../../src';
-import { Transaction } from '../../src/lib';
-import { TransactionType } from '../../../sdk-core/src/account-lib/baseCoin/enum';
+import { Ada, KeyPair, Tada, Transaction } from '../../src';
 
 describe('ADA', function () {
   const coinName = 'ada';
