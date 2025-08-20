@@ -35,6 +35,7 @@ const DISALLOWED_FEATURES = [
   CoinFeature.CHILD_PAYS_FOR_PARENT,
   CoinFeature.PAYGO,
   CoinFeature.SUPPORTS_TOKENS,
+  CoinFeature.SHARED_EVM_SIGNING,
 ];
 
 const REQUIRED_FEATURES = [CoinFeature.ACCOUNT_MODEL, CoinFeature.REQUIRES_BIG_NUMBER];
