@@ -1,3 +1,4 @@
+import { SolStakingTypeEnum } from '@bitgo/public-types';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
@@ -5,14 +6,14 @@ import { TransactionBuilder } from './transactionBuilder';
 import { InstructionBuilderTypes } from './constants';
 
 import assert from 'assert';
-import { StakingActivate, StakingActivateExtraParams, StakingType } from './iface';
+import { StakingActivate, StakingActivateExtraParams } from './iface';
 import { isValidStakingAmount, validateAddress } from './utils';
 
 export class StakingActivateBuilder extends TransactionBuilder {
   protected _amount: string;
   protected _stakingAddress: string;
   protected _validator: string;
-  protected _stakingType: StakingType = StakingType.NATIVE;
+  protected _stakingType: SolStakingTypeEnum = SolStakingTypeEnum.NATIVE;
   protected _extraParams?: StakingActivateExtraParams;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -84,10 +85,10 @@ export class StakingActivateBuilder extends TransactionBuilder {
   /**
    * Set staking type.
    *
-   * @param {StakingType} stakingType a staking type.
+   * @param {SolStakingType} stakingType a staking type.
    * @returns {StakingActivateBuilder} This staking builder.
    */
-  stakingType(stakingType: StakingType): this {
+  stakingType(stakingType: SolStakingTypeEnum): this {
     this._stakingType = stakingType;
     return this;
   }

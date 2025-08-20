@@ -4,7 +4,7 @@ import * as testData from '../../resources/sol';
 import { getBuilderFactory } from '../getBuilderFactory';
 import { KeyPair, Utils, StakingActivateBuilder } from '../../../src';
 import { JITO_STAKE_POOL_ADDRESS, JITOSOL_MINT_ADDRESS } from '../../../src/lib/constants';
-import { StakingType } from '../../../src/lib/iface';
+import { SolStakingTypeEnum } from '@bitgo/public-types';
 import { BaseTransaction } from '@bitgo/sdk-core';
 
 describe('Sol Staking Activate Builder', () => {
@@ -79,7 +79,7 @@ describe('Sol Staking Activate Builder', () => {
   const verifyBuiltTransactionNativeOrMarinade = (
     tx: BaseTransaction,
     doMemo: boolean,
-    stakingType: StakingType.NATIVE | StakingType.MARINADE
+    stakingType: SolStakingTypeEnum.NATIVE | SolStakingTypeEnum.MARINADE
   ) => {
     const txJson = tx.toJson();
     txJson.instructionsData.should.deepEqual([
@@ -125,7 +125,7 @@ describe('Sol Staking Activate Builder', () => {
   };
 
   const makeUnsignedBuilderMarinade = (doMemo: boolean) => {
-    return makeUnsignedBuilderNative(doMemo).stakingType(StakingType.MARINADE);
+    return makeUnsignedBuilderNative(doMemo).stakingType(SolStakingTypeEnum.MARINADE);
   };
 
   const makeUnsignedBuilderJito = (doMemo: boolean) => {
@@ -135,7 +135,7 @@ describe('Sol Staking Activate Builder', () => {
       .sender(wallet.pub)
       .stakingAddress(JITO_STAKE_POOL_ADDRESS)
       .validator(JITO_STAKE_POOL_ADDRESS)
-      .stakingType(StakingType.JITO)
+      .stakingType(SolStakingTypeEnum.JITO)
       .extraParams({
         stakePoolData: {
           managerFeeAccount: testData.JITO_STAKE_POOL_DATA_PARSED.managerFeeAccount.toString(),
@@ -185,7 +185,7 @@ describe('Sol Staking Activate Builder', () => {
           stakingAddress: JITO_STAKE_POOL_ADDRESS,
           amount: amount,
           validator: JITO_STAKE_POOL_ADDRESS,
-          stakingType: StakingType.JITO,
+          stakingType: SolStakingTypeEnum.JITO,
           extraParams: {
             stakePoolData: {
               managerFeeAccount: testData.JITO_STAKE_POOL_DATA_PARSED.managerFeeAccount.toString(),
@@ -217,7 +217,7 @@ describe('Sol Staking Activate Builder', () => {
           signBuilder: doSign ? signBuilderNativeOrMarinade : undefined,
           knownRawTx,
           makeUnsignedBuilder: () => makeUnsignedBuilderNative(doMemo),
-          verifyBuiltTransaction: (x) => verifyBuiltTransactionNativeOrMarinade(x, doMemo, StakingType.NATIVE),
+          verifyBuiltTransaction: (x) => verifyBuiltTransactionNativeOrMarinade(x, doMemo, SolStakingTypeEnum.NATIVE),
         });
       };
 
@@ -240,7 +240,7 @@ describe('Sol Staking Activate Builder', () => {
           signBuilder: doSign ? signBuilderNativeOrMarinade : undefined,
           knownRawTx,
           makeUnsignedBuilder: () => makeUnsignedBuilderMarinade(doMemo),
-          verifyBuiltTransaction: (x) => verifyBuiltTransactionNativeOrMarinade(x, doMemo, StakingType.MARINADE),
+          verifyBuiltTransaction: (x) => verifyBuiltTransactionNativeOrMarinade(x, doMemo, SolStakingTypeEnum.MARINADE),
         });
       };
 
