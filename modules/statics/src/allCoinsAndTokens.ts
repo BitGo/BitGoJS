@@ -371,7 +371,7 @@ export const allCoinsAndTokens = [
     ],
     KeyCurve.Secp256k1,
     '',
-    'tBaseETH'
+    'TBaseETH'
   ),
   account(
     'd51fe324-1e01-4630-9b04-c724fe495a1c',
@@ -734,7 +734,7 @@ export const allCoinsAndTokens = [
     ],
     KeyCurve.Secp256k1,
     '',
-    't0G'
+    'T0G'
   ),
   account(
     'f180825c-a79c-4e4d-8c91-ebeffbd19819',
@@ -828,7 +828,7 @@ export const allCoinsAndTokens = [
     ],
     KeyCurve.Secp256k1,
     '',
-    'tLineaETH'
+    'TLineaETH'
   ),
 
   account(
