@@ -203,7 +203,7 @@ function handleCreateTransaction(req: express.Request) {
  * @deprecated
  * @param req
  */
-function handleSignTransaction(req: express.Request) {
+function handleSignTransaction(req: ExpressApiRouteRequest<'express.v1.wallet.signTransaction', 'post'>) {
   return req.bitgo
     .wallets()
     .get({ id: req.params.id })
@@ -1588,12 +1588,8 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
     prepareBitGo(config),
     promiseWrapper(handleCreateTransaction)
   );
-  app.post(
-    '/api/v1/wallet/:id/signtransaction',
-    parseBody,
-    prepareBitGo(config),
-    promiseWrapper(handleSignTransaction)
-  );
+
+  router.post('express.v1.wallet.signTransaction', [prepareBitGo(config), typedPromiseWrapper(handleSignTransaction)]);
 
   app.post('/api/v1/wallet/:id/simpleshare', parseBody, prepareBitGo(config), promiseWrapper(handleShareWallet));
   router.post('express.v1.wallet.acceptShare', [prepareBitGo(config), typedPromiseWrapper(handleAcceptShare)]);
