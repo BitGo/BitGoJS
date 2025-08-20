@@ -3,10 +3,10 @@
 // https://github.com/bitcoin/bips/blob/master/bip-0341.mediawiki
 
 import { TapTree as PsbtTapTree, TapLeaf as PsbtTapLeaf } from 'bip174/src/lib/interfaces';
-import assert = require('assert');
-import FastPriorityQueue = require('fastpriorityqueue');
+import * as assert from 'assert';
 import { script as bscript, crypto as bcrypto, payments as bpayments } from 'bitcoinjs-lib';
 import { ecc as eccLib } from './noble_ecc';
+const FastPriorityQueue = require('fastpriorityqueue');
 const varuint = require('varuint-bitcoin');
 
 /**
@@ -239,7 +239,7 @@ export function getHuffmanTaptree(scripts: Buffer[], weights: Array<number | und
 
   // Create a queue/heap of the provided scripts prioritized according to their
   // corresponding weights.
-  const queue = new FastPriorityQueue<WeightedTapScript>((a, b): boolean => {
+  const queue = new FastPriorityQueue((a: WeightedTapScript, b: WeightedTapScript): boolean => {
     return a.weight < b.weight;
   });
   scripts.forEach((script, index) => {

@@ -5,6 +5,8 @@ import { Triple } from '../types';
 
 export class WalletUnspentSigner<T extends WalletKeys> {
   public readonly walletKeys: T;
+  public signer: BIP32Interface;
+  public cosigner: BIP32Interface;
 
   static from(
     walletKeys: RootWalletKeys,
@@ -17,11 +19,9 @@ export class WalletUnspentSigner<T extends WalletKeys> {
   readonly signerIndex;
   readonly cosignerIndex;
 
-  constructor(
-    walletKeys: WalletKeys | Triple<BIP32Interface>,
-    public signer: BIP32Interface,
-    public cosigner: BIP32Interface
-  ) {
+  constructor(walletKeys: WalletKeys | Triple<BIP32Interface>, signer: BIP32Interface, cosigner: BIP32Interface) {
+    this.signer = signer;
+    this.cosigner = cosigner;
     if (Array.isArray(walletKeys)) {
       walletKeys = new RootWalletKeys(walletKeys);
     }

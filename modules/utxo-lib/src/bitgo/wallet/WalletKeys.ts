@@ -26,10 +26,13 @@ export function eqPublicKey(a: BIP32Interface, b: BIP32Interface): boolean {
 export class WalletKeys {
   public readonly publicKeys: Triple<Buffer>;
 
+  public readonly triple: Triple<BIP32Interface>;
+
   /**
    * @param triple - bip32 key triple
    */
-  constructor(public readonly triple: Triple<BIP32Interface>) {
+  constructor(triple: Triple<BIP32Interface>) {
+    this.triple = triple;
     triple.forEach((a, i) => {
       triple.forEach((b, j) => {
         if (eqPublicKey(a, b) && i !== j) {
@@ -60,12 +63,17 @@ export class WalletKeys {
  * for derivation.
  */
 export class DerivedWalletKeys extends WalletKeys {
+  public parent: RootWalletKeys;
+  public paths: Triple<string>;
+
   /**
    * @param parent - wallet keys to derive from
    * @param paths - paths to derive with
    */
-  constructor(public parent: RootWalletKeys, public paths: Triple<string>) {
+  constructor(parent: RootWalletKeys, paths: Triple<string>) {
     super(parent.triple.map((k, i) => k.derivePath(paths[i])) as Triple<BIP32Interface>);
+    this.parent = parent;
+    this.paths = paths;
   }
 }
 

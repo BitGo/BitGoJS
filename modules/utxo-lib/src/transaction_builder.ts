@@ -160,10 +160,14 @@ export class TransactionBuilder<TNumber extends number | bigint = number> {
   private __INPUTS: Array<TxbInput<TNumber>>;
   private __TX: Transaction<TNumber>;
   private __USE_LOW_R: boolean;
+  public network: Network;
+  public maximumFeeRate: number;
 
   // WARNING: maximumFeeRate is __NOT__ to be relied on,
   //          it's just another potential safety mechanism (safety in-depth)
-  constructor(public network: Network = networks.bitcoin, public maximumFeeRate: number = 2500) {
+  constructor(network: Network = networks.bitcoin, maximumFeeRate = 2500) {
+    this.network = network;
+    this.maximumFeeRate = maximumFeeRate;
     this.__PREV_TX_SET = {};
     this.__INPUTS = [];
     this.__TX = new Transaction<TNumber>();

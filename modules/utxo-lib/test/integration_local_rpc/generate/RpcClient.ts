@@ -16,8 +16,11 @@ function sleep(millis: number): Promise<void> {
 }
 
 export class RpcError extends Error {
-  constructor(public rpcError: { code: number; message: string }) {
+  public rpcError: { code: number; message: string };
+
+  constructor(rpcError: { code: number; message: string }) {
     super(`RPC error: ${rpcError.message} (code=${rpcError.code})`);
+    this.rpcError = rpcError;
   }
 
   static isRpcErrorWithCode(e: Error, code: number): boolean {
@@ -31,8 +34,15 @@ const BITCOIN_CORE_22_99 = '/Satoshi:22.99.0/';
 
 export class RpcClient {
   id = 0;
+  protected network: Network;
+  protected url: string;
+  protected networkInfo?: NetworkInfo;
 
-  constructor(protected network: Network, protected url: string, protected networkInfo?: NetworkInfo) {}
+  constructor(network: Network, url: string, networkInfo?: NetworkInfo) {
+    this.network = network;
+    this.url = url;
+    this.networkInfo = networkInfo;
+  }
 
   /**
    * Poor man's Bluebird.map(arr, f, { concurrency })
@@ -198,8 +208,11 @@ export class RpcClient {
 }
 
 export class RpcClientWithWallet extends RpcClient {
-  constructor(network: Network, url: string, networkInfo: NetworkInfo, private walletName?: string) {
+  private walletName?: string;
+
+  constructor(network: Network, url: string, networkInfo: NetworkInfo, walletName?: string) {
     super(network, url, networkInfo);
+    this.walletName = walletName;
   }
 
   protected getUrl(): string {
