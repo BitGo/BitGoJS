@@ -35,8 +35,7 @@ import { ofcErc20Coins, tOfcErc20Coins } from './coins/ofcErc20Coins';
 import { ofcCoins } from './coins/ofcCoins';
 import { allCoinsAndTokens } from './allCoinsAndTokens';
 
-const allOfcCoinsAndToken = [...ofcErc20Coins, ...tOfcErc20Coins, ...ofcCoins];
-export const coins = CoinMap.fromCoins([...allCoinsAndTokens, ...allOfcCoinsAndToken]);
+export const coins = CoinMap.fromCoins([...allCoinsAndTokens, ...ofcErc20Coins, ...tOfcErc20Coins, ...ofcCoins]);
 
 export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefined {
   const initializerMap: Record<string, unknown> = {
