@@ -121,7 +121,6 @@ import {
   SoneiumToken,
   StellarToken,
   Stx,
-  Stt,
   Sui,
   SuiToken,
   Susd,
@@ -286,7 +285,6 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('sol', Sol.createInstance);
   coinFactory.register('soneium', Soneium.createInstance);
   coinFactory.register('stx', Stx.createInstance);
-  coinFactory.register('stt', Stt.createInstance);
   coinFactory.register('sui', Sui.createInstance);
   coinFactory.register('susd', Susd.createInstance);
   coinFactory.register('tao', Tao.createInstance);
@@ -687,8 +685,6 @@ export function getCoinConstructor(coinName: string): CoinConstructor | undefine
       return Soneium.createInstance;
     case 'stx':
       return Stx.createInstance;
-    case 'stt':
-      return Stt.createInstance;
     case 'sui':
       return Sui.createInstance;
     case 'susd':

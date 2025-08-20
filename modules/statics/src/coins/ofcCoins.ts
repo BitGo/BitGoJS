@@ -178,7 +178,6 @@ export const ofcCoins = [
     UnderlyingAsset.WORLD,
     CoinKind.CRYPTO
   ),
-  ofc('0ea1175d-63a2-4dd3-b963-24020a02eab3', 'ofcstt', 'Somnia', 18, UnderlyingAsset.STT, CoinKind.CRYPTO),
   tofc('06eee147-1299-435d-843f-9eea958e2b2f', 'ofctstt', 'Testnet somnia', 18, UnderlyingAsset.STT, CoinKind.CRYPTO),
   ofc(
     'cdc62abc-4748-48f4-8926-6ed42f6c86c9',
