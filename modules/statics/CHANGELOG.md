@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [57.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@57.2.0...@bitgo/statics@57.3.0) (2025-08-19)
+
+### Bug Fixes
+
+- make VetNFTCollection extend NFTCollectionIdDefinedToken ([1762816](https://github.com/BitGo/BitGoJS/commit/1762816d2daa96c7469104dd8a0f8cee889fbcf8))
+
+### Features
+
+- **abstract-eth:** add recover consolidation for eth ([4851e67](https://github.com/BitGo/BitGoJS/commit/4851e672cb59bfaff6d31181bceaddd26ad6e208))
+- automate ERC20 automation ([4287e7a](https://github.com/BitGo/BitGoJS/commit/4287e7a9739e0f908011a8ab6419d6468a1188a2))
+- new token files and imports for bot tokens ([ca21730](https://github.com/BitGo/BitGoJS/commit/ca21730fd1baf40ff06e05083238bdb8c6618d2b))
+- **statics:** add new testnet erc20 token on hoodi ([dc5270b](https://github.com/BitGo/BitGoJS/commit/dc5270bb56d862b9ebb4aa082eabdb8de77d6118))
+
 # [57.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@57.1.0...@bitgo/statics@57.2.0) (2025-08-14)
 
 ### Bug Fixes

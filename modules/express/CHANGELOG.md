@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@14.2.0...@bitgo/express@14.3.0) (2025-08-19)
+
+### Bug Fixes
+
+- **express:** fix testcases and move to correct file ([bfac86e](https://github.com/BitGo/BitGoJS/commit/bfac86e0efa19e90574c80e21f5b1070fc93c65f))
+
+### Features
+
+- **express:** migrate v1 wallet create to typed routes ([8968cb8](https://github.com/BitGo/BitGoJS/commit/8968cb89b167213ec2e7ae095519a3b62783f758))
+- **express:** typed-router for pendingApprovals ([31504f0](https://github.com/BitGo/BitGoJS/commit/31504f037a236bbdfa87f3e15219fa75ff6f56ad))
+
 # [14.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@14.1.7...@bitgo/express@14.2.0) (2025-08-14)
 
 ### Bug Fixes

@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.0.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@5.0.0...@bitgo/sdk-coin-sol@5.0.1) (2025-08-19)
+
+### Bug Fixes
+
+- **sdk-coin-sol:** check array bounds for transaction type matching ([3e113c0](https://github.com/BitGo/BitGoJS/commit/3e113c00cb5bbe2d99d30c113871bd752f0ae749))
+- **sdk-coin-sol:** set correct jito activate instruction indexes ([b4ac52b](https://github.com/BitGo/BitGoJS/commit/b4ac52b69b8e7d62b493677b36786a5b90411060))
+
 # [5.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@4.16.0...@bitgo/sdk-coin-sol@5.0.0) (2025-08-14)
 
 ### Code Refactoring

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.17.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.16.0...@bitgo/sdk-coin-sui@5.17.0) (2025-08-19)
+
+### Features
+
+- **sdk-coin-sui:** adding fee payer sigining support ([96797ea](https://github.com/BitGo/BitGoJS/commit/96797eaebc477a7c4d9ba60a7fd0ecb662aef725))
+
 # [5.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.15.12...@bitgo/sdk-coin-sui@5.16.0) (2025-08-14)
 
 ### Features

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xtz@2.4.13...@bitgo/sdk-coin-xtz@2.5.0) (2025-08-19)
+
+### Features
+
+- **sdk-coin-xtz:** add xtz recovery ([8875500](https://github.com/BitGo/BitGoJS/commit/8875500a979e61c51a092c1e9c48810b906e1c16))
+
 ## [2.4.13](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xtz@2.4.12...@bitgo/sdk-coin-xtz@2.4.13) (2025-08-14)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-xtz

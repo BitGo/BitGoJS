@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [25.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@25.0.2...@bitgo/sdk-coin-eth@25.1.0) (2025-08-19)
+
+### Features
+
+- **abstract-eth:** add recover consolidation for eth ([4851e67](https://github.com/BitGo/BitGoJS/commit/4851e672cb59bfaff6d31181bceaddd26ad6e208))
+
 ## [25.0.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@25.0.1...@bitgo/sdk-coin-eth@25.0.2) (2025-08-14)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-eth
