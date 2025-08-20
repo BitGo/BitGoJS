@@ -182,7 +182,7 @@ describe('PendingApproval codec tests', function () {
 
   describe('PutPendingApproval route definition', function () {
     it('should have the correct path', function () {
-      assert.strictEqual(PutPendingApproval.path, '/api/v1/pendingapprovals/:id/express');
+      assert.strictEqual(PutPendingApproval.path, '/api/v1/pendingapprovals/{id}/express');
     });
 
     it('should have the correct HTTP method', function () {
