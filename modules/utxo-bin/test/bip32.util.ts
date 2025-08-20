@@ -1,7 +1,7 @@
 import * as crypto from 'crypto';
 
 import * as utxolib from '@bitgo/utxo-lib';
-import { BIP32Interface } from 'bip32';
+import type { BIP32Interface } from 'bip32';
 
 export type Triple<T> = [T, T, T];
 
