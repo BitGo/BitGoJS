@@ -27,7 +27,7 @@
     "lint": "eslint --quiet .",
     "prepare": "npm run build",
     "test": "npm run unit-test",
-    "unit-test": "mocha --recursive \"dist/test/**/*.js\""
+    "unit-test": "mocha --recursive test/**/*.ts"
   },
   "author": "BitGo SDK Team <sdkteam@bitgo.com>",
   "license": "MIT",
