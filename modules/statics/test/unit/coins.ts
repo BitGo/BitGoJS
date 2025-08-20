@@ -565,10 +565,26 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
   tton: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   tbsc: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.BULK_TRANSACTION] },
   xtz: {
-    features: [CoinFeature.CUSTODY_BITGO_TRUST],
+    features: [
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_NEW_YORK,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+      CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      CoinFeature.CUSTODY_BITGO_KOREA,
+      CoinFeature.CUSTODY_BITGO_MENA_FZE,
+    ],
   },
   txtz: {
-    features: [CoinFeature.CUSTODY_BITGO_TRUST],
+    features: [
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_NEW_YORK,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+      CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      CoinFeature.CUSTODY_BITGO_KOREA,
+      CoinFeature.CUSTODY_BITGO_MENA_FZE,
+    ],
   },
 };
 
@@ -847,13 +863,11 @@ coins.forEach((coin, coinName) => {
       it(`should return true for CUSTODY_BITGO_INDIA ${coin.family} coin feature`, () => {
         coin.features.includes(CoinFeature.CUSTODY_BITGO_INDIA).should.eql(true);
       });
-    } else if (coin.family === CoinFamily.XTZ || coin.features.includes(CoinFeature.GENERIC_TOKEN)) {
+    } else if (coin.features.includes(CoinFeature.GENERIC_TOKEN)) {
       it(`should return false for all custody ${coin.family} coin feature`, () => {
         coin.features.includes(CoinFeature.CUSTODY).should.eql(false);
-        if (coin.family !== CoinFamily.XTZ) {
-          coin.features.includes(CoinFeature.CUSTODY_BITGO_TRUST).should.eql(false);
-          coin.features.includes(CoinFeature.CUSTODY_BITGO_INDIA).should.eql(false);
-        }
+        coin.features.includes(CoinFeature.CUSTODY_BITGO_TRUST).should.eql(false);
+        coin.features.includes(CoinFeature.CUSTODY_BITGO_INDIA).should.eql(false);
         coin.features.includes(CoinFeature.CUSTODY_BITGO_MENA_FZE).should.eql(false);
         coin.features.includes(CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE).should.eql(false);
         coin.features.includes(CoinFeature.CUSTODY_BITGO_NEW_YORK).should.eql(false);
