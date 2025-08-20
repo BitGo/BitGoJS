@@ -44,7 +44,6 @@
     "gen-docs": "typedoc"
   },
   "dependencies": {
-    "@bitgo/abstract-cosmos": "^11.12.2",
     "@bitgo/abstract-lightning": "^6.2.9",
     "@bitgo/abstract-utxo": "^9.22.1",
     "@bitgo/account-lib": "^27.9.3",
