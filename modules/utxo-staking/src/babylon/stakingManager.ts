@@ -39,6 +39,9 @@ class BitGoStakingManager extends vendor.BabylonBtcStakingManager {
     stakerBtcAddress: string,
     sigType: BTCSigType
   ): Promise<ProofOfPossessionBTC> {
+    if (!bech32Address.startsWith('bbn1')) {
+      throw new Error('invalid bech32 babylon address, must start with bbn1');
+    }
     const signedBabylonAddress = await this.btcProvider.signMessage(
       bech32Address,
       sigType === BTCSigType.BIP322 ? 'bip322-simple' : 'ecdsa'
