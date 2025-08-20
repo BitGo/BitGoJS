@@ -38,7 +38,6 @@
     ]
   },
   "dependencies": {
-    "@bitgo/sdk-api": "^1.66.2",
     "@bitgo/sdk-core": "^36.3.0",
     "@bitgo/sdk-lib-mpc": "^10.6.0",
     "@bitgo/secp256k1": "^1.4.0",
@@ -55,7 +54,6 @@
     "superagent": "^9.0.1"
   },
   "devDependencies": {
-    "@bitgo/sdk-test": "^9.0.3",
     "@types/lodash": "^4.14.183"
   },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c"

@@ -1,8 +1,8 @@
 import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
 import { CosmosTokenConfig, coins, tokens } from '@bitgo/statics';
-import { CosmosCoin } from './cosmosCoin';
+import { Hash } from './hash';
 
-export class CosmosToken extends CosmosCoin {
+export class HashToken extends Hash {
   public readonly tokenConfig: CosmosTokenConfig;
 
   constructor(bitgo: BitGoBase, tokenConfig: CosmosTokenConfig) {
@@ -12,7 +12,7 @@ export class CosmosToken extends CosmosCoin {
   }
 
   static createTokenConstructor(config: CosmosTokenConfig): CoinConstructor {
-    return (bitgo: BitGoBase) => new CosmosToken(bitgo, config);
+    return (bitgo: BitGoBase) => new HashToken(bitgo, config);
   }
 
   static createTokenConstructors(
@@ -20,8 +20,10 @@ export class CosmosToken extends CosmosCoin {
   ): NamedCoinConstructor[] {
     const tokensCtors: NamedCoinConstructor[] = [];
     for (const token of tokenConfigs) {
-      const tokenConstructor = CosmosToken.createTokenConstructor(token);
-      tokensCtors.push({ name: token.type, coinConstructor: tokenConstructor });
+      if (token.coin === 'hash' || token.coin === 'thash') {
+        const tokenConstructor = HashToken.createTokenConstructor(token);
+        tokensCtors.push({ name: token.type, coinConstructor: tokenConstructor });
+      }
     }
     return tokensCtors;
   }
@@ -55,8 +57,7 @@ export class CosmosToken extends CosmosCoin {
   }
 
   getFullName(): string {
-    const displayCoin = this.getFamily();
-    return `${displayCoin.charAt(0).toUpperCase() + displayCoin.slice(1)} Token`;
+    return 'Hash Token';
   }
 
   getBaseFactor(): number {
