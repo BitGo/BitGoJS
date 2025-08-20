@@ -85,7 +85,7 @@ describe('AcceptShare codec tests', function () {
   describe('Edge cases', function () {
     describe('PostAcceptShare route definition', function () {
       it('should have the correct path', function () {
-        assert.strictEqual(PostAcceptShare.path, '/api/v1/walletshare/:shareId/acceptShare');
+        assert.strictEqual(PostAcceptShare.path, '/api/v1/walletshare/{shareId}/acceptShare');
       });
 
       it('should have the correct HTTP method', function () {
