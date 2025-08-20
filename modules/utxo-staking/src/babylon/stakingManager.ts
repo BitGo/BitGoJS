@@ -39,6 +39,9 @@ class BitGoStakingManager extends vendor.BabylonBtcStakingManager {
     stakerBtcAddress: string,
     sigType: BTCSigType
   ): Promise<ProofOfPossessionBTC> {
+    if (!bech32Address.startsWith('bbn1')) {
+      throw new Error('invalid bech32 babylon address, must start with bbn1');
+    }
     const signedBabylonAddress = await this.btcProvider.signMessage(
       bech32Address,
       sigType === BTCSigType.BIP322 ? 'bip322-simple' : 'ecdsa'
@@ -65,11 +68,16 @@ class BitGoStakingManager extends vendor.BabylonBtcStakingManager {
 
   /**
    * Creates a proof of possession for the staker based on ECDSA signature.
+   * @param channel - The channel for which the proof of possession is created.
    * @param bech32Address - The staker's bech32 address on the babylon network.
    * @param stakerBtcAddress
    * @returns The proof of possession.
    */
-  async createProofOfPossession(bech32Address: string, stakerBtcAddress: string): Promise<ProofOfPossessionBTC> {
+  override async createProofOfPossession(
+    channel: 'delegation:create' | 'delegation:register',
+    bech32Address: string,
+    stakerBtcAddress: string
+  ): Promise<ProofOfPossessionBTC> {
     // force the ECDSA signature type
     return this.createProofOfPossessionWithSigType(bech32Address, stakerBtcAddress, BTCSigType.ECDSA);
   }
