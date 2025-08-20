@@ -30,7 +30,7 @@ const getAllCoinsAndTokensMap = (): CoinMap => {
   return allCoinsAndTokensMap;
 };
 
-const DISALLOWED_FEATURES = [
+const DISALLOWED_FEATURES: CoinFeature[] = [
   CoinFeature.UNSPENT_MODEL,
   CoinFeature.CHILD_PAYS_FOR_PARENT,
   CoinFeature.PAYGO,
@@ -49,7 +49,7 @@ export function getFilteredFeatures(suffix: string): CoinFeature[] {
   if (coinsMap.has(suffix.toLowerCase())) {
     const filteredFeatures = coinsMap
       .get(suffix.toLowerCase())
-      .features.filter((feature) => !DISALLOWED_FEATURES.includes(feature));
+      .features.filter((feature) => !DISALLOWED_FEATURES.includes(feature)) as CoinFeature[];
     return [...filteredFeatures, ...REQUIRED_FEATURES];
   }
   return [];

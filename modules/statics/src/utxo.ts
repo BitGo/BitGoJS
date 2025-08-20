@@ -211,7 +211,7 @@ export const utxoCoins: Readonly<BaseCoin>[] = [
     Networks.test.bitcoin,
     UnderlyingAsset.BTC,
     BaseUnit.BTC,
-    BTC_FEATURES.filter((f) => f !== CoinFeature.STAKING)
+    BTC_FEATURES.filter((f) => f !== CoinFeature.STAKING) as CoinFeature[]
   ),
   utxo(
     'a0d53dc9-2dcc-4ebb-a2d4-51983fe20da6',
@@ -256,7 +256,7 @@ export const utxoCoins: Readonly<BaseCoin>[] = [
     Networks.test.bitcoinGold,
     UnderlyingAsset.BTG,
     BaseUnit.BTC,
-    BTG_FEATURES.filter((f) => f !== CoinFeature.MULTISIG_COLD)
+    BTG_FEATURES.filter((f) => f !== CoinFeature.MULTISIG_COLD) as CoinFeature[]
   ),
   utxo(
     '9c8097f1-5d2c-4a62-a94c-96c271c0e5e0',
@@ -285,12 +285,14 @@ export const utxoCoins: Readonly<BaseCoin>[] = [
     BaseUnit.DASH,
     DASH_FEATURES.filter(
       (feature) =>
-        ![
-          CoinFeature.CUSTODY_BITGO_SINGAPORE,
-          CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
-          CoinFeature.CUSTODY_BITGO_MENA_FZE,
-        ].includes(feature)
-    )
+        !(
+          [
+            CoinFeature.CUSTODY_BITGO_SINGAPORE,
+            CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+            CoinFeature.CUSTODY_BITGO_MENA_FZE,
+          ] as CoinFeature[]
+        ).includes(feature)
+    ) as CoinFeature[]
   ),
   utxo(
     '5950d78f-e8dd-457a-ab5d-310e6b476bb1',

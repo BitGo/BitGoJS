@@ -133,12 +133,14 @@ export const polygonTokens = [
     UnderlyingAsset['polygon:cel'],
     POLYGON_TOKEN_FEATURES.filter(
       (feature) =>
-        ![
-          CoinFeature.CUSTODY_BITGO_SINGAPORE,
-          CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
-          CoinFeature.CUSTODY_BITGO_MENA_FZE,
-        ].includes(feature)
-    )
+        !(
+          [
+            CoinFeature.CUSTODY_BITGO_SINGAPORE,
+            CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+            CoinFeature.CUSTODY_BITGO_MENA_FZE,
+          ] as CoinFeature[]
+        ).includes(feature)
+    ) as CoinFeature[]
   ),
   polygonErc20(
     '95b52504-fb5c-44fa-8546-91384daa55f6',
@@ -887,12 +889,14 @@ export const polygonTokens = [
     UnderlyingAsset['polygon:wrx'],
     POLYGON_TOKEN_FEATURES.filter(
       (feature) =>
-        ![
-          CoinFeature.CUSTODY_BITGO_SINGAPORE,
-          CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
-          CoinFeature.CUSTODY_BITGO_MENA_FZE,
-        ].includes(feature)
-    )
+        !(
+          [
+            CoinFeature.CUSTODY_BITGO_SINGAPORE,
+            CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+            CoinFeature.CUSTODY_BITGO_MENA_FZE,
+          ] as CoinFeature[]
+        ).includes(feature)
+    ) as CoinFeature[]
   ),
   polygonErc20(
     '8c61bb88-f103-4d42-bf5e-26826d4b7712',

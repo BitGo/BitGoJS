@@ -215,12 +215,14 @@ export const allCoinsAndTokens = [
     BaseUnit.CSPR,
     CSPR_FEATURES.filter(
       (feature) =>
-        ![
-          CoinFeature.CUSTODY_BITGO_SINGAPORE,
-          CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
-          CoinFeature.CUSTODY_BITGO_MENA_FZE,
-        ].includes(feature)
-    )
+        !(
+          [
+            CoinFeature.CUSTODY_BITGO_SINGAPORE,
+            CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+            CoinFeature.CUSTODY_BITGO_MENA_FZE,
+          ] as CoinFeature[]
+        ).includes(feature)
+    ) as CoinFeature[]
   ),
   account(
     'bd8f0b27-d13b-41c8-9f60-84fc1f201d89',
@@ -917,12 +919,14 @@ export const allCoinsAndTokens = [
     BaseUnit.COREUM,
     COREUM_FEATURES.filter(
       (feature) =>
-        ![
-          CoinFeature.CUSTODY_BITGO_SINGAPORE,
-          CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
-          CoinFeature.CUSTODY_BITGO_MENA_FZE,
-        ].includes(feature)
-    )
+        !(
+          [
+            CoinFeature.CUSTODY_BITGO_SINGAPORE,
+            CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+            CoinFeature.CUSTODY_BITGO_MENA_FZE,
+          ] as CoinFeature[]
+        ).includes(feature)
+    ) as CoinFeature[]
   ),
   account(
     'df2f040b-89f3-4bb3-8da7-2445c7fdefca',
@@ -1082,7 +1086,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.ISLM,
     BaseUnit.ISLM,
-    COSMOS_SIDECHAIN_FEATURES.filter((f) => f !== CoinFeature.SHA256_WITH_ECDSA_TSS)
+    COSMOS_SIDECHAIN_FEATURES.filter((f) => f !== CoinFeature.SHA256_WITH_ECDSA_TSS) as CoinFeature[]
   ),
   account(
     '02eced2c-cf1d-4660-832c-858685ae7107',
@@ -1092,7 +1096,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.ISLM,
     BaseUnit.ISLM,
-    COSMOS_SIDECHAIN_FEATURES.filter((f) => f !== CoinFeature.SHA256_WITH_ECDSA_TSS)
+    COSMOS_SIDECHAIN_FEATURES.filter((f) => f !== CoinFeature.SHA256_WITH_ECDSA_TSS) as CoinFeature[]
   ),
   account(
     'e48baabf-5cc9-4011-b67e-6f6425753df2',
@@ -1338,7 +1342,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.XDC,
     BaseUnit.ETH,
-    EVM_FEATURES.filter((feature) => feature !== CoinFeature.EIP1559)
+    EVM_FEATURES.filter((feature) => feature !== CoinFeature.EIP1559) as CoinFeature[]
   ),
   account(
     'e6ecb22e-0ae8-463a-b2fb-61502fd54240',
@@ -1348,7 +1352,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.XDC,
     BaseUnit.ETH,
-    EVM_FEATURES.filter((feature) => feature !== CoinFeature.EIP1559)
+    EVM_FEATURES.filter((feature) => feature !== CoinFeature.EIP1559) as CoinFeature[]
   ),
   account(
     '297edf01-b166-45fb-be6f-da6680635f72',
@@ -4014,7 +4018,7 @@ export const allCoinsAndTokens = [
     'AFSUI',
     '0xf325ce1300e8dac124071d3152c5c5ee6174914f8bc2161e88329cf579246efc::afsui::AFSUI',
     UnderlyingAsset['sui:afsui'],
-    SUI_TOKEN_FEATURES.filter((feature) => feature !== CoinFeature.CUSTODY_BITGO_SINGAPORE)
+    SUI_TOKEN_FEATURES.filter((feature) => feature !== CoinFeature.CUSTODY_BITGO_SINGAPORE) as CoinFeature[]
   ),
   suiToken(
     'af864118-e9ec-47b2-896c-735f0530fb8f',

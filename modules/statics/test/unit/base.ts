@@ -1,5 +1,5 @@
 const should = require('should');
-const { UnderlyingAsset } = require('../../src/base');
+import { UnderlyingAsset } from '../../src';
 
 describe('UnderlyingAsset', function () {
   it('UnderlyingAsset values should be unique', function () {

@@ -1300,12 +1300,14 @@ export const erc20Coins = [
     UnderlyingAsset.CEL,
     ETH_FEATURES_WITH_FRANKFURT.filter(
       (feature) =>
-        ![
-          CoinFeature.CUSTODY_BITGO_SINGAPORE,
-          CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
-          CoinFeature.CUSTODY_BITGO_MENA_FZE,
-        ].includes(feature)
-    )
+        !(
+          [
+            CoinFeature.CUSTODY_BITGO_SINGAPORE,
+            CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+            CoinFeature.CUSTODY_BITGO_MENA_FZE,
+          ] as CoinFeature[]
+        ).includes(feature)
+    ) as CoinFeature[]
   ),
   erc20(
     'a5dfdbdd-aff4-4a38-a798-37225afb2c8c',
@@ -2557,12 +2559,14 @@ export const erc20Coins = [
     UnderlyingAsset.FTT,
     ETH_FEATURES_WITH_FRANKFURT.filter(
       (feature) =>
-        ![
-          CoinFeature.CUSTODY_BITGO_SINGAPORE,
-          CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
-          CoinFeature.CUSTODY_BITGO_MENA_FZE,
-        ].includes(feature)
-    )
+        !(
+          [
+            CoinFeature.CUSTODY_BITGO_SINGAPORE,
+            CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+            CoinFeature.CUSTODY_BITGO_MENA_FZE,
+          ] as CoinFeature[]
+        ).includes(feature)
+    ) as CoinFeature[]
   ),
   erc20(
     'd7c330ea-7767-4737-8701-cc50c605bab9',

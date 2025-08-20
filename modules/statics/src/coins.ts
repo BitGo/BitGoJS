@@ -26,7 +26,7 @@ import {
   xrpToken,
 } from './account';
 import { ofcToken } from './ofc';
-import { BaseCoin } from './base';
+import { BaseCoin, CoinFamily } from './base';
 import { AmsTokenConfig, TrimmedAmsTokenConfig } from './tokenConfig';
 import { CoinMap } from './map';
 import { Networks } from './networks';
@@ -357,10 +357,10 @@ export function createTokenMapUsingTrimmedConfigDetails(
       !isCoinPresentInCoinMap({ ...tokenConfig }) &&
       network &&
       tokenConfig.isToken &&
-      networkFeatureMapForTokens[network.family]
+      networkFeatureMapForTokens[network.family as CoinFamily]
     ) {
       const features = new Set([
-        ...(networkFeatureMapForTokens[network.family] || []),
+        ...(networkFeatureMapForTokens[network.family as CoinFamily] || []),
         ...(tokenConfig.additionalFeatures || []),
       ]);
       tokenConfig.excludedFeatures?.forEach((feature) => features.delete(feature));
