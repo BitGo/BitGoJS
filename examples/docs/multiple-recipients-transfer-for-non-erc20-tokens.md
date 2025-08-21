@@ -16,11 +16,11 @@ TESTNET_ACCESS_TOKEN=your_access_token_here
 
 First, run `yarn install` from the root directory of the repository.
 
-Then change into the `examples/ts/sol/utils/nonce-account-creation` directory and use `npx ts-node` to run the desired example:
+Then change into the `examples/ts/sol/utils/nonce-account-creation` directory and use `npx tsx` to run the desired example:
 
 ```
 $ cd examples/ts/sol/utils/nonce-account-creation
-$ npx ts-node multi-recipient-pay-transaction.ts
+$ npx tsx multi-recipient-pay-transaction.ts
 ```
 
 

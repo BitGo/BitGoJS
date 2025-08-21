@@ -1,5 +1,5 @@
 {
-  "require": ["ts-node/register", "should"],
+  "require": ["tsx", "should"],
   "timeout": "20000",
   "reporter": "min",
   "reporter-option": ["cdn=true", "json=false"],

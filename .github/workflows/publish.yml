@@ -53,7 +53,7 @@ jobs:
         run: |
           rm -rfd ./modules/web-demo
           rm -rfd ./modules/express
-          npx ts-node ./scripts/prepare-release.ts ${{ env.preid }}
+          npx tsx ./scripts/prepare-release.ts ${{ env.preid }}
 
       - name: Rebuild packages
         run: yarn
@@ -65,4 +65,4 @@ jobs:
         run: yarn lerna publish from-package --preid ${{ env.preid }} --dist-tag ${{ env.preid }} --force-publish --yes --loglevel silly
 
       - name: Verify Publish
-        run: npx ts-node ./scripts/verify-release.ts ${{ env.preid }}
+        run: npx tsx ./scripts/verify-release.ts ${{ env.preid }}

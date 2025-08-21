@@ -13,7 +13,7 @@
     "clean": "rm -r ./dist",
     "lint": "eslint --quiet .",
     "prepare": "npm run build",
-    "test:watch": " mocha -r ts-node/register --watch --watch-files test/**/*.ts"
+    "test:watch": " mocha -r tsx --watch --watch-files test/**/*.ts"
   },
   "author": "BitGo SDK Team <sdkteam@bitgo.com>",
   "license": "MIT",

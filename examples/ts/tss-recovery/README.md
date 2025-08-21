@@ -14,10 +14,10 @@ $ nvm use
 $ yarn install
 ```
 
-Use `npx ts-node` to run the desired example:
+Use `npx tsx` to run the desired example:
 
 ```
-$ npx ts-node eddsa-recovery.ts
+$ npx tsx eddsa-recovery.ts
 ```
 
 or, 

@@ -1,4 +1,4 @@
-require: 'ts-node/register'
+require: 'tsx'
 timeout: '90000'
 reporter: 'min'
 reporter-option:

@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = {
-  require: 'ts-node/register',
+  require: 'tsx',
   timeout: '20000',
   reporter: 'min',
   'reporter-option': ['cdn=true', 'json=false'],

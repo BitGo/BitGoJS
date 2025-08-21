@@ -94,7 +94,7 @@ async function sendOmniAsset(
 }
 
 /*
- * Usage: npx ts-node btc/omni/index.ts
+ * Usage: npx tsx btc/omni/index.ts
  * */
 async function main() {
   console.log('Starting...');
