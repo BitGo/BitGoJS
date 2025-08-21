@@ -28,6 +28,9 @@ yarn lint-changed
 
 # Fix linting issues
 yarn lint-fix
+
+# Commit lint
+yarn check-commits
 ```
 
 ### Testing
@@ -62,6 +65,10 @@ yarn compile
 # Build for development
 yarn compile-dbg
 ```
+## Code Style
+
+### Commits
+BitGoJS uses conventional commits. All commits MUST pass the spec described in `commitlint.config.js`.
 
 ## Code Architecture
 
