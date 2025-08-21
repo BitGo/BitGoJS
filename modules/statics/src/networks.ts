@@ -355,7 +355,7 @@ class BinanceSmartChain extends Mainnet implements EthereumNetwork {
   chainId = 56;
   nativeCoinOperationHashPrefix = '56';
   tokenOperationHashPrefix = '56-ERC20';
-  batcherContractAddress = '0xb1b7e7cc1ecafbfd0771a5eb5454ab5b0356980d';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class BinanceSmartChainTestnet extends Testnet implements EthereumNetwork {
@@ -366,7 +366,7 @@ class BinanceSmartChainTestnet extends Testnet implements EthereumNetwork {
   chainId = 97;
   nativeCoinOperationHashPrefix = '97';
   tokenOperationHashPrefix = '97-ERC20';
-  batcherContractAddress = '0x6faf4b6bae3d4bf20c5d866c938f51992c63e825';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class LightningBitcoin extends Mainnet implements LightningNetwork {
