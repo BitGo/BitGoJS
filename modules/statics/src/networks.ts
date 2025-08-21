@@ -1,5 +1,5 @@
 // FlareNetwork interface for Flare-family chains
-export interface FlareNetwork {
+export interface FlareNetwork extends BaseNetwork {
   name: string;
   family: CoinFamily;
   explorerUrl: string;
@@ -11,7 +11,6 @@ export interface FlareNetwork {
   forwarderImplementationAddress?: string;
   blockchainID?: string;
   cChainBlockchainID?: string;
-  avaxAssetID?: string;
   networkID?: number;
   hrp?: string;
   alias?: string;
@@ -1718,9 +1717,8 @@ export class FlareP extends Mainnet implements FlareNetwork {
   accountExplorerUrl = 'https://flarescan.com/blockchain/pvm/address/';
   blockchainID = '11111111111111111111111111111111LpoYY';
   cChainBlockchainID = '2q9e4r6Mu3U68nU1fYjgbR6JvwrRx36CohpAX5UQxse55x1Q5';
-  avaxAssetID = ''; // This is not applicable to our chain, so just any string that passes validation will suffice
   networkID = 14;
-  hrp = 'flare'; //The Human-Readable Part for Bech32 addresses on the network (e.g., avax for Mainnet). It's the prefix before the 1 in an address.
+  hrp = 'flare';
   alias = 'P';
   vm = 'platformvm';
   txFee = '1000000'; // defaults
@@ -1745,9 +1743,8 @@ export class FlarePTestnet extends Testnet implements FlareNetwork {
   accountExplorerUrl = 'https://coston2.testnet.flarescan.com/blockchain/pvm/address/';
   blockchainID = '11111111111111111111111111111111LpoYY';
   cChainBlockchainID = 'vE8M98mEQH6wk56sStD1ML8HApTgSqfJZLk9gQ3Fsd4i6m3Bi';
-  avaxAssetID = ''; // This is not applicable to our chain, so just any string that passes validation will suffice
   networkID = 114;
-  hrp = 'costwo'; //The Human-Readable Part for Bech32 addresses on the network (e.g., avax for Mainnet). It's the prefix before the 1 in an address.
+  hrp = 'costwo';
   alias = 'P';
   vm = 'platformvm';
   txFee = '1000000'; // defaults
