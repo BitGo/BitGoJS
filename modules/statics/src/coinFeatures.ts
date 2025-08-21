@@ -121,15 +121,9 @@ export const XTZ_FEATURES = [
   CoinFeature.MULTISIG_COLD,
   CoinFeature.MULTISIG,
   CoinFeature.ENTERPRISE_PAYS_FEES,
-].filter(
-  (feature) =>
-    feature !== CoinFeature.CUSTODY_BITGO_MENA_FZE &&
-    feature !== CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE &&
-    feature !== CoinFeature.CUSTODY_BITGO_SINGAPORE &&
-    feature !== CoinFeature.CUSTODY_BITGO_KOREA &&
-    feature !== CoinFeature.CUSTODY_BITGO_EUROPE_APS &&
-    feature !== CoinFeature.CUSTODY_BITGO_FRANKFURT
-);
+  CoinFeature.CUSTODY_BITGO_GERMANY,
+  CoinFeature.CUSTODY_BITGO_NEW_YORK,
+].filter((feature) => feature !== CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE);
 
 export const XRP_FEATURES = [
   ...ACCOUNT_COIN_DEFAULT_FEATURES,
