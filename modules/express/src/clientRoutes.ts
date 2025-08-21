@@ -32,8 +32,8 @@ import {
 } from '@bitgo/sdk-core';
 import { BitGo, BitGoOptions, Coin, CustomSigningFunction, SignedTransaction, SignedTransactionRequest } from 'bitgo';
 import * as bodyParser from 'body-parser';
-import * as debugLib from 'debug';
-import * as express from 'express';
+import debugLib from 'debug';
+import express from 'express';
 import type { ParamsDictionary } from 'express-serve-static-core';
 import * as _ from 'lodash';
 import * as url from 'url';
