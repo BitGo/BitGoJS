@@ -834,10 +834,15 @@ export class Sol extends BaseCoin {
     let totalFee = new BigNumber(0);
     let totalFeeForTokenRecovery = new BigNumber(0);
 
-    // check for possible token recovery, recover the token provide by user
+    let resolvedProgramId = params.programId;
     if (params.tokenContractAddress) {
+      const network = this.getNetwork();
+      const solToken = getSolTokenFromAddress(params.tokenContractAddress, network);
+      if (solToken && typeof solToken === 'object' && 'programId' in solToken) {
+        resolvedProgramId = (solToken as { programId: string }).programId;
+      }
       let isUnsupportedToken = false;
-      const tokenAccounts = await this.getTokenAccountsByOwner(bs58EncodedPublicKey, params.programId, params.apiKey);
+      const tokenAccounts = await this.getTokenAccountsByOwner(bs58EncodedPublicKey, resolvedProgramId, params.apiKey);
       if (tokenAccounts.length !== 0) {
         // there exists token accounts on the given address, but need to check certain conditions:
         // 1. if there is a recoverable balance
@@ -873,7 +878,7 @@ export class Sol extends BaseCoin {
           // need to get all token accounts of the recipient address and need to create them if they do not exist
           const recipientTokenAccounts = await this.getTokenAccountsByOwner(
             params.recoveryDestination,
-            params.programId,
+            resolvedProgramId,
             params.apiKey
           );
 
@@ -890,7 +895,7 @@ export class Sol extends BaseCoin {
               tokenAccount.info.mint,
               params.recoveryDestination,
               false,
-              params.programId?.toString()
+              resolvedProgramId?.toString()
             );
             const tokenName = tokenAccount.tokenName as string;
             const sendParams = {
@@ -900,7 +905,7 @@ export class Sol extends BaseCoin {
               ...(isUnsupportedToken
                 ? {
                     tokenAddress: tokenAccount.info.mint,
-                    programId: params.programId?.toString(),
+                    programId: resolvedProgramId?.toString(),
                     decimalPlaces: tokenAccount.info.tokenAmount.decimals,
                   }
                 : {}),
@@ -909,14 +914,15 @@ export class Sol extends BaseCoin {
 
             if (!recipientTokenAccountExists) {
               // recipient token account does not exist for token and must be created
+              const programIdToUse =
+                resolvedProgramId?.toString().toLowerCase() === TOKEN_2022_PROGRAM_ID.toString().toLowerCase()
+                  ? TOKEN_2022_PROGRAM_ID.toString()
+                  : TOKEN_PROGRAM_ID.toString();
               txBuilder.createAssociatedTokenAccount({
                 ownerAddress: params.recoveryDestination,
                 tokenName: tokenName,
                 ...(isUnsupportedToken ? { tokenAddress: tokenAccount.info.mint } : {}),
-                programId:
-                  params.programId?.toString().toLowerCase() === TOKEN_2022_PROGRAM_ID.toString().toLowerCase()
-                    ? TOKEN_2022_PROGRAM_ID.toString()
-                    : TOKEN_PROGRAM_ID.toString(),
+                programId: programIdToUse,
               });
               // add rent exempt amount to total fee for each token account that has to be created
               totalFeeForTokenRecovery = totalFeeForTokenRecovery.plus(rentExemptAmount);

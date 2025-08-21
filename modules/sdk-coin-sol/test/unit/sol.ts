@@ -1517,7 +1517,6 @@ describe('SOL:', function () {
 
     beforeEach(() => {
       callBack = sandBox.stub(Sol.prototype, 'getDataFromNode' as keyof Sol);
-
       callBack
         .withArgs({
           payload: {
@@ -1810,6 +1809,38 @@ describe('SOL:', function () {
 
     afterEach(() => {
       sandBox.restore();
+    });
+
+    it('should use programId from statics for token recovery, ignoring recovery param', async function () {
+      const tokenContractAddress = usdtMintAddress;
+      const wrongProgramId = 'FakeProgramId1111111111111111111111111111111111';
+      const tokenTxn = await basecoin.recover({
+        userKey: testData.wrwUser.userKey,
+        backupKey: testData.wrwUser.backupKey,
+        bitgoKey: testData.wrwUser.bitgoKey,
+        recoveryDestination: testData.keys.destinationPubKey,
+        tokenContractAddress,
+        walletPassphrase: testData.wrwUser.walletPassphrase,
+        durableNonce: {
+          publicKey: testData.keys.durableNoncePubKey,
+          secretKey: testData.keys.durableNoncePrivKey,
+        },
+        programId: wrongProgramId, // Should be ignored
+      });
+
+      // Deserialize and check the programId used in the TokenTransfer instruction
+      const tokenTxnDeserialize = new Transaction(coin);
+      tokenTxnDeserialize.fromRawTransaction((tokenTxn as MPCTx).serializedTx);
+      const tokenTxnJson = tokenTxnDeserialize.toJson();
+      const instructionsData = tokenTxnJson.instructionsData as InstructionParams[];
+      // Find the TokenTransfer instruction
+      const tokenTransferInstr = instructionsData.find((i) => i.type === 'TokenTransfer');
+      should.exist(tokenTransferInstr);
+      // The programId used should match the statics-driven value for USDT, not the wrong one
+      // For USDT on testnet, the expected programId is the SPL Token Program
+      if (tokenTransferInstr) {
+        should.equal(tokenTransferInstr.params.programId, 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
+      }
     });
 
     it('should take OVC output and generate a signed sweep transaction', async function () {
