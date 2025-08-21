@@ -7,7 +7,7 @@ export function generateParamsForKeyCreation({
   walletLabel,
   keyCardImage,
 }: GenerateQrDataForKeychainParams & GenerateQrDataBaseParams): IDrawKeyCard {
-  assert(bitgoKeychain.commonKeychain, 'bitgoKeychain.commonKeychain is required');
+  assert.ok(bitgoKeychain.commonKeychain, 'bitgoKeychain.commonKeychain is required');
   return {
     walletLabel,
     keyCardImage,
