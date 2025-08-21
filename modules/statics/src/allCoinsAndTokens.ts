@@ -84,6 +84,7 @@ import {
   ETH_FEATURES,
   ETH_FEATURES_WITH_STAKING_AND_MMI,
   EVM_FEATURES,
+  FLR_FEATURES,
   GENERIC_TOKEN_FEATURES,
   HBAR_FEATURES,
   ICP_FEATURES,
@@ -97,6 +98,7 @@ import {
   POLYX_TOKEN_FEATURES,
   RBTC_FEATURES,
   SEI_FEATURES,
+  SGB_FEATURES,
   SOL_FEATURES,
   SONEIUM_FEATURES,
   STX_FEATURES,
@@ -112,6 +114,8 @@ import {
   TSOL_FEATURES,
   VET_FEATURES,
   WCT_FEATURES,
+  WEMIX_FEATURES,
+  XDC_FEATURES,
   XLM_FEATURES,
   XLM_TOKEN_FEATURES_WITH_FRANKFURT,
   XRP_FEATURES,
@@ -1361,7 +1365,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.XDC,
     BaseUnit.ETH,
-    EVM_FEATURES.filter((feature) => feature !== CoinFeature.EIP1559)
+    XDC_FEATURES
   ),
   account(
     'e6ecb22e-0ae8-463a-b2fb-61502fd54240',
@@ -1371,7 +1375,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.XDC,
     BaseUnit.ETH,
-    EVM_FEATURES.filter((feature) => feature !== CoinFeature.EIP1559)
+    XDC_FEATURES
   ),
   account(
     '297edf01-b166-45fb-be6f-da6680635f72',
@@ -1381,7 +1385,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.WEMIX,
     BaseUnit.ETH,
-    EVM_FEATURES
+    WEMIX_FEATURES
   ),
   account(
     'b18517e3-2fba-44df-be39-7ba062d14895',
@@ -1391,7 +1395,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.WEMIX,
     BaseUnit.ETH,
-    EVM_FEATURES
+    WEMIX_FEATURES
   ),
   account(
     'c315bdbb-4e77-4eeb-a625-92f4defc3e42',
@@ -1753,7 +1757,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.FLR,
     BaseUnit.ETH,
-    EVM_FEATURES
+    FLR_FEATURES
   ),
   account(
     '338fc340-08be-4796-9c04-96e5a5078393',
@@ -1763,7 +1767,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.FLR,
     BaseUnit.ETH,
-    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
+    [...FLR_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
   ),
   account(
     '321a3168-4669-4ed0-a767-8f35111bb576',
@@ -1773,7 +1777,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.SGB,
     BaseUnit.ETH,
-    EVM_FEATURES
+    SGB_FEATURES
   ),
   account(
     'c6b8f90b-1f89-4d26-b296-4097927f6b30',
@@ -1783,7 +1787,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.SGB,
     BaseUnit.ETH,
-    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
+    [...SGB_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
   ),
   gasTankAccount(
     '75a71e9c-e3a0-4852-8e4b-9613ffed2a4c',
