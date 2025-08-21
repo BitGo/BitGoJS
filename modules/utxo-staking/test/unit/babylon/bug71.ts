@@ -10,7 +10,7 @@ describe('btc-staking-ts bug #71', function () {
   let buf: Buffer;
   before('load half-signed transaction', async function () {
     const fixture = JSON.parse(
-      await fs.promises.readFile(__dirname + '/../../../../test/fixtures/babylon/txTree.testnet.json', 'utf-8')
+      await fs.promises.readFile(__dirname + '/../../fixtures/babylon/txTree.testnet.json', 'utf-8')
     );
     const base64 = fixture.slashingSignedBase64;
     assert(typeof base64 === 'string');
