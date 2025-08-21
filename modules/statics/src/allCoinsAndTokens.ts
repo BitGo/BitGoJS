@@ -4148,6 +4148,33 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['ttao:apex'],
     TAO_TOKEN_FEATURES
   ),
+  ttaoToken(
+    '2e408548-f611-4325-86fc-fe1f0b62a136',
+    'ttao:onion',
+    'Onion',
+    9,
+    '2',
+    UnderlyingAsset['ttao:onion'],
+    TAO_TOKEN_FEATURES
+  ),
+  ttaoToken(
+    '0238a505-a25d-47d2-bd7b-05858472930d',
+    'ttao:templar',
+    'Templar',
+    9,
+    '3',
+    UnderlyingAsset['ttao:templar'],
+    TAO_TOKEN_FEATURES
+  ),
+  ttaoToken(
+    '969b44cf-a884-459d-a0da-39188ca68f98',
+    'ttao:targon',
+    'Targon',
+    9,
+    '4',
+    UnderlyingAsset['ttao:targon'],
+    TAO_TOKEN_FEATURES
+  ),
   tpolyxToken(
     'a63b4f8d-84d6-45d3-bc67-625239e40811',
     'tpolyx:nvbitgot',
