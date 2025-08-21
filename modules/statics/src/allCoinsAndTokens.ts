@@ -37,9 +37,11 @@ import {
   tsuiToken,
   ttaoToken,
   ttronToken,
+  tvetNFTCollection,
   tworldErc20,
   txrpToken,
   tzkethErc20,
+  vetNFTCollection,
   worldErc20,
   xrpToken,
   zkethErc20,
@@ -4208,6 +4210,22 @@ export const allCoinsAndTokens = [
     '0x14d44152cb1050277338ab6c58416e074d4a34ddf431978b41b5a9d14f9884f2',
     UnderlyingAsset['tapt:beta3loanbook'],
     APT_FEATURES
+  ),
+  vetNFTCollection(
+    '4f56375d-f682-4045-a3a2-cabb29556c07',
+    'vet:sdt',
+    'StarGate Delegator Token',
+    '0x1856c533ac2d94340aaa8544d35a5c1d4a21dee7',
+    UnderlyingAsset['vet:sdt'],
+    VET_FEATURES
+  ),
+  tvetNFTCollection(
+    'dd710759-1b87-4435-bef5-db377040deaf',
+    'tvet:sdt',
+    'Testnet StarGate Delegator Token',
+    '0x1ec1d168574603ec35b9d229843b7c2b44bcb770',
+    UnderlyingAsset['tvet:sdt'],
+    VET_FEATURES
   ),
   fiat('3f89b1f5-4ada-49c0-a613-15e484d42426', 'fiatusd', 'US Dollar', Networks.main.fiat, 2, UnderlyingAsset.USD),
   fiat(
