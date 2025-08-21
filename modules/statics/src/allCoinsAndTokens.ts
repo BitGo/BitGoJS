@@ -61,6 +61,7 @@ import { sip10Tokens } from './coins/sip10Tokens';
 import { nep141Tokens } from './coins/nep141Tokens';
 import { vetTokens } from './coins/vetTokens';
 import { cosmosTokens } from './coins/cosmosTokens';
+import { flrp } from './flrp';
 import {
   ADA_FEATURES_WITH_FRANKFURT,
   ALGO_FEATURES,
@@ -148,6 +149,14 @@ export const allCoinsAndTokens = [
     'Testnet Avalanche P-Chain',
     Networks.test.avalancheP,
     UnderlyingAsset.AVAXP
+  ),
+  flrp('84749ce6-a3ca-4270-9970-4e21cca026ca', 'flrp', 'Flare P-Chain', Networks.main.flrP, UnderlyingAsset.FLRP),
+  flrp(
+    'e8a58db3-eedd-423c-89ae-817dfb6c6249',
+    'tflrp',
+    'Testnet Flare P-Chain',
+    Networks.test.flrP,
+    UnderlyingAsset.FLRP
   ),
   ada(
     'fd4d125e-f14f-414b-bd17-6cb1393265f0',
