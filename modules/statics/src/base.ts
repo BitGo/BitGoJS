@@ -2959,6 +2959,9 @@ export enum UnderlyingAsset {
 
   // TAO testnet tokens
   'ttao:apex' = 'ttao:apex',
+  'ttao:onion' = 'ttao:onion',
+  'ttao:templar' = 'ttao:templar',
+  'ttao:targon' = 'ttao:targon',
 
   // Polymesh testnet tokens
   'tpolyx:nvbitgot' = 'tpolyx:nvbitgot',
