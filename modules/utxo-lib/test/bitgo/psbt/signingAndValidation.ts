@@ -60,7 +60,7 @@ function runTest(scriptType: outputScripts.ScriptType, signerName: KeyName, cosi
       if (scriptType === 'p2shP2pk') {
         const unspent = mockReplayProtectionUnspent(network, BigInt(1e8), { key: signer });
         const { redeemScript } = createOutputScriptP2shP2pk(signer.publicKey);
-        assert(redeemScript);
+        assert.ok(redeemScript);
         addReplayProtectionUnspentToPsbt(psbt, unspent, redeemScript);
       } else {
         const unspents = mockUnspents(walletKeys, [scriptType], BigInt(1e8), network) as WalletUnspent<bigint>[];
@@ -87,11 +87,11 @@ function runTest(scriptType: outputScripts.ScriptType, signerName: KeyName, cosi
         psbt.signAllInputsHD(signer);
         psbt.signAllInputsHD(cosigner);
       }
-      assert(psbt.validateSignaturesOfAllInputs());
+      assert.ok(psbt.validateSignaturesOfAllInputs());
       assert.deepStrictEqual(psbt.getSignatureValidationArray(0, { rootNodes: walletKeys.triple }), signingKeys);
       psbt.finalizeAllInputs();
       const tx = psbt.extractTransaction();
-      assert(tx);
+      assert.ok(tx);
       if (scriptType === 'p2shP2pk') {
         tx.ins.forEach((input) => assert.strictEqual(input.sequence, TX_INPUT_SEQUENCE_NUMBER_FINAL));
       } else {

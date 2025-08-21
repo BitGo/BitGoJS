@@ -100,7 +100,7 @@ describe('WalletUnspent', function () {
     // TODO: Test rederiving scripts from PSBT and keys only
     psbt.signAllInputsHD(walletKeys[signer]);
     psbt.signAllInputsHD(walletKeys[cosigner]);
-    assert(psbt.validateSignaturesOfAllInputs());
+    assert.ok(psbt.validateSignaturesOfAllInputs());
     psbt.finalizeAllInputs();
     // extract transaction has a return type of Transaction instead of UtxoTransaction
     const tx = psbt.extractTransaction() as UtxoTransaction<bigint>;
@@ -109,7 +109,7 @@ describe('WalletUnspent', function () {
       tx,
       unspents.map((u) => ({ ...toPrevOutput<bigint>(u, network), prevTx: u.prevTx }))
     );
-    assert(psbt2.validateSignaturesOfAllInputs());
+    assert.ok(psbt2.validateSignaturesOfAllInputs());
     return tx;
   }
 

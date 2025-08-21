@@ -463,7 +463,7 @@ export function isPsbtInputArray(inputs: PsbtInput[] | TxInput[]): inputs is Psb
  * @return true iff inputs array is of TxInput type
  * */
 export function isTxInputArray(inputs: PsbtInput[] | TxInput[]): inputs is TxInput[] {
-  assert(!!inputs.length, 'empty inputs array');
+  assert.ok(!!inputs.length, 'empty inputs array');
   return 'hash' in inputs[0];
 }
 
@@ -532,7 +532,7 @@ export function getSignatureValidationArrayPsbt(psbt: UtxoPsbt, rootWalletKeys: 
  * The purpose is to provide backward compatibility to keyternal (KRS) that only supports network transaction and p2ms script types.
  */
 export function extractP2msOnlyHalfSignedTx(psbt: UtxoPsbt): UtxoTransaction<bigint> {
-  assert(!!(psbt.data.inputs.length && psbt.data.outputs.length), 'empty inputs or outputs');
+  assert.ok(!!(psbt.data.inputs.length && psbt.data.outputs.length), 'empty inputs or outputs');
   const tx = psbt.getUnsignedTx();
 
   function isP2msParsedPsbtInput(
@@ -543,10 +543,10 @@ export function extractP2msOnlyHalfSignedTx(psbt: UtxoPsbt): UtxoTransaction<big
 
   psbt.data.inputs.forEach((input, i) => {
     const parsed = parsePsbtInput(input);
-    assert(isP2msParsedPsbtInput(parsed), `unsupported script type ${parsed.scriptType}`);
-    assert(input.partialSig?.length === 1, `unexpected signature count ${input.partialSig?.length}`);
+    assert.ok(isP2msParsedPsbtInput(parsed), `unsupported script type ${parsed.scriptType}`);
+    assert.ok(input.partialSig?.length === 1, `unexpected signature count ${input.partialSig?.length}`);
     const [partialSig] = input.partialSig;
-    assert(
+    assert.ok(
       input.sighashType !== undefined && input.sighashType === bscript.signature.decode(partialSig.signature).hashType,
       'signature sighash does not match input sighash type'
     );

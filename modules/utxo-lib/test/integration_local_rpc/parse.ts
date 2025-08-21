@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import * as assert from 'assert/strict';
 import { describe, it } from 'mocha';
 import { BIP32Interface } from 'bip32';
 

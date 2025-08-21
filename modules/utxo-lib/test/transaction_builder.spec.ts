@@ -693,7 +693,7 @@ function runTest<TNumber extends number | bigint>(
         txb.addInput(randomTx, 0);
         txb.addOutput(randomAddress, toAmount(1000, params.amountType) as TNumber);
         const tx = txb.buildIncomplete();
-        assert(tx);
+        assert.ok(tx);
       });
 
       it('for incomplete P2SH with 0 signatures', () => {

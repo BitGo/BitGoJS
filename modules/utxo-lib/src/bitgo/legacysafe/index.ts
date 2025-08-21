@@ -58,11 +58,11 @@ export function createLegacySafeOutputScript2of3(
   });
 
   const script2of3 = bitcoinjs.payments.p2ms({ m: 2, pubkeys });
-  assert(script2of3.output);
+  assert.ok(script2of3.output);
 
   const scriptPubKey = bitcoinjs.payments.p2sh({ redeem: script2of3 });
-  assert(scriptPubKey);
-  assert(scriptPubKey.output);
+  assert.ok(scriptPubKey);
+  assert.ok(scriptPubKey.output);
 
   return {
     scriptPubKey: scriptPubKey.output,
