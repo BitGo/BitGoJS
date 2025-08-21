@@ -7,7 +7,7 @@ function run(coin: AbstractUtxoCoin) {
   describe(`UTXO Keychains ${coin.getChain()}`, function () {
     it('validates pub', function () {
       const { pub } = coin.keychains().create();
-      assert(pub);
+      assert.ok(pub);
       coin.isValidPub(pub).should.equal(true);
     });
   });

@@ -21,7 +21,7 @@ describe('ECDH utils', () => {
       const eckey1 = getKey(`${i}.a`);
       const eckey2 = getKey(`${i}.b`);
 
-      assert(eckey1.privateKey);
+      assert.ok(eckey1.privateKey);
       [eckey1, utxolib.bitgo.keyutil.privateKeyBufferToECPair(eckey1.privateKey)].forEach((privateKey) => {
         const sharingKey1 = getSharedSecret(privateKey, eckey2).toString('hex');
         const sharingKey2 = getSharedSecret(eckey2, eckey1).toString('hex');

@@ -7,7 +7,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 
 import { strict as assert } from 'assert';
-import * as should from 'should';
+import should = require('should');
 import * as _ from 'lodash';
 
 const TestBitGo = require('../lib/test_bitgo');

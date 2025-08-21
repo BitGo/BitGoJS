@@ -2,8 +2,8 @@
  * @prettier
  */
 import * as assert from 'assert';
-import * as should from 'should';
-import * as nock from 'nock';
+import should = require('should');
+import nock = require('nock');
 import * as utxolib from '@bitgo/utxo-lib';
 import { Triple } from '@bitgo/sdk-core';
 import {
@@ -199,7 +199,7 @@ function run<TNumber extends number | bigint = number>(sourceCoin: AbstractUtxoC
       const unspents = getRecoveryUnspents();
       should.equal(tx.ins.length, unspents.length);
       tx.ins.forEach((input, i) => {
-        assert(typeof tx !== 'string');
+        assert.ok(typeof tx !== 'string');
         utxolib.bitgo
           .verifySignatureWithUnspent<TNumber>(tx, i, getRecoveryUnspents(), walletKeys)
           .should.eql([true, false, false]);

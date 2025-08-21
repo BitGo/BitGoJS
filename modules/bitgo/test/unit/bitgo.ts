@@ -3,8 +3,8 @@
 //
 
 import * as crypto from 'crypto';
-import * as nock from 'nock';
-import * as should from 'should';
+import nock = require('nock');
+import should = require('should');
 import assert = require('assert');
 
 import { common, generateGPGKeyPair } from '@bitgo/sdk-core';
@@ -707,7 +707,7 @@ describe('BitGo Prototype Methods', function () {
       nock('https://bitgo.fakeurl')
         .post('/api/auth/v1/session')
         .reply(200, async (uri, requestBody) => {
-          assert(typeof requestBody === 'object');
+          assert.ok(typeof requestBody === 'object');
           should.exist(requestBody.userId);
           should.exist(requestBody.passkey);
           requestBody.userId.should.equal(userId);
@@ -752,7 +752,7 @@ describe('BitGo Prototype Methods', function () {
         assert.fail('Expected error not thrown');
       } catch (e) {
         console.log(e);
-        assert(e.message.includes('JSON'));
+        assert.ok(e.message.includes('JSON'));
       }
     });
     it('should throw - missing access token', async () => {

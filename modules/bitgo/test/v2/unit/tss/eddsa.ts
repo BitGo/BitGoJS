@@ -22,7 +22,7 @@ import {
   RequestTracer,
 } from '@bitgo/sdk-core';
 import * as openpgp from 'openpgp';
-import * as should from 'should';
+import should = require('should');
 import * as _ from 'lodash';
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src/bitgo';

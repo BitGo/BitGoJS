@@ -2,10 +2,10 @@
 // Tests for Wallet
 //
 
-import * as should from 'should';
+import should = require('should');
 import * as sinon from 'sinon';
 import '../lib/asserts';
-import * as nock from 'nock';
+import nock = require('nock');
 import * as _ from 'lodash';
 
 import {

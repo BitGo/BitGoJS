@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import { TestBitGo } from '@bitgo/sdk-test';
-import * as nock from 'nock';
+import nock = require('nock');
 import { BaseCoin, PendingApprovalData, State, Type } from '@bitgo/sdk-core';
 import {
   CreateInvoiceBody,
@@ -435,7 +435,7 @@ describe('Lightning wallets', function () {
       assert.strictEqual(response.txRequestId, 'txReq123');
       assert.strictEqual(response.txRequestState, 'delivered');
       assert.strictEqual(response.transfer.id, transferData.id);
-      assert(response.paymentStatus);
+      assert.ok(response.paymentStatus);
       assert.strictEqual(
         response.paymentStatus.status,
         finalPaymentResponse.transactions[0].unsignedTx.coinSpecific.status
@@ -509,7 +509,7 @@ describe('Lightning wallets', function () {
       const response = await wallet.payInvoice(params);
       assert.strictEqual(response.txRequestId, 'txReq123');
       assert.strictEqual(response.txRequestState, 'pendingApproval');
-      assert(response.pendingApproval);
+      assert.ok(response.pendingApproval);
       assert.strictEqual(response.paymentStatus, undefined);
 
       createTxRequestNock.done();
@@ -783,9 +783,9 @@ describe('Lightning wallets', function () {
       };
 
       await assert.doesNotReject(async () => await updateWalletCoinSpecific(wallet, params));
-      assert(userAuthKeyNock.isDone());
-      assert(nodeAuthKeyNock.isDone());
-      assert(wpWalletUpdateNock.isDone());
+      assert.ok(userAuthKeyNock.isDone());
+      assert.ok(nodeAuthKeyNock.isDone());
+      assert.ok(wpWalletUpdateNock.isDone());
 
       // Verify structure and required fields
       assert.ok(capturedBody.coinSpecific?.tlnbtc?.signedRequest, 'signedRequest should exist');
@@ -1001,7 +1001,7 @@ describe('Lightning wallets', function () {
       const response = await wallet.withdrawOnchain(params);
       assert.strictEqual(response.txRequestId, 'txReq123');
       assert.strictEqual(response.txRequestState, 'pendingApproval');
-      assert(response.pendingApproval);
+      assert.ok(response.pendingApproval);
 
       createTxRequestNock.done();
       getPendingApprovalNock.done();

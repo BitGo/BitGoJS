@@ -5,7 +5,7 @@ import 'mocha';
 import * as _ from 'lodash';
 import * as assert from 'assert';
 import * as utxolib from '@bitgo/utxo-lib';
-import * as nock from 'nock';
+import nock = require('nock');
 import { BIP32Interface, bitgo, testutil } from '@bitgo/utxo-lib';
 
 import { AbstractUtxoCoin, getReplayProtectionAddresses } from '@bitgo/abstract-utxo';
@@ -113,7 +113,7 @@ describe(`UTXO coin signTransaction`, async function () {
       if (isPsbt) {
         validatePsbt(psbt.txHex, 1, 2);
       } else {
-        assert(unspents);
+        assert.ok(unspents);
         validateTx(psbt.txHex, unspents, 1);
       }
       if (scope) {
@@ -131,7 +131,7 @@ describe(`UTXO coin signTransaction`, async function () {
     if (isPsbt) {
       validatePsbt(signerNoncePsbt.txHex, 0, isTxWithTaprootKeyPathSpend ? 1 : undefined);
     } else {
-      assert(unspents);
+      assert.ok(unspents);
       validateTx(signerNoncePsbt.txHex, unspents, 0);
     }
 
@@ -148,7 +148,7 @@ describe(`UTXO coin signTransaction`, async function () {
     if (isPsbt) {
       validatePsbt(cosignerNoncePsbt.txHex, 0, isTxWithTaprootKeyPathSpend ? 2 : undefined);
     } else {
-      assert(unspents);
+      assert.ok(unspents);
       validateTx(cosignerNoncePsbt.txHex, unspents, 0);
     }
 
@@ -166,7 +166,7 @@ describe(`UTXO coin signTransaction`, async function () {
     if (isPsbt) {
       validatePsbt(signerSigPsbt.txHex, 1, isTxWithTaprootKeyPathSpend ? 2 : undefined);
     } else {
-      assert(unspents);
+      assert.ok(unspents);
       validateTx(signerSigPsbt.txHex, unspents, 1);
     }
   }
@@ -511,7 +511,7 @@ function run<TNumber extends number | bigint = number>(
       );
       transaction.ins.forEach((input, index) => {
         if (inputScripts[index] === 'p2shP2pk') {
-          assert(coin.isBitGoTaintedUnspent(unspents[index]));
+          assert.ok(coin.isBitGoTaintedUnspent(unspents[index]));
           return;
         }
 

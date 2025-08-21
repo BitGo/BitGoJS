@@ -86,9 +86,9 @@ describe('Address', function () {
         assert.equal(result.start, 0);
         result.should.have.property('total');
         result.should.have.property('count');
-        assert(result.transactions.length > 20);
+        assert.ok(result.transactions.length > 20);
         assert.equal(result.transactions.length, result.count);
-        assert(result.total > 75);
+        assert.ok(result.total > 75);
         done();
       });
     });

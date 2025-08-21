@@ -1,7 +1,7 @@
 import * as openpgp from 'openpgp';
 import { createSharedDataProof, SignatureShareRecord } from '@bitgo/sdk-core';
 import { getRoute } from '../internal/tssUtils/common';
-import * as nock from 'nock';
+import nock = require('nock');
 
 export async function nockSendSignatureShare(
   params: {

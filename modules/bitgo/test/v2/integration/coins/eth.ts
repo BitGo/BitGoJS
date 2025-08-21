@@ -1,8 +1,8 @@
-import * as should from 'should';
+import should = require('should');
 import 'should-http';
 
 import { TestBitGo } from '../../../lib/test_bitgo';
-import * as nock from 'nock';
+import nock = require('nock');
 nock.restore();
 
 describe('ETH:', function () {

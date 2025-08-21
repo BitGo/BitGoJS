@@ -1,4 +1,4 @@
-import * as nock from 'nock';
+import nock = require('nock');
 import * as sinon from 'sinon';
 import { common, Wallet } from '@bitgo/sdk-core';
 import { TestBitGo } from '@bitgo/sdk-test';

@@ -4,7 +4,7 @@ import { BaseCoin } from '../../../../src/v2';
 
 import { TestBitGo } from '../../../lib/test_bitgo';
 
-import * as nock from 'nock';
+import nock = require('nock');
 
 describe('XLM:', function () {
   let bitgo: typeof TestBitGo;

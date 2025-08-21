@@ -14,7 +14,7 @@ const TestBitGo = require('../lib/test_bitgo');
 import * as utxolib from '@bitgo/utxo-lib';
 import { getAddressP2PKH, getNetwork } from '../../src/bitcoin';
 import { common } from '@bitgo/sdk-core';
-import * as nock from 'nock';
+import nock = require('nock');
 
 const TEST_WALLET_LABEL = 'wallet management test';
 
@@ -171,7 +171,7 @@ describe('Wallets', function () {
           assert.equal(keychain.xpub, keychains[1].xpub);
 
           bitgo.keychains().createBitGo({}, function (err, keychain) {
-            assert(keychain.xpub);
+            assert.ok(keychain.xpub);
             keychains.push(keychain);
 
             const options = {
@@ -362,7 +362,7 @@ describe('Wallets', function () {
         id: newKey.address.toString(),
       };
       wallets.get(options, function (err, wallet) {
-        assert(!wallet);
+        assert.ok(!wallet);
         done();
       });
     });

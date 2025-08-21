@@ -7,7 +7,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 
 import { strict as assert } from 'assert';
-import * as should from 'should';
+import should = require('should');
 import { VirtualSizes } from '@bitgo/unspents';
 import * as utxolib from '@bitgo/utxo-lib';
 
@@ -1044,7 +1044,7 @@ describe('Wallet API', function () {
           progressDetails.should.have.property('index');
           progressDetails.should.have.property('inputCount');
           progressDetails.index.should.equal(progressCallbackCount);
-          assert(progressDetails.inputCount <= maxInputCountPerConsolidation);
+          assert.ok(progressDetails.inputCount <= maxInputCountPerConsolidation);
           progressCallbackCount++;
         };
 
@@ -2445,7 +2445,7 @@ describe('Wallet API', function () {
             walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE,
           })
           .then(function (res) {
-            assert(false); // should not reach
+            assert.ok(false); // should not reach
           })
           .catch(function (err) {
             err.message.should.eql('Insufficient funds');
@@ -2466,7 +2466,7 @@ describe('Wallet API', function () {
             instant: true,
           })
           .then(function (res) {
-            assert(false); // should not reach
+            assert.ok(false); // should not reach
           })
           .catch(function (err) {
             err.message.should.eql('wallet does not support instant transactions');
@@ -2486,7 +2486,7 @@ describe('Wallet API', function () {
             });
           })
           .then(function (result) {
-            assert(false); // should not reach
+            assert.ok(false); // should not reach
           })
           .catch(function (err) {
             err.needsOTP.should.equal(true);
@@ -3037,7 +3037,7 @@ describe('Wallet API', function () {
           .createTransaction({ recipients: recipients })
           .then(function (result) {
             // should not reach
-            assert(false);
+            assert.ok(false);
           })
           .catch(function (err) {
             err.message.should.containEql('incorrect type for field fromUserName in travel info');

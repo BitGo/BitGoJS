@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import * as nock from 'nock';
+import nock = require('nock');
 import * as openpgp from 'openpgp';
 import * as crypto from 'crypto';
 
@@ -310,7 +310,7 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
           [userGpgPrvKey]
         );
         const userMsg1 = userMsgs1Signed.broadcastMessages.find((m) => m.from === 0);
-        assert(userMsg1, 'userMsg1 not found');
+        assert.ok(userMsg1, 'userMsg1 not found');
 
         OVC1ToOVC2Round1Payload = {
           tssVersion: '0.0.1' as NonEmptyString,
@@ -345,7 +345,7 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
       const backupSession = new DklsDkg.Dkg(3, 2, 1);
       let OVC2ToBitgoRound1Payload: OVC2ToBitgoRound1Payload;
       {
-        assert(OVC1ToOVC2Round1Payload.state === 0, 'OVC1ToOVC2Round1Payload.state should be 0');
+        assert.ok(OVC1ToOVC2Round1Payload.state === 0, 'OVC1ToOVC2Round1Payload.state should be 0');
         const backupBroadcastMsg1Unsigned = await backupSession.initDkg();
         const backupMsgs1Signed = await DklsComms.encryptAndAuthOutgoingMessages(
           { broadcastMessages: [DklsTypes.serializeBroadcastMessage(backupBroadcastMsg1Unsigned)], p2pMessages: [] },
@@ -353,7 +353,7 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
           [backupGpgPrvKey]
         );
         const backupMsg1 = backupMsgs1Signed.broadcastMessages.find((m) => m.from === 1);
-        assert(backupMsg1, 'backupMsg1 not found');
+        assert.ok(backupMsg1, 'backupMsg1 not found');
 
         OVC2ToBitgoRound1Payload = {
           ...OVC1ToOVC2Round1Payload,
@@ -374,7 +374,7 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
       // Round 2 User
       let OVC1ToOVC2Round2Payload: OVC1ToOVC2Round2Payload;
       {
-        assert(bitgoToOVC1Round1Payload.state === 2, 'bitgoToOVC1Round1Payload.state should be 2');
+        assert.ok(bitgoToOVC1Round1Payload.state === 2, 'bitgoToOVC1Round1Payload.state should be 2');
         const toUserRound1BroadcastMessages = await DklsComms.decryptAndVerifyIncomingMessages(
           {
             p2pMessages: [],
@@ -399,11 +399,11 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
         const userToBackupMsg2 = userRound2Messages.p2pMessages.find(
           (m) => m.from === ECDSAUtils.MPCv2PartiesEnum.USER && m.to === ECDSAUtils.MPCv2PartiesEnum.BACKUP
         );
-        assert(userToBackupMsg2, 'userToBackupMsg2 not found');
+        assert.ok(userToBackupMsg2, 'userToBackupMsg2 not found');
         const userToBitgoMsg2 = userRound2Messages.p2pMessages.find(
           (m) => m.from === ECDSAUtils.MPCv2PartiesEnum.USER && m.to === ECDSAUtils.MPCv2PartiesEnum.BITGO
         );
-        assert(userToBitgoMsg2, 'userToBitgoMsg2 not found');
+        assert.ok(userToBitgoMsg2, 'userToBitgoMsg2 not found');
 
         OVC1ToOVC2Round2Payload = {
           ...bitgoToOVC1Round1Payload,
@@ -422,7 +422,7 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
       let OVC2ToBitgoRound2Payload: OVC2ToBitgoRound2Payload;
 
       {
-        assert(OVC1ToOVC2Round2Payload.state === 3, 'bitgoToOVC1Round1Payload.state should be 3');
+        assert.ok(OVC1ToOVC2Round2Payload.state === 3, 'bitgoToOVC1Round1Payload.state should be 3');
         const toBackupRound1BroadcastMessages = await DklsComms.decryptAndVerifyIncomingMessages(
           {
             p2pMessages: [],
@@ -449,11 +449,11 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
         const backupToUserMsg2 = backupRound2Messages.p2pMessages.find(
           (m) => m.from === ECDSAUtils.MPCv2PartiesEnum.BACKUP && m.to === ECDSAUtils.MPCv2PartiesEnum.USER
         );
-        assert(backupToUserMsg2, 'backupToUserMsg2 not found');
+        assert.ok(backupToUserMsg2, 'backupToUserMsg2 not found');
         const backupToBitgoMsg2 = backupRound2Messages.p2pMessages.find(
           (m) => m.from === ECDSAUtils.MPCv2PartiesEnum.BACKUP && m.to === ECDSAUtils.MPCv2PartiesEnum.BITGO
         );
-        assert(backupToBitgoMsg2, 'backupToBitgoMsg2 not found');
+        assert.ok(backupToBitgoMsg2, 'backupToBitgoMsg2 not found');
 
         OVC2ToBitgoRound2Payload = {
           ...OVC1ToOVC2Round2Payload,
@@ -475,7 +475,7 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
       // Round 3A User
       let OVC1ToOVC2Round3Payload: OVC1ToOVC2Round3Payload;
       {
-        assert(bitgoToOVC1Round2Payload.state === 5, 'bitgoToOVC1Round2Payload.state should be 5');
+        assert.ok(bitgoToOVC1Round2Payload.state === 5, 'bitgoToOVC1Round2Payload.state should be 5');
         const toUserRound2P2PMessages = await DklsComms.decryptAndVerifyIncomingMessages(
           {
             p2pMessages: [
@@ -504,11 +504,11 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
         const userToBitgoMsg3 = userRound3AMessages.p2pMessages.find(
           (m) => m.from === ECDSAUtils.MPCv2PartiesEnum.USER && m.to === ECDSAUtils.MPCv2PartiesEnum.BITGO
         );
-        assert(userToBitgoMsg3, 'userToBitgoMsg3 not found');
+        assert.ok(userToBitgoMsg3, 'userToBitgoMsg3 not found');
         const userToBackupMsg3 = userRound3AMessages.p2pMessages.find(
           (m) => m.from === ECDSAUtils.MPCv2PartiesEnum.USER && m.to === ECDSAUtils.MPCv2PartiesEnum.BACKUP
         );
-        assert(userToBackupMsg3, 'userToBackupMsg3 not found');
+        assert.ok(userToBackupMsg3, 'userToBackupMsg3 not found');
 
         OVC1ToOVC2Round3Payload = {
           ...bitgoToOVC1Round2Payload,
@@ -526,7 +526,7 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
       // Round 3 Backup
       let OVC2ToOVC1Round3Payload: OVC2ToOVC1Round3Payload;
       {
-        assert(OVC1ToOVC2Round3Payload.state === 6, 'OVC1ToOVC2Round3Payload.state should be 6');
+        assert.ok(OVC1ToOVC2Round3Payload.state === 6, 'OVC1ToOVC2Round3Payload.state should be 6');
         const toBackupRound3P2PMessages = await DklsComms.decryptAndVerifyIncomingMessages(
           {
             p2pMessages: [
@@ -553,11 +553,11 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
         const backupToBitgoMsg3 = backupRound3Messages.p2pMessages.find(
           (m) => m.from === ECDSAUtils.MPCv2PartiesEnum.BACKUP && m.to === ECDSAUtils.MPCv2PartiesEnum.BITGO
         );
-        assert(backupToBitgoMsg3, 'backupToBitgoMsg3 not found');
+        assert.ok(backupToBitgoMsg3, 'backupToBitgoMsg3 not found');
         const backupToUserMsg3 = backupRound3Messages.p2pMessages.find(
           (m) => m.from === ECDSAUtils.MPCv2PartiesEnum.BACKUP && m.to === ECDSAUtils.MPCv2PartiesEnum.USER
         );
-        assert(backupToUserMsg3, 'backupToUserMsg3 not found');
+        assert.ok(backupToUserMsg3, 'backupToUserMsg3 not found');
 
         const toBackupRound3Messages = await DklsComms.decryptAndVerifyIncomingMessages(
           {
@@ -594,7 +594,7 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
         const backupMsg4 = backupRound4BroadcastMessages.broadcastMessages.find(
           (m) => m.from === ECDSAUtils.MPCv2PartiesEnum.BACKUP
         );
-        assert(backupMsg4, 'backupMsg4 not found');
+        assert.ok(backupMsg4, 'backupMsg4 not found');
 
         OVC2ToOVC1Round3Payload = {
           ...OVC1ToOVC2Round3Payload,
@@ -613,7 +613,7 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
       // Round 3B User
       let OVC1ToBitgoRound3BPayload: OVC1ToBitgoRound3Payload;
       {
-        assert(OVC2ToOVC1Round3Payload.state === 7, 'OVC2ToOVC1Round3Payload.state should be 7');
+        assert.ok(OVC2ToOVC1Round3Payload.state === 7, 'OVC2ToOVC1Round3Payload.state should be 7');
         const toUserRound4Messages = await DklsComms.decryptAndVerifyIncomingMessages(
           {
             p2pMessages: [
@@ -636,7 +636,7 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
           p2pMessages: toUserRound4Messages.p2pMessages.map(DklsTypes.deserializeP2PMessage),
           broadcastMessages: [],
         }).broadcastMessages;
-        assert(userRound4BroadcastMessages.length === 1, 'userRound4BroadcastMessages length should be 1');
+        assert.ok(userRound4BroadcastMessages.length === 1, 'userRound4BroadcastMessages length should be 1');
 
         const userRound4Messages = await DklsComms.encryptAndAuthOutgoingMessages(
           DklsTypes.serializeMessages({
@@ -648,7 +648,7 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
         );
 
         const userMsg4 = userRound4Messages.broadcastMessages.find((m) => m.from === ECDSAUtils.MPCv2PartiesEnum.USER);
-        assert(userMsg4, 'userMsg4 not found');
+        assert.ok(userMsg4, 'userMsg4 not found');
 
         OVC1ToBitgoRound3BPayload = {
           ...OVC2ToOVC1Round3Payload,
@@ -670,8 +670,8 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
       let userCommonKeychain: string;
       let OVC1ToOVC2Round4Payload;
       {
-        assert(bitgoToOVC1Round3Payload.state === 9, 'bitgoToOVC1Round3Payload.state should be 9');
-        assert(bitgoToOVC1Round3Payload.bitGoKeyId, 'bitgoToOVC1Round3Payload.bitGoKeyId not found');
+        assert.ok(bitgoToOVC1Round3Payload.state === 9, 'bitgoToOVC1Round3Payload.state should be 9');
+        assert.ok(bitgoToOVC1Round3Payload.bitGoKeyId, 'bitgoToOVC1Round3Payload.bitGoKeyId not found');
         const toUserBitgoRound3Msg = await DklsComms.decryptAndVerifyIncomingMessages(
           {
             p2pMessages: [],
@@ -697,7 +697,7 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
           'User and Bitgo Common keychains do not match'
         );
         const userPrv = userPrivateMaterial.toString('base64');
-        assert(userPrv, 'userPrv not found');
+        assert.ok(userPrv, 'userPrv not found');
 
         OVC1ToOVC2Round4Payload = {
           bitgoKeyId: bitgoToOVC1Round3Payload.bitGoKeyId,
@@ -709,8 +709,8 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
       // Round 4 Backup
       let backupCommonKeychain: string;
       {
-        assert(OVC1ToOVC2Round4Payload.state === 10, 'OVC1ToOVC2Round4Payload.state should be 10');
-        assert(OVC1ToOVC2Round4Payload.bitgoKeyId, 'OVC1ToOVC2Round4Payload.bitGoKeyId not found');
+        assert.ok(OVC1ToOVC2Round4Payload.state === 10, 'OVC1ToOVC2Round4Payload.state should be 10');
+        assert.ok(OVC1ToOVC2Round4Payload.bitgoKeyId, 'OVC1ToOVC2Round4Payload.bitGoKeyId not found');
 
         const toBackupBitgoRound3Msg = await DklsComms.decryptAndVerifyIncomingMessages(
           {
@@ -737,7 +737,7 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
           'Backup and Bitgo Common keychains do not match'
         );
         const backupPrv = backupPrivateMaterial.toString('base64');
-        assert(backupPrv, 'backupPrv not found');
+        assert.ok(backupPrv, 'backupPrv not found');
       }
 
       // Round 4 BitGo
@@ -841,7 +841,7 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
             [bitgoGpgPrvKey]
           );
           const bitgoMsg1 = bitgoMsgs1Signed.broadcastMessages.find((m) => m.from === 2);
-          assert(bitgoMsg1, 'bitgoMsg1 not found');
+          assert.ok(bitgoMsg1, 'bitgoMsg1 not found');
 
           const round1IncomingMsgs = await DklsComms.decryptAndVerifyIncomingMessages(
             {
@@ -867,9 +867,9 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
 
           const bitgoToUserMsg2 = round2SignedMessages.p2pMessages.find((m) => m.to === 0);
           const bitgoToBackupMsg2 = round2SignedMessages.p2pMessages.find((m) => m.to === 1);
-          assert(bitgoToUserMsg2, 'bitgoToUserMsg2 not found');
-          assert(bitgoToBackupMsg2, 'bitgoToBackupMsg2 not found');
-          assert(bitgoToUserMsg2.commitment, 'bitgoToUserMsg2.commitment not found');
+          assert.ok(bitgoToUserMsg2, 'bitgoToUserMsg2 not found');
+          assert.ok(bitgoToBackupMsg2, 'bitgoToBackupMsg2 not found');
+          assert.ok(bitgoToUserMsg2.commitment, 'bitgoToUserMsg2.commitment not found');
 
           storedBitgoCommitment2 = bitgoToUserMsg2?.commitment;
           return {
@@ -935,8 +935,8 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
 
           const bitgoToUserMsg3 = round3SignedMessages.p2pMessages.find((m) => m.to === 0);
           const bitgoToBackupMsg3 = round3SignedMessages.p2pMessages.find((m) => m.to === 1);
-          assert(bitgoToUserMsg3, 'bitgoToUserMsg3 not found');
-          assert(bitgoToBackupMsg3, 'bitgoToBackupMsg3 not found');
+          assert.ok(bitgoToUserMsg3, 'bitgoToUserMsg3 not found');
+          assert.ok(bitgoToBackupMsg3, 'bitgoToBackupMsg3 not found');
 
           return {
             sessionId,
@@ -998,7 +998,7 @@ describe('TSS Ecdsa MPCv2 Utils:', async function () {
             [bitgoGpgPrvKey]
           );
           const bitgoMsg4 = round4SignedMessages.broadcastMessages.find((m) => m.from === 2);
-          assert(bitgoMsg4, 'bitgoMsg4 not found');
+          assert.ok(bitgoMsg4, 'bitgoMsg4 not found');
 
           const round4IncomingMsgs = await DklsComms.decryptAndVerifyIncomingMessages(
             {

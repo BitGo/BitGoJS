@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import * as nock from 'nock';
+import nock = require('nock');
 import { Environments } from '@bitgo/sdk-core';
 
 module.exports.nockXrpRecovery = function nockXrpRecovery() {

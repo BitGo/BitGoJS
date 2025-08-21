@@ -21,8 +21,8 @@ describe('LightningV2 Wallet:', function () {
       subType: 'lightningCustody',
     });
 
-    assert(getLightningWallet(lnbtcWallet), 'lnbtc wallet should support lightningV2');
-    assert(getLightningWallet(tlntcWallet), 'tlnbtc wallet should support lightningV2');
+    assert.ok(getLightningWallet(lnbtcWallet), 'lnbtc wallet should support lightningV2');
+    assert.ok(getLightningWallet(tlntcWallet), 'tlnbtc wallet should support lightningV2');
   });
 
   it('should throw error when creating lightningV2 wallet for unsupported coins', function () {

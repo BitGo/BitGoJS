@@ -75,7 +75,7 @@ describe('BitGo', function () {
         bitgo.initializeTestVars();
         bitgo.logout({}, function (err) {
           // logout should fail when not logged in
-          assert(err);
+          assert.ok(err);
           done();
         });
       });

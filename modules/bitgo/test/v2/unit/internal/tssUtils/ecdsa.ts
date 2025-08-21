@@ -1,8 +1,8 @@
 import * as assert from 'assert';
 import * as _ from 'lodash';
-import * as nock from 'nock';
+import nock = require('nock');
 import * as openpgp from 'openpgp';
-import * as should from 'should';
+import should = require('should');
 import * as sinon from 'sinon';
 
 import {
@@ -1699,11 +1699,11 @@ describe('TSS Ecdsa Utils:', async function () {
       false
     );
 
-    assert(bitgoKeychain.keyShares);
+    assert.ok(bitgoKeychain.keyShares);
     const bitgoToBackupKeyShare = bitgoKeychain.keyShares.find(
       (keyShare) => keyShare.from === 'bitgo' && keyShare.to === 'backup'
     );
-    assert(bitgoToBackupKeyShare);
+    assert.ok(bitgoToBackupKeyShare);
 
     const userPublicShare = Buffer.concat([
       Buffer.from(userKeyShare.nShares[2].y, 'hex'),

@@ -1,4 +1,4 @@
-import * as nock from 'nock';
+import nock = require('nock');
 
 export async function nockGetSigningKey(params: {
   userId: string;

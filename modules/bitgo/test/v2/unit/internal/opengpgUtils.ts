@@ -1,5 +1,5 @@
 import * as openpgp from 'openpgp';
-import * as should from 'should';
+import should = require('should');
 import * as crypto from 'crypto';
 import * as assert from 'assert';
 
@@ -305,7 +305,7 @@ describe('OpenGPG Utils Tests', function () {
       const parsedKey = await openpgp.readKey({ armoredKey: gpgKey.publicKey });
       should.exist(parsedKey);
 
-      assert(parsedKey);
+      assert.ok(parsedKey);
       const primaryUser = await parsedKey.getPrimaryUser();
       primaryUser.user.userID?.name?.should.equal(userName);
       primaryUser.user.userID?.email?.should.equal(userEmail);
