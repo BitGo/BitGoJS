@@ -1,3 +1,36 @@
+// FlareNetwork interface for Flare-family chains
+export interface FlareNetwork {
+  name: string;
+  family: CoinFamily;
+  explorerUrl: string;
+  accountExplorerUrl: string;
+  chainId?: number;
+  nativeCoinOperationHashPrefix?: string;
+  batcherContractAddress?: string;
+  forwarderFactoryAddress?: string;
+  forwarderImplementationAddress?: string;
+  blockchainID?: string;
+  cChainBlockchainID?: string;
+  avaxAssetID?: string;
+  networkID?: number;
+  hrp?: string;
+  alias?: string;
+  vm?: string;
+  txFee?: string;
+  maxImportFee?: string;
+  createSubnetTx?: string;
+  createChainTx?: string;
+  creationTxFee?: string;
+  minConsumption?: string;
+  maxConsumption?: string;
+  maxSupply?: string;
+  minStake?: string;
+  minStakeDuration?: string;
+  maxStakeDuration?: string;
+  minDelegationStake?: string;
+  minDelegationFee?: string;
+}
+
 import { CoinFamily } from './base';
 
 export enum NetworkType {
@@ -1678,7 +1711,61 @@ class Somi extends Mainnet implements EthereumNetwork {
   batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
-class Flare extends Mainnet implements EthereumNetwork {
+export class FlareP extends Mainnet implements FlareNetwork {
+  name = 'FlareP';
+  family = CoinFamily.FLRP;
+  explorerUrl = 'https://flarescan.com/blockchain/pvm/transactions/';
+  accountExplorerUrl = 'https://flarescan.com/blockchain/pvm/address/';
+  blockchainID = '11111111111111111111111111111111LpoYY';
+  cChainBlockchainID = '2q9e4r6Mu3U68nU1fYjgbR6JvwrRx36CohpAX5UQxse55x1Q5';
+  avaxAssetID = ''; // This is not applicable to our chain, so just any string that passes validation will suffice
+  networkID = 14;
+  hrp = 'flare'; //The Human-Readable Part for Bech32 addresses on the network (e.g., avax for Mainnet). It's the prefix before the 1 in an address.
+  alias = 'P';
+  vm = 'platformvm';
+  txFee = '1000000'; // defaults
+  maxImportFee = '10000000'; // defaults
+  createSubnetTx = '100000000'; // defaults
+  createChainTx = '100000000'; // defaults
+  creationTxFee = '10000000'; // defaults
+  minConsumption = '0.1';
+  maxConsumption = '0.12';
+  maxSupply = '103688266974000000000'; // 103B tokens
+  minStake = '1000000000000000'; // 1M FLR
+  minStakeDuration = '5256000'; // 2 months
+  maxStakeDuration = '31536000'; // 1 year
+  minDelegationStake = '50000000000000'; // 50000 FLR
+  minDelegationFee = '0';
+}
+
+export class FlarePTestnet extends Testnet implements FlareNetwork {
+  name = 'FlarePTestnet';
+  family = CoinFamily.FLRP;
+  explorerUrl = 'https://coston2.testnet.flarescan.com/blockchain/pvm/transactions';
+  accountExplorerUrl = 'https://coston2.testnet.flarescan.com/blockchain/pvm/address/';
+  blockchainID = '11111111111111111111111111111111LpoYY';
+  cChainBlockchainID = 'vE8M98mEQH6wk56sStD1ML8HApTgSqfJZLk9gQ3Fsd4i6m3Bi';
+  avaxAssetID = ''; // This is not applicable to our chain, so just any string that passes validation will suffice
+  networkID = 114;
+  hrp = 'costwo'; //The Human-Readable Part for Bech32 addresses on the network (e.g., avax for Mainnet). It's the prefix before the 1 in an address.
+  alias = 'P';
+  vm = 'platformvm';
+  txFee = '1000000'; // defaults
+  maxImportFee = '10000000'; // defaults
+  createSubnetTx = '100000000'; // defaults
+  createChainTx = '100000000'; // defaults
+  creationTxFee = '10000000'; // defaults
+  minConsumption = '0.1';
+  maxConsumption = '0.12';
+  maxSupply = '79000000000000000000000'; // 79 trillion tokens
+  minStake = '1000000000000000'; // 1M FLR
+  minStakeDuration = '5256000'; // 2 months
+  maxStakeDuration = '31536000'; // 1 year
+  minDelegationStake = '50000000000000'; // 50000 FLR
+  minDelegationFee = '0';
+}
+
+export class Flare extends Mainnet implements FlareNetwork, EthereumNetwork {
   name = 'Flarechain';
   family = CoinFamily.FLR;
   explorerUrl = 'https://flare-explorer.flare.network/tx/';
@@ -1689,7 +1776,8 @@ class Flare extends Mainnet implements EthereumNetwork {
   forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
-class FlareTestnet extends Testnet implements EthereumNetwork {
+
+export class FlareTestnet extends Testnet implements FlareNetwork, EthereumNetwork {
   name = 'FlarechainTestnet';
   family = CoinFamily.FLR;
   explorerUrl = 'https://coston2-explorer.flare.network/tx/';
@@ -1831,6 +1919,7 @@ export const Networks = {
     fiat: Object.freeze(new Fiat()),
     fetchai: Object.freeze(new FetchAi()),
     flr: Object.freeze(new Flare()),
+    flrP: Object.freeze(new FlareP()),
     hash: Object.freeze(new Hash()),
     hedera: Object.freeze(new Hedera()),
     icp: Object.freeze(new Icp()),
@@ -1919,6 +2008,7 @@ export const Networks = {
     fiat: Object.freeze(new FiatTestnet()),
     fetchai: Object.freeze(new FetchAiTestnet()),
     flr: Object.freeze(new FlareTestnet()),
+    flrP: Object.freeze(new FlarePTestnet()),
     mon: Object.freeze(new MonadTestnet()),
     pyrmont: Object.freeze(new Pyrmont()),
     ethereumClassicTestnet: Object.freeze(new EthereumClassicTestnet()),

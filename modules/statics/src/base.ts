@@ -55,6 +55,7 @@ export enum CoinFamily {
   FETCHAI = 'fetchai',
   FIAT = 'fiat',
   FLR = 'flr',
+  FLRP = 'flrp',
   HASH = 'hash', // Provenance
   HBAR = 'hbar',
   ICP = 'icp',
@@ -518,6 +519,7 @@ export enum UnderlyingAsset {
   EURR = 'eurr',
   FETCHAI = 'fetchai',
   FLR = 'flr',
+  FLRP = 'flrp',
   GTC = 'gtc',
   HASH = 'hash', // Provenance
   HBAR = 'hbar', // Hedera main coin

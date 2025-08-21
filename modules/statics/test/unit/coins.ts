@@ -863,6 +863,10 @@ coins.forEach((coin, coinName) => {
       it(`should return true for CUSTODY_BITGO_INDIA ${coin.family} coin feature`, () => {
         coin.features.includes(CoinFeature.CUSTODY_BITGO_INDIA).should.eql(true);
       });
+    } else if (coin.family === CoinFamily.FLRP) {
+      it('does not require custody', () => {
+        coin.features.includes(CoinFeature.CUSTODY).should.eql(false);
+      });
     } else if (coin.features.includes(CoinFeature.GENERIC_TOKEN)) {
       it(`should return false for all custody ${coin.family} coin feature`, () => {
         coin.features.includes(CoinFeature.CUSTODY).should.eql(false);

@@ -98,6 +98,7 @@ describe('V2 Keychains', function () {
         n.asset !== UnderlyingAsset.IP && // Story Chain
         n.asset !== UnderlyingAsset.BASEETH &&
         n.asset !== UnderlyingAsset.SOMI &&
+        n.asset !== UnderlyingAsset.FLRP &&
         coinFamilyValues.includes(n.name)
     );
 
