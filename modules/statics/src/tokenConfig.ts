@@ -29,6 +29,7 @@ import {
   WorldERC20Token,
   XrpCoin,
   ZkethERC20Token,
+  VetNFTCollection,
 } from './account';
 import { CoinFamily, CoinKind, BaseCoin } from './base';
 import { coins } from './coins';
@@ -130,6 +131,10 @@ export type VetTokenConfig = BaseNetworkConfig & {
   contractAddress: string;
 };
 
+export type VetNFTCollectionConfig = BaseNetworkConfig & {
+  nftCollectionId: string;
+};
+
 export type CosmosTokenConfig = BaseNetworkConfig & {
   denom: string;
 };
@@ -155,6 +160,7 @@ export type TokenConfig =
   | Nep141TokenConfig
   | CosmosTokenConfig
   | VetTokenConfig
+  | VetNFTCollectionConfig
   | TaoTokenConfig
   | PolyxTokenConfig;
 
@@ -245,6 +251,7 @@ export interface Tokens {
     };
     vet: {
       tokens: VetTokenConfig[];
+      nftCollections: VetNFTCollectionConfig[];
     };
     cosmos: {
       tokens: CosmosTokenConfig[];
@@ -336,6 +343,7 @@ export interface Tokens {
     };
     vet: {
       tokens: VetTokenConfig[];
+      nftCollections: VetNFTCollectionConfig[];
     };
     cosmos: {
       tokens: CosmosTokenConfig[];
@@ -912,10 +920,29 @@ function getAptNFTCollectionConfig(coin: AptNFTCollection): AptNFTCollectionConf
     decimalPlaces: coin.decimalPlaces,
   };
 }
+
+function getVetNFTCollectionConfig(coin: VetNFTCollection): VetNFTCollectionConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'vet' : 'tvet',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    nftCollectionId: coin.nftCollectionId,
+    decimalPlaces: coin.decimalPlaces,
+  };
+}
 const getFormattedAptNFTCollections = (customCoinMap = coins) =>
   customCoinMap.reduce((acc: AptNFTCollectionConfig[], coin) => {
     if (coin instanceof AptNFTCollection) {
       acc.push(getAptNFTCollectionConfig(coin));
+    }
+    return acc;
+  }, []);
+
+const getFormattedVetNFTCollections = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: VetNFTCollectionConfig[], coin) => {
+    if (coin instanceof VetNFTCollection) {
+      acc.push(getVetNFTCollectionConfig(coin));
     }
     return acc;
   }, []);
@@ -997,6 +1024,7 @@ function getCosmosTokenConfig(coin: CosmosChainToken): CosmosTokenConfig {
 
 export const getFormattedTokens = (coinMap = coins): Tokens => {
   const formattedAptNFTCollections = getFormattedAptNFTCollections(coinMap);
+  const formattedVetNFTCollections = getFormattedVetNFTCollections(coinMap);
   return {
     bitcoin: {
       eth: {
@@ -1088,6 +1116,9 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
       },
       vet: {
         tokens: getFormattedVetTokens(coinMap).filter((token) => token.network === 'Mainnet'),
+        nftCollections: formattedVetNFTCollections.filter(
+          (nftCollection: VetNFTCollectionConfig) => nftCollection.network === 'Mainnet'
+        ),
       },
       cosmos: {
         tokens: getFormattedCosmosChainTokens(coinMap).filter((token) => token.network === 'Mainnet'),
@@ -1183,6 +1214,9 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
       },
       vet: {
         tokens: getFormattedVetTokens(coinMap).filter((token) => token.network === 'Testnet'),
+        nftCollections: formattedVetNFTCollections.filter(
+          (nftCollection: VetNFTCollectionConfig) => nftCollection.network === 'Testnet'
+        ),
       },
       cosmos: {
         tokens: getFormattedCosmosChainTokens(coinMap).filter((token) => token.network === 'Testnet'),
@@ -1294,6 +1328,8 @@ export function getFormattedTokenConfigForCoin(coin: Readonly<BaseCoin>): TokenC
     return getCosmosTokenConfig(coin);
   } else if (coin instanceof VetToken) {
     return getVetTokenConfig(coin);
+  } else if (coin instanceof VetNFTCollection) {
+    return getVetNFTCollectionConfig(coin);
   }
   return undefined;
 }
