@@ -10,6 +10,8 @@ import {
   multisigTypes,
   ParsedTransaction,
   ParseTransactionOptions,
+  PopulatedIntent,
+  PrebuildTransactionWithIntentOptions,
   SignedTransaction,
   SignTransactionOptions,
   VerifyAddressOptions,
@@ -206,5 +208,12 @@ export class Apt extends BaseCoin {
       throw new Error('Unsupported multiSigType');
     }
     auditEddsaPrivateKey(prv, publicKey ?? '');
+  }
+
+  setCoinSpecificFieldsInIntent(intent: PopulatedIntent, params: PrebuildTransactionWithIntentOptions): void {
+    // Handle custom transaction parameters for Aptos
+    if (params.aptosCustomTransactionParams) {
+      intent.aptosCustomTransactionParams = params.aptosCustomTransactionParams;
+    }
   }
 }

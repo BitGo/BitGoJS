@@ -97,7 +97,8 @@ export class Utils implements BaseUtils {
       case DIGITAL_ASSET_TRANSFER_FUNCTION:
         return TransactionType.SendNFT;
       default:
-        throw new InvalidTransactionError(`Invalid transaction: unable to fetch transaction type ${moduleIdentifier}`);
+        // For any other function calls, treat as a custom transaction
+        return TransactionType.CustomTx;
     }
   }
 
