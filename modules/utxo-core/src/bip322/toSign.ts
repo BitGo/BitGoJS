@@ -1,4 +1,4 @@
-import { Psbt, bitgo, networks } from '@bitgo/utxo-lib';
+import { Psbt, bitgo, networks, Transaction } from '@bitgo/utxo-lib';
 import { toXOnlyPublicKey } from '@bitgo/utxo-lib/dist/src/bitgo/outputScripts';
 
 import { addBip322ProofMessage } from './utils';
@@ -57,6 +57,7 @@ export function addBip322Input(psbt: Psbt, message: string, addressDetails: Addr
     index: 0, // vin[0].prevout.n = 0
     sequence: 0, // vin[0].nSequence = 0
     nonWitnessUtxo: toSpendTx.toBuffer(), // previous transaction for us to rebuild later to verify
+    sighashType: Transaction.SIGHASH_ALL,
   });
   const inputIndex = psbt.data.inputs.length - 1;
   psbt.updateInput(inputIndex, {
