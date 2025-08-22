@@ -7,7 +7,7 @@ import { writeFileSync } from 'fs';
 // ** RUNNING THIS SCRIPT TWICE WILL OVERWRITE THE DATA ON THE FILE **
 
 // to run this script you can use the following command:
-// npx ts-node create-account.ts
+// npx tsx create-account.ts
 
 async function main() {
   const newKeyPair = new KeyPair();

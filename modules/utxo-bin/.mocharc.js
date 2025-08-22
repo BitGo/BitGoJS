@@ -1,5 +1,5 @@
 module.exports = {
-  require: 'ts-node/register',
+  require: 'tsx',
   timeout: '10000',
   extension: ['ts'],
 };

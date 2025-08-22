@@ -4,7 +4,9 @@
   "description": "",
   "main": "server.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start:server": "tsx server.ts",
+    "start:create-wallet": "tsx create-wallet.ts"
   },
   "author": "BitGo",
   "license": "ISC",
@@ -12,7 +14,7 @@
     "proxy": "2.1.1",
     "proxy-agent": "6.4.0",
     "superagent": "9.0.1",
-    "ts-node": "^10.8.1",
+    "tsx": "^4.20.4",
     "typescript": "^4.7.3",
     "typescript-cached-transpile": "^0.0.6"
   }

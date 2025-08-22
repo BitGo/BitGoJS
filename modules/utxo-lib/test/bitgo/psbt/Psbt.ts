@@ -106,9 +106,9 @@ describe('Psbt Misc', function () {
   }
   it('fail to finalise p2tr sighash mismatch', function () {
     const psbt = getTestPsbt();
-    assert(psbt.validateSignaturesOfAllInputs());
+    assert.ok(psbt.validateSignaturesOfAllInputs());
     const tapScriptSig = psbt.data.inputs[0].tapScriptSig;
-    assert(tapScriptSig);
+    assert.ok(tapScriptSig);
     tapScriptSig[0].signature = Buffer.concat([tapScriptSig[0].signature, Buffer.of(Transaction.SIGHASH_ALL)]);
     assert.throws(
       () => psbt.finalizeAllInputs(),
@@ -373,7 +373,7 @@ describe('isTransactionWithKeyPathSpendInput', function () {
         rootWalletKeys,
         'fullsigned'
       );
-      assert(psbt.validateSignaturesOfAllInputs());
+      assert.ok(psbt.validateSignaturesOfAllInputs());
       psbt.finalizeAllInputs();
       const tx = psbt.extractTransaction() as UtxoTransaction<bigint>;
 
@@ -392,7 +392,7 @@ describe('isTransactionWithKeyPathSpendInput', function () {
         rootWalletKeys,
         'fullsigned'
       );
-      assert(psbt.validateSignaturesOfAllInputs());
+      assert.ok(psbt.validateSignaturesOfAllInputs());
       psbt.finalizeAllInputs();
       const tx = psbt.extractTransaction();
 
@@ -464,7 +464,7 @@ describe('Parse PSBT', function () {
     const psbt = createPsbtForNetwork({ network: networks.bitcoincash });
     const unspent = mockReplayProtectionUnspent(networks.bitcoincash, BigInt(1e8), { key: signer });
     const { redeemScript } = createOutputScriptP2shP2pk(signer.publicKey);
-    assert(redeemScript);
+    assert.ok(redeemScript);
     addReplayProtectionUnspentToPsbt(psbt, unspent, redeemScript);
     addWalletOutputToPsbt(psbt, rootWalletKeys, getInternalChainCode('p2sh'), 0, BigInt(1e8 - 10000));
     const input = psbt.data.inputs[0];
@@ -932,7 +932,7 @@ function testUtxoPsbt(coinNetwork: Network) {
 
     it('should be able to clone psbt', async function () {
       const clone = psbt.clone();
-      assert(clone instanceof psbt.constructor, `Expected clone to be instance of ${psbt.constructor.name}`);
+      assert.ok(clone instanceof psbt.constructor, `Expected clone to be instance of ${psbt.constructor.name}`);
       assert.deepStrictEqual(clone.toBuffer(), psbt.toBuffer());
       assert.deepStrictEqual(clone.clone().toBuffer(), psbt.toBuffer());
       assert.strictEqual(clone.network, psbt.network);
@@ -956,13 +956,13 @@ function testUtxoPsbt(coinNetwork: Network) {
       function checkDerivationPrefix(bip32Derivation: { path: string }): void {
         const path = bip32Derivation.path.split('/');
         const prefix = bip32PathsAbsolute ? 'm' : '0';
-        assert(path[0] === prefix);
+        assert.ok(path[0] === prefix);
       }
       it(`should deserialize PSBT bip32Derivations with paths ${
         bip32PathsAbsolute ? '' : 'not '
       } absolute`, async function () {
         const deserializedPsbt = createPsbtFromHex(psbtHex, coinNetwork, bip32PathsAbsolute);
-        assert(deserializedPsbt);
+        assert.ok(deserializedPsbt);
         deserializedPsbt.data.inputs.forEach((input) => {
           input?.bip32Derivation?.forEach((derivation) => checkDerivationPrefix(derivation));
           input?.tapBip32Derivation?.forEach((derivation) => checkDerivationPrefix(derivation));

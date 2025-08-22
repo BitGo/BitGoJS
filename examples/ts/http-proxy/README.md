@@ -11,6 +11,6 @@ Please take the time to review your use case as you choose between these options
 ## Setup + Usage
 - Acquire a test environment account, enterprise and access token
 - Fill in the `TODO` sections with the relevant credentials
-- `npm install`
-- `ts-node server.ts`
-- In a separate shell: `ts-node create-wallet.ts`
+- `yarn install`
+- `yarn run start:server`
+- In a separate shell: `yarn run start:create-wallet`

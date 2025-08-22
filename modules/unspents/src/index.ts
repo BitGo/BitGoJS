@@ -7,3 +7,4 @@ export {
 };
 
 export * from './dimensions';
+export { VirtualSizes } from './virtualSizes';

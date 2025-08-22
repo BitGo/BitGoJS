@@ -2,9 +2,9 @@
 // Tests for Wallets
 //
 
-import * as should from 'should';
+import should = require('should');
 import * as _ from 'lodash';
-import * as nock from 'nock';
+import nock = require('nock');
 
 import { TestBitGo } from '../../lib/test_bitgo';
 

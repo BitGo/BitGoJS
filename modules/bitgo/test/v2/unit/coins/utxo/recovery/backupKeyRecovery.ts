@@ -4,7 +4,7 @@
 import 'should';
 import * as mocha from 'mocha';
 import * as sinon from 'sinon';
-import * as nock from 'nock';
+import nock = require('nock');
 import { BIP32Interface } from '@bitgo/utxo-lib';
 
 import * as utxolib from '@bitgo/utxo-lib';

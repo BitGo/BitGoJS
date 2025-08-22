@@ -3,7 +3,7 @@
  */
 
 import * as _ from 'lodash';
-import * as should from 'should';
+import should = require('should');
 import { bip32 } from '@bitgo/utxo-lib';
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src/bitgo';

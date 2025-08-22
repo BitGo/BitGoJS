@@ -32,7 +32,7 @@ function generateUserQrData(userKeychain: Keychain, userMasterKey?: string): QrD
   }
 
   const pub = getPubFromKey(userKeychain);
-  assert(pub);
+  assert.ok(pub);
 
   return {
     title: 'A: Provided User Key',
@@ -71,7 +71,7 @@ function generateBackupQrData(
 
   if (backupKeyProvider === 'BitGo Trust' && backupKeychain.type === 'tss') {
     const keyShares = backupKeychain.keyShares?.filter((keyShare) => keyShare.to === 'backup');
-    assert(keyShares?.length === 2);
+    assert.ok(keyShares?.length === 2);
     return {
       title: 'B: Backup Key Shares',
       description:
@@ -82,7 +82,7 @@ function generateBackupQrData(
   }
 
   const pub = getPubFromKey(backupKeychain);
-  assert(pub);
+  assert.ok(pub);
 
   if (backupKeyProvider) {
     return {
@@ -104,7 +104,7 @@ function generateBackupQrData(
 
 function generateBitGoQrData(bitgoKeychain: Keychain): QrDataEntry {
   const bitgoData = getPubFromKey(bitgoKeychain);
-  assert(bitgoData);
+  assert.ok(bitgoData);
 
   return {
     title: 'C: BitGo Public Key',

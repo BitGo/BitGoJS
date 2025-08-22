@@ -1,8 +1,8 @@
 import * as sodium from 'libsodium-wrappers-sumo';
 import * as _ from 'lodash';
-import * as nock from 'nock';
+import nock = require('nock');
 import * as openpgp from 'openpgp';
-import * as should from 'should';
+import should = require('should');
 import * as sinon from 'sinon';
 
 import { TestableBG, TestBitGo } from '@bitgo/sdk-test';

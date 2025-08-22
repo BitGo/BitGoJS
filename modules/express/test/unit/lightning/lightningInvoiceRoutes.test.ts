@@ -1,5 +1,5 @@
 import * as sinon from 'sinon';
-import * as should from 'should';
+import should from 'should';
 import * as express from 'express';
 import { handlePayLightningInvoice, handleCreateLightningInvoice } from '../../../src/lightning/lightningInvoiceRoutes';
 import { Invoice, PayInvoiceResponse } from '@bitgo/abstract-lightning';
@@ -73,7 +73,7 @@ describe('Lightning Invoice Routes', () => {
 
       should(result).deepEqual(Invoice.encode(expectedResponse));
       const decodedResult = Invoice.decode(result);
-      assert('right' in decodedResult);
+      assert.ok('right' in decodedResult);
       should(decodedResult.right).deepEqual(expectedResponse);
       should(createInvoiceSpy).be.calledOnce();
       const [firstArg] = createInvoiceSpy.getCall(0).args;

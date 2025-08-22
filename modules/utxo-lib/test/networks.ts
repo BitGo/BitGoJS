@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import * as assert from 'assert/strict';
 import {
   getMainnet,
   getNetworkList,
@@ -129,7 +129,7 @@ describe('networks', function () {
 
     describe(`networks.${name}`, function () {
       it('is valid network', function () {
-        assert(isValidNetwork(network));
+        assert.ok(isValidNetwork(network));
       });
 
       it('getNetworkName() returns network name', function () {

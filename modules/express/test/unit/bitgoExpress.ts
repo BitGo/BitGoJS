@@ -1,25 +1,28 @@
-import * as should from 'should';
+import should from 'should';
 import 'should-http';
 import 'should-sinon';
 import '../lib/asserts';
 
-import * as nock from 'nock';
 import * as sinon from 'sinon';
+import * as nock from 'nock';
+import proxyquire from 'proxyquire';
 
-import * as fs from 'fs';
-import * as http from 'http';
-import * as https from 'https';
-import * as debugLib from 'debug';
-import * as path from 'path';
+import debugLib from 'debug';
 import { Environments } from 'bitgo';
 
 import { SSL_OP_NO_TLSv1 } from 'constants';
 import { TlsConfigurationError, NodeEnvironmentError } from '../../src/errors';
 
-nock.disableNetConnect();
-
 import { app as expressApp, startup, createServer, createBaseUri, prepareIpc } from '../../src/expressApp';
-import * as clientRoutes from '../../src/clientRoutes';
+
+// commonJS imports to allow stubbing
+const path = require('path');
+const http = require('http');
+const https = require('https');
+const fs = require('fs');
+
+nock.disableNetConnect();
+proxyquire.noPreserveCache();
 
 describe('Bitgo Express', function () {
   describe('server initialization', function () {
@@ -371,7 +374,7 @@ describe('Bitgo Express', function () {
     });
 
     it('should remove the socket before binding if IPC socket exists and is a socket', async () => {
-      const statStub = sinon.stub(fs, 'statSync').returns({ isSocket: () => true } as unknown as fs.Stats);
+      const statStub = sinon.stub(fs, 'statSync').returns({ isSocket: () => true });
       const unlinkStub = sinon.stub(fs, 'unlinkSync');
       await prepareIpc('testipc').should.be.resolved();
       unlinkStub.calledWithExactly('testipc').should.be.true();
@@ -381,7 +384,7 @@ describe('Bitgo Express', function () {
     });
 
     it('should fail if IPC socket is not actually a socket', async () => {
-      const statStub = sinon.stub(fs, 'statSync').returns({ isSocket: () => false } as unknown as fs.Stats);
+      const statStub = sinon.stub(fs, 'statSync').returns({ isSocket: () => false });
       const unlinkStub = sinon.stub(fs, 'unlinkSync');
       await prepareIpc('testipc').should.be.rejectedWith(/IPC socket is not actually a socket/);
       unlinkStub.notCalled.should.be.true();
@@ -404,58 +407,81 @@ describe('Bitgo Express', function () {
     });
 
     it('should only call setupAPIRoutes when running in regular mode', () => {
+      const setupAPIRoutesStub = sinon.stub();
+      const setupSigningRoutesStub = sinon.stub();
+
+      const { app } = proxyquire('../../src/expressApp', {
+        './clientRoutes': {
+          setupAPIRoutes: setupAPIRoutesStub,
+          setupSigningRoutes: setupSigningRoutesStub,
+          setupLightningSignerNodeRoutes: sinon.stub(),
+        },
+      });
+
       const args: any = {
         env: 'test',
         signerMode: undefined,
       };
 
-      const apiStub = sinon.stub(clientRoutes, 'setupAPIRoutes');
-      const signerStub = sinon.stub(clientRoutes, 'setupSigningRoutes');
-
-      expressApp(args);
-      apiStub.should.have.been.calledOnce();
-      signerStub.called.should.be.false();
-      apiStub.restore();
-      signerStub.restore();
+      app(args);
+      setupAPIRoutesStub.should.have.been.calledOnce();
+      setupSigningRoutesStub.called.should.be.false();
     });
 
     it('should only call setupLightningSignerNodeRoutes when running with lightningSignerFileSystemPath', () => {
+      const setupAPIRoutesStub = sinon.stub();
+      const setupSigningRoutesStub = sinon.stub();
+      const setupLightningSignerNodeRoutesStub = sinon.stub();
+      const { app } = proxyquire('../../src/expressApp', {
+        './clientRoutes': {
+          setupAPIRoutes: setupAPIRoutesStub,
+          setupSigningRoutes: setupSigningRoutesStub,
+          setupLightningSignerNodeRoutes: setupLightningSignerNodeRoutesStub,
+        },
+        fs: {
+          readFileSync: () => {
+            return validLightningSignerConfigJSON;
+          },
+        },
+      });
+
       const args: any = {
         env: 'test',
         lightningSignerFileSystemPath: 'lightningSignerFileSystemPath',
       };
 
-      const readValidStub = sinon.stub(fs, 'readFileSync').returns(validLightningSignerConfigJSON);
-      const lightningSignerStub = sinon.stub(clientRoutes, 'setupLightningSignerNodeRoutes');
-      const apiStub = sinon.stub(clientRoutes, 'setupAPIRoutes');
-      const signerStub = sinon.stub(clientRoutes, 'setupSigningRoutes');
-
-      expressApp(args);
-      lightningSignerStub.should.have.been.calledOnce();
-      apiStub.should.have.been.calledOnce();
-      signerStub.called.should.be.false();
-      apiStub.restore();
-      signerStub.restore();
-      readValidStub.restore();
+      app(args);
+      setupLightningSignerNodeRoutesStub.should.have.been.calledOnce();
+      setupAPIRoutesStub.should.have.been.calledOnce();
+      setupSigningRoutesStub.called.should.be.false();
     });
 
     it('should only call setupSigningRoutes when running in signer mode', () => {
+      const setupAPIRoutesStub = sinon.stub();
+      const setupSigningRoutesStub = sinon.stub();
+
+      const { app } = proxyquire('../../src/expressApp', {
+        './clientRoutes': {
+          setupAPIRoutes: setupAPIRoutesStub,
+          setupSigningRoutes: setupSigningRoutesStub,
+          setupLightningSignerNodeRoutes: sinon.stub(),
+        },
+        fs: {
+          readFileSync: () => {
+            return validPrvJSON;
+          },
+        },
+      });
+
       const args: any = {
         env: 'test',
         signerMode: 'signerMode',
         signerFileSystemPath: 'signerFileSystemPath',
       };
 
-      const apiStub = sinon.stub(clientRoutes, 'setupAPIRoutes');
-      const signerStub = sinon.stub(clientRoutes, 'setupSigningRoutes');
-      const readFileStub = sinon.stub(fs, 'readFileSync').returns(validPrvJSON);
-
-      expressApp(args);
-      signerStub.should.have.been.calledOnce();
-      apiStub.called.should.be.false();
-      apiStub.restore();
-      signerStub.restore();
-      readFileStub.restore();
+      app(args);
+      setupSigningRoutesStub.should.have.been.calledOnce();
+      setupAPIRoutesStub.called.should.be.false();
     });
 
     it('should require a signerFileSystemPath and signerMode are both set when running in signer mode', function () {
@@ -555,7 +581,7 @@ describe('Bitgo Express', function () {
 
     it('should set keepAliveTimeout and headersTimeout if specified in config for HTTP server', async function () {
       const createServerStub = sinon.stub(http, 'createServer').callsFake(() => {
-        return { listen: sinon.stub(), setTimeout: sinon.stub() } as unknown as http.Server;
+        return { listen: sinon.stub(), setTimeout: sinon.stub() };
       });
 
       const args: any = {
@@ -575,7 +601,7 @@ describe('Bitgo Express', function () {
 
     it('should set keepAliveTimeout and headersTimeout if specified in config for HTTPS server', async function () {
       const createServerStub = sinon.stub(https, 'createServer').callsFake(() => {
-        return { listen: sinon.stub(), setTimeout: sinon.stub() } as unknown as https.Server;
+        return { listen: sinon.stub(), setTimeout: sinon.stub() };
       });
 
       const args: any = {
@@ -597,7 +623,7 @@ describe('Bitgo Express', function () {
 
     it('should not set keepAliveTimeout and headersTimeout if not specified in config for HTTP server', async function () {
       const createServerStub = sinon.stub(http, 'createServer').callsFake(() => {
-        return { listen: sinon.stub(), setTimeout: sinon.stub() } as unknown as http.Server;
+        return { listen: sinon.stub(), setTimeout: sinon.stub() };
       });
 
       const args: any = {
@@ -616,7 +642,7 @@ describe('Bitgo Express', function () {
 
     it('should not set keepAliveTimeout and headersTimeout if not specified in config for HTTPS server', async function () {
       const createServerStub = sinon.stub(https, 'createServer').callsFake(() => {
-        return { listen: sinon.stub(), setTimeout: sinon.stub() } as unknown as https.Server;
+        return { listen: sinon.stub(), setTimeout: sinon.stub() };
       });
 
       const args: any = {

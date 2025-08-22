@@ -182,7 +182,7 @@ export function getTransactionBuilder<TNumber extends number | bigint = number>(
   txBuilder.addOutput(recipientScript, toTNumber<TNumber>(BigInt(outputAmount) - BigInt(1000), amountType));
 
   const pubkeys = keys.map((k) => k.publicKey);
-  assert(isTriple(pubkeys));
+  assert.ok(isTriple(pubkeys));
 
   prevOutputs.forEach(({ value }, vin) => {
     halfSigners.forEach(({ signer, cosigner }) => {

@@ -7,7 +7,6 @@ import { compactSize } from './scriptSizes';
 import { PositiveInteger } from './types';
 
 import { VirtualSizes } from './virtualSizes';
-export { VirtualSizes };
 
 /**
  * Apply `f` to all properties of `d`
@@ -144,15 +143,14 @@ export class Dimensions {
     return Dimensions.sum({ outputs: { count: 1, size } });
   }
 
-  static readonly SingleOutput = Object.freeze({
-    p2sh: Dimensions.singleOutput(VirtualSizes.txP2shOutputSize),
-    p2shP2wsh: Dimensions.singleOutput(VirtualSizes.txP2shP2wshOutputSize),
-    p2wsh: Dimensions.singleOutput(VirtualSizes.txP2wshOutputSize),
-    p2tr: Dimensions.singleOutput(VirtualSizes.txP2trOutputSize),
-
-    p2pkh: Dimensions.singleOutput(VirtualSizes.txP2pkhOutputSize),
-    p2wpkh: Dimensions.singleOutput(VirtualSizes.txP2wpkhOutputSize),
-  });
+  static SingleOutput: {
+    p2sh: Dimensions;
+    p2shP2wsh: Dimensions;
+    p2wsh: Dimensions;
+    p2tr: Dimensions;
+    p2pkh: Dimensions;
+    p2wpkh: Dimensions;
+  };
 
   /**
    * @return Number of total inputs (p2sh + p2shP2wsh + p2wsh + p2tr)
@@ -218,15 +216,15 @@ export class Dimensions {
     return scriptLength + compactSize(scriptLength) + VirtualSizes.txOutputAmountSize;
   }
 
-  static readonly SingleInput = Object.freeze({
-    p2sh: Dimensions.sum({ nP2shInputs: 1 }),
-    p2shP2wsh: Dimensions.sum({ nP2shP2wshInputs: 1 }),
-    p2wsh: Dimensions.sum({ nP2wshInputs: 1 }),
-    p2trKeypath: Dimensions.sum({ nP2trKeypathInputs: 1 }),
-    p2trScriptPathLevel1: Dimensions.sum({ nP2trScriptPathLevel1Inputs: 1 }),
-    p2trScriptPathLevel2: Dimensions.sum({ nP2trScriptPathLevel2Inputs: 1 }),
-    p2shP2pk: Dimensions.sum({ nP2shP2pkInputs: 1 }),
-  });
+  static SingleInput: {
+    p2sh: Dimensions;
+    p2shP2wsh: Dimensions;
+    p2wsh: Dimensions;
+    p2trKeypath: Dimensions;
+    p2trScriptPathLevel1: Dimensions;
+    p2trScriptPathLevel2: Dimensions;
+    p2shP2pk: Dimensions;
+  };
 
   /**
    * @return
@@ -269,13 +267,13 @@ export class Dimensions {
     }
   }
 
-  static readonly ASSUME_P2SH = Dimensions.SingleInput.p2sh;
-  static readonly ASSUME_P2SH_P2WSH = Dimensions.SingleInput.p2shP2wsh;
-  static readonly ASSUME_P2WSH = Dimensions.SingleInput.p2wsh;
-  static readonly ASSUME_P2TR_KEYPATH = Dimensions.SingleInput.p2trKeypath;
-  static readonly ASSUME_P2TR_SCRIPTPATH_LEVEL1 = Dimensions.SingleInput.p2trScriptPathLevel1;
-  static readonly ASSUME_P2TR_SCRIPTPATH_LEVEL2 = Dimensions.SingleInput.p2trScriptPathLevel2;
-  static readonly ASSUME_P2SH_P2PK_INPUT = Dimensions.SingleInput.p2shP2pk;
+  static ASSUME_P2SH: Dimensions;
+  static ASSUME_P2SH_P2WSH: Dimensions;
+  static ASSUME_P2WSH: Dimensions;
+  static ASSUME_P2TR_KEYPATH: Dimensions;
+  static ASSUME_P2TR_SCRIPTPATH_LEVEL1: Dimensions;
+  static ASSUME_P2TR_SCRIPTPATH_LEVEL2: Dimensions;
+  static ASSUME_P2SH_P2PK_INPUT: Dimensions;
 
   private static getAssumedDimension(params: FromInputParams = {}, index: number) {
     const { assumeUnsigned } = params;
@@ -588,3 +586,33 @@ export class Dimensions {
     return this.getOverheadVSize() + this.getInputsVSize() + this.getOutputsVSize();
   }
 }
+
+// Initialize static properties that require the class to be fully defined first
+Dimensions.SingleOutput = Object.freeze({
+  p2sh: Dimensions.singleOutput(VirtualSizes.txP2shOutputSize),
+  p2shP2wsh: Dimensions.singleOutput(VirtualSizes.txP2shP2wshOutputSize),
+  p2wsh: Dimensions.singleOutput(VirtualSizes.txP2wshOutputSize),
+  p2tr: Dimensions.singleOutput(VirtualSizes.txP2trOutputSize),
+  p2pkh: Dimensions.singleOutput(VirtualSizes.txP2pkhOutputSize),
+  p2wpkh: Dimensions.singleOutput(VirtualSizes.txP2wpkhOutputSize),
+});
+
+// Initialize SingleInput after the class is fully defined
+Dimensions.SingleInput = Object.freeze({
+  p2sh: Dimensions.sum({ nP2shInputs: 1 }),
+  p2shP2wsh: Dimensions.sum({ nP2shP2wshInputs: 1 }),
+  p2wsh: Dimensions.sum({ nP2wshInputs: 1 }),
+  p2trKeypath: Dimensions.sum({ nP2trKeypathInputs: 1 }),
+  p2trScriptPathLevel1: Dimensions.sum({ nP2trScriptPathLevel1Inputs: 1 }),
+  p2trScriptPathLevel2: Dimensions.sum({ nP2trScriptPathLevel2Inputs: 1 }),
+  p2shP2pk: Dimensions.sum({ nP2shP2pkInputs: 1 }),
+});
+
+// Initialize the ASSUME_ constants
+Dimensions.ASSUME_P2SH = Dimensions.SingleInput.p2sh;
+Dimensions.ASSUME_P2SH_P2WSH = Dimensions.SingleInput.p2shP2wsh;
+Dimensions.ASSUME_P2WSH = Dimensions.SingleInput.p2wsh;
+Dimensions.ASSUME_P2TR_KEYPATH = Dimensions.SingleInput.p2trKeypath;
+Dimensions.ASSUME_P2TR_SCRIPTPATH_LEVEL1 = Dimensions.SingleInput.p2trScriptPathLevel1;
+Dimensions.ASSUME_P2TR_SCRIPTPATH_LEVEL2 = Dimensions.SingleInput.p2trScriptPathLevel2;
+Dimensions.ASSUME_P2SH_P2PK_INPUT = Dimensions.SingleInput.p2shP2pk;

@@ -1,5 +1,5 @@
 import * as sinon from 'sinon';
-import * as should from 'should';
+import should from 'should';
 import * as express from 'express';
 import { LightningOnchainWithdrawResponse } from '@bitgo/abstract-lightning';
 import { BitGo } from 'bitgo';

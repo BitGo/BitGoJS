@@ -5,7 +5,7 @@ import { unspents } from './fixtures/unspents';
 const destination = '2MyGxrhLC4kRfuVjLqCVYFtC7DchhgMCiNz';
 
 /*
- * Usage: npx ts-node btc/legacySafe/sweep.ts
+ * Usage: npx tsx btc/legacySafe/sweep.ts
  * */
 const sweepTransaction = async () => {
   const coin = legacySafeConfig.sdk.coin(legacySafeConfig.coin) as AbstractUtxoCoin;

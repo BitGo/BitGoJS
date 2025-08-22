@@ -35,7 +35,7 @@ import {
   MPCv2SignatureShareRound3Input,
 } from '@bitgo/public-types';
 import * as assert from 'assert';
-import * as nock from 'nock';
+import nock from 'nock';
 import * as fs from 'fs';
 import * as express from 'express';
 
@@ -504,7 +504,7 @@ describe('External signer', () => {
     const walletPassphrase = 'testPass';
 
     const [userShare, backupShare, bitgoShare] = await DklsUtils.generateDKGKeyShares();
-    assert(backupShare, 'backupShare is not defined');
+    assert.ok(backupShare, 'backupShare is not defined');
 
     const bgTest = new BitGo({ env: 'test' });
     const userKeyShare = userShare.getKeyShare().toString('base64');
@@ -555,7 +555,7 @@ describe('External signer', () => {
       round1Result.signatureShareRound1,
       round1Result.userGpgPubKey
     );
-    assert(
+    assert.ok(
       txRequestRound1.transactions &&
         txRequestRound1.transactions.length === 1 &&
         txRequestRound1.transactions[0].signatureShares.length === 2,
@@ -589,7 +589,7 @@ describe('External signer', () => {
       round2Result.signatureShareRound2,
       round1Result.userGpgPubKey
     );
-    assert(
+    assert.ok(
       txRequestRound2.transactions &&
         txRequestRound2.transactions.length === 1 &&
         txRequestRound2.transactions[0].signatureShares.length === 4,
@@ -623,7 +623,7 @@ describe('External signer', () => {
     );
 
     // signature generation and validation
-    assert(userMsg4.data.msg4.signatureR === bitgoMsg4.signatureR, 'User and BitGo signaturesR do not match');
+    assert.ok(userMsg4.data.msg4.signatureR === bitgoMsg4.signatureR, 'User and BitGo signaturesR do not match');
 
     const deserializedBitgoMsg4 = DklsTypes.deserializeMessages({
       p2pMessages: [],
@@ -652,8 +652,8 @@ describe('External signer', () => {
       derivationPath,
       createKeccakHash('keccak256') as Hash
     );
-    assert(convertedSignature, 'Signature is not valid');
-    assert(convertedSignature.split(':').length === 4, 'Signature is not valid');
+    assert.ok(convertedSignature, 'Signature is not valid');
+    assert.ok(convertedSignature.split(':').length === 4, 'Signature is not valid');
     readFileStub.restore();
     envStub.restore();
   });
@@ -710,7 +710,7 @@ async function signBitgoMPCv2Round1(
   userShare: SignatureShareRecord,
   userGPGPubKey: string
 ): Promise<TxRequest> {
-  assert(
+  assert.ok(
     txRequest.transactions && txRequest.transactions.length === 1,
     'txRequest.transactions is not an array of length 1'
   );
@@ -772,7 +772,7 @@ async function signBitgoMPCv2Round2(
   userShare: SignatureShareRecord,
   userGPGPubKey: string
 ): Promise<{ txRequest: TxRequest; bitgoMsg4: DklsTypes.SerializedBroadcastMessage }> {
-  assert(
+  assert.ok(
     txRequest.transactions && txRequest.transactions.length === 1,
     'txRequest.transactions is not an array of length 1'
   );

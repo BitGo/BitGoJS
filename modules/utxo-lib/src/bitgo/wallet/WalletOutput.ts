@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import { ok as assert } from 'assert';
 
 import { Payment, taproot } from 'bitcoinjs-lib';
 import { PsbtOutput, PsbtOutputUpdate } from 'bip174/src/lib/interfaces';

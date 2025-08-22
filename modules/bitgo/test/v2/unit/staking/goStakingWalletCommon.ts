@@ -1,5 +1,5 @@
-import * as nock from 'nock';
-import * as should from 'should';
+import nock = require('nock');
+import should = require('should');
 import fixtures from '../../fixtures/staking/goStakingWallet';
 
 import { Enterprise, Environments, GoStakingWallet, Wallet } from '@bitgo/sdk-core';

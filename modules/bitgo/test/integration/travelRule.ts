@@ -213,7 +213,7 @@ describe('Travel Rule API', function () {
       return travel
         .sendMany({ txid: txid, travelInfos: travelInfos })
         .then(function () {
-          assert(false); // should not get here
+          assert.ok(false); // should not get here
         })
         .catch(function (err) {
           err.message.should.equal('amount did not match for output index 0');

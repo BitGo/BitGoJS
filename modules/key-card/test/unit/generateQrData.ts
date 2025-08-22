@@ -60,19 +60,19 @@ describe('generateQrData', function () {
     qrData.user.description.should.equal('This is your private key, encrypted with your wallet password.');
     qrData.user.data.should.equal(userEncryptedPrv);
 
-    assert(qrData.backup);
+    assert.ok(qrData.backup);
     qrData.backup.title.should.equal('B: Backup Key');
     qrData.backup.description.should.equal('This is your backup private key, encrypted with your wallet password.');
     qrData.backup.data.should.equal(backupEncryptedPrv);
 
-    assert(qrData.bitgo);
+    assert.ok(qrData.bitgo);
     qrData.bitgo.title.should.equal('C: BitGo Public Key');
     qrData.bitgo.description.should.equal(
       'This is the public part of the key that BitGo will use to ' + 'co-sign transactions\r\nwith you on your wallet.'
     );
     qrData.bitgo.data.should.equal(bitgoPub);
 
-    assert(qrData.passcode);
+    assert.ok(qrData.passcode);
     qrData.passcode.title.should.equal('D: Encrypted wallet Password');
     qrData.passcode.description.should.equal(
       'This is the wallet password, encrypted client-side with a key held by BitGo.'
@@ -123,13 +123,13 @@ describe('generateQrData', function () {
         qrData.user.data.should.equal(userPub);
         should.equal(qrData.user.publicMasterKey, userMasterKey);
 
-        assert(qrData.backup);
+        assert.ok(qrData.backup);
         qrData.backup.title.should.equal('B: Provided Backup Key');
         qrData.backup.description.should.equal('This is the public key you provided for your wallet.');
         qrData.backup.data.should.equal(backupPub);
         should.equal(qrData.backup?.publicMasterKey, backupMasterKey);
 
-        assert(qrData.bitgo);
+        assert.ok(qrData.bitgo);
         qrData.bitgo.data.should.equal(bitgoPub);
 
         should.not.exist(qrData.passcode);
@@ -160,7 +160,7 @@ describe('generateQrData', function () {
 
     qrData.user.data.should.equal(userEncryptedPrv);
 
-    assert(qrData.backup);
+    assert.ok(qrData.backup);
     qrData.backup.title.should.equal('B: Backup Key');
     qrData.backup.description.should.equal(
       'This is the public key held at ' +
@@ -173,7 +173,7 @@ describe('generateQrData', function () {
     );
     qrData.backup.data.should.equal(backupPub);
 
-    assert(qrData.bitgo);
+    assert.ok(qrData.bitgo);
     qrData.bitgo.data.should.equal(bitgoPub);
   });
 });

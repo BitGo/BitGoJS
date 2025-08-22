@@ -12,7 +12,7 @@ import {
 } from '@bitgo/sdk-core';
 import { EcdsaTypes, EcdsaPaillierProof } from '@bitgo/sdk-lib-mpc';
 import * as openpgp from 'openpgp';
-import * as should from 'should';
+import should = require('should');
 import { mockSerializedChallengeWithProofs, TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../../src';
 import { nockGetTxRequest, nockSendSignatureShare } from './helpers';

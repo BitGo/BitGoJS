@@ -107,7 +107,7 @@ utxo-bin generateAddresses \
 git clone https://github.com/BitGo/BitGoJS.git
 yarn install
 cd modules/utxo-bin
-yarn ts-node bin/index.ts ...
+yarn tsx bin/index.ts ...
 ```
 
 See the toplevel [DEVELOPERS.md](../../DEVELOPERS.md) for more information.

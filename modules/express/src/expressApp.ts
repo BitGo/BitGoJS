@@ -1,16 +1,16 @@
 /**
  * @prettier
  */
-import * as express from 'express';
+import express from 'express';
 import * as path from 'path';
 import * as _ from 'lodash';
-import * as debugLib from 'debug';
+import debugLib from 'debug';
 import * as https from 'https';
 import * as http from 'http';
-import * as morgan from 'morgan';
+import morgan, { token as morganToken } from 'morgan';
 import * as fs from 'fs';
 import type { Request as StaticRequest } from 'express-serve-static-core';
-import * as timeout from 'connect-timeout';
+import timeout from 'connect-timeout';
 import * as bodyParser from 'body-parser';
 
 import { Config, config } from './config';
@@ -51,7 +51,7 @@ function setupLogging(app: express.Application, config: Config): void {
   }
 
   app.use(middleware);
-  morgan.token('remote-user', function (req: StaticRequest) {
+  morganToken('remote-user', function (req: StaticRequest) {
     return req.isProxy ? 'proxy' : 'local_express';
   });
 }

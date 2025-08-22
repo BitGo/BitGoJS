@@ -6,7 +6,7 @@
  * the user's keycard information (Box D). It helps recover the original wallet password for V1 Wallets Only.
  *
  * Usage:
- *   ts-node wallet-recovery-validation.ts
+ *   tsx wallet-recovery-validation.ts
  *
  * The script will prompt for:
  * - BitGo credentials (username, password, OTP)

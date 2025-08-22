@@ -2,7 +2,7 @@
 // Tests for Wallets
 //
 
-import * as should from 'should';
+import should = require('should');
 import { TestBitGo } from '../../lib/test_bitgo';
 import { restore } from 'nock';
 const Q = require('q');

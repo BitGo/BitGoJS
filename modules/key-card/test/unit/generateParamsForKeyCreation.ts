@@ -15,13 +15,13 @@ describe('generateParamsForKeyCreation', function () {
     const keyCardImage: HTMLImageElement = 'random image' as unknown as HTMLImageElement;
 
     const result = generateParamsForKeyCreation({ bitgoKeychain, curve, walletLabel, keyCardImage });
-    assert(result);
-    assert(result.qrData.user);
-    assert(result.qrData.user.data === bitgoKeychain.commonKeychain);
-    assert(result.qrData.bitgo && result.qrData.bitgo.data === bitgoKeychain.id);
-    assert(result.questions && result.questions.length === 2);
-    assert(result.walletLabel === walletLabel);
-    assert(result.curve === curve);
-    assert(result.keyCardImage === keyCardImage);
+    assert.ok(result);
+    assert.ok(result.qrData.user);
+    assert.ok(result.qrData.user.data === bitgoKeychain.commonKeychain);
+    assert.ok(result.qrData.bitgo && result.qrData.bitgo.data === bitgoKeychain.id);
+    assert.ok(result.questions && result.questions.length === 2);
+    assert.ok(result.walletLabel === walletLabel);
+    assert.ok(result.curve === curve);
+    assert.ok(result.keyCardImage === keyCardImage);
   });
 });

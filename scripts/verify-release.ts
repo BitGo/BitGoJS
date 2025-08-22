@@ -45,5 +45,5 @@ async function verify(preid?: string) {
   }
 }
 
-// e.g. for alpha releases: `npx ts-node ./scripts/verify-beta.ts alpha`
+// e.g. for alpha releases: `npx tsx ./scripts/verify-beta.ts alpha`
 verify(process.argv.slice(2)[0]);

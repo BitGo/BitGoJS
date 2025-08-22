@@ -16,7 +16,7 @@ async function getWallet() {
 }
 
 /*
- * Usage: npx ts-node btc/externalChange/index.ts
+ * Usage: npx tsx btc/externalChange/index.ts
  * */
 async function main() {
   console.log('Starting...');

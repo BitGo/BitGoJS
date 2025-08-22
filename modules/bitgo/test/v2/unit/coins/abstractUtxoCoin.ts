@@ -1,5 +1,5 @@
 import * as utxolib from '@bitgo/utxo-lib';
-import * as should from 'should';
+import should = require('should');
 import * as sinon from 'sinon';
 import { Wallet, UnexpectedAddressError, VerificationOptions, Triple } from '@bitgo/sdk-core';
 import { TestBitGo } from '@bitgo/sdk-test';
