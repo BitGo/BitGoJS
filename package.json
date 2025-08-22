@@ -59,6 +59,7 @@
     "yeoman-generator": "^5.6.1"
   },
   "resolutions": {
+    "**/sha.js": ">=2.4.12",
     "@ethereumjs/util": "8.0.3",
     "@types/keyv": "3.1.4",
     "@types/react": "17.0.24",
