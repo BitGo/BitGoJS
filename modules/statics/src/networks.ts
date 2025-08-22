@@ -1399,8 +1399,8 @@ class Plasma extends Mainnet implements EthereumNetwork {
 class PlasmaTestnet extends Testnet implements EthereumNetwork {
   name = 'PlasmaTestnet';
   family = CoinFamily.XPL;
-  explorerUrl = 'https://testnet.plasmascan.to/blockchain/transactions';
-  accountExplorerUrl = 'http://testnet.plasmaexplorer.io/address/';
+  explorerUrl = 'https://testnet.plasmascan.to/tx/';
+  accountExplorerUrl = 'https://testnet.plasmascan.to/address/';
   chainId = 9746;
   nativeCoinOperationHashPrefix = '9746';
 }
