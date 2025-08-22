@@ -1,10 +1,11 @@
 import { erc20Coins } from '../../src/coins/erc20Coins';
 import { cosmosTokens } from '../../src/coins/cosmosTokens';
 import { avaxTokens } from '../../src/coins/avaxTokens';
+import { bscTokens } from '../../src/coins/bscTokens';
 import { NetworkType } from '../../src/networks';
 
 describe('Token Naming Convention Tests', function () {
-  const allTokens = [...erc20Coins, ...cosmosTokens, ...avaxTokens];
+  const allTokens = [...erc20Coins, ...cosmosTokens, ...avaxTokens, ...bscTokens];
 
   // Helper function to filter tokens by network type
   function getTokensByNetworkType(networkType: NetworkType) {
