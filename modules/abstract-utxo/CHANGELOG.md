@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.24.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.23.0...@bitgo/abstract-utxo@9.24.0) (2025-08-22)
+
+### Features
+
+- **root:** migrate ts-node -> tsx ([ea180b4](https://github.com/BitGo/BitGoJS/commit/ea180b43001d8e956196bc07b32798e3a7031eeb))
+
+# [9.23.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.22.1...@bitgo/abstract-utxo@9.23.0) (2025-08-22)
+
+### Features
+
+- **abstract-utxo:** add BIP322 message extraction to explainTransaction ([f23f65f](https://github.com/BitGo/BitGoJS/commit/f23f65f387f10e7ad350c5c738cb0b54b263fb4d))
+
 ## [9.22.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.22.0...@bitgo/abstract-utxo@9.22.1) (2025-08-19)
 
 **Note:** Version bump only for package @bitgo/abstract-utxo

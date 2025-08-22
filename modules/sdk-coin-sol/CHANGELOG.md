@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@6.0.0...@bitgo/sdk-coin-sol@6.1.0) (2025-08-22)
+
+### Features
+
+- **root:** migrate ts-node -> tsx ([ea180b4](https://github.com/BitGo/BitGoJS/commit/ea180b43001d8e956196bc07b32798e3a7031eeb))
+
+# [6.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@5.0.1...@bitgo/sdk-coin-sol@6.0.0) (2025-08-22)
+
+### Features
+
+- **sdk-coin-sol:** add support to recover unsupported spl tokens ([56ee7d0](https://github.com/BitGo/BitGoJS/commit/56ee7d08c61528a82e052f4adaef32d46fac7a76))
+- **sdk-coin-sol:** use sol intent staking type from public types ([3487704](https://github.com/BitGo/BitGoJS/commit/3487704ded0d97fbafa3ef76e64269cfcecb343a))
+
+### BREAKING CHANGES
+
+- **sdk-coin-sol:** txBuilder.stakingType now uses SolStakingTypeEnum
+  from public-types instead of StakingType from BitGoJS.
+
+Ticket: SC-2789
+
 ## [5.0.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@5.0.0...@bitgo/sdk-coin-sol@5.0.1) (2025-08-19)
 
 ### Bug Fixes

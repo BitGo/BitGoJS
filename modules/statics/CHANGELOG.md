@@ -3,6 +3,31 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [57.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@57.4.0...@bitgo/statics@57.5.0) (2025-08-22)
+
+### Bug Fixes
+
+- **statics:** fix polyx token network ([0d2da0c](https://github.com/BitGo/BitGoJS/commit/0d2da0c9235256fdc95f7af7076aa79a2cd302d6))
+
+### Features
+
+- add vetNFTCollection skeleton ([e84334c](https://github.com/BitGo/BitGoJS/commit/e84334c3a7df746f719121305ad56d7c7e0ff26b))
+- **root:** migrate ts-node -> tsx ([ea180b4](https://github.com/BitGo/BitGoJS/commit/ea180b43001d8e956196bc07b32798e3a7031eeb))
+
+# [57.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@57.3.0...@bitgo/statics@57.4.0) (2025-08-22)
+
+### Bug Fixes
+
+- rename the suffix ticker for the og,linea,base ([325dcbc](https://github.com/BitGo/BitGoJS/commit/325dcbc2a9615e734d195f7c6349e30713b334b3))
+- use same feature for ofc tokens ([b0c5619](https://github.com/BitGo/BitGoJS/commit/b0c56198f4c2313982603745488342bd5d2ee03b))
+
+### Features
+
+- enable send many for multiple EVM coins ([f4d9b76](https://github.com/BitGo/BitGoJS/commit/f4d9b76d845502b8f26908eaecbfbdc6adeee177))
+- **sdk-coin-xtz:** add custodial features to statics ([3be2281](https://github.com/BitGo/BitGoJS/commit/3be22812790181e342ff90f5294f022f04a84b5e))
+- **statics:** added flare p statics ([d74cc3b](https://github.com/BitGo/BitGoJS/commit/d74cc3be27c3d94a9a15cc5bc991ac030d534ac1))
+- update bsc batcher contract address ([0cb427d](https://github.com/BitGo/BitGoJS/commit/0cb427d66fe28764af38cf3249ffbda5075638df))
+
 # [57.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@57.2.0...@bitgo/statics@57.3.0) (2025-08-19)
 
 ### Bug Fixes

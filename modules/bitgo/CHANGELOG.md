@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [49.5.0](https://github.com/BitGo/BitGoJS/compare/bitgo@49.4.0...bitgo@49.5.0) (2025-08-22)
+
+### Bug Fixes
+
+- **bitgo:** update imports and assertions for Node 22 compatibility ([12ba9f6](https://github.com/BitGo/BitGoJS/commit/12ba9f602dc9027b33c41f6aa89c9060c284a022))
+
+### Features
+
+- **root:** migrate ts-node -> tsx ([ea180b4](https://github.com/BitGo/BitGoJS/commit/ea180b43001d8e956196bc07b32798e3a7031eeb))
+
+# [49.4.0](https://github.com/BitGo/BitGoJS/compare/bitgo@49.3.0...bitgo@49.4.0) (2025-08-22)
+
+### Features
+
+- **abstract-utxo:** add BIP322 message extraction to explainTransaction ([f23f65f](https://github.com/BitGo/BitGoJS/commit/f23f65f387f10e7ad350c5c738cb0b54b263fb4d))
+- **statics:** added flare p statics ([d74cc3b](https://github.com/BitGo/BitGoJS/commit/d74cc3be27c3d94a9a15cc5bc991ac030d534ac1))
+
 # [49.3.0](https://github.com/BitGo/BitGoJS/compare/bitgo@49.2.0...bitgo@49.3.0) (2025-08-19)
 
 ### Features

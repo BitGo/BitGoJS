@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.17.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.16.1...@bitgo/utxo-core@1.17.0) (2025-08-22)
+
+### Bug Fixes
+
+- **utxo-core:** correct path name for fixtures ([7149d02](https://github.com/BitGo/BitGoJS/commit/7149d02ed61d5f42d533973825221749b8cf271a))
+
+### Features
+
+- **root:** migrate ts-node -> tsx ([ea180b4](https://github.com/BitGo/BitGoJS/commit/ea180b43001d8e956196bc07b32798e3a7031eeb))
+
 ## [1.16.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.16.0...@bitgo/utxo-core@1.16.1) (2025-08-19)
 
 **Note:** Version bump only for package @bitgo/utxo-core

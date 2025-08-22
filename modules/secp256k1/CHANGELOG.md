@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.4.0...@bitgo/secp256k1@1.5.0) (2025-08-22)
+
+### Bug Fixes
+
+- **secp256k1:** fix import of create-hmac ([2eb61af](https://github.com/BitGo/BitGoJS/commit/2eb61afa6149245dde9ef875d475169930e99e26))
+
+### Features
+
+- **root:** migrate ts-node -> tsx ([ea180b4](https://github.com/BitGo/BitGoJS/commit/ea180b43001d8e956196bc07b32798e3a7031eeb))
+
 # [1.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.3.3...@bitgo/secp256k1@1.4.0) (2025-06-05)
 
 ### Features

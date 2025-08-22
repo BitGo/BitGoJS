@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xtz@2.6.0...@bitgo/sdk-coin-xtz@2.7.0) (2025-08-22)
+
+### Features
+
+- **root:** migrate ts-node -> tsx ([ea180b4](https://github.com/BitGo/BitGoJS/commit/ea180b43001d8e956196bc07b32798e3a7031eeb))
+
+# [2.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xtz@2.5.0...@bitgo/sdk-coin-xtz@2.6.0) (2025-08-22)
+
+### Features
+
+- add unsigned sweep for wrw xtz ([20a4953](https://github.com/BitGo/BitGoJS/commit/20a495369c569a4cc4a79e337b932fe6a9753e55))
+
 # [2.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xtz@2.4.13...@bitgo/sdk-coin-xtz@2.5.0) (2025-08-19)
 
 ### Features

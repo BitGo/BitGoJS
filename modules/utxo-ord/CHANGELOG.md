@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.21.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-ord@1.20.104...@bitgo/utxo-ord@1.21.0) (2025-08-22)
+
+### Bug Fixes
+
+- **utxo-ord:** update assert imports for Node 22 ([1d54643](https://github.com/BitGo/BitGoJS/commit/1d54643090fee681353bda17a0aed709f068f523))
+
+### Features
+
+- **root:** migrate ts-node -> tsx ([ea180b4](https://github.com/BitGo/BitGoJS/commit/ea180b43001d8e956196bc07b32798e3a7031eeb))
+
+## [1.20.104](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-ord@1.20.103...@bitgo/utxo-ord@1.20.104) (2025-08-22)
+
+**Note:** Version bump only for package @bitgo/utxo-ord
+
 ## [1.20.103](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-ord@1.20.102...@bitgo/utxo-ord@1.20.103) (2025-08-19)
 
 **Note:** Version bump only for package @bitgo/utxo-ord
