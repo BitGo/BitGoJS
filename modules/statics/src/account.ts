@@ -3592,7 +3592,7 @@ export function ttaoToken(
 }
 
 /**
- * Factory function for tao token instances.
+ * Factory function for polyx token instances.
  *
  * @param id uuid v4
  * @param name unique identifier of the token
@@ -3603,7 +3603,7 @@ export function ttaoToken(
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES
  * @param prefix? Optional token prefix. Defaults to empty string
  * @param suffix? Optional token suffix. Defaults to token name.
- * @param network? Optional token network. Defaults to TAO main network.
+ * @param network? Optional token network. Defaults to Polyx main network.
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function polyxToken(
@@ -3617,7 +3617,7 @@ export function polyxToken(
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix = '',
   suffix: string = name.toUpperCase(),
-  network: AccountNetwork = Networks.main.tao,
+  network: AccountNetwork = Networks.main.polyx,
   primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
 ): Readonly<PolyxCoin> {
   return Object.freeze(
@@ -3635,13 +3635,13 @@ export function polyxToken(
       asset,
       isToken: true,
       primaryKeyCurve,
-      baseUnit: BaseUnit.TAO,
+      baseUnit: BaseUnit.POLYX,
     })
   );
 }
 
 /**
- * Factory function for testnet tao token instances.
+ * Factory function for testnet polyx token instances.
  *
  * @param id uuid v4
  * @param name unique identifier of the token
@@ -3652,7 +3652,7 @@ export function polyxToken(
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES
  * @param prefix? Optional token prefix. Defaults to empty string
  * @param suffix? Optional token suffix. Defaults to token name.
- * @param network? Optional token network. Defaults to TAO test network.
+ * @param network? Optional token network. Defaults to Polyx test network.
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 
@@ -3667,7 +3667,7 @@ export function tpolyxToken(
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix = '',
   suffix: string = name.toUpperCase(),
-  network: AccountNetwork = Networks.test.tao,
+  network: AccountNetwork = Networks.test.polyx,
   primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
 ): Readonly<PolyxCoin> {
   return polyxToken(
