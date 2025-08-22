@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [36.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.3.0...@bitgo/sdk-core@36.4.0) (2025-08-22)
+
+### Features
+
+- add WalletProofs class to connect with proofs-service API ([671b75b](https://github.com/BitGo/BitGoJS/commit/671b75bffc83afd38e8b9864163d4247ec6f73c0))
+
 # [36.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.2.0...@bitgo/sdk-core@36.3.0) (2025-08-19)
 
 ### Features

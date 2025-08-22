@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.20.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.20.3...@bitgo/utxo-staking@1.20.4) (2025-08-22)
+
+### Bug Fixes
+
+- **utxo-staking:** update createProofOfPossession method signature ([46cd679](https://github.com/BitGo/BitGoJS/commit/46cd67937e0e5bbf7d2d4d1a718c40851dec3409))
+- **utxo-staking:** validate babylon address in proof of possession ([6c9df95](https://github.com/BitGo/BitGoJS/commit/6c9df95ef80cdf34951afc500e72d94e89d3b301))
+
 ## [1.20.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.20.2...@bitgo/utxo-staking@1.20.3) (2025-08-19)
 
 **Note:** Version bump only for package @bitgo/utxo-staking

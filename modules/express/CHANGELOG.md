@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [14.3.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@14.3.0...@bitgo/express@14.3.1) (2025-08-22)
+
+### Bug Fixes
+
+- **express:** adding jsdoc ([1baa22c](https://github.com/BitGo/BitGoJS/commit/1baa22c7f6b240c6b056c87fddfba218d6c2bd58))
+
 # [14.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@14.2.0...@bitgo/express@14.3.0) (2025-08-19)
 
 ### Bug Fixes

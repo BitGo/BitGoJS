@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [49.4.0](https://github.com/BitGo/BitGoJS/compare/bitgo@49.3.0...bitgo@49.4.0) (2025-08-22)
+
+### Features
+
+- **abstract-utxo:** add BIP322 message extraction to explainTransaction ([f23f65f](https://github.com/BitGo/BitGoJS/commit/f23f65f387f10e7ad350c5c738cb0b54b263fb4d))
+- **statics:** added flare p statics ([d74cc3b](https://github.com/BitGo/BitGoJS/commit/d74cc3be27c3d94a9a15cc5bc991ac030d534ac1))
+
 # [49.3.0](https://github.com/BitGo/BitGoJS/compare/bitgo@49.2.0...bitgo@49.3.0) (2025-08-19)
 
 ### Features
