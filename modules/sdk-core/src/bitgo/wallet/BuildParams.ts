@@ -3,6 +3,11 @@
 import * as t from 'io-ts';
 import { getCodecProperties } from '../utils/codecProps';
 
+export const Bip322Message = t.type({
+  message: t.string,
+  address: t.string,
+});
+
 export const BuildParamsUTXO = t.partial({
   /* deprecated. the change address type */
   addressType: t.unknown,
@@ -30,6 +35,7 @@ export const BuildParamsUTXO = t.partial({
   /* rbf */
   rbfTxIds: t.array(t.string),
   isReplaceableByFee: t.boolean,
+  messages: t.array(Bip322Message),
 });
 
 export const BuildParamsStacks = t.partial({
