@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.27.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/key-card@0.26.6...@bitgo/key-card@0.27.0) (2025-08-22)
+
+### Bug Fixes
+
+- **key-card:** update assert imports for Node 22 ([4df9c97](https://github.com/BitGo/BitGoJS/commit/4df9c97e7909b312bd50c8310bfa70328cd6a714))
+
+### Features
+
+- **root:** migrate ts-node -> tsx ([ea180b4](https://github.com/BitGo/BitGoJS/commit/ea180b43001d8e956196bc07b32798e3a7031eeb))
+
 ## [0.26.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/key-card@0.26.5...@bitgo/key-card@0.26.6) (2025-08-22)
 
 **Note:** Version bump only for package @bitgo/key-card

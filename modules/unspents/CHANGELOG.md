@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.49.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.48.9...@bitgo/unspents@0.49.0) (2025-08-22)
+
+### Bug Fixes
+
+- **unspents:** defer static initializations for ESM compatibility ([7a057c2](https://github.com/BitGo/BitGoJS/commit/7a057c264dfeeeb291db51954799e7af0d9c9bba))
+
+### Features
+
+- **root:** migrate ts-node -> tsx ([ea180b4](https://github.com/BitGo/BitGoJS/commit/ea180b43001d8e956196bc07b32798e3a7031eeb))
+
 ## [0.48.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.48.8...@bitgo/unspents@0.48.9) (2025-08-19)
 
 **Note:** Version bump only for package @bitgo/unspents

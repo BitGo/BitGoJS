@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [11.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.9.0...@bitgo/utxo-lib@11.10.0) (2025-08-22)
+
+### Bug Fixes
+
+- **utxo-lib:** update assert imports for Node 22 ([18c1c5f](https://github.com/BitGo/BitGoJS/commit/18c1c5f08463d16f02ec89e4ac450be44ae882cd))
+
+### Features
+
+- **root:** migrate ts-node -> tsx ([ea180b4](https://github.com/BitGo/BitGoJS/commit/ea180b43001d8e956196bc07b32798e3a7031eeb))
+
 # [11.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.8.0...@bitgo/utxo-lib@11.9.0) (2025-08-19)
 
 ### Features

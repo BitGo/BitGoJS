@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@14.3.1...@bitgo/express@14.4.0) (2025-08-22)
+
+### Bug Fixes
+
+- **express:** replace sinon stubs with proxyquire for ESM compatibility ([aad6d60](https://github.com/BitGo/BitGoJS/commit/aad6d6009cd8e8ee1b4f594256dacab54f5fe3d9))
+
+### Features
+
+- **root:** migrate ts-node -> tsx ([ea180b4](https://github.com/BitGo/BitGoJS/commit/ea180b43001d8e956196bc07b32798e3a7031eeb))
+
 ## [14.3.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@14.3.0...@bitgo/express@14.3.1) (2025-08-22)
 
 ### Bug Fixes

@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [49.5.0](https://github.com/BitGo/BitGoJS/compare/bitgo@49.4.0...bitgo@49.5.0) (2025-08-22)
+
+### Bug Fixes
+
+- **bitgo:** update imports and assertions for Node 22 compatibility ([12ba9f6](https://github.com/BitGo/BitGoJS/commit/12ba9f602dc9027b33c41f6aa89c9060c284a022))
+
+### Features
+
+- **root:** migrate ts-node -> tsx ([ea180b4](https://github.com/BitGo/BitGoJS/commit/ea180b43001d8e956196bc07b32798e3a7031eeb))
+
 # [49.4.0](https://github.com/BitGo/BitGoJS/compare/bitgo@49.3.0...bitgo@49.4.0) (2025-08-22)
 
 ### Features

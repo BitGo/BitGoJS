@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxc@6.2.5...@bitgo/sdk-coin-avaxc@6.3.0) (2025-08-22)
+
+### Features
+
+- **root:** migrate ts-node -> tsx ([ea180b4](https://github.com/BitGo/BitGoJS/commit/ea180b43001d8e956196bc07b32798e3a7031eeb))
+
 ## [6.2.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxc@6.2.4...@bitgo/sdk-coin-avaxc@6.2.5) (2025-08-22)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-avaxc

@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.21.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.20.4...@bitgo/utxo-staking@1.21.0) (2025-08-22)
+
+### Bug Fixes
+
+- **utxo-staking:** correct path name for fixtures ([cf375c7](https://github.com/BitGo/BitGoJS/commit/cf375c767aa678c491142f602c515761cd761bd6))
+
+### Features
+
+- **root:** migrate ts-node -> tsx ([ea180b4](https://github.com/BitGo/BitGoJS/commit/ea180b43001d8e956196bc07b32798e3a7031eeb))
+
 ## [1.20.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.20.3...@bitgo/utxo-staking@1.20.4) (2025-08-22)
 
 ### Bug Fixes

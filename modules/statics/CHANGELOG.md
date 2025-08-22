@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [57.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@57.4.0...@bitgo/statics@57.5.0) (2025-08-22)
+
+### Bug Fixes
+
+- **statics:** fix polyx token network ([0d2da0c](https://github.com/BitGo/BitGoJS/commit/0d2da0c9235256fdc95f7af7076aa79a2cd302d6))
+
+### Features
+
+- add vetNFTCollection skeleton ([e84334c](https://github.com/BitGo/BitGoJS/commit/e84334c3a7df746f719121305ad56d7c7e0ff26b))
+- **root:** migrate ts-node -> tsx ([ea180b4](https://github.com/BitGo/BitGoJS/commit/ea180b43001d8e956196bc07b32798e3a7031eeb))
+
 # [57.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@57.3.0...@bitgo/statics@57.4.0) (2025-08-22)
 
 ### Bug Fixes
