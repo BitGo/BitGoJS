@@ -1,8 +1,8 @@
-import * as fs from 'fs';
-import * as path from 'path';
-import * as os from 'os';
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
 import { execFileSync } from 'child_process';
-import * as tmp from 'tmp';
+import tmp from 'tmp';
 
 /**
  * Helper function to execute git commands and return output as string
@@ -57,9 +57,13 @@ export function symlinkNodeModules(targetDir: string): void {
   if (fs.existsSync(sourceNodeModules)) {
     // Create symlink
     fs.symlinkSync(sourceNodeModules, targetNodeModules, 'junction');
-    console.log(`Symlinked node_modules from ${sourceNodeModules} to ${targetNodeModules}`);
+    console.log(
+      `Symlinked node_modules from ${sourceNodeModules} to ${targetNodeModules}`,
+    );
   } else {
-    console.warn('Source node_modules directory not found, skipping symlink creation');
+    console.warn(
+      'Source node_modules directory not found, skipping symlink creation',
+    );
   }
 }
 
@@ -74,7 +78,9 @@ export function createShallowClone(commitHash: string, tempDir: string): void {
   const repoDir = execGitCapture(['rev-parse', '--show-toplevel']).trim();
 
   if (fs.existsSync(tempDir)) {
-    console.log(`Directory ${tempDir} already exists, ensuring it's at commit ${commitHash}`);
+    console.log(
+      `Directory ${tempDir} already exists, ensuring it's at commit ${commitHash}`,
+    );
 
     try {
       // Check if it's a git repository
@@ -89,7 +95,9 @@ export function createShallowClone(commitHash: string, tempDir: string): void {
       // Clean the working directory to remove any untracked files
       execGit(['clean', '-fdx'], tempDir);
 
-      console.log(`Successfully updated existing directory to commit ${commitHash}`);
+      console.log(
+        `Successfully updated existing directory to commit ${commitHash}`,
+      );
     } catch (error) {
       console.error(`Error updating existing directory: ${error}`);
       console.log('Removing directory and cloning fresh...');
@@ -124,14 +132,17 @@ export function applyPrepareReleaseScript(
   clonedRepoDir: string,
   preid: string,
   scope = '@bitgo-beta',
-  distTagsCachePath?: string
+  distTagsCachePath?: string,
 ): string {
   const args: string[] = [];
   args.push(preid);
   args.push(`scope=${scope}`);
 
   // Get the current git repository directory
-  const currentRepoDir = execGitCapture(['rev-parse', '--show-toplevel']).trim();
+  const currentRepoDir = execGitCapture([
+    'rev-parse',
+    '--show-toplevel',
+  ]).trim();
 
   // Use the script from the current repo, not the cloned one
   const scriptPath = path.join(currentRepoDir, 'scripts', 'prepare-release.ts');
@@ -180,13 +191,19 @@ export function generateGitDiff(repoDir: string, pathFilter?: string): string {
  * @param referenceDiffPath The path to the reference diff file
  * @throws AssertionError if the diffs don't match
  */
-export function assertEqualDiffs(generatedDiff: string, referenceDiffPath: string): void {
+export function assertEqualDiffs(
+  generatedDiff: string,
+  referenceDiffPath: string,
+): void {
   if (!fs.existsSync(referenceDiffPath)) {
     throw new Error(`Reference diff file does not exist: ${referenceDiffPath}`);
   }
 
   // Write the generated diff to a temporary file
-  const tempFile = tmp.fileSync({ prefix: 'generated-diff-', postfix: '.diff' });
+  const tempFile = tmp.fileSync({
+    prefix: 'generated-diff-',
+    postfix: '.diff',
+  });
   fs.writeFileSync(tempFile.name, generatedDiff);
 
   try {
@@ -221,7 +238,10 @@ export function assertEqualDiffs(generatedDiff: string, referenceDiffPath: strin
  * @param diff The diff to save as reference
  * @param referenceDiffPath The path to save the reference diff to
  */
-export function createReferenceDiff(diff: string, referenceDiffPath: string): void {
+export function createReferenceDiff(
+  diff: string,
+  referenceDiffPath: string,
+): void {
   const dirPath = path.dirname(referenceDiffPath);
   if (!fs.existsSync(dirPath)) {
     fs.mkdirSync(dirPath, { recursive: true });
@@ -246,7 +266,7 @@ export function runTestAndCompare(
     tempDir?: string;
     pathFilter?: string;
     distTagsCachePath?: string;
-  }
+  },
 ): void {
   // Use provided tempDir or create a new one
   const tempDir = options?.tempDir || createTempDir();

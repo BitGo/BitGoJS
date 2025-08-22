@@ -1,4 +1,4 @@
-import * as path from 'path';
+import path from 'path';
 import { readdirSync, statSync } from 'fs';
 
 export const walk = (dir: string): string[] => {

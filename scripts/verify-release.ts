@@ -1,6 +1,6 @@
-import * as execa from 'execa';
+import execa from 'execa';
 import { readFileSync } from 'fs';
-import * as path from 'path';
+import path from 'path';
 import { getLernaModules, getDistTags } from './prepareRelease';
 
 let lernaModuleLocations: string[] = [];
@@ -12,7 +12,9 @@ async function getLernaModuleLocations(): Promise<void> {
 
 async function verifyPackage(dir: string, preid = 'beta'): Promise<boolean> {
   const cwd = dir;
-  const json = JSON.parse(readFileSync(path.join(cwd, 'package.json'), { encoding: 'utf-8' }));
+  const json = JSON.parse(
+    readFileSync(path.join(cwd, 'package.json'), { encoding: 'utf-8' }),
+  );
   if (json.private) {
     return true;
   }
@@ -20,8 +22,14 @@ async function verifyPackage(dir: string, preid = 'beta'): Promise<boolean> {
   try {
     const distTags = await getDistTags(json.name);
     if (json.version !== distTags[preid]) {
-      console.log(`${json.name} missing. Expected ${json.version}, latest is ${distTags[preid]}`);
-      const { stdout, exitCode } = await execa('npm', ['publish', '--tag', preid], { cwd });
+      console.log(
+        `${json.name} missing. Expected ${json.version}, latest is ${distTags[preid]}`,
+      );
+      const { stdout, exitCode } = await execa(
+        'npm',
+        ['publish', '--tag', preid],
+        { cwd },
+      );
       console.log(stdout);
       return exitCode === 0;
     } else {

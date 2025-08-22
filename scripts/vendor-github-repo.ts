@@ -1,7 +1,7 @@
 import { execa, ResultPromise } from 'execa';
-import * as fs from 'fs/promises';
-import * as tmp from 'tmp';
-import * as yargs from 'yargs';
+import fs from 'fs/promises';
+import tmp from 'tmp';
+import yargs from 'yargs';
 
 type GithubSource = {
   org: string;

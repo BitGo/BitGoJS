@@ -1,8 +1,8 @@
-import * as assert from 'node:assert';
+import assert from 'node:assert';
 import { readFileSync, writeFileSync } from 'fs';
-import * as path from 'path';
+import path from 'path';
 import { inc, lt } from 'semver';
-import * as yargs from 'yargs';
+import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 
 import {
@@ -15,10 +15,17 @@ import {
   LernaModule,
 } from './prepareRelease';
 
-function replacePackageScopes(rootDir: string, lernaModules: LernaModule[], targetScope: string): number {
+function replacePackageScopes(
+  rootDir: string,
+  lernaModules: LernaModule[],
+  targetScope: string,
+): number {
   let filesChanged = 0;
   // replace all @bitgo packages & source code with alternate SCOPE
-  const filePaths = [...walk(path.join(rootDir, 'modules')), ...walk(path.join(rootDir, 'webpack'))];
+  const filePaths = [
+    ...walk(path.join(rootDir, 'modules')),
+    ...walk(path.join(rootDir, 'webpack')),
+  ];
   const moduleNames = lernaModules.map(({ name }) => name);
 
   filePaths.forEach((file) => {
@@ -31,9 +38,14 @@ function replacePackageScopes(rootDir: string, lernaModules: LernaModule[], targ
 // we must manually set one
 function replaceBitGoPackageScope(rootDir: string, targetScope: string): void {
   const cwd = path.join(rootDir, 'modules', 'bitgo');
-  const json = JSON.parse(readFileSync(path.join(cwd, 'package.json'), { encoding: 'utf-8' }));
+  const json = JSON.parse(
+    readFileSync(path.join(cwd, 'package.json'), { encoding: 'utf-8' }),
+  );
   json.name = `${targetScope}/bitgo`;
-  writeFileSync(path.join(cwd, 'package.json'), JSON.stringify(json, null, 2) + '\n');
+  writeFileSync(
+    path.join(cwd, 'package.json'),
+    JSON.stringify(json, null, 2) + '\n',
+  );
 }
 
 /**
@@ -42,7 +54,11 @@ function replaceBitGoPackageScope(rootDir: string, targetScope: string): void {
  * @returns The parsed package.json content
  */
 function readModulePackageJson(module: LernaModule): any {
-  return JSON.parse(readFileSync(path.join(module.location, 'package.json'), { encoding: 'utf-8' }));
+  return JSON.parse(
+    readFileSync(path.join(module.location, 'package.json'), {
+      encoding: 'utf-8',
+    }),
+  );
 }
 
 /**
@@ -51,7 +67,10 @@ function readModulePackageJson(module: LernaModule): any {
  * @param json The content to write
  */
 function writeModulePackageJson(module: LernaModule, json: any): void {
-  writeFileSync(path.join(module.location, 'package.json'), JSON.stringify(json, null, 2) + '\n');
+  writeFileSync(
+    path.join(module.location, 'package.json'),
+    JSON.stringify(json, null, 2) + '\n',
+  );
 }
 
 /**
@@ -67,7 +86,7 @@ function incrementVersionsForModuleLocation(
   preid: string,
   module: LernaModule,
   tags: DistTags | undefined,
-  allModules: LernaModule[]
+  allModules: LernaModule[],
 ): string | undefined {
   const json = readModulePackageJson(module);
 
@@ -77,7 +96,9 @@ function incrementVersionsForModuleLocation(
     if (tags[preid]) {
       const version = tags[preid].split('-');
       const latest = tags?.latest?.split('-') ?? ['0.0.0'];
-      prevTag = lt(version[0], latest[0]) ? `${tags.latest}-${preid}` : tags[preid];
+      prevTag = lt(version[0], latest[0])
+        ? `${tags.latest}-${preid}`
+        : tags[preid];
     } else {
       prevTag = `${tags.latest}-${preid}`;
     }
@@ -85,7 +106,10 @@ function incrementVersionsForModuleLocation(
 
   if (prevTag) {
     const next = inc(prevTag, 'prerelease', undefined, preid);
-    assert(typeof next === 'string', `Failed to increment version for ${json.name} prevTag=${prevTag}`);
+    assert(
+      typeof next === 'string',
+      `Failed to increment version for ${json.name} prevTag=${prevTag}`,
+    );
     console.log(`Setting next version for ${json.name} to ${next}`);
     json.version = next;
     writeModulePackageJson(module, json);
@@ -119,15 +143,26 @@ function incrementVersionsForModuleLocation(
  * @param {String} preid - The prerelease identifier
  * @param {LernaModule[]} lernaModules - The modules to update
  */
-async function incrementVersions(preid: string, lernaModules: LernaModule[]): Promise<void> {
+async function incrementVersions(
+  preid: string,
+  lernaModules: LernaModule[],
+): Promise<void> {
   const distTags = await getDistTagsForModules(lernaModules);
 
   for (const m of lernaModules) {
     try {
-      incrementVersionsForModuleLocation(preid, m, distTags.get(m), lernaModules);
+      incrementVersionsForModuleLocation(
+        preid,
+        m,
+        distTags.get(m),
+        lernaModules,
+      );
     } catch (e) {
       // it's not necessarily a blocking error. Let lerna try and publish anyways
-      console.warn(`Couldn't set next version for ${m.name} at ${m.location}`, e);
+      console.warn(
+        `Couldn't set next version for ${m.name} at ${m.location}`,
+        e,
+      );
     }
   }
 }
@@ -151,7 +186,9 @@ yargs(hideBin(process.argv))
         .option('root-dir', {
           type: 'string',
           description: 'Root directory of the repository',
-          default: process.env.BITGO_PREPARE_RELEASE_ROOT_DIR || path.join(__dirname, '..'),
+          default:
+            process.env.BITGO_PREPARE_RELEASE_ROOT_DIR ||
+            path.join(__dirname, '..'),
         });
     },
     async (argv) => {
@@ -166,7 +203,11 @@ yargs(hideBin(process.argv))
         const lernaModules = await getLernaModules();
 
         // Replace package scopes
-        const filesChanged = replacePackageScopes(rootDir, lernaModules, targetScope);
+        const filesChanged = replacePackageScopes(
+          rootDir,
+          lernaModules,
+          targetScope,
+        );
 
         // Replace BitGo package scope
         replaceBitGoPackageScope(rootDir, targetScope);
@@ -178,14 +219,16 @@ yargs(hideBin(process.argv))
           console.log(`Successfully re-targeted ${filesChanged} files.`);
           process.exit(0);
         } else {
-          console.error('No files were changed, something must have gone wrong.');
+          console.error(
+            'No files were changed, something must have gone wrong.',
+          );
           process.exit(1);
         }
       } catch (error) {
         console.error('Error in prepare-release script:', error);
         process.exit(1);
       }
-    }
+    },
   )
   .help()
   .alias('help', 'h')
