@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import { ok as assert } from 'assert';
 import { BIP32Interface } from 'bip32';
 import * as noble from '@noble/secp256k1';
 import * as utxolib from '..';

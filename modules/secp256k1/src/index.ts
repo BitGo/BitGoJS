@@ -1,4 +1,3 @@
-import * as createHmac from 'create-hmac';
 import { ECPairAPI, ECPairFactory, ECPairInterface } from 'ecpair';
 import * as necc from '@noble/secp256k1';
 import { BIP32API, BIP32Factory, BIP32Interface } from 'bip32';
@@ -8,6 +7,7 @@ import * as baseCrypto from '@brandonblack/musig/base_crypto';
 import { MuSig, MuSigFactory } from '@brandonblack/musig';
 
 const createHash = require('create-hash');
+const createHmac = require('create-hmac');
 
 necc.utils.sha256Sync = (...messages: Uint8Array[]): Uint8Array => {
   const sha256 = createHash('sha256');

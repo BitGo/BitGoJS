@@ -8,11 +8,11 @@ You will need node and npm installed locally. You can find information on how to
 
 First, run `yarn install` from the root directory of the repository.
 
-Then change into the `examples/ts` directory and use `npx ts-node` to run the desired example:
+Then change into the `examples/ts` directory and use `npx tsx` to run the desired example:
 
 ```
 $ cd examples/ts
-$ npx ts-node get-wallet.ts
+$ npx tsx get-wallet.ts
 ```
 
 Copy `.env.example` to `.env` and provide the given values if you would like to use the same variables for multiple examples.

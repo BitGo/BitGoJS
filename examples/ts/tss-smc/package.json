@@ -3,15 +3,15 @@
   "version": "1.0.0",
   "description": "TSS Self Managed Cold Wallets Examples",
   "scripts": {
-    "step1": "ts-node create-smc-wallet-step-1.ts",
-    "step2": "ts-node create-smc-wallet-step-2.ts",
-    "create-smc-wallet": "ts-node create-smc-wallet-reusing-keys.ts"
+    "step1": "tsx create-smc-wallet-step-1.ts",
+    "step2": "tsx create-smc-wallet-step-2.ts",
+    "create-smc-wallet": "tsx create-smc-wallet-reusing-keys.ts"
   },
   "dependencies": {
     "bitgo": "19.5.0"
   },
   "devDependencies": {
-    "ts-node": "10.9.1",
+    "tsx": "^4.20.4",
     "typescript": "5.1.6"
   }
 }

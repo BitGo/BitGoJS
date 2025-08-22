@@ -26,7 +26,7 @@ export function getProtocolVersions(network: Network): number[] {
 
 export function getFixtureDir(protocol: Protocol): string {
   let networkName = getNetworkName(protocol.network);
-  assert(networkName);
+  assert.ok(networkName);
   if (networkName === 'bitcoinBitGoSignet' || networkName === 'bitcoinTestnet4') {
     networkName = 'bitcoinPublicSignet';
   }

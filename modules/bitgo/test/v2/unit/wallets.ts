@@ -2,9 +2,9 @@
 // Tests for Wallets
 //
 import * as assert from 'assert';
-import * as nock from 'nock';
+import nock = require('nock');
 import * as sinon from 'sinon';
-import * as should from 'should';
+import should = require('should');
 import * as _ from 'lodash';
 import * as utxoLib from '@bitgo/utxo-lib';
 import { TestBitGo } from '@bitgo/sdk-test';
@@ -2759,7 +2759,7 @@ describe('V2 Wallets:', function () {
       assert.strictEqual(result.shares[0].id, 'userId', 'The share ID should match');
       assert.strictEqual(result.shares[0].coin, walletData.coin, 'The coin should match');
       assert.strictEqual(result.shares[0].wallet, walletData.id, 'The wallet ID should match');
-      assert(result.shares[0].keychain);
+      assert.ok(result.shares[0].keychain);
       assert.strictEqual(result.shares[0].keychain.pub, 'dummyPub', 'The keychain pub should match');
       assert.strictEqual(result.shares[0].permissions.includes('view'), true, 'The permissions should include "view"');
       assert.strictEqual(
@@ -2826,7 +2826,7 @@ describe('V2 Wallets:', function () {
         } as BulkWalletShareOptions);
         assert.fail('Expected error not thrown');
       } catch (error) {
-        assert(error instanceof NeedUserSignupError);
+        assert.ok(error instanceof NeedUserSignupError);
         assert.strictEqual(error.name, 'NeedUserSignupError');
         assert.strictEqual(error.message, userId);
       }
@@ -2870,7 +2870,7 @@ describe('V2 Wallets:', function () {
         });
         assert.fail('Expected error not thrown');
       } catch (error) {
-        assert(error instanceof NeedUserSignupError);
+        assert.ok(error instanceof NeedUserSignupError);
         assert.strictEqual(error.name, 'NeedUserSignupError');
         assert.strictEqual(error.message, userId);
       }
@@ -2999,7 +2999,7 @@ describe('V2 Wallets:', function () {
         await wallet.createBulkWalletShare(params);
         assert.fail('Expected error not thrown');
       } catch (error) {
-        assert(error instanceof IncorrectPasswordError);
+        assert.ok(error instanceof IncorrectPasswordError);
         assert.equal(error.message, 'Password shared is incorrect for this wallet');
       }
     });

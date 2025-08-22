@@ -35,7 +35,7 @@ async function getTransaction(mweb: boolean): Promise<LitecoinTransaction<bigint
 describe('Litecoin Transaction', function () {
   it('mweb transaction gets round-tripped to a non-mweb transaction', async function () {
     const mweb = await getTransaction(true);
-    assert(mweb instanceof LitecoinTransaction);
+    assert.ok(mweb instanceof LitecoinTransaction);
     const nonMwebFixture = await getFixture(`ltc-transaction.json`);
     assert.deepStrictEqual(mweb.toHex(), nonMwebFixture);
   });
@@ -43,7 +43,7 @@ describe('Litecoin Transaction', function () {
   it('non-mweb transaction gets round-tripped to a non-mweb transaction', async function () {
     const nonMweb = await getTransaction(false);
 
-    assert(nonMweb instanceof LitecoinTransaction);
+    assert.ok(nonMweb instanceof LitecoinTransaction);
 
     const nonMwebFixture = await getFixture(`ltc-transaction.json`);
     assert.deepStrictEqual(nonMweb.toHex(), nonMwebFixture);
@@ -66,7 +66,7 @@ describe('Litecoin Psbt', function () {
         value: BigInt(10000),
       },
     ]);
-    assert(psbt instanceof LitecoinPsbt);
+    assert.ok(psbt instanceof LitecoinPsbt);
     assert.deepStrictEqual(psbt.getUnsignedTx().toHex(), await getFixture(`ltc-transaction.json`));
   });
 
@@ -77,7 +77,7 @@ describe('Litecoin Psbt', function () {
     const tx = await createTransactionFromBuffer(buf, network, { amountType: 'bigint' });
 
     const psbt = createPsbtForNetwork({ network });
-    assert(psbt instanceof LitecoinPsbt);
+    assert.ok(psbt instanceof LitecoinPsbt);
 
     const u = mockWalletUnspent(network, BigInt(9500), {
       chain: 0,
@@ -97,11 +97,11 @@ describe('Litecoin Psbt', function () {
       'user',
       'bitgo'
     );
-    assert(psbt.data.inputs.length > 0);
+    assert.ok(psbt.data.inputs.length > 0);
 
     // Check that the previous transaction buffer added does not have a MWEB flag
     const prevTxBuffer = psbt.data.inputs[0].nonWitnessUtxo;
-    assert(prevTxBuffer);
+    assert.ok(prevTxBuffer);
     assert.deepStrictEqual(prevTxBuffer.toString('hex'), await getFixture(`ltc-transaction.json`));
   });
 });

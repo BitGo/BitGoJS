@@ -3,8 +3,8 @@
 //
 
 import * as _ from 'lodash';
-import * as nock from 'nock';
 import 'should';
+import nock = require('nock');
 
 import { common } from '@bitgo/sdk-core';
 

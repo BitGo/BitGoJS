@@ -4,10 +4,9 @@
 import assert from 'assert';
 import { Hash, randomBytes } from 'crypto';
 import { Ecdsa, ECDSA, hexToBigInt } from '@bitgo/sdk-core';
-import { EcdsaPaillierProof, EcdsaTypes, Schnorr, SchnorrProof } from '@bitgo/sdk-lib-mpc';
+import { EcdsaPaillierProof, EcdsaTypes, SchnorrProof } from '@bitgo/sdk-lib-mpc';
 import * as sinon from 'sinon';
 import createKeccakHash from 'keccak';
-import * as paillierBigint from 'paillier-bigint';
 import {
   schnorrProofs,
   ntildes,
@@ -18,6 +17,12 @@ import {
   mockEKeyShare,
   mockFKeyShare,
 } from '../fixtures/ecdsa';
+
+// Need to import and then monkey-patch to make stubbing work with ESM
+const paillierBigintModule = require('paillier-bigint');
+const paillierBigint = paillierBigintModule;
+const schnorrModule = require('@bitgo/sdk-lib-mpc');
+const Schnorr = schnorrModule.Schnorr;
 
 describe('TSS ECDSA TESTS', function () {
   const MPC = new Ecdsa();
@@ -30,23 +35,35 @@ describe('TSS ECDSA TESTS', function () {
   );
   let A: ECDSA.KeyShare, B: ECDSA.KeyShare, C: ECDSA.KeyShare;
   before(async () => {
-    const paillierMock = sinon
-      .stub(paillierBigint, 'generateRandomKeys')
-      .onCall(0)
-      .resolves(paillerKeys[0] as unknown as paillierBigint.KeyPair)
-      .onCall(1)
-      .resolves(paillerKeys[1] as unknown as paillierBigint.KeyPair)
-      .onCall(2)
-      .resolves(paillerKeys[2] as unknown as paillierBigint.KeyPair)
-      .onCall(3)
-      .resolves(paillerKeys[0] as unknown as paillierBigint.KeyPair)
-      .onCall(4)
-      .resolves(paillerKeys[1] as unknown as paillierBigint.KeyPair)
-      .onCall(5)
-      .resolves(paillerKeys[2] as unknown as paillierBigint.KeyPair);
+    // Direct monkey patching of the module for ESM compatibility
+    const originalGenerateRandomKeys = paillierBigint.generateRandomKeys;
 
-    const schnorrProofMock = sinon
-      .stub(Schnorr, 'createSchnorrProof')
+    const paillierMock = sinon.stub();
+    paillierMock
+      .onCall(0)
+      .resolves(paillerKeys[0])
+      .onCall(1)
+      .resolves(paillerKeys[1])
+      .onCall(2)
+      .resolves(paillerKeys[2])
+      .onCall(3)
+      .resolves(paillerKeys[0])
+      .onCall(4)
+      .resolves(paillerKeys[1])
+      .onCall(5)
+      .resolves(paillerKeys[2]);
+
+    // Replace the function directly on the module
+    paillierBigint.generateRandomKeys = paillierMock;
+
+    // Save references to restore later
+    (paillierMock as any).originalFn = originalGenerateRandomKeys;
+
+    // Apply the same monkey-patching approach for Schnorr
+    const originalCreateSchnorrProof = Schnorr.createSchnorrProof;
+
+    const schnorrProofMock = sinon.stub();
+    schnorrProofMock
       .onCall(0)
       .returns(schnorrProofs[0] as unknown as SchnorrProof)
       .onCall(1)
@@ -59,6 +76,12 @@ describe('TSS ECDSA TESTS', function () {
       .returns(schnorrProofs[4] as unknown as SchnorrProof)
       .onCall(5)
       .returns(schnorrProofs[5] as unknown as SchnorrProof);
+
+    // Replace the function directly on the module
+    Schnorr.createSchnorrProof = schnorrProofMock;
+
+    // Save references to restore later
+    (schnorrProofMock as any).originalFn = originalCreateSchnorrProof;
 
     [A, B, C] = await Promise.all([MPC.keyShare(1, 2, 3), MPC.keyShare(2, 2, 3), MPC.keyShare(3, 2, 3)]);
 
@@ -96,10 +119,13 @@ describe('TSS ECDSA TESTS', function () {
       hKeyCombine,
     ];
     commonPublicKey = aKeyCombine.xShare.y;
-    paillierMock.reset();
-    paillierMock.restore();
-    schnorrProofMock.reset();
-    schnorrProofMock.restore();
+    // Adding an explicit assertion to check if the stub was used
+    paillierMock.callCount.should.equal(6, 'paillierMock should be called 6 times');
+    schnorrProofMock.callCount.should.equal(8, 'schnorrProofMock should be called 6 times');
+
+    // Restore original functions
+    paillierBigint.generateRandomKeys = (paillierMock as any).originalFn;
+    Schnorr.createSchnorrProof = (schnorrProofMock as any).originalFn;
   });
 
   describe('Ecdsa Key Generation Test', function () {
@@ -149,10 +175,7 @@ describe('TSS ECDSA TESTS', function () {
     });
 
     it('should pass if seed length is greater than 64', async function () {
-      const paillierMock = sinon
-        .stub(paillierBigint, 'generateRandomKeys')
-        .onCall(0)
-        .resolves(paillerKeys[0] as unknown as paillierBigint.KeyPair);
+      const paillierMock = sinon.stub(paillierBigint, 'generateRandomKeys').onCall(0).resolves(paillerKeys[0]);
       const seed72Bytes = Buffer.from(
         '4f7e914dc9ec696398675d1544aab61cb7a67662ffcbdb4079ec5d682be565d87c1b2de75c943dec14c96586984860268779498e6732473aed9ed9c2538f50bea0af926bdccc0134',
         'hex',

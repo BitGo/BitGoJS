@@ -1,4 +1,4 @@
 module.exports = {
-  require: 'ts-node/register',
+  require: 'tsx',
   extension: ['.js', '.ts'],
 };

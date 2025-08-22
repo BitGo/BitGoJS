@@ -14,10 +14,10 @@ $ nvm use
 $ npm install
 ```
 
-Use `npx ts-node` to run the desired example:
+Use `npx tsx` to run the desired example:
 
 ```
-$ npx ts-node create-smc-wallet-step-1.ts
+$ npx tsx create-smc-wallet-step-1.ts
 ```
 
 **Note**: Complete the required TODO's for each script, such as adding your access token or providing your wallet ID.

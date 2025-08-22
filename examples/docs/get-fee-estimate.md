@@ -23,11 +23,11 @@ This script, when run, will log a transaction hex. You can then pass this value 
 
 First, run `yarn install` from the root directory of the repository.
 
-Then change into the `examples/ts/sui` directory and use `npx ts-node` to run it:
+Then change into the `examples/ts/sui` directory and use `npx tsx` to run it:
 
 ```
 $ cd examples/ts/sui/
-$ npx ts-node get-transaction-hex.ts
+$ npx tsx get-transaction-hex.ts
 ```
 
 ### Note

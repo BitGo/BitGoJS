@@ -1,5 +1,5 @@
-import * as should from 'should';
-import * as nock from 'nock';
+import should = require('should');
+import nock = require('nock');
 
 import { Environments } from '@bitgo/sdk-core';
 import { TestBitGo } from '@bitgo/sdk-test';

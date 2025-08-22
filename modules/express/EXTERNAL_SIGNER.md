@@ -57,7 +57,7 @@ Option #2 may make be more convenient for configuration instead of reconfiguring
 An example is provided in the file. To run the file, use the command:
 
 ```sh
-yarn ts-node <path/to/fetchEncryptedPrivKeys.ts>
+yarn tsx <path/to/fetchEncryptedPrivKeys.ts>
 ```
 
 ### Wallet passphrase

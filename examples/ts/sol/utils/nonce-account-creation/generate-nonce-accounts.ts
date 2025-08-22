@@ -24,7 +24,7 @@ import { readFileSync, writeFileSync } from "fs";
 // and the value is an array of nonce accounts public keys
 
 // To run this script you can use the following command:
-// npx ts-node generate-nonce-accounts.ts
+// npx tsx generate-nonce-accounts.ts
 
 
 // UPDATE this variables to match your environment

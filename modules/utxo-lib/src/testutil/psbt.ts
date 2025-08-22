@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import { ok as assert } from 'assert';
 
 import {
   createOutputScriptP2shP2pk,

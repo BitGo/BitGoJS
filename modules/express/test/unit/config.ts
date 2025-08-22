@@ -5,92 +5,106 @@
 import * as should from 'should';
 import * as sinon from 'sinon';
 
-import { config, DefaultConfig } from '../../src/config';
+import { DefaultConfig } from '../../src/config';
 import * as args from '../../src/args';
+import proxyquire from 'proxyquire';
 
 describe('Config:', () => {
   it('should take command line config options', () => {
-    const argStub = sinon.stub(args, 'args').returns({ port: 12345 });
-    config().port.should.equal(12345);
-    argStub.restore();
+    const { config: proxyConfig } = proxyquire('../../src/config', {
+      './args': {
+        args: () => {
+          return {
+            port: 12345,
+          };
+        },
+      },
+    });
+    proxyConfig().port.should.equal(12345);
   });
 
   it('should take environment variable config options', () => {
-    const argStub = sinon.stub(args, 'args').returns({});
     const envStub = sinon.stub(process, 'env').value({ BITGO_PORT: '12345' });
-    config().port.should.equal(12345);
-    argStub.restore();
+    const { config: proxyConfig } = proxyquire('../../src/config', {
+      './args': {
+        args: () => {
+          return {};
+        },
+      },
+    });
+    proxyConfig().port.should.equal(12345);
     envStub.restore();
   });
 
   it('should fall back to default config options', () => {
-    const argStub = sinon.stub(args, 'args').returns({});
-    config().port.should.equal(DefaultConfig.port);
-    argStub.restore();
+    const { config: proxyConfig } = proxyquire('../../src/config', {
+      './args': {
+        args: () => {
+          return {};
+        },
+      },
+    });
+    proxyConfig().port.should.equal(DefaultConfig.port);
   });
 
   it('should correctly handle config precedence', () => {
-    const argStub = sinon.stub(args, 'args').returns({ port: 23456 });
     const envStub = sinon.stub(process, 'env').value({ BITGO_PORT: '12345' });
-    config().port.should.equal(23456);
-    argStub.restore();
+    const { config: proxyConfig } = proxyquire('../../src/config', {
+      './args': {
+        args: () => {
+          return { port: 23456 };
+        },
+      },
+    });
+    proxyConfig().port.should.equal(23456);
     envStub.restore();
   });
 
   it('should transform urls to secure urls when disableSSL is undefined', () => {
-    const argStub = sinon.stub(args, 'args').returns({ disableSSL: undefined, customrooturi: 'test.com' });
     const envStub = sinon
       .stub(process, 'env')
       .value({ BITGO_DISABLE_SSL: undefined, BITGO_CUSTOM_ROOT_URI: 'test.com' });
-    config().disableSSL.should.equal(false);
-    config().should.have.property('customRootUri', 'https://test.com');
-    argStub.restore();
+    const { config: proxyConfig } = proxyquire('../../src/config', {
+      './args': {
+        args: () => {
+          return { disableSSL: undefined, customrooturi: 'test.com' };
+        },
+      },
+    });
+    proxyConfig().disableSSL.should.equal(false);
+    proxyConfig().should.have.property('customRootUri', 'https://test.com');
     envStub.restore();
   });
 
   it('should transform urls to secure urls when disableSSL is false', () => {
-    const argStub = sinon.stub(args, 'args').returns({ disableSSL: false, customrooturi: 'test.com' });
     const envStub = sinon.stub(process, 'env').value({ BITGO_DISABLE_SSL: false, BITGO_CUSTOM_ROOT_URI: 'test.com' });
-    config().disableSSL.should.equal(false);
-    config().should.have.property('customRootUri', 'https://test.com');
-    argStub.restore();
+    const { config: proxyConfig } = proxyquire('../../src/config', {
+      './args': {
+        args: () => {
+          return { disableSSL: false, customrooturi: 'test.com' };
+        },
+      },
+    });
+    proxyConfig().disableSSL.should.equal(false);
+    proxyConfig().should.have.property('customRootUri', 'https://test.com');
     envStub.restore();
   });
 
   it('should not transform urls to secure urls when disableSSL is true', () => {
-    const argStub = sinon.stub(args, 'args').returns({ disableSSL: true, customrooturi: 'test.com' });
     const envStub = sinon.stub(process, 'env').value({ BITGO_DISABLE_SSL: true, BITGO_CUSTOM_ROOT_URI: 'test.com' });
-    config().disableSSL.should.equal(true);
-    config().should.have.property('customRootUri', 'test.com');
-    argStub.restore();
+    const { config: proxyConfig } = proxyquire('../../src/config', {
+      './args': {
+        args: () => {
+          return { disableSSL: true, customrooturi: 'test.com' };
+        },
+      },
+    });
+    proxyConfig().disableSSL.should.equal(true);
+    proxyConfig().should.have.property('customRootUri', 'test.com');
     envStub.restore();
   });
 
   it('should correctly handle config precedence for a complete config', () => {
-    const argStub = sinon.stub(args, 'args').returns({
-      port: 23456,
-      bind: 'argbind',
-      ipc: 'argipc',
-      env: 'argenv',
-      debugnamespace: 'argdebug',
-      keypath: 'argkeypath',
-      crtpath: 'argcrtpath',
-      logfile: 'arglogfile',
-      disablessl: 'argdisableSSL',
-      disableproxy: 'argdisableProxy',
-      disableenvcheck: 'argdisableEnvCheck',
-      timeout: 'argtimeout',
-      customrooturi: 'argcustomRootUri',
-      custombitcoinnetwork: 'argcustomBitcoinNetwork',
-      externalSignerUrl: 'argexternalSignerUrl',
-      enclavedExpressUrl: 'argenclavedExpressUrl',
-      enclavedExpressSSLCert: 'argenclavedExpressSSLCert',
-      signerMode: 'argsignerMode',
-      signerFileSystemPath: 'argsignerFileSystemPath',
-      lightningSignerFileSystemPath: 'arglightningSignerFileSystemPath',
-      keepalivetimeout: 'argkeepalivetimeout',
-      headerstimeout: 'argheaderstimeout',
-    });
     const envStub = sinon.stub(process, 'env').value({
       BITGO_PORT: 'env12345',
       BITGO_BIND: 'envbind',
@@ -117,7 +131,38 @@ describe('Config:', () => {
       BITGO_KEEP_ALIVE_TIMETOUT: 'envkeepalivetimeout',
       BITGO_HEADERS_TIMETOUT: 'envheaderstimeout',
     });
-    config().should.eql({
+
+    const { config: proxyConfig } = proxyquire('../../src/config', {
+      './args': {
+        args: () => {
+          return {
+            port: 23456,
+            bind: 'argbind',
+            ipc: 'argipc',
+            env: 'argenv',
+            debugnamespace: 'argdebug',
+            keypath: 'argkeypath',
+            crtpath: 'argcrtpath',
+            logfile: 'arglogfile',
+            disablessl: 'argdisableSSL',
+            disableproxy: 'argdisableProxy',
+            disableenvcheck: 'argdisableEnvCheck',
+            timeout: 'argtimeout',
+            customrooturi: 'argcustomRootUri',
+            custombitcoinnetwork: 'argcustomBitcoinNetwork',
+            externalSignerUrl: 'argexternalSignerUrl',
+            enclavedExpressUrl: 'argenclavedExpressUrl',
+            enclavedExpressSSLCert: 'argenclavedExpressSSLCert',
+            signerMode: 'argsignerMode',
+            signerFileSystemPath: 'argsignerFileSystemPath',
+            lightningSignerFileSystemPath: 'arglightningSignerFileSystemPath',
+            keepalivetimeout: 'argkeepalivetimeout',
+            headerstimeout: 'argheaderstimeout',
+          };
+        },
+      },
+    });
+    proxyConfig().should.eql({
       port: 23456,
       bind: 'argbind',
       ipc: 'argipc',
@@ -144,15 +189,19 @@ describe('Config:', () => {
       keepAliveTimeout: 'argkeepalivetimeout',
       headersTimeout: 'argheaderstimeout',
     });
-    argStub.restore();
     envStub.restore();
   });
 
   it('should correctly handle boolean config precedence', () => {
-    const argStub = sinon.stub(args, 'args').returns({ disablessl: true });
     const envStub = sinon.stub(process, 'env').value({ BITGO_DISABLE_SSL: undefined });
-    config().disableSSL.should.equal(true);
-    argStub.restore();
+    const { config: proxyConfig } = proxyquire('../../src/config', {
+      './args': {
+        args: () => {
+          return { disablessl: true };
+        },
+      },
+    });
+    proxyConfig().disableSSL.should.equal(true);
     envStub.restore();
   });
 
@@ -165,11 +214,16 @@ describe('Config:', () => {
     ];
 
     for (const { deprecated, ...form } of optionForms) {
-      const argStub = sinon.stub(args, 'args').returns({});
       const envStub = sinon.stub(process, 'env').value(form);
       const consoleStub = sinon.stub(console, 'warn').returns(undefined);
-      config().disableSSL.should.equal(true);
-      argStub.restore();
+      const { config: proxyConfig } = proxyquire('../../src/config', {
+        './args': {
+          args: () => {
+            return {};
+          },
+        },
+      });
+      proxyConfig().disableSSL.should.equal(true);
       envStub.restore();
       consoleStub.restore();
       if (deprecated) {
@@ -182,11 +236,16 @@ describe('Config:', () => {
     const optionForms = [{ deprecated: true, DISABLE_PROXY: true }, { BITGO_DISABLE_PROXY: true }];
 
     for (const { deprecated = false, ...form } of optionForms) {
-      const argStub = sinon.stub(args, 'args').returns({});
       const envStub = sinon.stub(process, 'env').value(form);
       const consoleStub = sinon.stub(console, 'warn').returns(undefined);
-      config().disableProxy.should.equal(true);
-      argStub.restore();
+      const { config: proxyConfig } = proxyquire('../../src/config', {
+        './args': {
+          args: () => {
+            return {};
+          },
+        },
+      });
+      proxyConfig().disableProxy.should.equal(true);
       envStub.restore();
       consoleStub.restore();
       if (deprecated) {
@@ -199,11 +258,16 @@ describe('Config:', () => {
     const optionForms = [{ BITGO_DISABLE_ENV_CHECK: true }, { deprecated: true, DISABLE_ENV_CHECK: true }];
 
     for (const { deprecated = false, ...form } of optionForms) {
-      const argStub = sinon.stub(args, 'args').returns({});
       const envStub = sinon.stub(process, 'env').value(form);
       const consoleStub = sinon.stub(console, 'warn').returns(undefined);
-      config().disableEnvCheck.should.equal(true);
-      argStub.restore();
+      const { config: proxyConfig } = proxyquire('../../src/config', {
+        './args': {
+          args: () => {
+            return {};
+          },
+        },
+      });
+      proxyConfig().disableEnvCheck.should.equal(true);
       envStub.restore();
       consoleStub.restore();
       if (deprecated) {

@@ -148,7 +148,7 @@ export function applyPrepareReleaseScript(
   }
 
   // Execute the prepare-release script with the repoDir as cwd
-  return execFileSync('npx', ['ts-node', '--transpile-only', scriptPath, ...args], {
+  return execFileSync('npx', ['tsx', '--transpile-only', scriptPath, ...args], {
     encoding: 'utf8',
     stdio: 'inherit',
     cwd: clonedRepoDir,

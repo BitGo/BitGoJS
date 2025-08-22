@@ -5,8 +5,8 @@
 import { CoinFamily, CoinKind, coins, KeyCurve, UnderlyingAsset } from '@bitgo/statics';
 import * as assert from 'assert';
 import * as _ from 'lodash';
-import * as nock from 'nock';
-import * as should from 'should';
+import nock = require('nock');
+import should = require('should');
 import * as sinon from 'sinon';
 
 import { common, decodeOrElse, ECDSAUtils, EDDSAUtils, Keychains, OvcShare } from '@bitgo/sdk-core';
@@ -778,7 +778,7 @@ describe('V2 Keychains', function () {
       const decodedRes = decodeOrElse(OvcShare.name, OvcShare, test, (errors) => {
         throw new Error(`error(s) parsing parsing json: ${errors}`);
       });
-      assert(decodedRes);
+      assert.ok(decodedRes);
     });
   });
 

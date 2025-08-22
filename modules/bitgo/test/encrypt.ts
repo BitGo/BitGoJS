@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import * as should from 'should';
+import should = require('should');
 
 import { randomBytes } from 'crypto';
 import { decrypt, encrypt, bytesToWord } from '@bitgo/sdk-api';

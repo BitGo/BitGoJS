@@ -134,9 +134,9 @@ export function createInscriptionRevealData(
   const payment = createPaymentForInscription(pubkey, contentType, inscriptionData);
 
   const { output: commitOutput, controlBlock } = payment;
-  assert(commitOutput);
-  assert(controlBlock);
-  assert(payment.redeem?.output);
+  assert.ok(commitOutput);
+  assert.ok(controlBlock);
+  assert.ok(payment.redeem?.output);
   const commitAddress = address.fromOutputScript(commitOutput, network);
 
   const tapLeafScript: utxolib.bitgo.TapLeafScript[] = [
@@ -164,7 +164,7 @@ export function createInscriptionRevealData(
 export function createOutputScriptForInscription(pubkey: Buffer, contentType: string, inscriptionData: Buffer): Buffer {
   const payment = createPaymentForInscription(pubkey, contentType, inscriptionData);
 
-  assert(payment.output, 'Failed to create inscription output script');
+  assert.ok(payment.output, 'Failed to create inscription output script');
   return payment.output;
 }
 

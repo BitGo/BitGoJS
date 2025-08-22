@@ -80,7 +80,7 @@ describe('OutputLayout to PSBT conversion', function () {
     const values = [inscriptionUnspent, ...supplementaryUnspents].map((u) => u.value);
     it(`finds layout for unspents [${values}, {minimizeInputs=${minimizeInputs}]`, function () {
       const satPoint = inscriptionUnspent.id + ':0';
-      assert(isSatPoint(satPoint));
+      assert.ok(isSatPoint(satPoint));
       const f = () =>
         createPsbtForSingleInscriptionPassingTransaction(
           network,
@@ -108,7 +108,7 @@ describe('OutputLayout to PSBT conversion', function () {
       const result = findOutputLayoutForWalletUnspents(expectedUnspentSelection, satPoint, outputs, {
         feeRateSatKB: 1000,
       });
-      assert(result);
+      assert.ok(result);
       assert.deepStrictEqual(result.layout, expectedResult);
       const expectedOutputs = toArray(expectedResult).filter((v) => v !== BigInt(0)).length - 1;
       const psbt = createPsbtFromOutputLayout(network, inputBuilder, expectedUnspentSelection, outputs, result.layout);

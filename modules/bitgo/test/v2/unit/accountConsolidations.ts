@@ -6,7 +6,7 @@ import * as sinon from 'sinon';
 require('should-sinon');
 
 import '../lib/asserts';
-import * as nock from 'nock';
+import nock = require('nock');
 
 import { common, Wallet } from '@bitgo/sdk-core';
 

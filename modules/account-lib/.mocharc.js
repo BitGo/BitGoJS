@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = {
-  require: 'ts-node/register',
+  require: 'tsx',
   timeout: '60000',
   reporter: 'min',
   'reporter-option': ['consoleReporter=min'],
