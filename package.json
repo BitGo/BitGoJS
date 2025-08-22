@@ -94,7 +94,8 @@
     "form-data": "^4.0.4",
     "**/avalanche/**/ws": "8.18.3",
     "**/ethers/**/ws": "7.5.10",
-    "**/swarm-js/**/ws": "5.2.4"
+    "**/swarm-js/**/ws": "5.2.4",
+    "sha.js": "^2.4.12"
   },
   "workspaces": [
     "modules/*"
