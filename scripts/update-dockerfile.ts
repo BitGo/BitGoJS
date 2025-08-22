@@ -1,5 +1,5 @@
-import * as execa from 'execa';
-import * as fs from 'fs';
+import execa from 'execa';
+import fs from 'fs';
 
 type ManagedModule = {
   name: string;
