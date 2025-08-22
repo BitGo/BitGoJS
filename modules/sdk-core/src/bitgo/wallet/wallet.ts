@@ -3082,6 +3082,28 @@ export class Wallet implements IWallet {
     // this gives us a set of account consolidation transactions
     const unsignedBuilds = await this.buildAccountConsolidations({ ...params, apiVersion: apiVersion });
     if (unsignedBuilds && unsignedBuilds.length > 0) {
+      // Get wallet's base address to validate destination addresses
+      const baseAddress = this._wallet.coinSpecific?.baseAddress || this._wallet.coinSpecific?.rootAddress;
+      // Validate all transactions
+      for (const build of unsignedBuilds) {
+        if (baseAddress) {
+          debug('verifying txHex', JSON.stringify(build));
+          //Verify transactions send funds to the base address
+          if (
+            !(await this.baseCoin.verifyTransaction({
+              txPrebuild: build,
+              txParams: params,
+              verification: {
+                consolidationToBaseAddress: true,
+              },
+              wallet: this,
+              walletType: this._wallet.multisigType,
+            }))
+          ) {
+            throw new Error('Found output that does not consolidate funds to base address');
+          }
+        }
+      }
       const successfulTxs: any[] = [];
       const failedTxs = new Array<Error>();
       for (const unsignedBuild of unsignedBuilds) {
@@ -3093,7 +3115,6 @@ export class Wallet implements IWallet {
           const sendTx = await this.sendAccountConsolidation(unsignedBuildWithOptions);
           successfulTxs.push(sendTx);
         } catch (e) {
-          console.dir(e);
           failedTxs.push(e);
         }
       }

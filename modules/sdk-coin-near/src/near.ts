@@ -11,6 +11,7 @@ import * as request from 'superagent';
 import { auditEddsaPrivateKey } from '@bitgo/sdk-lib-mpc';
 import {
   AuditDecryptedKeyParams,
+  BaseAddress,
   BaseCoin,
   BaseTransaction,
   BitGoBase,
@@ -1040,6 +1041,11 @@ export class Near extends BaseCoin {
         throw new Error('Tx total amount does not match with expected total amount field');
       }
     }
+
+    if (params.verification?.consolidationToBaseAddress) {
+      await this.verifyConsolidationToBaseAddress(params, explainedTx);
+    }
+
     return true;
   }
 
@@ -1053,5 +1059,22 @@ export class Near extends BaseCoin {
       throw new Error('Unsupported multiSigType');
     }
     auditEddsaPrivateKey(prv, publicKey ?? '');
+  }
+
+  protected async verifyConsolidationToBaseAddress(
+    params: VerifyTransactionOptions,
+    explainedTx: TransactionExplanation
+  ): Promise<void> {
+    const baseAddresses: BaseAddress[] | undefined = await params.wallet.addresses({ sort: -1, limit: 1 });
+    if (!baseAddresses || baseAddresses.length === 0) {
+      throw new Error('No base address found on wallet');
+    }
+    const baseAddress = baseAddresses[0];
+
+    for (const output of explainedTx.outputs) {
+      if (output.address !== baseAddress.address) {
+        throw new Error('tx outputs does not match with expected address');
+      }
+    }
   }
 }
