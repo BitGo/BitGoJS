@@ -12,15 +12,12 @@ require('dotenv').config({ path: '../../../.env' });
  * Step 1. GET /assets API
  *      Retrieves:
  *        - The list of assets supported for burning
+ *        - Treasury Account Wallet ID for the specified stablecoin, to which the funds need to be sent
  *
- * Step 2. GET /{token}/constants API
- *      Retrieves:
- *        - Treasury Account Wallet ID for the specified stablecoin
- *
- * Step 3. POST /order API
+ * Step 2. POST /order API
  *      Creates a Burn Order with the specified parameters
  *
- * Step 4. Transfer the assets to be burnt, to the treasury account
+ * Step 3. Transfer the assets to be burnt, to the treasury account
  *      Initiates the send transaction to the Treasury Account using sendMany
  */
 
@@ -34,7 +31,7 @@ const walletPassphrase = ''; // Wallet passphrase
 const usdcoin = 'tfiatusd'; // USD asset token
 const stablecoin = 'tbsc:usd1'; // Stablecoin to burn
 const ofcStablecoin = `ofc${stablecoin}`; // ofc stablecoin (for initiating the send from the specified GoAccount wallet to the Treasury Go Account)
-const fromAmountInFullUnits = '100'; // Amount in full units of the stablecoin (3 tbsc:usd1) - Must be an integer
+const fromAmountInFullUnits = '100'; // Amount in full units of the stablecoin (100 tbsc:usd1) - Must be an integer
 // Note: fromAmount will be calculated dynamically using asset decimals
 
 // Initialize BitGo SDK
@@ -44,24 +41,6 @@ const basecoin = bitgo.coin(ofcStablecoin);
 
 function createStablecoinUrl(path: string): string {
   return common.Environments[bitgo.getEnv()].uri + '/api/stablecoin/v1' + path;
-}
-
-/**
- * Fetch treasury wallet ID from the constants API
- * @param token - The stablecoin token to get constants for
- * @returns The treasury account wallet ID
- */
-async function fetchTreasuryWalletId(token: string): Promise<string> {
-  console.log(`\n🔍 STEP 2: Fetching treasury wallet ID from constants API for ${token}...`);
-  const constants = await bitgo.get(createStablecoinUrl(`/${token}/constants`));
-  const treasuryAccountWalletId = constants.body.trustAccountWalletId;
-
-  if (!treasuryAccountWalletId) {
-    throw new Error(`Treasury account wallet ID not found in constants for ${token}`);
-  }
-
-  console.log(`🏦 Treasury Account Wallet ID (from constants): ${treasuryAccountWalletId}`);
-  return treasuryAccountWalletId;
 }
 
 /**
@@ -77,8 +56,7 @@ async function main() {
     console.log('='.repeat(50));
 
     // Execute the burn order process step by step
-    const { usdAsset, stablecoinAsset, fromAmount } = await fetchAndValidateAssets();
-    const treasuryAccountWalletId = await fetchTreasuryWalletId(stablecoin);
+    const { usdAsset, stablecoinAsset, treasuryAccountWalletId, fromAmount } = await fetchAndValidateAssets();
     const newOrder = await createBurnOrder(stablecoinAsset, usdAsset, fromAmount);
     await sendTokensToTreasury(treasuryAccountWalletId, newOrder.id, fromAmount);
     const order = await fetchOrderDetails(newOrder.id);
@@ -119,8 +97,13 @@ async function fetchAndValidateAssets() {
   console.log(`📋 USD Asset: ${usdAsset.token} (ID: ${usdAsset.id})`);
   console.log(`🪙 Stablecoin Asset: ${stablecoinAsset.token} (ID: ${stablecoinAsset.id})`);
 
+  const treasuryAccountWalletId = stablecoinAsset.treasuryAccountWalletId;
   // Calculate fromAmount using stablecoin asset decimals
   const decimals = stablecoinAsset.decimals;
+
+  if (!treasuryAccountWalletId) {
+    throw new Error(`Treasury account wallet ID not found for ${stablecoin}`);
+  }
 
   if (decimals === undefined) {
     throw new Error(`Decimals not found for ${stablecoin}`);
@@ -133,8 +116,9 @@ async function fetchAndValidateAssets() {
   console.log(`   • Full Units: ${fromAmountInFullUnits} ${stablecoinAsset.token}`);
   console.log(`   • Decimals: ${decimals}`);
   console.log(`   • Base Units: ${fromAmount}`);
+  console.log(`🏦 Treasury Account Wallet ID: ${treasuryAccountWalletId}`);
 
-  return { usdAsset, stablecoinAsset, fromAmount };
+  return { usdAsset, stablecoinAsset, treasuryAccountWalletId, fromAmount };
 }
 
 /**
@@ -145,7 +129,7 @@ async function fetchAndValidateAssets() {
  * @returns The created order object
  */
 async function createBurnOrder(stablecoinAsset: any, usdAsset: any, fromAmount: string) {
-  console.log('\n🔥 STEP 3: Creating burn order...');
+  console.log('\n🔥 STEP 2: Creating burn order...');
 
   const orderRequestBody = {
     sourceWalletId: walletId,
@@ -181,7 +165,7 @@ async function createBurnOrder(stablecoinAsset: any, usdAsset: any, fromAmount: 
  * @returns The transaction object
  */
 async function sendTokensToTreasury(treasuryAccountWalletId: string, orderId: string, fromAmount: string) {
-  console.log('\n💸 STEP 4: Sending stablecoin to treasury account...');
+  console.log('\n💸 STEP 3: Sending stablecoin to treasury account...');
 
   const walletInstance = await basecoin.wallets().get({ id: walletId });
 
@@ -208,7 +192,7 @@ async function sendTokensToTreasury(treasuryAccountWalletId: string, orderId: st
 }
 
 async function fetchOrderDetails(orderId: string) {
-  console.log('\n🔍 STEP 5: Fetching final order details...');
+  console.log('\n🔍 STEP 4: Fetching final order details...');
   const orderResponse = await bitgo.get(createStablecoinUrl(`/enterprise/${enterpriseId}/orders/${orderId}`)).send();
   return orderResponse.body;
 }
