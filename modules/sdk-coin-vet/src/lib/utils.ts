@@ -16,6 +16,7 @@ import {
   VET_ADDRESS_LENGTH,
   VET_BLOCK_ID_LENGTH,
   VET_TRANSACTION_ID_LENGTH,
+  TRANSFER_NFT_METHOD_ID,
 } from './constants';
 import { KeyPair } from './keyPair';
 
@@ -87,6 +88,8 @@ export class Utils implements BaseUtils {
       return TransactionType.StakingUnlock; // Using StakingUnlock for exit delegation
     } else if (clauses[0].data.startsWith(BURN_NFT_METHOD_ID)) {
       return TransactionType.StakingWithdraw; // Using StakingWithdraw for burn NFT
+    } else if (clauses[0].data.startsWith(TRANSFER_NFT_METHOD_ID)) {
+      return TransactionType.SendNFT;
     } else {
       return TransactionType.SendToken;
     }
@@ -96,6 +99,17 @@ export class Utils implements BaseUtils {
     const methodName = 'transfer';
     const types = ['address', 'uint256'];
     const params = [toAddress, new BN(amountWei)];
+
+    const method = EthereumAbi.methodID(methodName, types);
+    const args = EthereumAbi.rawEncode(types, params);
+
+    return addHexPrefix(Buffer.concat([method, args]).toString('hex'));
+  }
+
+  getTransferNFTData(from: string, to: string, tokenId: string): string {
+    const methodName = 'transferFrom';
+    const types = ['address', 'address', 'uint256'];
+    const params = [from, to, new BN(tokenId)];
 
     const method = EthereumAbi.methodID(methodName, types);
     const args = EthereumAbi.rawEncode(types, params);
@@ -129,6 +143,29 @@ export class Utils implements BaseUtils {
     return {
       address: recipientAddress,
       amount: amount.toString(),
+    };
+  }
+
+  decodeTransferNFTData(data: string): {
+    recipients: TransactionRecipient[];
+    sender: string;
+    tokenId: string;
+  } {
+    const [from, to, tokenIdBN] = getRawDecoded(
+      ['address', 'address', 'uint256'],
+      getBufferedByteCode(TRANSFER_NFT_METHOD_ID, data)
+    );
+    const recipientAddress = addHexPrefix(to.toString()).toLowerCase();
+    const recipient: TransactionRecipient = {
+      address: recipientAddress,
+      amount: '1',
+    };
+    const sender = addHexPrefix(from.toString()).toLowerCase();
+    const tokenId = tokenIdBN.toString();
+    return {
+      recipients: [recipient],
+      sender,
+      tokenId,
     };
   }
 }

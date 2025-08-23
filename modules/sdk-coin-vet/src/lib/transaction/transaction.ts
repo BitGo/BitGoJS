@@ -371,7 +371,11 @@ export class Transaction extends BaseTransaction {
       nonce: this.nonce,
     };
 
-    if (this.type === TransactionType.Send || this.type === TransactionType.SendToken) {
+    if (
+      this.type === TransactionType.Send ||
+      this.type === TransactionType.SendToken ||
+      this.type === TransactionType.SendNFT
+    ) {
       transactionBody.reserved = {
         features: 1, // mark transaction as delegated i.e. will use gas payer
       };

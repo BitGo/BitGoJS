@@ -17,6 +17,8 @@ import { TokenTransactionBuilder } from './transactionBuilder/tokenTransactionBu
 import { TokenTransaction } from './transaction/tokenTransaction';
 import { StakingBuilder } from './transactionBuilder/stakingBuilder';
 import { StakingTransaction } from './transaction/stakingTransaction';
+import { NFTTransactionBuilder } from './transactionBuilder/nftTransactionBuilder';
+import { NFTTransaction } from './transaction/nftTransaction';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -45,6 +47,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           const tokenTransferTx = new TokenTransaction(this._coinConfig);
           tokenTransferTx.fromDeserializedSignedTransaction(signedTx);
           return this.getTokenTransactionBuilder(tokenTransferTx);
+        case TransactionType.SendNFT:
+          const nftTransferTx = new NFTTransaction(this._coinConfig);
+          nftTransferTx.fromDeserializedSignedTransaction(signedTx);
+          return this.getNFTTransactionBuilder(nftTransferTx);
         case TransactionType.ContractCall:
           const stakingTx = new StakingTransaction(this._coinConfig);
           stakingTx.fromDeserializedSignedTransaction(signedTx);
@@ -84,6 +90,16 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getStakingBuilder(tx?: StakingTransaction): StakingBuilder {
     return this.initializeBuilder(tx, new StakingBuilder(this._coinConfig));
+  }
+
+  /**
+   * Gets an nft transaction builder.
+   *
+   * @param {NFTTransaction} tx - The nft transaction to use
+   * @returns {NFTTransactionBuilder} The nft transaction builder
+   */
+  getNFTTransactionBuilder(tx?: Transaction): NFTTransactionBuilder {
+    return this.initializeBuilder(tx, new NFTTransactionBuilder(this._coinConfig));
   }
 
   /**
