@@ -87,6 +87,7 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-hbar /var/modules/sdk-coin-hbar/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-icp /var/modules/sdk-coin-icp/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-initia /var/modules/sdk-coin-initia/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-injective /var/modules/sdk-coin-injective/
+COPY --from=builder /tmp/bitgo/modules/sdk-coin-iota /var/modules/sdk-coin-iota/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-islm /var/modules/sdk-coin-islm/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-mantra /var/modules/sdk-coin-mantra/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-mon /var/modules/sdk-coin-mon/
@@ -183,6 +184,7 @@ cd /var/modules/sdk-coin-hbar && yarn link && \
 cd /var/modules/sdk-coin-icp && yarn link && \
 cd /var/modules/sdk-coin-initia && yarn link && \
 cd /var/modules/sdk-coin-injective && yarn link && \
+cd /var/modules/sdk-coin-iota && yarn link && \
 cd /var/modules/sdk-coin-islm && yarn link && \
 cd /var/modules/sdk-coin-mantra && yarn link && \
 cd /var/modules/sdk-coin-mon && yarn link && \
@@ -282,6 +284,7 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-icp && \
     yarn link @bitgo/sdk-coin-initia && \
     yarn link @bitgo/sdk-coin-injective && \
+    yarn link @bitgo/sdk-coin-iota && \
     yarn link @bitgo/sdk-coin-islm && \
     yarn link @bitgo/sdk-coin-mantra && \
     yarn link @bitgo/sdk-coin-mon && \

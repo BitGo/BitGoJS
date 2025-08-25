@@ -41,6 +41,8 @@ describe('Coins', () => {
       AptToken: 1,
       Icp: 1,
       Ticp: 1,
+      Iota: 1,
+      Tiota: 1,
       Sip10Token: 1,
       SoneiumToken: 1,
       Polyx: 1,

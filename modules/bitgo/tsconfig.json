@@ -177,6 +177,9 @@
       "path": "../sdk-coin-injective"
     },
     {
+      "path": "../sdk-coin-iota"
+    },
+    {
       "path": "../sdk-coin-islm"
     },
     {

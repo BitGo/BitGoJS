@@ -96,6 +96,7 @@ import {
   Icp,
   Initia,
   Injective,
+  Iota,
   Islm,
   Lnbtc,
   Ltc,
@@ -270,6 +271,7 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('icp', Icp.createInstance);
   coinFactory.register('initia', Initia.createInstance);
   coinFactory.register('injective', Injective.createInstance);
+  coinFactory.register('iota', Iota.createInstance);
   coinFactory.register('islm', Islm.createInstance);
   coinFactory.register('near', Near.createInstance);
   coinFactory.register('oas', Oas.createInstance);
@@ -333,6 +335,7 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('ticp', Ticp.createInstance);
   coinFactory.register('tinitia', Tinitia.createInstance);
   coinFactory.register('tinjective', Tinjective.createInstance);
+  coinFactory.register('tiota', Iota.createInstance);
   coinFactory.register('tislm', Tislm.createInstance);
   coinFactory.register('tlnbtc', Tlnbtc.createInstance);
   coinFactory.register('tltc', Tltc.createInstance);
