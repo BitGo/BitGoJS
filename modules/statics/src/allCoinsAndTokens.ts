@@ -812,6 +812,8 @@ export const allCoinsAndTokens = [
       CoinFeature.SHARED_EVM_SDK,
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
     ]
   ),
   account(
@@ -872,6 +874,8 @@ export const allCoinsAndTokens = [
       CoinFeature.SHARED_EVM_SDK,
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
     ]
   ),
   account(
@@ -1589,6 +1593,8 @@ export const allCoinsAndTokens = [
       CoinFeature.SHARED_EVM_SDK,
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
     ]
   ),
   account(
@@ -1605,6 +1611,8 @@ export const allCoinsAndTokens = [
       CoinFeature.SHARED_EVM_SDK,
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
     ]
   ),
   account(
@@ -1653,6 +1661,8 @@ export const allCoinsAndTokens = [
       CoinFeature.SHARED_EVM_SDK,
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
     ]
   ),
   account(
@@ -1669,6 +1679,8 @@ export const allCoinsAndTokens = [
       CoinFeature.SHARED_EVM_SDK,
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
     ]
   ),
   account(
@@ -1685,6 +1697,8 @@ export const allCoinsAndTokens = [
       CoinFeature.SHARED_EVM_SDK,
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
     ]
   ),
   account(
@@ -1701,6 +1715,8 @@ export const allCoinsAndTokens = [
       CoinFeature.SHARED_EVM_SDK,
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
     ]
   ),
   account(
