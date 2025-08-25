@@ -80,6 +80,9 @@ export const SignPsbtRequest = t.type(
   {
     fundedPsbt: t.string,
     txRequestId: t.string,
+    userAuthKey: t.string,
+    signature: t.string,
+    signedRequest: t.string,
   },
   'SendPsbtRequest'
 );
@@ -98,6 +101,9 @@ export const SendPsbtRequest = t.type(
   {
     signedTxHex: t.string,
     txRequestId: t.string,
+    userAuthKey: t.string,
+    signature: t.string,
+    signedRequest: t.string,
   },
   'SendPsbtRequest'
 );
