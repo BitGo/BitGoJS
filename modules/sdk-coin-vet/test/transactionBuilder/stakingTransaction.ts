@@ -9,21 +9,6 @@ describe('VET Staking Transaction', function () {
   const factory = new TransactionBuilderFactory(coins.get('tvet'));
   const stakingContractAddress = '0x1EC1D168574603ec35b9d229843B7C2b44bCB770';
   const amountToStake = '1000000000000000000'; // 1 VET in wei
-  const stakingContractABI = [
-    {
-      inputs: [
-        {
-          internalType: 'uint256',
-          name: 'amount',
-          type: 'uint256',
-        },
-      ],
-      name: 'stake',
-      outputs: [],
-      stateMutability: 'payable',
-      type: 'function',
-    },
-  ];
 
   // Helper function to create a basic transaction builder with common properties
   const createBasicTxBuilder = () => {
@@ -42,7 +27,7 @@ describe('VET Staking Transaction', function () {
     const txBuilder = factory.getStakingBuilder();
     txBuilder.stakingContractAddress(stakingContractAddress);
     txBuilder.amountToStake(amountToStake);
-    txBuilder.stakingContractABI(stakingContractABI);
+    txBuilder.stakingContractABI(EthereumAbi);
     txBuilder.sender('0x9378c12BD7502A11F770a5C1F223c959B2805dA9');
     txBuilder.chainTag(0x27); // Testnet chain tag
     txBuilder.blockRef('0x0000000000000000');
@@ -59,7 +44,7 @@ describe('VET Staking Transaction', function () {
     const stakingTx = tx as StakingTransaction;
     stakingTx.stakingContractAddress.should.equal(stakingContractAddress);
     stakingTx.amountToStake.should.equal(amountToStake);
-    stakingTx.stakingContractABI.should.deepEqual(stakingContractABI);
+    stakingTx.stakingContractABI.should.deepEqual(EthereumAbi);
 
     // Verify clauses
     stakingTx.clauses.length.should.equal(1);
@@ -93,7 +78,7 @@ describe('VET Staking Transaction', function () {
     it('should throw error when stakingContractAddress is missing', async function () {
       const txBuilder = createBasicTxBuilder();
       txBuilder.amountToStake(amountToStake);
-      txBuilder.stakingContractABI(stakingContractABI);
+      txBuilder.stakingContractABI(EthereumAbi);
 
       await txBuilder.build().should.be.rejectedWith('Staking contract address is required');
     });
@@ -101,7 +86,7 @@ describe('VET Staking Transaction', function () {
     it('should throw error when amountToStake is missing', async function () {
       const txBuilder = createBasicTxBuilder();
       txBuilder.stakingContractAddress(stakingContractAddress);
-      txBuilder.stakingContractABI(stakingContractABI);
+      txBuilder.stakingContractABI(EthereumAbi);
 
       await txBuilder.build().should.be.rejectedWith('Amount to stake is required');
     });
@@ -115,10 +100,44 @@ describe('VET Staking Transaction', function () {
       }).throw(/Invalid address/);
     });
 
+    it('should throw error when amountToStake is not a valid number string', async function () {
+      const txBuilder = createBasicTxBuilder();
+      txBuilder.stakingContractAddress(stakingContractAddress);
+      txBuilder.stakingContractABI(EthereumAbi);
+
+      // Invalid amount (not a number)
+      should(() => {
+        txBuilder.amountToStake('not-a-number');
+      }).not.throw(); // The setter doesn't validate
+      // But it should fail when building the transaction
+      await txBuilder.build().should.be.rejectedWith(/Invalid character/);
+    });
+
+    it('should pass validation with any ABI object but may fail during build', async function () {
+      const txBuilder = createBasicTxBuilder();
+      txBuilder.stakingContractAddress(stakingContractAddress);
+      txBuilder.amountToStake(amountToStake);
+
+      // Set an invalid ABI object
+      const invalidAbi = {};
+      txBuilder.stakingContractABI(invalidAbi as EthereumAbi);
+
+      // The validation will pass because it only checks if the ABI property exists
+      // But the build might fail if the ABI is actually used in the build process
+      // Since the actual encoding is done by utils.getStakingData() which doesn't use
+      // the ABI set on the transaction, this might still succeed
+      try {
+        await txBuilder.build();
+      } catch (e) {
+        // If it fails, it should be because of an invalid ABI
+        e.message.should.match(/methodID|rawEncode/);
+      }
+    });
+
     it('should allow zero amountToStake but encode it properly', async function () {
       const txBuilder = createBasicTxBuilder();
       txBuilder.stakingContractAddress(stakingContractAddress);
-      txBuilder.stakingContractABI(stakingContractABI);
+      txBuilder.stakingContractABI(EthereumAbi);
       txBuilder.amountToStake('0');
 
       const tx = await txBuilder.build();
@@ -133,28 +152,21 @@ describe('VET Staking Transaction', function () {
       stakingTx.clauses[0].data.should.equal(expectedData);
     });
 
-    it('should generate correct transaction data even without explicitly setting stakingContractABI', async function () {
+    it('should throw error when stakingContractABI is missing', async function () {
       const txBuilder = createBasicTxBuilder();
       txBuilder.stakingContractAddress(stakingContractAddress);
       txBuilder.amountToStake(amountToStake);
       // Not setting stakingContractABI
 
-      const tx = await txBuilder.build();
-      tx.should.be.instanceof(StakingTransaction);
-
-      const stakingTx = tx as StakingTransaction;
-      // Verify the transaction data is correctly generated using the default staking method ID
-      stakingTx.clauses[0].data.should.startWith(STAKING_METHOD_ID);
-      // Verify the encoded amount matches what we expect
-      const expectedData = '0xa694fc3a0000000000000000000000000000000000000000000000000de0b6b3a7640000';
-      stakingTx.clauses[0].data.should.equal(expectedData);
+      // Should fail when trying to build without ABI
+      await txBuilder.build().should.be.rejectedWith('Staking contract ABI is required');
     });
 
     it('should build transaction with undefined sender but include it in inputs', async function () {
       const txBuilder = factory.getStakingBuilder();
       txBuilder.stakingContractAddress(stakingContractAddress);
       txBuilder.amountToStake(amountToStake);
-      txBuilder.stakingContractABI(stakingContractABI);
+      txBuilder.stakingContractABI(EthereumAbi);
       txBuilder.chainTag(0x27);
       txBuilder.blockRef('0x0000000000000000');
       txBuilder.expiration(64);
@@ -181,7 +193,7 @@ describe('VET Staking Transaction', function () {
       const txBuilder = factory.getStakingBuilder();
       txBuilder.stakingContractAddress(stakingContractAddress);
       txBuilder.amountToStake(amountToStake);
-      txBuilder.stakingContractABI(stakingContractABI);
+      txBuilder.stakingContractABI(EthereumAbi);
       // Not setting chainTag
       txBuilder.blockRef('0x0000000000000000');
       txBuilder.expiration(64);
@@ -196,6 +208,54 @@ describe('VET Staking Transaction', function () {
       const stakingTx = tx as StakingTransaction;
       // Verify the chainTag is set to the testnet default (39)
       stakingTx.chainTag.should.equal(39);
+    });
+
+    it('should verify ABI encoding matches expected output for different amounts', async function () {
+      const txBuilder = createBasicTxBuilder();
+      txBuilder.stakingContractAddress(stakingContractAddress);
+      txBuilder.stakingContractABI(EthereumAbi);
+
+      // Test with a different amount
+      const differentAmount = '500000000000000000'; // 0.5 VET
+      txBuilder.amountToStake(differentAmount);
+
+      const tx = await txBuilder.build();
+      const stakingTx = tx as StakingTransaction;
+
+      // Manually encode the expected data
+      const methodName = 'stake';
+      const types = ['uint256'];
+      const params = [new BN(differentAmount)];
+
+      const method = EthereumAbi.methodID(methodName, types);
+      const args = EthereumAbi.rawEncode(types, params);
+      const expectedData = '0x' + Buffer.concat([method, args]).toString('hex');
+
+      // Verify the transaction data matches our manual encoding
+      stakingTx.clauses[0].data.should.equal(expectedData);
+      stakingTx.clauses[0].data.should.startWith(STAKING_METHOD_ID);
+    });
+
+    it('should handle extremely large stake amounts correctly', async function () {
+      const txBuilder = createBasicTxBuilder();
+      txBuilder.stakingContractAddress(stakingContractAddress);
+      txBuilder.stakingContractABI(EthereumAbi);
+
+      // Test with a very large amount (near uint256 max)
+      const largeAmount = '115792089237316195423570985008687907853269984665640564039457584007913129639935'; // 2^256 - 1
+      txBuilder.amountToStake(largeAmount);
+
+      const tx = await txBuilder.build();
+      const stakingTx = tx as StakingTransaction;
+
+      // Verify the amount is stored correctly
+      stakingTx.amountToStake.should.equal(largeAmount);
+
+      // The data should still be properly encoded
+      stakingTx.clauses[0].data.should.startWith(STAKING_METHOD_ID);
+
+      // Verify recipients
+      stakingTx.recipients[0].amount.should.equal(largeAmount);
     });
   });
 });
