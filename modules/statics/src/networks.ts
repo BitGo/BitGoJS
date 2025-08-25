@@ -1879,6 +1879,18 @@ class VetTestnet extends Testnet implements EthereumNetwork {
   forwarderImplementationAddress = '0x62de34c87f847d385af07f6c25dbd97b1fffefc0';
 }
 
+class Iota extends Mainnet implements AccountNetwork {
+  name = 'Iota';
+  family = CoinFamily.IOTA;
+  explorerUrl = 'https://explorer.iota.org/?network=mainnet';
+}
+
+class IotaTestnet extends Testnet implements AccountNetwork {
+  name = 'Testnet Iota';
+  family = CoinFamily.IOTA;
+  explorerUrl = 'https://explorer.iota.org/?network=testnet';
+}
+
 export const Networks = {
   main: {
     ada: Object.freeze(new Ada()),
@@ -1922,6 +1934,7 @@ export const Networks = {
     icp: Object.freeze(new Icp()),
     ip: Object.freeze(new IP()),
     initia: Object.freeze(new Initia()),
+    iota: Object.freeze(new Iota()),
     injective: Object.freeze(new Injective()),
     irys: Object.freeze(new Irys()),
     islm: Object.freeze(new Islm()),
@@ -2015,6 +2028,7 @@ export const Networks = {
     ip: Object.freeze(new IPTestnet()),
     initia: Object.freeze(new InitiaTestnet()),
     injective: Object.freeze(new InjectiveTestnet()),
+    iota: Object.freeze(new IotaTestnet()),
     irys: Object.freeze(new IrysTestnet()),
     islm: Object.freeze(new IslmTestnet()),
     kava: Object.freeze(new KavaTestnet()),

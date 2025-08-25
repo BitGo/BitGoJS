@@ -75,6 +75,7 @@ export const expectedColdFeatures = {
     'icp',
     'ip', // Story chain
     'initia',
+    'iota',
     'irys',
     'islm',
     'injective',
@@ -137,6 +138,7 @@ export const expectedColdFeatures = {
     'tirys',
     'tislm',
     'tinjective',
+    'tiota',
     'tkaia',
     'tkava',
     'tmantra',
