@@ -61,6 +61,7 @@ export enum CoinFamily {
   ICP = 'icp',
   INITIA = 'initia',
   INJECTIVE = 'injective',
+  IOTA = 'iota',
   IRYS = 'irys',
   ISLM = 'islm',
   KAIA = 'kaia',
@@ -527,6 +528,7 @@ export enum UnderlyingAsset {
   IP = 'ip', // Story Chain
   INITIA = 'initia',
   INJECTIVE = 'injective',
+  IOTA = 'iota',
   IRYS = 'irys',
   ISLM = 'islm',
   KAIA = 'kaia',
@@ -3071,6 +3073,7 @@ export enum BaseUnit {
   BLD = 'ubld',
   SEI = 'usei',
   INJECTIVE = 'inj',
+  IOTA = 'iota',
   ZETA = 'azeta',
   KAVA = 'ukava',
   COREUM = 'ucore',

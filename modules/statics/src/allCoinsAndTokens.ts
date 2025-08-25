@@ -89,6 +89,7 @@ import {
   HBAR_FEATURES,
   ICP_FEATURES,
   INJECTIVE_FEATURES,
+  IOTA_FEATURES,
   NEAR_FEATURES,
   OAS_FEATURES,
   OPETH_FEATURES,
@@ -913,6 +914,28 @@ export const allCoinsAndTokens = [
     UnderlyingAsset.INJECTIVE,
     BaseUnit.INJECTIVE,
     INJECTIVE_FEATURES
+  ),
+  account(
+    '5deff7da-a66b-4810-8daf-88319af1aca9',
+    'iota',
+    'Iota',
+    Networks.main.iota,
+    9,
+    UnderlyingAsset.IOTA,
+    BaseUnit.IOTA,
+    IOTA_FEATURES,
+    KeyCurve.Ed25519
+  ),
+  account(
+    '23c64fc0-69af-405e-86e2-f8403f08fb64',
+    'tiota',
+    'Testnet Iota',
+    Networks.test.iota,
+    9,
+    UnderlyingAsset.IOTA,
+    BaseUnit.IOTA,
+    IOTA_FEATURES,
+    KeyCurve.Ed25519
   ),
   account(
     'c592d110-cf6d-4630-b6e8-cfe044db0be2',
