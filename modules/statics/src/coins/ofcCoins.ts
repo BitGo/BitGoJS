@@ -156,6 +156,58 @@ export const ofcCoins = [
     UnderlyingAsset.WEMIX,
     CoinKind.CRYPTO
   ),
+  ofc('5405ad60-40c2-4789-b6b3-79265f167669', 'ofckaia', 'Kaia', 18, UnderlyingAsset.KAIA, CoinKind.CRYPTO),
+  tofc('1d41e93a-7de8-4e2e-a8bd-adc22cbe83e6', 'ofctkaia', 'Kaia Testnet', 18, UnderlyingAsset.KAIA, CoinKind.CRYPTO),
+  ofc('499c7ae0-b21e-4b6d-8486-00980bb180d5', 'ofcsonic', 'Sonic', 18, UnderlyingAsset.SONIC, CoinKind.CRYPTO),
+  tofc(
+    '274e9430-daac-4bfa-b75a-ba4c5ec82f9d',
+    'ofctsonic',
+    'Sonic Testnet',
+    18,
+    UnderlyingAsset.SONIC,
+    CoinKind.CRYPTO
+  ),
+  ofc(
+    'ec31b18d-f034-4e84-837e-2c7d2908bbae',
+    'ofchypeevm',
+    'Hyperliquid EVM',
+    18,
+    UnderlyingAsset.HYPEEVM,
+    CoinKind.CRYPTO
+  ),
+  tofc(
+    '3eb80dc2-98bc-40ee-a27c-b4572e0d7270',
+    'ofcthypeevm',
+    'Hyperliquid EVM Testnet',
+    18,
+    UnderlyingAsset.HYPEEVM,
+    CoinKind.CRYPTO
+  ),
+  ofc('c7350490-f1c0-4f76-8db4-832dc18a2efe', 'ofcseievm', 'Sei EVM', 18, UnderlyingAsset.SEIEVM, CoinKind.CRYPTO),
+  tofc(
+    '12d3f26a-dede-429b-8ba6-126293a8e02a',
+    'ofctseievm',
+    'Sei EVM Testnet',
+    18,
+    UnderlyingAsset.SEIEVM,
+    CoinKind.CRYPTO
+  ),
+  ofc(
+    '7e4fc86c-7caf-4cd3-b801-a650b0bfcf64',
+    'ofcapechain',
+    'Ape Chain',
+    18,
+    UnderlyingAsset.APECHAIN,
+    CoinKind.CRYPTO
+  ),
+  tofc(
+    '19dce006-56a3-4603-a0c8-2b1de20352a0',
+    'ofctapechain',
+    'Testnet Ape Chain',
+    18,
+    UnderlyingAsset.APECHAIN,
+    CoinKind.CRYPTO
+  ),
   ofc('1876cf96-a0b7-4b7b-9024-6bd89df9814b', 'ofcflr', 'Flare', 18, UnderlyingAsset.FLR, CoinKind.CRYPTO),
   tofc('312ff039-2473-4a11-837f-4ec896a0483d', 'ofctflr', 'Testnet flare', 18, UnderlyingAsset.FLR, CoinKind.CRYPTO),
   ofc('dd3f3d9a-8eae-4a7a-8178-88611687674d', 'ofcsgb', 'Songbird', 18, UnderlyingAsset.SGB, CoinKind.CRYPTO),
