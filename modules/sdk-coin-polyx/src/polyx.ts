@@ -12,6 +12,7 @@ import {
   Environments,
   MPCSweepRecoveryOptions,
   MPCTxs,
+  TokenEnablementConfig,
 } from '@bitgo/sdk-core';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { BaseCoin as StaticsBaseCoin, coins, SubstrateSpecNameType } from '@bitgo/statics';
@@ -342,5 +343,24 @@ export class Polyx extends SubstrateCoin {
       }
     }
     return { transactions: broadcastableTransactions, lastScanIndex };
+  }
+
+  /**
+   * Gets config for how token enablements work for this coin
+   * @returns
+   *    requiresTokenEnablement: True if tokens need to be enabled for this coin
+   *    supportsMultipleTokenEnablements: True if multiple tokens can be enabled in one transaction
+   *    validateWallet: Function to validate wallet type for token enablement
+   */
+  getTokenEnablementConfig(): TokenEnablementConfig {
+    return {
+      requiresTokenEnablement: true,
+      supportsMultipleTokenEnablements: false,
+      validateWallet: (walletType: string) => {
+        if (walletType !== 'custodial') {
+          throw new Error('Token enablement for Polymesh (polyx) is only supported for custodial wallets');
+        }
+      },
+    };
   }
 }
