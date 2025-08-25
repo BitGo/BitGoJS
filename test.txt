@@ -1,1 +1,1 @@
-test asset-metadata-bot
+This is a harmless test file created by asset-metadata-service to validate asset-metadata-bot.
