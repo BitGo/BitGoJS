@@ -132,7 +132,7 @@ async function incrementVersions(preid: string, lernaModules: LernaModule[]): Pr
   }
 }
 
-yargs(hideBin(process.argv))
+yargs.default(hideBin(process.argv))
   .command(
     '$0 [preid]',
     'Prepare packages for release with a new scope and incremented versions',
