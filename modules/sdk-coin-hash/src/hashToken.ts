@@ -1,14 +1,17 @@
 import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
 import { CosmosTokenConfig, coins, tokens } from '@bitgo/statics';
 import { Hash } from './hash';
+import { HashUtils } from './lib/utils';
 
 export class HashToken extends Hash {
   public readonly tokenConfig: CosmosTokenConfig;
+  protected readonly _utils: HashUtils;
 
   constructor(bitgo: BitGoBase, tokenConfig: CosmosTokenConfig) {
     const staticsCoin = coins.get(tokenConfig.coin);
     super(bitgo, staticsCoin);
     this.tokenConfig = tokenConfig;
+    this._utils = new HashUtils(staticsCoin.network.type);
   }
 
   static createTokenConstructor(config: CosmosTokenConfig): CoinConstructor {
