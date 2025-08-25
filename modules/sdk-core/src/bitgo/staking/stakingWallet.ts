@@ -16,11 +16,14 @@ import {
   UnstakeOptions,
   EthUnstakeOptions,
   ClaimRewardsOptions,
+  StakingTxRequestPrebuildTransactionResult,
 } from './iStakingWallet';
 import { BitGoBase } from '../bitgoBase';
 import { IWallet, PrebuildTransactionResult } from '../wallet';
 import { ITssUtils, RequestTracer, TssUtils } from '../utils';
 import assert from 'assert';
+import { transactionRecipientsMatch } from '../utils/transactionUtils';
+import debug from 'debug';
 
 export class StakingWallet implements IStakingWallet {
   private readonly bitgo: BitGoBase;
@@ -262,6 +265,11 @@ export class StakingWallet implements IStakingWallet {
     transaction: StakingTransaction
   ): Promise<StakingSignedTransaction> {
     const builtTx = await this.build(transaction);
+    // default to verifying a transaction unless explicitly skipped
+    const skipVerification = signOptions.transactionVerificationOptions?.skipTransactionVerification ?? false;
+    if (!isStakingTxRequestPrebuildResult(builtTx.result) && !skipVerification) {
+      await this.validateBuiltStakingTransaction(transaction, builtTx);
+    }
     return await this.sign(signOptions, builtTx);
   }
 
@@ -338,4 +346,77 @@ export class StakingWallet implements IStakingWallet {
     assert(transaction.buildParams?.senderWalletId, 'senderWalletId is required for btc undelegate transaction');
     return await this.wallet.baseCoin.wallets().get({ id: transaction.buildParams.senderWalletId });
   }
+
+  private async validateBuiltStakingTransaction(
+    transaction: StakingTransaction,
+    prebuiltStakingTransaction: StakingPrebuildTransactionResult
+  ) {
+    const { buildParams } = transaction;
+    const { result } = prebuiltStakingTransaction;
+    const coin = this.wallet.baseCoin;
+    debug(`Validating staking transaction ${transaction.stakingRequestId} with prebuilt transaction`);
+
+    if (!('txHex' in result) || !result.txHex) {
+      debug(`Skipping validation for staking transaction ${transaction.stakingRequestId} - txHex is undefined`);
+      return;
+    }
+
+    const explainedTransaction = await coin.explainTransaction(result);
+
+    if (buildParams?.recipients) {
+      const userRecipientMap = new Map(
+        buildParams.recipients.map((recipient) => [recipient.address.toLowerCase(), recipient])
+      );
+      const platformRecipientMap = new Map(
+        (explainedTransaction?.outputs ?? []).map((recipient) => [recipient.address.toLowerCase(), recipient])
+      );
+
+      const mismatchErrors: string[] = [];
+
+      for (const [recipientAddress, recipientInfo] of platformRecipientMap) {
+        if (userRecipientMap.has(recipientAddress)) {
+          const userRecipient = userRecipientMap.get(recipientAddress);
+          if (!userRecipient) {
+            console.error('Unable to determine recipient address');
+            return;
+          }
+          const matchResult = transactionRecipientsMatch(userRecipient, recipientInfo);
+          if (!matchResult.exactMatch) {
+            if (!matchResult.tokenMatch) {
+              mismatchErrors.push(
+                `Invalid token ${recipientInfo.tokenName} transfer with amount ${recipientInfo.amount} to ${recipientInfo.address} found in built transaction, specified ${userRecipient.tokenName}`
+              );
+            }
+            if (!matchResult.amountMatch) {
+              mismatchErrors.push(
+                `Invalid recipient amount for ${recipientInfo.address}, specified ${userRecipient.amount} got ${recipientInfo.amount}`
+              );
+            }
+          }
+        } else {
+          mismatchErrors.push(`Invalid recipient address: ${recipientAddress}`);
+        }
+      }
+
+      const missingRecipientAddresses = Array.from(userRecipientMap.keys()).filter(
+        (address) => !platformRecipientMap.has(address)
+      );
+
+      if (missingRecipientAddresses.length > 0) {
+        mismatchErrors.push(`Missing recipient address(es): ${missingRecipientAddresses.join(', ')}`);
+      }
+      if (mismatchErrors.length > 0) {
+        console.error(mismatchErrors.join(', '));
+        return;
+      }
+    } else {
+      debug(`Cannot validate staking transaction ${transaction.stakingRequestId} without specified build params`);
+    }
+  }
+}
+
+function isStakingTxRequestPrebuildResult(
+  tx: StakingPrebuildTransactionResult['result']
+): tx is StakingTxRequestPrebuildTransactionResult {
+  return (tx as StakingTxRequestPrebuildTransactionResult).txRequestId !== undefined;
 }

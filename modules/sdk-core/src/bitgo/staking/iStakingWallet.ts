@@ -244,9 +244,14 @@ export interface StakingTransaction {
   gasPrice?: string;
 }
 
+export type StakingTxRequestPrebuildTransactionResult = {
+  walletId: string;
+  txRequestId: string;
+};
+
 export interface StakingPrebuildTransactionResult {
   transaction: StakingTransaction;
-  result: PrebuildTransactionResult;
+  result: PrebuildTransactionResult | StakingTxRequestPrebuildTransactionResult;
 }
 
 export interface StakingSignedTransaction {
@@ -256,6 +261,13 @@ export interface StakingSignedTransaction {
 
 export interface StakingSignOptions {
   walletPassphrase: string;
+  transactionVerificationOptions?: {
+    /**
+     * Skip transaction verification. Not recommended unless you have manually verified the transaction details.
+     * @default false
+     */
+    skipTransactionVerification?: boolean;
+  };
 }
 
 export interface IStakingWallet {
