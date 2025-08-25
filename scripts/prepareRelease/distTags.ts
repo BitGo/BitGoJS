@@ -1,5 +1,5 @@
 import { readFileSync, writeFileSync, existsSync } from 'fs';
-import * as path from 'path';
+import path from 'path';
 import { LernaModule } from './getLernaModules';
 
 export type DistTags = Record<string, string>;

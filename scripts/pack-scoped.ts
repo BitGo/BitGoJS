@@ -4,10 +4,10 @@
  * The archive can be used with `npm install path/to/tgz` to test the package locally.
  */
 
-import * as fs from 'fs';
-import * as execa from 'execa';
-import * as mpath from 'path';
-import * as yargs from 'yargs';
+import fs from 'fs';
+import execa from 'execa';
+import mpath from 'path';
+import yargs from 'yargs';
 import {
   walk,
   getLernaModules,
