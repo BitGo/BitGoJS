@@ -1,6 +1,7 @@
 import sinon from 'sinon';
 import assert from 'assert';
 import _ from 'lodash';
+import should from 'should';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { coins, GasTankAccountCoin } from '@bitgo/statics';
@@ -108,6 +109,39 @@ describe('Vechain', function () {
           txPrebuild,
         })
         .should.rejectedWith('missing required tx prebuild property txHex');
+    });
+
+    it('should build correct nft transfer data', function () {
+      const data = basecoin.buildNftTransferData({
+        fromAddress: testData.addresses.validAddresses[0],
+        recipientAddress: testData.addresses.validAddresses[1],
+        type: 'ERC721',
+        tokenId: '1234',
+        tokenContractAddress: testData.NFT_CONTRACT_ADDRESS,
+      });
+      data.should.equal(testData.VALID_NFT_CONTRACT_DATA);
+    });
+
+    it('should build throw invalid address error', function () {
+      should(() =>
+        basecoin.buildNftTransferData({
+          fromAddress: testData.addresses.validAddresses[0],
+          recipientAddress: testData.addresses.invalidAddresses[0],
+          type: 'ERC721',
+          tokenId: '1234',
+          tokenContractAddress: testData.NFT_CONTRACT_ADDRESS,
+        })
+      ).throwError('Invalid recipient address');
+
+      should(() =>
+        basecoin.buildNftTransferData({
+          fromAddress: testData.addresses.invalidAddresses[0],
+          recipientAddress: testData.addresses.validAddresses[0],
+          type: 'ERC721',
+          tokenId: '1234',
+          tokenContractAddress: testData.NFT_CONTRACT_ADDRESS,
+        })
+      ).throwError('Invalid from address');
     });
   });
 

@@ -6,11 +6,13 @@ import {
   BaseCoin,
   BaseTransaction,
   BitGoBase,
+  BuildNftTransferDataOptions,
   InvalidAddressError,
   KeyPair,
   MPCAlgorithm,
   MultisigType,
   multisigTypes,
+  NotImplementedError,
   ParsedTransaction,
   SignedTransaction,
   SignTransactionOptions,
@@ -237,5 +239,23 @@ export class Vet extends BaseCoin {
         return Buffer.from(uint8Result);
       },
     } as unknown as Hash;
+  }
+
+  buildNftTransferData(params: BuildNftTransferDataOptions): string {
+    const { recipientAddress, fromAddress } = params;
+    if (!utils.isValidAddress(recipientAddress)) {
+      throw new InvalidAddressError('Invalid recipient address');
+    }
+    if (!utils.isValidAddress(fromAddress)) {
+      throw new InvalidAddressError('Invalid from address');
+    }
+    switch (params.type) {
+      case 'ERC721': {
+        const tokenId = params.tokenId;
+        return utils.getTransferNFTData(fromAddress, recipientAddress, tokenId);
+      }
+      default:
+        throw new NotImplementedError(`NFT type ${params.type} not supported on ${this.getChain()}`);
+    }
   }
 }
