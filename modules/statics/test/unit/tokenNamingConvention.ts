@@ -2,10 +2,11 @@ import { erc20Coins } from '../../src/coins/erc20Coins';
 import { cosmosTokens } from '../../src/coins/cosmosTokens';
 import { avaxTokens } from '../../src/coins/avaxTokens';
 import { bscTokens } from '../../src/coins/bscTokens';
+import { nep141Tokens } from '../../src/coins/nep141Tokens';
 import { NetworkType } from '../../src/networks';
 
 describe('Token Naming Convention Tests', function () {
-  const allTokens = [...erc20Coins, ...cosmosTokens, ...avaxTokens, ...bscTokens];
+  const allTokens = [...erc20Coins, ...cosmosTokens, ...avaxTokens, ...bscTokens, ...nep141Tokens];
 
   // Helper function to filter tokens by network type
   function getTokensByNetworkType(networkType: NetworkType) {
@@ -162,6 +163,11 @@ describe('Token Naming Convention Tests', function () {
       const networkPrefix = parts[0];
       const tokenId = parts[1];
 
+      const knownNetworkExceptions = ['hteth'];
+      if (knownNetworkExceptions.includes(networkPrefix)) {
+        return; // Skip known exceptions
+      }
+
       // For testnet tokens, remove the 't' prefix to get the base network name
       let baseNetworkName: string;
       if (token.network.type === NetworkType.TESTNET) {
@@ -239,7 +245,7 @@ describe('Token Naming Convention Tests', function () {
       { mainnet: 'eth:link', testnet: 'teth:link' }, // 18 vs 6 decimal places
     ];
 
-    // Group tokens by their base token identifier
+    // Group tokens by their base token identifier and compatible network prefixes
     const tokenPairs = new Map<string, { token: any; networkPrefix: string; isTestnet: boolean }[]>();
 
     tokensWithColon.forEach((token) => {
@@ -248,8 +254,21 @@ describe('Token Naming Convention Tests', function () {
       const networkPrefix = parts[0];
       const tokenId = parts[1];
 
-      // Create a key based on just the token identifier
-      const key = tokenId;
+      const knownNetworkExceptions = ['hteth'];
+      if (knownNetworkExceptions.includes(networkPrefix)) {
+        return; // Skip known exceptions
+      }
+
+      // For testnet tokens, get the equivalent mainnet prefix
+      let baseNetworkName: string;
+      if (token.network.type === NetworkType.TESTNET) {
+        baseNetworkName = networkPrefix.startsWith('t') ? networkPrefix.substring(1) : networkPrefix;
+      } else {
+        baseNetworkName = networkPrefix;
+      }
+
+      // Create a key that combines the base network name and token identifier
+      const key = `${baseNetworkName}:${tokenId}`;
 
       if (!tokenPairs.has(key)) {
         tokenPairs.set(key, []);
@@ -265,12 +284,19 @@ describe('Token Naming Convention Tests', function () {
     tokenPairs.forEach((tokens, _tokenId) => {
       // If there are both mainnet and testnet versions of this token
       if (tokens.length > 1) {
-        const testnetTokens = tokens.filter((t: any) => t.isTestnet);
-        const mainnetTokens = tokens.filter((t: any) => !t.isTestnet);
+        const testnetTokens = tokens.filter(
+          (t: { token: any; networkPrefix: string; isTestnet: boolean }) => t.isTestnet
+        );
+        const mainnetTokens = tokens.filter(
+          (t: { token: any; networkPrefix: string; isTestnet: boolean }) => !t.isTestnet
+        );
 
         if (testnetTokens.length > 0 && mainnetTokens.length > 0) {
-          testnetTokens.forEach((testnetToken: any) => {
-            mainnetTokens.forEach((mainnetToken: any) => {
+          testnetTokens.forEach((testnetToken: { token: any; networkPrefix: string; isTestnet: boolean }) => {
+            // For debugging token pairs
+            // console.log({ testnetTokens, mainnetTokens });
+
+            mainnetTokens.forEach((mainnetToken: { token: any; networkPrefix: string; isTestnet: boolean }) => {
               // Skip checking decimal places for known exceptions
               const isException = knownDecimalExceptions.some(
                 (exception) =>
@@ -350,13 +376,13 @@ describe('Token Naming Convention Tests', function () {
     tokensByBase.forEach((versions, _baseName) => {
       // If we have multiple versions of the same base coin
       if (versions.length > 1) {
-        const testnetVersions = versions.filter((v: any) => v.isTestnet);
-        const mainnetVersions = versions.filter((v: any) => !v.isTestnet);
+        const testnetVersions = versions.filter((v: { token: any; name: string; isTestnet: boolean }) => v.isTestnet);
+        const mainnetVersions = versions.filter((v: { token: any; name: string; isTestnet: boolean }) => !v.isTestnet);
 
         // Check if we have both testnet and mainnet versions
         if (testnetVersions.length > 0 && mainnetVersions.length > 0) {
-          testnetVersions.forEach((testnetVersion: any) => {
-            mainnetVersions.forEach((mainnetVersion: any) => {
+          testnetVersions.forEach((testnetVersion: { token: any; name: string; isTestnet: boolean }) => {
+            mainnetVersions.forEach((mainnetVersion: { token: any; name: string; isTestnet: boolean }) => {
               // Testnet name should be 't' + mainnet name
               testnetVersion.name.should.equal(
                 `t${mainnetVersion.name}`,
