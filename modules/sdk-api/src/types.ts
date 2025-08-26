@@ -11,14 +11,14 @@ export type AdditionalHeadersCallback = (
 ) => Array<{ key: string; value: string }>;
 
 export {
-  supportedRequestMethods,
   AuthVersion,
   CalculateHmacSubjectOptions,
-  CalculateRequestHmacOptions,
   CalculateRequestHeadersOptions,
+  CalculateRequestHmacOptions,
   RequestHeaders,
-  VerifyResponseOptions,
+  supportedRequestMethods,
   VerifyResponseInfo,
+  VerifyResponseOptions,
 } from '@bitgo/sdk-hmac';
 export interface BitGoAPIOptions {
   accessToken?: string;
@@ -152,6 +152,7 @@ export interface AccessTokenSpendingLimit {
   txCount?: number;
   txValue?: string;
   txValueLimit?: string;
+  maxLimit?: boolean;
 }
 
 export interface AddAccessTokenOptions {
