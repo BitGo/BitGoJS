@@ -2875,6 +2875,7 @@ export enum UnderlyingAsset {
   'sol:2z' = 'sol:2z',
   'sol:cloud' = 'sol:cloud',
   'sol:eliza' = 'sol:eliza',
+  'sol:eurc' = 'sol:eurc',
   // TRX tokens
   'trx:htx' = 'trx:htx',
   'trx:jst' = 'trx:jst',

@@ -1064,6 +1064,14 @@ export const ofcCoins = [
     UnderlyingAsset['sol:eliza'],
     SOL_TOKEN_FEATURES
   ),
+  ofcsolToken(
+    '663123e0-8326-4d10-a362-8549f9d42321',
+    'ofcsol:eurc',
+    'EURC',
+    6,
+    UnderlyingAsset['sol:eurc'],
+    SOL_TOKEN_FEATURES
+  ),
   tofcsolToken(
     '24d678cf-e0f0-4cde-a338-d754289c5b27',
     'ofctsol:slnd',
