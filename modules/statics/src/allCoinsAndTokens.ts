@@ -3041,6 +3041,17 @@ export const allCoinsAndTokens = [
     Networks.test.soneium,
     KeyCurve.Secp256k1
   ),
+  terc721(
+    'b2e1c8a7-4e2a-4b8d-9e2f-7c3a1d2e5f6b',
+    'tsoneium:forwarder',
+    'soneium test nft to verify autoflush',
+    '0x798b02d08b5e60e65e2717c46231f270047a4d8f',
+    GENERIC_TOKEN_FEATURES,
+    '',
+    '',
+    Networks.test.soneium,
+    KeyCurve.Secp256k1
+  ),
   terc1155(
     '6299cdc3-07b8-40b3-a814-f2d9965bcbb4',
     'tsoneium:test1155',
