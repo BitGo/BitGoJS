@@ -88,6 +88,7 @@
     "@bitgo/sdk-coin-icp": "^1.18.0",
     "@bitgo/sdk-coin-initia": "^2.3.0",
     "@bitgo/sdk-coin-injective": "^3.3.0",
+    "@bitgo/sdk-coin-iota": "^1.0.0",
     "@bitgo/sdk-coin-islm": "^2.3.0",
     "@bitgo/sdk-coin-lnbtc": "^1.4.0",
     "@bitgo/sdk-coin-ltc": "^3.3.0",

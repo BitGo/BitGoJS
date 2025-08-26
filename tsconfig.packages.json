@@ -155,6 +155,9 @@
       "path": "./modules/sdk-coin-injective"
     },
     {
+      "path": "./modules/sdk-coin-iota"
+    },
+    {
       "path": "./modules/sdk-coin-islm"
     },
     {
