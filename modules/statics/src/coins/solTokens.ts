@@ -2979,6 +2979,16 @@ export const solTokens = [
     UnderlyingAsset['sol:eliza'],
     SOL_TOKEN_FEATURES
   ),
+  solToken(
+    'ac76b6aa-d5a7-4ad2-8b4b-bd4e1771c0ba',
+    'sol:eurc',
+    'EURC',
+    6,
+    'HzwqbKZw8HxMN6bF2yFZNrht3c2iXXzpKcFu7uBEDKtr',
+    'HzwqbKZw8HxMN6bF2yFZNrht3c2iXXzpKcFu7uBEDKtr',
+    UnderlyingAsset['sol:eurc'],
+    SOL_TOKEN_FEATURES
+  ),
   tsolToken(
     'b98c5a7a-49c5-45f1-a6ee-b08dff596a7d',
     'tsol:srm',
