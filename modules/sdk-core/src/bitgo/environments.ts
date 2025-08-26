@@ -225,7 +225,7 @@ const mainnetBase: EnvironmentTemplate = {
       baseUrl: '', //TODO- WIN-6519 when mainnet details available
     },
     xpl: {
-      baseUrl: '', //TODO- WIN-6654 when mainnet details available
+      baseUrl: 'https://rpc.plasma.to',
     },
     sonic: {
       baseUrl: 'https://rpc.soniclabs.com',
