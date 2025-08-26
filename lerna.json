@@ -1,7 +1,6 @@
 {
   "version": "independent",
   "npmClient": "yarn",
-  "useWorkspaces": true,
   "command": {
     "version": {
       "message": "chore(root): publish modules"
