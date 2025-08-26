@@ -39,6 +39,7 @@ describe('TSS Staking Wallet', function () {
       coin: 'near',
       enterprise: enterprise.id,
       keys: ['5b3424f91bf349930e340175'],
+      multisigType: 'tss',
     };
     const nearWallet = new Wallet(bitgo, nearBaseCoin, tssWalletData);
     nearStakingWallet = nearWallet.toStakingWallet();
