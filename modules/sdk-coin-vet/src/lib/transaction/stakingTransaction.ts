@@ -2,13 +2,14 @@ import { TransactionType, InvalidTransactionError } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { Transaction as VetTransaction, Secp256k1 } from '@vechain/sdk-core';
 import { Transaction } from './transaction';
-import { VetTransactionData, ContractAbi } from '../iface';
+import { VetTransactionData } from '../iface';
+import EthereumAbi from 'ethereumjs-abi';
 import utils from '../utils';
 
 export class StakingTransaction extends Transaction {
   private _stakingContractAddress: string;
   private _amountToStake: string;
-  private _stakingContractABI: ContractAbi;
+  private _stakingContractABI: EthereumAbi;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -31,11 +32,11 @@ export class StakingTransaction extends Transaction {
     this._amountToStake = amount;
   }
 
-  get stakingContractABI(): ContractAbi {
+  get stakingContractABI(): EthereumAbi {
     return this._stakingContractABI;
   }
 
-  set stakingContractABI(abi: ContractAbi) {
+  set stakingContractABI(abi: EthereumAbi) {
     this._stakingContractABI = abi;
   }
 
