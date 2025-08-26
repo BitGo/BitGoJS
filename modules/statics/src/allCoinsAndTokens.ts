@@ -4158,6 +4158,18 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['sui:wal'],
     SUI_TOKEN_FEATURES_STAKING
   ),
+  suiToken(
+    '8aaf5539-7dd7-4148-a369-c24372ebae57',
+    'sui:xaum',
+    'Matrixdock Gold',
+    9,
+    '0x9d297676e7a4b771ab023291377b2adfaa4938fb9080b8d12430e4b108b836a9',
+    'xaum',
+    'XAUM',
+    '0x9d297676e7a4b771ab023291377b2adfaa4938fb9080b8d12430e4b108b836a9::xaum::XAUM',
+    UnderlyingAsset['sui:xaum'],
+    SUI_TOKEN_FEATURES
+  ),
   tsuiToken(
     '0b8a7919-c37e-4be8-8338-7fc13c6c875e',
     'tsui:deep',

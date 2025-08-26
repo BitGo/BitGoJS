@@ -2925,6 +2925,7 @@ export enum UnderlyingAsset {
   'sui:cetus' = 'sui:cetus',
   'sui:wal' = 'sui:wal',
   'sui:xmn' = 'sui:xmn',
+  'sui:xaum' = 'sui:xaum',
 
   // Sui testnet tokens
   'tsui:deep' = 'tsui:deep',
