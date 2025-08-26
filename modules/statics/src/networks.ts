@@ -1390,10 +1390,10 @@ class Creditcoin extends Mainnet implements EthereumNetwork {
 class Plasma extends Mainnet implements EthereumNetwork {
   name = 'Plasma';
   family = CoinFamily.XPL;
-  explorerUrl = ''; //TODO- WIN-6654 when mainnet details available
-  accountExplorerUrl = ''; //TODO- WIN-6654 when mainnet details available
-  chainId = 9999999999999; //TODO- WIN-6654 when mainnet details available ,this is a dummy value
-  nativeCoinOperationHashPrefix = ''; //TODO- WIN-6654 when mainnet details available
+  explorerUrl = 'https://plasmascan.to/tx/';
+  accountExplorerUrl = 'https://plasmascan.to/address/';
+  chainId = 9745;
+  nativeCoinOperationHashPrefix = '9745';
 }
 
 class PlasmaTestnet extends Testnet implements EthereumNetwork {
