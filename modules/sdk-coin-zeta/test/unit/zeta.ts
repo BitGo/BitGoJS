@@ -346,7 +346,12 @@ describe('Zeta', function () {
     const sandBox = sinon.createSandbox();
     const destinationAddress = wrwUser.destinationAddress;
     const coin = coins.get('tzeta');
-    const testBalance = '15000000000000000';
+    const testBalance = [
+      {
+        denom: 'azeta',
+        amount: '15000000000000000',
+      },
+    ];
     const testChainId = 'test-chain';
 
     beforeEach(() => {
@@ -386,11 +391,12 @@ describe('Zeta', function () {
       txn.enrichTransactionDetailsFromRawTransaction(res.serializedTx);
       const txnJson = txn.toJson();
       const sendMessage = txnJson.sendMessages[0].value as SendMessage;
-      const balance = new BigNumber(testBalance);
+      const balance = new BigNumber(testBalance[0].amount);
       const gasAmount = new BigNumber(GAS_AMOUNT);
       const actualBalance = balance.minus(gasAmount);
       should.equal(sendMessage.toAddress, destinationAddress);
       should.equal(sendMessage.amount[0].amount, actualBalance.toFixed());
+      should.equal(sendMessage.amount[0].denom, testBalance[0].denom);
     });
 
     it('should redelegate funds to new validator', async function () {
@@ -421,7 +427,12 @@ describe('Zeta', function () {
   describe('Recover transaction: failure path', () => {
     const sandBox = sinon.createSandbox();
     const destinationAddress = wrwUser.destinationAddress;
-    const testZeroBalance = '0';
+    const testZeroBalance = [
+      {
+        denom: 'azeta',
+        amount: '0',
+      },
+    ];
     const testChainId = 'test-chain';
 
     beforeEach(() => {

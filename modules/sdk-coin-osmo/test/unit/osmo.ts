@@ -400,7 +400,12 @@ describe('OSMO', function () {
     const sandBox = sinon.createSandbox();
     const destinationAddress = wrwUser.destinationAddress;
     const coin = coins.get('tosmo');
-    const testBalance = '1500000';
+    const testBalance = [
+      {
+        denom: 'uosmo',
+        amount: '150000',
+      },
+    ];
     const testAccountNumber = '123';
     const testSequenceNumber = '0';
     const testChainId = 'test-chain';
@@ -442,17 +447,23 @@ describe('OSMO', function () {
       osmoTxn.enrichTransactionDetailsFromRawTransaction(res.serializedTx);
       const osmoTxnJson = osmoTxn.toJson();
       const sendMessage = osmoTxnJson.sendMessages[0].value as SendMessage;
-      const balance = new BigNumber(testBalance);
+      const balance = new BigNumber(testBalance[0].amount);
       const gasAmount = new BigNumber(7000);
       const actualBalance = balance.minus(gasAmount);
       should.equal(sendMessage.amount[0].amount, actualBalance.toFixed());
+      should.equal(sendMessage.amount[0].denom, testBalance[0].denom);
     });
   });
 
   describe('Recover transaction: failure path', () => {
     const sandBox = sinon.createSandbox();
     const destinationAddress = wrwUser.destinationAddress;
-    const testZeroBalance = '0';
+    const testZeroBalance = [
+      {
+        denom: 'uosmo',
+        amount: '0',
+      },
+    ];
     const testAccountNumber = '123';
     const testSequenceNumber = '0';
     const testChainId = 'test-chain';

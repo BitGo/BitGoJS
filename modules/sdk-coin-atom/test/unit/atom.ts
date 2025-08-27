@@ -390,11 +390,21 @@ describe('ATOM', function () {
     const sandBox = sinon.createSandbox();
     const destinationAddress = wrwUser.destinationAddress;
     const coin = coins.get('tatom');
-    const testBalance = '150000';
+    const testBalance = [
+      {
+        denom: 'uatom',
+        amount: '150000',
+      },
+    ];
     const testAccountNumber = '725163';
     const testSequenceNumber = '8';
 
-    const testBalanceDkls = '150000';
+    const testBalanceDkls = [
+      {
+        denom: 'uatom',
+        amount: '150000',
+      },
+    ];
     const testAccountNumberDkls = '755440';
     const testSequenceNumberDkls = '2';
 
@@ -439,10 +449,11 @@ describe('ATOM', function () {
       atomTxn.enrichTransactionDetailsFromRawTransaction(res.serializedTx);
       const atomTxnJson = atomTxn.toJson();
       const sendMessage = atomTxnJson.sendMessages[0].value as SendMessage;
-      const balance = new BigNumber(testBalance);
+      const balance = new BigNumber(testBalance[0].amount);
       const gasAmount = new BigNumber(GAS_AMOUNT);
       const actualBalance = balance.minus(gasAmount);
       should.equal(sendMessage.amount[0].amount, actualBalance.toFixed());
+      should.equal(sendMessage.amount[0].denom, testBalance[0].denom);
     });
 
     it('should recover funds for non-bitgo recoveries - DKLS type', async function () {
@@ -463,7 +474,7 @@ describe('ATOM', function () {
       atomTxn.enrichTransactionDetailsFromRawTransaction(res.serializedTx);
       const atomTxnJson = atomTxn.toJson();
       const sendMessage = atomTxnJson.sendMessages[0].value as SendMessage;
-      const balance = new BigNumber(testBalanceDkls);
+      const balance = new BigNumber(testBalanceDkls[0].amount);
       const gasAmount = new BigNumber(GAS_AMOUNT);
       const actualBalance = balance.minus(gasAmount);
       should.equal(sendMessage.amount[0].amount, actualBalance.toFixed());
@@ -487,7 +498,7 @@ describe('ATOM', function () {
       unsignedSweepTxnDeserialize.enrichTransactionDetailsFromRawTransaction(res.serializedTx);
       const unsignedSweepTxnJson = unsignedSweepTxnDeserialize.toJson();
       const sendMessage = unsignedSweepTxnJson.sendMessages[0].value as SendMessage;
-      const balance = new BigNumber(testBalance);
+      const balance = new BigNumber(testBalance[0].amount);
       const gasAmount = new BigNumber(GAS_AMOUNT);
       const actualBalance = balance.minus(gasAmount);
       should.equal(sendMessage.amount[0].amount, actualBalance.toFixed());
@@ -521,7 +532,12 @@ describe('ATOM', function () {
   describe('Recover transactions: failure path', () => {
     const sandBox = sinon.createSandbox();
     const destinationAddress = wrwUser.destinationAddress;
-    const testZeroBalance = '0';
+    const testZeroBalance = [
+      {
+        denom: 'uatom',
+        amount: '0',
+      },
+    ];
     const testAccountNumber = '1234';
     const testSequenceNumber = '0';
     const testChainId = 'test-chain';

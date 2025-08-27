@@ -41,6 +41,10 @@ import {
   RecoveryOptions,
   RedelegateMessage,
   SendMessage,
+  CosmosTransactionBuilder,
+  KeyShares,
+  TransactionBuildParams,
+  BalanceResult,
 } from './lib';
 import { ROOT_PATH } from './lib/constants';
 import utils from './lib/utils';
@@ -142,120 +146,301 @@ export class CosmosCoin<CustomMessage = never> extends BaseCoin {
    * of the address being swept
    */
   async recover(params: RecoveryOptions): Promise<CosmosLikeCoinRecoveryOutput> {
-    // Step 1: Check if params contains the required parameters
+    const isUnsignedSweep = this.isUnsignedSweep(params);
+    this.validateRecoveryParams(params, isUnsignedSweep);
+
+    const { senderAddress, publicKey, keyShares } = await this.getSenderDetails(params, isUnsignedSweep);
+
+    const [chainId, accountDetails, balances] = await Promise.all([
+      this.getChainId(),
+      this.getAccountDetails(senderAddress),
+      this.getAccountBalance(senderAddress),
+    ]);
+
+    const { actualBalance, remainingBalances } = this.processBalances(balances);
+    const messages = this.buildTransactionMessages(
+      senderAddress,
+      params.recoveryDestination,
+      actualBalance,
+      remainingBalances
+    );
+
+    return this.buildAndSignTransaction({
+      messages,
+      chainId,
+      accountDetails,
+      publicKey: publicKey || params.bitgoKey || '',
+      isUnsignedSweep,
+      keyShares,
+    });
+  }
+
+  /**
+   * Validates the recovery parameters
+   */
+  private validateRecoveryParams(params: RecoveryOptions, isUnsignedSweep: boolean): void {
     if (!params.recoveryDestination || !this.isValidAddress(params.recoveryDestination)) {
       throw new Error('invalid recoveryDestination');
     }
 
-    const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
-
-    let senderAddress: string;
-    let publicKey: string | undefined;
-    let userKeyShare, backupKeyShare, commonKeyChain;
-    const MPC = new Ecdsa();
-    // Step 2: Fetch the bitgo key from params if not unsigned sweep
     if (!isUnsignedSweep) {
-      if (!params.userKey) {
-        throw new Error('missing userKey');
-      }
+      if (!params.userKey) throw new Error('missing userKey');
+      if (!params.backupKey) throw new Error('missing backupKey');
+      if (!params.walletPassphrase) throw new Error('missing wallet passphrase');
+    }
+  }
 
-      if (!params.backupKey) {
-        throw new Error('missing backupKey');
-      }
+  /**
+   * Checks if this is an unsigned sweep operation
+   */
+  private isUnsignedSweep(params: RecoveryOptions): boolean {
+    return !params.userKey && !params.backupKey && !params.walletPassphrase;
+  }
 
-      if (!params.walletPassphrase) {
-        throw new Error('missing wallet passphrase');
-      }
-
-      const userKey = params.userKey.replace(/\s/g, '');
-      const backupKey = params.backupKey.replace(/\s/g, '');
-
-      ({ userKeyShare, backupKeyShare, commonKeyChain } = await ECDSAUtils.getMpcV2RecoveryKeyShares(
-        userKey,
-        backupKey,
-        params.walletPassphrase
-      ));
-      publicKey = MPC.deriveUnhardened(commonKeyChain, ROOT_PATH).slice(0, 66);
-      senderAddress = this.getAddressFromPublicKey(publicKey);
-    } else {
-      senderAddress = params.rootAddress as string;
+  /**
+   * Gets sender details including address, public key and key shares
+   */
+  private async getSenderDetails(
+    params: RecoveryOptions,
+    isUnsignedSweep: boolean
+  ): Promise<{
+    senderAddress: string;
+    publicKey?: string;
+    keyShares?: KeyShares;
+  }> {
+    if (isUnsignedSweep) {
+      return { senderAddress: params.rootAddress as string };
     }
 
-    // Step 3: Instantiate the ECDSA signer and fetch the address details
-    const chainId = await this.getChainId();
-    // Step 4: Fetch account details such as accountNo, balance and check for sufficient funds once gasAmount has been deducted
-    const [accountNumber, sequenceNo] = await this.getAccountDetails(senderAddress);
-    const balance = new BigNumber(await this.getAccountBalance(senderAddress));
-    const gasBudget: FeeData = {
-      amount: [{ denom: this.getDenomination(), amount: this.getGasAmountDetails().gasAmount }],
-      gasLimit: this.getGasAmountDetails().gasLimit,
-    };
-    const gasAmount = new BigNumber(gasBudget.amount[0].amount);
-    const actualBalance = balance.minus(gasAmount);
+    const MPC = new Ecdsa();
+    const keyShares = await this.getKeyShares(params);
+    const publicKey = MPC.deriveUnhardened(keyShares.commonKeyChain, ROOT_PATH).slice(0, 66);
 
+    return {
+      senderAddress: this.getAddressFromPublicKey(publicKey),
+      publicKey,
+      keyShares,
+    };
+  }
+
+  /**
+   * Gets key shares from recovery parameters
+   */
+  private async getKeyShares(params: RecoveryOptions): Promise<KeyShares> {
+    if (!params.userKey || !params.backupKey || !params.walletPassphrase) {
+      throw new Error('Missing required key parameters');
+    }
+
+    const userKey = params.userKey.replace(/\s/g, '');
+    const backupKey = params.backupKey.replace(/\s/g, '');
+    const walletPassphrase = params.walletPassphrase;
+
+    if (!userKey || !backupKey) {
+      throw new Error('Invalid key format');
+    }
+
+    return await ECDSAUtils.getMpcV2RecoveryKeyShares(userKey, backupKey, walletPassphrase);
+  }
+
+  /**
+   * Processes account balances and validates sufficient funds
+   */
+  private processBalances(balances: Coin[]): BalanceResult {
+    if (!balances?.length) {
+      throw new Error('No balance found on account');
+    }
+
+    const denomination = this.getDenomination();
+    if (!denomination) {
+      throw new Error('Invalid denomination');
+    }
+
+    let nativeBalance = new BigNumber(0);
+    const remainingBalances: Coin[] = [];
+
+    const gasAmountDetails = this.getGasAmountDetails();
+    if (!gasAmountDetails?.gasAmount) {
+      throw new Error('Invalid gas amount');
+    }
+
+    const gasAmount = new BigNumber(gasAmountDetails.gasAmount);
+    balances.forEach((balance) => {
+      if (!balance.amount) {
+        throw new Error('Invalid balance amount');
+      }
+
+      if (balance.denom === denomination) {
+        nativeBalance = new BigNumber(balance.amount);
+      } else {
+        remainingBalances.push(balance);
+      }
+    });
+
+    const actualBalance = nativeBalance.minus(gasAmount);
     if (actualBalance.isLessThanOrEqualTo(0)) {
       throw new Error('Did not have enough funds to recover');
     }
 
-    // Step 5: Once sufficient funds are present, construct the recover tx message
-    const amount: Coin[] = [
-      {
-        denom: this.getDenomination(),
-        amount: actualBalance.toFixed(),
-      },
-    ];
-    const sendMessage: SendMessage[] = [
-      {
-        fromAddress: senderAddress,
-        toAddress: params.recoveryDestination,
-        amount: amount,
-      },
-    ];
+    return { nativeBalance, remainingBalances, actualBalance };
+  }
 
-    // Step 6: Build the unsigned tx using the constructed message
-    const txnBuilder = this.getBuilder().getTransferBuilder();
-    txnBuilder
-      .messages(sendMessage)
+  /**
+   * Builds transaction messages for all balances
+   */
+  private buildTransactionMessages(
+    senderAddress: string,
+    recoveryDestination: string,
+    actualBalance: BigNumber,
+    remainingBalances: Coin[]
+  ): SendMessage[] {
+    const nativeSendMessage: SendMessage = {
+      fromAddress: senderAddress,
+      toAddress: recoveryDestination,
+      amount: [
+        {
+          denom: this.getDenomination(),
+          amount: actualBalance.toFixed(),
+        },
+      ],
+    };
+
+    const otherTokenMessages = remainingBalances.map((balance) => ({
+      fromAddress: senderAddress,
+      toAddress: recoveryDestination,
+      amount: [balance],
+    }));
+
+    return [...otherTokenMessages, nativeSendMessage];
+  }
+
+  /**
+   * Builds and signs the transaction
+   */
+  private async buildAndSignTransaction(params: TransactionBuildParams): Promise<CosmosLikeCoinRecoveryOutput> {
+    if (!params.chainId) {
+      throw new Error('Invalid chain ID');
+    }
+
+    const [accountNumber, sequenceNo] = params.accountDetails;
+    if (!accountNumber || !sequenceNo) {
+      throw new Error('Invalid account details');
+    }
+
+    const denomination = this.getDenomination();
+    const gasAmountDetails = this.getGasAmountDetails();
+    if (!denomination || !gasAmountDetails?.gasAmount || !gasAmountDetails?.gasLimit) {
+      throw new Error('Invalid gas configuration');
+    }
+
+    const gasBudget: FeeData = {
+      amount: [
+        {
+          denom: denomination,
+          amount: gasAmountDetails.gasAmount,
+        },
+      ],
+      gasLimit: gasAmountDetails.gasLimit,
+    };
+
+    const txnBuilder = this.getBuilder()
+      .getTransferBuilder()
+      .messages(params.messages)
       .gasBudget(gasBudget)
       .sequence(Number(sequenceNo))
       .accountNumber(Number(accountNumber))
-      .chainId(chainId);
-
-    if (publicKey) {
-      txnBuilder.publicKey(publicKey);
-    } else {
-      publicKey = MPC.deriveUnhardened(params.bitgoKey || '', ROOT_PATH).slice(0, 66);
-      txnBuilder.publicKey(publicKey);
-    }
+      .chainId(params.chainId)
+      .publicKey(params.publicKey);
 
     const unsignedTransaction = (await txnBuilder.build()) as CosmosTransaction<CustomMessage>;
-    let serializedTx = unsignedTransaction.toBroadcastFormat();
-    const signableHex = unsignedTransaction.signablePayload.toString('hex');
+    if (!unsignedTransaction) {
+      throw new Error('Failed to build unsigned transaction');
+    }
 
-    // Check if unsigned sweep is requested
-    if (isUnsignedSweep) {
+    if (params.isUnsignedSweep) {
       return {
-        signableHex: signableHex,
+        signableHex: unsignedTransaction.signablePayload.toString('hex'),
       };
     }
 
-    // Step 7: Sign the tx for non-BitGo recovery
-    const message = unsignedTransaction.signablePayload;
-    const messageHash = (utils.getHashFunction() || createHash('sha256')).update(message).digest();
+    return this.signTransactionWithMpc(unsignedTransaction, txnBuilder, params.keyShares!, params.publicKey);
+  }
 
-    const signature = await ECDSAUtils.signRecoveryMpcV2(messageHash, userKeyShare, backupKeyShare, commonKeyChain);
+  /**
+   * Signs the transaction with MPC
+   */
+  /**
+   * Signs the transaction using MPC (Multi-Party Computation)
+   * @param unsignedTransaction The unsigned transaction to sign
+   * @param txnBuilder The transaction builder instance
+   * @param keyShares The key shares for MPC signing
+   * @param publicKey The public key for verification
+   * @returns The signed transaction output
+   * @throws Error if validation fails or signing process encounters an error
+   */
+  protected async signTransactionWithMpc(
+    unsignedTransaction: CosmosTransaction<CustomMessage>,
+    txnBuilder: CosmosTransactionBuilder,
+    keyShares: KeyShares,
+    publicKey: string
+  ): Promise<CosmosLikeCoinRecoveryOutput> {
+    // Validate inputs
+    if (!unsignedTransaction?.signablePayload) {
+      throw new Error('Invalid unsigned transaction');
+    }
+
+    if (!keyShares?.userKeyShare || !keyShares?.backupKeyShare || !keyShares?.commonKeyChain) {
+      throw new Error('Invalid key shares');
+    }
 
     if (!publicKey) {
-      throw new Error('publicKey is undefined');
+      throw new Error('Invalid public key');
     }
-    const signableBuffer = Buffer.from(signableHex, 'hex');
-    MPC.verify(signableBuffer, signature, this.getHashFunction());
-    const cosmosKeyPair = this.getKeyPair(publicKey);
-    txnBuilder.addSignature({ pub: cosmosKeyPair.getKeys().pub }, Buffer.from(signature.r + signature.s, 'hex'));
-    const signedTransaction = await txnBuilder.build();
-    serializedTx = signedTransaction.toBroadcastFormat();
 
-    return { serializedTx: serializedTx };
+    try {
+      const MPC = new Ecdsa();
+      const message = unsignedTransaction.signablePayload;
+
+      // Get hash function and compute message hash
+      const hashFunction = utils.getHashFunction() || createHash('sha256');
+      if (!hashFunction) {
+        throw new Error('Failed to get hash function');
+      }
+      const messageHash = hashFunction.update(message).digest();
+
+      // Sign the transaction
+      const signature = await ECDSAUtils.signRecoveryMpcV2(
+        messageHash,
+        keyShares.userKeyShare,
+        keyShares.backupKeyShare,
+        keyShares.commonKeyChain
+      );
+
+      // Verify the signature
+      const signableHex = unsignedTransaction.signablePayload.toString('hex');
+      const signableBuffer = Buffer.from(signableHex, 'hex');
+      MPC.verify(signableBuffer, signature, this.getHashFunction());
+
+      // Get cosmos key pair and validate
+      const cosmosKeyPair = this.getKeyPair(publicKey);
+      if (!cosmosKeyPair) {
+        throw new Error('Invalid cosmos key pair');
+      }
+
+      // Add signature to transaction
+      txnBuilder.addSignature({ pub: cosmosKeyPair.getKeys().pub }, Buffer.from(signature.r + signature.s, 'hex'));
+
+      // Build final transaction
+      const signedTransaction = await txnBuilder.build();
+      if (!signedTransaction) {
+        throw new Error('Failed to build signed transaction');
+      }
+
+      return {
+        serializedTx: signedTransaction.toBroadcastFormat(),
+      };
+    } catch (error) {
+      throw new Error(`Failed to sign transaction: ${error.message}`);
+    }
   }
 
   /**
@@ -515,13 +700,12 @@ export class CosmosCoin<CustomMessage = never> extends BaseCoin {
   /**
    * Helper to fetch account balance
    */
-  protected async getAccountBalance(senderAddress: string): Promise<string> {
+  protected async getAccountBalance(senderAddress: string): Promise<Coin[]> {
     const response = await this.getBalanceFromNode(senderAddress);
     if (response.status !== 200) {
       throw new Error('Account not found');
     }
-    const balance = response.body.balances.find((item) => item.denom === this.getDenomination());
-    return balance.amount;
+    return response.body.balances;
   }
 
   /**

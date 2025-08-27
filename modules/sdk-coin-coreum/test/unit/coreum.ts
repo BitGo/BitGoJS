@@ -387,7 +387,12 @@ describe('Coreum', function () {
     const sandBox = sinon.createSandbox();
     const destinationAddress = wrwUser.destinationAddress;
     const coin = coins.get('tcoreum');
-    const testBalance = '1500000';
+    const testBalance = [
+      {
+        denom: 'utestcore',
+        amount: '150000000000',
+      },
+    ];
     const testAccountNumber = '123';
     const testSequenceNumber = '0';
     const testChainId = 'test-chain';
@@ -429,16 +434,22 @@ describe('Coreum', function () {
       tcoreumTxn.enrichTransactionDetailsFromRawTransaction(res.serializedTx);
       const tcoreumTxnJson = tcoreumTxn.toJson();
       const sendMessage = tcoreumTxnJson.sendMessages[0].value as SendMessage;
-      const balance = new BigNumber(testBalance);
+      const balance = new BigNumber(testBalance[0].amount);
       const actualBalance = balance.minus(new BigNumber(GAS_AMOUNT));
       should.equal(sendMessage.amount[0].amount, actualBalance.toFixed());
+      should.equal(sendMessage.amount[0].denom, testBalance[0].denom);
     });
   });
 
   describe('Recover transaction: failure path', () => {
     const sandBox = sinon.createSandbox();
     const destinationAddress = wrwUser.destinationAddress;
-    const testZeroBalance = '0';
+    const testZeroBalance = [
+      {
+        denom: 'utestcore',
+        amount: '0',
+      },
+    ];
     const testAccountNumber = '123';
     const testSequenceNumber = '0';
     const testChainId = 'test-chain';
