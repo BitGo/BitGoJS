@@ -121,6 +121,7 @@ export interface PrebuildTransactionOptions {
    * */
   senderWalletId?: string;
 
+  messages?: { address: string; message: string }[];
   changeAddress?: string;
   allowExternalChangeAddress?: boolean;
   type?: string;
