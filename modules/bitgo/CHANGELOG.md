@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [49.6.0](https://github.com/BitGo/BitGoJS/compare/bitgo@49.5.0...bitgo@49.6.0) (2025-08-27)
+
+### Bug Fixes
+
+- **sdk-core:** rely on wallet field to validate txrequest on staking ([9ee96f1](https://github.com/BitGo/BitGoJS/commit/9ee96f179594eb818a1d9f307fd37385e2c7615a))
+
+### Features
+
+- bump public types ([e98036a](https://github.com/BitGo/BitGoJS/commit/e98036a8480aa6cfbc55b092a439ba8f80d23656))
+- **sdk-coin-iota:** adding sdk skeleton for iota ([1e09c17](https://github.com/BitGo/BitGoJS/commit/1e09c177d19c5a9cc0f1e20fbeb5da1a6a6580de))
+
 # [49.5.0](https://github.com/BitGo/BitGoJS/compare/bitgo@49.4.0...bitgo@49.5.0) (2025-08-22)
 
 ### Bug Fixes

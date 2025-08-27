@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.4.0...@bitgo/sdk-coin-vet@2.5.0) (2025-08-27)
+
+### Bug Fixes
+
+- contract abi for vechain staking ([70292a3](https://github.com/BitGo/BitGoJS/commit/70292a3021eda20ca91e76ca1c9ddda29e6f908e))
+- implement buildNftTransferData for vet ([07a0dbf](https://github.com/BitGo/BitGoJS/commit/07a0dbf831d1ae7beebf5e9a02596d02007a2094))
+
+### Features
+
+- **sdk-coin-vet:** add vet nft tx builder ([131f81c](https://github.com/BitGo/BitGoJS/commit/131f81c4ed68989d8ca25298fa675aee08811c6c))
+
 # [2.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.3.3...@bitgo/sdk-coin-vet@2.4.0) (2025-08-22)
 
 ### Features

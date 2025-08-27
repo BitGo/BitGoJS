@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-hash@3.4.0...@bitgo/sdk-coin-hash@3.4.1) (2025-08-27)
+
+### Bug Fixes
+
+- **sdk-coin-hash:** add utils based on network type ([199f940](https://github.com/BitGo/BitGoJS/commit/199f940cc84200cacfac08c3f1e782339b3915d8))
+
 # [3.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-hash@3.3.1...@bitgo/sdk-coin-hash@3.4.0) (2025-08-22)
 
 ### Features

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polyx@1.8.0...@bitgo/sdk-coin-polyx@1.9.0) (2025-08-27)
+
+### Features
+
+- **sdk-coin-polyx:** add support for token enablement ([894459a](https://github.com/BitGo/BitGoJS/commit/894459a49848a2b111cf850429cbb2f8b90d550f))
+
 # [1.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-polyx@1.7.2...@bitgo/sdk-coin-polyx@1.8.0) (2025-08-22)
 
 ### Features

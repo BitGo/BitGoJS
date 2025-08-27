@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@14.4.0...@bitgo/express@14.5.0) (2025-08-27)
+
+### Features
+
+- bump public types ([e98036a](https://github.com/BitGo/BitGoJS/commit/e98036a8480aa6cfbc55b092a439ba8f80d23656))
+- **express:** migrating to typed router ([d44f2c5](https://github.com/BitGo/BitGoJS/commit/d44f2c57db83f732989ea9166ca94da2e0e1707b))
+
 # [14.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@14.3.1...@bitgo/express@14.4.0) (2025-08-22)
 
 ### Bug Fixes

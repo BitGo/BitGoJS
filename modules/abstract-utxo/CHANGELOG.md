@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.25.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.24.0...@bitgo/abstract-utxo@9.25.0) (2025-08-27)
+
+### Features
+
+- **abstract-utxo:** add BIP322 message serialization format ([b3f30de](https://github.com/BitGo/BitGoJS/commit/b3f30dedb715d29a1f180ba1b0f3d30d806fce6d))
+
 # [9.24.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.23.0...@bitgo/abstract-utxo@9.24.0) (2025-08-22)
 
 ### Features

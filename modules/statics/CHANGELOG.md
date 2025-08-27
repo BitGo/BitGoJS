@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [57.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@57.5.0...@bitgo/statics@57.6.0) (2025-08-27)
+
+### Features
+
+- add EVM_UNSIGNED_SWEEP_RECOVERY and EVM_NON_BITGO_RECOVERY features ([48ca558](https://github.com/BitGo/BitGoJS/commit/48ca558dd0ae6aff110e70b6dfc60b754e8969f6))
+- add ofc statics for kaia, sonic, hypeevm, seievm, apechain ([b53c712](https://github.com/BitGo/BitGoJS/commit/b53c712dbf1a948ffa4e1e218c38a58fa8faf4d7))
+- onboard sol eurc token ([7efff32](https://github.com/BitGo/BitGoJS/commit/7efff32bc6bc8157cbb703f61e333a2ba23b048b))
+- onboard sui xaum token ([faa4486](https://github.com/BitGo/BitGoJS/commit/faa44869e10790ecca172317b959af00318c433c))
+- **statics:** add statics for iota coin ([33afc9b](https://github.com/BitGo/BitGoJS/commit/33afc9bdd5d1d5818f4d1a21cc298077283135e6))
+
 # [57.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@57.4.0...@bitgo/statics@57.5.0) (2025-08-22)
 
 ### Bug Fixes
