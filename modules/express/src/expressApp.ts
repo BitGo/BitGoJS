@@ -1,21 +1,21 @@
 /**
  * @prettier
  */
-import express from 'express';
+import * as express from 'express';
 import * as path from 'path';
 import * as _ from 'lodash';
-import debugLib from 'debug';
+import * as debugLib from 'debug';
 import * as https from 'https';
 import * as http from 'http';
-import morgan, { token as morganToken } from 'morgan';
+import * as morgan from 'morgan';
 import * as fs from 'fs';
 import type { Request as StaticRequest } from 'express-serve-static-core';
-import timeout from 'connect-timeout';
+import * as timeout from 'connect-timeout';
 import * as bodyParser from 'body-parser';
 
 import { Config, config } from './config';
 
-const debug = debugLib('bitgo:express');
+const debug = debugLib.default('bitgo:express');
 
 import { SSL_OP_NO_TLSv1 } from 'constants';
 import {
@@ -51,7 +51,7 @@ function setupLogging(app: express.Application, config: Config): void {
   }
 
   app.use(middleware);
-  morganToken('remote-user', function (req: StaticRequest) {
+  morgan.token('remote-user', function (req: StaticRequest) {
     return req.isProxy ? 'proxy' : 'local_express';
   });
 }
@@ -310,8 +310,8 @@ export function app(cfg: Config): express.Application {
   // enable specified debug namespaces
   if (_.isArray(debugNamespace)) {
     for (const ns of debugNamespace) {
-      if (ns && !debugLib.enabled(ns)) {
-        debugLib.enable(ns);
+      if (ns && !debugLib.default.enabled(ns)) {
+        debugLib.default.enable(ns);
       }
     }
   }
