@@ -208,6 +208,59 @@ export const ofcCoins = [
     UnderlyingAsset.APECHAIN,
     CoinKind.CRYPTO
   ),
+  ofc('300c6ba0-2d15-44a1-859d-76d48192e202', 'ofcsomi', 'Somnia', 18, UnderlyingAsset.SOMI, CoinKind.CRYPTO),
+  tofc('06eee147-1299-435d-843f-9eea958e2b2f', 'ofctstt', 'Somnia Testnet', 18, UnderlyingAsset.STT, CoinKind.CRYPTO),
+  ofc('aa8a01a7-ee09-41ad-be26-4b00342e3ae9', 'ofcctc', 'Creditcoin', 18, UnderlyingAsset.CTC, CoinKind.CRYPTO),
+  tofc(
+    'd67dbc97-5c8a-4935-a42c-7bee2fb1f631',
+    'ofctctc',
+    'Creditcoin Testnet',
+    18,
+    UnderlyingAsset.CTC,
+    CoinKind.CRYPTO
+  ),
+  ofc('a2d09aaa-0aad-4d70-812a-347eb9d290ef', 'ofcphrs', 'Pharos', 18, UnderlyingAsset.PHRS, CoinKind.CRYPTO),
+  tofc('2bdd4010-cc54-4794-ad64-b90e3bde7719', 'ofctphrs', 'Pharos Testnet', 18, UnderlyingAsset.PHRS, CoinKind.CRYPTO),
+  ofc('6cb1c08b-ad84-4912-98fd-4cfe17c4438c', 'ofcirys', 'Irys', 18, UnderlyingAsset.IRYS, CoinKind.CRYPTO),
+  tofc('5422a6f0-a3f9-41b1-937f-4d6171efed1f', 'ofctirys', 'Irys Testnet', 18, UnderlyingAsset.IRYS, CoinKind.CRYPTO),
+  ofc('a7365ab8-913f-489e-9756-fe29cb2ea723', 'ofcog', 'Zero Gravity', 18, UnderlyingAsset.OG, CoinKind.CRYPTO),
+  tofc(
+    'b841c838-ffae-437f-9ad7-66dde05f7aba',
+    'ofctog',
+    'Zero Gravity Testnet',
+    18,
+    UnderlyingAsset.OG,
+    CoinKind.CRYPTO
+  ),
+  ofc('b5f4efbd-d212-4547-a132-321aa39973f3', 'ofcbaseeth', 'Base Chain', 18, UnderlyingAsset.BASEETH, CoinKind.CRYPTO),
+  tofc(
+    'a4c8b07d-a4a5-4271-9640-01b2bb9795f8',
+    'ofctbaseeth',
+    'Base Sepolia Chain',
+    18,
+    UnderlyingAsset.BASEETH,
+    CoinKind.CRYPTO
+  ),
+  ofc(
+    'f6a05e7a-ef80-4cb4-87a0-92b3eb4025a8',
+    'ofclineaeth',
+    'Linea Ethereum',
+    18,
+    UnderlyingAsset.LINEAETH,
+    CoinKind.CRYPTO
+  ),
+  tofc(
+    'd4699953-20c9-4b3e-91ec-506a4c3efbfb',
+    'ofctlineaeth',
+    'Linea Ethereum Testnet',
+    18,
+    UnderlyingAsset.LINEAETH,
+    CoinKind.CRYPTO
+  ),
+  ofc('aa7e956f-2d59-4bf6-aba6-2d51bd298150', 'ofcip', 'Story', 18, UnderlyingAsset.IP, CoinKind.CRYPTO),
+  tofc('773b02f6-32ea-493a-bca5-13d93cb0afff', 'ofctip', 'Story Testnet', 18, UnderlyingAsset.IP, CoinKind.CRYPTO),
+  ofc('32b87bea-ba5f-4cab-9516-647b1fba9ea2', 'ofcxpl', 'Plasma', 18, UnderlyingAsset.XPL, CoinKind.CRYPTO),
+  tofc('7783b655-1d01-4c99-b35f-1525d9a1d191', 'ofctxpl', 'Plasma Testnet', 18, UnderlyingAsset.XPL, CoinKind.CRYPTO),
   ofc('1876cf96-a0b7-4b7b-9024-6bd89df9814b', 'ofcflr', 'Flare', 18, UnderlyingAsset.FLR, CoinKind.CRYPTO),
   tofc('312ff039-2473-4a11-837f-4ec896a0483d', 'ofctflr', 'Testnet flare', 18, UnderlyingAsset.FLR, CoinKind.CRYPTO),
   ofc('dd3f3d9a-8eae-4a7a-8178-88611687674d', 'ofcsgb', 'Songbird', 18, UnderlyingAsset.SGB, CoinKind.CRYPTO),
@@ -230,7 +283,6 @@ export const ofcCoins = [
     UnderlyingAsset.WORLD,
     CoinKind.CRYPTO
   ),
-  tofc('06eee147-1299-435d-843f-9eea958e2b2f', 'ofctstt', 'Testnet somnia', 18, UnderlyingAsset.STT, CoinKind.CRYPTO),
   ofc(
     'cdc62abc-4748-48f4-8926-6ed42f6c86c9',
     'ofcsoneium',
