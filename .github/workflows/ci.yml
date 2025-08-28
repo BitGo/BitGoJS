@@ -54,7 +54,7 @@ jobs:
           path: |
             node_modules
             modules/*/node_modules
-          key: ${{ runner.os }}-node${{matrix.node-version}}-${{ hashFiles('yarn.lock') }}-${{ hashFiles('tsconfig.packages.json') }}-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-node${{matrix.node-version}}-${{ hashFiles('yarn.lock') }}-${{ hashFiles('tsconfig.packages.json') }}-${{ hashFiles('package.json') }}
 
       - name: Install Packages
         if: steps.lerna-cache.outputs.cache-hit != 'true' || contains( github.event.pull_request.labels.*.name, 'SKIP_CACHE')
@@ -106,7 +106,7 @@ jobs:
           path: |
             node_modules
             modules/*/node_modules
-          key: ${{ runner.os }}-node20-${{ hashFiles('yarn.lock') }}-${{ hashFiles('tsconfig.packages.json') }}-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-node20-${{ hashFiles('yarn.lock') }}-${{ hashFiles('tsconfig.packages.json') }}-${{ hashFiles('package.json') }}
 
       - name: Install Packages
         if: steps.lerna-cache.outputs.cache-hit != 'true' || contains( github.event.pull_request.labels.*.name, 'SKIP_CACHE')
@@ -133,43 +133,6 @@ jobs:
       - name: Audit Dependencies
         if: matrix.check == 'audit'
         run: yarn run improved-yarn-audit --min-severity high
-
-  license-analysis:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
-      - name: Setup node 22
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version: 22
-
-      - name: restore lerna dependencies
-        id: lerna-cache
-        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 #v4.2.3
-        with:
-          path: |
-            node_modules
-            modules/*/node_modules
-          key: ${{ runner.os }}-node22-${{ hashFiles('yarn.lock') }}-${{ hashFiles('tsconfig.packages.json') }}-${{ hashFiles('**/package.json') }}
-
-      - name: Install Packages
-        if: steps.lerna-cache.outputs.cache-hit != 'true'
-        run: yarn install --with-frozen-lockfile --ignore-scripts
-
-      - name: build packages
-        env:
-          # Workaround for https://github.com/nodejs/node/issues/51555
-          DISABLE_V8_COMPILE_CACHE: '1'
-        run: yarn run postinstall
-
-      - name: Run Fossa Analysis
-        uses: fossas/fossa-action@3ebcea1862c6ffbd5cf1b4d0bd6b3fe7bd6f2cac # v1.7.0
-        with:
-          api-key: ${{ secrets.FOSSA_API_KEY }}
-          branch: ${{ github.head_ref || github.ref_name }}
-          project: BitGo/BitGoJS
 
   browser-test:
     runs-on: ubuntu-22.04
@@ -245,7 +208,7 @@ jobs:
             node_modules
             modules/*/node_modules
             /home/runner/.cache/Cypress
-          key: ${{ runner.os }}-${{ hashFiles('yarn.lock') }}-${{ hashFiles('tsconfig.packages.json')}}-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-${{ hashFiles('yarn.lock') }}-${{ hashFiles('tsconfig.packages.json')}}-${{ hashFiles('package.json') }}
 
       - name: Install Packages
         if: steps.lerna-cache.outputs.cache-hit != 'true' || contains( github.event.pull_request.labels.*.name, 'SKIP_CACHE')
@@ -270,44 +233,5 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-
-      - name: Setup Docker compatibility with Podman
-        run: sudo ln -sf /usr/bin/podman /usr/local/bin/docker
-
       - name: Build BitGoJS Express Docker Image
-        run: ./scripts/build-docker-express.sh
-
-  dockerfile-check:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-
-      - name: Setup node 22
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version: 22
-
-      - name: restore lerna dependencies
-        id: lerna-cache
-        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 #v4.2.3
-        with:
-          path: |
-            node_modules
-            modules/*/node_modules
-          key: ${{ runner.os }}-node22-${{ hashFiles('yarn.lock') }}-${{ hashFiles('tsconfig.packages.json') }}-${{ hashFiles('package.json') }}
-
-      - name: Install Packages
-        if: steps.lerna-cache.outputs.cache-hit != 'true' || contains( github.event.pull_request.labels.*.name, 'SKIP_CACHE')
-        run: yarn install --with-frozen-lockfile --ignore-scripts
-
-      - name: Check Dockerfile is up to date
-        run: |
-          yarn update-dockerfile
-          if ! git diff --quiet; then
-            echo "Dockerfile is not up to date. Please run 'yarn update-dockerfile' and commit the changes."
-            git diff
-            exit 1
-          fi
+        run: podman build .
