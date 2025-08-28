@@ -278,7 +278,12 @@ describe('Rune', function () {
   describe('Recover transaction: success path', () => {
     const sandBox = sinon.createSandbox();
     const coin = coins.get('tthorchain:rune');
-    const testBalance = '15000000';
+    const testBalance = [
+      {
+        denom: 'rune',
+        amount: '150000000',
+      },
+    ];
     const testAccountNumber = '123';
     const testSequenceNumber = '0';
     const testChainId = 'thorchain-stagenet-2';
@@ -317,7 +322,7 @@ describe('Rune', function () {
       truneTxn.enrichTransactionDetailsFromRawTransaction(res.serializedTx);
       const truneTxnJson = truneTxn.toJson();
       const sendMessage = truneTxnJson.sendMessages[0].value as SendMessage;
-      const balance = new BigNumber(testBalance);
+      const balance = new BigNumber(testBalance[0].amount);
       const actualBalance = balance.minus('2000000'); // native rune transaction fees
       should.equal(sendMessage.amount[0].amount, actualBalance.toFixed());
     });
@@ -325,7 +330,12 @@ describe('Rune', function () {
 
   describe('Recover transaction: failure path', () => {
     const sandBox = sinon.createSandbox();
-    const testZeroBalance = '0';
+    const testZeroBalance = [
+      {
+        denom: 'rune',
+        amount: '0',
+      },
+    ];
     const testAccountNumber = '123';
     const testSequenceNumber = '0';
     const testChainId = 'thorchain-stagenet-2';

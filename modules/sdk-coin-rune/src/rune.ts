@@ -177,7 +177,8 @@ export class Rune extends CosmosCoin {
 
     // Step 4: Fetch account details such as accountNo, balance and check for sufficient funds once gasAmount has been deducted
     const [accountNumber, sequenceNo] = await this.getAccountDetails(senderAddress);
-    const balance = new BigNumber(await this.getAccountBalance(senderAddress));
+    const balances = await this.getAccountBalance(senderAddress);
+    const balance = new BigNumber(balances[0].amount);
     const gasBudget: FeeData = {
       amount: [{ denom: this.getDenomination(), amount: this.getGasAmountDetails().gasAmount }],
       gasLimit: this.getGasAmountDetails().gasLimit,

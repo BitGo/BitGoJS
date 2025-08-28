@@ -1,10 +1,16 @@
 import should = require('should');
+import sinon from 'sinon';
+import BigNumber from 'bignumber.js';
+import { beforeEach } from 'mocha';
 
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { mockSerializedChallengeWithProofs, TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
+import { coins, NetworkType } from '@bitgo/statics';
+import { EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
+import { CosmosTransaction, SendMessage } from '@bitgo/abstract-cosmos';
 import { HashToken } from '../../src';
-import HashUtils from '../../src/lib/utils';
-import { mainnetAddress, testnetAddress } from '../resources/hash';
+import { HashUtils } from '../../src/lib/utils';
+import { mainnetAddress, testnetAddress, wrwUser } from '../resources/hash';
 
 describe('Hash Tokens', function () {
   let bitgo: TestBitGoAPI;
@@ -12,6 +18,7 @@ describe('Hash Tokens', function () {
   let testnetHashToken;
   const testnetTokenName = 'thash:ylds';
   const mainnetTokenName = 'hash:ylds';
+  let testnetUtils: HashUtils;
 
   before(function () {
     bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
@@ -21,6 +28,7 @@ describe('Hash Tokens', function () {
     bitgo.initializeTestVars();
     mainnetHashToken = bitgo.coin(mainnetTokenName);
     testnetHashToken = bitgo.coin(testnetTokenName);
+    testnetUtils = new HashUtils(NetworkType.TESTNET);
   });
 
   it('should return constants for Hash YLDS testnet token', function () {
@@ -50,7 +58,7 @@ describe('Hash Tokens', function () {
   });
 
   it('should return denomination for YLDS token on hash using hash as coinFamily', function () {
-    HashUtils.getTokenDenomsUsingCoinFamily('hash').should.deepEqual(['uylds.fcc']);
+    testnetUtils.getTokenDenomsUsingCoinFamily('hash').should.deepEqual(['uylds.fcc']);
   });
 
   describe('Address Validation', () => {
@@ -133,6 +141,192 @@ describe('Hash Tokens', function () {
       should.equal(testnetHashToken._utils.isValidValidatorAddress('dfjk35y'), false);
       should.equal(testnetHashToken._utils.isValidValidatorAddress(undefined as unknown as string), false);
       should.equal(testnetHashToken._utils.isValidValidatorAddress(''), false);
+    });
+  });
+
+  describe('Recover transaction: success path', () => {
+    const sandBox = sinon.createSandbox();
+    const destinationAddress = wrwUser.destinationAddress;
+    const coin = coins.get('thash:ylds');
+    const testBalance = [
+      {
+        denom: 'nhash',
+        amount: '150000000000',
+      },
+      {
+        denom: 'uylds.fcc',
+        amount: '10000',
+      },
+    ];
+    const testAccountNumber = '123';
+    const testSequenceNumber = '0';
+    const testChainId = 'test-chain';
+
+    beforeEach(() => {
+      const accountBalance = sandBox.stub(HashToken.prototype, 'getAccountBalance' as keyof HashToken);
+      accountBalance.withArgs(wrwUser.senderAddress).resolves(testBalance);
+
+      const accountDetails = sandBox.stub(HashToken.prototype, 'getAccountDetails' as keyof HashToken);
+      accountDetails.withArgs(wrwUser.senderAddress).resolves([testAccountNumber, testSequenceNumber]);
+
+      const chainId = sandBox.stub(HashToken.prototype, 'getChainId' as keyof HashToken);
+      chainId.withArgs().resolves(testChainId);
+
+      const deserializedEntChallenge = EcdsaTypes.deserializeNtildeWithProofs(mockSerializedChallengeWithProofs);
+      sinon.stub(EcdsaRangeProof, 'generateNtilde').resolves(deserializedEntChallenge);
+    });
+
+    afterEach(() => {
+      sandBox.restore();
+      sinon.restore();
+    });
+
+    it('should recover funds for non-bitgo recoveries', async function () {
+      const res = await testnetHashToken.recover({
+        userKey: wrwUser.userPrivateKey,
+        backupKey: wrwUser.backupPrivateKey,
+        bitgoKey: wrwUser.bitgoPublicKey,
+        walletPassphrase: wrwUser.walletPassphrase,
+        recoveryDestination: destinationAddress,
+      });
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('serializedTx');
+      sandBox.assert.calledOnce(testnetHashToken.getAccountBalance);
+      sandBox.assert.calledOnce(testnetHashToken.getAccountDetails);
+      sandBox.assert.calledOnce(testnetHashToken.getChainId);
+
+      const txn = new CosmosTransaction(coin, testnetUtils);
+      txn.enrichTransactionDetailsFromRawTransaction(res.serializedTx);
+      const txnJson = txn.toJson();
+
+      // The last sendMessage is of the native coin type
+      const len = txnJson.sendMessages.length;
+      const sendMessage = txnJson.sendMessages[len - 1].value as SendMessage;
+      const tokenSendMessage = txnJson.sendMessages[0].value as SendMessage;
+      const balance = new BigNumber(testBalance[0].amount);
+      const gasAmount = new BigNumber(5000000000);
+      const actualBalance = balance.minus(gasAmount);
+      should.equal(sendMessage.toAddress, destinationAddress);
+      should.equal(sendMessage.amount[0].amount, actualBalance.toFixed());
+      should.equal(sendMessage.amount[0].denom, testBalance[0].denom);
+      should.equal(tokenSendMessage.toAddress, destinationAddress);
+      should.equal(tokenSendMessage.amount[0].amount, testBalance[1].amount);
+      should.equal(tokenSendMessage.amount[0].denom, testBalance[1].denom);
+    });
+
+    it('should recover funds for Unsigned Sweep Transaction', async function () {
+      const res = await testnetHashToken.recover({
+        userKey: wrwUser.userPrivateKey,
+        backupKey: wrwUser.backupPrivateKey,
+        bitgoKey: wrwUser.bitgoPublicKey,
+        walletPassphrase: wrwUser.walletPassphrase,
+        recoveryDestination: destinationAddress,
+      });
+      res.should.not.be.empty();
+      res.should.hasOwnProperty('serializedTx');
+      sandBox.assert.calledOnce(testnetHashToken.getAccountBalance);
+      sandBox.assert.calledOnce(testnetHashToken.getAccountDetails);
+      sandBox.assert.calledOnce(testnetHashToken.getChainId);
+
+      const unsignedSweepTxnDeserialize = new CosmosTransaction(coin, testnetUtils);
+      unsignedSweepTxnDeserialize.enrichTransactionDetailsFromRawTransaction(res.serializedTx);
+      const unsignedSweepTxnJson = unsignedSweepTxnDeserialize.toJson();
+
+      // The last sendMessage is of the native coin type
+      const len = unsignedSweepTxnJson.sendMessages.length;
+      const sendMessage = unsignedSweepTxnJson.sendMessages[len - 1].value as SendMessage;
+      const tokenSendMessage = unsignedSweepTxnJson.sendMessages[0].value as SendMessage;
+      const balance = new BigNumber(testBalance[0].amount);
+      const gasAmount = new BigNumber(5000000000);
+      const actualBalance = balance.minus(gasAmount);
+      should.equal(sendMessage.toAddress, destinationAddress);
+      should.equal(sendMessage.amount[0].amount, actualBalance.toFixed());
+      should.equal(sendMessage.amount[0].denom, testBalance[0].denom);
+      should.equal(tokenSendMessage.toAddress, destinationAddress);
+      should.equal(tokenSendMessage.amount[0].amount, testBalance[1].amount);
+      should.equal(tokenSendMessage.amount[0].denom, testBalance[1].denom);
+    });
+  });
+
+  describe('Recover transaction: failure path', () => {
+    const sandBox = sinon.createSandbox();
+    const destinationAddress = wrwUser.destinationAddress;
+    const testZeroBalance = [
+      {
+        denom: 'nhash',
+        amount: '0',
+      },
+      {
+        denom: 'uylds.fcc',
+        amount: '1000',
+      },
+    ];
+    const testAccountNumber = '123';
+    const testSequenceNumber = '0';
+    const testChainId = 'test-chain';
+
+    beforeEach(() => {
+      const accountBalance = sandBox.stub(HashToken.prototype, 'getAccountBalance' as keyof HashToken);
+      accountBalance.withArgs(wrwUser.senderAddress).resolves(testZeroBalance);
+
+      const accountDetails = sandBox.stub(HashToken.prototype, 'getAccountDetails' as keyof HashToken);
+      accountDetails.withArgs(wrwUser.senderAddress).resolves([testAccountNumber, testSequenceNumber]);
+
+      const chainId = sandBox.stub(HashToken.prototype, 'getChainId' as keyof HashToken);
+      chainId.withArgs().resolves(testChainId);
+
+      const deserializedEntChallenge = EcdsaTypes.deserializeNtildeWithProofs(mockSerializedChallengeWithProofs);
+      sinon.stub(EcdsaRangeProof, 'generateNtilde').resolves(deserializedEntChallenge);
+    });
+
+    afterEach(() => {
+      sandBox.restore();
+      sinon.restore();
+    });
+
+    it('should throw error if backupkey is not present', async function () {
+      await testnetHashToken
+        .recover({
+          userKey: wrwUser.userPrivateKey,
+          bitgoKey: wrwUser.bitgoPublicKey,
+          walletPassphrase: wrwUser.walletPassphrase,
+          recoveryDestination: destinationAddress,
+        })
+        .should.rejectedWith('missing backupKey');
+    });
+
+    it('should throw error if userkey is not present', async function () {
+      await testnetHashToken
+        .recover({
+          backupKey: wrwUser.backupPrivateKey,
+          bitgoKey: wrwUser.bitgoPublicKey,
+          walletPassphrase: wrwUser.walletPassphrase,
+          recoveryDestination: destinationAddress,
+        })
+        .should.rejectedWith('missing userKey');
+    });
+
+    it('should throw error if wallet passphrase is not present', async function () {
+      await testnetHashToken
+        .recover({
+          userKey: wrwUser.userPrivateKey,
+          backupKey: wrwUser.backupPrivateKey,
+          bitgoKey: wrwUser.bitgoPublicKey,
+          recoveryDestination: destinationAddress,
+        })
+        .should.rejectedWith('missing wallet passphrase');
+    });
+
+    it('should throw error if there is no balance', async function () {
+      await testnetHashToken
+        .recover({
+          userKey: wrwUser.userPrivateKey,
+          backupKey: wrwUser.backupPrivateKey,
+          bitgoKey: wrwUser.bitgoPublicKey,
+          walletPassphrase: wrwUser.walletPassphrase,
+          recoveryDestination: destinationAddress,
+        })
+        .should.rejectedWith('Did not have enough funds to recover');
     });
   });
 });

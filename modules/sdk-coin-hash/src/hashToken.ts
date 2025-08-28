@@ -1,7 +1,8 @@
-import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
+import { AddressFormat, BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
 import { CosmosTokenConfig, coins, tokens } from '@bitgo/statics';
 import { Hash } from './hash';
 import { HashUtils } from './lib/utils';
+import { KeyPair } from './lib';
 
 export class HashToken extends Hash {
   public readonly tokenConfig: CosmosTokenConfig;
@@ -65,5 +66,10 @@ export class HashToken extends Hash {
 
   getBaseFactor(): number {
     return Math.pow(10, this.tokenConfig.decimalPlaces);
+  }
+
+  getAddressFromPublicKey(publicKey: string): string {
+    const networkType = this.network === 'Mainnet' ? AddressFormat.mainnet : AddressFormat.testnet;
+    return new KeyPair({ pub: publicKey }).getAddress(networkType);
   }
 }
