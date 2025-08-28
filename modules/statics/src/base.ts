@@ -2713,6 +2713,7 @@ export enum UnderlyingAsset {
 
   // coredao testnet tokens
   'tcoredao:stcore' = 'tcoredao:stcore',
+  'tcoredao:tlstbtc' = 'tcoredao:tlstbtc',
 
   //world chain mainnet tokens
   'world:wld' = 'world:wld',
