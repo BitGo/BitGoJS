@@ -3802,6 +3802,14 @@ export const allCoinsAndTokens = [
     '0x6401f24ef7c54032f4f54e67492928973ab87650',
     UnderlyingAsset['tcoredao:stcore']
   ),
+  tcoredaoErc20(
+    '95aee3ad-cfd1-456b-bd55-a475cf9f584b',
+    'tcoredao:tlstbtc',
+    'Testnet tlstBTC token',
+    8,
+    '0xe82116b558bd290808a880cb469e0a16cad8027e',
+    UnderlyingAsset['tcoredao:tlstbtc']
+  ),
   worldErc20(
     '35cadba6-2324-4ad0-b809-fbdbb59e6ce3',
     'world:wld',
