@@ -104,6 +104,11 @@ export class Nep141Token extends Near {
         throw new Error('Tx total amount does not match with expected total amount field');
       }
     }
+
+    if (params.verification?.consolidationToBaseAddress) {
+      await this.verifyConsolidationToBaseAddress(params, explainedTx);
+    }
+
     return true;
   }
 }
