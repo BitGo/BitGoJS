@@ -126,6 +126,7 @@ import {
 } from './coinFeatures';
 import { botTokens } from './coins/botTokens';
 import { botOfcTokens } from './coins/botOfcTokens';
+import { adaTokens } from './coins/adaTokens';
 
 export const allCoinsAndTokens = [
   ...lightningCoins,
@@ -141,6 +142,7 @@ export const allCoinsAndTokens = [
   ...cosmosTokens,
   ...botTokens,
   ...botOfcTokens,
+  ...adaTokens,
   avaxp(
     '5436386e-9e4d-4d82-92df-59d9720d1738',
     'avaxp',

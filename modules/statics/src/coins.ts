@@ -24,6 +24,7 @@ import {
   vetNFTCollection,
   vetToken,
   xrpToken,
+  adaToken,
 } from './account';
 import { ofcToken } from './ofc';
 import { BaseCoin } from './base';
@@ -63,6 +64,7 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
     xlm: stellarToken,
     xrp: xrpToken,
     ofc: ofcToken,
+    ada: adaToken,
   };
 
   //return the BaseCoin from default coin map if present
