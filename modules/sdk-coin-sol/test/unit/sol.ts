@@ -591,6 +591,55 @@ describe('SOL:', function () {
       } as any);
       validTransaction.should.equal(true);
     });
+
+    it('should validate transaction type match for Send type', async function () {
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      // Set the type to 'transfer' which should match with 'Send' type from explained transaction
+      txParams.type = 'transfer';
+
+      const validTransaction = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        memo,
+        durableNonce,
+        wallet: walletObj,
+      } as any);
+      validTransaction.should.equal(true);
+    });
+
+    it('should fail validation when transaction type does not match', async function () {
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      // Set the type to 'invalid' which should not match with 'Send' type from explained transaction
+      txParams.type = 'invalid';
+
+      await basecoin
+        .verifyTransaction({
+          txParams,
+          txPrebuild,
+          memo,
+          durableNonce,
+          wallet: walletObj,
+        } as any)
+        .should.be.rejectedWith("Tx type 'Send' does not match with expected txParams type 'invalid'");
+    });
+
+    it('should handle undefined transaction types gracefully', async function () {
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      // Set the type to undefined which should log a warning but not throw
+      txParams.type = undefined;
+
+      const validTransaction = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        memo,
+        durableNonce,
+        wallet: walletObj,
+      } as any);
+      validTransaction.should.equal(true);
+    });
   });
 
   it('should accept valid address', function () {
