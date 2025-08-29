@@ -2800,6 +2800,8 @@ describe('V2 Wallet:', function () {
             data: 'SGVsbG8gV29ybGQ=',
           },
         ];
+        const comment = 'Test comment';
+        const sequenceId = '123';
 
         const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
         prebuildTxWithIntent.resolves(txRequest);
@@ -2808,6 +2810,8 @@ describe('V2 Wallet:', function () {
           intentType: 'customTx',
           solInstructions,
           recipients,
+          comment,
+          sequenceId,
         });
 
         const txPrebuild = await tssSolWallet.prebuildTransaction({
@@ -2815,6 +2819,8 @@ describe('V2 Wallet:', function () {
           recipients,
           type: 'customTx',
           solInstructions,
+          comment,
+          sequenceId,
         });
 
         txPrebuild.should.deepEqual({
@@ -2826,6 +2832,8 @@ describe('V2 Wallet:', function () {
             recipients,
             type: 'customTx',
             solInstructions,
+            comment,
+            sequenceId,
           },
           feeInfo: {
             fee: 5000,

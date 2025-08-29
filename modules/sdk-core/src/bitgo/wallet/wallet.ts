@@ -3399,6 +3399,8 @@ export class Wallet implements IWallet {
           {
             reqId,
             intentType: 'customTx',
+            sequenceId: params.sequenceId,
+            comment: params.comment,
             solInstructions: params.solInstructions,
             recipients: params.recipients || [],
           },
