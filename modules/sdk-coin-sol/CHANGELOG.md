@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.1.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@6.1.1...@bitgo/sdk-coin-sol@6.1.2) (2025-08-29)
+
+### Bug Fixes
+
+- **sdk-coin-sol:** allow off curve address as well for solana 2022 token ([dad647a](https://github.com/BitGo/BitGoJS/commit/dad647a207df68914982b57d0740db95f7c28f9d))
+
 ## [6.1.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@6.1.0...@bitgo/sdk-coin-sol@6.1.1) (2025-08-27)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol

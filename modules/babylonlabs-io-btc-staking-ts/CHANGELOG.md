@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/babylonlabs-io-btc-staking-ts@2.4.0...@bitgo/babylonlabs-io-btc-staking-ts@2.4.1) (2025-08-29)
+
+**Note:** Version bump only for package @bitgo/babylonlabs-io-btc-staking-ts
+
 # [2.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/babylonlabs-io-btc-staking-ts@1.2.0...@bitgo/babylonlabs-io-btc-staking-ts@2.4.0) (2025-07-10)
 
 ### Bug Fixes

@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [57.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@57.6.0...@bitgo/statics@57.7.0) (2025-08-29)
+
+### Bug Fixes
+
+- revert bsc send many ([2e523b3](https://github.com/BitGo/BitGoJS/commit/2e523b317ee19174c49a0ec5674dbf562f0bb593))
+
+### Features
+
+- added ofc assests for several coins ([3ea2bc7](https://github.com/BitGo/BitGoJS/commit/3ea2bc754cea4d6e8bed64e3ee66491d8c673579))
+- onboarding lstBTC CoreDAO ERC20 token ([0e136a0](https://github.com/BitGo/BitGoJS/commit/0e136a038cf38c1adbed64e6ecb2bbe6a75f65fa))
+- **sdk-coin-ada:** add support for tokens ([4fadc03](https://github.com/BitGo/BitGoJS/commit/4fadc0329f71542807814191015d930ee22acbe0))
+
 # [57.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@57.5.0...@bitgo/statics@57.6.0) (2025-08-27)
 
 ### Features

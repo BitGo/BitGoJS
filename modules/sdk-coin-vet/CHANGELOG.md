@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.5.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.5.0...@bitgo/sdk-coin-vet@2.5.1) (2025-08-29)
+
+### Bug Fixes
+
+- valuelessTransferAllowed true for vet ([cebd963](https://github.com/BitGo/BitGoJS/commit/cebd963890f87cc4223e349a926994156e3cc016))
+
 # [2.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.4.0...@bitgo/sdk-coin-vet@2.5.0) (2025-08-27)
 
 ### Bug Fixes

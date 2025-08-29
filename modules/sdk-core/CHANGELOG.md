@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [36.6.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.6.0...@bitgo/sdk-core@36.6.1) (2025-08-29)
+
+### Bug Fixes
+
+- **sdk-coin-near:** verify platform built consolidation tx ([813abe0](https://github.com/BitGo/BitGoJS/commit/813abe05271f4f5a0ed015a17e81156de4f5e3cd))
+
 # [36.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.5.0...@bitgo/sdk-core@36.6.0) (2025-08-27)
 
 ### Bug Fixes

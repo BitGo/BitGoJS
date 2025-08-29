@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [14.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@14.5.0...@bitgo/express@14.6.0) (2025-08-29)
+
+### Features
+
+- **express:** enable esModuleInterop to align test and runtime ([8d163f9](https://github.com/BitGo/BitGoJS/commit/8d163f9bb6894a9b3b28407927ad86b7a2863df5))
+
 # [14.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@14.4.0...@bitgo/express@14.5.0) (2025-08-27)
 
 ### Features

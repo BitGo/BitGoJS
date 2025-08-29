@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@6.4.0...@bitgo/abstract-lightning@6.5.0) (2025-08-29)
+
+### Features
+
+- updated withdraw codecs signature verify ([23e87b9](https://github.com/BitGo/BitGoJS/commit/23e87b92fec9b2d98291424251e17c2a4ab53793))
+
 # [6.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@6.3.0...@bitgo/abstract-lightning@6.4.0) (2025-08-27)
 
 ### Features
