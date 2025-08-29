@@ -24,6 +24,7 @@ import {
   MultisigType,
   multisigTypes,
   AuditDecryptedKeyParams,
+  TransactionType,
 } from '@bitgo/sdk-core';
 import { BigNumber } from 'bignumber.js';
 import * as stellar from 'stellar-sdk';
@@ -208,6 +209,23 @@ export class Hbar extends BaseCoin {
     return { prv: keys.prv + keys.pub, pub: keys.pub };
   }
 
+  /**
+   * Helper function to validate transaction type matches txParams type
+   * @param transactionType - The transaction type from the transaction
+   * @param txParamsType - The type from txParams
+   */
+  private validateTransactionTypeMatch(transactionType: TransactionType | undefined, txParamsType?: string): void {
+    if (transactionType === undefined || !txParamsType) {
+      return;
+    }
+
+    const transactionTypeStr = TransactionType[transactionType];
+
+    if (transactionTypeStr === 'Send' && txParamsType !== 'transfer') {
+      throw new Error(`Transaction type 'Send' does not match with expected txParams type ${txParamsType}`);
+    }
+  }
+
   async parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
     return {};
   }
@@ -244,6 +262,8 @@ export class Hbar extends BaseCoin {
     if (!txParams.recipients) {
       throw new Error('missing required tx params property recipients');
     }
+
+    this.validateTransactionTypeMatch(transaction.type, txParams.type);
 
     // for enabletoken, recipient output amount is 0
     const recipients = txParams.recipients.map((recipient) => ({
