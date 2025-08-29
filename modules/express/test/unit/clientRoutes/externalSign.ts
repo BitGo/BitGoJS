@@ -139,7 +139,9 @@ describe('External signer', () => {
     envStub.restore();
   });
 
-  it('should read an encrypted prv from signerFileSystemPath and pass it to PaillierModulus, K, MuDelta, and S share generators', async () => {
+  it('should read an encrypted prv from signerFileSystemPath and pass it to PaillierModulus, K, MuDelta, and S share generators', async function () {
+    // This test performs multiple MPC ECDSA rounds and can exceed Mocha's default 60s timeout on CI
+    this.timeout(180000);
     const walletID = '62fe536a6b4cf70007acb48c0e7bb0b0';
     const user = keyShareOneEcdsa; // await mpcEcdsa.keyShare(1, 2, 3);
     const backup = keyShareTwoEcdsa; // await mpcEcdsa.keyShare(2, 2, 3);
@@ -497,7 +499,9 @@ describe('External signer', () => {
     envStub.restore();
   });
 
-  it('should read an encrypted prv from signerFileSystemPath and pass it to MPCv2Round1, MPCv2Round2 and MPCv2Round3 share generators', async () => {
+  it('should read an encrypted prv from signerFileSystemPath and pass it to MPCv2Round1, MPCv2Round2 and MPCv2Round3 share generators', async function () {
+    // MPCv2 DKLS flow is CPU-heavy; extend timeout for CI stability
+    this.timeout(180000);
     const walletID = '62fe536a6b4cf70007acb48c0e7bb0b0';
     const tMessage = 'testMessage';
     const derivationPath = 'm/0';
