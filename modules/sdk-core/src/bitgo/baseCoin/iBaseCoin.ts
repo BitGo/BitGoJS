@@ -14,7 +14,7 @@ import { IWebhooks } from '../webhook/iWebhooks';
 import { TransactionType } from '../../account-lib';
 import { IInscriptionBuilder } from '../inscriptionBuilder';
 import { Hash } from 'crypto';
-import { MessageStandardType, MPCTx, PopulatedIntent, TokenType } from '../utils';
+import { MessageStandardType, MPCTx, PopulatedIntent, TokenTransferRecipientParams, TokenType } from '../utils';
 
 export const multisigTypes = {
   onchain: 'onchain',
@@ -574,7 +574,7 @@ export interface IBaseCoin {
    * @param params Options specifying the token contract, token recipient & the token(s) to be transferred
    * @return the hex string for the contract call.
    */
-  buildNftTransferData(params: BuildNftTransferDataOptions): string;
+  buildNftTransferData(params: BuildNftTransferDataOptions): string | TokenTransferRecipientParams;
   getHashFunction(): Hash;
   broadcastTransaction(params: BaseBroadcastTransactionOptions): Promise<BaseBroadcastTransactionResult>;
   setCoinSpecificFieldsInIntent(intent: PopulatedIntent, params: PrebuildTransactionWithIntentOptions): void;
