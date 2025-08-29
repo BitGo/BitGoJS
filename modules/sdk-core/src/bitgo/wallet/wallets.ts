@@ -101,8 +101,8 @@ export class Wallets implements IWallets {
       throw new Error('missing required string parameter label');
     }
 
-    // no need to pass keys for (single) custodial wallets
-    if (params.type !== 'custodial') {
+    // no need to pass keys for (single) custodial wallets or it is EVM wallet
+    if (params.type !== 'custodial' || params.referenceWalletId) {
       if (Array.isArray(params.keys) === false || !_.isNumber(params.m) || !_.isNumber(params.n)) {
         throw new Error('invalid argument');
       }

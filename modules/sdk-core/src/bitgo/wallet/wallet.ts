@@ -1251,6 +1251,7 @@ export class Wallet implements IWallet {
       baseAddress,
       allowSkipVerifyAddress = true,
       onToken,
+      referenceAddressId,
     } = params;
 
     if (!_.isUndefined(chain)) {
@@ -1323,6 +1324,13 @@ export class Wallet implements IWallet {
       if (!_.isString(onToken)) {
         throw new Error('onToken has to be a string');
       }
+    }
+
+    if (!_.isUndefined(referenceAddressId)) {
+      if (!_.isString(referenceAddressId)) {
+        throw new Error('referenceAddressId has to be a string');
+      }
+      addressParams.referenceAddressId = referenceAddressId;
     }
 
     // get keychains for address verification
