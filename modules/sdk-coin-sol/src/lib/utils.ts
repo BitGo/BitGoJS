@@ -591,7 +591,12 @@ export async function getAssociatedTokenAccountAddress(
 
   let ataAddress: PublicKey;
   if (programId === TOKEN_2022_PROGRAM_ID.toString()) {
-    ataAddress = await getAssociatedTokenAddress(mintPublicKey, ownerPublicKey, false, TOKEN_2022_PROGRAM_ID);
+    ataAddress = await getAssociatedTokenAddress(
+      mintPublicKey,
+      ownerPublicKey,
+      allowOwnerOffCurve,
+      TOKEN_2022_PROGRAM_ID
+    );
   } else {
     ataAddress = await getAssociatedTokenAddress(mintPublicKey, ownerPublicKey, allowOwnerOffCurve);
   }
