@@ -671,7 +671,7 @@ export interface SendManyOptions extends PrebuildAndSignTransactionOptions {
     address: string;
     amount: string | number;
     feeLimit?: string;
-    data?: string;
+    data?: string | TokenTransferRecipientParams;
     tokenName?: string;
     tokenData?: TokenTransferRecipientParams;
   }[];

@@ -2537,15 +2537,23 @@ export class Wallet implements IWallet {
         }
 
         const data = this.baseCoin.buildNftTransferData({ ...sendNftOptions, fromAddress: baseAddress });
+        let recipient;
+        if (this.baseCoin.getFamily() === 'vet') {
+          recipient = {
+            address: recipientAddress,
+            amount: '1',
+            tokenData: data,
+          };
+        } else {
+          recipient = {
+            address: sendNftOptions.tokenContractAddress,
+            amount: '0',
+            data,
+          };
+        }
         return this.sendMany({
           ...sendOptions,
-          recipients: [
-            {
-              address: sendNftOptions.tokenContractAddress,
-              amount: '0',
-              data: data,
-            },
-          ],
+          recipients: [recipient],
         });
       }
       case 'ERC1155': {

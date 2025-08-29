@@ -119,7 +119,12 @@ describe('Vechain', function () {
         tokenId: '1234',
         tokenContractAddress: testData.NFT_CONTRACT_ADDRESS,
       });
-      data.should.equal(testData.VALID_NFT_CONTRACT_DATA);
+      data.should.deepEqual({
+        tokenType: 'ERC721',
+        tokenQuantity: '1',
+        tokenContractAddress: '0x1ec1d168574603ec35b9d229843b7c2b44bcb770',
+        tokenId: '1234',
+      });
     });
 
     it('should build throw invalid address error', function () {

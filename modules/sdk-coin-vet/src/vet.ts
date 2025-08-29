@@ -16,8 +16,10 @@ import {
   ParsedTransaction,
   SignedTransaction,
   SignTransactionOptions,
+  TokenTransferRecipientParams,
   VerifyAddressOptions,
   VerifyTransactionOptions,
+  TokenType,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import utils from './lib/utils';
@@ -245,18 +247,26 @@ export class Vet extends BaseCoin {
     } as unknown as Hash;
   }
 
-  buildNftTransferData(params: BuildNftTransferDataOptions): string {
-    const { recipientAddress, fromAddress } = params;
+  buildNftTransferData(params: BuildNftTransferDataOptions): TokenTransferRecipientParams {
+    const { recipientAddress, fromAddress, tokenContractAddress } = params;
     if (!utils.isValidAddress(recipientAddress)) {
       throw new InvalidAddressError('Invalid recipient address');
     }
     if (!utils.isValidAddress(fromAddress)) {
       throw new InvalidAddressError('Invalid from address');
     }
+    if (!utils.isValidAddress(tokenContractAddress)) {
+      throw new InvalidAddressError('Invalid NFT contract address address');
+    }
     switch (params.type) {
       case 'ERC721': {
         const tokenId = params.tokenId;
-        return utils.getTransferNFTData(fromAddress, recipientAddress, tokenId);
+        return {
+          tokenType: TokenType.ERC721,
+          tokenQuantity: '1', // This NFT standard will always have quantity of 1
+          tokenContractAddress,
+          tokenId,
+        };
       }
       default:
         throw new NotImplementedError(`NFT type ${params.type} not supported on ${this.getChain()}`);

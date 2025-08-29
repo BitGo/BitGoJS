@@ -49,7 +49,13 @@ import {
   AuditDecryptedKeyParams,
 } from './iBaseCoin';
 import { IInscriptionBuilder } from '../inscriptionBuilder';
-import { MPCSweepRecoveryOptions, MPCTxs, PopulatedIntent, PrebuildTransactionWithIntentOptions } from '../utils';
+import {
+  MPCSweepRecoveryOptions,
+  MPCTxs,
+  PopulatedIntent,
+  PrebuildTransactionWithIntentOptions,
+  TokenTransferRecipientParams,
+} from '../utils';
 
 export abstract class BaseCoin implements IBaseCoin {
   protected readonly bitgo: BitGoBase;
@@ -586,7 +592,7 @@ export abstract class BaseCoin implements IBaseCoin {
     throw new NotImplementedError('getHashFunction is not supported for this coin');
   }
 
-  buildNftTransferData(params: BuildNftTransferDataOptions): string {
+  buildNftTransferData(params: BuildNftTransferDataOptions): string | TokenTransferRecipientParams {
     throw new NotImplementedError('buildNftTransferData is not supported for this coin');
   }
 
