@@ -96,7 +96,7 @@ function handleDecrypt(req: ExpressApiRouteRequest<'express.decrypt', 'post'>) {
   };
 }
 
-function handleEncrypt(req: express.Request) {
+function handleEncrypt(req: ExpressApiRouteRequest<'express.encrypt', 'post'>) {
   return {
     encrypted: req.bitgo.encrypt(req.body),
   };
@@ -1564,7 +1564,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   router.post('express.login', [prepareBitGo(config), typedPromiseWrapper(handleLogin)]);
 
   router.post('express.decrypt', [prepareBitGo(config), typedPromiseWrapper(handleDecrypt)]);
-  app.post('/api/v[12]/encrypt', parseBody, prepareBitGo(config), promiseWrapper(handleEncrypt));
+  router.post('express.encrypt', [prepareBitGo(config), typedPromiseWrapper(handleEncrypt)]);
   router.post('express.verifyaddress', [prepareBitGo(config), typedPromiseWrapper(handleVerifyAddress)]);
   app.post(
     '/api/v[12]/calculateminerfeeinfo',
