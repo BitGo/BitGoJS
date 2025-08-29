@@ -222,7 +222,7 @@ const mainnetBase: EnvironmentTemplate = {
       baseUrl: 'https://rpc.hyperliquid.xyz/evm',
     },
     og: {
-      baseUrl: '', //TODO- WIN-6519 when mainnet details available
+      baseUrl: 'https://chainscan.0g.ai/open/api',
     },
     xpl: {
       baseUrl: 'https://rpc.plasma.to',
