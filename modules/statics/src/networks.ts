@@ -1522,10 +1522,10 @@ class IrysTestnet extends Testnet implements EthereumNetwork {
 class Og extends Mainnet implements EthereumNetwork {
   name = 'Zero Gravity';
   family = CoinFamily.OG;
-  explorerUrl = ''; //TODO- WIN-6519 when mainnet details available
-  accountExplorerUrl = ''; //TODO- WIN-6519 when mainnet details available
-  chainId = 9999999999999; //TODO- WIN-6519 when mainnet details available ,this is a dummy value
-  nativeCoinOperationHashPrefix = ''; //TODO- WIN-6519 when mainnet details available
+  explorerUrl = 'https://chainscan.0g.ai/tx/';
+  accountExplorerUrl = 'https://chainscan.0g.ai/address/';
+  chainId = 16661;
+  nativeCoinOperationHashPrefix = '16661';
 }
 
 class OgTestnet extends Testnet implements EthereumNetwork {

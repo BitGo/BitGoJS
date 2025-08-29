@@ -172,6 +172,8 @@ export interface VerificationOptions {
   addresses?: { [address: string]: AddressVerificationData };
   allowPaygoOutput?: boolean;
   considerMigratedFromAddressInternal?: boolean;
+  // Verify transaction is consolidating to wallet's base address
+  consolidationToBaseAddress?: boolean;
 }
 
 export interface VerifyTransactionOptions {

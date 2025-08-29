@@ -1864,17 +1864,18 @@ export function tsolToken(
 }
 
 /**
- * Factory function for ada token instances.
+ * Factory function for prod cardano token instances.
  *
  * @param id uuid v4
- * @param name unique identifier of the token
+ * @param name Name of the token
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
- * @param tokenSymbol Token symbol of this token
+ * @param policyId Policy Id
+ * @param assetName Asset name -> Policy ID + Asset name is the unique identifier
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
  * @param prefix? Optional token prefix. Defaults to empty string
  * @param suffix? Optional token suffix. Defaults to token name.
- * @param network? Optional token network. Defaults to Cardano main network.
+ * @param network? Optional token network. Defaults to the testnet Cardano network.
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES and REQUIRES_RESERVE defined in `AccountCoin`
  * @param primaryKeyCurve The elliptic curve for this chain/token
  */
@@ -1916,10 +1917,11 @@ export function adaToken(
  * Factory function for testnet cardano token instances.
  *
  * @param id uuid v4
- * @param name unique identifier of the token
+ * @param name Name of the token
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
- * @param tokenSymbol Token symbol of this token i.e: AUSD
+ * @param policyId Policy Id
+ * @param assetName Asset name -> Policy ID + Asset name is the unique identifier
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
  * @param prefix? Optional token prefix. Defaults to empty string
  * @param suffix? Optional token suffix. Defaults to token name.
@@ -1935,9 +1937,9 @@ export function tadaToken(
   assetName: string,
   asset: UnderlyingAsset,
   features: CoinFeature[] = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.REQUIRES_RESERVE],
+  network: AccountNetwork = Networks.test.ada,
   prefix = '',
-  suffix: string = name.toUpperCase(),
-  network: AccountNetwork = Networks.test.ada
+  suffix: string = name.toUpperCase()
 ) {
   return adaToken(id, name, fullName, decimalPlaces, policyId, assetName, asset, features, prefix, suffix, network);
 }

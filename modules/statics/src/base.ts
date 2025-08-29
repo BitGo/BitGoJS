@@ -2713,6 +2713,7 @@ export enum UnderlyingAsset {
 
   // coredao testnet tokens
   'tcoredao:stcore' = 'tcoredao:stcore',
+  'tcoredao:tlstbtc' = 'tcoredao:tlstbtc',
 
   //world chain mainnet tokens
   'world:wld' = 'world:wld',
@@ -3020,6 +3021,9 @@ export enum UnderlyingAsset {
   'eth:rlb' = 'eth:rlb',
   'eth:neiro2' = 'eth:neiro2',
   'eth:sign' = 'eth:sign',
+
+  // ADA testnet tokens
+  'tada:water' = 'tada:water',
 
   // fiats
   AED = 'aed',

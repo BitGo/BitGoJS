@@ -1,5 +1,6 @@
 import { TransactionExplanation as BaseTransactionExplanation, TransactionType } from '@bitgo/sdk-core';
 import { Coin } from '@cosmjs/stargate';
+import { BigNumber } from 'bignumber.js';
 
 /**
  * Defines the protobuf typeUrl for the public key
@@ -108,4 +109,25 @@ export interface CosmosLikeTransaction<CustomMessage = never> {
   readonly signature?: Uint8Array;
   readonly hash?: string;
   readonly memo?: string;
+}
+
+export interface KeyShares {
+  userKeyShare: Buffer;
+  backupKeyShare: Buffer;
+  commonKeyChain: string;
+}
+
+export interface TransactionBuildParams {
+  messages: SendMessage[];
+  chainId: string;
+  accountDetails: string[];
+  publicKey: string;
+  isUnsignedSweep: boolean;
+  keyShares?: KeyShares;
+}
+
+export interface BalanceResult {
+  nativeBalance: BigNumber;
+  remainingBalances: Coin[];
+  actualBalance: BigNumber;
 }

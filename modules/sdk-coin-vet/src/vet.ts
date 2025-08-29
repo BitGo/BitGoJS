@@ -68,6 +68,10 @@ export class Vet extends BaseCoin {
     return 'VeChain';
   }
 
+  valuelessTransferAllowed(): boolean {
+    return true;
+  }
+
   /** @inheritDoc */
   supportsTss(): boolean {
     return true;

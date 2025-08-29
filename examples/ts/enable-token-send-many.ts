@@ -4,27 +4,27 @@
  * Copyright 2023, BitGo, Inc.  All Rights Reserved.
  */
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { Topeth } from '@bitgo/sdk-coin-opeth';
-require('dotenv').config({ path: '../../../.env' });
+import { Tbsc } from '@bitgo/sdk-coin-bsc';
+require('dotenv').config({ path: '../../.env' });
 
 const bitgo = new BitGoAPI({
   accessToken: process.env.TESTNET_ACCESS_TOKEN,
-  env: 'test',
+  env: 'staging',
 });
 
-const coin = 'topeth';
-bitgo.register(coin, Topeth.createInstance);
+const coin = 'tbsc';
+bitgo.register(coin, Tbsc.createInstance);
 
-const walletId = process.env.TESTNET_ETH_WALLET_ID;
-const walletPassphrase = process.env.TESTNET_ETH_WALLET_PASSPHRASE;
-const tokenName = 'topeth:terc18dp'; // Replace with the token you want to approve
+const walletId = process.env.TESTNET_BSC_WALLET_ID;
+const walletPassphrase = process.env.TESTNET_BSC_WALLET_PASSPHRASE;
+const tokenName = 'tbsc:busd'; // Replace with the token you want to approve
 
 async function main() {
   if (!walletId) {
-    throw new Error('Please set TESTNET_ETH_WALLET_ID environment variable');
+    throw new Error('Please set TESTNET_BSC_WALLET_ID environment variable');
   }
   if (!walletPassphrase) {
-    throw new Error('Please set TESTNET_ETH_WALLET_PASSPHRASE environment variable');
+    throw new Error('Please set TESTNET_BSC_WALLET_PASSPHRASE environment variable');
   }
 
   const walletInstance = await bitgo.coin(coin).wallets().get({ id: walletId });
@@ -34,7 +34,7 @@ async function main() {
   console.log(`Approving token ${tokenName} for use with batcher contract...`);
 
   try {
-    const approvalTransaction = await walletInstance.approveErc20Token(walletPassphrase, tokenName);
+    const approvalTransaction = await walletInstance.sendMany({ type: 'tokenApproval', walletPassphrase, tokenName });
 
     console.log('Token Approval Transaction:', JSON.stringify(approvalTransaction, null, 4));
     console.log('Transaction ID:', approvalTransaction.txid);

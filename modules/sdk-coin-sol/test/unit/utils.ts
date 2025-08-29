@@ -338,6 +338,21 @@ describe('SOL util library', function () {
     });
   });
 
+  describe('getAssociatedTokenAccountAddress for sol 2022 token off curve address', function () {
+    const mintAddress = testData.sol2022PumpTransfers.mint;
+    const tokenAddress = '6fxrV8zFVo7Q7U9RzgfNiZGHFygdCzXaFZHyiFhNZjNF';
+    it('should succeed for native address as owner address', async function () {
+      const ownerAddress = testData.sol2022PumpTransfers.owner;
+      const result = await Utils.getAssociatedTokenAccountAddress(
+        mintAddress,
+        ownerAddress,
+        true,
+        TOKEN_2022_PROGRAM_ID.toString()
+      );
+      result.should.be.equal(tokenAddress);
+    });
+  });
+
   describe('matchTransactionTypeByInstructionsOrder', function () {
     describe('Activate stake instructions', function () {
       it('should match staking activate instructions', function () {

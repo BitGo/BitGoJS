@@ -7,7 +7,7 @@ import * as sinon from 'sinon';
 
 import * as request from 'supertest';
 import { app as expressApp } from '../../src/expressApp';
-import * as nock from 'nock';
+import nock from 'nock';
 import { Coin, Environments } from 'bitgo';
 
 describe('Custom signing function', () => {

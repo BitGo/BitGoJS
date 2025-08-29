@@ -378,7 +378,12 @@ describe('HASH', function () {
     const sandBox = sinon.createSandbox();
     const destinationAddress = wrwUser.destinationAddress;
     const coin = coins.get('thash');
-    const testBalance = '150000000000';
+    const testBalance = [
+      {
+        denom: 'nhash',
+        amount: '150000000000',
+      },
+    ];
     const testAccountNumber = '123';
     const testSequenceNumber = '0';
     const testChainId = 'test-chain';
@@ -420,18 +425,24 @@ describe('HASH', function () {
       txn.enrichTransactionDetailsFromRawTransaction(res.serializedTx);
       const txnJson = txn.toJson();
       const sendMessage = txnJson.sendMessages[0].value as SendMessage;
-      const balance = new BigNumber(testBalance);
+      const balance = new BigNumber(testBalance[0].amount);
       const gasAmount = new BigNumber(5000000000);
       const actualBalance = balance.minus(gasAmount);
       should.equal(sendMessage.toAddress, destinationAddress);
       should.equal(sendMessage.amount[0].amount, actualBalance.toFixed());
+      should.equal(sendMessage.amount[0].denom, testBalance[0].denom);
     });
   });
 
   describe('Recover transaction: failure path', () => {
     const sandBox = sinon.createSandbox();
     const destinationAddress = wrwUser.destinationAddress;
-    const testZeroBalance = '0';
+    const testZeroBalance = [
+      {
+        denom: 'nhash',
+        amount: '0',
+      },
+    ];
     const testAccountNumber = '123';
     const testSequenceNumber = '0';
     const testChainId = 'test-chain';
