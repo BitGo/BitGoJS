@@ -1,6 +1,7 @@
 import * as bitcoinUtil from './bitcoin';
 import * as tss from './tss';
 
+export * as walletUtil from './walletUtil';
 export * from './baseCoin';
 export * from './bip32util';
 export * from './bitcoin';
