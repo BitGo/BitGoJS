@@ -8,6 +8,7 @@
     "inlineSources": true,
     "lib": ["dom", "es2020"],
     "module": "commonjs",
+    "esModuleInterop": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitThis": true,
     "resolveJsonModule": true,

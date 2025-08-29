@@ -1,5 +1,5 @@
 import * as superagent from 'superagent';
-import * as debug from 'debug';
+import debug from 'debug';
 import * as express from 'express';
 import { retryPromise } from '../retryPromise';
 

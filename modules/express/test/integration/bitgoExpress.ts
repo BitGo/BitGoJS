@@ -7,7 +7,7 @@ import 'should-http';
 import { agent as supertest } from 'supertest';
 import { DefaultConfig } from '../../src/config';
 import { app as expressApp } from '../../src/expressApp';
-import * as nock from 'nock';
+import nock from 'nock';
 import { Environments } from '@bitgo/sdk-core';
 
 describe('Bitgo Express', function () {
