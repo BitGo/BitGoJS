@@ -30,7 +30,6 @@ async function main() {
   const walletInstance = await bitgo.coin(coin).wallets().get({ id: walletId });
 
   console.log('Wallet ID:', walletInstance.id());
-  console.log('Current Receive Address:', walletInstance.receiveAddress());
 
   console.log(`Approving token ${tokenName} for use with batcher contract...`);
 
