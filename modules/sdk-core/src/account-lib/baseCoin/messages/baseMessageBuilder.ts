@@ -12,6 +12,7 @@ export abstract class BaseMessageBuilder implements IMessageBuilder {
   protected type: MessageStandardType;
   protected signatures: Signature[] = [];
   protected signers: string[] = [];
+  protected whitelistedMessageTemplates: Record<string, string> = {};
   protected metadata?: Record<string, unknown> = {};
   protected digest?: string;
 
@@ -26,6 +27,7 @@ export abstract class BaseMessageBuilder implements IMessageBuilder {
   ) {
     this.coinConfig = coinConfig;
     this.type = messageType;
+    this.whitelistedMessageTemplates = this.getWhitelistedMessageTemplates();
   }
 
   /**
@@ -166,5 +168,25 @@ export abstract class BaseMessageBuilder implements IMessageBuilder {
       encoding: 'utf8',
     };
     return this.build();
+  }
+
+  public isMessageWhitelisted(messageRaw: string): boolean {
+    if (!this.whitelistedMessageTemplates || Object.keys(this.whitelistedMessageTemplates).length === 0) {
+      return true;
+    }
+    // Check if the message matches any of the whitelisted templates
+    return Object.values(this.whitelistedMessageTemplates).some((template) => {
+      const regex = new RegExp(`^${template}$`, 's'); // 's' flag to match newlines
+      return regex.test(messageRaw);
+    });
+  }
+
+  protected getWhitelistedMessageTemplates(): Record<string, string> {
+    const midnightTNCHash = '31a6bab50a84b8439adcfb786bb2020f6807e6e8fda629b424110fc7bb1c6b8b';
+    const midnightGlacierDropClaimMessageTemplate = `STAR \\d+ to addr(?:1|_test1)[a-z0-9]{50,} ${midnightTNCHash}`;
+    return {
+      midnightGDClaimMsgTemplate: midnightGlacierDropClaimMessageTemplate,
+      // Add more whitelisted templates as needed
+    };
   }
 }
