@@ -825,11 +825,34 @@ describe('Lightning wallets', function () {
           },
         ],
         satsPerVbyte: 15n,
+        passphrase: 'password123',
       };
 
       const txRequestResponse = {
         txRequestId: 'txReq123',
         state: 'pendingDelivery',
+        transactions: [
+          {
+            unsignedTx: {
+              serializedTxHex: 'unsignedTx123',
+            },
+          },
+        ],
+      };
+
+      const txRequestWithSignatureResponse = {
+        txRequestId: 'txReq123',
+        state: 'pendingDelivery',
+        transactions: [
+          {
+            unsignedTx: {
+              serializedTxHex: 'unsignedTx123',
+              coinSpecific: {
+                signature: 'someSignature',
+              },
+            },
+          },
+        ],
       };
 
       const finalWithdrawResponse = {
@@ -838,7 +861,9 @@ describe('Lightning wallets', function () {
         transactions: [
           {
             unsignedTx: {
+              serializedTxHex: 'unsignedTx123',
               coinSpecific: {
+                signature: 'someSignature',
                 status: 'delivered',
                 txid: 'tx123',
               },
@@ -939,6 +964,10 @@ describe('Lightning wallets', function () {
         .post(`/api/v2/wallet/${wallet.wallet.id()}/txrequests`)
         .reply(200, txRequestResponse);
 
+      const storeSignatureNock = nock(bgUrl)
+        .put(`/api/v2/wallet/${wallet.wallet.id()}/txrequests/${txRequestResponse.txRequestId}/coinSpecific`)
+        .reply(200, txRequestWithSignatureResponse);
+
       const createTransferNock = nock(bgUrl)
         .post(`/api/v2/wallet/${wallet.wallet.id()}/txrequests/${txRequestResponse.txRequestId}/transfers`)
         .reply(200, transferResponse);
@@ -951,14 +980,25 @@ describe('Lightning wallets', function () {
         .get(`/api/v2/${coinName}/wallet/${wallet.wallet.id()}/transfer/${transferResponse.id}`)
         .reply(200, updatedTransferResponse);
 
+      const userAuthKeyNock = nock(bgUrl)
+        .get('/api/v2/' + coinName + '/key/def')
+        .reply(200, userAuthKey);
+      const nodeAuthKeyNock = nock(bgUrl)
+        .get('/api/v2/' + coinName + '/key/ghi')
+        .reply(200, nodeAuthKey);
+
       const response = await wallet.withdrawOnchain(params);
       assert.strictEqual(response.txRequestId, 'txReq123');
       assert.strictEqual(response.txRequestState, 'delivered');
       assert.strictEqual(response.withdrawStatus?.status, 'delivered');
       assert.strictEqual(response.withdrawStatus?.txid, 'tx123');
+      assert.strictEqual((response.withdrawStatus as any).signature, undefined);
       assert.deepStrictEqual(response.transfer, updatedTransferResponse);
 
+      userAuthKeyNock.done();
+      nodeAuthKeyNock.done();
       createTxRequestNock.done();
+      storeSignatureNock.done();
       createTransferNock.done();
       sendTxRequestNock.done();
       getTransferNock.done();
@@ -973,12 +1013,35 @@ describe('Lightning wallets', function () {
           },
         ],
         satsPerVbyte: 15n,
+        passphrase: 'password123',
       };
 
       const txRequestResponse = {
         txRequestId: 'txReq123',
         state: 'pendingApproval',
         pendingApprovalId: 'approval123',
+        transactions: [
+          {
+            unsignedTx: {
+              serializedTxHex: 'unsignedTx123',
+            },
+          },
+        ],
+      };
+      const txRequestWithSignatureResponse = {
+        txRequestId: 'txReq123',
+        state: 'pendingApproval',
+        pendingApprovalId: 'approval123',
+        transactions: [
+          {
+            unsignedTx: {
+              serializedTxHex: 'unsignedTx123',
+              coinSpecific: {
+                signature: 'someSignature',
+              },
+            },
+          },
+        ],
       };
 
       const pendingApprovalData: PendingApprovalData = {
@@ -998,11 +1061,25 @@ describe('Lightning wallets', function () {
         .get(`/api/v2/${coinName}/pendingapprovals/${txRequestResponse.pendingApprovalId}`)
         .reply(200, pendingApprovalData);
 
+      const userAuthKeyNock = nock(bgUrl)
+        .get('/api/v2/' + coinName + '/key/def')
+        .reply(200, userAuthKey);
+      const nodeAuthKeyNock = nock(bgUrl)
+        .get('/api/v2/' + coinName + '/key/ghi')
+        .reply(200, nodeAuthKey);
+
+      const storeSignatureNock = nock(bgUrl)
+        .put(`/api/v2/wallet/${wallet.wallet.id()}/txrequests/${txRequestResponse.txRequestId}/coinSpecific`)
+        .reply(200, txRequestWithSignatureResponse);
+
       const response = await wallet.withdrawOnchain(params);
       assert.strictEqual(response.txRequestId, 'txReq123');
       assert.strictEqual(response.txRequestState, 'pendingApproval');
       assert.ok(response.pendingApproval);
 
+      userAuthKeyNock.done();
+      nodeAuthKeyNock.done();
+      storeSignatureNock.done();
       createTxRequestNock.done();
       getPendingApprovalNock.done();
     });
