@@ -3022,6 +3022,9 @@ export enum UnderlyingAsset {
   'eth:neiro2' = 'eth:neiro2',
   'eth:sign' = 'eth:sign',
 
+  // ADA testnet tokens
+  'tada:water' = 'tada:water',
+
   // fiats
   AED = 'aed',
   EUR = 'eur',
