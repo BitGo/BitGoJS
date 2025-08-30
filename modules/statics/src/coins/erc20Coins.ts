@@ -3,6 +3,7 @@ import { AccountCoin, erc20, terc20 } from '../account';
 import { Networks } from '../networks';
 import {
   EIGEN_FEATURES,
+  ETH_FEATURES,
   ETH_FEATURES_WITH_FRANKFURT,
   ETH_FEATURES_WITH_FRANKFURT_EXCLUDE_SINGAPORE,
   ETH_FEATURES_WITH_FRANKFURT_GERMANY,
@@ -2544,7 +2545,7 @@ export const erc20Coins = [
       CoinFeature.CUSTODY_BITGO_SINGAPORE,
       CoinFeature.CUSTODY_BITGO_GERMANY,
       CoinFeature.CUSTODY_BITGO_EUROPE_APS,
-      CoinFeature.CUSTODY_BITGO_TRUST
+      CoinFeature.CUSTODY_BITGO_FRANKFURT
     ])
 
   ),
@@ -2658,14 +2659,17 @@ export const erc20Coins = [
     18,
     '0x50d1c9771902476076ecfc8b2a83ad6b9355a4c9',
     UnderlyingAsset.FTT,
-    AccountCoin.getFeaturesExcluding([
-      CoinFeature.CUSTODY_BITGO_SINGAPORE,
-      CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
-      CoinFeature.CUSTODY_BITGO_MENA_FZE,
-      CoinFeature.CUSTODY_BITGO_GERMANY,
-      CoinFeature.CUSTODY_BITGO_EUROPE_APS,
-      CoinFeature.CUSTODY_BITGO_FRANKFURT
-    ])
+    ETH_FEATURES.filter(
+      (feature) =>
+        ![
+          CoinFeature.CUSTODY_BITGO_SINGAPORE,
+          CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+          CoinFeature.CUSTODY_BITGO_MENA_FZE,
+          CoinFeature.CUSTODY_BITGO_FRANKFURT,
+          CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+          CoinFeature.CUSTODY_BITGO_GERMANY
+        ].includes(feature)
+    )
   ),
   erc20(
     'd7c330ea-7767-4737-8701-cc50c605bab9',
