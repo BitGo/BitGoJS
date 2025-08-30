@@ -1,4 +1,4 @@
-import { ProgramID, solToken, tsolToken } from '../account';
+import { ProgramID, SolCoin, solToken, tsolToken } from '../account';
 import { CoinFeature, UnderlyingAsset } from '../base';
 import {
   SOL_TOKEN_FEATURES,
@@ -149,7 +149,11 @@ export const solTokens = [
     'SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt', // https://explorer.solana.com/address/SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt
     'SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt',
     UnderlyingAsset['sol:srm'],
-    SOL_TOKEN_FEATURES
+    SolCoin.getFeaturesExcluding([
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT
+    ]),
   ),
   solToken(
     '162c00d8-4262-4a89-b85d-8d938435397e',
@@ -2218,7 +2222,11 @@ export const solTokens = [
     'S3SQfD6RheMXQ3EEYn1Z5sJsbtwfXdt7tSAVXPQFtYo',
     'S3SQfD6RheMXQ3EEYn1Z5sJsbtwfXdt7tSAVXPQFtYo',
     UnderlyingAsset['sol:wrose'],
-    SOL_TOKEN_FEATURES
+    SolCoin.getFeaturesExcluding([
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT
+    ])
   ),
   solToken(
     'f092f18a-ac79-4f07-b7f9-72df55e08306',
@@ -2541,7 +2549,12 @@ export const solTokens = [
     'EuroszHk1AL7fHBBsxgeGHsamUqwBpb26oEyt9BcfZ6G',
     'EuroszHk1AL7fHBBsxgeGHsamUqwBpb26oEyt9BcfZ6G',
     UnderlyingAsset['sol:eurob'],
-    [...SOL_TOKEN_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.CUSTODY_BITGO_GERMANY],
+    SolCoin.getFeaturesExcluding([
+      CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT
+    ]),
     ProgramID.Token2022ProgramId
   ),
   solToken(
@@ -2552,7 +2565,12 @@ export const solTokens = [
     'BRNTNaZeTJANz9PeuD8drNbBHwGgg7ZTjiQYrFgWQ48p',
     'BRNTNaZeTJANz9PeuD8drNbBHwGgg7ZTjiQYrFgWQ48p',
     UnderlyingAsset['sol:tesouro'],
-    [...SOL_TOKEN_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.CUSTODY_BITGO_GERMANY],
+    SolCoin.getFeaturesExcluding([
+      CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT
+    ]),
     ProgramID.Token2022ProgramId
   ),
   solToken(
@@ -2563,7 +2581,12 @@ export const solTokens = [
     'CETES7CKqqKQizuSN6iWQwmTeFRjbJR6Vw2XRKfEDR8f',
     'CETES7CKqqKQizuSN6iWQwmTeFRjbJR6Vw2XRKfEDR8f',
     UnderlyingAsset['sol:cetes'],
-    [...SOL_TOKEN_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.CUSTODY_BITGO_GERMANY],
+    SolCoin.getFeaturesExcluding([
+      CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT
+    ]),
     ProgramID.Token2022ProgramId
   ),
   solToken(
@@ -2574,7 +2597,12 @@ export const solTokens = [
     'GiLTSeSFnNse7xQVYeKdMyckGw66AoRmyggGg1NNd4yr',
     'GiLTSeSFnNse7xQVYeKdMyckGw66AoRmyggGg1NNd4yr',
     UnderlyingAsset['sol:gilts'],
-    [...SOL_TOKEN_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.CUSTODY_BITGO_GERMANY],
+    SolCoin.getFeaturesExcluding([
+      CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT
+    ]),
     ProgramID.Token2022ProgramId
   ),
   solToken(
