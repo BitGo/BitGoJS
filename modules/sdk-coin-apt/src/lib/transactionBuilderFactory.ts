@@ -10,6 +10,8 @@ import { FungibleAssetTransfer } from './transaction/fungibleAssetTransfer';
 import { FungibleAssetTransferBuilder } from './transactionBuilder/fungibleAssetTransferBuilder';
 import { DigitalAssetTransfer } from './transaction/digitalAssetTransfer';
 import { DigitalAssetTransferBuilder } from './transactionBuilder/digitalAssetTransferBuilder';
+import { CustomTransaction } from './transaction/customTransaction';
+import { CustomTransactionBuilder } from './transactionBuilder/customTransactionBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -21,6 +23,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     try {
       const signedTxn = Transaction.deserializeSignedTransaction(signedRawTxn);
       const txnType = this.getTransactionTypeFromSignedTxn(signedTxn);
+
       switch (txnType) {
         case TransactionType.Send:
           const transferTx = new TransferTransaction(this._coinConfig);
@@ -34,6 +37,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           const digitalAssetTransferTx = new DigitalAssetTransfer(this._coinConfig);
           digitalAssetTransferTx.fromDeserializedSignedTransaction(signedTxn);
           return this.getDigitalAssetTransactionBuilder(digitalAssetTransferTx);
+        case TransactionType.CustomTx:
+          const customTx = new CustomTransaction(this._coinConfig);
+          customTx.fromDeserializedSignedTransaction(signedTxn);
+          return this.getCustomTransactionBuilder(customTx);
         default:
           throw new InvalidTransactionError('Invalid transaction');
       }
@@ -44,7 +51,12 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getTransactionTypeFromSignedTxn(signedTxn: SignedTransaction): TransactionType {
     const rawTxn = signedTxn.raw_txn;
-    return utils.getTransactionTypeFromTransactionPayload(rawTxn.payload);
+    try {
+      return utils.getTransactionTypeFromTransactionPayload(rawTxn.payload);
+    } catch (e) {
+      // If we can't determine a specific transaction type, assume it's a custom transaction
+      return TransactionType.CustomTx;
+    }
   }
 
   /** @inheritdoc */
@@ -60,6 +72,16 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   /** @inheritdoc */
   getDigitalAssetTransactionBuilder(tx?: Transaction): DigitalAssetTransferBuilder {
     return this.initializeBuilder(tx, new DigitalAssetTransferBuilder(this._coinConfig));
+  }
+
+  /**
+   * Get a custom transaction builder
+   *
+   * @param tx - Optional transaction to initialize the builder with
+   * @returns A custom transaction builder
+   */
+  getCustomTransactionBuilder(tx?: Transaction): CustomTransactionBuilder {
+    return this.initializeBuilder(tx, new CustomTransactionBuilder(this._coinConfig));
   }
 
   /** @inheritdoc */
