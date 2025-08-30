@@ -1772,7 +1772,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.STT,
     BaseUnit.ETH,
-    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING]
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.STAKING]
   ),
   account(
     'aaa25f54-24f8-41d9-ba4e-83465d7cc2ec',
