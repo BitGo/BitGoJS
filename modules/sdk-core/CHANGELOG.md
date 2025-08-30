@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [36.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.6.1...@bitgo/sdk-core@36.7.0) (2025-08-30)
+
+### Features
+
+- add sequenceId and comment to custom transaction parameters ([d8e66e3](https://github.com/BitGo/BitGoJS/commit/d8e66e329db9ac61ef184e692a0fddd597a300b7))
+- **sdk-core:** add walletUtil module with UTXO message proof ([dc853e6](https://github.com/BitGo/BitGoJS/commit/dc853e6a006c7bb0db2f5b9b131c21fb63be49c9))
+- **sdk-core:** update midnight claim message format for BTC-2425 ([6cdc9a2](https://github.com/BitGo/BitGoJS/commit/6cdc9a2298be7b4d8143519d9fc3ed27317d934a))
+
 ## [36.6.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.6.0...@bitgo/sdk-core@36.6.1) (2025-08-29)
 
 ### Bug Fixes

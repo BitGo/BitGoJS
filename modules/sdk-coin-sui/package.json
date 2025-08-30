@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-sui",
-  "version": "5.18.2",
+  "version": "5.18.3",
   "description": "BitGo SDK coin library for Sui",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -41,7 +41,7 @@
   },
   "dependencies": {
     "@bitgo/blake2b": "^3.2.4",
-    "@bitgo/sdk-core": "^36.6.1",
+    "@bitgo/sdk-core": "^36.7.0",
     "@bitgo/sdk-lib-mpc": "^10.7.0",
     "@bitgo/statics": "^57.7.0",
     "@mysten/bcs": "^0.7.0",
@@ -53,8 +53,8 @@
     "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.68.1",
-    "@bitgo/sdk-test": "^9.0.7",
+    "@bitgo/sdk-api": "^1.68.2",
+    "@bitgo/sdk-test": "^9.0.8",
     "@types/lodash": "^4.14.183",
     "axios": "^1.11.0",
     "debug": "^4.3.4"

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [49.7.0](https://github.com/BitGo/BitGoJS/compare/bitgo@49.6.1...bitgo@49.7.0) (2025-08-30)
+
+### Features
+
+- add sequenceId and comment to custom transaction parameters ([d8e66e3](https://github.com/BitGo/BitGoJS/commit/d8e66e329db9ac61ef184e692a0fddd597a300b7))
+
 ## [49.6.1](https://github.com/BitGo/BitGoJS/compare/bitgo@49.6.0...bitgo@49.6.1) (2025-08-29)
 
 **Note:** Version bump only for package bitgo
