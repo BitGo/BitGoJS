@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [36.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.6.1...@bitgo/sdk-core@36.7.0) (2025-08-30)
+
+### Features
+
+- add sequenceId and comment to custom transaction parameters ([d8e66e3](https://github.com/BitGo/BitGoJS/commit/d8e66e329db9ac61ef184e692a0fddd597a300b7))
+- **sdk-core:** add walletUtil module with UTXO message proof ([dc853e6](https://github.com/BitGo/BitGoJS/commit/dc853e6a006c7bb0db2f5b9b131c21fb63be49c9))
+- **sdk-core:** update midnight claim message format for BTC-2425 ([6cdc9a2](https://github.com/BitGo/BitGoJS/commit/6cdc9a2298be7b4d8143519d9fc3ed27317d934a))
+
+## [36.6.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.6.0...@bitgo/sdk-core@36.6.1) (2025-08-29)
+
+### Bug Fixes
+
+- **sdk-coin-near:** verify platform built consolidation tx ([813abe0](https://github.com/BitGo/BitGoJS/commit/813abe05271f4f5a0ed015a17e81156de4f5e3cd))
+
+# [36.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.5.0...@bitgo/sdk-core@36.6.0) (2025-08-27)
+
+### Bug Fixes
+
+- **sdk-core:** rely on wallet field to validate txrequest on staking ([9ee96f1](https://github.com/BitGo/BitGoJS/commit/9ee96f179594eb818a1d9f307fd37385e2c7615a))
+
+### Features
+
+- bump public types ([e98036a](https://github.com/BitGo/BitGoJS/commit/e98036a8480aa6cfbc55b092a439ba8f80d23656))
+- **sdk-coin-polyx:** add support for token enablement ([894459a](https://github.com/BitGo/BitGoJS/commit/894459a49848a2b111cf850429cbb2f8b90d550f))
+- **sdk-core:** add messages to BuildParamsUTXO for BIP322 ([89fa74e](https://github.com/BitGo/BitGoJS/commit/89fa74e9be1e669b98dc07fec73921181b94ed81))
+
 # [36.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.4.0...@bitgo/sdk-core@36.5.0) (2025-08-22)
 
 ### Features

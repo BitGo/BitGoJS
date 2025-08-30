@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.18.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.17.0...@bitgo/utxo-core@1.18.0) (2025-08-27)
+
+### Features
+
+- **utxo-core:** add bip322 proof checker ([b898f78](https://github.com/BitGo/BitGoJS/commit/b898f78dbc3b0766a64dccbebc245942a2c33c37))
+- **utxo-core:** explicitly set SIGHASH_ALL for BIP322 inputs ([b06eeb9](https://github.com/BitGo/BitGoJS/commit/b06eeb9d1a914f185ed93cf22be29e68ec821668))
+
 # [1.17.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.16.1...@bitgo/utxo-core@1.17.0) (2025-08-22)
 
 ### Bug Fixes
