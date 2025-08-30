@@ -921,7 +921,7 @@ export const allCoinsAndTokens = [
     BaseUnit.INJECTIVE,
     INJECTIVE_FEATURES
   ),
-  account(
+  gasTankAccount(
     '5deff7da-a66b-4810-8daf-88319af1aca9',
     'iota',
     'Iota',
@@ -930,9 +930,11 @@ export const allCoinsAndTokens = [
     UnderlyingAsset.IOTA,
     BaseUnit.IOTA,
     IOTA_FEATURES,
-    KeyCurve.Ed25519
+    KeyCurve.Ed25519,
+    80,
+    200
   ),
-  account(
+  gasTankAccount(
     '23c64fc0-69af-405e-86e2-f8403f08fb64',
     'tiota',
     'Testnet Iota',
@@ -941,7 +943,9 @@ export const allCoinsAndTokens = [
     UnderlyingAsset.IOTA,
     BaseUnit.IOTA,
     IOTA_FEATURES,
-    KeyCurve.Ed25519
+    KeyCurve.Ed25519,
+    80,
+    200
   ),
   account(
     'c592d110-cf6d-4630-b6e8-cfe044db0be2',
