@@ -370,3 +370,29 @@ export function createTokenMapUsingTrimmedConfigDetails(
 
   return createTokenMapUsingConfigDetails(amsTokenConfigMap);
 }
+
+export function createTokenUsingTrimmedConfigDetails(
+  tokenConfig: TrimmedAmsTokenConfig
+): Readonly<BaseCoin> | undefined {
+  let fullTokenConfig: AmsTokenConfig | undefined;
+  const networkNameMap = new Map(
+    Object.values(Networks).flatMap((networkType) =>
+      Object.values(networkType).map((network) => [network.name, network])
+    )
+  );
+  const network = networkNameMap.get(tokenConfig.network.name);
+  if (
+    !isCoinPresentInCoinMap({ ...tokenConfig }) &&
+    network &&
+    tokenConfig.isToken &&
+    networkFeatureMapForTokens[network.family]
+  ) {
+    const features = new Set([
+      ...(networkFeatureMapForTokens[network.family] || []),
+      ...(tokenConfig.additionalFeatures || []),
+    ]);
+    tokenConfig.excludedFeatures?.forEach((feature) => features.delete(feature));
+    fullTokenConfig = { ...tokenConfig, features: Array.from(features), network } as AmsTokenConfig;
+    return createToken(fullTokenConfig);
+  }
+}
