@@ -364,6 +364,14 @@ describe('non-TSS Staking Wallet', function () {
       signStub.restore();
     });
 
+    it('should return true for isSendCallRequired for topethWctStakingWallet', function () {
+      // Access the private method using type assertion
+      const isSendCallRequired = (topethWctStakingWallet as any).isSendCallRequired();
+
+      // Check that isSendCallRequired returns true because this is not ETH TSS
+      isSendCallRequired.should.equal(true);
+    });
+
     it('should build and validate transaction', async function () {
       const unsignedTransaction: PrebuildTransactionResult = {
         walletId: topethWctStakingWallet.walletId,

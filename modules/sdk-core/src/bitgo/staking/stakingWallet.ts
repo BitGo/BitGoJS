@@ -1,6 +1,8 @@
 /**
  * @prettier
  */
+import { CoinFamily } from '@bitgo/statics';
+
 import {
   DelegationOptions,
   DelegationResults,
@@ -333,9 +335,9 @@ export class StakingWallet implements IStakingWallet {
    * @returns true if send API call to staking service is required else false
    */
   private isSendCallRequired(): boolean {
-    if (this.wallet.baseCoin.getFamily() === 'eth') {
+    if (this.wallet.baseCoin.getFamily() === CoinFamily.ETH) {
       return !this.isEthTss;
-    } else if (this.wallet.baseCoin.supportsTss()) {
+    } else if (this.wallet.multisigType() === 'tss') {
       return this.wallet.baseCoin.getMPCAlgorithm() !== 'ecdsa';
     } else {
       return true;
