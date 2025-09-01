@@ -52,16 +52,20 @@ export class EvmCoin extends AbstractEthLikeNewCoins {
   /**
    * Make a query to chain explorer for information such as balance, token balance, solidity calls
    * @param {Object} query key-value pairs of parameters to append after /api
+   * @param {string} apiKey optional API key to use for the query falls back to EVM config if not provided
    * @returns {Promise<Object>} response from chain explorer
    */
-  async recoveryBlockchainExplorerQuery(query: Record<string, string>): Promise<Record<string, unknown>> {
+  async recoveryBlockchainExplorerQuery(
+    query: Record<string, string>,
+    apiKey?: string
+  ): Promise<Record<string, unknown>> {
     const evmConfig = common.Environments[this.bitgo.getEnv()].evm;
     assert(
       evmConfig && this.getFamily() in evmConfig,
       `env config is missing for ${this.getFamily()} in ${this.bitgo.getEnv()}`
     );
 
-    const apiToken = evmConfig[this.getFamily()].apiToken;
+    const apiToken = apiKey || evmConfig[this.getFamily()].apiToken;
     const explorerUrl = evmConfig[this.getFamily()].baseUrl;
     return await recoveryBlockchainExplorerQuery(query, explorerUrl as string, apiToken as string);
   }
