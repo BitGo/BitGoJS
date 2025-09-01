@@ -65,7 +65,12 @@ export const avaxTokens = [
     18,
     '0x48f88a3fe843ccb0b5003e70b4192c1d7448bef0',
     UnderlyingAsset['avaxc:cai'],
-    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
+    AccountCoin.getFeaturesByTypeExcluding([
+      CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+    ])
   ),
   avaxErc20(
     '55d38f23-ed66-43b8-838c-e9df316c0140',
@@ -275,7 +280,12 @@ export const avaxTokens = [
     18,
     '0x2b2c81e08f1af8835a78bb2a90ae924ace0ea4be',
     UnderlyingAsset['avaxc:savax'],
-    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
+    AccountCoin.getFeaturesByTypeExcluding([
+      CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+    ])
   ),
   avaxErc20(
     '772a2498-2bef-4da8-9bce-f1a89e6f4536',
@@ -604,7 +614,12 @@ export const avaxTokens = [
     8,
     '0x7c6a937943f135283a2561938de2200994a8f7a7',
     UnderlyingAsset['avaxc:note'],
-    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
+    AccountCoin.getFeaturesByTypeExcluding([
+      CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+    ])
   ),
   avaxErc20(
     '929c8d8c-fff3-4702-9dc1-477c70400024',
@@ -612,7 +627,13 @@ export const avaxTokens = [
     'Wrapped ROSE',
     18,
     '0x12af5c1a232675f62f405b5812a80e7a6f75d746',
-    UnderlyingAsset['avaxc:wrose']
+    UnderlyingAsset['avaxc:wrose'],
+    AccountCoin.getFeaturesByTypeExcluding([
+      CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+      CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+    ])
   ),
   avaxErc20(
     '2511b910-85fb-4660-a8a5-bb137b237054',
@@ -645,7 +666,10 @@ export const avaxTokens = [
     18,
     '0x5e0e90e268bc247cc850c789a0db0d5c7621fb59',
     UnderlyingAsset['avaxc:nxpc'],
-    AccountCoin.getFeaturesExcluding([CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE, CoinFeature.CUSTODY_BITGO_MENA_FZE])
+    AccountCoin.getFeaturesByTypeExcluding([
+      CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+      CoinFeature.CUSTODY_BITGO_MENA_FZE,
+    ])
   ),
   avaxErc20(
     '45e27c49-3064-41b4-ae5f-d0620cfbdd9d',

@@ -1,10 +1,6 @@
-import { polygonErc20, tpolygonErc20 } from '../account';
+import { AccountCoin, polygonErc20, tpolygonErc20 } from '../account';
 import { UnderlyingAsset, CoinFeature } from '../base';
-import {
-  POLYGON_TOKEN_FEATURES,
-  POLYGON_TOKEN_FEATURES_WITH_FRANKFURT,
-  POLYGON_TOKEN_FEATURES_EXCLUDE_SINGAPORE,
-} from '../coinFeatures';
+import { POLYGON_TOKEN_FEATURES, POLYGON_TOKEN_FEATURES_WITH_FRANKFURT } from '../coinFeatures';
 
 export const polygonTokens = [
   polygonErc20(
@@ -201,7 +197,10 @@ export const polygonTokens = [
     6,
     '0x6bf2eb299e51fc5df30dec81d9445dde70e3f185',
     UnderlyingAsset['polygon:srm'],
-    POLYGON_TOKEN_FEATURES
+    AccountCoin.getFeaturesByTypeExcluding(
+      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT],
+      POLYGON_TOKEN_FEATURES
+    )
   ),
   polygonErc20(
     '5589b2d1-252e-4948-9252-268ed9e38d2f',
@@ -1054,7 +1053,15 @@ export const polygonTokens = [
     6,
     '0x2893ef551b6dd69f661ac00f11d93e5dc5dc0e99',
     UnderlyingAsset['polygon:buidl'],
-    POLYGON_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+    AccountCoin.getFeaturesByTypeExcluding(
+      [
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      ],
+      POLYGON_TOKEN_FEATURES
+    )
   ),
   polygonErc20(
     '325d787e-7860-4886-9fb2-c0699c33959a',
