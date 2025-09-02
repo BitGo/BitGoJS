@@ -170,6 +170,13 @@ export const HTETH_TOKEN_FEATURES = [
 ];
 export const ADA_FEATURES = [...Ada.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION, CoinFeature.SUPPORTS_TOKENS];
 export const ADA_FEATURES_WITH_FRANKFURT = [...ADA_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT];
+export const ADA_TOKEN_FEATURES = [
+  ...ACCOUNT_COIN_DEFAULT_FEATURES,
+  CoinFeature.BULK_TRANSACTION,
+  CoinFeature.TSS,
+  CoinFeature.TSS_COLD,
+  CoinFeature.STAKING,
+];
 export const DOT_FEATURES = [
   ...ACCOUNT_COIN_DEFAULT_FEATURES,
   CoinFeature.TSS,

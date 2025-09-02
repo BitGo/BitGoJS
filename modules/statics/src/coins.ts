@@ -255,6 +255,14 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
         ...commonArgs.slice(4, 8), // asset, features, prefix, suffix
         token.primaryKeyCurve // primaryKeyCurve
       );
+    case 'ada':
+      return initializer(
+        ...commonArgs.slice(0, 4), // id, name, fullName, decimalPlaces
+        token.uniqueAssetId,
+        token.assetName,
+        token.policyId,
+        ...commonArgs.slice(4) // asset, features, prefix, suffix, network, primaryKeyCurve
+      );
     default:
       return undefined;
   }

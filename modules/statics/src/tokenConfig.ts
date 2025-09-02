@@ -1,5 +1,4 @@
 import {
-  AdaCoin,
   AlgoCoin,
   AptCoin,
   AptNFTCollection,
@@ -30,6 +29,7 @@ import {
   XrpCoin,
   ZkethERC20Token,
   VetNFTCollection,
+  AdaToken,
 } from './account';
 import { CoinFamily, CoinKind, BaseCoin } from './base';
 import { coins } from './coins';
@@ -70,6 +70,7 @@ export type SolTokenConfig = BaseNetworkConfig & {
 export type AdaTokenConfig = BaseNetworkConfig & {
   policyId: string;
   assetName: string;
+  uniqueAssetId: string;
 };
 
 export type AlgoTokenConfig = BaseNetworkConfig & {
@@ -384,6 +385,9 @@ export interface AmsTokenConfig {
   ticker?: string;
   programId?: string;
   addressCoin?: string;
+  assetName?: string;
+  uniqueAssetId?: string;
+  policyId?: string;
 }
 
 export interface TrimmedAmsNetworkConfig {
@@ -778,7 +782,7 @@ const getFormattedHbarTokens = (customCoinMap = coins) =>
     return acc;
   }, []);
 
-function getAdaTokenConfig(coin: AdaCoin): AdaTokenConfig {
+function getAdaTokenConfig(coin: AdaToken): AdaTokenConfig {
   return {
     type: coin.name,
     coin: coin.network.type === NetworkType.MAINNET ? 'ada' : 'tada',
@@ -787,11 +791,12 @@ function getAdaTokenConfig(coin: AdaCoin): AdaTokenConfig {
     policyId: coin.policyId,
     assetName: coin.assetName,
     decimalPlaces: coin.decimalPlaces,
+    uniqueAssetId: coin.uniqueAssetId,
   };
 }
 const getFormattedAdaTokens = (customCoinMap = coins) =>
   customCoinMap.reduce((acc: AdaTokenConfig[], coin) => {
-    if (coin instanceof AdaCoin) {
+    if (coin instanceof AdaToken) {
       acc.push(getAdaTokenConfig(coin));
     }
     return acc;
@@ -1306,7 +1311,7 @@ export function getFormattedTokenConfigForCoin(coin: Readonly<BaseCoin>): TokenC
     return getSolTokenConfig(coin);
   } else if (coin instanceof HederaToken) {
     return getHbarTokenConfig(coin);
-  } else if (coin instanceof AdaCoin) {
+  } else if (coin instanceof AdaToken) {
     return getAdaTokenConfig(coin);
   } else if (coin instanceof TronErc20Coin) {
     return getTrxTokenConfig(coin);
