@@ -1,6 +1,7 @@
 import { AccountCoin } from './account';
 import { CoinFamily, CoinFeature } from './base';
 import {
+  ADA_TOKEN_FEATURES,
   APT_FEATURES,
   BSC_TOKEN_FEATURES,
   POLYGON_TOKEN_FEATURES,
@@ -33,4 +34,5 @@ export const networkFeatureMapForTokens: Partial<Record<CoinFamily, CoinFeature[
   xlm: AccountCoin.DEFAULT_FEATURES,
   xrp: AccountCoin.DEFAULT_FEATURES,
   ofc: [],
+  ada: ADA_TOKEN_FEATURES,
 };

@@ -1,16 +1,6 @@
 import { Ada } from './ada';
 import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
-import { coins, tokens } from '@bitgo/statics';
-
-export interface AdaTokenConfig {
-  name: string;
-  type: string;
-  coin: string;
-  network: string;
-  policyId: string;
-  assetName: string;
-  decimalPlaces: number;
-}
+import { coins, tokens, AdaTokenConfig } from '@bitgo/statics';
 
 export class AdaToken extends Ada {
   public readonly tokenConfig: AdaTokenConfig;
@@ -58,6 +48,10 @@ export class AdaToken extends Ada {
 
   get decimalPlaces() {
     return this.tokenConfig.decimalPlaces;
+  }
+
+  get uniqueAssetId() {
+    return this.tokenConfig.uniqueAssetId;
   }
 
   getChain() {
