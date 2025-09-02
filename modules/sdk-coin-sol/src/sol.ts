@@ -252,8 +252,6 @@ export class Sol extends BaseCoin {
 
   async verifyTransaction(params: SolVerifyTransactionOptions): Promise<any> {
     // asset name to transfer amount map
-    console.log('=================================');
-    console.log(JSON.stringify(params, null, 2));
     const totalAmount: Record<string, BigNumber> = {};
     const coinConfig = coins.get(this.getChain());
     const { txParams: txParams, txPrebuild: txPrebuild, memo: memo, durableNonce: durableNonce } = params;
