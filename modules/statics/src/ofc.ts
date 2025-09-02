@@ -118,7 +118,8 @@ export function ofcToken(
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1,
   baseUnit: BaseUnit = BaseUnit.OFC,
   isToken = true,
-  kind: CoinKind = CoinKind.CRYPTO
+  kind: CoinKind = CoinKind.CRYPTO,
+  addressCoin = ''
 ): Readonly<OfcCoin> {
   const filteredFeatures = getFilteredFeatures(suffix);
   if (filteredFeatures.length > 0) {
@@ -139,6 +140,7 @@ export function ofcToken(
       kind,
       primaryKeyCurve,
       baseUnit,
+      addressCoin,
     })
   );
 }

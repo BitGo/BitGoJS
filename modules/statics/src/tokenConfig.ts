@@ -382,6 +382,8 @@ export interface AmsTokenConfig {
   kind?: string;
   subnetId?: string;
   ticker?: string;
+  programId?: string;
+  addressCoin?: string;
 }
 
 export interface TrimmedAmsNetworkConfig {
