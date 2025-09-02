@@ -8,8 +8,10 @@ export class Utils extends SubstrateUtils {
     return (networkType === NetworkType.MAINNET ? mainnetMaterial : testnetMaterial) as unknown as Interface.Material;
   }
 
-  getTaoTokenBySubnetId(subnetId: string): Readonly<CoinConfig> {
-    const tokens = coins.filter((coin) => coin instanceof TaoCoin && coin.subnetId === subnetId).map((coin) => coin);
+  getTaoTokenBySubnetId(subnetId: string | number): Readonly<CoinConfig> {
+    const tokens = coins
+      .filter((coin) => coin instanceof TaoCoin && coin.subnetId === String(subnetId))
+      .map((coin) => coin);
 
     assert(tokens.length > 0, `No Tao token found for subnetId: ${subnetId}`);
     assert(tokens.length === 1, `Multiple Tao tokens found for subnetId: ${subnetId}`);
