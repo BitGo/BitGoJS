@@ -33,7 +33,9 @@ import {
   amsTokenWithUnsupportedNetwork,
   incorrectAmsTokenConfig,
   reducedAmsTokenConfig,
+  reducedTokenConfigForAllChains,
 } from './resources/amsTokenConfig';
+import { Networks } from '../../src/networks';
 
 interface DuplicateCoinObject {
   name: string;
@@ -1254,5 +1256,28 @@ describe('create token map using config details', () => {
     const bgerchToken = coins.get('bgerch');
     const bgerchNetwork = bgerchToken?.network;
     JSON.stringify(bgerchNetwork).should.eql(JSON.stringify(token?.network));
+  });
+
+  it('should form base coin for tokens of all the chains', () => {
+    const coinMap = createTokenMapUsingTrimmedConfigDetails(reducedTokenConfigForAllChains);
+    for (const tokenName of Object.keys(reducedTokenConfigForAllChains)) {
+      const coinMapToken = coinMap.get(tokenName);
+      const tokenConfig = reducedTokenConfigForAllChains[tokenName][0];
+      const networkName = tokenConfig.network.name;
+      const networkNameMap = new Map(
+        Object.values(Networks).flatMap((networkType) =>
+          Object.values(networkType).map((network) => [network.name, network])
+        )
+      );
+      const network = networkNameMap.get(networkName);
+      JSON.stringify(coinMapToken?.network).should.eql(JSON.stringify(network));
+      for (const entries of Object.entries(tokenConfig)) {
+        const [key, value] = entries;
+        if (key === 'network' || key === 'additionalFeatures' || key === 'excludedFeatures') {
+          continue;
+        }
+        coinMapToken?.[key].should.eql(value);
+      }
+    }
   });
 });

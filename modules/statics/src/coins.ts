@@ -100,7 +100,7 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
 
   switch (family) {
     case 'arbeth':
-    case 'avax':
+    case 'avaxc':
     case 'bera':
     case 'bsc':
     case 'celo':
@@ -178,7 +178,10 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
         ...commonArgs.slice(0, 4), // id, name, fullName, decimalPlaces
         token.tokenAddress, // tokenAddress
         token.contractAddress, // contractAddress
-        ...commonArgs.slice(4) // asset, features, prefix, suffix, network, primaryKeyCurve
+        token.asset,
+        token.features,
+        token.programId,
+        ...commonArgs.slice(6) // prefix, suffix, network, primaryKeyCurve
       );
 
     case 'sui':
@@ -226,7 +229,8 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
         ...commonArgs, // id, name, fullName, decimalPlaces, asset, prefix, suffix, network, primaryKeyCurve
         token.baseUnit, // baseUnit
         token.isToken, // isToken
-        token.kind // kind
+        token.kind, // kind
+        token.addressCoin // addressCoin
       );
     case 'asi':
     case 'atom':
