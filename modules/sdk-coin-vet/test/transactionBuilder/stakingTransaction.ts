@@ -4,6 +4,7 @@ import should from 'should';
 import { STAKING_METHOD_ID } from '../../src/lib/constants';
 import EthereumAbi from 'ethereumjs-abi';
 import { BN } from 'ethereumjs-util';
+import * as testData from '../resources/vet';
 
 describe('VET Staking Transaction', function () {
   const factory = new TransactionBuilderFactory(coins.get('tvet'));
@@ -256,6 +257,20 @@ describe('VET Staking Transaction', function () {
 
       // Verify recipients
       stakingTx.recipients[0].amount.should.equal(largeAmount);
+    });
+
+    it('should build a signed tx and validate its toJson', async function () {
+      const txBuilder = factory.from(testData.STAKING_TRANSACTION);
+      const tx = txBuilder.transaction as StakingTransaction;
+      const toJson = tx.toJson();
+      toJson.id.should.equal('0x4fd543eb5ac4e4b1a3eeda7335cd8ba449e5aef6dff243a55d83daf480526e11');
+      toJson.stakingContractAddress?.should.equal('0x1ec1d168574603ec35b9d229843b7c2b44bcb770');
+      toJson.amountToStake?.should.equal('0xde0b6b3a7640000');
+      toJson.nonce.should.equal('449037');
+      toJson.gas.should.equal(47565);
+      toJson.gasPriceCoef.should.equal(128);
+      toJson.expiration.should.equal(64);
+      toJson.chainTag.should.equal(39);
     });
   });
 });
