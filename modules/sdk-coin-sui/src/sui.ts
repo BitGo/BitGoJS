@@ -141,7 +141,7 @@ export class Sui extends BaseCoin {
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
     let totalAmount = new BigNumber(0);
     const coinConfig = coins.get(this.getChain());
-    const { txPrebuild: txPrebuild, txParams: txParams } = params;
+    const { txPrebuild: txPrebuild, txParams: txParams, verification, wallet } = params;
     const transaction = new TransferTransaction(coinConfig);
     const rawTx = txPrebuild.txHex;
     if (!rawTx) {
@@ -173,6 +173,17 @@ export class Sui extends BaseCoin {
         throw new Error('Tx total amount does not match with expected total amount field');
       }
     }
+
+    if (verification?.consolidationToBaseAddress) {
+      const baseAddress = wallet.coinSpecific()?.baseAddress || wallet.coinSpecific()?.rootAddress;
+
+      for (const output of explainedTx.outputs) {
+        if (output.address !== baseAddress) {
+          throw new Error('Consolidation transaction output address does not match wallet base address');
+        }
+      }
+    }
+
     return true;
   }
 

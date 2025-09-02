@@ -12,6 +12,8 @@ import { SuiTransactionType } from '../../src/lib/iface';
 import { getBuilderFactory } from './getBuilderFactory';
 import { keys } from '../resources/sui';
 import { Buffer } from 'buffer';
+import { common, TransactionPrebuild, Wallet } from '@bitgo/sdk-core';
+import nock from 'nock';
 
 describe('SUI:', function () {
   let bitgo: TestBitGoAPI;
@@ -116,6 +118,187 @@ describe('SUI:', function () {
         txPrebuild,
       });
       verify.should.equal(true);
+    });
+
+    it('should fail to verify a spoofed consolidation transaction', async function () {
+      // Set up wallet data
+      const walletData = {
+        id: '62e156dbd641c000076bbabe04041a90',
+        coin: 'tsui',
+        keys: [
+          '5b3424f91bf349930e34017500000000',
+          '5b3424f91bf349930e34017600000000',
+          '5b3424f91bf349930e34017700000000',
+        ],
+        coinSpecific: {
+          rootAddress: '0x6f0f4e0eef19176628ee0ebc80eef89194afd9e19e59444e64b997f1254f6cd8',
+        },
+        multisigType: 'tss',
+      };
+
+      const consolidationTx = {
+        txRequestId: '13857c1a-9b61-4b85-96f1-10af125f68a0',
+        walletId: '644c3d6c5232f00007680040',
+        txHex:
+          '0000020008e6e6753b0000000000206f0f4e0eef19176628ee0ebc80eef89194afd9e19e59444e64b997f1254f6cd80202000101000001010200000101001670472c44b59058032840b94a7fd7405b4b87cbf67f4eb60e1b7781ce03ddad01222b818b450dcd2164b25ba5a57b0507e59a4c8eb6d7cadd08ea609db17c611d4e12d014000000002023fc27576626762904339b0abe1ff99c99799c93bea46e8bf452f23c68992db11670472c44b59058032840b94a7fd7405b4b87cbf67f4eb60e1b7781ce03ddade8030000000000001ae324000000000000',
+        feeInfo: {
+          fee: 2417434,
+          feeString: '2417434',
+        },
+        txInfo: {
+          minerFee: '2417434',
+          spendAmount: '997582566',
+          spendAmounts: [
+            {
+              coinName: 'tsui',
+              amountString: '997582566',
+            },
+          ],
+          payGoFee: '0',
+          outputs: [
+            {
+              address: '0x6f0f4e0eef19176628ee0ebc80eef89194afd9e19e59444e64b997f1254f6cd8',
+              value: 997582566,
+              wallet: '644c3d6c5232f00007680040',
+              wallets: ['644c3d6c5232f00007680040'],
+              enterprise: '62cc59b727443a0007089033',
+              enterprises: ['62cc59b727443a0007089033'],
+              valueString: '997582566',
+              coinName: 'tsui',
+              walletType: 'hot',
+              walletTypes: ['hot'],
+            },
+          ],
+          inputs: [
+            {
+              value: 997582566,
+              address: '0x1670472c44b59058032840b94a7fd7405b4b87cbf67f4eb60e1b7781ce03ddad',
+              valueString: '997582566',
+            },
+          ],
+          type: 'Transfer',
+        },
+        consolidateId: '68b648892ee9355c97e4b96d0945b2ca',
+        coin: 'tsui',
+      };
+      const bgUrl = common.Environments['mock'].uri;
+      const walletObj = new Wallet(bitgo, basecoin, walletData);
+
+      nock(bgUrl)
+        .post('/api/v2/tsui/wallet/62e156dbd641c000076bbabe04041a90/consolidateAccount/build')
+        .reply(200, [
+          {
+            ...consolidationTx,
+            txHex:
+              '000002000800e1f5050000000000208771273969acf0356ed0f33c1c52b109bbfe0de3369e9fb9837d52a5a438c6500202000101000001010200000101006f0f4e0eef19176628ee0ebc80eef89194afd9e19e59444e64b997f1254f6cd80122de95b31347a2f0d9715c560dfdfc8fd351782ca5e275d4bc3a98ea78769bce4f12d0140000000020ea639081929603fe2580873f4aa64701746d089f973b0827a222d784e992ee266f0f4e0eef19176628ee0ebc80eef89194afd9e19e59444e64b997f1254f6cd8e803000000000000a48821000000000000',
+          },
+        ]);
+
+      nock(bgUrl)
+        .get('/api/v2/tsui/key/5b3424f91bf349930e34017500000000')
+        .reply(200, [
+          {
+            encryptedPrv: 'fakePrv',
+          },
+        ]);
+
+      // Call the function to test
+      await assert.rejects(
+        async () => {
+          await walletObj.sendAccountConsolidations({
+            walletPassphrase: 'password',
+            verification: {
+              consolidationToBaseAddress: true,
+            },
+          });
+        },
+        {
+          message: 'Consolidation transaction output address does not match wallet base address',
+        }
+      );
+    });
+
+    it('should verify valid a consolidation transaction', async () => {
+      // Set up wallet data
+      const walletData = {
+        id: '62e156dbd641c000076bbabe04041a90',
+        coin: 'tsui',
+        keys: [
+          '5b3424f91bf349930e34017500000000',
+          '5b3424f91bf349930e34017600000000',
+          '5b3424f91bf349930e34017700000000',
+        ],
+        coinSpecific: {
+          rootAddress: '0x6f0f4e0eef19176628ee0ebc80eef89194afd9e19e59444e64b997f1254f6cd8',
+        },
+        multisigType: 'tss',
+      };
+
+      const consolidationTx = {
+        txRequestId: '13857c1a-9b61-4b85-96f1-10af125f68a0',
+        walletId: '644c3d6c5232f00007680040',
+        txHex:
+          '0000020008e6e6753b0000000000206f0f4e0eef19176628ee0ebc80eef89194afd9e19e59444e64b997f1254f6cd80202000101000001010200000101001670472c44b59058032840b94a7fd7405b4b87cbf67f4eb60e1b7781ce03ddad01222b818b450dcd2164b25ba5a57b0507e59a4c8eb6d7cadd08ea609db17c611d4e12d014000000002023fc27576626762904339b0abe1ff99c99799c93bea46e8bf452f23c68992db11670472c44b59058032840b94a7fd7405b4b87cbf67f4eb60e1b7781ce03ddade8030000000000001ae324000000000000',
+        feeInfo: {
+          fee: 2417434,
+          feeString: '2417434',
+        },
+        txInfo: {
+          minerFee: '2417434',
+          spendAmount: '997582566',
+          spendAmounts: [
+            {
+              coinName: 'tsui',
+              amountString: '997582566',
+            },
+          ],
+          payGoFee: '0',
+          outputs: [
+            {
+              address: '0x6f0f4e0eef19176628ee0ebc80eef89194afd9e19e59444e64b997f1254f6cd8',
+              value: 997582566,
+              wallet: '644c3d6c5232f00007680040',
+              wallets: ['644c3d6c5232f00007680040'],
+              enterprise: '62cc59b727443a0007089033',
+              enterprises: ['62cc59b727443a0007089033'],
+              valueString: '997582566',
+              coinName: 'tsui',
+              walletType: 'hot',
+              walletTypes: ['hot'],
+            },
+          ],
+          inputs: [
+            {
+              value: 997582566,
+              address: '0x1670472c44b59058032840b94a7fd7405b4b87cbf67f4eb60e1b7781ce03ddad',
+              valueString: '997582566',
+            },
+          ],
+          type: 'Transfer',
+        },
+        consolidateId: '68b648892ee9355c97e4b96d0945b2ca',
+        coin: 'tsui',
+      };
+
+      try {
+        if (
+          !(await basecoin.verifyTransaction({
+            blockhash: '',
+            feePayer: '',
+            txParams: {},
+            txPrebuild: consolidationTx as unknown as TransactionPrebuild,
+            walletType: 'tss',
+            wallet: new Wallet(bitgo, basecoin, walletData),
+            verification: {
+              consolidationToBaseAddress: true,
+            },
+          }))
+        ) {
+          assert.fail('Transaction should pass verification');
+        }
+      } catch (e) {
+        assert.fail('Transaction should pass verification');
+      }
     });
   });
 
