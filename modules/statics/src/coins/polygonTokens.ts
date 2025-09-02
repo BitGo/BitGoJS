@@ -1183,4 +1183,13 @@ export const polygonTokens = [
     UnderlyingAsset['tpolygon:BitGoTest'],
     POLYGON_TOKEN_FEATURES
   ),
+  tpolygonErc20(
+    'e2411508-ebec-4956-a2d3-bb2b0441fe31',
+    'tpolygon:txusd',
+    'Test StraitsX USD',
+    6,
+    '0x49063fbb462529dee4566341f79d83b1ee547130',
+    UnderlyingAsset['polygon:txusd'],
+    POLYGON_TOKEN_FEATURES
+  ),
 ];

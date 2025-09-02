@@ -1270,6 +1270,15 @@ export const bscTokens = [
     UnderlyingAsset['bsc:usdo'],
     [...BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.REBASE_TOKEN]
   ),
+  bscToken(
+    '2b4262dd-1a9f-4dbb-bac0-d12a1a0ab34f',
+    'bsc:slay',
+    'SatLayer',
+    6,
+    '0xfc5a743271672e91d77f0176e5cea581fbd5d834',
+    UnderlyingAsset['bsc:slay'],
+    BSC_TOKEN_FEATURES
+  ),
   tbscToken(
     'b31aa2b5-8d8c-4ac1-b5e5-0f9d59377eab',
     'tbsc:busd',

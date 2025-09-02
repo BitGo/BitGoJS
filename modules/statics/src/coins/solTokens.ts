@@ -2989,6 +2989,26 @@ export const solTokens = [
     UnderlyingAsset['sol:eurc'],
     SOL_TOKEN_FEATURES
   ),
+  solToken(
+    'b3e59b37-9af6-4069-9566-f4b07ce34a85',
+    'sol:dynosol',
+    'dynoSOL',
+    9,
+    'DYNoyS3x5qgbccZg7RPXagm4xQzfnm5iwd9o8pMyJtdE',
+    'DYNoyS3x5qgbccZg7RPXagm4xQzfnm5iwd9o8pMyJtdE',
+    UnderlyingAsset['sol:dynosol'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '51983e8f-8218-49d4-a2b4-6a6e6b147b36',
+    'sol:cipher',
+    'Cipher',
+    9,
+    'Ciphern9cCXtms66s8Mm6wCFC27b2JProRQLYmiLMH3N',
+    'Ciphern9cCXtms66s8Mm6wCFC27b2JProRQLYmiLMH3N',
+    UnderlyingAsset['sol:cipher'],
+    SOL_TOKEN_FEATURES
+  ),
   tsolToken(
     'b98c5a7a-49c5-45f1-a6ee-b08dff596a7d',
     'tsol:srm',

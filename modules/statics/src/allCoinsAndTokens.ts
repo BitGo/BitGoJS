@@ -3355,6 +3355,14 @@ export const allCoinsAndTokens = [
     '0x63681558c1b680e43bbcadc0ced21075854bba87',
     UnderlyingAsset['tarbeth:xsgd']
   ),
+  tarbethErc20(
+    '23209716-c220-4ef7-ac4c-ea1c151f14cb',
+    'tarbeth:bull',
+    'BULL',
+    18,
+    '0x0726773451af83203583b5d38b3a11f752b1a96b',
+    UnderlyingAsset['arbeth:bull']
+  ),
   arbethErc20(
     '6a69ea1d-ce7d-4603-89df-cf2f6490d1f9',
     'arbeth:xai',
@@ -4182,6 +4190,18 @@ export const allCoinsAndTokens = [
     'XAUM',
     '0x9d297676e7a4b771ab023291377b2adfaa4938fb9080b8d12430e4b108b836a9::xaum::XAUM',
     UnderlyingAsset['sui:xaum'],
+    SUI_TOKEN_FEATURES
+  ),
+  suiToken(
+    '2287dcde-353b-44d4-901a-b2f1310085ef',
+    'sui:alkimi',
+    'Alkimi',
+    9,
+    '0x1a8f4bc33f8ef7fbc851f156857aa65d397a6a6fd27a7ac2ca717b51f2fd9489',
+    'alkimi',
+    'ALKIMI',
+    '0x1a8f4bc33f8ef7fbc851f156857aa65d397a6a6fd27a7ac2ca717b51f2fd9489::alkimi::ALKIMI',
+    UnderlyingAsset['sui:alkimi'],
     SUI_TOKEN_FEATURES
   ),
   tsuiToken(
