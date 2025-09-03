@@ -3020,5 +3020,189 @@ describe('SOL:', function () {
         assert.fail('Transaction should pass verification');
       }
     });
+
+    it('should verify a token consolidation transaction', async () => {
+      const consolidationTx = {
+        txRequestId: '4fdd0cae-2563-43b1-b5cf-94865158ca10',
+        walletId: '63068ed4efa63a000877f02fd4b0fa6d',
+        txHex:
+          '02b7c2c7829eded4e8f947c90ed3b9afce71f616eb47dfcfbf4b765778149060013acb33b9f67fdd9c2512f48fac4e4c049eab93829b69404f3bd166fe3242c90700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000020104096da690bd558fd8634ac14f1645d8095afd0caea5953578c596e3c0dea38305ee7298bfac55101f177735659d42ed6be890ef3a1d204d9e33f32e24c5635327ca66d1fe00826e5a4f759f87b279c1aee19cce5301af4ed66ae17db48b201ed6c2a0e8a28bf565627f1ab8a34b1a95ee1b0a2a39084f1f0e2acb1c394b20185d8e0b22657c8d9c4ce5f6495efb6410c199011530f90e3ab9d8d1e4206f9ae0ffeb0000000000000000000000000000000000000000000000000000000000000000c5f9fb32f49111ab20c33f2598fc836c113e291881ac21ee29169394011244e406a7d517192c568ee08a845f73d29788cf035c3145b21ab344d8062ea940000006ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9de13c74d2b4d948e1608ea6eebdafe75bc2f995aad11b21d1e2c94f2a2d12f6802050303070004040000000804020604010a0ce0076bb20400000006',
+        feeInfo: {
+          fee: 10000,
+          feeString: '10000',
+        },
+        txInfo: {
+          inputs: [
+            {
+              address: '8iLa26KSbdpBUzNK7uYq8FvyuyA5h4k4erDHsDcPbHus',
+              value: 2.0173228e10,
+              valueString: '20173228000',
+            },
+            {
+              address: '8P2kX7Tyh9eS3RKdaBhqbEtQGAX58DXzL7mhDQABGX2d',
+              value: 10000,
+              valueString: '10000',
+            },
+          ],
+          minerFee: '10000',
+          outputs: [
+            {
+              address: 'HBxZShcE86UMmF93KUM8eWJKqeEXi5cqWCLYLMMhqMYm',
+              coinName: 'sol:wif',
+              enterprise: {
+                $oid: '5553ba8ae7a5c77006719661',
+              },
+              enterprises: [
+                {
+                  $oid: '5553ba8ae7a5c77006719661',
+                },
+              ],
+              value: 2.0173228e10,
+              valueString: '20173228000',
+              wallet: {
+                $oid: '62f4c3720d92c50008257eb5',
+              },
+              walletType: 'hot',
+              wallets: [
+                {
+                  $oid: '62f4c3720d92c50008257eb5',
+                },
+              ],
+            },
+          ],
+          payGoFee: '0',
+          spendAmount: '20173228000',
+          spendAmounts: [
+            {
+              amountString: '20173228000',
+              coinName: 'sol:wif',
+            },
+          ],
+          type: 'Send',
+        },
+        consolidateId: '6712d7fda6de4906d658c04aebbf8f9b',
+        coin: 'tsol',
+      };
+
+      const mockedWallet: Partial<IWallet> = {
+        coinSpecific: () => {
+          const cs = {
+            rootAddress: 'HBxZShcE86UMmF93KUM8eWJKqeEXi5cqWCLYLMMhqMYm',
+          } as WalletCoinSpecific;
+          return cs;
+        },
+      };
+
+      try {
+        if (
+          !(await basecoin.verifyTransaction({
+            blockhash: '',
+            feePayer: '',
+            txParams: {},
+            txPrebuild: consolidationTx as unknown as TransactionPrebuild,
+            walletType: 'tss',
+            wallet: mockedWallet as IWallet,
+            verification: {
+              consolidationToBaseAddress: true,
+            },
+          }))
+        ) {
+          assert.fail('Transaction should pass verification');
+        }
+      } catch (e) {
+        assert.fail('Transaction should pass verification');
+      }
+    });
+
+    it('should verify a spoofed token consolidation transaction', async () => {
+      const consolidationTx = {
+        txRequestId: '4fdd0cae-2563-43b1-b5cf-94865158ca10',
+        walletId: '63068ed4efa63a000877f02fd4b0fa6d',
+        txHex:
+          '02b7c2c7829eded4e8f947c90ed3b9afce71f616eb47dfcfbf4b765778149060013acb33b9f67fdd9c2512f48fac4e4c049eab93829b69404f3bd166fe3242c90700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000020104096da690bd558fd8634ac14f1645d8095afd0caea5953578c596e3c0dea38305ee7298bfac55101f177735659d42ed6be890ef3a1d204d9e33f32e24c5635327ca66d1fe00826e5a4f759f87b279c1aee19cce5301af4ed66ae17db48b201ed6c2a0e8a28bf565627f1ab8a34b1a95ee1b0a2a39084f1f0e2acb1c394b20185d8e0b22657c8d9c4ce5f6495efb6410c199011530f90e3ab9d8d1e4206f9ae0ffeb0000000000000000000000000000000000000000000000000000000000000000c5f9fb32f49111ab20c33f2598fc836c113e291881ac21ee29169394011244e406a7d517192c568ee08a845f73d29788cf035c3145b21ab344d8062ea940000006ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9de13c74d2b4d948e1608ea6eebdafe75bc2f995aad11b21d1e2c94f2a2d12f6802050303070004040000000804020604010a0ce0076bb20400000006',
+        feeInfo: {
+          fee: 10000,
+          feeString: '10000',
+        },
+        txInfo: {
+          inputs: [
+            {
+              address: '8iLa26KSbdpBUzNK7uYq8FvyuyA5h4k4erDHsDcPbHus',
+              value: 2.0173228e10,
+              valueString: '20173228000',
+            },
+            {
+              address: '8P2kX7Tyh9eS3RKdaBhqbEtQGAX58DXzL7mhDQABGX2d',
+              value: 10000,
+              valueString: '10000',
+            },
+          ],
+          minerFee: '10000',
+          outputs: [
+            {
+              address: 'HBxZShcE86UMmF93KUM8eWJKqeEXi5cqWCLYLMMhqMYm',
+              coinName: 'sol:wif',
+              enterprise: {
+                $oid: '5553ba8ae7a5c77006719661',
+              },
+              enterprises: [
+                {
+                  $oid: '5553ba8ae7a5c77006719661',
+                },
+              ],
+              value: 2.0173228e10,
+              valueString: '20173228000',
+              wallet: {
+                $oid: '62f4c3720d92c50008257eb5',
+              },
+              walletType: 'hot',
+              wallets: [
+                {
+                  $oid: '62f4c3720d92c50008257eb5',
+                },
+              ],
+            },
+          ],
+          payGoFee: '0',
+          spendAmount: '20173228000',
+          spendAmounts: [
+            {
+              amountString: '20173228000',
+              coinName: 'sol:wif',
+            },
+          ],
+          type: 'Send',
+        },
+        consolidateId: '6712d7fda6de4906d658c04aebbf8f9b',
+        coin: 'tsol',
+      };
+
+      const mockedWallet: Partial<IWallet> = {
+        coinSpecific: () => {
+          const cs = {
+            rootAddress: '8rQXeVEMrKvtWCEJirEM6cKYnbZuTqVTbqRPiMMAJ8R4',
+          } as WalletCoinSpecific;
+          return cs;
+        },
+      };
+
+      await assert.rejects(
+        async () =>
+          basecoin.verifyTransaction({
+            blockhash: '',
+            feePayer: '',
+            txParams: {},
+            txPrebuild: consolidationTx as unknown as TransactionPrebuild,
+            walletType: 'tss',
+            wallet: mockedWallet as IWallet,
+            verification: {
+              consolidationToBaseAddress: true,
+            },
+          }),
+        {
+          message: 'tx outputs does not match with expected address',
+        }
+      );
+    });
   });
 });

@@ -322,8 +322,30 @@ export class Sol extends BaseCoin {
       //verify funds are sent to walletRootAddress for a consolidation
       const filteredOutputs = explainedTx.outputs.map((output) => _.pick(output, ['address', 'amount', 'tokenName']));
 
+      // Cache to store already derived ATA addresses
+      const ataAddressCache: Record<string, string> = {};
+
       for (const output of filteredOutputs) {
-        if (output.address !== walletRootAddress) {
+        if (output.tokenName) {
+          // Check cache first before deriving ATA address
+          if (!ataAddressCache[output.tokenName]) {
+            const tokenMintAddress = getSolTokenFromTokenName(output.tokenName);
+            if (tokenMintAddress?.tokenAddress && tokenMintAddress?.programId) {
+              ataAddressCache[output.tokenName] = await getAssociatedTokenAccountAddress(
+                tokenMintAddress.tokenAddress,
+                walletRootAddress as string,
+                true,
+                tokenMintAddress.programId
+              );
+            } else {
+              throw new Error(`Unable to get token information for ${output.tokenName}`);
+            }
+          }
+
+          if (ataAddressCache[output.tokenName] !== output.address) {
+            throw new Error('tx outputs does not match with expected address');
+          }
+        } else if (output.address !== walletRootAddress) {
           throw new Error('tx outputs does not match with expected address');
         }
       }
