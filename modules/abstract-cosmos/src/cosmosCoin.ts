@@ -169,7 +169,7 @@ export class CosmosCoin<CustomMessage = never> extends BaseCoin {
       messages,
       chainId,
       accountDetails,
-      publicKey: publicKey || params.bitgoKey || '',
+      publicKey: publicKey || '',
       isUnsignedSweep,
       keyShares,
     });
@@ -208,11 +208,15 @@ export class CosmosCoin<CustomMessage = never> extends BaseCoin {
     publicKey?: string;
     keyShares?: KeyShares;
   }> {
+    const MPC = new Ecdsa();
+
     if (isUnsignedSweep) {
-      return { senderAddress: params.rootAddress as string };
+      return {
+        senderAddress: params.rootAddress as string,
+        publicKey: MPC.deriveUnhardened(params.bitgoKey || '', ROOT_PATH).slice(0, 66),
+      };
     }
 
-    const MPC = new Ecdsa();
     const keyShares = await this.getKeyShares(params);
     const publicKey = MPC.deriveUnhardened(keyShares.commonKeyChain, ROOT_PATH).slice(0, 66);
 
