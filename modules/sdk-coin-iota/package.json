@@ -42,10 +42,12 @@
   "dependencies": {
     "@bitgo/sdk-core": "^36.7.0",
     "@bitgo/statics": "^57.7.0",
+    "@iota/iota-sdk": "^1.6.0",
     "bignumber.js": "^9.1.2"
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.68.2",
-    "@bitgo/sdk-test": "^9.0.8"
+    "@bitgo/sdk-test": "^9.0.8",
+    "@bitgo/sdk-lib-mpc": "^10.7.0"
   }
 }
