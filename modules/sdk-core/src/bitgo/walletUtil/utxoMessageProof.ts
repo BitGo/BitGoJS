@@ -3,7 +3,6 @@ import * as utxolib from '@bitgo/utxo-lib';
 import { IWallet } from '../wallet/iWallet';
 import { Environments } from '../environments';
 
-const NUM_MESSAGES_PER_TRANSACTION = 2;
 const NUM_MESSAGES_PER_QUERY = 1000;
 export const MIDNIGHT_TNC_HASH = '31a6bab50a84b8439adcfb786bb2020f6807e6e8fda629b424110fc7bb1c6b8b';
 
@@ -44,17 +43,20 @@ export class MidnightMessageProvider implements IMessageProvider {
   protected midnightClaimUrl: string;
   protected prevId: string | undefined;
   protected ranOnce = false;
+  private readonly numMessagesPerTransaction: number;
+
   constructor(private wallet: IWallet, private destinationAddress: string) {
     this.unprocessedMessagesCache = [];
     this.network = utxolib.networks[wallet.coin()];
     this.midnightClaimUrl = `${
       Environments[wallet.bitgo.env].uri
     }/api/airdrop-claim/v1/midnight/claims/${wallet.coin()}/${wallet.id()}`;
+    this.numMessagesPerTransaction = wallet.bitgo.env === 'prod' ? 200 : 4;
   }
 
   async getMessagesAndAddressesToSign(): Promise<MessageInfo[]> {
     if (this.unprocessedMessagesCache.length > 0) {
-      return this.unprocessedMessagesCache.splice(0, NUM_MESSAGES_PER_TRANSACTION);
+      return this.unprocessedMessagesCache.splice(0, this.numMessagesPerTransaction);
     } else if (this.unprocessedMessagesCache.length === 0 && this.ranOnce && this.prevId === undefined) {
       return [];
     }
@@ -87,7 +89,7 @@ export class MidnightMessageProvider implements IMessageProvider {
         address: claim.originAddress,
       };
     });
-    const toReturn = this.unprocessedMessagesCache.splice(0, NUM_MESSAGES_PER_TRANSACTION);
+    const toReturn = this.unprocessedMessagesCache.splice(0, this.numMessagesPerTransaction);
     return toReturn;
   }
 }
