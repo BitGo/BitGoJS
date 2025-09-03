@@ -167,6 +167,9 @@ export interface ILightningWallet {
    * @param {LightningOnchainWithdrawParams} params - Withdraw parameters
    * @param {LightningOnchainRecipient[]} params.recipients - The recipients to pay
    * @param {bigint} params.satsPerVbyte - Value for sats per virtual byte
+   * @param {string} params.passphrase - The wallet passphrase
+   * @param {string} [params.sequenceId] - Optional sequence ID for the respective withdraw transfer
+   * @param {string} [params.comment] - Optional comment for the respective withdraw transfer
    * @returns {Promise<LightningOnchainWithdrawResponse>} Withdraw result containing transaction request details and status
    */
   withdrawOnchain(params: LightningOnchainWithdrawParams): Promise<LightningOnchainWithdrawResponse>;
@@ -338,6 +341,8 @@ export class LightningWallet implements ILightningWallet {
 
     const paymentIntent: { intent: LightningPaymentIntent } = {
       intent: {
+        comment: params.comment,
+        sequenceId: params.sequenceId,
         onchainRequest: {
           recipients: params.recipients,
           satsPerVbyte: params.satsPerVbyte,
@@ -351,20 +356,52 @@ export class LightningWallet implements ILightningWallet {
       .send(t.type({ intent: LightningPaymentIntent }).encode(paymentIntent))
       .result()) as TxRequest;
 
-    if (transactionRequestCreate.state === 'pendingApproval') {
+    if (
+      !transactionRequestCreate.transactions ||
+      transactionRequestCreate.transactions.length === 0 ||
+      !transactionRequestCreate.transactions[0].unsignedTx.serializedTxHex
+    ) {
+      throw new Error(`serialized txHex is missing`);
+    }
+
+    const { userAuthKey } = await getLightningAuthKeychains(this.wallet);
+    const userAuthKeyEncryptedPrv = userAuthKey.encryptedPrv;
+    if (!userAuthKeyEncryptedPrv) {
+      throw new Error(`user auth key is missing encrypted private key`);
+    }
+    const signature = createMessageSignature(
+      transactionRequestCreate.transactions[0].unsignedTx.serializedTxHex,
+      this.wallet.bitgo.decrypt({ password: params.passphrase, input: userAuthKeyEncryptedPrv })
+    );
+
+    const transactionRequestWithSignature = (await this.wallet.bitgo
+      .put(
+        this.wallet.bitgo.url(
+          '/wallet/' + this.wallet.id() + '/txrequests/' + transactionRequestCreate.txRequestId + '/coinSpecific',
+          2
+        )
+      )
+      .send({
+        unsignedCoinSpecific: {
+          signature,
+        },
+      })
+      .result()) as TxRequest;
+
+    if (transactionRequestWithSignature.state === 'pendingApproval') {
       const pendingApprovals = new PendingApprovals(this.wallet.bitgo, this.wallet.baseCoin);
-      const pendingApproval = await pendingApprovals.get({ id: transactionRequestCreate.pendingApprovalId });
+      const pendingApproval = await pendingApprovals.get({ id: transactionRequestWithSignature.pendingApprovalId });
       return {
         pendingApproval: pendingApproval.toJSON(),
-        txRequestId: transactionRequestCreate.txRequestId,
-        txRequestState: transactionRequestCreate.state,
+        txRequestId: transactionRequestWithSignature.txRequestId,
+        txRequestState: transactionRequestWithSignature.state,
       };
     }
 
     const transfer: { id: string } = await this.wallet.bitgo
       .post(
         this.wallet.bitgo.url(
-          '/wallet/' + this.wallet.id() + '/txrequests/' + transactionRequestCreate.txRequestId + '/transfers',
+          '/wallet/' + this.wallet.id() + '/txrequests/' + transactionRequestWithSignature.txRequestId + '/transfers',
           2
         )
       )
@@ -374,7 +411,7 @@ export class LightningWallet implements ILightningWallet {
     const transactionRequestSend = await commonTssMethods.sendTxRequest(
       this.wallet.bitgo,
       this.wallet.id(),
-      transactionRequestCreate.txRequestId,
+      transactionRequestWithSignature.txRequestId,
       RequestType.tx,
       reqId
     );
@@ -390,7 +427,7 @@ export class LightningWallet implements ILightningWallet {
     }
 
     return {
-      txRequestId: transactionRequestCreate.txRequestId,
+      txRequestId: transactionRequestWithSignature.txRequestId,
       txRequestState: transactionRequestSend.state,
       transfer: updatedTransfer,
       withdrawStatus:

@@ -1,5 +1,5 @@
 import * as t from 'io-ts';
-import { LightningOnchainRecipient } from '@bitgo/public-types';
+import { LightningOnchainRecipient, optionalString } from '@bitgo/public-types';
 import { PendingApprovalData, TxRequestState } from '@bitgo/sdk-core';
 import { BigIntFromString } from 'io-ts-types';
 
@@ -8,13 +8,19 @@ export const WithdrawStatusFailed = 'failed';
 
 export const WithdrawStatus = t.union([t.literal(WithdrawStatusDelivered), t.literal(WithdrawStatusFailed)]);
 
-export const LightningOnchainWithdrawParams = t.type({
-  recipients: t.array(LightningOnchainRecipient),
-  satsPerVbyte: BigIntFromString,
-  // todo:(current) add passphrase
-  // passphrase: t.string,
-});
-
+// todo: import LightningOnchainRequest from public-types after it is published
+export const LightningOnchainWithdrawParams = t.intersection([
+  // LightningOnchainRequest,
+  t.type({
+    recipients: t.array(LightningOnchainRecipient),
+    satsPerVbyte: BigIntFromString,
+    passphrase: t.string,
+  }),
+  t.partial({
+    sequenceId: optionalString,
+    comment: optionalString,
+  }),
+]);
 export type LightningOnchainWithdrawParams = t.TypeOf<typeof LightningOnchainWithdrawParams>;
 
 export const LndCreateWithdrawResponse = t.intersection(
