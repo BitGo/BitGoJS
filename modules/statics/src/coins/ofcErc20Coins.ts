@@ -3399,6 +3399,16 @@ export const ofcErc20Coins = [
     18,
     underlyingAssetForSymbol('eth:usdo')
   ),
+  ofcerc20('c099e464-f464-4d7c-8e6b-3dee55d95837', 'ofceth:vsn', 'Vision', 18, underlyingAssetForSymbol('eth:vsn')),
+  ofcerc20(
+    '42f3a70b-2070-45d4-ac52-9fb676d3337b',
+    'ofceth:shx',
+    'Stronghold SHx',
+    7,
+    underlyingAssetForSymbol('eth:shx')
+  ),
+  ofcerc20('6ad8cc28-3c63-4d77-9488-87c6935b3cf8', 'ofceth:slay', 'SatLayer', 6, underlyingAssetForSymbol('eth:slay')),
+  ofcerc20('e1a2fff8-5a33-4873-9231-6289eec23a9d', 'ofceth:mxnb', 'MXNB', 6, underlyingAssetForSymbol('eth:mxnb')),
 ];
 
 export const tOfcErc20Coins = [

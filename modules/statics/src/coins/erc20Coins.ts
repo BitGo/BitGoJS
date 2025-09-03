@@ -11168,6 +11168,38 @@ export const erc20Coins = [
     UnderlyingAsset['eth:usdo'],
     [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.BULK_TRANSACTION, CoinFeature.REBASE_TOKEN]
   ),
+  erc20(
+    '9577010b-3c51-4f02-a284-fdff7837e407',
+    'eth:vsn',
+    'Vision',
+    18,
+    '0x699ccf919c1dfdfa4c374292f42cadc9899bf753',
+    UnderlyingAsset['eth:vsn']
+  ),
+  erc20(
+    'c51774c4-c9fd-4cfc-886e-36e084ce7b48',
+    'eth:shx',
+    'Stronghold SHx',
+    7,
+    '0xee7527841a932d2912224e20a405e1a1ff747084',
+    UnderlyingAsset['eth:shx']
+  ),
+  erc20(
+    '88e2f52d-d582-4ab5-9151-cca02572b5d8',
+    'eth:slay',
+    'SatLayer',
+    6,
+    '0x51477a3002ee04b7542adfe63ccdb50c00ee5147',
+    UnderlyingAsset['eth:slay']
+  ),
+  erc20(
+    '0eb44459-7e38-4974-8847-e2fa8a510478',
+    'eth:mxnb',
+    'MXNB',
+    6,
+    '0xf197ffc28c23e0309b5559e7a166f2c6164c80aa',
+    UnderlyingAsset['eth:mxnb']
+  ),
   terc20(
     '0205f0d6-0647-47c9-ad8b-c48d048e54f3',
     'fixed',

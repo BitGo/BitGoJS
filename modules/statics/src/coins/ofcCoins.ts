@@ -1124,6 +1124,22 @@ export const ofcCoins = [
     UnderlyingAsset['sol:eurc'],
     SOL_TOKEN_FEATURES
   ),
+  ofcsolToken(
+    '90c297d2-853b-4322-9050-809254c9cfc2',
+    'ofcsol:dynosol',
+    'dynoSOL',
+    9,
+    UnderlyingAsset['sol:dynosol'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '0c6e3dcc-9009-4f38-8895-09844dc9e81f',
+    'ofcsol:cipher',
+    'Cipher',
+    9,
+    UnderlyingAsset['sol:cipher'],
+    SOL_TOKEN_FEATURES
+  ),
   tofcsolToken(
     '24d678cf-e0f0-4cde-a338-d754289c5b27',
     'ofctsol:slnd',
@@ -1231,6 +1247,7 @@ export const ofcCoins = [
   ofcTronToken('94b00b66-68a4-45ed-b772-77e5bca1e34c', 'ofctrx:usdt', 'Tether USD', 6, UnderlyingAsset['trx:usdt']),
   ofcTronToken('486dca06-5709-45ee-8b35-677e3d27509f', 'ofctrx:usd1', 'USD1 Token', 18, UnderlyingAsset['trx:usd1']),
   ofcTronToken('d953a72b-b7b9-4c8d-97bd-f03394e30608', 'ofctrx:trxs', 'Staked TRX', 18, UnderlyingAsset['trx:trxs']),
+  ofcTronToken('d1f624a6-8d53-4c59-abdb-65fc12204ea3', 'ofctrx:jst', 'Just', 18, UnderlyingAsset['trx:jst']),
   ofcXrpToken('6a173023-5faf-4a0a-af38-b8be98abe94f', 'ofcxrp:rlusd', 'Ripple USD', 15, UnderlyingAsset['xrp:rlusd']),
   tofcXrpToken('bd406dab-3b55-4ab5-b0a5-74b9f94268a3', 'ofctxrp:rlusd', 'RLUSD', 15, UnderlyingAsset['txrp:rlusd']),
   ofcXrpToken('eb3c02de-7221-4fde-9235-5cc576eb7c8b', 'ofcxrp:xsgd', 'XSGD', 15, UnderlyingAsset['xrp:xsgd']),
@@ -2035,6 +2052,7 @@ export const ofcCoins = [
     18,
     UnderlyingAsset['bsc:usdo']
   ),
+  ofcBscToken('eb9280a5-2781-450b-945f-7fe13d170433', 'ofcbsc:slay', 'SatLayer', 6, UnderlyingAsset['bsc:slay']),
   tofcBscToken(
     'bf8a52e5-f416-46ea-95c2-a920dc204233',
     'ofctbsc:usd1',
@@ -2834,6 +2852,13 @@ export const ofcCoins = [
     18,
     UnderlyingAsset['tpolygon:testcopm']
   ),
+  tofcPolygonErc20(
+    'af1a275c-cfa8-4137-ad9a-1e79c0e3a8f7',
+    'ofctpolygon:txusd',
+    'Test StraitsX USD',
+    6,
+    UnderlyingAsset['polygon:txusd']
+  ),
 
   ofcAlgoToken(
     'fec37305-8fb8-4c23-b42c-b4696d579eb9',
@@ -2943,6 +2968,13 @@ export const ofcCoins = [
     'Arbitrum Test LINK',
     18,
     UnderlyingAsset['tarbeth:link']
+  ),
+  tofcArbethErc20(
+    '52048169-4cb3-4a7c-9d7e-c0a1cabe2a47',
+    'ofctarbeth:bull',
+    'Test BULL',
+    18,
+    UnderlyingAsset['arbeth:bull']
   ),
   ofcaptToken(
     '6d027643-3d96-4627-8312-1151a793d4f8',
