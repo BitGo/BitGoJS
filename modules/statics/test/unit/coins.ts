@@ -154,7 +154,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
   dent: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   egld: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   elf: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
-  ftt: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  ftt: { features: [] },
   glm: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   gno: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   hot: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
@@ -165,7 +165,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
   mdx: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   mir: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   nmr: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
-  nu: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  nu: { features: [] },
   ocean: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   ogn: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   omni: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
@@ -307,16 +307,16 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
     features: [CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_GERMANY],
   },
   'sol:eurob': {
-    features: [CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_GERMANY],
+    features: [],
   },
   'sol:tesouro': {
-    features: [CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_GERMANY],
+    features: [],
   },
   'sol:cetes': {
-    features: [CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_GERMANY],
+    features: [],
   },
   'sol:gilts': {
-    features: [CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_GERMANY],
+    features: [],
   },
   'sol:muskit': {
     features: [
@@ -615,8 +615,6 @@ const coinsWithExcludedFeatures: Record<string, { features: CoinFeature[] }> = {
       CoinFeature.CUSTODY_BITGO_TRUST,
       CoinFeature.CUSTODY_BITGO_INDIA,
       CoinFeature.CUSTODY_BITGO_KOREA,
-      CoinFeature.CUSTODY_BITGO_EUROPE_APS,
-      CoinFeature.CUSTODY_BITGO_FRANKFURT,
       CoinFeature.CUSTODY,
     ],
   },
@@ -629,8 +627,6 @@ const coinsWithExcludedFeatures: Record<string, { features: CoinFeature[] }> = {
       CoinFeature.CUSTODY_BITGO_TRUST,
       CoinFeature.CUSTODY_BITGO_INDIA,
       CoinFeature.CUSTODY_BITGO_KOREA,
-      CoinFeature.CUSTODY_BITGO_EUROPE_APS,
-      CoinFeature.CUSTODY_BITGO_FRANKFURT,
       CoinFeature.CUSTODY,
     ],
   },
