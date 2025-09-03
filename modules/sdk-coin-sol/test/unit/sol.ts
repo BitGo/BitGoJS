@@ -1798,6 +1798,24 @@ describe('SOL:', function () {
           payload: {
             id: '1',
             jsonrpc: '2.0',
+            method: 'getTokenAccountsByOwner',
+            params: [
+              testData.keys.destinationPubKey,
+              {
+                programId: 'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb',
+              },
+              {
+                encoding: 'jsonParsed',
+              },
+            ],
+          },
+        })
+        .resolves(testData.SolResponses.getTokenAccountsByOwnerResponseNoAccounts);
+      callBack
+        .withArgs({
+          payload: {
+            id: '1',
+            jsonrpc: '2.0',
             method: 'sendTransaction',
             params: sinon.match.array,
           },
@@ -2026,6 +2044,68 @@ describe('SOL:', function () {
       should.equal((instructionsData[2] as TokenTransfer).params.amount, '2000000000');
       should.equal((instructionsData[2] as TokenTransfer).params.tokenName, 'tsol:usdt');
       should.equal((instructionsData[2] as TokenTransfer).params.sourceAddress, sourceUSDTTokenAccount);
+
+      const solCoin = basecoin as any;
+      sandBox.assert.callCount(solCoin.getDataFromNode, 7);
+    });
+
+    it('should recover sol 2022 tokens to recovery destination with no existing token accounts', async function () {
+      const tokenTxn = await basecoin.recover({
+        userKey: testData.wrwUser.userKey,
+        backupKey: testData.wrwUser.backupKey,
+        bitgoKey: testData.wrwUser.bitgoKey,
+        recoveryDestination: testData.keys.destinationPubKey,
+        tokenContractAddress: t22mintAddress,
+        walletPassphrase: testData.wrwUser.walletPassphrase,
+        durableNonce: {
+          publicKey: testData.keys.durableNoncePubKey,
+          secretKey: testData.keys.durableNoncePrivKey,
+        },
+        programId: 'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb',
+      });
+
+      tokenTxn.should.not.be.empty();
+      tokenTxn.should.hasOwnProperty('serializedTx');
+      tokenTxn.should.hasOwnProperty('scanIndex');
+      should.equal((tokenTxn as MPCTx).scanIndex, 0);
+
+      const tokenTxnDeserialize = new Transaction(coin);
+      tokenTxnDeserialize.fromRawTransaction((tokenTxn as MPCTx).serializedTx);
+      const tokenTxnJson = tokenTxnDeserialize.toJson();
+
+      should.equal(tokenTxnJson.nonce, testData.SolInputData.durableNonceBlockhash);
+      should.equal(tokenTxnJson.feePayer, testData.wrwUser.walletAddress0);
+      should.equal(tokenTxnJson.numSignatures, testData.SolInputData.durableNonceSignatures);
+
+      const instructionsData = tokenTxnJson.instructionsData as InstructionParams[];
+      should.equal(instructionsData.length, 3);
+      should.equal(instructionsData[0].type, 'NonceAdvance');
+
+      const destinationTokenAccount = await getAssociatedTokenAccountAddress(
+        t22mintAddress,
+        testData.keys.destinationPubKey
+      );
+      should.equal(instructionsData[1].type, 'CreateAssociatedTokenAccount');
+      should.equal((instructionsData[1] as AtaInit).params.mintAddress, t22mintAddress);
+      should.equal((instructionsData[1] as AtaInit).params.ataAddress, destinationTokenAccount);
+      should.equal((instructionsData[1] as AtaInit).params.ownerAddress, testData.keys.destinationPubKey);
+      should.equal((instructionsData[1] as AtaInit).params.tokenName, 'tsol:t22mint');
+      should.equal((instructionsData[1] as AtaInit).params.payerAddress, testData.wrwUser.walletAddress0);
+
+      const sourceTokenAccount = await getAssociatedTokenAccountAddress(
+        t22mintAddress,
+        testData.wrwUser.walletAddress0
+      );
+      should.equal(instructionsData[2].type, 'TokenTransfer');
+      should.equal((instructionsData[2] as TokenTransfer).params.fromAddress, testData.wrwUser.walletAddress0);
+      should.equal((instructionsData[2] as TokenTransfer).params.toAddress, destinationTokenAccount);
+      should.equal((instructionsData[2] as TokenTransfer).params.amount, '2000000000');
+      should.equal((instructionsData[2] as TokenTransfer).params.tokenName, 'tsol:t22mint');
+      should.equal((instructionsData[2] as TokenTransfer).params.sourceAddress, sourceTokenAccount);
+      should.equal(
+        (instructionsData[2] as TokenTransfer).params.programId,
+        'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb'
+      );
 
       const solCoin = basecoin as any;
       sandBox.assert.callCount(solCoin.getDataFromNode, 7);
