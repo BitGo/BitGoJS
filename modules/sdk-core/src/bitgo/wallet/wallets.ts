@@ -101,21 +101,8 @@ export class Wallets implements IWallets {
       throw new Error('missing required string parameter label');
     }
 
-    // Validate referenceWalletId parameter
-    if (params.referenceWalletId) {
-      if (!_.isString(params.referenceWalletId)) {
-        throw new Error('invalid referenceWalletId argument, expecting string');
-      }
-      if (!this.baseCoin.isEVM()) {
-        throw new Error('referenceWalletId is only supported for EVM chains');
-      }
-    }
-
-    // For wallets with referenceWalletId, skip multisig validation as configuration is inherited
-    if (params.referenceWalletId) {
-      // Skip all multisig validation - configuration will be inherited from reference wallet
-    } else if (params.type !== 'custodial') {
-      // Standard validation for non-custodial wallets without referenceWalletId
+    // no need to pass keys for (single) custodial wallets
+    if (params.type !== 'custodial') {
       if (Array.isArray(params.keys) === false || !_.isNumber(params.m) || !_.isNumber(params.n)) {
         throw new Error('invalid argument');
       }
@@ -285,10 +272,9 @@ export class Wallets implements IWallets {
       throw new Error('missing required string parameter label');
     }
 
-    const { type = 'hot', label, passphrase, enterprise, isDistributedCustody, referenceWalletId } = params;
+    const { type = 'hot', label, passphrase, enterprise, isDistributedCustody } = params;
     const isTss = params.multisigType === 'tss' && this.baseCoin.supportsTss();
     const canEncrypt = !!passphrase && typeof passphrase === 'string';
-    const isEVMWithReference = this.baseCoin.isEVM() && referenceWalletId;
 
     const walletParams: SupplementGenerateWalletOptions = {
       label: label,
@@ -297,11 +283,6 @@ export class Wallets implements IWallets {
       keys: [],
       type: !!params.userKey && params.multisigType !== 'onchain' ? 'cold' : type,
     };
-
-    // Add referenceWalletId to walletParams if provided for EVM chains
-    if (isEVMWithReference) {
-      walletParams.referenceWalletId = referenceWalletId;
-    }
 
     if (!_.isUndefined(params.passcodeEncryptionCode)) {
       if (!_.isString(params.passcodeEncryptionCode)) {
@@ -316,57 +297,13 @@ export class Wallets implements IWallets {
       walletParams.enterprise = enterprise;
     }
 
-    // Validate referenceWalletId for EVM keyring
-    if (!_.isUndefined(referenceWalletId)) {
-      if (!_.isString(referenceWalletId)) {
-        throw new Error('invalid referenceWalletId argument, expecting string');
-      }
-      if (!this.baseCoin.isEVM()) {
-        throw new Error('referenceWalletId is only supported for EVM chains');
-      }
-    }
-
     // EVM TSS wallets must use wallet version 3, 5 and 6
-    // Skip this validation for EVM keyring wallets as they inherit version from reference wallet
     if (
       isTss &&
       this.baseCoin.isEVM() &&
-      !referenceWalletId &&
       !(params.walletVersion === 3 || params.walletVersion === 5 || params.walletVersion === 6)
     ) {
       throw new Error('EVM TSS wallets are only supported for wallet version 3, 5 and 6');
-    }
-
-    // Handle EVM keyring wallet creation with referenceWalletId
-    if (isEVMWithReference) {
-      // For EVM keyring wallets, multisigType will be inferred from the reference wallet
-      // No need to explicitly validate TSS requirement here as it will be handled by bgms
-
-      // For EVM keyring wallets, we use the add method directly with referenceWalletId
-      // This bypasses the normal key generation process since keys are shared via keyring
-      const addWalletParams = {
-        label,
-        referenceWalletId,
-      };
-
-      const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet/add')).send(addWalletParams).result();
-
-      // For EVM keyring wallets, we need to get the keychains from the reference wallet
-      const userKeychain = this.baseCoin.keychains().get({ id: newWallet.keys[KeyIndices.USER] });
-      const backupKeychain = this.baseCoin.keychains().get({ id: newWallet.keys[KeyIndices.BACKUP] });
-      const bitgoKeychain = this.baseCoin.keychains().get({ id: newWallet.keys[KeyIndices.BITGO] });
-
-      const [userKey, backupKey, bitgoKey] = await Promise.all([userKeychain, backupKeychain, bitgoKeychain]);
-
-      const result: WalletWithKeychains = {
-        wallet: new Wallet(this.bitgo, this.baseCoin, newWallet),
-        userKeychain: userKey,
-        backupKeychain: backupKey,
-        bitgoKeychain: bitgoKey,
-        responseType: 'WalletWithKeychains',
-      };
-
-      return result;
     }
 
     if (isTss) {
