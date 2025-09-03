@@ -33,6 +33,8 @@ import {
   tofcCoredaoErc20,
   ofcVetToken,
   tofcVetToken,
+  ofcHashToken,
+  tofcHashToken,
 } from '../ofc';
 import { UnderlyingAsset, CoinKind } from '../base';
 
@@ -3085,5 +3087,13 @@ export const ofcCoins = [
     'Testnet VeThor',
     18,
     UnderlyingAsset['tvet:vtho']
+  ),
+  ofcHashToken('705402cb-b92f-4b32-8899-1f3f4dec1406', 'ofchash:ylds', 'YLDS Token', 6, UnderlyingAsset['hash:ylds']),
+  tofcHashToken(
+    'd2277bf2-0f95-4ede-9b38-aebac7ae9962',
+    'ofcthash:ylds',
+    'Testnet YLDS Token',
+    6,
+    UnderlyingAsset['thash:ylds']
   ),
 ];
