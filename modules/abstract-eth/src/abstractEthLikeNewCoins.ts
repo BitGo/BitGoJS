@@ -1486,7 +1486,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     // Get sequence ID using contract call
     // we need to wait between making two explorer api calls to avoid getting banned
     await new Promise((resolve) => setTimeout(resolve, 1000));
-    const sequenceId = await this.querySequenceId(params.walletContractAddress);
+    const sequenceId = await this.querySequenceId(params.walletContractAddress, params.apiKey);
 
     let operationHash, signature;
     // Get operation hash and sign it
@@ -1681,7 +1681,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       ? new optionalDeps.ethUtil.BN(params.eip1559.maxFeePerGas)
       : params.gasPrice
       ? new optionalDeps.ethUtil.BN(this.setGasPrice(params.gasPrice))
-      : await this.getGasPriceFromExternalAPI(this.staticsCoin?.name as string);
+      : await this.getGasPriceFromExternalAPI(this.staticsCoin?.name as string, params.apiKey);
 
     const bitgoFeeAddressNonce = await this.getAddressNonce(bitgoFeeAddress, params.apiKey);
 
@@ -1916,7 +1916,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     // Get sequence ID using contract call
     // we need to wait between making two explorer api calls to avoid getting banned
     await new Promise((resolve) => setTimeout(resolve, 1000));
-    const sequenceId = await this.querySequenceId(params.walletContractAddress);
+    const sequenceId = await this.querySequenceId(params.walletContractAddress, params.apiKey);
 
     const txBuilder = this.getTransactionBuilder(params.common) as TransactionBuilder;
     txBuilder.counter(bitgoFeeAddressNonce);
@@ -1975,7 +1975,8 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
         params.intendedChain as string,
         params.bitgoFeeAddress as string,
         params.walletContractAddress,
-        sendData
+        sendData,
+        apiKey
       );
       txBuilder.fee({
         ...txFee,
@@ -1984,7 +1985,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     }
 
     // Get the balance of bitgoFeeAddress to ensure funds are available to pay fees
-    await this.ensureSufficientBalance(params.bitgoFeeAddress as string, gasPrice, gasLimit);
+    await this.ensureSufficientBalance(params.bitgoFeeAddress as string, gasPrice, gasLimit, params.apiKey);
 
     const tx = await txBuilder.build();
 

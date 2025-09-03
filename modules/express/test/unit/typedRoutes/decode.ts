@@ -1,6 +1,7 @@
 import * as assert from 'assert';
 import * as t from 'io-ts';
 import { DecryptRequestBody } from '../../../src/typedRoutes/api/common/decrypt';
+import { EncryptRequestBody } from '../../../src/typedRoutes/api/common/encrypt';
 import { LoginRequest } from '../../../src/typedRoutes/api/common/login';
 import { VerifyAddressBody } from '../../../src/typedRoutes/api/common/verifyAddress';
 import { SimpleCreateRequestBody } from '../../../src/typedRoutes/api/v1/simpleCreate';
@@ -39,6 +40,46 @@ describe('io-ts decode tests', function () {
     assertDecode(t.type(DecryptRequestBody), {
       input: 'input',
       password: 'password',
+    });
+  });
+  it('express.encrypt', function () {
+    // input is required field
+    assert.throws(() =>
+      assertDecode(t.type(EncryptRequestBody), {
+        password: 'password',
+      })
+    );
+
+    // input must be a string
+    assert.throws(() =>
+      assertDecode(t.type(EncryptRequestBody), {
+        input: 123,
+      })
+    );
+
+    // valid with just input
+    assertDecode(t.type(EncryptRequestBody), {
+      input: 'data to encrypt',
+    });
+
+    // valid with input and password
+    assertDecode(t.type(EncryptRequestBody), {
+      input: 'data to encrypt',
+      password: 'password',
+    });
+
+    // valid with all fields
+    assertDecode(t.type(EncryptRequestBody), {
+      input: 'data to encrypt',
+      password: 'password',
+      adata: 'additional authenticated data',
+    });
+
+    // password and adata are optional, should accept undefined
+    assertDecode(t.type(EncryptRequestBody), {
+      input: 'data to encrypt',
+      password: undefined,
+      adata: undefined,
     });
   });
   it('express.verifyaddress', function () {

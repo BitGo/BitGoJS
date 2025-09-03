@@ -15,9 +15,12 @@ export const MAX_NUM_BIP322_INPUTS = 200;
  * Create the base PSBT for the to_sign transaction for BIP322 signing.
  * There will be ever 1 output.
  */
-export function createBaseToSignPsbt(rootWalletKeys?: bitgo.RootWalletKeys): bitgo.UtxoPsbt {
+export function createBaseToSignPsbt(
+  rootWalletKeys?: bitgo.RootWalletKeys,
+  network = networks.bitcoin
+): bitgo.UtxoPsbt {
   // Create PSBT object for constructing the transaction
-  const psbt = bitgo.createPsbtForNetwork({ network: networks.bitcoin });
+  const psbt = bitgo.createPsbtForNetwork({ network });
   // Set default value for nVersion and nLockTime
   psbt.setVersion(0); // nVersion = 0
   psbt.setLocktime(0); // nLockTime = 0

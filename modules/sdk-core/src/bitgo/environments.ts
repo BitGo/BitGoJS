@@ -251,6 +251,9 @@ const mainnetBase: EnvironmentTemplate = {
     somi: {
       baseUrl: 'https://mainnet.somnia.w3us.site/',
     },
+    baseeth: {
+      baseUrl: 'https://api.etherscan.io/v2',
+    },
   },
   icpNodeUrl: 'https://ic0.app',
   worldExplorerBaseUrl: 'https://worldscan.org/',
@@ -369,6 +372,9 @@ const testnetBase: EnvironmentTemplate = {
     },
     ip: {
       baseUrl: 'https://api.storyscan.app/',
+    },
+    tbaseeth: {
+      baseUrl: 'https://api.etherscan.io/v2',
     },
   },
   stxNodeUrl: 'https://api.testnet.hiro.so',

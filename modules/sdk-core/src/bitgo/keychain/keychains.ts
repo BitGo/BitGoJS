@@ -383,9 +383,10 @@ export class Keychains implements IKeychains {
    * and creates a corresponding TSS BitGo key. It also returns the JSON that needs
    * to be uploaded back to the OVCs containing the BitGo -> OVC shares.
    * @param ovcOutputJson JSON format of the file downloaded from the OVC for platform
+   * @param enterprise Optional enterprise ID associated with the key
    * @returns {BitGoKeyFromOvcShares}
    */
-  async createTssBitGoKeyFromOvcShares(ovcOutputJson: unknown): Promise<BitGoKeyFromOvcShares> {
+  async createTssBitGoKeyFromOvcShares(ovcOutputJson: unknown, enterprise?: string): Promise<BitGoKeyFromOvcShares> {
     const decodedOvcOutput = decodeOrElse(OvcToBitGoJSON.name, OvcToBitGoJSON, ovcOutputJson, (errors) => {
       throw new Error(`Error(s) parsing OVC JSON: ${errors}`);
     });
@@ -424,6 +425,7 @@ export class Keychains implements IKeychains {
       keyType: 'tss',
       userGPGPublicKey: ovc1.gpgPubKey,
       backupGPGPublicKey: ovc2.gpgPubKey,
+      enterprise,
     });
     assert(key.keyShares);
     assert(key.commonKeychain);

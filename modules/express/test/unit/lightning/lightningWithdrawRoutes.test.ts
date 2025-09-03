@@ -32,6 +32,7 @@ describe('Lightning Withdraw Routes', () => {
           },
         ],
         satsPerVbyte: '15',
+        passphrase: 'password123',
       };
 
       const expectedResponse: LightningOnchainWithdrawResponse = {
@@ -84,6 +85,7 @@ describe('Lightning Withdraw Routes', () => {
       // we decode the amountMsat string to bigint, it should be in bigint format when passed to payInvoice
       should(firstArg).have.property('recipients', decodedRecipients);
       should(firstArg).have.property('satsPerVbyte', BigInt(inputParams.satsPerVbyte));
+      should(firstArg).have.property('passphrase', inputParams.passphrase);
     });
 
     it('should throw an error if the satsPerVbyte is missing in the request params', async () => {
@@ -94,6 +96,7 @@ describe('Lightning Withdraw Routes', () => {
             address: 'bcrt1qjq48cqk2u80hewdcndf539m8nnnvt845nl68x7',
           },
         ],
+        passphrase: 'password123',
       };
 
       const req = mockRequestObject({
@@ -110,6 +113,29 @@ describe('Lightning Withdraw Routes', () => {
     it('should throw an error if the recipients is missing in the request params', async () => {
       const inputParams = {
         satsPerVbyte: '15',
+        passphrase: 'password123',
+      };
+
+      const req = mockRequestObject({
+        params: { id: 'testWalletId', coin },
+        body: inputParams,
+      });
+      req.bitgo = bitgo;
+
+      await should(handleLightningWithdraw(req)).be.rejectedWith(
+        'Invalid request body for withdrawing on chain lightning balance'
+      );
+    });
+
+    it('should throw an error if passphrase is missing in the request params', async () => {
+      const inputParams = {
+        satsPerVbyte: '15',
+        recipients: [
+          {
+            amountSat: '500000',
+            address: 'bcrt1qjq48cqk2u80hewdcndf539m8nnnvt845nl68x7',
+          },
+        ],
       };
 
       const req = mockRequestObject({

@@ -9,6 +9,7 @@ import {
   createToken,
   createTokenMapUsingConfigDetails,
   createTokenMapUsingTrimmedConfigDetails,
+  createTokenUsingTrimmedConfigDetails,
   EosCoin,
   Erc20Coin,
   EthereumNetwork,
@@ -32,7 +33,9 @@ import {
   amsTokenWithUnsupportedNetwork,
   incorrectAmsTokenConfig,
   reducedAmsTokenConfig,
+  reducedTokenConfigForAllChains,
 } from './resources/amsTokenConfig';
+import { Networks } from '../../src/networks';
 
 interface DuplicateCoinObject {
   name: string;
@@ -151,7 +154,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
   dent: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   egld: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   elf: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
-  ftt: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  ftt: { features: [] },
   glm: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   gno: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   hot: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
@@ -162,7 +165,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
   mdx: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   mir: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   nmr: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
-  nu: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
+  nu: { features: [] },
   ocean: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   ogn: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
   omni: { features: [CoinFeature.CUSTODY_BITGO_FRANKFURT] },
@@ -304,16 +307,16 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
     features: [CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_GERMANY],
   },
   'sol:eurob': {
-    features: [CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_GERMANY],
+    features: [],
   },
   'sol:tesouro': {
-    features: [CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_GERMANY],
+    features: [],
   },
   'sol:cetes': {
-    features: [CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_GERMANY],
+    features: [],
   },
   'sol:gilts': {
-    features: [CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_GERMANY],
+    features: [],
   },
   'sol:muskit': {
     features: [
@@ -612,8 +615,6 @@ const coinsWithExcludedFeatures: Record<string, { features: CoinFeature[] }> = {
       CoinFeature.CUSTODY_BITGO_TRUST,
       CoinFeature.CUSTODY_BITGO_INDIA,
       CoinFeature.CUSTODY_BITGO_KOREA,
-      CoinFeature.CUSTODY_BITGO_EUROPE_APS,
-      CoinFeature.CUSTODY_BITGO_FRANKFURT,
       CoinFeature.CUSTODY,
     ],
   },
@@ -626,8 +627,6 @@ const coinsWithExcludedFeatures: Record<string, { features: CoinFeature[] }> = {
       CoinFeature.CUSTODY_BITGO_TRUST,
       CoinFeature.CUSTODY_BITGO_INDIA,
       CoinFeature.CUSTODY_BITGO_KOREA,
-      CoinFeature.CUSTODY_BITGO_EUROPE_APS,
-      CoinFeature.CUSTODY_BITGO_FRANKFURT,
       CoinFeature.CUSTODY,
     ],
   },
@@ -1165,6 +1164,7 @@ describe('create token map using config details', () => {
       JSON.stringify(tokenNetwork).should.eql(JSON.stringify(staticNetwork));
     });
   });
+
   it('should give precedence to static coin map over ams coin map', () => {
     const tokenMap = createTokenMapUsingConfigDetails(incorrectAmsTokenConfig);
     const tokenName = 'thbar:usdc';
@@ -1174,6 +1174,7 @@ describe('create token map using config details', () => {
     token.decimalPlaces.should.not.eql(incorrectAmsTokenConfig[tokenName][0].decimalPlaces);
     token.baseUnit.should.not.eql(incorrectAmsTokenConfig[tokenName][0].baseUnit);
   });
+
   it('should create a coin map and get formatted tokens from it', () => {
     const coinMap = createTokenMapUsingConfigDetails(amsTokenConfigWithCustomToken);
     const formattedTokens = getFormattedTokens(coinMap);
@@ -1182,10 +1183,12 @@ describe('create token map using config details', () => {
     formattedTokens.testnet.eth.tokens.some((token) => token.type === 'hteth:faketoken').should.eql(true);
     formattedTokens.testnet.ofc.tokens.some((token) => token.type === 'ofcterc2').should.eql(true);
   });
+
   it('should not create an base coin object in coin map for token with unsupported network', () => {
     const tokenMap = createTokenMapUsingTrimmedConfigDetails(amsTokenWithUnsupportedNetwork);
     tokenMap.has('hteth:faketoken').should.eql(false);
   });
+
   it('should create a coin map using reduced token config details', () => {
     const coinMap1 = createTokenMapUsingTrimmedConfigDetails(reducedAmsTokenConfig);
     const amsToken1 = coinMap1.get('hteth:faketoken');
@@ -1202,6 +1205,7 @@ describe('create token map using config details', () => {
     JSON.stringify(tokenNetwork1).should.eql(JSON.stringify(tokenNetwork2));
     JSON.stringify(tokenNetwork3).should.eql(JSON.stringify(tokenNetwork4));
   });
+
   it('should be able to add single ams token into coin map', () => {
     const coinMap = CoinMap.fromCoins([]);
     const staticsCoin = createToken(amsTokenConfigWithCustomToken['hteth:faketoken'][0]);
@@ -1210,6 +1214,7 @@ describe('create token map using config details', () => {
     }
     coinMap.has('hteth:faketoken').should.be.true();
   });
+
   it('should be able to create token config of a single base coin', () => {
     const tokenName = 'hteth:faketoken';
     const coinMap = createTokenMapUsingTrimmedConfigDetails(reducedAmsTokenConfig);
@@ -1225,14 +1230,50 @@ describe('create token map using config details', () => {
       decimalPlaces: amsTokenConfig.decimalPlaces,
       tokenContractAddress: amsTokenConfig.contractAddress.toLowerCase(),
     });
-    it('should return the base coin present in default coin map', () => {
-      const tokenName = 'thbar:usdc';
-      const token = createToken(incorrectAmsTokenConfig[tokenName][0]);
-      token?.should.not.be.undefined();
-      token?.decimalPlaces.should.eql(coins.get(tokenName).decimalPlaces);
-      token?.baseUnit.should.eql(coins.get(tokenName).baseUnit);
-      token?.decimalPlaces.should.not.eql(incorrectAmsTokenConfig[tokenName][0].decimalPlaces);
-      token?.baseUnit.should.not.eql(incorrectAmsTokenConfig[tokenName][0].baseUnit);
-    });
+  });
+
+  it('should return the base coin present in default coin map', () => {
+    const tokenName = 'thbar:usdc';
+    const token = createToken(incorrectAmsTokenConfig[tokenName][0]);
+    token?.should.not.be.undefined();
+    token?.decimalPlaces.should.eql(coins.get(tokenName).decimalPlaces);
+    token?.baseUnit.should.eql(coins.get(tokenName).baseUnit);
+    token?.decimalPlaces.should.not.eql(incorrectAmsTokenConfig[tokenName][0].decimalPlaces);
+    token?.baseUnit.should.not.eql(incorrectAmsTokenConfig[tokenName][0].baseUnit);
+  });
+
+  it('should be able to create base coin from trimmed token config', () => {
+    const tokenName = 'hteth:faketoken';
+    const reducedTokenConfig = reducedAmsTokenConfig[tokenName][0];
+    const token = createTokenUsingTrimmedConfigDetails(reducedTokenConfig);
+    token?.should.not.be.undefined();
+    token?.name.should.eql(reducedTokenConfig.name);
+    token?.decimalPlaces.should.eql(reducedTokenConfig.decimalPlaces);
+    const bgerchToken = coins.get('bgerch');
+    const bgerchNetwork = bgerchToken?.network;
+    JSON.stringify(bgerchNetwork).should.eql(JSON.stringify(token?.network));
+  });
+
+  it('should form base coin for tokens of all the chains', () => {
+    const coinMap = createTokenMapUsingTrimmedConfigDetails(reducedTokenConfigForAllChains);
+    for (const tokenName of Object.keys(reducedTokenConfigForAllChains)) {
+      const coinMapToken = coinMap.get(tokenName);
+      const tokenConfig = reducedTokenConfigForAllChains[tokenName][0];
+      const networkName = tokenConfig.network.name;
+      const networkNameMap = new Map(
+        Object.values(Networks).flatMap((networkType) =>
+          Object.values(networkType).map((network) => [network.name, network])
+        )
+      );
+      const network = networkNameMap.get(networkName);
+      JSON.stringify(coinMapToken?.network).should.eql(JSON.stringify(network));
+      for (const entries of Object.entries(tokenConfig)) {
+        const [key, value] = entries;
+        if (key === 'network' || key === 'additionalFeatures' || key === 'excludedFeatures') {
+          continue;
+        }
+        coinMapToken?.[key].should.eql(value);
+      }
+    }
   });
 });

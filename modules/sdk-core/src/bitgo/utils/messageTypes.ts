@@ -8,6 +8,7 @@ export enum MessageStandardType {
   UNKNOWN = 'UNKNOWN',
   SIMPLE = 'SIMPLE',
   EIP191 = 'EIP191',
+  EIP712 = 'EIP712',
   CIP8 = 'CIP8',
 }
 

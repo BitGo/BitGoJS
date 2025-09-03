@@ -468,6 +468,11 @@ export enum CoinFeature {
    * This coin is an EVM compatible coin and should use common EVM message signing functionality
    */
   SHARED_EVM_MESSAGE_SIGNING = 'shared-evm-message-signing',
+
+  /**
+   * This token is a stablecoin
+   */
+  STABLECOIN = 'stablecoin',
 }
 
 /**
@@ -2415,6 +2420,7 @@ export enum UnderlyingAsset {
   'polygon:benji' = 'polygon:benji',
   'polygon:naka' = 'polygon:naka',
   'polygon:xusd' = 'polygon:xusd',
+  'polygon:txusd' = 'polygon:txusd',
   // Polygon NFTs
   // generic NFTs
   'erc721:polygontoken' = 'erc721:polygontoken',
@@ -2565,6 +2571,7 @@ export enum UnderlyingAsset {
   'bsc:cusdo' = 'bsc:cusdo',
   'bsc:unx' = 'bsc:unx',
   'bsc:usdo' = 'bsc:usdo',
+  'bsc:slay' = 'bsc:slay',
   // BSC NFTs
   // generic NFTs
   'erc721:bsctoken' = 'erc721:bsctoken',
@@ -2642,6 +2649,7 @@ export enum UnderlyingAsset {
   'arbeth:anime' = 'arbeth:anime',
   'arbeth:benji' = 'arbeth:benji',
   'arbeth:dolo' = 'arbeth:dolo',
+  'arbeth:bull' = 'arbeth:bull',
 
   // Arbitrum testnet tokens
   'tarbeth:link' = 'tarbeth:link',
@@ -2877,6 +2885,8 @@ export enum UnderlyingAsset {
   'sol:cloud' = 'sol:cloud',
   'sol:eliza' = 'sol:eliza',
   'sol:eurc' = 'sol:eurc',
+  'sol:dynosol' = 'sol:dynosol',
+  'sol:cipher' = 'sol:cipher',
   // TRX tokens
   'trx:htx' = 'trx:htx',
   'trx:jst' = 'trx:jst',
@@ -2927,6 +2937,7 @@ export enum UnderlyingAsset {
   'sui:wal' = 'sui:wal',
   'sui:xmn' = 'sui:xmn',
   'sui:xaum' = 'sui:xaum',
+  'sui:alkimi' = 'sui:alkimi',
 
   // Sui testnet tokens
   'tsui:deep' = 'tsui:deep',
@@ -3021,6 +3032,10 @@ export enum UnderlyingAsset {
   'eth:rlb' = 'eth:rlb',
   'eth:neiro2' = 'eth:neiro2',
   'eth:sign' = 'eth:sign',
+  'eth:vsn' = 'eth:vsn',
+  'eth:shx' = 'eth:shx',
+  'eth:slay' = 'eth:slay',
+  'eth:mxnb' = 'eth:mxnb',
 
   // ADA testnet tokens
   'tada:water' = 'tada:water',

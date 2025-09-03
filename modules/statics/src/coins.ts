@@ -100,7 +100,7 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
 
   switch (family) {
     case 'arbeth':
-    case 'avax':
+    case 'avaxc':
     case 'bera':
     case 'bsc':
     case 'celo':
@@ -178,7 +178,10 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
         ...commonArgs.slice(0, 4), // id, name, fullName, decimalPlaces
         token.tokenAddress, // tokenAddress
         token.contractAddress, // contractAddress
-        ...commonArgs.slice(4) // asset, features, prefix, suffix, network, primaryKeyCurve
+        token.asset,
+        token.features,
+        token.programId,
+        ...commonArgs.slice(6) // prefix, suffix, network, primaryKeyCurve
       );
 
     case 'sui':
@@ -226,7 +229,8 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
         ...commonArgs, // id, name, fullName, decimalPlaces, asset, prefix, suffix, network, primaryKeyCurve
         token.baseUnit, // baseUnit
         token.isToken, // isToken
-        token.kind // kind
+        token.kind, // kind
+        token.addressCoin // addressCoin
       );
     case 'asi':
     case 'atom':
@@ -250,6 +254,14 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
         token.baseUnit, // baseUnit
         ...commonArgs.slice(4, 8), // asset, features, prefix, suffix
         token.primaryKeyCurve // primaryKeyCurve
+      );
+    case 'ada':
+      return initializer(
+        ...commonArgs.slice(0, 4), // id, name, fullName, decimalPlaces
+        token.uniqueAssetId,
+        token.assetName,
+        token.policyId,
+        ...commonArgs.slice(4) // asset, features, prefix, suffix, network, primaryKeyCurve
       );
     default:
       return undefined;
@@ -371,4 +383,30 @@ export function createTokenMapUsingTrimmedConfigDetails(
   }
 
   return createTokenMapUsingConfigDetails(amsTokenConfigMap);
+}
+
+export function createTokenUsingTrimmedConfigDetails(
+  tokenConfig: TrimmedAmsTokenConfig
+): Readonly<BaseCoin> | undefined {
+  let fullTokenConfig: AmsTokenConfig | undefined;
+  const networkNameMap = new Map(
+    Object.values(Networks).flatMap((networkType) =>
+      Object.values(networkType).map((network) => [network.name, network])
+    )
+  );
+  const network = networkNameMap.get(tokenConfig.network.name);
+  if (
+    !isCoinPresentInCoinMap({ ...tokenConfig }) &&
+    network &&
+    tokenConfig.isToken &&
+    networkFeatureMapForTokens[network.family]
+  ) {
+    const features = new Set([
+      ...(networkFeatureMapForTokens[network.family] || []),
+      ...(tokenConfig.additionalFeatures || []),
+    ]);
+    tokenConfig.excludedFeatures?.forEach((feature) => features.delete(feature));
+    fullTokenConfig = { ...tokenConfig, features: Array.from(features), network } as AmsTokenConfig;
+    return createToken(fullTokenConfig);
+  }
 }

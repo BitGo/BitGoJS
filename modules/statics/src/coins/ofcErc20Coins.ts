@@ -1,5 +1,6 @@
 import { ofcerc20, tofcerc20 } from '../ofc';
-import { UnderlyingAsset } from '../base';
+import { CoinFeature, UnderlyingAsset } from '../base';
+import { AccountCoin } from '../account';
 
 export const ofcErc20Coins = [
   ofcerc20('a6b6dd56-c25e-45a3-83e5-5da0f95d27d2', 'ofcpol', 'Polygon Ecosystem Token', 18, UnderlyingAsset.POL),
@@ -35,9 +36,13 @@ export const ofcErc20Coins = [
   ofcerc20('3db3b895-756c-4c95-9dea-08d283f09a7a', 'ofcmeme', 'Meme', 8, UnderlyingAsset.MEME),
   ofcerc20('8a73d170-28c1-48c9-8d3c-c7ea374f4414', 'ofcband', 'Band Protocol', 18, UnderlyingAsset.BAND),
   ofcerc20('ad5d8cf4-59b5-4b82-b1ee-d5d0d6ba5944', 'ofcant', 'Aragon', 18, UnderlyingAsset.ANT),
-  ofcerc20('2092c0cc-19cf-42b2-90a0-123b1904d901', 'ofcpyusd', 'PayPal USD', 6, UnderlyingAsset.PYUSD),
+  ofcerc20('2092c0cc-19cf-42b2-90a0-123b1904d901', 'ofcpyusd', 'PayPal USD', 6, UnderlyingAsset.PYUSD, undefined, [
+    CoinFeature.STABLECOIN,
+  ]),
   ofcerc20('8304c497-523d-4f3f-8744-65e2e5ebd5a5', 'ofc1inch', '1Inch Token', 18, UnderlyingAsset['1INCH']),
-  ofcerc20('28024a59-6fbb-4156-96e4-2ba7747e8581', 'ofcusdc', 'USD Coin', 6, UnderlyingAsset.USDC),
+  ofcerc20('28024a59-6fbb-4156-96e4-2ba7747e8581', 'ofcusdc', 'USD Coin', 6, UnderlyingAsset.USDC, undefined, [
+    CoinFeature.STABLECOIN,
+  ]),
   ofcerc20('f790e63d-9785-4e98-b323-897fdc489613', 'ofcaave', 'Aave', 18, UnderlyingAsset.AAVE),
   ofcerc20('a3b0e98b-3a50-4ee7-a290-696b4cbce666', 'ofcape', 'ApeCoin', 18, UnderlyingAsset.APE),
   ofcerc20('15c3f5fb-255c-4ef6-9df3-767b3aa2b36d', 'ofcaudio', 'Audio', 18, UnderlyingAsset.AUDIO),
@@ -51,7 +56,9 @@ export const ofcErc20Coins = [
   ofcerc20('4bc691c4-dcdd-4b78-be96-1e87269c3caf', 'ofcbnb', 'BNB Token', 18, UnderlyingAsset.BNB),
   ofcerc20('7a76184c-b4b2-4c87-81bc-0c496c605488', 'ofcbnt', 'Bancor', 18, UnderlyingAsset.BNT),
   ofcerc20('f142074d-8d94-442b-a0e3-3f09c98acaeb', 'ofcbtrst', 'Braintrust', 18, UnderlyingAsset.BTRST),
-  ofcerc20('779e9fa5-e4f2-4c74-947a-5b5df61e66df', 'ofcbusd', 'Binance USD', 18, UnderlyingAsset.BUSD),
+  ofcerc20('779e9fa5-e4f2-4c74-947a-5b5df61e66df', 'ofcbusd', 'Binance USD', 18, UnderlyingAsset.BUSD, undefined, [
+    CoinFeature.STABLECOIN,
+  ]),
   ofcerc20('50dab286-6071-4298-893b-fb6c38e3442b', 'ofccel', 'Celsius', 4, UnderlyingAsset.CEL),
   ofcerc20('94ea31eb-f35d-4075-a9fe-90a91a6b03f8', 'ofccelr', 'Celer Network', 18, UnderlyingAsset.CELR),
   ofcerc20('f019a286-14bb-4e27-9c08-3c6216a59851', 'ofccfx', 'Conflux', 18, UnderlyingAsset.CFX),
@@ -101,7 +108,9 @@ export const ofcErc20Coins = [
   ofcerc20('f3cfe483-3aab-4d9f-8990-08c2910c3f17', 'ofcsnx', 'Synthetix Network', 18, UnderlyingAsset.SNX),
   ofcerc20('7f591fea-dcaa-46de-88dd-7173537f4433', 'ofcsushi', 'SushiToken', 18, UnderlyingAsset.SUSHI),
   ofcerc20('f15ddadd-5b35-4fa0-bcf6-68e3254d3bb1', 'ofcuni', 'Uniswap Token', 18, UnderlyingAsset.UNI),
-  ofcerc20('e30203cd-99c0-4b98-b101-e0cd95a455a9', 'ofcusdt', 'Tether', 6, UnderlyingAsset.USDT),
+  ofcerc20('e30203cd-99c0-4b98-b101-e0cd95a455a9', 'ofcusdt', 'Tether', 6, UnderlyingAsset.USDT, undefined, [
+    CoinFeature.STABLECOIN,
+  ]),
   ofcerc20('b73b5bc1-1738-439b-a0d4-2c1880898ac5', 'ofcweth', 'Wrapped Ether', 18, UnderlyingAsset.WETH),
   ofcerc20('442030fc-5b0d-4678-8c7f-d266f363e31a', 'ofcwoo', 'Wootrade Network', 18, UnderlyingAsset.WOO),
   ofcerc20('08da24cf-1420-4361-b10f-5060673ab949', 'ofcxsushi', 'xSUSHI', 18, UnderlyingAsset.XSUSHI),
@@ -112,7 +121,9 @@ export const ofcErc20Coins = [
   ofcerc20('f4fed641-f2e2-4fc7-b55b-62c0477b1301', 'ofcegld', 'Elrond Gold', 18, UnderlyingAsset.EGLD),
   ofcerc20('7b9b62ad-fa00-468f-9b15-fe0d6db04c97', 'ofcenj', 'EnjinCoin', 18, UnderlyingAsset.ENJ),
   ofcerc20('b930e9f3-4476-499c-82f9-f11a3f774f41', 'ofcever', 'Everscale', 9, UnderlyingAsset.EVER),
-  ofcerc20('9e713b54-f46f-41a6-9792-a58964011d6b', 'ofcfei', 'Fei USD', 18, UnderlyingAsset.FEI),
+  ofcerc20('9e713b54-f46f-41a6-9792-a58964011d6b', 'ofcfei', 'Fei USD', 18, UnderlyingAsset.FEI, undefined, [
+    CoinFeature.STABLECOIN,
+  ]),
   ofcerc20('15caf3bc-1d2e-440a-8954-1f1f8a52ac71', 'ofcftm', 'Fantom Token', 18, UnderlyingAsset.FTM),
   ofcerc20('c3dac821-88cc-4080-8417-bed0f48cc651', 'ofcgala', 'Gala', 8, UnderlyingAsset.GALA),
   ofcerc20('af0b8e78-a821-4542-958a-5c1d3ac687b1', 'ofcgno', 'Gnosis', 18, UnderlyingAsset.GNO),
@@ -145,7 +156,10 @@ export const ofcErc20Coins = [
   ofcerc20('3c35a09e-2cf2-475c-a5e3-a4757dca7b36', 'ofcstorj', 'Storj', 8, UnderlyingAsset.STORJ),
   ofcerc20('cc429744-58ca-4c3b-abe7-1761320b76ce', 'ofcsxp', 'Swipe', 18, UnderlyingAsset.SXP),
   ofcerc20('764937cd-464b-4a49-88a4-836e39f8e7d3', 'ofctribe', 'Tribe', 18, UnderlyingAsset.TRIBE),
-  ofcerc20('dbaf70b2-e159-4c67-9dd9-39ef886a2390', 'ofctrueusd', 'TrueUSD', 18, UnderlyingAsset.TUSD),
+  ofcerc20('dbaf70b2-e159-4c67-9dd9-39ef886a2390', 'ofctrueusd', 'TrueUSD', 18, UnderlyingAsset.TUSD, undefined, [
+    ...AccountCoin.DEFAULT_FEATURES,
+    CoinFeature.STABLECOIN,
+  ]),
   ofcerc20('2566f816-47de-481c-b4b9-f31989861388', 'ofcuma', 'UMA Voting Token V1', 18, UnderlyingAsset.UMA),
   ofcerc20('c6a7a05d-c4bf-44e6-b8e8-21ee1c0d2aa7', 'ofcwxt', 'Wirex', 18, UnderlyingAsset.WXT),
   ofcerc20('d46dc5ab-9c36-4591-b973-0175c2f4cdb5', 'ofcwsteth', 'Wrapped stETH', 18, UnderlyingAsset.WSTETH),
@@ -161,7 +175,9 @@ export const ofcErc20Coins = [
   ofcerc20('85aa8d06-1d85-4409-a421-99a2609a3106', 'ofccra', 'Crabada', 18, UnderlyingAsset.CRA),
   ofcerc20('a4271420-4e1d-46f2-b237-542c7720027d', 'ofcstmx', 'StormX', 18, UnderlyingAsset.STMX),
   ofcerc20('d37c6a8b-ddc8-4984-b2c0-317c18a8e4e1', 'ofccoti', 'Coti Token', 18, UnderlyingAsset.COTI),
-  ofcerc20('640b14f3-3c4d-4d9c-8139-73e68ec0db14', 'ofchusd', 'Husd Token', 8, UnderlyingAsset.HUSD),
+  ofcerc20('640b14f3-3c4d-4d9c-8139-73e68ec0db14', 'ofchusd', 'Husd Token', 8, UnderlyingAsset.HUSD, undefined, [
+    CoinFeature.STABLECOIN,
+  ]),
   ofcerc20('2b8c197e-b7ce-4069-8ab2-d75d1ba770ae', 'ofcqkc', 'QuarkChain', 18, UnderlyingAsset.QKC),
   ofcerc20('c11bbf5d-49ca-4678-8909-2599b60f80be', 'ofcrsr', 'Reserve Rights', 18, UnderlyingAsset.RSR),
   ofcerc20('41af8bf9-19a5-4975-9192-7e9f87718516', 'ofcspell', 'Spell Token', 18, UnderlyingAsset.SPELL),
@@ -175,7 +191,9 @@ export const ofcErc20Coins = [
   ofcerc20('af198c54-53d5-42b3-9e69-7fcc5887c0a0', 'ofcdia', 'DIA Token', 18, UnderlyingAsset.DIA),
   ofcerc20('4da7f6a6-9c56-44f7-a9b2-07ae7c669e42', 'ofcldo', 'Lido DAO Token', 18, UnderlyingAsset.LDO),
   ofcerc20('c7ac234f-5fb7-4ee3-b1e9-5479ccaab28c', 'ofcsbc', 'Sustainable Bitcoin Certificate', 8, UnderlyingAsset.SBC),
-  ofcerc20('1bc9f8be-81ea-4d1f-b55d-80c1986743f9', 'ofcusdglo', 'Glo Dollar', 18, UnderlyingAsset.USDGLO),
+  ofcerc20('1bc9f8be-81ea-4d1f-b55d-80c1986743f9', 'ofcusdglo', 'Glo Dollar', 18, UnderlyingAsset.USDGLO, undefined, [
+    CoinFeature.STABLECOIN,
+  ]),
   ofcerc20('dec90842-ca08-417e-9cb0-89723cc50b77', 'ofcwbtc', 'Wrapped Bitcoin', 8, UnderlyingAsset.WBTC),
   ofcerc20('8f01bcec-f576-49f8-b925-274566954017', 'ofcokb', 'OKB', 18, UnderlyingAsset.OKB),
   ofcerc20('37e7d659-c3a4-4761-8f42-76fb7bc5032c', 'ofcmnt', 'Mantle', 18, UnderlyingAsset.MNT),
@@ -211,13 +229,29 @@ export const ofcErc20Coins = [
   ofcerc20('4efe4036-6528-45f8-9a3f-d4175103da72', 'ofcom', 'Om Token', 18, UnderlyingAsset.OM),
   ofcerc20('f60e2aa4-0b99-40df-a316-bc1a41912ffd', 'ofcoceanv2', 'Ocean Token V2', 18, UnderlyingAsset.OCEANV2),
   ofcerc20('0ee531d4-6df5-437d-aec5-aa72e33ac775', 'ofceigen', 'Eigen', 18, UnderlyingAsset.EIGEN),
-  ofcerc20('bbe911d8-c900-401c-8dfb-febd98256e75', 'ofcusdy', 'Ondo U.S. Dollar Yield', 18, UnderlyingAsset.USDY),
+  ofcerc20(
+    'bbe911d8-c900-401c-8dfb-febd98256e75',
+    'ofcusdy',
+    'Ondo U.S. Dollar Yield',
+    18,
+    UnderlyingAsset.USDY,
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
   ofcerc20('017c87e8-db41-41f6-8382-c61ad8ced64b', 'ofcfold', 'Manifold Finance', 18, UnderlyingAsset.FOLD),
   ofcerc20('94fcd19b-6dd6-4a8c-8fea-11c73ba9fa48', 'ofcacx', 'Across Protocol', 18, UnderlyingAsset.ACX),
   ofcerc20('b5f3afea-f69a-4a05-87f9-965476ad77de', 'ofclpt', 'Livepeer Token', 18, UnderlyingAsset.LPT),
   ofcerc20('567b571f-6f79-40e4-adff-3e0e3c6ba959', 'ofcethfi', 'ether.fi governance token', 18, UnderlyingAsset.ETHFI),
   ofcerc20('cba66dc6-31eb-46c4-b73f-8cb77eb7ef5b', 'ofcgal', 'Project Galaxy', 18, UnderlyingAsset.GAL),
-  ofcerc20('0c6e4b19-d748-477c-9507-6c0f51142b07', 'ofcfdusd', 'First Digital USD', 18, UnderlyingAsset.FDUSD),
+  ofcerc20(
+    '0c6e4b19-d748-477c-9507-6c0f51142b07',
+    'ofcfdusd',
+    'First Digital USD',
+    18,
+    UnderlyingAsset.FDUSD,
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
   ofcerc20('80c3e860-f589-4227-a0f5-2aa6b18293c5', 'ofcrune', 'THORChain ETH.RUNE', 18, UnderlyingAsset.RUNE),
   ofcerc20('db35feb4-9cdb-447a-a698-e0e944ca6869', 'ofckcs', 'KuCoin', 6, UnderlyingAsset.KCS),
   ofcerc20('519ab013-f634-41f4-9d31-6f9368de5b09', 'ofcbeam', 'Beam', 18, UnderlyingAsset.BEAM),
@@ -226,7 +260,9 @@ export const ofcErc20Coins = [
   ofcerc20('969180cc-5af9-49c5-ad19-d8e8de755467', 'ofckas', 'Kaspa', 8, UnderlyingAsset.KAS),
   ofcerc20('eb54ecb6-7312-42c0-926a-1600d61a50dc', 'ofcbgb', 'Bitget', 18, UnderlyingAsset.BGB),
   ofcerc20('a4e0613e-1d1b-477c-9da5-7c553ff787b7', 'ofcmew', 'MEW coin', 18, UnderlyingAsset.MEW),
-  ofcerc20('ba2c8abb-6375-4207-9262-8b907a1dbf1b', 'ofcusdd', 'USDD', 18, UnderlyingAsset.USDD),
+  ofcerc20('ba2c8abb-6375-4207-9262-8b907a1dbf1b', 'ofcusdd', 'USDD', 18, UnderlyingAsset.USDD, undefined, [
+    CoinFeature.STABLECOIN,
+  ]),
   ofcerc20('cbb73d46-ce0d-4045-822b-8aa0d6fb8ad4', 'ofcw', 'Wormhole Token', 18, UnderlyingAsset.W),
   ofcerc20(
     '03a02e79-f604-4b79-96da-fb4a21456566',
@@ -237,7 +273,9 @@ export const ofcErc20Coins = [
   ),
   ofcerc20('8f0d3af0-8f99-4860-88db-e9b52855262f', 'ofccore', 'cVault.finance', 18, UnderlyingAsset.CORE),
   ofcerc20('6135770b-d8a6-4998-85f4-5efc7379695c', 'ofcena', 'Ethena', 18, UnderlyingAsset.ENA),
-  ofcerc20('fb61c76b-ee66-48b6-a0a2-6ec37d03c542', 'ofcusde', 'USDe', 18, UnderlyingAsset.USDE),
+  ofcerc20('fb61c76b-ee66-48b6-a0a2-6ec37d03c542', 'ofcusde', 'USDe', 18, UnderlyingAsset.USDE, undefined, [
+    CoinFeature.STABLECOIN,
+  ]),
   ofcerc20('4419a432-b655-4941-92f6-a8a8a405ee97', 'ofczro', 'LayerZero', 18, UnderlyingAsset.ZRO),
   ofcerc20('799795f1-0294-4bb7-9ed1-d5d43fd03e8b', 'ofcsafe', 'SAFE', 18, UnderlyingAsset.SAFE),
   ofcerc20('5d0f9251-58e1-44fa-b1d6-b87ed23586da', 'ofcmoca', 'Moca', 18, UnderlyingAsset.MOCA),
@@ -252,7 +290,15 @@ export const ofcErc20Coins = [
   ofcerc20('d3f81454-874d-44a2-96e9-2fa37b5311b3', 'ofceth:turbo', 'Turbo', 18, UnderlyingAsset['eth:turbo']),
   ofcerc20('509e7614-4134-4f4a-b107-cd3b4783a558', 'ofceth:spx', 'SPX6900', 8, UnderlyingAsset['eth:spx']),
   ofcerc20('2c863d38-6d3b-438a-983d-79f20aff030a', 'ofceth:kava', 'Kava', 6, UnderlyingAsset['eth:kava']),
-  ofcerc20('53a414b4-cefa-4a81-936c-9ecbb2da22cc', 'ofceth:gousd', 'goUSD', 6, UnderlyingAsset['eth:gousd']),
+  ofcerc20(
+    '53a414b4-cefa-4a81-936c-9ecbb2da22cc',
+    'ofceth:gousd',
+    'goUSD',
+    6,
+    UnderlyingAsset['eth:gousd'],
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
   ofcerc20('42e30f8e-0e75-4e3f-bb9c-c4f8ec6d819e', 'ofceth:ryt', 'Real Yield Token', 18, UnderlyingAsset['eth:ryt']),
   ofcerc20('0bdaaf36-bd01-4cce-96b5-60a9d2c82c36', 'ofceth:guild', 'BlockchainSpace', 18, UnderlyingAsset['eth:guild']),
   ofcerc20('f9bb204c-cfc7-406a-8e4e-6205efb9b187', 'ofceth:rdo', 'Reddio', 18, UnderlyingAsset['eth:rdo']),
@@ -758,7 +804,15 @@ export const ofcErc20Coins = [
   ofcerc20('ca7e5745-af28-432a-8411-b8e3aaf38416', 'ofcgold', 'XBullion Token', 8, underlyingAssetForSymbol('gold')),
   ofcerc20('0330cfb6-43be-4cc6-b905-a09706a5e9ae', 'ofcgot', 'GOExchange', 18, underlyingAssetForSymbol('got')),
   ofcerc20('cccb78f7-8d8a-4b73-b915-a3754ac3d75b', 'ofcgto', 'Gifto', 5, underlyingAssetForSymbol('gto')),
-  ofcerc20('87290914-5a67-46a1-a2d6-26ba243dae33', 'ofcgusd', 'Gemini Dollar', 2, underlyingAssetForSymbol('gusd')),
+  ofcerc20(
+    '87290914-5a67-46a1-a2d6-26ba243dae33',
+    'ofcgusd',
+    'Gemini Dollar',
+    2,
+    underlyingAssetForSymbol('gusd'),
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
   ofcerc20('c0089eb1-92d9-4775-bbf7-a0a60434c23f', 'ofcgxc', 'Game X Coin', 18, underlyingAssetForSymbol('gxc')),
   ofcerc20('a9bc71ef-b85e-4b3a-9949-7de54626258b', 'ofcgyen', 'Gmo JPY', 6, underlyingAssetForSymbol('gyen')),
   ofcerc20('0081146a-bde1-4bf4-abe7-703d90d5e1ec', 'ofchcn', 'Himalaya Coin', 18, underlyingAssetForSymbol('hcn')),
@@ -914,7 +968,15 @@ export const ofcErc20Coins = [
   ofcerc20('9a4e4778-5188-4fbc-8365-9dc0ec667692', 'ofcmpay', 'MenaPay', 18, underlyingAssetForSymbol('mpay')),
   ofcerc20('b6211763-0265-4b62-b611-8ed352c97516', 'ofcmtcn', 'Multiven', 18, underlyingAssetForSymbol('mtcn')),
   ofcerc20('a880c391-4c5a-4748-9bc7-1f36334562ec', 'ofcmta', 'Meta', 18, underlyingAssetForSymbol('mta')),
-  ofcerc20('a34f03a4-6e4f-45db-b00b-936f07127359', 'ofcmusd', 'mStable USD', 18, underlyingAssetForSymbol('musd')),
+  ofcerc20(
+    'a34f03a4-6e4f-45db-b00b-936f07127359',
+    'ofcmusd',
+    'mStable USD',
+    18,
+    underlyingAssetForSymbol('musd'),
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
   ofcerc20('8cbe862a-ce3e-4d0d-ab77-e854422d7a94', 'ofcmvi', 'Metaverse Index', 18, underlyingAssetForSymbol('mvi')),
   ofcerc20(
     '6213e9f1-19eb-4464-8353-308d0fe2c4a0',
@@ -1047,7 +1109,15 @@ export const ofcErc20Coins = [
     18,
     underlyingAssetForSymbol('ns2drp')
   ),
-  ofcerc20('a48c13d4-387f-48f9-8ac6-add674f2dc60', 'ofcpusd', 'PegUSD Token', 8, underlyingAssetForSymbol('pusd')),
+  ofcerc20(
+    'a48c13d4-387f-48f9-8ac6-add674f2dc60',
+    'ofcpusd',
+    'PegUSD Token',
+    8,
+    underlyingAssetForSymbol('pusd'),
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
   ofcerc20('3ed1f00c-be87-45f4-b393-4a423422361f', 'ofcpush', 'Push Protocol', 18, underlyingAssetForSymbol('push')),
   ofcerc20('188194de-9728-4e29-997f-00dba0c224b4', 'ofcpv01', 'PV01', 18, underlyingAssetForSymbol('pv01')),
   ofcerc20(
@@ -1106,7 +1176,15 @@ export const ofcErc20Coins = [
   ofcerc20('a808f5a1-fd21-40ef-8be0-ffd1c9c61015', 'ofcringx', 'Ringx Token', 18, underlyingAssetForSymbol('ringx')),
   ofcerc20('07268667-86cc-4ae6-a986-2c39523ad2b8', 'ofcrio', 'Realio Network', 18, underlyingAssetForSymbol('rio')),
   ofcerc20('e6adc9cf-8125-4ff8-b34d-1a412060d88a', 'ofcrlc', 'Iexec Rlc', 9, underlyingAssetForSymbol('rlc')),
-  ofcerc20('fd56e938-5f94-4b19-b2c5-f15a2af50595', 'ofcrlusd', 'Ripple USD', 18, underlyingAssetForSymbol('rlusd')),
+  ofcerc20(
+    'fd56e938-5f94-4b19-b2c5-f15a2af50595',
+    'ofcrlusd',
+    'Ripple USD',
+    18,
+    underlyingAssetForSymbol('rlusd'),
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
   ofcerc20('8728409f-5e31-4fb1-a63e-e42a4fdd950a', 'ofcrook', 'KeeperDAO', 18, underlyingAssetForSymbol('rook')),
   ofcerc20('31f7b2ab-a7bc-463f-ac87-930cf8f3e203', 'ofcronc', 'RONCoin', 18, underlyingAssetForSymbol('ronc')),
   ofcerc20('8f5135de-5f0c-4a1c-8158-ccede1d39c30', 'ofcroobee', 'ROOBEE', 18, underlyingAssetForSymbol('roobee')),
@@ -1313,7 +1391,9 @@ export const ofcErc20Coins = [
     'ofcupusd',
     'Universal US Dollar',
     2,
-    underlyingAssetForSymbol('upusd')
+    underlyingAssetForSymbol('upusd'),
+    undefined,
+    [CoinFeature.STABLECOIN]
   ),
   ofcerc20(
     '24415d14-0397-45b7-87c8-1aa680d11b79',
@@ -1327,12 +1407,30 @@ export const ofcErc20Coins = [
     'ofcusdx',
     'eToro United States Dollar',
     18,
-    underlyingAssetForSymbol('usdx')
+    underlyingAssetForSymbol('usdx'),
+    undefined,
+    [CoinFeature.STABLECOIN]
   ),
   ofcerc20('fd6f7e4e-3a5e-4868-91af-399b8e4d76dd', 'ofcusg', 'US Gold', 9, underlyingAssetForSymbol('usg')),
   ofcerc20('7e1bc370-f226-4111-b51b-a3dd8ed54fb7', 'ofcuspx', 'USPX Token', 0, underlyingAssetForSymbol('uspx')),
-  ofcerc20('d5b18be0-8263-4729-84fe-57501c848e29', 'ofcust', 'TerraUSD', 18, underlyingAssetForSymbol('ust')),
-  ofcerc20('f55ca795-c8ed-4e8f-b137-bf74b5868503', 'ofcusx', 'USD Stable Token', 18, underlyingAssetForSymbol('usx')),
+  ofcerc20(
+    'd5b18be0-8263-4729-84fe-57501c848e29',
+    'ofcust',
+    'TerraUSD',
+    18,
+    underlyingAssetForSymbol('ust'),
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
+  ofcerc20(
+    'f55ca795-c8ed-4e8f-b137-bf74b5868503',
+    'ofcusx',
+    'USD Stable Token',
+    18,
+    underlyingAssetForSymbol('usx'),
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
   ofcerc20('e0142e63-a344-49df-a671-bca12013d88c', 'ofcusyc', 'US Yield Coin', 6, underlyingAssetForSymbol('usyc')),
   ofcerc20('c7f9e986-8eb8-445f-b2d2-b029428024c5', 'ofcutk', 'UTrust', 18, underlyingAssetForSymbol('utk')),
   ofcerc20('59815a51-0298-43bf-9e7c-8aa58ba4d725', 'ofcutk1', 'UTrust Token', 18, underlyingAssetForSymbol('utk1')),
@@ -1453,7 +1551,15 @@ export const ofcErc20Coins = [
   ofcerc20('a528f520-dc66-4154-a368-904c9914ff3f', 'ofczlw', 'Zelwin', 18, underlyingAssetForSymbol('zlw')),
   ofcerc20('e669308b-14c0-4c3e-8c3a-4e12ac9701cf', 'ofczmt', 'Zipmex Token', 18, underlyingAssetForSymbol('zmt')),
   ofcerc20('d1ef8829-7f82-4697-8f5e-4430e1c3c851', 'ofczoom', 'CoinZoom', 18, underlyingAssetForSymbol('zoom')),
-  ofcerc20('41930258-22df-4edb-80db-912b097c92ec', 'ofczusd', 'Z.com Usd', 6, underlyingAssetForSymbol('zusd')),
+  ofcerc20(
+    '41930258-22df-4edb-80db-912b097c92ec',
+    'ofczusd',
+    'Z.com Usd',
+    6,
+    underlyingAssetForSymbol('zusd'),
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
   ofcerc20(
     '5246d956-3dfb-4de2-a5e4-f5d683c451ab',
     'ofcadabear',
@@ -1874,7 +1980,9 @@ export const ofcErc20Coins = [
     18,
     underlyingAssetForSymbol('xtzbull')
   ),
-  ofcerc20('0844dddc-d125-460d-b23b-e098d7d4ed98', 'ofcxusd', 'XUSD', 6, underlyingAssetForSymbol('xusd')),
+  ofcerc20('0844dddc-d125-460d-b23b-e098d7d4ed98', 'ofcxusd', 'XUSD', 6, underlyingAssetForSymbol('xusd'), undefined, [
+    CoinFeature.STABLECOIN,
+  ]),
   ofcerc20('22e95bde-0569-4cc0-991d-275fa548e792', 'ofcxvs', 'Venus XVS', 18, underlyingAssetForSymbol('xvs')),
   ofcerc20('522523cd-0716-4a10-a785-06d424286bed', 'ofcxzk', 'Mystiko Token', 18, underlyingAssetForSymbol('xzk')),
   ofcerc20(
@@ -1923,7 +2031,9 @@ export const ofcErc20Coins = [
     'ofcsynth-susd',
     'Synth sUSD',
     18,
-    underlyingAssetForSymbol('synth-susd')
+    underlyingAssetForSymbol('synth-susd'),
+    undefined,
+    [CoinFeature.STABLECOIN]
   ),
   ofcerc20('2c14c22a-cdc9-4f5e-b6a4-6201f4fc48d9', 'ofcsusde', 'Staked USDe', 18, underlyingAssetForSymbol('susde')),
   ofcerc20('39a6d9e6-9f64-4c66-b6d2-22c4982cb488', 'ofcswag', 'Swag Token', 18, underlyingAssetForSymbol('swag')),
@@ -2028,7 +2138,9 @@ export const ofcErc20Coins = [
   ofcerc20('947b3b4e-280b-45be-9455-aabd7138c075', 'ofcatf', 'AntFarm Finance', 9, underlyingAssetForSymbol('atf')),
   ofcerc20('c8428197-606c-4950-89fc-97e8adcd74a5', 'ofcatl', 'ATLANT', 18, underlyingAssetForSymbol('atl')),
   ofcerc20('a368ec29-3204-4699-9815-c0d7a8683d50', 'ofcatlas', 'Star Atlas', 8, underlyingAssetForSymbol('atlas')),
-  ofcerc20('ad394bb6-3c1e-4c0d-9502-a13b23f69fc1', 'ofcausd', 'AUSD₮', 6, underlyingAssetForSymbol('ausd')),
+  ofcerc20('ad394bb6-3c1e-4c0d-9502-a13b23f69fc1', 'ofcausd', 'AUSD₮', 6, underlyingAssetForSymbol('ausd'), undefined, [
+    CoinFeature.STABLECOIN,
+  ]),
   ofcerc20(
     'a7a5e765-af73-4769-a10b-88379386656b',
     'ofcausdt',
@@ -2631,7 +2743,15 @@ export const ofcErc20Coins = [
   ofcerc20('dce641ae-8a76-4212-9dfc-a5ba981259c8', 'ofcorc', 'Orbit Chain', 18, underlyingAssetForSymbol('orc')),
   ofcerc20('8c5c434b-3ffa-46fc-8fb9-bc88d73a9363', 'ofcorn', 'Orion Protocol', 8, underlyingAssetForSymbol('orn')),
   ofcerc20('9d4c639f-29f1-4941-be3e-dfc23291b379', 'ofcos', 'OpenSea', 18, underlyingAssetForSymbol('os')),
-  ofcerc20('24daf055-c62a-43dc-844d-cb85361294e1', 'ofcousd', 'OpenSea', 18, underlyingAssetForSymbol('ousd')),
+  ofcerc20(
+    '24daf055-c62a-43dc-844d-cb85361294e1',
+    'ofcousd',
+    'OpenSea',
+    18,
+    underlyingAssetForSymbol('ousd'),
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
   ofcerc20(
     '015fe891-e2b9-4f89-949e-7b0682e0c163',
     'ofcpaxgbear',
@@ -2849,7 +2969,9 @@ export const ofcErc20Coins = [
     underlyingAssetForSymbol('usdc-pos-wormhole')
   ),
   ofcerc20('6eea1886-280f-4fef-b392-8d0299437dfd', 'ofcuscc', 'USCC', 8, underlyingAssetForSymbol('uscc')),
-  ofcerc20('930506e9-5672-4a26-bc09-58df72267cac', 'ofcusdk', 'USDK', 18, underlyingAssetForSymbol('usdk')),
+  ofcerc20('930506e9-5672-4a26-bc09-58df72267cac', 'ofcusdk', 'USDK', 18, underlyingAssetForSymbol('usdk'), undefined, [
+    CoinFeature.STABLECOIN,
+  ]),
   ofcerc20(
     '1c891223-1ffb-409d-89b9-52e57c7fc02a',
     'ofcusdtbear',
@@ -2974,13 +3096,23 @@ export const ofcErc20Coins = [
     6,
     underlyingAssetForSymbol('eth:rtbl')
   ),
-  ofcerc20('2bd66ef0-5767-4739-baf4-0eb862e5675e', 'ofceth:usd1', 'USD1', 18, underlyingAssetForSymbol('eth:usd1')),
+  ofcerc20(
+    '2bd66ef0-5767-4739-baf4-0eb862e5675e',
+    'ofceth:usd1',
+    'USD1',
+    18,
+    underlyingAssetForSymbol('eth:usd1'),
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
   ofcerc20(
     '80bfa43e-f01c-42bd-bd14-269b88948bbf',
     'ofceth:usdg',
     'Global Dollar',
     6,
-    underlyingAssetForSymbol('eth:usdg')
+    underlyingAssetForSymbol('eth:usdg'),
+    undefined,
+    [CoinFeature.STABLECOIN]
   ),
   ofcerc20(
     '597fa9d6-2cc5-451e-b964-c18ca41ef3df',
@@ -3002,7 +3134,9 @@ export const ofcErc20Coins = [
     'ofceth:usdd',
     'Decentralized USD',
     18,
-    underlyingAssetForSymbol('eth:usdd')
+    underlyingAssetForSymbol('eth:usdd'),
+    undefined,
+    [CoinFeature.STABLECOIN]
   ),
   ofcerc20('2732c732-1c77-4638-92a2-b2a6771e584b', 'ofceth:mx', 'MX Token', 18, underlyingAssetForSymbol('eth:mx')),
   ofcerc20(
@@ -3017,7 +3151,9 @@ export const ofcErc20Coins = [
     'ofceth:usd0',
     'Usual USD',
     18,
-    underlyingAssetForSymbol('eth:usd0')
+    underlyingAssetForSymbol('eth:usd0'),
+    undefined,
+    [CoinFeature.STABLECOIN]
   ),
   ofcerc20(
     'f0c97bb2-a778-4605-94d6-e3c82bf68821',
@@ -3247,7 +3383,15 @@ export const ofcErc20Coins = [
     18,
     underlyingAssetForSymbol('eth:ibenji')
   ),
-  ofcerc20('c3a5c5d2-5d6e-4c9b-9f3e-6d2a4e5b6c8d', 'ofceth:usds', 'USDS', 18, underlyingAssetForSymbol('eth:usds')),
+  ofcerc20(
+    'c3a5c5d2-5d6e-4c9b-9f3e-6d2a4e5b6c8d',
+    'ofceth:usds',
+    'USDS',
+    18,
+    underlyingAssetForSymbol('eth:usds'),
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
   ofcerc20('b4aed05b-b667-4b1e-b88e-19219989c1e4', 'ofceth:perc', 'Perion', 18, underlyingAssetForSymbol('eth:perc')),
   ofcerc20('d6ba9776-1b5b-4364-8afd-594363a01ec1', 'ofceth:cfg', 'Centrifuge', 18, underlyingAssetForSymbol('eth:cfg')),
   ofcerc20('d3ec2f84-fa4d-42a7-85f2-7d0e932b3bb0', 'ofceth:plume', 'Plume', 18, underlyingAssetForSymbol('eth:plume')),
@@ -3399,6 +3543,16 @@ export const ofcErc20Coins = [
     18,
     underlyingAssetForSymbol('eth:usdo')
   ),
+  ofcerc20('c099e464-f464-4d7c-8e6b-3dee55d95837', 'ofceth:vsn', 'Vision', 18, underlyingAssetForSymbol('eth:vsn')),
+  ofcerc20(
+    '42f3a70b-2070-45d4-ac52-9fb676d3337b',
+    'ofceth:shx',
+    'Stronghold SHx',
+    7,
+    underlyingAssetForSymbol('eth:shx')
+  ),
+  ofcerc20('6ad8cc28-3c63-4d77-9488-87c6935b3cf8', 'ofceth:slay', 'SatLayer', 6, underlyingAssetForSymbol('eth:slay')),
+  ofcerc20('e1a2fff8-5a33-4873-9231-6289eec23a9d', 'ofceth:mxnb', 'MXNB', 6, underlyingAssetForSymbol('eth:mxnb')),
 ];
 
 export const tOfcErc20Coins = [
@@ -3481,7 +3635,7 @@ export const tOfcErc20Coins = [
     6,
     UnderlyingAsset.TUSDS,
     undefined,
-    undefined,
+    [CoinFeature.STABLECOIN],
     undefined,
     undefined,
     undefined,
@@ -3495,7 +3649,7 @@ export const tOfcErc20Coins = [
     6,
     UnderlyingAsset.TGOUSD,
     undefined,
-    undefined,
+    [CoinFeature.STABLECOIN],
     undefined,
     undefined,
     undefined,
@@ -3509,7 +3663,7 @@ export const tOfcErc20Coins = [
     18,
     UnderlyingAsset['hteth:stgusd1'],
     undefined,
-    undefined,
+    [CoinFeature.STABLECOIN],
     undefined,
     undefined,
     undefined,
@@ -3537,7 +3691,7 @@ export const tOfcErc20Coins = [
     6,
     UnderlyingAsset['hteth:gousd'],
     undefined,
-    undefined,
+    [CoinFeature.STABLECOIN],
     undefined,
     undefined,
     undefined,
@@ -3551,7 +3705,7 @@ export const tOfcErc20Coins = [
     18,
     UnderlyingAsset['hteth:usd1'],
     undefined,
-    undefined,
+    [CoinFeature.STABLECOIN],
     undefined,
     undefined,
     undefined,

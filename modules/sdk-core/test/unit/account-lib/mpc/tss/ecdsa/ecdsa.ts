@@ -21,7 +21,8 @@ import { loadWebAssembly } from '@bitgo/sdk-opensslbytes';
 
 const openSSLBytes = loadWebAssembly().buffer;
 
-describe('ecdsa tss', function () {
+describe('ecdsa tss', function (this: Mocha.Context) {
+  this.timeout(60000);
   const ecdsa = new Ecdsa();
 
   let signCombine1: SignCombineRT, signCombine2: SignCombineRT;

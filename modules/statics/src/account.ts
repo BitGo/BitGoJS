@@ -68,6 +68,13 @@ export class AccountCoin extends BaseCoin {
   public static getFeaturesExcluding(excludedFeatures: CoinFeature[]): CoinFeature[] {
     return AccountCoin.DEFAULT_FEATURES.filter((feature) => !excludedFeatures.includes(feature));
   }
+
+  public static getFeaturesByTypeExcluding(
+    excludedFeatures: CoinFeature[],
+    baseFeatures: CoinFeature[] = AccountCoin.DEFAULT_FEATURES
+  ): CoinFeature[] {
+    return baseFeatures.filter((feature) => !excludedFeatures.includes(feature));
+  }
 }
 
 export interface GasTankAccountConstructorOptions extends AccountConstructorOptions {
@@ -110,11 +117,6 @@ export interface SolCoinConstructorOptions extends AccountConstructorOptions {
   tokenAddress: string;
   contractAddress: string;
   programId: string;
-}
-
-export interface AdaCoinConstructorOptions extends AccountConstructorOptions {
-  policyId: string;
-  assetName: string;
 }
 
 export interface XrpCoinConstructorOptions extends AccountConstructorOptions {
@@ -166,6 +168,11 @@ export interface CosmosTokenConstructorOptions extends AccountConstructorOptions
   denom: string;
 }
 
+export interface AdaTokenConstructorOptions extends AccountConstructorOptions {
+  uniqueAssetId: string;
+  policyId: string;
+  assetName: string;
+}
 export interface ContractAddress extends String {
   __contractaddress_phantom__: never;
 }
@@ -410,24 +417,6 @@ export class SolCoin extends AccountCoinToken {
     this.tokenAddress = options.contractAddress;
     this.contractAddress = options.contractAddress;
     this.programId = options.programId;
-  }
-}
-
-/**
- * The Ada network supports tokens
- * Ada tokens are identified by their policy ID and asset name
- *
- */
-export class AdaCoin extends AccountCoinToken {
-  public policyId: string;
-  public assetName: string;
-  constructor(options: AdaCoinConstructorOptions) {
-    super({
-      ...options,
-    });
-
-    this.policyId = options.policyId;
-    this.assetName = options.assetName;
   }
 }
 
@@ -710,6 +699,21 @@ export class PolyxCoin extends AccountCoinToken {
     });
     this.ticker = options.ticker;
     this.assetId = options.assetId;
+  }
+}
+
+export class AdaToken extends AccountCoinToken {
+  public uniqueAssetId: string;
+  public policyId: string;
+  public assetName: string;
+  constructor(options: AdaTokenConstructorOptions) {
+    super({
+      ...options,
+    });
+
+    this.uniqueAssetId = options.uniqueAssetId;
+    this.policyId = options.policyId;
+    this.assetName = options.assetName;
   }
 }
 
@@ -1886,6 +1890,7 @@ export function adaToken(
   decimalPlaces: number,
   policyId: string,
   assetName: string,
+  encodedAssetName: string,
   asset: UnderlyingAsset,
   features: CoinFeature[] = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.REQUIRES_RESERVE],
   prefix = '',
@@ -1893,8 +1898,9 @@ export function adaToken(
   network: AccountNetwork = Networks.main.ada,
   primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
 ) {
+  const uniqueAssetId = `${policyId}${encodedAssetName}`;
   return Object.freeze(
-    new AdaCoin({
+    new AdaToken({
       id,
       name,
       fullName,
@@ -1909,6 +1915,7 @@ export function adaToken(
       isToken: true,
       primaryKeyCurve,
       baseUnit: BaseUnit.ADA,
+      uniqueAssetId,
     })
   );
 }
@@ -1935,13 +1942,27 @@ export function tadaToken(
   decimalPlaces: number,
   policyId: string,
   assetName: string,
+  encodedAssetName: string,
   asset: UnderlyingAsset,
   features: CoinFeature[] = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.REQUIRES_RESERVE],
   network: AccountNetwork = Networks.test.ada,
   prefix = '',
   suffix: string = name.toUpperCase()
 ) {
-  return adaToken(id, name, fullName, decimalPlaces, policyId, assetName, asset, features, prefix, suffix, network);
+  return adaToken(
+    id,
+    name,
+    fullName,
+    decimalPlaces,
+    policyId,
+    assetName,
+    encodedAssetName,
+    asset,
+    features,
+    prefix,
+    suffix,
+    network
+  );
 }
 
 /**

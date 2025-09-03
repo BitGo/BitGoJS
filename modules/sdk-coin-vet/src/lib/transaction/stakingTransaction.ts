@@ -5,6 +5,7 @@ import { Transaction } from './transaction';
 import { VetTransactionData } from '../iface';
 import EthereumAbi from 'ethereumjs-abi';
 import utils from '../utils';
+import BigNumber from 'bignumber.js';
 
 export class StakingTransaction extends Transaction {
   private _stakingContractAddress: string;
@@ -129,7 +130,7 @@ export class StakingTransaction extends Transaction {
       // Set recipients from clauses
       this.recipients = body.clauses.map((clause) => ({
         address: (clause.to || '0x0').toString().toLowerCase(),
-        amount: String(clause.value || '0'),
+        amount: new BigNumber(clause.value || 0).toString(),
       }));
       this.loadInputsAndOutputs();
 

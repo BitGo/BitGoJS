@@ -2,7 +2,9 @@ import { CoinFeature, UnderlyingAsset } from '../base';
 import { AccountCoin, erc20, terc20 } from '../account';
 import { Networks } from '../networks';
 import {
+  ACCOUNT_COIN_DEFAULT_FEATURES,
   EIGEN_FEATURES,
+  ETH_FEATURES,
   ETH_FEATURES_WITH_FRANKFURT,
   ETH_FEATURES_WITH_FRANKFURT_EXCLUDE_SINGAPORE,
   ETH_FEATURES_WITH_FRANKFURT_GERMANY,
@@ -425,7 +427,15 @@ export const erc20Coins = [
     18,
     '0xf17a3fe536f8f7847f1385ec1bc967b2ca9cae8d',
     UnderlyingAsset.AMKT,
-    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
+    AccountCoin.getFeaturesByTypeExcluding(
+      [
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      ],
+      ETH_FEATURES
+    )
   ),
   erc20(
     'f050777a-c194-46a1-9f37-ee006b03365d',
@@ -728,7 +738,11 @@ export const erc20Coins = [
     'BASIC Token',
     18,
     '0xf25c91c87e0b1fd9b4064af0f427157aab0193a7',
-    UnderlyingAsset.BASIC
+    UnderlyingAsset.BASIC,
+    AccountCoin.getFeaturesByTypeExcluding(
+      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT],
+      ETH_FEATURES
+    )
   ),
   erc20(
     '769bcca4-af8e-4a1d-8758-65d79fbc4b94',
@@ -770,7 +784,15 @@ export const erc20Coins = [
     0,
     '0x1f41e42d0a9e3c0dd3ba15b527342783b43200a9',
     UnderlyingAsset.BCAP,
-    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
+    AccountCoin.getFeaturesByTypeExcluding(
+      [
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      ],
+      ETH_FEATURES
+    )
   ),
   erc20(
     '8f3ba79b-4cf6-417f-a5bc-84c613a3c08e',
@@ -786,7 +808,11 @@ export const erc20Coins = [
     'Blockchain.io',
     18,
     '0xcdc412f306e0c51e3249b88c65423cd16b322673',
-    UnderlyingAsset.BCIO
+    UnderlyingAsset.BCIO,
+    AccountCoin.getFeaturesByTypeExcluding(
+      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT],
+      ETH_FEATURES
+    )
   ),
   erc20(
     '4130136a-edd2-4e1c-a546-3f467793c232',
@@ -819,11 +845,17 @@ export const erc20Coins = [
     18,
     '0x62d0a8458ed7719fdaf978fe5929c6d342b0bfce',
     UnderlyingAsset.BEAM,
-    AccountCoin.getFeaturesExcluding([
-      CoinFeature.CUSTODY_BITGO_SINGAPORE,
-      CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
-      CoinFeature.CUSTODY_BITGO_MENA_FZE,
-    ])
+    AccountCoin.getFeaturesByTypeExcluding(
+      [
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+        CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+        CoinFeature.CUSTODY_BITGO_MENA_FZE,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+      ],
+      ETH_FEATURES
+    )
   ),
   erc20(
     '04c44584-c417-4fce-883f-8f316854c63e',
@@ -832,7 +864,15 @@ export const erc20Coins = [
     18,
     '0x2af1df3ab0ab157e1e2ad8f88a7d04fbea0c7dc6',
     UnderlyingAsset.BED,
-    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
+    AccountCoin.getFeaturesByTypeExcluding(
+      [
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      ],
+      ETH_FEATURES
+    )
   ),
   erc20(
     '6a744a2e-e6b6-4bb2-bf7a-7fee330678c3',
@@ -890,11 +930,14 @@ export const erc20Coins = [
     18,
     '0x96a5399d07896f757bd4c6ef56461f58db951862',
     UnderlyingAsset['eth:dragonx'],
-    AccountCoin.getFeaturesExcluding([
-      CoinFeature.CUSTODY_BITGO_SINGAPORE,
-      CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
-      CoinFeature.CUSTODY_BITGO_MENA_FZE,
-    ])
+    AccountCoin.getFeaturesByTypeExcluding(
+      [
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+        CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+        CoinFeature.CUSTODY_BITGO_MENA_FZE,
+      ],
+      ETH_FEATURES
+    )
   ),
   erc20(
     'bcb2af13-b64d-403a-bb61-1990e6286fcd',
@@ -961,7 +1004,15 @@ export const erc20Coins = [
     8,
     '0xc80c5e40220172b36adee2c951f26f2a577810c5',
     UnderlyingAsset.BNK,
-    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
+    AccountCoin.getFeaturesByTypeExcluding(
+      [
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      ],
+      ETH_FEATURES
+    )
   ),
   erc20(
     'fd39c546-52c8-4668-b30d-3397681ff9d3',
@@ -1118,7 +1169,15 @@ export const erc20Coins = [
     6,
     '0x7712c34205737192402172409a8f7ccef8aa2aec',
     UnderlyingAsset.BUIDL,
-    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
+    AccountCoin.getFeaturesByTypeExcluding(
+      [
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      ],
+      ETH_FEATURES
+    )
   ),
   erc20(
     '43a646c7-f137-4f02-ba36-a98a5c72bf45',
@@ -1142,7 +1201,8 @@ export const erc20Coins = [
     'Binance USD',
     18,
     '0x4fabb145d64652a948d72533023f6e7a623c7c53',
-    UnderlyingAsset.BUSD
+    UnderlyingAsset.BUSD,
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   erc20(
     '21ea5ea7-8660-4e68-aa17-1c9bed6f623d',
@@ -1298,13 +1358,13 @@ export const erc20Coins = [
     4,
     '0xaaaebe6fe48e54f431b0c390cfaf0b017d09d42d',
     UnderlyingAsset.CEL,
-    ETH_FEATURES_WITH_FRANKFURT.filter(
-      (feature) =>
-        ![
-          CoinFeature.CUSTODY_BITGO_SINGAPORE,
-          CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
-          CoinFeature.CUSTODY_BITGO_MENA_FZE,
-        ].includes(feature)
+    AccountCoin.getFeaturesByTypeExcluding(
+      [
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+        CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+        CoinFeature.CUSTODY_BITGO_MENA_FZE,
+      ],
+      ETH_FEATURES_WITH_FRANKFURT
     )
   ),
   erc20(
@@ -1323,7 +1383,15 @@ export const erc20Coins = [
     8,
     '0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5',
     UnderlyingAsset.CETH,
-    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
+    AccountCoin.getFeaturesByTypeExcluding(
+      [
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      ],
+      ETH_FEATURES
+    )
   ),
   erc20(
     'fd41106e-cf6f-4f0c-9868-a41fbcec8a49',
@@ -1405,7 +1473,11 @@ export const erc20Coins = [
     'Colu Local Network',
     18,
     '0x4162178b78d6985480a308b2190ee5517460406d',
-    UnderlyingAsset.CLN
+    UnderlyingAsset.CLN,
+    AccountCoin.getFeaturesByTypeExcluding(
+      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT],
+      ETH_FEATURES
+    )
   ),
   erc20(
     'f53296e8-f0a8-4e16-8a3c-851980e0e619',
@@ -1472,7 +1544,11 @@ export const erc20Coins = [
     'Cover',
     18,
     '0x5d8d9f5b96f4438195be9b99eee6118ed4304286',
-    UnderlyingAsset.COVER
+    UnderlyingAsset.COVER,
+    AccountCoin.getFeaturesByTypeExcluding(
+      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT],
+      ETH_FEATURES
+    )
   ),
   erc20(
     '86083e85-1847-46d8-ad81-319a351b22f0',
@@ -1722,7 +1798,15 @@ export const erc20Coins = [
     18,
     '0x33d63ba1e57e54779f7ddaeaa7109349344cf5f1',
     UnderlyingAsset.DATAECON,
-    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
+    AccountCoin.getFeaturesByTypeExcluding(
+      [
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      ],
+      ETH_FEATURES
+    )
   ),
   erc20(
     '61e56de0-9325-4f78-8c3c-0f5778929539',
@@ -1894,7 +1978,15 @@ export const erc20Coins = [
     18,
     '0x1494ca1f11d487c2bbe4543e90080aeba4ba3c2b',
     UnderlyingAsset.DPI,
-    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
+    AccountCoin.getFeaturesByTypeExcluding(
+      [
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      ],
+      ETH_FEATURES
+    )
   ),
   erc20(
     '1ac0596d-5b05-4c4e-b6b4-4a5eb0310944',
@@ -2170,7 +2262,11 @@ export const erc20Coins = [
     'Enigma',
     8,
     '0xf0ee6b27b759c9893ce4f094b49ad28fd15a23e4',
-    UnderlyingAsset.ENG
+    UnderlyingAsset.ENG,
+    AccountCoin.getFeaturesByTypeExcluding(
+      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT],
+      ETH_FEATURES
+    )
   ),
   erc20(
     '9a8a9b8d-5554-426c-8233-20970a4391f1',
@@ -2220,7 +2316,11 @@ export const erc20Coins = [
     'Ethos',
     8,
     '0x5af2be193a6abca9c8817001f45744777db30756',
-    UnderlyingAsset.ETHOS
+    UnderlyingAsset.ETHOS,
+    AccountCoin.getFeaturesByTypeExcluding(
+      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT],
+      ETH_FEATURES
+    )
   ),
   erc20(
     'acf19e82-a0f9-4cb8-a30b-a46b00a1270c',
@@ -2261,7 +2361,11 @@ export const erc20Coins = [
     'LUGH',
     6,
     '0xa967dd943b336680540011536e7d8c3d33333515',
-    UnderlyingAsset.EURL
+    UnderlyingAsset.EURL,
+    AccountCoin.getFeaturesByTypeExcluding(
+      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT],
+      ETH_FEATURES
+    )
   ),
   erc20(
     '5764186f-c3a1-4872-a7ec-5575d6e543de',
@@ -2432,7 +2536,11 @@ export const erc20Coins = [
     'Fiat DAO',
     18,
     '0xed1480d12be41d92f36f5f7bdd88212e381a3677',
-    UnderlyingAsset.FDT
+    UnderlyingAsset.FDT,
+    AccountCoin.getFeaturesByTypeExcluding(
+      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT],
+      ETH_FEATURES
+    )
   ),
   erc20(
     '1bc29425-088d-4e24-905f-9d2afc7cd636',
@@ -2440,7 +2548,14 @@ export const erc20Coins = [
     'First Digital USD',
     18,
     '0xc5f0f7b66764f6ec8c8dff7ba683102295e16409',
-    UnderlyingAsset.FDUSD
+    UnderlyingAsset.FDUSD,
+    [
+      ...AccountCoin.getFeaturesByTypeExcluding(
+        [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT],
+        ETH_FEATURES
+      ),
+      CoinFeature.STABLECOIN,
+    ]
   ),
   erc20(
     '1bae0040-6e3c-4da5-bd27-a8a4818fd8c7',
@@ -2449,7 +2564,15 @@ export const erc20Coins = [
     18,
     '0x59af0356cdebd1fa23ae5dadff9170bbfc31278c',
     UnderlyingAsset.FF1,
-    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
+    AccountCoin.getFeaturesByTypeExcluding(
+      [
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      ],
+      ETH_FEATURES
+    )
   ),
   erc20(
     '7c62369d-91e6-45f0-874b-4ce43c86ffe5',
@@ -2497,7 +2620,11 @@ export const erc20Coins = [
     'Formosa Financial',
     18,
     '0xb4d0fdfc8497aef97d3c2892ae682ee06064a2bc',
-    UnderlyingAsset.FMF
+    UnderlyingAsset.FMF,
+    AccountCoin.getFeaturesByTypeExcluding(
+      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT],
+      ETH_FEATURES
+    )
   ),
   erc20(
     '5581778c-1e76-456d-a284-7c571a51efbb',
@@ -2555,13 +2682,16 @@ export const erc20Coins = [
     18,
     '0x50d1c9771902476076ecfc8b2a83ad6b9355a4c9',
     UnderlyingAsset.FTT,
-    ETH_FEATURES_WITH_FRANKFURT.filter(
-      (feature) =>
-        ![
-          CoinFeature.CUSTODY_BITGO_SINGAPORE,
-          CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
-          CoinFeature.CUSTODY_BITGO_MENA_FZE,
-        ].includes(feature)
+    AccountCoin.getFeaturesByTypeExcluding(
+      [
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+        CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+        CoinFeature.CUSTODY_BITGO_MENA_FZE,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+      ],
+      ETH_FEATURES
     )
   ),
   erc20(
@@ -2635,7 +2765,11 @@ export const erc20Coins = [
     'Gamma',
     18,
     '0x6bea7cfef803d1e3d5f7c0103f7ded065644e197',
-    UnderlyingAsset.GAMMA
+    UnderlyingAsset.GAMMA,
+    AccountCoin.getFeaturesByTypeExcluding(
+      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT],
+      ETH_FEATURES
+    )
   ),
   erc20(
     'c2eff11c-aa3b-4a08-9600-86e102cf1489',
@@ -2651,7 +2785,11 @@ export const erc20Coins = [
     'Poundtoken',
     18,
     '0x86b4dbe5d203e634a12364c0e428fa242a3fba98',
-    UnderlyingAsset.GBPT
+    UnderlyingAsset.GBPT,
+    AccountCoin.getFeaturesByTypeExcluding(
+      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT],
+      ETH_FEATURES
+    )
   ),
   erc20(
     '9a539510-7dcc-47a3-ab2f-e9253cc2e3cf',
@@ -2716,7 +2854,8 @@ export const erc20Coins = [
     'goUSD',
     6,
     '0xf1f6b8cc3a0d544a40f1d29909396378370e6938',
-    UnderlyingAsset['eth:gousd']
+    UnderlyingAsset['eth:gousd'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   erc20(
     '3628927c-05c7-4fba-9fc3-f3c17e261334',
@@ -2855,7 +2994,8 @@ export const erc20Coins = [
     'Gemini Dollar',
     2,
     '0x056fd409e1d7a124bd7017459dfea2f387b6d5cd',
-    UnderlyingAsset.GUSD
+    UnderlyingAsset.GUSD,
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   erc20(
     '9c6ddd7f-3e3d-4a99-924a-9e522dabf27c',
@@ -2968,7 +3108,11 @@ export const erc20Coins = [
     'HyperQuant',
     18,
     '0x3e1d5a855ad9d948373ae68e4fe1f094612b1322',
-    UnderlyingAsset.HQT
+    UnderlyingAsset.HQT,
+    AccountCoin.getFeaturesByTypeExcluding(
+      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT],
+      ETH_FEATURES
+    )
   ),
   erc20(
     '18244a63-80c0-4436-81e1-79d65a53dc91',
@@ -3009,7 +3153,14 @@ export const erc20Coins = [
     'HUSD',
     8,
     '0xdf574c24545e5ffecb9a659c229253d4111d87e1',
-    UnderlyingAsset.HUSD
+    UnderlyingAsset.HUSD,
+    [
+      ...AccountCoin.getFeaturesByTypeExcluding(
+        [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT],
+        ETH_FEATURES
+      ),
+      CoinFeature.STABLECOIN,
+    ]
   ),
   erc20(
     '6a41551c-ec90-4522-b26a-b7674a0e467e',
@@ -3042,7 +3193,15 @@ export const erc20Coins = [
     18,
     '0x7c07f7abe10ce8e33dc6c5ad68fe033085256a84',
     UnderlyingAsset.ICETH,
-    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
+    AccountCoin.getFeaturesByTypeExcluding(
+      [
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      ],
+      ETH_FEATURES
+    )
   ),
   erc20(
     '85100681-2a5c-4a36-81fa-34361c284a52',
@@ -3370,7 +3529,15 @@ export const erc20Coins = [
     18,
     '0x25500000d700bbe27104577cccce8eabcc96c8ad',
     UnderlyingAsset.KRO,
-    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
+    AccountCoin.getFeaturesByTypeExcluding(
+      [
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      ],
+      ETH_FEATURES
+    )
   ),
   erc20(
     'cbcebae0-e2a8-4ebe-8da7-89983f04f917',
@@ -3444,7 +3611,11 @@ export const erc20Coins = [
     'LGO Exchange',
     8,
     '0x0a50c93c762fdd6e56d86215c24aaad43ab629aa',
-    UnderlyingAsset.LGO
+    UnderlyingAsset.LGO,
+    AccountCoin.getFeaturesByTypeExcluding(
+      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT],
+      ETH_FEATURES
+    )
   ),
   erc20(
     '63626e56-84f0-425d-8125-48be872967cc',
@@ -3946,7 +4117,8 @@ export const erc20Coins = [
     'mStable USD',
     18,
     '0xe2f2a5c287993345a840db3b0845fbc70f5935a5',
-    UnderlyingAsset.MUSD
+    UnderlyingAsset.MUSD,
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   erc20(
     '3018d8a9-cd00-433b-ba52-56933bcf0171',
@@ -4020,7 +4192,11 @@ export const erc20Coins = [
     'Neumark',
     18,
     '0xa823e6722006afe99e91c30ff5295052fe6b8e32',
-    UnderlyingAsset.NEU
+    UnderlyingAsset.NEU,
+    AccountCoin.getFeaturesByTypeExcluding(
+      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT],
+      ETH_FEATURES
+    )
   ),
   erc20(
     'e0e68b55-27a4-4111-b5fb-ee705a991b7a',
@@ -4053,7 +4229,11 @@ export const erc20Coins = [
     'Naira Token',
     2,
     '0x05bbed16620b352a7f889e23e3cf427d1d379ffe',
-    UnderlyingAsset.NGNT
+    UnderlyingAsset.NGNT,
+    AccountCoin.getFeaturesByTypeExcluding(
+      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT],
+      ETH_FEATURES
+    )
   ),
   erc20(
     '922e1952-5cb3-4199-91cd-cb13302f4f49',
@@ -4087,7 +4267,10 @@ export const erc20Coins = [
     18,
     '0x4fe83213d56308330ec302a8bd641f1d0113a4cc',
     UnderlyingAsset.NU,
-    ETH_FEATURES_WITH_FRANKFURT
+    AccountCoin.getFeaturesByTypeExcluding(
+      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT],
+      ETH_FEATURES
+    )
   ),
   erc20(
     'f3b3ea44-e236-4dd1-b005-605fff79f422',
@@ -4095,7 +4278,11 @@ export const erc20Coins = [
     'NYM',
     6,
     '0x525a8f6f3ba4752868cde25164382bfbae3990e1',
-    UnderlyingAsset.NYM
+    UnderlyingAsset.NYM,
+    AccountCoin.getFeaturesByTypeExcluding(
+      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT],
+      ETH_FEATURES
+    )
   ),
   erc20(
     '1ec8d32a-47dc-4796-9896-cda036bd5200',
@@ -4188,7 +4375,11 @@ export const erc20Coins = [
     'On.Live',
     18,
     '0x6863be0e7cf7ce860a574760e9020d519a8bdc47',
-    UnderlyingAsset.ONL
+    UnderlyingAsset.ONL,
+    AccountCoin.getFeaturesByTypeExcluding(
+      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT],
+      ETH_FEATURES
+    )
   ),
   erc20(
     'b77f65d7-2ce1-497d-bf40-3f2ac936916b',
@@ -4392,7 +4583,15 @@ export const erc20Coins = [
     18,
     '0x632806bf5c8f062932dd121244c9fbe7becb8b48',
     UnderlyingAsset.PDI,
-    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
+    AccountCoin.getFeaturesByTypeExcluding(
+      [
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      ],
+      ETH_FEATURES
+    )
   ),
   erc20(
     'ac3efe78-4921-44e9-8766-454ce2d3b522',
@@ -4490,7 +4689,11 @@ export const erc20Coins = [
     'PlusCoin',
     18,
     '0xdf99c7f9e0eadd71057a801055da810985df38bd',
-    UnderlyingAsset.PLC
+    UnderlyingAsset.PLC,
+    AccountCoin.getFeaturesByTypeExcluding(
+      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT],
+      ETH_FEATURES
+    )
   ),
   erc20(
     'c4a25ad2-fe09-4faa-b724-3b274f670db4',
@@ -4613,7 +4816,15 @@ export const erc20Coins = [
     0,
     '0x835a44027ee4e92bbd8874e5ede9e5148b069e96',
     UnderlyingAsset.PRTS,
-    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
+    AccountCoin.getFeaturesByTypeExcluding(
+      [
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      ],
+      ETH_FEATURES
+    )
   ),
   erc20(
     '5152d598-1f7a-4de1-90a1-0e14e07eed9e',
@@ -4655,7 +4866,8 @@ export const erc20Coins = [
     'PegUSD Token',
     8,
     '0x93d3296cac208422bf587c3597d116e809870f2b',
-    UnderlyingAsset.PUSD
+    UnderlyingAsset.PUSD,
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   erc20(
     'dfe5dacc-73b2-482d-a402-9aec770e4808',
@@ -4696,7 +4908,7 @@ export const erc20Coins = [
     6,
     '0x6c3ea9036406852006290770bedfcaba0e23a0e8',
     UnderlyingAsset.PYUSD,
-    ETH_FEATURES_WITH_FRANKFURT
+    [...ETH_FEATURES_WITH_FRANKFURT, CoinFeature.STABLECOIN]
   ),
   erc20(
     '62a385af-296f-44e7-b4f0-7a25a1e990dc',
@@ -5019,7 +5231,8 @@ export const erc20Coins = [
     'Ripple USD',
     18,
     '0x8292bb45bf1ee4d140127049757c2e0ff06317ed',
-    UnderlyingAsset.RLUSD
+    UnderlyingAsset.RLUSD,
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   erc20(
     '65e2f11f-77af-4c2e-9ecb-43962793adfc',
@@ -5398,11 +5611,17 @@ export const erc20Coins = [
     6,
     '0x476c5e26a75bd202a9683ffd34359c0cc15be0ff',
     UnderlyingAsset.SRM,
-    AccountCoin.getFeaturesExcluding([
-      CoinFeature.CUSTODY_BITGO_SINGAPORE,
-      CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
-      CoinFeature.CUSTODY_BITGO_MENA_FZE,
-    ])
+    AccountCoin.getFeaturesByTypeExcluding(
+      [
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+        CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+        CoinFeature.CUSTODY_BITGO_MENA_FZE,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+      ],
+      ETH_FEATURES
+    )
   ),
   erc20(
     '7c786a41-3527-4e87-8b7a-addfe4f4e02a',
@@ -5593,7 +5812,11 @@ export const erc20Coins = [
     'TrueAUD',
     18,
     '0x00006100f7090010005f1bd7ae6122c3c2cf0090',
-    UnderlyingAsset.TAUD
+    UnderlyingAsset.TAUD,
+    AccountCoin.getFeaturesByTypeExcluding(
+      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT],
+      ETH_FEATURES
+    )
   ),
   erc20(
     '18baf0af-ce4c-476f-85a7-009d07a4cf91',
@@ -5626,7 +5849,11 @@ export const erc20Coins = [
     'TrueCAD',
     18,
     '0x00000100f2a2bd000715001920eb70d229700085',
-    UnderlyingAsset.TCAD
+    UnderlyingAsset.TCAD,
+    AccountCoin.getFeaturesByTypeExcluding(
+      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT],
+      ETH_FEATURES
+    )
   ),
   erc20(
     '6ebb5497-c726-4845-8c94-2f19dd7394be',
@@ -5667,7 +5894,11 @@ export const erc20Coins = [
     'TrueGBP',
     18,
     '0x00000000441378008ea67f4284a57932b1c000a5',
-    UnderlyingAsset.TGBP
+    UnderlyingAsset.TGBP,
+    AccountCoin.getFeaturesByTypeExcluding(
+      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT],
+      ETH_FEATURES
+    )
   ),
   erc20(
     '47e9763a-abdc-4e2b-8326-c8d29359e066',
@@ -5887,7 +6118,8 @@ export const erc20Coins = [
     'TrueUSD',
     18,
     '0x0000000000085d4780b73119b644ae5ecd22b376',
-    UnderlyingAsset.TUSD
+    UnderlyingAsset.TUSD,
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   erc20(
     'd1aae34f-d448-449c-91c3-fbfd9983eabf',
@@ -6009,7 +6241,14 @@ export const erc20Coins = [
     'Universal US Dollar',
     2,
     '0x86367c0e517622dacdab379f2de389c3c9524345',
-    UnderlyingAsset.UPUSD
+    UnderlyingAsset.UPUSD,
+    [
+      ...AccountCoin.getFeaturesByTypeExcluding(
+        [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT],
+        ETH_FEATURES
+      ),
+      CoinFeature.STABLECOIN,
+    ]
   ),
   erc20(
     'a3e31214-0c47-4329-a56c-c7539b0d7906',
@@ -6034,7 +6273,12 @@ export const erc20Coins = [
     6,
     '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
     UnderlyingAsset.USDC,
-    [...TOKEN_FEATURES_WITH_SWISS, CoinFeature.CUSTODY_BITGO_NEW_YORK, CoinFeature.CUSTODY_BITGO_FRANKFURT]
+    [
+      ...TOKEN_FEATURES_WITH_SWISS,
+      CoinFeature.CUSTODY_BITGO_NEW_YORK,
+      CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      CoinFeature.STABLECOIN,
+    ]
   ),
   erc20(
     'd2b0daf7-c664-4e97-a9b3-48c2fe4e6b30',
@@ -6042,7 +6286,8 @@ export const erc20Coins = [
     'USDD',
     18,
     '0x0c10bf8fcb7bf5412187a595ab97a3609160b5c6',
-    UnderlyingAsset.USDD
+    UnderlyingAsset.USDD,
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   erc20(
     '7ab504b3-eecc-45ca-8f33-7957cb9e774d',
@@ -6050,7 +6295,8 @@ export const erc20Coins = [
     'USDe',
     18,
     '0x4c9edd5852cd905f086c759e8383e09bff1e68b3',
-    UnderlyingAsset.USDE
+    UnderlyingAsset.USDE,
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   erc20(
     'e1d609f1-eb3f-4b3f-8ef6-87f434a6de83',
@@ -6059,7 +6305,7 @@ export const erc20Coins = [
     6,
     '0xdac17f958d2ee523a2206206994597c13d831ec7',
     UnderlyingAsset.USDT,
-    [...TOKEN_FEATURES_WITH_SWISS, CoinFeature.CUSTODY_BITGO_FRANKFURT]
+    [...TOKEN_FEATURES_WITH_SWISS, CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.STABLECOIN]
   ),
   erc20(
     '7eab6610-5fa7-4a92-8317-c4d143cd58c0',
@@ -6067,7 +6313,8 @@ export const erc20Coins = [
     'eToro United States Dollar',
     18,
     '0x4e3856c37b2fe7ff2fe34510cda82a1dffd63cd0',
-    UnderlyingAsset.USDX
+    UnderlyingAsset.USDX,
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   erc20(
     '28a848d3-0490-4fd6-a1e8-4d1b5dc10966',
@@ -6076,7 +6323,18 @@ export const erc20Coins = [
     18,
     '0x96f6ef951840721adbf46ac996b59e0235cb985c',
     UnderlyingAsset.USDY,
-    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
+    [
+      ...AccountCoin.getFeaturesByTypeExcluding(
+        [
+          CoinFeature.CUSTODY_BITGO_SINGAPORE,
+          CoinFeature.CUSTODY_BITGO_GERMANY,
+          CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+          CoinFeature.CUSTODY_BITGO_FRANKFURT,
+        ],
+        ETH_FEATURES
+      ),
+      CoinFeature.STABLECOIN,
+    ]
   ),
   erc20(
     'fd8d8929-ebd3-4d12-81bf-5b8183206741',
@@ -6100,7 +6358,14 @@ export const erc20Coins = [
     'TerraUSD',
     18,
     '0xa47c8bf37f92abed4a126bda807a7b7498661acd',
-    UnderlyingAsset.UST
+    UnderlyingAsset.UST,
+    [
+      ...AccountCoin.getFeaturesByTypeExcluding(
+        [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT],
+        ETH_FEATURES
+      ),
+      CoinFeature.STABLECOIN,
+    ]
   ),
   erc20(
     'dee69d23-5898-45e4-89e7-ea90e02856e0',
@@ -6109,7 +6374,15 @@ export const erc20Coins = [
     6,
     '0x43415eb6ff9db7e26a15b704e7a3edce97d31c4e',
     UnderlyingAsset.USTB,
-    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
+    AccountCoin.getFeaturesByTypeExcluding(
+      [
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      ],
+      ETH_FEATURES
+    )
   ),
   erc20(
     '072bda2d-3c21-40a8-8581-0518b75bace1',
@@ -6117,7 +6390,8 @@ export const erc20Coins = [
     'USD Stable Token',
     18,
     '0xe72f4c4ff9d294fc34829947e4371da306f90465',
-    UnderlyingAsset.USX
+    UnderlyingAsset.USX,
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   erc20(
     '4fa85b68-95e3-4c92-a921-fe86d3bdc4c0',
@@ -6126,7 +6400,15 @@ export const erc20Coins = [
     6,
     '0x136471a34f6ef19fe571effc1ca711fdb8e49f2b',
     UnderlyingAsset.USYC,
-    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
+    AccountCoin.getFeaturesByTypeExcluding(
+      [
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      ],
+      ETH_FEATURES
+    )
   ),
   erc20(
     'ef825ff6-4304-415b-a202-5cfe60e343b4',
@@ -6265,7 +6547,15 @@ export const erc20Coins = [
     18,
     '0x14f0a12a43c36c49d4b403dd6e1a9b8222be456c',
     UnderlyingAsset.VXC,
-    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
+    AccountCoin.getFeaturesByTypeExcluding(
+      [
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      ],
+      ETH_FEATURES
+    )
   ),
   erc20(
     '7733a50f-b06b-4ea2-94bb-d5a6c2999dc2',
@@ -6454,7 +6744,11 @@ export const erc20Coins = [
     'Wrapped Luna',
     18,
     '0xd2877702675e6ceb975b4a1dff9fb7baf4c91ea9',
-    UnderlyingAsset.WLUNA
+    UnderlyingAsset.WLUNA,
+    AccountCoin.getFeaturesByTypeExcluding(
+      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT],
+      ETH_FEATURES
+    )
   ),
   erc20(
     '85b43771-485b-499d-ae2b-209c398497b5',
@@ -6470,7 +6764,11 @@ export const erc20Coins = [
     'Wrapped ROSE (Wormhole)',
     18,
     '0x26b80fbfc01b71495f477d5237071242e0d959d7',
-    UnderlyingAsset.WROSE
+    UnderlyingAsset.WROSE,
+    AccountCoin.getFeaturesByTypeExcluding(
+      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT],
+      ETH_FEATURES
+    )
   ),
   erc20(
     '0886bf8b-507e-459f-a38c-bdcd3f492190',
@@ -6576,7 +6874,11 @@ export const erc20Coins = [
     'XBullion Token',
     8,
     '0x670f9d9a26d3d42030794ff035d35a67aa092ead',
-    UnderlyingAsset.XBGOLD
+    UnderlyingAsset.XBGOLD,
+    AccountCoin.getFeaturesByTypeExcluding(
+      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT],
+      ETH_FEATURES
+    )
   ),
   erc20(
     'fd1bfef9-39d0-40eb-b15a-f9eccc1824e5',
@@ -6610,7 +6912,15 @@ export const erc20Coins = [
     9,
     '0xb24754be79281553dc1adc160ddf5cd9b74361a4',
     UnderlyingAsset.XRL,
-    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
+    AccountCoin.getFeaturesByTypeExcluding(
+      [
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      ],
+      ETH_FEATURES
+    )
   ),
   erc20(
     '0ef88852-b8d7-4260-818d-e626c913e56f',
@@ -6627,7 +6937,15 @@ export const erc20Coins = [
     18,
     '0x8798249c2e607446efb7ad49ec89dd1865ff4272',
     UnderlyingAsset.XSUSHI,
-    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
+    AccountCoin.getFeaturesByTypeExcluding(
+      [
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      ],
+      ETH_FEATURES
+    )
   ),
   erc20(
     '119a1bdc-5571-4945-b4a1-82301758619a',
@@ -6726,7 +7044,11 @@ export const erc20Coins = [
     'Zebi Coin',
     8,
     '0x2008e3057bd734e10ad13c9eae45ff132abc1722',
-    UnderlyingAsset.ZCO
+    UnderlyingAsset.ZCO,
+    AccountCoin.getFeaturesByTypeExcluding(
+      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT],
+      ETH_FEATURES
+    )
   ),
   erc20(
     'dc67e349-0ccd-4eb5-a756-91144c731e73',
@@ -6792,7 +7114,8 @@ export const erc20Coins = [
     'Z.com Usd',
     6,
     '0xc56c2b7e71b54d38aab6d52e94a04cbfa8f604fa',
-    UnderlyingAsset.ZUSD
+    UnderlyingAsset.ZUSD,
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   erc20(
     '2795af7b-6e14-46af-85e6-8f794f15b6a3',
@@ -7280,7 +7603,8 @@ export const erc20Coins = [
     'XUSD',
     6,
     '0xc08e7e23c235073c6807c2efe7021304cb7c2815',
-    UnderlyingAsset.XUSD
+    UnderlyingAsset.XUSD,
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   erc20(
     '42010c6a-380b-4b11-983d-4b736172340d',
@@ -7814,7 +8138,8 @@ export const erc20Coins = [
     'AUSD₮',
     6,
     '0x9eead9ce15383caeed975427340b3a369410cfbf',
-    UnderlyingAsset.AUSD
+    UnderlyingAsset.AUSD,
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   erc20(
     'e26974ca-1494-4c13-8b8d-ce155d246253',
@@ -8334,7 +8659,8 @@ export const erc20Coins = [
     'DefiDollar',
     18,
     '0x5bc25f649fc4e26069ddf4cf4010f9f706c23831',
-    UnderlyingAsset.DUSD
+    UnderlyingAsset.DUSD,
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   erc20(
     '51750f69-0e78-4954-996c-bd9da846f759',
@@ -9334,7 +9660,8 @@ export const erc20Coins = [
     'OpenSea',
     18,
     '0x2a8e1e676ec238d8a992307b495b45b3feaa5e86',
-    UnderlyingAsset.OUSD
+    UnderlyingAsset.OUSD,
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   erc20(
     '980dfde9-6849-43aa-8e49-d4fd527e622c',
@@ -9954,7 +10281,15 @@ export const erc20Coins = [
     8,
     '0x7b13abb88eb01aa0cd9739b91d4d4f273262eacf',
     UnderlyingAsset.USCC,
-    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
+    AccountCoin.getFeaturesByTypeExcluding(
+      [
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+      ],
+      ETH_FEATURES
+    )
   ),
   erc20(
     'efae2e71-10b8-4461-8e84-51390f6e77df',
@@ -9962,7 +10297,8 @@ export const erc20Coins = [
     'Glo Dollar',
     18,
     '0x4f604735c1cf31399c6e711d5962b2b3e0225ad3',
-    UnderlyingAsset.USDGLO
+    UnderlyingAsset.USDGLO,
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   erc20(
     'b775f7f9-268f-457a-8476-bc64d832425a',
@@ -9970,7 +10306,8 @@ export const erc20Coins = [
     'USDK',
     18,
     '0x1c48f86ae57291f7686349f12601910bd8d470bb',
-    UnderlyingAsset.USDK
+    UnderlyingAsset.USDK,
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   erc20(
     '29a77428-7ddf-4dce-8845-2296cb1fc305',
@@ -10267,7 +10604,8 @@ export const erc20Coins = [
     'Global Dollar',
     6,
     '0xe343167631d89b6ffc58b88d6b7fb0228795491d',
-    UnderlyingAsset['eth:usdg']
+    UnderlyingAsset['eth:usdg'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   erc20(
     '36ec9ba1-359b-4a05-addb-ada12ced8371',
@@ -10291,7 +10629,8 @@ export const erc20Coins = [
     'Deep Blue USD',
     6,
     '0x32bdd8b97868acf7014cfe6eb49bf4f2936c8f02',
-    UnderlyingAsset['eth:dbusd']
+    UnderlyingAsset['eth:dbusd'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   erc20(
     '6418f63b-3c9b-4880-9034-e286d3abd1ac',
@@ -10339,7 +10678,11 @@ export const erc20Coins = [
     'GOD Coin',
     18,
     '0xb5130f4767ab0acc579f25a76e8f9e977cb3f948',
-    UnderlyingAsset['eth:god']
+    UnderlyingAsset['eth:god'],
+    AccountCoin.getFeaturesByTypeExcluding(
+      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT],
+      ETH_FEATURES
+    )
   ),
   erc20(
     'f106b4aa-1c9a-4d81-b580-1a02dabb8680',
@@ -10372,7 +10715,8 @@ export const erc20Coins = [
     'USD1',
     18,
     '0x8d0d000ee44948fc98c9b98a4fa4921476f08b0d',
-    UnderlyingAsset['eth:usd1']
+    UnderlyingAsset['eth:usd1'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   erc20(
     'e811d594-de4f-48b0-9b6b-47e8b4ba7dda',
@@ -10528,11 +10872,14 @@ export const erc20Coins = [
     18,
     '0xba3f535bbcccca2a154b573ca6c5a49baae0a3ea',
     UnderlyingAsset['eth:deuro'],
-    AccountCoin.getFeaturesExcluding([
-      CoinFeature.CUSTODY_BITGO_SINGAPORE,
-      CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
-      CoinFeature.CUSTODY_BITGO_MENA_FZE,
-    ])
+    AccountCoin.getFeaturesByTypeExcluding(
+      [
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+        CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+        CoinFeature.CUSTODY_BITGO_MENA_FZE,
+      ],
+      ETH_FEATURES
+    )
   ),
   erc20(
     'ad73ed49-cbce-4809-a2e1-9d66c7f7a8d8',
@@ -10541,11 +10888,17 @@ export const erc20Coins = [
     18,
     '0xfa2b947eec368f42195f24f36d2af29f7c24cec2',
     UnderlyingAsset['eth:usdf'],
-    AccountCoin.getFeaturesExcluding([
-      CoinFeature.CUSTODY_BITGO_SINGAPORE,
-      CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
-      CoinFeature.CUSTODY_BITGO_MENA_FZE,
-    ])
+    [
+      ...AccountCoin.getFeaturesByTypeExcluding(
+        [
+          CoinFeature.CUSTODY_BITGO_SINGAPORE,
+          CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+          CoinFeature.CUSTODY_BITGO_MENA_FZE,
+        ],
+        ETH_FEATURES
+      ),
+      CoinFeature.STABLECOIN,
+    ]
   ),
   erc20(
     'f3ae12cd-6181-46af-9444-6acd605f123e',
@@ -10553,7 +10906,8 @@ export const erc20Coins = [
     'Agora Dollar',
     6,
     '0x00000000efe302beaa2b3e6e1b18d08d69a9012a',
-    UnderlyingAsset['eth:ausd']
+    UnderlyingAsset['eth:ausd'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   erc20(
     'cc2e9fd4-f2a7-4501-837d-9d0912001ed1',
@@ -10569,7 +10923,8 @@ export const erc20Coins = [
     'USDS Stablecoin',
     18,
     '0xdc035d45d973e3ec169d2276ddab16f1e407384f',
-    UnderlyingAsset['eth:usds']
+    UnderlyingAsset['eth:usds'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   erc20(
     'dfe67820-c659-4dfb-b699-26795d0ec543',
@@ -10780,7 +11135,8 @@ export const erc20Coins = [
     'USD CoinVertible',
     18,
     '0x5422374b27757da72d5265cc745ea906e0446634',
-    UnderlyingAsset['eth:usdcv']
+    UnderlyingAsset['eth:usdcv'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   erc20(
     '12fdbdb5-1e93-4a70-b651-8017959e12da',
@@ -10820,7 +11176,8 @@ export const erc20Coins = [
     'Decentralized USD',
     18,
     '0x3d7975eccfc61a2102b08925cbba0a4d4dbb6555',
-    UnderlyingAsset['eth:usdd']
+    UnderlyingAsset['eth:usdd'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   erc20(
     '46761c18-9a0d-4482-9abe-83415b79572f',
@@ -10844,7 +11201,8 @@ export const erc20Coins = [
     'Usual USD',
     18,
     '0x73a15fed60bf67631dc6cd7bc5b6e8da8190acf5',
-    UnderlyingAsset['eth:usd0']
+    UnderlyingAsset['eth:usd0'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   erc20(
     'b23d4371-84a8-4780-bb51-f41813e8cda0',
@@ -11013,7 +11371,8 @@ export const erc20Coins = [
     '0x0.ai',
     9,
     '0x5a3e6a77ba2f983ec0d371ea3b475f8bc0811ad5',
-    UnderlyingAsset['eth:0x0']
+    UnderlyingAsset['eth:0x0'],
+    [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.BULK_TRANSACTION]
   ),
   erc20(
     '7839148f-7b3b-4926-a9d4-bdfe2e009abc',
@@ -11069,7 +11428,8 @@ export const erc20Coins = [
     'Rollbit Coin',
     18,
     '0x046eee2cc3188071c02bfc1745a6b17c656e3f3d',
-    UnderlyingAsset['eth:rlb']
+    UnderlyingAsset['eth:rlb'],
+    [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.BULK_TRANSACTION]
   ),
   erc20(
     '5ef3ded1-1a49-45f6-80a5-7e4a6f397bcf',
@@ -11168,6 +11528,38 @@ export const erc20Coins = [
     UnderlyingAsset['eth:usdo'],
     [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.BULK_TRANSACTION, CoinFeature.REBASE_TOKEN]
   ),
+  erc20(
+    '9577010b-3c51-4f02-a284-fdff7837e407',
+    'eth:vsn',
+    'Vision',
+    18,
+    '0x699ccf919c1dfdfa4c374292f42cadc9899bf753',
+    UnderlyingAsset['eth:vsn']
+  ),
+  erc20(
+    'c51774c4-c9fd-4cfc-886e-36e084ce7b48',
+    'eth:shx',
+    'Stronghold SHx',
+    7,
+    '0xee7527841a932d2912224e20a405e1a1ff747084',
+    UnderlyingAsset['eth:shx']
+  ),
+  erc20(
+    '88e2f52d-d582-4ab5-9151-cca02572b5d8',
+    'eth:slay',
+    'SatLayer',
+    6,
+    '0x51477a3002ee04b7542adfe63ccdb50c00ee5147',
+    UnderlyingAsset['eth:slay']
+  ),
+  erc20(
+    '0eb44459-7e38-4974-8847-e2fa8a510478',
+    'eth:mxnb',
+    'MXNB',
+    6,
+    '0xf197ffc28c23e0309b5559e7a166f2c6164c80aa',
+    UnderlyingAsset['eth:mxnb']
+  ),
   terc20(
     '0205f0d6-0647-47c9-ad8b-c48d048e54f3',
     'fixed',
@@ -11187,7 +11579,7 @@ export const erc20Coins = [
     18,
     '0x64d081854fad45e64db52cd28ba78ae1ecfee59b',
     UnderlyingAsset.GUSDT,
-    undefined,
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN],
     undefined,
     undefined,
     Networks.test.goerli
@@ -11591,7 +11983,7 @@ export const erc20Coins = [
     6,
     '0x399ae63d3fd23da82109fc8b632c19a1810f657e',
     UnderlyingAsset.TUSDS,
-    undefined,
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN],
     undefined,
     undefined,
     Networks.test.holesky
@@ -11603,7 +11995,7 @@ export const erc20Coins = [
     6,
     '0x32275b636171ba98fec28e86ed5f0289bd42aeb9',
     UnderlyingAsset.TGOUSD,
-    undefined,
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN],
     undefined,
     undefined,
     Networks.test.hoodi
@@ -11615,7 +12007,7 @@ export const erc20Coins = [
     18,
     '0xe4cf91a5bf7cc3d75ac85639e591e51d34948954',
     UnderlyingAsset['hteth:stgusd1'],
-    undefined,
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN],
     undefined,
     undefined,
     Networks.test.hoodi
@@ -11639,7 +12031,7 @@ export const erc20Coins = [
     6,
     '0xd94dd81066271d0930e53cfd77f374e64ba306e9',
     UnderlyingAsset['hteth:gousd'],
-    undefined,
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN],
     undefined,
     undefined,
     Networks.test.hoodi
@@ -11651,7 +12043,7 @@ export const erc20Coins = [
     18,
     '0xed9e025fc3fd4ab704378ff5486b596f00dbef1b',
     UnderlyingAsset['hteth:usd1'],
-    undefined,
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN],
     undefined,
     undefined,
     Networks.test.hoodi
@@ -11687,7 +12079,7 @@ export const erc20Coins = [
     6,
     '0x37557a96ea4415af2d96a6f896fa8281a22802ce',
     UnderlyingAsset.TXUSD,
-    undefined,
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN],
     undefined,
     undefined,
     Networks.test.hoodi
@@ -12038,7 +12430,8 @@ export const erc20Coins = [
     'Goerli USDC',
     6,
     '0x07865c6e87b9f70255377e024ace6630c1eaa37f',
-    UnderlyingAsset.TUSDC
+    UnderlyingAsset.TUSDC,
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   terc20(
     '891e4428-82b1-4970-8bad-a2cece698066',
@@ -12046,7 +12439,8 @@ export const erc20Coins = [
     'Goerli USDT',
     6,
     '0xc2c527c0cacf457746bd31b2a698fe89de2b6d49',
-    UnderlyingAsset.TUSDT
+    UnderlyingAsset.TUSDT,
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   terc20(
     '6b43e702-d0ba-44c8-af93-c10cd9c2e730',
@@ -12055,7 +12449,7 @@ export const erc20Coins = [
     18,
     '0xe101fb315a64cda9944e570a7bffafe60b994b1d',
     UnderlyingAsset.RLUSD,
-    undefined,
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN],
     undefined,
     undefined,
     Networks.test.holesky
