@@ -2008,7 +2008,7 @@ export const allCoinsAndTokens = [
     6,
     UnderlyingAsset.USDC,
     '0.0.456858',
-    AccountCoin.DEFAULT_FEATURES
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
 
   hederaToken(
@@ -2139,7 +2139,7 @@ export const allCoinsAndTokens = [
     6,
     UnderlyingAsset.USDC,
     '0.0.429274',
-    AccountCoin.DEFAULT_FEATURES
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   hederaToken(
     '77bc438b-7206-4cb1-bee8-dc900e5915be',
@@ -2230,7 +2230,7 @@ export const allCoinsAndTokens = [
     7,
     UnderlyingAsset['xlm:USD-GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX'],
     'anchorusd.com',
-    AccountCoin.DEFAULT_FEATURES,
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN],
     '',
     'USD'
   ),
@@ -2263,7 +2263,7 @@ export const allCoinsAndTokens = [
     7,
     UnderlyingAsset['xlm:USDC-GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN'],
     'centre.io',
-    XLM_TOKEN_FEATURES_WITH_FRANKFURT,
+    [...XLM_TOKEN_FEATURES_WITH_FRANKFURT, CoinFeature.STABLECOIN],
     '',
     'USDC'
   ),
@@ -2340,7 +2340,7 @@ export const allCoinsAndTokens = [
     7,
     UnderlyingAsset['xlm:ZUSD-GDF6VOEGRWLOZ64PQQGKD2IYWA22RLT37GJKS2EJXZHT2VLAGWLC5TOB'],
     'stablecoin.z.com',
-    XLM_TOKEN_FEATURES_WITH_FRANKFURT,
+    [...XLM_TOKEN_FEATURES_WITH_FRANKFURT, CoinFeature.STABLECOIN],
     '',
     'ZUSD'
   ),
@@ -2448,7 +2448,8 @@ export const allCoinsAndTokens = [
     'USD Coin',
     6,
     'TEkxiTehnzSmSe2XqrBj4w32RUN966rdz8',
-    UnderlyingAsset.USDC
+    UnderlyingAsset.USDC,
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   tronToken(
     'f96fda99-cf5a-4ac4-885e-fa95292a7135',
@@ -2456,7 +2457,8 @@ export const allCoinsAndTokens = [
     'Tether USD',
     6,
     'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t',
-    UnderlyingAsset['trx:usdt']
+    UnderlyingAsset['trx:usdt'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   tronToken(
     '77fe25dc-7871-4d9d-9cc0-2e5cba6250ff',
@@ -2488,7 +2490,8 @@ export const allCoinsAndTokens = [
     'TrueUSD',
     18,
     'TUpMhErZL2fhh4sVNULAbNKLokS4GjC1F4',
-    UnderlyingAsset['trx:tusd']
+    UnderlyingAsset['trx:tusd'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   tronToken(
     '71084f91-30f3-4907-bbb0-ce26ea8584d5',
@@ -2512,7 +2515,8 @@ export const allCoinsAndTokens = [
     'USDD',
     18,
     'TPYmHEhy5n8TCEfYGqW2rPxsghSfzghPDn',
-    UnderlyingAsset['trx:usdd']
+    UnderlyingAsset['trx:usdd'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   tronToken(
     '6d37a333-c09b-44b8-bd2b-f07f12b838cd',
@@ -2520,7 +2524,8 @@ export const allCoinsAndTokens = [
     'USD1',
     18,
     'TPFqcBAaaUMCSVRCqPaQ9QnzKhmuoLR6Rc',
-    UnderlyingAsset['trx:usd1']
+    UnderlyingAsset['trx:usd1'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   tronToken(
     '35b44b0f-272c-4e13-8056-3bbab3fd609e',
@@ -2537,7 +2542,7 @@ export const allCoinsAndTokens = [
     'USDC',
     6,
     UnderlyingAsset['algo:USDC-31566704'],
-    AccountCoin.DEFAULT_FEATURES,
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN],
     '',
     'USDC'
   ),
@@ -2548,7 +2553,7 @@ export const allCoinsAndTokens = [
     'Algorand USDT',
     6,
     UnderlyingAsset['algo:USDt-312769'],
-    AccountCoin.DEFAULT_FEATURES,
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN],
     '',
     'USDt'
   ),
@@ -2737,7 +2742,8 @@ export const allCoinsAndTokens = [
     'USD Coin',
     6,
     'TSdZwNqpHofzP6BsBKGQUWdBeJphLmF6id',
-    UnderlyingAsset.USDC
+    UnderlyingAsset.USDC,
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   ttronToken(
     '85a60a5a-88e3-45df-9e2c-dc6161b4c6b1',
@@ -2745,7 +2751,8 @@ export const allCoinsAndTokens = [
     'Tether USD',
     6,
     'TG3XXyExBkPp9nzdajDZsozEu4BkaSJozs',
-    UnderlyingAsset['ttrx:usdt']
+    UnderlyingAsset['ttrx:usdt'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   ttronToken(
     '78551a7f-17d1-4e81-b6a9-3c6e960337f4',
@@ -2753,7 +2760,8 @@ export const allCoinsAndTokens = [
     'Test USD1 Token',
     18,
     'TMsuh7QxbJkYaLsGMGCgNJYtYjTZLJG3Np',
-    UnderlyingAsset['ttrx:usd1']
+    UnderlyingAsset['ttrx:usd1'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   ttronToken(
     '4853b203-e475-4538-bcba-f69da0e45d4b',
@@ -2761,7 +2769,8 @@ export const allCoinsAndTokens = [
     'Test USD1 Token',
     18,
     'TPEwuCefwvzBcr9BHvg2xhJCaf499uGMZx',
-    UnderlyingAsset['ttrx:stgusd1']
+    UnderlyingAsset['ttrx:stgusd1'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   talgoToken(
     '0e20b757-3e62-4400-887d-caff117481c8',
@@ -2770,7 +2779,7 @@ export const allCoinsAndTokens = [
     'USDC',
     6,
     UnderlyingAsset['talgo:USDC-10458941'],
-    AccountCoin.DEFAULT_FEATURES,
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN],
     '',
     'USDC'
   ),
@@ -2781,7 +2790,7 @@ export const allCoinsAndTokens = [
     'Testnet Algorand USDT',
     6,
     UnderlyingAsset['talgo:USDt-180447'],
-    AccountCoin.DEFAULT_FEATURES,
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN],
     '',
     'USDt'
   ),
@@ -2873,7 +2882,7 @@ export const allCoinsAndTokens = [
     'tethertether',
     'tethertether',
     UnderlyingAsset.USDT,
-    AccountCoin.DEFAULT_FEATURES,
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN],
     '',
     'USDT'
   ),
@@ -2934,7 +2943,7 @@ export const allCoinsAndTokens = [
     'lionteste212',
     'lionteste212',
     UnderlyingAsset.USDT,
-    AccountCoin.DEFAULT_FEATURES,
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN],
     '',
     'USDT'
   ),
@@ -3110,7 +3119,8 @@ export const allCoinsAndTokens = [
     'USD Coin',
     6,
     '0xff970a61a04b1ca14834a43f5de4533ebddb5cc8',
-    UnderlyingAsset['arbeth:usdc']
+    UnderlyingAsset['arbeth:usdc'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   arbethErc20(
     '8deaaaf0-f81f-4697-bba6-77f4cfcd4efc',
@@ -3119,7 +3129,7 @@ export const allCoinsAndTokens = [
     6,
     '0xaf88d065e77c8cc2239327c5edb3a432268e5831',
     UnderlyingAsset['arbeth:usdcv2'],
-    TOKEN_FEATURES_WITH_FRANKFURT
+    [...TOKEN_FEATURES_WITH_FRANKFURT, CoinFeature.STABLECOIN]
   ),
   arbethErc20(
     'a49b04e6-5a1b-4d55-9187-4d41c41f8f1e',
@@ -3127,7 +3137,8 @@ export const allCoinsAndTokens = [
     'Tether USD',
     6,
     '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9',
-    UnderlyingAsset['arbeth:usdt']
+    UnderlyingAsset['arbeth:usdt'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   arbethErc20(
     '7dfbdd2b-efd6-45ab-90bd-9c3bc16d1397',
@@ -3232,7 +3243,8 @@ export const allCoinsAndTokens = [
     'TrueUSD',
     18,
     '0x4d15a3a2286d883af0aa1b3f21367843fac63e07',
-    UnderlyingAsset['arbeth:tusd']
+    UnderlyingAsset['arbeth:tusd'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   arbethErc20(
     'eb721759-6da6-46c3-b0d2-a7e9d939c527',
@@ -3516,7 +3528,8 @@ export const allCoinsAndTokens = [
     'USD Coin',
     6,
     '0x7f5c764cbc14f9669b88837ca1490cca17c31607',
-    UnderlyingAsset['opeth:usdc']
+    UnderlyingAsset['opeth:usdc'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   opethErc20(
     '00abc58e-c1fb-4b9b-8b9a-d609071bb7be',
@@ -3524,7 +3537,8 @@ export const allCoinsAndTokens = [
     'USD Coin (native)',
     6,
     '0x0b2c639c533813f4aa9d7837caf62653d097ff85',
-    UnderlyingAsset['opeth:usdcv2']
+    UnderlyingAsset['opeth:usdcv2'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   opethErc20(
     '634d052e-8c1c-47ed-aded-d0a2399439b0',
@@ -3532,7 +3546,8 @@ export const allCoinsAndTokens = [
     'Tether USD',
     6,
     '0x94b008aa00579c1307b0ef2c499ad98a8ce58e58',
-    UnderlyingAsset['opeth:usdt']
+    UnderlyingAsset['opeth:usdt'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   opethErc20(
     '949c4e1f-83b8-4ca0-a6dc-72817a8a86e7',
@@ -3749,7 +3764,8 @@ export const allCoinsAndTokens = [
     18,
     // TODO: the mainnet contract address is still not available, adding placeholder here, WIN-3597
     '0xbda130737bdd9618301681329bf2e46a016ff9a0',
-    UnderlyingAsset['bera:usdc']
+    UnderlyingAsset['bera:usdc'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   beraErc20(
     'd7b6efe9-4ce2-4f23-9a31-adba41900716',
@@ -3790,7 +3806,8 @@ export const allCoinsAndTokens = [
     'Bera Testnet USDC',
     18,
     '0xd6d83af58a19cd14ef3cf6fe848c9a4d21e5727c',
-    UnderlyingAsset['tbera:usdc']
+    UnderlyingAsset['tbera:usdc'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   tberaErc20(
     'f46242ce-dd4a-44c9-8b52-ef6dfaae1d79',
@@ -3838,7 +3855,8 @@ export const allCoinsAndTokens = [
     'USDC',
     6,
     '0x79a02482a880bce3f13e09da970dc34db4cd24d1',
-    UnderlyingAsset['world:usdc']
+    UnderlyingAsset['world:usdc'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   tworldErc20(
     'c5acdc9b-d0d4-4e0c-88fe-2cc68504cf86',
@@ -3854,7 +3872,8 @@ export const allCoinsAndTokens = [
     'USDC',
     6,
     '0x66145f38cbac35ca6f1dfb4914df98f1614aea88',
-    UnderlyingAsset['tworld:usdc']
+    UnderlyingAsset['tworld:usdc'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   txrpToken(
     '8ef16158-1015-4a67-b6fe-db669c18ab2b',
@@ -3876,7 +3895,8 @@ export const allCoinsAndTokens = [
     '524C555344000000000000000000000000000000',
     'rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV::524C555344000000000000000000000000000000',
     'ripple.com',
-    UnderlyingAsset['txrp:rlusd']
+    UnderlyingAsset['txrp:rlusd'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   xrpToken(
     'a5e3e409-4cde-443d-9000-22bfc99ad456',
@@ -3887,7 +3907,8 @@ export const allCoinsAndTokens = [
     '524C555344000000000000000000000000000000',
     'rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De::524C555344000000000000000000000000000000',
     'ripple.com',
-    UnderlyingAsset['xrp:rlusd']
+    UnderlyingAsset['xrp:rlusd'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   xrpToken(
     'd6d5ff31-c539-4ea7-ae62-a6d986190234',
@@ -4034,7 +4055,7 @@ export const allCoinsAndTokens = [
     'FDUSD',
     '0xf16e6b723f242ec745dfd7634ad072c42d5c1d9ac9d62a39c381303eaa57693a::fdusd::FDUSD',
     UnderlyingAsset['sui:fdusd'],
-    SUI_TOKEN_FEATURES
+    [...SUI_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
   suiToken(
     'e78941b5-9c34-4198-9c2c-cb9e27d4dde7',
@@ -4046,7 +4067,7 @@ export const allCoinsAndTokens = [
     'USDC',
     '0xdba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7::usdc::USDC',
     UnderlyingAsset['sui:usdc'],
-    SUI_TOKEN_FEATURES
+    [...SUI_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
   suiToken(
     'b3729af5-033b-495f-bab6-b5225c8f27e7',
@@ -4058,7 +4079,7 @@ export const allCoinsAndTokens = [
     'COIN',
     '0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf::coin::COIN',
     UnderlyingAsset['sui:wusdc'],
-    SUI_TOKEN_FEATURES
+    [...SUI_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
   suiToken(
     '97617c48-004c-4222-9eff-d77d10ce8443',
@@ -4281,7 +4302,7 @@ export const allCoinsAndTokens = [
     6,
     '0x357b0b74bc833e95a115ad22604854d6b0fca151cecd94111770e5d6ffc9dc2b',
     UnderlyingAsset['apt:usdt'],
-    APT_FEATURES
+    [...APT_FEATURES, CoinFeature.STABLECOIN]
   ),
   aptToken(
     'bf82aa75-88a8-4010-91cf-b8811cf4b763',
@@ -4290,7 +4311,7 @@ export const allCoinsAndTokens = [
     6,
     '0xbae207659db88bea0cbead6da0ed00aac12edcdda169e591cd41c94180b46f3b',
     UnderlyingAsset['apt:usdc'],
-    APT_FEATURES
+    [...APT_FEATURES, CoinFeature.STABLECOIN]
   ),
   aptToken(
     '3d29adfb-7df5-4295-a3c2-acdf3f23adc2',
@@ -4326,7 +4347,7 @@ export const allCoinsAndTokens = [
     6,
     '0xd5d0d561493ea2b9410f67da804653ae44e793c2423707d4f11edb2e38192050',
     UnderlyingAsset['tapt:usdt'],
-    APT_FEATURES
+    [...APT_FEATURES, CoinFeature.STABLECOIN]
   ),
   aptNFTCollection(
     '3672e359-d96d-46fc-9a37-9c87c1d52a86',

@@ -19,7 +19,7 @@ export const polygonTokens = [
     6,
     '0x2791bca1f2de4661ed88a30c99a7a9449aa84174',
     UnderlyingAsset['polygon:usdc'],
-    POLYGON_TOKEN_FEATURES_WITH_FRANKFURT
+    [...POLYGON_TOKEN_FEATURES_WITH_FRANKFURT, CoinFeature.STABLECOIN]
   ),
   polygonErc20(
     '5a17fe9c-3b78-4f12-b419-ed3662f4e985',
@@ -28,7 +28,7 @@ export const polygonTokens = [
     6,
     '0x3c499c542cef5e3811e1192ce70d8cc03d5c3359',
     UnderlyingAsset['polygon:usdcv2'],
-    POLYGON_TOKEN_FEATURES
+    [...POLYGON_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
   polygonErc20(
     'dee07c7a-96cb-4dbb-906c-b0ad98160cff',
@@ -37,7 +37,7 @@ export const polygonTokens = [
     6,
     '0xc2132d05d31c914a87c6611c10748aeb04b58e8f',
     UnderlyingAsset['polygon:usdt'],
-    POLYGON_TOKEN_FEATURES_WITH_FRANKFURT
+    [...POLYGON_TOKEN_FEATURES_WITH_FRANKFURT, CoinFeature.STABLECOIN]
   ),
   polygonErc20(
     '7e891f15-a29e-4a01-9ff5-d739cfc171f9',
@@ -118,7 +118,7 @@ export const polygonTokens = [
     18,
     '0x2e1ad108ff1d8c782fcbbb89aad783ac49586756',
     UnderlyingAsset['polygon:tusd'],
-    POLYGON_TOKEN_FEATURES
+    [...POLYGON_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
   polygonErc20(
     'd137313c-b6da-4ff7-806e-fefc10a931d5',
@@ -143,7 +143,7 @@ export const polygonTokens = [
     18,
     '0x9c9e5fd8bbc25984b178fdce6117defa39d2db39',
     UnderlyingAsset['polygon:busd'],
-    POLYGON_TOKEN_FEATURES
+    [...POLYGON_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
   polygonErc20(
     '467391b7-65a3-48a4-88da-96e024f553ac',
@@ -722,7 +722,7 @@ export const polygonTokens = [
     2,
     '0xc8a94a3d3d2dabc3c1caffffdca6a7543c3e3e65',
     UnderlyingAsset['polygon:gusd'],
-    POLYGON_TOKEN_FEATURES
+    [...POLYGON_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
   polygonErc20(
     '0942e4bb-540a-4fe9-a5ff-d5783fa773c9',
@@ -1079,7 +1079,7 @@ export const polygonTokens = [
     6,
     '0x5c3552f94a322c4e8d4d4c627a3badf8257d1499',
     UnderlyingAsset['polygon:xusd'],
-    POLYGON_TOKEN_FEATURES
+    [...POLYGON_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
   // testnet polygon tokens
   tpolygonErc20(
@@ -1134,7 +1134,7 @@ export const polygonTokens = [
     6,
     '0x41e94eb019c0762f9bfcf9fb1e58725bfb0e7582',
     UnderlyingAsset['tpolygon:usdc'],
-    POLYGON_TOKEN_FEATURES
+    [...POLYGON_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
   tpolygonErc20(
     '6a24d660-0f7b-457e-bd5b-238ca34848ff',
@@ -1152,7 +1152,7 @@ export const polygonTokens = [
     6,
     '0xbcf39d8616d15fd146dd5db4a86b4f244a9bc772',
     UnderlyingAsset['tpolygon:usdt'],
-    POLYGON_TOKEN_FEATURES
+    [...POLYGON_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
   tpolygonErc20(
     '2262a12e-1154-4f66-9f52-c2554454d2a1',

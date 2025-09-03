@@ -86,7 +86,8 @@ export const avaxTokens = [
     'Tether USD',
     6,
     '0x9702230a8ea53601f5cd2dc00fdbc13d4df4a8c7',
-    UnderlyingAsset['avaxc:usdt']
+    UnderlyingAsset['avaxc:usdt'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   avaxErc20(
     '185c4019-56fa-4911-adc8-6811563431ed',
@@ -94,7 +95,8 @@ export const avaxTokens = [
     'USD Coin',
     6,
     '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e',
-    UnderlyingAsset['avaxc:usdc']
+    UnderlyingAsset['avaxc:usdc'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   avaxErc20(
     '7c0a3d09-82b4-4da0-9bc2-32c6de527b11',
@@ -102,7 +104,8 @@ export const avaxTokens = [
     'USD Coin',
     6,
     '0xa7d7079b0fead91f3e65f86e8915cb59c1a4c664',
-    UnderlyingAsset['avaxc:usdc']
+    UnderlyingAsset['avaxc:usdc'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   avaxErc20(
     'd9a021b1-a94a-495c-84c3-061d97c98748',
@@ -110,7 +113,8 @@ export const avaxTokens = [
     'Dai Stablecoin',
     18,
     '0xd586e7f844cea2f87f50152665bcbc2c279d8d70',
-    UnderlyingAsset['avaxc:dai']
+    UnderlyingAsset['avaxc:dai'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   avaxErc20(
     'e6f2a1fd-4cb9-4eae-9278-434b334bdc09',
@@ -118,7 +122,8 @@ export const avaxTokens = [
     'Tether USD',
     6,
     '0xc7198437980c041c805a1edcba50c1ce5db95118',
-    UnderlyingAsset['avaxc:usdt']
+    UnderlyingAsset['avaxc:usdt'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   avaxErc20(
     '4a58ecf3-c505-4735-bf38-ce5f6e11fda6',
@@ -166,7 +171,8 @@ export const avaxTokens = [
     'USD Coin (Wormhole)',
     6,
     '0x543672e9cbec728cbba9c3ccd99ed80ac3607fa8',
-    UnderlyingAsset['avaxc:usdc']
+    UnderlyingAsset['avaxc:usdc'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   avaxErc20(
     '6e92ac8e-a2c8-49f3-8096-b630516bec5d',
@@ -199,7 +205,8 @@ export const avaxTokens = [
     'YUSD Stablecoin',
     18,
     '0x111111111111ed1d73f860f57b2798b683f2d325',
-    UnderlyingAsset['avaxc:yusd']
+    UnderlyingAsset['avaxc:yusd'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   avaxErc20(
     '005cae58-7917-4288-bf24-60752d193dbc',
@@ -255,7 +262,8 @@ export const avaxTokens = [
     'Aave Avalanche USDC',
     6,
     '0x625e7708f30ca75bfd92586e17077590c60eb4cd',
-    UnderlyingAsset['avaxc:aavausdc']
+    UnderlyingAsset['avaxc:aavausdc'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   avaxErc20(
     'c6fd3419-164b-46a5-be0b-50f28f8c2c81',
@@ -263,7 +271,8 @@ export const avaxTokens = [
     'TrueUSD',
     18,
     '0x1c20e891bab6b1727d14da358fae2984ed9b59eb',
-    UnderlyingAsset['avaxc:tusd']
+    UnderlyingAsset['avaxc:tusd'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   avaxErc20(
     '4b2f8744-bbcd-4b18-ae84-52ef0647d09c',
@@ -349,7 +358,8 @@ export const avaxTokens = [
     'Aave Avalanche USDT',
     18,
     '0x6ab707aca953edaefbc4fd23ba73294241490620',
-    UnderlyingAsset['avaxc:aavausdt']
+    UnderlyingAsset['avaxc:aavausdt'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   avaxErc20(
     'ffec10f0-09c7-4068-a623-b95d95eb6058',
@@ -381,7 +391,8 @@ export const avaxTokens = [
     'Axelar Wrapped USDC',
     6,
     '0xfab550568c688d5d8a52c7d794cb93edc26ec0ec',
-    UnderlyingAsset['avaxc:axlusdc']
+    UnderlyingAsset['avaxc:axlusdc'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   avaxErc20(
     '5b2f8e28-bc54-432f-88a4-6de845624cc5',
