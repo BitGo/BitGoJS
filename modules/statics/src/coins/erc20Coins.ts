@@ -11014,7 +11014,7 @@ export const erc20Coins = [
     9,
     '0x5a3e6a77ba2f983ec0d371ea3b475f8bc0811ad5',
     UnderlyingAsset['eth:0x0'],
-    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
+    [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.BULK_TRANSACTION]
   ),
   erc20(
     '7839148f-7b3b-4926-a9d4-bdfe2e009abc',
@@ -11071,7 +11071,7 @@ export const erc20Coins = [
     18,
     '0x046eee2cc3188071c02bfc1745a6b17c656e3f3d',
     UnderlyingAsset['eth:rlb'],
-    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
+    [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.BULK_TRANSACTION]
   ),
   erc20(
     '5ef3ded1-1a49-45f6-80a5-7e4a6f397bcf',
