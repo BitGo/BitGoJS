@@ -1337,6 +1337,8 @@ export function getFormattedTokenConfigForCoin(coin: Readonly<BaseCoin>): TokenC
     return getVetTokenConfig(coin);
   } else if (coin instanceof VetNFTCollection) {
     return getVetNFTCollectionConfig(coin);
+  } else if (coin instanceof CoredaoERC20Token) {
+    return getCoredaoTokenConfig(coin);
   }
   return undefined;
 }
