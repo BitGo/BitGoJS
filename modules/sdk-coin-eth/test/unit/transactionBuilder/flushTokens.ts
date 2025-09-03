@@ -9,8 +9,15 @@ import {
   Transaction,
 } from '../../../src';
 import { getBuilder } from '../getBuilder';
+// eslint-disable-next-line import/no-internal-modules
+import { runFlushNftTests } from '@bitgo/abstract-eth/test/unit/transactionBuilder';
 
-describe('Eth Transaction builder flush tokens', function () {
+// Run the shared flush NFT tests from abstract-eth
+describe('ETH Flush NFT Tests (from abstract-eth)', () => {
+  runFlushNftTests('eth', getBuilder);
+});
+
+describe('Eth Transaction builder flush tokens (ETH-specific)', function () {
   const defaultKeyPair = new KeyPair({
     prv: 'FAC4D04AA0025ECF200D74BC9B5E4616E4B8338B69B61362AAAD49F76E68EF28',
   });

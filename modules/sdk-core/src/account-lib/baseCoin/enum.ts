@@ -83,6 +83,10 @@ export enum TransactionType {
   // Un-delegate resource (e.g. TRX)
   UnDelegateResource,
   StorageDeposit,
+  // Flush ERC721 NFTs from a forwarder address to base address
+  FlushERC721,
+  // Flush ERC1155 tokens from a forwarder address to base address
+  FlushERC1155,
 }
 
 /**

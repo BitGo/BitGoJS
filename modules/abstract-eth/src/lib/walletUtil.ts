@@ -10,6 +10,10 @@ export const recoveryWalletInitializationFirstBytes = '0x60c06040';
 export const flushForwarderTokensMethodId = '0x2da03409';
 export const flushForwarderTokensMethodIdV4 = '0x3ef13367';
 export const flushCoinsMethodId = '0x6b9f96ea';
+export const flushERC721ForwarderTokensMethodId = '0x5a953d0a';
+export const flushERC721ForwarderTokensMethodIdV4 = '0x159e44d7';
+export const flushERC1155ForwarderTokensMethodId = '0xe6bd0aa4';
+export const flushERC1155ForwarderTokensMethodIdV4 = '0x8972c17c';
 
 export const ERC721SafeTransferTypeMethodId = '0xb88d4fde';
 export const ERC1155SafeTransferTypeMethodId = '0xf242432a';
@@ -22,6 +26,10 @@ export const createV1WalletTypes = ['address[]', 'bytes32'];
 export const flushTokensTypes = ['address', 'address'];
 export const flushTokensTypesv4 = ['address'];
 export const flushCoinsTypes = [];
+export const flushERC721TokensTypes = ['address', 'address', 'uint256'];
+export const flushERC721TokensTypesv4 = ['address', 'uint256'];
+export const flushERC1155TokensTypes = ['address', 'address', 'uint256'];
+export const flushERC1155TokensTypesv4 = ['address', 'uint256'];
 
 export const sendMultiSigTypes = ['address', 'uint', 'bytes', 'uint', 'uint', 'bytes'];
 export const sendMultiSigTypesFirstSigner = ['string', 'address', 'uint', 'bytes', 'uint', 'uint'];
