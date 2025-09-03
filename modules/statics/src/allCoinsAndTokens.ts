@@ -372,7 +372,7 @@ export const allCoinsAndTokens = [
   account(
     '2660f6f6-1980-4584-a0b3-487d4a832b9f',
     'tbaseeth',
-    'Base Sepolia Chain',
+    'Base Ethereum Testnet',
     Networks.test.basechain,
     18,
     UnderlyingAsset.BASEETH,
@@ -394,7 +394,7 @@ export const allCoinsAndTokens = [
   account(
     'd51fe324-1e01-4630-9b04-c724fe495a1c',
     'baseeth',
-    'Base Chain',
+    'Base Ethereum',
     Networks.main.basechain,
     18,
     UnderlyingAsset.BASEETH,
