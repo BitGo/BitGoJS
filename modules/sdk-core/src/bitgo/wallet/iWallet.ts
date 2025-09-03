@@ -500,8 +500,6 @@ export interface CreateAddressOptions {
   derivedAddress?: string;
   index?: number;
   onToken?: string;
-  referenceCoin?: string;
-  referenceAddress?: string;
 }
 
 export interface UpdateAddressOptions {
