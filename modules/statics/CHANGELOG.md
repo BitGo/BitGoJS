@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [57.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@57.7.0...@bitgo/statics@57.8.0) (2025-09-03)
+
+### Bug Fixes
+
+- **statics:** get token config for coredao ([08589ca](https://github.com/BitGo/BitGoJS/commit/08589ca4b99f68f82715bcf2ab5ae0fd2b69c9d3))
+
+### Features
+
+- add ofc tokens for hash ([b16302f](https://github.com/BitGo/BitGoJS/commit/b16302fe4e3a740a5eef376466f8467bd3b777c9))
+- added stablecoin coinfeature flag ([6ef7d15](https://github.com/BitGo/BitGoJS/commit/6ef7d15ba66d129678509667b8b0d2bf61bd6e8d))
+- enable staking feature on somnia testnet ([d8803ce](https://github.com/BitGo/BitGoJS/commit/d8803ce42dbda461917a9489b266086d1c6f8df9))
+- gate some assets for Bitgo Germany/ Frankfurt/ Europe ApS ([569bbb4](https://github.com/BitGo/BitGoJS/commit/569bbb421427c9528f88c51b6ce19040d8a3912d))
+- **sdk-coin-ada:** add token support config ([8352773](https://github.com/BitGo/BitGoJS/commit/835277307a119c193413a76697e479d2541b9eb1))
+- **sdk-coin-iota:** implement key creation and validation ([ad13e3c](https://github.com/BitGo/BitGoJS/commit/ad13e3c4e37546390b81aeeafb4d062d9a3ef137))
+- **statics:** add method to create base coin from trimmed token details ([dd7bc5e](https://github.com/BitGo/BitGoJS/commit/dd7bc5e94a6df2f8e44dad4e551c10c54fbc48a0))
+- **statics:** add new tokens ([7a2ca3b](https://github.com/BitGo/BitGoJS/commit/7a2ca3be499d5c918114f2d97ef5e69178a18674))
+- **statics:** adding fee address coin feature for iota ([d0936da](https://github.com/BitGo/BitGoJS/commit/d0936dab0c6fd6cf85595220a9cff2cb66a9abbb))
+
 # [57.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@57.6.0...@bitgo/statics@57.7.0) (2025-08-29)
 
 ### Bug Fixes

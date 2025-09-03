@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.21.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.21.2...@bitgo/utxo-staking@1.21.3) (2025-09-03)
+
+**Note:** Version bump only for package @bitgo/utxo-staking
+
 ## [1.21.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.21.1...@bitgo/utxo-staking@1.21.2) (2025-08-29)
 
 **Note:** Version bump only for package @bitgo/utxo-staking

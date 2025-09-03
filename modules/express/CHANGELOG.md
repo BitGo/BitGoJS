@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [15.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@14.6.1...@bitgo/express@15.0.0) (2025-09-03)
+
+### Features
+
+- adding signature in withdraw lightning ([514aaee](https://github.com/BitGo/BitGoJS/commit/514aaeebf0e6a20c78f9a3beb7715a77d2b0b9dc))
+- **express:** migrate encrypt to typed routes ([48e162d](https://github.com/BitGo/BitGoJS/commit/48e162d601f95bc541386e548216768950d7c3f9))
+
+### BREAKING CHANGES
+
+- withdraw request changed
+
 ## [14.6.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@14.6.0...@bitgo/express@14.6.1) (2025-08-30)
 
 **Note:** Version bump only for package @bitgo/express

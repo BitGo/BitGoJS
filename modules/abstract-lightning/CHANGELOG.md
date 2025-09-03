@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@6.5.1...@bitgo/abstract-lightning@7.0.0) (2025-09-03)
+
+### Features
+
+- adding signature in withdraw lightning ([514aaee](https://github.com/BitGo/BitGoJS/commit/514aaeebf0e6a20c78f9a3beb7715a77d2b0b9dc))
+
+### BREAKING CHANGES
+
+- withdraw request changed
+
 ## [6.5.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@6.5.0...@bitgo/abstract-lightning@6.5.1) (2025-08-30)
 
 **Note:** Version bump only for package @bitgo/abstract-lightning

@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.0.0](https://github.com/BitGo/BitGoJS/compare/bitgo@49.7.0...bitgo@50.0.0) (2025-09-03)
+
+### Bug Fixes
+
+- **sdk-core:** send staking tx signatures based on wallet config ([d39af2e](https://github.com/BitGo/BitGoJS/commit/d39af2eee100acb04eaa2ca8450fbf7d6d532bd2))
+
+### Features
+
+- add ofc tokens for hash ([b16302f](https://github.com/BitGo/BitGoJS/commit/b16302fe4e3a740a5eef376466f8467bd3b777c9))
+- adding signature in withdraw lightning ([514aaee](https://github.com/BitGo/BitGoJS/commit/514aaeebf0e6a20c78f9a3beb7715a77d2b0b9dc))
+- **bitgo:** pass enterprise id in tss cold key creation ([d95f226](https://github.com/BitGo/BitGoJS/commit/d95f22694b0b61f4fde0e600f497242c5ba50007))
+- **sdk-coin-ada:** add token support config ([8352773](https://github.com/BitGo/BitGoJS/commit/835277307a119c193413a76697e479d2541b9eb1))
+
+### BREAKING CHANGES
+
+- withdraw request changed
+
 # [49.7.0](https://github.com/BitGo/BitGoJS/compare/bitgo@49.6.1...bitgo@49.7.0) (2025-08-30)
 
 ### Features

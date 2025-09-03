@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.19.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.18.0...@bitgo/utxo-core@1.19.0) (2025-09-03)
+
+### Features
+
+- **utxo-core:** add BIP322 signature verification ([f71aa51](https://github.com/BitGo/BitGoJS/commit/f71aa51edf0d90038f894a57f62fdeb44d2fbdb5))
+
 # [1.18.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.17.0...@bitgo/utxo-core@1.18.0) (2025-08-27)
 
 ### Features

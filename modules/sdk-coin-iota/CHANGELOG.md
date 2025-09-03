@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-iota@1.1.2...@bitgo/sdk-coin-iota@1.2.0) (2025-09-03)
+
+### Bug Fixes
+
+- **sdk-coin-iota:** fix iota packages from merge conflict ([d98153b](https://github.com/BitGo/BitGoJS/commit/d98153bbcaacbfdaa3faf86c78ea2b97349f6ffa))
+
+### Features
+
+- **sdk-coin-iota:** implement key creation and validation ([ad13e3c](https://github.com/BitGo/BitGoJS/commit/ad13e3c4e37546390b81aeeafb4d062d9a3ef137))
+
 ## [1.1.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-iota@1.1.1...@bitgo/sdk-coin-iota@1.1.2) (2025-08-30)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-iota

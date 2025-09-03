@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.5.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.5.2...@bitgo/sdk-coin-vet@2.5.3) (2025-09-03)
+
+### Bug Fixes
+
+- amount conversion in staking for vechain ([3b95074](https://github.com/BitGo/BitGoJS/commit/3b95074ec289f236c070c4e426a50cdb1358e864))
+- return raw data for vet nft transaction ([92f0145](https://github.com/BitGo/BitGoJS/commit/92f0145bfa131559c27683441849d515e686e8cb))
+
 ## [2.5.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.5.1...@bitgo/sdk-coin-vet@2.5.2) (2025-08-30)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-vet
