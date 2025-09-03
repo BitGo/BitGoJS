@@ -63,7 +63,7 @@ export class MidnightMessageProvider implements IMessageProvider {
 
     this.ranOnce = true;
     const query: Record<string, unknown> = {
-      status: 'UNINITIALIZED',
+      status: 'UNINITIATED',
       limit: NUM_MESSAGES_PER_QUERY,
     };
     if (this.prevId !== undefined) {
