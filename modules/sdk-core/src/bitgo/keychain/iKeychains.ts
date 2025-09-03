@@ -210,6 +210,6 @@ export interface IKeychains {
   getKeysForSigning(params?: GetKeysForSigningOptions): Promise<Keychain[]>;
   createMpc(params: CreateMpcOptions): Promise<KeychainsTriplet>;
   recreateMpc(params: RecreateMpcOptions): Promise<KeychainsTriplet>;
-  createTssBitGoKeyFromOvcShares(ovcOutput: OvcToBitGoJSON): Promise<BitGoKeyFromOvcShares>;
+  createTssBitGoKeyFromOvcShares(ovcOutput: OvcToBitGoJSON, enterprise?: string): Promise<BitGoKeyFromOvcShares>;
   createUserKeychain(userPassword: string): Promise<Keychain>;
 }
