@@ -1,5 +1,5 @@
 import { sip10Token, tsip10Token } from '../account';
-import { UnderlyingAsset } from '../base';
+import { CoinFeature, UnderlyingAsset } from '../base';
 import { STX_TOKEN_FEATURES } from '../coinFeatures';
 
 // SIP10 tokens' assetId can be obtained as follows:
@@ -42,7 +42,7 @@ export const sip10Tokens = [
     6,
     'SP3Y2ZSH8P7D50B0VBTSX11S7XSG24M1VB9YFQA4K.token-aeusdc::aeUSDC',
     UnderlyingAsset['stx:aeusdc'],
-    STX_TOKEN_FEATURES
+    [...STX_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
   sip10Token(
     'baaf7ebe-b931-4a5e-a173-ab514688df73',
@@ -51,7 +51,7 @@ export const sip10Tokens = [
     8,
     'SPN5AKG35QZSK2M8GAMR4AFX45659RJHDW353HSG.susdh-token-v1::susdh',
     UnderlyingAsset['stx:susdh'],
-    STX_TOKEN_FEATURES
+    [...STX_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
   sip10Token(
     '83fbaa8a-eeda-496a-9c38-98ef592a008b',
@@ -60,7 +60,7 @@ export const sip10Tokens = [
     8,
     'SPN5AKG35QZSK2M8GAMR4AFX45659RJHDW353HSG.usdh-token-v1::usdh',
     UnderlyingAsset['stx:usdh'],
-    STX_TOKEN_FEATURES
+    [...STX_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
   sip10Token(
     'c52dd53f-6db4-4fda-ba5f-0c0900e23caf',

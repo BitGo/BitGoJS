@@ -468,6 +468,11 @@ export enum CoinFeature {
    * This coin is an EVM compatible coin and should use common EVM message signing functionality
    */
   SHARED_EVM_MESSAGE_SIGNING = 'shared-evm-message-signing',
+
+  /**
+   * This token is a stablecoin
+   */
+  STABLECOIN = 'stablecoin',
 }
 
 /**
