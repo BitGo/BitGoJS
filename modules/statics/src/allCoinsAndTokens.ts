@@ -84,6 +84,7 @@ import {
   ETH_FEATURES,
   ETH_FEATURES_WITH_STAKING_AND_MMI,
   EVM_FEATURES,
+  EVM_NON_EIP1559_FEATURES,
   FLR_FEATURES,
   GENERIC_TOKEN_FEATURES,
   HBAR_FEATURES,
@@ -1674,6 +1675,40 @@ export const allCoinsAndTokens = [
       CoinFeature.SHARED_EVM_SDK,
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
+    ]
+  ),
+  account(
+    '764a4e96-a754-4866-b40a-8fc24ca10cc1',
+    'kavaevm',
+    'Kava EVM',
+    Networks.main.kavaevm,
+    18,
+    UnderlyingAsset.KAVAEVM,
+    BaseUnit.ETH,
+    [
+      ...EVM_NON_EIP1559_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+    ]
+  ),
+  account(
+    'a443481c-9d7e-4352-a1f4-77ea9c08e4fd',
+    'tkavaevm',
+    'Testnet Kava EVM',
+    Networks.test.kavaevm,
+    18,
+    UnderlyingAsset.KAVAEVM,
+    BaseUnit.ETH,
+    [
+      ...EVM_NON_EIP1559_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
     ]
   ),
   account(

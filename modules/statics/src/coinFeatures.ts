@@ -620,10 +620,9 @@ export const VET_FEATURES = [
 ];
 export const VET_TOKEN_FEATURES = VET_FEATURES.filter((feature) => feature !== CoinFeature.SUPPORTS_TOKENS);
 
-export const XDC_FEATURES = [
-  ...EVM_FEATURES.filter((feature) => feature !== CoinFeature.EIP1559),
-  CoinFeature.ERC20_BULK_TRANSACTION,
-];
+export const EVM_NON_EIP1559_FEATURES = [...EVM_FEATURES.filter((feature) => feature !== CoinFeature.EIP1559)];
+
+export const XDC_FEATURES = [...EVM_NON_EIP1559_FEATURES, CoinFeature.ERC20_BULK_TRANSACTION];
 
 export const SGB_FEATURES = [...EVM_FEATURES, CoinFeature.ERC20_BULK_TRANSACTION];
 
