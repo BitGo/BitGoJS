@@ -383,7 +383,8 @@ export class LightningWallet implements ILightningWallet {
       )
       .send({
         unsignedCoinSpecific: {
-          signature,
+          coin: this.wallet.baseCoin.getChain(),
+          data: { signature },
         },
       })
       .result()) as TxRequest;
