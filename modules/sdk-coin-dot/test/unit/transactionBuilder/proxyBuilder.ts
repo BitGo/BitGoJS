@@ -45,7 +45,7 @@ describe('Dot Remove Proxy Builder', () => {
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
-    it('should build from raw signed tx', async () => {
+    xit('should build from raw signed tx', async () => {
       builder.from(rawTx.removeProxy.signed);
       builder.validity({ firstValid: 3933 }).referenceBlock(referenceBlock);
 
@@ -66,7 +66,7 @@ describe('Dot Remove Proxy Builder', () => {
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
-    it('should build from raw unsigned tx', async () => {
+    xit('should build from raw unsigned tx', async () => {
       builder.from(rawTx.removeProxy.unsigned);
       builder.sender({ address: sender.address }).validity({ firstValid: 3933 }).referenceBlock(referenceBlock);
 

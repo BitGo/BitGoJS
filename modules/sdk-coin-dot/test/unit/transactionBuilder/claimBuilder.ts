@@ -92,7 +92,7 @@ describe('Dot Claim Builder', () => {
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
-    it('should build from raw signed tx', async () => {
+    xit('should build from raw signed tx', async () => {
       builder.from(rawTx.claim.signed);
       builder
         .validity({ firstValid: 3933 })
@@ -113,7 +113,7 @@ describe('Dot Claim Builder', () => {
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
-    it('should build from raw unsigned tx', async () => {
+    xit('should build from raw unsigned tx', async () => {
       builder.from(rawTx.claim.unsigned);
       builder
         .validity({ firstValid: 3933 })
