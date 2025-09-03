@@ -474,4 +474,25 @@ describe('OFC:', function () {
       });
     });
   });
+
+  describe('check ofc tokens for hash tokens', function () {
+    const tokenMain = 'ofchash:ylds';
+    const tokenTest = 'ofcthash:ylds';
+    describe('for main network', function () {
+      it(`should have the correct values for ${tokenMain}`, function () {
+        const ofcCoin = bitgo.coin(tokenMain);
+        ofcCoin.getChain().should.equal(tokenMain);
+        ofcCoin.getFullName().should.equal('YLDS Token');
+        ofcCoin.getBaseFactor().should.equal(PRECISION_6);
+      });
+    });
+    describe('for test network', function () {
+      it(`should have the correct values for ${tokenTest}`, function () {
+        const ofcCoin = bitgo.coin(tokenTest);
+        ofcCoin.getChain().should.equal(tokenTest);
+        ofcCoin.getFullName().should.equal('Testnet YLDS Token');
+        ofcCoin.getBaseFactor().should.equal(PRECISION_6);
+      });
+    });
+  });
 });
