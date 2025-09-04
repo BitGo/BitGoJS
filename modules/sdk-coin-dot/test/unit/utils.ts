@@ -4,7 +4,7 @@ import should from 'should';
 import { SingletonRegistry } from '../../src';
 import utils from '../../src/lib/utils';
 import { accounts, blockHash, signatures, txIds, rawTx } from '../resources';
-import * as material from '../resources/assetHubMaterialData.json';
+import * as material from '../resources/materialData.json';
 
 describe('utils', () => {
   const registry: TypeRegistry = SingletonRegistry.getInstance(material);
@@ -91,14 +91,14 @@ describe('utils', () => {
     );
   });
 
-  xit('should recover signature from raw tx correctly', () => {
+  it('should recover signature from raw tx correctly', () => {
     should.equal(
       utils.recoverSignatureFromRawTx(rawTx.transfer.signed, { registry: registry }),
       'b6d868a11d202b56df1959f5d5f81f44ce1f95c8e70424b17080ea869d1c39d453f16c38fbef600a636c9a62a49ede5ee695a1822faf2f94fcfbb184a4254009'
     );
   });
 
-  xit('should serialize signed transaction successfully', () => {
+  it('should serialize signed transaction successfully', () => {
     const signature = utils.recoverSignatureFromRawTx(rawTx.transfer.signed, { registry: registry });
     const txHex = utils.serializeSignedTransaction(
       rawTx.transfer.unsigned,

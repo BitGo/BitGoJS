@@ -76,7 +76,7 @@ describe('Dot Transaction', () => {
   });
 
   describe('should build from raw unsigned tx', async () => {
-    xit('Transaction size validation', async () => {
+    it('Transaction size validation', async () => {
       const builder = new TransferBuilder(config).material(material);
       builder.from(rawTx.transfer.unsigned);
       builder
@@ -87,7 +87,7 @@ describe('Dot Transaction', () => {
       should.deepEqual(tx.transactionSize(), rawTx.transfer.unsigned.length / 2);
     });
 
-    xit('Should rebuild different hex if keepAlive is true or false for transferAll txs', async () => {
+    it('Should rebuild different hex if keepAlive is true or false for transferAll txs', async () => {
       const keepAliveFalseBuilder = new TransferBuilder(config).material(material);
       keepAliveFalseBuilder.from(rawTx.transferAll.unsignedKeepAliveFalse);
       keepAliveFalseBuilder
@@ -200,7 +200,7 @@ describe('Dot Transaction', () => {
   });
 
   describe('inputs and outputs', () => {
-    xit('should generate inputs and output for a batch staking transaction', async () => {
+    it('should generate inputs and output for a batch staking transaction', async () => {
       const builder = new BatchTransactionBuilder(config).material(material);
       builder.from(rawTx.stake.batchAll.signed);
       builder
@@ -236,7 +236,7 @@ describe('Dot Transaction', () => {
       should(tx.outputs[1].coin).eql('tdot');
     });
 
-    xit('should generate inputs and output for a batch unstaking transaction', async () => {
+    it('should generate inputs and output for a batch unstaking transaction', async () => {
       const builder = new BatchTransactionBuilder(config).material(material);
       builder.from(rawTx.unstake.batchAll.signed);
       builder
@@ -262,7 +262,7 @@ describe('Dot Transaction', () => {
       should(tx.outputs[0].coin).eql('tdot');
     });
 
-    xit('should generate inputs and output for a stake more transaction', async () => {
+    it('should generate inputs and output for a stake more transaction', async () => {
       const builder = new StakingBuilder(config).material(material);
       builder.from(rawTx.stakeMore.signed);
       builder
@@ -287,7 +287,7 @@ describe('Dot Transaction', () => {
       should(tx.outputs[0].coin).eql('tdot');
     });
 
-    xit('should generate inputs and output for an unstake transaction', async () => {
+    it('should generate inputs and output for an unstake transaction', async () => {
       const builder = new UnstakeBuilder(config).material(material);
       builder.from(rawTx.unstake.signed);
       builder
@@ -303,7 +303,7 @@ describe('Dot Transaction', () => {
       should(tx.outputs.length).eql(0);
     });
 
-    xit('should generate inputs and output for a withdraw staked transaction', async () => {
+    it('should generate inputs and output for a withdraw staked transaction', async () => {
       const builder = new WithdrawUnstakedBuilder(config).material(material);
       builder.from(rawTx.withdrawUnbonded.signed);
       builder
