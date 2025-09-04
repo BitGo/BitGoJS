@@ -122,7 +122,7 @@ export class Ada extends BaseCoin {
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
     try {
       const coinConfig = coins.get(this.getChain());
-      const { txPrebuild: txPrebuild, txParams: txParams } = params;
+      const { txPrebuild: txPrebuild, txParams: txParams, verification, wallet } = params;
       const transaction = new Transaction(coinConfig);
       assert(txPrebuild.txHex, new Error('missing required tx prebuild property txHex'));
       const rawTx = txPrebuild.txHex;
@@ -140,6 +140,14 @@ export class Ada extends BaseCoin {
           }
           if (!find) {
             throw new Error('cannot find recipient in expected output');
+          }
+        }
+      } else if (verification?.consolidationToBaseAddress) {
+        const baseAddress = wallet.coinSpecific()?.baseAddress || wallet.coinSpecific()?.rootAddress;
+
+        for (const output of explainedTx.outputs) {
+          if (output.address !== baseAddress) {
+            throw new Error('tx outputs does not match with expected address');
           }
         }
       }
