@@ -1423,6 +1423,24 @@ class HypeEVM extends Mainnet implements EthereumNetwork {
   nativeCoinOperationHashPrefix = '999';
 }
 
+class KavaEVMTestnet extends Testnet implements EthereumNetwork {
+  name = 'KavaEVMTestnet';
+  family = CoinFamily.KAVAEVM;
+  explorerUrl = 'https://testnet.kavascan.com/tx/';
+  accountExplorerUrl = 'https://testnet.kavascan.com/address/';
+  chainId = 2221;
+  nativeCoinOperationHashPrefix = '2221';
+}
+
+class KavaEVM extends Mainnet implements EthereumNetwork {
+  name = 'KavaEVM';
+  family = CoinFamily.KAVAEVM;
+  explorerUrl = 'https://kavascan.com/tx/';
+  accountExplorerUrl = 'https://kavascan.com/address/';
+  chainId = 2222;
+  nativeCoinOperationHashPrefix = '2222';
+}
+
 class LineaETH extends Mainnet implements EthereumNetwork {
   name = 'Linea Ethereum Testnet';
   family = CoinFamily.LINEAETH;
@@ -1940,6 +1958,7 @@ export const Networks = {
     islm: Object.freeze(new Islm()),
     kaia: Object.freeze(new Kaia()),
     kava: Object.freeze(new Kava()),
+    kavaevm: Object.freeze(new KavaEVM()),
     lnbtc: Object.freeze(new LightningBitcoin()),
     litecoin: Object.freeze(new Litecoin()),
     mon: Object.freeze(new Monad()),
@@ -2032,6 +2051,7 @@ export const Networks = {
     irys: Object.freeze(new IrysTestnet()),
     islm: Object.freeze(new IslmTestnet()),
     kava: Object.freeze(new KavaTestnet()),
+    kavaevm: Object.freeze(new KavaEVMTestnet()),
     kovan: Object.freeze(new Kovan()),
     goerli: Object.freeze(new Goerli()),
     holesky: Object.freeze(new Holesky()),
