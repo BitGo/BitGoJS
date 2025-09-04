@@ -314,7 +314,7 @@ const testnetBase: EnvironmentTemplate = {
   cronosNodeUrl: 'https://testnet-croeseid-4.crypto.org:1317/',
   initiaNodeUrl: 'https://rest.testnet.initia.xyz/',
   asiNodeUrl: 'https://rest-dorado.fetch.ai/',
-  dotNodeUrls: ['wss://westend-rpc.polkadot.io'],
+  dotNodeUrls: ['wss://asset-hub-westend-rpc.n.dwellir.com'],
   substrateNodeUrls: ['wss://test.finney.opentensor.ai'],
   polymeshNodeUrls: ['wss://testnet-rpc.polymesh.live'],
   tronNodes: {
