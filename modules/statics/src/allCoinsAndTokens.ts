@@ -2698,6 +2698,12 @@ export const allCoinsAndTokens = [
     'Test BITGO ERC 1155 Token',
     '0x87cd6a40640befdd96e563b788a6b1fb3e07a186'
   ),
+  terc721(
+    'a4f3e8c2-7b9d-4e1f-b5c6-3d2a1e9f8b7c',
+    'terc721:hoodidj',
+    'dj nft test (superUrgent)',
+    '0x78d74402093e002b84d36a40d9b47ee06186ab4e'
+  ),
   tstellarToken(
     '47887cb5-98bb-4942-bd25-3ccca0847f36',
     'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
