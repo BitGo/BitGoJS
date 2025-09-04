@@ -591,6 +591,45 @@ describe('SOL:', function () {
       } as any);
       validTransaction.should.equal(true);
     });
+
+    it('should success transaction type match for token enable', async function () {
+      const validTransaction = await basecoin.verifyTransaction({
+        txParams: testData.tokenEnablementTransactionTxParams,
+        txPrebuild: testData.tokenEnablementTransactionTxPrebuild,
+        wallet: new Wallet(bitgo, basecoin, testData.tokenEnablementTransactionWallet),
+      } as any);
+      validTransaction.should.equal(true);
+    });
+
+    it('should fail validation when transaction type does not match', async function () {
+      const txPrebuild = testData.tokenEnablementTransactionTxPrebuild;
+      txPrebuild.txHex = testData.transferTransactionPrebuild.txHex;
+      txPrebuild.txRequestId = testData.transferTransactionPrebuild.txRequestId;
+
+      await basecoin
+        .verifyTransaction({
+          txParams: testData.tokenEnablementTransactionTxParams,
+          txPrebuild,
+          wallet: new Wallet(bitgo, basecoin, testData.tokenEnablementTransactionWallet),
+        } as any)
+        .should.be.rejectedWith("Tx type 'Send' does not match with expected txParams type 'enabletoken'");
+    });
+
+    it('should handle undefined transaction types gracefully', async function () {
+      const txParams = newTxParams();
+      const txPrebuild = newTxPrebuild();
+      // Set the type to undefined which should log a warning but not throw
+      txParams.type = undefined;
+
+      const validTransaction = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        memo,
+        durableNonce,
+        wallet: walletObj,
+      } as any);
+      validTransaction.should.equal(true);
+    });
   });
 
   it('should accept valid address', function () {

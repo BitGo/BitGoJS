@@ -950,3 +950,85 @@ export const wrwUser = {
   walletAddress4: 'E7Z6pFfUhjx2dFjdB9Ws2KnKepXoq62TeF5uaCVSvqQV',
   walletAddress5: '8V34g2KeJXChECTWHfcJ5NeyWwyb7HvKpu66DD3YPNcf',
 };
+
+export const tokenEnablementTransactionTxPrebuild = {
+  walletId: '68a8ce3dea8237d5da85d1852e370901',
+  txRequestId: '02baa495-5256-49a4-bb32-2c7243a6fa4f',
+  txHex:
+    '0200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000fb6a5abb6b5ce6718d824dc797f935c9547c5ca4db671e462e2bcf8eb0f1be1dd5dc42bba32c69eb5012a9e66e620b233eb1812bff97eff3ceba3394a72c91040201060af93ed0654f08df3119a3b7aed55197e73a9b49d02980bd6502a18187226eaa841c96172044f1217c3784e8f02f49e2c8fc3591e81294ab54394f9d22fd7b7a8f1773d2dcb9f1feee8e4d00507865d7dc36c86134d3f83e8e5704dfb2cc9510e90b3806cbc5030d328af0f644f0db8eb9a58c7551bbbbaeec942f4dd6f8c97de000000000000000000000000000000000000000000000000000000000000000008c97258f4e2489f1bb3d1029148e0d830b5a1399daff1084048e7bd8dbe9f8599331dfeb67fb6f18c2b28a777657bf6439ee959ee6fe40f64e099236668fbcf206a7d517192c568ee08a845f73d29788cf035c3145b21ab344d8062ea940000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a95977767bf7bdb7ad2cbe6dd57ed68c814a60c19b438afbc69318d02415471305020403030701040400000005070002000604090800',
+  buildParams: {
+    enableTokens: [{ name: 'tsol:gari' }],
+    type: 'enabletoken',
+  },
+  feeInfo: {
+    fee: 2049280,
+    feeString: '2049280',
+  },
+};
+
+export const tokenEnablementTransactionTxParams = {
+  enableTokens: [{ name: 'tsol:gari' }],
+  type: 'enabletoken',
+  prebuildTx: tokenEnablementTransactionTxPrebuild,
+  apiVersion: 'full',
+};
+
+export const tokenEnablementTransactionWallet = {
+  id: '68a8ce3dea8237d5da85d1852e370901',
+  users: [
+    {
+      user: '6849bcaaeaba2ab23e14299104d5104a',
+      permissions: ['admin', 'spend', 'view'],
+    },
+  ],
+  coin: 'tsol',
+  label: 'token enablement1',
+  m: 2,
+  n: 3,
+  keys: ['68a8ce2f1f2cabb761a87b903927b5b7', '68a8ce2fb2b522b30b40328277ad9912', '68a8ce2fb2b522b30b403238de09d9eb'],
+  enterprise: '6849bcaceaba2ab23e142a0668169e35',
+  organization: '6849bcaceaba2ab23e142a146d20bacc',
+  bitgoOrg: 'BitGo Trust',
+  tags: ['68a8ce3dea8237d5da85d1852e370901', '6849bcaceaba2ab23e142a0668169e35'],
+  approvalsRequired: 1,
+  isCold: false,
+  coinSpecific: {
+    rootAddress: 'Hmx53pRpAifMYEC6kuv4tGczPVrUgR4pEGqdiw4TkY9Z',
+    pendingChainInitialization: false,
+    minimumFunding: 2447136,
+    lastChainIndex: { 0: 0, 1: -1 },
+    nonceExpiresAt: '2025-08-22T19:15:30.849Z',
+    trustedTokens: [
+      { token: 'tsol:gmt', state: 'active' },
+      { token: 'tsol:srm', state: 'active' },
+    ],
+  },
+  balanceString: '999980000',
+  confirmedBalanceString: '999980000',
+  spendableBalanceString: '993444304',
+  reservedBalanceString: '2447136',
+  receiveAddress: {
+    id: '68a8ce3dea8237d5da85d191a65e28ef',
+    address: 'Hmx53pRpAifMYEC6kuv4tGczPVrUgR4pEGqdiw4TkY9Z',
+    chain: 0,
+    index: 0,
+    coin: 'tsol',
+    wallet: '68a8ce3dea8237d5da85d1852e370901',
+    coinSpecific: {
+      rootAddress: 'Hmx53pRpAifMYEC6kuv4tGczPVrUgR4pEGqdiw4TkY9Z',
+      minimumFunding: 2447136,
+      type: 'native',
+      pendingChainInitialization: false,
+      trustedTokens: [
+        { token: 'tsol:gmt', state: 'active' },
+        { token: 'tsol:srm', state: 'active' },
+      ],
+    },
+  },
+};
+
+export const transferTransactionPrebuild = {
+  txHex:
+    '020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000019f42cd4cb8d259f365be0e67ba8ee061620bcebdafb5d9c0585dcb83fb21434d13a67d744785797787f349ec504d5bbc2d155d44df23293b5ba23268e5f390202010206f93ed0654f08df3119a3b7aed55197e73a9b49d02980bd6502a18187226eaa841c96172044f1217c3784e8f02f49e2c8fc3591e81294ab54394f9d22fd7b7a8f8401c3f67cfa52518b34a09b08f4ea77e1c4fb9d89bfaccdc33cf8b8a9cf8d7be6b1b3fb7bc8d6c8f8e25876495c14d34137664930d30f05f0df44f7e54f9c34000000000000000000000000000000000000000000000000000000000000000006a7d517192c568ee08a845f73d29788cf035c3145b21ab344d8062ea940000099377dacd3970ef1e50c5b9c1cb5e6fdbb573ddaaa2b7b5da996df83527f01e50204030305010404000000040200020c020000000a00000000000000',
+  txRequestId: '243fde0b-17c3-4b2d-935e-fb8e16d5c59a',
+};
