@@ -232,11 +232,17 @@ export class Sol extends BaseCoin {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 
-  async verifyTransaction(params: SolVerifyTransactionOptions): Promise<any> {
+  async verifyTransaction(params: SolVerifyTransactionOptions): Promise<boolean> {
     // asset name to transfer amount map
     const totalAmount: Record<string, BigNumber> = {};
     const coinConfig = coins.get(this.getChain());
-    const { txParams: txParams, txPrebuild: txPrebuild, memo: memo, durableNonce: durableNonce } = params;
+    const {
+      txParams: txParams,
+      txPrebuild: txPrebuild,
+      memo: memo,
+      durableNonce: durableNonce,
+      verification: verificationOptions,
+    } = params;
     const transaction = new Transaction(coinConfig);
     const rawTx = txPrebuild.txBase64 || txPrebuild.txHex;
     const consolidateId = txPrebuild.consolidateId;
@@ -311,6 +317,37 @@ export class Sol extends BaseCoin {
 
       if (recipientChecks.includes(false)) {
         throw new Error('Tx outputs does not match with expected txParams recipients');
+      }
+    } else if (verificationOptions?.consolidationToBaseAddress) {
+      //verify funds are sent to walletRootAddress for a consolidation
+      const filteredOutputs = explainedTx.outputs.map((output) => _.pick(output, ['address', 'amount', 'tokenName']));
+
+      // Cache to store already derived ATA addresses
+      const ataAddressCache: Record<string, string> = {};
+
+      for (const output of filteredOutputs) {
+        if (output.tokenName) {
+          // Check cache first before deriving ATA address
+          if (!ataAddressCache[output.tokenName]) {
+            const tokenMintAddress = getSolTokenFromTokenName(output.tokenName);
+            if (tokenMintAddress?.tokenAddress && tokenMintAddress?.programId) {
+              ataAddressCache[output.tokenName] = await getAssociatedTokenAccountAddress(
+                tokenMintAddress.tokenAddress,
+                walletRootAddress as string,
+                true,
+                tokenMintAddress.programId
+              );
+            } else {
+              throw new Error(`Unable to get token information for ${output.tokenName}`);
+            }
+          }
+
+          if (ataAddressCache[output.tokenName] !== output.address) {
+            throw new Error('tx outputs does not match with expected address');
+          }
+        } else if (output.address !== walletRootAddress) {
+          throw new Error('tx outputs does not match with expected address');
+        }
       }
     }
 

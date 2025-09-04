@@ -1,20 +1,28 @@
-import { BitGoAPI } from '@bitgo/sdk-api';
-import {
-  generateRandomPassword,
-  MPCSweepTxs,
-  MPCTx,
-  MPCTxs,
-  TssUtils,
-  TxRequest,
-  Wallet,
-  Environments,
-} from '@bitgo/sdk-core';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { coins } from '@bitgo/statics';
-import assert from 'assert';
 import * as _ from 'lodash';
 import * as should from 'should';
 import * as sinon from 'sinon';
+import nock from 'nock';
+import assert from 'assert';
+
+import { TOKEN_2022_PROGRAM_ID } from '@solana/spl-token';
+
+import { BitGoAPI, encrypt } from '@bitgo/sdk-api';
+import {
+  common,
+  Environments,
+  generateRandomPassword,
+  IWallet,
+  MPCSweepTxs,
+  MPCTx,
+  MPCTxs,
+  TransactionPrebuild,
+  TssUtils,
+  TxRequest,
+  Wallet,
+  WalletCoinSpecific,
+} from '@bitgo/sdk-core';
+import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { coins } from '@bitgo/statics';
 import { KeyPair, Sol, Tsol } from '../../src';
 import { Transaction } from '../../src/lib';
 import { AtaInit, InstructionParams, TokenTransfer } from '../../src/lib/iface';
@@ -23,7 +31,6 @@ import * as testData from '../fixtures/sol';
 import * as resources from '../resources/sol';
 import { getBuilderFactory } from './getBuilderFactory';
 import { solBackupKey } from './fixtures/solBackupKey';
-import { TOKEN_2022_PROGRAM_ID } from '@solana/spl-token';
 
 describe('SOL:', function () {
   let bitgo: TestBitGoAPI;
@@ -2831,6 +2838,369 @@ describe('SOL:', function () {
           }),
         {
           message: 'failed to decrypt prv: json decrypt: invalid parameters',
+        }
+      );
+    });
+
+    it('should verify consolidation transaction', async function () {
+      // Set up wallet data
+      const walletData = {
+        id: '5b34252f1bf349930e34020a00000000',
+        coin: 'tsol',
+        keys: [
+          '5b3424f91bf349930e34017500000000',
+          '5b3424f91bf349930e34017600000000',
+          '5b3424f91bf349930e34017700000000',
+        ],
+        coinSpecific: {
+          rootAddress: wallet.pub,
+        },
+        multisigType: 'tss',
+      };
+      const fakePrv = encrypt('password', 'prv');
+
+      const walletObj = new Wallet(bitgo, basecoin, walletData);
+      const bgUrl = common.Environments['mock'].uri;
+
+      nock(bgUrl)
+        .get('/api/v2/tsol/key/5b3424f91bf349930e34017500000000')
+        .reply(200, [
+          {
+            encryptedPrv: fakePrv,
+          },
+        ]);
+
+      // Mock the API response for buildAccountConsolidations
+      nock(bgUrl)
+        .post('/api/v2/tsol/wallet/5b34252f1bf349930e34020a00000000/consolidateAccount/build')
+        .reply(200, [
+          {
+            txRequestId: '4fdd0cae-2563-43b1-b5cf-94865158ca10',
+            walletId: '63068ed4efa63a000877f02fd4b0fa6d',
+            txHex:
+              '02000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000006f50130abf8d0d8943c5b9a51a574886a7d7b3d8db18f0ddb4ab8b6d3ec27e3c2f36f3339bb92d4296af6ae4d3abfbb07877f77d0033c883de08fa4a2eea670d0201020674a9df2b94aa4b4ada1202dc2891be366501d0acb4a01ca3e02e7fd6c1f505a71c96172044f1217c3784e8f02f49e2c8fc3591e81294ab54394f9d22fd7b7a8f8401c3f67cfa52518b34a09b08f4ea77e1c4fb9d89bfaccdc33cf8b8a9cf8d7bf0e04c89c50428e4eda5cbb759427c370f0a29a50bb0d1407e57924b0cc5b36f000000000000000000000000000000000000000000000000000000000000000006a7d517192c568ee08a845f73d29788cf035c3145b21ab344d8062ea940000040c9568195d67eb6b396fdbe97ba2e276622ef0023af09f23e6e0292abb678d90204030305010404000000040200020c020000000100000000000000',
+            feeInfo: {
+              fee: 10000,
+              feeString: '10000',
+            },
+            txInfo: {
+              minerFee: '10000',
+              spendAmount: '1547864',
+              spendAmounts: [
+                {
+                  coinName: 'tsol',
+                  amountString: '1547864',
+                },
+              ],
+              payGoFee: '0',
+              outputs: [
+                {
+                  address: '8rQXeVEMrKvtWCEJirEM6cKYnbZuTqVTbqRPiMMAJ8R4',
+                  value: 1547864,
+                  wallet: '63068ed4efa63a000877f02f',
+                  wallets: ['63068ed4efa63a000877f02f'],
+                  enterprise: '62d71a6b86068f0008f029fd',
+                  enterprises: ['62d71a6b86068f0008f029fd'],
+                  valueString: '1547864',
+                  coinName: 'tsol',
+                  walletType: 'hot',
+                  walletTypes: ['hot'],
+                },
+              ],
+              inputs: [
+                {
+                  value: 1547864,
+                  address: 'CmYsN3f8bcm4BDkFJWNsvYgjRxMTLH6vbJWNfYdmH7GU',
+                  valueString: '1547864',
+                },
+                {
+                  value: 10000,
+                  address: 'CmYsN3f8bcm4BDkFJWNsvYgjRxMTLH6vbJWNfYdmH7GU',
+                  valueString: '10000',
+                },
+              ],
+              type: 'Send',
+            },
+            consolidateId: '68a7d5d0c66e74e216b97173bd558c6d',
+            coin: 'tsol',
+          },
+        ]);
+
+      // Call the function to test
+      await assert.rejects(
+        async () => {
+          await walletObj.sendAccountConsolidations({
+            walletPassphrase: 'password',
+          });
+        },
+        {
+          message: 'tx outputs does not match with expected address',
+        }
+      );
+    });
+
+    it('should verify valid a consolidation transaction', async () => {
+      const consolidationTx = {
+        txRequestId: '4fdd0cae-2563-43b1-b5cf-94865158ca10',
+        walletId: '63068ed4efa63a000877f02fd4b0fa6d',
+        txHex:
+          '02000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002010206aeda253a331de489838246df93879440af8c62ac4967658edc2bb5d52b9759d91c96172044f1217c3784e8f02f49e2c8fc3591e81294ab54394f9d22fd7b7a8f74a9df2b94aa4b4ada1202dc2891be366501d0acb4a01ca3e02e7fd6c1f505a7d2734f3952f3eb4aefcf6c7a6092e979dd3fe5563ccfaca1cc92652a15ddd393000000000000000000000000000000000000000000000000000000000000000006a7d517192c568ee08a845f73d29788cf035c3145b21ab344d8062ea9400000428dad41bbedeb38018379e4ceeb7e80757d74dd00ae8c47c38d597477339ad80204030305010404000000040200020c02000000589e170000000000',
+        feeInfo: {
+          fee: 10000,
+          feeString: '10000',
+        },
+        txInfo: {
+          minerFee: '10000',
+          spendAmount: '1547864',
+          spendAmounts: [
+            {
+              coinName: 'tsol',
+              amountString: '1547864',
+            },
+          ],
+          payGoFee: '0',
+          outputs: [
+            {
+              address: '8rQXeVEMrKvtWCEJirEM6cKYnbZuTqVTbqRPiMMAJ8R4',
+              value: 1547864,
+              wallet: '63068ed4efa63a000877f02f',
+              wallets: ['63068ed4efa63a000877f02f'],
+              enterprise: '62d71a6b86068f0008f029fd',
+              enterprises: ['62d71a6b86068f0008f029fd'],
+              valueString: '1547864',
+              coinName: 'tsol',
+              walletType: 'hot',
+              walletTypes: ['hot'],
+            },
+          ],
+          inputs: [
+            {
+              value: 1547864,
+              address: 'CmYsN3f8bcm4BDkFJWNsvYgjRxMTLH6vbJWNfYdmH7GU',
+              valueString: '1547864',
+            },
+            {
+              value: 10000,
+              address: 'CmYsN3f8bcm4BDkFJWNsvYgjRxMTLH6vbJWNfYdmH7GU',
+              valueString: '10000',
+            },
+          ],
+          type: 'Send',
+        },
+        consolidateId: '68a7d5d0c66e74e216b97173bd558c6d',
+        coin: 'tsol',
+      };
+
+      const mockedWallet: Partial<IWallet> = {
+        coinSpecific: () => {
+          const cs = {
+            rootAddress: '8rQXeVEMrKvtWCEJirEM6cKYnbZuTqVTbqRPiMMAJ8R4',
+          } as WalletCoinSpecific;
+          return cs;
+        },
+      };
+
+      try {
+        if (
+          !(await basecoin.verifyTransaction({
+            blockhash: '',
+            feePayer: '',
+            txParams: {},
+            txPrebuild: consolidationTx as unknown as TransactionPrebuild,
+            walletType: 'tss',
+            wallet: mockedWallet as IWallet,
+            verification: {
+              consolidationToBaseAddress: true,
+            },
+          }))
+        ) {
+          assert.fail('Transaction should pass verification');
+        }
+      } catch (e) {
+        assert.fail('Transaction should pass verification');
+      }
+    });
+
+    it('should verify a token consolidation transaction', async () => {
+      const consolidationTx = {
+        txRequestId: '4fdd0cae-2563-43b1-b5cf-94865158ca10',
+        walletId: '63068ed4efa63a000877f02fd4b0fa6d',
+        txHex:
+          '02b7c2c7829eded4e8f947c90ed3b9afce71f616eb47dfcfbf4b765778149060013acb33b9f67fdd9c2512f48fac4e4c049eab93829b69404f3bd166fe3242c90700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000020104096da690bd558fd8634ac14f1645d8095afd0caea5953578c596e3c0dea38305ee7298bfac55101f177735659d42ed6be890ef3a1d204d9e33f32e24c5635327ca66d1fe00826e5a4f759f87b279c1aee19cce5301af4ed66ae17db48b201ed6c2a0e8a28bf565627f1ab8a34b1a95ee1b0a2a39084f1f0e2acb1c394b20185d8e0b22657c8d9c4ce5f6495efb6410c199011530f90e3ab9d8d1e4206f9ae0ffeb0000000000000000000000000000000000000000000000000000000000000000c5f9fb32f49111ab20c33f2598fc836c113e291881ac21ee29169394011244e406a7d517192c568ee08a845f73d29788cf035c3145b21ab344d8062ea940000006ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9de13c74d2b4d948e1608ea6eebdafe75bc2f995aad11b21d1e2c94f2a2d12f6802050303070004040000000804020604010a0ce0076bb20400000006',
+        feeInfo: {
+          fee: 10000,
+          feeString: '10000',
+        },
+        txInfo: {
+          inputs: [
+            {
+              address: '8iLa26KSbdpBUzNK7uYq8FvyuyA5h4k4erDHsDcPbHus',
+              value: 2.0173228e10,
+              valueString: '20173228000',
+            },
+            {
+              address: '8P2kX7Tyh9eS3RKdaBhqbEtQGAX58DXzL7mhDQABGX2d',
+              value: 10000,
+              valueString: '10000',
+            },
+          ],
+          minerFee: '10000',
+          outputs: [
+            {
+              address: 'HBxZShcE86UMmF93KUM8eWJKqeEXi5cqWCLYLMMhqMYm',
+              coinName: 'sol:wif',
+              enterprise: {
+                $oid: '5553ba8ae7a5c77006719661',
+              },
+              enterprises: [
+                {
+                  $oid: '5553ba8ae7a5c77006719661',
+                },
+              ],
+              value: 2.0173228e10,
+              valueString: '20173228000',
+              wallet: {
+                $oid: '62f4c3720d92c50008257eb5',
+              },
+              walletType: 'hot',
+              wallets: [
+                {
+                  $oid: '62f4c3720d92c50008257eb5',
+                },
+              ],
+            },
+          ],
+          payGoFee: '0',
+          spendAmount: '20173228000',
+          spendAmounts: [
+            {
+              amountString: '20173228000',
+              coinName: 'sol:wif',
+            },
+          ],
+          type: 'Send',
+        },
+        consolidateId: '6712d7fda6de4906d658c04aebbf8f9b',
+        coin: 'tsol',
+      };
+
+      const mockedWallet: Partial<IWallet> = {
+        coinSpecific: () => {
+          const cs = {
+            rootAddress: 'HBxZShcE86UMmF93KUM8eWJKqeEXi5cqWCLYLMMhqMYm',
+          } as WalletCoinSpecific;
+          return cs;
+        },
+      };
+
+      try {
+        if (
+          !(await basecoin.verifyTransaction({
+            blockhash: '',
+            feePayer: '',
+            txParams: {},
+            txPrebuild: consolidationTx as unknown as TransactionPrebuild,
+            walletType: 'tss',
+            wallet: mockedWallet as IWallet,
+            verification: {
+              consolidationToBaseAddress: true,
+            },
+          }))
+        ) {
+          assert.fail('Transaction should pass verification');
+        }
+      } catch (e) {
+        assert.fail('Transaction should pass verification');
+      }
+    });
+
+    it('should verify a spoofed token consolidation transaction', async () => {
+      const consolidationTx = {
+        txRequestId: '4fdd0cae-2563-43b1-b5cf-94865158ca10',
+        walletId: '63068ed4efa63a000877f02fd4b0fa6d',
+        txHex:
+          '02b7c2c7829eded4e8f947c90ed3b9afce71f616eb47dfcfbf4b765778149060013acb33b9f67fdd9c2512f48fac4e4c049eab93829b69404f3bd166fe3242c90700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000020104096da690bd558fd8634ac14f1645d8095afd0caea5953578c596e3c0dea38305ee7298bfac55101f177735659d42ed6be890ef3a1d204d9e33f32e24c5635327ca66d1fe00826e5a4f759f87b279c1aee19cce5301af4ed66ae17db48b201ed6c2a0e8a28bf565627f1ab8a34b1a95ee1b0a2a39084f1f0e2acb1c394b20185d8e0b22657c8d9c4ce5f6495efb6410c199011530f90e3ab9d8d1e4206f9ae0ffeb0000000000000000000000000000000000000000000000000000000000000000c5f9fb32f49111ab20c33f2598fc836c113e291881ac21ee29169394011244e406a7d517192c568ee08a845f73d29788cf035c3145b21ab344d8062ea940000006ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9de13c74d2b4d948e1608ea6eebdafe75bc2f995aad11b21d1e2c94f2a2d12f6802050303070004040000000804020604010a0ce0076bb20400000006',
+        feeInfo: {
+          fee: 10000,
+          feeString: '10000',
+        },
+        txInfo: {
+          inputs: [
+            {
+              address: '8iLa26KSbdpBUzNK7uYq8FvyuyA5h4k4erDHsDcPbHus',
+              value: 2.0173228e10,
+              valueString: '20173228000',
+            },
+            {
+              address: '8P2kX7Tyh9eS3RKdaBhqbEtQGAX58DXzL7mhDQABGX2d',
+              value: 10000,
+              valueString: '10000',
+            },
+          ],
+          minerFee: '10000',
+          outputs: [
+            {
+              address: 'HBxZShcE86UMmF93KUM8eWJKqeEXi5cqWCLYLMMhqMYm',
+              coinName: 'sol:wif',
+              enterprise: {
+                $oid: '5553ba8ae7a5c77006719661',
+              },
+              enterprises: [
+                {
+                  $oid: '5553ba8ae7a5c77006719661',
+                },
+              ],
+              value: 2.0173228e10,
+              valueString: '20173228000',
+              wallet: {
+                $oid: '62f4c3720d92c50008257eb5',
+              },
+              walletType: 'hot',
+              wallets: [
+                {
+                  $oid: '62f4c3720d92c50008257eb5',
+                },
+              ],
+            },
+          ],
+          payGoFee: '0',
+          spendAmount: '20173228000',
+          spendAmounts: [
+            {
+              amountString: '20173228000',
+              coinName: 'sol:wif',
+            },
+          ],
+          type: 'Send',
+        },
+        consolidateId: '6712d7fda6de4906d658c04aebbf8f9b',
+        coin: 'tsol',
+      };
+
+      const mockedWallet: Partial<IWallet> = {
+        coinSpecific: () => {
+          const cs = {
+            rootAddress: '8rQXeVEMrKvtWCEJirEM6cKYnbZuTqVTbqRPiMMAJ8R4',
+          } as WalletCoinSpecific;
+          return cs;
+        },
+      };
+
+      await assert.rejects(
+        async () =>
+          basecoin.verifyTransaction({
+            blockhash: '',
+            feePayer: '',
+            txParams: {},
+            txPrebuild: consolidationTx as unknown as TransactionPrebuild,
+            walletType: 'tss',
+            wallet: mockedWallet as IWallet,
+            verification: {
+              consolidationToBaseAddress: true,
+            },
+          }),
+        {
+          message: 'tx outputs does not match with expected address',
         }
       );
     });
