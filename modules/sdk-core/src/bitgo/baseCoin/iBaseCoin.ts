@@ -208,6 +208,7 @@ export interface SupplementGenerateWalletOptions {
   type: 'hot' | 'cold' | 'custodial';
   subType?: 'lightningCustody' | 'lightningSelfCustody' | 'onPrem';
   coinSpecific?: { [coinName: string]: unknown };
+  evmKeyRingReferenceWalletId?: string;
 }
 
 export interface FeeEstimateOptions {
