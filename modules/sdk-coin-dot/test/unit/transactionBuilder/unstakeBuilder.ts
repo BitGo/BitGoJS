@@ -76,7 +76,7 @@ describe('Dot Unstake Builder', () => {
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
-    xit('should build from raw signed tx', async () => {
+    it('should build from raw signed tx', async () => {
       builder.from(rawTx.unstake.signed);
       builder
         .validity({ firstValid: 3933 })
@@ -96,7 +96,7 @@ describe('Dot Unstake Builder', () => {
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
-    xit('should build from raw unsigned tx', async () => {
+    it('should build from raw unsigned tx', async () => {
       builder.from(rawTx.unstake.unsigned);
       builder
         .validity({ firstValid: 3933 })

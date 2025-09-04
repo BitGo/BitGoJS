@@ -146,7 +146,7 @@ describe('Dot Transfer Builder', () => {
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
-    xit('should build from raw signed tx', async () => {
+    it('should build from raw signed tx', async () => {
       builder.from(rawTx.transfer.signed);
       builder
         .validity({ firstValid: 3933, maxDuration: 64 })
@@ -167,7 +167,7 @@ describe('Dot Transfer Builder', () => {
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
-    xit('should build from raw unsigned tx', async () => {
+    it('should build from raw unsigned tx', async () => {
       builder.from(rawTx.transfer.unsigned);
       builder
         .validity({ firstValid: 3933, maxDuration: 64 })
@@ -191,7 +191,7 @@ describe('Dot Transfer Builder', () => {
       should.deepEqual(txJson.chainName, chainName);
     });
 
-    xit('should build from raw signed westend tx', async () => {
+    it('should build from raw signed westend tx', async () => {
       builder.from(rawTx.transfer.westendSigned);
       builder
         .validity({ firstValid: 3933, maxDuration: 64 })
@@ -275,7 +275,7 @@ describe('Dot Transfer Builder', () => {
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
-    xit('should build from raw signed tx', async () => {
+    it('should build from raw signed tx', async () => {
       builder.from(rawTx.proxy.signed);
       builder
         .validity({ firstValid: 3933, maxDuration: 64 })
@@ -296,7 +296,7 @@ describe('Dot Transfer Builder', () => {
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
-    xit('should build from raw unsigned tx', async () => {
+    it('should build from raw unsigned tx', async () => {
       builder.from(rawTx.proxy.unsigned);
       builder
         .validity({ firstValid: 3933, maxDuration: 64 })
@@ -418,7 +418,7 @@ describe('Dot Transfer Builder', () => {
       should.deepEqual(outputs.value, consolidationValue);
     });
 
-    xit('should build from raw signed sweep transaction', async () => {
+    it('should build from raw signed sweep transaction', async () => {
       builder.from(rawTx.transferAll.signed);
       builder
         .validity({ firstValid: 3933, maxDuration: 64 })
@@ -445,7 +445,7 @@ describe('Dot Transfer Builder', () => {
       should.deepEqual(outputs.value, consolidationValue);
     });
 
-    xit('should build from an unsigned sweep transaction', async () => {
+    it('should build from an unsigned sweep transaction', async () => {
       builder.from(rawTx.transferAll.unsigned);
       builder
         .validity({ firstValid: 3933, maxDuration: 64 })

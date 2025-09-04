@@ -77,7 +77,7 @@ describe('Dot WithdrawUnstaked Builder', () => {
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
-    xit('should build from raw signed tx', async () => {
+    it('should build from raw signed tx', async () => {
       builder.from(rawTx.withdrawUnbonded.signed);
       builder.validity({ firstValid: 3933 }).referenceBlock(refBlock);
       const tx = await builder.build();
@@ -95,7 +95,7 @@ describe('Dot WithdrawUnstaked Builder', () => {
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
-    xit('should build from raw unsigned tx', async () => {
+    it('should build from raw unsigned tx', async () => {
       builder.from(rawTx.withdrawUnbonded.unsigned);
       builder
         .validity({ firstValid: 3933 })

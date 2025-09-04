@@ -154,7 +154,7 @@ describe('Dot Transfer Builder Base', () => {
       should.deepEqual(material.chainName, chainName);
     });
 
-    xit('should build from raw signed tx', async () => {
+    it('should build from raw signed tx', async () => {
       builder.from(rawTx.transfer.signed);
       should.deepEqual(builder.getSender(), sender.address);
       should.deepEqual(builder.getNonce(), 200);
@@ -162,7 +162,7 @@ describe('Dot Transfer Builder Base', () => {
       should.deepEqual(builder.getTip(), undefined);
     });
 
-    xit('should build from raw unsigned tx', async () => {
+    it('should build from raw unsigned tx', async () => {
       builder.from(rawTx.transfer.unsigned);
       should.deepEqual(
         builder.getReferenceBlock(),

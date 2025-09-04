@@ -9,7 +9,7 @@ import {
 } from '../../../src/lib';
 import { Material } from '../../../src/lib/iface';
 import { rawTx, accounts, mockTssSignature } from '../../resources';
-import * as materialData from '../../resources/assetHubMaterialData.json';
+import * as materialData from '../../resources/materialData.json';
 
 describe('dot Transaction Builder Factory', function () {
   const sender = accounts.account1;
@@ -60,7 +60,7 @@ describe('dot Transaction Builder Factory', function () {
       factory = new TransactionBuilderFactory(coins.get('tdot'));
     });
 
-    xit('should parse an unsigned proxy txn and return a proxy builder', async () => {
+    it('should parse an unsigned proxy txn and return a proxy builder', async () => {
       const builder = factory.from(rawTx.proxy.unsigned).material(materialData as Material);
       should(builder).instanceOf(TransferBuilder);
       builder
@@ -71,7 +71,7 @@ describe('dot Transaction Builder Factory', function () {
       should.equal(tx.toBroadcastFormat(), rawTx.proxy.unsigned);
     });
 
-    xit('should parse a signed proxy txn and return a proxy builder', async () => {
+    it('should parse a signed proxy txn and return a proxy builder', async () => {
       const builder = factory.from(rawTx.proxy.signed).material(materialData as Material);
       should(builder).instanceOf(TransferBuilder);
       builder

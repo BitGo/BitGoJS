@@ -2,7 +2,7 @@ import should from 'should';
 import { SingletonRegistry } from '../../../src/lib';
 import { TypeRegistry } from '@substrate/txwrapper-core/lib/types';
 import { Material } from '../../../src/lib/iface';
-import * as material from '../../resources/assetHubMaterialData.json';
+import * as material from '../../resources/materialData.json';
 import * as modifiedMaterial from '../../resources/materialDataModified.json';
 
 describe('SingletonRegistry', function () {

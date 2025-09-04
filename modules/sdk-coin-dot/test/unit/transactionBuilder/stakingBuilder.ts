@@ -109,7 +109,7 @@ describe('Dot Stake Builder', () => {
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
-    xit('should build from raw signed tx', async () => {
+    it('should build from raw signed tx', async () => {
       const address = '5F1mFBGhm7FrSKftDxzFPN8U1BqHKSAxEDhTV2Yx5JhCe2Nk';
       builder.from(rawTx.stake.signed);
       builder.validity({ firstValid: 3933 }).referenceBlock(referenceBlock);
@@ -130,7 +130,7 @@ describe('Dot Stake Builder', () => {
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
-    xit('should build from raw unsigned tx', async () => {
+    it('should build from raw unsigned tx', async () => {
       const address = '5F1mFBGhm7FrSKftDxzFPN8U1BqHKSAxEDhTV2Yx5JhCe2Nk';
       builder.from(rawTx.stake.unsigned);
       builder
@@ -183,7 +183,7 @@ describe('Dot Stake Builder', () => {
       should.deepEqual(txJson.eraPeriod, 64);
 
       const txHex = tx.toBroadcastFormat();
-      should.deepEqual(rawTx.stakeMore.signedWestendAssetHub, txHex);
+      should.deepEqual(rawTx.stakeMore.signed, txHex);
     });
 
     it('should build an unsigned stake more transaction', async () => {
@@ -211,10 +211,10 @@ describe('Dot Stake Builder', () => {
       should.deepEqual(txJson.eraPeriod, 64);
 
       const txHex = tx.toBroadcastFormat();
-      should.deepEqual(rawTx.stakeMore.unsignedWestendAssetHub, txHex);
+      should.deepEqual(rawTx.stakeMore.unsigned, txHex);
     });
 
-    xit('should build from a stake more raw signed tx', async () => {
+    it('should build from a stake more raw signed tx', async () => {
       builder.from(rawTx.stakeMore.signed);
       builder.validity({ firstValid: 3933, maxDuration: 64 }).referenceBlock(referenceBlock);
 
@@ -236,7 +236,7 @@ describe('Dot Stake Builder', () => {
       should.deepEqual(rawTx.stakeMore.signed, txHex);
     });
 
-    xit('should build from a stake more raw unsigned tx', async () => {
+    it('should build from a stake more raw unsigned tx', async () => {
       builder.from(rawTx.stakeMore.unsigned);
       builder.sender({ address: sender.address }).validity({ firstValid: 3933, maxDuration: 64 });
 
