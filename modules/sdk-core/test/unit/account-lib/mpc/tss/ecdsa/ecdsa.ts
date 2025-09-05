@@ -53,15 +53,15 @@ describe('ecdsa tss', function (this: Mocha.Context) {
     // Note that this is something WP needs to do after keyCombine/keyDerive.
     const Y = hexToBigInt(keyCombined1.xShare.y);
 
-    const VSSs = [
-      [hexToBigInt(keyShare1.nShares[2].v!)],
-      [hexToBigInt(keyShare2.nShares[3].v!)],
-      [hexToBigInt(keyShare3.nShares[1].v!)],
-    ];
+    const safeV = (v?: string) => {
+      if (!v) throw new Error('missing v share');
+      return hexToBigInt(v);
+    };
+    const VSSs = [[safeV(keyShare1.nShares[2].v)], [safeV(keyShare2.nShares[3].v)], [safeV(keyShare3.nShares[1].v)]];
 
-    ecdsa.verifySchnorrProofX(Y, VSSs, 1, keyCombined1.xShare.schnorrProofX).should.be.true();
-    ecdsa.verifySchnorrProofX(Y, VSSs, 2, keyCombined2.xShare.schnorrProofX).should.be.true();
-    ecdsa.verifySchnorrProofX(Y, VSSs, 3, keyCombined3.xShare.schnorrProofX).should.be.true();
+    ecdsa.verifySchnorrProofX(Y, VSSs, 1, keyCombined1.xShare.schnorrProofX).should.equal(true);
+    ecdsa.verifySchnorrProofX(Y, VSSs, 2, keyCombined2.xShare.schnorrProofX).should.equal(true);
+    ecdsa.verifySchnorrProofX(Y, VSSs, 3, keyCombined3.xShare.schnorrProofX).should.equal(true);
 
     // Verify Schnorr proofs against X_i for keyDerive and subsequent keyCombine.
     const path = 'm/0/1/2';
@@ -70,11 +70,11 @@ describe('ecdsa tss', function (this: Mocha.Context) {
     // Note the VSSs used here are different from the ones used above.
     const derivedY = hexToBigInt(keyDerive1.xShare.y);
     const derivedVSSs = [
-      [hexToBigInt(keyDerive1.nShares[2].v!)],
-      [hexToBigInt(keyShare2.nShares[3].v!)],
-      [hexToBigInt(keyShare3.nShares[1].v!)],
+      [safeV(keyDerive1.nShares[2].v)],
+      [safeV(keyShare2.nShares[3].v)],
+      [safeV(keyShare3.nShares[1].v)],
     ];
-    ecdsa.verifySchnorrProofX(derivedY, derivedVSSs, 1, keyDerive1.xShare.schnorrProofX).should.be.true();
+    ecdsa.verifySchnorrProofX(derivedY, derivedVSSs, 1, keyDerive1.xShare.schnorrProofX).should.equal(true);
 
     const keyCombined2FromKeyDerive1 = ecdsa.keyCombine(keyShare2.pShare, [
       keyDerive1.nShares[2],
@@ -82,7 +82,7 @@ describe('ecdsa tss', function (this: Mocha.Context) {
     ]);
     ecdsa
       .verifySchnorrProofX(derivedY, derivedVSSs, 2, keyCombined2FromKeyDerive1.xShare.schnorrProofX)
-      .should.be.true();
+      .should.equal(true);
 
     const [ntilde1, ntilde2] = await Promise.all([
       EcdsaRangeProof.generateNtilde(openSSLBytes, 512),
@@ -215,7 +215,7 @@ describe('ecdsa tss', function (this: Mocha.Context) {
     // Step 5E: Broadcast s_i returned by Ecdsa.verifyUTShares() above to other parties.
     //          Verify the sum of s_i should be a valid signature.
     const signature = ecdsa.constructSignature([signature1, signature2]);
-    ecdsa.verify(message, signature).should.be.true();
+    ecdsa.verify(message, signature).should.equal(true);
   });
 
   it('sign phase 5 fail - malicious player cheats with bad s share', async function () {
