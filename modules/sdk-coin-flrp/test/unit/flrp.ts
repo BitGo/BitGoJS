@@ -1,4 +1,3 @@
-import { expect } from 'chai';
 import { BitGoBase } from '@bitgo/sdk-core';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
@@ -21,15 +20,15 @@ describe('Flrp', function () {
   it('createInstance returns a Flrp instance', function () {
     const staticsCoin = coins.get('flrp');
     const coin = Flrp.createInstance(bitgo as unknown as BitGoBase, staticsCoin);
-    expect(coin).to.be.instanceOf(Flrp);
+    coin.should.be.instanceOf(Flrp);
   });
 
   it('multiple createInstance calls produce distinct objects', function () {
     const sc = coins.get('flrp');
     const a = Flrp.createInstance(bitgo as unknown as BitGoBase, sc);
     const b = Flrp.createInstance(bitgo as unknown as BitGoBase, sc);
-    expect(a).to.not.equal(b);
-    expect(a).to.be.instanceOf(Flrp);
-    expect(b).to.be.instanceOf(Flrp);
+    a.should.not.equal(b);
+    a.should.be.instanceOf(Flrp);
+    b.should.be.instanceOf(Flrp);
   });
 });

@@ -43,8 +43,6 @@
     ]
   },
   "devDependencies": {
-    "chai": "^4.4.1",
-    "@types/chai": "^4.3.16",
     "@types/bn.js": "^5.2.0",
     "@bitgo/sdk-test": "^9.0.5",
     "@bitgo/sdk-api": "^1.67.0"
