@@ -40,6 +40,7 @@ import {
   requiresAllSignatures,
   validateRawMsgInstruction,
 } from './utils';
+import { SolStakingTypeEnum } from '@bitgo/public-types';
 
 export class Transaction extends BaseTransaction {
   protected _solTransaction: SolTransaction;
@@ -359,11 +360,13 @@ export class Transaction extends BaseTransaction {
             value: instruction.params.amount,
             coin: this._coinConfig.name,
           });
-          outputs.push({
-            address: instruction.params.stakingAddress,
-            value: instruction.params.amount,
-            coin: this._coinConfig.name,
-          });
+          if (instruction.params.stakingType !== SolStakingTypeEnum.JITO) {
+            outputs.push({
+              address: instruction.params.stakingAddress,
+              value: instruction.params.amount,
+              coin: this._coinConfig.name,
+            });
+          }
           break;
         case InstructionBuilderTypes.StakingDeactivate:
           if (instruction.params.amount && instruction.params.unstakingAddress) {

@@ -202,12 +202,7 @@ describe('Sol Staking Activate Builder', () => {
       value: amount,
       coin: 'tsol',
     });
-    tx.outputs.length.should.equal(1);
-    tx.outputs[0].should.deepEqual({
-      address: JITO_STAKE_POOL_ADDRESS,
-      value: amount,
-      coin: 'tsol',
-    });
+    tx.outputs.length.should.equal(0);
   };
 
   describe('Succeed', () => {
