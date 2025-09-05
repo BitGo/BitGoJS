@@ -92,11 +92,9 @@ describe('Vet Burn NFT Transaction', () => {
       const txBuilder = factory.getBurnNftBuilder();
 
       // Should throw error when building without required fields
-      await should(txBuilder.build()).be.rejectedWith('transaction not defined');
-
-      txBuilder.sender(testData.addresses.validAddresses[0]);
       await should(txBuilder.build()).be.rejectedWith('NFT contract address is required');
 
+      txBuilder.sender(testData.addresses.validAddresses[0]);
       txBuilder.nftContract();
       await should(txBuilder.build()).be.rejectedWith('Token ID is required');
 

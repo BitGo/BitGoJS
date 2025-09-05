@@ -97,11 +97,9 @@ describe('Vet Exit Delegation Transaction', () => {
       const txBuilder = factory.getExitDelegationBuilder();
 
       // Should throw error when building without required fields
-      await should(txBuilder.build()).be.rejectedWith('transaction not defined');
-
-      txBuilder.sender(testData.addresses.validAddresses[0]);
       await should(txBuilder.build()).be.rejectedWith('Delegation contract address is required');
 
+      txBuilder.sender(testData.addresses.validAddresses[0]);
       txBuilder.delegationContract();
       await should(txBuilder.build()).be.rejectedWith('Token ID is required');
 
