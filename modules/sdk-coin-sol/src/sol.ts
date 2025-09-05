@@ -169,6 +169,7 @@ export interface SolConsolidationRecoveryOptions extends MPCConsolidationRecover
   };
   tokenContractAddress?: string;
   apiKey?: string; // API key for node requests
+  programId?: string; // programId of the token
 }
 
 const HEX_REGEX = /^[0-9a-fA-F]+$/;
@@ -1399,6 +1400,7 @@ export class Sol extends BaseCoin {
         },
         tokenContractAddress: params.tokenContractAddress,
         apiKey: params.apiKey,
+        programId: params.programId,
       };
 
       let recoveryTransaction;
