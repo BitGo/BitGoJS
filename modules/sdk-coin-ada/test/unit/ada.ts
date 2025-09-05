@@ -6,24 +6,27 @@ import should = require('should');
 import { randomBytes } from 'crypto';
 import * as sinon from 'sinon';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { BitGoAPI, encrypt } from '@bitgo/sdk-api';
 import {
-  rawTx,
-  enterpriseAccounts as accounts,
-  privateKeys,
-  publicKeys,
-  wrwUser,
-  consolidationWrwUser,
   address,
+  consolidationWrwUser,
   endpointResponses,
-  testnetUTXO,
+  enterpriseAccounts as accounts,
   ovcResponse,
   ovcResponse2,
+  privateKeys,
+  publicKeys,
+  rawTx,
+  testnetUTXO,
+  wrwUser,
 } from '../resources';
 import * as _ from 'lodash';
 import { Ada, KeyPair, Tada } from '../../src';
 import { Transaction } from '../../src/lib';
 import { TransactionType } from '../../../sdk-core/src/account-lib/baseCoin/enum';
+import assert from 'assert';
+import { common, Wallet } from '@bitgo/sdk-core';
+import nock from 'nock';
 
 describe('ADA', function () {
   const coinName = 'ada';
@@ -244,6 +247,174 @@ describe('ADA', function () {
 
       const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild });
       validTransaction.should.equal(true);
+    });
+
+    it('should verify a valid consolidation transaction', async () => {
+      const consolidationTx = {
+        txRequestId: '1b5c79c5-ab7c-4f47-912b-de6a95fb0779',
+        walletId: '64fa31a94db65a0007c9691b',
+        txHex:
+          '84a40081825820db46c7c76ea54fec2ca0a2f94b77a238931a8dce2387c99a12b08dd8aac21c4f000181825839004601fc016ac38580916d3520bc76b659298156008738d347aa93142f4601fc016ac38580916d3520bc76b659298156008738d347aa93142f1a3b984357021a000286a9031a060e37eea0f5f6',
+        feeInfo: {
+          fee: 165545,
+          feeString: '165545',
+        },
+        txInfo: {
+          minerFee: '165545',
+          spendAmount: '999834455',
+          spendAmounts: [
+            {
+              coinName: 'tada',
+              amountString: '999834455',
+            },
+          ],
+          payGoFee: '0',
+          outputs: [
+            {
+              address:
+                'addr_test1qprqrlqpdtpctqy3d56jp0rkkevjnq2kqzrn356842f3gt6xq87qz6krskqfzmf4yz78ddje9xq4vqy88rf5025nzshsjdmg2s',
+              value: 999834455,
+              wallet: '64fa31a94db65a0007c9691b',
+              wallets: ['64fa31a94db65a0007c9691b'],
+              enterprise: '62cc59b727443a0007089033',
+              enterprises: ['62cc59b727443a0007089033'],
+              valueString: '999834455',
+              coinName: 'tada',
+              walletType: 'hot',
+              walletTypes: ['hot'],
+            },
+          ],
+          inputs: [
+            {
+              value: 1000000000,
+              address:
+                'addr_test1qqlzxfl7tlgp999x4a7334pchycpkk72pykrsr3mryl3yj6xq87qz6krskqfzmf4yz78ddje9xq4vqy88rf5025nzshsvpgl8w',
+              valueString: '1000000000',
+            },
+          ],
+          type: '0',
+        },
+        consolidateId: '68b9fc18558006aab53785615fea7c28',
+        coin: 'tada',
+      };
+
+      const mockedWallet = {
+        coinSpecific: () => {
+          return {
+            rootAddress:
+              'addr_test1qprqrlqpdtpctqy3d56jp0rkkevjnq2kqzrn356842f3gt6xq87qz6krskqfzmf4yz78ddje9xq4vqy88rf5025nzshsjdmg2s',
+          };
+        },
+      };
+
+      try {
+        const isVerified = await basecoin.verifyTransaction({
+          txParams: {},
+          txPrebuild: consolidationTx,
+          wallet: mockedWallet,
+          verification: {
+            consolidationToBaseAddress: true,
+          },
+        });
+        isVerified.should.equal(true);
+      } catch (e) {
+        assert.fail('Transaction should pass verification');
+      }
+    });
+
+    it('should fail to sign a spoofed consolidation transaction', async function () {
+      // Set up wallet data
+      const walletData = {
+        id: '5b34252f1bf349930e34020a00000000',
+        coin: 'tada',
+        keys: [
+          '5b3424f91bf349930e34017500000000',
+          '5b3424f91bf349930e34017600000000',
+          '5b3424f91bf349930e34017700000000',
+        ],
+        coinSpecific: {
+          rootAddress:
+            'addr_test1qprqrlqpdtpctqy3d56jp0rkkevjnq2kqzrn356842f3gt6xq87qz6krskqfzmf4yz78ddje9xq4vqy88rf5025nzshsjdmg2s',
+        },
+        multisigType: 'tss',
+      };
+      const fakePrv = encrypt('password', 'prv');
+
+      const walletObj = new Wallet(bitgo, basecoin, walletData);
+      const bgUrl = common.Environments['mock'].uri;
+
+      nock(bgUrl)
+        .get('/api/v2/tada/key/5b3424f91bf349930e34017500000000')
+        .reply(200, [
+          {
+            encryptedPrv: fakePrv,
+          },
+        ]);
+
+      // Mock the API response for buildAccountConsolidations
+      nock(bgUrl)
+        .post('/api/v2/tada/wallet/5b34252f1bf349930e34020a00000000/consolidateAccount/build')
+        .reply(200, [
+          {
+            txRequestId: '1b5c79c5-ab7c-4f47-912b-de6a95fb0779',
+            walletId: '64fa31a94db65a0007c9691b',
+            txHex:
+              '84a40081825820db46c7c76ea54fec2ca0a2f94b77a238931a8dce2387c99a12b08dd8aac21c4f01018282581d6033c378cee41b2e15ac848f7f6f1d2f78155ab12d93b713de898d855f1a00989680825839004601fc016ac38580916d3520bc76b659298156008738d347aa93142f4601fc016ac38580916d3520bc76b659298156008738d347aa93142f1b0000000217acebe9021a00028db5031a060e3b41a0f5f6',
+            feeInfo: {
+              fee: 165545,
+              feeString: '165545',
+            },
+            txInfo: {
+              minerFee: '165545',
+              spendAmount: '999834455',
+              spendAmounts: [
+                {
+                  coinName: 'tada',
+                  amountString: '999834455',
+                },
+              ],
+              payGoFee: '0',
+              outputs: [
+                {
+                  address:
+                    'addr_test1qprqrlqpdtpctqy3d56jp0rkkevjnq2kqzrn356842f3gt6xq87qz6krskqfzmf4yz78ddje9xq4vqy88rf5025nzshsjdmg2s',
+                  value: 999834455,
+                  wallet: '64fa31a94db65a0007c9691b',
+                  wallets: ['64fa31a94db65a0007c9691b'],
+                  enterprise: '62cc59b727443a0007089033',
+                  enterprises: ['62cc59b727443a0007089033'],
+                  valueString: '999834455',
+                  coinName: 'tada',
+                  walletType: 'hot',
+                  walletTypes: ['hot'],
+                },
+              ],
+              inputs: [
+                {
+                  value: 1000000000,
+                  address:
+                    'addr_test1qqlzxfl7tlgp999x4a7334pchycpkk72pykrsr3mryl3yj6xq87qz6krskqfzmf4yz78ddje9xq4vqy88rf5025nzshsvpgl8w',
+                  valueString: '1000000000',
+                },
+              ],
+              type: '0',
+            },
+            consolidateId: '68b9fc18558006aab53785615fea7c28',
+            coin: 'tada',
+          },
+        ]);
+
+      // Call the function to test
+      await assert.rejects(
+        async () => {
+          await walletObj.sendAccountConsolidations({
+            walletPassphrase: 'password',
+          });
+        },
+        {
+          message: 'tx outputs does not match with expected address',
+        }
+      );
     });
   });
 
@@ -638,6 +809,93 @@ describe('ADA', function () {
           'Insufficient funds to recover, minimum required is 1 ADA plus fees, got 9834455 fees: 165545'
         );
       sandBox.assert.calledTwice(basecoin.getDataFromNode);
+    });
+  });
+
+  describe('Verify token consolidation transaction:', () => {
+    it('should fail to verify a spoofed token consolidation transaction with incorrect address', async () => {
+      const consolidationTx = {
+        txRequestId: '4fdd0cae-2563-43b1-b5cf-94865158ca10',
+        walletId: '63068ed4efa63a000877f02fd4b0fa6d',
+        txHex:
+          '84a400818258204bd0f991c1532cffe31d4a10db492b43175ec326765b6b29ceee598df2b61f470001818258390087379ebc5533ebe621963c915c3cbc5f08537fcdca4af8f8ae08ed4c87379ebc5533ebe621963c915c3cbc5f08537fcdca4af8f8ae08ed4c1a05f359ff021a00028701031a024972e1a10081825820bbacb13431b99208e6e8cdbf710147feaf06a39d71565e60b411ce9e4fa3f137584001a4ab8236563f69ff309e5786e8f39c629ed57676c692159cb2e0494c9e663355384c13c749d04c17a80ba2a45cc127df480fc64a43199a772f11acd5b14a0ff5f6',
+        feeInfo: {
+          fee: 10000,
+          feeString: '10000',
+        },
+        txInfo: {
+          inputs: [
+            {
+              address: '8iLa26KSbdpBUzNK7uYq8FvyuyA5h4k4erDHsDcPbHus',
+              value: 2.0173228e10,
+              valueString: '20173228000',
+            },
+            {
+              address: '8P2kX7Tyh9eS3RKdaBhqbEtQGAX58DXzL7mhDQABGX2d',
+              value: 10000,
+              valueString: '10000',
+            },
+          ],
+          minerFee: '10000',
+          outputs: [
+            {
+              address: 'addr_test1vr8rakm66rcfv4fcxqykg5lf0yv7lsyk9mvapx369jpvtcgfcuk7f',
+              coinName: 'tada:usdt',
+              enterprise: {
+                $oid: '5553ba8ae7a5c77006719661',
+              },
+              enterprises: [
+                {
+                  $oid: '5553ba8ae7a5c77006719661',
+                },
+              ],
+              value: 2.0173228e10,
+              valueString: '20173228000',
+              wallet: {
+                $oid: '62f4c3720d92c50008257eb5',
+              },
+              walletType: 'hot',
+              wallets: [
+                {
+                  $oid: '62f4c3720d92c50008257eb5',
+                },
+              ],
+            },
+          ],
+          payGoFee: '0',
+          spendAmount: '20173228000',
+          spendAmounts: [
+            {
+              amountString: '20173228000',
+              coinName: 'tada:usdt',
+            },
+          ],
+          type: 'Send',
+        },
+        consolidateId: '6712d7fda6de4906d658c04aebbf8f9b',
+        coin: 'tada',
+      };
+
+      // Mock the wallet with a different address than the transaction's output
+      const mockedWallet = {
+        coinSpecific: () => {
+          return {
+            rootAddress:
+              'addr_test1qqnnvptrc3rec64q2n9jh572ncu5wvdtt8uvg4g3aj96s5dwu9nj70mlahzglm9939uevupsmj8dcdqv25d5n5r8vw8sn7prey',
+          };
+        },
+      };
+
+      await basecoin
+        .verifyTransaction({
+          txParams: {},
+          txPrebuild: consolidationTx,
+          wallet: mockedWallet,
+          verification: {
+            consolidationToBaseAddress: true,
+          },
+        })
+        .should.be.rejectedWith('tx outputs does not match with expected address');
     });
   });
 });
