@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.13.3...@bitgo/sdk-coin-ada@4.14.0) (2025-09-03)
+
+### Features
+
+- **sdk-coin-ada:** add token support config ([8352773](https://github.com/BitGo/BitGoJS/commit/835277307a119c193413a76697e479d2541b9eb1))
+
+## [4.13.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.13.2...@bitgo/sdk-coin-ada@4.13.3) (2025-08-30)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-ada
+
+## [4.13.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.13.1...@bitgo/sdk-coin-ada@4.13.2) (2025-08-29)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-ada
+
+## [4.13.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.13.0...@bitgo/sdk-coin-ada@4.13.1) (2025-08-27)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-ada
+
 # [4.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.12.9...@bitgo/sdk-coin-ada@4.13.0) (2025-08-22)
 
 ### Features

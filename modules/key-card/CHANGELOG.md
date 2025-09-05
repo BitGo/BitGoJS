@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.27.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/key-card@0.27.3...@bitgo/key-card@0.27.4) (2025-09-03)
+
+**Note:** Version bump only for package @bitgo/key-card
+
+## [0.27.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/key-card@0.27.2...@bitgo/key-card@0.27.3) (2025-08-30)
+
+**Note:** Version bump only for package @bitgo/key-card
+
+## [0.27.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/key-card@0.27.1...@bitgo/key-card@0.27.2) (2025-08-29)
+
+**Note:** Version bump only for package @bitgo/key-card
+
+## [0.27.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/key-card@0.27.0...@bitgo/key-card@0.27.1) (2025-08-27)
+
+### Bug Fixes
+
+- bump jsPDF ([525780e](https://github.com/BitGo/BitGoJS/commit/525780ed18b584fd00b3162356533f2ff0811494))
+
 # [0.27.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/key-card@0.26.6...@bitgo/key-card@0.27.0) (2025-08-22)
 
 ### Bug Fixes

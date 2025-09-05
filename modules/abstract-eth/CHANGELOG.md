@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [24.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.11.3...@bitgo/abstract-eth@24.12.0) (2025-09-03)
+
+### Bug Fixes
+
+- fixed gasPrice issue for base ([743effd](https://github.com/BitGo/BitGoJS/commit/743effd79faca6e89cd696e351844ed0c0bafe67))
+
+### Features
+
+- **abstract-eth:** support eip712 signing ([5f14318](https://github.com/BitGo/BitGoJS/commit/5f14318198dfb52aff3d0f2551fafd357c68cee2))
+
+## [24.11.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.11.2...@bitgo/abstract-eth@24.11.3) (2025-08-30)
+
+**Note:** Version bump only for package @bitgo/abstract-eth
+
+## [24.11.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.11.1...@bitgo/abstract-eth@24.11.2) (2025-08-29)
+
+**Note:** Version bump only for package @bitgo/abstract-eth
+
+## [24.11.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.11.0...@bitgo/abstract-eth@24.11.1) (2025-08-27)
+
+**Note:** Version bump only for package @bitgo/abstract-eth
+
 # [24.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.10.1...@bitgo/abstract-eth@24.11.0) (2025-08-22)
 
 ### Features

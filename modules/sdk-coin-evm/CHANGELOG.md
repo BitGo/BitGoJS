@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.6.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.6.3...@bitgo/sdk-coin-evm@1.6.4) (2025-09-03)
+
+### Bug Fixes
+
+- fixed gasPrice issue for base ([743effd](https://github.com/BitGo/BitGoJS/commit/743effd79faca6e89cd696e351844ed0c0bafe67))
+
+## [1.6.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.6.2...@bitgo/sdk-coin-evm@1.6.3) (2025-08-30)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
+## [1.6.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.6.1...@bitgo/sdk-coin-evm@1.6.2) (2025-08-29)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
+## [1.6.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.6.0...@bitgo/sdk-coin-evm@1.6.1) (2025-08-27)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
 # [1.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.5.1...@bitgo/sdk-coin-evm@1.6.0) (2025-08-22)
 
 ### Features

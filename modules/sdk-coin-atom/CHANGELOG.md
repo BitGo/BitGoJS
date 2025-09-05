@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [13.8.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-atom@13.8.1...@bitgo/sdk-coin-atom@13.8.2) (2025-09-03)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-atom
+
+## [13.8.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-atom@13.8.0...@bitgo/sdk-coin-atom@13.8.1) (2025-08-30)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-atom
+
+# [13.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-atom@13.7.1...@bitgo/sdk-coin-atom@13.8.0) (2025-08-29)
+
+### Features
+
+- **abstract-cosmos:** add non-bitgo token recovery support on wrw ([86f44eb](https://github.com/BitGo/BitGoJS/commit/86f44ebbae563085dab6323ebae12301753fbbe4))
+
+## [13.7.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-atom@13.7.0...@bitgo/sdk-coin-atom@13.7.1) (2025-08-27)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-atom
+
 # [13.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-atom@13.6.3...@bitgo/sdk-coin-atom@13.7.0) (2025-08-22)
 
 ### Features

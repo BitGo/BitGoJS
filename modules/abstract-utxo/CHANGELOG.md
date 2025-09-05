@@ -3,6 +3,31 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [9.26.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.25.2...@bitgo/abstract-utxo@9.26.0) (2025-09-03)
+
+### Bug Fixes
+
+- **abstract-utxo:** export transaction ([75d6552](https://github.com/BitGo/BitGoJS/commit/75d6552a73c19de53a95450ff46da28cd30f1c05))
+- export bip322 types and utility functions ([d352531](https://github.com/BitGo/BitGoJS/commit/d3525316f2e5de4b48b4796857efc7c573c38170))
+
+### Features
+
+- **abstract-utxo:** add BIP322 message verification functionality ([531a83c](https://github.com/BitGo/BitGoJS/commit/531a83c16d9b187506068d57a27bab1bc5b3b865))
+
+## [9.25.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.25.1...@bitgo/abstract-utxo@9.25.2) (2025-08-30)
+
+**Note:** Version bump only for package @bitgo/abstract-utxo
+
+## [9.25.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.25.0...@bitgo/abstract-utxo@9.25.1) (2025-08-29)
+
+**Note:** Version bump only for package @bitgo/abstract-utxo
+
+# [9.25.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.24.0...@bitgo/abstract-utxo@9.25.0) (2025-08-27)
+
+### Features
+
+- **abstract-utxo:** add BIP322 message serialization format ([b3f30de](https://github.com/BitGo/BitGoJS/commit/b3f30dedb715d29a1f180ba1b0f3d30d806fce6d))
+
 # [9.24.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.23.0...@bitgo/abstract-utxo@9.24.0) (2025-08-22)
 
 ### Features

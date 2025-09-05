@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [22.7.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@22.7.1...@bitgo/sdk-coin-bsc@22.7.2) (2025-09-03)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-bsc
+
+## [22.7.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@22.7.0...@bitgo/sdk-coin-bsc@22.7.1) (2025-08-30)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-bsc
+
+# [22.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@22.6.1...@bitgo/sdk-coin-bsc@22.7.0) (2025-08-29)
+
+### Features
+
+- allow bsc to enable token for send many ([69b5d1e](https://github.com/BitGo/BitGoJS/commit/69b5d1e34d4371bb114651556a77cdd87d6a963a))
+
+## [22.6.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@22.6.0...@bitgo/sdk-coin-bsc@22.6.1) (2025-08-27)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-bsc
+
 # [22.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@22.5.4...@bitgo/sdk-coin-bsc@22.6.0) (2025-08-22)
 
 ### Features

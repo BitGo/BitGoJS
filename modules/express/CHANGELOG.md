@@ -3,6 +3,34 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [15.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@14.6.1...@bitgo/express@15.0.0) (2025-09-03)
+
+### Features
+
+- adding signature in withdraw lightning ([514aaee](https://github.com/BitGo/BitGoJS/commit/514aaeebf0e6a20c78f9a3beb7715a77d2b0b9dc))
+- **express:** migrate encrypt to typed routes ([48e162d](https://github.com/BitGo/BitGoJS/commit/48e162d601f95bc541386e548216768950d7c3f9))
+
+### BREAKING CHANGES
+
+- withdraw request changed
+
+## [14.6.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@14.6.0...@bitgo/express@14.6.1) (2025-08-30)
+
+**Note:** Version bump only for package @bitgo/express
+
+# [14.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@14.5.0...@bitgo/express@14.6.0) (2025-08-29)
+
+### Features
+
+- **express:** enable esModuleInterop to align test and runtime ([8d163f9](https://github.com/BitGo/BitGoJS/commit/8d163f9bb6894a9b3b28407927ad86b7a2863df5))
+
+# [14.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@14.4.0...@bitgo/express@14.5.0) (2025-08-27)
+
+### Features
+
+- bump public types ([e98036a](https://github.com/BitGo/BitGoJS/commit/e98036a8480aa6cfbc55b092a439ba8f80d23656))
+- **express:** migrating to typed router ([d44f2c5](https://github.com/BitGo/BitGoJS/commit/d44f2c57db83f732989ea9166ca94da2e0e1707b))
+
 # [14.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@14.3.1...@bitgo/express@14.4.0) (2025-08-22)
 
 ### Bug Fixes

@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [11.14.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@11.14.1...@bitgo/abstract-cosmos@11.14.2) (2025-09-03)
+
+### Bug Fixes
+
+- use publicKey for cold wallet recovery ([6e39f3e](https://github.com/BitGo/BitGoJS/commit/6e39f3edc14681150c272dfd2d7aae9cfab5437d))
+
+## [11.14.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@11.14.0...@bitgo/abstract-cosmos@11.14.1) (2025-08-30)
+
+**Note:** Version bump only for package @bitgo/abstract-cosmos
+
+# [11.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@11.13.1...@bitgo/abstract-cosmos@11.14.0) (2025-08-29)
+
+### Features
+
+- **abstract-cosmos:** add non-bitgo token recovery support on wrw ([86f44eb](https://github.com/BitGo/BitGoJS/commit/86f44ebbae563085dab6323ebae12301753fbbe4))
+
+## [11.13.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@11.13.0...@bitgo/abstract-cosmos@11.13.1) (2025-08-27)
+
+**Note:** Version bump only for package @bitgo/abstract-cosmos
+
 # [11.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-cosmos@11.12.3...@bitgo/abstract-cosmos@11.13.0) (2025-08-22)
 
 ### Features

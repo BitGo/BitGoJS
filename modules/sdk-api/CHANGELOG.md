@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.68.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.68.2...@bitgo/sdk-api@1.68.3) (2025-09-03)
+
+**Note:** Version bump only for package @bitgo/sdk-api
+
+## [1.68.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.68.1...@bitgo/sdk-api@1.68.2) (2025-08-30)
+
+**Note:** Version bump only for package @bitgo/sdk-api
+
+## [1.68.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.68.0...@bitgo/sdk-api@1.68.1) (2025-08-29)
+
+**Note:** Version bump only for package @bitgo/sdk-api
+
+# [1.68.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.67.0...@bitgo/sdk-api@1.68.0) (2025-08-27)
+
+### Features
+
+- **sdk-api:** new max limit prop on access token spending limit interf ([a679630](https://github.com/BitGo/BitGoJS/commit/a679630ee86495e4c9e99f469e6ef57eab91acf4))
+
 # [1.67.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.66.3...@bitgo/sdk-api@1.67.0) (2025-08-22)
 
 ### Features

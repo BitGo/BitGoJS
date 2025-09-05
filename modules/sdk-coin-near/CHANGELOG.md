@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.10.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@2.10.3...@bitgo/sdk-coin-near@2.10.4) (2025-09-03)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-near
+
+## [2.10.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@2.10.2...@bitgo/sdk-coin-near@2.10.3) (2025-08-30)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-near
+
+## [2.10.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@2.10.1...@bitgo/sdk-coin-near@2.10.2) (2025-08-29)
+
+### Bug Fixes
+
+- **sdk-coin-near:** verify platform built consolidation tx ([813abe0](https://github.com/BitGo/BitGoJS/commit/813abe05271f4f5a0ed015a17e81156de4f5e3cd))
+
+## [2.10.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@2.10.0...@bitgo/sdk-coin-near@2.10.1) (2025-08-27)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-near
+
 # [2.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@2.9.5...@bitgo/sdk-coin-near@2.10.0) (2025-08-22)
 
 ### Features
