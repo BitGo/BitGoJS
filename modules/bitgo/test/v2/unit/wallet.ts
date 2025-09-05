@@ -5709,4 +5709,388 @@ describe('V2 Wallet:', function () {
       });
     });
   });
+
+  describe('Aptos Custom transaction Flow', function () {
+    const sandbox = sinon.createSandbox();
+
+    // Set up test data and wallets
+    const tapt = bitgo.coin('tapt');
+    const aptosWalletData = {
+      id: '5b34252f1bf349930e34020a00000001',
+      coin: 'tapt',
+      keys: [
+        '598f606cd8fc24710d2ebad89dce86c3',
+        '598f606cc8e43aef09fcb785221d9dd3',
+        '5935d59cf660764331bafcade1855fd8',
+      ],
+      coinSpecific: {},
+      multisigType: 'tss',
+    };
+
+    const tssAptosWallet = new Wallet(bitgo, tapt, aptosWalletData);
+    const custodialTssAptosWallet = new Wallet(bitgo, tapt, {
+      ...aptosWalletData,
+      type: 'custodial',
+    });
+
+    const reqId = new RequestTracer();
+
+    const aptosTxRequest: TxRequest = {
+      txRequestId: 'aptos-tx-id',
+      transactions: [],
+      intent: {
+        intentType: 'customTx',
+      },
+      date: new Date().toISOString(),
+      latest: true,
+      state: 'pendingUserSignature',
+      userId: 'userId',
+      walletType: 'hot',
+      policiesChecked: false,
+      version: 1,
+      walletId: 'walletId',
+      unsignedTxs: [
+        {
+          serializedTxHex: 'aptos123abcd',
+          signableHex: 'aptosdeadbeef',
+          feeInfo: {
+            fee: 1000,
+            feeString: '1000',
+          },
+          derivationPath: 'm/0',
+        },
+      ],
+    };
+
+    afterEach(function () {
+      sandbox.verifyAndRestore();
+    });
+
+    const testCustomSmartContractCall = {
+      moduleName: '0x1::coin',
+      functionName: 'transfer',
+      typeArguments: ['0x1::aptos_coin::AptosCoin'],
+      functionArguments: ['0x742d35Cc6634C0532925a3b8D400E65AAD801c0b', '1000000'],
+    };
+
+    const testAptosRecipients = [
+      {
+        address: '0x742d35Cc6634C0532925a3b8D400E65AAD801c0b',
+        amount: '1000000',
+      },
+    ];
+
+    describe('prebuildTransaction with aptosCustomTransaction type', function () {
+      it('should call prebuildTxWithIntent with correct parameters for custom smart contract call', async function () {
+        const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(aptosTxRequest);
+        prebuildTxWithIntent.calledOnceWithExactly({
+          reqId,
+          intentType: 'customTx',
+          aptosCustomTransactionParams: testCustomSmartContractCall,
+          recipients: testAptosRecipients,
+        });
+
+        const txPrebuild = await tssAptosWallet.prebuildTransaction({
+          reqId,
+          type: 'customTx',
+          aptosCustomTransactionParams: testCustomSmartContractCall,
+          recipients: testAptosRecipients,
+        });
+
+        txPrebuild.should.deepEqual({
+          walletId: tssAptosWallet.id(),
+          wallet: tssAptosWallet,
+          txRequestId: 'aptos-tx-id',
+          txHex: 'aptos123abcd',
+          buildParams: {
+            type: 'customTx',
+            aptosCustomTransactionParams: testCustomSmartContractCall,
+            recipients: testAptosRecipients,
+          },
+          feeInfo: {
+            fee: 1000,
+            feeString: '1000',
+          },
+        });
+      });
+
+      it('should handle aptosCustomTransaction with empty recipients', async function () {
+        const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(aptosTxRequest);
+        prebuildTxWithIntent.calledOnceWithExactly({
+          reqId,
+          intentType: 'customTx',
+          aptosCustomTransactionParams: testCustomSmartContractCall,
+          recipients: [],
+        });
+
+        const txPrebuild = await tssAptosWallet.prebuildTransaction({
+          reqId,
+          type: 'customTx',
+          aptosCustomTransactionParams: testCustomSmartContractCall,
+        });
+
+        txPrebuild.should.deepEqual({
+          walletId: tssAptosWallet.id(),
+          wallet: tssAptosWallet,
+          txRequestId: 'aptos-tx-id',
+          txHex: 'aptos123abcd',
+          buildParams: {
+            type: 'customTx',
+            aptosCustomTransactionParams: testCustomSmartContractCall,
+          },
+          feeInfo: {
+            fee: 1000,
+            feeString: '1000',
+          },
+        });
+      });
+
+      it('should handle custom smart contract call with type arguments', async function () {
+        const accountCreationCall = {
+          moduleName: '0x1::aptos_account',
+          functionName: 'create_account',
+          typeArguments: [],
+          functionArguments: ['0x123def456abc789fed012345abcdef67890'],
+        };
+
+        const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(aptosTxRequest);
+        prebuildTxWithIntent.calledOnceWithExactly({
+          reqId,
+          intentType: 'customTx',
+          aptosCustomTransactionParams: accountCreationCall,
+          recipients: testAptosRecipients,
+        });
+
+        const txPrebuild = await tssAptosWallet.prebuildTransaction({
+          reqId,
+          type: 'customTx',
+          aptosCustomTransactionParams: accountCreationCall,
+          recipients: testAptosRecipients,
+        });
+
+        txPrebuild.should.deepEqual({
+          walletId: tssAptosWallet.id(),
+          wallet: tssAptosWallet,
+          txRequestId: 'aptos-tx-id',
+          txHex: 'aptos123abcd',
+          buildParams: {
+            type: 'customTx',
+            aptosCustomTransactionParams: accountCreationCall,
+            recipients: testAptosRecipients,
+          },
+          feeInfo: {
+            fee: 1000,
+            feeString: '1000',
+          },
+        });
+      });
+
+      it('should handle aptosCustomTransaction with ABI information', async function () {
+        const customCallWithAbi = {
+          ...testCustomSmartContractCall,
+          abi: {
+            name: 'transfer',
+            visibility: 'public',
+            is_entry: true,
+            generic_type_params: [],
+            params: ['address', 'u64'],
+            return: [],
+          },
+        };
+
+        const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(aptosTxRequest);
+        prebuildTxWithIntent.calledOnceWithExactly({
+          reqId,
+          intentType: 'customTx',
+          aptosCustomTransactionParams: customCallWithAbi,
+          recipients: testAptosRecipients,
+        });
+
+        const txPrebuild = await tssAptosWallet.prebuildTransaction({
+          reqId,
+          type: 'customTx',
+          aptosCustomTransactionParams: customCallWithAbi,
+          recipients: testAptosRecipients,
+        });
+
+        txPrebuild.should.deepEqual({
+          walletId: tssAptosWallet.id(),
+          wallet: tssAptosWallet,
+          txRequestId: 'aptos-tx-id',
+          txHex: 'aptos123abcd',
+          buildParams: {
+            type: 'customTx',
+            aptosCustomTransactionParams: customCallWithAbi,
+            recipients: testAptosRecipients,
+          },
+          feeInfo: {
+            fee: 1000,
+            feeString: '1000',
+          },
+        });
+      });
+
+      it('should handle aptosCustomTransaction with pending approval ID', async function () {
+        const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves({
+          ...aptosTxRequest,
+          state: 'pendingApproval',
+          pendingApprovalId: 'aptos-approval-id',
+        });
+        prebuildTxWithIntent.calledOnceWithExactly({
+          reqId,
+          intentType: 'customTx',
+          aptosCustomTransactionParams: testCustomSmartContractCall,
+          recipients: testAptosRecipients,
+        });
+
+        const txPrebuild = await custodialTssAptosWallet.prebuildTransaction({
+          reqId,
+          type: 'customTx',
+          aptosCustomTransactionParams: testCustomSmartContractCall,
+          recipients: testAptosRecipients,
+        });
+
+        txPrebuild.should.deepEqual({
+          walletId: custodialTssAptosWallet.id(),
+          wallet: custodialTssAptosWallet,
+          txRequestId: 'aptos-tx-id',
+          txHex: 'aptos123abcd',
+          pendingApprovalId: 'aptos-approval-id',
+          buildParams: {
+            type: 'customTx',
+            aptosCustomTransactionParams: testCustomSmartContractCall,
+            recipients: testAptosRecipients,
+          },
+          feeInfo: {
+            fee: 1000,
+            feeString: '1000',
+          },
+        });
+      });
+
+      it('should throw error for missing aptosCustomTransactionParams', async function () {
+        await tssAptosWallet
+          .prebuildTransaction({
+            reqId,
+            type: 'customTx',
+            recipients: testAptosRecipients,
+          })
+          .should.be.rejectedWith(`'aptosCustomTransactionParams' is a required parameter for customTx intent`);
+      });
+
+      it('should support aptosCustomTransaction for cold wallets', async function () {
+        const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
+        aptosTxRequest.walletType = 'cold';
+        prebuildTxWithIntent.resolves(aptosTxRequest);
+        prebuildTxWithIntent.calledOnceWithExactly({
+          reqId,
+          intentType: 'customTx',
+          aptosCustomTransactionParams: testCustomSmartContractCall,
+          recipients: testAptosRecipients,
+        });
+
+        const txPrebuild = await tssAptosWallet.prebuildTransaction({
+          reqId,
+          type: 'customTx',
+          aptosCustomTransactionParams: testCustomSmartContractCall,
+          recipients: testAptosRecipients,
+        });
+
+        txPrebuild.should.deepEqual({
+          walletId: tssAptosWallet.id(),
+          wallet: tssAptosWallet,
+          txRequestId: 'aptos-tx-id',
+          txHex: 'aptos123abcd',
+          buildParams: {
+            type: 'customTx',
+            aptosCustomTransactionParams: testCustomSmartContractCall,
+            recipients: testAptosRecipients,
+          },
+          feeInfo: {
+            fee: 1000,
+            feeString: '1000',
+          },
+        });
+      });
+
+      it('should build a standard Aptos transfer without breaking custom functionality', async function () {
+        const standardTransferRequest = {
+          ...aptosTxRequest,
+          intent: {
+            intentType: 'payment',
+          },
+        };
+
+        const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(standardTransferRequest);
+        prebuildTxWithIntent.calledOnceWithExactly({
+          reqId,
+          recipients: testAptosRecipients,
+          intentType: 'payment',
+        });
+
+        const txPrebuild = await tssAptosWallet.prebuildTransaction({
+          reqId,
+          recipients: testAptosRecipients,
+          type: 'transfer',
+        });
+
+        txPrebuild.should.deepEqual({
+          walletId: tssAptosWallet.id(),
+          wallet: tssAptosWallet,
+          txRequestId: 'aptos-tx-id',
+          txHex: 'aptos123abcd',
+          buildParams: {
+            recipients: testAptosRecipients,
+            type: 'transfer',
+          },
+          feeInfo: {
+            fee: 1000,
+            feeString: '1000',
+          },
+        });
+      });
+
+      it('should validate aptosCustomTransactionParams structure for smart contract calls', async function () {
+        const invalidParams = {
+          moduleName: '0x1::coin',
+          // Missing required functionName
+          typeArguments: ['0x1::aptos_coin::AptosCoin'],
+          functionArguments: ['0x742d35Cc6634C0532925a3b8D400E65AAD801c0b', '1000000'],
+        } as any; // Type assertion to test invalid params
+
+        const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.rejects(new Error('Function name is required and must be a non-empty string'));
+
+        try {
+          await tssAptosWallet.prebuildTransaction({
+            reqId,
+            type: 'customTx',
+            aptosCustomTransactionParams: invalidParams,
+            recipients: testAptosRecipients,
+          });
+          throw new Error('Expected promise to be rejected');
+        } catch (error) {
+          error.message.should.equal('Function name is required and must be a non-empty string');
+        }
+
+        prebuildTxWithIntent.should.have.been.calledOnceWith({
+          reqId,
+          intentType: 'customTx',
+          sequenceId: undefined,
+          comment: undefined,
+          solInstructions: undefined,
+          aptosCustomTransactionParams: invalidParams,
+          recipients: testAptosRecipients,
+          nonce: undefined,
+          feeOptions: undefined,
+        });
+      });
+    });
+  });
 });

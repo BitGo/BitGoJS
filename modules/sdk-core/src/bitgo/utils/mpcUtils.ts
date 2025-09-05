@@ -124,6 +124,13 @@ export abstract class MpcUtils {
       );
     }
 
+    if (params.intentType === 'customTx' && baseCoin.getFamily() === 'apt') {
+      assert(
+        params.aptosCustomTransactionParams,
+        `'aptosCustomTransactionParams' is a required parameter for customTx intent`
+      );
+    }
+
     if (!['acceleration', 'fillNonce', 'transferToken', 'tokenApproval', 'customTx'].includes(params.intentType)) {
       assert(params.recipients, `'recipients' is a required parameter for ${params.intentType} intent`);
     }
