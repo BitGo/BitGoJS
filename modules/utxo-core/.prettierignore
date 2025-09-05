@@ -1,1 +1,3 @@
 test/descriptor/psbt/fixtures
+# Ignore build output
+dist/
