@@ -27,9 +27,13 @@ import {
   classifyTransaction,
   decodeForwarderCreationData,
   decodeFlushTokensData,
+  decodeFlushERC721TokensData,
+  decodeFlushERC1155TokensData,
   decodeWalletCreationData,
   flushCoinsData,
   flushTokensData,
+  flushERC721TokensData,
+  flushERC1155TokensData,
   getAddressInitDataAllForwarderVersions,
   getCommon,
   getProxyInitcode,
@@ -69,6 +73,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   // flush tokens parameters
   private _forwarderAddress: string;
   private _tokenAddress: string;
+  private _tokenId: string;
 
   // Send and AddressInitialization transaction specific parameters
   protected _transfer: TransferBuilder | ERC721TransferBuilder | ERC1155TransferBuilder;
@@ -144,6 +149,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         return this.buildFlushTokensTransaction();
       case TransactionType.FlushCoins:
         return this.buildFlushCoinsTransaction();
+      case TransactionType.FlushERC721:
+        return this.buildFlushERC721Transaction();
+      case TransactionType.FlushERC1155:
+        return this.buildFlushERC1155Transaction();
       case TransactionType.SingleSigSend:
         return this.buildBase('0x');
       case TransactionType.ContractCall:
@@ -235,6 +244,26 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         break;
       case TransactionType.FlushCoins:
         this.setContract(transactionJson.to);
+        break;
+      case TransactionType.FlushERC721:
+        this.setContract(transactionJson.to);
+        const erc721Data = decodeFlushERC721TokensData(transactionJson.data, transactionJson.to);
+        if (erc721Data.forwarderVersion >= 4) {
+          this.forwarderVersion(erc721Data.forwarderVersion);
+        }
+        this.forwarderAddress(erc721Data.forwarderAddress);
+        this.tokenAddress(erc721Data.tokenAddress);
+        this.tokenId(erc721Data.tokenId);
+        break;
+      case TransactionType.FlushERC1155:
+        this.setContract(transactionJson.to);
+        const erc1155Data = decodeFlushERC1155TokensData(transactionJson.data, transactionJson.to);
+        if (erc1155Data.forwarderVersion >= 4) {
+          this.forwarderVersion(erc1155Data.forwarderVersion);
+        }
+        this.forwarderAddress(erc1155Data.forwarderAddress);
+        this.tokenAddress(erc1155Data.tokenAddress);
+        this.tokenId(erc1155Data.tokenId);
         break;
       case TransactionType.Send:
       case TransactionType.SendERC1155:
@@ -386,6 +415,21 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         this.validateContractAddress();
         this.validateForwarderAddress();
         this.validateTokenAddress();
+        break;
+      case TransactionType.FlushERC721:
+      case TransactionType.FlushERC1155:
+        this.validateContractAddress();
+        if (this._forwarderVersion < 4) {
+          this.validateForwarderAddress();
+        }
+        this.validateTokenAddress();
+        if (!this._tokenId) {
+          throw new BuildTransactionError(
+            this._type === TransactionType.FlushERC721
+              ? 'Token ID is required for ERC721 flush'
+              : 'Token ID is required for ERC1155 flush'
+          );
+        }
         break;
       case TransactionType.SingleSigSend:
         // for single sig sends, the contract address is actually the recipient
@@ -741,6 +785,15 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /**
+   * Set the token ID for ERC721/ERC1155 token flush
+   *
+   * @param {string} tokenId the token ID to flush
+   */
+  tokenId(tokenId: string): void {
+    this._tokenId = tokenId;
+  }
+
+  /**
    * Build a transaction to flush tokens from a forwarder.
    *
    * @returns {TxData} The Ethereum transaction data
@@ -759,6 +812,46 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   private buildFlushCoinsTransaction(): TxData {
     return this.buildBase(flushCoinsData());
+  }
+
+  /**
+   * Build a transaction to flush ERC721 NFTs from a forwarder.
+   *
+   * @returns {TxData} The Ethereum transaction data
+   */
+  private buildFlushERC721Transaction(): TxData {
+    if (!this._tokenAddress) {
+      throw new BuildTransactionError('Token address is required for ERC721 flush');
+    }
+    if (!this._tokenId) {
+      throw new BuildTransactionError('Token ID is required for ERC721 flush');
+    }
+    if (this._forwarderVersion >= 4 && this._contractAddress !== this._forwarderAddress) {
+      throw new BuildTransactionError('Invalid contract address: ' + this._contractAddress);
+    }
+    return this.buildBase(
+      flushERC721TokensData(this._forwarderAddress, this._tokenAddress, this._tokenId, this._forwarderVersion)
+    );
+  }
+
+  /**
+   * Build a transaction to flush ERC1155 tokens from a forwarder.
+   *
+   * @returns {TxData} The Ethereum transaction data
+   */
+  private buildFlushERC1155Transaction(): TxData {
+    if (!this._tokenAddress) {
+      throw new BuildTransactionError('Token address is required for ERC1155 flush');
+    }
+    if (!this._tokenId) {
+      throw new BuildTransactionError('Token ID is required for ERC1155 flush');
+    }
+    if (this._forwarderVersion >= 4 && this._contractAddress !== this._forwarderAddress) {
+      throw new BuildTransactionError('Invalid contract address: ' + this._contractAddress);
+    }
+    return this.buildBase(
+      flushERC1155TokensData(this._forwarderAddress, this._tokenAddress, this._tokenId, this._forwarderVersion)
+    );
   }
   // endregion
 

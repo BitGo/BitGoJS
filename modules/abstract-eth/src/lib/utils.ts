@@ -55,6 +55,14 @@ import {
   flushCoinsTypes,
   flushForwarderTokensMethodId,
   flushTokensTypes,
+  flushERC721ForwarderTokensMethodId,
+  flushERC721ForwarderTokensMethodIdV4,
+  flushERC721TokensTypes,
+  flushERC721TokensTypesv4,
+  flushERC1155ForwarderTokensMethodId,
+  flushERC1155ForwarderTokensMethodIdV4,
+  flushERC1155TokensTypes,
+  flushERC1155TokensTypesv4,
   sendMultisigMethodId,
   sendMultisigTokenMethodId,
   sendMultiSigTokenTypes,
@@ -207,6 +215,152 @@ export function flushCoinsData(): string {
   const method = EthereumAbi.methodID('flush', flushCoinsTypes);
   const args = EthereumAbi.rawEncode(flushCoinsTypes, params);
   return addHexPrefix(Buffer.concat([method, args]).toString('hex'));
+}
+
+/**
+ * Get the data required to make a flush ERC721 tokens contract call
+ * @param forwarderAddress - The forwarder address (for v0-v3)
+ * @param tokenAddress - The ERC721 token contract address
+ * @param tokenId - The token ID to flush
+ * @param forwarderVersion - The forwarder version
+ */
+export function flushERC721TokensData(
+  forwarderAddress: string,
+  tokenAddress: string,
+  tokenId: string,
+  forwarderVersion: number
+): string {
+  let params: (string | Buffer)[];
+  let method: Uint8Array;
+  let args: Uint8Array;
+
+  if (forwarderVersion >= 4) {
+    params = [tokenAddress, tokenId];
+    method = EthereumAbi.methodID('flushERC721Token', flushERC721TokensTypesv4);
+    args = EthereumAbi.rawEncode(flushERC721TokensTypesv4, params);
+  } else {
+    params = [forwarderAddress, tokenAddress, tokenId];
+    method = EthereumAbi.methodID('flushERC721ForwarderTokens', flushERC721TokensTypes);
+    args = EthereumAbi.rawEncode(flushERC721TokensTypes, params);
+  }
+  return addHexPrefix(Buffer.concat([method, args]).toString('hex'));
+}
+
+/**
+ * Decode the given ABI-encoded flush ERC721 tokens data
+ * @param data The data to decode
+ * @param to The to address (contract address for v4+)
+ * @returns parsed flush data with forwarderAddress, tokenAddress, tokenId and forwarderVersion
+ */
+export function decodeFlushERC721TokensData(
+  data: string,
+  to?: string
+): {
+  forwarderAddress: string;
+  tokenAddress: string;
+  tokenId: string;
+  forwarderVersion: number;
+} {
+  if (data.startsWith(flushERC721ForwarderTokensMethodIdV4)) {
+    if (!to) {
+      throw new BuildTransactionError(`Missing to address: ${to}`);
+    }
+    const [tokenAddress, tokenId] = getRawDecoded(
+      flushERC721TokensTypesv4,
+      getBufferedByteCode(flushERC721ForwarderTokensMethodIdV4, data)
+    );
+    return {
+      forwarderAddress: to,
+      tokenAddress: addHexPrefix(tokenAddress as string),
+      tokenId: new BigNumber(bufferToHex(tokenId as Buffer)).toFixed(),
+      forwarderVersion: 4,
+    };
+  } else if (data.startsWith(flushERC721ForwarderTokensMethodId)) {
+    const [forwarderAddress, tokenAddress, tokenId] = getRawDecoded(
+      flushERC721TokensTypes,
+      getBufferedByteCode(flushERC721ForwarderTokensMethodId, data)
+    );
+    return {
+      forwarderAddress: addHexPrefix(forwarderAddress as string),
+      tokenAddress: addHexPrefix(tokenAddress as string),
+      tokenId: new BigNumber(bufferToHex(tokenId as Buffer)).toFixed(),
+      forwarderVersion: 0,
+    };
+  }
+  throw new BuildTransactionError(`Invalid flush ERC721 bytecode: ${data}`);
+}
+
+/**
+ * Get the data required to make a flush ERC1155 tokens contract call
+ * @param forwarderAddress - The forwarder address (for v0-v3)
+ * @param tokenAddress - The ERC1155 token contract address
+ * @param tokenId - The token ID to flush
+ * @param forwarderVersion - The forwarder version
+ */
+export function flushERC1155TokensData(
+  forwarderAddress: string,
+  tokenAddress: string,
+  tokenId: string,
+  forwarderVersion: number
+): string {
+  let params: (string | Buffer)[];
+  let method: Uint8Array;
+  let args: Uint8Array;
+
+  if (forwarderVersion >= 4) {
+    params = [tokenAddress, tokenId];
+    method = EthereumAbi.methodID('flushERC1155Tokens', flushERC1155TokensTypesv4);
+    args = EthereumAbi.rawEncode(flushERC1155TokensTypesv4, params);
+  } else {
+    params = [forwarderAddress, tokenAddress, tokenId];
+    method = EthereumAbi.methodID('flushERC1155ForwarderTokens', flushERC1155TokensTypes);
+    args = EthereumAbi.rawEncode(flushERC1155TokensTypes, params);
+  }
+  return addHexPrefix(Buffer.concat([method, args]).toString('hex'));
+}
+
+/**
+ * Decode the given ABI-encoded flush ERC1155 tokens data
+ * @param data The data to decode
+ * @param to The to address (contract address for v4+)
+ * @returns parsed flush data with forwarderAddress, tokenAddress, tokenId and forwarderVersion
+ */
+export function decodeFlushERC1155TokensData(
+  data: string,
+  to?: string
+): {
+  forwarderAddress: string;
+  tokenAddress: string;
+  tokenId: string;
+  forwarderVersion: number;
+} {
+  if (data.startsWith(flushERC1155ForwarderTokensMethodIdV4)) {
+    if (!to) {
+      throw new BuildTransactionError(`Missing to address: ${to}`);
+    }
+    const [tokenAddress, tokenId] = getRawDecoded(
+      flushERC1155TokensTypesv4,
+      getBufferedByteCode(flushERC1155ForwarderTokensMethodIdV4, data)
+    );
+    return {
+      forwarderAddress: to,
+      tokenAddress: addHexPrefix(tokenAddress as string),
+      tokenId: new BigNumber(bufferToHex(tokenId as Buffer)).toFixed(),
+      forwarderVersion: 4,
+    };
+  } else if (data.startsWith(flushERC1155ForwarderTokensMethodId)) {
+    const [forwarderAddress, tokenAddress, tokenId] = getRawDecoded(
+      flushERC1155TokensTypes,
+      getBufferedByteCode(flushERC1155ForwarderTokensMethodId, data)
+    );
+    return {
+      forwarderAddress: addHexPrefix(forwarderAddress as string),
+      tokenAddress: addHexPrefix(tokenAddress as string),
+      tokenId: new BigNumber(bufferToHex(tokenId as Buffer)).toFixed(),
+      forwarderVersion: 0,
+    };
+  }
+  throw new BuildTransactionError(`Invalid flush ERC1155 bytecode: ${data}`);
 }
 
 /**
@@ -542,6 +696,10 @@ const transactionTypesMap = {
   [flushForwarderTokensMethodId]: TransactionType.FlushTokens,
   [flushForwarderTokensMethodIdV4]: TransactionType.FlushTokens,
   [flushCoinsMethodId]: TransactionType.FlushCoins,
+  [flushERC721ForwarderTokensMethodId]: TransactionType.FlushERC721,
+  [flushERC721ForwarderTokensMethodIdV4]: TransactionType.FlushERC721,
+  [flushERC1155ForwarderTokensMethodId]: TransactionType.FlushERC1155,
+  [flushERC1155ForwarderTokensMethodIdV4]: TransactionType.FlushERC1155,
   [sendMultisigTokenMethodId]: TransactionType.Send,
   [LockMethodId]: TransactionType.StakingLock,
   [VoteMethodId]: TransactionType.StakingVote,
