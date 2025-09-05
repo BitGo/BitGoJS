@@ -1847,6 +1847,16 @@ describe('SOL:', function () {
       (recoveryTxn.lastScanIndex ?? 0).should.equal(0);
     });
 
+    it('should take sol 2022 token OVC output and generate a signed sweep transaction', async function () {
+      const params = testData.ovcResponse;
+      const recoveryTxn = await basecoin.createBroadcastableSweepTransaction(params);
+      recoveryTxn.transactions[0].serializedTx.should.equal(
+        'AvR+L909kzRq6NuaUe9F6Jt97MOiFs7jpW8MuOrwz4EbKF40d31dci/bgLTq4gpk/Hh3s5cA8FtbLkDQr15PqAE7yd8LOXvsLtO2REqMM/OCZ8wItfsqfTfia2xIfibRW3wHgw63jiaojbXeSqaYajJ/Ca7YwBUz5blydI3fYLgPAgECBsLVtfT7mpvNii8wPk0G942N7TAHE/RW2iq/8LPqAYWqBRo0vIrNQ4djl2+Wh2EVBQ9zgoVTVm0RHXrIv/6/WHxPX1mHv+JqpmAT79ltNjYPK0M2yR+ZMln7VgUTBWFNQvLqE/j/nXlY2/JpxuNr/fXLXEPeS04dPvt9qz1dAoYEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGp9UXGSxWjuCKhF9z0peIzwNcMUWyGrNE2AYuqUAAADpiH20cxLj7KnOaoI5ANNoPxYjs472FdjDeMPft3kXdAgQDAgUBBAQAAAAEAgADDAIAAADwopo7AAAAAA=='
+      );
+      (recoveryTxn.transactions[0].scanIndex ?? 0).should.equal(0);
+      (recoveryTxn.lastScanIndex ?? 0).should.equal(0);
+    });
+
     it('should take consolidation OVC output and generate multiple signed sweep transactions', async function () {
       const params = testData.ovcResponse2;
       const recoveryTxn = await basecoin.createBroadcastableSweepTransaction(params);

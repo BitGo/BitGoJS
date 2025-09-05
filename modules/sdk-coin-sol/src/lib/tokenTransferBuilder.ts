@@ -162,14 +162,14 @@ export class TokenTransferBuilder extends TransactionBuilder {
         let tokenAddress: string;
         let tokenName: string;
         let programId: string | undefined;
-        if (recipient.tokenAddress && recipient.programId) {
-          tokenName = recipient.tokenName;
-          tokenAddress = recipient.tokenAddress;
-          programId = recipient.programId;
-        } else if (coin) {
+        if (coin) {
           tokenName = coin.name;
           tokenAddress = coin.tokenAddress;
           programId = coin.programId;
+        } else if (recipient.tokenAddress && recipient.programId) {
+          tokenName = recipient.tokenName;
+          tokenAddress = recipient.tokenAddress;
+          programId = recipient.programId;
         } else {
           throw new Error(`Could not determine token information for ${recipient.tokenName}`);
         }
