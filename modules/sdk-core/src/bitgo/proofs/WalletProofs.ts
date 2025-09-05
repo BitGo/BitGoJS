@@ -17,9 +17,8 @@ export class WalletProofs {
   async getLiabilityProofs(): Promise<UserVerificationElements> {
     const reqId = new RequestTracer();
     this.wallet.bitgo.setRequestTracer(reqId);
-
     return (await this.wallet.bitgo
-      .get(this.wallet.bitgo.url('/proofs-service/wallet/' + this.wallet.id() + '/liability-proofs'))
+      .get(this.wallet.bitgo.url('/proofs-service/wallets/' + this.wallet.id() + '/liability-proofs'))
       .send()
       .result()) as UserVerificationElements;
   }
@@ -34,7 +33,7 @@ export class WalletProofs {
     this.wallet.bitgo.setRequestTracer(reqId);
 
     return (await this.wallet.bitgo
-      .get(this.wallet.bitgo.url('/proofs-service/wallet/' + this.wallet.id() + '/account-snapshot'))
+      .get(this.wallet.bitgo.url('/proofs-service/wallets/' + this.wallet.id() + '/account-snapshot'))
       .send()
       .result()) as AccountSnapshot;
   }
