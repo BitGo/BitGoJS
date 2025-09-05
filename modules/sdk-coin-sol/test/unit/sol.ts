@@ -1,8 +1,8 @@
+import assert from 'assert';
 import * as _ from 'lodash';
+import nock from 'nock';
 import * as should from 'should';
 import * as sinon from 'sinon';
-import nock from 'nock';
-import assert from 'assert';
 
 import { TOKEN_2022_PROGRAM_ID } from '@solana/spl-token';
 
@@ -23,14 +23,14 @@ import {
 } from '@bitgo/sdk-core';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { coins } from '@bitgo/statics';
-import { KeyPair, Sol, Tsol } from '../../src';
+import { KeyPair, Sol, SolVerifyTransactionOptions, Tsol } from '../../src';
 import { Transaction } from '../../src/lib';
 import { AtaInit, InstructionParams, TokenTransfer } from '../../src/lib/iface';
 import { getAssociatedTokenAccountAddress } from '../../src/lib/utils';
 import * as testData from '../fixtures/sol';
 import * as resources from '../resources/sol';
-import { getBuilderFactory } from './getBuilderFactory';
 import { solBackupKey } from './fixtures/solBackupKey';
+import { getBuilderFactory } from './getBuilderFactory';
 
 describe('SOL:', function () {
   let bitgo: TestBitGoAPI;
@@ -3212,6 +3212,66 @@ describe('SOL:', function () {
         {
           message: 'tx outputs does not match with expected address',
         }
+      );
+    });
+  });
+
+  describe('blind signing token enablement protection', () => {
+    it('should verify as valid the enabletoken intent when prebuild tx matchs user intent ', async function () {
+      const { txParams, txPrebuild, walletData } = testData.enableToken;
+      const wallet = new Wallet(bitgo, basecoin, walletData);
+      const sameIntentTx = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        wallet,
+      } as unknown as SolVerifyTransactionOptions);
+
+      sameIntentTx.should.equal(true);
+    });
+
+    it('should verify as valid the disabletoken intent when prebuild tx matchs user intent ', async function () {
+      const { txParams, txPrebuild, walletData } = testData.disableToken;
+      const wallet = new Wallet(bitgo, basecoin, walletData);
+      const sameIntentTx = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        wallet,
+      } as unknown as SolVerifyTransactionOptions);
+
+      sameIntentTx.should.equal(true);
+    });
+
+    it('should thrown an error when tampered prebuild tx type ', async function () {
+      const { txParams, txPrebuild, sendTxHex, walletData } = testData.enableToken;
+      const tamperedTxPrebuild = { ...txPrebuild, txHex: sendTxHex };
+
+      const wallet = new Wallet(bitgo, basecoin, walletData);
+      // tamperedTxPrebuild has the type Send instead of 'enabletoken'
+      const tamperedTypesIntentTx = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild: tamperedTxPrebuild,
+        wallet,
+      } as unknown as SolVerifyTransactionOptions);
+      tamperedTypesIntentTx.should.be.rejectedWith(
+        'Tx type "Send" does not match expected txParams type "enabletoken"'
+      );
+    });
+
+    it('should throw an error when tokenName does not match on recipients', async function () {
+      //TODO: we should decide on where should we throw the error inside verify
+      const { txParams, txPrebuild, enableMaliciousTokenTxHex, walletData } = testData.enableToken;
+      const tamperedTxPrebuild = { ...txPrebuild, txHex: enableMaliciousTokenTxHex };
+
+      const wallet = new Wallet(bitgo, basecoin, walletData);
+      // tamperedTxPrebuild enables a token that's not part of bitgo accepted ones
+      const tamperedTokenNameIntentTx = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild: tamperedTxPrebuild,
+        wallet,
+      } as unknown as SolVerifyTransactionOptions);
+
+      tamperedTokenNameIntentTx.should.be.rejectedWith(
+        'Tx tokenName "MALICIOUS" does not match expected txParams token name "orca"'
       );
     });
   });
