@@ -21,13 +21,14 @@ import { loadWebAssembly } from '@bitgo/sdk-opensslbytes';
 
 const openSSLBytes = loadWebAssembly().buffer;
 
-describe('ecdsa tss', function (this: Mocha.Context) {
-  this.timeout(60000);
+describe('ecdsa tss', function () {
   const ecdsa = new Ecdsa();
 
   let signCombine1: SignCombineRT, signCombine2: SignCombineRT;
 
   before('generate key and sign phase 1 to 4', async function () {
+    // In some execution environments (e.g. CI), generateNtilde below may take longer at times.
+    this.timeout('40s');
     const paillierKeyStub = sinon.stub(paillierBigint, 'generateRandomKeys');
 
     paillierKeyStub.onCall(0).returns(Promise.resolve(paillierKeyPairs[0]));
