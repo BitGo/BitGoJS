@@ -120,6 +120,8 @@ export class ExitDelegationBuilder extends TransactionBuilder {
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     this.transaction.type = this.transactionType;
+    // Set the transaction data before building
+    this.exitDelegationTransaction.transactionData = this.getExitDelegationData();
     await this.exitDelegationTransaction.build();
     return this.transaction;
   }

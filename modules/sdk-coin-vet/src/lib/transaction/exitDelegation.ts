@@ -116,7 +116,7 @@ export class ExitDelegationTransaction extends Transaction {
       }
 
       // Set sender address
-      if (signedTx.origin) {
+      if (signedTx.signature && signedTx.origin) {
         this.sender = signedTx.origin.toString().toLowerCase();
       }
 
