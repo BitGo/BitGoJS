@@ -500,6 +500,7 @@ export interface CreateAddressOptions {
   derivedAddress?: string;
   index?: number;
   onToken?: string;
+  evmKeyRingReferenceAddress?: string;
 }
 
 export interface UpdateAddressOptions {

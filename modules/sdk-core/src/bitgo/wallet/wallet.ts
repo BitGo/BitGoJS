@@ -1251,6 +1251,7 @@ export class Wallet implements IWallet {
       baseAddress,
       allowSkipVerifyAddress = true,
       onToken,
+      evmKeyRingReferenceAddress,
     } = params;
 
     if (!_.isUndefined(chain)) {
@@ -1323,6 +1324,19 @@ export class Wallet implements IWallet {
       if (!_.isString(onToken)) {
         throw new Error('onToken has to be a string');
       }
+    }
+
+    if (!_.isUndefined(evmKeyRingReferenceAddress)) {
+      if (!_.isString(evmKeyRingReferenceAddress)) {
+        throw new Error('evmKeyRingReferenceAddress has to be a string');
+      }
+      if (!this.baseCoin.isEVM()) {
+        throw new Error('evmKeyRingReferenceAddress is only supported for EVM chains');
+      }
+      if (!this.baseCoin.isValidAddress(evmKeyRingReferenceAddress)) {
+        throw new Error('evmKeyRingReferenceAddress must be a valid address');
+      }
+      addressParams.evmKeyRingReferenceAddress = evmKeyRingReferenceAddress;
     }
 
     // get keychains for address verification

@@ -70,6 +70,7 @@ export interface GenerateWalletOptions {
   commonKeychain?: string;
   type?: 'hot' | 'cold' | 'custodial';
   subType?: 'lightningCustody' | 'lightningSelfCustody';
+  evmKeyRingReferenceWalletId?: string;
 }
 
 export const GenerateLightningWalletOptionsCodec = t.strict(
@@ -170,6 +171,7 @@ export interface AddWalletOptions {
   initializationTxs?: any;
   disableTransactionNotifications?: boolean;
   gasPrice?: number;
+  evmKeyRingReferenceWalletId?: string;
 }
 
 type KeySignatures = {

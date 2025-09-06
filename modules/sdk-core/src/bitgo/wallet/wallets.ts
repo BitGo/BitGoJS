@@ -41,6 +41,7 @@ import {
 import { WalletShare } from './iWallet';
 import { Wallet } from './wallet';
 import { TssSettings } from '@bitgo/public-types';
+import { createEvmKeyRingWallet, validateEvmKeyRingWalletParams } from '../evm/evmUtils';
 
 /**
  * Check if a wallet is a WalletWithKeychains
@@ -101,8 +102,10 @@ export class Wallets implements IWallets {
       throw new Error('missing required string parameter label');
     }
 
-    // no need to pass keys for (single) custodial wallets
-    if (params.type !== 'custodial') {
+    validateEvmKeyRingWalletParams(params, this.baseCoin);
+
+    if (!params.evmKeyRingReferenceWalletId && params.type !== 'custodial') {
+      // no need to pass keys for (single) custodial wallets
       if (Array.isArray(params.keys) === false || !_.isNumber(params.m) || !_.isNumber(params.n)) {
         throw new Error('invalid argument');
       }
@@ -272,9 +275,18 @@ export class Wallets implements IWallets {
       throw new Error('missing required string parameter label');
     }
 
-    const { type = 'hot', label, passphrase, enterprise, isDistributedCustody } = params;
+    const { type = 'hot', label, passphrase, enterprise, isDistributedCustody, evmKeyRingReferenceWalletId } = params;
     const isTss = params.multisigType === 'tss' && this.baseCoin.supportsTss();
     const canEncrypt = !!passphrase && typeof passphrase === 'string';
+
+    if (validateEvmKeyRingWalletParams(params, this.baseCoin)) {
+      return await createEvmKeyRingWallet({
+        label,
+        evmKeyRingReferenceWalletId: evmKeyRingReferenceWalletId!,
+        bitgo: this.bitgo,
+        baseCoin: this.baseCoin,
+      });
+    }
 
     const walletParams: SupplementGenerateWalletOptions = {
       label: label,
@@ -301,6 +313,7 @@ export class Wallets implements IWallets {
     if (
       isTss &&
       this.baseCoin.isEVM() &&
+      !evmKeyRingReferenceWalletId &&
       !(params.walletVersion === 3 || params.walletVersion === 5 || params.walletVersion === 6)
     ) {
       throw new Error('EVM TSS wallets are only supported for wallet version 3, 5 and 6');
