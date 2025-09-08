@@ -1,19 +1,15 @@
 import * as t from 'io-ts';
-import { LightningOnchainRecipient, LightningOnchainRequest, optionalString } from '@bitgo/public-types';
+import { LightningOnchainRequest, optionalString } from '@bitgo/public-types';
 import { PendingApprovalData, TxRequestState } from '@bitgo/sdk-core';
-import { BigIntFromString } from 'io-ts-types';
 
 export const WithdrawStatusDelivered = 'delivered';
 export const WithdrawStatusFailed = 'failed';
 
 export const WithdrawStatus = t.union([t.literal(WithdrawStatusDelivered), t.literal(WithdrawStatusFailed)]);
 
-// todo: import LightningOnchainRequest from public-types after it is published
 export const LightningOnchainWithdrawParams = t.intersection([
-  // LightningOnchainRequest,
+  LightningOnchainRequest,
   t.type({
-    recipients: t.array(LightningOnchainRecipient),
-    satsPerVbyte: BigIntFromString,
     passphrase: t.string,
   }),
   t.partial({
