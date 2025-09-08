@@ -945,10 +945,10 @@
     monocle-ts "^2.3.13"
     newtype-ts "^0.3.5"
 
-"@bitgo/public-types@5.20.0":
-  version "5.20.0"
-  resolved "https://registry.npmjs.org/@bitgo/public-types/-/public-types-5.20.0.tgz"
-  integrity sha512-OOVs9eGviJtSdpWvWb9uPUezM9Qyy/ERAQFifZZ8NB8Sq8RxAjMlXinzazEHveRtHi9aaEd6jxzEnatnFLCE0w==
+"@bitgo/public-types@5.22.0":
+  version "5.22.0"
+  resolved "https://registry.npmjs.org/@bitgo/public-types/-/public-types-5.22.0.tgz#eec37aa28b3979c6e9ba2dda8f3bb35472b0eaad"
+  integrity sha512-1j9c3hYn9SmxV2oAq5NBOOS8Hpm6f9B9eKNUH1qpELrktEA/qkg4YCm4/uILWPb0BN5fluhMk0G0XCkMybt7vA==
   dependencies:
     fp-ts "^2.0.0"
     io-ts "npm:@bitgo-forks/io-ts@2.1.4"
