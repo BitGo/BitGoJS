@@ -406,6 +406,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
       messageRaw: params.messageRaw,
       messageStandardType: params.messageStandardType ?? MessageStandardType.UNKNOWN,
       messageEncoded: params.messageEncoded ?? '',
+      signerAddress: params.signerAddress,
     };
 
     return this.buildSignMessageRequestBase(intent, apiVersion, params.reqId);
