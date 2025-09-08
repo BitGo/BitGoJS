@@ -1,5 +1,5 @@
 import * as t from 'io-ts';
-import { LightningOnchainRecipient, optionalString } from '@bitgo/public-types';
+import { LightningOnchainRecipient, LightningOnchainRequest, optionalString } from '@bitgo/public-types';
 import { PendingApprovalData, TxRequestState } from '@bitgo/sdk-core';
 import { BigIntFromString } from 'io-ts-types';
 
@@ -72,6 +72,17 @@ export type LightningOnchainWithdrawResponse = {
    */
   transfer?: any;
 };
+
+export const FundPsbtRequest = t.intersection(
+  [
+    LightningOnchainRequest,
+    t.type({
+      txRequestId: t.string,
+    }),
+  ],
+  'FundPsbtRequest'
+);
+export type FundPsbtRequest = t.TypeOf<typeof FundPsbtRequest>;
 
 export const FundPsbtResponse = t.type(
   {
