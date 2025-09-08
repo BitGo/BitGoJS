@@ -71,6 +71,7 @@ export enum CoinFamily {
   LNBTC = 'lnbtc',
   LTC = 'ltc',
   MANTRA = 'mantra',
+  MEGAETH = 'megaeth',
   MON = 'mon',
   XPL = 'xpl', // Plasma Network
   POLYGON = 'polygon',
@@ -84,6 +85,7 @@ export enum CoinFamily {
   OG = 'og',
   OPETH = 'opeth',
   OSMO = 'osmo',
+  PLUME = 'plume',
   RBTC = 'rbtc',
   SGB = 'sgb',
   SEI = 'sei',
@@ -546,6 +548,7 @@ export enum UnderlyingAsset {
   LTC = 'ltc',
   LINEAETH = 'lineaeth',
   MANTRA = 'mantra',
+  MEGAETH = 'megaeth',
   MON = 'mon',
   NEAR = 'near',
   OAS = 'oas',
@@ -555,6 +558,7 @@ export enum UnderlyingAsset {
   XPL = 'xpl', // Plasma Network
   POLYGON = 'polygon',
   PHRS = 'phrs',
+  PLUME = 'plume',
   CTC = 'ctc',
   HYPEEVM = 'hypeevm',
   RBTC = 'rbtc', // RSK main coin

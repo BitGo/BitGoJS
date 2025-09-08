@@ -1980,6 +1980,22 @@ export const allCoinsAndTokens = [
     ]
   ),
   account(
+    '4af2a68a-a006-4924-bc1b-797cc65b2547',
+    'plume',
+    'Plume',
+    Networks.main.plume,
+    18,
+    UnderlyingAsset.PLUME,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+    ]
+  ),
+  account(
     '29a233d0-6d60-4e1e-8f76-16712fee3bf5',
     'tflow',
     'Testnet Flow',
@@ -1995,6 +2011,38 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+    ]
+  ),
+  account(
+    '3c7ccfca-d229-4238-a0f1-3115e592c28c',
+    'tplume',
+    'Testnet Plume',
+    Networks.test.plume,
+    18,
+    UnderlyingAsset.PLUME,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+    ]
+  ),
+  account(
+    '2f510e0f-7dad-4765-881d-6fd185d20866',
+    'tmegaeth',
+    'Testnet MegaETH',
+    Networks.test.megaeth,
+    18,
+    UnderlyingAsset.MEGAETH,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
     ]
   ),
   gasTankAccount(
