@@ -69,17 +69,6 @@ export type LightningOnchainWithdrawResponse = {
   transfer?: any;
 };
 
-export const FundPsbtRequest = t.intersection(
-  [
-    LightningOnchainRequest,
-    t.type({
-      txRequestId: t.string,
-    }),
-  ],
-  'FundPsbtRequest'
-);
-export type FundPsbtRequest = t.TypeOf<typeof FundPsbtRequest>;
-
 export const FundPsbtResponse = t.type(
   {
     fundedPsbt: t.string,
