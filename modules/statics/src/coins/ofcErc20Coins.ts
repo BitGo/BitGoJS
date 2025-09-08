@@ -2424,7 +2424,7 @@ export const ofcErc20Coins = [
   ofcerc20('1f0c355d-f7d7-4417-9005-7a3cd912ba9e', 'ofckishui', 'Kishui.org', 0, underlyingAssetForSymbol('kishui')),
   ofcerc20('7d7bfcc5-5bf5-4521-af6d-7af2c0401439', 'ofckol', 'Kollect', 18, underlyingAssetForSymbol('kol')),
   ofcerc20('cfa9a270-9b9c-4a71-b54e-5b2d5e6cdbc1', 'ofcl3usd', 'L3USD', 18, underlyingAssetForSymbol('l3usd')),
-  ofcerc20('28c47c8a-3c81-499a-91b3-6a6b1537d02a', 'ofcla', 'LAtoken', 18, underlyingAssetForSymbol('la')),
+  ofcerc20('28c47c8a-3c81-499a-91b3-6a6b1537d02a', 'ofcla', 'LAtoken', 18, underlyingAssetForSymbol('latoken')),
   ofcerc20('af6189bc-20c4-4f67-a5bb-50914d9b06db', 'ofcladys', 'Milady', 18, underlyingAssetForSymbol('ladys')),
   ofcerc20(
     '5965b592-cd81-4a26-8766-7f252b8b2e12',

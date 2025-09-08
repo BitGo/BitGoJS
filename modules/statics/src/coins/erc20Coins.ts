@@ -8858,11 +8858,11 @@ export const erc20Coins = [
   ),
   erc20(
     '704e5fc2-e25d-4772-918b-42b70c5a71c5',
-    'la',
+    'latoken',
     'LAtoken',
     18,
     '0xe50365f5d679cb98a1dd62d6f6e58e59321bcddf',
-    UnderlyingAsset.LA
+    UnderlyingAsset.LATOKEN
   ),
   erc20(
     '99b6d10c-74c9-41dd-8a98-0cc35f8e006a',

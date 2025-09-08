@@ -1222,7 +1222,7 @@ export enum UnderlyingAsset {
   KZE = 'kze',
   L3 = 'l3',
   L3USD = 'l3usd',
-  LA = 'la',
+  LATOKEN = 'latoken',
   LADYS = 'ladys',
   LAYER = 'layer',
   LAYERZERO = 'layerzero',
