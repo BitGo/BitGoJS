@@ -2133,6 +2133,7 @@ export class Wallet implements IWallet {
         isTss: true,
         messageRaw,
         messageStandardType,
+        signerAddress: params.message.signerAddress,
       };
 
       if (!this.tssUtils) {

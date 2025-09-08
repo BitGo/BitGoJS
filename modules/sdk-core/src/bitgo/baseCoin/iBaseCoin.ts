@@ -304,6 +304,7 @@ export interface Message extends BaseSignable {
   messageRaw: string;
   messageEncoded?: string;
   messageStandardType?: MessageStandardType;
+  signerAddress?: string;
 }
 
 export interface MessageTypeProperty {

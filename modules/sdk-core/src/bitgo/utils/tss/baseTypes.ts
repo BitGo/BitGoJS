@@ -184,6 +184,7 @@ export interface IntentOptionsForMessage extends IntentOptionsBase {
   messageRaw: string;
   messageEncoded?: string;
   messageStandardType?: MessageStandardType;
+  signerAddress?: string;
 }
 
 export interface IntentOptionsForTypedData extends IntentOptionsBase {
@@ -244,6 +245,7 @@ export interface PopulatedIntentForMessageSigning extends PopulatedIntentBase {
   messageEncoded: string;
   custodianMessageId?: string;
   messageStandardType?: MessageStandardType;
+  signerAddress?: string;
 }
 
 export interface PopulatedIntentForTypedDataSigning extends PopulatedIntentBase {
