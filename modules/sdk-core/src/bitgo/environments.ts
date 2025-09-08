@@ -225,7 +225,8 @@ const mainnetBase: EnvironmentTemplate = {
       baseUrl: 'https://chainscan.0g.ai/open/api',
     },
     xpl: {
-      baseUrl: 'https://rpc.plasma.to',
+      baseUrl:
+        'https://chaotic-cosmopolitan-waterfall.plasma-mainnet.quiknode.pro/40f306c7667db5b8637b214b2dbd45aac5f1fe3f',
     },
     sonic: {
       baseUrl: 'https://rpc.soniclabs.com',
