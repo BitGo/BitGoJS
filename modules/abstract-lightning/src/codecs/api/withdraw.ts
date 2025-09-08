@@ -1,19 +1,15 @@
 import * as t from 'io-ts';
-import { LightningOnchainRecipient, optionalString } from '@bitgo/public-types';
+import { LightningOnchainRequest, optionalString } from '@bitgo/public-types';
 import { PendingApprovalData, TxRequestState } from '@bitgo/sdk-core';
-import { BigIntFromString } from 'io-ts-types';
 
 export const WithdrawStatusDelivered = 'delivered';
 export const WithdrawStatusFailed = 'failed';
 
 export const WithdrawStatus = t.union([t.literal(WithdrawStatusDelivered), t.literal(WithdrawStatusFailed)]);
 
-// todo: import LightningOnchainRequest from public-types after it is published
 export const LightningOnchainWithdrawParams = t.intersection([
-  // LightningOnchainRequest,
+  LightningOnchainRequest,
   t.type({
-    recipients: t.array(LightningOnchainRecipient),
-    satsPerVbyte: BigIntFromString,
     passphrase: t.string,
   }),
   t.partial({
@@ -72,6 +68,17 @@ export type LightningOnchainWithdrawResponse = {
    */
   transfer?: any;
 };
+
+export const FundPsbtRequest = t.intersection(
+  [
+    LightningOnchainRequest,
+    t.type({
+      txRequestId: t.string,
+    }),
+  ],
+  'FundPsbtRequest'
+);
+export type FundPsbtRequest = t.TypeOf<typeof FundPsbtRequest>;
 
 export const FundPsbtResponse = t.type(
   {

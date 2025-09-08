@@ -37,7 +37,7 @@
     ]
   },
   "dependencies": {
-    "@bitgo/public-types": "5.20.0",
+    "@bitgo/public-types": "5.22.0",
     "@bitgo/sdk-lib-mpc": "^10.7.0",
     "@bitgo/secp256k1": "^1.5.0",
     "@bitgo/sjcl": "^1.0.1",
