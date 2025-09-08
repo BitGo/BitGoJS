@@ -18,9 +18,10 @@ export abstract class AtomicTransactionBuilder {
     _blockchainID: Buffer;
     _assetId: Buffer;
     _fromAddresses: string[];
+    _to: string[];
     _locktime: bigint;
     _threshold: number;
-    fee: { fee: string };
+    _fee: { fee: string; feeRate?: string; size?: number };
     hasCredentials: boolean;
     _tx?: unknown;
     setTransaction: (tx: unknown) => void;
@@ -30,9 +31,10 @@ export abstract class AtomicTransactionBuilder {
     _blockchainID: Buffer.alloc(0),
     _assetId: Buffer.alloc(0),
     _fromAddresses: [],
+    _to: [],
     _locktime: 0n,
     _threshold: 1,
-    fee: { fee: '0' },
+    _fee: { fee: '0' },
     hasCredentials: false,
     setTransaction: function (_tx: unknown) {
       this._tx = _tx;
