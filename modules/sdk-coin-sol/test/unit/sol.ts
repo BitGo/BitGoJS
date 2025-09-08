@@ -1,8 +1,8 @@
+import assert from 'assert';
 import * as _ from 'lodash';
+import nock from 'nock';
 import * as should from 'should';
 import * as sinon from 'sinon';
-import nock from 'nock';
-import assert from 'assert';
 
 import { TOKEN_2022_PROGRAM_ID } from '@solana/spl-token';
 
@@ -15,6 +15,7 @@ import {
   MPCSweepTxs,
   MPCTx,
   MPCTxs,
+  TransactionExplanation,
   TransactionPrebuild,
   TssUtils,
   TxRequest,
@@ -23,14 +24,14 @@ import {
 } from '@bitgo/sdk-core';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { coins } from '@bitgo/statics';
-import { KeyPair, Sol, Tsol } from '../../src';
+import { KeyPair, Sol, SolVerifyTransactionOptions, Tsol } from '../../src';
 import { Transaction } from '../../src/lib';
 import { AtaInit, InstructionParams, TokenTransfer } from '../../src/lib/iface';
 import { getAssociatedTokenAccountAddress } from '../../src/lib/utils';
 import * as testData from '../fixtures/sol';
 import * as resources from '../resources/sol';
-import { getBuilderFactory } from './getBuilderFactory';
 import { solBackupKey } from './fixtures/solBackupKey';
+import { getBuilderFactory } from './getBuilderFactory';
 
 describe('SOL:', function () {
   let bitgo: TestBitGoAPI;
@@ -3212,6 +3213,99 @@ describe('SOL:', function () {
         {
           message: 'tx outputs does not match with expected address',
         }
+      );
+    });
+  });
+
+  describe('blind signing token enablement protection', () => {
+    let originalExplain: (this: Transaction) => TransactionExplanation;
+    let explainStub: sinon.SinonStub;
+    beforeEach(() => {
+      originalExplain = Transaction.prototype.explainTransaction;
+    });
+
+    afterEach(() => {
+      // Restore the stub to avoid affecting other tests in cascade as explainTransaction
+      // is used in multiple places
+      if (explainStub) explainStub.restore();
+    });
+    it('should verify as valid the enabletoken intent when prebuild tx matchs user intent ', async function () {
+      const { txParams, txPrebuildRaw, walletData } = testData.enableTokenFixtures;
+      const wallet = new Wallet(bitgo, basecoin, walletData);
+      const sameIntentTx = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild: txPrebuildRaw,
+        wallet,
+      } as unknown as SolVerifyTransactionOptions);
+
+      sameIntentTx.should.equal(true);
+    });
+
+    it('should thrown an error when tampered prebuild tx type ', async function () {
+      const { txParams, txPrebuildRaw, sendTxHex, walletData } = testData.enableTokenFixtures;
+      const tamperedTxPrebuild = { ...txPrebuildRaw, txHex: sendTxHex };
+
+      const wallet = new Wallet(bitgo, basecoin, walletData);
+      // Necessary fluff in order to reuse the same txHex for the next test (as it autogenerate outputs) but removing the outputs
+      // to make it fail by the type instead of the outputs array.
+      explainStub = sinon.stub(Transaction.prototype, 'explainTransaction').callsFake(function (this: Transaction) {
+        const result = originalExplain.call(this) as unknown as Record<string, unknown>;
+        const outputs = Array.isArray(result.outputs) ? [] : [];
+        const durableNonce =
+          result.durableNonce && typeof result.durableNonce === 'object'
+            ? (result.durableNonce as import('../../src/lib/iface').DurableNonceParams)
+            : undefined;
+        const memo = typeof result.memo === 'string' ? result.memo : undefined;
+        const stakingAuthorize =
+          result.stakingAuthorize && typeof result.stakingAuthorize === 'object'
+            ? (result.stakingAuthorize as import('../../src/lib/iface').StakingAuthorizeParams)
+            : undefined;
+        const stakingDelegate =
+          result.stakingDelegate && typeof result.stakingDelegate === 'object'
+            ? (result.stakingDelegate as import('../../src/lib/iface').StakingDelegateParams)
+            : undefined;
+        return {
+          displayOrder: Array.isArray(result.displayOrder) ? result.displayOrder : [],
+          id: typeof result.id === 'string' ? result.id : '',
+          outputs,
+          outputAmount: typeof result.outputAmount === 'string' ? result.outputAmount : '0',
+          changeOutputs: Array.isArray(result.changeOutputs) ? result.changeOutputs : [],
+          changeAmount: typeof result.changeAmount === 'string' ? result.changeAmount : '0',
+          fee: typeof result.fee === 'object' && result.fee !== null ? (result.fee as { fee: string }) : { fee: '0' },
+          type: typeof result.type === 'string' ? result.type : '',
+          blockhash: typeof result.blockhash === 'string' ? result.blockhash : '',
+          durableNonce,
+          memo,
+          stakingAuthorize,
+          stakingDelegate,
+        };
+      });
+
+      await assert.rejects(
+        async () =>
+          await basecoin.verifyTransaction({
+            txParams,
+            txPrebuild: tamperedTxPrebuild,
+            wallet,
+          } as unknown as SolVerifyTransactionOptions),
+        { message: 'Tx type "Send" does not match expected txParams type "enabletoken"' }
+      );
+    });
+
+    it('should throw an error when outputs is not empty', async function () {
+      const { txParams, txPrebuildRaw, tamperedTxHexWithOutputs, walletData } = testData.enableTokenFixtures;
+      const tamperedTxPrebuild = { ...txPrebuildRaw, txHex: tamperedTxHexWithOutputs };
+
+      const wallet = new Wallet(bitgo, basecoin, walletData);
+      // tamperedTxPrebuild enables a token that contains outputs
+      await assert.rejects(
+        async () =>
+          basecoin.verifyTransaction({
+            txParams,
+            txPrebuild: tamperedTxPrebuild,
+            wallet,
+          } as unknown as SolVerifyTransactionOptions),
+        { message: 'Tx outputs were found when none were expected for sol enablement tokens' }
       );
     });
   });
