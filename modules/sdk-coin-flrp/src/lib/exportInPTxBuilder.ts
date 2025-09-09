@@ -2,7 +2,7 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { TransactionType } from '@bitgo/sdk-core';
 import { AtomicTransactionBuilder } from './atomicTransactionBuilder';
 
-export class ExportTxBuilder extends AtomicTransactionBuilder {
+export class ExportInPTxBuilder extends AtomicTransactionBuilder {
   private _amount = 0n;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -38,7 +38,7 @@ export class ExportTxBuilder extends AtomicTransactionBuilder {
   }
 
   verifyTxType(_baseTx: unknown): boolean {
-    return ExportTxBuilder.verifyTxType(_baseTx);
+    return ExportInPTxBuilder.verifyTxType(_baseTx);
   }
 
   /**
