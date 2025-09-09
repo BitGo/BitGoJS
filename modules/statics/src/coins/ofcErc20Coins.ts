@@ -4065,6 +4065,289 @@ export const tOfcErc20Coins = [
     18,
     underlyingAssetForSymbol('eth:hpp')
   ),
+  ofcerc20('e638abf5-a930-4f75-81b2-f82680bb2db6', 'ofceth:iwnon', 'iwnon', 18, underlyingAssetForSymbol('eth:iwnon')),
+  ofcerc20(
+    '4d1766ca-13c8-4eb3-afcf-a63d9123bec1',
+    'ofceth:qbtson',
+    'qbtson',
+    18,
+    underlyingAssetForSymbol('eth:qbtson')
+  ),
+  ofcerc20('059109b6-0f62-46d0-b28a-951c7ff67834', 'ofceth:tipon', 'tipon', 18, underlyingAssetForSymbol('eth:tipon')),
+  ofcerc20('09c745df-8cc6-42bc-9599-237fd8adfc93', 'ofceth:ulon', 'ulon', 18, underlyingAssetForSymbol('eth:ulon')),
+  ofcerc20(
+    '4ac0b4ca-2475-429d-b268-53925969190a',
+    'ofceth:itoton',
+    'itoton',
+    18,
+    underlyingAssetForSymbol('eth:itoton')
+  ),
+  ofcerc20('07bb44b2-7f40-45d1-8af6-e02f504f098c', 'ofceth:hygon', 'hygon', 18, underlyingAssetForSymbol('eth:hygon')),
+  ofcerc20('ade4c12f-b822-4f4c-91ce-2bf30b7f1781', 'ofceth:gmeon', 'gmeon', 18, underlyingAssetForSymbol('eth:gmeon')),
+  ofcerc20('5c660285-f305-4d1e-b024-1f63bb0839b4', 'ofceth:pbron', 'pbron', 18, underlyingAssetForSymbol('eth:pbron')),
+  ofcerc20(
+    '4a056743-f3c6-422b-8dd7-b50bbe7594bf',
+    'ofceth:eqixon',
+    'eqixon',
+    18,
+    underlyingAssetForSymbol('eth:eqixon')
+  ),
+  ofcerc20(
+    '97b8b652-1309-4a30-ac19-82f6d699b993',
+    'ofceth:rioton',
+    'rioton',
+    18,
+    underlyingAssetForSymbol('eth:rioton')
+  ),
+  ofcerc20(
+    '4240efd6-92f8-4c33-9fec-e59d5a333468',
+    'ofceth:maraon',
+    'maraon',
+    18,
+    underlyingAssetForSymbol('eth:maraon')
+  ),
+  ofcerc20('5e83f933-dad9-48b0-8a01-88a9bd9cf384', 'ofceth:pfeon', 'pfeon', 18, underlyingAssetForSymbol('eth:pfeon')),
+  ofcerc20('98b73768-2337-42a9-8211-f4af6f56f42c', 'ofceth:eemon', 'eemon', 18, underlyingAssetForSymbol('eth:eemon')),
+  ofcerc20(
+    '90daae9b-bd26-4e65-a77e-8bdcb59e3024',
+    'ofceth:cmcsaon',
+    'cmcsaon',
+    18,
+    underlyingAssetForSymbol('eth:cmcsaon')
+  ),
+  ofcerc20(
+    '55e52e9c-23e7-44f6-8b92-df96e8efc719',
+    'ofceth:sonyon',
+    'sonyon',
+    18,
+    underlyingAssetForSymbol('eth:sonyon')
+  ),
+  ofcerc20(
+    'e29d537b-7494-414c-b21e-ec0ef6c67190',
+    'ofceth:pyplon',
+    'pyplon',
+    18,
+    underlyingAssetForSymbol('eth:pyplon')
+  ),
+  ofcerc20(
+    '61e9a3be-9d3f-409e-9d97-21b9cc7a575d',
+    'ofceth:himson',
+    'himson',
+    18,
+    underlyingAssetForSymbol('eth:himson')
+  ),
+  ofcerc20('65c4a6a8-d833-4f56-9c6d-16f0bea34a24', 'ofceth:abton', 'abton', 18, underlyingAssetForSymbol('eth:abton')),
+  ofcerc20('4ece3a34-6067-405c-9eab-a6f856766630', 'ofceth:nvoon', 'nvoon', 18, underlyingAssetForSymbol('eth:nvoon')),
+  ofcerc20('1abe3ec2-ed00-4409-8338-e73482e235fa', 'ofceth:efaon', 'efaon', 18, underlyingAssetForSymbol('eth:efaon')),
+  ofcerc20('b7e9dd59-8c38-4150-a78f-ce326a93e833', 'ofceth:nkeon', 'nkeon', 18, underlyingAssetForSymbol('eth:nkeon')),
+  ofcerc20(
+    '8f12c91a-aebc-40fc-a419-e2566c7286da',
+    'ofceth:intcon',
+    'intcon',
+    18,
+    underlyingAssetForSymbol('eth:intcon')
+  ),
+  ofcerc20(
+    '6acba325-02bf-427e-bcc3-8c5ab2475a8a',
+    'ofceth:iefaon',
+    'iefaon',
+    18,
+    underlyingAssetForSymbol('eth:iefaon')
+  ),
+  ofcerc20(
+    '17ccb3f4-5274-4e1d-9cfc-4422870e4bf6',
+    'ofceth:smcion',
+    'smcion',
+    18,
+    underlyingAssetForSymbol('eth:smcion')
+  ),
+  ofcerc20(
+    'd7cc3111-8b74-4e24-9af0-2bb64d423dda',
+    'ofceth:mrvlon',
+    'mrvlon',
+    18,
+    underlyingAssetForSymbol('eth:mrvlon')
+  ),
+  ofcerc20('e7cf3596-e6b7-417e-b5b8-8d30abff31b4', 'ofceth:aggon', 'aggon', 18, underlyingAssetForSymbol('eth:aggon')),
+  ofcerc20(
+    'b7e1369f-0491-42c3-9734-5a3fac89fd45',
+    'ofceth:sbuxon',
+    'sbuxon',
+    18,
+    underlyingAssetForSymbol('eth:sbuxon')
+  ),
+  ofcerc20(
+    'c267fc24-7996-42f0-831e-cd9ebf9ea401',
+    'ofceth:uberon',
+    'uberon',
+    18,
+    underlyingAssetForSymbol('eth:uberon')
+  ),
+  ofcerc20(
+    '570b96f3-aec0-4b8c-9915-325adb9a1f1c',
+    'ofceth:abnbon',
+    'abnbon',
+    18,
+    underlyingAssetForSymbol('eth:abnbon')
+  ),
+  ofcerc20(
+    'd73c922d-9b73-4299-b5bc-618ac1f26ec4',
+    'ofceth:qcomon',
+    'qcomon',
+    18,
+    underlyingAssetForSymbol('eth:qcomon')
+  ),
+  ofcerc20(
+    'b5a5153a-f3a8-428a-9934-1d87e4175dcc',
+    'ofceth:cscoon',
+    'cscoon',
+    18,
+    underlyingAssetForSymbol('eth:cscoon')
+  ),
+  ofcerc20(
+    '8ddc4745-10a5-4d22-a604-ffe50605b70a',
+    'ofceth:futuon',
+    'futuon',
+    18,
+    underlyingAssetForSymbol('eth:futuon')
+  ),
+  ofcerc20('623afdd7-f270-466c-b363-dfd4679f7fde', 'ofceth:cmgon', 'cmgon', 18, underlyingAssetForSymbol('eth:cmgon')),
+  ofcerc20('e9158ed1-f4a0-48ed-b84d-79e906f89fbe', 'ofceth:iwfon', 'iwfon', 18, underlyingAssetForSymbol('eth:iwfon')),
+  ofcerc20('a04afcd4-14b2-47e6-8fa8-38043e55c5e0', 'ofceth:koon', 'koon', 18, underlyingAssetForSymbol('eth:koon')),
+  ofcerc20('aa74a050-a8e0-4cd6-aa64-18468f7560d3', 'ofceth:linon', 'linon', 18, underlyingAssetForSymbol('eth:linon')),
+  ofcerc20('1ba451ea-c9b5-401d-b161-87cd18fb2419', 'ofceth:armon', 'armon', 18, underlyingAssetForSymbol('eth:armon')),
+  ofcerc20('2e57c654-fb08-4869-b545-bcb50d4431e4', 'ofceth:jdon', 'jdon', 18, underlyingAssetForSymbol('eth:jdon')),
+  ofcerc20('e60e89f0-7d14-4815-9501-6720e67a04a7', 'ofceth:muon', 'muon', 18, underlyingAssetForSymbol('eth:muon')),
+  ofcerc20('661c66fe-eb3b-4f43-b440-216e10a7bc38', 'ofceth:wmton', 'wmton', 18, underlyingAssetForSymbol('eth:wmton')),
+  ofcerc20('3970ce50-fea4-4635-803a-6aa63b2a662a', 'ofceth:tmon', 'tmon', 18, underlyingAssetForSymbol('eth:tmon')),
+  ofcerc20(
+    'b1e56388-b03c-409a-8a77-74dba67ce079',
+    'ofceth:shopon',
+    'shopon',
+    18,
+    underlyingAssetForSymbol('eth:shopon')
+  ),
+  ofcerc20(
+    '619804f7-9c43-444a-81a1-91832344f2d3',
+    'ofceth:rddton',
+    'rddton',
+    18,
+    underlyingAssetForSymbol('eth:rddton')
+  ),
+  ofcerc20('ea02c6fe-ded0-4da9-bc7b-684c97e21321', 'ofceth:dison', 'dison', 18, underlyingAssetForSymbol('eth:dison')),
+  ofcerc20('d531c9c3-54de-4fa6-b317-6128492b771d', 'ofceth:apoon', 'apoon', 18, underlyingAssetForSymbol('eth:apoon')),
+  ofcerc20('e7f18334-7e08-46a4-88f0-db5848d2b831', 'ofceth:pepon', 'pepon', 18, underlyingAssetForSymbol('eth:pepon')),
+  ofcerc20('e82d49b1-f4dd-4edc-9a2b-0a2e6e75691e', 'ofceth:wfcon', 'wfcon', 18, underlyingAssetForSymbol('eth:wfcon')),
+  ofcerc20(
+    'a67c4f0a-71b8-4cf9-8060-ed5180cae497',
+    'ofceth:biduon',
+    'biduon',
+    18,
+    underlyingAssetForSymbol('eth:biduon')
+  ),
+  ofcerc20('1d1928f4-5ec8-414c-9820-abcb870d0a8e', 'ofceth:mson', 'mson', 18, underlyingAssetForSymbol('eth:mson')),
+  ofcerc20('60fbfe73-555c-4f0e-8d94-ffd01ba448b9', 'ofceth:pgon', 'pgon', 18, underlyingAssetForSymbol('eth:pgon')),
+  ofcerc20('2f45e033-f268-434b-b36b-fef009693803', 'ofceth:cvxon', 'cvxon', 18, underlyingAssetForSymbol('eth:cvxon')),
+  ofcerc20(
+    '0b6b3fb7-3756-4dad-80c1-581f7ae68f29',
+    'ofceth:panwon',
+    'panwon',
+    18,
+    underlyingAssetForSymbol('eth:panwon')
+  ),
+  ofcerc20(
+    'd387be04-c260-47ca-b9c4-dad2dc343dab',
+    'ofceth:avgoon',
+    'avgoon',
+    18,
+    underlyingAssetForSymbol('eth:avgoon')
+  ),
+  ofcerc20('1532bd6c-2a38-429f-b834-d93329ffd3b3', 'ofceth:crmon', 'crmon', 18, underlyingAssetForSymbol('eth:crmon')),
+  ofcerc20(
+    'e7905f90-f2c7-4887-a5e4-d494c450332d',
+    'ofceth:snowon',
+    'snowon',
+    18,
+    underlyingAssetForSymbol('eth:snowon')
+  ),
+  ofcerc20('2be0986b-ccf7-4d2e-a010-120007e48484', 'ofceth:axpon', 'axpon', 18, underlyingAssetForSymbol('eth:axpon')),
+  ofcerc20('36123a80-cf03-4a09-a316-a5aefb0f2b33', 'ofceth:ibmon', 'ibmon', 18, underlyingAssetForSymbol('eth:ibmon')),
+  ofcerc20(
+    'ba298da8-7595-4a3b-8854-ac0681c13a65',
+    'ofceth:dashon',
+    'dashon',
+    18,
+    underlyingAssetForSymbol('eth:dashon')
+  ),
+  ofcerc20('0d7b9f0e-cc0b-4d58-bed6-32d26c04a2f8', 'ofceth:acnon', 'acnon', 18, underlyingAssetForSymbol('eth:acnon')),
+  ofcerc20('5c93f80e-c39d-4d0e-bb45-0c9c6158232f', 'ofceth:ijhon', 'ijhon', 18, underlyingAssetForSymbol('eth:ijhon')),
+  ofcerc20('d668c146-c055-47a9-ae95-b73d529e72d4', 'ofceth:baon', 'baon', 18, underlyingAssetForSymbol('eth:baon')),
+  ofcerc20('6244ebde-d917-4a86-b783-c07212613032', 'ofceth:geon', 'geon', 18, underlyingAssetForSymbol('eth:geon')),
+  ofcerc20('5ec5f233-52df-40b2-bee4-23da396344e4', 'ofceth:appon', 'appon', 18, underlyingAssetForSymbol('eth:appon')),
+  ofcerc20('9c19f271-f66c-4892-809d-38566043a06d', 'ofceth:lmton', 'lmton', 18, underlyingAssetForSymbol('eth:lmton')),
+  ofcerc20(
+    'b76c6d3d-952c-432e-94b0-2fd47fdb5191',
+    'ofceth:intuon',
+    'intuon',
+    18,
+    underlyingAssetForSymbol('eth:intuon')
+  ),
+  ofcerc20('978ae967-2911-4cf9-b086-62a2e3faaa21', 'ofceth:mcdon', 'mcdon', 18, underlyingAssetForSymbol('eth:mcdon')),
+  ofcerc20('24552561-2fb5-4b17-9afa-9755826390dc', 'ofceth:gson', 'gson', 18, underlyingAssetForSymbol('eth:gson')),
+  ofcerc20(
+    '94ead874-a4d4-4453-a5aa-cdb5d6bb50d7',
+    'ofceth:adbeon',
+    'adbeon',
+    18,
+    underlyingAssetForSymbol('eth:adbeon')
+  ),
+  ofcerc20(
+    '11506e59-d46b-4115-bd3d-f74405acb85a',
+    'ofceth:spoton',
+    'spoton',
+    18,
+    underlyingAssetForSymbol('eth:spoton')
+  ),
+  ofcerc20('05897dcf-f29c-47c7-8de1-5ed010b704e4', 'ofceth:blkon', 'blkon', 18, underlyingAssetForSymbol('eth:blkon')),
+  ofcerc20(
+    'e1e741ff-290d-4551-9a73-c6a445207dc9',
+    'ofceth:asmlon',
+    'asmlon',
+    18,
+    underlyingAssetForSymbol('eth:asmlon')
+  ),
+  ofcerc20('288e693a-741b-4798-9bb5-22a97419a605', 'ofceth:nowon', 'nowon', 18, underlyingAssetForSymbol('eth:nowon')),
+  ofcerc20('10ae4d3b-eb79-47ac-a232-15fbd9d2661b', 'ofceth:iwmon', 'iwmon', 18, underlyingAssetForSymbol('eth:iwmon')),
+  ofcerc20(
+    'ebdce5e2-5f30-4d09-9df2-e42d799165bf',
+    'ofceth:melion',
+    'melion',
+    18,
+    underlyingAssetForSymbol('eth:melion')
+  ),
+  ofcerc20('63baa5b0-79f2-480e-8cf3-6f869fd250b6', 'ofceth:tlton', 'tlton', 18, underlyingAssetForSymbol('eth:tlton')),
+  ofcerc20(
+    'b3b4286f-98b0-4d40-8658-c79222ed0482',
+    'ofceth:grndon',
+    'grndon',
+    18,
+    underlyingAssetForSymbol('eth:grndon')
+  ),
+  ofcerc20('2b881a22-4137-4240-ba6d-ebf29973d081', 'ofceth:figon', 'figon', 18, underlyingAssetForSymbol('eth:figon')),
+  ofcerc20(
+    '3ec95730-e1b5-4636-9045-d1e339472160',
+    'ofceth:iemgon',
+    'iemgon',
+    18,
+    underlyingAssetForSymbol('eth:iemgon')
+  ),
+  ofcerc20(
+    'e8657df3-8052-440d-ad01-715ae8dc007c',
+    'ofceth:sbeton',
+    'sbeton',
+    18,
+    underlyingAssetForSymbol('eth:sbeton')
+  ),
 ];
 
 function underlyingAssetForSymbol(underlyingAssetValue: string): UnderlyingAsset {
