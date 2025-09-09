@@ -147,11 +147,12 @@
 /DEVELOPERS.md @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform @BitGo/developer-experience
 /commitlint.config.js @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform
 /Dockerfile @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform
-/lerna.json @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform @BitGo/developer-experience
-/package.json @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform @BitGo/developer-experience
-/tsconfig.json @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform @BitGo/developer-experience
+/lerna.json @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform @BitGo/developer-experience @BitGo/devops
+/package.json @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform @BitGo/developer-experience @BitGo/devops
+**/package.json @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform @BitGo/developer-experience @BitGo/devops
+/tsconfig.json @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform @BitGo/developer-experience @BitGo/devops
 /tsconfig.packages.json @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform
-/yarn.lock @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform @BitGo/developer-experience
+/yarn.lock @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform @BitGo/developer-experience @BitGo/devops
 /.iyarc @BitGo/wallet-platform @BitGo/hsm @BitGo/velocity
 flake.nix @BitGo/wallet-platform @BitGo/hsm @BitGo/developer-experience
 flake.lock @BitGo/wallet-platform @BitGo/hsm @BitGo/developer-experience
