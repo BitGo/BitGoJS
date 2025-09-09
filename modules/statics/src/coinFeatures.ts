@@ -175,7 +175,6 @@ export const ADA_TOKEN_FEATURES = [
   CoinFeature.BULK_TRANSACTION,
   CoinFeature.TSS,
   CoinFeature.TSS_COLD,
-  CoinFeature.STAKING,
 ];
 export const DOT_FEATURES = [
   ...ACCOUNT_COIN_DEFAULT_FEATURES,
