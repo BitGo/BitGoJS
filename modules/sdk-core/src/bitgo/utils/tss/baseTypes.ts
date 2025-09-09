@@ -47,6 +47,14 @@ export interface SolInstruction {
   data: string;
 }
 
+export interface aptosCustomTransactionParams {
+  moduleName: string;
+  functionName: string;
+  typeArguments?: string[];
+  functionArguments?: any[];
+  abi?: any;
+}
+
 export enum ShareType {
   R = 'R',
   Commitment = 'commitment',
@@ -220,6 +228,17 @@ export interface PrebuildTransactionWithIntentOptions extends IntentOptionsBase 
    * Each instruction should contain programId, keys, and data fields.
    */
   solInstructions?: SolInstruction[];
+  /**
+   * Custom transaction parameters for Aptos entry function calls.
+   * Used with the customTx intent type for Aptos smart contract interactions.
+   */
+  aptosCustomTransactionParams?: {
+    moduleName: string;
+    functionName: string;
+    typeArguments?: string[];
+    functionArguments?: any[];
+    abi?: any;
+  };
 }
 export interface IntentRecipient {
   address: {
@@ -279,6 +298,10 @@ export interface PopulatedIntent extends PopulatedIntentBase {
    * Each instruction should contain programId, keys, and data fields.
    */
   solInstructions?: SolInstruction[];
+  /**
+   * Custom Aptos transaction for use with the customTx intent type.
+   */
+  aptosCustomTransactionParams?: aptosCustomTransactionParams;
 }
 
 export type TxRequestState =

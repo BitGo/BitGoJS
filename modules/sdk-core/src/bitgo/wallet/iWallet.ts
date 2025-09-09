@@ -181,6 +181,17 @@ export interface PrebuildTransactionOptions {
     }[];
     data: string;
   }[];
+  /**
+   * Custom transaction parameters for Aptos entry function calls.
+   * Used with the customTx intent type for Aptos smart contract interactions.
+   */
+  aptosCustomTransactionParams?: {
+    moduleName: string;
+    functionName: string;
+    typeArguments?: string[];
+    functionArguments?: any[];
+    abi?: any;
+  };
 }
 
 export interface PrebuildAndSignTransactionOptions extends PrebuildTransactionOptions, WalletSignTransactionOptions {
