@@ -1,7 +1,7 @@
 import { UnderlyingAsset } from '../base';
 import { networkFeatureMapForTokens } from '../networkFeatureMapForTokens';
 import { Networks } from '../networks';
-import * as AccountCtors from '@bitgo-beta/statics/dist/src/account';
+import * as AccountCtors from '../account';
 
 export const botTokens = [
   AccountCtors.terc20(
