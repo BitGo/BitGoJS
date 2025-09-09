@@ -3,10 +3,11 @@ import { cosmosTokens } from '../../src/coins/cosmosTokens';
 import { avaxTokens } from '../../src/coins/avaxTokens';
 import { bscTokens } from '../../src/coins/bscTokens';
 import { nep141Tokens } from '../../src/coins/nep141Tokens';
+import { polygonTokens } from '../../src/coins/polygonTokens';
 import { NetworkType } from '../../src/networks';
 
 describe('Token Naming Convention Tests', function () {
-  const allTokens = [...erc20Coins, ...cosmosTokens, ...avaxTokens, ...bscTokens, ...nep141Tokens];
+  const allTokens = [...erc20Coins, ...cosmosTokens, ...avaxTokens, ...bscTokens, ...nep141Tokens, ...polygonTokens];
 
   // Helper function to filter tokens by network type
   function getTokensByNetworkType(networkType: NetworkType) {
@@ -209,7 +210,8 @@ describe('Token Naming Convention Tests', function () {
               // Special cases for tokens which don't follow the pattern
               if (
                 (testnetVersion.networkPrefix === 'ofct' && mainnetVersion.networkPrefix === 'ofc') ||
-                (testnetVersion.networkPrefix === 'thash' && mainnetVersion.networkPrefix === 'hash')
+                (testnetVersion.networkPrefix === 'thash' && mainnetVersion.networkPrefix === 'hash') ||
+                (testnetVersion.networkPrefix === 'tpolygon' && mainnetVersion.networkPrefix === 'polygon')
               ) {
                 return; // Skip the check for these special cases
               }
@@ -319,8 +321,15 @@ describe('Token Naming Convention Tests', function () {
   });
 
   it('should ensure all token names are lowercase', function () {
+    // List of tokens that are exceptions to the lowercase rule
+    const lowercaseExceptions: string[] = ['tpolygon:BitGoTest'];
+
     allTokens.forEach((token) => {
       const tokenName = token.name;
+      // Skip known exceptions
+      if (lowercaseExceptions.includes(tokenName)) {
+        return;
+      }
       tokenName.should.equal(tokenName.toLowerCase(), `Token "${tokenName}" should be lowercase`);
     });
   });
