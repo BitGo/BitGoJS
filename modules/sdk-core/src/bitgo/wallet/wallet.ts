@@ -3698,6 +3698,7 @@ export class Wallet implements IWallet {
           isTss: true,
           messageRaw,
           messageStandardType: params.message.messageStandardType,
+          signerAddress: params.message.signerAddress,
         };
         txRequest = await this.tssUtils!.buildSignMessageRequest(intentOption);
         params.message.txRequestId = txRequest.txRequestId;
