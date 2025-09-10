@@ -958,16 +958,28 @@ class BabyTestnet extends Testnet implements AccountNetwork {
   explorerUrl = 'https://testnet.babylon.explorers.guru/transaction/';
 }
 
-class Mantra extends Mainnet implements AccountNetwork {
+class Mantra extends Mainnet implements CosmosNetwork {
   name = 'Mantra';
   family = CoinFamily.MANTRA;
   explorerUrl = 'https://explorer.mantrachain.io/MANTRA-1/tx/';
+  addressPrefix = 'mantra';
+  validatorPrefix = 'mantravaloper';
+  denom = 'uom';
+  gasAmount = '8000';
+  gasLimit = 200000;
+  validDenoms = ['om', 'uom'];
 }
 
-class MantraTestnet extends Testnet implements AccountNetwork {
+class MantraTestnet extends Testnet implements CosmosNetwork {
   name = 'Testnet Mantra';
   family = CoinFamily.MANTRA;
   explorerUrl = 'https://explorer.mantrachain.io/MANTRA-Dukong/tx/';
+  addressPrefix = 'mantra';
+  validatorPrefix = 'mantravaloper';
+  denom = 'uom';
+  gasAmount = '8000';
+  gasLimit = 200000;
+  validDenoms = ['om', 'uom'];
 }
 
 class Cronos extends Mainnet implements AccountNetwork {
