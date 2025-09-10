@@ -169,9 +169,9 @@ export interface CosmosTokenConstructorOptions extends AccountConstructorOptions
 }
 
 export interface AdaTokenConstructorOptions extends AccountConstructorOptions {
-  uniqueAssetId: string;
   policyId: string;
   assetName: string;
+  contractAddress: string;
 }
 export interface ContractAddress extends String {
   __contractaddress_phantom__: never;
@@ -703,17 +703,17 @@ export class PolyxCoin extends AccountCoinToken {
 }
 
 export class AdaToken extends AccountCoinToken {
-  public uniqueAssetId: string;
   public policyId: string;
   public assetName: string;
+  public contractAddress: string;
   constructor(options: AdaTokenConstructorOptions) {
     super({
       ...options,
     });
 
-    this.uniqueAssetId = options.uniqueAssetId;
     this.policyId = options.policyId;
     this.assetName = options.assetName;
+    this.contractAddress = options.contractAddress;
   }
 }
 
@@ -1876,6 +1876,7 @@ export function tsolToken(
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
  * @param policyId Policy Id
  * @param assetName Asset name -> Policy ID + Asset name is the unique identifier
+ * @param contractAddress Fingerprint of this token
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
  * @param prefix? Optional token prefix. Defaults to empty string
  * @param suffix? Optional token suffix. Defaults to token name.
@@ -1890,7 +1891,7 @@ export function adaToken(
   decimalPlaces: number,
   policyId: string,
   assetName: string,
-  encodedAssetName: string,
+  contractAddress: string,
   asset: UnderlyingAsset,
   features: CoinFeature[] = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.REQUIRES_RESERVE],
   prefix = '',
@@ -1898,7 +1899,6 @@ export function adaToken(
   network: AccountNetwork = Networks.main.ada,
   primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
 ) {
-  const uniqueAssetId = `${policyId}${encodedAssetName}`;
   return Object.freeze(
     new AdaToken({
       id,
@@ -1911,11 +1911,11 @@ export function adaToken(
       suffix,
       features,
       decimalPlaces,
+      contractAddress,
       asset,
       isToken: true,
       primaryKeyCurve,
       baseUnit: BaseUnit.ADA,
-      uniqueAssetId,
     })
   );
 }
@@ -1929,6 +1929,7 @@ export function adaToken(
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
  * @param policyId Policy Id
  * @param assetName Asset name -> Policy ID + Asset name is the unique identifier
+ * @param contractAddress Fingerprint of this token
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
  * @param prefix? Optional token prefix. Defaults to empty string
  * @param suffix? Optional token suffix. Defaults to token name.
@@ -1942,7 +1943,7 @@ export function tadaToken(
   decimalPlaces: number,
   policyId: string,
   assetName: string,
-  encodedAssetName: string,
+  contractAddress: string,
   asset: UnderlyingAsset,
   features: CoinFeature[] = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.REQUIRES_RESERVE],
   network: AccountNetwork = Networks.test.ada,
@@ -1956,7 +1957,7 @@ export function tadaToken(
     decimalPlaces,
     policyId,
     assetName,
-    encodedAssetName,
+    contractAddress,
     asset,
     features,
     prefix,

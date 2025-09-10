@@ -258,9 +258,9 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
     case 'ada':
       return initializer(
         ...commonArgs.slice(0, 4), // id, name, fullName, decimalPlaces
-        token.uniqueAssetId,
         token.assetName,
         token.policyId,
+        token.contractAddress,
         ...commonArgs.slice(4) // asset, features, prefix, suffix, network, primaryKeyCurve
       );
     default:
