@@ -70,7 +70,7 @@ export type SolTokenConfig = BaseNetworkConfig & {
 export type AdaTokenConfig = BaseNetworkConfig & {
   policyId: string;
   assetName: string;
-  uniqueAssetId: string;
+  contractAddress: string;
 };
 
 export type AlgoTokenConfig = BaseNetworkConfig & {
@@ -386,7 +386,6 @@ export interface AmsTokenConfig {
   programId?: string;
   addressCoin?: string;
   assetName?: string;
-  uniqueAssetId?: string;
   policyId?: string;
 }
 
@@ -791,7 +790,7 @@ function getAdaTokenConfig(coin: AdaToken): AdaTokenConfig {
     policyId: coin.policyId,
     assetName: coin.assetName,
     decimalPlaces: coin.decimalPlaces,
-    uniqueAssetId: coin.uniqueAssetId,
+    contractAddress: coin.contractAddress,
   };
 }
 const getFormattedAdaTokens = (customCoinMap = coins) =>

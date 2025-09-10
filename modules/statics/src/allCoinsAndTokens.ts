@@ -1043,7 +1043,7 @@ export const allCoinsAndTokens = [
     6,
     UnderlyingAsset.MANTRA,
     BaseUnit.MANTRA,
-    COSMOS_SIDECHAIN_FEATURES
+    [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.SHARED_COSMOS_SDK]
   ),
   account(
     'cc900f12-f229-4eb3-9ca7-2a05a445f362',
@@ -1053,7 +1053,7 @@ export const allCoinsAndTokens = [
     6,
     UnderlyingAsset.MANTRA,
     BaseUnit.MANTRA,
-    COSMOS_SIDECHAIN_FEATURES
+    [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.SHARED_COSMOS_SDK]
   ),
   account(
     '507492ba-d127-4fd8-b07d-9461f5887a26',
@@ -1960,6 +1960,42 @@ export const allCoinsAndTokens = [
     BaseUnit.POLYX,
     POLYX_FEATURES,
     KeyCurve.Ed25519
+  ),
+  account(
+    'cf601b71-5ed5-4524-b545-d6d19051781f',
+    'flow',
+    'Flow',
+    Networks.main.flow,
+    18,
+    UnderlyingAsset.FLOW,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+    ]
+  ),
+  account(
+    '29a233d0-6d60-4e1e-8f76-16712fee3bf5',
+    'tflow',
+    'Testnet Flow',
+    Networks.test.flow,
+    18,
+    UnderlyingAsset.FLOW,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+    ]
   ),
   gasTankAccount(
     '98071460-1488-4edd-857f-0899bc5eee4f',
