@@ -12,6 +12,7 @@ import { PostAcceptShare } from './v1/acceptShare';
 import { PostSimpleCreate } from './v1/simpleCreate';
 import { PutPendingApproval } from './v1/pendingApproval';
 import { PostSignTransaction } from './v1/signTransaction';
+import { PostOfcSignPayload } from './v2/ofcSignPayload';
 
 export const ExpressApi = apiSpec({
   'express.ping': {
@@ -43,6 +44,9 @@ export const ExpressApi = apiSpec({
   },
   'express.v1.wallet.signTransaction': {
     post: PostSignTransaction,
+  },
+  'express.ofc.signPayload': {
+    post: PostOfcSignPayload,
   },
 });
 
