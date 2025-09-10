@@ -35,6 +35,7 @@ import {
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
 import { Hash } from 'crypto';
+import { KeyPair as FlrpKeyPair } from './lib/keyPair';
 
 export class Flrp extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -93,7 +94,15 @@ export class Flrp extends BaseCoin {
 
   // Key methods (stubs)
   generateKeyPair(): KeyPair {
-    throw new Error('generateKeyPair not implemented');
+    const keyPair = new FlrpKeyPair();
+    const keys = keyPair.getKeys();
+    if (!keys.prv) {
+      throw new Error('Failed to generate private key');
+    }
+    return {
+      pub: keys.pub,
+      prv: keys.prv,
+    };
   }
   generateRootKeyPair(): KeyPair {
     throw new Error('generateRootKeyPair not implemented');

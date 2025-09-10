@@ -143,12 +143,24 @@ export class ExportInCTxBuilder extends AtomicInCTransactionBuilder {
    * @protected
    */
   protected buildFlareTransaction(): void {
-    if (this.transaction.hasCredentials) return; // placeholder: credentials not yet implemented
-    if (this._amount === undefined) throw new Error('amount is required');
-    if (this.transaction._fromAddresses.length !== 1) throw new Error('sender is one and required');
-    if (this.transaction._to.length === 0) throw new Error('to is required');
-    if (!this.transaction._fee.feeRate) throw new Error('fee rate is required');
-    if (this._nonce === undefined) throw new Error('nonce is required');
+    if (this.transaction.hasCredentials) {
+      return; // placeholder: credentials not yet implemented
+    }
+    if (this._amount === undefined) {
+      throw new Error('amount is required');
+    }
+    if (this.transaction._fromAddresses.length !== 1) {
+      throw new Error('sender is one and required');
+    }
+    if (this.transaction._to.length === 0) {
+      throw new Error('to is required');
+    }
+    if (!this.transaction._fee.feeRate) {
+      throw new Error('fee rate is required');
+    }
+    if (this._nonce === undefined) {
+      throw new Error('nonce is required');
+    }
 
     // Compose placeholder unsigned tx shape
     const feeRate = BigInt(this.transaction._fee.feeRate);
