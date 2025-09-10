@@ -13,6 +13,7 @@ import {
   erc20CompatibleAccountCoin,
   erc721,
   fiat,
+  flrErc20,
   gasTankAccount,
   hederaCoin,
   hederaToken,
@@ -30,6 +31,7 @@ import {
   teosToken,
   terc1155,
   terc721,
+  tflrErc20,
   topethErc20,
   tpolyxToken,
   tronToken,
@@ -3950,6 +3952,24 @@ export const allCoinsAndTokens = [
     6,
     '0x66145f38cbac35ca6f1dfb4914df98f1614aea88',
     UnderlyingAsset['tworld:usdc'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  flrErc20(
+    '1a38ab45-a789-4810-8d1d-2970af380753',
+    'flr:wflr',
+    'Wrapped Flare',
+    18,
+    '0x1d80c49bbbcd1c0911346656b529df9e5c2f783d',
+    UnderlyingAsset['flr:wflr'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  tflrErc20(
+    'ff4dd56d-8fa0-4e92-b764-88c56ea48549',
+    'tflr:wflr',
+    'Wrapped Flare Testnet',
+    18,
+    '0xab6fad89389b73dbc887d31206a26fd88d719d1f',
+    UnderlyingAsset['tflr:wflr'],
     [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   txrpToken(

@@ -2814,6 +2814,12 @@ export enum UnderlyingAsset {
   'tworld:wld' = 'tworld:wld',
   'tworld:usdc' = 'tworld:usdc',
 
+  // Flr mainnet tokens
+  'flr:wflr' = 'flr:wflr',
+
+  // Flr testnet tokens
+  'tflr:wflr' = 'tflr:wflr',
+
   ERC721 = 'erc721',
   ERC1155 = 'erc1155',
   NONSTANDARD = 'nonstandard',

@@ -13,6 +13,7 @@ import {
   Erc1155Coin,
   Erc20Coin,
   Erc721Coin,
+  FlrERC20Token,
   HederaToken,
   Nep141Token,
   OpethERC20Token,
@@ -210,6 +211,9 @@ export interface Tokens {
     world: {
       tokens: EthLikeTokenConfig[];
     };
+    flr: {
+      tokens: EthLikeTokenConfig[];
+    };
     sol: {
       tokens: SolTokenConfig[];
     };
@@ -330,6 +334,9 @@ export interface Tokens {
       tokens: EthLikeTokenConfig[];
     };
     world: {
+      tokens: EthLikeTokenConfig[];
+    };
+    flr: {
       tokens: EthLikeTokenConfig[];
     };
     apt: {
@@ -724,6 +731,24 @@ const getFormattedWorldTokens = (customCoinMap = coins) =>
     return acc;
   }, []);
 
+function getFlrTokenConfig(coin: FlrERC20Token): EthLikeTokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'flr' : 'tflr',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+    decimalPlaces: coin.decimalPlaces,
+  };
+}
+const getFormattedFlrTokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: EthLikeTokenConfig[], coin) => {
+    if (coin instanceof FlrERC20Token) {
+      acc.push(getFlrTokenConfig(coin));
+    }
+    return acc;
+  }, []);
+
 function getSolTokenConfig(coin: SolCoin): SolTokenConfig {
   return {
     type: coin.name,
@@ -1108,6 +1133,9 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
       world: {
         tokens: getFormattedWorldTokens(coinMap).filter((token) => token.network === 'Mainnet'),
       },
+      flr: {
+        tokens: getFormattedFlrTokens(coinMap).filter((token) => token.network === 'Mainnet'),
+      },
       apt: {
         tokens: getFormattedAptTokens(coinMap).filter((token) => token.network === 'Mainnet'),
         nftCollections: formattedAptNFTCollections.filter(
@@ -1214,6 +1242,9 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
       },
       world: {
         tokens: getFormattedWorldTokens(coinMap).filter((token) => token.network === 'Testnet'),
+      },
+      flr: {
+        tokens: getFormattedFlrTokens(coinMap).filter((token) => token.network === 'Testnet'),
       },
       near: {
         tokens: getFormattedNep141Tokens(coinMap).filter((token) => token.network === 'Testnet'),
