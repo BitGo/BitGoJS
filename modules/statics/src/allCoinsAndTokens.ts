@@ -1043,7 +1043,7 @@ export const allCoinsAndTokens = [
     6,
     UnderlyingAsset.MANTRA,
     BaseUnit.MANTRA,
-    COSMOS_SIDECHAIN_FEATURES
+    [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.SHARED_COSMOS_SDK]
   ),
   account(
     'cc900f12-f229-4eb3-9ca7-2a05a445f362',
@@ -1053,7 +1053,7 @@ export const allCoinsAndTokens = [
     6,
     UnderlyingAsset.MANTRA,
     BaseUnit.MANTRA,
-    COSMOS_SIDECHAIN_FEATURES
+    [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.SHARED_COSMOS_SDK]
   ),
   account(
     '507492ba-d127-4fd8-b07d-9461f5887a26',
