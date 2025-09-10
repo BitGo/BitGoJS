@@ -1642,9 +1642,6 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
     promiseWrapper(handleV2AcceptWalletShare)
   );
 
-  // sign arbitrary payloads w/ trading account key (migrated to typed route express.ofc.signPayload)
-  // app.post(`/api/v2/ofc/signPayload`, parseBody, prepareBitGo(config), promiseWrapper(handleV2OFCSignPayload));
-
   // sign transaction
   app.post('/api/v2/:coin/signtx', parseBody, prepareBitGo(config), promiseWrapper(handleV2SignTx));
   app.post('/api/v2/:coin/wallet/:id/signtx', parseBody, prepareBitGo(config), promiseWrapper(handleV2SignTxWallet));
