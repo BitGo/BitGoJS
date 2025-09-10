@@ -18,7 +18,7 @@ export const VerifyAddressV2Params = {
  * @property supportOldScriptHashVersion - (UTXO only) When true, treat legacy script hash version as acceptable.
  */
 export const VerifyAddressV2Body = {
-  /** Address to be validated */
+  /** Address which should be verified for correct format */
   address: t.string,
   /** Accept legacy script hash version for applicable UTXO coins (optional). */
   supportOldScriptHashVersion: optional(t.boolean),
