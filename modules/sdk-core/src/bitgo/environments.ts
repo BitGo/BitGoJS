@@ -225,8 +225,7 @@ const mainnetBase: EnvironmentTemplate = {
       baseUrl: 'https://chainscan.0g.ai/open/api',
     },
     xpl: {
-      baseUrl:
-        'https://chaotic-cosmopolitan-waterfall.plasma-mainnet.quiknode.pro/40f306c7667db5b8637b214b2dbd45aac5f1fe3f',
+      baseUrl: 'https://api.routescan.io/v2/network/mainnet/evm/9745/etherscan/api',
     },
     sonic: {
       baseUrl: 'https://rpc.soniclabs.com',
@@ -238,7 +237,7 @@ const mainnetBase: EnvironmentTemplate = {
       baseUrl: 'https://public-en.node.kaia.io',
     },
     kavaevm: {
-      baseUrl: 'https://api.verify.mintscan.io/evm/api',
+      baseUrl: 'https://api.verify.mintscan.io/evm/api/0x8ae',
     },
     irys: {
       baseUrl: 'https://testnet-rpc.irys.xyz/v1/execution-rpc', //TODO: WIN-6191 add mainnet url when available
@@ -366,7 +365,7 @@ const testnetBase: EnvironmentTemplate = {
       baseUrl: 'https://public-en-kairos.node.kaia.io',
     },
     kavaevm: {
-      baseUrl: 'https://api.verify.mintscan.io/evm/api',
+      baseUrl: 'https://api.verify.mintscan.io/evm/api/0x8ad',
     },
     irys: {
       baseUrl: 'https://testnet-rpc.irys.xyz/v1/execution-rpc',
