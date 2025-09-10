@@ -50,10 +50,6 @@ export class AdaToken extends Ada {
     return this.tokenConfig.decimalPlaces;
   }
 
-  get uniqueAssetId() {
-    return this.tokenConfig.uniqueAssetId;
-  }
-
   getChain() {
     return this.tokenConfig.type;
   }
@@ -84,5 +80,9 @@ export class AdaToken extends Ada {
    */
   transactionDataAllowed() {
     return false;
+  }
+
+  get contractAddress() {
+    return this.tokenConfig.contractAddress;
   }
 }
