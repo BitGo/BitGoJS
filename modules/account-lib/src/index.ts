@@ -110,9 +110,6 @@ export { Baby };
 import * as Mon from '@bitgo/sdk-coin-mon';
 export { Mon };
 
-import * as Mantra from '@bitgo/sdk-coin-mantra';
-export { Mantra };
-
 import * as Cronos from '@bitgo/sdk-coin-cronos';
 export { Cronos };
 
@@ -307,8 +304,6 @@ const coinBuilderMap = {
   txdc: Xdc.TransactionBuilder,
   wemix: Wemix.TransactionBuilder,
   twemix: Wemix.TransactionBuilder,
-  mantra: Mantra.TransactionBuilder,
-  tmantra: Mantra.TransactionBuilder,
   mon: Mon.TransactionBuilder,
   tmon: Mon.TransactionBuilder,
   world: World.TransactionBuilder,
