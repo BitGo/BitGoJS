@@ -362,7 +362,7 @@ function handleV2VerifyAddress(req: ExpressApiRouteRequest<'express.verifycoinad
 
   if (coin instanceof Coin.AbstractUtxoCoin) {
     return {
-      isValid: coin.isValidAddress(req.decoded.address, !!req.decoded.supportOldScriptHashVersion),
+      isValid: coin.isValidAddress(req.decoded.address, req.decoded.supportOldScriptHashVersion),
     };
   }
 
