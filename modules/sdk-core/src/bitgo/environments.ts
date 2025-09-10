@@ -257,6 +257,9 @@ const mainnetBase: EnvironmentTemplate = {
     baseeth: {
       baseUrl: 'https://api.etherscan.io/v2',
     },
+    flow: {
+      baseUrl: 'https://evm.flowscan.io/api',
+    },
   },
   icpNodeUrl: 'https://ic0.app',
   worldExplorerBaseUrl: 'https://worldscan.org/',
@@ -381,6 +384,9 @@ const testnetBase: EnvironmentTemplate = {
     },
     tbaseeth: {
       baseUrl: 'https://api.etherscan.io/v2',
+    },
+    flow: {
+      baseUrl: 'https://evm-testnet.flowscan.io/api',
     },
   },
   stxNodeUrl: 'https://api.testnet.hiro.so',
