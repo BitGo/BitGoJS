@@ -101,7 +101,6 @@ import {
   Lnbtc,
   Ltc,
   Mon,
-  Mantra,
   Ofc,
   Oas,
   OfcToken,
@@ -174,7 +173,6 @@ import {
   Tislm,
   Tlnbtc,
   Tltc,
-  Tmantra,
   Toas,
   Tosmo,
   Topeth,
@@ -267,7 +265,6 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('lnbtc', Lnbtc.createInstance);
   coinFactory.register('ltc', Ltc.createInstance);
   coinFactory.register('mon', Mon.createInstance);
-  coinFactory.register('mantra', Mantra.createInstance);
   coinFactory.register('icp', Icp.createInstance);
   coinFactory.register('initia', Initia.createInstance);
   coinFactory.register('injective', Injective.createInstance);
@@ -339,7 +336,6 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('tislm', Tislm.createInstance);
   coinFactory.register('tlnbtc', Tlnbtc.createInstance);
   coinFactory.register('tltc', Tltc.createInstance);
-  coinFactory.register('tmantra', Tmantra.createInstance);
   coinFactory.register('tnear', TNear.createInstance);
   coinFactory.register('toas', Toas.createInstance);
   coinFactory.register('topeth', Topeth.createInstance);
@@ -650,8 +646,6 @@ export function getCoinConstructor(coinName: string): CoinConstructor | undefine
       return Ltc.createInstance;
     case 'mon':
       return Mon.createInstance;
-    case 'mantra':
-      return Mantra.createInstance;
     case 'icp':
       return Icp.createInstance;
     case 'initia':
@@ -790,8 +784,6 @@ export function getCoinConstructor(coinName: string): CoinConstructor | undefine
       return Tlnbtc.createInstance;
     case 'tltc':
       return Tltc.createInstance;
-    case 'tmantra':
-      return Tmantra.createInstance;
     case 'tnear':
       return TNear.createInstance;
     case 'toas':
