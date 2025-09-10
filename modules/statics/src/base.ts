@@ -54,6 +54,7 @@ export enum CoinFamily {
   EOS = 'eos',
   FETCHAI = 'fetchai',
   FIAT = 'fiat',
+  FLOW = 'flow',
   FLR = 'flr',
   FLRP = 'flrp',
   HASH = 'hash', // Provenance
@@ -525,6 +526,7 @@ export enum UnderlyingAsset {
   EUROC = 'euroc',
   EURR = 'eurr',
   FETCHAI = 'fetchai',
+  FLOW = 'flow',
   FLR = 'flr',
   FLRP = 'flrp',
   GTC = 'gtc',

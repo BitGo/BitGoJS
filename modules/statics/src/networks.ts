@@ -1909,6 +1909,24 @@ class IotaTestnet extends Testnet implements AccountNetwork {
   explorerUrl = 'https://explorer.iota.org/?network=testnet';
 }
 
+class Flow extends Mainnet implements EthereumNetwork {
+  name = 'Flow';
+  family = CoinFamily.FLOW;
+  explorerUrl = 'https://evm.flowscan.io/tx/';
+  accountExplorerUrl = 'https://evm.flowscan.io/address/';
+  chainId = 747;
+  nativeCoinOperationHashPrefix = '747';
+}
+
+class FlowTestnet extends Testnet implements EthereumNetwork {
+  name = 'FlowTestnet';
+  family = CoinFamily.FLOW;
+  explorerUrl = 'https://evm.flowscan.io/tx/';
+  accountExplorerUrl = 'https://evm-testnet.flowscan.io/address/';
+  chainId = 545;
+  nativeCoinOperationHashPrefix = '545';
+}
+
 export const Networks = {
   main: {
     ada: Object.freeze(new Ada()),
@@ -1945,6 +1963,7 @@ export const Networks = {
     ethereumW: Object.freeze(new EthereumW()),
     fiat: Object.freeze(new Fiat()),
     fetchai: Object.freeze(new FetchAi()),
+    flow: Object.freeze(new Flow()),
     flr: Object.freeze(new Flare()),
     flrP: Object.freeze(new FlareP()),
     hash: Object.freeze(new Hash()),
@@ -2036,6 +2055,7 @@ export const Networks = {
     eos: Object.freeze(new EosTestnet()),
     fiat: Object.freeze(new FiatTestnet()),
     fetchai: Object.freeze(new FetchAiTestnet()),
+    flow: Object.freeze(new FlowTestnet()),
     flr: Object.freeze(new FlareTestnet()),
     flrP: Object.freeze(new FlarePTestnet()),
     mon: Object.freeze(new MonadTestnet()),
