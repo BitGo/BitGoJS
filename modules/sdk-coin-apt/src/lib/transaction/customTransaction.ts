@@ -19,7 +19,7 @@ export class CustomTransaction extends Transaction {
   private _functionName: string;
   private _typeArguments: string[] = [];
   private _functionArguments: Array<EntryFunctionArgumentTypes | SimpleEntryFunctionArgumentTypes> = [];
-  private _entryFunctionAbi?: EntryFunctionABI;
+  private _entryFunctionAbi: EntryFunctionABI;
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
@@ -34,11 +34,13 @@ export class CustomTransaction extends Transaction {
   setCustomTransactionParams(params: CustomTransactionParams): void {
     this.validateModuleName(params.moduleName);
     this.validateFunctionName(params.functionName);
+    this.validateAbi(params.abi);
 
     this._moduleName = params.moduleName;
     this._functionName = params.functionName;
     this._typeArguments = params.typeArguments || [];
     this._functionArguments = params.functionArguments || [];
+    this._entryFunctionAbi = params.abi;
   }
 
   /**
@@ -122,6 +124,7 @@ export class CustomTransaction extends Transaction {
       functionName: this._functionName || '',
       typeArguments: this._typeArguments,
       functionArguments: this._functionArguments,
+      abi: this._entryFunctionAbi,
     };
   }
 
@@ -206,5 +209,25 @@ export class CustomTransaction extends Transaction {
     }
 
     return fullName as `${string}::${string}::${string}`;
+  }
+
+  /**
+   * Validate ABI structure and provide helpful error messages
+   *
+   * @param {EntryFunctionABI} abi - The ABI to validate
+   * @throws {Error} If ABI format is invalid
+   */
+  private validateAbi(abi: EntryFunctionABI): void {
+    if (!abi || typeof abi !== 'object') {
+      throw new Error('ABI must be a valid EntryFunctionABI object');
+    }
+
+    if (!Array.isArray(abi.typeParameters)) {
+      throw new Error('ABI must have a typeParameters array. Use [] if the function has no type parameters');
+    }
+
+    if (!Array.isArray(abi.parameters)) {
+      throw new Error('ABI must have a parameters array containing TypeTag objects for each function parameter');
+    }
   }
 }
