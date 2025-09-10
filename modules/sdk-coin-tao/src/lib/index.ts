@@ -9,6 +9,7 @@ export {
 } from '@bitgo/abstract-substrate';
 
 export { TransactionBuilderFactory } from './transactionBuilderFactory';
+export { TokenTransferBuilder } from './tokenTransferBuilder';
 export { TransferBuilder } from './transferBuilder';
 export { StakingBuilder } from './stakingBuilder';
 export { UnstakeBuilder } from './unstakeBuilder';
