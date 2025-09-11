@@ -73,7 +73,7 @@
     "body-parser": "1.20.3",
     "degenerator": "5.0.0",
     "eventsource": "2.0.2",
-    "follow-redirects": "1.15.4",
+    "follow-redirects": "^1.15.6",
     "io-ts": "npm:@bitgo-forks/io-ts@2.1.4",
     "isbinaryfile": "5.0.0",
     "minimist": "1.2.6",
