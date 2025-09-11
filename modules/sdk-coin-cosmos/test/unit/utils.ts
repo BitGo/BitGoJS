@@ -1,7 +1,7 @@
-import { Utils } from '../../src/lib/utils';
+import should from 'should';
 import { coins, CosmosNetwork } from '@bitgo/statics';
 import { getAvailableTestCoins, getTestData } from '../testUtils';
-import should from 'should';
+import { Utils } from '../../src';
 
 describe('Cosmos Utils', function () {
   const availableCoins = getAvailableTestCoins();

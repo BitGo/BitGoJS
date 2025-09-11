@@ -6,8 +6,7 @@ import { VerifyAddressOptions, VerifyTransactionOptions } from '@bitgo/sdk-core'
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { coins, CosmosNetwork } from '@bitgo/statics';
-import { CosmosSharedCoin } from '../../src/cosmosSharedCoin';
-import { Utils } from '../../src/lib/utils';
+import { CosmosSharedCoin, Utils } from '../../src';
 import { getAvailableTestCoins, getTestData } from '../testUtils';
 
 describe('Cosmos Shared Coin', function () {
