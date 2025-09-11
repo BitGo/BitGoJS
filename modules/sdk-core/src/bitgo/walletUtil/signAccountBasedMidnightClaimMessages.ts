@@ -47,35 +47,30 @@ async function signOrBuildMessage(
   messageStandardType: MessageStandardType,
   walletPassphrase?: string
 ): Promise<{ success: boolean; address: string; txRequestId?: string }> {
-  try {
-    let txRequestId: string;
-    if (walletPassphrase !== undefined) {
-      // Sign the messages with the wallet
-      const signedMessage = await wallet.signMessage({
-        message: {
-          messageRaw: messageInfo.message,
-          messageStandardType,
-          signerAddress: messageInfo.address,
-        },
-        walletPassphrase,
-      });
-      txRequestId = signedMessage.txRequestId;
-    } else {
-      // Build the sign message request
-      const txRequest = await wallet.buildSignMessageRequest({
-        message: {
-          messageRaw: messageInfo.message,
-          messageStandardType,
-          signerAddress: messageInfo.address,
-        },
-      });
-      txRequestId = txRequest.txRequestId;
-    }
-    return { success: true, address: messageInfo.address, txRequestId };
-  } catch (e) {
-    console.error(`Error building/signing message for address ${messageInfo.address}: ${e}`);
-    return { success: false, address: messageInfo.address };
+  let txRequestId: string;
+  if (walletPassphrase !== undefined) {
+    // Sign the messages with the wallet
+    const signedMessage = await wallet.signMessage({
+      message: {
+        messageRaw: messageInfo.message,
+        messageStandardType,
+        signerAddress: messageInfo.address,
+      },
+      walletPassphrase,
+    });
+    txRequestId = signedMessage.txRequestId;
+  } else {
+    // Build the sign message request
+    const txRequest = await wallet.buildSignMessageRequest({
+      message: {
+        messageRaw: messageInfo.message,
+        messageStandardType,
+        signerAddress: messageInfo.address,
+      },
+    });
+    txRequestId = txRequest.txRequestId;
   }
+  return { success: true, address: messageInfo.address, txRequestId };
 }
 
 function processResults(
