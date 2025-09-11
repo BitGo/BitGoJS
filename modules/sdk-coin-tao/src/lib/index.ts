@@ -10,6 +10,7 @@ export {
 
 export { TransactionBuilderFactory } from './transactionBuilderFactory';
 export { TokenTransferBuilder } from './tokenTransferBuilder';
+export { TokenTransferTransaction } from './tokenTransferTransaction';
 export { TransferBuilder } from './transferBuilder';
 export { StakingBuilder } from './stakingBuilder';
 export { UnstakeBuilder } from './unstakeBuilder';
