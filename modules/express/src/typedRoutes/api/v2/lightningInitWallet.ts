@@ -2,15 +2,18 @@ import * as t from 'io-ts';
 import { httpRoute, httpRequest, optional } from '@api-ts/io-ts-http';
 import { BitgoExpressError } from '../../schemas/error';
 
-// Params: coin (lightning coin), walletId path parameter
+/**
+ *
+ */
 export const LightningInitWalletParams = {
   coin: t.string,
   walletId: t.string,
 };
 
-// Body shape (required + optional). We intentionally do NOT reuse the composite
-// InitLightningWalletRequest intersection codec here because httpRequest expects
-// a plain object mapping of field -> codec, not an io-ts Type instance.
+/**
+ * Request body for initializing a Lightning wallet
+ * @property passphrase - Passphrase to encrypt the admin macaroon of the signer node.
+ */
 export const LightningInitWalletBody = {
   passphrase: t.string,
   expressHost: optional(t.string),
