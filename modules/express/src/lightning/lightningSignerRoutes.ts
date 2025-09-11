@@ -61,7 +61,7 @@ export async function handleInitLightningWallet(
   req: ExpressApiRouteRequest<'express.lightning.initWallet', 'post'>
 ): Promise<unknown> {
   const bitgo = req.bitgo;
-  const { coin: coinName, walletId, passphrase, expressHost } = req.decoded as any;
+  const { coin: coinName, walletId, passphrase, expressHost } = req.decoded;
   if (!isLightningCoinName(coinName)) {
     throw new ApiResponseError(`Invalid coin ${coinName}. This is not a lightning coin.`, 400);
   }

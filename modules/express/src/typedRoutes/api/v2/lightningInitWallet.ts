@@ -3,7 +3,9 @@ import { httpRoute, httpRequest, optional } from '@api-ts/io-ts-http';
 import { BitgoExpressError } from '../../schemas/error';
 
 /**
- *
+ * Path parameters for initializing a Lightning wallet
+ * @property {string} coin - A lightning coin name (e.g, lnbtc).
+ * @property {string} walletId - The ID of the wallet.
  */
 export const LightningInitWalletParams = {
   coin: t.string,
@@ -20,8 +22,11 @@ export const LightningInitWalletBody = {
 };
 
 /**
- * Lightning - Initialize node
+ * Lightning - This is only used for self-custody lightning. Initialize a newly created Lightning Network Daemon (LND) for the first time.
+ * Returns the updated wallet with the encrypted admin macaroon in the `coinSpecific` response field.
+ *
  * @operationId express.lightning.initWallet
+ *
  * POST /api/v2/{coin}/wallet/{walletId}/initwallet
  */
 export const PostLightningInitWallet = httpRoute({
