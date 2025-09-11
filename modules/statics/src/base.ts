@@ -3046,6 +3046,7 @@ export enum UnderlyingAsset {
   'apt:h00ts' = 'apt:h00ts',
 
   // Apt testnet tokens
+  'tapt:stgusd1' = 'tapt:stgusd1',
   'tapt:usdt' = 'tapt:usdt',
 
   // Apt testnet NFT collections
