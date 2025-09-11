@@ -1,5 +1,5 @@
-import { TransactionType } from '@bitgo/sdk-core';
 import should from 'should';
+import { TransactionType } from '@bitgo/sdk-core';
 
 import { getAvailableTestCoins, getBuilderFactory, getTestData } from '../../testUtils';
 

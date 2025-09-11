@@ -19,10 +19,8 @@ export const getAvailableTestCoins = (): string[] => {
     const resourcesDir = path.join(__dirname, '../resources');
     // Read all files in the resources directory
     const files = fs.readdirSync(resourcesDir);
-    // Filter for .ts files that are not index.ts
-    const coinFiles = files.filter((file) => file.endsWith('.ts') && file !== 'index.ts');
     // Extract coin names by removing the .ts extension
-    return coinFiles.map((file) => file.replace('.ts', ''));
+    return files.map((file) => file.replace('.ts', ''));
   } catch (error) {
     // Fallback to hardcoded list if there's an error
     console.warn('Failed to dynamically discover test coins:', error);
