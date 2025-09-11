@@ -82,6 +82,15 @@ export interface ITransactionRecipient {
   memo?: string;
 }
 
+/**
+ * Represents a token enablement (e.g., creation of an associated token account)
+ */
+export interface ITokenEnablement {
+  address: string; // Associated token account address
+  tokenName: string; // Name of the token being enabled
+  tokenAddress?: string; // Contract address of the token
+}
+
 export interface ITransactionFee<TAmount = string> {
   fee: TAmount;
   feeRate?: number;
@@ -118,6 +127,8 @@ export interface ITransactionExplanation<TFee = any, TAmount = any> {
   fee: TFee;
   proxy?: string;
   producers?: string[];
+  /** NOTE: Tokens being enabled for the wallet */
+  tokenEnablements?: ITokenEnablement[];
 }
 
 export interface KeyPair {
