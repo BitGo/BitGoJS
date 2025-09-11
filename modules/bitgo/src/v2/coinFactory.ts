@@ -82,6 +82,7 @@ import {
   EthLikeCoin,
   EvmCoin,
   Flr,
+  FlrToken,
   HashToken,
   TethLikeCoin,
   FiatAED,
@@ -531,6 +532,10 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
     coinFactory.register(name, coinConstructor)
   );
 
+  FlrToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
+    coinFactory.register(name, coinConstructor);
+  });
+
   // Generic ERC20 token registration for coins with SUPPORTS_ERC20 feature
   coins
     .filter((coin) => coin.features.includes(CoinFeature.SUPPORTS_ERC20) && !coin.isToken)
@@ -963,6 +968,9 @@ export function getTokenConstructor(tokenConfig: TokenConfig): CoinConstructor |
     case 'hash':
     case 'thash':
       return HashToken.createTokenConstructor(tokenConfig as CosmosTokenConfig);
+    case 'flr':
+    case 'tflr':
+      return FlrToken.createTokenConstructor(tokenConfig as EthLikeTokenConfig);
     default:
       return undefined;
   }
