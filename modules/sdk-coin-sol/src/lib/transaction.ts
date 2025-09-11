@@ -480,6 +480,15 @@ export class Transaction extends BaseTransaction {
           outputAmount = outputAmount.plus(stakingWithdrawInstruction.params.amount);
           break;
         case InstructionBuilderTypes.CreateAssociatedTokenAccount:
+          const ataInitInstruction = instruction;
+          // Add associated token account information to the outputs
+          // Since this is a token enablement, we don't have an amount to send
+          // but we want to show the token account that's being created
+          outputs.push({
+            address: ataInitInstruction.params.ataAddress,
+            amount: '0', // No tokens are being transferred
+            tokenName: ataInitInstruction.params.tokenName, // Add the token name
+          });
           break;
         case InstructionBuilderTypes.CustomInstruction:
           // Custom instructions are arbitrary and cannot be explained
