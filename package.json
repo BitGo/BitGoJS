@@ -96,7 +96,8 @@
     "form-data": "^4.0.4",
     "**/avalanche/**/ws": "8.18.3",
     "**/ethers/**/ws": "7.5.10",
-    "**/swarm-js/**/ws": "5.2.4"
+    "**/swarm-js/**/ws": "5.2.4",
+    "serialize-javascript": "^6.0.2"
   },
   "workspaces": [
     "modules/*"
