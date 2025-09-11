@@ -14,14 +14,10 @@ import {
 import * as utxolib from '@bitgo/utxo-lib';
 import { Buffer } from 'buffer';
 
-import {
-  CreateSignerMacaroonRequest,
-  GetWalletStateResponse,
-  InitLightningWalletRequest,
-  UnlockLightningWalletRequest,
-} from './codecs';
+import { CreateSignerMacaroonRequest, GetWalletStateResponse, UnlockLightningWalletRequest } from './codecs';
 import { LndSignerClient } from './lndSignerClient';
 import { ApiResponseError } from '../errors';
+import { ExpressApiRouteRequest } from '../typedRoutes/api';
 
 type Decrypt = (params: { input: string; password: string }) => string;
 
@@ -61,28 +57,15 @@ function getMacaroonRootKey(passphrase: string, nodeAuthEncryptedPrv: string, de
 /**
  * Handle the request to initialise remote signer LND for a wallet.
  */
-export async function handleInitLightningWallet(req: express.Request): Promise<unknown> {
+export async function handleInitLightningWallet(
+  req: ExpressApiRouteRequest<'express.lightning.initWallet', 'post'>
+): Promise<unknown> {
   const bitgo = req.bitgo;
-  const coinName = req.params.coin;
+  const { coin: coinName, walletId, passphrase, expressHost } = req.decoded as any;
   if (!isLightningCoinName(coinName)) {
     throw new ApiResponseError(`Invalid coin ${coinName}. This is not a lightning coin.`, 400);
   }
   const coin = bitgo.coin(coinName);
-
-  const walletId = req.params.id;
-  if (typeof walletId !== 'string') {
-    throw new ApiResponseError(`Invalid wallet id: ${walletId}`, 400);
-  }
-
-  const { passphrase, expressHost } = decodeOrElse(
-    InitLightningWalletRequest.name,
-    InitLightningWalletRequest,
-    req.body,
-    (_) => {
-      // DON'T throw errors from decodeOrElse. It could leak sensitive information.
-      throw new ApiResponseError('Invalid request body to initialize lightning wallet', 400);
-    }
-  );
 
   const wallet = await coin.wallets().get({ id: walletId, includeBalance: false });
   if (wallet.subType() !== 'lightningSelfCustody') {
