@@ -4,10 +4,19 @@ import { avaxTokens } from '../../src/coins/avaxTokens';
 import { bscTokens } from '../../src/coins/bscTokens';
 import { nep141Tokens } from '../../src/coins/nep141Tokens';
 import { polygonTokens } from '../../src/coins/polygonTokens';
+import { solTokens } from '../../src/coins/solTokens';
 import { NetworkType } from '../../src/networks';
 
 describe('Token Naming Convention Tests', function () {
-  const allTokens = [...erc20Coins, ...cosmosTokens, ...avaxTokens, ...bscTokens, ...nep141Tokens, ...polygonTokens];
+  const allTokens = [
+    ...erc20Coins,
+    ...cosmosTokens,
+    ...avaxTokens,
+    ...bscTokens,
+    ...nep141Tokens,
+    ...polygonTokens,
+    ...solTokens,
+  ];
 
   // Helper function to filter tokens by network type
   function getTokensByNetworkType(networkType: NetworkType) {
@@ -127,6 +136,13 @@ describe('Token Naming Convention Tests', function () {
         'toke',
         'token',
         'tomi',
+        'turbo',
+        'tupolis',
+        'tulip',
+        'tank',
+        'trump',
+        'tesouro',
+        'tai',
         'tomobear2',
         'trumplose',
         'trumpwin',
@@ -245,6 +261,12 @@ describe('Token Naming Convention Tests', function () {
       { mainnet: 'eth:usdc', testnet: 'teth:usdc' }, // 6 vs 18 decimal places
       { mainnet: 'eth:usdt', testnet: 'teth:usdt' }, // 6 vs 18 decimal places
       { mainnet: 'eth:link', testnet: 'teth:link' }, // 18 vs 6 decimal places
+      { mainnet: 'sol:srm', testnet: 'tsol:srm' }, // 6 vs 9 decimal places
+      { mainnet: 'sol:usdc', testnet: 'tsol:usdc' }, // 6 vs 9 decimal places
+      { mainnet: 'sol:ray', testnet: 'tsol:ray' }, // 6 vs 9 decimal places
+      { mainnet: 'sol:usdt', testnet: 'tsol:usdt' }, // 6 vs 9 decimal places
+      { mainnet: 'sol:orca', testnet: 'tsol:orca' }, // 6 vs 9 decimal places
+      { mainnet: 'sol:slnd', testnet: 'tsol:slnd' }, // 6 vs 9 decimal places
     ];
 
     // Group tokens by their base token identifier and compatible network prefixes
