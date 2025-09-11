@@ -131,11 +131,18 @@ describe('Lightning signer routes', () => {
           params: {
             coin: 'tlnbtc',
             id: 'fakeid',
+            walletId: 'fakeid',
+          },
+          decoded: {
+            coin: 'tlnbtc',
+            walletId: apiData.wallet.id,
+            passphrase: apiData.signerMacaroonRequestBody.passphrase,
+            addIpCaveatToMacaroon,
           },
           config: {
             lightningSignerFileSystemPath: 'lightningSignerFileSystemPath',
           },
-        } as unknown as express.Request;
+        } as any;
 
         try {
           await handleCreateSignerMacaroon(req);

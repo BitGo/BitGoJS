@@ -15,6 +15,7 @@ import {
 import { UnlockLightningWalletBody, UnlockLightningWalletParams } from '../../../src/typedRoutes/api/v2/unlockWallet';
 import { OfcSignPayloadBody } from '../../../src/typedRoutes/api/v2/ofcSignPayload';
 import { CreateAddressBody, CreateAddressParams } from '../../../src/typedRoutes/api/v2/createAddress';
+import { SignerMacaroonBody, SignerMacaroonParams } from '../../../src/typedRoutes/api/v2/signerMacaroon';
 
 export function assertDecode<T>(codec: t.Type<T, unknown>, input: unknown): T {
   const result = codec.decode(input);
@@ -242,5 +243,17 @@ describe('io-ts decode tests', function () {
     // valid body
     assertDecode(t.type(CreateAddressBody), { eip1559: { maxFeePerGas: 1, maxPriorityFeePerGas: 1 } });
     assertDecode(t.type(CreateAddressBody), {});
+  });
+  it('express.lightning.signerMacaroon body valid', function () {
+    assertDecode(t.type(SignerMacaroonBody), { passphrase: 'pw', addIpCaveatToMacaroon: true });
+  });
+  it('express.lightning.signerMacaroon body valid (missing addIpCaveatToMacaroon)', function () {
+    assertDecode(t.type(SignerMacaroonBody), { passphrase: 'pw' });
+  });
+  it('express.lightning.signerMacaroon params valid', function () {
+    assertDecode(t.type(SignerMacaroonParams), { coin: 'lnbtc', walletId: 'wid123' });
+  });
+  it('express.lightning.signerMacaroon params invalid', function () {
+    assert.throws(() => assertDecode(t.type(SignerMacaroonParams), { coin: 'lnbtc' }));
   });
 });
