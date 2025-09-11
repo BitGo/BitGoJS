@@ -108,8 +108,7 @@ export async function handleCreateSignerMacaroon(
   req: ExpressApiRouteRequest<'express.lightning.signerMacaroon', 'post'>
 ): Promise<unknown> {
   const bitgo = req.bitgo;
-  const { walletId, passphrase, addIpCaveatToMacaroon } = req.decoded;
-  const coinName = req.decoded.coin;
+  const { coin: coinName, walletId, passphrase, addIpCaveatToMacaroon } = req.decoded;
   if (!isLightningCoinName(coinName)) {
     throw new ApiResponseError(`Invalid coin to create signer macaroon: ${coinName}. Must be a lightning coin.`, 400);
   }
