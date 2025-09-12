@@ -30,6 +30,7 @@ import {
   ZkethERC20Token,
   VetNFTCollection,
   AdaToken,
+  JettonToken,
 } from './account';
 import { CoinFamily, CoinKind, BaseCoin } from './base';
 import { coins } from './coins';
@@ -140,6 +141,10 @@ export type CosmosTokenConfig = BaseNetworkConfig & {
   denom: string;
 };
 
+export type JettonTokenConfig = BaseNetworkConfig & {
+  contractAddress: string;
+};
+
 export type TokenConfig =
   | Erc20TokenConfig
   | StellarTokenConfig
@@ -163,7 +168,8 @@ export type TokenConfig =
   | VetTokenConfig
   | VetNFTCollectionConfig
   | TaoTokenConfig
-  | PolyxTokenConfig;
+  | PolyxTokenConfig
+  | JettonTokenConfig;
 
 export interface Tokens {
   bitcoin: {
@@ -257,6 +263,9 @@ export interface Tokens {
     cosmos: {
       tokens: CosmosTokenConfig[];
     };
+    ton: {
+      tokens: JettonTokenConfig[];
+    };
   };
   testnet: {
     eth: {
@@ -348,6 +357,9 @@ export interface Tokens {
     };
     cosmos: {
       tokens: CosmosTokenConfig[];
+    };
+    ton: {
+      tokens: JettonTokenConfig[];
     };
   };
 }
@@ -1028,6 +1040,25 @@ function getCosmosTokenConfig(coin: CosmosChainToken): CosmosTokenConfig {
   };
 }
 
+function getJettonTokenConfig(coin: JettonToken): JettonTokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'ton' : 'tton',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    contractAddress: coin.contractAddress,
+    decimalPlaces: coin.decimalPlaces,
+  };
+}
+
+const getFormattedJettonTokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: JettonTokenConfig[], coin) => {
+    if (coin instanceof JettonToken) {
+      acc.push(getJettonTokenConfig(coin));
+    }
+    return acc;
+  }, []);
+
 export const getFormattedTokens = (coinMap = coins): Tokens => {
   const formattedAptNFTCollections = getFormattedAptNFTCollections(coinMap);
   const formattedVetNFTCollections = getFormattedVetNFTCollections(coinMap);
@@ -1129,6 +1160,9 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
       cosmos: {
         tokens: getFormattedCosmosChainTokens(coinMap).filter((token) => token.network === 'Mainnet'),
       },
+      ton: {
+        tokens: getFormattedJettonTokens(coinMap).filter((token) => token.network === 'Mainnet'),
+      }
     },
     testnet: {
       eth: {
@@ -1227,6 +1261,9 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
       cosmos: {
         tokens: getFormattedCosmosChainTokens(coinMap).filter((token) => token.network === 'Testnet'),
       },
+      ton: {
+        tokens: getFormattedJettonTokens(coinMap).filter((token) => token.network === 'Testnet'),
+      }
     },
   };
 };
@@ -1338,6 +1375,8 @@ export function getFormattedTokenConfigForCoin(coin: Readonly<BaseCoin>): TokenC
     return getVetNFTCollectionConfig(coin);
   } else if (coin instanceof CoredaoERC20Token) {
     return getCoredaoTokenConfig(coin);
+  } else if (coin instanceof JettonToken) {
+    return getJettonTokenConfig(coin);
   }
   return undefined;
 }
