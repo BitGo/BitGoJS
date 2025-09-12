@@ -14,14 +14,10 @@ import {
 import * as utxolib from '@bitgo/utxo-lib';
 import { Buffer } from 'buffer';
 
-import {
-  CreateSignerMacaroonRequest,
-  GetWalletStateResponse,
-  InitLightningWalletRequest,
-  UnlockLightningWalletRequest,
-} from './codecs';
+import { GetWalletStateResponse, InitLightningWalletRequest, UnlockLightningWalletRequest } from './codecs';
 import { LndSignerClient } from './lndSignerClient';
 import { ApiResponseError } from '../errors';
+import type { ExpressApiRouteRequest } from '../typedRoutes/api';
 
 type Decrypt = (params: { input: string; password: string }) => string;
 
@@ -123,27 +119,18 @@ export async function handleInitLightningWallet(req: express.Request): Promise<u
 /**
  * Handle the request to create a signer macaroon from remote signer LND for a wallet.
  */
-export async function handleCreateSignerMacaroon(req: express.Request): Promise<unknown> {
+export async function handleCreateSignerMacaroon(
+  req: ExpressApiRouteRequest<'express.lightning.signerMacaroon', 'post'>
+): Promise<unknown> {
   const bitgo = req.bitgo;
-  const coinName = req.params.coin;
+  const { coin: coinName, walletId, passphrase, addIpCaveatToMacaroon } = req.decoded;
   if (!isLightningCoinName(coinName)) {
     throw new ApiResponseError(`Invalid coin to create signer macaroon: ${coinName}. Must be a lightning coin.`, 400);
   }
   const coin = bitgo.coin(coinName);
-  const walletId = req.params.id;
   if (typeof walletId !== 'string') {
     throw new ApiResponseError(`Invalid wallet id: ${walletId}`, 400);
   }
-
-  const { passphrase, addIpCaveatToMacaroon } = decodeOrElse(
-    CreateSignerMacaroonRequest.name,
-    CreateSignerMacaroonRequest,
-    req.body,
-    (_) => {
-      // DON'T throw errors from decodeOrElse. It could leak sensitive information.
-      throw new ApiResponseError('Invalid request body to create signer macaroon', 400);
-    }
-  );
 
   const wallet = await coin.wallets().get({ id: walletId, includeBalance: false });
   if (wallet.subType() !== 'lightningSelfCustody') {
