@@ -248,7 +248,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       case TransactionType.FlushERC721:
         this.setContract(transactionJson.to);
         const erc721Data = decodeFlushERC721TokensData(transactionJson.data, transactionJson.to);
-        if (erc721Data.forwarderVersion >= 4) {
+        if (erc721Data.forwarderVersion === 4) {
           this.forwarderVersion(erc721Data.forwarderVersion);
         }
         this.forwarderAddress(erc721Data.forwarderAddress);
@@ -258,7 +258,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       case TransactionType.FlushERC1155:
         this.setContract(transactionJson.to);
         const erc1155Data = decodeFlushERC1155TokensData(transactionJson.data, transactionJson.to);
-        if (erc1155Data.forwarderVersion >= 4) {
+        if (erc1155Data.forwarderVersion === 4) {
           this.forwarderVersion(erc1155Data.forwarderVersion);
         }
         this.forwarderAddress(erc1155Data.forwarderAddress);

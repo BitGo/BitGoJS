@@ -39,7 +39,7 @@ describe('Abstract ETH Utils', () => {
       const forwarderAddress = '0x8f977e912ef500548a0c3be6ddde9899f1199b81';
       const tokenAddress = '0xdf7decb1baa8f529f0c8982cbb4be50357195299';
       const tokenId = '12345';
-      const forwarderVersion = 0;
+      const forwarderVersion = 2;
 
       const encoded = flushERC721TokensData(forwarderAddress, tokenAddress, tokenId, forwarderVersion);
       const decoded = decodeFlushERC721TokensData(encoded);
@@ -48,7 +48,7 @@ describe('Abstract ETH Utils', () => {
       decoded.forwarderAddress.toLowerCase().should.equal(forwarderAddress.toLowerCase());
       decoded.tokenAddress.toLowerCase().should.equal(tokenAddress.toLowerCase());
       decoded.tokenId.should.equal(tokenId);
-      decoded.forwarderVersion.should.equal(0);
+      should.not.exist(decoded.forwarderVersion);
     });
 
     it('should decode flush ERC721 data correctly for v4+', () => {
@@ -64,7 +64,8 @@ describe('Abstract ETH Utils', () => {
       decoded.forwarderAddress.toLowerCase().should.equal(forwarderAddress.toLowerCase());
       decoded.tokenAddress.toLowerCase().should.equal(tokenAddress.toLowerCase());
       decoded.tokenId.should.equal(tokenId);
-      decoded.forwarderVersion.should.equal(4);
+      should.exist(decoded.forwarderVersion);
+      should.equal(decoded.forwarderVersion, 4);
     });
 
     it('should handle large token IDs for ERC721', () => {
@@ -133,7 +134,7 @@ describe('Abstract ETH Utils', () => {
       const forwarderAddress = '0x8f977e912ef500548a0c3be6ddde9899f1199b81';
       const tokenAddress = '0xdf7decb1baa8f529f0c8982cbb4be50357195299';
       const tokenId = '99999';
-      const forwarderVersion = 0;
+      const forwarderVersion = 2;
 
       const encoded = flushERC1155TokensData(forwarderAddress, tokenAddress, tokenId, forwarderVersion);
       const decoded = decodeFlushERC1155TokensData(encoded);
@@ -142,7 +143,7 @@ describe('Abstract ETH Utils', () => {
       decoded.forwarderAddress.toLowerCase().should.equal(forwarderAddress.toLowerCase());
       decoded.tokenAddress.toLowerCase().should.equal(tokenAddress.toLowerCase());
       decoded.tokenId.should.equal(tokenId);
-      decoded.forwarderVersion.should.equal(0);
+      should.not.exist(decoded.forwarderVersion);
     });
 
     it('should decode flush ERC1155 data correctly for v4+', () => {
@@ -158,7 +159,8 @@ describe('Abstract ETH Utils', () => {
       decoded.forwarderAddress.toLowerCase().should.equal(forwarderAddress.toLowerCase());
       decoded.tokenAddress.toLowerCase().should.equal(tokenAddress.toLowerCase());
       decoded.tokenId.should.equal(tokenId);
-      decoded.forwarderVersion.should.equal(4);
+      should.exist(decoded.forwarderVersion);
+      should.equal(decoded.forwarderVersion, 4);
     });
 
     it('should handle token ID 0 for ERC1155', () => {
