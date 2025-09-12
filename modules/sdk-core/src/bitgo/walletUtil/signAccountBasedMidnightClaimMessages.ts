@@ -1,4 +1,4 @@
-import { IWallet } from '../wallet';
+import { IWallet, Wallet } from '../wallet';
 import { MessageStandardType } from '../utils';
 import { MidnightMessageProvider } from './midnightMessageProvider';
 import { IMessageProvider, MessageInfo } from './iMessageProvider';
@@ -27,11 +27,17 @@ async function bulkSignAccountBasedMessagesWithProvider(
   const failedAddresses: string[] = [];
   const txRequests: Record<string, unknown>[] = [];
 
+  // Extract wallet constructor params
+  const { bitgo, baseCoin, _wallet: walletData } = wallet as Wallet;
+
   let messages: MessageInfo[] = await provider.getMessagesAndAddressesToSign();
   while (messages.length > 0) {
-    // Sign/build all messages in parallel
+    // Process all messages in parallel, each with a new Wallet instance
     const results = await Promise.all(
-      messages.map((messageInfo) => signOrBuildMessage(wallet, messageInfo, messageStandardType, walletPassphrase))
+      messages.map(async (messageInfo) => {
+        const newWallet = new Wallet(bitgo, baseCoin, walletData);
+        return signOrBuildMessage(newWallet, messageInfo, messageStandardType, walletPassphrase);
+      })
     );
     // Process results and update counters
     processResults(results, txRequests, failedAddresses);
@@ -47,30 +53,35 @@ async function signOrBuildMessage(
   messageStandardType: MessageStandardType,
   walletPassphrase?: string
 ): Promise<{ success: boolean; address: string; txRequestId?: string }> {
-  let txRequestId: string;
-  if (walletPassphrase !== undefined) {
-    // Sign the messages with the wallet
-    const signedMessage = await wallet.signMessage({
-      message: {
-        messageRaw: messageInfo.message,
-        messageStandardType,
-        signerAddress: messageInfo.address,
-      },
-      walletPassphrase,
-    });
-    txRequestId = signedMessage.txRequestId;
-  } else {
-    // Build the sign message request
-    const txRequest = await wallet.buildSignMessageRequest({
-      message: {
-        messageRaw: messageInfo.message,
-        messageStandardType,
-        signerAddress: messageInfo.address,
-      },
-    });
-    txRequestId = txRequest.txRequestId;
+  try {
+    let txRequestId: string;
+    if (walletPassphrase !== undefined) {
+      // Sign the messages with the wallet
+      const signedMessage = await wallet.signMessage({
+        message: {
+          messageRaw: messageInfo.message,
+          messageStandardType,
+          signerAddress: messageInfo.address,
+        },
+        walletPassphrase,
+      });
+      txRequestId = signedMessage.txRequestId;
+    } else {
+      // Build the sign message request
+      const txRequest = await wallet.buildSignMessageRequest({
+        message: {
+          messageRaw: messageInfo.message,
+          messageStandardType,
+          signerAddress: messageInfo.address,
+        },
+      });
+      txRequestId = txRequest.txRequestId;
+    }
+    return { success: true, address: messageInfo.address, txRequestId };
+  } catch (error) {
+    // Return failure result for individual message errors
+    return { success: false, address: messageInfo.address };
   }
-  return { success: true, address: messageInfo.address, txRequestId };
 }
 
 function processResults(
