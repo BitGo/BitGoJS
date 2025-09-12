@@ -3168,4 +3168,14 @@ export const solTokens = [
     UnderlyingAsset['sol:usd1'],
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
+  tsolToken(
+    'cd6509ed-ba89-463f-98f1-5054727281b7',
+    'sol:jitosol',
+    'Test JitoSOL Token',
+    9,
+    'J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn',
+    'J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn',
+    UnderlyingAsset['sol:jitosol'],
+    SOL_TOKEN_FEATURES
+  ),
 ];
