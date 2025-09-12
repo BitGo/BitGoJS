@@ -1132,6 +1132,7 @@ export const ofcCoins = [
     UnderlyingAsset['sol:cipher'],
     SOL_TOKEN_FEATURES
   ),
+
   tofcsolToken(
     '24d678cf-e0f0-4cde-a338-d754289c5b27',
     'ofctsol:slnd',
@@ -1188,7 +1189,6 @@ export const ofcCoins = [
     UnderlyingAsset['tsol:srm'],
     SOL_TOKEN_FEATURES
   ),
-
   tofcsolToken(
     '20b20bc7-86b8-4f58-a8e9-a7cedbc2a507',
     'ofctsol:gari',
@@ -1221,6 +1221,7 @@ export const ofcCoins = [
     UnderlyingAsset['sol:usd1'],
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
+
   tofcTronToken('937efe97-a17a-4d2a-aaf2-0ffdb529a943', 'ofcttrx:usdt', 'Tether USD', 6, UnderlyingAsset['ttrx:usdt']),
   tofcTronToken(
     '26d82f2c-47fd-474f-be79-246117214e0e',
