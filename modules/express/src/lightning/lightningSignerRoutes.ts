@@ -13,13 +13,9 @@ import {
 } from '@bitgo/abstract-lightning';
 import * as utxolib from '@bitgo/utxo-lib';
 import { Buffer } from 'buffer';
+import { ExpressApiRouteRequest } from '../typedRoutes/api';
 
-import {
-  CreateSignerMacaroonRequest,
-  GetWalletStateResponse,
-  InitLightningWalletRequest,
-  UnlockLightningWalletRequest,
-} from './codecs';
+import { CreateSignerMacaroonRequest, GetWalletStateResponse, InitLightningWalletRequest } from './codecs';
 import { LndSignerClient } from './lndSignerClient';
 import { ApiResponseError } from '../errors';
 
@@ -204,25 +200,13 @@ export async function handleGetLightningWalletState(req: express.Request): Promi
 /**
  * Handle the request to unlock a wallet in the signer.
  */
-export async function handleUnlockLightningWallet(req: express.Request): Promise<{ message: string }> {
-  const coinName = req.params.coin;
+export async function handleUnlockLightningWallet(
+  req: ExpressApiRouteRequest<'express.lightning.unlockWallet', 'post'>
+): Promise<{ message: string }> {
+  const { coin: coinName, id: walletId, passphrase } = req.decoded;
   if (!isLightningCoinName(coinName)) {
     throw new ApiResponseError(`Invalid coin to unlock lightning wallet: ${coinName}`, 400);
   }
-  const walletId = req.params.id;
-  if (typeof walletId !== 'string') {
-    throw new ApiResponseError(`Invalid wallet id: ${walletId}`, 400);
-  }
-
-  const { passphrase } = decodeOrElse(
-    UnlockLightningWalletRequest.name,
-    UnlockLightningWalletRequest,
-    req.body,
-    (_) => {
-      // DON'T throw errors from decodeOrElse. It could leak sensitive information.
-      throw new ApiResponseError('Invalid request body to unlock lightning wallet', 400);
-    }
-  );
 
   const lndSignerClient = await LndSignerClient.create(walletId, req.config);
   // The passphrase at LND can only accommodate a base64 character set
