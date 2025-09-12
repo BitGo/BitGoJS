@@ -153,11 +153,16 @@ describe('Lightning signer routes', () => {
       params: {
         coin: 'tlnbtc',
         id: apiData.wallet.id,
+        walletId: apiData.wallet.id,
+      },
+      decoded: {
+        coin: 'tlnbtc',
+        walletId: apiData.wallet.id,
       },
       config: {
         lightningSignerFileSystemPath: 'lightningSignerFileSystemPath',
       },
-    } as unknown as express.Request;
+    } as any;
 
     await handleGetLightningWalletState(req);
 

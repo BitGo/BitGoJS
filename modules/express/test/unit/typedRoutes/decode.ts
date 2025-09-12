@@ -5,6 +5,7 @@ import { EncryptRequestBody } from '../../../src/typedRoutes/api/common/encrypt'
 import { LoginRequest } from '../../../src/typedRoutes/api/common/login';
 import { VerifyAddressBody } from '../../../src/typedRoutes/api/common/verifyAddress';
 import { SimpleCreateRequestBody } from '../../../src/typedRoutes/api/v1/simpleCreate';
+import { LightningStateParams } from '../../../src/typedRoutes/api/v2/lightningState';
 
 export function assertDecode<T>(codec: t.Type<T, unknown>, input: unknown): T {
   const result = codec.decode(input);
@@ -99,5 +100,11 @@ describe('io-ts decode tests', function () {
     assertDecode(t.type(SimpleCreateRequestBody), {
       passphrase: 'pass',
     });
+  });
+  it('express.lightning.getState params valid', function () {
+    assertDecode(t.type(LightningStateParams), { coin: 'lnbtc', walletId: 'wallet123' });
+  });
+  it('express.lightning.getState params invalid', function () {
+    assert.throws(() => assertDecode(t.type(LightningStateParams), { coin: 'lnbtc' }));
   });
 });
