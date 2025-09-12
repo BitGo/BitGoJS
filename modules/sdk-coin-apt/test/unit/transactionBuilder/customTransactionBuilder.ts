@@ -3,9 +3,48 @@ import { TransactionBuilderFactory, CustomTransaction } from '../../../src';
 import * as testData from '../../resources/apt';
 import { TransactionType } from '@bitgo/sdk-core';
 import should from 'should';
+import { TypeTagAddress, TypeTagU64, TypeTagU128, TypeTagVector, TypeTagU8, TypeTagBool } from '@aptos-labs/ts-sdk';
 
 describe('Apt Custom Transaction Builder', () => {
   const factory = new TransactionBuilderFactory(coins.get('tapt'));
+
+  // Common ABI patterns for tests
+  const transferCoinsAbi = {
+    typeParameters: [{ constraints: [] }],
+    parameters: [new TypeTagAddress(), new TypeTagU64()],
+  };
+
+  const mintAbi = {
+    typeParameters: [{ constraints: [] }], // Expects 1 type parameter for Coin<T>
+    parameters: [new TypeTagAddress(), new TypeTagU64()],
+  };
+
+  const burnAbi = {
+    typeParameters: [{ constraints: [] }], // Expects 1 type parameter for Coin<T>
+    parameters: [new TypeTagU64()],
+  };
+
+  const basicAbi = {
+    typeParameters: [],
+    parameters: [],
+  };
+
+  // ABI for custom token functions that don't use type parameters
+  const customTokenMintAbi = {
+    typeParameters: [], // No type parameters for custom token
+    parameters: [new TypeTagAddress(), new TypeTagU64()],
+  };
+
+  const customTokenBurnAbi = {
+    typeParameters: [], // No type parameters for custom token
+    parameters: [new TypeTagU64()],
+  };
+
+  // Wrong ABI for testing - has wrong parameter count but correct type parameter count
+  const wrongAbi = {
+    typeParameters: [{ constraints: [] }],
+    parameters: [new TypeTagAddress(), new TypeTagU64(), new TypeTagAddress()], // Wrong - 3 params instead of 2
+  };
 
   describe('Custom Entry Function Call', () => {
     describe('Succeed', () => {
@@ -24,6 +63,7 @@ describe('Apt Custom Transaction Builder', () => {
           functionName: 'transfer_coins',
           typeArguments: ['0x1::aptos_coin::AptosCoin'],
           functionArguments: [testData.recipients[0].address, testData.recipients[0].amount],
+          abi: transferCoinsAbi,
         });
         txBuilder.addFeePayerAddress(testData.feePayer.address);
         txBuilder.setIsSimulateTxn(true);
@@ -55,6 +95,7 @@ describe('Apt Custom Transaction Builder', () => {
           functionName: 'transfer_coins',
           typeArguments: ['0x1::aptos_coin::AptosCoin'],
           functionArguments: [testData.recipients[0].address, testData.recipients[0].amount],
+          abi: transferCoinsAbi,
         });
         txBuilder.addFeePayerAddress(testData.feePayer.address);
 
@@ -78,6 +119,7 @@ describe('Apt Custom Transaction Builder', () => {
           functionName: 'transfer_coins',
           typeArguments: ['0x1::aptos_coin::AptosCoin'],
           functionArguments: [testData.recipients[0].address, testData.recipients[0].amount],
+          abi: transferCoinsAbi,
         });
         txBuilder.addFeePayerAddress(testData.feePayer.address);
 
@@ -105,6 +147,7 @@ describe('Apt Custom Transaction Builder', () => {
           functionName: 'mint',
           typeArguments: ['0x1::aptos_coin::AptosCoin'],
           functionArguments: [testData.recipients[0].address, testData.recipients[0].amount],
+          abi: mintAbi,
         });
         txBuilder.addFeePayerAddress(testData.feePayer.address);
         txBuilder.setIsSimulateTxn(true);
@@ -138,6 +181,7 @@ describe('Apt Custom Transaction Builder', () => {
           functionArguments: [
             testData.recipients[0].amount, // amount
           ],
+          abi: burnAbi,
         });
         txBuilder.addFeePayerAddress(testData.feePayer.address);
         txBuilder.setIsSimulateTxn(true);
@@ -170,6 +214,7 @@ describe('Apt Custom Transaction Builder', () => {
             functionName: 'register_domain',
             typeArguments: [],
             functionArguments: [],
+            abi: basicAbi,
           })
         ).throwError('Missing module name');
       });
@@ -182,6 +227,7 @@ describe('Apt Custom Transaction Builder', () => {
             functionName: '',
             typeArguments: [],
             functionArguments: [],
+            abi: basicAbi,
           })
         ).throwError('Missing function name');
       });
@@ -194,6 +240,7 @@ describe('Apt Custom Transaction Builder', () => {
             functionName: 'transfer',
             typeArguments: [],
             functionArguments: [],
+            abi: basicAbi,
           })
         ).throwError(/Invalid module name format/);
       });
@@ -206,6 +253,7 @@ describe('Apt Custom Transaction Builder', () => {
             functionName: '123invalid',
             typeArguments: [],
             functionArguments: [],
+            abi: basicAbi,
           })
         ).throwError(/Invalid function name format/);
       });
@@ -218,6 +266,7 @@ describe('Apt Custom Transaction Builder', () => {
             functionName: 'transfer_coins',
             typeArguments: [],
             functionArguments: [],
+            abi: basicAbi,
           })
         ).not.throw();
       });
@@ -230,6 +279,7 @@ describe('Apt Custom Transaction Builder', () => {
             functionName: 'transfer_coins',
             typeArguments: [],
             functionArguments: [],
+            abi: basicAbi,
           })
         ).not.throw();
       });
@@ -242,6 +292,7 @@ describe('Apt Custom Transaction Builder', () => {
             functionName: 'transfer_coins',
             typeArguments: [],
             functionArguments: [],
+            abi: basicAbi,
           })
         ).not.throw();
       });
@@ -263,6 +314,7 @@ describe('Apt Custom Transaction Builder', () => {
           functionName: 'mint',
           typeArguments: ['0x1::aptos_coin::AptosCoin'],
           functionArguments: [testData.recipients[0].address, testData.recipients[0].amount],
+          abi: mintAbi,
         });
 
         const tx = await txBuilder.build();
@@ -311,7 +363,7 @@ describe('Apt Custom Transaction Builder', () => {
           functionName: 'transfer_coins',
           typeArguments: ['0x1::aptos_coin::AptosCoin'],
           functionArguments: [testData.recipients[0].address, testData.recipients[0].amount],
-          // No ABI provided - should this work?
+          abi: transferCoinsAbi, // ABI is now required
         });
         txBuilder.addFeePayerAddress(testData.feePayer.address);
         txBuilder.setIsSimulateTxn(true);
@@ -323,7 +375,7 @@ describe('Apt Custom Transaction Builder', () => {
         should.equal(txBuilder.isValidRawTransaction(rawTx), true);
       });
 
-      it('should handle invalid ABI gracefully or fail appropriately', async function () {
+      it('should fail with invalid ABI string', async function () {
         const transaction = new CustomTransaction(coins.get('tapt'));
         const txBuilder = factory.getCustomTransactionBuilder(transaction);
         txBuilder.sender(testData.sender2.address);
@@ -338,6 +390,7 @@ describe('Apt Custom Transaction Builder', () => {
           functionName: 'transfer_coins',
           typeArguments: ['0x1::aptos_coin::AptosCoin'],
           functionArguments: [testData.recipients[0].address, testData.recipients[0].amount],
+          abi: transferCoinsAbi,
         });
 
         // Pass invalid ABI by bypassing TypeScript (cast as any)
@@ -345,14 +398,8 @@ describe('Apt Custom Transaction Builder', () => {
         txBuilder.addFeePayerAddress(testData.feePayer.address);
         txBuilder.setIsSimulateTxn(true);
 
-        try {
-          const tx = (await txBuilder.build()) as CustomTransaction;
-          // If it succeeds, the invalid ABI is ignored
-          should.equal(tx.type, TransactionType.CustomTx);
-        } catch (error) {
-          // If it fails, we know invalid ABI causes errors
-          should.exist(error);
-        }
+        // Should fail due to invalid ABI during build
+        await should(txBuilder.build()).be.rejected();
       });
 
       it('should work with correct ABI for transfer_coins', async function () {
@@ -372,6 +419,7 @@ describe('Apt Custom Transaction Builder', () => {
           functionName: 'transfer_coins',
           typeArguments: ['0x1::aptos_coin::AptosCoin'],
           functionArguments: [testData.recipients[0].address, testData.recipients[0].amount],
+          abi: transferCoinsAbi,
         });
 
         // Provide correct ABI (same as TransferTransaction uses)
@@ -390,9 +438,69 @@ describe('Apt Custom Transaction Builder', () => {
         should.equal(txBuilder.isValidRawTransaction(rawTx), true);
       });
 
-      it('should test behavior with wrong ABI parameter count', async function () {
-        const { TypeTagAddress, TypeTagU64, TypeTagU128 } = await import('@aptos-labs/ts-sdk');
+      it('should build transaction with custom token mint at deployed address', async function () {
+        const transaction = new CustomTransaction(coins.get('tapt'));
+        const txBuilder = factory.getCustomTransactionBuilder(transaction);
+        txBuilder.sender(testData.sender2.address);
+        txBuilder.gasData({
+          maxGasAmount: 200000,
+          gasUnitPrice: 100,
+        });
+        txBuilder.sequenceNumber(15);
+        txBuilder.expirationTime(1736246155);
+        txBuilder.customTransaction({
+          moduleName: '0xa85107ee0e345969d2b76e57f6f67c551ba1b066fc14d213328dded62618bf2e::sample_token',
+          functionName: 'mint',
+          typeArguments: [],
+          functionArguments: [testData.recipients[0].address, testData.recipients[0].amount],
+          abi: customTokenMintAbi,
+        });
+        txBuilder.addFeePayerAddress(testData.feePayer.address);
+        txBuilder.setIsSimulateTxn(true);
 
+        const tx = (await txBuilder.build()) as CustomTransaction;
+        should.equal(tx.type, TransactionType.CustomTx);
+        should.equal(
+          tx.fullFunctionName,
+          '0xa85107ee0e345969d2b76e57f6f67c551ba1b066fc14d213328dded62618bf2e::sample_token::mint'
+        );
+
+        const rawTx = tx.toBroadcastFormat();
+        should.equal(txBuilder.isValidRawTransaction(rawTx), true);
+      });
+
+      it('should build transaction with custom token burn at deployed address', async function () {
+        const transaction = new CustomTransaction(coins.get('tapt'));
+        const txBuilder = factory.getCustomTransactionBuilder(transaction);
+        txBuilder.sender(testData.sender2.address);
+        txBuilder.gasData({
+          maxGasAmount: 200000,
+          gasUnitPrice: 100,
+        });
+        txBuilder.sequenceNumber(16);
+        txBuilder.expirationTime(1736246155);
+        txBuilder.customTransaction({
+          moduleName: '0xa85107ee0e345969d2b76e57f6f67c551ba1b066fc14d213328dded62618bf2e::sample_token',
+          functionName: 'burn',
+          typeArguments: [],
+          functionArguments: [testData.recipients[0].amount],
+          abi: customTokenBurnAbi,
+        });
+        txBuilder.addFeePayerAddress(testData.feePayer.address);
+        txBuilder.setIsSimulateTxn(true);
+
+        const tx = (await txBuilder.build()) as CustomTransaction;
+        should.equal(tx.type, TransactionType.CustomTx);
+        should.equal(
+          tx.fullFunctionName,
+          '0xa85107ee0e345969d2b76e57f6f67c551ba1b066fc14d213328dded62618bf2e::sample_token::burn'
+        );
+
+        const rawTx = tx.toBroadcastFormat();
+        should.equal(txBuilder.isValidRawTransaction(rawTx), true);
+      });
+
+      it('should fail with wrong ABI parameter count', async function () {
         const transaction = new CustomTransaction(coins.get('tapt'));
         const txBuilder = factory.getCustomTransactionBuilder(transaction);
         txBuilder.sender(testData.sender2.address);
@@ -407,6 +515,7 @@ describe('Apt Custom Transaction Builder', () => {
           functionName: 'transfer_coins',
           typeArguments: ['0x1::aptos_coin::AptosCoin'],
           functionArguments: [testData.recipients[0].address, testData.recipients[0].amount],
+          abi: transferCoinsAbi,
         });
 
         // Provide ABI with wrong parameter count (3 instead of 2)
@@ -418,12 +527,278 @@ describe('Apt Custom Transaction Builder', () => {
         txBuilder.addFeePayerAddress(testData.feePayer.address);
         txBuilder.setIsSimulateTxn(true);
 
-        try {
-          const tx = (await txBuilder.build()) as CustomTransaction;
-          should.equal(tx.type, TransactionType.CustomTx);
-        } catch (error) {
-          should.exist(error);
-        }
+        // Should fail due to parameter count mismatch
+        await should(txBuilder.build()).be.rejectedWith(/Too few arguments/);
+      });
+
+      it('should test wrong ABI behavior', async function () {
+        const transaction = new CustomTransaction(coins.get('tapt'));
+        const txBuilder = factory.getCustomTransactionBuilder(transaction);
+        txBuilder.sender(testData.sender2.address);
+        txBuilder.gasData({
+          maxGasAmount: 200000,
+          gasUnitPrice: 100,
+        });
+        txBuilder.sequenceNumber(16);
+        txBuilder.expirationTime(1736246155);
+
+        // Provide function that expects 2 args but wrong ABI expects 3
+        txBuilder.customTransaction({
+          moduleName: '0x1::aptos_account',
+          functionName: 'transfer_coins',
+          typeArguments: ['0x1::aptos_coin::AptosCoin'],
+          functionArguments: [testData.recipients[0].address, testData.recipients[0].amount], // 2 args
+          abi: wrongAbi, // ABI expects 3 parameters but we provide 2
+        });
+        txBuilder.addFeePayerAddress(testData.feePayer.address);
+        txBuilder.setIsSimulateTxn(true);
+
+        // Should fail due to argument count mismatch
+        await should(txBuilder.build()).be.rejectedWith(/Too few arguments/);
+      });
+
+      it('should test wrong ABI with matching parameter count but wrong types', async function () {
+        const transaction = new CustomTransaction(coins.get('tapt'));
+        const txBuilder = factory.getCustomTransactionBuilder(transaction);
+        txBuilder.sender(testData.sender2.address);
+        txBuilder.gasData({
+          maxGasAmount: 200000,
+          gasUnitPrice: 100,
+        });
+        txBuilder.sequenceNumber(17);
+        txBuilder.expirationTime(1736246155);
+
+        // Wrong ABI with correct parameter count but wrong types
+        const wrongTypesAbi = {
+          typeParameters: [{ constraints: [] }],
+          parameters: [new TypeTagU64(), new TypeTagU64()], // Both u64 instead of Address + u64
+        };
+
+        txBuilder.customTransaction({
+          moduleName: '0x1::aptos_account',
+          functionName: 'transfer_coins',
+          typeArguments: ['0x1::aptos_coin::AptosCoin'],
+          functionArguments: [testData.recipients[0].address, testData.recipients[0].amount], // Address + u64
+          abi: wrongTypesAbi,
+        });
+        txBuilder.addFeePayerAddress(testData.feePayer.address);
+        txBuilder.setIsSimulateTxn(true);
+
+        // Should fail due to type mismatch between ABI and actual arguments
+        await should(txBuilder.build()).be.rejected();
+      });
+
+      it('should provide helpful error for invalid ABI structure', async function () {
+        const transaction = new CustomTransaction(coins.get('tapt'));
+        const txBuilder = factory.getCustomTransactionBuilder(transaction);
+
+        should(() => {
+          txBuilder.customTransaction({
+            moduleName: '0x1::aptos_account',
+            functionName: 'transfer_coins',
+            typeArguments: ['0x1::aptos_coin::AptosCoin'],
+            functionArguments: [testData.recipients[0].address, testData.recipients[0].amount],
+            abi: {} as any, // Invalid empty object
+          });
+        }).throw(/typeParameters array/);
+      });
+
+      it('should provide helpful error for completely wrong ABI', async function () {
+        const transaction = new CustomTransaction(coins.get('tapt'));
+        const txBuilder = factory.getCustomTransactionBuilder(transaction);
+
+        should(() => {
+          txBuilder.customTransaction({
+            moduleName: '0x1::aptos_account',
+            functionName: 'transfer_coins',
+            typeArguments: ['0x1::aptos_coin::AptosCoin'],
+            functionArguments: [testData.recipients[0].address, testData.recipients[0].amount],
+            abi: 'not an object' as any, // Completely wrong type
+          });
+        }).throw(/valid EntryFunctionABI object/);
+      });
+
+      it('should build regulated token initialize with correct ABI', async function () {
+        const regulatedTokenInitializeAbi = {
+          typeParameters: [],
+          parameters: [
+            new TypeTagVector(new TypeTagU8()),
+            new TypeTagVector(new TypeTagU8()),
+            new TypeTagU8(),
+            new TypeTagVector(new TypeTagU8()),
+            new TypeTagVector(new TypeTagU8()),
+          ],
+        };
+
+        const transaction = new CustomTransaction(coins.get('tapt'));
+        const txBuilder = factory.getCustomTransactionBuilder(transaction);
+        txBuilder.sender(testData.sender2.address);
+        txBuilder.gasData({
+          maxGasAmount: 200000,
+          gasUnitPrice: 100,
+        });
+        txBuilder.sequenceNumber(18);
+        txBuilder.expirationTime(1736246155);
+        txBuilder.customTransaction({
+          moduleName: '0x4a280942fd4aa7218aaf9beed6756dbc7f4d05b7f13b8a4c5564dd4a34b92192::regulated_token',
+          functionName: 'initialize',
+          typeArguments: [],
+          functionArguments: ['Regulated Token', 'RT', 6, 'https://example.com/icon.png', 'Regulated Token Project'],
+          abi: regulatedTokenInitializeAbi,
+        });
+        txBuilder.addFeePayerAddress(testData.feePayer.address);
+        txBuilder.setIsSimulateTxn(true);
+
+        const tx = (await txBuilder.build()) as CustomTransaction;
+        should.equal(tx.type, TransactionType.CustomTx);
+        should.equal(
+          tx.fullFunctionName,
+          '0x4a280942fd4aa7218aaf9beed6756dbc7f4d05b7f13b8a4c5564dd4a34b92192::regulated_token::initialize'
+        );
+      });
+
+      it('should fail regulated token initialize with wrong ABI', async function () {
+        const wrongRegulatedTokenAbi = {
+          typeParameters: [],
+          parameters: [
+            new TypeTagU64(),
+            new TypeTagU64(),
+            new TypeTagU128(),
+            new TypeTagVector(new TypeTagU8()),
+            new TypeTagVector(new TypeTagU8()),
+          ],
+        };
+
+        const transaction = new CustomTransaction(coins.get('tapt'));
+        const txBuilder = factory.getCustomTransactionBuilder(transaction);
+        txBuilder.sender(testData.sender2.address);
+        txBuilder.gasData({
+          maxGasAmount: 200000,
+          gasUnitPrice: 100,
+        });
+        txBuilder.sequenceNumber(19);
+        txBuilder.expirationTime(1736246155);
+        txBuilder.customTransaction({
+          moduleName: '0x4a280942fd4aa7218aaf9beed6756dbc7f4d05b7f13b8a4c5564dd4a34b92192::regulated_token',
+          functionName: 'initialize',
+          typeArguments: [],
+          functionArguments: ['Regulated Token', 'RT', 6, 'https://example.com/icon.png', 'Regulated Token Project'],
+          abi: wrongRegulatedTokenAbi,
+        });
+        txBuilder.addFeePayerAddress(testData.feePayer.address);
+        txBuilder.setIsSimulateTxn(true);
+
+        // Should fail due to type mismatch during serialization
+        await should(txBuilder.build()).be.rejected();
+      });
+
+      it('should build managed trading place_order_v3 with correct ABI', async function () {
+        const placeOrderV3Abi = {
+          typeParameters: [{ constraints: [] }, { constraints: [] }],
+          parameters: [
+            new TypeTagAddress(),
+            new TypeTagU64(),
+            new TypeTagU64(),
+            new TypeTagU64(),
+            new TypeTagBool(),
+            new TypeTagBool(),
+            new TypeTagBool(),
+            new TypeTagU64(),
+            new TypeTagU64(),
+            new TypeTagBool(),
+            new TypeTagAddress(),
+          ],
+        };
+
+        const transaction = new CustomTransaction(coins.get('tapt'));
+        const txBuilder = factory.getCustomTransactionBuilder(transaction);
+        txBuilder.sender(testData.sender2.address);
+        txBuilder.gasData({
+          maxGasAmount: 200000,
+          gasUnitPrice: 100,
+        });
+        txBuilder.sequenceNumber(20);
+        txBuilder.expirationTime(1736246155);
+        txBuilder.customTransaction({
+          moduleName: '0x33a8693758d1d28a9305946c7758b7548a04736c35929eac22eb0de2a865275d::managed_trading',
+          functionName: 'place_order_v3',
+          typeArguments: [
+            '0x33a8693758d1d28a9305946c7758b7548a04736c35929eac22eb0de2a865275d::pair_types::TRUMP_USD',
+            '0x33a8693758d1d28a9305946c7758b7548a04736c35929eac22eb0de2a865275d::fa_box::W_USDC',
+          ],
+          functionArguments: [
+            '0x6a8d106dcc0f63cb8b35d0e7d33c9ff38f392d963595368cd230c46f6b7397a5',
+            '800000000',
+            '0',
+            '18446744073709551615',
+            true,
+            false,
+            true,
+            '1',
+            '18446744073709551615',
+            false,
+            '0x0',
+          ],
+          abi: placeOrderV3Abi,
+        });
+        txBuilder.addFeePayerAddress(testData.feePayer.address);
+        txBuilder.setIsSimulateTxn(true);
+
+        const tx = (await txBuilder.build()) as CustomTransaction;
+        should.equal(tx.type, TransactionType.CustomTx);
+        should.equal(
+          tx.fullFunctionName,
+          '0x33a8693758d1d28a9305946c7758b7548a04736c35929eac22eb0de2a865275d::managed_trading::place_order_v3'
+        );
+      });
+
+      it('should fail managed trading place_order_v3 with wrong ABI parameter count', async function () {
+        const wrongPlaceOrderAbi = {
+          typeParameters: [{ constraints: [] }, { constraints: [] }],
+          parameters: [
+            new TypeTagAddress(), // target_config
+            new TypeTagU64(), // max_base
+            new TypeTagU64(), // max_quote
+            // Missing 8 more parameters - only 3 instead of 11
+          ],
+        };
+
+        const transaction = new CustomTransaction(coins.get('tapt'));
+        const txBuilder = factory.getCustomTransactionBuilder(transaction);
+        txBuilder.sender(testData.sender2.address);
+        txBuilder.gasData({
+          maxGasAmount: 200000,
+          gasUnitPrice: 100,
+        });
+        txBuilder.sequenceNumber(21);
+        txBuilder.expirationTime(1736246155);
+        txBuilder.customTransaction({
+          moduleName: '0x33a8693758d1d28a9305946c7758b7548a04736c35929eac22eb0de2a865275d::managed_trading',
+          functionName: 'place_order_v3',
+          typeArguments: [
+            '0x33a8693758d1d28a9305946c7758b7548a04736c35929eac22eb0de2a865275d::pair_types::TRUMP_USD',
+            '0x33a8693758d1d28a9305946c7758b7548a04736c35929eac22eb0de2a865275d::fa_box::W_USDC',
+          ],
+          functionArguments: [
+            '0x6a8d106dcc0f63cb8b35d0e7d33c9ff38f392d963595368cd230c46f6b7397a5',
+            '800000000',
+            '0',
+            '18446744073709551615',
+            true,
+            false,
+            true,
+            '1',
+            '18446744073709551615',
+            false,
+            '0x0',
+          ],
+          abi: wrongPlaceOrderAbi,
+        });
+        txBuilder.addFeePayerAddress(testData.feePayer.address);
+        txBuilder.setIsSimulateTxn(true);
+
+        // Should fail due to parameter count mismatch (expects 3, got 11)
+        await should(txBuilder.build()).be.rejectedWith(/Too many arguments.*expected 3/);
       });
     });
   });
