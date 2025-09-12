@@ -74,7 +74,13 @@ describe('Lightning signer routes', () => {
         config: {
           lightningSignerFileSystemPath: 'lightningSignerFileSystemPath',
         },
-      } as unknown as express.Request;
+        decoded: {
+          coin: 'tlnbtc',
+          walletId: apiData.wallet.id,
+          passphrase: apiData.initWalletRequestBody.passphrase,
+          ...(includingOptionalFields ? { expressHost: apiData.initWalletRequestBody.expressHost } : {}),
+        },
+      } as unknown as express.Request & { decoded: any };
 
       await handleInitLightningWallet(req);
 
