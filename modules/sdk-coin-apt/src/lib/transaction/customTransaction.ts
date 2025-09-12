@@ -10,6 +10,7 @@ import {
   TransactionPayloadEntryFunction,
 } from '@aptos-labs/ts-sdk';
 import { CustomTransactionParams } from '../iface';
+import { validateModuleName, validateFunctionName } from '../utils/validation';
 
 /**
  * Transaction class for custom Aptos transactions with entry function payloads.
@@ -32,8 +33,8 @@ export class CustomTransaction extends Transaction {
    * @param {CustomTransactionParams} params - Custom transaction parameters
    */
   setCustomTransactionParams(params: CustomTransactionParams): void {
-    this.validateModuleName(params.moduleName);
-    this.validateFunctionName(params.functionName);
+    validateModuleName(params.moduleName);
+    validateFunctionName(params.functionName);
     this.validateAbi(params.abi);
 
     this._moduleName = params.moduleName;
@@ -84,8 +85,8 @@ export class CustomTransaction extends Transaction {
     const moduleName = `${moduleAddress}::${moduleIdentifier}`;
 
     // Validate the extracted names using our existing validation
-    this.validateModuleName(moduleName);
-    this.validateFunctionName(functionIdentifier);
+    validateModuleName(moduleName);
+    validateFunctionName(functionIdentifier);
 
     this._moduleName = moduleName;
     this._functionName = functionIdentifier;
@@ -126,48 +127,6 @@ export class CustomTransaction extends Transaction {
       functionArguments: this._functionArguments,
       abi: this._entryFunctionAbi,
     };
-  }
-
-  /**
-   * Validate module name format
-   *
-   * @param {string} moduleName - Module name to validate
-   * @throws {Error} If module name format is invalid
-   */
-  private validateModuleName(moduleName: string): void {
-    if (!moduleName || typeof moduleName !== 'string') {
-      throw new Error('Module name is required and must be a non-empty string');
-    }
-
-    // Aptos module name format: address::module_name
-    // Supports both SHORT (0x1) and LONG (0x0000...0001) address formats
-    // Also supports named addresses (resolved at deployment time)
-    const moduleNamePattern = /^(0x[a-fA-F0-9]{1,64}|[a-zA-Z_][a-zA-Z0-9_]*)::[a-zA-Z_][a-zA-Z0-9_]*$/;
-    if (!moduleNamePattern.test(moduleName)) {
-      throw new Error(
-        `Invalid module name format: "${moduleName}". Expected format: "0xaddress::module_name" or "named_address::module_name"`
-      );
-    }
-  }
-
-  /**
-   * Validate function name format
-   *
-   * @param {string} functionName - Function name to validate
-   * @throws {Error} If function name format is invalid
-   */
-  private validateFunctionName(functionName: string): void {
-    if (!functionName || typeof functionName !== 'string') {
-      throw new Error('Function name is required and must be a non-empty string');
-    }
-
-    // Aptos function name pattern: valid identifier (letters, numbers, underscores, starting with letter/underscore)
-    const functionNamePattern = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
-    if (!functionNamePattern.test(functionName)) {
-      throw new Error(
-        `Invalid function name format: "${functionName}". Function names must be valid identifiers (letters, numbers, underscores, starting with letter or underscore)`
-      );
-    }
   }
 
   /**

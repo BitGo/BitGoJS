@@ -284,7 +284,7 @@ describe('Apt Custom Transaction Builder', () => {
         ).not.throw();
       });
 
-      it('should accept named addresses', async function () {
+      it('should reject named addresses', async function () {
         const builder = factory.getCustomTransactionBuilder();
         should(() =>
           builder.customTransaction({
@@ -294,7 +294,7 @@ describe('Apt Custom Transaction Builder', () => {
             functionArguments: [],
             abi: basicAbi,
           })
-        ).not.throw();
+        ).throwError(/Invalid module name format.*hex addresses only/);
       });
 
       it('should validate transaction payloads properly', async function () {
