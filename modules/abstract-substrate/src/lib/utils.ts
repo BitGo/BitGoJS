@@ -28,6 +28,7 @@ import {
   UnbondArgs,
   WithdrawUnbondedArgs,
   BatchArgs,
+  MoveStakeArgs,
 } from './iface';
 
 export class Utils implements BaseUtils {
@@ -261,6 +262,16 @@ export class Utils implements BaseUtils {
 
   isBatch(arg: TxMethod['args']): arg is BatchArgs {
     return (arg as BatchArgs).calls !== undefined && Array.isArray((arg as BatchArgs).calls);
+  }
+
+  isMoveStake(arg: TxMethod['args']): arg is MoveStakeArgs {
+    return (
+      (arg as MoveStakeArgs).originHotkey !== undefined &&
+      (arg as MoveStakeArgs).destinationHotkey !== undefined &&
+      (arg as MoveStakeArgs).originNetuid !== undefined &&
+      (arg as MoveStakeArgs).destinationNetuid !== undefined &&
+      (arg as MoveStakeArgs).alphaAmount !== undefined
+    );
   }
 
   /**
