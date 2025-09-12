@@ -7796,7 +7796,7 @@ export const erc20Coins = [
   erc20(
     '8c3142c8-0cd9-42f2-8849-3aca3da1a214',
     'gate',
-    'GATE',
+    'GATENet',
     18,
     '0x9d7630adf7ab0b0cb00af747db76864df0ec82e4',
     UnderlyingAsset.GATE

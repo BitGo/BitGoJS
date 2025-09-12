@@ -2041,7 +2041,7 @@ export const ofcErc20Coins = [
   ofcerc20('4296793d-bb5a-4156-8fa3-de065d2b3d94', 'ofcuos', 'Ultra Token', 4, underlyingAssetForSymbol('uos')),
   ofcerc20('53c43c96-4622-4459-91df-1e80bea7ba7d', 'ofcxcn', 'Onyxcoin', 18, underlyingAssetForSymbol('xcn')),
   ofcerc20('94f3e140-6652-4c4a-8b18-b8e56a28258c', 'ofcxdefi', 'XDEFI', 18, underlyingAssetForSymbol('xdefi')),
-  ofcerc20('db12970d-9be6-4399-9657-705a984661a6', 'ofcgate', 'GATE', 18, underlyingAssetForSymbol('gate')),
+  ofcerc20('db12970d-9be6-4399-9657-705a984661a6', 'ofcgate', 'GATENet', 18, underlyingAssetForSymbol('gate')),
   ofcerc20('7949daf7-305c-47bd-9e08-f85a4972b002', 'ofclcx', 'LCX', 18, underlyingAssetForSymbol('lcx')),
   ofcerc20('a2872b71-b5d1-4ac9-bcaa-5a0c18062b44', 'ofcrfox', 'RFOX', 18, underlyingAssetForSymbol('rfox')),
   ofcerc20('8dfdb813-b1e7-4975-9b14-a862906563b5', 'ofcswise', 'StakeWise', 18, underlyingAssetForSymbol('swice')),
