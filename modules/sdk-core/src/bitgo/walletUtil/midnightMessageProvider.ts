@@ -25,17 +25,23 @@ export class MidnightMessageProvider implements IMessageProvider {
   protected midnightClaimUrl: string;
   protected prevId: string | undefined;
   protected ranOnce = false;
+  private readonly apiClient: any;
+  private readonly walletId: string;
+  private readonly coinName: string;
 
   constructor(
-    private wallet: IWallet,
+    wallet: IWallet,
     private destinationAddress: string,
     private readonly batchSize = NUM_MESSAGES_PER_QUERY
   ) {
     this.unprocessedMessagesCache = [];
     this.network = utxolib.networks[wallet.coin()];
-    this.midnightClaimUrl = `${
-      Environments[wallet.bitgo.env].uri
-    }/api/airdrop-claim/v1/midnight/claims/${wallet.coin()}/${wallet.id()}`;
+    this.apiClient = wallet.bitgo;
+    this.walletId = wallet.id();
+    this.coinName = wallet.coin();
+    this.midnightClaimUrl = `${Environments[wallet.bitgo.env].uri}/api/airdrop-claim/v1/midnight/claims/${
+      this.coinName
+    }/${this.walletId}`;
   }
 
   async getMessagesAndAddressesToSign(): Promise<MessageInfo[]> {
@@ -53,7 +59,7 @@ export class MidnightMessageProvider implements IMessageProvider {
     if (this.prevId !== undefined) {
       query.prevId = this.prevId;
     }
-    const response = await this.wallet.bitgo.get(this.midnightClaimUrl).query(query).result();
+    const response = await this.apiClient.get(this.midnightClaimUrl).query(query).result();
     if (response.status !== 'success') {
       throw new Error(`Unexpected status code ${response.status} from ${this.midnightClaimUrl}`);
     }
