@@ -1566,6 +1566,10 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   router.post('express.decrypt', [prepareBitGo(config), typedPromiseWrapper(handleDecrypt)]);
   router.post('express.encrypt', [prepareBitGo(config), typedPromiseWrapper(handleEncrypt)]);
   router.post('express.verifyaddress', [prepareBitGo(config), typedPromiseWrapper(handleVerifyAddress)]);
+  router.post('express.lightning.unlockWallet', [
+    prepareBitGo(config),
+    typedPromiseWrapper(handleUnlockLightningWallet),
+  ]);
   app.post(
     '/api/v[12]/calculateminerfeeinfo',
     parseBody,
@@ -1801,12 +1805,6 @@ export function setupLightningSignerNodeRoutes(app: express.Application, config:
     parseBody,
     prepareBitGo(config),
     promiseWrapper(handleCreateSignerMacaroon)
-  );
-  app.post(
-    '/api/v2/:coin/wallet/:id/unlockwallet',
-    parseBody,
-    prepareBitGo(config),
-    promiseWrapper(handleUnlockLightningWallet)
   );
   app.get('/api/v2/:coin/wallet/:id/state', prepareBitGo(config), promiseWrapper(handleGetLightningWalletState));
 }

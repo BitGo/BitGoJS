@@ -173,15 +173,9 @@ describe('Lightning signer routes', () => {
 
     const req = {
       bitgo: bitgo,
-      body: apiData.unlockWalletRequestBody,
-      params: {
-        coin: 'tlnbtc',
-        id: 'fakeid',
-      },
-      config: {
-        lightningSignerFileSystemPath: 'lightningSignerFileSystemPath',
-      },
-    } as unknown as express.Request;
+      config: { lightningSignerFileSystemPath: 'lightningSignerFileSystemPath' },
+      decoded: { coin: 'tlnbtc', id: 'fakeid', passphrase: apiData.unlockWalletRequestBody.passphrase },
+    } as any;
 
     await handleUnlockLightningWallet(req);
 

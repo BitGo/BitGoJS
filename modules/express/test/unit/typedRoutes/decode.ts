@@ -5,6 +5,7 @@ import { EncryptRequestBody } from '../../../src/typedRoutes/api/common/encrypt'
 import { LoginRequest } from '../../../src/typedRoutes/api/common/login';
 import { VerifyAddressBody } from '../../../src/typedRoutes/api/common/verifyAddress';
 import { SimpleCreateRequestBody } from '../../../src/typedRoutes/api/v1/simpleCreate';
+import { UnlockLightningWalletBody, UnlockLightningWalletParams } from '../../../src/typedRoutes/api/v2/unlockWallet';
 
 export function assertDecode<T>(codec: t.Type<T, unknown>, input: unknown): T {
   const result = codec.decode(input);
@@ -99,5 +100,13 @@ describe('io-ts decode tests', function () {
     assertDecode(t.type(SimpleCreateRequestBody), {
       passphrase: 'pass',
     });
+  });
+  it('express.lightning.unlockWallet', function () {
+    // params require coin and id
+    assertDecode(t.type(UnlockLightningWalletParams), { coin: 'tlnbtc', id: 'wallet123' });
+    // missing passphrase
+    assert.throws(() => assertDecode(t.type(UnlockLightningWalletBody), {}));
+    // valid body
+    assertDecode(t.type(UnlockLightningWalletBody), { passphrase: 'secret' });
   });
 });
