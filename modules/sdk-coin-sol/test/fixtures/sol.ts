@@ -1017,3 +1017,387 @@ export const wrwUser = {
   walletAddress4: 'E7Z6pFfUhjx2dFjdB9Ws2KnKepXoq62TeF5uaCVSvqQV',
   walletAddress5: '8V34g2KeJXChECTWHfcJ5NeyWwyb7HvKpu66DD3YPNcf',
 };
+
+export const enableTokenFixtures = {
+  txParams: {
+    apiVersion: 'full',
+    enableTokens: [
+      {
+        name: 'tsol:ray',
+        address: 'A8DzSnggNN84nwPgVvLtdo1yZ3VscLGDi4FdEQXzUyYy',
+      },
+    ],
+    type: 'enabletoken',
+    walletPassphrase: 'test-password',
+    prebuildTx: {
+      walletId: '68bafee43eb5cd22aca2afd6b13ec7ad',
+      wallet: {
+        id: '68bafee43eb5cd22aca2afd6b13ec7ad',
+        users: [
+          {
+            user: '65f9c6797236825d1b4e1f82a1035b46',
+            permissions: ['admin', 'spend', 'view'],
+          },
+        ],
+        coin: 'tsol',
+        label: 'SOL BLIND SIGNING',
+        m: 2,
+        n: 3,
+        keys: [
+          '68bafed588671cf94ed8a5dbba882ad3',
+          '68bafed52d6d95694cf596c2a153868b',
+          '68bafed42d6d95694cf5956ed640853a',
+        ],
+        keySignatures: {},
+        enterprise: '66632c6b42b03d265a939048beaaee55',
+        organization: '66632c6d42b03d265a939107d2f586e5',
+        bitgoOrg: 'BitGo Trust',
+        tags: ['68bafee43eb5cd22aca2afd6b13ec7ad', '66632c6b42b03d265a939048beaaee55'],
+        disableTransactionNotifications: false,
+        freeze: {},
+        deleted: false,
+        approvalsRequired: 1,
+        isCold: false,
+        coinSpecific: {
+          rootAddress: 'Gg8Y2TYjUiW4MdUJU3qR3CTDKG8izuKYpXobDj3uzi1y',
+          pendingChainInitialization: false,
+          minimumFunding: 2447136,
+          lastChainIndex: {
+            0: 1,
+            1: -1,
+          },
+          nonceExpiresAt: '2025-09-05T12:54:16.219Z',
+          trustedTokens: [
+            {
+              token: 'tsol:gari',
+              state: 'active',
+            },
+            {
+              token: 'tsol:gmt',
+              state: 'active',
+            },
+            {
+              token: 'tsol:orca',
+              state: 'active',
+            },
+          ],
+        },
+        admin: {
+          policy: {
+            date: '2025-09-05T15:16:52.376Z',
+            id: '68bafee43eb5cd22aca2afd9e699a3ac',
+            label: 'default',
+            rules: [],
+            version: 0,
+            latest: true,
+          },
+        },
+        clientFlags: [],
+        walletFlags: [],
+        allowBackupKeySigning: false,
+        recoverable: true,
+        startDate: '2025-09-05T15:16:52.000Z',
+        type: 'hot',
+        buildDefaults: {},
+        customChangeKeySignatures: {},
+        hasLargeNumberOfAddresses: false,
+        multisigType: 'tss',
+        hasReceiveTransferPolicy: false,
+        creator: '65f9c6797236825d1b4e1f82a1035b46',
+        walletFullyCreated: true,
+        config: {},
+        balanceString: '997865920',
+        confirmedBalanceString: '997865920',
+        spendableBalanceString: '985212384',
+        reservedBalanceString: '2447136',
+        receiveAddress: {
+          id: '68bafee43eb5cd22aca2afe431d4272b',
+          address: 'Gg8Y2TYjUiW4MdUJU3qR3CTDKG8izuKYpXobDj3uzi1y',
+          chain: 0,
+          index: 0,
+          coin: 'tsol',
+          wallet: '68bafee43eb5cd22aca2afd6b13ec7ad',
+          coinSpecific: {
+            rootAddress: 'Gg8Y2TYjUiW4MdUJU3qR3CTDKG8izuKYpXobDj3uzi1y',
+            minimumFunding: 2447136,
+            type: 'native',
+            pendingChainInitialization: false,
+            trustedTokens: [
+              {
+                token: 'tsol:gari',
+                state: 'active',
+              },
+              {
+                token: 'tsol:gmt',
+                state: 'active',
+              },
+              {
+                token: 'tsol:orca',
+                state: 'active',
+              },
+            ],
+          },
+        },
+        pendingApprovals: [],
+      },
+      txRequestId: '17b5d895-c380-4973-9ab2-191a04d545f8',
+      txHex:
+        '0200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c70c9bb38230c6577dd46ae67975420585747a3be7fe2e8f744508f8bbd9122eda991f45c8031d1bd218998602870078164671e82d8020bd9caa36387163cc010201070be8e579a7198c71ee38b3ba2ee56af88cb16995a8f0bf46ab2a3702603cb732e41c96172044f1217c3784e8f02f49e2c8fc3591e81294ab54394f9d22fd7b7a8f3566d43c990eb025f022d68c80888882e9cbd00ed6267cff400cc065be79b9d2c41f3ee4163b631730fea44aaf49b2b5eb7ff29a52a8292fae6f45f7529c93c1000000000000000000000000000000000000000000000000000000000000000081f74cefd3fb844f62ca7ed6f1418b3f86faf0886647d980259bf0aafbe77b6c8792efb2b156bf73ac31e3022e9b98cdc80afa50d34c7f005fe4b84b540336e68c97258f4e2489f1bb3d1029148e0d830b5a1399daff1084048e7bd8dbe9f85906a7d517192c568ee08a845f73d29788cf035c3145b21ab344d8062ea940000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9b10993465fa6fd2e70caebcc7220931c696e877c5c4f1ee3d7bf3f1874b4ddb70204030308010404000000070700020605040a0900',
+      buildParams: {
+        apiVersion: 'full',
+        enableTokens: [
+          {
+            name: 'tsol:ray',
+            address: 'A8DzSnggNN84nwPgVvLtdo1yZ3VscLGDi4FdEQXzUyYy',
+          },
+        ],
+        type: 'enabletoken',
+      },
+      feeInfo: {
+        fee: 2049280,
+        feeString: '2049280',
+      },
+    },
+  },
+
+  txPrebuildRaw: {
+    walletId: '68bafee43eb5cd22aca2afd6b13ec7ad',
+    wallet: {
+      id: '68bafee43eb5cd22aca2afd6b13ec7ad',
+      users: [
+        {
+          user: '65f9c6797236825d1b4e1f82a1035b46',
+          permissions: ['admin', 'spend', 'view'],
+        },
+      ],
+      coin: 'tsol',
+      label: 'SOL BLIND SIGNING',
+      m: 2,
+      n: 3,
+      keys: [
+        '68bafed588671cf94ed8a5dbba882ad3',
+        '68bafed52d6d95694cf596c2a153868b',
+        '68bafed42d6d95694cf5956ed640853a',
+      ],
+      keySignatures: {},
+      enterprise: '66632c6b42b03d265a939048beaaee55',
+      organization: '66632c6d42b03d265a939107d2f586e5',
+      bitgoOrg: 'BitGo Trust',
+      tags: ['68bafee43eb5cd22aca2afd6b13ec7ad', '66632c6b42b03d265a939048beaaee55'],
+      disableTransactionNotifications: false,
+      freeze: {},
+      deleted: false,
+      approvalsRequired: 1,
+      isCold: false,
+      coinSpecific: {
+        rootAddress: 'Gg8Y2TYjUiW4MdUJU3qR3CTDKG8izuKYpXobDj3uzi1y',
+        pendingChainInitialization: false,
+        minimumFunding: 2447136,
+        lastChainIndex: {
+          0: 1,
+          1: -1,
+        },
+        nonceExpiresAt: '2025-09-05T12:54:16.219Z',
+        trustedTokens: [
+          {
+            token: 'tsol:gari',
+            state: 'active',
+          },
+          {
+            token: 'tsol:gmt',
+            state: 'active',
+          },
+          {
+            token: 'tsol:orca',
+            state: 'active',
+          },
+        ],
+      },
+      admin: {
+        policy: {
+          date: '2025-09-05T15:16:52.376Z',
+          id: '68bafee43eb5cd22aca2afd9e699a3ac',
+          label: 'default',
+          rules: [],
+          version: 0,
+          latest: true,
+        },
+      },
+      clientFlags: [],
+      walletFlags: [],
+      allowBackupKeySigning: false,
+      recoverable: true,
+      startDate: '2025-09-05T15:16:52.000Z',
+      type: 'hot',
+      buildDefaults: {},
+      customChangeKeySignatures: {},
+      hasLargeNumberOfAddresses: false,
+      multisigType: 'tss',
+      hasReceiveTransferPolicy: false,
+      creator: '65f9c6797236825d1b4e1f82a1035b46',
+      walletFullyCreated: true,
+      config: {},
+      balanceString: '997865920',
+      confirmedBalanceString: '997865920',
+      spendableBalanceString: '985212384',
+      reservedBalanceString: '2447136',
+      receiveAddress: {
+        id: '68bafee43eb5cd22aca2afe431d4272b',
+        address: 'Gg8Y2TYjUiW4MdUJU3qR3CTDKG8izuKYpXobDj3uzi1y',
+        chain: 0,
+        index: 0,
+        coin: 'tsol',
+        wallet: '68bafee43eb5cd22aca2afd6b13ec7ad',
+        coinSpecific: {
+          rootAddress: 'Gg8Y2TYjUiW4MdUJU3qR3CTDKG8izuKYpXobDj3uzi1y',
+          minimumFunding: 2447136,
+          type: 'native',
+          pendingChainInitialization: false,
+          trustedTokens: [
+            {
+              token: 'tsol:gari',
+              state: 'active',
+            },
+            {
+              token: 'tsol:gmt',
+              state: 'active',
+            },
+            {
+              token: 'tsol:orca',
+              state: 'active',
+            },
+          ],
+        },
+      },
+      pendingApprovals: [],
+    },
+    txRequestId: '17b5d895-c380-4973-9ab2-191a04d545f8',
+    txHex:
+      '0200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c70c9bb38230c6577dd46ae67975420585747a3be7fe2e8f744508f8bbd9122eda991f45c8031d1bd218998602870078164671e82d8020bd9caa36387163cc010201070be8e579a7198c71ee38b3ba2ee56af88cb16995a8f0bf46ab2a3702603cb732e41c96172044f1217c3784e8f02f49e2c8fc3591e81294ab54394f9d22fd7b7a8f3566d43c990eb025f022d68c80888882e9cbd00ed6267cff400cc065be79b9d2c41f3ee4163b631730fea44aaf49b2b5eb7ff29a52a8292fae6f45f7529c93c1000000000000000000000000000000000000000000000000000000000000000081f74cefd3fb844f62ca7ed6f1418b3f86faf0886647d980259bf0aafbe77b6c8792efb2b156bf73ac31e3022e9b98cdc80afa50d34c7f005fe4b84b540336e68c97258f4e2489f1bb3d1029148e0d830b5a1399daff1084048e7bd8dbe9f85906a7d517192c568ee08a845f73d29788cf035c3145b21ab344d8062ea940000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9b10993465fa6fd2e70caebcc7220931c696e877c5c4f1ee3d7bf3f1874b4ddb70204030308010404000000070700020605040a0900',
+    buildParams: {
+      apiVersion: 'full',
+      enableTokens: [
+        {
+          name: 'tsol:ray',
+          address: 'A8DzSnggNN84nwPgVvLtdo1yZ3VscLGDi4FdEQXzUyYy',
+        },
+      ],
+      type: 'enabletoken',
+    },
+    feeInfo: {
+      fee: 2049280,
+      feeString: '2049280',
+    },
+  },
+  walletData: {
+    id: '68bafee43eb5cd22aca2afd6b13ec7ad',
+    users: [
+      {
+        user: '65f9c6797236825d1b4e1f82a1035b46',
+        permissions: ['admin', 'spend', 'view'],
+      },
+    ],
+    coin: 'tsol',
+    label: 'SOL BLIND SIGNING',
+    m: 2,
+    n: 3,
+    keys: ['68bafed588671cf94ed8a5dbba882ad3', '68bafed52d6d95694cf596c2a153868b', '68bafed42d6d95694cf5956ed640853a'],
+    keySignatures: {},
+    enterprise: '66632c6b42b03d265a939048beaaee55',
+    organization: '66632c6d42b03d265a939107d2f586e5',
+    bitgoOrg: 'BitGo Trust',
+    tags: ['68bafee43eb5cd22aca2afd6b13ec7ad', '66632c6b42b03d265a939048beaaee55'],
+    disableTransactionNotifications: false,
+    freeze: {},
+    deleted: false,
+    approvalsRequired: 1,
+    isCold: false,
+    coinSpecific: {
+      rootAddress: 'Gg8Y2TYjUiW4MdUJU3qR3CTDKG8izuKYpXobDj3uzi1y',
+      pendingChainInitialization: false,
+      minimumFunding: 2447136,
+      lastChainIndex: {
+        0: 1,
+        1: -1,
+      },
+      nonceExpiresAt: '2025-09-05T12:54:16.219Z',
+      trustedTokens: [
+        {
+          token: 'tsol:gari',
+          state: 'active',
+        },
+        {
+          token: 'tsol:gmt',
+          state: 'active',
+        },
+        {
+          token: 'tsol:orca',
+          state: 'active',
+        },
+      ],
+    },
+    admin: {
+      policy: {
+        date: '2025-09-05T15:16:52.376Z',
+        id: '68bafee43eb5cd22aca2afd9e699a3ac',
+        label: 'default',
+        rules: [],
+        version: 0,
+        latest: true,
+      },
+    },
+    clientFlags: [],
+    walletFlags: [],
+    allowBackupKeySigning: false,
+    recoverable: true,
+    startDate: '2025-09-05T15:16:52.000Z',
+    type: 'hot',
+    buildDefaults: {},
+    customChangeKeySignatures: {},
+    hasLargeNumberOfAddresses: false,
+    multisigType: 'tss',
+    hasReceiveTransferPolicy: false,
+    creator: '65f9c6797236825d1b4e1f82a1035b46',
+    walletFullyCreated: true,
+    config: {},
+    balanceString: '997865920',
+    confirmedBalanceString: '997865920',
+    spendableBalanceString: '985212384',
+    reservedBalanceString: '2447136',
+    receiveAddress: {
+      id: '68bafee43eb5cd22aca2afe431d4272b',
+      address: 'Gg8Y2TYjUiW4MdUJU3qR3CTDKG8izuKYpXobDj3uzi1y',
+      chain: 0,
+      index: 0,
+      coin: 'tsol',
+      wallet: '68bafee43eb5cd22aca2afd6b13ec7ad',
+      coinSpecific: {
+        rootAddress: 'Gg8Y2TYjUiW4MdUJU3qR3CTDKG8izuKYpXobDj3uzi1y',
+        minimumFunding: 2447136,
+        type: 'native',
+        pendingChainInitialization: false,
+        trustedTokens: [
+          {
+            token: 'tsol:gari',
+            state: 'active',
+          },
+          {
+            token: 'tsol:gmt',
+            state: 'active',
+          },
+          {
+            token: 'tsol:orca',
+            state: 'active',
+          },
+        ],
+      },
+    },
+    pendingApprovals: [],
+  },
+  sendTxHex:
+    '020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000091d9945020da975c1908af823d1f3fb024362fc9c2b42126542e53945b2e58107286ccf6de77449a5dee338aebb2f47a11690d918e1d70d4bf948a7ed708430802010206e8e579a7198c71ee38b3ba2ee56af88cb16995a8f0bf46ab2a3702603cb732e41c96172044f1217c3784e8f02f49e2c8fc3591e81294ab54394f9d22fd7b7a8f8401c3f67cfa52518b34a09b08f4ea77e1c4fb9d89bfaccdc33cf8b8a9cf8d7bc5c538dc718dd6601193893098aa50838d76868be6561eeb39bca11197dc2f82000000000000000000000000000000000000000000000000000000000000000006a7d517192c568ee08a845f73d29788cf035c3145b21ab344d8062ea940000039b6464b8771903ac1721b28ab9e19ae5f034543572c7034d282c493769f9bd40204030305010404000000040200020c020000000a00000000000000',
+  wrongTokenNameTxHex:
+    '020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000056a73c1a2afc311d457f5899b49a043800556f325775af401cc1003c4161065f9e6ee35cf9e2a019c7e32f425c4f97a4740327c2eb6ddc1f2dfd29fe91aca2090201060ae8e579a7198c71ee38b3ba2ee56af88cb16995a8f0bf46ab2a3702603cb732e41c96172044f1217c3784e8f02f49e2c8fc3591e81294ab54394f9d22fd7b7a8f3896fc21959137c93b14f821d1f24953900264a1f3085c308d4f7b5b9fed67189b9bb33f5d48c55a2e5f736c8b9f232091699c069923ce97a89e42d3a4f836c3000000000000000000000000000000000000000000000000000000000000000040eb17d8a12e56358b533dde4d338d6d25dc1daf0a30a76ed1ca827eb49e35e78c97258f4e2489f1bb3d1029148e0d830b5a1399daff1084048e7bd8dbe9f85906a7d517192c568ee08a845f73d29788cf035c3145b21ab344d8062ea940000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006ddf6e1ee758fde18425dbce46ccddab61afc4d83b90d27febdf928d8a18bfc486378cec7bef6cd76c627185b3e39adec4e173c610889b45f23fbe741e6284c020403020701040400000006070003000504090800',
+  wrongAddrTxHex:
+    '02000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000007994e5cf423b5dfc2ca2f7de39edb2686a7e13db94943d9e5ee1437cf69152757080e7dbce942052ade6f7db9410d070c01b3a4914e73e53967050d8ce645a0c0201060a0a366f59bf131ce5d454af84bf3ca3d5c257804a66b2f917c325e2cb4f61b21e1c96172044f1217c3784e8f02f49e2c8fc3591e81294ab54394f9d22fd7b7a8f865224b8d48baa4ba878f53dcc7613219864bec9840b6cf013228edf4649fef8def50dc9c8fe8e5e4a23a534e8f75ee737eac6755904ad3c385fe5fbf7216632000000000000000000000000000000000000000000000000000000000000000081f74cefd3fb844f62ca7ed6f1418b3f86faf0886647d980259bf0aafbe77b6c8c97258f4e2489f1bb3d1029148e0d830b5a1399daff1084048e7bd8dbe9f85906a7d517192c568ee08a845f73d29788cf035c3145b21ab344d8062ea940000006a7d517192c5c51218cc94c3d4af17f58daee089ba1fd44e3dbd98a0000000006ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9ebf212e4d5c93a21e2cff09e1b5a7fe0fdf2d5f573294d8411b302fc9d7c89d0020403020701040400000006070003000504090800',
+};
