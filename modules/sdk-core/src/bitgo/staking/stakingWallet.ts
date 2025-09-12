@@ -271,7 +271,7 @@ export class StakingWallet implements IStakingWallet {
     // default to verifying a transaction unless explicitly skipped
     const skipVerification = signOptions.transactionVerificationOptions?.skipTransactionVerification ?? false;
     if (!isStakingTxRequestPrebuildResult(builtTx.result) && !skipVerification) {
-      await this.validateBuiltStakingTransaction(transaction, builtTx);
+      await this.validateBuiltStakingTransaction(builtTx.transaction, builtTx);
     }
     return await this.sign(signOptions, builtTx);
   }
@@ -372,7 +372,7 @@ export class StakingWallet implements IStakingWallet {
 
     const explainedTransaction = await coin.explainTransaction(result);
 
-    if (buildParams?.recipients) {
+    if (buildParams?.recipients && buildParams.recipients.length > 0) {
       const userRecipientMap = new Map(
         buildParams.recipients.map((recipient) => [recipient.address.toLowerCase(), recipient])
       );
@@ -382,41 +382,38 @@ export class StakingWallet implements IStakingWallet {
 
       const mismatchErrors: string[] = [];
 
-      for (const [recipientAddress, recipientInfo] of platformRecipientMap) {
-        if (userRecipientMap.has(recipientAddress)) {
-          const userRecipient = userRecipientMap.get(recipientAddress);
-          if (!userRecipient) {
-            console.error('Unable to determine recipient address');
-            return;
-          }
-          const matchResult = transactionRecipientsMatch(userRecipient, recipientInfo);
-          if (!matchResult.exactMatch) {
-            if (!matchResult.tokenMatch) {
-              mismatchErrors.push(
-                `Invalid token ${recipientInfo.tokenName} transfer with amount ${recipientInfo.amount} to ${recipientInfo.address} found in built transaction, specified ${userRecipient.tokenName}`
-              );
-            }
-            if (!matchResult.amountMatch) {
-              mismatchErrors.push(
-                `Invalid recipient amount for ${recipientInfo.address}, specified ${userRecipient.amount} got ${recipientInfo.amount}`
-              );
-            }
-          }
-        } else {
-          mismatchErrors.push(`Invalid recipient address: ${recipientAddress}`);
+      for (const [address] of platformRecipientMap) {
+        if (!userRecipientMap.has(address)) {
+          mismatchErrors.push(`Unexpected recipient address found in built transaction: ${address}`);
         }
       }
 
-      const missingRecipientAddresses = Array.from(userRecipientMap.keys()).filter(
-        (address) => !platformRecipientMap.has(address)
-      );
+      for (const [address, userRecipient] of userRecipientMap) {
+        const platformRecipient = platformRecipientMap.get(address);
+        if (!platformRecipient) {
+          mismatchErrors.push(`Expected recipient address not found in built transaction: ${address}`);
+          continue;
+        }
 
-      if (missingRecipientAddresses.length > 0) {
-        mismatchErrors.push(`Missing recipient address(es): ${missingRecipientAddresses.join(', ')}`);
+        const matchResult = transactionRecipientsMatch(userRecipient, platformRecipient);
+
+        if (!matchResult.amountMatch) {
+          mismatchErrors.push(
+            `Recipient ${address} amount mismatch. Expected: ${userRecipient.amount}, Got: ${platformRecipient.amount}`
+          );
+        }
+        if (!matchResult.tokenMatch) {
+          mismatchErrors.push(
+            `Recipient ${address} token mismatch. Expected: ${userRecipient.tokenName ?? 'native coin'}, Got: ${
+              platformRecipient.tokenName ?? 'native coin'
+            }`
+          );
+        }
       }
       if (mismatchErrors.length > 0) {
-        console.error(mismatchErrors.join(', '));
-        return;
+        const errorMessage = `Staking transaction validation failed before signing: ${mismatchErrors.join('; ')}`;
+        debug(errorMessage);
+        throw new Error(errorMessage);
       }
     } else {
       debug(`Cannot validate staking transaction ${transaction.stakingRequestId} without specified build params`);
