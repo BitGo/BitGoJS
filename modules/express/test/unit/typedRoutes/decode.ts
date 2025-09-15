@@ -5,6 +5,7 @@ import { EncryptRequestBody } from '../../../src/typedRoutes/api/common/encrypt'
 import { LoginRequest } from '../../../src/typedRoutes/api/common/login';
 import { VerifyAddressBody } from '../../../src/typedRoutes/api/common/verifyAddress';
 import { SimpleCreateRequestBody } from '../../../src/typedRoutes/api/v1/simpleCreate';
+import { KeychainLocalRequestParams } from '../../../src/typedRoutes/api/v2/keychainLocal';
 
 export function assertDecode<T>(codec: t.Type<T, unknown>, input: unknown): T {
   const result = codec.decode(input);
@@ -98,6 +99,28 @@ describe('io-ts decode tests', function () {
 
     assertDecode(t.type(SimpleCreateRequestBody), {
       passphrase: 'pass',
+    });
+  });
+  it('express.keychain.local', function () {
+    // coin parameter is required
+    assert.throws(() => assertDecode(t.type(KeychainLocalRequestParams), {}));
+    // coin must be a string
+    assert.throws(() =>
+      assertDecode(t.type(KeychainLocalRequestParams), {
+        coin: 123,
+      })
+    );
+    // valid with coin parameter
+    assertDecode(t.type(KeychainLocalRequestParams), {
+      coin: 'btc',
+    });
+    // valid with different coin
+    assertDecode(t.type(KeychainLocalRequestParams), {
+      coin: 'eth',
+    });
+    // valid with testnet coin
+    assertDecode(t.type(KeychainLocalRequestParams), {
+      coin: 'tbtc',
     });
   });
 });

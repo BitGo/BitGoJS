@@ -1617,12 +1617,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   // API v2
 
   // create keychain
-  app.post(
-    '/api/v2/:coin/keychain/local',
-    parseBody,
-    prepareBitGo(config),
-    promiseWrapper(handleV2CreateLocalKeyChain)
-  );
+  router.post('express.keychain.local', [prepareBitGo(config), typedPromiseWrapper(handleV2CreateLocalKeyChain)]);
 
   // generate wallet
   app.post('/api/v2/:coin/wallet/generate', parseBody, prepareBitGo(config), promiseWrapper(handleV2GenerateWallet));
