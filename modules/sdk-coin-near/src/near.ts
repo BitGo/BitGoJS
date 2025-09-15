@@ -1085,26 +1085,66 @@ export class Near extends BaseCoin {
     const freshTxData = freshTx.toJson();
     const originalTxData = transaction.toJson();
 
-    // Verify key transaction fields match to prevent tampering
-    if (
-      freshTxData.signerId !== originalTxData.signerId ||
-      freshTxData.receiverId !== originalTxData.receiverId ||
-      freshTxData.publicKey !== originalTxData.publicKey ||
-      freshTxData.actions.length !== originalTxData.actions.length
-    ) {
-      throw new Error('Transaction hex does not match provided transaction');
+    // Validate each aspect of the transaction separately
+    this.validateSigner(originalTxData, freshTxData);
+    this.validateReceiver(originalTxData, freshTxData);
+    this.validatePublicKey(originalTxData, freshTxData);
+    this.validateActions(originalTxData, freshTxData);
+    this.validateAddresses(txParams, explainedTx);
+  }
+
+  //Validates that the signer ID matches between original and fresh transaction
+  private validateSigner(originalTxData: any, freshTxData: any): void {
+    if (originalTxData.signerId !== freshTxData.signerId) {
+      throw new Error(
+        `Error on token enablements: signers are not the same, expected ${originalTxData.signerId} but got ${freshTxData.signerId}`
+      );
+    }
+  }
+
+  //Validates that the receiver ID matches between original and fresh transaction
+  private validateReceiver(originalTxData: any, freshTxData: any): void {
+    if (originalTxData.receiverId !== freshTxData.receiverId) {
+      throw new Error(
+        `Error on token enablements: receivers are not the same, expected ${originalTxData.receiverId} but got ${freshTxData.receiverId}`
+      );
+    }
+  }
+
+  //Validates that the public key matches between original and fresh transaction
+  private validatePublicKey(originalTxData: any, freshTxData: any): void {
+    if (originalTxData.publicKey !== freshTxData.publicKey) {
+      throw new Error(
+        `Error on token enablements: public keys are not the same, expected ${originalTxData.publicKey} but got ${freshTxData.publicKey}`
+      );
+    }
+  }
+
+  //Validates that the actions length matches between original and fresh transaction
+  private validateActions(originalTxData: any, freshTxData: any): void {
+    if (originalTxData.actions.length !== freshTxData.actions.length) {
+      throw new Error(
+        `Error on token enablements: actions length mismatch, expected ${originalTxData.actions.length} but got ${freshTxData.actions.length}`
+      );
+    }
+  }
+
+  //Validates that addresses match between parameters and explained transaction
+  private validateAddresses(txParams: VerifyTransactionOptions['txParams'], explainedTx: TransactionExplanation): void {
+    if (!txParams.recipients || !explainedTx.outputs) {
+      return;
     }
 
-    // Validate addresses match between parameters and explained transaction
-    if (txParams.recipients && explainedTx.outputs) {
-      const expectedAddresses = txParams.recipients.map((r) => r.address);
-      const explainedAddresses = explainedTx.outputs.map((o) => o.address);
+    if (txParams.recipients.length !== explainedTx.outputs.length) {
+      throw new Error('Error on token enablements: output count does not match recipients count');
+    }
 
-      for (const addr of expectedAddresses) {
-        if (!explainedAddresses.includes(addr)) {
-          throw new Error(`Address mismatch: ${addr}`);
-        }
-      }
+    const mismatchedAddresses = txParams.recipients
+      .filter((recipient, index) => recipient.address !== explainedTx.outputs[index].address)
+      .map((recipient) => recipient.address);
+
+    if (mismatchedAddresses.length > 0) {
+      throw new Error(`Address mismatch: ${mismatchedAddresses.join(', ')}`);
     }
   }
 }
