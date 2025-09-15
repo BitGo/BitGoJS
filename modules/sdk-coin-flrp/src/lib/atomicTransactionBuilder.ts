@@ -1,6 +1,7 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
-import { Credential, Signature } from '@flarenetwork/flarejs';
+import { BuildTransactionError, TransactionType, BaseTransaction } from '@bitgo/sdk-core';
+import { Credential, Signature, TransferableInput, TransferableOutput } from '@flarenetwork/flarejs';
+import { TransactionExplanation, DecodedUtxoObj } from './iface';
 
 // Constants for signature handling
 const SECP256K1_SIGNATURE_LENGTH = 65;
@@ -15,8 +16,8 @@ export abstract class AtomicTransactionBuilder {
   // External chain id (destination) for export transactions
   protected _externalChainId: Buffer | undefined;
 
-  // Simplified internal transaction state (mirrors shape expected by existing builders)
-  // Simplified internal transaction state
+  protected _utxos: DecodedUtxoObj[] = [];
+
   protected transaction: {
     _network: Record<string, unknown>;
     _networkID: number;
@@ -75,10 +76,95 @@ export abstract class AtomicTransactionBuilder {
   }
 
   /**
-   * Placeholder that should assemble inputs/outputs and credentials once UTXO + key logic is implemented.
+   * Creates inputs, outputs, and credentials for Flare P-chain atomic transactions.
+   * Based on AVAX P-chain implementation adapted for FlareJS.
+   *
+   * Note: This is a simplified implementation that creates the core structure.
+   * The FlareJS type system integration will be refined in future iterations.
+   *
+   * @param total - Total amount needed including fees
+   * @returns Object containing TransferableInput[], TransferableOutput[], and Credential[]
    */
-  protected createInputOutput(_total: bigint): { inputs: unknown[]; outputs: unknown[]; credentials: Credential[] } {
-    return { inputs: [], outputs: [], credentials: [] };
+  protected createInputOutput(total: bigint): {
+    inputs: TransferableInput[];
+    outputs: TransferableOutput[];
+    credentials: Credential[];
+  } {
+    if (!this._utxos || this._utxos.length === 0) {
+      throw new BuildTransactionError('UTXOs are required for creating inputs and outputs');
+    }
+
+    const inputs: TransferableInput[] = [];
+    const outputs: TransferableOutput[] = [];
+    const credentials: Credential[] = [];
+
+    let inputSum = 0n;
+    const addressIndices: { [address: string]: number } = {};
+    let nextAddressIndex = 0;
+
+    // Sort UTXOs by amount in descending order for optimal coin selection
+    const sortedUtxos = [...this._utxos].sort((a, b) => {
+      const amountA = BigInt(a.amount);
+      const amountB = BigInt(b.amount);
+      if (amountA > amountB) return -1;
+      if (amountA < amountB) return 1;
+      return 0;
+    });
+
+    // Process UTXOs to create inputs and credentials
+    for (const utxo of sortedUtxos) {
+      const utxoAmount = BigInt(utxo.amount);
+
+      if (inputSum >= total) {
+        break; // We have enough inputs
+      }
+
+      // TODO: Create proper FlareJS TransferableInput once type issues are resolved
+      // For now, we create a placeholder that demonstrates the structure
+      // The actual FlareJS integration will need proper UTXOID handling
+
+      // Track input sum
+      inputSum += utxoAmount;
+
+      // Track address indices for signature ordering (mimics AVAX pattern)
+      const addressIndexArray: number[] = [];
+      for (const address of utxo.addresses) {
+        if (!(address in addressIndices)) {
+          addressIndices[address] = nextAddressIndex++;
+        }
+        addressIndexArray.push(addressIndices[address]);
+      }
+
+      // Store address indices on the UTXO for credential creation
+      utxo.addressesIndex = addressIndexArray;
+
+      // Create credential with placeholder signatures
+      // In a real implementation, these would be actual signatures
+      const signatures = Array.from({ length: utxo.threshold }, () => '');
+      const credential = this.createFlareCredential(0, signatures);
+      credentials.push(credential);
+    }
+
+    // Verify we have enough inputs
+    if (inputSum < total) {
+      throw new BuildTransactionError(`Insufficient funds: need ${total}, have ${inputSum}`);
+    }
+
+    // TODO: Create change output if we have excess input
+    // The TransferableOutput creation will be implemented once FlareJS types are resolved
+
+    return { inputs, outputs, credentials };
+  }
+
+  /**
+   * Set UTXOs for the transaction. This is required for creating inputs and outputs.
+   *
+   * @param utxos - Array of decoded UTXO objects
+   * @returns this builder instance for chaining
+   */
+  utxos(utxos: DecodedUtxoObj[]): this {
+    this._utxos = utxos;
+    return this;
   }
 
   /**
@@ -145,5 +231,79 @@ export abstract class AtomicTransactionBuilder {
    */
   initBuilder(_tx: unknown): this {
     return this;
+  }
+
+  /**
+   * Sign transaction with private key (placeholder implementation)
+   * TODO: Implement proper FlareJS signing
+   */
+  sign(_params: { key: string }): this {
+    // TODO: Implement FlareJS signing
+    // For now, just mark as having credentials
+    this.transaction.hasCredentials = true;
+    return this;
+  }
+
+  /**
+   * Build the transaction (placeholder implementation)
+   * TODO: Implement proper FlareJS transaction building
+   */
+  async build(): Promise<BaseTransaction> {
+    // TODO: Create actual FlareJS UnsignedTx
+    // For now, return a mock transaction that satisfies the interface
+    const mockTransaction = {
+      _id: 'mock-transaction-id',
+      _inputs: [],
+      _outputs: [],
+      _type: this.transactionType,
+      signature: [] as string[],
+      toBroadcastFormat: () => 'mock-tx-hex',
+      toJson: () => ({}),
+      explainTransaction: (): TransactionExplanation => ({
+        type: this.transactionType,
+        inputs: [],
+        outputs: [],
+        outputAmount: '0',
+        rewardAddresses: [],
+        id: 'mock-transaction-id',
+        changeOutputs: [],
+        changeAmount: '0',
+        fee: { fee: '0' },
+      }),
+      isTransactionForCChain: false,
+      fromAddresses: [],
+      validationErrors: [],
+      loadInputsAndOutputs: () => {
+        /* placeholder */
+      },
+      inputs: () => [],
+      outputs: () => [],
+      fee: () => ({ fee: '0' }),
+      feeRate: () => 0,
+      id: () => 'mock-transaction-id',
+      type: this.transactionType,
+    } as unknown as BaseTransaction;
+
+    return mockTransaction;
+  }
+
+  /**
+   * Parse and explain a transaction from hex (placeholder implementation)
+   * TODO: Implement proper FlareJS transaction parsing
+   */
+  explainTransaction(): TransactionExplanation {
+    // TODO: Parse actual FlareJS transaction
+    // For now, return basic explanation
+    return {
+      type: this.transactionType,
+      inputs: [],
+      outputs: [],
+      outputAmount: '0',
+      rewardAddresses: [],
+      id: 'mock-transaction-id',
+      changeOutputs: [],
+      changeAmount: '0',
+      fee: { fee: '0' },
+    };
   }
 }
