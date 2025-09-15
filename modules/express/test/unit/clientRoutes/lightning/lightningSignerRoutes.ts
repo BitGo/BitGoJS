@@ -13,6 +13,7 @@ import {
   handleInitLightningWallet,
   handleUnlockLightningWallet,
 } from '../../../../src/lightning/lightningSignerRoutes';
+import { ExpressApiRouteRequest } from 'modules/express/src/typedRoutes/api';
 
 describe('Lightning signer routes', () => {
   let bitgo: TestBitGoAPI;
@@ -175,7 +176,7 @@ describe('Lightning signer routes', () => {
       bitgo: bitgo,
       config: { lightningSignerFileSystemPath: 'lightningSignerFileSystemPath' },
       decoded: { coin: 'tlnbtc', id: 'fakeid', passphrase: apiData.unlockWalletRequestBody.passphrase },
-    } as any;
+    } as unknown as ExpressApiRouteRequest<'express.lightning.unlockWallet', 'post'>;
 
     await handleUnlockLightningWallet(req);
 
