@@ -428,6 +428,7 @@ export const TON_FEATURES = [
   CoinFeature.REBUILD_ON_CUSTODY_SIGNING,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
   CoinFeature.ALPHANUMERIC_MEMO_ID,
+  CoinFeature.SUPPORTS_TOKENS,
 ];
 export const ARBETH_FEATURES = [
   ...ETH_FEATURES,

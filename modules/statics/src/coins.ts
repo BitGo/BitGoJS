@@ -263,6 +263,12 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
         token.contractAddress,
         ...commonArgs.slice(4) // asset, features, prefix, suffix, network, primaryKeyCurve
       );
+    case 'ton':
+      return initializer(
+        ...commonArgs.slice(0, 4), // id, name, fullName, decimalPlaces
+        token.contractAddress, // contractAddress
+        ...commonArgs.slice(4) // asset, features, prefix, suffix, network, primaryKeyCurve
+      );
     default:
       return undefined;
   }
