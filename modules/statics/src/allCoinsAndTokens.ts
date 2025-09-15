@@ -63,6 +63,7 @@ import { sip10Tokens } from './coins/sip10Tokens';
 import { nep141Tokens } from './coins/nep141Tokens';
 import { vetTokens } from './coins/vetTokens';
 import { cosmosTokens } from './coins/cosmosTokens';
+import { jettonTokens } from './coins/jettonTokens';
 import { flrp } from './flrp';
 import {
   ADA_FEATURES_WITH_FRANKFURT,
@@ -146,6 +147,7 @@ export const allCoinsAndTokens = [
   ...botTokens,
   ...botOfcTokens,
   ...adaTokens,
+  ...jettonTokens,
   avaxp(
     '5436386e-9e4d-4d82-92df-59d9720d1738',
     'avaxp',
@@ -2531,6 +2533,17 @@ export const allCoinsAndTokens = [
     '',
     'GBENJI'
   ),
+  stellarToken(
+    'c72bcc64-9269-45ae-9a08-9efa8afb071a',
+    'xlm:SHX-GDSTRSHXHGJ7ZIVRBXEYE5Q74XUVCUSEKEBR7UCHEUUEK72N7I7KJ6JH',
+    'Stronghold SHx',
+    7,
+    UnderlyingAsset['xlm:SHX-GDSTRSHXHGJ7ZIVRBXEYE5Q74XUVCUSEKEBR7UCHEUUEK72N7I7KJ6JH'],
+    'stronghold.co',
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'SHX'
+  ),
   tronToken(
     '5f3266f8-252c-492a-90d7-bb6d3bf550fb',
     'trx:btt',
@@ -4484,6 +4497,24 @@ export const allCoinsAndTokens = [
     '0x7b5e9cac3433e9202f28527f707c89e1e47b19de2c33e4db9521a63ad219b739',
     UnderlyingAsset['apt:benji'],
     APT_FEATURES
+  ),
+  aptToken(
+    'b8b9e122-f091-4ce4-9baf-5c901779e9f7',
+    'apt:kgen',
+    'KGEN',
+    8,
+    '0x2a8227993a4e38537a57caefe5e7e9a51327bf6cd732c1f56648f26f68304ebc',
+    UnderlyingAsset['apt:kgen'],
+    APT_FEATURES
+  ),
+  taptToken(
+    '5cce2ccc-977c-4791-b4f0-de5eb8da17b6',
+    'tapt:stgusd1',
+    'Test USD1 Token',
+    6,
+    '0x2356ad3e22c235a200a5df08282a65c42c2aafb0d8ec5b878a7192c5a2ba432a',
+    UnderlyingAsset['tapt:stgusd1'],
+    [...APT_FEATURES, CoinFeature.STABLECOIN]
   ),
   taptToken(
     '2695e728-96dd-46e6-9d01-bd0fdbe1ff38',

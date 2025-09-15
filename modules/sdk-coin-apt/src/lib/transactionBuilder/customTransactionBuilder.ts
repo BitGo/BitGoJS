@@ -5,6 +5,7 @@ import { Transaction } from '../transaction/transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import { CustomTransaction } from '../transaction/customTransaction';
 import { CustomTransactionParams } from '../iface';
+import { isValidModuleName, isValidFunctionName } from '../utils/validation';
 
 /**
  * Builder for Aptos custom transactions.
@@ -77,23 +78,13 @@ export class CustomTransactionBuilder extends TransactionBuilder {
     }
     try {
       const entryFunction = payload.entryFunction;
-      // Validate module address format
-      const moduleAddress = entryFunction.module_name.address.toString();
-      if (!moduleAddress.startsWith('0x')) {
-        return false;
-      }
       // Validate module and function identifiers
+      const moduleAddress = entryFunction.module_name.address.toString();
       const moduleIdentifier = entryFunction.module_name.name.identifier;
       const functionIdentifier = entryFunction.function_name.identifier;
-      // Check identifier format (letters, numbers, underscores, starting with letter/underscore)
-      const identifierPattern = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
-      if (!identifierPattern.test(moduleIdentifier) || !identifierPattern.test(functionIdentifier)) {
-        return false;
-      }
-      // Validate module name format
       const moduleName = `${moduleAddress}::${moduleIdentifier}`;
-      const moduleNamePattern = /^0x[a-fA-F0-9]{1,64}::[a-zA-Z_][a-zA-Z0-9_]*$/;
-      if (!moduleNamePattern.test(moduleName)) {
+
+      if (!isValidModuleName(moduleName) || !isValidFunctionName(functionIdentifier)) {
         return false;
       }
       return true;
