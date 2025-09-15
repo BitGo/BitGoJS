@@ -36,7 +36,7 @@ export const PostUnlockLightningWallet = httpRoute({
   }),
   response: {
     200: t.type({
-      message: t.string, // currently returns { message: 'ok' }
+      message: t.string,
     }),
     400: BitgoExpressError,
   },
