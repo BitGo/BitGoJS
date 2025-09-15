@@ -330,6 +330,7 @@ type StakingInstructions = {
   create?: CreateAccountParams;
   initialize?: InitializeStakeParams;
   delegate?: DelegateStakeParams;
+  hasAtaInit?: boolean;
 };
 
 type JitoStakingInstructions = StakingInstructions & {
@@ -419,6 +420,7 @@ function parseStakingActivateInstructions(
         break;
 
       case ValidInstructionTypesEnum.InitializeAssociatedTokenAccount:
+        stakingInstructions.hasAtaInit = true;
         instructionData.push({
           type: InstructionBuilderTypes.CreateAssociatedTokenAccount,
           params: {
@@ -441,7 +443,7 @@ function parseStakingActivateInstructions(
   switch (stakingType) {
     case SolStakingTypeEnum.JITO: {
       assert(isJitoStakingInstructions(stakingInstructions));
-      const { depositSol } = stakingInstructions;
+      const { depositSol, hasAtaInit } = stakingInstructions;
       stakingActivate = {
         type: InstructionBuilderTypes.StakingActivate,
         params: {
@@ -456,6 +458,7 @@ function parseStakingActivateInstructions(
               poolMint: depositSol.poolMint.toString(),
               reserveStake: depositSol.reserveStake.toString(),
             },
+            createAssociatedTokenAccount: !!hasAtaInit,
           },
         },
       };
