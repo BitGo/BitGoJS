@@ -2,5 +2,27 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["github>BitGo/gha-renovate-bot//presets/onboarding#v1.15.1"],
   "baseBranches": ["master"],
-  "enabledManagers": ["github-actions", "regex"],
+  "enabledManagers": ["github-actions", "regex", "nix", "pre-commit", "npm"],
+  "schedule": ["on monday"],
+  "packageRules": [
+    {
+      "matchPackageNames": ["@bitgo/public-types"],
+      "automerge": false,
+      "prTitle": "chore(deps): update @bitgo/public-types to {{newVersion}}",
+      "schedule": ["at any time"],
+      "prCreation": "immediate",
+      "reviewersFromCodeOwners": true,
+      "branchPrefix": "renovate/public-types/",
+      "semanticCommits": "enabled",
+      "separateMinorPatch": false,
+      "groupName": "BitGo Public Types",
+      "addLabels": ["auto-dependency-update"],
+      "assigneesFromCodeOwners": true,
+      "platformAutomerge": false,
+      "commitMessageAction": "chore",
+      "commitMessageTopic": "(deps): bump up @bitgo/public-types",
+      "commitMessageExtra": "to {{newVersion}}",
+      "commitBody": "This commit is part of an automated dependency update to minimize change lead time."
+    }
+  ]
 }
