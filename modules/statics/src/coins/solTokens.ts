@@ -2337,6 +2337,16 @@ export const solTokens = [
     UnderlyingAsset['sol:jitosol'],
     SolCoin.getFeaturesByTypeExcluding([CoinFeature.CUSTODY_BITGO_SINGAPORE], SOL_TOKEN_FEATURES)
   ),
+  tsolToken(
+    'cd6509ed-ba89-463f-98f1-5054727281b7',
+    'tsol:jitosol',
+    'Jito Staked SOL',
+    9,
+    'J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn',
+    'J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn',
+    UnderlyingAsset['tsol:jitosol'],
+    SolCoin.getFeaturesByTypeExcluding([CoinFeature.CUSTODY_BITGO_SINGAPORE], SOL_TOKEN_FEATURES)
+  ),
   solToken(
     'bd2130ca-c44f-4d7a-977b-62939a1f9fdb',
     'sol:zeus',

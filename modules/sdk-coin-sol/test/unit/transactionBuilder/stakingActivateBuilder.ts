@@ -165,7 +165,7 @@ describe('Sol Staking Activate Builder', () => {
           mintAddress: JITOSOL_MINT_ADDRESS,
           ownerAddress: wallet.pub,
           payerAddress: wallet.pub,
-          tokenName: 'sol:jitosol',
+          tokenName: 'tsol:jitosol',
         },
       },
       ...(doMemo
