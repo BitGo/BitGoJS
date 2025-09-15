@@ -2531,6 +2531,17 @@ export const allCoinsAndTokens = [
     '',
     'GBENJI'
   ),
+  stellarToken(
+    'c72bcc64-9269-45ae-9a08-9efa8afb071a',
+    'xlm:SHX-GDSTRSHXHGJ7ZIVRBXEYE5Q74XUVCUSEKEBR7UCHEUUEK72N7I7KJ6JH',
+    'Stronghold SHx',
+    7,
+    UnderlyingAsset['xlm:SHX-GDSTRSHXHGJ7ZIVRBXEYE5Q74XUVCUSEKEBR7UCHEUUEK72N7I7KJ6JH'],
+    'stronghold.co',
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'SHX'
+  ),
   tronToken(
     '5f3266f8-252c-492a-90d7-bb6d3bf550fb',
     'trx:btt',
@@ -4483,6 +4494,15 @@ export const allCoinsAndTokens = [
     9,
     '0x7b5e9cac3433e9202f28527f707c89e1e47b19de2c33e4db9521a63ad219b739',
     UnderlyingAsset['apt:benji'],
+    APT_FEATURES
+  ),
+  aptToken(
+    'b8b9e122-f091-4ce4-9baf-5c901779e9f7',
+    'apt:kgen',
+    'KGEN',
+    8,
+    '0x2a8227993a4e38537a57caefe5e7e9a51327bf6cd732c1f56648f26f68304ebc',
+    UnderlyingAsset['apt:kgen'],
     APT_FEATURES
   ),
   taptToken(

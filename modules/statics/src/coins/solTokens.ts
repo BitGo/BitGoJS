@@ -3047,6 +3047,26 @@ export const solTokens = [
     UnderlyingAsset['sol:cipher'],
     SOL_TOKEN_FEATURES
   ),
+  solToken(
+    '2dedad77-c5c9-4565-84bf-2236e5155de9',
+    'sol:bio',
+    'Bio Protocol',
+    9,
+    'bioJ9JTqW62MLz7UKHU69gtKhPpGi1BQhccj2kmSvUJ',
+    'bioJ9JTqW62MLz7UKHU69gtKhPpGi1BQhccj2kmSvUJ',
+    UnderlyingAsset['sol:bio'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '9f24f8f3-2f31-4bfe-b33a-539467e0bc9a',
+    'sol:rekt',
+    'Rekt',
+    4,
+    'vQoYWru2pbUdcVkUrRH74ktQDJgVjRcDvsoDbUzM5n9',
+    'vQoYWru2pbUdcVkUrRH74ktQDJgVjRcDvsoDbUzM5n9',
+    UnderlyingAsset['sol:rekt'],
+    SOL_TOKEN_FEATURES
+  ),
   tsolToken(
     'b98c5a7a-49c5-45f1-a6ee-b08dff596a7d',
     'tsol:srm',
