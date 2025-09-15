@@ -11,6 +11,7 @@ import {
   eosToken,
   erc20,
   hederaToken,
+  jettonToken,
   nep141Token,
   opethErc20,
   polygonErc20,
@@ -65,6 +66,7 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
     xrp: xrpToken,
     ofc: ofcToken,
     ada: adaToken,
+    ton: jettonToken,
   };
 
   //return the BaseCoin from default coin map if present

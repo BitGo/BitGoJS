@@ -63,6 +63,7 @@ import { sip10Tokens } from './coins/sip10Tokens';
 import { nep141Tokens } from './coins/nep141Tokens';
 import { vetTokens } from './coins/vetTokens';
 import { cosmosTokens } from './coins/cosmosTokens';
+import { jettonTokens } from './coins/jettonTokens';
 import { flrp } from './flrp';
 import {
   ADA_FEATURES_WITH_FRANKFURT,
@@ -146,6 +147,7 @@ export const allCoinsAndTokens = [
   ...botTokens,
   ...botOfcTokens,
   ...adaTokens,
+  ...jettonTokens,
   avaxp(
     '5436386e-9e4d-4d82-92df-59d9720d1738',
     'avaxp',
