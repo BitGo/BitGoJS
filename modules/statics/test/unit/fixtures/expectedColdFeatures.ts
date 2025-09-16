@@ -82,6 +82,7 @@ export const expectedColdFeatures = {
     'injective',
     'kaia',
     'kava',
+    'megaeth',
     'mantra',
     'mon',
     'near',
