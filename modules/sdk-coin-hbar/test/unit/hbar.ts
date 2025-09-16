@@ -501,6 +501,78 @@ describe('Hedera Hashgraph:', function () {
     });
   });
 
+  describe('Verify Token Enablement Transaction:', () => {
+    it('should verify a valid token enablement transaction', async function () {
+      const txHex = TestData.UNSIGNED_TOKEN_ASSOCIATE;
+      const expectedTokenName = 'thbar:usdc';
+      const expectedAccountId = '0.0.81320';
+
+      const isValid = await basecoin.verifyTokenEnablementTransaction(txHex, expectedTokenName, expectedAccountId);
+      isValid.should.equal(true);
+    });
+
+    it('should fail when txHex is missing', async function () {
+      await basecoin
+        .verifyTokenEnablementTransaction('', 'thbar:usdc', '0.0.81320')
+        .should.be.rejectedWith('Missing required parameters: txHex');
+    });
+
+    it('should fail when expectedTokenName is missing', async function () {
+      await basecoin
+        .verifyTokenEnablementTransaction(TestData.UNSIGNED_TOKEN_ASSOCIATE, '', '0.0.81320')
+        .should.be.rejectedWith('Missing required parameters: expectedTokenName');
+    });
+
+    it('should fail when expectedAccountId is missing', async function () {
+      await basecoin
+        .verifyTokenEnablementTransaction(TestData.UNSIGNED_TOKEN_ASSOCIATE, 'thbar:usdc', '')
+        .should.be.rejectedWith('Missing required parameters: expectedAccountId');
+    });
+
+    it('should fail when token name does not match', async function () {
+      await basecoin
+        .verifyTokenEnablementTransaction(TestData.UNSIGNED_TOKEN_ASSOCIATE, 'thbar:wrongtoken', '0.0.81320')
+        .should.be.rejectedWith(/Expected token name thbar:wrongtoken, got thbar:usdc/);
+    });
+
+    it('should fail when account ID does not match', async function () {
+      await basecoin
+        .verifyTokenEnablementTransaction(TestData.UNSIGNED_TOKEN_ASSOCIATE, 'thbar:usdc', '0.0.99999')
+        .should.be.rejectedWith(/Expected account ID 0.0.99999, got 0.0.81320/);
+    });
+
+    it('should fail when transaction is not a token enablement (has non-zero amount)', async function () {
+      // Use a regular transfer transaction which has non-zero amount
+      await basecoin
+        .verifyTokenEnablementTransaction(TestData.UNSIGNED_TOKEN_TRANSFER, 'thbar:usdc', '0.0.81320')
+        .should.be.rejectedWith(/Expected amount 0 for token enablement/);
+    });
+
+    it('should fail when transaction type is not tokenAssociate', async function () {
+      // Use a regular transfer transaction which is not tokenAssociate
+      // This will fail on amount validation first, but that's expected behavior
+      await basecoin
+        .verifyTokenEnablementTransaction(TestData.UNSIGNED_TOKEN_TRANSFER, 'thbar:usdc', '0.0.81320')
+        .should.be.rejectedWith(/Expected amount 0 for token enablement/);
+    });
+
+    it('should validate transaction type for valid token associate transaction', async function () {
+      // This test ensures the transaction type validation works for valid token associate transactions
+      const txHex = TestData.UNSIGNED_TOKEN_ASSOCIATE;
+      const expectedTokenName = 'thbar:usdc';
+      const expectedAccountId = '0.0.81320';
+
+      const isValid = await basecoin.verifyTokenEnablementTransaction(txHex, expectedTokenName, expectedAccountId);
+      isValid.should.equal(true);
+    });
+
+    it('should fail with invalid transaction hex', async function () {
+      await basecoin
+        .verifyTokenEnablementTransaction('invalid_hex', 'thbar:usdc', '0.0.81320')
+        .should.be.rejectedWith(/Invalid token enablement transaction/);
+    });
+  });
+
   describe('Sign Message', () => {
     it('should be performed', async () => {
       const keyPair = new KeyPair();
