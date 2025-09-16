@@ -13771,10 +13771,10 @@ jake@^10.8.5:
     filelist "^1.0.4"
     picocolors "^1.1.1"
 
-jasmine-core@^3.6.0:
-  version "3.99.1"
-  resolved "https://registry.npmjs.org/jasmine-core/-/jasmine-core-3.99.1.tgz"
-  integrity sha512-Hu1dmuoGcZ7AfyynN3LsfruwMbxMALMka+YtZeGoLuDEySVmVAPaonkNoBRIw/ectu8b9tVQCJNgp4a4knp+tg==
+jasmine-core@^4.1.0:
+  version "4.6.1"
+  resolved "https://registry.npmjs.org/jasmine-core/-/jasmine-core-4.6.1.tgz#5ebb8afa07282078f8d7b15871737a83b74e58f2"
+  integrity sha512-VYz/BjjmC3klLJlLwA4Kw8ytk0zDSmbbDLNs794VnWmkcCB7I9aAL/D48VNQtmITyPvea2C3jdUMfc3kAoy0PQ==
 
 jayson@^4.1.1:
   version "4.2.0"
@@ -14111,23 +14111,23 @@ jwt-decode@^4.0.0:
   resolved "https://registry.npmjs.org/jwt-decode/-/jwt-decode-4.0.0.tgz"
   integrity sha512-+KJGIyHgkGuIq3IEBNftfhW/LfWhXUIY6OmyVWjliu5KH1y0fw7VQ8YndE2O4qZdMSd9SqbnC8GOcZEy0Om7sA==
 
-karma-chrome-launcher@^3.1.0:
+karma-chrome-launcher@3.2.0:
   version "3.2.0"
-  resolved "https://registry.npmjs.org/karma-chrome-launcher/-/karma-chrome-launcher-3.2.0.tgz"
+  resolved "https://registry.npmjs.org/karma-chrome-launcher/-/karma-chrome-launcher-3.2.0.tgz#eb9c95024f2d6dfbb3748d3415ac9b381906b9a9"
   integrity sha512-rE9RkUPI7I9mAxByQWkGJFXfFD6lE4gC5nPuZdobf/QdTEJI6EU4yIay/cfU/xV4ZxlM5JiTv7zWYgA64NpS5Q==
   dependencies:
     which "^1.2.1"
 
-karma-jasmine@^4.0.0:
-  version "4.0.2"
-  resolved "https://registry.npmjs.org/karma-jasmine/-/karma-jasmine-4.0.2.tgz"
-  integrity sha512-ggi84RMNQffSDmWSyyt4zxzh2CQGwsxvYYsprgyR1j8ikzIduEdOlcLvXjZGwXG/0j41KUXOWsUCBfbEHPWP9g==
+karma-jasmine@5.1.0:
+  version "5.1.0"
+  resolved "https://registry.npmjs.org/karma-jasmine/-/karma-jasmine-5.1.0.tgz#3af4558a6502fa16856a0f346ec2193d4b884b2f"
+  integrity sha512-i/zQLFrfEpRyQoJF9fsCdTMOF5c2dK7C7OmsuKg2D0YSsuZSfQDiLuaiktbuio6F2wiCsZSnSnieIQ0ant/uzQ==
   dependencies:
-    jasmine-core "^3.6.0"
+    jasmine-core "^4.1.0"
 
-karma-typescript@^5.0.3:
+karma-typescript@5.5.4:
   version "5.5.4"
-  resolved "https://registry.npmjs.org/karma-typescript/-/karma-typescript-5.5.4.tgz"
+  resolved "https://registry.npmjs.org/karma-typescript/-/karma-typescript-5.5.4.tgz#969871512b8476dfc7a496f48da9ca9c73d710e5"
   integrity sha512-D7nQ96xu/UekuqCmiPimnCuOFqp8+BxiND6MU6IJVN37E7DgXzr7SUeTzwuTHtKSYpgxKv4iOTUteYTxpeZL9A==
   dependencies:
     acorn "^8.1.0"
@@ -14174,7 +14174,7 @@ karma-typescript@^5.0.3:
     util "^0.12.1"
     vm-browserify "^1.1.2"
 
-karma@^6.4.2:
+karma@6.4.4:
   version "6.4.4"
   resolved "https://registry.npmjs.org/karma/-/karma-6.4.4.tgz#dfa5a426cf5a8b53b43cd54ef0d0d09742351492"
   integrity sha512-LrtUxbdvt1gOpo3gxG+VAJlJAEMhbWlM4YrFQgql98FwF7+K8K12LYO4hnDdUkNjeztYrOXEMqgTajSWgmtI/w==
