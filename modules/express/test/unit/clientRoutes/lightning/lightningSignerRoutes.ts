@@ -13,6 +13,7 @@ import {
   handleInitLightningWallet,
   handleUnlockLightningWallet,
 } from '../../../../src/lightning/lightningSignerRoutes';
+import { ExpressApiRouteRequest } from '../../../../src/typedRoutes/api';
 
 describe('Lightning signer routes', () => {
   let bitgo: TestBitGoAPI;
@@ -162,7 +163,7 @@ describe('Lightning signer routes', () => {
       config: {
         lightningSignerFileSystemPath: 'lightningSignerFileSystemPath',
       },
-    } as any;
+    } as unknown as ExpressApiRouteRequest<'express.lightning.getState', 'get'>;
 
     await handleGetLightningWalletState(req);
 
