@@ -224,6 +224,88 @@ export class Hbar extends BaseCoin {
     return Utils.isSameBaseAddress(address, baseAddress);
   }
 
+  /**
+   * Verify that a transaction hex is a valid token enablement transaction
+   * @param txHex - The transaction hex to verify
+   * @param expectedTokenName - The expected token name to be enabled
+   * @param expectedAccountId - The expected account ID that will enable the token
+   * @returns Promise<boolean> - True if valid token enablement transaction
+   */
+  async verifyTokenEnablementTransaction(
+    txHex: string,
+    expectedTokenName: string,
+    expectedAccountId: string
+  ): Promise<boolean> {
+    // Validate required parameters
+    if (!txHex || !expectedTokenName || !expectedAccountId) {
+      const missing: string[] = [];
+      if (!txHex) missing.push('txHex');
+      if (!expectedTokenName) missing.push('expectedTokenName');
+      if (!expectedAccountId) missing.push('expectedAccountId');
+      throw new Error(`Missing required parameters: ${missing.join(', ')}`);
+    }
+
+    try {
+      // Parse and explain the transaction
+      const explainedTx = await this.explainTransaction({ txHex });
+
+      // Parse transaction from hex for validation
+      const transaction = new Transaction(coins.get(this.getChain()));
+      transaction.fromRawTransaction(txHex);
+      const originalTxData = transaction.toJson();
+
+      // Validate all aspects of the token enablement transaction
+      this.validateTransactionStructure(explainedTx);
+      this.validateAmount(explainedTx);
+      this.validateAccountId(explainedTx, expectedAccountId);
+      this.validateTokenName(explainedTx, expectedTokenName);
+      this.validateTransactionType(originalTxData);
+
+      return true;
+    } catch (error) {
+      throw new Error(`Invalid token enablement transaction: ${error.message}`);
+    }
+  }
+
+  // Validates that the transaction has the proper structure for token enablement
+  private validateTransactionStructure(explainedTx: TransactionExplanation): void {
+    if (explainedTx.outputs.length === 0) {
+      throw new Error('Transaction has no outputs');
+    }
+  }
+
+  // Validates that the amount is 0 for token enablement (no value transfer)
+  private validateAmount(explainedTx: TransactionExplanation): void {
+    const { amount } = explainedTx.outputs[0];
+    if (amount !== '0') {
+      throw new Error(`Expected amount 0 for token enablement, got ${amount}`);
+    }
+  }
+
+  // Validates that the account ID matches the expected account
+  private validateAccountId(explainedTx: TransactionExplanation, expectedAccountId: string): void {
+    const { address } = explainedTx.outputs[0];
+    if (address !== expectedAccountId) {
+      throw new Error(`Expected account ID ${expectedAccountId}, got ${address}`);
+    }
+  }
+
+  // Validates that the token name matches the expected token
+  private validateTokenName(explainedTx: TransactionExplanation, expectedTokenName: string): void {
+    const { tokenName } = explainedTx.outputs[0];
+    if (tokenName !== expectedTokenName) {
+      throw new Error(`Expected token name ${expectedTokenName}, got ${tokenName}`);
+    }
+  }
+
+  // Validates that the transaction type is token associate
+  private validateTransactionType(originalTxData: any): void {
+    const transactionType = originalTxData.instructionsData?.type;
+    if (transactionType !== 'tokenAssociate') {
+      throw new Error(`Expected transaction type 'tokenAssociate', got ${transactionType}`);
+    }
+  }
+
   async verifyTransaction(params: HbarVerifyTransactionOptions): Promise<boolean> {
     // asset name to transfer amount map
     const coinConfig = coins.get(this.getChain());
@@ -243,6 +325,13 @@ export class Hbar extends BaseCoin {
 
     if (!txParams.recipients) {
       throw new Error('missing required tx params property recipients');
+    }
+
+    // for enabletoken, use verifyTokenEnablementTransaction
+    if (txParams.type === 'enabletoken') {
+      const expectedTokenName = txParams.recipients[0].tokenName || '';
+      const expectedAccountId = txParams.recipients[0].address;
+      await this.verifyTokenEnablementTransaction(txPrebuild.txHex, expectedTokenName, expectedAccountId);
     }
 
     // for enabletoken, recipient output amount is 0
