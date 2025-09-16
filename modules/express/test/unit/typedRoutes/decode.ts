@@ -4,6 +4,7 @@ import { DecryptRequestBody } from '../../../src/typedRoutes/api/common/decrypt'
 import { EncryptRequestBody } from '../../../src/typedRoutes/api/common/encrypt';
 import { LoginRequest } from '../../../src/typedRoutes/api/common/login';
 import { VerifyAddressBody } from '../../../src/typedRoutes/api/common/verifyAddress';
+import { VerifyAddressV2Body, VerifyAddressV2Params } from '../../../src/typedRoutes/api/v2/verifyAddress';
 import { SimpleCreateRequestBody } from '../../../src/typedRoutes/api/v1/simpleCreate';
 import { KeychainLocalRequestParams } from '../../../src/typedRoutes/api/v2/keychainLocal';
 
@@ -91,6 +92,34 @@ describe('io-ts decode tests', function () {
     );
     assertDecode(t.type(VerifyAddressBody), {
       address: 'some-address',
+    });
+  });
+  it('express.verifycoinaddress', function () {
+    // invalid coin param type
+    assert.throws(() =>
+      assertDecode(t.type(VerifyAddressV2Params), {
+        coin: 123,
+      })
+    );
+    // valid coin param
+    assertDecode(t.type(VerifyAddressV2Params), {
+      coin: 'btc',
+    });
+
+    // invalid address type in body
+    assert.throws(() =>
+      assertDecode(t.type(VerifyAddressV2Body), {
+        address: 123,
+      })
+    );
+    // valid body without optional flag
+    assertDecode(t.type(VerifyAddressV2Body), {
+      address: 'some-address',
+    });
+    // valid body with optional flag
+    assertDecode(t.type(VerifyAddressV2Body), {
+      address: 'some-address',
+      supportOldScriptHashVersion: true,
     });
   });
   it('express.v1.wallet.simplecreate', function () {

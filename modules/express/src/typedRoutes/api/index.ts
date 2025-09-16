@@ -13,6 +13,7 @@ import { PostSimpleCreate } from './v1/simpleCreate';
 import { PutPendingApproval } from './v1/pendingApproval';
 import { PostSignTransaction } from './v1/signTransaction';
 import { PostKeychainLocal } from './v2/keychainLocal';
+import { PostVerifyCoinAddress } from './v2/verifyAddress';
 
 export const ExpressApi = apiSpec({
   'express.ping': {
@@ -47,6 +48,9 @@ export const ExpressApi = apiSpec({
   },
   'express.keychain.local': {
     post: PostKeychainLocal,
+  },
+  'express.verifycoinaddress': {
+    post: PostVerifyCoinAddress,
   },
 });
 

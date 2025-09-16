@@ -8,10 +8,8 @@ import {
   KeyPairOptions,
   Secp256k1ExtendedKeyPair,
 } from '@bitgo/sdk-core';
-import createHash from 'create-hash';
-import { Buffer as SafeBuffer } from 'safe-buffer';
 import { bip32, ECPair } from '@bitgo/secp256k1';
-import { randomBytes } from 'crypto';
+import { randomBytes, createHash } from 'crypto';
 import utils from './utils';
 
 const DEFAULT_SEED_SIZE_BYTES = 16;
@@ -137,8 +135,8 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
    * @returns {Buffer}
    */
   private getAddressSafeBuffer(): Buffer {
-    const publicKeySafe = SafeBuffer.from(this.keyPair.publicKey.toString('hex'), 'hex');
-    const sha256 = SafeBuffer.from(createHash('sha256').update(publicKeySafe).digest());
-    return Buffer.from(createHash('ripemd160').update(sha256).digest());
+    const publicKeyHex = this.keyPair.publicKey.toString('hex');
+    const sha256 = createHash('sha256').update(publicKeyHex, 'hex').digest();
+    return createHash('ripemd160').update(sha256).digest();
   }
 }

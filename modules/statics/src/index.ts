@@ -32,6 +32,7 @@ export {
   VetNFTCollection,
   CosmosChainToken,
   AdaToken,
+  JettonToken,
 } from './account';
 export { CoinMap } from './map';
 export { networkFeatureMapForTokens } from './networkFeatureMapForTokens';

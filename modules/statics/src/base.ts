@@ -2261,6 +2261,7 @@ export enum UnderlyingAsset {
   'xlm:AUDD-GDC7X2MXTYSAKUUGAIQ7J7RPEIM7GXSAIWFYWWH4GLNFECQVJJLB2EEU' = 'xlm:AUDD-GDC7X2MXTYSAKUUGAIQ7J7RPEIM7GXSAIWFYWWH4GLNFECQVJJLB2EEU',
   'xlm:BENJI-GBHNGLLIE3KWGKCHIKMHJ5HVZHYIK7WTBE4QF5PLAKL4CJGSEU7HZIW5' = 'xlm:BENJI-GBHNGLLIE3KWGKCHIKMHJ5HVZHYIK7WTBE4QF5PLAKL4CJGSEU7HZIW5',
   'xlm:gBENJI-GD5J73EKK5IYL5XS3FBTHHX7CZIYRP7QXDL57XFWGC2WVYWT326OBXRP' = 'xlm:gBENJI-GD5J73EKK5IYL5XS3FBTHHX7CZIYRP7QXDL57XFWGC2WVYWT326OBXRP',
+  'xlm:SHX-GDSTRSHXHGJ7ZIVRBXEYE5Q74XUVCUSEKEBR7UCHEUUEK72N7I7KJ6JH' = 'xlm:SHX-GDSTRSHXHGJ7ZIVRBXEYE5Q74XUVCUSEKEBR7UCHEUUEK72N7I7KJ6JH',
 
   // Eth NFTs
   // generic NFTs
@@ -2659,6 +2660,8 @@ export enum UnderlyingAsset {
   'bsc:unx' = 'bsc:unx',
   'bsc:usdo' = 'bsc:usdo',
   'bsc:slay' = 'bsc:slay',
+  'bsc:prove' = 'bsc:prove',
+  'bsc:rekt' = 'bsc:rekt',
   // BSC NFTs
   // generic NFTs
   'erc721:bsctoken' = 'erc721:bsctoken',
@@ -2909,6 +2912,7 @@ export enum UnderlyingAsset {
   'sol:ens' = 'sol:ens',
   'sol:enron' = 'sol:enron',
   'sol:jitosol' = 'sol:jitosol',
+  'tsol:jitosol' = 'tsol:jitosol',
   'sol:zeus' = 'sol:zeus',
   'sol:kmno' = 'sol:kmno',
   'sol:giga' = 'sol:giga',
@@ -2980,6 +2984,8 @@ export enum UnderlyingAsset {
   'sol:eurc' = 'sol:eurc',
   'sol:dynosol' = 'sol:dynosol',
   'sol:cipher' = 'sol:cipher',
+  'sol:bio' = 'sol:bio',
+  'sol:rekt' = 'sol:rekt',
   // TRX tokens
   'trx:htx' = 'trx:htx',
   'trx:jst' = 'trx:jst',
@@ -3042,6 +3048,7 @@ export enum UnderlyingAsset {
   'apt:pact' = 'apt:pact',
   'apt:benji' = 'apt:benji',
   'apt:lsd' = 'apt:lsd',
+  'apt:kgen' = 'apt:kgen',
   // Apt mainnet NFT collections
   'apt:h00ts' = 'apt:h00ts',
 
@@ -3116,6 +3123,9 @@ export enum UnderlyingAsset {
   // COSMOS testnet tokens
   'thash:ylds' = 'thash:ylds',
 
+  // TON testnet tokens
+  'tton:ukwny-us' = 'tton:ukwny-us',
+
   'eth:0x0' = 'eth:0x0',
   'eth:vvs' = 'eth:vvs',
   'eth:bmx' = 'eth:bmx',
@@ -3130,6 +3140,13 @@ export enum UnderlyingAsset {
   'eth:shx' = 'eth:shx',
   'eth:slay' = 'eth:slay',
   'eth:mxnb' = 'eth:mxnb',
+  'eth:hwhlp' = 'eth:hwhlp',
+  'eth:mxnd' = 'eth:mxnd',
+  'eth:bio' = 'eth:bio',
+  'eth:prove' = 'eth:prove',
+  'eth:zrc' = 'eth:zrc',
+  'eth:open' = 'eth:open',
+  'eth:mbg' = 'eth:mbg',
 
   // ADA testnet tokens
   'tada:water' = 'tada:water',

@@ -43,15 +43,17 @@ describe('Tao Move Stake Builder', function () {
     it('should validate addresses', function () {
       const spyValidateAddress = spy(builder, 'validateAddress');
       assert.throws(
-        () => builder.originHotkey('abc'),
+        () => builder.originHotkey({ address: 'abc' }),
         (e: Error) => e.message === `The address 'abc' is not a well-formed dot address`
       );
       assert.throws(
-        () => builder.destinationHotkey('abc'),
+        () => builder.destinationHotkey({ address: 'abc' }),
         (e: Error) => e.message === `The address 'abc' is not a well-formed dot address`
       );
-      should.doesNotThrow(() => builder.originHotkey('5FCPTnjevGqAuTttetBy4a24Ej3pH9fiQ8fmvP1ZkrVsLUoT'));
-      should.doesNotThrow(() => builder.destinationHotkey('5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq'));
+      should.doesNotThrow(() => builder.originHotkey({ address: '5FCPTnjevGqAuTttetBy4a24Ej3pH9fiQ8fmvP1ZkrVsLUoT' }));
+      should.doesNotThrow(() =>
+        builder.destinationHotkey({ address: '5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq' })
+      );
 
       SinonAssert.callCount(spyValidateAddress, 4);
     });
@@ -61,8 +63,8 @@ describe('Tao Move Stake Builder', function () {
     it('should build a move stake transaction', async function () {
       builder
         .amount('9007199254740995')
-        .originHotkey('5FCPTnjevGqAuTttetBy4a24Ej3pH9fiQ8fmvP1ZkrVsLUoT')
-        .destinationHotkey('5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq')
+        .originHotkey({ address: '5FCPTnjevGqAuTttetBy4a24Ej3pH9fiQ8fmvP1ZkrVsLUoT' })
+        .destinationHotkey({ address: '5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq' })
         .originNetuid('1')
         .destinationNetuid('1')
         .sender({ address: sender.address })
@@ -136,8 +138,8 @@ describe('Tao Move Stake Builder', function () {
     it('should build transaction with different netuids', async function () {
       builder
         .amount('1000000000000')
-        .originHotkey('5FCPTnjevGqAuTttetBy4a24Ej3pH9fiQ8fmvP1ZkrVsLUoT')
-        .destinationHotkey('5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq')
+        .originHotkey({ address: '5FCPTnjevGqAuTttetBy4a24Ej3pH9fiQ8fmvP1ZkrVsLUoT' })
+        .destinationHotkey({ address: '5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq' })
         .originNetuid('1')
         .destinationNetuid('2')
         .sender({ address: sender.address })
@@ -163,8 +165,8 @@ describe('Tao Move Stake Builder', function () {
       should.doesNotThrow(() => {
         builder
           .amount('1000000000000')
-          .originHotkey('5FCPTnjevGqAuTttetBy4a24Ej3pH9fiQ8fmvP1ZkrVsLUoT')
-          .destinationHotkey('5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq')
+          .originHotkey({ address: '5FCPTnjevGqAuTttetBy4a24Ej3pH9fiQ8fmvP1ZkrVsLUoT' })
+          .destinationHotkey({ address: '5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq' })
           .originNetuid('1')
           .destinationNetuid('1');
       });
@@ -231,8 +233,8 @@ describe('Tao Move Stake Builder', function () {
     it('should build a signed move stake transaction with TSS signature', async function () {
       builder
         .amount('9007199254740995')
-        .originHotkey('5FCPTnjevGqAuTttetBy4a24Ej3pH9fiQ8fmvP1ZkrVsLUoT')
-        .destinationHotkey('5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq')
+        .originHotkey({ address: '5FCPTnjevGqAuTttetBy4a24Ej3pH9fiQ8fmvP1ZkrVsLUoT' })
+        .destinationHotkey({ address: '5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq' })
         .originNetuid('1')
         .destinationNetuid('1')
         .sender({ address: sender.address })
@@ -265,8 +267,8 @@ describe('Tao Move Stake Builder', function () {
     it('should build an unsigned move stake transaction', async function () {
       builder
         .amount('50000000')
-        .originHotkey('5FCPTnjevGqAuTttetBy4a24Ej3pH9fiQ8fmvP1ZkrVsLUoT')
-        .destinationHotkey('5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq')
+        .originHotkey({ address: '5FCPTnjevGqAuTttetBy4a24Ej3pH9fiQ8fmvP1ZkrVsLUoT' })
+        .destinationHotkey({ address: '5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq' })
         .originNetuid('1')
         .destinationNetuid('2')
         .sender({ address: sender.address })
@@ -300,7 +302,7 @@ describe('Tao Move Stake Builder', function () {
     it('should throw error for missing origin hotkey', function () {
       builder
         .amount('1000000000000')
-        .destinationHotkey('5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq')
+        .destinationHotkey({ address: '5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq' })
         .originNetuid('1')
         .destinationNetuid('1');
 
@@ -313,7 +315,7 @@ describe('Tao Move Stake Builder', function () {
     it('should throw error for missing destination hotkey', function () {
       builder
         .amount('1000000000000')
-        .originHotkey('5FCPTnjevGqAuTttetBy4a24Ej3pH9fiQ8fmvP1ZkrVsLUoT')
+        .originHotkey({ address: '5FCPTnjevGqAuTttetBy4a24Ej3pH9fiQ8fmvP1ZkrVsLUoT' })
         .originNetuid('1')
         .destinationNetuid('1');
 
@@ -326,8 +328,8 @@ describe('Tao Move Stake Builder', function () {
     it('should throw error for missing origin netuid', function () {
       builder
         .amount('1000000000000')
-        .originHotkey('5FCPTnjevGqAuTttetBy4a24Ej3pH9fiQ8fmvP1ZkrVsLUoT')
-        .destinationHotkey('5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq')
+        .originHotkey({ address: '5FCPTnjevGqAuTttetBy4a24Ej3pH9fiQ8fmvP1ZkrVsLUoT' })
+        .destinationHotkey({ address: '5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq' })
         .destinationNetuid('1');
 
       assert.throws(
@@ -339,8 +341,8 @@ describe('Tao Move Stake Builder', function () {
     it('should throw error for missing destination netuid', function () {
       builder
         .amount('1000000000000')
-        .originHotkey('5FCPTnjevGqAuTttetBy4a24Ej3pH9fiQ8fmvP1ZkrVsLUoT')
-        .destinationHotkey('5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq')
+        .originHotkey({ address: '5FCPTnjevGqAuTttetBy4a24Ej3pH9fiQ8fmvP1ZkrVsLUoT' })
+        .destinationHotkey({ address: '5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq' })
         .originNetuid('1');
 
       assert.throws(
@@ -351,8 +353,8 @@ describe('Tao Move Stake Builder', function () {
 
     it('should throw error for missing amount', function () {
       builder
-        .originHotkey('5FCPTnjevGqAuTttetBy4a24Ej3pH9fiQ8fmvP1ZkrVsLUoT')
-        .destinationHotkey('5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq')
+        .originHotkey({ address: '5FCPTnjevGqAuTttetBy4a24Ej3pH9fiQ8fmvP1ZkrVsLUoT' })
+        .destinationHotkey({ address: '5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq' })
         .originNetuid('1')
         .destinationNetuid('1');
 
@@ -402,7 +404,7 @@ describe('Tao Move Stake Builder', function () {
     it('should handle same origin and destination hotkeys', function () {
       const sameAddress = '5FCPTnjevGqAuTttetBy4a24Ej3pH9fiQ8fmvP1ZkrVsLUoT';
       should.doesNotThrow(() => {
-        builder.originHotkey(sameAddress).destinationHotkey(sameAddress);
+        builder.originHotkey({ address: sameAddress }).destinationHotkey({ address: sameAddress });
       });
     });
 
@@ -422,11 +424,11 @@ describe('Tao Move Stake Builder', function () {
 
       invalidAddresses.forEach((address) => {
         assert.throws(
-          () => builder.originHotkey(address),
+          () => builder.originHotkey({ address }),
           (e: Error) => e.message.includes('is not a well-formed dot address')
         );
         assert.throws(
-          () => builder.destinationHotkey(address),
+          () => builder.destinationHotkey({ address }),
           (e: Error) => e.message.includes('is not a well-formed dot address')
         );
       });
@@ -453,8 +455,8 @@ describe('Tao Move Stake Builder', function () {
     it('should provide correct explanation with different subnet tokens', async function () {
       builder
         .amount('1000000000000')
-        .originHotkey('5FCPTnjevGqAuTttetBy4a24Ej3pH9fiQ8fmvP1ZkrVsLUoT')
-        .destinationHotkey('5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq')
+        .originHotkey({ address: '5FCPTnjevGqAuTttetBy4a24Ej3pH9fiQ8fmvP1ZkrVsLUoT' })
+        .destinationHotkey({ address: '5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq' })
         .originNetuid('1')
         .destinationNetuid('2')
         .sender({ address: sender.address })
@@ -479,8 +481,8 @@ describe('Tao Move Stake Builder', function () {
     it('should handle explanation with zero tip', async function () {
       builder
         .amount('500000000')
-        .originHotkey('5FCPTnjevGqAuTttetBy4a24Ej3pH9fiQ8fmvP1ZkrVsLUoT')
-        .destinationHotkey('5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq')
+        .originHotkey({ address: '5FCPTnjevGqAuTttetBy4a24Ej3pH9fiQ8fmvP1ZkrVsLUoT' })
+        .destinationHotkey({ address: '5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq' })
         .originNetuid('1')
         .destinationNetuid('1')
         .sender({ address: sender.address })
