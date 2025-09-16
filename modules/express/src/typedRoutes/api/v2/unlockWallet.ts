@@ -10,7 +10,7 @@ import { BitgoExpressError } from '../../schemas/error';
 export const UnlockLightningWalletParams = {
   coin: t.string,
   id: t.string,
-};
+} as const;
 
 /**
  * Request body for unlocking a lightning wallet
@@ -18,7 +18,7 @@ export const UnlockLightningWalletParams = {
  */
 export const UnlockLightningWalletBody = {
   passphrase: t.string,
-};
+} as const;
 
 /**
  * Lightning - Unlock node

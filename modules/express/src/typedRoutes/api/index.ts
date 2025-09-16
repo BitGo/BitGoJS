@@ -48,6 +48,7 @@ export const ExpressApi = apiSpec({
   },
   'express.lightning.unlockWallet': {
     post: PostUnlockLightningWallet,
+  },
   'express.verifycoinaddress': {
     post: PostVerifyCoinAddress,
   },
