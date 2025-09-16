@@ -3976,18 +3976,7 @@ export class Wallet implements IWallet {
     return keychains;
   }
 
-  /**
-   * Approve token for use with a batcher contract
-   * This function builds, signs, and sends a token approval transaction
-   *
-   * @param {string} walletPassphrase - The passphrase to be used to decrypt the user key
-   * @param {string} tokenName - The name of the token to be approved
-   * @returns {Promise<any>} The transaction details
-   */
-  async approveErc20Token(walletPassphrase: string, tokenName: string): Promise<SubmitTransactionResponse> {
-    const reqId = new RequestTracer();
-    this.bitgo.setRequestTracer(reqId);
-
+  async buildErc20TokenApproval(tokenName: string) {
     let tokenApprovalBuild;
     try {
       const url = this.baseCoin.url(`/wallet/${this.id()}/token/approval/build`);
@@ -4000,6 +3989,21 @@ export class Wallet implements IWallet {
     } catch (e) {
       throw e;
     }
+    return tokenApprovalBuild;
+  }
+  /**
+   * Approve token for use with a batcher contract
+   * This function builds, signs, and sends a token approval transaction
+   *
+   * @param {string} walletPassphrase - The passphrase to be used to decrypt the user key
+   * @param {string} tokenName - The name of the token to be approved
+   * @returns {Promise<any>} The transaction details
+   */
+  async approveErc20Token(walletPassphrase: string, tokenName: string): Promise<SubmitTransactionResponse> {
+    const reqId = new RequestTracer();
+    this.bitgo.setRequestTracer(reqId);
+
+    const x = buildErc20TokenApproval(tokenName);
 
     const keychains = await this.getKeychainsAndValidatePassphrase({
       reqId,
@@ -4007,7 +4011,7 @@ export class Wallet implements IWallet {
     });
 
     const signingParams = {
-      txPrebuild: tokenApprovalBuild,
+      txPrebuild: x,
       keychain: keychains[0],
       walletPassphrase,
       reqId,
