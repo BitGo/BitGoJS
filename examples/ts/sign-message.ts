@@ -26,6 +26,7 @@ async function signMessage(): Promise<void> {
     message: {
       messageRaw: testnetMessageRaw,
       messageStandardType: MessageStandardType.EIP191,
+      // signerAddress: '' // optional, will use wallet root address if not provided
     },
     walletPassphrase,
   });
