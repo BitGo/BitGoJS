@@ -115,6 +115,11 @@ export const marinadeStakingActivateInstructionsIndexes = {
 
 /** Const to check the order of the Jito Staking Activate instructions when decode */
 export const jitoStakingActivateInstructionsIndexes = {
+  DepositSol: 0,
+} as const;
+
+/** Const to check the order of the Jito Staking Activate instructions when decode */
+export const jitoStakingActivateWithATAInstructionsIndexes = {
   InitializeAssociatedTokenAccount: 0,
   DepositSol: 1,
 } as const;

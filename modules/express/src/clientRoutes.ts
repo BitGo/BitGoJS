@@ -356,26 +356,18 @@ function handleV2UserREST(req: express.Request, res: express.Response, next: exp
  * handle v2 address validation
  * @param req
  */
-function handleV2VerifyAddress(req: express.Request): { isValid: boolean } {
-  if (!_.isString(req.body.address)) {
-    throw new Error('Expected address to be a string');
-  }
-
-  if (req.body.supportOldScriptHashVersion !== undefined && !_.isBoolean(req.body.supportOldScriptHashVersion)) {
-    throw new Error('Expected supportOldScriptHashVersion to be a boolean.');
-  }
-
+function handleV2VerifyAddress(req: ExpressApiRouteRequest<'express.verifycoinaddress', 'post'>): { isValid: boolean } {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.params.coin);
 
   if (coin instanceof Coin.AbstractUtxoCoin) {
     return {
-      isValid: coin.isValidAddress(req.body.address, !!req.body.supportOldScriptHashVersion),
+      isValid: coin.isValidAddress(req.decoded.address, req.decoded.supportOldScriptHashVersion),
     };
   }
 
   return {
-    isValid: coin.isValidAddress(req.body.address),
+    isValid: coin.isValidAddress(req.decoded.address),
   };
 }
 
@@ -1724,7 +1716,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
 
   // Miscellaneous
   app.post('/api/v2/:coin/canonicaladdress', parseBody, prepareBitGo(config), promiseWrapper(handleCanonicalAddress));
-  app.post('/api/v2/:coin/verifyaddress', parseBody, prepareBitGo(config), promiseWrapper(handleV2VerifyAddress));
+  router.post('express.verifycoinaddress', [prepareBitGo(config), typedPromiseWrapper(handleV2VerifyAddress)]);
   app.put(
     '/api/v2/:coin/pendingapprovals/:id',
     parseBody,
