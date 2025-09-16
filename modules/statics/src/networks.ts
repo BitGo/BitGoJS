@@ -1939,6 +1939,16 @@ class FlowTestnet extends Testnet implements EthereumNetwork {
   nativeCoinOperationHashPrefix = '545';
 }
 
+// TODO update MegaETH explorer urls and chainId when available
+class MegaETH extends Mainnet implements EthereumNetwork {
+  name = 'MegaETH';
+  family = CoinFamily.MEGAETH;
+  explorerUrl = 'https://www.megaexplorer.xyz/tx';
+  accountExplorerUrl = 'https://www.megaexplorer.xyz/address/';
+  chainId = 6342;
+  nativeCoinOperationHashPrefix = '6342';
+}
+
 class MegaETHTestnet extends Testnet implements EthereumNetwork {
   name = 'MegaETHTestnet';
   family = CoinFamily.MEGAETH;
@@ -2019,6 +2029,7 @@ export const Networks = {
     kavaevm: Object.freeze(new KavaEVM()),
     lnbtc: Object.freeze(new LightningBitcoin()),
     litecoin: Object.freeze(new Litecoin()),
+    megaeth: Object.freeze(new MegaETH()),
     mon: Object.freeze(new Monad()),
     mantra: Object.freeze(new Mantra()),
     plume: Object.freeze(new Plume()),
