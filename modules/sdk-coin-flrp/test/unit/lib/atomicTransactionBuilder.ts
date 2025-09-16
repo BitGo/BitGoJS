@@ -181,27 +181,59 @@ describe('AtomicTransactionBuilder', function () {
   });
 
   describe('createInputOutput', function () {
-    it('should return placeholder structure', function () {
-      const result = builder.testCreateInputOutput(100n);
+    const sampleUtxos = [
+      {
+        outputID: 7,
+        amount: '1000000',
+        txid: '1234567890abcdef1234567890abcdef12345678',
+        outputidx: '0',
+        threshold: 2,
+        addresses: ['P-test1234567890abcdef', 'P-test567890abcdef1234'],
+      },
+      {
+        outputID: 7,
+        amount: '500000',
+        txid: 'abcdef1234567890abcdef1234567890abcdef12',
+        outputidx: '1',
+        threshold: 2,
+        addresses: ['P-test1234567890abcdef', 'P-test567890abcdef1234'],
+      },
+    ];
+
+    it('should return empty structure when no UTXOs set', function () {
+      assert.throws(() => builder.testCreateInputOutput(100n), /UTXOs are required for creating inputs and outputs/);
+    });
+
+    it('should process UTXOs and return structured output', function () {
+      // Set UTXOs first
+      builder.utxos(sampleUtxos);
+
+      const result = builder.testCreateInputOutput(100000n);
 
       assert.ok('inputs' in result);
       assert.ok('outputs' in result);
       assert.ok('credentials' in result);
 
       assert.ok(Array.isArray(result.inputs));
-      assert.strictEqual(result.inputs.length, 0);
       assert.ok(Array.isArray(result.outputs));
-      assert.strictEqual(result.outputs.length, 0);
       assert.ok(Array.isArray(result.credentials));
-      assert.strictEqual(result.credentials.length, 0);
+      assert.strictEqual(result.credentials.length, 1); // Should create credential for first UTXO
     });
 
-    it('should handle different amounts', function () {
-      const result1 = builder.testCreateInputOutput(1n);
-      const result2 = builder.testCreateInputOutput(BigInt('1000000000'));
+    it('should handle insufficient funds', function () {
+      builder.utxos(sampleUtxos);
 
-      // Both should return same placeholder structure regardless of amount
-      assert.deepStrictEqual(result1, result2);
+      // Request more than available (total available is 1,500,000)
+      assert.throws(() => builder.testCreateInputOutput(2000000n), /Insufficient funds: need 2000000, have 1500000/);
+    });
+
+    it('should use multiple UTXOs when needed', function () {
+      builder.utxos(sampleUtxos);
+
+      // Request amount that requires both UTXOs
+      const result = builder.testCreateInputOutput(1200000n);
+
+      assert.strictEqual(result.credentials.length, 2); // Should use both UTXOs
     });
   });
 

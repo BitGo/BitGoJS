@@ -2,6 +2,7 @@
  * @prettier
  */
 import { CoinFamily } from '@bitgo/statics';
+import isEqual from 'lodash/isEqual';
 
 import {
   DelegationOptions,
@@ -380,7 +381,6 @@ export class StakingWallet implements IStakingWallet {
       const platformRecipientMap = new Map(
         (explainedTransaction?.outputs ?? []).map((recipient) => [recipient.address.toLowerCase(), recipient])
       );
-
       for (const [address] of platformRecipientMap) {
         if (!userRecipientMap.has(address)) {
           mismatchErrors.push(`Unexpected recipient address found in built transaction: ${address}`);
@@ -410,6 +410,7 @@ export class StakingWallet implements IStakingWallet {
         }
       }
     }
+
     if (buildParams?.memo && (explainedTransaction as any).memo !== buildParams.memo) {
       mismatchErrors.push(
         `Memo mismatch. Expected: '${JSON.stringify(buildParams.memo)}', Got: '${JSON.stringify(
@@ -431,9 +432,7 @@ export class StakingWallet implements IStakingWallet {
     }
 
     if (buildParams?.solInstructions) {
-      if (
-        JSON.stringify((explainedTransaction as any).solInstructions) !== JSON.stringify(buildParams.solInstructions)
-      ) {
+      if (!isEqual((explainedTransaction as any).solInstructions, buildParams.solInstructions)) {
         mismatchErrors.push(
           `Solana instructions mismatch. Expected: ${JSON.stringify(
             buildParams.solInstructions
@@ -444,8 +443,7 @@ export class StakingWallet implements IStakingWallet {
 
     if (buildParams?.aptosCustomTransactionParams) {
       if (
-        JSON.stringify((explainedTransaction as any).aptosCustomTransactionParams) !==
-        JSON.stringify(buildParams.aptosCustomTransactionParams)
+        !isEqual((explainedTransaction as any).aptosCustomTransactionParams, buildParams.aptosCustomTransactionParams)
       ) {
         mismatchErrors.push(
           `Aptos custom transaction parameters mismatch. Expected: ${JSON.stringify(

@@ -1,4 +1,4 @@
-import { IWallet } from '../wallet';
+import { Wallet, IWallet } from '../wallet';
 import { MessageStandardType } from '../utils';
 import { MidnightMessageProvider } from './midnightMessageProvider';
 import { IMessageProvider, MessageInfo } from './iMessageProvider';
@@ -27,17 +27,25 @@ async function bulkSignAccountBasedMessagesWithProvider(
   const failedAddresses: string[] = [];
   const txRequests: Record<string, unknown>[] = [];
 
+  // Gather all messages to process (flatten all batches)
+  let allMessages: MessageInfo[] = [];
   let messages: MessageInfo[] = await provider.getMessagesAndAddressesToSign();
   while (messages.length > 0) {
-    // Sign/build all messages in parallel
-    const results = await Promise.all(
-      messages.map((messageInfo) => signOrBuildMessage(wallet, messageInfo, messageStandardType, walletPassphrase))
-    );
-    // Process results and update counters
-    processResults(results, txRequests, failedAddresses);
-    // Get next batch of messages
+    allMessages = allMessages.concat(messages);
     messages = await provider.getMessagesAndAddressesToSign();
   }
+
+  // Extract wallet constructor params
+  const { bitgo, baseCoin, _wallet: walletData } = wallet as Wallet;
+
+  // Process all messages in parallel, each with a new Wallet instance
+  const results = await Promise.all(
+    allMessages.map(async (messageInfo) => {
+      const newWallet = new Wallet(bitgo, baseCoin, walletData);
+      return signOrBuildMessage(newWallet, messageInfo, messageStandardType, walletPassphrase);
+    })
+  );
+  processResults(results, txRequests, failedAddresses);
   return { failedAddresses, txRequests };
 }
 

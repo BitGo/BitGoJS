@@ -8,6 +8,9 @@ export { AddressInitializationTransaction } from './transaction/addressInitializ
 export { FlushTokenTransaction } from './transaction/flushTokenTransaction';
 export { TokenTransaction } from './transaction/tokenTransaction';
 export { StakingTransaction } from './transaction/stakingTransaction';
+export { ExitDelegationTransaction } from './transaction/exitDelegation';
+export { BurnNftTransaction } from './transaction/burnNftTransaction';
+export { ClaimRewardsTransaction } from './transaction/claimRewards';
 export { NFTTransaction } from './transaction/nftTransaction';
 export { TransactionBuilder } from './transactionBuilder/transactionBuilder';
 export { TransferBuilder } from './transactionBuilder/transferBuilder';
@@ -17,5 +20,6 @@ export { StakingBuilder } from './transactionBuilder/stakingBuilder';
 export { NFTTransactionBuilder } from './transactionBuilder/nftTransactionBuilder';
 export { BurnNftBuilder } from './transactionBuilder/burnNftBuilder';
 export { ExitDelegationBuilder } from './transactionBuilder/exitDelegationBuilder';
+export { ClaimRewardsBuilder } from './transactionBuilder/claimRewardsBuilder';
 export { TransactionBuilderFactory } from './transactionBuilderFactory';
 export { Constants, Utils, Interface };
