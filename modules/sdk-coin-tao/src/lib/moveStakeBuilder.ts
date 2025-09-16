@@ -1,5 +1,5 @@
 import { Interface, Schema, Transaction, TransactionBuilder } from '@bitgo/abstract-substrate';
-import { InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
+import { InvalidTransactionError, TransactionType, BaseAddress } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { DecodedSignedTx, DecodedSigningPayload, defineMethod, UnsignedTransaction } from '@substrate/txwrapper-core';
 import BigNumber from 'bignumber.js';
@@ -58,7 +58,7 @@ export class MoveStakeBuilder extends TransactionBuilder {
    * @param {string} address of origin hotkey
    * @returns {MoveStakeBuilder} This builder.
    */
-  originHotkey(address: string): this {
+  originHotkey({ address }: BaseAddress): this {
     this.validateAddress({ address });
     this._originHotkey = address;
     return this;
@@ -69,7 +69,7 @@ export class MoveStakeBuilder extends TransactionBuilder {
    * @param {string} address of destination hotkey
    * @returns {MoveStakeBuilder} This builder.
    */
-  destinationHotkey(address: string): this {
+  destinationHotkey({ address }: BaseAddress): this {
     this.validateAddress({ address });
     this._destinationHotkey = address;
     return this;
@@ -107,8 +107,8 @@ export class MoveStakeBuilder extends TransactionBuilder {
     const tx = super.fromImplementation(rawTransaction);
     const txMethod = this._method.args as Interface.MoveStakeArgs;
     this.amount(txMethod.alphaAmount);
-    this.originHotkey(txMethod.originHotkey);
-    this.destinationHotkey(txMethod.destinationHotkey);
+    this.originHotkey({ address: txMethod.originHotkey });
+    this.destinationHotkey({ address: txMethod.destinationHotkey });
     this.originNetuid(txMethod.originNetuid);
     this.destinationNetuid(txMethod.destinationNetuid);
     return tx;
