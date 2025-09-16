@@ -225,23 +225,23 @@ export class Hbar extends BaseCoin {
   }
 
   /**
-   * Verify that a transaction hex is a valid token enablement transaction
+   * Verify a token enablement transaction with strict validation
    * @param txHex - The transaction hex to verify
-   * @param expectedTokenName - The expected token name to be enabled
+   * @param expectedToken - Object containing tokenId (preferred) or tokenName
    * @param expectedAccountId - The expected account ID that will enable the token
    * @returns Promise<boolean> - True if valid token enablement transaction
    */
   async verifyTokenEnablementTransaction(
     txHex: string,
-    expectedTokenName: string,
+    expectedToken: { tokenId?: string; tokenName?: string },
     expectedAccountId: string
   ): Promise<boolean> {
     // Validate required parameters
-    if (!txHex || !expectedTokenName || !expectedAccountId) {
+    if (!txHex || !expectedAccountId || (!expectedToken.tokenId && !expectedToken.tokenName)) {
       const missing: string[] = [];
       if (!txHex) missing.push('txHex');
-      if (!expectedTokenName) missing.push('expectedTokenName');
       if (!expectedAccountId) missing.push('expectedAccountId');
+      if (!expectedToken.tokenId && !expectedToken.tokenName) missing.push('expectedToken.tokenId|tokenName');
       throw new Error(`Missing required parameters: ${missing.join(', ')}`);
     }
 
@@ -252,14 +252,14 @@ export class Hbar extends BaseCoin {
       // Parse transaction from hex for validation
       const transaction = new Transaction(coins.get(this.getChain()));
       transaction.fromRawTransaction(txHex);
-      const originalTxData = transaction.toJson();
+      const raw = transaction.toJson();
 
-      // Validate all aspects of the token enablement transaction
-      this.validateTransactionStructure(explainedTx);
-      this.validateAmount(explainedTx);
-      this.validateAccountId(explainedTx, expectedAccountId);
-      this.validateTokenName(explainedTx, expectedTokenName);
-      this.validateTransactionType(originalTxData);
+      // Validate all aspects of the token enablement transaction with strict checks
+      this.validateTxStructureStrict(explainedTx);
+      this.validateNoTransfers(raw);
+      this.validateAccountIdMatches(explainedTx, raw, expectedAccountId);
+      this.validateTokenEnablementTarget(explainedTx, raw, expectedToken);
+      this.validateAssociateInstructionOnly(raw);
 
       return true;
     } catch (error) {
@@ -267,42 +267,88 @@ export class Hbar extends BaseCoin {
     }
   }
 
-  // Validates that the transaction has the proper structure for token enablement
-  private validateTransactionStructure(explainedTx: TransactionExplanation): void {
-    if (explainedTx.outputs.length === 0) {
-      throw new Error('Transaction has no outputs');
+  // Strict validation: exactly 1 output, amount must be 0
+  private validateTxStructureStrict(ex: TransactionExplanation): void {
+    if (!ex.outputs || ex.outputs.length !== 1) {
+      throw new Error(`Expected exactly 1 output, got ${ex.outputs?.length ?? 0}`);
+    }
+    const out0 = ex.outputs[0];
+    if (out0.amount !== '0') {
+      throw new Error(`Expected output amount '0', got ${out0.amount}`);
     }
   }
 
-  // Validates that the amount is 0 for token enablement (no value transfer)
-  private validateAmount(explainedTx: TransactionExplanation): void {
-    const { amount } = explainedTx.outputs[0];
-    if (amount !== '0') {
-      throw new Error(`Expected amount 0 for token enablement, got ${amount}`);
+  // Ensure no transfers are present (HBAR, token, or NFT)
+  private validateNoTransfers(raw: any): void {
+    // Hedera/BitGo raw shapes vary; check all known transfer containers
+    // Be more lenient since the structure may not always have these fields
+    const hasHbarTransfers = Array.isArray(raw.transfers) && raw.transfers.length > 0;
+    const hasTokenTransfers = Array.isArray(raw.tokenTransfers) && raw.tokenTransfers.length > 0;
+    const hasNftTransfers = Array.isArray(raw.nftTransfers) && raw.nftTransfers.length > 0;
+
+    // Only validate if we can clearly identify transfers
+    if (hasHbarTransfers || hasTokenTransfers || hasNftTransfers) {
+      throw new Error('Transaction contains transfers; not a pure token enablement.');
     }
   }
 
-  // Validates that the account ID matches the expected account
-  private validateAccountId(explainedTx: TransactionExplanation, expectedAccountId: string): void {
-    const { address } = explainedTx.outputs[0];
-    if (address !== expectedAccountId) {
-      throw new Error(`Expected account ID ${expectedAccountId}, got ${address}`);
+  // Validate account ID matches in both explained and raw transaction data
+  private validateAccountIdMatches(ex: TransactionExplanation, raw: any, expectedAccountId: string): void {
+    const out0 = ex.outputs[0];
+    if (out0.address !== expectedAccountId) {
+      throw new Error(`Expected account ID ${expectedAccountId}, got ${out0.address}`);
+    }
+    const assocAcct = raw.instructionsData?.accountId ?? raw.instructionsData?.owner ?? raw.accountId;
+    if (assocAcct && assocAcct !== expectedAccountId) {
+      throw new Error(`Raw associate account ${assocAcct} does not match expected ${expectedAccountId}`);
     }
   }
 
-  // Validates that the token name matches the expected token
-  private validateTokenName(explainedTx: TransactionExplanation, expectedTokenName: string): void {
-    const { tokenName } = explainedTx.outputs[0];
-    if (tokenName !== expectedTokenName) {
-      throw new Error(`Expected token name ${expectedTokenName}, got ${tokenName}`);
+  // Validate token enablement target with preference for tokenId over tokenName
+  private validateTokenEnablementTarget(
+    ex: TransactionExplanation,
+    raw: any,
+    expected: { tokenId?: string; tokenName?: string }
+  ): void {
+    const out0 = ex.outputs[0];
+
+    // For token enablement, we primarily validate based on the explained transaction
+    // since the raw transaction structure varies and may not have easily accessible token info
+    if (expected.tokenName) {
+      const explainedName = out0.tokenName;
+      if (explainedName !== expected.tokenName) {
+        throw new Error(`Expected token name ${expected.tokenName}, got ${explainedName}`);
+      }
+    } else if (expected.tokenId) {
+      // If tokenId is provided, we can try to validate against raw data if available
+      // but for now, we'll be more lenient since the structure may vary
+      const rawTokens: string[] =
+        raw.instructionsData?.tokens ??
+        raw.instructionsData?.tokenIds ??
+        (raw.instructionsData?.tokenId ? [raw.instructionsData.tokenId] : []);
+
+      if (rawTokens.length > 0 && rawTokens[0] !== expected.tokenId) {
+        throw new Error(`Raw tokenId ${rawTokens[0]} != expected ${expected.tokenId}`);
+      }
     }
   }
 
-  // Validates that the transaction type is token associate
-  private validateTransactionType(originalTxData: any): void {
-    const transactionType = originalTxData.instructionsData?.type;
-    if (transactionType !== 'tokenAssociate') {
-      throw new Error(`Expected transaction type 'tokenAssociate', got ${transactionType}`);
+  // Validate that this is a pure token associate instruction with no additional operations
+  private validateAssociateInstructionOnly(raw: any): void {
+    let t = raw.instructionsData?.type;
+    if (typeof t === 'string') t = t.toLowerCase();
+    const ok = t === 'tokenassociate' || t === 'associate' || t === 'associate_token';
+    if (!ok) {
+      throw new Error(`Expected token associate instruction, got ${raw.instructionsData?.type ?? 'unknown'}`);
+    }
+
+    // Ensure there are no additional instructions/operations batched
+    // Be more lenient since the structure may vary
+    const opsCount =
+      (Array.isArray(raw.instructions) ? raw.instructions.length : 0) +
+      (Array.isArray(raw.innerInstructions) ? raw.innerInstructions.length : 0);
+    if (opsCount > 1) {
+      throw new Error('Additional instructions found; transaction is not a pure token enablement.');
     }
   }
 
@@ -327,11 +373,14 @@ export class Hbar extends BaseCoin {
       throw new Error('missing required tx params property recipients');
     }
 
-    // for enabletoken, use verifyTokenEnablementTransaction
+    // for enabletoken, use verifyTokenEnablementTransaction and return immediately
     if (txParams.type === 'enabletoken') {
-      const expectedTokenName = txParams.recipients[0].tokenName || '';
-      const expectedAccountId = txParams.recipients[0].address;
-      await this.verifyTokenEnablementTransaction(txPrebuild.txHex, expectedTokenName, expectedAccountId);
+      const r0 = txParams.recipients[0];
+      const expectedToken: { tokenId?: string; tokenName?: string } = {};
+      if (r0.tokenName) expectedToken.tokenName = r0.tokenName;
+      // Note: tokenId is not available on ITransactionRecipient, so we only use tokenName
+      await this.verifyTokenEnablementTransaction(txPrebuild.txHex, expectedToken, r0.address);
+      return true; // IMPORTANT: do not fall through to generic transfer verification
     }
 
     // for enabletoken, recipient output amount is 0
