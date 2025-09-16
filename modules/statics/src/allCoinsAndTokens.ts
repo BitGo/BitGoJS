@@ -712,7 +712,7 @@ export const allCoinsAndTokens = [
     9,
     UnderlyingAsset.HASH,
     BaseUnit.HASH,
-    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
+    [...COSMOS_SIDECHAIN_FEATURES_WITH_STAKING, CoinFeature.CUSTODY_BULK_TRANSACTION]
   ),
   account(
     'feadf3d5-5a9a-427e-8144-7a5085b4d258',
@@ -722,7 +722,7 @@ export const allCoinsAndTokens = [
     9,
     UnderlyingAsset.HASH,
     BaseUnit.HASH,
-    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
+    [...COSMOS_SIDECHAIN_FEATURES_WITH_STAKING, CoinFeature.CUSTODY_BULK_TRANSACTION]
   ),
   account(
     '36700514-fa3c-42d8-9503-98cdcab0b3c3',
