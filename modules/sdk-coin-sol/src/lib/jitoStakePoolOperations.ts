@@ -250,7 +250,7 @@ export function withdrawStakeInstructions(
   const poolAmount = BigInt(poolAmountString);
 
   return [
-    createApproveInstruction(poolTokenAccount, tokenOwner, tokenOwner, poolAmount),
+    createApproveInstruction(poolTokenAccount, transferAuthority, tokenOwner, poolAmount),
     SystemProgram.createAccount({
       fromPubkey: tokenOwner,
       newAccountPubkey: destinationStakeAccount,
