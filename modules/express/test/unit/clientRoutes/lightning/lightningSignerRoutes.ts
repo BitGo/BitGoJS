@@ -81,7 +81,7 @@ describe('Lightning signer routes', () => {
           passphrase: apiData.initWalletRequestBody.passphrase,
           ...(includingOptionalFields ? { expressHost: apiData.initWalletRequestBody.expressHost } : {}),
         },
-      } as unknown as ExpressApiRouteRequest<'express.lightning.initWallet'>;
+      } as unknown as ExpressApiRouteRequest<'express.lightning.initWallet', 'post'>;
 
       await handleInitLightningWallet(req);
 
