@@ -84,7 +84,6 @@ import {
   DOT_FEATURES,
   EOS_FEATURES,
   ETC_FEATURES,
-  ETH_FEATURES,
   ETH_FEATURES_WITH_STAKING_AND_MMI,
   EVM_FEATURES,
   EVM_NON_EIP1559_FEATURES,
@@ -305,16 +304,6 @@ export const allCoinsAndTokens = [
       CoinFeature.CUSTODY_BULK_TRANSACTION,
     ]
   ), // we should probably refactor this into a eth() method
-  account(
-    '25f9ade1-d768-45ec-8b44-e55c2e5f472d',
-    'teth',
-    'Kovan Testnet Ethereum (Deprecated)',
-    Networks.test.kovan,
-    18,
-    UnderlyingAsset.ETH,
-    BaseUnit.ETH,
-    [...ETH_FEATURES, CoinFeature.DEPRECATED, CoinFeature.EIP1559]
-  ),
   account(
     '41b75ac4-46d6-4dac-b741-bf11406b142f',
     'gteth',
