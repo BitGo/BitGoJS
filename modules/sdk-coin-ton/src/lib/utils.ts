@@ -1,5 +1,46 @@
 import { BaseUtils, isValidEd25519PublicKey } from '@bitgo/sdk-core';
 import TonWeb from 'tonweb';
+import {
+  Address,
+  Cell,
+  contractAddress,
+  toNano,
+  TupleBuilder,
+  type Contract,
+  type ContractProvider,
+  type Sender,
+  type StateInit,
+  type Address as AddressType,
+} from '@ton/core';
+import { Blockchain, createShardAccount } from '@ton/sandbox';
+import { tokenToContractCodeMap, tokenToContractDataMap } from './constants.js';
+
+class MyContract implements Contract {
+  readonly address: AddressType;
+  readonly init?: StateInit;
+
+  static fromInit(code: Cell, data: Cell) {
+    return new MyContract(contractAddress(0, { code: code, data: data }), { code: code, data: data });
+  }
+
+  constructor(address: AddressType, init?: StateInit) {
+    this.address = address;
+    this.init = init;
+  }
+
+  async send(
+    provider: ContractProvider,
+    via: Sender,
+    args: { value: bigint; bounce?: boolean | null | undefined },
+    body: Cell
+  ) {
+    await provider.internal(via, { ...args, body: body });
+  }
+
+  async getRunMethod(provider: ContractProvider, id: number | string, stack: TupleBuilder = new TupleBuilder()) {
+    return (await provider.get(id, stack.build())).stack;
+  }
+}
 
 export class Utils implements BaseUtils {
   /** @inheritdoc */
@@ -84,6 +125,45 @@ export class Utils implements BaseUtils {
     const slice = (cell as any).beginParse();
     const address = slice.loadAddress();
     return address.toString();
+  }
+
+  async getJettonWalletAddress(
+    tokenName: string,
+    ownerAddress: string,
+    jettonMasterAddress: string,
+    isBounceable = true
+  ): Promise<string> {
+    try {
+      const contractCode = Cell.fromHex(tokenToContractCodeMap[tokenName]);
+      const contractData = Cell.fromHex(tokenToContractDataMap[tokenName]);
+
+      const blockchain = await Blockchain.create();
+      const JettonMasterAddress = Address.parse(jettonMasterAddress);
+
+      const openedContract = blockchain.openContract(new MyContract(JettonMasterAddress));
+
+      // Instead of deploying the contract, we can set shard account directly
+      await blockchain.setShardAccount(
+        JettonMasterAddress,
+        createShardAccount({
+          address: JettonMasterAddress,
+          code: contractCode,
+          data: contractData,
+          balance: toNano('0.05'),
+          workchain: 0,
+        })
+      );
+
+      const stack = new TupleBuilder();
+      stack.writeAddress(Address.parse(ownerAddress));
+      const result = await openedContract.getRunMethod('get_wallet_address', stack);
+
+      const jettonWalletAddress = result.readAddress().toString();
+
+      return this.getAddress(jettonWalletAddress, isBounceable);
+    } catch (error) {
+      throw new Error(`Failed to get jetton wallet address: ${error.message}`);
+    }
   }
 }
 
