@@ -63,6 +63,7 @@ import { sip10Tokens } from './coins/sip10Tokens';
 import { nep141Tokens } from './coins/nep141Tokens';
 import { vetTokens } from './coins/vetTokens';
 import { cosmosTokens } from './coins/cosmosTokens';
+import { jettonTokens } from './coins/jettonTokens';
 import { flrp } from './flrp';
 import {
   ADA_FEATURES_WITH_FRANKFURT,
@@ -146,6 +147,7 @@ export const allCoinsAndTokens = [
   ...botTokens,
   ...botOfcTokens,
   ...adaTokens,
+  ...jettonTokens,
   avaxp(
     '5436386e-9e4d-4d82-92df-59d9720d1738',
     'avaxp',
@@ -710,7 +712,7 @@ export const allCoinsAndTokens = [
     9,
     UnderlyingAsset.HASH,
     BaseUnit.HASH,
-    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
+    [...COSMOS_SIDECHAIN_FEATURES_WITH_STAKING, CoinFeature.CUSTODY_BULK_TRANSACTION]
   ),
   account(
     'feadf3d5-5a9a-427e-8144-7a5085b4d258',
@@ -720,7 +722,7 @@ export const allCoinsAndTokens = [
     9,
     UnderlyingAsset.HASH,
     BaseUnit.HASH,
-    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
+    [...COSMOS_SIDECHAIN_FEATURES_WITH_STAKING, CoinFeature.CUSTODY_BULK_TRANSACTION]
   ),
   account(
     '36700514-fa3c-42d8-9503-98cdcab0b3c3',
@@ -2045,6 +2047,24 @@ export const allCoinsAndTokens = [
       CoinFeature.SHARED_EVM_SDK,
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+    ]
+  ),
+  account(
+    '8c9ba7c6-6dfb-4070-b8e2-6225077a0f85',
+    'megaeth',
+    'MegaETH',
+    Networks.main.megaeth,
+    18,
+    UnderlyingAsset.MEGAETH,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
     ]
   ),
   gasTankAccount(
@@ -2530,6 +2550,17 @@ export const allCoinsAndTokens = [
     AccountCoin.DEFAULT_FEATURES,
     '',
     'GBENJI'
+  ),
+  stellarToken(
+    'c72bcc64-9269-45ae-9a08-9efa8afb071a',
+    'xlm:SHX-GDSTRSHXHGJ7ZIVRBXEYE5Q74XUVCUSEKEBR7UCHEUUEK72N7I7KJ6JH',
+    'Stronghold SHx',
+    7,
+    UnderlyingAsset['xlm:SHX-GDSTRSHXHGJ7ZIVRBXEYE5Q74XUVCUSEKEBR7UCHEUUEK72N7I7KJ6JH'],
+    'stronghold.co',
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'SHX'
   ),
   tronToken(
     '5f3266f8-252c-492a-90d7-bb6d3bf550fb',
@@ -3191,6 +3222,17 @@ export const allCoinsAndTokens = [
     'tsoneium:test721',
     'soneium Test ERC721',
     '0xc78d4c49ccaa27a9ba9d0de9d93f50dbc67d4f8e',
+    GENERIC_TOKEN_FEATURES,
+    '',
+    '',
+    Networks.test.soneium,
+    KeyCurve.Secp256k1
+  ),
+  terc721(
+    'b2e1c8a7-4e2a-4b8d-9e2f-7c3a1d2e5f6b',
+    'tsoneium:forwarder',
+    'soneium test nft to verify autoflush',
+    '0x798b02d08b5e60e65e2717c46231f270047a4d8f',
     GENERIC_TOKEN_FEATURES,
     '',
     '',
@@ -4483,6 +4525,15 @@ export const allCoinsAndTokens = [
     9,
     '0x7b5e9cac3433e9202f28527f707c89e1e47b19de2c33e4db9521a63ad219b739',
     UnderlyingAsset['apt:benji'],
+    APT_FEATURES
+  ),
+  aptToken(
+    'b8b9e122-f091-4ce4-9baf-5c901779e9f7',
+    'apt:kgen',
+    'KGEN',
+    8,
+    '0x2a8227993a4e38537a57caefe5e7e9a51327bf6cd732c1f56648f26f68304ebc',
+    UnderlyingAsset['apt:kgen'],
     APT_FEATURES
   ),
   taptToken(

@@ -1311,6 +1311,24 @@ export const bscTokens = [
     UnderlyingAsset['bsc:slay'],
     BSC_TOKEN_FEATURES
   ),
+  bscToken(
+    'de4424d5-b119-4220-899f-a48727c58a80',
+    'bsc:prove',
+    'Succinct',
+    18,
+    '0x7ddf164cecfddd0f992299d033b5a11279a15929',
+    UnderlyingAsset['bsc:prove'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
+    'e80a1fd6-2b2a-4b1c-8bfc-f2e684128a03',
+    'bsc:rekt',
+    'Rekt',
+    18,
+    '0x20482b0b4d9d8f60d3ab432b92f4c4b901a0d10c',
+    UnderlyingAsset['bsc:rekt'],
+    BSC_TOKEN_FEATURES
+  ),
   tbscToken(
     'b31aa2b5-8d8c-4ac1-b5e5-0f9d59377eab',
     'tbsc:busd',

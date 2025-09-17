@@ -33,7 +33,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     return new TokenTransferBuilder(this._coinConfig).material(this._material);
   }
 
-  getMoveStakeBuilder(): TransactionBuilder {
+  getMoveStakeBuilder(): MoveStakeBuilder {
     return new MoveStakeBuilder(this._coinConfig).material(this._material);
   }
 

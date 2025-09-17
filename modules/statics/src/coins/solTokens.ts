@@ -2337,6 +2337,16 @@ export const solTokens = [
     UnderlyingAsset['sol:jitosol'],
     SolCoin.getFeaturesByTypeExcluding([CoinFeature.CUSTODY_BITGO_SINGAPORE], SOL_TOKEN_FEATURES)
   ),
+  tsolToken(
+    'cd6509ed-ba89-463f-98f1-5054727281b7',
+    'tsol:jitosol',
+    'Jito Staked SOL',
+    9,
+    'J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn',
+    'J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn',
+    UnderlyingAsset['tsol:jitosol'],
+    SolCoin.getFeaturesByTypeExcluding([CoinFeature.CUSTODY_BITGO_SINGAPORE], SOL_TOKEN_FEATURES)
+  ),
   solToken(
     'bd2130ca-c44f-4d7a-977b-62939a1f9fdb',
     'sol:zeus',
@@ -3045,6 +3055,26 @@ export const solTokens = [
     'Ciphern9cCXtms66s8Mm6wCFC27b2JProRQLYmiLMH3N',
     'Ciphern9cCXtms66s8Mm6wCFC27b2JProRQLYmiLMH3N',
     UnderlyingAsset['sol:cipher'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '2dedad77-c5c9-4565-84bf-2236e5155de9',
+    'sol:bio',
+    'Bio Protocol',
+    9,
+    'bioJ9JTqW62MLz7UKHU69gtKhPpGi1BQhccj2kmSvUJ',
+    'bioJ9JTqW62MLz7UKHU69gtKhPpGi1BQhccj2kmSvUJ',
+    UnderlyingAsset['sol:bio'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '9f24f8f3-2f31-4bfe-b33a-539467e0bc9a',
+    'sol:rekt',
+    'Rekt',
+    4,
+    'vQoYWru2pbUdcVkUrRH74ktQDJgVjRcDvsoDbUzM5n9',
+    'vQoYWru2pbUdcVkUrRH74ktQDJgVjRcDvsoDbUzM5n9',
+    UnderlyingAsset['sol:rekt'],
     SOL_TOKEN_FEATURES
   ),
   tsolToken(

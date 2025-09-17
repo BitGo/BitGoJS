@@ -115,7 +115,8 @@ export type DepositSolStakePoolData = Pick<StakePoolData, 'poolMint' | 'reserveS
  */
 export function depositSolInstructions(
   params: DepositSolInstructionsParams,
-  stakePool: DepositSolStakePoolData
+  stakePool: DepositSolStakePoolData,
+  createAssociatedTokenAccount: boolean
 ): TransactionInstruction[] {
   const { stakePoolAddress, from, lamports } = params;
   const poolMint = new PublicKey(stakePool.poolMint);
@@ -124,11 +125,15 @@ export function depositSolInstructions(
 
   // findWithdrawAuthorityProgramAddress
   const withdrawAuthority = findWithdrawAuthorityProgramAddressSync(STAKE_POOL_PROGRAM_ID, stakePoolAddress);
-
   const associatedAddress = getAssociatedTokenAddressSync(poolMint, from);
 
-  return [
-    createAssociatedTokenAccountInstruction(from, associatedAddress, from, poolMint),
+  const instructions: TransactionInstruction[] = [];
+
+  if (createAssociatedTokenAccount) {
+    instructions.push(createAssociatedTokenAccountInstruction(from, associatedAddress, from, poolMint));
+  }
+
+  instructions.push(
     StakePoolInstruction.depositSol({
       stakePool: stakePoolAddress,
       reserveStake,
@@ -139,8 +144,10 @@ export function depositSolInstructions(
       poolMint,
       lamports: Number(lamports),
       withdrawAuthority,
-    }),
-  ];
+    })
+  );
+
+  return instructions;
 }
 
 function parseKey(key: AccountMeta, template: { isSigner: boolean; isWritable: boolean }): PublicKey {
@@ -243,7 +250,7 @@ export function withdrawStakeInstructions(
   const poolAmount = BigInt(poolAmountString);
 
   return [
-    createApproveInstruction(poolTokenAccount, tokenOwner, tokenOwner, poolAmount),
+    createApproveInstruction(poolTokenAccount, transferAuthority, tokenOwner, poolAmount),
     SystemProgram.createAccount({
       fromPubkey: tokenOwner,
       newAccountPubkey: destinationStakeAccount,
