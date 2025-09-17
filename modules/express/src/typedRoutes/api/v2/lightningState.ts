@@ -14,6 +14,20 @@ export const LightningStateParams = {
 };
 
 /**
+ * Response
+ * - 200: Returns the current Lightning wallet/node state('NON_EXISTING' | 'LOCKED' | 'UNLOCKED' | 'RPC_ACTIVE' | 'SERVER_ACTIVE' | 'WAITING_TO_START'.
+ * - 400: BitGo Express error payload when the request is invalid (e.g., invalid coin or wallet not a self-custody lightning wallet).
+ *
+ * See platform spec: GET /api/v2/{coin}/wallet/{walletId}/state
+ */
+export const LightningStateResponse = {
+  200: t.type({
+    state: WalletState,
+  }),
+  400: BitgoExpressError,
+} as const;
+
+/**
  * Lightning - Get node state
  *
  * This is only used for self-custody lightning. Get the current state of the lightning node.
@@ -26,10 +40,5 @@ export const GetLightningState = httpRoute({
   request: httpRequest({
     params: LightningStateParams,
   }),
-  response: {
-    200: t.type({
-      state: WalletState,
-    }),
-    400: BitgoExpressError,
-  },
+  response: LightningStateResponse,
 });
