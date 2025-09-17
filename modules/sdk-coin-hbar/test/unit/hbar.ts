@@ -551,7 +551,7 @@ describe('Hedera Hashgraph:', function () {
     it('should fail when account ID does not match', async function () {
       await basecoin
         .verifyTokenEnablementTransaction(TestData.UNSIGNED_TOKEN_ASSOCIATE, { tokenName: 'thbar:usdc' }, '0.0.99999')
-        .should.be.rejectedWith(/Expected account ID 0.0.99999, got 0.0.81320/);
+        .should.be.rejectedWith(/Expected account 0.0.99999, got 0.0.81320/);
     });
 
     it('should fail when transaction is not a token enablement (has non-zero amount)', async function () {
