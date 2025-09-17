@@ -17,7 +17,7 @@ import { Buffer } from 'buffer';
 import { GetWalletStateResponse, InitLightningWalletRequest, UnlockLightningWalletRequest } from './codecs';
 import { LndSignerClient } from './lndSignerClient';
 import { ApiResponseError } from '../errors';
-import { ExpressApiRouteRequest } from '../../../../src/typedRoutes/api';
+import { ExpressApiRouteRequest } from '../typedRoutes/api';
 
 type Decrypt = (params: { input: string; password: string }) => string;
 
