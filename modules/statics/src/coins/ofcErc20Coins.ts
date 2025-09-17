@@ -2041,7 +2041,7 @@ export const ofcErc20Coins = [
   ofcerc20('4296793d-bb5a-4156-8fa3-de065d2b3d94', 'ofcuos', 'Ultra Token', 4, underlyingAssetForSymbol('uos')),
   ofcerc20('53c43c96-4622-4459-91df-1e80bea7ba7d', 'ofcxcn', 'Onyxcoin', 18, underlyingAssetForSymbol('xcn')),
   ofcerc20('94f3e140-6652-4c4a-8b18-b8e56a28258c', 'ofcxdefi', 'XDEFI', 18, underlyingAssetForSymbol('xdefi')),
-  ofcerc20('db12970d-9be6-4399-9657-705a984661a6', 'ofcgate', 'GATE', 18, underlyingAssetForSymbol('gate')),
+  ofcerc20('db12970d-9be6-4399-9657-705a984661a6', 'ofcgate', 'GATENet', 18, underlyingAssetForSymbol('gate')),
   ofcerc20('7949daf7-305c-47bd-9e08-f85a4972b002', 'ofclcx', 'LCX', 18, underlyingAssetForSymbol('lcx')),
   ofcerc20('a2872b71-b5d1-4ac9-bcaa-5a0c18062b44', 'ofcrfox', 'RFOX', 18, underlyingAssetForSymbol('rfox')),
   ofcerc20('8dfdb813-b1e7-4975-9b14-a862906563b5', 'ofcswise', 'StakeWise', 18, underlyingAssetForSymbol('swice')),
@@ -3431,7 +3431,7 @@ export const ofcErc20Coins = [
     '9081e77f-ccca-48b6-8b51-de73849042dc',
     'ofceth:umint',
     'UBS uMINT',
-    0,
+    18,
     underlyingAssetForSymbol('eth:umint')
   ),
   ofcerc20('f89abeb4-6566-4a16-9cb6-54c607467602', 'ofceth:arb', 'Arbitrum', 18, underlyingAssetForSymbol('eth:arb')),
@@ -3553,6 +3553,49 @@ export const ofcErc20Coins = [
   ),
   ofcerc20('6ad8cc28-3c63-4d77-9488-87c6935b3cf8', 'ofceth:slay', 'SatLayer', 6, underlyingAssetForSymbol('eth:slay')),
   ofcerc20('e1a2fff8-5a33-4873-9231-6289eec23a9d', 'ofceth:mxnb', 'MXNB', 6, underlyingAssetForSymbol('eth:mxnb')),
+  ofcerc20(
+    '7ea68985-aaff-4094-affa-4a421f7734fb',
+    'ofceth:hwhlp',
+    'Hyperwave HLP',
+    6,
+    underlyingAssetForSymbol('eth:hwhlp')
+  ),
+  ofcerc20(
+    '9af2408f-111a-4876-83be-49e46863b7b5',
+    'ofceth:mxnd',
+    'Mexican Digital Peso',
+    6,
+    underlyingAssetForSymbol('eth:mxnd')
+  ),
+  ofcerc20(
+    'e77c2162-3927-4194-b525-fe79895dd314',
+    'ofceth:bio',
+    'Bio Protocol',
+    18,
+    underlyingAssetForSymbol('eth:bio')
+  ),
+  ofcerc20(
+    'e2f6955d-7c74-4459-9e8d-738d692fa3d1',
+    'ofceth:prove',
+    'Succinct',
+    18,
+    underlyingAssetForSymbol('eth:prove')
+  ),
+  ofcerc20('bbe4893d-be4d-4126-b5e7-21bee4341c3b', 'ofceth:zrc', 'Zircuit', 18, underlyingAssetForSymbol('eth:zrc')),
+  ofcerc20(
+    '8da43f86-4bf5-48ef-bf80-3c81b604c3e4',
+    'ofceth:open',
+    'OpenLedger',
+    18,
+    underlyingAssetForSymbol('eth:open')
+  ),
+  ofcerc20(
+    '8ab7252f-a586-4d18-8631-d5dedf2a8024',
+    'ofceth:mbg',
+    'MultiBank Group',
+    18,
+    underlyingAssetForSymbol('eth:mbg')
+  ),
 ];
 
 export const tOfcErc20Coins = [

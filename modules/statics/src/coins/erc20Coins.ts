@@ -7796,7 +7796,7 @@ export const erc20Coins = [
   erc20(
     '8c3142c8-0cd9-42f2-8849-3aca3da1a214',
     'gate',
-    'GATE',
+    'GATENet',
     18,
     '0x9d7630adf7ab0b0cb00af747db76864df0ec82e4',
     UnderlyingAsset.GATE
@@ -11051,8 +11051,8 @@ export const erc20Coins = [
     '89776872-d6f0-443b-89ca-abf4e6868779',
     'eth:umint',
     'UBS uMINT',
-    0,
-    '0x3797c46db697c24a983222c335f17ba28e8c5b69',
+    18,
+    '0xc06036793272219179f846ef6bfc3b16e820df0b',
     UnderlyingAsset['eth:umint'],
     AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
@@ -11559,6 +11559,62 @@ export const erc20Coins = [
     6,
     '0xf197ffc28c23e0309b5559e7a166f2c6164c80aa',
     UnderlyingAsset['eth:mxnb']
+  ),
+  erc20(
+    '76563af3-10a6-40f2-9109-4afb40284912',
+    'eth:hwhlp',
+    'Hyperwave HLP',
+    6,
+    '0x9fd7466f987fd4c45a5bbde22ed8aba5bc8d72d1',
+    UnderlyingAsset['eth:hwhlp']
+  ),
+  erc20(
+    'e732528b-2c63-4fd0-b15d-290f831a7e92',
+    'eth:mxnd',
+    'Mexican Digital Peso',
+    6,
+    '0xc60bca6bd5790611b8a302d4c5df37d769c81121',
+    UnderlyingAsset['eth:mxnd']
+  ),
+  erc20(
+    '978d92c0-454d-45d5-a869-f025737d6467',
+    'eth:bio',
+    'Bio Protocol',
+    18,
+    '0xcb1592591996765ec0efc1f92599a19767ee5ffa',
+    UnderlyingAsset['eth:bio']
+  ),
+  erc20(
+    '71738095-97de-4404-9b10-e9dcd1bc8cbf',
+    'eth:prove',
+    'Succinct',
+    18,
+    '0x6bef15d938d4e72056ac92ea4bdd0d76b1c4ad29',
+    UnderlyingAsset['eth:prove']
+  ),
+  erc20(
+    'ea6c2d04-77c9-4a20-9523-9f310a1a6545',
+    'eth:zrc',
+    'Zircuit',
+    18,
+    '0xfd418e42783382e86ae91e445406600ba144d162',
+    UnderlyingAsset['eth:zrc']
+  ),
+  erc20(
+    'f3c300a4-2591-47f1-8d42-0e216ec6a938',
+    'eth:open',
+    'OpenLedger',
+    18,
+    '0xa227cc36938f0c9e09ce0e64dfab226cad739447',
+    UnderlyingAsset['eth:open']
+  ),
+  erc20(
+    'f0ca4c8c-79fa-435b-9f7b-d8c6fd99f775',
+    'eth:mbg',
+    'MultiBank Group',
+    18,
+    '0x45e02bc2875a2914c4f585bbf92a6f28bc07cb70',
+    UnderlyingAsset['eth:mbg']
   ),
   terc20(
     '0205f0d6-0647-47c9-ad8b-c48d048e54f3',

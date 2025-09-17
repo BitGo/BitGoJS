@@ -13,6 +13,7 @@ import { PostSimpleCreate } from './v1/simpleCreate';
 import { PutPendingApproval } from './v1/pendingApproval';
 import { PostSignTransaction } from './v1/signTransaction';
 import { PostLightningInitWallet } from './v2/lightningInitWallet';
+import { PostVerifyCoinAddress } from './v2/verifyAddress';
 
 export const ExpressApi = apiSpec({
   'express.ping': {
@@ -47,6 +48,9 @@ export const ExpressApi = apiSpec({
   },
   'express.lightning.initWallet': {
     post: PostLightningInitWallet,
+  },
+  'express.verifycoinaddress': {
+    post: PostVerifyCoinAddress,
   },
 });
 

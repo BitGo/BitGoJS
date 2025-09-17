@@ -13,6 +13,7 @@ import {
   Erc1155Coin,
   Erc20Coin,
   Erc721Coin,
+  FlrERC20Token,
   HederaToken,
   Nep141Token,
   OpethERC20Token,
@@ -30,6 +31,7 @@ import {
   ZkethERC20Token,
   VetNFTCollection,
   AdaToken,
+  JettonToken,
 } from './account';
 import { CoinFamily, CoinKind, BaseCoin } from './base';
 import { coins } from './coins';
@@ -140,6 +142,10 @@ export type CosmosTokenConfig = BaseNetworkConfig & {
   denom: string;
 };
 
+export type JettonTokenConfig = BaseNetworkConfig & {
+  contractAddress: string;
+};
+
 export type TokenConfig =
   | Erc20TokenConfig
   | StellarTokenConfig
@@ -163,7 +169,8 @@ export type TokenConfig =
   | VetTokenConfig
   | VetNFTCollectionConfig
   | TaoTokenConfig
-  | PolyxTokenConfig;
+  | PolyxTokenConfig
+  | JettonTokenConfig;
 
 export interface Tokens {
   bitcoin: {
@@ -208,6 +215,9 @@ export interface Tokens {
       tokens: EthLikeTokenConfig[];
     };
     world: {
+      tokens: EthLikeTokenConfig[];
+    };
+    flr: {
       tokens: EthLikeTokenConfig[];
     };
     sol: {
@@ -256,6 +266,9 @@ export interface Tokens {
     };
     cosmos: {
       tokens: CosmosTokenConfig[];
+    };
+    ton: {
+      tokens: JettonTokenConfig[];
     };
   };
   testnet: {
@@ -332,6 +345,9 @@ export interface Tokens {
     world: {
       tokens: EthLikeTokenConfig[];
     };
+    flr: {
+      tokens: EthLikeTokenConfig[];
+    };
     apt: {
       tokens: AptTokenConfig[];
       nftCollections: AptNFTCollectionConfig[];
@@ -348,6 +364,9 @@ export interface Tokens {
     };
     cosmos: {
       tokens: CosmosTokenConfig[];
+    };
+    ton: {
+      tokens: JettonTokenConfig[];
     };
   };
 }
@@ -724,6 +743,24 @@ const getFormattedWorldTokens = (customCoinMap = coins) =>
     return acc;
   }, []);
 
+function getFlrTokenConfig(coin: FlrERC20Token): EthLikeTokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'flr' : 'tflr',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+    decimalPlaces: coin.decimalPlaces,
+  };
+}
+const getFormattedFlrTokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: EthLikeTokenConfig[], coin) => {
+    if (coin instanceof FlrERC20Token) {
+      acc.push(getFlrTokenConfig(coin));
+    }
+    return acc;
+  }, []);
+
 function getSolTokenConfig(coin: SolCoin): SolTokenConfig {
   return {
     type: coin.name,
@@ -1028,6 +1065,25 @@ function getCosmosTokenConfig(coin: CosmosChainToken): CosmosTokenConfig {
   };
 }
 
+function getJettonTokenConfig(coin: JettonToken): JettonTokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'ton' : 'tton',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    contractAddress: coin.contractAddress,
+    decimalPlaces: coin.decimalPlaces,
+  };
+}
+
+const getFormattedJettonTokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: JettonTokenConfig[], coin) => {
+    if (coin instanceof JettonToken) {
+      acc.push(getJettonTokenConfig(coin));
+    }
+    return acc;
+  }, []);
+
 export const getFormattedTokens = (coinMap = coins): Tokens => {
   const formattedAptNFTCollections = getFormattedAptNFTCollections(coinMap);
   const formattedVetNFTCollections = getFormattedVetNFTCollections(coinMap);
@@ -1108,6 +1164,9 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
       world: {
         tokens: getFormattedWorldTokens(coinMap).filter((token) => token.network === 'Mainnet'),
       },
+      flr: {
+        tokens: getFormattedFlrTokens(coinMap).filter((token) => token.network === 'Mainnet'),
+      },
       apt: {
         tokens: getFormattedAptTokens(coinMap).filter((token) => token.network === 'Mainnet'),
         nftCollections: formattedAptNFTCollections.filter(
@@ -1128,6 +1187,9 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
       },
       cosmos: {
         tokens: getFormattedCosmosChainTokens(coinMap).filter((token) => token.network === 'Mainnet'),
+      },
+      ton: {
+        tokens: getFormattedJettonTokens(coinMap).filter((token) => token.network === 'Mainnet'),
       },
     },
     testnet: {
@@ -1215,6 +1277,9 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
       world: {
         tokens: getFormattedWorldTokens(coinMap).filter((token) => token.network === 'Testnet'),
       },
+      flr: {
+        tokens: getFormattedFlrTokens(coinMap).filter((token) => token.network === 'Testnet'),
+      },
       near: {
         tokens: getFormattedNep141Tokens(coinMap).filter((token) => token.network === 'Testnet'),
       },
@@ -1226,6 +1291,9 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
       },
       cosmos: {
         tokens: getFormattedCosmosChainTokens(coinMap).filter((token) => token.network === 'Testnet'),
+      },
+      ton: {
+        tokens: getFormattedJettonTokens(coinMap).filter((token) => token.network === 'Testnet'),
       },
     },
   };
@@ -1338,6 +1406,8 @@ export function getFormattedTokenConfigForCoin(coin: Readonly<BaseCoin>): TokenC
     return getVetNFTCollectionConfig(coin);
   } else if (coin instanceof CoredaoERC20Token) {
     return getCoredaoTokenConfig(coin);
+  } else if (coin instanceof JettonToken) {
+    return getJettonTokenConfig(coin);
   }
   return undefined;
 }

@@ -13,6 +13,7 @@ import {
   erc20CompatibleAccountCoin,
   erc721,
   fiat,
+  flrErc20,
   gasTankAccount,
   hederaCoin,
   hederaToken,
@@ -30,6 +31,7 @@ import {
   teosToken,
   terc1155,
   terc721,
+  tflrErc20,
   topethErc20,
   tpolyxToken,
   tronToken,
@@ -61,6 +63,7 @@ import { sip10Tokens } from './coins/sip10Tokens';
 import { nep141Tokens } from './coins/nep141Tokens';
 import { vetTokens } from './coins/vetTokens';
 import { cosmosTokens } from './coins/cosmosTokens';
+import { jettonTokens } from './coins/jettonTokens';
 import { flrp } from './flrp';
 import {
   ADA_FEATURES_WITH_FRANKFURT,
@@ -144,6 +147,7 @@ export const allCoinsAndTokens = [
   ...botTokens,
   ...botOfcTokens,
   ...adaTokens,
+  ...jettonTokens,
   avaxp(
     '5436386e-9e4d-4d82-92df-59d9720d1738',
     'avaxp',
@@ -708,7 +712,7 @@ export const allCoinsAndTokens = [
     9,
     UnderlyingAsset.HASH,
     BaseUnit.HASH,
-    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
+    [...COSMOS_SIDECHAIN_FEATURES_WITH_STAKING, CoinFeature.CUSTODY_BULK_TRANSACTION]
   ),
   account(
     'feadf3d5-5a9a-427e-8144-7a5085b4d258',
@@ -718,7 +722,7 @@ export const allCoinsAndTokens = [
     9,
     UnderlyingAsset.HASH,
     BaseUnit.HASH,
-    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
+    [...COSMOS_SIDECHAIN_FEATURES_WITH_STAKING, CoinFeature.CUSTODY_BULK_TRANSACTION]
   ),
   account(
     '36700514-fa3c-42d8-9503-98cdcab0b3c3',
@@ -1043,7 +1047,7 @@ export const allCoinsAndTokens = [
     6,
     UnderlyingAsset.MANTRA,
     BaseUnit.MANTRA,
-    [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.SHARED_COSMOS_SDK]
+    [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.SHARED_COSMOS_SDK, CoinFeature.SHARED_COSMOS_WP]
   ),
   account(
     'cc900f12-f229-4eb3-9ca7-2a05a445f362',
@@ -1053,7 +1057,7 @@ export const allCoinsAndTokens = [
     6,
     UnderlyingAsset.MANTRA,
     BaseUnit.MANTRA,
-    [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.SHARED_COSMOS_SDK]
+    [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.SHARED_COSMOS_SDK, CoinFeature.SHARED_COSMOS_WP]
   ),
   account(
     '507492ba-d127-4fd8-b07d-9461f5887a26',
@@ -1975,8 +1979,24 @@ export const allCoinsAndTokens = [
       CoinFeature.SHARED_EVM_SDK,
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
-      CoinFeature.EVM_NON_BITGO_RECOVERY,
-      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.EVM_COMPATIBLE_WP,
+    ]
+  ),
+  account(
+    '4af2a68a-a006-4924-bc1b-797cc65b2547',
+    'plume',
+    'Plume',
+    Networks.main.plume,
+    18,
+    UnderlyingAsset.PLUME,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
     ]
   ),
   account(
@@ -1993,8 +2013,58 @@ export const allCoinsAndTokens = [
       CoinFeature.SHARED_EVM_SDK,
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
-      CoinFeature.EVM_NON_BITGO_RECOVERY,
-      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.EVM_COMPATIBLE_WP,
+    ]
+  ),
+  account(
+    '3c7ccfca-d229-4238-a0f1-3115e592c28c',
+    'tplume',
+    'Testnet Plume',
+    Networks.test.plume,
+    18,
+    UnderlyingAsset.PLUME,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+    ]
+  ),
+  account(
+    '2f510e0f-7dad-4765-881d-6fd185d20866',
+    'tmegaeth',
+    'Testnet MegaETH',
+    Networks.test.megaeth,
+    18,
+    UnderlyingAsset.MEGAETH,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+    ]
+  ),
+  account(
+    '8c9ba7c6-6dfb-4070-b8e2-6225077a0f85',
+    'megaeth',
+    'MegaETH',
+    Networks.main.megaeth,
+    18,
+    UnderlyingAsset.MEGAETH,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
     ]
   ),
   gasTankAccount(
@@ -2480,6 +2550,17 @@ export const allCoinsAndTokens = [
     AccountCoin.DEFAULT_FEATURES,
     '',
     'GBENJI'
+  ),
+  stellarToken(
+    'c72bcc64-9269-45ae-9a08-9efa8afb071a',
+    'xlm:SHX-GDSTRSHXHGJ7ZIVRBXEYE5Q74XUVCUSEKEBR7UCHEUUEK72N7I7KJ6JH',
+    'Stronghold SHx',
+    7,
+    UnderlyingAsset['xlm:SHX-GDSTRSHXHGJ7ZIVRBXEYE5Q74XUVCUSEKEBR7UCHEUUEK72N7I7KJ6JH'],
+    'stronghold.co',
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'SHX'
   ),
   tronToken(
     '5f3266f8-252c-492a-90d7-bb6d3bf550fb',
@@ -3141,6 +3222,17 @@ export const allCoinsAndTokens = [
     'tsoneium:test721',
     'soneium Test ERC721',
     '0xc78d4c49ccaa27a9ba9d0de9d93f50dbc67d4f8e',
+    GENERIC_TOKEN_FEATURES,
+    '',
+    '',
+    Networks.test.soneium,
+    KeyCurve.Secp256k1
+  ),
+  terc721(
+    'b2e1c8a7-4e2a-4b8d-9e2f-7c3a1d2e5f6b',
+    'tsoneium:forwarder',
+    'soneium test nft to verify autoflush',
+    '0x798b02d08b5e60e65e2717c46231f270047a4d8f',
     GENERIC_TOKEN_FEATURES,
     '',
     '',
@@ -3952,6 +4044,24 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['tworld:usdc'],
     [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
+  flrErc20(
+    '1a38ab45-a789-4810-8d1d-2970af380753',
+    'flr:wflr',
+    'Wrapped Flare',
+    18,
+    '0x1d80c49bbbcd1c0911346656b529df9e5c2f783d',
+    UnderlyingAsset['flr:wflr'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  tflrErc20(
+    'ff4dd56d-8fa0-4e92-b764-88c56ea48549',
+    'tflr:wflr',
+    'Wrapped Flare Testnet',
+    18,
+    '0xab6fad89389b73dbc887d31206a26fd88d719d1f',
+    UnderlyingAsset['tflr:wflr'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+  ),
   txrpToken(
     '8ef16158-1015-4a67-b6fe-db669c18ab2b',
     'txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd',
@@ -4416,6 +4526,24 @@ export const allCoinsAndTokens = [
     '0x7b5e9cac3433e9202f28527f707c89e1e47b19de2c33e4db9521a63ad219b739',
     UnderlyingAsset['apt:benji'],
     APT_FEATURES
+  ),
+  aptToken(
+    'b8b9e122-f091-4ce4-9baf-5c901779e9f7',
+    'apt:kgen',
+    'KGEN',
+    8,
+    '0x2a8227993a4e38537a57caefe5e7e9a51327bf6cd732c1f56648f26f68304ebc',
+    UnderlyingAsset['apt:kgen'],
+    APT_FEATURES
+  ),
+  taptToken(
+    '5cce2ccc-977c-4791-b4f0-de5eb8da17b6',
+    'tapt:stgusd1',
+    'Test USD1 Token',
+    6,
+    '0x2356ad3e22c235a200a5df08282a65c42c2aafb0d8ec5b878a7192c5a2ba432a',
+    UnderlyingAsset['tapt:stgusd1'],
+    [...APT_FEATURES, CoinFeature.STABLECOIN]
   ),
   taptToken(
     '2695e728-96dd-46e6-9d01-bd0fdbe1ff38',

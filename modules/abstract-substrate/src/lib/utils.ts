@@ -8,7 +8,7 @@ import { hexToU8a, isHex, u8aToHex, u8aToU8a } from '@polkadot/util';
 import { base64Decode, signatureVerify } from '@polkadot/util-crypto';
 import { UnsignedTransaction } from '@substrate/txwrapper-core';
 import { DecodedSignedTx, DecodedSigningPayload, TypeRegistry } from '@substrate/txwrapper-core/lib/types';
-import { construct } from '@substrate/txwrapper-polkadot';
+import { construct, decode } from '@substrate/txwrapper-polkadot';
 import bs58 from 'bs58';
 import base32 from 'hi-base32';
 import nacl from 'tweetnacl';
@@ -28,7 +28,9 @@ import {
   UnbondArgs,
   WithdrawUnbondedArgs,
   BatchArgs,
+  MoveStakeArgs,
 } from './iface';
+import { SingletonRegistry } from './singletonRegistry';
 
 export class Utils implements BaseUtils {
   /** @inheritdoc */
@@ -263,6 +265,16 @@ export class Utils implements BaseUtils {
     return (arg as BatchArgs).calls !== undefined && Array.isArray((arg as BatchArgs).calls);
   }
 
+  isMoveStake(arg: TxMethod['args']): arg is MoveStakeArgs {
+    return (
+      (arg as MoveStakeArgs).originHotkey !== undefined &&
+      (arg as MoveStakeArgs).destinationHotkey !== undefined &&
+      (arg as MoveStakeArgs).originNetuid !== undefined &&
+      (arg as MoveStakeArgs).destinationNetuid !== undefined &&
+      (arg as MoveStakeArgs).alphaAmount !== undefined
+    );
+  }
+
   /**
    * extracts and returns the signature in hex format given a raw signed transaction
    *
@@ -305,6 +317,31 @@ export class Utils implements BaseUtils {
 
   getMaterial(networkType: NetworkType): Material {
     throw new Error('Method not implemented.');
+  }
+
+  /**
+   * Decodes a substrate transaction from raw transaction hex
+   *
+   * @param {string} txHex - The raw transaction hex string to decode (signed or unsigned)
+   * @param {Material} material - Network material containing metadata and chain information
+   * @param {boolean} [isImmortalEra] - Whether the transaction uses immortal era (optional)
+   * @returns {DecodedSignedTx | DecodedSigningPayload} The decoded transaction object
+   */
+  decodeTransaction(txHex: string, material: Material, isImmortalEra = false): DecodedSignedTx | DecodedSigningPayload {
+    try {
+      const registry = SingletonRegistry.getInstance(material);
+
+      // Attempt to decode as a signed transaction or unsigned transaction
+      const decoded = decode(txHex, {
+        metadataRpc: material.metadata,
+        registry,
+        isImmortalEra,
+      });
+
+      return decoded;
+    } catch (error) {
+      throw new Error(`Failed to decode transaction: ${error}`);
+    }
   }
 }
 

@@ -260,6 +260,12 @@ const mainnetBase: EnvironmentTemplate = {
     flow: {
       baseUrl: 'https://evm.flowscan.io/api',
     },
+    plume: {
+      baseUrl: 'https://explorer.plume.org/api',
+    },
+    megaeth: {
+      baseUrl: 'https://carrot.megaeth.com/rpc', //TODO: add mainnet url when available
+    },
   },
   icpNodeUrl: 'https://ic0.app',
   worldExplorerBaseUrl: 'https://worldscan.org/',
@@ -387,6 +393,12 @@ const testnetBase: EnvironmentTemplate = {
     },
     flow: {
       baseUrl: 'https://evm-testnet.flowscan.io/api',
+    },
+    megaeth: {
+      baseUrl: 'https://carrot.megaeth.com/rpc',
+    },
+    plume: {
+      baseUrl: 'https://testnet-explorer.plume.org/api',
     },
   },
   stxNodeUrl: 'https://api.testnet.hiro.so',

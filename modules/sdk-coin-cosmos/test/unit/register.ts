@@ -2,8 +2,7 @@ import sinon from 'sinon';
 import should from 'should';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { CoinFeature, coins } from '@bitgo/statics';
-import { register } from '../../src/register';
-import { CosmosSharedCoin } from '../../src/cosmosSharedCoin';
+import { register, CosmosSharedCoin } from '../../src';
 
 describe('Cosmos Register', function () {
   let bitgo: BitGoAPI;
