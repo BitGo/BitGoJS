@@ -160,18 +160,25 @@ export class StakingWallet implements IStakingWallet {
       if (!transaction.buildParams) {
         throw Error(`Staking transaction ${transaction.id} build params not expanded`);
       }
-      const isBtcUndelegate =
-        this.wallet.baseCoin.getFamily() === 'btc' &&
-        transaction.transactionType.toLowerCase() === 'undelegate_withdraw';
-      const wallet = isBtcUndelegate
-        ? await this.getDescriptorWallet(transaction)
-        : await this.getWalletForBuildingAndSigning();
+      const wallet = await this.extractWallet(transaction);
 
       return {
         transaction: transaction,
         result: await wallet.prebuildTransaction(transaction.buildParams),
       };
     }
+  }
+
+  private async extractWallet(transaction: StakingTransaction) {
+    return this.isBtcUndelegate(transaction)
+      ? await this.getDescriptorWallet(transaction)
+      : await this.getWalletForBuildingAndSigning();
+  }
+
+  private isBtcUndelegate(transaction: StakingTransaction) {
+    return (
+      this.wallet.baseCoin.getFamily() === 'btc' && transaction.transactionType.toLowerCase() === 'undelegate_withdraw'
+    );
   }
 
   /**
@@ -269,7 +276,10 @@ export class StakingWallet implements IStakingWallet {
   ): Promise<StakingSignedTransaction> {
     const builtTx = await this.build(transaction);
     // default to verifying a transaction unless explicitly skipped
-    const skipVerification = signOptions.transactionVerificationOptions?.skipTransactionVerification ?? false;
+    // skipping the verification for btc undelegate because it is just single sig
+    const skipVerification =
+      (signOptions.transactionVerificationOptions?.skipTransactionVerification || this.isBtcUndelegate(transaction)) ??
+      false;
     if (!isStakingTxRequestPrebuildResult(builtTx.result) && !skipVerification) {
       await this.validateBuiltStakingTransaction(builtTx.transaction, builtTx);
     }
