@@ -10,7 +10,7 @@ import { BitgoExpressError } from '../../schemas/error';
 export const SignerMacaroonParams = {
   coin: t.string,
   walletId: t.string,
-};
+} as const;
 
 /**
  * Request body for creating a signer macaroon
@@ -20,7 +20,19 @@ export const SignerMacaroonParams = {
 export const SignerMacaroonBody = {
   passphrase: t.string,
   addIpCaveatToMacaroon: optional(t.boolean),
-};
+} as const;
+
+/**
+ * Response
+ * - 200: Returns the updated wallet. On success, the wallet's `coinSpecific` includes the generated signer macaroon (derived from the signer node admin macaroon), optionally with an IP caveat.
+ * - 400: BitGo Express error payload when macaroon creation cannot proceed (e.g., invalid coin, wallet not self‑custody lightning, missing encrypted signer admin macaroon, or external IP not set when an IP caveat is requested).
+ *
+ * See platform spec: POST /api/v2/{coin}/wallet/{walletId}/signermacaroon
+ */
+export const SignerMacaroonResponse = {
+  200: t.UnknownRecord,
+  400: BitgoExpressError,
+} as const;
 
 /**
  * Lightning - Create signer macaroon
@@ -36,8 +48,5 @@ export const PostSignerMacaroon = httpRoute({
     params: SignerMacaroonParams,
     body: SignerMacaroonBody,
   }),
-  response: {
-    200: t.UnknownRecord,
-    400: BitgoExpressError,
-  },
+  response: SignerMacaroonResponse,
 });
