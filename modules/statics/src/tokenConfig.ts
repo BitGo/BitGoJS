@@ -13,6 +13,7 @@ import {
   Erc1155Coin,
   Erc20Coin,
   Erc721Coin,
+  EthLikeERC20Token,
   FlrERC20Token,
   HederaToken,
   Nep141Token,
@@ -211,6 +212,9 @@ export interface Tokens {
     opeth: {
       tokens: EthLikeTokenConfig[];
     };
+    baseeth: {
+      tokens: EthLikeTokenConfig[];
+    };
     coredao: {
       tokens: EthLikeTokenConfig[];
     };
@@ -307,6 +311,9 @@ export interface Tokens {
       tokens: EthLikeTokenConfig[];
     };
     opeth: {
+      tokens: EthLikeTokenConfig[];
+    };
+    baseeth: {
       tokens: EthLikeTokenConfig[];
     };
     sol: {
@@ -667,6 +674,24 @@ const getFormattedOpethTokens = (customCoinMap = coins) =>
   customCoinMap.reduce((acc: EthLikeTokenConfig[], coin) => {
     if (coin instanceof OpethERC20Token) {
       acc.push(getOpethTokenConfig(coin));
+    }
+    return acc;
+  }, []);
+
+function getBaseethTokenConfig(coin: EthLikeERC20Token): EthLikeTokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'baseeth' : 'tbaseeth',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+    decimalPlaces: coin.decimalPlaces,
+  };
+}
+const getFormattedBaseethTokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: EthLikeTokenConfig[], coin) => {
+    if (coin instanceof EthLikeERC20Token && (coin.name.includes('baseeth:') || coin.name.includes('tbaseeth:'))) {
+      acc.push(getBaseethTokenConfig(coin));
     }
     return acc;
   }, []);
@@ -1128,6 +1153,9 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
       opeth: {
         tokens: getFormattedOpethTokens(coinMap).filter((token) => token.network === 'Mainnet'),
       },
+      baseeth: {
+        tokens: getFormattedBaseethTokens(coinMap).filter((token) => token.network === 'Mainnet'),
+      },
       zketh: {
         tokens: getFormattedZkethTokens(coinMap).filter((token) => token.network === 'Mainnet'),
       },
@@ -1231,6 +1259,9 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
       },
       opeth: {
         tokens: getFormattedOpethTokens(coinMap).filter((token) => token.network === 'Testnet'),
+      },
+      baseeth: {
+        tokens: getFormattedBaseethTokens(coinMap).filter((token) => token.network === 'Testnet'),
       },
       zketh: {
         tokens: getFormattedZkethTokens(coinMap).filter((token) => token.network === 'Testnet'),
