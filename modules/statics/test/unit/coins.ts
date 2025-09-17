@@ -82,6 +82,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
       CoinFeature.CUSTODY_BITGO_SINGAPORE,
       CoinFeature.BULK_TRANSACTION,
+      CoinFeature.CUSTODY_BULK_TRANSACTION,
     ],
   },
   btg: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
@@ -470,6 +471,7 @@ const custodyFeatures: Record<string, { features: CoinFeature[] }> = {
       CoinFeature.CUSTODY_BITGO_FRANKFURT,
       CoinFeature.CUSTODY_BITGO_SINGAPORE,
       CoinFeature.BULK_TRANSACTION,
+      CoinFeature.CUSTODY_BULK_TRANSACTION,
     ],
   },
   tbtg: { features: [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_FRANKFURT] },
@@ -1107,6 +1109,10 @@ describe('Custody Bulk Withdrawal Features', () => {
       'tcronos',
       'initia',
       'tinitia',
+      'thash',
+      'hash',
+      'bch',
+      'tbch',
     ];
     custodyBulkWithdrawalCoins.forEach((coinName) => {
       const coin = coins.get(coinName);

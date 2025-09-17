@@ -263,6 +263,9 @@ const mainnetBase: EnvironmentTemplate = {
     plume: {
       baseUrl: 'https://explorer.plume.org/api',
     },
+    megaeth: {
+      baseUrl: 'https://carrot.megaeth.com/rpc', //TODO: add mainnet url when available
+    },
   },
   icpNodeUrl: 'https://ic0.app',
   worldExplorerBaseUrl: 'https://worldscan.org/',

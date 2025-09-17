@@ -117,6 +117,7 @@ export class CoinMap {
       10143: 'tmon',
       480: 'world',
       4801: 'tworld',
+      5031: 'somi',
       50312: 'tstt',
       1868: 'soneium',
       1946: 'tsoneium',

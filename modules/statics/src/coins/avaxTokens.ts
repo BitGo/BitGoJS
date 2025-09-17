@@ -177,7 +177,7 @@ export const avaxTokens = [
   avaxErc20(
     '6e92ac8e-a2c8-49f3-8096-b630516bec5d',
     'avaxc:btc-b',
-    'Bitcoin',
+    'Bitcoin Avalanche Bridged',
     8,
     '0x152b9d0fdc40c096757f570a51e494bd4b943e50',
     UnderlyingAsset['avaxc:btc']

@@ -7,12 +7,14 @@ import { AddressInitializationBuilder } from './transactionBuilder/addressInitia
 import { FlushTokenTransactionBuilder } from './transactionBuilder/flushTokenTransactionBuilder';
 import { ExitDelegationBuilder } from './transactionBuilder/exitDelegationBuilder';
 import { BurnNftBuilder } from './transactionBuilder/burnNftBuilder';
+import { ClaimRewardsBuilder } from './transactionBuilder/claimRewardsBuilder';
 import { Transaction } from './transaction/transaction';
 import utils from './utils';
 import { AddressInitializationTransaction } from './transaction/addressInitializationTransaction';
 import { FlushTokenTransaction } from './transaction/flushTokenTransaction';
 import { ExitDelegationTransaction } from './transaction/exitDelegation';
 import { BurnNftTransaction } from './transaction/burnNftTransaction';
+import { ClaimRewardsTransaction } from './transaction/claimRewards';
 import { TokenTransactionBuilder } from './transactionBuilder/tokenTransactionBuilder';
 import { TokenTransaction } from './transaction/tokenTransaction';
 import { StakingBuilder } from './transactionBuilder/stakingBuilder';
@@ -63,6 +65,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           const burnNftTx = new BurnNftTransaction(this._coinConfig);
           burnNftTx.fromDeserializedSignedTransaction(signedTx);
           return this.getBurnNftBuilder(burnNftTx);
+        case TransactionType.StakingClaim:
+          const claimRewardsTx = new ClaimRewardsTransaction(this._coinConfig);
+          claimRewardsTx.fromDeserializedSignedTransaction(signedTx);
+          return this.getClaimRewardsBuilder(claimRewardsTx);
         default:
           throw new InvalidTransactionError('Invalid transaction type');
       }
@@ -120,6 +126,16 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    */
   getBurnNftBuilder(tx?: BurnNftTransaction): BurnNftBuilder {
     return this.initializeBuilder(tx, new BurnNftBuilder(this._coinConfig));
+  }
+
+  /**
+   * Gets a claim rewards transaction builder.
+   *
+   * @param {ClaimRewardsTransaction} tx - The claim rewards transaction to use
+   * @returns {ClaimRewardsBuilder} The claim rewards transaction builder
+   */
+  getClaimRewardsBuilder(tx?: ClaimRewardsTransaction): ClaimRewardsBuilder {
+    return this.initializeBuilder(tx, new ClaimRewardsBuilder(this._coinConfig));
   }
 
   /** @inheritdoc */

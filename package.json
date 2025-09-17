@@ -34,7 +34,7 @@
     "lerna": "^5.5.0",
     "lint-staged": "^12.4.1",
     "make-dir": "^3.1.0",
-    "mocha": "^9.2.0",
+    "mocha": "10.6.0",
     "nock": "^13.3.1",
     "nyc": "^15.1.0",
     "parse-url": "^8.1.0",
@@ -73,7 +73,7 @@
     "body-parser": "1.20.3",
     "degenerator": "5.0.0",
     "eventsource": "2.0.2",
-    "follow-redirects": "1.15.4",
+    "follow-redirects": "1.15.11",
     "io-ts": "npm:@bitgo-forks/io-ts@2.1.4",
     "isbinaryfile": "5.0.0",
     "minimist": "1.2.6",
@@ -88,7 +88,7 @@
     "@polkadot/api": "14.1.1",
     "elliptic": "^6.6.1",
     "cookie": "^0.7.1",
-    "axios": "^1.11.0",
+    "axios": "^1.12.0",
     "canvg": "4.0.3",
     "**/stellar-sdk/**/bignumber.js": "4.1.0",
     "**/stellar-base/**/bignumber.js": "4.1.0",
@@ -96,7 +96,8 @@
     "form-data": "^4.0.4",
     "**/avalanche/**/ws": "8.18.3",
     "**/ethers/**/ws": "7.5.10",
-    "**/swarm-js/**/ws": "5.2.4"
+    "**/swarm-js/**/ws": "5.2.4",
+    "serialize-javascript": "^6.0.2"
   },
   "workspaces": [
     "modules/*"
@@ -136,7 +137,7 @@
     "test:prepare-release": "mocha --require tsx ./scripts/tests/prepareRelease/prepare-release-main.test.ts"
   },
   "dependencies": {
-    "axios": "^1.11.0",
+    "axios": "^1.12.0",
     "terser": "^5.14.2",
     "tmp": "^0.2.3"
   },

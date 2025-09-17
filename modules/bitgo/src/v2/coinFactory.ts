@@ -37,6 +37,7 @@ import {
   VetTokenConfig,
   TaoTokenConfig,
   PolyxTokenConfig,
+  JettonTokenConfig,
 } from '@bitgo/statics';
 import {
   Ada,
@@ -99,6 +100,7 @@ import {
   Injective,
   Iota,
   Islm,
+  JettonToken,
   Lnbtc,
   Ltc,
   Mon,
@@ -525,6 +527,10 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   );
 
   HashToken.createTokenConstructors([...tokens.bitcoin.cosmos.tokens, ...tokens.testnet.cosmos.tokens]).forEach(
+    ({ name, coinConstructor }) => coinFactory.register(name, coinConstructor)
+  );
+
+  JettonToken.createTokenConstructors([...tokens.bitcoin.ton.tokens, ...tokens.testnet.ton.tokens]).forEach(
     ({ name, coinConstructor }) => coinFactory.register(name, coinConstructor)
   );
 
@@ -971,6 +977,9 @@ export function getTokenConstructor(tokenConfig: TokenConfig): CoinConstructor |
     case 'flr':
     case 'tflr':
       return FlrToken.createTokenConstructor(tokenConfig as EthLikeTokenConfig);
+    case 'ton':
+    case 'tton':
+      return JettonToken.createTokenConstructor(tokenConfig as JettonTokenConfig);
     default:
       return undefined;
   }

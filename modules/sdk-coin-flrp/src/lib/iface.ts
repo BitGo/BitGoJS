@@ -1,4 +1,11 @@
-import { TransactionExplanation as BaseTransactionExplanation, Entry, TransactionType } from '@bitgo/sdk-core';
+import {
+  TransactionExplanation as BaseTransactionExplanation,
+  Entry,
+  TransactionType,
+  SignTransactionOptions,
+  VerifyTransactionOptions,
+  TransactionParams,
+} from '@bitgo/sdk-core';
 import { UnsignedTx, TransferableOutput, avaxSerial } from '@flarenetwork/flarejs';
 export interface FlrpEntry extends Entry {
   id: string;
@@ -32,6 +39,7 @@ export interface TxData {
   changeOutputs: Entry[];
   sourceChain?: string;
   destinationChain?: string;
+  memo?: string; // Memo field for transaction metadata
 }
 
 /**
@@ -72,3 +80,61 @@ export type BaseTx = avaxSerial.BaseTx; // FlareJS BaseTx
 export type AvaxTx = avaxSerial.AvaxTx; // FlareJS AvaxTx
 export type DeprecatedOutput = unknown; // Placeholder for backward compatibility
 export type Output = TransferableOutput; // FlareJS TransferableOutput (unified type in 4.0.5)
+
+// FLRP-specific interfaces extending SDK-core interfaces
+export interface FlrpSignTransactionOptions extends SignTransactionOptions {
+  txPrebuild: {
+    txHex: string;
+  };
+  prv: string;
+}
+
+export interface FlrpVerifyTransactionOptions extends VerifyTransactionOptions {
+  txParams: FlrpTransactionParams;
+}
+
+export interface FlrpTransactionStakingOptions {
+  nodeID: string;
+  amount: string;
+  startTime?: string;
+  endTime?: string;
+  delegationFeeRate?: number;
+}
+
+export interface FlrpTransactionParams extends TransactionParams {
+  type: string;
+  recipients?: Array<{
+    address: string;
+    amount: string;
+  }>;
+  stakingOptions?: FlrpTransactionStakingOptions;
+  unspents?: string[];
+}
+
+export interface ExplainTransactionOptions {
+  txHex?: string;
+  halfSigned?: {
+    txHex: string;
+  };
+}
+
+/**
+ * Memo utility interfaces for FlareJS integration
+ */
+export interface MemoData {
+  text?: string; // UTF-8 string memo
+  bytes?: Uint8Array; // Raw byte array memo
+  json?: Record<string, unknown>; // JSON object memo (will be stringified)
+}
+
+/**
+ * SpendOptions interface matching FlareJS patterns
+ * Based on FlareJS SpendOptions with memo support
+ */
+export interface FlrpSpendOptions {
+  minIssuanceTime?: bigint;
+  changeAddresses?: string[]; // BitGo uses string addresses, FlareJS uses Uint8Array[]
+  threshold?: number;
+  memo?: Uint8Array; // FlareJS memo format (byte array)
+  locktime?: bigint;
+}

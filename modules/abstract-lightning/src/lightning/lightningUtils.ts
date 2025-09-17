@@ -154,14 +154,18 @@ function convertXpubPrefix(xpub: string, purpose: ExtendedKeyPurpose, isMainnet:
 /**
  * Derives watch-only accounts from the master HD node for the given purposes and network.
  */
-function deriveWatchOnlyAccounts(masterHDNode: utxolib.BIP32Interface, isMainnet: boolean): WatchOnlyAccount[] {
+export function deriveWatchOnlyAccounts(
+  masterHDNode: utxolib.BIP32Interface,
+  isMainnet: boolean,
+  params: { onlyAddressCreationAccounts?: boolean } = { onlyAddressCreationAccounts: false }
+): WatchOnlyAccount[] {
   // https://github.com/lightningnetwork/lnd/blob/master/docs/remote-signing.md#required-accounts
   if (masterHDNode.isNeutered()) {
     throw new Error('masterHDNode must not be neutered');
   }
-
-  const purposes = [PURPOSE_WRAPPED_P2WKH, PURPOSE_P2WKH, PURPOSE_P2TR, PURPOSE_ALL_OTHERS] as const;
-
+  const purposes = params.onlyAddressCreationAccounts
+    ? ([PURPOSE_WRAPPED_P2WKH, PURPOSE_P2WKH, PURPOSE_P2TR] as const)
+    : ([PURPOSE_WRAPPED_P2WKH, PURPOSE_P2WKH, PURPOSE_P2TR, PURPOSE_ALL_OTHERS] as const);
   return purposes.flatMap((purpose) => {
     const maxAccount = purpose === PURPOSE_ALL_OTHERS ? 255 : 0;
     const coinType = purpose !== PURPOSE_ALL_OTHERS || isMainnet ? 0 : 1;

@@ -244,6 +244,7 @@ describe('Sol Transaction', () => {
           'changeAmount',
           'outputs',
           'changeOutputs',
+          'tokenEnablements',
           'fee',
           'memo',
         ],
@@ -265,6 +266,7 @@ describe('Sol Transaction', () => {
         memo: undefined,
         blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
         durableNonce: undefined,
+        tokenEnablements: [],
       });
     });
 
@@ -287,6 +289,7 @@ describe('Sol Transaction', () => {
           'changeAmount',
           'outputs',
           'changeOutputs',
+          'tokenEnablements',
           'fee',
           'memo',
         ],
@@ -311,6 +314,7 @@ describe('Sol Transaction', () => {
           authWalletAddress: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
           walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
         },
+        tokenEnablements: [],
       });
     });
 
@@ -336,6 +340,7 @@ describe('Sol Transaction', () => {
           'changeAmount',
           'outputs',
           'changeOutputs',
+          'tokenEnablements',
           'fee',
           'memo',
         ],
@@ -368,6 +373,7 @@ describe('Sol Transaction', () => {
           authWalletAddress: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
           walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
         },
+        tokenEnablements: [],
       });
     });
 
@@ -392,6 +398,7 @@ describe('Sol Transaction', () => {
           'changeAmount',
           'outputs',
           'changeOutputs',
+          'tokenEnablements',
           'fee',
           'memo',
         ],
@@ -413,6 +420,7 @@ describe('Sol Transaction', () => {
         memo: undefined,
         blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
         durableNonce: undefined,
+        tokenEnablements: [],
       });
     });
 
@@ -437,6 +445,7 @@ describe('Sol Transaction', () => {
           'changeAmount',
           'outputs',
           'changeOutputs',
+          'tokenEnablements',
           'fee',
           'memo',
         ],
@@ -458,6 +467,7 @@ describe('Sol Transaction', () => {
         memo: undefined,
         blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
         durableNonce: undefined,
+        tokenEnablements: [],
       });
     });
 
@@ -482,6 +492,7 @@ describe('Sol Transaction', () => {
           'changeAmount',
           'outputs',
           'changeOutputs',
+          'tokenEnablements',
           'fee',
           'memo',
         ],
@@ -506,6 +517,7 @@ describe('Sol Transaction', () => {
           authWalletAddress: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
           walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
         },
+        tokenEnablements: [],
       });
     });
 
@@ -531,6 +543,7 @@ describe('Sol Transaction', () => {
           'changeAmount',
           'outputs',
           'changeOutputs',
+          'tokenEnablements',
           'fee',
           'memo',
         ],
@@ -552,10 +565,11 @@ describe('Sol Transaction', () => {
         memo: undefined,
         blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
         durableNonce: undefined,
+        tokenEnablements: [],
       });
     });
 
-    it('should explain create ATA transaction', async function () {
+    it('should explain create ATA transaction with tokenEnablements field', async function () {
       const tx = await factory
         .getAtaInitializationBuilder()
         .fee({ amount: 5000 })
@@ -566,33 +580,67 @@ describe('Sol Transaction', () => {
         .build();
 
       const explainedTransaction = tx.explainTransaction();
-      explainedTransaction.should.deepEqual({
-        displayOrder: [
-          'id',
-          'type',
-          'blockhash',
-          'durableNonce',
-          'outputAmount',
-          'changeAmount',
-          'outputs',
-          'changeOutputs',
-          'fee',
-          'memo',
-        ],
-        id: 'UNAVAILABLE',
-        type: 'AssociatedTokenAccountInitialization',
-        changeOutputs: [],
-        changeAmount: '0',
-        outputAmount: '0',
-        outputs: [],
-        fee: {
-          fee: '15000',
-          feeRate: 5000,
-        },
-        memo: undefined,
-        blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
-        durableNonce: undefined,
+
+      // Verify the tokenEnablements field exists and contains the correct data
+      explainedTransaction.should.have.property('tokenEnablements');
+      explainedTransaction.tokenEnablements.should.be.an.Array();
+      explainedTransaction.tokenEnablements.length.should.equal(1);
+      explainedTransaction.tokenEnablements[0].should.have.properties(['address', 'tokenName', 'tokenAddress']);
+      explainedTransaction.tokenEnablements[0].tokenName.should.equal('tsol:usdc');
+
+      // Verify displayOrder includes tokenEnablements
+      explainedTransaction.displayOrder.should.containEql('tokenEnablements');
+
+      // Verify other important fields
+      explainedTransaction.id.should.equal('UNAVAILABLE');
+      explainedTransaction.type.should.equal('AssociatedTokenAccountInitialization');
+      explainedTransaction.outputs.should.be.an.Array().and.be.empty();
+      explainedTransaction.fee.fee.should.equal('15000');
+      explainedTransaction.fee.feeRate.should.equal(5000);
+      explainedTransaction.blockhash.should.equal('5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen');
+      should.not.exist(explainedTransaction.durableNonce);
+    });
+
+    it('should explain multiple token enablements in a transaction', async function () {
+      // Create a transaction with multiple token enablements
+      const txBuilder = factory.getAtaInitializationBuilder();
+      txBuilder.nonce(blockHash);
+      txBuilder.sender(sender);
+      txBuilder.enableToken({
+        ownerAddress: sender,
+        tokenName: 'tsol:usdc',
+        ataAddress: 'DfGJHsrY7RchVwPfigT4T3Wkc4zGq1kkbWzNaVQrDE4w',
       });
+      txBuilder.enableToken({
+        ownerAddress: sender,
+        tokenName: 'tsol:ray',
+        ataAddress: 'GHhhPAuh5PdyeCM4zHPT7jz3jAGrXTPQu6mUMTtZ8TTf',
+      });
+      txBuilder.rentExemptAmount(amount);
+      txBuilder.fee({ amount: 5000 });
+
+      const tx = await txBuilder.build();
+      const explainedTransaction = tx.explainTransaction();
+
+      // Verify the tokenEnablements field contains multiple entries
+      explainedTransaction.should.have.property('tokenEnablements');
+      explainedTransaction.tokenEnablements.should.be.an.Array();
+      explainedTransaction.tokenEnablements.length.should.equal(2);
+
+      // Check the first token enablement
+      explainedTransaction.tokenEnablements[0].should.have.properties(['address', 'tokenName', 'tokenAddress']);
+      explainedTransaction.tokenEnablements[0].tokenName.should.equal('tsol:usdc');
+
+      // Check the second token enablement
+      explainedTransaction.tokenEnablements[1].should.have.properties(['address', 'tokenName', 'tokenAddress']);
+      explainedTransaction.tokenEnablements[1].tokenName.should.equal('tsol:ray');
+
+      // Verify outputs is empty (since token enablements are no longer added to outputs)
+      explainedTransaction.outputs.should.be.an.Array();
+      explainedTransaction.outputs.should.be.empty();
+
+      // Display order should include tokenEnablements
+      explainedTransaction.displayOrder.should.containEql('tokenEnablements');
     });
 
     it('should activate builder ', async function () {
@@ -617,6 +665,7 @@ describe('Sol Transaction', () => {
           'changeAmount',
           'outputs',
           'changeOutputs',
+          'tokenEnablements',
           'fee',
           'memo',
         ],
@@ -638,6 +687,7 @@ describe('Sol Transaction', () => {
         memo: undefined,
         blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
         durableNonce: undefined,
+        tokenEnablements: [],
       });
     });
 
@@ -663,6 +713,7 @@ describe('Sol Transaction', () => {
           'changeAmount',
           'outputs',
           'changeOutputs',
+          'tokenEnablements',
           'fee',
           'memo',
         ],
@@ -679,6 +730,7 @@ describe('Sol Transaction', () => {
         memo: undefined,
         blockhash: 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi',
         durableNonce: undefined,
+        tokenEnablements: [],
       });
     });
 
@@ -704,6 +756,7 @@ describe('Sol Transaction', () => {
           'changeAmount',
           'outputs',
           'changeOutputs',
+          'tokenEnablements',
           'fee',
           'memo',
         ],
@@ -725,6 +778,7 @@ describe('Sol Transaction', () => {
         memo: undefined,
         blockhash: 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi',
         durableNonce: undefined,
+        tokenEnablements: [],
       });
     });
 
@@ -751,6 +805,7 @@ describe('Sol Transaction', () => {
           'changeAmount',
           'outputs',
           'changeOutputs',
+          'tokenEnablements',
           'fee',
           'memo',
         ],
@@ -775,6 +830,7 @@ describe('Sol Transaction', () => {
           walletNonceAddress: testData.nonceAccount.pub,
           authWalletAddress: sender,
         },
+        tokenEnablements: [],
       });
     });
 
@@ -798,6 +854,7 @@ describe('Sol Transaction', () => {
           'changeAmount',
           'outputs',
           'changeOutputs',
+          'tokenEnablements',
           'fee',
           'memo',
         ],
@@ -820,6 +877,7 @@ describe('Sol Transaction', () => {
         memo: undefined,
         blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
         durableNonce: undefined,
+        tokenEnablements: [],
       });
     });
 
@@ -850,6 +908,7 @@ describe('Sol Transaction', () => {
           'changeAmount',
           'outputs',
           'changeOutputs',
+          'tokenEnablements',
           'fee',
           'memo',
         ],
@@ -872,6 +931,7 @@ describe('Sol Transaction', () => {
         memo: undefined,
         blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
         durableNonce: undefined,
+        tokenEnablements: [],
       });
     });
 
@@ -897,6 +957,7 @@ describe('Sol Transaction', () => {
           'changeAmount',
           'outputs',
           'changeOutputs',
+          'tokenEnablements',
           'fee',
           'memo',
         ],
@@ -932,6 +993,7 @@ describe('Sol Transaction', () => {
           authWalletAddress: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
           walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
         },
+        tokenEnablements: [],
       });
     });
   });

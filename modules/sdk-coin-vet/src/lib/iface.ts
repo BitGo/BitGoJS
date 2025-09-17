@@ -3,6 +3,7 @@ import {
   TransactionType as BitGoTransactionType,
   TransactionRecipient,
 } from '@bitgo/sdk-core';
+import { ClaimRewardsData } from './types';
 
 /**
  * The transaction data returned from the toJson() function of a transaction
@@ -28,9 +29,11 @@ export interface VetTransactionData {
   stakingContractAddress?: string;
   amountToStake?: string;
   nftCollectionId?: string;
+  claimRewardsData?: ClaimRewardsData;
 }
 
 export interface VetTransactionExplanation extends BaseTransactionExplanation {
   sender?: string;
   type?: BitGoTransactionType;
+  claimRewardsData?: ClaimRewardsData;
 }

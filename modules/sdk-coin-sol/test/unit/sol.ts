@@ -798,6 +798,7 @@ describe('SOL:', function () {
           'changeAmount',
           'outputs',
           'changeOutputs',
+          'tokenEnablements',
           'fee',
           'memo',
         ],
@@ -822,6 +823,7 @@ describe('SOL:', function () {
           authWalletAddress: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
           walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
         },
+        tokenEnablements: [],
       });
     });
 
@@ -842,6 +844,7 @@ describe('SOL:', function () {
           'changeAmount',
           'outputs',
           'changeOutputs',
+          'tokenEnablements',
           'fee',
           'memo',
         ],
@@ -866,6 +869,7 @@ describe('SOL:', function () {
           authWalletAddress: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
           walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
         },
+        tokenEnablements: [],
       });
     });
 
@@ -887,6 +891,7 @@ describe('SOL:', function () {
           'changeAmount',
           'outputs',
           'changeOutputs',
+          'tokenEnablements',
           'fee',
           'memo',
         ],
@@ -908,6 +913,7 @@ describe('SOL:', function () {
         blockhash: 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi',
         durableNonce: undefined,
         memo: undefined,
+        tokenEnablements: [],
       });
     });
 
@@ -929,6 +935,7 @@ describe('SOL:', function () {
           'changeAmount',
           'outputs',
           'changeOutputs',
+          'tokenEnablements',
           'fee',
           'memo',
         ],
@@ -950,6 +957,7 @@ describe('SOL:', function () {
         blockhash: 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi',
         durableNonce: undefined,
         memo: undefined,
+        tokenEnablements: [],
       });
     });
 
@@ -970,6 +978,7 @@ describe('SOL:', function () {
           'changeAmount',
           'outputs',
           'changeOutputs',
+          'tokenEnablements',
           'fee',
           'memo',
         ],
@@ -995,6 +1004,7 @@ describe('SOL:', function () {
           authWalletAddress: '12f6D3WubGVeQoH2m8kTvvcrasWdXWwtVzUCyRNDZxA2',
           walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
         },
+        tokenEnablements: [],
       });
     });
 
@@ -1015,6 +1025,7 @@ describe('SOL:', function () {
           'changeAmount',
           'outputs',
           'changeOutputs',
+          'tokenEnablements',
           'fee',
           'memo',
         ],
@@ -1040,6 +1051,7 @@ describe('SOL:', function () {
           authWalletAddress: '12f6D3WubGVeQoH2m8kTvvcrasWdXWwtVzUCyRNDZxA2',
           walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
         },
+        tokenEnablements: [],
       });
     });
 
@@ -1071,6 +1083,7 @@ describe('SOL:', function () {
           'changeAmount',
           'outputs',
           'changeOutputs',
+          'tokenEnablements',
           'fee',
           'memo',
         ],
@@ -1092,6 +1105,7 @@ describe('SOL:', function () {
         memo: 'test memo',
         blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
         durableNonce: undefined,
+        tokenEnablements: [],
       });
     });
 
@@ -1121,6 +1135,7 @@ describe('SOL:', function () {
           'changeAmount',
           'outputs',
           'changeOutputs',
+          'tokenEnablements',
           'fee',
           'memo',
         ],
@@ -1137,6 +1152,7 @@ describe('SOL:', function () {
         memo: 'test memo',
         blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
         durableNonce: undefined,
+        tokenEnablements: [],
       });
     });
 
@@ -1167,6 +1183,7 @@ describe('SOL:', function () {
           'changeAmount',
           'outputs',
           'changeOutputs',
+          'tokenEnablements',
           'fee',
           'memo',
         ],
@@ -1188,6 +1205,7 @@ describe('SOL:', function () {
         memo: 'test memo',
         blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
         durableNonce: undefined,
+        tokenEnablements: [],
       });
     });
 
@@ -1221,6 +1239,7 @@ describe('SOL:', function () {
           'changeAmount',
           'outputs',
           'changeOutputs',
+          'tokenEnablements',
           'fee',
           'memo',
         ],
@@ -1237,6 +1256,13 @@ describe('SOL:', function () {
         memo: 'test memo',
         blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
         durableNonce: undefined,
+        tokenEnablements: [
+          {
+            address: '141BFNem3pknc8CzPVLv1Ri3btgKdCsafYP5nXwmXfxU',
+            tokenAddress: 'F4uLeXJoFz3hw13MposuwaQbMcZbCjqvEGPPeRRB1Byf',
+            tokenName: 'tsol:usdc',
+          },
+        ],
       });
     });
 
@@ -1280,6 +1306,7 @@ describe('SOL:', function () {
           'changeAmount',
           'outputs',
           'changeOutputs',
+          'tokenEnablements',
           'fee',
           'memo',
         ],
@@ -1296,6 +1323,18 @@ describe('SOL:', function () {
         memo: 'test memo',
         blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
         durableNonce: undefined,
+        tokenEnablements: [
+          {
+            address: '141BFNem3pknc8CzPVLv1Ri3btgKdCsafYP5nXwmXfxU',
+            tokenAddress: 'F4uLeXJoFz3hw13MposuwaQbMcZbCjqvEGPPeRRB1Byf',
+            tokenName: 'tsol:usdc',
+          },
+          {
+            address: '9KaLinZFNW5chL4J8UoKnTECppWVMz3ewgx4FAkxUDcf',
+            tokenAddress: '9kLJoGbMgSteptkhKKuh7ken4JEvHrT83157ezEGrZ7R',
+            tokenName: 'tsol:ray',
+          },
+        ],
       });
     });
 
@@ -1317,6 +1356,7 @@ describe('SOL:', function () {
           'changeAmount',
           'outputs',
           'changeOutputs',
+          'tokenEnablements',
           'fee',
           'memo',
         ],
@@ -1336,6 +1376,13 @@ describe('SOL:', function () {
         memo: undefined,
         blockhash: '27E3MXFvXMUNYeMJeX1pAbERGsJfUbkaZTfgMgpmNN5g',
         durableNonce: undefined,
+        tokenEnablements: [
+          {
+            address: '2eKjVtzV3oPTXFdtRSDj3Em9k1MV7k8WjKkBszQUwizS',
+            tokenAddress: 'F4uLeXJoFz3hw13MposuwaQbMcZbCjqvEGPPeRRB1Byf',
+            tokenName: 'tsol:usdc',
+          },
+        ],
       });
     });
   });

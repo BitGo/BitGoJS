@@ -52,11 +52,15 @@ export const WatchOnlyAccount = t.type({
 
 export type WatchOnlyAccount = t.TypeOf<typeof WatchOnlyAccount>;
 
-export const WatchOnly = t.type({
-  master_key_birthday_timestamp: t.string,
-  master_key_fingerprint: t.string,
-  accounts: t.array(WatchOnlyAccount),
-});
+export const WatchOnly = t.intersection([
+  t.type({
+    accounts: t.array(WatchOnlyAccount),
+  }),
+  t.partial({
+    master_key_birthday_timestamp: t.string,
+    master_key_fingerprint: t.string,
+  }),
+]);
 
 export type WatchOnly = t.TypeOf<typeof WatchOnly>;
 

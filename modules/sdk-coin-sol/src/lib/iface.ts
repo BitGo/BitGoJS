@@ -123,6 +123,7 @@ export interface Approve {
 
 export interface JitoStakingActivateParams {
   stakePoolData: DepositSolStakePoolData;
+  createAssociatedTokenAccount?: boolean;
 }
 
 export type StakingActivateExtraParams = JitoStakingActivateParams;

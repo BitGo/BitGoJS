@@ -7,6 +7,8 @@ export const STAKING_METHOD_ID = '0xa694fc3a';
 export const EXIT_DELEGATION_METHOD_ID = '0x3fb7a871';
 export const BURN_NFT_METHOD_ID = '0x42966c68';
 export const TRANSFER_NFT_METHOD_ID = '0x23b872dd';
+export const CLAIM_BASE_REWARDS_METHOD_ID = '0x037402d3';
+export const CLAIM_STAKING_REWARDS_METHOD_ID = '0xeb2767fa';
 
 export const STARGATE_NFT_ADDRESS = '0x1856c533ac2d94340aaa8544d35a5c1d4a21dee7';
 export const STARGATE_DELEGATION_ADDRESS = '0x4cb1c9ef05b529c093371264fab2c93cc6cddb0e';

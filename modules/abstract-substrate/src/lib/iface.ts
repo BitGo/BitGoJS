@@ -79,6 +79,10 @@ export const MethodNames = {
    * Transfer stake from one validator to another.
    */
   TransferStake: 'transferStake' as const,
+  /**
+   * Move stake from one hotkey to another.
+   */
+  MoveStake: 'moveStake' as const,
 } as const;
 
 /**
@@ -195,6 +199,14 @@ export interface TransferStakeArgs extends Args {
   alphaAmount: string;
 }
 
+export interface MoveStakeArgs extends Args {
+  originHotkey: string;
+  destinationHotkey: string;
+  originNetuid: string;
+  destinationNetuid: string;
+  alphaAmount: string;
+}
+
 /**
  * Decoded TxMethod from a transaction hex
  */
@@ -211,7 +223,8 @@ export interface TxMethod {
     | UnbondArgs
     | WithdrawUnbondedArgs
     | BatchArgs
-    | TransferStakeArgs;
+    | TransferStakeArgs
+    | MoveStakeArgs;
   name: MethodNamesValues;
   pallet: string;
 }

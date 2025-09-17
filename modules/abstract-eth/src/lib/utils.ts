@@ -259,7 +259,7 @@ export function decodeFlushERC721TokensData(
   forwarderAddress: string;
   tokenAddress: string;
   tokenId: string;
-  forwarderVersion: number;
+  forwarderVersion?: number;
 } {
   if (data.startsWith(flushERC721ForwarderTokensMethodIdV4)) {
     if (!to) {
@@ -284,7 +284,6 @@ export function decodeFlushERC721TokensData(
       forwarderAddress: addHexPrefix(forwarderAddress as string),
       tokenAddress: addHexPrefix(tokenAddress as string),
       tokenId: new BigNumber(bufferToHex(tokenId as Buffer)).toFixed(),
-      forwarderVersion: 0,
     };
   }
   throw new BuildTransactionError(`Invalid flush ERC721 bytecode: ${data}`);
@@ -332,7 +331,7 @@ export function decodeFlushERC1155TokensData(
   forwarderAddress: string;
   tokenAddress: string;
   tokenId: string;
-  forwarderVersion: number;
+  forwarderVersion?: number;
 } {
   if (data.startsWith(flushERC1155ForwarderTokensMethodIdV4)) {
     if (!to) {
@@ -357,7 +356,6 @@ export function decodeFlushERC1155TokensData(
       forwarderAddress: addHexPrefix(forwarderAddress as string),
       tokenAddress: addHexPrefix(tokenAddress as string),
       tokenId: new BigNumber(bufferToHex(tokenId as Buffer)).toFixed(),
-      forwarderVersion: 0,
     };
   }
   throw new BuildTransactionError(`Invalid flush ERC1155 bytecode: ${data}`);

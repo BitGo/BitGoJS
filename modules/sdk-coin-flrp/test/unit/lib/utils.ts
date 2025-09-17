@@ -243,4 +243,75 @@ describe('Utils', function () {
       assert.ok(constants.HEX_REGEX instanceof RegExp);
     });
   });
+
+  describe('Memo Utilities', function () {
+    it('should convert string to bytes', function () {
+      const text = 'Hello Flare';
+      const bytes = utils.stringToBytes(text);
+
+      assert.ok(bytes instanceof Uint8Array);
+      assert.strictEqual(utils.bytesToString(bytes), text);
+    });
+
+    it('should handle UTF-8 strings', function () {
+      const text = 'Hello 世界 🌍';
+      const bytes = utils.stringToBytes(text);
+
+      assert.strictEqual(utils.bytesToString(bytes), text);
+    });
+
+    it('should create memo bytes from string', function () {
+      const text = 'Memo text';
+      const bytes = utils.createMemoBytes(text);
+
+      assert.ok(bytes instanceof Uint8Array);
+      assert.strictEqual(utils.parseMemoBytes(bytes), text);
+    });
+
+    it('should create memo bytes from JSON object', function () {
+      const obj = { type: 'payment', amount: 1000 };
+      const bytes = utils.createMemoBytes(obj);
+      const parsed = utils.parseMemoBytes(bytes);
+
+      assert.strictEqual(parsed, JSON.stringify(obj));
+    });
+
+    it('should handle Uint8Array input', function () {
+      const originalBytes = new Uint8Array([1, 2, 3, 4]);
+      const bytes = utils.createMemoBytes(originalBytes);
+
+      assert.deepStrictEqual(bytes, originalBytes);
+    });
+
+    it('should throw error for invalid memo type', function () {
+      assert.throws(() => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        utils.createMemoBytes(123 as any);
+      }, /Invalid memo format/);
+    });
+
+    it('should parse empty memo', function () {
+      const emptyBytes = new Uint8Array([]);
+      const parsed = utils.parseMemoBytes(emptyBytes);
+
+      assert.strictEqual(parsed, '');
+    });
+
+    it('should validate memo size', function () {
+      const smallMemo = new Uint8Array([1, 2, 3]);
+      const largeMemo = new Uint8Array(5000);
+
+      assert.strictEqual(utils.validateMemoSize(smallMemo), true);
+      assert.strictEqual(utils.validateMemoSize(largeMemo), false);
+      assert.strictEqual(utils.validateMemoSize(largeMemo, 6000), true);
+    });
+
+    it('should handle special characters in memo', function () {
+      const specialText = 'Special: \n\t\r\0';
+      const bytes = utils.createMemoBytes(specialText);
+      const parsed = utils.parseMemoBytes(bytes);
+
+      assert.strictEqual(parsed, specialText);
+    });
+  });
 });

@@ -7,3 +7,11 @@ export interface ExplainTransactionOptions {
 export interface VetParseTransactionOptions extends ParseTransactionOptions {
   txHex: string;
 }
+
+export interface ClaimRewardsData {
+  validatorAddress: string;
+  delegatorAddress: string;
+  delegationContractAddress?: string;
+  claimBaseRewards?: boolean;
+  claimStakingRewards?: boolean;
+}

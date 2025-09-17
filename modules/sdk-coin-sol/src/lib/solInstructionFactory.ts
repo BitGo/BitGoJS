@@ -296,7 +296,8 @@ function stakingInitializeInstruction(data: StakingActivate): TransactionInstruc
           from: fromPubkey,
           lamports: BigInt(amount),
         },
-        extraParams.stakePoolData
+        extraParams.stakePoolData,
+        !!extraParams.createAssociatedTokenAccount
       );
       tx.add(...instructions);
       break;

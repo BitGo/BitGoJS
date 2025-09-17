@@ -159,6 +159,13 @@ export interface StakeOptions {
   depositSignature?: string;
 }
 
+export interface TronStakeOptions extends StakeOptions {
+  /**
+   * Tron staking resource type (Energy or Bandwidth)
+   */
+  resourceType?: string;
+}
+
 export interface UnstakeOptions {
   amount: string;
   clientId?: string;
@@ -273,7 +280,7 @@ export interface StakingSignOptions {
 export interface IStakingWallet {
   readonly walletId: string;
   readonly coin: string;
-  stake(options: StakeOptions): Promise<StakingRequest>;
+  stake(options: StakeOptions | TronStakeOptions): Promise<StakingRequest>;
   unstake(options: UnstakeOptions | EthUnstakeOptions): Promise<StakingRequest>;
   switchValidator(options: SwitchValidatorOptions): Promise<StakingRequest>;
   claimRewards(options: ClaimRewardsOptions): Promise<StakingRequest>;
