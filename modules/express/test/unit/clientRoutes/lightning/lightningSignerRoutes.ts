@@ -142,7 +142,7 @@ describe('Lightning signer routes', () => {
           config: {
             lightningSignerFileSystemPath: 'lightningSignerFileSystemPath',
           },
-        } as any;
+        } as unknown as ExpressApiRouteRequest<'express.lightning.signerMacaroon', 'post'>;
 
         try {
           await handleCreateSignerMacaroon(req);
