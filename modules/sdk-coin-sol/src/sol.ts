@@ -252,63 +252,65 @@ export class Sol extends BaseCoin {
     return explanation.tokenEnablements;
   }
 
-  throwIfMissingEnableTokenConfigOrReturn(txParams: TransactionParams): TokenEnablement {
+  throwIfMissingEnableTokenConfigOrReturn(txParams: TransactionParams): TokenEnablement[] {
     if (!txParams.enableTokens || txParams.enableTokens.length === 0) throw new Error('Missing enable token config');
-    if (txParams.enableTokens.length > 1)
-      throw new Error('Multiple token enablement not supported in a single transaction');
-    return txParams.enableTokens[0];
+    return txParams.enableTokens;
   }
 
-  verifyTokenName(tokenEnablementsPrebuild: ITokenEnablement[], enableTokensConfig: TokenEnablement): void {
-    const expectedTokenName = enableTokensConfig.name;
-    tokenEnablementsPrebuild.forEach((tokenEnablement) => {
-      if (!tokenEnablement.tokenName) throw new Error('Missing token name on token enablement tx');
-      if (tokenEnablement.tokenName !== expectedTokenName)
-        throw new Error(
-          `Invalid token name: expected ${expectedTokenName}, got ${tokenEnablement.tokenName} on token enablement tx`
-        );
+  verifyTokenName(tokenEnablementsPrebuild: ITokenEnablement[], enableTokensConfig: TokenEnablement[]): void {
+    enableTokensConfig.forEach((enableTokenConfig) => {
+      const expectedTokenName = enableTokenConfig.name;
+      tokenEnablementsPrebuild.forEach((tokenEnablement) => {
+        if (!tokenEnablement.tokenName) throw new Error('Missing token name on token enablement tx');
+        if (tokenEnablement.tokenName !== expectedTokenName)
+          throw new Error(
+            `Invalid token name: expected ${expectedTokenName}, got ${tokenEnablement.tokenName} on token enablement tx`
+          );
+      });
     });
   }
 
   async verifyTokenAddress(
     tokenEnablementsPrebuild: ITokenEnablement[],
-    enableTokensConfig: TokenEnablement
+    enableTokensConfig: TokenEnablement[]
   ): Promise<void> {
-    const expectedTokenAddress = enableTokensConfig.address;
-    const expectedTokenName = enableTokensConfig.name;
+    for (const enableTokenConfig of enableTokensConfig) {
+      const expectedTokenAddress = enableTokenConfig.address;
+      const expectedTokenName = enableTokenConfig.name;
 
-    if (!expectedTokenAddress) throw new Error('Missing token address on token enablement tx');
-    if (!expectedTokenName) throw new Error('Missing token name on token enablement tx');
+      if (!expectedTokenAddress) throw new Error('Missing token address on token enablement tx');
+      if (!expectedTokenName) throw new Error('Missing token name on token enablement tx');
 
-    for (const tokenEnablement of tokenEnablementsPrebuild) {
-      let tokenMintAddress: Readonly<SolCoin> | undefined;
-      try {
-        tokenMintAddress = getSolTokenFromTokenName(expectedTokenName);
-      } catch {
-        throw new Error(`Unable to derive ATA for token address: ${expectedTokenAddress}`);
-      }
-      if (
-        !tokenMintAddress ||
-        tokenMintAddress.tokenAddress === undefined ||
-        tokenMintAddress.programId === undefined
-      ) {
-        throw new Error(`Unable to get token mint address for ${expectedTokenName}`);
-      }
-      let ata: string;
-      try {
-        ata = await getAssociatedTokenAccountAddress(
-          tokenMintAddress.tokenAddress,
-          expectedTokenAddress,
-          true,
-          tokenMintAddress.programId
-        );
-      } catch {
-        throw new Error(`Unable to derive ATA for token address: ${expectedTokenAddress}`);
-      }
-      if (ata !== tokenEnablement.address) {
-        throw new Error(
-          `Invalid token address: expected ${ata}, got ${tokenEnablement.address} on token enablement tx`
-        );
+      for (const tokenEnablement of tokenEnablementsPrebuild) {
+        let tokenMintAddress: Readonly<SolCoin> | undefined;
+        try {
+          tokenMintAddress = getSolTokenFromTokenName(expectedTokenName);
+        } catch {
+          throw new Error(`Unable to derive ATA for token address: ${expectedTokenAddress}`);
+        }
+        if (
+          !tokenMintAddress ||
+          tokenMintAddress.tokenAddress === undefined ||
+          tokenMintAddress.programId === undefined
+        ) {
+          throw new Error(`Unable to get token mint address for ${expectedTokenName}`);
+        }
+        let ata: string;
+        try {
+          ata = await getAssociatedTokenAccountAddress(
+            tokenMintAddress.tokenAddress,
+            expectedTokenAddress,
+            true,
+            tokenMintAddress.programId
+          );
+        } catch {
+          throw new Error(`Unable to derive ATA for token address: ${expectedTokenAddress}`);
+        }
+        if (ata !== tokenEnablement.address) {
+          throw new Error(
+            `Invalid token address: expected ${ata}, got ${tokenEnablement.address} on token enablement tx`
+          );
+        }
       }
     }
   }
