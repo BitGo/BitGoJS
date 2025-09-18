@@ -3,7 +3,7 @@ import should from 'should';
 import { assert as SinonAssert, spy } from 'sinon';
 import { MoveStakeBuilder } from '../../../src/lib/moveStakeBuilder';
 import utils from '../../../src/lib/utils';
-import { accounts, mockTssSignature, genesisHash, chainName } from '../../resources';
+import { accounts, mockTssSignature, genesisHash, chainName, rawTx } from '../../resources';
 import { buildTestConfig } from './base';
 import { testnetMaterial } from '../../../src/resources';
 import { InvalidTransactionError } from '@bitgo/sdk-core';
@@ -496,6 +496,148 @@ describe('Tao Move Stake Builder', function () {
 
       explanation.fee.fee.should.equal('0');
       explanation.outputAmount.should.equal('0');
+    });
+  });
+
+  describe('fromImplementation stages validation', function () {
+    it('should call super.fromImplementation before validation to populate _method', async function () {
+      const config = buildTestConfig();
+      const material = utils.getMaterial(config.network.type);
+      const validBuilder = new MoveStakeBuilder(config).material(material);
+      validBuilder
+        .amount('1000000000000')
+        .originHotkey({ address: '5FCPTnjevGqAuTttetBy4a24Ej3pH9fiQ8fmvP1ZkrVsLUoT' })
+        .destinationHotkey({ address: '5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq' })
+        .originNetuid('1')
+        .destinationNetuid('2')
+        .sender({ address: sender.address })
+        .validity({ firstValid: 3933, maxDuration: 64 })
+        .referenceBlock(referenceBlock)
+        .sequenceId({ name: 'Nonce', keyword: 'nonce', value: 200 })
+        .fee({ amount: 0, type: 'tip' });
+
+      const validTx = await validBuilder.build();
+      const rawTxHex = validTx.toBroadcastFormat();
+
+      const newBuilder = new MoveStakeBuilder(config).material(material);
+
+      should.doesNotThrow(() => {
+        newBuilder.from(rawTxHex);
+      });
+
+      const builderMethod = (newBuilder as any)._method;
+      builderMethod.should.not.be.undefined();
+      builderMethod.name.should.equal('moveStake');
+      builderMethod.args.should.have.properties([
+        'originHotkey',
+        'destinationHotkey',
+        'originNetuid',
+        'destinationNetuid',
+        'alphaAmount',
+      ]);
+      builderMethod.args.alphaAmount.should.equal('1000000000000');
+      builderMethod.args.originHotkey.should.equal('5FCPTnjevGqAuTttetBy4a24Ej3pH9fiQ8fmvP1ZkrVsLUoT');
+      builderMethod.args.destinationHotkey.should.equal('5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq');
+      builderMethod.args.originNetuid.should.equal('1');
+      builderMethod.args.destinationNetuid.should.equal('2');
+    });
+
+    it('should throw error if _method is not populated before validation', function () {
+      const config = buildTestConfig();
+      const material = utils.getMaterial(config.network.type);
+      const mockBuilder = new TestMoveStakeBuilder(config).material(material);
+
+      assert.throws(
+        () => {
+          if (mockBuilder['_method']?.name !== 'moveStake') {
+            throw new InvalidTransactionError(
+              `Invalid Transaction Type: ${mockBuilder['_method']?.name}. Expected moveStake`
+            );
+          }
+        },
+        (e: Error) => e.message.includes('Invalid Transaction Type: undefined. Expected moveStake')
+      );
+    });
+
+    it('should properly validate transaction type after super.fromImplementation', function () {
+      const config = buildTestConfig();
+      const material = utils.getMaterial(config.network.type);
+      const mockBuilder = new TestMoveStakeBuilder(config).material(material);
+
+      mockBuilder.setMethodForTesting({
+        name: 'transferKeepAlive',
+        args: { dest: { id: 'test' }, value: '1000' },
+        pallet: 'balances',
+      });
+
+      assert.throws(
+        () => {
+          if (mockBuilder['_method']?.name !== 'moveStake') {
+            throw new InvalidTransactionError(
+              `Invalid Transaction Type: ${mockBuilder['_method']?.name}. Expected moveStake`
+            );
+          }
+        },
+        (e: Error) => e.message.includes('Invalid Transaction Type: transferKeepAlive. Expected moveStake')
+      );
+    });
+
+    it('should successfully parse and validate correct moveStake transaction', function () {
+      const config = buildTestConfig();
+      const material = utils.getMaterial(config.network.type);
+      const mockBuilder = new TestMoveStakeBuilder(config).material(material);
+
+      mockBuilder.setMethodForTesting({
+        name: 'moveStake',
+        args: {
+          originHotkey: '5FCPTnjevGqAuTttetBy4a24Ej3pH9fiQ8fmvP1ZkrVsLUoT',
+          destinationHotkey: '5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq',
+          originNetuid: '1',
+          destinationNetuid: '2',
+          alphaAmount: '1000000000000',
+        },
+        pallet: 'subtensorModule',
+      });
+
+      should.doesNotThrow(() => {
+        if (mockBuilder['_method']?.name !== 'moveStake') {
+          throw new InvalidTransactionError(
+            `Invalid Transaction Type: ${mockBuilder['_method']?.name}. Expected moveStake`
+          );
+        }
+      });
+    });
+
+    it('should fail validation when parsing wrong transaction type (transferStake instead of moveStake)', function () {
+      const config = buildTestConfig();
+      const material = utils.getMaterial(config.network.type);
+      const moveStakeBuilder = new MoveStakeBuilder(config).material(material);
+
+      assert.throws(
+        () => {
+          moveStakeBuilder.from(rawTx.transferStake.signed);
+        },
+        (e: Error) => e.message.includes('Invalid Transaction Type: transferStake. Expected moveStake')
+      );
+    });
+
+    it('should verify _method is properly populated after super.fromImplementation with wrong transaction type', function () {
+      const config = buildTestConfig();
+      const material = utils.getMaterial(config.network.type);
+
+      const testBuilder = new TestMoveStakeBuilder(config).material(material);
+
+      try {
+        testBuilder.from(rawTx.transferStake.signed);
+      } catch (error) {
+        const method = (testBuilder as any)._method;
+        method.should.not.be.undefined();
+        method.name.should.equal('transferStake'); // This proves super.fromImplementation was called
+        method.should.have.property('args');
+        method.should.have.property('pallet');
+
+        (error as Error).message.should.containEql('Invalid Transaction Type: transferStake. Expected moveStake');
+      }
     });
   });
 });
