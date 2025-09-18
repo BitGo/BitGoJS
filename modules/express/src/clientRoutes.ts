@@ -685,7 +685,7 @@ async function handleV2PendingApproval(req: express.Request): Promise<any> {
  * create a keychain
  * @param req
  */
-function handleV2CreateLocalKeyChain(req: express.Request) {
+function handleV2CreateLocalKeyChain(req: ExpressApiRouteRequest<'express.keychain.local', 'post'>) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.params.coin);
   return coin.keychains().create(req.body);

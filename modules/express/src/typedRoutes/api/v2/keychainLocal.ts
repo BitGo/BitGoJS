@@ -3,11 +3,26 @@ import { httpRoute, httpRequest } from '@api-ts/io-ts-http';
 import { BitgoExpressError } from '../../schemas/error';
 
 /**
+ * Request parameters for creating a local keychain
  * @property {string} coin - Coin identifier (e.g. btc, tbtc, eth)
  */
 export const KeychainLocalRequestParams = {
+  /** Coin identifier (e.g. btc, tbtc, eth) */
   coin: t.string,
-};
+} as const;
+
+/**
+ * Response for creating a local keychain
+ */
+export const KeychainLocalResponse = {
+  /** Newly generated local keychain. */
+  200: t.type({
+    prv: t.string,
+    pub: t.string,
+  }),
+  /** Invalid request or key generation fails. */
+  400: BitgoExpressError,
+} as const;
 
 /**
  * Local client-side function to create a new keychain.
@@ -24,11 +39,5 @@ export const PostKeychainLocal = httpRoute({
   request: httpRequest({
     params: KeychainLocalRequestParams,
   }),
-  response: {
-    200: t.type({
-      prv: t.string,
-      pub: t.string,
-    }),
-    400: BitgoExpressError,
-  },
+  response: KeychainLocalResponse,
 });
