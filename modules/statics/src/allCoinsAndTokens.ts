@@ -120,6 +120,7 @@ import {
   VET_FEATURES,
   WCT_FEATURES,
   WEMIX_FEATURES,
+  WFLR_FEATURES,
   XDC_FEATURES,
   XLM_FEATURES,
   XLM_TOKEN_FEATURES_WITH_FRANKFURT,
@@ -4060,7 +4061,7 @@ export const allCoinsAndTokens = [
     18,
     '0xab6fad89389b73dbc887d31206a26fd88d719d1f',
     UnderlyingAsset['tflr:wflr'],
-    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+    WFLR_FEATURES
   ),
   txrpToken(
     '8ef16158-1015-4a67-b6fe-db669c18ab2b',
