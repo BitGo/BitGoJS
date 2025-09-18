@@ -1543,7 +1543,7 @@ export enum UnderlyingAsset {
   REBL = 'rebl',
   REEF = 'reef',
   REF = 'ref',
-  REKT = 'rekt',
+  REKTTOKEN = 'rekttoken',
   REKTGAME = 'rektgame',
   REN = 'ren',
   RENBTC = 'renbtc',

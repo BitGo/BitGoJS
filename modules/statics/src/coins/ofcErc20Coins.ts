@@ -2797,7 +2797,7 @@ export const ofcErc20Coins = [
   ofcerc20('9998869a-b403-45e7-b522-1459d9f73e3c', 'ofcrbn', 'Ribbon', 18, underlyingAssetForSymbol('rbn')),
   ofcerc20('3d0d4f0e-4837-42e9-a62c-1e14dfa78a11', 'ofcrct', 'realchain', 18, underlyingAssetForSymbol('rct')),
   ofcerc20('c317ea90-3bad-4179-ae65-f1575c00add7', 'ofcref', 'RefToken', 8, underlyingAssetForSymbol('ref')),
-  ofcerc20('439d353b-65c9-4513-85cf-cb8e2a73bc62', 'ofcrekt', '$REKT', 18, underlyingAssetForSymbol('rekt')),
+  ofcerc20('439d353b-65c9-4513-85cf-cb8e2a73bc62', 'ofcrekttoken', '$REKT', 18, underlyingAssetForSymbol('rekttoken')),
   ofcerc20('786786a2-98cb-425a-8746-9c16a9f46d33', 'ofcrektgame', 'RektGAME', 18, underlyingAssetForSymbol('rektgame')),
   ofcerc20('fb6b9335-680a-4c7f-afd3-aed4dd63e9ca', 'ofcrenbtc', 'renBTC', 8, underlyingAssetForSymbol('renbtc')),
   ofcerc20(

@@ -9849,11 +9849,11 @@ export const erc20Coins = [
   ),
   erc20(
     '066ebf64-043a-4cc8-9b72-1f8b11a8bc32',
-    'rekt',
+    'rekttoken',
     '$REKT',
     18,
     '0x4f8b986ecffe7bed5dbeb2b49310fb00ca85a539',
-    UnderlyingAsset.REKT
+    UnderlyingAsset.REKTTOKEN
   ),
   erc20(
     '3c5ebcde-83d7-4211-9bf2-44dfb3ff6c23',
