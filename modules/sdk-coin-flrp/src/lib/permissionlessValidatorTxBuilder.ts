@@ -4,6 +4,7 @@ import { AtomicTransactionBuilder } from './atomicTransactionBuilder';
 import { Tx } from './iface';
 import { TransactionWithExtensions } from './types';
 import {
+  ADD_PERMISSIONLESS_VALIDATOR_TYPE,
   BLS_PUBLIC_KEY_COMPRESSED_LENGTH,
   BLS_PUBLIC_KEY_UNCOMPRESSED_LENGTH,
   BLS_SIGNATURE_LENGTH,
@@ -258,7 +259,7 @@ export class PermissionlessValidatorTxBuilder extends AtomicTransactionBuilder {
       // TODO: Implement actual FlareJS PVM API call when available
       // For now, create a placeholder transaction structure
       const validatorTx = {
-        type: 'addPermissionlessValidator',
+        type: ADD_PERMISSIONLESS_VALIDATOR_TYPE,
         nodeID: this._nodeID,
         blsPublicKey: this._blsPublicKey,
         blsSignature: this._blsSignature,

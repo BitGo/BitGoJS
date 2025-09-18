@@ -18,6 +18,13 @@ import {
   OBJECT_TYPE_STRING,
   STRING_TYPE,
   NUMBER_TYPE,
+  VALID_P_CHAIN_IMPORT_TYPES,
+  EXPORT_TYPE,
+  SEND_TYPE,
+  IMPORT_TYPE,
+  P_CHAIN_FULL,
+  C_CHAIN_FULL,
+  UTF8_ENCODING,
 } from './constants';
 
 /**
@@ -158,7 +165,7 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
       }
 
       // Check for P-chain import transaction type markers
-      const validTypes = ['PlatformVM.ImportTx', 'ImportTx', 'import', 'P-chain-import'];
+      const validTypes = VALID_P_CHAIN_IMPORT_TYPES;
 
       // Primary type verification
       if (tx.type && typeof tx.type === STRING_TYPE) {
@@ -166,7 +173,7 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
           return true;
         }
         // If type is specified but not valid, return false (like 'export')
-        if (tx.type === 'export' || tx.type === 'send') {
+        if (tx.type === EXPORT_TYPE || tx.type === SEND_TYPE) {
           return false;
         }
       }
@@ -185,8 +192,8 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
       // FlareJS-specific markers
       const hasFlareJSMarkers =
         tx._flareJSReady === true ||
-        tx._txType === 'import' ||
-        tx._chainType === 'P-chain' ||
+        tx._txType === IMPORT_TYPE ||
+        tx._chainType === P_CHAIN_FULL ||
         tx._pvmCompatible === true;
 
       // Enhanced validation for FlareJS compatibility
@@ -276,7 +283,7 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
             threshold: this.transaction._threshold,
             locktime: this.transaction._locktime,
             // FlareJS import output markers
-            _destinationChain: 'P-chain',
+            _destinationChain: P_CHAIN_FULL,
             _flareJSReady: true,
           },
         ],
@@ -358,8 +365,8 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
           _pvmCompatible: true,
         },
         // Enhanced metadata for FlareJS compatibility
-        _sourceChain: 'C-chain',
-        _destinationChain: 'P-chain',
+        _sourceChain: C_CHAIN_FULL,
+        _destinationChain: P_CHAIN_FULL,
       };
 
       // Store the input (type assertion for compatibility)
@@ -461,11 +468,11 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
         chainBuffer = Buffer.from(chainId, HEX_ENCODING);
       } else {
         // For all other formats, store as UTF-8
-        chainBuffer = Buffer.from(chainId, 'utf8');
+        chainBuffer = Buffer.from(chainId, UTF8_ENCODING);
       }
     } catch (error) {
       // Fallback to UTF-8 if hex parsing fails
-      chainBuffer = Buffer.from(chainId, 'utf8');
+      chainBuffer = Buffer.from(chainId, UTF8_ENCODING);
     }
 
     this._externalChainId = chainBuffer;

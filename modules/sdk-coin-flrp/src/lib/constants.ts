@@ -1,7 +1,7 @@
 // Shared constants for Flare P-Chain (flrp) utilities and key handling.
 // Centralizing avoids magic numbers scattered across utils and keyPair implementations.
 
-export const DECODED_BLOCK_ID_LENGTH = 36; // Expected decoded block identifier length
+export const DECODED_BLOCK_ID_LENGTH = 32; // Expected decoded block identifier length
 export const SHORT_PUB_KEY_LENGTH = 50; // Placeholder (potential CB58 encoded form length)
 export const COMPRESSED_PUBLIC_KEY_LENGTH = 66; // 33 bytes (compressed) hex encoded
 export const UNCOMPRESSED_PUBLIC_KEY_LENGTH = 130; // 65 bytes (uncompressed) hex encoded
@@ -176,6 +176,15 @@ export const AMOUNT_FIELD = 'amount'; // Amount field
 export const TXID_FIELD = 'txid'; // Transaction ID field
 export const OUTPUT_IDX_FIELD = 'outputidx'; // Output index field
 
+// Transaction explanation field names
+export const ID_FIELD = 'id'; // ID field name
+export const OUTPUT_AMOUNT_FIELD = 'outputAmount'; // Output amount field
+export const CHANGE_AMOUNT_FIELD = 'changeAmount'; // Change amount field
+export const OUTPUTS_FIELD = 'outputs'; // Outputs field
+export const CHANGE_OUTPUTS_FIELD = 'changeOutputs'; // Change outputs field
+export const FEE_FIELD = 'fee'; // Fee field
+export const TYPE_FIELD = 'type'; // Type field
+
 // Signature and hash methods
 export const SECP256K1_SIG_TYPE = 'secp256k1'; // SECP256K1 signature type
 export const DER_FORMAT = 'der'; // DER format
@@ -209,6 +218,25 @@ export const MEMO_FIELD = 'memo'; // Memo field name
 export const REWARD_ADDRESSES_FIELD = 'rewardAddresses'; // Reward addresses field
 export const SOURCE_CHAIN_FIELD = 'sourceChain'; // Source chain field
 export const DESTINATION_CHAIN_FIELD = 'destinationChain'; // Destination chain field
+
+// Asset and network constants
+export const FLR_ASSET_ID = 'FLR'; // Default FLR asset ID
+
+// Placeholder constants for development
+export const FLARE_TX_HEX_PLACEHOLDER = 'flare-tx-hex-placeholder'; // Transaction hex placeholder
+export const FLARE_SIGNABLE_PAYLOAD = 'flare-signable-payload'; // Signable payload placeholder
+export const FLARE_TRANSACTION_ID_PLACEHOLDER = 'flare-transaction-id-placeholder'; // Transaction ID placeholder
+export const PLACEHOLDER_NODE_ID = 'placeholder-node-id'; // Node ID placeholder
+
+// Chain identifiers (short forms)
+export const P_CHAIN_SHORT = 'P'; // P-chain short name
+export const X_CHAIN_SHORT = 'X'; // X-chain short name
+
+// Valid source chains for imports
+export const VALID_IMPORT_SOURCE_CHAINS = [P_CHAIN_SHORT, P_CHAIN_FULL, X_CHAIN_SHORT, X_CHAIN_FULL]; // Valid source chains for C-chain imports
+
+// Valid P-chain import types
+export const VALID_P_CHAIN_IMPORT_TYPES = [PLATFORM_VM_IMPORT_TX, IMPORT_TX_TYPE, IMPORT_TYPE, P_CHAIN_IMPORT_TYPE]; // Valid P-chain import types
 
 // Error messages for transactionBuilder
 export const ERROR_NETWORK_ID_MISMATCH = 'Network ID mismatch'; // Network ID validation error

@@ -28,6 +28,12 @@ import {
   ERROR_FAILED_INITIALIZE_BUILDER,
   OBJECT_TYPE_STRING,
   HEX_ENCODING,
+  VALID_IMPORT_SOURCE_CHAINS,
+  P_CHAIN_SHORT,
+  UTF8_ENCODING,
+  IMPORT_C_TYPE,
+  TRANSFERABLE_INPUT_TYPE,
+  CREDENTIAL_TYPE,
 } from './constants';
 
 /**
@@ -237,7 +243,7 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
       }));
 
       // Get source chain ID (typically P-chain for C-chain imports)
-      const sourceChainId = this._externalChainId ? this._externalChainId.toString('hex') : 'P';
+      const sourceChainId = this._externalChainId ? this._externalChainId.toString(HEX_ENCODING) : P_CHAIN_SHORT;
 
       // Calculate fee
       const fee = BigInt(this.transaction._fee.fee || DEFAULT_EVM_GAS_FEE); // EVM-style gas fee
@@ -271,7 +277,7 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
           },
         ],
         fee,
-        type: 'import-c',
+        type: IMPORT_C_TYPE,
         fromAddresses: fromAddresses.map((addr) => addr.toString('hex')),
         toAddress: Buffer.from(toAddress).toString('hex'),
         // Add FlareJS-specific metadata for future integration
@@ -336,7 +342,7 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
 
         // FlareJS compatibility markers
         _flareJSReady: true,
-        _type: 'TransferableInput',
+        _type: TRANSFERABLE_INPUT_TYPE,
 
         // Methods for FlareJS compatibility
         getAmount: () => BigInt(amount.toString()),
@@ -355,7 +361,7 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
 
         // FlareJS compatibility markers
         _flareJSReady: true,
-        _type: 'Credential',
+        _type: CREDENTIAL_TYPE,
 
         // Methods for FlareJS compatibility
         addSignature: (signature: Buffer) => enhancedCredential.signatures.push(signature),
@@ -433,13 +439,13 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
     }
 
     // Valid source chains for C-chain imports in Flare network
-    const validSourceChains = ['P', 'P-chain', 'X', 'X-chain'];
+    const validSourceChains = VALID_IMPORT_SOURCE_CHAINS;
     const chainIdNormalized = chainId.replace('-chain', '').toUpperCase();
 
     // Check if it's a predefined chain identifier
     if (validSourceChains.some((chain) => chain.replace('-chain', '').toUpperCase() === chainIdNormalized)) {
       // Store normalized chain ID (e.g., 'P' for P-chain)
-      this._externalChainId = Buffer.from(chainIdNormalized, 'utf8');
+      this._externalChainId = Buffer.from(chainIdNormalized, UTF8_ENCODING);
       return this;
     }
 
@@ -459,7 +465,7 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
     try {
       this._externalChainId = Buffer.from(chainId, 'hex');
     } catch (error) {
-      this._externalChainId = Buffer.from(chainId, 'utf8');
+      this._externalChainId = Buffer.from(chainId, UTF8_ENCODING);
     }
 
     return this;
