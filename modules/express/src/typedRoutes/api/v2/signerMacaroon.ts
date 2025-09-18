@@ -8,7 +8,9 @@ import { BitgoExpressError } from '../../schemas/error';
  * @property {string} walletId - The ID of the wallet.
  */
 export const SignerMacaroonParams = {
+  /** A lightning coin name (e.g, lnbtc). */
   coin: t.string,
+  /** The ID of the wallet. */
   walletId: t.string,
 } as const;
 
@@ -18,7 +20,9 @@ export const SignerMacaroonParams = {
  * @property {boolean} addIpCaveatToMacaroon - If true, adds an IP caveat to the generated signer macaroon.
  */
 export const SignerMacaroonBody = {
+  /** Passphrase to decrypt the admin macaroon of the signer node. */
   passphrase: t.string,
+  /** If true, adds an IP caveat to the generated signer macaroon. */
   addIpCaveatToMacaroon: optional(t.boolean),
 } as const;
 
@@ -30,7 +34,9 @@ export const SignerMacaroonBody = {
  * See platform spec: POST /api/v2/{coin}/wallet/{walletId}/signermacaroon
  */
 export const SignerMacaroonResponse = {
+  /** The updated wallet with the generated signer macaroon. */
   200: t.UnknownRecord,
+  /** BitGo Express error payload. */
   400: BitgoExpressError,
 } as const;
 
