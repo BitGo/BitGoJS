@@ -11616,6 +11616,14 @@ export const erc20Coins = [
     '0x45e02bc2875a2914c4f585bbf92a6f28bc07cb70',
     UnderlyingAsset['eth:mbg']
   ),
+  erc20(
+    'e2650199-e114-4abd-9086-46d77ee1ee0f',
+    'eth:rekt',
+    'Rekt',
+    18,
+    '0xdd3b11ef34cd511a2da159034a05fcb94d806686',
+    UnderlyingAsset['eth:rekt']
+  ),
   terc20(
     '0205f0d6-0647-47c9-ad8b-c48d048e54f3',
     'fixed',
