@@ -106,4 +106,74 @@ describe('BTC:', () => {
       );
     });
   });
+
+  describe('Unspent management spoofability (BUILD_SIGN_SEND)', () => {
+    let coin: Tbtc;
+    let bitgoTest: TestBitGoAPI;
+    before(() => {
+      bitgoTest = TestBitGo.decorate(BitGoAPI, { env: 'test' });
+      bitgoTest.safeRegister('tbtc', Tbtc.createInstance);
+      bitgoTest.initializeTestVars();
+      coin = bitgoTest.coin('tbtc') as Tbtc;
+    });
+
+    it('should detect hex spoofing in BUILD_SIGN_SEND', async (): Promise<void> => {
+      const { getDefaultWalletKeys, toKeychainObjects } = require('../../../bitgo/test/v2/unit/coins/utxo/util/keychains');
+      const rootWalletKey = getDefaultWalletKeys();
+      const keysObj = toKeychainObjects(rootWalletKey, 'pass');
+
+      const { Wallet } = await import('@bitgo/sdk-core');
+      const wallet = new Wallet(bitgoTest, coin, {
+        id: '5b34252f1bf349930e34020a',
+        coin: 'tbtc',
+        keys: keysObj.map((k) => k.id),
+      });
+
+      const originalPsbt = utxolib.testutil.constructPsbt(
+        [{ scriptType: 'p2wsh' as const, value: BigInt(10000) }],
+        [{ address: 'tb1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3q0sl5k7', value: BigInt(9000) }],
+        coin.network,
+        rootWalletKey,
+        'unsigned' as const
+      );
+      utxolib.bitgo.addXpubsToPsbt(originalPsbt, rootWalletKey);
+
+      const spoofedPsbt = utxolib.testutil.constructPsbt(
+        [{ scriptType: 'p2wsh' as const, value: BigInt(10000) }],
+        [{ address: 'tb1pjgg9ty3s2ztp60v6lhgrw76f7hxydzuk9t9mjsndh3p2gf2ah7gs4850kn', value: BigInt(9000) }],
+        coin.network,
+        rootWalletKey,
+        'unsigned' as const
+      );
+      utxolib.bitgo.addXpubsToPsbt(spoofedPsbt, rootWalletKey);
+      const spoofedHex: string = spoofedPsbt.toHex();
+
+      const bgUrl: string = (bitgoTest as any)._baseUrl;
+      const nock = require('nock');
+
+      nock(bgUrl)
+        .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/consolidateUnspents`)
+        .reply(200, { txHex: spoofedHex, consolidateId: 'test' });
+
+      nock(bgUrl)
+        .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/send`)
+        .reply((requestBody: any) => {
+          if (requestBody?.txHex === spoofedHex) {
+            throw new Error('Spoofed transaction was sent: spoofing protection failed');
+          }
+          return [200, { txid: 'test-txid-123', status: 'signed' }];
+        });
+
+      keysObj.forEach((k, i) =>
+        nock(bgUrl).get(`/api/v2/${wallet.coin()}/key/${wallet.keyIds()[i]}`).reply(200, k)
+      );
+
+      await assert.rejects(
+        wallet.consolidateUnspents({ walletPassphrase: 'pass' }),
+        (e: any) =>
+          typeof e?.message === 'string' &&
+          e.message.includes('prebuild attempts to spend to unintended external recipients')
+      );
+    });
+  });
 });
