@@ -8,7 +8,9 @@ import { BitgoExpressError } from '../../schemas/error';
  * @property {string} id - The ID of the wallet.
  */
 export const UnlockLightningWalletParams = {
+  /** A lightning coin name (e.g, lnbtc, tlnbtc). */
   coin: t.string,
+  /** The ID of the wallet. */
   id: t.string,
 } as const;
 
@@ -17,7 +19,20 @@ export const UnlockLightningWalletParams = {
  * @property {string} passphrase - Passphrase to unlock the lightning wallet.
  */
 export const UnlockLightningWalletBody = {
+  /** Passphrase to unlock the lightning wallet. */
   passphrase: t.string,
+} as const;
+
+/**
+ * Response for unlocking a lightning wallet.
+ */
+export const UnlockLightningWalletReponse = {
+  /** Confirmation message. */
+  200: t.type({
+    message: t.string,
+  }),
+  /** BitGo Express error payload. */
+  400: BitgoExpressError,
 } as const;
 
 /**
@@ -34,10 +49,5 @@ export const PostUnlockLightningWallet = httpRoute({
     params: UnlockLightningWalletParams,
     body: UnlockLightningWalletBody,
   }),
-  response: {
-    200: t.type({
-      message: t.string,
-    }),
-    400: BitgoExpressError,
-  },
+  response: UnlockLightningWalletReponse,
 });
