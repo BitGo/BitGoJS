@@ -1,6 +1,6 @@
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGo } from 'bitgo';
-import { common } from '@bitgo/sdk-core';
+import { common, decodeOrElse } from '@bitgo/sdk-core';
 import nock from 'nock';
 import * as express from 'express';
 import * as sinon from 'sinon';
@@ -14,6 +14,7 @@ import {
   handleUnlockLightningWallet,
 } from '../../../../src/lightning/lightningSignerRoutes';
 import { ExpressApiRouteRequest } from '../../../../src/typedRoutes/api';
+import { PostLightningInitWallet } from '../../../../src/typedRoutes/api/v2/lightningInitWallet';
 
 describe('Lightning signer routes', () => {
   let bitgo: TestBitGoAPI;
@@ -83,7 +84,10 @@ describe('Lightning signer routes', () => {
         },
       } as unknown as ExpressApiRouteRequest<'express.lightning.initWallet', 'post'>;
 
-      await handleInitLightningWallet(req);
+      const res = await handleInitLightningWallet(req);
+      decodeOrElse('PostLightningInitWallet.response.200', PostLightningInitWallet.response[200], res, (_) => {
+        throw new Error('Response did not match expected codec');
+      });
 
       wpWalletUpdateNock.done();
       signerInitWalletNock.done();

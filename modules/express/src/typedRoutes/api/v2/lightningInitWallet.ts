@@ -14,20 +14,21 @@ export const LightningInitWalletParams = {
 
 /**
  * Request body for initializing a Lightning wallet
- * @property passphrase - Passphrase to encrypt the admin macaroon of the signer node.
  */
 export const LightningInitWalletBody = {
+  /** Passphrase to encrypt the admin macaroon of the signer node. */
   passphrase: t.string,
+  /** Optional hostname or IP address to set the `expressHost` field of the wallet. */
   expressHost: optional(t.string),
 } as const;
 
 /**
- * Response
- * - 200: Returns the updated wallet. On success, the wallet's `coinSpecific` will include the encrypted admin macaroon for the Lightning signer node.
- * - 400: BitGo Express error payload when initialization cannot proceed (for example: invalid coin, unsupported environment, wallet not in an initializable state).
+ * Response for initializing a Lightning wallet
  */
 export const LightningInitWalletResponse = {
+  /** Returns the updated wallet. On success, the wallet's `coinSpecific` will include the encrypted admin macaroon for the Lightning signer node. */
   200: t.unknown,
+  /** BitGo Express error payload when initialization cannot proceed (for example: invalid coin, unsupported environment, wallet not in an initializable state). */
   400: BitgoExpressError,
 } as const;
 
@@ -36,8 +37,6 @@ export const LightningInitWalletResponse = {
  * Returns the updated wallet with the encrypted admin macaroon in the `coinSpecific` response field.
  *
  * @operationId express.lightning.initWallet
- *
- * POST /api/v2/{coin}/wallet/{walletId}/initwallet
  */
 export const PostLightningInitWallet = httpRoute({
   path: '/api/v2/:coin/wallet/:walletId/initwallet',
