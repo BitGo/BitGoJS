@@ -3596,6 +3596,7 @@ export const ofcErc20Coins = [
     18,
     underlyingAssetForSymbol('eth:mbg')
   ),
+  ofcerc20('c2b381d1-795f-4c27-bc3a-322757dd7938', 'ofceth:rekt', 'Rekt', 18, underlyingAssetForSymbol('eth:rekt')),
 ];
 
 export const tOfcErc20Coins = [
