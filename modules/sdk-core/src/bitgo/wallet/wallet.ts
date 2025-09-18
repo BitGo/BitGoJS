@@ -1,11 +1,15 @@
 /**
  * @prettier
  */
-import * as t from 'io-ts';
+import { TxSendBody } from '@bitgo/public-types';
+import { CoinFamily } from '@bitgo/statics';
 import assert from 'assert';
 import BigNumber from 'bignumber.js';
+import * as t from 'io-ts';
 import * as _ from 'lodash';
+import { IRequestTracer } from '../../api';
 import * as common from '../../common';
+import { AddressBook, IAddressBook } from '../address-book';
 import {
   IBaseCoin,
   NFTTransferOptions,
@@ -25,11 +29,15 @@ import {
   MissingEncryptedKeychainError,
   NeedUserSignupError,
 } from '../errors';
-import * as internal from '../internal/internal';
+import { SubmitTransactionResponse } from '../inscriptionBuilder';
 import { drawKeycard } from '../internal';
+import * as internal from '../internal/internal';
 import { decryptKeychainPrivateKey, Keychain, KeychainWithEncryptedPrv } from '../keychain';
+import { getLightningAuthKey } from '../lightning/lightningWalletUtil';
 import { IPendingApproval, PendingApproval, PendingApprovals } from '../pendingApproval';
+import { GoStakingWallet, StakingWallet } from '../staking';
 import { TradingAccount } from '../trading';
+import { getTxRequest } from '../tss';
 import {
   EddsaUnsignedTransaction,
   inferAddressType,
@@ -41,6 +49,11 @@ import {
   TokenType,
   TxRequest,
 } from '../utils';
+import { postWithCodec } from '../utils/postWithCodec';
+import { EcdsaMPCv2Utils, EcdsaUtils } from '../utils/tss/ecdsa';
+import EddsaUtils from '../utils/tss/eddsa';
+import { getTxRequestApiVersion, validateTxRequestApiVersion } from '../utils/txRequest';
+import { buildParamKeys, BuildParams } from './BuildParams';
 import {
   AccelerateTransactionOptions,
   AddressesByBalanceOptions,
@@ -110,19 +123,6 @@ import {
   WalletSignTypedDataOptions,
   WalletType,
 } from './iWallet';
-import { GoStakingWallet, StakingWallet } from '../staking';
-import EddsaUtils from '../utils/tss/eddsa';
-import { EcdsaMPCv2Utils, EcdsaUtils } from '../utils/tss/ecdsa';
-import { getTxRequest } from '../tss';
-import { buildParamKeys, BuildParams } from './BuildParams';
-import { postWithCodec } from '../utils/postWithCodec';
-import { TxSendBody } from '@bitgo/public-types';
-import { AddressBook, IAddressBook } from '../address-book';
-import { IRequestTracer } from '../../api';
-import { getTxRequestApiVersion, validateTxRequestApiVersion } from '../utils/txRequest';
-import { getLightningAuthKey } from '../lightning/lightningWalletUtil';
-import { SubmitTransactionResponse } from '../inscriptionBuilder';
-import { CoinFamily } from '@bitgo/statics';
 
 const debug = require('debug')('bitgo:v2:wallet');
 
@@ -3231,6 +3231,8 @@ export class Wallet implements IWallet {
    */
   public async sendTokenEnablement(params: PrebuildAndSignTransactionOptions = {}): Promise<any> {
     const teConfig = this.baseCoin.getTokenEnablementConfig();
+    if (params.verification && params.verification.verifyTokenEnablement === undefined)
+      params.verification.verifyTokenEnablement = true;
     if (!teConfig.requiresTokenEnablement) {
       throw new Error(`${this.baseCoin.getFullName()} does not require token enablement transactions`);
     }

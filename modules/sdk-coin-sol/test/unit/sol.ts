@@ -3271,6 +3271,7 @@ describe('SOL:', function () {
         txParams,
         txPrebuild: txPrebuildRaw,
         wallet,
+        verification: { verifyTokenEnablement: true },
       } as unknown as SolVerifyTransactionOptions);
 
       sameIntentTx.should.equal(true);
@@ -3288,8 +3289,12 @@ describe('SOL:', function () {
             txParams,
             txPrebuild: tamperedTxPrebuild,
             wallet,
+            verification: { verifyTokenEnablement: true },
           } as unknown as SolVerifyTransactionOptions),
-        { message: 'Tx type "Send" does not match expected txParams type "enabletoken"' }
+        {
+          message:
+            'Invalid transaction type on token enablement: expected "AssociatedTokenAccountInitialization", got "Send".',
+        }
       );
     });
 
@@ -3304,6 +3309,7 @@ describe('SOL:', function () {
             txParams,
             txPrebuild: tamperedTxPrebuild,
             wallet,
+            verification: { verifyTokenEnablement: true },
           } as unknown as SolVerifyTransactionOptions),
         { message: 'Invalid token name: expected tsol:ray, got tsol:t22mint on token enablement tx' }
       );
@@ -3320,6 +3326,7 @@ describe('SOL:', function () {
             txParams,
             txPrebuild: tamperedTxPrebuild,
             wallet,
+            verification: { verifyTokenEnablement: true },
           } as unknown as SolVerifyTransactionOptions),
         {
           message:

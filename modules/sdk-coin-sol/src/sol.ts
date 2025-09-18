@@ -237,16 +237,11 @@ export class Sol extends BaseCoin {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 
-  verifyTxType(txParams: TransactionParams, actualTypeFromDecoded: string | undefined): void {
-    // do nothing, let the tx fail way down as always
-    const expectedTypeFromUserParams = txParams.type;
-    if (expectedTypeFromUserParams === undefined || actualTypeFromDecoded === undefined) return;
-
-    const correctPrebuildTxType = BLIND_SIGNING_TX_TYPES_TO_CHECK[expectedTypeFromUserParams];
-
-    if (correctPrebuildTxType && correctPrebuildTxType !== actualTypeFromDecoded) {
+  verifyTxType(expectedTypeFromUserParams: string, actualTypeFromDecoded: string | undefined): void {
+    const matchFromUserToDecodedType = BLIND_SIGNING_TX_TYPES_TO_CHECK[expectedTypeFromUserParams];
+    if (matchFromUserToDecodedType !== actualTypeFromDecoded) {
       throw new Error(
-        `Tx type "${actualTypeFromDecoded}" does not match expected txParams type "${expectedTypeFromUserParams}"`
+        `Invalid transaction type on token enablement: expected "${matchFromUserToDecodedType}", got "${actualTypeFromDecoded}".`
       );
     }
   }
@@ -351,8 +346,8 @@ export class Sol extends BaseCoin {
     transaction.fromRawTransaction(rawTxBase64);
     const explainedTx = transaction.explainTransaction();
 
-    this.verifyTxType(txParams, explainedTx.type);
-    if (txParams.type === 'enabletoken') {
+    if (txParams.type === 'enabletoken' && verificationOptions?.verifyTokenEnablement) {
+      this.verifyTxType(txParams.type, explainedTx.type);
       const tokenEnablementsPrebuild = this.throwIfMissingTokenEnablementsOrReturn(explainedTx);
       const enableTokensConfig = this.throwIfMissingEnableTokenConfigOrReturn(txParams);
 
