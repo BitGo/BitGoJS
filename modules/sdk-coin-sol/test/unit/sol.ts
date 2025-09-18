@@ -15,6 +15,7 @@ import {
   MPCSweepTxs,
   MPCTx,
   MPCTxs,
+  PrebuildAndSignTransactionOptions,
   TransactionPrebuild,
   TssUtils,
   TxRequest,
@@ -3331,6 +3332,23 @@ describe('SOL:', function () {
         {
           message:
             'Invalid token address: expected 4bTYvvv2Hk4v2kQW8HZFFS4SzYPztQshw9Gm1suXmaBj, got G1LEgANAwKo7b8NfxTsMzrbBYDkXqi5REVJY8thrMRQm on token enablement tx',
+        }
+      );
+    });
+
+    it('should fail sendTokenEnablement call on spoofed data', async function () {
+      const { sendTokenEnablementPayload, walletData, wrongTokenNameTxHex } = testData.enableTokenFixtures;
+      const wallet = new Wallet(bitgo, basecoin, walletData);
+      nock('https://bitgo.fakeurl').get('/api/v2/tsol/key/68bafed588671cf94ed8a5dbba882ad3').reply(200, {});
+      await assert.rejects(
+        async () =>
+          wallet.sendTokenEnablement({
+            verification: { verifyTokenEnablement: true },
+            ...sendTokenEnablementPayload,
+            prebuildTx: { ...sendTokenEnablementPayload.prebuildTx, txHex: wrongTokenNameTxHex },
+          } as unknown as PrebuildAndSignTransactionOptions),
+        {
+          message: 'Invalid token name: expected tsol:ray, got tsol:t22mint on token enablement tx',
         }
       );
     });
