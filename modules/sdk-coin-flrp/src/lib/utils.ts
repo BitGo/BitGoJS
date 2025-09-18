@@ -23,7 +23,25 @@ import {
   OUTPUT_INDEX_HEX_LENGTH,
   ADDRESS_REGEX,
   HEX_REGEX,
+  HEX_CHAR_PATTERN,
+  HEX_PATTERN_NO_PREFIX,
+  FLARE_ADDRESS_PLACEHOLDER,
+  HEX_ENCODING,
+  PADSTART_CHAR,
+  HEX_RADIX,
+  STRING_TYPE,
 } from './constants';
+
+// Regex utility functions for hex validation
+export const createHexRegex = (length: number, requirePrefix = false): RegExp => {
+  const pattern = requirePrefix ? `^0x${HEX_CHAR_PATTERN}{${length}}$` : `^${HEX_CHAR_PATTERN}{${length}}$`;
+  return new RegExp(pattern);
+};
+
+export const createFlexibleHexRegex = (requirePrefix = false): RegExp => {
+  const pattern = requirePrefix ? `^0x${HEX_CHAR_PATTERN}+$` : HEX_PATTERN_NO_PREFIX;
+  return new RegExp(pattern);
+};
 
 export class Utils implements BaseUtils {
   public includeIn(walletAddresses: string[], otxoOutputAddresses: string[]): boolean {
@@ -84,7 +102,7 @@ export class Utils implements BaseUtils {
     if (pub.length === SHORT_PUB_KEY_LENGTH) {
       try {
         // For FlareJS, we'll need to implement CB58 decode functionality
-        pubBuf = Buffer.from(pub, 'hex'); // Temporary placeholder
+        pubBuf = Buffer.from(pub, HEX_ENCODING); // Temporary placeholder
       } catch {
         return false;
       }
@@ -119,7 +137,7 @@ export class Utils implements BaseUtils {
 
   public parseAddress = (pub: string): Buffer => {
     // FlareJS equivalent for address parsing
-    return Buffer.from(pub, 'hex'); // Simplified implementation
+    return Buffer.from(pub, HEX_ENCODING); // Simplified implementation
   };
 
   /**
@@ -168,7 +186,7 @@ export class Utils implements BaseUtils {
    * @returns {boolean} - true if valid Ethereum address format
    */
   isValidEthereumAddress(address: string): boolean {
-    if (!address || typeof address !== 'string') {
+    if (!address || typeof address !== STRING_TYPE) {
       return false;
     }
 
@@ -331,7 +349,7 @@ export class Utils implements BaseUtils {
       const unsignedTx = (txRecord.getUnsignedTx as () => Record<string, unknown>)();
       const transaction = (unsignedTx.getTransaction as () => Record<string, unknown>)();
       const txBlockchainId = (transaction.getBlockchainID as () => unknown)();
-      return Buffer.from(txBlockchainId as string).toString('hex') === blockchainId;
+      return Buffer.from(txBlockchainId as string).toString(HEX_ENCODING) === blockchainId;
     } catch (error) {
       return false;
     }
@@ -371,7 +389,7 @@ export class Utils implements BaseUtils {
           const amount = transferableOutput.amount();
 
           // Simplified address handling - would need proper FlareJS address utilities
-          const address = 'flare-address-placeholder'; // TODO: implement proper address conversion
+          const address = FLARE_ADDRESS_PLACEHOLDER; // TODO: implement proper address conversion
 
           return {
             value: amount.toString(),
@@ -432,7 +450,10 @@ export class Utils implements BaseUtils {
    * @return {Buffer} buffer of size 4 with that number value
    */
   outputidxNumberToBuffer(outputidx: string): Buffer {
-    return Buffer.from(Number(outputidx).toString(16).padStart(OUTPUT_INDEX_HEX_LENGTH, '0'), 'hex');
+    return Buffer.from(
+      Number(outputidx).toString(HEX_RADIX).padStart(OUTPUT_INDEX_HEX_LENGTH, PADSTART_CHAR),
+      HEX_ENCODING
+    );
   }
 
   /**
@@ -441,7 +462,7 @@ export class Utils implements BaseUtils {
    * @return {string} outputidx number
    */
   outputidxBufferToNumber(outputidx: Buffer): string {
-    return parseInt(outputidx.toString('hex'), 16).toString();
+    return parseInt(outputidx.toString(HEX_ENCODING), HEX_RADIX).toString();
   }
 
   /**
@@ -453,7 +474,7 @@ export class Utils implements BaseUtils {
     // For now, use a simple hex decode as placeholder
     // In a full implementation, this would be proper CB58 decoding
     try {
-      return Buffer.from(data, 'hex');
+      return Buffer.from(data, HEX_ENCODING);
     } catch {
       // Fallback to buffer from string
       return Buffer.from(data);
@@ -469,7 +490,7 @@ export class Utils implements BaseUtils {
    */
   addressToString(hrp: string, chainid: string, addressBuffer: Buffer): string {
     // Simple implementation - in practice this would use bech32 encoding
-    return `${chainid}-${addressBuffer.toString('hex')}`;
+    return `${chainid}-${addressBuffer.toString(HEX_ENCODING)}`;
   }
 
   /**
@@ -502,8 +523,8 @@ export class Utils implements BaseUtils {
       return memo;
     }
 
-    if (typeof memo === 'string') {
-      return this.stringToBytes(memo);
+    if (typeof memo === STRING_TYPE) {
+      return this.stringToBytes(memo as string);
     }
 
     if (typeof memo === 'object') {

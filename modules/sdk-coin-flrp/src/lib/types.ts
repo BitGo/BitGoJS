@@ -22,23 +22,55 @@ export interface ExtendedTransaction {
 }
 
 /**
- * Raw transaction data structure from serialized transactions
+ * Base raw transaction data structure from serialized transactions
  */
-export interface RawTransactionData {
-  rewardAddresses?: string[];
-  delegationFeeRate?: number;
-  blsPublicKey?: string;
-  blsSignature?: string;
-  nodeID?: string;
-  startTime?: string | number | bigint;
-  endTime?: string | number | bigint;
-  stakeAmount?: string | number | bigint;
+export interface BaseRawTransactionData {
+  // Optional fields common to all transaction types
   memo?: Uint8Array | string;
   utxos?: DecodedUtxoObj[];
   outputAmount?: string;
   networkID?: number;
   blockchainID?: Buffer | string;
 }
+
+/**
+ * Raw transaction data for delegator transactions
+ */
+export interface DelegatorRawTransactionData extends BaseRawTransactionData {
+  // Required fields for delegator transactions
+  nodeID: string;
+  startTime: string | number | bigint;
+  endTime: string | number | bigint;
+  stakeAmount: string | number | bigint;
+  rewardAddresses: string[];
+}
+
+/**
+ * Raw transaction data for validator transactions
+ */
+export interface ValidatorRawTransactionData extends DelegatorRawTransactionData {
+  // Additional required field for validator transactions
+  delegationFeeRate: number;
+}
+
+/**
+ * Raw transaction data for permissionless validator transactions
+ */
+export interface PermissionlessValidatorRawTransactionData extends ValidatorRawTransactionData {
+  // Additional required fields for permissionless validator transactions
+  blsPublicKey: string;
+  blsSignature: string;
+}
+
+/**
+ * Raw transaction data structure from serialized transactions
+ * Union type supporting all transaction types with proper type safety
+ */
+export type RawTransactionData =
+  | BaseRawTransactionData
+  | DelegatorRawTransactionData
+  | ValidatorRawTransactionData
+  | PermissionlessValidatorRawTransactionData;
 
 /**
  * Transaction with extended properties type assertion helper

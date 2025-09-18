@@ -71,6 +71,17 @@ describe('DelegatorTxBuilder', function () {
     it('should throw error for negative start time', function () {
       assert.throws(() => builder.startTime(-1), BuildTransactionError);
     });
+
+    it('should throw error when start time is after end time', function () {
+      builder.endTime(1640995200); // Set end time first
+      assert.throws(() => builder.startTime(1672531200), BuildTransactionError); // Start time after end time
+    });
+
+    it('should allow start time before end time', function () {
+      builder.endTime(1672531200); // Set end time first
+      const result = builder.startTime(1640995200); // Start time before end time
+      assert.strictEqual(result, builder);
+    });
   });
 
   describe('endTime', function () {
@@ -101,6 +112,17 @@ describe('DelegatorTxBuilder', function () {
 
     it('should throw error for negative end time', function () {
       assert.throws(() => builder.endTime(-1), BuildTransactionError);
+    });
+
+    it('should throw error when end time is before start time', function () {
+      builder.startTime(1672531200); // Set start time first
+      assert.throws(() => builder.endTime(1640995200), BuildTransactionError); // End time before start time
+    });
+
+    it('should allow end time after start time', function () {
+      builder.startTime(1640995200); // Set start time first
+      const result = builder.endTime(1672531200); // End time after start time
+      assert.strictEqual(result, builder);
     });
   });
 
@@ -190,9 +212,11 @@ describe('DelegatorTxBuilder', function () {
       await assert.rejects(builder['buildFlareTransaction'](), BuildTransactionError);
     });
 
-    it('should throw error if end time is before start time', async function () {
-      builder.startTime(1672531200).endTime(1640995200);
-      await assert.rejects(builder['buildFlareTransaction'](), BuildTransactionError);
+    it('should throw error if end time is before start time', function () {
+      // This test verifies that time validation happens immediately when setting values
+      assert.throws(() => {
+        builder.startTime(1672531200).endTime(1640995200);
+      }, BuildTransactionError);
     });
   });
 

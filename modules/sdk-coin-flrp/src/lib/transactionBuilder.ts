@@ -4,31 +4,28 @@ import { DecodedUtxoObj, Tx } from './iface';
 import { KeyPair } from './keyPair';
 import { Transaction } from './transaction';
 import { RawTransactionData } from './types';
+import {
+  ERROR_NETWORK_ID_MISMATCH,
+  ERROR_BLOCKCHAIN_ID_MISMATCH_BUILDER,
+  ERROR_INVALID_THRESHOLD,
+  ERROR_INVALID_LOCKTIME,
+  ERROR_UTXOS_EMPTY_ARRAY,
+  ERROR_UTXOS_MISSING_FIELD,
+  ERROR_FROM_ADDRESSES_REQUIRED,
+  ERROR_UTXOS_REQUIRED_BUILDER,
+  ERROR_PARSE_RAW_TRANSACTION,
+  ERROR_UNKNOWN_PARSING,
+  UTXO_REQUIRED_FIELDS,
+  HEX_ENCODING,
+} from './constants';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
   protected recoverSigner = false;
   public _signer: KeyPair[] = [];
 
-  // FlareJS recovery and signature metadata
-  protected _recoveryMetadata?: {
-    enabled: boolean;
-    mode: string;
-    timestamp: number;
-    signingMethod?: string;
-    _flareJSReady: boolean;
-    _recoveryVersion?: string;
-  };
-
-  protected _signatureConfig?: {
-    type: string;
-    format: string;
-    recovery: boolean;
-    hashFunction: string;
-    _flareJSSignature: boolean;
-    _recoverySignature: boolean;
-    _signatureVersion: string;
-  };
+  // Recovery mode flag for transaction building
+  protected _recoveryMode = false;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -46,18 +43,18 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     const txData = tx as unknown as RawTransactionData;
 
     if (txData.networkID !== undefined && txData.networkID !== this._transaction._networkID) {
-      throw new Error('Network ID mismatch');
+      throw new Error(ERROR_NETWORK_ID_MISMATCH);
     }
 
     if (txData.blockchainID) {
       const blockchainID = Buffer.isBuffer(txData.blockchainID)
         ? txData.blockchainID
-        : Buffer.from(txData.blockchainID, 'hex');
+        : Buffer.from(txData.blockchainID, HEX_ENCODING);
       const transactionBlockchainID = Buffer.isBuffer(this._transaction._blockchainID)
         ? this._transaction._blockchainID
-        : Buffer.from(this._transaction._blockchainID, 'hex');
+        : Buffer.from(this._transaction._blockchainID, HEX_ENCODING);
       if (!blockchainID.equals(transactionBlockchainID)) {
-        throw new Error('Blockchain ID mismatch');
+        throw new Error(ERROR_BLOCKCHAIN_ID_MISMATCH_BUILDER);
       }
     }
 
@@ -72,7 +69,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   validateThreshold(threshold: number): void {
     if (!threshold || threshold !== 2) {
-      throw new BuildTransactionError('Invalid transaction: threshold must be set to 2');
+      throw new BuildTransactionError(ERROR_INVALID_THRESHOLD);
     }
   }
 
@@ -81,8 +78,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @param UTXO
    */
   validateUtxo(value: DecodedUtxoObj): void {
-    ['outputID', 'amount', 'txid', 'outputidx'].forEach((field) => {
-      if (!value.hasOwnProperty(field)) throw new BuildTransactionError(`Utxos required ${field}`);
+    UTXO_REQUIRED_FIELDS.forEach((field) => {
+      if (!value.hasOwnProperty(field)) throw new BuildTransactionError(`${ERROR_UTXOS_MISSING_FIELD} ${field}`);
     });
   }
 
@@ -92,7 +89,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   validateUtxos(values: DecodedUtxoObj[]): void {
     if (values.length === 0) {
-      throw new BuildTransactionError("Utxos can't be empty array");
+      throw new BuildTransactionError(ERROR_UTXOS_EMPTY_ARRAY);
     }
     values.forEach(this.validateUtxo);
   }
@@ -103,7 +100,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   validateLocktime(locktime: bigint): void {
     if (!locktime || locktime < BigInt(0)) {
-      throw new BuildTransactionError('Invalid transaction: locktime must be 0 or higher');
+      throw new BuildTransactionError(ERROR_INVALID_LOCKTIME);
     }
   }
   // endregion
@@ -132,68 +129,18 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /**
    * When using recovery key must be set here
-   * FlareJS recovery key signing implementation
    * @param {boolean}[recoverSigner=true] whether it's recovery signer
    */
   recoverMode(recoverSigner = true): this {
     this.recoverSigner = recoverSigner;
+    this._recoveryMode = recoverSigner;
 
-    // FlareJS recovery mode setup
-    if (recoverSigner) {
-      // Configure transaction builder for recovery key operation
-      this._recoveryMetadata = {
-        enabled: true,
-        mode: 'recovery',
-        timestamp: Date.now(),
-        signingMethod: 'recovery-key',
-        // FlareJS recovery markers
-        _flareJSReady: true,
-        _recoveryVersion: '1.0.0',
-      };
-
-      // Set enhanced signature requirements for recovery
-      if (!this._transaction._threshold) {
-        this._transaction._threshold = 1; // Recovery typically needs single signature
-      }
-
-      // Configure for recovery key signature creation
-      this._configureRecoverySignature();
-    } else {
-      // Clear recovery mode
-      this._recoveryMetadata = {
-        enabled: false,
-        mode: 'normal',
-        timestamp: Date.now(),
-        _flareJSReady: true,
-      };
+    // Recovery operations typically need single signature
+    if (recoverSigner && !this._transaction._threshold) {
+      this._transaction._threshold = 1;
     }
 
     return this;
-  }
-
-  /**
-   * Configure FlareJS signature creation for recovery operations
-   * @private
-   */
-  private _configureRecoverySignature(): void {
-    // FlareJS signature configuration for recovery keys
-    // This sets up the proper signature format and validation for recovery operations
-
-    // Configure signature metadata for FlareJS compatibility
-    this._signatureConfig = {
-      type: 'secp256k1',
-      format: 'der',
-      recovery: true,
-      hashFunction: 'sha256',
-      // FlareJS signature configuration
-      _flareJSSignature: true,
-      _recoverySignature: true,
-      _signatureVersion: '1.0.0',
-    };
-
-    // Set recovery-specific threshold and locktime
-    this._transaction._threshold = 1; // Recovery operations typically require single signature
-    this._transaction._locktime = BigInt(0); // No locktime for recovery operations
   }
 
   /**
@@ -232,7 +179,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       this.initBuilder(parsedTx);
       return this._transaction;
     } catch (error) {
-      throw new Error(`Failed to parse raw transaction: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `${ERROR_PARSE_RAW_TRANSACTION}: ${error instanceof Error ? error.message : ERROR_UNKNOWN_PARSING}`
+      );
     }
   }
 
@@ -249,10 +198,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   protected validateRequiredFields(): void {
     if (this._transaction._fromAddresses.length === 0) {
-      throw new Error('from addresses are required');
+      throw new Error(ERROR_FROM_ADDRESSES_REQUIRED);
     }
     if (this._transaction._utxos.length === 0) {
-      throw new Error('utxos are required');
+      throw new Error(ERROR_UTXOS_REQUIRED_BUILDER);
     }
   }
 }

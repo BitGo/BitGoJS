@@ -3,20 +3,31 @@ import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { AtomicInCTransactionBuilder } from './atomicInCTransactionBuilder';
 import { TransferableInput, Credential } from '@flarenetwork/flarejs';
 import { Buffer } from 'buffer';
-import utils from './utils';
+import utils, { createHexRegex } from './utils';
 import { Tx, DecodedUtxoObj } from './iface';
 import BigNumber from 'bignumber.js';
 import { TransactionWithExtensions } from './types';
 import {
   ASSET_ID_LENGTH,
-  DEFAULT_EVM_GAS_FEE,
+  OUTPUT_INDEX_HEX_LENGTH,
+  CHAIN_ID_HEX_LENGTH,
   DEFAULT_BASE_FEE,
+  DEFAULT_EVM_GAS_FEE,
   INPUT_FEE,
   OUTPUT_FEE,
   MINIMUM_FEE,
-  CHAIN_ID_HEX_LENGTH,
-  OUTPUT_INDEX_HEX_LENGTH,
-  createHexRegex,
+  EMPTY_STRING,
+  AMOUNT_STRING_ZERO,
+  FIRST_ARRAY_INDEX,
+  DEFAULT_THRESHOLD,
+  DEFAULT_LOCKTIME,
+  ZERO_NUMBER,
+  ERROR_TRANSACTION_REQUIRED,
+  ERROR_BLOCKCHAIN_ID_MISMATCH,
+  ERROR_TRANSACTION_PARSE_FAILED,
+  ERROR_FAILED_INITIALIZE_BUILDER,
+  OBJECT_TYPE_STRING,
+  HEX_ENCODING,
 } from './constants';
 
 /**
@@ -49,7 +60,7 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
   /** @inheritdoc */
   initBuilder(tx: Tx): this {
     if (!tx) {
-      throw new BuildTransactionError('Transaction is required for initialization');
+      throw new BuildTransactionError(ERROR_TRANSACTION_REQUIRED);
     }
 
     // Handle both UnsignedTx and signed transaction formats
@@ -65,7 +76,7 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
       }
 
       if (unsignedTx.blockchainID && !unsignedTx.blockchainID.equals(this.transaction._blockchainID)) {
-        throw new BuildTransactionError('Blockchain ID mismatch');
+        throw new BuildTransactionError(ERROR_BLOCKCHAIN_ID_MISMATCH);
       }
 
       // Extract C-chain import transaction details
@@ -73,13 +84,13 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
         // Extract UTXOs from import inputs (typically from P-chain)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const utxos: DecodedUtxoObj[] = unsignedTx.importIns.map((importIn: any) => ({
-          id: importIn.txID?.toString() || '',
-          outputIndex: importIn.outputIndex || 0,
-          amount: importIn.input?.amount?.toString() || '0',
+          id: importIn.txID?.toString() || EMPTY_STRING,
+          outputIndex: importIn.outputIndex || FIRST_ARRAY_INDEX,
+          amount: importIn.input?.amount?.toString() || AMOUNT_STRING_ZERO,
           assetId: importIn.input?.assetID || Buffer.alloc(ASSET_ID_LENGTH),
-          address: importIn.input?.addresses?.[0] || '',
-          threshold: importIn.input?.threshold || 1,
-          locktime: importIn.input?.locktime || 0n,
+          address: importIn.input?.addresses?.[FIRST_ARRAY_INDEX] || EMPTY_STRING,
+          threshold: importIn.input?.threshold || DEFAULT_THRESHOLD,
+          locktime: importIn.input?.locktime || DEFAULT_LOCKTIME,
         }));
         this.addUtxos(utxos);
       }
@@ -87,14 +98,14 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
       // Extract outputs (C-chain destination)
       if (unsignedTx.outs && Array.isArray(unsignedTx.outs)) {
         const outputs = unsignedTx.outs;
-        if (outputs.length > 0) {
-          const firstOutput = outputs[0];
+        if (outputs.length > ZERO_NUMBER) {
+          const firstOutput = outputs[FIRST_ARRAY_INDEX];
 
           // C-chain uses Ethereum-style addresses
           if (firstOutput.addresses && Array.isArray(firstOutput.addresses)) {
             // Set the first address as the destination
-            if (firstOutput.addresses.length > 0) {
-              this.to(firstOutput.addresses[0]);
+            if (firstOutput.addresses.length > ZERO_NUMBER) {
+              this.to(firstOutput.addresses[FIRST_ARRAY_INDEX]);
             }
           }
 
@@ -110,7 +121,7 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
       if (unsignedTx.sourceChain) {
         this._externalChainId = Buffer.isBuffer(unsignedTx.sourceChain)
           ? unsignedTx.sourceChain
-          : Buffer.from(unsignedTx.sourceChain, 'hex');
+          : Buffer.from(unsignedTx.sourceChain, HEX_ENCODING);
       }
 
       // Extract fee information
@@ -129,13 +140,13 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
 
       // Validate transaction type
       if (!this.verifyTxType(tx)) {
-        throw new BuildTransactionError('Transaction cannot be parsed or has an unsupported transaction type');
+        throw new BuildTransactionError(ERROR_TRANSACTION_PARSE_FAILED);
       }
     } catch (error) {
       if (error instanceof BuildTransactionError) {
         throw error;
       }
-      throw new BuildTransactionError(`Failed to initialize builder from transaction: ${error}`);
+      throw new BuildTransactionError(`${ERROR_FAILED_INITIALIZE_BUILDER}: ${error}`);
     }
 
     return this;
@@ -157,7 +168,7 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
       };
 
       // If transaction is null/undefined, return false
-      if (!tx || typeof tx !== 'object') {
+      if (!tx || typeof tx !== OBJECT_TYPE_STRING) {
         return false;
       }
 
@@ -245,7 +256,10 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
         importedInputs: flareUtxos.map((utxo) => ({
           ...utxo,
           // Add FlareJS-compatible fields
-          utxoID: Buffer.from(utxo.txID + utxo.outputIndex.toString(16).padStart(OUTPUT_INDEX_HEX_LENGTH, '0'), 'hex'),
+          utxoID: Buffer.from(
+            utxo.txID + utxo.outputIndex.toString(16).padStart(OUTPUT_INDEX_HEX_LENGTH, AMOUNT_STRING_ZERO),
+            HEX_ENCODING
+          ),
           assetID: utxo.output.assetID,
           amount: utxo.output.amount(),
         })),
@@ -327,7 +341,8 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
         // Methods for FlareJS compatibility
         getAmount: () => BigInt(amount.toString()),
         getAssetID: () => Buffer.alloc(ASSET_ID_LENGTH),
-        getUTXOID: () => Buffer.from(utxo.txid + utxo.outputidx.padStart(OUTPUT_INDEX_HEX_LENGTH, '0'), 'hex'),
+        getUTXOID: () =>
+          Buffer.from(utxo.txid + utxo.outputidx.padStart(OUTPUT_INDEX_HEX_LENGTH, AMOUNT_STRING_ZERO), HEX_ENCODING),
       };
 
       inputs.push(enhancedInput as unknown as TransferableInput);

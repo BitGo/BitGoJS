@@ -2,8 +2,13 @@ import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { DelegatorTxBuilder } from './delegatorTxBuilder';
 import { Tx } from './iface';
-import { RawTransactionData, TransactionWithExtensions } from './types';
-import { MIN_DELEGATION_FEE_BASIS_POINTS } from './constants';
+import { RawTransactionData, TransactionWithExtensions, ValidatorRawTransactionData } from './types';
+import {
+  MIN_DELEGATION_FEE_BASIS_POINTS,
+  OBJECT_TYPE_STRING,
+  STRING_TYPE,
+  VALIDATOR_TRANSACTION_TYPES,
+} from './constants';
 
 export class ValidatorTxBuilder extends DelegatorTxBuilder {
   protected _delegationFeeRate: number | undefined;
@@ -52,8 +57,9 @@ export class ValidatorTxBuilder extends DelegatorTxBuilder {
 
     // Extract delegation fee rate from transaction if available
     const txData = tx as unknown as RawTransactionData;
-    if (txData.delegationFeeRate !== undefined) {
-      this._delegationFeeRate = txData.delegationFeeRate;
+    const validatorData = txData as ValidatorRawTransactionData;
+    if (validatorData.delegationFeeRate !== undefined) {
+      this._delegationFeeRate = validatorData.delegationFeeRate;
     }
 
     return this;
@@ -66,18 +72,18 @@ export class ValidatorTxBuilder extends DelegatorTxBuilder {
   static verifyTxType(tx: unknown): boolean {
     // FlareJS validator transaction type verification
     try {
-      if (!tx || typeof tx !== 'object') {
+      if (!tx || typeof tx !== OBJECT_TYPE_STRING) {
         return false;
       }
 
       const txData = tx as Record<string, unknown>;
 
       // Check for validator transaction type markers
-      const validValidatorTypes = ['PlatformVM.AddValidatorTx', 'AddValidatorTx', 'addValidator', 'validator'];
+      const validValidatorTypes = VALIDATOR_TRANSACTION_TYPES;
 
       // Primary type verification
-      if (txData.type && typeof txData.type === 'string') {
-        if (validValidatorTypes.includes(txData.type)) {
+      if (txData.type && typeof txData.type === STRING_TYPE) {
+        if (validValidatorTypes.includes(txData.type as string)) {
           return true;
         }
       }

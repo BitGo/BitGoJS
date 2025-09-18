@@ -4,7 +4,7 @@ import { AtomicTransactionBuilder } from './atomicTransactionBuilder';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { pvm, utils as flareUtils, TransferableInput, TransferableOutput, Credential } from '@flarenetwork/flarejs';
 import { Buffer } from 'buffer';
-import utils from './utils';
+import utils, { createFlexibleHexRegex } from './utils';
 import { Tx, DecodedUtxoObj } from './iface';
 import BigNumber from 'bignumber.js';
 import { TransactionWithExtensions } from './types';
@@ -13,7 +13,11 @@ import {
   DEFAULT_BASE_FEE,
   SECP256K1_SIGNATURE_LENGTH,
   MAX_CHAIN_ID_LENGTH,
-  createFlexibleHexRegex,
+  C_CHAIN,
+  HEX_ENCODING,
+  OBJECT_TYPE_STRING,
+  STRING_TYPE,
+  NUMBER_TYPE,
 } from './constants';
 
 /**
@@ -103,7 +107,7 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
       if (unsignedTx.sourceChain) {
         this._externalChainId = Buffer.isBuffer(unsignedTx.sourceChain)
           ? unsignedTx.sourceChain
-          : Buffer.from(unsignedTx.sourceChain, 'hex');
+          : Buffer.from(unsignedTx.sourceChain, HEX_ENCODING);
       }
 
       // Extract memo if present
@@ -140,7 +144,7 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
 
     try {
       // Check if transaction object exists and has required structure
-      if (!unsignedTx || typeof unsignedTx !== 'object') {
+      if (!unsignedTx || typeof unsignedTx !== OBJECT_TYPE_STRING) {
         // For compatibility with existing tests, return true for null/undefined
         return unsignedTx === null || unsignedTx === undefined;
       }
@@ -157,8 +161,8 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
       const validTypes = ['PlatformVM.ImportTx', 'ImportTx', 'import', 'P-chain-import'];
 
       // Primary type verification
-      if (tx.type && typeof tx.type === 'string') {
-        if (validTypes.includes(tx.type)) {
+      if (tx.type && typeof tx.type === STRING_TYPE) {
+        if (validTypes.includes(tx.type as string)) {
           return true;
         }
         // If type is specified but not valid, return false (like 'export')
@@ -224,10 +228,10 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
       }));
 
       // Get source chain ID (typically C-chain for P-chain imports)
-      const sourceChainId = this._externalChainId ? this._externalChainId.toString('hex') : 'C';
+      const sourceChainId = this._externalChainId ? this._externalChainId.toString(HEX_ENCODING) : C_CHAIN;
 
       // Prepare destination addresses (P-chain addresses)
-      const toAddresses = this.transaction._to.map((addr) => new Uint8Array(Buffer.from(addr, 'hex')));
+      const toAddresses = this.transaction._to.map((addr) => new Uint8Array(Buffer.from(addr, HEX_ENCODING)));
 
       // Calculate total input amount
       const totalInputAmount = this.calculateTotalAmount(flareUtxos);
@@ -385,7 +389,7 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
         assetID: this.getAssetId(),
         output: {
           amount: BigInt(changeAmount.toString()),
-          addresses: this.transaction._to.map((addr) => Buffer.from(addr, 'hex')),
+          addresses: this.transaction._to.map((addr) => Buffer.from(addr, HEX_ENCODING)),
           threshold: this.transaction._threshold,
           locktime: this.transaction._locktime,
           // FlareJS P-chain output markers
@@ -427,7 +431,7 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
     // Source chain ID validation and setting
     // This provides basic validation while maintaining compatibility with various formats
 
-    if (!chainId || typeof chainId !== 'string') {
+    if (!chainId || typeof chainId !== STRING_TYPE) {
       throw new BuildTransactionError('Chain ID must be a non-empty string');
     }
 
@@ -454,7 +458,7 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
     try {
       // Try to detect if it's a hex string (even length, valid hex chars)
       if (createFlexibleHexRegex().test(chainId) && chainId.length % 2 === 0) {
-        chainBuffer = Buffer.from(chainId, 'hex');
+        chainBuffer = Buffer.from(chainId, HEX_ENCODING);
       } else {
         // For all other formats, store as UTF-8
         chainBuffer = Buffer.from(chainId, 'utf8');
@@ -473,7 +477,8 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
    * @param {string | number | BigNumber} fee - Fee amount in nanoFLR
    */
   fee(fee: string | number | BigNumber): this {
-    const feeAmount = typeof fee === 'string' || typeof fee === 'number' ? new BigNumber(fee) : fee;
+    const feeAmount =
+      typeof fee === STRING_TYPE || typeof fee === NUMBER_TYPE ? new BigNumber(fee) : (fee as BigNumber);
 
     if (feeAmount.lt(0)) {
       throw new BuildTransactionError('Fee cannot be negative');

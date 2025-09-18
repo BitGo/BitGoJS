@@ -1,10 +1,26 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { TransactionType } from '@bitgo/sdk-core';
 import { AtomicTransactionBuilder } from './atomicTransactionBuilder';
-import { ASSET_ID_LENGTH, DEFAULT_BASE_FEE } from './constants';
+import {
+  ASSET_ID_LENGTH,
+  DEFAULT_BASE_FEE,
+  ZERO_BIGINT,
+  FLARE_MAINNET_NETWORK_ID,
+  FLARE_TESTNET_NETWORK_ID,
+  MAINNET_TYPE,
+  EXPORT_TRANSACTION_TYPE,
+  FIRST_ARRAY_INDEX,
+  SECP256K1_CREDENTIAL_TYPE,
+  EMPTY_BUFFER_SIZE,
+  ERROR_EXPORT_NOT_IMPLEMENTED,
+  ERROR_DESTINATION_CHAIN_REQUIRED,
+  ERROR_SOURCE_ADDRESSES_REQUIRED,
+  ERROR_DESTINATION_ADDRESSES_REQUIRED,
+  ERROR_EXPORT_AMOUNT_POSITIVE,
+} from './constants';
 
 export class ExportInPTxBuilder extends AtomicTransactionBuilder {
-  private _amount = 0n;
+  private _amount = ZERO_BIGINT;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -56,40 +72,40 @@ export class ExportInPTxBuilder extends AtomicTransactionBuilder {
     // This maintains compatibility with existing tests expecting "not implemented"
     if (!this._externalChainId && !this.transaction._fromAddresses.length && !this.transaction._to.length) {
       // Maintain compatibility with existing tests expecting "not implemented"
-      throw new Error('Flare P-chain export transaction build not implemented');
+      throw new Error(ERROR_EXPORT_NOT_IMPLEMENTED);
     }
 
     // Enhanced validation for real usage
     if (!this._externalChainId) {
-      throw new Error('Destination chain ID must be set for P-chain export');
+      throw new Error(ERROR_DESTINATION_CHAIN_REQUIRED);
     }
 
     if (!this.transaction._fromAddresses.length) {
-      throw new Error('Source addresses must be set for P-chain export');
+      throw new Error(ERROR_SOURCE_ADDRESSES_REQUIRED);
     }
 
     if (!this.transaction._to.length) {
-      throw new Error('Destination addresses must be set for P-chain export');
+      throw new Error(ERROR_DESTINATION_ADDRESSES_REQUIRED);
     }
 
-    if (this._amount <= 0n) {
-      throw new Error('Export amount must be positive');
+    if (this._amount <= ZERO_BIGINT) {
+      throw new Error(ERROR_EXPORT_AMOUNT_POSITIVE);
     }
 
     // Enhanced P-chain export transaction structure compatible with FlareJS pvm.newExportTx
     const enhancedExportTx = {
-      type: 'PlatformVM.ExportTx',
-      networkID: this._coinConfig.network.type === 'mainnet' ? 1 : 5, // Flare mainnet: 1, testnet: 5
+      type: EXPORT_TRANSACTION_TYPE,
+      networkID: this._coinConfig.network.type === MAINNET_TYPE ? FLARE_MAINNET_NETWORK_ID : FLARE_TESTNET_NETWORK_ID, // Flare mainnet: 1, testnet: 5
       blockchainID: this.transaction._blockchainID,
       destinationChain: this._externalChainId,
 
       // Enhanced input structure ready for FlareJS pvm.newExportTx
       inputs: this._utxos.map((input) => ({
         txID: Buffer.alloc(ASSET_ID_LENGTH), // Transaction ID from UTXO
-        outputIndex: 0,
+        outputIndex: FIRST_ARRAY_INDEX,
         assetID: this.transaction._assetId,
         amount: BigInt(input.amount),
-        address: input.addresses[0],
+        address: input.addresses[FIRST_ARRAY_INDEX],
         // FlareJS compatibility markers
         _flareJSReady: true,
         _pvmCompatible: true,
@@ -115,12 +131,12 @@ export class ExportInPTxBuilder extends AtomicTransactionBuilder {
       // Credential placeholders ready for FlareJS integration
       credentials: this.transaction._fromAddresses.map(() => ({
         signatures: [], // Will be populated by FlareJS signing
-        _credentialType: 'secp256k1fx.Credential',
+        _credentialType: SECP256K1_CREDENTIAL_TYPE,
         _flareJSReady: true,
       })),
 
       // Transaction metadata
-      memo: Buffer.alloc(0),
+      memo: Buffer.alloc(EMPTY_BUFFER_SIZE),
     };
 
     // Store the transaction structure

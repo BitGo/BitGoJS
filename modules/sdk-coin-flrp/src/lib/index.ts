@@ -1,5 +1,6 @@
 import Utils from './utils';
 export * from './iface';
+export * from './types';
 export { KeyPair } from './keyPair';
 export { Utils };
 export { TransactionBuilderFactory } from './transactionBuilderFactory';

@@ -258,18 +258,15 @@ describe('ValidatorTxBuilder', function () {
       });
     });
 
-    it('should inherit time validation from delegator builder', async function () {
-      builder
-        .nodeID('NodeID-7Xhw2mDxuDS44j42TCB6U5579esbSt3Lg')
-        .startTime(1641081600)
-        .endTime(1640995200) // End time before start time
-        .stakeAmount('1000000000000000000')
-        .delegationFeeRate(25000) // 2.5%
-        .rewardAddresses(['P-flare1x0r5h0l8w6nj3k2p0d5g9t5b8v3a9k1m']);
-
-      await assert.rejects(async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (builder as any).buildFlareTransaction();
+    it('should inherit time validation from delegator builder', function () {
+      // This test verifies that time validation happens immediately when setting values
+      assert.throws(() => {
+        builder
+          .nodeID('NodeID-7Xhw2mDxuDS44j42TCB6U5579esbSt3Lg')
+          .startTime(1641081600)
+          .endTime(1640995200) // End time before start time
+          .stakeAmount('1000000000000000000')
+          .delegationFeeRate(25000); // 2.5%
       }, BuildTransactionError);
     });
   });

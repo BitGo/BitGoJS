@@ -2,7 +2,22 @@ import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { AtomicTransactionBuilder } from './atomicTransactionBuilder';
 import { Tx } from './iface';
-import { RawTransactionData, TransactionWithExtensions } from './types';
+import { RawTransactionData, TransactionWithExtensions, DelegatorRawTransactionData } from './types';
+import {
+  DELEGATOR_TRANSACTION_TYPE,
+  PRIMARY_DELEGATOR_TYPE,
+  DELEGATOR_STAKE_TYPE,
+  SECP256K1_CREDENTIAL_TYPE,
+  STAKE_OUTPUT_TYPE,
+  CREDENTIAL_VERSION,
+  EMPTY_STRING,
+  ZERO_BIGINT,
+  ZERO_NUMBER,
+  DEFAULT_THRESHOLD,
+  DEFAULT_LOCKTIME,
+  MEMO_BUFFER_SIZE,
+  FIRST_ADDRESS_INDEX,
+} from './constants';
 
 export class DelegatorTxBuilder extends AtomicTransactionBuilder {
   protected _nodeID: string;
@@ -15,10 +30,10 @@ export class DelegatorTxBuilder extends AtomicTransactionBuilder {
    */
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
-    this._nodeID = '';
-    this._startTime = 0n;
-    this._endTime = 0n;
-    this._stakeAmount = 0n;
+    this._nodeID = EMPTY_STRING;
+    this._startTime = ZERO_BIGINT;
+    this._endTime = ZERO_BIGINT;
+    this._stakeAmount = ZERO_BIGINT;
   }
 
   /**
@@ -34,7 +49,7 @@ export class DelegatorTxBuilder extends AtomicTransactionBuilder {
    * @param nodeID - The node ID to delegate to
    */
   nodeID(nodeID: string): this {
-    if (!nodeID || nodeID.length === 0) {
+    if (!nodeID || nodeID.length === ZERO_NUMBER) {
       throw new BuildTransactionError('Node ID cannot be empty');
     }
     this._nodeID = nodeID;
@@ -47,9 +62,17 @@ export class DelegatorTxBuilder extends AtomicTransactionBuilder {
    */
   startTime(startTime: string | number | bigint): this {
     const time = BigInt(startTime);
-    if (time <= 0) {
+
+    // Validate that start time is positive
+    if (time <= ZERO_NUMBER) {
       throw new BuildTransactionError('Start time must be positive');
     }
+
+    // Validate that start time is before end time (if end time is already set)
+    if (this._endTime > ZERO_NUMBER && time >= this._endTime) {
+      throw new BuildTransactionError('Start time must be before end time');
+    }
+
     this._startTime = time;
     return this;
   }
@@ -60,9 +83,17 @@ export class DelegatorTxBuilder extends AtomicTransactionBuilder {
    */
   endTime(endTime: string | number | bigint): this {
     const time = BigInt(endTime);
-    if (time <= 0) {
+
+    // Validate that end time is positive
+    if (time <= ZERO_NUMBER) {
       throw new BuildTransactionError('End time must be positive');
     }
+
+    // Validate that end time is after start time (if start time is already set)
+    if (this._startTime > ZERO_NUMBER && time <= this._startTime) {
+      throw new BuildTransactionError('End time must be after start time');
+    }
+
     this._endTime = time;
     return this;
   }
@@ -73,7 +104,7 @@ export class DelegatorTxBuilder extends AtomicTransactionBuilder {
    */
   stakeAmount(amount: string | number | bigint): this {
     const stake = BigInt(amount);
-    if (stake <= 0) {
+    if (stake <= ZERO_NUMBER) {
       throw new BuildTransactionError('Stake amount must be positive');
     }
     this._stakeAmount = stake;
@@ -85,7 +116,7 @@ export class DelegatorTxBuilder extends AtomicTransactionBuilder {
    * @param addresses - Array of reward addresses
    */
   rewardAddresses(addresses: string[]): this {
-    if (!addresses || addresses.length === 0) {
+    if (!addresses || addresses.length === ZERO_NUMBER) {
       throw new BuildTransactionError('At least one reward address is required');
     }
     // Store reward addresses in the transaction (we'll need to extend the type)
@@ -99,21 +130,22 @@ export class DelegatorTxBuilder extends AtomicTransactionBuilder {
 
     // Extract delegator-specific fields from transaction
     const txData = tx as unknown as RawTransactionData;
+    const delegatorData = txData as DelegatorRawTransactionData;
 
-    if (txData.nodeID) {
-      this._nodeID = txData.nodeID;
+    if (delegatorData.nodeID) {
+      this._nodeID = delegatorData.nodeID;
     }
-    if (txData.startTime) {
-      this._startTime = BigInt(txData.startTime);
+    if (delegatorData.startTime) {
+      this._startTime = BigInt(delegatorData.startTime);
     }
-    if (txData.endTime) {
-      this._endTime = BigInt(txData.endTime);
+    if (delegatorData.endTime) {
+      this._endTime = BigInt(delegatorData.endTime);
     }
-    if (txData.stakeAmount) {
-      this._stakeAmount = BigInt(txData.stakeAmount);
+    if (delegatorData.stakeAmount) {
+      this._stakeAmount = BigInt(delegatorData.stakeAmount);
     }
-    if (txData.rewardAddresses) {
-      (this.transaction as TransactionWithExtensions)._rewardAddresses = txData.rewardAddresses;
+    if (delegatorData.rewardAddresses) {
+      (this.transaction as TransactionWithExtensions)._rewardAddresses = delegatorData.rewardAddresses;
     }
 
     return this;
@@ -125,8 +157,8 @@ export class DelegatorTxBuilder extends AtomicTransactionBuilder {
    */
   static verifyTxType(tx: unknown): boolean {
     // Check if transaction has delegator-specific properties
-    const txData = tx as unknown as RawTransactionData;
-    return !!(txData && txData.nodeID && txData.stakeAmount);
+    const delegatorData = tx as DelegatorRawTransactionData;
+    return !!(delegatorData && delegatorData.nodeID && delegatorData.stakeAmount);
   }
 
   verifyTxType(tx: unknown): boolean {
@@ -153,7 +185,7 @@ export class DelegatorTxBuilder extends AtomicTransactionBuilder {
     }
 
     const rewardAddresses = (this.transaction as TransactionWithExtensions)._rewardAddresses;
-    if (!rewardAddresses || rewardAddresses.length === 0) {
+    if (!rewardAddresses || rewardAddresses.length === ZERO_NUMBER) {
       throw new BuildTransactionError('Reward addresses are required for delegator transaction');
     }
 
@@ -167,7 +199,7 @@ export class DelegatorTxBuilder extends AtomicTransactionBuilder {
       // This creates a structured delegator transaction with proper credential handling
 
       const enhancedDelegatorTx = {
-        type: 'PlatformVM.AddDelegatorTx',
+        type: DELEGATOR_TRANSACTION_TYPE,
         networkID: this.transaction._networkID,
         blockchainID: this.transaction._blockchainID,
 
@@ -177,9 +209,9 @@ export class DelegatorTxBuilder extends AtomicTransactionBuilder {
           startTime: this._startTime,
           endTime: this._endTime,
           stakeAmount: this._stakeAmount,
-          rewardAddress: rewardAddresses[0],
+          rewardAddress: rewardAddresses[FIRST_ADDRESS_INDEX],
           // FlareJS delegator markers
-          _delegatorType: 'primary',
+          _delegatorType: PRIMARY_DELEGATOR_TYPE,
           _flareJSReady: true,
           _pvmCompatible: true,
         },
@@ -189,10 +221,10 @@ export class DelegatorTxBuilder extends AtomicTransactionBuilder {
           assetID: this.getAssetId(),
           amount: this._stakeAmount,
           addresses: this.transaction._fromAddresses,
-          threshold: this.transaction._threshold || 1,
-          locktime: this.transaction._locktime || 0n,
+          threshold: this.transaction._threshold || DEFAULT_THRESHOLD,
+          locktime: this.transaction._locktime || DEFAULT_LOCKTIME,
           // FlareJS stake markers
-          _stakeType: 'delegator',
+          _stakeType: DELEGATOR_STAKE_TYPE,
           _flareJSReady: true,
         },
 
@@ -201,14 +233,14 @@ export class DelegatorTxBuilder extends AtomicTransactionBuilder {
         credentials: this.transaction._fromAddresses.map((address, index) => ({
           signatures: [], // Will be populated by FlareJS signing process
           addressIndices: [index], // Index of the signing address
-          threshold: 1, // Signature threshold for this credential
+          threshold: DEFAULT_THRESHOLD, // Signature threshold for this credential
           // FlareJS credential markers
-          _credentialType: 'secp256k1fx.Credential',
+          _credentialType: SECP256K1_CREDENTIAL_TYPE,
           _delegatorCredential: true,
           _addressIndex: index,
           _signingAddress: address,
           _flareJSReady: true,
-          _credentialVersion: '1.0.0',
+          _credentialVersion: CREDENTIAL_VERSION,
         })),
 
         // Enhanced outputs for delegator rewards
@@ -216,18 +248,18 @@ export class DelegatorTxBuilder extends AtomicTransactionBuilder {
           {
             assetID: this.getAssetId(),
             amount: this._stakeAmount,
-            addresses: [rewardAddresses[0]],
-            threshold: 1,
-            locktime: this.transaction._locktime || 0n,
+            addresses: [rewardAddresses[FIRST_ADDRESS_INDEX]],
+            threshold: DEFAULT_THRESHOLD,
+            locktime: this.transaction._locktime || DEFAULT_LOCKTIME,
             // FlareJS output markers
-            _outputType: 'stake',
+            _outputType: STAKE_OUTPUT_TYPE,
             _rewardOutput: true,
             _flareJSReady: true,
           },
         ],
 
         // Transaction metadata
-        memo: Buffer.alloc(0),
+        memo: Buffer.alloc(MEMO_BUFFER_SIZE),
       };
 
       this.transaction.setTransaction(enhancedDelegatorTx);

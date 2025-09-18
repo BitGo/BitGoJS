@@ -8,8 +8,8 @@ import {
   BLS_PUBLIC_KEY_UNCOMPRESSED_LENGTH,
   BLS_SIGNATURE_LENGTH,
   MIN_DELEGATION_FEE_BASIS_POINTS,
-  createHexRegex,
 } from './constants';
+import { createHexRegex } from './utils';
 
 export class PermissionlessValidatorTxBuilder extends AtomicTransactionBuilder {
   protected _nodeID: string | undefined;

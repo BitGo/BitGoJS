@@ -4,11 +4,38 @@ import { Credential, Signature, TransferableInput, TransferableOutput } from '@f
 import { TransactionExplanation, DecodedUtxoObj } from './iface';
 import {
   ASSET_ID_LENGTH,
-  SECP256K1_SIGNATURE_LENGTH,
   TRANSACTION_ID_HEX_LENGTH,
   PRIVATE_KEY_HEX_LENGTH,
-  createFlexibleHexRegex,
+  SECP256K1_SIGNATURE_LENGTH,
+  TRANSACTION_ID_PREFIX,
+  DEFAULT_NETWORK_ID,
+  EMPTY_BUFFER_SIZE,
+  HEX_PREFIX,
+  HEX_PREFIX_LENGTH,
+  DECIMAL_RADIX,
+  SIGNING_METHOD,
+  AMOUNT_STRING_ZERO,
+  DEFAULT_LOCKTIME,
+  DEFAULT_THRESHOLD,
+  ZERO_BIGINT,
+  ZERO_NUMBER,
+  ERROR_AMOUNT_POSITIVE,
+  ERROR_CREDENTIALS_ARRAY,
+  ERROR_UTXOS_REQUIRED,
+  ERROR_SIGNATURES_ARRAY,
+  ERROR_SIGNATURES_EMPTY,
+  ERROR_INVALID_PRIVATE_KEY,
+  ERROR_UTXOS_REQUIRED_BUILD,
+  ERROR_ENHANCED_BUILD_FAILED,
+  ERROR_ENHANCED_PARSE_FAILED,
+  ERROR_FLAREJS_SIGNING_FAILED,
+  ERROR_CREATE_CREDENTIAL_FAILED,
+  ERROR_UNKNOWN,
+  FLARE_ATOMIC_PREFIX,
+  FLARE_ATOMIC_PARSED_PREFIX,
+  HEX_ENCODING,
 } from './constants';
+import { createFlexibleHexRegex } from './utils';
 
 /**
  * Flare P-chain atomic transaction builder with FlareJS credential support.
@@ -38,14 +65,14 @@ export abstract class AtomicTransactionBuilder {
     setTransaction: (tx: unknown) => void;
   } = {
     _network: {},
-    _networkID: 0,
-    _blockchainID: Buffer.alloc(0),
-    _assetId: Buffer.alloc(0),
+    _networkID: DEFAULT_NETWORK_ID,
+    _blockchainID: Buffer.alloc(EMPTY_BUFFER_SIZE),
+    _assetId: Buffer.alloc(EMPTY_BUFFER_SIZE),
     _fromAddresses: [],
     _to: [],
-    _locktime: 0n,
-    _threshold: 1,
-    _fee: { fee: '0' },
+    _locktime: DEFAULT_LOCKTIME,
+    _threshold: DEFAULT_THRESHOLD,
+    _fee: { fee: AMOUNT_STRING_ZERO },
     hasCredentials: false,
     setTransaction: function (_tx: unknown) {
       this._tx = _tx;
@@ -75,8 +102,8 @@ export abstract class AtomicTransactionBuilder {
   }
 
   validateAmount(amount: bigint): void {
-    if (amount <= 0n) {
-      throw new BuildTransactionError('Amount must be positive');
+    if (amount <= ZERO_BIGINT) {
+      throw new BuildTransactionError(ERROR_AMOUNT_POSITIVE);
     }
   }
 
@@ -86,7 +113,7 @@ export abstract class AtomicTransactionBuilder {
    */
   protected validateCredentials(credentials: Credential[]): void {
     if (!Array.isArray(credentials)) {
-      throw new BuildTransactionError('Credentials must be an array');
+      throw new BuildTransactionError(ERROR_CREDENTIALS_ARRAY);
     }
 
     credentials.forEach((credential, index) => {
@@ -111,8 +138,8 @@ export abstract class AtomicTransactionBuilder {
     outputs: TransferableOutput[];
     credentials: Credential[];
   } {
-    if (!this._utxos || this._utxos.length === 0) {
-      throw new BuildTransactionError('UTXOs are required for creating inputs and outputs');
+    if (!this._utxos || this._utxos.length === ZERO_NUMBER) {
+      throw new BuildTransactionError(ERROR_UTXOS_REQUIRED);
     }
 
     const inputs: TransferableInput[] = [];
@@ -157,8 +184,8 @@ export abstract class AtomicTransactionBuilder {
 
       // Create TransferableInput for atomic transactions
       const transferableInput = {
-        txID: Buffer.from(utxo.txid || '0'.repeat(TRANSACTION_ID_HEX_LENGTH), 'hex'),
-        outputIndex: parseInt(utxo.outputidx || '0', 10),
+        txID: Buffer.from(utxo.txid || AMOUNT_STRING_ZERO.repeat(TRANSACTION_ID_HEX_LENGTH), HEX_ENCODING),
+        outputIndex: parseInt(utxo.outputidx || AMOUNT_STRING_ZERO, DECIMAL_RADIX),
         assetID: this.getAssetId(),
         input: {
           amount: utxoAmount,
@@ -225,11 +252,11 @@ export abstract class AtomicTransactionBuilder {
    */
   protected createFlareCredential(_credentialId: number, signatures: string[]): Credential {
     if (!Array.isArray(signatures)) {
-      throw new BuildTransactionError('Signatures must be an array');
+      throw new BuildTransactionError(ERROR_SIGNATURES_ARRAY);
     }
 
-    if (signatures.length === 0) {
-      throw new BuildTransactionError('Signatures array cannot be empty');
+    if (signatures.length === ZERO_NUMBER) {
+      throw new BuildTransactionError(ERROR_SIGNATURES_EMPTY);
     }
 
     const sigs = signatures.map((sig, index) => {
@@ -239,13 +266,13 @@ export abstract class AtomicTransactionBuilder {
       }
 
       // Validate hex string format
-      const cleanSig = sig.startsWith('0x') ? sig.slice(2) : sig;
+      const cleanSig = sig.startsWith(HEX_PREFIX) ? sig.slice(HEX_PREFIX_LENGTH) : sig;
       if (!createFlexibleHexRegex().test(cleanSig)) {
         throw new BuildTransactionError(`Invalid hex signature at index ${index}: contains non-hex characters`);
       }
 
       // Convert to buffer and validate length
-      const sigBuffer = Buffer.from(cleanSig, 'hex');
+      const sigBuffer = Buffer.from(cleanSig, HEX_ENCODING);
       if (sigBuffer.length > SECP256K1_SIGNATURE_LENGTH) {
         throw new BuildTransactionError(
           `Signature too long at index ${index}: ${sigBuffer.length} bytes (max ${SECP256K1_SIGNATURE_LENGTH})`
@@ -260,7 +287,7 @@ export abstract class AtomicTransactionBuilder {
         return new Signature(new Uint8Array(fixedLengthBuffer));
       } catch (error) {
         throw new BuildTransactionError(
-          `Failed to create signature at index ${index}: ${error instanceof Error ? error.message : 'unknown error'}`
+          `Failed to create signature at index ${index}: ${error instanceof Error ? error.message : ERROR_UNKNOWN}`
         );
       }
     });
@@ -269,7 +296,7 @@ export abstract class AtomicTransactionBuilder {
       return new Credential(sigs);
     } catch (error) {
       throw new BuildTransactionError(
-        `Failed to create credential: ${error instanceof Error ? error.message : 'unknown error'}`
+        `${ERROR_CREATE_CREDENTIAL_FAILED}: ${error instanceof Error ? error.message : ERROR_UNKNOWN}`
       );
     }
   }
@@ -289,13 +316,13 @@ export abstract class AtomicTransactionBuilder {
     try {
       // Validate private key format (placeholder implementation)
       if (!params.key || params.key.length < PRIVATE_KEY_HEX_LENGTH) {
-        throw new BuildTransactionError('Invalid private key format');
+        throw new BuildTransactionError(ERROR_INVALID_PRIVATE_KEY);
       }
 
       // Create signature structure
       const signature = {
         privateKey: params.key,
-        signingMethod: 'secp256k1',
+        signingMethod: SIGNING_METHOD,
       };
 
       // Store signature for FlareJS compatibility
@@ -305,7 +332,7 @@ export abstract class AtomicTransactionBuilder {
       return this;
     } catch (error) {
       throw new BuildTransactionError(
-        `FlareJS signing failed: ${error instanceof Error ? error.message : 'unknown error'}`
+        `${ERROR_FLAREJS_SIGNING_FAILED}: ${error instanceof Error ? error.message : ERROR_UNKNOWN}`
       );
     }
   }
@@ -318,12 +345,12 @@ export abstract class AtomicTransactionBuilder {
     try {
       // Validate transaction requirements
       if (!this._utxos || this._utxos.length === 0) {
-        throw new BuildTransactionError('UTXOs are required for transaction building');
+        throw new BuildTransactionError(ERROR_UTXOS_REQUIRED_BUILD);
       }
 
       // Create FlareJS transaction structure with atomic support
       const transaction = {
-        _id: `flare-atomic-tx-${Date.now()}`,
+        _id: `${TRANSACTION_ID_PREFIX}${Date.now()}`,
         _inputs: [],
         _outputs: [],
         _type: this.transactionType,
@@ -333,7 +360,7 @@ export abstract class AtomicTransactionBuilder {
         validationErrors: [],
 
         // FlareJS methods with atomic support
-        toBroadcastFormat: () => `flare-atomic-tx-${Date.now()}`,
+        toBroadcastFormat: () => `${TRANSACTION_ID_PREFIX}${Date.now()}`,
         toJson: () => ({
           type: this.transactionType,
         }),
@@ -342,11 +369,11 @@ export abstract class AtomicTransactionBuilder {
           type: this.transactionType,
           inputs: [],
           outputs: [],
-          outputAmount: '0',
+          outputAmount: AMOUNT_STRING_ZERO,
           rewardAddresses: [],
-          id: `flare-atomic-${Date.now()}`,
+          id: `${FLARE_ATOMIC_PREFIX}${Date.now()}`,
           changeOutputs: [],
-          changeAmount: '0',
+          changeAmount: AMOUNT_STRING_ZERO,
           fee: { fee: this.transaction._fee.fee },
         }),
 
@@ -358,14 +385,14 @@ export abstract class AtomicTransactionBuilder {
         outputs: () => [],
         fee: () => ({ fee: this.transaction._fee.fee }),
         feeRate: () => 0,
-        id: () => `flare-atomic-${Date.now()}`,
+        id: () => `${FLARE_ATOMIC_PREFIX}${Date.now()}`,
         type: this.transactionType,
       } as unknown as BaseTransaction;
 
       return transaction;
     } catch (error) {
       throw new BuildTransactionError(
-        `Enhanced FlareJS transaction building failed: ${error instanceof Error ? error.message : 'unknown error'}`
+        `${ERROR_ENHANCED_BUILD_FAILED}: ${error instanceof Error ? error.message : ERROR_UNKNOWN}`
       );
     }
   }
@@ -380,16 +407,16 @@ export abstract class AtomicTransactionBuilder {
         type: this.transactionType,
         inputs: [],
         outputs: [],
-        outputAmount: '0',
+        outputAmount: AMOUNT_STRING_ZERO,
         rewardAddresses: [],
-        id: `flare-atomic-parsed-${Date.now()}`,
+        id: `${FLARE_ATOMIC_PARSED_PREFIX}${Date.now()}`,
         changeOutputs: [],
-        changeAmount: '0',
+        changeAmount: AMOUNT_STRING_ZERO,
         fee: { fee: this.transaction._fee.fee },
       };
     } catch (error) {
       throw new BuildTransactionError(
-        `Enhanced FlareJS transaction parsing failed: ${error instanceof Error ? error.message : 'unknown error'}`
+        `${ERROR_ENHANCED_PARSE_FAILED}: ${error instanceof Error ? error.message : ERROR_UNKNOWN}`
       );
     }
   }
