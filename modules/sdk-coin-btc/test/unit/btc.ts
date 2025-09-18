@@ -118,7 +118,10 @@ describe('BTC:', () => {
     });
 
     it('should detect hex spoofing in BUILD_SIGN_SEND', async (): Promise<void> => {
-      const { getDefaultWalletKeys, toKeychainObjects } = require('../../../bitgo/test/v2/unit/coins/utxo/util/keychains');
+      const {
+        getDefaultWalletKeys,
+        toKeychainObjects,
+      } = require('../../../bitgo/test/v2/unit/coins/utxo/util/keychains');
       const rootWalletKey = getDefaultWalletKeys();
       const keysObj = toKeychainObjects(rootWalletKey, 'pass');
 
@@ -164,9 +167,7 @@ describe('BTC:', () => {
           return [200, { txid: 'test-txid-123', status: 'signed' }];
         });
 
-      keysObj.forEach((k, i) =>
-        nock(bgUrl).get(`/api/v2/${wallet.coin()}/key/${wallet.keyIds()[i]}`).reply(200, k)
-      );
+      keysObj.forEach((k, i) => nock(bgUrl).get(`/api/v2/${wallet.coin()}/key/${wallet.keyIds()[i]}`).reply(200, k));
 
       await assert.rejects(
         wallet.consolidateUnspents({ walletPassphrase: 'pass' }),

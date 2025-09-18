@@ -737,15 +737,17 @@ export class Wallet implements IWallet {
 
     // Validate that the platform-built transaction matches user parameters
     const txPrebuilds = Array.isArray(buildResponse) ? buildResponse : [buildResponse];
-    for (const txPrebuild of txPrebuilds) {
-      await this.baseCoin.verifyTransaction({
-        txParams: params,
-        txPrebuild,
-        wallet: this,
-        verification: params.verification ?? {},
-        reqId,
-      });
-    }
+    await Promise.all(
+      txPrebuilds.map((txPrebuild) =>
+        this.baseCoin.verifyTransaction({
+          txParams: params,
+          txPrebuild,
+          wallet: this,
+          verification: params.verification ?? {},
+          reqId,
+        })
+      )
+    );
 
     const keychains = (await this.baseCoin
       .keychains()
