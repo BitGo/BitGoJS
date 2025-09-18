@@ -62,6 +62,7 @@ import { handleLightningWithdraw } from './lightning/lightningWithdrawRoutes';
 import createExpressRouter from './typedRoutes';
 import { ExpressApiRouteRequest } from './typedRoutes/api';
 import { TypedRequestHandler, WrappedRequest, WrappedResponse } from '@api-ts/typed-express-router';
+import { isJsonString } from './utils';
 
 const { version } = require('bitgo/package.json');
 const pjson = require('../package.json');
@@ -630,7 +631,7 @@ export async function handleV2OFCSignPayload(req: express.Request): Promise<{ pa
 
   const walletPassphrase = bodyWalletPassphrase || getWalletPwFromEnv(wallet.id());
   const tradingAccount = wallet.toTradingAccount();
-  const stringifiedPayload = JSON.stringify(req.body.payload);
+  const stringifiedPayload = isJsonString(req.body.payload) ? req.body.payload : JSON.stringify(req.body.payload);
   const signature = await tradingAccount.signPayload({
     payload: stringifiedPayload,
     walletPassphrase,
