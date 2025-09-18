@@ -4199,12 +4199,12 @@ describe('V2 Wallet:', function () {
         prebuildAndSignTransaction.calledOnceWithExactly(sendManyInput);
 
         const sendTxRequest = sandbox.stub(TssUtils.prototype, 'sendTxRequest');
-        sendTxRequest.resolves('sendTxResponse');
+        sendTxRequest.resolves(undefined);
         // TODO(BG-59686): this is not doing anything if we don't check the return value, we should also move this check to happen after we invoke sendMany
         sendTxRequest.calledOnceWithExactly(signedTransaction.txRequestId);
 
         const sendMany = await tssSolWallet.sendMany(sendManyInput);
-        sendMany.should.deepEqual('sendTxResponse');
+        sendMany.should.deepEqual(undefined);
       });
 
       it('should send many and call setRequestTracer', async function () {
@@ -4217,14 +4217,14 @@ describe('V2 Wallet:', function () {
         prebuildAndSignTransaction.calledOnceWithExactly(sendManyInput);
 
         const sendTxRequest = sandbox.stub(TssUtils.prototype, 'sendTxRequest');
-        sendTxRequest.resolves('sendTxResponse');
+        sendTxRequest.resolves(undefined);
         sendTxRequest.calledOnceWithExactly(signedTransaction.txRequestId);
 
         const setRequestTracerSpy = sinon.spy(bitgo, 'setRequestTracer');
         setRequestTracerSpy.withArgs(sendManyInput.reqId);
 
         const sendMany = await tssSolWallet.sendMany(sendManyInput);
-        sendMany.should.deepEqual('sendTxResponse');
+        sendMany.should.deepEqual(undefined);
         sinon.assert.calledOnce(setRequestTracerSpy);
         setRequestTracerSpy.restore();
       });
@@ -5040,7 +5040,7 @@ describe('V2 Wallet:', function () {
       // stub all steps after txrequest creation
       sinon.stub(adaWallet.baseCoin, 'verifyTransaction').resolves(true);
       sinon.stub(adaWallet, 'signTransaction').resolves({ txRequestId: 'txRequestId' });
-      sinon.stub(BaseTssUtils.default.prototype, 'sendTxRequest').resolves('sendTxResponse');
+      sinon.stub(BaseTssUtils.default.prototype, 'sendTxRequest').resolves(undefined);
       await adaWallet.sendMany(sendManyParams);
     });
 
@@ -5081,7 +5081,7 @@ describe('V2 Wallet:', function () {
 
       sinon.stub(adaWallet.baseCoin, 'verifyTransaction').resolves(true);
       sinon.stub(adaWallet, 'signTransaction').resolves({ txRequestId: 'txRequestId' });
-      sinon.stub(BaseTssUtils.default.prototype, 'sendTxRequest').resolves('sendTxResponse');
+      sinon.stub(BaseTssUtils.default.prototype, 'sendTxRequest').resolves(undefined);
       await adaWallet.sendMany(sendManyParams).should.be.resolved();
     });
   });
