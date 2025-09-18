@@ -5,10 +5,12 @@ import { Tx } from './iface';
 import { TransactionWithExtensions } from './types';
 import {
   ADD_PERMISSIONLESS_VALIDATOR_TYPE,
+  BASIS_POINTS_DIVISOR,
   BLS_PUBLIC_KEY_COMPRESSED_LENGTH,
   BLS_PUBLIC_KEY_UNCOMPRESSED_LENGTH,
   BLS_SIGNATURE_LENGTH,
   MIN_DELEGATION_FEE_BASIS_POINTS,
+  PERCENTAGE_MULTIPLIER,
 } from './constants';
 import { createHexRegex } from './utils';
 
@@ -162,9 +164,12 @@ export class PermissionlessValidatorTxBuilder extends AtomicTransactionBuilder {
    */
   validateDelegationFeeRate(delegationFeeRate: number): void {
     // For Flare, use a minimum delegation fee of 2% (20000 basis points)
-    const minDelegationFee = MIN_DELEGATION_FEE_BASIS_POINTS; // 2%
+    const minDelegationFee = MIN_DELEGATION_FEE_BASIS_POINTS;
     if (delegationFeeRate < minDelegationFee) {
-      throw new BuildTransactionError(`Delegation fee cannot be less than ${minDelegationFee} basis points (2%)`);
+      const minDelegationFeePercent = (minDelegationFee / BASIS_POINTS_DIVISOR) * PERCENTAGE_MULTIPLIER;
+      throw new BuildTransactionError(
+        `Delegation fee cannot be less than ${minDelegationFee} basis points (${minDelegationFeePercent}%)`
+      );
     }
   }
 

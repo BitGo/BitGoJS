@@ -30,6 +30,8 @@ export const MINIMUM_FEE = '1000000'; // 1M nanoFLR minimum fee
 
 // Validator constants
 export const MIN_DELEGATION_FEE_BASIS_POINTS = 20000; // 2% minimum delegation fee
+export const BASIS_POINTS_DIVISOR = 10000; // Divisor to convert basis points to decimal
+export const PERCENTAGE_MULTIPLIER = 100; // Multiplier to convert decimal to percentage
 
 // Transaction ID prefix
 export const TRANSACTION_ID_PREFIX = 'flare-atomic-tx-'; // Prefix for transaction IDs
