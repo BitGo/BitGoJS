@@ -5,25 +5,23 @@ import { WalletState } from '../../../lightning/codecs';
 
 /**
  * Path parameters for getting lightning node state
- * @property {string} coin - A lightning coin name (e.g., lnbtc or tlnbtc)
- * @property {string} walletId - The ID of the lightning self-custody wallet
  */
 export const LightningStateParams = {
+  /** A lightning coin name (e.g., lnbtc or tlnbtc) */
   coin: t.string,
+  /** The ID of the lightning self-custody wallet */
   walletId: t.string,
 };
 
 /**
- * Response
- * - 200: Returns the current Lightning wallet/node state('NON_EXISTING' | 'LOCKED' | 'UNLOCKED' | 'RPC_ACTIVE' | 'SERVER_ACTIVE' | 'WAITING_TO_START'.
- * - 400: BitGo Express error payload when the request is invalid (e.g., invalid coin or wallet not a self-custody lightning wallet).
- *
- * See platform spec: GET /api/v2/{coin}/wallet/{walletId}/state
+ * Response for getting lightning node state
  */
 export const LightningStateResponse = {
+  /** Current Lightning wallet/node state('NON_EXISTING' | 'LOCKED' | 'UNLOCKED' | 'RPC_ACTIVE' | 'SERVER_ACTIVE' | 'WAITING_TO_START') */
   200: t.type({
     state: WalletState,
   }),
+  /** BitGo Express error payload when the request is invalid (e.g., invalid coin or wallet not a self-custody lightning wallet). */
   400: BitgoExpressError,
 } as const;
 
