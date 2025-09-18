@@ -6,7 +6,7 @@ import { Buffer } from 'buffer';
 import utils, { createHexRegex } from './utils';
 import { Tx, DecodedUtxoObj } from './iface';
 import BigNumber from 'bignumber.js';
-import { TransactionWithExtensions } from './types';
+import { BaseExtendedTransaction } from './types';
 import {
   ASSET_ID_LENGTH,
   OUTPUT_INDEX_HEX_LENGTH,
@@ -118,7 +118,7 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
           // Extract amount if present
           if (firstOutput.amount) {
             // Store output amount for validation
-            (this.transaction as TransactionWithExtensions)._outputAmount = firstOutput.amount.toString();
+            (this.transaction as BaseExtendedTransaction)._outputAmount = firstOutput.amount.toString();
           }
         }
       }
@@ -138,7 +138,7 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
       // Extract memo if present
       if (unsignedTx.memo && unsignedTx.memo.length > 0) {
         // Store memo data for later use
-        (this.transaction as TransactionWithExtensions)._memo = unsignedTx.memo;
+        (this.transaction as BaseExtendedTransaction)._memo = unsignedTx.memo;
       }
 
       // Set the transaction

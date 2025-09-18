@@ -2,7 +2,7 @@ import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { AtomicTransactionBuilder } from './atomicTransactionBuilder';
 import { Tx } from './iface';
-import { RawTransactionData, TransactionWithExtensions, DelegatorRawTransactionData } from './types';
+import { RawTransactionData, StakingExtendedTransaction, DelegatorRawTransactionData } from './types';
 import {
   DELEGATOR_TRANSACTION_TYPE,
   PRIMARY_DELEGATOR_TYPE,
@@ -120,7 +120,7 @@ export class DelegatorTxBuilder extends AtomicTransactionBuilder {
       throw new BuildTransactionError('At least one reward address is required');
     }
     // Store reward addresses in the transaction (we'll need to extend the type)
-    (this.transaction as TransactionWithExtensions)._rewardAddresses = addresses;
+    (this.transaction as unknown as StakingExtendedTransaction)._rewardAddresses = addresses;
     return this;
   }
 
@@ -145,7 +145,7 @@ export class DelegatorTxBuilder extends AtomicTransactionBuilder {
       this._stakeAmount = BigInt(delegatorData.stakeAmount);
     }
     if (delegatorData.rewardAddresses) {
-      (this.transaction as TransactionWithExtensions)._rewardAddresses = delegatorData.rewardAddresses;
+      (this.transaction as unknown as StakingExtendedTransaction)._rewardAddresses = delegatorData.rewardAddresses;
     }
 
     return this;
@@ -184,7 +184,7 @@ export class DelegatorTxBuilder extends AtomicTransactionBuilder {
       throw new BuildTransactionError('Stake amount is required for delegator transaction');
     }
 
-    const rewardAddresses = (this.transaction as TransactionWithExtensions)._rewardAddresses;
+    const rewardAddresses = (this.transaction as unknown as StakingExtendedTransaction)._rewardAddresses;
     if (!rewardAddresses || rewardAddresses.length === ZERO_NUMBER) {
       throw new BuildTransactionError('Reward addresses are required for delegator transaction');
     }

@@ -7,7 +7,7 @@ import { Buffer } from 'buffer';
 import utils, { createFlexibleHexRegex } from './utils';
 import { Tx, DecodedUtxoObj } from './iface';
 import BigNumber from 'bignumber.js';
-import { TransactionWithExtensions } from './types';
+import { BaseExtendedTransaction } from './types';
 import {
   ASSET_ID_LENGTH,
   DEFAULT_BASE_FEE,
@@ -120,7 +120,7 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
       // Extract memo if present
       if (unsignedTx.memo && unsignedTx.memo.length > 0) {
         // Store memo data for later use
-        (this.transaction as TransactionWithExtensions)._memo = unsignedTx.memo;
+        (this.transaction as BaseExtendedTransaction)._memo = unsignedTx.memo;
       }
 
       // Set the transaction

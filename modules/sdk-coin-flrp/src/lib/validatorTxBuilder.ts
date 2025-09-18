@@ -2,7 +2,7 @@ import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { DelegatorTxBuilder } from './delegatorTxBuilder';
 import { Tx } from './iface';
-import { RawTransactionData, TransactionWithExtensions, ValidatorRawTransactionData } from './types';
+import { RawTransactionData, ValidatorExtendedTransaction, ValidatorRawTransactionData } from './types';
 import {
   MIN_DELEGATION_FEE_BASIS_POINTS,
   OBJECT_TYPE_STRING,
@@ -137,7 +137,7 @@ export class ValidatorTxBuilder extends DelegatorTxBuilder {
       throw new BuildTransactionError('Delegation fee rate is required for validator transaction');
     }
 
-    const rewardAddresses = (this.transaction as TransactionWithExtensions)._rewardAddresses;
+    const rewardAddresses = (this.transaction as unknown as ValidatorExtendedTransaction)._rewardAddresses;
     if (!rewardAddresses || rewardAddresses.length === 0) {
       throw new BuildTransactionError('Reward addresses are required for validator transaction');
     }

@@ -4,21 +4,38 @@
 import { DecodedUtxoObj } from './iface';
 
 /**
- * Extended transaction interface with additional properties
- * used by transaction builders
+ * Base extended transaction interface with common optional properties
  */
-export interface ExtendedTransaction {
-  _rewardAddresses?: string[];
-  _outputAmount?: string;
+export interface BaseExtendedTransaction {
   _memo?: Uint8Array;
-  _delegationFeeRate?: number;
-  _blsPublicKey?: string;
-  _blsSignature?: string;
+  _outputAmount?: string;
+  _utxos?: DecodedUtxoObj[];
+}
+
+/**
+ * Extended transaction for staking transactions (delegator/validator)
+ */
+export interface StakingExtendedTransaction extends BaseExtendedTransaction {
+  _rewardAddresses: string[]; // Required for all staking transactions
   _nodeID?: string;
   _startTime?: bigint;
   _endTime?: bigint;
   _stakeAmount?: bigint;
-  _utxos?: DecodedUtxoObj[];
+}
+
+/**
+ * Extended transaction for validator transactions
+ */
+export interface ValidatorExtendedTransaction extends StakingExtendedTransaction {
+  _delegationFeeRate?: number;
+}
+
+/**
+ * Extended transaction for permissionless validator transactions
+ */
+export interface PermissionlessValidatorExtendedTransaction extends ValidatorExtendedTransaction {
+  _blsPublicKey?: string;
+  _blsSignature?: string;
 }
 
 /**
@@ -73,6 +90,10 @@ export type RawTransactionData =
   | PermissionlessValidatorRawTransactionData;
 
 /**
- * Transaction with extended properties type assertion helper
+ * Specific transaction extension types for better type safety
  */
-export type TransactionWithExtensions = ExtendedTransaction & Record<string, unknown>;
+export type TransactionWithBaseExtensions = BaseExtendedTransaction & Record<string, unknown>;
+export type TransactionWithStakingExtensions = StakingExtendedTransaction & Record<string, unknown>;
+export type TransactionWithValidatorExtensions = ValidatorExtendedTransaction & Record<string, unknown>;
+export type TransactionWithPermissionlessValidatorExtensions = PermissionlessValidatorExtendedTransaction &
+  Record<string, unknown>;

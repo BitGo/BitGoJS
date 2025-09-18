@@ -2,7 +2,7 @@ import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { AtomicTransactionBuilder } from './atomicTransactionBuilder';
 import { Tx } from './iface';
-import { TransactionWithExtensions } from './types';
+import { PermissionlessValidatorExtendedTransaction } from './types';
 import {
   ADD_PERMISSIONLESS_VALIDATOR_TYPE,
   BASIS_POINTS_DIVISOR,
@@ -154,7 +154,7 @@ export class PermissionlessValidatorTxBuilder extends AtomicTransactionBuilder {
       throw new BuildTransactionError('At least one reward address is required');
     }
     // Store reward addresses in the transaction (we'll need to extend the type)
-    (this.transaction as TransactionWithExtensions)._rewardAddresses = addresses;
+    (this.transaction as unknown as PermissionlessValidatorExtendedTransaction)._rewardAddresses = addresses;
     return this;
   }
 
@@ -201,7 +201,8 @@ export class PermissionlessValidatorTxBuilder extends AtomicTransactionBuilder {
       this._delegationFeeRate = txData.delegationFeeRate;
     }
     if (txData.rewardAddresses) {
-      (this.transaction as TransactionWithExtensions)._rewardAddresses = txData.rewardAddresses;
+      (this.transaction as unknown as PermissionlessValidatorExtendedTransaction)._rewardAddresses =
+        txData.rewardAddresses;
     }
 
     return this;
@@ -250,7 +251,8 @@ export class PermissionlessValidatorTxBuilder extends AtomicTransactionBuilder {
       throw new BuildTransactionError('Delegation fee rate is required for permissionless validator transaction');
     }
 
-    const rewardAddresses = (this.transaction as TransactionWithExtensions)._rewardAddresses;
+    const rewardAddresses = (this.transaction as unknown as PermissionlessValidatorExtendedTransaction)
+      ._rewardAddresses;
     if (!rewardAddresses || rewardAddresses.length === 0) {
       throw new BuildTransactionError('Reward addresses are required for permissionless validator transaction');
     }
