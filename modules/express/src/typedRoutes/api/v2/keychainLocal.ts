@@ -11,15 +11,17 @@ export const KeychainLocalRequestParams = {
   coin: t.string,
 } as const;
 
+export const KeychainLocalRequestResponse200 = t.type({
+  prv: t.string,
+  pub: t.string,
+});
+
 /**
  * Response for creating a local keychain
  */
 export const KeychainLocalResponse = {
   /** Newly generated local keychain. */
-  200: t.type({
-    prv: t.string,
-    pub: t.string,
-  }),
+  200: KeychainLocalRequestResponse200,
   /** Invalid request or key generation fails. */
   400: BitgoExpressError,
 } as const;
