@@ -3123,6 +3123,9 @@ export enum UnderlyingAsset {
   // COSMOS testnet tokens
   'thash:ylds' = 'thash:ylds',
 
+  // TON mainnet tokens
+  'ton:usdt' = 'ton:usdt',
+
   // TON testnet tokens
   'tton:ukwny-us' = 'tton:ukwny-us',
 
