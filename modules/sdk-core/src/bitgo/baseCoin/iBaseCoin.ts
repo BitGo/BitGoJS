@@ -1,5 +1,5 @@
+import { BaseTokenConfig, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
-import { BaseCoin as StaticsBaseCoin, BaseTokenConfig } from '@bitgo/statics';
 import { IRequestTracer } from '../../api';
 import { IEnterprises } from '../enterprise';
 import { IKeychains, Keychain } from '../keychain';
@@ -8,13 +8,14 @@ import { IPendingApprovals } from '../pendingApproval';
 import { InitiateRecoveryOptions } from '../recovery';
 import { EcdsaMPCv2Utils, EcdsaUtils } from '../utils/tss/ecdsa';
 import EddsaUtils, { PrebuildTransactionWithIntentOptions, TxRequest } from '../utils/tss/eddsa';
-import { CreateAddressFormat, CustomSigningFunction, IWallet, IWallets, Wallet, WalletData, Memo } from '../wallet';
+import { CreateAddressFormat, CustomSigningFunction, IWallet, IWallets, Memo, Wallet, WalletData } from '../wallet';
 
-import { IWebhooks } from '../webhook/iWebhooks';
+import { TokenEnablement } from '@bitgo/public-types';
+import { Hash } from 'crypto';
 import { TransactionType } from '../../account-lib';
 import { IInscriptionBuilder } from '../inscriptionBuilder';
-import { Hash } from 'crypto';
 import { MessageStandardType, MPCTx, PopulatedIntent, TokenTransferRecipientParams, TokenType } from '../utils';
+import { IWebhooks } from '../webhook/iWebhooks';
 
 export const multisigTypes = {
   onchain: 'onchain',
@@ -165,6 +166,7 @@ export interface TransactionParams {
   walletPassphrase?: string;
   type?: string;
   memo?: Memo;
+  enableTokens?: TokenEnablement[];
 }
 
 export interface AddressVerificationData {
@@ -183,6 +185,7 @@ export interface VerificationOptions {
   addresses?: { [address: string]: AddressVerificationData };
   allowPaygoOutput?: boolean;
   considerMigratedFromAddressInternal?: boolean;
+  verifyTokenEnablement?: boolean;
   // Verify transaction is consolidating to wallet's base address
   consolidationToBaseAddress?: boolean;
 }
