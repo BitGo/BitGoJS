@@ -2,11 +2,10 @@ import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGo } from 'bitgo';
 import { common, decodeOrElse } from '@bitgo/sdk-core';
 import nock from 'nock';
-import * as express from 'express';
 import * as sinon from 'sinon';
 import * as fs from 'fs';
 import { UnlockLightningWalletResponse } from '../../../../src/typedRoutes/api/v2/unlockWallet';
-
+import { SignerMacaroonResponse } from '../../../../src/typedRoutes/api/v2/signerMacaroon';
 import { lightningSignerConfigs, apiData, signerApiData } from './lightningSignerFixture';
 import {
   handleCreateSignerMacaroon,
@@ -145,7 +144,10 @@ describe('Lightning signer routes', () => {
         } as unknown as ExpressApiRouteRequest<'express.lightning.signerMacaroon', 'post'>;
 
         try {
-          await handleCreateSignerMacaroon(req);
+          const res = await handleCreateSignerMacaroon(req);
+          decodeOrElse('PostLightningInitWallet.response.200', SignerMacaroonResponse[200], res, (_) => {
+            throw new Error('Response did not match expected codec');
+          });
         } catch (e) {
           if (!includeWatchOnlyIp || addIpCaveatToMacaroon) {
             throw e;
