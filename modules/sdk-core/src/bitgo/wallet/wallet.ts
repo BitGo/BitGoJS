@@ -739,6 +739,27 @@ export class Wallet implements IWallet {
       .keychains()
       .getKeysForSigning({ wallet: this, reqId })) as unknown as Keychain[];
 
+    // Validate that the platform-built transaction matches user parameters
+    const txPrebuilds = Array.isArray(buildResponse) ? buildResponse : [buildResponse];
+    await Promise.all(
+      txPrebuilds.map((txPrebuild) =>
+        this.baseCoin.verifyTransaction({
+          txParams: params,
+          txPrebuild,
+          wallet: this,
+          verification: {
+            ...(params.verification ?? {}),
+            keychains: {
+              user: keychains[0],
+              backup: keychains[1],
+              bitgo: keychains[2],
+            },
+          },
+          reqId,
+        })
+      )
+    );
+
     const transactionParams = {
       ...params,
       keychain: keychains[0],
@@ -750,8 +771,6 @@ export class Wallet implements IWallet {
       // Manually override the signing and validating to not fail.
       allowNonSegwitSigningWithoutPrevTx: !!params.bulk,
     };
-
-    const txPrebuilds = Array.isArray(buildResponse) ? buildResponse : [buildResponse];
 
     const selectParams = _.pick(params, ['comment', 'otp', 'bulk']);
 
