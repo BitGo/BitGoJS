@@ -1589,6 +1589,7 @@ describe('V2 Wallet:', function () {
           'unsigned'
         )
       );
+      psbts.forEach((psbt) => utxoLib.bitgo.addXpubsToPsbt(psbt, rootWalletKey));
       const txHexes = psbts.map((psbt) => ({ txHex: psbt.toHex() }));
 
       const nocks: nock.Scope[] = [];
@@ -1627,6 +1628,7 @@ describe('V2 Wallet:', function () {
         rootWalletKey,
         'unsigned'
       );
+      utxoLib.bitgo.addXpubsToPsbt(psbt, rootWalletKey);
 
       const nocks: nock.Scope[] = [];
       nocks.push(
