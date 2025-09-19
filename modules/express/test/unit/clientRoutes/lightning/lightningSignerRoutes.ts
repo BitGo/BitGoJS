@@ -5,7 +5,7 @@ import nock from 'nock';
 import * as express from 'express';
 import * as sinon from 'sinon';
 import * as fs from 'fs';
-import { UnlockLightningWalletReponse200 } from '../../../../src/typedRoutes/api/v2/unlockWallet';
+import { UnlockLightningWalletResponse } from '../../../../src/typedRoutes/api/v2/unlockWallet';
 
 import { lightningSignerConfigs, apiData, signerApiData } from './lightningSignerFixture';
 import {
@@ -180,7 +180,7 @@ describe('Lightning signer routes', () => {
     } as unknown as ExpressApiRouteRequest<'express.lightning.unlockWallet', 'post'>;
 
     const res = await handleUnlockLightningWallet(req);
-    decodeOrElse('UnlockLightningWalletReponse200', UnlockLightningWalletReponse200, res, (_) => {
+    decodeOrElse('UnlockLightningWalletResponse200', UnlockLightningWalletResponse[200], res, (_) => {
       throw new Error('Response did not match expected codec');
     });
 
