@@ -1,6 +1,6 @@
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGo } from 'bitgo';
-import { common } from '@bitgo/sdk-core';
+import { common, decodeOrElse } from '@bitgo/sdk-core';
 import nock from 'nock';
 import * as express from 'express';
 import * as sinon from 'sinon';
@@ -13,6 +13,8 @@ import {
   handleInitLightningWallet,
   handleUnlockLightningWallet,
 } from '../../../../src/lightning/lightningSignerRoutes';
+import { ExpressApiRouteRequest } from '../../../../src/typedRoutes/api';
+import { LightningStateResponse } from '../../../../src/typedRoutes/api/v2/lightningState';
 
 describe('Lightning signer routes', () => {
   let bitgo: TestBitGoAPI;
@@ -153,13 +155,21 @@ describe('Lightning signer routes', () => {
       params: {
         coin: 'tlnbtc',
         id: apiData.wallet.id,
+        walletId: apiData.wallet.id,
+      },
+      decoded: {
+        coin: 'tlnbtc',
+        walletId: apiData.wallet.id,
       },
       config: {
         lightningSignerFileSystemPath: 'lightningSignerFileSystemPath',
       },
-    } as unknown as express.Request;
+    } as unknown as ExpressApiRouteRequest<'express.lightning.getState', 'get'>;
 
-    await handleGetLightningWalletState(req);
+    const res = await handleGetLightningWalletState(req);
+    decodeOrElse('LightningStateResponse200', LightningStateResponse[200], res, () => {
+      throw new Error('Response did not match expected codec');
+    });
 
     walletStateNock.done();
     readFileStub.calledOnceWith('lightningSignerFileSystemPath').should.be.true();
