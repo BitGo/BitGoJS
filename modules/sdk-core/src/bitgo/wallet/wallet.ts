@@ -3231,8 +3231,8 @@ export class Wallet implements IWallet {
    */
   public async sendTokenEnablement(params: PrebuildAndSignTransactionOptions = {}): Promise<any> {
     const teConfig = this.baseCoin.getTokenEnablementConfig();
-    if (params.verification && params.verification.verifyTokenEnablement === undefined)
-      params.verification.verifyTokenEnablement = true;
+    params.verification = params.verification ?? {};
+    params.verification.verifyTokenEnablement = params.verification.verifyTokenEnablement ?? true;
     if (!teConfig.requiresTokenEnablement) {
       throw new Error(`${this.baseCoin.getFullName()} does not require token enablement transactions`);
     }
