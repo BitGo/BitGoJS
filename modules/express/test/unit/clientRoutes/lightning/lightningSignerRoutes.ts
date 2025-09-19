@@ -1,10 +1,11 @@
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGo } from 'bitgo';
-import { common } from '@bitgo/sdk-core';
+import { common, decodeOrElse } from '@bitgo/sdk-core';
 import nock from 'nock';
 import * as express from 'express';
 import * as sinon from 'sinon';
 import * as fs from 'fs';
+import { SignerMacaroonResponse } from '../../../../src/typedRoutes/api/v2/signerMacaroon';
 
 import { lightningSignerConfigs, apiData, signerApiData } from './lightningSignerFixture';
 import {
@@ -13,6 +14,7 @@ import {
   handleInitLightningWallet,
   handleUnlockLightningWallet,
 } from '../../../../src/lightning/lightningSignerRoutes';
+import { ExpressApiRouteRequest } from '../../../../src/typedRoutes/api';
 
 describe('Lightning signer routes', () => {
   let bitgo: TestBitGoAPI;
@@ -118,14 +120,24 @@ describe('Lightning signer routes', () => {
           params: {
             coin: 'tlnbtc',
             id: 'fakeid',
+            walletId: 'fakeid',
+          },
+          decoded: {
+            coin: 'tlnbtc',
+            walletId: apiData.wallet.id,
+            passphrase: apiData.signerMacaroonRequestBody.passphrase,
+            addIpCaveatToMacaroon,
           },
           config: {
             lightningSignerFileSystemPath: 'lightningSignerFileSystemPath',
           },
-        } as unknown as express.Request;
+        } as unknown as ExpressApiRouteRequest<'express.lightning.signerMacaroon', 'post'>;
 
         try {
-          await handleCreateSignerMacaroon(req);
+          const res = await handleCreateSignerMacaroon(req);
+          decodeOrElse('SignerMacaroonResponse200', SignerMacaroonResponse[200], res, (_) => {
+            throw new Error('Response did not match expected codec');
+          });
         } catch (e) {
           if (!includeWatchOnlyIp || addIpCaveatToMacaroon) {
             throw e;
