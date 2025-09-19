@@ -11,6 +11,7 @@ import {
   eosToken,
   erc1155,
   erc20CompatibleAccountCoin,
+  erc20Token,
   erc721,
   fiat,
   flrErc20,
@@ -416,6 +417,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.SUPPORTS_ERC20,
     ],
     KeyCurve.Secp256k1,
     '',
@@ -2123,6 +2125,24 @@ export const allCoinsAndTokens = [
     UnderlyingAsset.CELO,
     BaseUnit.ETH,
     CELO_FEATURES
+  ),
+  erc20Token(
+    '03b67719-a5d5-4ae3-a050-252b948f4daa',
+    'baseeth:aero',
+    'Aerodrome Finance',
+    18,
+    '0x940181a94a35a4569e4529a3cdfb74e38fd98631',
+    UnderlyingAsset['baseeth:aero'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    '16c438c1-714a-4ad7-bdb1-fb8d2575c466',
+    'tbaseeth:usdc',
+    'Testnet USDC',
+    6,
+    '0x036cbd53842c5426634e7929541ec2318f3dcf7e',
+    UnderlyingAsset['tbaseeth:usdc'],
+    Networks.test.basechain
   ),
   hederaCoin(
     '98aad956-27ee-45dd-aa43-6a23c9a1d1d0',

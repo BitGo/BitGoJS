@@ -2741,6 +2741,12 @@ export enum UnderlyingAsset {
   'arbeth:dolo' = 'arbeth:dolo',
   'arbeth:bull' = 'arbeth:bull',
 
+  // BaseETH mainnet tokens
+  'baseeth:aero' = 'baseeth:aero',
+
+  // BaseETH testnet tokens
+  'tbaseeth:usdc' = 'tbaseeth:usdc',
+
   // Arbitrum testnet tokens
   'tarbeth:link' = 'tarbeth:link',
   'tarbeth:xsgd' = 'tarbeth:xsgd',
