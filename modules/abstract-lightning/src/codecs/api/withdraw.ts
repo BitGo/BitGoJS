@@ -1,6 +1,7 @@
 import * as t from 'io-ts';
 import { LightningOnchainRequest, optionalString } from '@bitgo/public-types';
 import { PendingApprovalData, TxRequestState } from '@bitgo/sdk-core';
+import { Bip32Derivation } from 'bip174/src/lib/interfaces';
 
 export const WithdrawStatusDelivered = 'delivered';
 export const WithdrawStatusFailed = 'failed';
@@ -124,3 +125,10 @@ export const SendPsbtResponse = t.intersection(
   'SendPsbtResponse'
 );
 export type SendPsbtResponse = t.TypeOf<typeof SendPsbtResponse>;
+
+export type WithdrawBaseOutputUTXO<TNumber extends number | bigint = number> = {
+  value: TNumber;
+  change: boolean;
+  address: string;
+  bip32Derivation?: Bip32Derivation;
+};
