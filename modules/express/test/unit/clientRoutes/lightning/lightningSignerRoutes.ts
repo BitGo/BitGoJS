@@ -145,7 +145,7 @@ describe('Lightning signer routes', () => {
 
         try {
           const res = await handleCreateSignerMacaroon(req);
-          decodeOrElse('PostLightningInitWallet.response.200', SignerMacaroonResponse[200], res, (_) => {
+          decodeOrElse('SignerMacaroonResponse200', SignerMacaroonResponse[200], res, (_) => {
             throw new Error('Response did not match expected codec');
           });
         } catch (e) {
