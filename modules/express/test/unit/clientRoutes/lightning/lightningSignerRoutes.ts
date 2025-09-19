@@ -1,10 +1,11 @@
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGo } from 'bitgo';
-import { common } from '@bitgo/sdk-core';
+import { common, decodeOrElse } from '@bitgo/sdk-core';
 import nock from 'nock';
 import * as express from 'express';
 import * as sinon from 'sinon';
 import * as fs from 'fs';
+import { UnlockLightningWalletReponse200 } from '../../../../src/typedRoutes/api/v2/unlockWallet';
 
 import { lightningSignerConfigs, apiData, signerApiData } from './lightningSignerFixture';
 import {
@@ -178,7 +179,10 @@ describe('Lightning signer routes', () => {
       decoded: { coin: 'tlnbtc', id: 'fakeid', passphrase: apiData.unlockWalletRequestBody.passphrase },
     } as unknown as ExpressApiRouteRequest<'express.lightning.unlockWallet', 'post'>;
 
-    await handleUnlockLightningWallet(req);
+    const res = await handleUnlockLightningWallet(req);
+    decodeOrElse('UnlockLightningWalletReponse200', UnlockLightningWalletReponse200, res, (_) => {
+      throw new Error('Response did not match expected codec');
+    });
 
     unlockwalletNock.done();
     readFileStub.calledOnceWith('lightningSignerFileSystemPath').should.be.true();

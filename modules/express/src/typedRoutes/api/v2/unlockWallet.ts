@@ -23,14 +23,16 @@ export const UnlockLightningWalletBody = {
   passphrase: t.string,
 } as const;
 
+export const UnlockLightningWalletReponse200 = t.type({
+  message: t.string,
+});
+
 /**
  * Response for unlocking a lightning wallet.
  */
 export const UnlockLightningWalletReponse = {
   /** Confirmation message. */
-  200: t.type({
-    message: t.string,
-  }),
+  200: UnlockLightningWalletReponse200,
   /** BitGo Express error payload. */
   400: BitgoExpressError,
 } as const;
