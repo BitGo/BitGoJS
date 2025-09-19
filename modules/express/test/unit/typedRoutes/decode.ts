@@ -6,6 +6,10 @@ import { LoginRequest } from '../../../src/typedRoutes/api/common/login';
 import { VerifyAddressBody } from '../../../src/typedRoutes/api/common/verifyAddress';
 import { VerifyAddressV2Body, VerifyAddressV2Params } from '../../../src/typedRoutes/api/v2/verifyAddress';
 import { SimpleCreateRequestBody } from '../../../src/typedRoutes/api/v1/simpleCreate';
+import {
+  LightningInitWalletBody,
+  LightningInitWalletParams,
+} from '../../../src/typedRoutes/api/v2/lightningInitWallet';
 
 export function assertDecode<T>(codec: t.Type<T, unknown>, input: unknown): T {
   const result = codec.decode(input);
@@ -128,5 +132,23 @@ describe('io-ts decode tests', function () {
     assertDecode(t.type(SimpleCreateRequestBody), {
       passphrase: 'pass',
     });
+  });
+  it('express.lightning.initWallet params', function () {
+    // missing walletId
+    assert.throws(() => assertDecode(t.type(LightningInitWalletParams), { coin: 'ltc' }));
+    // valid
+    assertDecode(t.type(LightningInitWalletParams), { coin: 'ltc', walletId: 'wallet123' });
+  });
+  it('express.lightning.initWallet body', function () {
+    // missing passphrase
+    assert.throws(() => assertDecode(t.type(LightningInitWalletBody), {}));
+    // passphrase must be string
+    assert.throws(() => assertDecode(t.type(LightningInitWalletBody), { passphrase: 123 }));
+    // expressHost optional and must be string if provided
+    assert.throws(() => assertDecode(t.type(LightningInitWalletBody), { passphrase: 'p', expressHost: 99 }));
+    // valid minimal
+    assertDecode(t.type(LightningInitWalletBody), { passphrase: 'p' });
+    // valid with expressHost
+    assertDecode(t.type(LightningInitWalletBody), { passphrase: 'p', expressHost: 'host.example' });
   });
 });
