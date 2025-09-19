@@ -13,14 +13,16 @@ export const LightningStateParams = {
   walletId: t.string,
 };
 
+export const LightningStateResponse200 = t.type({
+  state: WalletState,
+});
+
 /**
  * Response for getting lightning node state
  */
 export const LightningStateResponse = {
   /** Current Lightning wallet/node state('NON_EXISTING' | 'LOCKED' | 'UNLOCKED' | 'RPC_ACTIVE' | 'SERVER_ACTIVE' | 'WAITING_TO_START') */
-  200: t.type({
-    state: WalletState,
-  }),
+  200: LightningStateResponse200,
   /** BitGo Express error payload when the request is invalid (e.g., invalid coin or wallet not a self-custody lightning wallet). */
   400: BitgoExpressError,
 } as const;
