@@ -2,5 +2,17 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["github>BitGo/gha-renovate-bot//presets/default"],
   "baseBranches": ["master"],
-  "enabledManagers": ["github-actions", "regex"]
+  "enabledManagers": ["github-actions", "regex", "npm"],
+  "packageRules": [
+    {
+      "description": "Disable all npm dependencies by default",
+      "matchManagers": ["npm"],
+      "enabled": false
+    },
+    {
+      "description": "Enable updates only for @bitgo/public-types",
+      "matchPackageNames": ["@bitgo/public-types"],
+      "enabled": true
+    }
+  ]
 }
