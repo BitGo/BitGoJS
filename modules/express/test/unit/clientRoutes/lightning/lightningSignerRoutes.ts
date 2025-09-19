@@ -1,10 +1,11 @@
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGo } from 'bitgo';
-import { common } from '@bitgo/sdk-core';
+import { common, decodeOrElse } from '@bitgo/sdk-core';
 import nock from 'nock';
 import * as express from 'express';
 import * as sinon from 'sinon';
 import * as fs from 'fs';
+import { UnlockLightningWalletResponse } from '../../../../src/typedRoutes/api/v2/unlockWallet';
 
 import { lightningSignerConfigs, apiData, signerApiData } from './lightningSignerFixture';
 import {
@@ -13,6 +14,7 @@ import {
   handleInitLightningWallet,
   handleUnlockLightningWallet,
 } from '../../../../src/lightning/lightningSignerRoutes';
+import { ExpressApiRouteRequest } from '../../../../src/typedRoutes/api';
 
 describe('Lightning signer routes', () => {
   let bitgo: TestBitGoAPI;
@@ -173,17 +175,14 @@ describe('Lightning signer routes', () => {
 
     const req = {
       bitgo: bitgo,
-      body: apiData.unlockWalletRequestBody,
-      params: {
-        coin: 'tlnbtc',
-        id: 'fakeid',
-      },
-      config: {
-        lightningSignerFileSystemPath: 'lightningSignerFileSystemPath',
-      },
-    } as unknown as express.Request;
+      config: { lightningSignerFileSystemPath: 'lightningSignerFileSystemPath' },
+      decoded: { coin: 'tlnbtc', id: 'fakeid', passphrase: apiData.unlockWalletRequestBody.passphrase },
+    } as unknown as ExpressApiRouteRequest<'express.lightning.unlockWallet', 'post'>;
 
-    await handleUnlockLightningWallet(req);
+    const res = await handleUnlockLightningWallet(req);
+    decodeOrElse('UnlockLightningWalletResponse200', UnlockLightningWalletResponse[200], res, (_) => {
+      throw new Error('Response did not match expected codec');
+    });
 
     unlockwalletNock.done();
     readFileStub.calledOnceWith('lightningSignerFileSystemPath').should.be.true();
