@@ -237,4 +237,98 @@ describe('Base Message', () => {
       should.deepEqual(parsed, expectedBroadcastString);
     });
   });
+
+  describe('verifyEncodedPayload', () => {
+    let message: TestMessage;
+
+    beforeEach(() => {
+      message = new TestMessage({
+        coinConfig,
+        payload: 'test payload',
+      });
+    });
+
+    it('should return true when encoded message matches signable payload', async () => {
+      const signablePayload = await message.getSignablePayload();
+      const expectedHex = (signablePayload as Buffer).toString('hex');
+
+      const result = await message.verifyEncodedPayload(expectedHex);
+      should.equal(result, true);
+    });
+
+    it('should return false when encoded message does not match signable payload', async () => {
+      const wrongHex = '1234567890abcdef';
+
+      const result = await message.verifyEncodedPayload(wrongHex);
+      should.equal(result, false);
+    });
+
+    it('should handle string signable payload', async () => {
+      // Create a custom test message that returns string payload
+      class StringTestMessage extends TestMessage {
+        async getSignablePayload(): Promise<string | Buffer> {
+          return 'string payload';
+        }
+      }
+
+      const messageWithStringPayload = new StringTestMessage({
+        coinConfig,
+        payload: 'test',
+      });
+
+      const result = await messageWithStringPayload.verifyEncodedPayload('string payload');
+      should.equal(result, true);
+    });
+
+    it('should accept optional metadata parameter', async () => {
+      const signablePayload = await message.getSignablePayload();
+      const expectedHex = (signablePayload as Buffer).toString('hex');
+      const metadata = { chainId: 1, version: '1.0' };
+
+      const result = await message.verifyEncodedPayload(expectedHex, metadata);
+      should.equal(result, true);
+    });
+  });
+
+  describe('verifyRawMessage', () => {
+    let message: TestMessage;
+
+    beforeEach(() => {
+      message = new TestMessage({
+        coinConfig,
+        payload: 'test payload',
+      });
+    });
+
+    it('should return true for any non-empty raw message (base implementation)', () => {
+      const result = message.verifyRawMessage('Any message content');
+      should.equal(result, true);
+    });
+
+    it('should return false for empty string', () => {
+      const result = message.verifyRawMessage('');
+      should.equal(result, false);
+    });
+
+    it('should return false for null', () => {
+      const result = message.verifyRawMessage(null as any);
+      should.equal(result, false);
+    });
+
+    it('should return false for undefined', () => {
+      const result = message.verifyRawMessage(undefined as any);
+      should.equal(result, false);
+    });
+
+    it('should return false for whitespace-only string', () => {
+      const result = message.verifyRawMessage('   \t\n\r  ');
+      should.equal(result, false);
+    });
+
+    it('should return true for JSON format', () => {
+      const jsonMessage = JSON.stringify({ message: 'test', data: [1, 2, 3] });
+      const result = message.verifyRawMessage(jsonMessage);
+      should.equal(result, true);
+    });
+  });
 });

@@ -82,6 +82,20 @@ export interface IMessage {
    * @returns A Promise resolving to true if the message is valid, false otherwise
    */
   verifyEncodedPayload(messageEncodedHex: string, metadata?: Record<string, unknown>): Promise<boolean>;
+
+  /**
+   * Verifies whether a raw message payload meets coin-specific format requirements
+   * This method performs validation on the raw message content before signing
+   * @param rawMessage The raw message content to verify as a string
+   * @returns True if the raw message is valid and can be safely processed, false otherwise
+   * @example
+   * ```typescript
+   * const message = await builder.build();
+   * const isValid = message.verifyRawMessage("Hello World");
+   * // Returns true for most coins, false for coins with strict format requirements
+   * ```
+   */
+  verifyRawMessage(rawMessage: string): boolean;
 }
 
 /**
