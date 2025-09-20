@@ -400,7 +400,7 @@ describe('non-TSS Staking Wallet', function () {
       await topethWctStakingWallet.buildAndSign({ walletPassphrase: 'passphrase' }, stakingTransaction);
     });
 
-    it('should throw an error if unsigned transaction does not match the staking transaction', async function () {
+    it('should log an error if a transaction is failed to be validated transaction if unsigned transaction does not match the staking transaction', async function () {
       const unsignedTransaction: PrebuildTransactionResult = {
         walletId: topethWctStakingWallet.walletId,
         ...opethFixtures.unsignedStakingTransaction,
@@ -408,6 +408,8 @@ describe('non-TSS Staking Wallet', function () {
           '0x02f9019083aa37dc718206a882089e83030d40941d1a245741bd7d603747a23d30f4c91682a2992680b901643912521500000000000000000000000086bb6dca2cd6f9a0189c478bbb8f7ee2fef07c89000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c00000000000000000000000000000000000000000000000000000000067ebedc3000000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000001400000000000000000000000000000000000000000000000000000000000000044095ea7b3000000000000000000000000140d63efb5b24314f6f62dbadb383dba2e49d7ee0000000000000000000000000000000000000000000000000de0b6b3a7640000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c0808080',
       } as PrebuildTransactionResult;
       const stakingTransaction: StakingTransaction = opethFixtures.updatedStakingRequest;
+
+      const consoleStub = sinon.stub(console, 'error');
 
       nock(microservicesUri)
         .get(
@@ -424,14 +426,11 @@ describe('non-TSS Staking Wallet', function () {
         .post(`/api/v2/topeth/wallet/${topethWctStakingWallet.walletId}/tx/build`)
         .reply(200, unsignedTransaction);
 
-      const expectedErrorMessage =
-        'Staking transaction validation failed before signing: ' +
-        'Unexpected recipient address found in built transaction: 0x86bb6dca2cd6f9a0189c478bbb8f7ee2fef07c89; ' +
-        'Expected recipient address not found in built transaction: 0x75bb6dca2cd6f9a0189c478bbb8f7ee2fef07c78';
+      await topethWctStakingWallet.buildAndSign({ walletPassphrase: 'passphrase' }, stakingTransaction);
 
-      await topethWctStakingWallet
-        .buildAndSign({ walletPassphrase: 'passphrase' }, stakingTransaction)
-        .should.be.rejectedWith(expectedErrorMessage);
+      consoleStub.calledWith(
+        'Invalid recipient address: 0x86bb6dca2cd6f9a0189c478bbb8f7ee2fef07c89, Missing recipient address(es): 0x75bb6dca2cd6f9a0189c478bbb8f7ee2fef07c78'
+      );
     });
   });
 });
