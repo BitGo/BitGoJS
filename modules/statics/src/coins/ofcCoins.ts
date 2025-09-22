@@ -1148,6 +1148,22 @@ export const ofcCoins = [
     UnderlyingAsset['sol:rekt'],
     SOL_TOKEN_FEATURES
   ),
+  ofcsolToken(
+    'ce1e7789-6684-4a50-baf0-570c9c18120c',
+    'ofcsol:xyo',
+    'XY Oracle',
+    8,
+    UnderlyingAsset['sol:xyo'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '108f4e91-2046-46d0-9607-cd4f633ae93d',
+    'ofcsol:zig',
+    'ZIGChain',
+    8,
+    UnderlyingAsset['sol:zig'],
+    SOL_TOKEN_FEATURES
+  ),
   tofcsolToken(
     '24d678cf-e0f0-4cde-a338-d754289c5b27',
     'ofctsol:slnd',
@@ -1237,6 +1253,23 @@ export const ofcCoins = [
     UnderlyingAsset['sol:usd1'],
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
+  tofcsolToken(
+    'ad6d7d4e-894b-4cf9-bb66-e4341717969a',
+    'ofctsol:txsgd',
+    'Test StraitsX SGD',
+    6,
+    UnderlyingAsset['tsol:txsgd'],
+    SOL_TOKEN_FEATURES
+  ),
+  tofcsolToken(
+    'ca0fb21b-d75d-40c2-b7fe-18a451b81bd5',
+    'ofctsol:txusd',
+    'Test StraitsX USD',
+    6,
+    UnderlyingAsset['tsol:txusd'],
+    SOL_TOKEN_FEATURES
+  ),
+
   tofcTronToken('937efe97-a17a-4d2a-aaf2-0ffdb529a943', 'ofcttrx:usdt', 'Tether USD', 6, UnderlyingAsset['ttrx:usdt']),
   tofcTronToken(
     '26d82f2c-47fd-474f-be79-246117214e0e',
@@ -2190,6 +2223,11 @@ export const ofcCoins = [
     undefined,
     [CoinFeature.STABLECOIN]
   ),
+  ofcBscToken('21da2589-8494-4f2e-ad95-431f86fa85ff', 'ofcbsc:zig', 'ZIGChain', 18, UnderlyingAsset['bsc:zig']),
+  ofcBscToken('0c23da3a-bbd5-4ff9-867a-62a71e8f2b75', 'ofcbsc:eden', 'OpenEden', 18, UnderlyingAsset['bsc:eden']),
+  ofcBscToken('26a641a4-076a-4306-a325-6ce426c6932e', 'ofcbsc:m', 'MemeCore', 18, UnderlyingAsset['bsc:m']),
+  ofcBscToken('e2c46423-6bae-4a28-8df5-717535be86c5', 'ofcbsc:cash+', 'CashPlus', 18, UnderlyingAsset['bsc:cash+']),
+
   tofcBscToken(
     'e9174338-0d26-4f49-b111-3487b60c9912',
     'ofctbsc:stgusd1',
@@ -2962,6 +3000,13 @@ export const ofcCoins = [
     UnderlyingAsset['polygon:xusd'],
     undefined,
     [CoinFeature.STABLECOIN]
+  ),
+  ofcPolygonErc20(
+    '06a9c149-4834-4173-be46-1c78cd624140',
+    'ofcpolygon:zig',
+    'ZIGChain',
+    18,
+    UnderlyingAsset['polygon:zig']
   ),
   tofcPolygonErc20(
     '62f4329d-11cd-4875-b91b-9ceae66c9439',

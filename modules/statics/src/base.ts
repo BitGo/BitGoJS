@@ -2129,6 +2129,10 @@ export enum UnderlyingAsset {
   'eth:seda' = 'eth:seda',
   'eth:enso' = 'eth:enso',
   'eth:hpp' = 'eth:hpp',
+  'eth:six' = 'eth:six',
+  'eth:eden' = 'eth:eden',
+  'eth:xeden' = 'eth:xeden',
+  'eth:linea' = 'eth:linea',
 
   // Ondo Tokenized Assets
   'eth:qqqon' = 'qqqon',
@@ -2509,6 +2513,7 @@ export enum UnderlyingAsset {
   'polygon:naka' = 'polygon:naka',
   'polygon:xusd' = 'polygon:xusd',
   'polygon:txusd' = 'polygon:txusd',
+  'polygon:zig' = 'polygon:zig',
   // Polygon NFTs
   // generic NFTs
   'erc721:polygontoken' = 'erc721:polygontoken',
@@ -2662,6 +2667,11 @@ export enum UnderlyingAsset {
   'bsc:slay' = 'bsc:slay',
   'bsc:prove' = 'bsc:prove',
   'bsc:rekt' = 'bsc:rekt',
+  'bsc:zig' = 'bsc:zig',
+  'bsc:eden' = 'bsc:eden',
+  'bsc:m' = 'bsc:m',
+  'bsc:cash+' = 'bsc:cash+',
+
   // BSC NFTs
   // generic NFTs
   'erc721:bsctoken' = 'erc721:bsctoken',
@@ -2991,6 +3001,10 @@ export enum UnderlyingAsset {
   'sol:cipher' = 'sol:cipher',
   'sol:bio' = 'sol:bio',
   'sol:rekt' = 'sol:rekt',
+  'sol:xyo' = 'sol:xyo',
+  'sol:zig' = 'sol:zig',
+  'tsol:txsgd' = 'sol:txsgd',
+  'tsol:txusd' = 'sol:txusd',
   // TRX tokens
   'trx:htx' = 'trx:htx',
   'trx:jst' = 'trx:jst',

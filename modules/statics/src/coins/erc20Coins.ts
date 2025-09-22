@@ -13432,4 +13432,36 @@ export const erc20Coins = [
     '0x2816169a49953c548bfeb3948dcf05c4a0e4657d',
     UnderlyingAsset['eth:melion']
   ),
+  erc20(
+    '6e7f1a86-e938-42ed-afe8-b58364a7f498',
+    'eth:six',
+    'SIX Token',
+    18,
+    '0x61c6ebf443ad613c9648762585b3cfd3ba1f3fa8',
+    UnderlyingAsset['eth:six']
+  ),
+  erc20(
+    '8769e8e2-7a34-465b-815d-4afe1b05746c',
+    'eth:eden',
+    'OpenEden',
+    18,
+    '0x24a3d725c37a8d1a66eb87f0e5d07fe67c120035',
+    UnderlyingAsset['eth:eden']
+  ),
+  erc20(
+    'ef73881d-b94d-45e1-884f-1409e3b1a10e',
+    'eth:xeden',
+    'Staked EDEN',
+    18,
+    '0x7e6c274e9f57b0f052647c37084d372ed665af23',
+    UnderlyingAsset['eth:xeden']
+  ),
+  erc20(
+    '6cf912d4-ea34-4e06-8a76-9a8067e826c6',
+    'eth:linea',
+    'Linea',
+    18,
+    '0x1789e0043623282d5dcc7f213d703c6d8bafbb04',
+    UnderlyingAsset['eth:linea']
+  ),
 ];

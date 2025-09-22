@@ -1356,4 +1356,40 @@ export const bscTokens = [
     UnderlyingAsset['tbsc:stgusd1'],
     [...BSC_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
+  bscToken(
+    '08ce2923-65fa-4ecd-8ff9-4bae553d896e',
+    'bsc:zig',
+    'ZIGChain',
+    18,
+    '0x8c907e0a72c3d55627e853f4ec6a96b0c8771145',
+    UnderlyingAsset['bsc:zig'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
+    'e4664d1d-2719-4352-8af0-0be79248cfbe',
+    'bsc:eden',
+    'OpenEden',
+    18,
+    '0x235b6fe22b4642ada16d311855c49ce7de260841',
+    UnderlyingAsset['bsc:eden'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
+    'eb805711-bb54-4374-8e07-a7f46d3bccd7',
+    'bsc:m',
+    'MemeCore',
+    18,
+    '0x22b1458e780f8fa71e2f84502cee8b5a3cc731fa',
+    UnderlyingAsset['bsc:m'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
+    'aab7b748-e98b-4bf7-9502-48ecb0479880',
+    'bsc:cash+',
+    'CashPlus',
+    18,
+    '0x1775504c5873e179ea2f8abfce3861ec74d159bc',
+    UnderlyingAsset['bsc:cash+'],
+    BSC_TOKEN_FEATURES
+  ),
 ];
