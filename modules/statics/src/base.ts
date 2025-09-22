@@ -2918,7 +2918,6 @@ export enum UnderlyingAsset {
   'sol:ens' = 'sol:ens',
   'sol:enron' = 'sol:enron',
   'sol:jitosol' = 'sol:jitosol',
-  'tsol:jitosol' = 'tsol:jitosol',
   'sol:zeus' = 'sol:zeus',
   'sol:kmno' = 'sol:kmno',
   'sol:giga' = 'sol:giga',
