@@ -9849,11 +9849,11 @@ export const erc20Coins = [
   ),
   erc20(
     '066ebf64-043a-4cc8-9b72-1f8b11a8bc32',
-    'rekt',
+    'rekttoken',
     '$REKT',
     18,
     '0x4f8b986ecffe7bed5dbeb2b49310fb00ca85a539',
-    UnderlyingAsset.REKT
+    UnderlyingAsset.REKTTOKEN
   ),
   erc20(
     '3c5ebcde-83d7-4211-9bf2-44dfb3ff6c23',
@@ -11615,6 +11615,14 @@ export const erc20Coins = [
     18,
     '0x45e02bc2875a2914c4f585bbf92a6f28bc07cb70',
     UnderlyingAsset['eth:mbg']
+  ),
+  erc20(
+    'e2650199-e114-4abd-9086-46d77ee1ee0f',
+    'eth:rekt',
+    'Rekt',
+    18,
+    '0xdd3b11ef34cd511a2da159034a05fcb94d806686',
+    UnderlyingAsset['eth:rekt']
   ),
   terc20(
     '0205f0d6-0647-47c9-ad8b-c48d048e54f3',
@@ -13423,5 +13431,37 @@ export const erc20Coins = [
     18,
     '0x2816169a49953c548bfeb3948dcf05c4a0e4657d',
     UnderlyingAsset['eth:melion']
+  ),
+  erc20(
+    '6e7f1a86-e938-42ed-afe8-b58364a7f498',
+    'eth:six',
+    'SIX Token',
+    18,
+    '0x61c6ebf443ad613c9648762585b3cfd3ba1f3fa8',
+    UnderlyingAsset['eth:six']
+  ),
+  erc20(
+    '8769e8e2-7a34-465b-815d-4afe1b05746c',
+    'eth:eden',
+    'OpenEden',
+    18,
+    '0x24a3d725c37a8d1a66eb87f0e5d07fe67c120035',
+    UnderlyingAsset['eth:eden']
+  ),
+  erc20(
+    'ef73881d-b94d-45e1-884f-1409e3b1a10e',
+    'eth:xeden',
+    'Staked EDEN',
+    18,
+    '0x7e6c274e9f57b0f052647c37084d372ed665af23',
+    UnderlyingAsset['eth:xeden']
+  ),
+  erc20(
+    '6cf912d4-ea34-4e06-8a76-9a8067e826c6',
+    'eth:linea',
+    'Linea',
+    18,
+    '0x1789e0043623282d5dcc7f213d703c6d8bafbb04',
+    UnderlyingAsset['eth:linea']
   ),
 ];

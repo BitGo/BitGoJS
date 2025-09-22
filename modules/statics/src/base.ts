@@ -1543,7 +1543,7 @@ export enum UnderlyingAsset {
   REBL = 'rebl',
   REEF = 'reef',
   REF = 'ref',
-  REKT = 'rekt',
+  REKTTOKEN = 'rekttoken',
   REKTGAME = 'rektgame',
   REN = 'ren',
   RENBTC = 'renbtc',
@@ -2129,6 +2129,10 @@ export enum UnderlyingAsset {
   'eth:seda' = 'eth:seda',
   'eth:enso' = 'eth:enso',
   'eth:hpp' = 'eth:hpp',
+  'eth:six' = 'eth:six',
+  'eth:eden' = 'eth:eden',
+  'eth:xeden' = 'eth:xeden',
+  'eth:linea' = 'eth:linea',
 
   // Ondo Tokenized Assets
   'eth:qqqon' = 'qqqon',
@@ -2509,6 +2513,7 @@ export enum UnderlyingAsset {
   'polygon:naka' = 'polygon:naka',
   'polygon:xusd' = 'polygon:xusd',
   'polygon:txusd' = 'polygon:txusd',
+  'polygon:zig' = 'polygon:zig',
   // Polygon NFTs
   // generic NFTs
   'erc721:polygontoken' = 'erc721:polygontoken',
@@ -2662,6 +2667,11 @@ export enum UnderlyingAsset {
   'bsc:slay' = 'bsc:slay',
   'bsc:prove' = 'bsc:prove',
   'bsc:rekt' = 'bsc:rekt',
+  'bsc:zig' = 'bsc:zig',
+  'bsc:eden' = 'bsc:eden',
+  'bsc:m' = 'bsc:m',
+  'bsc:cash+' = 'bsc:cash+',
+
   // BSC NFTs
   // generic NFTs
   'erc721:bsctoken' = 'erc721:bsctoken',
@@ -2740,6 +2750,12 @@ export enum UnderlyingAsset {
   'arbeth:benji' = 'arbeth:benji',
   'arbeth:dolo' = 'arbeth:dolo',
   'arbeth:bull' = 'arbeth:bull',
+
+  // BaseETH mainnet tokens
+  'baseeth:aero' = 'baseeth:aero',
+
+  // BaseETH testnet tokens
+  'tbaseeth:usdc' = 'tbaseeth:usdc',
 
   // Arbitrum testnet tokens
   'tarbeth:link' = 'tarbeth:link',
@@ -2912,7 +2928,6 @@ export enum UnderlyingAsset {
   'sol:ens' = 'sol:ens',
   'sol:enron' = 'sol:enron',
   'sol:jitosol' = 'sol:jitosol',
-  'tsol:jitosol' = 'tsol:jitosol',
   'sol:zeus' = 'sol:zeus',
   'sol:kmno' = 'sol:kmno',
   'sol:giga' = 'sol:giga',
@@ -2986,6 +3001,10 @@ export enum UnderlyingAsset {
   'sol:cipher' = 'sol:cipher',
   'sol:bio' = 'sol:bio',
   'sol:rekt' = 'sol:rekt',
+  'sol:xyo' = 'sol:xyo',
+  'sol:zig' = 'sol:zig',
+  'tsol:txsgd' = 'sol:txsgd',
+  'tsol:txusd' = 'sol:txusd',
   // TRX tokens
   'trx:htx' = 'trx:htx',
   'trx:jst' = 'trx:jst',
@@ -3123,6 +3142,9 @@ export enum UnderlyingAsset {
   // COSMOS testnet tokens
   'thash:ylds' = 'thash:ylds',
 
+  // TON mainnet tokens
+  'ton:usdt' = 'ton:usdt',
+
   // TON testnet tokens
   'tton:ukwny-us' = 'tton:ukwny-us',
 
@@ -3147,6 +3169,7 @@ export enum UnderlyingAsset {
   'eth:zrc' = 'eth:zrc',
   'eth:open' = 'eth:open',
   'eth:mbg' = 'eth:mbg',
+  'eth:rekt' = 'eth:rekt',
 
   // ADA testnet tokens
   'tada:water' = 'tada:water',

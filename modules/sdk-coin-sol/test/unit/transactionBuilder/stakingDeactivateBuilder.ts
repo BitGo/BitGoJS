@@ -346,6 +346,8 @@ describe('Sol Staking Deactivate Builder', () => {
                 },
               },
             ]);
+            tx.inputs.should.deepEqual([]);
+            tx.outputs.should.deepEqual([]);
           },
           knownRawTx: testData.JITO_STAKING_DEACTIVATE_SIGNED_TX,
         });
