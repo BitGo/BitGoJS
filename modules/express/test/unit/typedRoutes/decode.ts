@@ -155,6 +155,7 @@ describe('io-ts decode tests', function () {
     assertDecode(t.type(KeychainLocalRequestParams), {
       coin: 'tbtc',
     });
+  });
   it('express.lightning.initWallet params', function () {
     // missing walletId
     assert.throws(() => assertDecode(t.type(LightningInitWalletParams), { coin: 'ltc' }));
