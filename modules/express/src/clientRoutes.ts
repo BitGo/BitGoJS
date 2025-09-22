@@ -637,7 +637,7 @@ export async function handleV2OFCSignPayload(
  * handle new wallet creation
  * @param req
  */
-export async function handleV2GenerateWallet(req: express.Request) {
+export async function handleV2GenerateWallet(req: ExpressApiRouteRequest<'express.wallet.generate', 'post'>) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.params.coin);
   const result = await coin.wallets().generateWallet(req.body);
@@ -1605,7 +1605,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   router.post('express.keychain.local', [prepareBitGo(config), typedPromiseWrapper(handleV2CreateLocalKeyChain)]);
 
   // generate wallet
-  app.post('/api/v2/:coin/wallet/generate', parseBody, prepareBitGo(config), promiseWrapper(handleV2GenerateWallet));
+  router.post('express.wallet.generate', [prepareBitGo(config), typedPromiseWrapper(handleV2GenerateWallet)]);
 
   app.put('/express/api/v2/:coin/wallet/:id', parseBody, prepareBitGo(config), promiseWrapper(handleWalletUpdate));
 
