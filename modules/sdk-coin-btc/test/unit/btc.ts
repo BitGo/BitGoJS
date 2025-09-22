@@ -8,6 +8,8 @@ import { Tbtc } from '../../src';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import * as utxolib from '@bitgo/utxo-lib';
 
+const { getDefaultWalletKeys, toKeychainObjects } = require('../../../bitgo/test/v2/unit/coins/utxo/util/keychains');
+
 describe('BTC:', () => {
   let bitgo: TestBitGoAPI;
 
@@ -118,10 +120,6 @@ describe('BTC:', () => {
     });
 
     it('should detect hex spoofing in BUILD_SIGN_SEND', async (): Promise<void> => {
-      const {
-        getDefaultWalletKeys,
-        toKeychainObjects,
-      } = require('../../../bitgo/test/v2/unit/coins/utxo/util/keychains');
       const rootWalletKey = getDefaultWalletKeys();
       const keysObj = toKeychainObjects(rootWalletKey, 'pass');
 
@@ -189,10 +187,6 @@ describe('BTC:', () => {
     });
 
     it('should detect hex spoofing in fanout BUILD_SIGN_SEND', async (): Promise<void> => {
-      const {
-        getDefaultWalletKeys,
-        toKeychainObjects,
-      } = require('../../../bitgo/test/v2/unit/coins/utxo/util/keychains');
       const rootWalletKey = getDefaultWalletKeys();
       const keysObj = toKeychainObjects(rootWalletKey, 'pass');
 
