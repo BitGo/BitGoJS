@@ -1385,11 +1385,11 @@ export const bscTokens = [
   ),
   bscToken(
     'aab7b748-e98b-4bf7-9502-48ecb0479880',
-    'bsc:cash+',
+    'bsc:cashplus',
     'CashPlus',
     18,
     '0x1775504c5873e179ea2f8abfce3861ec74d159bc',
-    UnderlyingAsset['bsc:cash+'],
+    UnderlyingAsset['bsc:cashplus'],
     BSC_TOKEN_FEATURES
   ),
 ];

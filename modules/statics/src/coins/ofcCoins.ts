@@ -2226,7 +2226,13 @@ export const ofcCoins = [
   ofcBscToken('21da2589-8494-4f2e-ad95-431f86fa85ff', 'ofcbsc:zig', 'ZIGChain', 18, UnderlyingAsset['bsc:zig']),
   ofcBscToken('0c23da3a-bbd5-4ff9-867a-62a71e8f2b75', 'ofcbsc:eden', 'OpenEden', 18, UnderlyingAsset['bsc:eden']),
   ofcBscToken('26a641a4-076a-4306-a325-6ce426c6932e', 'ofcbsc:m', 'MemeCore', 18, UnderlyingAsset['bsc:m']),
-  ofcBscToken('e2c46423-6bae-4a28-8df5-717535be86c5', 'ofcbsc:cash+', 'CashPlus', 18, UnderlyingAsset['bsc:cash+']),
+  ofcBscToken(
+    'e2c46423-6bae-4a28-8df5-717535be86c5',
+    'ofcbsc:cashplus',
+    'CashPlus',
+    18,
+    UnderlyingAsset['bsc:cashplus']
+  ),
 
   tofcBscToken(
     'e9174338-0d26-4f49-b111-3487b60c9912',
