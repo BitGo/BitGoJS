@@ -22,6 +22,7 @@ import {
 } from './codecs';
 import { LndSignerClient } from './lndSignerClient';
 import { ApiResponseError } from '../errors';
+import { ExpressApiRouteRequest } from '../typedRoutes/api';
 
 type Decrypt = (params: { input: string; password: string }) => string;
 
@@ -188,7 +189,7 @@ export async function handleCreateSignerMacaroon(req: express.Request): Promise<
  * Handle the request to get the state of a wallet from the signer.
  */
 export async function handleGetLightningWalletState(
-  req: import('../typedRoutes/api').ExpressApiRouteRequest<'express.lightning.getState', 'get'>
+  req: ExpressApiRouteRequest<'express.lightning.getState', 'get'>
 ): Promise<GetWalletStateResponse> {
   const { coin: coinName, walletId } = req.decoded;
   if (!isLightningCoinName(coinName)) {

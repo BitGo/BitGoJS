@@ -11,7 +11,7 @@ export const LightningStateParams = {
   coin: t.string,
   /** The ID of the lightning self-custody wallet */
   walletId: t.string,
-};
+} as const;
 
 export const LightningStateResponse200 = t.type({
   state: WalletState,
