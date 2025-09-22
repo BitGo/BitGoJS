@@ -168,7 +168,7 @@ function transferInstruction(data: Transfer): TransactionInstruction[] {
  */
 function tokenTransferInstruction(data: TokenTransfer): TransactionInstruction[] {
   const {
-    params: { fromAddress, toAddress, amount, tokenName, sourceAddress },
+    params: { fromAddress, toAddress, amount, tokenName, sourceAddress, extensionAccounts },
   } = data;
   assert(fromAddress, 'Missing fromAddress (owner) param');
   assert(toAddress, 'Missing toAddress param');
@@ -204,6 +204,16 @@ function tokenTransferInstruction(data: TokenTransfer): TransactionInstruction[]
       [],
       TOKEN_2022_PROGRAM_ID
     );
+    // Add solana 2022 token extension accounts
+    if (extensionAccounts && extensionAccounts.length > 0) {
+      for (const account of extensionAccounts) {
+        transferInstruction.keys.push({
+          pubkey: new PublicKey(account.pubkey),
+          isSigner: account.isSigner,
+          isWritable: account.isWritable,
+        });
+      }
+    }
   } else {
     transferInstruction = createTransferCheckedInstruction(
       new PublicKey(sourceAddress),
