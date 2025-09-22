@@ -21466,27 +21466,15 @@ ws@5.2.4, ws@^3.0.0:
   dependencies:
     async-limiter "~1.0.0"
 
-ws@7.4.6, ws@8.18.3, ws@8.8.0, ws@^8.13.0, ws@^8.18.0, ws@^8.5.0, ws@^8.8.1:
+ws@7.4.6, ws@8.18.3, ws@8.8.0, ws@^6.1.0, ws@^7, ws@^7.0.0, ws@^7.5.10, ws@^8.13.0, ws@^8.18.0, ws@^8.5.0, ws@^8.8.1, ws@~8.17.1:
   version "8.18.3"
   resolved "https://registry.npmjs.org/ws/-/ws-8.18.3.tgz"
   integrity sha512-PEIGCY5tSlUt50cqyMXfCzX+oOPqN0vuGqWzbcJ2xvnkzkq46oOpz7dQaTDBdfICb4N14+GARUDw2XV2N4tvzg==
 
-ws@7.5.10, ws@8.17.1, ws@8.18.0, ws@^7, ws@^7.0.0, ws@^7.5.10:
+ws@7.5.10, ws@8.17.1, ws@8.18.0:
   version "7.5.10"
   resolved "https://registry.npmjs.org/ws/-/ws-7.5.10.tgz"
   integrity sha512-+dbF1tHwZpXcbOJdVOkzLDxZP1ailvSxM6ZweXTegylPny803bFhA+vqBYw4s31NSAk4S2Qz+AKXK9a4wkdjcQ==
-
-ws@^6.1.0:
-  version "6.2.3"
-  resolved "https://registry.npmjs.org/ws/-/ws-6.2.3.tgz"
-  integrity sha512-jmTjYU0j60B+vHey6TfR3Z7RD61z/hmxBS3VMSGIrroOWXQEneK1zNuotOUrGyBHQj0yrpsLHPWtigEFd13ndA==
-  dependencies:
-    async-limiter "~1.0.0"
-
-ws@~8.17.1:
-  version "8.17.1"
-  resolved "https://registry.npmjs.org/ws/-/ws-8.17.1.tgz#9293da530bb548febc95371d90f9c878727d919b"
-  integrity sha512-6XQFvXTkbfUOZOKKILFG1PDK2NDQs4azKQl26T0YS5CxqWLgXajbPZ+h4gZekJyRqFU8pvnbAbbs/3TgRPy+GQ==
 
 xhr-request-promise@^0.1.2:
   version "0.1.3"
