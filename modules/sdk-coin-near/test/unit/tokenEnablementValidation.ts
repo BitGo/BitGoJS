@@ -157,4 +157,69 @@ describe('NEAR Token Enablement Validation', function () {
     // and prevent the user from being tricked into enabling tokens for the wrong address
     await basecoin.verifyTransaction(verifyOptions).should.be.rejectedWith('Address mismatch: wrong.address.near');
   });
+
+  /**
+   * TEST 4: Security Test - Spoofed TxHex Detection
+   *
+   * This test simulates what happens when the wallet platform tries to send a token enablement
+   * transaction but receives a spoofed TxHex from a malicious actor. This test verifies that
+   * our validation catches the spoofed transaction and prevents the user from being tricked.
+   */
+  it('should reject spoofed TxHex in token enablement transaction', async function () {
+    // Create valid transaction parameters for token enablement
+    const txParams = createValidTxParams();
+
+    // Create a SPOOFED transaction hex that looks like a valid NEAR transaction
+    // but contains malicious data (e.g., different recipient, wrong token contract, etc.)
+    const spoofedTxHex = testData.rawTx.fungibleTokenTransfer.unsigned; // Using transfer instead of storage deposit
+
+    const txPrebuild = createTxPrebuild(spoofedTxHex);
+
+    const verifyOptions: VerifyTransactionOptions = {
+      txParams, // User thinks they're enabling a token
+      txPrebuild, // But the hex is for a different transaction type (fungible token transfer)
+      wallet: { id: 'test-wallet' } as any,
+    };
+
+    // This SHOULD throw an error because the spoofed hex doesn't match the expected
+    // token enablement transaction. The validation will detect that this is not a
+    // proper storage deposit transaction for token enablement.
+    // The storage deposit amount validation catches this first
+    await basecoin.verifyTransaction(verifyOptions).should.be.rejectedWith('Storage deposit amount not matching!');
+  });
+
+  /**
+   * TEST 5: Wallet Platform Integration Test
+   *
+   * This test verifies that transactions sent from the wallet platform are properly
+   * validated and pass through our security checks. This ensures that legitimate
+   * wallet platform operations work correctly.
+   */
+  it('should validate token enablement transaction from wallet platform', async function () {
+    // Simulate a transaction that would be sent from the wallet platform
+    // This uses the same valid storage deposit transaction but with wallet platform context
+    const txParams = {
+      type: 'enabletoken' as const,
+      recipients: [
+        {
+          address: testData.accounts.account1.address, // Wallet platform controlled address
+          amount: '0',
+          tokenName: 'tnear:tnep24dp',
+        },
+      ],
+    };
+
+    // Use the legitimate storage deposit transaction hex from wallet platform
+    const txPrebuild = createTxPrebuild(testData.rawTx.selfStorageDeposit.unsigned);
+
+    const verifyOptions: VerifyTransactionOptions = {
+      txParams, // Wallet platform transaction parameters
+      txPrebuild, // Legitimate transaction hex from wallet platform
+      wallet: { id: 'wallet-platform-wallet' } as any, // Wallet platform wallet
+    };
+
+    // This should NOT throw an error - legitimate wallet platform transactions
+    // should pass validation and be processed successfully
+    await basecoin.verifyTransaction(verifyOptions);
+  });
 });
