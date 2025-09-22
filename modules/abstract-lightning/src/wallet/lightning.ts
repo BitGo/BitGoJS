@@ -27,6 +27,7 @@ import {
   LightningOnchainWithdrawResponse,
   ListInvoicesResponse,
   ListPaymentsResponse,
+  ListTransactionsResponse,
   LndCreateWithdrawResponse,
 } from '../codecs';
 import { LightningPaymentIntent, LightningPaymentRequest } from '@bitgo/public-types';
@@ -208,7 +209,7 @@ export interface ILightningWallet {
    * @param {Date} [params.endDate] The end date for the query
    * @returns {Promise<Transaction[]>} List of transactions
    */
-  listTransactions(params: TransactionQuery): Promise<Transaction[]>;
+  listTransactions(params: TransactionQuery): Promise<ListTransactionsResponse>;
 }
 
 export class LightningWallet implements ILightningWallet {

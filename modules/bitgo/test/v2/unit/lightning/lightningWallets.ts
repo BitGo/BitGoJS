@@ -804,6 +804,7 @@ describe('Lightning wallets', function () {
       assert.strictEqual(signedRequest.passphrase, undefined, 'passphrase should not exist in request');
     });
   });
+
   describe('On chain withdrawal', function () {
     let wallet: LightningWallet;
     beforeEach(function () {
@@ -1082,6 +1083,12 @@ describe('Lightning wallets', function () {
       storeSignatureNock.done();
       createTxRequestNock.done();
       getPendingApprovalNock.done();
+    });
+  });
+
+  describe('Transactions', function () {
+    it('should work properly with pagination while listing transactions', async function () {
+      console.log('todo');
     });
   });
 });

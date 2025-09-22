@@ -73,6 +73,23 @@ export const Transaction = t.intersection(
 );
 export type Transaction = t.TypeOf<typeof Transaction>;
 
+export const ListTransactionsResponse = t.intersection(
+  [
+    t.type({
+      transactions: t.array(Transaction),
+    }),
+    t.partial({
+      /**
+       * This is the transaction ID of the last Transaction in the last iteration.
+       * Providing this value as the prevId in the next request will return the next batch of transactions.
+       * */
+      nextBatchPrevId: t.string,
+    }),
+  ],
+  'ListTransactionsResponse'
+);
+export type ListTransactionsResponse = t.TypeOf<typeof ListTransactionsResponse>;
+
 /**
  * Transaction query parameters
  */
@@ -80,6 +97,8 @@ export const TransactionQuery = t.partial(
   {
     blockHeight: BigIntFromString,
     limit: BigIntFromString,
+    // transaction ID provided by nextBatchPrevId in the previous list
+    prevId: t.string,
     startDate: DateFromISOString,
     endDate: DateFromISOString,
   },
