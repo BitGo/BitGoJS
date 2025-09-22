@@ -123,7 +123,7 @@ export interface CosmosNetwork extends AccountNetwork {
 /**
  * Specification name type of the chain. Used in setting up the registry
  */
-export type PolkadotSpecNameType = 'kusama' | 'polkadot' | 'westend' | 'statemint' | 'statemine';
+export type PolkadotSpecNameType = 'kusama' | 'polkadot' | 'westend' | 'statemint' | 'statemine' | 'westmint';
 
 export type SubstrateSpecNameType =
   | 'kusama'
@@ -521,15 +521,16 @@ class Polkadot extends Mainnet implements DotNetwork {
   txVersion = 9;
 }
 
-class PolkadotTestnet extends Testnet implements DotNetwork {
-  name = 'Westend';
+class WestendAssetHub extends Testnet implements DotNetwork {
+  name = 'WestendAssetHub';
   family = CoinFamily.DOT;
-  explorerUrl = 'https://westend.subscan.io/extrinsic/';
-  specName = 'westend' as PolkadotSpecNameType;
-  genesisHash = '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e';
-  specVersion = 9430;
-  chainName = 'Westend';
-  txVersion = 22;
+  explorerUrl = 'https://assethub-westend.subscan.io/extrinsic/';
+  specName = 'westmint' as PolkadotSpecNameType;
+  genesisHash = '0x67f9723393ef76214df0118c34bbbd3dbebc8ed46a10973a8c969d48fe7598c9';
+  // specVersion = 1018013;
+  specVersion = 1018013;
+  chainName = 'Westend Asset Hub';
+  txVersion = 16;
 }
 
 class Celo extends Mainnet implements EthereumNetwork {
@@ -2101,7 +2102,7 @@ export const Networks = {
     cronos: Object.freeze(new CronosTestnet()),
     dash: Object.freeze(new DashTestnet()),
     dogecoin: Object.freeze(new DogecoinTestnet()),
-    dot: Object.freeze(new PolkadotTestnet()),
+    dot: Object.freeze(new WestendAssetHub()),
     eCash: Object.freeze(new ECashTestnet()),
     eos: Object.freeze(new EosTestnet()),
     fiat: Object.freeze(new FiatTestnet()),
