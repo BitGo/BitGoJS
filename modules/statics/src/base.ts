@@ -2328,6 +2328,7 @@ export enum UnderlyingAsset {
   'avaxc:ticov2' = 'avaxc:ticov2',
   'avaxc:nxpc' = 'avaxc:nxpc',
   'avaxc:spxux' = 'avaxc:spxux',
+  'avaxc:stavax' = 'avaxc:stavax',
   'tavaxc:opm' = 'tavaxc:opm',
   'tavaxc:cop2peq' = 'tavaxc:cop2peq',
   'tavaxc:xsgd' = 'tavaxc:xsgd',
