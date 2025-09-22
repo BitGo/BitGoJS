@@ -825,6 +825,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.SUPPORTS_ERC20,
     ]
   ),
   account(
@@ -843,6 +844,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.SUPPORTS_ERC20,
     ],
     KeyCurve.Secp256k1,
     '',
@@ -1983,6 +1985,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.SUPPORTS_ERC20,
     ]
   ),
   account(
@@ -2127,6 +2130,15 @@ export const allCoinsAndTokens = [
     CELO_FEATURES
   ),
   erc20Token(
+    '16c438c1-714a-4ad7-bdb1-fb8d2575c466',
+    'tbaseeth:usdc',
+    'Testnet USDC',
+    6,
+    '0x036cbd53842c5426634e7929541ec2318f3dcf7e',
+    UnderlyingAsset['tbaseeth:usdc'],
+    Networks.test.basechain
+  ),
+  erc20Token(
     '03b67719-a5d5-4ae3-a050-252b948f4daa',
     'baseeth:aero',
     'Aerodrome Finance',
@@ -2136,13 +2148,166 @@ export const allCoinsAndTokens = [
     Networks.main.basechain
   ),
   erc20Token(
-    '16c438c1-714a-4ad7-bdb1-fb8d2575c466',
-    'tbaseeth:usdc',
-    'Testnet USDC',
+    '07e33515-183e-400b-a681-53a7e4b6df02',
+    'baseeth:usdc',
+    'USDC',
     6,
-    '0x036cbd53842c5426634e7929541ec2318f3dcf7e',
-    UnderlyingAsset['tbaseeth:usdc'],
-    Networks.test.basechain
+    '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
+    UnderlyingAsset['baseeth:usdc'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    '3d542986-403f-4302-aa57-95f4dec26727',
+    'baseeth:wbtc',
+    'Wrapped BTC',
+    8,
+    '0x0555e30da8f98308edb960aa94c0db47230d2b9c',
+    UnderlyingAsset['baseeth:wbtc'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    'b7e7a9f6-4563-45d0-ba5f-260c2f363638',
+    'baseeth:usde',
+    'Ethena USDe',
+    18,
+    '0x5d3a1ff2b6bab83b63cd9ad0787074081a52ef34',
+    UnderlyingAsset['baseeth:usde'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    '525a07c9-4df0-4e79-8e65-9cf74e07cd5b',
+    'baseeth:trust',
+    'Trust',
+    18,
+    '0x6cd905df2ed214b22e0d48ff17cd4200c1c6d8a3',
+    UnderlyingAsset['baseeth:trust'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    'e8be1d67-4e15-4865-af1c-a0c4dc1902f3',
+    'baseeth:flk',
+    'Fleek',
+    18,
+    '0xe0969ec84456b7e4d3dd2181fb5265edbb63f7bd',
+    UnderlyingAsset['baseeth:flk'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    '3842a6cf-1bd5-4741-ad09-1071e8f5e26c',
+    'seievm:usdc',
+    'USDC',
+    6,
+    '0xe15fc38f6d8c56af07bbcbe3baf5708a2bf42392',
+    UnderlyingAsset['seievm:usdc'],
+    Networks.main.seievm
+  ),
+  erc20Token(
+    '94cbea4e-c56d-4b43-aa38-83c8806eda3e',
+    'seievm:weth',
+    'Wrapped Ether',
+    18,
+    '0x160345fc359604fc6e70e3c5facbde5f7a9342d8',
+    UnderlyingAsset['seievm:weth'],
+    Networks.main.seievm
+  ),
+  erc20Token(
+    'c4f2a3af-15df-4dc8-95ff-55150d150c30',
+    'seievm:wbtc',
+    'Wrapped BTC',
+    8,
+    '0x0555e30da8f98308edb960aa94c0db47230d2b9c',
+    UnderlyingAsset['seievm:wbtc'],
+    Networks.main.seievm
+  ),
+  erc20Token(
+    'af997171-f1c5-4938-b88c-0bfd2b98aed4',
+    'seievm:usd0',
+    'USD₮0',
+    6,
+    '0x9151434b16b9763660705744891fa906f660ecc5',
+    UnderlyingAsset['seievm:usd0'],
+    Networks.main.seievm
+  ),
+  erc20Token(
+    '0ad7a932-bccf-4f37-a201-69ae3571bfa7',
+    'lineaeth:linea',
+    'Linea',
+    18,
+    '0x1789e0043623282d5dcc7f213d703c6d8bafbb04',
+    UnderlyingAsset['lineaeth:linea'],
+    Networks.main.lineaeth
+  ),
+  erc20Token(
+    'fa924bd1-eb96-4e40-aecc-447e64aea7dc',
+    'lineaeth:usdt',
+    'Linea USDT',
+    6,
+    '0xa219439258ca9da29e9cc4ce5596924745e12b93',
+    UnderlyingAsset['lineaeth:usdt'],
+    Networks.main.lineaeth
+  ),
+  erc20Token(
+    '8a2e3d48-f8f2-441b-9c64-cbed6e607d1a',
+    'lineaeth:usdc',
+    'Linea USDC',
+    6,
+    '0x176211869ca2b568f2a7d4ee941e073a821ee1ff',
+    UnderlyingAsset['lineaeth:usdc'],
+    Networks.main.lineaeth
+  ),
+  erc20Token(
+    '5fd24ec5-2312-4c44-8323-6a2a1fec401b',
+    'flow:usdf',
+    'USD Flow',
+    6,
+    '0x2aabea2058b5ac2d339b163c6ab6f2b6d53aabed',
+    UnderlyingAsset['flow:usdf'],
+    Networks.main.flow
+  ),
+  erc20Token(
+    '107f05d3-fe76-40a0-97aa-72478eddbe39',
+    'flow:wflow',
+    'Wrapped Flow',
+    18,
+    '0xd3bf53dac106a0290b0483ecbc89d40fcc961f3e',
+    UnderlyingAsset['flow:wflow'],
+    Networks.main.flow
+  ),
+  erc20Token(
+    'cf416c79-0c47-4fe8-b534-1fff088332f3',
+    'flow:weth',
+    'WETH',
+    18,
+    '0x2f6f07cdcf3588944bf4c42ac74ff24bf56e7590',
+    UnderlyingAsset['flow:weth'],
+    Networks.main.flow
+  ),
+  erc20Token(
+    '7c6e8a37-6f6a-4f9a-9b38-fa43d61bc3d9',
+    'baseeth:icnt',
+    'Impossible Cloud Network Token',
+    18,
+    '0xe0cd4cacddcbf4f36e845407ce53e87717b6601d',
+    UnderlyingAsset['baseeth:icnt'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    'f5df6b74-c009-4d28-95e6-3cc7e66427b6',
+    'baseeth:weth',
+    'Wrapped Ether',
+    18,
+    '0x4200000000000000000000000000000000000006',
+    UnderlyingAsset['baseeth:weth'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    'e8c95214-a0d1-42b7-8ea1-64857c324216',
+    'baseeth:morpho',
+    'Morpho Token',
+    18,
+    '0xbaa5cc21fd487b8fcc2f632f3f4e8d37262a0842',
+    UnderlyingAsset['baseeth:morpho'],
+    Networks.main.basechain
   ),
   hederaCoin(
     '98aad956-27ee-45dd-aa43-6a23c9a1d1d0',
