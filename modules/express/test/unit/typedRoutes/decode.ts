@@ -6,6 +6,7 @@ import { LoginRequest } from '../../../src/typedRoutes/api/common/login';
 import { VerifyAddressBody } from '../../../src/typedRoutes/api/common/verifyAddress';
 import { VerifyAddressV2Body, VerifyAddressV2Params } from '../../../src/typedRoutes/api/v2/verifyAddress';
 import { SimpleCreateRequestBody } from '../../../src/typedRoutes/api/v1/simpleCreate';
+import { SignerMacaroonBody, SignerMacaroonParams } from '../../../src/typedRoutes/api/v2/signerMacaroon';
 
 export function assertDecode<T>(codec: t.Type<T, unknown>, input: unknown): T {
   const result = codec.decode(input);
@@ -128,5 +129,17 @@ describe('io-ts decode tests', function () {
     assertDecode(t.type(SimpleCreateRequestBody), {
       passphrase: 'pass',
     });
+  });
+  it('express.lightning.signerMacaroon body valid', function () {
+    assertDecode(t.type(SignerMacaroonBody), { passphrase: 'pw', addIpCaveatToMacaroon: true });
+  });
+  it('express.lightning.signerMacaroon body valid (missing addIpCaveatToMacaroon)', function () {
+    assertDecode(t.type(SignerMacaroonBody), { passphrase: 'pw' });
+  });
+  it('express.lightning.signerMacaroon params valid', function () {
+    assertDecode(t.type(SignerMacaroonParams), { coin: 'lnbtc', walletId: 'wid123' });
+  });
+  it('express.lightning.signerMacaroon params invalid', function () {
+    assert.throws(() => assertDecode(t.type(SignerMacaroonParams), { coin: 'lnbtc' }));
   });
 });
