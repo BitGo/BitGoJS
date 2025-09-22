@@ -1,4 +1,4 @@
-import { BaseMessage, MessageOptions, MessageStandardType, Signature } from '@bitgo/sdk-core';
+import { BaseMessage, MessageOptions, MessageStandardType, Signature } from '@bitgo-beta/sdk-core';
 import * as CardanoSL from '@emurgo/cardano-serialization-lib-nodejs';
 import { constructCSLCoseObjects, coseObjectsOutputToBuffer, createCSLSigStructure } from './utils';
 

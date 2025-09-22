@@ -1,5 +1,5 @@
-import { coins } from '@bitgo/statics';
-import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
+import { coins } from '@bitgo-beta/statics';
+import { BuildTransactionError, TransactionType } from '@bitgo-beta/sdk-core';
 import * as assert from 'assert';
 import { Credential, Signature } from '@flarenetwork/flarejs';
 import { AtomicTransactionBuilder } from '../../../src/lib/atomicTransactionBuilder';

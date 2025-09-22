@@ -1,4 +1,4 @@
-import * as sjcl from '@bitgo/sjcl';
+import * as sjcl from '@bitgo-beta/sjcl';
 import { randomBytes } from 'crypto';
 
 /**

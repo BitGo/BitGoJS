@@ -2,9 +2,9 @@
  * @prettier
  */
 import 'should';
-import { bip32, BIP32Interface } from '@bitgo/utxo-lib';
-import { sanitizeLegacyPath, bitcoin } from '@bitgo/sdk-core';
-import { getSeed } from '@bitgo/sdk-test';
+import { bip32, BIP32Interface } from '@bitgo-beta/utxo-lib';
+import { sanitizeLegacyPath, bitcoin } from '@bitgo-beta/sdk-core';
+import { getSeed } from '@bitgo-beta/sdk-test';
 const { HDNode, hdPath } = bitcoin;
 type Derivable = bitcoin.Derivable;
 

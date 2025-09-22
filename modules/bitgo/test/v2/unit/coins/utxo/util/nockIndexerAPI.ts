@@ -2,8 +2,8 @@
  * @prettier
  */
 import nock = require('nock');
-import * as utxolib from '@bitgo/utxo-lib';
-import { AbstractUtxoCoin } from '@bitgo/abstract-utxo';
+import * as utxolib from '@bitgo-beta/utxo-lib';
+import { AbstractUtxoCoin } from '@bitgo-beta/abstract-utxo';
 import { nockBitGo } from './nockBitGo';
 
 interface ImsUnspent {

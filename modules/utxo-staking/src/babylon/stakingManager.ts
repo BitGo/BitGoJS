@@ -1,6 +1,6 @@
 import * as bitcoinjslib from 'bitcoinjs-lib';
-import * as utxolib from '@bitgo/utxo-lib';
-import * as vendor from '@bitgo/babylonlabs-io-btc-staking-ts';
+import * as utxolib from '@bitgo-beta/utxo-lib';
+import * as vendor from '@bitgo-beta/babylonlabs-io-btc-staking-ts';
 import {
   BIP322Sig,
   BTCSigType,

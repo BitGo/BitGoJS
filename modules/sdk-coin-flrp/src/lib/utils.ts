@@ -7,9 +7,9 @@ import {
   isValidXpub,
   NotImplementedError,
   ParseTransactionError,
-} from '@bitgo/sdk-core';
-import { FlareNetwork } from '@bitgo/statics';
-import { ecc } from '@bitgo/secp256k1';
+} from '@bitgo-beta/sdk-core';
+import { FlareNetwork } from '@bitgo-beta/statics';
+import { ecc } from '@bitgo-beta/secp256k1';
 import { createHash } from 'crypto';
 import { DeprecatedOutput, DeprecatedTx, Output } from './iface';
 import {

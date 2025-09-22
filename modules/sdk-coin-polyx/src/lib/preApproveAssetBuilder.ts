@@ -1,7 +1,7 @@
-import { TransactionType, InvalidTransactionError } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { TransactionType, InvalidTransactionError } from '@bitgo-beta/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { DecodedSignedTx, DecodedSigningPayload, defineMethod, UnsignedTransaction } from '@substrate/txwrapper-core';
-import { Interface } from '@bitgo/abstract-substrate';
+import { Interface } from '@bitgo-beta/abstract-substrate';
 import { PolyxBaseBuilder } from './baseBuilder';
 import { TxMethod, PreApproveAssetArgs, MethodNames } from './iface';
 import { PreApproveAssetTransactionSchema } from './txnSchema';

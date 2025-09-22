@@ -1,6 +1,6 @@
 import * as express from 'express';
-import { decodeOrElse } from '@bitgo/sdk-core';
-import { getLightningWallet, LightningOnchainWithdrawParams } from '@bitgo/abstract-lightning';
+import { decodeOrElse } from '@bitgo-beta/sdk-core';
+import { getLightningWallet, LightningOnchainWithdrawParams } from '@bitgo-beta/abstract-lightning';
 import { ApiResponseError } from '../errors';
 
 export async function handleLightningWithdraw(req: express.Request): Promise<any> {

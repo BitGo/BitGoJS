@@ -1,5 +1,5 @@
-import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BuildTransactionError, TransactionType } from '@bitgo-beta/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { Amount, Payment } from 'xrpl';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';

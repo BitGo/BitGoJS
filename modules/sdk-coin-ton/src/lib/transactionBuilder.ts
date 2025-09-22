@@ -7,11 +7,11 @@ import {
   PublicKey as BasePublicKey,
   Signature,
   TransactionType,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import { Transaction } from './transaction';
 import utils from './utils';
 import BigNumber from 'bignumber.js';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import TonWeb from 'tonweb';
 
 export const WITHDRAW_OPCODE = '00001000';

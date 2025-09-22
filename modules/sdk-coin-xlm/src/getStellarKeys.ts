@@ -1,4 +1,4 @@
-import { BitGoBase, InitiateRecoveryOptions } from '@bitgo/sdk-core';
+import { BitGoBase, InitiateRecoveryOptions } from '@bitgo-beta/sdk-core';
 import * as stellar from 'stellar-sdk';
 import { Utils } from './lib';
 

@@ -1,12 +1,12 @@
-import { BitGoAPI } from '@bitgo/sdk-api';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
 import { randomBytes } from 'crypto';
 import should = require('should');
 import { Dot, Tdot, KeyPair } from '../../src';
 import * as testData from '../fixtures';
 import { chainName, txVersion, genesisHash, specVersion } from '../resources';
 import * as sinon from 'sinon';
-import { Wallet } from '@bitgo/sdk-core';
+import { Wallet } from '@bitgo-beta/sdk-core';
 
 describe('DOT:', function () {
   let bitgo: TestBitGoAPI;

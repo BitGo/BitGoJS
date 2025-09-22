@@ -3,9 +3,9 @@
  */
 import assert from 'assert';
 import { BigNumber } from 'bignumber.js';
-import { bip32 } from '@bitgo/utxo-lib';
+import { bip32 } from '@bitgo-beta/utxo-lib';
 import * as _ from 'lodash';
-import { CoinFeature } from '@bitgo/statics';
+import { CoinFeature } from '@bitgo-beta/statics';
 
 import { sanitizeLegacyPath } from '../../api';
 import * as common from '../../common';

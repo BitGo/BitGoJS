@@ -1,6 +1,13 @@
-import { BaseKey, BaseTransaction, Entry, Recipient, TransactionRecipient, TransactionType } from '@bitgo/sdk-core';
+import {
+  BaseKey,
+  BaseTransaction,
+  Entry,
+  Recipient,
+  TransactionRecipient,
+  TransactionType,
+} from '@bitgo-beta/sdk-core';
 import { TxData, TransactionExplanation } from './iface';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import TonWeb from 'tonweb';
 import { BN } from 'bn.js';
 import { Cell } from 'tonweb/dist/types/boc/cell';

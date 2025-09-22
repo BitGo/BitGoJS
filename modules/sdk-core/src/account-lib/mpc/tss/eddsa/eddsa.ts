@@ -48,7 +48,7 @@ import {
   GShare,
 } from './types';
 import assert from 'assert';
-import { HDTree } from '@bitgo/sdk-lib-mpc';
+import { HDTree } from '@bitgo-beta/sdk-lib-mpc';
 
 // 2^256
 const base = BigInt('0x010000000000000000000000000000000000000000000000000000000000000000');

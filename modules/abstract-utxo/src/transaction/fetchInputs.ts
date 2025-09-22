@@ -1,5 +1,5 @@
-import * as utxolib from '@bitgo/utxo-lib';
-import { BitGoBase, IRequestTracer } from '@bitgo/sdk-core';
+import * as utxolib from '@bitgo-beta/utxo-lib';
+import { BitGoBase, IRequestTracer } from '@bitgo-beta/sdk-core';
 
 import { AbstractUtxoCoin, TransactionPrebuild } from '../abstractUtxoCoin';
 

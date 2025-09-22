@@ -2,7 +2,7 @@ import should from 'should';
 import { utils } from '../../src';
 import { rawTx, stakingTx } from '../resources';
 import { testnetMaterial } from '../../src/resources';
-import { Interface } from '@bitgo/abstract-substrate';
+import { Interface } from '@bitgo-beta/abstract-substrate';
 
 type Material = Interface.Material;
 

@@ -1,7 +1,7 @@
-import { KeyPairOptions } from '@bitgo/sdk-core';
+import { KeyPairOptions } from '@bitgo-beta/sdk-core';
 import { pubkeyToAddress } from '@cosmjs/amino';
 
-import { CosmosKeyPair, PubKeyType } from '@bitgo/abstract-cosmos';
+import { CosmosKeyPair, PubKeyType } from '@bitgo-beta/abstract-cosmos';
 /**
  * Cosmos keys and address management.
  */

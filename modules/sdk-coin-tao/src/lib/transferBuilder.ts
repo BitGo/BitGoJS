@@ -1,5 +1,5 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { TransferBuilder as SubstrateTransferBuilder } from '@bitgo/abstract-substrate';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
+import { TransferBuilder as SubstrateTransferBuilder } from '@bitgo-beta/abstract-substrate';
 import utils from './utils';
 
 export class TransferBuilder extends SubstrateTransferBuilder {

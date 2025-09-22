@@ -7,9 +7,14 @@
  * @coinWebsite https://docs.soneium.org/soneium-chain/quick-start/info
  */
 
-import { BaseCoin, BitGoBase, MPCAlgorithm, MultisigType, multisigTypes } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, coins, ethGasConfigs } from '@bitgo/statics';
-import { AbstractEthLikeNewCoins, UnsignedSweepTxMPCv2, RecoverOptions, OfflineVaultTxInfo } from '@bitgo/abstract-eth';
+import { BaseCoin, BitGoBase, MPCAlgorithm, MultisigType, multisigTypes } from '@bitgo-beta/sdk-core';
+import { BaseCoin as StaticsBaseCoin, coins, ethGasConfigs } from '@bitgo-beta/statics';
+import {
+  AbstractEthLikeNewCoins,
+  UnsignedSweepTxMPCv2,
+  RecoverOptions,
+  OfflineVaultTxInfo,
+} from '@bitgo-beta/abstract-eth';
 import { TransactionBuilder } from './lib';
 import * as utils from './lib/utils';
 

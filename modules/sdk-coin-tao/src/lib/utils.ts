@@ -1,5 +1,5 @@
-import { Interface, Utils as SubstrateUtils } from '@bitgo/abstract-substrate';
-import { BaseCoin as CoinConfig, coins, NetworkType, TaoCoin } from '@bitgo/statics';
+import { Interface, Utils as SubstrateUtils } from '@bitgo-beta/abstract-substrate';
+import { BaseCoin as CoinConfig, coins, NetworkType, TaoCoin } from '@bitgo-beta/statics';
 import assert from 'assert';
 import { mainnetMaterial, testnetMaterial } from '../resources';
 

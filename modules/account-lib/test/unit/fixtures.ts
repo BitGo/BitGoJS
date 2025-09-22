@@ -1,4 +1,4 @@
-import { BaseCoin } from '@bitgo/statics';
+import { BaseCoin } from '@bitgo-beta/statics';
 import {
   BaseMessage,
   BaseMessageBuilder,
@@ -7,7 +7,7 @@ import {
   IMessageBuilder,
   MessageOptions,
   MessageStandardType,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 
 export class MockMessageBuilderFactory extends BaseMessageBuilderFactory {
   constructor(coinConfig: Readonly<BaseCoin>) {

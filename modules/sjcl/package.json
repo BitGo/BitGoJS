@@ -1,6 +1,6 @@
 {
-  "name": "@bitgo/sjcl",
-  "version": "0.0.0-semantic-release-managed",
+  "name": "@bitgo-beta/sjcl",
+  "version": "1.0.2-beta.1439",
   "description": "fork of Stanford Javascript Crypto Library",
   "main": "sjcl.min.js",
   "author": "BitGo SDK Team <sdkteam@bitgo.com>",

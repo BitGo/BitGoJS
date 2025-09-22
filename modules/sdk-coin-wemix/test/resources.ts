@@ -1,4 +1,4 @@
-import { KeyPair } from '@bitgo/abstract-eth';
+import { KeyPair } from '@bitgo-beta/abstract-eth';
 
 export const PRIVATE_KEY_1 = '950d23766c0d0adad45a7dcf0db7a93b2c91fe411a5154c9a4ac23758c2ae4d5';
 

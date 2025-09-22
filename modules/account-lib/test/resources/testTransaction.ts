@@ -1,4 +1,4 @@
-import { BaseKey, BaseTransaction } from '@bitgo/sdk-core';
+import { BaseKey, BaseTransaction } from '@bitgo-beta/sdk-core';
 
 /**
  * The purpose of this coin is to provide a mock to use for the test runner since there is no easy

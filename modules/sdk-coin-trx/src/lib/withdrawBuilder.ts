@@ -1,6 +1,12 @@
 import { createHash } from 'crypto';
-import { TransactionType, BaseKey, ExtendTransactionError, BuildTransactionError, SigningError } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import {
+  TransactionType,
+  BaseKey,
+  ExtendTransactionError,
+  BuildTransactionError,
+  SigningError,
+} from '@bitgo-beta/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { TransactionReceipt, WithdrawBalanceContract } from './iface';

@@ -1,6 +1,6 @@
 import { avmSerial, pvmSerial, UnsignedTx } from '@bitgo-forks/avalanchejs';
-import { BaseTransactionBuilder, BuildTransactionError } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseTransactionBuilder, BuildTransactionError } from '@bitgo-beta/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { DecodedUtxoObj, Tx } from './iface';
 import { KeyPair } from './keyPair';
 import { Transaction } from './transaction';

@@ -48,7 +48,7 @@ describe('Lightning Wallet Routes', () => {
 
       const proxyquire = require('proxyquire');
       const lightningRoutes = proxyquire('../../../src/lightning/lightningWalletRoutes', {
-        '@bitgo/abstract-lightning': {
+        '@bitgo-beta/abstract-lightning': {
           updateWalletCoinSpecific: updateStub,
         },
       });

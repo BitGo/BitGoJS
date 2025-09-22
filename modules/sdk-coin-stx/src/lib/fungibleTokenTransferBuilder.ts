@@ -1,5 +1,5 @@
-import { BaseCoin as CoinConfig, NetworkType } from '@bitgo/statics';
-import { InvalidParameterValueError, TransactionType } from '@bitgo/sdk-core';
+import { BaseCoin as CoinConfig, NetworkType } from '@bitgo-beta/statics';
+import { InvalidParameterValueError, TransactionType } from '@bitgo-beta/sdk-core';
 import {
   AddressHashMode,
   AddressVersion,

@@ -8,7 +8,7 @@ import * as base58 from 'bs58';
 import * as nearAPI from 'near-api-js';
 import * as request from 'superagent';
 
-import { auditEddsaPrivateKey } from '@bitgo/sdk-lib-mpc';
+import { auditEddsaPrivateKey } from '@bitgo-beta/sdk-lib-mpc';
 import {
   AuditDecryptedKeyParams,
   BaseAddress,
@@ -40,8 +40,8 @@ import {
   TransactionExplanation,
   VerifyAddressOptions,
   VerifyTransactionOptions,
-} from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, CoinFamily, coins, Nep141Token, Networks } from '@bitgo/statics';
+} from '@bitgo-beta/sdk-core';
+import { BaseCoin as StaticsBaseCoin, CoinFamily, coins, Nep141Token, Networks } from '@bitgo-beta/statics';
 
 import { KeyPair as NearKeyPair, Transaction, TransactionBuilder, TransactionBuilderFactory } from './lib';
 import nearUtils from './lib/utils';

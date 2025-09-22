@@ -1,10 +1,10 @@
 import { DecodedSigningPayload } from '@substrate/txwrapper-core';
 import { decode } from '@substrate/txwrapper-polkadot';
-import { coins } from '@bitgo/statics';
+import { coins } from '@bitgo-beta/statics';
 import should from 'should';
 import sinon from 'sinon';
 import { TransactionBuilderFactory, BondExtraBuilder, Transaction } from '../../../src/lib';
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 import utils from '../../../src/lib/utils';
 
 import { accounts, stakingTx } from '../../resources';

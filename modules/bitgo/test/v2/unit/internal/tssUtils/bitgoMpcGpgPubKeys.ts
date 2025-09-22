@@ -6,8 +6,8 @@ import {
   EnvironmentName,
   IRequestTracer,
   Wallet,
-} from '@bitgo/sdk-core';
-import { TestBitGo } from '@bitgo/sdk-test';
+} from '@bitgo-beta/sdk-core';
+import { TestBitGo } from '@bitgo-beta/sdk-test';
 
 import { BitGo } from '../../../../../src';
 import * as openpgp from 'openpgp';

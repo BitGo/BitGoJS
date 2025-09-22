@@ -1,5 +1,5 @@
-import * as utxolib from '@bitgo/utxo-lib';
-import { isTriple, IWallet } from '@bitgo/sdk-core';
+import * as utxolib from '@bitgo-beta/utxo-lib';
+import { isTriple, IWallet } from '@bitgo-beta/sdk-core';
 
 import { TransactionExplanation } from '../abstractUtxoCoin';
 import { getDescriptorMapFromWallet, isDescriptorWallet } from '../descriptor';

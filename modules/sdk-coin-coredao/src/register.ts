@@ -1,4 +1,4 @@
-import { BitGoBase } from '@bitgo/sdk-core';
+import { BitGoBase } from '@bitgo-beta/sdk-core';
 import { Coredao } from './coredao';
 import { Tcoredao } from './tcoredao';
 import { CoredaoToken } from './coredaoToken';

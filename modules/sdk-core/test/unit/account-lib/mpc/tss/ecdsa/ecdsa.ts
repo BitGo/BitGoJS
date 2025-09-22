@@ -9,7 +9,7 @@ import {
   HashCommitment,
   hexToBigInt,
   bigIntToBufferBE,
-} from '@bitgo/sdk-lib-mpc';
+} from '@bitgo-beta/sdk-lib-mpc';
 import { Ecdsa } from '../../../../../../src/account-lib/mpc/tss';
 import {
   PublicUTShare,
@@ -17,7 +17,7 @@ import {
   SignCombineRT,
 } from '../../../../../../src/account-lib/mpc/tss/ecdsa/types';
 import { paillierKeyPairs } from './fixtures';
-import { loadWebAssembly } from '@bitgo/sdk-opensslbytes';
+import { loadWebAssembly } from '@bitgo-beta/sdk-opensslbytes';
 
 const openSSLBytes = loadWebAssembly().buffer;
 

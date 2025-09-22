@@ -2,7 +2,7 @@ import {
   SignTransactionOptions as BaseSignTransactionOptions,
   TransactionExplanation as BaseTransactionExplanation,
   TransactionType,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import { BaseTxInfo, DecodedUnsignedTx, TypeRegistry } from '@substrate/txwrapper-core/lib/types';
 import { Args } from '@substrate/txwrapper-core/lib/types/method';
 

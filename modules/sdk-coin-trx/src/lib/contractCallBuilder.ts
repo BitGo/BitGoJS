@@ -1,5 +1,5 @@
 import { createHash } from 'crypto';
-import { BaseCoin as CoinConfig, TronNetwork } from '@bitgo/statics';
+import { BaseCoin as CoinConfig, TronNetwork } from '@bitgo-beta/statics';
 import BigNumber from 'bignumber.js';
 import { protocol } from '../../resources/protobuf/tron';
 import {
@@ -9,7 +9,7 @@ import {
   InvalidParameterValueError,
   SigningError,
   TransactionType,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import { TransactionBuilder } from './transactionBuilder';
 import { Address } from './address';
 import { Transaction } from './transaction';

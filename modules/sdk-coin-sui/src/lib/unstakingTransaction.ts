@@ -7,9 +7,9 @@ import {
   Signature,
   TransactionRecipient,
   TransactionType,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import { UnstakingProgrammableTransaction, SuiTransaction, TransactionExplanation, TxData } from './iface';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import utils, { isImmOrOwnedObj } from './utils';
 import { Buffer } from 'buffer';
 import { Transaction } from './transaction';

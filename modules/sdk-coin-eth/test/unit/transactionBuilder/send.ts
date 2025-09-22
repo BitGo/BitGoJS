@@ -1,5 +1,5 @@
-import { TransactionType, BaseTransaction } from '@bitgo/sdk-core';
-import { coins, EthereumNetwork } from '@bitgo/statics';
+import { TransactionType, BaseTransaction } from '@bitgo-beta/sdk-core';
+import { coins, EthereumNetwork } from '@bitgo-beta/statics';
 import EthereumAbi from 'ethereumjs-abi';
 import assert from 'assert';
 import should from 'should';

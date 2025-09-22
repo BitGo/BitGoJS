@@ -1,7 +1,7 @@
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
 import { Celo, Tcelo } from '../../src';
-import { Wallet } from '@bitgo/sdk-core';
+import { Wallet } from '@bitgo-beta/sdk-core';
 
 describe('Celo Gold', function () {
   let bitgo: TestBitGoAPI;

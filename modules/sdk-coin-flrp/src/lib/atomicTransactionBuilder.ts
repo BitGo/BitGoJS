@@ -1,5 +1,5 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BuildTransactionError, TransactionType, BaseTransaction } from '@bitgo/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
+import { BuildTransactionError, TransactionType, BaseTransaction } from '@bitgo-beta/sdk-core';
 import { Credential, Signature, TransferableInput, TransferableOutput } from '@flarenetwork/flarejs';
 import { TransactionExplanation, DecodedUtxoObj } from './iface';
 

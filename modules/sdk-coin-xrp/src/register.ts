@@ -1,4 +1,4 @@
-import { BitGoBase } from '@bitgo/sdk-core';
+import { BitGoBase } from '@bitgo-beta/sdk-core';
 import { Txrp } from './txrp';
 import { Xrp } from './xrp';
 import { XrpToken } from './xrpToken';

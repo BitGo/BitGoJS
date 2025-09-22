@@ -1,8 +1,8 @@
 import * as stellar from 'stellar-sdk';
 import * as _ from 'lodash';
-import { CoinFamily } from '@bitgo/statics';
+import { CoinFamily } from '@bitgo-beta/statics';
 import { createRawKey } from './lib/utils';
-import { AlgoLib } from '@bitgo/sdk-coin-algo';
+import { AlgoLib } from '@bitgo-beta/sdk-coin-algo';
 /**
  * This classes intention is to guess/verify what seeds come from where.
  */

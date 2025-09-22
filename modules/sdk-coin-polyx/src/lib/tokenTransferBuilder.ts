@@ -1,9 +1,9 @@
-import { TransactionType } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { TransactionType } from '@bitgo-beta/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { PolyxBaseBuilder } from './baseBuilder';
 import { TxMethod, MethodNames, AddAndAffirmWithMediatorsArgs, SettlementType, PortfolioKind } from './iface';
 import { Transaction } from './transaction';
-import { Interface } from '@bitgo/abstract-substrate';
+import { Interface } from '@bitgo-beta/abstract-substrate';
 import { AddAndAffirmWithMediatorsTransactionSchema } from './txnSchema';
 import { DecodedSignedTx, DecodedSigningPayload, defineMethod, UnsignedTransaction } from '@substrate/txwrapper-core';
 

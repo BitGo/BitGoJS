@@ -1,4 +1,4 @@
-import { BitGoBase } from '@bitgo/sdk-core';
+import { BitGoBase } from '@bitgo-beta/sdk-core';
 import { Sgb } from './sgb';
 import { Tsgb } from './tsgb';
 

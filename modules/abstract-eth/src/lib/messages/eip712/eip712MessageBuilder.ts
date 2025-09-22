@@ -1,5 +1,5 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseMessageBuilder, IMessage, MessageOptions, MessageStandardType } from '@bitgo/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
+import { BaseMessageBuilder, IMessage, MessageOptions, MessageStandardType } from '@bitgo-beta/sdk-core';
 import { EIP712Message } from './eip712Message';
 
 export class Eip712MessageBuilder extends BaseMessageBuilder {

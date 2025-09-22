@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 
 import {
   formatDescriptorAddress,

@@ -1,10 +1,10 @@
-import { toHex, TransactionType } from '@bitgo/sdk-core';
-import { coins } from '@bitgo/statics';
+import { toHex, TransactionType } from '@bitgo-beta/sdk-core';
+import { coins } from '@bitgo-beta/statics';
 import { fromBase64 } from '@cosmjs/encoding';
 import should from 'should';
 const bech32 = require('bech32-buffer');
 
-import { CosmosTransaction, SendMessage } from '@bitgo/abstract-cosmos';
+import { CosmosTransaction, SendMessage } from '@bitgo-beta/abstract-cosmos';
 import { RuneUtils } from '../../src/lib/utils';
 import * as testData from '../resources/trune';
 

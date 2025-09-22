@@ -28,10 +28,10 @@ import {
 } from '@stacks/transactions';
 import { secp256k1 } from '@noble/curves/secp256k1';
 import * as _ from 'lodash';
-import { InvalidTransactionError, isValidXprv, isValidXpub, SigningError, UtilsError } from '@bitgo/sdk-core';
+import { InvalidTransactionError, isValidXprv, isValidXpub, SigningError, UtilsError } from '@bitgo-beta/sdk-core';
 import { AddressDetails, SendParams, TokenTransferParams } from './iface';
 import { KeyPair } from '.';
-import { coins, Sip10Token, StacksNetwork as BitgoStacksNetwork } from '@bitgo/statics';
+import { coins, Sip10Token, StacksNetwork as BitgoStacksNetwork } from '@bitgo-beta/statics';
 import { VALID_CONTRACT_FUNCTION_NAMES } from './constants';
 
 /**

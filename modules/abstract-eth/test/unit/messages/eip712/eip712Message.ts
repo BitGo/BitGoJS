@@ -1,7 +1,7 @@
 import 'should';
 import { EIP712Message } from '../../../../src/';
 import { fixtures } from './fixtures';
-import { MessageStandardType } from '@bitgo/sdk-core';
+import { MessageStandardType } from '@bitgo-beta/sdk-core';
 import { testEthMessageSigning } from '../abstractEthMessagesTests';
 
 describe('EIP712 Message', () => {

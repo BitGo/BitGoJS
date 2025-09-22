@@ -1,4 +1,4 @@
-import { CosmosTransactionMessage } from '@bitgo/abstract-cosmos';
+import { CosmosTransactionMessage } from '@bitgo-beta/abstract-cosmos';
 
 export interface MessageData {
   typeUrl: string;

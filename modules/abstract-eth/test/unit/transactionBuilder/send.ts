@@ -1,4 +1,4 @@
-import { TransactionType, BaseTransaction } from '@bitgo/sdk-core';
+import { TransactionType, BaseTransaction } from '@bitgo-beta/sdk-core';
 import EthereumAbi from 'ethereumjs-abi';
 import should from 'should';
 import * as ethUtil from 'ethereumjs-util';

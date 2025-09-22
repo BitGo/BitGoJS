@@ -1,5 +1,5 @@
 import { Descriptor, Psbt } from '@bitgo/wasm-miniscript';
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 
 export function updateInputWithDescriptor(psbt: utxolib.Psbt, inputIndex: number, descriptor: Descriptor): void {
   const wrappedPsbt = Psbt.deserialize(psbt.toBuffer());

@@ -6,7 +6,7 @@ import {
   hexToBigInt,
   convertHexArrToBigIntArr,
   convertBigIntArrToHexArr,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import should from 'should';
 
 describe('Crypto utils', function () {

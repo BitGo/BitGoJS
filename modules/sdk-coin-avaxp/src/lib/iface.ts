@@ -1,4 +1,4 @@
-import { TransactionExplanation as BaseTransactionExplanation, Entry, TransactionType } from '@bitgo/sdk-core';
+import { TransactionExplanation as BaseTransactionExplanation, Entry, TransactionType } from '@bitgo-beta/sdk-core';
 import { EVMBaseTx as DeprecatedEVMBaseTx, EVMOutput, Tx as EVMTx } from 'avalanche/dist/apis/evm';
 import {
   BaseTx as DeprecatedPMVBaseTx,

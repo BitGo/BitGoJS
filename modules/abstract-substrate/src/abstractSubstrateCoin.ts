@@ -22,13 +22,13 @@ import {
   SignedTransaction,
   VerifyAddressOptions,
   VerifyTransactionOptions,
-} from '@bitgo/sdk-core';
-import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+} from '@bitgo-beta/sdk-core';
+import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo-beta/statics';
 import { KeyPair as SubstrateKeyPair, Transaction } from './lib';
 import { DEFAULT_SUBSTRATE_PREFIX } from './lib/constants';
 import { SignTransactionOptions, VerifiedTransactionParameters, Material } from './lib/iface';
 import utils from './lib/utils';
-import { auditEddsaPrivateKey, getDerivationPath } from '@bitgo/sdk-lib-mpc';
+import { auditEddsaPrivateKey, getDerivationPath } from '@bitgo-beta/sdk-lib-mpc';
 import BigNumber from 'bignumber.js';
 import { ApiPromise } from '@polkadot/api';
 

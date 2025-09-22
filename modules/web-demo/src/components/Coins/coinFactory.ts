@@ -1,5 +1,5 @@
-import { BitGoAPI } from '@bitgo/sdk-api';
-import { BaseCoin } from '@bitgo/sdk-core';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
+import { BaseCoin } from '@bitgo-beta/sdk-core';
 
 class CoinFactory {
   private coinCache: Map<string, BaseCoin>;
@@ -27,162 +27,162 @@ class CoinFactory {
     switch (name) {
       case 'ada':
       case 'tada': {
-        const { register } = await import('@bitgo/sdk-coin-ada');
+        const { register } = await import('@bitgo-beta/sdk-coin-ada');
         return this.cacheAndRegister(name, sdk, register);
       }
       case 'algo':
       case 'talgo': {
-        const { register } = await import('@bitgo/sdk-coin-algo');
+        const { register } = await import('@bitgo-beta/sdk-coin-algo');
         return this.cacheAndRegister(name, sdk, register);
       }
       case 'avaxc':
       case 'tavaxc': {
-        const { register } = await import('@bitgo/sdk-coin-avaxc');
+        const { register } = await import('@bitgo-beta/sdk-coin-avaxc');
         return this.cacheAndRegister(name, sdk, register);
       }
       case 'avaxp':
       case 'tavaxp': {
-        const { register } = await import('@bitgo/sdk-coin-avaxp');
+        const { register } = await import('@bitgo-beta/sdk-coin-avaxp');
         return this.cacheAndRegister(name, sdk, register);
       }
       case 'bch':
       case 'tbch': {
-        const { register } = await import('@bitgo/sdk-coin-bch');
+        const { register } = await import('@bitgo-beta/sdk-coin-bch');
         return this.cacheAndRegister(name, sdk, register);
       }
       case 'bcha':
       case 'tbcha': {
-        const { register } = await import('@bitgo/sdk-coin-bcha');
+        const { register } = await import('@bitgo-beta/sdk-coin-bcha');
         return this.cacheAndRegister(name, sdk, register);
       }
       case 'bsc':
       case 'tbsc': {
-        const { register } = await import('@bitgo/sdk-coin-bsc');
+        const { register } = await import('@bitgo-beta/sdk-coin-bsc');
         return this.cacheAndRegister(name, sdk, register);
       }
       case 'bsv':
       case 'tbsv': {
-        const { register } = await import('@bitgo/sdk-coin-bsv');
+        const { register } = await import('@bitgo-beta/sdk-coin-bsv');
         return this.cacheAndRegister(name, sdk, register);
       }
       case 'btc':
       case 'tbtc': {
-        const { register } = await import('@bitgo/sdk-coin-btc');
+        const { register } = await import('@bitgo-beta/sdk-coin-btc');
         return this.cacheAndRegister(name, sdk, register);
       }
       case 'btg': {
-        const { register } = await import('@bitgo/sdk-coin-btg');
+        const { register } = await import('@bitgo-beta/sdk-coin-btg');
         return this.cacheAndRegister(name, sdk, register);
       }
       case 'celo':
       case 'tcelo': {
-        const { register } = await import('@bitgo/sdk-coin-celo');
+        const { register } = await import('@bitgo-beta/sdk-coin-celo');
         return this.cacheAndRegister(name, sdk, register);
       }
       case 'cspr':
       case 'tcspr': {
-        const { register } = await import('@bitgo/sdk-coin-cspr');
+        const { register } = await import('@bitgo-beta/sdk-coin-cspr');
         return this.cacheAndRegister(name, sdk, register);
       }
       case 'dash':
       case 'tdash': {
-        const { register } = await import('@bitgo/sdk-coin-dash');
+        const { register } = await import('@bitgo-beta/sdk-coin-dash');
         return this.cacheAndRegister(name, sdk, register);
       }
       case 'doge':
       case 'tdoge': {
-        const { register } = await import('@bitgo/sdk-coin-doge');
+        const { register } = await import('@bitgo-beta/sdk-coin-doge');
         return this.cacheAndRegister(name, sdk, register);
       }
       case 'dot':
       case 'tdot': {
-        const { register } = await import('@bitgo/sdk-coin-dot');
+        const { register } = await import('@bitgo-beta/sdk-coin-dot');
         return this.cacheAndRegister(name, sdk, register);
       }
       case 'eos':
       case 'teos': {
-        const { register } = await import('@bitgo/sdk-coin-eos');
+        const { register } = await import('@bitgo-beta/sdk-coin-eos');
         return this.cacheAndRegister(name, sdk, register);
       }
       case 'etc':
       case 'tetc': {
-        const { register } = await import('@bitgo/sdk-coin-etc');
+        const { register } = await import('@bitgo-beta/sdk-coin-etc');
         return this.cacheAndRegister(name, sdk, register);
       }
       case 'eth':
       case 'teth':
       case 'gteth':
       case 'hteth': {
-        const { register } = await import('@bitgo/sdk-coin-eth');
+        const { register } = await import('@bitgo-beta/sdk-coin-eth');
         return this.cacheAndRegister(name, sdk, register);
       }
       case 'ethw': {
-        const { register } = await import('@bitgo/sdk-coin-ethw');
+        const { register } = await import('@bitgo-beta/sdk-coin-ethw');
         return this.cacheAndRegister(name, sdk, register);
       }
       case 'hbar':
       case 'thbar': {
-        const { register } = await import('@bitgo/sdk-coin-hbar');
+        const { register } = await import('@bitgo-beta/sdk-coin-hbar');
         return this.cacheAndRegister(name, sdk, register);
       }
       case 'ltc':
       case 'tltc': {
-        const { register } = await import('@bitgo/sdk-coin-ltc');
+        const { register } = await import('@bitgo-beta/sdk-coin-ltc');
         return this.cacheAndRegister(name, sdk, register);
       }
       case 'near':
       case 'tnear': {
-        const { register } = await import('@bitgo/sdk-coin-near');
+        const { register } = await import('@bitgo-beta/sdk-coin-near');
         return this.cacheAndRegister(name, sdk, register);
       }
       case 'polygon':
       case 'tpolygon': {
-        const { register } = await import('@bitgo/sdk-coin-polygon');
+        const { register } = await import('@bitgo-beta/sdk-coin-polygon');
         return this.cacheAndRegister(name, sdk, register);
       }
       case 'rbtc':
       case 'trbtc': {
-        const { register } = await import('@bitgo/sdk-coin-rbtc');
+        const { register } = await import('@bitgo-beta/sdk-coin-rbtc');
         return this.cacheAndRegister(name, sdk, register);
       }
       case 'sol':
       case 'tsol': {
-        const { register } = await import('@bitgo/sdk-coin-sol');
+        const { register } = await import('@bitgo-beta/sdk-coin-sol');
         return this.cacheAndRegister(name, sdk, register);
       }
       case 'stx':
       case 'tstx': {
-        const { register } = await import('@bitgo/sdk-coin-stx');
+        const { register } = await import('@bitgo-beta/sdk-coin-stx');
         return this.cacheAndRegister(name, sdk, register);
       }
       case 'sui':
       case 'tsui': {
-        const { register } = await import('@bitgo/sdk-coin-sui');
+        const { register } = await import('@bitgo-beta/sdk-coin-sui');
         return this.cacheAndRegister(name, sdk, register);
       }
       case 'trx':
       case 'ttrx': {
-        const { register } = await import('@bitgo/sdk-coin-trx');
+        const { register } = await import('@bitgo-beta/sdk-coin-trx');
         return this.cacheAndRegister(name, sdk, register);
       }
       case 'txlm':
       case 'xlm': {
-        const { register } = await import('@bitgo/sdk-coin-xlm');
+        const { register } = await import('@bitgo-beta/sdk-coin-xlm');
         return this.cacheAndRegister(name, sdk, register);
       }
       case 'xrp':
       case 'txrp': {
-        const { register } = await import('@bitgo/sdk-coin-xrp');
+        const { register } = await import('@bitgo-beta/sdk-coin-xrp');
         return this.cacheAndRegister(name, sdk, register);
       }
       case 'xtz':
       case 'txtz': {
-        const { register } = await import('@bitgo/sdk-coin-xtz');
+        const { register } = await import('@bitgo-beta/sdk-coin-xtz');
         return this.cacheAndRegister(name, sdk, register);
       }
       case 'zec':
       case 'tzec': {
-        const { register } = await import('@bitgo/sdk-coin-zec');
+        const { register } = await import('@bitgo-beta/sdk-coin-zec');
         return this.cacheAndRegister(name, sdk, register);
       }
     }

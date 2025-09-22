@@ -1,8 +1,8 @@
 import should from 'should';
 import * as testData from '../../resources/icp';
 import sinon from 'sinon';
-import { TestBitGo } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { TestBitGo } from '@bitgo-beta/sdk-test';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
 import nock from 'nock';
 import { Icp } from '../../../src/index';
 import { IcpAgent } from '../../../src/lib/icpAgent';

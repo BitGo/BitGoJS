@@ -1,6 +1,6 @@
-import { decodeOrElse } from '@bitgo/sdk-core';
-import { bip322 } from '@bitgo/utxo-core';
-import { bitgo, networks, Network } from '@bitgo/utxo-lib';
+import { decodeOrElse } from '@bitgo-beta/sdk-core';
+import { bip322 } from '@bitgo-beta/utxo-core';
+import { bitgo, networks, Network } from '@bitgo-beta/utxo-lib';
 import * as t from 'io-ts';
 
 const BIP322MessageInfo = t.type({

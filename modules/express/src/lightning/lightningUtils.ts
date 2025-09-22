@@ -1,5 +1,5 @@
 import { promises as fs } from 'fs';
-import { decodeOrElse } from '@bitgo/sdk-core';
+import { decodeOrElse } from '@bitgo-beta/sdk-core';
 import { LightningSignerConfigs, LightningSignerConfig } from './codecs';
 import { forceSecureUrl } from '../config';
 

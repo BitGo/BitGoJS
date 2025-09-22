@@ -1,9 +1,9 @@
 import * as assert from 'node:assert';
 
-import { TestBitGo } from '@bitgo/sdk-test';
-import { AbstractUtxoCoin, descriptor as utxod } from '@bitgo/abstract-utxo';
-import * as utxolib from '@bitgo/utxo-lib';
-import { IWallet, WalletCoinSpecific } from '@bitgo/sdk-core';
+import { TestBitGo } from '@bitgo-beta/sdk-test';
+import { AbstractUtxoCoin, descriptor as utxod } from '@bitgo-beta/abstract-utxo';
+import * as utxolib from '@bitgo-beta/utxo-lib';
+import { IWallet, WalletCoinSpecific } from '@bitgo-beta/sdk-core';
 
 import { BitGo } from '../../../../../src';
 

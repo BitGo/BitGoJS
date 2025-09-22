@@ -1,6 +1,6 @@
 import { Cip8Message } from './cip8Message';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseMessageBuilder, IMessage, MessageOptions, MessageStandardType } from '@bitgo/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
+import { BaseMessageBuilder, IMessage, MessageOptions, MessageStandardType } from '@bitgo-beta/sdk-core';
 
 /**
  * Builder for CIP-8 messages

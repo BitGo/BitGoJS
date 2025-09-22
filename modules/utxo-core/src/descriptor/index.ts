@@ -7,5 +7,5 @@ export * from './VirtualSize';
 export * from './fromFixedScriptWallet';
 export * from './parse/PatternMatcher';
 
-/** @deprecated - import from @bitgo/utxo-core directly instead */
+/** @deprecated - import from @bitgo-beta/utxo-core directly instead */
 export * from '../Output';

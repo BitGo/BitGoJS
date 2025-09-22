@@ -1,6 +1,6 @@
 {
-  "name": "@bitgo/abstract-eth",
-  "version": "0.0.0-semantic-release-managed",
+  "name": "@bitgo-beta/abstract-eth",
+  "version": "1.0.2-beta.1430",
   "description": "BitGo SDK coin library for ETH base implementation",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,10 +40,10 @@
     ]
   },
   "dependencies": {
-    "@bitgo/sdk-core": "0.0.0-semantic-release-managed",
-    "@bitgo/sdk-lib-mpc": "0.0.0-semantic-release-managed",
-    "@bitgo/secp256k1": "0.0.0-semantic-release-managed",
-    "@bitgo/statics": "0.0.0-semantic-release-managed",
+    "@bitgo-beta/sdk-core": "8.2.1-beta.1200",
+    "@bitgo-beta/sdk-lib-mpc": "8.2.0-beta.1192",
+    "@bitgo-beta/secp256k1": "1.0.2-beta.1227",
+    "@bitgo-beta/statics": "15.1.1-beta.1203",
     "@ethereumjs/common": "^2.6.5",
     "@ethereumjs/rlp": "^4.0.0",
     "@ethereumjs/tx": "^3.3.0",
@@ -60,8 +60,8 @@
     "superagent": "^9.0.1"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "0.0.0-semantic-release-managed",
-    "@bitgo/sdk-test": "0.0.0-semantic-release-managed",
+    "@bitgo-beta/sdk-api": "1.10.1-beta.1199",
+    "@bitgo-beta/sdk-test": "0.0.0-semantic-release-managed",
     "@types/keccak": "^3.0.5"
   },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c"

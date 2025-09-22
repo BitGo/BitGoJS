@@ -1,7 +1,7 @@
 import assert from 'node:assert';
 import { afterEach, before, describe, it, mock } from 'node:test';
-import { BitGoAPI } from '@bitgo/sdk-api';
-import { TestBitGoAPI, TestBitGo } from '@bitgo/sdk-test';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
+import { TestBitGoAPI, TestBitGo } from '@bitgo-beta/sdk-test';
 import * as _ from 'lodash';
 import { Trx, Ttrx, Utils } from '../../src';
 import { signTxOptions, mockTx } from '../fixtures';

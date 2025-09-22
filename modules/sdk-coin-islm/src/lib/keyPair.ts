@@ -1,5 +1,5 @@
-import { KeyPairOptions } from '@bitgo/sdk-core';
-import { CosmosKeyPair } from '@bitgo/abstract-cosmos';
+import { KeyPairOptions } from '@bitgo-beta/sdk-core';
+import { CosmosKeyPair } from '@bitgo-beta/abstract-cosmos';
 import { ADDRESS_PREFIX } from './constants';
 import { toBech32, fromHex } from '@cosmjs/encoding';
 import { computeAddress } from 'ethers/lib/utils';

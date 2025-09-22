@@ -1,5 +1,5 @@
 import should from 'should';
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 import { TransactionBuilder } from '../../../src';
 
 function addOwner(txBuilder: TransactionBuilder, testData) {

@@ -1,7 +1,7 @@
 import EthereumCommon from '@ethereumjs/common';
-import { TransactionBuilder as AbstractTransactionBuilder, Transaction } from '@bitgo/abstract-eth';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
+import { TransactionBuilder as AbstractTransactionBuilder, Transaction } from '@bitgo-beta/abstract-eth';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
+import { BuildTransactionError, TransactionType } from '@bitgo-beta/sdk-core';
 import { TransferBuilder } from './transferBuilder';
 
 export class EthLikeTransactionBuilder extends AbstractTransactionBuilder {

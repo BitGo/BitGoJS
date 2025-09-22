@@ -15,8 +15,8 @@ import {
   TransactionType,
   VerifyAddressOptions,
   VerifyTransactionOptions,
-} from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
+} from '@bitgo-beta/sdk-core';
+import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo-beta/statics';
 import {
   bufferCVFromString,
   ClarityType,

@@ -3,7 +3,7 @@ import {
   TransactionPrebuild as BaseTransactionPrebuild,
   TransactionRecipient,
   TransactionFee,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 
 export { TransactionFee };
 export interface ExplainTransactionOptions {

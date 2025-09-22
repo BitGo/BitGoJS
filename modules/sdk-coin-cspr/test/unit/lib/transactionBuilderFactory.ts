@@ -3,7 +3,7 @@ import should from 'should';
 import { KeyPair, TransactionBuilderFactory } from '../../../src/lib';
 import * as testData from '../../fixtures/resources';
 import { Transaction } from '../../../src/lib/transaction';
-import { coins } from '@bitgo/statics';
+import { coins } from '@bitgo-beta/statics';
 
 const factory = new TransactionBuilderFactory(coins.get('tcspr'));
 const owner1Address = new KeyPair({ pub: testData.ACCOUNT_1.publicKey }).getAddress();

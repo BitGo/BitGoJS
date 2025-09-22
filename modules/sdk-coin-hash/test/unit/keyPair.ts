@@ -2,7 +2,7 @@ import assert from 'assert';
 import should from 'should';
 import { KeyPair } from '../../src';
 import { TEST_ACCOUNT } from '../resources/hash';
-import { AddressFormat } from '@bitgo/sdk-core';
+import { AddressFormat } from '@bitgo-beta/sdk-core';
 
 describe('HASH Key Pair', () => {
   describe('should create a valid KeyPair', () => {

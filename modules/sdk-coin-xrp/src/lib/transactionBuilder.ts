@@ -7,8 +7,8 @@ import {
   SigningError,
   TransactionType,
   xprvToRawPrv,
-} from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+} from '@bitgo-beta/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import BigNumber from 'bignumber.js';
 import * as _ from 'lodash';
 import * as xrpl from 'xrpl';

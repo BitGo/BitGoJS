@@ -1,5 +1,5 @@
 import * as bitcoinjslib from 'bitcoinjs-lib';
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 
 export type BabylonNetwork = 'mainnet' | 'testnet';
 

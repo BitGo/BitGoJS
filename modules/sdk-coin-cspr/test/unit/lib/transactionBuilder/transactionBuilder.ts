@@ -6,7 +6,7 @@ import { KeyPair, TransactionBuilderFactory } from '../../../../src/lib';
 import { Transaction } from '../../../../src/lib/transaction';
 import { removeAlgoPrefixFromHexValue } from '../../../../src/lib/utils';
 import { DEFAULT_CHAIN_NAMES } from '../../../../src/lib/constants';
-import { coins } from '@bitgo/statics';
+import { coins } from '@bitgo-beta/statics';
 
 describe('Casper Transaction Builder', () => {
   const factory = new TransactionBuilderFactory(coins.get('tcspr'));

@@ -1,6 +1,6 @@
 import assert from 'assert';
 import should from 'should';
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 import { Transaction, KeyPair, ETHTransactionType, Fee, TransactionBuilder } from '../../../src';
 import * as testData from '../../resources/eth';
 import { getBuilder } from '../getBuilder';

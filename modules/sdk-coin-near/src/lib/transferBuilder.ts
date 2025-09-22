@@ -1,5 +1,5 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseKey, BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
+import { BaseKey, BuildTransactionError, TransactionType } from '@bitgo-beta/sdk-core';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
 import * as NearAPI from 'near-api-js';

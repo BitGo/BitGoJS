@@ -1,7 +1,7 @@
-import { coins } from '@bitgo/statics';
+import { coins } from '@bitgo-beta/statics';
 import { TransactionBuilderFactory, CustomTransaction } from '../../../src';
 import * as testData from '../../resources/apt';
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 import should from 'should';
 import { TypeTagAddress, TypeTagU64, TypeTagU128, TypeTagVector, TypeTagU8, TypeTagBool } from '@aptos-labs/ts-sdk';
 

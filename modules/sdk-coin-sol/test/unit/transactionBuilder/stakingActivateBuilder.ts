@@ -5,7 +5,7 @@ import { getBuilderFactory } from '../getBuilderFactory';
 import { KeyPair, Utils, StakingActivateBuilder } from '../../../src';
 import { InstructionBuilderTypes, JITO_STAKE_POOL_ADDRESS, JITOSOL_MINT_ADDRESS } from '../../../src/lib/constants';
 import { SolStakingTypeEnum } from '@bitgo/public-types';
-import { BaseTransaction } from '@bitgo/sdk-core';
+import { BaseTransaction } from '@bitgo-beta/sdk-core';
 import { InstructionParams } from '../../../src/lib/iface';
 
 describe('Sol Staking Activate Builder', () => {

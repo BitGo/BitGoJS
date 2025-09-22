@@ -1,10 +1,10 @@
 /**
  * @prettier
  */
-import { BitGoAPI } from '@bitgo/sdk-api';
-import { Wallet } from '@bitgo/sdk-core';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { bip32 } from '@bitgo/secp256k1';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
+import { Wallet } from '@bitgo-beta/sdk-core';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
+import { bip32 } from '@bitgo-beta/secp256k1';
 import * as ecc from 'eosjs-ecc';
 import * as _ from 'lodash';
 import should from 'should';

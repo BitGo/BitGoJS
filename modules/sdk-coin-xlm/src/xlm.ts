@@ -37,8 +37,8 @@ import {
   MultisigType,
   multisigTypes,
   AuditDecryptedKeyParams,
-} from '@bitgo/sdk-core';
-import { toBitgoRequest } from '@bitgo/sdk-api';
+} from '@bitgo-beta/sdk-core';
+import { toBitgoRequest } from '@bitgo-beta/sdk-api';
 import { getStellarKeys } from './getStellarKeys';
 
 /**

@@ -1,7 +1,7 @@
 import assert from 'assert';
 
-import { getKeyTriple } from '@bitgo/utxo-core/testutil';
-import { getDescriptorMap, mockPsbtDefaultWithDescriptorTemplate } from '@bitgo/utxo-core/testutil/descriptor';
+import { getKeyTriple } from '@bitgo-beta/utxo-core/testutil';
+import { getDescriptorMap, mockPsbtDefaultWithDescriptorTemplate } from '@bitgo-beta/utxo-core/testutil/descriptor';
 
 import { TransactionExplanation } from '../../../src';
 import { explainPsbt } from '../../../src/transaction/descriptor';

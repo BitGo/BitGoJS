@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 
-import { bufferutils } from '@bitgo/utxo-lib';
+import { bufferutils } from '@bitgo-beta/utxo-lib';
 
 import { Prefix } from '../paygo';
 

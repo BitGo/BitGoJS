@@ -2,9 +2,9 @@ import * as should from 'should';
 import { randomBytes } from 'crypto';
 import * as stellar from 'stellar-sdk';
 
-import { Environments, Wallet } from '@bitgo/sdk-core';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoAPI, encrypt } from '@bitgo/sdk-api';
+import { Environments, Wallet } from '@bitgo-beta/sdk-core';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
+import { BitGoAPI, encrypt } from '@bitgo-beta/sdk-api';
 import { Txlm } from '../../src';
 import { KeyPair } from '../../src/lib/keyPair';
 

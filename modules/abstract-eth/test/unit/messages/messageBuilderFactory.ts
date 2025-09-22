@@ -1,9 +1,9 @@
 import 'should';
-import { MessageStandardType } from '@bitgo/sdk-core';
+import { MessageStandardType } from '@bitgo-beta/sdk-core';
 import { fixtures as eip191Fixtures } from './eip191/fixtures';
 import { fixtures as eip712Fixtures } from './eip712/fixtures';
 import { Eip191MessageBuilder, Eip712MessageBuilder, MessageBuilderFactory } from '../../../src';
-import { coins } from '@bitgo/statics';
+import { coins } from '@bitgo-beta/statics';
 
 describe('Message Builder Factory', () => {
   const coinConfig = coins.get('eth');

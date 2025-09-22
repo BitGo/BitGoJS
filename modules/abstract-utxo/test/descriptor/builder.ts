@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 
-import { getKeyTriple } from '@bitgo/utxo-core/testutil';
+import { getKeyTriple } from '@bitgo-beta/utxo-core/testutil';
 
 import { parseDescriptor, DescriptorBuilder, getDescriptorFromBuilder } from '../../src/descriptor/builder';
 

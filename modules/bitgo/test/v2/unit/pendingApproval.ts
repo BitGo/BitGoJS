@@ -4,7 +4,7 @@
 import 'should';
 import nock = require('nock');
 import * as sinon from 'sinon';
-import { TestableBG, TestBitGo } from '@bitgo/sdk-test';
+import { TestableBG, TestBitGo } from '@bitgo-beta/sdk-test';
 import { BitGo } from '../../../src';
 
 import {
@@ -22,7 +22,7 @@ import {
   TxRequest,
   Type,
   Wallet,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 
 describe('Pending Approvals:', () => {
   let sandbox: sinon.SinonSandbox;

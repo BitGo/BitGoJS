@@ -3,7 +3,7 @@ import * as should from 'should';
 import { getBuilderFactory } from '../getBuilderFactory';
 import { KeyPair } from '../../../src';
 import * as testData from '../../resources/hbar';
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 import { WalletInitializationBuilder } from '../../../src/lib/walletInitializationBuilder';
 
 describe('HBAR Wallet initialization', () => {

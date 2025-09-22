@@ -1,4 +1,4 @@
-import { BaseTransactionBuilderFactory } from '@bitgo/sdk-core';
+import { BaseTransactionBuilderFactory } from '@bitgo-beta/sdk-core';
 import { TransactionBuilder } from './transactionBuilder';
 import { TransferBuilder } from './transferBuilder';
 

@@ -1,7 +1,7 @@
 import assert from 'assert';
 import crypto from 'crypto';
 
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 import { decodeProprietaryKey } from 'bip174/src/lib/proprietaryKeyVal';
 import { KeyValue } from 'bip174/src/lib/interfaces';
 import { checkForOutput } from 'bip174/src/lib/utils';

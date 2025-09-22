@@ -1,4 +1,4 @@
-import { coins } from '@bitgo/statics';
+import { coins } from '@bitgo-beta/statics';
 
 // Test fixtures for BSC EIP-191 message tests
 export const fixtures = {

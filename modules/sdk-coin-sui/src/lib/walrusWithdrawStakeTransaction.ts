@@ -1,6 +1,6 @@
 import { SuiTransaction, TransactionExplanation, TxData, WalrusWithdrawStakeProgrammableTransaction } from './iface';
 import { Transaction } from './transaction';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 
 import utils from './utils';
 import {
@@ -11,7 +11,7 @@ import {
   Signature,
   TransactionRecipient,
   TransactionType,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import { CallArg, normalizeSuiAddress } from './mystenlab/types';
 import { builder, Inputs, TransactionBlockInput } from './mystenlab/builder';
 import { AMOUNT_UNKNOWN_TEXT, SUI_ADDRESS_LENGTH } from './constants';

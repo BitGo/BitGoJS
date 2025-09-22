@@ -7,8 +7,8 @@ import {
   SigningError,
   TransactionFee,
   TransactionType,
-} from '@bitgo/sdk-core';
-import { FlareNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
+} from '@bitgo-beta/sdk-core';
+import { FlareNetwork, BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { Buffer } from 'buffer';
 import {
   ADDRESS_SEPARATOR,

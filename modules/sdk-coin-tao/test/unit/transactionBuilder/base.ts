@@ -1,5 +1,5 @@
-import { BaseKey, DotAddressFormat, Eddsa, TransactionType } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig, coins, DotNetwork } from '@bitgo/statics';
+import { BaseKey, DotAddressFormat, Eddsa, TransactionType } from '@bitgo-beta/sdk-core';
+import { BaseCoin as CoinConfig, coins, DotNetwork } from '@bitgo-beta/statics';
 import { DecodedSignedTx, DecodedSigningPayload, UnsignedTransaction } from '@substrate/txwrapper-core';
 import assert from 'assert';
 import should from 'should';

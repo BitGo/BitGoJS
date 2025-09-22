@@ -1,6 +1,6 @@
 import assert from 'assert';
 import should from 'should';
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 import { getBuilder } from '../getBuilder';
 import { TransactionBuilder } from '../../../src';
 import * as testData from '../../resources/celo';

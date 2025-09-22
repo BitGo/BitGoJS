@@ -1,7 +1,7 @@
 import sinon from 'sinon';
 import should from 'should';
-import { BitGoAPI } from '@bitgo/sdk-api';
-import { CoinFeature, coins } from '@bitgo/statics';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
+import { CoinFeature, coins } from '@bitgo-beta/statics';
 import { register, CosmosSharedCoin } from '../../src';
 
 describe('Cosmos Register', function () {

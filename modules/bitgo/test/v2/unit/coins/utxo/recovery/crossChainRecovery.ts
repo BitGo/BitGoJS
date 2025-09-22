@@ -4,8 +4,8 @@
 import * as assert from 'assert';
 import should = require('should');
 import nock = require('nock');
-import * as utxolib from '@bitgo/utxo-lib';
-import { Triple } from '@bitgo/sdk-core';
+import * as utxolib from '@bitgo-beta/utxo-lib';
+import { Triple } from '@bitgo-beta/sdk-core';
 import {
   getFixture,
   keychainsBase58,
@@ -18,7 +18,7 @@ import {
   defaultBitGo,
   getUtxoCoin,
 } from '../util';
-import { getSeed } from '@bitgo/sdk-test';
+import { getSeed } from '@bitgo-beta/sdk-test';
 import { nockBitGo } from '../util/nockBitGo';
 import { createFullSignedTransaction } from '../util/transaction';
 import { getDefaultWalletUnspentSigner } from '../util/keychains';
@@ -29,7 +29,7 @@ import {
   CrossChainRecoveryUnsigned,
   getWallet,
   supportedCrossChainRecoveries,
-} from '@bitgo/abstract-utxo';
+} from '@bitgo-beta/abstract-utxo';
 import * as sinon from 'sinon';
 
 type WalletUnspent<TNumber extends number | bigint = number> = utxolib.bitgo.WalletUnspent<TNumber>;

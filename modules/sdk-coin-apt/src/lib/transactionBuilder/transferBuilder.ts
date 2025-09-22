@@ -1,6 +1,6 @@
 import { TransactionBuilder } from './transactionBuilder';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { TransactionType } from '@bitgo/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 import { TransferTransaction } from '../transaction/transferTransaction';
 import utils from '../utils';
 import { TransactionPayload, TransactionPayloadEntryFunction } from '@aptos-labs/ts-sdk';

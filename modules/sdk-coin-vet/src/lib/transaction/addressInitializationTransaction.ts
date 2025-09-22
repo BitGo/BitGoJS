@@ -1,11 +1,11 @@
-import { TransactionType, InvalidTransactionError } from '@bitgo/sdk-core';
+import { TransactionType, InvalidTransactionError } from '@bitgo-beta/sdk-core';
 import {
   getCreateForwarderParamsAndTypes,
   calculateForwarderV1Address,
   decodeForwarderCreationData,
   getProxyInitcode,
-} from '@bitgo/abstract-eth';
-import { BaseCoin as CoinConfig, EthereumNetwork } from '@bitgo/statics';
+} from '@bitgo-beta/abstract-eth';
+import { BaseCoin as CoinConfig, EthereumNetwork } from '@bitgo-beta/statics';
 import * as ethUtil from 'ethereumjs-util';
 import EthereumAbi from 'ethereumjs-abi';
 import { Transaction as VetTransaction, Secp256k1 } from '@vechain/sdk-core';

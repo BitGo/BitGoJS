@@ -1,8 +1,8 @@
 import { Transaction, TransactionBuilderFactory } from '../../src';
-import { coins } from '@bitgo/statics';
+import { coins } from '@bitgo-beta/statics';
 import { rawTx } from '../resources';
 import should from 'should';
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 
 describe('ADA Staking Pledge Transaction Builder', async () => {
   const factory = new TransactionBuilderFactory(coins.get('tada'));

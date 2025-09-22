@@ -1,5 +1,5 @@
-import { coins, FlareNetwork } from '@bitgo/statics';
-import { NotImplementedError } from '@bitgo/sdk-core';
+import { coins, FlareNetwork } from '@bitgo-beta/statics';
+import { NotImplementedError } from '@bitgo-beta/sdk-core';
 import * as assert from 'assert';
 import { Utils } from '../../../src/lib/utils';
 

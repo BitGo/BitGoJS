@@ -19,13 +19,13 @@ import {
   SignTransactionOptions,
   TssVerifyAddressOptions,
   VerifyTransactionOptions,
-} from '@bitgo/sdk-core';
-import { coins, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+} from '@bitgo-beta/sdk-core';
+import { coins, BaseCoin as StaticsBaseCoin } from '@bitgo-beta/statics';
 import { Principal } from '@dfinity/principal';
 import axios from 'axios';
 import BigNumber from 'bignumber.js';
 import { createHash, Hash } from 'crypto';
-import * as mpc from '@bitgo/sdk-lib-mpc';
+import * as mpc from '@bitgo-beta/sdk-lib-mpc';
 
 import {
   CurveType,
@@ -44,7 +44,7 @@ import {
 } from './lib/iface';
 import { TransactionBuilderFactory } from './lib/transactionBuilderFactory';
 import utils from './lib/utils';
-import { auditEcdsaPrivateKey } from '@bitgo/sdk-lib-mpc';
+import { auditEcdsaPrivateKey } from '@bitgo-beta/sdk-lib-mpc';
 import { IcpAgent } from './lib/icpAgent';
 
 /**

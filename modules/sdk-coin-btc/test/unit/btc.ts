@@ -2,11 +2,11 @@ import 'should';
 import assert from 'assert';
 import { btcBackupKey } from './fixtures';
 
-import { type TestBitGoAPI, TestBitGo } from '@bitgo/sdk-test';
+import { type TestBitGoAPI, TestBitGo } from '@bitgo-beta/sdk-test';
 
 import { Tbtc } from '../../src';
-import { BitGoAPI } from '@bitgo/sdk-api';
-import * as utxolib from '@bitgo/utxo-lib';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 
 describe('BTC:', () => {
   let bitgo: TestBitGoAPI;

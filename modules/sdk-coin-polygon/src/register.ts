@@ -1,4 +1,4 @@
-import { BitGoBase } from '@bitgo/sdk-core';
+import { BitGoBase } from '@bitgo-beta/sdk-core';
 import { Polygon } from './polygon';
 import { PolygonToken } from './polygonToken';
 import { Tpolygon } from './tpolygon';

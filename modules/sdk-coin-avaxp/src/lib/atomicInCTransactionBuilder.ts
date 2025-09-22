@@ -1,8 +1,8 @@
 import { AtomicTransactionBuilder } from './atomicTransactionBuilder';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import utils from './utils';
 import { BN, Buffer as BufferAvax } from 'avalanche';
-import { BuildTransactionError } from '@bitgo/sdk-core';
+import { BuildTransactionError } from '@bitgo-beta/sdk-core';
 import { Tx as EVMTx } from 'avalanche/dist/apis/evm/tx';
 import { DeprecatedTransaction } from './deprecatedTransaction';
 

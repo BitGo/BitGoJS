@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactJson from 'react-json-view';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
 
 const sdk = new BitGoAPI();
 

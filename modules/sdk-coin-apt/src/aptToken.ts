@@ -1,6 +1,6 @@
 import { Apt } from './apt';
-import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
-import { AptTokenConfig, coins, tokens } from '@bitgo/statics';
+import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo-beta/sdk-core';
+import { AptTokenConfig, coins, tokens } from '@bitgo-beta/statics';
 
 export class AptToken extends Apt {
   public readonly tokenConfig: AptTokenConfig;

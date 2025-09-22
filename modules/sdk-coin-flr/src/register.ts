@@ -1,4 +1,4 @@
-import { BitGoBase } from '@bitgo/sdk-core';
+import { BitGoBase } from '@bitgo-beta/sdk-core';
 import { Flr } from './flr';
 import { Tflr } from './tflr';
 import { FlrToken } from './flrToken';

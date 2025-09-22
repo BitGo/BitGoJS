@@ -8,7 +8,7 @@
         // these are false-positives
         // certain packages explicitly ALLOW deep imports via the `exports` directive in package.json
         "allow": [
-          "@bitgo/utxo-core/*",
+          "@bitgo-beta/utxo-core/*",
           "@noble/curves/*"
         ]
       }

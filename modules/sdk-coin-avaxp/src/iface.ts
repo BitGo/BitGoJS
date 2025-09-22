@@ -5,7 +5,7 @@ import {
   TransactionFee,
   VerifyTransactionOptions,
   TransactionParams,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 
 export { TransactionFee };
 export interface ExplainTransactionOptions {

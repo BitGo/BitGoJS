@@ -5,7 +5,7 @@ import {
   NotSupported,
   ParseTransactionError,
   TransactionType,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import { encodeSecp256k1Pubkey, encodeSecp256k1Signature } from '@cosmjs/amino';
 import { fromBase64, fromBech32, fromHex, toBech32, toHex } from '@cosmjs/encoding';
 import {
@@ -19,7 +19,7 @@ import {
   Registry,
 } from '@cosmjs/proto-signing';
 import { Coin, defaultRegistryTypes } from '@cosmjs/stargate';
-import { coins } from '@bitgo/statics';
+import { coins } from '@bitgo-beta/statics';
 import BigNumber from 'bignumber.js';
 import { SignDoc, TxRaw } from 'cosmjs-types/cosmos/tx/v1beta1/tx';
 import { Any } from 'cosmjs-types/google/protobuf/any';

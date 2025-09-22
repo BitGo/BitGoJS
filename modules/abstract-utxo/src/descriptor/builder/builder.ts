@@ -1,4 +1,4 @@
-import { BIP32Interface } from '@bitgo/utxo-lib';
+import { BIP32Interface } from '@bitgo-beta/utxo-lib';
 import { Descriptor } from '@bitgo/wasm-miniscript';
 
 type DescriptorWithKeys<TName extends string> = {

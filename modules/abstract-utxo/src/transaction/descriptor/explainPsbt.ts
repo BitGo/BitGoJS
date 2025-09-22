@@ -1,6 +1,6 @@
-import * as utxolib from '@bitgo/utxo-lib';
-import { ITransactionRecipient } from '@bitgo/sdk-core';
-import * as coreDescriptors from '@bitgo/utxo-core/descriptor';
+import * as utxolib from '@bitgo-beta/utxo-lib';
+import { ITransactionRecipient } from '@bitgo-beta/sdk-core';
+import * as coreDescriptors from '@bitgo-beta/utxo-core/descriptor';
 
 import { toExtendedAddressFormat } from '../recipient';
 import { TransactionExplanation } from '../../abstractUtxoCoin';

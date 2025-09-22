@@ -1,4 +1,4 @@
-import { DotAddressFormat } from '@bitgo/sdk-core';
+import { DotAddressFormat } from '@bitgo-beta/sdk-core';
 import { TypeRegistry } from '@substrate/txwrapper-core/lib/types';
 import should from 'should';
 import { SingletonRegistry } from '../../src';

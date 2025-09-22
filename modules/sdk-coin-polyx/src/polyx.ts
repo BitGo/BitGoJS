@@ -13,14 +13,14 @@ import {
   MPCSweepRecoveryOptions,
   MPCTxs,
   TokenEnablementConfig,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import { ApiPromise, WsProvider } from '@polkadot/api';
-import { BaseCoin as StaticsBaseCoin, coins, SubstrateSpecNameType } from '@bitgo/statics';
-import { KeyPair as SubstrateKeyPair, SubstrateCoin, Transaction, Interface } from '@bitgo/abstract-substrate';
+import { BaseCoin as StaticsBaseCoin, coins, SubstrateSpecNameType } from '@bitgo-beta/statics';
+import { KeyPair as SubstrateKeyPair, SubstrateCoin, Transaction, Interface } from '@bitgo-beta/abstract-substrate';
 import { BatchStakingBuilder } from './lib/batchStakingBuilder';
 import { BondExtraBuilder } from './lib/bondExtraBuilder';
 import { POLYX_ADDRESS_FORMAT } from './lib/constants';
-import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
+import { getDerivationPath } from '@bitgo-beta/sdk-lib-mpc';
 import BigNumber from 'bignumber.js';
 import { TransactionBuilderFactory, TransferBuilder } from './lib';
 

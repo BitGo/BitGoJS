@@ -1,6 +1,6 @@
-import { coins, XrpTokenConfig, tokens } from '@bitgo/statics';
+import { coins, XrpTokenConfig, tokens } from '@bitgo-beta/statics';
 import { Xrp } from './xrp';
-import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
+import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo-beta/sdk-core';
 
 export class XrpToken extends Xrp {
   public readonly tokenConfig: XrpTokenConfig;

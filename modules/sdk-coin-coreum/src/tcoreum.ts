@@ -3,8 +3,8 @@
  *
  * @format
  */
-import { AddressFormat, BaseCoin, BitGoBase } from '@bitgo/sdk-core';
-import { BaseUnit, NetworkType, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { AddressFormat, BaseCoin, BitGoBase } from '@bitgo-beta/sdk-core';
+import { BaseUnit, NetworkType, BaseCoin as StaticsBaseCoin } from '@bitgo-beta/statics';
 import { Coreum } from './coreum';
 import { KeyPair } from './lib';
 import { CoreumUtils } from './lib/utils';

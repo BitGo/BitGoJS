@@ -1,7 +1,7 @@
 import 'should';
 import { Utils, KeyPair } from '../../../src/lib/';
 import * as testData from '../../resources/avaxp';
-import { AvalancheNetwork, coins } from '@bitgo/statics';
+import { AvalancheNetwork, coins } from '@bitgo-beta/statics';
 
 describe('Avaxp Utils', () => {
   const network: AvalancheNetwork = coins.get('tavaxp').network as AvalancheNetwork;

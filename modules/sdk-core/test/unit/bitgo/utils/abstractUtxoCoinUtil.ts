@@ -1,7 +1,7 @@
 import assert from 'assert';
 
 import { getUtxoCoinScriptTypes2Of3 } from '../../../../src';
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 
 describe('getUtxoCoinScriptTypes', function () {
   it('success', function () {

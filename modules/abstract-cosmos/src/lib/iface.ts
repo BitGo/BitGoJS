@@ -1,4 +1,4 @@
-import { TransactionExplanation as BaseTransactionExplanation, TransactionType } from '@bitgo/sdk-core';
+import { TransactionExplanation as BaseTransactionExplanation, TransactionType } from '@bitgo-beta/sdk-core';
 import { Coin } from '@cosmjs/stargate';
 import { BigNumber } from 'bignumber.js';
 

@@ -2,10 +2,10 @@ import * as fs from 'fs';
 import * as process from 'process';
 import { promisify } from 'util';
 
-import * as utxolib from '@bitgo/utxo-lib';
-import * as blockapis from '@bitgo/blockapis';
-import { BaseHttpClient, CachingHttpClient, getTransactionIdsAtHeight, HttpClient } from '@bitgo/blockapis';
-import { coins, UtxoCoin } from '@bitgo/statics';
+import * as utxolib from '@bitgo-beta/utxo-lib';
+import * as blockapis from '@bitgo-beta/blockapis';
+import { BaseHttpClient, CachingHttpClient, getTransactionIdsAtHeight, HttpClient } from '@bitgo-beta/blockapis';
+import { coins, UtxoCoin } from '@bitgo-beta/statics';
 
 import { ParserTx } from './ParserTx';
 

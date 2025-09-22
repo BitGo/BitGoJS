@@ -4,13 +4,13 @@
 import assert from 'assert';
 
 import { BIP322 } from 'bip322-js';
-import * as vendor from '@bitgo/babylonlabs-io-btc-staking-ts';
+import * as vendor from '@bitgo-beta/babylonlabs-io-btc-staking-ts';
 import * as babylonProtobuf from '@babylonlabs-io/babylon-proto-ts';
 import * as bitcoinjslib from 'bitcoinjs-lib';
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 import { Descriptor } from '@bitgo/wasm-miniscript';
-import { toXOnlyPublicKey } from '@bitgo/utxo-core';
-import { signWithKey, toWrappedPsbt } from '@bitgo/utxo-core/descriptor';
+import { toXOnlyPublicKey } from '@bitgo-beta/utxo-core';
+import { signWithKey, toWrappedPsbt } from '@bitgo-beta/utxo-core/descriptor';
 
 import { BabylonDescriptorBuilder } from './descriptor';
 import { createStakingManager } from './stakingManager';

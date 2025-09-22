@@ -1,8 +1,8 @@
 import { strict as assert } from 'assert';
-import { TestBitGo } from '@bitgo/sdk-test';
+import { TestBitGo } from '@bitgo-beta/sdk-test';
 import { BitGo } from '../../../src';
-import { Wallet } from '@bitgo/sdk-core';
-import { getLightningWallet } from '@bitgo/abstract-lightning';
+import { Wallet } from '@bitgo-beta/sdk-core';
+import { getLightningWallet } from '@bitgo-beta/abstract-lightning';
 
 describe('LightningV2 Wallet:', function () {
   const bitgo = TestBitGo.decorate(BitGo, { env: 'test' });

@@ -32,13 +32,13 @@ import {
   MultisigType,
   multisigTypes,
   AuditDecryptedKeyParams,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import { KeyPair as AdaKeyPair, Transaction, TransactionBuilderFactory, Utils } from './lib';
-import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo-beta/statics';
 import adaUtils from './lib/utils';
 import * as request from 'superagent';
 import BigNumber from 'bignumber.js';
-import { auditEddsaPrivateKey, getDerivationPath } from '@bitgo/sdk-lib-mpc';
+import { auditEddsaPrivateKey, getDerivationPath } from '@bitgo-beta/sdk-lib-mpc';
 
 export const DEFAULT_SCAN_FACTOR = 20; // default number of receive addresses to scan for funds
 

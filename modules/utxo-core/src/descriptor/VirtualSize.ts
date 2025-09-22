@@ -1,5 +1,5 @@
-import * as utxolib from '@bitgo/utxo-lib';
-import { Dimensions, VirtualSizes } from '@bitgo/unspents';
+import * as utxolib from '@bitgo-beta/utxo-lib';
+import { Dimensions, VirtualSizes } from '@bitgo-beta/unspents';
 import { Descriptor } from '@bitgo/wasm-miniscript';
 
 import { DescriptorMap } from './DescriptorMap';

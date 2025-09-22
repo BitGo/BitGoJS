@@ -1,5 +1,5 @@
-import { MessageStandardType, serializeSignatures } from '@bitgo/sdk-core';
-import { coins } from '@bitgo/statics';
+import { MessageStandardType, serializeSignatures } from '@bitgo-beta/sdk-core';
+import { coins } from '@bitgo-beta/statics';
 import { MessageBuilderFactory } from '../../../src';
 import should from 'should';
 import { MessageBuildingTestConfig } from './abstractEthMessageTestTypes';

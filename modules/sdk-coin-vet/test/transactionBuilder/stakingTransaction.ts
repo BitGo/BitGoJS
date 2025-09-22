@@ -1,4 +1,4 @@
-import { coins } from '@bitgo/statics';
+import { coins } from '@bitgo-beta/statics';
 import { TransactionBuilderFactory, Transaction, StakingTransaction } from '../../src/lib';
 import should from 'should';
 import { STAKING_METHOD_ID } from '../../src/lib/constants';

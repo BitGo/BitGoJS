@@ -1,5 +1,5 @@
-import { BaseCoin as CoinConfig, NetworkType } from '@bitgo/statics';
-import { BaseKey, BuildTransactionError, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
+import { BaseCoin as CoinConfig, NetworkType } from '@bitgo-beta/statics';
+import { BaseKey, BuildTransactionError, InvalidTransactionError, TransactionType } from '@bitgo-beta/sdk-core';
 import {
   RequestWalrusStakeWithPool,
   SuiTransaction,

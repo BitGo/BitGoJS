@@ -1,6 +1,6 @@
 import * as yargs from 'yargs';
-import * as utxolib from '@bitgo/utxo-lib';
-import { Dimensions } from '@bitgo/unspents';
+import * as utxolib from '@bitgo-beta/utxo-lib';
+import { Dimensions } from '@bitgo-beta/unspents';
 import { Buffer } from 'buffer';
 import { Descriptor, Miniscript } from '@bitgo/wasm-miniscript';
 

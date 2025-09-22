@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import { coins, CoinMap, BaseCoin as StaticsBaseCoin, CoinNotDefinedError } from '@bitgo/statics';
+import { coins, CoinMap, BaseCoin as StaticsBaseCoin, CoinNotDefinedError } from '@bitgo-beta/statics';
 import { BaseCoin } from './baseCoin';
 import { BitGoBase } from './bitgoBase';
 import { UnsupportedCoinError } from './errors';

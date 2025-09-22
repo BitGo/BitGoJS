@@ -3,9 +3,9 @@
  *
  * @format
  */
-import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
+import { BaseCoin, BitGoBase } from '@bitgo-beta/sdk-core';
 import { Baby } from './baby';
-import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin } from '@bitgo-beta/statics';
 
 export class Tbaby extends Baby {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;

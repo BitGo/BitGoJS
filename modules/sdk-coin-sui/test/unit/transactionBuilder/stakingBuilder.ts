@@ -2,7 +2,7 @@ import assert from 'assert';
 import { getBuilderFactory } from '../getBuilderFactory';
 import * as testData from '../../resources/sui';
 import should from 'should';
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 import utils from '../../../src/lib/utils';
 import { Transaction as SuiTransaction } from '../../../src/lib/transaction';
 import { StakingProgrammableTransaction, SuiTransactionType } from '../../../src/lib/iface';

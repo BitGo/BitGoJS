@@ -1,4 +1,4 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import BigNumber from 'bignumber.js';
 import algosdk from 'algosdk';
 
@@ -17,7 +17,7 @@ import {
   isValidEd25519SecretKey,
   isValidEd25519Seed,
   TransactionType,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import { algoUtils } from '.';
 
 const MIN_FEE = 1000; // in microalgos

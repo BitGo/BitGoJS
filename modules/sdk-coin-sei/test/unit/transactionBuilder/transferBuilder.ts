@@ -1,6 +1,6 @@
-import { BitGoAPI } from '@bitgo/sdk-api';
-import { TransactionType } from '@bitgo/sdk-core';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
+import { TransactionType } from '@bitgo-beta/sdk-core';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
 import { fromBase64, toHex } from '@cosmjs/encoding';
 import should from 'should';
 import { Sei, Tsei } from '../../../src';

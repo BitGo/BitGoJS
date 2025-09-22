@@ -3,8 +3,8 @@
  *
  * @format
  */
-import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { BaseCoin, BitGoBase } from '@bitgo-beta/sdk-core';
+import { BaseCoin as StaticsBaseCoin } from '@bitgo-beta/statics';
 import { Sei } from './sei';
 
 export class Tsei extends Sei {

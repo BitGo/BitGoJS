@@ -1,4 +1,4 @@
-import { BaseMessage, MessageOptions, MessageStandardType } from '@bitgo/sdk-core';
+import { BaseMessage, MessageOptions, MessageStandardType } from '@bitgo-beta/sdk-core';
 import { SignTypedDataVersion, TypedDataUtils } from '@metamask/eth-sig-util';
 
 export class EIP712Message extends BaseMessage {

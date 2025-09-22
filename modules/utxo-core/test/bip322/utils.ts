@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 
 import { getBip322ProofMessageAtIndex, isBip322ProofCheck } from '../../src/bip322';
 

@@ -1,4 +1,4 @@
-import * as sdkcore from '@bitgo/sdk-core';
+import * as sdkcore from '@bitgo-beta/sdk-core';
 import {
   PendingApprovalData,
   PendingApprovals,
@@ -8,7 +8,7 @@ import {
   commonTssMethods,
   TxRequestState,
   decodeOrElse,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import * as t from 'io-ts';
 import { createMessageSignature, unwrapLightningCoinSpecific } from '../lightning';
 import {

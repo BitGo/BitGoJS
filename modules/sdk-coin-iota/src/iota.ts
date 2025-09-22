@@ -15,11 +15,11 @@ import {
   EDDSAMethods,
   TssVerifyAddressOptions,
   MPCType,
-} from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
+} from '@bitgo-beta/sdk-core';
+import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo-beta/statics';
 import utils from './lib/utils';
 import { KeyPair as IotaKeyPair } from './lib';
-import { auditEddsaPrivateKey } from '@bitgo/sdk-lib-mpc';
+import { auditEddsaPrivateKey } from '@bitgo-beta/sdk-lib-mpc';
 
 export class Iota extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;

@@ -1,6 +1,6 @@
 import { CommandModule } from 'yargs';
-import * as utxolib from '@bitgo/utxo-lib';
-import { getNamedDescriptorsForRootWalletKeys } from '@bitgo/utxo-core/descriptor';
+import * as utxolib from '@bitgo-beta/utxo-lib';
+import { getNamedDescriptorsForRootWalletKeys } from '@bitgo-beta/utxo-core/descriptor';
 
 import {
   FormatTreeOrJson,

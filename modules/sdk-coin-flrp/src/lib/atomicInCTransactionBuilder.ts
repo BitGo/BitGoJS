@@ -1,7 +1,7 @@
 import { AtomicTransactionBuilder } from './atomicTransactionBuilder';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import utils from './utils';
-import { BuildTransactionError } from '@bitgo/sdk-core';
+import { BuildTransactionError } from '@bitgo-beta/sdk-core';
 
 interface FlareChainNetworkMeta {
   blockchainID?: string; // P-chain id (external)

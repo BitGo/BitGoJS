@@ -1,4 +1,4 @@
-import { BitGoBase } from '@bitgo/sdk-core';
+import { BitGoBase } from '@bitgo-beta/sdk-core';
 import { Zketh } from './zketh';
 import { Tzketh } from './tzketh';
 import { ZkethToken } from './zkethToken';

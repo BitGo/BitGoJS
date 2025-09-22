@@ -1,8 +1,8 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import EthereumAbi from 'ethereumjs-abi';
-import { Transaction } from '@bitgo/abstract-eth';
-import { TransactionBuilder as EthTransactionBuilder, TxData, walletSimpleConstructor } from '@bitgo/sdk-coin-eth';
-import { BuildTransactionError, TransactionType, StakingOperationTypes } from '@bitgo/sdk-core';
+import { Transaction } from '@bitgo-beta/abstract-eth';
+import { TransactionBuilder as EthTransactionBuilder, TxData, walletSimpleConstructor } from '@bitgo-beta/sdk-coin-eth';
+import { BuildTransactionError, TransactionType, StakingOperationTypes } from '@bitgo-beta/sdk-core';
 import { StakingBuilder } from './stakingBuilder';
 import { StakingCall } from './stakingCall';
 import { getCommon, walletSimpleByteCode } from './utils';

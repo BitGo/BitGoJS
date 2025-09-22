@@ -1,8 +1,8 @@
 import buildDebug from 'debug';
 import _ from 'lodash';
 import BigNumber from 'bignumber.js';
-import { BitGoBase } from '@bitgo/sdk-core';
-import * as utxolib from '@bitgo/utxo-lib';
+import { BitGoBase } from '@bitgo-beta/sdk-core';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 
 import { AbstractUtxoCoin, Output, ParsedTransaction, VerifyTransactionOptions } from '../../abstractUtxoCoin';
 import { verifyCustomChangeKeySignatures, verifyKeySignature, verifyUserPublicKey } from '../../verifyKey';

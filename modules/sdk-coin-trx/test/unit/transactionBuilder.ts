@@ -1,6 +1,6 @@
 import { beforeEach, describe, it } from 'node:test';
 import assert from 'assert';
-import { rawPrvToExtendedKeys, TransactionType } from '@bitgo/sdk-core';
+import { rawPrvToExtendedKeys, TransactionType } from '@bitgo-beta/sdk-core';
 import {
   UnsignedBuildTransaction,
   FirstSigOnBuildTransaction,

@@ -1,4 +1,4 @@
-import { coins } from '@bitgo/statics';
+import { coins } from '@bitgo-beta/statics';
 import { TransactionBuilderFactory } from './lib';
 
 export const getBuilder = (coinName: string): TransactionBuilderFactory => {

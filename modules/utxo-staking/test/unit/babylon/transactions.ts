@@ -1,9 +1,9 @@
 import assert from 'assert';
 
-import * as vendor from '@bitgo/babylonlabs-io-btc-staking-ts';
+import * as vendor from '@bitgo-beta/babylonlabs-io-btc-staking-ts';
 import * as bitcoinjslib from 'bitcoinjs-lib';
-import * as utxolib from '@bitgo/utxo-lib';
-import { ECPairInterface } from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
+import { ECPairInterface } from '@bitgo-beta/utxo-lib';
 import { ast, Descriptor, Miniscript } from '@bitgo/wasm-miniscript';
 import {
   createAddressFromDescriptor,
@@ -12,9 +12,9 @@ import {
   signWithKey,
   toUtxoPsbt,
   toWrappedPsbt,
-} from '@bitgo/utxo-core/descriptor';
-import { toPlainObject } from '@bitgo/utxo-core/testutil';
-import { getBabylonParamByVersion } from '@bitgo/babylonlabs-io-btc-staking-ts';
+} from '@bitgo-beta/utxo-core/descriptor';
+import { toPlainObject } from '@bitgo-beta/utxo-core/testutil';
+import { getBabylonParamByVersion } from '@bitgo-beta/babylonlabs-io-btc-staking-ts';
 
 import {
   BabylonDescriptorBuilder,

@@ -1,8 +1,8 @@
 import BigNumber from 'bignumber.js';
 import { TransactionClause } from '@vechain/sdk-core';
 
-import { BuildTransactionError, Recipient, TransactionType } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BuildTransactionError, Recipient, TransactionType } from '@bitgo-beta/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 
 import { TransactionBuilder } from './transactionBuilder';
 import { NFTTransaction } from '../transaction/nftTransaction';

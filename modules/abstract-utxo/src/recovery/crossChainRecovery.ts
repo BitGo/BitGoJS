@@ -1,8 +1,8 @@
-import * as utxolib from '@bitgo/utxo-lib';
-import { bip32, BIP32Interface } from '@bitgo/utxo-lib';
-import { Dimensions } from '@bitgo/unspents';
-import { BitGoBase, IWallet, Keychain, Triple, Wallet } from '@bitgo/sdk-core';
-import { decrypt } from '@bitgo/sdk-api';
+import * as utxolib from '@bitgo-beta/utxo-lib';
+import { bip32, BIP32Interface } from '@bitgo-beta/utxo-lib';
+import { Dimensions } from '@bitgo-beta/unspents';
+import { BitGoBase, IWallet, Keychain, Triple, Wallet } from '@bitgo-beta/sdk-core';
+import { decrypt } from '@bitgo-beta/sdk-api';
 
 import { AbstractUtxoCoin, TransactionInfo } from '../abstractUtxoCoin';
 import { signAndVerifyWalletTransaction } from '../sign';

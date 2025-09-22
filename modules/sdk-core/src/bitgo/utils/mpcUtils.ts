@@ -14,7 +14,7 @@ import {
   TokenTransferRecipientParams,
 } from './tss/baseTypes';
 import { envRequiresBitgoPubGpgKeyConfig, isBitgoMpcPubKey } from '../tss/bitgoPubKeys';
-import { coins, NetworkType } from '@bitgo/statics';
+import { coins, NetworkType } from '@bitgo-beta/statics';
 
 export interface MpcKeyShare {
   publicShare: string;

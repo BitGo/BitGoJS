@@ -5,7 +5,7 @@
 
 /**
  */
-import { bip32 } from '@bitgo/utxo-lib';
+import { bip32 } from '@bitgo-beta/utxo-lib';
 import * as Big from 'big.js';
 import * as _ from 'lodash';
 import { randomBytes } from 'crypto';

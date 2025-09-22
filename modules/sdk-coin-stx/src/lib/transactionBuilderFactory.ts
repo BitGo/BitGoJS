@@ -1,11 +1,11 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { BufferReader, deserializeTransaction, PayloadType } from '@stacks/transactions';
 import {
   BaseTransactionBuilderFactory,
   InvalidTransactionError,
   NotImplementedError,
   ParseTransactionError,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import { TransferBuilder } from './transferBuilder';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';

@@ -5,7 +5,7 @@
  */
 
 import { Descriptor, ast } from '@bitgo/wasm-miniscript';
-import { StakingParams } from '@bitgo/babylonlabs-io-btc-staking-ts';
+import { StakingParams } from '@bitgo-beta/babylonlabs-io-btc-staking-ts';
 
 export function getUnspendableKey(): string {
   // https://github.com/babylonlabs-io/btc-staking-ts/blob/v0.4.0-rc.2/src/constants/internalPubkey.ts

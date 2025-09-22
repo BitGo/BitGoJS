@@ -7,7 +7,7 @@ import {
   GasAmountDetails,
   RecoveryOptions,
   SendMessage,
-} from '@bitgo/abstract-cosmos';
+} from '@bitgo-beta/abstract-cosmos';
 import {
   BaseCoin,
   BitGoBase,
@@ -16,8 +16,8 @@ import {
   Environments,
   TransactionType,
   VerifyTransactionOptions,
-} from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, BaseUnit, coins } from '@bitgo/statics';
+} from '@bitgo-beta/sdk-core';
+import { BaseCoin as StaticsBaseCoin, BaseUnit, coins } from '@bitgo-beta/statics';
 import { KeyPair, TransactionBuilderFactory } from './lib';
 import { GAS_AMOUNT, GAS_LIMIT, RUNE_FEES, ROOT_PATH } from './lib/constants';
 import { RuneUtils } from './lib/utils';

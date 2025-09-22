@@ -1,4 +1,4 @@
-import { payments, networks } from '@bitgo/utxo-lib';
+import { payments, networks } from '@bitgo-beta/utxo-lib';
 
 // Source: https://docs.coredao.org/docs/Learn/products/btc-staking/design
 export const CORE_DAO_DEVNET_CHAIN_ID = Buffer.from('0458', 'hex');

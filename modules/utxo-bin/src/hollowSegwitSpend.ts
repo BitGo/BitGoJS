@@ -1,4 +1,4 @@
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 
 /**
  * Users can mistakenly create wrapped segwit outputs on chains that do not support it (bitcoincash, bitcoinSV).

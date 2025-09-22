@@ -1,4 +1,4 @@
-import { AbstractUtxoCoin, getWalletKeys, RootWalletKeys } from '@bitgo/abstract-utxo';
+import { AbstractUtxoCoin, getWalletKeys, RootWalletKeys } from '@bitgo-beta/abstract-utxo';
 import {
   HalfSignedUtxoTransaction,
   IInscriptionBuilder,
@@ -9,8 +9,8 @@ import {
   SubmitTransactionResponse,
   xprvToRawPrv,
   xpubToCompressedPub,
-} from '@bitgo/sdk-core';
-import * as utxolib from '@bitgo/utxo-lib';
+} from '@bitgo-beta/sdk-core';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 import {
   createPsbtForSingleInscriptionPassingTransaction,
   DefaultInscriptionConstraints,
@@ -22,7 +22,7 @@ import {
   findOutputLayoutForWalletUnspents,
   MAX_UNSPENTS_FOR_OUTPUT_LAYOUT,
   SatPoint,
-} from '@bitgo/utxo-ord';
+} from '@bitgo-beta/utxo-ord';
 import assert from 'assert';
 
 const SUPPLEMENTARY_UNSPENTS_MIN_VALUE_SATS = [0, 20_000, 200_000];

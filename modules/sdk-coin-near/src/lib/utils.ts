@@ -1,8 +1,8 @@
 import bs58 from 'bs58';
 import BigNumber from 'bignumber.js';
 
-import { BaseUtils, isBase58 } from '@bitgo/sdk-core';
-import { coins, Nep141Token } from '@bitgo/statics';
+import { BaseUtils, isBase58 } from '@bitgo-beta/sdk-core';
+import { coins, Nep141Token } from '@bitgo-beta/statics';
 
 import { KeyPair } from './keyPair';
 

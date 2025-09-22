@@ -8,12 +8,12 @@ import {
   Recipient,
   Signature,
   TransactionType,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import assert from 'assert';
 import { Transaction } from './transaction';
 import utils from './utils';
 import BigNumber from 'bignumber.js';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { SuiProgrammableTransaction, SuiTransactionType } from './iface';
 import { DUMMY_SUI_GAS_PRICE } from './constants';
 import { KeyPair } from './keyPair';

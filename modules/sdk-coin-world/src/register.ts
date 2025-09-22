@@ -1,4 +1,4 @@
-import { BitGoBase } from '@bitgo/sdk-core';
+import { BitGoBase } from '@bitgo-beta/sdk-core';
 import { World } from './world';
 import { Tworld } from './tworld';
 import { WorldToken } from './worldToken';

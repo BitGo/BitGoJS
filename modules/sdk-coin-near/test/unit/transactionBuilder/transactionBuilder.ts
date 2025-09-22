@@ -1,7 +1,7 @@
 import assert from 'assert';
 import should from 'should';
 import { getBuilderFactory } from '../getBuilderFactory';
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 import * as testData from '../../resources/near';
 
 describe('NEAR Transaction Builder', async () => {

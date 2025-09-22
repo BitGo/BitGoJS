@@ -9,10 +9,10 @@ import {
   SignTransactionOptions,
   VerifyAddressOptions,
   VerifyTransactionOptions,
-} from '@bitgo/sdk-core';
-import * as utxolib from '@bitgo/utxo-lib';
+} from '@bitgo-beta/sdk-core';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 import { randomBytes } from 'crypto';
-import { bip32 } from '@bitgo/utxo-lib';
+import { bip32 } from '@bitgo-beta/utxo-lib';
 
 export abstract class AbstractLightningCoin extends BaseCoin {
   private readonly _network: utxolib.Network;

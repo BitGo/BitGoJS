@@ -1,7 +1,7 @@
-import { BaseCoin } from '@bitgo/statics';
+import { BaseCoin } from '@bitgo-beta/statics';
 import sinon from 'sinon';
 import should from 'should';
-import { BroadcastableMessage, MessageStandardType, SimpleMessage } from '@bitgo/sdk-core';
+import { BroadcastableMessage, MessageStandardType, SimpleMessage } from '@bitgo-beta/sdk-core';
 import * as bs58 from 'bs58';
 import { MessageBuilderFactory } from '../../../src';
 

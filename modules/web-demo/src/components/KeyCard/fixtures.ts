@@ -1,7 +1,7 @@
-import { generateKeycard } from '@bitgo/key-card';
-import { KeyCurve, coins } from '@bitgo/statics';
-import { Keychain } from '@bitgo/sdk-core';
-import { DklsDkg, DklsTypes } from '@bitgo/sdk-lib-mpc';
+import { generateKeycard } from '@bitgo-beta/key-card';
+import { KeyCurve, coins } from '@bitgo-beta/statics';
+import { Keychain } from '@bitgo-beta/sdk-core';
+import { DklsDkg, DklsTypes } from '@bitgo-beta/sdk-lib-mpc';
 import * as sjcl from 'sjcl';
 
 function downloadKeycardImage(coinFamily: string): Promise<HTMLImageElement> {

@@ -1,8 +1,8 @@
-import { Interface, utils } from '@bitgo/abstract-substrate';
+import { Interface, utils } from '@bitgo-beta/abstract-substrate';
 import { PolyxBaseBuilder } from './baseBuilder';
 import { DecodedSignedTx, DecodedSigningPayload, defineMethod, UnsignedTransaction } from '@substrate/txwrapper-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { TransactionType, BaseAddress, InvalidTransactionError } from '@bitgo/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
+import { TransactionType, BaseAddress, InvalidTransactionError } from '@bitgo-beta/sdk-core';
 import { RegisterDidWithCDDArgs, TxMethod, MethodNames } from './iface';
 import { RegisterDidWithCDDTransactionSchema } from './txnSchema';
 import { Transaction } from './transaction';

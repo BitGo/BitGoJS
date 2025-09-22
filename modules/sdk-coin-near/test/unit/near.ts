@@ -6,10 +6,10 @@ import sinon from 'sinon';
 import nock from 'nock';
 import assert from 'assert';
 
-import { BitGoAPI } from '@bitgo/sdk-api';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { coins } from '@bitgo/statics';
-import { common, TransactionPrebuild, Wallet } from '@bitgo/sdk-core';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
+import { coins } from '@bitgo-beta/statics';
+import { common, TransactionPrebuild, Wallet } from '@bitgo-beta/sdk-core';
 
 import { KeyPair, Near, TNear, Transaction } from '../../src';
 import nearUtils from '../../src/lib/utils';

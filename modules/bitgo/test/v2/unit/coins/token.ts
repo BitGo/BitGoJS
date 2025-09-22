@@ -1,7 +1,7 @@
 import 'should';
-import { BaseCoin } from '@bitgo/sdk-core';
+import { BaseCoin } from '@bitgo-beta/sdk-core';
 
-import { TestBitGo } from '@bitgo/sdk-test';
+import { TestBitGo } from '@bitgo-beta/sdk-test';
 import { BitGo } from '../../../../src/bitgo';
 
 describe('Virtual Token:', function () {
@@ -14,7 +14,7 @@ describe('Virtual Token:', function () {
 
   it('should not instantiate coin interface before loading client constants', function () {
     (() => bitgo.coin('mycrappytoken')).should.throw(
-      'Coin or token type mycrappytoken not supported or not compiled. Please be sure that you are using the latest version of BitGoJS. If using @bitgo/sdk-api, please confirm you have registered mycrappytoken first.'
+      'Coin or token type mycrappytoken not supported or not compiled. Please be sure that you are using the latest version of BitGoJS. If using @bitgo-beta/sdk-api, please confirm you have registered mycrappytoken first.'
     );
   });
 

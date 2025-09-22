@@ -1,5 +1,5 @@
 import { Transaction } from './transaction';
-import { InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
+import { InvalidTransactionError, TransactionType } from '@bitgo-beta/sdk-core';
 import {
   AccountAddress,
   EntryFunctionABI,
@@ -11,7 +11,7 @@ import {
   TypeTagVector,
 } from '@aptos-labs/ts-sdk';
 
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { APTOS_COIN, COIN_BATCH_TRANSFER_FUNCTION, COIN_TRANSFER_FUNCTION } from '../constants';
 import utils from '../utils';
 

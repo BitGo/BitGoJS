@@ -8,8 +8,8 @@ import {
   toUint8Array,
   TransactionRecipient,
   TransactionType,
-} from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+} from '@bitgo-beta/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import Keyring, { decodeAddress, encodeAddress } from '@polkadot/keyring';
 import { u8aToBuffer } from '@polkadot/util';
 import { construct, decode } from '@substrate/txwrapper-polkadot';

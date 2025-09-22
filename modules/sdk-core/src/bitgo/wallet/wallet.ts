@@ -2,7 +2,7 @@
  * @prettier
  */
 import { TxSendBody } from '@bitgo/public-types';
-import { CoinFamily } from '@bitgo/statics';
+import { CoinFamily } from '@bitgo-beta/statics';
 import assert from 'assert';
 import BigNumber from 'bignumber.js';
 import * as t from 'io-ts';

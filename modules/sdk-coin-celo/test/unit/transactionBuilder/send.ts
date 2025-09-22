@@ -2,11 +2,11 @@ import assert from 'assert';
 import should from 'should';
 import * as ethUtil from 'ethereumjs-util';
 import EthereumAbi from 'ethereumjs-abi';
-import { BaseTransaction, TransactionType } from '@bitgo/sdk-core';
+import { BaseTransaction, TransactionType } from '@bitgo-beta/sdk-core';
 import { getBuilder } from '../getBuilder';
 import { KeyPair, TransactionBuilder } from '../../../src';
 import * as testData from '../../resources/celo';
-import { decodeTransferData } from '@bitgo/sdk-coin-eth';
+import { decodeTransferData } from '@bitgo-beta/sdk-coin-eth';
 
 describe('Send transaction', function () {
   let txBuilder: TransactionBuilder;

@@ -3,8 +3,8 @@ import should = require('should');
 import * as crypto from 'crypto';
 import * as assert from 'assert';
 
-import { openpgpUtils } from '@bitgo/sdk-core';
-import { ecc as secp256k1 } from '@bitgo/utxo-lib';
+import { openpgpUtils } from '@bitgo-beta/sdk-core';
+import { ecc as secp256k1 } from '@bitgo-beta/utxo-lib';
 import * as sinon from 'sinon';
 
 const sodium = require('libsodium-wrappers-sumo');

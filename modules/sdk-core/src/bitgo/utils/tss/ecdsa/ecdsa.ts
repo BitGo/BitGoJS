@@ -3,8 +3,14 @@ import { Buffer } from 'buffer';
 import * as openpgp from 'openpgp';
 import { Key, SerializedKeyPair } from 'openpgp';
 import { Hash } from 'crypto';
-import { EcdsaPaillierProof, EcdsaRangeProof, EcdsaTypes, hexToBigInt, minModulusBitLength } from '@bitgo/sdk-lib-mpc';
-import { bip32 } from '@bitgo/utxo-lib';
+import {
+  EcdsaPaillierProof,
+  EcdsaRangeProof,
+  EcdsaTypes,
+  hexToBigInt,
+  minModulusBitLength,
+} from '@bitgo-beta/sdk-lib-mpc';
+import { bip32 } from '@bitgo-beta/utxo-lib';
 
 import { ECDSA, Ecdsa } from '../../../../account-lib/mpc/tss';
 import { AddKeychainOptions, Keychain, KeyType } from '../../../keychain';

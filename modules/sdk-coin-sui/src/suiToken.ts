@@ -1,6 +1,6 @@
-import { coins, SuiTokenConfig, tokens } from '@bitgo/statics';
+import { coins, SuiTokenConfig, tokens } from '@bitgo-beta/statics';
 import { Sui } from './sui';
-import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
+import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo-beta/sdk-core';
 
 export class SuiToken extends Sui {
   public readonly tokenConfig: SuiTokenConfig;

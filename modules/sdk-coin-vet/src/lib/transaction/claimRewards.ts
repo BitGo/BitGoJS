@@ -1,7 +1,7 @@
 import EthereumAbi from 'ethereumjs-abi';
 import { addHexPrefix } from 'ethereumjs-util';
-import { TransactionType, InvalidTransactionError, TransactionRecipient } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { TransactionType, InvalidTransactionError, TransactionRecipient } from '@bitgo-beta/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { Transaction as VetTransaction, Secp256k1, TransactionClause } from '@vechain/sdk-core';
 import { Transaction } from './transaction';
 import { VetTransactionData } from '../iface';

@@ -1,4 +1,10 @@
-import { AddressFormat, BaseKeyPair, DefaultKeys, Ed25519KeyPair, Secp256k1ExtendedKeyPair } from '@bitgo/sdk-core';
+import {
+  AddressFormat,
+  BaseKeyPair,
+  DefaultKeys,
+  Ed25519KeyPair,
+  Secp256k1ExtendedKeyPair,
+} from '@bitgo-beta/sdk-core';
 
 export class KeyPair implements BaseKeyPair {
   recordKeysFromPrivateKey(prv: string): void {

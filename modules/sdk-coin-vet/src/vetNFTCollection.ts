@@ -1,6 +1,6 @@
 import { Vet } from './vet';
-import { coins, tokens, VetNFTCollectionConfig } from '@bitgo/statics';
-import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
+import { coins, tokens, VetNFTCollectionConfig } from '@bitgo-beta/statics';
+import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo-beta/sdk-core';
 
 export class VetNFTCollection extends Vet {
   public readonly nftCollectionConfig: VetNFTCollectionConfig;

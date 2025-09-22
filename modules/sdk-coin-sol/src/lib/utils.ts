@@ -5,8 +5,8 @@ import {
   ParseTransactionError,
   TransactionType,
   UtilsError,
-} from '@bitgo/sdk-core';
-import { BaseCoin, BaseNetwork, CoinNotDefinedError, coins, SolCoin } from '@bitgo/statics';
+} from '@bitgo-beta/sdk-core';
+import { BaseCoin, BaseNetwork, CoinNotDefinedError, coins, SolCoin } from '@bitgo-beta/statics';
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   getAssociatedTokenAddress,

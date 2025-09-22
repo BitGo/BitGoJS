@@ -1,8 +1,8 @@
 import BigNumber from 'bignumber.js';
 import { TransactionClause } from '@vechain/sdk-core';
 
-import { TransactionType } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { TransactionType } from '@bitgo-beta/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { TransactionBuilder } from './transactionBuilder';
 import utils from '../utils';
 import { Transaction } from '../transaction/transaction';

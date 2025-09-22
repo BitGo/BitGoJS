@@ -1,5 +1,5 @@
 import { Descriptor, ast } from '@bitgo/wasm-miniscript';
-import { PatternMatcher, Pattern } from '@bitgo/utxo-core/descriptor';
+import { PatternMatcher, Pattern } from '@bitgo-beta/utxo-core/descriptor';
 
 import { getUnspendableKey } from './descriptor';
 

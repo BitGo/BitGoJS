@@ -1,9 +1,9 @@
 import assert from 'assert';
-import { BitGoAPI } from '@bitgo/sdk-api';
-import { common, FullySignedTransaction, HalfSignedTransaction, TransactionType } from '@bitgo/sdk-core';
-import { OfflineVaultTxInfo, TransferBuilder } from '@bitgo/abstract-eth';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { bip32 } from '@bitgo/secp256k1';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
+import { common, FullySignedTransaction, HalfSignedTransaction, TransactionType } from '@bitgo-beta/sdk-core';
+import { OfflineVaultTxInfo, TransferBuilder } from '@bitgo-beta/abstract-eth';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
+import { bip32 } from '@bitgo-beta/secp256k1';
 import nock from 'nock';
 
 import { EthLikeCoin, TethLikeCoin, EthLikeTransactionBuilder } from '../../src';

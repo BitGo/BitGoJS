@@ -1,4 +1,4 @@
-import { DefaultKeys, KeyPairOptions, Ed25519KeyPair, toHex, toUint8Array } from '@bitgo/sdk-core';
+import { DefaultKeys, KeyPairOptions, Ed25519KeyPair, toHex, toUint8Array } from '@bitgo-beta/sdk-core';
 import * as nearApi from 'near-api-js';
 import * as nacl from 'tweetnacl';
 

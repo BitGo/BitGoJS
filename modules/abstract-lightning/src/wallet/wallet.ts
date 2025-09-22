@@ -1,4 +1,4 @@
-import * as sdkcore from '@bitgo/sdk-core';
+import * as sdkcore from '@bitgo-beta/sdk-core';
 import { SelfCustodialLightningWallet } from './selfCustodialLightning';
 import { CustodialLightningWallet } from './custodialLightning';
 import { ILightningWallet } from './lightning';

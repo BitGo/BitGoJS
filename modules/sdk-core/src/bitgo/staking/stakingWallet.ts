@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import { CoinFamily } from '@bitgo/statics';
+import { CoinFamily } from '@bitgo-beta/statics';
 import isEqual from 'lodash/isEqual';
 
 import {

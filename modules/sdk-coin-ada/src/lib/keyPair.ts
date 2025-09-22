@@ -1,4 +1,4 @@
-import { DefaultKeys, KeyPairOptions, Ed25519KeyPair, toHex, AddressFormat, toUint8Array } from '@bitgo/sdk-core';
+import { DefaultKeys, KeyPairOptions, Ed25519KeyPair, toHex, AddressFormat, toUint8Array } from '@bitgo-beta/sdk-core';
 import {
   PublicKey,
   PrivateKey,

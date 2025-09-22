@@ -2,8 +2,8 @@
  * @prettier
  */
 import { BigNumber } from 'bignumber.js';
-import { bip32, BIP32Interface } from '@bitgo/secp256k1';
-import { coins, EosCoin } from '@bitgo/statics';
+import { bip32, BIP32Interface } from '@bitgo-beta/secp256k1';
+import { coins, EosCoin } from '@bitgo-beta/statics';
 import { createHash, randomBytes } from 'crypto';
 import { Api, ApiInterfaces, JsonRpc, RpcInterfaces } from 'eosjs';
 import * as ecc from 'eosjs-ecc';
@@ -39,7 +39,7 @@ import {
   VerifyAddressOptions as BaseVerifyAddressOptions,
   VerifyTransactionOptions as BaseVerifyTransactionOptions,
   Wallet,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 
 interface AddressDetails {
   address: string;

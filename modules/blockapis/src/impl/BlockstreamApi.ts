@@ -1,4 +1,4 @@
-import { bitgo } from '@bitgo/utxo-lib';
+import { bitgo } from '@bitgo-beta/utxo-lib';
 import { AddressApi, AddressInfo } from '../AddressApi';
 import { OutputSpend, TransactionIO, UtxoApi } from '../UtxoApi';
 import { ApiRequestError, BaseHttpClient, HttpClient, mapSeries } from '../BaseHttpClient';

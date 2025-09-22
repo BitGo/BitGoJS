@@ -3,13 +3,13 @@
  */
 import * as assert from 'assert';
 
-import { AbstractUtxoCoin, getReplayProtectionAddresses } from '@bitgo/abstract-utxo';
-import * as utxolib from '@bitgo/utxo-lib';
+import { AbstractUtxoCoin, getReplayProtectionAddresses } from '@bitgo-beta/abstract-utxo';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 import nock = require('nock');
 
 import { encryptKeychain, getDefaultWalletKeys, getUtxoWallet, keychainsBase58, utxoCoins } from './util';
-import { common, HalfSignedUtxoTransaction, Wallet } from '@bitgo/sdk-core';
-import { getSeed, TestBitGo } from '@bitgo/sdk-test';
+import { common, HalfSignedUtxoTransaction, Wallet } from '@bitgo-beta/sdk-core';
+import { getSeed, TestBitGo } from '@bitgo-beta/sdk-test';
 import { BitGo } from '../../../../../src';
 
 const txFormats = ['legacy', 'psbt'] as const;

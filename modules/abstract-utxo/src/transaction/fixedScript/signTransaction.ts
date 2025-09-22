@@ -1,9 +1,9 @@
 import assert from 'assert';
 
 import _ from 'lodash';
-import { bip32, BIP32Interface, bitgo } from '@bitgo/utxo-lib';
-import * as utxolib from '@bitgo/utxo-lib';
-import { isTriple, Triple } from '@bitgo/sdk-core';
+import { bip32, BIP32Interface, bitgo } from '@bitgo-beta/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
+import { isTriple, Triple } from '@bitgo-beta/sdk-core';
 
 import { signAndVerifyPsbt, signAndVerifyWalletTransaction } from '../../sign';
 import { AbstractUtxoCoin, DecodedTransaction, RootWalletKeys } from '../../abstractUtxoCoin';

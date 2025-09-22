@@ -1,8 +1,8 @@
-import { CosmosTransaction, SendMessage } from '@bitgo/abstract-cosmos';
-import { BitGoAPI } from '@bitgo/sdk-api';
-import { EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
-import { TestBitGo, TestBitGoAPI, mockSerializedChallengeWithProofs } from '@bitgo/sdk-test';
-import { NetworkType, coins } from '@bitgo/statics';
+import { CosmosTransaction, SendMessage } from '@bitgo-beta/abstract-cosmos';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
+import { EcdsaRangeProof, EcdsaTypes } from '@bitgo-beta/sdk-lib-mpc';
+import { TestBitGo, TestBitGoAPI, mockSerializedChallengeWithProofs } from '@bitgo-beta/sdk-test';
+import { NetworkType, coins } from '@bitgo-beta/statics';
 import BigNumber from 'bignumber.js';
 import { beforeEach } from 'mocha';
 import sinon from 'sinon';

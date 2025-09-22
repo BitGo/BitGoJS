@@ -9,7 +9,7 @@ import {
   KeyPairOptions,
   toHex,
   toUint8Array,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import bs58 from 'bs58';
 import utils from './utils';
 import * as nacl from 'tweetnacl';

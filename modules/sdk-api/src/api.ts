@@ -9,7 +9,7 @@ import superagent from 'superagent';
 import urlLib from 'url';
 import querystring from 'querystring';
 
-import { ApiResponseError, BitGoRequest } from '@bitgo/sdk-core';
+import { ApiResponseError, BitGoRequest } from '@bitgo-beta/sdk-core';
 
 import { AuthVersion, VerifyResponseOptions } from './types';
 import { BitGoAPI } from './bitgoAPI';

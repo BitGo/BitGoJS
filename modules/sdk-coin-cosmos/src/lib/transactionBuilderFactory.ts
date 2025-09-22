@@ -7,9 +7,9 @@ import {
   StakingRedelegateBuilder,
   StakingWithdrawRewardsBuilder,
   ContractCallBuilder,
-} from '@bitgo/abstract-cosmos';
-import { BaseCoin as CoinConfig, CosmosNetwork } from '@bitgo/statics';
-import { BaseTransactionBuilderFactory, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
+} from '@bitgo-beta/abstract-cosmos';
+import { BaseCoin as CoinConfig, CosmosNetwork } from '@bitgo-beta/statics';
+import { BaseTransactionBuilderFactory, InvalidTransactionError, TransactionType } from '@bitgo-beta/sdk-core';
 import { Utils } from './utils';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {

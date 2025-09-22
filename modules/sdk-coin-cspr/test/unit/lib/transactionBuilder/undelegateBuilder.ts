@@ -3,9 +3,9 @@ import * as should from 'should';
 import { KeyPair, TransactionBuilderFactory } from '../../../../src/lib';
 import { DELEGATE_VALIDATOR_ACCOUNT } from '../../../../src/lib/constants';
 import * as testData from '../../../fixtures/resources';
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 import { UndelegateBuilder } from '../../../../src/lib/undelegateBuilder';
-import { coins } from '@bitgo/statics';
+import { coins } from '@bitgo-beta/statics';
 
 describe('CSPR Undelegate Builder', () => {
   const factory = new TransactionBuilderFactory(coins.get('tcspr'));

@@ -1,9 +1,9 @@
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 import should from 'should';
 
 import * as testData from '../../resources/tia';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
 import { Tia, Ttia } from '../../../src';
 
 describe('Tia Transaction Builder', async () => {

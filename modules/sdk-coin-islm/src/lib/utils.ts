@@ -1,8 +1,8 @@
-import { InvalidTransactionError } from '@bitgo/sdk-core';
+import { InvalidTransactionError } from '@bitgo-beta/sdk-core';
 import { Coin } from '@cosmjs/stargate';
 import BigNumber from 'bignumber.js';
 
-import { CosmosUtils, PubKeyType, PubKeyTypeUrl } from '@bitgo/abstract-cosmos';
+import { CosmosUtils, PubKeyType, PubKeyTypeUrl } from '@bitgo-beta/abstract-cosmos';
 import * as constants from './constants';
 import { DecodedTxRaw } from '@cosmjs/proto-signing';
 import { fromBase64, toBase64, toHex, fromHex } from '@cosmjs/encoding';

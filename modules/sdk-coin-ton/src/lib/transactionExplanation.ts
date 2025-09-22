@@ -1,4 +1,4 @@
-import { ITransactionRecipient } from '@bitgo/sdk-core';
+import { ITransactionRecipient } from '@bitgo-beta/sdk-core';
 
 export interface ITransactionExplanation<TFee = any, TAmount = any> {
   displayOrder: string[];

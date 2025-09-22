@@ -1,6 +1,6 @@
-import { TransactionBuilder as EthLikeTransactionBuilder } from '@bitgo/abstract-eth';
-import { BuildTransactionError, PublicKey, TransactionType } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { TransactionBuilder as EthLikeTransactionBuilder } from '@bitgo-beta/abstract-eth';
+import { BuildTransactionError, PublicKey, TransactionType } from '@bitgo-beta/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 
 import { getCommon } from './utils';
 import { walletSimpleByteCode } from './walletUtil';

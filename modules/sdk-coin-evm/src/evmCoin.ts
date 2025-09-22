@@ -1,8 +1,8 @@
 /**
  * @prettier
  */
-import { BaseCoin, BitGoBase, common, MPCAlgorithm, MultisigType, multisigTypes } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, CoinFeature, coins } from '@bitgo/statics';
+import { BaseCoin, BitGoBase, common, MPCAlgorithm, MultisigType, multisigTypes } from '@bitgo-beta/sdk-core';
+import { BaseCoin as StaticsBaseCoin, CoinFeature, coins } from '@bitgo-beta/statics';
 import {
   AbstractEthLikeNewCoins,
   OfflineVaultTxInfo,
@@ -10,7 +10,7 @@ import {
   recoveryBlockchainExplorerQuery,
   TransactionBuilder as EthLikeTransactionBuilder,
   UnsignedSweepTxMPCv2,
-} from '@bitgo/abstract-eth';
+} from '@bitgo-beta/abstract-eth';
 import { TransactionBuilder } from './lib';
 import assert from 'assert';
 

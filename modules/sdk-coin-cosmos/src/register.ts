@@ -1,5 +1,5 @@
-import { BitGoBase } from '@bitgo/sdk-core';
-import { CoinFeature, coins } from '@bitgo/statics';
+import { BitGoBase } from '@bitgo-beta/sdk-core';
+import { CoinFeature, coins } from '@bitgo-beta/statics';
 import { CosmosSharedCoin } from './cosmosSharedCoin';
 
 /**

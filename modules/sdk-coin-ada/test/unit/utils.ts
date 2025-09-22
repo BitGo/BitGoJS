@@ -1,6 +1,6 @@
 import should from 'should';
 import { KeyPair, Utils } from '../../src';
-import { AddressFormat, toHex } from '@bitgo/sdk-core';
+import { AddressFormat, toHex } from '@bitgo-beta/sdk-core';
 import { Ed25519Signature, DRep } from '@emurgo/cardano-serialization-lib-nodejs';
 import {
   address,

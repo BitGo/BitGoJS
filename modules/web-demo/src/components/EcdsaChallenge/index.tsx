@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { EcdsaTypes, EcdsaRangeProof } from '@bitgo/sdk-lib-mpc';
+import { EcdsaTypes, EcdsaRangeProof } from '@bitgo-beta/sdk-lib-mpc';
 import ReactJson from 'react-json-view';
 
 const EcdsaChallenge = () => {
@@ -12,7 +12,7 @@ const EcdsaChallenge = () => {
 
   const generateChallenge = async () => {
     setLoading(true);
-    const { loadWebAssembly } = await import('@bitgo/sdk-opensslbytes');
+    const { loadWebAssembly } = await import('@bitgo-beta/sdk-opensslbytes');
     const openSSLBytes = loadWebAssembly().buffer;
     const start = new Date().getTime() / 1000;
     const challenge = await EcdsaRangeProof.generateNtilde(openSSLBytes, 3072);

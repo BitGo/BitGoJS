@@ -1,4 +1,4 @@
-import { ECDSAMethodTypes } from '@bitgo/sdk-core';
+import { ECDSAMethodTypes } from '@bitgo-beta/sdk-core';
 
 export const mockUserSigningMaterial: ECDSAMethodTypes.SigningMaterial = {
   pShare: {

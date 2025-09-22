@@ -1,5 +1,5 @@
 import * as fs from 'fs/promises';
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 
 import { argToString, getNetworkOptionsDemand, readStringOptions } from '../../args';
 import { Buffer } from 'buffer';

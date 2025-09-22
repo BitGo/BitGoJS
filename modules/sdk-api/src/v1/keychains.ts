@@ -11,9 +11,9 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-import { bip32 } from '@bitgo/utxo-lib';
+import { bip32 } from '@bitgo-beta/utxo-lib';
 import { randomBytes } from 'crypto';
-import { common, Util, sanitizeLegacyPath } from '@bitgo/sdk-core';
+import { common, Util, sanitizeLegacyPath } from '@bitgo-beta/sdk-core';
 const _ = require('lodash');
 
 //

@@ -1,4 +1,4 @@
-import { BitGoBase } from '@bitgo/sdk-core';
+import { BitGoBase } from '@bitgo-beta/sdk-core';
 import { Near } from './near';
 import { TNear } from './tnear';
 import { Nep141Token } from './nep141Token';

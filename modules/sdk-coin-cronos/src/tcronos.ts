@@ -1,5 +1,5 @@
-import { AddressFormat, BaseCoin, BitGoBase } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, BaseUnit, NetworkType } from '@bitgo/statics';
+import { AddressFormat, BaseCoin, BitGoBase } from '@bitgo-beta/sdk-core';
+import { BaseCoin as StaticsBaseCoin, BaseUnit, NetworkType } from '@bitgo-beta/statics';
 import { Cronos } from './cronos';
 import { Utils } from './lib/utils';
 import { KeyPair } from './lib/keyPair';

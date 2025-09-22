@@ -3,7 +3,7 @@ import should from 'should';
 import utils from '../../src/lib/utils';
 import { blockHash, txIds } from '../resources/osmo';
 import * as testData from '../resources/osmo';
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 
 describe('utils', () => {
   it('should validate block hash correctly', () => {

@@ -1,13 +1,13 @@
 /**
  * @prettier
  */
-import { BaseCoin, BitGoBase, common, MPCAlgorithm, MultisigType, multisigTypes } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, coins, ethGasConfigs } from '@bitgo/statics';
+import { BaseCoin, BitGoBase, common, MPCAlgorithm, MultisigType, multisigTypes } from '@bitgo-beta/sdk-core';
+import { BaseCoin as StaticsBaseCoin, coins, ethGasConfigs } from '@bitgo-beta/statics';
 import {
   AbstractEthLikeNewCoins,
   TransactionBuilder as EthLikeTransactionBuilder,
   recoveryBlockchainExplorerQuery,
-} from '@bitgo/abstract-eth';
+} from '@bitgo-beta/abstract-eth';
 import { TransactionBuilder } from './lib';
 
 export class Opeth extends AbstractEthLikeNewCoins {

@@ -1,4 +1,4 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { CLValue, CLPublicKey as PublicKey, CLValueBuilder } from 'casper-js-sdk';
 import {
   BaseKey,
@@ -6,7 +6,7 @@ import {
   InvalidParameterValueError,
   SigningError,
   TransactionType,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import { TransactionBuilder, DEFAULT_M } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { TRANSACTION_TYPE, TRANSFER_TO_ADDRESS } from './constants';

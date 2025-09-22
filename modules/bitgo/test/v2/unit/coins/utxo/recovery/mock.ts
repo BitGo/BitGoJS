@@ -1,12 +1,12 @@
 /**
  * @prettier
  */
-import { bitgo } from '@bitgo/utxo-lib';
-import { AddressInfo, TransactionIO } from '@bitgo/blockapis';
-import { AbstractUtxoCoin, RecoveryProvider } from '@bitgo/abstract-utxo';
-import * as utxolib from '@bitgo/utxo-lib';
-import { Bch } from '@bitgo/sdk-coin-bch';
-import { Bsv } from '@bitgo/sdk-coin-bsv';
+import { bitgo } from '@bitgo-beta/utxo-lib';
+import { AddressInfo, TransactionIO } from '@bitgo-beta/blockapis';
+import { AbstractUtxoCoin, RecoveryProvider } from '@bitgo-beta/abstract-utxo';
+import * as utxolib from '@bitgo-beta/utxo-lib';
+import { Bch } from '@bitgo-beta/sdk-coin-bch';
+import { Bsv } from '@bitgo-beta/sdk-coin-bsv';
 
 type Unspent<TNumber extends number | bigint = number> = bitgo.Unspent<TNumber>;
 export class MockRecoveryProvider implements RecoveryProvider {

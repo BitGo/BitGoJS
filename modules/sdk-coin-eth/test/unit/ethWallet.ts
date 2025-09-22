@@ -1,16 +1,16 @@
 import should from 'should';
-import { bip32 } from '@bitgo/secp256k1';
+import { bip32 } from '@bitgo-beta/secp256k1';
 import * as secp256k1 from 'secp256k1';
 import nock from 'nock';
 import sinon from 'sinon';
-import { common, Util } from '@bitgo/sdk-core';
+import { common, Util } from '@bitgo-beta/sdk-core';
 
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
 
 import { Capability, Transaction as EthTx } from '@ethereumjs/tx';
 const fixtures = require('../fixtures/eth');
 
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
 import { Erc20Token, SignTransactionOptions, Teth } from '../../src';
 import { getBuilder } from './getBuilder';
 

@@ -4,14 +4,14 @@
 
 import * as _ from 'lodash';
 import should = require('should');
-import { bip32 } from '@bitgo/utxo-lib';
-import { TestBitGo } from '@bitgo/sdk-test';
+import { bip32 } from '@bitgo-beta/utxo-lib';
+import { TestBitGo } from '@bitgo-beta/sdk-test';
 import { BitGo } from '../../../../src/bitgo';
-import { getBuilder, Eth } from '@bitgo/account-lib';
+import { getBuilder, Eth } from '@bitgo-beta/account-lib';
 import * as ethAbi from 'ethereumjs-abi';
 import * as ethUtil from 'ethereumjs-util';
-import { coins, ContractAddressDefinedToken } from '@bitgo/statics';
-import { BaseTransaction, TransactionType } from '@bitgo/sdk-core';
+import { coins, ContractAddressDefinedToken } from '@bitgo-beta/statics';
+import { BaseTransaction, TransactionType } from '@bitgo-beta/sdk-core';
 
 describe('ETH-like coins', () => {
   _.forEach(['tetc', 'tcelo', 'trbtc'], (coinName) => {

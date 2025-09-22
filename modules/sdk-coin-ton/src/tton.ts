@@ -3,9 +3,9 @@
  *
  * @format
  */
-import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
+import { BaseCoin, BitGoBase } from '@bitgo-beta/sdk-core';
 import { Ton } from './ton';
-import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin } from '@bitgo-beta/statics';
 
 export class Tton extends Ton {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;

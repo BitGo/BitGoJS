@@ -1,9 +1,9 @@
 import * as assert from 'assert';
 import * as should from 'should';
 import { generateQrData } from '../../src/generateQrData';
-import { decrypt } from '@bitgo/sdk-api';
-import { ApiKeyShare, Keychain, KeyType } from '@bitgo/sdk-core';
-import { coins } from '@bitgo/statics';
+import { decrypt } from '@bitgo-beta/sdk-api';
+import { ApiKeyShare, Keychain, KeyType } from '@bitgo-beta/sdk-core';
+import { coins } from '@bitgo-beta/statics';
 
 function createKeychain({
   commonKeychain,

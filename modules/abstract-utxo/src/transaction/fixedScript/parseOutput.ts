@@ -10,7 +10,7 @@ import {
   VerificationOptions,
   ITransactionRecipient,
   Triple,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 
 import { AbstractUtxoCoin, Output, isWalletOutput } from '../../abstractUtxoCoin';
 

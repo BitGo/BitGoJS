@@ -4,10 +4,10 @@ import * as _ from 'lodash';
 import Sinon, { SinonStub } from 'sinon';
 import { randomBytes } from 'crypto';
 import { BigNumber } from 'bignumber.js';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoAPI, encrypt } from '@bitgo/sdk-api';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
+import { BitGoAPI, encrypt } from '@bitgo-beta/sdk-api';
 import { TxData, Transfer } from '../../src/lib/iface';
-import { Wallet } from '@bitgo/sdk-core';
+import { Wallet } from '@bitgo-beta/sdk-core';
 
 import * as TestData from '../fixtures/hbar';
 import { Hbar, Thbar, KeyPair, HbarToken } from '../../src';

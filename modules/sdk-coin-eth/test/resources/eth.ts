@@ -1,4 +1,4 @@
-import { Networks } from '@bitgo/statics';
+import { Networks } from '@bitgo-beta/statics';
 import { EIP1559TxData, ETHTransactionType, KeyPair, LegacyTxData } from '../../src';
 
 export const TX_JSON =

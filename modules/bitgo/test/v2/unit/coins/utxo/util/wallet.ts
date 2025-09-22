@@ -1,5 +1,5 @@
-import { AbstractUtxoCoin } from '@bitgo/abstract-utxo';
-import { Wallet } from '@bitgo/sdk-core';
+import { AbstractUtxoCoin } from '@bitgo-beta/abstract-utxo';
+import { Wallet } from '@bitgo-beta/sdk-core';
 import { defaultBitGo } from './utxoCoins';
 
 export function getUtxoWallet(coin: AbstractUtxoCoin, walletData = {}): Wallet {

@@ -4,7 +4,7 @@ import {
   GoStakingWalletObject,
   GoStakingWalletResults,
   UnsignedGoStakingRequest,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 
 export default {
   previewGoStakingRequest: function (coin: string): UnsignedGoStakingRequest {

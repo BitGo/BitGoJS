@@ -5,7 +5,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { coins } from '@bitgo/statics';
+import { coins } from '@bitgo-beta/statics';
 import { TransactionBuilderFactory } from '../../src/lib/transactionBuilderFactory';
 import { CoinTestData } from './types';
 

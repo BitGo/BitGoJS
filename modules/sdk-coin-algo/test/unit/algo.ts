@@ -1,15 +1,15 @@
 import { AlgoLib, Talgo } from '../../src';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoAPI, encrypt } from '@bitgo/sdk-api';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
+import { BitGoAPI, encrypt } from '@bitgo-beta/sdk-api';
 import * as AlgoResources from '../fixtures/algo';
 import { randomBytes } from 'crypto';
-import { coins } from '@bitgo/statics';
+import { coins } from '@bitgo-beta/statics';
 import Sinon, { SinonStub } from 'sinon';
 import assert from 'assert';
 import { Algo } from '../../src/algo';
 import BigNumber from 'bignumber.js';
 import { TransactionBuilderFactory } from '../../src/lib';
-import { KeyPair } from '@bitgo/sdk-core';
+import { KeyPair } from '@bitgo-beta/sdk-core';
 import { algoBackupKey } from './fixtures/algoBackupKey';
 
 describe('ALGO:', function () {

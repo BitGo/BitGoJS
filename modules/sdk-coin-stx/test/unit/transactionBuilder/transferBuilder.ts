@@ -1,11 +1,11 @@
 import assert from 'assert';
 import should from 'should';
 import { StacksMainnet, StacksTestnet } from '@stacks/network';
-import { TransactionType, rawPrvToExtendedKeys } from '@bitgo/sdk-core';
+import { TransactionType, rawPrvToExtendedKeys } from '@bitgo-beta/sdk-core';
 
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
-import { coins } from '@bitgo/statics';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
+import { coins } from '@bitgo-beta/statics';
 
 import { Stx, Tstx, StxLib } from '../../../src';
 import * as testData from '../resources';

@@ -1,8 +1,8 @@
 import assert from 'assert';
 
-import { Triple } from '@bitgo/sdk-core';
-import { BIP32Interface } from '@bitgo/utxo-lib';
-import { getKeyTriple } from '@bitgo/utxo-core/testutil';
+import { Triple } from '@bitgo-beta/sdk-core';
+import { BIP32Interface } from '@bitgo-beta/utxo-lib';
+import { getKeyTriple } from '@bitgo-beta/utxo-core/testutil';
 
 import { DescriptorTemplate, getDescriptor } from '../../../../utxo-core/src/testutil/descriptor';
 import {

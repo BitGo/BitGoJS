@@ -1,7 +1,7 @@
-import { CosmosTransaction, CosmosUtils, TransactionExplanation, TxData } from '@bitgo/abstract-cosmos';
-import { Entry, InvalidTransactionError, TransactionRecipient, TransactionType } from '@bitgo/sdk-core';
+import { CosmosTransaction, CosmosUtils, TransactionExplanation, TxData } from '@bitgo-beta/abstract-cosmos';
+import { Entry, InvalidTransactionError, TransactionRecipient, TransactionType } from '@bitgo-beta/sdk-core';
 import { BabylonSpecificMessages, WithdrawRewardMessage } from './iface';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { UNAVAILABLE_TEXT } from './constants';
 
 export class BabylonTransaction extends CosmosTransaction<BabylonSpecificMessages> {

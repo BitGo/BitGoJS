@@ -1,4 +1,4 @@
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 import * as t from 'io-ts';
 
 import { DescriptorMap, NamedDescriptor } from '../../descriptor';

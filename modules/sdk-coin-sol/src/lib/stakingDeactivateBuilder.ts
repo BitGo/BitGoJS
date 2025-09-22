@@ -1,8 +1,8 @@
 import { SolStakingTypeEnum } from '@bitgo/public-types';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import assert from 'assert';
 
-import { BuildTransactionError, Recipient, TransactionType } from '@bitgo/sdk-core';
+import { BuildTransactionError, Recipient, TransactionType } from '@bitgo-beta/sdk-core';
 import { InstructionBuilderTypes, STAKE_ACCOUNT_RENT_EXEMPT_AMOUNT } from './constants';
 import { StakingDeactivate, StakingDeactivateExtraParams, Transfer } from './iface';
 import { Transaction } from './transaction';

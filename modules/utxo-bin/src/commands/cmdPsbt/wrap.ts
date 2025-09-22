@@ -1,4 +1,4 @@
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 import { Psbt } from '@bitgo/wasm-miniscript';
 
 export function toWrappedPsbt(psbt: utxolib.bitgo.UtxoPsbt | utxolib.Psbt | Buffer | Uint8Array): Psbt {

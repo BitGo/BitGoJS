@@ -1,8 +1,8 @@
-import { InvalidTransactionError } from '@bitgo/sdk-core';
+import { InvalidTransactionError } from '@bitgo-beta/sdk-core';
 import { Coin } from '@cosmjs/stargate';
 import BigNumber from 'bignumber.js';
 
-import { CosmosUtils } from '@bitgo/abstract-cosmos';
+import { CosmosUtils } from '@bitgo-beta/abstract-cosmos';
 import * as constants from './constants';
 
 export class ZetaUtils extends CosmosUtils {

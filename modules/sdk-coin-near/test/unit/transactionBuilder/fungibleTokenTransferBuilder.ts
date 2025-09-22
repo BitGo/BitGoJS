@@ -1,10 +1,10 @@
 import should from 'should';
 import * as base58 from 'bs58';
 
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
-import { Eddsa, TransactionType } from '@bitgo/sdk-core';
-import { coins } from '@bitgo/statics';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
+import { Eddsa, TransactionType } from '@bitgo-beta/sdk-core';
+import { coins } from '@bitgo-beta/statics';
 
 import * as testData from '../../resources/near';
 import { getBuilderFactory } from '../getBuilderFactory';

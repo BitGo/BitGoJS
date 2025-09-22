@@ -1,7 +1,7 @@
 import { Eip191MessageBuilder } from './eip191';
 import { Eip712MessageBuilder } from './eip712';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseMessageBuilderFactory, IMessageBuilder, MessageStandardType } from '@bitgo/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
+import { BaseMessageBuilderFactory, IMessageBuilder, MessageStandardType } from '@bitgo-beta/sdk-core';
 
 export class MessageBuilderFactory extends BaseMessageBuilderFactory {
   constructor(coinConfig: Readonly<CoinConfig>) {

@@ -10,12 +10,12 @@ import {
   getIsUnsignedSweep,
   MPCAlgorithm,
   NamedCoinConstructor,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import { BigNumber } from 'bignumber.js';
 
-import { coins, EthLikeTokenConfig, tokens } from '@bitgo/statics';
-import { CoinNames } from '@bitgo/abstract-eth';
-import { bip32 } from '@bitgo/secp256k1';
+import { coins, EthLikeTokenConfig, tokens } from '@bitgo-beta/statics';
+import { CoinNames } from '@bitgo-beta/abstract-eth';
+import { bip32 } from '@bitgo-beta/secp256k1';
 import * as _ from 'lodash';
 
 import { Eth, RecoverOptions, RecoveryInfo, optionalDeps, TransactionPrebuild } from './eth';

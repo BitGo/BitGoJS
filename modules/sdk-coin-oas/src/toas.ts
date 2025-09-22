@@ -1,8 +1,8 @@
 /**
  * Testnet Oas
  */
-import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { BaseCoin, BitGoBase } from '@bitgo-beta/sdk-core';
+import { BaseCoin as StaticsBaseCoin } from '@bitgo-beta/statics';
 import { Oas } from './oas';
 
 export class Toas extends Oas {

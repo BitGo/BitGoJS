@@ -1,6 +1,6 @@
-import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
+import { BaseCoin, BitGoBase } from '@bitgo-beta/sdk-core';
 import { Apt } from './apt';
-import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin } from '@bitgo-beta/statics';
 
 export class Tapt extends Apt {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;

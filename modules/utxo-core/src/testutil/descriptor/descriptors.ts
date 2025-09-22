@@ -1,7 +1,7 @@
 import assert from 'assert';
 
 import { Miniscript, Descriptor, ast } from '@bitgo/wasm-miniscript';
-import { bip32, BIP32Interface } from '@bitgo/utxo-lib';
+import { bip32, BIP32Interface } from '@bitgo-beta/utxo-lib';
 
 import { DescriptorMap, PsbtParams } from '../../descriptor';
 import { getKeyTriple, Triple, KeyTriple } from '../key.utils';

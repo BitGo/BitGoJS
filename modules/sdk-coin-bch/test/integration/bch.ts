@@ -4,8 +4,8 @@
 import * as should from 'should';
 import 'should-http';
 
-import { BitGoAPI } from '@bitgo/sdk-api';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
 import { Tbch } from '../../src/tbch';
 import * as nock from 'nock';
 

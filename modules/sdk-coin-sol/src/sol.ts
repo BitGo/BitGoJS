@@ -51,9 +51,9 @@ import {
   TransactionRecipient,
   VerifyAddressOptions,
   VerifyTransactionOptions,
-} from '@bitgo/sdk-core';
-import { auditEddsaPrivateKey, getDerivationPath } from '@bitgo/sdk-lib-mpc';
-import { BaseNetwork, CoinFamily, coins, SolCoin, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+} from '@bitgo-beta/sdk-core';
+import { auditEddsaPrivateKey, getDerivationPath } from '@bitgo-beta/sdk-lib-mpc';
+import { BaseNetwork, CoinFamily, coins, SolCoin, BaseCoin as StaticsBaseCoin } from '@bitgo-beta/statics';
 import { KeyPair as SolKeyPair, Transaction, TransactionBuilder, TransactionBuilderFactory } from './lib';
 import {
   getAssociatedTokenAccountAddress,

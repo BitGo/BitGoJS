@@ -1,7 +1,7 @@
 {
-  "name": "@bitgo/blockapis",
+  "name": "@bitgo-beta/blockapis",
   "description": "Access public block explorer APIs for a variety of coins",
-  "version": "0.0.0-semantic-release-managed",
+  "version": "1.0.5-beta.1436",
   "main": "dist/src/index.js",
   "files": [
     "dist/src/**/*"
@@ -22,7 +22,7 @@
     "directory": "modules/blockapis"
   },
   "dependencies": {
-    "@bitgo/utxo-lib": "0.0.0-semantic-release-managed",
+    "@bitgo-beta/utxo-lib": "8.0.3-beta.1201",
     "@types/superagent": "4.1.16",
     "superagent": "^9.0.1"
   },

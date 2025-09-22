@@ -1,4 +1,4 @@
-import { BaseMessage, MessageOptions, MessageStandardType } from '@bitgo/sdk-core';
+import { BaseMessage, MessageOptions, MessageStandardType } from '@bitgo-beta/sdk-core';
 
 /**
  * Implementation of Message for EIP191 standard

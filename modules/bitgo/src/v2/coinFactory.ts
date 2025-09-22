@@ -1,15 +1,15 @@
 /**
  * @prettier
  */
-import { AdaToken } from '@bitgo/sdk-coin-ada';
-import { AlgoToken } from '@bitgo/sdk-coin-algo';
-import { Bcha, Tbcha } from '@bitgo/sdk-coin-bcha';
-import { HbarToken } from '@bitgo/sdk-coin-hbar';
-import { Near, TNear, Nep141Token } from '@bitgo/sdk-coin-near';
-import { SolToken } from '@bitgo/sdk-coin-sol';
-import { TrxToken } from '@bitgo/sdk-coin-trx';
-import { CoinFactory, CoinConstructor } from '@bitgo/sdk-core';
-import { EthLikeErc20Token } from '@bitgo/sdk-coin-evm';
+import { AdaToken } from '@bitgo-beta/sdk-coin-ada';
+import { AlgoToken } from '@bitgo-beta/sdk-coin-algo';
+import { Bcha, Tbcha } from '@bitgo-beta/sdk-coin-bcha';
+import { HbarToken } from '@bitgo-beta/sdk-coin-hbar';
+import { Near, TNear, Nep141Token } from '@bitgo-beta/sdk-coin-near';
+import { SolToken } from '@bitgo-beta/sdk-coin-sol';
+import { TrxToken } from '@bitgo-beta/sdk-coin-trx';
+import { CoinFactory, CoinConstructor } from '@bitgo-beta/sdk-core';
+import { EthLikeErc20Token } from '@bitgo-beta/sdk-coin-evm';
 import {
   CoinMap,
   coins,
@@ -38,7 +38,7 @@ import {
   TaoTokenConfig,
   PolyxTokenConfig,
   JettonTokenConfig,
-} from '@bitgo/statics';
+} from '@bitgo-beta/statics';
 import {
   Ada,
   Algo,

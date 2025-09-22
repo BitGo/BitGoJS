@@ -2,15 +2,15 @@ import * as t from 'io-ts';
 import * as tt from 'io-ts-types';
 import { isLeft } from 'fp-ts/Either';
 import { PathReporter } from 'io-ts/lib/PathReporter';
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 import {
   getBabylonParamByVersion,
   StakerInfo,
   StakingInputs,
   StakingParams,
   VersionedStakingParams,
-} from '@bitgo/babylonlabs-io-btc-staking-ts';
-export { getBabylonParamByVersion, getBabylonParamByBtcHeight } from '@bitgo/babylonlabs-io-btc-staking-ts';
+} from '@bitgo-beta/babylonlabs-io-btc-staking-ts';
+export { getBabylonParamByVersion, getBabylonParamByBtcHeight } from '@bitgo-beta/babylonlabs-io-btc-staking-ts';
 
 import { BabylonDescriptorBuilder } from './descriptor';
 import jsonMainnetParams from './params.mainnet.json';

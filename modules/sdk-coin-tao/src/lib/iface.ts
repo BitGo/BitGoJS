@@ -1,4 +1,4 @@
-import { Interface } from '@bitgo/abstract-substrate';
+import { Interface } from '@bitgo-beta/abstract-substrate';
 
 export interface TransferStakeTxData extends Interface.TxData {
   destinationColdkey: string;

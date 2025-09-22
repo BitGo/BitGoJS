@@ -1,4 +1,4 @@
-import { coins } from '@bitgo/statics';
+import { coins } from '@bitgo-beta/statics';
 import should from 'should';
 import { TransactionBuilderFactory, TransferBuilder } from '../../../src/lib';
 import { Interface } from '../../../src';

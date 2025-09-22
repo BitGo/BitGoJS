@@ -1,13 +1,13 @@
 import assert from 'assert';
 import should from 'should';
-import { NetworkType } from '@bitgo/statics';
+import { NetworkType } from '@bitgo-beta/statics';
 import { TEST_ACCOUNT, TEST_ACCOUNT_2 } from '../resources/avaxc';
 import { isValidEthAddress, isValidEthPrivateKey, isValidEthPublicKey, sign, getCommon } from '../../src/lib/utils';
 
 import { getBuilder } from './getBuilder';
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 import { KeyPair, TransactionBuilder } from '../../src';
-import { ETHTransactionType, TxData } from '@bitgo/sdk-coin-eth';
+import { ETHTransactionType, TxData } from '@bitgo-beta/sdk-coin-eth';
 
 describe('AVAX util library', () => {
   describe('keys validations success cases', () => {

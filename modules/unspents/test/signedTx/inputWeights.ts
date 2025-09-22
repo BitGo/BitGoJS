@@ -1,8 +1,8 @@
 import * as assert from 'assert';
 
 import * as mocha from 'mocha';
-import * as utxolib from '@bitgo/utxo-lib';
-import { bip32, BIP32Interface } from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
+import { bip32, BIP32Interface } from '@bitgo-beta/utxo-lib';
 import {
   getInputComponentsWeight,
   getInputWeight,

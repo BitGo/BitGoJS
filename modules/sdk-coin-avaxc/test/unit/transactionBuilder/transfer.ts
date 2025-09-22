@@ -2,9 +2,9 @@ import assert from 'assert';
 import should from 'should';
 
 import { TransactionBuilder } from '../../../src';
-import { ETHTransactionType, TxData } from '@bitgo/sdk-coin-eth';
+import { ETHTransactionType, TxData } from '@bitgo-beta/sdk-coin-eth';
 import * as testData from '../../resources/avaxc';
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 import { getBuilder } from '../getBuilder';
 
 describe('Avax C-Chain Transfer Transaction', function () {

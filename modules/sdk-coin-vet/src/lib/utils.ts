@@ -1,13 +1,13 @@
 import { HexUInt, Transaction, TransactionClause } from '@vechain/sdk-core';
 import EthereumAbi from 'ethereumjs-abi';
 import { addHexPrefix, BN } from 'ethereumjs-util';
-import { BaseUtils, TransactionRecipient, TransactionType } from '@bitgo/sdk-core';
+import { BaseUtils, TransactionRecipient, TransactionType } from '@bitgo-beta/sdk-core';
 import {
   v4CreateForwarderMethodId,
   flushForwarderTokensMethodIdV4,
   getRawDecoded,
   getBufferedByteCode,
-} from '@bitgo/abstract-eth';
+} from '@bitgo-beta/abstract-eth';
 import {
   TRANSFER_TOKEN_METHOD_ID,
   STAKING_METHOD_ID,

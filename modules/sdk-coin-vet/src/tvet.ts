@@ -1,9 +1,9 @@
 /**
  * Testnet Vechain
  */
-import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
+import { BaseCoin, BitGoBase } from '@bitgo-beta/sdk-core';
 import { Vet } from './vet';
-import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin } from '@bitgo-beta/statics';
 
 export class Tvet extends Vet {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;

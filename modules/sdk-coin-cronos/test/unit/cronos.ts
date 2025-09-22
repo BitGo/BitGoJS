@@ -1,12 +1,12 @@
 import should = require('should');
 import BigNumber from 'bignumber.js';
 import sinon from 'sinon';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
 import { Cronos, Tcronos } from '../../src/index';
 import { Utils } from '../../src/lib/utils';
 import { address, TEST_SEND_MANY_TX, TEST_SEND_TX, TEST_TX_WITH_MEMO } from '../resources/cronos';
-import { NetworkType } from '@bitgo/statics';
+import { NetworkType } from '@bitgo-beta/statics';
 
 const bitgo: TestBitGoAPI = TestBitGo.decorate(BitGoAPI, { env: 'test' });
 bitgo.safeRegister('tcronos', Tcronos.createInstance);

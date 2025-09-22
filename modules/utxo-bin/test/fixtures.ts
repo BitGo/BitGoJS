@@ -1,7 +1,7 @@
 import { promises as fs } from 'fs';
 
 import { Instance } from 'chalk';
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 
 import { formatTree } from '../src/format';
 import { ParserNode } from '../src/Parser';

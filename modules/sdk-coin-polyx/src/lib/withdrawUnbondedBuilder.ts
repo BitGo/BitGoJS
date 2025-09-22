@@ -1,7 +1,7 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { methods } from '@substrate/txwrapper-polkadot';
 import { UnsignedTransaction, DecodedSigningPayload, DecodedSignedTx } from '@substrate/txwrapper-core';
-import { InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
+import { InvalidTransactionError, TransactionType } from '@bitgo-beta/sdk-core';
 import BigNumber from 'bignumber.js';
 import { Transaction } from './transaction';
 import { PolyxBaseBuilder } from './baseBuilder';

@@ -1,5 +1,12 @@
-import { DotAssetTypes, BaseUtils, DotAddressFormat, isBase58, isValidEd25519PublicKey, Seed } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig, DotNetwork } from '@bitgo/statics';
+import {
+  DotAssetTypes,
+  BaseUtils,
+  DotAddressFormat,
+  isBase58,
+  isValidEd25519PublicKey,
+  Seed,
+} from '@bitgo-beta/sdk-core';
+import { BaseCoin as CoinConfig, DotNetwork } from '@bitgo-beta/statics';
 import { decodeAddress, encodeAddress, Keyring } from '@polkadot/keyring';
 import { decodePair } from '@polkadot/keyring/pair/decode';
 import { KeyringPair } from '@polkadot/keyring/types';

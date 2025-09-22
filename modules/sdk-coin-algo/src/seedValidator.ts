@@ -1,6 +1,6 @@
 import * as stellar from 'stellar-sdk';
 import * as _ from 'lodash';
-import { CoinFamily } from '@bitgo/statics';
+import { CoinFamily } from '@bitgo-beta/statics';
 import { algoUtils } from './lib';
 import { PrivateKey } from '@hashgraph/cryptography';
 /**

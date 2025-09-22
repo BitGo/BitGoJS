@@ -1,5 +1,5 @@
 import { createHash } from 'crypto';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import BigNumber from 'bignumber.js';
 import { protocol } from '../../resources/protobuf/tron';
 import {
@@ -8,7 +8,7 @@ import {
   ExtendTransactionError,
   ParseTransactionError,
   TransactionType,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import { ContractType } from './enum';
 import {
   decodeTransaction,

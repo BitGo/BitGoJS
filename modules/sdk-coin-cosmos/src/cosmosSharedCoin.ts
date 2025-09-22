@@ -1,7 +1,7 @@
 import assert from 'assert';
-import { BaseCoin, BitGoBase, common } from '@bitgo/sdk-core';
-import { CosmosCoin, GasAmountDetails, CosmosKeyPair } from '@bitgo/abstract-cosmos';
-import { BaseCoin as StaticsBaseCoin, CosmosNetwork } from '@bitgo/statics';
+import { BaseCoin, BitGoBase, common } from '@bitgo-beta/sdk-core';
+import { CosmosCoin, GasAmountDetails, CosmosKeyPair } from '@bitgo-beta/abstract-cosmos';
+import { BaseCoin as StaticsBaseCoin, CosmosNetwork } from '@bitgo-beta/statics';
 import { KeyPair, Utils, TransactionBuilderFactory } from './lib';
 
 /**

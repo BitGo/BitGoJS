@@ -3,9 +3,9 @@
  *
  * @format
  */
-import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
+import { BaseCoin, BitGoBase } from '@bitgo-beta/sdk-core';
 import { Atom } from './atom';
-import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin } from '@bitgo-beta/statics';
 
 export class Tatom extends Atom {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;

@@ -4,8 +4,8 @@ import {
   InvalidTransactionError,
   ParseTransactionError,
   TransactionType,
-} from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+} from '@bitgo-beta/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { CODEC, localForger } from '@taquito/local-forging';
 import BigNumber from 'bignumber.js';
 import { IndexedSignature, OriginationOp, ParsedTransaction, RevealOp, TransactionOp } from './iface';

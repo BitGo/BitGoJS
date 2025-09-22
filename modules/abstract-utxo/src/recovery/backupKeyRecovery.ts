@@ -1,8 +1,8 @@
 import assert from 'assert';
 
 import _ from 'lodash';
-import * as utxolib from '@bitgo/utxo-lib';
-import { Dimensions } from '@bitgo/unspents';
+import * as utxolib from '@bitgo-beta/utxo-lib';
+import { Dimensions } from '@bitgo-beta/unspents';
 import {
   BitGoBase,
   ErrorNoInputToRecover,
@@ -12,8 +12,8 @@ import {
   getIsUnsignedSweep,
   isTriple,
   krsProviders,
-} from '@bitgo/sdk-core';
-import { getMainnet, networks } from '@bitgo/utxo-lib';
+} from '@bitgo-beta/sdk-core';
+import { getMainnet, networks } from '@bitgo-beta/utxo-lib';
 
 import { AbstractUtxoCoin, MultiSigAddress } from '../abstractUtxoCoin';
 import { signAndVerifyPsbt } from '../sign';

@@ -1,6 +1,6 @@
 import * as ethUtil from 'ethereumjs-util';
-import { Transaction } from '@bitgo/abstract-eth';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { Transaction } from '@bitgo-beta/abstract-eth';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { TransactionBuilder } from './transactionBuilder';
 
 export class TestnetTransactionBuilder extends TransactionBuilder {

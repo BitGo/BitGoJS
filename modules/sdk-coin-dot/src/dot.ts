@@ -29,14 +29,14 @@ import {
   MultisigType,
   multisigTypes,
   AuditDecryptedKeyParams,
-} from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, coins, PolkadotSpecNameType } from '@bitgo/statics';
+} from '@bitgo-beta/sdk-core';
+import { BaseCoin as StaticsBaseCoin, coins, PolkadotSpecNameType } from '@bitgo-beta/statics';
 import { Interface, KeyPair as DotKeyPair, Transaction, TransactionBuilderFactory, Utils } from './lib';
 import '@polkadot/api-augment';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { Material } from './lib/iface';
 import BigNumber from 'bignumber.js';
-import { auditEddsaPrivateKey, getDerivationPath } from '@bitgo/sdk-lib-mpc';
+import { auditEddsaPrivateKey, getDerivationPath } from '@bitgo-beta/sdk-lib-mpc';
 
 export const DEFAULT_SCAN_FACTOR = 20; // default number of receive addresses to scan for funds
 

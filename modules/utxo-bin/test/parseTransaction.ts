@@ -2,7 +2,7 @@ import assert from 'assert';
 
 import yargs from 'yargs';
 import * as mocha from 'mocha';
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 
 import { ParserNode } from '../src/Parser';
 import { ParserTx } from '../src/ParserTx';

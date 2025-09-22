@@ -25,8 +25,8 @@ import {
 } from '@solana/web3.js';
 
 import { SolStakingTypeEnum } from '@bitgo/public-types';
-import { NotSupported, TransactionType } from '@bitgo/sdk-core';
-import { coins, SolCoin } from '@bitgo/statics';
+import { NotSupported, TransactionType } from '@bitgo-beta/sdk-core';
+import { coins, SolCoin } from '@bitgo-beta/statics';
 import assert from 'assert';
 import { InstructionBuilderTypes, ValidInstructionTypesEnum, walletInitInstructionIndexes } from './constants';
 import {

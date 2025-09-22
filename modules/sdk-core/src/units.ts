@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
 
-import { coins } from '@bitgo/statics';
+import { coins } from '@bitgo-beta/statics';
 
 /**
  * Converts an amount of coin in base units (such as satoshis, cents, or wei) to full units (such as bitcoin, dollars, or ether)

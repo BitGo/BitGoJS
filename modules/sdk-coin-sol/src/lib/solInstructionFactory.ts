@@ -1,5 +1,5 @@
 import { SolStakingTypeEnum } from '@bitgo/public-types';
-import { SolCoin } from '@bitgo/statics';
+import { SolCoin } from '@bitgo-beta/statics';
 import {
   createAssociatedTokenAccountInstruction,
   createCloseAccountInstruction,

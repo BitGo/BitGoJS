@@ -1,7 +1,7 @@
 import should from 'should';
 
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
 import { Sui, TokenTransferTransaction, TransferTransaction, Tsui } from '../../src';
 import * as testData from '../resources/sui';
 import _ from 'lodash';
@@ -12,7 +12,7 @@ import { SuiTransactionType } from '../../src/lib/iface';
 import { getBuilderFactory } from './getBuilderFactory';
 import { keys } from '../resources/sui';
 import { Buffer } from 'buffer';
-import { common, TransactionPrebuild, Wallet } from '@bitgo/sdk-core';
+import { common, TransactionPrebuild, Wallet } from '@bitgo-beta/sdk-core';
 import nock from 'nock';
 
 describe('SUI:', function () {

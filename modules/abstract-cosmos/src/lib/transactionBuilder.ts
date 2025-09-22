@@ -7,8 +7,8 @@ import {
   PublicKey as BasePublicKey,
   SigningError,
   TransactionType,
-} from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+} from '@bitgo-beta/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { Secp256k1 } from '@cosmjs/crypto';
 import { makeSignBytes } from '@cosmjs/proto-signing';
 import BigNumber from 'bignumber.js';

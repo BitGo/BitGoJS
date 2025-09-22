@@ -11,11 +11,11 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-import { VirtualSizes } from '@bitgo/unspents';
+import { VirtualSizes } from '@bitgo-beta/unspents';
 import assert from 'assert';
 
-import * as utxolib from '@bitgo/utxo-lib';
-import { bip32 } from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
+import { bip32 } from '@bitgo-beta/utxo-lib';
 import {
   common,
   ErrorNoInputToRecover,
@@ -23,7 +23,7 @@ import {
   getSharedSecret,
   makeRandomKey,
   sanitizeLegacyPath,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import _ from 'lodash';
 import { signPsbtRequest } from './signPsbt';
 import { tryPromise } from '../util';

@@ -8,7 +8,7 @@ import {
   getPaillierPublicKey,
   DklsUtils,
   DklsTypes,
-} from '@bitgo/sdk-lib-mpc';
+} from '@bitgo-beta/sdk-lib-mpc';
 
 /**
  * Combines serialized partial signatures from parties participating in DSG.
@@ -34,7 +34,7 @@ export function combineRound4DklsDsgMessages(
 }
 
 /**
- * @deprecated - use exported methods from @bitgo/sdk-lib-mpc instead
+ * @deprecated - use exported methods from @bitgo-beta/sdk-lib-mpc instead
  */
 export {
   bigIntFromBufferLE,

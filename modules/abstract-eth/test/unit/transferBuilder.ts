@@ -1,6 +1,6 @@
 import assert from 'assert';
 import should from 'should';
-import { coins, EthereumNetwork as EthLikeNetwork } from '@bitgo/statics';
+import { coins, EthereumNetwork as EthLikeNetwork } from '@bitgo-beta/statics';
 import { KeyPair, TransferBuilder } from '../../src';
 
 describe('Eth send multi sig builder', function () {
@@ -12,7 +12,7 @@ describe('Eth send multi sig builder', function () {
   const ethLikeCoins = ['hteth', 'tarbeth', 'topeth', 'zketh'];
 
   describe('should fail', () => {
-    it('should fail if a coin does not exists in @bitgo/statics', () => {
+    it('should fail if a coin does not exists in @bitgo-beta/statics', () => {
       should(() => {
         new TransferBuilder().coin('inexistentcoin');
       }).throw();

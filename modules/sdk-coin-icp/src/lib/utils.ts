@@ -5,7 +5,7 @@ import {
   Recipient,
   BuildTransactionError,
   MethodNotImplementedError,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import { Principal as DfinityPrincipal } from '@dfinity/principal';
 import * as agent from '@dfinity/agent';
 import crypto from 'crypto';

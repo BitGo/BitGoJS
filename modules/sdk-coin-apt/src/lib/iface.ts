@@ -2,7 +2,7 @@ import {
   TransactionExplanation as BaseTransactionExplanation,
   TransactionRecipient,
   TransactionType as BitGoTransactionType,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import { EntryFunctionABI, EntryFunctionArgumentTypes, SimpleEntryFunctionArgumentTypes } from '@aptos-labs/ts-sdk';
 
 export interface AptTransactionExplanation extends BaseTransactionExplanation {

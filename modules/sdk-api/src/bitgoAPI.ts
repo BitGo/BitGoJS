@@ -21,10 +21,10 @@ import {
   IRequestTracer,
   makeRandomKey,
   sanitizeLegacyPath,
-} from '@bitgo/sdk-core';
-import * as sdkHmac from '@bitgo/sdk-hmac';
-import * as utxolib from '@bitgo/utxo-lib';
-import { bip32, ECPairInterface } from '@bitgo/utxo-lib';
+} from '@bitgo-beta/sdk-core';
+import * as sdkHmac from '@bitgo-beta/sdk-hmac';
+import * as utxolib from '@bitgo-beta/utxo-lib';
+import { bip32, ECPairInterface } from '@bitgo-beta/utxo-lib';
 import * as bitcoinMessage from 'bitcoinjs-message';
 import { type Agent } from 'http';
 import debugLib from 'debug';
@@ -1446,7 +1446,7 @@ export class BitGoAPI implements BitGoBase {
 
   /**
    * Register a new coin instance with its builder factory
-   * @param {string} name coin name as it was registered in @bitgo/statics
+   * @param {string} name coin name as it was registered in @bitgo-beta/statics
    * @param {CoinConstructor} coin the builder factory class for that coin
    * @returns {void}
    */

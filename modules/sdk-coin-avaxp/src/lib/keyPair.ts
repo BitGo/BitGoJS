@@ -7,12 +7,12 @@ import {
   isValidXpub,
   KeyPairOptions,
   Secp256k1ExtendedKeyPair,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import createHash from 'create-hash';
 import { Buffer as SafeBuffer } from 'safe-buffer';
 import { Buffer as BufferAvax } from 'avalanche';
 import { SECP256k1KeyPair } from 'avalanche/dist/common';
-import { bip32, ECPair } from '@bitgo/secp256k1';
+import { bip32, ECPair } from '@bitgo-beta/secp256k1';
 import { randomBytes } from 'crypto';
 import utils from './utils';
 

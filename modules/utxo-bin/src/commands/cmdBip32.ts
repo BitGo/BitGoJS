@@ -2,7 +2,7 @@ import * as crypto from 'crypto';
 
 import * as yargs from 'yargs';
 import { CommandModule } from 'yargs';
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 
 import { parseBip32 } from '../bip32';
 import { formatTreeOrJson, FormatTreeOrJson } from '../args';

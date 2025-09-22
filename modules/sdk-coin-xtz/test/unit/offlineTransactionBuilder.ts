@@ -1,11 +1,11 @@
 import should from 'should';
 
-import { common, TransactionType } from '@bitgo/sdk-core';
-import { coins } from '@bitgo/statics';
+import { common, TransactionType } from '@bitgo-beta/sdk-core';
+import { coins } from '@bitgo-beta/statics';
 import { Txtz, Xtz, XtzLib } from '../../src';
 import nock from 'nock';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
 import {
   chainheadData,
   contractAddressDetails,

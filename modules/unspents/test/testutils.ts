@@ -1,5 +1,5 @@
 import * as unspents from '../src';
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 import assert from 'assert';
 import { createScriptPubKey } from './signedTx/txGen';
 

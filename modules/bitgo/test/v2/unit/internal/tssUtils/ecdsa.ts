@@ -10,7 +10,7 @@ import {
   mockSerializedChallengeWithProofs2,
   TestableBG,
   TestBitGo,
-} from '@bitgo/sdk-test';
+} from '@bitgo-beta/sdk-test';
 import { BitGo, createSharedDataProof, TssUtils, RequestType } from '../../../../../src';
 import {
   BackupGpgKey,
@@ -30,8 +30,8 @@ import {
   SignatureShareType,
   TxRequest,
   Wallet,
-} from '@bitgo/sdk-core';
-import { EcdsaPaillierProof, EcdsaRangeProof, EcdsaTypes, hexToBigInt } from '@bitgo/sdk-lib-mpc';
+} from '@bitgo-beta/sdk-core';
+import { EcdsaPaillierProof, EcdsaRangeProof, EcdsaTypes, hexToBigInt } from '@bitgo-beta/sdk-lib-mpc';
 import { keyShares, otherKeyShares } from '../../../fixtures/tss/ecdsaFixtures';
 import { nockSendSignatureShareWithResponse } from './common';
 import {
@@ -42,11 +42,11 @@ import {
   nockGetSigningKey,
   nockGetTxRequest,
 } from '../../tss/helpers';
-import { bip32, ecc } from '@bitgo/utxo-lib';
+import { bip32, ecc } from '@bitgo-beta/utxo-lib';
 import { Hash } from 'crypto';
 import { mockChallengeA, mockChallengeB, mockChallengeC } from './mocks/ecdsaNtilde';
 
-import { loadWebAssembly } from '@bitgo/sdk-opensslbytes';
+import { loadWebAssembly } from '@bitgo-beta/sdk-opensslbytes';
 
 const openSSLBytes = loadWebAssembly().buffer;
 

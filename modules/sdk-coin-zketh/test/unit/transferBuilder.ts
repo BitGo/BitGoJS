@@ -1,5 +1,5 @@
 import should from 'should';
-import { coins, EthereumNetwork as EthLikeNetwork } from '@bitgo/statics';
+import { coins, EthereumNetwork as EthLikeNetwork } from '@bitgo-beta/statics';
 import { KeyPair, TransferBuilder } from '../../src';
 
 import * as testData from '../resources';

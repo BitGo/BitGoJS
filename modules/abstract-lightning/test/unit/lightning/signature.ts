@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 
 import { createMessageSignature, verifyMessageSignature } from '../../../src/lightning';
 import crypto from 'crypto';

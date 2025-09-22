@@ -1,8 +1,8 @@
 import _ from 'lodash';
 import BigNumber from 'bignumber.js';
 
-import { BitGoBase, CoinConstructor, NamedCoinConstructor, VerifyTransactionOptions } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, coins, NetworkType, Sip10TokenConfig, tokens } from '@bitgo/statics';
+import { BitGoBase, CoinConstructor, NamedCoinConstructor, VerifyTransactionOptions } from '@bitgo-beta/sdk-core';
+import { BaseCoin as StaticsBaseCoin, coins, NetworkType, Sip10TokenConfig, tokens } from '@bitgo-beta/statics';
 
 import { Stx } from './stx';
 import { TransactionBuilderFactory } from './lib';

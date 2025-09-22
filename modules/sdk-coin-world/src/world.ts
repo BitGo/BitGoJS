@@ -7,15 +7,15 @@
  * @coinWebsite https://docs.world.org/world-chain/quick-start/info
  */
 
-import { BaseCoin, BitGoBase, common, MPCAlgorithm, MultisigType, multisigTypes } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
+import { BaseCoin, BitGoBase, common, MPCAlgorithm, MultisigType, multisigTypes } from '@bitgo-beta/sdk-core';
+import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo-beta/statics';
 import {
   AbstractEthLikeNewCoins,
   recoveryBlockchainExplorerQuery,
   UnsignedSweepTxMPCv2,
   RecoverOptions,
   OfflineVaultTxInfo,
-} from '@bitgo/abstract-eth';
+} from '@bitgo-beta/abstract-eth';
 import { TransactionBuilder } from './lib';
 
 export class World extends AbstractEthLikeNewCoins {

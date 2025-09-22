@@ -2,8 +2,8 @@
  * @prettier
  */
 import { Algo } from './algo';
-import { BitGoBase, BitGoJsError, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
-import { AlgoTokenConfig, formattedAlgoTokens } from '@bitgo/statics';
+import { BitGoBase, BitGoJsError, CoinConstructor, NamedCoinConstructor } from '@bitgo-beta/sdk-core';
+import { AlgoTokenConfig, formattedAlgoTokens } from '@bitgo-beta/statics';
 
 export class AlgoToken extends Algo {
   static readonly tokenNamePattern = /^([^:]+):(?:([^.]+)-)?([0-9]+)$/;

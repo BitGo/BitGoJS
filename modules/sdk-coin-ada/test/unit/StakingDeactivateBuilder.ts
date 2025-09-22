@@ -1,8 +1,8 @@
 import should from 'should';
-import { AddressFormat, TransactionType } from '@bitgo/sdk-core';
+import { AddressFormat, TransactionType } from '@bitgo-beta/sdk-core';
 import * as testData from '../resources';
 import { KeyPair, TransactionBuilderFactory, Utils } from '../../src';
-import { coins } from '@bitgo/statics';
+import { coins } from '@bitgo-beta/statics';
 import { Transaction } from '../../src/lib/transaction';
 
 describe('ADA Staking Deactivate Transaction Builder', async () => {

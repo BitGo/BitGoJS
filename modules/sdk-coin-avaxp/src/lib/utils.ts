@@ -7,8 +7,8 @@ import {
   isValidXpub,
   NotImplementedError,
   ParseTransactionError,
-} from '@bitgo/sdk-core';
-import { AvalancheNetwork } from '@bitgo/statics';
+} from '@bitgo-beta/sdk-core';
+import { AvalancheNetwork } from '@bitgo-beta/statics';
 import { BinTools, BN, Buffer as BufferAvax } from 'avalanche';
 import { EVMOutput } from 'avalanche/dist/apis/evm';
 import {

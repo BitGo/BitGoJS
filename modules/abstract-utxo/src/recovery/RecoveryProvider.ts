@@ -1,5 +1,5 @@
-import { BlockchairApi, AddressInfo, TransactionIO } from '@bitgo/blockapis';
-import { bitgo } from '@bitgo/utxo-lib';
+import { BlockchairApi, AddressInfo, TransactionIO } from '@bitgo-beta/blockapis';
+import { bitgo } from '@bitgo-beta/utxo-lib';
 
 import { ApiNotImplementedError } from './baseApi';
 

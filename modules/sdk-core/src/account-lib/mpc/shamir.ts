@@ -1,4 +1,4 @@
-import { Shamir } from '@bitgo/sdk-lib-mpc';
+import { Shamir } from '@bitgo-beta/sdk-lib-mpc';
 /**
  * @deprecated use Shamir from sdk-lib-mpc instead
  */

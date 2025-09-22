@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
-import { BaseCoin as CoinConfig, coins } from '@bitgo/statics';
-import { BaseAddress, BaseKey, BaseTransaction, BaseTransactionBuilder } from '@bitgo/sdk-core';
+import { BaseCoin as CoinConfig, coins } from '@bitgo-beta/statics';
+import { BaseAddress, BaseKey, BaseTransaction, BaseTransactionBuilder } from '@bitgo-beta/sdk-core';
 import { TestTransaction } from './testTransaction';
 
 /**

@@ -1,7 +1,7 @@
 import 'should';
 
-import { bip32 } from '@bitgo/utxo-lib';
-import { Util } from '@bitgo/sdk-core';
+import { bip32 } from '@bitgo-beta/utxo-lib';
+import { Util } from '@bitgo-beta/sdk-core';
 
 describe('Internal:', () => {
   describe('Util', function () {

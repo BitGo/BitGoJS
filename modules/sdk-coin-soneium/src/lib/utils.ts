@@ -1,8 +1,8 @@
-import { NetworkType } from '@bitgo/statics';
+import { NetworkType } from '@bitgo-beta/statics';
 import EthereumCommon from '@ethereumjs/common';
-import { InvalidTransactionError, common } from '@bitgo/sdk-core';
+import { InvalidTransactionError, common } from '@bitgo-beta/sdk-core';
 import { mainnetCommon, testnetCommon } from './resources';
-import { recoveryBlockchainExplorerQuery as abstractRecoveryQuery } from '@bitgo/abstract-eth';
+import { recoveryBlockchainExplorerQuery as abstractRecoveryQuery } from '@bitgo-beta/abstract-eth';
 import request from 'superagent';
 import { addHexPrefix } from 'ethereumjs-util';
 

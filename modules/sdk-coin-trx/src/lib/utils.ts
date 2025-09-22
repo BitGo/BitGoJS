@@ -3,8 +3,8 @@ import * as hex from '@stablelib/hex';
 import * as tronweb from 'tronweb';
 import { protocol } from '../../resources/protobuf/tron';
 
-import { UtilsError } from '@bitgo/sdk-core';
-import { TronErc20Coin, coins } from '@bitgo/statics';
+import { UtilsError } from '@bitgo-beta/sdk-core';
+import { TronErc20Coin, coins } from '@bitgo-beta/statics';
 import {
   TransferContract,
   RawData,

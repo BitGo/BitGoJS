@@ -1,10 +1,10 @@
 import assert from 'assert';
 
-import { AvaxERC20Token, BaseCoin, BaseNetwork, NetworkType, coins } from '@bitgo/statics';
+import { AvaxERC20Token, BaseCoin, BaseNetwork, NetworkType, coins } from '@bitgo-beta/statics';
 import { isValidAddress, isValidPrivate, isValidPublic } from 'ethereumjs-util';
 import EthereumCommon from '@ethereumjs/common';
-import { Utils, KeyPair, TxData } from '@bitgo/sdk-coin-eth';
-import { InvalidTransactionError } from '@bitgo/sdk-core';
+import { Utils, KeyPair, TxData } from '@bitgo-beta/sdk-coin-eth';
+import { InvalidTransactionError } from '@bitgo-beta/sdk-core';
 import { testnetCommon, mainnetCommon } from './resources';
 
 /**

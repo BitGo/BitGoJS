@@ -13,7 +13,7 @@ import {
   generateAddress2,
   padToEven,
 } from 'ethereumjs-util';
-import { BaseCoin, BaseNetwork, coins, ContractAddressDefinedToken, EthereumNetwork } from '@bitgo/statics';
+import { BaseCoin, BaseNetwork, coins, ContractAddressDefinedToken, EthereumNetwork } from '@bitgo-beta/statics';
 import EthereumAbi from 'ethereumjs-abi';
 import EthereumCommon from '@ethereumjs/common';
 import BN from 'bn.js';
@@ -28,7 +28,7 @@ import {
   UnvoteMethodId,
   VoteMethodId,
   WithdrawMethodId,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 
 import {
   ERC1155TransferData,

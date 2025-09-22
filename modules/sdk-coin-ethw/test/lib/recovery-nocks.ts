@@ -1,6 +1,6 @@
 import nock from 'nock';
 
-import { TestBitGoAPI } from '@bitgo/sdk-test';
+import { TestBitGoAPI } from '@bitgo-beta/sdk-test';
 
 const nockEthData: any[] = [
   {

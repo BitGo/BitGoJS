@@ -7,7 +7,7 @@
 import * as _ from 'lodash';
 import { strict as assert } from 'assert';
 import 'should';
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 
 const BitGoJS = require('../../src/index');
 const TestBitGo = require('../lib/test_bitgo');

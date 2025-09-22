@@ -1,8 +1,8 @@
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
 
 import nock from 'nock';
 import sinon from 'sinon';
-import { bip32 } from '@bitgo/secp256k1';
+import { bip32 } from '@bitgo-beta/secp256k1';
 import * as secp256k1 from 'secp256k1';
 import request from 'superagent';
 import {
@@ -14,8 +14,8 @@ import {
   TransactionType,
   UnexpectedAddressError,
   Wallet,
-} from '@bitgo/sdk-core';
-import { BitGoAPI } from '@bitgo/sdk-api';
+} from '@bitgo-beta/sdk-core';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
 import {
   AbstractEthLikeNewCoins,
   Erc20Token,
@@ -26,7 +26,7 @@ import {
   UnsignedBuilConsolidation,
   UnsignedSweepTxMPCv2,
 } from '../../src';
-import { EthereumNetwork } from '@bitgo/statics';
+import { EthereumNetwork } from '@bitgo-beta/statics';
 import assert from 'assert';
 import { getBuilder } from './getBuilder';
 import * as testData from '../resources/eth';

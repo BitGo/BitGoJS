@@ -1,6 +1,6 @@
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
 import { BitGo } from 'bitgo';
-import { common, decodeOrElse } from '@bitgo/sdk-core';
+import { common, decodeOrElse } from '@bitgo-beta/sdk-core';
 import nock from 'nock';
 import * as express from 'express';
 import * as sinon from 'sinon';

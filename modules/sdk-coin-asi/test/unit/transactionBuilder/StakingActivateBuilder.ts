@@ -1,4 +1,4 @@
-import { toHex, TransactionType } from '@bitgo/sdk-core';
+import { toHex, TransactionType } from '@bitgo-beta/sdk-core';
 import { fromBase64 } from '@cosmjs/encoding';
 import axios from 'axios';
 import should from 'should';

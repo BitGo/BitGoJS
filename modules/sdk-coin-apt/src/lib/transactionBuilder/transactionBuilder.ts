@@ -7,11 +7,11 @@ import {
   PublicKey as BasePublicKey,
   Recipient,
   TransactionType,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import { Transaction } from '../transaction/transaction';
 import utils from '../utils';
 import BigNumber from 'bignumber.js';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { GasData } from '../types';
 import { TransactionPayload } from '@aptos-labs/ts-sdk';
 

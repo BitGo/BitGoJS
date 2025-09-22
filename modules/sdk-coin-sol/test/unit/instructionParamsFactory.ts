@@ -1,7 +1,7 @@
 import should from 'should';
 import * as testData from '../resources/sol';
 import { instructionParamsFactory } from '../../src/lib/instructionParamsFactory';
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 import { InstructionParams } from '../../src/lib/iface';
 import { InstructionBuilderTypes, MEMO_PROGRAM_PK } from '../../src/lib/constants';
 import { PublicKey, SystemProgram, TransactionInstruction } from '@solana/web3.js';

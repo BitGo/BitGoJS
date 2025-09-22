@@ -1,6 +1,6 @@
 import { Key } from 'openpgp';
 
-import { EcdsaTypes } from '@bitgo/sdk-lib-mpc';
+import { EcdsaTypes } from '@bitgo-beta/sdk-lib-mpc';
 
 import { ECDSA } from '../../../../account-lib/mpc/tss';
 import { ECDSAMethodTypes } from '../../../tss/ecdsa';

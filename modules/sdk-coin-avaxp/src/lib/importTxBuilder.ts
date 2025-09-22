@@ -1,5 +1,5 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BuildTransactionError, NotSupported, TransactionType } from '@bitgo/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
+import { BuildTransactionError, NotSupported, TransactionType } from '@bitgo-beta/sdk-core';
 import { AtomicTransactionBuilder } from './atomicTransactionBuilder';
 import { ImportTx, PlatformVMConstants, Tx as PVMTx, UnsignedTx } from 'avalanche/dist/apis/platformvm';
 import utils from './utils';

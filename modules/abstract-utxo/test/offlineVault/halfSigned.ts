@@ -3,8 +3,8 @@ import assert from 'assert';
 import crypto from 'crypto';
 
 import * as t from 'io-ts';
-import { decodeOrElse } from '@bitgo/sdk-core';
-import * as utxolib from '@bitgo/utxo-lib';
+import { decodeOrElse } from '@bitgo-beta/sdk-core';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 
 import { createHalfSigned, getTransactionExplanation } from '../../src/offlineVault';
 import { DescriptorTransaction } from '../../src/offlineVault/descriptor';

@@ -1,11 +1,11 @@
-import { AbstractUtxoCoin, UtxoNetwork } from '@bitgo/abstract-utxo';
+import { AbstractUtxoCoin, UtxoNetwork } from '@bitgo-beta/abstract-utxo';
 import {
   BitGoBase,
   BaseCoin,
   VerifyRecoveryTransactionOptions as BaseVerifyRecoveryTransactionOptions,
   Wallet,
-} from '@bitgo/sdk-core';
-import * as utxolib from '@bitgo/utxo-lib';
+} from '@bitgo-beta/sdk-core';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 import { InscriptionBuilder } from './inscriptionBuilder';
 
 export interface VerifyRecoveryTransactionOptions extends BaseVerifyRecoveryTransactionOptions {

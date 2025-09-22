@@ -1,4 +1,4 @@
-import { BitGoBase } from '@bitgo/sdk-core';
+import { BitGoBase } from '@bitgo-beta/sdk-core';
 import { Opeth } from './opeth';
 import { Topeth } from './topeth';
 import { OpethToken } from './opethToken';

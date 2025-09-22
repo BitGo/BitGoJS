@@ -6,7 +6,7 @@ import { ApiVersion, Memo, WalletType } from '../../wallet';
 import { EDDSA, GShare, Signature, SignShare } from '../../../account-lib/mpc/tss';
 import { Signature as EcdsaSignature } from '../../../account-lib/mpc/tss/ecdsa/types';
 import { KeyShare } from './ecdsa';
-import { EcdsaTypes } from '@bitgo/sdk-lib-mpc';
+import { EcdsaTypes } from '@bitgo-beta/sdk-lib-mpc';
 import { TssEcdsaStep1ReturnMessage, TssEcdsaStep2ReturnMessage, TxRequestChallengeResponse } from '../../tss/types';
 import { AShare, DShare, SShare } from '../../tss/ecdsa/types';
 import { MessageStandardType } from '../messageTypes';

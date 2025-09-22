@@ -2,7 +2,7 @@ import should from 'should';
 import { KeyPair } from '../../src';
 import { enterpriseAccounts } from '../resources/';
 import { PrivateKey, PublicKey } from '@emurgo/cardano-serialization-lib-nodejs';
-import { AddressFormat, toHex } from '@bitgo/sdk-core';
+import { AddressFormat, toHex } from '@bitgo-beta/sdk-core';
 
 describe('Ada Keypair', () => {
   const defaultSeed = { seed: Buffer.alloc(32) };

@@ -5,7 +5,7 @@
 import { Transaction, TxInput, TxOutput } from 'bitcoinjs-lib';
 import { BufferWriter } from 'bitcoinjs-lib/src/bufferutils';
 
-const blake2b = require('@bitgo/blake2b');
+const blake2b = require('@bitgo-beta/blake2b');
 
 import { ZcashTransaction } from './ZcashTransaction';
 import { varSliceSize } from '../UtxoTransaction';

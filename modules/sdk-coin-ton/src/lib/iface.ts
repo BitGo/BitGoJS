@@ -1,4 +1,4 @@
-import { TransactionFee } from '@bitgo/sdk-core';
+import { TransactionFee } from '@bitgo-beta/sdk-core';
 import { ITransactionExplanation } from './transactionExplanation';
 
 /**

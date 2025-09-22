@@ -1,4 +1,4 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { NativeTransferBuilder } from './nativeTransferBuilder';
 
 export class TransferBuilder extends NativeTransferBuilder {

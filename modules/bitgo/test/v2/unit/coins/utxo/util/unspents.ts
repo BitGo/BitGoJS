@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 const { scriptTypeForChain, chainCodesP2sh, getExternalChainCode, getInternalChainCode } = utxolib.bitgo;
 
 type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
@@ -9,8 +9,8 @@ type Unspent<TNumber extends number | bigint = number> = utxolib.bitgo.Unspent<T
 type WalletUnspent<TNumber extends number | bigint = number> = utxolib.bitgo.WalletUnspent<TNumber>;
 type ChainCode = utxolib.bitgo.ChainCode;
 
-import { getSeed } from '@bitgo/sdk-test';
-import { getReplayProtectionAddresses } from '@bitgo/abstract-utxo';
+import { getSeed } from '@bitgo-beta/sdk-test';
+import { getReplayProtectionAddresses } from '@bitgo-beta/abstract-utxo';
 
 export type InputScriptType = utxolib.bitgo.outputScripts.ScriptType2Of3 | 'replayProtection';
 

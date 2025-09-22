@@ -3,9 +3,9 @@ import { StacksTestnet, StacksMainnet } from '@stacks/network';
 import { pubKeyfromPrivKey, publicKeyToString } from '@stacks/transactions';
 import { principalToString } from '@stacks/transactions/dist/clarity/types/principalCV';
 
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
-import { coins } from '@bitgo/statics';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
+import { coins } from '@bitgo-beta/statics';
 
 import { Stx, Tstx, StxLib } from '../../../src';
 import * as testData from '../resources';

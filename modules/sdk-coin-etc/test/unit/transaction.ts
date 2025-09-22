@@ -1,7 +1,7 @@
 import assert from 'assert';
 import should from 'should';
-import { coins } from '@bitgo/statics';
-import { Transaction } from '@bitgo/sdk-coin-eth';
+import { coins } from '@bitgo-beta/statics';
+import { Transaction } from '@bitgo-beta/sdk-coin-eth';
 import * as testData from '../resources';
 import { getCommon } from '../../src/lib/utils';
 

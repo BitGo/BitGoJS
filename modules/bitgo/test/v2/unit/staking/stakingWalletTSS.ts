@@ -3,8 +3,8 @@ import * as _ from 'lodash';
 import nock = require('nock');
 import fixtures from '../../fixtures/staking/stakingWallet';
 
-import { Enterprise, Environments, Keychain, Keychains, StakingWallet, TssUtils, Wallet } from '@bitgo/sdk-core';
-import { TestBitGo } from '@bitgo/sdk-test';
+import { Enterprise, Environments, Keychain, Keychains, StakingWallet, TssUtils, Wallet } from '@bitgo-beta/sdk-core';
+import { TestBitGo } from '@bitgo-beta/sdk-test';
 import { BitGo } from '../../../../src';
 
 import * as sinon from 'sinon';

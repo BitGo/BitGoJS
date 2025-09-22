@@ -2,8 +2,8 @@
  * @prettier
  */
 import type * as EthLikeCommon from '@ethereumjs/common';
-import { CoinFamily, BaseCoin as StaticsBaseCoin, EthereumNetwork } from '@bitgo/statics';
-import { bip32 } from '@bitgo/secp256k1';
+import { CoinFamily, BaseCoin as StaticsBaseCoin, EthereumNetwork } from '@bitgo-beta/statics';
+import { bip32 } from '@bitgo-beta/secp256k1';
 import { randomBytes } from 'crypto';
 import {
   AuditDecryptedKeyParams,
@@ -24,12 +24,12 @@ import {
   TransactionPrebuild as BaseTransactionPrebuild,
   TransactionRecipient as Recipient,
   VerifyTransactionOptions,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import BigNumber from 'bignumber.js';
 
 import { isValidEthAddress, KeyPair as EthKeyPair, TransactionBuilder } from './lib';
 import { VerifyEthAddressOptions } from './abstractEthLikeNewCoins';
-import { auditEcdsaPrivateKey } from '@bitgo/sdk-lib-mpc';
+import { auditEcdsaPrivateKey } from '@bitgo-beta/sdk-lib-mpc';
 
 export interface EthSignTransactionOptions extends SignTransactionOptions {
   txPrebuild: TransactionPrebuild;

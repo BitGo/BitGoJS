@@ -1,8 +1,8 @@
 import assert from 'assert';
 
-import * as utxolib from '@bitgo/utxo-lib';
-import { ECPairInterface } from '@bitgo/utxo-lib';
-import { getKey } from '@bitgo/utxo-core/testutil';
+import * as utxolib from '@bitgo-beta/utxo-lib';
+import { ECPairInterface } from '@bitgo-beta/utxo-lib';
+import { getKey } from '@bitgo-beta/utxo-core/testutil';
 
 export function getECKey(seed: string): ECPairInterface {
   const { privateKey } = getKey(seed);

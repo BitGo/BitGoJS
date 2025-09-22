@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import { OfcTokenConfig } from '@bitgo/statics';
+import { OfcTokenConfig } from '@bitgo-beta/statics';
 import { isString } from 'lodash';
 import {
   BitGoBase,

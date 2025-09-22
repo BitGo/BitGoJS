@@ -1,8 +1,8 @@
 import * as nock from 'nock';
 import * as should from 'should';
 
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
 
 import { Ethw } from '../../src/index';
 import { nockEthwRecovery } from '../lib/recovery-nocks';

@@ -1,8 +1,8 @@
 import should = require('should');
 import nock = require('nock');
 
-import { Environments } from '@bitgo/sdk-core';
-import { TestBitGo } from '@bitgo/sdk-test';
+import { Environments } from '@bitgo-beta/sdk-core';
+import { TestBitGo } from '@bitgo-beta/sdk-test';
 import { BitGo, BitGoOptions } from '../../../../src';
 import { reducedAmsTokenConfig } from '../../resources/amsTokenConfig';
 
@@ -31,7 +31,7 @@ describe('Asset metadata service', () => {
     (() => {
       bitgoNoAms.coin('hteth:faketoken');
     }).should.throw(
-      'Coin or token type hteth:faketoken not supported or not compiled. Please be sure that you are using the latest version of BitGoJS. If using @bitgo/sdk-api, please confirm you have registered hteth:faketoken first.'
+      'Coin or token type hteth:faketoken not supported or not compiled. Please be sure that you are using the latest version of BitGoJS. If using @bitgo-beta/sdk-api, please confirm you have registered hteth:faketoken first.'
     );
   });
 

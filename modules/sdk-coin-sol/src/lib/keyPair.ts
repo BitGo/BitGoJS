@@ -1,5 +1,5 @@
 import { Keypair as SolKeypair } from '@solana/web3.js';
-import { DefaultKeys, KeyPairOptions, Ed25519KeyPair } from '@bitgo/sdk-core';
+import { DefaultKeys, KeyPairOptions, Ed25519KeyPair } from '@bitgo-beta/sdk-core';
 import { SolanaKeys } from './iface';
 import { base58ToUint8Array, Uint8ArrayTobase58 } from './utils';
 

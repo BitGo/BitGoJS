@@ -9,8 +9,8 @@
 //
 // Copyright 2015, BitGo, Inc.  All Rights Reserved.
 //
-import { common } from '@bitgo/sdk-core';
-import * as utxolib from '@bitgo/utxo-lib';
+import { common } from '@bitgo-beta/sdk-core';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 
 import _ from 'lodash';
 import { tryPromise } from '../util';

@@ -1,7 +1,7 @@
 import assert from 'assert';
 
-import { testutil } from '@bitgo/utxo-lib';
-import { getFixture } from '@bitgo/utxo-core/testutil';
+import { testutil } from '@bitgo-beta/utxo-lib';
+import { getFixture } from '@bitgo-beta/utxo-core/testutil';
 
 import {
   CORE_DAO_MAINNET_CHAIN_ID,

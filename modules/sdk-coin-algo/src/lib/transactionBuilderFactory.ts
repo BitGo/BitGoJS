@@ -1,12 +1,12 @@
 import algosdk from 'algosdk';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 
 import { KeyRegistrationBuilder } from './keyRegistrationBuilder';
 import { TransferBuilder } from './transferBuilder';
 import { TransactionBuilder } from './transactionBuilder';
 import { AssetTransferBuilder } from './assetTransferBuilder';
 import Utils from './utils';
-import { BaseTransactionBuilderFactory, NotSupported } from '@bitgo/sdk-core';
+import { BaseTransactionBuilderFactory, NotSupported } from '@bitgo-beta/sdk-core';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {

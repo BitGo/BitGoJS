@@ -1,4 +1,4 @@
-import { BIP32Interface } from '@bitgo/utxo-lib';
+import { BIP32Interface } from '@bitgo-beta/utxo-lib';
 
 import { createNamedDescriptorWithSignature, NamedDescriptor } from '../NamedDescriptor';
 import { getDescriptorFromBuilder, DescriptorBuilder } from '../builder';

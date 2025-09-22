@@ -1,8 +1,8 @@
 import assert from 'assert';
 import should from 'should';
-import { coins } from '@bitgo/statics';
+import { coins } from '@bitgo-beta/statics';
 import { StakingBuilder } from '../../src/lib/stakingBuilder';
-import { getOperationConfig, StakingOperationTypes } from '@bitgo/sdk-core';
+import { getOperationConfig, StakingOperationTypes } from '@bitgo-beta/sdk-core';
 import * as testData from '../resources/celo';
 
 describe('Celo staking operations builder', function () {

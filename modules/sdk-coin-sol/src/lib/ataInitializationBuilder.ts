@@ -1,6 +1,6 @@
 import { TransactionBuilder } from './transactionBuilder';
-import { BuildTransactionError, DuplicateMethodError, TransactionType } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BuildTransactionError, DuplicateMethodError, TransactionType } from '@bitgo-beta/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { Transaction } from './transaction';
 import { AtaInit, TokenAssociateRecipient } from './iface';
 import { InstructionBuilderTypes } from './constants';

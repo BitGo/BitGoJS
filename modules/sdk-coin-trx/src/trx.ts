@@ -3,8 +3,8 @@
  */
 import * as secp256k1 from 'secp256k1';
 import { randomBytes } from 'crypto';
-import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
-import { bip32 } from '@bitgo/secp256k1';
+import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo-beta/statics';
+import { bip32 } from '@bitgo-beta/secp256k1';
 import * as request from 'superagent';
 import {
   BaseCoin,
@@ -29,7 +29,7 @@ import {
   MultisigType,
   multisigTypes,
   AuditDecryptedKeyParams,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import { Interface, Utils, WrappedBuilder } from './lib';
 import { getBuilder } from './lib/builder';
 import { TransactionReceipt } from './lib/iface';

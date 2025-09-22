@@ -2,7 +2,7 @@
  * @prettier
  */
 import { BigNumber } from 'bignumber.js';
-import { bip32 } from '@bitgo/secp256k1';
+import { bip32 } from '@bitgo-beta/secp256k1';
 import Keccak from 'keccak';
 import * as secp256k1 from 'secp256k1';
 import * as _ from 'lodash';
@@ -13,7 +13,7 @@ import {
   coins,
   ethGasConfigs,
   EthereumNetwork,
-} from '@bitgo/statics';
+} from '@bitgo-beta/statics';
 import {
   BaseCoin,
   BaseTransaction,
@@ -33,7 +33,7 @@ import {
   TransactionExplanation,
   Util,
   VerifyAddressOptions,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import {
   AbstractEthLikeNewCoins,
   GetSendMethodArgsOptions,
@@ -43,7 +43,7 @@ import {
   SendMethodArgs,
   TransactionBuilder as EthTransactionBuilder,
   TransactionPrebuild,
-} from '@bitgo/sdk-coin-eth';
+} from '@bitgo-beta/sdk-coin-eth';
 import { getToken, isValidEthAddress } from './lib/utils';
 import { KeyPair as AvaxcKeyPair, TransactionBuilder } from './lib';
 import request from 'superagent';
@@ -64,8 +64,8 @@ import {
   SignFinalOptions,
   VerifyAvaxcTransactionOptions,
 } from './iface';
-import { AvaxpLib } from '@bitgo/sdk-coin-avaxp';
-import { SignTransactionOptions } from '@bitgo/abstract-eth';
+import { AvaxpLib } from '@bitgo-beta/sdk-coin-avaxp';
+import { SignTransactionOptions } from '@bitgo-beta/abstract-eth';
 
 /** COIN-1708 : Avaxc is added for CCR in WRW,
  * hence adding the feature for AbstractEthLikeNewCoins

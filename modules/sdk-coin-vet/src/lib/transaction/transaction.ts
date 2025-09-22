@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
-import { BaseTransaction, TransactionType, InvalidTransactionError, TransactionRecipient } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseTransaction, TransactionType, InvalidTransactionError, TransactionRecipient } from '@bitgo-beta/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import {
   TransactionBody,
   TransactionClause,

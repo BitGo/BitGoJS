@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import {
   BaseAddress,
   BaseKey,
@@ -9,7 +9,7 @@ import {
   Signature,
   TransactionType,
   UtilsError,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import { Asset, Transaction, TransactionInput, TransactionOutput, Withdrawal } from './transaction';
 import { KeyPair } from './keyPair';
 import util, { MIN_ADA_FOR_ONE_ASSET } from './utils';

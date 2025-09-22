@@ -10,13 +10,13 @@ import {
   BaseMessageBuilderFactory,
   BuildMessageError,
   MessageStandardType,
-} from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig, CoinFeature, coins } from '@bitgo/statics';
+} from '@bitgo-beta/sdk-core';
+import { BaseCoin as CoinConfig, CoinFeature, coins } from '@bitgo-beta/statics';
 export { Ed25519BIP32, Eddsa };
 
 /**
  * Deprecated after version 2.19.0
- * Retained for short term backwards compatibility - migrate to: @bitgo/sdk-api and @bitgo/sdk-core
+ * Retained for short term backwards compatibility - migrate to: @bitgo-beta/sdk-api and @bitgo-beta/sdk-core
  */
 export const crypto = acountLibCrypto;
 
@@ -24,183 +24,183 @@ export { Ed25519KeyDeriver };
 
 /**
  * Deprecated after version 2.19.0
- * Retained for short term backwards compatibility - migrate to: @bitgo/sdk-api and @bitgo/sdk-core
+ * Retained for short term backwards compatibility - migrate to: @bitgo-beta/sdk-api and @bitgo-beta/sdk-core
  */
 export const BaseCoin = accountLibBaseCoin;
 
 // coins
-import * as Trx from '@bitgo/sdk-coin-trx';
+import * as Trx from '@bitgo-beta/sdk-coin-trx';
 export { Trx };
 
-import { XtzLib as Xtz } from '@bitgo/sdk-coin-xtz';
+import { XtzLib as Xtz } from '@bitgo-beta/sdk-coin-xtz';
 export { Xtz };
 
-import * as Eth from '@bitgo/sdk-coin-eth';
+import * as Eth from '@bitgo-beta/sdk-coin-eth';
 export { Eth };
 
-import * as Etc from '@bitgo/sdk-coin-etc';
+import * as Etc from '@bitgo-beta/sdk-coin-etc';
 export { Etc };
 
-import * as AvaxC from '@bitgo/sdk-coin-avaxc';
+import * as AvaxC from '@bitgo-beta/sdk-coin-avaxc';
 export { AvaxC };
 
-import * as Rbtc from '@bitgo/sdk-coin-rbtc';
+import * as Rbtc from '@bitgo-beta/sdk-coin-rbtc';
 export { Rbtc };
 
-import * as Celo from '@bitgo/sdk-coin-celo';
+import * as Celo from '@bitgo-beta/sdk-coin-celo';
 export { Celo };
 
-import * as Hbar from '@bitgo/sdk-coin-hbar';
+import * as Hbar from '@bitgo-beta/sdk-coin-hbar';
 export { Hbar };
 
-import { CsprLib as Cspr } from '@bitgo/sdk-coin-cspr';
+import { CsprLib as Cspr } from '@bitgo-beta/sdk-coin-cspr';
 export { Cspr };
 
-import { StxLib as Stx } from '@bitgo/sdk-coin-stx';
+import { StxLib as Stx } from '@bitgo-beta/sdk-coin-stx';
 export { Stx };
 
-import { AlgoLib as Algo } from '@bitgo/sdk-coin-algo';
+import { AlgoLib as Algo } from '@bitgo-beta/sdk-coin-algo';
 export { Algo };
 
-import * as Arbeth from '@bitgo/sdk-coin-arbeth';
+import * as Arbeth from '@bitgo-beta/sdk-coin-arbeth';
 export { Arbeth };
 
-import * as Atom from '@bitgo/sdk-coin-atom';
+import * as Atom from '@bitgo-beta/sdk-coin-atom';
 export { Atom };
 
-import * as Osmo from '@bitgo/sdk-coin-osmo';
+import * as Osmo from '@bitgo-beta/sdk-coin-osmo';
 export { Osmo };
 
-import { AvaxpLib as AvaxP } from '@bitgo/sdk-coin-avaxp';
+import { AvaxpLib as AvaxP } from '@bitgo-beta/sdk-coin-avaxp';
 export { AvaxP };
 
-import * as Tia from '@bitgo/sdk-coin-tia';
+import * as Tia from '@bitgo-beta/sdk-coin-tia';
 export { Tia };
 
-import * as Bera from '@bitgo/sdk-coin-bera';
+import * as Bera from '@bitgo-beta/sdk-coin-bera';
 export { Bera };
 
-import * as Bld from '@bitgo/sdk-coin-bld';
+import * as Bld from '@bitgo-beta/sdk-coin-bld';
 export { Bld };
 
-import * as Hash from '@bitgo/sdk-coin-hash';
+import * as Hash from '@bitgo-beta/sdk-coin-hash';
 export { Hash };
 
-import * as Sei from '@bitgo/sdk-coin-sei';
+import * as Sei from '@bitgo-beta/sdk-coin-sei';
 export { Sei };
 
-import * as Injective from '@bitgo/sdk-coin-injective';
+import * as Injective from '@bitgo-beta/sdk-coin-injective';
 export { Injective };
 
-import * as Islm from '@bitgo/sdk-coin-islm';
+import * as Islm from '@bitgo-beta/sdk-coin-islm';
 export { Islm };
 
-import * as Zeta from '@bitgo/sdk-coin-zeta';
+import * as Zeta from '@bitgo-beta/sdk-coin-zeta';
 export { Zeta };
 
-import * as Coreum from '@bitgo/sdk-coin-coreum';
+import * as Coreum from '@bitgo-beta/sdk-coin-coreum';
 export { Coreum };
 
-import * as Rune from '@bitgo/sdk-coin-rune';
+import * as Rune from '@bitgo-beta/sdk-coin-rune';
 export { Rune };
 
-import * as Baby from '@bitgo/sdk-coin-baby';
+import * as Baby from '@bitgo-beta/sdk-coin-baby';
 export { Baby };
 
-import * as Mon from '@bitgo/sdk-coin-mon';
+import * as Mon from '@bitgo-beta/sdk-coin-mon';
 export { Mon };
 
-import * as Cronos from '@bitgo/sdk-coin-cronos';
+import * as Cronos from '@bitgo-beta/sdk-coin-cronos';
 export { Cronos };
 
-import * as Initia from '@bitgo/sdk-coin-initia';
+import * as Initia from '@bitgo-beta/sdk-coin-initia';
 export { Initia };
 
-import * as Asi from '@bitgo/sdk-coin-asi';
+import * as Asi from '@bitgo-beta/sdk-coin-asi';
 export { Asi };
 
-import * as Sol from '@bitgo/sdk-coin-sol';
+import * as Sol from '@bitgo-beta/sdk-coin-sol';
 export { Sol };
 
-import * as Ada from '@bitgo/sdk-coin-ada';
+import * as Ada from '@bitgo-beta/sdk-coin-ada';
 export { Ada };
 
-import * as Dot from '@bitgo/sdk-coin-dot';
+import * as Dot from '@bitgo-beta/sdk-coin-dot';
 export { Dot };
 
-import * as Near from '@bitgo/sdk-coin-near';
+import * as Near from '@bitgo-beta/sdk-coin-near';
 export { Near };
 
-import * as Bsc from '@bitgo/sdk-coin-bsc';
+import * as Bsc from '@bitgo-beta/sdk-coin-bsc';
 export { Bsc };
 
-import * as Polygon from '@bitgo/sdk-coin-polygon';
+import * as Polygon from '@bitgo-beta/sdk-coin-polygon';
 export { Polygon };
 
-import * as Polyx from '@bitgo/sdk-coin-polyx';
+import * as Polyx from '@bitgo-beta/sdk-coin-polyx';
 export { Polyx };
 
-import * as Opeth from '@bitgo/sdk-coin-opeth';
+import * as Opeth from '@bitgo-beta/sdk-coin-opeth';
 export { Opeth };
 
-import * as Sui from '@bitgo/sdk-coin-sui';
+import * as Sui from '@bitgo-beta/sdk-coin-sui';
 export { Sui };
 
-import * as Ton from '@bitgo/sdk-coin-ton';
+import * as Ton from '@bitgo-beta/sdk-coin-ton';
 export { Ton };
 
-import * as XRP from '@bitgo/sdk-coin-xrp';
+import * as XRP from '@bitgo-beta/sdk-coin-xrp';
 export { XRP };
 
-import * as zkEth from '@bitgo/sdk-coin-zketh';
+import * as zkEth from '@bitgo-beta/sdk-coin-zketh';
 export { zkEth };
 
-import * as Oas from '@bitgo/sdk-coin-oas';
+import * as Oas from '@bitgo-beta/sdk-coin-oas';
 export { Oas };
 
-import * as Coredao from '@bitgo/sdk-coin-coredao';
+import * as Coredao from '@bitgo-beta/sdk-coin-coredao';
 export { Coredao };
 
-import * as Apt from '@bitgo/sdk-coin-apt';
+import * as Apt from '@bitgo-beta/sdk-coin-apt';
 export { Apt };
 
-import * as Apechain from '@bitgo/sdk-coin-apechain';
+import * as Apechain from '@bitgo-beta/sdk-coin-apechain';
 export { Apechain };
 
-import * as Tao from '@bitgo/sdk-coin-tao';
+import * as Tao from '@bitgo-beta/sdk-coin-tao';
 export { Tao };
 
-import * as Icp from '@bitgo/sdk-coin-icp';
+import * as Icp from '@bitgo-beta/sdk-coin-icp';
 export { Icp };
 
-import * as Flr from '@bitgo/sdk-coin-flr';
+import * as Flr from '@bitgo-beta/sdk-coin-flr';
 export { Flr };
 
-import * as EvmCoin from '@bitgo/sdk-coin-evm';
+import * as EvmCoin from '@bitgo-beta/sdk-coin-evm';
 export { EvmCoin };
 
-import * as Sgb from '@bitgo/sdk-coin-sgb';
+import * as Sgb from '@bitgo-beta/sdk-coin-sgb';
 export { Sgb };
 
-import * as Xdc from '@bitgo/sdk-coin-xdc';
+import * as Xdc from '@bitgo-beta/sdk-coin-xdc';
 export { Xdc };
 
-import * as Wemix from '@bitgo/sdk-coin-wemix';
+import * as Wemix from '@bitgo-beta/sdk-coin-wemix';
 export { Wemix };
 
-import * as World from '@bitgo/sdk-coin-world';
+import * as World from '@bitgo-beta/sdk-coin-world';
 export { World };
 
-import * as Stt from '@bitgo/sdk-coin-stt';
+import * as Stt from '@bitgo-beta/sdk-coin-stt';
 export { Stt };
 
-import * as Soneium from '@bitgo/sdk-coin-soneium';
+import * as Soneium from '@bitgo-beta/sdk-coin-soneium';
 export { Soneium };
 
-import * as Vet from '@bitgo/sdk-coin-vet';
+import * as Vet from '@bitgo-beta/sdk-coin-vet';
 export { Vet };
 
-import * as CosmosSharedCoin from '@bitgo/sdk-coin-cosmos';
+import * as CosmosSharedCoin from '@bitgo-beta/sdk-coin-cosmos';
 export { CosmosSharedCoin };
 
 import { validateAgainstMessageTemplates, MIDNIGHT_TNC_HASH } from './utils';
@@ -371,7 +371,7 @@ export function getMessageBuilderFactory(coinName: string): BaseMessageBuilderFa
 /**
  * Register a new coin instance with its builder factory
  *
- * @param {string} coinName coin name as it was registered in @bitgo/statics
+ * @param {string} coinName coin name as it was registered in @bitgo-beta/statics
  * @param {any} builderFactory the builder factory class for that coin
  * @returns {any} the factory instance for the registered coin
  */
@@ -389,7 +389,7 @@ export function register<T extends BaseTransactionBuilderFactory>(
 /**
  * Register a new coin instance with its message builder factory constructor.
  *
- * @param {string} coinName coin name as it was registered in @bitgo/statics
+ * @param {string} coinName coin name as it was registered in @bitgo-beta/statics
  * @param {any} messageBuilderFactory the message builder factory class for that coin
  * @returns {any} the message builder factory instance for the registered coin
  */

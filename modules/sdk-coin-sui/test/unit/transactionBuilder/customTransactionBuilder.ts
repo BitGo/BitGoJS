@@ -1,7 +1,7 @@
-import { coins } from '@bitgo/statics';
+import { coins } from '@bitgo-beta/statics';
 import { CustomTransaction } from '../../../src/lib/customTransaction';
 import { CUSTOM_TX_PUBLIC_TRANSFER, CUSTOM_TX_STAKING_POOL_SPLIT, UNSUPPORTED_TX } from '../../resources/sui';
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 import should from 'should';
 import { getBuilderFactory } from '../getBuilderFactory';
 import { Transaction as SuiTransaction } from '../../../src';

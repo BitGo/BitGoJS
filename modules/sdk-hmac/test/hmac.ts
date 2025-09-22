@@ -7,7 +7,7 @@ import {
   calculateRequestHeaders,
   verifyResponse,
 } from '../src/hmac';
-import * as sjcl from '@bitgo/sjcl';
+import * as sjcl from '@bitgo-beta/sjcl';
 
 // Mock Date.now for consistent timestamp values
 const MOCK_TIMESTAMP = 1672531200000; // Example timestamp (e.g., Jan 1, 2023, 00:00:00 UTC)

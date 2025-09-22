@@ -6,7 +6,7 @@ export {
   SingletonRegistry,
   Transaction,
   TransactionBuilder,
-} from '@bitgo/abstract-substrate';
+} from '@bitgo-beta/abstract-substrate';
 
 export { TransactionBuilderFactory } from './transactionBuilderFactory';
 export { PolyxBaseBuilder } from './baseBuilder';

@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 
 export function isWalletKeyName(name: string): name is utxolib.bitgo.KeyName {
   return name === 'user' || name === 'backup' || name === 'bitgo';

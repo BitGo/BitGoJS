@@ -17,7 +17,7 @@ import {
   Ed25519BIP32,
   Eddsa,
   HDTree,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 
 describe('TSS EDDSA key generation and signing', function () {
   let MPC: Eddsa;

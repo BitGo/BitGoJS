@@ -1,12 +1,12 @@
 import * as ethUtil from 'ethereumjs-util';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import {
   isValidAmount,
   isValidEthAddress,
   getRawDecoded,
   getBufferedByteCode,
   hexStringToNumber,
-} from '@bitgo/sdk-coin-eth';
+} from '@bitgo-beta/sdk-coin-eth';
 import {
   ActivateMethodId,
   BuildTransactionError,
@@ -18,7 +18,7 @@ import {
   UnvoteMethodId,
   VoteMethodId,
   WithdrawMethodId,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import { StakingCall } from './stakingCall';
 
 export class StakingBuilder {

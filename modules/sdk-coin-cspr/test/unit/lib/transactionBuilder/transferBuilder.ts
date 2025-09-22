@@ -6,7 +6,7 @@ import { KeyPair, TransactionBuilderFactory } from '../../../../src/lib';
 import * as testData from '../../../fixtures/resources';
 import { Transaction } from '../../../../src/lib/transaction';
 import { DEFAULT_CHAIN_NAMES } from '../../../../src/lib/constants';
-import { coins } from '@bitgo/statics';
+import { coins } from '@bitgo-beta/statics';
 
 describe('Casper Transfer Builder', () => {
   const factory = new TransactionBuilderFactory(coins.get('tcspr'));

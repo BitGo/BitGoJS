@@ -1,5 +1,5 @@
 import { Hash } from 'fast-sha256';
-import { Psbt, Transaction, bitgo, networks } from '@bitgo/utxo-lib';
+import { Psbt, Transaction, bitgo, networks } from '@bitgo-beta/utxo-lib';
 
 export const BIP322_TAG = 'BIP0322-signed-message';
 

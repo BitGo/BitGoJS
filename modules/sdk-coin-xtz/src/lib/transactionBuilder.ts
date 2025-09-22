@@ -1,5 +1,11 @@
-import { BaseKey, BuildTransactionError, SigningError, BaseTransactionBuilder, TransactionType } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import {
+  BaseKey,
+  BuildTransactionError,
+  SigningError,
+  BaseTransactionBuilder,
+  TransactionType,
+} from '@bitgo-beta/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import BigNumber from 'bignumber.js';
 import { Address } from './address';
 import { Fee, IndexedData, IndexedSignature, Key, Operation, OriginationOp, RevealOp, TransactionOp } from './iface';

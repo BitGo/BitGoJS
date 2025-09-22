@@ -1,8 +1,8 @@
 /**
  * @prettier
  */
-import { BitGoBase, BaseCoin } from '@bitgo/sdk-core';
-import * as utxolib from '@bitgo/utxo-lib';
+import { BitGoBase, BaseCoin } from '@bitgo-beta/sdk-core';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 import { Doge } from './doge';
 
 export class Tdoge extends Doge {

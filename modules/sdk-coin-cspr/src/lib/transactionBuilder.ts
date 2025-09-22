@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { DeployUtil, CLPublicKey as PublicKey } from 'casper-js-sdk';
 import _ from 'lodash';
 import {
@@ -11,7 +11,7 @@ import {
   ParseTransactionError,
   SigningError,
   TransactionType,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
 import {

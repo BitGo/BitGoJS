@@ -13,7 +13,7 @@ import { DeserializedNtilde, RangeProof } from '../../../../src/tss/ecdsa/types'
 import { modPow, randBetween } from 'bigint-crypto-utils';
 import { createHash } from 'crypto';
 
-import { loadWebAssembly } from '@bitgo/sdk-opensslbytes';
+import { loadWebAssembly } from '@bitgo-beta/sdk-opensslbytes';
 
 const openSSLBytes = loadWebAssembly().buffer;
 

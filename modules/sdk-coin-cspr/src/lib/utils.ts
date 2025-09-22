@@ -16,7 +16,7 @@ import {
   SigningError,
   TransactionType,
   UtilsError,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 
 import {
   SECP256K1_PREFIX,

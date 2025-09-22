@@ -1,6 +1,6 @@
 import assert from 'assert';
 import should from 'should';
-import { coins } from '@bitgo/statics';
+import { coins } from '@bitgo-beta/statics';
 import { CLString, DeployUtil, CLPublicKey as PublicKey } from 'casper-js-sdk';
 import { Transaction } from '../../../src/lib/transaction';
 import * as testData from '../../fixtures/resources';

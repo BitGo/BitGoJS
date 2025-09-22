@@ -1,9 +1,9 @@
 /**
  * @prettier
  */
-import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
+import { BaseCoin, BitGoBase } from '@bitgo-beta/sdk-core';
 import { Bch } from './bch';
-import * as bitcoin from '@bitgo/utxo-lib';
+import * as bitcoin from '@bitgo-beta/utxo-lib';
 
 export class Tbch extends Bch {
   constructor(bitgo: BitGoBase) {

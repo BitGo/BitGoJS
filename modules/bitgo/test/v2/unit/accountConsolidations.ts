@@ -8,9 +8,9 @@ require('should-sinon');
 import '../lib/asserts';
 import nock = require('nock');
 
-import { common, Wallet } from '@bitgo/sdk-core';
+import { common, Wallet } from '@bitgo-beta/sdk-core';
 
-import { TestBitGo } from '@bitgo/sdk-test';
+import { TestBitGo } from '@bitgo-beta/sdk-test';
 import { BitGo } from '../../../src/bitgo';
 const algoFixtures = require('../../../../sdk-coin-algo/test/fixtures/algo');
 

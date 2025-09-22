@@ -1,4 +1,4 @@
-import { BitGoBase } from '@bitgo/sdk-core';
+import { BitGoBase } from '@bitgo-beta/sdk-core';
 import { Hash } from './hash';
 import { Thash } from './thash';
 import { HashToken } from './hashToken';

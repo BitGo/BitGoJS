@@ -5,10 +5,10 @@
 import 'should';
 import nock = require('nock');
 
-import { TestBitGo } from '@bitgo/sdk-test';
+import { TestBitGo } from '@bitgo-beta/sdk-test';
 import { BitGo } from '../../../src/bitgo';
-import { Erc20Token } from '@bitgo/sdk-coin-eth';
-import { StellarToken } from '@bitgo/sdk-coin-xlm';
+import { Erc20Token } from '@bitgo-beta/sdk-coin-eth';
+import { StellarToken } from '@bitgo-beta/sdk-coin-xlm';
 
 nock.disableNetConnect();
 

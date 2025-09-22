@@ -15,9 +15,9 @@ import {
   AuditDecryptedKeyParams,
   common,
   TransactionType,
-} from '@bitgo/sdk-core';
-import { bip32 } from '@bitgo/secp256k1';
-import { CoinFamily, coins, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+} from '@bitgo-beta/sdk-core';
+import { bip32 } from '@bitgo-beta/secp256k1';
+import { CoinFamily, coins, BaseCoin as StaticsBaseCoin } from '@bitgo-beta/statics';
 import BigNumber from 'bignumber.js';
 import { Interface, KeyPair, TransactionBuilder, Utils } from './lib';
 import { RecoverOptions } from './lib/iface';

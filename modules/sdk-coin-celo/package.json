@@ -1,6 +1,6 @@
 {
-  "name": "@bitgo/sdk-coin-celo",
-  "version": "0.0.0-semantic-release-managed",
+  "name": "@bitgo-beta/sdk-coin-celo",
+  "version": "1.1.1-beta.1423",
   "description": "BitGo SDK coin library for Celo",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,10 +40,10 @@
     ]
   },
   "dependencies": {
-    "@bitgo/abstract-eth": "0.0.0-semantic-release-managed",
-    "@bitgo/sdk-coin-eth": "0.0.0-semantic-release-managed",
-    "@bitgo/sdk-core": "0.0.0-semantic-release-managed",
-    "@bitgo/statics": "0.0.0-semantic-release-managed",
+    "@bitgo-beta/abstract-eth": "1.0.2-beta.1430",
+    "@bitgo-beta/sdk-coin-eth": "4.4.1-beta.1195",
+    "@bitgo-beta/sdk-core": "8.2.1-beta.1200",
+    "@bitgo-beta/statics": "15.1.1-beta.1203",
     "@celo/connect": "^2.0.0",
     "@celo/contractkit": "^2.0.0",
     "@celo/wallet-base": "^2.0.0",
@@ -55,8 +55,8 @@
     "ethers": "^5.1.3"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "0.0.0-semantic-release-managed",
-    "@bitgo/sdk-test": "0.0.0-semantic-release-managed"
+    "@bitgo-beta/sdk-api": "1.10.1-beta.1199",
+    "@bitgo-beta/sdk-test": "0.0.0-semantic-release-managed"
   },
   "resolutions": {
     "form-data": "^4.0.4"

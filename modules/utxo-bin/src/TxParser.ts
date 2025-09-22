@@ -1,5 +1,5 @@
-import { OutputSpend, TransactionStatus } from '@bitgo/blockapis';
-import * as utxolib from '@bitgo/utxo-lib';
+import { OutputSpend, TransactionStatus } from '@bitgo-beta/blockapis';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 
 import { Parser, ParserNode } from './Parser';
 import { formatSat } from './format';

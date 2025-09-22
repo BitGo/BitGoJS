@@ -1,5 +1,5 @@
-import { BaseKey, TransactionType } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseKey, TransactionType } from '@bitgo-beta/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
 import * as CardanoWasm from '@emurgo/cardano-serialization-lib-nodejs';

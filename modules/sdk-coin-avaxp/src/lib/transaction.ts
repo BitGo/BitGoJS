@@ -7,8 +7,8 @@ import {
   SigningError,
   TransactionFee,
   TransactionType,
-} from '@bitgo/sdk-core';
-import { AvalancheNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
+} from '@bitgo-beta/sdk-core';
+import { AvalancheNetwork, BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { BN, Buffer as BufferAvax } from 'avalanche';
 import { Buffer } from 'buffer';
 import { ADDRESS_SEPARATOR, DecodedUtxoObj, INPUT_SEPARATOR, TransactionExplanation, Tx, TxData } from './iface';

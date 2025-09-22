@@ -1,7 +1,7 @@
 import { TransactionBuilder } from './transactionBuilder';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { FungibleAssetTransfer } from '../transaction/fungibleAssetTransfer';
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 import utils from '../utils';
 import { TransactionPayload, TransactionPayloadEntryFunction } from '@aptos-labs/ts-sdk';
 import { FUNGIBLE_ASSET_TYPE_ARGUMENT } from '../constants';

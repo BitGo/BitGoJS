@@ -1,12 +1,12 @@
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
 import { Etc, Tetc, TransactionBuilder } from '../../src';
 import sinon from 'sinon';
-import { OfflineVaultTxInfo, SignTransactionOptions } from '@bitgo/abstract-eth';
+import { OfflineVaultTxInfo, SignTransactionOptions } from '@bitgo-beta/abstract-eth';
 
 import { BN } from 'ethereumjs-util';
 import { getBuilder } from './getBuilder';
-import { FullySignedTransaction } from '@bitgo/sdk-core';
+import { FullySignedTransaction } from '@bitgo-beta/sdk-core';
 import * as should from 'should';
 
 describe('Ethereum Classic', function () {

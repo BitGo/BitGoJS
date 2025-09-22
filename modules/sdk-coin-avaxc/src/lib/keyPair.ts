@@ -1,5 +1,5 @@
 import { randomBytes } from 'crypto';
-import { bip32 } from '@bitgo/secp256k1';
+import { bip32 } from '@bitgo-beta/secp256k1';
 import { addHexPrefix, pubToAddress } from 'ethereumjs-util';
 import {
   DefaultKeys,
@@ -8,7 +8,7 @@ import {
   isSeed,
   KeyPairOptions,
   Secp256k1ExtendedKeyPair,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 
 const DEFAULT_SEED_SIZE_BYTES = 16;
 

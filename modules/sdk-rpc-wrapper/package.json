@@ -1,6 +1,6 @@
 {
-  "name": "@bitgo/sdk-rpc-wrapper",
-  "version": "0.0.0-semantic-release-managed",
+  "name": "@bitgo-beta/sdk-rpc-wrapper",
+  "version": "1.0.1-beta.1264",
   "description": "Bitgo SDK wrapper to handle EVM RPC events",
   "main": "./dist/src/index.js",
   "type": "./dist/src/index.d.ts",
@@ -13,12 +13,12 @@
     "fmt": "prettier --write '{src,test}/**/*.{ts,js,json}'"
   },
   "dependencies": {
-    "@bitgo/sdk-core": "0.0.0-semantic-release-managed"
+    "@bitgo-beta/sdk-core": "8.2.1-beta.1200"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "0.0.0-semantic-release-managed",
-    "@bitgo/sdk-coin-eth": "0.0.0-semantic-release-managed",
-    "@bitgo/sdk-test": "0.0.0-semantic-release-managed"
+    "@bitgo-beta/sdk-api": "1.10.1-beta.1199",
+    "@bitgo-beta/sdk-coin-eth": "4.4.1-beta.1195",
+    "@bitgo-beta/sdk-test": "0.0.0-semantic-release-managed"
   },
   "author": "Bitgo DEFI Team <defi-team@bitgo.com>",
   "license": "MIT",

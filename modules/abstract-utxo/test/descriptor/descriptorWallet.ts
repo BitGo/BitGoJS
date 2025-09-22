@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import { getDefaultXPubs, getDescriptorMap } from '@bitgo/utxo-core/testutil/descriptor';
+import { getDefaultXPubs, getDescriptorMap } from '@bitgo-beta/utxo-core/testutil/descriptor';
 
 import { getDescriptorMapFromWallet, isDescriptorWallet } from '../../src/descriptor';
 import { UtxoWallet } from '../../src/wallet';

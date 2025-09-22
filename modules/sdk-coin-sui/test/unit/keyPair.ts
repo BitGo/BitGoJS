@@ -2,9 +2,9 @@ import assert from 'assert';
 import { KeyPair } from '../../src';
 import utils from '../../src/lib/utils';
 import should from 'should';
-import { Eddsa } from '@bitgo/sdk-core';
+import { Eddsa } from '@bitgo-beta/sdk-core';
 import bs58 from 'bs58';
-import { Ed25519Bip32HdTree, HDTree } from '@bitgo/sdk-lib-mpc';
+import { Ed25519Bip32HdTree, HDTree } from '@bitgo-beta/sdk-lib-mpc';
 
 describe('SUI KeyPair', function () {
   let rootKeychain;

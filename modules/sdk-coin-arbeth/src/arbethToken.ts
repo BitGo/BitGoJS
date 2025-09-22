@@ -1,9 +1,9 @@
 /**
  * @prettier
  */
-import { EthLikeTokenConfig, coins } from '@bitgo/statics';
-import { BitGoBase, CoinConstructor, NamedCoinConstructor, common, MPCAlgorithm } from '@bitgo/sdk-core';
-import { CoinNames, EthLikeToken, recoveryBlockchainExplorerQuery } from '@bitgo/abstract-eth';
+import { EthLikeTokenConfig, coins } from '@bitgo-beta/statics';
+import { BitGoBase, CoinConstructor, NamedCoinConstructor, common, MPCAlgorithm } from '@bitgo-beta/sdk-core';
+import { CoinNames, EthLikeToken, recoveryBlockchainExplorerQuery } from '@bitgo-beta/abstract-eth';
 
 import { TransactionBuilder } from './lib';
 export { EthLikeTokenConfig };

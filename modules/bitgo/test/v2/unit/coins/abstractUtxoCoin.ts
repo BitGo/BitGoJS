@@ -1,12 +1,18 @@
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 import should = require('should');
 import * as sinon from 'sinon';
-import { Wallet, UnexpectedAddressError, VerificationOptions, Triple } from '@bitgo/sdk-core';
-import { TestBitGo } from '@bitgo/sdk-test';
+import { Wallet, UnexpectedAddressError, VerificationOptions, Triple } from '@bitgo-beta/sdk-core';
+import { TestBitGo } from '@bitgo-beta/sdk-test';
 import { BitGo } from '../../../../src/bitgo';
 import { psbtTxHex } from './payGoPSBTHexFixture/psbtHexProof';
 import { bip322Fixtures } from '../../fixtures/bip322/fixtures';
-import { AbstractUtxoCoin, UtxoWallet, Output, TransactionExplanation, TransactionParams } from '@bitgo/abstract-utxo';
+import {
+  AbstractUtxoCoin,
+  UtxoWallet,
+  Output,
+  TransactionExplanation,
+  TransactionParams,
+} from '@bitgo-beta/abstract-utxo';
 
 describe('Abstract UTXO Coin:', () => {
   describe('Parse Transaction:', () => {

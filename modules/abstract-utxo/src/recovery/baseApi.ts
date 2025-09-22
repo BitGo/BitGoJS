@@ -1,5 +1,5 @@
 import superagent from 'superagent';
-import { BitGoJsError } from '@bitgo/sdk-core';
+import { BitGoJsError } from '@bitgo-beta/sdk-core';
 
 export class ApiNotImplementedError extends BitGoJsError {
   constructor(coinName: string) {

@@ -1,4 +1,4 @@
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 import { checkForOutput } from 'bip174/src/lib/utils';
 
 import { verifyMessage } from '../../bip32utils';

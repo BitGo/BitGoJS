@@ -8,7 +8,7 @@ import { agent as supertest } from 'supertest';
 import { DefaultConfig } from '../../src/config';
 import { app as expressApp } from '../../src/expressApp';
 import nock from 'nock';
-import { Environments } from '@bitgo/sdk-core';
+import { Environments } from '@bitgo-beta/sdk-core';
 
 describe('Bitgo Express', function () {
   let agent;

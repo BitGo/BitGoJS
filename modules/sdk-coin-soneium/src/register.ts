@@ -1,4 +1,4 @@
-import { BitGoBase } from '@bitgo/sdk-core';
+import { BitGoBase } from '@bitgo-beta/sdk-core';
 import { Soneium } from './soneium';
 import { Tsoneium } from './tsoneium';
 import { SoneiumToken } from './soneiumToken';

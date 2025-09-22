@@ -1,4 +1,4 @@
-import { BaseAddress } from '@bitgo/sdk-core';
+import { BaseAddress } from '@bitgo-beta/sdk-core';
 
 /**
  * Base 58 address with tz2 prefix (secp256k1)

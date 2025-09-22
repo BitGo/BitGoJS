@@ -5,7 +5,7 @@ import {
   MessageOptions,
   MessageStandardType,
   Signature,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 
 type MessageCtor = new (options: MessageOptions) => BaseMessage;
 

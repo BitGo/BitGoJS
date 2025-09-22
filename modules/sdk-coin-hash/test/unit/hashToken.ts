@@ -3,11 +3,11 @@ import sinon from 'sinon';
 import BigNumber from 'bignumber.js';
 import { beforeEach } from 'mocha';
 
-import { mockSerializedChallengeWithProofs, TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
-import { coins, NetworkType } from '@bitgo/statics';
-import { EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
-import { CosmosTransaction, SendMessage } from '@bitgo/abstract-cosmos';
+import { mockSerializedChallengeWithProofs, TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
+import { coins, NetworkType } from '@bitgo-beta/statics';
+import { EcdsaRangeProof, EcdsaTypes } from '@bitgo-beta/sdk-lib-mpc';
+import { CosmosTransaction, SendMessage } from '@bitgo-beta/abstract-cosmos';
 import { HashToken } from '../../src';
 import { HashUtils } from '../../src/lib/utils';
 import { mainnetAddress, testnetAddress, wrwUser } from '../resources/hash';

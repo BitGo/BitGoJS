@@ -1,8 +1,8 @@
 import should = require('should');
 import BigNumber from 'bignumber.js';
 import sinon from 'sinon';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
 import { Asi, Tasi } from '../../src/index';
 import utils from '../../src/lib/utils';
 import { TEST_SEND_MANY_TX, TEST_SEND_TX, TEST_TX_WITH_MEMO, address, TEST_ACCOUNT } from '../resources/asi';

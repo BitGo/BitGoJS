@@ -3,9 +3,9 @@ import {
   DelegateOrUndelegeteMessage,
   SendMessage,
   WithdrawDelegatorRewardsMessage,
-} from '@bitgo/abstract-cosmos';
-import { toHex, TransactionType } from '@bitgo/sdk-core';
-import { coins } from '@bitgo/statics';
+} from '@bitgo-beta/abstract-cosmos';
+import { toHex, TransactionType } from '@bitgo-beta/sdk-core';
+import { coins } from '@bitgo-beta/statics';
 import { fromBase64 } from '@cosmjs/encoding';
 import should from 'should';
 import { Transaction } from '../../src';

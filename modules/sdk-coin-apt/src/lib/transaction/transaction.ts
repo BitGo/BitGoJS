@@ -6,8 +6,8 @@ import {
   Signature,
   TransactionRecipient,
   TransactionType,
-} from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig, NetworkType } from '@bitgo/statics';
+} from '@bitgo-beta/sdk-core';
+import { BaseCoin as CoinConfig, NetworkType } from '@bitgo-beta/statics';
 import {
   AccountAddress,
   AccountAuthenticator,

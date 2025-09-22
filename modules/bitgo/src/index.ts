@@ -7,24 +7,24 @@
 // Copyright 2022, BitGo, Inc.  All Rights Reserved.
 //
 import * as _ from 'lodash';
-import { common } from '@bitgo/sdk-core';
-export * from '@bitgo/sdk-api';
-import * as utxolib from '@bitgo/utxo-lib';
+import { common } from '@bitgo-beta/sdk-core';
+export * from '@bitgo-beta/sdk-api';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 import { GlobalCoinFactory } from './v2/coinFactory';
 
 export * from './bitgo';
 
 // Expose legacy "bitcoin" API (mostly HDNode)
 /** @deprecated */
-export { bitcoin } from '@bitgo/sdk-core';
+export { bitcoin } from '@bitgo-beta/sdk-core';
 
 /** @deprecated */
-export const sjcl = require('@bitgo/sjcl');
+export const sjcl = require('@bitgo-beta/sjcl');
 
 export { Buffer } from 'buffer';
 
 export const Environments = _.cloneDeep(common.Environments);
-export * from '@bitgo/sdk-core';
+export * from '@bitgo-beta/sdk-core';
 export { GlobalCoinFactory };
 export * from './v2';
 

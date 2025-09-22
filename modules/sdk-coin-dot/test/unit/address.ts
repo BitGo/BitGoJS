@@ -1,5 +1,5 @@
 import { TransactionBuilderFactory } from '../../src';
-import { coins } from '@bitgo/statics';
+import { coins } from '@bitgo-beta/statics';
 
 describe('Polkadot and Westend Address Validation', function () {
   describe('Polkadot Address Validation', function () {

@@ -1,5 +1,5 @@
 import should from 'should';
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 import { ETHTransactionType, Fee, flushCoinsMethodId, KeyPair, Transaction, TransactionBuilder } from '../../../src';
 import { getBuilder } from '../getBuilder';
 

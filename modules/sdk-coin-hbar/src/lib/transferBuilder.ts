@@ -1,4 +1,4 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { proto } from '@hashgraph/proto';
 import {
   BaseKey,
@@ -6,7 +6,7 @@ import {
   InvalidParameterValueError,
   SigningError,
   TransactionType,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import { Recipient } from './iface';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';

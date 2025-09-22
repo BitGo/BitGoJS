@@ -16,15 +16,15 @@ import {
   SignTransactionOptions,
   VerifyAddressOptions,
   VerifyTransactionOptions,
-} from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
+} from '@bitgo-beta/sdk-core';
+import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo-beta/statics';
 import { KeyPair as AptKeyPair, TransactionBuilderFactory } from './lib';
 import utils from './lib/utils';
 import * as _ from 'lodash';
 import BigNumber from 'bignumber.js';
 import { ExplainTransactionOptions } from './lib/types';
 import { AptTransactionExplanation } from './lib/iface';
-import { auditEddsaPrivateKey } from '@bitgo/sdk-lib-mpc';
+import { auditEddsaPrivateKey } from '@bitgo-beta/sdk-lib-mpc';
 
 export interface AptParseTransactionOptions extends ParseTransactionOptions {
   txHex: string;

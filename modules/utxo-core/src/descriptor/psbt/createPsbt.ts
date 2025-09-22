@@ -1,5 +1,5 @@
 import { TapLeafScript } from 'bip174/src/lib/interfaces';
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 import { Descriptor, Miniscript } from '@bitgo/wasm-miniscript';
 
 import { DerivedDescriptorWalletOutput, WithOptDescriptor } from '../Output';

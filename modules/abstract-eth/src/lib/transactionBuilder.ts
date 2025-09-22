@@ -1,4 +1,4 @@
-import { BaseCoin as CoinConfig, EthereumNetwork, CoinFeature } from '@bitgo/statics';
+import { BaseCoin as CoinConfig, EthereumNetwork, CoinFeature } from '@bitgo-beta/statics';
 import EthereumCommon from '@ethereumjs/common';
 import EthereumAbi from 'ethereumjs-abi';
 import BigNumber from 'bignumber.js';
@@ -17,7 +17,7 @@ import {
   ParseTransactionError,
   SigningError,
   TransactionType,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 
 import { KeyPair } from './keyPair';
 import { ETHTransactionType, Fee, SignatureParts, TxData } from './iface';

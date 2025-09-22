@@ -1,16 +1,16 @@
 import * as should from 'should';
-import { bip32 } from '@bitgo/secp256k1';
+import { bip32 } from '@bitgo-beta/secp256k1';
 import * as secp256k1 from 'secp256k1';
 import nock from 'nock';
-import { common, FullySignedTransaction, TransactionType, Wallet } from '@bitgo/sdk-core';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
-import { OfflineVaultTxInfo, optionalDeps, SignTransactionOptions } from '@bitgo/abstract-eth';
+import { common, FullySignedTransaction, TransactionType, Wallet } from '@bitgo-beta/sdk-core';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
+import { OfflineVaultTxInfo, optionalDeps, SignTransactionOptions } from '@bitgo-beta/abstract-eth';
 
 import { Opeth, Topeth, TransactionBuilder, TransferBuilder } from '../../src/index';
 import * as mockData from '../fixtures/opeth';
 import { getBuilder } from '../getBuilder';
-import { EthereumNetwork } from '@bitgo/statics';
+import { EthereumNetwork } from '@bitgo-beta/statics';
 
 nock.enableNetConnect();
 

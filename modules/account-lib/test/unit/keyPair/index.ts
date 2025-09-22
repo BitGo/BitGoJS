@@ -4,9 +4,9 @@
 import assert from 'assert';
 import { register } from '../../../src/keyPair';
 import * as coinModules from '../../../src';
-import { coins } from '@bitgo/statics';
-import { KeyPair as EthKeyPair } from '@bitgo/sdk-coin-eth';
-import { Ed25519KeyPair } from '@bitgo/sdk-core';
+import { coins } from '@bitgo-beta/statics';
+import { KeyPair as EthKeyPair } from '@bitgo-beta/sdk-coin-eth';
+import { Ed25519KeyPair } from '@bitgo-beta/sdk-core';
 
 describe('Key Pair Factory', () => {
   describe('coinToKey map initialization', function () {

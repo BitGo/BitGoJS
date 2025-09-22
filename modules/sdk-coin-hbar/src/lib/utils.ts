@@ -5,8 +5,8 @@ import BigNumber from 'bignumber.js';
 import * as stellar from 'stellar-sdk';
 import { AddressDetails } from './iface';
 import url from 'url';
-import { toHex, toUint8Array, UtilsError } from '@bitgo/sdk-core';
-import { BaseCoin, coins, HederaToken } from '@bitgo/statics';
+import { toHex, toUint8Array, UtilsError } from '@bitgo-beta/sdk-core';
+import { BaseCoin, coins, HederaToken } from '@bitgo-beta/statics';
 export { toHex, toUint8Array };
 
 const MAX_TINYBARS_AMOUNT = new BigNumber(2).pow(63).minus(1);

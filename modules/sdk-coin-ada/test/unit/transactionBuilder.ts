@@ -1,8 +1,8 @@
 import should from 'should';
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 import * as testData from '../resources';
 import { KeyPair, TransactionBuilderFactory } from '../../src';
-import { coins } from '@bitgo/statics';
+import { coins } from '@bitgo-beta/statics';
 import * as CardanoWasm from '@emurgo/cardano-serialization-lib-nodejs';
 import { Transaction } from '../../src/lib/transaction';
 

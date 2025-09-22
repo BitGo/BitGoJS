@@ -2,7 +2,7 @@ import sinon from 'sinon';
 import { generateNtilde, generateNtildeProof, verifyNtildeProof } from '../../../../src/tss/ecdsa/rangeproof';
 import * as safePrimes from '../../../../src/safePrime';
 
-import { loadWebAssembly } from '@bitgo/sdk-opensslbytes';
+import { loadWebAssembly } from '@bitgo-beta/sdk-opensslbytes';
 
 const openSSLBytes = loadWebAssembly().buffer;
 

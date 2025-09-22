@@ -1,10 +1,10 @@
-import { TestBitGo } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { TestBitGo } from '@bitgo-beta/sdk-test';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
 import { Ton, TonParseTransactionOptions, Tton } from '../../src';
 import * as sinon from 'sinon';
 import assert from 'assert';
 import * as testData from '../resources/ton';
-import { EDDSAMethods, TransactionExplanation } from '@bitgo/sdk-core';
+import { EDDSAMethods, TransactionExplanation } from '@bitgo-beta/sdk-core';
 import should from 'should';
 import utils from '../../src/lib/utils';
 import Tonweb from 'tonweb';

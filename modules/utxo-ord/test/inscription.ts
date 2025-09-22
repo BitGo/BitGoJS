@@ -1,7 +1,7 @@
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 import * as assert from 'assert';
 import { inscriptions, WalletInputBuilder } from '../src';
-import { address, networks, testutil, bitgo } from '@bitgo/utxo-lib';
+import { address, networks, testutil, bitgo } from '@bitgo-beta/utxo-lib';
 
 function createCommitTransactionPsbt(commitAddress: string, walletKeys: utxolib.bitgo.RootWalletKeys) {
   const commitTransactionOutputScript = utxolib.address.toOutputScript(commitAddress, networks.testnet);

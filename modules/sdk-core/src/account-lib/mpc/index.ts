@@ -1,4 +1,4 @@
-import { HDTree, Ed25519Bip32HdTree, Secp256k1Bip32HdTree } from '@bitgo/sdk-lib-mpc';
+import { HDTree, Ed25519Bip32HdTree, Secp256k1Bip32HdTree } from '@bitgo-beta/sdk-lib-mpc';
 import { EDDSA } from './tss';
 import ShamirSecret from './shamir';
 

@@ -1,6 +1,6 @@
 import assert from 'assert';
 import should from 'should';
-import { coins } from '@bitgo/statics';
+import { coins } from '@bitgo-beta/statics';
 import {
   unsignedSerializedOriginationTransaction,
   signedSerializedOriginationTransaction,

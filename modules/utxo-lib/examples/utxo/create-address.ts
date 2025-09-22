@@ -8,7 +8,7 @@
  */
 
 {
-  const utxolib = require('@bitgo/utxo-lib');
+  const utxolib = require('@bitgo-beta/utxo-lib');
 
   // Generate Random Keypair
 

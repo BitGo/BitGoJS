@@ -1,6 +1,6 @@
-import { Interface, Schema, Transaction, TransactionBuilder } from '@bitgo/abstract-substrate';
-import { InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { Interface, Schema, Transaction, TransactionBuilder } from '@bitgo-beta/abstract-substrate';
+import { InvalidTransactionError, TransactionType } from '@bitgo-beta/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { DecodedSignedTx, DecodedSigningPayload, defineMethod, UnsignedTransaction } from '@substrate/txwrapper-core';
 import BigNumber from 'bignumber.js';
 import { TokenTransferTransaction } from './tokenTransferTransaction';

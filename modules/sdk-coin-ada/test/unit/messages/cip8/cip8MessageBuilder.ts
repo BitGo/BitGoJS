@@ -1,8 +1,8 @@
 import should from 'should';
 import sinon from 'sinon';
 import { Buffer } from 'buffer';
-import { BroadcastableMessage, MessageStandardType, serializeSignatures, Signature } from '@bitgo/sdk-core';
-import { BaseCoin } from '@bitgo/statics';
+import { BroadcastableMessage, MessageStandardType, serializeSignatures, Signature } from '@bitgo-beta/sdk-core';
+import { BaseCoin } from '@bitgo-beta/statics';
 import { cip8TestResources } from '../../../resources/cip8Resources';
 import { Cip8Message, Cip8MessageBuilder, MessageBuilderFactory } from '../../../../src';
 import { bufferToCoseObjectsOutput } from '../../../../src/lib/messages/cip8/utils';

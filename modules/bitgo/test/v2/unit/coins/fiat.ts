@@ -1,5 +1,5 @@
 import 'should';
-import { CoinFamily, coins, NetworkType } from '@bitgo/statics';
+import { CoinFamily, coins, NetworkType } from '@bitgo-beta/statics';
 
 function executeTestForFiatCoins(coin, expectedNetwork) {
   describe(`Fiat coin: ${coin.name}`, function () {

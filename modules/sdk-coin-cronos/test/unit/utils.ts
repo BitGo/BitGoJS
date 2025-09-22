@@ -2,7 +2,7 @@ import should from 'should';
 import { Utils } from '../../src/lib/utils';
 import { address, blockHash, txIds } from '../resources/cronos';
 import * as testData from '../resources/cronos';
-import { NetworkType } from '@bitgo/statics';
+import { NetworkType } from '@bitgo-beta/statics';
 
 describe('utils', () => {
   const utils = new Utils(NetworkType.TESTNET);

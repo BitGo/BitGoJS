@@ -1,6 +1,6 @@
 import assert from 'assert';
-import { coins, UtxoCoin } from '@bitgo/statics';
-import * as utxolib from '@bitgo/utxo-lib';
+import { coins, UtxoCoin } from '@bitgo-beta/statics';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 import { WalletType } from '../wallet';
 

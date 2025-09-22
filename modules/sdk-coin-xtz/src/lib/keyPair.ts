@@ -1,6 +1,6 @@
 import { randomBytes } from 'crypto';
-import blake2b from '@bitgo/blake2b';
-import { bip32, ECPair } from '@bitgo/secp256k1';
+import blake2b from '@bitgo-beta/blake2b';
+import { bip32, ECPair } from '@bitgo-beta/secp256k1';
 import {
   DefaultKeys,
   isPrivateKey,
@@ -12,7 +12,7 @@ import {
   isValidXpub,
   KeyPairOptions,
   Secp256k1ExtendedKeyPair,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import * as Utils from './utils';
 
 const DEFAULT_SEED_SIZE_BYTES = 16;

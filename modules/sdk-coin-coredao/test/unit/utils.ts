@@ -1,6 +1,6 @@
 import assert from 'assert';
 import should from 'should';
-import { NetworkType } from '@bitgo/statics';
+import { NetworkType } from '@bitgo-beta/statics';
 import { getCommon } from '../../src/lib/utils';
 
 describe('Network Common Configuration', () => {

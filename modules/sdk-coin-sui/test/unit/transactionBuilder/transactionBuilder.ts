@@ -1,7 +1,7 @@
 import { getBuilderFactory } from '../getBuilderFactory';
 import * as testData from '../../resources/sui';
 import should from 'should';
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 import { SuiTransactionType } from '../../../src/lib/iface';
 import { CUSTOM_TX_STAKING_POOL_SPLIT, recipients, STAKING_AMOUNT, UNSUPPORTED_TX } from '../../resources/sui';
 import { KeyPair } from '../../../src/lib/keyPair';

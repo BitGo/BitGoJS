@@ -6,8 +6,8 @@
 import pjson = require('../package.json');
 import * as _ from 'lodash';
 
-import { BaseCoin, CoinFactory, common, UnsupportedCoinError } from '@bitgo/sdk-core';
-import { BitGoAPI, BitGoAPIOptions } from '@bitgo/sdk-api';
+import { BaseCoin, CoinFactory, common, UnsupportedCoinError } from '@bitgo-beta/sdk-core';
+import { BitGoAPI, BitGoAPIOptions } from '@bitgo-beta/sdk-api';
 import {
   createTokenMapUsingTrimmedConfigDetails,
   TrimmedAmsTokenConfig,
@@ -15,7 +15,7 @@ import {
   getFormattedTokenConfigForCoin,
   coins,
   BaseCoin as StaticsBaseCoin,
-} from '@bitgo/statics';
+} from '@bitgo-beta/statics';
 import { GlobalCoinFactory, registerCoinConstructors, getTokenConstructor, getCoinConstructor } from './v2/coinFactory';
 import { Ofc } from './v2/coins';
 

@@ -1,4 +1,4 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import BigNumber from 'bignumber.js';
 import {
   BaseAddress,
@@ -7,7 +7,7 @@ import {
   TransactionType,
   BuildTransactionError,
   BaseTransaction,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import { DeprecatedTransaction } from './deprecatedTransaction';
 import { KeyPair } from './keyPair';
 import { BN, Buffer as BufferAvax } from 'avalanche';

@@ -1,11 +1,11 @@
-import { BaseTransactionBuilderFactory, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
+import { BaseTransactionBuilderFactory, InvalidTransactionError, TransactionType } from '@bitgo-beta/sdk-core';
 import { TransactionBuilder } from './transactionBuilder/transactionBuilder';
 import { TransferBuilder } from './transactionBuilder/transferBuilder';
 import utils from './utils';
 import { Transaction } from './transaction/transaction';
 import { SignedTransaction } from '@aptos-labs/ts-sdk';
 import { TransferTransaction } from './transaction/transferTransaction';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { FungibleAssetTransfer } from './transaction/fungibleAssetTransfer';
 import { FungibleAssetTransferBuilder } from './transactionBuilder/fungibleAssetTransferBuilder';
 import { DigitalAssetTransfer } from './transaction/digitalAssetTransfer';

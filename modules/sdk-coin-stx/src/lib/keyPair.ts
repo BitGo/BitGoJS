@@ -1,5 +1,5 @@
 import { randomBytes } from 'crypto';
-import { bip32, ECPair } from '@bitgo/secp256k1';
+import { bip32, ECPair } from '@bitgo-beta/secp256k1';
 import { getAddressFromPublicKey, TransactionVersion } from '@stacks/transactions';
 import {
   DefaultKeys,
@@ -10,7 +10,7 @@ import {
   isValidXpub,
   KeyPairOptions,
   Secp256k1ExtendedKeyPair,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import { isValidPrivateKey, isValidPublicKey } from './utils';
 import { DEFAULT_SEED_SIZE_BYTES } from './constants';
 

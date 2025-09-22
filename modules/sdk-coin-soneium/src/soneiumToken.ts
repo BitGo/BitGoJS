@@ -1,6 +1,6 @@
-import { coins, EthLikeTokenConfig } from '@bitgo/statics';
-import { BitGoBase, CoinConstructor, MPCAlgorithm, NamedCoinConstructor } from '@bitgo/sdk-core';
-import { CoinNames, EthLikeToken } from '@bitgo/abstract-eth';
+import { coins, EthLikeTokenConfig } from '@bitgo-beta/statics';
+import { BitGoBase, CoinConstructor, MPCAlgorithm, NamedCoinConstructor } from '@bitgo-beta/sdk-core';
+import { CoinNames, EthLikeToken } from '@bitgo-beta/abstract-eth';
 import { TransactionBuilder } from './lib';
 import * as utils from './lib/utils';
 

@@ -1,7 +1,7 @@
 import should from 'should';
 import sinon from 'sinon';
-import { BaseCoin } from '@bitgo/statics';
-import { MessageStandardType } from '@bitgo/sdk-core';
+import { BaseCoin } from '@bitgo-beta/statics';
+import { MessageStandardType } from '@bitgo-beta/sdk-core';
 import { Cip8MessageBuilder, MessageBuilderFactory } from '../../../src';
 
 describe('MessageBuilderFactory', function () {

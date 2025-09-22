@@ -1,10 +1,10 @@
 import * as AvaxpLib from '../../src/lib';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
 import { AvaxP, TavaxP } from '../../src/';
 import { randomBytes } from 'crypto';
 import * as should from 'should';
-import { BitGoAPI } from '@bitgo/sdk-api';
-import { coins } from '@bitgo/statics';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
+import { coins } from '@bitgo-beta/statics';
 import * as testData from '../resources/avaxp';
 import { keychains } from '../resources/keychains';
 import { Utils as KeyPairUtils } from '../../src/lib/utils';
@@ -12,7 +12,7 @@ import { KeyPair } from '../../src/lib';
 import { Buffer as BufferAvax } from 'avalanche';
 import * as _ from 'lodash';
 
-import { HalfSignedAccountTransaction, TransactionType } from '@bitgo/sdk-core';
+import { HalfSignedAccountTransaction, TransactionType } from '@bitgo-beta/sdk-core';
 import { IMPORT_P } from '../resources/tx/importP';
 import {
   ADDVALIDATOR_SAMPLES,

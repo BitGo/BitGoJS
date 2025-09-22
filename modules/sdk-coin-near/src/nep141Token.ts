@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
-import { BitGoBase, CoinConstructor, NamedCoinConstructor, VerifyTransactionOptions } from '@bitgo/sdk-core';
-import { coins, Nep141TokenConfig, NetworkType, tokens } from '@bitgo/statics';
+import { BitGoBase, CoinConstructor, NamedCoinConstructor, VerifyTransactionOptions } from '@bitgo-beta/sdk-core';
+import { coins, Nep141TokenConfig, NetworkType, tokens } from '@bitgo-beta/statics';
 
 import { Transaction } from './lib';
 import { Near } from './near';

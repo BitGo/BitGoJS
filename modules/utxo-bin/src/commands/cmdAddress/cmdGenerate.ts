@@ -1,4 +1,4 @@
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 import { CommandModule } from 'yargs';
 
 import { getNetworkOptionsDemand, keyOptions, KeyOptions } from '../../args';

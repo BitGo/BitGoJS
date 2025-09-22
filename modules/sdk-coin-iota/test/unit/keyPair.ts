@@ -2,10 +2,10 @@ import assert from 'assert';
 import { KeyPair, Iota } from '../../src';
 import utils from '../../src/lib/utils';
 import should from 'should';
-import { Eddsa } from '@bitgo/sdk-core';
-import { Ed25519Bip32HdTree, HDTree } from '@bitgo/sdk-lib-mpc';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { Eddsa } from '@bitgo-beta/sdk-core';
+import { Ed25519Bip32HdTree, HDTree } from '@bitgo-beta/sdk-lib-mpc';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
 
 describe('Iota KeyPair', function () {
   let rootKeychain;

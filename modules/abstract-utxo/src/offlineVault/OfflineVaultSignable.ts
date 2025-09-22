@@ -1,5 +1,5 @@
-import * as utxolib from '@bitgo/utxo-lib';
-import { Triple } from '@bitgo/sdk-core';
+import * as utxolib from '@bitgo-beta/utxo-lib';
+import { Triple } from '@bitgo-beta/sdk-core';
 import * as t from 'io-ts';
 
 export const XPubWithDerivationPath = t.intersection(

@@ -2,11 +2,11 @@ import assert from 'assert';
 import should from 'should';
 import BigNum from 'bn.js';
 import { StacksTestnet, StacksMainnet } from '@stacks/network';
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 import { bufferCV, noneCV, someCV, standardPrincipalCV, tupleCV, uintCV, intCV } from '@stacks/transactions';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
-import { coins } from '@bitgo/statics';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
+import { coins } from '@bitgo-beta/statics';
 
 import { Stx, Tstx, StxLib } from '../../../src';
 import * as testData from '../resources';

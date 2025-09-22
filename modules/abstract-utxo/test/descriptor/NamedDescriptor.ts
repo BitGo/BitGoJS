@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import { getFixture, getKeyTriple } from '@bitgo/utxo-core/testutil';
+import { getFixture, getKeyTriple } from '@bitgo-beta/utxo-core/testutil';
 
 import { assertHasValidSignature, createNamedDescriptorWithSignature } from '../../src/descriptor/NamedDescriptor';
 import { getDescriptorFromBuilder } from '../../src/descriptor/builder';

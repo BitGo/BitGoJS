@@ -1,5 +1,5 @@
-import { coins } from '@bitgo/statics';
-import { TransactionType, InvalidTransactionError } from '@bitgo/sdk-core';
+import { coins } from '@bitgo-beta/statics';
+import { TransactionType, InvalidTransactionError } from '@bitgo-beta/sdk-core';
 import * as assert from 'assert';
 import { Transaction } from '../../../src/lib/transaction';
 import { KeyPair } from '../../../src/lib/keyPair';

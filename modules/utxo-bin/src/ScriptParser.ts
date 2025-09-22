@@ -1,4 +1,4 @@
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 import { Miniscript } from '@bitgo/wasm-miniscript';
 
 import { Parser, ParserNode } from './Parser';

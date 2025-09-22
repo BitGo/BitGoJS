@@ -1,4 +1,4 @@
-import { DefaultKeys, Ed25519KeyPair, KeyPairOptions, toUint8Array } from '@bitgo/sdk-core';
+import { DefaultKeys, Ed25519KeyPair, KeyPairOptions, toUint8Array } from '@bitgo-beta/sdk-core';
 import utils from './utils';
 import bs58 from 'bs58';
 import * as nacl from 'tweetnacl';

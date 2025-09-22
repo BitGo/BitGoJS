@@ -1,5 +1,5 @@
-import { Utils as SubstrateUtils, Interface } from '@bitgo/abstract-substrate';
-import { NetworkType } from '@bitgo/statics';
+import { Utils as SubstrateUtils, Interface } from '@bitgo-beta/abstract-substrate';
+import { NetworkType } from '@bitgo-beta/statics';
 import { TypeRegistry } from '@substrate/txwrapper-core/lib/types';
 import { mainnetMaterial, testnetMaterial } from '../resources';
 import { BatchCallObject } from './iface';

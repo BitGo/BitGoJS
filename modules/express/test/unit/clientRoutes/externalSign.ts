@@ -12,9 +12,9 @@ import {
   ShareKeyPosition,
   TxRequest,
   SignatureShareRecord,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import { Hash } from 'crypto';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
 import * as should from 'should';
 import * as sinon from 'sinon';
 import {
@@ -25,7 +25,7 @@ import {
   DklsTypes,
   DklsComms,
   DklsDsg,
-} from '@bitgo/sdk-lib-mpc';
+} from '@bitgo-beta/sdk-lib-mpc';
 import {
   MPCv2PartyFromStringOrNumber,
   MPCv2SignatureShareRound1Input,

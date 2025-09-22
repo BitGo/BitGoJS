@@ -1,4 +1,4 @@
-import { BitGoBase } from '@bitgo/sdk-core';
+import { BitGoBase } from '@bitgo-beta/sdk-core';
 import { Bera } from './bera';
 import { Tbera } from './tbera';
 import { BeraToken } from './beraToken';

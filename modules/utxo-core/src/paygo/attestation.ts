@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 export const NIL_UUID = '00000000-0000-0000-0000-000000000000';
 
 /** This function reconstructs the proof <ENTROPY><ADDRESS><UUID>

@@ -4,7 +4,7 @@ import { getBuilderFactory } from '../getBuilderFactory';
 import { KeyPair, StakingDeactivateBuilder, Utils } from '../../../src';
 import * as testData from '../../resources/sol';
 import { SolStakingTypeEnum } from '@bitgo/public-types';
-import { BaseTransaction, Recipient, TransactionType } from '@bitgo/sdk-core';
+import { BaseTransaction, Recipient, TransactionType } from '@bitgo-beta/sdk-core';
 import * as bs58 from 'bs58';
 import { JITO_STAKE_POOL_ADDRESS } from '../../../src/lib/constants';
 

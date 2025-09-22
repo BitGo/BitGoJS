@@ -1,13 +1,13 @@
 import * as should from 'should';
 
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
 
 import { Flr, Tflr } from '../../src/index';
-import { UnsignedSweepTxMPCv2 } from '@bitgo/abstract-eth';
+import { UnsignedSweepTxMPCv2 } from '@bitgo-beta/abstract-eth';
 import { mockDataUnsignedSweep, mockDataNonBitGoRecovery } from '../resources';
 import nock from 'nock';
-import { common } from '@bitgo/sdk-core';
+import { common } from '@bitgo-beta/sdk-core';
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx';
 import { stripHexPrefix } from '@ethereumjs/util';
 

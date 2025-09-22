@@ -1,16 +1,28 @@
 import BigNumber from 'bignumber.js';
-import { BitGoAPI } from '@bitgo/sdk-api';
-import { common, ECDSAMethodTypes, FullySignedTransaction, Recipient, TransactionType, Wallet } from '@bitgo/sdk-core';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { bip32 } from '@bitgo/secp256k1';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
+import {
+  common,
+  ECDSAMethodTypes,
+  FullySignedTransaction,
+  Recipient,
+  TransactionType,
+  Wallet,
+} from '@bitgo-beta/sdk-core';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
+import { bip32 } from '@bitgo-beta/secp256k1';
 import nock from 'nock';
 import * as secp256k1 from 'secp256k1';
 import * as should from 'should';
 import { Polygon, Tpolygon, TransactionBuilder, TransferBuilder } from '../../src';
-import { AbstractEthLikeNewCoins, UnsignedSweepTxMPCv2, OfflineVaultTxInfo, optionalDeps } from '@bitgo/abstract-eth';
+import {
+  AbstractEthLikeNewCoins,
+  UnsignedSweepTxMPCv2,
+  OfflineVaultTxInfo,
+  optionalDeps,
+} from '@bitgo-beta/abstract-eth';
 import { getBuilder } from '../getBuilder';
 import * as mockData from '../fixtures/polygon';
-import * as sjcl from '@bitgo/sjcl';
+import * as sjcl from '@bitgo-beta/sjcl';
 import assert from 'assert';
 
 nock.enableNetConnect();

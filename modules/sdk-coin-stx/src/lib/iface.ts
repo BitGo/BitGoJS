@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ClarityValue, PayloadType } from '@stacks/transactions';
-import { TransactionExplanation as BaseTransactionExplanation } from '@bitgo/sdk-core';
+import { TransactionExplanation as BaseTransactionExplanation } from '@bitgo-beta/sdk-core';
 
 export interface TxData {
   id: string;

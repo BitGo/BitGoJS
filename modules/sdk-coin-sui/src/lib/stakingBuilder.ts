@@ -1,5 +1,5 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseKey, BuildTransactionError, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
+import { BaseKey, BuildTransactionError, InvalidTransactionError, TransactionType } from '@bitgo-beta/sdk-core';
 import {
   SuiTransaction,
   RequestAddStake,

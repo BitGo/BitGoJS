@@ -1,5 +1,5 @@
-import { BaseKey, ExtendTransactionError, BuildTransactionError, SigningError } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseKey, ExtendTransactionError, BuildTransactionError, SigningError } from '@bitgo-beta/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import BigNumber from 'bignumber.js';
 
 import { TransactionBuilder } from './transactionBuilder';

@@ -4,7 +4,7 @@ import utils from '../../../src/lib/utils';
 import * as testData from '../../resources/avaxp';
 import * as errorMessage from '../../resources/errors';
 import { TransactionBuilderFactory, DecodedUtxoObj } from '../../../src/lib';
-import { coins } from '@bitgo/statics';
+import { coins } from '@bitgo-beta/statics';
 import { BN } from 'avalanche';
 
 describe('AvaxP Validate Tx Builder', () => {

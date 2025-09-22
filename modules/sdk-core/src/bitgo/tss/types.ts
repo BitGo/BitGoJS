@@ -1,4 +1,4 @@
-import { EcdsaTypes } from '@bitgo/sdk-lib-mpc';
+import { EcdsaTypes } from '@bitgo-beta/sdk-lib-mpc';
 import { KShare, OShare, WShare } from './ecdsa/types';
 import { MuDShare } from './ecdsa/ecdsa';
 

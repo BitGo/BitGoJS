@@ -1,7 +1,7 @@
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { bip32 } from '@bitgo/secp256k1';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
+import { bip32 } from '@bitgo-beta/secp256k1';
 import * as secp256k1 from 'secp256k1';
-import { FullySignedTransaction, TransactionType, Wallet } from '@bitgo/sdk-core';
+import { FullySignedTransaction, TransactionType, Wallet } from '@bitgo-beta/sdk-core';
 import nock from 'nock';
 import * as should from 'should';
 import {

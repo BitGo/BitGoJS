@@ -17,7 +17,7 @@ import {
   InvalidKey,
   isValidEd25519PublicKey,
   isValidEd25519SecretKey,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 
 const ALGORAND_CHECKSUM_BYTE_LENGTH = 4;
 const ALGORAND_SEED_LENGTH = 58;

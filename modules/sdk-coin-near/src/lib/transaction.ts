@@ -13,8 +13,8 @@ import {
   ITransactionRecipient,
   TransactionRecipient,
   TransactionType,
-} from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+} from '@bitgo-beta/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 
 import {
   FT_TRANSFER,

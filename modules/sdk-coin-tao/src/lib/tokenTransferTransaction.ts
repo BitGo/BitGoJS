@@ -1,5 +1,5 @@
-import { Interface as SubstrateInterface, Transaction as SubstrateTransaction } from '@bitgo/abstract-substrate';
-import { InvalidTransactionError, TransactionRecipient } from '@bitgo/sdk-core';
+import { Interface as SubstrateInterface, Transaction as SubstrateTransaction } from '@bitgo-beta/abstract-substrate';
+import { InvalidTransactionError, TransactionRecipient } from '@bitgo-beta/sdk-core';
 import { decode } from '@substrate/txwrapper-polkadot';
 import { TransferStakeTxData } from './iface';
 import utils from './utils';

@@ -1,7 +1,7 @@
 import * as t from 'io-ts';
 import { Descriptor, DescriptorPkType } from '@bitgo/wasm-miniscript';
-import { BIP32Interface, networks } from '@bitgo/utxo-lib';
-import { signMessage, verifyMessage } from '@bitgo/sdk-core';
+import { BIP32Interface, networks } from '@bitgo-beta/utxo-lib';
+import { signMessage, verifyMessage } from '@bitgo-beta/sdk-core';
 
 export const NamedDescriptor = t.intersection(
   [

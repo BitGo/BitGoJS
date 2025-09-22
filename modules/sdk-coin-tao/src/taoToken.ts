@@ -1,6 +1,6 @@
-import { coins, TaoTokenConfig, tokens } from '@bitgo/statics';
+import { coins, TaoTokenConfig, tokens } from '@bitgo-beta/statics';
 import { Tao } from './tao';
-import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
+import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo-beta/sdk-core';
 
 export class TaoToken extends Tao {
   public readonly tokenConfig: TaoTokenConfig;

@@ -1,8 +1,8 @@
 import 'should';
 import sinon from 'sinon';
-import { BroadcastableMessage, MessageStandardType, serializeSignatures } from '@bitgo/sdk-core';
+import { BroadcastableMessage, MessageStandardType, serializeSignatures } from '@bitgo-beta/sdk-core';
 import { fixtures } from './fixtures';
-import { Eip191MessageBuilder, EIP191Message } from '@bitgo/abstract-eth';
+import { Eip191MessageBuilder, EIP191Message } from '@bitgo-beta/abstract-eth';
 
 describe('BSC EIP191 Message Builder', () => {
   const sandbox = sinon.createSandbox();

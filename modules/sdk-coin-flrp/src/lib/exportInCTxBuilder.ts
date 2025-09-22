@@ -1,5 +1,5 @@
-import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BuildTransactionError, TransactionType } from '@bitgo-beta/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { AtomicInCTransactionBuilder } from './atomicInCTransactionBuilder';
 
 // Lightweight interface placeholders replacing Avalanche SDK transaction shapes

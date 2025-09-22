@@ -6,9 +6,9 @@ import {
   Signature,
   TransactionRecipient,
   TransactionType,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import { SuiTransaction, TransactionExplanation, TransferProgrammableTransaction, TxData } from './iface';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { MAX_GAS_OBJECTS, SUI_ADDRESS_LENGTH, UNAVAILABLE_TEXT } from './constants';
 import { Buffer } from 'buffer';
 import { Transaction } from './transaction';

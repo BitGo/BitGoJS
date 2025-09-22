@@ -2,8 +2,8 @@
  * @prettier
  */
 import { Celo } from './celo';
-import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
-import { CeloTokenConfig, coins, tokens } from '@bitgo/statics';
+import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo-beta/sdk-core';
+import { CeloTokenConfig, coins, tokens } from '@bitgo-beta/statics';
 
 export { CeloTokenConfig };
 

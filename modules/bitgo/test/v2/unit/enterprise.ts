@@ -4,12 +4,12 @@
 
 import nock = require('nock');
 import * as sinon from 'sinon';
-import { common, ECDSAUtils, Enterprise } from '@bitgo/sdk-core';
+import { common, ECDSAUtils, Enterprise } from '@bitgo-beta/sdk-core';
 
-import { TestBitGo } from '@bitgo/sdk-test';
+import { TestBitGo } from '@bitgo-beta/sdk-test';
 import { BitGo } from '../../../src/bitgo';
 import { mockChallengeA } from './internal/tssUtils/mocks/ecdsaNtilde';
-import { bip32 } from '@bitgo/utxo-lib';
+import { bip32 } from '@bitgo-beta/utxo-lib';
 
 describe('Enterprise:', function () {
   let bitgo;

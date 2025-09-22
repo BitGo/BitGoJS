@@ -11,13 +11,13 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-import { bip32 } from '@bitgo/utxo-lib';
-import * as utxolib from '@bitgo/utxo-lib';
+import { bip32 } from '@bitgo-beta/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 import _ from 'lodash';
-import { VirtualSizes } from '@bitgo/unspents';
+import { VirtualSizes } from '@bitgo-beta/unspents';
 import debugLib = require('debug');
 const debug = debugLib('bitgo:v1:txb');
-import { common, getAddressP2PKH, getNetwork, sanitizeLegacyPath } from '@bitgo/sdk-core';
+import { common, getAddressP2PKH, getNetwork, sanitizeLegacyPath } from '@bitgo-beta/sdk-core';
 import { verifyAddress } from './verifyAddress';
 import { tryPromise } from '../util';
 

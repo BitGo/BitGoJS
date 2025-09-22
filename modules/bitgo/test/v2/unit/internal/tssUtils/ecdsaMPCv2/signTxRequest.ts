@@ -9,8 +9,8 @@ import {
   SignatureShareType,
   TxRequest,
   Wallet,
-} from '@bitgo/sdk-core';
-import { DklsDsg, DklsTypes, DklsComms } from '@bitgo/sdk-lib-mpc';
+} from '@bitgo-beta/sdk-core';
+import { DklsDsg, DklsTypes, DklsComms } from '@bitgo-beta/sdk-lib-mpc';
 import * as fs from 'fs';
 import { getRoute } from '../common';
 import {
@@ -23,7 +23,7 @@ import {
 } from '@bitgo/public-types';
 import * as openpgp from 'openpgp';
 import nock = require('nock');
-import { TestableBG, TestBitGo } from '@bitgo/sdk-test';
+import { TestableBG, TestBitGo } from '@bitgo-beta/sdk-test';
 import { BitGo } from '../../../../../../src';
 const createKeccakHash = require('keccak');
 

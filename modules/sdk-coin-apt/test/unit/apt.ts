@@ -1,6 +1,6 @@
 import 'should';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
 import { Apt, AptToken, Tapt, TransferTransaction } from '../../src';
 import * as testData from '../resources/apt';
 import _ from 'lodash';
@@ -18,7 +18,7 @@ import {
   Network,
 } from '@aptos-labs/ts-sdk';
 import utils from '../../src/lib/utils';
-import { AptCoin, coins, GasTankAccountCoin } from '@bitgo/statics';
+import { AptCoin, coins, GasTankAccountCoin } from '@bitgo-beta/statics';
 
 describe('APT:', function () {
   let bitgo: TestBitGoAPI;

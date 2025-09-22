@@ -1,7 +1,7 @@
-import { BitGoAPI } from '@bitgo/sdk-api';
-import { BaseTransaction, HalfSignedAccountTransaction, TransactionType } from '@bitgo/sdk-core';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { coins } from '@bitgo/statics';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
+import { BaseTransaction, HalfSignedAccountTransaction, TransactionType } from '@bitgo-beta/sdk-core';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
+import { coins } from '@bitgo-beta/statics';
 import assert from 'assert';
 import { AvaxP, TavaxP } from '../../../src';
 import * as AvaxpLib from '../../../src/lib';

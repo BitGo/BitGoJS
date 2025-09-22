@@ -3,8 +3,8 @@ import assert from 'assert';
 import BigNumber from 'bignumber.js';
 import * as NearAPI from 'near-api-js';
 
-import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BuildTransactionError, TransactionType } from '@bitgo-beta/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 
 import { FT_TRANSFER, STORAGE_DEPOSIT } from './constants';
 import { ContractCallWrapper } from './contractCallWrapper';

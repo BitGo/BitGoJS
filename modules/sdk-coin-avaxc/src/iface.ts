@@ -10,8 +10,8 @@ import {
   TransactionType,
   VerifyTransactionOptions,
   Wallet,
-} from '@bitgo/sdk-core';
-import { TransactionPrebuild as EthTransactionPrebuild } from '@bitgo/sdk-coin-eth';
+} from '@bitgo-beta/sdk-core';
+import { TransactionPrebuild as EthTransactionPrebuild } from '@bitgo-beta/sdk-coin-eth';
 
 export interface PrecreateBitGoOptions {
   enterprise?: string;

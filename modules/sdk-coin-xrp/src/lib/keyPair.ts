@@ -5,8 +5,8 @@ import {
   isSeed,
   KeyPairOptions,
   Secp256k1ExtendedKeyPair,
-} from '@bitgo/sdk-core';
-import { bip32 } from '@bitgo/secp256k1';
+} from '@bitgo-beta/sdk-core';
+import { bip32 } from '@bitgo-beta/secp256k1';
 import { randomBytes } from 'crypto';
 import * as xrpl from 'xrpl';
 import utils from './utils';

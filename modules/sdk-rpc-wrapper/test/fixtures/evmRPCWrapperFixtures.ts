@@ -1,4 +1,4 @@
-import { TxRequest, SignatureShareType, RequestTracer, TypedMessage, MessageTypes } from '@bitgo/sdk-core';
+import { TxRequest, SignatureShareType, RequestTracer, TypedMessage, MessageTypes } from '@bitgo-beta/sdk-core';
 import { EVMRPCTransactionOptions } from '../../src';
 
 export const ethWalletData = {

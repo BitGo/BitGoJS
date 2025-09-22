@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { CLPublicKey as PublicKey, DeployUtil, Keys, CLString, CLU512 } from 'casper-js-sdk';
-import { BaseKey, BaseTransaction, TransactionType, InvalidTransactionError, SigningError } from '@bitgo/sdk-core';
+import { BaseKey, BaseTransaction, TransactionType, InvalidTransactionError, SigningError } from '@bitgo-beta/sdk-core';
 import { KeyPair } from './keyPair';
 import { CasperTransaction } from './ifaces';
 import {

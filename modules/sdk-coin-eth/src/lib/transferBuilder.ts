@@ -1,4 +1,4 @@
-import { TransferBuilder as EthTransferBuilder } from '@bitgo/abstract-eth';
+import { TransferBuilder as EthTransferBuilder } from '@bitgo-beta/abstract-eth';
 
 /** ETH transfer builder */
 export class TransferBuilder extends EthTransferBuilder {

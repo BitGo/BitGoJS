@@ -1,8 +1,8 @@
 import 'should';
 
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
 import { BscToken } from '../../src';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
 
 describe('Bsc Token:', function () {
   let bitgo: TestBitGoAPI;

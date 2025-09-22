@@ -17,9 +17,9 @@ import {
   getSharedSecret,
   makeRandomKey,
   sanitizeLegacyPath,
-} from '@bitgo/sdk-core';
-import { bip32 } from '@bitgo/utxo-lib';
-import * as utxolib from '@bitgo/utxo-lib';
+} from '@bitgo-beta/sdk-core';
+import { bip32 } from '@bitgo-beta/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 import _ from 'lodash';
 const Wallet = require('./wallet');
 

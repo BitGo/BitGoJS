@@ -1,4 +1,4 @@
-import { coins } from '@bitgo/statics';
+import { coins } from '@bitgo-beta/statics';
 import should from 'should';
 import { Transaction, TransferTransaction } from '../../src';
 import * as testData from '../resources/sui';

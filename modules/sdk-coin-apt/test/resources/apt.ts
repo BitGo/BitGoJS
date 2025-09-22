@@ -1,4 +1,4 @@
-import { Recipient } from '@bitgo/sdk-core';
+import { Recipient } from '@bitgo-beta/sdk-core';
 
 export const AMOUNT = 1000;
 export const FUNGIBLE_TOKEN_AMOUNT = 1;

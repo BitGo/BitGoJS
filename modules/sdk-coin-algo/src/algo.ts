@@ -3,7 +3,7 @@
  */
 import * as _ from 'lodash';
 import { SeedValidator } from './seedValidator';
-import { coins, CoinFamily } from '@bitgo/statics';
+import { coins, CoinFamily } from '@bitgo-beta/statics';
 import * as AlgoLib from './lib';
 import {
   AddressCoinSpecific,
@@ -30,7 +30,7 @@ import {
   MultisigType,
   multisigTypes,
   AuditDecryptedKeyParams,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import stellar from 'stellar-sdk';
 import BigNumber from 'bignumber.js';
 import Utils from './lib/utils';

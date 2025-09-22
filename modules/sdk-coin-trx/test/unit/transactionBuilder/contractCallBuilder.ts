@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'assert';
-import { TransactionType } from '@bitgo/sdk-core';
-import { coins, TronNetwork } from '@bitgo/statics';
+import { TransactionType } from '@bitgo-beta/sdk-core';
+import { coins, TronNetwork } from '@bitgo-beta/statics';
 import BigNumber from 'bignumber.js';
 import { Transaction, WrappedBuilder } from '../../../src';
 import { getBuilder } from '../../../src/lib/builder';

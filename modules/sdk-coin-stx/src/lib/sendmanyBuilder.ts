@@ -1,4 +1,4 @@
-import { BaseCoin as CoinConfig, NetworkType, StacksNetwork as BitgoStacksNetwork } from '@bitgo/statics';
+import { BaseCoin as CoinConfig, NetworkType, StacksNetwork as BitgoStacksNetwork } from '@bitgo-beta/statics';
 import BigNum from 'bn.js';
 import {
   AddressHashMode,
@@ -15,7 +15,7 @@ import {
   tupleCV,
   uintCV,
 } from '@stacks/transactions';
-import { BuildTransactionError } from '@bitgo/sdk-core';
+import { BuildTransactionError } from '@bitgo-beta/sdk-core';
 import { Transaction } from './transaction';
 import {
   functionArgsToSendParams,

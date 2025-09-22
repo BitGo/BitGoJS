@@ -1,6 +1,6 @@
-import { EnvironmentName, Triple } from '@bitgo/sdk-core';
-import * as utxolib from '@bitgo/utxo-lib';
-import { DescriptorMap, toDescriptorMap } from '@bitgo/utxo-core/descriptor';
+import { EnvironmentName, Triple } from '@bitgo-beta/sdk-core';
+import * as utxolib from '@bitgo-beta/utxo-lib';
+import { DescriptorMap, toDescriptorMap } from '@bitgo-beta/utxo-core/descriptor';
 
 import { parseDescriptor } from './builder';
 import { hasValidSignature, NamedDescriptor, NamedDescriptorNative, toNamedDescriptorNative } from './NamedDescriptor';

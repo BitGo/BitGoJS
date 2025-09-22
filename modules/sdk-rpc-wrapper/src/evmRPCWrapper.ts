@@ -5,8 +5,8 @@ import {
   WalletSignTypedDataOptions,
   SignTypedDataVersion,
   SendManyOptions,
-} from '@bitgo/sdk-core';
-import { hexStringToNumber } from '@bitgo/sdk-coin-eth';
+} from '@bitgo-beta/sdk-core';
+import { hexStringToNumber } from '@bitgo-beta/sdk-coin-eth';
 import { personal_sign, eth_signTypedData, eth_sendTransaction } from './constants';
 
 export class EvmRPCWrapper {

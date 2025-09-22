@@ -10,7 +10,7 @@ import {
   RecoveryInfo,
   SignedTransaction,
   SignTransactionOptions,
-} from '@bitgo/abstract-eth';
+} from '@bitgo-beta/abstract-eth';
 import {
   BaseCoin,
   BitGoBase,
@@ -20,11 +20,16 @@ import {
   Recipient,
   MultisigType,
   multisigTypes,
-} from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, coins, EthereumNetwork as EthLikeNetwork, ethGasConfigs } from '@bitgo/statics';
+} from '@bitgo-beta/sdk-core';
+import {
+  BaseCoin as StaticsBaseCoin,
+  coins,
+  EthereumNetwork as EthLikeNetwork,
+  ethGasConfigs,
+} from '@bitgo-beta/statics';
 import { TransactionBuilder, KeyPair as KeyPairLib, TransferBuilder } from './lib';
 import * as _ from 'lodash';
-import { bip32 } from '@bitgo/secp256k1';
+import { bip32 } from '@bitgo-beta/secp256k1';
 import { BigNumber } from 'bignumber.js';
 import { Buffer } from 'buffer';
 import request from 'superagent';

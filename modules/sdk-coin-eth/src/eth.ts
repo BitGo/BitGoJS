@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import { bip32 } from '@bitgo/secp256k1';
+import { bip32 } from '@bitgo-beta/secp256k1';
 import _ from 'lodash';
 import request from 'superagent';
 import {
@@ -18,7 +18,7 @@ import {
   multisigTypes,
   Recipient,
   Util,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import {
   AbstractEthLikeNewCoins,
   BuildOptions,
@@ -38,8 +38,8 @@ import {
   SignTransactionOptions,
   TransactionPrebuild,
   UnsignedSweepTxMPCv2,
-} from '@bitgo/abstract-eth';
-import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
+} from '@bitgo-beta/abstract-eth';
+import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo-beta/statics';
 import type * as EthTxLib from '@ethereumjs/tx';
 import { BigNumber } from 'bignumber.js';
 

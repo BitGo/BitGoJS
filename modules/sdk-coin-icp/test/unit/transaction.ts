@@ -1,9 +1,9 @@
 import { Transaction } from '../../src';
-import { coins } from '@bitgo/statics';
+import { coins } from '@bitgo-beta/statics';
 import assert from 'assert';
 import should from 'should';
 import utils from '../../src/lib/utils';
-import { InvalidTransactionError } from '@bitgo/sdk-core';
+import { InvalidTransactionError } from '@bitgo-beta/sdk-core';
 import * as testData from '../resources/icp';
 import { getBuilderFactory } from './getBuilderFactory';
 import sinon from 'sinon';

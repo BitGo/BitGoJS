@@ -1,4 +1,4 @@
-import { BitGoBase } from '@bitgo/sdk-core';
+import { BitGoBase } from '@bitgo-beta/sdk-core';
 import { Apt } from './apt';
 import { Tapt } from './tapt';
 import { AptToken } from './aptToken';

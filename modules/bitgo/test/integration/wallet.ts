@@ -8,8 +8,8 @@
 
 import { strict as assert } from 'assert';
 import should = require('should');
-import { VirtualSizes } from '@bitgo/unspents';
-import * as utxolib from '@bitgo/utxo-lib';
+import { VirtualSizes } from '@bitgo-beta/unspents';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 
 const Q = require('q');
 

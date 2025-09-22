@@ -5,7 +5,7 @@ import {
   TransactionFee,
   TransactionRecipient as Recipient,
   TransactionPrebuild as BaseTransactionPrebuild,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 
 export interface XtzSignTransactionOptions extends SignTransactionOptions {
   txPrebuild: TransactionPrebuild;

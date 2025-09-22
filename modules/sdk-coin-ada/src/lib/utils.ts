@@ -1,4 +1,4 @@
-import { AddressFormat, BaseUtils, InvalidAddressError } from '@bitgo/sdk-core';
+import { AddressFormat, BaseUtils, InvalidAddressError } from '@bitgo-beta/sdk-core';
 import {
   BaseAddress,
   PublicKey,

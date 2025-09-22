@@ -1,4 +1,4 @@
-import { isValidEd25519PublicKey, isValidEd25519SecretKey } from '@bitgo/sdk-core';
+import { isValidEd25519PublicKey, isValidEd25519SecretKey } from '@bitgo-beta/sdk-core';
 import * as stellar from 'stellar-sdk';
 
 /**

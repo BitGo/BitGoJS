@@ -7,7 +7,7 @@
 // Each subclass needs the explicit Object.setPrototypeOf() so that instanceof will work correctly.
 // See https://github.com/Microsoft/TypeScript-wiki/blob/master/Breaking-Changes.md#extending-built-ins-like-error-array-and-map-may-no-longer-work
 
-import { BitGoJsError } from '@bitgo/sdk-core';
+import { BitGoJsError } from '@bitgo-beta/sdk-core';
 
 export class TlsConfigurationError extends BitGoJsError {
   public constructor(message?: string) {

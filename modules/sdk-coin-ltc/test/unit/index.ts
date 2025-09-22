@@ -1,9 +1,9 @@
 import 'should';
 
-import { TestBitGoAPI, TestBitGo } from '@bitgo/sdk-test';
+import { TestBitGoAPI, TestBitGo } from '@bitgo-beta/sdk-test';
 
 import { Ltc, Tltc } from '../../src';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
 
 describe('Litecoin:', function () {
   const bitgo: TestBitGoAPI = TestBitGo.decorate(BitGoAPI, { env: 'test' });

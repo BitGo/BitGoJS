@@ -1,9 +1,9 @@
 import * as should from 'should';
-import { bip32 } from '@bitgo/secp256k1';
-import { common, TransactionType, Wallet } from '@bitgo/sdk-core';
+import { bip32 } from '@bitgo-beta/secp256k1';
+import { common, TransactionType, Wallet } from '@bitgo-beta/sdk-core';
 import nock from 'nock';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
 
 import { Bera, Tbera, TransactionBuilder, TransferBuilder } from '../../src';
 import { getBuilder } from '../getBuilder';

@@ -1,8 +1,8 @@
 import assert from 'assert';
 import { Secp256k1, Transaction as VetTransaction } from '@vechain/sdk-core';
 
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
+import { InvalidTransactionError, TransactionType } from '@bitgo-beta/sdk-core';
 import { Transaction } from './transaction';
 import utils from '../utils';
 

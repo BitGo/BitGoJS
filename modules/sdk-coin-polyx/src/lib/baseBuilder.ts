@@ -1,7 +1,7 @@
-import { TransactionBuilder } from '@bitgo/abstract-substrate';
+import { TransactionBuilder } from '@bitgo-beta/abstract-substrate';
 import { Transaction } from './transaction';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { TransactionType } from '@bitgo/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 import { DecodedSignedTx, DecodedSigningPayload, UnsignedTransaction } from '@substrate/txwrapper-core';
 import { TxMethod } from './iface';
 import utils from './utils';

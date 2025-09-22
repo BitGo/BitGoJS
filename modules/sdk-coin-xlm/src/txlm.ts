@@ -1,4 +1,4 @@
-import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
+import { BaseCoin, BitGoBase } from '@bitgo-beta/sdk-core';
 import { Xlm } from './xlm';
 const stellar = require('stellar-sdk');
 

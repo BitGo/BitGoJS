@@ -1,4 +1,4 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { BaseKey, Entry } from './iface';
 import { TransactionType } from './enum';
 import { NotImplementedError } from './errors';

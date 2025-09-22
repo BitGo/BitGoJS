@@ -2,7 +2,7 @@ import should from 'should';
 import { Transaction as VetTransaction } from '@vechain/sdk-core';
 import * as testData from '../resources/vet';
 import utils from '../../src/lib/utils';
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 
 describe('Vechain util library', function () {
   describe('isValidAddress', function () {

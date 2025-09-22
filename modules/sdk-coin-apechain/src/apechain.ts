@@ -1,15 +1,15 @@
 /**
  * @prettier
  */
-import { BaseCoin, BitGoBase, MPCAlgorithm, MultisigType, multisigTypes } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
+import { BaseCoin, BitGoBase, MPCAlgorithm, MultisigType, multisigTypes } from '@bitgo-beta/sdk-core';
+import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo-beta/statics';
 import {
   AbstractEthLikeNewCoins,
   TransactionBuilder as EthLikeTransactionBuilder,
   UnsignedSweepTxMPCv2,
   RecoverOptions,
   OfflineVaultTxInfo,
-} from '@bitgo/abstract-eth';
+} from '@bitgo-beta/abstract-eth';
 import { TransactionBuilder } from './lib';
 
 export class Apechain extends AbstractEthLikeNewCoins {

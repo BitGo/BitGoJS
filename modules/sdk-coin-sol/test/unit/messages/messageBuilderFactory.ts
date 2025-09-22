@@ -1,4 +1,4 @@
-import { BaseCoin } from '@bitgo/statics';
+import { BaseCoin } from '@bitgo-beta/statics';
 import sinon from 'sinon';
 import should from 'should';
 import { MessageBuilderFactory } from '../../../src';
@@ -9,7 +9,7 @@ import {
   MessageStandardType,
   SerializedSignature,
   SimpleMessageBuilder,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 
 describe('Solana MessageBuilderFactory', function () {
   let sandbox: sinon.SinonSandbox;

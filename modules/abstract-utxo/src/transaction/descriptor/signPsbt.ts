@@ -1,5 +1,5 @@
-import * as utxolib from '@bitgo/utxo-lib';
-import { DescriptorMap, findDescriptorForInput } from '@bitgo/utxo-core/descriptor';
+import * as utxolib from '@bitgo-beta/utxo-lib';
+import { DescriptorMap, findDescriptorForInput } from '@bitgo-beta/utxo-core/descriptor';
 
 export class ErrorUnknownInput extends Error {
   constructor(public vin: number) {

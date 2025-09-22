@@ -1,7 +1,7 @@
 import {
   TransactionExplanation as BaseTransactionExplanation,
   TransactionType as BitGoTransactionType,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 
 export const MAX_INGRESS_TTL = 5 * 60 * 1000_000_000; // 5 minutes in nanoseconds
 export const PERMITTED_DRIFT = 60 * 1000_000_000; // 60 seconds in nanoseconds

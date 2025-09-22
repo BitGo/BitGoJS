@@ -1,8 +1,8 @@
 /**
  * @prettier
  */
-import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
+import { BaseCoin, BitGoBase } from '@bitgo-beta/sdk-core';
+import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo-beta/statics';
 import { Celo } from './celo';
 import { TestnetTransactionBuilder } from './lib';
 

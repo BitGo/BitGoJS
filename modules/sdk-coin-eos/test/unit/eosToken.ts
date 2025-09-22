@@ -2,9 +2,9 @@ import 'should';
 
 import * as _ from 'lodash';
 
-import { BitGoAPI } from '@bitgo/sdk-api';
-import { Wallet } from '@bitgo/sdk-core';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
+import { Wallet } from '@bitgo-beta/sdk-core';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
 import { Eos, Teos, EosToken } from '../../src';
 
 describe('EOS Token:', function () {

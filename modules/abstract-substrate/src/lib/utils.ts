@@ -1,5 +1,5 @@
-import { BaseUtils, isBase58, isValidEd25519PublicKey, Seed } from '@bitgo/sdk-core';
-import { NetworkType } from '@bitgo/statics';
+import { BaseUtils, isBase58, isValidEd25519PublicKey, Seed } from '@bitgo-beta/sdk-core';
+import { NetworkType } from '@bitgo-beta/statics';
 import { decodeAddress, encodeAddress, Keyring } from '@polkadot/keyring';
 import { decodePair } from '@polkadot/keyring/pair/decode';
 import { KeyringPair } from '@polkadot/keyring/types';

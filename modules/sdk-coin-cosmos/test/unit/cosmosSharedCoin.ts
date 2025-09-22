@@ -2,10 +2,10 @@ import should from 'should';
 import BigNumber from 'bignumber.js';
 import sinon from 'sinon';
 import { fromBase64, toHex } from '@cosmjs/encoding';
-import { VerifyAddressOptions, VerifyTransactionOptions } from '@bitgo/sdk-core';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
-import { coins, CosmosNetwork } from '@bitgo/statics';
+import { VerifyAddressOptions, VerifyTransactionOptions } from '@bitgo-beta/sdk-core';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
+import { coins, CosmosNetwork } from '@bitgo-beta/statics';
 import { CosmosSharedCoin, Utils } from '../../src';
 import { getAvailableTestCoins, getTestData } from '../testUtils';
 

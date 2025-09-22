@@ -1,6 +1,6 @@
 import * as coinModules from '..';
-import { BaseUtils, NotSupported } from '@bitgo/sdk-core';
-import { coins } from '@bitgo/statics';
+import { BaseUtils, NotSupported } from '@bitgo-beta/sdk-core';
+import { coins } from '@bitgo-beta/statics';
 
 /**
  * Register the factory method for coin utils methods

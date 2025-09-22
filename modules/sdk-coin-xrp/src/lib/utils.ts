@@ -4,8 +4,8 @@ import {
   InvalidTransactionError,
   UnsupportedTokenError,
   UtilsError,
-} from '@bitgo/sdk-core';
-import { BaseCoin, coins, XrpCoin } from '@bitgo/statics';
+} from '@bitgo-beta/sdk-core';
+import { BaseCoin, coins, XrpCoin } from '@bitgo-beta/statics';
 import * as querystring from 'querystring';
 import * as rippleKeypairs from 'ripple-keypairs';
 import * as url from 'url';

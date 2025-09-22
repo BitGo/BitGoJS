@@ -1,5 +1,5 @@
 import EthereumCommon from '@ethereumjs/common';
-import { coins, EthereumNetwork } from '@bitgo/statics';
+import { coins, EthereumNetwork } from '@bitgo-beta/statics';
 
 /**
  * A Common object defining the chain

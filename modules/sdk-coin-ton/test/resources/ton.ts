@@ -1,4 +1,4 @@
-import { Recipient } from '@bitgo/sdk-core';
+import { Recipient } from '@bitgo-beta/sdk-core';
 
 export const AMOUNT = 123400000;
 

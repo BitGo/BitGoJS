@@ -1,7 +1,7 @@
-import { KeyPairOptions, AddressFormat } from '@bitgo/sdk-core';
+import { KeyPairOptions, AddressFormat } from '@bitgo-beta/sdk-core';
 import { pubkeyToAddress } from '@cosmjs/amino';
 
-import { CosmosKeyPair } from '@bitgo/abstract-cosmos';
+import { CosmosKeyPair } from '@bitgo-beta/abstract-cosmos';
 import { MAINNET_ADDRESS_PREFIX, TESTNET_ADDRESS_PREFIX } from './constants';
 
 /**

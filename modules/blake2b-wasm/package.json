@@ -1,6 +1,6 @@
 {
-  "name": "@bitgo/blake2b-wasm",
-  "version": "0.0.0-semantic-release-managed",
+  "name": "@bitgo-beta/blake2b-wasm",
+  "version": "3.0.4-beta.1441",
   "description": "Blake2b implemented in WASM",
   "main": "index.js",
   "dependencies": {

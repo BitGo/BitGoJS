@@ -1,7 +1,7 @@
 import assert from 'assert';
 import should from 'should';
-import { TransactionType } from '@bitgo/sdk-core';
-import { coins } from '@bitgo/statics';
+import { TransactionType } from '@bitgo-beta/sdk-core';
+import { coins } from '@bitgo-beta/statics';
 import BigNumber from 'bignumber.js';
 import * as testData from '../resources';
 import { XtzLib } from '../../src';

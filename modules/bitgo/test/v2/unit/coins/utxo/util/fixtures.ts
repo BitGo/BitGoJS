@@ -5,7 +5,7 @@ import 'should';
 import * as fs from 'fs-extra';
 import * as mpath from 'path';
 
-import { AbstractUtxoCoin } from '@bitgo/abstract-utxo';
+import { AbstractUtxoCoin } from '@bitgo-beta/abstract-utxo';
 
 function serializeBigInt(k: string, v: any): string | number {
   if (typeof v === 'bigint') {

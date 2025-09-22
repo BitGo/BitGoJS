@@ -2,8 +2,8 @@
  * @hidden
  */
 
-import * as utxolib from '@bitgo/utxo-lib';
-import { BIP32Interface, ECPairInterface } from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
+import { BIP32Interface, ECPairInterface } from '@bitgo-beta/utxo-lib';
 import * as common from '../common';
 import { V1Network } from './types';
 

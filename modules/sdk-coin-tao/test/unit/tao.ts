@@ -1,6 +1,6 @@
 import should from 'should';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
 import { Tao, Ttao } from '../../src';
 import * as sinon from 'sinon';
 import * as testData from './fixtures';

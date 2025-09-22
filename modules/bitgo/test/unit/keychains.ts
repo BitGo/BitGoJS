@@ -6,9 +6,9 @@ import * as _ from 'lodash';
 import 'should';
 import nock = require('nock');
 
-import { common } from '@bitgo/sdk-core';
+import { common } from '@bitgo-beta/sdk-core';
 
-import { TestBitGo } from '@bitgo/sdk-test';
+import { TestBitGo } from '@bitgo-beta/sdk-test';
 import { BitGo } from '../../src/bitgo';
 
 describe('Keychains', function v2keychains() {

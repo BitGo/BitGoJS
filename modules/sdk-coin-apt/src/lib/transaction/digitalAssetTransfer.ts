@@ -11,8 +11,8 @@ import {
   TypeTagGeneric,
   TypeTagStruct,
 } from '@aptos-labs/ts-sdk';
-import { InvalidTransactionError, TransactionRecipient, TransactionType } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { InvalidTransactionError, TransactionRecipient, TransactionType } from '@bitgo-beta/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import {
   DIGITAL_ASSET_TYPE_ARGUMENT,
   DIGITAL_ASSET_TRANSFER_FUNCTION,

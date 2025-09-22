@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import { tokens } from '@bitgo/statics';
+import { tokens } from '@bitgo-beta/statics';
 import { EnvironmentName, Environments } from './environments';
 
 export type KrsProvider = {

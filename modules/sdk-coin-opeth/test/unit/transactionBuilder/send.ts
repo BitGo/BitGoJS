@@ -1,10 +1,10 @@
-import { TransactionType, BaseTransaction } from '@bitgo/sdk-core';
-import { coins } from '@bitgo/statics';
+import { TransactionType, BaseTransaction } from '@bitgo-beta/sdk-core';
+import { coins } from '@bitgo-beta/statics';
 import EthereumAbi from 'ethereumjs-abi';
 import should from 'should';
 import * as ethUtil from 'ethereumjs-util';
 
-import { decodeTransferData, KeyPair } from '@bitgo/abstract-eth';
+import { decodeTransferData, KeyPair } from '@bitgo-beta/abstract-eth';
 import * as testData from '../../resources';
 import { getBuilder } from '../../getBuilder';
 import { TransactionBuilder } from '../../../src';

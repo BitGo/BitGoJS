@@ -1,5 +1,5 @@
 import should from 'should';
-import { coins } from '@bitgo/statics';
+import { coins } from '@bitgo-beta/statics';
 import { Transaction } from '../../src';
 import Common from '@ethereumjs/common';
 

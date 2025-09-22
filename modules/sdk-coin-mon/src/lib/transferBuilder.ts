@@ -1,1 +1,1 @@
-export { TransferBuilder } from '@bitgo/abstract-eth';
+export { TransferBuilder } from '@bitgo-beta/abstract-eth';

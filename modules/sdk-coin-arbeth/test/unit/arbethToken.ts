@@ -1,12 +1,12 @@
 import * as should from 'should';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
 import nock from 'nock';
-import { OfflineVaultTxInfo, optionalDeps } from '@bitgo/abstract-eth';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { OfflineVaultTxInfo, optionalDeps } from '@bitgo-beta/abstract-eth';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
 
 import { ArbethToken } from '../../src';
 import * as mockData from '../fixtures/arbeth';
-import { common } from '@bitgo/sdk-core';
+import { common } from '@bitgo-beta/sdk-core';
 
 describe('Arbeth Token:', function () {
   let bitgo: TestBitGoAPI;

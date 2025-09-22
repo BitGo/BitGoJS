@@ -1,4 +1,4 @@
-import { EcdsaTypes, HashCommitDecommit, SchnorrProof } from '@bitgo/sdk-lib-mpc';
+import { EcdsaTypes, HashCommitDecommit, SchnorrProof } from '@bitgo-beta/sdk-lib-mpc';
 
 /**
  * @deprecated use DeserializedNtildeProof from sdk-lib-mpc instead

@@ -1,6 +1,6 @@
-import * as utxolib from '@bitgo/utxo-lib';
-import { ITransactionRecipient, VerifyTransactionOptions } from '@bitgo/sdk-core';
-import { DescriptorMap } from '@bitgo/utxo-core/descriptor';
+import * as utxolib from '@bitgo-beta/utxo-lib';
+import { ITransactionRecipient, VerifyTransactionOptions } from '@bitgo-beta/sdk-core';
+import { DescriptorMap } from '@bitgo-beta/utxo-core/descriptor';
 
 import { AbstractUtxoCoin, BaseOutput, BaseParsedTransactionOutputs } from '../../abstractUtxoCoin';
 

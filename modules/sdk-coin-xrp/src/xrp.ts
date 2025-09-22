@@ -24,8 +24,8 @@ import {
   TransactionParams,
   UnexpectedAddressError,
   VerifyTransactionOptions,
-} from '@bitgo/sdk-core';
-import { coins, BaseCoin as StaticsBaseCoin, XrpCoin } from '@bitgo/statics';
+} from '@bitgo-beta/sdk-core';
+import { coins, BaseCoin as StaticsBaseCoin, XrpCoin } from '@bitgo-beta/statics';
 import * as rippleBinaryCodec from 'ripple-binary-codec';
 import * as rippleKeypairs from 'ripple-keypairs';
 import * as xrpl from 'xrpl';

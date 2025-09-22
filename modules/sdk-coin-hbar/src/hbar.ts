@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import { CoinFamily, BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
+import { CoinFamily, BaseCoin as StaticsBaseCoin, coins } from '@bitgo-beta/statics';
 import {
   BaseCoin,
   BitGoBase,
@@ -24,7 +24,7 @@ import {
   MultisigType,
   multisigTypes,
   AuditDecryptedKeyParams,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import { BigNumber } from 'bignumber.js';
 import * as stellar from 'stellar-sdk';
 import { SeedValidator } from './seedValidator';

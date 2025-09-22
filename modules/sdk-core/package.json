@@ -1,6 +1,6 @@
 {
-  "name": "@bitgo/sdk-core",
-  "version": "0.0.0-semantic-release-managed",
+  "name": "@bitgo-beta/sdk-core",
+  "version": "8.2.1-beta.1200",
   "description": "core library functions for BitGoJS",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -38,12 +38,12 @@
   },
   "dependencies": {
     "@bitgo/public-types": "5.22.0",
-    "@bitgo/sdk-lib-mpc": "0.0.0-semantic-release-managed",
-    "@bitgo/secp256k1": "0.0.0-semantic-release-managed",
-    "@bitgo/sjcl": "0.0.0-semantic-release-managed",
-    "@bitgo/statics": "0.0.0-semantic-release-managed",
-    "@bitgo/utxo-core": "0.0.0-semantic-release-managed",
-    "@bitgo/utxo-lib": "0.0.0-semantic-release-managed",
+    "@bitgo-beta/sdk-lib-mpc": "8.2.0-beta.1192",
+    "@bitgo-beta/secp256k1": "1.0.2-beta.1227",
+    "@bitgo-beta/sjcl": "1.0.2-beta.1439",
+    "@bitgo-beta/statics": "15.1.1-beta.1203",
+    "@bitgo-beta/utxo-core": "1.8.1-beta.317",
+    "@bitgo-beta/utxo-lib": "8.0.3-beta.1201",
     "@noble/curves": "1.8.1",
     "@stablelib/hex": "^1.0.0",
     "@types/superagent": "4.1.15",
@@ -70,7 +70,7 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
-    "@bitgo/sdk-opensslbytes": "0.0.0-semantic-release-managed",
+    "@bitgo-beta/sdk-opensslbytes": "1.0.0-beta.753",
     "@openpgp/web-stream-tools": "0.0.14",
     "@types/keccak": "^3.0.5",
     "@types/lodash": "^4.14.151",

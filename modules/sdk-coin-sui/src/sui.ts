@@ -30,8 +30,8 @@ import {
   MultisigType,
   multisigTypes,
   AuditDecryptedKeyParams,
-} from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, BaseNetwork, coins, SuiCoin } from '@bitgo/statics';
+} from '@bitgo-beta/sdk-core';
+import { BaseCoin as StaticsBaseCoin, BaseNetwork, coins, SuiCoin } from '@bitgo-beta/statics';
 import BigNumber from 'bignumber.js';
 import {
   KeyPair as SuiKeyPair,
@@ -52,7 +52,7 @@ import {
   MAX_OBJECT_LIMIT,
   TOKEN_OBJECT_LIMIT,
 } from './lib/constants';
-import { auditEddsaPrivateKey, getDerivationPath } from '@bitgo/sdk-lib-mpc';
+import { auditEddsaPrivateKey, getDerivationPath } from '@bitgo-beta/sdk-lib-mpc';
 
 export interface ExplainTransactionOptions {
   txHex: string;

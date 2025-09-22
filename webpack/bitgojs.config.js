@@ -13,7 +13,7 @@ module.exports = {
       // this is only required if using bitgo instead of just the sdk-api
       '@hashgraph/sdk': path.resolve('../../node_modules/@hashgraph/sdk/src/browser.js'),
       // use the default version here since we're webpacking ourselves
-      '@bitgo/sdk-api': path.resolve('../sdk-api/dist/src/index.js'),
+      '@bitgo-beta/sdk-api': path.resolve('../sdk-api/dist/src/index.js'),
       async: path.resolve('../../node_modules/async/index.js'),
     },
     fallback: {

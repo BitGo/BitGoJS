@@ -1,5 +1,5 @@
-import { DefaultKeys, Ed25519KeyPair, isBase58, KeyPairOptions, toHex, toUint8Array } from '@bitgo/sdk-core';
-import { KeyCurve } from '@bitgo/statics';
+import { DefaultKeys, Ed25519KeyPair, isBase58, KeyPairOptions, toHex, toUint8Array } from '@bitgo-beta/sdk-core';
+import { KeyCurve } from '@bitgo-beta/statics';
 import { Keyring } from '@polkadot/keyring';
 import { createPair } from '@polkadot/keyring/pair';
 import { KeyringPair } from '@polkadot/keyring/types';

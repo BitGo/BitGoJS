@@ -6,8 +6,8 @@ import nock = require('nock');
 import * as sinon from 'sinon';
 import should = require('should');
 import * as _ from 'lodash';
-import * as utxoLib from '@bitgo/utxo-lib';
-import { TestBitGo } from '@bitgo/sdk-test';
+import * as utxoLib from '@bitgo-beta/utxo-lib';
+import { TestBitGo } from '@bitgo-beta/sdk-test';
 import {
   common,
   TssUtils,
@@ -28,11 +28,11 @@ import {
   multisigTypes,
   IncorrectPasswordError,
   NeedUserSignupError,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import { BitGo } from '../../../src';
 import { afterEach } from 'mocha';
 import { TssSettings } from '@bitgo/public-types';
-import * as moduleBitgo from '@bitgo/sdk-core';
+import * as moduleBitgo from '@bitgo-beta/sdk-core';
 
 describe('V2 Wallets:', function () {
   const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });

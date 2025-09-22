@@ -1,4 +1,4 @@
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 import { Descriptor, ast } from '@bitgo/wasm-miniscript';
 
 /** Expand a template with the given root wallet keys and chain code */

@@ -1,6 +1,6 @@
-import { TransactionType } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { CosmosTransferBuilder, CosmosUtils, SendMessage } from '@bitgo/abstract-cosmos';
+import { TransactionType } from '@bitgo-beta/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
+import { CosmosTransferBuilder, CosmosUtils, SendMessage } from '@bitgo-beta/abstract-cosmos';
 
 export class RuneTransferBuilder extends CosmosTransferBuilder {
   protected _utils: CosmosUtils;

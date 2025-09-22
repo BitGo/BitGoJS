@@ -1,7 +1,7 @@
 import { createHash } from 'crypto';
 import * as _ from 'lodash';
 import BigNumber from 'bignumber.js';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import {
   BaseKey,
   BaseTransactionBuilder,
@@ -11,7 +11,7 @@ import {
   SigningError,
   ExtendTransactionError,
   InvalidParameterValueError,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import { TransactionReceipt, Block } from './iface';
 import { Address } from './address';
 import {

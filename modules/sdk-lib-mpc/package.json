@@ -1,6 +1,6 @@
 {
-  "name": "@bitgo/sdk-lib-mpc",
-  "version": "0.0.0-semantic-release-managed",
+  "name": "@bitgo-beta/sdk-lib-mpc",
+  "version": "8.2.0-beta.1192",
   "description": "library functions for BitGo's MPC solution",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -52,7 +52,7 @@
     "secp256k1": "5.0.1"
   },
   "devDependencies": {
-    "@bitgo/sdk-opensslbytes": "0.0.0-semantic-release-managed",
+    "@bitgo-beta/sdk-opensslbytes": "1.0.0-beta.753",
     "@silencelaboratories/dkls-wasm-ll-bundler": "1.2.0-pre.4",
     "@types/lodash": "^4.14.151",
     "@types/node": "^22.15.29",

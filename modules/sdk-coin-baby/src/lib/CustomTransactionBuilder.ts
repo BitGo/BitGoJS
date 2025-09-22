@@ -1,6 +1,6 @@
-import { CosmosTransaction, CosmosTransactionBuilder } from '@bitgo/abstract-cosmos';
-import { TransactionType } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { CosmosTransaction, CosmosTransactionBuilder } from '@bitgo-beta/abstract-cosmos';
+import { TransactionType } from '@bitgo-beta/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { BabylonTransaction } from './BabylonTransaction';
 import { BabylonSpecificMessages } from './iface';
 import utils, { Utils } from './utils';

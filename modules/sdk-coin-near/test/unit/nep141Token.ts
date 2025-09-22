@@ -1,6 +1,6 @@
-import { BitGoAPI } from '@bitgo/sdk-api';
-import { common, ITransactionRecipient, TransactionPrebuild, Wallet } from '@bitgo/sdk-core';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
+import { common, ITransactionRecipient, TransactionPrebuild, Wallet } from '@bitgo-beta/sdk-core';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
 
 import { Nep141Token } from '../../src';
 import * as testData from '../resources/near';

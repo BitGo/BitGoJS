@@ -6,7 +6,7 @@ import utils from '../../../src/lib/utils';
 import { accounts, mockTssSignature, genesisHash, chainName, rawTx } from '../../resources';
 import { buildTestConfig } from './base';
 import { testnetMaterial } from '../../../src/resources';
-import { InvalidTransactionError } from '@bitgo/sdk-core';
+import { InvalidTransactionError } from '@bitgo-beta/sdk-core';
 
 // Test helper class to access private methods for testing
 class TestMoveStakeBuilder extends MoveStakeBuilder {

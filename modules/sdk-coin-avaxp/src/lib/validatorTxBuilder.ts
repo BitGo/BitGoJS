@@ -1,7 +1,7 @@
 import { DelegatorTxBuilder } from './delegatorTxBuilder';
-import { BaseCoin } from '@bitgo/statics';
+import { BaseCoin } from '@bitgo-beta/statics';
 import { AddValidatorTx, PlatformVMConstants, UnsignedTx, Tx as PVMTx } from 'avalanche/dist/apis/platformvm';
-import { BuildTransactionError, NotSupported, TransactionType } from '@bitgo/sdk-core';
+import { BuildTransactionError, NotSupported, TransactionType } from '@bitgo-beta/sdk-core';
 import { DeprecatedTx, DeprecatedBaseTx } from './iface';
 import utils from './utils';
 

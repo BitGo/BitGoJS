@@ -1,4 +1,4 @@
-import * as sjcl from '@bitgo/sjcl';
+import * as sjcl from '@bitgo-beta/sjcl';
 import * as bs58 from 'bs58';
 
 /**

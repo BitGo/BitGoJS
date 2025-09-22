@@ -29,7 +29,7 @@ import {
   TssEcdsaStep2ReturnMessage,
   UnsupportedCoinError,
   Wallet,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import { BitGo, BitGoOptions, Coin, CustomSigningFunction, SignedTransaction, SignedTransactionRequest } from 'bitgo';
 import * as bodyParser from 'body-parser';
 import debugLib from 'debug';
@@ -57,7 +57,7 @@ import {
 import { handlePayLightningInvoice } from './lightning/lightningInvoiceRoutes';
 import { handleUpdateLightningWalletCoinSpecific } from './lightning/lightningWalletRoutes';
 import { ProxyAgent } from 'proxy-agent';
-import { isLightningCoinName } from '@bitgo/abstract-lightning';
+import { isLightningCoinName } from '@bitgo-beta/abstract-lightning';
 import { handleLightningWithdraw } from './lightning/lightningWithdrawRoutes';
 import createExpressRouter from './typedRoutes';
 import { ExpressApiRouteRequest } from './typedRoutes/api';

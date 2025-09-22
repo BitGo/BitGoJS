@@ -6,9 +6,9 @@ import {
   StakingDeactivateBuilder,
   StakingRedelegateBuilder,
   StakingWithdrawRewardsBuilder,
-} from '@bitgo/abstract-cosmos';
-import { BaseTransactionBuilderFactory, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+} from '@bitgo-beta/abstract-cosmos';
+import { BaseTransactionBuilderFactory, InvalidTransactionError, TransactionType } from '@bitgo-beta/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import islmUtils from './utils';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {

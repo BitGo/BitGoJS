@@ -1,4 +1,4 @@
-import { Networks } from '@bitgo/statics';
+import { Networks } from '@bitgo-beta/statics';
 export { testnetMetadataRpc } from './testnet';
 
 export const mockTssSignature =

@@ -1,7 +1,7 @@
 import EthereumCommon from '@ethereumjs/common';
-import { AbstractEthLikeNewCoins, recoveryBlockchainExplorerQuery } from '@bitgo/abstract-eth';
-import { BaseCoin, BitGoBase, common } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
+import { AbstractEthLikeNewCoins, recoveryBlockchainExplorerQuery } from '@bitgo-beta/abstract-eth';
+import { BaseCoin, BitGoBase, common } from '@bitgo-beta/sdk-core';
+import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo-beta/statics';
 import { EthLikeTransactionBuilder } from './lib';
 
 interface CommonConfig {

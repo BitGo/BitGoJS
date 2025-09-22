@@ -3,7 +3,7 @@ import * as Utils from './utils';
 
 export * from './iface';
 
-export { CosmosTransactionBuilder as TransactionBuilder } from '@bitgo/abstract-cosmos';
+export { CosmosTransactionBuilder as TransactionBuilder } from '@bitgo-beta/abstract-cosmos';
 export { BabylonTransaction as Transaction } from './BabylonTransaction';
 export { CustomTransactionBuilder } from './CustomTransactionBuilder';
 export { KeyPair } from './keyPair';

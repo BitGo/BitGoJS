@@ -1,12 +1,12 @@
 import BigNumber from 'bignumber.js';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import algosdk from 'algosdk';
 
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { TransferTransactionSchema } from './txnSchema';
 import Utils from './utils';
-import { BaseAddress, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
+import { BaseAddress, InvalidTransactionError, TransactionType } from '@bitgo-beta/sdk-core';
 
 export class TransferBuilder extends TransactionBuilder {
   protected _to: string;

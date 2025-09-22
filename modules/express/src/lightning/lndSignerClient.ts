@@ -1,6 +1,6 @@
 import * as https from 'https';
 import * as superagent from 'superagent';
-import { decodeOrElse } from '@bitgo/sdk-core';
+import { decodeOrElse } from '@bitgo-beta/sdk-core';
 import { retryPromise } from '../retryPromise';
 import { BakeMacaroonResponse, GetWalletStateResponse, InitWalletResponse, LightningSignerConfig } from './codecs';
 import { getLightningSignerConfig } from './lightningUtils';

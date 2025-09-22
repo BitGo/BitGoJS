@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { BaseCoin as CoinConfig, coins } from '@bitgo/statics';
+import { BaseCoin as CoinConfig, coins } from '@bitgo-beta/statics';
 import algosdk from 'algosdk';
 import assert from 'assert';
 import should from 'should';
@@ -14,7 +14,7 @@ import {
 import { Transaction } from '../../../../src/lib/transaction';
 
 import * as AlgoResources from '../../../fixtures/resources';
-import { BaseKey, TransactionType } from '@bitgo/sdk-core';
+import { BaseKey, TransactionType } from '@bitgo-beta/sdk-core';
 import { EncodedTx } from '../../../../src/lib/ifaces';
 
 const STANDARD_REQUIRED_NUMBER_OF_SIGNERS = 2;

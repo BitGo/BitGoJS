@@ -1,4 +1,4 @@
-import { BuildTransactionError } from '@bitgo/sdk-core';
+import { BuildTransactionError } from '@bitgo-beta/sdk-core';
 
 export class InsufficientFeeError extends BuildTransactionError {
   constructor(providedFee: number, minimum: number) {

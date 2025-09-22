@@ -1,6 +1,6 @@
 import should from 'should';
 import { fromBase64, toHex } from '@cosmjs/encoding';
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 import { getAvailableTestCoins, getBuilderFactory, getTestData } from '../../testUtils';
 
 describe('Cosmos Transfer Builder', function () {

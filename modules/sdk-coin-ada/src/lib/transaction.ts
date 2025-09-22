@@ -5,10 +5,10 @@ import {
   InvalidTransactionError,
   NodeEnvironmentError,
   TransactionType,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import * as CardanoWasm from '@emurgo/cardano-serialization-lib-nodejs';
 import { KeyPair } from './keyPair';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import adaUtils from './utils';
 
 export interface TransactionInput {

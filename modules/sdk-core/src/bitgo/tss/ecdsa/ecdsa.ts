@@ -36,12 +36,12 @@ import {
 import { commonVerifyWalletSignature, getTxRequest, sendSignatureShare } from '../common';
 import createKeccakHash from 'keccak';
 import assert from 'assert';
-import { bip32, ecc } from '@bitgo/utxo-lib';
+import { bip32, ecc } from '@bitgo-beta/utxo-lib';
 import * as pgp from 'openpgp';
 import bs58 from 'bs58';
 import { ApiKeyShare } from '../../keychain';
 import { Hash } from 'crypto';
-import { EcdsaPaillierProof } from '@bitgo/sdk-lib-mpc';
+import { EcdsaPaillierProof } from '@bitgo-beta/sdk-lib-mpc';
 import { IRequestTracer } from '../../../api';
 
 const MPC = new Ecdsa();

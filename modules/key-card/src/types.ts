@@ -1,5 +1,5 @@
-import { Keychain } from '@bitgo/sdk-core';
-import { BaseCoin, KeyCurve } from '@bitgo/statics';
+import { Keychain } from '@bitgo-beta/sdk-core';
+import { BaseCoin, KeyCurve } from '@bitgo-beta/statics';
 
 export interface GenerateQrDataBaseParams {
   activationCode?: string;

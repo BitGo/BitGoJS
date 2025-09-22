@@ -4,7 +4,7 @@ import {
   TransactionExplanation as BaseTransactionExplanation,
   VerifyAddressOptions as BaseVerifyAddressOptions,
   TransactionPrebuild,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import { AccountSet, Amount, Payment, Signer, SignerEntry, SignerListSet, TrustSet } from 'xrpl';
 
 export enum XrpTransactionType {

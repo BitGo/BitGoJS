@@ -1,4 +1,4 @@
-import { NetworkType } from '@bitgo/statics';
+import { NetworkType } from '@bitgo-beta/statics';
 import { StakingOperationTypes } from '../baseCoin';
 
 export interface ContractMethodConfig {

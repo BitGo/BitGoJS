@@ -1,8 +1,8 @@
-import * as utxolib from '@bitgo/utxo-lib';
-import { bip322 } from '@bitgo/utxo-core';
-import { bip32, BIP32Interface, bitgo } from '@bitgo/utxo-lib';
-import { Triple } from '@bitgo/sdk-core';
-import * as utxocore from '@bitgo/utxo-core';
+import * as utxolib from '@bitgo-beta/utxo-lib';
+import { bip322 } from '@bitgo-beta/utxo-core';
+import { bip32, BIP32Interface, bitgo } from '@bitgo-beta/utxo-lib';
+import { Triple } from '@bitgo-beta/sdk-core';
+import * as utxocore from '@bitgo-beta/utxo-core';
 
 import { Output, TransactionExplanation, Bip322Message, FixedScriptWalletOutput } from '../../abstractUtxoCoin';
 import { toExtendedAddressFormat } from '../recipient';

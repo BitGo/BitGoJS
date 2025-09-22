@@ -1,4 +1,4 @@
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 import { fromBase64, toHex } from '@cosmjs/encoding';
 import should from 'should';
 import * as testData from '../../resources/initia';

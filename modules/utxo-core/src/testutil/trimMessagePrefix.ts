@@ -1,4 +1,4 @@
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 
 /** We receive a proof in the form:
  * 0x18Bitcoin Signed Message:\n<varint_length><ENTROPY><ADDRESS><UUID>

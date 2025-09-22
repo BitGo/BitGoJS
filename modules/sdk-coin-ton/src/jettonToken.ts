@@ -1,5 +1,5 @@
-import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
-import { JettonTokenConfig, coins, tokens } from '@bitgo/statics';
+import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo-beta/sdk-core';
+import { JettonTokenConfig, coins, tokens } from '@bitgo-beta/statics';
 import { Ton } from './ton';
 
 export class JettonToken extends Ton {

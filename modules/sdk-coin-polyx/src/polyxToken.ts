@@ -1,6 +1,6 @@
-import { coins, PolyxTokenConfig, tokens } from '@bitgo/statics';
+import { coins, PolyxTokenConfig, tokens } from '@bitgo-beta/statics';
 import { Polyx } from './polyx';
-import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
+import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo-beta/sdk-core';
 
 export class PolyxToken extends Polyx {
   public readonly tokenConfig: PolyxTokenConfig;

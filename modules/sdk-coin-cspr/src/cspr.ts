@@ -2,10 +2,10 @@
  * @prettier
  */
 import * as CsprLib from './lib';
-import { ECPair } from '@bitgo/secp256k1';
+import { ECPair } from '@bitgo-beta/secp256k1';
 import BigNumber from 'bignumber.js';
 
-import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo-beta/statics';
 import {
   AuditDecryptedKeyParams,
   BaseCoin,
@@ -26,7 +26,7 @@ import {
   VerifyAddressOptions,
   VerifyTransactionOptions,
   MethodNotImplementedError,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 
 interface SignTransactionOptions extends BaseSignTransactionOptions {
   txPrebuild: TransactionPrebuild;

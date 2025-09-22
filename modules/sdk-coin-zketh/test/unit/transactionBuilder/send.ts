@@ -1,6 +1,6 @@
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 import should from 'should';
-import { decodeTransferData } from '@bitgo/abstract-eth';
+import { decodeTransferData } from '@bitgo-beta/abstract-eth';
 import * as testData from '../../resources';
 import { getBuilder } from '../../getBuilder';
 import { TransactionBuilder } from '../../../src';

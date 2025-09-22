@@ -6,7 +6,7 @@
  */
 import * as rippleKeypairs from 'ripple-keypairs';
 import * as xrpl from 'xrpl';
-import { ECPair } from '@bitgo/secp256k1';
+import { ECPair } from '@bitgo-beta/secp256k1';
 import BigNumber from 'bignumber.js';
 
 import * as binary from 'ripple-binary-codec';

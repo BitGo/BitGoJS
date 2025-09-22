@@ -20,11 +20,11 @@ import {
   CommitmentType,
   SignatureShareType,
   RequestTracer,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import * as openpgp from 'openpgp';
 import should = require('should');
 import * as _ from 'lodash';
-import { TestBitGo } from '@bitgo/sdk-test';
+import { TestBitGo } from '@bitgo-beta/sdk-test';
 import { BitGo } from '../../../../src/bitgo';
 import { nockGetTxRequest, nockSendSignatureShare } from './helpers';
 import * as sinon from 'sinon';

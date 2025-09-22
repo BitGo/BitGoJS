@@ -1,4 +1,4 @@
-import { BitGoBase } from '@bitgo/sdk-core';
+import { BitGoBase } from '@bitgo-beta/sdk-core';
 import { Sol } from './sol';
 import { SolToken } from './solToken';
 import { Tsol } from './tsol';

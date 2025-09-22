@@ -1,5 +1,5 @@
 import { Argv, CommandModule } from 'yargs';
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 
 import { withPsbt, WithPsbtOptions, withPsbtOptions } from './withPsbt';
 import { getNetworkOptionsDemand } from '../../args';

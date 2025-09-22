@@ -1,4 +1,4 @@
-import { BaseKey, BuildTransactionError } from '@bitgo/sdk-core';
+import { BaseKey, BuildTransactionError } from '@bitgo-beta/sdk-core';
 import assert from 'assert';
 import should from 'should';
 import sinon from 'sinon';

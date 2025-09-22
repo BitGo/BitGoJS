@@ -1,7 +1,7 @@
 import * as crypto from 'crypto';
 import * as assert from 'assert';
 
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 
 import { signMessage, verifyMessage } from '../src/bip32utils';
 

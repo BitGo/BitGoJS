@@ -1,5 +1,5 @@
-import { TestBitGo } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { TestBitGo } from '@bitgo-beta/sdk-test';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
 import { EvmRPCWrapper } from '../../src/evmRPCWrapper';
 import {
   Wallet,
@@ -10,9 +10,9 @@ import {
   SignedMessage,
   SignTypedDataVersion,
   SendManyOptions,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import { EVMRPCRequest } from '../../src/types';
-import { Hteth } from '@bitgo/sdk-coin-eth';
+import { Hteth } from '@bitgo-beta/sdk-coin-eth';
 import * as sinon from 'sinon';
 import {
   ethWalletData,

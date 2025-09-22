@@ -1,4 +1,4 @@
-import { BaseCoin as CoinConfig, StacksNetwork as BitgoStacksNetwork } from '@bitgo/statics';
+import { BaseCoin as CoinConfig, StacksNetwork as BitgoStacksNetwork } from '@bitgo-beta/statics';
 import {
   bufferCV,
   bufferCVFromString,
@@ -10,7 +10,7 @@ import {
   someCV,
   tupleCV,
 } from '@stacks/transactions';
-import { InvalidParameterValueError } from '@bitgo/sdk-core';
+import { InvalidParameterValueError } from '@bitgo-beta/sdk-core';
 import { Transaction } from './transaction';
 import { isValidAddress } from './utils';
 import { ClarityValueJson } from './iface';

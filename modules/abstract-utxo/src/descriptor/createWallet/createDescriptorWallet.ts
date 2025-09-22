@@ -1,6 +1,6 @@
-import { BitGoAPI } from '@bitgo/sdk-api';
-import * as utxolib from '@bitgo/utxo-lib';
-import { Wallet } from '@bitgo/sdk-core';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
+import * as utxolib from '@bitgo-beta/utxo-lib';
+import { Wallet } from '@bitgo-beta/sdk-core';
 
 import { AbstractUtxoCoin } from '../../abstractUtxoCoin';
 import { IDescriptorWallet } from '../descriptorWallet';

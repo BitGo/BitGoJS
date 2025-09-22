@@ -1,4 +1,4 @@
-import { DotAddressFormat } from '@bitgo/sdk-core';
+import { DotAddressFormat } from '@bitgo-beta/sdk-core';
 import assert from 'assert';
 import bs58 from 'bs58';
 import should from 'should';

@@ -3,8 +3,8 @@
  *
  * @format
  */
-import { AddressFormat, BaseCoin, BitGoBase } from '@bitgo/sdk-core';
-import { NetworkType, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { AddressFormat, BaseCoin, BitGoBase } from '@bitgo-beta/sdk-core';
+import { NetworkType, BaseCoin as StaticsBaseCoin } from '@bitgo-beta/statics';
 import { Hash } from './hash';
 import { HashUtils } from './lib/utils';
 import { KeyPair } from './lib';

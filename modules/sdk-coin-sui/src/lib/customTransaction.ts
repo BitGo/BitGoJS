@@ -6,9 +6,15 @@ import {
   TxData,
 } from './iface';
 import { Transaction } from './transaction';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import utils from './utils';
-import { BaseKey, InvalidTransactionError, Recipient, TransactionRecipient, TransactionType } from '@bitgo/sdk-core';
+import {
+  BaseKey,
+  InvalidTransactionError,
+  Recipient,
+  TransactionRecipient,
+  TransactionType,
+} from '@bitgo-beta/sdk-core';
 import { UNAVAILABLE_TEXT } from './constants';
 
 export class CustomTransaction extends Transaction<CustomProgrammableTransaction> {

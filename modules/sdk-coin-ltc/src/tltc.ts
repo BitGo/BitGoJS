@@ -1,5 +1,5 @@
-import { BitGoBase, BaseCoin } from '@bitgo/sdk-core';
-import * as utxolib from '@bitgo/utxo-lib';
+import { BitGoBase, BaseCoin } from '@bitgo-beta/sdk-core';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 import { Ltc } from './ltc';
 
 export class Tltc extends Ltc {

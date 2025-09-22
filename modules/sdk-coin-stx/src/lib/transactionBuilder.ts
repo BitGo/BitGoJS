@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
 import BigNum from 'bn.js';
-import { BaseCoin as CoinConfig, NetworkType } from '@bitgo/statics';
+import { BaseCoin as CoinConfig, NetworkType } from '@bitgo-beta/statics';
 import {
   AuthType,
   BufferReader,
@@ -25,7 +25,7 @@ import {
   ParseTransactionError,
   SigningError,
   xprvToRawPrv,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
 import { SignatureData } from './iface';

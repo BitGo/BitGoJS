@@ -1,4 +1,4 @@
-import { KeyPair } from '@bitgo/abstract-eth';
+import { KeyPair } from '@bitgo-beta/abstract-eth';
 
 export const RECIPIENT = '0x19645032c7f1533395d44a629462e751084d3e4c';
 export const CONTRACT_ADDR = '0x8f977e912ef500548a0c3be6ddde9899f1199b81';

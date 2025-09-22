@@ -1,4 +1,4 @@
-import { coins, EthereumNetwork } from '@bitgo/statics';
+import { coins, EthereumNetwork } from '@bitgo-beta/statics';
 import EthereumCommon from '@ethereumjs/common';
 
 /**

@@ -1,4 +1,4 @@
-import { Wallet, WalletData } from '@bitgo/sdk-core';
+import { Wallet, WalletData } from '@bitgo-beta/sdk-core';
 
 import { isUtxoCoinName, UtxoCoinName } from './names';
 

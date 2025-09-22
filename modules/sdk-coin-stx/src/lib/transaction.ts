@@ -17,7 +17,7 @@ import {
   TransactionSigner,
 } from '@stacks/transactions';
 
-import { BaseCoin as CoinConfig, StacksNetwork } from '@bitgo/statics';
+import { BaseCoin as CoinConfig, StacksNetwork } from '@bitgo-beta/statics';
 
 import {
   BaseKey,
@@ -27,7 +27,7 @@ import {
   ParseTransactionError,
   SigningError,
   TransactionType,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 
 import BigNum from 'bn.js';
 

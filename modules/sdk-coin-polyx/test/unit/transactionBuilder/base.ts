@@ -2,9 +2,9 @@ import sinon from 'sinon';
 import assert from 'assert';
 import should from 'should';
 
-import { BaseCoin as CoinConfig, coins } from '@bitgo/statics';
+import { BaseCoin as CoinConfig, coins } from '@bitgo-beta/statics';
 import { DecodedSignedTx, DecodedSigningPayload, UnsignedTransaction } from '@substrate/txwrapper-core';
-import { BaseKey, DotAddressFormat, Eddsa, TransactionType } from '@bitgo/sdk-core';
+import { BaseKey, DotAddressFormat, Eddsa, TransactionType } from '@bitgo-beta/sdk-core';
 
 import { Interface, KeyPair, Transaction, TransactionBuilder, TransactionBuilderFactory } from '../../../src/lib';
 import { utils } from '../../../src/';

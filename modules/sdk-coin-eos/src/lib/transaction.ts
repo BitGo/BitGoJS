@@ -1,4 +1,4 @@
-import { BaseKey, BaseTransaction } from '@bitgo/sdk-core';
+import { BaseKey, BaseTransaction } from '@bitgo-beta/sdk-core';
 
 export class Transaction extends BaseTransaction {
   canSign(key: BaseKey): boolean {

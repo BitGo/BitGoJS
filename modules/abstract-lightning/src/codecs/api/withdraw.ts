@@ -1,6 +1,6 @@
 import * as t from 'io-ts';
 import { LightningOnchainRequest, optionalString } from '@bitgo/public-types';
-import { PendingApprovalData, TxRequestState } from '@bitgo/sdk-core';
+import { PendingApprovalData, TxRequestState } from '@bitgo-beta/sdk-core';
 
 export const WithdrawStatusDelivered = 'delivered';
 export const WithdrawStatusFailed = 'failed';

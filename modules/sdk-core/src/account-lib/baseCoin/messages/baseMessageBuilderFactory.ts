@@ -1,4 +1,4 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { IMessageBuilder, IMessageBuilderFactory } from './iface';
 import { BroadcastableMessage, MessageStandardType } from '../../../bitgo';
 import { deserializeSignatures } from '../iface';

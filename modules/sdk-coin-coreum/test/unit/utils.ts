@@ -1,4 +1,4 @@
-import { NetworkType } from '@bitgo/statics';
+import { NetworkType } from '@bitgo-beta/statics';
 import should from 'should';
 import { CoreumUtils } from '../../src/lib/utils';
 import { blockHash, mainnetCoinAmounts, txIds } from '../resources/coreum';

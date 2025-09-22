@@ -1,7 +1,7 @@
 import 'should';
 
-import { TestBitGo } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { TestBitGo } from '@bitgo-beta/sdk-test';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
 import { PolygonToken } from '../../src';
 
 describe('Polygon Token: ', function () {

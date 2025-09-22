@@ -1,5 +1,5 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { TransactionType } from '@bitgo/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 import { AtomicTransactionBuilder } from './atomicTransactionBuilder';
 
 export class ExportInPTxBuilder extends AtomicTransactionBuilder {

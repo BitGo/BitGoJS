@@ -1,5 +1,5 @@
 import should from 'should';
-import { coins, CosmosNetwork } from '@bitgo/statics';
+import { coins, CosmosNetwork } from '@bitgo-beta/statics';
 import { getAvailableTestCoins, getTestData } from '../testUtils';
 import { Utils } from '../../src';
 

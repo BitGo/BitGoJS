@@ -1,4 +1,4 @@
-import { InvalidAddressError, UtilsError } from '@bitgo/sdk-core';
+import { InvalidAddressError, UtilsError } from '@bitgo-beta/sdk-core';
 import should from 'should';
 import { VALID_ACCOUNT_SET_FLAGS } from '../../../src/lib/constants';
 import { Address } from '../../../src/lib/iface';

@@ -1,4 +1,4 @@
-import { coins } from '@bitgo/statics';
+import { coins } from '@bitgo-beta/statics';
 import { TransactionBuilderFactory, Transaction, ClaimRewardsTransaction } from '../../src/lib';
 import { ClaimRewardsData } from '../../src/lib/types';
 import should from 'should';
@@ -7,7 +7,7 @@ import {
   CLAIM_STAKING_REWARDS_METHOD_ID,
   STARGATE_DELEGATION_ADDRESS,
 } from '../../src/lib/constants';
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 
 describe('VET Claim Rewards Transaction', function () {
   const factory = new TransactionBuilderFactory(coins.get('tvet'));

@@ -1,4 +1,4 @@
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 import assert from 'assert';
 import should from 'should';
 import {

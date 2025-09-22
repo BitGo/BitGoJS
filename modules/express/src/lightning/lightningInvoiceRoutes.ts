@@ -1,7 +1,7 @@
 import * as express from 'express';
 import { ApiResponseError } from '../errors';
-import { CreateInvoiceBody, getLightningWallet, Invoice, SubmitPaymentParams } from '@bitgo/abstract-lightning';
-import { decodeOrElse } from '@bitgo/sdk-core';
+import { CreateInvoiceBody, getLightningWallet, Invoice, SubmitPaymentParams } from '@bitgo-beta/abstract-lightning';
+import { decodeOrElse } from '@bitgo-beta/sdk-core';
 
 export async function handleCreateLightningInvoice(req: express.Request): Promise<any> {
   const bitgo = req.bitgo;

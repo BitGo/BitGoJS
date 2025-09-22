@@ -6,7 +6,7 @@ import * as sinon from 'sinon';
 
 import { TOKEN_2022_PROGRAM_ID } from '@solana/spl-token';
 
-import { BitGoAPI, encrypt } from '@bitgo/sdk-api';
+import { BitGoAPI, encrypt } from '@bitgo-beta/sdk-api';
 import {
   common,
   Environments,
@@ -21,9 +21,9 @@ import {
   TxRequest,
   Wallet,
   WalletCoinSpecific,
-} from '@bitgo/sdk-core';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { coins } from '@bitgo/statics';
+} from '@bitgo-beta/sdk-core';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
+import { coins } from '@bitgo-beta/statics';
 import { KeyPair, Sol, SolVerifyTransactionOptions, Tsol } from '../../src';
 import { Transaction } from '../../src/lib';
 import { AtaInit, InstructionParams, TokenTransfer } from '../../src/lib/iface';

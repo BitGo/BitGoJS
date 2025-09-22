@@ -1,4 +1,4 @@
-import { BitGoBase } from '@bitgo/sdk-core';
+import { BitGoBase } from '@bitgo-beta/sdk-core';
 import { Stx } from './stx';
 import { Tstx } from './tstx';
 import { Sip10Token } from './sip10Token';

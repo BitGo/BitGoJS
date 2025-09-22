@@ -2,9 +2,9 @@ import should from 'should';
 import { TransferBuilder as AvaxCTransferBuilder, TransactionBuilder, KeyPair } from '../../src';
 import { getBuilder } from './getBuilder';
 import * as testData from '../resources/avaxc';
-import { TransactionType } from '@bitgo/sdk-core';
-import { decodeTokenTransferData } from '@bitgo/sdk-coin-eth';
-import { coins, EthereumNetwork as EthLikeNetwork } from '@bitgo/statics';
+import { TransactionType } from '@bitgo-beta/sdk-core';
+import { decodeTokenTransferData } from '@bitgo-beta/sdk-coin-eth';
+import { coins, EthereumNetwork as EthLikeNetwork } from '@bitgo-beta/statics';
 
 const amount = '20000';
 const toAddress = '0x7325A3F7d4f9E86AE62Cf742426078C3755730d5';

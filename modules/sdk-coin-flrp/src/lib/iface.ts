@@ -5,7 +5,7 @@ import {
   SignTransactionOptions,
   VerifyTransactionOptions,
   TransactionParams,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import { UnsignedTx, TransferableOutput, avaxSerial } from '@flarenetwork/flarejs';
 export interface FlrpEntry extends Entry {
   id: string;

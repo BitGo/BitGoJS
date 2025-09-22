@@ -1,5 +1,5 @@
 import joi from 'joi';
-import { InvalidTransactionError } from '@bitgo/sdk-core';
+import { InvalidTransactionError } from '@bitgo-beta/sdk-core';
 import utils from './utils';
 
 const addressSchema = joi.string().custom((addr) => utils.isValidAddress(addr));

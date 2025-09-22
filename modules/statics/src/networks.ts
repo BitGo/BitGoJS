@@ -45,7 +45,7 @@ export abstract class BaseNetwork {
 }
 
 export interface UtxoNetwork extends BaseNetwork {
-  // Network name as defined in @bitgo/utxo-lib networks.ts
+  // Network name as defined in @bitgo-beta/utxo-lib networks.ts
   utxolibName: string;
   paygoAddressAttestationPubkey?: string;
 }
@@ -70,7 +70,7 @@ export interface LightningNetwork extends UtxoNetwork {
 }
 
 export interface AdaNetwork extends BaseNetwork {
-  // Network name as defined in @bitgo/utxo-lib networks.ts
+  // Network name as defined in @bitgo-beta/utxo-lib networks.ts
   // maybe add network identifier / magic network number
   utxolibName: string;
   poolDeposit: number;

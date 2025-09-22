@@ -1,7 +1,7 @@
 import assert from 'assert';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { TransactionType, BuildTransactionError } from '@bitgo/sdk-core';
-import { decodeFlushTokensData, flushTokensData } from '@bitgo/abstract-eth';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
+import { TransactionType, BuildTransactionError } from '@bitgo-beta/sdk-core';
+import { decodeFlushTokensData, flushTokensData } from '@bitgo-beta/abstract-eth';
 import { TransactionClause } from '@vechain/sdk-core';
 
 import { TransactionBuilder } from './transactionBuilder';

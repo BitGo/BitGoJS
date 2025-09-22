@@ -1,6 +1,6 @@
 import * as t from 'io-ts';
-import { IWallet, WalletCoinSpecific } from '@bitgo/sdk-core';
-import { DescriptorMap } from '@bitgo/utxo-core/descriptor';
+import { IWallet, WalletCoinSpecific } from '@bitgo-beta/sdk-core';
+import { DescriptorMap } from '@bitgo-beta/utxo-core/descriptor';
 
 import { UtxoWallet, UtxoWalletData } from '../wallet';
 

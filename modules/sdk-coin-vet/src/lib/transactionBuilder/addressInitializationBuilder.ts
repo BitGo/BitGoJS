@@ -1,8 +1,12 @@
 import assert from 'assert';
 import { TransactionClause } from '@vechain/sdk-core';
-import { getProxyInitcode, getCreateForwarderParamsAndTypes, decodeForwarderCreationData } from '@bitgo/abstract-eth';
-import { TransactionType } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import {
+  getProxyInitcode,
+  getCreateForwarderParamsAndTypes,
+  decodeForwarderCreationData,
+} from '@bitgo-beta/abstract-eth';
+import { TransactionType } from '@bitgo-beta/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { setLengthLeft, toBuffer, addHexPrefix } from 'ethereumjs-util';
 import EthereumAbi from 'ethereumjs-abi';
 

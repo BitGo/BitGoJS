@@ -1,5 +1,5 @@
 import { ILightningWallet, LightningWallet } from './lightning';
-import * as sdkcore from '@bitgo/sdk-core';
+import * as sdkcore from '@bitgo-beta/sdk-core';
 
 export type ICustodialLightningWallet = ILightningWallet;
 

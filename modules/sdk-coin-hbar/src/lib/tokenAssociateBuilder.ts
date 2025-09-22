@@ -1,6 +1,6 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { proto } from '@hashgraph/proto';
-import { BaseKey, BuildTransactionError, SigningError, TransactionType } from '@bitgo/sdk-core';
+import { BaseKey, BuildTransactionError, SigningError, TransactionType } from '@bitgo-beta/sdk-core';
 import { Transaction } from './transaction';
 import {
   buildHederaAccountID,

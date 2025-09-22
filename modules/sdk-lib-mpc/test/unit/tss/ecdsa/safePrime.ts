@@ -1,7 +1,7 @@
 import 'should';
 import { bitLength, isProbablyPrime } from 'bigint-crypto-utils';
 import { generateSafePrime } from '../../../../src';
-import { loadWebAssembly } from '@bitgo/sdk-opensslbytes';
+import { loadWebAssembly } from '@bitgo-beta/sdk-opensslbytes';
 
 const openSSLBytes = loadWebAssembly().buffer;
 

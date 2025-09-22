@@ -1,5 +1,5 @@
-import { TransactionType, InvalidTransactionError } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { TransactionType, InvalidTransactionError } from '@bitgo-beta/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { Transaction as VetTransaction, Secp256k1 } from '@vechain/sdk-core';
 import { Transaction } from './transaction';
 import { VetTransactionData } from '../iface';

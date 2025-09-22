@@ -1,9 +1,9 @@
 import 'should';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
 import { Iota } from '../../src';
 import assert from 'assert';
-import { coins, GasTankAccountCoin } from '@bitgo/statics';
+import { coins, GasTankAccountCoin } from '@bitgo-beta/statics';
 
 describe('IOTA:', function () {
   let bitgo: TestBitGoAPI;

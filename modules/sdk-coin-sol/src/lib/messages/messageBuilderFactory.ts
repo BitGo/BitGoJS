@@ -1,5 +1,10 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseMessageBuilderFactory, IMessageBuilder, MessageStandardType, SimpleMessageBuilder } from '@bitgo/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
+import {
+  BaseMessageBuilderFactory,
+  IMessageBuilder,
+  MessageStandardType,
+  SimpleMessageBuilder,
+} from '@bitgo-beta/sdk-core';
 
 export class MessageBuilderFactory extends BaseMessageBuilderFactory {
   constructor(coinConfig: Readonly<CoinConfig>) {

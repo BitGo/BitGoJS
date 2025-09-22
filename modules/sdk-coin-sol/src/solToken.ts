@@ -1,6 +1,6 @@
 import { Sol } from './sol';
-import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
-import { coins, tokens } from '@bitgo/statics';
+import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo-beta/sdk-core';
+import { coins, tokens } from '@bitgo-beta/statics';
 
 export interface SolTokenConfig {
   name: string;

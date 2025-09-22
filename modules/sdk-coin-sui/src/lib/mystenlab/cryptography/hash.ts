@@ -1,4 +1,4 @@
-import blake2b from '@bitgo/blake2b';
+import blake2b from '@bitgo-beta/blake2b';
 
 /**
  * Generates a Blake2b hash of typed data as a base64 string.

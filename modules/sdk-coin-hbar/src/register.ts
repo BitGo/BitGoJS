@@ -1,4 +1,4 @@
-import { BitGoBase } from '@bitgo/sdk-core';
+import { BitGoBase } from '@bitgo-beta/sdk-core';
 import { Hbar } from './hbar';
 import { HbarToken } from './hbarToken';
 import { Thbar } from './thbar';

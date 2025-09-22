@@ -1,7 +1,7 @@
 import should from 'should';
 import * as testData from '../../resources/near';
 import { getBuilderFactory } from '../getBuilderFactory';
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 import { validatorContractAddress } from '../../resources/near';
 
 describe('Near Staking Deactivate Builder', () => {

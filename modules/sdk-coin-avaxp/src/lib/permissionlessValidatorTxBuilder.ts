@@ -25,9 +25,9 @@ import {
   isValidBLSSignature,
   NotSupported,
   TransactionType,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { Buffer as BufferAvax } from 'avalanche';
 import BigNumber from 'bignumber.js';
 import { DecodedUtxoObj, SECP256K1_Transfer_Output, Tx } from './iface';

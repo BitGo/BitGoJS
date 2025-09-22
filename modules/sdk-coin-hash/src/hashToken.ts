@@ -1,5 +1,5 @@
-import { AddressFormat, BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
-import { CosmosTokenConfig, coins, tokens } from '@bitgo/statics';
+import { AddressFormat, BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo-beta/sdk-core';
+import { CosmosTokenConfig, coins, tokens } from '@bitgo-beta/statics';
 import { Hash } from './hash';
 import { HashUtils } from './lib/utils';
 import { KeyPair } from './lib';

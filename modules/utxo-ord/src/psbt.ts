@@ -1,5 +1,5 @@
-import { Network, bitgo, address } from '@bitgo/utxo-lib';
-import { Dimensions, VirtualSizes } from '@bitgo/unspents';
+import { Network, bitgo, address } from '@bitgo-beta/utxo-lib';
+import { Dimensions, VirtualSizes } from '@bitgo-beta/unspents';
 
 import { OrdOutput } from './OrdOutput';
 import { parseSatPoint, SatPoint } from './SatPoint';

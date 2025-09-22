@@ -1,6 +1,6 @@
 import assert from 'assert';
 import should from 'should';
-import { coins } from '@bitgo/statics';
+import { coins } from '@bitgo-beta/statics';
 import * as AlgoResources from '../../fixtures/resources';
 import { Transaction } from '../../../src/lib/transaction';
 import { KeyPair, AssetTransferBuilder, TransactionBuilderFactory } from '../../../src/lib';

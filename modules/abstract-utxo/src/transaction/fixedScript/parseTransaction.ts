@@ -1,8 +1,8 @@
 import assert from 'assert';
 
 import _ from 'lodash';
-import { Triple, VerificationOptions, Wallet } from '@bitgo/sdk-core';
-import * as utxolib from '@bitgo/utxo-lib';
+import { Triple, VerificationOptions, Wallet } from '@bitgo-beta/sdk-core';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 
 import {
   AbstractUtxoCoin,

@@ -1,4 +1,4 @@
-import { BitGoBase } from '@bitgo/sdk-core';
+import { BitGoBase } from '@bitgo-beta/sdk-core';
 import { Erc20Token } from './erc20Token';
 import { Eth } from './eth';
 import { Gteth } from './gteth';

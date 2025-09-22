@@ -7,8 +7,8 @@ import {
   Recipient,
   TransactionType,
   ParseTransactionError,
-} from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+} from '@bitgo-beta/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { Transaction } from '../transaction/transaction';
 import utils from '../utils';
 import { TransactionClause } from '@vechain/sdk-core';

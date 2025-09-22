@@ -9,7 +9,7 @@
  * The goal is not an exhaustive check, but to catch common mistakes.
  */
 import { Descriptor } from '@bitgo/wasm-miniscript';
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 
 export const FINAL_SEQUENCE = 0xffffffff;
 

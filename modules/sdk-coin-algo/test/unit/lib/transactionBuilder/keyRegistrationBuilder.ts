@@ -1,4 +1,4 @@
-import { coins } from '@bitgo/statics';
+import { coins } from '@bitgo-beta/statics';
 import algosdk from 'algosdk';
 import assert from 'assert';
 import should from 'should';

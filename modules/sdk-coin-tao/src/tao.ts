@@ -3,9 +3,9 @@ import {
   BitGoBase,
   Environments,
   SignTransactionOptions as BaseSignTransactionOptions,
-} from '@bitgo/sdk-core';
-import { coins, BaseCoin as StaticsBaseCoin, SubstrateSpecNameType } from '@bitgo/statics';
-import { Interface, SubstrateCoin } from '@bitgo/abstract-substrate';
+} from '@bitgo-beta/sdk-core';
+import { coins, BaseCoin as StaticsBaseCoin, SubstrateSpecNameType } from '@bitgo-beta/statics';
+import { Interface, SubstrateCoin } from '@bitgo-beta/abstract-substrate';
 import { TransactionBuilderFactory } from './lib';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 

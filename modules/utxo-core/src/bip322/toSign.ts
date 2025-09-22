@@ -1,5 +1,5 @@
-import { Psbt, bitgo, networks, Transaction } from '@bitgo/utxo-lib';
-import { toXOnlyPublicKey } from '@bitgo/utxo-lib/dist/src/bitgo/outputScripts';
+import { Psbt, bitgo, networks, Transaction } from '@bitgo-beta/utxo-lib';
+import { toXOnlyPublicKey } from '@bitgo-beta/utxo-lib/dist/src/bitgo/outputScripts';
 
 import { addBip322ProofMessage } from './utils';
 import { BIP322_TAG, buildToSpendTransaction } from './toSpend';

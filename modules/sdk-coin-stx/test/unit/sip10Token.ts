@@ -1,8 +1,8 @@
 import _ from 'lodash';
 import nock from 'nock';
-import { BitGoAPI } from '@bitgo/sdk-api';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { ITransactionRecipient, Wallet, Memo } from '@bitgo/sdk-core';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
+import { ITransactionRecipient, Wallet, Memo } from '@bitgo-beta/sdk-core';
 
 import { Sip10Token } from '../../src';
 import * as testData from '../fixtures';

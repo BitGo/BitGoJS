@@ -1,6 +1,6 @@
 import { Transaction as VetTransaction } from '@vechain/sdk-core';
-import { BaseTransactionBuilderFactory, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseTransactionBuilderFactory, InvalidTransactionError, TransactionType } from '@bitgo-beta/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { TransactionBuilder } from './transactionBuilder/transactionBuilder';
 import { TransferBuilder } from './transactionBuilder/transferBuilder';
 import { AddressInitializationBuilder } from './transactionBuilder/addressInitializationBuilder';

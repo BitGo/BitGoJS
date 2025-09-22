@@ -1,5 +1,12 @@
 import { PrivateKey, PublicKey } from '@hashgraph/sdk';
-import { AddressFormat, DefaultKeys, Ed25519KeyPair, InvalidKey, KeyPairOptions, NotSupported } from '@bitgo/sdk-core';
+import {
+  AddressFormat,
+  DefaultKeys,
+  Ed25519KeyPair,
+  InvalidKey,
+  KeyPairOptions,
+  NotSupported,
+} from '@bitgo-beta/sdk-core';
 import { removePrefix } from './utils';
 
 export const PUBLIC_KEY_PREFIX = '302a300506032b6570032100';

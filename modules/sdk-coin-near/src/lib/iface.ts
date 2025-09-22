@@ -1,5 +1,5 @@
 import { KeyType } from '@near-js/crypto';
-import { TransactionType, TransactionExplanation as BaseTransactionExplanation } from '@bitgo/sdk-core';
+import { TransactionType, TransactionExplanation as BaseTransactionExplanation } from '@bitgo-beta/sdk-core';
 
 export interface TransactionExplanation extends BaseTransactionExplanation {
   type: TransactionType;

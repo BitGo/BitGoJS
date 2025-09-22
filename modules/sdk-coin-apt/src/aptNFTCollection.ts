@@ -1,6 +1,6 @@
 import { Apt } from './apt';
-import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
-import { AptNFTCollectionConfig, coins, tokens } from '@bitgo/statics';
+import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo-beta/sdk-core';
+import { AptNFTCollectionConfig, coins, tokens } from '@bitgo-beta/statics';
 
 export class AptNFTCollection extends Apt {
   public readonly nftCollectionConfig: AptNFTCollectionConfig;

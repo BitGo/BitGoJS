@@ -1,4 +1,4 @@
-import { BaseCurve } from '@bitgo/sdk-lib-mpc';
+import { BaseCurve } from '@bitgo-beta/sdk-lib-mpc';
 
 /**
  * Base Interface for supporting elliptic curve parameters

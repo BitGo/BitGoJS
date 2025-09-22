@@ -4,7 +4,7 @@
 // Copyright 2016, BitGo, Inc.  All Rights Reserved.
 //
 
-import { bip32 } from '@bitgo/utxo-lib';
+import { bip32 } from '@bitgo-beta/utxo-lib';
 import { strict as assert } from 'assert';
 import 'should';
 import * as _ from 'lodash';
@@ -12,7 +12,7 @@ import { getSharedSecret } from '../../src/ecdh';
 
 const BitGoJS = require('../../src/index');
 const bitcoin = BitGoJS.bitcoin;
-const sjcl = require('@bitgo/sjcl');
+const sjcl = require('@bitgo-beta/sjcl');
 const TestBitGo = require('../lib/test_bitgo');
 
 const txid = TestBitGo.TRAVEL_RULE_TXID;

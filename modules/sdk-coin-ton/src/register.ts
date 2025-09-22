@@ -1,4 +1,4 @@
-import { BitGoBase } from '@bitgo/sdk-core';
+import { BitGoBase } from '@bitgo-beta/sdk-core';
 import { Ton } from './ton';
 import { Tton } from './tton';
 import { JettonToken } from './jettonToken';

@@ -1,4 +1,4 @@
-import { NetworkType } from '@bitgo/statics';
+import { NetworkType } from '@bitgo-beta/statics';
 import should from 'should';
 import { RuneUtils } from '../../src/lib/utils';
 import { MAINNET_ADDRESS_PREFIX, TESTNET_ADDRESS_PREFIX } from '../../src/lib/constants';

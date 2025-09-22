@@ -1,5 +1,5 @@
 import { Args } from '@substrate/txwrapper-core';
-import { Interface } from '@bitgo/abstract-substrate';
+import { Interface } from '@bitgo-beta/abstract-substrate';
 import { DecodedUnsignedTx } from '@substrate/txwrapper-core/lib/types';
 
 export type AnyJson = string | number | boolean | null | { [key: string]: AnyJson } | Array<AnyJson>;

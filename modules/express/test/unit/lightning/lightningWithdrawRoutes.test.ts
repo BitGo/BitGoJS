@@ -1,7 +1,7 @@
 import * as sinon from 'sinon';
 import should from 'should';
 import * as express from 'express';
-import { LightningOnchainWithdrawResponse } from '@bitgo/abstract-lightning';
+import { LightningOnchainWithdrawResponse } from '@bitgo-beta/abstract-lightning';
 import { BitGo } from 'bitgo';
 import { handleLightningWithdraw } from '../../../src/lightning/lightningWithdrawRoutes';
 
@@ -52,7 +52,7 @@ describe('Lightning Withdraw Routes', () => {
       // Mock the module import
       const proxyquire = require('proxyquire');
       const lightningWithdrawRoutes = proxyquire('../../../src/lightning/lightningWithdrawRoutes', {
-        '@bitgo/abstract-lightning': {
+        '@bitgo-beta/abstract-lightning': {
           getLightningWallet: () => mockLightningWallet,
         },
       });

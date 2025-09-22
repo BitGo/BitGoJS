@@ -5,8 +5,8 @@
 import should = require('should');
 import { randomBytes } from 'crypto';
 import * as sinon from 'sinon';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoAPI, encrypt } from '@bitgo/sdk-api';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
+import { BitGoAPI, encrypt } from '@bitgo-beta/sdk-api';
 import {
   address,
   consolidationWrwUser,
@@ -25,7 +25,7 @@ import { Ada, KeyPair, Tada } from '../../src';
 import { Transaction } from '../../src/lib';
 import { TransactionType } from '../../../sdk-core/src/account-lib/baseCoin/enum';
 import assert from 'assert';
-import { common, Wallet } from '@bitgo/sdk-core';
+import { common, Wallet } from '@bitgo-beta/sdk-core';
 import nock from 'nock';
 
 describe('ADA', function () {

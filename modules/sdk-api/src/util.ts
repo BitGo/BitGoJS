@@ -1,5 +1,5 @@
-import * as utxolib from '@bitgo/utxo-lib';
-import { common, V1Network } from '@bitgo/sdk-core';
+import * as utxolib from '@bitgo-beta/utxo-lib';
+import { common, V1Network } from '@bitgo-beta/sdk-core';
 
 export function getNetwork(network?: V1Network): utxolib.Network {
   network = network || common.getNetwork();

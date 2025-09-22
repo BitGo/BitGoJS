@@ -1,8 +1,8 @@
 import assert from 'assert';
 
 import * as t from 'io-ts';
-import * as utxolib from '@bitgo/utxo-lib';
-import { IRequestTracer, IWallet, KeyIndices, promiseProps, Triple } from '@bitgo/sdk-core';
+import * as utxolib from '@bitgo-beta/utxo-lib';
+import { IRequestTracer, IWallet, KeyIndices, promiseProps, Triple } from '@bitgo-beta/sdk-core';
 
 import { AbstractUtxoCoin } from './abstractUtxoCoin';
 import { UtxoWallet } from './wallet';

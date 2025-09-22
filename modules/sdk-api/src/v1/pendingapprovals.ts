@@ -13,7 +13,7 @@
 
 import * as _ from 'lodash';
 
-import { common } from '@bitgo/sdk-core';
+import { common } from '@bitgo-beta/sdk-core';
 const PendingApproval = require('./pendingapproval');
 
 //

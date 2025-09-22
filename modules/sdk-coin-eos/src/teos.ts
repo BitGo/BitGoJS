@@ -1,4 +1,4 @@
-import { BaseCoin, BitGoBase, common } from '@bitgo/sdk-core';
+import { BaseCoin, BitGoBase, common } from '@bitgo-beta/sdk-core';
 import { Eos } from './eos';
 
 export class Teos extends Eos {

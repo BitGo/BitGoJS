@@ -1,5 +1,5 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseKey } from '@bitgo/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
+import { BaseKey } from '@bitgo-beta/sdk-core';
 import { ContractCallBuilder } from './contractCallBuilder';
 import { Transaction } from './transaction';
 import { getHexAddressFromBase58Address, encodeDataParams } from './utils';

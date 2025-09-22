@@ -1,5 +1,5 @@
-import { TransactionType } from '@bitgo/sdk-core';
-import { coins, EthereumNetwork as EthLikeNetwork } from '@bitgo/statics';
+import { TransactionType } from '@bitgo-beta/sdk-core';
+import { coins, EthereumNetwork as EthLikeNetwork } from '@bitgo-beta/statics';
 import { ERC1155TransferBuilder, ERC721TransferBuilder, TransactionBuilder } from '../../../src';
 import * as testData from '../../resources/eth';
 import { ethers } from 'ethers';

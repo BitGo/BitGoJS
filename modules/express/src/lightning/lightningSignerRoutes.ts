@@ -1,6 +1,6 @@
 import { isIP } from 'net';
 import * as express from 'express';
-import { decodeOrElse } from '@bitgo/sdk-core';
+import { decodeOrElse } from '@bitgo-beta/sdk-core';
 import {
   getUtxolibNetwork,
   signerMacaroonPermissions,
@@ -10,8 +10,8 @@ import {
   getLightningKeychain,
   getLightningAuthKeychains,
   updateWalletCoinSpecific,
-} from '@bitgo/abstract-lightning';
-import * as utxolib from '@bitgo/utxo-lib';
+} from '@bitgo-beta/abstract-lightning';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 import { Buffer } from 'buffer';
 
 import { CreateSignerMacaroonRequest, GetWalletStateResponse, UnlockLightningWalletRequest } from './codecs';

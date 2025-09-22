@@ -1,4 +1,4 @@
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 
 export type ParserTx = utxolib.bitgo.UtxoTransaction<bigint> | utxolib.bitgo.UtxoPsbt;
 export type ParserTxInput =

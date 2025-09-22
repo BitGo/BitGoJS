@@ -1,13 +1,13 @@
 import * as CsprAccountLib from '../../src/lib';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
 import { Cspr, ExplainTransactionOptions, TransactionFee } from '../../src/cspr';
 import { Tcspr } from '../../src/tcspr';
 import { randomBytes } from 'crypto';
 import * as should from 'should';
 import { signedRawDelegateTx, signedRawTransferTx, signedRawUndelegateTx } from '../fixtures/cspr';
-import { TransactionType } from '@bitgo/sdk-core';
-import { BitGoAPI } from '@bitgo/sdk-api';
-import { coins } from '@bitgo/statics';
+import { TransactionType } from '@bitgo-beta/sdk-core';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
+import { coins } from '@bitgo-beta/statics';
 import assert from 'assert';
 
 type Transaction = CsprAccountLib.Transaction;

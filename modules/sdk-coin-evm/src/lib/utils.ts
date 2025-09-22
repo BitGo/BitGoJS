@@ -1,6 +1,6 @@
-import { CoinFeature, NetworkType, BaseCoin, EthereumNetwork } from '@bitgo/statics';
+import { CoinFeature, NetworkType, BaseCoin, EthereumNetwork } from '@bitgo-beta/statics';
 import EthereumCommon from '@ethereumjs/common';
-import { InvalidTransactionError } from '@bitgo/sdk-core';
+import { InvalidTransactionError } from '@bitgo-beta/sdk-core';
 
 /**
  * @param {NetworkType} network either mainnet or testnet

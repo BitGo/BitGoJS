@@ -1,5 +1,5 @@
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
 import { Xtz, Txtz, XtzLib } from '../../src';
 import {
   dataToSign,
@@ -10,7 +10,7 @@ import {
   unsignedHex,
   unsignedTransactionWithTwoTransfersHex,
 } from '../fixtures';
-import { Wallet } from '@bitgo/sdk-core';
+import { Wallet } from '@bitgo-beta/sdk-core';
 
 const bitgo: TestBitGoAPI = TestBitGo.decorate(BitGoAPI, { env: 'test' });
 bitgo.safeRegister('xtz', Xtz.createInstance);

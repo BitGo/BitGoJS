@@ -1,5 +1,5 @@
-import { bigIntToBufferBE, DklsComms, DklsDkg, DklsDsg, DklsTypes, DklsUtils } from '@bitgo/sdk-lib-mpc';
-import * as sjcl from '@bitgo/sjcl';
+import { bigIntToBufferBE, DklsComms, DklsDkg, DklsDsg, DklsTypes, DklsUtils } from '@bitgo-beta/sdk-lib-mpc';
+import * as sjcl from '@bitgo-beta/sjcl';
 import assert from 'assert';
 import { Buffer } from 'buffer';
 import { Hash } from 'crypto';

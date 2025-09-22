@@ -1,6 +1,6 @@
-import { BitGoAPI } from '@bitgo/sdk-api';
-import { toHex, TransactionType } from '@bitgo/sdk-core';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
+import { toHex, TransactionType } from '@bitgo-beta/sdk-core';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
 import { fromBase64 } from '@cosmjs/encoding';
 import should from 'should';
 import { Tzeta, Zeta } from '../../../src';

@@ -1,4 +1,4 @@
-import { BitGoBase } from '@bitgo/sdk-core';
+import { BitGoBase } from '@bitgo-beta/sdk-core';
 import { Celo } from './celo';
 import { CeloToken } from './celoToken';
 import { Tcelo } from './tcelo';

@@ -1,6 +1,6 @@
 import EthereumCommon from '@ethereumjs/common';
-import { BaseBuilder } from '@bitgo/sdk-core';
-import { coins } from '@bitgo/statics';
+import { BaseBuilder } from '@bitgo-beta/sdk-core';
+import { coins } from '@bitgo-beta/statics';
 import { EthLikeTransactionBuilder } from '../src';
 
 export function getBuilder(coinName: string, common: EthereumCommon): BaseBuilder {

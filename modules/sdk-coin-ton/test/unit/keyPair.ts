@@ -2,8 +2,8 @@ import assert from 'assert';
 import { KeyPair } from '../../src';
 import utils from '../../src/lib/utils';
 import should from 'should';
-import { Eddsa } from '@bitgo/sdk-core';
-import { Ed25519Bip32HdTree, HDTree } from '@bitgo/sdk-lib-mpc';
+import { Eddsa } from '@bitgo-beta/sdk-core';
+import { Ed25519Bip32HdTree, HDTree } from '@bitgo-beta/sdk-lib-mpc';
 
 describe('Ton KeyPair', function () {
   let rootKeychain;

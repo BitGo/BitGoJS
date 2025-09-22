@@ -27,14 +27,14 @@ import {
   MPCTxs,
   MPCSweepRecoveryOptions,
   AuditDecryptedKeyParams,
-} from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
+} from '@bitgo-beta/sdk-core';
+import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo-beta/statics';
 import { KeyPair as TonKeyPair } from './lib/keyPair';
 import BigNumber from 'bignumber.js';
 import * as _ from 'lodash';
 import { Transaction, TransactionBuilderFactory, Utils, TransferBuilder } from './lib';
 import TonWeb from 'tonweb';
-import { auditEddsaPrivateKey, getDerivationPath } from '@bitgo/sdk-lib-mpc';
+import { auditEddsaPrivateKey, getDerivationPath } from '@bitgo-beta/sdk-lib-mpc';
 import { getFeeEstimate } from './lib/utils';
 
 export interface TonParseTransactionOptions extends ParseTransactionOptions {

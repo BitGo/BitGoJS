@@ -8,7 +8,7 @@ import { EnterpriseData, EnterpriseFeatureFlag, IEnterprise } from '../enterpris
 import { getFirstPendingTransaction } from '../internal';
 import { ListWalletOptions, Wallet } from '../wallet';
 import { BitGoProofSignatures, EcdsaUtils, SerializedNtildeWithVerifiers } from '../utils/tss/ecdsa';
-import { EcdsaTypes } from '@bitgo/sdk-lib-mpc';
+import { EcdsaTypes } from '@bitgo-beta/sdk-lib-mpc';
 import { verifyEcdhSignature } from '../ecdh';
 import { Buffer } from 'buffer';
 import { EcdhDerivedKeypair } from '../keychain';

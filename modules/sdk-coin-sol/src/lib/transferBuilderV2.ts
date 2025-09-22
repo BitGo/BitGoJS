@@ -1,5 +1,5 @@
 import { TransactionBuilder } from './transactionBuilder';
-import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
+import { BuildTransactionError, TransactionType } from '@bitgo-beta/sdk-core';
 import { Transaction } from './transaction';
 import {
   getAssociatedTokenAccountAddress,
@@ -9,7 +9,7 @@ import {
   validateMintAddress,
   validateOwnerAddress,
 } from './utils';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import assert from 'assert';
 import { AtaInit, TokenAssociateRecipient, TokenTransfer, Transfer, SetPriorityFee } from './iface';
 import { InstructionBuilderTypes } from './constants';

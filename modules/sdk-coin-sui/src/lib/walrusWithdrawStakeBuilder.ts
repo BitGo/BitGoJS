@@ -4,13 +4,13 @@ import {
   WalrusWithdrawStakeProgrammableTransaction,
   SuiTransactionType,
 } from './iface';
-import { BaseCoin as CoinConfig, NetworkType } from '@bitgo/statics';
+import { BaseCoin as CoinConfig, NetworkType } from '@bitgo-beta/statics';
 import { TransactionBuilder } from './transactionBuilder';
 import { WalrusWithdrawStakeTransaction } from './walrusWithdrawStakeTransaction';
 import utils from './utils';
 
 import { WALRUS_TESTNET_CONFIG, WALRUS_PROD_CONFIG } from './resources/walrusConfig';
-import { BaseKey, BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
+import { BaseKey, BuildTransactionError, TransactionType } from '@bitgo-beta/sdk-core';
 import { TransferTransaction } from './transferTransaction';
 import { Transaction } from './transaction';
 import { normalizeSuiObjectId } from './mystenlab/types';

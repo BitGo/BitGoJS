@@ -2,7 +2,7 @@ import assert from 'assert';
 import 'should';
 import * as errorMessage from '../../resources/errors';
 import { TransactionBuilderFactory, DecodedUtxoObj } from '../../../src/lib';
-import { coins } from '@bitgo/statics';
+import { coins } from '@bitgo-beta/statics';
 import { IMPORT_C } from '../../resources/tx/importC';
 import signFlowTest from './signFlowTestSuit';
 

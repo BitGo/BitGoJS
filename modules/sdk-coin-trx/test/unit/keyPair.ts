@@ -2,7 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'assert';
 
 import { KeyPair } from '../../src';
-import { AddressFormat } from '@bitgo/sdk-core';
+import { AddressFormat } from '@bitgo-beta/sdk-core';
 
 describe('Trx KeyPair', function () {
   const defaultSeed = { seed: Buffer.alloc(32) };

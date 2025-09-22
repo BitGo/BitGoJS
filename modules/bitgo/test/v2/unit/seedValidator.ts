@@ -1,11 +1,11 @@
 import 'should';
 
 import nock = require('nock');
-import { TestBitGo } from '@bitgo/sdk-test';
+import { TestBitGo } from '@bitgo-beta/sdk-test';
 import { BitGo } from '../../../src/bitgo';
 
 import { SeedValidator } from '../../../src/v2/internal/seedValidator';
-import { CoinFamily } from '@bitgo/statics';
+import { CoinFamily } from '@bitgo-beta/statics';
 
 describe('SeedValidators:', function () {
   let bitgo;

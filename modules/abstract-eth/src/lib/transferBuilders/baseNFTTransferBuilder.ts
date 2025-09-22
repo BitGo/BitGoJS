@@ -1,7 +1,7 @@
-import { InvalidParameterValueError, InvalidSignatureError } from '@bitgo/sdk-core';
+import { InvalidParameterValueError, InvalidSignatureError } from '@bitgo-beta/sdk-core';
 import { isValidEthAddress } from '../utils';
 import { joinSignature, solidityKeccak256, SigningKey } from 'ethers/lib/utils';
-import { BaseCoin } from '@bitgo/statics';
+import { BaseCoin } from '@bitgo-beta/statics';
 
 export abstract class BaseNFTTransferBuilder {
   protected readonly _EMPTY_HEX_VALUE = '0x';

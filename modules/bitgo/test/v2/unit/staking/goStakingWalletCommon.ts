@@ -2,12 +2,12 @@ import nock = require('nock');
 import should = require('should');
 import fixtures from '../../fixtures/staking/goStakingWallet';
 
-import { Enterprise, Environments, GoStakingWallet, Wallet } from '@bitgo/sdk-core';
-import { TestBitGo } from '@bitgo/sdk-test';
+import { Enterprise, Environments, GoStakingWallet, Wallet } from '@bitgo-beta/sdk-core';
+import { TestBitGo } from '@bitgo-beta/sdk-test';
 import { BitGo } from '../../../../src';
 import * as sinon from 'sinon';
 import { OfcToken } from '../../../../src/v2/coins';
-import { tokens } from '@bitgo/statics';
+import { tokens } from '@bitgo-beta/statics';
 
 describe('Go Staking Wallet Common', function () {
   const microservicesUri = Environments['mock'].uri;

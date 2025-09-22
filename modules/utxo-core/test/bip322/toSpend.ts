@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import { testutil, bitgo } from '@bitgo/utxo-lib';
+import { testutil, bitgo } from '@bitgo-beta/utxo-lib';
 
 import {
   buildToSpendTransaction,

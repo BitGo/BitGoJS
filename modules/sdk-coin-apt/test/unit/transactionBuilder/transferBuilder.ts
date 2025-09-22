@@ -1,7 +1,7 @@
-import { coins } from '@bitgo/statics';
+import { coins } from '@bitgo-beta/statics';
 import { TransactionBuilderFactory, TransferTransaction } from '../../../src';
 import * as testData from '../../resources/apt';
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 import should from 'should';
 
 describe('Apt Transfer Transaction', () => {

@@ -1,4 +1,4 @@
-import { isValidXpub, SigningError } from '@bitgo/sdk-core';
+import { isValidXpub, SigningError } from '@bitgo-beta/sdk-core';
 import { InMemorySigner } from '@taquito/signer';
 import * as base58check from 'bs58check';
 import { secp256k1 } from '@noble/curves/secp256k1';

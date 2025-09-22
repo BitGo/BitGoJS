@@ -1,6 +1,6 @@
 import * as should from 'should';
-import { TestBitGo } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { TestBitGo } from '@bitgo-beta/sdk-test';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
 
 describe('ALGO:', function () {
   let bitgo;

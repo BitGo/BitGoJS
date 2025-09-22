@@ -1,4 +1,4 @@
-import { BaseUtils, isValidEd25519PublicKey } from '@bitgo/sdk-core';
+import { BaseUtils, isValidEd25519PublicKey } from '@bitgo-beta/sdk-core';
 import TonWeb from 'tonweb';
 
 export class Utils implements BaseUtils {

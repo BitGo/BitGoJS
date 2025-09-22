@@ -1,7 +1,7 @@
 import assert from 'assert';
 
-import * as utxolib from '@bitgo/utxo-lib';
-import { BIP32Interface, ECPair, ECPairInterface } from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
+import { BIP32Interface, ECPair, ECPairInterface } from '@bitgo-beta/utxo-lib';
 import { Descriptor, Miniscript } from '@bitgo/wasm-miniscript';
 
 import { PsbtParams, parse, toUtxoPsbt, toWrappedPsbt, ParsedDescriptorTransaction } from '../../../src/descriptor';

@@ -1,6 +1,6 @@
-import { BaseCoin } from '@bitgo/statics';
-import { Keychain } from '@bitgo/sdk-core';
-import { encrypt } from '@bitgo/sdk-api';
+import { BaseCoin } from '@bitgo-beta/statics';
+import { Keychain } from '@bitgo-beta/sdk-core';
+import { encrypt } from '@bitgo-beta/sdk-api';
 import * as assert from 'assert';
 import { GenerateQrDataParams, MasterPublicKeyQrDataEntry, QrData, QrDataEntry } from './types';
 

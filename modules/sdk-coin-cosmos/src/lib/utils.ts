@@ -1,7 +1,7 @@
-import { CosmosUtils } from '@bitgo/abstract-cosmos';
-import { CosmosNetwork } from '@bitgo/statics';
+import { CosmosUtils } from '@bitgo-beta/abstract-cosmos';
+import { CosmosNetwork } from '@bitgo-beta/statics';
 import { Coin } from '@cosmjs/stargate';
-import { InvalidTransactionError } from '@bitgo/sdk-core';
+import { InvalidTransactionError } from '@bitgo-beta/sdk-core';
 import BigNumber from 'bignumber.js';
 
 /**

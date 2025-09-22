@@ -2,7 +2,7 @@ import 'should';
 import { testEthMessageBuilding } from '../abstractEthMessageBuilderTests';
 import { EIP191Message, Eip191MessageBuilder } from '../../../../src';
 import { fixtures } from './fixtures';
-import { MessageStandardType } from '@bitgo/sdk-core';
+import { MessageStandardType } from '@bitgo-beta/sdk-core';
 
 describe('EIP191 Message Builder', () => {
   testEthMessageBuilding({

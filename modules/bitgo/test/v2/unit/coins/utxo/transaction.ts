@@ -4,11 +4,11 @@
 import 'mocha';
 import * as _ from 'lodash';
 import * as assert from 'assert';
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 import nock = require('nock');
-import { BIP32Interface, bitgo, testutil } from '@bitgo/utxo-lib';
+import { BIP32Interface, bitgo, testutil } from '@bitgo-beta/utxo-lib';
 
-import { AbstractUtxoCoin, getReplayProtectionAddresses } from '@bitgo/abstract-utxo';
+import { AbstractUtxoCoin, getReplayProtectionAddresses } from '@bitgo-beta/abstract-utxo';
 
 import {
   utxoCoins,
@@ -33,8 +33,8 @@ import {
   HalfSignedUtxoTransaction,
   Triple,
   WalletSignTransactionOptions,
-} from '@bitgo/sdk-core';
-import { TestBitGo } from '@bitgo/sdk-test';
+} from '@bitgo-beta/sdk-core';
+import { TestBitGo } from '@bitgo-beta/sdk-test';
 import { BitGo } from '../../../../../src';
 
 type Unspent<TNumber extends number | bigint = number> = bitgo.Unspent<TNumber>;

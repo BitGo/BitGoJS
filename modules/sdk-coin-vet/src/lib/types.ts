@@ -1,4 +1,4 @@
-import { ParseTransactionOptions } from '@bitgo/sdk-core';
+import { ParseTransactionOptions } from '@bitgo-beta/sdk-core';
 
 export interface ExplainTransactionOptions {
   txHex: string;

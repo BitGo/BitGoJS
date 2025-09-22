@@ -1,10 +1,10 @@
-import { toHex, TransactionType } from '@bitgo/sdk-core';
+import { toHex, TransactionType } from '@bitgo-beta/sdk-core';
 import { fromBase64 } from '@cosmjs/encoding';
 import should from 'should';
 
 import * as testData from '../../resources/tia';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
 import { Tia, Ttia } from '../../../src';
 
 describe('Tia WithdrawRewards txn Builder', () => {

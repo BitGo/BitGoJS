@@ -11,9 +11,9 @@ import {
   ParseTransactionOptions,
   VerifyAddressOptions,
   VerifyTransactionOptions,
-} from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
-import { Eth, optionalDeps, TransactionBuilder } from '@bitgo/sdk-coin-eth';
+} from '@bitgo-beta/sdk-core';
+import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo-beta/statics';
+import { Eth, optionalDeps, TransactionBuilder } from '@bitgo-beta/sdk-coin-eth';
 
 type FullNodeResponseBody = {
   jsonrpc: string;

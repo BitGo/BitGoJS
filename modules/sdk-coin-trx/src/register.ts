@@ -1,4 +1,4 @@
-import { BitGoBase } from '@bitgo/sdk-core';
+import { BitGoBase } from '@bitgo-beta/sdk-core';
 import { Trx } from './trx';
 import { TrxToken } from './trxToken';
 import { Ttrx } from './ttrx';

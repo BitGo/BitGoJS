@@ -15,9 +15,9 @@ import {
   address,
   taproot,
   ECPair,
-} from '@bitgo/utxo-lib';
-import * as utxolib from '@bitgo/utxo-lib';
-import { PreparedInscriptionRevealData } from '@bitgo/sdk-core';
+} from '@bitgo-beta/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
+import { PreparedInscriptionRevealData } from '@bitgo-beta/sdk-core';
 
 const OPS = bscript.OPS;
 const MAX_LENGTH_TAP_DATA_PUSH = 520;

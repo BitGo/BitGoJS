@@ -11,7 +11,7 @@
 // Copyright 2015, BitGo, Inc.  All Rights Reserved.
 //
 
-import { common } from '@bitgo/sdk-core';
+import { common } from '@bitgo-beta/sdk-core';
 
 //
 // Constructor

@@ -1,4 +1,4 @@
-import * as sdkcore from '@bitgo/sdk-core';
+import * as sdkcore from '@bitgo-beta/sdk-core';
 import { BackupResponse, UpdateLightningWalletClientRequest, UpdateLightningWalletEncryptedRequest } from '../codecs';
 import { getLightningAuthKeychains, ILightningWallet, LightningWallet } from './lightning';
 import { createMessageSignature, deriveLightningServiceSharedSecret, isLightningCoinName } from '../lightning';

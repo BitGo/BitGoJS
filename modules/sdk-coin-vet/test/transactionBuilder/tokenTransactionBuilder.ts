@@ -1,6 +1,6 @@
 import should from 'should';
-import { coins } from '@bitgo/statics';
-import { TransactionType } from '@bitgo/sdk-core';
+import { coins } from '@bitgo-beta/statics';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 import { Transaction, TransactionBuilderFactory, TokenTransaction } from '../../src';
 import * as testData from '../resources/vet';
 

@@ -1,5 +1,5 @@
-import { BitGoAPI } from '@bitgo/sdk-api';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
 import BigNumber from 'bignumber.js';
 import sinon from 'sinon';
 import { Mantra, Tmantra } from '../../src';

@@ -1,7 +1,7 @@
 import { KeyPair, Utils, AtaInitializationBuilder, TokenTransferBuilder } from '../../../src';
 import should from 'should';
 import * as testData from '../../resources/sol';
-import { BaseTransaction } from '@bitgo/sdk-core';
+import { BaseTransaction } from '@bitgo-beta/sdk-core';
 import { getBuilderFactory } from '../getBuilderFactory';
 
 describe('Sol Associated Token Account Builder', () => {

@@ -1,5 +1,5 @@
 import * as fs from 'fs/promises';
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 
 import { Dimensions } from '../src';
 
@@ -80,7 +80,7 @@ function generateDocument() {
   return [
     '# Input Costs',
     'This document contains the worst-case input costs for various script types and spend types.',
-    'The input costs are calculated using the `Dimensions` class from `@bitgo/unspents`.',
+    'The input costs are calculated using the `Dimensions` class from `@bitgo-beta/unspents`.',
     '',
     generateTables(),
   ].join('\n');

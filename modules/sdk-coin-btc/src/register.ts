@@ -1,4 +1,4 @@
-import { BitGoBase } from '@bitgo/sdk-core';
+import { BitGoBase } from '@bitgo-beta/sdk-core';
 import { Btc } from './btc';
 import { Tbtc } from './tbtc';
 import { Tbtc4 } from './tbtc4';

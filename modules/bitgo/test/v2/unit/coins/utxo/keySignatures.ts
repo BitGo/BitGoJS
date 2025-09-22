@@ -1,6 +1,6 @@
 import * as assert from 'assert';
-import { AbstractUtxoCoin } from '@bitgo/abstract-utxo';
-import { Keychain } from '@bitgo/sdk-core';
+import { AbstractUtxoCoin } from '@bitgo-beta/abstract-utxo';
+import { Keychain } from '@bitgo-beta/sdk-core';
 
 import { utxoCoins } from './util';
 

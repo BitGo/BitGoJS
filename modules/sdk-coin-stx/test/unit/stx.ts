@@ -1,10 +1,10 @@
 import assert from 'assert';
 import nock from 'nock';
 
-import { BitGoAPI } from '@bitgo/sdk-api';
-import { Wallet } from '@bitgo/sdk-core';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { coins } from '@bitgo/statics';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
+import { Wallet } from '@bitgo-beta/sdk-core';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
+import { coins } from '@bitgo-beta/statics';
 import { cvToString } from '@stacks/transactions';
 
 import * as testData from '../fixtures';

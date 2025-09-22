@@ -1,7 +1,7 @@
-import { BitGoBase, BaseCoin } from '@bitgo/sdk-core';
-import { Bch } from '@bitgo/sdk-coin-bch';
-import * as utxolib from '@bitgo/utxo-lib';
-import { UtxoNetwork } from '@bitgo/abstract-utxo';
+import { BitGoBase, BaseCoin } from '@bitgo-beta/sdk-core';
+import { Bch } from '@bitgo-beta/sdk-coin-bch';
+import * as utxolib from '@bitgo-beta/utxo-lib';
+import { UtxoNetwork } from '@bitgo-beta/abstract-utxo';
 
 export class Bcha extends Bch {
   constructor(bitgo: BitGoBase, network?: UtxoNetwork) {

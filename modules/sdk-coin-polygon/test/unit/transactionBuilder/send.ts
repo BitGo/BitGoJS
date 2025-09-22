@@ -1,7 +1,7 @@
-import { TransactionType, BaseTransaction } from '@bitgo/sdk-core';
+import { TransactionType, BaseTransaction } from '@bitgo-beta/sdk-core';
 import * as ethUtil from 'ethereumjs-util';
 import should from 'should';
-import { decodeTransferData } from '@bitgo/abstract-eth';
+import { decodeTransferData } from '@bitgo-beta/abstract-eth';
 import { getBuilder } from '../../getBuilder';
 import { TransactionBuilder, KeyPair } from '../../../src';
 import * as testData from '../../resources';

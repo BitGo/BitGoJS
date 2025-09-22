@@ -1,4 +1,4 @@
-import { BaseTransactionBuilder, BaseTransactionBuilderFactory } from '@bitgo/sdk-core';
+import { BaseTransactionBuilder, BaseTransactionBuilderFactory } from '@bitgo-beta/sdk-core';
 
 export interface signFlowTestSuitArgs {
   transactionType: string;

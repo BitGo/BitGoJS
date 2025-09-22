@@ -2,12 +2,12 @@
  * @prettier
  */
 import 'should';
-import { bip32 } from '@bitgo/utxo-lib';
+import { bip32 } from '@bitgo-beta/utxo-lib';
 import * as crypto from 'crypto';
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 
-import { getSharedSecret, signMessageWithDerivedEcdhKey, verifyEcdhSignature } from '@bitgo/sdk-core';
-import { TestBitGo } from '@bitgo/sdk-test';
+import { getSharedSecret, signMessageWithDerivedEcdhKey, verifyEcdhSignature } from '@bitgo-beta/sdk-core';
+import { TestBitGo } from '@bitgo-beta/sdk-test';
 import * as assert from 'assert';
 import { BitGo } from '../src/bitgo';
 

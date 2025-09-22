@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'assert';
-import { coins } from '@bitgo/statics';
+import { coins } from '@bitgo-beta/statics';
 import { Interface, Transaction } from '../../src';
 import { UnsignedBuildTransaction } from '../resources';
 

@@ -1,4 +1,4 @@
-import { CosmosUtils } from '@bitgo/abstract-cosmos';
+import { CosmosUtils } from '@bitgo-beta/abstract-cosmos';
 
 const cosmosUtils = new CosmosUtils();
 export const validDenoms = ['init', 'tinit', 'uinit', ...cosmosUtils.getTokenDenomsUsingCoinFamily('initia')];

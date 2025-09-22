@@ -1,11 +1,11 @@
-import { InvalidTransactionError } from '@bitgo/sdk-core';
+import { InvalidTransactionError } from '@bitgo-beta/sdk-core';
 import { Coin } from '@cosmjs/stargate';
 import BigNumber from 'bignumber.js';
 
-import { CosmosLikeTransaction, CosmosUtils, FeeData } from '@bitgo/abstract-cosmos';
+import { CosmosLikeTransaction, CosmosUtils, FeeData } from '@bitgo-beta/abstract-cosmos';
 import { MessageData } from './iface';
 import * as constants from './constants';
-import { NetworkType } from '@bitgo/statics';
+import { NetworkType } from '@bitgo-beta/statics';
 import { DecodedTxRaw } from '@cosmjs/proto-signing';
 import { MAINNET_ADDRESS_PREFIX, TESTNET_ADDRESS_PREFIX } from './constants';
 const bech32 = require('bech32-buffer');

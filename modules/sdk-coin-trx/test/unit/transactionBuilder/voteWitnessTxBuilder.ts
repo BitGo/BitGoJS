@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 import { describe, it } from 'node:test';
 import { PARTICIPANTS, BLOCK_HASH, BLOCK_NUMBER, EXPIRATION, VOTE_WITNESS_CONTRACT } from '../../resources';
 import { getBuilder } from '../../../src/lib/builder';

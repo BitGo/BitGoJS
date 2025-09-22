@@ -1,4 +1,4 @@
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 
 export function addBip322ProofMessage(psbt: utxolib.Psbt, inputIndex: number, message: Buffer): void {
   utxolib.bitgo.addProprietaryKeyValuesFromUnknownKeyValues(psbt, 'input', inputIndex, {

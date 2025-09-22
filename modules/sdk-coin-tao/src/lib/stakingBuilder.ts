@@ -1,8 +1,8 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { defineMethod, UnsignedTransaction, DecodedSignedTx, DecodedSigningPayload } from '@substrate/txwrapper-core';
 import BigNumber from 'bignumber.js';
-import { InvalidTransactionError, TransactionType, BaseAddress } from '@bitgo/sdk-core';
-import { Transaction, TransactionBuilder, Interface, Schema } from '@bitgo/abstract-substrate';
+import { InvalidTransactionError, TransactionType, BaseAddress } from '@bitgo-beta/sdk-core';
+import { Transaction, TransactionBuilder, Interface, Schema } from '@bitgo-beta/abstract-substrate';
 
 export class StakingBuilder extends TransactionBuilder {
   protected _amount: string;

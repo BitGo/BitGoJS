@@ -1,14 +1,14 @@
 import * as should from 'should';
 
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
 
 import { Coredao, Tcoredao } from '../../src';
 import nock from 'nock';
 
 import { FeeMarketEIP1559Transaction } from '@ethereumjs/tx';
 import { stripHexPrefix } from '@ethereumjs/util';
-import { common } from '@bitgo/sdk-core';
+import { common } from '@bitgo-beta/sdk-core';
 import { mockDataNonBitGoRecovery } from '../resources';
 
 const bitgo: TestBitGoAPI = TestBitGo.decorate(BitGoAPI, { env: 'test' });

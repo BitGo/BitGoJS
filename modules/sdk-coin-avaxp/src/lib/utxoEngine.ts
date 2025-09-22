@@ -2,7 +2,7 @@ import { DecodedUtxoObj, SECP256K1_Transfer_Output } from './iface';
 import { BN, Buffer as BufferAvax } from 'avalanche';
 import { Signature } from 'avalanche/dist/common';
 import utils from './utils';
-import { BuildTransactionError } from '@bitgo/sdk-core';
+import { BuildTransactionError } from '@bitgo-beta/sdk-core';
 import { StandardAmountInput, StandardTransferableInput } from 'avalanche/dist/common/input';
 import { avaxSerial } from '@bitgo-forks/avalanchejs';
 

@@ -6,10 +6,10 @@ These are actually not utxo-specific and belong in a more general module.
 import assert from 'assert';
 
 import buildDebug from 'debug';
-import * as utxolib from '@bitgo/utxo-lib';
-import { bip32 } from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
+import { bip32 } from '@bitgo-beta/utxo-lib';
 import * as bitcoinMessage from 'bitcoinjs-message';
-import { BitGoBase, decryptKeychainPrivateKey, KeyIndices } from '@bitgo/sdk-core';
+import { BitGoBase, decryptKeychainPrivateKey, KeyIndices } from '@bitgo-beta/sdk-core';
 
 import { ParsedTransaction, VerifyKeySignaturesOptions, VerifyUserPublicKeyOptions } from './abstractUtxoCoin';
 import { UtxoKeychain } from './keychains';

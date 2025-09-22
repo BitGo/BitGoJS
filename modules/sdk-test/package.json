@@ -1,5 +1,5 @@
 {
-  "name": "@bitgo/sdk-test",
+  "name": "@bitgo-beta/sdk-test",
   "version": "0.0.0-semantic-release-managed",
   "private": "true",
   "description": "coin test libary for BitGoJS",
@@ -27,8 +27,8 @@
     ]
   },
   "dependencies": {
-    "@bitgo/sdk-api": "0.0.0-semantic-release-managed",
-    "@bitgo/sdk-core": "0.0.0-semantic-release-managed",
+    "@bitgo-beta/sdk-api": "1.10.1-beta.1199",
+    "@bitgo-beta/sdk-core": "8.2.1-beta.1200",
     "bignumber.js": "^9.1.1",
     "should-http": "^0.1.1"
   }

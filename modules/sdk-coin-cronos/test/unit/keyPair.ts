@@ -4,7 +4,7 @@ import should from 'should';
 
 import { KeyPair } from '../../src';
 import { TEST_ACCOUNT, TEST_SEND_TX } from '../resources/cronos';
-import { AddressFormat } from '@bitgo/sdk-core';
+import { AddressFormat } from '@bitgo-beta/sdk-core';
 
 describe('Cronos Key Pair', () => {
   describe('should create a valid KeyPair', () => {

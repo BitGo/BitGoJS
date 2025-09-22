@@ -1,4 +1,4 @@
-import { createSharedDataProof, commonTssMethods } from '@bitgo/sdk-core';
+import { createSharedDataProof, commonTssMethods } from '@bitgo-beta/sdk-core';
 import * as openpgp from 'openpgp';
 
 openpgp.config.rejectCurves = new Set();

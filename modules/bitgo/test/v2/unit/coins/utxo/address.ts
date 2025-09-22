@@ -3,10 +3,10 @@
  */
 import 'should';
 import * as assert from 'assert';
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 const { chainCodes } = utxolib.bitgo;
 
-import { AbstractUtxoCoin, GenerateFixedScriptAddressOptions } from '@bitgo/abstract-utxo';
+import { AbstractUtxoCoin, GenerateFixedScriptAddressOptions } from '@bitgo-beta/abstract-utxo';
 
 import { utxoCoins, keychains as keychainsBip32, getFixture, shouldEqualJSON } from './util';
 

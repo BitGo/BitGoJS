@@ -1,4 +1,4 @@
-import { AddressFormat } from '@bitgo/sdk-core';
+import { AddressFormat } from '@bitgo-beta/sdk-core';
 import assert from 'assert';
 import should from 'should';
 import { KeyPair } from '../../src';

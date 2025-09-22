@@ -1,8 +1,8 @@
 /**
  * @prettier
  */
-import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
-import { EosTokenConfig, tokens } from '@bitgo/statics';
+import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo-beta/sdk-core';
+import { EosTokenConfig, tokens } from '@bitgo-beta/statics';
 import { Eos } from './eos';
 
 export { EosTokenConfig };

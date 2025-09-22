@@ -1,5 +1,5 @@
 import { Descriptor } from '@bitgo/wasm-miniscript';
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 
 export function createScriptPubKeyFromDescriptor(descriptor: Descriptor, index: number | undefined): Buffer {
   if (index === undefined) {

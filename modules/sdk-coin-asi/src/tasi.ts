@@ -1,5 +1,5 @@
-import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, BaseUnit } from '@bitgo/statics';
+import { BaseCoin, BitGoBase } from '@bitgo-beta/sdk-core';
+import { BaseCoin as StaticsBaseCoin, BaseUnit } from '@bitgo-beta/statics';
 import { Asi } from './asi';
 
 export class Tasi extends Asi {

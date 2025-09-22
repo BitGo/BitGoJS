@@ -1,7 +1,7 @@
 import * as assert from 'assert';
-import { TestBitGo } from '@bitgo/sdk-test';
+import { TestBitGo } from '@bitgo-beta/sdk-test';
 import nock = require('nock');
-import { BaseCoin, PendingApprovalData, State, Type } from '@bitgo/sdk-core';
+import { BaseCoin, PendingApprovalData, State, Type } from '@bitgo-beta/sdk-core';
 import {
   CreateInvoiceBody,
   getLightningWallet,
@@ -17,7 +17,7 @@ import {
   LightningOnchainWithdrawParams,
   PaymentInfo,
   PaymentQuery,
-} from '@bitgo/abstract-lightning';
+} from '@bitgo-beta/abstract-lightning';
 
 import { BitGo, common, GenerateLightningWalletOptions, Wallet, Wallets } from '../../../../src';
 

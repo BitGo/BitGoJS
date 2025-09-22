@@ -1,6 +1,6 @@
 {
-  "name": "@bitgo/sdk-coin-iota",
-  "version": "0.0.0-semantic-release-managed",
+  "name": "@bitgo-beta/sdk-coin-iota",
+  "version": "1.0.1-beta.78",
   "description": "BitGo SDK coin library for IOTA coin",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,14 +40,14 @@
     ]
   },
   "dependencies": {
-    "@bitgo/sdk-core": "0.0.0-semantic-release-managed",
-    "@bitgo/statics": "0.0.0-semantic-release-managed",
+    "@bitgo-beta/sdk-core": "8.2.1-beta.1200",
+    "@bitgo-beta/statics": "15.1.1-beta.1203",
     "@iota/iota-sdk": "^1.6.0",
     "bignumber.js": "^9.1.2"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "0.0.0-semantic-release-managed",
-    "@bitgo/sdk-lib-mpc": "0.0.0-semantic-release-managed",
-    "@bitgo/sdk-test": "0.0.0-semantic-release-managed"
+    "@bitgo-beta/sdk-api": "1.10.1-beta.1199",
+    "@bitgo-beta/sdk-lib-mpc": "8.2.0-beta.1192",
+    "@bitgo-beta/sdk-test": "0.0.0-semantic-release-managed"
   }
 }

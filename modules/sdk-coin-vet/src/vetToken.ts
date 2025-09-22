@@ -1,6 +1,6 @@
 import { Vet } from './vet';
-import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
-import { VetTokenConfig, coins, tokens } from '@bitgo/statics';
+import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo-beta/sdk-core';
+import { VetTokenConfig, coins, tokens } from '@bitgo-beta/statics';
 
 export class VetToken extends Vet {
   public readonly tokenConfig: VetTokenConfig;

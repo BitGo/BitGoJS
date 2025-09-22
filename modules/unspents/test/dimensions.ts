@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import * as should from 'should';
-import { bitgo } from '@bitgo/utxo-lib';
+import { bitgo } from '@bitgo-beta/utxo-lib';
 const { chainCodes, chainCodesP2sh, chainCodesP2shP2wsh, chainCodesP2tr, chainCodesP2trMusig2, chainCodesP2wsh } =
   bitgo;
 import { Dimensions, OutputDimensions, VirtualSizes } from '../src';

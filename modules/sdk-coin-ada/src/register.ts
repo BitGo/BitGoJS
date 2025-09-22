@@ -1,4 +1,4 @@
-import { BitGoBase } from '@bitgo/sdk-core';
+import { BitGoBase } from '@bitgo-beta/sdk-core';
 import { Ada } from './ada';
 import { Tada } from './tada';
 import { AdaToken } from './adaToken';

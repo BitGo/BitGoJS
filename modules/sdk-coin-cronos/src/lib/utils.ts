@@ -1,9 +1,9 @@
-import { CosmosUtils } from '@bitgo/abstract-cosmos';
-import { InvalidTransactionError } from '@bitgo/sdk-core';
+import { CosmosUtils } from '@bitgo-beta/abstract-cosmos';
+import { InvalidTransactionError } from '@bitgo-beta/sdk-core';
 import { Coin } from '@cosmjs/stargate';
 import BigNumber from 'bignumber.js';
 import * as constants from './constants';
-import { NetworkType } from '@bitgo/statics';
+import { NetworkType } from '@bitgo-beta/statics';
 
 export class Utils extends CosmosUtils {
   private networkType: NetworkType;

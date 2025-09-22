@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import BigNumber from 'bignumber.js';
-import blake2b from '@bitgo/blake2b';
+import blake2b from '@bitgo-beta/blake2b';
 import {
   AuditDecryptedKeyParams,
   BaseCoin,
@@ -20,12 +20,12 @@ import {
   VerifyAddressOptions,
   VerifyTransactionOptions,
   TokenType,
-} from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+} from '@bitgo-beta/sdk-core';
+import { BaseCoin as StaticsBaseCoin } from '@bitgo-beta/statics';
 import utils from './lib/utils';
-import { bip32 } from '@bitgo/secp256k1';
+import { bip32 } from '@bitgo-beta/secp256k1';
 import { randomBytes, Hash } from 'crypto';
-import { KeyPair as EthKeyPair } from '@bitgo/abstract-eth';
+import { KeyPair as EthKeyPair } from '@bitgo-beta/abstract-eth';
 import { TransactionBuilderFactory } from './lib';
 import { ExplainTransactionOptions, VetParseTransactionOptions } from './lib/types';
 import { VetTransactionExplanation } from './lib/iface';

@@ -11,9 +11,9 @@ import 'should';
 const Q = require('q');
 
 const TestBitGo = require('../lib/test_bitgo');
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 import { getAddressP2PKH, getNetwork } from '../../src/bitcoin';
-import { common } from '@bitgo/sdk-core';
+import { common } from '@bitgo-beta/sdk-core';
 import nock = require('nock');
 
 const TEST_WALLET_LABEL = 'wallet management test';

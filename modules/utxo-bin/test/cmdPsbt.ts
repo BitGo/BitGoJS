@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import * as fs from 'fs/promises';
 
 import yargs from 'yargs';
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 import { Descriptor } from '@bitgo/wasm-miniscript';
 
 import { cmdPsbt } from '../src/commands';

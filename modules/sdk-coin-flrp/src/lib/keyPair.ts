@@ -7,8 +7,8 @@ import {
   isValidXpub,
   KeyPairOptions,
   Secp256k1ExtendedKeyPair,
-} from '@bitgo/sdk-core';
-import { bip32, ECPair } from '@bitgo/secp256k1';
+} from '@bitgo-beta/sdk-core';
+import { bip32, ECPair } from '@bitgo-beta/secp256k1';
 import { randomBytes, createHash } from 'crypto';
 import utils from './utils';
 

@@ -1,6 +1,6 @@
 import assert from 'assert';
 import { importMacaroon } from 'macaroon';
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 
 import { accounts, signerRootKey } from './createWatchOnlyFixture';
 import {
@@ -18,7 +18,7 @@ import {
   computeBip32DerivationIndexFromSeed,
 } from '../../../src/lightning';
 
-import * as sdkcore from '@bitgo/sdk-core';
+import * as sdkcore from '@bitgo-beta/sdk-core';
 
 describe('lightning utils', function () {
   [

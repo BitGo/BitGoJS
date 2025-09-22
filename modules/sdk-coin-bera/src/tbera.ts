@@ -1,8 +1,8 @@
 /**
  * Testnet Bera
  */
-import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { BaseCoin, BitGoBase } from '@bitgo-beta/sdk-core';
+import { BaseCoin as StaticsBaseCoin } from '@bitgo-beta/statics';
 import { Bera } from './bera';
 
 export class Tbera extends Bera {

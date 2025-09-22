@@ -1,4 +1,4 @@
-import { BitGoBase } from '@bitgo/sdk-core';
+import { BitGoBase } from '@bitgo-beta/sdk-core';
 import { Btg } from './btg';
 
 export const register = (sdk: BitGoBase): void => {

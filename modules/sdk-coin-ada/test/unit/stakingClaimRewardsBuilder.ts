@@ -1,8 +1,8 @@
 import should from 'should';
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 import * as testData from '../resources';
 import { KeyPair, TransactionBuilderFactory } from '../../src';
-import { coins } from '@bitgo/statics';
+import { coins } from '@bitgo-beta/statics';
 import { Transaction } from '../../src/lib/transaction';
 
 describe('ADA Staking Withdraw Transaction Builder', async () => {

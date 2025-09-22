@@ -2,9 +2,9 @@ import sinon from 'sinon';
 import assert from 'assert';
 import _ from 'lodash';
 import should from 'should';
-import { BitGoAPI } from '@bitgo/sdk-api';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { coins, GasTankAccountCoin } from '@bitgo/statics';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
+import { coins, GasTankAccountCoin } from '@bitgo-beta/statics';
 import { Vet, Tvet, Transaction } from '../../src';
 import * as testData from '../resources/vet';
 

@@ -1,5 +1,5 @@
-import * as utxolib from '@bitgo/utxo-lib';
-import { getMainnet } from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
+import { getMainnet } from '@bitgo-beta/utxo-lib';
 
 export const bitcoinRegtest: utxolib.Network = {
   ...utxolib.networks.testnet,

@@ -4,10 +4,10 @@ import * as bs58 from 'bs58';
 import { SolStakingTypeEnum } from '@bitgo/public-types';
 import { getBuilderFactory } from '../getBuilderFactory';
 import { KeyPair, TokenTransferBuilder } from '../../../src';
-import { Eddsa, TransactionType } from '@bitgo/sdk-core';
+import { Eddsa, TransactionType } from '@bitgo-beta/sdk-core';
 import * as testData from '../../resources/sol';
 import BigNumber from 'bignumber.js';
-import { Ed25519Bip32HdTree } from '@bitgo/sdk-lib-mpc';
+import { Ed25519Bip32HdTree } from '@bitgo-beta/sdk-lib-mpc';
 
 describe('Sol Transaction Builder', async () => {
   let builders;

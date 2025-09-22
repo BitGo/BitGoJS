@@ -1,6 +1,6 @@
-import { AbstractLightningCoin } from '@bitgo/abstract-lightning';
-import { BitGoBase, BaseCoin } from '@bitgo/sdk-core';
-import * as utxolib from '@bitgo/utxo-lib';
+import { AbstractLightningCoin } from '@bitgo-beta/abstract-lightning';
+import { BitGoBase, BaseCoin } from '@bitgo-beta/sdk-core';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 
 export class Lnbtc extends AbstractLightningCoin {
   constructor(bitgo: BitGoBase, network?: utxolib.Network) {

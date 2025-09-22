@@ -1,5 +1,5 @@
 import should from 'should';
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 import { TransactionBuilder } from '../../../src';
 import { getBuilder } from '../../../src/lib/builder';
 import * as testData from '../../resources';

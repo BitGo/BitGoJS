@@ -1,4 +1,4 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { BN, Buffer as BufferAvax } from 'avalanche';
 import utils from './utils';
 import { DeprecatedTransactionBuilder } from './deprecatedTransactionBuilder';
@@ -10,7 +10,7 @@ import {
   TransferableOutput,
 } from 'avalanche/dist/apis/platformvm';
 import { Credential } from 'avalanche/dist/common';
-import { BuildTransactionError } from '@bitgo/sdk-core';
+import { BuildTransactionError } from '@bitgo-beta/sdk-core';
 import { SECP256K1_Transfer_Output } from './iface';
 
 /**

@@ -2,7 +2,7 @@ import {
   TransactionExplanation as BaseTransactionExplanation,
   TransactionType as BitGoTransactionType,
   TransactionRecipient,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import { ClaimRewardsData } from './types';
 
 /**

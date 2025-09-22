@@ -1,4 +1,4 @@
-import { BitGoBase } from '@bitgo/sdk-core';
+import { BitGoBase } from '@bitgo-beta/sdk-core';
 import { Iota } from './iota';
 
 export const register = (sdk: BitGoBase): void => {

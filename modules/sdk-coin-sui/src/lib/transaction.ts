@@ -5,9 +5,9 @@ import {
   PublicKey as BasePublicKey,
   Signature,
   TransactionType as BitGoTransactionType,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import { SuiProgrammableTransaction, SuiTransaction, SuiTransactionType, TxData } from './iface';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import utils, { AppId, Intent, IntentScope, IntentVersion, isImmOrOwnedObj } from './utils';
 import { GasData, normalizeSuiAddress, normalizeSuiObjectId, SuiObjectRef } from './mystenlab/types';
 import { SIGNATURE_SCHEME_BYTES } from './constants';
@@ -17,7 +17,7 @@ import bs58 from 'bs58';
 import { KeyPair } from './keyPair';
 import { TRANSACTION_DATA_MAX_SIZE, TransactionBlockDataBuilder } from './mystenlab/builder/TransactionDataBlock';
 import { builder, MergeCoinsTransaction, TransactionType } from './mystenlab/builder';
-import blake2b from '@bitgo/blake2b';
+import blake2b from '@bitgo-beta/blake2b';
 import { hashTypedData } from './mystenlab/cryptography/hash';
 
 export abstract class Transaction<T> extends BaseTransaction {

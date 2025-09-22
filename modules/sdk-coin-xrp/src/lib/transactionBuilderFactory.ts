@@ -1,5 +1,5 @@
-import { BaseTransactionBuilderFactory, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseTransactionBuilderFactory, InvalidTransactionError, TransactionType } from '@bitgo-beta/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import xrpl from 'xrpl';
 import { AccountSetBuilder } from './accountSetBuilder';
 import { TokenTransferBuilder } from './tokenTransferBuilder';

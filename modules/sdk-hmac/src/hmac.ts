@@ -1,6 +1,6 @@
 import { createHmac } from 'crypto';
 import * as urlLib from 'url';
-import * as sjcl from '@bitgo/sjcl';
+import * as sjcl from '@bitgo-beta/sjcl';
 import {
   CalculateHmacSubjectOptions,
   CalculateRequestHeadersOptions,

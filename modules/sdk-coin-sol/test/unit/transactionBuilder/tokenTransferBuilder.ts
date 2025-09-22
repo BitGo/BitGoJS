@@ -2,7 +2,7 @@ import { getBuilderFactory } from '../getBuilderFactory';
 import { KeyPair, Utils } from '../../../src';
 import should from 'should';
 import * as testData from '../../resources/sol';
-import { FeeOptions } from '@bitgo/sdk-core';
+import { FeeOptions } from '@bitgo-beta/sdk-core';
 
 describe('Sol Token Transfer Builder', () => {
   let ataAddress;

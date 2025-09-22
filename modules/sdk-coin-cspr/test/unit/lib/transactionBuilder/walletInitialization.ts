@@ -2,11 +2,11 @@ import assert from 'assert';
 import should from 'should';
 import { KeyPair, TransactionBuilderFactory } from '../../../../src/lib';
 import * as testData from '../../../fixtures/resources';
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 import { Transaction } from '../../../../src/lib/transaction';
 import { verifySignature } from '../../../../src/lib/utils';
 import { CLString } from 'casper-js-sdk';
-import { coins } from '@bitgo/statics';
+import { coins } from '@bitgo-beta/statics';
 
 describe('CSPR Wallet initialization', () => {
   const factory = new TransactionBuilderFactory(coins.get('tcspr'));

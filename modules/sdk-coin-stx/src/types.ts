@@ -2,7 +2,7 @@ import {
   SignTransactionOptions,
   TransactionExplanation,
   TransactionPrebuild as BaseTransactionPrebuild,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface SupplementGenerateWalletOptions {

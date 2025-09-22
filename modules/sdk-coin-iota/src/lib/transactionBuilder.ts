@@ -1,4 +1,4 @@
-import { BaseAddress, BaseKey, BaseTransaction, BaseTransactionBuilder } from '@bitgo/sdk-core';
+import { BaseAddress, BaseKey, BaseTransaction, BaseTransactionBuilder } from '@bitgo-beta/sdk-core';
 import BigNumber from 'bignumber.js';
 
 export class TransactionBuilder extends BaseTransactionBuilder {

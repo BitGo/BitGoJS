@@ -1,4 +1,4 @@
-import { BitGoBase } from '@bitgo/sdk-core';
+import { BitGoBase } from '@bitgo-beta/sdk-core';
 import { Algo } from './algo';
 import { AlgoToken } from './algoToken';
 import { Talgo } from './talgo';

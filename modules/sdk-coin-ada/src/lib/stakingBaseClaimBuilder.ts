@@ -1,6 +1,6 @@
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
-import { BaseKey } from '@bitgo/sdk-core';
+import { BaseKey } from '@bitgo-beta/sdk-core';
 import { Utils } from '../';
 
 /**

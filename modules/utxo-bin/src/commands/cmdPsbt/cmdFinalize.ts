@@ -1,6 +1,6 @@
 import { Argv, CommandModule } from 'yargs';
 import { withPsbt, WithPsbtOptions, withPsbtOptions } from './withPsbt';
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 import { toUtxoPsbt, toWrappedPsbt } from './wrap';
 
 type ArgsFinalizePsbt = WithPsbtOptions & {

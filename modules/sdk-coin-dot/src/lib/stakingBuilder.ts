@@ -1,9 +1,9 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { DecodedSignedTx, DecodedSigningPayload, UnsignedTransaction } from '@substrate/txwrapper-core';
 import { methods } from '@substrate/txwrapper-polkadot';
 import BigNumber from 'bignumber.js';
 import utils from './utils';
-import { BaseAddress, DotAssetTypes, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
+import { BaseAddress, DotAssetTypes, InvalidTransactionError, TransactionType } from '@bitgo-beta/sdk-core';
 import { MethodNames, StakeArgs, StakeArgsPayee, StakeArgsPayeeRaw, StakeMoreArgs } from './iface';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';

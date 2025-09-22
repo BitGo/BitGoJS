@@ -1,9 +1,9 @@
 import should from 'should';
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 
 import { TransactionBuilder } from '../../../src';
 import * as testData from '../../resources';
-import { coins } from '@bitgo/statics';
+import { coins } from '@bitgo-beta/statics';
 
 describe('Rbtc send transaction', function () {
   let txBuilder: TransactionBuilder;

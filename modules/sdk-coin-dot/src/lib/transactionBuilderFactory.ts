@@ -1,5 +1,5 @@
-import { BaseTransactionBuilderFactory, NotImplementedError, NotSupported } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseTransactionBuilderFactory, NotImplementedError, NotSupported } from '@bitgo-beta/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { decode } from '@substrate/txwrapper-polkadot';
 import { AddressInitializationBuilder } from './addressInitializationBuilder';
 import { Material, MethodNames } from './iface';

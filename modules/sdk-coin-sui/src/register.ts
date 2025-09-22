@@ -1,4 +1,4 @@
-import { BitGoBase } from '@bitgo/sdk-core';
+import { BitGoBase } from '@bitgo-beta/sdk-core';
 import { Sui } from './sui';
 import { Tsui } from './tsui';
 import { SuiToken } from './suiToken';

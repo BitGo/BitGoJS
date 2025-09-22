@@ -1,5 +1,5 @@
-import { BitGoBase } from '@bitgo/sdk-core';
-import { CoinFeature, coins, NetworkType } from '@bitgo/statics';
+import { BitGoBase } from '@bitgo-beta/sdk-core';
+import { CoinFeature, coins, NetworkType } from '@bitgo-beta/statics';
 import { EvmCoin } from './evmCoin';
 import { EthLikeErc20Token } from './ethLikeErc20Token';
 

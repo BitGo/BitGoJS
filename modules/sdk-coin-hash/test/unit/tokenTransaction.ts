@@ -1,9 +1,9 @@
-import { toHex, TransactionType } from '@bitgo/sdk-core';
-import { coins } from '@bitgo/statics';
+import { toHex, TransactionType } from '@bitgo-beta/sdk-core';
+import { coins } from '@bitgo-beta/statics';
 import { fromBase64 } from '@cosmjs/encoding';
 import should from 'should';
 
-import { CosmosTransaction, SendMessage } from '@bitgo/abstract-cosmos';
+import { CosmosTransaction, SendMessage } from '@bitgo-beta/abstract-cosmos';
 import { HashUtils } from '../../src/lib/utils';
 import * as testData from '../resources/hash';
 

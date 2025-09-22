@@ -1,12 +1,18 @@
 /**
  * @prettier
  */
-import { coins, EthLikeTokenConfig, tokens, EthereumNetwork as EthLikeNetwork, ethGasConfigs } from '@bitgo/statics';
+import {
+  coins,
+  EthLikeTokenConfig,
+  tokens,
+  EthereumNetwork as EthLikeNetwork,
+  ethGasConfigs,
+} from '@bitgo-beta/statics';
 import _ from 'lodash';
-import { bip32 } from '@bitgo/secp256k1';
+import { bip32 } from '@bitgo-beta/secp256k1';
 import { BigNumber } from 'bignumber.js';
 
-import { BitGoBase, CoinConstructor, NamedCoinConstructor, getIsUnsignedSweep, Util } from '@bitgo/sdk-core';
+import { BitGoBase, CoinConstructor, NamedCoinConstructor, getIsUnsignedSweep, Util } from '@bitgo-beta/sdk-core';
 import {
   TransactionBuilder as EthLikeTransactionBuilder,
   TransferBuilder as EthLikeTransferBuilder,

@@ -1,4 +1,4 @@
-import { DefaultKeys, Ed25519KeyPair, KeyPairOptions } from '@bitgo/sdk-core';
+import { DefaultKeys, Ed25519KeyPair, KeyPairOptions } from '@bitgo-beta/sdk-core';
 import utils from './utils';
 
 export class KeyPair extends Ed25519KeyPair {

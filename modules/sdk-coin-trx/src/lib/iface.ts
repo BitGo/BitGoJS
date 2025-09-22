@@ -1,4 +1,4 @@
-import { Entry } from '@bitgo/sdk-core';
+import { Entry } from '@bitgo-beta/sdk-core';
 import { ContractType, PermissionType, TronResource } from './enum';
 
 export interface Account {

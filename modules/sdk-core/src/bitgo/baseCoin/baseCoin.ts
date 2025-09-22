@@ -3,11 +3,11 @@
  */
 import * as crypto from 'crypto';
 import { Hash } from 'crypto';
-import * as utxolib from '@bitgo/utxo-lib';
-import { bip32 } from '@bitgo/utxo-lib';
-import * as sjcl from '@bitgo/sjcl';
+import * as utxolib from '@bitgo-beta/utxo-lib';
+import { bip32 } from '@bitgo-beta/utxo-lib';
+import * as sjcl from '@bitgo-beta/sjcl';
 import { BigNumber } from 'bignumber.js';
-import { BaseCoin as StaticsBaseCoin, CoinFeature } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, CoinFeature } from '@bitgo-beta/statics';
 
 import { InitiateRecoveryOptions } from '../recovery';
 import { signMessage } from '../bip32util';

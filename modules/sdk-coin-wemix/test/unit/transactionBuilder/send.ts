@@ -1,8 +1,8 @@
 import { getBuilder } from '../getBuilder';
 import should from 'should';
 import { TransactionBuilder } from '../../../src';
-import { TransactionType } from '@bitgo/sdk-core';
-import { decodeTransferData } from '@bitgo/abstract-eth';
+import { TransactionType } from '@bitgo-beta/sdk-core';
+import { decodeTransferData } from '@bitgo-beta/abstract-eth';
 import * as testData from '../../resources';
 
 describe('Wemix Transfer Builder', () => {

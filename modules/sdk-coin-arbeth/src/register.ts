@@ -1,4 +1,4 @@
-import { BitGoBase } from '@bitgo/sdk-core';
+import { BitGoBase } from '@bitgo-beta/sdk-core';
 import { Arbeth } from './arbeth';
 import { Tarbeth } from './tarbeth';
 import { ArbethToken } from './arbethToken';

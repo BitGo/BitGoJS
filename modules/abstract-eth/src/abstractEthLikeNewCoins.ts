@@ -38,9 +38,9 @@ import {
   VerifyAddressOptions as BaseVerifyAddressOptions,
   VerifyTransactionOptions,
   Wallet,
-} from '@bitgo/sdk-core';
-import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
-import { bip32 } from '@bitgo/secp256k1';
+} from '@bitgo-beta/sdk-core';
+import { getDerivationPath } from '@bitgo-beta/sdk-lib-mpc';
+import { bip32 } from '@bitgo-beta/secp256k1';
 import {
   BaseCoin as StaticsBaseCoin,
   CoinFeature,
@@ -48,7 +48,7 @@ import {
   coins,
   EthereumNetwork as EthLikeNetwork,
   ethGasConfigs,
-} from '@bitgo/statics';
+} from '@bitgo-beta/statics';
 import type * as EthLikeCommon from '@ethereumjs/common';
 import type * as EthLikeTxLib from '@ethereumjs/tx';
 import { FeeMarketEIP1559Transaction, Transaction as LegacyTransaction } from '@ethereumjs/tx';

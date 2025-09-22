@@ -1,7 +1,7 @@
 import should from 'should';
 import sinon from 'sinon';
 import { Buffer } from 'buffer';
-import { MessageOptions, MessageStandardType, Signature } from '@bitgo/sdk-core';
+import { MessageOptions, MessageStandardType, Signature } from '@bitgo-beta/sdk-core';
 import { Cip8Message } from '../../../../src';
 import { cip8TestResources } from '../../../resources/cip8Resources';
 

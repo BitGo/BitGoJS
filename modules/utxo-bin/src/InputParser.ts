@@ -1,4 +1,4 @@
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 import { script, ScriptSignature } from 'bitcoinjs-lib';
 
 import { Parser, ParserNode } from './Parser';

@@ -1,4 +1,4 @@
-import { BitGoBase } from '@bitgo/sdk-core';
+import { BitGoBase } from '@bitgo-beta/sdk-core';
 import { Vet } from './vet';
 import { Tvet } from './tvet';
 import { VetToken } from './vetToken';

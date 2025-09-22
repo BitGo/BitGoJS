@@ -1,12 +1,12 @@
 import BigNumber from 'bignumber.js';
 
-import { Interface, Schema } from '@bitgo/abstract-substrate';
+import { Interface, Schema } from '@bitgo-beta/abstract-substrate';
 import { Transaction } from './transaction';
 import { TxMethod } from './iface';
 import { PolyxBaseBuilder } from './baseBuilder';
 import { DecodedSignedTx, DecodedSigningPayload, defineMethod, UnsignedTransaction } from '@substrate/txwrapper-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseAddress, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
+import { BaseAddress, InvalidTransactionError, TransactionType } from '@bitgo-beta/sdk-core';
 
 import utils from './utils';
 

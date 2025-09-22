@@ -1,4 +1,4 @@
-import { PolkadotSpecNameType } from '@bitgo/statics';
+import { PolkadotSpecNameType } from '@bitgo-beta/statics';
 import { TypeRegistry } from '@substrate/txwrapper-core/lib/types';
 import { getRegistry } from '@substrate/txwrapper-polkadot';
 import { Material } from './iface';

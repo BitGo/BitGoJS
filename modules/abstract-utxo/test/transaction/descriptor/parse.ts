@@ -1,15 +1,15 @@
 import assert from 'assert';
 
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 import { Descriptor } from '@bitgo/wasm-miniscript';
 import {
   getDefaultXPubs,
   getDescriptor,
   getDescriptorMap,
   mockPsbtDefault,
-} from '@bitgo/utxo-core/testutil/descriptor';
-import { toPlainObject } from '@bitgo/utxo-core/testutil';
-import { createAddressFromDescriptor } from '@bitgo/utxo-core/descriptor';
+} from '@bitgo-beta/utxo-core/testutil/descriptor';
+import { toPlainObject } from '@bitgo-beta/utxo-core/testutil';
+import { createAddressFromDescriptor } from '@bitgo-beta/utxo-core/descriptor';
 
 import { ParsedOutputsBigInt, toBaseParsedTransactionOutputsFromPsbt } from '../../../src/transaction/descriptor/parse';
 import {

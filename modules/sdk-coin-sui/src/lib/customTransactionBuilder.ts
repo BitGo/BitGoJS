@@ -1,8 +1,8 @@
 import { TransactionBuilder } from './transactionBuilder';
 import { CustomProgrammableTransaction, SuiTransaction, SuiTransactionType } from './iface';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { CustomTransaction } from './customTransaction';
-import { BuildTransactionError, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
+import { BuildTransactionError, InvalidTransactionError, TransactionType } from '@bitgo-beta/sdk-core';
 import { Transaction } from './transaction';
 import assert from 'assert';
 import utils from './utils';

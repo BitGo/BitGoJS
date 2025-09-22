@@ -1,4 +1,4 @@
-import { BuildTransactionError, InvalidParameterValueError } from '@bitgo/sdk-core';
+import { BuildTransactionError, InvalidParameterValueError } from '@bitgo-beta/sdk-core';
 import { hexlify, hexZeroPad } from 'ethers/lib/utils';
 
 import { ContractCall } from '../contractCall';
@@ -10,7 +10,7 @@ import {
   ERC1155SafeTransferTypeMethodId,
 } from '../walletUtil';
 import { BaseNFTTransferBuilder } from './baseNFTTransferBuilder';
-import { coins, EthereumNetwork as EthLikeNetwork } from '@bitgo/statics';
+import { coins, EthereumNetwork as EthLikeNetwork } from '@bitgo-beta/statics';
 
 export class ERC1155TransferBuilder extends BaseNFTTransferBuilder {
   private _tokenIds: string[];

@@ -1,7 +1,7 @@
 import * as express from 'express';
 import { ApiResponseError } from '../errors';
-import { UpdateLightningWalletClientRequest, updateWalletCoinSpecific } from '@bitgo/abstract-lightning';
-import { decodeOrElse } from '@bitgo/sdk-core';
+import { UpdateLightningWalletClientRequest, updateWalletCoinSpecific } from '@bitgo-beta/abstract-lightning';
+import { decodeOrElse } from '@bitgo-beta/sdk-core';
 
 export async function handleUpdateLightningWalletCoinSpecific(req: express.Request): Promise<unknown> {
   const bitgo = req.bitgo;

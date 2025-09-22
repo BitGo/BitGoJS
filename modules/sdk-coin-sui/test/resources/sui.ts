@@ -5,7 +5,7 @@ import {
   RequestWithdrawStakedSui,
 } from '../../src/lib/iface';
 import { DUMMY_SUI_GAS_PRICE } from '../../src/lib/constants';
-import { Recipient } from '@bitgo/sdk-core';
+import { Recipient } from '@bitgo-beta/sdk-core';
 import { SuiObjectRef } from '../../src/lib/mystenlab/types';
 import { randomBytes, randomInt } from 'crypto';
 import base58 from 'bs58';

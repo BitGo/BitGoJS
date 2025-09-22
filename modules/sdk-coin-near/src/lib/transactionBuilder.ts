@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import {
   BaseAddress,
   BaseKey,
@@ -7,7 +7,7 @@ import {
   BuildTransactionError,
   PublicKey as BasePublicKey,
   Signature,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import { Transaction } from './transaction';
 import * as nearAPI from 'near-api-js';
 import { AddressValidationError } from './errors';

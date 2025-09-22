@@ -1,5 +1,5 @@
-import * as utxolib from '@bitgo/utxo-lib';
-import { Network } from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
+import { Network } from '@bitgo-beta/utxo-lib';
 
 /**
  * Verify a Bitcoin address is a valid address

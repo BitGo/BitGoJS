@@ -1,4 +1,4 @@
-import { EcdsaTypes } from '@bitgo/sdk-lib-mpc';
+import { EcdsaTypes } from '@bitgo-beta/sdk-lib-mpc';
 import { IWallet } from '../wallet';
 import { Buffer } from 'buffer';
 import { BitGoProofSignatures, SerializedNtildeWithVerifiers } from '../utils/tss/ecdsa';

@@ -1,5 +1,5 @@
-import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BuildTransactionError, TransactionType } from '@bitgo-beta/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { SignerEntry } from 'xrpl/dist/npm/models/common';
 import { MAX_SIGNERS, MIN_SIGNER_QUORUM, MIN_SIGNERS } from './constants';
 import { SignerDetails } from './iface';

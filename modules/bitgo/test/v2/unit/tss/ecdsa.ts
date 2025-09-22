@@ -9,11 +9,11 @@ import {
   RequestType,
   SignatureShareType,
   hexToBigInt,
-} from '@bitgo/sdk-core';
-import { EcdsaTypes, EcdsaPaillierProof } from '@bitgo/sdk-lib-mpc';
+} from '@bitgo-beta/sdk-core';
+import { EcdsaTypes, EcdsaPaillierProof } from '@bitgo-beta/sdk-lib-mpc';
 import * as openpgp from 'openpgp';
 import should = require('should');
-import { mockSerializedChallengeWithProofs, TestBitGo } from '@bitgo/sdk-test';
+import { mockSerializedChallengeWithProofs, TestBitGo } from '@bitgo-beta/sdk-test';
 import { BitGo } from '../../../../src';
 import { nockGetTxRequest, nockSendSignatureShare } from './helpers';
 import {

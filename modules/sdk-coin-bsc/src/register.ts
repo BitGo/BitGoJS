@@ -1,4 +1,4 @@
-import { BitGoBase } from '@bitgo/sdk-core';
+import { BitGoBase } from '@bitgo-beta/sdk-core';
 import { Bsc } from './bsc';
 import { BscToken } from './bscToken';
 import { Tbsc } from './tbsc';

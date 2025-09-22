@@ -1,12 +1,12 @@
 import * as should from 'should';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
 
 import { Oas, Toas } from '../../src/index';
-import { UnsignedSweepTxMPCv2 } from '@bitgo/abstract-eth';
+import { UnsignedSweepTxMPCv2 } from '@bitgo-beta/abstract-eth';
 import { mockDataUnsignedSweep } from '../resources';
 import nock from 'nock';
-import { common } from '@bitgo/sdk-core';
+import { common } from '@bitgo-beta/sdk-core';
 
 const bitgo: TestBitGoAPI = TestBitGo.decorate(BitGoAPI, { env: 'test' });
 

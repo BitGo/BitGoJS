@@ -5,9 +5,9 @@ import 'should';
 import * as mocha from 'mocha';
 import * as sinon from 'sinon';
 import nock = require('nock');
-import { BIP32Interface } from '@bitgo/utxo-lib';
+import { BIP32Interface } from '@bitgo-beta/utxo-lib';
 
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 const { toOutput, outputScripts } = utxolib.bitgo;
 type WalletUnspent = utxolib.bitgo.WalletUnspent<bigint>;
 type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
@@ -20,7 +20,7 @@ import {
   BackupKeyRecoveryTransansaction,
   CoingeckoApi,
   FormattedOfflineVaultTxInfo,
-} from '@bitgo/abstract-utxo';
+} from '@bitgo-beta/abstract-utxo';
 
 import {
   defaultBitGo,
@@ -36,7 +36,7 @@ import {
 } from '../util';
 
 import { MockRecoveryProvider } from './mock';
-import { krsProviders, Triple } from '@bitgo/sdk-core';
+import { krsProviders, Triple } from '@bitgo-beta/sdk-core';
 
 const config = { krsProviders };
 

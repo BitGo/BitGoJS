@@ -1,5 +1,5 @@
-import { BuildTransactionError, NotSupported, TransactionType } from '@bitgo/sdk-core';
-import { AvalancheNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BuildTransactionError, NotSupported, TransactionType } from '@bitgo-beta/sdk-core';
+import { AvalancheNetwork, BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { DeprecatedTransactionBuilder } from './deprecatedTransactionBuilder';
 import {
   AddDelegatorTx,

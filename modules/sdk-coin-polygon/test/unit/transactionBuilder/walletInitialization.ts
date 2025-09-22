@@ -1,9 +1,9 @@
 import should from 'should';
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 import { TransactionBuilder } from '../../../src';
 import * as testData from '../../resources';
 import { getBuilder } from '../../getBuilder';
-import { coins } from '@bitgo/statics';
+import { coins } from '@bitgo-beta/statics';
 
 describe('Polygon wallet initialization', function () {
   let txBuilder: TransactionBuilder;

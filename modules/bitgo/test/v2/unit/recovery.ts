@@ -1,15 +1,15 @@
 import should = require('should');
 import nock = require('nock');
 
-import { mockSerializedChallengeWithProofs, TestBitGo } from '@bitgo/sdk-test';
+import { mockSerializedChallengeWithProofs, TestBitGo } from '@bitgo-beta/sdk-test';
 import { BitGo } from '../../../src';
-import { krsProviders } from '@bitgo/sdk-core';
-import { EcdsaRangeProof, EcdsaTypes } from '@bitgo/sdk-lib-mpc';
+import { krsProviders } from '@bitgo-beta/sdk-core';
+import { EcdsaRangeProof, EcdsaTypes } from '@bitgo-beta/sdk-lib-mpc';
 import { TransactionFactory } from '@ethereumjs/tx';
 import * as sinon from 'sinon';
 import { ethLikeDKLSKeycard, ethLikeGG18Keycard } from '../fixtures/tss/recoveryFixtures';
-import { Utils } from '@bitgo/sdk-coin-xrp';
-import { UnsignedSweepTxMPCv2 } from '@bitgo/sdk-coin-eth';
+import { Utils } from '@bitgo-beta/sdk-coin-xrp';
+import { UnsignedSweepTxMPCv2 } from '@bitgo-beta/sdk-coin-eth';
 
 const recoveryNocks = require('../lib/recovery-nocks');
 

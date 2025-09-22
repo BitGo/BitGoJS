@@ -21,9 +21,9 @@ import {
   UnexpectedAddressError,
   VerifyAddressOptions,
   VerifyTransactionOptions,
-} from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
-import { bip32 } from '@bitgo/secp256k1';
+} from '@bitgo-beta/sdk-core';
+import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo-beta/statics';
+import { bip32 } from '@bitgo-beta/secp256k1';
 import { Coin } from '@cosmjs/stargate';
 import { BigNumber } from 'bignumber.js';
 import { Buffer } from 'buffer';
@@ -48,7 +48,7 @@ import {
 } from './lib';
 import { ROOT_PATH } from './lib/constants';
 import utils from './lib/utils';
-import { auditEcdsaPrivateKey } from '@bitgo/sdk-lib-mpc';
+import { auditEcdsaPrivateKey } from '@bitgo-beta/sdk-lib-mpc';
 
 /**
  * Cosmos accounts support memo Id based addresses

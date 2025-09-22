@@ -3,8 +3,8 @@
  */
 import assert from 'assert';
 import { Hash, randomBytes } from 'crypto';
-import { Ecdsa, ECDSA, hexToBigInt } from '@bitgo/sdk-core';
-import { EcdsaPaillierProof, EcdsaTypes, SchnorrProof } from '@bitgo/sdk-lib-mpc';
+import { Ecdsa, ECDSA, hexToBigInt } from '@bitgo-beta/sdk-core';
+import { EcdsaPaillierProof, EcdsaTypes, SchnorrProof } from '@bitgo-beta/sdk-lib-mpc';
 import * as sinon from 'sinon';
 import createKeccakHash from 'keccak';
 import {
@@ -21,7 +21,7 @@ import {
 // Need to import and then monkey-patch to make stubbing work with ESM
 const paillierBigintModule = require('paillier-bigint');
 const paillierBigint = paillierBigintModule;
-const schnorrModule = require('@bitgo/sdk-lib-mpc');
+const schnorrModule = require('@bitgo-beta/sdk-lib-mpc');
 const Schnorr = schnorrModule.Schnorr;
 
 describe('TSS ECDSA TESTS', function () {

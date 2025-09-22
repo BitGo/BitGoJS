@@ -12,9 +12,9 @@ import {
   RecoverFromWrongChainOptions,
   TransactionInfo,
   TransactionPrebuild,
-} from '@bitgo/abstract-utxo';
-import { BaseCoin, BitGoBase, HalfSignedUtxoTransaction, SignedTransaction } from '@bitgo/sdk-core';
-import { bitgo, networks } from '@bitgo/utxo-lib';
+} from '@bitgo-beta/abstract-utxo';
+import { BaseCoin, BitGoBase, HalfSignedUtxoTransaction, SignedTransaction } from '@bitgo-beta/sdk-core';
+import { bitgo, networks } from '@bitgo-beta/utxo-lib';
 
 type UnspentJSON = bitgo.Unspent<number> & { valueString: string };
 type TransactionInfoJSON = TransactionInfo<number> & { unspents: UnspentJSON[] };

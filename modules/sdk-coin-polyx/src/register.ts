@@ -1,4 +1,4 @@
-import { BitGoBase } from '@bitgo/sdk-core';
+import { BitGoBase } from '@bitgo-beta/sdk-core';
 import { Polyx } from './polyx';
 import { Tpolyx } from './tpolyx';
 import { PolyxToken } from './polyxToken';

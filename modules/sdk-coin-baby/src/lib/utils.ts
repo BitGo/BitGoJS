@@ -9,8 +9,8 @@ import {
   CreateBtcDelegationMessage,
   WithdrawRewardMessage,
 } from './iface';
-import { CosmosUtils, MessageData } from '@bitgo/abstract-cosmos';
-import { InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
+import { CosmosUtils, MessageData } from '@bitgo-beta/abstract-cosmos';
+import { InvalidTransactionError, TransactionType } from '@bitgo-beta/sdk-core';
 import * as constants from './constants';
 
 export class Utils extends CosmosUtils<BabylonSpecificMessages> {

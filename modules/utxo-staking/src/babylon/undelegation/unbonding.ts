@@ -1,9 +1,9 @@
 import assert from 'assert';
 
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 import { PartialSig, WitnessUtxo } from 'bip174/src/lib/interfaces';
 import { Descriptor, Miniscript, ast } from '@bitgo/wasm-miniscript';
-import { findTapLeafScript, toUtxoPsbt, toWrappedPsbt } from '@bitgo/utxo-core/descriptor';
+import { findTapLeafScript, toUtxoPsbt, toWrappedPsbt } from '@bitgo-beta/utxo-core/descriptor';
 
 import { parseStakingDescriptor } from '../parseDescriptor';
 

@@ -1,6 +1,6 @@
 import should from 'should';
-import { TransactionType } from '@bitgo/sdk-core';
-import { coins } from '@bitgo/statics';
+import { TransactionType } from '@bitgo-beta/sdk-core';
+import { coins } from '@bitgo-beta/statics';
 
 import { TransactionBuilderFactory, TransferBuilder, KeyRegistrationBuilder, algoUtils } from '../../../../src/lib';
 import * as AlgoResources from '../../../fixtures/resources';

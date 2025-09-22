@@ -8,7 +8,7 @@ import {
   toArray,
 } from '../src';
 import { isSatPoint, OutputLayout, toParameters } from '../src';
-import { bitgo, networks, testutil } from '@bitgo/utxo-lib';
+import { bitgo, networks, testutil } from '@bitgo-beta/utxo-lib';
 
 function assertValidPsbt(
   psbt: bitgo.UtxoPsbt,

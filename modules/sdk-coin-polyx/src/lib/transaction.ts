@@ -1,5 +1,5 @@
-import { Transaction as SubstrateTransaction, utils, KeyPair } from '@bitgo/abstract-substrate';
-import { InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
+import { Transaction as SubstrateTransaction, utils, KeyPair } from '@bitgo-beta/abstract-substrate';
+import { InvalidTransactionError, TransactionType } from '@bitgo-beta/sdk-core';
 import { construct, decode } from '@substrate/txwrapper-polkadot';
 import { decodeAddress } from '@polkadot/keyring';
 import { DecodedTx, RegisterDidWithCDDArgs, PreApproveAssetArgs, TxData, AddAndAffirmWithMediatorsArgs } from './iface';

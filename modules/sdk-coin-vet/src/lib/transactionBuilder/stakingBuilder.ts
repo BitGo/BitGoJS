@@ -1,6 +1,6 @@
 import assert from 'assert';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { TransactionType } from '@bitgo/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 import { TransactionClause } from '@vechain/sdk-core';
 
 import { TransactionBuilder } from './transactionBuilder';

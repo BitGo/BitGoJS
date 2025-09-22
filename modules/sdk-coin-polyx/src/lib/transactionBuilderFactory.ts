@@ -1,5 +1,5 @@
-import { BaseTransactionBuilderFactory, NotImplementedError } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseTransactionBuilderFactory, NotImplementedError } from '@bitgo-beta/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { decode } from '@substrate/txwrapper-polkadot';
 import { TransferBuilder } from './transferBuilder';
 import { RegisterDidWithCDDBuilder } from './registerDidWithCDDBuilder';
@@ -11,7 +11,7 @@ import { WithdrawUnbondedBuilder } from './withdrawUnbondedBuilder';
 import utils from './utils';
 import { Interface, SingletonRegistry, TransactionBuilder } from './';
 import { TxMethod, BatchCallObject, MethodNames } from './iface';
-import { Transaction as BaseTransaction } from '@bitgo/abstract-substrate';
+import { Transaction as BaseTransaction } from '@bitgo-beta/abstract-substrate';
 import { Transaction as PolyxTransaction } from './transaction';
 import { PreApproveAssetBuilder } from './preApproveAssetBuilder';
 import { TokenTransferBuilder } from './tokenTransferBuilder';

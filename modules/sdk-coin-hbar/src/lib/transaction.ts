@@ -1,5 +1,13 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseKey, BaseTransaction, Entry, SigningError, toHex, toUint8Array, TransactionType } from '@bitgo/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
+import {
+  BaseKey,
+  BaseTransaction,
+  Entry,
+  SigningError,
+  toHex,
+  toUint8Array,
+  TransactionType,
+} from '@bitgo-beta/sdk-core';
 import { hash } from '@stablelib/sha384';
 import BigNumber from 'bignumber.js';
 import { Writer } from 'protobufjs';

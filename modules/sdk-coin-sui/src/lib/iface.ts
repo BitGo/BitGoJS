@@ -1,7 +1,7 @@
 import {
   TransactionExplanation as BaseTransactionExplanation,
   TransactionType as BitGoTransactionType,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import BigNumber from 'bignumber.js';
 import {
   CallArg,

@@ -1,5 +1,5 @@
-import { EnvironmentName, IRequestTracer, V1Network } from '@bitgo/sdk-core';
-import { ECPairInterface } from '@bitgo/utxo-lib';
+import { EnvironmentName, IRequestTracer, V1Network } from '@bitgo-beta/sdk-core';
+import { ECPairInterface } from '@bitgo-beta/utxo-lib';
 import { type Agent } from 'http';
 
 const patchedRequestMethods = ['get', 'post', 'put', 'del', 'patch', 'options'] as const;
@@ -19,7 +19,7 @@ export {
   supportedRequestMethods,
   VerifyResponseInfo,
   VerifyResponseOptions,
-} from '@bitgo/sdk-hmac';
+} from '@bitgo-beta/sdk-hmac';
 export interface BitGoAPIOptions {
   accessToken?: string;
   authVersion?: 2 | 3;

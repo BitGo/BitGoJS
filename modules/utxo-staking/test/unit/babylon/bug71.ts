@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import assert from 'assert';
 
 import * as bitcoinjs from 'bitcoinjs-lib';
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 import * as wasmMiniscript from '@bitgo/wasm-miniscript';
 
 // demonstrate https://github.com/babylonlabs-io/btc-staking-ts/issues/71

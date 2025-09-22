@@ -1,5 +1,5 @@
-import { toHex, TransactionType } from '@bitgo/sdk-core';
-import { coins } from '@bitgo/statics';
+import { toHex, TransactionType } from '@bitgo-beta/sdk-core';
+import { coins } from '@bitgo-beta/statics';
 import { fromBase64 } from '@cosmjs/encoding';
 import should from 'should';
 
@@ -9,7 +9,7 @@ import {
   RedelegateMessage,
   SendMessage,
   WithdrawDelegatorRewardsMessage,
-} from '@bitgo/abstract-cosmos';
+} from '@bitgo-beta/abstract-cosmos';
 import utils from '../../src/lib/utils';
 import * as testData from '../resources/zeta';
 

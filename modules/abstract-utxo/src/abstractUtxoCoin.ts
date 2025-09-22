@@ -2,8 +2,8 @@ import assert from 'assert';
 import { randomBytes } from 'crypto';
 
 import _ from 'lodash';
-import * as utxolib from '@bitgo/utxo-lib';
-import { bip32, bitgo, getMainnet, isMainnet, isTestnet } from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
+import { bip32, bitgo, getMainnet, isMainnet, isTestnet } from '@bitgo-beta/utxo-lib';
 import {
   AddressCoinSpecific,
   AddressTypeChainMismatchError,
@@ -47,7 +47,7 @@ import {
   isValidPrv,
   isValidXprv,
   bitcoin,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 
 import {
   backupKeyRecovery,
@@ -384,7 +384,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     if (!utxolib.isValidNetwork(network)) {
       throw new Error(
         'invalid network: please make sure to use the same version of ' +
-          '@bitgo/utxo-lib as this library when initializing an instance of this class'
+          '@bitgo-beta/utxo-lib as this library when initializing an instance of this class'
       );
     }
     this.amountType = amountType;

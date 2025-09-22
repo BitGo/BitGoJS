@@ -1,11 +1,11 @@
 import * as should from 'should';
-import { bip32 } from '@bitgo/secp256k1';
-import { common, FullySignedTransaction, TransactionType, Wallet } from '@bitgo/sdk-core';
+import { bip32 } from '@bitgo-beta/secp256k1';
+import { common, FullySignedTransaction, TransactionType, Wallet } from '@bitgo-beta/sdk-core';
 import * as secp256k1 from 'secp256k1';
 import nock from 'nock';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
-import { BitGoAPI } from '@bitgo/sdk-api';
-import { OfflineVaultTxInfo, optionalDeps, SignTransactionOptions } from '@bitgo/abstract-eth';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
+import { OfflineVaultTxInfo, optionalDeps, SignTransactionOptions } from '@bitgo-beta/abstract-eth';
 
 import { Zketh, Tzketh, TransactionBuilder, TransferBuilder } from '../../src';
 import * as mockData from '../fixtures/zketh';

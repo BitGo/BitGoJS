@@ -2,7 +2,7 @@ import should from 'should';
 import * as testData from '../resources/sol';
 import { instructionParamsFactory } from '../../src/lib/instructionParamsFactory';
 import { SolStakingTypeEnum } from '@bitgo/public-types';
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 import { InstructionParams, Nonce, StakingActivate, StakingDeactivate, StakingWithdraw } from '../../src/lib/iface';
 import { InstructionBuilderTypes, MEMO_PROGRAM_PK, STAKE_ACCOUNT_RENT_EXEMPT_AMOUNT } from '../../src/lib/constants';
 import {

@@ -1,6 +1,6 @@
 import { SignatureShareRecord, SignatureShareType } from '../../utils';
 import openpgp from 'openpgp';
-import { DklsComms, DklsTypes } from '@bitgo/sdk-lib-mpc';
+import { DklsComms, DklsTypes } from '@bitgo-beta/sdk-lib-mpc';
 import {
   MPCv2SignatureShareRound1Input,
   MPCv2SignatureShareRound1Output,

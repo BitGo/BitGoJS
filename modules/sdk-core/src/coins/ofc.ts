@@ -2,7 +2,7 @@
  * @prettier
  */
 import { randomBytes } from 'crypto';
-import { bip32 } from '@bitgo/utxo-lib';
+import { bip32 } from '@bitgo-beta/utxo-lib';
 import {
   AuditDecryptedKeyParams,
   BaseCoin,

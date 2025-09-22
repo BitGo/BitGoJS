@@ -1,6 +1,6 @@
 import { Ada } from './ada';
-import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo/sdk-core';
-import { coins, tokens, AdaTokenConfig } from '@bitgo/statics';
+import { BitGoBase, CoinConstructor, NamedCoinConstructor } from '@bitgo-beta/sdk-core';
+import { coins, tokens, AdaTokenConfig } from '@bitgo-beta/statics';
 
 export class AdaToken extends Ada {
   public readonly tokenConfig: AdaTokenConfig;

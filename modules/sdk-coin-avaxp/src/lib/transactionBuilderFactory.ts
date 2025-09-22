@@ -6,8 +6,8 @@ import {
   TransferOutput,
   UnsignedTx,
 } from '@bitgo-forks/avalanchejs';
-import { BaseTransactionBuilderFactory, NotSupported } from '@bitgo/sdk-core';
-import { AvalancheNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseTransactionBuilderFactory, NotSupported } from '@bitgo-beta/sdk-core';
+import { AvalancheNetwork, BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { Buffer as BufferAvax } from 'avalanche';
 import { Tx as EVMTx } from 'avalanche/dist/apis/evm';
 import { Tx as PVMTx } from 'avalanche/dist/apis/platformvm';

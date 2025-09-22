@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { BaseAddress, BaseKey, PublicKey, ValidityWindow } from './iface';
 import { BaseTransaction } from './baseTransaction';
 import { SigningError } from './errors';

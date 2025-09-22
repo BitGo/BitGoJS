@@ -38,7 +38,7 @@ import { CreateEddsaBitGoKeychainParams, CreateEddsaKeychainParams, KeyShare, YS
 import baseTSSUtils from '../baseTSSUtils';
 import { KeychainsTriplet } from '../../../baseCoin';
 import { exchangeEddsaCommitments } from '../../../tss/common';
-import { Ed25519Bip32HdTree } from '@bitgo/sdk-lib-mpc';
+import { Ed25519Bip32HdTree } from '@bitgo-beta/sdk-lib-mpc';
 import { IRequestTracer } from '../../../../api';
 import { getBitgoMpcGpgPubKey } from '../../../tss/bitgoPubKeys';
 import { EnvironmentName } from '../../../environments';

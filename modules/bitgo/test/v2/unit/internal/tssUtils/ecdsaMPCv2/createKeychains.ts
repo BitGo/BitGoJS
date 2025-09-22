@@ -3,9 +3,9 @@ import nock = require('nock');
 import * as openpgp from 'openpgp';
 import * as crypto from 'crypto';
 
-import { TestableBG, TestBitGo } from '@bitgo/sdk-test';
-import { AddKeychainOptions, BaseCoin, common, ECDSAUtils, Keychain, Wallet } from '@bitgo/sdk-core';
-import { bigIntToBufferBE, DklsComms, DklsDkg, DklsDsg, DklsTypes, DklsUtils } from '@bitgo/sdk-lib-mpc';
+import { TestableBG, TestBitGo } from '@bitgo-beta/sdk-test';
+import { AddKeychainOptions, BaseCoin, common, ECDSAUtils, Keychain, Wallet } from '@bitgo-beta/sdk-core';
+import { bigIntToBufferBE, DklsComms, DklsDkg, DklsDsg, DklsTypes, DklsUtils } from '@bitgo-beta/sdk-lib-mpc';
 import {
   KeyCreationMPCv2StateEnum,
   MPCv2KeyGenRound1Request,

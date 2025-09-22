@@ -10,8 +10,8 @@ import {
   TypeTagU64,
   TypeTagVector,
 } from '@aptos-labs/ts-sdk';
-import { InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { InvalidTransactionError, TransactionType } from '@bitgo-beta/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import {
   FUNGIBLE_ASSET_TYPE_ARGUMENT,
   FUNGIBLE_ASSET_TRANSFER_FUNCTION,

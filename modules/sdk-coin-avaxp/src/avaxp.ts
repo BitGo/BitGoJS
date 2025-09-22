@@ -1,4 +1,4 @@
-import { AvalancheNetwork, BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
+import { AvalancheNetwork, BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo-beta/statics';
 import {
   BaseCoin,
   BitGoBase,
@@ -18,7 +18,7 @@ import {
   multisigTypes,
   AuditDecryptedKeyParams,
   MethodNotImplementedError,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import * as AvaxpLib from './lib';
 import {
   AvaxpSignTransactionOptions,

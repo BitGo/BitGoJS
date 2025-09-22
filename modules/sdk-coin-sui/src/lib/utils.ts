@@ -6,7 +6,7 @@ import {
   ParseTransactionError,
   Recipient,
   TransactionType,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import BigNumber from 'bignumber.js';
 import { SUI_ADDRESS_LENGTH } from './constants';
 import { isPureArg } from './mystenlab/types/sui-bcs';
@@ -43,11 +43,11 @@ import {
   TransactionType as TransactionCommandType,
 } from './mystenlab/builder';
 import { SIGNATURE_SCHEME_TO_FLAG } from './keyPair';
-import blake2b from '@bitgo/blake2b';
+import blake2b from '@bitgo-beta/blake2b';
 import { TRANSACTION_DATA_MAX_SIZE } from './mystenlab/builder/TransactionDataBlock';
 import { makeRPC } from './rpcClient';
 import assert from 'assert';
-import { BaseNetwork, coins, SuiCoin } from '@bitgo/statics';
+import { BaseNetwork, coins, SuiCoin } from '@bitgo-beta/statics';
 
 export function isImmOrOwnedObj(obj: ObjectCallArg['Object']): obj is { ImmOrOwned: SuiObjectRef } {
   return 'ImmOrOwned' in obj;

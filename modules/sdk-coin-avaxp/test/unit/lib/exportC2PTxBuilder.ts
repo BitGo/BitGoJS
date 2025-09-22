@@ -2,7 +2,7 @@ import assert from 'assert';
 import 'should';
 import * as errorMessage from '../../resources/errors';
 import { TransactionBuilderFactory } from '../../../src/lib';
-import { coins } from '@bitgo/statics';
+import { coins } from '@bitgo-beta/statics';
 import { EXPORT_C } from '../../resources/tx/exportC';
 import { BN } from 'avalanche';
 

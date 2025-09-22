@@ -1,8 +1,8 @@
 import should from 'should';
-import { TransactionType, AddressFormat } from '@bitgo/sdk-core';
+import { TransactionType, AddressFormat } from '@bitgo-beta/sdk-core';
 import * as testData from '../resources';
 import { KeyPair, TransactionBuilderFactory } from '../../src';
-import { coins } from '@bitgo/statics';
+import { coins } from '@bitgo-beta/statics';
 import { CertType, Transaction } from '../../src/lib/transaction';
 import * as Utils from '../../src/lib/utils';
 

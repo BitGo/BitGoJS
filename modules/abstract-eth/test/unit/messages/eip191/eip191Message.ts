@@ -1,5 +1,5 @@
 import 'should';
-import { MessageStandardType } from '@bitgo/sdk-core';
+import { MessageStandardType } from '@bitgo-beta/sdk-core';
 import { fixtures } from './fixtures';
 import { EIP191Message } from '../../../../src';
 import { testEthMessageSigning } from '../abstractEthMessagesTests';

@@ -1,4 +1,4 @@
-import { payments, ECPair } from '@bitgo/utxo-lib';
+import { payments, ECPair } from '@bitgo-beta/utxo-lib';
 
 import { addBip322Input, createBaseToSignPsbt, buildToSpendTransaction } from '../../src/bip322';
 

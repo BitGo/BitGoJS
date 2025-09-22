@@ -1,4 +1,4 @@
-import { BaseTokenConfig, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { BaseTokenConfig, BaseCoin as StaticsBaseCoin } from '@bitgo-beta/statics';
 import BigNumber from 'bignumber.js';
 import { IRequestTracer } from '../../api';
 import { IEnterprises } from '../enterprise';

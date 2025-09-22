@@ -1,6 +1,6 @@
 import assert from 'assert';
 import should from 'should';
-import { coins, EthereumNetwork } from '@bitgo/statics';
+import { coins, EthereumNetwork } from '@bitgo-beta/statics';
 import { getCommon, Transaction, TxData } from '../../src';
 import * as testData from '../resources/eth';
 import { test } from 'mocha';

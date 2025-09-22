@@ -9,7 +9,7 @@ https://github.com/casey/ord/blob/master/bip.mediawiki#terminology-and-notation
 > `680df1e4d43016571e504b0b142ee43c5c0b83398a97bdcfd94ea6f287322d22:0:6`
 
 */
-import { bitgo } from '@bitgo/utxo-lib';
+import { bitgo } from '@bitgo-beta/utxo-lib';
 
 export type SatPoint = `${string}:${number}:${bigint}`;
 

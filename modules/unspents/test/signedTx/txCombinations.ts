@@ -12,7 +12,7 @@ import {
 } from '../testutils';
 
 import { runCombinations, TxCombo } from './txGen';
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 
 export type InputScriptType = utxolib.bitgo.outputScripts.ScriptType | 'taprootKeyPathSpend';
 

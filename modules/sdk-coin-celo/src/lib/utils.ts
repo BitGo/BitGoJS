@@ -1,10 +1,10 @@
-import { NetworkType } from '@bitgo/statics';
+import { NetworkType } from '@bitgo-beta/statics';
 import EthereumCommon from '@ethereumjs/common';
 import { recoverTransaction } from '@celo/wallet-base';
 import * as ethers from 'ethers';
 import BigNumber from 'bignumber.js';
-import { ETHTransactionType, LegacyTxData } from '@bitgo/sdk-coin-eth';
-import { InvalidTransactionError, ParseTransactionError } from '@bitgo/sdk-core';
+import { ETHTransactionType, LegacyTxData } from '@bitgo-beta/sdk-coin-eth';
+import { InvalidTransactionError, ParseTransactionError } from '@bitgo-beta/sdk-core';
 import { mainnetCommon, testnetCommon } from './resources';
 
 /**

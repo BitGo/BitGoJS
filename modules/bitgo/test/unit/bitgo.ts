@@ -7,13 +7,13 @@ import nock = require('nock');
 import should = require('should');
 import assert = require('assert');
 
-import { common, generateGPGKeyPair } from '@bitgo/sdk-core';
-import { bip32, ECPair } from '@bitgo/utxo-lib';
+import { common, generateGPGKeyPair } from '@bitgo-beta/sdk-core';
+import { bip32, ECPair } from '@bitgo-beta/utxo-lib';
 import * as _ from 'lodash';
 import * as BitGoJS from '../../src/index';
 const rp = require('request-promise');
 
-import { TestBitGo } from '@bitgo/sdk-test';
+import { TestBitGo } from '@bitgo-beta/sdk-test';
 import { BitGo } from '../../src/bitgo';
 
 nock.disableNetConnect();

@@ -1,5 +1,5 @@
 import { SuiTransaction, TokenTransferProgrammableTransaction, TransactionExplanation, TxData } from './iface';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { Transaction } from './transaction';
 import { SUI_ADDRESS_LENGTH, UNAVAILABLE_TEXT } from './constants';
 import {
@@ -10,7 +10,7 @@ import {
   Signature,
   TransactionRecipient,
   TransactionType,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import { CallArg, normalizeSuiAddress, SuiObjectRef } from './mystenlab/types';
 import utils, { isImmOrOwnedObj } from './utils';
 import {

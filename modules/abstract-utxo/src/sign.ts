@@ -1,4 +1,4 @@
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 import debugLib from 'debug';
 
 import { isReplayProtectionUnspent } from './replayProtection';

@@ -1,5 +1,5 @@
 import * as constants from './constants';
-import { StakingDeactivateBuilder } from '@bitgo/abstract-cosmos';
+import { StakingDeactivateBuilder } from '@bitgo-beta/abstract-cosmos';
 import { BabylonSpecificMessages } from './iface';
 
 export class EpochedStakingDeactivateBuilder extends StakingDeactivateBuilder<BabylonSpecificMessages> {

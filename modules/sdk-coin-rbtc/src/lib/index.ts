@@ -1,4 +1,4 @@
-export { Interface, KeyPair, Transaction } from '@bitgo/sdk-coin-eth';
+export { Interface, KeyPair, Transaction } from '@bitgo-beta/sdk-coin-eth';
 export { TransactionBuilder } from './transactionBuilder';
 export { TransferBuilder } from './transferBuilder';
 

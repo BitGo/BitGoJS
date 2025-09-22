@@ -8,8 +8,8 @@ import {
   InvalidTransactionError,
   SigningError,
   TransactionType,
-} from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+} from '@bitgo-beta/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import utils from './utils';
 
 import BigNumber from 'bignumber.js';

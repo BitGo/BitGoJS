@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import { bufferutils } from '@bitgo/utxo-lib';
+import { bufferutils } from '@bitgo-beta/utxo-lib';
 
 // The signed address will always have the following structure:
 // 0x18Bitcoin Signed Message:\n<varint_length><ENTROPY><ADDRESS><UUID>

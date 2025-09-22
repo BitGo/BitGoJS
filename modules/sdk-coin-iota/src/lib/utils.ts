@@ -1,4 +1,4 @@
-import { BaseUtils, isValidEd25519PublicKey, isValidEd25519SecretKey } from '@bitgo/sdk-core';
+import { BaseUtils, isValidEd25519PublicKey, isValidEd25519SecretKey } from '@bitgo-beta/sdk-core';
 import {
   IOTA_ADDRESS_LENGTH,
   IOTA_BLOCK_ID_LENGTH,

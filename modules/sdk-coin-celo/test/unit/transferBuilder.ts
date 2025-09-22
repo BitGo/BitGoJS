@@ -1,7 +1,7 @@
 import should from 'should';
 import { KeyPair, TransferBuilder } from '../../src';
 import * as testData from '../resources/celo';
-import { coins, EthereumNetwork as EthLikeNetwork } from '@bitgo/statics';
+import { coins, EthereumNetwork as EthLikeNetwork } from '@bitgo-beta/statics';
 
 describe('Celo send multi sig builder', function () {
   const toAddress = '0x7325A3F7d4f9E86AE62Cf742426078C3755730d5';

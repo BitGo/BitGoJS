@@ -1,5 +1,5 @@
 import { SimpleMessage } from './simpleMessage';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { BaseMessageBuilder } from '../baseMessageBuilder';
 import { MessageOptions, MessageStandardType } from '../../../../bitgo';
 import { IMessage } from '../iface';

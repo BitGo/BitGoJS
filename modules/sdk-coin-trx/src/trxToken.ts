@@ -1,6 +1,6 @@
 import { Trx } from './trx';
-import { BitGoBase, CoinConstructor, NamedCoinConstructor, VerifyTransactionOptions } from '@bitgo/sdk-core';
-import { TrxTokenConfig, coins, tokens } from '@bitgo/statics';
+import { BitGoBase, CoinConstructor, NamedCoinConstructor, VerifyTransactionOptions } from '@bitgo-beta/sdk-core';
+import { TrxTokenConfig, coins, tokens } from '@bitgo-beta/statics';
 import { getBuilder } from './lib/builder';
 import { Recipient } from '../../sdk-core/src/bitgo/baseCoin/iBaseCoin';
 import assert from 'assert';

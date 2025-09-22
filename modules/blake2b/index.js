@@ -1,5 +1,5 @@
 const assert = require('nanoassert');
-const b2wasm = require('@bitgo/blake2b-wasm');
+const b2wasm = require('@bitgo-beta/blake2b-wasm');
 
 const BYTES_MIN = (module.exports.BYTES_MIN = 16);
 const BYTES_MAX = (module.exports.BYTES_MAX = 64);

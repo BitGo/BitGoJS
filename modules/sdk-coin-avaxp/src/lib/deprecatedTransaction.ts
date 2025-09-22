@@ -1,4 +1,4 @@
-import { AvalancheNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
+import { AvalancheNetwork, BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import {
   BaseKey,
   BaseTransaction,
@@ -7,7 +7,7 @@ import {
   SigningError,
   TransactionFee,
   TransactionType,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import { KeyPair } from './keyPair';
 import {
   DeprecatedBaseTx,

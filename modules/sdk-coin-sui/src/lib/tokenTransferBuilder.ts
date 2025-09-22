@@ -1,6 +1,6 @@
 import assert from 'assert';
-import { TransactionType, Recipient, BuildTransactionError, BaseKey } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { TransactionType, Recipient, BuildTransactionError, BaseKey } from '@bitgo-beta/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import { SuiTransaction, SuiTransactionType, TokenTransferProgrammableTransaction } from './iface';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';

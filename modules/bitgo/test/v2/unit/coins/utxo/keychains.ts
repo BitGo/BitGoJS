@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import 'should';
-import { AbstractUtxoCoin } from '@bitgo/abstract-utxo';
+import { AbstractUtxoCoin } from '@bitgo-beta/abstract-utxo';
 import { utxoCoins } from './util';
 
 function run(coin: AbstractUtxoCoin) {

@@ -1,4 +1,4 @@
-import { PrebuildTransactionOptions, StakingRequest, StakingTransaction } from '@bitgo/sdk-core';
+import { PrebuildTransactionOptions, StakingRequest, StakingTransaction } from '@bitgo-beta/sdk-core';
 
 export default {
   txRequestId: '55ba0198-0b1f-44f6-94fe-8d782d633dde',

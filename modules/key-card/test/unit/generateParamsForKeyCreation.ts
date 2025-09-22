@@ -1,7 +1,7 @@
-import { Keychain } from '@bitgo/sdk-core';
+import { Keychain } from '@bitgo-beta/sdk-core';
 import * as assert from 'assert';
 import { generateParamsForKeyCreation } from '../../src/generateParamsForKeyCreation';
-import { KeyCurve } from '@bitgo/statics';
+import { KeyCurve } from '@bitgo-beta/statics';
 
 describe('generateParamsForKeyCreation', function () {
   it('should return the right params', async function () {

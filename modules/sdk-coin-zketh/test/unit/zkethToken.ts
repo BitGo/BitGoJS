@@ -1,8 +1,8 @@
 import 'should';
 
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { TestBitGo, TestBitGoAPI } from '@bitgo-beta/sdk-test';
 import { ZkethToken } from '../../src';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
 
 describe('Zketh Token:', function () {
   let bitgo: TestBitGoAPI;

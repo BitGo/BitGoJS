@@ -1,6 +1,6 @@
 import 'should';
-import { MessageStandardType } from '@bitgo/sdk-core';
-import { coins } from '@bitgo/statics';
+import { MessageStandardType } from '@bitgo-beta/sdk-core';
+import { coins } from '@bitgo-beta/statics';
 import { MessageBuilderFactory } from '../../../src';
 import { fixtures } from './fixtures';
 

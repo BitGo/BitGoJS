@@ -1,5 +1,5 @@
-import { networks } from '@bitgo/utxo-lib';
-import { bip32, ECPair } from '@bitgo/secp256k1';
+import { networks } from '@bitgo-beta/utxo-lib';
+import { bip32, ECPair } from '@bitgo-beta/secp256k1';
 import * as hex from '@stablelib/hex';
 import bs58 from 'bs58';
 import * as bls from 'noble-bls12-381';
@@ -8,9 +8,9 @@ import * as nacl from 'tweetnacl';
 import { ExtendedKeys } from '../baseCoin';
 
 /**
- * @deprecated - use @bitgo/sdk-lib-mpc instead
+ * @deprecated - use @bitgo-beta/sdk-lib-mpc instead
  */
-export { bigIntToHex, convertBigIntArrToHexArr, convertHexArrToBigIntArr, hexToBigInt } from '@bitgo/sdk-lib-mpc';
+export { bigIntToHex, convertBigIntArrToHexArr, convertHexArrToBigIntArr, hexToBigInt } from '@bitgo-beta/sdk-lib-mpc';
 
 /**
  * @param xpub - a base-58 encoded extended public key (BIP32)

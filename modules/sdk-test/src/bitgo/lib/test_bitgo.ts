@@ -9,9 +9,9 @@ import 'should';
 import 'should-http';
 
 import * as nock from 'nock';
-import { CoinConstructor, common, KeyIndices, promiseProps, Wallet } from '@bitgo/sdk-core';
+import { CoinConstructor, common, KeyIndices, promiseProps, Wallet } from '@bitgo-beta/sdk-core';
 
-import { BitGoAPIOptions, BitGoAPI } from '@bitgo/sdk-api';
+import { BitGoAPIOptions, BitGoAPI } from '@bitgo-beta/sdk-api';
 
 nock.enableNetConnect();
 

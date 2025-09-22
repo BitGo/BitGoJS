@@ -2,7 +2,7 @@ import assert from 'assert';
 import * as should from 'should';
 import { getBuilderFactory } from '../getBuilderFactory';
 import * as testData from '../../resources/hbar';
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 
 describe('HBAR Transfer Builder', () => {
   const factory = getBuilderFactory('thbar');

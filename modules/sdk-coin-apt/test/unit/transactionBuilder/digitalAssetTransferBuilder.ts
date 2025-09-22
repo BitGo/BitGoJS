@@ -1,7 +1,7 @@
 import { getBuilderFactory } from '../getBuilderFactory';
-import { coins } from '@bitgo/statics';
+import { coins } from '@bitgo-beta/statics';
 import * as testData from '../../resources/apt';
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 import should from 'should';
 import { DigitalAssetTransfer } from '../../../src/lib/transaction/digitalAssetTransfer';
 

@@ -2,8 +2,8 @@ import assert from 'assert';
 import should from 'should';
 import sinon from 'sinon';
 import { getMessageBuilderFactory, registerMessageBuilderFactory } from '../../src';
-import { BaseMessageBuilderFactory, BuildMessageError } from '@bitgo/sdk-core';
-import { coins, BaseCoin } from '@bitgo/statics';
+import { BaseMessageBuilderFactory, BuildMessageError } from '@bitgo-beta/sdk-core';
+import { coins, BaseCoin } from '@bitgo-beta/statics';
 import { MockMessageBuilderFactory } from './fixtures';
 
 describe('Message Builder Factory', () => {

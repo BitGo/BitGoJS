@@ -1,7 +1,7 @@
 import nock = require('nock');
 import * as sinon from 'sinon';
-import { common, Wallet } from '@bitgo/sdk-core';
-import { TestBitGo } from '@bitgo/sdk-test';
+import { common, Wallet } from '@bitgo-beta/sdk-core';
+import { TestBitGo } from '@bitgo-beta/sdk-test';
 import { BitGo } from '../../../src';
 
 describe('Verify string type is used for value of unspent', function () {

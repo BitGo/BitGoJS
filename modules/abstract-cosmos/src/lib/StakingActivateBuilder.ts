@@ -1,5 +1,5 @@
-import { TransactionType } from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { TransactionType } from '@bitgo-beta/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 
 import * as constants from './constants';
 import { DelegateOrUndelegeteMessage } from './iface';

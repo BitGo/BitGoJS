@@ -1,8 +1,8 @@
 import should from 'should';
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 import * as testData from '../resources';
 import { KeyPair, TransactionBuilderFactory } from '../../src';
-import { coins } from '@bitgo/statics';
+import { coins } from '@bitgo-beta/statics';
 import { CertType, Transaction } from '../../src/lib/transaction';
 
 describe('ADA Vote Delegation Transaction Builder', async () => {

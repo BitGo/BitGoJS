@@ -37,15 +37,15 @@ import {
   Wallet,
   WalletSignMessageOptions,
   WalletSignTypedDataOptions,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 
-import { TestBitGo } from '@bitgo/sdk-test';
+import { TestBitGo } from '@bitgo-beta/sdk-test';
 import { BitGo } from '../../../src';
-import * as utxoLib from '@bitgo/utxo-lib';
+import * as utxoLib from '@bitgo-beta/utxo-lib';
 import { randomBytes } from 'crypto';
 import { getDefaultWalletKeys, toKeychainObjects } from './coins/utxo/util';
-import { Tsol } from '@bitgo/sdk-coin-sol';
-import { Teth } from '@bitgo/sdk-coin-eth';
+import { Tsol } from '@bitgo-beta/sdk-coin-sol';
+import { Teth } from '@bitgo-beta/sdk-coin-eth';
 
 import { nftResponse, unsupportedNftResponse } from '../fixtures/nfts/nftResponses';
 

@@ -1,6 +1,6 @@
 import should from 'should';
 import * as accountLib from '../../src';
-import { MessageStandardType } from '@bitgo/sdk-core';
+import { MessageStandardType } from '@bitgo-beta/sdk-core';
 import { MIDNIGHT_TNC_HASH } from '../../src/utils';
 
 describe('verifyMessage', () => {

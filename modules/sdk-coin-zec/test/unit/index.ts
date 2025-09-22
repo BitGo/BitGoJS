@@ -1,5 +1,5 @@
 import 'should';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { BitGoAPI } from '@bitgo-beta/sdk-api';
 import { Zec, Tzec } from '../../src';
 
 describe('Zec', function () {

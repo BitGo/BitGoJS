@@ -1,5 +1,5 @@
 import * as openpgp from 'openpgp';
-import { createSharedDataProof, SignatureShareRecord } from '@bitgo/sdk-core';
+import { createSharedDataProof, SignatureShareRecord } from '@bitgo-beta/sdk-core';
 import { getRoute } from '../internal/tssUtils/common';
 import nock = require('nock');
 

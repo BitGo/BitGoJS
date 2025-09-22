@@ -1,5 +1,5 @@
 import * as stellar from 'stellar-sdk';
-import { DefaultKeys, Ed25519KeyPair, InvalidKey, KeyPairOptions } from '@bitgo/sdk-core';
+import { DefaultKeys, Ed25519KeyPair, InvalidKey, KeyPairOptions } from '@bitgo-beta/sdk-core';
 import { decodePrivateKey, decodePublicKey, encodePrivateKey, encodePublicKey } from './utils';
 
 export class KeyPair extends Ed25519KeyPair {

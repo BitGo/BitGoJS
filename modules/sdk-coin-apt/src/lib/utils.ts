@@ -17,7 +17,7 @@ import {
   isValidEd25519SecretKey,
   TransactionRecipient,
   TransactionType,
-} from '@bitgo/sdk-core';
+} from '@bitgo-beta/sdk-core';
 import {
   APT_ADDRESS_LENGTH,
   APT_BLOCK_ID_LENGTH,

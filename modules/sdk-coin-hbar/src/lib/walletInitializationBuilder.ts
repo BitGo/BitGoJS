@@ -1,7 +1,7 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import * as Long from 'long';
 import { proto } from '@hashgraph/proto';
-import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
+import { BuildTransactionError, TransactionType } from '@bitgo-beta/sdk-core';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { isValidPublicKey, toHex, toUint8Array } from './utils';

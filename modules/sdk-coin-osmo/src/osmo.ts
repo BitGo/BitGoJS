@@ -1,7 +1,7 @@
-import { BaseCoin, BitGoBase, Environments } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, BaseUnit, coins } from '@bitgo/statics';
+import { BaseCoin, BitGoBase, Environments } from '@bitgo-beta/sdk-core';
+import { BaseCoin as StaticsBaseCoin, BaseUnit, coins } from '@bitgo-beta/statics';
 import { KeyPair } from './lib/keyPair';
-import { CosmosCoin, CosmosKeyPair, GasAmountDetails } from '@bitgo/abstract-cosmos';
+import { CosmosCoin, CosmosKeyPair, GasAmountDetails } from '@bitgo-beta/abstract-cosmos';
 import { TransactionBuilderFactory } from './lib';
 import utils from './lib/utils';
 

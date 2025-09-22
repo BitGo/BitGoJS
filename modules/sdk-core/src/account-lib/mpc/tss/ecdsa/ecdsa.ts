@@ -2,7 +2,7 @@ import * as paillierBigint from 'paillier-bigint';
 import * as bigintCryptoUtils from 'bigint-crypto-utils';
 import { secp256k1 as secp } from '@noble/curves/secp256k1';
 import { createHash, Hash, randomBytes } from 'crypto';
-import { bip32 } from '@bitgo/utxo-lib';
+import { bip32 } from '@bitgo-beta/utxo-lib';
 import { bigIntFromBufferBE, bigIntFromU8ABE, bigIntToBufferBE, getPaillierPublicKey } from '../../util';
 import { Secp256k1Curve } from '../../curves';
 import {
@@ -20,7 +20,7 @@ import {
   chaincodeBase,
   Shamir,
   SchnorrProof,
-} from '@bitgo/sdk-lib-mpc';
+} from '@bitgo-beta/sdk-lib-mpc';
 import {
   AShare,
   BShare,

@@ -2,7 +2,7 @@ import * as sinon from 'sinon';
 import should from 'should';
 import * as express from 'express';
 import { handlePayLightningInvoice, handleCreateLightningInvoice } from '../../../src/lightning/lightningInvoiceRoutes';
-import { Invoice, PayInvoiceResponse } from '@bitgo/abstract-lightning';
+import { Invoice, PayInvoiceResponse } from '@bitgo-beta/abstract-lightning';
 import { BitGo } from 'bitgo';
 import * as assert from 'node:assert';
 
@@ -51,7 +51,7 @@ describe('Lightning Invoice Routes', () => {
       // Mock the module import
       const proxyquire = require('proxyquire');
       const lightningRoutes = proxyquire('../../../src/lightning/lightningInvoiceRoutes', {
-        '@bitgo/abstract-lightning': {
+        '@bitgo-beta/abstract-lightning': {
           getLightningWallet: () => mockLightningWallet,
         },
       });
@@ -127,7 +127,7 @@ describe('Lightning Invoice Routes', () => {
       // Mock the module import
       const proxyquire = require('proxyquire');
       const lightningRoutes = proxyquire('../../../src/lightning/lightningInvoiceRoutes', {
-        '@bitgo/abstract-lightning': {
+        '@bitgo-beta/abstract-lightning': {
           getLightningWallet: () => mockLightningWallet,
         },
       });

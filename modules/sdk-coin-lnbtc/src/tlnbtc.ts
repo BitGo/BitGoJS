@@ -1,9 +1,9 @@
 /**
  * @prettier
  */
-import { BaseCoin, BitGoBase } from '@bitgo/sdk-core';
+import { BaseCoin, BitGoBase } from '@bitgo-beta/sdk-core';
 import { Lnbtc } from './lnbtc';
-import * as utxolib from '@bitgo/utxo-lib';
+import * as utxolib from '@bitgo-beta/utxo-lib';
 
 export class Tlnbtc extends Lnbtc {
   constructor(bitgo: BitGoBase) {

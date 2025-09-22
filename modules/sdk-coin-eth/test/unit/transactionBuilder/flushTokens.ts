@@ -1,5 +1,5 @@
 import should from 'should';
-import { TransactionType } from '@bitgo/sdk-core';
+import { TransactionType } from '@bitgo-beta/sdk-core';
 import {
   ETHTransactionType,
   Fee,
@@ -10,7 +10,7 @@ import {
 } from '../../../src';
 import { getBuilder } from '../getBuilder';
 // eslint-disable-next-line import/no-internal-modules
-import { runFlushNftTests } from '@bitgo/abstract-eth/test/unit/transactionBuilder';
+import { runFlushNftTests } from '@bitgo-beta/abstract-eth/test/unit/transactionBuilder';
 
 // Run the shared flush NFT tests from abstract-eth
 describe('ETH Flush NFT Tests (from abstract-eth)', () => {

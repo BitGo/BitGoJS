@@ -5,8 +5,8 @@ import {
   TransactionType,
   InvalidTransactionError,
   TransactionType as BitGoTransactionType,
-} from '@bitgo/sdk-core';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
+} from '@bitgo-beta/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo-beta/statics';
 import {
   IcpTransaction,
   IcpTransactionData,
