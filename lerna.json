@@ -4,7 +4,13 @@
   "useWorkspaces": true,
   "command": {
     "version": {
-      "message": "chore(root): publish modules"
+      "message": "chore(root): publish modules",
+      "allowBranch": "*",
+      "skipGit": true
+    },
+    "publish": {
+      "skipGit": true,
+      "allowBranch": "*"
     }
   },
   "$schema": "node_modules/lerna/schemas/lerna-schema.json",
