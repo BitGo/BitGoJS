@@ -1961,7 +1961,7 @@ class MegaETHTestnet extends Testnet implements EthereumNetwork {
 class Plume extends Mainnet implements EthereumNetwork {
   name = 'Plume';
   family = CoinFamily.PLUME;
-  explorerUrl = 'https://explorer.plume.org/tx';
+  explorerUrl = 'https://explorer.plume.org/tx/';
   accountExplorerUrl = 'https://explorer.plume.org/address/';
   chainId = 98866;
   nativeCoinOperationHashPrefix = '98866';
@@ -1970,8 +1970,8 @@ class Plume extends Mainnet implements EthereumNetwork {
 class PlumeTestnet extends Testnet implements EthereumNetwork {
   name = 'PlumeTestnet';
   family = CoinFamily.PLUME;
-  explorerUrl = 'http://testnet-rpc.plume.org/tx';
-  accountExplorerUrl = 'http://testnet-rpc.plume.org/address/';
+  explorerUrl = 'https://testnet-explorer.plume.org/tx/';
+  accountExplorerUrl = 'https://testnet-explorer.plume.org/address/';
   chainId = 98867;
   nativeCoinOperationHashPrefix = '98867';
 }
