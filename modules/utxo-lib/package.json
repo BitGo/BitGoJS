@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/utxo-lib",
-  "version": "11.11.0",
+  "version": "0.0.0-semantic-release-managed",
   "description": "Client-side Bitcoin JavaScript library",
   "main": "./dist/src/index.js",
   "engines": {
@@ -46,7 +46,7 @@
     "dist/src"
   ],
   "dependencies": {
-    "@bitgo/blake2b": "^3.2.4",
+    "@bitgo/blake2b": "0.0.0-semantic-release-managed",
     "@brandonblack/musig": "^0.0.1-alpha.0",
     "@noble/curves": "1.8.1",
     "@noble/secp256k1": "1.6.3",

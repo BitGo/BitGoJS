@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-hmac",
-  "version": "1.2.0",
+  "version": "0.0.0-semantic-release-managed",
   "description": "HMAC module for the BitGo SDK",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -16,7 +16,7 @@
     "prepare": "npm run build"
   },
   "dependencies": {
-    "@bitgo/sjcl": "^1.0.1"
+    "@bitgo/sjcl": "0.0.0-semantic-release-managed"
   },
   "devDependencies": {
     "chai": "^4.3.6",
