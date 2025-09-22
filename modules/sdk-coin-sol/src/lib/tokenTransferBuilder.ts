@@ -14,6 +14,9 @@ import { AtaInit, TokenAssociateRecipient, TokenTransfer, SetPriorityFee } from 
 import assert from 'assert';
 import { TransactionBuilder } from './transactionBuilder';
 import _ from 'lodash';
+import { AccountMeta } from '@solana/web3.js';
+import { TOKEN_2022_PROGRAM_ID } from '@solana/spl-token';
+import { fetchExtensionAccounts } from './token2022Extensions';
 
 export interface SendParams {
   address: string;
@@ -138,6 +141,14 @@ export class TokenTransferBuilder extends TransactionBuilder {
           throw new Error(`Could not determine token information for ${sendParams.tokenName}`);
         }
         const sourceAddress = await getAssociatedTokenAccountAddress(tokenAddress, this._sender, false, programId);
+
+        // Only fetch extension accounts for Token-2022 tokens
+        let extensionAccounts: AccountMeta[] | undefined;
+        if (programId === TOKEN_2022_PROGRAM_ID.toString()) {
+          const network = this._coinConfig?.network.type;
+          extensionAccounts = await fetchExtensionAccounts(tokenAddress, network);
+        }
+
         return {
           type: InstructionBuilderTypes.TokenTransfer,
           params: {
@@ -149,6 +160,11 @@ export class TokenTransferBuilder extends TransactionBuilder {
             tokenAddress: tokenAddress,
             programId: programId,
             decimalPlaces: decimals,
+            extensionAccounts: extensionAccounts?.map((meta) => ({
+              pubkey: meta.pubkey.toString(),
+              isSigner: meta.isSigner,
+              isWritable: meta.isWritable,
+            })),
           },
         };
       })

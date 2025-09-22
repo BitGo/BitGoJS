@@ -81,6 +81,7 @@ export interface TokenTransfer {
     tokenAddress?: string;
     decimalPlaces?: number;
     programId?: string;
+    extensionAccounts?: Array<{ pubkey: string; isSigner: boolean; isWritable: boolean }>;
   };
 }
 
