@@ -4504,6 +4504,15 @@ export const allCoinsAndTokens = [
     POLYX_TOKEN_FEATURES
   ),
   aptToken(
+    'e2a2d8fc-df3e-4bb7-b9c6-19092bb3369a',
+    'apt:usd1',
+    'USD1',
+    6,
+    '0x6febdb5695dab42c3edf6baaebf7b49b4ae32fbb1411a5c33917f442ebe77daa',
+    UnderlyingAsset['apt:usd1'],
+    [...APT_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  aptToken(
     'e8bfdab3-4ef6-4b39-9450-d9cb59593f7a',
     'apt:usdt',
     'USD Tether',
