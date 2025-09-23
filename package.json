@@ -98,7 +98,8 @@
     "**/ethers/**/ws": "7.5.10",
     "**/swarm-js/**/ws": "5.2.4",
     "serialize-javascript": "^6.0.2",
-    "@grpc/grpc-js": "^1.12.6"
+    "@grpc/grpc-js": "^1.12.6",
+    "bigint-buffer": "npm:@trufflesuite/bigint-buffer@1.1.10"
   },
   "workspaces": [
     "modules/*"
@@ -139,7 +140,8 @@
   "dependencies": {
     "axios": "^1.12.0",
     "terser": "^5.14.2",
-    "tmp": "^0.2.3"
+    "tmp": "^0.2.3",
+    "bigint-buffer": "npm:@trufflesuite/bigint-buffer@1.1.10"
   },
   "packageManager": "yarn@1.22.22"
 }
