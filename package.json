@@ -97,15 +97,15 @@
     "**/avalanche/**/ws": "8.18.3",
     "**/ethers/**/ws": "7.5.10",
     "**/swarm-js/**/ws": "5.2.4",
-    "serialize-javascript": "^6.0.2"
+    "serialize-javascript": "^6.0.2",
+    "@grpc/grpc-js": "^1.12.6"
   },
   "workspaces": [
     "modules/*"
   ],
   "scripts": {
     "postinstall": "test -n \"$NOYARNPOSTINSTALL\" || lerna run build --stream",
-    "audit": "yarn audit --group dependencies optionalDependencies peerDependencies ; test $? -lt 8",
-    "audit-dev": "yarn audit --group devDependencies ; test $? -lt 8",
+    "audit-high": "improved-yarn-audit --min-severity high",
     "lint": "lerna run lint --stream",
     "lint-changed": "lerna run lint --since origin/${GITHUB_REPO_BRANCH:-master}..HEAD --stream",
     "unit-test-changed": "lerna run unit-test --since $(git merge-base HEAD~ origin/${GITHUB_REPO_BRANCH:-master}) --stream",

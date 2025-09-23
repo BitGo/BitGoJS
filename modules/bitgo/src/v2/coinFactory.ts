@@ -929,6 +929,10 @@ export function getTokenConstructor(tokenConfig: TokenConfig): CoinConstructor |
     case 'bera':
     case 'tbera':
       return BeraToken.createTokenConstructor(tokenConfig as EthLikeTokenConfig);
+    case 'baseeth':
+    case 'tbaseeth':
+      const coinNames = { Mainnet: 'baseeth', Testnet: 'tbaseeth' };
+      return EthLikeErc20Token.createTokenConstructor(tokenConfig as EthLikeTokenConfig, coinNames);
     case 'coredao':
     case 'tcoredao':
       return CoredaoToken.createTokenConstructor(tokenConfig as EthLikeTokenConfig);

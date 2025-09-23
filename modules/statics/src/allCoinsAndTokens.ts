@@ -11,6 +11,7 @@ import {
   eosToken,
   erc1155,
   erc20CompatibleAccountCoin,
+  erc20Token,
   erc721,
   fiat,
   flrErc20,
@@ -120,6 +121,7 @@ import {
   VET_FEATURES,
   WCT_FEATURES,
   WEMIX_FEATURES,
+  WFLR_FEATURES,
   XDC_FEATURES,
   XLM_FEATURES,
   XLM_TOKEN_FEATURES_WITH_FRANKFURT,
@@ -415,6 +417,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.SUPPORTS_ERC20,
     ],
     KeyCurve.Secp256k1,
     '',
@@ -1047,7 +1050,12 @@ export const allCoinsAndTokens = [
     6,
     UnderlyingAsset.MANTRA,
     BaseUnit.MANTRA,
-    [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.SHARED_COSMOS_SDK, CoinFeature.SHARED_COSMOS_WP]
+    [
+      ...COSMOS_SIDECHAIN_FEATURES,
+      CoinFeature.CUSTODY_BULK_TRANSACTION,
+      CoinFeature.SHARED_COSMOS_SDK,
+      CoinFeature.SHARED_COSMOS_WP,
+    ]
   ),
   account(
     'cc900f12-f229-4eb3-9ca7-2a05a445f362',
@@ -1057,7 +1065,12 @@ export const allCoinsAndTokens = [
     6,
     UnderlyingAsset.MANTRA,
     BaseUnit.MANTRA,
-    [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.SHARED_COSMOS_SDK, CoinFeature.SHARED_COSMOS_WP]
+    [
+      ...COSMOS_SIDECHAIN_FEATURES,
+      CoinFeature.CUSTODY_BULK_TRANSACTION,
+      CoinFeature.SHARED_COSMOS_SDK,
+      CoinFeature.SHARED_COSMOS_WP,
+    ]
   ),
   account(
     '507492ba-d127-4fd8-b07d-9461f5887a26',
@@ -2122,6 +2135,24 @@ export const allCoinsAndTokens = [
     UnderlyingAsset.CELO,
     BaseUnit.ETH,
     CELO_FEATURES
+  ),
+  erc20Token(
+    '03b67719-a5d5-4ae3-a050-252b948f4daa',
+    'baseeth:aero',
+    'Aerodrome Finance',
+    18,
+    '0x940181a94a35a4569e4529a3cdfb74e38fd98631',
+    UnderlyingAsset['baseeth:aero'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    '16c438c1-714a-4ad7-bdb1-fb8d2575c466',
+    'tbaseeth:usdc',
+    'Testnet USDC',
+    6,
+    '0x036cbd53842c5426634e7929541ec2318f3dcf7e',
+    UnderlyingAsset['tbaseeth:usdc'],
+    Networks.test.basechain
   ),
   hederaCoin(
     '98aad956-27ee-45dd-aa43-6a23c9a1d1d0',
@@ -4060,7 +4091,7 @@ export const allCoinsAndTokens = [
     18,
     '0xab6fad89389b73dbc887d31206a26fd88d719d1f',
     UnderlyingAsset['tflr:wflr'],
-    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+    WFLR_FEATURES
   ),
   txrpToken(
     '8ef16158-1015-4a67-b6fe-db669c18ab2b',
@@ -4483,6 +4514,15 @@ export const allCoinsAndTokens = [
     POLYX_TOKEN_FEATURES
   ),
   aptToken(
+    'e2a2d8fc-df3e-4bb7-b9c6-19092bb3369a',
+    'apt:usd1',
+    'USD1',
+    6,
+    '0x6febdb5695dab42c3edf6baaebf7b49b4ae32fbb1411a5c33917f442ebe77daa',
+    UnderlyingAsset['apt:usd1'],
+    [...APT_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  aptToken(
     'e8bfdab3-4ef6-4b39-9450-d9cb59593f7a',
     'apt:usdt',
     'USD Tether',
@@ -4543,6 +4583,15 @@ export const allCoinsAndTokens = [
     6,
     '0x2356ad3e22c235a200a5df08282a65c42c2aafb0d8ec5b878a7192c5a2ba432a',
     UnderlyingAsset['tapt:stgusd1'],
+    [...APT_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  taptToken(
+    'ed0679b9-2b8e-44d3-9b58-d103402472ea',
+    'tapt:usd1',
+    'Test USD1 Token',
+    6,
+    '0xc52f239bb28211c0340882b83cbc20f7a0e5bf31608f1ca46c2f4a5c6a856683',
+    UnderlyingAsset['tapt:usd1'],
     [...APT_FEATURES, CoinFeature.STABLECOIN]
   ),
   taptToken(

@@ -1,8 +1,8 @@
+import assert from 'assert';
 import * as _ from 'lodash';
+import nock from 'nock';
 import * as should from 'should';
 import * as sinon from 'sinon';
-import nock from 'nock';
-import assert from 'assert';
 
 import { TOKEN_2022_PROGRAM_ID } from '@solana/spl-token';
 
@@ -15,6 +15,7 @@ import {
   MPCSweepTxs,
   MPCTx,
   MPCTxs,
+  PrebuildAndSignTransactionOptions,
   TransactionPrebuild,
   TssUtils,
   TxRequest,
@@ -23,14 +24,14 @@ import {
 } from '@bitgo/sdk-core';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { coins } from '@bitgo/statics';
-import { KeyPair, Sol, Tsol } from '../../src';
+import { KeyPair, Sol, SolVerifyTransactionOptions, Tsol } from '../../src';
 import { Transaction } from '../../src/lib';
 import { AtaInit, InstructionParams, TokenTransfer } from '../../src/lib/iface';
 import { getAssociatedTokenAccountAddress } from '../../src/lib/utils';
 import * as testData from '../fixtures/sol';
 import * as resources from '../resources/sol';
-import { getBuilderFactory } from './getBuilderFactory';
 import { solBackupKey } from './fixtures/solBackupKey';
+import { getBuilderFactory } from './getBuilderFactory';
 
 describe('SOL:', function () {
   let bitgo: TestBitGoAPI;
@@ -798,6 +799,7 @@ describe('SOL:', function () {
           'changeAmount',
           'outputs',
           'changeOutputs',
+          'tokenEnablements',
           'fee',
           'memo',
         ],
@@ -822,6 +824,7 @@ describe('SOL:', function () {
           authWalletAddress: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
           walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
         },
+        tokenEnablements: [],
       });
     });
 
@@ -842,6 +845,7 @@ describe('SOL:', function () {
           'changeAmount',
           'outputs',
           'changeOutputs',
+          'tokenEnablements',
           'fee',
           'memo',
         ],
@@ -866,6 +870,7 @@ describe('SOL:', function () {
           authWalletAddress: '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
           walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
         },
+        tokenEnablements: [],
       });
     });
 
@@ -887,6 +892,7 @@ describe('SOL:', function () {
           'changeAmount',
           'outputs',
           'changeOutputs',
+          'tokenEnablements',
           'fee',
           'memo',
         ],
@@ -908,6 +914,7 @@ describe('SOL:', function () {
         blockhash: 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi',
         durableNonce: undefined,
         memo: undefined,
+        tokenEnablements: [],
       });
     });
 
@@ -929,6 +936,7 @@ describe('SOL:', function () {
           'changeAmount',
           'outputs',
           'changeOutputs',
+          'tokenEnablements',
           'fee',
           'memo',
         ],
@@ -950,6 +958,7 @@ describe('SOL:', function () {
         blockhash: 'GHtXQBsoZHVnNFa9YevAzFr17DJjgHXk3ycTKD5xD3Zi',
         durableNonce: undefined,
         memo: undefined,
+        tokenEnablements: [],
       });
     });
 
@@ -970,6 +979,7 @@ describe('SOL:', function () {
           'changeAmount',
           'outputs',
           'changeOutputs',
+          'tokenEnablements',
           'fee',
           'memo',
         ],
@@ -995,6 +1005,7 @@ describe('SOL:', function () {
           authWalletAddress: '12f6D3WubGVeQoH2m8kTvvcrasWdXWwtVzUCyRNDZxA2',
           walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
         },
+        tokenEnablements: [],
       });
     });
 
@@ -1015,6 +1026,7 @@ describe('SOL:', function () {
           'changeAmount',
           'outputs',
           'changeOutputs',
+          'tokenEnablements',
           'fee',
           'memo',
         ],
@@ -1040,6 +1052,7 @@ describe('SOL:', function () {
           authWalletAddress: '12f6D3WubGVeQoH2m8kTvvcrasWdXWwtVzUCyRNDZxA2',
           walletNonceAddress: '8Y7RM6JfcX4ASSNBkrkrmSbRu431YVi9Y3oLFnzC2dCh',
         },
+        tokenEnablements: [],
       });
     });
 
@@ -1071,6 +1084,7 @@ describe('SOL:', function () {
           'changeAmount',
           'outputs',
           'changeOutputs',
+          'tokenEnablements',
           'fee',
           'memo',
         ],
@@ -1092,6 +1106,7 @@ describe('SOL:', function () {
         memo: 'test memo',
         blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
         durableNonce: undefined,
+        tokenEnablements: [],
       });
     });
 
@@ -1121,6 +1136,7 @@ describe('SOL:', function () {
           'changeAmount',
           'outputs',
           'changeOutputs',
+          'tokenEnablements',
           'fee',
           'memo',
         ],
@@ -1137,6 +1153,7 @@ describe('SOL:', function () {
         memo: 'test memo',
         blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
         durableNonce: undefined,
+        tokenEnablements: [],
       });
     });
 
@@ -1167,6 +1184,7 @@ describe('SOL:', function () {
           'changeAmount',
           'outputs',
           'changeOutputs',
+          'tokenEnablements',
           'fee',
           'memo',
         ],
@@ -1188,6 +1206,7 @@ describe('SOL:', function () {
         memo: 'test memo',
         blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
         durableNonce: undefined,
+        tokenEnablements: [],
       });
     });
 
@@ -1221,6 +1240,7 @@ describe('SOL:', function () {
           'changeAmount',
           'outputs',
           'changeOutputs',
+          'tokenEnablements',
           'fee',
           'memo',
         ],
@@ -1237,6 +1257,13 @@ describe('SOL:', function () {
         memo: 'test memo',
         blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
         durableNonce: undefined,
+        tokenEnablements: [
+          {
+            address: '141BFNem3pknc8CzPVLv1Ri3btgKdCsafYP5nXwmXfxU',
+            tokenAddress: 'F4uLeXJoFz3hw13MposuwaQbMcZbCjqvEGPPeRRB1Byf',
+            tokenName: 'tsol:usdc',
+          },
+        ],
       });
     });
 
@@ -1280,6 +1307,7 @@ describe('SOL:', function () {
           'changeAmount',
           'outputs',
           'changeOutputs',
+          'tokenEnablements',
           'fee',
           'memo',
         ],
@@ -1296,6 +1324,18 @@ describe('SOL:', function () {
         memo: 'test memo',
         blockhash: '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
         durableNonce: undefined,
+        tokenEnablements: [
+          {
+            address: '141BFNem3pknc8CzPVLv1Ri3btgKdCsafYP5nXwmXfxU',
+            tokenAddress: 'F4uLeXJoFz3hw13MposuwaQbMcZbCjqvEGPPeRRB1Byf',
+            tokenName: 'tsol:usdc',
+          },
+          {
+            address: '9KaLinZFNW5chL4J8UoKnTECppWVMz3ewgx4FAkxUDcf',
+            tokenAddress: '9kLJoGbMgSteptkhKKuh7ken4JEvHrT83157ezEGrZ7R',
+            tokenName: 'tsol:ray',
+          },
+        ],
       });
     });
 
@@ -1317,6 +1357,7 @@ describe('SOL:', function () {
           'changeAmount',
           'outputs',
           'changeOutputs',
+          'tokenEnablements',
           'fee',
           'memo',
         ],
@@ -1336,6 +1377,13 @@ describe('SOL:', function () {
         memo: undefined,
         blockhash: '27E3MXFvXMUNYeMJeX1pAbERGsJfUbkaZTfgMgpmNN5g',
         durableNonce: undefined,
+        tokenEnablements: [
+          {
+            address: '2eKjVtzV3oPTXFdtRSDj3Em9k1MV7k8WjKkBszQUwizS',
+            tokenAddress: 'F4uLeXJoFz3hw13MposuwaQbMcZbCjqvEGPPeRRB1Byf',
+            tokenName: 'tsol:usdc',
+          },
+        ],
       });
     });
   });
@@ -3211,6 +3259,96 @@ describe('SOL:', function () {
           }),
         {
           message: 'tx outputs does not match with expected address',
+        }
+      );
+    });
+  });
+
+  describe('blind signing token enablement protection', () => {
+    it('should verify as valid the enabletoken intent when prebuild tx matchs user intent ', async function () {
+      const { txParams, txPrebuildRaw, walletData } = testData.enableTokenFixtures;
+      const wallet = new Wallet(bitgo, basecoin, walletData);
+      const sameIntentTx = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild: txPrebuildRaw,
+        wallet,
+        verification: { verifyTokenEnablement: true },
+      } as unknown as SolVerifyTransactionOptions);
+
+      sameIntentTx.should.equal(true);
+    });
+
+    it('should thrown an error when tampered prebuild tx type ', async function () {
+      const { txParams, txPrebuildRaw, sendTxHex, walletData } = testData.enableTokenFixtures;
+      const tamperedTxPrebuild = { ...txPrebuildRaw, txHex: sendTxHex };
+
+      const wallet = new Wallet(bitgo, basecoin, walletData);
+
+      await assert.rejects(
+        async () =>
+          await basecoin.verifyTransaction({
+            txParams,
+            txPrebuild: tamperedTxPrebuild,
+            wallet,
+            verification: { verifyTokenEnablement: true },
+          } as unknown as SolVerifyTransactionOptions),
+        {
+          message:
+            'Invalid transaction type on token enablement: expected "AssociatedTokenAccountInitialization", got "Send".',
+        }
+      );
+    });
+
+    it('should verify that tokenName matches between user intent and hex', async function () {
+      const { txParams, txPrebuildRaw, wrongTokenNameTxHex, walletData } = testData.enableTokenFixtures;
+      const tamperedTxPrebuild = { ...txPrebuildRaw, txHex: wrongTokenNameTxHex };
+      const wallet = new Wallet(bitgo, basecoin, walletData);
+
+      await assert.rejects(
+        async () =>
+          basecoin.verifyTransaction({
+            txParams,
+            txPrebuild: tamperedTxPrebuild,
+            wallet,
+            verification: { verifyTokenEnablement: true },
+          } as unknown as SolVerifyTransactionOptions),
+        { message: 'Invalid token name: expected tsol:ray, got tsol:t22mint on token enablement tx' }
+      );
+    });
+
+    it('should verify that tokenAddr matches between user intent and hex', async function () {
+      const { txParams, txPrebuildRaw, wrongAddrTxHex, walletData } = testData.enableTokenFixtures;
+      const tamperedTxPrebuild = { ...txPrebuildRaw, txHex: wrongAddrTxHex };
+
+      const wallet = new Wallet(bitgo, basecoin, walletData);
+      await assert.rejects(
+        async () =>
+          basecoin.verifyTransaction({
+            txParams,
+            txPrebuild: tamperedTxPrebuild,
+            wallet,
+            verification: { verifyTokenEnablement: true },
+          } as unknown as SolVerifyTransactionOptions),
+        {
+          message:
+            'Invalid token address: expected 4bTYvvv2Hk4v2kQW8HZFFS4SzYPztQshw9Gm1suXmaBj, got G1LEgANAwKo7b8NfxTsMzrbBYDkXqi5REVJY8thrMRQm on token enablement tx',
+        }
+      );
+    });
+
+    it('should fail sendTokenEnablement call on spoofed data', async function () {
+      const { sendTokenEnablementPayload, walletData, wrongTokenNameTxHex } = testData.enableTokenFixtures;
+      const wallet = new Wallet(bitgo, basecoin, walletData);
+      nock('https://bitgo.fakeurl').get('/api/v2/tsol/key/68bafed588671cf94ed8a5dbba882ad3').reply(200, {});
+      await assert.rejects(
+        async () =>
+          wallet.sendTokenEnablement({
+            verification: { verifyTokenEnablement: true },
+            ...sendTokenEnablementPayload,
+            prebuildTx: { ...sendTokenEnablementPayload.prebuildTx, txHex: wrongTokenNameTxHex },
+          } as unknown as PrebuildAndSignTransactionOptions),
+        {
+          message: 'Invalid token name: expected tsol:ray, got tsol:t22mint on token enablement tx',
         }
       );
     });

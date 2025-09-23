@@ -16,7 +16,7 @@ require('dotenv').config({ path: '../../.env' });
 
 const AMOUNT_LAMPORTS = 1000;
 const JITO_STAKE_POOL_ADDRESS = 'Jito4APyf642JPZPx3hGc6WWJ8zPKtRbRs4P815Awbb';
-const NETWORK = 'devnet';
+const NETWORK = 'testnet';
 
 const bitgo = new BitGoAPI({
   accessToken: process.env.TESTNET_ACCESS_TOKEN,

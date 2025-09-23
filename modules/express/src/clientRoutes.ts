@@ -1558,6 +1558,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   router.post('express.decrypt', [prepareBitGo(config), typedPromiseWrapper(handleDecrypt)]);
   router.post('express.encrypt', [prepareBitGo(config), typedPromiseWrapper(handleEncrypt)]);
   router.post('express.verifyaddress', [prepareBitGo(config), typedPromiseWrapper(handleVerifyAddress)]);
+  router.post('express.lightning.initWallet', [prepareBitGo(config), typedPromiseWrapper(handleInitLightningWallet)]);
   router.post('express.lightning.unlockWallet', [
     prepareBitGo(config),
     typedPromiseWrapper(handleUnlockLightningWallet),
@@ -1786,12 +1787,6 @@ export function setupEnclavedExpressRoutes(app: express.Application, config: Con
 }
 
 export function setupLightningSignerNodeRoutes(app: express.Application, config: Config): void {
-  app.post(
-    '/api/v2/:coin/wallet/:id/initwallet',
-    parseBody,
-    prepareBitGo(config),
-    promiseWrapper(handleInitLightningWallet)
-  );
   app.post(
     '/api/v2/:coin/wallet/:id/signermacaroon',
     parseBody,
