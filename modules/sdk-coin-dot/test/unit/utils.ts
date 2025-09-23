@@ -91,14 +91,14 @@ describe('utils', () => {
     );
   });
 
-  xit('should recover signature from raw tx correctly', () => {
+  it('should recover signature from raw tx correctly', () => {
     should.equal(
       utils.recoverSignatureFromRawTx(rawTx.transfer.signed, { registry: registry }),
       'aadae7fa1f53e7a5c900b330ff71bee6782cf3c29a2c6f9599162381cd021ad581c74ded89f49ec79adefed64af8ff16649553523dda9cb4f017cbf15681e50e'
     );
   });
 
-  xit('should serialize signed transaction successfully', () => {
+  it('should serialize signed transaction successfully', () => {
     const signature = utils.recoverSignatureFromRawTx(rawTx.transfer.signed, { registry: registry });
     const txHex = utils.serializeSignedTransaction(
       rawTx.transfer.unsigned,

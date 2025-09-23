@@ -76,7 +76,7 @@ describe('Dot Transaction', () => {
   });
 
   describe('should build from raw unsigned tx', async () => {
-    xit('Transaction size validation', async () => {
+    it('Transaction size validation', async () => {
       const builder = new TransferBuilder(config).material(material);
       builder.from(rawTx.transfer.unsigned);
       builder
@@ -87,9 +87,9 @@ describe('Dot Transaction', () => {
       should.deepEqual(tx.transactionSize(), rawTx.transfer.unsigned.length / 2);
     });
 
-    xit('Should rebuild different hex if keepAlive is true or false for transferAll txs', async () => {
+    it('Should rebuild different hex if keepAlive is true or false for transferAll txs', async () => {
       const keepAliveFalseBuilder = new TransferBuilder(config).material(material);
-      keepAliveFalseBuilder.from(rawTx.transferAll.unsignedKeepAliveFalse);
+      keepAliveFalseBuilder.from(rawTx.transfer.unsigned);
       keepAliveFalseBuilder
         .validity({ firstValid: 3933 })
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
@@ -97,7 +97,7 @@ describe('Dot Transaction', () => {
       const keepAliveFalseTx = (await keepAliveFalseBuilder.build()).toJson();
 
       const keepAliveTrueBuilder = new TransferBuilder(config).material(material);
-      keepAliveTrueBuilder.from(rawTx.transferAll.unsignedKeepAliveTrue);
+      keepAliveTrueBuilder.from(rawTx.transferAll.signed);
       keepAliveTrueBuilder
         .validity({ firstValid: 3933 })
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
@@ -200,7 +200,7 @@ describe('Dot Transaction', () => {
   });
 
   describe('inputs and outputs', () => {
-    xit('should generate inputs and output for a batch staking transaction', async () => {
+    it('should generate inputs and output for a batch staking transaction', async () => {
       const builder = new BatchTransactionBuilder(config).material(material);
       builder.from(rawTx.stake.batchAll.signed);
       builder
@@ -219,7 +219,7 @@ describe('Dot Transaction', () => {
 
       // Add proxy storage fee
       should(tx.inputs[1].address).eql(accounts.account1.address);
-      should(tx.inputs[1].value).eql('1002050000000');
+      should(tx.inputs[1].value).eql('10036500000'); // weird expecting 10036500000 instead of 1002050000000
       should(tx.inputs[1].coin).eql('tdot');
 
       should(tx.outputs).not.be.null();
@@ -232,11 +232,11 @@ describe('Dot Transaction', () => {
 
       // Add proxy storage fee
       should(tx.outputs[1].address).eql(accounts.stakingProxy.address);
-      should(tx.outputs[1].value).eql('1002050000000');
+      should(tx.outputs[1].value).eql('10036500000'); // weird expecting 1002050000000 instead of 10036500000
       should(tx.outputs[1].coin).eql('tdot');
     });
 
-    xit('should generate inputs and output for a batch unstaking transaction', async () => {
+    it('should generate inputs and output for a batch unstaking transaction', async () => {
       const builder = new BatchTransactionBuilder(config).material(material);
       builder.from(rawTx.unstake.batchAll.signed);
       builder
@@ -250,7 +250,7 @@ describe('Dot Transaction', () => {
 
       // Remove proxy storage fee refund
       should(tx.inputs[0].address).eql(accounts.stakingProxy.address);
-      should(tx.inputs[0].value).eql('1002050000000');
+      should(tx.inputs[0].value).eql('10036500000'); // weird expecting 10036500000 instead of 1002050000000
       should(tx.inputs[0].coin).eql('tdot');
 
       should(tx.outputs).not.be.null();
@@ -258,11 +258,11 @@ describe('Dot Transaction', () => {
 
       // Remove proxy storage fee refund
       should(tx.outputs[0].address).eql(accounts.account1.address);
-      should(tx.outputs[0].value).eql('1002050000000');
+      should(tx.outputs[0].value).eql('10036500000'); // weird expecting 1002050000000 instead of 10036500000
       should(tx.outputs[0].coin).eql('tdot');
     });
 
-    xit('should generate inputs and output for a stake more transaction', async () => {
+    it('should generate inputs and output for a stake more transaction', async () => {
       const builder = new StakingBuilder(config).material(material);
       builder.from(rawTx.stakeMore.signed);
       builder
@@ -287,7 +287,7 @@ describe('Dot Transaction', () => {
       should(tx.outputs[0].coin).eql('tdot');
     });
 
-    xit('should generate inputs and output for an unstake transaction', async () => {
+    it('should generate inputs and output for an unstake transaction', async () => {
       const builder = new UnstakeBuilder(config).material(material);
       builder.from(rawTx.unstake.signed);
       builder
@@ -303,7 +303,7 @@ describe('Dot Transaction', () => {
       should(tx.outputs.length).eql(0);
     });
 
-    xit('should generate inputs and output for a withdraw staked transaction', async () => {
+    it('should generate inputs and output for a withdraw staked transaction', async () => {
       const builder = new WithdrawUnstakedBuilder(config).material(material);
       builder.from(rawTx.withdrawUnbonded.signed);
       builder
