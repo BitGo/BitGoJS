@@ -44,7 +44,11 @@ export class CoinMap {
 
     if (coin.isToken) {
       if (coin instanceof ContractAddressDefinedToken) {
-        this._coinByContractAddress.set(`${coin.family}:${coin.contractAddress}`, coin);
+        const contractAddrKey = `${coin.family}:${coin.contractAddress}`;
+        if (this._coinByContractAddress.has(contractAddrKey)) {
+          throw new DuplicateCoinDefinitionError(contractAddrKey);
+        }
+        this._coinByContractAddress.set(contractAddrKey, coin);
       } else if (coin instanceof NFTCollectionIdDefinedToken) {
         this._coinByNftCollectionID.set(`${coin.prefix}${coin.family}:${coin.nftCollectionId}`, coin);
       }

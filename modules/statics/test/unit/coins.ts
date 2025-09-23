@@ -35,7 +35,6 @@ import {
   reducedAmsTokenConfig,
   reducedTokenConfigForAllChains,
 } from './resources/amsTokenConfig';
-import { Networks } from '../../src/networks';
 
 interface DuplicateCoinObject {
   name: string;
