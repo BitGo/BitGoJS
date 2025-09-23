@@ -99,12 +99,12 @@ export class MoveStakeBuilder extends TransactionBuilder {
 
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string): Transaction {
+    const tx = super.fromImplementation(rawTransaction);
     if (this._method?.name !== Interface.MethodNames.MoveStake) {
       throw new InvalidTransactionError(
         `Invalid Transaction Type: ${this._method?.name}. Expected ${Interface.MethodNames.MoveStake}`
       );
     }
-    const tx = super.fromImplementation(rawTransaction);
     const txMethod = this._method.args as Interface.MoveStakeArgs;
     this.amount(txMethod.alphaAmount);
     this.originHotkey({ address: txMethod.originHotkey });

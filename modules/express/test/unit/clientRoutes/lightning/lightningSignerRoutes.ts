@@ -14,6 +14,7 @@ import {
   handleUnlockLightningWallet,
 } from '../../../../src/lightning/lightningSignerRoutes';
 import { ExpressApiRouteRequest } from '../../../../src/typedRoutes/api';
+import { PostLightningInitWallet } from '../../../../src/typedRoutes/api/v2/lightningInitWallet';
 import { LightningStateResponse } from '../../../../src/typedRoutes/api/v2/lightningState';
 
 describe('Lightning signer routes', () => {
@@ -76,9 +77,18 @@ describe('Lightning signer routes', () => {
         config: {
           lightningSignerFileSystemPath: 'lightningSignerFileSystemPath',
         },
-      } as unknown as express.Request;
+        decoded: {
+          coin: 'tlnbtc',
+          walletId: apiData.wallet.id,
+          passphrase: apiData.initWalletRequestBody.passphrase,
+          ...(includingOptionalFields ? { expressHost: apiData.initWalletRequestBody.expressHost } : {}),
+        },
+      } as unknown as ExpressApiRouteRequest<'express.lightning.initWallet', 'post'>;
 
-      await handleInitLightningWallet(req);
+      const res = await handleInitLightningWallet(req);
+      decodeOrElse('PostLightningInitWallet.response.200', PostLightningInitWallet.response[200], res, (_) => {
+        throw new Error('Response did not match expected codec');
+      });
 
       wpWalletUpdateNock.done();
       signerInitWalletNock.done();

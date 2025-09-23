@@ -1,19 +1,20 @@
 import 'should';
 
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { Txrp } from '../../src/txrp';
+import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import ripple from '../../src/ripple';
+import { Txrp } from '../../src/txrp';
 
-import * as nock from 'nock';
+import { Wallet } from '@bitgo/sdk-core';
 import assert from 'assert';
+import * as _ from 'lodash';
+import * as nock from 'nock';
 import * as rippleBinaryCodec from 'ripple-binary-codec';
 import sinon from 'sinon';
-import * as testData from '../resources/xrp';
-import { SIGNER_USER, SIGNER_BACKUP, SIGNER_BITGO } from '../resources/xrp';
-import * as _ from 'lodash';
-import { XrpToken } from '../../src';
 import * as xrpl from 'xrpl';
+import { XrpToken } from '../../src';
+import * as testData from '../resources/xrp';
+import { SIGNER_BACKUP, SIGNER_BITGO, SIGNER_USER } from '../resources/xrp';
 
 nock.disableNetConnect();
 
@@ -445,7 +446,7 @@ describe('XRP:', function () {
     let newTxPrebuild;
 
     const txPrebuild = {
-      txHex: `{"TransactionType":"TrustSet","Account":"rBSpCz8PafXTJHppDcNnex7dYnbe3tSuFG","LimitAmount":{"currency":"524C555344000000000000000000000000000000","issuer":"rnox8i6h9GoAbuwr73JtaDxXoncLLUCpXH","value":"1000000000"},"Flags":2147483648,"Fee":"45","Sequence":7}`,
+      txHex: `{"TransactionType":"TrustSet","Account":"rBSpCz8PafXTJHppDcNnex7dYnbe3tSuFG","LimitAmount":{"currency":"524C555344000000000000000000000000000000","issuer":"rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV","value":"99999999"},"Flags":2147483648,"Fee":"45","Sequence":7}`,
     };
 
     before(function () {
@@ -524,8 +525,8 @@ describe('XRP:', function () {
         type: 'enabletoken',
       };
       await token
-        .verifyTransaction({ txParams, txPrebuild })
-        .should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
+        .verifyTransaction({ txParams, txPrebuild, verification: { verifyTokenEnablement: true } })
+        .should.be.rejectedWith("Account address doesn't match with activation address.");
     });
 
     it('should fail to verify trustline transaction with incorrect token name', async function () {
@@ -540,7 +541,9 @@ describe('XRP:', function () {
         ],
         type: 'enabletoken',
       };
-      await token.verifyTransaction({ txParams, txPrebuild }).should.be.rejectedWith('txrp:usd is not supported');
+      await token
+        .verifyTransaction({ txParams, txPrebuild, verification: { verifyTokenEnablement: true } })
+        .should.be.rejectedWith('txrp:usd is not supported');
     });
 
     it('should verify token transfers with recipoent has dt', async function () {
@@ -683,6 +686,89 @@ describe('XRP:', function () {
 
     afterEach(function () {
       sinon.restore();
+    });
+  });
+
+  describe('blind signing token enablement protection', () => {
+    it('should verify as valid the enabletoken intent when prebuild tx matchs user intent ', async function () {
+      const { txParams, txPrebuildRaw, walletData } = testData.enableTokenFixtures;
+      const wallet = new Wallet(bitgo, basecoin, walletData);
+      const sameIntentTx = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild: txPrebuildRaw,
+        wallet,
+        verification: { verifyTokenEnablement: true },
+      });
+
+      sameIntentTx.should.equal(true);
+    });
+
+    it('should verify token name', async function () {
+      const { txParams, txPrebuildRaw, txHexWrongTokenName, walletData } = testData.enableTokenFixtures;
+      const wallet = new Wallet(bitgo, basecoin, walletData);
+      const txPrebuildWrongTokenName = { ...txPrebuildRaw, txHex: txHexWrongTokenName };
+
+      await assert.rejects(
+        async () =>
+          await basecoin.verifyTransaction({
+            txParams,
+            txPrebuild: txPrebuildWrongTokenName,
+            wallet,
+            verification: { verifyTokenEnablement: true },
+          }),
+        { message: 'Invalid token issuer or currency on token enablement tx' }
+      );
+    });
+
+    it('should verify transaction type', async function () {
+      const { txParams, txPrebuildRaw, txHexWrongType, walletData } = testData.enableTokenFixtures;
+      const wallet = new Wallet(bitgo, basecoin, walletData);
+      const txPrebuildWrongType = { ...txPrebuildRaw, txHex: txHexWrongType };
+
+      await assert.rejects(
+        async () =>
+          await basecoin.verifyTransaction({
+            txParams,
+            txPrebuild: txPrebuildWrongType,
+            wallet,
+            verification: { verifyTokenEnablement: true },
+          }),
+        { message: 'tx type Payment does not match expected type TrustSet' }
+      );
+    });
+
+    it('should verify activation address', async function () {
+      const { txParams, txPrebuildRaw, txHexWrongActivationAddress, walletData } = testData.enableTokenFixtures;
+      const wallet = new Wallet(bitgo, basecoin, walletData);
+      const txPrebuildWrongActivationAddr = { ...txPrebuildRaw, txHex: txHexWrongActivationAddress };
+
+      await assert.rejects(
+        async () =>
+          await basecoin.verifyTransaction({
+            txParams,
+            txPrebuild: txPrebuildWrongActivationAddr,
+            wallet,
+            verification: { verifyTokenEnablement: true },
+          }),
+        { message: "Account address doesn't match with activation address." }
+      );
+    });
+
+    it('should verify issuer address', async function () {
+      const { txParams, txPrebuildRaw, txHexWrongIssuerAddress, walletData } = testData.enableTokenFixtures;
+      const wallet = new Wallet(bitgo, basecoin, walletData);
+      const txPrebuildWrongIssuerAddress = { ...txPrebuildRaw, txHex: txHexWrongIssuerAddress };
+
+      await assert.rejects(
+        async () =>
+          await basecoin.verifyTransaction({
+            txParams,
+            txPrebuild: txPrebuildWrongIssuerAddress,
+            wallet,
+            verification: { verifyTokenEnablement: true },
+          }),
+        { message: 'Invalid token issuer or currency on token enablement tx' }
+      );
     });
   });
 });

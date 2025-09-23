@@ -588,36 +588,6 @@ describe('Apt Custom Transaction Builder', () => {
         await should(txBuilder.build()).be.rejected();
       });
 
-      it('should provide helpful error for invalid ABI structure', async function () {
-        const transaction = new CustomTransaction(coins.get('tapt'));
-        const txBuilder = factory.getCustomTransactionBuilder(transaction);
-
-        should(() => {
-          txBuilder.customTransaction({
-            moduleName: '0x1::aptos_account',
-            functionName: 'transfer_coins',
-            typeArguments: ['0x1::aptos_coin::AptosCoin'],
-            functionArguments: [testData.recipients[0].address, testData.recipients[0].amount],
-            abi: {} as any, // Invalid empty object
-          });
-        }).throw(/typeParameters array/);
-      });
-
-      it('should provide helpful error for completely wrong ABI', async function () {
-        const transaction = new CustomTransaction(coins.get('tapt'));
-        const txBuilder = factory.getCustomTransactionBuilder(transaction);
-
-        should(() => {
-          txBuilder.customTransaction({
-            moduleName: '0x1::aptos_account',
-            functionName: 'transfer_coins',
-            typeArguments: ['0x1::aptos_coin::AptosCoin'],
-            functionArguments: [testData.recipients[0].address, testData.recipients[0].amount],
-            abi: 'not an object' as any, // Completely wrong type
-          });
-        }).throw(/valid EntryFunctionABI object/);
-      });
-
       it('should build regulated token initialize with correct ABI', async function () {
         const regulatedTokenInitializeAbi = {
           typeParameters: [],

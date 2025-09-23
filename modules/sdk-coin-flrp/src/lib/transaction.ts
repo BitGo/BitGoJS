@@ -21,6 +21,19 @@ import {
 } from './iface';
 import { KeyPair } from './keyPair';
 import utils from './utils';
+import {
+  FLR_ASSET_ID,
+  FLARE_TX_HEX_PLACEHOLDER,
+  FLARE_SIGNABLE_PAYLOAD,
+  FLARE_TRANSACTION_ID_PLACEHOLDER,
+  PLACEHOLDER_NODE_ID,
+  HEX_ENCODING,
+  MEMO_FIELD,
+  DISPLAY_ORDER_BASE,
+  REWARD_ADDRESSES_FIELD,
+  SOURCE_CHAIN_FIELD,
+  DESTINATION_CHAIN_FIELD,
+} from './constants';
 
 /**
  * Flare P-chain transaction implementation using FlareJS
@@ -51,7 +64,7 @@ export class Transaction extends BaseTransaction {
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
     this._network = coinConfig.network as FlareNetwork;
-    this._assetId = 'FLR'; // Default FLR asset
+    this._assetId = FLR_ASSET_ID; // Default FLR asset
     this._blockchainID = this._network.blockchainID || '';
     this._networkID = this._network.networkID || 0;
   }
@@ -158,7 +171,7 @@ export class Transaction extends BaseTransaction {
   }
 
   toHexString(byteArray: Uint8Array): string {
-    return Buffer.from(byteArray).toString('hex');
+    return Buffer.from(byteArray).toString(HEX_ENCODING);
   }
 
   /** @inheritdoc */
@@ -169,7 +182,7 @@ export class Transaction extends BaseTransaction {
 
     // TODO: Implement FlareJS transaction serialization
     // For now, return placeholder
-    return 'flare-tx-hex-placeholder';
+    return FLARE_TX_HEX_PLACEHOLDER;
   }
 
   toJson(): TxData {
@@ -228,7 +241,7 @@ export class Transaction extends BaseTransaction {
 
     // TODO: Implement FlareJS signable payload extraction
     // For now, return placeholder
-    return Buffer.from('flare-signable-payload');
+    return Buffer.from(FLARE_SIGNABLE_PAYLOAD);
   }
 
   get id(): string {
@@ -238,7 +251,7 @@ export class Transaction extends BaseTransaction {
 
     // TODO: Implement FlareJS transaction ID generation
     // For now, return placeholder
-    return 'flare-transaction-id-placeholder';
+    return FLARE_TRANSACTION_ID_PLACEHOLDER;
   }
 
   get fromAddresses(): string[] {
@@ -271,7 +284,7 @@ export class Transaction extends BaseTransaction {
         // TODO: Extract validator outputs from FlareJS transaction
         return [
           {
-            address: this._nodeID || 'placeholder-node-id',
+            address: this._nodeID || PLACEHOLDER_NODE_ID,
             value: this._stakeAmount?.toString() || '0',
           },
         ];
@@ -280,7 +293,7 @@ export class Transaction extends BaseTransaction {
         // TODO: Extract delegator outputs from FlareJS transaction
         return [
           {
-            address: this._nodeID || 'placeholder-node-id',
+            address: this._nodeID || PLACEHOLDER_NODE_ID,
             value: this._stakeAmount?.toString() || '0',
           },
         ];
@@ -318,7 +331,7 @@ export class Transaction extends BaseTransaction {
     // TODO: Implement FlareJS signature creation
     // This should use FlareJS signing utilities
     const signval = utils.createSignature(this._network, this.signablePayload, prv);
-    return signval.toString('hex');
+    return signval.toString(HEX_ENCODING);
   }
 
   /**
@@ -331,11 +344,11 @@ export class Transaction extends BaseTransaction {
   /** @inheritdoc */
   explainTransaction(): TransactionExplanation {
     const txJson = this.toJson();
-    const displayOrder = ['id', 'inputs', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'type'];
+    const displayOrder = [...DISPLAY_ORDER_BASE];
 
     // Add memo to display order if present
     if (this.hasMemo()) {
-      displayOrder.push('memo');
+      displayOrder.push(MEMO_FIELD);
     }
 
     // Calculate total output amount
@@ -362,12 +375,12 @@ export class Transaction extends BaseTransaction {
 
     if (stakingTypes.includes(txJson.type)) {
       rewardAddresses = this.rewardAddresses;
-      displayOrder.splice(6, 0, 'rewardAddresses');
+      displayOrder.splice(6, 0, REWARD_ADDRESSES_FIELD);
     }
 
     // Add cross-chain information for export/import
     if (this.isTransactionForCChain) {
-      displayOrder.push('sourceChain', 'destinationChain');
+      displayOrder.push(SOURCE_CHAIN_FIELD, DESTINATION_CHAIN_FIELD);
     }
 
     const explanation: TransactionExplanation & { memo?: string } = {

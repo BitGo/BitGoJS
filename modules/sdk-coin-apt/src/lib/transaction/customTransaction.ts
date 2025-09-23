@@ -1,26 +1,35 @@
 import { Transaction } from './transaction';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { TransactionType } from '@bitgo/sdk-core';
+import { InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import {
   EntryFunctionABI,
   EntryFunctionArgumentTypes,
-  InputGenerateTransactionPayloadData,
   SimpleEntryFunctionArgumentTypes,
+  InputGenerateTransactionPayloadData,
   TransactionPayload,
   TransactionPayloadEntryFunction,
+  AccountAddress,
+  TypeTagAddress,
+  TypeTagBool,
+  TypeTagU8,
+  TypeTagU16,
+  TypeTagU32,
+  TypeTagU64,
+  TypeTagU128,
+  TypeTagU256,
 } from '@aptos-labs/ts-sdk';
 import { CustomTransactionParams } from '../iface';
 import { validateModuleName, validateFunctionName } from '../utils/validation';
 
 /**
- * Transaction class for custom Aptos transactions with entry function payloads.
+ * Transaction class for custom Aptos transactions.
  */
 export class CustomTransaction extends Transaction {
   private _moduleName: string;
   private _functionName: string;
   private _typeArguments: string[] = [];
   private _functionArguments: Array<EntryFunctionArgumentTypes | SimpleEntryFunctionArgumentTypes> = [];
-  private _entryFunctionAbi: EntryFunctionABI;
+  private _entryFunctionAbi?: EntryFunctionABI;
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
@@ -29,13 +38,10 @@ export class CustomTransaction extends Transaction {
 
   /**
    * Set the custom transaction parameters
-   *
-   * @param {CustomTransactionParams} params - Custom transaction parameters
    */
   setCustomTransactionParams(params: CustomTransactionParams): void {
     validateModuleName(params.moduleName);
     validateFunctionName(params.functionName);
-    this.validateAbi(params.abi);
 
     this._moduleName = params.moduleName;
     this._functionName = params.functionName;
@@ -46,17 +52,13 @@ export class CustomTransaction extends Transaction {
 
   /**
    * Set the entry function ABI
-   *
-   * @param {EntryFunctionABI} abi - The ABI definition for the entry function
    */
   setEntryFunctionAbi(abi: EntryFunctionABI): void {
     this._entryFunctionAbi = abi;
   }
 
   /**
-   * Get the full function name in the format moduleName::functionName
-   *
-   * @returns {string} The full function name
+   * Get the full function name
    */
   get fullFunctionName(): string {
     if (!this._moduleName || !this._functionName) {
@@ -72,7 +74,7 @@ export class CustomTransaction extends Transaction {
    */
   protected parseTransactionPayload(payload: TransactionPayload): void {
     if (!(payload instanceof TransactionPayloadEntryFunction)) {
-      throw new Error('Expected entry function payload for custom transaction');
+      throw new InvalidTransactionError('Expected entry function payload for custom transaction');
     }
 
     const entryFunction = payload.entryFunction;
@@ -84,40 +86,151 @@ export class CustomTransaction extends Transaction {
 
     const moduleName = `${moduleAddress}::${moduleIdentifier}`;
 
-    // Validate the extracted names using our existing validation
+    // Validate
     validateModuleName(moduleName);
     validateFunctionName(functionIdentifier);
 
     this._moduleName = moduleName;
     this._functionName = functionIdentifier;
-
-    // Extract type arguments and function arguments
     this._typeArguments = entryFunction.type_args.map((typeArg) => typeArg.toString());
-    this._functionArguments = entryFunction.args as Array<
-      EntryFunctionArgumentTypes | SimpleEntryFunctionArgumentTypes
-    >;
+
+    this._functionArguments = entryFunction.args.map((arg: any) => {
+      if (typeof arg === 'string' || typeof arg === 'number' || typeof arg === 'boolean') {
+        return arg;
+      }
+      if (arg && typeof arg === 'object' && 'data' in arg && arg.data) {
+        const bytes = Array.from(arg.data) as number[];
+        return '0x' + bytes.map((b: number) => b.toString(16).padStart(2, '0')).join('');
+      }
+      return arg;
+    });
   }
 
   /**
-   * Generate the transaction payload data for the custom transaction
-   *
-   * @returns {InputGenerateTransactionPayloadData} The transaction payload data
+   * Generate transaction payload data
    */
   protected getTransactionPayloadData(): InputGenerateTransactionPayloadData {
     const functionName = this.getValidatedFullFunctionName();
 
+    // Convert arguments based on ABI information if available
+    const processedArguments = this._functionArguments.map((arg: any, index: number) => {
+      // Use ABI to identify the expected type for this argument
+      const paramType = this._entryFunctionAbi?.parameters?.[index];
+      if (paramType) {
+        return this.convertArgumentByABI(arg, paramType);
+      }
+
+      // Fallback: basic conversion for common cases
+      if (typeof arg === 'string' && arg.startsWith('0x') && arg.length === 66) {
+        try {
+          return AccountAddress.fromString(arg);
+        } catch {
+          return arg;
+        }
+      }
+      return arg;
+    });
+
     return {
       function: functionName,
       typeArguments: this._typeArguments,
-      functionArguments: this._functionArguments,
+      functionArguments: processedArguments,
       abi: this._entryFunctionAbi,
-    };
+    } as InputGenerateTransactionPayloadData;
   }
 
   /**
-   * Get the custom transaction parameters
-   *
-   * @returns {CustomTransactionParams} The custom transaction parameters
+   * Convert argument based on ABI type information
+   */
+  private convertArgumentByABI(arg: any, paramType: any): any {
+    // Helper function to convert bytes to hex string
+    const bytesToHex = (bytes: number[]): string => {
+      return '0x' + bytes.map((b) => b.toString(16).padStart(2, '0')).join('');
+    };
+
+    // Helper function to try converting a hex string to an AccountAddress
+    const tryToAddress = (hexStr: string): any => {
+      try {
+        return AccountAddress.fromString(hexStr);
+      } catch {
+        return hexStr;
+      }
+    };
+
+    // Handle primitive values (string, number, boolean)
+    if (typeof arg === 'string' || typeof arg === 'number' || typeof arg === 'boolean') {
+      // Address conversion for hex strings
+      if (paramType instanceof TypeTagAddress && typeof arg === 'string' && arg.startsWith('0x')) {
+        return tryToAddress(arg);
+      }
+
+      // Type conversions based on parameter type
+      if (paramType instanceof TypeTagBool) return Boolean(arg);
+      if (paramType instanceof TypeTagU8 || paramType instanceof TypeTagU16 || paramType instanceof TypeTagU32)
+        return Number(arg);
+      if (paramType instanceof TypeTagU64 || paramType instanceof TypeTagU128 || paramType instanceof TypeTagU256)
+        return String(arg);
+
+      return arg;
+    }
+
+    // Handle BCS-encoded data with 'data' property
+    if (arg && typeof arg === 'object' && 'data' in arg && arg.data) {
+      const bytes = Array.from(arg.data) as number[];
+      const hexString = bytesToHex(bytes);
+
+      return paramType instanceof TypeTagAddress ? tryToAddress(hexString) : hexString;
+    }
+
+    // Handle nested BCS structures with 'value' property
+    if (arg && typeof arg === 'object' && 'value' in arg && arg.value) {
+      // Simple value wrapper
+      if (!('value' in arg.value) || typeof arg.value.value !== 'object') {
+        return this.convertArgumentByABI(arg.value, paramType);
+      }
+
+      // Double nested structure with numeric keys
+      const bytesObj = arg.value.value;
+      const keys = Object.keys(bytesObj)
+        .filter((k) => !isNaN(parseInt(k, 10)))
+        .sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
+
+      if (keys.length === 0) return arg;
+
+      const bytes = keys.map((k) => bytesObj[k]);
+      let extractedValue: any;
+
+      // Convert bytes based on parameter type
+      if (
+        paramType instanceof TypeTagAddress ||
+        paramType instanceof TypeTagU64 ||
+        paramType instanceof TypeTagU128 ||
+        paramType instanceof TypeTagU256
+      ) {
+        extractedValue = bytesToHex(bytes);
+      } else if (paramType instanceof TypeTagBool) {
+        extractedValue = bytes[0] === 1;
+      } else if (paramType instanceof TypeTagU8 || paramType instanceof TypeTagU16 || paramType instanceof TypeTagU32) {
+        // Convert little-endian bytes to number using the original algorithm
+        // to ensure consistent behavior with large numbers
+        let result = 0;
+        for (let i = bytes.length - 1; i >= 0; i--) {
+          result = result * 256 + bytes[i];
+        }
+        extractedValue = result;
+      } else {
+        extractedValue = bytesToHex(bytes);
+      }
+
+      return this.convertArgumentByABI(extractedValue, paramType);
+    }
+
+    // For anything else, return as-is
+    return arg;
+  }
+
+  /**
+   * Get custom transaction parameters
    */
   getCustomTransactionParams(): CustomTransactionParams {
     return {
@@ -130,16 +243,12 @@ export class CustomTransaction extends Transaction {
   }
 
   /**
-   * Override the deprecated recipient getter to handle custom transactions gracefully
-   * Custom transactions may not have traditional recipients
-   *
-   * @deprecated - use `recipients()`
+   * Override recipient getter for custom transactions
    */
   get recipient(): any {
-    // For custom transactions, return a placeholder recipient if no recipients exist
     if (this._recipients.length === 0) {
       return {
-        address: '', // Empty address for custom transactions
+        address: '',
         amount: '0',
       };
     }
@@ -147,10 +256,7 @@ export class CustomTransaction extends Transaction {
   }
 
   /**
-   * Get validated full function name with runtime format checking
-   *
-   * @returns {string} The validated full function name
-   * @throws {Error} If function name format is invalid
+   * Get validated full function name
    */
   private getValidatedFullFunctionName(): `${string}::${string}::${string}` {
     if (!this._moduleName || !this._functionName) {
@@ -159,8 +265,7 @@ export class CustomTransaction extends Transaction {
 
     const fullName = `${this._moduleName}::${this._functionName}`;
 
-    // Runtime validation of the expected format
-    // Supports both hex addresses (SHORT/LONG) and named addresses
+    // Basic validation
     const fullFunctionPattern =
       /^(0x[a-fA-F0-9]{1,64}|[a-zA-Z_][a-zA-Z0-9_]*)::[a-zA-Z_][a-zA-Z0-9_]*::[a-zA-Z_][a-zA-Z0-9_]*$/;
     if (!fullFunctionPattern.test(fullName)) {
@@ -168,25 +273,5 @@ export class CustomTransaction extends Transaction {
     }
 
     return fullName as `${string}::${string}::${string}`;
-  }
-
-  /**
-   * Validate ABI structure and provide helpful error messages
-   *
-   * @param {EntryFunctionABI} abi - The ABI to validate
-   * @throws {Error} If ABI format is invalid
-   */
-  private validateAbi(abi: EntryFunctionABI): void {
-    if (!abi || typeof abi !== 'object') {
-      throw new Error('ABI must be a valid EntryFunctionABI object');
-    }
-
-    if (!Array.isArray(abi.typeParameters)) {
-      throw new Error('ABI must have a typeParameters array. Use [] if the function has no type parameters');
-    }
-
-    if (!Array.isArray(abi.parameters)) {
-      throw new Error('ABI must have a parameters array containing TypeTag objects for each function parameter');
-    }
   }
 }
