@@ -35,6 +35,7 @@ import {
   tofcVetToken,
   ofcHashToken,
   tofcHashToken,
+  tofcaptToken,
 } from '../ofc';
 import { UnderlyingAsset, CoinKind, CoinFeature } from '../base';
 
@@ -1131,6 +1132,38 @@ export const ofcCoins = [
     UnderlyingAsset['sol:cipher'],
     SOL_TOKEN_FEATURES
   ),
+  ofcsolToken(
+    '016a4786-73bc-44c3-8a5a-1d0abc835545',
+    'ofcsol:bio',
+    'Bio Protocol',
+    9,
+    UnderlyingAsset['sol:bio'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '7bd2ca03-7998-45f1-8b13-59574530316c',
+    'ofcsol:rekt',
+    'Rekt',
+    4,
+    UnderlyingAsset['sol:rekt'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    'ce1e7789-6684-4a50-baf0-570c9c18120c',
+    'ofcsol:xyo',
+    'XY Oracle',
+    8,
+    UnderlyingAsset['sol:xyo'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '108f4e91-2046-46d0-9607-cd4f633ae93d',
+    'ofcsol:zig',
+    'ZIGChain',
+    8,
+    UnderlyingAsset['sol:zig'],
+    SOL_TOKEN_FEATURES
+  ),
   tofcsolToken(
     '24d678cf-e0f0-4cde-a338-d754289c5b27',
     'ofctsol:slnd',
@@ -1220,6 +1253,23 @@ export const ofcCoins = [
     UnderlyingAsset['sol:usd1'],
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
+  tofcsolToken(
+    'ad6d7d4e-894b-4cf9-bb66-e4341717969a',
+    'ofctsol:txsgd',
+    'Test StraitsX SGD',
+    6,
+    UnderlyingAsset['tsol:txsgd'],
+    SOL_TOKEN_FEATURES
+  ),
+  tofcsolToken(
+    'ca0fb21b-d75d-40c2-b7fe-18a451b81bd5',
+    'ofctsol:txusd',
+    'Test StraitsX USD',
+    6,
+    UnderlyingAsset['tsol:txusd'],
+    SOL_TOKEN_FEATURES
+  ),
+
   tofcTronToken('937efe97-a17a-4d2a-aaf2-0ffdb529a943', 'ofcttrx:usdt', 'Tether USD', 6, UnderlyingAsset['ttrx:usdt']),
   tofcTronToken(
     '26d82f2c-47fd-474f-be79-246117214e0e',
@@ -1482,7 +1532,13 @@ export const ofcCoins = [
     UnderlyingAsset['arbeth:dolo']
   ),
   ofcAvaxErc20('2bd6201d-c46c-481e-b82d-7cf3601679cb', 'ofcavaxc:aave-e', 'Aave', 18, UnderlyingAsset['avaxc:aave']),
-  ofcAvaxErc20('515a5a74-54fe-4d73-bb12-8d1130f78692', 'ofcavaxc:btc-b', 'Bitcoin', 8, UnderlyingAsset['avaxc:btc']),
+  ofcAvaxErc20(
+    '515a5a74-54fe-4d73-bb12-8d1130f78692',
+    'ofcavaxc:btc-b',
+    'Bitcoin Avalanche Bridged',
+    8,
+    UnderlyingAsset['avaxc:btc']
+  ),
   ofcAvaxErc20(
     'b8c9ea9d-4be3-4d3c-b1de-a1bb963fc03b',
     'ofcavaxc:cai',
@@ -2156,6 +2212,8 @@ export const ofcCoins = [
     UnderlyingAsset['bsc:usdo']
   ),
   ofcBscToken('eb9280a5-2781-450b-945f-7fe13d170433', 'ofcbsc:slay', 'SatLayer', 6, UnderlyingAsset['bsc:slay']),
+  ofcBscToken('91442391-12ed-4361-947f-eed60000329f', 'ofcbsc:prove', 'Succinct', 18, UnderlyingAsset['bsc:prove']),
+  ofcBscToken('bca017c3-4326-48f8-809b-bd6df7538286', 'ofcbsc:rekt', 'Rekt', 18, UnderlyingAsset['bsc:rekt']),
   tofcBscToken(
     'bf8a52e5-f416-46ea-95c2-a920dc204233',
     'ofctbsc:usd1',
@@ -2165,6 +2223,17 @@ export const ofcCoins = [
     undefined,
     [CoinFeature.STABLECOIN]
   ),
+  ofcBscToken('21da2589-8494-4f2e-ad95-431f86fa85ff', 'ofcbsc:zig', 'ZIGChain', 18, UnderlyingAsset['bsc:zig']),
+  ofcBscToken('0c23da3a-bbd5-4ff9-867a-62a71e8f2b75', 'ofcbsc:eden', 'OpenEden', 18, UnderlyingAsset['bsc:eden']),
+  ofcBscToken('26a641a4-076a-4306-a325-6ce426c6932e', 'ofcbsc:m', 'MemeCore', 18, UnderlyingAsset['bsc:m']),
+  ofcBscToken(
+    'e2c46423-6bae-4a28-8df5-717535be86c5',
+    'ofcbsc:cashplus',
+    'CashPlus',
+    18,
+    UnderlyingAsset['bsc:cashplus']
+  ),
+
   tofcBscToken(
     'e9174338-0d26-4f49-b111-3487b60c9912',
     'ofctbsc:stgusd1',
@@ -2938,6 +3007,13 @@ export const ofcCoins = [
     undefined,
     [CoinFeature.STABLECOIN]
   ),
+  ofcPolygonErc20(
+    '06a9c149-4834-4173-be46-1c78cd624140',
+    'ofcpolygon:zig',
+    'ZIGChain',
+    18,
+    UnderlyingAsset['polygon:zig']
+  ),
   tofcPolygonErc20(
     '62f4329d-11cd-4875-b91b-9ceae66c9439',
     'ofctpolygon:link',
@@ -3089,6 +3165,13 @@ export const ofcCoins = [
     7,
     UnderlyingAsset['xlm:gBENJI-GD5J73EKK5IYL5XS3FBTHHX7CZIYRP7QXDL57XFWGC2WVYWT326OBXRP']
   ),
+  ofcStellarToken(
+    'fef22a7c-6599-4a9c-8283-a5bdae883023',
+    'ofcxlm:shx',
+    'Stronghold SHx',
+    7,
+    UnderlyingAsset['xlm:SHX-GDSTRSHXHGJ7ZIVRBXEYE5Q74XUVCUSEKEBR7UCHEUUEK72N7I7KJ6JH']
+  ),
 
   tofcStellarToken(
     '4883a062-c38c-43d9-92c6-7cec9aaef995',
@@ -3131,6 +3214,10 @@ export const ofcCoins = [
     UnderlyingAsset['apt:pact'],
     APT_OFC_TOKEN_FEATURES
   ),
+  ofcaptToken('8dbee739-3a5e-4113-b823-5d7cdc23471a', 'ofcapt:usd1', 'USD1', 6, UnderlyingAsset['apt:usd1'], [
+    ...APT_OFC_TOKEN_FEATURES,
+    CoinFeature.STABLECOIN,
+  ]),
   ofcaptToken('d15ec98e-1c8f-4c2d-9ede-e34edb3980b5', 'ofcapt:usdt', 'USD Tether', 6, UnderlyingAsset['apt:usdt'], [
     ...APT_OFC_TOKEN_FEATURES,
     CoinFeature.STABLECOIN,
@@ -3142,6 +3229,30 @@ export const ofcCoins = [
     8,
     UnderlyingAsset['apt:lsd'],
     APT_OFC_TOKEN_FEATURES
+  ),
+  ofcaptToken(
+    'bf846ec7-5a8b-46aa-a3f8-23123fdc0b06',
+    'ofcapt:kgen',
+    'KGEN',
+    8,
+    UnderlyingAsset['apt:kgen'],
+    APT_OFC_TOKEN_FEATURES
+  ),
+  tofcaptToken(
+    '3f49b498-f273-4237-9668-1987c420a258',
+    'ofctapt:stgusd1',
+    'Test USD1 Token',
+    6,
+    UnderlyingAsset['tapt:stgusd1'],
+    [...APT_OFC_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  tofcaptToken(
+    '63a0addc-4c8c-45a6-9d68-e306c839b10c',
+    'ofctapt:usd1',
+    'Test USD1 Token',
+    6,
+    UnderlyingAsset['tapt:usd1'],
+    [...APT_OFC_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
   ofcStxToken('2d2f9c7f-7d10-480e-a0ef-6893cf4d3493', 'ofcstx:sbtc', 'sBTC', 8, UnderlyingAsset['stx:sbtc']),
   ofcStxToken(

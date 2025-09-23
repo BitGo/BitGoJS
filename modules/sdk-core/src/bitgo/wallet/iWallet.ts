@@ -776,6 +776,9 @@ export interface WalletData {
   nfts?: { [contractAddressOrToken: string]: NftBalance };
   unsupportedNfts?: { [contractAddress: string]: NftBalance };
   users?: WalletUser[];
+  evmKeyRingReferenceWalletId?: string;
+  isParent?: boolean;
+  enabledChildChains?: string[];
 }
 
 export interface RecoverTokenOptions {

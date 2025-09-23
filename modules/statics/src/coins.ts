@@ -11,6 +11,7 @@ import {
   eosToken,
   erc20,
   hederaToken,
+  jettonToken,
   nep141Token,
   opethErc20,
   polygonErc20,
@@ -25,6 +26,7 @@ import {
   vetToken,
   xrpToken,
   adaToken,
+  erc20Token,
 } from './account';
 import { ofcToken } from './ofc';
 import { BaseCoin } from './base';
@@ -44,6 +46,7 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
     apt: aptToken,
     arbeth: arbethErc20,
     avaxc: avaxErc20,
+    baseeth: erc20Token,
     bera: beraErc20,
     bsc: bscToken,
     celo: celoToken,
@@ -65,6 +68,7 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
     xrp: xrpToken,
     ofc: ofcToken,
     ada: adaToken,
+    ton: jettonToken,
   };
 
   //return the BaseCoin from default coin map if present
@@ -101,6 +105,7 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
   switch (family) {
     case 'arbeth':
     case 'avaxc':
+    case 'baseeth':
     case 'bera':
     case 'bsc':
     case 'celo':
@@ -261,6 +266,12 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
         token.assetName,
         token.policyId,
         token.contractAddress,
+        ...commonArgs.slice(4) // asset, features, prefix, suffix, network, primaryKeyCurve
+      );
+    case 'ton':
+      return initializer(
+        ...commonArgs.slice(0, 4), // id, name, fullName, decimalPlaces
+        token.contractAddress, // contractAddress
         ...commonArgs.slice(4) // asset, features, prefix, suffix, network, primaryKeyCurve
       );
     default:

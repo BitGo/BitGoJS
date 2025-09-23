@@ -3,9 +3,10 @@ import should from 'should';
 import * as testData from '../../resources/sol';
 import { getBuilderFactory } from '../getBuilderFactory';
 import { KeyPair, Utils, StakingActivateBuilder } from '../../../src';
-import { JITO_STAKE_POOL_ADDRESS, JITOSOL_MINT_ADDRESS } from '../../../src/lib/constants';
+import { InstructionBuilderTypes, JITO_STAKE_POOL_ADDRESS, JITOSOL_MINT_ADDRESS } from '../../../src/lib/constants';
 import { SolStakingTypeEnum } from '@bitgo/public-types';
 import { BaseTransaction } from '@bitgo/sdk-core';
+import { InstructionParams } from '../../../src/lib/iface';
 
 describe('Sol Staking Activate Builder', () => {
   const factory = getBuilderFactory('tsol');
@@ -104,18 +105,20 @@ describe('Sol Staking Activate Builder', () => {
         },
       },
     ]);
-    tx.inputs.length.should.equal(1);
-    tx.inputs[0].should.deepEqual({
-      address: wallet.pub,
-      value: amount,
-      coin: 'tsol',
-    });
-    tx.outputs.length.should.equal(1);
-    tx.outputs[0].should.deepEqual({
-      address: stakeAccount.pub,
-      value: amount,
-      coin: 'tsol',
-    });
+    tx.inputs.should.deepEqual([
+      {
+        address: wallet.pub,
+        value: amount,
+        coin: 'tsol',
+      },
+    ]);
+    tx.outputs.should.deepEqual([
+      {
+        address: stakeAccount.pub,
+        value: amount,
+        coin: 'tsol',
+      },
+    ]);
   };
 
   const signBuilderNativeOrMarinade = (txBuilder: StakingActivateBuilder) => {
@@ -128,7 +131,7 @@ describe('Sol Staking Activate Builder', () => {
     return makeUnsignedBuilderNative(doMemo).stakingType(SolStakingTypeEnum.MARINADE);
   };
 
-  const makeUnsignedBuilderJito = (doMemo: boolean) => {
+  const makeUnsignedBuilderJito = (doMemo: boolean, doCreateATA: boolean) => {
     const txBuilder = factory.getStakingActivateBuilder();
     txBuilder
       .amount(amount)
@@ -142,6 +145,7 @@ describe('Sol Staking Activate Builder', () => {
           poolMint: testData.JITO_STAKE_POOL_DATA_PARSED.poolMint.toString(),
           reserveStake: testData.JITO_STAKE_POOL_DATA_PARSED.reserveStake.toString(),
         },
+        createAssociatedTokenAccount: doCreateATA,
       })
       .nonce(recentBlockHash);
     if (doMemo) {
@@ -155,11 +159,13 @@ describe('Sol Staking Activate Builder', () => {
     return txBuilder;
   };
 
-  const verifyBuiltTransactionJito = (tx: BaseTransaction, doMemo: boolean) => {
+  const verifyBuiltTransactionJito = (tx: BaseTransaction, doMemo: boolean, doCreateATA: boolean) => {
     const txJson = tx.toJson();
-    txJson.instructionsData.should.deepEqual([
-      {
-        type: 'CreateAssociatedTokenAccount',
+    const expectedInstructions: InstructionParams[] = [];
+
+    if (doCreateATA) {
+      expectedInstructions.push({
+        type: InstructionBuilderTypes.CreateAssociatedTokenAccount,
         params: {
           ataAddress: '2vJrx2Bn7PifLZDRaSCpphE9WtZsx1k43SRyiQDhE1As',
           mintAddress: JITOSOL_MINT_ADDRESS,
@@ -167,42 +173,46 @@ describe('Sol Staking Activate Builder', () => {
           payerAddress: wallet.pub,
           tokenName: 'sol:jitosol',
         },
-      },
-      ...(doMemo
-        ? [
-            {
-              type: 'Memo',
-              params: {
-                memo: 'test memo',
-              },
-            },
-          ]
-        : []),
-      {
-        type: 'Activate',
+      });
+    }
+
+    if (doMemo) {
+      expectedInstructions.push({
+        type: InstructionBuilderTypes.Memo,
         params: {
-          fromAddress: wallet.pub,
-          stakingAddress: JITO_STAKE_POOL_ADDRESS,
-          amount: amount,
-          validator: JITO_STAKE_POOL_ADDRESS,
-          stakingType: SolStakingTypeEnum.JITO,
-          extraParams: {
-            stakePoolData: {
-              managerFeeAccount: testData.JITO_STAKE_POOL_DATA_PARSED.managerFeeAccount.toString(),
-              poolMint: testData.JITO_STAKE_POOL_DATA_PARSED.poolMint.toString(),
-              reserveStake: testData.JITO_STAKE_POOL_DATA_PARSED.reserveStake.toString(),
-            },
+          memo: 'test memo',
+        },
+      });
+    }
+
+    expectedInstructions.push({
+      type: InstructionBuilderTypes.StakingActivate,
+      params: {
+        fromAddress: wallet.pub,
+        stakingAddress: JITO_STAKE_POOL_ADDRESS,
+        amount: amount,
+        validator: JITO_STAKE_POOL_ADDRESS,
+        stakingType: SolStakingTypeEnum.JITO,
+        extraParams: {
+          stakePoolData: {
+            managerFeeAccount: testData.JITO_STAKE_POOL_DATA_PARSED.managerFeeAccount.toString(),
+            poolMint: testData.JITO_STAKE_POOL_DATA_PARSED.poolMint.toString(),
+            reserveStake: testData.JITO_STAKE_POOL_DATA_PARSED.reserveStake.toString(),
           },
+          createAssociatedTokenAccount: doCreateATA,
         },
       },
-    ]);
-    tx.inputs.length.should.equal(1);
-    tx.inputs[0].should.deepEqual({
-      address: wallet.pub,
-      value: amount,
-      coin: 'tsol',
     });
-    tx.outputs.length.should.equal(0);
+
+    txJson.instructionsData.should.deepEqual(expectedInstructions);
+    tx.inputs.should.deepEqual([
+      {
+        address: wallet.pub,
+        value: amount,
+        coin: 'tsol',
+      },
+    ]);
+    tx.outputs.should.deepEqual([]);
   };
 
   describe('Succeed', () => {
@@ -253,26 +263,39 @@ describe('Sol Staking Activate Builder', () => {
     });
 
     describe('Jito staking tests', () => {
-      const performTestJito = async (doMemo: boolean, doSign: boolean, knownRawTx: string) => {
+      const performTestJito = async (doMemo: boolean, doSign: boolean, doCreateATA: boolean, knownRawTx: string) => {
         await performTest({
           signBuilder: doSign ? signBuilderJito : undefined,
           knownRawTx,
-          makeUnsignedBuilder: () => makeUnsignedBuilderJito(doMemo),
-          verifyBuiltTransaction: (x) => verifyBuiltTransactionJito(x, doMemo),
+          makeUnsignedBuilder: () => makeUnsignedBuilderJito(doMemo, doCreateATA),
+          verifyBuiltTransaction: (x) => verifyBuiltTransactionJito(x, doMemo, doCreateATA),
         });
       };
 
-      it('build a create staking signed tx', async () =>
-        performTestJito(false, true, testData.JITO_STAKING_ACTIVATE_SIGNED_TX));
+      const MEMO = 1;
+      const SIGN = 2;
+      const ATA = 4;
+      const rawTxData: (string | undefined)[] = Array.from(new Array(8)).map(() => undefined);
+      rawTxData[0] = testData.JITO_STAKING_ACTIVATE_UNSIGNED_TX;
+      rawTxData[MEMO] = testData.JITO_STAKING_ACTIVATE_UNSIGNED_TX_WITH_MEMO;
+      rawTxData[SIGN] = testData.JITO_STAKING_ACTIVATE_SIGNED_TX;
+      rawTxData[MEMO + SIGN] = testData.JITO_STAKING_ACTIVATE_SIGNED_TX_WITH_MEMO;
+      rawTxData[ATA] = testData.JITO_STAKING_ACTIVATE_UNSIGNED_TX_WITH_ATA;
+      rawTxData[ATA + MEMO] = testData.JITO_STAKING_ACTIVATE_UNSIGNED_TX_WITH_MEMO_WITH_ATA;
+      rawTxData[ATA + SIGN] = testData.JITO_STAKING_ACTIVATE_SIGNED_TX_WITH_ATA;
+      rawTxData[ATA + MEMO + SIGN] = testData.JITO_STAKING_ACTIVATE_SIGNED_TX_WITH_MEMO_WITH_ATA;
 
-      it('build a create signed tx with memo', async () =>
-        performTestJito(true, true, testData.JITO_STAKING_ACTIVATE_SIGNED_TX_WITH_MEMO));
-
-      it('build a create unsigned tx', async () =>
-        performTestJito(false, false, testData.JITO_STAKING_ACTIVATE_UNSIGNED_TX));
-
-      it('build a create unsigned tx with memo', async () =>
-        performTestJito(true, false, testData.JITO_STAKING_ACTIVATE_UNSIGNED_TX_WITH_MEMO));
+      for (const doMemo of [false, true]) {
+        for (const doSign of [false, true]) {
+          for (const doCreateATA of [false, true]) {
+            it(`build a tx with doMemo=${doMemo}, doSign=${doSign}, doCreateATA=${doCreateATA}`, async () => {
+              const data = rawTxData[(doMemo ? MEMO : 0) + (doSign ? SIGN : 0) + (doCreateATA ? ATA : 0)];
+              should(data).not.be.undefined();
+              await performTestJito(doMemo, doSign, doCreateATA, data ?? '');
+            });
+          }
+        }
+      }
     });
   });
 

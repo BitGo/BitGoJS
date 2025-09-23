@@ -64,9 +64,7 @@ export interface RecipientsValidationResult {
  *
  * @remarks
  * - The `abi` field is optional but provides type validation when present
- * - Invalid ABI will cause transaction building to fail
- * - Without ABI, the Aptos SDK performs basic validation
- * - All Aptos transactions use the same payload structure regardless of complexity
+ * - ABI must match the exact function signature of the target entry function
  */
 export interface CustomTransactionParams {
   /**
@@ -113,11 +111,9 @@ export interface CustomTransactionParams {
    * - Performs type checking during transaction building
    * - Improves error messages for invalid calls
    *
-   * When omitted:
-   * - Transaction building relies on Aptos SDK basic validation
-   * - Function signature errors detected at build/simulation time
-   *
-   * @remarks Providing incorrect ABI will cause transaction building to fail
+   * @remarks
+   * - Providing incorrect ABI will cause transaction building to fail
+   * - Must match the exact function signature of the target entry function
    */
   abi?: EntryFunctionABI;
 }

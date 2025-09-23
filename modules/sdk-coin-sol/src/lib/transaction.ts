@@ -2,6 +2,7 @@ import {
   BaseTransaction,
   Entry,
   InvalidTransactionError,
+  ITokenEnablement,
   ParseTransactionError,
   SigningError,
   TransactionRecipient,
@@ -19,6 +20,7 @@ import {
   ValidInstructionTypesEnum,
 } from './constants';
 import {
+  AtaInit,
   DurableNonceParams,
   InstructionParams,
   Memo,
@@ -369,7 +371,11 @@ export class Transaction extends BaseTransaction {
           }
           break;
         case InstructionBuilderTypes.StakingDeactivate:
-          if (instruction.params.amount && instruction.params.unstakingAddress) {
+          if (
+            instruction.params.amount &&
+            instruction.params.unstakingAddress &&
+            instruction.params.stakingType !== SolStakingTypeEnum.JITO
+          ) {
             inputs.push({
               address: instruction.params.stakingAddress,
               value: instruction.params.amount,
@@ -430,6 +436,8 @@ export class Transaction extends BaseTransaction {
 
     let outputAmount = new BigNumber(0);
     const outputs: TransactionRecipient[] = [];
+    // Create a separate array for token enablements
+    const tokenEnablements: ITokenEnablement[] = [];
 
     for (const instruction of decodedInstructions) {
       switch (instruction.type) {
@@ -480,6 +488,13 @@ export class Transaction extends BaseTransaction {
           outputAmount = outputAmount.plus(stakingWithdrawInstruction.params.amount);
           break;
         case InstructionBuilderTypes.CreateAssociatedTokenAccount:
+          // Process token enablement instructions and collect them in the tokenEnablements array
+          const ataInit = instruction as AtaInit;
+          tokenEnablements.push({
+            address: ataInit.params.ataAddress,
+            tokenName: ataInit.params.tokenName,
+            tokenAddress: ataInit.params.mintAddress,
+          });
           break;
         case InstructionBuilderTypes.CustomInstruction:
           // Custom instructions are arbitrary and cannot be explained
@@ -500,7 +515,7 @@ export class Transaction extends BaseTransaction {
       }
     }
 
-    return this.getExplainedTransaction(outputAmount, outputs, memo, durableNonce);
+    return this.getExplainedTransaction(outputAmount, outputs, memo, durableNonce, tokenEnablements);
   }
 
   private calculateFee(): string {
@@ -520,22 +535,29 @@ export class Transaction extends BaseTransaction {
     outputAmount: BigNumber,
     outputs: TransactionRecipient[],
     memo: undefined | string = undefined,
-    durableNonce: undefined | DurableNonceParams = undefined
+    durableNonce: undefined | DurableNonceParams = undefined,
+    tokenEnablements: ITokenEnablement[] = []
   ): TransactionExplanation {
     const feeString = this.calculateFee();
-    return {
-      displayOrder: [
-        'id',
-        'type',
-        'blockhash',
-        'durableNonce',
-        'outputAmount',
-        'changeAmount',
-        'outputs',
-        'changeOutputs',
-        'fee',
-        'memo',
-      ],
+
+    // Create displayOrder with tokenEnablements always included
+    const displayOrder = [
+      'id',
+      'type',
+      'blockhash',
+      'durableNonce',
+      'outputAmount',
+      'changeAmount',
+      'outputs',
+      'changeOutputs',
+      'tokenEnablements',
+      'fee',
+      'memo',
+    ];
+
+    // Create the base explanation object with tokenEnablements always included
+    const explanation: TransactionExplanation = {
+      displayOrder,
       id: this.id,
       type: TransactionType[this.type].toString(),
       changeOutputs: [],
@@ -549,7 +571,10 @@ export class Transaction extends BaseTransaction {
       memo: memo,
       blockhash: this.getNonce(),
       durableNonce: durableNonce,
+      tokenEnablements: tokenEnablements,
     };
+
+    return explanation;
   }
 
   private explainRawMsgAuthorizeTransaction(): TransactionExplanation {
@@ -586,6 +611,7 @@ export class Transaction extends BaseTransaction {
         'changeAmount',
         'outputs',
         'changeOutputs',
+        'tokenEnablements',
         'fee',
         'memo',
       ],
@@ -602,6 +628,7 @@ export class Transaction extends BaseTransaction {
       blockhash: this.getNonce(),
       durableNonce: durableNonce,
       stakingAuthorize: stakingAuthorizeParams,
+      tokenEnablements: [], // Always include tokenEnablements as an empty array for consistency
     };
   }
 }

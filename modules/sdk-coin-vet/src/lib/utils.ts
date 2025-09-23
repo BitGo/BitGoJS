@@ -17,6 +17,8 @@ import {
   VET_BLOCK_ID_LENGTH,
   VET_TRANSACTION_ID_LENGTH,
   TRANSFER_NFT_METHOD_ID,
+  CLAIM_BASE_REWARDS_METHOD_ID,
+  CLAIM_STAKING_REWARDS_METHOD_ID,
 } from './constants';
 import { KeyPair } from './keyPair';
 
@@ -85,9 +87,14 @@ export class Utils implements BaseUtils {
     } else if (clauses[0].data.startsWith(STAKING_METHOD_ID)) {
       return TransactionType.ContractCall;
     } else if (clauses[0].data.startsWith(EXIT_DELEGATION_METHOD_ID)) {
-      return TransactionType.StakingUnlock; // Using StakingUnlock for exit delegation
+      return TransactionType.StakingUnlock;
     } else if (clauses[0].data.startsWith(BURN_NFT_METHOD_ID)) {
-      return TransactionType.StakingWithdraw; // Using StakingWithdraw for burn NFT
+      return TransactionType.StakingWithdraw;
+    } else if (
+      clauses[0].data.startsWith(CLAIM_BASE_REWARDS_METHOD_ID) ||
+      clauses[0].data.startsWith(CLAIM_STAKING_REWARDS_METHOD_ID)
+    ) {
+      return TransactionType.StakingClaim;
     } else if (clauses[0].data.startsWith(TRANSFER_NFT_METHOD_ID)) {
       return TransactionType.SendNFT;
     } else {

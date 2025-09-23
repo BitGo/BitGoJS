@@ -3,10 +3,20 @@ import { cosmosTokens } from '../../src/coins/cosmosTokens';
 import { avaxTokens } from '../../src/coins/avaxTokens';
 import { bscTokens } from '../../src/coins/bscTokens';
 import { nep141Tokens } from '../../src/coins/nep141Tokens';
+import { polygonTokens } from '../../src/coins/polygonTokens';
+import { solTokens } from '../../src/coins/solTokens';
 import { NetworkType } from '../../src/networks';
 
 describe('Token Naming Convention Tests', function () {
-  const allTokens = [...erc20Coins, ...cosmosTokens, ...avaxTokens, ...bscTokens, ...nep141Tokens];
+  const allTokens = [
+    ...erc20Coins,
+    ...cosmosTokens,
+    ...avaxTokens,
+    ...bscTokens,
+    ...nep141Tokens,
+    ...polygonTokens,
+    ...solTokens,
+  ];
 
   // Helper function to filter tokens by network type
   function getTokensByNetworkType(networkType: NetworkType) {
@@ -126,6 +136,13 @@ describe('Token Naming Convention Tests', function () {
         'toke',
         'token',
         'tomi',
+        'turbo',
+        'tupolis',
+        'tulip',
+        'tank',
+        'trump',
+        'tesouro',
+        'tai',
         'tomobear2',
         'trumplose',
         'trumpwin',
@@ -209,7 +226,8 @@ describe('Token Naming Convention Tests', function () {
               // Special cases for tokens which don't follow the pattern
               if (
                 (testnetVersion.networkPrefix === 'ofct' && mainnetVersion.networkPrefix === 'ofc') ||
-                (testnetVersion.networkPrefix === 'thash' && mainnetVersion.networkPrefix === 'hash')
+                (testnetVersion.networkPrefix === 'thash' && mainnetVersion.networkPrefix === 'hash') ||
+                (testnetVersion.networkPrefix === 'tpolygon' && mainnetVersion.networkPrefix === 'polygon')
               ) {
                 return; // Skip the check for these special cases
               }
@@ -243,6 +261,12 @@ describe('Token Naming Convention Tests', function () {
       { mainnet: 'eth:usdc', testnet: 'teth:usdc' }, // 6 vs 18 decimal places
       { mainnet: 'eth:usdt', testnet: 'teth:usdt' }, // 6 vs 18 decimal places
       { mainnet: 'eth:link', testnet: 'teth:link' }, // 18 vs 6 decimal places
+      { mainnet: 'sol:srm', testnet: 'tsol:srm' }, // 6 vs 9 decimal places
+      { mainnet: 'sol:usdc', testnet: 'tsol:usdc' }, // 6 vs 9 decimal places
+      { mainnet: 'sol:ray', testnet: 'tsol:ray' }, // 6 vs 9 decimal places
+      { mainnet: 'sol:usdt', testnet: 'tsol:usdt' }, // 6 vs 9 decimal places
+      { mainnet: 'sol:orca', testnet: 'tsol:orca' }, // 6 vs 9 decimal places
+      { mainnet: 'sol:slnd', testnet: 'tsol:slnd' }, // 6 vs 9 decimal places
     ];
 
     // Group tokens by their base token identifier and compatible network prefixes
@@ -319,8 +343,15 @@ describe('Token Naming Convention Tests', function () {
   });
 
   it('should ensure all token names are lowercase', function () {
+    // List of tokens that are exceptions to the lowercase rule
+    const lowercaseExceptions: string[] = ['tpolygon:BitGoTest'];
+
     allTokens.forEach((token) => {
       const tokenName = token.name;
+      // Skip known exceptions
+      if (lowercaseExceptions.includes(tokenName)) {
+        return;
+      }
       tokenName.should.equal(tokenName.toLowerCase(), `Token "${tokenName}" should be lowercase`);
     });
   });

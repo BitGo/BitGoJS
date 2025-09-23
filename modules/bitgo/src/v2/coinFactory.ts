@@ -37,6 +37,7 @@ import {
   VetTokenConfig,
   TaoTokenConfig,
   PolyxTokenConfig,
+  JettonTokenConfig,
 } from '@bitgo/statics';
 import {
   Ada,
@@ -82,6 +83,7 @@ import {
   EthLikeCoin,
   EvmCoin,
   Flr,
+  FlrToken,
   HashToken,
   TethLikeCoin,
   FiatAED,
@@ -98,6 +100,7 @@ import {
   Injective,
   Iota,
   Islm,
+  JettonToken,
   Lnbtc,
   Ltc,
   Mon,
@@ -527,9 +530,17 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
     ({ name, coinConstructor }) => coinFactory.register(name, coinConstructor)
   );
 
+  JettonToken.createTokenConstructors([...tokens.bitcoin.ton.tokens, ...tokens.testnet.ton.tokens]).forEach(
+    ({ name, coinConstructor }) => coinFactory.register(name, coinConstructor)
+  );
+
   VetToken.createTokenConstructors().forEach(({ name, coinConstructor }) =>
     coinFactory.register(name, coinConstructor)
   );
+
+  FlrToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
+    coinFactory.register(name, coinConstructor);
+  });
 
   // Generic ERC20 token registration for coins with SUPPORTS_ERC20 feature
   coins
@@ -918,6 +929,10 @@ export function getTokenConstructor(tokenConfig: TokenConfig): CoinConstructor |
     case 'bera':
     case 'tbera':
       return BeraToken.createTokenConstructor(tokenConfig as EthLikeTokenConfig);
+    case 'baseeth':
+    case 'tbaseeth':
+      const coinNames = { Mainnet: 'baseeth', Testnet: 'tbaseeth' };
+      return EthLikeErc20Token.createTokenConstructor(tokenConfig as EthLikeTokenConfig, coinNames);
     case 'coredao':
     case 'tcoredao':
       return CoredaoToken.createTokenConstructor(tokenConfig as EthLikeTokenConfig);
@@ -963,6 +978,12 @@ export function getTokenConstructor(tokenConfig: TokenConfig): CoinConstructor |
     case 'hash':
     case 'thash':
       return HashToken.createTokenConstructor(tokenConfig as CosmosTokenConfig);
+    case 'flr':
+    case 'tflr':
+      return FlrToken.createTokenConstructor(tokenConfig as EthLikeTokenConfig);
+    case 'ton':
+    case 'tton':
+      return JettonToken.createTokenConstructor(tokenConfig as JettonTokenConfig);
     default:
       return undefined;
   }

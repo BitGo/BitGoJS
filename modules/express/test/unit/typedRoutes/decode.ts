@@ -4,8 +4,13 @@ import { DecryptRequestBody } from '../../../src/typedRoutes/api/common/decrypt'
 import { EncryptRequestBody } from '../../../src/typedRoutes/api/common/encrypt';
 import { LoginRequest } from '../../../src/typedRoutes/api/common/login';
 import { VerifyAddressBody } from '../../../src/typedRoutes/api/common/verifyAddress';
+import { VerifyAddressV2Body, VerifyAddressV2Params } from '../../../src/typedRoutes/api/v2/verifyAddress';
 import { SimpleCreateRequestBody } from '../../../src/typedRoutes/api/v1/simpleCreate';
 import { OfcSignPayloadBody } from '../../../src/typedRoutes/api/v2/ofcSignPayload';
+import {
+  LightningInitWalletBody,
+  LightningInitWalletParams,
+} from '../../../src/typedRoutes/api/v2/lightningInitWallet';
 
 export function assertDecode<T>(codec: t.Type<T, unknown>, input: unknown): T {
   const result = codec.decode(input);
@@ -125,6 +130,34 @@ describe('io-ts decode tests', function () {
       walletPassphrase: 'secret',
     });
   });
+  it('express.verifycoinaddress', function () {
+    // invalid coin param type
+    assert.throws(() =>
+      assertDecode(t.type(VerifyAddressV2Params), {
+        coin: 123,
+      })
+    );
+    // valid coin param
+    assertDecode(t.type(VerifyAddressV2Params), {
+      coin: 'btc',
+    });
+
+    // invalid address type in body
+    assert.throws(() =>
+      assertDecode(t.type(VerifyAddressV2Body), {
+        address: 123,
+      })
+    );
+    // valid body without optional flag
+    assertDecode(t.type(VerifyAddressV2Body), {
+      address: 'some-address',
+    });
+    // valid body with optional flag
+    assertDecode(t.type(VerifyAddressV2Body), {
+      address: 'some-address',
+      supportOldScriptHashVersion: true,
+    });
+  });
   it('express.v1.wallet.simplecreate', function () {
     // passphrase is required
     assert.throws(() => assertDecode(t.type(SimpleCreateRequestBody), {}));
@@ -132,5 +165,23 @@ describe('io-ts decode tests', function () {
     assertDecode(t.type(SimpleCreateRequestBody), {
       passphrase: 'pass',
     });
+  });
+  it('express.lightning.initWallet params', function () {
+    // missing walletId
+    assert.throws(() => assertDecode(t.type(LightningInitWalletParams), { coin: 'ltc' }));
+    // valid
+    assertDecode(t.type(LightningInitWalletParams), { coin: 'ltc', walletId: 'wallet123' });
+  });
+  it('express.lightning.initWallet body', function () {
+    // missing passphrase
+    assert.throws(() => assertDecode(t.type(LightningInitWalletBody), {}));
+    // passphrase must be string
+    assert.throws(() => assertDecode(t.type(LightningInitWalletBody), { passphrase: 123 }));
+    // expressHost optional and must be string if provided
+    assert.throws(() => assertDecode(t.type(LightningInitWalletBody), { passphrase: 'p', expressHost: 99 }));
+    // valid minimal
+    assertDecode(t.type(LightningInitWalletBody), { passphrase: 'p' });
+    // valid with expressHost
+    assertDecode(t.type(LightningInitWalletBody), { passphrase: 'p', expressHost: 'host.example' });
   });
 });

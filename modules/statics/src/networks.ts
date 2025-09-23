@@ -1388,6 +1388,11 @@ class PharosTestnet extends Testnet implements EthereumNetwork {
   accountExplorerUrl = 'https://testnet.pharosscan.xyz/address/';
   chainId = 688688;
   nativeCoinOperationHashPrefix = '688688';
+  forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
+  forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
+  walletFactoryAddress = '0x809ee567e413543af1caebcdb247f6a67eafc8dd';
+  walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class Creditcoin extends Mainnet implements EthereumNetwork {
@@ -1478,6 +1483,11 @@ class CreditcoinTestnet extends Testnet implements EthereumNetwork {
   accountExplorerUrl = 'https://creditcoin-testnet.blockscout.com/address/';
   chainId = 102031;
   nativeCoinOperationHashPrefix = '102031';
+  forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
+  forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
+  walletFactoryAddress = '0x809ee567e413543af1caebcdb247f6a67eafc8dd';
+  walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class Sonic extends Mainnet implements EthereumNetwork {
@@ -1939,6 +1949,43 @@ class FlowTestnet extends Testnet implements EthereumNetwork {
   nativeCoinOperationHashPrefix = '545';
 }
 
+// TODO update MegaETH explorer urls and chainId when available
+class MegaETH extends Mainnet implements EthereumNetwork {
+  name = 'MegaETH';
+  family = CoinFamily.MEGAETH;
+  explorerUrl = 'https://www.megaexplorer.xyz/tx';
+  accountExplorerUrl = 'https://www.megaexplorer.xyz/address/';
+  chainId = 6342;
+  nativeCoinOperationHashPrefix = '6342';
+}
+
+class MegaETHTestnet extends Testnet implements EthereumNetwork {
+  name = 'MegaETHTestnet';
+  family = CoinFamily.MEGAETH;
+  explorerUrl = 'https://www.megaexplorer.xyz/tx';
+  accountExplorerUrl = 'https://www.megaexplorer.xyz/address/';
+  chainId = 6342;
+  nativeCoinOperationHashPrefix = '6342';
+}
+
+class Plume extends Mainnet implements EthereumNetwork {
+  name = 'Plume';
+  family = CoinFamily.PLUME;
+  explorerUrl = 'https://explorer.plume.org/tx/';
+  accountExplorerUrl = 'https://explorer.plume.org/address/';
+  chainId = 98866;
+  nativeCoinOperationHashPrefix = '98866';
+}
+
+class PlumeTestnet extends Testnet implements EthereumNetwork {
+  name = 'PlumeTestnet';
+  family = CoinFamily.PLUME;
+  explorerUrl = 'https://testnet-explorer.plume.org/tx/';
+  accountExplorerUrl = 'https://testnet-explorer.plume.org/address/';
+  chainId = 98867;
+  nativeCoinOperationHashPrefix = '98867';
+}
+
 export const Networks = {
   main: {
     ada: Object.freeze(new Ada()),
@@ -1992,8 +2039,10 @@ export const Networks = {
     kavaevm: Object.freeze(new KavaEVM()),
     lnbtc: Object.freeze(new LightningBitcoin()),
     litecoin: Object.freeze(new Litecoin()),
+    megaeth: Object.freeze(new MegaETH()),
     mon: Object.freeze(new Monad()),
     mantra: Object.freeze(new Mantra()),
+    plume: Object.freeze(new Plume()),
     polygon: Object.freeze(new Polygon()),
     polyx: Object.freeze(new Polymesh()),
     phrs: Object.freeze(new Pharos()),
@@ -2071,7 +2120,9 @@ export const Networks = {
     flr: Object.freeze(new FlareTestnet()),
     flrP: Object.freeze(new FlarePTestnet()),
     mon: Object.freeze(new MonadTestnet()),
+    megaeth: Object.freeze(new MegaETHTestnet()),
     pyrmont: Object.freeze(new Pyrmont()),
+    plume: Object.freeze(new PlumeTestnet()),
     ethereumClassicTestnet: Object.freeze(new EthereumClassicTestnet()),
     hash: Object.freeze(new HashTestnet()),
     hedera: Object.freeze(new HederaTestnet()),

@@ -2,6 +2,7 @@
  * @prettier
  */
 import { CoinFamily } from '@bitgo/statics';
+import isEqual from 'lodash/isEqual';
 
 import {
   DelegationOptions,
@@ -19,6 +20,7 @@ import {
   EthUnstakeOptions,
   ClaimRewardsOptions,
   StakingTxRequestPrebuildTransactionResult,
+  TronStakeOptions,
 } from './iStakingWallet';
 import { BitGoBase } from '../bitgoBase';
 import { IWallet, PrebuildTransactionResult } from '../wallet';
@@ -55,7 +57,7 @@ export class StakingWallet implements IStakingWallet {
    * @param options - stake options
    * @return StakingRequest
    */
-  async stake(options: StakeOptions): Promise<StakingRequest> {
+  async stake(options: StakeOptions | TronStakeOptions): Promise<StakingRequest> {
     return await this.createStakingRequest(options, 'STAKE');
   }
 
@@ -159,18 +161,29 @@ export class StakingWallet implements IStakingWallet {
       if (!transaction.buildParams) {
         throw Error(`Staking transaction ${transaction.id} build params not expanded`);
       }
-      const isBtcUndelegate =
-        this.wallet.baseCoin.getFamily() === 'btc' &&
-        transaction.transactionType.toLowerCase() === 'undelegate_withdraw';
-      const wallet = isBtcUndelegate
-        ? await this.getDescriptorWallet(transaction)
-        : await this.getWalletForBuildingAndSigning();
+      const wallet = await this.extractWallet(transaction);
 
       return {
         transaction: transaction,
         result: await wallet.prebuildTransaction(transaction.buildParams),
       };
     }
+  }
+
+  private async extractWallet(transaction: StakingTransaction) {
+    return this.isBtcUndelegate(transaction)
+      ? await this.getDescriptorWallet(transaction)
+      : await this.getWalletForBuildingAndSigning();
+  }
+
+  private isBtcUndelegate(transaction: StakingTransaction) {
+    return (
+      this.wallet.baseCoin.getFamily() === 'btc' && transaction.transactionType.toLowerCase() === 'undelegate_withdraw'
+    );
+  }
+
+  private isTrxStaking(transaction: StakingTransaction) {
+    return this.wallet.baseCoin.getFamily() === 'trx';
   }
 
   /**
@@ -268,9 +281,15 @@ export class StakingWallet implements IStakingWallet {
   ): Promise<StakingSignedTransaction> {
     const builtTx = await this.build(transaction);
     // default to verifying a transaction unless explicitly skipped
-    const skipVerification = signOptions.transactionVerificationOptions?.skipTransactionVerification ?? false;
+    // skipping the verification for btc undelegate because it is just single sig
+    // TODO: SC-3183 (add trx staking verification)
+    const skipVerification =
+      (signOptions.transactionVerificationOptions?.skipTransactionVerification ||
+        this.isBtcUndelegate(transaction) ||
+        this.isTrxStaking(transaction)) ??
+      false;
     if (!isStakingTxRequestPrebuildResult(builtTx.result) && !skipVerification) {
-      await this.validateBuiltStakingTransaction(transaction, builtTx);
+      await this.validateBuiltStakingTransaction(builtTx.transaction, builtTx);
     }
     return await this.sign(signOptions, builtTx);
   }
@@ -283,7 +302,13 @@ export class StakingWallet implements IStakingWallet {
   }
 
   private async createStakingRequest(
-    options: StakeOptions | UnstakeOptions | EthUnstakeOptions | SwitchValidatorOptions | ClaimRewardsOptions,
+    options:
+      | StakeOptions
+      | UnstakeOptions
+      | EthUnstakeOptions
+      | SwitchValidatorOptions
+      | ClaimRewardsOptions
+      | TronStakeOptions,
     type: string
   ): Promise<StakingRequest> {
     return await this.bitgo
@@ -364,55 +389,97 @@ export class StakingWallet implements IStakingWallet {
     }
 
     const explainedTransaction = await coin.explainTransaction(result);
+    const mismatchErrors: string[] = [];
 
-    if (buildParams?.recipients) {
+    if (buildParams?.recipients && buildParams.recipients.length > 0) {
       const userRecipientMap = new Map(
         buildParams.recipients.map((recipient) => [recipient.address.toLowerCase(), recipient])
       );
       const platformRecipientMap = new Map(
         (explainedTransaction?.outputs ?? []).map((recipient) => [recipient.address.toLowerCase(), recipient])
       );
-
-      const mismatchErrors: string[] = [];
-
-      for (const [recipientAddress, recipientInfo] of platformRecipientMap) {
-        if (userRecipientMap.has(recipientAddress)) {
-          const userRecipient = userRecipientMap.get(recipientAddress);
-          if (!userRecipient) {
-            console.error('Unable to determine recipient address');
-            return;
-          }
-          const matchResult = transactionRecipientsMatch(userRecipient, recipientInfo);
-          if (!matchResult.exactMatch) {
-            if (!matchResult.tokenMatch) {
-              mismatchErrors.push(
-                `Invalid token ${recipientInfo.tokenName} transfer with amount ${recipientInfo.amount} to ${recipientInfo.address} found in built transaction, specified ${userRecipient.tokenName}`
-              );
-            }
-            if (!matchResult.amountMatch) {
-              mismatchErrors.push(
-                `Invalid recipient amount for ${recipientInfo.address}, specified ${userRecipient.amount} got ${recipientInfo.amount}`
-              );
-            }
-          }
-        } else {
-          mismatchErrors.push(`Invalid recipient address: ${recipientAddress}`);
+      for (const [address] of platformRecipientMap) {
+        if (!userRecipientMap.has(address)) {
+          mismatchErrors.push(`Unexpected recipient address found in built transaction: ${address}`);
         }
       }
 
-      const missingRecipientAddresses = Array.from(userRecipientMap.keys()).filter(
-        (address) => !platformRecipientMap.has(address)
-      );
+      for (const [address, userRecipient] of userRecipientMap) {
+        const platformRecipient = platformRecipientMap.get(address);
+        if (!platformRecipient) {
+          mismatchErrors.push(`Expected recipient address not found in built transaction: ${address}`);
+          continue;
+        }
 
-      if (missingRecipientAddresses.length > 0) {
-        mismatchErrors.push(`Missing recipient address(es): ${missingRecipientAddresses.join(', ')}`);
+        const matchResult = transactionRecipientsMatch(userRecipient, platformRecipient);
+
+        if (!matchResult.amountMatch) {
+          mismatchErrors.push(
+            `Recipient ${address} amount mismatch. Expected: ${userRecipient.amount}, Got: ${platformRecipient.amount}`
+          );
+        }
+        if (!matchResult.tokenMatch) {
+          mismatchErrors.push(
+            `Recipient ${address} token mismatch. Expected: ${userRecipient.tokenName ?? 'native coin'}, Got: ${
+              platformRecipient.tokenName ?? 'native coin'
+            }`
+          );
+        }
       }
-      if (mismatchErrors.length > 0) {
-        console.error(mismatchErrors.join(', '));
-        return;
+    }
+
+    if (buildParams?.memo && (explainedTransaction as any).memo !== buildParams.memo) {
+      mismatchErrors.push(
+        `Memo mismatch. Expected: '${JSON.stringify(buildParams.memo)}', Got: '${JSON.stringify(
+          (explainedTransaction as any).memo
+        )}'`
+      );
+    }
+
+    if (buildParams?.gasLimit && String((explainedTransaction as any).gasLimit) !== String(buildParams.gasLimit)) {
+      mismatchErrors.push(
+        `Gas Limit mismatch. Expected: ${buildParams.gasLimit}, Got: ${(explainedTransaction as any).gasLimit}`
+      );
+    }
+
+    if (buildParams?.type && (explainedTransaction as any).type !== buildParams.type) {
+      mismatchErrors.push(
+        `Transaction type mismatch. Expected: '${buildParams.type}', Got: '${(explainedTransaction as any).type}'`
+      );
+    }
+
+    if (buildParams?.solInstructions) {
+      if (!isEqual((explainedTransaction as any).solInstructions, buildParams.solInstructions)) {
+        mismatchErrors.push(
+          `Solana instructions mismatch. Expected: ${JSON.stringify(
+            buildParams.solInstructions
+          )}, Got: ${JSON.stringify((explainedTransaction as any).solInstructions)}`
+        );
       }
-    } else {
-      debug(`Cannot validate staking transaction ${transaction.stakingRequestId} without specified build params`);
+    }
+
+    if (buildParams?.aptosCustomTransactionParams) {
+      if (
+        !isEqual((explainedTransaction as any).aptosCustomTransactionParams, buildParams.aptosCustomTransactionParams)
+      ) {
+        mismatchErrors.push(
+          `Aptos custom transaction parameters mismatch. Expected: ${JSON.stringify(
+            buildParams.aptosCustomTransactionParams
+          )}, Got: ${JSON.stringify((explainedTransaction as any).aptosCustomTransactionParams)}`
+        );
+      }
+    }
+
+    if (mismatchErrors.length > 0) {
+      const errorMessage = `Staking transaction validation failed before signing: ${mismatchErrors.join('; ')}`;
+      debug(errorMessage);
+      throw new Error(errorMessage);
+    }
+
+    if (!buildParams) {
+      debug(
+        `Cannot perform deep validation for staking transaction ${transaction.stakingRequestId} without specified build params`
+      );
     }
   }
 }

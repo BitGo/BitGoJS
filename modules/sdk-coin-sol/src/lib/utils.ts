@@ -51,6 +51,7 @@ import {
   walletInitInstructionIndexes,
   jitoStakingActivateInstructionsIndexes,
   jitoStakingDeactivateInstructionsIndexes,
+  jitoStakingActivateWithATAInstructionsIndexes,
 } from './constants';
 import { ValidInstructionTypes } from './iface';
 import { STAKE_POOL_INSTRUCTION_LAYOUTS, STAKE_POOL_PROGRAM_ID } from '@solana/spl-stake-pool';
@@ -327,6 +328,7 @@ export function getTransactionType(transaction: SolTransaction): TransactionType
   } else if (
     matchTransactionTypeByInstructionsOrder(instructions, marinadeStakingActivateInstructionsIndexes) ||
     matchTransactionTypeByInstructionsOrder(instructions, jitoStakingActivateInstructionsIndexes) ||
+    matchTransactionTypeByInstructionsOrder(instructions, jitoStakingActivateWithATAInstructionsIndexes) ||
     matchTransactionTypeByInstructionsOrder(instructions, stakingActivateInstructionsIndexes)
   ) {
     return TransactionType.StakingActivate;

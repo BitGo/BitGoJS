@@ -168,6 +168,10 @@ export interface CosmosTokenConstructorOptions extends AccountConstructorOptions
   denom: string;
 }
 
+export interface JettonTokenConstructorOptions extends AccountConstructorOptions {
+  contractAddress: string;
+}
+
 export interface AdaTokenConstructorOptions extends AccountConstructorOptions {
   policyId: string;
   assetName: string;
@@ -507,6 +511,16 @@ export class WorldERC20Token extends ContractAddressDefinedToken {
 }
 
 /**
+ * The Flr Chain network supports tokens
+ * Flr Chain Tokens are ERC20 tokens
+ */
+export class FlrERC20Token extends ContractAddressDefinedToken {
+  constructor(options: Erc20ConstructorOptions) {
+    super(options);
+  }
+}
+
+/**
  * The Xrp network supports tokens
  * Xrp tokens are identified by their issuer address
  * Naming format is similar to XLM
@@ -668,6 +682,19 @@ export class CosmosChainToken extends AccountCoinToken {
       ...options,
     });
     this.denom = options.denom;
+  }
+}
+/**
+ * TON supports tokens and Jetton is a token standard on TON
+ * Jetton tokens work similar to native TON coin
+ */
+export class JettonToken extends AccountCoinToken {
+  public contractAddress: string;
+  constructor(options: JettonTokenConstructorOptions) {
+    super({
+      ...options,
+    });
+    this.contractAddress = options.contractAddress;
   }
 }
 
@@ -2687,6 +2714,96 @@ export function tworldErc20(
 }
 
 /**
+ * Factory function for FlrErc20 token instances.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param contractAddress Contract address of this token
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param prefix? Optional token prefix. Defaults to empty string
+ * @param suffix? Optional token suffix. Defaults to token name.
+ * @param network? Optional token network. Defaults to Flr Chain mainnet network.
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function flrErc20(
+  id: string,
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  contractAddress: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.EIP1559],
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.main.flr,
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
+) {
+  return Object.freeze(
+    new FlrERC20Token({
+      id,
+      name,
+      fullName,
+      network,
+      contractAddress,
+      prefix,
+      suffix,
+      features,
+      decimalPlaces,
+      asset,
+      isToken: true,
+      primaryKeyCurve,
+      baseUnit: BaseUnit.ETH,
+    })
+  );
+}
+
+/**
+ * Factory function for Flr testnet FlrErc20 token instances.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param contractAddress Contract address of this token
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param prefix? Optional token prefix. Defaults to empty string
+ * @param suffix? Optional token suffix. Defaults to token name.
+ * @param network? Optional token network. Defaults to the Flr Chain test network.
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function tflrErc20(
+  id: string,
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  contractAddress: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.test.flr,
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
+) {
+  return flrErc20(
+    id,
+    name,
+    fullName,
+    decimalPlaces,
+    contractAddress,
+    asset,
+    features,
+    prefix,
+    suffix,
+    network,
+    primaryKeyCurve
+  );
+}
+
+/**
  * Factory function for xrp token instances.
  *
  * @param id uuid v4
@@ -3701,6 +3818,97 @@ export function tpolyxToken(
     decimalPlaces,
     ticker,
     assetId,
+    asset,
+    features,
+    prefix,
+    suffix,
+    network,
+    primaryKeyCurve
+  );
+}
+
+/**
+ * Factory function for Jetton token instances.
+ * Jetton is the token standard on TON blockchain.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param contractAddress Contract address of this token
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param features Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param prefix Optional token prefix. Defaults to empty string
+ * @param suffix Optional token suffix. Defaults to token name.
+ * @param network Optional token network. Defaults to TON main network.
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function jettonToken(
+  id: string,
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  contractAddress: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.main.ton,
+  primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
+) {
+  return Object.freeze(
+    new JettonToken({
+      id,
+      name,
+      fullName,
+      network,
+      contractAddress,
+      prefix,
+      suffix,
+      features,
+      decimalPlaces,
+      asset,
+      isToken: true,
+      primaryKeyCurve,
+      baseUnit: BaseUnit.TON,
+    })
+  );
+}
+
+/**
+ * Factory function for testnet jetton token instances.
+ * Jetton is the token standard on TON blockchain.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param contractAddress Contract address of this token
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param features Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param prefix Optional token prefix. Defaults to empty string
+ * @param suffix Optional token suffix. Defaults to token name.
+ * @param network Optional token network. Defaults to the testnet TON network.
+ */
+export function tjettonToken(
+  id: string,
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  contractAddress: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.test.ton,
+  primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
+) {
+  return jettonToken(
+    id,
+    name,
+    fullName,
+    decimalPlaces,
+    contractAddress,
     asset,
     features,
     prefix,

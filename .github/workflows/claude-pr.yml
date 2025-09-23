@@ -1,0 +1,105 @@
+name: Claude PR
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  id-token: write
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+
+jobs:
+  claude-pr:
+    if: |
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
+      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
+      (github.event_name == 'issues' && contains(github.event.issue.body, '@claude'))
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: us-west-2
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: arn:aws:iam::199765120567:role/${{ github.event.repository.name }}-iam-protected
+          aws-region: us-west-2
+
+      - name: Assume inference role
+        id: inference-role
+        run: |
+          CREDS="$(aws sts assume-role \
+            --role-arn arn:aws:iam::168000258654:role/BedrockInferenceRole \
+            --role-session-name claude-inference-session \
+            --query 'Credentials' \
+            --output json)"
+
+          AWS_ACCESS_KEY_ID="$(echo "$CREDS" | jq -r '.AccessKeyId')"
+          AWS_SECRET_ACCESS_KEY="$(echo "$CREDS" | jq -r '.SecretAccessKey')"
+          AWS_SESSION_TOKEN="$(echo "$CREDS" | jq -r '.SessionToken')"
+
+          echo "::add-mask::$AWS_SECRET_ACCESS_KEY"
+          { echo "aws-access-key-id=$AWS_ACCESS_KEY_ID"; echo "aws-secret-access-key=$AWS_SECRET_ACCESS_KEY"; echo "aws-session-token=$AWS_SESSION_TOKEN"; } >> "$GITHUB_OUTPUT"
+
+      - name: Determine prompt to use
+        id: determine-prompt
+        env:
+          COMMENT_BODY: ${{ github.event.comment.body }}
+        run: |
+          # Safely trim whitespace and check if it's just @claude
+          TRIMMED_COMMENT=$(echo "$COMMENT_BODY" | xargs)
+
+          if [ "$TRIMMED_COMMENT" = "@claude" ]; then
+            echo "use-code-review-prompt=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "use-code-review-prompt=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Read code review prompt
+        id: read-prompt
+        if: steps.determine-prompt.outputs.use-code-review-prompt == 'true'
+        run: |
+          PROMPT_CONTENT=$(cat .github/prompts/code-review.md)
+          {
+            echo "prompt-content<<EOF"
+            echo "$PROMPT_CONTENT"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - uses: anthropics/claude-code-action@69dec299f882fef0fff1652a1309b7e9771b9f98
+        if: steps.determine-prompt.outputs.use-code-review-prompt == 'true'
+        env:
+          AWS_REGION: us-west-2
+          AWS_ACCESS_KEY_ID: ${{ steps.inference-role.outputs.aws-access-key-id }}
+          AWS_SECRET_ACCESS_KEY: ${{ steps.inference-role.outputs.aws-secret-access-key }}
+          AWS_SESSION_TOKEN: ${{ steps.inference-role.outputs.aws-session-token }}
+        with:
+          timeout_minutes: '10'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          use_bedrock: 'true'
+          anthropic_model: 'arn:aws:bedrock:us-west-2:168000258654:inference-profile/us.anthropic.claude-sonnet-4-20250514-v1:0'
+          direct_prompt: ${{ steps.read-prompt.outputs.prompt-content }}
+
+      - uses: anthropics/claude-code-action@69dec299f882fef0fff1652a1309b7e9771b9f98
+        if: steps.determine-prompt.outputs.use-code-review-prompt == 'false'
+        env:
+          AWS_REGION: us-west-2
+          AWS_ACCESS_KEY_ID: ${{ steps.inference-role.outputs.aws-access-key-id }}
+          AWS_SECRET_ACCESS_KEY: ${{ steps.inference-role.outputs.aws-secret-access-key }}
+          AWS_SESSION_TOKEN: ${{ steps.inference-role.outputs.aws-session-token }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+        with:
+          timeout_minutes: '10'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          use_bedrock: 'true'
+          anthropic_model: 'arn:aws:bedrock:us-west-2:168000258654:inference-profile/us.anthropic.claude-sonnet-4-20250514-v1:0'
+          direct_prompt: $COMMENT_BODY

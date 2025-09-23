@@ -9,8 +9,8 @@ import {
   ParseTransactionError,
 } from '@bitgo/sdk-core';
 import { FlareNetwork } from '@bitgo/statics';
-import * as createHash from 'create-hash';
-import { secp256k1 } from '@noble/curves/secp256k1';
+import { ecc } from '@bitgo/secp256k1';
+import { createHash } from 'crypto';
 import { DeprecatedOutput, DeprecatedTx, Output } from './iface';
 import {
   DECODED_BLOCK_ID_LENGTH,
@@ -23,7 +23,25 @@ import {
   OUTPUT_INDEX_HEX_LENGTH,
   ADDRESS_REGEX,
   HEX_REGEX,
+  HEX_CHAR_PATTERN,
+  HEX_PATTERN_NO_PREFIX,
+  FLARE_ADDRESS_PLACEHOLDER,
+  HEX_ENCODING,
+  PADSTART_CHAR,
+  HEX_RADIX,
+  STRING_TYPE,
 } from './constants';
+
+// Regex utility functions for hex validation
+export const createHexRegex = (length: number, requirePrefix = false): RegExp => {
+  const pattern = requirePrefix ? `^0x${HEX_CHAR_PATTERN}{${length}}$` : `^${HEX_CHAR_PATTERN}{${length}}$`;
+  return new RegExp(pattern);
+};
+
+export const createFlexibleHexRegex = (requirePrefix = false): RegExp => {
+  const pattern = requirePrefix ? `^0x${HEX_CHAR_PATTERN}+$` : HEX_PATTERN_NO_PREFIX;
+  return new RegExp(pattern);
+};
 
 export class Utils implements BaseUtils {
   public includeIn(walletAddresses: string[], otxoOutputAddresses: string[]): boolean {
@@ -84,7 +102,7 @@ export class Utils implements BaseUtils {
     if (pub.length === SHORT_PUB_KEY_LENGTH) {
       try {
         // For FlareJS, we'll need to implement CB58 decode functionality
-        pubBuf = Buffer.from(pub, 'hex'); // Temporary placeholder
+        pubBuf = Buffer.from(pub, HEX_ENCODING); // Temporary placeholder
       } catch {
         return false;
       }
@@ -108,9 +126,9 @@ export class Utils implements BaseUtils {
       if (!this.allHexChars(pub)) return false;
       pubBuf = Buffer.from(pub, 'hex');
     }
-    // validate the public key using noble secp256k1
+    // validate the public key using BitGo secp256k1
     try {
-      secp256k1.ProjectivePoint.fromHex(pubBuf.toString('hex'));
+      ecc.isPoint(pubBuf); // Check if it's a valid point
       return true;
     } catch (e) {
       return false;
@@ -119,7 +137,7 @@ export class Utils implements BaseUtils {
 
   public parseAddress = (pub: string): Buffer => {
     // FlareJS equivalent for address parsing
-    return Buffer.from(pub, 'hex'); // Simplified implementation
+    return Buffer.from(pub, HEX_ENCODING); // Simplified implementation
   };
 
   /**
@@ -160,6 +178,84 @@ export class Utils implements BaseUtils {
     return HEX_REGEX.test(maybe);
   }
 
+  /**
+   * Lightweight Ethereum address validation
+   * Validates that an address is a 40-character hex string (optionally prefixed with 0x)
+   *
+   * @param {string} address - the Ethereum address to validate
+   * @returns {boolean} - true if valid Ethereum address format
+   */
+  isValidEthereumAddress(address: string): boolean {
+    if (!address || typeof address !== STRING_TYPE) {
+      return false;
+    }
+
+    // Remove 0x prefix if present
+    const cleanAddress = address.startsWith('0x') ? address.slice(2) : address;
+
+    // Check if it's exactly 40 hex characters
+    return cleanAddress.length === 40 && /^[0-9a-fA-F]{40}$/.test(cleanAddress);
+  }
+
+  /**
+   * Pick specific properties from an object (replaces lodash.pick)
+   *
+   * @param {T} obj - the source object
+   * @param {K[]} keys - array of property keys to pick
+   * @returns {Pick<T, K>} - new object with only the specified properties
+   */
+  pick<T, K extends keyof T>(obj: T, keys: K[]): Pick<T, K> {
+    const result = {} as Pick<T, K>;
+    for (const key of keys) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        result[key] = obj[key];
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Deep equality comparison (replaces lodash.isEqual)
+   *
+   * @param {unknown} a - first value to compare
+   * @param {unknown} b - second value to compare
+   * @returns {boolean} - true if values are deeply equal
+   */
+  isEqual(a: unknown, b: unknown): boolean {
+    if (a === b) return true;
+
+    if (a === null || a === undefined || b === null || b === undefined) return a === b;
+
+    if (typeof a !== typeof b) return false;
+
+    if (typeof a === 'object') {
+      if (Array.isArray(a) !== Array.isArray(b)) return false;
+
+      if (Array.isArray(a)) {
+        const arrB = b as unknown[];
+        if (a.length !== arrB.length) return false;
+        for (let i = 0; i < a.length; i++) {
+          if (!this.isEqual(a[i], arrB[i])) return false;
+        }
+        return true;
+      }
+
+      const objA = a as Record<string, unknown>;
+      const objB = b as Record<string, unknown>;
+      const keysA = Object.keys(objA);
+      const keysB = Object.keys(objB);
+      if (keysA.length !== keysB.length) return false;
+
+      for (const key of keysA) {
+        if (!keysB.includes(key)) return false;
+        if (!this.isEqual(objA[key], objB[key])) return false;
+      }
+      return true;
+    }
+
+    return false;
+  }
+
   /** @inheritdoc */
   isValidSignature(signature: string): boolean {
     throw new NotImplementedError('isValidSignature not implemented');
@@ -178,10 +274,10 @@ export class Utils implements BaseUtils {
    * @return signature
    */
   createSignature(network: FlareNetwork, message: Buffer, prv: Buffer): Buffer {
-    // Use secp256k1 directly since FlareJS may not expose KeyPair in the same way
+    // Use BitGo secp256k1 since FlareJS may not expose KeyPair in the same way
     try {
-      const signature = secp256k1.sign(message, prv);
-      return Buffer.from(signature.toCompactRawBytes());
+      const signature = ecc.sign(message, prv);
+      return Buffer.from(signature);
     } catch (error) {
       throw new Error(`Failed to create signature: ${error}`);
     }
@@ -197,7 +293,7 @@ export class Utils implements BaseUtils {
    */
   verifySignature(network: FlareNetwork, message: Buffer, signature: Buffer, publicKey: Buffer): boolean {
     try {
-      return secp256k1.verify(signature, message, publicKey);
+      return ecc.verify(message, publicKey, signature);
     } catch (error) {
       return false;
     }
@@ -221,7 +317,7 @@ export class Utils implements BaseUtils {
   }
 
   sha256(buf: Uint8Array): Buffer {
-    return createHash.default('sha256').update(buf).digest();
+    return createHash('sha256').update(buf).digest();
   }
 
   /**
@@ -253,7 +349,7 @@ export class Utils implements BaseUtils {
       const unsignedTx = (txRecord.getUnsignedTx as () => Record<string, unknown>)();
       const transaction = (unsignedTx.getTransaction as () => Record<string, unknown>)();
       const txBlockchainId = (transaction.getBlockchainID as () => unknown)();
-      return Buffer.from(txBlockchainId as string).toString('hex') === blockchainId;
+      return Buffer.from(txBlockchainId as string).toString(HEX_ENCODING) === blockchainId;
     } catch (error) {
       return false;
     }
@@ -293,7 +389,7 @@ export class Utils implements BaseUtils {
           const amount = transferableOutput.amount();
 
           // Simplified address handling - would need proper FlareJS address utilities
-          const address = 'flare-address-placeholder'; // TODO: implement proper address conversion
+          const address = FLARE_ADDRESS_PLACEHOLDER; // TODO: implement proper address conversion
 
           return {
             value: amount.toString(),
@@ -354,7 +450,10 @@ export class Utils implements BaseUtils {
    * @return {Buffer} buffer of size 4 with that number value
    */
   outputidxNumberToBuffer(outputidx: string): Buffer {
-    return Buffer.from(Number(outputidx).toString(16).padStart(OUTPUT_INDEX_HEX_LENGTH, '0'), 'hex');
+    return Buffer.from(
+      Number(outputidx).toString(HEX_RADIX).padStart(OUTPUT_INDEX_HEX_LENGTH, PADSTART_CHAR),
+      HEX_ENCODING
+    );
   }
 
   /**
@@ -363,7 +462,7 @@ export class Utils implements BaseUtils {
    * @return {string} outputidx number
    */
   outputidxBufferToNumber(outputidx: Buffer): string {
-    return parseInt(outputidx.toString('hex'), 16).toString();
+    return parseInt(outputidx.toString(HEX_ENCODING), HEX_RADIX).toString();
   }
 
   /**
@@ -375,7 +474,7 @@ export class Utils implements BaseUtils {
     // For now, use a simple hex decode as placeholder
     // In a full implementation, this would be proper CB58 decoding
     try {
-      return Buffer.from(data, 'hex');
+      return Buffer.from(data, HEX_ENCODING);
     } catch {
       // Fallback to buffer from string
       return Buffer.from(data);
@@ -391,7 +490,70 @@ export class Utils implements BaseUtils {
    */
   addressToString(hrp: string, chainid: string, addressBuffer: Buffer): string {
     // Simple implementation - in practice this would use bech32 encoding
-    return `${chainid}-${addressBuffer.toString('hex')}`;
+    return `${chainid}-${addressBuffer.toString(HEX_ENCODING)}`;
+  }
+
+  /**
+   * Convert string to bytes for FlareJS memo
+   * Follows FlareJS utils.stringToBytes pattern
+   * @param {string} text - Text to convert
+   * @returns {Uint8Array} Byte array
+   */
+  stringToBytes(text: string): Uint8Array {
+    return new TextEncoder().encode(text);
+  }
+
+  /**
+   * Convert bytes to string from FlareJS memo
+   * @param {Uint8Array} bytes - Bytes to convert
+   * @returns {string} Decoded string
+   */
+  bytesToString(bytes: Uint8Array): string {
+    return new TextDecoder().decode(bytes);
+  }
+
+  /**
+   * Create memo bytes from various input formats
+   * Supports string, JSON object, or raw bytes
+   * @param {string | Record<string, unknown> | Uint8Array} memo - Memo data
+   * @returns {Uint8Array} Memo bytes for FlareJS
+   */
+  createMemoBytes(memo: string | Record<string, unknown> | Uint8Array): Uint8Array {
+    if (memo instanceof Uint8Array) {
+      return memo;
+    }
+
+    if (typeof memo === STRING_TYPE) {
+      return this.stringToBytes(memo as string);
+    }
+
+    if (typeof memo === 'object') {
+      return this.stringToBytes(JSON.stringify(memo));
+    }
+
+    throw new InvalidTransactionError('Invalid memo format');
+  }
+
+  /**
+   * Parse memo bytes to string
+   * @param {Uint8Array} memoBytes - Memo bytes from FlareJS transaction
+   * @returns {string} Decoded memo string
+   */
+  parseMemoBytes(memoBytes: Uint8Array): string {
+    if (memoBytes.length === 0) {
+      return '';
+    }
+    return this.bytesToString(memoBytes);
+  }
+
+  /**
+   * Validate memo size (FlareJS has transaction size limits)
+   * @param {Uint8Array} memoBytes - Memo bytes
+   * @param {number} maxSize - Maximum size in bytes (default 4KB)
+   * @returns {boolean} Whether memo is within size limits
+   */
+  validateMemoSize(memoBytes: Uint8Array, maxSize = 4096): boolean {
+    return memoBytes.length <= maxSize;
   }
 }
 

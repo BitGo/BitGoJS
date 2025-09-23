@@ -108,14 +108,14 @@ export type DepositSolStakePoolData = Pick<StakePoolData, 'poolMint' | 'reserveS
  * Construct Solana depositSol stake pool instruction from parameters.
  *
  * @param {DepositSolInstructionsParams} params - parameters for staking to stake pool
- * @param poolMint - pool mint derived from getStakePoolAccount
- * @param reserveStake - reserve account derived from getStakePoolAccount
- * @param managerFeeAccount - manager fee account derived from getStakePoolAccount
+ * @param {DepositSolStakePoolData} stakePool - data from getStakePoolAccount needed for DepositSol
+ * @param createAssociatedTokenAccount
  * @returns {TransactionInstruction}
  */
 export function depositSolInstructions(
   params: DepositSolInstructionsParams,
-  stakePool: DepositSolStakePoolData
+  stakePool: DepositSolStakePoolData,
+  createAssociatedTokenAccount: boolean
 ): TransactionInstruction[] {
   const { stakePoolAddress, from, lamports } = params;
   const poolMint = new PublicKey(stakePool.poolMint);
@@ -124,11 +124,15 @@ export function depositSolInstructions(
 
   // findWithdrawAuthorityProgramAddress
   const withdrawAuthority = findWithdrawAuthorityProgramAddressSync(STAKE_POOL_PROGRAM_ID, stakePoolAddress);
-
   const associatedAddress = getAssociatedTokenAddressSync(poolMint, from);
 
-  return [
-    createAssociatedTokenAccountInstruction(from, associatedAddress, from, poolMint),
+  const instructions: TransactionInstruction[] = [];
+
+  if (createAssociatedTokenAccount) {
+    instructions.push(createAssociatedTokenAccountInstruction(from, associatedAddress, from, poolMint));
+  }
+
+  instructions.push(
     StakePoolInstruction.depositSol({
       stakePool: stakePoolAddress,
       reserveStake,
@@ -139,8 +143,10 @@ export function depositSolInstructions(
       poolMint,
       lamports: Number(lamports),
       withdrawAuthority,
-    }),
-  ];
+    })
+  );
+
+  return instructions;
 }
 
 function parseKey(key: AccountMeta, template: { isSigner: boolean; isWritable: boolean }): PublicKey {
@@ -212,13 +218,11 @@ export interface WithdrawStakeInstructionsParams {
 export type WithdrawStakeStakePoolData = Pick<StakePoolData, 'poolMint' | 'validatorListAccount' | 'managerFeeAccount'>;
 
 /**
- * Construct Solana depositSol stake pool instruction from parameters.
+ * Construct Solana withdrawStake stake pool instructions from parameters.
  *
- * @param {DepositSolInstructionsParams} params - parameters for staking to stake pool
- * @param poolMint - pool mint derived from getStakePoolAccount
- * @param reserveStake - reserve account derived from getStakePoolAccount
- * @param managerFeeAccount - manager fee account derived from getStakePoolAccount
- * @returns {TransactionInstruction}
+ * @param {WithdrawStakeInstructionsParams} params - parameters for unstaking from stake pool
+ * @param {WithdrawStakeStakePoolData} stakePool - data from getStakePoolAccount needed for WithdrawStake
+ * @returns {TransactionInstruction[]}
  */
 export function withdrawStakeInstructions(
   params: WithdrawStakeInstructionsParams,
@@ -243,7 +247,7 @@ export function withdrawStakeInstructions(
   const poolAmount = BigInt(poolAmountString);
 
   return [
-    createApproveInstruction(poolTokenAccount, tokenOwner, tokenOwner, poolAmount),
+    createApproveInstruction(poolTokenAccount, transferAuthority, tokenOwner, poolAmount),
     SystemProgram.createAccount({
       fromPubkey: tokenOwner,
       newAccountPubkey: destinationStakeAccount,
@@ -264,6 +268,10 @@ export function withdrawStakeInstructions(
       poolTokens: Number(poolAmount),
       withdrawAuthority,
     }),
+    ...StakeProgram.deactivate({
+      stakePubkey: destinationStakeAccount,
+      authorizedPubkey: tokenOwner,
+    }).instructions,
   ];
 }
 
