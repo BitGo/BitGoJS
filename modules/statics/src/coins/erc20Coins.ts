@@ -7799,7 +7799,8 @@ export const erc20Coins = [
     'GATENet',
     18,
     '0x9d7630adf7ab0b0cb00af747db76864df0ec82e4',
-    UnderlyingAsset.GATE
+    UnderlyingAsset.GATE,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'e173c7c3-106b-4572-9c6c-e56c2f06c9c4',
@@ -11534,7 +11535,8 @@ export const erc20Coins = [
     'Vision',
     18,
     '0x699ccf919c1dfdfa4c374292f42cadc9899bf753',
-    UnderlyingAsset['eth:vsn']
+    UnderlyingAsset['eth:vsn'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'c51774c4-c9fd-4cfc-886e-36e084ce7b48',
@@ -11550,7 +11552,8 @@ export const erc20Coins = [
     'SatLayer',
     6,
     '0x51477a3002ee04b7542adfe63ccdb50c00ee5147',
-    UnderlyingAsset['eth:slay']
+    UnderlyingAsset['eth:slay'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '0eb44459-7e38-4974-8847-e2fa8a510478',

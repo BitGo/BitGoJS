@@ -110,6 +110,7 @@ import {
   STX_FEATURES,
   SUI_FEATURES,
   SUI_TOKEN_FEATURES,
+  SUI_TOKEN_FEATURES_EXCLUDE_SINGAPORE,
   SUI_TOKEN_FEATURES_STAKING,
   TAO_FEATURES,
   TAO_TOKEN_FEATURES,
@@ -4335,7 +4336,7 @@ export const allCoinsAndTokens = [
     'AFSUI',
     '0xf325ce1300e8dac124071d3152c5c5ee6174914f8bc2161e88329cf579246efc::afsui::AFSUI',
     UnderlyingAsset['sui:afsui'],
-    SUI_TOKEN_FEATURES.filter((feature) => feature !== CoinFeature.CUSTODY_BITGO_SINGAPORE)
+    SUI_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   suiToken(
     'af864118-e9ec-47b2-896c-735f0530fb8f',
@@ -4431,7 +4432,7 @@ export const allCoinsAndTokens = [
     'ALKIMI',
     '0x1a8f4bc33f8ef7fbc851f156857aa65d397a6a6fd27a7ac2ca717b51f2fd9489::alkimi::ALKIMI',
     UnderlyingAsset['sui:alkimi'],
-    SUI_TOKEN_FEATURES
+    SUI_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   tsuiToken(
     '0b8a7919-c37e-4be8-8338-7fc13c6c875e',

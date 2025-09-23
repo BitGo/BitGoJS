@@ -1309,7 +1309,7 @@ export const bscTokens = [
     6,
     '0xfc5a743271672e91d77f0176e5cea581fbd5d834',
     UnderlyingAsset['bsc:slay'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'de4424d5-b119-4220-899f-a48727c58a80',
