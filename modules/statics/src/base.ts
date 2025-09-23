@@ -3063,6 +3063,7 @@ export enum UnderlyingAsset {
   'tsui:wal' = 'tsui:wal',
 
   // Apt tokens
+  'apt:usd1' = 'apt:usd1',
   'apt:usdt' = 'apt:usdt',
   'apt:usdc' = 'apt:usdc',
   'apt:pact' = 'apt:pact',
