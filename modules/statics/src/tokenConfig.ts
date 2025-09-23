@@ -1439,6 +1439,8 @@ export function getFormattedTokenConfigForCoin(coin: Readonly<BaseCoin>): TokenC
     return getCoredaoTokenConfig(coin);
   } else if (coin instanceof JettonToken) {
     return getJettonTokenConfig(coin);
+  } else if (coin instanceof FlrERC20Token) {
+    return getFlrTokenConfig(coin);
   }
   return undefined;
 }
