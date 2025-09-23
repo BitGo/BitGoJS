@@ -68,6 +68,7 @@
 /modules/sdk-coin-eos/ @BitGo/ethalt-team
 /modules/sdk-coin-evm/ @BitGo/ethalt-team
 /modules/sdk-coin-flr/ @BitGo/ethalt-team
+/modules/sdk-coin-flrp/ @BitGo/ethalt-team
 /modules/sdk-coin-ethlike/ @BitGo/ethalt-team
 /modules/sdk-coin-hbar/ @BitGo/ethalt-team
 /modules/sdk-coin-icp/ @BitGo/ethalt-team
