@@ -3236,6 +3236,14 @@ export const ofcCoins = [
     UnderlyingAsset['tapt:stgusd1'],
     [...APT_OFC_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
+  tofcaptToken(
+    '63a0addc-4c8c-45a6-9d68-e306c839b10c',
+    'ofctapt:usd1',
+    'Test USD1 Token',
+    6,
+    UnderlyingAsset['tapt:usd1'],
+    [...APT_OFC_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+  ),
   ofcStxToken('2d2f9c7f-7d10-480e-a0ef-6893cf4d3493', 'ofcstx:sbtc', 'sBTC', 8, UnderlyingAsset['stx:sbtc']),
   ofcStxToken(
     'cc76810a-e19c-4123-ad0c-be39ce08550a',

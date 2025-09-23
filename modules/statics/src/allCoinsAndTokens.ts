@@ -4567,6 +4567,15 @@ export const allCoinsAndTokens = [
     [...APT_FEATURES, CoinFeature.STABLECOIN]
   ),
   taptToken(
+    'ed0679b9-2b8e-44d3-9b58-d103402472ea',
+    'tapt:usd1',
+    'Test USD1 Token',
+    6,
+    '0xc52f239bb28211c0340882b83cbc20f7a0e5bf31608f1ca46c2f4a5c6a856683',
+    UnderlyingAsset['tapt:usd1'],
+    [...APT_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  taptToken(
     '2695e728-96dd-46e6-9d01-bd0fdbe1ff38',
     'tapt:usdt',
     'USD Tether',
