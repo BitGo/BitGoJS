@@ -43,8 +43,8 @@ export class EthLikeToken extends AbstractEthLikeNewCoins {
   static createTokenConstructors(
     coinNames: CoinNames,
     tokenConfigs: EthLikeTokenConfig[] = [
-      ...tokens.bitcoin[coinNames.Mainnet].tokens,
-      ...tokens.testnet[coinNames.Mainnet].tokens,
+      ...(tokens.bitcoin[coinNames.Mainnet]?.tokens || []),
+      ...(tokens.testnet[coinNames.Mainnet]?.tokens || []),
     ]
   ): NamedCoinConstructor[] {
     const tokensCtors: NamedCoinConstructor[] = [];
