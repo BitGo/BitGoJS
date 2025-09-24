@@ -4684,7 +4684,7 @@ export const allCoinsAndTokens = [
     'apt:usd1',
     'USD1',
     6,
-    '0x6febdb5695dab42c3edf6baaebf7b49b4ae32fbb1411a5c33917f442ebe77daa',
+    '0x05fabd1b12e39967a3c24e91b7b8f67719a6dacee74f3c8b9fb7d93e855437d2',
     UnderlyingAsset['apt:usd1'],
     [...APT_FEATURES, CoinFeature.STABLECOIN]
   ),
@@ -4756,7 +4756,7 @@ export const allCoinsAndTokens = [
     'tapt:usd1',
     'Test USD1 Token',
     6,
-    '0xc52f239bb28211c0340882b83cbc20f7a0e5bf31608f1ca46c2f4a5c6a856683',
+    '0x5b31c15a79ae79dfcaac6a591012f2dd83888e741c5a288ad1659f56097afe2a',
     UnderlyingAsset['tapt:usd1'],
     [...APT_FEATURES, CoinFeature.STABLECOIN]
   ),
