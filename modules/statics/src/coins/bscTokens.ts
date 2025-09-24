@@ -1392,4 +1392,13 @@ export const bscTokens = [
     UnderlyingAsset['bsc:cashplus'],
     BSC_TOKEN_FEATURES
   ),
+  bscToken(
+    '9f5765c8-1bfa-4dca-b239-0ac0ba38147d',
+    'bsc:aster',
+    'Aster',
+    18,
+    '0x000ae314e2a2172a039b26378814c252734f556a',
+    UnderlyingAsset['bsc:aster'],
+    BSC_TOKEN_FEATURES
+  ),
 ];
