@@ -11,6 +11,7 @@ import {
   LightningInitWalletBody,
   LightningInitWalletParams,
 } from '../../../src/typedRoutes/api/v2/lightningInitWallet';
+import { OfcSignPayloadBody } from '../../../src/typedRoutes/api/v2/ofcSignPayload';
 
 export function assertDecode<T>(codec: t.Type<T, unknown>, input: unknown): T {
   const result = codec.decode(input);
@@ -124,6 +125,38 @@ describe('io-ts decode tests', function () {
     assertDecode(t.type(VerifyAddressV2Body), {
       address: 'some-address',
       supportOldScriptHashVersion: true,
+    });
+  });
+  it('express.ofc.signPayload', function () {
+    // missing walletId
+    assert.throws(() =>
+      assertDecode(t.type(OfcSignPayloadBody), {
+        payload: { a: 1 },
+      })
+    );
+    // empty walletId
+    assert.throws(() =>
+      assertDecode(t.type(OfcSignPayloadBody), {
+        walletId: '',
+        payload: { a: 1 },
+      })
+    );
+    // missing payload
+    assert.throws(() =>
+      assertDecode(t.type(OfcSignPayloadBody), {
+        walletId: 'w1',
+      })
+    );
+    // valid minimal
+    assertDecode(t.type(OfcSignPayloadBody), {
+      walletId: 'w1',
+      payload: { a: 1 },
+    });
+    // valid with nested and optional passphrase
+    assertDecode(t.type(OfcSignPayloadBody), {
+      walletId: 'w1',
+      payload: { nested: ['x', { y: true }] },
+      walletPassphrase: 'secret',
     });
   });
   it('express.v1.wallet.simplecreate', function () {

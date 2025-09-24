@@ -5,9 +5,9 @@ import 'should';
 import * as fs from 'fs';
 import { Request } from 'express';
 import { BitGo, Coin, BaseCoin, Wallet, Wallets } from 'bitgo';
-
 import '../../lib/asserts';
 import { handleV2OFCSignPayload, handleV2OFCSignPayloadInExtSigningMode } from '../../../src/clientRoutes';
+import { ExpressApiRouteRequest } from '../../../src/typedRoutes/api';
 
 describe('Sign an arbitrary payload with trading account key', function () {
   const coin = 'ofc';
@@ -53,8 +53,12 @@ describe('Sign an arbitrary payload with trading account key', function () {
         payload,
         walletId,
       },
+      decoded: {
+        payload,
+        walletId,
+      },
       query: {},
-    } as unknown as Request;
+    } as unknown as ExpressApiRouteRequest<'express.ofc.signPayload', 'post'>;
     await handleV2OFCSignPayload(req).should.be.resolvedWith(expectedResponse);
   });
   it('should return a signed payload with type as json string', async function () {
@@ -68,8 +72,12 @@ describe('Sign an arbitrary payload with trading account key', function () {
         payload: stringifiedPayload,
         walletId,
       },
+      decoded: {
+        payload,
+        walletId,
+      },
       query: {},
-    } as unknown as Request;
+    } as unknown as ExpressApiRouteRequest<'express.ofc.signPayload', 'post'>;
     await handleV2OFCSignPayload(req).should.be.resolvedWith(expectedResponse);
   });
 });
