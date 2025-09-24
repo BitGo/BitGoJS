@@ -363,8 +363,8 @@ describe('Dot Batch Transaction Builder', () => {
         const txJson = tx.toJson();
         should.deepEqual(txJson.batchCalls.length, rawTx.stake.batchAll.batch.length);
         should.deepEqual(txJson.batchCalls[0].callIndex, rawTx.stake.batchAll.batch[0].slice(0, 6));
-        // should.deepEqual(txJson.batchCalls[0].args?.value, 500000000000);
-        // should.deepEqual(txJson.batchCalls[0].args?.payee, { staked: null });
+        should.deepEqual(txJson.batchCalls[0].args?.value, 500000000000);
+        should.deepEqual(txJson.batchCalls[0].args?.payee, { staked: null });
         should.deepEqual(txJson.batchCalls[1].callIndex, rawTx.stake.batchAll.batch[1].slice(0, 6));
         should.deepEqual(txJson.batchCalls[1].args?.delegate, { id: accounts.stakingProxy.address });
         should.deepEqual(txJson.batchCalls[1].args?.proxy_type, ProxyType.STAKING);

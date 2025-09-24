@@ -219,7 +219,7 @@ describe('Dot Transaction', () => {
 
       // Add proxy storage fee
       should(tx.inputs[1].address).eql(accounts.account1.address);
-      should(tx.inputs[1].value).eql('10036500000'); // weird expecting 10036500000 instead of 1002050000000
+      should(tx.inputs[1].value).eql('10036500000');
       should(tx.inputs[1].coin).eql('tdot');
 
       should(tx.outputs).not.be.null();
@@ -232,7 +232,7 @@ describe('Dot Transaction', () => {
 
       // Add proxy storage fee
       should(tx.outputs[1].address).eql(accounts.stakingProxy.address);
-      should(tx.outputs[1].value).eql('10036500000'); // weird expecting 1002050000000 instead of 10036500000
+      should(tx.outputs[1].value).eql('10036500000');
       should(tx.outputs[1].coin).eql('tdot');
     });
 
@@ -250,7 +250,7 @@ describe('Dot Transaction', () => {
 
       // Remove proxy storage fee refund
       should(tx.inputs[0].address).eql(accounts.stakingProxy.address);
-      should(tx.inputs[0].value).eql('10036500000'); // weird expecting 10036500000 instead of 1002050000000
+      should(tx.inputs[0].value).eql('10036500000');
       should(tx.inputs[0].coin).eql('tdot');
 
       should(tx.outputs).not.be.null();
@@ -258,7 +258,7 @@ describe('Dot Transaction', () => {
 
       // Remove proxy storage fee refund
       should(tx.outputs[0].address).eql(accounts.account1.address);
-      should(tx.outputs[0].value).eql('10036500000'); // weird expecting 1002050000000 instead of 10036500000
+      should(tx.outputs[0].value).eql('10036500000');
       should(tx.outputs[0].coin).eql('tdot');
     });
 

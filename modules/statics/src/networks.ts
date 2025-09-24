@@ -527,7 +527,6 @@ class WestendAssetHub extends Testnet implements DotNetwork {
   explorerUrl = 'https://assethub-westend.subscan.io/extrinsic/';
   specName = 'westmint' as PolkadotSpecNameType;
   genesisHash = '0x67f9723393ef76214df0118c34bbbd3dbebc8ed46a10973a8c969d48fe7598c9';
-  // specVersion = 1018013;
   specVersion = 1020000;
   chainName = 'Westend Asset Hub';
   txVersion = 16;

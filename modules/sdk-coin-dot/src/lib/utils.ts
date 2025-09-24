@@ -255,14 +255,12 @@ export class Utils implements BaseUtils {
   getMaterial(coinConfig: Readonly<CoinConfig>): Material {
     const networkConfig = coinConfig.network as DotNetwork;
     const { specName, specVersion, chainName, txVersion, genesisHash } = networkConfig;
-    let metadataRpc = '';
+    let metadataRpc = mainnetMetadataRpc;
 
     if (specName === 'westend') {
       metadataRpc = westendMetadataRpc;
     } else if (specName === 'westmint') {
       metadataRpc = westendAssetHubMetadataRpc;
-    } else {
-      metadataRpc = mainnetMetadataRpc;
     }
 
     return {
