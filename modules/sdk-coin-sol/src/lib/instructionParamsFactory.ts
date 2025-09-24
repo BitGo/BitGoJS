@@ -578,7 +578,7 @@ type JitoUnstakingInstructions = UnstakingInstructions & {
 };
 
 function isJitoUnstakingInstructions(ui: UnstakingInstructions): ui is JitoUnstakingInstructions {
-  return ui.withdrawStake !== undefined;
+  return ui.withdrawStake !== undefined && ui.deactivate !== undefined;
 }
 
 type MarinadeUnstakingInstructions = UnstakingInstructions & {
@@ -595,7 +595,7 @@ type NativeUnstakingInstructions = UnstakingInstructions & {
 };
 
 function isNativeUnstakingInstructions(ui: UnstakingInstructions): ui is NativeUnstakingInstructions {
-  return ui.deactivate !== undefined;
+  return ui.withdrawStake === undefined && ui.deactivate !== undefined;
 }
 
 function getStakingTypeFromUnstakingInstructions(ui: UnstakingInstructions): SolStakingTypeEnum {
@@ -824,7 +824,6 @@ function validateUnstakingInstructions(unstakingInstructions: UnstakingInstructi
     'split',
     'deactivate',
     'transfer',
-    'withdrawStake',
   ] as const;
   if (unstakingInstructionsKeys.every((k) => !!unstakingInstructions[k] === (k === 'transfer'))) {
     return;
@@ -839,6 +838,11 @@ function validateUnstakingInstructions(unstakingInstructions: UnstakingInstructi
   // Cases where deactivate field must be present with another field
   if (!unstakingInstructions.deactivate) {
     throw new NotSupported('Invalid deactivate stake transaction, missing deactivate stake account instruction');
+  }
+
+  // This is a stake pool instruction, not a partial unstake
+  if (unstakingInstructions.withdrawStake) {
+    return;
   }
 
   if (!unstakingInstructions.allocate) {

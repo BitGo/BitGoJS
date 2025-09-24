@@ -171,7 +171,7 @@ describe('Sol Staking Activate Builder', () => {
           mintAddress: JITOSOL_MINT_ADDRESS,
           ownerAddress: wallet.pub,
           payerAddress: wallet.pub,
-          tokenName: 'tsol:jitosol',
+          tokenName: 'sol:jitosol',
         },
       });
     }

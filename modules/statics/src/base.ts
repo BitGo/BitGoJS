@@ -1074,6 +1074,8 @@ export enum UnderlyingAsset {
   'tsol:usdt' = 'tsol:usdt',
   'tsol:srm' = 'tsol:srm',
   'tsol:gari' = 'tsol:gari',
+  'tsol:t22mint' = 'tsol:t22mint',
+  'tsol:t1test' = 'tsol:t1test',
   GAS = 'gas',
   GATE = 'gate',
   GBPT = 'gbpt',
@@ -2129,6 +2131,10 @@ export enum UnderlyingAsset {
   'eth:seda' = 'eth:seda',
   'eth:enso' = 'eth:enso',
   'eth:hpp' = 'eth:hpp',
+  'eth:six' = 'eth:six',
+  'eth:eden' = 'eth:eden',
+  'eth:xeden' = 'eth:xeden',
+  'eth:linea' = 'eth:linea',
 
   // Ondo Tokenized Assets
   'eth:qqqon' = 'qqqon',
@@ -2324,6 +2330,7 @@ export enum UnderlyingAsset {
   'avaxc:ticov2' = 'avaxc:ticov2',
   'avaxc:nxpc' = 'avaxc:nxpc',
   'avaxc:spxux' = 'avaxc:spxux',
+  'avaxc:stavax' = 'avaxc:stavax',
   'tavaxc:opm' = 'tavaxc:opm',
   'tavaxc:cop2peq' = 'tavaxc:cop2peq',
   'tavaxc:xsgd' = 'tavaxc:xsgd',
@@ -2509,6 +2516,7 @@ export enum UnderlyingAsset {
   'polygon:naka' = 'polygon:naka',
   'polygon:xusd' = 'polygon:xusd',
   'polygon:txusd' = 'polygon:txusd',
+  'polygon:zig' = 'polygon:zig',
   // Polygon NFTs
   // generic NFTs
   'erc721:polygontoken' = 'erc721:polygontoken',
@@ -2662,6 +2670,12 @@ export enum UnderlyingAsset {
   'bsc:slay' = 'bsc:slay',
   'bsc:prove' = 'bsc:prove',
   'bsc:rekt' = 'bsc:rekt',
+  'bsc:zig' = 'bsc:zig',
+  'bsc:eden' = 'bsc:eden',
+  'bsc:m' = 'bsc:m',
+  'bsc:cashplus' = 'bsc:cashplus',
+  'bsc:aster' = 'bsc:aster',
+
   // BSC NFTs
   // generic NFTs
   'erc721:bsctoken' = 'erc721:bsctoken',
@@ -2743,9 +2757,33 @@ export enum UnderlyingAsset {
 
   // BaseETH mainnet tokens
   'baseeth:aero' = 'baseeth:aero',
+  'baseeth:icnt' = 'baseeth:icnt',
+  'baseeth:morpho' = 'baseeth:morpho',
+  'baseeth:weth' = 'baseeth:weth',
+  'baseeth:usdc' = 'baseeth:usdc',
+  'baseeth:wbtc' = 'baseeth:wbtc',
+  'baseeth:usde' = 'baseeth:usde',
+  'baseeth:trust' = 'baseeth:trust',
+  'baseeth:flk' = 'baseeth:flk',
 
   // BaseETH testnet tokens
   'tbaseeth:usdc' = 'tbaseeth:usdc',
+
+  // Seievm mainnet tokens
+  'seievm:usdc' = 'seievm:usdc',
+  'seievm:weth' = 'seievm:weth',
+  'seievm:wbtc' = 'seievm:wbtc',
+  'seievm:usd0' = 'seievm:usd0',
+
+  //Linea mainnet tokens
+  'lineaeth:linea' = 'lineaeth:linea',
+  'lineaeth:usdt' = 'lineaeth:usdt',
+  'lineaeth:usdc' = 'lineaeth:usdc',
+
+  // Flow mainnet tokens
+  'flow:weth' = 'flow:weth',
+  'flow:usdf' = 'flow:usdf',
+  'flow:wflow' = 'flow:wflow',
 
   // Arbitrum testnet tokens
   'tarbeth:link' = 'tarbeth:link',
@@ -2918,7 +2956,6 @@ export enum UnderlyingAsset {
   'sol:ens' = 'sol:ens',
   'sol:enron' = 'sol:enron',
   'sol:jitosol' = 'sol:jitosol',
-  'tsol:jitosol' = 'tsol:jitosol',
   'sol:zeus' = 'sol:zeus',
   'sol:kmno' = 'sol:kmno',
   'sol:giga' = 'sol:giga',
@@ -2992,6 +3029,10 @@ export enum UnderlyingAsset {
   'sol:cipher' = 'sol:cipher',
   'sol:bio' = 'sol:bio',
   'sol:rekt' = 'sol:rekt',
+  'sol:xyo' = 'sol:xyo',
+  'sol:zig' = 'sol:zig',
+  'tsol:txsgd' = 'sol:txsgd',
+  'tsol:txusd' = 'sol:txusd',
   // TRX tokens
   'trx:htx' = 'trx:htx',
   'trx:jst' = 'trx:jst',
@@ -3049,6 +3090,7 @@ export enum UnderlyingAsset {
   'tsui:wal' = 'tsui:wal',
 
   // Apt tokens
+  'apt:usd1' = 'apt:usd1',
   'apt:usdt' = 'apt:usdt',
   'apt:usdc' = 'apt:usdc',
   'apt:pact' = 'apt:pact',
@@ -3060,6 +3102,7 @@ export enum UnderlyingAsset {
 
   // Apt testnet tokens
   'tapt:stgusd1' = 'tapt:stgusd1',
+  'tapt:usd1' = 'tapt:usd1',
   'tapt:usdt' = 'tapt:usdt',
 
   // Apt testnet NFT collections

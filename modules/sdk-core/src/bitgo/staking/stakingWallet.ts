@@ -182,6 +182,10 @@ export class StakingWallet implements IStakingWallet {
     );
   }
 
+  private isTrxStaking(transaction: StakingTransaction) {
+    return this.wallet.baseCoin.getFamily() === 'trx';
+  }
+
   /**
    * Sign the staking transaction
    * @param signOptions
@@ -278,8 +282,11 @@ export class StakingWallet implements IStakingWallet {
     const builtTx = await this.build(transaction);
     // default to verifying a transaction unless explicitly skipped
     // skipping the verification for btc undelegate because it is just single sig
+    // TODO: SC-3183 (add trx staking verification)
     const skipVerification =
-      (signOptions.transactionVerificationOptions?.skipTransactionVerification || this.isBtcUndelegate(transaction)) ??
+      (signOptions.transactionVerificationOptions?.skipTransactionVerification ||
+        this.isBtcUndelegate(transaction) ||
+        this.isTrxStaking(transaction)) ??
       false;
     if (!isStakingTxRequestPrebuildResult(builtTx.result) && !skipVerification) {
       await this.validateBuiltStakingTransaction(builtTx.transaction, builtTx);

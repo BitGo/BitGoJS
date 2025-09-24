@@ -11,7 +11,7 @@ import { common, generateGPGKeyPair } from '@bitgo/sdk-core';
 import { bip32, ECPair } from '@bitgo/utxo-lib';
 import * as _ from 'lodash';
 import * as BitGoJS from '../../src/index';
-const rp = require('request-promise');
+import axios from 'axios';
 
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../src/bitgo';
@@ -473,27 +473,26 @@ describe('BitGo Prototype Methods', function () {
           timestamp: '1521590532925',
         });
 
-      const responseData = (await rp({
-        uri: url,
-        method: 'GET',
+      const response = await axios.get(url, {
         headers: requestHeaders,
-        transform: (body, response) => {
-          // verify the response headers
-          const url = response.request.href;
-          const hmac = response.headers.hmac;
-          const timestamp = response.headers.timestamp;
-          const statusCode = response.statusCode;
-          const verificationParams = {
-            url,
-            hmac,
-            timestamp,
-            token,
-            statusCode,
-            text: body,
-          };
-          return bitgo.verifyResponse(verificationParams);
-        },
-      })) as any;
+        transformResponse: [],
+      });
+
+      const finalUrl = response.request.responseURL || url;
+      const hmac = response.headers.hmac;
+      const timestamp = response.headers.timestamp;
+      const statusCode = response.status;
+
+      const verificationParams = {
+        url: finalUrl,
+        hmac,
+        timestamp,
+        token,
+        statusCode,
+        text: response.data,
+      };
+
+      const responseData = bitgo.verifyResponse(verificationParams) as any;
       responseData.signatureSubject.should.equal(
         '1521590532925|/api/v2/tltc/wallet/5941b202b42fcbc707170d5b597491d9/address/QNc4RFAcbvqmtrR1kR2wbGLCx6tEvojFYE?segwit=1|200|{"id":"5a7ca8bcaf52c8e807c575fb692609ec","address":"QNc4RFAcbvqmtrR1kR2wbGLCx6tEvojFYE","chain":0,"index":2,"coin":"tltc","wallet":"5941b202b42fcbc707170d5b597491d9","coinSpecific":{"redeemScript":"522102835bcfd130f7a56f72c905b782d90b66e22f88ad3309cf72af5138a7d44be8b3210322c7f42a1eb212868eab78db7ba64846075d98c7f4c7aa25a02e57871039e0cd210265825be0d5bf957fb72abd7c23bf0836a78a15f951a073467cd5c99e03ce7ab753ae"},"balance":{"updated":"2018-02-28T23:48:07.341Z","numTx":1,"numUnspents":1,"totalReceived":20000000}}'
       );

@@ -7799,7 +7799,8 @@ export const erc20Coins = [
     'GATENet',
     18,
     '0x9d7630adf7ab0b0cb00af747db76864df0ec82e4',
-    UnderlyingAsset.GATE
+    UnderlyingAsset.GATE,
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'e173c7c3-106b-4572-9c6c-e56c2f06c9c4',
@@ -11534,7 +11535,8 @@ export const erc20Coins = [
     'Vision',
     18,
     '0x699ccf919c1dfdfa4c374292f42cadc9899bf753',
-    UnderlyingAsset['eth:vsn']
+    UnderlyingAsset['eth:vsn'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'c51774c4-c9fd-4cfc-886e-36e084ce7b48',
@@ -11550,7 +11552,8 @@ export const erc20Coins = [
     'SatLayer',
     6,
     '0x51477a3002ee04b7542adfe63ccdb50c00ee5147',
-    UnderlyingAsset['eth:slay']
+    UnderlyingAsset['eth:slay'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '0eb44459-7e38-4974-8847-e2fa8a510478',
@@ -13431,5 +13434,37 @@ export const erc20Coins = [
     18,
     '0x2816169a49953c548bfeb3948dcf05c4a0e4657d',
     UnderlyingAsset['eth:melion']
+  ),
+  erc20(
+    '6e7f1a86-e938-42ed-afe8-b58364a7f498',
+    'eth:six',
+    'SIX Token',
+    18,
+    '0x61c6ebf443ad613c9648762585b3cfd3ba1f3fa8',
+    UnderlyingAsset['eth:six']
+  ),
+  erc20(
+    '8769e8e2-7a34-465b-815d-4afe1b05746c',
+    'eth:eden',
+    'OpenEden',
+    18,
+    '0x24a3d725c37a8d1a66eb87f0e5d07fe67c120035',
+    UnderlyingAsset['eth:eden']
+  ),
+  erc20(
+    'ef73881d-b94d-45e1-884f-1409e3b1a10e',
+    'eth:xeden',
+    'Staked EDEN',
+    18,
+    '0x7e6c274e9f57b0f052647c37084d372ed665af23',
+    UnderlyingAsset['eth:xeden']
+  ),
+  erc20(
+    '6cf912d4-ea34-4e06-8a76-9a8067e826c6',
+    'eth:linea',
+    'Linea',
+    18,
+    '0x1789e0043623282d5dcc7f213d703c6d8bafbb04',
+    UnderlyingAsset['eth:linea']
   ),
 ];

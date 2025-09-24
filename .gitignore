@@ -18,3 +18,4 @@ modules/**/pack-scoped/
 coverage
 /.direnv/
 .claude/
+scripts/cache/

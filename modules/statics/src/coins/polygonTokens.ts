@@ -1081,6 +1081,16 @@ export const polygonTokens = [
     UnderlyingAsset['polygon:xusd'],
     [...POLYGON_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
+  polygonErc20(
+    '6a38b826-9dc8-4776-b489-d0949a2e4fb4',
+    'polygon:zig',
+    'ZIGChain',
+    18,
+    '0x7bebd226154e865954a87650faefa8f485d36081',
+    UnderlyingAsset['polygon:xusd'],
+    POLYGON_TOKEN_FEATURES
+  ),
+
   // testnet polygon tokens
   tpolygonErc20(
     '09ba76d0-331e-4b75-bb75-739285c3e03a',

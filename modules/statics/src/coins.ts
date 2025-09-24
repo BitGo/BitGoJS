@@ -48,6 +48,9 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
     avaxc: avaxErc20,
     baseeth: erc20Token,
     bera: beraErc20,
+    flow: erc20Token,
+    lineaeth: erc20Token,
+    seievm: erc20Token,
     bsc: bscToken,
     celo: celoToken,
     cosmos: cosmosToken,
@@ -108,6 +111,9 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
     case 'baseeth':
     case 'bera':
     case 'bsc':
+    case 'flow':
+    case 'lineaeth':
+    case 'seievm':
     case 'celo':
     case 'eth':
     case 'opeth':

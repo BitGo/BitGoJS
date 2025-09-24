@@ -4392,6 +4392,16 @@ export const tOfcErc20Coins = [
     18,
     underlyingAssetForSymbol('eth:sbeton')
   ),
+  ofcerc20('5994291e-2d1b-4334-b7ae-0e361be85503', 'ofceth:six', 'SIX Token', 18, underlyingAssetForSymbol('eth:six')),
+  ofcerc20('5cbbbf49-81ba-44cb-b317-05e2b5489ec3', 'ofceth:eden', 'OpenEden', 18, underlyingAssetForSymbol('eth:eden')),
+  ofcerc20(
+    'cbc6cf70-7f40-46e1-bbe9-86e181714da8',
+    'ofceth:xeden',
+    'Staked Eden',
+    18,
+    underlyingAssetForSymbol('eth:xeden')
+  ),
+  ofcerc20('40a579f5-f630-4898-82de-9fc3fd555747', 'ofceth:linea', 'linea', 18, underlyingAssetForSymbol('eth:linea')),
 ];
 
 function underlyingAssetForSymbol(underlyingAssetValue: string): UnderlyingAsset {
