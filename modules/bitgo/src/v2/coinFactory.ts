@@ -663,6 +663,8 @@ export function getCoinConstructor(coinName: string): CoinConstructor | undefine
       return Initia.createInstance;
     case 'injective':
       return Injective.createInstance;
+    case 'iota':
+      return Iota.createInstance;
     case 'islm':
       return Islm.createInstance;
     case 'near':
@@ -789,6 +791,8 @@ export function getCoinConstructor(coinName: string): CoinConstructor | undefine
       return Tinitia.createInstance;
     case 'tinjective':
       return Tinjective.createInstance;
+    case 'tiota':
+      return Iota.createInstance;
     case 'tislm':
       return Tislm.createInstance;
     case 'tlnbtc':
