@@ -8,6 +8,7 @@ import { BitGo, Coin, BaseCoin, Wallet, Wallets } from 'bitgo';
 import '../../lib/asserts';
 import { handleV2OFCSignPayload, handleV2OFCSignPayloadInExtSigningMode } from '../../../src/clientRoutes';
 import { ExpressApiRouteRequest } from '../../../src/typedRoutes/api';
+import { OfcSignPayloadResponse } from '../../../src/typedRoutes/api/v2/ofcSignPayload';
 
 describe('Sign an arbitrary payload with trading account key', function () {
   const coin = 'ofc';
@@ -23,7 +24,7 @@ describe('Sign an arbitrary payload with trading account key', function () {
   const walletId = 'myWalletId';
 
   const walletStub = sinon.createStubInstance(Wallet as any, {
-    id: walletId,
+    id: sinon.stub().returns(walletId),
     coin: sinon.stub().returns(coin),
     toTradingAccount: sinon.stub().returns({
       signPayload: sinon.stub().returns(signature),
@@ -49,13 +50,9 @@ describe('Sign an arbitrary payload with trading account key', function () {
     };
     const req = {
       bitgo: bitGoStub,
-      body: {
-        payload,
-        walletId,
-      },
       decoded: {
-        payload,
         walletId,
+        payload,
       },
       query: {},
     } as unknown as ExpressApiRouteRequest<'express.ofc.signPayload', 'post'>;
@@ -79,6 +76,23 @@ describe('Sign an arbitrary payload with trading account key', function () {
       query: {},
     } as unknown as ExpressApiRouteRequest<'express.ofc.signPayload', 'post'>;
     await handleV2OFCSignPayload(req).should.be.resolvedWith(expectedResponse);
+  });
+
+  it('should decode handler response with OfcSignPayloadResponse codec', async function () {
+    const expected = {
+      payload: JSON.stringify(payload),
+      signature,
+    };
+    const req = {
+      bitgo: bitGoStub,
+      decoded: {
+        walletId,
+        payload,
+      },
+    } as unknown as ExpressApiRouteRequest<'express.ofc.signPayload', 'post'>;
+    const result = await handleV2OFCSignPayload(req);
+    result.should.eql(expected);
+    OfcSignPayloadResponse[200].is(result).should.be.true();
   });
 });
 
