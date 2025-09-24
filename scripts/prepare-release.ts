@@ -15,9 +15,12 @@ import path from 'path';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 
-import { getLernaModules, validateReleaseTransformations } from './prepareRelease';
-import { replacePackageScopes } from './prepareRelease/mutateScope';
-import { incrementVersions } from './prepareRelease/incrementVersions';
+import {
+  getLernaModules,
+  validateReleaseTransformations,
+  replacePackageScopes,
+  incrementVersions,
+} from './prepareRelease';
 
 export const uninitializedModules = process.env.UNINITIALIZED_MODULES
   ? process.env.UNINITIALIZED_MODULES.split(',')
