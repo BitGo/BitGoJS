@@ -31,7 +31,7 @@
     "https-browserify": "^1.0.0",
     "husky": "^8.0.1",
     "improved-yarn-audit": "^3.0.0",
-    "lerna": "^5.5.0",
+    "lerna": "^6.6.2",
     "lint-staged": "^12.4.1",
     "make-dir": "^3.1.0",
     "mocha": "10.6.0",
