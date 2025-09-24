@@ -26,7 +26,7 @@ jobs:
           node-version-file: .nvmrc
 
       - name: Install BitGoJS
-        run: yarn install --with-frozen-lockfile
+        run: yarn install --with-frozen-lockfile --ignore-scripts
 
       - name: Set Environment Variable for Alpha
         if: github.ref != 'refs/heads/master' # only publish changes if on feature branches

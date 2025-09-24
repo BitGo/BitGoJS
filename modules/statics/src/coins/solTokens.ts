@@ -3035,7 +3035,7 @@ export const solTokens = [
     'DYNoyS3x5qgbccZg7RPXagm4xQzfnm5iwd9o8pMyJtdE',
     'DYNoyS3x5qgbccZg7RPXagm4xQzfnm5iwd9o8pMyJtdE',
     UnderlyingAsset['sol:dynosol'],
-    SOL_TOKEN_FEATURES
+    SOL_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   solToken(
     '51983e8f-8218-49d4-a2b4-6a6e6b147b36',
@@ -3164,7 +3164,18 @@ export const solTokens = [
     9,
     '5NR1bQwLWqjbkhbQ1hx72HKJybbuvwkDnUZNoAZ2VhW6',
     '5NR1bQwLWqjbkhbQ1hx72HKJybbuvwkDnUZNoAZ2VhW6',
-    UnderlyingAsset['tsol:slnd'],
+    UnderlyingAsset['tsol:t22mint'],
+    SOL_TOKEN_FEATURES,
+    ProgramID.Token2022ProgramId
+  ),
+  tsolToken(
+    '50a59f79-033b-4bd0-aae1-49270f97cae2',
+    'tsol:t1test',
+    'T1TEST',
+    9,
+    '3BW95VLH2za2eUQ1PGfjxwMbpsnDFnmkA7m5LDgMKbX7',
+    '3BW95VLH2za2eUQ1PGfjxwMbpsnDFnmkA7m5LDgMKbX7',
+    UnderlyingAsset['tsol:t1test'],
     SOL_TOKEN_FEATURES,
     ProgramID.Token2022ProgramId
   ),

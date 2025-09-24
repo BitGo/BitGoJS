@@ -1309,7 +1309,7 @@ export const bscTokens = [
     6,
     '0xfc5a743271672e91d77f0176e5cea581fbd5d834',
     UnderlyingAsset['bsc:slay'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   bscToken(
     'de4424d5-b119-4220-899f-a48727c58a80',
@@ -1390,6 +1390,15 @@ export const bscTokens = [
     18,
     '0x1775504c5873e179ea2f8abfce3861ec74d159bc',
     UnderlyingAsset['bsc:cashplus'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
+    '9f5765c8-1bfa-4dca-b239-0ac0ba38147d',
+    'bsc:aster',
+    'Aster',
+    18,
+    '0x000ae314e2a2172a039b26378814c252734f556a',
+    UnderlyingAsset['bsc:aster'],
     BSC_TOKEN_FEATURES
   ),
 ];

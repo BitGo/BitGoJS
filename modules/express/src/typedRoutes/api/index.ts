@@ -8,10 +8,12 @@ import { PostLogin } from './common/login';
 import { PostDecrypt } from './common/decrypt';
 import { PostEncrypt } from './common/encrypt';
 import { PostVerifyAddress } from './common/verifyAddress';
+import { PostCalculateMinerFeeInfo } from './common/calculateMinerFeeInfo';
 import { PostAcceptShare } from './v1/acceptShare';
 import { PostSimpleCreate } from './v1/simpleCreate';
 import { PutPendingApproval } from './v1/pendingApproval';
 import { PostSignTransaction } from './v1/signTransaction';
+import { PostKeychainLocal } from './v2/keychainLocal';
 import { PostLightningInitWallet } from './v2/lightningInitWallet';
 import { PostUnlockLightningWallet } from './v2/unlockWallet';
 import { PostVerifyCoinAddress } from './v2/verifyAddress';
@@ -48,6 +50,9 @@ export const ExpressApi = apiSpec({
   'express.v1.wallet.signTransaction': {
     post: PostSignTransaction,
   },
+  'express.keychain.local': {
+    post: PostKeychainLocal,
+  },
   'express.lightning.initWallet': {
     post: PostLightningInitWallet,
   },
@@ -59,6 +64,9 @@ export const ExpressApi = apiSpec({
   },
   'express.wallet.update': {
     put: PutExpressWalletUpdate,
+  },
+  'express.calculateminerfeeinfo': {
+    post: PostCalculateMinerFeeInfo,
   },
 });
 
