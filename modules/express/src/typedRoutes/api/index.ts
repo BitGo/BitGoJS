@@ -8,6 +8,7 @@ import { PostLogin } from './common/login';
 import { PostDecrypt } from './common/decrypt';
 import { PostEncrypt } from './common/encrypt';
 import { PostVerifyAddress } from './common/verifyAddress';
+import { PostCalculateMinerFeeInfo } from './common/calculateMinerFeeInfo';
 import { PostAcceptShare } from './v1/acceptShare';
 import { PostSimpleCreate } from './v1/simpleCreate';
 import { PutPendingApproval } from './v1/pendingApproval';
@@ -51,6 +52,9 @@ export const ExpressApi = apiSpec({
   },
   'express.verifycoinaddress': {
     post: PostVerifyCoinAddress,
+  },
+  'express.calculateminerfeeinfo': {
+    post: PostCalculateMinerFeeInfo,
   },
 });
 
