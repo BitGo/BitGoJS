@@ -1184,7 +1184,7 @@ const getFormattedJettonTokens = (customCoinMap = coins) =>
 export const getFormattedTokens = (coinMap = coins): Tokens => {
   const formattedAptNFTCollections = getFormattedAptNFTCollections(coinMap);
   const formattedVetNFTCollections = getFormattedVetNFTCollections(coinMap);
-  return {
+  const result = {
     bitcoin: {
       eth: {
         tokens: getFormattedErc20Tokens(coinMap).filter((token) => token.network === 'Mainnet'),
@@ -1418,6 +1418,8 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
       },
     },
   };
+  console.log('Formatted tokens: ', result);
+  return result;
 };
 
 /**
