@@ -502,6 +502,30 @@ describe('Hedera Hashgraph:', function () {
   });
 
   describe('Verify Token Enablement Transaction:', () => {
+    let walletObj: Wallet;
+
+    before(function () {
+      const walletData = {
+        id: '5b34252f1bf34993006eae96',
+        users: [
+          {
+            user: '543c11ed356d00cb7600000b98794503',
+            permissions: 'admin',
+          },
+        ],
+        coin: 'thbar',
+        label: 'test wallet',
+        m: 2,
+        n: 3,
+        keys: ['5b3424f91bf34993006eae94', '5b3424f91bf34993006eae95', '5b3424f91bf34993006eae96'],
+        tags: ['5b34252f1bf34993006eae96'],
+        freeze: {},
+        disableTransactionNotifications: false,
+        multisigType: 'onchain',
+      };
+      walletObj = new Wallet(bitgo, basecoin, walletData);
+    });
+
     it('should verify a valid token enablement transaction with tokenName', async function () {
       const txHex = TestData.UNSIGNED_TOKEN_ASSOCIATE;
       const expectedToken = { tokenName: 'thbar:usdc' };
@@ -530,6 +554,65 @@ describe('Hedera Hashgraph:', function () {
       await basecoin
         .verifyTokenEnablementTransaction(TestData.UNSIGNED_TOKEN_ASSOCIATE, { tokenName: 'thbar:usdc' }, '')
         .should.be.rejectedWith('Missing required parameters: expectedAccountId');
+    });
+
+    it('should fail when wallet platform sends spoofed transaction hex for token enablement', async function () {
+      // Create a valid transaction response structure from wallet platform with spoofed txHex
+      // The txHex looks like valid hex but contains malicious/invalid transaction data
+      const spoofedTxHex = '0a0c0a080800100018a8fb0410130a0c0a080800100018d5d0041014'; // Valid hex but invalid transaction
+
+      // Mock the wallet's sendTokenEnablements to return a valid-looking response with spoofed txHex
+      const sendTokenEnablementsStub = Sinon.stub(walletObj, 'sendTokenEnablements').resolves({
+        success: [
+          {
+            txHex: spoofedTxHex,
+            txid: '586c5b59b10b134d04c16ac1b273fe3c5529f34aef75db4456cd469c5cdac7e2',
+            recipients: [
+              {
+                address: '0.0.81320',
+                amount: '0', // Valid amount for token enablement
+              },
+            ],
+            coin: 'thbar',
+            feeInfo: {
+              size: 1000,
+              fee: 1160407,
+              feeRate: 1160407,
+            },
+          },
+        ],
+        failure: [],
+      });
+
+      // This should fail because the spoofed transaction hex contains invalid transaction data
+      // The verification logic should catch this when trying to validate the transaction
+      await assert.rejects(
+        async () => {
+          const response = await walletObj.sendTokenEnablements({
+            enableTokens: [
+              {
+                name: 'thbar:usdc',
+                address: '0.0.81320',
+              },
+            ],
+          });
+
+          // Now verify the transaction - this should fail with spoofed txHex
+          await basecoin.verifyTokenEnablementTransaction(
+            response.success[0].txHex,
+            { tokenName: 'thbar:usdc' },
+            '0.0.81320'
+          );
+        },
+        (error: any) => {
+          // The error should indicate that the transaction is invalid
+          return error.message.includes('Invalid token enablement transaction');
+        }
+      );
+
+      // Verify the stub was called
+      sendTokenEnablementsStub.calledOnce.should.be.true();
+      sendTokenEnablementsStub.restore();
     });
 
     it('should fail when both tokenId and tokenName are missing', async function () {
