@@ -5,10 +5,10 @@ import { btcBackupKey } from './fixtures';
 import { type TestBitGoAPI, TestBitGo } from '@bitgo/sdk-test';
 
 import { Tbtc } from '../../src';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { BitGoAPI, encrypt } from '@bitgo/sdk-api';
 import * as utxolib from '@bitgo/utxo-lib';
 
-const { getDefaultWalletKeys, toKeychainObjects } = require('../../../bitgo/test/v2/unit/coins/utxo/util/keychains');
+import { Wallet } from '@bitgo/sdk-core';
 
 describe('BTC:', () => {
   let bitgo: TestBitGoAPI;
@@ -120,14 +120,14 @@ describe('BTC:', () => {
     });
 
     it('should detect hex spoofing in BUILD_SIGN_SEND', async (): Promise<void> => {
-      const rootWalletKey = getDefaultWalletKeys();
-      const keysObj = toKeychainObjects(rootWalletKey, 'pass');
+      const keyTriple = utxolib.testutil.getKeyTriple('default');
+      const rootWalletKey = new utxolib.bitgo.RootWalletKeys(keyTriple);
+      const [user] = keyTriple;
 
-      const { Wallet } = await import('@bitgo/sdk-core');
       const wallet = new Wallet(bitgoTest, coin, {
         id: '5b34252f1bf349930e34020a',
         coin: 'tbtc',
-        keys: keysObj.map((k) => k.id),
+        keys: ['user', 'backup', 'bitgo'],
       });
 
       const originalPsbt = utxolib.testutil.constructPsbt(
@@ -138,7 +138,6 @@ describe('BTC:', () => {
         'unsigned' as const
       );
       utxolib.bitgo.addXpubsToPsbt(originalPsbt, rootWalletKey);
-
       const spoofedPsbt = utxolib.testutil.constructPsbt(
         [{ scriptType: 'p2wsh' as const, value: BigInt(10000) }],
         [{ address: 'tb1pjgg9ty3s2ztp60v6lhgrw76f7hxydzuk9t9mjsndh3p2gf2ah7gs4850kn', value: BigInt(9000) }],
@@ -165,7 +164,15 @@ describe('BTC:', () => {
           return [200, { txid: 'test-txid-123', status: 'signed' }];
         });
 
-      keysObj.forEach((k, i) => nock(bgUrl).get(`/api/v2/${wallet.coin()}/key/${wallet.keyIds()[i]}`).reply(200, k));
+      const pubs = keyTriple.map((k) => k.neutered().toBase58());
+      const responses = [
+        { pub: pubs[0], encryptedPrv: encrypt('pass', user.toBase58()) },
+        { pub: pubs[1] },
+        { pub: pubs[2] },
+      ];
+      wallet
+        .keyIds()
+        .forEach((id, i) => nock(bgUrl).get(`/api/v2/${wallet.coin()}/key/${id}`).reply(200, responses[i]));
 
       await assert.rejects(
         wallet.consolidateUnspents({ walletPassphrase: 'pass' }),
@@ -187,14 +194,14 @@ describe('BTC:', () => {
     });
 
     it('should detect hex spoofing in fanout BUILD_SIGN_SEND', async (): Promise<void> => {
-      const rootWalletKey = getDefaultWalletKeys();
-      const keysObj = toKeychainObjects(rootWalletKey, 'pass');
+      const keyTriple = utxolib.testutil.getKeyTriple('default');
+      const rootWalletKey = new utxolib.bitgo.RootWalletKeys(keyTriple);
+      const [user] = keyTriple;
 
-      const { Wallet } = await import('@bitgo/sdk-core');
       const wallet = new Wallet(bitgoTest, coin, {
         id: '5b34252f1bf349930e34020a',
         coin: 'tbtc',
-        keys: keysObj.map((k) => k.id),
+        keys: ['user', 'backup', 'bitgo'],
       });
 
       const originalPsbt = utxolib.testutil.constructPsbt(
@@ -232,7 +239,15 @@ describe('BTC:', () => {
           return [200, { txid: 'test-txid-123', status: 'signed' }];
         });
 
-      keysObj.forEach((k, i) => nock(bgUrl).get(`/api/v2/${wallet.coin()}/key/${wallet.keyIds()[i]}`).reply(200, k));
+      const pubs = keyTriple.map((k) => k.neutered().toBase58());
+      const responses = [
+        { pub: pubs[0], encryptedPrv: encrypt('pass', user.toBase58()) },
+        { pub: pubs[1] },
+        { pub: pubs[2] },
+      ];
+      wallet
+        .keyIds()
+        .forEach((id, i) => nock(bgUrl).get(`/api/v2/${wallet.coin()}/key/${id}`).reply(200, responses[i]));
 
       await assert.rejects(
         wallet.fanoutUnspents({ walletPassphrase: 'pass' }),
