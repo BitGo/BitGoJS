@@ -52,6 +52,9 @@ export const ExpressApi = apiSpec({
   'express.keychain.local': {
     post: PostKeychainLocal,
   },
+  'express.ofc.signPayload': {
+    post: PostOfcSignPayload,
+  },
   'express.lightning.initWallet': {
     post: PostLightningInitWallet,
   },
@@ -60,9 +63,6 @@ export const ExpressApi = apiSpec({
   },
   'express.calculateminerfeeinfo': {
     post: PostCalculateMinerFeeInfo,
-  },
-  'express.ofc.signPayload': {
-    post: PostOfcSignPayload,
   },
 });
 

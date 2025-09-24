@@ -99,6 +99,38 @@ describe('io-ts decode tests', function () {
       address: 'some-address',
     });
   });
+  it('express.ofc.signPayload', function () {
+    // missing walletId
+    assert.throws(() =>
+      assertDecode(t.type(OfcSignPayloadBody), {
+        payload: { a: 1 },
+      })
+    );
+    // empty walletId
+    assert.throws(() =>
+      assertDecode(t.type(OfcSignPayloadBody), {
+        walletId: '',
+        payload: { a: 1 },
+      })
+    );
+    // missing payload
+    assert.throws(() =>
+      assertDecode(t.type(OfcSignPayloadBody), {
+        walletId: 'w1',
+      })
+    );
+    // valid minimal
+    assertDecode(t.type(OfcSignPayloadBody), {
+      walletId: 'w1',
+      payload: { a: 1 },
+    });
+    // valid with nested and optional passphrase
+    assertDecode(t.type(OfcSignPayloadBody), {
+      walletId: 'w1',
+      payload: { nested: ['x', { y: true }] },
+      walletPassphrase: 'secret',
+    });
+  });
   it('express.verifycoinaddress', function () {
     // invalid coin param type
     assert.throws(() =>

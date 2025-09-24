@@ -72,9 +72,7 @@ describe('Sign an arbitrary payload with trading account key', function () {
       },
       decoded: {
         payload,
-        walletId,
       },
-      query: {},
     } as unknown as ExpressApiRouteRequest<'express.ofc.signPayload', 'post'>;
 
     const res = await handleV2OFCSignPayload(req);
@@ -91,6 +89,10 @@ describe('Sign an arbitrary payload with trading account key', function () {
     };
     const req = {
       bitgo: bitGoStub,
+      body: {
+        walletId,
+        payload,
+      },
       decoded: {
         walletId,
         payload,
