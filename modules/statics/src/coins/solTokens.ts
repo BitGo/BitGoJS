@@ -3164,7 +3164,18 @@ export const solTokens = [
     9,
     '5NR1bQwLWqjbkhbQ1hx72HKJybbuvwkDnUZNoAZ2VhW6',
     '5NR1bQwLWqjbkhbQ1hx72HKJybbuvwkDnUZNoAZ2VhW6',
-    UnderlyingAsset['tsol:slnd'],
+    UnderlyingAsset['tsol:t22mint'],
+    SOL_TOKEN_FEATURES,
+    ProgramID.Token2022ProgramId
+  ),
+  tsolToken(
+    '50a59f79-033b-4bd0-aae1-49270f97cae2',
+    'tsol:t1test',
+    'T1TEST',
+    9,
+    '3BW95VLH2za2eUQ1PGfjxwMbpsnDFnmkA7m5LDgMKbX7',
+    '3BW95VLH2za2eUQ1PGfjxwMbpsnDFnmkA7m5LDgMKbX7',
+    UnderlyingAsset['tsol:t1test'],
     SOL_TOKEN_FEATURES,
     ProgramID.Token2022ProgramId
   ),
