@@ -297,7 +297,7 @@ function handleFanOutUnspents(req: express.Request) {
  * @deprecated
  * @param req
  */
-function handleCalculateMinerFeeInfo(req: express.Request) {
+function handleCalculateMinerFeeInfo(req: ExpressApiRouteRequest<'express.calculateminerfeeinfo', 'post'>) {
   return req.bitgo.calculateMinerFeeInfo({
     bitgo: req.bitgo,
     feeRate: req.body.feeRate,
@@ -1560,12 +1560,10 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   router.post('express.encrypt', [prepareBitGo(config), typedPromiseWrapper(handleEncrypt)]);
   router.post('express.verifyaddress', [prepareBitGo(config), typedPromiseWrapper(handleVerifyAddress)]);
   router.post('express.lightning.initWallet', [prepareBitGo(config), typedPromiseWrapper(handleInitLightningWallet)]);
-  app.post(
-    '/api/v[12]/calculateminerfeeinfo',
-    parseBody,
+  router.post('express.calculateminerfeeinfo', [
     prepareBitGo(config),
-    promiseWrapper(handleCalculateMinerFeeInfo)
-  );
+    typedPromiseWrapper(handleCalculateMinerFeeInfo),
+  ]);
 
   app.post('/api/v1/keychain/local', parseBody, prepareBitGo(config), promiseWrapper(handleCreateLocalKeyChain));
   app.post('/api/v1/keychain/derive', parseBody, prepareBitGo(config), promiseWrapper(handleDeriveLocalKeyChain));
