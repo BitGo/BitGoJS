@@ -39,6 +39,43 @@ import {
   Hbar as HbarUnit,
 } from '@hashgraph/sdk';
 import { PUBLIC_KEY_PREFIX } from './lib/keyPair';
+
+// Extended transaction data interface for raw transaction validation
+interface RawTransactionData {
+  id?: string;
+  hash?: string;
+  from?: string;
+  data?: string;
+  fee?: number;
+  startTime?: string;
+  validDuration?: string;
+  node?: string;
+  memo?: string;
+  to?: string;
+  amount?: string;
+  accountId?: string;
+  instructionsData?: {
+    type?: string;
+    accountId?: string;
+    owner?: string;
+    tokens?: string[];
+    tokenIds?: string[];
+    tokenId?: string;
+    params?: {
+      accountId?: string;
+      tokenNames?: string[];
+      recipients?: Array<{
+        address: string;
+        amount: string;
+        tokenName?: string;
+      }>;
+    };
+  };
+  // These are any[] because they're only used to verify existence, not to access contents
+  instructions?: any[];
+  innerInstructions?: any[];
+  scheduledTransactionBody?: any;
+}
 export interface HbarSignTransactionOptions extends SignTransactionOptions {
   txPrebuild: TransactionPrebuild;
   prv: string;
@@ -282,7 +319,7 @@ export class Hbar extends BaseCoin {
   }
 
   // Deep recursive scan for any transfers anywhere in the transaction
-  private validateNoTransfers(raw: any): void {
+  private validateNoTransfers(raw: RawTransactionData): void {
     if (this.hasAnyTransfers(raw)) {
       throw new Error('Transaction contains transfers; not a pure token enablement.');
     }
@@ -305,7 +342,11 @@ export class Hbar extends BaseCoin {
   }
 
   // Validate account ID matches in both explained and raw transaction data with normalization
-  private validateAccountIdMatches(ex: TransactionExplanation, raw: any, expectedAccountId: string): void {
+  private validateAccountIdMatches(
+    ex: TransactionExplanation,
+    raw: RawTransactionData,
+    expectedAccountId: string
+  ): void {
     // Only validate if outputs exist
     if (ex.outputs && ex.outputs.length > 0) {
       const out0 = ex.outputs[0];
@@ -323,7 +364,7 @@ export class Hbar extends BaseCoin {
   // Validate token enablement target with preference for tokenId over tokenName
   private validateTokenEnablementTarget(
     ex: TransactionExplanation,
-    raw: any,
+    raw: RawTransactionData,
     expected: { tokenId?: string; tokenName?: string }
   ): void {
     // Get tokens from raw transaction data
@@ -358,7 +399,7 @@ export class Hbar extends BaseCoin {
   }
 
   // Validate that this is a pure native token associate instruction with no additional operations
-  private validateAssociateInstructionOnly(raw: any): void {
+  private validateAssociateInstructionOnly(raw: RawTransactionData): void {
     const t = String(raw.instructionsData?.type || '').toLowerCase();
 
     // Explicitly reject ContractExecute/precompile routes first
@@ -384,10 +425,14 @@ export class Hbar extends BaseCoin {
     }
   }
 
-  async verifyTransaction(params: HbarVerifyTransactionOptions): Promise<boolean> {
+  async verifyTransaction({
+    txParams: txParams,
+    txPrebuild: txPrebuild,
+    memo: memo,
+    verification,
+  }: HbarVerifyTransactionOptions): Promise<boolean> {
     // asset name to transfer amount map
     const coinConfig = coins.get(this.getChain());
-    const { txParams: txParams, txPrebuild: txPrebuild, memo: memo } = params;
     const transaction = new Transaction(coinConfig);
     if (!txPrebuild.txHex) {
       throw new Error('missing required tx prebuild property txHex');
@@ -406,7 +451,7 @@ export class Hbar extends BaseCoin {
     }
 
     // for enabletoken, use verifyTokenEnablementTransaction and return immediately
-    if (txParams.type === 'enabletoken') {
+    if (txParams.type === 'enabletoken' && verification?.verifyTokenEnablement) {
       const r0 = txParams.recipients[0];
       const expectedToken: { tokenId?: string; tokenName?: string } = {};
 
