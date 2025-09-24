@@ -2674,6 +2674,7 @@ export enum UnderlyingAsset {
   'bsc:eden' = 'bsc:eden',
   'bsc:m' = 'bsc:m',
   'bsc:cashplus' = 'bsc:cashplus',
+  'bsc:aster' = 'bsc:aster',
 
   // BSC NFTs
   // generic NFTs
