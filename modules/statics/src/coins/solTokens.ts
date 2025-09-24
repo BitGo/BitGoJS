@@ -3035,7 +3035,7 @@ export const solTokens = [
     'DYNoyS3x5qgbccZg7RPXagm4xQzfnm5iwd9o8pMyJtdE',
     'DYNoyS3x5qgbccZg7RPXagm4xQzfnm5iwd9o8pMyJtdE',
     UnderlyingAsset['sol:dynosol'],
-    SOL_TOKEN_FEATURES
+    SOL_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   solToken(
     '51983e8f-8218-49d4-a2b4-6a6e6b147b36',
