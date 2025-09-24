@@ -222,4 +222,204 @@ describe('NEAR Token Enablement Validation', function () {
     // should pass validation and be processed successfully
     await basecoin.verifyTransaction(verifyOptions);
   });
+
+  /**
+   * TEST 6: Security Test - sendTokenEnablements with Spoofed TxHex
+   *
+   * This test simulates what happens when the wallet platform's sendTokenEnablements
+   * method receives a spoofed TxHex from a malicious actor. This test verifies that
+   * our validation catches the spoofed transaction and prevents the user from being tricked.
+   *
+   * The test simulates the flow where:
+   * 1. Wallet platform calls sendTokenEnablements
+   * 2. buildTokenEnablements returns a spoofed transaction hex
+   * 3. sendTokenEnablement calls verifyTransaction during signing
+   * 4. verifyTransaction detects the spoofed hex and throws an error
+   */
+  it('should throw error when sendTokenEnablements receives spoofed TxHex', async function () {
+    // Create a mock wallet that implements the sendTokenEnablements flow
+    const mockWallet = {
+      id: () => 'test-wallet',
+      bitgo: bitgo,
+      baseCoin: basecoin,
+
+      // Mock buildTokenEnablements to return a spoofed transaction hex
+      buildTokenEnablements: async (params: any) => {
+        return [
+          {
+            txHex: testData.rawTx.fungibleTokenTransfer.unsigned, // SPOOFED: This is a transfer, not storage deposit
+            key: 'test-key',
+            blockHash: 'test-block-hash',
+            nonce: BigInt(1),
+            txParams: {
+              type: 'enabletoken',
+              recipients: [
+                {
+                  address: testData.accounts.account1.address,
+                  amount: '0',
+                  tokenName: 'tnear:tnep24dp',
+                },
+              ],
+            },
+          },
+        ];
+      },
+
+      // Mock sendTokenEnablement to simulate the signing process with verification
+      sendTokenEnablement: async (params: any) => {
+        // This is where verifyTransaction would be called during signing
+        // The spoofed hex should cause verification to fail
+        const verifyOptions: VerifyTransactionOptions = {
+          txParams: params.txParams,
+          txPrebuild: params.prebuildTx,
+          wallet: mockWallet as any,
+        };
+
+        // This should throw an error because the hex is spoofed
+        await basecoin.verifyTransaction(verifyOptions);
+        return { success: true };
+      },
+
+      // Implement the actual sendTokenEnablements method
+      sendTokenEnablements: async (params: any) => {
+        const unsignedBuilds = await mockWallet.buildTokenEnablements(params);
+        const successfulTxs: any[] = [];
+        const failedTxs = new Array<Error>();
+
+        for (const unsignedBuild of unsignedBuilds) {
+          const unsignedBuildWithOptions = {
+            ...params,
+            prebuildTx: unsignedBuild,
+            txParams: unsignedBuild.txParams,
+          };
+          try {
+            const sendTx = await mockWallet.sendTokenEnablement(unsignedBuildWithOptions);
+            successfulTxs.push(sendTx);
+          } catch (e) {
+            failedTxs.push(e);
+          }
+        }
+
+        return {
+          success: successfulTxs,
+          failure: failedTxs,
+        };
+      },
+    };
+
+    // Create token enablement parameters
+    const enableTokensParams = {
+      enableTokens: [
+        {
+          name: 'tnear:tnep24dp',
+        },
+      ],
+    };
+
+    // Call sendTokenEnablements - this should fail because of the spoofed hex
+    const result = await mockWallet.sendTokenEnablements(enableTokensParams);
+
+    // The result should contain failures due to the spoofed transaction hex
+    result.success.should.have.length(0);
+    result.failure.should.have.length(1);
+    result.failure[0].message.should.containEql('Storage deposit amount not matching!');
+  });
+
+  /**
+   * TEST 7: Security Test - sendAccountConsolidations with Spoofed TxHex
+   *
+   * This test simulates what happens when the wallet platform's sendAccountConsolidations
+   * method receives a spoofed TxHex from a malicious actor. This test verifies that
+   * our validation catches the spoofed transaction and prevents the user from being tricked.
+   *
+   * The test simulates the flow where:
+   * 1. Wallet platform calls sendAccountConsolidations
+   * 2. buildAccountConsolidations returns a spoofed transaction hex
+   * 3. sendAccountConsolidation calls verifyTransaction during signing
+   * 4. verifyTransaction detects the spoofed hex and throws an error
+   */
+  it('should throw error when sendAccountConsolidations receives spoofed TxHex', async function () {
+    // Create a mock wallet that implements the sendAccountConsolidations flow
+    const mockWallet = {
+      id: () => 'test-wallet',
+      bitgo: bitgo,
+      baseCoin: basecoin,
+
+      // Mock buildAccountConsolidations to return a spoofed transaction hex
+      buildAccountConsolidations: async (params: any) => {
+        return [
+          {
+            txHex: testData.rawTx.fungibleTokenTransfer.unsigned, // SPOOFED: This is a transfer, not consolidation
+            key: 'test-key',
+            blockHash: 'test-block-hash',
+            nonce: BigInt(1),
+            txParams: {
+              type: 'consolidate',
+              recipients: [
+                {
+                  address: testData.accounts.account1.address,
+                  amount: '1000000',
+                },
+              ],
+            },
+          },
+        ];
+      },
+
+      // Mock sendAccountConsolidation to simulate the signing process with verification
+      sendAccountConsolidation: async (params: any) => {
+        // This is where verifyTransaction would be called during signing
+        // The spoofed hex should cause verification to fail
+        const verifyOptions: VerifyTransactionOptions = {
+          txParams: params.txParams,
+          txPrebuild: params.prebuildTx,
+          wallet: mockWallet as any,
+        };
+
+        // This should throw an error because the hex is spoofed
+        await basecoin.verifyTransaction(verifyOptions);
+        return { success: true };
+      },
+
+      // Implement the actual sendAccountConsolidations method
+      sendAccountConsolidations: async (params: any) => {
+        const unsignedBuilds = await mockWallet.buildAccountConsolidations(params);
+        const successfulTxs: any[] = [];
+        const failedTxs = new Array<Error>();
+
+        for (const unsignedBuild of unsignedBuilds) {
+          const unsignedBuildWithOptions = {
+            ...params,
+            prebuildTx: unsignedBuild,
+            txParams: unsignedBuild.txParams,
+          };
+          try {
+            const sendTx = await mockWallet.sendAccountConsolidation(unsignedBuildWithOptions);
+            successfulTxs.push(sendTx);
+          } catch (e) {
+            failedTxs.push(e);
+          }
+        }
+
+        return {
+          success: successfulTxs,
+          failure: failedTxs,
+        };
+      },
+    };
+
+    // Create account consolidation parameters
+    const consolidationParams = {
+      consolidateAddresses: [testData.accounts.account2.address],
+    };
+
+    // Call sendAccountConsolidations - this should fail because of the spoofed hex
+    const result = await mockWallet.sendAccountConsolidations(consolidationParams);
+
+    // The result should contain failures due to the spoofed transaction hex
+    result.success.should.have.length(0);
+    result.failure.should.have.length(1);
+    // The error should be related to transaction output mismatch since it's a different transaction type
+    result.failure[0].message.should.containEql('Tx outputs does not match with expected txParams recipients');
+  });
 });
