@@ -60,6 +60,9 @@ jobs:
         if: steps.lerna-cache.outputs.cache-hit != 'true' || contains( github.event.pull_request.labels.*.name, 'SKIP_CACHE')
         run: yarn install --with-frozen-lockfile --ignore-scripts
 
+      - name: Check In-Repo Package Versions
+        run: yarn run check-versions
+
       - name: build packages
         env:
           # Workaround for https://github.com/nodejs/node/issues/51555
