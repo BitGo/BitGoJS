@@ -2756,9 +2756,33 @@ export enum UnderlyingAsset {
 
   // BaseETH mainnet tokens
   'baseeth:aero' = 'baseeth:aero',
+  'baseeth:icnt' = 'baseeth:icnt',
+  'baseeth:morpho' = 'baseeth:morpho',
+  'baseeth:weth' = 'baseeth:weth',
+  'baseeth:usdc' = 'baseeth:usdc',
+  'baseeth:wbtc' = 'baseeth:wbtc',
+  'baseeth:usde' = 'baseeth:usde',
+  'baseeth:trust' = 'baseeth:trust',
+  'baseeth:flk' = 'baseeth:flk',
 
   // BaseETH testnet tokens
   'tbaseeth:usdc' = 'tbaseeth:usdc',
+
+  // Seievm mainnet tokens
+  'seievm:usdc' = 'seievm:usdc',
+  'seievm:weth' = 'seievm:weth',
+  'seievm:wbtc' = 'seievm:wbtc',
+  'seievm:usd0' = 'seievm:usd0',
+
+  //Linea mainnet tokens
+  'lineaeth:linea' = 'lineaeth:linea',
+  'lineaeth:usdt' = 'lineaeth:usdt',
+  'lineaeth:usdc' = 'lineaeth:usdc',
+
+  // Flow mainnet tokens
+  'flow:weth' = 'flow:weth',
+  'flow:usdf' = 'flow:usdf',
+  'flow:wflow' = 'flow:wflow',
 
   // Arbitrum testnet tokens
   'tarbeth:link' = 'tarbeth:link',

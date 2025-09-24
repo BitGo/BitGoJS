@@ -215,6 +215,15 @@ export interface Tokens {
     baseeth: {
       tokens: EthLikeTokenConfig[];
     };
+    flow: {
+      tokens: EthLikeTokenConfig[];
+    };
+    lineaeth: {
+      tokens: EthLikeTokenConfig[];
+    };
+    seievm: {
+      tokens: EthLikeTokenConfig[];
+    };
     coredao: {
       tokens: EthLikeTokenConfig[];
     };
@@ -314,6 +323,15 @@ export interface Tokens {
       tokens: EthLikeTokenConfig[];
     };
     baseeth: {
+      tokens: EthLikeTokenConfig[];
+    };
+    flow: {
+      tokens: EthLikeTokenConfig[];
+    };
+    lineaeth: {
+      tokens: EthLikeTokenConfig[];
+    };
+    seievm: {
       tokens: EthLikeTokenConfig[];
     };
     sol: {
@@ -692,6 +710,60 @@ const getFormattedBaseethTokens = (customCoinMap = coins) =>
   customCoinMap.reduce((acc: EthLikeTokenConfig[], coin) => {
     if (coin instanceof EthLikeERC20Token && (coin.name.includes('baseeth:') || coin.name.includes('tbaseeth:'))) {
       acc.push(getBaseethTokenConfig(coin));
+    }
+    return acc;
+  }, []);
+
+function getSeievmTokenConfig(coin: EthLikeERC20Token): EthLikeTokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'seievm' : 'tseievm',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+    decimalPlaces: coin.decimalPlaces,
+  };
+}
+const getFormattedSeievmTokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: EthLikeTokenConfig[], coin) => {
+    if (coin instanceof EthLikeERC20Token && (coin.name.includes('seievm:') || coin.name.includes('tseievm:'))) {
+      acc.push(getSeievmTokenConfig(coin));
+    }
+    return acc;
+  }, []);
+
+function getFlowTokenConfig(coin: EthLikeERC20Token): EthLikeTokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'flow' : 'tflow',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+    decimalPlaces: coin.decimalPlaces,
+  };
+}
+const getFormattedFlowTokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: EthLikeTokenConfig[], coin) => {
+    if (coin instanceof EthLikeERC20Token && (coin.name.includes('flow:') || coin.name.includes('tflow:'))) {
+      acc.push(getFlowTokenConfig(coin));
+    }
+    return acc;
+  }, []);
+
+function getLineaethTokenConfig(coin: EthLikeERC20Token): EthLikeTokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'lineaeth' : 'tlineaeth',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+    decimalPlaces: coin.decimalPlaces,
+  };
+}
+const getFormattedLineaethTokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: EthLikeTokenConfig[], coin) => {
+    if (coin instanceof EthLikeERC20Token && (coin.name.includes('lineaeth:') || coin.name.includes('tlineaeth:'))) {
+      acc.push(getLineaethTokenConfig(coin));
     }
     return acc;
   }, []);
@@ -1156,6 +1228,15 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
       baseeth: {
         tokens: getFormattedBaseethTokens(coinMap).filter((token) => token.network === 'Mainnet'),
       },
+      flow: {
+        tokens: getFormattedFlowTokens(coinMap).filter((token) => token.network === 'Mainnet'),
+      },
+      lineaeth: {
+        tokens: getFormattedLineaethTokens(coinMap).filter((token) => token.network === 'Mainnet'),
+      },
+      seievm: {
+        tokens: getFormattedSeievmTokens(coinMap).filter((token) => token.network === 'Mainnet'),
+      },
       zketh: {
         tokens: getFormattedZkethTokens(coinMap).filter((token) => token.network === 'Mainnet'),
       },
@@ -1262,6 +1343,15 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
       },
       baseeth: {
         tokens: getFormattedBaseethTokens(coinMap).filter((token) => token.network === 'Testnet'),
+      },
+      flow: {
+        tokens: getFormattedFlowTokens(coinMap).filter((token) => token.network === 'Testnet'),
+      },
+      lineaeth: {
+        tokens: getFormattedLineaethTokens(coinMap).filter((token) => token.network === 'Testnet'),
+      },
+      seievm: {
+        tokens: getFormattedSeievmTokens(coinMap).filter((token) => token.network === 'Testnet'),
       },
       zketh: {
         tokens: getFormattedZkethTokens(coinMap).filter((token) => token.network === 'Testnet'),

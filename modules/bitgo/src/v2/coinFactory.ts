@@ -966,6 +966,21 @@ export function getTokenConstructor(tokenConfig: TokenConfig): CoinConstructor |
     case 'apt':
     case 'tapt':
       return AptToken.createTokenConstructor(tokenConfig as AptTokenConfig);
+    case 'flow':
+    case 'tflow': {
+      const coinNames = { Mainnet: 'flow', Testnet: 'tflow' };
+      return EthLikeErc20Token.createTokenConstructor(tokenConfig as EthLikeTokenConfig, coinNames);
+    }
+    case 'seievm':
+    case 'tseievm': {
+      const coinNames = { Mainnet: 'seievm', Testnet: 'tseievm' };
+      return EthLikeErc20Token.createTokenConstructor(tokenConfig as EthLikeTokenConfig, coinNames);
+    }
+    case 'lineaeth':
+    case 'tlineaeth': {
+      const coinNames = { Mainnet: 'lineaeth', Testnet: 'tlineaeth' };
+      return EthLikeErc20Token.createTokenConstructor(tokenConfig as EthLikeTokenConfig, coinNames);
+    }
     case 'stx':
     case 'tstx':
       return Sip10Token.createTokenConstructor(tokenConfig as Sip10TokenConfig);
