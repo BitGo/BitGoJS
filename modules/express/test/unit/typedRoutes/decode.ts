@@ -6,6 +6,7 @@ import { LoginRequest } from '../../../src/typedRoutes/api/common/login';
 import { VerifyAddressBody } from '../../../src/typedRoutes/api/common/verifyAddress';
 import { VerifyAddressV2Body, VerifyAddressV2Params } from '../../../src/typedRoutes/api/v2/verifyAddress';
 import { SimpleCreateRequestBody } from '../../../src/typedRoutes/api/v1/simpleCreate';
+import { KeychainLocalRequestParams } from '../../../src/typedRoutes/api/v2/keychainLocal';
 import {
   LightningInitWalletBody,
   LightningInitWalletParams,
@@ -131,6 +132,28 @@ describe('io-ts decode tests', function () {
 
     assertDecode(t.type(SimpleCreateRequestBody), {
       passphrase: 'pass',
+    });
+  });
+  it('express.keychain.local', function () {
+    // coin parameter is required
+    assert.throws(() => assertDecode(t.type(KeychainLocalRequestParams), {}));
+    // coin must be a string
+    assert.throws(() =>
+      assertDecode(t.type(KeychainLocalRequestParams), {
+        coin: 123,
+      })
+    );
+    // valid with coin parameter
+    assertDecode(t.type(KeychainLocalRequestParams), {
+      coin: 'btc',
+    });
+    // valid with different coin
+    assertDecode(t.type(KeychainLocalRequestParams), {
+      coin: 'eth',
+    });
+    // valid with testnet coin
+    assertDecode(t.type(KeychainLocalRequestParams), {
+      coin: 'tbtc',
     });
   });
   it('express.lightning.initWallet params', function () {

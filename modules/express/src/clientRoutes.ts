@@ -686,7 +686,7 @@ async function handleV2PendingApproval(req: express.Request): Promise<any> {
  * create a keychain
  * @param req
  */
-function handleV2CreateLocalKeyChain(req: express.Request) {
+export function handleV2CreateLocalKeyChain(req: ExpressApiRouteRequest<'express.keychain.local', 'post'>) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.params.coin);
   return coin.keychains().create(req.body);
@@ -1609,12 +1609,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   // API v2
 
   // create keychain
-  app.post(
-    '/api/v2/:coin/keychain/local',
-    parseBody,
-    prepareBitGo(config),
-    promiseWrapper(handleV2CreateLocalKeyChain)
-  );
+  router.post('express.keychain.local', [prepareBitGo(config), typedPromiseWrapper(handleV2CreateLocalKeyChain)]);
 
   // generate wallet
   app.post('/api/v2/:coin/wallet/generate', parseBody, prepareBitGo(config), promiseWrapper(handleV2GenerateWallet));
