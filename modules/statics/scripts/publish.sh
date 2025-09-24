@@ -45,8 +45,9 @@ git checkout -q "$REF_NAME"
 PACKAGE_NAME="$(package_json 'name')"
 PACKAGE_VERSION="$(package_json 'version')"
 
-# install
-npm install
+# install - generate package-lock.json first, then use npm ci for reproducible builds
+npm install --package-lock-only
+npm ci
 
 # build
 npm run build
@@ -73,7 +74,8 @@ git checkout -q -
 echo "verifying correct publish of $PACKAGE_NAME@$PACKAGE_VERSION"
 cd "$(mktemp -d)" || error "cd to temp directory failed. Verify package manually."
 npm init -y >/dev/null 2>&1 || error "npm init failed. Verify package manually."
-npm install "$PACKAGE_NAME@$PACKAGE_VERSION" >/dev/null 2>&1 || error "npm install failed! May need to unpublish!!!"
+npm install --package-lock-only "$PACKAGE_NAME@$PACKAGE_VERSION" >/dev/null 2>&1 || error "npm install --package-lock-only failed! Verify package manually."
+npm ci >/dev/null 2>&1 || error "npm ci failed! May need to unpublish!!!"
 node -e "require('${PACKAGE_NAME}')" || error "node require failed! unpublish!!!"
 cd "$OLDPWD" || error "cd to old pwd failed. Publish is probably alright, but verify package manually"
 echo "correct publish of $PACKAGE_NAME@$PACKAGE_VERSION has been verified!"
