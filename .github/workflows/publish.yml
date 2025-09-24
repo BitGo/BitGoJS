@@ -50,10 +50,7 @@ jobs:
           echo "//registry.npmjs.org/:always-auth=true" >> .npmrc
 
       - name: Prepare Release
-        run: |
-          rm -rfd ./modules/web-demo
-          rm -rfd ./modules/express
-          npx tsx ./scripts/prepare-release.ts ${{ env.preid }}
+        run: npx tsx ./scripts/prepare-release.ts ${{ env.preid }}
 
       - name: Rebuild packages
         run: yarn

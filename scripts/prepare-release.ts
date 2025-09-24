@@ -19,7 +19,7 @@ import {
   getLernaModules,
   validateReleaseTransformations,
   replacePackageScopes,
-  incrementVersions,
+  incrementVersions, removePrivateModulesWithNoDependents,
 } from './prepareRelease';
 
 export const uninitializedModules = process.env.UNINITIALIZED_MODULES
@@ -57,7 +57,10 @@ yargs(hideBin(process.argv))
 
       try {
         // Get lerna modules directly
-        const lernaModules = await getLernaModules();
+        let lernaModules = await getLernaModules();
+        // Remove express and web-demo
+        await removePrivateModulesWithNoDependents(lernaModules);
+        lernaModules = await getLernaModules();
         // Replace package scopes
         await replacePackageScopes(rootDir, lernaModules, targetScope);
         // Increment versions
