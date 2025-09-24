@@ -1013,7 +1013,7 @@ export async function handleV2EnableTokens(req: express.Request) {
  * Handle Update Wallet
  * @param req
  */
-async function handleWalletUpdate(req: express.Request): Promise<unknown> {
+export async function handleWalletUpdate(req: express.Request): Promise<unknown> {
   // If it's a lightning coin, use the lightning-specific handler
   if (isLightningCoinName(req.params.coin)) {
     return handleUpdateLightningWalletCoinSpecific(req);
@@ -1624,7 +1624,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   // generate wallet
   app.post('/api/v2/:coin/wallet/generate', parseBody, prepareBitGo(config), promiseWrapper(handleV2GenerateWallet));
 
-  app.put('/express/api/v2/:coin/wallet/:id', parseBody, prepareBitGo(config), promiseWrapper(handleWalletUpdate));
+  router.put('express.wallet.update', [prepareBitGo(config), typedPromiseWrapper(handleWalletUpdate as any)]);
 
   // change wallet passphrase
   app.post(

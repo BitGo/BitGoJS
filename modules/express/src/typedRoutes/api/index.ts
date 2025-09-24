@@ -15,6 +15,7 @@ import { PostSignTransaction } from './v1/signTransaction';
 import { PostLightningInitWallet } from './v2/lightningInitWallet';
 import { PostUnlockLightningWallet } from './v2/unlockWallet';
 import { PostVerifyCoinAddress } from './v2/verifyAddress';
+import { PutExpressWalletUpdate } from './v2/expressWalletUpdate';
 
 export const ExpressApi = apiSpec({
   'express.ping': {
@@ -55,6 +56,9 @@ export const ExpressApi = apiSpec({
   },
   'express.verifycoinaddress': {
     post: PostVerifyCoinAddress,
+  },
+  'express.wallet.update': {
+    put: PutExpressWalletUpdate,
   },
 });
 
