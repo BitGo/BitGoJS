@@ -20,7 +20,8 @@ export interface OfcConstructorOptions {
   primaryKeyCurve: KeyCurve;
 }
 
-// Function to get coins map - will be called lazily to avoid circular dependency
+// Function to get coins map
+// will be called lazily to avoid circular dependency
 let allCoinsAndTokensMap: CoinMap | undefined;
 
 const getAllCoinsAndTokensMap = (): CoinMap => {
