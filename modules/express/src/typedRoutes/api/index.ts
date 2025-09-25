@@ -17,6 +17,8 @@ import { PostKeychainLocal } from './v2/keychainLocal';
 import { PostLightningInitWallet } from './v2/lightningInitWallet';
 import { PostVerifyCoinAddress } from './v2/verifyAddress';
 import { PostSweep } from './v2/sweep';
+import { PostDeriveLocalKeyChain } from './v1/deriveLocalKeyChain';
+
 
 export const ExpressApi = apiSpec({
   'express.ping': {
@@ -63,6 +65,8 @@ export const ExpressApi = apiSpec({
   },
   'express.v2.wallet.sweep': {
     post: PostSweep,
+  'express.v1.keychain.derive': {
+    post: PostDeriveLocalKeyChain,
   },
 });
 
