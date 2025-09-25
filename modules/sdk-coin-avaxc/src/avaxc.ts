@@ -1103,7 +1103,8 @@ export class AvaxC extends AbstractEthLikeNewCoins {
     const feeEstimate: FeeEstimate = await this.feeEstimate(feeEstimateParams);
 
     const gasLimit = feeEstimate.gasLimitEstimate;
-    const gasPrice = Math.round(feeEstimate.feeEstimate / gasLimit);
+    // Even if `feeEstimate < gasLimit`, we shouldn't end up with `gasPrice === 0`.
+    const gasPrice = Math.max(Math.round(feeEstimate.feeEstimate / gasLimit), 1);
     const gasPriceMax = gasPrice * 5;
     // Payment id a random number so its different for every tx
     const paymentId = Math.floor(Math.random() * 10000000000).toString();
