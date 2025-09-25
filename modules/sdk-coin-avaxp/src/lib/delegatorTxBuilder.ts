@@ -16,7 +16,7 @@ import {
   UnsignedTx,
 } from 'avalanche/dist/apis/platformvm';
 import { BinTools, BN } from 'avalanche';
-import { SECP256K1_Transfer_Output, DeprecatedTx, DeprecatedBaseTx } from './iface';
+import { SECP256K1_Transfer_Output, DeprecatedTx, DeprecatedBaseTx, SECP256K1_STAKEABLE_LOCK_OUT } from './iface';
 import utils from './utils';
 import { Credential } from 'avalanche/dist/common';
 import { deprecatedRecoverUtxos } from './utxoEngine';
@@ -309,7 +309,10 @@ export class DelegatorTxBuilder extends DeprecatedTransactionBuilder {
     const buildOutputs = this.transaction._utxos[0].addresses.length !== 0;
 
     this.transaction._utxos.forEach((utxo, i) => {
-      if (utxo.outputID === SECP256K1_Transfer_Output) {
+      if (
+        utxo.outputID === SECP256K1_Transfer_Output ||
+        (utxo.outputID === SECP256K1_STAKEABLE_LOCK_OUT && utxo.locktime === '0')
+      ) {
         const txidBuf = utils.cb58Decode(utxo.txid);
         const amt: BN = new BN(utxo.amount);
         const outputidx = utils.outputidxNumberToBuffer(utxo.outputidx);
