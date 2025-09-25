@@ -45,8 +45,9 @@ git checkout -q "$REF_NAME"
 PACKAGE_NAME="$(package_json 'name')"
 PACKAGE_VERSION="$(package_json 'version')"
 
-# install
-npm install
+# install - generate package-lock.json first, then use npm ci for reproducible builds
+npm install --package-lock-only
+npm ci
 
 # build
 echo "executing dry run publish of $PACKAGE_NAME@$PACKAGE_VERSION from ref $REF_NAME..."
@@ -72,7 +73,8 @@ git checkout -q -
 echo "verifying correct publish of $PACKAGE_NAME@$PACKAGE_VERSION"
 cd "$(mktemp -d)" || error "cd failed. Verify package manually."
 npm init -y >/dev/null 2>&1 || error "npm init failed. Verify package manually."
-npm install "$PACKAGE_NAME@$PACKAGE_VERSION" >/dev/null 2>&1 || error "npm install failed! Publish may not have occurred or there was an installation blocker!!!"
+npm install --package-lock-only "$PACKAGE_NAME@$PACKAGE_VERSION" >/dev/null 2>&1 || error "npm install --package-lock-only failed! Verify package manually."
+npm ci >/dev/null 2>&1 || error "npm ci failed! Publish may not have occurred or there was an installation blocker!!!"
 node -e "require('${PACKAGE_NAME}')" || error "node require failed! unpublish!!!"
 cd "$OLDPWD" || error "cd to OLDPWD failed. Verify package manually."
 echo "correct publish of $PACKAGE_NAME@$PACKAGE_VERSION has been verified!"
