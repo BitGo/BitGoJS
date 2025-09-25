@@ -125,7 +125,7 @@ function handleCreateLocalKeyChain(req: express.Request) {
  * @deprecated
  * @param req
  */
-function handleDeriveLocalKeyChain(req: express.Request) {
+function handleDeriveLocalKeyChain(req: ExpressApiRouteRequest<'express.v1.keychain.derive', 'post'>) {
   return req.bitgo.keychains().deriveLocal(req.body);
 }
 
@@ -1566,7 +1566,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   ]);
 
   app.post('/api/v1/keychain/local', parseBody, prepareBitGo(config), promiseWrapper(handleCreateLocalKeyChain));
-  app.post('/api/v1/keychain/derive', parseBody, prepareBitGo(config), promiseWrapper(handleDeriveLocalKeyChain));
+  router.post('express.v1.keychain.derive', [prepareBitGo(config), typedPromiseWrapper(handleDeriveLocalKeyChain)]);
   router.post('express.v1.wallet.simplecreate', [
     prepareBitGo(config),
     typedPromiseWrapper(handleCreateWalletWithKeychains),
