@@ -54,6 +54,45 @@ yarn integration-test
 yarn coverage
 ```
 
+### Test Caching
+BitGoJS uses Lerna + Nx for local test caching to speed up development:
+
+```bash
+# Tests are automatically cached when you run them
+yarn unit-test
+
+# Cache status is shown in output:
+# - Fresh run: Tests execute normally
+# - Cache hit: "[existing outputs match the cache, left as is]"
+
+# Clear cache if needed
+rm -rf .nx/cache
+
+# Cache works with all test commands
+yarn unit-test --scope @bitgo/sdk-core  # Caches per package
+yarn unit-test-changed                   # Caches changed packages
+```
+
+The cache automatically invalidates when:
+- Source files change
+- Test files change
+- Dependencies change
+- Configuration files change (tsconfig.json, .mocharc.*, package.json)
+
+**Note for CI**: Nx caching requires proper dependency management. Tests depend on build outputs, so ensure packages are built before running tests. The `yarn postinstall` step must run even when node_modules are cached.
+
+If you encounter TypeScript module resolution errors in CI, you can disable Nx caching by:
+```bash
+# Option 1: Use --skip-nx-cache flag
+yarn unit-test --skip-nx-cache
+
+# Option 2: Set environment variable
+NX_SKIP_NX_CACHE=true yarn unit-test
+
+# Option 3: Temporarily disable in lerna.json
+# Set "useNx": false
+```
+
 ### Browser Compatibility
 ```bash
 # Run browser tests
@@ -121,3 +160,7 @@ This will generate the necessary boilerplate for a new coin implementation.
 ## Node.js Version Support
 
 BitGoJS supports Node.js versions >=20 and <23, with NPM >=3.10.10.
+
+## Sessions System Behaviors
+
+@CLAUDE.sessions.md
