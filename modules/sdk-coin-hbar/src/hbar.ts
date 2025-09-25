@@ -71,10 +71,9 @@ interface RawTransactionData {
       }>;
     };
   };
-  // These are any[] because they're only used to verify existence, not to access contents
-  instructions?: any[];
-  innerInstructions?: any[];
-  scheduledTransactionBody?: any;
+  instructions?: unknown[];
+  innerInstructions?: unknown[];
+  scheduledTransactionBody?: unknown;
 }
 export interface HbarSignTransactionOptions extends SignTransactionOptions {
   txPrebuild: TransactionPrebuild;
