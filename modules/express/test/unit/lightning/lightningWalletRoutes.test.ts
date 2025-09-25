@@ -1,22 +1,11 @@
 import * as sinon from 'sinon';
 import should from 'should';
-import * as express from 'express';
-import { handleUpdateLightningWalletCoinSpecific } from '../../../src/lightning/lightningWalletRoutes';
 import { BitGo } from 'bitgo';
-import { ApiResponseError } from '../../../src/errors';
+import { ExpressApiRouteRequest } from '../../../src/typedRoutes/api';
 
 describe('Lightning Wallet Routes', () => {
   let bitgo;
   const coin = 'tlnbtc';
-
-  const mockRequestObject = (params: { body?: any; params?: any; query?: any; bitgo?: any }) => {
-    const req: Partial<express.Request> = {};
-    req.body = params.body || {};
-    req.params = params.params || {};
-    req.query = params.query || {};
-    req.bitgo = params.bitgo;
-    return req as express.Request;
-  };
 
   beforeEach(() => {
     const walletStub = {};
@@ -53,11 +42,16 @@ describe('Lightning Wallet Routes', () => {
         },
       });
 
-      const req = mockRequestObject({
+      const req = {
         params: { id: 'testWalletId', coin },
         body: inputParams,
+        decoded: {
+          id: 'testWalletId',
+          coin,
+          ...inputParams,
+        },
         bitgo,
-      });
+      } as unknown as ExpressApiRouteRequest<'express.wallet.update', 'put'>;
 
       const result = await lightningRoutes.handleUpdateLightningWalletCoinSpecific(req);
 
@@ -69,46 +63,6 @@ describe('Lightning Wallet Routes', () => {
       should(secondArg).have.property('signerMacaroon', 'encrypted-macaroon-data');
       should(secondArg).have.property('signerHost', 'signer.example.com');
       should(secondArg).have.property('passphrase', 'wallet-password-123');
-    });
-
-    it('should throw error when passphrase is missing', async () => {
-      const invalidParams = {
-        signerMacaroon: 'encrypted-data',
-        signerHost: 'signer.example.com',
-      };
-
-      const req = mockRequestObject({
-        params: { id: 'testWalletId', coin },
-        body: invalidParams,
-        bitgo,
-      });
-
-      await should(handleUpdateLightningWalletCoinSpecific(req))
-        .be.rejectedWith(ApiResponseError)
-        .then((error) => {
-          should(error.status).equal(400);
-          should(error.message).equal('Invalid request body to update lightning wallet coin specific');
-        });
-    });
-
-    it('should handle invalid request body', async () => {
-      const invalidParams = {
-        signerHost: 12345, // invalid type
-        passphrase: 'valid-pass',
-      };
-
-      const req = mockRequestObject({
-        params: { id: 'testWalletId', coin },
-        body: invalidParams,
-        bitgo,
-      });
-
-      await should(handleUpdateLightningWalletCoinSpecific(req))
-        .be.rejectedWith(ApiResponseError)
-        .then((error) => {
-          should(error.status).equal(400);
-          should(error.message).equal('Invalid request body to update lightning wallet coin specific');
-        });
     });
   });
 });
