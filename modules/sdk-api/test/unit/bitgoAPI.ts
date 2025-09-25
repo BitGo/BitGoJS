@@ -2,6 +2,7 @@ import 'should';
 import { BitGoAPI } from '../../src/bitgoAPI';
 import { ProxyAgent } from 'proxy-agent';
 import * as sinon from 'sinon';
+import nock from 'nock';
 
 describe('Constructor', function () {
   describe('cookiesPropagationEnabled argument', function () {
@@ -303,6 +304,104 @@ describe('Constructor', function () {
       result.should.be.an.Array();
       result.should.have.length(2);
       result.should.containDeep(['wallet-id-2', 'wallet-id-4']);
+    });
+  });
+
+  describe('constants parameter', function () {
+    it('should allow passing constants via options and expose via fetchConstants', async function () {
+      const bitgo = new BitGoAPI({
+        env: 'custom',
+        customRootURI: 'https://app.example.local',
+        clientConstants: { maxFeeRate: '123123123123123' },
+      });
+
+      const constants = await bitgo.fetchConstants();
+      constants.should.have.property('maxFeeRate', '123123123123123');
+    });
+
+    it('should refresh constants when cache has expired', async function () {
+      const bitgo = new BitGoAPI({
+        env: 'custom',
+        customRootURI: 'https://app.example.local',
+      });
+
+      // Set up cached constants with an expired cache
+      (BitGoAPI as any)._constants = (BitGoAPI as any)._constants || {};
+      (BitGoAPI as any)._constantsExpire = (BitGoAPI as any)._constantsExpire || {};
+      (BitGoAPI as any)._constants['custom'] = { maxFeeRate: 'old-value' };
+      (BitGoAPI as any)._constantsExpire['custom'] = new Date(Date.now() - 1000); // Expired 1 second ago
+
+      const scope = nock('https://app.example.local')
+        .get('/api/v1/client/constants')
+        .reply(200, {
+          constants: { maxFeeRate: 'new-value', newConstant: 'added' },
+        });
+
+      const constants = await bitgo.fetchConstants();
+
+      // Should return the new constants from the server
+      constants.should.have.property('maxFeeRate', 'new-value');
+      constants.should.have.property('newConstant', 'added');
+
+      scope.isDone().should.be.true();
+
+      nock.cleanAll();
+    });
+
+    it('should use cached constants when cache is still valid', async function () {
+      const bitgo = new BitGoAPI({
+        env: 'custom',
+        customRootURI: 'https://app.example.local',
+      });
+
+      // Set up cached constants with a future expiry
+      const cachedConstants = { maxFeeRate: 'cached-value', anotherSetting: 'cached-setting' };
+      (BitGoAPI as any)._constants = (BitGoAPI as any)._constants || {};
+      (BitGoAPI as any)._constantsExpire = (BitGoAPI as any)._constantsExpire || {};
+      (BitGoAPI as any)._constants['custom'] = cachedConstants;
+      (BitGoAPI as any)._constantsExpire['custom'] = new Date(Date.now() + 5 * 60 * 1000); // Valid for 5 more minutes
+
+      const scope = nock('https://app.example.local')
+        .get('/api/v1/client/constants')
+        .reply(200, { constants: { shouldNotBeUsed: true } });
+
+      const constants = await bitgo.fetchConstants();
+
+      // Should return the cached constants
+      constants.should.deepEqual(cachedConstants);
+
+      // Verify that no HTTP request was made (since cache was valid)
+      scope.isDone().should.be.false();
+
+      nock.cleanAll();
+    });
+
+    it('should use cached constants when no cache expiry is set', async function () {
+      const bitgo = new BitGoAPI({
+        env: 'custom',
+        customRootURI: 'https://app.example.local',
+      });
+
+      // Set up cached constants with no expiry
+      const cachedConstants = { maxFeeRate: 'no-expiry-value' };
+      (BitGoAPI as any)._constants = (BitGoAPI as any)._constants || {};
+      (BitGoAPI as any)._constantsExpire = (BitGoAPI as any)._constantsExpire || {};
+      (BitGoAPI as any)._constants['custom'] = cachedConstants;
+      (BitGoAPI as any)._constantsExpire['custom'] = undefined;
+
+      const scope = nock('https://app.example.local')
+        .get('/api/v1/client/constants')
+        .reply(200, { constants: { shouldNotBeUsed: true } });
+
+      const constants = await bitgo.fetchConstants();
+
+      // Should return the cached constants
+      constants.should.deepEqual(cachedConstants);
+
+      // Verify that no HTTP request was made (since no expiry means cache is always valid)
+      scope.isDone().should.be.false();
+
+      nock.cleanAll();
     });
   });
 });
