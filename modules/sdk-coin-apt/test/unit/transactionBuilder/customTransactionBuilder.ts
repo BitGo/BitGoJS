@@ -197,6 +197,48 @@ describe('Apt Custom Transaction Builder', () => {
         const rawTx = tx.toBroadcastFormat();
         should.equal(txBuilder.isValidRawTransaction(rawTx), true);
       });
+
+      it('should build and rebuild custom transaction with correct U64 amount parsing', async function () {
+        // Use the provided serialized hex with amount 1000
+        const serializedHex =
+          '0xf22fa009b6473cdc539ecbd570d00d0585682f5939ffe256a90ddee0d616292f000000000000000002000000000000000000000000000000000000000000000000000000000000000104636f696e087472616e73666572010700000000000000000000000000000000000000000000000000000000000000010a6170746f735f636f696e094170746f73436f696e000220da22bdc19f873fd6ce48c32912965c8a9dde578b2a3cf4fae3dd85dfaac784c908e803000000000000a8610000000000006400000000000000901cdd680000000002030020000000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000adba44b46722b8da1797645f71ddcdab28626c06acd36b88d5198a684966306c0020453ed5aa75b01f3eb03ab1d3030be10996206e5a073a74983ea3fcd013ffe1ea4000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000';
+
+        const transferCoinsAbi = {
+          typeParameters: [{ constraints: [] }],
+          parameters: [new TypeTagAddress(), new TypeTagU64()],
+        };
+
+        // Build transaction from serialized hex
+        const txBuilder = factory.from(serializedHex, transferCoinsAbi);
+        const tx = (await txBuilder.build()) as CustomTransaction;
+
+        // Validate the transaction was parsed correctly
+        should.equal(tx.type, TransactionType.CustomTx);
+        should.exist(tx.fullFunctionName);
+        should.equal(tx.fullFunctionName, '0x1::coin::transfer');
+
+        // Get the custom transaction parameters
+        const customParams = tx.getCustomTransactionParams();
+        should.exist(customParams);
+        should.equal(customParams.moduleName, '0x1::coin');
+        should.equal(customParams.functionName, 'transfer');
+        should.exist(customParams.functionArguments);
+        should.equal(customParams.functionArguments!.length, 2);
+
+        // Validate the amount argument was parsed correctly as 1000
+        const parsedAmount = customParams.functionArguments![1];
+        should.equal(parsedAmount, '1000', 'Amount should be correctly parsed as 1000 from U64 bytes');
+
+        // Validate the address argument (first argument)
+        const parsedAddress = customParams.functionArguments![0];
+        should.exist(parsedAddress);
+        should.equal(typeof parsedAddress, 'string', 'Address should be a string');
+        (parsedAddress as string).should.match(/^0x[a-fA-F0-9]+$/, 'Address should be valid hex format');
+
+        // Ensure the transaction can be rebuilt (round-trip test)
+        const rawTx = tx.toBroadcastFormat();
+        should.equal(txBuilder.isValidRawTransaction(rawTx), true);
+      });
     });
 
     describe('Fail', () => {
