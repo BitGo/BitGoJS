@@ -833,7 +833,7 @@ async function handleV2FanOutUnspents(req: express.Request) {
  * handle wallet sweep
  * @param req
  */
-async function handleV2Sweep(req: express.Request) {
+async function handleV2Sweep(req: ExpressApiRouteRequest<'express.v2.wallet.sweep', 'post'>) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.params.coin);
   const wallet = await coin.wallets().get({ id: req.params.id });
@@ -1687,7 +1687,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
     promiseWrapper(handleV2FanOutUnspents)
   );
 
-  app.post('/api/v2/:coin/wallet/:id/sweep', parseBody, prepareBitGo(config), promiseWrapper(handleV2Sweep));
+  router.post('express.v2.wallet.sweep', [prepareBitGo(config), typedPromiseWrapper(handleV2Sweep)]);
 
   // CPFP
   app.post(
