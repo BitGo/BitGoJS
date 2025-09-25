@@ -66,7 +66,7 @@ yarn unit-test
 # - Cache hit: "[existing outputs match the cache, left as is]"
 
 # Clear cache if needed
-rm -rf .nx/cache
+yarn clean-cache
 
 # Cache works with all test commands
 yarn unit-test --scope @bitgo/sdk-core  # Caches per package
