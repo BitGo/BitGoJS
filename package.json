@@ -98,7 +98,8 @@
     "**/ethers/**/ws": "7.5.10",
     "**/swarm-js/**/ws": "5.2.4",
     "serialize-javascript": "^6.0.2",
-    "@grpc/grpc-js": "^1.12.6"
+    "@grpc/grpc-js": "^1.12.6",
+    "**/avalanche/store2": "2.14.4"
   },
   "workspaces": [
     "modules/*"
