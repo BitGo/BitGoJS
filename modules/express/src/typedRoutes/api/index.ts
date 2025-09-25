@@ -16,7 +16,7 @@ import { PostSignTransaction } from './v1/signTransaction';
 import { PostKeychainLocal } from './v2/keychainLocal';
 import { PostLightningInitWallet } from './v2/lightningInitWallet';
 import { PostVerifyCoinAddress } from './v2/verifyAddress';
-import { PostGenerateWallet } from './v2/generate';
+import { PostGenerateWallet } from './v2/generateWallet';
 
 export const ExpressApi = apiSpec({
   'express.ping': {
