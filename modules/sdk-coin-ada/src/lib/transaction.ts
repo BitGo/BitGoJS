@@ -20,12 +20,13 @@ export interface Asset {
   policy_id: string;
   asset_name: string;
   quantity: string;
+  fingerprint?: string;
 }
 
 export interface TransactionOutput {
   address: string;
   amount: string;
-  multiAssets?: CardanoWasm.MultiAsset;
+  multiAssets?: CardanoWasm.MultiAsset | Asset;
 }
 
 export interface Witness {
