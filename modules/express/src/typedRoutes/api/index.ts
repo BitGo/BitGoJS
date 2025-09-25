@@ -16,6 +16,7 @@ import { PostSignTransaction } from './v1/signTransaction';
 import { PostKeychainLocal } from './v2/keychainLocal';
 import { PostLightningInitWallet } from './v2/lightningInitWallet';
 import { PostVerifyCoinAddress } from './v2/verifyAddress';
+import { PostDeriveLocalKeyChain } from './v1/deriveLocalKeyChain';
 
 export const ExpressApi = apiSpec({
   'express.ping': {
@@ -59,6 +60,9 @@ export const ExpressApi = apiSpec({
   },
   'express.calculateminerfeeinfo': {
     post: PostCalculateMinerFeeInfo,
+  },
+  'express.v1.keychain.derive': {
+    post: PostDeriveLocalKeyChain,
   },
 });
 

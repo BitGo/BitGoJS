@@ -1,6 +1,10 @@
 import { bscToken, tbscToken, AccountCoin } from '../account';
 import { UnderlyingAsset, CoinFeature } from '../base';
-import { BSC_TOKEN_FEATURES, BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE } from '../coinFeatures';
+import {
+  BSC_TOKEN_FEATURES,
+  BSC_TOKEN_FEATURES_EXCLUDE_SINGAPORE,
+  BSC_TOKEN_FEATURES_EXCLUDE_MENA_FZE,
+} from '../coinFeatures';
 
 export const bscTokens = [
   bscToken(
@@ -1399,6 +1403,6 @@ export const bscTokens = [
     18,
     '0x000ae314e2a2172a039b26378814c252734f556a',
     UnderlyingAsset['bsc:aster'],
-    BSC_TOKEN_FEATURES
+    BSC_TOKEN_FEATURES_EXCLUDE_MENA_FZE
   ),
 ];
