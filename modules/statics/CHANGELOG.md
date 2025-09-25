@@ -3,6 +3,68 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@57.8.0...@bitgo/statics@58.0.0) (2025-09-25)
+
+### Bug Fixes
+
+- correct PlumeTestnet explorer URLs ([975a7b7](https://github.com/BitGo/BitGoJS/commit/975a7b7a4bc31f8c321d0ec516f25ab63259b4ed))
+- **sdk-coin-dot:** handles breaking test cases ([aed9e9f](https://github.com/BitGo/BitGoJS/commit/aed9e9f99853d20ef527f1e6f44912b701715d5c))
+- **sdk-coin-dot:** update tests ([2e94080](https://github.com/BitGo/BitGoJS/commit/2e94080a7fb6c8ed42e8eff48f033d6d7e4c7a40))
+- **statics:** adding support for getting formatted flr token config ([0847c10](https://github.com/BitGo/BitGoJS/commit/0847c10ef5e8eb658bde871f9a6a9ab796f3e349))
+- **statics:** fix bsc token name ([06d267c](https://github.com/BitGo/BitGoJS/commit/06d267c1ee6adb827547bd26744f8642ebb154ed))
+- **statics:** remove staking feature from ADA tokens ([0922b86](https://github.com/BitGo/BitGoJS/commit/0922b86d05132b814cd34f75703abb185ab8791a))
+
+### Features
+
+- add aptos USD1 testnet tokens ([0a44cfa](https://github.com/BitGo/BitGoJS/commit/0a44cfa2bef1a5f54a6967aff6aa1ad1cfce370b))
+- add Flare token support and related configurations ([91dc8fb](https://github.com/BitGo/BitGoJS/commit/91dc8fb841de595d9b29142d066c697878d7472e))
+- add jetton to coinFactory ([cce273f](https://github.com/BitGo/BitGoJS/commit/cce273fa3d34bed03d90e3cfd5615721c7dc1064))
+- add jetton token standard ([699415e](https://github.com/BitGo/BitGoJS/commit/699415ef63cb29875c2662910ab24972334f1f18))
+- add new tokens for WIN-7171 ([2d51487](https://github.com/BitGo/BitGoJS/commit/2d51487ff45ddd08fb2d20e4532ebc1d03266e5a))
+- add statics and configuration for flow ([35b76f9](https://github.com/BitGo/BitGoJS/commit/35b76f974bb02cb149438736fc14fd8856e3ed05))
+- add ton mainnet token ([7846c48](https://github.com/BitGo/BitGoJS/commit/7846c48103c83883879b0d061209e465f9937249))
+- added ondo tokens (phase2) ([9938368](https://github.com/BitGo/BitGoJS/commit/99383687501210873c8761fc7094df01bca63f48))
+- added statics config for KavaEVM ([e6d0872](https://github.com/BitGo/BitGoJS/commit/e6d0872687b98743b3fc63e162aa8364d3ef060c))
+- added statics config for MegaEth and Plume ([a2bbeaa](https://github.com/BitGo/BitGoJS/commit/a2bbeaafd8350fc8b00a186bbd781d3884120295))
+- adds apt:usd1 token ([994fdeb](https://github.com/BitGo/BitGoJS/commit/994fdeb28489e2520b9b4cd1d2fcf56d339e760b))
+- adds tapt:usd1 token ([f1f3145](https://github.com/BitGo/BitGoJS/commit/f1f3145532e0b701a1e74635114066f5085eb579))
+- configure learn to skip git operations ([ee3a622](https://github.com/BitGo/BitGoJS/commit/ee3a6220496476aa7f4545b5f4a9a3bf97d9bdb9))
+- gate aster for BitGo Mena Fze ([4db8c35](https://github.com/BitGo/BitGoJS/commit/4db8c358edac3c5ab52957673fd6814a72ede8a3))
+- gate tokens for BitGo Singapore ([93eb7ca](https://github.com/BitGo/BitGoJS/commit/93eb7cad2f9f08283a4c1067d86c6f3dd1c0af30))
+- onboard testnet ton tokens ([e9e720b](https://github.com/BitGo/BitGoJS/commit/e9e720bd6e91d5a0fea9cdfcf36ba4e67fea321a))
+- replace apt usd1 asset id with FA address ([79c95ce](https://github.com/BitGo/BitGoJS/commit/79c95cebaf0efef301198072c0dea201b01866f4))
+- replace asset id with fungible asset address ([64e3b38](https://github.com/BitGo/BitGoJS/commit/64e3b38068b65ec6011cfc20e72bbdae8ce81ad1))
+- **sdk-coin-ada:** add fingerprint as the contract address ([65f2080](https://github.com/BitGo/BitGoJS/commit/65f2080de3efacde1549974fecefea90201b466b))
+- **sdk-coin-cosmos:** add bulk custody feature to mantra ([d85a16b](https://github.com/BitGo/BitGoJS/commit/d85a16bee8a2e5217a86f6144f05803e55fd4ce1))
+- **sdk-coin-dot:** integrate the Westend AssetHub chain for tdot ([0d90a2b](https://github.com/BitGo/BitGoJS/commit/0d90a2b4d659e1690e600d46df5ca24ea23db3b7))
+- **sdk-coin-dot:** integrate the Westend AssetHub chain for tdot ([5557e65](https://github.com/BitGo/BitGoJS/commit/5557e65d869061ecae5daa427c71708117e4c2c8))
+- **sdk-coin-sol:** onboarding sol 2022 token with transfer hook ([2640873](https://github.com/BitGo/BitGoJS/commit/2640873bebfc19e46e4652361ec049f394523906))
+- **statics:** add `tsol:jitosol` ([60f24e3](https://github.com/BitGo/BitGoJS/commit/60f24e37c14ce6e7a761cde79c7e4f7b37b26854))
+- **statics:** add custody bulk withdrawal feature for hash bch ([fb601ff](https://github.com/BitGo/BitGoJS/commit/fb601ff0c777d1627f047145333e43bed2686bc5))
+- **statics:** add ETH:REKT token ([ff8bde5](https://github.com/BitGo/BitGoJS/commit/ff8bde55c437fc55a48a110dedd77ec06b4723f6))
+- **statics:** add GATENet (GATE) ERC20 token ([6726091](https://github.com/BitGo/BitGoJS/commit/6726091cb273baea9f50634224453ca24e274285))
+- **statics:** add Hoodi testnet NFT token configuration ([6c64596](https://github.com/BitGo/BitGoJS/commit/6c645966787315c9874999d208e1c5a4e84bb934))
+- **statics:** add jetton token standard ([fec2d85](https://github.com/BitGo/BitGoJS/commit/fec2d85eb7c351ec3cc9dc44f096129db7e308db))
+- **statics:** add new nft on soneium for testing ([058f1b2](https://github.com/BitGo/BitGoJS/commit/058f1b249682abb05b99394e2649f70adc3dd7c5))
+- **statics:** add new tokens ([5b5126a](https://github.com/BitGo/BitGoJS/commit/5b5126abd7444cde5cd1c7b5c4816bc4331c7093))
+- **statics:** add shared cosmos coin feature for mantra ([8249f6f](https://github.com/BitGo/BitGoJS/commit/8249f6f676074f04f0fe62114f51bcf45330eccc))
+- **statics:** add somi to coinNameFromChainId for walletconnect ([1b29501](https://github.com/BitGo/BitGoJS/commit/1b2950186fab67168188f05907a71f35a5a83850))
+- **statics:** add staking feature for wflr ([a07a3d5](https://github.com/BitGo/BitGoJS/commit/a07a3d5e4c107247e3f9e264fe15747720593755))
+- **statics:** add stAVAX mainnet token ([b2842ac](https://github.com/BitGo/BitGoJS/commit/b2842ac57f7441d8033dc651999b33baced8c32f))
+- **statics:** change mantra to new cosmos structure ([9040efc](https://github.com/BitGo/BitGoJS/commit/9040efc58cbe10e006a310f1bc91399dc0e09a64))
+- **statics:** enable shared cosmos wp for mantra ([5d6ed20](https://github.com/BitGo/BitGoJS/commit/5d6ed20e0fb0dc03c908d8b27b1f30c6d8f6236d))
+- **statics:** onboard new batch of tokens ([b90c32b](https://github.com/BitGo/BitGoJS/commit/b90c32b824e881533960f39ebc2a8cc2658cdde3))
+- **statics:** onboard new bsc token ([bb7e27a](https://github.com/BitGo/BitGoJS/commit/bb7e27aabfed5930ea7b5156afe465b92e41043c))
+- **statics:** update REKT token to REKTTOKEN ([e992d61](https://github.com/BitGo/BitGoJS/commit/e992d61c36338995bcde28752f2f31776c1ef07c))
+- update flow,tflow to have EVM_COMPATIBLE_WP feature ([efb1c55](https://github.com/BitGo/BitGoJS/commit/efb1c559f30e7429ae91da794cea55083cdce894))
+
+### BREAKING CHANGES
+
+- FA address gets indexed for
+  transfers instead of move module address
+
+TICKET: TMS-1274
+
 # [57.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@57.7.0...@bitgo/statics@57.8.0) (2025-09-03)
 
 ### Bug Fixes

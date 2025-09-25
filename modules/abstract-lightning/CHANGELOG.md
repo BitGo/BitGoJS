@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@7.0.0...@bitgo/abstract-lightning@7.1.0) (2025-09-25)
+
+### Bug Fixes
+
+- coinspecific update in withdraw fix ([50faef5](https://github.com/BitGo/BitGoJS/commit/50faef5fb3c8c6230c0606bd849cdf75ee3932ce))
+- removed fund psbt request codec ([0cfbaf4](https://github.com/BitGo/BitGoJS/commit/0cfbaf4d3812d65835b3586b436225a046ac5483))
+
+### Features
+
+- added bip174 to abstract lightning ([6031d76](https://github.com/BitGo/BitGoJS/commit/6031d762c1b27e79a50c87e342a562297f8455ce))
+- added fundpsbtrequest codec ([af7cc28](https://github.com/BitGo/BitGoJS/commit/af7cc28134ff3da88e52169f504a60d2811ca7df))
+- bumped public types ([6bd0aec](https://github.com/BitGo/BitGoJS/commit/6bd0aecb700a740f76c169b1476e1832bc3abe22))
+- configure learn to skip git operations ([ee3a622](https://github.com/BitGo/BitGoJS/commit/ee3a6220496476aa7f4545b5f4a9a3bf97d9bdb9))
+- import onchain withdraw from public types ([c01af4f](https://github.com/BitGo/BitGoJS/commit/c01af4f541efc3406a31e615e338adef7e31b39e))
+- only accounts required for custody ([f7a26ad](https://github.com/BitGo/BitGoJS/commit/f7a26adb139bc3ae3ba8b5c12d70ef9a6a9149d1))
+- optional only create addrees accounts lightning ([c15c011](https://github.com/BitGo/BitGoJS/commit/c15c011b000c7f11d93c4c567b9ddd916ce25886))
+- verify psbt withdraw lightning ([e2befa7](https://github.com/BitGo/BitGoJS/commit/e2befa7cca34f553e355e02450626ad6eee08f86))
+
 # [7.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@6.5.1...@bitgo/abstract-lightning@7.0.0) (2025-09-03)
 
 ### Features

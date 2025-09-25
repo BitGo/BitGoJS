@@ -3,6 +3,38 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@6.1.4...@bitgo/sdk-coin-sol@7.0.0) (2025-09-25)
+
+### Bug Fixes
+
+- **sdk-coin-sol:** add missing deactivate to jito unstaking ([08dc11f](https://github.com/BitGo/BitGoJS/commit/08dc11f4c0376cff0c464bb8155eb4068ecb8ed5))
+- **sdk-coin-sol:** add verification for Solana consolidation transactions ([0ae8dd0](https://github.com/BitGo/BitGoJS/commit/0ae8dd0d26990a391e6a69bb496e59c33aeb116d))
+- **sdk-coin-sol:** approve transfer authority for jito unstake ([9ba03c4](https://github.com/BitGo/BitGoJS/commit/9ba03c4aa2648c0f28224e9e99ec1a51ce10825c))
+- **sdk-coin-sol:** blind signing for sol token enablements check multiple tokens ([718c1b1](https://github.com/BitGo/BitGoJS/commit/718c1b1603a2a2506f577f9abc4dc0f47a84aff9))
+- **sdk-coin-sol:** create broadcast tx for 2022 token ([0fd76bd](https://github.com/BitGo/BitGoJS/commit/0fd76bd561edce1e9596bfb6c066d13ff2263636))
+- **sdk-coin-sol:** explain init ata address transactions ([076f4cc](https://github.com/BitGo/BitGoJS/commit/076f4ccf6bae5031c9bcd3bf49dde2c297767fec))
+- **sdk-coin-sol:** recover consolidation for sol 2022 token ([0988d49](https://github.com/BitGo/BitGoJS/commit/0988d49aaf097b7d300308a999b6c1be91041753))
+- **sdk-coin-sol:** remove inputs and outputs for jito deactivate ([15b2ad1](https://github.com/BitGo/BitGoJS/commit/15b2ad1e3b6ab1dbe7b664c49c59e1c605bc2475))
+- **sdk-coin-sol:** remove output for jito staking activate ([c8ef1e5](https://github.com/BitGo/BitGoJS/commit/c8ef1e58bda3a1b1902279b8ac1c232dcbcd9c17))
+- **sdk-coin-sol:** removed outputs as empty check for token enab blind sign ([f25e2b5](https://github.com/BitGo/BitGoJS/commit/f25e2b52ff8ab0d9daa11847c216dda365e95b22))
+- **sdk-coin-sol:** verify ata address on consolidation ([f9207ad](https://github.com/BitGo/BitGoJS/commit/f9207ad943a9e82439518d03536061e1eec84ca7))
+
+### Features
+
+- configure learn to skip git operations ([ee3a622](https://github.com/BitGo/BitGoJS/commit/ee3a6220496476aa7f4545b5f4a9a3bf97d9bdb9))
+- **sdk-coin-sol:** blind signing guards for token enablements ([2099f83](https://github.com/BitGo/BitGoJS/commit/2099f8353800499e9f9f887d42e8fcab7500e194))
+- **sdk-coin-sol:** conditionally create ATA for jito staking ([ac5b6fc](https://github.com/BitGo/BitGoJS/commit/ac5b6fc897752620ed4bad432f1bdd1455481c51))
+- **sdk-core,sdk-coin-sol:** token enablements verify option and type check improvements ([c694864](https://github.com/BitGo/BitGoJS/commit/c694864416f075b126548febe48a68dbf466dfc2))
+- **statics:** add `tsol:jitosol` ([60f24e3](https://github.com/BitGo/BitGoJS/commit/60f24e37c14ce6e7a761cde79c7e4f7b37b26854))
+
+### BREAKING CHANGES
+
+- **sdk-coin-sol:** There is now 1 more
+  instruction (StakeProgram.deactivate) in JITO StakingDeactivate
+  transaction.
+
+Ticket: SC-3176
+
 ## [6.1.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@6.1.3...@bitgo/sdk-coin-sol@6.1.4) (2025-09-03)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol
