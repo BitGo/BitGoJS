@@ -79,18 +79,37 @@ The cache automatically invalidates when:
 - Dependencies change
 - Configuration files change (tsconfig.json, .mocharc.*, package.json)
 
-**Note for CI**: Nx caching requires proper dependency management. Tests depend on build outputs, so ensure packages are built before running tests. The `yarn postinstall` step must run even when node_modules are cached.
+### CI Caching
 
-If you encounter TypeScript module resolution errors in CI, you can disable Nx caching by:
+BitGoJS CI uses both GitHub Actions cache and Nx cache for optimal performance:
+
+**GitHub Actions Cache**:
+- Caches `node_modules` and `modules/*/node_modules`
+- Caches `.nx/cache` and `modules/*/dist` directories
+- Cache keys include source file hashes for proper invalidation
+
+**Nx Cache**:
+- Automatically enabled in CI (via `useNx: true` in lerna.json)
+- Caches build outputs and test results
+- Respects task dependencies (tests depend on builds)
+
+**Skipping Cache**:
+- Add the `SKIP_CACHE` label to a PR to bypass all caching
+- This forces fresh installs and builds
+- When `SKIP_CACHE` is used:
+  - GitHub Actions cache is not restored
+  - Nx caching is disabled (`NX_SKIP_NX_CACHE=true`)
+  - All tasks run fresh without any caching
+
+**Troubleshooting**:
+If you encounter module resolution errors in CI:
 ```bash
 # Option 1: Use --skip-nx-cache flag
 yarn unit-test --skip-nx-cache
 
-# Option 2: Set environment variable
-NX_SKIP_NX_CACHE=true yarn unit-test
-
-# Option 3: Temporarily disable in lerna.json
-# Set "useNx": false
+# Option 2: Clear cache and rebuild
+yarn clean-cache
+yarn build
 ```
 
 ### Browser Compatibility
