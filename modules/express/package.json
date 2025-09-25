@@ -51,6 +51,7 @@
     "dotenv": "^16.0.0",
     "express": "4.21.2",
     "io-ts": "npm:@bitgo-forks/io-ts@2.1.4",
+    "io-ts-types": "^0.5.19",
     "lodash": "^4.17.20",
     "morgan": "^1.9.1",
     "proxy-agent": "6.4.0",
