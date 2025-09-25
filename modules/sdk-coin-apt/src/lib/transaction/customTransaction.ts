@@ -20,6 +20,7 @@ import {
 } from '@aptos-labs/ts-sdk';
 import { CustomTransactionParams } from '../iface';
 import { validateModuleName, validateFunctionName } from '../utils/validation';
+import utils from '../utils';
 
 /**
  * Transaction class for custom Aptos transactions.
@@ -69,6 +70,7 @@ export class CustomTransaction extends Transaction {
 
   /**
    * Parse a transaction payload to extract the custom transaction data
+   * Requires ABI information for proper type-aware conversion
    *
    * @param {TransactionPayload} payload - The transaction payload to parse
    */
@@ -94,16 +96,23 @@ export class CustomTransaction extends Transaction {
     this._functionName = functionIdentifier;
     this._typeArguments = entryFunction.type_args.map((typeArg) => typeArg.toString());
 
-    this._functionArguments = entryFunction.args.map((arg: any) => {
-      if (typeof arg === 'string' || typeof arg === 'number' || typeof arg === 'boolean') {
-        return arg;
-      }
-      if (arg && typeof arg === 'object' && 'data' in arg && arg.data) {
-        const bytes = Array.from(arg.data) as number[];
-        return '0x' + bytes.map((b: number) => b.toString(16).padStart(2, '0')).join('');
-      }
-      return arg;
-    });
+    // Parse arguments using ABI information
+    // If ABI is available, parse with type awareness; otherwise store raw args for later processing
+    if (this._entryFunctionAbi?.parameters) {
+      this._functionArguments = entryFunction.args.map((arg: any, index: number) => {
+        const paramType = this._entryFunctionAbi?.parameters?.[index];
+        if (!paramType) {
+          throw new InvalidTransactionError(
+            `Missing ABI parameter type for argument ${index} in ${this._moduleName}::${this._functionName}. ` +
+              'ABI parameter count mismatch.'
+          );
+        }
+        return this.convertArgumentByABI(arg, paramType);
+      });
+    } else {
+      // Store raw arguments temporarily - transaction will be re-parsed when ABI is provided
+      this._functionArguments = entryFunction.args.map((arg: any) => arg);
+    }
   }
 
   /**
@@ -112,24 +121,8 @@ export class CustomTransaction extends Transaction {
   protected getTransactionPayloadData(): InputGenerateTransactionPayloadData {
     const functionName = this.getValidatedFullFunctionName();
 
-    // Convert arguments based on ABI information if available
-    const processedArguments = this._functionArguments.map((arg: any, index: number) => {
-      // Use ABI to identify the expected type for this argument
-      const paramType = this._entryFunctionAbi?.parameters?.[index];
-      if (paramType) {
-        return this.convertArgumentByABI(arg, paramType);
-      }
-
-      // Fallback: basic conversion for common cases
-      if (typeof arg === 'string' && arg.startsWith('0x') && arg.length === 66) {
-        try {
-          return AccountAddress.fromString(arg);
-        } catch {
-          return arg;
-        }
-      }
-      return arg;
-    });
+    // Arguments are pre-processed during parsing phase
+    const processedArguments = this._functionArguments;
 
     return {
       function: functionName,
@@ -184,6 +177,16 @@ export class CustomTransaction extends Transaction {
 
     // Handle nested BCS structures with 'value' property
     if (arg && typeof arg === 'object' && 'value' in arg && arg.value) {
+      // Check if inner value is a Uint8Array (common for U64 arguments)
+      if (arg.value.value && arg.value.value instanceof Uint8Array) {
+        const bytes = Array.from(arg.value.value) as number[];
+        if (this.isNumericType(paramType)) {
+          return this.convertNumericArgument(bytes, paramType);
+        }
+        // For non-numeric types, convert to hex string
+        return bytesToHex(bytes);
+      }
+
       // Simple value wrapper
       if (!('value' in arg.value) || typeof arg.value.value !== 'object') {
         return this.convertArgumentByABI(arg.value, paramType);
@@ -200,24 +203,13 @@ export class CustomTransaction extends Transaction {
       const bytes = keys.map((k) => bytesObj[k]);
       let extractedValue: any;
 
-      // Convert bytes based on parameter type
-      if (
-        paramType instanceof TypeTagAddress ||
-        paramType instanceof TypeTagU64 ||
-        paramType instanceof TypeTagU128 ||
-        paramType instanceof TypeTagU256
-      ) {
+      // Convert bytes based on parameter type using unified approach
+      if (this.isNumericType(paramType)) {
+        extractedValue = this.convertNumericArgument(bytes, paramType);
+      } else if (paramType instanceof TypeTagAddress) {
         extractedValue = bytesToHex(bytes);
       } else if (paramType instanceof TypeTagBool) {
         extractedValue = bytes[0] === 1;
-      } else if (paramType instanceof TypeTagU8 || paramType instanceof TypeTagU16 || paramType instanceof TypeTagU32) {
-        // Convert little-endian bytes to number using the original algorithm
-        // to ensure consistent behavior with large numbers
-        let result = 0;
-        for (let i = bytes.length - 1; i >= 0; i--) {
-          result = result * 256 + bytes[i];
-        }
-        extractedValue = result;
       } else {
         extractedValue = bytesToHex(bytes);
       }
@@ -273,5 +265,41 @@ export class CustomTransaction extends Transaction {
     }
 
     return fullName as `${string}::${string}::${string}`;
+  }
+
+  /**
+   * Check if a parameter type is a numeric type
+   */
+  private isNumericType(paramType: any): boolean {
+    return (
+      paramType instanceof TypeTagU8 ||
+      paramType instanceof TypeTagU16 ||
+      paramType instanceof TypeTagU32 ||
+      paramType instanceof TypeTagU64 ||
+      paramType instanceof TypeTagU128 ||
+      paramType instanceof TypeTagU256
+    );
+  }
+
+  /**
+   * Convert numeric argument using consistent little-endian byte handling
+   */
+  private convertNumericArgument(bytes: number[], paramType: any): any {
+    if (paramType instanceof TypeTagU8 || paramType instanceof TypeTagU16 || paramType instanceof TypeTagU32) {
+      // Small integers: use Number for compatibility
+      let result = 0;
+      for (let i = bytes.length - 1; i >= 0; i--) {
+        result = result * 256 + bytes[i];
+      }
+      return result;
+    }
+
+    if (paramType instanceof TypeTagU64 || paramType instanceof TypeTagU128 || paramType instanceof TypeTagU256) {
+      // Large integers: reuse the existing utility method
+      return utils.getAmountFromPayloadArgs(new Uint8Array(bytes));
+    }
+
+    // Fallback for unexpected numeric types
+    return '0x' + bytes.map((b) => b.toString(16).padStart(2, '0')).join('');
   }
 }

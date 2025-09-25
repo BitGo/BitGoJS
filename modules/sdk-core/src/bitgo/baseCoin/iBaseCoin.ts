@@ -219,7 +219,7 @@ export interface SupplementGenerateWalletOptions {
   rootPrivateKey?: string;
   disableKRSEmail?: boolean;
   multisigType?: 'tss' | 'onchain' | 'blsdkg';
-  type: 'hot' | 'cold' | 'custodial';
+  type: 'hot' | 'cold' | 'custodial' | 'advanced';
   subType?: 'lightningCustody' | 'lightningSelfCustody' | 'onPrem';
   coinSpecific?: { [coinName: string]: unknown };
   evmKeyRingReferenceWalletId?: string;

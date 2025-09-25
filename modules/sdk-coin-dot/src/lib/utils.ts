@@ -32,7 +32,7 @@ import {
   UnstakeBatchCallArgs,
 } from './iface';
 import { KeyPair } from '.';
-import { mainnetMetadataRpc, westendMetadataRpc } from '../resources';
+import { mainnetMetadataRpc, westendMetadataRpc, westendAssetHubMetadataRpc } from '../resources';
 
 const PROXY_METHOD_ARG = 2;
 // map to retrieve the address encoding format when the key is the asset name
@@ -255,7 +255,13 @@ export class Utils implements BaseUtils {
   getMaterial(coinConfig: Readonly<CoinConfig>): Material {
     const networkConfig = coinConfig.network as DotNetwork;
     const { specName, specVersion, chainName, txVersion, genesisHash } = networkConfig;
-    const metadataRpc = networkConfig.specName === 'westend' ? westendMetadataRpc : mainnetMetadataRpc;
+    let metadataRpc = mainnetMetadataRpc;
+
+    if (specName === 'westend') {
+      metadataRpc = westendMetadataRpc;
+    } else if (specName === 'westmint') {
+      metadataRpc = westendAssetHubMetadataRpc;
+    }
 
     return {
       specName,

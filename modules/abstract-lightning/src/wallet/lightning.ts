@@ -10,7 +10,12 @@ import {
   decodeOrElse,
 } from '@bitgo/sdk-core';
 import * as t from 'io-ts';
-import { createMessageSignature, unwrapLightningCoinSpecific } from '../lightning';
+import {
+  createMessageSignature,
+  getUtxolibNetwork,
+  unwrapLightningCoinSpecific,
+  validatePsbtForWithdraw,
+} from '../lightning';
 import {
   CreateInvoiceBody,
   Invoice,
@@ -28,6 +33,7 @@ import {
   ListInvoicesResponse,
   ListPaymentsResponse,
   LndCreateWithdrawResponse,
+  WatchOnly,
 } from '../codecs';
 import { LightningPaymentIntent, LightningPaymentRequest } from '@bitgo/public-types';
 
@@ -362,6 +368,32 @@ export class LightningWallet implements ILightningWallet {
       !transactionRequestCreate.transactions[0].unsignedTx.serializedTxHex
     ) {
       throw new Error(`serialized txHex is missing`);
+    }
+
+    const walletData = this.wallet.toJSON();
+    if (!walletData.coinSpecific.watchOnlyAccounts) {
+      throw new Error(`wallet is missing watch only accounts`);
+    }
+
+    const watchOnlyAccountDetails = decodeOrElse(
+      WatchOnly.name,
+      WatchOnly,
+      walletData.coinSpecific.watchOnlyAccounts,
+      (errors) => {
+        throw new Error(`invalid watch only accounts, error: ${errors}`);
+      }
+    );
+    const network = getUtxolibNetwork(this.wallet.coin());
+
+    try {
+      validatePsbtForWithdraw(
+        transactionRequestCreate.transactions[0].unsignedTx.serializedTxHex,
+        network,
+        params.recipients,
+        watchOnlyAccountDetails.accounts
+      );
+    } catch (err: any) {
+      throw new Error(`error validating withdraw psbt: ${err}`);
     }
 
     const { userAuthKey } = await getLightningAuthKeychains(this.wallet);

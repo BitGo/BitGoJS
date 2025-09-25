@@ -49,6 +49,7 @@ import { Transaction } from './transaction';
 import { TransferBuilder } from './transferBuilder';
 
 const DEFAULT_M = 3;
+const RAW_TX_HEX_REGEX = /^(0x)?[0-9a-f]{1,}$/;
 
 /**
  * EthereumLike transaction builder.
@@ -165,7 +166,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string, isFirstSigner?: boolean): Transaction {
     let tx: Transaction;
-    if (/^0x?[0-9a-f]{1,}$/.test(rawTransaction.toLowerCase())) {
+    if (RAW_TX_HEX_REGEX.test(rawTransaction.toLowerCase())) {
       tx = Transaction.fromSerialized(this._coinConfig, this._common, rawTransaction, isFirstSigner);
       this.loadBuilderInput(tx.toJson(), isFirstSigner);
     } else {
@@ -343,7 +344,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       throw new InvalidTransactionError('Raw transaction is empty');
     }
     if (typeof rawTransaction === 'string') {
-      if (/^0x?[0-9a-f]{1,}$/.test(rawTransaction.toLowerCase())) {
+      if (RAW_TX_HEX_REGEX.test(rawTransaction.toLowerCase())) {
         const txBytes = ethUtil.toBuffer(ethUtil.addHexPrefix(rawTransaction.toLowerCase()));
         if (!this.isEip1559Txn(txBytes) && !this.isRLPDecodable(txBytes)) {
           throw new ParseTransactionError('There was error in decoding the hex string');
