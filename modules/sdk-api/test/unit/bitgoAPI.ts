@@ -305,4 +305,17 @@ describe('Constructor', function () {
       result.should.containDeep(['wallet-id-2', 'wallet-id-4']);
     });
   });
+
+  describe('constants parameter', function () {
+    it('should allow passing constants via options and expose via fetchConstants', async function () {
+      const bitgo = new BitGoAPI({
+        env: 'custom',
+        customRootURI: 'https://app.example.local',
+        clientConstants: { maxFeeRate: '123123123123123' },
+      });
+
+      const constants = await bitgo.fetchConstants();
+      constants.should.have.property('maxFeeRate', '123123123123123');
+    });
+  });
 });
