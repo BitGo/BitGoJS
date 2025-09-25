@@ -128,6 +128,7 @@
     "check-fmt-changed": "lerna run check-fmt --since origin/${GITHUB_REPO_BRANCH:-master}..HEAD --stream --parallel",
     "check-fmt": "lerna run check-fmt --stream --parallel",
     "check-commits": "yarn commitlint --from=origin/${GITHUB_REPO_BRANCH:-master} -V",
+    "clean-cache": "npx nx reset",
     "check-deps": "tsx ./scripts/check-package-dependencies.ts",
     "check-versions": "node ./check-package-versions.js",
     "dev": "tsc -b ./tsconfig.packages.json -w",
