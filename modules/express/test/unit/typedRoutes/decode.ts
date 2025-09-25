@@ -11,6 +11,7 @@ import {
   LightningInitWalletBody,
   LightningInitWalletParams,
 } from '../../../src/typedRoutes/api/v2/lightningInitWallet';
+import { UnlockLightningWalletBody, UnlockLightningWalletParams } from '../../../src/typedRoutes/api/v2/unlockWallet';
 
 export function assertDecode<T>(codec: t.Type<T, unknown>, input: unknown): T {
   const result = codec.decode(input);
@@ -173,5 +174,13 @@ describe('io-ts decode tests', function () {
     assertDecode(t.type(LightningInitWalletBody), { passphrase: 'p' });
     // valid with expressHost
     assertDecode(t.type(LightningInitWalletBody), { passphrase: 'p', expressHost: 'host.example' });
+  });
+  it('express.lightning.unlockWallet', function () {
+    // params require coin and id
+    assertDecode(t.type(UnlockLightningWalletParams), { coin: 'tlnbtc', id: 'wallet123' });
+    // missing passphrase
+    assert.throws(() => assertDecode(t.type(UnlockLightningWalletBody), {}));
+    // valid body
+    assertDecode(t.type(UnlockLightningWalletBody), { passphrase: 'secret' });
   });
 });

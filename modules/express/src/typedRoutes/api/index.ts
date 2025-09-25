@@ -15,6 +15,7 @@ import { PutPendingApproval } from './v1/pendingApproval';
 import { PostSignTransaction } from './v1/signTransaction';
 import { PostKeychainLocal } from './v2/keychainLocal';
 import { PostLightningInitWallet } from './v2/lightningInitWallet';
+import { PostUnlockLightningWallet } from './v2/unlockWallet';
 import { PostVerifyCoinAddress } from './v2/verifyAddress';
 import { PostDeriveLocalKeyChain } from './v1/deriveLocalKeyChain';
 
@@ -54,6 +55,9 @@ export const ExpressApi = apiSpec({
   },
   'express.lightning.initWallet': {
     post: PostLightningInitWallet,
+  },
+  'express.lightning.unlockWallet': {
+    post: PostUnlockLightningWallet,
   },
   'express.verifycoinaddress': {
     post: PostVerifyCoinAddress,
