@@ -9,11 +9,11 @@ import { BitgoExpressError } from '../../schemas/error';
 export const OfcSignPayloadBody = {
   /** The ID of the OFC wallet to sign the payload with. */
   walletId: NonEmptyString,
-  /** The payload to sign. Will always decode into a JSON object. */
+  /** The payload to sign. The input can either be a stringified JSON, or a JSON object. */
   payload: t.union([Json, t.string.pipe(JsonFromString)]),
   /** The passphrase to decrypt the user key. */
   walletPassphrase: optional(t.string),
-};
+} as const;
 
 export const OfcSignPayloadResponse200 = t.type({
   /** The string form of the JSON payload that was signed. */

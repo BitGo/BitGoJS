@@ -61,7 +61,10 @@ describe('Sign an arbitrary payload with trading account key', function () {
       },
       query: {},
     } as unknown as ExpressApiRouteRequest<'express.ofc.signPayload', 'post'>;
-    await handleV2OFCSignPayload(req).should.be.resolvedWith(expectedResponse);
+    const result = await handleV2OFCSignPayload(req).should.be.resolvedWith(expectedResponse);
+    decodeOrElse('OfcSignPayloadResponse200', OfcSignPayloadResponse[200], result, (_) => {
+      throw new Error(`Response did not match expected codec`);
+    });
   });
   it('should return a signed payload with type as json string', async function () {
     const expectedResponse = {
@@ -80,7 +83,10 @@ describe('Sign an arbitrary payload with trading account key', function () {
       },
       query: {},
     } as unknown as ExpressApiRouteRequest<'express.ofc.signPayload', 'post'>;
-    await handleV2OFCSignPayload(req).should.be.resolvedWith(expectedResponse);
+    const result = await handleV2OFCSignPayload(req).should.be.resolvedWith(expectedResponse);
+    decodeOrElse('OfcSignPayloadResponse200', OfcSignPayloadResponse[200], result, (_) => {
+      throw new Error(`Response did not match expected codec`);
+    });
   });
   it('should decode handler response with OfcSignPayloadResponse codec', async function () {
     const expected = {
