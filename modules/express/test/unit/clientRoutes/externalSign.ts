@@ -100,6 +100,18 @@ describe('External signer', () => {
     }
   });
 
+  afterEach(async () => {
+    // Clean up the encryptedPrivKeys.json file if it exists
+    try {
+      await fs.promises.unlink('encryptedPrivKeys.json');
+    } catch (err) {
+      // Ignore error if file doesn't exist
+      if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
+        throw err;
+      }
+    }
+  });
+
   it('should read an encrypted prv from signerFileSystemPath and pass it to coin.signTransaction', async () => {
     const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(validPrv);
     const envStub = sinon
