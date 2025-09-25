@@ -1,7 +1,8 @@
 import * as t from 'io-ts';
 import { httpRoute, httpRequest, optional } from '@api-ts/io-ts-http';
 import { BitgoExpressError } from '../../schemas/error';
-import { UserKeychainCodec, BackupKeychainCodec, BitgoKeychainCodec } from '../../../wallet/codec';
+import { UserKeychainCodec, BackupKeychainCodec, BitgoKeychainCodec } from '../../schemas/keychain';
+import { multisigType, walletType } from '../../schemas/wallet';
 
 /**
  * Request body for wallet generation.
@@ -12,9 +13,9 @@ export const GenerateWalletBody = {
   /** Enterprise id. This is required for Ethereum wallets since they can only be created as part of an enterprise */
   enterprise: t.string,
   /** If absent, BitGo uses the default wallet type for the asset */
-  multisigType: optional(t.union([t.literal('onchain'), t.literal('tss'), t.literal('blsdkg')])),
+  multisigType: multisigType,
   /** The type of wallet, defined by key management and signing protocols. 'hot' and 'cold' are both self-managed wallets. If absent, defaults to 'hot' */
-  type: optional(t.union([t.literal('hot'), t.literal('cold'), t.literal('custodial')])),
+  type: walletType,
   /** Passphrase to be used to encrypt the user key on the wallet */
   passphrase: optional(t.string),
   /** User provided public key */

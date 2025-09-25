@@ -9,7 +9,7 @@ import '../../lib/asserts';
 
 import { ExpressApiRouteRequest } from '../../../src/typedRoutes/api';
 import { handleV2GenerateWallet } from '../../../src/clientRoutes';
-import { GenerateWalletResponse } from '../../../src/typedRoutes/api/v2/generate';
+import { GenerateWalletResponse } from '../../../src/typedRoutes/api/v2/generateWallet';
 
 describe('Generate Wallet', () => {
   let bitgo: TestBitGoAPI;
@@ -91,6 +91,7 @@ describe('Generate Wallet', () => {
       body: walletGenerateBody,
       decoded: {
         ...walletGenerateBody,
+        coin,
       },
     } as unknown as ExpressApiRouteRequest<'express.wallet.generate', 'post'>;
 
@@ -105,6 +106,7 @@ describe('Generate Wallet', () => {
       body: walletGenerateBody,
       decoded: {
         ...walletGenerateBody,
+        coin,
       },
     } as unknown as ExpressApiRouteRequest<'express.wallet.generate', 'post'>;
 
@@ -189,6 +191,7 @@ describe('Generate Wallet', () => {
       body: walletGenerateBody,
       decoded: {
         ...walletGenerateBody,
+        coin,
       },
     } as unknown as ExpressApiRouteRequest<'express.wallet.generate', 'post'>;
 

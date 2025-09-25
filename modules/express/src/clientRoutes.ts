@@ -639,7 +639,7 @@ export async function handleV2OFCSignPayload(
  */
 export async function handleV2GenerateWallet(req: ExpressApiRouteRequest<'express.wallet.generate', 'post'>) {
   const bitgo = req.bitgo;
-  const coin = bitgo.coin(req.params.coin);
+  const coin = bitgo.coin(req.decoded.coin);
   const result = await coin.wallets().generateWallet(req.body);
   if (req.query.includeKeychains === 'false') {
     return result.wallet.toJSON();

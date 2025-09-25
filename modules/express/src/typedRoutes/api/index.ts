@@ -26,7 +26,7 @@ import { PostCreateAddress } from './v2/createAddress';
 import { PutFanoutUnspents } from './v1/fanoutUnspents';
 import { PostOfcSignPayload } from './v2/ofcSignPayload';
 import { PostWalletRecoverToken } from './v2/walletRecoverToken';
-import { PostGenerateWallet } from './v2/generate';
+import { PostGenerateWallet } from './v2/generateWallet';
 
 export const ExpressApi = apiSpec({
   'express.ping': {
