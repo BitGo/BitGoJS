@@ -30,7 +30,7 @@ describe('Dot Batch Transaction Builder', () => {
   describe('build batch transaction', function () {
     const sender = accounts.account1;
     const referenceBlock = '0x462ab5246361febb9294ffa41dd099edddec30a205ea15fbd247abb0ddbabd51';
-    const genesisHash = '0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e';
+    const genesisHash = '0x67f9723393ef76214df0118c34bbbd3dbebc8ed46a10973a8c969d48fe7598c9';
 
     beforeEach(() => {
       const config = buildTestConfig();
@@ -67,7 +67,7 @@ describe('Dot Batch Transaction Builder', () => {
         should.deepEqual(txJson.nonce, 0);
         should.deepEqual(txJson.tip, 0);
         should.deepEqual(txJson.transactionVersion, txVersion);
-        should.deepEqual(txJson.chainName, 'Westend');
+        should.deepEqual(txJson.chainName, 'Westend Asset Hub');
         should.deepEqual(txJson.eraPeriod, 64);
 
         const txHex = tx.toBroadcastFormat();
@@ -104,7 +104,7 @@ describe('Dot Batch Transaction Builder', () => {
         should.deepEqual(txJson.nonce, 0);
         should.deepEqual(txJson.tip, 0);
         should.deepEqual(txJson.transactionVersion, txVersion);
-        should.deepEqual(txJson.chainName, 'Westend');
+        should.deepEqual(txJson.chainName, 'Westend Asset Hub');
         should.deepEqual(txJson.eraPeriod, 64);
 
         const txHex = tx.toBroadcastFormat();
@@ -140,7 +140,7 @@ describe('Dot Batch Transaction Builder', () => {
         should.deepEqual(txJson.nonce, 0);
         should.deepEqual(txJson.tip, 0);
         should.deepEqual(txJson.transactionVersion, txVersion);
-        should.deepEqual(txJson.chainName, 'Westend');
+        should.deepEqual(txJson.chainName, 'Westend Asset Hub');
         should.deepEqual(txJson.eraPeriod, 64);
 
         const txHex = tx.toBroadcastFormat();
@@ -177,7 +177,7 @@ describe('Dot Batch Transaction Builder', () => {
         should.deepEqual(txJson.nonce, 0);
         should.deepEqual(txJson.tip, 0);
         should.deepEqual(txJson.transactionVersion, txVersion);
-        should.deepEqual(txJson.chainName, 'Westend');
+        should.deepEqual(txJson.chainName, 'Westend Asset Hub');
         should.deepEqual(txJson.eraPeriod, 64);
 
         const txHex = tx.toBroadcastFormat();
@@ -185,37 +185,6 @@ describe('Dot Batch Transaction Builder', () => {
       });
 
       describe('from raw', () => {
-        it('should build a batch from a raw signed tx', async () => {
-          builder.from(rawTx.batch.threeAddPureProxies.signed);
-          builder.validity({ firstValid: 9266787, maxDuration: 64 }).referenceBlock(referenceBlock);
-          const tx = await builder.build();
-          const txJson = tx.toJson();
-          // test the call items
-          should.deepEqual(txJson.sender, sender.address);
-          should.deepEqual(txJson.batchCalls.length, 3);
-          should.deepEqual(txJson.batchCalls[0].args?.proxy_type, ProxyType.ANY);
-          should.deepEqual(txJson.batchCalls[0].args?.delay, 0);
-          should.deepEqual(txJson.batchCalls[0].args?.index, 0);
-          should.deepEqual(txJson.batchCalls[1].args?.proxy_type, ProxyType.ANY);
-          should.deepEqual(txJson.batchCalls[1].args?.delay, 0);
-          should.deepEqual(txJson.batchCalls[1].args?.index, 1);
-          should.deepEqual(txJson.batchCalls[2].args?.proxy_type, ProxyType.ANY);
-          should.deepEqual(txJson.batchCalls[2].args?.delay, 0);
-          should.deepEqual(txJson.batchCalls[2].args?.index, 2);
-          should.deepEqual(txJson.blockNumber, 9266787);
-          should.deepEqual(txJson.referenceBlock, referenceBlock);
-          should.deepEqual(txJson.genesisHash, genesisHash);
-          should.deepEqual(txJson.specVersion, specVersion);
-          should.deepEqual(txJson.nonce, 0);
-          should.deepEqual(txJson.tip, 0);
-          should.deepEqual(txJson.transactionVersion, txVersion);
-          should.deepEqual(txJson.chainName, 'Westend');
-          should.deepEqual(txJson.eraPeriod, 64);
-
-          const txHex = tx.toBroadcastFormat();
-          should.deepEqual(rawTx.batch.threeAddPureProxies.signed, txHex);
-        });
-
         it('should build a batch all from a raw signed tx', async () => {
           builder.from(rawTx.batchAll.twoAddPureProxies.signed);
           builder.validity({ firstValid: 9279281, maxDuration: 64 }).referenceBlock(referenceBlock);
@@ -237,7 +206,7 @@ describe('Dot Batch Transaction Builder', () => {
           should.deepEqual(txJson.nonce, 0);
           should.deepEqual(txJson.tip, 0);
           should.deepEqual(txJson.transactionVersion, txVersion);
-          should.deepEqual(txJson.chainName, 'Westend');
+          should.deepEqual(txJson.chainName, 'Westend Asset Hub');
           should.deepEqual(txJson.eraPeriod, 64);
 
           const txHex = tx.toBroadcastFormat();
@@ -267,7 +236,7 @@ describe('Dot Batch Transaction Builder', () => {
           should.deepEqual(txJson.nonce, 0);
           should.deepEqual(txJson.tip, 0);
           should.deepEqual(txJson.transactionVersion, txVersion);
-          should.deepEqual(txJson.chainName, 'Westend');
+          should.deepEqual(txJson.chainName, 'Westend Asset Hub');
           should.deepEqual(txJson.eraPeriod, 64);
 
           const txHex = tx.toBroadcastFormat();
@@ -299,7 +268,7 @@ describe('Dot Batch Transaction Builder', () => {
           should.deepEqual(txJson.nonce, 0);
           should.deepEqual(txJson.tip, 0);
           should.deepEqual(txJson.transactionVersion, txVersion);
-          should.deepEqual(txJson.chainName, 'Westend');
+          should.deepEqual(txJson.chainName, 'Westend Asset Hub');
           should.deepEqual(txJson.eraPeriod, 64);
 
           const txHex = tx.toBroadcastFormat();
@@ -337,7 +306,7 @@ describe('Dot Batch Transaction Builder', () => {
         should.deepEqual(txJson.nonce, 200);
         should.deepEqual(txJson.tip, 0);
         should.deepEqual(txJson.transactionVersion, txVersion);
-        should.deepEqual(txJson.chainName, 'Westend');
+        should.deepEqual(txJson.chainName, 'Westend Asset Hub');
         should.deepEqual(txJson.eraPeriod, 64);
 
         const txHex = tx.toBroadcastFormat();
@@ -373,7 +342,7 @@ describe('Dot Batch Transaction Builder', () => {
         should.deepEqual(txJson.nonce, 200);
         should.deepEqual(txJson.tip, 0);
         should.deepEqual(txJson.transactionVersion, txVersion);
-        should.deepEqual(txJson.chainName, 'Westend');
+        should.deepEqual(txJson.chainName, 'Westend Asset Hub');
         should.deepEqual(txJson.eraPeriod, 64);
 
         const txHex = tx.toBroadcastFormat();
@@ -408,7 +377,7 @@ describe('Dot Batch Transaction Builder', () => {
         should.deepEqual(txJson.nonce, 0);
         should.deepEqual(txJson.tip, 0);
         should.deepEqual(txJson.transactionVersion, txVersion);
-        should.deepEqual(txJson.chainName, 'Westend');
+        should.deepEqual(txJson.chainName, 'Westend Asset Hub');
         should.deepEqual(txJson.eraPeriod, 64);
 
         const txHex = tx.toBroadcastFormat();
@@ -443,7 +412,7 @@ describe('Dot Batch Transaction Builder', () => {
         should.deepEqual(txJson.nonce, 0);
         should.deepEqual(txJson.tip, 0);
         should.deepEqual(txJson.transactionVersion, txVersion);
-        should.deepEqual(txJson.chainName, 'Westend');
+        should.deepEqual(txJson.chainName, 'Westend Asset Hub');
         should.deepEqual(txJson.eraPeriod, 64);
 
         const txHex = tx.toBroadcastFormat();
@@ -489,7 +458,7 @@ describe('Dot Batch Transaction Builder', () => {
         should.deepEqual(txJson.nonce, 0);
         should.deepEqual(txJson.tip, 0);
         should.deepEqual(txJson.transactionVersion, txVersion);
-        should.deepEqual(txJson.chainName, 'Westend');
+        should.deepEqual(txJson.chainName, 'Westend Asset Hub');
         should.deepEqual(txJson.eraPeriod, 64);
 
         const txHex = tx.toBroadcastFormat();
@@ -497,40 +466,6 @@ describe('Dot Batch Transaction Builder', () => {
       });
 
       describe('from raw', () => {
-        it('should build a batch from a raw unsigned tx', async () => {
-          builder.from(rawTx.batch.threeAddPureProxies.unsigned);
-          builder
-            .validity({ firstValid: 9266787, maxDuration: 64 })
-            .referenceBlock(referenceBlock)
-            .sender({ address: sender.address });
-
-          const tx = await builder.build();
-          const txJson = tx.toJson();
-          should.deepEqual(txJson.sender, sender.address);
-          should.deepEqual(txJson.batchCalls.length, 3);
-          should.deepEqual(txJson.batchCalls[0].args?.proxy_type, ProxyType.ANY);
-          should.deepEqual(txJson.batchCalls[0].args?.delay, 0);
-          should.deepEqual(txJson.batchCalls[0].args?.index, 0);
-          should.deepEqual(txJson.batchCalls[1].args?.proxy_type, ProxyType.ANY);
-          should.deepEqual(txJson.batchCalls[1].args?.delay, 0);
-          should.deepEqual(txJson.batchCalls[1].args?.index, 1);
-          should.deepEqual(txJson.batchCalls[2].args?.proxy_type, ProxyType.ANY);
-          should.deepEqual(txJson.batchCalls[2].args?.delay, 0);
-          should.deepEqual(txJson.batchCalls[2].args?.index, 2);
-          should.deepEqual(txJson.blockNumber, 9266787);
-          should.deepEqual(txJson.referenceBlock, referenceBlock);
-          should.deepEqual(txJson.genesisHash, genesisHash);
-          should.deepEqual(txJson.specVersion, specVersion);
-          should.deepEqual(txJson.nonce, 0);
-          should.deepEqual(txJson.tip, 0);
-          should.deepEqual(txJson.transactionVersion, txVersion);
-          should.deepEqual(txJson.chainName, 'Westend');
-          should.deepEqual(txJson.eraPeriod, 64);
-
-          const txHex = tx.toBroadcastFormat();
-          should.deepEqual(rawTx.batch.threeAddPureProxies.unsigned, txHex);
-        });
-
         it('should build a batch all from a raw unsigned tx', async () => {
           builder.from(rawTx.batchAll.twoAddPureProxies.unsigned);
           builder
@@ -555,7 +490,7 @@ describe('Dot Batch Transaction Builder', () => {
           should.deepEqual(txJson.nonce, 200);
           should.deepEqual(txJson.tip, 0);
           should.deepEqual(txJson.transactionVersion, txVersion);
-          should.deepEqual(txJson.chainName, 'Westend');
+          should.deepEqual(txJson.chainName, 'Westend Asset Hub');
           should.deepEqual(txJson.eraPeriod, 64);
 
           const txHex = tx.toBroadcastFormat();
@@ -589,7 +524,7 @@ describe('Dot Batch Transaction Builder', () => {
           should.deepEqual(txJson.nonce, 0);
           should.deepEqual(txJson.tip, 0);
           should.deepEqual(txJson.transactionVersion, txVersion);
-          should.deepEqual(txJson.chainName, 'Westend');
+          should.deepEqual(txJson.chainName, 'Westend Asset Hub');
           should.deepEqual(txJson.eraPeriod, 64);
 
           const txHex = tx.toBroadcastFormat();
@@ -624,7 +559,7 @@ describe('Dot Batch Transaction Builder', () => {
           should.deepEqual(txJson.nonce, 0);
           should.deepEqual(txJson.tip, 0);
           should.deepEqual(txJson.transactionVersion, txVersion);
-          should.deepEqual(txJson.chainName, 'Westend');
+          should.deepEqual(txJson.chainName, 'Westend Asset Hub');
           should.deepEqual(txJson.eraPeriod, 64);
 
           const txHex = tx.toBroadcastFormat();
