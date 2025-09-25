@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flr@1.5.4...@bitgo/sdk-coin-flr@1.6.0) (2025-09-25)
+
+### Features
+
+- add Flare token support and related configurations ([91dc8fb](https://github.com/BitGo/BitGoJS/commit/91dc8fb841de595d9b29142d066c697878d7472e))
+- configure learn to skip git operations ([ee3a622](https://github.com/BitGo/BitGoJS/commit/ee3a6220496476aa7f4545b5f4a9a3bf97d9bdb9))
+
 ## [1.5.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flr@1.5.3...@bitgo/sdk-coin-flr@1.5.4) (2025-09-03)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-flr
