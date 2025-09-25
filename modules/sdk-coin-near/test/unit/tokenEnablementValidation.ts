@@ -4,12 +4,15 @@ import 'should';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
 // Import core types for transaction verification
-import { VerifyTransactionOptions } from '@bitgo/sdk-core';
+import { VerifyTransactionOptions, common } from '@bitgo/sdk-core';
 // Import NEAR-specific types and classes
 import { TransactionPrebuild, Near } from '../../src/near';
 import { TNear as TNearCoin } from '../../src/tnear';
 // Import test data containing sample transactions and account info
 import * as testData from '../resources/near';
+// Import testing utilities
+import nock from 'nock';
+import assert from 'assert';
 
 /**
  * Test suite for NEAR token enablement validation
@@ -421,5 +424,81 @@ describe('NEAR Token Enablement Validation', function () {
     result.failure.should.have.length(1);
     // The error should be related to transaction output mismatch since it's a different transaction type
     result.failure[0].message.should.containEql('Tx outputs does not match with expected txParams recipients');
+  });
+
+  /**
+   * TEST 8: Security Test - Spoofed Transaction Hex from Wallet Platform
+   *
+   * This test simulates what happens when the wallet platform sends a spoofed transaction hex
+   * for token enablement. This test verifies that our validation catches the spoofed transaction
+   * and prevents the user from being tricked into signing malicious transactions.
+   *
+   * The test simulates the flow where:
+   * 1. Wallet platform calls the API to build a token enablement transaction
+   * 2. A malicious actor intercepts and returns a spoofed transaction hex
+   * 3. The verification logic should detect the spoofed hex and throw an error
+   */
+  it('should fail when wallet platform sends spoofed transaction hex for token enablement', async function () {
+    // Create a valid transaction response structure from wallet platform with spoofed txHex
+    // The txHex looks like valid hex but contains malicious/invalid transaction data
+    const spoofedTxHex = '0a0c0a080800100018a8fb0410130a0c0a080800100018d5d0041014'; // Valid hex but invalid transaction
+
+    // Mock the API endpoints that will be called during token enablement
+    const bgUrl = common.Environments['mock'].uri;
+
+    // Mock the key endpoint needed for signing
+    nock(bgUrl)
+      .post('/api/v2/tnear/key/5b3424f91bf34993006eae94')
+      .reply(200, [
+        {
+          encryptedPrv: 'fakePrv',
+        },
+      ]);
+
+    // Mock the prebuild API response to return spoofed txHex
+    nock(bgUrl)
+      .post('/api/v2/tnear/wallet/5b34252f1bf34993006eae96/tx/build')
+      .reply(200, {
+        txHex: spoofedTxHex,
+        txid: '586c5b59b10b134d04c16ac1b273fe3c5529f34aef75db4456cd469c5cdac7e2',
+        recipients: [
+          {
+            address: 'test.near',
+            amount: '0', // Valid amount for token enablement
+          },
+        ],
+        coin: 'tnear',
+        feeInfo: {
+          size: 1000,
+          fee: 1160407,
+          feeRate: 1160407,
+        },
+      });
+
+    // This should fail because the spoofed transaction hex contains invalid transaction data
+    // The verification logic should catch this when trying to validate the transaction
+    await assert.rejects(
+      async () => {
+        // Create valid transaction parameters for token enablement
+        const txParams = createValidTxParams();
+
+        // Create transaction prebuild with spoofed hex
+        const txPrebuild = createTxPrebuild(spoofedTxHex);
+
+        const verifyOptions: VerifyTransactionOptions = {
+          txParams, // What the user thinks they're signing
+          txPrebuild, // The spoofed transaction hex from malicious actor
+          wallet: { id: 'test-wallet' } as any,
+        };
+
+        // This should fail because the spoofed hex doesn't represent a valid NEAR transaction
+        await basecoin.verifyTransaction(verifyOptions);
+      },
+      (error: any) => {
+        // The error should indicate that the transaction is invalid
+        // This could be various validation errors depending on what the spoofed hex contains
+        return error.message.includes('unable to build transaction from raw');
+      }
+    );
   });
 });
