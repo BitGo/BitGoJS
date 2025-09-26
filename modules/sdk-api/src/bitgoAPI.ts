@@ -105,6 +105,7 @@ export class BitGoAPI implements BitGoBase {
   protected _blockchain?: any;
   protected _travelRule?: any;
   protected _pendingApprovals?: any;
+  protected _clientConstants?: Record<string, any>;
 
   protected static _constants: any;
   protected static _constantsExpire: any;
@@ -275,6 +276,19 @@ export class BitGoAPI implements BitGoBase {
     this._baseApiUrlV2 = this._baseUrl + '/api/v2';
     this._baseApiUrlV3 = this._baseUrl + '/api/v3';
     this._token = params.accessToken;
+
+    if (!BitGoAPI._constants) {
+      BitGoAPI._constants = {};
+    }
+    if (!BitGoAPI._constantsExpire) {
+      BitGoAPI._constantsExpire = {};
+    }
+
+    const providedConstants = this.extractClientConstants(params.clientConstants || (params as any).constants);
+    if (providedConstants) {
+      this._clientConstants = providedConstants.constants;
+    }
+
     this._userAgent = params.userAgent || 'BitGoJS-api/' + this.version();
     this._reqId = undefined;
     this._refreshToken = params.refreshToken;
@@ -307,13 +321,35 @@ export class BitGoAPI implements BitGoBase {
     const e = new Error();
 
     // Kick off first load of constants
-    this.fetchConstants().catch((err) => {
-      if (err) {
-        // make sure an error does not terminate the entire script
-        console.error('failed to fetch initial client constants from BitGo');
-        debug(e.stack);
-      }
-    });
+    if (!providedConstants) {
+      this.fetchConstants().catch((err) => {
+        if (err) {
+          // make sure an error does not terminate the entire script
+          console.error('failed to fetch initial client constants from BitGo');
+          debug(e.stack);
+        }
+      });
+    }
+  }
+
+  private extractClientConstants(
+    clientConstants?: BitGoAPIOptions['clientConstants'] | BitGoAPIOptions['constants']
+  ): { constants: Record<string, any>; ttl?: number } | undefined {
+    if (!clientConstants) {
+      return undefined;
+    }
+
+    if ('constants' in (clientConstants as any)) {
+      const constantsContainer = clientConstants as { constants: Record<string, any>; ttl?: number };
+      return {
+        constants: constantsContainer.constants,
+        ttl: typeof constantsContainer.ttl === 'number' ? constantsContainer.ttl : undefined,
+      };
+    }
+
+    return {
+      constants: clientConstants as Record<string, any>,
+    };
   }
 
   /**
@@ -541,8 +577,10 @@ export class BitGoAPI implements BitGoBase {
       BitGoAPI._constantsExpire = {};
     }
 
-    if (BitGoAPI._constants[env] && BitGoAPI._constantsExpire[env] && new Date() < BitGoAPI._constantsExpire[env]) {
-      return BitGoAPI._constants[env];
+    const cachedConstants = BitGoAPI._constants[env];
+    const cacheExpiry = BitGoAPI._constantsExpire[env];
+    if (cachedConstants && (!cacheExpiry || new Date() < cacheExpiry)) {
+      return _.merge({}, cachedConstants, this._clientConstants || {});
     }
 
     // client constants call cannot be authenticated using the normal HMAC validation
@@ -560,13 +598,14 @@ export class BitGoAPI implements BitGoBase {
       }
     }
     const result = await resultPromise;
+
     BitGoAPI._constants[env] = result.body.constants;
 
     if (result.body?.ttl && typeof result.body?.ttl === 'number') {
       BitGoAPI._constantsExpire[env] = new Date(new Date().getTime() + (result.body.ttl as number) * 1000);
     }
 
-    return BitGoAPI._constants[env];
+    return _.merge({}, BitGoAPI._constants[env], this._clientConstants || {});
   }
 
   /**

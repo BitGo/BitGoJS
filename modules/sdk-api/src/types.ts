@@ -23,6 +23,16 @@ export {
 export interface BitGoAPIOptions {
   accessToken?: string;
   authVersion?: 2 | 3;
+  clientConstants?:
+    | Record<string, any>
+    | {
+        constants: Record<string, any>;
+        ttl?: number;
+      };
+  /**
+   * @deprecated use clientConstants instead
+   */
+  constants?: Record<string, any>;
   customBitcoinNetwork?: V1Network;
   customRootURI?: string;
   customSigningAddress?: string;
