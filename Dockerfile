@@ -333,11 +333,13 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-zec
 #LINK_END
 
-#LABEL_START
-LABEL created="Thu, 04 Sep 2025 18:59:30 GMT"
-LABEL version=15.0.0
-LABEL git_hash=bbdf6e60b720b25e3212f3a4c5bdc81732a505e8
-#LABEL_END
+ARG BUILD_DATE
+ARG VERSION
+ARG GIT_HASH
+
+LABEL created=${BUILD_DATE}
+LABEL version=${VERSION}
+LABEL git_hash=${GIT_HASH}
 
 USER node
 ENV NODE_ENV=production

@@ -270,5 +270,9 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
         with:
           ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Setup Docker compatibility with Podman
+        run: sudo ln -sf /usr/bin/podman /usr/local/bin/docker
+
       - name: Build BitGoJS Express Docker Image
-        run: podman build .
+        run: ./scripts/build-docker-express.sh
