@@ -265,13 +265,13 @@ export class Hbar extends BaseCoin {
    * @param txHex - The transaction hex to verify
    * @param expectedToken - Object containing tokenId (preferred) or tokenName
    * @param expectedAccountId - The expected account ID that will enable the token
-   * @returns Promise<boolean> - True if valid token enablement transaction
+   * @throws Error if the transaction is not a valid token enablement transaction
    */
   async verifyTokenEnablementTransaction(
     txHex: string,
     expectedToken: { tokenId?: string; tokenName?: string },
     expectedAccountId: string
-  ): Promise<boolean> {
+  ): Promise<void> {
     // Validate required parameters
     if (!txHex || !expectedAccountId || (!expectedToken.tokenId && !expectedToken.tokenName)) {
       const missing: string[] = [];
@@ -296,8 +296,6 @@ export class Hbar extends BaseCoin {
       this.validateAccountIdMatches(explainedTx, raw, expectedAccountId);
       this.validateTokenEnablementTarget(explainedTx, raw, expectedToken);
       this.validateAssociateInstructionOnly(raw);
-
-      return true;
     } catch (error) {
       throw new Error(`Invalid token enablement transaction: ${error.message}`);
     }
