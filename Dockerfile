@@ -340,7 +340,7 @@ LABEL git_hash=bbdf6e60b720b25e3212f3a4c5bdc81732a505e8
 #LABEL_END
 
 USER node
-ENV NODE_ENV production
-ENV BITGO_BIND 0.0.0.0
+ENV NODE_ENV=production
+ENV BITGO_BIND=0.0.0.0
 EXPOSE 3080
 ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/node", "/var/bitgo-express/bin/bitgo-express"]
