@@ -118,9 +118,15 @@ export abstract class MpcUtils {
     const chain = this.baseCoin.getChain();
 
     if (params.intentType === 'customTx' && baseCoin.getFamily() === 'sol') {
+      const hasSolInstructions = params.solInstructions && params.solInstructions.length > 0;
+      const hasVersionedData =
+        params.solVersionedTransactionData &&
+        params.solVersionedTransactionData.versionedInstructions &&
+        params.solVersionedTransactionData.versionedInstructions.length > 0;
+
       assert(
-        params.solInstructions && params.solInstructions.length > 0,
-        `'solInstructions' is a required parameter for customTx intent`
+        hasSolInstructions || hasVersionedData,
+        `'solInstructions' or 'solVersionedTransactionData' is required for customTx intent`
       );
     }
 

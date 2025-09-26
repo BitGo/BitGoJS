@@ -1,10 +1,11 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BuildTransactionError, SolInstruction, TransactionType } from '@bitgo/sdk-core';
+import { BuildTransactionError, SolInstruction, SolVersionedInstruction, TransactionType } from '@bitgo/sdk-core';
 import { PublicKey } from '@solana/web3.js';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import { InstructionBuilderTypes } from './constants';
-import { CustomInstruction } from './iface';
+import { CustomInstruction, VersionedCustomInstruction, VersionedTransactionData } from './iface';
+import { isSolLegacyInstruction } from './utils';
 import assert from 'assert';
 
 /**
@@ -12,7 +13,7 @@ import assert from 'assert';
  * Allows building transactions with any set of raw Solana instructions.
  */
 export class CustomInstructionBuilder extends TransactionBuilder {
-  private _customInstructions: CustomInstruction[] = [];
+  private _customInstructions: (CustomInstruction | VersionedCustomInstruction)[] = [];
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -32,6 +33,9 @@ export class CustomInstructionBuilder extends TransactionBuilder {
       if (instruction.type === InstructionBuilderTypes.CustomInstruction) {
         const customInstruction = instruction as CustomInstruction;
         this.addCustomInstruction(customInstruction.params);
+      } else if (instruction.type === InstructionBuilderTypes.VersionedCustomInstruction) {
+        const versionedCustomInstruction = instruction as VersionedCustomInstruction;
+        this.addCustomInstruction(versionedCustomInstruction.params);
       }
     }
   }
@@ -41,13 +45,23 @@ export class CustomInstructionBuilder extends TransactionBuilder {
    * @param instruction - The custom instruction to add
    * @returns This builder instance
    */
-  addCustomInstruction(instruction: SolInstruction): this {
+  addCustomInstruction(instruction: SolInstruction | SolVersionedInstruction): this {
     this.validateInstruction(instruction);
-    const customInstruction: CustomInstruction = {
-      type: InstructionBuilderTypes.CustomInstruction,
-      params: instruction,
-    };
-    this._customInstructions.push(customInstruction);
+
+    if (isSolLegacyInstruction(instruction)) {
+      const customInstruction: CustomInstruction = {
+        type: InstructionBuilderTypes.CustomInstruction,
+        params: instruction,
+      };
+      this._customInstructions.push(customInstruction);
+    } else {
+      const versionedCustomInstruction: VersionedCustomInstruction = {
+        type: InstructionBuilderTypes.VersionedCustomInstruction,
+        params: instruction,
+      };
+      this._customInstructions.push(versionedCustomInstruction);
+    }
+
     return this;
   }
 
@@ -56,7 +70,7 @@ export class CustomInstructionBuilder extends TransactionBuilder {
    * @param instructions - Array of custom instructions to add
    * @returns This builder instance
    */
-  addCustomInstructions(instructions: SolInstruction[]): this {
+  addCustomInstructions(instructions: (SolInstruction | SolVersionedInstruction)[]): this {
     if (!Array.isArray(instructions)) {
       throw new BuildTransactionError('Instructions must be an array');
     }
@@ -67,11 +81,59 @@ export class CustomInstructionBuilder extends TransactionBuilder {
   }
 
   /**
-   * Clear all custom instructions
+   * Build transaction from deconstructed VersionedTransaction data
+   * @param data - VersionedTransactionData containing instructions, ALTs, and account keys
+   * @returns This builder instance
+   */
+  fromVersionedTransactionData(data: VersionedTransactionData): this {
+    try {
+      if (!data || typeof data !== 'object') {
+        throw new BuildTransactionError('VersionedTransactionData must be a valid object');
+      }
+
+      if (!Array.isArray(data.versionedInstructions) || data.versionedInstructions.length === 0) {
+        throw new BuildTransactionError('versionedInstructions must be a non-empty array');
+      }
+
+      if (!Array.isArray(data.addressLookupTables)) {
+        throw new BuildTransactionError('addressLookupTables must be an array');
+      }
+
+      if (!Array.isArray(data.staticAccountKeys) || data.staticAccountKeys.length === 0) {
+        throw new BuildTransactionError('staticAccountKeys must be a non-empty array');
+      }
+
+      this.addCustomInstructions(data.versionedInstructions);
+
+      if (!this._transaction) {
+        this._transaction = new Transaction(this._coinConfig);
+      }
+      this._transaction.setVersionedTransactionData(data);
+
+      this._transaction.setTransactionType(TransactionType.CustomTx);
+
+      if (!this._sender && data.staticAccountKeys.length > 0) {
+        this._sender = data.staticAccountKeys[0];
+      }
+
+      return this;
+    } catch (error) {
+      if (error instanceof BuildTransactionError) {
+        throw error;
+      }
+      throw new BuildTransactionError(`Failed to process versioned transaction data: ${error.message}`);
+    }
+  }
+
+  /**
+   * Clear all custom instructions and versioned transaction data
    * @returns This builder instance
    */
   clearInstructions(): this {
     this._customInstructions = [];
+    if (this._transaction) {
+      this._transaction.setVersionedTransactionData(undefined);
+    }
     return this;
   }
 
@@ -79,7 +141,7 @@ export class CustomInstructionBuilder extends TransactionBuilder {
    * Get the current custom instructions
    * @returns Array of custom instructions
    */
-  getInstructions(): CustomInstruction[] {
+  getInstructions(): (CustomInstruction | VersionedCustomInstruction)[] {
     return [...this._customInstructions];
   }
 
@@ -87,11 +149,23 @@ export class CustomInstructionBuilder extends TransactionBuilder {
    * Validate custom instruction format
    * @param instruction - The instruction to validate
    */
-  private validateInstruction(instruction: SolInstruction): void {
+  private validateInstruction(instruction: SolInstruction | SolVersionedInstruction): void {
     if (!instruction) {
       throw new BuildTransactionError('Instruction cannot be null or undefined');
     }
 
+    if (isSolLegacyInstruction(instruction)) {
+      this.validateSolInstruction(instruction);
+    } else {
+      this.validateVersionedInstruction(instruction);
+    }
+  }
+
+  /**
+   * Validate traditional SolInstruction format
+   * @param instruction - The traditional instruction to validate
+   */
+  private validateSolInstruction(instruction: SolInstruction): void {
     if (!instruction.programId || typeof instruction.programId !== 'string') {
       throw new BuildTransactionError('Instruction must have a valid programId string');
     }
@@ -130,6 +204,31 @@ export class CustomInstructionBuilder extends TransactionBuilder {
 
     if (instruction.data === undefined || typeof instruction.data !== 'string') {
       throw new BuildTransactionError('Instruction must have valid data string');
+    }
+  }
+
+  /**
+   * Validate versioned instruction format
+   * @param instruction - The versioned instruction to validate
+   */
+  private validateVersionedInstruction(instruction: SolVersionedInstruction): void {
+    if (typeof instruction.programIdIndex !== 'number' || instruction.programIdIndex < 0) {
+      throw new BuildTransactionError('Versioned instruction must have a valid programIdIndex number');
+    }
+
+    if (!instruction.accountKeyIndexes || !Array.isArray(instruction.accountKeyIndexes)) {
+      throw new BuildTransactionError('Versioned instruction must have valid accountKeyIndexes array');
+    }
+
+    // Validate each account key index
+    for (const index of instruction.accountKeyIndexes) {
+      if (typeof index !== 'number' || index < 0) {
+        throw new BuildTransactionError('Each accountKeyIndex must be a non-negative number');
+      }
+    }
+
+    if (instruction.data === undefined || typeof instruction.data !== 'string') {
+      throw new BuildTransactionError('Versioned instruction must have valid data string');
     }
   }
 
