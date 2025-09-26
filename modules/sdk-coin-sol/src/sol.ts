@@ -1596,5 +1596,10 @@ export class Sol extends BaseCoin {
     if (params.solInstructions) {
       intent.solInstructions = params.solInstructions;
     }
+
+    // Handle unsigned transaction byte (for VersionedTransaction) for Solana
+    if (params.unsignedTransactionBytes) {
+      intent.unsignedTransactionBytes = params.unsignedTransactionBytes;
+    }
   }
 }

@@ -12,7 +12,7 @@ import {
   TransactionType,
 } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
-import { Blockhash, PublicKey, Transaction as SolTransaction } from '@solana/web3.js';
+import { Blockhash, PublicKey, Transaction as SolTransaction, VersionedTransaction } from '@solana/web3.js';
 import {
   isValidAddress,
   isValidAmount,
@@ -117,7 +117,18 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
-    this.transaction.solTransaction = this.buildSolTransaction();
+    const builtTransaction = this.buildSolTransaction();
+
+    // Handle both VersionedTransaction and legacy SolTransaction
+    if (builtTransaction instanceof VersionedTransaction) {
+      // For VersionedTransaction, the Transaction class already has the context
+      // Just ensure the built VersionedTransaction is stored
+      this.transaction.setVersionedTransaction(builtTransaction);
+    } else {
+      // For legacy transactions, set it normally
+      this.transaction.solTransaction = builtTransaction;
+    }
+
     this.transaction.setTransactionType(this.transactionType);
     this.transaction.setInstructionsData(this._instructionsData);
     this.transaction.loadInputsAndOutputs();
@@ -128,10 +139,22 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /**
    * Builds the solana transaction.
    */
-  protected buildSolTransaction(): SolTransaction {
+  protected buildSolTransaction(): SolTransaction | VersionedTransaction {
     assert(this._sender, new BuildTransactionError('sender is required before building'));
     assert(this._recentBlockhash, new BuildTransactionError('recent blockhash is required before building'));
 
+    // Check if we should build as VersionedTransaction
+    if (this._transaction.isVersionedTransaction()) {
+      return this.buildVersionedTransaction();
+    } else {
+      return this.buildLegacyTransaction();
+    }
+  }
+
+  /**
+   * Builds a legacy Solana transaction.
+   */
+  private buildLegacyTransaction(): SolTransaction {
     const tx = new SolTransaction();
     if (this._transaction?.solTransaction?.signatures) {
       tx.signatures = this._transaction?.solTransaction?.signatures;
@@ -177,6 +200,45 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     }
 
     return tx;
+  }
+
+  /**
+   * Builds a VersionedTransaction.
+   *
+   * @returns {VersionedTransaction} The built versioned transaction
+   */
+  private buildVersionedTransaction(): VersionedTransaction {
+    const originalVersionedTx = this._transaction.versionedTransaction;
+    if (!originalVersionedTx) {
+      throw new BuildTransactionError('Missing VersionedTransaction context');
+    }
+
+    // Create a copy of the original VersionedTransaction to preserve ALT structure
+    const versionedTx = new VersionedTransaction(originalVersionedTx.message);
+
+    // Copy existing signatures if any (same logic as legacy)
+    if (originalVersionedTx.signatures) {
+      versionedTx.signatures = [...originalVersionedTx.signatures];
+    }
+
+    // Set lamportsPerSignature (same as legacy)
+    this._transaction.lamportsPerSignature = this._lamportsPerSignature;
+
+    // Apply signers (same as legacy)
+    for (const signer of this._signers) {
+      const publicKey = new PublicKey(signer.getKeys().pub);
+      const secretKey = signer.getKeys(true).prv;
+      assert(secretKey instanceof Uint8Array);
+      versionedTx.sign([{ publicKey, secretKey }]);
+    }
+
+    // Add signatures (same as legacy)
+    for (const signature of this._signatures) {
+      const solPublicKey = new PublicKey(signature.publicKey.pub);
+      versionedTx.addSignature(solPublicKey, signature.signature);
+    }
+
+    return versionedTx;
   }
 
   // region Getters and Setters

@@ -997,4 +997,73 @@ describe('Sol Transaction', () => {
       });
     });
   });
+
+  describe('VersionedTransaction Support', () => {
+    it('should parse VersionedTransaction from bytes', () => {
+      const tx = new Transaction(coin);
+      should(() => tx.fromVersionedTransactionBytes(testData.JUPITER_VERSIONED_TX_BYTES)).not.throwError();
+
+      // Should be detected as VersionedTransaction
+      tx.isVersionedTransaction().should.be.true();
+
+      // Should have VersionedTransaction stored
+      const versionedTx = tx.versionedTransaction;
+      should.exist(versionedTx);
+      should.exist(versionedTx!.message);
+    });
+
+    it('should preserve Address Lookup Tables', () => {
+      const tx = new Transaction(coin);
+      tx.fromVersionedTransactionBytes(testData.JUPITER_VERSIONED_TX_BYTES);
+
+      const lookupTables = tx.getAddressLookupTables();
+      should.exist(lookupTables);
+      Array.isArray(lookupTables).should.equal(true);
+      // ALTs should be preserved (even if empty)
+    });
+
+    it('should handle VersionedTransaction serialization', () => {
+      const tx = new Transaction(coin);
+      tx.fromVersionedTransactionBytes(testData.JUPITER_VERSIONED_TX_BYTES);
+
+      // Should be able to serialize back to broadcast format
+      const serialized = tx.toBroadcastFormat();
+      should.exist(serialized);
+      (typeof serialized).should.equal('string');
+      serialized.length.should.be.greaterThan(0);
+    });
+
+    it('should provide correct signablePayload for VersionedTransaction', () => {
+      const tx = new Transaction(coin);
+      tx.fromVersionedTransactionBytes(testData.JUPITER_VERSIONED_TX_BYTES);
+
+      const payload = tx.signablePayload;
+      payload.should.be.instanceOf(Buffer);
+      payload.length.should.be.greaterThan(0);
+    });
+
+    it('should have correct transaction type for VersionedTransaction', () => {
+      const tx = new Transaction(coin);
+      tx.fromVersionedTransactionBytes(testData.JUPITER_VERSIONED_TX_BYTES);
+
+      tx.type.should.equal(31); // TransactionType.CustomTx enum value
+    });
+
+    it('should get transaction ID from VersionedTransaction', () => {
+      const tx = new Transaction(coin);
+      tx.fromVersionedTransactionBytes(testData.JUPITER_VERSIONED_TX_BYTES);
+
+      // Since this is unsigned, the ID should be generated from the transaction
+      // The exact value depends on the transaction content but should be a string
+      should.exist(tx.id);
+      (typeof tx.id).should.equal('string');
+      tx.id.length.should.be.greaterThan(0);
+    });
+
+    it('should handle invalid VersionedTransaction bytes', () => {
+      const tx = new Transaction(coin);
+      should(() => tx.fromVersionedTransactionBytes('invalid-base64')).throwError();
+      should(() => tx.fromVersionedTransactionBytes('')).throwError();
+    });
+  });
 });
