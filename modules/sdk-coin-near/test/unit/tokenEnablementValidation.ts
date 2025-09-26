@@ -1,16 +1,10 @@
-// Import the 'should' assertion library for testing
 import 'should';
-// Import BitGo testing utilities
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
-// Import core types for transaction verification
 import { VerifyTransactionOptions, common } from '@bitgo/sdk-core';
-// Import NEAR-specific types and classes
 import { TransactionPrebuild, Near } from '../../src/near';
 import { TNear as TNearCoin } from '../../src/tnear';
-// Import test data containing sample transactions and account info
 import * as testData from '../resources/near';
-// Import testing utilities
 import nock from 'nock';
 import assert from 'assert';
 
