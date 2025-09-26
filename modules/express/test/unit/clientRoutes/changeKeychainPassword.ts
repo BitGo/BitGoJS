@@ -1,14 +1,12 @@
 import * as sinon from 'sinon';
-
 import 'should-http';
 import 'should-sinon';
 import '../../lib/asserts';
-
-import * as express from 'express';
-
 import { handleKeychainChangePassword } from '../../../src/clientRoutes';
-
 import { BitGo } from 'bitgo';
+import { ExpressApiRouteRequest } from '../../../src/typedRoutes/api';
+import { decodeOrElse } from '@bitgo/sdk-core';
+import { KeychainChangePasswordResponse } from '../../../src/typedRoutes/api/v2/keychainChangePassword';
 
 describe('Change Wallet Password', function () {
   it('should change wallet password', async function () {
@@ -36,19 +34,32 @@ describe('Change Wallet Password', function () {
       }),
     });
 
+    const coin = 'talgo';
+    const id = '23423423423423';
+    const oldPassword = 'oldPasswordString';
+    const newPassword = 'newPasswordString';
     const mockRequest = {
       bitgo: stubBitgo,
       params: {
-        coin: 'talgo',
-        id: '23423423423423',
+        coin,
+        id,
       },
       body: {
-        oldPassword: 'oldPasswordString',
-        newPassword: 'newPasswordString',
+        oldPassword,
+        newPassword,
       },
-    };
+      decoded: {
+        oldPassword,
+        newPassword,
+        coin,
+        id,
+      },
+    } as unknown as ExpressApiRouteRequest<'express.keychain.changePassword', 'post'>;
 
-    const result = await handleKeychainChangePassword(mockRequest as express.Request & typeof mockRequest);
+    const result = await handleKeychainChangePassword(mockRequest);
+    decodeOrElse('KeychainChangePasswordResponse200', KeychainChangePasswordResponse[200], result, (errors) => {
+      throw new Error(`Response did not match expected codec: ${errors}`);
+    });
     ({ result: '200 OK' }).should.be.eql(result);
   });
 });
