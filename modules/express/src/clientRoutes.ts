@@ -1031,27 +1031,23 @@ async function handleWalletUpdate(req: express.Request): Promise<unknown> {
  * Changes a keychain's passphrase, re-encrypting the key to a new password
  * @param req
  */
-export async function handleKeychainChangePassword(req: express.Request): Promise<unknown> {
-  const { oldPassword, newPassword, otp } = req.body;
-  if (!oldPassword || !newPassword) {
-    throw new ApiResponseError('Missing 1 or more required fields: [oldPassword, newPassword]', 400);
-  }
+export async function handleKeychainChangePassword(
+  req: ExpressApiRouteRequest<'express.keychain.changePassword', 'post'>
+): Promise<unknown> {
+  const { oldPassword, newPassword, otp, coin: coinName, id } = req.decoded;
   const reqId = new RequestTracer();
 
   const bitgo = req.bitgo;
-  const coin = bitgo.coin(req.params.coin);
+  const coin = bitgo.coin(coinName);
 
   if (otp) {
     await bitgo.unlock({ otp });
   }
 
   const keychain = await coin.keychains().get({
-    id: req.params.id,
+    id: id,
     reqId,
   });
-  if (!keychain) {
-    throw new ApiResponseError(`Keychain ${req.params.id} not found`, 404);
-  }
 
   const updatedKeychain = coin.keychains().updateSingleKeychainPassword({
     keychain,
@@ -1622,12 +1618,10 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   app.put('/express/api/v2/:coin/wallet/:id', parseBody, prepareBitGo(config), promiseWrapper(handleWalletUpdate));
 
   // change wallet passphrase
-  app.post(
-    '/api/v2/:coin/keychain/:id/changepassword',
-    parseBody,
+  router.post('express.keychain.changePassword', [
     prepareBitGo(config),
-    promiseWrapper(handleKeychainChangePassword)
-  );
+    typedPromiseWrapper(handleKeychainChangePassword),
+  ]);
 
   // create address
   app.post('/api/v2/:coin/wallet/:id/address', parseBody, prepareBitGo(config), promiseWrapper(handleV2CreateAddress));

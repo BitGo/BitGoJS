@@ -14,6 +14,7 @@ import { PostSimpleCreate } from './v1/simpleCreate';
 import { PutPendingApproval } from './v1/pendingApproval';
 import { PostSignTransaction } from './v1/signTransaction';
 import { PostKeychainLocal } from './v2/keychainLocal';
+import { PostKeychainChangePassword } from './v2/keychainChangePassword';
 import { GetLightningState } from './v2/lightningState';
 import { PostLightningInitWallet } from './v2/lightningInitWallet';
 import { PostUnlockLightningWallet } from './v2/unlockWallet';
@@ -53,6 +54,9 @@ export const ExpressApi = apiSpec({
   },
   'express.keychain.local': {
     post: PostKeychainLocal,
+  },
+  'express.keychain.changePassword': {
+    post: PostKeychainChangePassword,
   },
   'express.lightning.getState': {
     get: GetLightningState,
