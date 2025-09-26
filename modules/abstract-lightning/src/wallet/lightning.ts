@@ -32,6 +32,7 @@ import {
   LightningOnchainWithdrawResponse,
   ListInvoicesResponse,
   ListPaymentsResponse,
+  ListTransactionsResponse,
   LndCreateWithdrawResponse,
   WatchOnly,
 } from '../codecs';
@@ -199,14 +200,16 @@ export interface ILightningWallet {
   getTransaction(txId: string): Promise<Transaction>;
 
   /**
-   * List transactions for a wallet with optional filtering
-   * @param {TransactionQuery} params Query parameters for filtering transactions
-   * @param {bigint} [params.limit] The maximum number of transactions to return
+   * List transactions for a wallet with optional filtering and cursor-based pagination
+   * @param {TransactionQuery} params Query parameters for filtering and pagination
+   * @param {bigint} [params.limit] The maximum number of transactions to return per page
+   * @param {bigint} [params.blockHeight] Optional filter for transactions at a specific block height
    * @param {Date} [params.startDate] The start date for the query
    * @param {Date} [params.endDate] The end date for the query
-   * @returns {Promise<Transaction[]>} List of transactions
+   * @param {string} [params.prevId] Continue iterating from this transaction ID (provided by nextBatchPrevId in the previous list)
+   * @returns {Promise<ListTransactionsResponse>} List of transactions and nextBatchPrevId for pagination
    */
-  listTransactions(params: TransactionQuery): Promise<Transaction[]>;
+  listTransactions(params: TransactionQuery): Promise<ListTransactionsResponse>;
 }
 
 export class LightningWallet implements ILightningWallet {
@@ -472,12 +475,12 @@ export class LightningWallet implements ILightningWallet {
     });
   }
 
-  async listTransactions(params: TransactionQuery): Promise<Transaction[]> {
+  async listTransactions(params: TransactionQuery): Promise<ListTransactionsResponse> {
     const response = await this.wallet.bitgo
       .get(this.wallet.bitgo.url(`/wallet/${this.wallet.id()}/lightning/transaction`, 2))
       .query(TransactionQuery.encode(params))
       .result();
-    return decodeOrElse(t.array(Transaction).name, t.array(Transaction), response, (error) => {
+    return decodeOrElse(ListTransactionsResponse.name, ListTransactionsResponse, response, (error) => {
       throw new Error(`Invalid transaction list response: ${error}`);
     });
   }
