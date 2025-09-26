@@ -1,4 +1,8 @@
 import { Key, SerializedKeyPair } from 'openpgp';
+
+import { type TxSendResponse } from '@bitgo/public-types';
+import { type EcdsaTypes } from '@bitgo/sdk-lib-mpc';
+
 import { IRequestTracer } from '../../../api';
 import { KeychainsTriplet, ParsedTransaction, TransactionParams } from '../../baseCoin';
 import { ApiKeyShare, Keychain } from '../../keychain';
@@ -6,10 +10,10 @@ import { ApiVersion, Memo, WalletType } from '../../wallet';
 import { EDDSA, GShare, Signature, SignShare } from '../../../account-lib/mpc/tss';
 import { Signature as EcdsaSignature } from '../../../account-lib/mpc/tss/ecdsa/types';
 import { KeyShare } from './ecdsa';
-import { EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 import { TssEcdsaStep1ReturnMessage, TssEcdsaStep2ReturnMessage, TxRequestChallengeResponse } from '../../tss/types';
 import { AShare, DShare, SShare } from '../../tss/ecdsa/types';
 import { MessageStandardType } from '../messageTypes';
+import { PendingApprovalData } from '../../pendingApproval';
 
 export type TxRequestVersion = 'full' | 'lite';
 export interface HopParams {
@@ -367,6 +371,22 @@ export type SignedTx = {
   publicKey?: string;
   signature?: string;
 };
+
+export type TxRequestTransfer = { state: string; pendingApproval?: string; txid?: string };
+
+export type SendManyTxRequestResponse =
+  | {
+      txRequest: TxRequest;
+      pendingApproval: PendingApprovalData;
+    }
+  | {
+      transfer: TxRequestTransfer;
+      txRequest: TxRequest;
+      txid?: SignedTx['id'];
+      tx?: SignedTx['tx'];
+      status: TxRequestTransfer['state'];
+    }
+  | TxSendResponse;
 
 export type TxRequest = {
   txRequestId: string;

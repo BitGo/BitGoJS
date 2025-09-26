@@ -1,5 +1,9 @@
-import { IRequestTracer } from '../../../api';
 import * as openpgp from 'openpgp';
+import * as _ from 'lodash';
+
+import { type TxSendResponse } from '@bitgo/public-types';
+
+import { IRequestTracer } from '../../../api';
 import { Key, readKey, SerializedKeyPair } from 'openpgp';
 import { IBaseCoin, KeychainsTriplet } from '../../baseCoin';
 import { BitGoBase } from '../../bitgoBase';
@@ -7,7 +11,6 @@ import { Keychain, KeyIndices } from '../../keychain';
 import { getTxRequest } from '../../tss';
 import { IWallet } from '../../wallet';
 import { MpcUtils } from '../mpcUtils';
-import * as _ from 'lodash';
 import {
   BitgoGPGPublicKey,
   BitgoHeldBackupKeyShare,
@@ -514,7 +517,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
    * @returns {Promise<any>}
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async sendTxRequest(txRequestId: string, reqId?: IRequestTracer): Promise<any> {
+  async sendTxRequest(txRequestId: string, reqId?: IRequestTracer): Promise<TxSendResponse | undefined> {
     const reqTracer = reqId || new RequestTracer();
     this.bitgo.setRequestTracer(reqTracer);
     return this.bitgo
