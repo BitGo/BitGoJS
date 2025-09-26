@@ -11,7 +11,7 @@ import {
 } from 'avalanche/dist/apis/platformvm';
 import { Credential } from 'avalanche/dist/common';
 import { BuildTransactionError } from '@bitgo/sdk-core';
-import { SECP256K1_Transfer_Output } from './iface';
+import { SECP256K1_STAKEABLE_LOCK_OUT, SECP256K1_Transfer_Output } from './iface';
 
 /**
  * Cross-chain transactions (export and import) are atomic operations.
@@ -104,7 +104,10 @@ export abstract class AtomicTransactionBuilder extends DeprecatedTransactionBuil
     });
 
     this.transaction._utxos.forEach((utxo, i) => {
-      if (utxo.outputID === SECP256K1_Transfer_Output) {
+      if (
+        utxo.outputID === SECP256K1_Transfer_Output ||
+        (utxo.outputID === SECP256K1_STAKEABLE_LOCK_OUT && utxo.locktime === '0')
+      ) {
         const txidBuf = utils.cb58Decode(utxo.txid);
         const amt: BN = new BN(utxo.amount);
         const outputidx = utils.outputidxNumberToBuffer(utxo.outputidx);

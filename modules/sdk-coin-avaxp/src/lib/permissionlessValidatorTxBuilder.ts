@@ -30,7 +30,7 @@ import {
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { Buffer as BufferAvax } from 'avalanche';
 import BigNumber from 'bignumber.js';
-import { DecodedUtxoObj, SECP256K1_Transfer_Output, Tx } from './iface';
+import { DecodedUtxoObj, SECP256K1_STAKEABLE_LOCK_OUT, SECP256K1_Transfer_Output, Tx } from './iface';
 import { KeyPair } from './keyPair';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
@@ -291,9 +291,6 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
     this.transaction._stakeAmount = permissionlessValidatorTx.stake[0].output.amount();
     this.stakeAmount(this.transaction._stakeAmount);
     this.transaction._utxos = recoverUtxos(permissionlessValidatorTx.getInputs());
-    // TODO(CR-1073): remove log
-    console.log('utxos: ', this.transaction._utxos);
-    console.log('fromAddresses: ', this.transaction.fromAddresses);
     return this;
   }
 
@@ -338,8 +335,6 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
     const bitgoAddresses = this.transaction._fromAddresses.map((b) =>
       avaxUtils.format(this.transaction._network.alias, this.transaction._network.hrp, b)
     );
-    // TODO(CR-1073): remove log
-    console.log(`bitgoAddress: ${bitgoAddresses}`);
 
     // if we are in OVC, none of the utxos will have addresses since they come from
     // deserialized inputs (which don't have addresses), not the IMS
@@ -371,12 +366,12 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
       utxo.addresses.forEach((a) => {
         bitgoIndexToOnChainIndex.set(bitgoAddresses.indexOf(a), utxo.addresses.indexOf(a));
       });
-      // TODO(CR-1073): remove log
-      console.log(`utxo.addresses: ${utxo.addresses}`);
-      console.log(`bitgoIndexToOnChainIndex: ${Array.from(bitgoIndexToOnChainIndex)}`);
       // in OVC, output.addressesIndex is defined correctly from the previous iteration
 
-      if (utxo.outputID === SECP256K1_Transfer_Output) {
+      if (
+        utxo.outputID === SECP256K1_Transfer_Output ||
+        (utxo.outputID === SECP256K1_STAKEABLE_LOCK_OUT && utxo.locktime === '0')
+      ) {
         const utxoAmount = BigInt(utxo.amount);
         // either user (0) or recovery (2)
         // On regular mode: [user, bitgo] (i.e. [0, 1])
@@ -400,8 +395,6 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
           new BigIntPr(utxoAmount),
           new Input([...addressesIndex].sort().map((num) => new Int(num)))
         );
-        // TODO(CR-1073): remove log
-        console.log(`using addressesIndex sorted: ${[...addressesIndex].sort()}`);
 
         const input = new avaxSerial.TransferableInput(utxoId, assetId, transferInputs);
         utxos.push(new Utxo(utxoId, assetId, transferInputs));
@@ -413,12 +406,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
             // For the user/backup signature we store the address that matches the key
             // if bitgo address comes before  < user/backup address
 
-            // TODO(CR-1073): remove log
-            console.log(`bitgo index on chain: ${utxo.addressesIndex[bitgoIndex]}`);
-            console.log(`user Or Backup Index: ${utxo.addressesIndex[userOrBackupIndex]}`);
             if (utxo.addressesIndex[bitgoIndex] < utxo.addressesIndex[userOrBackupIndex]) {
-              // TODO(CR-1073): remove log
-              console.log(`user or backup credentials after bitgo`);
               credentials.push(
                 new Credential([
                   utils.createNewSig(BufferAvax.from('').toString('hex')),
@@ -428,8 +416,6 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
                 ])
               );
             } else {
-              // TODO(CR-1073): remove log
-              console.log(`user or backup credentials before bitgo`);
               credentials.push(
                 new Credential([
                   utils.createNewSig(
@@ -440,7 +426,6 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
               );
             }
           } else {
-            // TODO(CR-1073): verify this else case for OVC
             credentials.push(
               new Credential(
                 addressesIndex.map((i) =>
@@ -449,9 +434,6 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
               )
             );
           }
-        } else {
-          // TODO(CR-1073): remove log
-          console.log(`reusing credentials from transaction`);
         }
       }
     });
@@ -542,9 +524,8 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
         .map((a) => Address.fromBytes(a)[0])
     );
 
-    // TODO(CR-1073): check this value
-    //  Shares 10,000 times percentage of reward taken from delegators
-    //  https://docs.avax.network/reference/avalanchego/p-chain/txn-format#unsigned-add-validator-tx
+    // Shares 10,000 times percentage of reward taken from delegators
+    // https://docs.avax.network/reference/avalanchego/p-chain/txn-format#unsigned-add-validator-tx
     const shares = new Int(1e4 * 2);
 
     const addressMaps = [...this.transaction._fromAddresses]
