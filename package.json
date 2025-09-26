@@ -99,6 +99,7 @@
     "**/swarm-js/**/ws": "5.2.4",
     "serialize-javascript": "^6.0.2",
     "@grpc/grpc-js": "^1.12.6",
+    "request": "npm:@cypress/request@3.0.9",
     "**/avalanche/store2": "2.14.4"
   },
   "workspaces": [
