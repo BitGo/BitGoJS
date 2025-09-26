@@ -170,14 +170,12 @@ export async function handleCreateSignerMacaroon(req: express.Request): Promise<
 /**
  * Handle the request to get the state of a wallet from the signer.
  */
-export async function handleGetLightningWalletState(req: express.Request): Promise<GetWalletStateResponse> {
-  const coinName = req.params.coin;
+export async function handleGetLightningWalletState(
+  req: ExpressApiRouteRequest<'express.lightning.getState', 'get'>
+): Promise<GetWalletStateResponse> {
+  const { coin: coinName, walletId } = req.decoded;
   if (!isLightningCoinName(coinName)) {
     throw new ApiResponseError(`Invalid coin to get lightning wallet state: ${coinName}`, 400);
-  }
-  const walletId = req.params.id;
-  if (typeof walletId !== 'string') {
-    throw new ApiResponseError(`Invalid wallet id: ${walletId}`, 400);
   }
 
   const lndSignerClient = await LndSignerClient.create(walletId, req.config);

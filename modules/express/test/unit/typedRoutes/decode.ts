@@ -7,6 +7,7 @@ import { VerifyAddressBody } from '../../../src/typedRoutes/api/common/verifyAdd
 import { VerifyAddressV2Body, VerifyAddressV2Params } from '../../../src/typedRoutes/api/v2/verifyAddress';
 import { SimpleCreateRequestBody } from '../../../src/typedRoutes/api/v1/simpleCreate';
 import { KeychainLocalRequestParams } from '../../../src/typedRoutes/api/v2/keychainLocal';
+import { LightningStateParams } from '../../../src/typedRoutes/api/v2/lightningState';
 import {
   LightningInitWalletBody,
   LightningInitWalletParams,
@@ -156,6 +157,12 @@ describe('io-ts decode tests', function () {
     assertDecode(t.type(KeychainLocalRequestParams), {
       coin: 'tbtc',
     });
+  });
+  it('express.lightning.getState params valid', function () {
+    assertDecode(t.type(LightningStateParams), { coin: 'lnbtc', walletId: 'wallet123' });
+  });
+  it('express.lightning.getState params invalid', function () {
+    assert.throws(() => assertDecode(t.type(LightningStateParams), { coin: 'lnbtc' }));
   });
   it('express.lightning.initWallet params', function () {
     // missing walletId
