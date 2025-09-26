@@ -9,7 +9,7 @@ import {
 } from '../../../src/lib';
 import { Material } from '../../../src/lib/iface';
 import { rawTx, accounts, mockTssSignature } from '../../resources';
-import * as materialData from '../../resources/assetHubMaterialData.json';
+import * as materialData from '../../resources/materialData.json';
 
 describe('dot Transaction Builder Factory', function () {
   const sender = accounts.account1;

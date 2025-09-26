@@ -89,7 +89,7 @@ describe('Dot Transaction', () => {
 
     it('Should rebuild different hex if keepAlive is true or false for transferAll txs', async () => {
       const keepAliveFalseBuilder = new TransferBuilder(config).material(material);
-      keepAliveFalseBuilder.from(rawTx.transfer.unsigned);
+      keepAliveFalseBuilder.from(rawTx.transferAll.unsignedKeepAliveFalse);
       keepAliveFalseBuilder
         .validity({ firstValid: 3933 })
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
@@ -97,7 +97,7 @@ describe('Dot Transaction', () => {
       const keepAliveFalseTx = (await keepAliveFalseBuilder.build()).toJson();
 
       const keepAliveTrueBuilder = new TransferBuilder(config).material(material);
-      keepAliveTrueBuilder.from(rawTx.transferAll.signed);
+      keepAliveTrueBuilder.from(rawTx.transferAll.unsignedKeepAliveTrue);
       keepAliveTrueBuilder
         .validity({ firstValid: 3933 })
         .referenceBlock('0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d')
@@ -219,7 +219,7 @@ describe('Dot Transaction', () => {
 
       // Add proxy storage fee
       should(tx.inputs[1].address).eql(accounts.account1.address);
-      should(tx.inputs[1].value).eql('10036500000');
+      should(tx.inputs[1].value).eql('1002050000000');
       should(tx.inputs[1].coin).eql('tdot');
 
       should(tx.outputs).not.be.null();
@@ -232,7 +232,7 @@ describe('Dot Transaction', () => {
 
       // Add proxy storage fee
       should(tx.outputs[1].address).eql(accounts.stakingProxy.address);
-      should(tx.outputs[1].value).eql('10036500000');
+      should(tx.outputs[1].value).eql('1002050000000');
       should(tx.outputs[1].coin).eql('tdot');
     });
 
@@ -250,7 +250,7 @@ describe('Dot Transaction', () => {
 
       // Remove proxy storage fee refund
       should(tx.inputs[0].address).eql(accounts.stakingProxy.address);
-      should(tx.inputs[0].value).eql('10036500000');
+      should(tx.inputs[0].value).eql('1002050000000');
       should(tx.inputs[0].coin).eql('tdot');
 
       should(tx.outputs).not.be.null();
@@ -258,7 +258,7 @@ describe('Dot Transaction', () => {
 
       // Remove proxy storage fee refund
       should(tx.outputs[0].address).eql(accounts.account1.address);
-      should(tx.outputs[0].value).eql('10036500000');
+      should(tx.outputs[0].value).eql('1002050000000');
       should(tx.outputs[0].coin).eql('tdot');
     });
 
