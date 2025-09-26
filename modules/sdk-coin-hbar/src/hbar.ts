@@ -304,7 +304,7 @@ export class Hbar extends BaseCoin {
   // Strict validation: allow 0 outputs or exactly 1 output with amount 0
   private validateTxStructureStrict(ex: TransactionExplanation): void {
     if (!ex.outputs || ex.outputs.length === 0) {
-      return; // acceptable for pure associate in some explainers
+      throw new Error('Invalid token enablement transaction: missing required token association output');
     }
     if (ex.outputs.length !== 1) {
       throw new Error(`Expected exactly 1 output, got ${ex.outputs.length}`);
@@ -315,27 +315,23 @@ export class Hbar extends BaseCoin {
     }
   }
 
-  // Deep recursive scan for any transfers anywhere in the transaction
+  // Simple validation to ensure no transfers are present in token enablement transaction
   private validateNoTransfers(raw: RawTransactionData): void {
-    if (this.hasAnyTransfers(raw)) {
+    // Check for transfers in the instructionsData recipients
+    if (raw.instructionsData?.params?.recipients?.length && raw.instructionsData.params.recipients.length > 0) {
+      // Allow recipients with amount '0' for token enablement, but reject non-zero amounts
+      const hasNonZeroTransfers = raw.instructionsData.params.recipients.some(
+        (recipient: any) => recipient.amount && recipient.amount !== '0'
+      );
+      if (hasNonZeroTransfers) {
+        throw new Error('Transaction contains transfers; not a pure token enablement.');
+      }
+    }
+
+    // Check for direct transfer amount (should be '0' or undefined for token enablement)
+    if (raw.amount && raw.amount !== '0') {
       throw new Error('Transaction contains transfers; not a pure token enablement.');
     }
-  }
-
-  // Recursive function to detect any transfers in nested structures
-  private hasAnyTransfers(obj: any): boolean {
-    if (!obj || typeof obj !== 'object') return false;
-
-    // Check for known transfer containers
-    if (Array.isArray(obj.accountAmounts) && obj.accountAmounts.length > 0) return true;
-    if (Array.isArray(obj.tokenTransfers) && obj.tokenTransfers.length > 0) return true;
-    if (Array.isArray(obj.nftTransfers) && obj.nftTransfers.length > 0) return true;
-    if (Array.isArray(obj.transfers) && obj.transfers.length > 0) return true;
-    if (Array.isArray(obj.tokenTransferLists) && obj.tokenTransferLists.some((t: any) => this.hasAnyTransfers(t)))
-      return true;
-
-    // Recursively check all nested objects
-    return Object.values(obj).some((value: any) => this.hasAnyTransfers(value));
   }
 
   // Validate account ID matches in both explained and raw transaction data with normalization
@@ -452,12 +448,15 @@ export class Hbar extends BaseCoin {
       const r0 = txParams.recipients[0];
       const expectedToken: { tokenId?: string; tokenName?: string } = {};
 
-      // Use tokenName from recipient (tokenId not available in current API)
-      if (r0.tokenName) {
-        expectedToken.tokenName = r0.tokenName;
-        // Note: tokenName validation is less secure than tokenId, but tokenId is not available in ITransactionRecipient
+      // Extract tokenId from transaction
+      const transaction = new Transaction(coins.get(this.getChain()));
+      transaction.fromRawTransaction(txPrebuild.txHex);
+      const tokenIds = transaction.txBody.tokenAssociate?.tokens || [];
+
+      if (tokenIds.length > 0) {
+        expectedToken.tokenId = Utils.stringifyTokenId(tokenIds[0]);
       } else {
-        throw new Error('Token enablement requires tokenName in recipient');
+        throw new Error('Token enablement transaction missing tokenId');
       }
 
       await this.verifyTokenEnablementTransaction(txPrebuild.txHex, expectedToken, r0.address);
