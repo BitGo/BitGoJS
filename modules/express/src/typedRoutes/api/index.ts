@@ -18,6 +18,7 @@ import { PostLightningInitWallet } from './v2/lightningInitWallet';
 import { PostUnlockLightningWallet } from './v2/unlockWallet';
 import { PostVerifyCoinAddress } from './v2/verifyAddress';
 import { PostDeriveLocalKeyChain } from './v1/deriveLocalKeyChain';
+import { PostGenerateWallet } from './v2/generateWallet';
 
 export const ExpressApi = apiSpec({
   'express.ping': {
@@ -61,6 +62,9 @@ export const ExpressApi = apiSpec({
   },
   'express.verifycoinaddress': {
     post: PostVerifyCoinAddress,
+  },
+  'express.wallet.generate': {
+    post: PostGenerateWallet,
   },
   'express.calculateminerfeeinfo': {
     post: PostCalculateMinerFeeInfo,
