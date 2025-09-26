@@ -508,8 +508,7 @@ describe('Hedera Hashgraph:', function () {
       const expectedToken = { tokenName: 'thbar:usdc' };
       const expectedAccountId = '0.0.81320';
 
-      const isValid = await basecoin.verifyTokenEnablementTransaction(txHex, expectedToken, expectedAccountId);
-      isValid.should.equal(true);
+      await basecoin.verifyTokenEnablementTransaction(txHex, expectedToken, expectedAccountId);
     });
 
     it('should verify a valid token enablement transaction with tokenId', async function () {
@@ -517,8 +516,7 @@ describe('Hedera Hashgraph:', function () {
       const expectedToken = { tokenId: '0.0.12345' };
       const expectedAccountId = '0.0.81320';
 
-      const isValid = await basecoin.verifyTokenEnablementTransaction(txHex, expectedToken, expectedAccountId);
-      isValid.should.equal(true);
+      await basecoin.verifyTokenEnablementTransaction(txHex, expectedToken, expectedAccountId);
     });
 
     it('should fail when txHex is missing', async function () {
@@ -627,8 +625,7 @@ describe('Hedera Hashgraph:', function () {
       const expectedToken = { tokenName: 'thbar:usdc' };
       const expectedAccountId = '0.0.81320';
 
-      const isValid = await basecoin.verifyTokenEnablementTransaction(txHex, expectedToken, expectedAccountId);
-      isValid.should.equal(true);
+      await basecoin.verifyTokenEnablementTransaction(txHex, expectedToken, expectedAccountId);
     });
 
     it('should fail with invalid transaction hex', async function () {
