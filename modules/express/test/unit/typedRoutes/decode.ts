@@ -15,6 +15,10 @@ import {
 import { UnlockLightningWalletBody, UnlockLightningWalletParams } from '../../../src/typedRoutes/api/v2/unlockWallet';
 import { OfcSignPayloadBody } from '../../../src/typedRoutes/api/v2/ofcSignPayload';
 import { CreateAddressBody, CreateAddressParams } from '../../../src/typedRoutes/api/v2/createAddress';
+import {
+  KeychainChangePasswordBody,
+  KeychainChangePasswordParams,
+} from '../../../src/typedRoutes/api/v2/keychainChangePassword';
 
 export function assertDecode<T>(codec: t.Type<T, unknown>, input: unknown): T {
   const result = codec.decode(input);
@@ -242,5 +246,25 @@ describe('io-ts decode tests', function () {
     // valid body
     assertDecode(t.type(CreateAddressBody), { eip1559: { maxFeePerGas: 1, maxPriorityFeePerGas: 1 } });
     assertDecode(t.type(CreateAddressBody), {});
+  });
+
+  it('express.keychain.changePassword', function () {
+    // missing id
+    assert.throws(() => assertDecode(t.type(KeychainChangePasswordParams), { coin: 'btc' }));
+    // invalid coin type
+    assert.throws(() => assertDecode(t.type(KeychainChangePasswordParams), { coin: 123, id: 'abc' }));
+    // valid params
+    assertDecode(t.type(KeychainChangePasswordParams), { coin: 'btc', id: 'abc' });
+    // missing required fields
+    assert.throws(() => assertDecode(t.type(KeychainChangePasswordBody), {}));
+    assert.throws(() => assertDecode(t.type(KeychainChangePasswordBody), { oldPassword: 'a' }));
+    assert.throws(() => assertDecode(t.type(KeychainChangePasswordBody), { newPassword: 'b' }));
+    // invalid types
+    assert.throws(() => assertDecode(t.type(KeychainChangePasswordBody), { oldPassword: 1, newPassword: 'b' }));
+    assert.throws(() => assertDecode(t.type(KeychainChangePasswordBody), { oldPassword: 'a', newPassword: 2 }));
+    // valid minimal
+    assertDecode(t.type(KeychainChangePasswordBody), { oldPassword: 'a', newPassword: 'b' });
+    // valid with optional otp
+    assertDecode(t.type(KeychainChangePasswordBody), { oldPassword: 'a', newPassword: 'b', otp: '123456' });
   });
 });
