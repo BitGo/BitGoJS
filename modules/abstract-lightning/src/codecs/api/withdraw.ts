@@ -60,14 +60,6 @@ export type LightningOnchainWithdrawResponse = {
    * This field is absent if approval is required before processing.
    */
   withdrawStatus?: LndCreateWithdrawResponse;
-
-  /**
-   * Latest transfer details for this withdraw request (if available).
-   * - Provides the current state of the transfer.
-   * - To track the latest withdraw status, monitor `transfer` asynchronously.
-   * This field is absent if approval is required before processing.
-   */
-  transfer?: any;
 };
 
 export const FundPsbtResponse = t.type(
