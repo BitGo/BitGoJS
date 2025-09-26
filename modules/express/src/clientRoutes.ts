@@ -117,7 +117,7 @@ function handleVerifyAddress(req: ExpressApiRouteRequest<'express.verifyaddress'
  * @deprecated
  * @param req
  */
-function handleCreateLocalKeyChain(req: express.Request) {
+function handleCreateLocalKeyChain(req: ExpressApiRouteRequest<'express.v1.keychain.local', 'post'>) {
   return req.bitgo.keychains().create(req.body);
 }
 
@@ -1569,7 +1569,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
     typedPromiseWrapper(handleCalculateMinerFeeInfo),
   ]);
 
-  app.post('/api/v1/keychain/local', parseBody, prepareBitGo(config), promiseWrapper(handleCreateLocalKeyChain));
+  router.post('express.v1.keychain.local', [prepareBitGo(config), typedPromiseWrapper(handleCreateLocalKeyChain)]);
   router.post('express.v1.keychain.derive', [prepareBitGo(config), typedPromiseWrapper(handleDeriveLocalKeyChain)]);
   router.post('express.v1.wallet.simplecreate', [
     prepareBitGo(config),
