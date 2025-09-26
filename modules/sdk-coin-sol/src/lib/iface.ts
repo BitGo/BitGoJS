@@ -1,5 +1,10 @@
 import { SolStakingTypeEnum } from '@bitgo/public-types';
-import { TransactionExplanation as BaseTransactionExplanation, Recipient, SolInstruction } from '@bitgo/sdk-core';
+import {
+  TransactionExplanation as BaseTransactionExplanation,
+  Recipient,
+  SolInstruction,
+  SolCompiledInstruction,
+} from '@bitgo/sdk-core';
 import { DecodedCloseAccountInstruction } from '@solana/spl-token';
 import { Blockhash, StakeInstructionType, SystemInstructionType, TransactionSignature } from '@solana/web3.js';
 import { InstructionBuilderTypes } from './constants';
@@ -237,7 +242,7 @@ export type StakingDelegateParams = {
 
 export interface CustomInstruction {
   type: InstructionBuilderTypes.CustomInstruction;
-  params: SolInstruction;
+  params: SolInstruction | SolCompiledInstruction;
 }
 
 export interface TransactionExplanation extends BaseTransactionExplanation {

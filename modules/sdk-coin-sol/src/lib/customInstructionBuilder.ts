@@ -1,6 +1,6 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BuildTransactionError, SolInstruction, TransactionType } from '@bitgo/sdk-core';
-import { PublicKey } from '@solana/web3.js';
+import { BuildTransactionError, SolInstruction, SolCompiledInstruction, TransactionType } from '@bitgo/sdk-core';
+import { PublicKey, VersionedTransaction } from '@solana/web3.js';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import { InstructionBuilderTypes } from './constants';
@@ -41,7 +41,7 @@ export class CustomInstructionBuilder extends TransactionBuilder {
    * @param instruction - The custom instruction to add
    * @returns This builder instance
    */
-  addCustomInstruction(instruction: SolInstruction): this {
+  addCustomInstruction(instruction: SolInstruction | SolCompiledInstruction): this {
     this.validateInstruction(instruction);
     const customInstruction: CustomInstruction = {
       type: InstructionBuilderTypes.CustomInstruction,
@@ -56,7 +56,7 @@ export class CustomInstructionBuilder extends TransactionBuilder {
    * @param instructions - Array of custom instructions to add
    * @returns This builder instance
    */
-  addCustomInstructions(instructions: SolInstruction[]): this {
+  addCustomInstructions(instructions: (SolInstruction | SolCompiledInstruction)[]): this {
     if (!Array.isArray(instructions)) {
       throw new BuildTransactionError('Instructions must be an array');
     }
@@ -64,6 +64,39 @@ export class CustomInstructionBuilder extends TransactionBuilder {
       this.addCustomInstruction(instruction);
     }
     return this;
+  }
+
+  /**
+   * Parse unsigned transaction bytes and extract instructions
+   * @param unsignedTransactionBytes - Base64 encoded VersionedTransaction bytes
+   * @returns This builder instance
+   */
+  fromUnsignedTransactionBytes(unsignedTransactionBytes: string): this {
+    try {
+      const buffer = Buffer.from(unsignedTransactionBytes, 'base64');
+      const versionedTx = VersionedTransaction.deserialize(buffer);
+
+      // Extract compiled instructions from the VersionedTransaction
+      const compiledInstructions: SolCompiledInstruction[] = versionedTx.message.compiledInstructions.map((ci) => ({
+        programIdIndex: ci.programIdIndex,
+        accountKeyIndexes: ci.accountKeyIndexes,
+        data: Buffer.from(ci.data).toString('hex'),
+      }));
+
+      // Add all compiled instructions
+      this.addCustomInstructions(compiledInstructions);
+
+      // Store the VersionedTransaction in our transaction for ALT preservation
+      // We need to initialize the transaction first
+      if (!this._transaction) {
+        this._transaction = new Transaction(this._coinConfig);
+      }
+      this._transaction.fromVersionedTransactionBytes(unsignedTransactionBytes);
+
+      return this;
+    } catch (error) {
+      throw new BuildTransactionError(`Failed to parse unsigned transaction bytes: ${error.message}`);
+    }
   }
 
   /**
@@ -87,11 +120,24 @@ export class CustomInstructionBuilder extends TransactionBuilder {
    * Validate custom instruction format
    * @param instruction - The instruction to validate
    */
-  private validateInstruction(instruction: SolInstruction): void {
+  private validateInstruction(instruction: SolInstruction | SolCompiledInstruction): void {
     if (!instruction) {
       throw new BuildTransactionError('Instruction cannot be null or undefined');
     }
 
+    // Check if this is a traditional SolInstruction
+    if ('programId' in instruction) {
+      this.validateSolInstruction(instruction);
+    } else {
+      this.validateCompiledInstruction(instruction);
+    }
+  }
+
+  /**
+   * Validate traditional SolInstruction format
+   * @param instruction - The traditional instruction to validate
+   */
+  private validateSolInstruction(instruction: SolInstruction): void {
     if (!instruction.programId || typeof instruction.programId !== 'string') {
       throw new BuildTransactionError('Instruction must have a valid programId string');
     }
@@ -130,6 +176,31 @@ export class CustomInstructionBuilder extends TransactionBuilder {
 
     if (instruction.data === undefined || typeof instruction.data !== 'string') {
       throw new BuildTransactionError('Instruction must have valid data string');
+    }
+  }
+
+  /**
+   * Validate compiled instruction format
+   * @param instruction - The compiled instruction to validate
+   */
+  private validateCompiledInstruction(instruction: SolCompiledInstruction): void {
+    if (typeof instruction.programIdIndex !== 'number' || instruction.programIdIndex < 0) {
+      throw new BuildTransactionError('Compiled instruction must have a valid programIdIndex number');
+    }
+
+    if (!instruction.accountKeyIndexes || !Array.isArray(instruction.accountKeyIndexes)) {
+      throw new BuildTransactionError('Compiled instruction must have valid accountKeyIndexes array');
+    }
+
+    // Validate each account key index
+    for (const index of instruction.accountKeyIndexes) {
+      if (typeof index !== 'number' || index < 0) {
+        throw new BuildTransactionError('Each accountKeyIndex must be a non-negative number');
+      }
+    }
+
+    if (instruction.data === undefined || typeof instruction.data !== 'string') {
+      throw new BuildTransactionError('Compiled instruction must have valid data string');
     }
   }
 

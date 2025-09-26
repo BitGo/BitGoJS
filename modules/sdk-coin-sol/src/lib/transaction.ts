@@ -8,7 +8,15 @@ import {
   TransactionType,
 } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { Blockhash, PublicKey, Signer, Transaction as SolTransaction, SystemInstruction } from '@solana/web3.js';
+import {
+  Blockhash,
+  PublicKey,
+  Signer,
+  Transaction as SolTransaction,
+  SystemInstruction,
+  VersionedTransaction,
+  MessageAddressTableLookup,
+} from '@solana/web3.js';
 import BigNumber from 'bignumber.js';
 import base58 from 'bs58';
 import { KeyPair } from '.';
@@ -49,6 +57,8 @@ export class Transaction extends BaseTransaction {
   protected _type: TransactionType;
   protected _instructionsData: InstructionParams[] = [];
   private _useTokenAddressTokenName = false;
+  private _versionedTransaction: VersionedTransaction | undefined;
+  private _addressLookupTables: MessageAddressTableLookup[] = [];
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -74,12 +84,27 @@ export class Transaction extends BaseTransaction {
 
   /** @inheritDoc */
   get signablePayload(): Buffer {
+    if (this._versionedTransaction) {
+      return Buffer.from(this._versionedTransaction.message.serialize());
+    }
     return this._solTransaction.serializeMessage();
   }
 
   /** @inheritDoc **/
   get id(): string {
     // Solana transaction ID === first signature: https://docs.solana.com/terminology#transaction-id
+    if (this._versionedTransaction) {
+      if (
+        this._versionedTransaction.signatures &&
+        this._versionedTransaction.signatures.length > 0 &&
+        this._versionedTransaction.signatures[0]
+      ) {
+        return base58.encode(this._versionedTransaction!.signatures[0]);
+      } else {
+        return UNAVAILABLE_TEXT;
+      }
+    }
+
     if (this._solTransaction.signature) {
       return base58.encode(this._solTransaction.signature);
     } else {
@@ -141,6 +166,51 @@ export class Transaction extends BaseTransaction {
   setUseTokenAddressTokenName(value: boolean): void {
     this._useTokenAddressTokenName = value;
   }
+
+  /**
+   * Check if this transaction is a VersionedTransaction
+   * @returns {boolean} True if this is a VersionedTransaction
+   */
+  isVersionedTransaction(): boolean {
+    return !!this._versionedTransaction;
+  }
+
+  /**
+   * Get Address Lookup Tables used in this VersionedTransaction
+   * @returns {MessageAddressTableLookup[]} Array of Address Lookup Tables
+   */
+  getAddressLookupTables(): MessageAddressTableLookup[] {
+    return this._addressLookupTables;
+  }
+
+  /**
+   * Get the original VersionedTransaction if this transaction was parsed from one
+   * @returns {VersionedTransaction | undefined} The VersionedTransaction or undefined
+   */
+  get versionedTransaction(): VersionedTransaction | undefined {
+    return this._versionedTransaction;
+  }
+
+  /**
+   * Set this transaction as a VersionedTransaction
+   * @param {VersionedTransaction} versionedTx The VersionedTransaction to set
+   */
+  private _setVersionedTransaction(versionedTx: VersionedTransaction): void {
+    this._versionedTransaction = versionedTx;
+
+    // Extract Address Lookup Tables
+    if (versionedTx.message.addressTableLookups) {
+      this._addressLookupTables = versionedTx.message.addressTableLookups;
+    }
+  }
+
+  /**
+   * Public method to set a built VersionedTransaction
+   * @param {VersionedTransaction} versionedTx The VersionedTransaction to set
+   */
+  setVersionedTransaction(versionedTx: VersionedTransaction): void {
+    this._setVersionedTransaction(versionedTx);
+  }
   /** @inheritdoc */
   canSign(): boolean {
     return true;
@@ -152,6 +222,30 @@ export class Transaction extends BaseTransaction {
    * @param {KeyPair} keyPair Signer keys.
    */
   async sign(keyPair: KeyPair[] | KeyPair): Promise<void> {
+    if (this._versionedTransaction) {
+      // Handle VersionedTransaction signing
+      if (!this._versionedTransaction.message.recentBlockhash) {
+        throw new SigningError('Nonce is required before signing');
+      }
+
+      const keyPairs = keyPair instanceof Array ? keyPair : [keyPair];
+      const signers: Signer[] = [];
+      for (const kp of keyPairs) {
+        const keys = kp.getKeys(true);
+        if (!keys.prv) {
+          throw new SigningError('Missing private key');
+        }
+        signers.push({ publicKey: new PublicKey(keys.pub), secretKey: keys.prv as Uint8Array });
+      }
+      try {
+        this._versionedTransaction.sign(signers);
+      } catch (e) {
+        throw e;
+      }
+      return;
+    }
+
+    // Handle legacy transaction signing
     if (!this._solTransaction || !this._solTransaction.recentBlockhash) {
       throw new SigningError('Nonce is required before signing');
     }
@@ -176,6 +270,16 @@ export class Transaction extends BaseTransaction {
 
   /** @inheritdoc */
   toBroadcastFormat(): string {
+    if (this._versionedTransaction) {
+      try {
+        // VersionedTransaction.serialize() doesn't need requireAllSignatures parameter
+        // It automatically handles whatever signatures are present
+        return Buffer.from(this._versionedTransaction.serialize()).toString('base64');
+      } catch (e) {
+        throw e;
+      }
+    }
+
     if (!this._solTransaction) {
       throw new ParseTransactionError('Empty transaction');
     }
@@ -243,6 +347,31 @@ export class Transaction extends BaseTransaction {
       if (transactionType !== TransactionType.StakingAuthorizeRaw) {
         this.loadInputsAndOutputs();
       }
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  /**
+   * Sets this transaction from VersionedTransaction bytes
+   * @param {string} transactionBytes Base64 encoded VersionedTransaction bytes
+   */
+  fromVersionedTransactionBytes(transactionBytes: string): void {
+    try {
+      const buffer = Buffer.from(transactionBytes, 'base64');
+      const versionedTx = VersionedTransaction.deserialize(buffer);
+
+      // Store the VersionedTransaction
+      this._setVersionedTransaction(versionedTx);
+
+      // Set transaction ID if signatures are present
+      if (versionedTx.signatures && versionedTx.signatures.length > 0 && versionedTx.signatures[0]) {
+        this._id = base58.encode(versionedTx.signatures[0]);
+      }
+
+      this.setTransactionType(TransactionType.CustomTx);
+
+      // Don't call loadInputsAndOutputs() - VersionedTransactions are treated as CustomTx
     } catch (e) {
       throw e;
     }

@@ -47,6 +47,12 @@ export interface SolInstruction {
   data: string;
 }
 
+export interface SolCompiledInstruction {
+  programIdIndex: number;
+  accountKeyIndexes: number[];
+  data: string;
+}
+
 export interface aptosCustomTransactionParams {
   moduleName: string;
   functionName: string;
@@ -229,6 +235,11 @@ export interface PrebuildTransactionWithIntentOptions extends IntentOptionsBase 
    */
   solInstructions?: SolInstruction[];
   /**
+   * Base64-encoded bytes for use with the customTx intent type
+   * Used to support Versioned Transactions with Address Lookup Tables.
+   */
+  unsignedTransactionBytes?: string;
+  /**
    * Custom transaction parameters for Aptos entry function calls.
    * Used with the customTx intent type for Aptos smart contract interactions.
    */
@@ -298,6 +309,11 @@ export interface PopulatedIntent extends PopulatedIntentBase {
    * Each instruction should contain programId, keys, and data fields.
    */
   solInstructions?: SolInstruction[];
+  /**
+   * Base64-encoded bytes for use with the customTx intent type
+   * Used to support Versioned Transactions with Address Lookup Tables.
+   */
+  unsignedTransactionBytes?: string;
   /**
    * Custom Aptos transaction for use with the customTx intent type.
    */
