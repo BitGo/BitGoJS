@@ -78,9 +78,7 @@
       "!{projectRoot}/node_modules/**"
     ],
     "production": [
-      "default",
-      "!{projectRoot}/**/*.spec.ts",
-      "!{projectRoot}/**/test/**"
+      "default"
     ]
   }
 }
