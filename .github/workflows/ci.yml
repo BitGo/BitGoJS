@@ -16,6 +16,7 @@ permissions:
 
 env:
   NX_NO_CLOUD: true
+  NX_CACHE_FILES: "modules/*/src/**/*.ts,modules/*/src/**/*.js,modules/*/*.json"
 
 jobs:
   unit-test:
@@ -74,7 +75,7 @@ jobs:
           path: |
             .nx/cache
             modules/*/dist
-          key: ${{ runner.os }}-nx-${{ matrix.node-version }}-${{ hashFiles('yarn.lock') }}-${{ hashFiles('modules/*/src/**/*.ts', 'modules/*/src/**/*.js', 'modules/*/*.json') }}
+          key: ${{ runner.os }}-nx-${{ matrix.node-version }}-${{ hashFiles('yarn.lock') }}-${{ hashFiles(env.NX_CACHE_FILES) }}
           restore-keys: |
             ${{ runner.os }}-nx-${{ matrix.node-version }}-${{ hashFiles('yarn.lock') }}-
             ${{ runner.os }}-nx-${{ matrix.node-version }}-
@@ -184,7 +185,7 @@ jobs:
           path: |
             .nx/cache
             modules/*/dist
-          key: ${{ runner.os }}-nx-license-${{ hashFiles('yarn.lock') }}-${{ hashFiles('modules/*/src/**/*.ts', 'modules/*/src/**/*.js', 'modules/*/*.json') }}
+          key: ${{ runner.os }}-nx-license-${{ hashFiles('yarn.lock') }}-${{ hashFiles(env.NX_CACHE_FILES) }}
           restore-keys: |
             ${{ runner.os }}-nx-license-${{ hashFiles('yarn.lock') }}-
             ${{ runner.os }}-nx-license-
@@ -291,7 +292,7 @@ jobs:
           path: |
             .nx/cache
             modules/*/dist
-          key: ${{ runner.os }}-nx-browser-${{ hashFiles('yarn.lock') }}-${{ hashFiles('modules/*/src/**/*.ts', 'modules/*/src/**/*.js', 'modules/*/*.json') }}
+          key: ${{ runner.os }}-nx-browser-${{ hashFiles('yarn.lock') }}-${{ hashFiles(env.NX_CACHE_FILES) }}
           restore-keys: |
             ${{ runner.os }}-nx-browser-${{ hashFiles('yarn.lock') }}-
             ${{ runner.os }}-nx-browser-
