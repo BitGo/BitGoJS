@@ -19,8 +19,13 @@ import {
   TRANSFER_NFT_METHOD_ID,
   CLAIM_BASE_REWARDS_METHOD_ID,
   CLAIM_STAKING_REWARDS_METHOD_ID,
+  STARGATE_NFT_ADDRESS,
+  STARGATE_NFT_ADDRESS_TESTNET,
+  STARGATE_DELEGATION_ADDRESS,
+  STARGATE_DELEGATION_ADDRESS_TESTNET,
 } from './constants';
 import { KeyPair } from './keyPair';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
 
 export class Utils implements BaseUtils {
   isValidAddress(address: string): boolean {
@@ -125,20 +130,25 @@ export class Utils implements BaseUtils {
   }
 
   /**
-   * Encodes staking transaction data using ethereumjs-abi
+   * Decodes staking transaction data to extract levelId and autorenew
    *
-   * @param {string} stakingAmount - The amount to stake in wei
-   * @returns {string} - The encoded transaction data
+   * @param {string} data - The encoded transaction data
+   * @returns {object} - Object containing levelId and autorenew
    */
-  getStakingData(stakingAmount: string): string {
-    const methodName = 'stake';
-    const types = ['uint256'];
-    const params = [new BN(stakingAmount)];
+  decodeStakingData(data: string): { levelId: number; autorenew: boolean } {
+    try {
+      const parameters = data.slice(10);
 
-    const method = EthereumAbi.methodID(methodName, types);
-    const args = EthereumAbi.rawEncode(types, params);
+      // Decode using ethereumjs-abi directly
+      const decoded = EthereumAbi.rawDecode(['uint8', 'bool'], Buffer.from(parameters, 'hex'));
 
-    return addHexPrefix(Buffer.concat([method, args]).toString('hex'));
+      return {
+        levelId: Number(decoded[0]),
+        autorenew: Boolean(decoded[1]),
+      };
+    } catch (error) {
+      throw new Error(`Failed to decode staking data: ${error.message}`);
+    }
   }
 
   decodeTransferTokenData(data: string): TransactionRecipient {
@@ -174,6 +184,143 @@ export class Utils implements BaseUtils {
       sender,
       tokenId,
     };
+  }
+
+  /**
+   * Decodes claim rewards transaction data to extract tokenId
+   *
+   * @param {string} data - The encoded claim rewards method call data
+   * @returns {string} - The tokenId as a string
+   */
+  decodeClaimRewardsData(data: string): string {
+    try {
+      // Remove method ID (first 10 characters: '0x' + 4-byte method ID)
+      const methodData = data.slice(10);
+
+      // Extract tokenId from first 32-byte slot
+      // The tokenId is a uint256, so we take the full 64 hex characters
+      const tokenIdHex = methodData.slice(0, 64);
+
+      // Convert hex to decimal string
+      return BigInt('0x' + tokenIdHex).toString();
+    } catch (error) {
+      throw new Error(`Failed to decode claim rewards data: ${error.message}`);
+    }
+  }
+
+  /**
+   * Decodes exit delegation transaction data to extract tokenId
+   *
+   * @param {string} data - The encoded exit delegation method call data
+   * @returns {string} - The tokenId as a string
+   */
+  decodeExitDelegationData(data: string): string {
+    try {
+      if (!data.startsWith(EXIT_DELEGATION_METHOD_ID)) {
+        throw new Error('Invalid exit delegation method data');
+      }
+
+      const tokenIdHex = data.slice(EXIT_DELEGATION_METHOD_ID.length);
+      // Convert hex to decimal (matching original parseInt logic)
+      return parseInt(tokenIdHex, 16).toString();
+    } catch (error) {
+      throw new Error(`Failed to decode exit delegation data: ${error.message}`);
+    }
+  }
+
+  /**
+   * Decodes burn NFT transaction data to extract tokenId
+   *
+   * @param {string} data - The encoded burn NFT method call data
+   * @returns {string} - The tokenId as a string
+   */
+  decodeBurnNftData(data: string): string {
+    try {
+      if (!data.startsWith(BURN_NFT_METHOD_ID)) {
+        throw new Error('Invalid burn NFT method data');
+      }
+
+      const tokenIdHex = data.slice(BURN_NFT_METHOD_ID.length);
+      // Convert hex to decimal (matching original parseInt logic)
+      return parseInt(tokenIdHex, 16).toString();
+    } catch (error) {
+      throw new Error(`Failed to decode burn NFT data: ${error.message}`);
+    }
+  }
+
+  /**
+   * Get the network-appropriate delegation contract address
+   * @param {CoinConfig} coinConfig - The coin configuration object
+   * @returns {string} The delegation contract address for the network
+   */
+  getDefaultDelegationAddress(coinConfig: Readonly<CoinConfig>): string {
+    const isTestnet = coinConfig.network.type === 'testnet';
+    return isTestnet ? STARGATE_DELEGATION_ADDRESS_TESTNET : STARGATE_DELEGATION_ADDRESS;
+  }
+
+  /**
+   * Get the network-appropriate staking contract address
+   * @param {CoinConfig} coinConfig - The coin configuration object
+   * @returns {string} The staking contract address for the network
+   */
+  getDefaultStakingAddress(coinConfig: Readonly<CoinConfig>): string {
+    const isTestnet = coinConfig.network.type === 'testnet';
+    return isTestnet ? STARGATE_NFT_ADDRESS_TESTNET : STARGATE_NFT_ADDRESS;
+  }
+
+  /**
+   * Check if an address is a valid delegation contract address for any network
+   * @param {string} address - The address to check
+   * @returns {boolean} True if the address is a delegation contract address
+   */
+  isDelegationContractAddress(address: string): boolean {
+    const lowerAddress = address.toLowerCase();
+    return (
+      lowerAddress === STARGATE_DELEGATION_ADDRESS.toLowerCase() ||
+      lowerAddress === STARGATE_DELEGATION_ADDRESS_TESTNET.toLowerCase()
+    );
+  }
+
+  /**
+   * Check if an address is a valid NFT contract address for any network
+   * @param {string} address - The address to check
+   * @returns {boolean} True if the address is an NFT contract address
+   */
+  isNftContractAddress(address: string): boolean {
+    const lowerAddress = address.toLowerCase();
+    return (
+      lowerAddress === STARGATE_NFT_ADDRESS.toLowerCase() || lowerAddress === STARGATE_NFT_ADDRESS_TESTNET.toLowerCase()
+    );
+  }
+
+  /**
+   * Validate that a contract address matches the expected NFT/staking contract for the network
+   * @param {string} address - The contract address to validate
+   * @param {CoinConfig} coinConfig - The coin configuration object
+   * @throws {Error} If the address doesn't match the expected NFT contract address
+   */
+  validateStakingContractAddress(address: string, coinConfig: Readonly<CoinConfig>): void {
+    const expectedAddress = this.getDefaultStakingAddress(coinConfig);
+    if (address.toLowerCase() !== expectedAddress.toLowerCase()) {
+      throw new Error(
+        `Invalid staking contract address. Expected ${expectedAddress} for ${coinConfig.network.type}, got ${address}`
+      );
+    }
+  }
+
+  /**
+   * Validate that a contract address matches the expected delegation contract for the network
+   * @param {string} address - The contract address to validate
+   * @param {CoinConfig} coinConfig - The coin configuration object
+   * @throws {Error} If the address doesn't match the expected delegation contract address
+   */
+  validateDelegationContractAddress(address: string, coinConfig: Readonly<CoinConfig>): void {
+    const expectedAddress = this.getDefaultDelegationAddress(coinConfig);
+    if (address.toLowerCase() !== expectedAddress.toLowerCase()) {
+      throw new Error(
+        `Invalid delegation contract address. Expected ${expectedAddress} for ${coinConfig.network.type}, got ${address}`
+      );
+    }
   }
 }
 
