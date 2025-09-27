@@ -3172,7 +3172,7 @@ export const solTokens = [
     '50a59f79-033b-4bd0-aae1-49270f97cae2',
     'tsol:t1test',
     'T1TEST',
-    9,
+    6,
     '3BW95VLH2za2eUQ1PGfjxwMbpsnDFnmkA7m5LDgMKbX7',
     '3BW95VLH2za2eUQ1PGfjxwMbpsnDFnmkA7m5LDgMKbX7',
     UnderlyingAsset['tsol:t1test'],
