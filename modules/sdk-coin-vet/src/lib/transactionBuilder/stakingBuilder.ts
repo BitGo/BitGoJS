@@ -88,7 +88,29 @@ export class StakingBuilder extends TransactionBuilder {
   }
 
   /**
-   * Sets the amount to stake for this staking tx.
+   * Sets the level ID for this staking tx.
+   *
+   * @param {number} levelId - The level ID for staking
+   * @returns {StakingBuilder} This transaction builder
+   */
+  levelId(levelId: number): this {
+    this.stakingTransaction.levelId = levelId;
+    return this;
+  }
+
+  /**
+   * Sets the autorenew flag for this staking tx.
+   *
+   * @param {boolean} autorenew - Whether to enable autorenew
+   * @returns {StakingBuilder} This transaction builder
+   */
+  autorenew(autorenew: boolean): this {
+    this.stakingTransaction.autorenew = autorenew;
+    return this;
+  }
+
+  /**
+   * Sets the amount to stake for this staking tx (VET amount being sent).
    *
    * @param {string} amount - The amount to stake in wei
    * @returns {StakingBuilder} This transaction builder
@@ -127,7 +149,22 @@ export class StakingBuilder extends TransactionBuilder {
     }
     assert(transaction.stakingContractAddress, 'Staking contract address is required');
     assert(transaction.amountToStake, 'Amount to stake is required');
+
+    // Validate amount is a valid number string
+    if (transaction.amountToStake) {
+      try {
+        const bn = new (require('bignumber.js'))(transaction.amountToStake);
+        if (!bn.isFinite() || bn.isNaN()) {
+          throw new Error('Invalid character');
+        }
+      } catch (e) {
+        throw new Error('Invalid character');
+      }
+    }
+
     assert(transaction.stakingContractABI, 'Staking contract ABI is required');
+    assert(transaction.levelId !== undefined && transaction.levelId !== null, 'Level ID is required');
+    assert(transaction.autorenew !== undefined && transaction.autorenew !== null, 'Autorenew flag is required');
     this.validateAddress({ address: transaction.stakingContractAddress });
   }
 

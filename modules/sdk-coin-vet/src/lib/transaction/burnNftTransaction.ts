@@ -53,7 +53,7 @@ export class BurnNftTransaction extends Transaction {
    * @returns {string} The encoded transaction data as a hex string
    */
   private getBurnNftData(): string {
-    const methodName = 'burn';
+    const methodName = 'unstake';
     const types = ['uint256'];
     const params = [this._tokenId];
 

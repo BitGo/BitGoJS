@@ -9,12 +9,15 @@ import BigNumber from 'bignumber.js';
 
 export class StakingTransaction extends Transaction {
   private _stakingContractAddress: string;
+  private _levelId: number;
+  private _autorenew: boolean;
   private _amountToStake: string;
   private _stakingContractABI: EthereumAbi;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
     this._type = TransactionType.ContractCall;
+    this._autorenew = true;
   }
 
   get stakingContractAddress(): string {
@@ -23,6 +26,22 @@ export class StakingTransaction extends Transaction {
 
   set stakingContractAddress(address: string) {
     this._stakingContractAddress = address;
+  }
+
+  get levelId(): number {
+    return this._levelId;
+  }
+
+  set levelId(levelId: number) {
+    this._levelId = levelId;
+  }
+
+  get autorenew(): boolean {
+    return this._autorenew;
+  }
+
+  set autorenew(autorenew: boolean) {
+    this._autorenew = autorenew;
   }
 
   get amountToStake(): string {
@@ -46,12 +65,15 @@ export class StakingTransaction extends Transaction {
       throw new Error('Staking contract address is not set');
     }
 
+    if (this.levelId === undefined || this.levelId === null) {
+      throw new Error('Level ID is not set');
+    }
+
     if (!this.amountToStake) {
       throw new Error('Amount to stake is not set');
     }
 
-    // Generate transaction data using ethereumjs-abi
-    const data = utils.getStakingData(this.amountToStake);
+    const data = utils.getStakingData(this.levelId, this.autorenew);
     this._transactionData = data;
 
     // Create the clause for staking
@@ -88,6 +110,8 @@ export class StakingTransaction extends Transaction {
       to: this.stakingContractAddress,
       stakingContractAddress: this.stakingContractAddress,
       amountToStake: this.amountToStake,
+      levelId: this.levelId,
+      autorenew: this.autorenew,
     };
 
     return json;
@@ -124,6 +148,9 @@ export class StakingTransaction extends Transaction {
         }
         if (clause.data) {
           this.transactionData = clause.data;
+          const decoded = utils.decodeStakingData(clause.data);
+          this.levelId = decoded.levelId;
+          this.autorenew = decoded.autorenew;
         }
       }
 
