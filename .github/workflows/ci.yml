@@ -74,7 +74,7 @@ jobs:
           path: |
             .nx/cache
             modules/*/dist
-          key: ${{ runner.os }}-nx-${{ matrix.node-version }}-${{ hashFiles('yarn.lock') }}-${{ hashFiles('modules/*/src/**/*.ts', 'modules/*/src/**/*.js', 'modules/*/*.json', '!modules/*/package-lock.json') }}
+          key: ${{ runner.os }}-nx-${{ matrix.node-version }}-${{ hashFiles('yarn.lock') }}-${{ hashFiles('modules/*/src/**/*.ts', 'modules/*/src/**/*.js', 'modules/*/*.json') }}
           restore-keys: |
             ${{ runner.os }}-nx-${{ matrix.node-version }}-${{ hashFiles('yarn.lock') }}-
             ${{ runner.os }}-nx-${{ matrix.node-version }}-
@@ -184,7 +184,7 @@ jobs:
           path: |
             .nx/cache
             modules/*/dist
-          key: ${{ runner.os }}-nx-license-${{ hashFiles('yarn.lock') }}-${{ hashFiles('modules/*/src/**/*.ts', 'modules/*/src/**/*.js', 'modules/*/*.json', '!modules/*/package-lock.json') }}
+          key: ${{ runner.os }}-nx-license-${{ hashFiles('yarn.lock') }}-${{ hashFiles('modules/*/src/**/*.ts', 'modules/*/src/**/*.js', 'modules/*/*.json') }}
           restore-keys: |
             ${{ runner.os }}-nx-license-${{ hashFiles('yarn.lock') }}-
             ${{ runner.os }}-nx-license-
@@ -291,7 +291,7 @@ jobs:
           path: |
             .nx/cache
             modules/*/dist
-          key: ${{ runner.os }}-nx-browser-${{ hashFiles('yarn.lock') }}-${{ hashFiles('modules/*/src/**/*.ts', 'modules/*/src/**/*.js', 'modules/*/*.json', '!modules/*/package-lock.json') }}
+          key: ${{ runner.os }}-nx-browser-${{ hashFiles('yarn.lock') }}-${{ hashFiles('modules/*/src/**/*.ts', 'modules/*/src/**/*.js', 'modules/*/*.json') }}
           restore-keys: |
             ${{ runner.os }}-nx-browser-${{ hashFiles('yarn.lock') }}-
             ${{ runner.os }}-nx-browser-
