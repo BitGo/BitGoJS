@@ -11,6 +11,10 @@ permissions:
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
 
+env:
+  NX_NO_CLOUD: true
+  NX_SKIP_NX_CACHE: true
+
 jobs:
   publish:
     name: Publish Release

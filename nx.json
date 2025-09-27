@@ -1,0 +1,84 @@
+{
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "tasksRunnerOptions": {
+    "default": {
+      "runner": "nx/tasks-runners/default",
+      "options": {
+        "cacheableOperations": ["build", "unit-test", "integration-test"],
+        "cacheDirectory": ".nx/cache",
+        "parallel": 3,
+        "skipNxCache": false
+      }
+    }
+  },
+  "targetDefaults": {
+    "build": {
+      "cache": true,
+      "dependsOn": ["^build"],
+      "inputs": [
+        "production",
+        "{projectRoot}/**/*.json",
+        "{projectRoot}/tsconfig.json",
+        "{projectRoot}/package.json",
+        "{workspaceRoot}/tsconfig.json",
+        "{workspaceRoot}/tsconfig.packages.json"
+      ],
+      "outputs": [
+        "{projectRoot}/dist"
+      ]
+    },
+    "unit-test": {
+      "cache": true,
+      "dependsOn": ["build"],
+      "inputs": [
+        "default",
+        "{projectRoot}/**/*.ts",
+        "{projectRoot}/**/*.js",
+        "{projectRoot}/**/*.json",
+        "{projectRoot}/.mocharc.*",
+        "{projectRoot}/tsconfig.json",
+        "{projectRoot}/package.json",
+        "{workspaceRoot}/tsconfig.json"
+      ],
+      "outputs": [
+        "{projectRoot}/.nyc_output",
+        "{projectRoot}/coverage"
+      ]
+    },
+    "integration-test": {
+      "cache": true,
+      "dependsOn": ["build"],
+      "inputs": [
+        "default",
+        "{projectRoot}/**/*.ts",
+        "{projectRoot}/**/*.js",
+        "{projectRoot}/**/*.json",
+        "{projectRoot}/.mocharc.*",
+        "{projectRoot}/tsconfig.json",
+        "{projectRoot}/package.json",
+        "{workspaceRoot}/tsconfig.json"
+      ],
+      "outputs": [
+        "{projectRoot}/.nyc_output",
+        "{projectRoot}/coverage"
+      ]
+    }
+  },
+  "namedInputs": {
+    "default": [
+      "{projectRoot}/**/*",
+      "!{projectRoot}/**/*.md",
+      "!{projectRoot}/**/*.spec.ts",
+      "!{projectRoot}/**/*.spec.js",
+      "!{projectRoot}/**/test/**",
+      "!{projectRoot}/.nyc_output/**",
+      "!{projectRoot}/coverage/**",
+      "!{projectRoot}/dist/**",
+      "!{projectRoot}/lib/**",
+      "!{projectRoot}/node_modules/**"
+    ],
+    "production": [
+      "default"
+    ]
+  }
+}
