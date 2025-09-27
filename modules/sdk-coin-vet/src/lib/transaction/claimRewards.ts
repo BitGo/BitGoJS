@@ -10,6 +10,7 @@ import {
   CLAIM_BASE_REWARDS_METHOD_ID,
   CLAIM_STAKING_REWARDS_METHOD_ID,
   STARGATE_DELEGATION_ADDRESS,
+  STARGATE_NFT_ADDRESS,
 } from '../constants';
 
 export class ClaimRewardsTransaction extends Transaction {
@@ -83,7 +84,7 @@ export class ClaimRewardsTransaction extends Transaction {
   }
 
   /**
-   * Get the delegation contract address to use for claims
+   * Get the delegation contract address to use for staking rewards claims
    * Uses the address from claimRewardsData if provided, otherwise falls back to default
    */
   private getDelegationAddress(): string {
@@ -91,31 +92,30 @@ export class ClaimRewardsTransaction extends Transaction {
   }
 
   /**
-   * Build clause for claiming base rewards
+   * Get the Stargate NFT contract address to use for base rewards claims
+   */
+  private getStargateNftAddress(): string {
+    return this._claimRewardsData.stargateNftAddress || STARGATE_NFT_ADDRESS;
+  }
+
+  /**
+   * Build clause for claiming base rewards (claimVetGeneratedVtho)
    */
   private buildClaimBaseRewardsClause(): TransactionClause {
-    const methodData = this.encodeClaimRewardsMethod(
-      CLAIM_BASE_REWARDS_METHOD_ID,
-      this._claimRewardsData.validatorAddress,
-      this._claimRewardsData.delegatorAddress
-    );
+    const methodData = this.encodeClaimRewardsMethod(CLAIM_BASE_REWARDS_METHOD_ID, this._claimRewardsData.tokenId);
 
     return {
-      to: this.getDelegationAddress(),
+      to: this.getStargateNftAddress(),
       value: '0x0',
       data: methodData,
     };
   }
 
   /**
-   * Build clause for claiming staking rewards
+   * Build clause for claiming staking rewards (claimRewards)
    */
   private buildClaimStakingRewardsClause(): TransactionClause {
-    const methodData = this.encodeClaimRewardsMethod(
-      CLAIM_STAKING_REWARDS_METHOD_ID,
-      this._claimRewardsData.validatorAddress,
-      this._claimRewardsData.delegatorAddress
-    );
+    const methodData = this.encodeClaimRewardsMethod(CLAIM_STAKING_REWARDS_METHOD_ID, this._claimRewardsData.tokenId);
 
     return {
       to: this.getDelegationAddress(),
@@ -127,10 +127,10 @@ export class ClaimRewardsTransaction extends Transaction {
   /**
    * Encode the claim rewards method call data
    */
-  private encodeClaimRewardsMethod(methodId: string, validatorAddress: string, delegatorAddress: string): string {
-    const methodName = methodId === CLAIM_BASE_REWARDS_METHOD_ID ? 'claimBaseRewards' : 'claimStakingRewards';
-    const types = ['address', 'address'];
-    const params = [validatorAddress, delegatorAddress];
+  private encodeClaimRewardsMethod(methodId: string, tokenId: string): string {
+    const methodName = methodId === CLAIM_BASE_REWARDS_METHOD_ID ? 'claimVetGeneratedVtho' : 'claimRewards';
+    const types = ['uint256'];
+    const params = [tokenId];
 
     const method = EthereumAbi.methodID(methodName, types);
     const args = EthereumAbi.rawEncode(types, params);
@@ -215,35 +215,26 @@ export class ClaimRewardsTransaction extends Transaction {
 
     let claimBaseRewards = false;
     let claimStakingRewards = false;
-    let validatorAddress = '';
-    let delegatorAddress = '';
+    let tokenId = '';
     let delegationContractAddress = '';
 
     for (const clause of clauses) {
-      // Check if this is a claim rewards clause by looking at the method ID in data
-      if (
-        clause.data &&
-        (clause.data.startsWith(CLAIM_BASE_REWARDS_METHOD_ID) ||
-          clause.data.startsWith(CLAIM_STAKING_REWARDS_METHOD_ID))
-      ) {
-        // Store the contract address (could be different from default)
-        if (!delegationContractAddress) {
-          delegationContractAddress = clause.to || '';
-        }
-
+      if (clause.data) {
         if (clause.data.startsWith(CLAIM_BASE_REWARDS_METHOD_ID)) {
+          // claimVetGeneratedVtho should go to STARGATE_NFT_ADDRESS
           claimBaseRewards = true;
-          if (!validatorAddress || !delegatorAddress) {
-            const addresses = this.parseAddressesFromClaimData(clause.data);
-            validatorAddress = addresses.validator;
-            delegatorAddress = addresses.delegator;
+          if (!tokenId) {
+            tokenId = this.parseTokenIdFromClaimData(clause.data);
           }
         } else if (clause.data.startsWith(CLAIM_STAKING_REWARDS_METHOD_ID)) {
+          // claimRewards should go to STARGATE_DELEGATION_ADDRESS
           claimStakingRewards = true;
-          if (!validatorAddress || !delegatorAddress) {
-            const addresses = this.parseAddressesFromClaimData(clause.data);
-            validatorAddress = addresses.validator;
-            delegatorAddress = addresses.delegator;
+          if (!tokenId) {
+            tokenId = this.parseTokenIdFromClaimData(clause.data);
+          }
+          // Store the delegation contract address (could be different from default)
+          if (!delegationContractAddress && clause.to !== STARGATE_DELEGATION_ADDRESS) {
+            delegationContractAddress = clause.to || '';
           }
         }
       }
@@ -254,8 +245,7 @@ export class ClaimRewardsTransaction extends Transaction {
     }
 
     this._claimRewardsData = {
-      validatorAddress,
-      delegatorAddress,
+      tokenId,
       delegationContractAddress:
         delegationContractAddress !== STARGATE_DELEGATION_ADDRESS ? delegationContractAddress : undefined,
       claimBaseRewards,
@@ -264,31 +254,24 @@ export class ClaimRewardsTransaction extends Transaction {
   }
 
   /**
-   * Parse validator and delegator addresses from claim rewards method data.
+   * Parse tokenId from claim rewards method data.
    *
-   * The method data follows Ethereum ABI encoding where each parameter occupies 32 bytes (64 hex chars).
-   * After the 4-byte method ID, the parameters are laid out as:
-   * - Bytes 0-31 (chars 0-63): First address parameter (validator) - right-padded, actual address in bytes 12-31
-   * - Bytes 32-63 (chars 64-127): Second address parameter (delegator) - right-padded, actual address in bytes 44-63
+   * The method data follows Ethereum ABI encoding where the uint256 parameter occupies 32 bytes (64 hex chars).
+   * After the 4-byte method ID, the tokenId is laid out as:
+   * - Bytes 0-31 (chars 0-63): tokenId parameter as uint256
    *
    * @param data The encoded method call data including method ID and parameters
-   * @returns Object containing the extracted validator and delegator addresses
+   * @returns The tokenId as a string
    */
-  private parseAddressesFromClaimData(data: string): { validator: string; delegator: string } {
+  private parseTokenIdFromClaimData(data: string): string {
     // Remove method ID (first 10 characters: '0x' + 4-byte method ID)
     const methodData = data.slice(10);
 
-    // Extract validator address from first parameter (bytes 12-31 of first 32-byte slot)
-    // Slice 24-64: Skip first 12 bytes of padding (24 hex chars), take next 20 bytes (40 hex chars)
-    const validatorAddress = '0x' + methodData.slice(24, 64);
+    // Extract tokenId from first 32-byte slot
+    // The tokenId is a uint256, so we take the full 64 hex characters
+    const tokenIdHex = methodData.slice(0, 64);
 
-    // Extract delegator address from second parameter (bytes 44-63 of second 32-byte slot)
-    // Slice 88-128: Skip to second slot + 12 bytes padding (88 hex chars), take next 20 bytes (40 hex chars)
-    const delegatorAddress = '0x' + methodData.slice(88, 128);
-
-    return {
-      validator: validatorAddress,
-      delegator: delegatorAddress,
-    };
+    // Convert hex to decimal string
+    return BigInt('0x' + tokenIdHex).toString();
   }
 }

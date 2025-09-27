@@ -125,20 +125,43 @@ export class Utils implements BaseUtils {
   }
 
   /**
-   * Encodes staking transaction data using ethereumjs-abi
+   * Encodes staking transaction data using ethereumjs-abi for stakeAndDelegate method
    *
-   * @param {string} stakingAmount - The amount to stake in wei
+   * @param {number} levelId - The level ID for staking
+   * @param {boolean} autorenew - Whether to enable autorenew
    * @returns {string} - The encoded transaction data
    */
-  getStakingData(stakingAmount: string): string {
-    const methodName = 'stake';
-    const types = ['uint256'];
-    const params = [new BN(stakingAmount)];
+  getStakingData(levelId: number, autorenew = true): string {
+    const methodName = 'stakeAndDelegate';
+    const types = ['uint8', 'bool'];
+    const params = [levelId, autorenew];
 
     const method = EthereumAbi.methodID(methodName, types);
     const args = EthereumAbi.rawEncode(types, params);
 
     return addHexPrefix(Buffer.concat([method, args]).toString('hex'));
+  }
+
+  /**
+   * Decodes staking transaction data to extract levelId and autorenew
+   *
+   * @param {string} data - The encoded transaction data
+   * @returns {object} - Object containing levelId and autorenew
+   */
+  decodeStakingData(data: string): { levelId: number; autorenew: boolean } {
+    try {
+      const parameters = data.slice(10);
+
+      // Decode using ethereumjs-abi directly
+      const decoded = EthereumAbi.rawDecode(['uint8', 'bool'], Buffer.from(parameters, 'hex'));
+
+      return {
+        levelId: Number(decoded[0]),
+        autorenew: Boolean(decoded[1]),
+      };
+    } catch (error) {
+      throw new Error(`Failed to decode staking data: ${error.message}`);
+    }
   }
 
   decodeTransferTokenData(data: string): TransactionRecipient {

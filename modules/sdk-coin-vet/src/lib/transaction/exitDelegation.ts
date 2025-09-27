@@ -53,7 +53,7 @@ export class ExitDelegationTransaction extends Transaction {
    * @returns {string} The encoded transaction data as a hex string
    */
   private getExitDelegationData(): string {
-    const methodName = 'exitDelegation';
+    const methodName = 'requestDelegationExit';
     const types = ['uint256'];
     const params = [this._tokenId];
 

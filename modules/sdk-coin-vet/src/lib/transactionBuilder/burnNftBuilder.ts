@@ -120,6 +120,7 @@ export class BurnNftBuilder extends TransactionBuilder {
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     this.transaction.type = this.transactionType;
+    this.burnNftTransaction.transactionData = this.getBurnNftData();
     await this.burnNftTransaction.build();
     return this.transaction;
   }
@@ -131,7 +132,7 @@ export class BurnNftBuilder extends TransactionBuilder {
    * @returns {string} The encoded transaction data as a hex string
    */
   private getBurnNftData(): string {
-    const methodName = 'burn';
+    const methodName = 'unstake';
     const types = ['uint256'];
     const params = [this.burnNftTransaction.tokenId];
 

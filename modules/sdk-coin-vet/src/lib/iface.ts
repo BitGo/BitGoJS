@@ -28,6 +28,9 @@ export interface VetTransactionData {
   tokenId?: string; // Added for unstaking and burn NFT transactions
   stakingContractAddress?: string;
   amountToStake?: string;
+  levelId?: number; // Level ID for stakeAndDelegate method
+  nftTokenId?: number; // NFT Token ID for stakeAndDelegate method (same as levelId)
+  autorenew?: boolean; // Autorenew flag for stakeAndDelegate method
   nftCollectionId?: string;
   claimRewardsData?: ClaimRewardsData;
 }
