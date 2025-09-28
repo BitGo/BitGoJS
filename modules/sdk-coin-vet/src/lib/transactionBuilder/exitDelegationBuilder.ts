@@ -2,14 +2,12 @@ import assert from 'assert';
 import { TransactionClause } from '@vechain/sdk-core';
 import { TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import EthereumAbi from 'ethereumjs-abi';
-import { addHexPrefix } from 'ethereumjs-util';
 
 import { TransactionBuilder } from './transactionBuilder';
 import { ExitDelegationTransaction } from '../transaction/exitDelegation';
 import { Transaction } from '../transaction/transaction';
 import utils from '../utils';
-import { EXIT_DELEGATION_METHOD_ID, STARGATE_DELEGATION_ADDRESS } from '../constants';
+import { EXIT_DELEGATION_METHOD_ID } from '../constants';
 
 export class ExitDelegationBuilder extends TransactionBuilder {
   /**
@@ -95,14 +93,15 @@ export class ExitDelegationBuilder extends TransactionBuilder {
 
   /**
    * Sets the delegation contract address for this unstaking transaction.
-   * If not provided, uses the default address from constants.
+   * If not provided, uses the network-appropriate default address.
    *
    * @param {string} address - The delegation contract address
    * @returns {ExitDelegationBuilder} This transaction builder
    */
-  delegationContract(address: string = STARGATE_DELEGATION_ADDRESS): this {
-    this.validateAddress({ address });
-    this.exitDelegationTransaction.contract = address;
+  delegationContract(address?: string): this {
+    const contractAddress = address || utils.getDefaultDelegationAddress(this._coinConfig);
+    this.validateAddress({ address: contractAddress });
+    this.exitDelegationTransaction.contract = contractAddress;
     return this;
   }
 
@@ -120,26 +119,7 @@ export class ExitDelegationBuilder extends TransactionBuilder {
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     this.transaction.type = this.transactionType;
-    // Set the transaction data before building
-    this.exitDelegationTransaction.transactionData = this.getExitDelegationData();
     await this.exitDelegationTransaction.build();
     return this.transaction;
-  }
-
-  /**
-   * Generates the transaction data for exit delegation by encoding the exitDelegation method call.
-   *
-   * @private
-   * @returns {string} The encoded transaction data as a hex string
-   */
-  private getExitDelegationData(): string {
-    const methodName = 'exitDelegation';
-    const types = ['uint256'];
-    const params = [this.exitDelegationTransaction.tokenId];
-
-    const method = EthereumAbi.methodID(methodName, types);
-    const args = EthereumAbi.rawEncode(types, params);
-
-    return addHexPrefix(Buffer.concat([method, args]).toString('hex'));
   }
 }
