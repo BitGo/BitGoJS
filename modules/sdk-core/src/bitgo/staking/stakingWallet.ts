@@ -28,6 +28,7 @@ import { ITssUtils, RequestTracer, TssUtils } from '../utils';
 import assert from 'assert';
 import { transactionRecipientsMatch } from '../utils/transactionUtils';
 import debug from 'debug';
+import { TransactionType } from '../../account-lib';
 
 export class StakingWallet implements IStakingWallet {
   private readonly bitgo: BitGoBase;
@@ -442,7 +443,7 @@ export class StakingWallet implements IStakingWallet {
       );
     }
 
-    if (buildParams?.type && (explainedTransaction as any).type !== buildParams.type) {
+    if (buildParams?.type && TransactionType[buildParams.type] !== (explainedTransaction as any).type) {
       mismatchErrors.push(
         `Transaction type mismatch. Expected: '${buildParams.type}', Got: '${(explainedTransaction as any).type}'`
       );
@@ -454,18 +455,6 @@ export class StakingWallet implements IStakingWallet {
           `Solana instructions mismatch. Expected: ${JSON.stringify(
             buildParams.solInstructions
           )}, Got: ${JSON.stringify((explainedTransaction as any).solInstructions)}`
-        );
-      }
-    }
-
-    if (buildParams?.aptosCustomTransactionParams) {
-      if (
-        !isEqual((explainedTransaction as any).aptosCustomTransactionParams, buildParams.aptosCustomTransactionParams)
-      ) {
-        mismatchErrors.push(
-          `Aptos custom transaction parameters mismatch. Expected: ${JSON.stringify(
-            buildParams.aptosCustomTransactionParams
-          )}, Got: ${JSON.stringify((explainedTransaction as any).aptosCustomTransactionParams)}`
         );
       }
     }
