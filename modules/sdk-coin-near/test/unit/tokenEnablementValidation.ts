@@ -114,10 +114,10 @@ describe('NEAR Token Enablement Validation', function () {
     };
 
     // This SHOULD throw an error because the hex doesn't match the expected transaction type
-    // The validation will detect that the transaction outputs don't match the expected token enablement parameters
+    // The validation will detect that the transaction type doesn't match the expected token enablement type
     await basecoin
       .verifyTransaction(verifyOptions)
-      .should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
+      .should.be.rejectedWith('Invalid transaction type on token enablement: expected "42", got "0".');
   });
 
   /**

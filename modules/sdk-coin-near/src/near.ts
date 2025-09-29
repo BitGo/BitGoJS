@@ -37,15 +37,15 @@ import {
   SignedTransaction,
   SignTransactionOptions as BaseSignTransactionOptions,
   TokenEnablementConfig,
-  TransactionExplanation,
   TransactionParams,
+  TransactionType,
   VerifyAddressOptions,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, CoinFamily, coins, Nep141Token, Networks } from '@bitgo/statics';
 
 import { KeyPair as NearKeyPair, Transaction, TransactionBuilder, TransactionBuilderFactory } from './lib';
-import { TxData } from './lib/iface';
+import { TxData, TransactionExplanation } from './lib/iface';
 import nearUtils from './lib/utils';
 import { MAX_GAS_LIMIT_FOR_FT_TRANSFER } from './lib/constants';
 
@@ -1096,6 +1096,7 @@ export class Near extends BaseCoin {
     this.validatePublicKey(transactionData);
     this.validateActions(transactionData);
     this.validateAddresses(txParams, explainedTx);
+    this.validateTxType(txParams, explainedTx);
   }
 
   // Validates that the signer ID exists in the transaction
@@ -1127,6 +1128,21 @@ export class Near extends BaseCoin {
     // For token enablement, we validate that the transaction has the expected actions
     if (!transactionData.actions || transactionData.actions.length === 0) {
       throw new Error('Error on token enablements: missing actions in transaction');
+    }
+  }
+
+  // Validates that the transaction type matches the expected type for the given txParams
+  private validateTxType(txParams: TransactionParams, explainedTx: TransactionExplanation): void {
+    if (txParams.type === 'enabletoken') {
+      // For NEAR token enablement, we expect TransactionType.StorageDeposit
+      const expectedType = TransactionType.StorageDeposit;
+      const actualType = explainedTx.type;
+
+      if (actualType !== expectedType) {
+        throw new Error(
+          `Invalid transaction type on token enablement: expected "${expectedType}", got "${actualType}".`
+        );
+      }
     }
   }
 
