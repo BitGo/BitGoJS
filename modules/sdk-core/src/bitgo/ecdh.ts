@@ -17,6 +17,21 @@ import * as secp256k1 from 'secp256k1';
 import { ECPairInterface, BIP32Interface, bip32, ECPair } from '@bitgo/utxo-lib';
 
 /**
+ * Validate that a public key is on the secp256k1 curve
+ * This is a defense-in-depth check to prevent invalid curve attacks
+ * @param publicKey Buffer containing the public key to validate
+ * @returns boolean true if the key is valid, false otherwise
+ */
+function validatePublicKey(publicKey: Buffer): boolean {
+  try {
+    // Validates that the public key is a point on the secp256k1 curve
+    return secp256k1.publicKeyVerify(publicKey);
+  } catch (e) {
+    return false;
+  }
+}
+
+/**
  * Calculate the Elliptic Curve Diffie Hellman
  * @param privateKey HDNode of private key
  * @param publicKey [neutered] HDNode of public key
@@ -55,8 +70,15 @@ export function getSharedSecret(
   assert.strictEqual(privateKey.length, 32);
   assert.strictEqual(publicKey.length, 33);
 
+  // Extra validation to ensure the public key is on the curve
+  // This provides defense-in-depth against CVE-2024-48930 (GHSA-584q-6j8j-r5pm)
+  if (!validatePublicKey(publicKey)) {
+    throw new Error(`invalid public key: not on secp256k1 curve`);
+  }
+
   // FIXME(BG-34386): we should use `secp256k1.ecdh()` in the future
   //                  see discussion here https://github.com/bitcoin-core/secp256k1/issues/352
+  //                  Additional validation has been added above to protect against CVE-2024-48930
   const buffer = Buffer.from(secp256k1.publicKeyTweakMul(publicKey, privateKey))
     // remove leading parity bit
     .slice(1);

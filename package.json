@@ -143,5 +143,21 @@
     "terser": "^5.14.2",
     "tmp": "^0.2.3"
   },
+  "overrides": {
+    "ethereum-cryptography": {
+      "secp256k1": "5.0.1"
+    },
+    "hdkey": {
+      "secp256k1": "5.0.1"
+    },
+    "eccrypto": {
+      "secp256k1": "5.0.1"
+    },
+    "bip322-js": {
+      "bitcoinjs-message": {
+        "secp256k1": "5.0.1"
+      }
+    }
+  },
   "packageManager": "yarn@1.22.22"
 }

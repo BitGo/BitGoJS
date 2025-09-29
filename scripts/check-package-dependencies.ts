@@ -34,6 +34,7 @@ const options = {
     'sass-loader',
     'style-loader',
     'ts-loader',
+    'secp256k1',
   ],
   specials: [
     depcheck.special.babel,

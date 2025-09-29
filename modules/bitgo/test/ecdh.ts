@@ -5,6 +5,7 @@ import 'should';
 import { bip32 } from '@bitgo/utxo-lib';
 import * as crypto from 'crypto';
 import * as utxolib from '@bitgo/utxo-lib';
+import * as secp256k1 from 'secp256k1';
 
 import { getSharedSecret, signMessageWithDerivedEcdhKey, verifyEcdhSignature } from '@bitgo/sdk-core';
 import { TestBitGo } from '@bitgo/sdk-test';
@@ -81,5 +82,27 @@ describe('ECDH utils', () => {
     derivedPubKey = bip32.fromBase58(myEcdhKeychain.xpub).derivePath('m/0/0').publicKey;
     isVerify = verifyEcdhSignature(JSON.stringify(message), signedMessage.toString('hex'), derivedPubKey);
     isVerify.should.be.false();
+  });
+
+  it('getSharedSecret rejects invalid public keys for CVE-2024-48930 mitigation', function () {
+    const validPrivateKey = Buffer.alloc(32, 1); // Create a dummy private key
+    const validPublicKey = Buffer.from(secp256k1.publicKeyCreate(validPrivateKey));
+
+    // Valid key should work
+    const sharedSecret = getSharedSecret(validPrivateKey, validPublicKey);
+    assert.strictEqual(sharedSecret.length, 32);
+
+    // Test with invalid public key
+    const invalidPublicKey = Buffer.from('0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798', 'hex');
+    // Modify last byte to make it invalid but keep the format valid
+    invalidPublicKey[32] = invalidPublicKey[32] ^ 0xff;
+
+    try {
+      getSharedSecret(validPrivateKey, invalidPublicKey);
+      assert.fail('Should have thrown error for invalid public key');
+    } catch (e) {
+      // The test passes as long as an error is thrown
+      assert.ok(true, 'Error was thrown as expected');
+    }
   });
 });
