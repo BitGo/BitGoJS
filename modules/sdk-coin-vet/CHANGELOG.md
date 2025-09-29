@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.6.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.6.0...@bitgo/sdk-coin-vet@2.6.1) (2025-09-29)
+
+### Bug Fixes
+
+- correct methods and abi for vechain ([6125807](https://github.com/BitGo/BitGoJS/commit/612580764da038a11ed23ac32c80e8d464c4d027))
+
 # [2.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.5.3...@bitgo/sdk-coin-vet@2.6.0) (2025-09-25)
 
 ### Bug Fixes

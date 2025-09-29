@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.0.0...@bitgo/statics@58.1.0) (2025-09-29)
+
+### Bug Fixes
+
+- add missing configs ([beb5bec](https://github.com/BitGo/BitGoJS/commit/beb5bec75b064083c69532f88ed3cbd2a7cc4627))
+
+### Features
+
+- add coin feature to og ([ba93367](https://github.com/BitGo/BitGoJS/commit/ba933674164280987777d332f38d542d81bc51e1))
+- **sdk-coin-sol:** token 2022 transfer hook implementation ([dae78c4](https://github.com/BitGo/BitGoJS/commit/dae78c4bcef92e29e7953fd8b94ed2fb174db4ba))
+
 # [58.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@57.8.0...@bitgo/statics@58.0.0) (2025-09-25)
 
 ### Bug Fixes

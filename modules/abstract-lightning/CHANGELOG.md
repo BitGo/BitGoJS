@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.1.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@7.1.0...@bitgo/abstract-lightning@7.1.1) (2025-09-29)
+
+### Bug Fixes
+
+- removed transfer data from payment withdraw ([53dcd91](https://github.com/BitGo/BitGoJS/commit/53dcd91b28a4728a15e80a33dfef7c2cfa8f782a))
+
 # [7.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@7.0.0...@bitgo/abstract-lightning@7.1.0) (2025-09-25)
 
 ### Bug Fixes
