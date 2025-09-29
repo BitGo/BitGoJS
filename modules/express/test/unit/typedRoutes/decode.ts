@@ -6,10 +6,13 @@ import { LoginRequest } from '../../../src/typedRoutes/api/common/login';
 import { VerifyAddressBody } from '../../../src/typedRoutes/api/common/verifyAddress';
 import { VerifyAddressV2Body, VerifyAddressV2Params } from '../../../src/typedRoutes/api/v2/verifyAddress';
 import { SimpleCreateRequestBody } from '../../../src/typedRoutes/api/v1/simpleCreate';
+import { KeychainLocalRequestParams } from '../../../src/typedRoutes/api/v2/keychainLocal';
+import { LightningStateParams } from '../../../src/typedRoutes/api/v2/lightningState';
 import {
   LightningInitWalletBody,
   LightningInitWalletParams,
 } from '../../../src/typedRoutes/api/v2/lightningInitWallet';
+import { UnlockLightningWalletBody, UnlockLightningWalletParams } from '../../../src/typedRoutes/api/v2/unlockWallet';
 
 export function assertDecode<T>(codec: t.Type<T, unknown>, input: unknown): T {
   const result = codec.decode(input);
@@ -133,6 +136,34 @@ describe('io-ts decode tests', function () {
       passphrase: 'pass',
     });
   });
+  it('express.keychain.local', function () {
+    // coin parameter is required
+    assert.throws(() => assertDecode(t.type(KeychainLocalRequestParams), {}));
+    // coin must be a string
+    assert.throws(() =>
+      assertDecode(t.type(KeychainLocalRequestParams), {
+        coin: 123,
+      })
+    );
+    // valid with coin parameter
+    assertDecode(t.type(KeychainLocalRequestParams), {
+      coin: 'btc',
+    });
+    // valid with different coin
+    assertDecode(t.type(KeychainLocalRequestParams), {
+      coin: 'eth',
+    });
+    // valid with testnet coin
+    assertDecode(t.type(KeychainLocalRequestParams), {
+      coin: 'tbtc',
+    });
+  });
+  it('express.lightning.getState params valid', function () {
+    assertDecode(t.type(LightningStateParams), { coin: 'lnbtc', walletId: 'wallet123' });
+  });
+  it('express.lightning.getState params invalid', function () {
+    assert.throws(() => assertDecode(t.type(LightningStateParams), { coin: 'lnbtc' }));
+  });
   it('express.lightning.initWallet params', function () {
     // missing walletId
     assert.throws(() => assertDecode(t.type(LightningInitWalletParams), { coin: 'ltc' }));
@@ -150,5 +181,13 @@ describe('io-ts decode tests', function () {
     assertDecode(t.type(LightningInitWalletBody), { passphrase: 'p' });
     // valid with expressHost
     assertDecode(t.type(LightningInitWalletBody), { passphrase: 'p', expressHost: 'host.example' });
+  });
+  it('express.lightning.unlockWallet', function () {
+    // params require coin and id
+    assertDecode(t.type(UnlockLightningWalletParams), { coin: 'tlnbtc', id: 'wallet123' });
+    // missing passphrase
+    assert.throws(() => assertDecode(t.type(UnlockLightningWalletBody), {}));
+    // valid body
+    assertDecode(t.type(UnlockLightningWalletBody), { passphrase: 'secret' });
   });
 });

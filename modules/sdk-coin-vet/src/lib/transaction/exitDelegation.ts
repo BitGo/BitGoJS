@@ -6,6 +6,7 @@ import { VetTransactionData } from '../iface';
 import { EXIT_DELEGATION_METHOD_ID } from '../constants';
 import EthereumAbi from 'ethereumjs-abi';
 import { addHexPrefix } from 'ethereumjs-util';
+import utils from '../utils';
 
 export class ExitDelegationTransaction extends Transaction {
   private _tokenId: string;
@@ -37,6 +38,8 @@ export class ExitDelegationTransaction extends Transaction {
       throw new InvalidTransactionError('Missing required unstaking parameters');
     }
 
+    utils.validateDelegationContractAddress(this._contract, this._coinConfig);
+
     this._clauses = [
       {
         to: this._contract,
@@ -53,7 +56,7 @@ export class ExitDelegationTransaction extends Transaction {
    * @returns {string} The encoded transaction data as a hex string
    */
   private getExitDelegationData(): string {
-    const methodName = 'exitDelegation';
+    const methodName = 'requestDelegationExit';
     const types = ['uint256'];
     const params = [this._tokenId];
 
@@ -110,9 +113,7 @@ export class ExitDelegationTransaction extends Transaction {
 
       // Extract tokenId from transaction data
       if (this.transactionData.startsWith(EXIT_DELEGATION_METHOD_ID)) {
-        const tokenIdHex = this.transactionData.slice(EXIT_DELEGATION_METHOD_ID.length);
-        // Convert hex to decimal
-        this.tokenId = parseInt(tokenIdHex, 16).toString();
+        this.tokenId = utils.decodeExitDelegationData(this.transactionData);
       }
 
       // Set sender address

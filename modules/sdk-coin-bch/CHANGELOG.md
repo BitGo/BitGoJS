@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bch@2.3.4...@bitgo/sdk-coin-bch@2.4.0) (2025-09-25)
+
+### Features
+
+- configure learn to skip git operations ([ee3a622](https://github.com/BitGo/BitGoJS/commit/ee3a6220496476aa7f4545b5f4a9a3bf97d9bdb9))
+
 ## [2.3.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bch@2.3.3...@bitgo/sdk-coin-bch@2.3.4) (2025-09-03)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-bch

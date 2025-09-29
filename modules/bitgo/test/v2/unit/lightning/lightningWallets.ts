@@ -401,17 +401,6 @@ describe('Lightning wallets', function () {
         state: 'initialized',
       };
 
-      const transferData = {
-        id: 'fake_id',
-        coin: 'tlnbtc',
-        state: 'confirmed',
-        txid: lndResponse.paymentHash,
-      };
-
-      const getTransferNock = nock(bgUrl)
-        .get(`/api/v2/${coinName}/wallet/${wallet.wallet.id()}/transfer/fake_id`)
-        .reply(200, transferData);
-
       const createTxRequestNock = nock(bgUrl)
         .post(`/api/v2/wallet/${wallet.wallet.id()}/txrequests`)
         .reply(200, txRequestResponse);
@@ -434,7 +423,6 @@ describe('Lightning wallets', function () {
       const response = await wallet.payInvoice(params);
       assert.strictEqual(response.txRequestId, 'txReq123');
       assert.strictEqual(response.txRequestState, 'delivered');
-      assert.strictEqual(response.transfer.id, transferData.id);
       assert.ok(response.paymentStatus);
       assert.strictEqual(
         response.paymentStatus.status,
@@ -457,7 +445,6 @@ describe('Lightning wallets', function () {
         finalPaymentResponse.transactions[0].unsignedTx.coinSpecific.paymentPreimage
       );
 
-      getTransferNock.done();
       createTxRequestNock.done();
       sendTxRequestNock.done();
       createTransferNock.done();
@@ -960,26 +947,6 @@ describe('Lightning wallets', function () {
         createdTime: '2025-06-09T07:47:16.102Z',
       };
 
-      const updatedTransferResponse = {
-        ...transferResponse,
-        txid: '211b8fb30990632751a83d1dc4f0323ff7d2fd3cad88084de13c9be2ae1c6426',
-        date: '2025-06-09T08:50:55.063Z',
-        state: 'signed',
-        history: [
-          {
-            date: '2025-06-09T07:50:55.063Z',
-            user: '6846918281f118cc42c33352779df88f',
-            action: 'signed',
-          },
-          {
-            date: '2025-06-09T07:47:16.102Z',
-            user: '6846918281f118cc42c33352779df88f',
-            action: 'created',
-          },
-        ],
-        signedTime: '2025-06-09T08:50:55.063Z',
-      };
-
       const createTxRequestNock = nock(bgUrl)
         .post(`/api/v2/wallet/${wallet.wallet.id()}/txrequests`)
         .reply(200, txRequestResponse);
@@ -996,10 +963,6 @@ describe('Lightning wallets', function () {
         .post(`/api/v2/wallet/${wallet.wallet.id()}/txrequests/${txRequestResponse.txRequestId}/transactions/0/send`)
         .reply(200, finalWithdrawResponse);
 
-      const getTransferNock = nock(bgUrl)
-        .get(`/api/v2/${coinName}/wallet/${wallet.wallet.id()}/transfer/${transferResponse.id}`)
-        .reply(200, updatedTransferResponse);
-
       const userAuthKeyNock = nock(bgUrl)
         .get('/api/v2/' + coinName + '/key/def')
         .reply(200, userAuthKey);
@@ -1013,7 +976,6 @@ describe('Lightning wallets', function () {
       assert.strictEqual(response.withdrawStatus?.status, 'delivered');
       assert.strictEqual(response.withdrawStatus?.txid, 'tx123');
       assert.strictEqual((response.withdrawStatus as any).signature, undefined);
-      assert.deepStrictEqual(response.transfer, updatedTransferResponse);
 
       userAuthKeyNock.done();
       nodeAuthKeyNock.done();
@@ -1021,7 +983,6 @@ describe('Lightning wallets', function () {
       storeSignatureNock.done();
       createTransferNock.done();
       sendTxRequestNock.done();
-      getTransferNock.done();
     });
 
     it('should handle pending approval when withdrawing onchain', async function () {

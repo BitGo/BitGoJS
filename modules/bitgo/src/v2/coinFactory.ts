@@ -254,6 +254,8 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('eth', Eth.createInstance);
   coinFactory.register('ethw', Ethw.createInstance);
   coinFactory.register('baseeth', EthLikeCoin.createInstance);
+  coinFactory.register('og', EthLikeCoin.createInstance);
+  coinFactory.register('tog', EthLikeCoin.createInstance);
   coinFactory.register('tbaseeth', TethLikeCoin.createInstance);
   coinFactory.register('fiataed', FiatAED.createInstance);
   coinFactory.register('fiateur', FiatEur.createInstance);
@@ -663,6 +665,8 @@ export function getCoinConstructor(coinName: string): CoinConstructor | undefine
       return Initia.createInstance;
     case 'injective':
       return Injective.createInstance;
+    case 'iota':
+      return Iota.createInstance;
     case 'islm':
       return Islm.createInstance;
     case 'near':
@@ -789,6 +793,8 @@ export function getCoinConstructor(coinName: string): CoinConstructor | undefine
       return Tinitia.createInstance;
     case 'tinjective':
       return Tinjective.createInstance;
+    case 'tiota':
+      return Iota.createInstance;
     case 'tislm':
       return Tislm.createInstance;
     case 'tlnbtc':
@@ -966,6 +972,21 @@ export function getTokenConstructor(tokenConfig: TokenConfig): CoinConstructor |
     case 'apt':
     case 'tapt':
       return AptToken.createTokenConstructor(tokenConfig as AptTokenConfig);
+    case 'flow':
+    case 'tflow': {
+      const coinNames = { Mainnet: 'flow', Testnet: 'tflow' };
+      return EthLikeErc20Token.createTokenConstructor(tokenConfig as EthLikeTokenConfig, coinNames);
+    }
+    case 'seievm':
+    case 'tseievm': {
+      const coinNames = { Mainnet: 'seievm', Testnet: 'tseievm' };
+      return EthLikeErc20Token.createTokenConstructor(tokenConfig as EthLikeTokenConfig, coinNames);
+    }
+    case 'lineaeth':
+    case 'tlineaeth': {
+      const coinNames = { Mainnet: 'lineaeth', Testnet: 'tlineaeth' };
+      return EthLikeErc20Token.createTokenConstructor(tokenConfig as EthLikeTokenConfig, coinNames);
+    }
     case 'stx':
     case 'tstx':
       return Sip10Token.createTokenConstructor(tokenConfig as Sip10TokenConfig);

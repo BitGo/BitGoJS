@@ -62,6 +62,7 @@ import { handleLightningWithdraw } from './lightning/lightningWithdrawRoutes';
 import createExpressRouter from './typedRoutes';
 import { ExpressApiRouteRequest } from './typedRoutes/api';
 import { TypedRequestHandler, WrappedRequest, WrappedResponse } from '@api-ts/typed-express-router';
+import { isJsonString } from './utils';
 
 const { version } = require('bitgo/package.json');
 const pjson = require('../package.json');
@@ -116,7 +117,7 @@ function handleVerifyAddress(req: ExpressApiRouteRequest<'express.verifyaddress'
  * @deprecated
  * @param req
  */
-function handleCreateLocalKeyChain(req: express.Request) {
+function handleCreateLocalKeyChain(req: ExpressApiRouteRequest<'express.v1.keychain.local', 'post'>) {
   return req.bitgo.keychains().create(req.body);
 }
 
@@ -124,7 +125,7 @@ function handleCreateLocalKeyChain(req: express.Request) {
  * @deprecated
  * @param req
  */
-function handleDeriveLocalKeyChain(req: express.Request) {
+function handleDeriveLocalKeyChain(req: ExpressApiRouteRequest<'express.v1.keychain.derive', 'post'>) {
   return req.bitgo.keychains().deriveLocal(req.body);
 }
 
@@ -256,7 +257,7 @@ function handleApproveTransaction(req: ExpressApiRouteRequest<'express.v1.pendin
  * @deprecated
  * @param req
  */
-function handleConstructApprovalTx(req: express.Request) {
+function handleConstructApprovalTx(req: ExpressApiRouteRequest<'express.v1.pendingapproval.constructTx', 'put'>) {
   const params = req.body || {};
   return req.bitgo
     .pendingApprovals()
@@ -296,7 +297,7 @@ function handleFanOutUnspents(req: express.Request) {
  * @deprecated
  * @param req
  */
-function handleCalculateMinerFeeInfo(req: express.Request) {
+function handleCalculateMinerFeeInfo(req: ExpressApiRouteRequest<'express.calculateminerfeeinfo', 'post'>) {
   return req.bitgo.calculateMinerFeeInfo({
     bitgo: req.bitgo,
     feeRate: req.body.feeRate,
@@ -630,7 +631,7 @@ export async function handleV2OFCSignPayload(req: express.Request): Promise<{ pa
 
   const walletPassphrase = bodyWalletPassphrase || getWalletPwFromEnv(wallet.id());
   const tradingAccount = wallet.toTradingAccount();
-  const stringifiedPayload = JSON.stringify(req.body.payload);
+  const stringifiedPayload = isJsonString(req.body.payload) ? req.body.payload : JSON.stringify(req.body.payload);
   const signature = await tradingAccount.signPayload({
     payload: stringifiedPayload,
     walletPassphrase,
@@ -685,7 +686,7 @@ async function handleV2PendingApproval(req: express.Request): Promise<any> {
  * create a keychain
  * @param req
  */
-function handleV2CreateLocalKeyChain(req: express.Request) {
+export function handleV2CreateLocalKeyChain(req: ExpressApiRouteRequest<'express.keychain.local', 'post'>) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.params.coin);
   return coin.keychains().create(req.body);
@@ -1559,15 +1560,17 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   router.post('express.encrypt', [prepareBitGo(config), typedPromiseWrapper(handleEncrypt)]);
   router.post('express.verifyaddress', [prepareBitGo(config), typedPromiseWrapper(handleVerifyAddress)]);
   router.post('express.lightning.initWallet', [prepareBitGo(config), typedPromiseWrapper(handleInitLightningWallet)]);
-  app.post(
-    '/api/v[12]/calculateminerfeeinfo',
-    parseBody,
+  router.post('express.lightning.unlockWallet', [
     prepareBitGo(config),
-    promiseWrapper(handleCalculateMinerFeeInfo)
-  );
+    typedPromiseWrapper(handleUnlockLightningWallet),
+  ]);
+  router.post('express.calculateminerfeeinfo', [
+    prepareBitGo(config),
+    typedPromiseWrapper(handleCalculateMinerFeeInfo),
+  ]);
 
-  app.post('/api/v1/keychain/local', parseBody, prepareBitGo(config), promiseWrapper(handleCreateLocalKeyChain));
-  app.post('/api/v1/keychain/derive', parseBody, prepareBitGo(config), promiseWrapper(handleDeriveLocalKeyChain));
+  router.post('express.v1.keychain.local', [prepareBitGo(config), typedPromiseWrapper(handleCreateLocalKeyChain)]);
+  router.post('express.v1.keychain.derive', [prepareBitGo(config), typedPromiseWrapper(handleDeriveLocalKeyChain)]);
   router.post('express.v1.wallet.simplecreate', [
     prepareBitGo(config),
     typedPromiseWrapper(handleCreateWalletWithKeychains),
@@ -1583,18 +1586,17 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   );
 
   router.post('express.v1.wallet.signTransaction', [prepareBitGo(config), typedPromiseWrapper(handleSignTransaction)]);
+  router.get('express.lightning.getState', [prepareBitGo(config), typedPromiseWrapper(handleGetLightningWalletState)]);
 
   app.post('/api/v1/wallet/:id/simpleshare', parseBody, prepareBitGo(config), promiseWrapper(handleShareWallet));
   router.post('express.v1.wallet.acceptShare', [prepareBitGo(config), typedPromiseWrapper(handleAcceptShare)]);
 
   router.put('express.v1.pendingapprovals', [prepareBitGo(config), typedPromiseWrapper(handleApproveTransaction)]);
 
-  app.put(
-    '/api/v1/pendingapprovals/:id/constructTx',
-    parseBody,
+  router.put('express.v1.pendingapproval.constructTx', [
     prepareBitGo(config),
-    promiseWrapper(handleConstructApprovalTx)
-  );
+    typedPromiseWrapper(handleConstructApprovalTx),
+  ]);
 
   app.put(
     '/api/v1/wallet/:id/consolidateunspents',
@@ -1610,12 +1612,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   // API v2
 
   // create keychain
-  app.post(
-    '/api/v2/:coin/keychain/local',
-    parseBody,
-    prepareBitGo(config),
-    promiseWrapper(handleV2CreateLocalKeyChain)
-  );
+  router.post('express.keychain.local', [prepareBitGo(config), typedPromiseWrapper(handleV2CreateLocalKeyChain)]);
 
   // generate wallet
   app.post('/api/v2/:coin/wallet/generate', parseBody, prepareBitGo(config), promiseWrapper(handleV2GenerateWallet));
@@ -1789,11 +1786,4 @@ export function setupLightningSignerNodeRoutes(app: express.Application, config:
     prepareBitGo(config),
     promiseWrapper(handleCreateSignerMacaroon)
   );
-  app.post(
-    '/api/v2/:coin/wallet/:id/unlockwallet',
-    parseBody,
-    prepareBitGo(config),
-    promiseWrapper(handleUnlockLightningWallet)
-  );
-  app.get('/api/v2/:coin/wallet/:id/state', prepareBitGo(config), promiseWrapper(handleGetLightningWalletState));
 }

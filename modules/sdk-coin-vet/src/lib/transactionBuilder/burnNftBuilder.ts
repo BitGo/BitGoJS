@@ -2,14 +2,12 @@ import assert from 'assert';
 import { TransactionClause } from '@vechain/sdk-core';
 import { TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import EthereumAbi from 'ethereumjs-abi';
-import { addHexPrefix } from 'ethereumjs-util';
 
 import { TransactionBuilder } from './transactionBuilder';
 import { BurnNftTransaction } from '../transaction/burnNftTransaction';
 import { Transaction } from '../transaction/transaction';
 import utils from '../utils';
-import { BURN_NFT_METHOD_ID, STARGATE_NFT_ADDRESS } from '../constants';
+import { BURN_NFT_METHOD_ID } from '../constants';
 
 export class BurnNftBuilder extends TransactionBuilder {
   /**
@@ -95,12 +93,16 @@ export class BurnNftBuilder extends TransactionBuilder {
 
   /**
    * Sets the NFT contract address for this burn NFT transaction.
-   * If not provided, uses the default address from constants.
+   * The address must be explicitly provided to ensure the correct contract is used.
    *
-   * @param {string} address - The NFT contract address
+   * @param {string} address - The NFT contract address (required)
    * @returns {BurnNftBuilder} This transaction builder
+   * @throws {Error} If no address is provided
    */
-  nftContract(address: string = STARGATE_NFT_ADDRESS): this {
+  nftContract(address: string): this {
+    if (!address) {
+      throw new Error('NFT contract address is required and must be explicitly provided');
+    }
     this.validateAddress({ address });
     this.burnNftTransaction.contract = address;
     return this;
@@ -122,22 +124,5 @@ export class BurnNftBuilder extends TransactionBuilder {
     this.transaction.type = this.transactionType;
     await this.burnNftTransaction.build();
     return this.transaction;
-  }
-
-  /**
-   * Generates the transaction data for burning NFT by encoding the burn method call.
-   *
-   * @private
-   * @returns {string} The encoded transaction data as a hex string
-   */
-  private getBurnNftData(): string {
-    const methodName = 'burn';
-    const types = ['uint256'];
-    const params = [this.burnNftTransaction.tokenId];
-
-    const method = EthereumAbi.methodID(methodName, types);
-    const args = EthereumAbi.rawEncode(types, params);
-
-    return addHexPrefix(Buffer.concat([method, args]).toString('hex'));
   }
 }
