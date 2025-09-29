@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.12.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tao@1.12.0...@bitgo/sdk-coin-tao@1.12.1) (2025-09-29)
+
+### Bug Fixes
+
+- remove Validation of coin/subnet while building move stake transaction ([1599ec5](https://github.com/BitGo/BitGoJS/commit/1599ec5e8cfc4b5bf99f31fa233a40eb270548b5))
+
 # [1.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tao@1.11.4...@bitgo/sdk-coin-tao@1.12.0) (2025-09-25)
 
 ### Bug Fixes
