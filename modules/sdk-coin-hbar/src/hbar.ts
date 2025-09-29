@@ -301,7 +301,7 @@ export class Hbar extends BaseCoin {
     }
   }
 
-  // Strict validation: allow 0 outputs or exactly 1 output with amount 0
+  // Strict validation: allow exactly 1 output with amount 0
   private validateTxStructureStrict(ex: TransactionExplanation): void {
     if (!ex.outputs || ex.outputs.length === 0) {
       throw new Error('Invalid token enablement transaction: missing required token association output');
