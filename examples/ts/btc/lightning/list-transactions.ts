@@ -66,7 +66,7 @@ async function main(): Promise<void> {
     if (endDate) queryParams.endDate = endDate;
 
     // List transactions with the provided filters
-    const transactions = await lightning.listTransactions(queryParams);
+    const { transactions } = await lightning.listTransactions(queryParams);
 
     // Display transaction summary
     console.log(`\nFound ${transactions.length} transactions:`);

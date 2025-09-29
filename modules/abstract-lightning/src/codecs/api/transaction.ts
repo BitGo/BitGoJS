@@ -73,15 +73,38 @@ export const Transaction = t.intersection(
 );
 export type Transaction = t.TypeOf<typeof Transaction>;
 
+export const ListTransactionsResponse = t.intersection(
+  [
+    t.type({
+      transactions: t.array(Transaction),
+    }),
+    t.partial({
+      /**
+       * Transaction ID of the last transaction in this batch.
+       * Use as prevId in next request to continue pagination.
+       */
+      nextBatchPrevId: t.string,
+    }),
+  ],
+  'ListTransactionsResponse'
+);
+export type ListTransactionsResponse = t.TypeOf<typeof ListTransactionsResponse>;
+
 /**
- * Transaction query parameters
+ * Transaction query parameters with cursor-based pagination
  */
 export const TransactionQuery = t.partial(
   {
-    blockHeight: BigIntFromString,
+    /** Maximum number of transactions to return per page */
     limit: BigIntFromString,
+    /** Optional filter for transactions at a specific block height */
+    blockHeight: BigIntFromString,
+    /** Optional start date filter */
     startDate: DateFromISOString,
+    /** Optional end date filter */
     endDate: DateFromISOString,
+    /** Transaction ID for cursor-based pagination (from nextBatchPrevId) */
+    prevId: t.string,
   },
   'TransactionQuery'
 );

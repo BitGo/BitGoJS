@@ -17,6 +17,7 @@ import {
   LightningOnchainWithdrawParams,
   PaymentInfo,
   PaymentQuery,
+  TransactionQuery,
 } from '@bitgo/abstract-lightning';
 
 import { BitGo, common, GenerateLightningWalletOptions, Wallet, Wallets } from '../../../../src';
@@ -1065,6 +1066,197 @@ describe('Lightning wallets', function () {
       storeSignatureNock.done();
       createTxRequestNock.done();
       getPendingApprovalNock.done();
+    });
+  });
+
+  describe('transactions', function () {
+    let wallet: LightningWallet;
+
+    beforeEach(function () {
+      wallet = getLightningWallet(
+        new Wallet(bitgo, basecoin, {
+          id: 'walletId',
+          coin: 'tlnbtc',
+          subType: 'lightningCustody',
+          coinSpecific: { keys: ['def', 'ghi'] },
+        })
+      ) as LightningWallet;
+    });
+
+    it('should list transactions', async function () {
+      const transaction = {
+        id: 'tx123',
+        normalizedTxHash: 'normalizedHash123',
+        blockHeight: 100000,
+        inputIds: ['input1', 'input2'],
+        entries: [
+          {
+            inputs: 1,
+            outputs: 2,
+            value: 50000,
+            valueString: '50000',
+            address: 'testAddress',
+            wallet: wallet.wallet.id(),
+          },
+        ],
+        inputs: [
+          {
+            id: 'input1',
+            value: 50000,
+            valueString: '50000',
+            address: 'inputAddress',
+            wallet: wallet.wallet.id(),
+          },
+        ],
+        outputs: [
+          {
+            id: 'output1',
+            value: 49500,
+            valueString: '49500',
+            address: 'outputAddress',
+            wallet: wallet.wallet.id(),
+          },
+        ],
+        size: 250,
+        date: new Date('2023-01-01T00:00:00Z'),
+        fee: 500,
+        feeString: '500',
+        hex: 'deadbeef',
+        confirmations: 6,
+      };
+      const query = {
+        limit: 100n,
+        startDate: new Date(),
+      };
+      const listTransactionsNock = nock(bgUrl)
+        .get(`/api/v2/wallet/${wallet.wallet.id()}/lightning/transaction`)
+        .query(TransactionQuery.encode(query))
+        .reply(200, { transactions: [transaction] });
+      const listTransactionsResponse = await wallet.listTransactions(query);
+      assert.strictEqual(listTransactionsResponse.transactions.length, 1);
+      assert.deepStrictEqual(listTransactionsResponse.transactions[0], transaction);
+      assert.strictEqual(listTransactionsResponse.nextBatchPrevId, undefined);
+      listTransactionsNock.done();
+    });
+
+    it('should work properly with pagination while listing transactions', async function () {
+      const transaction1 = {
+        id: 'tx123',
+        normalizedTxHash: 'normalizedHash123',
+        blockHeight: 100000,
+        inputIds: ['input1', 'input2'],
+        entries: [
+          {
+            inputs: 1,
+            outputs: 2,
+            value: 50000,
+            valueString: '50000',
+            address: 'testAddress',
+            wallet: wallet.wallet.id(),
+          },
+        ],
+        inputs: [
+          {
+            id: 'input1',
+            value: 50000,
+            valueString: '50000',
+            address: 'inputAddress',
+            wallet: wallet.wallet.id(),
+          },
+        ],
+        outputs: [
+          {
+            id: 'output1',
+            value: 49500,
+            valueString: '49500',
+            address: 'outputAddress',
+            wallet: wallet.wallet.id(),
+          },
+        ],
+        size: 250,
+        date: new Date('2023-01-01T00:00:00Z'),
+        fee: 500,
+        feeString: '500',
+        hex: 'deadbeef',
+        confirmations: 6,
+      };
+      const transaction2 = {
+        ...transaction1,
+        id: 'tx456',
+        normalizedTxHash: 'normalizedHash456',
+        blockHeight: 100001,
+        date: new Date('2023-01-02T00:00:00Z'),
+      };
+      const query = {
+        limit: 2n,
+        startDate: new Date('2023-01-01'),
+      };
+      const listTransactionsNock = nock(bgUrl)
+        .get(`/api/v2/wallet/${wallet.wallet.id()}/lightning/transaction`)
+        .query(TransactionQuery.encode(query))
+        .reply(200, { transactions: [transaction1, transaction2], nextBatchPrevId: transaction2.id });
+      const listTransactionsResponse = await wallet.listTransactions(query);
+      assert.strictEqual(listTransactionsResponse.transactions.length, 2);
+      assert.deepStrictEqual(listTransactionsResponse.transactions[0], transaction1);
+      assert.deepStrictEqual(listTransactionsResponse.transactions[1], transaction2);
+      assert.strictEqual(listTransactionsResponse.nextBatchPrevId, transaction2.id);
+      listTransactionsNock.done();
+    });
+
+    it('should handle prevId parameter for pagination cursor', async function () {
+      const transaction3 = {
+        id: 'tx789',
+        normalizedTxHash: 'normalizedHash789',
+        blockHeight: 100002,
+        inputIds: ['input1'],
+        entries: [
+          {
+            inputs: 1,
+            outputs: 1,
+            value: 40000,
+            valueString: '40000',
+            address: 'testAddress',
+            wallet: wallet.wallet.id(),
+          },
+        ],
+        inputs: [
+          {
+            id: 'input1',
+            value: 40000,
+            valueString: '40000',
+            address: 'inputAddress',
+            wallet: wallet.wallet.id(),
+          },
+        ],
+        outputs: [
+          {
+            id: 'output1',
+            value: 39500,
+            valueString: '39500',
+            address: 'outputAddress',
+            wallet: wallet.wallet.id(),
+          },
+        ],
+        size: 200,
+        date: new Date('2023-01-03T00:00:00Z'),
+        fee: 500,
+        feeString: '500',
+        hex: 'cafebabe',
+        confirmations: 4,
+      };
+      const query = {
+        limit: 1n,
+        prevId: 'tx456', // Continue from this transaction ID
+      };
+      const listTransactionsNock = nock(bgUrl)
+        .get(`/api/v2/wallet/${wallet.wallet.id()}/lightning/transaction`)
+        .query(TransactionQuery.encode(query))
+        .reply(200, { transactions: [transaction3] });
+      const listTransactionsResponse = await wallet.listTransactions(query);
+      assert.strictEqual(listTransactionsResponse.transactions.length, 1);
+      assert.deepStrictEqual(listTransactionsResponse.transactions[0], transaction3);
+      assert.strictEqual(listTransactionsResponse.nextBatchPrevId, undefined);
+      listTransactionsNock.done();
     });
   });
 });
