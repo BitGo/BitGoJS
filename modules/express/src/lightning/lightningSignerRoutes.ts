@@ -1,6 +1,4 @@
 import { isIP } from 'net';
-import * as express from 'express';
-import { decodeOrElse } from '@bitgo/sdk-core';
 import {
   getUtxolibNetwork,
   signerMacaroonPermissions,
@@ -14,7 +12,7 @@ import {
 import * as utxolib from '@bitgo/utxo-lib';
 import { Buffer } from 'buffer';
 
-import { GetWalletStateResponse, InitLightningWalletRequest, UnlockLightningWalletRequest } from './codecs';
+import { GetWalletStateResponse } from './codecs';
 import { LndSignerClient } from './lndSignerClient';
 import { ApiResponseError } from '../errors';
 import { ExpressApiRouteRequest } from '../typedRoutes/api';
@@ -57,28 +55,15 @@ function getMacaroonRootKey(passphrase: string, nodeAuthEncryptedPrv: string, de
 /**
  * Handle the request to initialise remote signer LND for a wallet.
  */
-export async function handleInitLightningWallet(req: express.Request): Promise<unknown> {
+export async function handleInitLightningWallet(
+  req: ExpressApiRouteRequest<'express.lightning.initWallet', 'post'>
+): Promise<unknown> {
   const bitgo = req.bitgo;
-  const coinName = req.params.coin;
+  const { coin: coinName, walletId, passphrase, expressHost } = req.decoded;
   if (!isLightningCoinName(coinName)) {
     throw new ApiResponseError(`Invalid coin ${coinName}. This is not a lightning coin.`, 400);
   }
   const coin = bitgo.coin(coinName);
-
-  const walletId = req.params.id;
-  if (typeof walletId !== 'string') {
-    throw new ApiResponseError(`Invalid wallet id: ${walletId}`, 400);
-  }
-
-  const { passphrase, expressHost } = decodeOrElse(
-    InitLightningWalletRequest.name,
-    InitLightningWalletRequest,
-    req.body,
-    (_) => {
-      // DON'T throw errors from decodeOrElse. It could leak sensitive information.
-      throw new ApiResponseError('Invalid request body to initialize lightning wallet', 400);
-    }
-  );
 
   const wallet = await coin.wallets().get({ id: walletId, includeBalance: false });
   if (wallet.subType() !== 'lightningSelfCustody') {
@@ -174,14 +159,12 @@ export async function handleCreateSignerMacaroon(
 /**
  * Handle the request to get the state of a wallet from the signer.
  */
-export async function handleGetLightningWalletState(req: express.Request): Promise<GetWalletStateResponse> {
-  const coinName = req.params.coin;
+export async function handleGetLightningWalletState(
+  req: ExpressApiRouteRequest<'express.lightning.getState', 'get'>
+): Promise<GetWalletStateResponse> {
+  const { coin: coinName, walletId } = req.decoded;
   if (!isLightningCoinName(coinName)) {
     throw new ApiResponseError(`Invalid coin to get lightning wallet state: ${coinName}`, 400);
-  }
-  const walletId = req.params.id;
-  if (typeof walletId !== 'string') {
-    throw new ApiResponseError(`Invalid wallet id: ${walletId}`, 400);
   }
 
   const lndSignerClient = await LndSignerClient.create(walletId, req.config);
@@ -191,25 +174,13 @@ export async function handleGetLightningWalletState(req: express.Request): Promi
 /**
  * Handle the request to unlock a wallet in the signer.
  */
-export async function handleUnlockLightningWallet(req: express.Request): Promise<{ message: string }> {
-  const coinName = req.params.coin;
+export async function handleUnlockLightningWallet(
+  req: ExpressApiRouteRequest<'express.lightning.unlockWallet', 'post'>
+): Promise<{ message: string }> {
+  const { coin: coinName, id: walletId, passphrase } = req.decoded;
   if (!isLightningCoinName(coinName)) {
     throw new ApiResponseError(`Invalid coin to unlock lightning wallet: ${coinName}`, 400);
   }
-  const walletId = req.params.id;
-  if (typeof walletId !== 'string') {
-    throw new ApiResponseError(`Invalid wallet id: ${walletId}`, 400);
-  }
-
-  const { passphrase } = decodeOrElse(
-    UnlockLightningWalletRequest.name,
-    UnlockLightningWalletRequest,
-    req.body,
-    (_) => {
-      // DON'T throw errors from decodeOrElse. It could leak sensitive information.
-      throw new ApiResponseError('Invalid request body to unlock lightning wallet', 400);
-    }
-  );
 
   const lndSignerClient = await LndSignerClient.create(walletId, req.config);
   // The passphrase at LND can only accommodate a base64 character set

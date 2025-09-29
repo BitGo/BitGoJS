@@ -19,7 +19,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   /** @inheritdoc */
-  from(signedRawTxn: string): TransactionBuilder {
+  from(signedRawTxn: string, abi?: any): TransactionBuilder {
     try {
       const signedTxn = Transaction.deserializeSignedTransaction(signedRawTxn);
       const txnType = this.getTransactionTypeFromSignedTxn(signedTxn);
@@ -39,6 +39,9 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           return this.getDigitalAssetTransactionBuilder(digitalAssetTransferTx);
         case TransactionType.CustomTx:
           const customTx = new CustomTransaction(this._coinConfig);
+          if (abi) {
+            customTx.setEntryFunctionAbi(abi);
+          }
           customTx.fromDeserializedSignedTransaction(signedTxn);
           return this.getCustomTransactionBuilder(customTx);
         default:

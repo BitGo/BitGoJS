@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-soneium@1.7.4...@bitgo/sdk-coin-soneium@1.8.0) (2025-09-25)
+
+### Features
+
+- **abstract-eth:** add flush token support for ERC721 and ERC1155 ([5d4fa35](https://github.com/BitGo/BitGoJS/commit/5d4fa353088b2bd99ed5e6423bf17d3e1c300e35))
+- configure learn to skip git operations ([ee3a622](https://github.com/BitGo/BitGoJS/commit/ee3a6220496476aa7f4545b5f4a9a3bf97d9bdb9))
+
 ## [1.7.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-soneium@1.7.3...@bitgo/sdk-coin-soneium@1.7.4) (2025-09-03)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-soneium

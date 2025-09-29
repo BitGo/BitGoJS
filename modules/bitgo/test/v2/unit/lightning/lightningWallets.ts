@@ -401,17 +401,6 @@ describe('Lightning wallets', function () {
         state: 'initialized',
       };
 
-      const transferData = {
-        id: 'fake_id',
-        coin: 'tlnbtc',
-        state: 'confirmed',
-        txid: lndResponse.paymentHash,
-      };
-
-      const getTransferNock = nock(bgUrl)
-        .get(`/api/v2/${coinName}/wallet/${wallet.wallet.id()}/transfer/fake_id`)
-        .reply(200, transferData);
-
       const createTxRequestNock = nock(bgUrl)
         .post(`/api/v2/wallet/${wallet.wallet.id()}/txrequests`)
         .reply(200, txRequestResponse);
@@ -434,7 +423,6 @@ describe('Lightning wallets', function () {
       const response = await wallet.payInvoice(params);
       assert.strictEqual(response.txRequestId, 'txReq123');
       assert.strictEqual(response.txRequestState, 'delivered');
-      assert.strictEqual(response.transfer.id, transferData.id);
       assert.ok(response.paymentStatus);
       assert.strictEqual(
         response.paymentStatus.status,
@@ -457,7 +445,6 @@ describe('Lightning wallets', function () {
         finalPaymentResponse.transactions[0].unsignedTx.coinSpecific.paymentPreimage
       );
 
-      getTransferNock.done();
       createTxRequestNock.done();
       sendTxRequestNock.done();
       createTransferNock.done();
@@ -807,12 +794,30 @@ describe('Lightning wallets', function () {
   describe('On chain withdrawal', function () {
     let wallet: LightningWallet;
     beforeEach(function () {
+      const watchOnlyAccounts = {
+        master_key_birthday_timestamp: 'dummy',
+        master_key_fingerprint: 'dummy',
+        accounts: [
+          {
+            xpub: 'tpubDCmiWMkTJrZ24t1Z6ECR3HyynCyZ9zGsWqhcLh6H4yFK2CDozSszD1pP2Li4Nx1YYtRcvmNbdb3nD1SzFejYtPFfTocTv2EaAgJCg4zpJpA',
+            purpose: 49,
+            coin_type: 0,
+            account: 0,
+          },
+          {
+            xpub: 'tpubDCFN7bsxR9UTKggdH2pmv5HeHGQNiDrJwa1EZFtP9sH5PF28i37FHpoYSYARQkKZ6Mi98pkp7oypDcxFmE4dQGq8jV8Gv3L6gmWBeRwPxkP',
+            purpose: 84,
+            coin_type: 0,
+            account: 0,
+          },
+        ],
+      };
       wallet = getLightningWallet(
         new Wallet(bitgo, basecoin, {
           id: 'walletId',
           coin: 'tlnbtc',
           subType: 'lightningCustody',
-          coinSpecific: { keys: ['def', 'ghi'] },
+          coinSpecific: { keys: ['def', 'ghi'], watchOnlyAccounts },
         })
       ) as LightningWallet;
     });
@@ -820,13 +825,15 @@ describe('Lightning wallets', function () {
       const params: LightningOnchainWithdrawParams = {
         recipients: [
           {
-            amountSat: 500000n,
-            address: 'bcrt1qjq48cqk2u80hewdcndf539m8nnnvt845nl68x7',
+            amountSat: 100000n,
+            address: 'tb1px7du3rxpt5mqtmvauxmpl7xk2qsmv5xmz9g7w5drpzzuelx869dqwape7k',
           },
         ],
         satsPerVbyte: 15n,
         passphrase: 'password123',
       };
+      const unsignedPsbtHex =
+        '70736274ff01007d02000000015e50b8d96cebdc3273d9a100eb68392d980d5b934b8170c80a23488b595268ca0100000000ffffffff02a086010000000000225120379bc88cc15d3605ed9de1b61ff8d65021b650db1151e751a30885ccfcc7d15affa80a000000000016001480a06f2e6b77e817fd5de6e41ea512c563c26cb800000000000100ea02000000000101a158d806735bb7c54e4c701d4f5821cd5342d48d5e1fcbed1169e6e45aa444be0100000000ffffffff02a086010000000000225120379bc88cc15d3605ed9de1b61ff8d65021b650db1151e751a30885ccfcc7d15a6a310c000000000016001478a5d98c7160484b9b00f1782803c58edfc49b9a024730440220407d9162f52371df246dcfa2943d40fbdcb0d4b6768f7682c65193378b2845a60220101c7bc460c93d2976961ac23400f0f10c145efb989a3addb7f03ebaaa2200950121037e17444c85c8b7da07f12fd53cb2ca142c2b4932d0f898649c4b5be0021da0980000000001030401000000220602e57146e5b4762a7ff374adf4072047b67ef115ad46a34189bdeb6a4f88db9b0818000000005400008000000080000000800100000006000000000022020379abbe44004ff7e527bdee3dd8d95e5cd250053f35ee92258b97aa83dfa93c621800000000540000800000008000000080010000005000000000';
 
       const txRequestResponse = {
         txRequestId: 'txReq123',
@@ -834,7 +841,7 @@ describe('Lightning wallets', function () {
         transactions: [
           {
             unsignedTx: {
-              serializedTxHex: 'unsignedTx123',
+              serializedTxHex: unsignedPsbtHex,
             },
           },
         ],
@@ -846,7 +853,7 @@ describe('Lightning wallets', function () {
         transactions: [
           {
             unsignedTx: {
-              serializedTxHex: 'unsignedTx123',
+              serializedTxHex: unsignedPsbtHex,
               coinSpecific: {
                 signature: 'someSignature',
               },
@@ -861,7 +868,7 @@ describe('Lightning wallets', function () {
         transactions: [
           {
             unsignedTx: {
-              serializedTxHex: 'unsignedTx123',
+              serializedTxHex: unsignedPsbtHex,
               coinSpecific: {
                 signature: 'someSignature',
                 status: 'delivered',
@@ -940,26 +947,6 @@ describe('Lightning wallets', function () {
         createdTime: '2025-06-09T07:47:16.102Z',
       };
 
-      const updatedTransferResponse = {
-        ...transferResponse,
-        txid: '211b8fb30990632751a83d1dc4f0323ff7d2fd3cad88084de13c9be2ae1c6426',
-        date: '2025-06-09T08:50:55.063Z',
-        state: 'signed',
-        history: [
-          {
-            date: '2025-06-09T07:50:55.063Z',
-            user: '6846918281f118cc42c33352779df88f',
-            action: 'signed',
-          },
-          {
-            date: '2025-06-09T07:47:16.102Z',
-            user: '6846918281f118cc42c33352779df88f',
-            action: 'created',
-          },
-        ],
-        signedTime: '2025-06-09T08:50:55.063Z',
-      };
-
       const createTxRequestNock = nock(bgUrl)
         .post(`/api/v2/wallet/${wallet.wallet.id()}/txrequests`)
         .reply(200, txRequestResponse);
@@ -976,10 +963,6 @@ describe('Lightning wallets', function () {
         .post(`/api/v2/wallet/${wallet.wallet.id()}/txrequests/${txRequestResponse.txRequestId}/transactions/0/send`)
         .reply(200, finalWithdrawResponse);
 
-      const getTransferNock = nock(bgUrl)
-        .get(`/api/v2/${coinName}/wallet/${wallet.wallet.id()}/transfer/${transferResponse.id}`)
-        .reply(200, updatedTransferResponse);
-
       const userAuthKeyNock = nock(bgUrl)
         .get('/api/v2/' + coinName + '/key/def')
         .reply(200, userAuthKey);
@@ -993,7 +976,6 @@ describe('Lightning wallets', function () {
       assert.strictEqual(response.withdrawStatus?.status, 'delivered');
       assert.strictEqual(response.withdrawStatus?.txid, 'tx123');
       assert.strictEqual((response.withdrawStatus as any).signature, undefined);
-      assert.deepStrictEqual(response.transfer, updatedTransferResponse);
 
       userAuthKeyNock.done();
       nodeAuthKeyNock.done();
@@ -1001,20 +983,21 @@ describe('Lightning wallets', function () {
       storeSignatureNock.done();
       createTransferNock.done();
       sendTxRequestNock.done();
-      getTransferNock.done();
     });
 
     it('should handle pending approval when withdrawing onchain', async function () {
       const params: LightningOnchainWithdrawParams = {
         recipients: [
           {
-            amountSat: 500000n,
-            address: 'bcrt1qjq48cqk2u80hewdcndf539m8nnnvt845nl68x7',
+            amountSat: 100000n,
+            address: 'tb1px7du3rxpt5mqtmvauxmpl7xk2qsmv5xmz9g7w5drpzzuelx869dqwape7k',
           },
         ],
         satsPerVbyte: 15n,
         passphrase: 'password123',
       };
+      const unsignedPsbtHex =
+        '70736274ff01007d02000000015e50b8d96cebdc3273d9a100eb68392d980d5b934b8170c80a23488b595268ca0100000000ffffffff02a086010000000000225120379bc88cc15d3605ed9de1b61ff8d65021b650db1151e751a30885ccfcc7d15affa80a000000000016001480a06f2e6b77e817fd5de6e41ea512c563c26cb800000000000100ea02000000000101a158d806735bb7c54e4c701d4f5821cd5342d48d5e1fcbed1169e6e45aa444be0100000000ffffffff02a086010000000000225120379bc88cc15d3605ed9de1b61ff8d65021b650db1151e751a30885ccfcc7d15a6a310c000000000016001478a5d98c7160484b9b00f1782803c58edfc49b9a024730440220407d9162f52371df246dcfa2943d40fbdcb0d4b6768f7682c65193378b2845a60220101c7bc460c93d2976961ac23400f0f10c145efb989a3addb7f03ebaaa2200950121037e17444c85c8b7da07f12fd53cb2ca142c2b4932d0f898649c4b5be0021da0980000000001030401000000220602e57146e5b4762a7ff374adf4072047b67ef115ad46a34189bdeb6a4f88db9b0818000000005400008000000080000000800100000006000000000022020379abbe44004ff7e527bdee3dd8d95e5cd250053f35ee92258b97aa83dfa93c621800000000540000800000008000000080010000005000000000';
 
       const txRequestResponse = {
         txRequestId: 'txReq123',
@@ -1023,7 +1006,7 @@ describe('Lightning wallets', function () {
         transactions: [
           {
             unsignedTx: {
-              serializedTxHex: 'unsignedTx123',
+              serializedTxHex: unsignedPsbtHex,
             },
           },
         ],
@@ -1035,7 +1018,7 @@ describe('Lightning wallets', function () {
         transactions: [
           {
             unsignedTx: {
-              serializedTxHex: 'unsignedTx123',
+              serializedTxHex: unsignedPsbtHex,
               coinSpecific: {
                 signature: 'someSignature',
               },

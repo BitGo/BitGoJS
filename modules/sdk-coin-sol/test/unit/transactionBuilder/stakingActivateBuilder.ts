@@ -105,18 +105,20 @@ describe('Sol Staking Activate Builder', () => {
         },
       },
     ]);
-    tx.inputs.length.should.equal(1);
-    tx.inputs[0].should.deepEqual({
-      address: wallet.pub,
-      value: amount,
-      coin: 'tsol',
-    });
-    tx.outputs.length.should.equal(1);
-    tx.outputs[0].should.deepEqual({
-      address: stakeAccount.pub,
-      value: amount,
-      coin: 'tsol',
-    });
+    tx.inputs.should.deepEqual([
+      {
+        address: wallet.pub,
+        value: amount,
+        coin: 'tsol',
+      },
+    ]);
+    tx.outputs.should.deepEqual([
+      {
+        address: stakeAccount.pub,
+        value: amount,
+        coin: 'tsol',
+      },
+    ]);
   };
 
   const signBuilderNativeOrMarinade = (txBuilder: StakingActivateBuilder) => {
@@ -169,7 +171,7 @@ describe('Sol Staking Activate Builder', () => {
           mintAddress: JITOSOL_MINT_ADDRESS,
           ownerAddress: wallet.pub,
           payerAddress: wallet.pub,
-          tokenName: 'tsol:jitosol',
+          tokenName: 'sol:jitosol',
         },
       });
     }
@@ -203,13 +205,14 @@ describe('Sol Staking Activate Builder', () => {
     });
 
     txJson.instructionsData.should.deepEqual(expectedInstructions);
-    tx.inputs.length.should.equal(1);
-    tx.inputs[0].should.deepEqual({
-      address: wallet.pub,
-      value: amount,
-      coin: 'tsol',
-    });
-    tx.outputs.length.should.equal(0);
+    tx.inputs.should.deepEqual([
+      {
+        address: wallet.pub,
+        value: amount,
+        coin: 'tsol',
+      },
+    ]);
+    tx.outputs.should.deepEqual([]);
   };
 
   describe('Succeed', () => {

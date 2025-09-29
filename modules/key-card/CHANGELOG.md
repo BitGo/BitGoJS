@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.28.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/key-card@0.27.4...@bitgo/key-card@0.28.0) (2025-09-25)
+
+### Features
+
+- configure learn to skip git operations ([ee3a622](https://github.com/BitGo/BitGoJS/commit/ee3a6220496476aa7f4545b5f4a9a3bf97d9bdb9))
+
 ## [0.27.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/key-card@0.27.3...@bitgo/key-card@0.27.4) (2025-09-03)
 
 **Note:** Version bump only for package @bitgo/key-card

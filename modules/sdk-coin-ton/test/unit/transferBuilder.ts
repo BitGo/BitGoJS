@@ -1,11 +1,10 @@
 import should from 'should';
-import { TransactionType } from '@bitgo/sdk-core';
-import { TransactionBuilderFactory } from '../../src/lib/transactionBuilderFactory';
-import { coins } from '@bitgo/statics';
-import * as testData from '../resources/ton';
-import { KeyPair } from '../../src/lib/keyPair';
-import * as utils from '../../src/lib/utils';
 import TonWeb from 'tonweb';
+import { TransactionType } from '@bitgo/sdk-core';
+import { coins } from '@bitgo/statics';
+import { TransactionBuilderFactory, KeyPair } from '../../src';
+import * as testData from '../resources/ton';
+import * as utils from '../../src/lib/utils';
 
 describe('Ton Transfer Builder', () => {
   const factory = new TransactionBuilderFactory(coins.get('tton'));

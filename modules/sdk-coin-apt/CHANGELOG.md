@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-apt@2.5.4...@bitgo/sdk-coin-apt@2.6.0) (2025-09-25)
+
+### Bug Fixes
+
+- parsing of apt function args ([c414b2f](https://github.com/BitGo/BitGoJS/commit/c414b2f9578bf0deac43f2ae5ea2829bbe138a41))
+
+### Features
+
+- add utility to deserialize signable payload hex ([9f586ce](https://github.com/BitGo/BitGoJS/commit/9f586ce9ecd177f4a50b7c53eb35ca590c1ca52c))
+- configure learn to skip git operations ([ee3a622](https://github.com/BitGo/BitGoJS/commit/ee3a6220496476aa7f4545b5f4a9a3bf97d9bdb9))
+- enable smart contract calls aptos ([704f6f9](https://github.com/BitGo/BitGoJS/commit/704f6f97478f7d9eeb57a31225bd3ca0a7164035))
+- **sdk-coin-apt:** making abi mandatory for custom transactions ([fc3e879](https://github.com/BitGo/BitGoJS/commit/fc3e879e96fc13026b4eba6b6df97f08dfeef0f2))
+- **sdk-coin-apt:** modify deserialization for custom tx and make abi optional ([1284e6f](https://github.com/BitGo/BitGoJS/commit/1284e6f95de5d8bc10b17877464e411dd73c8ebc))
+
 ## [2.5.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-apt@2.5.3...@bitgo/sdk-coin-apt@2.5.4) (2025-09-03)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-apt

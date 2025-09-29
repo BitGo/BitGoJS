@@ -10,7 +10,12 @@ import {
   decodeOrElse,
 } from '@bitgo/sdk-core';
 import * as t from 'io-ts';
-import { createMessageSignature, unwrapLightningCoinSpecific } from '../lightning';
+import {
+  createMessageSignature,
+  getUtxolibNetwork,
+  unwrapLightningCoinSpecific,
+  validatePsbtForWithdraw,
+} from '../lightning';
 import {
   CreateInvoiceBody,
   Invoice,
@@ -28,6 +33,7 @@ import {
   ListInvoicesResponse,
   ListPaymentsResponse,
   LndCreateWithdrawResponse,
+  WatchOnly,
 } from '../codecs';
 import { LightningPaymentIntent, LightningPaymentRequest } from '@bitgo/public-types';
 
@@ -58,14 +64,6 @@ export type PayInvoiceResponse = {
    * This field is absent if approval is required before processing.
    */
   paymentStatus?: LndCreatePaymentResponse;
-
-  /**
-   * Latest transfer details for this payment request (if available).
-   * - Provides the current state of the transfer.
-   * - To track the final payment status, monitor `transfer` asynchronously.
-   * This field is absent if approval is required before processing.
-   */
-  transfer?: any;
 };
 
 /**
@@ -297,7 +295,7 @@ export class LightningWallet implements ILightningWallet {
       };
     }
 
-    const transfer: { id: string } = await this.wallet.bitgo
+    await this.wallet.bitgo
       .post(
         this.wallet.bitgo.url(
           '/wallet/' + this.wallet.id() + '/txrequests/' + transactionRequestCreate.txRequestId + '/transfers',
@@ -316,14 +314,6 @@ export class LightningWallet implements ILightningWallet {
     );
 
     const coinSpecific = transactionRequestSend.transactions?.[0]?.unsignedTx?.coinSpecific;
-    let updatedTransfer: any = undefined;
-    try {
-      updatedTransfer = await this.wallet.getTransfer({ id: transfer.id });
-    } catch (e) {
-      // If transfer is not found which is possible in cases where the payment has definitely failed
-      // Or even if some unknown error occurs, we will not throw an error here
-      // We still want to return the txRequestId, txRequestState and paymentStatus.
-    }
 
     return {
       txRequestId: transactionRequestCreate.txRequestId,
@@ -331,7 +321,6 @@ export class LightningWallet implements ILightningWallet {
       paymentStatus: coinSpecific
         ? t.exact(LndCreatePaymentResponse).encode(coinSpecific as LndCreatePaymentResponse)
         : undefined,
-      transfer: updatedTransfer,
     };
   }
 
@@ -362,6 +351,32 @@ export class LightningWallet implements ILightningWallet {
       !transactionRequestCreate.transactions[0].unsignedTx.serializedTxHex
     ) {
       throw new Error(`serialized txHex is missing`);
+    }
+
+    const walletData = this.wallet.toJSON();
+    if (!walletData.coinSpecific.watchOnlyAccounts) {
+      throw new Error(`wallet is missing watch only accounts`);
+    }
+
+    const watchOnlyAccountDetails = decodeOrElse(
+      WatchOnly.name,
+      WatchOnly,
+      walletData.coinSpecific.watchOnlyAccounts,
+      (errors) => {
+        throw new Error(`invalid watch only accounts, error: ${errors}`);
+      }
+    );
+    const network = getUtxolibNetwork(this.wallet.coin());
+
+    try {
+      validatePsbtForWithdraw(
+        transactionRequestCreate.transactions[0].unsignedTx.serializedTxHex,
+        network,
+        params.recipients,
+        watchOnlyAccountDetails.accounts
+      );
+    } catch (err: any) {
+      throw new Error(`error validating withdraw psbt: ${err}`);
     }
 
     const { userAuthKey } = await getLightningAuthKeychains(this.wallet);
@@ -399,7 +414,7 @@ export class LightningWallet implements ILightningWallet {
       };
     }
 
-    const transfer: { id: string } = await this.wallet.bitgo
+    await this.wallet.bitgo
       .post(
         this.wallet.bitgo.url(
           '/wallet/' + this.wallet.id() + '/txrequests/' + transactionRequestWithSignature.txRequestId + '/transfers',
@@ -418,19 +433,10 @@ export class LightningWallet implements ILightningWallet {
     );
 
     const coinSpecific = transactionRequestSend.transactions?.[0]?.unsignedTx?.coinSpecific;
-    let updatedTransfer: any = undefined;
-    try {
-      updatedTransfer = await this.wallet.getTransfer({ id: transfer.id });
-    } catch (e) {
-      // If transfer is not found which is possible in cases where the withdraw has definitely failed
-      // Or even if some unknown error occurs, we will not throw an error here
-      // We still want to return the txRequestId and txRequestState.
-    }
 
     return {
       txRequestId: transactionRequestWithSignature.txRequestId,
       txRequestState: transactionRequestSend.state,
-      transfer: updatedTransfer,
       withdrawStatus:
         coinSpecific && 'status' in coinSpecific
           ? t.exact(LndCreateWithdrawResponse).encode(coinSpecific as LndCreateWithdrawResponse)

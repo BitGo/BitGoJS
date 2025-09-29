@@ -26,6 +26,7 @@ import {
   vetToken,
   xrpToken,
   adaToken,
+  erc20Token,
 } from './account';
 import { ofcToken } from './ofc';
 import { BaseCoin } from './base';
@@ -45,7 +46,11 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
     apt: aptToken,
     arbeth: arbethErc20,
     avaxc: avaxErc20,
+    baseeth: erc20Token,
     bera: beraErc20,
+    flow: erc20Token,
+    lineaeth: erc20Token,
+    seievm: erc20Token,
     bsc: bscToken,
     celo: celoToken,
     cosmos: cosmosToken,
@@ -103,8 +108,12 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
   switch (family) {
     case 'arbeth':
     case 'avaxc':
+    case 'baseeth':
     case 'bera':
     case 'bsc':
+    case 'flow':
+    case 'lineaeth':
+    case 'seievm':
     case 'celo':
     case 'eth':
     case 'opeth':

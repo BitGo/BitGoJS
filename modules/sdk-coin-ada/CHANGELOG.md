@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.14.0...@bitgo/sdk-coin-ada@4.15.0) (2025-09-25)
+
+### Bug Fixes
+
+- **sdk-coin-ada:** verify consolidation txHex ([62876e8](https://github.com/BitGo/BitGoJS/commit/62876e8b2e52902a723f2ab6dcdc4f5b1b80a321))
+
+### Features
+
+- configure learn to skip git operations ([ee3a622](https://github.com/BitGo/BitGoJS/commit/ee3a6220496476aa7f4545b5f4a9a3bf97d9bdb9))
+- **sdk-coin-ada:** add fingerprint as the contract address ([65f2080](https://github.com/BitGo/BitGoJS/commit/65f2080de3efacde1549974fecefea90201b466b))
+- **sdk-coin-ada:** token build support ([e046c39](https://github.com/BitGo/BitGoJS/commit/e046c3924881da4a0244a9638e7493c7bfa3ec15))
+
 # [4.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.13.3...@bitgo/sdk-coin-ada@4.14.0) (2025-09-03)
 
 ### Features

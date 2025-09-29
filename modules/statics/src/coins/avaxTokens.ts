@@ -182,6 +182,14 @@ export const avaxTokens = [
     '0x152b9d0fdc40c096757f570a51e494bd4b943e50',
     UnderlyingAsset['avaxc:btc']
   ),
+  avaxErc20(
+    '473a970c-9538-49ef-82f6-c2ff486efc12',
+    'avaxc:stavax',
+    'Hypha Staked AVAX',
+    18,
+    '0xa25eaf2906fa1a3a13edac9b9657108af7b703e3',
+    UnderlyingAsset['avaxc:stavax']
+  ),
   // Begin FTX missing AVAXC tokens
   avaxErc20(
     'c98de371-69a7-4f06-9a6e-810f0fc2b0bc',

@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@3.10.4...@bitgo/sdk-coin-xrp@3.11.0) (2025-09-25)
+
+### Features
+
+- configure learn to skip git operations ([ee3a622](https://github.com/BitGo/BitGoJS/commit/ee3a6220496476aa7f4545b5f4a9a3bf97d9bdb9))
+- **sdk-coin-xrp:** blind signing guards for xrp token enablements ([fa39c0f](https://github.com/BitGo/BitGoJS/commit/fa39c0fa51f452f0bdcba13ebe7135183fe86bf5))
+
 ## [3.10.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xrp@3.10.3...@bitgo/sdk-coin-xrp@3.10.4) (2025-09-03)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-xrp

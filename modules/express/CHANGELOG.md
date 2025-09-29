@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [15.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.0.0...@bitgo/express@15.1.0) (2025-09-25)
+
+### Bug Fixes
+
+- **express:** express version update ([6d399e7](https://github.com/BitGo/BitGoJS/commit/6d399e72260c396752bcbe5f41d35de899798b96))
+- **express:** signPayload API to handle stringified payload as req ([1423d8b](https://github.com/BitGo/BitGoJS/commit/1423d8b7663c1890afc58995e6febbdec374e39d))
+
+### Features
+
+- bumped public types ([6bd0aec](https://github.com/BitGo/BitGoJS/commit/6bd0aecb700a740f76c169b1476e1832bc3abe22))
+- configure learn to skip git operations ([ee3a622](https://github.com/BitGo/BitGoJS/commit/ee3a6220496476aa7f4545b5f4a9a3bf97d9bdb9))
+- **express:** migrate calculateminerfeeinfo to typed routes ([5f2771d](https://github.com/BitGo/BitGoJS/commit/5f2771d611a674197b6078deb9f2caa06ce81ec1))
+- **express:** migrate deriveLocalKeyChain to typed routes ([0f07658](https://github.com/BitGo/BitGoJS/commit/0f076587673477f7e93ccd5747b1b03e5b927960))
+- **express:** migrate init wallet to typed routes ([685ae3c](https://github.com/BitGo/BitGoJS/commit/685ae3c60677a84ef6598b46bfb5d3957e5cf28e))
+- **express:** migrate keychainlocal to typed routes ([fd693d9](https://github.com/BitGo/BitGoJS/commit/fd693d9725722400f98347a3aba113d39aabf1c6))
+- **express:** typed router for verifycoinaddress ([7b55f11](https://github.com/BitGo/BitGoJS/commit/7b55f11cf11f5746f87680ec6995fb56cf5dab42))
+- **express:** typed router for verifycoinaddress ([b73c31d](https://github.com/BitGo/BitGoJS/commit/b73c31dce64e9b96c1c09c65895c6d1e2db7fe58))
+- **express:** typed router for verifycoinaddress ([ed5b056](https://github.com/BitGo/BitGoJS/commit/ed5b056d9ce9ca6a49c487abd6e1cd4f2030c9d3))
+- **sdk-coin-flrp:** added keypair and utils ([71846e7](https://github.com/BitGo/BitGoJS/commit/71846e7431af97736e1babe7dc0fc2953639192a))
+
 # [15.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@14.6.1...@bitgo/express@15.0.0) (2025-09-03)
 
 ### Features

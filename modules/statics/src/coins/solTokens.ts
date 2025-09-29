@@ -2337,16 +2337,6 @@ export const solTokens = [
     UnderlyingAsset['sol:jitosol'],
     SolCoin.getFeaturesByTypeExcluding([CoinFeature.CUSTODY_BITGO_SINGAPORE], SOL_TOKEN_FEATURES)
   ),
-  tsolToken(
-    'cd6509ed-ba89-463f-98f1-5054727281b7',
-    'tsol:jitosol',
-    'Jito Staked SOL',
-    9,
-    'J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn',
-    'J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn',
-    UnderlyingAsset['tsol:jitosol'],
-    SolCoin.getFeaturesByTypeExcluding([CoinFeature.CUSTODY_BITGO_SINGAPORE], SOL_TOKEN_FEATURES)
-  ),
   solToken(
     'bd2130ca-c44f-4d7a-977b-62939a1f9fdb',
     'sol:zeus',
@@ -3045,7 +3035,7 @@ export const solTokens = [
     'DYNoyS3x5qgbccZg7RPXagm4xQzfnm5iwd9o8pMyJtdE',
     'DYNoyS3x5qgbccZg7RPXagm4xQzfnm5iwd9o8pMyJtdE',
     UnderlyingAsset['sol:dynosol'],
-    SOL_TOKEN_FEATURES
+    SOL_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   solToken(
     '51983e8f-8218-49d4-a2b4-6a6e6b147b36',
@@ -3174,7 +3164,18 @@ export const solTokens = [
     9,
     '5NR1bQwLWqjbkhbQ1hx72HKJybbuvwkDnUZNoAZ2VhW6',
     '5NR1bQwLWqjbkhbQ1hx72HKJybbuvwkDnUZNoAZ2VhW6',
-    UnderlyingAsset['tsol:slnd'],
+    UnderlyingAsset['tsol:t22mint'],
+    SOL_TOKEN_FEATURES,
+    ProgramID.Token2022ProgramId
+  ),
+  tsolToken(
+    '50a59f79-033b-4bd0-aae1-49270f97cae2',
+    'tsol:t1test',
+    'T1TEST',
+    6,
+    '3BW95VLH2za2eUQ1PGfjxwMbpsnDFnmkA7m5LDgMKbX7',
+    '3BW95VLH2za2eUQ1PGfjxwMbpsnDFnmkA7m5LDgMKbX7',
+    UnderlyingAsset['tsol:t1test'],
     SOL_TOKEN_FEATURES,
     ProgramID.Token2022ProgramId
   ),
@@ -3197,5 +3198,45 @@ export const solTokens = [
     '88FxbeGaabmx179rpYUzEkp8YAeLNPyLPa68wsEgukyQ',
     UnderlyingAsset['sol:usd1'],
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  solToken(
+    '6dea72c2-bef1-4dee-8d8c-5f55bbb1d01b',
+    'sol:xyo',
+    'XY Oracle',
+    8,
+    'FCZKwHd9Qn1EQj8fFuNLB8dupAWCoJJNePbMqyHhS77b',
+    'FCZKwHd9Qn1EQj8fFuNLB8dupAWCoJJNePbMqyHhS77b',
+    UnderlyingAsset['sol:xyo'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '55df3384-d688-4459-a532-97e107105cf6',
+    'sol:zig',
+    'ZIGChain',
+    8,
+    '26f12PmBk77wQV1TzLe8XKkNBvMFggbuypxdtMLzNLzz',
+    '26f12PmBk77wQV1TzLe8XKkNBvMFggbuypxdtMLzNLzz',
+    UnderlyingAsset['sol:zig'],
+    SOL_TOKEN_FEATURES
+  ),
+  tsolToken(
+    'd490d36f-c793-4d18-9dd4-f5e575162c0b',
+    'tsol:txsgd',
+    'Test StraitsX SGD',
+    6,
+    'D4tQgPDZgeTN4ko5q4fWYxbg6G2eZSqecxKjmWUaRZYJ',
+    'D4tQgPDZgeTN4ko5q4fWYxbg6G2eZSqecxKjmWUaRZYJ',
+    UnderlyingAsset['tsol:txsgd'],
+    SOL_TOKEN_FEATURES
+  ),
+  tsolToken(
+    '33bd0e98-4a02-4f35-8b85-96abcfb4f720',
+    'tsol:txusd',
+    'Test StraitsX USD',
+    6,
+    'Am6pGvDBLve6udqqb3gzKSQsXGy8MJY9vpNoHk5C1qGL',
+    'Am6pGvDBLve6udqqb3gzKSQsXGy8MJY9vpNoHk5C1qGL',
+    UnderlyingAsset['tsol:txusd'],
+    SOL_TOKEN_FEATURES
   ),
 ];

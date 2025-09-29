@@ -1,3 +1,6 @@
+import BigNumber from 'bignumber.js';
+import * as _ from 'lodash';
+import TonWeb from 'tonweb';
 import {
   BaseCoin,
   BitGoBase,
@@ -28,14 +31,12 @@ import {
   MPCSweepRecoveryOptions,
   AuditDecryptedKeyParams,
 } from '@bitgo/sdk-core';
+import { auditEddsaPrivateKey, getDerivationPath } from '@bitgo/sdk-lib-mpc';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import { KeyPair as TonKeyPair } from './lib/keyPair';
-import BigNumber from 'bignumber.js';
-import * as _ from 'lodash';
 import { Transaction, TransactionBuilderFactory, Utils, TransferBuilder } from './lib';
-import TonWeb from 'tonweb';
-import { auditEddsaPrivateKey, getDerivationPath } from '@bitgo/sdk-lib-mpc';
 import { getFeeEstimate } from './lib/utils';
+import { TokenTransaction } from './lib/tokenTransaction';
 
 export interface TonParseTransactionOptions extends ParseTransactionOptions {
   txHex: string;
@@ -114,7 +115,8 @@ export class Ton extends BaseCoin {
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
     const coinConfig = coins.get(this.getChain());
     const { txPrebuild: txPrebuild, txParams: txParams } = params;
-    const transaction = new Transaction(coinConfig);
+
+    const transaction = coinConfig.isToken ? new TokenTransaction(coinConfig) : new Transaction(coinConfig);
     const rawTx = txPrebuild.txHex;
     if (!rawTx) {
       throw new Error('missing required tx prebuild property txHex');

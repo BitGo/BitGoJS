@@ -4,6 +4,7 @@ import {
   Deserializer,
   Ed25519PublicKey,
   EntryFunctionArgument,
+  FeePayerRawTransaction,
   Hex,
   SignedTransaction,
   TransactionPayload,
@@ -19,6 +20,8 @@ import {
   TransactionType,
 } from '@bitgo/sdk-core';
 import {
+  ADDRESS_BYTES_LENGTH,
+  AMOUNT_BYTES_LENGTH,
   APT_ADDRESS_LENGTH,
   APT_BLOCK_ID_LENGTH,
   APT_SIGNATURE_LENGTH,
@@ -26,11 +29,9 @@ import {
   COIN_BATCH_TRANSFER_FUNCTION,
   COIN_TRANSFER_FUNCTION,
   DIGITAL_ASSET_TRANSFER_FUNCTION,
+  FUNGIBLE_ASSET_BATCH_TRANSFER_FUNCTION,
   FUNGIBLE_ASSET_TRANSFER_FUNCTION,
   SECONDS_PER_WEEK,
-  ADDRESS_BYTES_LENGTH,
-  AMOUNT_BYTES_LENGTH,
-  FUNGIBLE_ASSET_BATCH_TRANSFER_FUNCTION,
 } from './constants';
 import BigNumber from 'bignumber.js';
 import { RecipientsValidationResult } from './iface';
@@ -146,6 +147,12 @@ export class Utils implements BaseUtils {
     const txnBytes = Hex.fromHexString(rawTransaction).toUint8Array();
     const deserializer = new Deserializer(txnBytes);
     return deserializer.deserialize(SignedTransaction);
+  }
+
+  deserializeFeePayerRawTransaction(rawTransaction: string): FeePayerRawTransaction {
+    const txnBytes = Hex.fromHexString(rawTransaction).toUint8Array();
+    const deserializer = new Deserializer(txnBytes);
+    return FeePayerRawTransaction.load(deserializer);
   }
 
   deserializeAccountAddressVector(serializedBytes: Uint8Array): string[] {

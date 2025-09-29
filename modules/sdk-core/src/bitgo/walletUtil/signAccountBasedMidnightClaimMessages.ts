@@ -38,13 +38,13 @@ async function bulkSignAccountBasedMessagesWithProvider(
   // Extract wallet constructor params
   const { bitgo, baseCoin, _wallet: walletData } = wallet as Wallet;
 
-  // Process all messages in parallel, each with a new Wallet instance
-  const results = await Promise.all(
-    allMessages.map(async (messageInfo) => {
-      const newWallet = new Wallet(bitgo, baseCoin, walletData);
-      return signOrBuildMessage(newWallet, messageInfo, messageStandardType, walletPassphrase);
-    })
-  );
+  // Process all messages sequentially, each with a new Wallet instance
+  const results: { success: boolean; address: string; txRequestId?: string }[] = [];
+  for (const messageInfo of allMessages) {
+    const newWallet = new Wallet(bitgo, baseCoin, walletData);
+    const result = await signOrBuildMessage(newWallet, messageInfo, messageStandardType, walletPassphrase);
+    results.push(result);
+  }
   processResults(results, txRequests, failedAddresses);
   return { failedAddresses, txRequests };
 }

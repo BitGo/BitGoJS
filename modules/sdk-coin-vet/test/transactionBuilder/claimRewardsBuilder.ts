@@ -5,14 +5,14 @@ import should from 'should';
 import {
   CLAIM_BASE_REWARDS_METHOD_ID,
   CLAIM_STAKING_REWARDS_METHOD_ID,
-  STARGATE_DELEGATION_ADDRESS,
+  STARGATE_DELEGATION_ADDRESS_TESTNET,
+  STARGATE_NFT_ADDRESS_TESTNET,
 } from '../../src/lib/constants';
 import { TransactionType } from '@bitgo/sdk-core';
 
 describe('VET Claim Rewards Transaction', function () {
   const factory = new TransactionBuilderFactory(coins.get('tvet'));
-  const validatorAddress = '0x7567d83b7b8d80addcb281a71d54fc7b3364ffed';
-  const delegatorAddress = '0x625476eab2e75c5b9c6f8a9d7f1b2c5e6f8e9a7b';
+  const tokenId = '12345';
 
   // Helper function to create a basic transaction builder with common properties
   const createBasicTxBuilder = () => {
@@ -30,8 +30,7 @@ describe('VET Claim Rewards Transaction', function () {
   it('should build a claim rewards transaction with both reward types', async function () {
     const txBuilder = factory.getClaimRewardsBuilder();
     txBuilder.claimRewardsData({
-      validatorAddress,
-      delegatorAddress,
+      tokenId,
       claimBaseRewards: true,
       claimStakingRewards: true,
     });
@@ -49,26 +48,26 @@ describe('VET Claim Rewards Transaction', function () {
     tx.should.be.instanceof(ClaimRewardsTransaction);
 
     const claimTx = tx as ClaimRewardsTransaction;
-    claimTx.claimRewardsData.validatorAddress.should.equal(validatorAddress);
-    claimTx.claimRewardsData.delegatorAddress.should.equal(delegatorAddress);
+    claimTx.claimRewardsData.tokenId.should.equal(tokenId);
     claimTx.claimRewardsData.claimBaseRewards?.should.be.true();
     claimTx.claimRewardsData.claimStakingRewards?.should.be.true();
 
     // Verify clauses - should have 2 clauses for both reward types
     claimTx.clauses.length.should.equal(2);
-    claimTx.clauses.forEach((clause) => {
-      should.exist(clause.to);
-      clause.to?.should.equal(STARGATE_DELEGATION_ADDRESS);
-      clause.value.should.equal('0x0');
-      should.exist(clause.data);
-    });
 
-    // Verify method IDs
-    const hasBaseRewards = claimTx.clauses.some((clause) => clause.data.startsWith(CLAIM_BASE_REWARDS_METHOD_ID));
-    const hasStakingRewards = claimTx.clauses.some((clause) => clause.data.startsWith(CLAIM_STAKING_REWARDS_METHOD_ID));
+    // Find base rewards clause (claimVetGeneratedVtho)
+    const baseRewardsClause = claimTx.clauses.find((clause) => clause.data.startsWith(CLAIM_BASE_REWARDS_METHOD_ID));
+    should.exist(baseRewardsClause);
+    baseRewardsClause?.to?.should.equal(STARGATE_NFT_ADDRESS_TESTNET);
+    baseRewardsClause?.value.should.equal('0x0');
 
-    hasBaseRewards.should.be.true();
-    hasStakingRewards.should.be.true();
+    // Find staking rewards clause (claimRewards)
+    const stakingRewardsClause = claimTx.clauses.find((clause) =>
+      clause.data.startsWith(CLAIM_STAKING_REWARDS_METHOD_ID)
+    );
+    should.exist(stakingRewardsClause);
+    stakingRewardsClause?.to?.should.equal(STARGATE_DELEGATION_ADDRESS_TESTNET);
+    stakingRewardsClause?.value.should.equal('0x0');
 
     // Verify recipients should be empty for claim rewards
     claimTx.recipients.length.should.equal(0);
@@ -77,8 +76,7 @@ describe('VET Claim Rewards Transaction', function () {
   it('should build a claim rewards transaction with only base rewards', async function () {
     const txBuilder = createBasicTxBuilder();
     txBuilder.claimRewardsData({
-      validatorAddress,
-      delegatorAddress,
+      tokenId,
       claimBaseRewards: true,
       claimStakingRewards: false,
     });
@@ -89,7 +87,7 @@ describe('VET Claim Rewards Transaction', function () {
     // Should have only 1 clause for base rewards
     claimTx.clauses.length.should.equal(1);
     claimTx.clauses[0].data.should.startWith(CLAIM_BASE_REWARDS_METHOD_ID);
-    claimTx.clauses[0].to?.should.equal(STARGATE_DELEGATION_ADDRESS);
+    claimTx.clauses[0].to?.should.equal(STARGATE_NFT_ADDRESS_TESTNET);
     claimTx.clauses[0].value.should.equal('0x0');
 
     claimTx.claimRewardsData.claimBaseRewards?.should.be.true();
@@ -99,8 +97,7 @@ describe('VET Claim Rewards Transaction', function () {
   it('should build a claim rewards transaction with only staking rewards', async function () {
     const txBuilder = createBasicTxBuilder();
     txBuilder.claimRewardsData({
-      validatorAddress,
-      delegatorAddress,
+      tokenId,
       claimBaseRewards: false,
       claimStakingRewards: true,
     });
@@ -111,7 +108,7 @@ describe('VET Claim Rewards Transaction', function () {
     // Should have only 1 clause for staking rewards
     claimTx.clauses.length.should.equal(1);
     claimTx.clauses[0].data.should.startWith(CLAIM_STAKING_REWARDS_METHOD_ID);
-    claimTx.clauses[0].to?.should.equal(STARGATE_DELEGATION_ADDRESS);
+    claimTx.clauses[0].to?.should.equal(STARGATE_DELEGATION_ADDRESS_TESTNET);
     claimTx.clauses[0].value.should.equal('0x0');
 
     claimTx.claimRewardsData.claimBaseRewards?.should.be.false();
@@ -126,46 +123,22 @@ describe('VET Claim Rewards Transaction', function () {
       await txBuilder.build().should.be.rejectedWith('Claim rewards data is required');
     });
 
-    it('should throw error when validator address is missing', async function () {
+    it('should throw error when token ID is missing', async function () {
       const txBuilder = createBasicTxBuilder();
 
       should(() => {
-        txBuilder.claimRewardsData({
-          delegatorAddress,
-        } as Partial<ClaimRewardsData> as ClaimRewardsData);
-      }).throw('Validator address is required');
+        txBuilder.claimRewardsData({} as ClaimRewardsData);
+      }).throw('Token ID is required');
     });
 
-    it('should throw error when delegator address is missing', async function () {
+    it('should throw error when token ID is invalid', async function () {
       const txBuilder = createBasicTxBuilder();
 
       should(() => {
         txBuilder.claimRewardsData({
-          validatorAddress,
-        } as Partial<ClaimRewardsData> as ClaimRewardsData);
-      }).throw('Delegator address is required');
-    });
-
-    it('should throw error when validator address is invalid', async function () {
-      const txBuilder = createBasicTxBuilder();
-
-      should(() => {
-        txBuilder.claimRewardsData({
-          validatorAddress: 'invalid-address',
-          delegatorAddress,
+          tokenId: 'invalid-tokenid',
         });
-      }).throw(/Invalid validator address format/);
-    });
-
-    it('should throw error when delegator address is invalid', async function () {
-      const txBuilder = createBasicTxBuilder();
-
-      should(() => {
-        txBuilder.claimRewardsData({
-          validatorAddress,
-          delegatorAddress: '0xinvalid',
-        });
-      }).throw(/Invalid delegator address format/);
+      }).throw('Token ID must be a valid number string');
     });
 
     it('should throw error when both reward flags are false', async function () {
@@ -173,8 +146,7 @@ describe('VET Claim Rewards Transaction', function () {
 
       should(() => {
         txBuilder.claimRewardsData({
-          validatorAddress,
-          delegatorAddress,
+          tokenId,
           claimBaseRewards: false,
           claimStakingRewards: false,
         });
@@ -186,8 +158,7 @@ describe('VET Claim Rewards Transaction', function () {
 
       should(() => {
         txBuilder.claimRewardsData({
-          validatorAddress,
-          delegatorAddress,
+          tokenId,
           claimBaseRewards: 'true' as unknown as boolean,
         });
       }).throw('claimBaseRewards must be a boolean');
@@ -198,8 +169,7 @@ describe('VET Claim Rewards Transaction', function () {
 
       should(() => {
         txBuilder.claimRewardsData({
-          validatorAddress,
-          delegatorAddress,
+          tokenId,
           claimStakingRewards: 1 as unknown as boolean,
         });
       }).throw('claimStakingRewards must be a boolean');
@@ -208,8 +178,7 @@ describe('VET Claim Rewards Transaction', function () {
     it('should default to claiming both rewards when flags are undefined', async function () {
       const txBuilder = createBasicTxBuilder();
       txBuilder.claimRewardsData({
-        validatorAddress,
-        delegatorAddress,
+        tokenId,
       });
 
       const tx = await txBuilder.build();
@@ -218,20 +187,21 @@ describe('VET Claim Rewards Transaction', function () {
       // Should have 2 clauses by default
       claimTx.clauses.length.should.equal(2);
 
-      const hasBaseRewards = claimTx.clauses.some((clause) => clause.data.startsWith(CLAIM_BASE_REWARDS_METHOD_ID));
-      const hasStakingRewards = claimTx.clauses.some((clause) =>
+      const baseRewardsClause = claimTx.clauses.find((clause) => clause.data.startsWith(CLAIM_BASE_REWARDS_METHOD_ID));
+      const stakingRewardsClause = claimTx.clauses.find((clause) =>
         clause.data.startsWith(CLAIM_STAKING_REWARDS_METHOD_ID)
       );
 
-      hasBaseRewards.should.be.true();
-      hasStakingRewards.should.be.true();
+      should.exist(baseRewardsClause);
+      should.exist(stakingRewardsClause);
+      baseRewardsClause?.to?.should.equal(STARGATE_NFT_ADDRESS_TESTNET);
+      stakingRewardsClause?.to?.should.equal(STARGATE_DELEGATION_ADDRESS_TESTNET);
     });
 
     it('should build transaction with undefined sender but include it in inputs', async function () {
       const txBuilder = factory.getClaimRewardsBuilder();
       txBuilder.claimRewardsData({
-        validatorAddress,
-        delegatorAddress,
+        tokenId,
       });
       txBuilder.chainTag(0x27);
       txBuilder.blockRef('0x0000000000000000');
@@ -256,8 +226,7 @@ describe('VET Claim Rewards Transaction', function () {
     it('should use network default chainTag when not explicitly set', async function () {
       const txBuilder = factory.getClaimRewardsBuilder();
       txBuilder.claimRewardsData({
-        validatorAddress,
-        delegatorAddress,
+        tokenId,
       });
       // Not setting chainTag
       txBuilder.blockRef('0x0000000000000000');
@@ -278,8 +247,7 @@ describe('VET Claim Rewards Transaction', function () {
     it('should serialize and explain transaction correctly', async function () {
       const txBuilder = createBasicTxBuilder();
       txBuilder.claimRewardsData({
-        validatorAddress,
-        delegatorAddress,
+        tokenId,
       });
 
       const tx = await txBuilder.build();
@@ -300,8 +268,38 @@ describe('VET Claim Rewards Transaction', function () {
       // Test toJson
       const json = claimTx.toJson();
       should.exist(json.claimRewardsData);
-      json.claimRewardsData?.validatorAddress.should.equal(validatorAddress);
-      json.claimRewardsData?.delegatorAddress.should.equal(delegatorAddress);
+      json.claimRewardsData?.tokenId.should.equal(tokenId);
+    });
+
+    it('should correctly handle custom contract addresses when building transactions', async function () {
+      const customNftAddress = '0x1234567890123456789012345678901234567890';
+      const customDelegationAddress = '0x0987654321098765432109876543210987654321';
+
+      const txBuilder = createBasicTxBuilder();
+      txBuilder.claimRewardsData({
+        tokenId,
+        delegationContractAddress: customDelegationAddress,
+        stargateNftAddress: customNftAddress,
+      });
+
+      const tx = await txBuilder.build();
+      const claimTx = tx as ClaimRewardsTransaction;
+
+      // Verify that custom addresses are stored in claimRewardsData when they differ from defaults
+      should.exist(claimTx.claimRewardsData.delegationContractAddress);
+      claimTx.claimRewardsData.delegationContractAddress?.should.equal(customDelegationAddress);
+
+      should.exist(claimTx.claimRewardsData.stargateNftAddress);
+      claimTx.claimRewardsData.stargateNftAddress?.should.equal(customNftAddress);
+
+      // Verify clauses still use the default addresses (as builders use defaults)
+      const baseRewardsClause = claimTx.clauses.find((clause) => clause.data.startsWith(CLAIM_BASE_REWARDS_METHOD_ID));
+      const stakingRewardsClause = claimTx.clauses.find((clause) =>
+        clause.data.startsWith(CLAIM_STAKING_REWARDS_METHOD_ID)
+      );
+
+      baseRewardsClause?.to?.should.equal(STARGATE_NFT_ADDRESS_TESTNET);
+      stakingRewardsClause?.to?.should.equal(STARGATE_DELEGATION_ADDRESS_TESTNET);
     });
   });
 });

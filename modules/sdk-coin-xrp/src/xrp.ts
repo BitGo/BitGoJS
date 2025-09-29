@@ -21,14 +21,16 @@ import {
   ParseTransactionOptions,
   promiseProps,
   TokenEnablementConfig,
+  TransactionParams,
   UnexpectedAddressError,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, coins, XrpCoin } from '@bitgo/statics';
+import { coins, BaseCoin as StaticsBaseCoin, XrpCoin } from '@bitgo/statics';
 import * as rippleBinaryCodec from 'ripple-binary-codec';
 import * as rippleKeypairs from 'ripple-keypairs';
 import * as xrpl from 'xrpl';
 
+import { TokenTransferBuilder, TransactionBuilderFactory, TransferBuilder } from './lib';
 import {
   ExplainTransactionOptions,
   FeeInfo,
@@ -40,11 +42,11 @@ import {
   SupplementGenerateWalletOptions,
   TransactionExplanation,
   VerifyAddressOptions,
+  XrpTransactionType,
 } from './lib/iface';
 import { KeyPair as XrpKeyPair } from './lib/keyPair';
 import utils from './lib/utils';
 import ripple from './ripple';
-import { TokenTransferBuilder, TransactionBuilderFactory, TransferBuilder } from './lib';
 
 export class Xrp extends BaseCoin {
   protected _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -298,6 +300,98 @@ export class Xrp extends BaseCoin {
     };
   }
 
+  getTransactionTypeRawTxHex(txHex: string): XrpTransactionType | undefined {
+    let transaction;
+    if (!txHex) {
+      throw new Error('missing required param txHex');
+    }
+    try {
+      transaction = rippleBinaryCodec.decode(txHex);
+    } catch (e) {
+      try {
+        transaction = JSON.parse(txHex);
+      } catch (e) {
+        throw new Error('txHex needs to be either hex or JSON string for XRP');
+      }
+    }
+
+    return transaction.TransactionType;
+  }
+
+  verifyTxType(txPrebuildDecoded: TransactionExplanation, txHexPrebuild: string | undefined): void {
+    if (!txHexPrebuild) throw new Error('Missing txHexPrebuild to verify token type for enabletoken tx');
+    const transactionType = this.getTransactionTypeRawTxHex(txHexPrebuild);
+    if (transactionType === undefined) throw new Error('Missing TransactionType on token enablement tx');
+    if (transactionType !== XrpTransactionType.TrustSet)
+      throw new Error(`tx type ${transactionType} does not match expected type TrustSet`);
+    // decoded payload type could come as undefined or any of the enabletoken like types but never as something else like Send, etc
+    const actualTypeFromDecoded =
+      'type' in txPrebuildDecoded && typeof txPrebuildDecoded.type === 'string' ? txPrebuildDecoded.type : undefined;
+    if (
+      !actualTypeFromDecoded ||
+      actualTypeFromDecoded === 'enabletoken' ||
+      actualTypeFromDecoded === 'AssociatedTokenAccountInitialization'
+    )
+      return;
+
+    throw new Error(`tx type ${actualTypeFromDecoded} does not match the expected type enabletoken`);
+  }
+
+  verifyTokenName(
+    txParams: TransactionParams,
+    txPrebuildDecoded: TransactionExplanation,
+    txHexPrebuild: string | undefined,
+    coinConfig: XrpCoin
+  ): void {
+    if (!txHexPrebuild) throw new Error('Missing txHexPrebuild param required for token enablement.');
+    if (!txParams.recipients || txParams.recipients.length === 0)
+      throw new Error('Missing recipients param for token enablement.');
+    const fullTokenName = txParams.recipients[0].tokenName;
+    if (fullTokenName === undefined)
+      throw new Error('Param tokenName is required for token enablement. Recipient must include a token name.');
+
+    if (!('limitAmount' in txPrebuildDecoded)) throw new Error('Missing limitAmount param for token enablement.');
+
+    // we check currency on both the txHex but also the explained payload
+    const expectedCurrency = utils.getXrpCurrencyFromTokenName(fullTokenName).currency;
+    if (coinConfig.isToken && expectedCurrency !== txPrebuildDecoded.limitAmount.currency)
+      throw new Error('Invalid token issuer or currency on token enablement tx');
+  }
+
+  verifyActivationAddress(txParams: TransactionParams, txPrebuildDecoded: TransactionExplanation): void {
+    if (txParams.recipients === undefined || txParams.recipients.length === 0)
+      throw new Error('Missing recipients param for token enablement.');
+
+    if (txParams.recipients?.length !== 1) {
+      throw new Error(
+        `${this.getChain()} doesn't support sending to more than 1 destination address within a single transaction. Try again, using only a single recipient.`
+      );
+    }
+    if (!('account' in txPrebuildDecoded)) throw new Error('missing account on token enablement tx');
+
+    const activationAddress = txParams.recipients[0].address;
+    const accountAddress = txPrebuildDecoded.account;
+    if (activationAddress !== accountAddress) throw new Error("Account address doesn't match with activation address.");
+  }
+
+  verifyTokenIssuer(txParams: TransactionParams, txPrebuildDecoded: TransactionExplanation): void {
+    if (txPrebuildDecoded === undefined || !('limitAmount' in txPrebuildDecoded))
+      throw new Error('missing token issuer on token enablement tx');
+    const { issuer, currency } = txPrebuildDecoded.limitAmount;
+    if (!utils.getXrpToken(issuer, currency))
+      throw new Error('Invalid token issuer or currency on token enablement tx');
+  }
+
+  verifyRequiredKeys(txParams: TransactionParams, txPrebuildDecoded: TransactionExplanation): void {
+    if (
+      !('account' in txPrebuildDecoded) ||
+      !('limitAmount' in txPrebuildDecoded) ||
+      !txPrebuildDecoded.limitAmount.currency
+    ) {
+      throw new Error('Explanation is missing required keys (account or limitAmount with currency)');
+    }
+  }
+
   /**
    * Verify that a transaction prebuild complies with the original intention
    * @param txParams params object passed to send
@@ -305,11 +399,21 @@ export class Xrp extends BaseCoin {
    * @param wallet
    * @returns {boolean}
    */
-  public async verifyTransaction({ txParams, txPrebuild }: VerifyTransactionOptions): Promise<boolean> {
+  public async verifyTransaction({ txParams, txPrebuild, verification }: VerifyTransactionOptions): Promise<boolean> {
     const coinConfig = coins.get(this.getChain()) as XrpCoin;
     const explanation = await this.explainTransaction({
       txHex: txPrebuild.txHex,
     });
+
+    // Explaining a tx strips out certain data, for extra measurement we're checking vs the explained tx
+    // but also vs the tx pre explained.
+    if (txParams.type === 'enabletoken' && verification?.verifyTokenEnablement) {
+      this.verifyTxType(explanation, txPrebuild.txHex);
+      this.verifyActivationAddress(txParams, explanation);
+      this.verifyTokenIssuer(txParams, explanation);
+      this.verifyTokenName(txParams, explanation, txPrebuild.txHex, coinConfig);
+      this.verifyRequiredKeys(txParams, explanation);
+    }
 
     const output = [...explanation.outputs, ...explanation.changeOutputs][0];
     const expectedOutput = txParams.recipients && txParams.recipients[0];
@@ -331,32 +435,6 @@ export class Xrp extends BaseCoin {
       throw new Error('transaction prebuild does not match expected output');
     }
 
-    if (txParams.type === 'enabletoken') {
-      if (txParams.recipients?.length !== 1) {
-        throw new Error(
-          `${this.getChain()} doesn't support sending to more than 1 destination address within a single transaction. Try again, using only a single recipient.`
-        );
-      }
-      const recipient = txParams.recipients[0];
-      if (!recipient.tokenName) {
-        throw new Error('Recipient must include a token name.');
-      }
-      const recipientCurrency = utils.getXrpCurrencyFromTokenName(recipient.tokenName).currency;
-      if (coinConfig.isToken) {
-        if (recipientCurrency !== coinConfig.currencyCode) {
-          throw new Error('Incorrect token name specified in recipients');
-        }
-      }
-      if (!('account' in explanation) || !('limitAmount' in explanation) || !explanation.limitAmount.currency) {
-        throw new Error('Explanation is missing required keys (account or limitAmount with currency)');
-      }
-      const baseAddress = explanation.account;
-      const currency = explanation.limitAmount.currency;
-
-      if (recipient.address !== baseAddress || recipientCurrency !== currency) {
-        throw new Error('Tx outputs does not match with expected txParams recipients');
-      }
-    }
     return true;
   }
 

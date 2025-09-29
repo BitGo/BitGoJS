@@ -77,4 +77,42 @@ export default {
     },
     senderWalletId: 'btcDescriptorWalletId',
   },
+
+  matchingDataBuildParams: {
+    memo: 'matching-memo',
+    gasLimit: 200000,
+    type: 'pay',
+    solInstructions: [{ programId: 'Stake111', keys: [], data: 'delegate' }],
+    aptosCustomTransactionParams: { moduleName: '0x1::staking', functionName: 'stake' },
+  },
+
+  mismatchMemoBuildParams: {
+    memo: 'user-memo',
+  },
+
+  mismatchGasLimitBuildParams: {
+    gasLimit: 100000,
+  },
+
+  mismatchTypeBuildParams: {
+    type: 'stake',
+  },
+
+  mismatchSolInstructionsBuildParams: {
+    solInstructions: [
+      {
+        programId: 'UserStakeProgram1111111111111111111111111111',
+        keys: [{ pubkey: 'user-key', isSigner: true, isWritable: true }],
+        data: 'user-delegate-data',
+      },
+    ],
+  },
+
+  mismatchAptosParamsBuildParams: {
+    aptosCustomTransactionParams: {
+      moduleName: '0x1::staking',
+      functionName: 'stake',
+      functionArguments: ['10000'],
+    },
+  },
 };

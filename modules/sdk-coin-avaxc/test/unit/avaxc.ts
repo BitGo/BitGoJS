@@ -785,6 +785,41 @@ describe('Avalanche C-Chain', function () {
     });
   });
 
+  describe('Hop Transaction Parameters', () => {
+    const sandBox = sinon.createSandbox();
+
+    afterEach(function () {
+      sandBox.restore();
+    });
+
+    it('should create hop transaction parameters with gasPriceMax > 0', async function () {
+      const mockFeeEstimate = {
+        feeEstimate: '120000',
+        gasLimitEstimate: 500000,
+      };
+      sandBox.stub(tavaxCoin, 'feeEstimate').resolves(mockFeeEstimate);
+      const recipients = [
+        {
+          address:
+            'P-fuji14xa0q4858ct3kfvpkwnw2dys3m63kt6famckf6~P-fuji1hljye3kesjtpj87m00e8vwkayg6eys6theuxfg~P-fuji1lelqx4cleh3dzk5kplstz6mwrt3duk7d7wwmpp',
+          amount: '100000000000000000',
+        },
+      ];
+
+      const result = await tavaxCoin.createHopTransactionParams({
+        recipients,
+        type: 'Export' as keyof typeof TransactionType,
+      });
+
+      result.should.have.property('hopParams');
+      result.hopParams.should.have.properties(['userReqSig', 'gasPriceMax', 'paymentId', 'gasLimit']);
+      result.hopParams.userReqSig.should.equal('0x');
+      result.hopParams.gasPriceMax.should.be.above(0);
+      result.hopParams.paymentId.should.be.a.String();
+      result.hopParams.gasLimit.should.equal(500000);
+    });
+  });
+
   describe('Explain Transaction', () => {
     it('should explain a half signed import in C transaction', async () => {
       const testData = IMPORT_C;

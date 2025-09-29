@@ -1,3 +1,6 @@
+import BigNumber from 'bignumber.js';
+import TonWeb from 'tonweb';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import {
   BaseAddress,
   BaseKey,
@@ -10,9 +13,6 @@ import {
 } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
 import utils from './utils';
-import BigNumber from 'bignumber.js';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import TonWeb from 'tonweb';
 
 export const WITHDRAW_OPCODE = '00001000';
 
@@ -22,7 +22,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
-    this._transaction = new Transaction(coinConfig);
   }
 
   // get and set region

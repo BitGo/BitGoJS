@@ -18,6 +18,7 @@ describe('Sign an arbitrary payload with trading account key', function () {
       },
     },
   };
+  const stringifiedPayload = JSON.stringify(payload);
   const signature = 'signedPayload123';
   const walletId = 'myWalletId';
 
@@ -41,11 +42,7 @@ describe('Sign an arbitrary payload with trading account key', function () {
     process.env['WALLET_myWalletId_PASSPHRASE'] = 'mypass';
   });
 
-  it('should return a signed payload', async function () {
-    // TODO(GO-1015): unskip test
-    return;
-
-    // eslint-disable-next-line no-unreachable
+  it('should return a signed payload with type as object', async function () {
     const expectedResponse = {
       payload: JSON.stringify(payload),
       signature,
@@ -54,6 +51,21 @@ describe('Sign an arbitrary payload with trading account key', function () {
       bitgo: bitGoStub,
       body: {
         payload,
+        walletId,
+      },
+      query: {},
+    } as unknown as Request;
+    await handleV2OFCSignPayload(req).should.be.resolvedWith(expectedResponse);
+  });
+  it('should return a signed payload with type as json string', async function () {
+    const expectedResponse = {
+      payload: stringifiedPayload,
+      signature,
+    };
+    const req = {
+      bitgo: bitGoStub,
+      body: {
+        payload: stringifiedPayload,
         walletId,
       },
       query: {},

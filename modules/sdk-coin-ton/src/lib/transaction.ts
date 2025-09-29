@@ -1,12 +1,11 @@
-import { BaseKey, BaseTransaction, Entry, Recipient, TransactionRecipient, TransactionType } from '@bitgo/sdk-core';
-import { TxData, TransactionExplanation } from './iface';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import TonWeb from 'tonweb';
 import { BN } from 'bn.js';
 import { Cell } from 'tonweb/dist/types/boc/cell';
-import { WITHDRAW_OPCODE } from './transactionBuilder';
 
-const WALLET_ID = 698983191;
+import { BaseKey, BaseTransaction, Entry, Recipient, TransactionRecipient, TransactionType } from '@bitgo/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { TransactionExplanation, TxData } from './iface';
+import { WITHDRAW_OPCODE, WALLET_ID, JETTON_TRANSFER_OPCODE } from './constants';
 
 export class Transaction extends BaseTransaction {
   public recipient: Recipient;
@@ -19,8 +18,8 @@ export class Transaction extends BaseTransaction {
   expireTime: number;
   sender: string;
   publicKey: string;
-  private unsignedMessage: string;
-  private finalMessage: string;
+  protected unsignedMessage: string;
+  protected finalMessage: string;
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
@@ -88,7 +87,7 @@ export class Transaction extends BaseTransaction {
     this._id = originalTxId.replace(/\//g, '_').replace(/\+/g, '-');
   }
 
-  private createSigningMessage(walletId, seqno, expireAt) {
+  protected createSigningMessage(walletId, seqno, expireAt) {
     const message = new TonWeb.boc.Cell();
     message.bits.writeUint(walletId, 32);
     // expireAt should be set as per the provided arg value, regardless of the seqno
@@ -98,7 +97,7 @@ export class Transaction extends BaseTransaction {
     return message;
   }
 
-  private createOutMsg(address, amount, payload) {
+  protected createOutMsg(address, amount, payload) {
     let payloadCell = new TonWeb.boc.Cell();
     if (payload) {
       if (payload.refs) {
@@ -152,8 +151,7 @@ export class Transaction extends BaseTransaction {
     }
 
     const header = TonWeb.Contract.createExternalMessageHeader(this.sender);
-    const resultMessage = TonWeb.Contract.createCommonMsgInfo(header, stateInit, body);
-    return resultMessage;
+    return TonWeb.Contract.createCommonMsgInfo(header, stateInit, body);
   }
 
   loadInputsAndOutputs(): void {
@@ -176,11 +174,8 @@ export class Transaction extends BaseTransaction {
   fromRawTransaction(rawTransaction: string): void {
     try {
       const cell = TonWeb.boc.Cell.oneFromBoc(TonWeb.utils.base64ToBytes(rawTransaction));
-
       const parsed = this.parseTransaction(cell);
-      parsed.value = parsed.value.toString();
-      parsed.fromAddress = parsed.fromAddress.toString(true, true, this.fromAddressBounceable);
-      parsed.toAddress = parsed.toAddress.toString(true, true, this.toAddressBounceable);
+
       this.sender = parsed.fromAddress;
       this.recipient = { address: parsed.toAddress, amount: parsed.value };
       this.withdrawAmount = parsed.withdrawAmount;
@@ -214,7 +209,7 @@ export class Transaction extends BaseTransaction {
     };
   }
 
-  private parseTransaction(cell: Cell): any {
+  protected parseTransaction(cell: Cell): any {
     const slice = (cell as any).beginParse();
 
     // header
@@ -253,7 +248,7 @@ export class Transaction extends BaseTransaction {
     const bodySlice = slice.loadBit() ? slice.loadRef() : slice;
 
     return {
-      fromAddress: externalDestAddress,
+      fromAddress: externalDestAddress.toString(true, true, this.fromAddressBounceable),
       publicKey,
       ...this.parseTransactionBody(bodySlice),
     };
@@ -285,7 +280,7 @@ export class Transaction extends BaseTransaction {
     const sourceAddress = order.loadAddress();
     if (sourceAddress !== null) throw Error('invalid externalSourceAddress');
     const destAddress = order.loadAddress();
-    const value = order.loadCoins();
+    const value = order.loadCoins().toString();
 
     if (order.loadBit()) throw Error('invalid currencyCollection');
     const ihrFees = order.loadCoins();
@@ -321,13 +316,47 @@ export class Transaction extends BaseTransaction {
           withdrawAmount = order.loadCoins().toNumber().toString();
           payload = WITHDRAW_OPCODE + queryId.toString(16).padStart(16, '0') + withdrawAmount;
           this.transactionType = TransactionType.SingleNominatorWithdraw;
+        } else if (opcode === JETTON_TRANSFER_OPCODE) {
+          const queryId = order.loadUint(64).toNumber();
+          if (queryId !== 0) throw new Error('invalid queryId for jetton transfer');
+
+          const jettonAmount = order.loadCoins();
+          if (!jettonAmount.gt(new BN(0))) throw new Error('invalid jettonAmount');
+
+          const jettonRecipient = order.loadAddress();
+          if (!jettonRecipient) throw new Error('invalid jettonRecipient');
+
+          const forwarderAddress = order.loadAddress();
+          if (!forwarderAddress) throw new Error('invalid forwarderAddress');
+
+          order.loadBit(); // skip bit
+
+          const forwardTonAmount = order.loadCoins();
+          if (!forwardTonAmount.gt(new BN(0))) throw new Error('invalid forwardTonAmount');
+
+          let message = '';
+          if (order.loadBit()) {
+            order = order.loadRef();
+            const messageOpcode = order.loadUint(32).toNumber();
+            if (messageOpcode !== 0) throw new Error('invalid message opcode');
+            const messageBytes = order.loadBits(order.getFreeBits());
+            message = new TextDecoder().decode(messageBytes);
+          }
+
+          payload = {
+            jettonAmount: jettonAmount.toString(),
+            jettonRecipient: jettonRecipient.toString(true, true, this.toAddressBounceable),
+            forwarderAddress: forwarderAddress.toString(true, true, this.fromAddressBounceable),
+            forwardTonAmount: forwardTonAmount.toString(),
+            message: message,
+          };
         } else {
           payload = '';
         }
       }
     }
     return {
-      toAddress: destAddress,
+      toAddress: destAddress.toString(true, true, this.fromAddressBounceable),
       value,
       bounce,
       seqno,

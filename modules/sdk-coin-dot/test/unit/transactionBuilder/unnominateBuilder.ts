@@ -31,7 +31,7 @@ describe('Dot Unnominate Builder', () => {
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
       should.deepEqual(txJson.transactionVersion, txVersion);
-      should.deepEqual(txJson.chainName, 'Westend');
+      should.deepEqual(txJson.chainName, 'Westend Asset Hub');
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
@@ -52,7 +52,7 @@ describe('Dot Unnominate Builder', () => {
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
       should.deepEqual(txJson.transactionVersion, txVersion);
-      should.deepEqual(txJson.chainName, 'Westend');
+      should.deepEqual(txJson.chainName, 'Westend Asset Hub');
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
@@ -69,7 +69,7 @@ describe('Dot Unnominate Builder', () => {
       should.deepEqual(txJson.nonce, 200);
       should.deepEqual(txJson.tip, 0);
       should.deepEqual(txJson.transactionVersion, txVersion);
-      should.deepEqual(txJson.chainName, 'Westend');
+      should.deepEqual(txJson.chainName, 'Westend Asset Hub');
       should.deepEqual(txJson.eraPeriod, 64);
     });
 
@@ -91,7 +91,7 @@ describe('Dot Unnominate Builder', () => {
       should.deepEqual(txJson.eraPeriod, 64);
       should.deepEqual(txJson.tip, 0);
       should.deepEqual(txJson.transactionVersion, txVersion);
-      should.deepEqual(txJson.chainName, 'Westend');
+      should.deepEqual(txJson.chainName, 'Westend Asset Hub');
     });
   });
 });

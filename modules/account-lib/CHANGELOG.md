@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [27.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.10.4...@bitgo/account-lib@27.11.0) (2025-09-25)
+
+### Features
+
+- configure learn to skip git operations ([ee3a622](https://github.com/BitGo/BitGoJS/commit/ee3a6220496476aa7f4545b5f4a9a3bf97d9bdb9))
+- **sdk-coin-mantra:** removing mantra module ([cb10519](https://github.com/BitGo/BitGoJS/commit/cb10519c48b096fe358d42b35154ff3ea2e3deb4))
+
 ## [27.10.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.10.3...@bitgo/account-lib@27.10.4) (2025-09-03)
 
 **Note:** Version bump only for package @bitgo/account-lib

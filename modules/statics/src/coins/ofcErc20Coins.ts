@@ -2797,7 +2797,7 @@ export const ofcErc20Coins = [
   ofcerc20('9998869a-b403-45e7-b522-1459d9f73e3c', 'ofcrbn', 'Ribbon', 18, underlyingAssetForSymbol('rbn')),
   ofcerc20('3d0d4f0e-4837-42e9-a62c-1e14dfa78a11', 'ofcrct', 'realchain', 18, underlyingAssetForSymbol('rct')),
   ofcerc20('c317ea90-3bad-4179-ae65-f1575c00add7', 'ofcref', 'RefToken', 8, underlyingAssetForSymbol('ref')),
-  ofcerc20('439d353b-65c9-4513-85cf-cb8e2a73bc62', 'ofcrekt', '$REKT', 18, underlyingAssetForSymbol('rekt')),
+  ofcerc20('439d353b-65c9-4513-85cf-cb8e2a73bc62', 'ofcrekttoken', '$REKT', 18, underlyingAssetForSymbol('rekttoken')),
   ofcerc20('786786a2-98cb-425a-8746-9c16a9f46d33', 'ofcrektgame', 'RektGAME', 18, underlyingAssetForSymbol('rektgame')),
   ofcerc20('fb6b9335-680a-4c7f-afd3-aed4dd63e9ca', 'ofcrenbtc', 'renBTC', 8, underlyingAssetForSymbol('renbtc')),
   ofcerc20(
@@ -3596,6 +3596,7 @@ export const ofcErc20Coins = [
     18,
     underlyingAssetForSymbol('eth:mbg')
   ),
+  ofcerc20('c2b381d1-795f-4c27-bc3a-322757dd7938', 'ofceth:rekt', 'Rekt', 18, underlyingAssetForSymbol('eth:rekt')),
 ];
 
 export const tOfcErc20Coins = [
@@ -4391,6 +4392,16 @@ export const tOfcErc20Coins = [
     18,
     underlyingAssetForSymbol('eth:sbeton')
   ),
+  ofcerc20('5994291e-2d1b-4334-b7ae-0e361be85503', 'ofceth:six', 'SIX Token', 18, underlyingAssetForSymbol('eth:six')),
+  ofcerc20('5cbbbf49-81ba-44cb-b317-05e2b5489ec3', 'ofceth:eden', 'OpenEden', 18, underlyingAssetForSymbol('eth:eden')),
+  ofcerc20(
+    'cbc6cf70-7f40-46e1-bbe9-86e181714da8',
+    'ofceth:xeden',
+    'Staked Eden',
+    18,
+    underlyingAssetForSymbol('eth:xeden')
+  ),
+  ofcerc20('40a579f5-f630-4898-82de-9fc3fd555747', 'ofceth:linea', 'linea', 18, underlyingAssetForSymbol('eth:linea')),
 ];
 
 function underlyingAssetForSymbol(underlyingAssetValue: string): UnderlyingAsset {

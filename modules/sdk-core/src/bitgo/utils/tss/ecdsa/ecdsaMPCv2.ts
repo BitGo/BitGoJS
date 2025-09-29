@@ -321,7 +321,7 @@ export class EcdsaMPCv2Utils extends BaseEcdsaUtils {
     );
     const backupKeychainPromise = this.addBackupKeychain(
       bitgoCommonKeychain,
-      userPrivateMaterial,
+      backupPrivateMaterial,
       backupReducedPrivateMaterial,
       params.passphrase,
       params.originalPasscodeEncryptionCode

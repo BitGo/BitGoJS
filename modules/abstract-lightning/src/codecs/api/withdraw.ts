@@ -1,6 +1,7 @@
 import * as t from 'io-ts';
 import { LightningOnchainRequest, optionalString } from '@bitgo/public-types';
 import { PendingApprovalData, TxRequestState } from '@bitgo/sdk-core';
+import { Bip32Derivation } from 'bip174/src/lib/interfaces';
 
 export const WithdrawStatusDelivered = 'delivered';
 export const WithdrawStatusFailed = 'failed';
@@ -59,14 +60,6 @@ export type LightningOnchainWithdrawResponse = {
    * This field is absent if approval is required before processing.
    */
   withdrawStatus?: LndCreateWithdrawResponse;
-
-  /**
-   * Latest transfer details for this withdraw request (if available).
-   * - Provides the current state of the transfer.
-   * - To track the latest withdraw status, monitor `transfer` asynchronously.
-   * This field is absent if approval is required before processing.
-   */
-  transfer?: any;
 };
 
 export const FundPsbtResponse = t.type(
@@ -124,3 +117,10 @@ export const SendPsbtResponse = t.intersection(
   'SendPsbtResponse'
 );
 export type SendPsbtResponse = t.TypeOf<typeof SendPsbtResponse>;
+
+export type WithdrawBaseOutputUTXO<TNumber extends number | bigint = number> = {
+  value: TNumber;
+  change: boolean;
+  address: string;
+  bip32Derivation?: Bip32Derivation;
+};

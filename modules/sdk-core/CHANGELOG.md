@@ -3,6 +3,44 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [36.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.8.0...@bitgo/sdk-core@36.9.0) (2025-09-25)
+
+### Bug Fixes
+
+- **bitgo:** added data validation on tx ([489974e](https://github.com/BitGo/BitGoJS/commit/489974e6d9cf2b1889d269465d9ef0a9f2d43ab9))
+- **bitgo:** added validation for unsigned txHex from txRequest matches client staking request ([b535375](https://github.com/BitGo/BitGoJS/commit/b53537595f0fa8c0eec28c28889c5b7e5a62723a))
+- don't catch the exception thrown form sign or build methods ([96d8c40](https://github.com/BitGo/BitGoJS/commit/96d8c40b682b3f6ba01eebbd75d17519561ee7ef))
+- fix wallet proofs class url (change wallet to wallets) ([af47416](https://github.com/BitGo/BitGoJS/commit/af47416ff8b1699f401fe469b8794d65484b34ba))
+- **sdk-coin-sol:** explain init ata address transactions ([076f4cc](https://github.com/BitGo/BitGoJS/commit/076f4ccf6bae5031c9bcd3bf49dde2c297767fec))
+- **sdk-coin-sol:** if empty verification then token enablements verif by default ([eb9ebe9](https://github.com/BitGo/BitGoJS/commit/eb9ebe9c9e2284c7df9e7b6f135d2ee25c0193b8))
+- **sdk-core:** backup keychain creation to use correct privateMaterial ([745219f](https://github.com/BitGo/BitGoJS/commit/745219fef999b2df635caa1d8d5edc139cd53732))
+- **sdk-core:** override timeout for before() ([405fa81](https://github.com/BitGo/BitGoJS/commit/405fa81d6020caa2c772740ad031722376db6541))
+- **sdk-core:** skip btc undelegate stake tx validation ([32cc8bf](https://github.com/BitGo/BitGoJS/commit/32cc8bf3e0c9866dde073ab1bf4a1d4c65c7b8c7))
+- **sdk-core:** skip validation for Tron staking ([5c6d86a](https://github.com/BitGo/BitGoJS/commit/5c6d86aacc5f3dc7a18cea6ddbad9e970cb8974d))
+- sequential build and sign messages ([c5ec2ad](https://github.com/BitGo/BitGoJS/commit/c5ec2ad9d5ab1ecc7c60608c27284318ba00fbaf))
+- use new instances of wallet in parallel calls ([7dca29c](https://github.com/BitGo/BitGoJS/commit/7dca29c28cf104c651b9b33da594d7d247df09f7))
+
+### Features
+
+- **abstract-eth:** add flush token support for ERC721 and ERC1155 ([5d4fa35](https://github.com/BitGo/BitGoJS/commit/5d4fa353088b2bd99ed5e6423bf17d3e1c300e35))
+- add advanced wallet type ([536be8a](https://github.com/BitGo/BitGoJS/commit/536be8ae1ec957e7f86f82462c202fc19f43f0b8))
+- add new param to support the resource type ([ee7fcb2](https://github.com/BitGo/BitGoJS/commit/ee7fcb2650567225e8c627abc4e110206aac3f97))
+- add signer address in sign-message implementation ([b53999d](https://github.com/BitGo/BitGoJS/commit/b53999d2209710731fc2152bfb9fb95e879a5ac1))
+- add statics and configuration for flow ([35b76f9](https://github.com/BitGo/BitGoJS/commit/35b76f974bb02cb149438736fc14fd8856e3ed05))
+- added statics config for KavaEVM ([e6d0872](https://github.com/BitGo/BitGoJS/commit/e6d0872687b98743b3fc63e162aa8364d3ef060c))
+- added statics config for MegaEth and Plume ([a2bbeaa](https://github.com/BitGo/BitGoJS/commit/a2bbeaafd8350fc8b00a186bbd781d3884120295))
+- bumped public types ([6bd0aec](https://github.com/BitGo/BitGoJS/commit/6bd0aecb700a740f76c169b1476e1832bc3abe22))
+- configure learn to skip git operations ([ee3a622](https://github.com/BitGo/BitGoJS/commit/ee3a6220496476aa7f4545b5f4a9a3bf97d9bdb9))
+- enable smart contract calls aptos ([704f6f9](https://github.com/BitGo/BitGoJS/commit/704f6f97478f7d9eeb57a31225bd3ca0a7164035))
+- **sdk-coin-dot:** integrate the Westend AssetHub chain for tdot ([0d90a2b](https://github.com/BitGo/BitGoJS/commit/0d90a2b4d659e1690e600d46df5ca24ea23db3b7))
+- **sdk-coin-dot:** integrate the Westend AssetHub chain for tdot ([5557e65](https://github.com/BitGo/BitGoJS/commit/5557e65d869061ecae5daa427c71708117e4c2c8))
+- **sdk-coin-sol:** blind signing guards for token enablements ([2099f83](https://github.com/BitGo/BitGoJS/commit/2099f8353800499e9f9f887d42e8fcab7500e194))
+- **sdk-core,sdk-coin-sol:** token enablements verify option and type check improvements ([c694864](https://github.com/BitGo/BitGoJS/commit/c694864416f075b126548febe48a68dbf466dfc2))
+- **sdk-core:** add signer address in signMessage intent ([a6b8715](https://github.com/BitGo/BitGoJS/commit/a6b8715df55e1876ff264e3f0dc3008a1b8e182a))
+- **sdk-core:** added evm keyring params in wallet interface ([1e41b26](https://github.com/BitGo/BitGoJS/commit/1e41b2614ad4dc936b5f7b403df1894c088dbfc0))
+- **sdk-core:** bulk sign account based midnight claim messages ([d88b805](https://github.com/BitGo/BitGoJS/commit/d88b8056eb084dec4b44b24fb727298d791951d7))
+- **sdk-core:** evm keyring wallet and address creation api chnages ([50a2f14](https://github.com/BitGo/BitGoJS/commit/50a2f144aaaa641a39268fe7bc04e64792e8f60e))
+
 # [36.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.7.0...@bitgo/sdk-core@36.8.0) (2025-09-03)
 
 ### Bug Fixes

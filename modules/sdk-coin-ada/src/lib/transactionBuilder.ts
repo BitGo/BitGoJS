@@ -16,6 +16,18 @@ import util, { MIN_ADA_FOR_ONE_ASSET } from './utils';
 import * as CardanoWasm from '@emurgo/cardano-serialization-lib-nodejs';
 import { BigNum } from '@emurgo/cardano-serialization-lib-nodejs';
 
+/**
+ * Constants for transaction building
+ */
+const FEE_COEFFICIENTS = {
+  /** Linear fee parameter a */
+  A_COEFFICIENT: '44',
+  /** Linear fee parameter b */
+  B_COEFFICIENT: '155381',
+  /** Additional safety margin for the fee */
+  SAFETY_MARGIN: '440',
+};
+
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction!: Transaction;
   protected _signers: KeyPair[] = [];
@@ -30,7 +42,18 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _withdrawals: Withdrawal[] = [];
   protected _type: TransactionType;
   protected _multiAssets: Asset[] = [];
+  /** Address of the transaction recipient */
+  protected _recipientAddress: string;
+  /** Map of sender's assets by asset name */
+  protected _senderAssetList: Record<string, any> = {};
   private _fee: BigNum;
+  /** Flag indicating if this is a token transaction */
+  private _isTokenTransaction = false;
+  /** Deep clone of _senderAssetList - for manipulating during two iterations
+   *   - one for calculating the fee
+   *   - one for the actual transaction build with the calculated fee
+   * */
+  private _mutableSenderAssetList: Record<string, any> = {};
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -58,14 +81,35 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this;
   }
 
-  changeAddress(addr: string, totalInputBalance: string): this {
+  /**
+   * Sets the change address and input balances for the transaction
+   * @param addr - The address where change will be sent
+   * @param totalInputBalance - The total ADA input balance in Lovelace
+   * @param inputAssetList - Optional map of token assets in the input
+   */
+  changeAddress(addr: string, totalInputBalance: string, inputAssetList?: Record<string, any>): this {
     this._changeAddress = addr;
     this._senderBalance = totalInputBalance;
+    this._senderAssetList = inputAssetList ?? {};
+    this.setMutableSenderAssetList();
     return this;
+  }
+
+  setMutableSenderAssetList() {
+    this._mutableSenderAssetList = JSON.parse(JSON.stringify(this._senderAssetList));
   }
 
   fee(fee: string): this {
     this._fee = BigNum.from_str(fee);
+    return this;
+  }
+
+  /**
+   * Marks this transaction as a token transaction
+   * Enables special handling for token transfers
+   */
+  isTokenTransaction() {
+    this._isTokenTransaction = true;
     return this;
   }
 
@@ -132,8 +176,261 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this.transaction;
   }
 
+  /**
+   * Builds a transaction that includes token assets
+   * @returns The built transaction
+   */
+  private processTokenBuild(): Transaction {
+    const inputs = CardanoWasm.TransactionInputs.new();
+    let outputs = CardanoWasm.TransactionOutputs.new();
+    this.addInputs(inputs);
+    // Fee is never set so far from IMS
+    if (this._fee.is_zero()) {
+      this.addOutputs(outputs);
+      const txDraft = this.prepareAdaTransactionDraft(inputs, outputs, false);
+      this.calculateFee(txDraft);
+      this.setFeeInTransaction();
+    }
+    // Reset outputs to add them back with the correct change
+    outputs = CardanoWasm.TransactionOutputs.new();
+    this.setMutableSenderAssetList();
+    this.addOutputs(outputs);
+    this._transaction.transaction = this.prepareAdaTransactionDraft(inputs, outputs, true);
+    return this.transaction;
+  }
+
+  /**
+   * Adds transaction inputs to the transaction
+   * @param inputs - The inputs collection to add to
+   */
+  private addInputs(inputs) {
+    this._transactionInputs.forEach((input) => {
+      inputs.add(
+        CardanoWasm.TransactionInput.new(
+          CardanoWasm.TransactionHash.from_bytes(Buffer.from(input.transaction_id, 'hex')),
+          input.transaction_index
+        )
+      );
+    });
+  }
+
+  /**
+   * Adds outputs to the transaction including token outputs and change
+   * @param outputs - The outputs collection to add to
+   */
+  private addOutputs(outputs) {
+    const utxoBalance = CardanoWasm.BigNum.from_str(this._senderBalance); // Total UTXO balance
+    const change = utxoBalance.checked_sub(this._fee);
+    const changeAfterReceiverDeductions = this.addReceiverOutputs(outputs, change);
+    this.addChangeOutput(changeAfterReceiverDeductions, outputs);
+  }
+
+  /**
+   * Adds receiver outputs to the transaction and calculates the remaining change
+   * @param outputs - Transaction outputs collection
+   * @param change - Current change amount in ADA
+   * @returns Remaining change after adding receiver outputs
+   */
+  private addReceiverOutputs(outputs, change) {
+    this._transactionOutputs.forEach((output) => {
+      if (!output.address) {
+        throw new BuildTransactionError('Invalid output: missing address');
+      }
+
+      const receiverAddress = output.address;
+      const receiverAmount = output.amount;
+
+      try {
+        const receiverAmountBN = CardanoWasm.BigNum.from_str(receiverAmount);
+        change = change.checked_sub(receiverAmountBN);
+
+        if (change.less_than(CardanoWasm.BigNum.zero())) {
+          throw new BuildTransactionError(
+            'Insufficient funds: not enough ADA to cover receiver output amounts and fees'
+          );
+        }
+
+        const multiAssets = output.multiAssets as Asset;
+        if (multiAssets) {
+          const policyId = multiAssets.policy_id;
+          const assetName = multiAssets.asset_name;
+          const quantity = multiAssets.quantity;
+          const fingerprint = multiAssets.fingerprint as string;
+
+          const currentQty = this._mutableSenderAssetList[fingerprint].quantity;
+          const remainingQty = BigInt(currentQty) - BigInt(quantity);
+          this._mutableSenderAssetList[fingerprint].quantity = (remainingQty > 0n ? remainingQty : 0n).toString();
+
+          if (CardanoWasm.BigNum.from_str(this._mutableSenderAssetList[fingerprint].quantity).is_zero()) {
+            throw new BuildTransactionError('Insufficient qty: not enough token qty to cover receiver output');
+          }
+
+          const minAmountNeededForAssetOutput = this.addTokensToOutput(change, outputs, receiverAddress, {
+            policy_id: policyId,
+            asset_name: assetName,
+            quantity,
+            fingerprint,
+          });
+
+          change = change.checked_sub(minAmountNeededForAssetOutput);
+        }
+      } catch (e) {
+        if (e instanceof BuildTransactionError) {
+          throw e;
+        }
+        throw new BuildTransactionError(`Error processing output: ${e.message}`);
+      }
+    });
+    return change;
+  }
+
+  /**
+   * Adds tokens to a transaction output
+   * @param change - The current change amount in Lovelace
+   * @param outputs - The outputs collection to add to
+   * @param address - The recipient address
+   * @param asset - The asset to add
+   * @returns The minimum ADA amount needed for this asset output
+   */
+  private addTokensToOutput(change: BigNum, outputs: CardanoWasm.TransactionOutputs, address, asset: Asset): BigNum {
+    const minAmountNeededForOneAssetOutput = CardanoWasm.BigNum.from_str(MIN_ADA_FOR_ONE_ASSET);
+    if (change.less_than(minAmountNeededForOneAssetOutput)) {
+      throw new BuildTransactionError(
+        `Insufficient funds: need a minimum of ${MIN_ADA_FOR_ONE_ASSET} lovelace per output to construct token transactions`
+      );
+    }
+    this.buildTokens(asset, minAmountNeededForOneAssetOutput, outputs, address);
+    return minAmountNeededForOneAssetOutput;
+  }
+
+  /**
+   * Builds token outputs for a transaction
+   * @param asset - The asset to include in the output
+   * @param minAmountNeededForOneAssetOutput - Minimum ADA required for this asset output
+   * @param outputs - Transaction outputs collection
+   * @param address - Recipient address
+   */
+  private buildTokens(asset: Asset, minAmountNeededForOneAssetOutput, outputs, address) {
+    let txOutputBuilder = CardanoWasm.TransactionOutputBuilder.new();
+    const toAddress = util.getWalletAddress(address);
+    txOutputBuilder = txOutputBuilder.with_address(toAddress);
+    let txOutputAmountBuilder = txOutputBuilder.next();
+    const assetName = CardanoWasm.AssetName.new(Buffer.from(asset.asset_name, 'hex'));
+    const policyId = CardanoWasm.ScriptHash.from_bytes(Buffer.from(asset.policy_id, 'hex'));
+    const multiAsset = CardanoWasm.MultiAsset.new();
+    const assets = CardanoWasm.Assets.new();
+    assets.insert(assetName, CardanoWasm.BigNum.from_str(asset.quantity));
+    multiAsset.insert(policyId, assets);
+
+    txOutputAmountBuilder = txOutputAmountBuilder.with_coin_and_asset(minAmountNeededForOneAssetOutput, multiAsset);
+
+    const txOutput = txOutputAmountBuilder.build();
+    outputs.add(txOutput);
+  }
+
+  /**
+   * Adds a change output to the transaction
+   * @param change - The change amount in Lovelace
+   * @param outputs - The outputs collection to add to
+   */
+  private addChangeOutput(change, outputs) {
+    const changeAddress = util.getWalletAddress(this._changeAddress);
+    Object.keys(this._mutableSenderAssetList).forEach((fingerprint) => {
+      const asset = this._mutableSenderAssetList[fingerprint];
+      const changeQty = asset.quantity;
+      const policyId = asset.policy_id;
+      const assetName = asset.asset_name;
+
+      if (CardanoWasm.BigNum.from_str(changeQty).is_zero()) {
+        return;
+      }
+
+      const minAmountNeededForAssetOutput = this.addTokensToOutput(change, outputs, this._changeAddress, {
+        policy_id: policyId,
+        asset_name: assetName,
+        quantity: changeQty,
+        fingerprint,
+      });
+      change = change.checked_sub(minAmountNeededForAssetOutput);
+    });
+    if (!change.is_zero()) {
+      const changeOutput = CardanoWasm.TransactionOutput.new(changeAddress, CardanoWasm.Value.new(change));
+      outputs.add(changeOutput);
+    }
+  }
+
+  /**
+   * Sets the calculated fee in the transaction
+   */
+  private setFeeInTransaction() {
+    this._transaction.fee(this._fee.to_str());
+  }
+
+  /**
+   * Calculates the transaction fee based on transaction size
+   * @param txDraft - Draft transaction to calculate fee for
+   */
+  private calculateFee(txDraft) {
+    const linearFee = CardanoWasm.LinearFee.new(
+      CardanoWasm.BigNum.from_str(FEE_COEFFICIENTS.A_COEFFICIENT),
+      CardanoWasm.BigNum.from_str(FEE_COEFFICIENTS.B_COEFFICIENT)
+    );
+
+    // Calculate the fee based off our dummy transaction
+    const fee = CardanoWasm.min_fee(txDraft, linearFee).checked_add(BigNum.from_str(FEE_COEFFICIENTS.SAFETY_MARGIN));
+    this._fee = fee;
+  }
+
+  private prepareAdaTransactionDraft(inputs, outputs, refreshSignatures = false) {
+    const txBody = CardanoWasm.TransactionBody.new_tx_body(inputs, outputs, this._fee);
+    txBody.set_ttl(CardanoWasm.BigNum.from_str(this._ttl.toString()));
+    const txHash = CardanoWasm.hash_transaction(txBody);
+
+    // we add witnesses once so that we can get the appropriate amount of signers for calculating the fee
+    const witnessSet = CardanoWasm.TransactionWitnessSet.new();
+    const vkeyWitnesses = CardanoWasm.Vkeywitnesses.new();
+    this._signers.forEach((keyPair) => {
+      const prv = keyPair.getKeys().prv as string;
+      const vkeyWitness = CardanoWasm.make_vkey_witness(
+        txHash,
+        CardanoWasm.PrivateKey.from_normal_bytes(Buffer.from(prv, 'hex'))
+      );
+      vkeyWitnesses.add(vkeyWitness);
+    });
+    if (refreshSignatures) {
+      this._transaction.signature.length = 0;
+    }
+    this.getAllSignatures().forEach((signature) => {
+      const vkey = CardanoWasm.Vkey.new(CardanoWasm.PublicKey.from_bytes(Buffer.from(signature.publicKey.pub, 'hex')));
+      const ed255Sig = CardanoWasm.Ed25519Signature.from_bytes(signature.signature);
+      vkeyWitnesses.add(CardanoWasm.Vkeywitness.new(vkey, ed255Sig));
+    });
+    if (vkeyWitnesses.len() === 0) {
+      const prv = CardanoWasm.PrivateKey.generate_ed25519();
+      const vkeyWitness = CardanoWasm.make_vkey_witness(txHash, prv);
+      vkeyWitnesses.add(vkeyWitness);
+      if (this._type !== TransactionType.Send) {
+        vkeyWitnesses.add(vkeyWitness);
+      }
+    }
+    witnessSet.set_vkeys(vkeyWitnesses);
+
+    // add in certificates to get mock size
+    const draftCerts = CardanoWasm.Certificates.new();
+    for (const cert of this._certs) {
+      draftCerts.add(cert);
+    }
+    txBody.set_certs(draftCerts);
+
+    const txDraft = CardanoWasm.Transaction.new(txBody, witnessSet);
+    return txDraft;
+  }
+
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
+    if (this._isTokenTransaction) {
+      return this.processTokenBuild();
+    }
     const inputs = CardanoWasm.TransactionInputs.new();
     this._transactionInputs.forEach((input) => {
       inputs.add(
@@ -291,9 +588,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     // reset the outputs collection because now our last output has changed
     outputs = CardanoWasm.TransactionOutputs.new();
     this._transactionOutputs.forEach((output) => {
-      if (output.multiAssets) {
-        const policyId = output.multiAssets.keys().get(0);
-        const assets = output.multiAssets.get(policyId);
+      const multiAssets = output.multiAssets as CardanoWasm.MultiAsset;
+      if (multiAssets) {
+        const policyId = multiAssets.keys().get(0);
+        const assets = multiAssets.get(policyId);
         const assetName = assets!.keys().get(0);
         const quantity = assets!.get(assetName);
         let txOutputBuilder = CardanoWasm.TransactionOutputBuilder.new();

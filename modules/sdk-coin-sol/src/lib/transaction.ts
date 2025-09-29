@@ -371,7 +371,11 @@ export class Transaction extends BaseTransaction {
           }
           break;
         case InstructionBuilderTypes.StakingDeactivate:
-          if (instruction.params.amount && instruction.params.unstakingAddress) {
+          if (
+            instruction.params.amount &&
+            instruction.params.unstakingAddress &&
+            instruction.params.stakingType !== SolStakingTypeEnum.JITO
+          ) {
             inputs.push({
               address: instruction.params.stakingAddress,
               value: instruction.params.amount,
