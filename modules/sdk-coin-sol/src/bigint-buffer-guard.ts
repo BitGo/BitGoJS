@@ -1,3 +1,6 @@
+// Added a lightweight runtime guard for BigInt<->Buffer conversions in @bitgo/sdk-coin-sol (bigint-buffer-guard.ts) to validate input lengths and reduce misuse risk.
+// It's purpose is to enforce input type/length checks around BigInt buffer operations; imported it so validations run at module load
+
 try {
   const mod = require('bigint-buffer');
   const le = typeof mod.toBigIntLE === 'function' ? mod.toBigIntLE : undefined;
