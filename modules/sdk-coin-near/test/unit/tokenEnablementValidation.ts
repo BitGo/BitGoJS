@@ -16,16 +16,12 @@ import assert from 'assert';
  * for the token balance. This test validates that the security checks work correctly.
  */
 describe('NEAR Token Enablement Validation', function () {
-  let bitgo: TestBitGoAPI; // BitGo API instance for testing
-  let basecoin: Near; // NEAR coin implementation instance
+  let bitgo: TestBitGoAPI;
+  let basecoin: Near;
 
-  // Setup that runs once before all tests
   before(function () {
-    // Create a test BitGo instance configured for the test environment
     bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
-    // Register the TNEAR (testnet NEAR) coin with BitGo
     bitgo.safeRegister('tnear', TNearCoin.createInstance);
-    // Get the NEAR coin instance we'll use for testing
     basecoin = bitgo.coin('tnear') as Near;
   });
 
@@ -34,10 +30,10 @@ describe('NEAR Token Enablement Validation', function () {
    * @returns Transaction parameters that should pass validation
    */
   const createValidTxParams = () => ({
-    type: 'enabletoken' as const, // Tells BitGo this is a token enablement transaction
+    type: 'enabletoken' as const,
     recipients: [
       {
-        address: testData.accounts.account1.address, // The account that will receive the token capability
+        address: testData.accounts.account1.address,
         amount: '0', // Token enablement typically has 0 amount (no tokens transferred, just enabling)
         tokenName: 'tnear:tnep24dp', // The specific token being enabled (testnet NEP-141 token)
       },
@@ -50,9 +46,9 @@ describe('NEAR Token Enablement Validation', function () {
    * @returns A TransactionPrebuild object with the hex and metadata
    */
   const createTxPrebuild = (txHex: string): TransactionPrebuild => ({
-    txHex, // The actual transaction data in hexadecimal format
-    key: 'test-key', // Public key (placeholder for testing)
-    blockHash: 'test-block-hash', // Recent block hash (placeholder for testing)
+    txHex,
+    key: 'test-key',
+    blockHash: 'test-block-hash',
     nonce: BigInt(1), // Transaction nonce to prevent replay attacks
   });
 
@@ -63,22 +59,19 @@ describe('NEAR Token Enablement Validation', function () {
    * It uses a real storage deposit transaction hex from the test data.
    */
   it('should validate valid token enablement transaction', async function () {
-    // Create valid transaction parameters
     const txParams = createValidTxParams();
 
     // Create transaction prebuild using a real storage deposit transaction
     // This hex represents a NEAR transaction that creates storage space for a token
     const txPrebuild = createTxPrebuild(testData.rawTx.selfStorageDeposit.unsigned);
 
-    // Prepare the verification options that would be passed to BitGo
     const verifyOptions: VerifyTransactionOptions = {
       txParams, // What the user thinks they're signing
       txPrebuild, // The actual transaction hex from BitGo
-      wallet: { id: 'test-wallet' } as any, // Mock wallet object
+      wallet: { id: 'test-wallet' } as any,
     };
 
     // This should NOT throw an error - the transaction should be valid
-    // The verifyTransaction method will call validateTokenEnablementTransaction internally
     await basecoin.verifyTransaction(verifyOptions);
   });
 
@@ -90,7 +83,6 @@ describe('NEAR Token Enablement Validation', function () {
    * where a malicious actor substitutes a different transaction.
    */
   it('should reject transaction with mismatched hex', async function () {
-    // Create token enablement parameters but with the recipient address that matches the transfer transaction
     const txParams = {
       type: 'enabletoken' as const,
       recipients: [
@@ -105,7 +97,7 @@ describe('NEAR Token Enablement Validation', function () {
     // BUT use a DIFFERENT transaction type (regular transfer instead of storage deposit)
     // This simulates an attack where someone tries to trick the user into signing
     // a different transaction than what they think they're signing
-    const txPrebuild = createTxPrebuild(testData.rawTx.transfer.unsigned); // Different transaction type
+    const txPrebuild = createTxPrebuild(testData.rawTx.transfer.unsigned);
 
     const verifyOptions: VerifyTransactionOptions = {
       txParams, // User thinks they're enabling a token
@@ -114,7 +106,6 @@ describe('NEAR Token Enablement Validation', function () {
     };
 
     // This SHOULD throw an error because the hex doesn't match the expected transaction type
-    // The validation will detect that the transaction type doesn't match the expected token enablement type
     await basecoin
       .verifyTransaction(verifyOptions)
       .should.be.rejectedWith('Invalid transaction type on token enablement: expected "42", got "0".');
@@ -128,7 +119,6 @@ describe('NEAR Token Enablement Validation', function () {
    * This prevents attacks where someone changes the destination address.
    */
   it('should reject transaction with address mismatch', async function () {
-    // Create transaction parameters with a WRONG address
     const txParams = {
       type: 'enabletoken' as const,
       recipients: [
@@ -140,7 +130,6 @@ describe('NEAR Token Enablement Validation', function () {
       ],
     };
 
-    // Use the correct storage deposit transaction hex
     const txPrebuild = createTxPrebuild(testData.rawTx.selfStorageDeposit.unsigned);
 
     const verifyOptions: VerifyTransactionOptions = {
@@ -150,8 +139,6 @@ describe('NEAR Token Enablement Validation', function () {
     };
 
     // This SHOULD throw an error because the addresses don't match
-    // The validateTokenEnablementTransaction method should detect this mismatch
-    // and prevent the user from being tricked into enabling tokens for the wrong address
     await basecoin.verifyTransaction(verifyOptions).should.be.rejectedWith('Address mismatch: wrong.address.near');
   });
 
@@ -163,7 +150,6 @@ describe('NEAR Token Enablement Validation', function () {
    * our validation catches the spoofed transaction and prevents the user from being tricked.
    */
   it('should reject spoofed TxHex in token enablement transaction', async function () {
-    // Create valid transaction parameters for token enablement
     const txParams = createValidTxParams();
 
     // Create a SPOOFED transaction hex that looks like a valid NEAR transaction
@@ -179,9 +165,7 @@ describe('NEAR Token Enablement Validation', function () {
     };
 
     // This SHOULD throw an error because the spoofed hex doesn't match the expected
-    // token enablement transaction. The validation will detect that this is not a
-    // proper storage deposit transaction for token enablement.
-    // The storage deposit amount validation catches this first
+    // token enablement transaction. The storage deposit amount validation catches this first
     await basecoin.verifyTransaction(verifyOptions).should.be.rejectedWith('Storage deposit amount not matching!');
   });
 
@@ -194,12 +178,11 @@ describe('NEAR Token Enablement Validation', function () {
    */
   it('should validate token enablement transaction from wallet platform', async function () {
     // Simulate a transaction that would be sent from the wallet platform
-    // This uses the same valid storage deposit transaction but with wallet platform context
     const txParams = {
       type: 'enabletoken' as const,
       recipients: [
         {
-          address: testData.accounts.account1.address, // Wallet platform controlled address
+          address: testData.accounts.account1.address,
           amount: '0',
           tokenName: 'tnear:tnep24dp',
         },
@@ -210,13 +193,12 @@ describe('NEAR Token Enablement Validation', function () {
     const txPrebuild = createTxPrebuild(testData.rawTx.selfStorageDeposit.unsigned);
 
     const verifyOptions: VerifyTransactionOptions = {
-      txParams, // Wallet platform transaction parameters
-      txPrebuild, // Legitimate transaction hex from wallet platform
-      wallet: { id: 'wallet-platform-wallet' } as any, // Wallet platform wallet
+      txParams,
+      txPrebuild,
+      wallet: { id: 'wallet-platform-wallet' } as any,
     };
 
-    // This should NOT throw an error - legitimate wallet platform transactions
-    // should pass validation and be processed successfully
+    // This should NOT throw an error - legitimate wallet platform transactions should pass validation
     await basecoin.verifyTransaction(verifyOptions);
   });
 
@@ -234,7 +216,6 @@ describe('NEAR Token Enablement Validation', function () {
    * 4. verifyTransaction detects the spoofed hex and throws an error
    */
   it('should throw error when sendTokenEnablements receives spoofed TxHex', async function () {
-    // Create a mock wallet that implements the sendTokenEnablements flow
     const mockWallet = {
       id: () => 'test-wallet',
       bitgo: bitgo,
@@ -262,7 +243,6 @@ describe('NEAR Token Enablement Validation', function () {
         ];
       },
 
-      // Mock sendTokenEnablement to simulate the signing process with verification
       sendTokenEnablement: async (params: any) => {
         // This is where verifyTransaction would be called during signing
         // The spoofed hex should cause verification to fail
@@ -272,7 +252,6 @@ describe('NEAR Token Enablement Validation', function () {
           wallet: mockWallet as any,
         };
 
-        // This should throw an error because the hex is spoofed
         await basecoin.verifyTransaction(verifyOptions);
         return { success: true };
       },
@@ -304,7 +283,6 @@ describe('NEAR Token Enablement Validation', function () {
       },
     };
 
-    // Create token enablement parameters
     const enableTokensParams = {
       enableTokens: [
         {
@@ -313,7 +291,6 @@ describe('NEAR Token Enablement Validation', function () {
       ],
     };
 
-    // Call sendTokenEnablements - this should fail because of the spoofed hex
     const result = await mockWallet.sendTokenEnablements(enableTokensParams);
 
     // The result should contain failures due to the spoofed transaction hex
@@ -336,7 +313,6 @@ describe('NEAR Token Enablement Validation', function () {
    * 4. verifyTransaction detects the spoofed hex and throws an error
    */
   it('should throw error when sendAccountConsolidations receives spoofed TxHex', async function () {
-    // Create a mock wallet that implements the sendAccountConsolidations flow
     const mockWallet = {
       id: () => 'test-wallet',
       bitgo: bitgo,
@@ -363,7 +339,6 @@ describe('NEAR Token Enablement Validation', function () {
         ];
       },
 
-      // Mock sendAccountConsolidation to simulate the signing process with verification
       sendAccountConsolidation: async (params: any) => {
         // This is where verifyTransaction would be called during signing
         // The spoofed hex should cause verification to fail
@@ -373,7 +348,6 @@ describe('NEAR Token Enablement Validation', function () {
           wallet: mockWallet as any,
         };
 
-        // This should throw an error because the hex is spoofed
         await basecoin.verifyTransaction(verifyOptions);
         return { success: true };
       },
@@ -405,18 +379,15 @@ describe('NEAR Token Enablement Validation', function () {
       },
     };
 
-    // Create account consolidation parameters
     const consolidationParams = {
       consolidateAddresses: [testData.accounts.account2.address],
     };
 
-    // Call sendAccountConsolidations - this should fail because of the spoofed hex
     const result = await mockWallet.sendAccountConsolidations(consolidationParams);
 
     // The result should contain failures due to the spoofed transaction hex
     result.success.should.have.length(0);
     result.failure.should.have.length(1);
-    // The error should be related to transaction output mismatch since it's a different transaction type
     result.failure[0].message.should.containEql('Tx outputs does not match with expected txParams recipients');
   });
 
@@ -437,10 +408,8 @@ describe('NEAR Token Enablement Validation', function () {
     // The txHex looks like valid hex but contains malicious/invalid transaction data
     const spoofedTxHex = '0a0c0a080800100018a8fb0410130a0c0a080800100018d5d0041014'; // Valid hex but invalid transaction
 
-    // Mock the API endpoints that will be called during token enablement
     const bgUrl = common.Environments['mock'].uri;
 
-    // Mock the key endpoint needed for signing
     nock(bgUrl)
       .post('/api/v2/tnear/key/5b3424f91bf34993006eae94')
       .reply(200, [
@@ -458,7 +427,7 @@ describe('NEAR Token Enablement Validation', function () {
         recipients: [
           {
             address: 'test.near',
-            amount: '0', // Valid amount for token enablement
+            amount: '0',
           },
         ],
         coin: 'tnear',
@@ -470,10 +439,8 @@ describe('NEAR Token Enablement Validation', function () {
       });
 
     // This should fail because the spoofed transaction hex contains invalid transaction data
-    // The verification logic should catch this when trying to validate the transaction
     await assert.rejects(
       async () => {
-        // Create valid transaction parameters for token enablement
         const txParams = createValidTxParams();
 
         // Create transaction prebuild with spoofed hex
@@ -485,12 +452,10 @@ describe('NEAR Token Enablement Validation', function () {
           wallet: { id: 'test-wallet' } as any,
         };
 
-        // This should fail because the spoofed hex doesn't represent a valid NEAR transaction
         await basecoin.verifyTransaction(verifyOptions);
       },
       (error: any) => {
         // The error should indicate that the transaction is invalid
-        // This could be various validation errors depending on what the spoofed hex contains
         return error.message.includes('unable to build transaction from raw');
       }
     );
