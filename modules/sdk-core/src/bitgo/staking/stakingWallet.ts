@@ -443,7 +443,11 @@ export class StakingWallet implements IStakingWallet {
       );
     }
 
-    if (buildParams?.type && TransactionType[buildParams.type] !== (explainedTransaction as any).type) {
+    if (
+      buildParams?.type &&
+      (explainedTransaction as any).type !== undefined &&
+      TransactionType[buildParams.type] !== (explainedTransaction as any).type
+    ) {
       mismatchErrors.push(
         `Transaction type mismatch. Expected: '${buildParams.type}', Got: '${(explainedTransaction as any).type}'`
       );

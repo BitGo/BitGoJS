@@ -117,7 +117,7 @@ describe('non-TSS Staking Wallet', function () {
       spendableBalance: 0,
       spendableBalanceString: '',
       id: 'tavaxpStakingWalletId',
-      coin: 'topeth:wct',
+      coin: 'tavaxp',
       enterprise: enterprise.id,
     };
 
