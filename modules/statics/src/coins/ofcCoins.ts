@@ -358,7 +358,7 @@ export const ofcCoins = [
     'ofctaed',
     'Testnet United Arab Emirates Dirham',
     2,
-    UnderlyingAsset.SGD,
+    UnderlyingAsset.AED,
     CoinKind.FIAT
   ),
   tofc(
@@ -764,6 +764,14 @@ export const ofcCoins = [
     'Pump',
     6,
     UnderlyingAsset['sol:pump'],
+    SOL_OFC_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '7d50630f-9bba-4a06-8665-4376ef1f128e',
+    'ofcsol:drift',
+    'Drift',
+    6,
+    UnderlyingAsset['sol:drift'],
     SOL_OFC_TOKEN_FEATURES
   ),
   ofcsolToken(
