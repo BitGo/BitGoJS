@@ -257,7 +257,7 @@ function handleApproveTransaction(req: ExpressApiRouteRequest<'express.v1.pendin
  * @deprecated
  * @param req
  */
-function handleConstructApprovalTx(req: express.Request) {
+function handleConstructApprovalTx(req: ExpressApiRouteRequest<'express.v1.pendingapproval.constructTx', 'put'>) {
   const params = req.body || {};
   return req.bitgo
     .pendingApprovals()
@@ -1593,12 +1593,10 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
 
   router.put('express.v1.pendingapprovals', [prepareBitGo(config), typedPromiseWrapper(handleApproveTransaction)]);
 
-  app.put(
-    '/api/v1/pendingapprovals/:id/constructTx',
-    parseBody,
+  router.put('express.v1.pendingapproval.constructTx', [
     prepareBitGo(config),
-    promiseWrapper(handleConstructApprovalTx)
-  );
+    typedPromiseWrapper(handleConstructApprovalTx),
+  ]);
 
   app.put(
     '/api/v1/wallet/:id/consolidateunspents',
