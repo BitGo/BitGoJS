@@ -255,6 +255,7 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('ethw', Ethw.createInstance);
   coinFactory.register('baseeth', EthLikeCoin.createInstance);
   coinFactory.register('og', EthLikeCoin.createInstance);
+  coinFactory.register('tog', EthLikeCoin.createInstance);
   coinFactory.register('tbaseeth', TethLikeCoin.createInstance);
   coinFactory.register('fiataed', FiatAED.createInstance);
   coinFactory.register('fiateur', FiatEur.createInstance);
