@@ -73,7 +73,7 @@ git checkout -q -
 echo "verifying correct publish of $PACKAGE_NAME@$PACKAGE_VERSION"
 cd "$(mktemp -d)" || error "cd to temp directory failed. Verify package manually."
 npm init -y >/dev/null 2>&1 || error "npm init failed. Verify package manually."
-npm install "$PACKAGE_NAME@$PACKAGE_VERSION" >/dev/null 2>&1 || error "npm install failed! Verify package manually."
+npm install "$PACKAGE_NAME@$PACKAGE_VERSION" >/dev/null 2>&1 || error "npm install failed! May need to unpublish!!!"
 node -e "require('${PACKAGE_NAME}')" || error "node require failed! unpublish!!!"
 cd "$OLDPWD" || error "cd to old pwd failed. Publish is probably alright, but verify package manually"
 echo "correct publish of $PACKAGE_NAME@$PACKAGE_VERSION has been verified!"

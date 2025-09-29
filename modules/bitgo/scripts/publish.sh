@@ -72,7 +72,7 @@ git checkout -q -
 echo "verifying correct publish of $PACKAGE_NAME@$PACKAGE_VERSION"
 cd "$(mktemp -d)" || error "cd failed. Verify package manually."
 npm init -y >/dev/null 2>&1 || error "npm init failed. Verify package manually."
-npm install "$PACKAGE_NAME@$PACKAGE_VERSION" >/dev/null 2>&1 || error "npm install failed! Verify package manually."
+npm install "$PACKAGE_NAME@$PACKAGE_VERSION" >/dev/null 2>&1 || error "npm install failed! Publish may not have occurred or there was an installation blocker!!!"
 node -e "require('${PACKAGE_NAME}')" || error "node require failed! unpublish!!!"
 cd "$OLDPWD" || error "cd to OLDPWD failed. Verify package manually."
 echo "correct publish of $PACKAGE_NAME@$PACKAGE_VERSION has been verified!"
