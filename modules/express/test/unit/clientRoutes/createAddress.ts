@@ -4,11 +4,12 @@ import 'should-http';
 import 'should-sinon';
 import '../../lib/asserts';
 
-import * as express from 'express';
-
 import { handleV2CreateAddress } from '../../../src/clientRoutes';
 
 import { BitGo } from 'bitgo';
+import { ExpressApiRouteRequest } from '../../../src/typedRoutes/api';
+import { CreateAddressResponse } from '../../../src/typedRoutes/api/v2/createAddress';
+import { decodeOrElse } from '@bitgo/sdk-core';
 
 describe('Create Address', () => {
   function createAddressMocks(res) {
@@ -30,14 +31,22 @@ describe('Create Address', () => {
       bitgo: bitgoStub,
       params: {
         coin: 'tbtc',
-        id: '23423423423423',
+        walletId: '23423423423423',
       },
       query: {},
       body: {
         chain: 0,
       },
-    } as unknown as express.Request;
+      decoded: {
+        coin: 'tbtc',
+        walletId: '23423423423423',
+        chain: 0,
+      },
+    } as unknown as ExpressApiRouteRequest<'express.v2.wallet.createAddress', 'post'>;
 
-    await handleV2CreateAddress(req).should.be.resolvedWith(res);
+    const result = await handleV2CreateAddress(req).should.be.resolvedWith(res);
+    decodeOrElse('express.v2.wallet.createAddress', CreateAddressResponse[200], result, (errors) => {
+      throw new Error(`Response did not match expected codec: ${errors}`);
+    });
   });
 });

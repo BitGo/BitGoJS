@@ -22,6 +22,7 @@ import { PostDeriveLocalKeyChain } from './v1/deriveLocalKeyChain';
 import { PostCreateLocalKeyChain } from './v1/createLocalKeyChain';
 import { PutConstructPendingApprovalTx } from './v1/constructPendingApprovalTx';
 import { PutConsolidateUnspents } from './v1/consolidateUnspents';
+import { PostCreateAddress } from './v2/createAddress';
 
 export const ExpressApi = apiSpec({
   'express.ping': {
@@ -68,6 +69,9 @@ export const ExpressApi = apiSpec({
   },
   'express.verifycoinaddress': {
     post: PostVerifyCoinAddress,
+  },
+  'express.v2.wallet.createAddress': {
+    post: PostCreateAddress,
   },
   'express.calculateminerfeeinfo': {
     post: PostCalculateMinerFeeInfo,
