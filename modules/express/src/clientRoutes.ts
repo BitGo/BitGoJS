@@ -1581,7 +1581,6 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   );
 
   router.post('express.v1.wallet.signTransaction', [prepareBitGo(config), typedPromiseWrapper(handleSignTransaction)]);
-  router.get('express.lightning.getState', [prepareBitGo(config), typedPromiseWrapper(handleGetLightningWalletState)]);
 
   app.post('/api/v1/wallet/:id/simpleshare', parseBody, prepareBitGo(config), promiseWrapper(handleShareWallet));
   router.post('express.v1.wallet.acceptShare', [prepareBitGo(config), typedPromiseWrapper(handleAcceptShare)]);
