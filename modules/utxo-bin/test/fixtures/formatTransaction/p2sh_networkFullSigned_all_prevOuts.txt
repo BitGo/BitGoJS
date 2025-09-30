@@ -34,7 +34,8 @@ transaction: 58603ea06d55bd9dd6fec9b0d1ea5662d622f923e0f10045507723a893388e7f
 │ │     ├── signed by: [0, 2]
 │ │     ├─┬ 0
 │ │     │ ├── bytes: 3044022048a059c22437630fdd5bc3c46bd1e30438a3623a59050d5e5f2fb1a36686fd9e02202ed8206b2f2472efd3ea145bc3c52703a7874fc747bdccc97cd5b862c8d62b7401 (71 bytes)
-│ │     │ ├── valid: false
+│ │     │ ├── valid: true
+│ │     │ ├── signedBy: user
 │ │     │ ├── isCanonical: true
 │ │     │ ├── hashType: 1
 │ │     │ ├── r: 48a059c22437630fdd5bc3c46bd1e30438a3623a59050d5e5f2fb1a36686fd9e (32 bytes)
@@ -42,7 +43,8 @@ transaction: 58603ea06d55bd9dd6fec9b0d1ea5662d622f923e0f10045507723a893388e7f
 │ │     │ └── highS: false
 │ │     └─┬ 1
 │ │       ├── bytes: 30440220138087371ab51032457bdca8ef134eb566a61b16631cf6bc296c8b243f938bf70220720ab74bfa5e39f2c764d1879dd6fea9b1f287611b1ea714fe5b0928bd13d46901 (71 bytes)
-│ │       ├── valid: false
+│ │       ├── valid: true
+│ │       ├── signedBy: bitgo
 │ │       ├── isCanonical: true
 │ │       ├── hashType: 1
 │ │       ├── r: 138087371ab51032457bdca8ef134eb566a61b16631cf6bc296c8b243f938bf7 (32 bytes)
@@ -72,7 +74,8 @@ transaction: 58603ea06d55bd9dd6fec9b0d1ea5662d622f923e0f10045507723a893388e7f
 │       ├── signed by: [0, 2]
 │       ├─┬ 0
 │       │ ├── bytes: 3045022100afde55c0cfa9dc3a20fb8706c5a7f86c754efcbbaf866e09e84a18668c53148402203a7e0bb62cd5a951def97181f6a26d78b70c7ac22af79029f22b5b130785939f01 (72 bytes)
-│       │ ├── valid: false
+│       │ ├── valid: true
+│       │ ├── signedBy: user
 │       │ ├── isCanonical: true
 │       │ ├── hashType: 1
 │       │ ├── r: afde55c0cfa9dc3a20fb8706c5a7f86c754efcbbaf866e09e84a18668c531484 (32 bytes)
@@ -80,7 +83,8 @@ transaction: 58603ea06d55bd9dd6fec9b0d1ea5662d622f923e0f10045507723a893388e7f
 │       │ └── highS: false
 │       └─┬ 1
 │         ├── bytes: 3044022033ae8e7c8ef2109b804bc338e884109e5ed9e534307761aa5695a0eea3ce0615022045b4af31359339b6c696ca0f956e844baa8dd642b0e74ad2475e8fe5b4c055e801 (71 bytes)
-│         ├── valid: false
+│         ├── valid: true
+│         ├── signedBy: bitgo
 │         ├── isCanonical: true
 │         ├── hashType: 1
 │         ├── r: 33ae8e7c8ef2109b804bc338e884109e5ed9e534307761aa5695a0eea3ce0615 (32 bytes)
