@@ -202,6 +202,7 @@ describe('Instruction Builder Tests: ', function () {
           isSigner: meta.isSigner,
           isWritable: meta.isWritable,
         })),
+        { pubkey: new PublicKey(transferHook.authority), isSigner: false, isWritable: false },
         { pubkey: new PublicKey(transferHook.programId), isSigner: false, isWritable: false },
       ];
 
