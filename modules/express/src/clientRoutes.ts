@@ -641,7 +641,7 @@ export async function handleV2GenerateWallet(req: ExpressApiRouteRequest<'expres
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.decoded.coin);
   const result = await coin.wallets().generateWallet(req.body);
-  if (req.query.includeKeychains === 'false') {
+  if ((req.decoded.includeKeychains as any) === false) {
     return result.wallet.toJSON();
   }
   return { ...result, wallet: result.wallet.toJSON() };

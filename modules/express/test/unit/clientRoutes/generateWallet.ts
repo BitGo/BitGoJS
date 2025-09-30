@@ -101,12 +101,13 @@ describe('Generate Wallet', () => {
         coin,
       },
       query: {
-        includeKeychains: 'true',
+        includeKeychains: true,
       },
       body: walletGenerateBody,
       decoded: {
         ...walletGenerateBody,
         coin,
+        includeKeychains: true,
       },
     } as unknown as ExpressApiRouteRequest<'express.wallet.generate', 'post'>;
 
@@ -186,12 +187,13 @@ describe('Generate Wallet', () => {
         coin,
       },
       query: {
-        includeKeychains: 'false',
+        includeKeychains: false,
       },
       body: walletGenerateBody,
       decoded: {
         ...walletGenerateBody,
         coin,
+        includeKeychains: false,
       },
     } as unknown as ExpressApiRouteRequest<'express.wallet.generate', 'post'>;
 

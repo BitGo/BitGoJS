@@ -1,4 +1,5 @@
 import * as t from 'io-ts';
+import { BooleanFromString } from 'io-ts-types';
 import { httpRoute, httpRequest, optional } from '@api-ts/io-ts-http';
 import { BitgoExpressError } from '../../schemas/error';
 import { UserKeychainCodec, BackupKeychainCodec, BitgoKeychainCodec } from '../../schemas/keychain';
@@ -80,7 +81,7 @@ export const GenerateWalletV2Params = {
  */
 export const GenerateWalletV2Query = {
   /** Include user, backup and bitgo keychains along with generated wallet */
-  includeKeychains: optional(t.string),
+  includeKeychains: optional(BooleanFromString),
 };
 
 /**
