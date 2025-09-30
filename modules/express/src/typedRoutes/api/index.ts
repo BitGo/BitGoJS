@@ -21,6 +21,7 @@ import { PostVerifyCoinAddress } from './v2/verifyAddress';
 import { PostDeriveLocalKeyChain } from './v1/deriveLocalKeyChain';
 import { PostCreateLocalKeyChain } from './v1/createLocalKeyChain';
 import { PutConstructPendingApprovalTx } from './v1/constructPendingApprovalTx';
+import { PutConsolidateUnspents } from './v1/consolidateUnspents';
 
 export const ExpressApi = apiSpec({
   'express.ping': {
@@ -79,6 +80,9 @@ export const ExpressApi = apiSpec({
   },
   'express.v1.pendingapproval.constructTx': {
     put: PutConstructPendingApprovalTx,
+  },
+  'express.v1.wallet.consolidateunspents': {
+    put: PutConsolidateUnspents,
   },
 });
 
