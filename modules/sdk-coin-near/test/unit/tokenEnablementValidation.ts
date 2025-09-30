@@ -152,7 +152,9 @@ describe('NEAR Token Enablement Validation', function () {
     };
 
     // This SHOULD throw an error because the addresses don't match
-    await basecoin.verifyTransaction(verifyOptions).should.be.rejectedWith('Address mismatch: wrong.address.near');
+    await basecoin
+      .verifyTransaction(verifyOptions)
+      .should.be.rejectedWith('Error on token enablements: transaction beneficiary mismatch with user expectation');
   });
 
   /**

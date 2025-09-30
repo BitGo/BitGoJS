@@ -45,7 +45,7 @@ import {
 import { BaseCoin as StaticsBaseCoin, CoinFamily, coins, Nep141Token, Networks } from '@bitgo/statics';
 
 import { KeyPair as NearKeyPair, Transaction, TransactionBuilder, TransactionBuilderFactory } from './lib';
-import { TxData, TransactionExplanation } from './lib/iface';
+import { TransactionExplanation } from './lib/iface';
 import nearUtils from './lib/utils';
 import { MAX_GAS_LIMIT_FOR_FT_TRANSFER } from './lib/constants';
 
@@ -1036,6 +1036,18 @@ export class Near extends BaseCoin {
       });
 
       if (!_.isEqual(filteredOutputs, filteredRecipients)) {
+        // For enabletoken, provide more specific error messages for address mismatches
+        if (txParams.type === 'enabletoken') {
+          const mismatchedAddresses = txParams.recipients
+            ?.filter(
+              (recipient, index) => !filteredOutputs[index] || recipient.address !== filteredOutputs[index].address
+            )
+            .map((recipient) => recipient.address);
+
+          if (mismatchedAddresses && mismatchedAddresses.length > 0) {
+            throw new Error(`Address mismatch: ${mismatchedAddresses.join(', ')}`);
+          }
+        }
         throw new Error('Tx outputs does not match with expected txParams recipients');
       }
       for (const recipients of txParams.recipients) {
@@ -1082,141 +1094,198 @@ export class Near extends BaseCoin {
     }
   }
 
-  // Validates that the transaction matches what the user expects
   private validateTokenEnablementTransaction(
     transaction: Transaction,
     explainedTx: TransactionExplanation,
     txParams: TransactionParams
   ): void {
-    const transactionData = transaction.toJson();
-
-    // Validate each aspect of the transaction separately
     this.validateTxType(txParams, explainedTx);
-    this.validateSigner(transactionData);
-    this.validateReceiver(transactionData, explainedTx);
-    this.validatePublicKey(transactionData, explainedTx);
-    this.validateActions(transactionData, explainedTx);
-    this.validateAddresses(txParams, explainedTx);
+    this.validateSigner(transaction);
+    this.validateRawReceiver(transaction, txParams);
+    this.validatePublicKey(transaction);
+    this.validateRawActions(transaction, txParams);
+    this.validateBeneficiary(explainedTx, txParams);
+    this.validateTokenOutput(explainedTx, txParams);
   }
 
   // Validates that the signer ID exists in the transaction
-  private validateSigner(transactionData: TxData): void {
+  private validateSigner(transaction: Transaction): void {
+    const transactionData = transaction.toJson();
     if (!transactionData.signerId) {
       throw new Error('Error on token enablements: missing signer ID in transaction');
     }
   }
 
-  // Validates that the receiver ID exists in the transaction
-  private validateReceiver(transactionData: TxData, explainedTx: TransactionExplanation): void {
+  private validateBeneficiary(explainedTx: TransactionExplanation, txParams: TransactionParams): void {
+    if (!explainedTx.outputs || explainedTx.outputs.length === 0) {
+      throw new Error('Error on token enablements: transaction has no outputs to validate beneficiary');
+    }
+
+    const output = explainedTx.outputs[0];
+    const recipient = txParams.recipients?.[0];
+
+    if (!recipient?.address) {
+      throw new Error('Error on token enablements: missing beneficiary address in transaction parameters');
+    }
+
+    if (output.address !== recipient.address) {
+      throw new Error('Error on token enablements: transaction beneficiary mismatch with user expectation');
+    }
+  }
+
+  // Validates that the raw transaction receiverId matches the expected token contract
+  private validateRawReceiver(transaction: Transaction, txParams: TransactionParams): void {
+    const transactionData = transaction.toJson();
+
     if (!transactionData.receiverId) {
       throw new Error('Error on token enablements: missing receiver ID in transaction');
     }
 
-    // Get the expected contract address for the token being enabled
-    if (!explainedTx.outputs[0]?.tokenName) {
-      throw new Error('Error on token enablements: missing token name in transaction output');
+    const recipient = txParams.recipients?.[0];
+    if (!recipient?.tokenName) {
+      throw new Error('Error on token enablements: missing token name in transaction parameters');
     }
-    const tokenName = explainedTx.outputs[0].tokenName;
-    const tokenInstance = nearUtils.getTokenInstanceFromTokenName(tokenName);
-    if (!tokenInstance) {
-      throw new Error(`Error on token enablements: unknown token '${tokenName}'`);
-    }
-    const expectedContractAddress = tokenInstance?.contractAddress;
 
-    if (transactionData.receiverId !== expectedContractAddress) {
-      throw new Error('Error on token enablements: receiver contract mismatch');
+    const tokenInstance = nearUtils.getTokenInstanceFromTokenName(recipient.tokenName);
+    if (!tokenInstance) {
+      throw new Error(`Error on token enablements: unknown token '${recipient.tokenName}'`);
+    }
+
+    if (transactionData.receiverId !== tokenInstance.contractAddress) {
+      throw new Error(
+        `Error on token enablements: receiver contract mismatch - expected '${tokenInstance.contractAddress}', got '${transactionData.receiverId}'`
+      );
     }
   }
 
-  // Validates that the public key exists in the transaction
-  private validatePublicKey(transactionData: TxData, explainedTx: TransactionExplanation): void {
+  // Validates token output information from explained transaction
+  private validateTokenOutput(explainedTx: TransactionExplanation, txParams: TransactionParams): void {
+    if (!explainedTx.outputs || explainedTx.outputs.length !== 1) {
+      throw new Error('Error on token enablements: transaction must have exactly 1 output');
+    }
+
+    const output = explainedTx.outputs[0];
+    const recipient = txParams.recipients?.[0];
+
+    if (!output.tokenName) {
+      throw new Error('Error on token enablements: missing token name in transaction output');
+    }
+
+    const tokenInstance = nearUtils.getTokenInstanceFromTokenName(output.tokenName);
+    if (!tokenInstance) {
+      throw new Error(`Error on token enablements: unknown token '${output.tokenName}'`);
+    }
+
+    if (recipient?.tokenName && recipient.tokenName !== output.tokenName) {
+      throw new Error(
+        `Error on token enablements: token mismatch - user expects '${recipient.tokenName}', transaction has '${output.tokenName}'`
+      );
+    }
+  }
+
+  private validatePublicKey(transaction: Transaction): void {
+    const transactionData = transaction.toJson();
+
     if (!transactionData.publicKey) {
       throw new Error('Error on token enablements: missing public key in transaction');
     }
-    // NEAR public keys must be in the format "ed25519:base58_encoded_key"
+
+    // Validate ed25519 format: "ed25519:base58_encoded_key"
     if (!transactionData.publicKey.startsWith('ed25519:')) {
-      throw new Error('Error on token enablements: invalid public key format, must start with "ed25519:"');
+      throw new Error('Error on token enablements: unsupported key type, expected ed25519');
     }
 
-    // Extract the base58 part and validate it
-    const base58Part = transactionData.publicKey.substring(8); // Remove "ed25519:" prefix
-    if (!base58Part || base58Part.length === 0) {
-      throw new Error('Error on token enablements: invalid public key format, missing base58 encoded key');
+    // Validate base58 part after "ed25519:"
+    const base58Part = transactionData.publicKey.substring(8);
+    if (!base58Part || base58Part.length !== 44) {
+      // ed25519 keys are 32 bytes = 44 base58 chars
+      throw new Error('Error on token enablements: invalid ed25519 public key format');
     }
 
-    // Validate base58 encoding (basic check)
+    // Validate it's actually valid base58
     try {
-      const decoded = base58.decode(base58Part);
+      const decoded = nearAPI.utils.serialize.base_decode(base58Part);
       if (decoded.length !== 32) {
-        throw new Error('Error on token enablements: invalid public key length, must be 32 bytes when decoded');
+        throw new Error('Error on token enablements: invalid ed25519 public key length');
       }
-    } catch (error) {
-      throw new Error('Error on token enablements: invalid public key base58 encoding');
+    } catch {
+      throw new Error('Error on token enablements: invalid base58 encoding in public key');
     }
   }
 
-  // Validates that the actions exist in the transaction and follow NEAR token enablement spec
-  private validateActions(transactionData: TxData, explainedTx: TransactionExplanation): void {
-    // Check that actions array exists and is not empty
-    if (!transactionData.actions || transactionData.actions.length === 0) {
-      throw new Error('Error on token enablements: missing actions in transaction');
-    }
+  // Validates the raw transaction actions according to NEAR protocol spec
+  private validateRawActions(transaction: Transaction, txParams: TransactionParams): void {
+    const transactionData = transaction.toJson();
 
-    // Token enablement must have exactly ONE action (NEAR spec requirement)
-    if (transactionData.actions.length !== 1) {
-      throw new Error(
-        `Error on token enablements: must have exactly 1 action, found ${transactionData.actions.length}`
-      );
+    // Must have exactly 1 action (NEAR spec requirement)
+    if (!transactionData.actions || transactionData.actions.length !== 1) {
+      throw new Error('Error on token enablements: must have exactly 1 action');
     }
 
     const action = transactionData.actions[0];
 
-    // The action must be a FunctionCall (not Transfer or other action types)
+    // Must be a functionCall action (not transfer)
     if (!action.functionCall) {
-      throw new Error('Error on token enablements: action must be a FunctionCall, not Transfer or other type');
+      throw new Error('Error on token enablements: action must be a function call');
     }
 
-    // Method name must be exactly "storage_deposit" (NEAR NEP-145 requirement)
+    // Must be storage_deposit method (NEAR spec requirement)
     if (action.functionCall.methodName !== 'storage_deposit') {
       throw new Error(
-        `Error on token enablements: invalid method name "${action.functionCall.methodName}", must be "storage_deposit"`
+        `Error on token enablements: invalid method '${action.functionCall.methodName}', expected 'storage_deposit'`
       );
     }
 
-    // Validate function call arguments structure
+    // Validate args structure (should be JSON object)
     if (!action.functionCall.args || typeof action.functionCall.args !== 'object') {
-      throw new Error('Error on token enablements: missing or invalid function call arguments');
+      throw new Error('Error on token enablements: invalid or missing function call arguments');
     }
 
-    // Validate gas amount is reasonable (not zero, not excessively high)
-    const gas = action.functionCall.gas;
-    if (!gas || gas === '0') {
-      throw new Error('Error on token enablements: gas amount cannot be zero');
+    // Validate deposit exists and is valid
+    if (!action.functionCall.deposit) {
+      throw new Error('Error on token enablements: missing deposit in function call');
     }
 
-    // Validate deposit amount exists and is valid
-    const deposit = action.functionCall.deposit;
-    if (!deposit) {
-      throw new Error('Error on token enablements: missing deposit amount');
+    const depositAmount = new BigNumber(action.functionCall.deposit);
+    if (depositAmount.isNaN() || depositAmount.isLessThan(0)) {
+      throw new Error('Error on token enablements: invalid deposit amount in function call');
     }
 
-    const depositBN = new BigNumber(deposit);
-    if (depositBN.isNaN() || depositBN.isLessThan(0)) {
-      throw new Error('Error on token enablements: invalid deposit amount format');
+    // Validate gas exists and is valid
+    if (!action.functionCall.gas) {
+      throw new Error('Error on token enablements: missing gas in function call');
     }
 
-    // Cross-validate deposit amount with explained transaction
-    if (explainedTx.outputs?.[0]?.amount && deposit !== explainedTx.outputs[0].amount) {
+    const gasAmount = new BigNumber(action.functionCall.gas);
+    if (gasAmount.isNaN() || gasAmount.isLessThan(0)) {
+      throw new Error('Error on token enablements: invalid gas amount in function call');
+    }
+
+    // Validate deposit amount against expected storage deposit (merged from validateActions)
+    const recipient = txParams.recipients?.[0];
+    if (recipient?.tokenName) {
+      const tokenInstance = nearUtils.getTokenInstanceFromTokenName(recipient.tokenName);
+      if (tokenInstance?.storageDepositAmount && action.functionCall.deposit !== tokenInstance.storageDepositAmount) {
+        throw new Error(
+          `Error on token enablements: deposit amount ${action.functionCall.deposit} does not match expected storage deposit ${tokenInstance.storageDepositAmount}`
+        );
+      }
+    }
+
+    // Validate user-specified amount matches deposit (merged from validateActions)
+    if (
+      recipient?.amount !== undefined &&
+      recipient.amount !== '0' &&
+      recipient.amount !== action.functionCall.deposit
+    ) {
       throw new Error(
-        `Error on token enablements: deposit amount mismatch - action has "${deposit}", explained tx has "${explainedTx.outputs[0].amount}"`
+        `Error on token enablements: user specified amount '${recipient.amount}' does not match storage deposit '${action.functionCall.deposit}'`
       );
     }
   }
 
-  // Validates that the transaction type matches the expected type for the given txParams
   private validateTxType(txParams: TransactionParams, explainedTx: TransactionExplanation): void {
     if (txParams.type === 'enabletoken') {
-      // For NEAR token enablement, we expect TransactionType.StorageDeposit
       const expectedType = TransactionType.StorageDeposit;
       const actualType = explainedTx.type;
 
@@ -1225,29 +1294,6 @@ export class Near extends BaseCoin {
           `Invalid transaction type on token enablement: expected "${expectedType}", got "${actualType}".`
         );
       }
-    }
-  }
-
-  //Validates that addresses match between parameters and explained transaction
-  private validateAddresses(txParams: TransactionParams, explainedTx: TransactionExplanation): void {
-    if (!txParams.recipients) {
-      // This is ok since sometimes users do not input recipients for consolidation requests as they are generated by the server
-      return;
-    }
-    if (!explainedTx.outputs) {
-      throw new Error('Error on token enablements: transaction has no outputs but recipients were expected');
-    }
-
-    if (txParams.recipients.length !== explainedTx.outputs.length) {
-      throw new Error('Error on token enablements: output count does not match recipients count');
-    }
-
-    const mismatchedAddresses = txParams.recipients
-      .filter((recipient, index) => recipient.address !== explainedTx.outputs[index].address)
-      .map((recipient) => recipient.address);
-
-    if (mismatchedAddresses.length > 0) {
-      throw new Error(`Address mismatch: ${mismatchedAddresses.join(', ')}`);
     }
   }
 }
