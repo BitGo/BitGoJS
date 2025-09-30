@@ -42,6 +42,7 @@
   "dependencies": {
     "@bitgo/sdk-core": "^36.10.0",
     "@bitgo/statics": "^58.1.0",
+    "@canton-network/wallet-sdk": "^0.9.0",
     "bignumber.js": "^9.1.1"
   },
   "devDependencies": {

@@ -15,6 +15,8 @@ import {
 } from '@bitgo/sdk-core';
 import { auditEddsaPrivateKey } from '@bitgo/sdk-lib-mpc';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { KeyPair as CantonKeyPair } from './lib/keyPair';
+import utils from './lib/utils';
 
 export class Canton extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -84,12 +86,20 @@ export class Canton extends BaseCoin {
 
   /** @inheritDoc */
   generateKeyPair(seed?: Buffer): KeyPair {
-    throw new Error('Method not implemented.');
+    const keyPair = seed ? new CantonKeyPair({ seed }) : new CantonKeyPair();
+    const keys = keyPair.getKeys();
+    if (!keys.prv) {
+      throw new Error('Missing prv in key generation.');
+    }
+    return {
+      pub: keys.pub,
+      prv: keys.prv,
+    };
   }
 
   /** @inheritDoc */
   isValidPub(pub: string): boolean {
-    throw new Error('Method not implemented.');
+    return utils.isValidPublicKey(pub);
   }
 
   /** @inheritDoc */

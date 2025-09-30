@@ -1,4 +1,5 @@
-import { BaseUtils } from '@bitgo/sdk-core';
+import { BaseUtils, isValidEd25519PublicKey } from '@bitgo/sdk-core';
+import { TopologyController } from '@canton-network/wallet-sdk';
 
 export class Utils implements BaseUtils {
   /** @inheritdoc */
@@ -18,7 +19,7 @@ export class Utils implements BaseUtils {
 
   /** @inheritdoc */
   isValidPublicKey(key: string): boolean {
-    throw new Error('Method not implemented.');
+    return isValidEd25519PublicKey(key);
   }
 
   /** @inheritdoc */
@@ -29,6 +30,15 @@ export class Utils implements BaseUtils {
   /** @inheritdoc */
   isValidTransactionId(txId: string): boolean {
     throw new Error('Method not implemented.');
+  }
+
+  /**
+   * Method to create fingerprint (part of the canton partyId) from public key
+   * @param {String} publicKey the public key
+   * @returns {String}
+   */
+  getAddressFromPublicKey(publicKey: string): string {
+    return TopologyController.createFingerprintFromPublicKey(publicKey);
   }
 }
 
