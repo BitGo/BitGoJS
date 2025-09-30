@@ -4,6 +4,7 @@ const CopyPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const path = require('path');
+const webpack = require('webpack');
 
 const outputConfig = {
   destPath: './dist',
@@ -154,10 +155,13 @@ const prodPlugins = [
     inject: true,
     minify: false,
   }),
+  new webpack.ProvidePlugin({
+    process: 'process/browser.js',
+  }),
 ];
 
 const resolveFallback = {
-  'process/browser': require.resolve('process/browser'),
+  'process/browser': require.resolve('process/browser.js'),
 };
 
 module.exports = {

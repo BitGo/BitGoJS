@@ -20,11 +20,23 @@ module.exports = (env, options) => {
       mode: options.mode,
       entry: entryConfig,
       module: {
-        rules: prodRules,
+        rules: [
+          {
+            test: /\.m?js$/,
+            resolve: {
+              fullySpecified: false,
+            },
+          },
+          ...prodRules,
+        ],
       },
       resolve: {
         extensions: ['.tsx', '.ts', '.js'],
-        alias: aliasItems,
+        alias: {
+          process: require.resolve('process/browser.js'),
+          'process/browser': require.resolve('process/browser.js'),
+          ...aliasItems,
+        },
         fallback: resolveFallback,
       },
       output: {
