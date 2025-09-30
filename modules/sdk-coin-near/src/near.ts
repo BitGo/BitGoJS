@@ -1091,43 +1091,62 @@ export class Near extends BaseCoin {
     const transactionData = transaction.toJson();
 
     // Validate each aspect of the transaction separately
-    this.validateSigner(transactionData);
-    this.validateReceiver(transactionData);
-    this.validatePublicKey(transactionData);
-    this.validateActions(transactionData);
-    this.validateAddresses(txParams, explainedTx);
     this.validateTxType(txParams, explainedTx);
+    this.validateSigner(transactionData);
+    this.validateReceiver(transactionData, explainedTx);
+    this.validatePublicKey(transactionData, explainedTx);
+    this.validateActions(transactionData, explainedTx);
+    this.validateAddresses(txParams, explainedTx);
   }
 
   // Validates that the signer ID exists in the transaction
   private validateSigner(transactionData: TxData): void {
-    // For token enablement, we validate that the transaction signer exists
     if (!transactionData.signerId) {
       throw new Error('Error on token enablements: missing signer ID in transaction');
     }
   }
 
   // Validates that the receiver ID exists in the transaction
-  private validateReceiver(transactionData: TxData): void {
-    // For token enablement, the receiver should be the token contract
+  private validateReceiver(transactionData: TxData, explainedTx: TransactionExplanation): void {
     if (!transactionData.receiverId) {
       throw new Error('Error on token enablements: missing receiver ID in transaction');
+    }
+    if (explainedTx.outputs?.[0]?.tokenName) {
+      const tokenInstance = nearUtils.getTokenInstanceFromTokenName(explainedTx.outputs[0].tokenName);
+      if (transactionData.receiverId !== tokenInstance?.contractAddress) {
+        throw new Error('Error on token enablements: receiver contract mismatch');
+      }
     }
   }
 
   // Validates that the public key exists in the transaction
-  private validatePublicKey(transactionData: TxData): void {
-    // For token enablement, we validate that the transaction has a valid public key
+  private validatePublicKey(transactionData: TxData, explainedTx: TransactionExplanation): void {
     if (!transactionData.publicKey) {
       throw new Error('Error on token enablements: missing public key in transaction');
+    }
+    if (transactionData.id && explainedTx.id && transactionData.id !== explainedTx.id) {
+      throw new Error('Error on token enablements: transaction ID mismatch');
     }
   }
 
   //Validates that the actions exist in the transaction
-  private validateActions(transactionData: TxData): void {
-    // For token enablement, we validate that the transaction has the expected actions
+  private validateActions(transactionData: TxData, explainedTx: TransactionExplanation): void {
     if (!transactionData.actions || transactionData.actions.length === 0) {
       throw new Error('Error on token enablements: missing actions in transaction');
+    }
+    if (transactionData.actions.length !== explainedTx.outputs?.length) {
+      throw new Error('Error on token enablements: action count does not match output count');
+    }
+    const action = transactionData.actions[0];
+    if (action.functionCall?.methodName !== 'storage_deposit') {
+      throw new Error('Error on token enablements: invalid action method');
+    }
+    if (explainedTx.outputs?.[0]?.amount && action.functionCall?.deposit !== explainedTx.outputs[0].amount) {
+      throw new Error('Storage deposit amount not matching!');
+    }
+    const beneficiaryFromArgs = action.functionCall?.args?.['account_id'] || transactionData.signerId;
+    if (explainedTx.outputs?.[0]?.address && beneficiaryFromArgs !== explainedTx.outputs[0].address) {
+      throw new Error('Error on token enablements: beneficiary address mismatch');
     }
   }
 
