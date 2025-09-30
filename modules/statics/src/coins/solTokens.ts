@@ -3067,6 +3067,16 @@ export const solTokens = [
     UnderlyingAsset['sol:rekt'],
     SOL_TOKEN_FEATURES
   ),
+  solToken(
+    'cb3a07cd-0b6b-4e7c-810c-d93b257a7e34',
+    'sol:pipe',
+    'Pipe',
+    9,
+    '7s9MoSt7VV1J3jVNnw2AyocsQDBdCkPYz5apQDPKy9i5',
+    '7s9MoSt7VV1J3jVNnw2AyocsQDBdCkPYz5apQDPKy9i5',
+    UnderlyingAsset['sol:pipe'],
+    SOL_TOKEN_FEATURES
+  ),
   tsolToken(
     'b98c5a7a-49c5-45f1-a6ee-b08dff596a7d',
     'tsol:srm',
