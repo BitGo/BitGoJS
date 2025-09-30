@@ -6,7 +6,6 @@ import { TransactionClause } from '@vechain/sdk-core';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from '../transaction/transaction';
 import { StakingTransaction } from '../transaction/stakingTransaction';
-import EthereumAbi from 'ethereumjs-abi';
 import utils from '../utils';
 
 export class StakingBuilder extends TransactionBuilder {
@@ -115,17 +114,6 @@ export class StakingBuilder extends TransactionBuilder {
   }
 
   /**
-   * Sets the staking contract ABI for this staking tx.
-   *
-   * @param {EthereumAbi} abi - The staking contract ABI
-   * @returns {StakingBuilder} This transaction builder
-   */
-  stakingContractABI(abi: EthereumAbi): this {
-    this.stakingTransaction.stakingContractABI = abi;
-    return this;
-  }
-
-  /**
    * Sets the transaction data for this staking tx.
    *
    * @param {string} data - The transaction data
@@ -156,7 +144,6 @@ export class StakingBuilder extends TransactionBuilder {
       }
     }
 
-    assert(transaction.stakingContractABI, 'Staking contract ABI is required');
     assert(transaction.levelId, 'Level ID is required');
     assert(transaction.autorenew, 'Autorenew flag is required');
     this.validateAddress({ address: transaction.stakingContractAddress });
