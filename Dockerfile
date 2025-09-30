@@ -123,6 +123,7 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-bsv /var/modules/sdk-coin-bsv/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-btc /var/modules/sdk-coin-btc/
 COPY --from=builder /tmp/bitgo/modules/utxo-ord /var/modules/utxo-ord/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-btg /var/modules/sdk-coin-btg/
+COPY --from=builder /tmp/bitgo/modules/sdk-coin-canton /var/modules/sdk-coin-canton/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-dash /var/modules/sdk-coin-dash/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-doge /var/modules/sdk-coin-doge/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-eos /var/modules/sdk-coin-eos/
@@ -219,6 +220,7 @@ cd /var/modules/sdk-coin-bsv && yarn link && \
 cd /var/modules/sdk-coin-btc && yarn link && \
 cd /var/modules/utxo-ord && yarn link && \
 cd /var/modules/sdk-coin-btg && yarn link && \
+cd /var/modules/sdk-coin-canton && yarn link && \
 cd /var/modules/sdk-coin-dash && yarn link && \
 cd /var/modules/sdk-coin-doge && yarn link && \
 cd /var/modules/sdk-coin-eos && yarn link && \
@@ -318,6 +320,7 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-btc && \
     yarn link @bitgo/utxo-ord && \
     yarn link @bitgo/sdk-coin-btg && \
+    yarn link @bitgo/sdk-coin-canton && \
     yarn link @bitgo/sdk-coin-dash && \
     yarn link @bitgo/sdk-coin-doge && \
     yarn link @bitgo/sdk-coin-eos && \
