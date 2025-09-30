@@ -12,12 +12,21 @@ export const TOKEN_2022_STATIC_CONFIGS: Token2022Config[] = [
       authority: 'CPNEkz5SaAcWqGMezXTti39ekErzMpDCtuPMGw9tt4CZ',
       extraAccountMetas: [
         {
-          pubkey: '4zDeEh2D6K39H8Zzn99CpQkaUApbpUWfbCgqbwgZ2Yf',
+          pubkey: '98wFF5MpMjMQbfDF2MPzo8LCGX37unZR1ohRA1mU9GmJ',
           isSigner: false,
           isWritable: true,
         },
+        {
+          pubkey: '48n7YGEww7fKMfJ5gJ3sQC3rM6RWGjpUsghqVfXVkR5A',
+          isSigner: false,
+          isWritable: false,
+        },
+        {
+          pubkey: '9sQhAH7vV3RKTCK13VY4EiNjs3qBq1srSYxdNufdAAXm',
+          isSigner: false,
+          isWritable: false,
+        },
       ],
-      extraAccountMetasPDA: '9sQhAH7vV3RKTCK13VY4EiNjs3qBq1srSYxdNufdAAXm',
     },
   },
   {
@@ -31,12 +40,21 @@ export const TOKEN_2022_STATIC_CONFIGS: Token2022Config[] = [
       authority: 'BLZvvaQgPUvL2RWoJeovudbHMhqH4S3kdenN5eg1juDr',
       extraAccountMetas: [
         {
-          pubkey: '4zDeEh2D6K39H8Zzn99CpQkaUApbpUWfbCgqbwgZ2Yf',
+          pubkey: 'GbQ8ZiEFzGGTeYoXwtZtcoxwPcMyUcmZDduMVNdUPKpX',
           isSigner: false,
           isWritable: true,
         },
+        {
+          pubkey: '2Te6MFDwstRP2sZi6DLbkhVcSfaQVffmpbudN6pmvAXo',
+          isSigner: false,
+          isWritable: false,
+        },
+        {
+          pubkey: 'FR5YBEisx8mDe4ruhWKmpH5nirdJopj4uStBAVufqjMo',
+          isSigner: false,
+          isWritable: false,
+        },
       ],
-      extraAccountMetasPDA: 'FR5YBEisx8mDe4ruhWKmpH5nirdJopj4uStBAVufqjMo',
     },
   },
 ];

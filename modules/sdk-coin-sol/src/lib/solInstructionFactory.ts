@@ -719,13 +719,6 @@ function buildStaticTransferHookAccounts(transferHook: TransferHookConfig): Acco
       });
     }
   }
-  metas.push({ pubkey: new PublicKey(transferHook.authority), isSigner: false, isWritable: false });
-  metas.push({ pubkey: new PublicKey(transferHook.programId), isSigner: false, isWritable: false });
-
-  if (transferHook.extraAccountMetasPDA) {
-    metas.push({ pubkey: new PublicKey(transferHook.extraAccountMetasPDA), isSigner: false, isWritable: false });
-  }
-
   return metas;
 }
 
