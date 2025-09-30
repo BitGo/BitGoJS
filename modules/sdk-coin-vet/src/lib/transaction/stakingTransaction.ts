@@ -13,7 +13,6 @@ export class StakingTransaction extends Transaction {
   private _levelId: number;
   private _autorenew = true;
   private _amountToStake: string;
-  private _stakingContractABI: EthereumAbi;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -51,14 +50,6 @@ export class StakingTransaction extends Transaction {
 
   set amountToStake(amount: string) {
     this._amountToStake = amount;
-  }
-
-  get stakingContractABI(): EthereumAbi {
-    return this._stakingContractABI;
-  }
-
-  set stakingContractABI(abi: EthereumAbi) {
-    this._stakingContractABI = abi;
   }
 
   buildClauses(): void {
