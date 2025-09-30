@@ -271,7 +271,7 @@ function handleConstructApprovalTx(req: ExpressApiRouteRequest<'express.v1.pendi
  * @deprecated
  * @param req
  */
-function handleConsolidateUnspents(req: express.Request) {
+function handleConsolidateUnspents(req: ExpressApiRouteRequest<'express.v1.wallet.consolidateunspents', 'put'>) {
   return req.bitgo
     .wallets()
     .get({ id: req.params.id })
@@ -1598,12 +1598,11 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
     typedPromiseWrapper(handleConstructApprovalTx),
   ]);
 
-  app.put(
-    '/api/v1/wallet/:id/consolidateunspents',
-    parseBody,
+  router.put('express.v1.wallet.consolidateunspents', [
     prepareBitGo(config),
-    promiseWrapper(handleConsolidateUnspents)
-  );
+    typedPromiseWrapper(handleConsolidateUnspents),
+  ]);
+
   app.put('/api/v1/wallet/:id/fanoutunspents', parseBody, prepareBitGo(config), promiseWrapper(handleFanOutUnspents));
 
   // any other API call
