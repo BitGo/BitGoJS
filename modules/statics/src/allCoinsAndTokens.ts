@@ -2170,6 +2170,15 @@ export const allCoinsAndTokens = [
     Networks.main.basechain
   ),
   erc20Token(
+    'd71e48af-5a75-431e-9243-715af04351fc',
+    'og:wog',
+    'WOG',
+    18,
+    '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
+    UnderlyingAsset['og:wog'],
+    Networks.main.og
+  ),
+  erc20Token(
     '3d542986-403f-4302-aa57-95f4dec26727',
     'baseeth:wbtc',
     'Wrapped BTC',
