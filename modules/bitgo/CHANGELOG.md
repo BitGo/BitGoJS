@@ -3,6 +3,41 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.2.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.1.0...bitgo@50.2.0) (2025-09-29)
+
+### Bug Fixes
+
+- removed transfer data from payment withdraw ([53dcd91](https://github.com/BitGo/BitGoJS/commit/53dcd91b28a4728a15e80a33dfef7c2cfa8f782a))
+- **sdk-core:** add keychain info to transaction verification process, fixes unit tests ([ad3c6c4](https://github.com/BitGo/BitGoJS/commit/ad3c6c47529cbb9e730d3124a33b2b2038064462))
+- **sdk-core:** fix TransactionType check ([30dbf98](https://github.com/BitGo/BitGoJS/commit/30dbf9842e908baa753b072429088167777a668f))
+- **sdk-core:** remove filter from prebuild validation ([5717147](https://github.com/BitGo/BitGoJS/commit/571714799d7c9f467ec2b216595e020f645e336b))
+
+### Features
+
+- add coinfactory for token instance on test og ([69ce8cb](https://github.com/BitGo/BitGoJS/commit/69ce8cbf17b52360cb2da508969958b5f2882427))
+- **sdk-core:** add missing types for staking validation ([85dd4d0](https://github.com/BitGo/BitGoJS/commit/85dd4d0feac8b5f94bd5da15367bc3324d01612e))
+
+# [50.1.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.0.0...bitgo@50.1.0) (2025-09-25)
+
+### Bug Fixes
+
+- **bitgo:** added data validation on tx ([489974e](https://github.com/BitGo/BitGoJS/commit/489974e6d9cf2b1889d269465d9ef0a9f2d43ab9))
+- **bitgo:** added validation for unsigned txHex from txRequest matches client staking request ([b535375](https://github.com/BitGo/BitGoJS/commit/b53537595f0fa8c0eec28c28889c5b7e5a62723a))
+- bump up karma versions ([b7ae747](https://github.com/BitGo/BitGoJS/commit/b7ae7471be3b4e1d0ec3573035b700d70f9d47fe))
+- **express:** express cookie package upgrade ([abecb54](https://github.com/BitGo/BitGoJS/commit/abecb547ac76d106d874b41dbf8e4af178a3044c))
+- replaced vulnerable request package by using axios ([ef5121f](https://github.com/BitGo/BitGoJS/commit/ef5121fb9108e120701405dd34b0d9149f6e2f42))
+- use specific package versions ([b4a3ec5](https://github.com/BitGo/BitGoJS/commit/b4a3ec5dc7138fbf05dc3a7c15132952dcf56c24))
+
+### Features
+
+- add Flare token support and related configurations ([91dc8fb](https://github.com/BitGo/BitGoJS/commit/91dc8fb841de595d9b29142d066c697878d7472e))
+- add jetton to coinFactory ([cce273f](https://github.com/BitGo/BitGoJS/commit/cce273fa3d34bed03d90e3cfd5615721c7dc1064))
+- adding iota coin construction in coin factory ([2ac078c](https://github.com/BitGo/BitGoJS/commit/2ac078c0336e7fab4e90846a104150bdfc93c9bc))
+- bumped public types ([6bd0aec](https://github.com/BitGo/BitGoJS/commit/6bd0aecb700a740f76c169b1476e1832bc3abe22))
+- configure learn to skip git operations ([ee3a622](https://github.com/BitGo/BitGoJS/commit/ee3a6220496476aa7f4545b5f4a9a3bf97d9bdb9))
+- enable smart contract calls aptos ([704f6f9](https://github.com/BitGo/BitGoJS/commit/704f6f97478f7d9eeb57a31225bd3ca0a7164035))
+- **sdk-coin-mantra:** removing mantra module ([cb10519](https://github.com/BitGo/BitGoJS/commit/cb10519c48b096fe358d42b35154ff3ea2e3deb4))
+
 # [50.0.0](https://github.com/BitGo/BitGoJS/compare/bitgo@49.7.0...bitgo@50.0.0) (2025-09-03)
 
 ### Bug Fixes

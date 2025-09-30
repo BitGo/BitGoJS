@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.9.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@3.9.0...@bitgo/sdk-coin-ton@3.9.1) (2025-09-29)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-ton
+
+# [3.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@3.8.4...@bitgo/sdk-coin-ton@3.9.0) (2025-09-25)
+
+### Features
+
+- add jetton token standard ([699415e](https://github.com/BitGo/BitGoJS/commit/699415ef63cb29875c2662910ab24972334f1f18))
+- add ton mainnet token ([7846c48](https://github.com/BitGo/BitGoJS/commit/7846c48103c83883879b0d061209e465f9937249))
+- onboard testnet ton tokens ([e9e720b](https://github.com/BitGo/BitGoJS/commit/e9e720bd6e91d5a0fea9cdfcf36ba4e67fea321a))
+- **sdk-coin-ton:** add jetton transaction support ([ee1b696](https://github.com/BitGo/BitGoJS/commit/ee1b69665a96ae9a72d060a983755c48a2d36ebd))
+
 ## [3.8.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@3.8.3...@bitgo/sdk-coin-ton@3.8.4) (2025-09-03)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ton

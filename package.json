@@ -54,7 +54,7 @@
     "typescript-cached-transpile": "^0.0.6",
     "url": "^0.11.0",
     "webpack": "5.98.0",
-    "webpack-cli": "^4.9.1",
+    "webpack-cli": "^5.0.0",
     "yargs": "^17.7.2",
     "yeoman-generator": "^5.6.1"
   },
@@ -98,7 +98,11 @@
     "**/ethers/**/ws": "7.5.10",
     "**/swarm-js/**/ws": "5.2.4",
     "serialize-javascript": "^6.0.2",
-    "@grpc/grpc-js": "^1.12.6"
+    "@grpc/grpc-js": "^1.12.6",
+    "bigint-buffer": "npm:@trufflesuite/bigint-buffer@1.1.10",
+    "request": "npm:@cypress/request@3.0.9",
+    "**/avalanche/store2": "2.14.4",
+    "webpack-dev-server": "5.2.1"
   },
   "workspaces": [
     "modules/*"
@@ -128,8 +132,7 @@
     "dev": "tsc -b ./tsconfig.packages.json -w",
     "prepare": "husky install",
     "sdk-coin:new": "yo ./scripts/sdk-coin-generator",
-    "build-docker-express": "yarn update-dockerfile && podman build --platform=linux/amd64 -t bitgo/express:latest -t bitgo/express:$(jq -r .version < modules/express/package.json) .",
-    "push-docker-express": "podman push bitgo/express:latest && podman push bitgo/express:$(jq -r .version < modules/express/package.json)",
+    "build-docker-express": "yarn update-dockerfile && ./scripts/build-docker-express.sh",
     "update-dockerfile": "tsx scripts/update-dockerfile.ts",
     "precommit": "lint-staged",
     "lint-fix": "lerna run lint --parallel -- --fix",
@@ -139,7 +142,8 @@
   "dependencies": {
     "axios": "^1.12.0",
     "terser": "^5.14.2",
-    "tmp": "^0.2.3"
+    "tmp": "^0.2.3",
+    "bigint-buffer": "npm:@trufflesuite/bigint-buffer@1.1.10"
   },
   "packageManager": "yarn@1.22.22"
 }

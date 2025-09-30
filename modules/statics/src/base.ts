@@ -2769,6 +2769,9 @@ export enum UnderlyingAsset {
   // BaseETH testnet tokens
   'tbaseeth:usdc' = 'tbaseeth:usdc',
 
+  // Og mainnet tokens
+  'og:wog' = 'og:wog',
+
   // Seievm mainnet tokens
   'seievm:usdc' = 'seievm:usdc',
   'seievm:weth' = 'seievm:weth',
@@ -2845,10 +2848,6 @@ export enum UnderlyingAsset {
   'erc1155:soneiumtoken' = 'erc1155:soneiumtoken',
   'tsoneium:test721' = 'tsoneium:test721',
   'tsoneium:test1155' = 'tsoneium:test1155',
-
-  // Lido ETH NFTs
-  'erc721:unsteth' = 'erc721:unsteth',
-  'terc721:unsteth' = 'terc721:unsteth',
 
   // coredao mainnet tokens
   'coredao:stcore' = 'coredao:stcore',

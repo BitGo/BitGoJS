@@ -87,6 +87,24 @@ export enum TransactionType {
   FlushERC721,
   // Flush ERC1155 tokens from a forwarder address to base address
   FlushERC1155,
+
+  // trx
+  FREEZE,
+  VOTE,
+  UNFREEZE,
+  WITHDRAW_EXPIRE_UNFREEZE,
+  CLAIM_REWARDS,
+
+  // cspr and stx
+  stakingLock,
+  // stx
+  'self-stack',
+
+  // btc,
+  staking,
+
+  // cspr
+  stakingUnlock,
 }
 
 /**

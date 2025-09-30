@@ -47,15 +47,6 @@ Dimensions.fromUnspents({ unspents })
   .getVSize();
 ```
 
-## Publishing new versions
-
-Publishing new versions should be done by running the publish script in `scripts/publish.sh`.
-
-It can be invoked with the name of the branch to release, and will default to the currently checked out branch if not given.
-
-It will perform validation of all prepublish conditions, run a dry-run publish, then, if successful, a real publish. After that is complete,
-the newly installed package will be downloaded and `require()`'d to ensure the package was published correctly.
-
 ## Continuous Integration
 
 `@bitgo/unspents` uses github actions for continuous integration, which is configured by the `.github/workflows/ci.yml` file in the project root. All changes to the CI process should be done by modifying the `.github/workflows/ci.yml` file.

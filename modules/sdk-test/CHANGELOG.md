@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [9.1.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-test@9.1.0...@bitgo/sdk-test@9.1.1) (2025-09-29)
+
+**Note:** Version bump only for package @bitgo/sdk-test
+
+# [9.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-test@9.0.9...@bitgo/sdk-test@9.1.0) (2025-09-25)
+
+### Features
+
+- configure learn to skip git operations ([ee3a622](https://github.com/BitGo/BitGoJS/commit/ee3a6220496476aa7f4545b5f4a9a3bf97d9bdb9))
+
 ## [9.0.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-test@9.0.8...@bitgo/sdk-test@9.0.9) (2025-09-03)
 
 **Note:** Version bump only for package @bitgo/sdk-test

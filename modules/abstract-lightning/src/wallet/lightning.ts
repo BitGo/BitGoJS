@@ -26,6 +26,7 @@ import {
   SubmitPaymentParams,
   Transaction,
   TransactionQuery,
+  ListTransactionsResponse,
   PaymentInfo,
   PaymentQuery,
   LightningOnchainWithdrawParams,
@@ -64,14 +65,6 @@ export type PayInvoiceResponse = {
    * This field is absent if approval is required before processing.
    */
   paymentStatus?: LndCreatePaymentResponse;
-
-  /**
-   * Latest transfer details for this payment request (if available).
-   * - Provides the current state of the transfer.
-   * - To track the final payment status, monitor `transfer` asynchronously.
-   * This field is absent if approval is required before processing.
-   */
-  transfer?: any;
 };
 
 /**
@@ -207,14 +200,15 @@ export interface ILightningWallet {
   getTransaction(txId: string): Promise<Transaction>;
 
   /**
-   * List transactions for a wallet with optional filtering
+   * List transactions for a wallet with optional filtering and cursor-based pagination
    * @param {TransactionQuery} params Query parameters for filtering transactions
    * @param {bigint} [params.limit] The maximum number of transactions to return
    * @param {Date} [params.startDate] The start date for the query
    * @param {Date} [params.endDate] The end date for the query
-   * @returns {Promise<Transaction[]>} List of transactions
+   * @param {string} [params.prevId] Transaction ID for cursor-based pagination (from nextBatchPrevId)
+   * @returns {Promise<ListTransactionsResponse>} List of transactions with pagination info
    */
-  listTransactions(params: TransactionQuery): Promise<Transaction[]>;
+  listTransactions(params: TransactionQuery): Promise<ListTransactionsResponse>;
 }
 
 export class LightningWallet implements ILightningWallet {
@@ -303,7 +297,7 @@ export class LightningWallet implements ILightningWallet {
       };
     }
 
-    const transfer: { id: string } = await this.wallet.bitgo
+    await this.wallet.bitgo
       .post(
         this.wallet.bitgo.url(
           '/wallet/' + this.wallet.id() + '/txrequests/' + transactionRequestCreate.txRequestId + '/transfers',
@@ -322,14 +316,6 @@ export class LightningWallet implements ILightningWallet {
     );
 
     const coinSpecific = transactionRequestSend.transactions?.[0]?.unsignedTx?.coinSpecific;
-    let updatedTransfer: any = undefined;
-    try {
-      updatedTransfer = await this.wallet.getTransfer({ id: transfer.id });
-    } catch (e) {
-      // If transfer is not found which is possible in cases where the payment has definitely failed
-      // Or even if some unknown error occurs, we will not throw an error here
-      // We still want to return the txRequestId, txRequestState and paymentStatus.
-    }
 
     return {
       txRequestId: transactionRequestCreate.txRequestId,
@@ -337,7 +323,6 @@ export class LightningWallet implements ILightningWallet {
       paymentStatus: coinSpecific
         ? t.exact(LndCreatePaymentResponse).encode(coinSpecific as LndCreatePaymentResponse)
         : undefined,
-      transfer: updatedTransfer,
     };
   }
 
@@ -431,7 +416,7 @@ export class LightningWallet implements ILightningWallet {
       };
     }
 
-    const transfer: { id: string } = await this.wallet.bitgo
+    await this.wallet.bitgo
       .post(
         this.wallet.bitgo.url(
           '/wallet/' + this.wallet.id() + '/txrequests/' + transactionRequestWithSignature.txRequestId + '/transfers',
@@ -450,19 +435,10 @@ export class LightningWallet implements ILightningWallet {
     );
 
     const coinSpecific = transactionRequestSend.transactions?.[0]?.unsignedTx?.coinSpecific;
-    let updatedTransfer: any = undefined;
-    try {
-      updatedTransfer = await this.wallet.getTransfer({ id: transfer.id });
-    } catch (e) {
-      // If transfer is not found which is possible in cases where the withdraw has definitely failed
-      // Or even if some unknown error occurs, we will not throw an error here
-      // We still want to return the txRequestId and txRequestState.
-    }
 
     return {
       txRequestId: transactionRequestWithSignature.txRequestId,
       txRequestState: transactionRequestSend.state,
-      transfer: updatedTransfer,
       withdrawStatus:
         coinSpecific && 'status' in coinSpecific
           ? t.exact(LndCreateWithdrawResponse).encode(coinSpecific as LndCreateWithdrawResponse)
@@ -498,12 +474,12 @@ export class LightningWallet implements ILightningWallet {
     });
   }
 
-  async listTransactions(params: TransactionQuery): Promise<Transaction[]> {
+  async listTransactions(params: TransactionQuery): Promise<ListTransactionsResponse> {
     const response = await this.wallet.bitgo
       .get(this.wallet.bitgo.url(`/wallet/${this.wallet.id()}/lightning/transaction`, 2))
       .query(TransactionQuery.encode(params))
       .result();
-    return decodeOrElse(t.array(Transaction).name, t.array(Transaction), response, (error) => {
+    return decodeOrElse(ListTransactionsResponse.name, ListTransactionsResponse, response, (error) => {
       throw new Error(`Invalid transaction list response: ${error}`);
     });
   }

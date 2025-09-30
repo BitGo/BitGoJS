@@ -215,6 +215,9 @@ export interface Tokens {
     baseeth: {
       tokens: EthLikeTokenConfig[];
     };
+    og: {
+      tokens: EthLikeTokenConfig[];
+    };
     flow: {
       tokens: EthLikeTokenConfig[];
     };
@@ -323,6 +326,9 @@ export interface Tokens {
       tokens: EthLikeTokenConfig[];
     };
     baseeth: {
+      tokens: EthLikeTokenConfig[];
+    };
+    og: {
       tokens: EthLikeTokenConfig[];
     };
     flow: {
@@ -710,6 +716,24 @@ const getFormattedBaseethTokens = (customCoinMap = coins) =>
   customCoinMap.reduce((acc: EthLikeTokenConfig[], coin) => {
     if (coin instanceof EthLikeERC20Token && (coin.name.includes('baseeth:') || coin.name.includes('tbaseeth:'))) {
       acc.push(getBaseethTokenConfig(coin));
+    }
+    return acc;
+  }, []);
+
+function getOgTokenConfig(coin: EthLikeERC20Token): EthLikeTokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'og' : 'tog',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+    decimalPlaces: coin.decimalPlaces,
+  };
+}
+const getFormattedOgTokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: EthLikeTokenConfig[], coin) => {
+    if (coin instanceof EthLikeERC20Token && (coin.name.includes('og:') || coin.name.includes('tog:'))) {
+      acc.push(getOgTokenConfig(coin));
     }
     return acc;
   }, []);
@@ -1228,6 +1252,9 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
       baseeth: {
         tokens: getFormattedBaseethTokens(coinMap).filter((token) => token.network === 'Mainnet'),
       },
+      og: {
+        tokens: getFormattedOgTokens(coinMap).filter((token) => token.network === 'Mainnet'),
+      },
       flow: {
         tokens: getFormattedFlowTokens(coinMap).filter((token) => token.network === 'Mainnet'),
       },
@@ -1343,6 +1370,9 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
       },
       baseeth: {
         tokens: getFormattedBaseethTokens(coinMap).filter((token) => token.network === 'Testnet'),
+      },
+      og: {
+        tokens: getFormattedOgTokens(coinMap).filter((token) => token.network === 'Testnet'),
       },
       flow: {
         tokens: getFormattedFlowTokens(coinMap).filter((token) => token.network === 'Testnet'),

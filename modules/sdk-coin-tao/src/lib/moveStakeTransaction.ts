@@ -1,5 +1,5 @@
 import { Interface as SubstrateInterface, Transaction as SubstrateTransaction } from '@bitgo/abstract-substrate';
-import { InvalidTransactionError, TransactionRecipient } from '@bitgo/sdk-core';
+import { InvalidTransactionError } from '@bitgo/sdk-core';
 import { decode } from '@substrate/txwrapper-polkadot';
 import { MoveStakeTxData } from './iface';
 import utils from './utils';
@@ -42,33 +42,24 @@ export class MoveStakeTransaction extends SubstrateTransaction {
     this._inputs.push({
       address: txMethod.originHotkey,
       value: txMethod.alphaAmount,
-      coin: utils.getTaoTokenBySubnetId(txMethod.originNetuid).name,
     });
 
     this._outputs.push({
       address: txMethod.destinationHotkey,
       value: txMethod.alphaAmount,
-      coin: utils.getTaoTokenBySubnetId(txMethod.destinationNetuid).name,
     });
   }
 
   /** @inheritdoc */
   explainTransaction(): SubstrateInterface.TransactionExplanation {
-    const result = this.toJson();
-    const outputs: TransactionRecipient[] = this._outputs.map((output) => {
-      return {
-        address: output.address,
-        amount: output.value,
-        tokenName: output.coin,
-      };
-    });
+    const result = this.toJson() as MoveStakeTxData;
 
     const explanationResult: SubstrateInterface.TransactionExplanation = {
       id: result.id,
-      outputAmount: result.amount?.toString() || '0',
+      outputAmount: result.alphaAmount?.toString() || '0',
       changeAmount: '0',
       changeOutputs: [],
-      outputs,
+      outputs: [],
       fee: {
         fee: result.tip?.toString() || '',
         type: 'tip',

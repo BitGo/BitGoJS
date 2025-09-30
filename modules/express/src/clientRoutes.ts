@@ -117,7 +117,7 @@ function handleVerifyAddress(req: ExpressApiRouteRequest<'express.verifyaddress'
  * @deprecated
  * @param req
  */
-function handleCreateLocalKeyChain(req: express.Request) {
+function handleCreateLocalKeyChain(req: ExpressApiRouteRequest<'express.v1.keychain.local', 'post'>) {
   return req.bitgo.keychains().create(req.body);
 }
 
@@ -257,7 +257,7 @@ function handleApproveTransaction(req: ExpressApiRouteRequest<'express.v1.pendin
  * @deprecated
  * @param req
  */
-function handleConstructApprovalTx(req: express.Request) {
+function handleConstructApprovalTx(req: ExpressApiRouteRequest<'express.v1.pendingapproval.constructTx', 'put'>) {
   const params = req.body || {};
   return req.bitgo
     .pendingApprovals()
@@ -271,7 +271,7 @@ function handleConstructApprovalTx(req: express.Request) {
  * @deprecated
  * @param req
  */
-function handleConsolidateUnspents(req: express.Request) {
+function handleConsolidateUnspents(req: ExpressApiRouteRequest<'express.v1.wallet.consolidateunspents', 'put'>) {
   return req.bitgo
     .wallets()
     .get({ id: req.params.id })
@@ -1560,12 +1560,16 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   router.post('express.encrypt', [prepareBitGo(config), typedPromiseWrapper(handleEncrypt)]);
   router.post('express.verifyaddress', [prepareBitGo(config), typedPromiseWrapper(handleVerifyAddress)]);
   router.post('express.lightning.initWallet', [prepareBitGo(config), typedPromiseWrapper(handleInitLightningWallet)]);
+  router.post('express.lightning.unlockWallet', [
+    prepareBitGo(config),
+    typedPromiseWrapper(handleUnlockLightningWallet),
+  ]);
   router.post('express.calculateminerfeeinfo', [
     prepareBitGo(config),
     typedPromiseWrapper(handleCalculateMinerFeeInfo),
   ]);
 
-  app.post('/api/v1/keychain/local', parseBody, prepareBitGo(config), promiseWrapper(handleCreateLocalKeyChain));
+  router.post('express.v1.keychain.local', [prepareBitGo(config), typedPromiseWrapper(handleCreateLocalKeyChain)]);
   router.post('express.v1.keychain.derive', [prepareBitGo(config), typedPromiseWrapper(handleDeriveLocalKeyChain)]);
   router.post('express.v1.wallet.simplecreate', [
     prepareBitGo(config),
@@ -1582,25 +1586,23 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   );
 
   router.post('express.v1.wallet.signTransaction', [prepareBitGo(config), typedPromiseWrapper(handleSignTransaction)]);
+  router.get('express.lightning.getState', [prepareBitGo(config), typedPromiseWrapper(handleGetLightningWalletState)]);
 
   app.post('/api/v1/wallet/:id/simpleshare', parseBody, prepareBitGo(config), promiseWrapper(handleShareWallet));
   router.post('express.v1.wallet.acceptShare', [prepareBitGo(config), typedPromiseWrapper(handleAcceptShare)]);
 
   router.put('express.v1.pendingapprovals', [prepareBitGo(config), typedPromiseWrapper(handleApproveTransaction)]);
 
-  app.put(
-    '/api/v1/pendingapprovals/:id/constructTx',
-    parseBody,
+  router.put('express.v1.pendingapproval.constructTx', [
     prepareBitGo(config),
-    promiseWrapper(handleConstructApprovalTx)
-  );
+    typedPromiseWrapper(handleConstructApprovalTx),
+  ]);
 
-  app.put(
-    '/api/v1/wallet/:id/consolidateunspents',
-    parseBody,
+  router.put('express.v1.wallet.consolidateunspents', [
     prepareBitGo(config),
-    promiseWrapper(handleConsolidateUnspents)
-  );
+    typedPromiseWrapper(handleConsolidateUnspents),
+  ]);
+
   app.put('/api/v1/wallet/:id/fanoutunspents', parseBody, prepareBitGo(config), promiseWrapper(handleFanOutUnspents));
 
   // any other API call
@@ -1783,11 +1785,4 @@ export function setupLightningSignerNodeRoutes(app: express.Application, config:
     prepareBitGo(config),
     promiseWrapper(handleCreateSignerMacaroon)
   );
-  app.post(
-    '/api/v2/:coin/wallet/:id/unlockwallet',
-    parseBody,
-    prepareBitGo(config),
-    promiseWrapper(handleUnlockLightningWallet)
-  );
-  app.get('/api/v2/:coin/wallet/:id/state', prepareBitGo(config), promiseWrapper(handleGetLightningWalletState));
 }

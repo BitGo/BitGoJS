@@ -1,6 +1,7 @@
 import should from 'should';
 import * as testData from '../resources/sol';
 import { solInstructionFactory } from '../../src/lib/solInstructionFactory';
+import { getToken2022Config } from '../../src/lib/token2022Config';
 import { InstructionBuilderTypes, MEMO_PROGRAM_PK } from '../../src/lib/constants';
 import { InstructionParams } from '../../src/lib/iface';
 import { PublicKey, SystemProgram, TransactionInstruction } from '@solana/web3.js';
@@ -147,6 +148,66 @@ describe('Instruction Builder Tests: ', function () {
           9
         ),
       ]);
+    });
+
+    it('Token Transfer - Token-2022 with transfer hook config', () => {
+      const tokenConfig = getToken2022Config('4MmJVdwYN8LwvbGeCowYjSx7KoEi6BJWg8XXnW4fDDp6');
+      should.exist(tokenConfig);
+      should.exist(tokenConfig?.transferHook);
+      const transferHook = tokenConfig!.transferHook!;
+
+      const fromAddress = testData.authAccount.pub;
+      const toAddress = testData.nonceAccount.pub;
+      const sourceAddress = testData.associatedTokenAccounts.accounts[0].ata;
+      const amount = '500000';
+
+      const transferParams: InstructionParams = {
+        type: InstructionBuilderTypes.TokenTransfer,
+        params: {
+          fromAddress,
+          toAddress,
+          amount,
+          tokenName: tokenConfig!.symbol,
+          sourceAddress,
+          tokenAddress: tokenConfig!.mintAddress,
+          decimalPlaces: tokenConfig!.decimals,
+          programId: tokenConfig!.programId,
+        },
+      };
+
+      const result = solInstructionFactory(transferParams);
+      result.should.have.length(1);
+
+      const builtInstruction = result[0];
+      builtInstruction.programId.equals(TOKEN_2022_PROGRAM_ID).should.be.true();
+
+      const baseInstruction = createTransferCheckedInstruction(
+        new PublicKey(sourceAddress),
+        new PublicKey(tokenConfig!.mintAddress),
+        new PublicKey(toAddress),
+        new PublicKey(fromAddress),
+        BigInt(amount),
+        tokenConfig!.decimals,
+        [],
+        TOKEN_2022_PROGRAM_ID
+      );
+
+      const baseKeyCount = baseInstruction.keys.length;
+      builtInstruction.keys.slice(0, baseKeyCount).should.deepEqual(baseInstruction.keys);
+
+      const extraKeys = builtInstruction.keys.slice(baseKeyCount);
+      const expectedExtraKeys = [
+        ...transferHook.extraAccountMetas.map((meta) => ({
+          pubkey: new PublicKey(meta.pubkey),
+          isSigner: meta.isSigner,
+          isWritable: meta.isWritable,
+        })),
+      ];
+      extraKeys.should.deepEqual(expectedExtraKeys);
+
+      for (const expectedMeta of expectedExtraKeys) {
+        builtInstruction.keys.filter((meta) => meta.pubkey.equals(expectedMeta.pubkey)).should.have.length(1);
+      }
     });
 
     it('Mint To - Standard SPL Token', () => {

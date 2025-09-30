@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.12.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tao@1.12.0...@bitgo/sdk-coin-tao@1.12.1) (2025-09-29)
+
+### Bug Fixes
+
+- remove Validation of coin/subnet while building move stake transaction ([1599ec5](https://github.com/BitGo/BitGoJS/commit/1599ec5e8cfc4b5bf99f31fa233a40eb270548b5))
+
+# [1.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tao@1.11.4...@bitgo/sdk-coin-tao@1.12.0) (2025-09-25)
+
+### Bug Fixes
+
+- resolve type annotation error in TransactionBuilderFactory ([4a91875](https://github.com/BitGo/BitGoJS/commit/4a918756c18512a57e81dc55d8a58f250ee638b5))
+
+### Features
+
+- configure learn to skip git operations ([ee3a622](https://github.com/BitGo/BitGoJS/commit/ee3a6220496476aa7f4545b5f4a9a3bf97d9bdb9))
+- **sdk-coin-tao:** add moveStakeBuilder ([03a7b36](https://github.com/BitGo/BitGoJS/commit/03a7b368414b61ccfc45f0df5e56378fcd32168c))
+- **sdk-coin-tao:** correct validation stages order in move stake builder ([3fe6828](https://github.com/BitGo/BitGoJS/commit/3fe68289149d969f42c0063516553ac482b4885b))
+
 ## [1.11.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tao@1.11.3...@bitgo/sdk-coin-tao@1.11.4) (2025-09-03)
 
 ### Bug Fixes
