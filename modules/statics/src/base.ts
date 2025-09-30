@@ -2769,6 +2769,9 @@ export enum UnderlyingAsset {
   // BaseETH testnet tokens
   'tbaseeth:usdc' = 'tbaseeth:usdc',
 
+  // Og mainnet tokens
+  'og:wog' = 'og:wog',
+
   // Seievm mainnet tokens
   'seievm:usdc' = 'seievm:usdc',
   'seievm:weth' = 'seievm:weth',
