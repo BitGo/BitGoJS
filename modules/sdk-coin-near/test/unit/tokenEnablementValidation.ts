@@ -1,12 +1,11 @@
 import 'should';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { VerifyTransactionOptions, common } from '@bitgo/sdk-core';
+import { VerifyTransactionOptions, common, Wallet } from '@bitgo/sdk-core';
 import { TransactionPrebuild, Near } from '../../src/near';
 import { TNear as TNearCoin } from '../../src/tnear';
 import * as testData from '../resources/near';
 import nock from 'nock';
-import assert from 'assert';
 
 /**
  * Test suite for NEAR token enablement validation
@@ -18,11 +17,25 @@ import assert from 'assert';
 describe('NEAR Token Enablement Validation', function () {
   let bitgo: TestBitGoAPI;
   let basecoin: Near;
+  let wallet: Wallet;
 
   before(function () {
     bitgo = TestBitGo.decorate(BitGoAPI, { env: 'test' });
+    bitgo.initializeTestVars();
     bitgo.safeRegister('tnear', TNearCoin.createInstance);
     basecoin = bitgo.coin('tnear') as Near;
+
+    // Create a test wallet for sendTokenEnablements testing
+    const walletData = {
+      id: '5b34252f1bf34993006eae96',
+      coin: 'tnear',
+      type: 'hot', // Set wallet type to hot so it goes through prebuildAndSignTransaction
+      keys: ['5b3424f91bf34993006eae94', '5b3424f91bf34993006eae95', '5b3424f91bf34993006eae96'],
+      coinSpecific: {
+        baseAddress: testData.accounts.account1.address,
+      },
+    };
+    wallet = new Wallet(bitgo, basecoin, walletData);
   });
 
   /**
@@ -399,26 +412,31 @@ describe('NEAR Token Enablement Validation', function () {
    * and prevents the user from being tricked into signing malicious transactions.
    *
    * The test simulates the flow where:
-   * 1. Wallet platform calls the API to build a token enablement transaction
-   * 2. A malicious actor intercepts and returns a spoofed transaction hex
-   * 3. The verification logic should detect the spoofed hex and throw an error
+   * 1. Wallet platform calls sendTokenEnablements
+   * 2. A malicious actor intercepts the API response and returns a spoofed transaction hex
+   * 3. sendTokenEnablements calls verifyTransaction during signing
+   * 4. verifyTransaction detects the spoofed hex and throws an error
    */
-  it('should fail when wallet platform sends spoofed transaction hex for token enablement', async function () {
-    // Create a valid transaction response structure from wallet platform with spoofed txHex
-    // The txHex looks like valid hex but contains malicious/invalid transaction data
-    const spoofedTxHex = '0a0c0a080800100018a8fb0410130a0c0a080800100018d5d0041014'; // Valid hex but invalid transaction
+  it('should fail when sendTokenEnablements receives spoofed transaction hex', async function () {
+    // Create a spoofed transaction hex that will fail NEAR transaction parsing
+    // This hex is completely invalid and will cause deserialization to fail
+    const spoofedTxHex = 'deadbeefcafebabe1234567890abcdef'; // Invalid transaction data that will fail parsing
 
-    const bgUrl = common.Environments['mock'].uri;
+    const bgUrl = common.Environments['test'].uri;
 
-    nock(bgUrl)
-      .post('/api/v2/tnear/key/5b3424f91bf34993006eae94')
-      .reply(200, [
-        {
-          encryptedPrv: 'fakePrv',
-        },
-      ]);
+    // Mock the key retrieval API call
+    // Create an encrypted private key that can be decrypted with the test passphrase
+    const encryptedPrv = bitgo.encrypt({
+      input: testData.accounts.account1.secretKey,
+      password: 'test',
+    });
+
+    nock(bgUrl).get('/api/v2/tnear/key/5b3424f91bf34993006eae94').reply(200, {
+      encryptedPrv: encryptedPrv,
+    });
 
     // Mock the prebuild API response to return spoofed txHex
+    // This simulates a malicious actor intercepting the API response
     nock(bgUrl)
       .post('/api/v2/tnear/wallet/5b34252f1bf34993006eae96/tx/build')
       .reply(200, {
@@ -426,11 +444,13 @@ describe('NEAR Token Enablement Validation', function () {
         txid: '586c5b59b10b134d04c16ac1b273fe3c5529f34aef75db4456cd469c5cdac7e2',
         recipients: [
           {
-            address: 'test.near',
+            address: testData.accounts.account1.address,
             amount: '0',
+            tokenName: 'tnear:tnep24dp',
           },
         ],
         coin: 'tnear',
+        type: 'enabletoken',
         feeInfo: {
           size: 1000,
           fee: 1160407,
@@ -438,26 +458,19 @@ describe('NEAR Token Enablement Validation', function () {
         },
       });
 
-    // This should fail because the spoofed transaction hex contains invalid transaction data
-    await assert.rejects(
-      async () => {
-        const txParams = createValidTxParams();
+    // Call sendTokenEnablements which should detect the spoofed transaction and fail
+    const result = await wallet.sendTokenEnablements({
+      enableTokens: [
+        {
+          name: 'tnear:tnep24dp',
+        },
+      ],
+      walletPassphrase: 'test', // Required for hot wallet signing
+    });
 
-        // Create transaction prebuild with spoofed hex
-        const txPrebuild = createTxPrebuild(spoofedTxHex);
-
-        const verifyOptions: VerifyTransactionOptions = {
-          txParams, // What the user thinks they're signing
-          txPrebuild, // The spoofed transaction hex from malicious actor
-          wallet: { id: 'test-wallet' } as any,
-        };
-
-        await basecoin.verifyTransaction(verifyOptions);
-      },
-      (error: any) => {
-        // The error should indicate that the transaction is invalid
-        return error.message.includes('unable to build transaction from raw');
-      }
-    );
+    // The result should contain failures due to the spoofed transaction hex
+    result.success.should.have.length(0);
+    result.failure.should.have.length(1);
+    result.failure[0].message.should.containEql('unable to build transaction from raw');
   });
 });
