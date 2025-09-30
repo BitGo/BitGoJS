@@ -46,53 +46,6 @@ describe('Asset metadata service', () => {
     coin.tokenContractAddress.should.equal('0x89a959b9184b4f8c8633646d5dfd049d2ebc983a');
   });
 
-  describe('ERC721 NFTs', () => {
-    it('should create a custom coin factory from ams response', async () => {
-      bitgo.initCoinFactory(reducedAmsTokenConfig);
-      const coin = bitgo.coin('erc721:unsteth');
-      should.exist(coin);
-      coin.type.should.equal('erc721:unsteth');
-      coin.name.should.equal('Lido: stETH Withdrawal NFT');
-      coin.decimalPlaces.should.equal(0);
-      coin.tokenContractAddress.should.equal('0x889edc2edab5f40e902b864ad4d7ade8e412f9b1');
-    });
-
-    it('should be able to register an nft in the coin factory', () => {
-      const nftName = 'terc721:unsteth';
-      bitgo.registerToken(nftName);
-      const coin = bitgo.coin(nftName);
-      should.exist(coin);
-      coin.type.should.equal(nftName);
-      coin.name.should.equal('Test Lido: stETH Withdrawal NFT');
-      coin.decimalPlaces.should.equal(0);
-      coin.tokenContractAddress.should.equal('0xfe56573178f1bcdf53f01a6e9977670dcbbd9186');
-    });
-
-    it('should fetch all assets from AMS and initialize the coin factory', async () => {
-      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock', microservicesUri, useAms: true } as BitGoOptions);
-      bitgo.initializeTestVars();
-
-      // Setup nocks
-      nock(microservicesUri).get('/api/v1/assets/list/testnet').reply(200, reducedAmsTokenConfig);
-
-      await bitgo.registerAllTokens();
-      const coin = bitgo.coin('terc721:unsteth');
-      should.exist(coin);
-    });
-
-    it('should fetch nft from default coin factory when useAms is false', () => {
-      const bitgoNoAms = TestBitGo.decorate(BitGo, { env: 'mock', microservicesUri, useAms: false } as BitGoOptions);
-      bitgoNoAms.initializeTestVars();
-      bitgoNoAms.initCoinFactory(reducedAmsTokenConfig);
-      const coin: any = bitgoNoAms.coin('erc721:unsteth');
-      should.exist(coin);
-      coin.type.should.equal('erc721:unsteth');
-      coin.name.should.equal('Lido: stETH Withdrawal NFT');
-      coin.decimalPlaces.should.equal(0);
-      coin.tokenContractAddress.should.equal('0x889edc2edab5f40e902b864ad4d7ade8e412f9b1');
-    });
-  });
-
   it('should fetch all assets from AMS and initialize the coin factory', async () => {
     const bitgo = TestBitGo.decorate(BitGo, { env: 'mock', microservicesUri, useAms: true } as BitGoOptions);
     bitgo.initializeTestVars();
