@@ -10,6 +10,7 @@ export class KeyPair extends Ed25519KeyPair {
   constructor(source?: KeyPairOptions) {
     super(source);
   }
+
   /** @inheritdoc */
   getKeys(): DefaultKeys {
     const result: DefaultKeys = { pub: this.keyPair.pub };
