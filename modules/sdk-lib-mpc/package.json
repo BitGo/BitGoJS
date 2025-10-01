@@ -67,5 +67,8 @@
     "@silencelaboratories/dkls-wasm-ll-bundler": {
       "optional": true
     }
-  }
+  },
+  "files": [
+    "dist"
+  ]
 }

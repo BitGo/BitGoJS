@@ -54,5 +54,8 @@
   "devDependencies": {
     "@bitgo/sdk-api": "^1.69.2",
     "@bitgo/sdk-test": "^9.1.2"
-  }
+  },
+  "files": [
+    "dist"
+  ]
 }
