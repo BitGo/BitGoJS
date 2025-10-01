@@ -6,6 +6,7 @@ import { VetTransactionData } from '../iface';
 import { BURN_NFT_METHOD_ID } from '../constants';
 import EthereumAbi from 'ethereumjs-abi';
 import { addHexPrefix } from 'ethereumjs-util';
+import utils from '../utils';
 
 export class BurnNftTransaction extends Transaction {
   private _tokenId: string;
@@ -37,6 +38,8 @@ export class BurnNftTransaction extends Transaction {
       throw new InvalidTransactionError('Missing required burn NFT parameters');
     }
 
+    utils.validateStakingContractAddress(this._contract, this._coinConfig);
+
     this._clauses = [
       {
         to: this._contract,
@@ -53,7 +56,7 @@ export class BurnNftTransaction extends Transaction {
    * @returns {string} The encoded transaction data as a hex string
    */
   private getBurnNftData(): string {
-    const methodName = 'burn';
+    const methodName = 'unstake';
     const types = ['uint256'];
     const params = [this._tokenId];
 
@@ -110,9 +113,7 @@ export class BurnNftTransaction extends Transaction {
 
       // Extract tokenId from transaction data
       if (this.transactionData.startsWith(BURN_NFT_METHOD_ID)) {
-        const tokenIdHex = this.transactionData.slice(BURN_NFT_METHOD_ID.length);
-        // Convert hex to decimal
-        this.tokenId = parseInt(tokenIdHex, 16).toString();
+        this.tokenId = utils.decodeBurnNftData(this.transactionData);
       }
 
       // Set sender address

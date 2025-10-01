@@ -7,11 +7,7 @@ import { TransactionBuilder } from './transactionBuilder';
 import { ClaimRewardsTransaction } from '../transaction/claimRewards';
 import { Transaction } from '../transaction/transaction';
 import { ClaimRewardsData } from '../types';
-import {
-  CLAIM_BASE_REWARDS_METHOD_ID,
-  CLAIM_STAKING_REWARDS_METHOD_ID,
-  STARGATE_DELEGATION_ADDRESS,
-} from '../constants';
+import { CLAIM_BASE_REWARDS_METHOD_ID, CLAIM_STAKING_REWARDS_METHOD_ID } from '../constants';
 import utils from '../utils';
 
 export class ClaimRewardsBuilder extends TransactionBuilder {
@@ -75,11 +71,13 @@ export class ClaimRewardsBuilder extends TransactionBuilder {
           return false;
         }
 
-        // Check if the clause is for claim rewards operations
-        if (clause.to.toLowerCase() === STARGATE_DELEGATION_ADDRESS.toLowerCase() && clause.data) {
+        const isDelegationContract = utils.isDelegationContractAddress(clause.to);
+        const isNftContract = utils.isNftContractAddress(clause.to);
+
+        if (clause.data && (isDelegationContract || isNftContract)) {
           if (
-            clause.data.startsWith(CLAIM_BASE_REWARDS_METHOD_ID) ||
-            clause.data.startsWith(CLAIM_STAKING_REWARDS_METHOD_ID)
+            (clause.data.startsWith(CLAIM_BASE_REWARDS_METHOD_ID) && isNftContract) ||
+            (clause.data.startsWith(CLAIM_STAKING_REWARDS_METHOD_ID) && isDelegationContract)
           ) {
             hasValidClaimClause = true;
           }
@@ -114,20 +112,13 @@ export class ClaimRewardsBuilder extends TransactionBuilder {
       throw new Error('Claim rewards data is required');
     }
 
-    if (!data.validatorAddress) {
-      throw new Error('Validator address is required');
+    if (!data.tokenId) {
+      throw new Error('Token ID is required');
     }
 
-    if (!data.delegatorAddress) {
-      throw new Error('Delegator address is required');
-    }
-
-    if (!utils.isValidAddress(data.validatorAddress)) {
-      throw new Error('Invalid validator address format');
-    }
-
-    if (!utils.isValidAddress(data.delegatorAddress)) {
-      throw new Error('Invalid delegator address format');
+    // Validate tokenId is a valid number string
+    if (!/^\d+$/.test(data.tokenId)) {
+      throw new Error('Token ID must be a valid number string');
     }
 
     if (data.claimBaseRewards !== undefined && typeof data.claimBaseRewards !== 'boolean') {
@@ -155,11 +146,12 @@ export class ClaimRewardsBuilder extends TransactionBuilder {
 
     const claimData = transaction.claimRewardsData;
     assert(claimData, 'Claim rewards data is required');
-    assert(claimData.validatorAddress, 'Validator address is required');
-    assert(claimData.delegatorAddress, 'Delegator address is required');
+    assert(claimData.tokenId, 'Token ID is required');
 
-    this.validateAddress({ address: claimData.validatorAddress });
-    this.validateAddress({ address: claimData.delegatorAddress });
+    // Validate tokenId is a valid number string
+    if (!/^\d+$/.test(claimData.tokenId)) {
+      throw new Error('Token ID must be a valid number string');
+    }
   }
 
   /** @inheritdoc */

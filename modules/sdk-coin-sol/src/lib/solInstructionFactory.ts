@@ -10,6 +10,7 @@ import {
   createApproveInstruction,
 } from '@solana/spl-token';
 import {
+  AccountMeta,
   Authorized,
   Lockup,
   PublicKey,
@@ -45,6 +46,7 @@ import {
 } from './iface';
 import { getSolTokenFromTokenName, isValidBase64, isValidHex } from './utils';
 import { depositSolInstructions, withdrawStakeInstructions } from './jitoStakePoolOperations';
+import { getToken2022Config, TransferHookConfig } from './token2022Config';
 
 /**
  * Construct Solana instructions from instructions params
@@ -193,7 +195,10 @@ function tokenTransferInstruction(data: TokenTransfer): TransactionInstruction[]
   }
 
   let transferInstruction: TransactionInstruction;
+  const instructions: TransactionInstruction[] = [];
+
   if (programId === TOKEN_2022_PROGRAM_ID.toString()) {
+    // Create the base transfer instruction
     transferInstruction = createTransferCheckedInstruction(
       new PublicKey(sourceAddress),
       new PublicKey(tokenAddress),
@@ -204,6 +209,11 @@ function tokenTransferInstruction(data: TokenTransfer): TransactionInstruction[]
       [],
       TOKEN_2022_PROGRAM_ID
     );
+    // Check if this token has a transfer hook configuration
+    const tokenConfig = getToken2022Config(tokenAddress);
+    if (tokenConfig?.transferHook) {
+      addTransferHookAccounts(transferInstruction, tokenConfig.transferHook);
+    }
   } else {
     transferInstruction = createTransferCheckedInstruction(
       new PublicKey(sourceAddress),
@@ -214,7 +224,8 @@ function tokenTransferInstruction(data: TokenTransfer): TransactionInstruction[]
       decimalPlaces
     );
   }
-  return [transferInstruction];
+  instructions.push(transferInstruction);
+  return instructions;
 }
 
 /**
@@ -685,4 +696,35 @@ function customInstruction(data: InstructionParams): TransactionInstruction[] {
   });
 
   return [convertedInstruction];
+}
+
+function upsertAccountMeta(keys: AccountMeta[], meta: AccountMeta): void {
+  const existing = keys.find((account) => account.pubkey.equals(meta.pubkey));
+  if (existing) {
+    existing.isWritable = existing.isWritable || meta.isWritable;
+    existing.isSigner = existing.isSigner || meta.isSigner;
+  } else {
+    keys.push(meta);
+  }
+}
+
+function buildStaticTransferHookAccounts(transferHook: TransferHookConfig): AccountMeta[] {
+  const metas: AccountMeta[] = [];
+  if (transferHook.extraAccountMetas?.length) {
+    for (const meta of transferHook.extraAccountMetas) {
+      metas.push({
+        pubkey: new PublicKey(meta.pubkey),
+        isSigner: meta.isSigner,
+        isWritable: meta.isWritable,
+      });
+    }
+  }
+  return metas;
+}
+
+function addTransferHookAccounts(instruction: TransactionInstruction, transferHook: TransferHookConfig): void {
+  const extraMetas = buildStaticTransferHookAccounts(transferHook);
+  for (const meta of extraMetas) {
+    upsertAccountMeta(instruction.keys, meta);
+  }
 }

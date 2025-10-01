@@ -14,12 +14,16 @@ import { PostSimpleCreate } from './v1/simpleCreate';
 import { PutPendingApproval } from './v1/pendingApproval';
 import { PostSignTransaction } from './v1/signTransaction';
 import { PostKeychainLocal } from './v2/keychainLocal';
+import { GetLightningState } from './v2/lightningState';
 import { PostKeychainChangePassword } from './v2/keychainChangePassword';
 import { PostLightningInitWallet } from './v2/lightningInitWallet';
 import { PostUnlockLightningWallet } from './v2/unlockWallet';
 import { PostVerifyCoinAddress } from './v2/verifyAddress';
 import { PostDeriveLocalKeyChain } from './v1/deriveLocalKeyChain';
 import { PostCreateLocalKeyChain } from './v1/createLocalKeyChain';
+import { PutConstructPendingApprovalTx } from './v1/constructPendingApprovalTx';
+import { PutConsolidateUnspents } from './v1/consolidateUnspents';
+import { PutFanoutUnspents } from './v1/fanoutUnspents';
 
 export const ExpressApi = apiSpec({
   'express.ping': {
@@ -55,6 +59,9 @@ export const ExpressApi = apiSpec({
   'express.keychain.local': {
     post: PostKeychainLocal,
   },
+  'express.lightning.getState': {
+    get: GetLightningState,
+  },
   'express.keychain.changePassword': {
     post: PostKeychainChangePassword,
   },
@@ -75,6 +82,15 @@ export const ExpressApi = apiSpec({
   },
   'express.v1.keychain.local': {
     post: PostCreateLocalKeyChain,
+  },
+  'express.v1.pendingapproval.constructTx': {
+    put: PutConstructPendingApprovalTx,
+  },
+  'express.v1.wallet.consolidateunspents': {
+    put: PutConsolidateUnspents,
+  },
+  'express.v1.wallet.fanoutunspents': {
+    put: PutFanoutUnspents,
   },
 });
 

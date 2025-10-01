@@ -9,9 +9,9 @@ export interface VetParseTransactionOptions extends ParseTransactionOptions {
 }
 
 export interface ClaimRewardsData {
-  validatorAddress: string;
-  delegatorAddress: string;
+  tokenId: string;
   delegationContractAddress?: string;
+  stargateNftAddress?: string;
   claimBaseRewards?: boolean;
   claimStakingRewards?: boolean;
 }

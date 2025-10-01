@@ -3,6 +3,7 @@ import * as _ from 'lodash';
 import nock = require('nock');
 import fixtures from '../../fixtures/staking/stakingWallet';
 import * as opethFixtures from '../../fixtures/staking/topethStakingFixtures';
+import * as avaxpStakingFixtures from '../../fixtures/staking/tavaxpStakingFixtures';
 
 import {
   Enterprise,
@@ -27,15 +28,18 @@ describe('non-TSS Staking Wallet', function () {
   let maticBaseCoin;
   let btcBaseCoin;
   let topethWctBaseCoin;
+  let tavaxpBaseCoin;
   let enterprise;
   let ethWalletData: any;
   let btcWalletData: any;
   let topethWctStakingWalletData: WalletData;
+  let tavaxpStakingWalletData: WalletData;
   let btcDescriptorWalletData: any;
   let ethStakingWallet: StakingWallet;
   let maticStakingWallet: StakingWallet;
   let btcStakingWallet: StakingWallet;
   let topethWctStakingWallet: StakingWallet;
+  let tavaxpStakingWallet: StakingWallet;
 
   before(function () {
     bitgo = TestBitGo.decorate(BitGo, { env: 'mock', microservicesUri } as any);
@@ -47,6 +51,7 @@ describe('non-TSS Staking Wallet', function () {
     btcBaseCoin = bitgo.coin('btc');
     btcBaseCoin.keychains();
     topethWctBaseCoin = bitgo.coin('topeth:wct');
+    tavaxpBaseCoin = bitgo.coin('tavaxp');
 
     enterprise = new Enterprise(bitgo, ethBaseCoin, {
       id: '5cf940949449412d00f53b3d92dbcaa3',
@@ -98,10 +103,29 @@ describe('non-TSS Staking Wallet', function () {
       enterprise: enterprise.id,
     };
 
+    tavaxpStakingWalletData = {
+      approvalsRequired: 0,
+      balance: 0,
+      balanceString: '',
+      coinSpecific: {} as WalletCoinSpecific,
+      confirmedBalance: 0,
+      confirmedBalanceString: '',
+      keys: [],
+      label: '',
+      multisigType: 'onchain',
+      pendingApprovals: [],
+      spendableBalance: 0,
+      spendableBalanceString: '',
+      id: 'tavaxpStakingWalletId',
+      coin: 'tavaxp',
+      enterprise: enterprise.id,
+    };
+
     const ethWallet = new Wallet(bitgo, ethBaseCoin, ethWalletData);
     const maticWallet = new Wallet(bitgo, maticBaseCoin, maticWalletData);
     const btcWallet = new Wallet(bitgo, btcBaseCoin, btcWalletData);
     topethWctStakingWallet = new Wallet(bitgo, topethWctBaseCoin, topethWctStakingWalletData).toStakingWallet();
+    tavaxpStakingWallet = new Wallet(bitgo, tavaxpBaseCoin, tavaxpStakingWalletData).toStakingWallet();
 
     ethStakingWallet = ethWallet.toStakingWallet();
     maticStakingWallet = maticWallet.toStakingWallet();
@@ -432,6 +456,36 @@ describe('non-TSS Staking Wallet', function () {
       await topethWctStakingWallet
         .buildAndSign({ walletPassphrase: 'passphrase' }, stakingTransaction)
         .should.be.rejectedWith(expectedErrorMessage);
+    });
+  });
+
+  describe('TAVAXP Staking', function () {
+    it('should build and validate transaction', async function () {
+      const unsignedTransaction: PrebuildTransactionResult = {
+        walletId: tavaxpStakingWallet.walletId,
+        ...avaxpStakingFixtures.unsignedStakingTransaction,
+      } as PrebuildTransactionResult;
+      const stakingTransaction: StakingTransaction = avaxpStakingFixtures.updatedStakingRequest;
+
+      nock(microservicesUri)
+        .get(
+          `/api/staking/v1/${tavaxpStakingWallet.coin}/wallets/${tavaxpStakingWallet.walletId}/requests/${stakingTransaction.stakingRequestId}/transactions/${stakingTransaction.id}`
+        )
+        .query({ expandBuildParams: true })
+        .reply(200, stakingTransaction);
+
+      nock(microservicesUri)
+        .get(`/api/v2/tavaxp/wallet/${tavaxpStakingWallet.walletId}`)
+        .reply(200, tavaxpStakingWalletData);
+
+      nock(microservicesUri)
+        .post(`/api/v2/tavaxp/wallet/${tavaxpStakingWallet.walletId}/tx/build`)
+        .reply(200, unsignedTransaction);
+
+      // tx validation happens before signing, so we can skip it
+      sinon.stub(tavaxpStakingWallet, 'sign').resolves();
+
+      await tavaxpStakingWallet.buildAndSign({ walletPassphrase: 'passphrase' }, stakingTransaction);
     });
   });
 });

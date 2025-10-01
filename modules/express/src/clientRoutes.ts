@@ -257,7 +257,7 @@ function handleApproveTransaction(req: ExpressApiRouteRequest<'express.v1.pendin
  * @deprecated
  * @param req
  */
-function handleConstructApprovalTx(req: express.Request) {
+function handleConstructApprovalTx(req: ExpressApiRouteRequest<'express.v1.pendingapproval.constructTx', 'put'>) {
   const params = req.body || {};
   return req.bitgo
     .pendingApprovals()
@@ -271,7 +271,7 @@ function handleConstructApprovalTx(req: express.Request) {
  * @deprecated
  * @param req
  */
-function handleConsolidateUnspents(req: express.Request) {
+function handleConsolidateUnspents(req: ExpressApiRouteRequest<'express.v1.wallet.consolidateunspents', 'put'>) {
   return req.bitgo
     .wallets()
     .get({ id: req.params.id })
@@ -284,7 +284,7 @@ function handleConsolidateUnspents(req: express.Request) {
  * @deprecated
  * @param req
  */
-function handleFanOutUnspents(req: express.Request) {
+function handleFanOutUnspents(req: ExpressApiRouteRequest<'express.v1.wallet.fanoutunspents', 'put'>) {
   return req.bitgo
     .wallets()
     .get({ id: req.params.id })
@@ -1582,26 +1582,24 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   );
 
   router.post('express.v1.wallet.signTransaction', [prepareBitGo(config), typedPromiseWrapper(handleSignTransaction)]);
+  router.get('express.lightning.getState', [prepareBitGo(config), typedPromiseWrapper(handleGetLightningWalletState)]);
 
   app.post('/api/v1/wallet/:id/simpleshare', parseBody, prepareBitGo(config), promiseWrapper(handleShareWallet));
   router.post('express.v1.wallet.acceptShare', [prepareBitGo(config), typedPromiseWrapper(handleAcceptShare)]);
 
   router.put('express.v1.pendingapprovals', [prepareBitGo(config), typedPromiseWrapper(handleApproveTransaction)]);
 
-  app.put(
-    '/api/v1/pendingapprovals/:id/constructTx',
-    parseBody,
+  router.put('express.v1.pendingapproval.constructTx', [
     prepareBitGo(config),
-    promiseWrapper(handleConstructApprovalTx)
-  );
+    typedPromiseWrapper(handleConstructApprovalTx),
+  ]);
 
-  app.put(
-    '/api/v1/wallet/:id/consolidateunspents',
-    parseBody,
+  router.put('express.v1.wallet.consolidateunspents', [
     prepareBitGo(config),
-    promiseWrapper(handleConsolidateUnspents)
-  );
-  app.put('/api/v1/wallet/:id/fanoutunspents', parseBody, prepareBitGo(config), promiseWrapper(handleFanOutUnspents));
+    typedPromiseWrapper(handleConsolidateUnspents),
+  ]);
+
+  router.put('express.v1.wallet.fanoutunspents', [prepareBitGo(config), typedPromiseWrapper(handleFanOutUnspents)]);
 
   // any other API call
   app.use('/api/v[1]/*', parseBody, prepareBitGo(config), promiseWrapper(handleREST));
@@ -1781,5 +1779,4 @@ export function setupLightningSignerNodeRoutes(app: express.Application, config:
     prepareBitGo(config),
     promiseWrapper(handleCreateSignerMacaroon)
   );
-  app.get('/api/v2/:coin/wallet/:id/state', prepareBitGo(config), promiseWrapper(handleGetLightningWalletState));
 }

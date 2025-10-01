@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.2.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.1.0...bitgo@50.2.0) (2025-09-29)
+
+### Bug Fixes
+
+- removed transfer data from payment withdraw ([53dcd91](https://github.com/BitGo/BitGoJS/commit/53dcd91b28a4728a15e80a33dfef7c2cfa8f782a))
+- **sdk-core:** add keychain info to transaction verification process, fixes unit tests ([ad3c6c4](https://github.com/BitGo/BitGoJS/commit/ad3c6c47529cbb9e730d3124a33b2b2038064462))
+- **sdk-core:** fix TransactionType check ([30dbf98](https://github.com/BitGo/BitGoJS/commit/30dbf9842e908baa753b072429088167777a668f))
+- **sdk-core:** remove filter from prebuild validation ([5717147](https://github.com/BitGo/BitGoJS/commit/571714799d7c9f467ec2b216595e020f645e336b))
+
+### Features
+
+- add coinfactory for token instance on test og ([69ce8cb](https://github.com/BitGo/BitGoJS/commit/69ce8cbf17b52360cb2da508969958b5f2882427))
+- **sdk-core:** add missing types for staking validation ([85dd4d0](https://github.com/BitGo/BitGoJS/commit/85dd4d0feac8b5f94bd5da15367bc3324d01612e))
+
 # [50.1.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.0.0...bitgo@50.1.0) (2025-09-25)
 
 ### Bug Fixes

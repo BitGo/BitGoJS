@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [15.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.1.0...@bitgo/express@15.2.0) (2025-09-29)
+
+### Bug Fixes
+
+- **express:** remove hardcoded dockerfile labels ([69e6314](https://github.com/BitGo/BitGoJS/commit/69e6314ac0a27b9d09dc117c9ee78bf5f6bf4bc0))
+
+### Features
+
+- **express:** migrate constrctTx to typed routes ([df72204](https://github.com/BitGo/BitGoJS/commit/df722045f893e344a4a8eb4aa49d31179db5fe00))
+- **express:** migrate createLocalKeyChain to typed routes ([912614a](https://github.com/BitGo/BitGoJS/commit/912614aab0904ef2577f28235133bef059fa1d29))
+- **express:** migrate getlightningstate to typed routes ([916d430](https://github.com/BitGo/BitGoJS/commit/916d4308e67e08c9a9b1c7440c2bef0b278a92f3))
+- **express:** migrate unlocklightningwallet to typed routes ([24078a5](https://github.com/BitGo/BitGoJS/commit/24078a52f475f44f358dbea1d126b01fd40a821a))
+
 # [15.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.0.0...@bitgo/express@15.1.0) (2025-09-25)
 
 ### Bug Fixes
