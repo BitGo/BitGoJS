@@ -14,10 +14,6 @@ permissions:
   contents: read
   pull-requests: read
 
-env:
-  NX_NO_CLOUD: true
-  NX_CACHE_FILES: "modules/*/src/**/*.ts,modules/*/src/**/*.js,modules/*/*.json"
-
 jobs:
   unit-test:
     runs-on: ubuntu-latest
@@ -67,31 +63,16 @@ jobs:
       - name: Check In-Repo Package Versions
         run: yarn run check-versions
 
-      - name: restore nx cache
-        id: nx-cache
-        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 #v4.2.3
-        if: "!contains( github.event.pull_request.labels.*.name, 'SKIP_CACHE')"
-        with:
-          path: |
-            .nx/cache
-            modules/*/dist
-          key: ${{ runner.os }}-nx-${{ matrix.node-version }}-${{ hashFiles('yarn.lock') }}-${{ hashFiles(env.NX_CACHE_FILES) }}
-          restore-keys: |
-            ${{ runner.os }}-nx-${{ matrix.node-version }}-${{ hashFiles('yarn.lock') }}-
-            ${{ runner.os }}-nx-${{ matrix.node-version }}-
-
       - name: build packages
         env:
           # Workaround for https://github.com/nodejs/node/issues/51555
           DISABLE_V8_COMPILE_CACHE: '1'
-          NX_SKIP_NX_CACHE: ${{ contains(github.event.pull_request.labels.*.name, 'SKIP_CACHE') && 'true' || '' }}
         run: yarn run postinstall
 
       - name: Unit Test
         run: yarn run unit-test-changed
         env:
           BITGOJS_TEST_PASSWORD: ${{ secrets.BITGOJS_TEST_PASSWORD }}
-          NX_SKIP_NX_CACHE: ${{ contains(github.event.pull_request.labels.*.name, 'SKIP_CACHE') && 'true' || '' }}
 
       # - name: Upload Code Coverage
       #   run: |
@@ -177,24 +158,10 @@ jobs:
         if: steps.lerna-cache.outputs.cache-hit != 'true'
         run: yarn install --with-frozen-lockfile --ignore-scripts
 
-      - name: restore nx cache
-        id: nx-cache
-        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 #v4.2.3
-        if: "!contains( github.event.pull_request.labels.*.name, 'SKIP_CACHE')"
-        with:
-          path: |
-            .nx/cache
-            modules/*/dist
-          key: ${{ runner.os }}-nx-license-${{ hashFiles('yarn.lock') }}-${{ hashFiles(env.NX_CACHE_FILES) }}
-          restore-keys: |
-            ${{ runner.os }}-nx-license-${{ hashFiles('yarn.lock') }}-
-            ${{ runner.os }}-nx-license-
-
       - name: build packages
         env:
           # Workaround for https://github.com/nodejs/node/issues/51555
           DISABLE_V8_COMPILE_CACHE: '1'
-          NX_SKIP_NX_CACHE: ${{ contains(github.event.pull_request.labels.*.name, 'SKIP_CACHE') && 'true' || '' }}
         run: yarn run postinstall
 
       - name: Run Fossa Analysis
@@ -284,19 +251,6 @@ jobs:
         if: steps.lerna-cache.outputs.cache-hit != 'true' || contains( github.event.pull_request.labels.*.name, 'SKIP_CACHE')
         run: yarn install --with-frozen-lockfile
 
-      - name: restore nx cache
-        id: nx-cache
-        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 #v4.2.3
-        if: "!contains( github.event.pull_request.labels.*.name, 'SKIP_CACHE')"
-        with:
-          path: |
-            .nx/cache
-            modules/*/dist
-          key: ${{ runner.os }}-nx-browser-${{ hashFiles('yarn.lock') }}-${{ hashFiles(env.NX_CACHE_FILES) }}
-          restore-keys: |
-            ${{ runner.os }}-nx-browser-${{ hashFiles('yarn.lock') }}-
-            ${{ runner.os }}-nx-browser-
-
       - name: build packages
         if: steps.lerna-cache.outputs.cache-hit == 'true'
         env:
@@ -308,7 +262,6 @@ jobs:
         run: yarn run browser-tests
         env:
           BITGOJS_TEST_PASSWORD: ${{ secrets.BITGOJS_TEST_PASSWORD }}
-          NX_SKIP_NX_CACHE: ${{ contains(github.event.pull_request.labels.*.name, 'SKIP_CACHE') && 'true' || '' }}
 
   docker-build:
     runs-on: ubuntu-latest
