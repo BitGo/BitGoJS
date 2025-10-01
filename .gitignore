@@ -18,6 +18,3 @@ modules/**/pack-scoped/
 coverage
 /.direnv/
 .claude/
-.nx/
-CLAUDE.sessions.md
-sessions/
