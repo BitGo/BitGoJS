@@ -660,3 +660,12 @@ export const IOTA_FEATURES = [
   CoinFeature.ENTERPRISE_PAYS_FEES,
   CoinFeature.TSS_ENTERPRISE_PAYS_FEES,
 ];
+
+// TODO: https://bitgoinc.atlassian.net/browse/COIN-5870
+export const CANTON_FEATURES = [
+  CoinFeature.UNSPENT_MODEL,
+  CoinFeature.TRANSACTION_DATA,
+  CoinFeature.REQUIRES_BIG_NUMBER,
+  CoinFeature.TSS,
+  CoinFeature.TSS_COLD,
+];
