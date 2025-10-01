@@ -1,15 +1,16 @@
-import * as should from 'should';
 import { randomBytes } from 'crypto';
+import * as should from 'should';
 import * as stellar from 'stellar-sdk';
 
-import { Environments, Wallet } from '@bitgo/sdk-core';
-import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI, encrypt } from '@bitgo/sdk-api';
+import { Environments, PrebuildAndSignTransactionOptions, Wallet } from '@bitgo/sdk-core';
+import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { Txlm } from '../../src';
 import { KeyPair } from '../../src/lib/keyPair';
 
-import nock from 'nock';
 import * as assert from 'assert';
+import nock from 'nock';
+import { tokenEnablements as tokenEnablementsBlindSigningMocks } from './fixtures/blindSigning';
 import { xlmBackupKey } from './fixtures/xlmBackupKey';
 nock.enableNetConnect();
 
@@ -870,6 +871,7 @@ describe('XLM:', function () {
             user: { pub: userKeychain.pub },
             backup: { pub: backupKeychain.pub },
           },
+          verifyTokenEnablement: true,
         };
         const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification });
         validTransaction.should.equal(true);
@@ -877,7 +879,7 @@ describe('XLM:', function () {
     });
 
     describe('enabletoken transactions', function () {
-      it('should fail to verify a enbletoken transaction with unmatching number of token', async function () {
+      it('should fail to verify a token enablement tx with unmatching number of tokens', async function () {
         const txParams = {
           recipients: [],
           type: 'enabletoken',
@@ -897,18 +899,20 @@ describe('XLM:', function () {
             user: { pub: userKeychain.pub },
             backup: { pub: backupKeychain.pub },
           },
+
+          verifyTokenEnablement: true,
         };
         await basecoin
           .verifyTransaction({ txParams, txPrebuild, wallet, verification })
           .should.be.rejectedWith('transaction prebuild does not match expected trustline operations');
       });
 
-      it('should fail to verify a enbletoken transaction with unmatching token', async function () {
+      it('should fail to verify a token enablement tx with unmatching token', async function () {
         const txParams = {
           type: 'enabletoken',
           recipients: [
             {
-              token: 'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
+              tokenName: 'txlm:TST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
               amount: 0,
               address: '',
             },
@@ -929,11 +933,83 @@ describe('XLM:', function () {
             user: { pub: userKeychain.pub },
             backup: { pub: backupKeychain.pub },
           },
+          verifyTokenEnablement: true,
         };
         await basecoin
           .verifyTransaction({ txParams, txPrebuild, wallet, verification })
-          .should.be.rejectedWith('transaction prebuild does not match expected trustline tokens');
+          .should.be.rejectedWith('Invalid token code on token enablement operation: expected TST, got BST');
       });
+    });
+
+    it('should verify a token enablement when user data matchs prebuild data', async function () {
+      const { txParams, txPrebuild, walletData } = tokenEnablementsBlindSigningMocks;
+      const wallet = new Wallet(bitgo, basecoin, walletData);
+      const sameIntentTx = await basecoin.verifyTransaction({
+        txParams,
+        txPrebuild,
+        wallet,
+        verification: { verifyTokenEnablement: true },
+      });
+      sameIntentTx.should.equal(true);
+    });
+
+    it('should fail a token enablement when tx type is not a token enablement on txHex', async function () {
+      const { txParams, txPrebuild, walletData, wrongTxTypeTxPrebuildBase64 } = tokenEnablementsBlindSigningMocks;
+
+      const wallet = new Wallet(bitgo, basecoin, walletData);
+      // We send a "payment" in txBase64 instead of a "changeTrust"
+      const withdrawalTypeTxPrebuild = {
+        ...txPrebuild,
+        txBase64: wrongTxTypeTxPrebuildBase64,
+      };
+      await assert.rejects(
+        async () =>
+          await basecoin.verifyTransaction({
+            txParams,
+            txPrebuild: withdrawalTypeTxPrebuild,
+            wallet,
+            verification: { verifyTokenEnablement: true },
+          }),
+        {
+          message: 'transaction prebuild does not match expected trustline operations',
+        }
+      );
+    });
+
+    it('should fail a token enablement when token is not the same on txHex', async function () {
+      const { txParams, txPrebuild, walletData, wrongTokenTxPrebuildBase64 } = tokenEnablementsBlindSigningMocks;
+      const wallet = new Wallet(bitgo, basecoin, walletData);
+      const differentTokenTxPrebuild = { ...txPrebuild, txBase64: wrongTokenTxPrebuildBase64 };
+      await assert.rejects(
+        async () =>
+          await basecoin.verifyTransaction({
+            txParams,
+            txPrebuild: differentTokenTxPrebuild,
+            wallet,
+
+            verification: { verifyTokenEnablement: true },
+          }),
+        {
+          message: 'Invalid token code on token enablement operation: expected BST, got TST',
+        }
+      );
+    });
+
+    it('should throw an error on spoofed send token enablement call', async function () {
+      const { sendTokenEnablementPayload, walletData, wrongTokenTxPrebuildBase64 } = tokenEnablementsBlindSigningMocks;
+      const wallet = new Wallet(bitgo, basecoin, walletData);
+
+      nock(uri).get('/api/v2/txlm/key/68c82276b31dc1f89ab11ba5c5ec97ed').reply(200, {});
+      await assert.rejects(
+        async () =>
+          wallet.sendTokenEnablement({
+            ...sendTokenEnablementPayload,
+            prebuildTx: { ...sendTokenEnablementPayload.prebuildTx, txBase64: wrongTokenTxPrebuildBase64 },
+          } as unknown as PrebuildAndSignTransactionOptions),
+        {
+          message: 'Invalid token code on token enablement operation: expected BST, got TST',
+        }
+      );
     });
   });
 

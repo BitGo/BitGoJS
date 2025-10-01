@@ -1660,6 +1660,7 @@ export enum UnderlyingAsset {
   SRNT = 'srnt',
   SRM = 'srm',
   'sol:srm' = 'sol:srm',
+  'sol:pipe' = 'sol:pipe',
   SSV = 'ssv',
   STARS = 'stars',
   STATE = 'state',

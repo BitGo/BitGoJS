@@ -284,7 +284,7 @@ function handleConsolidateUnspents(req: ExpressApiRouteRequest<'express.v1.walle
  * @deprecated
  * @param req
  */
-function handleFanOutUnspents(req: express.Request) {
+function handleFanOutUnspents(req: ExpressApiRouteRequest<'express.v1.wallet.fanoutunspents', 'put'>) {
   return req.bitgo
     .wallets()
     .get({ id: req.params.id })
@@ -1603,7 +1603,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
     typedPromiseWrapper(handleConsolidateUnspents),
   ]);
 
-  app.put('/api/v1/wallet/:id/fanoutunspents', parseBody, prepareBitGo(config), promiseWrapper(handleFanOutUnspents));
+  router.put('express.v1.wallet.fanoutunspents', [prepareBitGo(config), typedPromiseWrapper(handleFanOutUnspents)]);
 
   // any other API call
   app.use('/api/v[1]/*', parseBody, prepareBitGo(config), promiseWrapper(handleREST));
