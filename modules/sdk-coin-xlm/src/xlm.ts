@@ -1009,13 +1009,17 @@ export class Xlm extends BaseCoin {
     return trustlineOperations;
   }
 
+  isChangeTrustOperation(operation: stellar.Operation): operation is stellar.Operation.ChangeTrust {
+    return operation.type && operation.type === 'changeTrust';
+  }
+
   getTrustlineOperationLineOrThrow(operation: stellar.Operation): stellar.Asset | stellar.LiquidityPoolAsset {
-    if (operation.type === 'changeTrust' && operation.line) return operation.line;
+    if (this.isChangeTrustOperation(operation) && operation.line) return operation.line;
     throw new Error('Invalid operation - expected changeTrust operation with line property');
   }
 
   getTrustlineOperationLimitOrThrow(operation: stellar.Operation): string {
-    if (operation.type === 'changeTrust' && operation.limit) return operation.limit;
+    if (this.isChangeTrustOperation(operation) && operation.limit) return operation.limit;
     throw new Error('Invalid operation - expected changeTrust operation with limit property');
   }
 
@@ -1088,21 +1092,24 @@ export class Xlm extends BaseCoin {
     return issuer;
   }
 
-  // first to verify
-  verifyTxType(txParams: TransactionParams, operations: stellar.Operation[]): void {
+  verifyTxType(operations: stellar.Operation[]): void {
     operations.forEach((operation) => {
-      if (!operation.type) throw new Error('Missing operation type on token enablement');
-      if (operation.type !== 'changeTrust')
-        throw new Error(`Invalid operation on token enablement: expected changeTrust, got ${operation.type}`);
+      if (!this.isChangeTrustOperation(operation))
+        throw new Error(
+          !operation.type
+            ? 'Missing operation type on token enablements'
+            : `Invalid operation on token enablement: expected changeTrust, got ${operation.type}`
+        );
     });
   }
 
   verifyAssetType(txParams: TransactionParams, operations: stellar.Operation[]): void {
     operations.forEach((operation) => {
       const line = this.getTrustlineOperationLineOrThrow(operation);
-      const assetType = line.getAssetType();
-      if (assetType === 'liquidity_pool_shares')
+      if (!this.isOperationLineOfAssetType(line)) {
+        const assetType = line.getAssetType();
         throw new Error(`Invalid asset type on token enablement: got ${assetType}`);
+      }
     });
   }
 
@@ -1185,8 +1192,7 @@ export class Xlm extends BaseCoin {
 
     if (txParams.type === 'enabletoken' && verification.verifyTokenEnablement) {
       const trustlineOperations = this.getTrustlineOperationsOrThrow(tx.operations, txParams, 'recipients');
-      this.verifyTxType(txParams, trustlineOperations);
-
+      this.verifyTxType(trustlineOperations);
       this.verifyAssetType(txParams, trustlineOperations);
       this.verifyTokenIssuer(txParams, trustlineOperations);
       this.verifyTokenName(txParams, trustlineOperations);
