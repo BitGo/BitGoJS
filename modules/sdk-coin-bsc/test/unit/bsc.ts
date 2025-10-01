@@ -7,7 +7,7 @@ import { Bsc, Tbsc } from '../../src/index';
 
 const bitgo: TestBitGoAPI = TestBitGo.decorate(BitGoAPI, { env: 'test' });
 
-describe('Binance Smart Chain', function () {
+describe('Native BNB', function () {
   before(function () {
     bitgo.safeRegister('bsc', Bsc.createInstance);
     bitgo.safeRegister('tbsc', Tbsc.createInstance);
@@ -21,7 +21,7 @@ describe('Binance Smart Chain', function () {
       bsc.should.be.an.instanceof(Bsc);
       bsc.getChain().should.equal('bsc');
       bsc.getFamily().should.equal('bsc');
-      bsc.getFullName().should.equal('Binance Smart Chain');
+      bsc.getFullName().should.equal('Native BNB');
       bsc.getBaseFactor().should.equal(1e18);
       bsc.supportsTss().should.equal(true);
       bsc.allowsAccountConsolidations().should.equal(true);
@@ -33,7 +33,7 @@ describe('Binance Smart Chain', function () {
       tbsc.should.be.an.instanceof(Tbsc);
       tbsc.getChain().should.equal('tbsc');
       tbsc.getFamily().should.equal('bsc');
-      tbsc.getFullName().should.equal('Testnet Binance Smart Chain');
+      tbsc.getFullName().should.equal('Testnet Native BNB');
       tbsc.getBaseFactor().should.equal(1e18);
       tbsc.supportsTss().should.equal(true);
       tbsc.allowsAccountConsolidations().should.equal(true);
