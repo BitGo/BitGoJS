@@ -39,6 +39,7 @@ export enum CoinFamily {
   BSV = 'bsv',
   BTC = 'btc',
   BTG = 'btg',
+  CANTON = 'canton',
   CELO = 'celo',
   COREDAO = 'coredao',
   COREUM = 'coreum',
@@ -510,6 +511,7 @@ export enum UnderlyingAsset {
   BSV = 'bsv',
   BTC = 'btc',
   BTG = 'btg',
+  CANTON = 'canton',
   DASH = 'dash',
   DOT = 'dot',
   CELO = 'celo', // Celo main coin
@@ -3288,6 +3290,7 @@ export enum BaseUnit {
   VET = 'wei',
   TCRONOS = 'basetcro',
   TASI = 'atestfet',
+  CANTON = 'canton',
 }
 
 export interface BaseCoinConstructorOptions {

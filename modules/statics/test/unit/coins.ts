@@ -35,7 +35,6 @@ import {
   reducedAmsTokenConfig,
   reducedTokenConfigForAllChains,
 } from './resources/amsTokenConfig';
-import { Networks } from '../../src/networks';
 
 interface DuplicateCoinObject {
   name: string;
@@ -884,6 +883,7 @@ coins.forEach((coin, coinName) => {
         const coinSupportsCustody =
           coin.family !== CoinFamily.LNBTC &&
           coin.family !== CoinFamily.CELO &&
+          coin.family !== CoinFamily.CANTON &&
           coin.name !== 'ofccelo' &&
           coin.name !== 'ofctcelo';
         coin.features.includes(CoinFeature.CUSTODY).should.eql(coinSupportsCustody);
