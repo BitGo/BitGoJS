@@ -1,9 +1,6 @@
 name: Publish @bitgo-beta
 on:
   workflow_dispatch:
-  # push:
-  #   branches:
-  #     - master
 
 permissions:
   contents: write
@@ -14,6 +11,10 @@ concurrency:
 env:
   NX_NO_CLOUD: true
   NX_SKIP_NX_CACHE: true
+  NX_DISABLE_NX_CACHE: true
+  NX_SKIP_REMOTE_CACHE: true
+  NX_DISABLE_REMOTE_CACHE: true
+  NX_CACHE: false
 
 jobs:
   publish:
@@ -28,9 +29,6 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: .nvmrc
-
-      - name: Install BitGoJS
-        run: yarn install --with-frozen-lockfile
 
       - name: Set Environment Variable for Alpha
         if: github.ref != 'refs/heads/master' # only publish changes if on feature branches
@@ -52,16 +50,34 @@ jobs:
           echo "@bitgo-beta:registry=https://registry.npmjs.org" >> .npmrc
           echo "//registry.npmjs.org/:_authToken=${{ secrets.BETA_TOKEN }}" >> .npmrc
           echo "//registry.npmjs.org/:always-auth=true" >> .npmrc
+      
+      - name: Install
+        env:
+          NOYARNPOSTINSTALL: true
+        run: yarn install --with-frozen-lockfile --ignore-scripts
+      
+      - name: Clean all caches
+        run: |
+            # Clean NX cache
+            npx nx reset
+            # Clean TypeScript incremental build cache
+            find . -name "tsconfig.tsbuildinfo" -delete
+            # Clean dist directories to force full rebuild
+            find ./modules -name "dist" -type d -exec rm -rf {} + 2>/dev/null || true
+            # Clean node_modules/.cache
+            find ./modules -path "*/node_modules/.cache" -type d -exec rm -rf {} + 2>/dev/null || true
+
+      - name: Rebuild packages
+        env:
+          NOYARNPOSTINSTALL: true
+        run: yarn lerna run build --stream
 
       - name: Prepare Release
         run: |
           rm -rfd ./modules/web-demo
           rm -rfd ./modules/express
           npx tsx ./scripts/prepare-release.ts ${{ env.preid }}
-
-      - name: Rebuild packages
-        run: yarn
-
+         
       - name: Commit Local Changes
         run: git commit -am "Auto updated ${{ env.preid }} branch" --no-verify || echo "No changes to commit"
 
