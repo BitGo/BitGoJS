@@ -1,7 +1,7 @@
 import 'should';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { VerifyTransactionOptions, common, Wallet } from '@bitgo/sdk-core';
+import { VerifyTransactionOptions, common, Wallet, TransactionType } from '@bitgo/sdk-core';
 import { TransactionPrebuild, Near } from '../../src/near';
 import { TNear as TNearCoin } from '../../src/tnear';
 import * as testData from '../resources/near';
@@ -180,8 +180,12 @@ describe('NEAR Token Enablement Validation', function () {
     };
 
     // This SHOULD throw an error because the spoofed hex doesn't match the expected
-    // token enablement transaction. The storage deposit amount validation catches this first
-    await basecoin.verifyTransaction(verifyOptions).should.be.rejectedWith('Storage deposit amount not matching!');
+    // token enablement transaction. The transaction type validation catches this first
+    await basecoin
+      .verifyTransaction(verifyOptions)
+      .should.be.rejectedWith(
+        `Invalid transaction type on token enablement: expected "${TransactionType.StorageDeposit}", got "${TransactionType.Send}".`
+      );
   });
 
   /**
@@ -311,7 +315,9 @@ describe('NEAR Token Enablement Validation', function () {
     // The result should contain failures due to the spoofed transaction hex
     result.success.should.have.length(0);
     result.failure.should.have.length(1);
-    result.failure[0].message.should.containEql('Storage deposit amount not matching!');
+    result.failure[0].message.should.containEql(
+      `Invalid transaction type on token enablement: expected "${TransactionType.StorageDeposit}", got "${TransactionType.Send}".`
+    );
   });
 
   /**
