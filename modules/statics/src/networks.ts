@@ -1986,6 +1986,18 @@ class PlumeTestnet extends Testnet implements EthereumNetwork {
   nativeCoinOperationHashPrefix = '98867';
 }
 
+class Canton extends Mainnet implements BaseNetwork {
+  name = 'Canton';
+  family = CoinFamily.CANTON;
+  explorerUrl = '';
+}
+
+class CantonTestnet extends Testnet implements BaseNetwork {
+  name = 'CantonTestnet';
+  family = CoinFamily.CANTON;
+  explorerUrl = '';
+}
+
 export const Networks = {
   main: {
     ada: Object.freeze(new Ada()),
@@ -2006,6 +2018,7 @@ export const Networks = {
     bera: Object.freeze(new Berachain()),
     bld: Object.freeze(new Bld()),
     bsc: Object.freeze(new BinanceSmartChain()),
+    canton: Object.freeze(new Canton()),
     casper: Object.freeze(new Casper()),
     celo: Object.freeze(new Celo()),
     coredao: Object.freeze(new Coredao()),
@@ -2105,6 +2118,7 @@ export const Networks = {
     bera: Object.freeze(new BerachainTestnet()),
     bld: Object.freeze(new BldTestnet()),
     bsc: Object.freeze(new BinanceSmartChainTestnet()),
+    canton: Object.freeze(new CantonTestnet()),
     casper: Object.freeze(new CasperTestnet()),
     coredao: Object.freeze(new CoredaoTestnet()),
     celo: Object.freeze(new CeloTestnet()),
