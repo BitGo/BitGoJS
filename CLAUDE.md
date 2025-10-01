@@ -54,6 +54,64 @@ yarn integration-test
 yarn coverage
 ```
 
+### Test Caching
+BitGoJS uses Lerna + Nx for local test caching to speed up development:
+
+```bash
+# Tests are automatically cached when you run them
+yarn unit-test
+
+# Cache status is shown in output:
+# - Fresh run: Tests execute normally
+# - Cache hit: "[existing outputs match the cache, left as is]"
+
+# Clear cache if needed
+yarn clean-cache
+
+# Cache works with all test commands
+yarn unit-test --scope @bitgo/sdk-core  # Caches per package
+yarn unit-test-changed                   # Caches changed packages
+```
+
+The cache automatically invalidates when:
+- Source files change
+- Test files change
+- Dependencies change
+- Configuration files change (tsconfig.json, .mocharc.*, package.json)
+
+### CI Caching
+
+BitGoJS CI uses both GitHub Actions cache and Nx cache for optimal performance:
+
+**GitHub Actions Cache**:
+- Caches `node_modules` and `modules/*/node_modules`
+- Caches `.nx/cache` and `modules/*/dist` directories
+- Cache keys include source file hashes for proper invalidation
+
+**Nx Cache**:
+- Automatically enabled in CI (via `useNx: true` in lerna.json)
+- Caches build outputs and test results
+- Respects task dependencies (tests depend on builds)
+
+**Skipping Cache**:
+- Add the `SKIP_CACHE` label to a PR to bypass all caching
+- This forces fresh installs and builds
+- When `SKIP_CACHE` is used:
+  - GitHub Actions cache is not restored
+  - Nx caching is disabled (`NX_SKIP_NX_CACHE=true`)
+  - All tasks run fresh without any caching
+
+**Troubleshooting**:
+If you encounter module resolution errors in CI:
+```bash
+# Option 1: Use --skip-nx-cache flag
+yarn unit-test --skip-nx-cache
+
+# Option 2: Clear cache and rebuild
+yarn clean-cache
+yarn build
+```
+
 ### Browser Compatibility
 ```bash
 # Run browser tests
@@ -121,3 +179,7 @@ This will generate the necessary boilerplate for a new coin implementation.
 ## Node.js Version Support
 
 BitGoJS supports Node.js versions >=20 and <23, with NPM >=3.10.10.
+
+## Sessions System Behaviors
+
+@CLAUDE.sessions.md
