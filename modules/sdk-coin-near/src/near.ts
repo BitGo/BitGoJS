@@ -45,7 +45,7 @@ import {
 import { BaseCoin as StaticsBaseCoin, CoinFamily, coins, Nep141Token, Networks } from '@bitgo/statics';
 
 import { KeyPair as NearKeyPair, Transaction, TransactionBuilder, TransactionBuilderFactory } from './lib';
-import { TransactionExplanation } from './lib/iface';
+import { TransactionExplanation, TxData } from './lib/iface';
 import nearUtils from './lib/utils';
 import { MAX_GAS_LIMIT_FOR_FT_TRANSFER } from './lib/constants';
 
@@ -1101,18 +1101,18 @@ export class Near extends BaseCoin {
     explainedTx: TransactionExplanation,
     txParams: TransactionParams
   ): void {
+    const transactionData = transaction.toJson();
     this.validateTxType(txParams, explainedTx);
-    this.validateSigner(transaction);
-    this.validateRawReceiver(transaction, txParams);
-    this.validatePublicKey(transaction);
-    this.validateRawActions(transaction, txParams);
+    this.validateSigner(transactionData);
+    this.validateRawReceiver(transactionData, txParams);
+    this.validatePublicKey(transactionData);
+    this.validateRawActions(transactionData, txParams);
     this.validateBeneficiary(explainedTx, txParams);
     this.validateTokenOutput(explainedTx, txParams);
   }
 
   // Validates that the signer ID exists in the transaction
-  private validateSigner(transaction: Transaction): void {
-    const transactionData = transaction.toJson();
+  private validateSigner(transactionData: TxData): void {
     if (!transactionData.signerId) {
       throw new Error('Error on token enablements: missing signer ID in transaction');
     }
@@ -1136,9 +1136,7 @@ export class Near extends BaseCoin {
   }
 
   // Validates that the raw transaction receiverId matches the expected token contract
-  private validateRawReceiver(transaction: Transaction, txParams: TransactionParams): void {
-    const transactionData = transaction.toJson();
-
+  private validateRawReceiver(transactionData: TxData, txParams: TransactionParams): void {
     if (!transactionData.receiverId) {
       throw new Error('Error on token enablements: missing receiver ID in transaction');
     }
@@ -1185,9 +1183,7 @@ export class Near extends BaseCoin {
     }
   }
 
-  private validatePublicKey(transaction: Transaction): void {
-    const transactionData = transaction.toJson();
-
+  private validatePublicKey(transactionData: TxData): void {
     if (!transactionData.publicKey) {
       throw new Error('Error on token enablements: missing public key in transaction');
     }
@@ -1205,20 +1201,20 @@ export class Near extends BaseCoin {
     }
 
     // Validate it's actually valid base58
+    let decoded;
     try {
-      const decoded = nearAPI.utils.serialize.base_decode(base58Part);
-      if (decoded.length !== 32) {
-        throw new Error('Error on token enablements: invalid ed25519 public key length');
-      }
+      decoded = nearAPI.utils.serialize.base_decode(base58Part);
     } catch {
       throw new Error('Error on token enablements: invalid base58 encoding in public key');
+    }
+
+    if (!decoded || decoded.length !== 32) {
+      throw new Error('Error on token enablements: invalid ed25519 public key length');
     }
   }
 
   // Validates the raw transaction actions according to NEAR protocol spec
-  private validateRawActions(transaction: Transaction, txParams: TransactionParams): void {
-    const transactionData = transaction.toJson();
-
+  private validateRawActions(transactionData: TxData, txParams: TransactionParams): void {
     // Must have exactly 1 action (NEAR spec requirement)
     if (!transactionData.actions || transactionData.actions.length !== 1) {
       throw new Error('Error on token enablements: must have exactly 1 action');
@@ -1287,15 +1283,11 @@ export class Near extends BaseCoin {
   }
 
   private validateTxType(txParams: TransactionParams, explainedTx: TransactionExplanation): void {
-    if (txParams.type === 'enabletoken') {
-      const expectedType = TransactionType.StorageDeposit;
-      const actualType = explainedTx.type;
+    const expectedType = TransactionType.StorageDeposit;
+    const actualType = explainedTx.type;
 
-      if (actualType !== expectedType) {
-        throw new Error(
-          `Invalid transaction type on token enablement: expected "${expectedType}", got "${actualType}".`
-        );
-      }
+    if (actualType !== expectedType) {
+      throw new Error(`Invalid transaction type on token enablement: expected "${expectedType}", got "${actualType}".`);
     }
   }
 }
