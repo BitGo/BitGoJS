@@ -116,6 +116,7 @@ describe('NEAR Token Enablement Validation', function () {
       txParams, // User thinks they're enabling a token
       txPrebuild, // But the actual hex is for a money transfer!
       wallet: { id: 'test-wallet' } as any,
+      verification: { verifyTokenEnablement: true },
     };
 
     // This SHOULD throw an error because the hex doesn't match the expected transaction type
@@ -149,6 +150,7 @@ describe('NEAR Token Enablement Validation', function () {
       txParams, // Contains wrong address
       txPrebuild, // Contains correct address in the hex
       wallet: { id: 'test-wallet' } as any,
+      verification: { verifyTokenEnablement: true },
     };
 
     // This SHOULD throw an error because the addresses don't match
@@ -177,6 +179,7 @@ describe('NEAR Token Enablement Validation', function () {
       txParams, // User thinks they're enabling a token
       txPrebuild, // But the hex is for a different transaction type (fungible token transfer)
       wallet: { id: 'test-wallet' } as any,
+      verification: { verifyTokenEnablement: true },
     };
 
     // This SHOULD throw an error because the spoofed hex doesn't match the expected
@@ -269,6 +272,7 @@ describe('NEAR Token Enablement Validation', function () {
           txParams: params.txParams,
           txPrebuild: params.prebuildTx,
           wallet: mockWallet as any,
+          verification: { verifyTokenEnablement: true },
         };
 
         await basecoin.verifyTransaction(verifyOptions);
