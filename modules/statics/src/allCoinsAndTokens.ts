@@ -34,7 +34,6 @@ import {
   terc721,
   tflrErc20,
   topethErc20,
-  tpolyxToken,
   tronToken,
   tstellarToken,
   tsuiToken,
@@ -101,7 +100,6 @@ import {
   POLYGON_FEATURES,
   POLYGON_TOKEN_FEATURES,
   POLYX_FEATURES,
-  POLYX_TOKEN_FEATURES,
   RBTC_FEATURES,
   SEI_FEATURES,
   SGB_FEATURES,
@@ -4665,16 +4663,6 @@ export const allCoinsAndTokens = [
     '4',
     UnderlyingAsset['ttao:targon'],
     TAO_TOKEN_FEATURES
-  ),
-  tpolyxToken(
-    'a63b4f8d-84d6-45d3-bc67-625239e40811',
-    'tpolyx:nvbitgot',
-    'NVBITGOT Fungible Asset',
-    6,
-    'NVBITGOT',
-    '0x780602887b358cf48989d0d9aa6c8d28',
-    UnderlyingAsset['tpolyx:nvbitgot'],
-    POLYX_TOKEN_FEATURES
   ),
   aptToken(
     'e2a2d8fc-df3e-4bb7-b9c6-19092bb3369a',
