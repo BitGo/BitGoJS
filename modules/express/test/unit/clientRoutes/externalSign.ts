@@ -98,6 +98,12 @@ describe('External signer', () => {
     if (nock.isActive()) {
       nock.restore();
     }
+
+    // Clean up encryptedPrivKeys.json file if it exists
+    const encryptedPrivKeysPath = 'encryptedPrivKeys.json';
+    if (fs.existsSync(encryptedPrivKeysPath)) {
+      fs.unlinkSync(encryptedPrivKeysPath);
+    }
   });
 
   it('should read an encrypted prv from signerFileSystemPath and pass it to coin.signTransaction', async () => {

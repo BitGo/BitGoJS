@@ -32,6 +32,7 @@
   "author": "Babylon Labs Ltd.",
   "license": "SEE LICENSE IN LICENSE",
   "devDependencies": {
+    "@types/glob": "^8.1.0",
     "dts-bundle-generator": "^9.3.1",
     "esbuild": "^0.20.2",
     "nanoevents": "^9.1.0"
