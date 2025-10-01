@@ -22,6 +22,7 @@ import { PostDeriveLocalKeyChain } from './v1/deriveLocalKeyChain';
 import { PostCreateLocalKeyChain } from './v1/createLocalKeyChain';
 import { PutConstructPendingApprovalTx } from './v1/constructPendingApprovalTx';
 import { PutConsolidateUnspents } from './v1/consolidateUnspents';
+import { PostShareWallet } from './v2/shareWallet';
 
 export const ExpressApi = apiSpec({
   'express.ping': {
@@ -83,6 +84,9 @@ export const ExpressApi = apiSpec({
   },
   'express.v1.wallet.consolidateunspents': {
     put: PutConsolidateUnspents,
+  },
+  'express.v2.wallet.share': {
+    post: PostShareWallet,
   },
 });
 
