@@ -17,6 +17,7 @@ import { PostKeychainLocal } from './v2/keychainLocal';
 import { GetLightningState } from './v2/lightningState';
 import { PostLightningInitWallet } from './v2/lightningInitWallet';
 import { PostUnlockLightningWallet } from './v2/unlockWallet';
+import { PostSignerMacaroon } from './v2/signerMacaroon';
 import { PostVerifyCoinAddress } from './v2/verifyAddress';
 import { PostDeriveLocalKeyChain } from './v1/deriveLocalKeyChain';
 import { PostCreateLocalKeyChain } from './v1/createLocalKeyChain';
@@ -66,6 +67,9 @@ export const ExpressApi = apiSpec({
   },
   'express.lightning.unlockWallet': {
     post: PostUnlockLightningWallet,
+  },
+  'express.lightning.signerMacaroon': {
+    post: PostSignerMacaroon,
   },
   'express.verifycoinaddress': {
     post: PostVerifyCoinAddress,
