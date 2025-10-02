@@ -365,6 +365,7 @@ describe('Hedera Hashgraph:', function () {
       const txParams = newTxParams();
       const txPrebuild = newTxPrebuild();
       txPrebuild.txHex = TestData.UNSIGNED_TOKEN_ASSOCIATE;
+      txParams.type = 'enabletoken';
       txParams.recipients = [
         {
           address: '0.0.81320',
@@ -377,6 +378,7 @@ describe('Hedera Hashgraph:', function () {
         txPrebuild,
         memo,
         wallet: walletObj,
+        verification: { verifyTokenEnablement: true },
       } as any);
       validTransaction.should.equal(true);
     });
@@ -385,6 +387,7 @@ describe('Hedera Hashgraph:', function () {
       const txParams = newTxParams();
       const txPrebuild = newTxPrebuild();
       txPrebuild.txHex = TestData.UNSIGNED_TOKEN_ASSOCIATE;
+      txParams.type = 'enabletoken';
       txParams.recipients = [
         {
           address: '0.0.81321',
@@ -393,8 +396,14 @@ describe('Hedera Hashgraph:', function () {
         },
       ];
       await basecoin
-        .verifyTransaction({ txParams, txPrebuild, memo, wallet: walletObj } as any)
-        .should.be.rejectedWith('Tx outputs does not match with expected txParams recipients');
+        .verifyTransaction({
+          txParams,
+          txPrebuild,
+          memo,
+          wallet: walletObj,
+          verification: { verifyTokenEnablement: true },
+        } as any)
+        .should.be.rejectedWith('Invalid token enablement transaction: Expected account 0.0.81321, got 0.0.81320');
     });
 
     it('should verify token transfer transaction', async function () {
@@ -485,6 +494,7 @@ describe('Hedera Hashgraph:', function () {
       const txParams = newTxParams();
       const txPrebuild = newTxPrebuild();
       txPrebuild.txHex = TestData.UNSIGNED_TOKEN_ASSOCIATE;
+      txParams.type = 'enabletoken';
       txParams.recipients = [
         {
           address: '0.0.81320?memoId=1',
@@ -497,6 +507,7 @@ describe('Hedera Hashgraph:', function () {
         txPrebuild,
         memo,
         wallet: walletObj,
+        verification: { verifyTokenEnablement: true },
       } as any);
       validTransaction.should.equal(true);
     });
@@ -513,7 +524,7 @@ describe('Hedera Hashgraph:', function () {
 
     it('should verify a valid token enablement transaction with tokenId', async function () {
       const txHex = TestData.UNSIGNED_TOKEN_ASSOCIATE;
-      const expectedToken = { tokenId: '0.0.12345' };
+      const expectedToken = { tokenId: '0.0.429274' }; // Actual tokenId for thbar:usdc
       const expectedAccountId = '0.0.81320';
 
       await basecoin.verifyTokenEnablementTransaction(txHex, expectedToken, expectedAccountId);
@@ -632,6 +643,92 @@ describe('Hedera Hashgraph:', function () {
       await basecoin
         .verifyTokenEnablementTransaction('invalid_hex', { tokenName: 'thbar:usdc' }, '0.0.81320')
         .should.be.rejectedWith(/Invalid token enablement transaction/);
+    });
+
+    it('should fail when txHex contains wrong tokenId compared to expected', async function () {
+      // This test ensures direct txHex validation catches spoofed tokenIds
+      const txHex = TestData.UNSIGNED_TOKEN_ASSOCIATE;
+      const wrongTokenId = '0.0.999999'; // Wrong tokenId
+      const expectedAccountId = '0.0.81320';
+
+      await basecoin
+        .verifyTokenEnablementTransaction(txHex, { tokenId: wrongTokenId }, expectedAccountId)
+        .should.be.rejectedWith(
+          new RegExp(`Expected tokenId ${_.escapeRegExp(wrongTokenId)}, but transaction contains tokenId`)
+        );
+    });
+
+    it('should fail when txHex contains wrong accountId compared to expected', async function () {
+      // This test ensures direct txHex validation catches spoofed accountIds
+      const txHex = TestData.UNSIGNED_TOKEN_ASSOCIATE;
+      const expectedToken = { tokenName: 'thbar:usdc' };
+      const wrongAccountId = '0.0.999999'; // Wrong accountId
+
+      await basecoin
+        .verifyTokenEnablementTransaction(txHex, expectedToken, wrongAccountId)
+        .should.be.rejectedWith(new RegExp(`Expected account ${_.escapeRegExp(wrongAccountId)}, got`));
+    });
+
+    it('should pass verification for valid token enablement transaction without throwing error', async function () {
+      // This test ensures that a valid token enablement transaction passes all validations
+      const txHex = TestData.UNSIGNED_TOKEN_ASSOCIATE;
+      const expectedToken = { tokenName: 'thbar:usdc' };
+      const expectedAccountId = '0.0.81320';
+
+      // This should complete without throwing any errors
+      await basecoin.verifyTokenEnablementTransaction(txHex, expectedToken, expectedAccountId);
+
+      // If we reach this point, the test passed
+      assert.ok(true, 'Valid token enablement transaction should not throw any errors');
+    });
+
+    it('should detect spoofed transaction hex through sendTokenEnablements flow', async function () {
+      // Use a valid transfer transaction hex instead of a token associate transaction
+      // This will parse correctly but fail validation because it's not a token associate transaction
+      const spoofedTxHex = TestData.UNSIGNED_TOKEN_TRANSFER; // Valid transfer transaction, not token associate
+
+      // Create a wallet mock for the sendTokenEnablements flow
+      const wallet = {
+        id: () => '5b34252f1bf34993006eae96',
+        coin: () => 'thbar',
+        prebuildTransaction: async () => ({
+          txHex: spoofedTxHex,
+          txid: '586c5b59b10b134d04c16ac1b273fe3c5529f34aef75db4456cd469c5cdac7e2',
+          recipients: [{ address: '0.0.81320', amount: '0' }],
+          coin: 'thbar',
+          feeInfo: { size: 1000, fee: 1160407, feeRate: 1160407 },
+        }),
+        sendTokenEnablements: async (params: any) => {
+          // This should trigger the verification and fail
+          const txPrebuild = await wallet.prebuildTransaction();
+          return basecoin.verifyTransaction({
+            txParams: {
+              type: 'enabletoken',
+              recipients: [{ address: '0.0.81320', amount: '0', tokenName: 'thbar:usdc' }],
+            },
+            txPrebuild,
+            verification: { verifyTokenEnablement: true },
+          });
+        },
+      };
+
+      // This should fail because the spoofed transaction hex contains a transfer transaction, not a token associate
+      await assert.rejects(
+        async () => {
+          await wallet.sendTokenEnablements({
+            recipients: [{ address: '0.0.81320', tokenName: 'thbar:usdc' }],
+          });
+        },
+        (error: any) => {
+          // The error should indicate that the transaction is invalid for token enablement
+          return (
+            error.message.includes('Invalid token enablement transaction') ||
+            error.message.includes('Token enablement transaction missing tokenId') ||
+            error.message.includes("Expected output amount '0'") ||
+            error.message.includes('Transaction is not a TokenAssociate transaction')
+          );
+        }
+      );
     });
   });
 
