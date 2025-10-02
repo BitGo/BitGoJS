@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [24.13.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.13.0...@bitgo/abstract-eth@24.13.1) (2025-09-29)
+
+**Note:** Version bump only for package @bitgo/abstract-eth
+
+# [24.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.12.0...@bitgo/abstract-eth@24.13.0) (2025-09-25)
+
+### Bug Fixes
+
+- **abstract-eth:** follow up updates from PR 6882 ([36a87de](https://github.com/BitGo/BitGoJS/commit/36a87de002c6b6ab8c72429b186c0660ccc88e92))
+
+### Features
+
+- **abstract-eth:** add flush token support for ERC721 and ERC1155 ([5d4fa35](https://github.com/BitGo/BitGoJS/commit/5d4fa353088b2bd99ed5e6423bf17d3e1c300e35))
+- configure learn to skip git operations ([ee3a622](https://github.com/BitGo/BitGoJS/commit/ee3a6220496476aa7f4545b5f4a9a3bf97d9bdb9))
+
 # [24.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.11.3...@bitgo/abstract-eth@24.12.0) (2025-09-03)
 
 ### Bug Fixes

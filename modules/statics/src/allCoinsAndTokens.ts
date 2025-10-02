@@ -764,6 +764,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.SUPPORTS_ERC20,
     ],
     KeyCurve.Secp256k1,
     '',
@@ -785,6 +786,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.SUPPORTS_ERC20,
     ],
     KeyCurve.Secp256k1,
     '',
@@ -2168,6 +2170,15 @@ export const allCoinsAndTokens = [
     Networks.main.basechain
   ),
   erc20Token(
+    'd71e48af-5a75-431e-9243-715af04351fc',
+    'og:wog',
+    'WOG',
+    18,
+    '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
+    UnderlyingAsset['og:wog'],
+    Networks.main.og
+  ),
+  erc20Token(
     '3d542986-403f-4302-aa57-95f4dec26727',
     'baseeth:wbtc',
     'Wrapped BTC',
@@ -3020,20 +3031,6 @@ export const allCoinsAndTokens = [
     '',
     '',
     Networks.test.hoodi
-  ),
-  erc721(
-    '30d034ae-41fd-4da2-bbb2-05fe1e301108',
-    'erc721:unsteth',
-    'Lido: stETH Withdrawal NFT',
-    '0x889edc2edab5f40e902b864ad4d7ade8e412f9b1',
-    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.RESTRICTED]
-  ),
-  terc721(
-    '05ce9121-45e0-4e9c-941b-1aa95bedfcc5',
-    'terc721:unsteth',
-    'Test Lido: stETH Withdrawal NFT',
-    '0xfe56573178f1bcdf53f01a6e9977670dcbbd9186',
-    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.RESTRICTED]
   ),
   terc721(
     'e795fc78-b8a7-47a1-8294-5ecbe8a74c3a',

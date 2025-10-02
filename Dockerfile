@@ -88,7 +88,6 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-icp /var/modules/sdk-coin-icp/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-initia /var/modules/sdk-coin-initia/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-injective /var/modules/sdk-coin-injective/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-islm /var/modules/sdk-coin-islm/
-COPY --from=builder /tmp/bitgo/modules/sdk-coin-mantra /var/modules/sdk-coin-mantra/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-mon /var/modules/sdk-coin-mon/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-near /var/modules/sdk-coin-near/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-oas /var/modules/sdk-coin-oas/
@@ -185,7 +184,6 @@ cd /var/modules/sdk-coin-icp && yarn link && \
 cd /var/modules/sdk-coin-initia && yarn link && \
 cd /var/modules/sdk-coin-injective && yarn link && \
 cd /var/modules/sdk-coin-islm && yarn link && \
-cd /var/modules/sdk-coin-mantra && yarn link && \
 cd /var/modules/sdk-coin-mon && yarn link && \
 cd /var/modules/sdk-coin-near && yarn link && \
 cd /var/modules/sdk-coin-oas && yarn link && \
@@ -285,7 +283,6 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-initia && \
     yarn link @bitgo/sdk-coin-injective && \
     yarn link @bitgo/sdk-coin-islm && \
-    yarn link @bitgo/sdk-coin-mantra && \
     yarn link @bitgo/sdk-coin-mon && \
     yarn link @bitgo/sdk-coin-near && \
     yarn link @bitgo/sdk-coin-oas && \
@@ -333,14 +330,16 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-zec
 #LINK_END
 
-#LABEL_START
-LABEL created="Thu, 04 Sep 2025 18:59:30 GMT"
-LABEL version=15.0.0
-LABEL git_hash=bbdf6e60b720b25e3212f3a4c5bdc81732a505e8
-#LABEL_END
+ARG BUILD_DATE
+ARG VERSION
+ARG GIT_HASH
+
+LABEL created=${BUILD_DATE}
+LABEL version=${VERSION}
+LABEL git_hash=${GIT_HASH}
 
 USER node
-ENV NODE_ENV production
-ENV BITGO_BIND 0.0.0.0
+ENV NODE_ENV=production
+ENV BITGO_BIND=0.0.0.0
 EXPOSE 3080
 ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/node", "/var/bitgo-express/bin/bitgo-express"]

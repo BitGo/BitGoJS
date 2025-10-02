@@ -9,20 +9,19 @@ import execa from 'execa';
 import mpath from 'path';
 import yargs from 'yargs';
 import {
-  LernaModule,
   walk,
-  changeScopeInFile,
-  DistTags,
-  updateModuleNames,
-  getDistTagsForModuleNames,
-  setDependencyVersion,
   getLernaModules,
+  changeScopeInFile,
+  getDistTagsForModuleNames,
+  updateModuleNames,
+  setDependencyVersion,
+  DistTags,
+  LernaModule,
   getNewModuleName,
 } from './prepareRelease';
 
 /** The directory to pack the module into */
 const scopedPackageDir = 'pack-scoped';
-const uninitializedModules = process.env.UNINITIALIZED_MODULES ? process.env.UNINITIALIZED_MODULES.split(',') : [];
 
 async function changeModuleScope(dir: string, params: { lernaModules: LernaModule[]; scope: string }) {
   console.log(`Changing scope of module at ${dir} to ${params.scope}`);
@@ -44,7 +43,7 @@ async function changeModuleVersions(
   }
 ) {
   const newModuleNames = params.moduleNames.map((m) => updateModuleNames(m, params.moduleNames, params.scope));
-  const { distTagsByModuleName = await getDistTagsForModuleNames(newModuleNames, uninitializedModules, 'beta') } = params;
+  const { distTagsByModuleName = await getDistTagsForModuleNames(newModuleNames) } = params;
   const packageJsonPath = mpath.join(dir, 'package.json');
   const packageJson = JSON.parse(await fs.promises.readFile(packageJsonPath, 'utf-8'));
   newModuleNames.forEach((m) => {
@@ -105,7 +104,7 @@ async function getDistTagsForModuleNamesCached(
     }
   }
 
-  const distTagsByModuleName = await getDistTagsForModuleNames(newModuleNames, uninitializedModules, 'beta');
+  const distTagsByModuleName = await getDistTagsForModuleNames(newModuleNames);
   if (params.cache) {
     console.log(`Caching dist tags to ${params.cache}`);
     await fs.promises.writeFile(params.cache, JSON.stringify([...distTagsByModuleName.entries()], null, 2) + '\n');

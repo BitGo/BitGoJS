@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-btc@2.8.0...@bitgo/sdk-coin-btc@2.9.0) (2025-09-29)
+
+### Bug Fixes
+
+- **sdk-coin-btc:** quick refactor for wallet key handling in BTC tests ([91cf215](https://github.com/BitGo/BitGoJS/commit/91cf2153c3c859cb641d859f7e68b238b549da53))
+- **sdk-core:** use Promise.all for concurrent processing for transaction verifying, linting fixes ([7300cc0](https://github.com/BitGo/BitGoJS/commit/7300cc04e3abf87e8b984a64eb5a1fdc47165bc1))
+
+### Features
+
+- **sdk-coin-btc:** add transaction validation for fanout unspent management ([a1726a6](https://github.com/BitGo/BitGoJS/commit/a1726a6df1d43da2bea9d286a3a37c655bb436bf))
+
+# [2.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-btc@2.7.4...@bitgo/sdk-coin-btc@2.8.0) (2025-09-25)
+
+### Features
+
+- configure learn to skip git operations ([ee3a622](https://github.com/BitGo/BitGoJS/commit/ee3a6220496476aa7f4545b5f4a9a3bf97d9bdb9))
+
 ## [2.7.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-btc@2.7.3...@bitgo/sdk-coin-btc@2.7.4) (2025-09-03)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-btc

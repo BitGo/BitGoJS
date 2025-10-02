@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.5.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@4.5.0...@bitgo/sdk-coin-dot@4.5.1) (2025-09-29)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-dot
+
+# [4.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@4.4.4...@bitgo/sdk-coin-dot@4.5.0) (2025-09-25)
+
+### Bug Fixes
+
+- **sdk-coin-dot:** handles breaking test cases ([aed9e9f](https://github.com/BitGo/BitGoJS/commit/aed9e9f99853d20ef527f1e6f44912b701715d5c))
+- **sdk-coin-dot:** update tests ([2e94080](https://github.com/BitGo/BitGoJS/commit/2e94080a7fb6c8ed42e8eff48f033d6d7e4c7a40))
+
+### Features
+
+- **sdk-coin-dot:** integrate the Westend AssetHub chain for tdot ([0d90a2b](https://github.com/BitGo/BitGoJS/commit/0d90a2b4d659e1690e600d46df5ca24ea23db3b7))
+
 ## [4.4.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@4.4.3...@bitgo/sdk-coin-dot@4.4.4) (2025-09-03)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-dot

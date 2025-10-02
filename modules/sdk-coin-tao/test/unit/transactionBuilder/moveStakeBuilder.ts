@@ -107,13 +107,7 @@ describe('Tao Move Stake Builder', function () {
 
       // Verify transaction explanation
       const explanation = tx.explainTransaction();
-      explanation.should.have.properties(['outputs', 'outputAmount', 'changeAmount', 'fee']);
-      explanation.outputs.should.have.length(1);
-      explanation.outputs[0].should.deepEqual({
-        address: '5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq',
-        amount: '9007199254740995',
-        tokenName: utils.getTaoTokenBySubnetId('1').name,
-      });
+      explanation.should.have.properties(['outputAmount', 'changeAmount', 'fee']);
     });
 
     it('should validate required fields', function () {
@@ -154,9 +148,6 @@ describe('Tao Move Stake Builder', function () {
       txJson.originNetuid.should.equal('1');
       txJson.destinationNetuid.should.equal('2');
       txJson.alphaAmount.should.equal('1000000000000');
-
-      const explanation = tx.explainTransaction();
-      explanation.outputs[0].tokenName.should.equal('ttao:onion');
     });
   });
 
@@ -468,11 +459,8 @@ describe('Tao Move Stake Builder', function () {
       const tx = await builder.build();
       const explanation = tx.explainTransaction();
 
-      explanation.should.have.properties(['outputs', 'outputAmount', 'changeAmount', 'fee', 'type']);
-      explanation.outputs.should.have.length(1);
-      explanation.outputs[0].should.have.properties(['address', 'amount', 'tokenName']);
-      explanation.outputs[0].address.should.equal('5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq');
-      explanation.outputs[0].amount.should.equal('1000000000000');
+      explanation.should.have.properties(['outputAmount', 'changeAmount', 'fee', 'type']);
+      explanation.outputAmount.should.equal('1000000000000');
       explanation.changeAmount.should.equal('0');
       explanation.fee.should.have.properties(['fee', 'type']);
       explanation.fee.type.should.equal('tip');
@@ -495,7 +483,7 @@ describe('Tao Move Stake Builder', function () {
       const explanation = tx.explainTransaction();
 
       explanation.fee.fee.should.equal('0');
-      explanation.outputAmount.should.equal('0');
+      explanation.outputAmount.should.equal('500000000');
     });
   });
 

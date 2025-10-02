@@ -6,7 +6,6 @@ import { TransactionClause } from '@vechain/sdk-core';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from '../transaction/transaction';
 import { StakingTransaction } from '../transaction/stakingTransaction';
-import EthereumAbi from 'ethereumjs-abi';
 import utils from '../utils';
 
 export class StakingBuilder extends TransactionBuilder {
@@ -77,35 +76,40 @@ export class StakingBuilder extends TransactionBuilder {
 
   /**
    * Sets the staking contract address for this staking tx.
+   * The address must be explicitly provided to ensure the correct contract is used.
    *
-   * @param {string} address - The staking contract address
+   * @param {string} address - The staking contract address (required)
    * @returns {StakingBuilder} This transaction builder
+   * @throws {Error} If no address is provided
    */
   stakingContractAddress(address: string): this {
+    if (!address) {
+      throw new Error('Staking contract address is required');
+    }
     this.validateAddress({ address });
     this.stakingTransaction.stakingContractAddress = address;
     return this;
   }
 
   /**
-   * Sets the amount to stake for this staking tx.
+   * Sets the level ID for this staking tx.
+   *
+   * @param {number} levelId - The level ID for staking
+   * @returns {StakingBuilder} This transaction builder
+   */
+  levelId(levelId: number): this {
+    this.stakingTransaction.levelId = levelId;
+    return this;
+  }
+
+  /**
+   * Sets the amount to stake for this staking tx (VET amount being sent).
    *
    * @param {string} amount - The amount to stake in wei
    * @returns {StakingBuilder} This transaction builder
    */
   amountToStake(amount: string): this {
     this.stakingTransaction.amountToStake = amount;
-    return this;
-  }
-
-  /**
-   * Sets the staking contract ABI for this staking tx.
-   *
-   * @param {EthereumAbi} abi - The staking contract ABI
-   * @returns {StakingBuilder} This transaction builder
-   */
-  stakingContractABI(abi: EthereumAbi): this {
-    this.stakingTransaction.stakingContractABI = abi;
     return this;
   }
 
@@ -127,7 +131,21 @@ export class StakingBuilder extends TransactionBuilder {
     }
     assert(transaction.stakingContractAddress, 'Staking contract address is required');
     assert(transaction.amountToStake, 'Amount to stake is required');
-    assert(transaction.stakingContractABI, 'Staking contract ABI is required');
+
+    // Validate amount is a valid number string
+    if (transaction.amountToStake) {
+      try {
+        const bn = new (require('bignumber.js'))(transaction.amountToStake);
+        if (!bn.isFinite() || bn.isNaN()) {
+          throw new Error('Invalid character');
+        }
+      } catch (e) {
+        throw new Error('Invalid character');
+      }
+    }
+
+    assert(transaction.levelId, 'Level ID is required');
+    assert(transaction.autorenew, 'Autorenew flag is required');
     this.validateAddress({ address: transaction.stakingContractAddress });
   }
 

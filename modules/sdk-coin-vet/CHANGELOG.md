@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.6.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.6.0...@bitgo/sdk-coin-vet@2.6.1) (2025-09-29)
+
+### Bug Fixes
+
+- correct methods and abi for vechain ([6125807](https://github.com/BitGo/BitGoJS/commit/612580764da038a11ed23ac32c80e8d464c4d027))
+
+# [2.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.5.3...@bitgo/sdk-coin-vet@2.6.0) (2025-09-25)
+
+### Bug Fixes
+
+- add txn type for vechain claim rewards ([7c716ba](https://github.com/BitGo/BitGoJS/commit/7c716bae5cafdf172506c9ccab9b394ffff3ceca))
+- export burn, exit delegation txns for vechain ([9aaa2fe](https://github.com/BitGo/BitGoJS/commit/9aaa2fe0dd081f2a534cccadb8aac4ca7d31e624))
+- failing vechain tests ([6af94ac](https://github.com/BitGo/BitGoJS/commit/6af94acfaf5fc416ae1e567c07e40ebad0c6cfe1))
+
+### Features
+
+- add claim rewards builder for vechain ([209a02a](https://github.com/BitGo/BitGoJS/commit/209a02a5b46cfbaf97aaf956130367791f21ec4a))
+- configure learn to skip git operations ([ee3a622](https://github.com/BitGo/BitGoJS/commit/ee3a6220496476aa7f4545b5f4a9a3bf97d9bdb9))
+
 ## [2.5.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.5.2...@bitgo/sdk-coin-vet@2.5.3) (2025-09-03)
 
 ### Bug Fixes

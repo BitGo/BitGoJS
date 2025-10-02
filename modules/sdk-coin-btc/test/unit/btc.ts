@@ -5,8 +5,10 @@ import { btcBackupKey } from './fixtures';
 import { type TestBitGoAPI, TestBitGo } from '@bitgo/sdk-test';
 
 import { Tbtc } from '../../src';
-import { BitGoAPI } from '@bitgo/sdk-api';
+import { BitGoAPI, encrypt } from '@bitgo/sdk-api';
 import * as utxolib from '@bitgo/utxo-lib';
+
+import { Wallet } from '@bitgo/sdk-core';
 
 describe('BTC:', () => {
   let bitgo: TestBitGoAPI;
@@ -103,6 +105,155 @@ describe('BTC:', () => {
             walletPassphrase: 'kAm[EFQ6o=SxlcLFDw%,',
           }),
         { message: 'failed to decrypt prv: json decrypt: invalid parameters' }
+      );
+    });
+  });
+
+  describe('Unspent management spoofability - Consolidation (BUILD_SIGN_SEND)', () => {
+    let coin: Tbtc;
+    let bitgoTest: TestBitGoAPI;
+    before(() => {
+      bitgoTest = TestBitGo.decorate(BitGoAPI, { env: 'test' });
+      bitgoTest.safeRegister('tbtc', Tbtc.createInstance);
+      bitgoTest.initializeTestVars();
+      coin = bitgoTest.coin('tbtc') as Tbtc;
+    });
+
+    it('should detect hex spoofing in BUILD_SIGN_SEND', async (): Promise<void> => {
+      const keyTriple = utxolib.testutil.getKeyTriple('default');
+      const rootWalletKey = new utxolib.bitgo.RootWalletKeys(keyTriple);
+      const [user] = keyTriple;
+
+      const wallet = new Wallet(bitgoTest, coin, {
+        id: '5b34252f1bf349930e34020a',
+        coin: 'tbtc',
+        keys: ['user', 'backup', 'bitgo'],
+      });
+
+      const originalPsbt = utxolib.testutil.constructPsbt(
+        [{ scriptType: 'p2wsh' as const, value: BigInt(10000) }],
+        [{ address: 'tb1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3q0sl5k7', value: BigInt(9000) }],
+        coin.network,
+        rootWalletKey,
+        'unsigned' as const
+      );
+      utxolib.bitgo.addXpubsToPsbt(originalPsbt, rootWalletKey);
+      const spoofedPsbt = utxolib.testutil.constructPsbt(
+        [{ scriptType: 'p2wsh' as const, value: BigInt(10000) }],
+        [{ address: 'tb1pjgg9ty3s2ztp60v6lhgrw76f7hxydzuk9t9mjsndh3p2gf2ah7gs4850kn', value: BigInt(9000) }],
+        coin.network,
+        rootWalletKey,
+        'unsigned' as const
+      );
+      utxolib.bitgo.addXpubsToPsbt(spoofedPsbt, rootWalletKey);
+      const spoofedHex: string = spoofedPsbt.toHex();
+
+      const bgUrl: string = (bitgoTest as any)._baseUrl;
+      const nock = require('nock');
+
+      nock(bgUrl)
+        .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/consolidateUnspents`)
+        .reply(200, { txHex: spoofedHex, consolidateId: 'test' });
+
+      nock(bgUrl)
+        .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/send`)
+        .reply((requestBody: any) => {
+          if (requestBody?.txHex === spoofedHex) {
+            throw new Error('Spoofed transaction was sent: spoofing protection failed');
+          }
+          return [200, { txid: 'test-txid-123', status: 'signed' }];
+        });
+
+      const pubs = keyTriple.map((k) => k.neutered().toBase58());
+      const responses = [
+        { pub: pubs[0], encryptedPrv: encrypt('pass', user.toBase58()) },
+        { pub: pubs[1] },
+        { pub: pubs[2] },
+      ];
+      wallet
+        .keyIds()
+        .forEach((id, i) => nock(bgUrl).get(`/api/v2/${wallet.coin()}/key/${id}`).reply(200, responses[i]));
+
+      await assert.rejects(
+        wallet.consolidateUnspents({ walletPassphrase: 'pass' }),
+        (e: any) =>
+          typeof e?.message === 'string' &&
+          e.message.includes('prebuild attempts to spend to unintended external recipients')
+      );
+    });
+  });
+
+  describe('Unspent management spoofability - Fanout (BUILD_SIGN_SEND)', () => {
+    let coin: Tbtc;
+    let bitgoTest: TestBitGoAPI;
+    before(() => {
+      bitgoTest = TestBitGo.decorate(BitGoAPI, { env: 'test' });
+      bitgoTest.safeRegister('tbtc', Tbtc.createInstance);
+      bitgoTest.initializeTestVars();
+      coin = bitgoTest.coin('tbtc') as Tbtc;
+    });
+
+    it('should detect hex spoofing in fanout BUILD_SIGN_SEND', async (): Promise<void> => {
+      const keyTriple = utxolib.testutil.getKeyTriple('default');
+      const rootWalletKey = new utxolib.bitgo.RootWalletKeys(keyTriple);
+      const [user] = keyTriple;
+
+      const wallet = new Wallet(bitgoTest, coin, {
+        id: '5b34252f1bf349930e34020a',
+        coin: 'tbtc',
+        keys: ['user', 'backup', 'bitgo'],
+      });
+
+      const originalPsbt = utxolib.testutil.constructPsbt(
+        [{ scriptType: 'p2wsh' as const, value: BigInt(10000) }],
+        [{ address: 'tb1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3q0sl5k7', value: BigInt(9000) }],
+        coin.network,
+        rootWalletKey,
+        'unsigned' as const
+      );
+      utxolib.bitgo.addXpubsToPsbt(originalPsbt, rootWalletKey);
+
+      const spoofedPsbt = utxolib.testutil.constructPsbt(
+        [{ scriptType: 'p2wsh' as const, value: BigInt(10000) }],
+        [{ address: 'tb1pjgg9ty3s2ztp60v6lhgrw76f7hxydzuk9t9mjsndh3p2gf2ah7gs4850kn', value: BigInt(9000) }],
+        coin.network,
+        rootWalletKey,
+        'unsigned' as const
+      );
+      utxolib.bitgo.addXpubsToPsbt(spoofedPsbt, rootWalletKey);
+      const spoofedHex: string = spoofedPsbt.toHex();
+
+      const bgUrl: string = (bitgoTest as any)._baseUrl;
+      const nock = require('nock');
+
+      nock(bgUrl)
+        .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/fanoutUnspents`)
+        .reply(200, { txHex: spoofedHex, fanoutId: 'test' });
+
+      nock(bgUrl)
+        .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/send`)
+        .reply((requestBody: any) => {
+          if (requestBody?.txHex === spoofedHex) {
+            throw new Error('Spoofed transaction was sent: spoofing protection failed');
+          }
+          return [200, { txid: 'test-txid-123', status: 'signed' }];
+        });
+
+      const pubs = keyTriple.map((k) => k.neutered().toBase58());
+      const responses = [
+        { pub: pubs[0], encryptedPrv: encrypt('pass', user.toBase58()) },
+        { pub: pubs[1] },
+        { pub: pubs[2] },
+      ];
+      wallet
+        .keyIds()
+        .forEach((id, i) => nock(bgUrl).get(`/api/v2/${wallet.coin()}/key/${id}`).reply(200, responses[i]));
+
+      await assert.rejects(
+        wallet.fanoutUnspents({ walletPassphrase: 'pass' }),
+        (e: any) =>
+          typeof e?.message === 'string' &&
+          e.message.includes('prebuild attempts to spend to unintended external recipients')
       );
     });
   });

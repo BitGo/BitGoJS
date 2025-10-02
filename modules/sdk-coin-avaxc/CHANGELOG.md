@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxc@6.4.0...@bitgo/sdk-coin-avaxc@6.4.1) (2025-09-29)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-avaxc
+
+# [6.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxc@6.3.4...@bitgo/sdk-coin-avaxc@6.4.0) (2025-09-25)
+
+### Bug Fixes
+
+- **sdk-coin-avaxc:** floor gas price estimates to 1 ([aa75ca7](https://github.com/BitGo/BitGoJS/commit/aa75ca7cc32d2ce384060c93da5407d2e39d8d1d))
+
+### Features
+
+- configure learn to skip git operations ([ee3a622](https://github.com/BitGo/BitGoJS/commit/ee3a6220496476aa7f4545b5f4a9a3bf97d9bdb9))
+
 ## [6.3.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-avaxc@6.3.3...@bitgo/sdk-coin-avaxc@6.3.4) (2025-09-03)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-avaxc

@@ -60,6 +60,7 @@ describe('Verify string type is used for value of unspent', function () {
           );
 
         sinon.stub(wallet, 'signTransaction').resolves({});
+        sinon.stub(wallet.baseCoin, 'verifyTransaction').resolves();
 
         const sendScope = nock(bgUrl)
           .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/send`, { type: manageUnspentType })

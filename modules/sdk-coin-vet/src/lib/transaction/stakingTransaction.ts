@@ -6,15 +6,18 @@ import { VetTransactionData } from '../iface';
 import EthereumAbi from 'ethereumjs-abi';
 import utils from '../utils';
 import BigNumber from 'bignumber.js';
+import { addHexPrefix } from 'ethereumjs-util';
 
 export class StakingTransaction extends Transaction {
   private _stakingContractAddress: string;
+  private _levelId: number;
+  private _autorenew = true;
   private _amountToStake: string;
-  private _stakingContractABI: EthereumAbi;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
     this._type = TransactionType.ContractCall;
+    this._autorenew = true;
   }
 
   get stakingContractAddress(): string {
@@ -25,6 +28,22 @@ export class StakingTransaction extends Transaction {
     this._stakingContractAddress = address;
   }
 
+  get levelId(): number {
+    return this._levelId;
+  }
+
+  set levelId(levelId: number) {
+    this._levelId = levelId;
+  }
+
+  get autorenew(): boolean {
+    return this._autorenew;
+  }
+
+  set autorenew(autorenew: boolean) {
+    this._autorenew = autorenew;
+  }
+
   get amountToStake(): string {
     return this._amountToStake;
   }
@@ -33,25 +52,22 @@ export class StakingTransaction extends Transaction {
     this._amountToStake = amount;
   }
 
-  get stakingContractABI(): EthereumAbi {
-    return this._stakingContractABI;
-  }
-
-  set stakingContractABI(abi: EthereumAbi) {
-    this._stakingContractABI = abi;
-  }
-
   buildClauses(): void {
     if (!this.stakingContractAddress) {
       throw new Error('Staking contract address is not set');
+    }
+
+    utils.validateStakingContractAddress(this.stakingContractAddress, this._coinConfig);
+
+    if (this.levelId === undefined || this.levelId === null) {
+      throw new Error('Level ID is not set');
     }
 
     if (!this.amountToStake) {
       throw new Error('Amount to stake is not set');
     }
 
-    // Generate transaction data using ethereumjs-abi
-    const data = utils.getStakingData(this.amountToStake);
+    const data = this.getStakingData(this.levelId, this.autorenew);
     this._transactionData = data;
 
     // Create the clause for staking
@@ -71,6 +87,23 @@ export class StakingTransaction extends Transaction {
       },
     ];
   }
+  /**
+   * Encodes staking transaction data using ethereumjs-abi for stakeAndDelegate method
+   *
+   * @param {number} levelId - The level ID for staking
+   * @param {boolean} autorenew - Whether to enable autorenew
+   * @returns {string} - The encoded transaction data
+   */
+  getStakingData(levelId: number, autorenew = true): string {
+    const methodName = 'stakeAndDelegate';
+    const types = ['uint8', 'bool'];
+    const params = [levelId, autorenew];
+
+    const method = EthereumAbi.methodID(methodName, types);
+    const args = EthereumAbi.rawEncode(types, params);
+
+    return addHexPrefix(Buffer.concat([method, args]).toString('hex'));
+  }
 
   toJson(): VetTransactionData {
     const json: VetTransactionData = {
@@ -88,6 +121,8 @@ export class StakingTransaction extends Transaction {
       to: this.stakingContractAddress,
       stakingContractAddress: this.stakingContractAddress,
       amountToStake: this.amountToStake,
+      nftTokenId: this.levelId,
+      autorenew: this.autorenew,
     };
 
     return json;
@@ -124,6 +159,9 @@ export class StakingTransaction extends Transaction {
         }
         if (clause.data) {
           this.transactionData = clause.data;
+          const decoded = utils.decodeStakingData(clause.data);
+          this.levelId = decoded.levelId;
+          this.autorenew = decoded.autorenew;
         }
       }
 

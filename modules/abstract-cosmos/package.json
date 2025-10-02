@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/abstract-cosmos",
-  "version": "0.0.0-semantic-release-managed",
+  "version": "11.15.1",
   "description": "BitGo SDK coin library for COSMOS base implementation",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -38,10 +38,10 @@
     ]
   },
   "dependencies": {
-    "@bitgo/sdk-core": "0.0.0-semantic-release-managed",
-    "@bitgo/sdk-lib-mpc": "0.0.0-semantic-release-managed",
-    "@bitgo/secp256k1": "0.0.0-semantic-release-managed",
-    "@bitgo/statics": "0.0.0-semantic-release-managed",
+    "@bitgo/sdk-core": "^36.10.0",
+    "@bitgo/sdk-lib-mpc": "^10.7.0",
+    "@bitgo/secp256k1": "^1.5.0",
+    "@bitgo/statics": "^58.1.0",
     "@cosmjs/amino": "^0.29.5",
     "@cosmjs/crypto": "^0.30.1",
     "@cosmjs/encoding": "^0.29.5",
