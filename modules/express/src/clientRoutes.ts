@@ -1049,6 +1049,10 @@ export async function handleKeychainChangePassword(
     reqId,
   });
 
+  if (!keychain) {
+    throw new ApiResponseError(`Keychain ${req.params.id} not found`, 404);
+  }
+
   const updatedKeychain = coin.keychains().updateSingleKeychainPassword({
     keychain,
     oldPassword,
