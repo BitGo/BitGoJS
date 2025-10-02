@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@7.1.1...@bitgo/abstract-lightning@7.2.0) (2025-10-02)
+
+### Features
+
+- **abstract-lightning:** add cursor-based pagination for lightning transactions ([ce9b735](https://github.com/BitGo/BitGoJS/commit/ce9b7353149ff67909b94813979949b47303372c))
+
 ## [7.1.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@7.1.0...@bitgo/abstract-lightning@7.1.1) (2025-09-29)
 
 ### Bug Fixes

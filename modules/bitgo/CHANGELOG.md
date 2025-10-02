@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.3.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.2.0...bitgo@50.3.0) (2025-10-02)
+
+### Bug Fixes
+
+- **statics:** un-onboard unstETH NFT ([3a76000](https://github.com/BitGo/BitGoJS/commit/3a7600028eca05c6a92151b9faa6524d6f6dfcc3))
+
+### Features
+
+- **abstract-lightning:** add cursor-based pagination for lightning transactions ([ce9b735](https://github.com/BitGo/BitGoJS/commit/ce9b7353149ff67909b94813979949b47303372c))
+
 # [50.2.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.1.0...bitgo@50.2.0) (2025-09-29)
 
 ### Bug Fixes
