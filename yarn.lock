@@ -14954,10 +14954,10 @@ mem-fs-editor@^9.0.0:
     normalize-path "^3.0.0"
     textextensions "^5.13.0"
 
-memfs@^4.43.1:
-  version "4.47.0"
-  resolved "https://registry.npmjs.org/memfs/-/memfs-4.47.0.tgz#410291da6dcce89a0d6c9cab23b135231a5ed44c"
-  integrity sha512-Xey8IZA57tfotV/TN4d6BmccQuhFP+CqRiI7TTNdipZdZBzF2WnzUcH//Cudw6X4zJiUbo/LTuU/HPA/iC/pNg==
+memfs@4.46.0, memfs@^4.43.1:
+  version "4.46.0"
+  resolved "https://registry.npmjs.org/memfs/-/memfs-4.46.0.tgz#7b110f7a47cdf28b524072b9dd028c9752e4a29c"
+  integrity sha512-//IxqL9OO/WMpm2kE2aq+y7vO7/xS9xgVIbFM8RUIfW7TY7lowtnuS1j9MwLGm0OwcHUa4p8Bp+40W7f1BiWGQ==
   dependencies:
     "@jsonjoy.com/json-pack" "^1.11.0"
     "@jsonjoy.com/util" "^1.9.0"
