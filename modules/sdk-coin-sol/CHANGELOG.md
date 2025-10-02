@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.1.0...@bitgo/sdk-coin-sol@7.2.0) (2025-10-02)
+
+### Bug Fixes
+
+- added bigint-buffer-guard to sdk-coin-sol ([bec5a1a](https://github.com/BitGo/BitGoJS/commit/bec5a1a87da8b172d56f4a82075a3b8f3b9de191))
+
+### Features
+
+- **sdk-coin-sol:** token 2022 transfer hook implementation ([9a7ab29](https://github.com/BitGo/BitGoJS/commit/9a7ab2928ab77a98d318a94d820966429e99a0da))
+- **sdk-coin-sol:** token 2022 transfer hook implementation ([1c5e085](https://github.com/BitGo/BitGoJS/commit/1c5e08512c868735eae8be452341bf4ac1dfe944))
+
 # [7.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.0.0...@bitgo/sdk-coin-sol@7.1.0) (2025-09-29)
 
 ### Features

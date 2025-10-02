@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [15.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.2.0...@bitgo/express@15.3.0) (2025-10-02)
+
+### Bug Fixes
+
+- resolve webpack-dev-server to v5.2.1 ([11c7987](https://github.com/BitGo/BitGoJS/commit/11c7987255794eabc05e63cc80cec1dd020d9424))
+
+### Features
+
+- **express:** migrate consolidateUnspents to typed routes ([af8f7d4](https://github.com/BitGo/BitGoJS/commit/af8f7d43058b6ab01efb6e32087dd5a967b15ff5))
+- **express:** migrate fanoutunspents to typed routes ([05b3b85](https://github.com/BitGo/BitGoJS/commit/05b3b85c714a2caa5ca3eb63495e3b0a5d347ea8))
+
 # [15.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.1.0...@bitgo/express@15.2.0) (2025-09-29)
 
 ### Bug Fixes

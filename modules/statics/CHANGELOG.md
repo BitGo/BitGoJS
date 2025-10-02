@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.1.0...@bitgo/statics@58.2.0) (2025-10-02)
+
+### Bug Fixes
+
+- **statics:** un-onboard unstETH NFT ([3a76000](https://github.com/BitGo/BitGoJS/commit/3a7600028eca05c6a92151b9faa6524d6f6dfcc3))
+
+### Features
+
+- add og to tokens ([cdff4d5](https://github.com/BitGo/BitGoJS/commit/cdff4d56472c676a3f14f4bd6d14665159083ed4))
+- **statics:** add statics for token PIPE ([f060e11](https://github.com/BitGo/BitGoJS/commit/f060e111d1915227e3de00c2e57a7d2208cd5a64))
+
 # [58.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.0.0...@bitgo/statics@58.1.0) (2025-09-29)
 
 ### Bug Fixes
