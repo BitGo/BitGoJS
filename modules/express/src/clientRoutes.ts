@@ -663,7 +663,7 @@ export async function handleV2GenerateWallet(req: express.Request) {
 export async function handleV2CreateAddress(req: ExpressApiRouteRequest<'express.v2.wallet.createAddress', 'post'>) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.decoded.coin);
-  const wallet = await coin.wallets().get({ id: req.decoded.walletId });
+  const wallet = await coin.wallets().get({ id: req.decoded.id });
   return wallet.createAddress(req.decoded);
 }
 

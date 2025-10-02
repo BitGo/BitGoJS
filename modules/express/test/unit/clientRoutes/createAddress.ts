@@ -31,7 +31,7 @@ describe('Create Address', () => {
       bitgo: bitgoStub,
       params: {
         coin: 'tbtc',
-        walletId: '23423423423423',
+        id: '23423423423423',
       },
       query: {},
       body: {
@@ -39,7 +39,7 @@ describe('Create Address', () => {
       },
       decoded: {
         coin: 'tbtc',
-        walletId: '23423423423423',
+        id: '23423423423423',
         chain: 0,
       },
     } as unknown as ExpressApiRouteRequest<'express.v2.wallet.createAddress', 'post'>;

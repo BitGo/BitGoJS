@@ -193,16 +193,16 @@ describe('io-ts decode tests', function () {
   });
 
   it('express.v2.wallet.createAddress params', function () {
-    // missing walletId
+    // missing id
     assert.throws(() => assertDecode(t.type(CreateAddressParams), { coin: 'btc' }));
     // coin must be string
     assert.throws(() =>
-      assertDecode(t.type(CreateAddressParams), { coin: 123, walletId: '59cd72485007a239fb00282ed480da1f' })
+      assertDecode(t.type(CreateAddressParams), { coin: 123, id: '59cd72485007a239fb00282ed480da1f' })
     );
-    // walletId must be string
-    assert.throws(() => assertDecode(t.type(CreateAddressParams), { coin: 'btc', walletId: 123 }));
+    // id must be string
+    assert.throws(() => assertDecode(t.type(CreateAddressParams), { coin: 'btc', id: 123 }));
     // valid params
-    assertDecode(t.type(CreateAddressParams), { coin: 'btc', walletId: '59cd72485007a239fb00282ed480da1f' });
+    assertDecode(t.type(CreateAddressParams), { coin: 'btc', id: '59cd72485007a239fb00282ed480da1f' });
     // invalid body
     assert.throws(() => assertDecode(t.type(CreateAddressBody), { chain: '1' }));
     assert.throws(() => assertDecode(t.type(CreateAddressBody), { format: 'invalid' }));

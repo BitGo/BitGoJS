@@ -10,7 +10,7 @@ export const CreateAddressParams = {
   /** Coin ticker / chain identifier */
   coin: t.string,
   /** The ID of the wallet. */
-  walletId: t.string,
+  id: t.string,
 } as const;
 
 /**
@@ -62,6 +62,7 @@ export const CreateAddressResponse = {
 /**
  * Create address for a wallet
  *
+ * @tag express
  * @operationId express.v2.wallet.createAddress
  */
 export const PostCreateAddress = httpRoute({
