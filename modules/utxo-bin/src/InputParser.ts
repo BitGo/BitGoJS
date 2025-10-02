@@ -224,7 +224,12 @@ export class InputParser extends Parser {
             ...this.parseSignaturesWithSigners(
               parsed,
               signedBy.flatMap((v, i) => (v ? [i.toString()] : [])),
-              parsed.signatures.map((k: Buffer | 0) => (k === 0 ? -1 : signedBy.indexOf(k)))
+              parsed.signatures.map((k: Buffer | 0) => {
+                if (k === 0) {
+                  return -1;
+                }
+                return signedBy.findIndex((kk) => kk && kl.equals(k));
+              })
             )
           );
         } catch (e) {
