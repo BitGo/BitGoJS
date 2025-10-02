@@ -28,7 +28,7 @@ import {
 import { BigNumber } from 'bignumber.js';
 import * as stellar from 'stellar-sdk';
 import { SeedValidator } from './seedValidator';
-import { KeyPair as HbarKeyPair, TransactionBuilderFactory, Transaction } from './lib';
+import { KeyPair as HbarKeyPair, TransactionBuilderFactory, Transaction, Recipient as HederaRecipient } from './lib';
 import * as Utils from './lib/utils';
 import * as _ from 'lodash';
 import {
@@ -303,7 +303,7 @@ export class Hbar extends BaseCoin {
   private validateNoTransfers(raw: HederaRawTransactionData): void {
     if (raw.instructionsData?.params?.recipients?.length && raw.instructionsData.params.recipients.length > 0) {
       const hasNonZeroTransfers = raw.instructionsData.params.recipients.some(
-        (recipient: any) => recipient.amount && recipient.amount !== '0'
+        (recipient: HederaRecipient) => recipient.amount && recipient.amount !== '0'
       );
       if (hasNonZeroTransfers) {
         throw new Error('Transaction contains transfers; not a pure token enablement.');
@@ -422,15 +422,22 @@ export class Hbar extends BaseCoin {
   }
 
   private validateAssociateInstructionOnly(raw: HederaRawTransactionData): void {
-    const t = String(raw.instructionsData?.type || '').toLowerCase();
+    const instructionType = String(raw.instructionsData?.type || '').toLowerCase();
 
-    if (t === 'contractexecute' || t === 'contractcall' || t === 'precompile') {
-      throw new Error(`Contract-based token association not allowed for blind enablement; got ${t}`);
+    if (
+      instructionType === 'contractexecute' ||
+      instructionType === 'contractcall' ||
+      instructionType === 'precompile'
+    ) {
+      throw new Error(`Contract-based token association not allowed for blind enablement; got ${instructionType}`);
     }
 
-    const isNativeAssociate = t === 'tokenassociate' || t === 'associate' || t === 'associate_token';
+    const isNativeAssociate =
+      instructionType === 'tokenassociate' || instructionType === 'associate' || instructionType === 'associate_token';
     if (!isNativeAssociate) {
-      throw new Error(`Only native TokenAssociate is allowed for blind enablement; got ${t || 'unknown'}`);
+      throw new Error(
+        `Only native TokenAssociate is allowed for blind enablement; got ${instructionType || 'unknown'}`
+      );
     }
   }
 
