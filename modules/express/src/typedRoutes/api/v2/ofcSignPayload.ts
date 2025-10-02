@@ -32,9 +32,10 @@ export const OfcSignPayloadResponse = {
   400: BitgoExpressError,
 } as const;
 
-/**
- * Request body for signing an arbitrary payload with an OFC wallet key.
+/** Sign payload with an OFC wallet key.
+ * Signs an arbitrary payload with an OFC wallet key.
  *
+ * @tag express
  * @operationId express.ofc.signPayload
  */
 export const PostOfcSignPayload = httpRoute({
