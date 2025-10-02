@@ -174,6 +174,14 @@ export function getBtcProviderForECKey(
           throw new Error(`unexpected signing step: ${options.action.name}`);
       }
     },
+
+    /**
+     * This function is only used by btc-staking-ts to create a staking expansion registration
+     * transaction, which we do not currently support.
+     */
+    async getTransactionHex(txid: string): Promise<string> {
+      throw new Error(`Unsupported operation getTransactionHex (txid=${txid})`);
+    },
   };
 }
 type Result = {
@@ -252,6 +260,22 @@ export function toStakingTransaction(tx: TransactionLike): bitcoinjslib.Transact
   return bitcoinjslib.Transaction.fromHex(tx.toHex());
 }
 
+/**
+ * As of babylonlabs-io/btc-staking-ts v1.5.7, the BTC delegation message creation functions support two message types:
+ * - MsgCreateBTCDelegation
+ * - MsgBtcStakeExpand
+ *
+ * BitGo still only supports MsgCreateBTCDelegation, so we need to check the message type here.
+ *
+ * @param msg - the message to check
+ * @return `true` if the message is of type MsgCreateBTCDelegation
+ */
+function isMsgBtcStakeExpand(
+  msg: babylonProtobuf.btcstakingtx.MsgCreateBTCDelegation | babylonProtobuf.btcstakingtx.MsgBtcStakeExpand
+) {
+  return 'previousStakingTxHash' in msg;
+}
+
 /*
  * This is mostly lifted from
  * https://github.com/babylonlabs-io/btc-staking-ts/blob/v0.4.0-rc.2/src/staking/manager.ts#L100-L172
@@ -270,7 +294,7 @@ export async function createDelegationMessageWithTransaction(
     throw new Error('Invalid Babylon address');
   }
   // Create delegation message without including inclusion proof
-  return manager.createBtcDelegationMsg(
+  const msg = await manager.createBtcDelegationMsg(
     channel,
     staking,
     {
@@ -283,6 +307,14 @@ export async function createDelegationMessageWithTransaction(
     staking.stakerInfo,
     staking.params
   );
+
+  // It shouldn't be possible for us to create a MsgBtcStakeExpand here because that only gets created when
+  // we pass channel = delegation:expand into createBtcDelegationMsg, which we cannot do.
+  if (isMsgBtcStakeExpand(msg.value)) {
+    throw new Error('MsgBtcStakeExpand is not supported');
+  }
+
+  return { ...msg, value: msg.value as babylonProtobuf.btcstakingtx.MsgCreateBTCDelegation };
 }
 
 export async function createUnsignedPreStakeRegistrationBabylonTransactionWithBtcProvider(

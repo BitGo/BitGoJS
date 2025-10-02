@@ -43,7 +43,7 @@
   },
   "type": "commonjs",
   "dependencies": {
-    "@babylonlabs-io/babylon-proto-ts": "1.0.0",
+    "@babylonlabs-io/babylon-proto-ts": "1.7.2",
     "@bitgo/babylonlabs-io-btc-staking-ts": "^2.4.1",
     "@bitgo/utxo-core": "^1.19.0",
     "@bitgo/utxo-lib": "^11.10.0",
