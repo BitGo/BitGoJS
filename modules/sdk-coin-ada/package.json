@@ -57,5 +57,8 @@
     "@bitgo/sdk-api": "^1.69.2",
     "@bitgo/sdk-test": "^9.1.2"
   },
-  "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c"
+  "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c",
+  "files": [
+    "dist"
+  ]
 }

@@ -176,5 +176,8 @@
   "publishConfig": {
     "access": "public"
   },
-  "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c"
+  "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c",
+  "files": [
+    "dist"
+  ]
 }
