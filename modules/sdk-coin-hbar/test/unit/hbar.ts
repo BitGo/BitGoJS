@@ -682,6 +682,47 @@ describe('Hedera Hashgraph:', function () {
       assert.ok(true, 'Valid token enablement transaction should not throw any errors');
     });
 
+    it('should successfully complete sendTokenEnablements with valid transaction response from wallet platform', async function () {
+      const validTxHex = TestData.UNSIGNED_TOKEN_ASSOCIATE;
+
+      const wallet = {
+        id: () => '5b34252f1bf34993006eae96',
+        coin: () => 'thbar',
+        prebuildTransaction: async () => ({
+          txHex: validTxHex, // Valid token associate transaction
+          txid: '586c5b59b10b134d04c16ac1b273fe3c5529f34aef75db4456cd469c5cdac7e2',
+          recipients: [{ address: '0.0.81320', amount: '0' }],
+          coin: 'thbar',
+          feeInfo: { size: 1000, fee: 1160407, feeRate: 1160407 },
+        }),
+        sendTokenEnablements: async (params: any) => {
+          const txPrebuild = await wallet.prebuildTransaction();
+          await basecoin.verifyTransaction({
+            txParams: {
+              type: 'enabletoken',
+              recipients: [{ address: '0.0.81320', amount: '0', tokenName: 'thbar:usdc' }],
+            },
+            txPrebuild,
+            verification: { verifyTokenEnablement: true },
+          });
+
+          return {
+            success: [{ txid: txPrebuild.txid, status: 'success' }],
+            failure: [],
+          };
+        },
+      };
+
+      await wallet.sendTokenEnablements({
+        recipients: [{ address: '0.0.81320', tokenName: 'thbar:usdc' }],
+      });
+
+      assert.ok(
+        true,
+        'Valid token enablement transaction should complete successfully through sendTokenEnablements flow'
+      );
+    });
+
     it('should detect spoofed transaction hex through sendTokenEnablements flow', async function () {
       // Use a valid transfer transaction hex instead of a token associate transaction
       // This will parse correctly but fail validation because it's not a token associate transaction
