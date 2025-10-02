@@ -1,2 +1,0 @@
-TEST_REPEAT_TIMES=5 npm test
-npm run build
