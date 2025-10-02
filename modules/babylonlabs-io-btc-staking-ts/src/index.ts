@@ -15,7 +15,3 @@ export {
 export * from "./utils/utxo/findInputUTXO";
 export * from "./utils/utxo/getPsbtInputFields";
 export * from "./utils/utxo/getScriptType";
-
-// BitGo-specific exports
-export * from "./utils/babylon";
-export * from "./utils/staking";
