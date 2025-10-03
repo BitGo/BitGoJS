@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.6.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.6.1...@bitgo/sdk-coin-vet@2.6.2) (2025-10-02)
+
+### Bug Fixes
+
+- invalid id error for vechain staking txns ([0493661](https://github.com/BitGo/BitGoJS/commit/0493661e928eb24bbfcd6d219fb6396a7f63a26c))
+- remove abi validation for vechain ([5b27927](https://github.com/BitGo/BitGoJS/commit/5b2792727e1f064453a0d1754e4e90227b40e0b5))
+
 ## [2.6.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.6.0...@bitgo/sdk-coin-vet@2.6.1) (2025-09-29)
 
 ### Bug Fixes

@@ -1,9 +1,12 @@
 {
   "name": "@bitgo/sdk-core",
-  "version": "36.10.0",
+  "version": "36.10.1",
   "description": "core library functions for BitGoJS",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "test": "yarn unit-test",
     "unit-test": "nyc -- mocha --recursive test",
@@ -41,8 +44,8 @@
     "@bitgo/sdk-lib-mpc": "^10.7.0",
     "@bitgo/secp256k1": "^1.5.0",
     "@bitgo/sjcl": "^1.0.1",
-    "@bitgo/statics": "^58.1.0",
-    "@bitgo/utxo-core": "^1.20.0",
+    "@bitgo/statics": "^58.2.0",
+    "@bitgo/utxo-core": "^1.20.1",
     "@bitgo/utxo-lib": "^11.11.0",
     "@noble/curves": "1.8.1",
     "@stablelib/hex": "^1.0.0",

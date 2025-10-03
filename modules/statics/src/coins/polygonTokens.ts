@@ -1090,7 +1090,15 @@ export const polygonTokens = [
     UnderlyingAsset['polygon:xusd'],
     POLYGON_TOKEN_FEATURES
   ),
-
+  polygonErc20(
+    'a9ad6dd1-f3e9-42f3-9b10-c68a92c216e7',
+    'polygon:brl1',
+    'BRL1',
+    18,
+    '0x5c067c80c00ecd2345b05e83a3e758ef799c40b5',
+    UnderlyingAsset['polygon:brl1'],
+    POLYGON_TOKEN_FEATURES
+  ),
   // testnet polygon tokens
   tpolygonErc20(
     '09ba76d0-331e-4b75-bb75-739285c3e03a',

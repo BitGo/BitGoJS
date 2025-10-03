@@ -13467,4 +13467,36 @@ export const erc20Coins = [
     '0x1789e0043623282d5dcc7f213d703c6d8bafbb04',
     UnderlyingAsset['eth:linea']
   ),
+  erc20(
+    '2b2318f4-11f1-416a-a75c-d755cc8c997c',
+    'eth:ff',
+    'Falcon Finance',
+    18,
+    '0xfa1c09fc8b491b6a4d3ff53a10cad29381b3f949',
+    UnderlyingAsset['eth:ff']
+  ),
+  erc20(
+    'b4b9fd5d-3830-4651-abda-667b59c865ac',
+    'eth:mavia',
+    'Heroes of Mavia',
+    18,
+    '0x24fcfc492c1393274b6bcd568ac9e225bec93584',
+    UnderlyingAsset['eth:mavia']
+  ),
+  erc20(
+    'c4c0adf4-adcf-436a-bc40-33c151f283aa',
+    'eth:lm',
+    'LeisureMeta',
+    18,
+    '0xc064f4f215b6a1e4e7f39bd8530c4de0fc43ee9d',
+    UnderlyingAsset['eth:lm']
+  ),
+  erc20(
+    '3ded7589-7211-484a-8a76-1eace1d7dcb6',
+    'eth:kub',
+    'KUB',
+    18,
+    '0x0649cef6d11ed6f88535462e147304d3fe5ae14d',
+    UnderlyingAsset['eth:kub']
+  ),
 ];

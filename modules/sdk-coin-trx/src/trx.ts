@@ -31,8 +31,8 @@ import {
   AuditDecryptedKeyParams,
 } from '@bitgo/sdk-core';
 import { Interface, Utils, WrappedBuilder } from './lib';
+import { ValueFields, TransactionReceipt } from './lib/iface';
 import { getBuilder } from './lib/builder';
-import { TransactionReceipt } from './lib/iface';
 import { isInteger, isUndefined } from 'lodash';
 
 export const MINIMUM_TRON_MSIG_TRANSACTION_FEE = 1e6;
@@ -250,6 +250,70 @@ export class Trx extends BaseCoin {
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
+    const { txParams, txPrebuild } = params;
+
+    if (!txParams) {
+      throw new Error('missing txParams');
+    }
+
+    if (!txPrebuild) {
+      throw new Error('missing txPrebuild');
+    }
+
+    if (!txPrebuild.txHex) {
+      throw new Error('missing txHex in txPrebuild');
+    }
+
+    const rawTx = txPrebuild.txHex;
+    const txBuilder = getBuilder(this.getChain()).from(rawTx);
+    const tx = await txBuilder.build();
+    const txJson = tx.toJson();
+
+    if (!txJson.raw_data || !txJson.raw_data.contract || txJson.raw_data.contract.length !== 1) {
+      throw new Error('Number of contracts is greater than 1.');
+    }
+
+    const contract = txJson.raw_data.contract[0];
+
+    if (contract.type === 'TransferContract') {
+      return this.validateTransferContract(contract, txParams);
+    } else {
+      return true;
+    }
+  }
+
+  /**
+   * Validate Transfer contract (native TRX transfer)
+   */
+  private validateTransferContract(contract: any, txParams: any): boolean {
+    if (!('parameter' in contract) || !contract.parameter?.value) {
+      throw new Error('Invalid Transfer contract structure');
+    }
+
+    const value = contract.parameter.value as ValueFields;
+
+    // Validate amount
+    if (!value.amount || value.amount < 0) {
+      throw new Error('Invalid transfer amount');
+    }
+
+    // If txParams has recipients, validate against expected values
+    if (txParams.recipients && txParams.recipients.length === 1) {
+      const recipient = txParams.recipients[0];
+      const expectedAmount = recipient.amount.toString();
+      const expectedDestination = recipient.address;
+      const actualAmount = value.amount.toString();
+      const actualDestination = Utils.getBase58AddressFromHex(value.to_address);
+
+      if (expectedAmount !== actualAmount) {
+        throw new Error('transaction amount in txPrebuild does not match the value given by client');
+      }
+
+      if (expectedDestination.toLowerCase() !== actualDestination.toLowerCase()) {
+        throw new Error('destination address does not match with the recipient address');
+      }
+    }
+
     return true;
   }
 

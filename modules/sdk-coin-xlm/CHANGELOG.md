@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xlm@3.6.1...@bitgo/sdk-coin-xlm@3.7.0) (2025-10-02)
+
+### Features
+
+- **sdk-coin-xlm:** blind signing guards for token enablements ([9d20ae8](https://github.com/BitGo/BitGoJS/commit/9d20ae84b15d4d20f9af0d027f215298bc530525))
+- **sdk-coin-xlm:** simplified verify methods ([8ed6ddd](https://github.com/BitGo/BitGoJS/commit/8ed6ddd4fa855c0a0dcce6186800bfa6ccffe7e6))
+
 ## [3.6.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xlm@3.6.0...@bitgo/sdk-coin-xlm@3.6.1) (2025-09-29)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-xlm

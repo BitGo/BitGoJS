@@ -41,5 +41,8 @@
   },
   "dependencies": {
     "cbor": "^9.0.1"
-  }
+  },
+  "files": [
+    "dist"
+  ]
 }

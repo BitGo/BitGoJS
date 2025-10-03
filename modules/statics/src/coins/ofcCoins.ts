@@ -767,6 +767,14 @@ export const ofcCoins = [
     SOL_OFC_TOKEN_FEATURES
   ),
   ofcsolToken(
+    'c120968e-6ec2-4ddb-98f7-87c4480e461f',
+    'ofcsol:pipe',
+    'Pipe',
+    9,
+    UnderlyingAsset['sol:pipe'],
+    SOL_OFC_TOKEN_FEATURES
+  ),
+  ofcsolToken(
     '7d50630f-9bba-4a06-8665-4376ef1f128e',
     'ofcsol:drift',
     'Drift',
@@ -1172,6 +1180,22 @@ export const ofcCoins = [
     UnderlyingAsset['sol:zig'],
     SOL_TOKEN_FEATURES
   ),
+  ofcsolToken(
+    '95aa4c0f-c1d9-41ab-8201-55a4bbab4609',
+    'ofcsol:ford',
+    'Forward Industries, Inc',
+    6,
+    UnderlyingAsset['sol:ford'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '2d314473-29f8-4f1d-aa6a-8f13e60ec2d1',
+    'ofcsol:glxy',
+    'Galaxy Digital Inc. Class A Common Stock',
+    6,
+    UnderlyingAsset['sol:ford'],
+    SOL_TOKEN_FEATURES
+  ),
   tofcsolToken(
     '24d678cf-e0f0-4cde-a338-d754289c5b27',
     'ofctsol:slnd',
@@ -1539,6 +1563,13 @@ export const ofcCoins = [
     18,
     UnderlyingAsset['arbeth:dolo']
   ),
+  ofcArbethErc20(
+    'f0b86f29-7b4c-4d16-abeb-12afdd2d6755',
+    'ofcarbeth:rdnt',
+    'Radiant Capital',
+    18,
+    UnderlyingAsset['arbeth:rdnt']
+  ),
   ofcAvaxErc20('2bd6201d-c46c-481e-b82d-7cf3601679cb', 'ofcavaxc:aave-e', 'Aave', 18, UnderlyingAsset['avaxc:aave']),
   ofcAvaxErc20(
     '515a5a74-54fe-4d73-bb12-8d1130f78692',
@@ -1747,6 +1778,13 @@ export const ofcCoins = [
     'WisdomTree Siegel Global Equity Digital Fund',
     18,
     UnderlyingAsset['opeth:eqtyx']
+  ),
+  ofcOpethErc20(
+    'f3c008f8-6347-46de-8ab6-dd642952da93',
+    'ofcopeth:velo',
+    'Velodrome Finance',
+    18,
+    UnderlyingAsset['opeth:velo']
   ),
   ofcBscToken('a79933f5-a9d2-4a29-a948-79313a569988', 'ofcbsc:cfx', 'BSC Conflux', 18, UnderlyingAsset['bsc:cfx']),
   ofcBscToken('c6f5df09-5a21-468b-89cc-f626d02d74d0', 'ofcbsc:oort', 'OORT', 18, UnderlyingAsset['bsc:oort']),
@@ -2222,6 +2260,9 @@ export const ofcCoins = [
   ofcBscToken('eb9280a5-2781-450b-945f-7fe13d170433', 'ofcbsc:slay', 'SatLayer', 6, UnderlyingAsset['bsc:slay']),
   ofcBscToken('91442391-12ed-4361-947f-eed60000329f', 'ofcbsc:prove', 'Succinct', 18, UnderlyingAsset['bsc:prove']),
   ofcBscToken('bca017c3-4326-48f8-809b-bd6df7538286', 'ofcbsc:rekt', 'Rekt', 18, UnderlyingAsset['bsc:rekt']),
+  ofcBscToken('54b0e2a2-f50c-4233-845f-ec5fa28dcdaa', 'ofcbsc:pln', 'Plearn', 18, UnderlyingAsset['bsc:pln']),
+  ofcBscToken('e3145994-c670-40b2-86c5-d02085854d39', 'ofcbsc:ff', 'Falcon Finance', 18, UnderlyingAsset['bsc:ff']),
+  ofcBscToken('6f00c269-ee23-4efb-bc4f-146cef74e338', 'ofcbsc:c98', 'Coin98', 18, UnderlyingAsset['bsc:c98']),
   tofcBscToken(
     'bf8a52e5-f416-46ea-95c2-a920dc204233',
     'ofctbsc:usd1',
@@ -3022,6 +3063,13 @@ export const ofcCoins = [
     'ZIGChain',
     18,
     UnderlyingAsset['polygon:zig']
+  ),
+  ofcPolygonErc20(
+    'fa712beb-d08f-437d-a9dc-7afd5070ddb7',
+    'ofcpolygon:brl1',
+    'BRL1',
+    18,
+    UnderlyingAsset['polygon:brl1']
   ),
   tofcPolygonErc20(
     '62f4329d-11cd-4875-b91b-9ceae66c9439',

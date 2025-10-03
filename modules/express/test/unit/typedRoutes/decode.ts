@@ -13,6 +13,7 @@ import {
   LightningInitWalletParams,
 } from '../../../src/typedRoutes/api/v2/lightningInitWallet';
 import { UnlockLightningWalletBody, UnlockLightningWalletParams } from '../../../src/typedRoutes/api/v2/unlockWallet';
+import { OfcSignPayloadBody } from '../../../src/typedRoutes/api/v2/ofcSignPayload';
 import { CreateAddressBody, CreateAddressParams } from '../../../src/typedRoutes/api/v2/createAddress';
 
 export function assertDecode<T>(codec: t.Type<T, unknown>, input: unknown): T {
@@ -190,6 +191,38 @@ describe('io-ts decode tests', function () {
     assert.throws(() => assertDecode(t.type(UnlockLightningWalletBody), {}));
     // valid body
     assertDecode(t.type(UnlockLightningWalletBody), { passphrase: 'secret' });
+  });
+  it('express.ofc.signPayload', function () {
+    // missing walletId
+    assert.throws(() =>
+      assertDecode(t.type(OfcSignPayloadBody), {
+        payload: { a: 1 },
+      })
+    );
+    // empty walletId
+    assert.throws(() =>
+      assertDecode(t.type(OfcSignPayloadBody), {
+        walletId: '',
+        payload: { a: 1 },
+      })
+    );
+    // missing payload
+    assert.throws(() =>
+      assertDecode(t.type(OfcSignPayloadBody), {
+        walletId: 'w1',
+      })
+    );
+    // valid minimal
+    assertDecode(t.type(OfcSignPayloadBody), {
+      walletId: 'w1',
+      payload: { a: 1 },
+    });
+    // valid with nested and optional passphrase
+    assertDecode(t.type(OfcSignPayloadBody), {
+      walletId: 'w1',
+      payload: { nested: ['x', { y: true }] },
+      walletPassphrase: 'secret',
+    });
   });
 
   it('express.v2.wallet.createAddress params', function () {

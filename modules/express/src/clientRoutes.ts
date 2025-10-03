@@ -62,7 +62,6 @@ import { handleLightningWithdraw } from './lightning/lightningWithdrawRoutes';
 import createExpressRouter from './typedRoutes';
 import { ExpressApiRouteRequest } from './typedRoutes/api';
 import { TypedRequestHandler, WrappedRequest, WrappedResponse } from '@api-ts/typed-express-router';
-import { isJsonString } from './utils';
 
 const { version } = require('bitgo/package.json');
 const pjson = require('../package.json');
@@ -284,7 +283,7 @@ function handleConsolidateUnspents(req: ExpressApiRouteRequest<'express.v1.walle
  * @deprecated
  * @param req
  */
-function handleFanOutUnspents(req: express.Request) {
+function handleFanOutUnspents(req: ExpressApiRouteRequest<'express.v1.wallet.fanoutunspents', 'put'>) {
   return req.bitgo
     .wallets()
     .get({ id: req.params.id })
@@ -590,10 +589,10 @@ export async function handleV2OFCSignPayloadInExtSigningMode(
   }
 }
 
-export async function handleV2OFCSignPayload(req: express.Request): Promise<{ payload: string; signature: string }> {
-  const walletId = req.body.walletId;
-  const payload = req.body.payload;
-  const bodyWalletPassphrase = req.body.walletPassphrase;
+export async function handleV2OFCSignPayload(
+  req: ExpressApiRouteRequest<'express.ofc.signPayload', 'post'>
+): Promise<{ payload: string; signature: string }> {
+  const { walletId, payload, walletPassphrase: bodyWalletPassphrase } = req.decoded;
   const ofcCoinName = 'ofc';
 
   // If the externalSignerUrl is set, forward the request to the express server hosted on the externalSignerUrl
@@ -612,14 +611,6 @@ export async function handleV2OFCSignPayload(req: express.Request): Promise<{ pa
     return payloadWithSignature;
   }
 
-  if (!payload) {
-    throw new ApiResponseError('Missing required field: payload', 400);
-  }
-
-  if (!walletId) {
-    throw new ApiResponseError('Missing required field: walletId', 400);
-  }
-
   const bitgo = req.bitgo;
 
   // This is to set us up for multiple trading accounts per enterprise
@@ -631,7 +622,7 @@ export async function handleV2OFCSignPayload(req: express.Request): Promise<{ pa
 
   const walletPassphrase = bodyWalletPassphrase || getWalletPwFromEnv(wallet.id());
   const tradingAccount = wallet.toTradingAccount();
-  const stringifiedPayload = isJsonString(req.body.payload) ? req.body.payload : JSON.stringify(req.body.payload);
+  const stringifiedPayload = JSON.stringify(payload);
   const signature = await tradingAccount.signPayload({
     payload: stringifiedPayload,
     walletPassphrase,
@@ -1603,7 +1594,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
     typedPromiseWrapper(handleConsolidateUnspents),
   ]);
 
-  app.put('/api/v1/wallet/:id/fanoutunspents', parseBody, prepareBitGo(config), promiseWrapper(handleFanOutUnspents));
+  router.put('express.v1.wallet.fanoutunspents', [prepareBitGo(config), typedPromiseWrapper(handleFanOutUnspents)]);
 
   // any other API call
   app.use('/api/v[1]/*', parseBody, prepareBitGo(config), promiseWrapper(handleREST));
@@ -1638,7 +1629,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   );
 
   // sign arbitrary payloads w/ trading account key
-  app.post(`/api/v2/ofc/signPayload`, parseBody, prepareBitGo(config), promiseWrapper(handleV2OFCSignPayload));
+  router.post('express.ofc.signPayload', [prepareBitGo(config), typedPromiseWrapper(handleV2OFCSignPayload)]);
 
   // sign transaction
   app.post('/api/v2/:coin/signtx', parseBody, prepareBitGo(config), promiseWrapper(handleV2SignTx));

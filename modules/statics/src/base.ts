@@ -1040,6 +1040,7 @@ export enum UnderlyingAsset {
   FMF = 'fmf',
   FOLD = 'fold',
   FOR = 'for',
+  'sol:ford' = 'sol:ford',
   FOREX = 'forex',
   FORT = 'fort',
   FORTH = 'forth',
@@ -1095,6 +1096,7 @@ export enum UnderlyingAsset {
   GIV = 'giv',
   GLDX = 'gldx',
   GLM = 'glm',
+  'sol:glxy' = 'sol:glxy',
   GMT = 'gmt',
   'sol:gmt' = 'sol:gmt',
   GNO = 'gno',
@@ -1660,6 +1662,7 @@ export enum UnderlyingAsset {
   SRNT = 'srnt',
   SRM = 'srm',
   'sol:srm' = 'sol:srm',
+  'sol:pipe' = 'sol:pipe',
   SSV = 'ssv',
   STARS = 'stars',
   STATE = 'state',
@@ -2135,6 +2138,10 @@ export enum UnderlyingAsset {
   'eth:eden' = 'eth:eden',
   'eth:xeden' = 'eth:xeden',
   'eth:linea' = 'eth:linea',
+  'eth:ff' = 'eth:ff',
+  'eth:mavia' = 'eth:mavia',
+  'eth:lm' = 'eth:lm',
+  'eth:kub' = 'eth:kub',
 
   // Ondo Tokenized Assets
   'eth:qqqon' = 'qqqon',
@@ -2517,6 +2524,7 @@ export enum UnderlyingAsset {
   'polygon:xusd' = 'polygon:xusd',
   'polygon:txusd' = 'polygon:txusd',
   'polygon:zig' = 'polygon:zig',
+  'polygon:brl1' = 'polygon:brl1',
   // Polygon NFTs
   // generic NFTs
   'erc721:polygontoken' = 'erc721:polygontoken',
@@ -2675,6 +2683,9 @@ export enum UnderlyingAsset {
   'bsc:m' = 'bsc:m',
   'bsc:cashplus' = 'bsc:cashplus',
   'bsc:aster' = 'bsc:aster',
+  'bsc:pln' = 'bsc:pln',
+  'bsc:ff' = 'bsc:ff',
+  'bsc:c98' = 'bsc:c98',
 
   // BSC NFTs
   // generic NFTs
@@ -2754,6 +2765,7 @@ export enum UnderlyingAsset {
   'arbeth:benji' = 'arbeth:benji',
   'arbeth:dolo' = 'arbeth:dolo',
   'arbeth:bull' = 'arbeth:bull',
+  'arbeth:rdnt' = 'arbeth:rdnt',
 
   // BaseETH mainnet tokens
   'baseeth:aero' = 'baseeth:aero',
@@ -2814,6 +2826,7 @@ export enum UnderlyingAsset {
   'opeth:wtgxx' = 'opeth:wtgxx',
   'opeth:lngvx' = 'opeth:lngvx',
   'opeth:eqtyx' = 'opeth:eqtyx',
+  'opeth:velo' = 'opeth:velo',
 
   // Optimism testnet tokens
   'topeth:terc18dp' = 'topeth:terc18dp',

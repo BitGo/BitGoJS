@@ -1,11 +1,12 @@
-import { BaseUtils, isValidEd25519PublicKey, isValidEd25519SecretKey } from '@bitgo/sdk-core';
+import { BaseUtils, isValidEd25519PublicKey, isValidEd25519SecretKey, isBase58 } from '@bitgo/sdk-core';
 import {
   IOTA_ADDRESS_LENGTH,
-  IOTA_BLOCK_ID_LENGTH,
+  IOTA_BLOCK_DIGEST_LENGTH,
   IOTA_SIGNATURE_LENGTH,
-  IOTA_TRANSACTION_ID_LENGTH,
+  IOTA_TRANSACTION_DIGEST_LENGTH,
 } from './constants';
 import { Ed25519PublicKey } from '@iota/iota-sdk/keypairs/ed25519';
+import { fromBase64 } from '@iota/bcs';
 
 export class Utils implements BaseUtils {
   /** @inheritdoc */
@@ -15,7 +16,7 @@ export class Utils implements BaseUtils {
 
   /** @inheritdoc */
   isValidBlockId(hash: string): boolean {
-    return this.isValidHex(hash, IOTA_BLOCK_ID_LENGTH);
+    return isBase58(hash, IOTA_BLOCK_DIGEST_LENGTH);
   }
 
   /** @inheritdoc */
@@ -30,12 +31,12 @@ export class Utils implements BaseUtils {
 
   /** @inheritdoc */
   isValidSignature(signature: string): boolean {
-    return this.isValidHex(signature, IOTA_SIGNATURE_LENGTH);
+    return fromBase64(signature).length === IOTA_SIGNATURE_LENGTH;
   }
 
   /** @inheritdoc */
   isValidTransactionId(txId: string): boolean {
-    return this.isValidHex(txId, IOTA_TRANSACTION_ID_LENGTH);
+    return isBase58(txId, IOTA_TRANSACTION_DIGEST_LENGTH);
   }
 
   isValidHex(value: string, length: number): boolean {

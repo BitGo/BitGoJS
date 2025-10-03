@@ -23,6 +23,8 @@ import { PostCreateLocalKeyChain } from './v1/createLocalKeyChain';
 import { PutConstructPendingApprovalTx } from './v1/constructPendingApprovalTx';
 import { PutConsolidateUnspents } from './v1/consolidateUnspents';
 import { PostCreateAddress } from './v2/createAddress';
+import { PutFanoutUnspents } from './v1/fanoutUnspents';
+import { PostOfcSignPayload } from './v2/ofcSignPayload';
 
 export const ExpressApi = apiSpec({
   'express.ping': {
@@ -87,6 +89,12 @@ export const ExpressApi = apiSpec({
   },
   'express.v1.wallet.consolidateunspents': {
     put: PutConsolidateUnspents,
+  },
+  'express.v1.wallet.fanoutunspents': {
+    put: PutFanoutUnspents,
+  },
+  'express.ofc.signPayload': {
+    post: PostOfcSignPayload,
   },
 });
 
