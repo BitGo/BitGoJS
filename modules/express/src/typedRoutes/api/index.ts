@@ -26,6 +26,7 @@ import { PostCreateAddress } from './v2/createAddress';
 import { PutFanoutUnspents } from './v1/fanoutUnspents';
 import { PostOfcSignPayload } from './v2/ofcSignPayload';
 import { PostWalletRecoverToken } from './v2/walletRecoverToken';
+import { PostCoinSignTx } from './v2/coinSignTx';
 
 export const ExpressApi = apiSpec({
   'express.ping': {
@@ -99,6 +100,9 @@ export const ExpressApi = apiSpec({
   },
   'express.v2.wallet.recovertoken': {
     post: PostWalletRecoverToken,
+  },
+  'express.v2.coin.signtx': {
+    post: PostCoinSignTx,
   },
 });
 
