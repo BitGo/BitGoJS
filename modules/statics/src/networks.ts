@@ -1943,7 +1943,7 @@ class Flow extends Mainnet implements EthereumNetwork {
 class FlowTestnet extends Testnet implements EthereumNetwork {
   name = 'FlowTestnet';
   family = CoinFamily.FLOW;
-  explorerUrl = 'https://evm.flowscan.io/tx/';
+  explorerUrl = 'https://evm-testnet.flowscan.io/tx/';
   accountExplorerUrl = 'https://evm-testnet.flowscan.io/address/';
   chainId = 545;
   nativeCoinOperationHashPrefix = '545';
