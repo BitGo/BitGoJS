@@ -590,7 +590,9 @@ export async function handleV2OFCSignPayloadInExtSigningMode(
   }
 }
 
-export async function handleV2OFCSignPayload(req: express.Request): Promise<{ payload: string; signature: string }> {
+export async function handleV2OFCSignPayload(
+  req: ExpressApiRouteRequest<'express.v2.ofc.signpayload', 'post'>
+): Promise<{ payload: string; signature: string }> {
   const walletId = req.body.walletId;
   const payload = req.body.payload;
   const bodyWalletPassphrase = req.body.walletPassphrase;
@@ -1639,7 +1641,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   );
 
   // sign arbitrary payloads w/ trading account key
-  app.post(`/api/v2/ofc/signPayload`, parseBody, prepareBitGo(config), promiseWrapper(handleV2OFCSignPayload));
+  router.post('express.v2.ofc.signpayload', [prepareBitGo(config), typedPromiseWrapper(handleV2OFCSignPayload)]);
 
   // sign transaction
   app.post('/api/v2/:coin/signtx', parseBody, prepareBitGo(config), promiseWrapper(handleV2SignTx));
