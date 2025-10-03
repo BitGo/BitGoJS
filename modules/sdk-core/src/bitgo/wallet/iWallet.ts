@@ -167,7 +167,7 @@ export interface PrebuildTransactionOptions {
    * This comment applies to UTXO coins. It's asking which transaction format to use:
    * the legacy format defined by bitcoinjs-lib, or the 'psbt' format, which follows the BIP-174.
    */
-  txFormat?: 'legacy' | 'psbt';
+  txFormat?: 'legacy' | 'psbt' | 'psbt-lite';
   /**
    * Custom Solana instructions to include in the transaction.
    * Each instruction contains a program ID, accounts array, and data buffer.
