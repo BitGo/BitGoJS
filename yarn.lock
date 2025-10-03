@@ -2971,7 +2971,7 @@
   resolved "https://registry.npmjs.org/@inquirer/type/-/type-3.0.8.tgz#efc293ba0ed91e90e6267f1aacc1c70d20b8b4e8"
   integrity sha512-lg9Whz8onIHRthWaN1Q9EGLa/0LFJjyM8mEUbL1eTi6yMGvBf8gvyDLtxSXztQsxMvhxxNpJYrwa1YHdq+w4Jw==
 
-"@iota/bcs@1.2.0":
+"@iota/bcs@1.2.0", "@iota/bcs@^1.2.0":
   version "1.2.0"
   resolved "https://registry.npmjs.org/@iota/bcs/-/bcs-1.2.0.tgz"
   integrity sha512-QdRSR0KpJ87tdjVNmM/j0+0DvE0aTxHIa02337iluaOsMqtJ8OdgUCfSyLduC/3qS+8tJE+UB1KOw55tF+sN2w==
