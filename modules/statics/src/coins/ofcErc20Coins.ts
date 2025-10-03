@@ -4402,6 +4402,10 @@ export const tOfcErc20Coins = [
     underlyingAssetForSymbol('eth:xeden')
   ),
   ofcerc20('40a579f5-f630-4898-82de-9fc3fd555747', 'ofceth:linea', 'linea', 18, underlyingAssetForSymbol('eth:linea')),
+  ofcerc20('1bf5a8c6-fad7-47ff-87a1-56129d3b4c15', 'ofceth:ff', 'ff', 18, underlyingAssetForSymbol('eth:ff')),
+  ofcerc20('9cfc5cf7-0a6b-40ec-936c-04be24e196c0', 'ofceth:mavia', 'mavia', 18, underlyingAssetForSymbol('eth:mavia')),
+  ofcerc20('9ec6f38f-ce0e-4f8c-94f8-69d182f9c25e', 'ofceth:lm', 'lm', 18, underlyingAssetForSymbol('eth:lm')),
+  ofcerc20('259c73b2-7c63-4522-96ee-9711442b45c8', 'ofceth:kub', 'kub', 18, underlyingAssetForSymbol('eth:kub')),
 ];
 
 function underlyingAssetForSymbol(underlyingAssetValue: string): UnderlyingAsset {

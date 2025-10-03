@@ -3877,6 +3877,14 @@ export const allCoinsAndTokens = [
     '0x0f81001ef0a83ecce5ccebf63eb302c70a39a654',
     UnderlyingAsset['arbeth:dolo']
   ),
+  arbethErc20(
+    '7d2d1b02-f64d-47be-be75-0d4615718350',
+    'arbeth:rdnt',
+    'Radiant Capital',
+    18,
+    '0x3082cc23568ea640225c2467653db90e9250aaa0',
+    UnderlyingAsset['arbeth:rdnt']
+  ),
   opethErc20(
     '8d80fac6-4cbc-447c-b49b-4229cb8aa89d',
     'opeth:link',
@@ -4060,6 +4068,14 @@ export const allCoinsAndTokens = [
     '0x8ac0d6b94ae23ad40407bc4dc16d74f09131eb48',
     UnderlyingAsset['opeth:eqtyx'],
     AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  opethErc20(
+    '73beeb1f-73a1-48c1-bc08-552f7be4a57b',
+    'opeth:velo',
+    'Velodrome Finance',
+    18,
+    '0x9560e827af36c94d2ac33a39bce1fe78631088db',
+    UnderlyingAsset['opeth:velo']
   ),
   topethErc20(
     '3c06bc28-1af2-4869-a632-bd081376fb46',

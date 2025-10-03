@@ -3077,6 +3077,28 @@ export const solTokens = [
     UnderlyingAsset['sol:pipe'],
     SOL_TOKEN_FEATURES
   ),
+  solToken(
+    '9dbb51ba-de77-4317-a974-157f552646b5',
+    'sol:glxy',
+    'Galaxy Digital Inc. Class A Common Stock',
+    6,
+    '2HehXG149TXuVptQhbiWAWDjbbuCsXSAtLTB5wc2aajK',
+    '2HehXG149TXuVptQhbiWAWDjbbuCsXSAtLTB5wc2aajK',
+    UnderlyingAsset['sol:glxy'],
+    SOL_TOKEN_FEATURES,
+    ProgramID.Token2022ProgramId
+  ),
+  solToken(
+    'b44f7798-4c6f-4135-ab1f-501535641b9e',
+    'sol:ford',
+    'Forward Industries, Inc',
+    6,
+    '7GzQgf6DPo6ZANjnbhe9tNCpkGTv3zqHbsDx74jyQf9',
+    '7GzQgf6DPo6ZANjnbhe9tNCpkGTv3zqHbsDx74jyQf9',
+    UnderlyingAsset['sol:ford'],
+    SOL_TOKEN_FEATURES,
+    ProgramID.Token2022ProgramId
+  ),
   tsolToken(
     'b98c5a7a-49c5-45f1-a6ee-b08dff596a7d',
     'tsol:srm',
