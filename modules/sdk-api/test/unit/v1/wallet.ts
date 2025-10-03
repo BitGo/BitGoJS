@@ -22,19 +22,10 @@ nock.disableNetConnect();
 const TestBitGo = {
   TEST_WALLET1_PASSCODE: 'iVWeATjqLS1jJShrPpETti0b',
 };
-const originalFetchConstants = BitGoAPI.prototype.fetchConstants;
-BitGoAPI.prototype.fetchConstants = function (this: any) {
-  nock(this._baseUrl).get('/api/v1/client/constants').reply(200, { ttl: 3600, constants: {} });
-
-  // force client constants reload
-  BitGoAPI['_constants'] = undefined;
-
-  return originalFetchConstants.apply(this, arguments as any);
-};
 describe('Wallet Prototype Methods', function () {
   const fixtures = getFixtures();
 
-  let bitgo = new BitGoAPI({ env: 'test' });
+  let bitgo = new BitGoAPI({ env: 'test', clientConstants: { constants: {} } });
   // bitgo.initializeTestVars();
 
   const userKeypair = {
@@ -131,7 +122,7 @@ describe('Wallet Prototype Methods', function () {
 
     before(function () {
       nock.pendingMocks().should.be.empty();
-      const prodBitgo = new BitGoAPI({ env: 'prod' });
+      const prodBitgo = new BitGoAPI({ env: 'prod', clientConstants: { constants: {} } });
       // prodBitgo.initializeTestVars();
       bgUrl = common.Environments[prodBitgo.getEnv()].uri;
       fakeProdWallet = new Wallet(prodBitgo, {
@@ -364,7 +355,7 @@ describe('Wallet Prototype Methods', function () {
       const { address, redeemScript, scriptPubKey } = await getFixture<Record<string, unknown>>(
         `${__dirname}/fixtures/sign-transaction.json`
       );
-      const testBitgo = new BitGoAPI({ env: 'test' });
+      const testBitgo = new BitGoAPI({ env: 'test', clientConstants: { constants: {} } });
       const fakeTestV1SafeWallet = new Wallet(testBitgo, {
         id: address,
         private: { safe: { redeemScript } },
@@ -426,7 +417,7 @@ describe('Wallet Prototype Methods', function () {
         halfSignedTxHex,
         fullSignedTxHex,
       } = await getFixture<Record<string, unknown>>(`${__dirname}/fixtures/sign-transaction.json`);
-      const testBitgo = new BitGoAPI({ env: 'test' });
+      const testBitgo = new BitGoAPI({ env: 'test', clientConstants: { constants: {} } });
       const fakeTestV1SafeWallet = new Wallet(testBitgo, {
         id: address,
         private: { safe: { redeemScript } },
@@ -745,7 +736,7 @@ describe('Wallet Prototype Methods', function () {
     before(function accelerateTxMockedBefore() {
       nock.pendingMocks().should.be.empty();
 
-      bitgo = new BitGoAPI({ env: 'mock' });
+      bitgo = new BitGoAPI({ env: 'mock', clientConstants: { constants: {} } });
       // bitgo.initializeTestVars();
       bitgo.setValidate(false);
       wallet = new Wallet(bitgo, { id: walletId, private: { keychains: [userKeypair, backupKeypair, bitgoKey] } });

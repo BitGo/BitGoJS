@@ -55,6 +55,7 @@ import {
   CalculateRequestHeadersOptions,
   CalculateRequestHmacOptions,
   ChangePasswordOptions,
+  Constants,
   DeprecatedVerifyAddressOptions,
   EstimateFeeOptions,
   ExtendTokenOptions,
@@ -275,6 +276,10 @@ export class BitGoAPI implements BitGoBase {
     this._baseApiUrlV2 = this._baseUrl + '/api/v2';
     this._baseApiUrlV3 = this._baseUrl + '/api/v3';
     this._token = params.accessToken;
+
+    const clientConstants = params.clientConstants;
+    this._initializeClientConstants(clientConstants);
+
     this._userAgent = params.userAgent || 'BitGoJS-api/' + this.version();
     this._reqId = undefined;
     this._refreshToken = params.refreshToken;
@@ -303,17 +308,34 @@ export class BitGoAPI implements BitGoBase {
 
     this._customProxyAgent = params.customProxyAgent;
 
-    // capture outer stack so we have useful debug information if fetch constants fails
-    const e = new Error();
+    // Only fetch constants from constructor if clientConstants was not provided
+    if (!clientConstants) {
+      // capture outer stack so we have useful debug information if fetch constants fails
+      const e = new Error();
 
-    // Kick off first load of constants
-    this.fetchConstants().catch((err) => {
-      if (err) {
-        // make sure an error does not terminate the entire script
-        console.error('failed to fetch initial client constants from BitGo');
-        debug(e.stack);
+      // Kick off first load of constants
+      this.fetchConstants().catch((err) => {
+        if (err) {
+          // make sure an error does not terminate the entire script
+          console.error('failed to fetch initial client constants from BitGo');
+          debug(e.stack);
+        }
+      });
+    }
+  }
+
+  /**
+   * Initialize client constants if provided.
+   * @param clientConstants - The client constants from params
+   * @private
+   */
+  private _initializeClientConstants(clientConstants: any): void {
+    if (clientConstants) {
+      if (!BitGoAPI._constants) {
+        BitGoAPI._constants = {};
       }
-    });
+      BitGoAPI._constants[this.env] = 'constants' in clientConstants ? clientConstants.constants : clientConstants;
+    }
   }
 
   /**
@@ -531,17 +553,15 @@ export class BitGoAPI implements BitGoBase {
    * but are unlikely to change during the lifetime of a BitGo object,
    * so they can safely cached.
    */
-  async fetchConstants(): Promise<any> {
+  async fetchConstants(): Promise<Constants> {
     const env = this.getEnv();
 
-    if (!BitGoAPI._constants) {
-      BitGoAPI._constants = {};
-    }
-    if (!BitGoAPI._constantsExpire) {
-      BitGoAPI._constantsExpire = {};
-    }
-
-    if (BitGoAPI._constants[env] && BitGoAPI._constantsExpire[env] && new Date() < BitGoAPI._constantsExpire[env]) {
+    // Check if we have cached constants that haven't expired
+    if (
+      BitGoAPI._constants &&
+      BitGoAPI._constants[env] &&
+      (!BitGoAPI._constantsExpire || !BitGoAPI._constantsExpire[env] || new Date() < BitGoAPI._constantsExpire[env])
+    ) {
       return BitGoAPI._constants[env];
     }
 
@@ -560,9 +580,16 @@ export class BitGoAPI implements BitGoBase {
       }
     }
     const result = await resultPromise;
+
+    if (!BitGoAPI._constants) {
+      BitGoAPI._constants = {};
+    }
     BitGoAPI._constants[env] = result.body.constants;
 
     if (result.body?.ttl && typeof result.body?.ttl === 'number') {
+      if (!BitGoAPI._constantsExpire) {
+        BitGoAPI._constantsExpire = {};
+      }
       BitGoAPI._constantsExpire[env] = new Date(new Date().getTime() + (result.body.ttl as number) * 1000);
     }
 
@@ -2116,8 +2143,8 @@ export class BitGoAPI implements BitGoBase {
       }
     });
 
-    // use defaultConstants as the backup for keys that are not set in this._constants
-    return _.merge({}, defaultConstants(this.getEnv()), BitGoAPI._constants[this.getEnv()]);
+    // use defaultConstants as the backup for keys that are not set in BitGoAPI._constants
+    return _.merge({}, defaultConstants(this.getEnv()), BitGoAPI._constants?.[this.getEnv()] || {});
   }
 
   /**
