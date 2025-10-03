@@ -1039,7 +1039,7 @@ export class Near extends BaseCoin {
 
       if (!_.isEqual(filteredOutputs, filteredRecipients)) {
         // For enabletoken, provide more specific error messages for address mismatches
-        if (txParams.type === 'enabletoken') {
+        if (txParams.type === 'enabletoken' && params.verification?.verifyTokenEnablement) {
           const mismatchedAddresses = txParams.recipients
             ?.filter(
               (recipient, index) => !filteredOutputs[index] || recipient.address !== filteredOutputs[index].address
