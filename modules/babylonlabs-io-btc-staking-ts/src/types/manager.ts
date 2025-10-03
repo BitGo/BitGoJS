@@ -22,6 +22,9 @@ export interface BtcProvider {
     message: string,
     type: "ecdsa" | "bip322-simple",
   ) => Promise<string>;
+
+  // Get the transaction hex from the transaction ID
+  getTransactionHex(txid: string): Promise<string>;
 }
 
 export interface BabylonProvider {
@@ -39,6 +42,20 @@ export interface BabylonProvider {
     typeUrl: string;
     value: T;
   }) => Promise<Uint8Array>;
+
+  /**
+   * Gets the current height of the Babylon Genesis chain.
+   *
+   * @returns {Promise<number>} The current Babylon chain height
+   */
+  getCurrentHeight?: () => Promise<number>;
+
+  /**
+   * Gets the chain ID of the Babylon Genesis chain.
+   *
+   * @returns {Promise<string>} The Babylon chain ID
+   */
+  getChainId?: () => Promise<string>;
 }
 
 export interface StakingInputs {
@@ -60,4 +77,32 @@ export interface InclusionProof {
   merkle: string[];
   // The block hash of the block that contains the transaction
   blockHashHex: string;
+}
+
+/**
+ * Upgrade configuration for Babylon POP (Proof of Possession) context.
+ * This is used to determine when to switch to the new POP context format
+ * based on the Babylon chain height and version.
+ */
+export interface UpgradeConfig {
+  /**
+   * POP context upgrade configuration.
+   */
+  pop?: PopUpgradeConfig;
+}
+
+/**
+ * Configuration for POP context upgrade.
+ * - upgradeHeight: The Babylon chain height at which the POP context upgrade is activated.
+ * - version: The version of the POP context to use after the upgrade.
+ */
+export interface PopUpgradeConfig {
+  /**
+   * The Babylon chain height at which the POP context upgrade is activated.
+   */
+  upgradeHeight: number;
+  /**
+   * The version of the POP context to use after the upgrade.
+   */
+  version: number;
 }

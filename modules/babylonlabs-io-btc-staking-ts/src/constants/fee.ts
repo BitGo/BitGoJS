@@ -2,8 +2,12 @@
 export const DEFAULT_INPUT_SIZE = 180;
 // Estimated size of a P2WPKH input in bytes
 export const P2WPKH_INPUT_SIZE = 68;
-// Estimated size of a P2TR input in bytes
+// Estimated size of a P2TR input in bytes. 42vb inputs + 16vb witness
 export const P2TR_INPUT_SIZE = 58;
+// Estimated size of a P2TR input in bytes for staking expansion transactions.
+// This value accounts for the witness size including covenant signatures
+// and is calibrated for a typical covenant quorum of 6 signatures.
+export const P2TR_STAKING_EXPANSION_INPUT_SIZE = 268;
 // Estimated size of a transaction buffer in bytes
 export const TX_BUFFER_SIZE_OVERHEAD = 11;
 // Buffer for estimation accuracy when fee rate <= 2 sat/byte
