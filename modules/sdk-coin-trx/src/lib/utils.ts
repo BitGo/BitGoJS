@@ -284,6 +284,17 @@ export function decodeRawTransaction(hexString: string): {
 }
 
 /**
+ * Converts a base64 encoded string to hex
+ *
+ * @param base64 - The base64 encoded string to convert
+ * @returns {string} - The hex representation
+ */
+export function getHexFromBase64(base64: string): string {
+  const buffer = Buffer.from(base64, 'base64');
+  return buffer.toString('hex');
+}
+
+/**
  * Indicates whether the passed string is a safe hex string for tron's purposes.
  *
  * @param hex A valid hex string must be a string made of numbers and characters and has an even length.
@@ -836,4 +847,90 @@ export function decodeDataParams(types: string[], data: string): any[] {
     obj.push(arg);
     return obj;
   }, []);
+}
+
+/**
+ * Generate raw_data_hex for a TRON transaction
+ *
+ * @param {Object} rawData - The transaction raw data object containing:
+ * @param {Array} rawData.contract - Array of contract objects
+ * @param {string} rawData.refBlockBytes - Reference block bytes
+ * @param {string} rawData.refBlockHash - Reference block hash
+ * @param {number} rawData.expiration - Transaction expiration timestamp
+ * @param {number} rawData.timestamp - Transaction creation timestamp
+ * @param {number} [rawData.feeLimit] - Optional fee limit for smart contracts
+ * @returns {string} The hex string representation of the encoded transaction data
+ */
+export function generateRawDataHex(
+  rawData: {
+    contract?: protocol.Transaction.Contract[];
+    refBlockBytes?: string;
+    refBlockHash?: string;
+    expiration?: number;
+    timestamp?: number;
+    feeLimit?: number;
+  } = {}
+): string {
+  try {
+    // Process contracts to ensure proper protobuf encoding
+    let processedContracts = rawData.contract;
+    if (rawData.contract && rawData.contract.length > 0) {
+      processedContracts = rawData.contract.map((contract) => {
+        // Handle TransferContract specifically
+        if (contract.parameter?.type_url === 'type.googleapis.com/protocol.TransferContract') {
+          const contractValue = contract.parameter.value as any;
+
+          // Create the protobuf contract object
+          const transferContract: any = {};
+
+          // Handle owner_address (required field)
+          if (contractValue.owner_address) {
+            transferContract.ownerAddress = Buffer.from(contractValue.owner_address, 'hex');
+          }
+
+          // Handle to_address (required field)
+          if (contractValue.to_address) {
+            transferContract.toAddress = Buffer.from(contractValue.to_address, 'hex');
+          }
+
+          // Handle amount (required field)
+          if (contractValue.amount !== undefined) {
+            transferContract.amount = contractValue.amount;
+          }
+
+          // Encode the contract using protobuf
+          const encodedContract = protocol.TransferContract.encode(transferContract).finish();
+          const base64Value = Buffer.from(encodedContract).toString('base64');
+
+          return {
+            ...contract,
+            parameter: {
+              ...contract.parameter,
+              value: base64Value,
+            },
+          } as any;
+        }
+
+        return contract;
+      }) as protocol.Transaction.Contract[];
+    }
+
+    // Create raw transaction object matching protobuf schema
+    const rawTx: protocol.Transaction.Iraw = {
+      contract: processedContracts,
+      refBlockBytes: rawData.refBlockBytes ? Buffer.from(rawData.refBlockBytes, 'hex') : undefined,
+      refBlockHash: rawData.refBlockHash ? Buffer.from(rawData.refBlockHash, 'hex') : undefined,
+      expiration: rawData.expiration,
+      timestamp: rawData.timestamp,
+      feeLimit: rawData.feeLimit,
+    };
+
+    // Encode using protobuf and get final bytes
+    const encodedBytes = protocol.Transaction.raw.encode(rawTx).finish();
+
+    // Convert to hex string
+    return Buffer.from(encodedBytes).toString('hex');
+  } catch (e) {
+    throw new UtilsError('Failed to generate raw data hex: ' + e.message);
+  }
 }
