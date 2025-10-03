@@ -651,11 +651,11 @@ export async function handleV2GenerateWallet(req: express.Request) {
  * handle new address creation
  * @param req
  */
-export async function handleV2CreateAddress(req: express.Request) {
+export async function handleV2CreateAddress(req: ExpressApiRouteRequest<'express.v2.wallet.createAddress', 'post'>) {
   const bitgo = req.bitgo;
-  const coin = bitgo.coin(req.params.coin);
-  const wallet = await coin.wallets().get({ id: req.params.id });
-  return wallet.createAddress(req.body);
+  const coin = bitgo.coin(req.decoded.coin);
+  const wallet = await coin.wallets().get({ id: req.decoded.id });
+  return wallet.createAddress(req.decoded);
 }
 
 /**
@@ -1617,8 +1617,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
     promiseWrapper(handleKeychainChangePassword)
   );
 
-  // create address
-  app.post('/api/v2/:coin/wallet/:id/address', parseBody, prepareBitGo(config), promiseWrapper(handleV2CreateAddress));
+  router.post('express.v2.wallet.createAddress', [prepareBitGo(config), typedPromiseWrapper(handleV2CreateAddress)]);
 
   // share wallet
   app.post('/api/v2/:coin/wallet/:id/share', parseBody, prepareBitGo(config), promiseWrapper(handleV2ShareWallet));
