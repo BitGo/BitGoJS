@@ -24,6 +24,7 @@ import { PutConstructPendingApprovalTx } from './v1/constructPendingApprovalTx';
 import { PutConsolidateUnspents } from './v1/consolidateUnspents';
 import { PutFanoutUnspents } from './v1/fanoutUnspents';
 import { PostOfcSignPayload } from './v2/ofcSignPayload';
+import { PostCoinSignTx } from './v2/coinSignTx';
 
 export const ExpressApi = apiSpec({
   'express.ping': {
@@ -91,6 +92,9 @@ export const ExpressApi = apiSpec({
   },
   'express.ofc.signPayload': {
     post: PostOfcSignPayload,
+  },
+  'express.v2.coin.signtx': {
+    post: PostCoinSignTx,
   },
 });
 
