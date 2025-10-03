@@ -1,5 +1,5 @@
 import { BaseUtils, isValidEd25519PublicKey } from '@bitgo/sdk-core';
-import { TopologyController } from '@canton-network/wallet-sdk';
+import { decodePreparedTransaction, PreparedTransaction, TopologyController } from '@canton-network/wallet-sdk';
 
 export class Utils implements BaseUtils {
   /** @inheritdoc */
@@ -39,6 +39,17 @@ export class Utils implements BaseUtils {
    */
   getAddressFromPublicKey(publicKey: string): string {
     return TopologyController.createFingerprintFromPublicKey(publicKey);
+  }
+
+  /**
+   * Method to parse raw canton transaction & get required data
+   * @param {String} rawData base64 encoded string
+   * @returns
+   */
+  parseRawCantonTransactionData(rawData: string): PreparedTransaction {
+    const decodedData = decodePreparedTransaction(rawData);
+    // const sender = decodedData.metadata?.submitterInfo?.actAs?.[0];
+    return decodedData;
   }
 }
 

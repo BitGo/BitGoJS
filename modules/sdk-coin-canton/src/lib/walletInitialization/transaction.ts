@@ -1,21 +1,21 @@
 import { BaseKey, BaseTransaction, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { CantonPrepareCommandResponse, TxData } from './iface';
+import { PreparedParty, WalletInitializationDataTxData } from '../iface';
 
 export class Transaction extends BaseTransaction {
-  private _transaction: CantonPrepareCommandResponse;
+  private _transaction: PreparedParty;
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
   }
 
-  get transaction(): CantonPrepareCommandResponse {
+  get transaction(): PreparedParty {
     return this._transaction;
   }
 
-  set transaction(transaction: CantonPrepareCommandResponse) {
+  set transaction(transaction: PreparedParty) {
     this._transaction = transaction;
-    this._id = transaction.preparedTransactionHash;
+    this._id = transaction.combinedHash;
   }
 
   canSign(key: BaseKey): boolean {
@@ -26,18 +26,16 @@ export class Transaction extends BaseTransaction {
     if (!this._transaction) {
       throw new InvalidTransactionError('Empty transaction data');
     }
-    return this._transaction.preparedTransactionHash;
+    return this._transaction.combinedHash;
   }
 
-  toJson(): TxData {
+  toJson(): WalletInitializationDataTxData {
     if (!this._transaction) {
       throw new InvalidTransactionError('Empty transaction data');
     }
-    const result: TxData = {
+    const result: WalletInitializationDataTxData = {
       id: this.id,
       type: this._type as TransactionType,
-      sender: '',
-      receiver: '',
     };
     // Add logic to parse the preparedTransaction & extract sender, receiver
     return result;
