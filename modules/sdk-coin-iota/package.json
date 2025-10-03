@@ -43,6 +43,7 @@
     "@bitgo/sdk-core": "^36.10.1",
     "@bitgo/statics": "^58.2.0",
     "@iota/iota-sdk": "^1.6.0",
+    "@iota/bcs": "^1.2.0",
     "bignumber.js": "^9.1.2"
   },
   "devDependencies": {
