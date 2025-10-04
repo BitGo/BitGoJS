@@ -4,6 +4,7 @@ import {
   Message,
   SignedMessage,
   SignedTransaction,
+  TransactionParams,
   TransactionPrebuild,
   VerificationOptions,
   TypedData,
@@ -274,6 +275,14 @@ export interface WalletSignTransactionOptions extends WalletSignBaseOptions {
   apiVersion?: ApiVersion;
   multisigTypeVersion?: 'MPCv2';
   walletPassphrase?: string;
+  /**
+   * Optional transaction verification parameters. When provided, the transaction will be verified
+   * using verifyTransaction before signing.
+   */
+  verifyTxParams?: {
+    txParams: TransactionParams;
+    verification?: VerificationOptions;
+  };
   [index: string]: unknown;
 }
 
