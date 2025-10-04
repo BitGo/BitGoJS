@@ -58,6 +58,8 @@ describe('Coins', () => {
       HashToken: 1,
       FlrToken: 1,
       JettonToken: 1,
+      Canton: 1,
+      Tcanton: 1,
     };
     Object.keys(BitGoJS.Coin)
       .filter((coinName) => !excludedKeys[coinName])
