@@ -28,7 +28,7 @@ import {
 import { BigNumber } from 'bignumber.js';
 import * as stellar from 'stellar-sdk';
 import { SeedValidator } from './seedValidator';
-import { KeyPair as HbarKeyPair, TransactionBuilderFactory, Transaction } from './lib';
+import { KeyPair as HbarKeyPair, TransactionBuilderFactory, Transaction, Recipient as HederaRecipient } from './lib';
 import * as Utils from './lib/utils';
 import * as _ from 'lodash';
 import {
@@ -39,6 +39,31 @@ import {
   Hbar as HbarUnit,
 } from '@hashgraph/sdk';
 import { PUBLIC_KEY_PREFIX } from './lib/keyPair';
+
+// Hedera-specific transaction data interface for raw transaction validation
+interface HederaRawTransactionData {
+  id?: string;
+  from?: string;
+  fee?: number;
+  startTime?: string;
+  validDuration?: string;
+  node?: string;
+  memo?: string;
+  amount?: string;
+  instructionsData?: {
+    type?: string;
+    accountId?: string;
+    params?: {
+      accountId?: string;
+      tokenNames?: string[];
+      recipients?: Array<{
+        address: string;
+        amount: string;
+        tokenName?: string;
+      }>;
+    };
+  };
+}
 export interface HbarSignTransactionOptions extends SignTransactionOptions {
   txPrebuild: TransactionPrebuild;
   prv: string;
@@ -224,10 +249,202 @@ export class Hbar extends BaseCoin {
     return Utils.isSameBaseAddress(address, baseAddress);
   }
 
+  /**
+   * Verify a token enablement transaction with strict validation
+   * @param txHex - The transaction hex to verify
+   * @param expectedToken - Object containing tokenId (preferred) or tokenName
+   * @param expectedAccountId - The expected account ID that will enable the token
+   * @throws Error if the transaction is not a valid token enablement transaction
+   */
+  async verifyTokenEnablementTransaction(
+    txHex: string,
+    expectedToken: { tokenId?: string; tokenName?: string },
+    expectedAccountId: string
+  ): Promise<void> {
+    if (!txHex || !expectedAccountId || (!expectedToken.tokenId && !expectedToken.tokenName)) {
+      const missing: string[] = [];
+      if (!txHex) missing.push('txHex');
+      if (!expectedAccountId) missing.push('expectedAccountId');
+      if (!expectedToken.tokenId && !expectedToken.tokenName) missing.push('expectedToken.tokenId|tokenName');
+      throw new Error(`Missing required parameters: ${missing.join(', ')}`);
+    }
+
+    try {
+      const transaction = new Transaction(coins.get(this.getChain()));
+      transaction.fromRawTransaction(txHex);
+      const raw = transaction.toJson();
+
+      const explainedTx = await this.explainTransaction({ txHex });
+
+      this.validateTxStructureStrict(explainedTx);
+      this.validateNoTransfers(raw);
+      this.validateAccountIdMatches(explainedTx, raw, expectedAccountId);
+      this.validateTokenEnablementTarget(explainedTx, raw, expectedToken);
+      this.validateAssociateInstructionOnly(raw);
+      this.validateTxHexAgainstExpected(txHex, expectedToken, expectedAccountId);
+    } catch (error) {
+      throw new Error(`Invalid token enablement transaction: ${error.message}`);
+    }
+  }
+
+  private validateTxStructureStrict(ex: TransactionExplanation): void {
+    if (!ex.outputs || ex.outputs.length === 0) {
+      throw new Error('Invalid token enablement transaction: missing required token association output');
+    }
+    if (ex.outputs.length !== 1) {
+      throw new Error(`Expected exactly 1 output, got ${ex.outputs.length}`);
+    }
+    const out0 = ex.outputs[0];
+    if (out0.amount !== '0') {
+      throw new Error(`Expected output amount '0', got ${out0.amount}`);
+    }
+  }
+
+  private validateNoTransfers(raw: HederaRawTransactionData): void {
+    if (raw.instructionsData?.params?.recipients?.length && raw.instructionsData.params.recipients.length > 0) {
+      const hasNonZeroTransfers = raw.instructionsData.params.recipients.some(
+        (recipient: HederaRecipient) => recipient.amount && recipient.amount !== '0'
+      );
+      if (hasNonZeroTransfers) {
+        throw new Error('Transaction contains transfers; not a pure token enablement.');
+      }
+    }
+
+    if (raw.amount && raw.amount !== '0') {
+      throw new Error('Transaction contains transfers; not a pure token enablement.');
+    }
+  }
+
+  private validateAccountIdMatches(
+    ex: TransactionExplanation,
+    raw: HederaRawTransactionData,
+    expectedAccountId: string
+  ): void {
+    if (ex.outputs && ex.outputs.length > 0) {
+      const out0 = ex.outputs[0];
+      const normalizedOutput = Utils.getAddressDetails(out0.address).address;
+      const normalizedExpected = Utils.getAddressDetails(expectedAccountId).address;
+      if (normalizedOutput !== normalizedExpected) {
+        throw new Error(`Expected account ${expectedAccountId}, got ${out0.address}`);
+      }
+    }
+
+    const assocAcct = raw.instructionsData?.params?.accountId;
+    if (assocAcct) {
+      const normalizedAssoc = Utils.getAddressDetails(assocAcct).address;
+      const normalizedExpected = Utils.getAddressDetails(expectedAccountId).address;
+      if (normalizedAssoc !== normalizedExpected) {
+        throw new Error(`Associate account ${assocAcct} does not match expected ${expectedAccountId}`);
+      }
+    }
+  }
+
+  private validateTokenEnablementTarget(
+    ex: TransactionExplanation,
+    raw: HederaRawTransactionData,
+    expected: { tokenId?: string; tokenName?: string }
+  ): void {
+    if (ex.outputs && ex.outputs.length > 0) {
+      const out0 = ex.outputs[0];
+      const explainedName = out0.tokenName;
+
+      if (expected.tokenName) {
+        if (explainedName !== expected.tokenName) {
+          throw new Error(`Expected token name ${expected.tokenName}, got ${explainedName}`);
+        }
+      }
+
+      if (expected.tokenId && explainedName) {
+        const actualTokenId = Utils.getHederaTokenIdFromName(explainedName);
+        if (!actualTokenId) {
+          throw new Error(`Unable to resolve tokenId for token name ${explainedName}`);
+        }
+        if (actualTokenId !== expected.tokenId) {
+          throw new Error(
+            `Expected tokenId ${expected.tokenId}, but transaction contains tokenId ${actualTokenId} (${explainedName})`
+          );
+        }
+      }
+    } else {
+      throw new Error('Transaction missing token information in outputs');
+    }
+
+    const tokenNames = raw.instructionsData?.params?.tokenNames || [];
+    if (tokenNames.length !== 1) {
+      throw new Error(`Expected exactly 1 token to associate, got ${tokenNames.length}`);
+    }
+  }
+
+  private validateTxHexAgainstExpected(
+    txHex: string,
+    expectedToken: { tokenId?: string; tokenName?: string },
+    expectedAccountId: string
+  ): void {
+    const transaction = new Transaction(coins.get(this.getChain()));
+    transaction.fromRawTransaction(txHex);
+
+    const txBody = transaction.txBody;
+    if (!txBody.tokenAssociate) {
+      throw new Error('Transaction is not a TokenAssociate transaction');
+    }
+
+    const actualAccountId = Utils.stringifyAccountId(txBody.tokenAssociate.account!);
+    const normalizedActual = Utils.getAddressDetails(actualAccountId).address;
+    const normalizedExpected = Utils.getAddressDetails(expectedAccountId).address;
+    if (normalizedActual !== normalizedExpected) {
+      throw new Error(`TxHex account ${actualAccountId} does not match expected ${expectedAccountId}`);
+    }
+
+    const actualTokens = txBody.tokenAssociate.tokens || [];
+    if (actualTokens.length !== 1) {
+      throw new Error(`TxHex contains ${actualTokens.length} tokens, expected exactly 1`);
+    }
+
+    const actualTokenId = Utils.stringifyTokenId(actualTokens[0]);
+
+    if (expectedToken.tokenId) {
+      if (actualTokenId !== expectedToken.tokenId) {
+        throw new Error(`TxHex tokenId ${actualTokenId} does not match expected ${expectedToken.tokenId}`);
+      }
+    }
+
+    if (expectedToken.tokenName) {
+      const expectedTokenId = Utils.getHederaTokenIdFromName(expectedToken.tokenName);
+      if (!expectedTokenId) {
+        throw new Error(`Unable to resolve tokenId for expected token name ${expectedToken.tokenName}`);
+      }
+      if (actualTokenId !== expectedTokenId) {
+        throw new Error(
+          `TxHex tokenId ${actualTokenId} does not match expected tokenId ${expectedTokenId} for token ${expectedToken.tokenName}`
+        );
+      }
+    }
+  }
+
+  private validateAssociateInstructionOnly(raw: HederaRawTransactionData): void {
+    const instructionType = String(raw.instructionsData?.type || '').toLowerCase();
+
+    if (
+      instructionType === 'contractexecute' ||
+      instructionType === 'contractcall' ||
+      instructionType === 'precompile'
+    ) {
+      throw new Error(`Contract-based token association not allowed for blind enablement; got ${instructionType}`);
+    }
+
+    const isNativeAssociate =
+      instructionType === 'tokenassociate' || instructionType === 'associate' || instructionType === 'associate_token';
+    if (!isNativeAssociate) {
+      throw new Error(
+        `Only native TokenAssociate is allowed for blind enablement; got ${instructionType || 'unknown'}`
+      );
+    }
+  }
+
   async verifyTransaction(params: HbarVerifyTransactionOptions): Promise<boolean> {
     // asset name to transfer amount map
     const coinConfig = coins.get(this.getChain());
-    const { txParams: txParams, txPrebuild: txPrebuild, memo: memo } = params;
+    const { txParams, txPrebuild, memo, verification } = params;
     const transaction = new Transaction(coinConfig);
     if (!txPrebuild.txHex) {
       throw new Error('missing required tx prebuild property txHex');
@@ -243,6 +460,26 @@ export class Hbar extends BaseCoin {
 
     if (!txParams.recipients) {
       throw new Error('missing required tx params property recipients');
+    }
+
+    if (txParams.type === 'enabletoken' && verification?.verifyTokenEnablement) {
+      const r0 = txParams.recipients[0];
+      const expectedToken: { tokenId?: string; tokenName?: string } = {};
+
+      if (r0.tokenName) {
+        expectedToken.tokenName = r0.tokenName;
+        const tokenId = Utils.getHederaTokenIdFromName(r0.tokenName);
+        if (tokenId) {
+          expectedToken.tokenId = tokenId;
+        }
+      }
+
+      if (!expectedToken.tokenName && !expectedToken.tokenId) {
+        throw new Error('Token enablement request missing token information');
+      }
+
+      await this.verifyTokenEnablementTransaction(txPrebuild.txHex, expectedToken, r0.address);
+      return true;
     }
 
     // for enabletoken, recipient output amount is 0
