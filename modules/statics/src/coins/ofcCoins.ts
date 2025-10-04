@@ -104,14 +104,7 @@ export const ofcCoins = [
   ofc('5958e6e9-c6d7-4372-8d1d-c681f595c481', 'ofchash', 'Provenance', 9, UnderlyingAsset.HASH, CoinKind.CRYPTO),
   ofc('4616eb4e-9244-449c-a503-02cb2d715b2c', 'ofcsei', 'Sei', 6, UnderlyingAsset.SEI, CoinKind.CRYPTO),
   ofc('50a00889-47d2-44b5-8dc8-1fb3b4f47b86', 'ofczeta', 'Zeta', 18, UnderlyingAsset.ZETA, CoinKind.CRYPTO),
-  ofc(
-    '03df4c0c-12be-4b24-b3c3-c59be198711b',
-    'ofcbsc',
-    'Binance Smart Chain',
-    18,
-    UnderlyingAsset.BSC,
-    CoinKind.CRYPTO
-  ),
+  ofc('03df4c0c-12be-4b24-b3c3-c59be198711b', 'ofcbsc', 'Native BNB', 18, UnderlyingAsset.BSC, CoinKind.CRYPTO),
   ofc('7b79bc25-5497-4350-b961-4bbed2bea994', 'ofcsui', 'Sui', 9, UnderlyingAsset.SUI, CoinKind.CRYPTO),
   ofc('31bae66e-a135-42f9-b9d3-1623ab9c7ecc', 'ofctrx', 'Tron', 6, UnderlyingAsset.TRX, CoinKind.CRYPTO),
   ofc('dbbceebe-9096-4d7b-ae9e-31eb8a3dc5ca', 'ofcsol', 'Solana', 9, UnderlyingAsset.SOL, CoinKind.CRYPTO),
@@ -491,7 +484,7 @@ export const ofcCoins = [
   tofc(
     '52e600bb-b006-452b-9f82-f81c20d0168d',
     'ofctbsc',
-    'Testnet Binance Smart Chain',
+    'Testnet Native BNB',
     18,
     UnderlyingAsset.BSC,
     CoinKind.CRYPTO
