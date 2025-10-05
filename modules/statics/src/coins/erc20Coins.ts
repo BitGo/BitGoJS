@@ -992,7 +992,7 @@ export const erc20Coins = [
   erc20(
     '462e1878-68eb-4c2b-9346-cee992195cdc',
     'bnb',
-    'BNB Token',
+    'BNB Token (ETH Network)',
     18,
     '0xb8c77482e45f1f44de1745f52c74426c631bdd52',
     UnderlyingAsset.BNB

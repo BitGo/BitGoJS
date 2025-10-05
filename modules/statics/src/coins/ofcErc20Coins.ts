@@ -53,7 +53,7 @@ export const ofcErc20Coins = [
   ofcerc20('ae72248b-19fb-4736-9430-caf68615a751', 'ofcbal', 'Balancer', 18, UnderlyingAsset.BAL),
   ofcerc20('8541eeed-0478-45fe-bff9-4bcc63ef3f67', 'ofcbico', 'Biconomy', 18, UnderlyingAsset.BICO),
   ofcerc20('48e33478-36b0-4332-a792-6b4d629c2376', 'ofcbit', 'BitDAO', 18, UnderlyingAsset.BIT),
-  ofcerc20('4bc691c4-dcdd-4b78-be96-1e87269c3caf', 'ofcbnb', 'BNB Token', 18, UnderlyingAsset.BNB),
+  ofcerc20('4bc691c4-dcdd-4b78-be96-1e87269c3caf', 'ofcbnb', 'BNB Token (ETH Network)', 18, UnderlyingAsset.BNB),
   ofcerc20('7a76184c-b4b2-4c87-81bc-0c496c605488', 'ofcbnt', 'Bancor', 18, UnderlyingAsset.BNT),
   ofcerc20('f142074d-8d94-442b-a0e3-3f09c98acaeb', 'ofcbtrst', 'Braintrust', 18, UnderlyingAsset.BTRST),
   ofcerc20('779e9fa5-e4f2-4c74-947a-5b5df61e66df', 'ofcbusd', 'Binance USD', 18, UnderlyingAsset.BUSD, undefined, [

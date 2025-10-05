@@ -1202,7 +1202,7 @@ export const allCoinsAndTokens = [
   account(
     'd0d44124-c7e9-4214-96ae-fbc6856ee3c2',
     'bsc',
-    'Binance Smart Chain',
+    'Native BNB',
     Networks.main.bsc,
     18,
     UnderlyingAsset.BSC,
@@ -1212,7 +1212,7 @@ export const allCoinsAndTokens = [
   account(
     '0a205427-f7c9-48a4-a238-c4b33ba6384d',
     'tbsc',
-    'Testnet Binance Smart Chain',
+    'Testnet Native BNB',
     Networks.test.bsc,
     18,
     UnderlyingAsset.BSC,
