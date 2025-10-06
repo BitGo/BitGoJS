@@ -113,6 +113,35 @@ export class Utils implements BaseUtils {
   }
 
   /**
+   * Computes the topology hash from the API response of the 'create party' endpoint.
+   *
+   * @param topologyTransactions - List of base64-encoded topology transactions from the Canton API.
+   * @returns The final base64-encoded topology transaction hash.
+   */
+  computeHashFromCreatePartyResponse(topologyTransactions: string[]): string {
+    const txBuffers = topologyTransactions.map((tx) => Buffer.from(tx, 'base64'));
+    return this.computeHashFromTopologyTransaction(txBuffers);
+  }
+
+  /**
+   * Computes the final topology transaction hash for a list of prepared Canton transactions.
+   *
+   * Each transaction is first hashed with purpose `11`, then all hashes are combined and
+   * hashed again with purpose `55`, following the Canton topology hash rules.
+   *
+   * The resulting hash is encoded as a base64 string.
+   *
+   * @param {Buffer[]} preparedTransactions - An array of Canton transaction buffers.
+   * @returns {string} The final topology hash, base64-encoded.
+   */
+  private computeHashFromTopologyTransaction(preparedTransactions: Buffer[]): string {
+    const rawHashes = preparedTransactions.map((tx) => this.computeSha256CantonHash(11, tx));
+    const combinedHashes = this.computeMultiHashForTopology(rawHashes);
+    const computedHash = this.computeSha256CantonHash(55, combinedHashes);
+    return Buffer.from(computedHash, 'hex').toString('base64');
+  }
+
+  /**
    * Converts a base64-encoded Ed25519 public key string into a structured signing public key object.
    * @param {String} publicKey The base64-encoded Ed25519 public key
    * @returns {Object} The structured signing key object formatted for use with cryptographic operations
@@ -183,6 +212,43 @@ export class Utils implements BaseUtils {
   private decodePreparedTransaction(base64: string): IPreparedTransaction {
     const bytes = this.fromBase64(base64);
     return PreparedTransaction.fromBinary(bytes);
+  }
+
+  /**
+   * Computes a deterministic combined hash from an array of individual Canton-style SHA-256 hashes
+   *
+   * Each hash is decoded from hex, sorted lexicographically (by hex), and prefixed with its length
+   * The final buffer includes the number of hashes followed by each (length-prefixed) hash
+   *
+   * @param {string[]} hashes - An array of Canton-prefixed SHA-256 hashes in hexadecimal string format
+   * @returns {Buffer} A binary buffer representing the combined hash input
+   */
+  private computeMultiHashForTopology(hashes: string[]): Buffer {
+    const sortedHashes = hashes
+      .map((hex) => Buffer.from(hex, 'hex'))
+      .sort((a, b) => a.toString('hex').localeCompare(b.toString('hex')));
+
+    const numHashesBytes = this.encodeInt32(sortedHashes.length);
+    const parts: Buffer[] = [numHashesBytes];
+
+    for (const h of sortedHashes) {
+      const lengthBytes = this.encodeInt32(h.length);
+      parts.push(lengthBytes, h);
+    }
+
+    return Buffer.concat(parts);
+  }
+
+  /**
+   * Encodes a 32-bit signed integer into a 4-byte big-endian Buffer
+   *
+   * @param {number} value - The integer to encode
+   * @returns {Buffer} A 4-byte buffer representing the integer in big-endian format
+   */
+  private encodeInt32(value: number): Buffer {
+    const buf = Buffer.alloc(4);
+    buf.writeInt32BE(value, 0);
+    return buf;
   }
 }
 

@@ -9,7 +9,7 @@ import {
   TransactionType,
 } from '@bitgo/sdk-core';
 import BigNumber from 'bignumber.js';
-import { Transaction } from './transaction';
+import { Transaction } from './transaction/transaction';
 import utils from './utils';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {

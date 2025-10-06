@@ -1,7 +1,7 @@
 import { BaseKey, BaseTransaction, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { CantonPrepareCommandResponse, PreparedTxnParsedInfo, TxData } from './iface';
-import utils from './utils';
+import { CantonPrepareCommandResponse, PreparedTxnParsedInfo, TxData } from '../iface';
+import utils from '../utils';
 
 export class Transaction extends BaseTransaction {
   private _transaction: CantonPrepareCommandResponse;

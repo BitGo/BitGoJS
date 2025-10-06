@@ -1,7 +1,7 @@
 import assert from 'assert';
 import should from 'should';
 import utils from '../../src/lib/utils';
-import { PreparedTransactionRawData } from '../resources';
+import { GenerateTopologyResponse, PreparedTransactionRawData } from '../resources';
 
 describe('Canton Util', function () {
   describe('Raw transaction parser', function () {
@@ -11,6 +11,14 @@ describe('Canton Util', function () {
       assert.equal(parsedData.sender, 'abc-1::12200c1ee226fbdf9fba3461c2c0c73331b69d3c6fd8cfce28cdf864141141cc656d');
       assert.equal(parsedData.receiver, 'abc-2::12207e96ada18a845adf4dc01410265633d5266dca9bb280c98e35c3692db87d3e35');
       assert.equal(parsedData.amount, '20.0000000000');
+    });
+  });
+
+  describe('Wallet init transaction', function () {
+    it('should locally generate and validate the hash for topology transaction', function () {
+      const computedHash = utils.computeHashFromCreatePartyResponse(GenerateTopologyResponse.topologyTransactions);
+      should.exist(computedHash);
+      assert.strictEqual(computedHash, GenerateTopologyResponse.multiHash);
     });
   });
 });
