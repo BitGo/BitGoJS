@@ -122,6 +122,7 @@ import {
   WalletSignTransactionOptions,
   WalletSignTypedDataOptions,
   WalletType,
+  BuildTokenApprovalResponse,
 } from './iWallet';
 
 const debug = require('debug')('bitgo:v2:wallet');
@@ -4020,6 +4021,56 @@ export class Wallet implements IWallet {
         .result();
     } catch (e) {
       throw e;
+    }
+
+    const keychains = await this.getKeychainsAndValidatePassphrase({
+      reqId,
+      walletPassphrase,
+    });
+
+    const signingParams = {
+      txPrebuild: tokenApprovalBuild,
+      keychain: keychains[0],
+      walletPassphrase,
+      reqId,
+    };
+
+    const halfSignedTransaction = await this.signTransaction(signingParams);
+    const finalTxParams = _.extend({}, halfSignedTransaction);
+
+    return this.sendTransaction(finalTxParams, reqId);
+  }
+
+  /**
+   * Build token approval transaction for ERC20 tokens
+   * If walletPassphrase is provided, also signs and sends the transaction
+   *
+   * @param {string} tokenName - The name of the token to be approved
+   * @param {string} [walletPassphrase] - Optional wallet passphrase for signing and sending
+   * @returns {Promise<BuildTokenApprovalResponse | SubmitTransactionResponse>} The token approval build response or transaction details if signed
+   */
+  async buildErc20TokenApproval(
+    tokenName: string,
+    walletPassphrase?: string
+  ): Promise<BuildTokenApprovalResponse | SubmitTransactionResponse> {
+    const reqId = new RequestTracer();
+    this.bitgo.setRequestTracer(reqId);
+
+    let tokenApprovalBuild: BuildTokenApprovalResponse;
+    const url = this.baseCoin.url(`/wallet/${this.id()}/token/approval/build`);
+    try {
+      tokenApprovalBuild = await this.bitgo
+        .post(url)
+        .send({
+          tokenName: tokenName,
+        })
+        .result();
+    } catch (error) {
+      throw new Error(`error building erc20 token approval tx: ${error}`);
+    }
+
+    if (!walletPassphrase) {
+      return tokenApprovalBuild;
     }
 
     const keychains = await this.getKeychainsAndValidatePassphrase({

@@ -800,6 +800,30 @@ export interface ChangeFeeOptions {
   eip1559?: EIP1559;
 }
 
+/**
+ * Response from the token approval build endpoint
+ */
+export interface BuildTokenApprovalResponse {
+  txHex: string;
+  txInfo: {
+    amount: string;
+    contractAddress: string;
+    spender: string;
+  };
+  recipients: {
+    address: string;
+    amount: string;
+    data: string;
+  }[];
+  eip1559?: {
+    maxFeePerGas: string;
+    maxPriorityFeePerGas: string;
+  };
+  nextContractSequenceId: number;
+  coin: string;
+  walletId: string;
+}
+
 export interface CreatePolicyRuleOptions {
   id?: string;
   type?: string;
@@ -945,4 +969,8 @@ export interface IWallet {
   getChallengesForEcdsaSigning(): Promise<WalletEcdsaChallenges>;
   getNftBalances(): Promise<NftBalance[]>;
   approveErc20Token(walletPassphrase: string, tokenName: string): Promise<SubmitTransactionResponse>;
+  buildErc20TokenApproval(
+    tokenName: string,
+    walletPassphrase?: string
+  ): Promise<BuildTokenApprovalResponse | SubmitTransactionResponse>;
 }
