@@ -45,9 +45,11 @@ import {
   IntentOptionsForTypedData,
   RequestTracer,
   RequestType,
+  SendManyTxRequestResponse,
   TokenTransferRecipientParams,
   TokenType,
   TxRequest,
+  TxRequestTransfer,
 } from '../utils';
 import { postWithCodec } from '../utils/postWithCodec';
 import { EcdsaMPCv2Utils, EcdsaUtils } from '../utils/tss/ecdsa';
@@ -3828,7 +3830,7 @@ export class Wallet implements IWallet {
    *
    * @param params send options
    */
-  private async sendManyTxRequests(params: SendManyOptions = {}): Promise<any> {
+  private async sendManyTxRequests(params: SendManyOptions = {}): Promise<SendManyTxRequestResponse | undefined> {
     params.apiVersion = getTxRequestApiVersion(this, params.apiVersion);
 
     const signedTransaction = (await this.prebuildAndSignTransaction(params)) as SignedTransactionRequest;
@@ -3840,7 +3842,7 @@ export class Wallet implements IWallet {
       const latestTxRequest = await getTxRequest(this.bitgo, this.id(), signedTransaction.txRequestId, params.reqId);
       const reqId = params.reqId || new RequestTracer();
       this.bitgo.setRequestTracer(reqId);
-      const transfer: { state: string; pendingApproval?: string; txid?: string } = await this.bitgo
+      const transfer: TxRequestTransfer = await this.bitgo
         .post(
           this.bitgo.url(
             '/wallet/' + this._wallet.id + '/txrequests/' + signedTransaction.txRequestId + '/transfers',
