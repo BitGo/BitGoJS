@@ -10,16 +10,22 @@ export function getCommon(coin: Readonly<BaseCoin>): EthereumCommon {
   if (!coin.features.includes(CoinFeature.SHARED_EVM_SDK)) {
     throw new InvalidTransactionError(`Cannot use common sdk module for the coin ${coin.name}`);
   }
+
+  const commonConfig: any = {
+    baseChain: coin.network.type === NetworkType.MAINNET ? 'mainnet' : 'sepolia',
+  };
+
+  if (coin.features.includes(CoinFeature.EIP1559)) {
+    commonConfig.hardfork = 'london';
+    commonConfig.eips = [1559];
+  }
+
   return EthereumCommon.custom(
     {
       name: coin.network.name,
       networkId: (coin.network as EthereumNetwork).chainId,
       chainId: (coin.network as EthereumNetwork).chainId,
     },
-    {
-      baseChain: coin.network.type === NetworkType.MAINNET ? 'mainnet' : 'sepolia',
-      hardfork: coin.features.includes(CoinFeature.EIP1559) ? 'london' : undefined,
-      eips: coin.features.includes(CoinFeature.EIP1559) ? [1559] : undefined,
-    }
+    commonConfig
   );
 }
