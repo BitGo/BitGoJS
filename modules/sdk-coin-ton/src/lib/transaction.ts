@@ -317,6 +317,7 @@ export class Transaction extends BaseTransaction {
           payload = WITHDRAW_OPCODE + queryId.toString(16).padStart(16, '0') + withdrawAmount;
           this.transactionType = TransactionType.SingleNominatorWithdraw;
         } else if (opcode === JETTON_TRANSFER_OPCODE) {
+          this.transactionType = TransactionType.SendToken;
           const queryId = order.loadUint(64).toNumber();
           if (queryId !== 0) throw new Error('invalid queryId for jetton transfer');
 
