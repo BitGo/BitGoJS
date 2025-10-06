@@ -132,7 +132,6 @@ import {
   ZKETH_FEATURES,
 } from './coinFeatures';
 import { botTokens } from './coins/botTokens';
-import { botOfcTokens } from './coins/botOfcTokens';
 import { adaTokens } from './coins/adaTokens';
 
 export const allCoinsAndTokens = [
@@ -148,7 +147,6 @@ export const allCoinsAndTokens = [
   ...vetTokens,
   ...cosmosTokens,
   ...botTokens,
-  ...botOfcTokens,
   ...adaTokens,
   ...jettonTokens,
   avaxp(
