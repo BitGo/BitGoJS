@@ -5051,6 +5051,21 @@
   resolved "https://registry.npmjs.org/@silencelaboratories/dkls-wasm-ll-web/-/dkls-wasm-ll-web-1.2.0-pre.4.tgz"
   integrity sha512-RDyGVX6nyABPchnucl4IOV78LWzXBV9QucRiitRNONo3pfO4z375T00lI/wPiId13wXb8YNkB1Ej90hBNUK25A==
 
+"@silencelaboratories/eddsa-wasm-ll-bundler@1.0.0-pre.2":
+  version "1.0.0-pre.2"
+  resolved "https://registry.npmjs.org/@silencelaboratories/eddsa-wasm-ll-bundler/-/eddsa-wasm-ll-bundler-1.0.0-pre.2.tgz#f8e32df5953a4e1dedff48b2a2ef1d427250e88e"
+  integrity sha512-G8CBmwAEQijPtgxs6zV5bMJWD49B4CyUoZkqm9S1JvEPonm5a9eS3DW+3Ryuj+bHxSv5i5iSHZP59Z2hAWRgHw==
+
+"@silencelaboratories/eddsa-wasm-ll-node@1.0.0-pre.2":
+  version "1.0.0-pre.2"
+  resolved "https://registry.npmjs.org/@silencelaboratories/eddsa-wasm-ll-node/-/eddsa-wasm-ll-node-1.0.0-pre.2.tgz#346bc6ea84367d59aeb2bd758a15dc2c5b836293"
+  integrity sha512-d+owsQorl4HVo2TyVdtz7LFIVPzJ7A53ksEgDdWla5cMH2IKZk+Zz2j1KvNqbgs7sGKxnqfb2SWPXH1gBXFFHA==
+
+"@silencelaboratories/eddsa-wasm-ll-web@1.0.0-pre.2":
+  version "1.0.0-pre.2"
+  resolved "https://registry.npmjs.org/@silencelaboratories/eddsa-wasm-ll-web/-/eddsa-wasm-ll-web-1.0.0-pre.2.tgz#40e8fb39f8b0f5098f8ca92ddb830194bd0826fe"
+  integrity sha512-BYDoGrCjtJT8GlOxahrsYUiNgwNeMSFWNtAeR/DBHIDBcJs1TSZ/px50bcLrAnToM91AxjVtOc+aQ/aRBbrWxA==
+
 "@sinclair/typebox@^0.34.0":
   version "0.34.41"
   resolved "https://registry.npmjs.org/@sinclair/typebox/-/typebox-0.34.41.tgz#aa51a6c1946df2c5a11494a2cdb9318e026db16c"
