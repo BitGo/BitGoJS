@@ -271,11 +271,29 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
-      - name: Setup Docker compatibility with Podman
-        run: sudo ln -sf /usr/bin/podman /usr/local/bin/docker
+      - name: Generate build info
+        id: build-info
+        run: |
+          VERSION=$(jq -r '.version' ./modules/express/package.json)
+          DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "date=$DATE" >> "$GITHUB_OUTPUT"
 
-      - name: Build BitGoJS Express Docker Image
-        run: ./scripts/build-docker-express.sh
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
+
+      - name: Build Express Docker image
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          tags: |
+            bitgo/express:${{ github.sha }}
+          build-args: |
+            VERSION=${{ steps.build-info.outputs.version }}
+            BUILD_DATE=${{ steps.build-info.outputs.date }}
+            GIT_HASH=${{ github.sha }}
 
   dockerfile-check:
     runs-on: ubuntu-latest
