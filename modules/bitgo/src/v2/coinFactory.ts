@@ -62,6 +62,7 @@ import {
   Bsv,
   Btc,
   Btg,
+  Canton,
   Celo,
   CeloToken,
   Coredao,
@@ -149,6 +150,7 @@ import {
   Tbtcsig,
   Tbtc4,
   Tbtcbgsig,
+  Tcanton,
   Tcelo,
   Tcoredao,
   Tcoreum,
@@ -241,6 +243,7 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('bsv', Bsv.createInstance);
   coinFactory.register('btc', Btc.createInstance);
   coinFactory.register('btg', Btg.createInstance);
+  coinFactory.register('canton', Canton.createInstance);
   coinFactory.register('celo', Celo.createInstance);
   coinFactory.register('coredao', Coredao.createInstance);
   coinFactory.register('coreum', Coreum.createInstance);
@@ -605,6 +608,8 @@ export function getCoinConstructor(coinName: string): CoinConstructor | undefine
       return Btc.createInstance;
     case 'btg':
       return Btg.createInstance;
+    case 'canton':
+      return Canton.createInstance;
     case 'celo':
       return Celo.createInstance;
     case 'coredao':
@@ -747,6 +752,8 @@ export function getCoinConstructor(coinName: string): CoinConstructor | undefine
       return Tbtc4.createInstance;
     case 'tbtcbgsig':
       return Tbtcbgsig.createInstance;
+    case 'tcanton':
+      return Tcanton.createInstance;
     case 'tcelo':
       return Tcelo.createInstance;
     case 'tcoredao':

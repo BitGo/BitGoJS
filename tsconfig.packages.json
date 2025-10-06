@@ -92,6 +92,9 @@
       "path": "./modules/sdk-coin-btg"
     },
     {
+      "path": "./modules/sdk-coin-canton"
+    },
+    {
       "path": "./modules/sdk-coin-celo"
     },
     {

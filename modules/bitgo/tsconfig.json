@@ -114,6 +114,9 @@
       "path": "../sdk-coin-btg"
     },
     {
+      "path": "../sdk-coin-canton"
+    },
+    {
       "path": "../sdk-coin-celo"
     },
     {
