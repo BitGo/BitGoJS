@@ -166,6 +166,13 @@ export interface TronStakeOptions extends StakeOptions {
   resourceType?: string;
 }
 
+export interface TaoStakeOptions extends StakeOptions {
+  /**
+   * tao staking netUID
+   */
+  netUID?: string;
+}
+
 export interface UnstakeOptions {
   amount: string;
   clientId?: string;
@@ -280,7 +287,7 @@ export interface StakingSignOptions {
 export interface IStakingWallet {
   readonly walletId: string;
   readonly coin: string;
-  stake(options: StakeOptions | TronStakeOptions): Promise<StakingRequest>;
+  stake(options: StakeOptions | TronStakeOptions | TaoStakeOptions): Promise<StakingRequest>;
   unstake(options: UnstakeOptions | EthUnstakeOptions): Promise<StakingRequest>;
   switchValidator(options: SwitchValidatorOptions): Promise<StakingRequest>;
   claimRewards(options: ClaimRewardsOptions): Promise<StakingRequest>;
