@@ -48,5 +48,8 @@
     "@bitgo/sdk-api": "^1.69.2",
     "@bitgo/sdk-lib-mpc": "^10.7.0",
     "@bitgo/sdk-test": "^9.1.2"
-  }
+  },
+  "files": [
+    "dist"
+  ]
 }
