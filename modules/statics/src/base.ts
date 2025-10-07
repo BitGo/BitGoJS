@@ -2254,8 +2254,10 @@ export enum UnderlyingAsset {
   'eth:figon' = 'eth:figon',
   'eth:iemgon' = 'eth:iemgon',
   'eth:sbeton' = 'eth:sbeton',
-
   'eth:usdo' = 'eth:usdo',
+  'eth:align' = 'eth:align',
+  'eth:xan' = 'eth:xan',
+
   'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ' = 'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ',
   'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M' = 'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M',
   'xlm:SLT-GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP' = 'xlm:SLT-GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP',
@@ -2768,6 +2770,8 @@ export enum UnderlyingAsset {
   'arbeth:dolo' = 'arbeth:dolo',
   'arbeth:bull' = 'arbeth:bull',
   'arbeth:rdnt' = 'arbeth:rdnt',
+  'arbeth:pendle' = 'arbeth:pendle',
+  'arbeth:gmx' = 'arbeth:gmx',
 
   // BaseETH mainnet tokens
   'baseeth:aero' = 'baseeth:aero',
@@ -2779,6 +2783,16 @@ export enum UnderlyingAsset {
   'baseeth:usde' = 'baseeth:usde',
   'baseeth:trust' = 'baseeth:trust',
   'baseeth:flk' = 'baseeth:flk',
+
+  'baseeth:spec' = 'baseeth:spec',
+  'baseeth:tig' = 'baseeth:tig',
+  'baseeth:virtual' = 'baseeth:virtual',
+  'baseeth:zora' = 'baseeth:zora',
+  'baseeth:toshi' = 'baseeth:toshi',
+  'baseeth:creator' = 'baseeth:creator',
+  'baseeth:avnt' = 'baseeth:avnt',
+  'baseeth:mira' = 'baseeth:mira',
+  'baseeth:towns' = 'baseeth:towns',
 
   // BaseETH testnet tokens
   'tbaseeth:usdc' = 'tbaseeth:usdc',
@@ -3045,6 +3059,10 @@ export enum UnderlyingAsset {
   'sol:rekt' = 'sol:rekt',
   'sol:xyo' = 'sol:xyo',
   'sol:zig' = 'sol:zig',
+  'sol:xsgd' = 'sol:xsgd',
+  'sol:straitxusd' = 'sol:straitxusd',
+  'sol:usx' = 'sol:usx',
+
   'tsol:txsgd' = 'sol:txsgd',
   'tsol:txusd' = 'sol:txusd',
   // TRX tokens

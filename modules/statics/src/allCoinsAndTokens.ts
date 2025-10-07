@@ -3903,6 +3903,25 @@ export const allCoinsAndTokens = [
     '0x3082cc23568ea640225c2467653db90e9250aaa0',
     UnderlyingAsset['arbeth:rdnt']
   ),
+
+  arbethErc20(
+    '1c3e6f0e-2f3a-4f0e-8d0c-2f3e6f0e2f3a',
+    'arbeth:gmx',
+    'GMX',
+    18,
+    '0xfc5a1a6eb076a2c7ad06ed22c90d7e710e35ad0a',
+    UnderlyingAsset['arbeth:gmx']
+  ),
+
+  arbethErc20(
+    '1c3e6f0e-2f3a-4f0e-8d0c-2f3e6f0e2f3b',
+    'arbeth:pendle',
+    'Pendle',
+    18,
+    '0x0c880f6761f1af8d9aa9c466984b80dab9a8c9e8',
+    UnderlyingAsset['arbeth:pendle']
+  ),
+
   opethErc20(
     '8d80fac6-4cbc-447c-b49b-4229cb8aa89d',
     'opeth:link',

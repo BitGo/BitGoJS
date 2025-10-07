@@ -1189,6 +1189,34 @@ export const ofcCoins = [
     UnderlyingAsset['sol:ford'],
     SOL_TOKEN_FEATURES
   ),
+
+  ofcsolToken(
+    '1f3e4b1c-2f0e-4d6a-8e2e-1c4f3e4b1c2f',
+    'ofcsol:xsgd',
+    'StraitsX SGD',
+    6,
+    UnderlyingAsset['sol:xsgd'],
+    SOL_TOKEN_FEATURES
+  ),
+
+  ofcsolToken(
+    'b4f8e1d2-3c4b-4a5d-9e6f-7a8b9c0d1e2f',
+    'ofcsol:straitxusd',
+    'StraitsX USD',
+    6,
+    UnderlyingAsset['sol:straitxusd'],
+    SOL_TOKEN_FEATURES
+  ),
+
+  ofcsolToken(
+    'd3c4b5a6-7e8f-4a0b-9c2d-3e4f5a6b7c8d',
+    'ofcsol:usx',
+    'USX',
+    6,
+    UnderlyingAsset['sol:usx'],
+    SOL_TOKEN_FEATURES
+  ),
+
   tofcsolToken(
     '24d678cf-e0f0-4cde-a338-d754289c5b27',
     'ofctsol:slnd',
@@ -1563,6 +1591,17 @@ export const ofcCoins = [
     18,
     UnderlyingAsset['arbeth:rdnt']
   ),
+
+  ofcArbethErc20('f3e1e2e1-2d3b-4c4a-9e6f-7a8b9c0d1e2f', 'ofcarbeth:gmx', 'GMX', 18, UnderlyingAsset['arbeth:gmx']),
+
+  ofcArbethErc20(
+    'a1b2c3d4-e5f6-4890-abcd-ef1234567890',
+    'ofcarbeth:pendle',
+    'Pendle',
+    18,
+    UnderlyingAsset['arbeth:pendle']
+  ),
+
   ofcAvaxErc20('2bd6201d-c46c-481e-b82d-7cf3601679cb', 'ofcavaxc:aave-e', 'Aave', 18, UnderlyingAsset['avaxc:aave']),
   ofcAvaxErc20(
     '515a5a74-54fe-4d73-bb12-8d1130f78692',

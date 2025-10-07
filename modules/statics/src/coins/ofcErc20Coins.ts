@@ -4406,6 +4406,52 @@ export const tOfcErc20Coins = [
   ofcerc20('9cfc5cf7-0a6b-40ec-936c-04be24e196c0', 'ofceth:mavia', 'mavia', 18, underlyingAssetForSymbol('eth:mavia')),
   ofcerc20('9ec6f38f-ce0e-4f8c-94f8-69d182f9c25e', 'ofceth:lm', 'lm', 18, underlyingAssetForSymbol('eth:lm')),
   ofcerc20('259c73b2-7c63-4522-96ee-9711442b45c8', 'ofceth:kub', 'kub', 18, underlyingAssetForSymbol('eth:kub')),
+
+  ofcerc20('d2b5f3e4-3c4e-4f1e-9f0a-1b2c3d4e5f6a', 'ofcbaseeth:spec', 'Spectral', 18, UnderlyingAsset['baseeth:spec']),
+
+  ofcerc20(
+    'e3c6f4e5-4d5e-4f2e-8f1a-2c3d4e5f6a7b',
+    'ofcbaseeth:tig',
+    'The Innovation Game',
+    18,
+    UnderlyingAsset['baseeth:tig']
+  ),
+
+  ofcerc20(
+    'f4d7f5e6-5e6f-4f3f-8f2b-3d4e5f6a7b8c',
+    'ofcbaseeth:virtual',
+    'Virtual Protocol',
+    18,
+    UnderlyingAsset['baseeth:virtual']
+  ),
+
+  ofcerc20('a5e8f6e7-6f7a-4f4a-8f3c-4e5f6a7b8c9d', 'ofcbaseeth:zora', 'Zora', 18, UnderlyingAsset['baseeth:zora']),
+
+  ofcerc20('b6f9f7e8-7a8b-4f5b-8f4d-5f6a7b8c9dae', 'ofcbaseeth:toshi', 'Toshi', 18, UnderlyingAsset['baseeth:toshi']),
+
+  ofcerc20(
+    'c7aaf8e9-8b9c-4f6c-8f5e-6a7b8c9daebf',
+    'ofcbaseeth:creator',
+    'CreatorDAO',
+    18,
+    UnderlyingAsset['baseeth:creator']
+  ),
+
+  ofcerc20('d8bbf9ea-9cad-4f7d-8f6f-7b8c9daebfca', 'ofcbaseeth:avnt', 'Avantis', 18, UnderlyingAsset['baseeth:avnt']),
+
+  ofcerc20(
+    'e9ccfaeb-adbe-4f8e-8f7a-8c9daebfcadb',
+    'ofcbaseeth:mira',
+    'Mira Network',
+    18,
+    UnderlyingAsset['baseeth:mira']
+  ),
+
+  ofcerc20('faddfbec-becf-4f9f-8f8b-9daebfcadbec', 'ofcbaseeth:towns', 'Towns', 18, UnderlyingAsset['baseeth:towns']),
+
+  ofcerc20('abeefced-cfda-4afa-8f9c-aebfcadbecfd', 'ofceth:align', 'Aligned', 18, UnderlyingAsset['eth:align']),
+
+  ofcerc20('bcfffdee-daeb-4bfb-9fad-bfcadbecfdae', 'ofceth:xan', 'Anoma', 18, UnderlyingAsset['eth:xan']),
 ];
 
 function underlyingAssetForSymbol(underlyingAssetValue: string): UnderlyingAsset {
