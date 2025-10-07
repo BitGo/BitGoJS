@@ -104,7 +104,7 @@ export class Canton extends BaseCoin {
 
   /** @inheritDoc */
   auditDecryptedKey({ multiSigType, prv, publicKey }: AuditDecryptedKeyParams): void {
-    if (multiSigType !== 'tss') {
+    if (multiSigType !== multisigTypes.tss) {
       throw new Error('Unsupported multiSigType');
     }
     auditEddsaPrivateKey(prv, publicKey ?? '');

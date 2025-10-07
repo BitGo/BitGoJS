@@ -52,6 +52,7 @@ import {
 import { ada } from './ada';
 import { avaxp } from './avaxp';
 import { BaseUnit, CoinFeature, KeyCurve, UnderlyingAsset } from './base';
+import { canton } from './canton';
 import { erc20Coins } from './coins/erc20Coins';
 import { avaxTokens } from './coins/avaxTokens';
 import { bscTokens } from './coins/bscTokens';
@@ -76,6 +77,7 @@ import {
   BERA_BGT_FEATURES,
   BERA_FEATURES,
   BSC_FEATURES,
+  CANTON_FEATURES,
   CELO_FEATURES,
   COREDAO_FEATURES,
   COREUM_FEATURES,
@@ -2083,6 +2085,24 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_COMPATIBLE_WP,
     ]
+  ),
+  canton(
+    '07385320-5a4f-48e9-97a5-86d4be9f24b0',
+    'canton',
+    'Canton Coin',
+    Networks.main.canton,
+    UnderlyingAsset.CANTON,
+    CANTON_FEATURES,
+    KeyCurve.Ed25519
+  ),
+  canton(
+    'f5d7f76b-fc5a-4da8-b1d0-a86ad0fd269e',
+    'tcanton',
+    'Testnet Canton Coin',
+    Networks.test.canton,
+    UnderlyingAsset.CANTON,
+    CANTON_FEATURES,
+    KeyCurve.Ed25519
   ),
   gasTankAccount(
     '98071460-1488-4edd-857f-0899bc5eee4f',
