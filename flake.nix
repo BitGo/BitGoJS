@@ -1,7 +1,7 @@
 {
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs";
-    nixpkgs-nodejs.url = "github:nixos/nixpkgs/de1864217bfa9b5845f465e771e0ecb48b30e02d"; # Node.js 20.18.1
+    nixpkgs-nodejs.url = "github:nixos/nixpkgs/6ad174a6dc07c7742fc64005265addf87ad08615"; # Node.js 22.14.0
   };
 
   outputs = {
@@ -21,8 +21,8 @@
     in {
       default = pkgs.mkShell {
         packages = with nixpkgs-nodejs.legacyPackages.${system}; [
-          nodejs_20
-          (yarn.override { nodejs = nodejs_20; })
+          nodejs_22
+          (yarn.override { nodejs = nodejs_22; })
         ];
 
         shellHook = ''
