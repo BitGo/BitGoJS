@@ -76,6 +76,7 @@ export const ShareWalletResponse = {
  * Share this wallet with another BitGo user.
  *
  * @operationId express.v2.wallet.share
+ * @tag express
  */
 export const PostShareWallet = httpRoute({
   path: '/api/v2/{coin}/wallet/{id}/share',

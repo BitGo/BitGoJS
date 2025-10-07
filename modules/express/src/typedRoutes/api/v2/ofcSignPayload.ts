@@ -1,7 +1,8 @@
 import * as t from 'io-ts';
-import { Json, NonEmptyString, JsonFromString } from 'io-ts-types';
+import { Json, NonEmptyString } from 'io-ts-types';
 import { httpRoute, httpRequest, optional } from '@api-ts/io-ts-http';
 import { BitgoExpressError } from '../../schemas/error';
+import { JsonFromStringifiedJson } from '../../schemas/jsonFromStringifiedJson';
 
 /**
  * Sign an arbitrary payload using an OFC trading account key.
@@ -10,7 +11,7 @@ export const OfcSignPayloadBody = {
   /** The ID of the OFC wallet to sign the payload with. */
   walletId: NonEmptyString,
   /** The payload to sign. The input can either be a stringified JSON, or a JSON object. */
-  payload: t.union([Json, t.string.pipe(JsonFromString)]),
+  payload: t.union([Json, JsonFromStringifiedJson]),
   /** The passphrase to decrypt the user key. */
   walletPassphrase: optional(t.string),
 } as const;
@@ -35,8 +36,8 @@ export const OfcSignPayloadResponse = {
 /** Sign payload with an OFC wallet key.
  * Signs an arbitrary payload with an OFC wallet key.
  *
- * @tag express
  * @operationId express.ofc.signPayload
+ * @tag express
  */
 export const PostOfcSignPayload = httpRoute({
   path: '/api/v2/ofc/signPayload',
