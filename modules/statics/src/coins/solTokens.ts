@@ -3099,6 +3099,38 @@ export const solTokens = [
     SOL_TOKEN_FEATURES,
     ProgramID.Token2022ProgramId
   ),
+
+  solToken(
+    'd1b4f0e1-2d3a-4f7c-8e2e-1c3b5f6a7b8c',
+    'sol:xsgd',
+    'StraitsX SGD',
+    6,
+    '71S9cppWipeUEQDFngYwxjoxB6Sz1MUqX72byLsVYJqy',
+    '71S9cppWipeUEQDFngYwxjoxB6Sz1MUqX72byLsVYJqy',
+    UnderlyingAsset['sol:xsgd'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    'd4b5f6a7-8c9d-4e1f-8a3b-4c5d6e7f8a9b',
+    'sol:straitxusd',
+    'StraitsX USD',
+    6,
+    '4UbvZiomFvXDnZSz6vdHiDNiHozH2ykTEqjhhbVHiv9z',
+    '4UbvZiomFvXDnZSz6vdHiDNiHozH2ykTEqjhhbVHiv9z',
+    UnderlyingAsset['sol:straitxusd'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    'e5f6a7b8-c9d0-4ef2-8a3b-c5d6e7f8a9b0',
+    'sol:usx',
+    'USX',
+    6,
+    '6FrrzDk5mQARGc1TDYoyVnSyRdds1t4PbtohCD6p3tgG',
+    '6FrrzDk5mQARGc1TDYoyVnSyRdds1t4PbtohCD6p3tgG',
+    UnderlyingAsset['sol:usx'],
+    SOL_TOKEN_FEATURES
+  ),
+
   tsolToken(
     'b98c5a7a-49c5-45f1-a6ee-b08dff596a7d',
     'tsol:srm',
