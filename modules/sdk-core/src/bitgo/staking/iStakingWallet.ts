@@ -170,7 +170,7 @@ export interface TaoStakeOptions extends StakeOptions {
   /**
    * tao staking netUID
    */
-  netUID?: string;
+  netUID?: number;
 }
 
 export interface UnstakeOptions {
