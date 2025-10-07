@@ -114,16 +114,18 @@ export function addIPCaveatToMacaroon(macaroonBase64: string, ip: string): strin
   return bytesToBase64(macaroon.exportBinary());
 }
 
-const PURPOSE_WRAPPED_P2WKH = 49;
-const PURPOSE_P2WKH = 84;
-const PURPOSE_P2TR = 86;
-const PURPOSE_ALL_OTHERS = 1017;
+export const PURPOSE_WRAPPED_P2WKH = 49;
+export const PURPOSE_P2WKH = 84;
+export const PURPOSE_P2TR = 86;
+export const PURPOSE_ALL_OTHERS = 1017;
 
-type ExtendedKeyPurpose =
+export type ExtendedKeyPurpose =
   | typeof PURPOSE_WRAPPED_P2WKH
   | typeof PURPOSE_P2WKH
   | typeof PURPOSE_P2TR
   | typeof PURPOSE_ALL_OTHERS;
+
+export type ExtendedKeyAddressPurpose = typeof PURPOSE_WRAPPED_P2WKH | typeof PURPOSE_P2WKH | typeof PURPOSE_P2TR;
 
 /**
  * Converts an extended public key (xpub) to the appropriate prefix (ypub, vpub, etc.) based on its purpose and network.
@@ -148,6 +150,43 @@ function convertXpubPrefix(xpub: string, purpose: ExtendedKeyPurpose, isMainnet:
   }
 
   versionBytes.copy(data, 0, 0, 4);
+  return bs58check.encode(data);
+}
+
+/**
+ * Converts a prefix related to purpose and network (ypub, vpub, etc.) to extended public key (xpub).
+ */
+export function revertXpubPrefix(xpub: string, purpose: ExtendedKeyPurpose, isMainnet: boolean): string {
+  // If the purpose is P2TR or ALL_OTHERS, the key is already in the standard format (xpub/tpub),
+  // so we return it unmodified. This is the same bypass condition.
+  if (purpose === PURPOSE_P2TR || purpose === PURPOSE_ALL_OTHERS) {
+    return xpub;
+  }
+
+  // 1. Decode the extended public key to get the raw bytes
+  const data = bs58check.decode(xpub);
+
+  let versionBytes: Buffer;
+
+  // 2. Determine the standard prefix (xpub/tpub) based on the network
+  switch (purpose) {
+    case PURPOSE_WRAPPED_P2WKH:
+    case PURPOSE_P2WKH:
+      // All standard, non-SegWit-specific keys use the same prefix (xpub for mainnet, tpub for testnet)
+      versionBytes = isMainnet
+        ? Buffer.from([0x04, 0x88, 0xb2, 0x1e]) // xpub
+        : Buffer.from([0x04, 0x35, 0x87, 0xcf]); // tpub
+      break;
+    default:
+      // This case should ideally not be hit if the input key is one of the converted types
+      throw new Error('Unsupported purpose for reversal');
+  }
+
+  // 3. Overwrite the existing prefix (ypub, zpub, upub, or vpub)
+  // with the standard xpub or tpub prefix.
+  versionBytes.copy(data, 0, 0, 4);
+
+  // 4. Encode the modified byte data back to a Base58Check string
   return bs58check.encode(data);
 }
 
