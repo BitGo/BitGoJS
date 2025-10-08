@@ -8,7 +8,7 @@
     "build": "npm run prepare",
     "build-ts": "yarn tsc --build --incremental --verbose .",
     "fmt": "prettier --write .",
-    "check-fmt": "prettier --check .",
+    "check-fmt": "prettier --check '**/*.{ts,js,json}'",
     "clean": "rm -r ./dist",
     "lint": "eslint --quiet .",
     "prepare": "npm run build-ts && shx cp -r ./resources ./dist",

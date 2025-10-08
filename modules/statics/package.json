@@ -12,7 +12,7 @@
     "unit-test": "nyc -- mocha",
     "build": "yarn tsc --build --incremental --verbose .",
     "fmt": "prettier --write .",
-    "check-fmt": "prettier --check .",
+    "check-fmt": "prettier --check '**/*.{ts,js,json}'",
     "clean": "rm -r ./dist",
     "prepare": "npm run build"
   },
