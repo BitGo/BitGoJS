@@ -11570,7 +11570,8 @@ export const erc20Coins = [
     'Hyperwave HLP',
     6,
     '0x9fd7466f987fd4c45a5bbde22ed8aba5bc8d72d1',
-    UnderlyingAsset['eth:hwhlp']
+    UnderlyingAsset['eth:hwhlp'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'e732528b-2c63-4fd0-b15d-290f831a7e92',
@@ -11618,7 +11619,8 @@ export const erc20Coins = [
     'MultiBank Group',
     18,
     '0x45e02bc2875a2914c4f585bbf92a6f28bc07cb70',
-    UnderlyingAsset['eth:mbg']
+    UnderlyingAsset['eth:mbg'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'e2650199-e114-4abd-9086-46d77ee1ee0f',
