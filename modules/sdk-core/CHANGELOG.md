@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [36.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.10.1...@bitgo/sdk-core@36.11.0) (2025-10-08)
+
+
+### Bug Fixes
+
+* add explicit 'files' in package json ([3b00373](https://github.com/BitGo/BitGoJS/commit/3b0037396f6ac16bb9380bd85bf37f2b133068f4))
+
+
+### Features
+
+* add new param to support the netUID for Tao Staking ([6b175f8](https://github.com/BitGo/BitGoJS/commit/6b175f84510d633d02071dea5fabac3acb36b7cf))
+* change the netUID data type from string to number for Tao Staking ([a4eba23](https://github.com/BitGo/BitGoJS/commit/a4eba231eca91d8b3d58301efbb5b62ea0c655e5))
+* **sdk-core:** add psbt-lite as a transaction format option ([ae4da15](https://github.com/BitGo/BitGoJS/commit/ae4da15972a7f8e5bf0612d9d9feccffea95cbfa))
+* **sdk-core:** tokenApproval func for hot and cold multisig ([76b9577](https://github.com/BitGo/BitGoJS/commit/76b9577eae035c8a846999864304a13a5a6f29c0))
+
+
+
+
+
 ## [36.10.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.10.0...@bitgo/sdk-core@36.10.1) (2025-10-02)
 
 **Note:** Version bump only for package @bitgo/sdk-core

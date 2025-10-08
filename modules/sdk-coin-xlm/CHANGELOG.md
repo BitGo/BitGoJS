@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.7.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xlm@3.7.0...@bitgo/sdk-coin-xlm@3.7.1) (2025-10-08)
+
+
+### Bug Fixes
+
+* add explicit 'files' in package json ([3b00373](https://github.com/BitGo/BitGoJS/commit/3b0037396f6ac16bb9380bd85bf37f2b133068f4))
+
+
+
+
+
 # [3.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xlm@3.6.1...@bitgo/sdk-coin-xlm@3.7.0) (2025-10-02)
 
 ### Features

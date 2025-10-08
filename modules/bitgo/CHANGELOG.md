@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.4.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.3.0...bitgo@50.4.0) (2025-10-08)
+
+
+### Bug Fixes
+
+* add explicit 'files' in package json ([3b00373](https://github.com/BitGo/BitGoJS/commit/3b0037396f6ac16bb9380bd85bf37f2b133068f4))
+
+
+### Features
+
+* **sdk-coin-canton:** added new coin, canton skeleton ([9aa34bb](https://github.com/BitGo/BitGoJS/commit/9aa34bb85688b225c3429e3909e7702cfd7f4608))
+
+
+
+
+
 # [50.3.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.2.0...bitgo@50.3.0) (2025-10-02)
 
 ### Bug Fixes
