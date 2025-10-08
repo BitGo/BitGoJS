@@ -9,7 +9,7 @@
     "unit-test": "nyc -- mocha --recursive test",
     "build": "yarn tsc --build --incremental --verbose .",
     "fmt": "prettier --write .",
-    "check-fmt": "prettier --check .",
+    "check-fmt": "prettier --check '{src,test}/**/*.{ts,js,json}'",
     "clean": "rm -r ./dist",
     "lint": "eslint --quiet .",
     "prepare": "npm run build"
