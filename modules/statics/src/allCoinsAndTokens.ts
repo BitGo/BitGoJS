@@ -130,6 +130,7 @@ import {
   XTZ_FEATURES,
   ZETA_FEATURES,
   ZKETH_FEATURES,
+  ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE_AND_MENA_FZE,
 } from './coinFeatures';
 import { botTokens } from './coins/botTokens';
 import { adaTokens } from './coins/adaTokens';
@@ -3890,7 +3891,8 @@ export const allCoinsAndTokens = [
     'GMX',
     18,
     '0xfc5a1a6eb076a2c7ad06ed22c90d7e710e35ad0a',
-    UnderlyingAsset['arbeth:gmx']
+    UnderlyingAsset['arbeth:gmx'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE_AND_MENA_FZE, CoinFeature.EIP1559]
   ),
 
   arbethErc20(
