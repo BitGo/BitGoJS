@@ -739,7 +739,7 @@ async function handleV2SignTx(req: express.Request) {
  * handle wallet recover token
  * @param req
  */
-async function handleV2RecoverToken(req: express.Request) {
+async function handleV2RecoverToken(req: ExpressApiRouteRequest<'express.v2.wallet.recovertoken', 'post'>) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.params.coin);
 
@@ -1640,12 +1640,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
     prepareBitGo(config),
     promiseWrapper(handleV2SignTSSWalletTx)
   );
-  app.post(
-    '/api/v2/:coin/wallet/:id/recovertoken',
-    parseBody,
-    prepareBitGo(config),
-    promiseWrapper(handleV2RecoverToken)
-  );
+  router.post('express.v2.wallet.recovertoken', [prepareBitGo(config), typedPromiseWrapper(handleV2RecoverToken)]);
 
   // send transaction
   app.post('/api/v2/:coin/wallet/:id/sendcoins', parseBody, prepareBitGo(config), promiseWrapper(handleV2SendOne));
