@@ -19,6 +19,7 @@ import {
   TWETH_FEATURES,
   WETH_FEATURES,
   ZETA_EVM_FEATURES,
+  ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_MENA_FZE,
 } from '../coinFeatures';
 
 export const erc20Coins = [
@@ -11633,7 +11634,8 @@ export const erc20Coins = [
     'Spectral',
     18,
     '0x96419929d7949d6a801a6909c145c8eef6a40431',
-    UnderlyingAsset['baseeth:spec']
+    UnderlyingAsset['baseeth:spec'],
+    [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.BULK_TRANSACTION]
   ),
 
   erc20(
@@ -11723,7 +11725,8 @@ export const erc20Coins = [
     'Anoma',
     18,
     '0xcedbea37c8872c4171259cdfd5255cb8923cf8e7',
-    UnderlyingAsset['eth:xan']
+    UnderlyingAsset['eth:xan'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_MENA_FZE, CoinFeature.BULK_TRANSACTION]
   ),
 
   terc20(
