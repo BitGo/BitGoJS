@@ -3163,6 +3163,16 @@ export enum UnderlyingAsset {
 
   // Polymesh testnet tokens
   'tpolyx:nvbitgot' = 'tpolyx:nvbitgot',
+  'tpolyx:RAND176TM' = 'tpolyx:RAND176TM',
+  'tpolyx:WEBINRASSET3' = 'tpolyx:WEBINRASSET3',
+  'tpolyx:WEBINRASSET4' = 'tpolyx:WEBINRASSET4',
+  'tpolyx:WEBINRASSET5' = 'tpolyx:WEBINRASSET5',
+  'tpolyx:WEBINRASSET6' = 'tpolyx:WEBINRASSET6',
+  'tpolyx:WEBINRASSET7' = 'tpolyx:WEBINRASSET7',
+  'tpolyx:BULLRWA' = 'tpolyx:BULLRWA',
+
+  // Polymesh mainnet tokens
+  'polyx:0xa0ce6bc4c60981e08eca6504656c99e6' = 'polyx:0xa0ce6bc4c60981e08eca6504656c99e6',
 
   // Hbar tokens
   'hbar:karate' = 'hbar:karate',
