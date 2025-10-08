@@ -260,6 +260,26 @@ export const ofcCoins = [
   ),
   ofc('aa7e956f-2d59-4bf6-aba6-2d51bd298150', 'ofcip', 'Story', 18, UnderlyingAsset.IP, CoinKind.CRYPTO),
   tofc('773b02f6-32ea-493a-bca5-13d93cb0afff', 'ofctip', 'Story Testnet', 18, UnderlyingAsset.IP, CoinKind.CRYPTO),
+  ofc('c5015165-6ae4-4925-bd3f-4b767feba2f9', 'ofcplume', 'Plume', 18, UnderlyingAsset.PLUME, CoinKind.CRYPTO),
+  tofc(
+    '7b81e4fb-0ca7-4626-8f0f-0ab36239a35f',
+    'ofctplume',
+    'Testnet Plume',
+    18,
+    UnderlyingAsset.PLUME,
+    CoinKind.CRYPTO
+  ),
+  ofc('a2b12493-d00d-4d0d-a109-55308f668e1f', 'ofckavaevm', 'Kava EVM', 18, UnderlyingAsset.KAVAEVM, CoinKind.CRYPTO),
+  tofc(
+    '8445d703-a302-49c3-9a43-a8ef06f3346f',
+    'ofctkavaevm',
+    'Testnet Kava EVM',
+    18,
+    UnderlyingAsset.KAVAEVM,
+    CoinKind.CRYPTO
+  ),
+  ofc('06f28a2c-8a52-41d8-a404-e8e82e81bea5', 'ofcflow', 'Flow', 18, UnderlyingAsset.FLOW, CoinKind.CRYPTO),
+  tofc('3c964b1b-4ace-4730-a307-4a9d90d98f6d', 'ofctflow', 'Testnet Flow', 18, UnderlyingAsset.FLOW, CoinKind.CRYPTO),
   ofc('32b87bea-ba5f-4cab-9516-647b1fba9ea2', 'ofcxpl', 'Plasma', 18, UnderlyingAsset.XPL, CoinKind.CRYPTO),
   tofc('7783b655-1d01-4c99-b35f-1525d9a1d191', 'ofctxpl', 'Plasma Testnet', 18, UnderlyingAsset.XPL, CoinKind.CRYPTO),
   ofc('1876cf96-a0b7-4b7b-9024-6bd89df9814b', 'ofcflr', 'Flare', 18, UnderlyingAsset.FLR, CoinKind.CRYPTO),
