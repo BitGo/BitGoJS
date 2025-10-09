@@ -726,9 +726,9 @@ async function handleV2SignTxWallet(req: express.Request) {
  */
 async function handleV2SignTx(req: ExpressApiRouteRequest<'express.v2.coin.signtx', 'post'>) {
   const bitgo = req.bitgo;
-  const coin = bitgo.coin(req.params.coin);
+  const coin = bitgo.coin(req.decoded.coin);
   try {
-    return await coin.signTransaction(req.body);
+    return await coin.signTransaction(req.decoded);
   } catch (error) {
     console.log('error while signing the transaction ', error);
     throw error;
