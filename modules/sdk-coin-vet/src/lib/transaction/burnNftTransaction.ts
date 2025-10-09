@@ -47,6 +47,13 @@ export class BurnNftTransaction extends Transaction {
         data: this._transactionData || this.getBurnNftData(),
       },
     ];
+
+    this._recipients = [
+      {
+        address: this._contract,
+        amount: '0',
+      },
+    ];
   }
 
   /**
@@ -115,11 +122,12 @@ export class BurnNftTransaction extends Transaction {
       if (this.transactionData.startsWith(BURN_NFT_METHOD_ID)) {
         this.tokenId = utils.decodeBurnNftData(this.transactionData);
       }
-
       // Set sender address
       if (signedTx.signature && signedTx.origin) {
         this.sender = signedTx.origin.toString().toLowerCase();
       }
+
+      this.loadInputsAndOutputs();
 
       // Set signatures if present
       if (signedTx.signature) {
