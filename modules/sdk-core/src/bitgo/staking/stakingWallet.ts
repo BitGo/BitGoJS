@@ -184,6 +184,10 @@ export class StakingWallet implements IStakingWallet {
     );
   }
 
+  private isStx() {
+    return this.wallet.baseCoin.getFamily() === 'stx';
+  }
+
   private isTrxStaking(transaction: StakingTransaction) {
     return this.wallet.baseCoin.getFamily() === 'trx';
   }
@@ -448,7 +452,8 @@ export class StakingWallet implements IStakingWallet {
     if (
       buildParams?.type &&
       (explainedTransaction as any).type !== undefined &&
-      TransactionType[buildParams.type] !== (explainedTransaction as any).type
+      ((this.isStx() && TransactionType.ContractCall !== (explainedTransaction as any).type) || // for STX the tx type should always ContractCall
+        (!this.isStx() && TransactionType[buildParams.type] !== (explainedTransaction as any).type))
     ) {
       mismatchErrors.push(
         `Transaction type mismatch. Expected: '${buildParams.type}', Got: '${(explainedTransaction as any).type}'`

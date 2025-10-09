@@ -724,11 +724,11 @@ async function handleV2SignTxWallet(req: express.Request) {
  * handle sign transaction
  * @param req
  */
-async function handleV2SignTx(req: express.Request) {
+async function handleV2SignTx(req: ExpressApiRouteRequest<'express.v2.coin.signtx', 'post'>) {
   const bitgo = req.bitgo;
-  const coin = bitgo.coin(req.params.coin);
+  const coin = bitgo.coin(req.decoded.coin);
   try {
-    return await coin.signTransaction(req.body);
+    return await coin.signTransaction(req.decoded);
   } catch (error) {
     console.log('error while signing the transaction ', error);
     throw error;
@@ -1632,7 +1632,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   router.post('express.ofc.signPayload', [prepareBitGo(config), typedPromiseWrapper(handleV2OFCSignPayload)]);
 
   // sign transaction
-  app.post('/api/v2/:coin/signtx', parseBody, prepareBitGo(config), promiseWrapper(handleV2SignTx));
+  router.post('express.v2.coin.signtx', [prepareBitGo(config), typedPromiseWrapper(handleV2SignTx)]);
   app.post('/api/v2/:coin/wallet/:id/signtx', parseBody, prepareBitGo(config), promiseWrapper(handleV2SignTxWallet));
   app.post(
     '/api/v2/:coin/wallet/:id/signtxtss',
