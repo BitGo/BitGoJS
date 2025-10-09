@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.1.0...@bitgo/sdk-coin-canton@1.2.0) (2025-10-09)
+
+
+### Bug Fixes
+
+* run check-fmt on code files only ([9745196](https://github.com/BitGo/BitGoJS/commit/9745196b02b9678c740d290a4638ceb153a8fd75))
+
+
+### Features
+
+* **sdk-coin-canton:** added transaction class and canton raw transaction local parser ([2062ff5](https://github.com/BitGo/BitGoJS/commit/2062ff5eb341dda8b9b8696f0d6b2f0c76ba7c02))
+
+
+
+
+
 # 1.1.0 (2025-10-08)
 
 

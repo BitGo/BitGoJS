@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [15.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.4.0...@bitgo/express@15.5.0) (2025-10-09)
+
+
+### Features
+
+* **express:** migrate coinSignTx to typed routes ([c2638e0](https://github.com/BitGo/BitGoJS/commit/c2638e08308283f9a32b4efe78520472276d991f))
+
+
+
+
+
 # [15.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.3.0...@bitgo/express@15.4.0) (2025-10-08)
 
 

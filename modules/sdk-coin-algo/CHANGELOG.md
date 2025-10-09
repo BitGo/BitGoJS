@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.5.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-algo@2.5.3...@bitgo/sdk-coin-algo@2.5.4) (2025-10-09)
+
+
+### Bug Fixes
+
+* run check-fmt on code files only ([9745196](https://github.com/BitGo/BitGoJS/commit/9745196b02b9678c740d290a4638ceb153a8fd75))
+
+
+
+
+
 ## [2.5.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-algo@2.5.2...@bitgo/sdk-coin-algo@2.5.3) (2025-10-08)
 
 
