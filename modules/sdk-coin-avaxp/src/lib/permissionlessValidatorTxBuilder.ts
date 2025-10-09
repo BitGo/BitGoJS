@@ -30,7 +30,7 @@ import {
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { Buffer as BufferAvax } from 'avalanche';
 import BigNumber from 'bignumber.js';
-import { DecodedUtxoObj, SECP256K1_Transfer_Output, Tx } from './iface';
+import { DecodedUtxoObj, SECP256K1_STAKEABLE_LOCK_OUT, SECP256K1_Transfer_Output, Tx } from './iface';
 import { KeyPair } from './keyPair';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
@@ -376,7 +376,10 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
       console.log(`bitgoIndexToOnChainIndex: ${Array.from(bitgoIndexToOnChainIndex)}`);
       // in OVC, output.addressesIndex is defined correctly from the previous iteration
 
-      if (utxo.outputID === SECP256K1_Transfer_Output) {
+      if (
+        utxo.outputID === SECP256K1_Transfer_Output ||
+        (utxo.outputID === SECP256K1_STAKEABLE_LOCK_OUT && utxo.locktime === '0')
+      ) {
         const utxoAmount = BigInt(utxo.amount);
         // either user (0) or recovery (2)
         // On regular mode: [user, bitgo] (i.e. [0, 1])

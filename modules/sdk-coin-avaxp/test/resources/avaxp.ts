@@ -622,7 +622,7 @@ export const BUILD_AND_SIGN_ADD_PERMISSIONLESS_VALIDATOR_SAMPLE = {
     '0xa94d6182edbd953516b262f17565a65d98f5741549cd70d2423abff750bb4b8d982d482376b189142ff8aa4705615fee14be6174610860e9c003aa4aeaa613b1732abf3cd0c9c42fa5856345644068c0d1f9fa1d9af32e20b14fca02983260bc',
   utxos: [
     {
-      outputID: 7,
+      outputID: 22,
       amount: '98000000',
       txid: 's92SjoZQemgG97HocX9GgyFy6ZKmapgcgqQ3y5J2uwP3qWBUy',
       threshold: 2,
