@@ -5,12 +5,13 @@
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "scripts": {
-    "build": "yarn tsc --build --incremental --verbose .",
+    "build": "npm run prepare",
+    "build-ts": "yarn tsc --build --incremental --verbose .",
     "fmt": "prettier --write .",
     "check-fmt": "prettier --check .",
     "clean": "rm -r ./dist",
     "lint": "eslint --quiet .",
-    "prepare": "npm run build",
+    "prepare": "npm run build-ts && shx cp -r ./resources ./dist",
     "test": "npm run coverage",
     "coverage": "nyc -- npm run unit-test",
     "unit-test": "mocha"
@@ -42,6 +43,7 @@
   "dependencies": {
     "@bitgo/sdk-core": "^36.10.1",
     "@bitgo/statics": "^58.2.0",
+    "@protobuf-ts/runtime": "^2.11.1",
     "bignumber.js": "^9.1.1"
   },
   "devDependencies": {
