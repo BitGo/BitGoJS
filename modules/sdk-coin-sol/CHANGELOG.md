@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.2.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.2.0...@bitgo/sdk-coin-sol@7.2.1) (2025-10-08)
+
+
+### Bug Fixes
+
+* add explicit 'files' in package json ([3b00373](https://github.com/BitGo/BitGoJS/commit/3b0037396f6ac16bb9380bd85bf37f2b133068f4))
+
+
+
+
+
 # [7.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.1.0...@bitgo/sdk-coin-sol@7.2.0) (2025-10-02)
 
 ### Bug Fixes

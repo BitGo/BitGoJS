@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/abstract-substrate",
-  "version": "1.11.2",
+  "version": "1.11.3",
   "description": "BitGo SDK coin library for Substrate base implementation",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -8,7 +8,7 @@
     "build": "npm run prepare",
     "build-ts": "yarn tsc --build --incremental --verbose .",
     "fmt": "prettier --write .",
-    "check-fmt": "prettier --check .",
+    "check-fmt": "prettier --check '**/*.{ts,js,json}'",
     "clean": "rm -r ./dist",
     "lint": "eslint --quiet .",
     "prepare": "npm run build-ts"
@@ -38,9 +38,9 @@
     ]
   },
   "dependencies": {
-    "@bitgo/sdk-core": "^36.10.1",
-    "@bitgo/sdk-lib-mpc": "^10.7.0",
-    "@bitgo/statics": "^58.2.0",
+    "@bitgo/sdk-core": "^36.11.0",
+    "@bitgo/sdk-lib-mpc": "^10.8.0",
+    "@bitgo/statics": "^58.3.0",
     "@polkadot/api": "14.1.1",
     "@polkadot/keyring": "13.3.1",
     "@polkadot/types": "14.1.1",

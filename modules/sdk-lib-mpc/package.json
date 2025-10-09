@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-lib-mpc",
-  "version": "10.7.0",
+  "version": "10.8.0",
   "description": "library functions for BitGo's MPC solution",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -9,7 +9,7 @@
     "unit-test": "nyc -- mocha --recursive test",
     "build": "yarn tsc --build --incremental --verbose .",
     "fmt": "prettier --write .",
-    "check-fmt": "prettier --check .",
+    "check-fmt": "prettier --check '**/*.{ts,js,json}'",
     "clean": "rm -r ./dist",
     "lint": "eslint --quiet .",
     "prepare": "npm run build"

@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/abstract-utxo",
-  "version": "9.27.2",
+  "version": "9.27.3",
   "description": "BitGo SDK coin library for UTXO base implementation",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -10,7 +10,7 @@
   "scripts": {
     "build": "yarn tsc --build --incremental --verbose .",
     "fmt": "prettier --write .",
-    "check-fmt": "prettier --check .",
+    "check-fmt": "prettier --check '**/*.{ts,js,json}'",
     "clean": "rm -r ./dist",
     "lint": "eslint --quiet .",
     "prepare": "npm run build",
@@ -43,10 +43,10 @@
   },
   "dependencies": {
     "@bitgo/blockapis": "^1.12.0",
-    "@bitgo/sdk-api": "^1.69.2",
-    "@bitgo/sdk-core": "^36.10.1",
-    "@bitgo/unspents": "^0.50.1",
-    "@bitgo/utxo-core": "^1.20.1",
+    "@bitgo/sdk-api": "^1.70.0",
+    "@bitgo/sdk-core": "^36.11.0",
+    "@bitgo/unspents": "^0.50.2",
+    "@bitgo/utxo-core": "^1.20.2",
     "@bitgo/utxo-lib": "^11.11.0",
     "@bitgo/wasm-miniscript": "2.0.0-beta.7",
     "@types/lodash": "^4.14.121",

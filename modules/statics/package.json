@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/statics",
-  "version": "58.2.0",
+  "version": "58.3.0",
   "description": "dependency-free static configuration for the bitgo platform",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -12,7 +12,7 @@
     "unit-test": "nyc -- mocha",
     "build": "yarn tsc --build --incremental --verbose .",
     "fmt": "prettier --write .",
-    "check-fmt": "prettier --check .",
+    "check-fmt": "prettier --check '**/*.{ts,js,json}'",
     "clean": "rm -r ./dist",
     "prepare": "npm run build"
   },

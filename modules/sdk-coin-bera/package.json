@@ -1,13 +1,13 @@
 {
   "name": "@bitgo/sdk-coin-bera",
-  "version": "2.6.2",
+  "version": "2.6.3",
   "description": "BitGo SDK coin library for Bera",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "scripts": {
     "build": "yarn tsc --build --incremental --verbose .",
     "fmt": "prettier --write .",
-    "check-fmt": "prettier --check .",
+    "check-fmt": "prettier --check '**/*.{ts,js,json}'",
     "clean": "rm -r ./dist",
     "lint": "eslint --quiet .",
     "prepare": "npm run build",
@@ -40,15 +40,15 @@
     ]
   },
   "dependencies": {
-    "@bitgo/abstract-eth": "^24.13.2",
-    "@bitgo/sdk-core": "^36.10.1",
+    "@bitgo/abstract-eth": "^24.13.3",
+    "@bitgo/sdk-core": "^36.11.0",
     "@bitgo/secp256k1": "^1.5.0",
-    "@bitgo/statics": "^58.2.0",
+    "@bitgo/statics": "^58.3.0",
     "@ethereumjs/common": "^2.6.5"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.69.2",
-    "@bitgo/sdk-test": "^9.1.2"
+    "@bitgo/sdk-api": "^1.70.0",
+    "@bitgo/sdk-test": "^9.1.3"
   },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c",
   "files": [
