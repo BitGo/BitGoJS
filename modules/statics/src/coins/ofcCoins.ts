@@ -90,6 +90,7 @@ export const ofcCoins = [
   ofc('74cc3b48-25be-4477-8782-cbb1ea070eab', 'ofccronos', 'Cronos POS', 8, UnderlyingAsset.CRONOS, CoinKind.CRYPTO),
   ofc('273f9166-b72d-420f-bc10-61a36e27b909', 'ofcinitia', 'Initia', 6, UnderlyingAsset.INITIA, CoinKind.CRYPTO),
   ofc('c4f6ac74-dc03-47bd-bb47-f2008b414ea2', 'ofcasi', 'Fetch Native', 18, UnderlyingAsset.ASI, CoinKind.CRYPTO),
+  ofc('94b17da0-9c6f-40d9-a39b-432f562f4c03', 'ofcmantra', 'Mantra', 6, UnderlyingAsset.MANTRA, CoinKind.CRYPTO),
   ofc('220b2568-e996-40d1-af2c-fc4f79019069', 'ofctia', 'Celestia', 6, UnderlyingAsset.TIA, CoinKind.CRYPTO),
   ofc('3ad9a2e0-a8f4-4673-9177-35e855929eb6', 'ofcatom', 'Cosmos Hub ATOM', 6, UnderlyingAsset.ATOM, CoinKind.CRYPTO),
   ofc(
@@ -460,6 +461,14 @@ export const ofcCoins = [
     'Testnet Fetch Native',
     18,
     UnderlyingAsset.ASI,
+    CoinKind.CRYPTO
+  ),
+  tofc(
+    '9c00ffaf-6c79-4e2d-b648-d50d53ca84b3',
+    'ofctmantra',
+    'Testnet Mantra',
+    6,
+    UnderlyingAsset.MANTRA,
     CoinKind.CRYPTO
   ),
   tofc(
