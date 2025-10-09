@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [50.4.1](https://github.com/BitGo/BitGoJS/compare/bitgo@50.4.0...bitgo@50.4.1) (2025-10-09)
+
+
+### Bug Fixes
+
+* run check-fmt on code files only ([9745196](https://github.com/BitGo/BitGoJS/commit/9745196b02b9678c740d290a4638ceb153a8fd75))
+
+
+
+
+
 # [50.4.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.3.0...bitgo@50.4.0) (2025-10-08)
 
 

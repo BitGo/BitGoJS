@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.9.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/deser-lib@1.9.0...@bitgo/deser-lib@1.9.1) (2025-10-09)
+
+
+### Bug Fixes
+
+* **deser-lib:** run check-fmt on code files only ([6b8f637](https://github.com/BitGo/BitGoJS/commit/6b8f637371e840e2b7b5517a5a96dbd0edc41d7a))
+* run check-fmt on code files only ([9745196](https://github.com/BitGo/BitGoJS/commit/9745196b02b9678c740d290a4638ceb153a8fd75))
+
+
+
+
+
 # [1.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/deser-lib@1.8.0...@bitgo/deser-lib@1.9.0) (2025-10-08)
 
 

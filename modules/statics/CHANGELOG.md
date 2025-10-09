@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.3.0...@bitgo/statics@58.4.0) (2025-10-09)
+
+
+### Bug Fixes
+
+* run check-fmt on code files only ([9745196](https://github.com/BitGo/BitGoJS/commit/9745196b02b9678c740d290a4638ceb153a8fd75))
+
+
+### Features
+
+* enable staking feature on somnia and wflr roduction ([eafb3ec](https://github.com/BitGo/BitGoJS/commit/eafb3ec7f98c5004c7e078545135819452a74a6c))
+* gate tokens for BitGo Singapore ([3502956](https://github.com/BitGo/BitGoJS/commit/35029568bb4f8bc337d1b577d55a80e2b1dcd515))
+* **statics:** add go account support for mantra ([ac19cf6](https://github.com/BitGo/BitGoJS/commit/ac19cf6610b1ec9e0054d9a7619d1d977d8a2d84))
+
+
+
+
+
 # [58.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.2.0...@bitgo/statics@58.3.0) (2025-10-08)
 
 
