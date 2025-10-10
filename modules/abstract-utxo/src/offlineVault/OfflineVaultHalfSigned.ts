@@ -1,5 +1,5 @@
+import { BIP32Interface, bip32 } from '@bitgo/secp256k1';
 import * as utxolib from '@bitgo/utxo-lib';
-import { BIP32Interface } from '@bitgo/utxo-lib';
 import { BaseCoin } from '@bitgo/sdk-core';
 
 import { getNetworkFromChain } from '../names';
@@ -23,7 +23,7 @@ export function createHalfSigned(
 ): OfflineVaultHalfSigned {
   const network = getNetworkFromChain(coin);
   if (typeof prv === 'string') {
-    prv = utxolib.bip32.fromBase58(prv);
+    prv = bip32.fromBase58(prv);
   }
   prv = BaseCoin.deriveKeyWithSeedBip32(prv, derivationId).key;
   if (!OfflineVaultSignable.is(tx)) {
