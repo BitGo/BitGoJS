@@ -167,11 +167,11 @@ describe('Instruction Builder Tests: ', function () {
           fromAddress,
           toAddress,
           amount,
-          tokenName: tokenConfig!.symbol,
+          tokenName: 'tbill',
           sourceAddress,
           tokenAddress: tokenConfig!.mintAddress,
-          decimalPlaces: tokenConfig!.decimals,
-          programId: tokenConfig!.programId,
+          decimalPlaces: 6,
+          programId: TOKEN_2022_PROGRAM_ID.toString(),
         },
       };
 
@@ -187,7 +187,7 @@ describe('Instruction Builder Tests: ', function () {
         new PublicKey(toAddress),
         new PublicKey(fromAddress),
         BigInt(amount),
-        tokenConfig!.decimals,
+        6,
         [],
         TOKEN_2022_PROGRAM_ID
       );
