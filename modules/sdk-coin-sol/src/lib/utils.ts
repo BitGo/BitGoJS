@@ -3,6 +3,8 @@ import {
   isValidXpub,
   NotSupported,
   ParseTransactionError,
+  SolInstruction,
+  SolVersionedInstruction,
   TransactionType,
   UtilsError,
 } from '@bitgo/sdk-core';
@@ -615,4 +617,18 @@ export function validateOwnerAddress(ownerAddress: string): void {
   if (!ownerAddress || !isValidAddress(ownerAddress)) {
     throw new BuildTransactionError('Invalid or missing ownerAddress, got: ' + ownerAddress);
   }
+}
+
+/**
+ * Type predicate to check if an instruction is a legacy SolInstruction.
+ * Uses 'programId' property as the discriminator since it's unique to legacy instructions
+ * Versioned instructions have 'programIdIndex' property.
+ *
+ * @param instruction - The instruction to check
+ * @returns True if the instruction is a SolInstruction (has programId field)
+ */
+export function isSolLegacyInstruction(
+  instruction: SolInstruction | SolVersionedInstruction
+): instruction is SolInstruction {
+  return 'programId' in instruction;
 }
