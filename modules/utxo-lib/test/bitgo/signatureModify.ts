@@ -1,9 +1,8 @@
 /* eslint-disable no-redeclare */
 import { script, ScriptSignature, TxOutput } from 'bitcoinjs-lib';
 import { isPlaceholderSignature, parseSignatureScript, UtxoTransaction } from '../../src/bitgo';
-import { secp256k1 } from '@noble/curves/secp256k1';
 
-const n = BigInt(secp256k1.CURVE.n);
+const n = BigInt('0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141');
 const nDiv2 = n / BigInt(2);
 
 function bytesToBigInt(bytes: Uint8Array): bigint {
