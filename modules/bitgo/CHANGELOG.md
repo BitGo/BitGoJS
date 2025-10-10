@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [50.4.2](https://github.com/BitGo/BitGoJS/compare/bitgo@50.4.1...bitgo@50.4.2) (2025-10-10)
+
+
+### Bug Fixes
+
+* upgrade public types version ([49cb5b1](https://github.com/BitGo/BitGoJS/commit/49cb5b1f07bf63ae0fab7feb5f55457f641ada9f))
+
+
+
+
+
 ## [50.4.1](https://github.com/BitGo/BitGoJS/compare/bitgo@50.4.0...bitgo@50.4.1) (2025-10-09)
 
 

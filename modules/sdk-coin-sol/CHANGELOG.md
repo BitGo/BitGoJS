@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.2.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.2.2...@bitgo/sdk-coin-sol@7.2.3) (2025-10-10)
+
+
+### Bug Fixes
+
+* upgrade public types version ([49cb5b1](https://github.com/BitGo/BitGoJS/commit/49cb5b1f07bf63ae0fab7feb5f55457f641ada9f))
+
+
+
+
+
 ## [7.2.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.2.1...@bitgo/sdk-coin-sol@7.2.2) (2025-10-09)
 
 
