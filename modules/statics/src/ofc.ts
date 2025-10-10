@@ -36,6 +36,7 @@ const DISALLOWED_FEATURES = [
   CoinFeature.PAYGO,
   CoinFeature.SUPPORTS_TOKENS,
   CoinFeature.SHARED_EVM_SIGNING,
+  CoinFeature.EVM_COMPATIBLE_WP,
 ];
 
 const REQUIRED_FEATURES = [CoinFeature.ACCOUNT_MODEL, CoinFeature.REQUIRES_BIG_NUMBER];
