@@ -256,7 +256,7 @@ export function updateWalletUnspentForPsbt(
   if ((isZcashOrSegwit || customParams?.skipNonWitnessUtxo) && !input.witnessUtxo) {
     const { script, value } = toPrevOutput(u, psbt.network);
     psbt.updateInput(inputIndex, { witnessUtxo: { script, value } });
-  } else if (!isZcashOrSegwit) {
+  } else if (!isZcashOrSegwit && !customParams?.skipNonWitnessUtxo) {
     if (!isUnspentWithPrevTx(u)) {
       throw new Error('Error, require previous tx to add to PSBT');
     }
