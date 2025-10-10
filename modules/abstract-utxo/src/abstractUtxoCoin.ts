@@ -3,7 +3,8 @@ import { randomBytes } from 'crypto';
 
 import _ from 'lodash';
 import * as utxolib from '@bitgo/utxo-lib';
-import { bip32, bitgo, getMainnet, isMainnet, isTestnet } from '@bitgo/utxo-lib';
+import { bip32 } from '@bitgo/secp256k1';
+import { bitgo, getMainnet, isMainnet, isTestnet } from '@bitgo/utxo-lib';
 import {
   AddressCoinSpecific,
   AddressTypeChainMismatchError,
@@ -46,7 +47,6 @@ import {
   Wallet,
   isValidPrv,
   isValidXprv,
-  bitcoin,
 } from '@bitgo/sdk-core';
 
 import {
@@ -1160,7 +1160,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       throw new Error('invalid private key');
     }
     if (publicKey) {
-      const genPubKey = bitcoin.HDNode.fromBase58(prv).neutered().toBase58();
+      const genPubKey = bip32.fromBase58(prv).neutered().toBase58();
       if (genPubKey !== publicKey) {
         throw new Error('public key does not match private key');
       }

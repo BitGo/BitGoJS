@@ -1,7 +1,7 @@
 import assert from 'assert';
 
 import * as t from 'io-ts';
-import * as utxolib from '@bitgo/utxo-lib';
+import { BIP32Interface, bip32 } from '@bitgo/secp256k1';
 import { IRequestTracer, IWallet, KeyIndices, promiseProps, Triple } from '@bitgo/sdk-core';
 
 import { AbstractUtxoCoin } from './abstractUtxoCoin';
@@ -48,12 +48,12 @@ export function toKeychainTriple(keychains: UtxoNamedKeychains): Triple<UtxoKeyc
 
 export function toBip32Triple(
   keychains: UtxoNamedKeychains | Triple<{ pub: string }> | Triple<string>
-): Triple<utxolib.BIP32Interface> {
+): Triple<BIP32Interface> {
   if (Array.isArray(keychains)) {
     return keychains.map((keychain: { pub: string } | string) => {
       const v = typeof keychain === 'string' ? keychain : keychain.pub;
-      return utxolib.bip32.fromBase58(v);
-    }) as Triple<utxolib.BIP32Interface>;
+      return bip32.fromBase58(v);
+    }) as Triple<BIP32Interface>;
   }
 
   return toBip32Triple(toKeychainTriple(keychains));

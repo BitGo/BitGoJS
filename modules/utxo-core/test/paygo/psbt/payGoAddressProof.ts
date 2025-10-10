@@ -1,6 +1,7 @@
 import assert from 'assert';
 import crypto from 'crypto';
 
+import { bip32 } from '@bitgo/secp256k1';
 import * as utxolib from '@bitgo/utxo-lib';
 import { decodeProprietaryKey } from 'bip174/src/lib/proprietaryKeyVal';
 import { KeyValue } from 'bip174/src/lib/interfaces';
@@ -19,7 +20,7 @@ import { NIL_UUID } from '../../../src/paygo/attestation';
 
 // To construct our PSBTs
 export const network = utxolib.networks.bitcoin;
-const keys = [1, 2, 3].map((v) => utxolib.bip32.fromSeed(Buffer.alloc(16, `test/2/${v}`), network));
+const keys = [1, 2, 3].map((v) => bip32.fromSeed(Buffer.alloc(16, `test/2/${v}`), network));
 const rootWalletKeys = new utxolib.bitgo.RootWalletKeys([keys[0], keys[1], keys[2]]);
 
 // PSBT INPUTS AND OUTPUTS
