@@ -1,6 +1,6 @@
 import * as t from 'io-ts';
 import { httpRoute, httpRequest, optional } from '@api-ts/io-ts-http';
-import { TransactionRequest as TxRequestResponse } from '@bitgo/public-types';
+import { TransactionRequest as TxRequestResponse, TransactionRequestApiVersion } from '@bitgo/public-types';
 import { BitgoExpressError } from '../../schemas/error';
 
 /**
@@ -58,7 +58,7 @@ export const WalletSignTxBody = {
   /** Wallet passphrase for TSS wallets */
   walletPassphrase: optional(t.string),
   /** API version: 'lite' or 'full' */
-  apiVersion: optional(t.union([t.literal('lite'), t.literal('full')])),
+  apiVersion: optional(TransactionRequestApiVersion),
   /** Multisig type version */
   multisigTypeVersion: optional(t.literal('MPCv2')),
   /** Gas limit for ETH transactions */
