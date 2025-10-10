@@ -708,7 +708,7 @@ async function handleV2AcceptWalletShare(req: express.Request) {
 /**
  * handle wallet sign transaction
  */
-async function handleV2SignTxWallet(req: express.Request) {
+async function handleV2SignTxWallet(req: ExpressApiRouteRequest<'express.v2.wallet.signtx', 'post'>) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.params.coin);
   const wallet = await coin.wallets().get({ id: req.params.id });
@@ -1633,7 +1633,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
 
   // sign transaction
   router.post('express.v2.coin.signtx', [prepareBitGo(config), typedPromiseWrapper(handleV2SignTx)]);
-  app.post('/api/v2/:coin/wallet/:id/signtx', parseBody, prepareBitGo(config), promiseWrapper(handleV2SignTxWallet));
+  router.post('express.v2.wallet.signtx', [prepareBitGo(config), typedPromiseWrapper(handleV2SignTxWallet)]);
   app.post(
     '/api/v2/:coin/wallet/:id/signtxtss',
     parseBody,
