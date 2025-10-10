@@ -3,7 +3,7 @@
 import { Stack } from '../../';
 import { script as bscript } from '../../';
 import { opcodes } from '../../';
-import { ecc } from '../../noble_ecc';
+import { ecc } from '@bitgo/secp256k1';
 
 export function check(script: Buffer | Stack, allowIncomplete?: boolean): boolean {
   const chunks = bscript.decompile(script) as Stack;

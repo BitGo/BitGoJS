@@ -14,7 +14,24 @@ export * as taproot from './taproot';
 
 export * as testutil from './testutil';
 
-export * from './noble_ecc';
+import { bip32, BIP32API, BIP32Interface, ecc, ECPair, ECPairInterface, ECPairAPI } from '@bitgo/secp256k1';
+
+export {
+  // @deprecated use import { bip32 } from '@bitgo/secp256k1' instead
+  bip32,
+  // @deprecated use import { BIP32API } from '@bitgo/secp256k1' instead
+  BIP32API,
+  // @deprecated use import { BIP32Interface } from '@bitgo/secp256k1' instead
+  BIP32Interface,
+  // @deprecated use import { ecc } from '@bitgo/secp256k1' instead
+  ecc,
+  // @deprecated use import { ECPair } from '@bitgo/secp256k1' instead
+  ECPair,
+  // @deprecated use import { ECPairAPI } from '@bitgo/secp256k1' instead
+  ECPairAPI,
+  // @deprecated use import { ECPairInterface } from '@bitgo/secp256k1' instead
+  ECPairInterface,
+};
 
 export * as p2trPayments from './payments';
 

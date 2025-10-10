@@ -4,7 +4,7 @@
 import { networks } from '../networks';
 import { script as bscript, Payment, PaymentOpts, lazy } from 'bitcoinjs-lib';
 import * as taproot from '../taproot';
-import { musig } from '../noble_ecc';
+import { musig } from '@bitgo/secp256k1';
 import { secp256k1 as necc } from '@noble/curves/secp256k1';
 
 const typef = require('typeforce');
