@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import * as utxolib from '@bitgo/utxo-lib';
+import { BIP32Interface, ECPairInterface } from '@bitgo/secp256k1';
 import { Psbt as WasmPsbt } from '@bitgo/wasm-miniscript';
 
 /** These can be replaced when @bitgo/wasm-miniscript is updated */
@@ -31,7 +31,7 @@ export function getNewSignatureCount(signResult: SignPsbtResult): number {
   return Object.values(signResult).reduce((sum, signatures) => sum + getNewSignatureCountForInput(signatures), 0);
 }
 
-type Key = Buffer | utxolib.BIP32Interface | utxolib.ECPairInterface;
+type Key = Buffer | BIP32Interface | ECPairInterface;
 
 /** Convenience function to sign a PSBT with a key */
 export function signWithKey(psbt: WasmPsbt, key: Key): SignPsbtResult {

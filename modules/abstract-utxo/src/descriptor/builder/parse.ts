@@ -1,5 +1,4 @@
-import { BIP32Interface } from '@bitgo/utxo-lib';
-import * as utxolib from '@bitgo/utxo-lib';
+import { BIP32Interface, bip32 } from '@bitgo/secp256k1';
 import { Descriptor } from '@bitgo/wasm-miniscript';
 
 import { DescriptorBuilder, getDescriptorFromBuilder } from './builder';
@@ -55,7 +54,7 @@ function parseMulti(node: unknown): {
   });
   return {
     threshold,
-    keys: keyWithPath.map((k) => utxolib.bip32.fromBase58(k.xpub)),
+    keys: keyWithPath.map((k) => bip32.fromBase58(k.xpub)),
     path: paths[0],
   };
 }

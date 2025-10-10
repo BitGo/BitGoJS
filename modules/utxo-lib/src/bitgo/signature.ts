@@ -15,7 +15,7 @@ import {
 } from './outputScripts';
 import { Triple } from './types';
 import { getMainnet, Network, networks } from '../networks';
-import { ecc as eccLib } from '../noble_ecc';
+import { ecc as eccLib } from '@bitgo/secp256k1';
 import { parseSignatureScript2Of3 } from './parseInput';
 import { getTaprootOutputKey } from '../taproot';
 
