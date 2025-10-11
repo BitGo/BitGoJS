@@ -1,7 +1,7 @@
 import assert from 'assert';
 import should from 'should';
 import utils from '../../src/lib/utils';
-import { GenerateTopologyResponse, PreparedTransactionRawData } from '../resources';
+import { GenerateTopologyResponse, PreparedTransactionRawData, PrepareSubmissionResponse } from '../resources';
 
 describe('Canton Util', function () {
   describe('Raw transaction parser', function () {
@@ -19,6 +19,16 @@ describe('Canton Util', function () {
       const computedHash = utils.computeHashFromCreatePartyResponse(GenerateTopologyResponse.topologyTransactions);
       should.exist(computedHash);
       assert.strictEqual(computedHash, GenerateTopologyResponse.multiHash);
+    });
+  });
+
+  describe('Prepare submission response validation', function () {
+    it('should locally generate and validate the hash for prepare submission response', async function () {
+      const computedHash = await utils.computeHashFromPrepareSubmissionResponse(
+        PrepareSubmissionResponse.preparedTransaction
+      );
+      should.exist(computedHash);
+      assert.strictEqual(computedHash, PrepareSubmissionResponse.preparedTransactionHash);
     });
   });
 });

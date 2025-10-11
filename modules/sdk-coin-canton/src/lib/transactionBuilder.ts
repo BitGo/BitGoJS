@@ -3,12 +3,12 @@ import {
   BaseKey,
   BaseTransactionBuilder,
   BuildTransactionError,
-  FeeOptions,
   PublicKey as BasePublicKey,
   Signature,
   TransactionType,
 } from '@bitgo/sdk-core';
 import BigNumber from 'bignumber.js';
+import { KeyPair } from './keyPair';
 import { Transaction } from './transaction/transaction';
 import utils from './utils';
 
@@ -42,21 +42,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this._signatures.push({ publicKey, signature });
   }
 
-  /**
-   * Sets the sender of this transaction.
-   * This account will be responsible for paying transaction fees.
-   *
-   * @param {string} senderAddress the account that is sending this transaction
-   * @returns {TransactionBuilder} This transaction builder
-   */
-  sender(senderAddress: string): this {
-    throw new Error('Method not implemented.');
-  }
-
-  fee(feeOptions: FeeOptions): this {
-    throw new Error('Method not implemented.');
-  }
-
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string): Transaction {
     throw new Error('Method not implemented.');
@@ -77,17 +62,37 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   validateKey(key: BaseKey): void {
-    throw new Error('Method not implemented.');
+    let keyPair: KeyPair;
+    try {
+      keyPair = new KeyPair({ prv: key.key });
+    } catch {
+      throw new BuildTransactionError('Invalid key');
+    }
+    if (!keyPair.getKeys().prv) {
+      throw new BuildTransactionError('Invalid key');
+    }
   }
 
   /** @inheritdoc */
-  validateRawTransaction(rawTransaction: string): void {
-    throw new Error('Method not implemented.');
+  async validateRawTransaction(rawTransaction: string): Promise<void> {
+    if (!rawTransaction || !this._transaction.transaction) {
+      throw new BuildTransactionError('invalid raw transaction');
+    }
+    const localHash = await utils.computeHashFromPrepareSubmissionResponse(rawTransaction);
+    if (localHash !== this._transaction.transaction.preparedTransactionHash) {
+      throw new BuildTransactionError('invalid raw transaction, hash not matching');
+    }
   }
 
   /** @inheritdoc */
-  validateTransaction(transaction?: Transaction): void {
-    throw new Error('Method not implemented.');
+  async validateTransaction(transaction?: Transaction): Promise<void> {
+    if (!transaction?.transaction?.preparedTransaction) {
+      return;
+    }
+    const localHash = await utils.computeHashFromPrepareSubmissionResponse(transaction.transaction.preparedTransaction);
+    if (localHash !== transaction.transaction.preparedTransactionHash) {
+      throw new BuildTransactionError('invalid transaction');
+    }
   }
 
   /** @inheritdoc */

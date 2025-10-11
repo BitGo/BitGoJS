@@ -57,3 +57,10 @@ export interface WalletInitRequest {
   confirmationThreshold: number;
   observingParticipantUids: string[];
 }
+
+export interface PrepareSubmissionResponse {
+  preparedTransaction: string;
+  preparedTransactionHash: string;
+  hashingSchemeVersion: string;
+  hashingDetails?: string;
+}
