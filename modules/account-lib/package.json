@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/account-lib",
-  "version": "27.11.4",
+  "version": "27.11.5",
   "description": "BitGo's account library functions",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -68,7 +68,7 @@
     "@bitgo/sdk-coin-rune": "^1.6.4",
     "@bitgo/sdk-coin-sei": "^3.5.4",
     "@bitgo/sdk-coin-sgb": "^1.6.4",
-    "@bitgo/sdk-coin-sol": "^7.2.2",
+    "@bitgo/sdk-coin-sol": "^7.2.3",
     "@bitgo/sdk-coin-soneium": "^1.8.4",
     "@bitgo/sdk-coin-stt": "^1.4.4",
     "@bitgo/sdk-coin-stx": "^3.10.4",
