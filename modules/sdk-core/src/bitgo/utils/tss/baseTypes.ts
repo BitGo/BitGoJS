@@ -9,7 +9,7 @@ import { KeyShare } from './ecdsa';
 import { EcdsaTypes } from '@bitgo/sdk-lib-mpc';
 import { TssEcdsaStep1ReturnMessage, TssEcdsaStep2ReturnMessage, TxRequestChallengeResponse } from '../../tss/types';
 import { AShare, DShare, SShare } from '../../tss/ecdsa/types';
-import { MessageStandardType } from '../messageTypes';
+import { MessageStandardType } from '../../../account-lib';
 
 export type TxRequestVersion = 'full' | 'lite';
 export interface HopParams {

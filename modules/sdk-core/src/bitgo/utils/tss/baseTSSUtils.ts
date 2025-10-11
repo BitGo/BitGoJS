@@ -44,7 +44,7 @@ import { RequestTracer } from '../util';
 import { envRequiresBitgoPubGpgKeyConfig, getBitgoMpcGpgPubKey } from '../../tss/bitgoPubKeys';
 import { getBitgoGpgPubKey } from '../opengpgUtils';
 import assert from 'assert';
-import { MessageStandardType } from '../messageTypes';
+import { MessageStandardType } from '../../../account-lib';
 
 /**
  * BaseTssUtil class which different signature schemes have to extend

@@ -12,10 +12,10 @@ import { CreateAddressFormat, CustomSigningFunction, IWallet, IWallets, Memo, Wa
 
 import { TokenEnablement } from '@bitgo/public-types';
 import { Hash } from 'crypto';
-import { TransactionType } from '../../account-lib';
+import { MessageStandardType, TransactionType } from '../../account-lib';
 import { IInscriptionBuilder } from '../inscriptionBuilder';
-import { MessageStandardType, MPCTx, PopulatedIntent, TokenTransferRecipientParams, TokenType } from '../utils';
-import { IWebhooks } from '../webhook/iWebhooks';
+import { MPCTx, PopulatedIntent, TokenTransferRecipientParams, TokenType } from '../utils';
+import { IWebhooks } from '../webhook';
 
 export const multisigTypes = {
   onchain: 'onchain',
