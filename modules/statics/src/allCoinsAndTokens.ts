@@ -4312,6 +4312,15 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['tflr:wflr'],
     WFLR_FEATURES
   ),
+  tflrErc20(
+    'a1c8fdc6-e5b5-4170-b490-f585db8ab922',
+    'tflr:twc2flr',
+    'Wrapped Coston2Flare Testnet',
+    18,
+    '0xc67dce33d7a8efa5ffeb961899c73fe01bce9273',
+    UnderlyingAsset['tflr:twc2flr'],
+    WFLR_FEATURES
+  ),
   txrpToken(
     '8ef16158-1015-4a67-b6fe-db669c18ab2b',
     'txrp:tst-rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd',
