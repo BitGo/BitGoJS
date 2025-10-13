@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.5.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.4.2...bitgo@50.5.0) (2025-10-13)
+
+
+### Features
+
+* support versioned sol transactions with customTx intent ([b33402f](https://github.com/BitGo/BitGoJS/commit/b33402f9a7c4724804a2f45737fcbd2562f6bb3e))
+
+
+
+
+
 ## [50.4.2](https://github.com/BitGo/BitGoJS/compare/bitgo@50.4.1...bitgo@50.4.2) (2025-10-10)
 
 

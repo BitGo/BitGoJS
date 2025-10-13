@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [11.11.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.11.0...@bitgo/utxo-lib@11.11.1) (2025-10-13)
+
+
+### Bug Fixes
+
+* **utxo-lib:** respect skipNonWitnessUtxo flag in PSBT ([dc4871f](https://github.com/BitGo/BitGoJS/commit/dc4871f992624d3c50e15416ff520f1a0a97f5a2))
+
+
+
+
+
 # [11.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.10.0...@bitgo/utxo-lib@11.11.0) (2025-09-25)
 
 ### Features
