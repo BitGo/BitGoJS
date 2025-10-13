@@ -6,6 +6,7 @@ import {
   IOTA_TRANSACTION_DIGEST_LENGTH,
 } from './constants';
 import { Ed25519PublicKey } from '@iota/iota-sdk/keypairs/ed25519';
+import { Transaction as IotaTransaction } from '@iota/iota-sdk/transactions';
 import { fromBase64 } from '@iota/bcs';
 
 export class Utils implements BaseUtils {
@@ -31,7 +32,11 @@ export class Utils implements BaseUtils {
 
   /** @inheritdoc */
   isValidSignature(signature: string): boolean {
-    return fromBase64(signature).length === IOTA_SIGNATURE_LENGTH;
+    try {
+      return fromBase64(signature).length === IOTA_SIGNATURE_LENGTH;
+    } catch (e) {
+      return false;
+    }
   }
 
   /** @inheritdoc */
@@ -47,6 +52,15 @@ export class Utils implements BaseUtils {
   getAddressFromPublicKey(publicKey: string): string {
     const iotaPublicKey = new Ed25519PublicKey(Buffer.from(publicKey, 'hex'));
     return iotaPublicKey.toIotaAddress();
+  }
+
+  isValidRawTransaction(rawTransaction: string | Uint8Array): boolean {
+    try {
+      IotaTransaction.from(rawTransaction);
+    } catch (e) {
+      return false;
+    }
+    return true;
   }
 }
 

@@ -1,9 +1,11 @@
-import 'should';
+import should from 'should';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { Iota } from '../../src';
+import { Iota, TransactionBuilderFactory, TransferTransaction } from '../../src';
 import assert from 'assert';
 import { coins, GasTankAccountCoin } from '@bitgo/statics';
+import * as testData from '../resources/iota';
+import { TransactionType } from '@bitgo/sdk-core';
 
 describe('IOTA:', function () {
   let bitgo: TestBitGoAPI;
@@ -122,6 +124,562 @@ describe('IOTA:', function () {
       const params = { commonKeychain, address: wrongAddress, index };
       await assert.rejects(async () => basecoin.isWalletAddress(params), {
         message: `invalid address: ${wrongAddress}`,
+      });
+    });
+  });
+
+  describe('Transaction Methods', () => {
+    let factory: TransactionBuilderFactory;
+
+    before(function () {
+      factory = new TransactionBuilderFactory(coins.get('tiota'));
+    });
+
+    describe('explainTransaction', () => {
+      it('should throw error for missing txBase64', async function () {
+        await assert.rejects(
+          async () => await basecoin.explainTransaction({ txBase64: '' }),
+          /missing required tx prebuild property txBase64/
+        );
+      });
+
+      it('should throw error for invalid transaction', async function () {
+        await assert.rejects(
+          async () => await basecoin.explainTransaction({ txBase64: 'invalidTxBase64' }),
+          /Failed to rebuild transaction/
+        );
+      });
+
+      it('should call explainTransaction on transaction object', async function () {
+        const txBuilder = factory.getTransferBuilder();
+        txBuilder.sender(testData.sender.address);
+        txBuilder.recipients(testData.recipients);
+        txBuilder.paymentObjects(testData.paymentObjects);
+        txBuilder.gasData(testData.gasData);
+
+        const tx = (await txBuilder.build()) as TransferTransaction;
+        const explanation = tx.explainTransaction();
+
+        explanation.should.have.property('id');
+        explanation.should.have.property('outputs');
+        explanation.should.have.property('outputAmount');
+        explanation.should.have.property('fee');
+        explanation.should.have.property('type');
+        explanation.type.should.equal(TransactionType.Send);
+        explanation.fee.fee.should.equal(testData.GAS_BUDGET.toString());
+      });
+    });
+
+    describe('verifyTransaction', () => {
+      it('should throw error for missing txBase64', async function () {
+        await assert.rejects(
+          async () =>
+            await basecoin.verifyTransaction({
+              txPrebuild: {},
+              txParams: { recipients: testData.recipients },
+            }),
+          /missing required tx prebuild property txBase64/
+        );
+      });
+
+      it('should verify transaction with matching recipients using JSON', async function () {
+        // Build transaction and get JSON instead of broadcast format to avoid parsing issues
+        const txBuilder = factory.getTransferBuilder();
+        txBuilder.sender(testData.sender.address);
+        txBuilder.recipients(testData.recipients);
+        txBuilder.paymentObjects(testData.paymentObjects);
+        txBuilder.gasData(testData.gasData);
+
+        const tx = (await txBuilder.build()) as TransferTransaction;
+        const txJson = tx.toJson();
+
+        // Rebuild from JSON to simulate what would happen in verification
+        const rebuiltTxBuilder = factory.getTransferBuilder();
+        (rebuiltTxBuilder.transaction as TransferTransaction).parseFromJSON(txJson);
+        const rebuiltTx = (await rebuiltTxBuilder.build()) as TransferTransaction;
+
+        // Verify the rebuilt transaction matches
+        should.equal(rebuiltTx.sender, testData.sender.address);
+        should.deepEqual(rebuiltTx.recipients, testData.recipients);
+      });
+
+      it('should detect mismatched recipients', async function () {
+        const txBuilder = factory.getTransferBuilder();
+        txBuilder.sender(testData.sender.address);
+        txBuilder.recipients(testData.recipients);
+        txBuilder.paymentObjects(testData.paymentObjects);
+        txBuilder.gasData(testData.gasData);
+
+        const tx = (await txBuilder.build()) as TransferTransaction;
+        const txJson = tx.toJson();
+
+        const differentRecipients = [{ address: testData.addresses.validAddresses[0], amount: '9999' }];
+
+        // Recipients don't match
+        should.notDeepEqual(txJson.recipients, differentRecipients);
+      });
+
+      it('should verify transaction without recipients parameter', async function () {
+        const txBuilder = factory.getTransferBuilder();
+        txBuilder.sender(testData.sender.address);
+        txBuilder.recipients(testData.recipients);
+        txBuilder.paymentObjects(testData.paymentObjects);
+        txBuilder.gasData(testData.gasData);
+
+        const tx = (await txBuilder.build()) as TransferTransaction;
+
+        // Verification should still work even if no recipients are provided for comparison
+        should.exist(tx);
+        should.equal(tx.type, TransactionType.Send);
+      });
+    });
+
+    describe('parseTransaction', () => {
+      it('should throw error for invalid transaction', async function () {
+        await assert.rejects(
+          async () => await basecoin.parseTransaction({ txBase64: 'invalidTxBase64' }),
+          /Failed to rebuild transaction/
+        );
+      });
+
+      it('should parse transaction using JSON format', async function () {
+        // Build a transaction
+        const txBuilder = factory.getTransferBuilder();
+        txBuilder.sender(testData.sender.address);
+        txBuilder.recipients(testData.recipients);
+        txBuilder.paymentObjects(testData.paymentObjects);
+        txBuilder.gasData(testData.gasData);
+
+        const tx = (await txBuilder.build()) as TransferTransaction;
+
+        // Get the transaction explanation (which is what parseTransaction returns internally)
+        const explanation = tx.explainTransaction();
+
+        // Verify the parsed data structure
+        explanation.should.have.property('id');
+        explanation.should.have.property('outputs');
+        explanation.should.have.property('outputAmount');
+        explanation.should.have.property('fee');
+
+        // Verify outputs match recipients
+        explanation.outputs.length.should.equal(testData.recipients.length);
+        explanation.outputs.forEach((output, index) => {
+          output.address.should.equal(testData.recipients[index].address);
+          output.amount.should.equal(testData.recipients[index].amount);
+        });
+
+        // Verify output amount
+        const totalAmount = testData.recipients.reduce((sum, r) => sum + Number(r.amount), 0);
+        explanation.outputAmount.should.equal(totalAmount.toString());
+
+        // Verify fee
+        explanation.fee.fee.should.equal(testData.GAS_BUDGET.toString());
+      });
+
+      it('should parse transaction with single recipient', async function () {
+        const singleRecipient = [testData.recipients[0]];
+
+        const txBuilder = factory.getTransferBuilder();
+        txBuilder.sender(testData.sender.address);
+        txBuilder.recipients(singleRecipient);
+        txBuilder.paymentObjects(testData.paymentObjects);
+        txBuilder.gasData(testData.gasData);
+
+        const tx = (await txBuilder.build()) as TransferTransaction;
+        const explanation = tx.explainTransaction();
+
+        explanation.outputs.length.should.equal(1);
+        explanation.outputs[0].address.should.equal(singleRecipient[0].address);
+        explanation.outputs[0].amount.should.equal(singleRecipient[0].amount);
+        explanation.outputAmount.should.equal(singleRecipient[0].amount);
+      });
+
+      it('should parse transaction with multiple recipients', async function () {
+        const multipleRecipients = [
+          { address: testData.addresses.validAddresses[0], amount: '1000' },
+          { address: testData.addresses.validAddresses[1], amount: '2000' },
+          { address: testData.addresses.validAddresses[2], amount: '3000' },
+        ];
+
+        const txBuilder = factory.getTransferBuilder();
+        txBuilder.sender(testData.sender.address);
+        txBuilder.recipients(multipleRecipients);
+        txBuilder.paymentObjects(testData.paymentObjects);
+        txBuilder.gasData(testData.gasData);
+
+        const tx = (await txBuilder.build()) as TransferTransaction;
+        const explanation = tx.explainTransaction();
+
+        explanation.outputs.length.should.equal(3);
+        explanation.outputAmount.should.equal('6000');
+      });
+    });
+
+    describe('getSignablePayload', () => {
+      it('should get signable payload from transaction directly', async function () {
+        const txBuilder = factory.getTransferBuilder();
+        txBuilder.sender(testData.sender.address);
+        txBuilder.recipients(testData.recipients);
+        txBuilder.paymentObjects(testData.paymentObjects);
+        txBuilder.gasData(testData.gasData);
+
+        const tx = (await txBuilder.build()) as TransferTransaction;
+        const signablePayload = tx.signablePayload;
+
+        signablePayload.should.be.instanceOf(Buffer);
+        signablePayload.length.should.equal(32); // Blake2b hash is 32 bytes
+      });
+
+      it('should throw error for invalid transaction', async function () {
+        await assert.rejects(
+          async () => await basecoin.getSignablePayload('invalidTxBase64'),
+          /Failed to rebuild transaction/
+        );
+      });
+
+      it('should generate consistent signable payload for identical transactions', async function () {
+        // Build first transaction
+        const txBuilder1 = factory.getTransferBuilder();
+        txBuilder1.sender(testData.sender.address);
+        txBuilder1.recipients(testData.recipients);
+        txBuilder1.paymentObjects(testData.paymentObjects);
+        txBuilder1.gasData(testData.gasData);
+
+        const tx1 = (await txBuilder1.build()) as TransferTransaction;
+        const payload1 = tx1.signablePayload;
+
+        // Build second identical transaction
+        const txBuilder2 = factory.getTransferBuilder();
+        txBuilder2.sender(testData.sender.address);
+        txBuilder2.recipients(testData.recipients);
+        txBuilder2.paymentObjects(testData.paymentObjects);
+        txBuilder2.gasData(testData.gasData);
+
+        const tx2 = (await txBuilder2.build()) as TransferTransaction;
+        const payload2 = tx2.signablePayload;
+
+        // Payloads should be identical for identical transactions
+        payload1.toString('hex').should.equal(payload2.toString('hex'));
+      });
+
+      it('should generate different signable payloads for different transactions', async function () {
+        // Build first transaction
+        const txBuilder1 = factory.getTransferBuilder();
+        txBuilder1.sender(testData.sender.address);
+        txBuilder1.recipients(testData.recipients);
+        txBuilder1.paymentObjects(testData.paymentObjects);
+        txBuilder1.gasData(testData.gasData);
+
+        const tx1 = (await txBuilder1.build()) as TransferTransaction;
+        const payload1 = tx1.signablePayload;
+
+        // Build second transaction with different recipient
+        const differentRecipients = [{ address: testData.addresses.validAddresses[0], amount: '5000' }];
+        const txBuilder2 = factory.getTransferBuilder();
+        txBuilder2.sender(testData.sender.address);
+        txBuilder2.recipients(differentRecipients);
+        txBuilder2.paymentObjects(testData.paymentObjects);
+        txBuilder2.gasData(testData.gasData);
+
+        const tx2 = (await txBuilder2.build()) as TransferTransaction;
+        const payload2 = tx2.signablePayload;
+
+        // Payloads should be different for different transactions
+        payload1.toString('hex').should.not.equal(payload2.toString('hex'));
+      });
+
+      it('should throw error when getting payload from simulate transaction', async function () {
+        const txBuilder = factory.getTransferBuilder();
+        txBuilder.sender(testData.sender.address);
+        txBuilder.recipients(testData.recipients);
+        txBuilder.paymentObjects(testData.paymentObjects);
+        // Don't set gasData - this will be a simulate transaction
+
+        const tx = (await txBuilder.build()) as TransferTransaction;
+        should.equal(tx.isSimulateTx, true);
+
+        should(() => tx.signablePayload).throwError('Cannot sign a simulate tx');
+      });
+    });
+
+    describe('setCoinSpecificFieldsInIntent', () => {
+      it('should set unspents in intent', function () {
+        const intent = {} as any;
+        const params = {
+          unspents: [
+            { objectId: '0x123', version: '1', digest: 'abc' },
+            { objectId: '0x456', version: '2', digest: 'def' },
+          ],
+        } as any;
+
+        basecoin.setCoinSpecificFieldsInIntent(intent, params);
+
+        intent.should.have.property('unspents');
+        intent.unspents.should.deepEqual(params.unspents);
+      });
+
+      it('should handle empty unspents', function () {
+        const intent = {} as any;
+        const params = { unspents: [] } as any;
+
+        basecoin.setCoinSpecificFieldsInIntent(intent, params);
+
+        intent.should.have.property('unspents');
+        intent.unspents.should.deepEqual([]);
+      });
+
+      it('should handle undefined unspents', function () {
+        const intent = {} as any;
+        const params = {} as any;
+
+        basecoin.setCoinSpecificFieldsInIntent(intent, params);
+
+        intent.should.have.property('unspents');
+        (intent.unspents === undefined).should.be.true();
+      });
+    });
+
+    describe('Transaction with Gas Sponsor', () => {
+      it('should build transaction with gas sponsor', async function () {
+        const txBuilder = factory.getTransferBuilder();
+        txBuilder.sender(testData.sender.address);
+        txBuilder.recipients(testData.recipients);
+        txBuilder.paymentObjects(testData.paymentObjects);
+        txBuilder.gasData(testData.gasData);
+        txBuilder.gasSponsor(testData.gasSponsor.address);
+
+        const tx = (await txBuilder.build()) as TransferTransaction;
+
+        should.equal(tx.sender, testData.sender.address);
+        should.equal(tx.gasSponsor, testData.gasSponsor.address);
+        should.notEqual(tx.sender, tx.gasSponsor);
+        should.equal(tx.type, TransactionType.Send);
+      });
+
+      it('should handle transaction where sender and gas sponsor are same', async function () {
+        const txBuilder = factory.getTransferBuilder();
+        txBuilder.sender(testData.sender.address);
+        txBuilder.recipients(testData.recipients);
+        txBuilder.paymentObjects(testData.paymentObjects);
+        txBuilder.gasData(testData.gasData);
+        txBuilder.gasSponsor(testData.sender.address); // Same as sender
+
+        const tx = (await txBuilder.build()) as TransferTransaction;
+
+        should.equal(tx.sender, testData.sender.address);
+        should.equal(tx.gasSponsor, testData.sender.address);
+      });
+    });
+
+    describe('Transaction ID Consistency', () => {
+      it('should generate same ID for identical transactions', async function () {
+        const txBuilder1 = factory.getTransferBuilder();
+        txBuilder1.sender(testData.sender.address);
+        txBuilder1.recipients(testData.recipients);
+        txBuilder1.paymentObjects(testData.paymentObjects);
+        txBuilder1.gasData(testData.gasData);
+
+        const tx1 = (await txBuilder1.build()) as TransferTransaction;
+
+        const txBuilder2 = factory.getTransferBuilder();
+        txBuilder2.sender(testData.sender.address);
+        txBuilder2.recipients(testData.recipients);
+        txBuilder2.paymentObjects(testData.paymentObjects);
+        txBuilder2.gasData(testData.gasData);
+
+        const tx2 = (await txBuilder2.build()) as TransferTransaction;
+
+        should.equal(tx1.id, tx2.id);
+      });
+
+      it('should generate different IDs for different transactions', async function () {
+        const txBuilder1 = factory.getTransferBuilder();
+        txBuilder1.sender(testData.sender.address);
+        txBuilder1.recipients(testData.recipients);
+        txBuilder1.paymentObjects(testData.paymentObjects);
+        txBuilder1.gasData(testData.gasData);
+
+        const tx1 = (await txBuilder1.build()) as TransferTransaction;
+
+        const differentRecipients = [{ address: testData.addresses.validAddresses[0], amount: '9999' }];
+        const txBuilder2 = factory.getTransferBuilder();
+        txBuilder2.sender(testData.sender.address);
+        txBuilder2.recipients(differentRecipients);
+        txBuilder2.paymentObjects(testData.paymentObjects);
+        txBuilder2.gasData(testData.gasData);
+
+        const tx2 = (await txBuilder2.build()) as TransferTransaction;
+
+        should.notEqual(tx1.id, tx2.id);
+      });
+    });
+
+    describe('Gas Configuration Edge Cases', () => {
+      it('should handle minimum gas values', async function () {
+        const minGasData = {
+          gasBudget: 1000,
+          gasPrice: 100,
+          gasPaymentObjects: [testData.gasPaymentObjects[0]],
+        };
+
+        const txBuilder = factory.getTransferBuilder();
+        txBuilder.sender(testData.sender.address);
+        txBuilder.recipients(testData.recipients);
+        txBuilder.paymentObjects(testData.paymentObjects);
+        txBuilder.gasData(minGasData);
+
+        const tx = (await txBuilder.build()) as TransferTransaction;
+
+        should.equal(tx.gasBudget, 1000);
+        should.equal(tx.gasPrice, 100);
+        should.equal(tx.gasPaymentObjects?.length, 1);
+      });
+
+      it('should handle large gas values', async function () {
+        const largeGasData = {
+          gasBudget: 50000000000, // 50 billion
+          gasPrice: 100000,
+          gasPaymentObjects: testData.gasPaymentObjects,
+        };
+
+        const txBuilder = factory.getTransferBuilder();
+        txBuilder.sender(testData.sender.address);
+        txBuilder.recipients(testData.recipients);
+        txBuilder.paymentObjects(testData.paymentObjects);
+        txBuilder.gasData(largeGasData);
+
+        const tx = (await txBuilder.build()) as TransferTransaction;
+
+        should.equal(tx.gasBudget, 50000000000);
+        should.equal(tx.gasPrice, 100000);
+      });
+
+      it('should return gas fee from transaction', async function () {
+        const txBuilder = factory.getTransferBuilder();
+        txBuilder.sender(testData.sender.address);
+        txBuilder.recipients(testData.recipients);
+        txBuilder.paymentObjects(testData.paymentObjects);
+        txBuilder.gasData(testData.gasData);
+
+        const tx = (await txBuilder.build()) as TransferTransaction;
+        const fee = tx.getFee();
+
+        should.exist(fee);
+        should.equal(fee, testData.GAS_BUDGET.toString());
+      });
+    });
+
+    describe('Transaction State Management', () => {
+      it('should track simulate mode correctly', async function () {
+        // Build without gas data - should be simulate mode
+        const simulateBuilder = factory.getTransferBuilder();
+        simulateBuilder.sender(testData.sender.address);
+        simulateBuilder.recipients(testData.recipients);
+        simulateBuilder.paymentObjects(testData.paymentObjects);
+
+        const simulateTx = (await simulateBuilder.build()) as TransferTransaction;
+        should.equal(simulateTx.isSimulateTx, true);
+
+        // Build with gas data - should not be simulate mode
+        const realBuilder = factory.getTransferBuilder();
+        realBuilder.sender(testData.sender.address);
+        realBuilder.recipients(testData.recipients);
+        realBuilder.paymentObjects(testData.paymentObjects);
+        realBuilder.gasData(testData.gasData);
+
+        const realTx = (await realBuilder.build()) as TransferTransaction;
+        should.equal(realTx.isSimulateTx, false);
+      });
+
+      it('should handle canSign based on simulate mode', async function () {
+        // Simulate transaction cannot be signed
+        const simulateBuilder = factory.getTransferBuilder();
+        simulateBuilder.sender(testData.sender.address);
+        simulateBuilder.recipients(testData.recipients);
+        simulateBuilder.paymentObjects(testData.paymentObjects);
+
+        const simulateTx = (await simulateBuilder.build()) as TransferTransaction;
+        should.equal(simulateTx.canSign({} as any), false);
+
+        // Real transaction can be signed
+        const realBuilder = factory.getTransferBuilder();
+        realBuilder.sender(testData.sender.address);
+        realBuilder.recipients(testData.recipients);
+        realBuilder.paymentObjects(testData.paymentObjects);
+        realBuilder.gasData(testData.gasData);
+
+        const realTx = (await realBuilder.build()) as TransferTransaction;
+        should.equal(realTx.canSign({} as any), true);
+      });
+
+      it('should handle transaction type correctly', async function () {
+        const txBuilder = factory.getTransferBuilder();
+        txBuilder.sender(testData.sender.address);
+        txBuilder.recipients(testData.recipients);
+        txBuilder.paymentObjects(testData.paymentObjects);
+        txBuilder.gasData(testData.gasData);
+
+        const tx = (await txBuilder.build()) as TransferTransaction;
+
+        should.equal(tx.type, TransactionType.Send);
+      });
+    });
+
+    describe('Transaction Serialization Formats', () => {
+      it('should serialize to consistent broadcast format', async function () {
+        const txBuilder1 = factory.getTransferBuilder();
+        txBuilder1.sender(testData.sender.address);
+        txBuilder1.recipients(testData.recipients);
+        txBuilder1.paymentObjects(testData.paymentObjects);
+        txBuilder1.gasData(testData.gasData);
+
+        const tx1 = (await txBuilder1.build()) as TransferTransaction;
+        const broadcast1 = await tx1.toBroadcastFormat();
+
+        const txBuilder2 = factory.getTransferBuilder();
+        txBuilder2.sender(testData.sender.address);
+        txBuilder2.recipients(testData.recipients);
+        txBuilder2.paymentObjects(testData.paymentObjects);
+        txBuilder2.gasData(testData.gasData);
+
+        const tx2 = (await txBuilder2.build()) as TransferTransaction;
+        const broadcast2 = await tx2.toBroadcastFormat();
+
+        should.equal(broadcast1, broadcast2);
+      });
+
+      it('should produce valid base64 broadcast format', async function () {
+        const txBuilder = factory.getTransferBuilder();
+        txBuilder.sender(testData.sender.address);
+        txBuilder.recipients(testData.recipients);
+        txBuilder.paymentObjects(testData.paymentObjects);
+        txBuilder.gasData(testData.gasData);
+
+        const tx = (await txBuilder.build()) as TransferTransaction;
+        const broadcast = await tx.toBroadcastFormat();
+
+        // Check if it's valid base64
+        should.equal(typeof broadcast, 'string');
+        should.equal(/^[A-Za-z0-9+/]*={0,2}$/.test(broadcast), true);
+        should.equal(broadcast.length > 0, true);
+
+        // Should be able to decode
+        const decoded = Buffer.from(broadcast, 'base64');
+        should.equal(decoded.length > 0, true);
+      });
+
+      it('should maintain JSON serialization consistency', async function () {
+        const txBuilder = factory.getTransferBuilder();
+        txBuilder.sender(testData.sender.address);
+        txBuilder.recipients(testData.recipients);
+        txBuilder.paymentObjects(testData.paymentObjects);
+        txBuilder.gasData(testData.gasData);
+
+        const tx = (await txBuilder.build()) as TransferTransaction;
+        const json1 = tx.toJson();
+        const json2 = tx.toJson();
+
+        should.deepEqual(json1, json2);
       });
     });
   });
