@@ -2144,6 +2144,7 @@ export enum UnderlyingAsset {
   'eth:mavia' = 'eth:mavia',
   'eth:lm' = 'eth:lm',
   'eth:kub' = 'eth:kub',
+  'eth:fidd' = 'eth:fidd',
 
   // Ondo Tokenized Assets
   'eth:qqqon' = 'qqqon',
@@ -3192,6 +3193,8 @@ export enum UnderlyingAsset {
   // Nep141 tokens
   'near:usdc' = 'near:usdc',
   'near:usdt' = 'near:usdt',
+  'near:mpdao' = 'near:mpdao',
+  'near:stnear' = 'near:stnear',
 
   // Nep141 testnet tokens
   'tnear:tnep24dp' = 'tnear:tnep24dp',

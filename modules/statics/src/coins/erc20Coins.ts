@@ -13603,4 +13603,12 @@ export const erc20Coins = [
     '0x0649cef6d11ed6f88535462e147304d3fe5ae14d',
     UnderlyingAsset['eth:kub']
   ),
+  erc20(
+    '379c0ab5-7729-456b-b0b6-db74c3bd6a03',
+    'eth:fidd',
+    'Fidelity Digital Dollar',
+    18,
+    '0x7c135549504245b5eae64fc0e99fa5ebabb8e35d',
+    UnderlyingAsset['eth:fidd']
+  ),
 ];
