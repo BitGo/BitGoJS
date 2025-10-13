@@ -497,8 +497,8 @@ export async function handleV2GenerateShareTSS(req: express.Request): Promise<an
 
 export async function handleV2SignTSSWalletTx(req: ExpressApiRouteRequest<'express.v2.wallet.signtxtss', 'post'>) {
   const bitgo = req.bitgo;
-  const coin = bitgo.coin(req.params.coin);
-  const wallet = await coin.wallets().get({ id: req.params.id });
+  const coin = bitgo.coin(req.decoded.coin);
+  const wallet = await coin.wallets().get({ id: req.decoded.id });
   try {
     return await wallet.signTransaction(createTSSSendParams(req, wallet));
   } catch (error) {
