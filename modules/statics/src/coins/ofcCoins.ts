@@ -3417,6 +3417,20 @@ export const ofcCoins = [
     UnderlyingAsset['near:usdt'],
     [CoinFeature.STABLECOIN]
   ),
+  ofcnep141Token(
+    '711a31d8-0513-449d-9649-2f9b5b0eb141',
+    'ofcnear:mpdao',
+    'Meta Pool',
+    6,
+    UnderlyingAsset['near:mpdao']
+  ),
+  ofcnep141Token(
+    '125bd6cb-1927-408e-9045-dc55f2da7eed',
+    'ofcnear:stnear',
+    'stNEAR',
+    24,
+    UnderlyingAsset['near:stnear']
+  ),
   tofcnep141Token(
     'a3a47204-c114-42d7-b673-0a5f60ca0d9e',
     'ofctnear:tnep24dp',
