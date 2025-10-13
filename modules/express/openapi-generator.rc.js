@@ -4,4 +4,13 @@
  * NOTE: This file is not being passed into the openapi-generator
  */
 
-module.exports = {};
+module.exports = (E) => {
+  return {
+    '.': {
+      JsonFromStringifiedJson: () => E.right({ type: 'string' }),
+    },
+    'io-ts-types': {
+      Json: () => E.right({ type: 'object', properties: {}, required: [] }),
+    },
+  };
+};
