@@ -414,8 +414,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       const vkey = CardanoWasm.Vkey.new(CardanoWasm.PublicKey.from_bytes(Buffer.from(signature.publicKey.pub, 'hex')));
       const ed255Sig = CardanoWasm.Ed25519Signature.from_bytes(signature.signature);
       vkeyWitnesses.add(CardanoWasm.Vkeywitness.new(vkey, ed255Sig));
+      // Restoring the behaviour from the original buildImplementation
+      if (refreshSignatures) {
+        this._transaction.signature.push(signature.signature.toString('hex'));
+      }
     });
-    if (vkeyWitnesses.len() === 0) {
+    if (!refreshSignatures && vkeyWitnesses.len() === 0) {
       const prv = CardanoWasm.PrivateKey.generate_ed25519();
       const vkeyWitness = CardanoWasm.make_vkey_witness(txHash, prv);
       vkeyWitnesses.add(vkeyWitness);
