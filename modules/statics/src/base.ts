@@ -2898,6 +2898,7 @@ export enum UnderlyingAsset {
 
   // Flr testnet tokens
   'tflr:wflr' = 'tflr:wflr',
+  'tflr:twc2flr' = 'tflr:twc2flr',
 
   ERC721 = 'erc721',
   ERC1155 = 'erc1155',
