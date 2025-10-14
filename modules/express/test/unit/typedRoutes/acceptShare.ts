@@ -18,6 +18,23 @@ export function assertDecode<T>(codec: t.Type<T, unknown>, input: unknown): T {
   return result.right;
 }
 
+/**
+ * Helper function to extract path parameter names from a route path
+ * Supports both Express-style (:param) and OpenAPI-style ({param}) notation
+ */
+function extractPathParams(path: string): string[] {
+  const colonParams = path.match(/:(\w+)/g)?.map((p) => p.slice(1)) || [];
+  const braceParams = path.match(/\{(\w+)\}/g)?.map((p) => p.slice(1, -1)) || [];
+  return [...colonParams, ...braceParams];
+}
+
+/**
+ * Helper function to get codec parameter names from a params object
+ */
+function getCodecParamNames(paramsCodec: Record<string, any>): string[] {
+  return Object.keys(paramsCodec);
+}
+
 describe('AcceptShare codec tests', function () {
   describe('AcceptShareRequestParams', function () {
     it('should validate valid params', function () {
@@ -101,6 +118,26 @@ describe('AcceptShare codec tests', function () {
         // Check that the response object has the expected status codes
         assert.ok(PostAcceptShare.response[200]);
         assert.ok(PostAcceptShare.response[400]);
+      });
+
+      /**
+       * CRITICAL TEST: Validates that path parameter names match codec parameter names
+       * to prevent runtime validation errors.
+       */
+      it('should have path parameter names matching codec parameter names', function () {
+        const pathParams = extractPathParams(PostAcceptShare.path);
+        const codecParams = getCodecParamNames(AcceptShareRequestParams);
+
+        pathParams.sort();
+        codecParams.sort();
+
+        assert.deepStrictEqual(
+          pathParams,
+          codecParams,
+          `Path parameters ${JSON.stringify(pathParams)} do not match codec parameters ${JSON.stringify(
+            codecParams
+          )}. ` + `This will cause runtime validation errors! Path: ${PostAcceptShare.path}`
+        );
       });
     });
 

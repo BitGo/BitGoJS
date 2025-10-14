@@ -8,6 +8,23 @@ import {
 } from '../../../src/typedRoutes/api/v1/fanoutUnspents';
 import { assertDecode } from './common';
 
+/**
+ * Helper function to extract path parameter names from a route path
+ * Supports both Express-style (:param) and OpenAPI-style ({param}) notation
+ */
+function extractPathParams(path: string): string[] {
+  const colonParams = path.match(/:(\w+)/g)?.map((p) => p.slice(1)) || [];
+  const braceParams = path.match(/\{(\w+)\}/g)?.map((p) => p.slice(1, -1)) || [];
+  return [...colonParams, ...braceParams];
+}
+
+/**
+ * Helper function to get codec parameter names from a params object
+ */
+function getCodecParamNames(paramsCodec: Record<string, any>): string[] {
+  return Object.keys(paramsCodec);
+}
+
 describe('FanoutUnspents codec tests', function () {
   describe('FanoutUnspentsRequestParams', function () {
     it('should validate params with required id', function () {
@@ -389,6 +406,25 @@ describe('FanoutUnspents codec tests', function () {
       // Check that the response object has the expected status codes
       assert.ok(PutFanoutUnspents.response[200]);
       assert.ok(PutFanoutUnspents.response[400]);
+    });
+
+    /**
+     * CRITICAL TEST: Validates that path parameter names match codec parameter names
+     * to prevent runtime validation errors.
+     */
+    it('should have path parameter names matching codec parameter names', function () {
+      const pathParams = extractPathParams(PutFanoutUnspents.path);
+      const codecParams = getCodecParamNames(FanoutUnspentsRequestParams);
+
+      pathParams.sort();
+      codecParams.sort();
+
+      assert.deepStrictEqual(
+        pathParams,
+        codecParams,
+        `Path parameters ${JSON.stringify(pathParams)} do not match codec parameters ${JSON.stringify(codecParams)}. ` +
+          `This will cause runtime validation errors! Path: ${PutFanoutUnspents.path}`
+      );
     });
   });
 });

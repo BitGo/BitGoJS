@@ -7,6 +7,23 @@ import {
 } from '../../../src/typedRoutes/api/v1/signTransaction';
 import { assertDecode } from './common';
 
+/**
+ * Helper function to extract path parameter names from a route path
+ * Supports both Express-style (:param) and OpenAPI-style ({param}) notation
+ */
+function extractPathParams(path: string): string[] {
+  const colonParams = path.match(/:(\w+)/g)?.map((p) => p.slice(1)) || [];
+  const braceParams = path.match(/\{(\w+)\}/g)?.map((p) => p.slice(1, -1)) || [];
+  return [...colonParams, ...braceParams];
+}
+
+/**
+ * Helper function to get codec parameter names from a params object
+ */
+function getCodecParamNames(paramsCodec: Record<string, any>): string[] {
+  return Object.keys(paramsCodec);
+}
+
 describe('SignTransaction codec tests', function () {
   describe('signTransactionRequestParams', function () {
     it('should validate valid params', function () {
@@ -333,6 +350,25 @@ describe('SignTransaction codec tests', function () {
       // Check that the response object has the expected status codes
       assert.ok(PostSignTransaction.response[200]);
       assert.ok(PostSignTransaction.response[400]);
+    });
+
+    /**
+     * CRITICAL TEST: Validates that path parameter names match codec parameter names
+     * to prevent runtime validation errors.
+     */
+    it('should have path parameter names matching codec parameter names', function () {
+      const pathParams = extractPathParams(PostSignTransaction.path);
+      const codecParams = getCodecParamNames(signTransactionRequestParams);
+
+      pathParams.sort();
+      codecParams.sort();
+
+      assert.deepStrictEqual(
+        pathParams,
+        codecParams,
+        `Path parameters ${JSON.stringify(pathParams)} do not match codec parameters ${JSON.stringify(codecParams)}. ` +
+          `This will cause runtime validation errors! Path: ${PostSignTransaction.path}`
+      );
     });
   });
 });
