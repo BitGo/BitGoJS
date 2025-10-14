@@ -11,6 +11,7 @@ import * as request from 'superagent';
 import { auditEddsaPrivateKey } from '@bitgo/sdk-lib-mpc';
 import {
   AuditDecryptedKeyParams,
+  BaseAddress,
   BaseCoin,
   BaseTransaction,
   BitGoBase,
