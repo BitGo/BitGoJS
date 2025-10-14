@@ -632,6 +632,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @param params.verification.keychains Pass keychains manually rather than fetching them by id
    * @param params.verification.addresses Address details to pass in for out-of-band verification
    * @returns {boolean}
+   * @throws {TxIntentMismatchError} if transaction validation fails
    */
   async verifyTransaction<TNumber extends number | bigint = number>(
     params: VerifyTransactionOptions<TNumber>
