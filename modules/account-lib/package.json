@@ -40,6 +40,7 @@
     "@bitgo/sdk-coin-bera": "^2.6.4",
     "@bitgo/sdk-coin-bld": "^3.5.4",
     "@bitgo/sdk-coin-bsc": "^22.8.4",
+    "@bitgo/sdk-coin-canton": "^1.2.0",
     "@bitgo/sdk-coin-celo": "^5.3.4",
     "@bitgo/sdk-coin-coredao": "^2.6.4",
     "@bitgo/sdk-coin-coreum": "^21.5.4",
