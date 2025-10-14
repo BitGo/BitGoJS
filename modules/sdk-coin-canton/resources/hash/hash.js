@@ -44,7 +44,7 @@ async function encodeInt64(value) {
   view.setBigInt64(0, num, false); // true for little-endian
   return new Uint8Array(buffer);
 }
-export async function encodeString(value = '') {
+async function encodeString(value = '') {
   const utf8Bytes = new TextEncoder().encode(value);
   return encodeBytes(utf8Bytes);
 }
