@@ -374,7 +374,11 @@ export class Transaction extends BaseTransaction {
     if (
       this.type === TransactionType.Send ||
       this.type === TransactionType.SendToken ||
-      this.type === TransactionType.SendNFT
+      this.type === TransactionType.SendNFT ||
+      this.type === TransactionType.ContractCall ||
+      this.type === TransactionType.StakingUnlock ||
+      this.type === TransactionType.StakingWithdraw ||
+      this.type === TransactionType.StakingClaim
     ) {
       transactionBody.reserved = {
         features: 1, // mark transaction as delegated i.e. will use gas payer

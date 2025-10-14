@@ -22,6 +22,13 @@ import { PostDeriveLocalKeyChain } from './v1/deriveLocalKeyChain';
 import { PostCreateLocalKeyChain } from './v1/createLocalKeyChain';
 import { PutConstructPendingApprovalTx } from './v1/constructPendingApprovalTx';
 import { PutConsolidateUnspents } from './v1/consolidateUnspents';
+import { PostCreateAddress } from './v2/createAddress';
+import { PutFanoutUnspents } from './v1/fanoutUnspents';
+import { PostOfcSignPayload } from './v2/ofcSignPayload';
+import { PostWalletRecoverToken } from './v2/walletRecoverToken';
+import { PostCoinSignTx } from './v2/coinSignTx';
+import { PostWalletSignTx } from './v2/walletSignTx';
+import { PostWalletTxSignTSS } from './v2/walletTxSignTSS';
 
 export const ExpressApi = apiSpec({
   'express.ping': {
@@ -69,6 +76,9 @@ export const ExpressApi = apiSpec({
   'express.verifycoinaddress': {
     post: PostVerifyCoinAddress,
   },
+  'express.v2.wallet.createAddress': {
+    post: PostCreateAddress,
+  },
   'express.calculateminerfeeinfo': {
     post: PostCalculateMinerFeeInfo,
   },
@@ -83,6 +93,24 @@ export const ExpressApi = apiSpec({
   },
   'express.v1.wallet.consolidateunspents': {
     put: PutConsolidateUnspents,
+  },
+  'express.v1.wallet.fanoutunspents': {
+    put: PutFanoutUnspents,
+  },
+  'express.ofc.signPayload': {
+    post: PostOfcSignPayload,
+  },
+  'express.v2.wallet.recovertoken': {
+    post: PostWalletRecoverToken,
+  },
+  'express.v2.coin.signtx': {
+    post: PostCoinSignTx,
+  },
+  'express.v2.wallet.signtx': {
+    post: PostWalletSignTx,
+  },
+  'express.v2.wallet.signtxtss': {
+    post: PostWalletTxSignTSS,
   },
 });
 

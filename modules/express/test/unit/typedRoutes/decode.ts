@@ -13,6 +13,8 @@ import {
   LightningInitWalletParams,
 } from '../../../src/typedRoutes/api/v2/lightningInitWallet';
 import { UnlockLightningWalletBody, UnlockLightningWalletParams } from '../../../src/typedRoutes/api/v2/unlockWallet';
+import { OfcSignPayloadBody } from '../../../src/typedRoutes/api/v2/ofcSignPayload';
+import { CreateAddressBody, CreateAddressParams } from '../../../src/typedRoutes/api/v2/createAddress';
 
 export function assertDecode<T>(codec: t.Type<T, unknown>, input: unknown): T {
   const result = codec.decode(input);
@@ -189,5 +191,56 @@ describe('io-ts decode tests', function () {
     assert.throws(() => assertDecode(t.type(UnlockLightningWalletBody), {}));
     // valid body
     assertDecode(t.type(UnlockLightningWalletBody), { passphrase: 'secret' });
+  });
+  it('express.ofc.signPayload', function () {
+    // missing walletId
+    assert.throws(() =>
+      assertDecode(t.type(OfcSignPayloadBody), {
+        payload: { a: 1 },
+      })
+    );
+    // empty walletId
+    assert.throws(() =>
+      assertDecode(t.type(OfcSignPayloadBody), {
+        walletId: '',
+        payload: { a: 1 },
+      })
+    );
+    // missing payload
+    assert.throws(() =>
+      assertDecode(t.type(OfcSignPayloadBody), {
+        walletId: 'w1',
+      })
+    );
+    // valid minimal
+    assertDecode(t.type(OfcSignPayloadBody), {
+      walletId: 'w1',
+      payload: { a: 1 },
+    });
+    // valid with nested and optional passphrase
+    assertDecode(t.type(OfcSignPayloadBody), {
+      walletId: 'w1',
+      payload: { nested: ['x', { y: true }] },
+      walletPassphrase: 'secret',
+    });
+  });
+
+  it('express.v2.wallet.createAddress params', function () {
+    // missing id
+    assert.throws(() => assertDecode(t.type(CreateAddressParams), { coin: 'btc' }));
+    // coin must be string
+    assert.throws(() =>
+      assertDecode(t.type(CreateAddressParams), { coin: 123, id: '59cd72485007a239fb00282ed480da1f' })
+    );
+    // id must be string
+    assert.throws(() => assertDecode(t.type(CreateAddressParams), { coin: 'btc', id: 123 }));
+    // valid params
+    assertDecode(t.type(CreateAddressParams), { coin: 'btc', id: '59cd72485007a239fb00282ed480da1f' });
+    // invalid body
+    assert.throws(() => assertDecode(t.type(CreateAddressBody), { chain: '1' }));
+    assert.throws(() => assertDecode(t.type(CreateAddressBody), { format: 'invalid' }));
+    // valid body
+    assertDecode(t.type(CreateAddressBody), { eip1559: { maxFeePerGas: 1, maxPriorityFeePerGas: 1 } });
+    assertDecode(t.type(CreateAddressBody), {});
   });
 });

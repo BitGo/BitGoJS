@@ -1405,4 +1405,31 @@ export const bscTokens = [
     UnderlyingAsset['bsc:aster'],
     BSC_TOKEN_FEATURES_EXCLUDE_MENA_FZE
   ),
+  bscToken(
+    'f048235b-06d8-495a-92e4-8f9c6f9fb234',
+    'bsc:ff',
+    'Falcon Finance',
+    18,
+    '0xac23b90a79504865d52b49b327328411a23d4db2',
+    UnderlyingAsset['bsc:ff'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
+    'c17700fd-74b9-4d4c-90dc-bd7c6e08ae8c',
+    'bsc:pln',
+    'Plearn',
+    18,
+    '0xbe0d3526fc797583dada3f30bc390013062a048b',
+    UnderlyingAsset['bsc:pln'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
+    'f9bea1c3-a1ce-4291-99f4-1b6d61f438c7',
+    'bsc:c98',
+    'Coin98',
+    18,
+    '0xaec945e04baf28b135fa7c640f624f8d90f1c3a6',
+    UnderlyingAsset['bsc:c98'],
+    BSC_TOKEN_FEATURES
+  ),
 ];

@@ -199,6 +199,24 @@ export class Utils implements BaseUtils {
   getTxnExpirationTimestamp(): number {
     return Math.floor(Date.now() / 1e3) + SECONDS_PER_WEEK;
   }
+
+  /**
+   * Convert bytes array to hex string with 0x prefix
+   */
+  bytesToHex(bytes: number[]): string {
+    return '0x' + bytes.map((b) => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  /**
+   * Try to convert hex string to AccountAddress, return original string if conversion fails
+   */
+  tryParseAccountAddress(hexStr: string): AccountAddress | string {
+    try {
+      return AccountAddress.fromString(hexStr);
+    } catch {
+      return hexStr;
+    }
+  }
 }
 
 const utils = new Utils();

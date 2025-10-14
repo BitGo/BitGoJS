@@ -11,7 +11,6 @@ import * as request from 'superagent';
 import { auditEddsaPrivateKey } from '@bitgo/sdk-lib-mpc';
 import {
   AuditDecryptedKeyParams,
-  BaseAddress,
   BaseCoin,
   BaseTransaction,
   BitGoBase,
@@ -1058,10 +1057,6 @@ export class Near extends BaseCoin {
       if (!totalAmount.isEqualTo(explainedTx.outputAmount) && txParams.type !== 'enabletoken') {
         throw new Error('Tx total amount does not match with expected total amount field');
       }
-    }
-
-    if (params.verification?.consolidationToBaseAddress) {
-      await this.verifyConsolidationToBaseAddress(params, explainedTx);
     }
 
     return true;

@@ -9,10 +9,19 @@ import {
   PublicKey as BasePublicKey,
   Signature,
   SigningError,
+  SolVersionedTransactionData,
   TransactionType,
 } from '@bitgo/sdk-core';
 import { Transaction } from './transaction';
-import { Blockhash, PublicKey, Transaction as SolTransaction } from '@solana/web3.js';
+import {
+  Blockhash,
+  MessageAddressTableLookup,
+  MessageV0,
+  PublicKey,
+  Transaction as SolTransaction,
+  VersionedTransaction,
+} from '@solana/web3.js';
+import base58 from 'bs58';
 import {
   isValidAddress,
   isValidAmount,
@@ -117,7 +126,14 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
-    this.transaction.solTransaction = this.buildSolTransaction();
+    const builtTransaction = this.buildSolTransaction();
+
+    if (builtTransaction instanceof VersionedTransaction) {
+      this.transaction.versionedTransaction = builtTransaction;
+    } else {
+      this.transaction.solTransaction = builtTransaction;
+    }
+
     this.transaction.setTransactionType(this.transactionType);
     this.transaction.setInstructionsData(this._instructionsData);
     this.transaction.loadInputsAndOutputs();
@@ -128,10 +144,22 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /**
    * Builds the solana transaction.
    */
-  protected buildSolTransaction(): SolTransaction {
+  protected buildSolTransaction(): SolTransaction | VersionedTransaction {
     assert(this._sender, new BuildTransactionError('sender is required before building'));
     assert(this._recentBlockhash, new BuildTransactionError('recent blockhash is required before building'));
 
+    // Check if we should build as VersionedTransaction
+    if (this._transaction.isVersionedTransaction()) {
+      return this.buildVersionedTransaction();
+    } else {
+      return this.buildLegacyTransaction();
+    }
+  }
+
+  /**
+   * Builds a legacy Solana transaction.
+   */
+  private buildLegacyTransaction(): SolTransaction {
     const tx = new SolTransaction();
     if (this._transaction?.solTransaction?.signatures) {
       tx.signatures = this._transaction?.solTransaction?.signatures;
@@ -177,6 +205,76 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     }
 
     return tx;
+  }
+
+  /**
+   * Builds a VersionedTransaction.
+   *
+   * @returns {VersionedTransaction} The built versioned transaction
+   */
+  private buildVersionedTransaction(): VersionedTransaction {
+    const versionedTxData = this._transaction.getVersionedTransactionData();
+
+    if (!versionedTxData) {
+      throw new BuildTransactionError('Missing VersionedTransactionData');
+    }
+
+    const versionedTx = this.buildFromVersionedData(versionedTxData);
+
+    this._transaction.lamportsPerSignature = this._lamportsPerSignature;
+
+    for (const signer of this._signers) {
+      const publicKey = new PublicKey(signer.getKeys().pub);
+      const secretKey = signer.getKeys(true).prv;
+      assert(secretKey instanceof Uint8Array);
+      versionedTx.sign([{ publicKey, secretKey }]);
+    }
+
+    for (const signature of this._signatures) {
+      const solPublicKey = new PublicKey(signature.publicKey.pub);
+      versionedTx.addSignature(solPublicKey, signature.signature);
+    }
+
+    return versionedTx;
+  }
+
+  /**
+   * Build a VersionedTransaction from deconstructed VersionedTransactionData
+   * @param data The versioned transaction data
+   * @returns The built versioned transaction
+   */
+  private buildFromVersionedData(data: SolVersionedTransactionData): VersionedTransaction {
+    const staticAccountKeys = data.staticAccountKeys.map((key: string) => new PublicKey(key));
+
+    const addressTableLookups: MessageAddressTableLookup[] = data.addressLookupTables.map((alt) => ({
+      accountKey: new PublicKey(alt.accountKey),
+      writableIndexes: alt.writableIndexes,
+      readonlyIndexes: alt.readonlyIndexes,
+    }));
+
+    const compiledInstructions = data.versionedInstructions.map((instruction) => ({
+      programIdIndex: instruction.programIdIndex,
+      accountKeyIndexes: instruction.accountKeyIndexes,
+      data: Buffer.from(base58.decode(instruction.data)),
+    }));
+
+    if (!this._recentBlockhash) {
+      throw new BuildTransactionError('Missing nonce (recentBlockhash) for VersionedTransaction');
+    }
+
+    if (!this._sender) {
+      throw new BuildTransactionError('Missing sender (fee payer) for VersionedTransaction');
+    }
+
+    const messageV0 = new MessageV0({
+      header: data.messageHeader,
+      staticAccountKeys,
+      recentBlockhash: this._recentBlockhash,
+      compiledInstructions,
+      addressTableLookups,
+    });
+
+    return new VersionedTransaction(messageV0);
   }
 
   // region Getters and Setters

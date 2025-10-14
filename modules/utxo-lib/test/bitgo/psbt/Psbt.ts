@@ -745,47 +745,67 @@ describe('Update incomplete psbt', function () {
     signAllInputs(psbt);
   });
 
-  const componentsOnEachInputScriptType = {
-    p2sh: ['nonWitnessUtxo', 'redeemScript', 'bip32Derivation'],
-    p2shP2wsh: ['witnessUtxo', 'bip32Derivation', 'redeemScript', 'witnessScript'],
-    p2wsh: ['witnessUtxo', 'witnessScript', 'bip32Derivation'],
-    p2tr: ['witnessUtxo', 'tapLeafScript', 'tapBip32Derivation'],
-    p2trMusig2: ['witnessUtxo', 'tapBip32Derivation', 'tapInternalKey', 'tapMerkleRoot', 'unknownKeyVals'],
-    p2shP2pk: ['redeemScript', 'nonWitnessUtxo'],
-  };
+  function runTest(txFormat: 'psbt' | 'psbt-lite') {
+    describe(`txFormat=${txFormat}`, function () {
+      const componentsOnEachInputScriptType = {
+        p2sh: [txFormat === 'psbt' ? 'nonWitnessUtxo' : 'witnessUtxo', 'redeemScript', 'bip32Derivation'],
+        p2shP2wsh: ['witnessUtxo', 'bip32Derivation', 'redeemScript', 'witnessScript'],
+        p2wsh: ['witnessUtxo', 'witnessScript', 'bip32Derivation'],
+        p2tr: ['witnessUtxo', 'tapLeafScript', 'tapBip32Derivation'],
+        p2trMusig2: ['witnessUtxo', 'tapBip32Derivation', 'tapInternalKey', 'tapMerkleRoot', 'unknownKeyVals'],
+        p2shP2pk: ['redeemScript', txFormat === 'psbt' ? 'nonWitnessUtxo' : 'witnessUtxo'],
+      };
 
-  const p2trComponents = ['tapTree', 'tapInternalKey', 'tapBip32Derivation'];
-  const componentsOnEachOutputScriptType = {
-    p2sh: ['bip32Derivation', 'redeemScript'],
-    p2shP2wsh: ['bip32Derivation', 'witnessScript', 'redeemScript'],
-    p2wsh: ['bip32Derivation', 'witnessScript'],
-    p2tr: p2trComponents,
-    p2trMusig2: p2trComponents,
-    p2shP2pk: [],
-  };
-  scriptTypes.forEach((scriptType, i) => {
-    componentsOnEachInputScriptType[scriptType].forEach((inputComponent) => {
-      it(`[${scriptType}] missing ${inputComponent} on input should succeed in fully signing unsigned psbt after update`, function () {
-        const psbt = removeFromPsbt(psbtHex, network, { input: { index: i, fieldToRemove: inputComponent } });
-        const unspent = unspents[i];
-        if (isWalletUnspent(unspent)) {
-          updateWalletUnspentForPsbt(psbt, i, unspent, rootWalletKeys, signer, cosigner);
-        } else {
-          const { redeemScript } = createOutputScriptP2shP2pk(replayProtectionKeyPair.publicKey);
-          assert.ok(redeemScript);
-          updateReplayProtectionUnspentToPsbt(psbt, i, unspent, redeemScript);
-        }
-        signAllInputs(psbt);
+      const p2trComponents = ['tapTree', 'tapInternalKey', 'tapBip32Derivation'];
+      const componentsOnEachOutputScriptType = {
+        p2sh: ['bip32Derivation', 'redeemScript'],
+        p2shP2wsh: ['bip32Derivation', 'witnessScript', 'redeemScript'],
+        p2wsh: ['bip32Derivation', 'witnessScript'],
+        p2tr: p2trComponents,
+        p2trMusig2: p2trComponents,
+        p2shP2pk: [],
+      };
+      scriptTypes.forEach((scriptType, i) => {
+        componentsOnEachInputScriptType[scriptType].forEach((inputComponent) => {
+          it(`[${scriptType}] missing ${inputComponent} on input should succeed in fully signing unsigned psbt after update`, function () {
+            const psbt = removeFromPsbt(psbtHex, network, {
+              input: { index: i, fieldToRemove: inputComponent },
+            });
+            const unspent = unspents[i];
+            if (txFormat === 'psbt-lite') {
+              // remove the prevTx for the unspent
+              delete (unspent as unknown as { prevTx?: Buffer }).prevTx;
+            }
+            if (isWalletUnspent(unspent)) {
+              updateWalletUnspentForPsbt(psbt, i, unspent, rootWalletKeys, signer, cosigner, {
+                skipNonWitnessUtxo: txFormat === 'psbt-lite',
+              });
+            } else {
+              const { redeemScript } = createOutputScriptP2shP2pk(replayProtectionKeyPair.publicKey);
+              assert.ok(redeemScript);
+              updateReplayProtectionUnspentToPsbt(psbt, i, unspent, redeemScript, {
+                skipNonWitnessUtxo: txFormat === 'psbt-lite',
+              });
+            }
+            signAllInputs(psbt);
+          });
+        });
+
+        componentsOnEachOutputScriptType[scriptType].forEach((outputComponent) => {
+          it(`[${scriptType}] missing ${outputComponent} on output should produce same hex as fully hydrated after update`, function () {
+            const psbt = removeFromPsbt(psbtHex, network, {
+              output: { index: i, fieldToRemove: outputComponent },
+            });
+            updateWalletOutputForPsbt(psbt, rootWalletKeys, i, outputs[i].chain, outputs[i].index);
+            assert.strictEqual(psbt.toHex(), psbtHex);
+          });
+        });
       });
     });
+  }
 
-    componentsOnEachOutputScriptType[scriptType].forEach((outputComponent) => {
-      it(`[${scriptType}] missing ${outputComponent} on output should produce same hex as fully hydrated after update`, function () {
-        const psbt = removeFromPsbt(psbtHex, network, { output: { index: i, fieldToRemove: outputComponent } });
-        updateWalletOutputForPsbt(psbt, rootWalletKeys, i, outputs[i].chain, outputs[i].index);
-        assert.strictEqual(psbt.toHex(), psbtHex);
-      });
-    });
+  ['psbt', 'psbt-lite'].forEach((txFormat) => {
+    runTest(txFormat as 'psbt' | 'psbt-lite');
   });
 });
 

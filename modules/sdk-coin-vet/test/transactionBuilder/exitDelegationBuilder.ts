@@ -43,6 +43,17 @@ describe('Vet Exit Delegation Transaction', () => {
       tx.clauses[0]?.to?.should.equal(STARGATE_DELEGATION_ADDRESS_TESTNET);
       should.exist(tx.clauses[0].value);
       tx.clauses[0].value.should.equal('0x0');
+
+      tx.inputs.length.should.equal(1);
+      tx.outputs.length.should.equal(1);
+
+      should.equal(tx.inputs[0].address, testData.addresses.validAddresses[0]);
+      should.equal(tx.inputs[0].value, '0');
+      should.equal(tx.inputs[0].coin, 'tvet');
+
+      should.equal(tx.outputs[0].address, STARGATE_DELEGATION_ADDRESS_TESTNET);
+      should.equal(tx.outputs[0].value, '0');
+      should.equal(tx.outputs[0].coin, 'tvet');
     });
 
     it('should build an exit delegation transaction with custom contract address', async function () {

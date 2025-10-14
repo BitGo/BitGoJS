@@ -1,11 +1,18 @@
 import * as utxolib from '@bitgo/utxo-lib';
-import { Psbt } from '@bitgo/utxo-lib';
+import { isMainnet, Psbt } from '@bitgo/utxo-lib';
 import { WatchOnlyAccount, WithdrawBaseOutputUTXO } from '../codecs';
 import { LightningOnchainRecipient } from '@bitgo/public-types';
 import { Bip32Derivation } from 'bip174/src/lib/interfaces';
+import {
+  ExtendedKeyAddressPurpose,
+  PURPOSE_P2TR,
+  PURPOSE_P2WKH,
+  PURPOSE_WRAPPED_P2WKH,
+  revertXpubPrefix,
+} from './lightningUtils';
 
 function parseDerivationPath(derivationPath: string): {
-  purpose: number;
+  purpose: ExtendedKeyAddressPurpose;
   change: number;
   addressIndex: number;
 } {
@@ -13,6 +20,9 @@ function parseDerivationPath(derivationPath: string): {
   const purpose = Number(pathSegments[1].replace(/'/g, ''));
   const change = Number(pathSegments[pathSegments.length - 2]);
   const addressIndex = Number(pathSegments[pathSegments.length - 1]);
+  if (purpose !== PURPOSE_WRAPPED_P2WKH && purpose !== PURPOSE_P2WKH && purpose !== PURPOSE_P2TR) {
+    throw new Error(`Unsupported purpose in derivation path: ${purpose}`);
+  }
   return { purpose, change, addressIndex };
 }
 
@@ -65,8 +75,10 @@ function verifyChangeAddress(
     throw new Error(`Account not found for purpose: ${purpose}`);
   }
 
+  // convert upub, vpub, etc prefixes to xpub as utxolib doesn't support these
+  const convertedXpub = revertXpubPrefix(account.xpub, purpose, isMainnet(network));
   // Create a BIP32 node from the xpub
-  const xpubNode = utxolib.bip32.fromBase58(account.xpub, network);
+  const xpubNode = utxolib.bip32.fromBase58(convertedXpub, network);
 
   // Derive the public key from the xpub using the change and address index
   const derivedPubkey = xpubNode.derive(change).derive(addressIndex).publicKey;

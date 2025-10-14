@@ -1,15 +1,24 @@
 import assert from 'assert';
+import { BigNumber } from 'bignumber.js';
 import * as _ from 'lodash';
 import * as querystring from 'querystring';
-import * as url from 'url';
-import * as request from 'superagent';
 import * as stellar from 'stellar-sdk';
-import { BigNumber } from 'bignumber.js';
-import * as Utils from './lib/utils';
+import * as request from 'superagent';
+import * as url from 'url';
 import { KeyPair as StellarKeyPair } from './lib/keyPair';
+import * as Utils from './lib/utils';
 
+import { toBitgoRequest } from '@bitgo/sdk-api';
 import {
+  AuditDecryptedKeyParams,
   BaseCoin,
+  SignTransactionOptions as BaseSignTransactionOptions,
+  TransactionExplanation as BaseTransactionExplanation,
+  TransactionRecipient as BaseTransactionOutput,
+  TransactionParams as BaseTransactionParams,
+  TransactionPrebuild as BaseTransactionPrebuild,
+  VerifyAddressOptions as BaseVerifyAddressOptions,
+  VerifyTransactionOptions as BaseVerifyTransactionOptions,
   BitGoBase,
   checkKrsProvider,
   common,
@@ -19,26 +28,17 @@ import {
   ITransactionRecipient,
   KeyIndices,
   KeyPair,
+  MultisigType,
+  multisigTypes,
+  NotSupported,
   ParsedTransaction,
   ParseTransactionOptions,
   promiseProps,
-  SignTransactionOptions as BaseSignTransactionOptions,
   StellarFederationUserNotFoundError,
   TokenEnablementConfig,
-  TransactionExplanation as BaseTransactionExplanation,
-  TransactionParams as BaseTransactionParams,
-  TransactionPrebuild as BaseTransactionPrebuild,
-  TransactionRecipient as BaseTransactionOutput,
   UnexpectedAddressError,
-  VerifyAddressOptions as BaseVerifyAddressOptions,
-  VerifyTransactionOptions as BaseVerifyTransactionOptions,
   Wallet,
-  NotSupported,
-  MultisigType,
-  multisigTypes,
-  AuditDecryptedKeyParams,
 } from '@bitgo/sdk-core';
-import { toBitgoRequest } from '@bitgo/sdk-api';
 import { getStellarKeys } from './getStellarKeys';
 
 /**
@@ -996,35 +996,37 @@ export class Xlm extends BaseCoin {
     } as any;
   }
 
-  /**
-   * Verify that a tx prebuild's operations comply with the original intention
-   * @param {stellar.Operation} operations - tx operations
-   * @param {TransactionParams} txParams - params used to build the tx
-   */
-  verifyEnableTokenTxOperations(operations: stellar.Operation[], txParams: TransactionParams): void {
-    const trustlineOperations = _.filter(operations, ['type', 'changeTrust']) as stellar.Operation.ChangeTrust[];
-    if (trustlineOperations.length !== _.get(txParams, 'recipients', []).length) {
+  getTrustlineOperationsOrThrow(
+    operations: stellar.Operation[],
+    txParams: TransactionParams,
+    operationTypePropName: 'trustlines' | 'recipients'
+  ): stellar.Operation.ChangeTrust[] {
+    const trustlineOperations = operations.filter((op) => op?.type === 'changeTrust');
+    if (trustlineOperations.length !== _.get(txParams, operationTypePropName, []).length) {
       throw new Error('transaction prebuild does not match expected trustline operations');
     }
-    _.forEach(trustlineOperations, (op: stellar.Operation) => {
-      if (op.type !== 'changeTrust') {
-        throw new Error('Invalid asset type');
-      }
-      if (op.line.getAssetType() === 'liquidity_pool_shares') {
-        throw new Error('Invalid asset type');
-      }
-      const asset = op.line as stellar.Asset;
-      const opToken = this.getTokenNameFromStellarAsset(asset);
-      const tokenTrustline = _.find(txParams.recipients, (recipient) => {
-        // trustline params use limits in base units
-        const opLimitBaseUnits = this.bigUnitsToBaseUnits(op.limit);
-        // Enable token limit is set to Xlm.maxTrustlineLimit by default
-        return recipient.tokenName === opToken && opLimitBaseUnits === Xlm.maxTrustlineLimit;
-      });
-      if (!tokenTrustline) {
-        throw new Error('transaction prebuild does not match expected trustline tokens');
-      }
-    });
+
+    return trustlineOperations;
+  }
+
+  isChangeTrustOperation(operation: stellar.Operation): operation is stellar.Operation.ChangeTrust {
+    return operation.type && operation.type === 'changeTrust';
+  }
+
+  getTrustlineOperationLineOrThrow(operation: stellar.Operation): stellar.Asset | stellar.LiquidityPoolAsset {
+    if (this.isChangeTrustOperation(operation) && operation.line) return operation.line;
+    throw new Error('Invalid operation - expected changeTrust operation with line property');
+  }
+
+  getTrustlineOperationLimitOrThrow(operation: stellar.Operation): string {
+    if (this.isChangeTrustOperation(operation) && operation.limit) return operation.limit;
+    throw new Error('Invalid operation - expected changeTrust operation with limit property');
+  }
+
+  isOperationLineOfAssetType(line: stellar.Asset | stellar.LiquidityPoolAsset): line is stellar.Asset {
+    // line should be stellar.Asset, we removed the explicit cast and check the type instead
+    if (!line.getAssetType) return false;
+    return line.getAssetType() !== 'liquidity_pool_shares';
   }
 
   /**
@@ -1033,10 +1035,7 @@ export class Xlm extends BaseCoin {
    * @param {TransactionParams} txParams - params used to build the tx
    */
   verifyTrustlineTxOperations(operations: stellar.Operation[], txParams: TransactionParams): void {
-    const trustlineOperations = _.filter(operations, ['type', 'changeTrust']) as stellar.Operation.ChangeTrust[];
-    if (trustlineOperations.length !== _.get(txParams, 'trustlines', []).length) {
-      throw new Error('transaction prebuild does not match expected trustline operations');
-    }
+    const trustlineOperations = this.getTrustlineOperationsOrThrow(operations, txParams, 'trustlines');
     _.forEach(trustlineOperations, (op: stellar.Operation) => {
       if (op.type !== 'changeTrust') {
         throw new Error('Invalid asset type');
@@ -1063,6 +1062,98 @@ export class Xlm extends BaseCoin {
       });
       if (!tokenTrustline) {
         throw new Error('transaction prebuild does not match expected trustline tokens');
+      }
+    });
+  }
+
+  getRecipientOrThrow(txParams: TransactionParams): ITransactionRecipient {
+    if (!txParams.recipients || txParams.recipients.length === 0)
+      throw new Error('Missing recipients on token enablement');
+    if (txParams.recipients.length > 1) throw new Error('Multiple recipients not supported on token enablement');
+    return txParams.recipients[0];
+  }
+
+  getTokenDataOrThrow(txParams: TransactionParams): string {
+    const recipient = this.getRecipientOrThrow(txParams);
+    const fullTokenData = recipient.tokenName;
+    if (!fullTokenData || fullTokenData === '') throw new Error('Missing tokenName on token enablement recipient');
+    return fullTokenData;
+  }
+
+  private getTokenCodeFromTokenName(tokenName: string): string {
+    const tokenCode = tokenName.split(':')[1]?.split('-')[0] ?? '';
+    if (tokenCode === '') throw new Error(`Invalid tokenName format on token enablement for token ${tokenName}`);
+    return tokenCode;
+  }
+
+  private getIssuerFromTokenName(tokenName: string): string {
+    const issuer = tokenName.split(':')[1]?.split('-')[1] ?? '';
+    if (issuer === '') throw new Error(`Invalid issuer format on token enablement for token ${tokenName}`);
+    return issuer;
+  }
+
+  verifyTxType(operations: stellar.Operation[]): void {
+    operations.forEach((operation) => {
+      if (!this.isChangeTrustOperation(operation))
+        throw new Error(
+          !operation.type
+            ? 'Missing operation type on token enablements'
+            : `Invalid operation on token enablement: expected changeTrust, got ${operation.type}`
+        );
+    });
+  }
+
+  verifyAssetType(txParams: TransactionParams, operations: stellar.Operation[]): void {
+    operations.forEach((operation) => {
+      const line = this.getTrustlineOperationLineOrThrow(operation);
+      if (!this.isOperationLineOfAssetType(line)) {
+        const assetType = line.getAssetType();
+        throw new Error(`Invalid asset type on token enablement: got ${assetType}`);
+      }
+    });
+  }
+
+  verifyTokenIssuer(txParams: TransactionParams, operations: stellar.Operation[]): void {
+    const fullTokenData = this.getTokenDataOrThrow(txParams);
+    const expectedIssuer = this.getIssuerFromTokenName(fullTokenData);
+
+    operations.forEach((operation) => {
+      const line = this.getTrustlineOperationLineOrThrow(operation);
+      if (!('issuer' in line)) throw new Error('Missing issuer on token enablement operation');
+      if (line.issuer !== expectedIssuer)
+        throw new Error(`Invalid issuer on token enablement operation: expected ${expectedIssuer}, got ${line.issuer}`);
+    });
+  }
+
+  verifyTokenName(txParams: TransactionParams, operations: stellar.Operation[]): void {
+    const fullTokenData = this.getTokenDataOrThrow(txParams);
+    const expectedTokenCode = this.getTokenCodeFromTokenName(fullTokenData);
+
+    operations.forEach((operation) => {
+      const line = this.getTrustlineOperationLineOrThrow(operation);
+      if (!('code' in line)) throw new Error('Missing token code on token enablement operation');
+      if (line.code === '') throw new Error('Empty token code on token enablement operation');
+      if (line.code !== expectedTokenCode)
+        throw new Error(
+          `Invalid token code on token enablement operation: expected ${expectedTokenCode}, got ${line.code}`
+        );
+    });
+  }
+
+  verifyTokenLimits(txParams: TransactionParams, operations: stellar.Operation[]): void {
+    const recipient = this.getRecipientOrThrow(txParams);
+
+    operations.forEach((operation) => {
+      // trustline params use limits in base units
+      const line = this.getTrustlineOperationLineOrThrow(operation);
+      const limit = this.getTrustlineOperationLimitOrThrow(operation); // line should be stellar.Asset
+      if (!this.isOperationLineOfAssetType(line)) throw new Error('Invalid asset type');
+      const operationLimitBaseUnits = this.bigUnitsToBaseUnits(limit);
+      const operationToken = this.getTokenNameFromStellarAsset(line);
+
+      // Enable token limit is set to Xlm.maxTrustlineLimit by default
+      if (recipient.tokenName !== operationToken || operationLimitBaseUnits !== Xlm.maxTrustlineLimit) {
+        throw new Error('Token limit must be set to max limit on enable token operations');
       }
     });
   }
@@ -1099,8 +1190,13 @@ export class Xlm extends BaseCoin {
       (operation) => operation.type === 'createAccount' || operation.type === 'payment'
     );
 
-    if (txParams.type === 'enabletoken') {
-      this.verifyEnableTokenTxOperations(tx.operations, txParams);
+    if (txParams.type === 'enabletoken' && verification.verifyTokenEnablement) {
+      const trustlineOperations = this.getTrustlineOperationsOrThrow(tx.operations, txParams, 'recipients');
+      this.verifyTxType(trustlineOperations);
+      this.verifyAssetType(txParams, trustlineOperations);
+      this.verifyTokenIssuer(txParams, trustlineOperations);
+      this.verifyTokenName(txParams, trustlineOperations);
+      this.verifyTokenLimits(txParams, trustlineOperations);
     } else if (txParams.type === 'trustline') {
       this.verifyTrustlineTxOperations(tx.operations, txParams);
     } else {

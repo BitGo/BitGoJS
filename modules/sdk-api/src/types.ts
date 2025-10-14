@@ -2,6 +2,8 @@ import { EnvironmentName, IRequestTracer, V1Network } from '@bitgo/sdk-core';
 import { ECPairInterface } from '@bitgo/utxo-lib';
 import { type Agent } from 'http';
 
+export type Constants = Record<string, any>;
+
 const patchedRequestMethods = ['get', 'post', 'put', 'del', 'patch', 'options'] as const;
 export type RequestMethods = (typeof patchedRequestMethods)[number];
 export type AdditionalHeadersCallback = (
@@ -23,6 +25,12 @@ export {
 export interface BitGoAPIOptions {
   accessToken?: string;
   authVersion?: 2 | 3;
+  clientConstants?:
+    | Record<string, any>
+    | {
+        constants: Record<string, any>;
+        ttl?: number;
+      };
   customBitcoinNetwork?: V1Network;
   customRootURI?: string;
   customSigningAddress?: string;

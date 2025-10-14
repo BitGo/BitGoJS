@@ -1402,6 +1402,11 @@ class Creditcoin extends Mainnet implements EthereumNetwork {
   accountExplorerUrl = 'https://creditcoin.blockscout.com/address/';
   chainId = 102030;
   nativeCoinOperationHashPrefix = '102030';
+  forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
+  forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
+  walletFactoryAddress = '0x809ee567e413543af1caebcdb247f6a67eafc8dd';
+  walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class Plasma extends Mainnet implements EthereumNetwork {
@@ -1429,6 +1434,11 @@ class HypeEVMTestnet extends Testnet implements EthereumNetwork {
   accountExplorerUrl = 'https://testnet.purrsec.com/address/';
   chainId = 998;
   nativeCoinOperationHashPrefix = '998';
+  forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
+  forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
+  walletFactoryAddress = '0x809ee567e413543af1caebcdb247f6a67eafc8dd';
+  walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class HypeEVM extends Mainnet implements EthereumNetwork {
@@ -1438,6 +1448,11 @@ class HypeEVM extends Mainnet implements EthereumNetwork {
   accountExplorerUrl = 'https://hyperevm-explorer.vercel.app/address/';
   chainId = 999;
   nativeCoinOperationHashPrefix = '999';
+  forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
+  forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
+  walletFactoryAddress = '0x809ee567e413543af1caebcdb247f6a67eafc8dd';
+  walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class KavaEVMTestnet extends Testnet implements EthereumNetwork {
@@ -1573,8 +1588,8 @@ class OgTestnet extends Testnet implements EthereumNetwork {
   family = CoinFamily.OG;
   explorerUrl = 'https://chainscan-galileo.0g.ai/tx/';
   accountExplorerUrl = 'https://chainscan-galileo.0g.ai/address/';
-  chainId = 16601;
-  nativeCoinOperationHashPrefix = '16601';
+  chainId = 16602;
+  nativeCoinOperationHashPrefix = '16602';
 }
 
 class Xdc extends Mainnet implements EthereumNetwork {
@@ -1943,7 +1958,7 @@ class Flow extends Mainnet implements EthereumNetwork {
 class FlowTestnet extends Testnet implements EthereumNetwork {
   name = 'FlowTestnet';
   family = CoinFamily.FLOW;
-  explorerUrl = 'https://evm.flowscan.io/tx/';
+  explorerUrl = 'https://evm-testnet.flowscan.io/tx/';
   accountExplorerUrl = 'https://evm-testnet.flowscan.io/address/';
   chainId = 545;
   nativeCoinOperationHashPrefix = '545';
@@ -1986,6 +2001,18 @@ class PlumeTestnet extends Testnet implements EthereumNetwork {
   nativeCoinOperationHashPrefix = '98867';
 }
 
+class Canton extends Mainnet implements BaseNetwork {
+  name = 'Canton';
+  family = CoinFamily.CANTON;
+  explorerUrl = '';
+}
+
+class CantonTestnet extends Testnet implements BaseNetwork {
+  name = 'CantonTestnet';
+  family = CoinFamily.CANTON;
+  explorerUrl = '';
+}
+
 export const Networks = {
   main: {
     ada: Object.freeze(new Ada()),
@@ -2006,6 +2033,7 @@ export const Networks = {
     bera: Object.freeze(new Berachain()),
     bld: Object.freeze(new Bld()),
     bsc: Object.freeze(new BinanceSmartChain()),
+    canton: Object.freeze(new Canton()),
     casper: Object.freeze(new Casper()),
     celo: Object.freeze(new Celo()),
     coredao: Object.freeze(new Coredao()),
@@ -2105,6 +2133,7 @@ export const Networks = {
     bera: Object.freeze(new BerachainTestnet()),
     bld: Object.freeze(new BldTestnet()),
     bsc: Object.freeze(new BinanceSmartChainTestnet()),
+    canton: Object.freeze(new CantonTestnet()),
     casper: Object.freeze(new CasperTestnet()),
     coredao: Object.freeze(new CoredaoTestnet()),
     celo: Object.freeze(new CeloTestnet()),

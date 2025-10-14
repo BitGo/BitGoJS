@@ -3,6 +3,36 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.3.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@3.3.4...@bitgo/web-demo@3.3.5) (2025-10-10)
+
+**Note:** Version bump only for package @bitgo/web-demo
+
+
+
+
+
+## [3.3.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@3.3.3...@bitgo/web-demo@3.3.4) (2025-10-09)
+
+**Note:** Version bump only for package @bitgo/web-demo
+
+
+
+
+
+## [3.3.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@3.3.2...@bitgo/web-demo@3.3.3) (2025-10-08)
+
+**Note:** Version bump only for package @bitgo/web-demo
+
+
+
+
+
+## [3.3.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@3.3.1...@bitgo/web-demo@3.3.2) (2025-10-02)
+
+### Bug Fixes
+
+- resolve webpack-dev-server to v5.2.1 ([11c7987](https://github.com/BitGo/BitGoJS/commit/11c7987255794eabc05e63cc80cec1dd020d9424))
+
 ## [3.3.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/web-demo@3.3.0...@bitgo/web-demo@3.3.1) (2025-09-29)
 
 **Note:** Version bump only for package @bitgo/web-demo

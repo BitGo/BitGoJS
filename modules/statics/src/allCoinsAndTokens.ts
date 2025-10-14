@@ -34,7 +34,6 @@ import {
   terc721,
   tflrErc20,
   topethErc20,
-  tpolyxToken,
   tronToken,
   tstellarToken,
   tsuiToken,
@@ -52,6 +51,7 @@ import {
 import { ada } from './ada';
 import { avaxp } from './avaxp';
 import { BaseUnit, CoinFeature, KeyCurve, UnderlyingAsset } from './base';
+import { canton } from './canton';
 import { erc20Coins } from './coins/erc20Coins';
 import { avaxTokens } from './coins/avaxTokens';
 import { bscTokens } from './coins/bscTokens';
@@ -65,6 +65,7 @@ import { nep141Tokens } from './coins/nep141Tokens';
 import { vetTokens } from './coins/vetTokens';
 import { cosmosTokens } from './coins/cosmosTokens';
 import { jettonTokens } from './coins/jettonTokens';
+import { polyxTokens } from './coins/polyxTokens';
 import { flrp } from './flrp';
 import {
   ADA_FEATURES_WITH_FRANKFURT,
@@ -76,6 +77,7 @@ import {
   BERA_BGT_FEATURES,
   BERA_FEATURES,
   BSC_FEATURES,
+  CANTON_FEATURES,
   CELO_FEATURES,
   COREDAO_FEATURES,
   COREUM_FEATURES,
@@ -101,7 +103,6 @@ import {
   POLYGON_FEATURES,
   POLYGON_TOKEN_FEATURES,
   POLYX_FEATURES,
-  POLYX_TOKEN_FEATURES,
   RBTC_FEATURES,
   SEI_FEATURES,
   SGB_FEATURES,
@@ -122,7 +123,6 @@ import {
   VET_FEATURES,
   WCT_FEATURES,
   WEMIX_FEATURES,
-  WFLR_FEATURES,
   XDC_FEATURES,
   XLM_FEATURES,
   XLM_TOKEN_FEATURES_WITH_FRANKFURT,
@@ -130,9 +130,10 @@ import {
   XTZ_FEATURES,
   ZETA_FEATURES,
   ZKETH_FEATURES,
+  ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE_AND_MENA_FZE,
+  WFLR_FEATURES,
 } from './coinFeatures';
 import { botTokens } from './coins/botTokens';
-import { botOfcTokens } from './coins/botOfcTokens';
 import { adaTokens } from './coins/adaTokens';
 
 export const allCoinsAndTokens = [
@@ -148,9 +149,9 @@ export const allCoinsAndTokens = [
   ...vetTokens,
   ...cosmosTokens,
   ...botTokens,
-  ...botOfcTokens,
   ...adaTokens,
   ...jettonTokens,
+  ...polyxTokens,
   avaxp(
     '5436386e-9e4d-4d82-92df-59d9720d1738',
     'avaxp',
@@ -1202,7 +1203,7 @@ export const allCoinsAndTokens = [
   account(
     'd0d44124-c7e9-4214-96ae-fbc6856ee3c2',
     'bsc',
-    'Binance Smart Chain',
+    'Native BNB',
     Networks.main.bsc,
     18,
     UnderlyingAsset.BSC,
@@ -1212,7 +1213,7 @@ export const allCoinsAndTokens = [
   account(
     '0a205427-f7c9-48a4-a238-c4b33ba6384d',
     'tbsc',
-    'Testnet Binance Smart Chain',
+    'Testnet Native BNB',
     Networks.test.bsc,
     18,
     UnderlyingAsset.BSC,
@@ -1849,6 +1850,7 @@ export const allCoinsAndTokens = [
       CoinFeature.SHARED_EVM_SDK,
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.STAKING,
     ]
   ),
   account(
@@ -2067,6 +2069,8 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
     ]
   ),
   account(
@@ -2084,7 +2088,27 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
     ]
+  ),
+  canton(
+    '07385320-5a4f-48e9-97a5-86d4be9f24b0',
+    'canton',
+    'Canton Coin',
+    Networks.main.canton,
+    UnderlyingAsset.CANTON,
+    CANTON_FEATURES,
+    KeyCurve.Ed25519
+  ),
+  canton(
+    'f5d7f76b-fc5a-4da8-b1d0-a86ad0fd269e',
+    'tcanton',
+    'Testnet Canton Coin',
+    Networks.test.canton,
+    UnderlyingAsset.CANTON,
+    CANTON_FEATURES,
+    KeyCurve.Ed25519
   ),
   gasTankAccount(
     '98071460-1488-4edd-857f-0899bc5eee4f',
@@ -2168,6 +2192,15 @@ export const allCoinsAndTokens = [
     '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
     UnderlyingAsset['baseeth:usdc'],
     Networks.main.basechain
+  ),
+  erc20Token(
+    'd71e48af-5a75-431e-9243-715af04351fc',
+    'og:wog',
+    'WOG',
+    18,
+    '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
+    UnderlyingAsset['og:wog'],
+    Networks.main.og
   ),
   erc20Token(
     '3d542986-403f-4302-aa57-95f4dec26727',
@@ -3023,20 +3056,6 @@ export const allCoinsAndTokens = [
     '',
     Networks.test.hoodi
   ),
-  erc721(
-    '30d034ae-41fd-4da2-bbb2-05fe1e301108',
-    'erc721:unsteth',
-    'Lido: stETH Withdrawal NFT',
-    '0x889edc2edab5f40e902b864ad4d7ade8e412f9b1',
-    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.RESTRICTED]
-  ),
-  terc721(
-    '05ce9121-45e0-4e9c-941b-1aa95bedfcc5',
-    'terc721:unsteth',
-    'Test Lido: stETH Withdrawal NFT',
-    '0xfe56573178f1bcdf53f01a6e9977670dcbbd9186',
-    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.RESTRICTED]
-  ),
   terc721(
     'e795fc78-b8a7-47a1-8294-5ecbe8a74c3a',
     'terc721:bitgoerc721',
@@ -3882,6 +3901,34 @@ export const allCoinsAndTokens = [
     '0x0f81001ef0a83ecce5ccebf63eb302c70a39a654',
     UnderlyingAsset['arbeth:dolo']
   ),
+  arbethErc20(
+    '7d2d1b02-f64d-47be-be75-0d4615718350',
+    'arbeth:rdnt',
+    'Radiant Capital',
+    18,
+    '0x3082cc23568ea640225c2467653db90e9250aaa0',
+    UnderlyingAsset['arbeth:rdnt']
+  ),
+
+  arbethErc20(
+    '1c3e6f0e-2f3a-4f0e-8d0c-2f3e6f0e2f3a',
+    'arbeth:gmx',
+    'GMX',
+    18,
+    '0xfc5a1a6eb076a2c7ad06ed22c90d7e710e35ad0a',
+    UnderlyingAsset['arbeth:gmx'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE_AND_MENA_FZE, CoinFeature.EIP1559]
+  ),
+
+  arbethErc20(
+    '1c3e6f0e-2f3a-4f0e-8d0c-2f3e6f0e2f3b',
+    'arbeth:pendle',
+    'Pendle',
+    18,
+    '0x0c880f6761f1af8d9aa9c466984b80dab9a8c9e8',
+    UnderlyingAsset['arbeth:pendle']
+  ),
+
   opethErc20(
     '8d80fac6-4cbc-447c-b49b-4229cb8aa89d',
     'opeth:link',
@@ -4065,6 +4112,14 @@ export const allCoinsAndTokens = [
     '0x8ac0d6b94ae23ad40407bc4dc16d74f09131eb48',
     UnderlyingAsset['opeth:eqtyx'],
     AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  opethErc20(
+    '73beeb1f-73a1-48c1-bc08-552f7be4a57b',
+    'opeth:velo',
+    'Velodrome Finance',
+    18,
+    '0x9560e827af36c94d2ac33a39bce1fe78631088db',
+    UnderlyingAsset['opeth:velo']
   ),
   topethErc20(
     '3c06bc28-1af2-4869-a632-bd081376fb46',
@@ -4250,7 +4305,7 @@ export const allCoinsAndTokens = [
     18,
     '0x1d80c49bbbcd1c0911346656b529df9e5c2f783d',
     UnderlyingAsset['flr:wflr'],
-    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+    WFLR_FEATURES
   ),
   tflrErc20(
     'ff4dd56d-8fa0-4e92-b764-88c56ea48549',
@@ -4259,6 +4314,15 @@ export const allCoinsAndTokens = [
     18,
     '0xab6fad89389b73dbc887d31206a26fd88d719d1f',
     UnderlyingAsset['tflr:wflr'],
+    WFLR_FEATURES
+  ),
+  tflrErc20(
+    'a1c8fdc6-e5b5-4170-b490-f585db8ab922',
+    'tflr:twc2flr',
+    'Wrapped Coston2Flare Testnet',
+    18,
+    '0xc67dce33d7a8efa5ffeb961899c73fe01bce9273',
+    UnderlyingAsset['tflr:twc2flr'],
     WFLR_FEATURES
   ),
   txrpToken(
@@ -4670,16 +4734,6 @@ export const allCoinsAndTokens = [
     '4',
     UnderlyingAsset['ttao:targon'],
     TAO_TOKEN_FEATURES
-  ),
-  tpolyxToken(
-    'a63b4f8d-84d6-45d3-bc67-625239e40811',
-    'tpolyx:nvbitgot',
-    'NVBITGOT Fungible Asset',
-    6,
-    'NVBITGOT',
-    '0x780602887b358cf48989d0d9aa6c8d28',
-    UnderlyingAsset['tpolyx:nvbitgot'],
-    POLYX_TOKEN_FEATURES
   ),
   aptToken(
     'e2a2d8fc-df3e-4bb7-b9c6-19092bb3369a',

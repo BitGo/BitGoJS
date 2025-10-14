@@ -16,27 +16,14 @@ export interface ExtraAccountMeta {
   isSigner: boolean;
   /** Whether the account is writable */
   isWritable: boolean;
-  /** Optional seed for PDA derivation */
-  seeds?: Array<{
-    /** Literal seed value or instruction account index reference */
-    value: string | number;
-    /** Type of seed: 'literal' for string/buffer, 'accountKey' for instruction account index */
-    type: 'literal' | 'accountKey';
-  }>;
 }
 
 /**
  * Interface for transfer hook configuration
  */
 export interface TransferHookConfig {
-  /** The transfer hook program ID */
-  programId: string;
-  /** The transfer hook authority */
-  authority: string;
   /** Extra account metas required by the transfer hook */
   extraAccountMetas: ExtraAccountMeta[];
-  /** The PDA address for extra account metas (cached) */
-  extraAccountMetasPDA?: string;
 }
 
 /**
@@ -45,34 +32,18 @@ export interface TransferHookConfig {
 export interface Token2022Config {
   /** The mint address of the token */
   mintAddress: string;
-  /** Token symbol */
-  symbol: string;
-  /** Token name */
-  name: string;
-  /** Number of decimal places */
-  decimals: number;
-  /** Program ID (TOKEN_2022_PROGRAM_ID) */
-  programId: string;
   /** Transfer hook configuration if applicable */
   transferHook?: TransferHookConfig;
-  /** Whether the token has transfer fees */
-  hasTransferFees?: boolean;
 }
 
 /**
  * Token configurations map
- * Key: mintAddress or symbol
+ * Key: mintAddress
  */
 export const TOKEN_2022_CONFIGS: Record<string, Token2022Config> = {};
 
 TOKEN_2022_STATIC_CONFIGS.forEach((config) => {
   TOKEN_2022_CONFIGS[config.mintAddress] = config;
-  TOKEN_2022_CONFIGS[config.symbol] = config;
-});
-
-// Create symbol mappings for convenience
-Object.values(TOKEN_2022_CONFIGS).forEach((config) => {
-  TOKEN_2022_CONFIGS[config.symbol] = config;
 });
 
 /**

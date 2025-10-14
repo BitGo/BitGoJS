@@ -50,6 +50,7 @@ export interface TxData {
  */
 export type DecodedUtxoObj = {
   outputID: number;
+  locktime?: string;
   amount: string;
   txid: string;
   outputidx: string;
@@ -61,9 +62,14 @@ export type DecodedUtxoObj = {
 /**
  * TypeId value for SECP256K1 Transfer Output
  *
- * {@link https://docs.avax.network/specs/platform-transaction-serialization#secp256k1-transfer-output-example }
+ * {@link https://build.avax.network/docs/api-reference/p-chain/txn-format#secp256k1-transfer-output }
  */
 export const SECP256K1_Transfer_Output = 7;
+/**
+ * TypeId value for Stakeable Lock Output
+ * {@link https://build.avax.network/docs/api-reference/p-chain/txn-format#stakeablelockout }
+ */
+export const SECP256K1_STAKEABLE_LOCK_OUT = 22;
 
 export const ADDRESS_SEPARATOR = '~';
 export const INPUT_SEPARATOR = ':';

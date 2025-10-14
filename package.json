@@ -31,7 +31,7 @@
     "https-browserify": "^1.0.0",
     "husky": "^8.0.1",
     "improved-yarn-audit": "^3.0.0",
-    "lerna": "^5.5.0",
+    "lerna": "^9.0.0",
     "lint-staged": "^12.4.1",
     "make-dir": "^3.1.0",
     "mocha": "10.6.0",
@@ -97,12 +97,14 @@
     "**/avalanche/**/ws": "8.18.3",
     "**/ethers/**/ws": "7.5.10",
     "**/swarm-js/**/ws": "5.2.4",
+    "**/swarm-js/**/tar": "6.2.1",
     "serialize-javascript": "^6.0.2",
     "@grpc/grpc-js": "^1.12.6",
     "bigint-buffer": "npm:@trufflesuite/bigint-buffer@1.1.10",
     "request": "npm:@cypress/request@3.0.9",
     "**/avalanche/store2": "2.14.4",
-    "webpack-dev-server": "5.2.1"
+    "webpack-dev-server": "5.2.1",
+    "memfs": "4.46.0"
   },
   "workspaces": [
     "modules/*"

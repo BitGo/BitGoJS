@@ -15,8 +15,18 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   from(raw: string): TransactionBuilder {
     let builder: TransactionBuilder;
     try {
-      const tx = this._coinConfig.isToken ? new TokenTransaction(this._coinConfig) : new Transaction(this._coinConfig);
-      tx.fromRawTransaction(raw);
+      const checkTx = new Transaction(this._coinConfig);
+      checkTx.fromRawTransaction(raw);
+
+      let tx: Transaction;
+      if (checkTx.type === TransactionType.SendToken) {
+        // It's a token transaction, so use TokenTransaction for proper parsing
+        tx = new TokenTransaction(this._coinConfig);
+        tx.fromRawTransaction(raw);
+      } else {
+        // It's a regular transaction, use the already parsed one
+        tx = checkTx;
+      }
       switch (tx.type) {
         case TransactionType.Send:
           builder = this.getTransferBuilder();

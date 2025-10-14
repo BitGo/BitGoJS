@@ -36,6 +36,8 @@ import {
   ofcHashToken,
   tofcHashToken,
   tofcaptToken,
+  ofcTonToken,
+  tofcTonToken,
 } from '../ofc';
 import { UnderlyingAsset, CoinKind, CoinFeature } from '../base';
 
@@ -90,6 +92,7 @@ export const ofcCoins = [
   ofc('74cc3b48-25be-4477-8782-cbb1ea070eab', 'ofccronos', 'Cronos POS', 8, UnderlyingAsset.CRONOS, CoinKind.CRYPTO),
   ofc('273f9166-b72d-420f-bc10-61a36e27b909', 'ofcinitia', 'Initia', 6, UnderlyingAsset.INITIA, CoinKind.CRYPTO),
   ofc('c4f6ac74-dc03-47bd-bb47-f2008b414ea2', 'ofcasi', 'Fetch Native', 18, UnderlyingAsset.ASI, CoinKind.CRYPTO),
+  ofc('94b17da0-9c6f-40d9-a39b-432f562f4c03', 'ofcmantra', 'Mantra', 6, UnderlyingAsset.MANTRA, CoinKind.CRYPTO),
   ofc('220b2568-e996-40d1-af2c-fc4f79019069', 'ofctia', 'Celestia', 6, UnderlyingAsset.TIA, CoinKind.CRYPTO),
   ofc('3ad9a2e0-a8f4-4673-9177-35e855929eb6', 'ofcatom', 'Cosmos Hub ATOM', 6, UnderlyingAsset.ATOM, CoinKind.CRYPTO),
   ofc(
@@ -104,14 +107,7 @@ export const ofcCoins = [
   ofc('5958e6e9-c6d7-4372-8d1d-c681f595c481', 'ofchash', 'Provenance', 9, UnderlyingAsset.HASH, CoinKind.CRYPTO),
   ofc('4616eb4e-9244-449c-a503-02cb2d715b2c', 'ofcsei', 'Sei', 6, UnderlyingAsset.SEI, CoinKind.CRYPTO),
   ofc('50a00889-47d2-44b5-8dc8-1fb3b4f47b86', 'ofczeta', 'Zeta', 18, UnderlyingAsset.ZETA, CoinKind.CRYPTO),
-  ofc(
-    '03df4c0c-12be-4b24-b3c3-c59be198711b',
-    'ofcbsc',
-    'Binance Smart Chain',
-    18,
-    UnderlyingAsset.BSC,
-    CoinKind.CRYPTO
-  ),
+  ofc('03df4c0c-12be-4b24-b3c3-c59be198711b', 'ofcbsc', 'Native BNB', 18, UnderlyingAsset.BSC, CoinKind.CRYPTO),
   ofc('7b79bc25-5497-4350-b961-4bbed2bea994', 'ofcsui', 'Sui', 9, UnderlyingAsset.SUI, CoinKind.CRYPTO),
   ofc('31bae66e-a135-42f9-b9d3-1623ab9c7ecc', 'ofctrx', 'Tron', 6, UnderlyingAsset.TRX, CoinKind.CRYPTO),
   ofc('dbbceebe-9096-4d7b-ae9e-31eb8a3dc5ca', 'ofcsol', 'Solana', 9, UnderlyingAsset.SOL, CoinKind.CRYPTO),
@@ -267,6 +263,26 @@ export const ofcCoins = [
   ),
   ofc('aa7e956f-2d59-4bf6-aba6-2d51bd298150', 'ofcip', 'Story', 18, UnderlyingAsset.IP, CoinKind.CRYPTO),
   tofc('773b02f6-32ea-493a-bca5-13d93cb0afff', 'ofctip', 'Story Testnet', 18, UnderlyingAsset.IP, CoinKind.CRYPTO),
+  ofc('c5015165-6ae4-4925-bd3f-4b767feba2f9', 'ofcplume', 'Plume', 18, UnderlyingAsset.PLUME, CoinKind.CRYPTO),
+  tofc(
+    '7b81e4fb-0ca7-4626-8f0f-0ab36239a35f',
+    'ofctplume',
+    'Testnet Plume',
+    18,
+    UnderlyingAsset.PLUME,
+    CoinKind.CRYPTO
+  ),
+  ofc('a2b12493-d00d-4d0d-a109-55308f668e1f', 'ofckavaevm', 'Kava EVM', 18, UnderlyingAsset.KAVAEVM, CoinKind.CRYPTO),
+  tofc(
+    '8445d703-a302-49c3-9a43-a8ef06f3346f',
+    'ofctkavaevm',
+    'Testnet Kava EVM',
+    18,
+    UnderlyingAsset.KAVAEVM,
+    CoinKind.CRYPTO
+  ),
+  ofc('06f28a2c-8a52-41d8-a404-e8e82e81bea5', 'ofcflow', 'Flow', 18, UnderlyingAsset.FLOW, CoinKind.CRYPTO),
+  tofc('3c964b1b-4ace-4730-a307-4a9d90d98f6d', 'ofctflow', 'Testnet Flow', 18, UnderlyingAsset.FLOW, CoinKind.CRYPTO),
   ofc('32b87bea-ba5f-4cab-9516-647b1fba9ea2', 'ofcxpl', 'Plasma', 18, UnderlyingAsset.XPL, CoinKind.CRYPTO),
   tofc('7783b655-1d01-4c99-b35f-1525d9a1d191', 'ofctxpl', 'Plasma Testnet', 18, UnderlyingAsset.XPL, CoinKind.CRYPTO),
   ofc('1876cf96-a0b7-4b7b-9024-6bd89df9814b', 'ofcflr', 'Flare', 18, UnderlyingAsset.FLR, CoinKind.CRYPTO),
@@ -470,6 +486,14 @@ export const ofcCoins = [
     CoinKind.CRYPTO
   ),
   tofc(
+    '9c00ffaf-6c79-4e2d-b648-d50d53ca84b3',
+    'ofctmantra',
+    'Testnet Mantra',
+    6,
+    UnderlyingAsset.MANTRA,
+    CoinKind.CRYPTO
+  ),
+  tofc(
     '3b0f5716-94c3-4c5b-be70-cfd08b2f1fdf',
     'ofctinjective',
     'Testnet Injective',
@@ -491,7 +515,7 @@ export const ofcCoins = [
   tofc(
     '52e600bb-b006-452b-9f82-f81c20d0168d',
     'ofctbsc',
-    'Testnet Binance Smart Chain',
+    'Testnet Native BNB',
     18,
     UnderlyingAsset.BSC,
     CoinKind.CRYPTO
@@ -764,6 +788,14 @@ export const ofcCoins = [
     'Pump',
     6,
     UnderlyingAsset['sol:pump'],
+    SOL_OFC_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    'c120968e-6ec2-4ddb-98f7-87c4480e461f',
+    'ofcsol:pipe',
+    'Pipe',
+    9,
+    UnderlyingAsset['sol:pipe'],
     SOL_OFC_TOKEN_FEATURES
   ),
   ofcsolToken(
@@ -1172,6 +1204,50 @@ export const ofcCoins = [
     UnderlyingAsset['sol:zig'],
     SOL_TOKEN_FEATURES
   ),
+  ofcsolToken(
+    '95aa4c0f-c1d9-41ab-8201-55a4bbab4609',
+    'ofcsol:ford',
+    'Forward Industries, Inc',
+    6,
+    UnderlyingAsset['sol:ford'],
+    SOL_TOKEN_FEATURES
+  ),
+  ofcsolToken(
+    '2d314473-29f8-4f1d-aa6a-8f13e60ec2d1',
+    'ofcsol:glxy',
+    'Galaxy Digital Inc. Class A Common Stock',
+    6,
+    UnderlyingAsset['sol:ford'],
+    SOL_TOKEN_FEATURES
+  ),
+
+  ofcsolToken(
+    '1f3e4b1c-2f0e-4d6a-8e2e-1c4f3e4b1c2f',
+    'ofcsol:xsgd',
+    'StraitsX SGD',
+    6,
+    UnderlyingAsset['sol:xsgd'],
+    SOL_TOKEN_FEATURES
+  ),
+
+  ofcsolToken(
+    'b4f8e1d2-3c4b-4a5d-9e6f-7a8b9c0d1e2f',
+    'ofcsol:straitxusd',
+    'StraitsX USD',
+    6,
+    UnderlyingAsset['sol:straitxusd'],
+    SOL_TOKEN_FEATURES
+  ),
+
+  ofcsolToken(
+    'd3c4b5a6-7e8f-4a0b-9c2d-3e4f5a6b7c8d',
+    'ofcsol:usx',
+    'USX',
+    6,
+    UnderlyingAsset['sol:usx'],
+    SOL_TOKEN_FEATURES
+  ),
+
   tofcsolToken(
     '24d678cf-e0f0-4cde-a338-d754289c5b27',
     'ofctsol:slnd',
@@ -1539,6 +1615,24 @@ export const ofcCoins = [
     18,
     UnderlyingAsset['arbeth:dolo']
   ),
+  ofcArbethErc20(
+    'f0b86f29-7b4c-4d16-abeb-12afdd2d6755',
+    'ofcarbeth:rdnt',
+    'Radiant Capital',
+    18,
+    UnderlyingAsset['arbeth:rdnt']
+  ),
+
+  ofcArbethErc20('f3e1e2e1-2d3b-4c4a-9e6f-7a8b9c0d1e2f', 'ofcarbeth:gmx', 'GMX', 18, UnderlyingAsset['arbeth:gmx']),
+
+  ofcArbethErc20(
+    'a1b2c3d4-e5f6-4890-abcd-ef1234567890',
+    'ofcarbeth:pendle',
+    'Pendle',
+    18,
+    UnderlyingAsset['arbeth:pendle']
+  ),
+
   ofcAvaxErc20('2bd6201d-c46c-481e-b82d-7cf3601679cb', 'ofcavaxc:aave-e', 'Aave', 18, UnderlyingAsset['avaxc:aave']),
   ofcAvaxErc20(
     '515a5a74-54fe-4d73-bb12-8d1130f78692',
@@ -1747,6 +1841,13 @@ export const ofcCoins = [
     'WisdomTree Siegel Global Equity Digital Fund',
     18,
     UnderlyingAsset['opeth:eqtyx']
+  ),
+  ofcOpethErc20(
+    'f3c008f8-6347-46de-8ab6-dd642952da93',
+    'ofcopeth:velo',
+    'Velodrome Finance',
+    18,
+    UnderlyingAsset['opeth:velo']
   ),
   ofcBscToken('a79933f5-a9d2-4a29-a948-79313a569988', 'ofcbsc:cfx', 'BSC Conflux', 18, UnderlyingAsset['bsc:cfx']),
   ofcBscToken('c6f5df09-5a21-468b-89cc-f626d02d74d0', 'ofcbsc:oort', 'OORT', 18, UnderlyingAsset['bsc:oort']),
@@ -2222,6 +2323,9 @@ export const ofcCoins = [
   ofcBscToken('eb9280a5-2781-450b-945f-7fe13d170433', 'ofcbsc:slay', 'SatLayer', 6, UnderlyingAsset['bsc:slay']),
   ofcBscToken('91442391-12ed-4361-947f-eed60000329f', 'ofcbsc:prove', 'Succinct', 18, UnderlyingAsset['bsc:prove']),
   ofcBscToken('bca017c3-4326-48f8-809b-bd6df7538286', 'ofcbsc:rekt', 'Rekt', 18, UnderlyingAsset['bsc:rekt']),
+  ofcBscToken('54b0e2a2-f50c-4233-845f-ec5fa28dcdaa', 'ofcbsc:pln', 'Plearn', 18, UnderlyingAsset['bsc:pln']),
+  ofcBscToken('e3145994-c670-40b2-86c5-d02085854d39', 'ofcbsc:ff', 'Falcon Finance', 18, UnderlyingAsset['bsc:ff']),
+  ofcBscToken('6f00c269-ee23-4efb-bc4f-146cef74e338', 'ofcbsc:c98', 'Coin98', 18, UnderlyingAsset['bsc:c98']),
   tofcBscToken(
     'bf8a52e5-f416-46ea-95c2-a920dc204233',
     'ofctbsc:usd1',
@@ -3023,6 +3127,13 @@ export const ofcCoins = [
     18,
     UnderlyingAsset['polygon:zig']
   ),
+  ofcPolygonErc20(
+    'fa712beb-d08f-437d-a9dc-7afd5070ddb7',
+    'ofcpolygon:brl1',
+    'BRL1',
+    18,
+    UnderlyingAsset['polygon:brl1']
+  ),
   tofcPolygonErc20(
     '62f4329d-11cd-4875-b91b-9ceae66c9439',
     'ofctpolygon:link',
@@ -3308,6 +3419,20 @@ export const ofcCoins = [
     UnderlyingAsset['near:usdt'],
     [CoinFeature.STABLECOIN]
   ),
+  ofcnep141Token(
+    '711a31d8-0513-449d-9649-2f9b5b0eb141',
+    'ofcnear:mpdao',
+    'Meta Pool',
+    6,
+    UnderlyingAsset['near:mpdao']
+  ),
+  ofcnep141Token(
+    '125bd6cb-1927-408e-9045-dc55f2da7eed',
+    'ofcnear:stnear',
+    'stNEAR',
+    24,
+    UnderlyingAsset['near:stnear']
+  ),
   tofcnep141Token(
     'a3a47204-c114-42d7-b673-0a5f60ca0d9e',
     'ofctnear:tnep24dp',
@@ -3378,5 +3503,13 @@ export const ofcCoins = [
     'Testnet YLDS Token',
     6,
     UnderlyingAsset['thash:ylds']
+  ),
+  ofcTonToken('c0e7396b-d21a-4b5a-b547-fdfe001cf3ba', 'ofcton:usdt', 'Ton USDT', 6, UnderlyingAsset['ton:usdt']),
+  tofcTonToken(
+    'e7d516c1-b975-4905-b5d0-8460f6ea7eb9',
+    'ofctton:ukwny-us',
+    'Test Unknown TokenY-US',
+    9,
+    UnderlyingAsset['tton:ukwny-us']
   ),
 ];

@@ -72,6 +72,7 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-baby /var/modules/sdk-coin-baby/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-bera /var/modules/sdk-coin-bera/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-bld /var/modules/sdk-coin-bld/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-bsc /var/modules/sdk-coin-bsc/
+COPY --from=builder /tmp/bitgo/modules/sdk-coin-canton /var/modules/sdk-coin-canton/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-celo /var/modules/sdk-coin-celo/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-coredao /var/modules/sdk-coin-coredao/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-coreum /var/modules/sdk-coin-coreum/
@@ -168,6 +169,7 @@ cd /var/modules/sdk-coin-baby && yarn link && \
 cd /var/modules/sdk-coin-bera && yarn link && \
 cd /var/modules/sdk-coin-bld && yarn link && \
 cd /var/modules/sdk-coin-bsc && yarn link && \
+cd /var/modules/sdk-coin-canton && yarn link && \
 cd /var/modules/sdk-coin-celo && yarn link && \
 cd /var/modules/sdk-coin-coredao && yarn link && \
 cd /var/modules/sdk-coin-coreum && yarn link && \
@@ -267,6 +269,7 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-bera && \
     yarn link @bitgo/sdk-coin-bld && \
     yarn link @bitgo/sdk-coin-bsc && \
+    yarn link @bitgo/sdk-coin-canton && \
     yarn link @bitgo/sdk-coin-celo && \
     yarn link @bitgo/sdk-coin-coredao && \
     yarn link @bitgo/sdk-coin-coreum && \

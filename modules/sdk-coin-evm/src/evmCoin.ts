@@ -10,6 +10,7 @@ import {
   recoveryBlockchainExplorerQuery,
   TransactionBuilder as EthLikeTransactionBuilder,
   UnsignedSweepTxMPCv2,
+  VerifyEthTransactionOptions,
 } from '@bitgo/abstract-eth';
 import { TransactionBuilder } from './lib';
 import assert from 'assert';
@@ -68,5 +69,44 @@ export class EvmCoin extends AbstractEthLikeNewCoins {
     const apiToken = apiKey || evmConfig[this.getFamily()].apiToken;
     const explorerUrl = evmConfig[this.getFamily()].baseUrl;
     return await recoveryBlockchainExplorerQuery(query, explorerUrl as string, apiToken as string);
+  }
+
+  /** @inheritDoc */
+  async verifyTssTransaction(params: VerifyEthTransactionOptions): Promise<boolean> {
+    const supportsEIP1559 = this.staticsCoin?.features?.includes(CoinFeature.EIP1559);
+    if (supportsEIP1559) {
+      return await super.verifyTssTransaction(params);
+    } else {
+      return await this.verifyLegacyTssTransaction(params);
+    }
+  }
+
+  /**
+   * Verifies legacy (non-EIP-1559) TSS transactions with basic validation.
+   */
+  private async verifyLegacyTssTransaction(params: VerifyEthTransactionOptions): Promise<boolean> {
+    const { txParams, txPrebuild, wallet } = params;
+
+    // Basic validation for legacy transactions only
+    if (
+      !txParams?.recipients &&
+      !(
+        txParams.prebuildTx?.consolidateId ||
+        (txParams.type && ['acceleration', 'fillNonce', 'transferToken', 'tokenApproval'].includes(txParams.type))
+      )
+    ) {
+      throw new Error(`missing txParams`);
+    }
+
+    if (!wallet || !txPrebuild) {
+      throw new Error(`missing params`);
+    }
+
+    if (txParams.hop && txParams.recipients && txParams.recipients.length > 1) {
+      throw new Error(`tx cannot be both a batch and hop transaction`);
+    }
+
+    // If validation passes, consider it verified
+    return true;
   }
 }

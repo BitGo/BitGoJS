@@ -203,6 +203,9 @@ export { Vet };
 import * as CosmosSharedCoin from '@bitgo/sdk-coin-cosmos';
 export { CosmosSharedCoin };
 
+import * as Canton from '@bitgo/sdk-coin-canton';
+export { Canton };
+
 import { validateAgainstMessageTemplates, MIDNIGHT_TNC_HASH } from './utils';
 export { MIDNIGHT_TNC_HASH };
 
@@ -315,6 +318,8 @@ const coinBuilderMap = {
   tpolyx: Polyx.TransactionBuilderFactory,
   vet: Vet.TransactionBuilderFactory,
   tvet: Vet.TransactionBuilderFactory,
+  canton: Canton.TransactionBuilderFactory,
+  tcanton: Canton.TransactionBuilderFactory,
 };
 
 const coinMessageBuilderFactoryMap = {

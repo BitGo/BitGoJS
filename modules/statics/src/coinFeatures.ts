@@ -25,6 +25,10 @@ export const ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_MENA_FZE = ACCOUNT_COIN_DEFAU
   (feature) => feature !== CoinFeature.CUSTODY_BITGO_MENA_FZE
 );
 
+export const ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE_AND_MENA_FZE = ACCOUNT_COIN_DEFAULT_FEATURES.filter(
+  (feature) => feature !== CoinFeature.CUSTODY_BITGO_SINGAPORE && feature !== CoinFeature.CUSTODY_BITGO_MENA_FZE
+);
+
 export const ETH_FEATURES = [
   ...ACCOUNT_COIN_DEFAULT_FEATURES,
   CoinFeature.SUPPORTS_TOKENS,
@@ -647,7 +651,7 @@ export const SGB_FEATURES = [...EVM_FEATURES, CoinFeature.ERC20_BULK_TRANSACTION
 
 export const FLR_FEATURES = [...EVM_FEATURES, CoinFeature.ERC20_BULK_TRANSACTION];
 
-export const WFLR_FEATURES = [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STAKING];
+export const WFLR_FEATURES = [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN, CoinFeature.STAKING];
 
 export const WEMIX_FEATURES = [...EVM_FEATURES, CoinFeature.ERC20_BULK_TRANSACTION];
 
@@ -659,4 +663,13 @@ export const IOTA_FEATURES = [
   CoinFeature.CUSTODY_BULK_TRANSACTION,
   CoinFeature.ENTERPRISE_PAYS_FEES,
   CoinFeature.TSS_ENTERPRISE_PAYS_FEES,
+];
+
+// TODO: https://bitgoinc.atlassian.net/browse/COIN-5870
+export const CANTON_FEATURES = [
+  CoinFeature.UNSPENT_MODEL,
+  CoinFeature.TRANSACTION_DATA,
+  CoinFeature.REQUIRES_BIG_NUMBER,
+  CoinFeature.TSS,
+  CoinFeature.TSS_COLD,
 ];

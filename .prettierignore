@@ -8,3 +8,4 @@ CHANGELOG.md
 flake.lock
 
 modules/babylonlabs-io-btc-staking-ts/
+/.nx/workspace-data

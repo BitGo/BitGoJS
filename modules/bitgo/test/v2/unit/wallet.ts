@@ -5672,7 +5672,7 @@ describe('V2 Wallet:', function () {
             solInstructions: [],
             recipients: testRecipients,
           })
-          .should.be.rejectedWith(`'solInstructions' is a required parameter for customTx intent`);
+          .should.be.rejectedWith(`'solInstructions' or 'solVersionedTransactionData' is required for customTx intent`);
       });
 
       it('should support solInstruction for cold wallets', async function () {
@@ -5708,6 +5708,209 @@ describe('V2 Wallet:', function () {
             feeString: '5000',
           },
         });
+      });
+    });
+
+    describe('prebuildTransaction with solVersionedTransactionData type', function () {
+      function getTestVersionedTransactionData() {
+        return {
+          versionedInstructions: [
+            {
+              programIdIndex: 10,
+              accountKeyIndexes: [0, 1, 2],
+              data: '0102030405',
+            },
+            {
+              programIdIndex: 11,
+              accountKeyIndexes: [0, 3, 4, 5],
+              data: '060708090a',
+            },
+          ],
+          addressLookupTables: [
+            {
+              accountKey: '2sk6bVhjN53hz7sqE72eqHvhPfSc1snZzsJR6yA5hF7j',
+              writableIndexes: [0, 1],
+              readonlyIndexes: [2, 3],
+            },
+          ],
+          staticAccountKeys: [
+            '5hr5fisPi6DXNuuRpm5XUbzpiEnmdyxXuBDTwzwZj5Pe',
+            '2sk6bVhjN53hz7sqE72eqHvhPfSc1snZzsJR6yA5hF7j',
+            '11111111111111111111111111111111',
+          ],
+          messageHeader: {
+            numRequiredSignatures: 1,
+            numReadonlySignedAccounts: 0,
+            numReadonlyUnsignedAccounts: 1,
+          },
+        };
+      }
+
+      it('should call prebuildTxWithIntent with correct parameters for versioned transaction', async function () {
+        const testVersionedTransactionData = getTestVersionedTransactionData();
+        const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(txRequest);
+        prebuildTxWithIntent.calledOnceWithExactly({
+          reqId,
+          intentType: 'customTx',
+          solVersionedTransactionData: testVersionedTransactionData,
+          recipients: testRecipients,
+        });
+
+        const txPrebuild = await tssSolWallet.prebuildTransaction({
+          reqId,
+          type: 'customTx',
+          solVersionedTransactionData: testVersionedTransactionData,
+          recipients: testRecipients,
+        });
+
+        txPrebuild.should.deepEqual({
+          walletId: tssSolWallet.id(),
+          wallet: tssSolWallet,
+          txRequestId: 'id',
+          txHex: 'ababcdcd',
+          buildParams: {
+            type: 'customTx',
+            solVersionedTransactionData: testVersionedTransactionData,
+            recipients: testRecipients,
+          },
+          feeInfo: {
+            fee: 5000,
+            feeString: '5000',
+          },
+        });
+      });
+
+      it('should handle solVersionedTransactionData with empty recipients', async function () {
+        const testVersionedTransactionData = getTestVersionedTransactionData();
+        const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(txRequest);
+        prebuildTxWithIntent.calledOnceWithExactly({
+          reqId,
+          intentType: 'customTx',
+          solVersionedTransactionData: testVersionedTransactionData,
+          recipients: [],
+        });
+
+        const txPrebuild = await tssSolWallet.prebuildTransaction({
+          reqId,
+          type: 'customTx',
+          solVersionedTransactionData: testVersionedTransactionData,
+        });
+
+        txPrebuild.should.deepEqual({
+          walletId: tssSolWallet.id(),
+          wallet: tssSolWallet,
+          txRequestId: 'id',
+          txHex: 'ababcdcd',
+          buildParams: {
+            type: 'customTx',
+            solVersionedTransactionData: testVersionedTransactionData,
+          },
+          feeInfo: {
+            fee: 5000,
+            feeString: '5000',
+          },
+        });
+      });
+
+      it('should handle solVersionedTransactionData with memo parameter', async function () {
+        const testVersionedTransactionData = getTestVersionedTransactionData();
+        const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(txRequest);
+        prebuildTxWithIntent.calledOnceWithExactly({
+          reqId,
+          intentType: 'customTx',
+          solVersionedTransactionData: testVersionedTransactionData,
+          recipients: testRecipients,
+          memo: {
+            type: 'type',
+            value: 'test memo',
+          },
+        });
+
+        const txPrebuild = await tssSolWallet.prebuildTransaction({
+          reqId,
+          type: 'customTx',
+          solVersionedTransactionData: testVersionedTransactionData,
+          recipients: testRecipients,
+          memo: {
+            type: 'type',
+            value: 'test memo',
+          },
+        });
+
+        txPrebuild.should.deepEqual({
+          walletId: tssSolWallet.id(),
+          wallet: tssSolWallet,
+          txRequestId: 'id',
+          txHex: 'ababcdcd',
+          buildParams: {
+            type: 'customTx',
+            solVersionedTransactionData: testVersionedTransactionData,
+            recipients: testRecipients,
+            memo: {
+              type: 'type',
+              value: 'test memo',
+            },
+          },
+          feeInfo: {
+            fee: 5000,
+            feeString: '5000',
+          },
+        });
+      });
+
+      it('should handle solVersionedTransactionData with pending approval ID', async function () {
+        const testVersionedTransactionData = getTestVersionedTransactionData();
+        const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves({ ...txRequest, state: 'pendingApproval', pendingApprovalId: 'some-id' });
+        prebuildTxWithIntent.calledOnceWithExactly({
+          reqId,
+          intentType: 'customTx',
+          solVersionedTransactionData: testVersionedTransactionData,
+          recipients: testRecipients,
+        });
+
+        const txPrebuild = await custodialTssSolWallet.prebuildTransaction({
+          reqId,
+          type: 'customTx',
+          solVersionedTransactionData: testVersionedTransactionData,
+          recipients: testRecipients,
+        });
+
+        txPrebuild.should.deepEqual({
+          walletId: custodialTssSolWallet.id(),
+          wallet: custodialTssSolWallet,
+          txRequestId: 'id',
+          txHex: 'ababcdcd',
+          pendingApprovalId: 'some-id',
+          buildParams: {
+            type: 'customTx',
+            solVersionedTransactionData: testVersionedTransactionData,
+            recipients: testRecipients,
+          },
+          feeInfo: {
+            fee: 5000,
+            feeString: '5000',
+          },
+        });
+      });
+
+      it('should throw error for empty versionedInstructions array', async function () {
+        await tssSolWallet
+          .prebuildTransaction({
+            reqId,
+            type: 'customTx',
+            solVersionedTransactionData: {
+              versionedInstructions: [],
+              addressLookupTables: [],
+              staticAccountKeys: ['test'],
+              messageHeader: { numRequiredSignatures: 1, numReadonlySignedAccounts: 0, numReadonlyUnsignedAccounts: 0 },
+            },
+            recipients: testRecipients,
+          })
+          .should.be.rejectedWith(`'solInstructions' or 'solVersionedTransactionData' is required for customTx intent`);
       });
     });
   });

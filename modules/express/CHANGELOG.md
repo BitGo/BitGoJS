@@ -3,6 +3,53 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [15.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.5.0...@bitgo/express@15.6.0) (2025-10-10)
+
+
+### Features
+
+* **express:** added type from public types ([53fe28b](https://github.com/BitGo/BitGoJS/commit/53fe28bf2f6e193174d72a3bafc0544eead9ea5c))
+* **express:** migrate wallet signTx to typed routes ([335fe30](https://github.com/BitGo/BitGoJS/commit/335fe3060ac3cc21f696fc99d7b4404b6f807ef5))
+
+
+
+
+
+# [15.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.4.0...@bitgo/express@15.5.0) (2025-10-09)
+
+
+### Features
+
+* **express:** migrate coinSignTx to typed routes ([c2638e0](https://github.com/BitGo/BitGoJS/commit/c2638e08308283f9a32b4efe78520472276d991f))
+
+
+
+
+
+# [15.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.3.0...@bitgo/express@15.4.0) (2025-10-08)
+
+
+### Features
+
+* **express:** migrate createAddress to typed routes ([2724ac2](https://github.com/BitGo/BitGoJS/commit/2724ac2e82ac8b8713aacf1939f03e98fd04b3f0))
+* **express:** migrate recover token to typed routes ([4eac889](https://github.com/BitGo/BitGoJS/commit/4eac889de60671b3fc0ae023218b3e19f490143c))
+* **express:** migrated ofcSignPayload to typed routes ([cbf3084](https://github.com/BitGo/BitGoJS/commit/cbf3084f1d48b70c2bf953e06fdc4103bbcdae3e))
+
+
+
+
+
+# [15.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.2.0...@bitgo/express@15.3.0) (2025-10-02)
+
+### Bug Fixes
+
+- resolve webpack-dev-server to v5.2.1 ([11c7987](https://github.com/BitGo/BitGoJS/commit/11c7987255794eabc05e63cc80cec1dd020d9424))
+
+### Features
+
+- **express:** migrate consolidateUnspents to typed routes ([af8f7d4](https://github.com/BitGo/BitGoJS/commit/af8f7d43058b6ab01efb6e32087dd5a967b15ff5))
+- **express:** migrate fanoutunspents to typed routes ([05b3b85](https://github.com/BitGo/BitGoJS/commit/05b3b85c714a2caa5ca3eb63495e3b0a5d347ea8))
+
 # [15.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.1.0...@bitgo/express@15.2.0) (2025-09-29)
 
 ### Bug Fixes

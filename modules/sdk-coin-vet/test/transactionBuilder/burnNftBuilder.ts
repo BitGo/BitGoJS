@@ -33,13 +33,27 @@ describe('Vet Burn NFT Transaction', () => {
       should.equal(tx.expiration, 64);
       should.equal(tx.type, TransactionType.StakingWithdraw);
 
-      // Verify the transaction data contains the correct method ID
+      // Verify the transaction data contains the correct method ID and tokenId
       tx.clauses[0].data.should.startWith(BURN_NFT_METHOD_ID);
 
       // Verify the transaction has the correct structure
       tx.clauses.length.should.equal(1);
-      should.equal(tx.clauses[0].to, STARGATE_NFT_ADDRESS_TESTNET);
-      should.equal(tx.clauses[0].value, '0x0');
+      should.exist(tx.clauses[0]);
+      should.exist(tx.clauses[0].to);
+      tx.clauses[0]?.to?.should.equal(STARGATE_NFT_ADDRESS_TESTNET);
+      should.exist(tx.clauses[0].value);
+      tx.clauses[0].value.should.equal('0x0');
+
+      tx.inputs.length.should.equal(1);
+      tx.outputs.length.should.equal(1);
+
+      should.equal(tx.inputs[0].address, testData.addresses.validAddresses[0]);
+      should.equal(tx.inputs[0].value, '0');
+      should.equal(tx.inputs[0].coin, 'tvet');
+
+      should.equal(tx.outputs[0].address, STARGATE_NFT_ADDRESS_TESTNET);
+      should.equal(tx.outputs[0].value, '0');
+      should.equal(tx.outputs[0].coin, 'tvet');
     });
 
     it('should build a burn NFT transaction with custom contract address', async function () {
@@ -59,7 +73,9 @@ describe('Vet Burn NFT Transaction', () => {
       const tx = (await txBuilder.build()) as BurnNftTransaction;
 
       should.equal(tx.contract, customContractAddress);
-      should.equal(tx.clauses[0].to, customContractAddress);
+      should.exist(tx.clauses[0]);
+      should.exist(tx.clauses[0].to);
+      tx.clauses[0]?.to?.should.equal(customContractAddress);
     });
 
     it('should deserialize and reserialize a signed burn NFT transaction', async function () {

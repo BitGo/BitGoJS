@@ -2,13 +2,13 @@ import { Transaction } from './transaction';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import {
+  AccountAddress,
   EntryFunctionABI,
   EntryFunctionArgumentTypes,
   SimpleEntryFunctionArgumentTypes,
   InputGenerateTransactionPayloadData,
   TransactionPayload,
   TransactionPayloadEntryFunction,
-  AccountAddress,
   TypeTagAddress,
   TypeTagBool,
   TypeTagU8,
@@ -136,89 +136,119 @@ export class CustomTransaction extends Transaction {
    * Convert argument based on ABI type information
    */
   private convertArgumentByABI(arg: any, paramType: any): any {
-    // Helper function to convert bytes to hex string
-    const bytesToHex = (bytes: number[]): string => {
-      return '0x' + bytes.map((b) => b.toString(16).padStart(2, '0')).join('');
-    };
-
-    // Helper function to try converting a hex string to an AccountAddress
-    const tryToAddress = (hexStr: string): any => {
-      try {
-        return AccountAddress.fromString(hexStr);
-      } catch {
-        return hexStr;
-      }
-    };
-
     // Handle primitive values (string, number, boolean)
     if (typeof arg === 'string' || typeof arg === 'number' || typeof arg === 'boolean') {
-      // Address conversion for hex strings
-      if (paramType instanceof TypeTagAddress && typeof arg === 'string' && arg.startsWith('0x')) {
-        return tryToAddress(arg);
-      }
-
-      // Type conversions based on parameter type
-      if (paramType instanceof TypeTagBool) return Boolean(arg);
-      if (paramType instanceof TypeTagU8 || paramType instanceof TypeTagU16 || paramType instanceof TypeTagU32)
-        return Number(arg);
-      if (paramType instanceof TypeTagU64 || paramType instanceof TypeTagU128 || paramType instanceof TypeTagU256)
-        return String(arg);
-
-      return arg;
+      return this.convertPrimitiveArgument(arg, paramType);
     }
 
     // Handle BCS-encoded data with 'data' property
     if (arg && typeof arg === 'object' && 'data' in arg && arg.data) {
-      const bytes = Array.from(arg.data) as number[];
-      const hexString = bytesToHex(bytes);
-
-      return paramType instanceof TypeTagAddress ? tryToAddress(hexString) : hexString;
+      return this.convertBcsDataArgument(arg, paramType);
     }
 
     // Handle nested BCS structures with 'value' property
     if (arg && typeof arg === 'object' && 'value' in arg && arg.value) {
-      // Check if inner value is a Uint8Array (common for U64 arguments)
-      if (arg.value.value && arg.value.value instanceof Uint8Array) {
-        const bytes = Array.from(arg.value.value) as number[];
-        if (this.isNumericType(paramType)) {
-          return this.convertNumericArgument(bytes, paramType);
-        }
-        // For non-numeric types, convert to hex string
-        return bytesToHex(bytes);
-      }
-
-      // Simple value wrapper
-      if (!('value' in arg.value) || typeof arg.value.value !== 'object') {
-        return this.convertArgumentByABI(arg.value, paramType);
-      }
-
-      // Double nested structure with numeric keys
-      const bytesObj = arg.value.value;
-      const keys = Object.keys(bytesObj)
-        .filter((k) => !isNaN(parseInt(k, 10)))
-        .sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
-
-      if (keys.length === 0) return arg;
-
-      const bytes = keys.map((k) => bytesObj[k]);
-      let extractedValue: any;
-
-      // Convert bytes based on parameter type using unified approach
-      if (this.isNumericType(paramType)) {
-        extractedValue = this.convertNumericArgument(bytes, paramType);
-      } else if (paramType instanceof TypeTagAddress) {
-        extractedValue = bytesToHex(bytes);
-      } else if (paramType instanceof TypeTagBool) {
-        extractedValue = bytes[0] === 1;
-      } else {
-        extractedValue = bytesToHex(bytes);
-      }
-
-      return this.convertArgumentByABI(extractedValue, paramType);
+      return this.convertNestedBcsArgument(arg, paramType);
     }
 
     // For anything else, return as-is
     return arg;
+  }
+
+  /**
+   * Convert primitive argument values based on parameter type
+   */
+  private convertPrimitiveArgument(
+    arg: string | number | boolean,
+    paramType: any
+  ): string | number | boolean | AccountAddress {
+    // Address conversion for hex strings
+    if (paramType instanceof TypeTagAddress && typeof arg === 'string' && arg.startsWith('0x')) {
+      return utils.tryParseAccountAddress(arg);
+    }
+
+    // Type conversions based on parameter type
+    if (paramType instanceof TypeTagBool) return Boolean(arg);
+
+    // Use unified numeric type handling
+    if (this.isNumericType(paramType)) {
+      return this.convertPrimitiveNumericArgument(arg);
+    }
+
+    return arg;
+  }
+
+  /**
+   * Convert primitive numeric arguments to string
+   * - Big numbers break JavaScript (precision loss)
+   * - String safer for large U64/U128/U256 values
+   * - Aptos SDK converts string to correct type automatically
+   */
+  private convertPrimitiveNumericArgument(arg: string | number | boolean): string {
+    // Always string - safer for big numbers
+    return String(arg);
+  }
+
+  /**
+   * Convert BCS data argument with 'data' property
+   */
+  private convertBcsDataArgument(arg: any, paramType: any): string | AccountAddress {
+    const bytes = Array.from(arg.data) as number[];
+    const hexString = utils.bytesToHex(bytes);
+
+    return paramType instanceof TypeTagAddress ? utils.tryParseAccountAddress(hexString) : hexString;
+  }
+
+  /**
+   * Convert nested BCS argument with 'value' property
+   */
+  private convertNestedBcsArgument(arg: any, paramType: any): any {
+    // Check if inner value is a Uint8Array (common for U64 arguments)
+    if (arg.value.value && arg.value.value instanceof Uint8Array) {
+      const bytes = Array.from(arg.value.value) as number[];
+      if (this.isNumericType(paramType)) {
+        return this.convertNumericArgument(bytes, paramType);
+      }
+      // For non-numeric types, convert to hex string
+      return utils.bytesToHex(bytes);
+    }
+
+    // Simple value wrapper - fix the bug in original implementation
+    if (typeof arg.value !== 'object' || !('value' in arg.value)) {
+      return this.convertArgumentByABI(arg.value, paramType);
+    }
+
+    // Double nested structure with numeric keys
+    const bytes = this.extractBytesFromBcsObject(arg.value.value);
+    if (bytes.length === 0) return arg;
+
+    let extractedValue: any;
+
+    // Convert bytes based on parameter type using unified approach
+    if (this.isNumericType(paramType)) {
+      extractedValue = this.convertNumericArgument(bytes, paramType);
+    } else if (paramType instanceof TypeTagAddress) {
+      extractedValue = utils.bytesToHex(bytes);
+    } else if (paramType instanceof TypeTagBool) {
+      extractedValue = bytes[0] === 1;
+    } else {
+      extractedValue = utils.bytesToHex(bytes);
+    }
+
+    return this.convertArgumentByABI(extractedValue, paramType);
+  }
+
+  /**
+   * Extract bytes from BCS object with numeric keys
+   */
+  private extractBytesFromBcsObject(bcsObject: any): number[] {
+    const keys = Object.keys(bcsObject)
+      .filter((k) => !isNaN(parseInt(k, 10)))
+      .sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
+
+    if (keys.length === 0) return [];
+
+    return keys.map((k) => bcsObject[k]);
   }
 
   /**
@@ -282,24 +312,27 @@ export class CustomTransaction extends Transaction {
   }
 
   /**
-   * Convert numeric argument using consistent little-endian byte handling
+   * Convert byte arrays to string numbers
+   * - Small types (U8/U16/U32): 1-4 bytes, parse manually
+   * - Large types (U64/U128/U256): 8+ bytes, use existing utility
+   * - Both return string for consistency
    */
-  private convertNumericArgument(bytes: number[], paramType: any): any {
+  private convertNumericArgument(bytes: number[], paramType: any): string {
     if (paramType instanceof TypeTagU8 || paramType instanceof TypeTagU16 || paramType instanceof TypeTagU32) {
-      // Small integers: use Number for compatibility
+      // Small types: parse bytes manually (1-4 bytes)
       let result = 0;
       for (let i = bytes.length - 1; i >= 0; i--) {
         result = result * 256 + bytes[i];
       }
-      return result;
+      return result.toString();
     }
 
     if (paramType instanceof TypeTagU64 || paramType instanceof TypeTagU128 || paramType instanceof TypeTagU256) {
-      // Large integers: reuse the existing utility method
+      // Large types: use existing method (needs 8+ bytes)
       return utils.getAmountFromPayloadArgs(new Uint8Array(bytes));
     }
 
-    // Fallback for unexpected numeric types
-    return '0x' + bytes.map((b) => b.toString(16).padStart(2, '0')).join('');
+    // Unknown type: convert to hex
+    return utils.bytesToHex(bytes);
   }
 }

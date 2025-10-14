@@ -1,5 +1,5 @@
 import { tvetToken, vetToken } from '../account';
-import { UnderlyingAsset } from '../base';
+import { UnderlyingAsset, CoinFeature } from '../base';
 import { VET_TOKEN_FEATURES } from '../coinFeatures';
 
 export const vetTokens = [
@@ -19,6 +19,6 @@ export const vetTokens = [
     18,
     '0x0000000000000000000000000000456e65726779',
     UnderlyingAsset['tvet:vtho'],
-    VET_TOKEN_FEATURES
+    [...VET_TOKEN_FEATURES, CoinFeature.REBASE_TOKEN]
   ),
 ];

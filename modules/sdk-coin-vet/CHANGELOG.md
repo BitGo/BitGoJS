@@ -3,6 +3,36 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.6.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.6.3...@bitgo/sdk-coin-vet@2.6.4) (2025-10-09)
+
+
+### Bug Fixes
+
+* load inputs for unstake txns ([a1413f9](https://github.com/BitGo/BitGoJS/commit/a1413f9fc88d2f7a7f91f8a2b565a5782b3a8200))
+* run check-fmt on code files only ([9745196](https://github.com/BitGo/BitGoJS/commit/9745196b02b9678c740d290a4638ceb153a8fd75))
+
+
+
+
+
+## [2.6.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.6.2...@bitgo/sdk-coin-vet@2.6.3) (2025-10-08)
+
+
+### Bug Fixes
+
+* add explicit 'files' in package json ([3b00373](https://github.com/BitGo/BitGoJS/commit/3b0037396f6ac16bb9380bd85bf37f2b133068f4))
+
+
+
+
+
+## [2.6.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.6.1...@bitgo/sdk-coin-vet@2.6.2) (2025-10-02)
+
+### Bug Fixes
+
+- invalid id error for vechain staking txns ([0493661](https://github.com/BitGo/BitGoJS/commit/0493661e928eb24bbfcd6d219fb6396a7f63a26c))
+- remove abi validation for vechain ([5b27927](https://github.com/BitGo/BitGoJS/commit/5b2792727e1f064453a0d1754e4e90227b40e0b5))
+
 ## [2.6.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.6.0...@bitgo/sdk-coin-vet@2.6.1) (2025-09-29)
 
 ### Bug Fixes

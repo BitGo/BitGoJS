@@ -39,6 +39,7 @@ export enum CoinFamily {
   BSV = 'bsv',
   BTC = 'btc',
   BTG = 'btg',
+  CANTON = 'canton',
   CELO = 'celo',
   COREDAO = 'coredao',
   COREUM = 'coreum',
@@ -510,6 +511,7 @@ export enum UnderlyingAsset {
   BSV = 'bsv',
   BTC = 'btc',
   BTG = 'btg',
+  CANTON = 'canton',
   DASH = 'dash',
   DOT = 'dot',
   CELO = 'celo', // Celo main coin
@@ -1040,6 +1042,7 @@ export enum UnderlyingAsset {
   FMF = 'fmf',
   FOLD = 'fold',
   FOR = 'for',
+  'sol:ford' = 'sol:ford',
   FOREX = 'forex',
   FORT = 'fort',
   FORTH = 'forth',
@@ -1095,6 +1098,7 @@ export enum UnderlyingAsset {
   GIV = 'giv',
   GLDX = 'gldx',
   GLM = 'glm',
+  'sol:glxy' = 'sol:glxy',
   GMT = 'gmt',
   'sol:gmt' = 'sol:gmt',
   GNO = 'gno',
@@ -1660,6 +1664,7 @@ export enum UnderlyingAsset {
   SRNT = 'srnt',
   SRM = 'srm',
   'sol:srm' = 'sol:srm',
+  'sol:pipe' = 'sol:pipe',
   SSV = 'ssv',
   STARS = 'stars',
   STATE = 'state',
@@ -2135,6 +2140,11 @@ export enum UnderlyingAsset {
   'eth:eden' = 'eth:eden',
   'eth:xeden' = 'eth:xeden',
   'eth:linea' = 'eth:linea',
+  'eth:ff' = 'eth:ff',
+  'eth:mavia' = 'eth:mavia',
+  'eth:lm' = 'eth:lm',
+  'eth:kub' = 'eth:kub',
+  'eth:fidd' = 'eth:fidd',
 
   // Ondo Tokenized Assets
   'eth:qqqon' = 'qqqon',
@@ -2245,8 +2255,10 @@ export enum UnderlyingAsset {
   'eth:figon' = 'eth:figon',
   'eth:iemgon' = 'eth:iemgon',
   'eth:sbeton' = 'eth:sbeton',
-
   'eth:usdo' = 'eth:usdo',
+  'eth:align' = 'eth:align',
+  'eth:xan' = 'eth:xan',
+
   'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ' = 'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ',
   'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M' = 'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M',
   'xlm:SLT-GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP' = 'xlm:SLT-GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP',
@@ -2517,6 +2529,7 @@ export enum UnderlyingAsset {
   'polygon:xusd' = 'polygon:xusd',
   'polygon:txusd' = 'polygon:txusd',
   'polygon:zig' = 'polygon:zig',
+  'polygon:brl1' = 'polygon:brl1',
   // Polygon NFTs
   // generic NFTs
   'erc721:polygontoken' = 'erc721:polygontoken',
@@ -2675,6 +2688,9 @@ export enum UnderlyingAsset {
   'bsc:m' = 'bsc:m',
   'bsc:cashplus' = 'bsc:cashplus',
   'bsc:aster' = 'bsc:aster',
+  'bsc:pln' = 'bsc:pln',
+  'bsc:ff' = 'bsc:ff',
+  'bsc:c98' = 'bsc:c98',
 
   // BSC NFTs
   // generic NFTs
@@ -2754,6 +2770,9 @@ export enum UnderlyingAsset {
   'arbeth:benji' = 'arbeth:benji',
   'arbeth:dolo' = 'arbeth:dolo',
   'arbeth:bull' = 'arbeth:bull',
+  'arbeth:rdnt' = 'arbeth:rdnt',
+  'arbeth:pendle' = 'arbeth:pendle',
+  'arbeth:gmx' = 'arbeth:gmx',
 
   // BaseETH mainnet tokens
   'baseeth:aero' = 'baseeth:aero',
@@ -2765,6 +2784,16 @@ export enum UnderlyingAsset {
   'baseeth:usde' = 'baseeth:usde',
   'baseeth:trust' = 'baseeth:trust',
   'baseeth:flk' = 'baseeth:flk',
+
+  'baseeth:spec' = 'baseeth:spec',
+  'baseeth:tig' = 'baseeth:tig',
+  'baseeth:virtual' = 'baseeth:virtual',
+  'baseeth:zora' = 'baseeth:zora',
+  'baseeth:toshi' = 'baseeth:toshi',
+  'baseeth:creator' = 'baseeth:creator',
+  'baseeth:avnt' = 'baseeth:avnt',
+  'baseeth:mira' = 'baseeth:mira',
+  'baseeth:towns' = 'baseeth:towns',
 
   // BaseETH testnet tokens
   'tbaseeth:usdc' = 'tbaseeth:usdc',
@@ -2814,6 +2843,7 @@ export enum UnderlyingAsset {
   'opeth:wtgxx' = 'opeth:wtgxx',
   'opeth:lngvx' = 'opeth:lngvx',
   'opeth:eqtyx' = 'opeth:eqtyx',
+  'opeth:velo' = 'opeth:velo',
 
   // Optimism testnet tokens
   'topeth:terc18dp' = 'topeth:terc18dp',
@@ -2849,10 +2879,6 @@ export enum UnderlyingAsset {
   'tsoneium:test721' = 'tsoneium:test721',
   'tsoneium:test1155' = 'tsoneium:test1155',
 
-  // Lido ETH NFTs
-  'erc721:unsteth' = 'erc721:unsteth',
-  'terc721:unsteth' = 'terc721:unsteth',
-
   // coredao mainnet tokens
   'coredao:stcore' = 'coredao:stcore',
 
@@ -2873,6 +2899,7 @@ export enum UnderlyingAsset {
 
   // Flr testnet tokens
   'tflr:wflr' = 'tflr:wflr',
+  'tflr:twc2flr' = 'tflr:twc2flr',
 
   ERC721 = 'erc721',
   ERC1155 = 'erc1155',
@@ -3034,6 +3061,10 @@ export enum UnderlyingAsset {
   'sol:rekt' = 'sol:rekt',
   'sol:xyo' = 'sol:xyo',
   'sol:zig' = 'sol:zig',
+  'sol:xsgd' = 'sol:xsgd',
+  'sol:straitxusd' = 'sol:straitxusd',
+  'sol:usx' = 'sol:usx',
+
   'tsol:txsgd' = 'sol:txsgd',
   'tsol:txusd' = 'sol:txusd',
   // TRX tokens
@@ -3134,6 +3165,17 @@ export enum UnderlyingAsset {
 
   // Polymesh testnet tokens
   'tpolyx:nvbitgot' = 'tpolyx:nvbitgot',
+  'tpolyx:RAND176TM' = 'tpolyx:RAND176TM',
+  'tpolyx:WEBINRASSET3' = 'tpolyx:WEBINRASSET3',
+  'tpolyx:WEBINRASSET4' = 'tpolyx:WEBINRASSET4',
+  'tpolyx:WEBINRASSET5' = 'tpolyx:WEBINRASSET5',
+  'tpolyx:WEBINRASSET6' = 'tpolyx:WEBINRASSET6',
+  'tpolyx:WEBINRASSET7' = 'tpolyx:WEBINRASSET7',
+  'tpolyx:BULLRWA' = 'tpolyx:BULLRWA',
+  'tpolyx:0x4a002922d38b8a7f87484b9c65a7ca0c' = 'tpolyx:0x4a002922d38b8a7f87484b9c65a7ca0c',
+
+  // Polymesh mainnet tokens
+  'polyx:0xa0ce6bc4c60981e08eca6504656c99e6' = 'polyx:0xa0ce6bc4c60981e08eca6504656c99e6',
 
   // Hbar tokens
   'hbar:karate' = 'hbar:karate',
@@ -3152,6 +3194,8 @@ export enum UnderlyingAsset {
   // Nep141 tokens
   'near:usdc' = 'near:usdc',
   'near:usdt' = 'near:usdt',
+  'near:mpdao' = 'near:mpdao',
+  'near:stnear' = 'near:stnear',
 
   // Nep141 testnet tokens
   'tnear:tnep24dp' = 'tnear:tnep24dp',
@@ -3206,6 +3250,9 @@ export enum UnderlyingAsset {
 
   // ADA testnet tokens
   'tada:water' = 'tada:water',
+
+  // ADA mainnet tokens
+  'ada:min' = 'ada:min',
 
   // fiats
   AED = 'aed',
@@ -3279,6 +3326,7 @@ export enum BaseUnit {
   VET = 'wei',
   TCRONOS = 'basetcro',
   TASI = 'atestfet',
+  CANTON = 'canton',
 }
 
 export interface BaseCoinConstructorOptions {

@@ -175,8 +175,8 @@ export const DELEGATE_RESOURCE_CONTRACT = [
       value: {
         resource: 'ENERGY',
         balance: 1000000,
-        owner_address: '41d6cd6a2c0ff35a319e6abb5b9503ba0278679882',
-        receiver_address: '416ffedf93921506c3efdb510f7c4f256036c48a6a',
+        owner_address: '4173a5993cd182ae152adad8203163f780c65a8aa5',
+        receiver_address: '4173a5993cd182ae152adad8203163f780c65a8aa5',
       },
       type_url: 'type.googleapis.com/protocol.DelegateResourceContract',
     },
@@ -190,8 +190,8 @@ export const UNDELEGATE_RESOURCE_CONTRACT = [
       value: {
         resource: 'ENERGY',
         balance: 1000000,
-        owner_address: '41d6cd6a2c0ff35a319e6abb5b9503ba0278679882',
-        receiver_address: '416ffedf93921506c3efdb510f7c4f256036c48a6a',
+        owner_address: '4173a5993cd182ae152adad8203163f780c65a8aa5',
+        receiver_address: '4173a5993cd182ae152adad8203163f780c65a8aa5',
       },
       type_url: 'type.googleapis.com/protocol.UnDelegateResourceContract',
     },

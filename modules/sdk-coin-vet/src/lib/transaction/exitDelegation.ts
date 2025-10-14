@@ -7,6 +7,7 @@ import { EXIT_DELEGATION_METHOD_ID } from '../constants';
 import EthereumAbi from 'ethereumjs-abi';
 import { addHexPrefix } from 'ethereumjs-util';
 import utils from '../utils';
+import BigNumber from 'bignumber.js';
 
 export class ExitDelegationTransaction extends Transaction {
   private _tokenId: string;
@@ -45,6 +46,13 @@ export class ExitDelegationTransaction extends Transaction {
         to: this._contract,
         value: '0x0',
         data: this._transactionData || this.getExitDelegationData(),
+      },
+    ];
+
+    this._recipients = [
+      {
+        address: this._contract,
+        amount: '0',
       },
     ];
   }
@@ -115,11 +123,17 @@ export class ExitDelegationTransaction extends Transaction {
       if (this.transactionData.startsWith(EXIT_DELEGATION_METHOD_ID)) {
         this.tokenId = utils.decodeExitDelegationData(this.transactionData);
       }
+      this.recipients = body.clauses.map((clause) => ({
+        address: (clause.to || '0x0').toString().toLowerCase(),
+        amount: new BigNumber(clause.value || 0).toString(),
+      }));
 
       // Set sender address
       if (signedTx.signature && signedTx.origin) {
         this.sender = signedTx.origin.toString().toLowerCase();
       }
+
+      this.loadInputsAndOutputs();
 
       // Set signatures if present
       if (signedTx.signature) {

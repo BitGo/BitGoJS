@@ -105,10 +105,6 @@ export class Nep141Token extends Near {
       }
     }
 
-    if (params.verification?.consolidationToBaseAddress) {
-      await this.verifyConsolidationToBaseAddress(params, explainedTx);
-    }
-
     return true;
   }
 }

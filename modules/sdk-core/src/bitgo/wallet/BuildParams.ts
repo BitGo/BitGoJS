@@ -112,6 +112,8 @@ export const BuildParams = t.exact(
       emergency: t.unknown,
       // Solana custom instructions for transaction building
       solInstructions: t.unknown,
+      // Solana versioned transaction data for transaction building
+      solVersionedTransactionData: t.unknown,
       // Aptos custom transaction parameters for smart contract calls
       aptosCustomTransactionParams: t.unknown,
     }),

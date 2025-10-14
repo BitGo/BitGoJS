@@ -23,6 +23,27 @@ export const nep141Tokens = [
     UnderlyingAsset['near:usdt'],
     [...NEAR_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
+  nep141Token(
+    'c34f7765-e8b6-46a5-bf03-5e547d5ebac2',
+    'near:mpdao',
+    'Meta Pool',
+    6,
+    'mpdao-token.near',
+    '1250000000000000000000',
+    UnderlyingAsset['near:mpdao'],
+    NEAR_TOKEN_FEATURES
+  ),
+  nep141Token(
+    '04a288c1-8aee-4ff2-b59b-a3e13ce49c03',
+    'near:stnear',
+    'stNEAR',
+    24,
+    'meta-pool.near',
+    '1250000000000000000000',
+    UnderlyingAsset['near:stnear'],
+    NEAR_TOKEN_FEATURES
+  ),
+
   // testnet tokens
   tnep141Token(
     'de55cb4b-afaf-4ac0-b271-d7eba49eb8e9',

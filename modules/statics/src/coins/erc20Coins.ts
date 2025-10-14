@@ -19,6 +19,7 @@ import {
   TWETH_FEATURES,
   WETH_FEATURES,
   ZETA_EVM_FEATURES,
+  ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_MENA_FZE,
 } from '../coinFeatures';
 
 export const erc20Coins = [
@@ -992,7 +993,7 @@ export const erc20Coins = [
   erc20(
     '462e1878-68eb-4c2b-9346-cee992195cdc',
     'bnb',
-    'BNB Token',
+    'BNB Token (ETH Network)',
     18,
     '0xb8c77482e45f1f44de1745f52c74426c631bdd52',
     UnderlyingAsset.BNB
@@ -11569,7 +11570,8 @@ export const erc20Coins = [
     'Hyperwave HLP',
     6,
     '0x9fd7466f987fd4c45a5bbde22ed8aba5bc8d72d1',
-    UnderlyingAsset['eth:hwhlp']
+    UnderlyingAsset['eth:hwhlp'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'e732528b-2c63-4fd0-b15d-290f831a7e92',
@@ -11617,7 +11619,8 @@ export const erc20Coins = [
     'MultiBank Group',
     18,
     '0x45e02bc2875a2914c4f585bbf92a6f28bc07cb70',
-    UnderlyingAsset['eth:mbg']
+    UnderlyingAsset['eth:mbg'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'e2650199-e114-4abd-9086-46d77ee1ee0f',
@@ -11627,6 +11630,107 @@ export const erc20Coins = [
     '0xdd3b11ef34cd511a2da159034a05fcb94d806686',
     UnderlyingAsset['eth:rekt']
   ),
+  erc20(
+    '1f0e3b9e-2d3d-4f71-8f3e-2d1f6f2b3c0e',
+    'baseeth:spec',
+    'Spectral',
+    18,
+    '0x96419929d7949d6a801a6909c145c8eef6a40431',
+    UnderlyingAsset['baseeth:spec'],
+    [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.BULK_TRANSACTION]
+  ),
+
+  erc20(
+    '2f1e4b8e-3d4d-4f72-9f4e-3d2f7f3b4c1f',
+    'baseeth:tig',
+    'The Innovation Game',
+    18,
+    '0x0c03ce270b4826ec62e7dd007f0b716068639f7b',
+    UnderlyingAsset['baseeth:tig']
+  ),
+
+  erc20(
+    '3f2e5b9e-4d5d-4f73-af5e-4d3f8f4b5c2f',
+    'baseeth:virtual',
+    'Virtual Protocol',
+    18,
+    '0x0b3e328455c4059eeb9e3f84b5543f74e24e7e1b',
+    UnderlyingAsset['baseeth:virtual']
+  ),
+
+  erc20(
+    '4f3e6b0e-5d6d-4f74-bf6e-5d4f9f5b6c3f',
+    'baseeth:zora',
+    'Zora',
+    18,
+    '0x1111111111166b7fe7bd91427724b487980afc69',
+    UnderlyingAsset['baseeth:zora']
+  ),
+
+  erc20(
+    '5f4e7b1e-6d7d-4f75-8f7e-6d5faf6b7c4f',
+    'baseeth:toshi',
+    'Toshi',
+    18,
+    '0xac1bd2486aaf3b5c0fc3fd868558b082a531b2b4',
+    UnderlyingAsset['baseeth:toshi']
+  ),
+
+  erc20(
+    '6f5e8b2e-7d8d-4f76-8f8e-7d6fbf7b8c5f',
+    'baseeth:creator',
+    'CreatorDAO',
+    18,
+    '0x0fd122a924c4528a78a8141bddd38a0e5ba35fa5',
+    UnderlyingAsset['baseeth:creator']
+  ),
+
+  erc20(
+    '7f6e9b3e-8d9d-4f77-8f9e-8d7fcf8b9c6f',
+    'baseeth:avnt',
+    'Avantis',
+    18,
+    '0x696f9436b67233384889472cd7cd58a6fb5df4f1',
+    UnderlyingAsset['baseeth:avnt']
+  ),
+
+  erc20(
+    '8f7eab4e-9dad-4f78-8f0e-9d8fdf9bac7f',
+    'baseeth:mira',
+    'Mira Network',
+    18,
+    '0x7aafd31a321d3627b30a8e2171264b56852187fe',
+    UnderlyingAsset['baseeth:mira']
+  ),
+
+  erc20(
+    '9f8ebb5e-adb0-4f79-8f1e-ae9fef0bbd8f',
+    'baseeth:towns',
+    'Towns',
+    18,
+    '0x00000000a22c618fd6b4d7e9a335c4b96b189a38',
+    UnderlyingAsset['baseeth:towns']
+  ),
+
+  erc20(
+    'af9ecc6e-beb1-4f80-8f2e-bf0f0f1cce9f',
+    'eth:align',
+    'Aligned',
+    18,
+    '0x50614cc8e44f7814549c223aa31db9296e58057c',
+    UnderlyingAsset['eth:align']
+  ),
+
+  erc20(
+    'bf0edd7e-cfb2-4f81-8f3e-cf1f1f2ddfaf',
+    'eth:xan',
+    'Anoma',
+    18,
+    '0xcedbea37c8872c4171259cdfd5255cb8923cf8e7',
+    UnderlyingAsset['eth:xan'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_MENA_FZE, CoinFeature.BULK_TRANSACTION]
+  ),
+
   terc20(
     '0205f0d6-0647-47c9-ad8b-c48d048e54f3',
     'fixed',
@@ -13466,5 +13570,45 @@ export const erc20Coins = [
     18,
     '0x1789e0043623282d5dcc7f213d703c6d8bafbb04',
     UnderlyingAsset['eth:linea']
+  ),
+  erc20(
+    '2b2318f4-11f1-416a-a75c-d755cc8c997c',
+    'eth:ff',
+    'Falcon Finance',
+    18,
+    '0xfa1c09fc8b491b6a4d3ff53a10cad29381b3f949',
+    UnderlyingAsset['eth:ff']
+  ),
+  erc20(
+    'b4b9fd5d-3830-4651-abda-667b59c865ac',
+    'eth:mavia',
+    'Heroes of Mavia',
+    18,
+    '0x24fcfc492c1393274b6bcd568ac9e225bec93584',
+    UnderlyingAsset['eth:mavia']
+  ),
+  erc20(
+    'c4c0adf4-adcf-436a-bc40-33c151f283aa',
+    'eth:lm',
+    'LeisureMeta',
+    18,
+    '0xc064f4f215b6a1e4e7f39bd8530c4de0fc43ee9d',
+    UnderlyingAsset['eth:lm']
+  ),
+  erc20(
+    '3ded7589-7211-484a-8a76-1eace1d7dcb6',
+    'eth:kub',
+    'KUB',
+    18,
+    '0x0649cef6d11ed6f88535462e147304d3fe5ae14d',
+    UnderlyingAsset['eth:kub']
+  ),
+  erc20(
+    '379c0ab5-7729-456b-b0b6-db74c3bd6a03',
+    'eth:fidd',
+    'Fidelity Digital Dollar',
+    18,
+    '0x7c135549504245b5eae64fc0e99fa5ebabb8e35d',
+    UnderlyingAsset['eth:fidd']
   ),
 ];

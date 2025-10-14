@@ -62,7 +62,6 @@ import { handleLightningWithdraw } from './lightning/lightningWithdrawRoutes';
 import createExpressRouter from './typedRoutes';
 import { ExpressApiRouteRequest } from './typedRoutes/api';
 import { TypedRequestHandler, WrappedRequest, WrappedResponse } from '@api-ts/typed-express-router';
-import { isJsonString } from './utils';
 
 const { version } = require('bitgo/package.json');
 const pjson = require('../package.json');
@@ -284,7 +283,7 @@ function handleConsolidateUnspents(req: ExpressApiRouteRequest<'express.v1.walle
  * @deprecated
  * @param req
  */
-function handleFanOutUnspents(req: express.Request) {
+function handleFanOutUnspents(req: ExpressApiRouteRequest<'express.v1.wallet.fanoutunspents', 'put'>) {
   return req.bitgo
     .wallets()
     .get({ id: req.params.id })
@@ -496,10 +495,10 @@ export async function handleV2GenerateShareTSS(req: express.Request): Promise<an
   }
 }
 
-export async function handleV2SignTSSWalletTx(req: express.Request) {
+export async function handleV2SignTSSWalletTx(req: ExpressApiRouteRequest<'express.v2.wallet.signtxtss', 'post'>) {
   const bitgo = req.bitgo;
-  const coin = bitgo.coin(req.params.coin);
-  const wallet = await coin.wallets().get({ id: req.params.id });
+  const coin = bitgo.coin(req.decoded.coin);
+  const wallet = await coin.wallets().get({ id: req.decoded.id });
   try {
     return await wallet.signTransaction(createTSSSendParams(req, wallet));
   } catch (error) {
@@ -590,10 +589,10 @@ export async function handleV2OFCSignPayloadInExtSigningMode(
   }
 }
 
-export async function handleV2OFCSignPayload(req: express.Request): Promise<{ payload: string; signature: string }> {
-  const walletId = req.body.walletId;
-  const payload = req.body.payload;
-  const bodyWalletPassphrase = req.body.walletPassphrase;
+export async function handleV2OFCSignPayload(
+  req: ExpressApiRouteRequest<'express.ofc.signPayload', 'post'>
+): Promise<{ payload: string; signature: string }> {
+  const { walletId, payload, walletPassphrase: bodyWalletPassphrase } = req.decoded;
   const ofcCoinName = 'ofc';
 
   // If the externalSignerUrl is set, forward the request to the express server hosted on the externalSignerUrl
@@ -612,14 +611,6 @@ export async function handleV2OFCSignPayload(req: express.Request): Promise<{ pa
     return payloadWithSignature;
   }
 
-  if (!payload) {
-    throw new ApiResponseError('Missing required field: payload', 400);
-  }
-
-  if (!walletId) {
-    throw new ApiResponseError('Missing required field: walletId', 400);
-  }
-
   const bitgo = req.bitgo;
 
   // This is to set us up for multiple trading accounts per enterprise
@@ -631,7 +622,7 @@ export async function handleV2OFCSignPayload(req: express.Request): Promise<{ pa
 
   const walletPassphrase = bodyWalletPassphrase || getWalletPwFromEnv(wallet.id());
   const tradingAccount = wallet.toTradingAccount();
-  const stringifiedPayload = isJsonString(req.body.payload) ? req.body.payload : JSON.stringify(req.body.payload);
+  const stringifiedPayload = JSON.stringify(payload);
   const signature = await tradingAccount.signPayload({
     payload: stringifiedPayload,
     walletPassphrase,
@@ -660,11 +651,11 @@ export async function handleV2GenerateWallet(req: express.Request) {
  * handle new address creation
  * @param req
  */
-export async function handleV2CreateAddress(req: express.Request) {
+export async function handleV2CreateAddress(req: ExpressApiRouteRequest<'express.v2.wallet.createAddress', 'post'>) {
   const bitgo = req.bitgo;
-  const coin = bitgo.coin(req.params.coin);
-  const wallet = await coin.wallets().get({ id: req.params.id });
-  return wallet.createAddress(req.body);
+  const coin = bitgo.coin(req.decoded.coin);
+  const wallet = await coin.wallets().get({ id: req.decoded.id });
+  return wallet.createAddress(req.decoded);
 }
 
 /**
@@ -717,10 +708,10 @@ async function handleV2AcceptWalletShare(req: express.Request) {
 /**
  * handle wallet sign transaction
  */
-async function handleV2SignTxWallet(req: express.Request) {
+async function handleV2SignTxWallet(req: ExpressApiRouteRequest<'express.v2.wallet.signtx', 'post'>) {
   const bitgo = req.bitgo;
-  const coin = bitgo.coin(req.params.coin);
-  const wallet = await coin.wallets().get({ id: req.params.id });
+  const coin = bitgo.coin(req.decoded.coin);
+  const wallet = await coin.wallets().get({ id: req.decoded.id });
   try {
     return await wallet.signTransaction(createSendParams(req));
   } catch (error) {
@@ -733,11 +724,11 @@ async function handleV2SignTxWallet(req: express.Request) {
  * handle sign transaction
  * @param req
  */
-async function handleV2SignTx(req: express.Request) {
+async function handleV2SignTx(req: ExpressApiRouteRequest<'express.v2.coin.signtx', 'post'>) {
   const bitgo = req.bitgo;
-  const coin = bitgo.coin(req.params.coin);
+  const coin = bitgo.coin(req.decoded.coin);
   try {
-    return await coin.signTransaction(req.body);
+    return await coin.signTransaction(req.decoded);
   } catch (error) {
     console.log('error while signing the transaction ', error);
     throw error;
@@ -748,7 +739,7 @@ async function handleV2SignTx(req: express.Request) {
  * handle wallet recover token
  * @param req
  */
-async function handleV2RecoverToken(req: express.Request) {
+async function handleV2RecoverToken(req: ExpressApiRouteRequest<'express.v2.wallet.recovertoken', 'post'>) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.params.coin);
 
@@ -1603,7 +1594,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
     typedPromiseWrapper(handleConsolidateUnspents),
   ]);
 
-  app.put('/api/v1/wallet/:id/fanoutunspents', parseBody, prepareBitGo(config), promiseWrapper(handleFanOutUnspents));
+  router.put('express.v1.wallet.fanoutunspents', [prepareBitGo(config), typedPromiseWrapper(handleFanOutUnspents)]);
 
   // any other API call
   app.use('/api/v[1]/*', parseBody, prepareBitGo(config), promiseWrapper(handleREST));
@@ -1626,8 +1617,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
     promiseWrapper(handleKeychainChangePassword)
   );
 
-  // create address
-  app.post('/api/v2/:coin/wallet/:id/address', parseBody, prepareBitGo(config), promiseWrapper(handleV2CreateAddress));
+  router.post('express.v2.wallet.createAddress', [prepareBitGo(config), typedPromiseWrapper(handleV2CreateAddress)]);
 
   // share wallet
   app.post('/api/v2/:coin/wallet/:id/share', parseBody, prepareBitGo(config), promiseWrapper(handleV2ShareWallet));
@@ -1639,23 +1629,13 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   );
 
   // sign arbitrary payloads w/ trading account key
-  app.post(`/api/v2/ofc/signPayload`, parseBody, prepareBitGo(config), promiseWrapper(handleV2OFCSignPayload));
+  router.post('express.ofc.signPayload', [prepareBitGo(config), typedPromiseWrapper(handleV2OFCSignPayload)]);
 
   // sign transaction
-  app.post('/api/v2/:coin/signtx', parseBody, prepareBitGo(config), promiseWrapper(handleV2SignTx));
-  app.post('/api/v2/:coin/wallet/:id/signtx', parseBody, prepareBitGo(config), promiseWrapper(handleV2SignTxWallet));
-  app.post(
-    '/api/v2/:coin/wallet/:id/signtxtss',
-    parseBody,
-    prepareBitGo(config),
-    promiseWrapper(handleV2SignTSSWalletTx)
-  );
-  app.post(
-    '/api/v2/:coin/wallet/:id/recovertoken',
-    parseBody,
-    prepareBitGo(config),
-    promiseWrapper(handleV2RecoverToken)
-  );
+  router.post('express.v2.coin.signtx', [prepareBitGo(config), typedPromiseWrapper(handleV2SignTx)]);
+  router.post('express.v2.wallet.signtx', [prepareBitGo(config), typedPromiseWrapper(handleV2SignTxWallet)]);
+  router.post('express.v2.wallet.signtxtss', [prepareBitGo(config), typedPromiseWrapper(handleV2SignTSSWalletTx)]);
+  router.post('express.v2.wallet.recovertoken', [prepareBitGo(config), typedPromiseWrapper(handleV2RecoverToken)]);
 
   // send transaction
   app.post('/api/v2/:coin/wallet/:id/sendcoins', parseBody, prepareBitGo(config), promiseWrapper(handleV2SendOne));

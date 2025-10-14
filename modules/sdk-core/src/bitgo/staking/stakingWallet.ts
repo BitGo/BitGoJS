@@ -21,6 +21,7 @@ import {
   ClaimRewardsOptions,
   StakingTxRequestPrebuildTransactionResult,
   TronStakeOptions,
+  TaoStakeOptions,
 } from './iStakingWallet';
 import { BitGoBase } from '../bitgoBase';
 import { IWallet, PrebuildTransactionResult } from '../wallet';
@@ -58,7 +59,7 @@ export class StakingWallet implements IStakingWallet {
    * @param options - stake options
    * @return StakingRequest
    */
-  async stake(options: StakeOptions | TronStakeOptions): Promise<StakingRequest> {
+  async stake(options: StakeOptions | TronStakeOptions | TaoStakeOptions): Promise<StakingRequest> {
     return await this.createStakingRequest(options, 'STAKE');
   }
 
@@ -181,6 +182,10 @@ export class StakingWallet implements IStakingWallet {
     return (
       this.wallet.baseCoin.getFamily() === 'btc' && transaction.transactionType.toLowerCase() === 'undelegate_withdraw'
     );
+  }
+
+  private isStx() {
+    return this.wallet.baseCoin.getFamily() === 'stx';
   }
 
   private isTrxStaking(transaction: StakingTransaction) {
@@ -309,7 +314,8 @@ export class StakingWallet implements IStakingWallet {
       | EthUnstakeOptions
       | SwitchValidatorOptions
       | ClaimRewardsOptions
-      | TronStakeOptions,
+      | TronStakeOptions
+      | TaoStakeOptions,
     type: string
   ): Promise<StakingRequest> {
     return await this.bitgo
@@ -446,7 +452,8 @@ export class StakingWallet implements IStakingWallet {
     if (
       buildParams?.type &&
       (explainedTransaction as any).type !== undefined &&
-      TransactionType[buildParams.type] !== (explainedTransaction as any).type
+      ((this.isStx() && TransactionType.ContractCall !== (explainedTransaction as any).type) || // for STX the tx type should always ContractCall
+        (!this.isStx() && TransactionType[buildParams.type] !== (explainedTransaction as any).type))
     ) {
       mismatchErrors.push(
         `Transaction type mismatch. Expected: '${buildParams.type}', Got: '${(explainedTransaction as any).type}'`

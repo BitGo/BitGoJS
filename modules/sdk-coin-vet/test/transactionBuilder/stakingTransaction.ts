@@ -143,17 +143,6 @@ describe('VET Staking Transaction', function () {
       stakingTx.clauses[0].data.should.equal(expectedData);
     });
 
-    it('should throw error when stakingContractABI is missing', async function () {
-      const txBuilder = createBasicTxBuilder();
-      txBuilder.stakingContractAddress(stakingContractAddress);
-      txBuilder.amountToStake(amountToStake);
-      txBuilder.levelId(levelId);
-      // Not setting stakingContractABI
-
-      // Should fail when trying to build without ABI
-      await txBuilder.build().should.be.rejectedWith('Staking contract ABI is required');
-    });
-
     it('should build transaction with undefined sender but include it in inputs', async function () {
       const txBuilder = factory.getStakingBuilder();
       txBuilder.stakingContractAddress(stakingContractAddress);

@@ -5,9 +5,11 @@ import 'should';
 import * as fs from 'fs';
 import { Request } from 'express';
 import { BitGo, Coin, BaseCoin, Wallet, Wallets } from 'bitgo';
-
 import '../../lib/asserts';
 import { handleV2OFCSignPayload, handleV2OFCSignPayloadInExtSigningMode } from '../../../src/clientRoutes';
+import { ExpressApiRouteRequest } from '../../../src/typedRoutes/api';
+import { OfcSignPayloadResponse } from '../../../src/typedRoutes/api/v2/ofcSignPayload';
+import { decodeOrElse } from '@bitgo/sdk-core';
 
 describe('Sign an arbitrary payload with trading account key', function () {
   const coin = 'ofc';
@@ -53,9 +55,16 @@ describe('Sign an arbitrary payload with trading account key', function () {
         payload,
         walletId,
       },
+      decoded: {
+        walletId,
+        payload,
+      },
       query: {},
-    } as unknown as Request;
-    await handleV2OFCSignPayload(req).should.be.resolvedWith(expectedResponse);
+    } as unknown as ExpressApiRouteRequest<'express.ofc.signPayload', 'post'>;
+    const result = await handleV2OFCSignPayload(req).should.be.resolvedWith(expectedResponse);
+    decodeOrElse('OfcSignPayloadResponse200', OfcSignPayloadResponse[200], result, (_) => {
+      throw new Error(`Response did not match expected codec`);
+    });
   });
   it('should return a signed payload with type as json string', async function () {
     const expectedResponse = {
@@ -68,9 +77,40 @@ describe('Sign an arbitrary payload with trading account key', function () {
         payload: stringifiedPayload,
         walletId,
       },
+      decoded: {
+        walletId,
+        payload,
+      },
       query: {},
-    } as unknown as Request;
-    await handleV2OFCSignPayload(req).should.be.resolvedWith(expectedResponse);
+    } as unknown as ExpressApiRouteRequest<'express.ofc.signPayload', 'post'>;
+    const result = await handleV2OFCSignPayload(req).should.be.resolvedWith(expectedResponse);
+    decodeOrElse('OfcSignPayloadResponse200', OfcSignPayloadResponse[200], result, (_) => {
+      throw new Error(`Response did not match expected codec`);
+    });
+  });
+  it('should decode handler response with OfcSignPayloadResponse codec', async function () {
+    const expected = {
+      payload: JSON.stringify(payload),
+      signature,
+    };
+    const req = {
+      bitgo: bitGoStub,
+      body: {
+        walletId,
+        payload,
+      },
+      decoded: {
+        walletId,
+        payload,
+      },
+    } as unknown as ExpressApiRouteRequest<'express.ofc.signPayload', 'post'>;
+
+    const result = await handleV2OFCSignPayload(req);
+    decodeOrElse('OfcSignPayloadResponse200', OfcSignPayloadResponse[200], result, (_) => {
+      throw new Error(`Response did not match expected codec`);
+    });
+    result.should.eql(expected);
+    OfcSignPayloadResponse[200].is(result).should.be.true();
   });
 });
 

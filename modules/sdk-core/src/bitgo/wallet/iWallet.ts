@@ -167,7 +167,7 @@ export interface PrebuildTransactionOptions {
    * This comment applies to UTXO coins. It's asking which transaction format to use:
    * the legacy format defined by bitcoinjs-lib, or the 'psbt' format, which follows the BIP-174.
    */
-  txFormat?: 'legacy' | 'psbt';
+  txFormat?: 'legacy' | 'psbt' | 'psbt-lite';
   /**
    * Custom Solana instructions to include in the transaction.
    * Each instruction contains a program ID, accounts array, and data buffer.
@@ -181,6 +181,28 @@ export interface PrebuildTransactionOptions {
     }[];
     data: string;
   }[];
+  /**
+   * Solana versioned transaction data for building transactions with Address Lookup Tables.
+   * Contains compiled instructions, address lookup tables, static account keys, and message header.
+   */
+  solVersionedTransactionData?: {
+    versionedInstructions: {
+      programIdIndex: number;
+      accountKeyIndexes: number[];
+      data: string;
+    }[];
+    addressLookupTables: {
+      accountKey: string;
+      writableIndexes: number[];
+      readonlyIndexes: number[];
+    }[];
+    staticAccountKeys: string[];
+    messageHeader: {
+      numRequiredSignatures: number;
+      numReadonlySignedAccounts: number;
+      numReadonlyUnsignedAccounts: number;
+    };
+  };
   /**
    * Custom transaction parameters for Aptos entry function calls.
    * Used with the customTx intent type for Aptos smart contract interactions.
@@ -800,6 +822,30 @@ export interface ChangeFeeOptions {
   eip1559?: EIP1559;
 }
 
+/**
+ * Response from the token approval build endpoint
+ */
+export interface BuildTokenApprovalResponse {
+  txHex: string;
+  txInfo: {
+    amount: string;
+    contractAddress: string;
+    spender: string;
+  };
+  recipients: {
+    address: string;
+    amount: string;
+    data: string;
+  }[];
+  eip1559?: {
+    maxFeePerGas: string;
+    maxPriorityFeePerGas: string;
+  };
+  nextContractSequenceId: number;
+  coin: string;
+  walletId: string;
+}
+
 export interface CreatePolicyRuleOptions {
   id?: string;
   type?: string;
@@ -945,4 +991,8 @@ export interface IWallet {
   getChallengesForEcdsaSigning(): Promise<WalletEcdsaChallenges>;
   getNftBalances(): Promise<NftBalance[]>;
   approveErc20Token(walletPassphrase: string, tokenName: string): Promise<SubmitTransactionResponse>;
+  buildErc20TokenApproval(
+    tokenName: string,
+    walletPassphrase?: string
+  ): Promise<BuildTokenApprovalResponse | SubmitTransactionResponse>;
 }
