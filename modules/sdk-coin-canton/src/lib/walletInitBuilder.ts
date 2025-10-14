@@ -13,7 +13,6 @@ export class WalletInitBuilder extends BaseTransactionBuilder {
   private _transaction: WalletInitTransaction;
 
   private _publicKey: IPublicKey;
-  private _synchronizer: string;
   private _partyHint: string;
   private _localParticipantObservationOnly = false;
   private _otherConfirmingParticipantUids: string[] = [];
@@ -106,21 +105,6 @@ export class WalletInitBuilder extends BaseTransactionBuilder {
       keyData: key,
       keySpec: PUBLIC_KEY_SPEC,
     };
-    return this;
-  }
-
-  /**
-   * Sets the synchronizer ID for the wallet initialization.
-   *
-   * @param id - The synchronizer identifier (must be a non-empty string).
-   * @returns The current builder instance for chaining.
-   * @throws Error if the synchronizer ID is empty.
-   */
-  synchronizer(id: string): this {
-    if (!id.trim()) {
-      throw new Error('synchronizer must be a non-empty string');
-    }
-    this._synchronizer = id.trim();
     return this;
   }
 
@@ -220,7 +204,6 @@ export class WalletInitBuilder extends BaseTransactionBuilder {
     this.validate();
     return {
       publicKey: this._publicKey,
-      synchronizer: this._synchronizer,
       partyHint: this._partyHint,
       localParticipantObservationOnly: this._localParticipantObservationOnly,
       otherConfirmingParticipantUids: this._otherConfirmingParticipantUids,
@@ -243,7 +226,6 @@ export class WalletInitBuilder extends BaseTransactionBuilder {
    * @throws {Error} If any required field is missing or invalid.
    */
   private validate(): void {
-    if (!this._synchronizer) throw new Error('Missing synchronizer');
     if (!this._partyHint || this._partyHint.length > 5) throw new Error('Invalid partyHint');
     if (!this._publicKey || !this._publicKey.keyData || !this._publicKey.format || !this._publicKey.keySpec) {
       throw new Error('Invalid publicKey');

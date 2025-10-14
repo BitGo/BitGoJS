@@ -49,7 +49,6 @@ export interface IPublicKey {
 }
 
 export interface WalletInitRequest {
-  synchronizer: string;
   partyHint: string;
   publicKey: IPublicKey;
   localParticipantObservationOnly: boolean;
@@ -58,26 +57,10 @@ export interface WalletInitRequest {
   observingParticipantUids: string[];
 }
 
-interface PreApprovalCreateCommand {
-  templateId: string;
-  createArguments: {
-    receiver: string;
-    provider: string;
-    expectedDso: string;
-  };
-}
-
 export interface OneStepEnablementRequest {
   commandId: string;
-  commands: [
-    {
-      CreateCommand: PreApprovalCreateCommand;
-    }
-  ];
-  disclosedContracts: [];
-  synchronizerId: string;
+  receiverId: string;
   verboseHashing: boolean;
   actAs: string[];
   readAs: string[];
-  packageIdSelectionPreference: string[];
 }

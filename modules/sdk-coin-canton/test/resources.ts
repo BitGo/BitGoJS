@@ -34,19 +34,13 @@ export const PrepareSubmissionResponse = {
 };
 
 export const WalletInitRequestData = {
-  synchronizer: 'global-domain::1220be58c29e65de40bf273be1dc2b266d43a9a002ea5b18955aeef7aac881bb471a',
   partyHint: '1220b',
   publicKey: 'zs4J2IrVpfYNHN0bR7EHS0Fb3rETUyyu2L2QwxucPjg=',
 };
 
 export const OneStepEnablement = {
-  synchronizer: 'global-domain::1220be58c29e65de40bf273be1dc2b266d43a9a002ea5b18955aeef7aac881bb471a',
   partyId: 'ravi-test-party-1::12205b4e3537a95126d90604592344d8ad3c3ddccda4f79901954280ee19c576714d',
-  validatorPartyId: 'Bitgo-devnet-validator-1::1220a0a0f60b0e62b5d750c484b18c091dba23080c133d944614ba75a5858cba3045',
-  templateId: '#splice-wallet:Splice.Wallet.TransferPreapproval:TransferPreapprovalProposal',
-  expectedDsoId: 'DSO::1220be58c29e65de40bf273be1dc2b266d43a9a002ea5b18955aeef7aac881bb471a',
   commandId: '3935a06d-3b03-41be-99a5-95b2ecaabf7d',
-  synchronizerId: 'global-domain::1220be58c29e65de40bf273be1dc2b266d43a9a002ea5b18955aeef7aac881bb471a',
 };
 
 export const OneStepPreApprovalPrepareResponse = {
