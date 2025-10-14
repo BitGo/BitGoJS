@@ -27,7 +27,7 @@ export interface CantonPrepareCommandResponse {
   preparedTransaction?: string;
   preparedTransactionHash: string;
   hashingSchemeVersion: string;
-  hashingDetails?: string;
+  hashingDetails?: string | null;
 }
 
 export interface PreparedParty {
@@ -56,4 +56,28 @@ export interface WalletInitRequest {
   otherConfirmingParticipantUids: string[];
   confirmationThreshold: number;
   observingParticipantUids: string[];
+}
+
+interface PreApprovalCreateCommand {
+  templateId: string;
+  createArguments: {
+    receiver: string;
+    provider: string;
+    expectedDso: string;
+  };
+}
+
+export interface OneStepEnablementRequest {
+  commandId: string;
+  commands: [
+    {
+      CreateCommand: PreApprovalCreateCommand;
+    }
+  ];
+  disclosedContracts: [];
+  synchronizerId: string;
+  verboseHashing: boolean;
+  actAs: string[];
+  readAs: string[];
+  packageIdSelectionPreference: string[];
 }

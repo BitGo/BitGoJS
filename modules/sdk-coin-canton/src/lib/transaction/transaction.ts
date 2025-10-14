@@ -4,19 +4,33 @@ import { CantonPrepareCommandResponse, PreparedTxnParsedInfo, TxData } from '../
 import utils from '../utils';
 
 export class Transaction extends BaseTransaction {
-  private _transaction: CantonPrepareCommandResponse;
+  private _prepareCommand: CantonPrepareCommandResponse;
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
   }
 
-  get transaction(): CantonPrepareCommandResponse {
-    return this._transaction;
+  get prepareCommand(): CantonPrepareCommandResponse {
+    return this._prepareCommand;
   }
 
-  set transaction(transaction: CantonPrepareCommandResponse) {
-    this._transaction = transaction;
-    this._id = transaction.preparedTransactionHash;
+  set prepareCommand(transaction: CantonPrepareCommandResponse) {
+    this._prepareCommand = transaction;
+  }
+
+  set transactionType(transactionType: TransactionType) {
+    this._type = transactionType;
+  }
+
+  get id(): string {
+    if (!this._id) {
+      throw new InvalidTransactionError('transaction is is not set');
+    }
+    return this._id;
+  }
+
+  set id(id: string) {
+    this._id = id;
   }
 
   canSign(key: BaseKey): boolean {
@@ -24,14 +38,14 @@ export class Transaction extends BaseTransaction {
   }
 
   toBroadcastFormat(): string {
-    if (!this._transaction) {
+    if (!this._prepareCommand) {
       throw new InvalidTransactionError('Empty transaction data');
     }
-    return this._transaction.preparedTransactionHash;
+    return Buffer.from(JSON.stringify(this._prepareCommand)).toString('base64');
   }
 
   toJson(): TxData {
-    if (!this._transaction || !this._transaction.preparedTransaction) {
+    if (!this._prepareCommand || !this._prepareCommand.preparedTransaction) {
       throw new InvalidTransactionError('Empty transaction data');
     }
     const result: TxData = {
@@ -43,12 +57,28 @@ export class Transaction extends BaseTransaction {
     // TODO: extract other required data (utxo used, request time, execute before etc)
     let parsedInfo: PreparedTxnParsedInfo;
     try {
-      parsedInfo = utils.parseRawCantonTransactionData(this._transaction.preparedTransaction);
+      parsedInfo = utils.parseRawCantonTransactionData(this._prepareCommand.preparedTransaction);
     } catch (e) {
       throw new InvalidTransactionError(`Failed to parse transaction hash: ${e instanceof Error ? e.message : e}`);
     }
     result.sender = parsedInfo.sender;
     result.receiver = parsedInfo.receiver;
     return result;
+  }
+
+  getSignablePayload(): Buffer {
+    if (!this._prepareCommand) {
+      throw new InvalidTransactionError('Empty transaction data');
+    }
+    return Buffer.from(this._prepareCommand.preparedTransactionHash);
+  }
+
+  fromRawTransaction(rawTx: string): void {
+    try {
+      const decoded: CantonPrepareCommandResponse = JSON.parse(Buffer.from(rawTx, 'base64').toString('utf8'));
+      this.prepareCommand = decoded;
+    } catch (e) {
+      throw new InvalidTransactionError('Unable to parse raw transaction data');
+    }
   }
 }
