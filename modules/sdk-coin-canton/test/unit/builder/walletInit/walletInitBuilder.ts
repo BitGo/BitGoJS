@@ -12,13 +12,11 @@ import { GenerateTopologyResponse, InvalidGenerateTopologyResponse, WalletInitRe
 describe('Wallet Initialization Builder', () => {
   it('should get the wallet init request object', function () {
     const txBuilder = new WalletInitBuilder(coins.get('tcanton'));
-    const { publicKey, synchronizer, partyHint } = WalletInitRequestData;
+    const { publicKey, partyHint } = WalletInitRequestData;
     txBuilder.publicKey(publicKey);
-    txBuilder.synchronizer(synchronizer);
     txBuilder.partyHint(partyHint);
     const requestObj: WalletInitRequest = txBuilder.toRequestObject();
     should.exist(requestObj);
-    assert.equal(requestObj.synchronizer, synchronizer);
     assert.equal(requestObj.partyHint, partyHint);
     assert.equal(requestObj.localParticipantObservationOnly, false);
     assert.equal(requestObj.confirmationThreshold, 1);

@@ -18,31 +18,15 @@ describe('Wallet Pre-approval Enablement Builder', () => {
     const txBuilder = new OneStepPreApprovalBuilder(coins.get('tcanton'));
     const oneStepEnablementTx = new Transaction(coins.get('tcanton'));
     txBuilder.initBuilder(oneStepEnablementTx);
-    const { synchronizer, commandId, partyId, validatorPartyId, expectedDsoId, templateId, synchronizerId } =
-      OneStepEnablement;
-    txBuilder
-      .commandId(commandId)
-      .templateId(templateId)
-      .expectedDso(expectedDsoId)
-      .templateId(templateId)
-      .providerPartyId(validatorPartyId)
-      .receiverPartyId(partyId)
-      .synchronizerId(synchronizerId);
+    const { commandId, partyId } = OneStepEnablement;
+    txBuilder.commandId(commandId).receiverPartyId(partyId);
     const requestObj: OneStepEnablementRequest = txBuilder.toRequestObject();
     should.exist(requestObj);
-    assert.equal(requestObj.synchronizerId, synchronizer);
     assert.equal(requestObj.commandId, commandId);
-    assert.equal(requestObj.commands.length, 1);
-    const command = requestObj.commands[0];
-    should.exist(command);
-    const createCommand = command.CreateCommand;
-    should.exist(createCommand);
-    assert.equal(createCommand.templateId, templateId);
-    const createArguments = createCommand.createArguments;
-    should.exist(createArguments);
-    assert.equal(createArguments.expectedDso, expectedDsoId);
-    assert.equal(createArguments.provider, validatorPartyId);
-    assert.equal(createArguments.receiver, partyId);
+    assert.equal(requestObj.receiverId, partyId);
+    assert.equal(requestObj.actAs.length, 1);
+    const actAs = requestObj.actAs[0];
+    assert.equal(actAs, partyId);
   });
 
   it('should validate raw transaction', function () {
