@@ -22,4 +22,10 @@ export class Eip191MessageBuilder extends BaseMessageBuilder {
   async buildMessage(options: MessageOptions): Promise<IMessage> {
     return new EIP191Message(options);
   }
+
+  protected getWhitelistedMessageTemplates(): Record<string, string> {
+    // EIP-191 does not have whitelisted message templates
+    // This means all messages are allowed
+    return {};
+  }
 }

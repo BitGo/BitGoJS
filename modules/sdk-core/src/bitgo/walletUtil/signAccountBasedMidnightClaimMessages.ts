@@ -1,7 +1,7 @@
 import { Wallet, IWallet } from '../wallet';
-import { MessageStandardType } from '../utils';
 import { MidnightMessageProvider } from './midnightMessageProvider';
 import { IMessageProvider, MessageInfo } from './iMessageProvider';
+import { MessageStandardType } from '../../account-lib';
 
 type BulkAccountBasedMessageResponse = {
   txRequests: Record<string, unknown>[];
