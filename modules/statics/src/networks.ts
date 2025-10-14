@@ -1573,8 +1573,8 @@ class OgTestnet extends Testnet implements EthereumNetwork {
   family = CoinFamily.OG;
   explorerUrl = 'https://chainscan-galileo.0g.ai/tx/';
   accountExplorerUrl = 'https://chainscan-galileo.0g.ai/address/';
-  chainId = 16601;
-  nativeCoinOperationHashPrefix = '16601';
+  chainId = 16602;
+  nativeCoinOperationHashPrefix = '16602';
 }
 
 class Xdc extends Mainnet implements EthereumNetwork {
