@@ -1,11 +1,11 @@
-import {
+const {
   MessageType,
   UnknownFieldHandler,
   reflectionMergePartial,
   WireType,
   PbLong,
   typeofJsonValue,
-} from '@protobuf-ts/runtime';
+} = require('@protobuf-ts/runtime');
 
 class Timestamp$Type extends MessageType {
   constructor() {
@@ -142,4 +142,4 @@ class Timestamp$Type extends MessageType {
 /**
  * @generated MessageType for protobuf message google.protobuf.Timestamp
  */
-export const Timestamp = new Timestamp$Type();
+module.exports.Timestamp = new Timestamp$Type();

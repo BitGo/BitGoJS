@@ -1,6 +1,6 @@
-import { MessageType, UnknownFieldHandler, reflectionMergePartial, WireType } from '@protobuf-ts/runtime';
-import { Value } from '../node/value.js';
-import { GlobalKey } from '../node/globalKey.js';
+const { MessageType, UnknownFieldHandler, reflectionMergePartial, WireType } = require('@protobuf-ts/runtime');
+const { Value } = require('../node/value.js');
+const { GlobalKey } = require('../node/globalKey.js');
 
 class Metadata_GlobalKeyMappingEntry$Type extends MessageType {
   constructor() {
@@ -50,4 +50,4 @@ class Metadata_GlobalKeyMappingEntry$Type extends MessageType {
 /**
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.interactive.Metadata.GlobalKeyMappingEntry
  */
-export const Metadata_GlobalKeyMappingEntry = new Metadata_GlobalKeyMappingEntry$Type();
+module.exports.Metadata_GlobalKeyMappingEntry = new Metadata_GlobalKeyMappingEntry$Type();
