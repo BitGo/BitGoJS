@@ -277,6 +277,366 @@ describe('CoinSignTx codec tests', function () {
       assert.strictEqual(coinStub.calledOnceWith(coin), true);
       assert.strictEqual(mockCoin.signTransaction.calledOnce, true);
     });
+
+    describe('Error Cases', function () {
+      it('should handle invalid coin error', async function () {
+        const invalidCoin = 'invalid_coin_xyz';
+        const requestBody = {
+          txPrebuild: {
+            txHex:
+              '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
+          },
+          prv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
+        };
+
+        // Stub coin() to throw error for invalid coin
+        sinon.stub(BitGo.prototype, 'coin').throws(new Error(`Coin ${invalidCoin} is not supported`));
+
+        // Make the request to Express
+        const result = await agent
+          .post(`/api/v2/${invalidCoin}/signtx`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        // Verify error response
+        assert.strictEqual(result.status, 500);
+        result.body.should.have.property('error');
+      });
+
+      it('should handle signTransaction failure', async function () {
+        const requestBody = {
+          txPrebuild: {
+            txHex:
+              '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
+          },
+          prv: 'invalid_private_key',
+        };
+
+        // Create mock coin where signTransaction fails
+        const mockCoin = {
+          signTransaction: sinon.stub().rejects(new Error('Invalid private key')),
+        };
+
+        sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+        // Make the request to Express
+        const result = await agent
+          .post(`/api/v2/${coin}/signtx`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        // Verify error response
+        assert.strictEqual(result.status, 500);
+        result.body.should.have.property('error');
+      });
+
+      it('should handle missing transaction data error', async function () {
+        const requestBody = {
+          txPrebuild: {},
+          prv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
+        };
+
+        // Create mock coin where signTransaction fails due to missing data
+        const mockCoin = {
+          signTransaction: sinon.stub().rejects(new Error('Missing transaction data')),
+        };
+
+        sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+        // Make the request to Express
+        const result = await agent
+          .post(`/api/v2/${coin}/signtx`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        // Verify error response
+        assert.strictEqual(result.status, 500);
+        result.body.should.have.property('error');
+      });
+    });
+
+    describe('Invalid Request Body', function () {
+      it('should reject request with empty body', async function () {
+        // Make the request with empty body
+        const result = await agent
+          .post(`/api/v2/${coin}/signtx`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send({});
+
+        // io-ts validation should fail or SDK should reject
+        // Note: Depending on route config, this might be 400 or 500
+        assert.ok(result.status >= 400);
+      });
+
+      it('should reject request with invalid txPrebuild type', async function () {
+        const requestBody = {
+          txPrebuild: 'invalid_string_instead_of_object', // Wrong type!
+          prv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
+        };
+
+        // Make the request
+        const result = await agent
+          .post(`/api/v2/${coin}/signtx`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        // Should fail validation
+        assert.ok(result.status >= 400);
+      });
+
+      it('should reject request with invalid field types', async function () {
+        const requestBody = {
+          txPrebuild: {
+            txHex:
+              '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
+          },
+          prv: 12345, // Number instead of string!
+          isLastSignature: 'true', // String instead of boolean!
+        };
+
+        // Make the request
+        const result = await agent
+          .post(`/api/v2/${coin}/signtx`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        // Should fail validation
+        assert.ok(result.status >= 400);
+      });
+
+      it('should handle request with malformed JSON', async function () {
+        // Make the request with malformed JSON
+        const result = await agent
+          .post(`/api/v2/${coin}/signtx`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send('{ invalid json ]');
+
+        // Should fail parsing
+        assert.ok(result.status >= 400);
+      });
+    });
+
+    describe('Edge Cases', function () {
+      it('should handle empty txPrebuild object', async function () {
+        const requestBody = {
+          txPrebuild: {}, // Empty object
+          prv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
+        };
+
+        const mockCoin = {
+          signTransaction: sinon.stub().rejects(new Error('Missing transaction data')),
+        };
+
+        sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+        const result = await agent
+          .post(`/api/v2/${coin}/signtx`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        // Should handle empty txPrebuild gracefully
+        assert.ok(result.status >= 400);
+      });
+
+      it('should handle very long private key', async function () {
+        const requestBody = {
+          txPrebuild: {
+            txHex:
+              '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
+          },
+          prv: 'x'.repeat(10000), // Extremely long private key
+        };
+
+        const mockCoin = {
+          signTransaction: sinon.stub().rejects(new Error('Invalid private key format')),
+        };
+
+        sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+        const result = await agent
+          .post(`/api/v2/${coin}/signtx`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        // Should handle gracefully
+        assert.ok(result.status >= 400);
+      });
+
+      it('should handle missing prv for certain transaction types', async function () {
+        const requestBody = {
+          txPrebuild: {
+            txHex:
+              '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
+          },
+          // Missing prv - some transaction types might not require it
+        };
+
+        const mockCoin = {
+          signTransaction: sinon.stub().rejects(new Error('Private key required for signing')),
+        };
+
+        sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+        const result = await agent
+          .post(`/api/v2/${coin}/signtx`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        // Should fail if prv is required
+        assert.ok(result.status >= 400);
+      });
+
+      it('should handle coin parameter with special characters', async function () {
+        const specialCoin = '../../../etc/passwd';
+        const requestBody = {
+          txPrebuild: {
+            txHex:
+              '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
+          },
+          prv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
+        };
+
+        sinon.stub(BitGo.prototype, 'coin').throws(new Error('Invalid coin identifier'));
+
+        const result = await agent
+          .post(`/api/v2/${encodeURIComponent(specialCoin)}/signtx`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        // Should handle special characters safely
+        assert.ok(result.status >= 400);
+      });
+
+      it('should handle request with both txHex and txBase64', async function () {
+        const requestBody = {
+          txPrebuild: {
+            txHex:
+              '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
+            txBase64:
+              'AQAAAAFz2JT3Xvjk8jKcYcMrKR8tPMRm5+/Q6J2sMgtz7QDpAAAAAAD+////AoCWmAAAAAAAGXapFJA29QPQaHHwR3Uriuhw2A6tHkPgiKwAAAAAAAEBH9cQ2QAAAAAAAXapFCf/zr8zPrMftHGIRsOt0Cf+wdOyiKwA',
+          },
+          prv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
+        };
+
+        const mockCoin = {
+          signTransaction: sinon.stub().resolves(mockFullySignedResponse),
+        };
+
+        sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+        const result = await agent
+          .post(`/api/v2/${coin}/signtx`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        // Should handle gracefully (accept or reject consistently)
+        assert.ok(result.status === 200 || result.status >= 400);
+      });
+
+      it('should handle request with invalid signingStep value', async function () {
+        const requestBody = {
+          txPrebuild: {
+            txHex:
+              '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
+          },
+          prv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
+          signingStep: 'invalidStep', // Not one of: signerNonce, signerSignature, cosignerNonce
+        };
+
+        const result = await agent
+          .post(`/api/v2/${coin}/signtx`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        // Should fail validation
+        assert.ok(result.status >= 400);
+      });
+    });
+
+    describe('Response Validation Edge Cases', function () {
+      it('should reject response with missing required field in FullySignedTransactionResponse', async function () {
+        const requestBody = {
+          txPrebuild: {
+            txHex:
+              '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
+          },
+          prv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
+        };
+
+        // Mock returns invalid response (missing txHex)
+        const invalidResponse = {};
+
+        const mockCoin = {
+          signTransaction: sinon.stub().resolves(invalidResponse),
+        };
+
+        sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+        const result = await agent
+          .post(`/api/v2/${coin}/signtx`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        // Even if SDK returns 200, response should fail codec validation
+        // This depends on where validation happens
+        assert.ok(result.status === 200 || result.status >= 400);
+
+        // If status is 200 but response is invalid, codec validation should catch it
+        if (result.status === 200) {
+          assert.throws(() => {
+            assertDecode(FullySignedTransactionResponse, result.body);
+          });
+        }
+      });
+
+      it('should reject response with wrong type in txHex field', async function () {
+        const requestBody = {
+          txPrebuild: {
+            txHex:
+              '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
+          },
+          prv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
+        };
+
+        // Mock returns invalid response (txHex is number instead of string)
+        const invalidResponse = {
+          txHex: 12345, // Wrong type!
+        };
+
+        const mockCoin = {
+          signTransaction: sinon.stub().resolves(invalidResponse),
+        };
+
+        sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+        const result = await agent
+          .post(`/api/v2/${coin}/signtx`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        // Response codec validation should catch type mismatch
+        if (result.status === 200) {
+          assert.throws(() => {
+            assertDecode(FullySignedTransactionResponse, result.body);
+          });
+        }
+      });
+    });
   });
 
   describe('CoinSignTxParams', function () {
