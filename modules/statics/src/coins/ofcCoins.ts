@@ -36,6 +36,8 @@ import {
   ofcHashToken,
   tofcHashToken,
   tofcaptToken,
+  ofcTonToken,
+  tofcTonToken,
 } from '../ofc';
 import { UnderlyingAsset, CoinKind, CoinFeature } from '../base';
 
@@ -3501,5 +3503,13 @@ export const ofcCoins = [
     'Testnet YLDS Token',
     6,
     UnderlyingAsset['thash:ylds']
+  ),
+  ofcTonToken('c0e7396b-d21a-4b5a-b547-fdfe001cf3ba', 'ofcton:usdt', 'Ton USDT', 6, UnderlyingAsset['ton:usdt']),
+  tofcTonToken(
+    'e7d516c1-b975-4905-b5d0-8460f6ea7eb9',
+    'ofctton:ukwny-us',
+    'Test Unknown TokenY-US',
+    9,
+    UnderlyingAsset['tton:ukwny-us']
   ),
 ];

@@ -289,10 +289,12 @@ export class StakingWallet implements IStakingWallet {
     // default to verifying a transaction unless explicitly skipped
     // skipping the verification for btc undelegate because it is just single sig
     // TODO: SC-3183 (add trx staking verification)
+    // TODO: SC-3508 (add STX staking verification)
     const skipVerification =
       (signOptions.transactionVerificationOptions?.skipTransactionVerification ||
         this.isBtcUndelegate(transaction) ||
-        this.isTrxStaking(transaction)) ??
+        this.isTrxStaking(transaction) ||
+        this.isStx()) ??
       false;
     if (!isStakingTxRequestPrebuildResult(builtTx.result) && !skipVerification) {
       await this.validateBuiltStakingTransaction(builtTx.transaction, builtTx);
@@ -452,8 +454,7 @@ export class StakingWallet implements IStakingWallet {
     if (
       buildParams?.type &&
       (explainedTransaction as any).type !== undefined &&
-      ((this.isStx() && TransactionType.ContractCall !== (explainedTransaction as any).type) || // for STX the tx type should always ContractCall
-        (!this.isStx() && TransactionType[buildParams.type] !== (explainedTransaction as any).type))
+      TransactionType[buildParams.type] !== (explainedTransaction as any).type
     ) {
       mismatchErrors.push(
         `Transaction type mismatch. Expected: '${buildParams.type}', Got: '${(explainedTransaction as any).type}'`

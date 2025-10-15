@@ -1,4 +1,4 @@
-import { MessageType, UnknownFieldHandler, reflectionMergePartial, WireType } from '@protobuf-ts/runtime';
+const { MessageType, UnknownFieldHandler, reflectionMergePartial, WireType } = require('@protobuf-ts/runtime');
 
 class Metadata_SubmitterInfo$Type extends MessageType {
   constructor() {
@@ -59,4 +59,4 @@ class Metadata_SubmitterInfo$Type extends MessageType {
 /**
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.interactive.Metadata.SubmitterInfo
  */
-export const Metadata_SubmitterInfo = new Metadata_SubmitterInfo$Type();
+module.exports.Metadata_SubmitterInfo = new Metadata_SubmitterInfo$Type();

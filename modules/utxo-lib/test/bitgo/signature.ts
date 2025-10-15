@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { BIP32Interface } from 'bip32';
+import { BIP32Interface } from '@bitgo/secp256k1';
 
 import { script as bscript, classify, TxOutput } from '../../src';
 import { getKeyName } from '../../src/testutil';

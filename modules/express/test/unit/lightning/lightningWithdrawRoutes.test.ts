@@ -32,6 +32,7 @@ describe('Lightning Withdraw Routes', () => {
           },
         ],
         satsPerVbyte: '15',
+        numBlocks: 3,
         passphrase: 'password123',
       };
 
@@ -85,10 +86,11 @@ describe('Lightning Withdraw Routes', () => {
       // we decode the amountMsat string to bigint, it should be in bigint format when passed to payInvoice
       should(firstArg).have.property('recipients', decodedRecipients);
       should(firstArg).have.property('satsPerVbyte', BigInt(inputParams.satsPerVbyte));
+      should(firstArg).have.property('numBlocks', inputParams.numBlocks);
       should(firstArg).have.property('passphrase', inputParams.passphrase);
     });
 
-    it('should throw an error if the satsPerVbyte is missing in the request params', async () => {
+    it('should not throw an error if the satsPerVbyte and/or numBlocks is missing in the request params', async () => {
       const inputParams = {
         recipients: [
           {
@@ -99,15 +101,43 @@ describe('Lightning Withdraw Routes', () => {
         passphrase: 'password123',
       };
 
+      const expectedResponse: LightningOnchainWithdrawResponse = {
+        txRequestState: 'delivered',
+        txRequestId: '123',
+        withdrawStatus: {
+          status: 'delivered',
+          txid: 'tx123',
+        },
+      };
+
+      const onchainWithdrawStub = sinon.stub().resolves(expectedResponse);
+      const mockLightningWallet = {
+        withdrawOnchain: onchainWithdrawStub,
+      };
+
+      // Mock the module import
+      const proxyquire = require('proxyquire');
+      const lightningWithdrawRoutes = proxyquire('../../../src/lightning/lightningWithdrawRoutes', {
+        '@bitgo/abstract-lightning': {
+          getLightningWallet: () => mockLightningWallet,
+        },
+      });
+
+      const walletStub = {};
+      const coinStub = {
+        wallets: () => ({ get: sinon.stub().resolves(walletStub) }),
+      };
+      const stubBitgo = sinon.createStubInstance(BitGo as any, { coin: coinStub });
+
       const req = mockRequestObject({
         params: { id: 'testWalletId', coin },
         body: inputParams,
+        bitgo: stubBitgo,
       });
-      req.bitgo = bitgo;
 
-      await should(handleLightningWithdraw(req)).be.rejectedWith(
-        'Invalid request body for withdrawing on chain lightning balance'
-      );
+      const result = await lightningWithdrawRoutes.handleLightningWithdraw(req);
+
+      should(result).deepEqual(expectedResponse);
     });
 
     it('should throw an error if the recipients is missing in the request params', async () => {

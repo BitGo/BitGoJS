@@ -86,6 +86,7 @@
     "@bitgo/sdk-coin-zeta": "^3.5.5",
     "@bitgo/sdk-coin-zketh": "^2.4.5",
     "@bitgo/sdk-core": "^36.13.0",
+    "@bitgo/sdk-coin-canton": "^1.2.0",
     "@bitgo/sdk-lib-mpc": "^10.8.1",
     "@bitgo/statics": "^58.5.0",
     "bignumber.js": "^9.1.1",

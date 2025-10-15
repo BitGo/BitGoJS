@@ -1,6 +1,7 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import { bip322 } from '@bitgo/utxo-core';
-import { bip32, BIP32Interface, bitgo } from '@bitgo/utxo-lib';
+import { BIP32Interface, bip32 } from '@bitgo/secp256k1';
+import { bitgo } from '@bitgo/utxo-lib';
 import { Triple } from '@bitgo/sdk-core';
 import * as utxocore from '@bitgo/utxo-core';
 
@@ -302,7 +303,7 @@ export function explainPsbt<TNumber extends number | bigint, Tx extends bitgo.Ut
       utxocore.paygo.verifyPayGoAddressProof(
         psbt,
         payGoVerificationInfo.outputIndex,
-        utxolib.bip32.fromBase58(payGoVerificationInfo.verificationPubkey, utxolib.networks.bitcoin).publicKey
+        bip32.fromBase58(payGoVerificationInfo.verificationPubkey, utxolib.networks.bitcoin).publicKey
       );
     } catch (e) {
       if (strict) {

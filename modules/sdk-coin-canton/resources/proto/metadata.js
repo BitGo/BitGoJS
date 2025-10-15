@@ -1,7 +1,7 @@
-import { MessageType, UnknownFieldHandler, reflectionMergePartial, WireType } from '@protobuf-ts/runtime';
-import { Metadata_GlobalKeyMappingEntry } from './metadata/metadataGlobalKeyMappingEntry.js';
-import { Metadata_InputContract } from './metadata/metadataInputContract.js';
-import { Metadata_SubmitterInfo } from './metadata/metadataSubmitterInfo.js';
+const { MessageType, UnknownFieldHandler, reflectionMergePartial, WireType } = require('@protobuf-ts/runtime');
+const { Metadata_GlobalKeyMappingEntry } = require('./metadata/metadataGlobalKeyMappingEntry.js');
+const { Metadata_InputContract } = require('./metadata/metadataInputContract.js');
+const { Metadata_SubmitterInfo } = require('./metadata/metadataSubmitterInfo.js');
 
 class Metadata$Type extends MessageType {
   constructor() {
@@ -186,4 +186,4 @@ class Metadata$Type extends MessageType {
 /**
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.interactive.Metadata
  */
-export const Metadata = new Metadata$Type();
+module.exports.Metadata = new Metadata$Type();

@@ -1,7 +1,6 @@
 import { BaseKey, BaseTransaction, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { PreparedParty, WalletInitTxData } from '../iface';
-import { Buffer } from 'buffer';
 
 export class WalletInitTransaction extends BaseTransaction {
   private _preparedParty: PreparedParty;
