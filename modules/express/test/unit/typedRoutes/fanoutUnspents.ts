@@ -373,7 +373,7 @@ describe('FanoutUnspents codec tests', function () {
 
   describe('PutFanoutUnspents route definition', function () {
     it('should have the correct path', function () {
-      assert.strictEqual(PutFanoutUnspents.path, '/api/v1/wallet/:id/fanoutunspents');
+      assert.strictEqual(PutFanoutUnspents.path, '/api/v1/wallet/{id}/fanoutunspents');
     });
 
     it('should have the correct HTTP method', function () {

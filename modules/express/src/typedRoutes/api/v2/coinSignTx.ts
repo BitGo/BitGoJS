@@ -141,7 +141,7 @@ export const CoinSignTxResponse = {
  * @operationId express.v2.coin.signtx
  */
 export const PostCoinSignTx = httpRoute({
-  path: '/api/v2/:coin/signtx',
+  path: '/api/v2/{coin}/signtx',
   method: 'POST',
   request: httpRequest({
     params: CoinSignTxParams,
