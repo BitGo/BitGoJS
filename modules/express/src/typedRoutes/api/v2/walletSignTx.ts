@@ -155,10 +155,11 @@ export const WalletSignTxResponse = {
  * - sequenceId: Sequence ID for transactions
  * - isEvmBasedCrossChainRecovery: For EVM cross-chain recovery
  *
+ * @tag express
  * @operationId express.v2.wallet.signtx
  */
 export const PostWalletSignTx = httpRoute({
-  path: '/api/v2/:coin/wallet/:id/signtx',
+  path: '/api/v2/{coin}/wallet/{id}/signtx',
   method: 'POST',
   request: httpRequest({
     params: WalletSignTxParams,

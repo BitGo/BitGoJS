@@ -1,5 +1,5 @@
-import { MessageType, UnknownFieldHandler, reflectionMergePartial, WireType } from '@protobuf-ts/runtime';
-import { Node } from './node/node.js';
+const { MessageType, UnknownFieldHandler, reflectionMergePartial, WireType } = require('@protobuf-ts/runtime');
+const { Node } = require('./node/node.js');
 
 class DamlTransaction_Node$Type extends MessageType {
   constructor() {
@@ -68,4 +68,4 @@ class DamlTransaction_Node$Type extends MessageType {
 /**
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.interactive.DamlTransaction.Node
  */
-export const DamlTransaction_Node = new DamlTransaction_Node$Type();
+module.exports.DamlTransaction_Node = new DamlTransaction_Node$Type();

@@ -7,7 +7,7 @@ import * as taproot from '../taproot';
 
 import { isTriple, Triple, Tuple } from './types';
 
-import { ecc as eccLib } from '../noble_ecc';
+import { ecc as eccLib } from '@bitgo/secp256k1';
 import { getDepthFirstTaptree, getTweakedOutputKey } from '../taproot';
 
 export { scriptTypeForChain } from './wallet/chains';

@@ -165,7 +165,8 @@ export interface ILightningWallet {
    * On chain withdrawal
    * @param {LightningOnchainWithdrawParams} params - Withdraw parameters
    * @param {LightningOnchainRecipient[]} params.recipients - The recipients to pay
-   * @param {bigint} params.satsPerVbyte - Value for sats per virtual byte
+   * @param {bigint} [params.satsPerVbyte] - Optional value for sats per virtual byte. If not present, it will be estimated.
+   * @param {number} [params.numBlocks] - Target blocks for the transaction to be confirmed
    * @param {string} params.passphrase - The wallet passphrase
    * @param {string} [params.sequenceId] - Optional sequence ID for the respective withdraw transfer
    * @param {string} [params.comment] - Optional comment for the respective withdraw transfer
@@ -337,6 +338,7 @@ export class LightningWallet implements ILightningWallet {
         onchainRequest: {
           recipients: params.recipients,
           satsPerVbyte: params.satsPerVbyte,
+          numBlocks: params.numBlocks,
         },
         intentType: 'payment',
       },

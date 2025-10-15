@@ -4,6 +4,20 @@
   "description": "BitGo SDK coin library for Canton",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/src/index.js",
+      "types": "./dist/src/index.d.ts"
+    },
+    "./resources/proto/preparedTransaction": {
+      "require": "./dist/resources/proto/preparedTransaction.js",
+      "types": "./dist/resources/proto/preparedTransaction.d.ts"
+    },
+    "./resources/hash/hash": {
+      "require": "./dist/resources/hash/hash.js",
+      "types": "./dist/resources/hash/hash.d.ts"
+    }
+  },
   "scripts": {
     "build": "npm run prepare",
     "build-ts": "yarn tsc --build --incremental --verbose .",

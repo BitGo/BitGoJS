@@ -664,7 +664,7 @@ describe('WalletSignTx codec tests', function () {
 
   describe('PostWalletSignTx route definition', function () {
     it('should have the correct path', function () {
-      assert.strictEqual(PostWalletSignTx.path, '/api/v2/:coin/wallet/:id/signtx');
+      assert.strictEqual(PostWalletSignTx.path, '/api/v2/{coin}/wallet/{id}/signtx');
     });
 
     it('should have the correct HTTP method', function () {

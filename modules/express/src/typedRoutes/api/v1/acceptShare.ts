@@ -22,6 +22,7 @@ export const AcceptShareRequestBody = {
  * When a wallet is shared with a user, they need to accept the share to gain access
  * to the wallet according to the permissions granted by the sharing user.
  *
+ * @tag express
  * @operationId express.v1.wallet.acceptShare
  */
 export const PostAcceptShare = httpRoute({

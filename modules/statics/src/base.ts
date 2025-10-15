@@ -3172,6 +3172,7 @@ export enum UnderlyingAsset {
   'tpolyx:WEBINRASSET6' = 'tpolyx:WEBINRASSET6',
   'tpolyx:WEBINRASSET7' = 'tpolyx:WEBINRASSET7',
   'tpolyx:BULLRWA' = 'tpolyx:BULLRWA',
+  'tpolyx:0x4a002922d38b8a7f87484b9c65a7ca0c' = 'tpolyx:0x4a002922d38b8a7f87484b9c65a7ca0c',
 
   // Polymesh mainnet tokens
   'polyx:0xa0ce6bc4c60981e08eca6504656c99e6' = 'polyx:0xa0ce6bc4c60981e08eca6504656c99e6',

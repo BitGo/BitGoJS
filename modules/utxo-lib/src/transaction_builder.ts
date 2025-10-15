@@ -11,7 +11,7 @@ import { script as bscript } from './';
 import { opcodes as ops } from './';
 import { taproot } from './';
 import { TxOutput, Transaction } from './';
-import { ECPair, ecc as eccLib } from './noble_ecc';
+import { ECPair, ecc as eccLib } from '@bitgo/secp256k1';
 
 export interface Signer {
   privateKey?: Buffer;

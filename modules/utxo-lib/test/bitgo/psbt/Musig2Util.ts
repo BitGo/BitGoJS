@@ -32,8 +32,7 @@ import {
   toXOnlyPublicKey,
 } from '../../../src/bitgo/outputScripts';
 import { mockWalletUnspent, replayProtectionKeyPair } from '../../../src/testutil';
-import { bip32, networks } from '../../../src';
-import { BIP32Interface } from 'bip32';
+import { bip32, BIP32Interface, networks } from '../../../src';
 import { isPsbtInputFinalized } from '../../../src/bitgo/PsbtUtil';
 
 export const network = networks.bitcoin;
