@@ -3,6 +3,33 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.16.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.16.0...@bitgo/sdk-coin-ada@4.16.1) (2025-10-09)
+
+
+### Bug Fixes
+
+* run check-fmt on code files only ([9745196](https://github.com/BitGo/BitGoJS/commit/9745196b02b9678c740d290a4638ceb153a8fd75))
+
+
+
+
+
+# [4.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.15.2...@bitgo/sdk-coin-ada@4.16.0) (2025-10-08)
+
+
+### Bug Fixes
+
+* add explicit 'files' in package json ([3b00373](https://github.com/BitGo/BitGoJS/commit/3b0037396f6ac16bb9380bd85bf37f2b133068f4))
+
+
+### Features
+
+* **sdk-coin-ada:** use 1 ada as min fees ([558f621](https://github.com/BitGo/BitGoJS/commit/558f6213131e75aac3d0cefb12ac7633fe7c9419))
+
+
+
+
+
 ## [4.15.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.15.1...@bitgo/sdk-coin-ada@4.15.2) (2025-10-02)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ada

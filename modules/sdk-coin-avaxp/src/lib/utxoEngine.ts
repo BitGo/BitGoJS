@@ -1,4 +1,4 @@
-import { DecodedUtxoObj, SECP256K1_Transfer_Output } from './iface';
+import { DecodedUtxoObj, SECP256K1_STAKEABLE_LOCK_OUT, SECP256K1_Transfer_Output } from './iface';
 import { BN, Buffer as BufferAvax } from 'avalanche';
 import { Signature } from 'avalanche/dist/common';
 import utils from './utils';
@@ -98,7 +98,12 @@ export function utxoToInput(
   let currentTotal: BN = new BN(0);
 
   const inputs = utxos
-    .filter((utxo) => utxo && utxo.outputID === SECP256K1_Transfer_Output)
+    .filter(
+      (utxo) =>
+        utxo &&
+        (utxo.outputID === SECP256K1_Transfer_Output ||
+          (utxo.outputID === SECP256K1_STAKEABLE_LOCK_OUT && utxo.locktime === '0'))
+    )
     .map((utxo) => {
       // validate the utxos
       const utxoAddresses: BufferAvax[] = utxo.addresses.map((a) => utils.parseAddress(a));

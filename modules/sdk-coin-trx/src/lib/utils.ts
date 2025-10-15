@@ -459,7 +459,7 @@ export function decodeFreezeBalanceV2Contract(base64: string): FreezeBalanceCont
     getByteArrayFromHexAddress(Buffer.from(freezeContract.ownerAddress, 'base64').toString('hex'))
   );
 
-  const resourceValue = freezeContract.resource === 0 ? TronResource.BANDWIDTH : TronResource.ENERGY;
+  const resourceValue = freezeContract.resource === 'BANDWIDTH' ? TronResource.BANDWIDTH : TronResource.ENERGY;
 
   return [
     {

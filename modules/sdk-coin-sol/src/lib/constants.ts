@@ -61,6 +61,7 @@ export enum InstructionBuilderTypes {
   MintTo = 'MintTo',
   Burn = 'Burn',
   CustomInstruction = 'CustomInstruction',
+  VersionedCustomInstruction = 'VersionedCustomInstruction',
   Approve = 'Approve',
   WithdrawStake = 'WithdrawStake',
 }

@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import { BitGoBase } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
-import { bip32 } from '@bitgo/utxo-lib';
+import { bip32 } from '@bitgo/secp256k1';
 import buildDebug from 'debug';
 
 import { AbstractUtxoCoin, SignTransactionOptions } from '../abstractUtxoCoin';

@@ -3,6 +3,42 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [15.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.5.0...@bitgo/express@15.6.0) (2025-10-10)
+
+
+### Features
+
+* **express:** added type from public types ([53fe28b](https://github.com/BitGo/BitGoJS/commit/53fe28bf2f6e193174d72a3bafc0544eead9ea5c))
+* **express:** migrate wallet signTx to typed routes ([335fe30](https://github.com/BitGo/BitGoJS/commit/335fe3060ac3cc21f696fc99d7b4404b6f807ef5))
+
+
+
+
+
+# [15.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.4.0...@bitgo/express@15.5.0) (2025-10-09)
+
+
+### Features
+
+* **express:** migrate coinSignTx to typed routes ([c2638e0](https://github.com/BitGo/BitGoJS/commit/c2638e08308283f9a32b4efe78520472276d991f))
+
+
+
+
+
+# [15.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.3.0...@bitgo/express@15.4.0) (2025-10-08)
+
+
+### Features
+
+* **express:** migrate createAddress to typed routes ([2724ac2](https://github.com/BitGo/BitGoJS/commit/2724ac2e82ac8b8713aacf1939f03e98fd04b3f0))
+* **express:** migrate recover token to typed routes ([4eac889](https://github.com/BitGo/BitGoJS/commit/4eac889de60671b3fc0ae023218b3e19f490143c))
+* **express:** migrated ofcSignPayload to typed routes ([cbf3084](https://github.com/BitGo/BitGoJS/commit/cbf3084f1d48b70c2bf953e06fdc4103bbcdae3e))
+
+
+
+
+
 # [15.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.2.0...@bitgo/express@15.3.0) (2025-10-02)
 
 ### Bug Fixes

@@ -1596,5 +1596,10 @@ export class Sol extends BaseCoin {
     if (params.solInstructions) {
       intent.solInstructions = params.solInstructions;
     }
+
+    // Handle versioned transaction data for Solana
+    if (params.solVersionedTransactionData) {
+      intent.solVersionedTransactionData = params.solVersionedTransactionData;
+    }
   }
 }

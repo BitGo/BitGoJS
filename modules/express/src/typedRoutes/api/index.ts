@@ -27,6 +27,9 @@ import { PutFanoutUnspents } from './v1/fanoutUnspents';
 import { PostOfcSignPayload } from './v2/ofcSignPayload';
 import { PostWalletRecoverToken } from './v2/walletRecoverToken';
 import { PostSignerMacaroon } from './v2/signerMacaroon';
+import { PostCoinSignTx } from './v2/coinSignTx';
+import { PostWalletSignTx } from './v2/walletSignTx';
+import { PostWalletTxSignTSS } from './v2/walletTxSignTSS';
 
 export const ExpressApi = apiSpec({
   'express.ping': {
@@ -100,6 +103,15 @@ export const ExpressApi = apiSpec({
   },
   'express.v2.wallet.recovertoken': {
     post: PostWalletRecoverToken,
+  },
+  'express.v2.coin.signtx': {
+    post: PostCoinSignTx,
+  },
+  'express.v2.wallet.signtx': {
+    post: PostWalletSignTx,
+  },
+  'express.v2.wallet.signtxtss': {
+    post: PostWalletTxSignTSS,
   },
   'express.lightning.signerMacaroon': {
     post: PostSignerMacaroon,
