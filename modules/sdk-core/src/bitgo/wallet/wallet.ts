@@ -3567,6 +3567,48 @@ export class Wallet implements IWallet {
   }
 
   /**
+   * Ensures signature shares are in a clean state before signing a transaction.
+   * Automatically detects if a TxRequest is a partially signed Full TxRequest and deletes stale signatures.
+   * Use this for Express API and other integrations that need automatic cleanup of partial signatures.
+   *
+   * @param params - signing options
+   * @returns signed transaction
+   */
+  public async ensureCleanSigSharesAndSignTransaction(
+    params: WalletSignTransactionOptions = {}
+  ): Promise<SignedTransaction | TxRequest> {
+    const txRequestId = params.txRequestId || params.txPrebuild?.txRequestId;
+
+    if (txRequestId && this.tssUtils && this.multisigType() === 'tss') {
+      const txRequest = await this.tssUtils.getTxRequest(txRequestId);
+
+      // Check if txRequest is Full (not Lite)
+      const isFull =
+        txRequest.apiVersion === 'full' ||
+        (txRequest.transactions ?? []).length > 0 ||
+        (txRequest.messages ?? []).length > 0;
+
+      if (isFull) {
+        // Check if there are any partial signature shares present
+        // Signature shares array is populated during signing and cleared when complete
+        let isPartiallySigned = false;
+
+        if (txRequest.transactions && txRequest.transactions.length > 0) {
+          isPartiallySigned = txRequest.transactions.some((tx) => (tx.signatureShares ?? []).length > 0);
+        } else if (txRequest.messages && txRequest.messages.length > 0) {
+          isPartiallySigned = txRequest.messages.some((msg) => (msg.signatureShares ?? []).length > 0);
+        }
+
+        if (isPartiallySigned) {
+          await this.tssUtils.deleteSignatureShares(txRequestId);
+        }
+      }
+    }
+
+    return this.signTransaction(params);
+  }
+
+  /**
    * Signs a transaction from a TSS ECDSA wallet using external signer.
    *
    * @param params signing options
