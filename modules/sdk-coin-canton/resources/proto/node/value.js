@@ -1,6 +1,6 @@
-import { MessageType, UnknownFieldHandler, reflectionMergePartial, WireType } from '@protobuf-ts/runtime';
-import { Empty } from './empty.js';
-import { Identifier } from './identifier.js';
+const { MessageType, UnknownFieldHandler, reflectionMergePartial, WireType } = require('@protobuf-ts/runtime');
+const { Empty } = require('./empty.js');
+const { Identifier } = require('./identifier.js');
 
 class Value$Type extends MessageType {
   constructor() {
@@ -289,7 +289,7 @@ class Value$Type extends MessageType {
 /**
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.Value
  */
-export const Value = new Value$Type();
+const Value = new Value$Type();
 
 class Optional$Type extends MessageType {
   constructor() {
@@ -330,7 +330,7 @@ class Optional$Type extends MessageType {
 /**
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.Optional
  */
-export const Optional = new Optional$Type();
+const Optional = new Optional$Type();
 
 class List$Type extends MessageType {
   constructor() {
@@ -380,7 +380,7 @@ class List$Type extends MessageType {
 /**
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.List
  */
-export const List = new List$Type();
+const List = new List$Type();
 
 class TextMap$Type extends MessageType {
   constructor() {
@@ -434,7 +434,7 @@ class TextMap$Type extends MessageType {
 /**
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.TextMap
  */
-export const TextMap = new TextMap$Type();
+const TextMap = new TextMap$Type();
 
 class TextMap_Entry$Type extends MessageType {
   constructor() {
@@ -484,7 +484,7 @@ class TextMap_Entry$Type extends MessageType {
 /**
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.TextMap.Entry
  */
-export const TextMap_Entry = new TextMap_Entry$Type();
+const TextMap_Entry = new TextMap_Entry$Type();
 
 class GenMap$Type extends MessageType {
   constructor() {
@@ -538,7 +538,7 @@ class GenMap$Type extends MessageType {
 /**
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.GenMap
  */
-export const GenMap = new GenMap$Type();
+const GenMap = new GenMap$Type();
 
 class GenMap_Entry$Type extends MessageType {
   constructor() {
@@ -588,7 +588,7 @@ class GenMap_Entry$Type extends MessageType {
 /**
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.GenMap.Entry
  */
-export const GenMap_Entry = new GenMap_Entry$Type();
+const GenMap_Entry = new GenMap_Entry$Type();
 
 class Record$Type extends MessageType {
   constructor() {
@@ -649,7 +649,7 @@ class Record$Type extends MessageType {
 /**
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.Record
  */
-export const Record = new Record$Type();
+const Record = new Record$Type();
 
 class RecordField$Type extends MessageType {
   constructor() {
@@ -704,7 +704,7 @@ class RecordField$Type extends MessageType {
 /**
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.RecordField
  */
-export const RecordField = new RecordField$Type();
+const RecordField = new RecordField$Type();
 
 class Variant$Type extends MessageType {
   constructor() {
@@ -766,7 +766,7 @@ class Variant$Type extends MessageType {
 /**
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.Variant
  */
-export const Variant = new Variant$Type();
+const Variant = new Variant$Type();
 
 class Enum$Type extends MessageType {
   constructor() {
@@ -821,4 +821,18 @@ class Enum$Type extends MessageType {
 /**
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.Enum
  */
-export const Enum = new Enum$Type();
+const Enum = new Enum$Type();
+
+module.exports = {
+  Value,
+  Optional,
+  List,
+  TextMap,
+  TextMap_Entry,
+  GenMap,
+  GenMap_Entry,
+  Record,
+  RecordField,
+  Variant,
+  Enum,
+};

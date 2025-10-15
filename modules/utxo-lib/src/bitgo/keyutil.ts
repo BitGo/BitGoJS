@@ -1,7 +1,6 @@
-import { ECPairInterface } from 'ecpair';
 import * as bs58check from 'bs58check';
 import { Network } from '../networks';
-import { bip32, ECPair } from '../noble_ecc';
+import { bip32, ECPair, ECPairInterface } from '@bitgo/secp256k1';
 
 /**
  * Create an ECPair from the raw private key bytes

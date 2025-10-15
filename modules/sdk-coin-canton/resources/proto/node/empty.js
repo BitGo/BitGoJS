@@ -1,4 +1,4 @@
-import { MessageType, UnknownFieldHandler, reflectionMergePartial } from '@protobuf-ts/runtime';
+const { MessageType, UnknownFieldHandler, reflectionMergePartial } = require('@protobuf-ts/runtime');
 
 class Empty$Type extends MessageType {
   constructor() {
@@ -33,4 +33,4 @@ class Empty$Type extends MessageType {
 /**
  * @generated MessageType for protobuf message google.protobuf.Empty
  */
-export const Empty = new Empty$Type();
+module.exports.Empty = new Empty$Type();

@@ -1,6 +1,6 @@
-import { MessageType, UnknownFieldHandler, reflectionMergePartial, WireType } from '@protobuf-ts/runtime';
-import { Value } from './value.js';
-import { Identifier } from './identifier.js';
+const { MessageType, UnknownFieldHandler, reflectionMergePartial, WireType } = require('@protobuf-ts/runtime');
+const { Value } = require('./value.js');
+const { Identifier } = require('./identifier.js');
 
 class Fetch$Type extends MessageType {
   constructor() {
@@ -146,7 +146,7 @@ class Fetch$Type extends MessageType {
 /**
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.interactive.transaction.v1.Fetch
  */
-export const Fetch = new Fetch$Type();
+const Fetch = new Fetch$Type();
 // @generated message type with reflection information, may provide speed optimized methods
 class Exercise$Type extends MessageType {
   constructor() {
@@ -367,7 +367,7 @@ class Exercise$Type extends MessageType {
 /**
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.interactive.transaction.v1.Exercise
  */
-export const Exercise = new Exercise$Type();
+const Exercise = new Exercise$Type();
 // @generated message type with reflection information, may provide speed optimized methods
 class Create$Type extends MessageType {
   constructor() {
@@ -490,7 +490,7 @@ class Create$Type extends MessageType {
 /**
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.interactive.transaction.v1.Create
  */
-export const Create = new Create$Type();
+const Create = new Create$Type();
 // @generated message type with reflection information, may provide speed optimized methods
 class Rollback$Type extends MessageType {
   constructor() {
@@ -540,7 +540,7 @@ class Rollback$Type extends MessageType {
 /**
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.interactive.transaction.v1.Rollback
  */
-export const Rollback = new Rollback$Type();
+const Rollback = new Rollback$Type();
 // @generated message type with reflection information, may provide speed optimized methods
 class Node$Type extends MessageType {
   constructor() {
@@ -653,4 +653,12 @@ class Node$Type extends MessageType {
 /**
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.interactive.transaction.v1.Node
  */
-export const Node = new Node$Type();
+const Node = new Node$Type();
+
+module.exports = {
+  Fetch,
+  Exercise,
+  Create,
+  Rollback,
+  Node,
+};
