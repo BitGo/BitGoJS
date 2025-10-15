@@ -137,6 +137,7 @@ export const CoinSignTxResponse = {
  * - pubKeys: Public keys for multi-signature transactions
  * - isEvmBasedCrossChainRecovery: For EVM cross-chain recovery
  *
+ * @tag express
  * @operationId express.v2.coin.signtx
  */
 export const PostCoinSignTx = httpRoute({

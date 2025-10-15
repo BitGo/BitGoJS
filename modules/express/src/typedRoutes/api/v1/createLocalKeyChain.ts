@@ -33,6 +33,7 @@ export const CreateLocalKeyChainResponse = t.type({
  * For security reasons, it is highly recommended that you encrypt and destroy
  * the original xprv immediately to prevent theft.
  *
+ * @tag express
  * @operationId express.v1.keychain.local
  */
 export const PostCreateLocalKeyChain = httpRoute({

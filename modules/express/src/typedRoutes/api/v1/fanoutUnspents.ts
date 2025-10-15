@@ -59,6 +59,7 @@ export const FanoutUnspentsResponse = t.type({
  * multiple inputs to multiple outputs. This is useful for increasing the number of UTXOs
  * in a wallet, which can improve transaction parallelization.
  *
+ * @tag express
  * @operationId express.v1.wallet.fanoutunspents
  */
 export const PutFanoutUnspents = httpRoute({
