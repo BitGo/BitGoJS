@@ -40,7 +40,7 @@ export const LightningInitWalletResponse = {
  * @operationId express.lightning.initWallet
  */
 export const PostLightningInitWallet = httpRoute({
-  path: '/api/v2/:coin/wallet/:walletId/initwallet',
+  path: '/api/v2/{coin}/wallet/{walletId}/initwallet',
   method: 'POST',
   request: httpRequest({ params: LightningInitWalletParams, body: LightningInitWalletBody }),
   response: LightningInitWalletResponse,
