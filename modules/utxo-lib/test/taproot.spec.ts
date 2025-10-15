@@ -7,9 +7,13 @@ const ECPair: ECPairAPI = ECPairFactory(ecc);
 
 describe('taproot utils', () => {
   describe('musig key aggregation', () => {
-    // Expected values for the test cases assertions below are derived from the
+    // Expected values for the test cases assertions below are derived from a
     // MuSig2 implementation example code in secp256k1-zkp.
-    // https://github.com/jonasnick/secp256k1-zkp/blob/musig2/src/modules/musig/example.c
+    // https://github.com/jonasnick/secp256k1-zkp/blob/musig2/src/modules/musig/example.c (link defunct)
+    //
+    // Reconstruction of the code in the above link:
+    // https://github.com/OttoAllmendinger/bips/commit/3683cc46e0cf4fc101f1c06492eb1f9f2ab9e450
+    // https://github.com/OttoAllmendinger/bips/blob/musig-bitgo/bip-musig2/reference.py
 
     it('aggregates 2 pubkeys', () => {
       const aggregatePubkey = taproot.aggregateMuSigPubkeys(ecc, [

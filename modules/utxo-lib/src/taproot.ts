@@ -1,6 +1,11 @@
 // Taproot-specific key aggregation and taptree logic as defined in:
 // https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki
 // https://github.com/bitcoin/bips/blob/master/bip-0341.mediawiki
+//
+// The implementation here is unfortunately not the same as the final Musig2
+// implementation. It is a variant of an earlier version that aggregates the
+// x-only 32-byte pubkeys instead of the plain 33-byte pubkeys.
+// See https://github.com/OttoAllmendinger/bips/blob/musig-bitgo/bip-musig2/reference.py for details.
 
 import { TapTree as PsbtTapTree, TapLeaf as PsbtTapLeaf } from 'bip174/src/lib/interfaces';
 import assert = require('assert');
