@@ -3,6 +3,46 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [15.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.6.0...@bitgo/express@15.7.0) (2025-10-13)
+
+
+### Bug Fixes
+
+* req decoded params ([5cc3782](https://github.com/BitGo/BitGoJS/commit/5cc37823a0d3c7539e1130148c75f8cea9e87b1f))
+
+
+### Features
+
+* **express:** moved wallet signtxtss to typed route ([8ca5c81](https://github.com/BitGo/BitGoJS/commit/8ca5c813398f83b8548dcb118b206759f3cf2566))
+* **express:** used req decoded params ([bd96647](https://github.com/BitGo/BitGoJS/commit/bd966470aa414827b583293ae3af63f7ebe860a7))
+
+
+
+
+
+# [15.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.5.0...@bitgo/express@15.6.0) (2025-10-10)
+
+
+### Features
+
+* **express:** added type from public types ([53fe28b](https://github.com/BitGo/BitGoJS/commit/53fe28bf2f6e193174d72a3bafc0544eead9ea5c))
+* **express:** migrate wallet signTx to typed routes ([335fe30](https://github.com/BitGo/BitGoJS/commit/335fe3060ac3cc21f696fc99d7b4404b6f807ef5))
+
+
+
+
+
+# [15.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.4.0...@bitgo/express@15.5.0) (2025-10-09)
+
+
+### Features
+
+* **express:** migrate coinSignTx to typed routes ([c2638e0](https://github.com/BitGo/BitGoJS/commit/c2638e08308283f9a32b4efe78520472276d991f))
+
+
+
+
+
 # [15.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.3.0...@bitgo/express@15.4.0) (2025-10-08)
 
 

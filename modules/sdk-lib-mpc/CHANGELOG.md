@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [10.8.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@10.8.0...@bitgo/sdk-lib-mpc@10.8.1) (2025-10-09)
+
+
+### Bug Fixes
+
+* run check-fmt on code files only ([9745196](https://github.com/BitGo/BitGoJS/commit/9745196b02b9678c740d290a4638ceb153a8fd75))
+
+
+
+
+
 # [10.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-lib-mpc@10.7.0...@bitgo/sdk-lib-mpc@10.8.0) (2025-10-08)
 
 

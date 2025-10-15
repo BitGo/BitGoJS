@@ -3,6 +3,34 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [36.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.12.0...@bitgo/sdk-core@36.13.0) (2025-10-13)
+
+
+### Features
+
+* support versioned sol transactions with customTx intent ([b33402f](https://github.com/BitGo/BitGoJS/commit/b33402f9a7c4724804a2f45737fcbd2562f6bb3e))
+
+
+
+
+
+# [36.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.11.0...@bitgo/sdk-core@36.12.0) (2025-10-09)
+
+
+### Bug Fixes
+
+* run check-fmt on code files only ([9745196](https://github.com/BitGo/BitGoJS/commit/9745196b02b9678c740d290a4638ceb153a8fd75))
+
+
+### Features
+
+* **express:** migrate coinSignTx to typed routes ([c2638e0](https://github.com/BitGo/BitGoJS/commit/c2638e08308283f9a32b4efe78520472276d991f))
+* **sdk-core:** staking tx STX validate type ([ea7bca6](https://github.com/BitGo/BitGoJS/commit/ea7bca649419308e3e1eab7d94c70bdb2ae28375))
+
+
+
+
+
 # [36.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.10.1...@bitgo/sdk-core@36.11.0) (2025-10-08)
 
 

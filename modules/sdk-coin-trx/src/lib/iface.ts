@@ -234,7 +234,7 @@ export interface UnfreezeBalanceContractParameter {
  */
 export interface FreezeContractDecoded {
   ownerAddress?: string;
-  resource?: number;
+  resource?: string;
   frozenBalance?: string | number;
 }
 

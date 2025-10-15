@@ -7,11 +7,13 @@ import {
   BLOCK_NUMBER,
   EXPIRATION,
   RESOURCE_ENERGY,
+  RESOURCE_BANDWIDTH,
   FROZEN_BALANCE,
   FREEZE_BALANCE_V2_CONTRACT,
 } from '../../resources';
 import { getBuilder } from '../../../src/lib/builder';
 import { Transaction, WrappedBuilder } from '../../../src';
+import { decodeTransaction } from '../../../src/lib/utils';
 
 describe('Tron FreezeBalanceV2 builder', function () {
   const initTxBuilder = () => {
@@ -318,6 +320,46 @@ describe('Tron FreezeBalanceV2 builder', function () {
       assert.doesNotReject(() => {
         return txBuilder.build();
       });
+    });
+  });
+
+  describe('decode freeze txns correctly', () => {
+    it('should decode a freeze transaction with resource as ENERGY', async () => {
+      const rawHex =
+        '0a0263562208aeb6dfb8e968626440bc91f6c39c335a5a083612560a34747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e467265657a6542616c616e63655632436f6e7472616374121e0a154160b9ab837fd7153c1baa5e55a16d05d60e21d0d31080e1eb17180170fcd8f3c39c33';
+      const decodedTransaction = decodeTransaction(rawHex);
+
+      // Verify transaction has contracts
+      assert.ok(decodedTransaction.contract?.length > 0, 'Transaction should have at least one contract');
+
+      const contract = decodedTransaction.contract[0];
+      assert.ok(contract, 'contract should exist');
+
+      if (!('parameter' in contract) || !contract.parameter?.value || !('resource' in contract.parameter.value)) {
+        throw new Error('Invalid contract format: missing parameter or resource');
+      }
+
+      // Verify resource type
+      assert.equal(contract.parameter.value.resource, RESOURCE_ENERGY, 'Resource type should be ENERGY');
+    });
+
+    it('should decode a freeze transaction with resource as BANDWIDTH', async () => {
+      const rawHex =
+        '0a028d372208f403372490b5b8e240bbaab7f69b335a5b083612570a34747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e467265657a6542616c616e63655632436f6e7472616374121f0a154160b9ab837fd7153c1baa5e55a16d05d60e21d0d31080cab5ee01180070bbcddbf49b33';
+      const decodedTransaction = decodeTransaction(rawHex);
+
+      // Verify transaction has contracts
+      assert.ok(decodedTransaction.contract?.length > 0, 'Transaction should have at least one contract');
+
+      const contract = decodedTransaction.contract[0];
+      assert.ok(contract, 'contract should exist');
+
+      if (!('parameter' in contract) || !contract.parameter?.value || !('resource' in contract.parameter.value)) {
+        throw new Error('Invalid contract format: missing parameter or resource');
+      }
+
+      // Verify resource type
+      assert.equal(contract.parameter.value.resource, RESOURCE_BANDWIDTH, 'Resource type should be BANDWIDTH');
     });
   });
 });

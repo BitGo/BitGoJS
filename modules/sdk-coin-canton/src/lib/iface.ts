@@ -17,9 +17,10 @@ export interface PreparedTxnParsedInfo {
   amount: string;
 }
 
-export interface WalletInitializationDataTxData {
+export interface WalletInitTxData {
   id: string;
   type: TransactionType;
+  preparedParty: PreparedParty;
 }
 
 export interface CantonPrepareCommandResponse {
@@ -30,14 +31,29 @@ export interface CantonPrepareCommandResponse {
 }
 
 export interface PreparedParty {
-  partyTransactions: Uint8Array<ArrayBufferLike>[];
-  combinedHash: string;
-  txHashes: Buffer<ArrayBuffer>[];
-  namespace: string;
   partyId: string;
+  publicKeyFingerprint: string;
+  topologyTransactions: string[];
+  multiHash: string;
 }
 
 export interface PreparedTransaction {
   transaction?: DamlTransaction;
   metadata?: Metadata;
+}
+
+export interface IPublicKey {
+  format: string;
+  keyData: string;
+  keySpec: string;
+}
+
+export interface WalletInitRequest {
+  synchronizer: string;
+  partyHint: string;
+  publicKey: IPublicKey;
+  localParticipantObservationOnly: boolean;
+  otherConfirmingParticipantUids: string[];
+  confirmationThreshold: number;
+  observingParticipantUids: string[];
 }
