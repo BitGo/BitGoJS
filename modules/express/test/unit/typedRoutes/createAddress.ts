@@ -6,6 +6,12 @@ import {
   PostCreateAddress,
 } from '../../../src/typedRoutes/api/v2/createAddress';
 import { assertDecode } from './common';
+import 'should';
+import 'should-http';
+import 'should-sinon';
+import * as sinon from 'sinon';
+import { BitGo } from 'bitgo';
+import { setupAgent } from '../../lib/testutil';
 
 /**
  * Helper function to extract path parameter names from a route path
@@ -26,6 +32,133 @@ function getCodecParamNames(paramsCodec: Record<string, any>): string[] {
 }
 
 describe('CreateAddress codec tests', function () {
+  describe('createAddress', function () {
+    const agent = setupAgent();
+
+    const walletId = '68c02f96aa757d9212bd1a536f123456';
+    const coin = 'tbtc';
+
+    const mockResponse = {
+      id: '68ed4dbfe664aa98d171ac0f524ef111',
+      address: '2N632etYgykMhGrScEN7RpAthg64ACsTL6v',
+      chain: 0,
+      index: 1,
+      coin: 'tbtc',
+      wallet: '68c02f96aa757d9212bd1a536f123456',
+      label: 'My new address',
+      coinSpecific: {
+        redeemScript:
+          '522103ebc10ae7ca49f55228fd29dd32eadfcd289fb43082fabb8e0f3bcee9ab09853721039b1a9b93a2e8114d6627753fc37f115e721609b35187d74dc32e5adfa97992402102a704615d8eedaf2e0ff37f7e503615fb6765b8b147a97ac1d930b37e709755dc53ae',
+      },
+      addressType: 'p2sh',
+      keychains: [
+        {
+          id: '68c02f94aa757d9212bd19b783deb065',
+          pub: 'xpub661MyMwAqRbcGCSB6BrtvtRzb4Pebi5RLaC8dqZ8Zt2sJsWZ8dj7pXrLRfiGjYAD5PMV23dAxNQww8kggwKZUZtEhcjH1vPDhu4dUihbv2T',
+          ethAddress: '0x23f7b80a5f5dce2bfb9e09d40e37794cc8e2a3be',
+          source: 'user',
+          type: 'independent',
+          encryptedPrv:
+            '{"iv":"abc123xyz456==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"def789ghi012=","ct":"mockEncryptedPrivateKeyData1234567890"}',
+        },
+        {
+          id: '68c02f94a36d5167fa49878f9553f40e',
+          pub: 'xpub661MyMwAqRbcFUMUdma6ot9QPBcBDiyJSo3CsyE53hjcZ9RgAH2oxcNViRTv9bUJrHeEiDhL2sLDa9kXgjSwL33Bca3ApQaG7nBJJc5enLr',
+          ethAddress: '0xfb1d696334a2632952ae25aead77be781df91e18',
+          source: 'backup',
+          type: 'independent',
+          encryptedPrv:
+            '{"iv":"uvw345qrs678==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"jkl901mno234=","ct":"mockEncryptedPrivateKeyDataBackup567890"}',
+        },
+        {
+          id: '68c02f95aa757d9212bd19e7ee0744e4',
+          pub: 'xpub661MyMwAqRbcFZ1e1eeAuFnu8gBAM1Yd7bJUSEL7TRX3QQ6vbY6B5Uugf8E93eTfvcKRHHZUiqq7WLLerZdFkp2guAVG1Mkuqp6ZZqbQ53u',
+          ethAddress: '0xfad325e7f4b57549ff68395e0d42378046208a71',
+          source: 'bitgo',
+          type: 'independent',
+          isBitGo: true,
+          isTrust: false,
+          hsmType: 'institutional',
+        },
+      ],
+    };
+
+    afterEach(function () {
+      sinon.restore();
+    });
+
+    it('should successfully create a new wallet address', async function () {
+      const requestBody = {
+        label: 'My new address',
+        chain: 0,
+        allowSkipVerifyAddress: true,
+      };
+
+      // Create mock wallet with createAddress method
+      const mockWallet = {
+        createAddress: sinon.stub().resolves(mockResponse),
+      };
+
+      // Stub the wallets().get() chain
+      const walletsGetStub = sinon.stub().resolves(mockWallet);
+
+      const mockWallets = {
+        get: walletsGetStub,
+      };
+
+      const mockCoin = {
+        wallets: sinon.stub().returns(mockWallets),
+      };
+
+      // Stub BitGo.prototype.coin to return our mock coin
+      const coinStub = sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+      // Make the request to Express
+      const result = await agent
+        .post(`/api/v2/${coin}/wallet/${walletId}/address`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      // Verify the response
+      assert.strictEqual(result.status, 200);
+      result.body.should.have.property('id', '68ed4dbfe664aa98d171ac0f524ef111');
+      result.body.should.have.property('address', '2N632etYgykMhGrScEN7RpAthg64ACsTL6v');
+      result.body.should.have.property('chain', 0);
+      result.body.should.have.property('index', 1);
+      result.body.should.have.property('coin', 'tbtc');
+      result.body.should.have.property('wallet', walletId);
+      result.body.should.have.property('label', 'My new address');
+      result.body.should.have.property('addressType', 'p2sh');
+      result.body.should.have.property('keychains');
+      result.body.keychains.should.be.Array();
+      result.body.keychains.should.have.length(3);
+
+      // Verify the keychain structure
+      result.body.keychains[0].should.have.property('source', 'user');
+      result.body.keychains[1].should.have.property('source', 'backup');
+      result.body.keychains[2].should.have.property('source', 'bitgo');
+      result.body.keychains[2].should.have.property('isBitGo', true);
+
+      // Verify that the correct BitGoJS methods were called
+      assert.strictEqual(coinStub.calledOnceWith(coin), true);
+      assert.strictEqual(mockCoin.wallets.calledOnce, true);
+      assert.strictEqual(walletsGetStub.calledOnceWith({ id: walletId }), true);
+      assert.strictEqual(
+        mockWallet.createAddress.calledOnceWith(
+          sinon.match({
+            coin: coin,
+            id: walletId,
+            label: 'My new address',
+            chain: 0,
+            allowSkipVerifyAddress: true,
+          })
+        ),
+        true
+      );
+    });
+  });
+
   describe('CreateAddressParams', function () {
     it('should validate params with required coin and id', function () {
       const validParams = {

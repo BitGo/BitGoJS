@@ -2,6 +2,7 @@ import crypto from 'crypto';
 
 import { BaseUtils, isValidEd25519PublicKey } from '@bitgo/sdk-core';
 
+import { computePreparedTransaction } from '../../resources/hash/hash.js';
 import { PreparedTransaction } from '../../resources/proto/preparedTransaction.js';
 
 import { CryptoKeyFormat, SigningAlgorithmSpec, SigningKeySpec } from './constant';
@@ -121,6 +122,12 @@ export class Utils implements BaseUtils {
   computeHashFromCreatePartyResponse(topologyTransactions: string[]): string {
     const txBuffers = topologyTransactions.map((tx) => Buffer.from(tx, 'base64'));
     return this.computeHashFromTopologyTransaction(txBuffers);
+  }
+
+  async computeHashFromPrepareSubmissionResponse(preparedTransactionBase64: string): Promise<string> {
+    const preparedTransaction = this.decodePreparedTransaction(preparedTransactionBase64);
+    const hash = await computePreparedTransaction(preparedTransaction);
+    return Buffer.from(hash).toString('base64');
   }
 
   /**

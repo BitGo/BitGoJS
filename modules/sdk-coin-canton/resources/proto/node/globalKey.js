@@ -1,6 +1,6 @@
-import { MessageType, reflectionMergePartial, UnknownFieldHandler, WireType } from '@protobuf-ts/runtime';
-import { Value } from './value.js';
-import { Identifier } from './identifier.js';
+const { MessageType, reflectionMergePartial, UnknownFieldHandler, WireType } = require('@protobuf-ts/runtime');
+const { Value } = require('./value.js');
+const { Identifier } = require('./identifier.js');
 
 class GlobalKey$Type extends MessageType {
   constructor() {
@@ -78,4 +78,4 @@ class GlobalKey$Type extends MessageType {
 /**
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.interactive.GlobalKey
  */
-export const GlobalKey = new GlobalKey$Type();
+module.exports.GlobalKey = new GlobalKey$Type();

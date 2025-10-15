@@ -563,7 +563,7 @@ describe('WalletRecoverToken codec tests', function () {
 
   describe('PostWalletRecoverToken route definition', function () {
     it('should have the correct path', function () {
-      assert.strictEqual(PostWalletRecoverToken.path, '/api/v2/:coin/wallet/:id/recovertoken');
+      assert.strictEqual(PostWalletRecoverToken.path, '/api/v2/{coin}/wallet/{id}/recovertoken');
     });
 
     it('should have the correct HTTP method', function () {

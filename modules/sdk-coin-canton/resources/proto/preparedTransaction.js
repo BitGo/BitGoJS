@@ -1,6 +1,6 @@
-import { MessageType, UnknownFieldHandler, reflectionMergePartial, WireType } from '@protobuf-ts/runtime';
-import { DamlTransaction } from './damlTransaction.js';
-import { Metadata } from './metadata.js';
+const { MessageType, UnknownFieldHandler, reflectionMergePartial, WireType } = require('@protobuf-ts/runtime');
+const { DamlTransaction } = require('./damlTransaction.js');
+const { Metadata } = require('./metadata.js');
 
 class PreparedTransaction$Type extends MessageType {
   constructor() {
@@ -63,4 +63,4 @@ class PreparedTransaction$Type extends MessageType {
   }
 }
 
-export const PreparedTransaction = new PreparedTransaction$Type();
+module.exports.PreparedTransaction = new PreparedTransaction$Type();

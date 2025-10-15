@@ -5,5 +5,6 @@ export { KeyPair } from './keyPair';
 export { Transaction } from './transaction/transaction';
 export { TransactionBuilder } from './transactionBuilder';
 export { TransactionBuilderFactory } from './transactionBuilderFactory';
+export { WalletInitTransaction } from './walletInitialization/walletInitTransaction';
 
 export { Utils, Interface };

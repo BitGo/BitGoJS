@@ -1,5 +1,5 @@
-import { MessageType, UnknownFieldHandler, reflectionMergePartial, WireType } from '@protobuf-ts/runtime';
-import { Create } from '../node/node.js';
+const { MessageType, UnknownFieldHandler, reflectionMergePartial, WireType } = require('@protobuf-ts/runtime');
+const { Create } = require('../node/node.js');
 
 class Metadata_InputContract$Type extends MessageType {
   constructor() {
@@ -77,4 +77,4 @@ class Metadata_InputContract$Type extends MessageType {
 /**
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.interactive.Metadata.InputContract
  */
-export const Metadata_InputContract = new Metadata_InputContract$Type();
+module.exports.Metadata_InputContract = new Metadata_InputContract$Type();

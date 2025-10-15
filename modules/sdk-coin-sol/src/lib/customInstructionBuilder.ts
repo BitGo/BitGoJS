@@ -1,6 +1,6 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BuildTransactionError, SolInstruction, SolVersionedInstruction, TransactionType } from '@bitgo/sdk-core';
-import { PublicKey } from '@solana/web3.js';
+import { PublicKey, SystemProgram, SYSVAR_RECENT_BLOCKHASHES_PUBKEY } from '@solana/web3.js';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import { InstructionBuilderTypes } from './constants';
@@ -103,17 +103,44 @@ export class CustomInstructionBuilder extends TransactionBuilder {
         throw new BuildTransactionError('staticAccountKeys must be a non-empty array');
       }
 
-      this.addCustomInstructions(data.versionedInstructions);
+      if (!data.messageHeader || typeof data.messageHeader !== 'object') {
+        throw new BuildTransactionError('messageHeader must be a valid object');
+      }
+      if (
+        typeof data.messageHeader.numRequiredSignatures !== 'number' ||
+        data.messageHeader.numRequiredSignatures < 0
+      ) {
+        throw new BuildTransactionError('messageHeader.numRequiredSignatures must be a non-negative number');
+      }
+      if (
+        typeof data.messageHeader.numReadonlySignedAccounts !== 'number' ||
+        data.messageHeader.numReadonlySignedAccounts < 0
+      ) {
+        throw new BuildTransactionError('messageHeader.numReadonlySignedAccounts must be a non-negative number');
+      }
+      if (
+        typeof data.messageHeader.numReadonlyUnsignedAccounts !== 'number' ||
+        data.messageHeader.numReadonlyUnsignedAccounts < 0
+      ) {
+        throw new BuildTransactionError('messageHeader.numReadonlyUnsignedAccounts must be a non-negative number');
+      }
+
+      let processedData = data;
+      if (this._nonceInfo && this._nonceInfo.params) {
+        processedData = this.injectNonceAdvanceInstruction(data);
+      }
+
+      this.addCustomInstructions(processedData.versionedInstructions);
 
       if (!this._transaction) {
         this._transaction = new Transaction(this._coinConfig);
       }
-      this._transaction.setVersionedTransactionData(data);
+      this._transaction.setVersionedTransactionData(processedData);
 
       this._transaction.setTransactionType(TransactionType.CustomTx);
 
-      if (!this._sender && data.staticAccountKeys.length > 0) {
-        this._sender = data.staticAccountKeys[0];
+      if (!this._sender && processedData.staticAccountKeys.length > 0) {
+        this._sender = processedData.staticAccountKeys[0];
       }
 
       return this;
@@ -123,6 +150,63 @@ export class CustomInstructionBuilder extends TransactionBuilder {
       }
       throw new BuildTransactionError(`Failed to process versioned transaction data: ${error.message}`);
     }
+  }
+
+  /**
+   * Inject nonce advance instruction into versioned transaction data for durable nonce support.
+   * Reorders accounts so signers appear first (required by Solana MessageV0 format).
+   * @param data - Original versioned transaction data
+   * @returns Modified versioned transaction data with nonce advance instruction
+   * @private
+   */
+  private injectNonceAdvanceInstruction(data: VersionedTransactionData): VersionedTransactionData {
+    const { walletNonceAddress, authWalletAddress } = this._nonceInfo!.params;
+    const SYSTEM_PROGRAM = SystemProgram.programId.toBase58();
+    const SYSVAR_RECENT_BLOCKHASHES = SYSVAR_RECENT_BLOCKHASHES_PUBKEY.toBase58();
+
+    const numSigners = data.messageHeader.numRequiredSignatures;
+    const originalSigners = data.staticAccountKeys.slice(0, numSigners);
+    const originalNonSigners = data.staticAccountKeys.slice(numSigners);
+
+    if (!originalSigners.includes(authWalletAddress)) {
+      originalSigners.push(authWalletAddress);
+    }
+
+    const nonSigners = [...originalNonSigners];
+    const allKeys = [...originalSigners, ...originalNonSigners];
+
+    if (!allKeys.includes(SYSTEM_PROGRAM)) nonSigners.push(SYSTEM_PROGRAM);
+    if (!allKeys.includes(walletNonceAddress)) nonSigners.push(walletNonceAddress);
+    if (!allKeys.includes(SYSVAR_RECENT_BLOCKHASHES)) nonSigners.push(SYSVAR_RECENT_BLOCKHASHES);
+
+    const newStaticAccountKeys = [...originalSigners, ...nonSigners];
+
+    const nonceAdvanceInstruction: SolVersionedInstruction = {
+      programIdIndex: newStaticAccountKeys.indexOf(SYSTEM_PROGRAM),
+      accountKeyIndexes: [
+        newStaticAccountKeys.indexOf(walletNonceAddress),
+        newStaticAccountKeys.indexOf(SYSVAR_RECENT_BLOCKHASHES),
+        newStaticAccountKeys.indexOf(authWalletAddress),
+      ],
+      data: '6vx8P', // SystemProgram AdvanceNonceAccount (0x04000000) in base58
+    };
+
+    const indexMap = new Map(data.staticAccountKeys.map((key, oldIdx) => [oldIdx, newStaticAccountKeys.indexOf(key)]));
+    const remappedInstructions = data.versionedInstructions.map((inst) => ({
+      programIdIndex: indexMap.get(inst.programIdIndex) ?? inst.programIdIndex,
+      accountKeyIndexes: inst.accountKeyIndexes.map((idx) => indexMap.get(idx) ?? idx),
+      data: inst.data,
+    }));
+
+    return {
+      ...data,
+      versionedInstructions: [nonceAdvanceInstruction, ...remappedInstructions],
+      staticAccountKeys: newStaticAccountKeys,
+      messageHeader: {
+        ...data.messageHeader,
+        numRequiredSignatures: originalSigners.length,
+      },
+    };
   }
 
   /**

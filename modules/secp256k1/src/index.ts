@@ -176,4 +176,16 @@ const ECPair: ECPairAPI = ECPairFactory(ecc);
 const bip32: BIP32API = BIP32Factory(ecc);
 const musig: MuSig = MuSigFactory(crypto);
 
-export { ecc, ECPair, ECPairAPI, ECPairInterface, bip32, BIP32API, BIP32Interface, musig, MuSig };
+export {
+  ecc,
+  ECPair,
+  ECPairAPI,
+  ECPairFactory,
+  ECPairInterface,
+  bip32,
+  BIP32API,
+  BIP32Factory,
+  BIP32Interface,
+  musig,
+  MuSig,
+};
