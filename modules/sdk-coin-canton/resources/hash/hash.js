@@ -292,6 +292,7 @@ async function encodePreparedTransaction(preparedTransaction) {
   const metadataHash = await hashMetadata(preparedTransaction.metadata);
   return mkByteArray(PREPARED_TRANSACTION_HASH_PURPOSE, HASHING_SCHEME_VERSION, transactionHash, metadataHash);
 }
-export async function computePreparedTransaction(preparedTransaction) {
+async function computePreparedTransaction(preparedTransaction) {
   return sha256(await encodePreparedTransaction(preparedTransaction));
 }
+module.exports.computePreparedTransaction = computePreparedTransaction;

@@ -1,4 +1,4 @@
-import { MessageType, UnknownFieldHandler, reflectionMergePartial, WireType } from '@protobuf-ts/runtime';
+const { MessageType, UnknownFieldHandler, reflectionMergePartial, WireType } = require('@protobuf-ts/runtime');
 
 class Identifier$Type extends MessageType {
   constructor() {
@@ -70,4 +70,4 @@ class Identifier$Type extends MessageType {
 /**
  * @generated MessageType for protobuf message com.daml.ledger.api.v2.Identifier
  */
-export const Identifier = new Identifier$Type();
+module.exports.Identifier = new Identifier$Type();
