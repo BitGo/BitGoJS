@@ -506,7 +506,7 @@ export const polygonTokens = [
     8,
     '0xdbf31df14b66535af65aac99c32e9ea844e14501',
     UnderlyingAsset['polygon:renbtc'],
-    POLYGON_TOKEN_FEATURES
+    AccountCoin.getFeaturesByTypeExcluding([CoinFeature.CUSTODY_BITGO_MENA_FZE], POLYGON_TOKEN_FEATURES)
   ),
   polygonErc20(
     'e7d6568e-696c-4482-8dbf-9c0bb2364978',
@@ -954,7 +954,7 @@ export const polygonTokens = [
     18,
     '0x2f697bc31895ea05e6a364cedc8a76ff3467d32f',
     UnderlyingAsset['polygon:tcs'],
-    POLYGON_TOKEN_FEATURES
+    AccountCoin.getFeaturesByTypeExcluding([CoinFeature.CUSTODY_BITGO_MENA_FZE], POLYGON_TOKEN_FEATURES)
   ),
   polygonErc20(
     'eac8b635-e692-40f7-bf22-0197ae5e11f8',
