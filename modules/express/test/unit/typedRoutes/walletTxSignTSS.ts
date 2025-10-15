@@ -46,9 +46,9 @@ describe('WalletTxSignTSS codec tests', function () {
         apiVersion: 'lite' as const,
       };
 
-      // Create mock wallet with signTransaction method
+      // Create mock wallet with ensureCleanSigSharesAndSignTransaction method
       const mockWallet = {
-        signTransaction: sinon.stub().resolves(mockFullySignedResponse),
+        ensureCleanSigSharesAndSignTransaction: sinon.stub().resolves(mockFullySignedResponse),
       };
 
       // Stub the wallets().get() chain
@@ -85,7 +85,7 @@ describe('WalletTxSignTSS codec tests', function () {
       assert.strictEqual(coinStub.calledOnceWith(coin), true);
       assert.strictEqual(mockCoin.wallets.calledOnce, true);
       assert.strictEqual(walletsGetStub.calledOnceWith({ id: walletId }), true);
-      assert.strictEqual(mockWallet.signTransaction.calledOnce, true);
+      assert.strictEqual(mockWallet.ensureCleanSigSharesAndSignTransaction.calledOnce, true);
     });
 
     it('should successfully sign a half-signed TSS wallet transaction', async function () {
@@ -106,9 +106,9 @@ describe('WalletTxSignTSS codec tests', function () {
         },
       };
 
-      // Create mock wallet with signTransaction method
+      // Create mock wallet with ensureCleanSigSharesAndSignTransaction method
       const mockWallet = {
-        signTransaction: sinon.stub().resolves(mockHalfSignedResponse),
+        ensureCleanSigSharesAndSignTransaction: sinon.stub().resolves(mockHalfSignedResponse),
       };
 
       // Stub the wallets().get() chain
@@ -146,7 +146,7 @@ describe('WalletTxSignTSS codec tests', function () {
       assert.strictEqual(coinStub.calledOnceWith(coin), true);
       assert.strictEqual(mockCoin.wallets.calledOnce, true);
       assert.strictEqual(walletsGetStub.calledOnceWith({ id: walletId }), true);
-      assert.strictEqual(mockWallet.signTransaction.calledOnce, true);
+      assert.strictEqual(mockWallet.ensureCleanSigSharesAndSignTransaction.calledOnce, true);
     });
 
     it('should successfully sign a half-signed UTXO transaction', async function () {
@@ -165,9 +165,9 @@ describe('WalletTxSignTSS codec tests', function () {
           '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f00000000484730440220abc123def456...',
       };
 
-      // Create mock wallet with signTransaction method
+      // Create mock wallet with ensureCleanSigSharesAndSignTransaction method
       const mockWallet = {
-        signTransaction: sinon.stub().resolves(mockHalfSignedUtxoResponse),
+        ensureCleanSigSharesAndSignTransaction: sinon.stub().resolves(mockHalfSignedUtxoResponse),
       };
 
       // Stub the wallets().get() chain
@@ -204,7 +204,7 @@ describe('WalletTxSignTSS codec tests', function () {
       assert.strictEqual(coinStub.calledOnceWith(coin), true);
       assert.strictEqual(mockCoin.wallets.calledOnce, true);
       assert.strictEqual(walletsGetStub.calledOnceWith({ id: walletId }), true);
-      assert.strictEqual(mockWallet.signTransaction.calledOnce, true);
+      assert.strictEqual(mockWallet.ensureCleanSigSharesAndSignTransaction.calledOnce, true);
     });
 
     it('should successfully return a TSS transaction request ID', async function () {
@@ -222,9 +222,9 @@ describe('WalletTxSignTSS codec tests', function () {
         txRequestId: '5a1341e7c8421dc90710673b3166bbd5',
       };
 
-      // Create mock wallet with signTransaction method
+      // Create mock wallet with ensureCleanSigSharesAndSignTransaction method
       const mockWallet = {
-        signTransaction: sinon.stub().resolves(mockTxRequestResponse),
+        ensureCleanSigSharesAndSignTransaction: sinon.stub().resolves(mockTxRequestResponse),
       };
 
       // Stub the wallets().get() chain
@@ -261,7 +261,7 @@ describe('WalletTxSignTSS codec tests', function () {
       assert.strictEqual(coinStub.calledOnceWith(coin), true);
       assert.strictEqual(mockCoin.wallets.calledOnce, true);
       assert.strictEqual(walletsGetStub.calledOnceWith({ id: walletId }), true);
-      assert.strictEqual(mockWallet.signTransaction.calledOnce, true);
+      assert.strictEqual(mockWallet.ensureCleanSigSharesAndSignTransaction.calledOnce, true);
     });
 
     it('should successfully return a full TSS transaction request (TxRequestResponse)', async function () {
@@ -322,9 +322,9 @@ describe('WalletTxSignTSS codec tests', function () {
         latest: true,
       };
 
-      // Create mock wallet with signTransaction method
+      // Create mock wallet with ensureCleanSigSharesAndSignTransaction method
       const mockWallet = {
-        signTransaction: sinon.stub().resolves(mockTxRequestFullResponse),
+        ensureCleanSigSharesAndSignTransaction: sinon.stub().resolves(mockTxRequestFullResponse),
       };
 
       // Stub the wallets().get() chain
@@ -385,7 +385,170 @@ describe('WalletTxSignTSS codec tests', function () {
       assert.strictEqual(coinStub.calledOnceWith(coin), true);
       assert.strictEqual(mockCoin.wallets.calledOnce, true);
       assert.strictEqual(walletsGetStub.calledOnceWith({ id: walletId }), true);
-      assert.strictEqual(mockWallet.signTransaction.calledOnce, true);
+      assert.strictEqual(mockWallet.ensureCleanSigSharesAndSignTransaction.calledOnce, true);
+    });
+
+    // ==========================================
+    // SIGNATURE CLEANUP TESTS
+    // ==========================================
+
+    describe('Signature Cleanup (ensureCleanSigSharesAndSignTransaction)', function () {
+      it('should cleanup partial signature shares before signing', async function () {
+        const requestBody = {
+          txPrebuild: {
+            txHex:
+              '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
+            walletId: walletId,
+            txRequestId: 'tx-req-with-partial-sigs',
+          },
+          walletPassphrase: 'test_passphrase_12345',
+          apiVersion: 'full' as const,
+        };
+
+        const partiallySignedTxRequest = {
+          txRequestId: 'tx-req-with-partial-sigs',
+          walletId: walletId,
+          walletType: 'hot',
+          version: 1,
+          state: 'pendingSignature',
+          date: '2025-10-22',
+          userId: 'user-123',
+          intent: {},
+          policiesChecked: false,
+          unsignedTxs: [],
+          apiVersion: 'full',
+          latest: true,
+          transactions: [
+            {
+              state: 'pendingSignature',
+              unsignedTx: {
+                serializedTxHex: 'abc123',
+                signableHex: 'def456',
+                derivationPath: 'm/0',
+              },
+              signatureShares: [
+                {
+                  from: 'user',
+                  to: 'bitgo',
+                  share: 'stale-partial-sig',
+                },
+              ],
+            },
+          ],
+        };
+
+        const mockWallet = {
+          ensureCleanSigSharesAndSignTransaction: sinon.stub().resolves(partiallySignedTxRequest),
+        };
+
+        const walletsGetStub = sinon.stub().resolves(mockWallet);
+        const mockWallets = { get: walletsGetStub };
+        const mockCoin = { wallets: sinon.stub().returns(mockWallets) };
+        sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+        const result = await agent
+          .post(`/api/v2/${coin}/wallet/${walletId}/signtxtss`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        assert.strictEqual(result.status, 200);
+        assert.strictEqual(mockWallet.ensureCleanSigSharesAndSignTransaction.calledOnce, true);
+
+        const callArgs = mockWallet.ensureCleanSigSharesAndSignTransaction.firstCall.args[0];
+        assert.strictEqual(callArgs.txPrebuild.txRequestId, 'tx-req-with-partial-sigs');
+        assert.strictEqual(callArgs.walletPassphrase, 'test_passphrase_12345');
+      });
+
+      it('should handle message-based TxRequest with partial signatures', async function () {
+        const requestBody = {
+          txPrebuild: {
+            txHex: '0xabc123',
+            walletId: walletId,
+            txRequestId: 'msg-req-with-partial-sigs',
+          },
+          walletPassphrase: 'test_passphrase_12345',
+          apiVersion: 'full' as const,
+        };
+
+        const partiallySignedMessageRequest = {
+          txRequestId: 'msg-req-with-partial-sigs',
+          walletId: walletId,
+          walletType: 'hot',
+          version: 1,
+          state: 'pendingSignature',
+          date: '2025-10-22',
+          userId: 'user-123',
+          intent: { intentType: 'signMessage' },
+          policiesChecked: false,
+          unsignedTxs: [],
+          apiVersion: 'full',
+          latest: true,
+          messages: [
+            {
+              state: 'pendingSignature',
+              messageRaw: 'hello world',
+              derivationPath: 'm/0',
+              signatureShares: [
+                {
+                  from: 'user',
+                  to: 'bitgo',
+                  share: 'stale-msg-sig',
+                },
+              ],
+            },
+          ],
+        };
+
+        const mockWallet = {
+          ensureCleanSigSharesAndSignTransaction: sinon.stub().resolves(partiallySignedMessageRequest),
+        };
+
+        const walletsGetStub = sinon.stub().resolves(mockWallet);
+        const mockWallets = { get: walletsGetStub };
+        const mockCoin = { wallets: sinon.stub().returns(mockWallets) };
+        sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+        const result = await agent
+          .post(`/api/v2/${coin}/wallet/${walletId}/signtxtss`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        assert.strictEqual(result.status, 200);
+        assert.strictEqual(mockWallet.ensureCleanSigSharesAndSignTransaction.calledOnce, true);
+      });
+
+      it('should not perform cleanup for Lite TxRequest', async function () {
+        const requestBody = {
+          txPrebuild: {
+            txHex:
+              '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
+            walletId: walletId,
+            txRequestId: 'lite-tx-req',
+          },
+          walletPassphrase: 'test_passphrase_12345',
+          apiVersion: 'lite' as const,
+        };
+
+        const mockWallet = {
+          ensureCleanSigSharesAndSignTransaction: sinon.stub().resolves(mockFullySignedResponse),
+        };
+
+        const walletsGetStub = sinon.stub().resolves(mockWallet);
+        const mockWallets = { get: walletsGetStub };
+        const mockCoin = { wallets: sinon.stub().returns(mockWallets) };
+        sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+        const result = await agent
+          .post(`/api/v2/${coin}/wallet/${walletId}/signtxtss`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        assert.strictEqual(result.status, 200);
+        assert.strictEqual(mockWallet.ensureCleanSigSharesAndSignTransaction.calledOnce, true);
+      });
     });
 
     // ==========================================
