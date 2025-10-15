@@ -11,6 +11,7 @@ module.exports = (E) => {
     },
     'io-ts-types': {
       Json: () => E.right({ type: 'object', properties: {}, required: [] }),
+      NonEmptyString: () => E.right({ type: 'string', minLength: 1 }),
     },
   };
 };

@@ -36,8 +36,8 @@ export const OfcSignPayloadResponse = {
 /** Sign payload with an OFC wallet key.
  * Signs an arbitrary payload with an OFC wallet key.
  *
- * @tag express
  * @operationId express.ofc.signPayload
+ * @tag express
  */
 export const PostOfcSignPayload = httpRoute({
   path: '/api/v2/ofc/signPayload',

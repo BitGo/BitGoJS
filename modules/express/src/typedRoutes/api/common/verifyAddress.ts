@@ -10,6 +10,7 @@ export const VerifyAddressBody = {
  * Verify Address
  *
  * @operationId express.verifyaddress
+ * @tag express
  */
 export const PostVerifyAddress = httpRoute({
   path: '/api/v[12]/verifyaddress',

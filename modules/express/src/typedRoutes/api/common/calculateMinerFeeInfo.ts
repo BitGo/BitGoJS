@@ -39,6 +39,7 @@ export const CalculateMinerFeeInfoResponse = t.type({
  * 4. The fee rate (in satoshis per kilobyte)
  *
  * @operationId express.calculateminerfeeinfo
+ * @tag express
  */
 export const PostCalculateMinerFeeInfo = httpRoute({
   path: '/api/v[12]/calculateminerfeeinfo',

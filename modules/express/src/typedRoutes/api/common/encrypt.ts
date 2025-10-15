@@ -12,6 +12,7 @@ export const EncryptRequestBody = {
  * Encrypt
  *
  * @operationId express.encrypt
+ * @tag express
  */
 export const PostEncrypt = httpRoute({
   path: '/api/v[12]/encrypt',

@@ -23,6 +23,7 @@ export const AcceptShareRequestBody = {
  * to the wallet according to the permissions granted by the sharing user.
  *
  * @operationId express.v1.wallet.acceptShare
+ * @tag express
  */
 export const PostAcceptShare = httpRoute({
   path: '/api/v1/walletshare/{shareId}/acceptShare',

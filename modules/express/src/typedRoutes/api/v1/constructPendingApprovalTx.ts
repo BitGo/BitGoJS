@@ -60,9 +60,10 @@ export const ConstructPendingApprovalTxResponse = t.type({
  * You can optionally specify fee-related parameters to customize the transaction fee.
  *
  * @operationId express.v1.pendingapproval.constructTx
+ * @tag express
  */
 export const PutConstructPendingApprovalTx = httpRoute({
-  path: '/api/v1/pendingapprovals/:id/constructTx',
+  path: '/api/v1/pendingapprovals/{id}/constructTx',
   method: 'PUT',
   request: httpRequest({
     params: ConstructPendingApprovalTxRequestParams,

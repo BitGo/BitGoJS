@@ -72,9 +72,10 @@ export const ConsolidateUnspentsResponse = t.array(
  * which can improve performance and reduce transaction fees.
  *
  * @operationId express.v1.wallet.consolidateunspents
+ * @tag express
  */
 export const PutConsolidateUnspents = httpRoute({
-  path: '/api/v1/wallet/:id/consolidateunspents',
+  path: '/api/v1/wallet/{id}/consolidateunspents',
   method: 'PUT',
   request: httpRequest({
     params: ConsolidateUnspentsRequestParams,

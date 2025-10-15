@@ -284,7 +284,7 @@ describe('ConstructPendingApprovalTx codec tests', function () {
 
   describe('PutConstructPendingApprovalTx route definition', function () {
     it('should have the correct path', function () {
-      assert.strictEqual(PutConstructPendingApprovalTx.path, '/api/v1/pendingapprovals/:id/constructTx');
+      assert.strictEqual(PutConstructPendingApprovalTx.path, '/api/v1/pendingapprovals/{id}/constructTx');
     });
 
     it('should have the correct HTTP method', function () {

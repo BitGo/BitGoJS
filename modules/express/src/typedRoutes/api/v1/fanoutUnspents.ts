@@ -60,9 +60,10 @@ export const FanoutUnspentsResponse = t.type({
  * in a wallet, which can improve transaction parallelization.
  *
  * @operationId express.v1.wallet.fanoutunspents
+ * @tag express
  */
 export const PutFanoutUnspents = httpRoute({
-  path: '/api/v1/wallet/:id/fanoutunspents',
+  path: '/api/v1/wallet/{id}/fanoutunspents',
   method: 'PUT',
   request: httpRequest({
     params: FanoutUnspentsRequestParams,

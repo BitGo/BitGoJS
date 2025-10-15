@@ -62,11 +62,11 @@ export const CreateAddressResponse = {
 /**
  * Create address for a wallet
  *
- * @tag express
  * @operationId express.v2.wallet.createAddress
+ * @tag express
  */
 export const PostCreateAddress = httpRoute({
-  path: '/api/v2/{coin}/wallet/{walletId}/address',
+  path: '/api/v2/{coin}/wallet/{id}/address',
   method: 'POST',
   request: httpRequest({
     params: CreateAddressParams,

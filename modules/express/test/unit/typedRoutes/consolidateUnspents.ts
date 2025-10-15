@@ -640,7 +640,7 @@ describe('ConsolidateUnspents codec tests', function () {
 
   describe('PutConsolidateUnspents route definition', function () {
     it('should have the correct path', function () {
-      assert.strictEqual(PutConsolidateUnspents.path, '/api/v1/wallet/:id/consolidateunspents');
+      assert.strictEqual(PutConsolidateUnspents.path, '/api/v1/wallet/{id}/consolidateunspents');
     });
 
     it('should have the correct HTTP method', function () {

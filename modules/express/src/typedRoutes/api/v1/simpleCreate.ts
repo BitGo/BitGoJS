@@ -32,6 +32,7 @@ export const SimpleCreateRequestBody = {
  * 5. Creates the wallet on BitGo with the 3 public keys above
  *
  * @operationId express.v1.wallet.simplecreate
+ * @tag express
  */
 export const PostSimpleCreate = httpRoute({
   path: '/api/v1/wallets/simplecreate',

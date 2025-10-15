@@ -42,6 +42,7 @@ export const LoginRequest = {
  * Login
  *
  * @operationId express.login
+ * @tag express
  */
 export const PostLogin = httpRoute({
   path: '/api/v[12]/user/login',
