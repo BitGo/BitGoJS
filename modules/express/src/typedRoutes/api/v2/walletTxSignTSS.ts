@@ -157,6 +157,7 @@ export const WalletTxSignTSSResponse = {
  * - sequenceId: Sequence ID for transactions
  * - isEvmBasedCrossChainRecovery: For EVM cross-chain recovery
  *
+ * @tag express
  * @operationId express.v2.wallet.signtxtss
  */
 export const PostWalletTxSignTSS = httpRoute({

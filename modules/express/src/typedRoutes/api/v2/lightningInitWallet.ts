@@ -36,6 +36,7 @@ export const LightningInitWalletResponse = {
  * Lightning - This is only used for self-custody lightning. Initialize a newly created Lightning Network Daemon (LND) for the first time.
  * Returns the updated wallet with the encrypted admin macaroon in the `coinSpecific` response field.
  *
+ * @tag express
  * @operationId express.lightning.initWallet
  */
 export const PostLightningInitWallet = httpRoute({
