@@ -50,3 +50,24 @@ interface Message<T> {
 }
 
 export type DeserializedMessage = Message<Uint8Array>;
+
+/**
+ * Represents the state of a DSG (Distributed Signature Generation) session
+ * These states correspond to the internal WASM library states
+ */
+export enum DsgState {
+  /** DSG session has not been initialized */
+  Uninitialized = 'Uninitialized',
+  /** DSG session has been initialized (Init state in WASM) */
+  Init = 'Init',
+  /** DSG session is waiting for first message (WaitMsg1 state in WASM) */
+  WaitMsg1 = 'WaitMsg1',
+  /** DSG session is waiting for second message (WaitMsg2 state in WASM) */
+  WaitMsg2 = 'WaitMsg2',
+  /** DSG session has partial signature and is waiting for messages (Partial state in WASM) */
+  Partial = 'Partial',
+  /** DSG session has finished (Finished state in WASM) */
+  Finished = 'Finished',
+  /** DSG session has been ended/cleaned up */
+  Ended = 'Ended',
+}
