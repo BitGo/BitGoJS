@@ -921,35 +921,6 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   /**
-   * @deprecated - use utxolib.bitgo.getDefaultSigHash(network) instead
-   * @returns {number}
-   */
-  get defaultSigHashType(): number {
-    return utxolib.bitgo.getDefaultSigHash(this.network);
-  }
-
-  /**
-   * @deprecated - use utxolib.bitcoin.verifySignature() instead
-   */
-  verifySignature(
-    transaction: any,
-    inputIndex: number,
-    amount: number,
-    verificationSettings: {
-      signatureIndex?: number;
-      publicKey?: string;
-    } = {}
-  ): boolean {
-    if (transaction.network !== this.network) {
-      throw new Error(`network mismatch`);
-    }
-    return utxolib.bitgo.verifySignature(transaction, inputIndex, amount, {
-      signatureIndex: verificationSettings.signatureIndex,
-      publicKey: verificationSettings.publicKey ? Buffer.from(verificationSettings.publicKey, 'hex') : undefined,
-    });
-  }
-
-  /**
    * Decompose a raw psbt/transaction into useful information, such as the total amounts,
    * change amounts, and transaction outputs.
    * @param params

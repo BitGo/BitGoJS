@@ -1,4 +1,4 @@
-import { execa, ResultPromise } from 'execa';
+import execa, { ExecaChildProcess } from 'execa';
 import fs from 'fs/promises';
 import tmp from 'tmp';
 import yargs from 'yargs';
@@ -91,7 +91,7 @@ async function fetchArchive(lib: GithubSource, outfile: string): Promise<void> {
   await fs.writeFile(outfile, Buffer.from(await result.arrayBuffer()));
 }
 
-function pipe(cmd: ResultPromise): ResultPromise {
+function pipe(cmd: ExecaChildProcess): ExecaChildProcess {
   cmd.stdout?.pipe(process.stdout);
   cmd.stderr?.pipe(process.stderr);
   return cmd;
@@ -171,6 +171,30 @@ const vendorConfigs: VendorConfig[] = [
     org: 'babylonlabs-io',
     repo: 'btc-staking-ts',
     tag: 'v2.3.4',
+    targetDir: 'modules/babylonlabs-io-btc-staking-ts',
+    removeFiles: [
+      '.eslintrc.json',
+      '.github/',
+      '.husky/',
+      '.npmrc',
+      '.nvmrc',
+      '.prettierignore',
+      '.prettierrc.json',
+      'docs/',
+      'tests/',
+      '.releaserc.json',
+      '.commitlint.config.cjs',
+      'README.md',
+    ],
+    cherryPick: {
+      start: '161a937c4303d8273922ebfd04640d2391aca246',
+      end: '8d84d9b02af73d7c216d87aceca3dec0baabfecf',
+    },
+  },
+  {
+    org: 'babylonlabs-io',
+    repo: 'btc-staking-ts',
+    tag: 'v2.5.7',
     targetDir: 'modules/babylonlabs-io-btc-staking-ts',
     removeFiles: [
       '.eslintrc.json',
