@@ -3,6 +3,37 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [22.8.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@22.8.4...@bitgo/sdk-coin-bsc@22.8.5) (2025-10-13)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-bsc
+
+
+
+
+
+## [22.8.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@22.8.3...@bitgo/sdk-coin-bsc@22.8.4) (2025-10-09)
+
+
+### Bug Fixes
+
+* run check-fmt on code files only ([9745196](https://github.com/BitGo/BitGoJS/commit/9745196b02b9678c740d290a4638ceb153a8fd75))
+
+
+
+
+
+## [22.8.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@22.8.2...@bitgo/sdk-coin-bsc@22.8.3) (2025-10-08)
+
+
+### Bug Fixes
+
+* add explicit 'files' in package json ([3b00373](https://github.com/BitGo/BitGoJS/commit/3b0037396f6ac16bb9380bd85bf37f2b133068f4))
+* update fullname of binance smart chain and bnb token ([0a19d00](https://github.com/BitGo/BitGoJS/commit/0a19d00a7537b82b53100e313e4beb5541d85ebe))
+
+
+
+
+
 ## [22.8.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@22.8.1...@bitgo/sdk-coin-bsc@22.8.2) (2025-10-02)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-bsc

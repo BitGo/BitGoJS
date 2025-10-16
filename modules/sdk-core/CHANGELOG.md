@@ -3,6 +3,53 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [36.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.12.0...@bitgo/sdk-core@36.13.0) (2025-10-13)
+
+
+### Features
+
+* support versioned sol transactions with customTx intent ([b33402f](https://github.com/BitGo/BitGoJS/commit/b33402f9a7c4724804a2f45737fcbd2562f6bb3e))
+
+
+
+
+
+# [36.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.11.0...@bitgo/sdk-core@36.12.0) (2025-10-09)
+
+
+### Bug Fixes
+
+* run check-fmt on code files only ([9745196](https://github.com/BitGo/BitGoJS/commit/9745196b02b9678c740d290a4638ceb153a8fd75))
+
+
+### Features
+
+* **express:** migrate coinSignTx to typed routes ([c2638e0](https://github.com/BitGo/BitGoJS/commit/c2638e08308283f9a32b4efe78520472276d991f))
+* **sdk-core:** staking tx STX validate type ([ea7bca6](https://github.com/BitGo/BitGoJS/commit/ea7bca649419308e3e1eab7d94c70bdb2ae28375))
+
+
+
+
+
+# [36.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.10.1...@bitgo/sdk-core@36.11.0) (2025-10-08)
+
+
+### Bug Fixes
+
+* add explicit 'files' in package json ([3b00373](https://github.com/BitGo/BitGoJS/commit/3b0037396f6ac16bb9380bd85bf37f2b133068f4))
+
+
+### Features
+
+* add new param to support the netUID for Tao Staking ([6b175f8](https://github.com/BitGo/BitGoJS/commit/6b175f84510d633d02071dea5fabac3acb36b7cf))
+* change the netUID data type from string to number for Tao Staking ([a4eba23](https://github.com/BitGo/BitGoJS/commit/a4eba231eca91d8b3d58301efbb5b62ea0c655e5))
+* **sdk-core:** add psbt-lite as a transaction format option ([ae4da15](https://github.com/BitGo/BitGoJS/commit/ae4da15972a7f8e5bf0612d9d9feccffea95cbfa))
+* **sdk-core:** tokenApproval func for hot and cold multisig ([76b9577](https://github.com/BitGo/BitGoJS/commit/76b9577eae035c8a846999864304a13a5a6f29c0))
+
+
+
+
+
 ## [36.10.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.10.0...@bitgo/sdk-core@36.10.1) (2025-10-02)
 
 **Note:** Version bump only for package @bitgo/sdk-core

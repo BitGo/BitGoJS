@@ -2144,6 +2144,7 @@ export enum UnderlyingAsset {
   'eth:mavia' = 'eth:mavia',
   'eth:lm' = 'eth:lm',
   'eth:kub' = 'eth:kub',
+  'eth:fidd' = 'eth:fidd',
 
   // Ondo Tokenized Assets
   'eth:qqqon' = 'qqqon',
@@ -2898,6 +2899,7 @@ export enum UnderlyingAsset {
 
   // Flr testnet tokens
   'tflr:wflr' = 'tflr:wflr',
+  'tflr:twc2flr' = 'tflr:twc2flr',
 
   ERC721 = 'erc721',
   ERC1155 = 'erc1155',
@@ -3170,6 +3172,7 @@ export enum UnderlyingAsset {
   'tpolyx:WEBINRASSET6' = 'tpolyx:WEBINRASSET6',
   'tpolyx:WEBINRASSET7' = 'tpolyx:WEBINRASSET7',
   'tpolyx:BULLRWA' = 'tpolyx:BULLRWA',
+  'tpolyx:0x4a002922d38b8a7f87484b9c65a7ca0c' = 'tpolyx:0x4a002922d38b8a7f87484b9c65a7ca0c',
 
   // Polymesh mainnet tokens
   'polyx:0xa0ce6bc4c60981e08eca6504656c99e6' = 'polyx:0xa0ce6bc4c60981e08eca6504656c99e6',
@@ -3191,6 +3194,8 @@ export enum UnderlyingAsset {
   // Nep141 tokens
   'near:usdc' = 'near:usdc',
   'near:usdt' = 'near:usdt',
+  'near:mpdao' = 'near:mpdao',
+  'near:stnear' = 'near:stnear',
 
   // Nep141 testnet tokens
   'tnear:tnep24dp' = 'tnear:tnep24dp',

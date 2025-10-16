@@ -71,10 +71,11 @@ export const ConsolidateUnspentsResponse = t.array(
  * multiple inputs to a single output. This is useful for reducing the number of UTXOs in a wallet,
  * which can improve performance and reduce transaction fees.
  *
+ * @tag express
  * @operationId express.v1.wallet.consolidateunspents
  */
 export const PutConsolidateUnspents = httpRoute({
-  path: '/api/v1/wallet/:id/consolidateunspents',
+  path: '/api/v1/wallet/{id}/consolidateunspents',
   method: 'PUT',
   request: httpRequest({
     params: ConsolidateUnspentsRequestParams,

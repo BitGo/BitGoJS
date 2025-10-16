@@ -6,7 +6,7 @@ import { TapTree as PsbtTapTree, TapLeaf as PsbtTapLeaf } from 'bip174/src/lib/i
 import assert = require('assert');
 import FastPriorityQueue = require('fastpriorityqueue');
 import { script as bscript, crypto as bcrypto, payments as bpayments } from 'bitcoinjs-lib';
-import { ecc as eccLib } from './noble_ecc';
+import { ecc as eccLib } from '@bitgo/secp256k1';
 const varuint = require('varuint-bitcoin');
 
 /**

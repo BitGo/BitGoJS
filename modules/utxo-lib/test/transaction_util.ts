@@ -1,6 +1,6 @@
-import { BIP32Interface } from 'bip32';
 import * as assert from 'assert';
 import { TxOutput } from 'bitcoinjs-lib';
+import { BIP32Interface } from '@bitgo/secp256k1';
 
 import { networks, Network } from '../src';
 

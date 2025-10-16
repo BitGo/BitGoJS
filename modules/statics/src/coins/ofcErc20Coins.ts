@@ -4452,6 +4452,14 @@ export const tOfcErc20Coins = [
   ofcerc20('abeefced-cfda-4afa-8f9c-aebfcadbecfd', 'ofceth:align', 'Aligned', 18, UnderlyingAsset['eth:align']),
 
   ofcerc20('bcfffdee-daeb-4bfb-9fad-bfcadbecfdae', 'ofceth:xan', 'Anoma', 18, UnderlyingAsset['eth:xan']),
+
+  ofcerc20(
+    'a9d3645d-4a42-4e9d-999b-83e4785b3f57',
+    'ofceth:fidd',
+    'Fidelity Digital Dollar',
+    18,
+    UnderlyingAsset['eth:fidd']
+  ),
 ];
 
 function underlyingAssetForSymbol(underlyingAssetValue: string): UnderlyingAsset {

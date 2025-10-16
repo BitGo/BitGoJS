@@ -6,19 +6,22 @@ import {
   getSignatureValidationArrayPsbt,
   getStrictSignatureCount,
   getStrictSignatureCounts,
+  PsbtInput,
+  PsbtOutput,
   RootWalletKeys,
   Triple,
+  UtxoPsbt,
   UtxoTransaction,
 } from '../../../src/bitgo';
-import { BIP32Interface } from 'bip32';
+import { BIP32Interface } from '@bitgo/secp256k1';
 import {
   constructPsbt,
   constructTxnBuilder,
   getDefaultWalletKeys,
-  Input,
+  Input as TestUtilInput,
   InputScriptType,
   inputScriptTypes,
-  Output,
+  Output as TestUtilOutput,
   outputScriptTypes,
   TxnInput,
   txnInputScriptTypes,
@@ -28,11 +31,12 @@ import {
 import { getNetworkList, getNetworkName, isMainnet, Network, networks } from '../../../src';
 import { isSupportedScriptType } from '../../../src/bitgo/outputScripts';
 import { SignatureTargetType } from './Psbt';
+import { getFixture } from '../../fixture.util';
 
 const rootWalletKeys = getDefaultWalletKeys();
 const signs = ['unsigned', 'halfsigned', 'fullsigned'] as const;
 
-const neutratedRootWalletKeys = new RootWalletKeys(
+const rootWalletKeysXpubs = new RootWalletKeys(
   rootWalletKeys.triple.map((bip32) => bip32.neutered()) as Triple<BIP32Interface>,
   rootWalletKeys.derivationPrefixes
 );
@@ -57,14 +61,50 @@ function signCount(sign: SignatureTargetType) {
   return sign === 'unsigned' ? 0 : sign === 'halfsigned' ? 1 : 2;
 }
 
-function runPsbt(network: Network, sign: SignatureTargetType, inputs: Input[], outputs: Output[]) {
+// normalize buffers to hex
+function toFixture(obj: unknown) {
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+  if (typeof obj === 'bigint') {
+    return obj.toString();
+  }
+  if (Buffer.isBuffer(obj)) {
+    return obj.toString('hex');
+  }
+  if (Array.isArray(obj)) {
+    return obj.map(toFixture);
+  }
+  if (typeof obj === 'object') {
+    return Object.fromEntries(Object.entries(obj).map(([key, value]) => [key, toFixture(value)]));
+  }
+  return obj;
+}
+
+function getFixturePsbtInputs(psbt: UtxoPsbt, inputs: TestUtilInput[]) {
+  if (inputs.length !== psbt.data.inputs.length) {
+    throw new Error('inputs length mismatch');
+  }
+  return psbt.data.inputs.map((input: PsbtInput, index: number) =>
+    toFixture({ type: inputs[index].scriptType, ...input })
+  );
+}
+
+function getFixturePsbtOutputs(psbt: UtxoPsbt) {
+  return psbt.data.outputs.map((output: PsbtOutput) => toFixture(output));
+}
+
+function runPsbt(network: Network, sign: SignatureTargetType, inputs: TestUtilInput[], outputs: TestUtilOutput[]) {
   const coin = getNetworkName(network);
   const signatureCount = signCount(sign);
+  const inputTypes = inputs.map((input) => input.scriptType);
 
-  describe(`psbt build, sign and verify for ${coin} ${sign}`, function () {
+  describe(`psbt build, sign and verify for ${coin} ${inputTypes.join('-')} ${sign}`, function () {
+    let psbt: UtxoPsbt;
+
     it(`getSignatureValidationArray with globalXpub ${coin} ${sign}`, function () {
-      const psbt = constructPsbt(inputs, outputs, network, rootWalletKeys, sign);
-      addXpubsToPsbt(psbt, neutratedRootWalletKeys);
+      psbt = constructPsbt(inputs, outputs, network, rootWalletKeys, sign, { deterministic: true });
+      addXpubsToPsbt(psbt, rootWalletKeysXpubs);
       psbt.data.inputs.forEach((input, inputIndex) => {
         const isP2shP2pk = inputs[inputIndex].scriptType === 'p2shP2pk';
         const expectedSigValid = getSigValidArray(inputs[inputIndex].scriptType, sign);
@@ -78,13 +118,24 @@ function runPsbt(network: Network, sign: SignatureTargetType, inputs: Input[], o
       });
     });
 
+    it('matches fixture', async function () {
+      const fixture = {
+        walletKeys: rootWalletKeys.triple.map((xpub) => xpub.toBase58()),
+        psbtBase64: psbt.toBase64(),
+        inputs: getFixturePsbtInputs(psbt, inputs),
+        outputs: getFixturePsbtOutputs(psbt),
+      };
+      const filename = [`psbt`, coin, sign, 'json'].join('.');
+      assert.deepStrictEqual(fixture, await getFixture(`${__dirname}/../fixtures/psbt/${filename}`, fixture));
+    });
+
     it(`getSignatureValidationArray with rootNodes ${coin} ${sign}`, function () {
       const psbt = constructPsbt(inputs, outputs, network, rootWalletKeys, sign);
-      addXpubsToPsbt(psbt, neutratedRootWalletKeys);
+      addXpubsToPsbt(psbt, rootWalletKeysXpubs);
       psbt.data.inputs.forEach((input, inputIndex) => {
         const isP2shP2pk = inputs[inputIndex].scriptType === 'p2shP2pk';
         const expectedSigValid = getSigValidArray(inputs[inputIndex].scriptType, sign);
-        psbt.getSignatureValidationArray(inputIndex, { rootNodes: neutratedRootWalletKeys.triple }).forEach((sv, i) => {
+        psbt.getSignatureValidationArray(inputIndex, { rootNodes: rootWalletKeysXpubs.triple }).forEach((sv, i) => {
           if (isP2shP2pk && sign !== 'unsigned' && i === 0) {
             assert.strictEqual(sv, true);
           } else {
@@ -96,7 +147,7 @@ function runPsbt(network: Network, sign: SignatureTargetType, inputs: Input[], o
 
     it(`getSignatureValidationArrayPsbt  ${coin} ${sign}`, function () {
       const psbt = constructPsbt(inputs, outputs, network, rootWalletKeys, sign);
-      const sigValidations = getSignatureValidationArrayPsbt(psbt, neutratedRootWalletKeys);
+      const sigValidations = getSignatureValidationArrayPsbt(psbt, rootWalletKeysXpubs);
       psbt.data.inputs.forEach((input, inputIndex) => {
         const expectedSigValid = getSigValidArray(inputs[inputIndex].scriptType, sign);
         const sigValid = sigValidations.find((sv) => sv[0] === inputIndex);

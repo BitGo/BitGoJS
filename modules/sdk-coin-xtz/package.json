@@ -1,13 +1,13 @@
 {
   "name": "@bitgo/sdk-coin-xtz",
-  "version": "2.8.2",
+  "version": "2.8.5",
   "description": "BitGo SDK coin library for Tezos",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "scripts": {
     "build": "yarn tsc --build --incremental --verbose .",
     "fmt": "prettier --write .",
-    "check-fmt": "prettier --check .",
+    "check-fmt": "prettier --check '**/*.{ts,js,json}'",
     "clean": "rm -r ./dist",
     "lint": "eslint --quiet .",
     "prepare": "npm run build",
@@ -41,9 +41,9 @@
   },
   "dependencies": {
     "@bitgo/blake2b": "^3.2.4",
-    "@bitgo/sdk-core": "^36.10.1",
+    "@bitgo/sdk-core": "^36.13.0",
     "@bitgo/secp256k1": "^1.5.0",
-    "@bitgo/statics": "^58.2.0",
+    "@bitgo/statics": "^58.5.0",
     "@noble/curves": "1.8.1",
     "@taquito/local-forging": "6.3.5-beta.0",
     "@taquito/signer": "6.3.5-beta.0",
@@ -54,8 +54,8 @@
     "superagent": "^9.0.1"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.69.2",
-    "@bitgo/sdk-test": "^9.1.2"
+    "@bitgo/sdk-api": "^1.70.2",
+    "@bitgo/sdk-test": "^9.1.5"
   },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c",
   "files": [
