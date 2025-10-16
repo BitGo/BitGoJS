@@ -17,9 +17,9 @@ export const ShareWalletParams = {
  * Request body for sharing a wallet
  */
 export const ShareWalletBody = {
-  /** Recipient email address (required) */
+  /** Recipient email address */
   email: t.string,
-  /** Permissions string, e.g., "view,spend" (required) */
+  /** Permissions string, e.g., "view,spend" */
   permissions: t.string,
   /** Wallet passphrase used to derive shared key when needed */
   walletPassphrase: optional(t.string),
