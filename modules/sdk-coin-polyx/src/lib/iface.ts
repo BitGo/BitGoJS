@@ -12,6 +12,8 @@ export interface TxData extends Interface.TxData {
   assetId?: string;
   fromDID?: string;
   toDID?: string;
+  instructionId?: string;
+  portfolioDID?: string;
 }
 
 /**
@@ -49,6 +51,8 @@ export const MethodNames = {
   PreApproveAsset: 'preApproveAsset' as const,
 
   AddAndAffirmWithMediators: 'addAndAffirmWithMediators' as const,
+
+  RejectInstruction: 'rejectInstruction' as const,
 } as const;
 
 // Create a type that represents the keys of this object
@@ -85,6 +89,12 @@ export interface AddAndAffirmWithMediatorsArgs extends Args {
   mediators: [];
 }
 
+export interface RejectInstructionBuilderArgs extends Args {
+  id: string;
+  portfolio: { did: string; kind: PortfolioKind.Default };
+  numberOfAssets: { fungible: number; nonFungible: number; offChain: number };
+}
+
 export interface TxMethod extends Omit<Interface.TxMethod, 'args' | 'name'> {
   args:
     | Interface.TransferArgs
@@ -100,7 +110,8 @@ export interface TxMethod extends Omit<Interface.TxMethod, 'args' | 'name'> {
     | Interface.BatchArgs
     | RegisterDidWithCDDArgs
     | PreApproveAssetArgs
-    | AddAndAffirmWithMediatorsArgs;
+    | AddAndAffirmWithMediatorsArgs
+    | RejectInstructionBuilderArgs;
   name: MethodNamesValues;
 }
 
