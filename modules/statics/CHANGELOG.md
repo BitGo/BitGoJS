@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.4.0...@bitgo/statics@58.5.0) (2025-10-13)
+
+
+### Features
+
+* add ofc statics for plume, kavaevm, and flow ([d851155](https://github.com/BitGo/BitGoJS/commit/d85115539694f52e2a974160ec071c74c4654342))
+* **statics:** add twc2flr testnet token ([7a8a199](https://github.com/BitGo/BitGoJS/commit/7a8a19935dca4ee351f1697b57c446300eb3834f))
+* **statics:** onboard new batch of tokens ([f70224f](https://github.com/BitGo/BitGoJS/commit/f70224f8282b282e1d450fada4f675fe4016dc8c))
+
+
+
+
+
 # [58.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.3.0...@bitgo/statics@58.4.0) (2025-10-09)
 
 

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.2.0...@bitgo/sdk-coin-canton@1.3.0) (2025-10-13)
+
+
+### Features
+
+* **sdk-coin-canton:** added wallet initialization builder class ([5a75d7a](https://github.com/BitGo/BitGoJS/commit/5a75d7a85ae4783edd0c368eb9b4992eb53b4443))
+
+
+
+
+
 # [1.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.1.0...@bitgo/sdk-coin-canton@1.2.0) (2025-10-09)
 
 

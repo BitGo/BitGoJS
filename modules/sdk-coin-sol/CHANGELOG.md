@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.2.3...@bitgo/sdk-coin-sol@7.3.0) (2025-10-13)
+
+
+### Features
+
+* support versioned sol transactions with customTx intent ([b33402f](https://github.com/BitGo/BitGoJS/commit/b33402f9a7c4724804a2f45737fcbd2562f6bb3e))
+
+
+
+
+
 ## [7.2.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.2.2...@bitgo/sdk-coin-sol@7.2.3) (2025-10-10)
 
 
