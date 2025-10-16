@@ -137,7 +137,6 @@ export class TokenTransferBuilder extends PolyxBaseBuilder<TxMethod, Transaction
   validateDecodedTransaction(decodedTxn: DecodedSigningPayload | DecodedSignedTx, rawTransaction?: string): void {
     if (decodedTxn.method?.name === MethodNames.AddAndAffirmWithMediators) {
       const txMethod = decodedTxn.method.args as AddAndAffirmWithMediatorsArgs;
-      console.log(`Validating transaction: ${JSON.stringify(txMethod)}`);
       const venueId = txMethod.venueId;
       const settlementType = txMethod.settlementType;
       const tradeDate = txMethod.tradeDate;

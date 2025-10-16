@@ -107,6 +107,9 @@ export enum TransactionType {
 
   // cspr
   stakingUnlock,
+
+  // polyx
+  RejectInstruction,
 }
 
 /**
