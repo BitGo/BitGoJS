@@ -24,7 +24,7 @@ import {
 } from '@bitgo/sdk-core';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { coins } from '@bitgo/statics';
-import { KeyPair, Sol, SolVerifyTransactionOptions, Tsol } from '../../src';
+import { getAmountBasedOnEndianness, KeyPair, Sol, SolVerifyTransactionOptions, Tsol } from '../../src';
 import { Transaction } from '../../src/lib';
 import { AtaInit, InstructionParams, TokenTransfer } from '../../src/lib/iface';
 import { getAssociatedTokenAccountAddress } from '../../src/lib/utils';
@@ -598,6 +598,93 @@ describe('SOL:', function () {
         wallet: walletObj,
       } as any);
       validTransaction.should.equal(true);
+    });
+  });
+
+  describe('getAmountBasedOnEndianness', () => {
+    let originalArch: string;
+
+    beforeEach(() => {
+      originalArch = process.arch;
+    });
+
+    afterEach(() => {
+      Object.defineProperty(process, 'arch', {
+        value: originalArch,
+        writable: true,
+        configurable: true,
+      });
+    });
+
+    it('should return amount unchanged on non-s390x architectures', function () {
+      Object.defineProperty(process, 'arch', {
+        value: 'x64',
+        writable: true,
+        configurable: true,
+      });
+
+      getAmountBasedOnEndianness('300000').should.equal('300000');
+      getAmountBasedOnEndianness('10000').should.equal('10000');
+      getAmountBasedOnEndianness('504403158265495552').should.equal('504403158265495552');
+    });
+
+    it('should byte-swap small amounts on s390x (small becomes huge)', function () {
+      Object.defineProperty(process, 'arch', {
+        value: 's390x',
+        writable: true,
+        configurable: true,
+      });
+
+      // Small amount 10,000 (0x2710) swaps to 1,163,899,028,698,562,560
+      getAmountBasedOnEndianness('10000').should.equal('1163899028698562560');
+    });
+
+    it('should byte-swap large amounts on s390x (large becomes tiny)', function () {
+      Object.defineProperty(process, 'arch', {
+        value: 's390x',
+        writable: true,
+        configurable: true,
+      });
+
+      // Large amount 504,403,158,265,495,552 (0x0700000000000000) swaps to 7
+      getAmountBasedOnEndianness('504403158265495552').should.equal('7');
+    });
+
+    it('should handle numeric input', function () {
+      Object.defineProperty(process, 'arch', {
+        value: 's390x',
+        writable: true,
+        configurable: true,
+      });
+
+      // Should work with numbers, not just strings
+      getAmountBasedOnEndianness(10000).should.equal('1163899028698562560');
+    });
+
+    it('should handle standard transaction amounts on s390x', function () {
+      Object.defineProperty(process, 'arch', {
+        value: 's390x',
+        writable: true,
+        configurable: true,
+      });
+
+      // Standard amount 300,000 (0x493E0) swaps to large value
+      const result = getAmountBasedOnEndianness('300000');
+      // Verify it's different (swapped)
+      result.should.not.equal('300000');
+      // Verify swapping back gives original
+      getAmountBasedOnEndianness(result).should.equal('300000');
+    });
+
+    it('should handle invalid input gracefully', function () {
+      Object.defineProperty(process, 'arch', {
+        value: 's390x',
+        writable: true,
+        configurable: true,
+      });
+
+      // Invalid BigInt input should return original string
+      getAmountBasedOnEndianness('not-a-number').should.equal('not-a-number');
     });
   });
 
