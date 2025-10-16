@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.5.0...@bitgo/secp256k1@1.6.0) (2025-10-16)
+
+
+### Features
+
+* configure learn to skip git operations ([ee3a622](https://github.com/BitGo/BitGoJS/commit/ee3a6220496476aa7f4545b5f4a9a3bf97d9bdb9))
+* **secp256k1:** export factory functions ([4930f7a](https://github.com/BitGo/BitGoJS/commit/4930f7ac14ca7050c77bb46448340300116e81ab))
+
+
+
+
+
 # [1.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.4.0...@bitgo/secp256k1@1.5.0) (2025-08-22)
 
 ### Bug Fixes

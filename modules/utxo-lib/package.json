@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/utxo-lib",
-  "version": "11.11.1",
+  "version": "11.12.0",
   "description": "Client-side Bitcoin JavaScript library",
   "main": "./dist/src/index.js",
   "engines": {
@@ -47,7 +47,7 @@
   ],
   "dependencies": {
     "@bitgo/blake2b": "^3.2.4",
-    "@bitgo/secp256k1": "^1.5.0",
+    "@bitgo/secp256k1": "^1.6.0",
     "@brandonblack/musig": "^0.0.1-alpha.0",
     "bech32": "^2.0.0",
     "bip174": "npm:@bitgo-forks/bip174@3.1.0-master.4",

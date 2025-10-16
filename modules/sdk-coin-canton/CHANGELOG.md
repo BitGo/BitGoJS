@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.3.0...@bitgo/sdk-coin-canton@1.4.0) (2025-10-16)
+
+
+### Bug Fixes
+
+* **sdk-coin-canton:** fix issue with beta dependency bumps ([9672c67](https://github.com/BitGo/BitGoJS/commit/9672c67a40bf5f9db5646ccccce3b1e80bbbdb20))
+* **sdk-coin-canton:** removed the non-required export ([73ed13d](https://github.com/BitGo/BitGoJS/commit/73ed13d974e7cc840c77678688b95b4a0ab2b726))
+
+
+### Features
+
+* **sdk-coin-canton:** added pre-approval builder ([8cbdf3e](https://github.com/BitGo/BitGoJS/commit/8cbdf3ec4be6cc52abd405c369befb8814957063))
+* **sdk-coin-canton:** added wallet initialize builder to the builder factory ([8bc0608](https://github.com/BitGo/BitGoJS/commit/8bc0608c5bace577350c4adb01501700cc1e5a82))
+* **sdk-coin-canton:** export the wallet init transaction ([fcdebce](https://github.com/BitGo/BitGoJS/commit/fcdebce615b2c8dc32bf3f33fdd76ff6d31226a3))
+* **sdk-coin-canton:** removed non-required fields from builders ([b4f19cc](https://github.com/BitGo/BitGoJS/commit/b4f19cc59ca8ee80d01de958708020f32726a58d))
+
+
+
+
+
 # [1.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.2.0...@bitgo/sdk-coin-canton@1.3.0) (2025-10-13)
 
 

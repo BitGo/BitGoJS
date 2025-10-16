@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.27.5...@bitgo/abstract-utxo@10.0.0) (2025-10-16)
+
+
+### Features
+
+* **abstract-utxo:** remove deprecated signature verification functions ([2ca3bf5](https://github.com/BitGo/BitGoJS/commit/2ca3bf5824a30fe78c5b95bc03019020d5be9c71))
+* **abstract-utxo:** use secp256k1 for bip32 operations ([b1ae0fc](https://github.com/BitGo/BitGoJS/commit/b1ae0fc7e52b83677e228a236b4f8e0844fd9b6f))
+
+
+### BREAKING CHANGES
+
+* **abstract-utxo:** Consumers must now use
+`utxolib.bitgo.getDefaultSigHash(network)`
+
+Issue: BTC-2676
+
+Co-authored-by: llm-git <llm-git@ttll.de>
+
+
+
+
+
 ## [9.27.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@9.27.4...@bitgo/abstract-utxo@9.27.5) (2025-10-13)
 
 **Note:** Version bump only for package @bitgo/abstract-utxo

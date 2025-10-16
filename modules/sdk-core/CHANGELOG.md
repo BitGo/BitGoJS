@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [36.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.13.0...@bitgo/sdk-core@36.14.0) (2025-10-16)
+
+
+### Bug Fixes
+
+* **sdk-core:** skip STX stake related tx ([ec54517](https://github.com/BitGo/BitGoJS/commit/ec54517775411f750e4cc9797d25be3c37580203))
+
+
+### Features
+
+* bump public types ([ca817a6](https://github.com/BitGo/BitGoJS/commit/ca817a637015a33584fd68dbf5c36592b6a13608))
+* **sdk-coin-canton:** added pre-approval builder ([8cbdf3e](https://github.com/BitGo/BitGoJS/commit/8cbdf3ec4be6cc52abd405c369befb8814957063))
+* **sdk-coin-polyx:** add rejectInstruction transaction ([ea83103](https://github.com/BitGo/BitGoJS/commit/ea831034d6bd9a8883765ee59d2c7d0c228ee2ab))
+* **sdk-core:** add transaction intent mismatch errors ([b4ce897](https://github.com/BitGo/BitGoJS/commit/b4ce8972a4e6aedc52fe9ea231746ecb0ed417ff))
+
+
+
+
+
 # [36.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.12.0...@bitgo/sdk-core@36.13.0) (2025-10-13)
 
 

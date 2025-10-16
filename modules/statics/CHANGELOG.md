@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.5.0...@bitgo/statics@58.6.0) (2025-10-16)
+
+
+### Features
+
+* add WRW support for multiple EVM coins ([64d7265](https://github.com/BitGo/BitGoJS/commit/64d72657683633f7a7f0c0b141e3115d91494773))
+* disallow EVM_COMPATIBLE_WP feature for OFC coin ([df6850b](https://github.com/BitGo/BitGoJS/commit/df6850bc1b6a86022566aa7d7bd9af81ac712180))
+* ofc tokens for ton ([a4d7bc7](https://github.com/BitGo/BitGoJS/commit/a4d7bc7f9ecc47179eb18a779840a71c0cff2b04))
+* ofc tokens for ton ([e736792](https://github.com/BitGo/BitGoJS/commit/e736792bdd3278900aa9c4ee46bb34fadca3d285))
+
+
+
+
+
 # [58.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.4.0...@bitgo/statics@58.5.0) (2025-10-13)
 
 
