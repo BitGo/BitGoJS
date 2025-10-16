@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [18.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-opeth@18.7.5...@bitgo/sdk-coin-opeth@18.8.0) (2025-10-16)
+
+
+### Features
+
+* **sdk-coin-opeth:** support message signing for walletconnect ([f36d076](https://github.com/BitGo/BitGoJS/commit/f36d07622e1f463a11bfc7ba43e3575969aa1cc4))
+
+
+
+
+
 ## [18.7.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-opeth@18.7.4...@bitgo/sdk-coin-opeth@18.7.5) (2025-10-13)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-opeth

@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.17.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.16.2...@bitgo/sdk-coin-ada@4.17.0) (2025-10-16)
+
+
+### Features
+
+* **sdk-coin-ada:** fix ada build signature handling ([34dacbc](https://github.com/BitGo/BitGoJS/commit/34dacbcc1a2e4619503f5a93410b611f55bbc847))
+* **sdk-coin-ada:** remove fallback logic for token fee calculation ([daef78e](https://github.com/BitGo/BitGoJS/commit/daef78ea58e9c93c4f1b4e0d78a0249ca6c5f524))
+
+
+
+
+
 ## [4.16.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.16.1...@bitgo/sdk-coin-ada@4.16.2) (2025-10-13)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ada

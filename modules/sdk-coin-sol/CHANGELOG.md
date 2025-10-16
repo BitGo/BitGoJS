@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.3.0...@bitgo/sdk-coin-sol@7.4.0) (2025-10-16)
+
+
+### Features
+
+* bump public types ([ca817a6](https://github.com/BitGo/BitGoJS/commit/ca817a637015a33584fd68dbf5c36592b6a13608))
+* **sdk-coin-sol:** inject durable nonce for versioned transactions ([b6d7524](https://github.com/BitGo/BitGoJS/commit/b6d7524b06568c51626fce231a119e15abe86365))
+
+
+
+
+
 # [7.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.2.3...@bitgo/sdk-coin-sol@7.3.0) (2025-10-13)
 
 

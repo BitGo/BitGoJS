@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.0.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-celo@5.3.5...@bitgo/sdk-coin-celo@6.0.0) (2025-10-16)
+
+
+### chore
+
+* **sdk-coin-celo:** remove unused files and functions ([a47e0b1](https://github.com/BitGo/BitGoJS/commit/a47e0b11a50594c351b0800514857f271ba6a5f2))
+
+
+### BREAKING CHANGES
+
+* **sdk-coin-celo:** * Removed modules/sdk-coin-celo/src/lib/types.ts - entire file deleted
+* Removed deserialize() function from modules/sdk-coin-celo/src/lib/utils.ts
+
+These components were unused and removing them reduces bundle size and
+dependency overhead. If you were importing these directly, you'll
+need to use alternative implementations.
+
+BG-0000
+
+
+
+
+
 ## [5.3.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-celo@5.3.4...@bitgo/sdk-coin-celo@5.3.5) (2025-10-13)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-celo

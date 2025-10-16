@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/babylonlabs-io-btc-staking-ts@2.4.1...@bitgo/babylonlabs-io-btc-staking-ts@3.1.0) (2025-10-16)
+
+
+### Bug Fixes
+
+* **babylonlabs-io-btc-staking-ts:** add BitGo-specific exports ([86d0727](https://github.com/BitGo/BitGoJS/commit/86d072783ebca743079815e58a6a002e96cd4219))
+* **babylonlabs-io-btc-staking-ts:** resolve build issue caused by dependency conflicts ([d049b8c](https://github.com/BitGo/BitGoJS/commit/d049b8cd600edd0c49e1de5253a4ee7344acdd31))
+* **babylonlabs-io-btc-staking-ts:** simplify README to identify as fork ([89d8c3a](https://github.com/BitGo/BitGoJS/commit/89d8c3a1e87a029dfd1e69f0da77494be5b83047))
+* **babylonlabs-io-btc-staking-ts:** update package metadata for BitGo fork ([db4be59](https://github.com/BitGo/BitGoJS/commit/db4be592a7e401d1ad245a75d1f970344ca197a0))
+
+
+### Features
+
+* **babylonlabs-io-btc-staking-ts:** add build directory to gitignore ([6150179](https://github.com/BitGo/BitGoJS/commit/615017981865811a26eacf5e8bf838e88e9ad6d0))
+* **babylonlabs-io-btc-staking-ts:** add channel param to protobuf message creation ([c8b89ed](https://github.com/BitGo/BitGoJS/commit/c8b89ed14b97ecd1c0bf43ec27fdeac56fb22324))
+* **babylonlabs-io-btc-staking-ts:** change createBtcDelegationMsg method to public ([89ef8ae](https://github.com/BitGo/BitGoJS/commit/89ef8ae486544b80d3615f9337e75ba005afb2a9))
+* **babylonlabs-io-btc-staking-ts:** change private fields to protected ([c91ca2f](https://github.com/BitGo/BitGoJS/commit/c91ca2fb14423fda9263b3f538bccf5991238975))
+* configure learn to skip git operations ([ee3a622](https://github.com/BitGo/BitGoJS/commit/ee3a6220496476aa7f4545b5f4a9a3bf97d9bdb9))
+* **utxo-staking:** support babylon v2.5.7 changes ([62a6965](https://github.com/BitGo/BitGoJS/commit/62a696564c05ba2351abcc77eb7993959f008fcd))
+
+
+
+
+
 ## [2.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/babylonlabs-io-btc-staking-ts@2.4.0...@bitgo/babylonlabs-io-btc-staking-ts@2.4.1) (2025-08-29)
 
 **Note:** Version bump only for package @bitgo/babylonlabs-io-btc-staking-ts

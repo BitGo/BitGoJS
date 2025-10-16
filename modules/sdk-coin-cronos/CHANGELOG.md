@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.6.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-cronos@1.6.5...@bitgo/sdk-coin-cronos@1.6.6) (2025-10-16)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-cronos
+
+
+
+
+
 ## [1.6.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-cronos@1.6.4...@bitgo/sdk-coin-cronos@1.6.5) (2025-10-13)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-cronos

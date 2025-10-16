@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [15.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.7.0...@bitgo/express@15.8.0) (2025-10-16)
+
+
+### Features
+
+* bump public types ([ca817a6](https://github.com/BitGo/BitGoJS/commit/ca817a637015a33584fd68dbf5c36592b6a13608))
+* **express:** setup integration test ([cae56ab](https://github.com/BitGo/BitGoJS/commit/cae56ab1195c49654a9b1e28269b09b8c1171845))
+* lightning on chain intent change ([ecc0db9](https://github.com/BitGo/BitGoJS/commit/ecc0db9d8fe5b7206b5738e08504525832099a5a))
+
+
+
+
+
 # [15.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.6.0...@bitgo/express@15.7.0) (2025-10-13)
 
 

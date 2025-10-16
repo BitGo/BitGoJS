@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.23.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.22.4...@bitgo/utxo-staking@1.23.0) (2025-10-16)
+
+
+### Features
+
+* **utxo-staking:** support babylon v2.5.7 changes ([62a6965](https://github.com/BitGo/BitGoJS/commit/62a696564c05ba2351abcc77eb7993959f008fcd))
+
+
+
+
+
 ## [1.22.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.22.3...@bitgo/utxo-staking@1.22.4) (2025-10-13)
 
 **Note:** Version bump only for package @bitgo/utxo-staking
