@@ -1,13 +1,13 @@
 {
   "name": "@bitgo/sdk-coin-baby",
-  "version": "1.8.2",
+  "version": "1.8.4",
   "description": "BitGo SDK coin library for Babylon",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "scripts": {
     "build": "yarn tsc --build --incremental --verbose .",
     "fmt": "prettier --write .",
-    "check-fmt": "prettier --check .",
+    "check-fmt": "prettier --check '**/*.{ts,js,json}'",
     "clean": "rm -r ./dist",
     "lint": "eslint --quiet .",
     "prepare": "npm run build",
@@ -41,9 +41,9 @@
   },
   "dependencies": {
     "@babylonlabs-io/babylon-proto-ts": "1.0.0",
-    "@bitgo/abstract-cosmos": "^11.15.2",
-    "@bitgo/sdk-core": "^36.10.1",
-    "@bitgo/statics": "^58.2.0",
+    "@bitgo/abstract-cosmos": "^11.15.4",
+    "@bitgo/sdk-core": "^36.12.0",
+    "@bitgo/statics": "^58.4.0",
     "@cosmjs/amino": "^0.29.5",
     "@cosmjs/encoding": "^0.29.5",
     "@cosmjs/proto-signing": "^0.29.5",
@@ -52,8 +52,8 @@
     "cosmjs-types": "^0.6.1"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.69.2",
-    "@bitgo/sdk-test": "^9.1.2"
+    "@bitgo/sdk-api": "^1.70.1",
+    "@bitgo/sdk-test": "^9.1.4"
   },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c",
   "files": [

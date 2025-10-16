@@ -3,6 +3,48 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.3.0...@bitgo/statics@58.4.0) (2025-10-09)
+
+
+### Bug Fixes
+
+* run check-fmt on code files only ([9745196](https://github.com/BitGo/BitGoJS/commit/9745196b02b9678c740d290a4638ceb153a8fd75))
+
+
+### Features
+
+* enable staking feature on somnia and wflr roduction ([eafb3ec](https://github.com/BitGo/BitGoJS/commit/eafb3ec7f98c5004c7e078545135819452a74a6c))
+* gate tokens for BitGo Singapore ([3502956](https://github.com/BitGo/BitGoJS/commit/35029568bb4f8bc337d1b577d55a80e2b1dcd515))
+* **statics:** add go account support for mantra ([ac19cf6](https://github.com/BitGo/BitGoJS/commit/ac19cf6610b1ec9e0054d9a7619d1d977d8a2d84))
+
+
+
+
+
+# [58.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.2.0...@bitgo/statics@58.3.0) (2025-10-08)
+
+
+### Bug Fixes
+
+* add explicit 'files' in package json ([3b00373](https://github.com/BitGo/BitGoJS/commit/3b0037396f6ac16bb9380bd85bf37f2b133068f4))
+* flow testnet explorer url ([dcd5902](https://github.com/BitGo/BitGoJS/commit/dcd5902f2781cff4d9a41118093454b8a82c61d7))
+* modify botOfcToken imports to prevent circular dependency ([8ec08c8](https://github.com/BitGo/BitGoJS/commit/8ec08c80c27cd350d47608c928afdbf7f9ce94d1))
+* update fullname of binance smart chain and bnb token ([0a19d00](https://github.com/BitGo/BitGoJS/commit/0a19d00a7537b82b53100e313e4beb5541d85ebe))
+
+
+### Features
+
+* added canton coin to statics ([0eebbc9](https://github.com/BitGo/BitGoJS/commit/0eebbc9a377b2ef6f792498004520074aa62fd92))
+* onboard new tokens ([c7dba30](https://github.com/BitGo/BitGoJS/commit/c7dba307b22c44c7067d7b9b501f445c3e592cd9))
+* onboarding new tokens ([6ad588c](https://github.com/BitGo/BitGoJS/commit/6ad588c9c3c07af9ceb7c5119aedf258fd91fee3))
+* **sdk-coin-ada:** add prod ada token config ([20fa5cf](https://github.com/BitGo/BitGoJS/commit/20fa5cf831fa6cdbf1d5d30acbb592308acedf7d))
+* **sdk-coin-ada:** fix decimal places of minswap ([4c0046c](https://github.com/BitGo/BitGoJS/commit/4c0046c92923d740216b711b004abd910953839b))
+* **statics:** add polyx tokens ([8b53574](https://github.com/BitGo/BitGoJS/commit/8b53574ccdd57663bcd07102e17dfe0f2351061d))
+
+
+
+
+
 # [58.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.1.0...@bitgo/statics@58.2.0) (2025-10-02)
 
 ### Bug Fixes

@@ -1,6 +1,5 @@
 import { ok as assert } from 'assert';
-import { BIP32Interface } from 'bip32';
-import * as noble from '@noble/secp256k1';
+import { BIP32Interface } from '@bitgo/secp256k1';
 import * as utxolib from '..';
 import { getMainnet, Network, networks } from '../networks';
 
@@ -56,11 +55,7 @@ export function mockPrevTx(
   });
   // Don't require the prevTx for signing and finalizing for non-segwit input
   utxolib.bitgo.withUnsafeNonSegwit(psbtFromNetwork, () => {
-    psbtFromNetwork.signInput(0, {
-      publicKey: pubkey,
-      sign: (hash: Buffer, lowR?: boolean) =>
-        Buffer.from(noble.signSync(hash, keypair.privateKey as Buffer, { canonical: !lowR, der: false })),
-    });
+    psbtFromNetwork.signInput(0, keypair);
     psbtFromNetwork.validateSignaturesOfAllInputs();
     psbtFromNetwork.finalizeAllInputs();
   });

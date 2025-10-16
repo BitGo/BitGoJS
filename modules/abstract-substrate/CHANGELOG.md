@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.11.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.11.3...@bitgo/abstract-substrate@1.11.4) (2025-10-09)
+
+
+### Bug Fixes
+
+* run check-fmt on code files only ([9745196](https://github.com/BitGo/BitGoJS/commit/9745196b02b9678c740d290a4638ceb153a8fd75))
+
+
+
+
+
+## [1.11.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.11.2...@bitgo/abstract-substrate@1.11.3) (2025-10-08)
+
+
+### Bug Fixes
+
+* add explicit 'files' in package json ([3b00373](https://github.com/BitGo/BitGoJS/commit/3b0037396f6ac16bb9380bd85bf37f2b133068f4))
+
+
+
+
+
 ## [1.11.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.11.1...@bitgo/abstract-substrate@1.11.2) (2025-10-02)
 
 **Note:** Version bump only for package @bitgo/abstract-substrate

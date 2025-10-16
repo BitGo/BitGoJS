@@ -7,7 +7,7 @@ import assert from 'assert';
 
 import buildDebug from 'debug';
 import * as utxolib from '@bitgo/utxo-lib';
-import { bip32 } from '@bitgo/utxo-lib';
+import { bip32 } from '@bitgo/secp256k1';
 import * as bitcoinMessage from 'bitcoinjs-message';
 import { BitGoBase, decryptKeychainPrivateKey, KeyIndices } from '@bitgo/sdk-core';
 

@@ -1,5 +1,5 @@
 import * as utxolib from '@bitgo/utxo-lib';
-import { bip32, BIP32Interface } from '@bitgo/utxo-lib';
+import { BIP32Interface, bip32 } from '@bitgo/secp256k1';
 import { Dimensions } from '@bitgo/unspents';
 import { BitGoBase, IWallet, Keychain, Triple, Wallet } from '@bitgo/sdk-core';
 import { decrypt } from '@bitgo/sdk-api';

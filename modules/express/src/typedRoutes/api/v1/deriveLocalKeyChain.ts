@@ -44,6 +44,7 @@ export const DeriveLocalKeyChainResponse = t.type({
  * both the derived xprv and xpub are returned. If xpub is provided, only the
  * derived xpub is returned.
  *
+ * @tag express
  * @operationId express.v1.keychain.derive
  */
 export const PostDeriveLocalKeyChain = httpRoute({

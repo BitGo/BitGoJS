@@ -1,6 +1,6 @@
 import * as assert from 'assert/strict';
 import { describe, it } from 'mocha';
-import { BIP32Interface } from 'bip32';
+import { BIP32Interface } from '@bitgo/secp256k1';
 
 import { isTestnet, TxOutput, getNetworkList, getNetworkName, networks } from '../../src';
 import { getDefaultCosigner } from '../../src/testutil';

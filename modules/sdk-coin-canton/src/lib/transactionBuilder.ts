@@ -3,20 +3,24 @@ import {
   BaseKey,
   BaseTransactionBuilder,
   BuildTransactionError,
-  FeeOptions,
   PublicKey as BasePublicKey,
   Signature,
   TransactionType,
 } from '@bitgo/sdk-core';
 import BigNumber from 'bignumber.js';
-import { Transaction } from './transaction';
+import { CantonPrepareCommandResponse } from './iface';
+import { KeyPair } from './keyPair';
+import { Transaction } from './transaction/transaction';
 import utils from './utils';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
   private _signatures: Signature[] = [];
 
-  // get and set region
+  initBuilder(tx: Transaction): void {
+    this._transaction = tx;
+  }
+
   /**
    * The transaction type.
    */
@@ -28,9 +32,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /** @inheritdoc */
-  protected set transaction(transaction: Transaction) {
-    this._transaction = transaction;
-  }
+  abstract setTransaction(transaction: CantonPrepareCommandResponse): void;
 
   /** @inheritdoc */
   protected signImplementation(key: BaseKey): Transaction {
@@ -40,21 +42,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /** @inheritDoc */
   addSignature(publicKey: BasePublicKey, signature: Buffer): void {
     this._signatures.push({ publicKey, signature });
-  }
-
-  /**
-   * Sets the sender of this transaction.
-   * This account will be responsible for paying transaction fees.
-   *
-   * @param {string} senderAddress the account that is sending this transaction
-   * @returns {TransactionBuilder} This transaction builder
-   */
-  sender(senderAddress: string): this {
-    throw new Error('Method not implemented.');
-  }
-
-  fee(feeOptions: FeeOptions): this {
-    throw new Error('Method not implemented.');
   }
 
   /** @inheritdoc */
@@ -77,17 +64,39 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   validateKey(key: BaseKey): void {
-    throw new Error('Method not implemented.');
+    let keyPair: KeyPair;
+    try {
+      keyPair = new KeyPair({ prv: key.key });
+    } catch {
+      throw new BuildTransactionError('Invalid key');
+    }
+    if (!keyPair.getKeys().prv) {
+      throw new BuildTransactionError('Invalid key');
+    }
   }
 
   /** @inheritdoc */
-  validateRawTransaction(rawTransaction: string): void {
-    throw new Error('Method not implemented.');
+  async validateRawTransaction(rawTransaction: string): Promise<void> {
+    if (!rawTransaction || !this._transaction.prepareCommand) {
+      throw new BuildTransactionError('invalid raw transaction');
+    }
+    const localHash = await utils.computeHashFromPrepareSubmissionResponse(rawTransaction);
+    if (localHash !== this._transaction.prepareCommand.preparedTransactionHash) {
+      throw new BuildTransactionError('invalid raw transaction, hash not matching');
+    }
   }
 
   /** @inheritdoc */
-  validateTransaction(transaction?: Transaction): void {
-    throw new Error('Method not implemented.');
+  async validateTransaction(transaction?: Transaction): Promise<void> {
+    if (!transaction?.prepareCommand?.preparedTransaction) {
+      return;
+    }
+    const localHash = await utils.computeHashFromPrepareSubmissionResponse(
+      transaction.prepareCommand.preparedTransaction
+    );
+    if (localHash !== transaction.prepareCommand.preparedTransactionHash) {
+      throw new BuildTransactionError('invalid transaction');
+    }
   }
 
   /** @inheritdoc */

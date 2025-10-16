@@ -28,6 +28,7 @@ export const pendingApprovalRequestBody = {
  * Handles various approval scenarios including transaction approvals, policy rule changes,
  * and user change requests.
  *
+ * @tag express
  * @operationId express.v1.pendingapprovals
  */
 
