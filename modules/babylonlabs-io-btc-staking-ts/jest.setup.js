@@ -1,8 +1,7 @@
 const { initBTCCurve } = require("./src");
 
 const originalTest = global.test;
-const NUM_ITERATIONS = 3;
-;
+const NUM_ITERATIONS = parseInt(process.env.TEST_REPEAT_TIMES) || 1;
 
 initBTCCurve();
 

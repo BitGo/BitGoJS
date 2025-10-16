@@ -2,7 +2,14 @@ import { Transaction as SubstrateTransaction, utils, KeyPair } from '@bitgo/abst
 import { InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { construct, decode } from '@substrate/txwrapper-polkadot';
 import { decodeAddress } from '@polkadot/keyring';
-import { DecodedTx, RegisterDidWithCDDArgs, PreApproveAssetArgs, TxData, AddAndAffirmWithMediatorsArgs } from './iface';
+import {
+  DecodedTx,
+  RegisterDidWithCDDArgs,
+  PreApproveAssetArgs,
+  TxData,
+  AddAndAffirmWithMediatorsArgs,
+  RejectInstructionBuilderArgs,
+} from './iface';
 import polyxUtils from './utils';
 
 export class Transaction extends SubstrateTransaction {
@@ -63,6 +70,11 @@ export class Transaction extends SubstrateTransaction {
       result.amount = sendTokenArgs.legs[0].fungible.amount.toString();
       result.assetId = sendTokenArgs.legs[0].fungible.assetId;
       result.memo = sendTokenArgs.instructionMemo;
+    } else if (this.type === TransactionType.RejectInstruction) {
+      const rejectInstructionArgs = txMethod as RejectInstructionBuilderArgs;
+      result.instructionId = rejectInstructionArgs.id as string;
+      result.portfolioDID = rejectInstructionArgs.portfolio.did as string;
+      result.amount = '0'; // Reject instruction does not transfer any value
     } else {
       return super.toJson() as TxData;
     }
@@ -88,6 +100,8 @@ export class Transaction extends SubstrateTransaction {
       this.decodeInputsAndOutputsForPreApproveAsset(decodedTx);
     } else if (this.type === TransactionType.SendToken) {
       this.decodeInputsAndOutputsForSendToken(decodedTx);
+    } else if (this.type === TransactionType.RejectInstruction) {
+      this.decodeInputsAndOutputsForRejectInstruction(decodedTx);
     }
   }
 
@@ -145,6 +159,24 @@ export class Transaction extends SubstrateTransaction {
     this._outputs.push({
       address: toDID,
       value: amount,
+      coin: this._coinConfig.name,
+    });
+  }
+
+  private decodeInputsAndOutputsForRejectInstruction(decodedTx: DecodedTx) {
+    const txMethod = decodedTx.method.args as RejectInstructionBuilderArgs;
+    const portfolioDID = txMethod.portfolio.did;
+    const value = '0'; // Reject instruction does not transfer any value
+
+    this._inputs.push({
+      address: portfolioDID,
+      value,
+      coin: this._coinConfig.name,
+    });
+
+    this._outputs.push({
+      address: portfolioDID,
+      value,
       coin: this._coinConfig.name,
     });
   }
