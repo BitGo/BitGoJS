@@ -33,6 +33,7 @@ export const SimpleCreateRequestBody = {
  *
  * @tag express
  * @operationId express.v1.wallet.simplecreate
+ * @tag express
  */
 export const PostSimpleCreate = httpRoute({
   path: '/api/v1/wallets/simplecreate',

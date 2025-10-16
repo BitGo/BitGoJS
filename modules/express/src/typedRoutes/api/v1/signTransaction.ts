@@ -33,6 +33,7 @@ export const signTransactionRequestBody = {
  *
  * @tag express
  * @operationId express.v1.wallet.signTransaction
+ * @tag express
  */
 export const PostSignTransaction = httpRoute({
   path: '/api/v1/wallet/{id}/signtransaction',

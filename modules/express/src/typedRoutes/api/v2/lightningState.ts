@@ -34,6 +34,7 @@ export const LightningStateResponse = {
  *
  * @tag express
  * @operationId express.lightning.getState
+ * @tag express
  */
 export const GetLightningState = httpRoute({
   method: 'GET',

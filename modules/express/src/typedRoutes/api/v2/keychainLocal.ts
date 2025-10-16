@@ -35,6 +35,7 @@ export const KeychainLocalResponse = {
  *
  * @tag express
  * @operationId express.keychain.local
+ * @tag express
  */
 export const PostKeychainLocal = httpRoute({
   path: '/api/v2/{coin}/keychain/local',

@@ -46,6 +46,7 @@ export const DeriveLocalKeyChainResponse = t.type({
  *
  * @tag express
  * @operationId express.v1.keychain.derive
+ * @tag express
  */
 export const PostDeriveLocalKeyChain = httpRoute({
   path: '/api/v1/keychain/derive',

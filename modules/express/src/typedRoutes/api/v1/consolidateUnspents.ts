@@ -73,6 +73,7 @@ export const ConsolidateUnspentsResponse = t.array(
  *
  * @tag express
  * @operationId express.v1.wallet.consolidateunspents
+ * @tag express
  */
 export const PutConsolidateUnspents = httpRoute({
   path: '/api/v1/wallet/{id}/consolidateunspents',

@@ -30,6 +30,7 @@ export const pendingApprovalRequestBody = {
  *
  * @tag express
  * @operationId express.v1.pendingapprovals
+ * @tag express
  */
 
 export const PutPendingApproval = httpRoute({

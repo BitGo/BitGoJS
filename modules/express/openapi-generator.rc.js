@@ -1,0 +1,17 @@
+/**
+ * OpenAPI Generator Configuration
+ * No custom configuration needed for Express module so far.
+ * NOTE: This file is not being passed into the openapi-generator
+ */
+
+module.exports = (E) => {
+  return {
+    '.': {
+      JsonFromStringifiedJson: () => E.right({ type: 'string' }),
+    },
+    'io-ts-types': {
+      Json: () => E.right({ type: 'object', properties: {}, required: [] }),
+      NonEmptyString: () => E.right({ type: 'string', minLength: 1 }),
+    },
+  };
+};

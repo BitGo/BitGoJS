@@ -44,6 +44,7 @@ export const UnlockLightningWalletResponse = {
  *
  * @tag express
  * @operationId express.lightning.unlockWallet
+ * @tag express
  */
 export const PostUnlockLightningWallet = httpRoute({
   method: 'POST',

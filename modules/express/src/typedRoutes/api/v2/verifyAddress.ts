@@ -32,6 +32,7 @@ export const VerifyAddressV2Body = {
  *
  * @tag express
  * @operationId express.verifycoinaddress
+ * @tag express
  */
 export const PostVerifyCoinAddress = httpRoute({
   path: '/api/v2/{coin}/verifyaddress',

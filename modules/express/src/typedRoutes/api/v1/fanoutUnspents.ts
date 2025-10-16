@@ -61,6 +61,7 @@ export const FanoutUnspentsResponse = t.type({
  *
  * @tag express
  * @operationId express.v1.wallet.fanoutunspents
+ * @tag express
  */
 export const PutFanoutUnspents = httpRoute({
   path: '/api/v1/wallet/{id}/fanoutunspents',

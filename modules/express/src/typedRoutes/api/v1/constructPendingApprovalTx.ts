@@ -61,6 +61,7 @@ export const ConstructPendingApprovalTxResponse = t.type({
  *
  * @tag express
  * @operationId express.v1.pendingapproval.constructTx
+ * @tag express
  */
 export const PutConstructPendingApprovalTx = httpRoute({
   path: '/api/v1/pendingapprovals/{id}/constructTx',
