@@ -515,6 +515,51 @@ describe('V2 Wallets:', function () {
         params.passphrase
       );
     });
+
+    it('should generate Go Account wallet', async () => {
+      const ofcWallets = bitgo.coin('ofc').wallets();
+
+      const params: GenerateWalletOptions = {
+        label: 'Go Account Wallet',
+        passphrase: 'go_account_password',
+        enterprise: 'enterprise-id',
+        passcodeEncryptionCode: 'originalPasscodeEncryptionCode',
+        type: 'trading',
+      };
+
+      const keychainId = 'user_keychain_id';
+
+      // Mock keychain creation and upload
+      nock(bgUrl)
+        .post('/api/v2/ofc/key', function (body) {
+          body.should.have.property('encryptedPrv');
+          body.should.have.property('originalPasscodeEncryptionCode');
+          body.keyType.should.equal('independent');
+          body.source.should.equal('user');
+          return true;
+        })
+        .reply(200, { id: keychainId, pub: 'userPub', encryptedPrv: 'encryptedPrivateKey' });
+
+      // Mock wallet creation
+      const walletNock = nock(bgUrl)
+        .post('/api/v2/ofc/wallet/add', function (body) {
+          body.type.should.equal('trading');
+          body.m.should.equal(1);
+          body.n.should.equal(1);
+          body.keys.should.have.length(1);
+          body.keys[0].should.equal(keychainId);
+          return true;
+        })
+        .reply(200, { id: 'wallet123', keys: [keychainId] });
+
+      const response = await ofcWallets.generateWallet(params);
+
+      walletNock.isDone().should.be.true();
+
+      assert.ok(response.encryptedWalletPassphrase);
+      assert.ok(response.wallet);
+      assert.ok('userKeychain' in response);
+    });
   });
 
   describe('Generate TSS wallet:', function () {

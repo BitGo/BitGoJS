@@ -24,6 +24,8 @@ import {
   BulkUpdateWalletShareOptionsRequest,
   BulkUpdateWalletShareResponse,
   GenerateBaseMpcWalletOptions,
+  GenerateGoAccountWalletOptions,
+  GenerateGoAccountWalletOptionsCodec,
   GenerateLightningWalletOptions,
   GenerateLightningWalletOptionsCodec,
   GenerateMpcWalletOptions,
@@ -31,6 +33,7 @@ import {
   GenerateWalletOptions,
   GetWalletByAddressOptions,
   GetWalletOptions,
+  GoAccountWalletWithUserKeychain,
   IWallets,
   LightningWalletWithKeychains,
   ListWalletOptions,
@@ -47,7 +50,7 @@ import { createEvmKeyRingWallet, validateEvmKeyRingWalletParams } from '../evm/e
  * Check if a wallet is a WalletWithKeychains
  */
 export function isWalletWithKeychains(
-  wallet: WalletWithKeychains | LightningWalletWithKeychains
+  wallet: WalletWithKeychains | LightningWalletWithKeychains | GoAccountWalletWithUserKeychain
 ): wallet is WalletWithKeychains {
   return wallet.responseType === 'WalletWithKeychains';
 }
@@ -214,6 +217,57 @@ export class Wallets implements IWallets {
   }
 
   /**
+   * Generate a Go Account wallet
+   * @param params GenerateGoAccountWalletOptions
+   * @returns Promise<GoAccountWalletWithUserKeychain>
+   */
+  private async generateGoAccountWallet(
+    params: GenerateGoAccountWalletOptions
+  ): Promise<GoAccountWalletWithUserKeychain> {
+    const reqId = new RequestTracer();
+    this.bitgo.setRequestTracer(reqId);
+
+    const { label, passphrase, enterprise, passcodeEncryptionCode } = params;
+
+    const keychain = this.baseCoin.keychains().create();
+
+    const keychainParams: AddKeychainOptions = {
+      pub: keychain.pub,
+      encryptedPrv: this.bitgo.encrypt({ password: passphrase, input: keychain.prv }),
+      originalPasscodeEncryptionCode: passcodeEncryptionCode,
+      keyType: 'independent',
+      source: 'user',
+    };
+
+    const userKeychain = await this.baseCoin.keychains().add(keychainParams);
+
+    const walletParams: SupplementGenerateWalletOptions = {
+      label,
+      m: 1,
+      n: 1,
+      type: 'trading',
+      enterprise,
+      keys: [userKeychain.id],
+    };
+
+    const newWallet = await this.bitgo.post(this.baseCoin.url('/wallet/add')).send(walletParams).result();
+    const wallet = new Wallet(this.bitgo, this.baseCoin, newWallet);
+
+    const result: GoAccountWalletWithUserKeychain = {
+      wallet,
+      userKeychain,
+      responseType: 'GoAccountWalletWithUserKeychain',
+    };
+
+    // Add warning if the user keychain has an encrypted private key
+    if (!_.isUndefined(userKeychain.encryptedPrv)) {
+      result.warning = 'Be sure to backup the user keychain -- it is not stored anywhere else!';
+    }
+
+    return result;
+  }
+
+  /**
    * Generate a new wallet
    * 1. Creates the user keychain locally on the client, and encrypts it with the provided passphrase
    * 2. If no pub was provided, creates the backup keychain locally on the client, and encrypts it with the provided passphrase
@@ -246,7 +300,7 @@ export class Wallets implements IWallets {
    */
   async generateWallet(
     params: GenerateWalletOptions = {}
-  ): Promise<WalletWithKeychains | LightningWalletWithKeychains> {
+  ): Promise<WalletWithKeychains | LightningWalletWithKeychains | GoAccountWalletWithUserKeychain> {
     // Assign the default multiSig type value based on the coin
     if (!params.multisigType) {
       params.multisigType = this.baseCoin.getDefaultMultisigType();
@@ -263,6 +317,25 @@ export class Wallets implements IWallets {
       );
 
       const walletData = await this.generateLightningWallet(options);
+      walletData.encryptedWalletPassphrase = this.bitgo.encrypt({
+        input: options.passphrase,
+        password: options.passcodeEncryptionCode,
+      });
+      return walletData;
+    }
+
+    // Go Account wallet generation
+    if (this.baseCoin.getFamily() === 'ofc' && params.type === 'trading') {
+      const options = decodeOrElse(
+        GenerateGoAccountWalletOptionsCodec.name,
+        GenerateGoAccountWalletOptionsCodec,
+        params,
+        (errors) => {
+          throw new Error(`error(s) parsing generate go account request params: ${errors}`);
+        }
+      );
+
+      const walletData = await this.generateGoAccountWallet(options);
       walletData.encryptedWalletPassphrase = this.bitgo.encrypt({
         input: options.passphrase,
         password: options.passcodeEncryptionCode,
