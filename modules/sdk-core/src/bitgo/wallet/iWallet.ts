@@ -893,6 +893,11 @@ export type SendNFTResult = {
   pendingApproval: PendingApprovalData;
 };
 
+export type WalletInitResult = {
+  success: PrebuildTransactionResult[];
+  failure: Error[];
+};
+
 export interface IWallet {
   bitgo: BitGoBase;
   baseCoin: IBaseCoin;
@@ -985,6 +990,7 @@ export interface IWallet {
   buildTokenEnablements(params?: BuildTokenEnablementOptions): Promise<PrebuildTransactionResult[]>;
   sendTokenEnablement(params?: PrebuildAndSignTransactionOptions): Promise<any>;
   sendTokenEnablements(params?: BuildTokenEnablementOptions): Promise<any>;
+  sendWalletInitialization(params?: PrebuildTransactionOptions): Promise<WalletInitResult>;
   signMessage(params: WalletSignMessageOptions): Promise<SignedMessage>;
   buildSignMessageRequest(params: WalletSignMessageOptions): Promise<TxRequest>;
   signTypedData(params: WalletSignTypedDataOptions): Promise<SignedMessage>;

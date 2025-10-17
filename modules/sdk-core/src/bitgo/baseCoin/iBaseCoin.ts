@@ -604,4 +604,5 @@ export interface IBaseCoin {
    * @param {string} params.multiSigType - The type of multisig (e.g. 'onchain' or 'tss')
    */
   assertIsValidKey({ publicKey, encryptedPrv, walletPassphrase, multiSigType }: AuditKeyParams): void;
+  requiresWalletInitializationTransaction(): boolean;
 }
