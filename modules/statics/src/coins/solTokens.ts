@@ -1,4 +1,4 @@
-import { ProgramID, SolCoin, solToken, tsolToken } from '../account';
+import { AccountCoin, ProgramID, SolCoin, solToken, tsolToken } from '../account';
 import { CoinFeature, UnderlyingAsset } from '../base';
 import {
   SOL_TOKEN_FEATURES,
@@ -2324,7 +2324,10 @@ export const solTokens = [
     'pumpCmXqMfrsAkQ5r49WcJnRayYRqmXz6ae8H7H9Dfn',
     'pumpCmXqMfrsAkQ5r49WcJnRayYRqmXz6ae8H7H9Dfn',
     UnderlyingAsset['sol:pump'],
-    [...SOL_TOKEN_FEATURES, CoinFeature.CUSTODY_BITGO_GERMANY],
+    [
+      ...AccountCoin.getFeaturesByTypeExcluding([CoinFeature.CUSTODY_BITGO_MENA_FZE], SOL_TOKEN_FEATURES),
+      CoinFeature.CUSTODY_BITGO_GERMANY,
+    ],
     ProgramID.Token2022ProgramId
   ),
   solToken(
@@ -2830,7 +2833,7 @@ export const solTokens = [
     'DtR4D9FtVoTX2569gaL837ZgrB6wNjj6tkmnX9Rdk9B2',
     'DtR4D9FtVoTX2569gaL837ZgrB6wNjj6tkmnX9Rdk9B2',
     UnderlyingAsset['sol:aura'],
-    SOL_TOKEN_FEATURES
+    AccountCoin.getFeaturesByTypeExcluding([CoinFeature.CUSTODY_BITGO_MENA_FZE], SOL_TOKEN_FEATURES)
   ),
   solToken(
     '4e6eee4d-637e-42fd-bb4d-196337a2e302',
