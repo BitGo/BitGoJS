@@ -34,7 +34,6 @@ export const polyxTokens = [
     UnderlyingAsset['tpolyx:RAND176TM'],
     POLYX_TOKEN_FEATURES
   ),
-
   tpolyxToken(
     '4becde65-8d44-488f-bda9-74ca2d90b3dd',
     'tpolyx:WEBINRASSET3',
@@ -93,6 +92,16 @@ export const polyxTokens = [
     'BULLRWA',
     '0x17701e181aab8ba5bc5c3b56f472b340',
     UnderlyingAsset['tpolyx:BULLRWA'],
+    POLYX_TOKEN_FEATURES
+  ),
+  tpolyxToken(
+    '5ae194ea-6347-42b3-8eb6-d2d53c340114',
+    'tpolyx:0x4a002922d38b8a7f87484b9c65a7ca0c',
+    '',
+    6,
+    '',
+    '0x4a002922d38b8a7f87484b9c65a7ca0c',
+    UnderlyingAsset['tpolyx:0x4a002922d38b8a7f87484b9c65a7ca0c'],
     POLYX_TOKEN_FEATURES
   ),
 ];

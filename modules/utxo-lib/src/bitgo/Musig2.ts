@@ -7,7 +7,7 @@ import {
   checkXOnlyPublicKey,
   toXOnlyPublicKey,
 } from './outputScripts';
-import { ecc, musig } from '../noble_ecc';
+import { ecc, musig } from '@bitgo/secp256k1';
 import { Tuple } from './types';
 import { calculateTapTweak, tapTweakPubkey } from '../taproot';
 import { Transaction } from '../index';

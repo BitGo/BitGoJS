@@ -1,13 +1,13 @@
 {
   "name": "@bitgo/sdk-hmac",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "HMAC module for the BitGo SDK",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "scripts": {
     "build": "yarn tsc --build --incremental --verbose .",
     "fmt": "prettier --write .",
-    "check-fmt": "prettier --check .",
+    "check-fmt": "prettier --check '**/*.{ts,js,json}'",
     "clean": "rm -r ./dist",
     "lint": "eslint --quiet .",
     "test": "npm run coverage",

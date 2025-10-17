@@ -3,6 +3,57 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [27.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.11.6...@bitgo/account-lib@27.12.0) (2025-10-16)
+
+
+### Bug Fixes
+
+* **deps:** update account-lib to canton version ([f5eac79](https://github.com/BitGo/BitGoJS/commit/f5eac7918b83aa1949944141d24b51d24a3cd414))
+
+
+### Features
+
+* added canton to account-lib ([b72194f](https://github.com/BitGo/BitGoJS/commit/b72194f572bd16044225fdc47d46c980b0d0319e))
+
+
+
+
+
+## [27.11.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.11.5...@bitgo/account-lib@27.11.6) (2025-10-13)
+
+**Note:** Version bump only for package @bitgo/account-lib
+
+
+
+
+
+## [27.11.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.11.4...@bitgo/account-lib@27.11.5) (2025-10-10)
+
+**Note:** Version bump only for package @bitgo/account-lib
+
+
+
+
+
+## [27.11.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.11.3...@bitgo/account-lib@27.11.4) (2025-10-09)
+
+**Note:** Version bump only for package @bitgo/account-lib
+
+
+
+
+
+## [27.11.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.11.2...@bitgo/account-lib@27.11.3) (2025-10-08)
+
+
+### Bug Fixes
+
+* add explicit 'files' in package json ([3b00373](https://github.com/BitGo/BitGoJS/commit/3b0037396f6ac16bb9380bd85bf37f2b133068f4))
+
+
+
+
+
 ## [27.11.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.11.1...@bitgo/account-lib@27.11.2) (2025-10-02)
 
 **Note:** Version bump only for package @bitgo/account-lib

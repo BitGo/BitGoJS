@@ -60,6 +60,7 @@
 /modules/sdk-coin-baby/ @BitGo/ethalt-team
 /modules/sdk-coin-bera/ @BitGo/ethalt-team
 /modules/sdk-coin-bsc/ @BitGo/ethalt-team
+/module/sdk-coin-canton/ @BitGo/ethalt-team
 /modules/sdk-coin-coredao/ @BitGo/ethalt-team
 /modules/sdk-coin-cosmos/ @BitGo/ethalt-team
 /modules/sdk-coin-cronos/ @BitGo/ethalt-team

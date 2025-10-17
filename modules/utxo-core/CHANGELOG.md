@@ -3,6 +3,44 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.21.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.20.4...@bitgo/utxo-core@1.21.0) (2025-10-16)
+
+
+### Features
+
+* **abstract-utxo:** use secp256k1 for bip32 operations ([b1ae0fc](https://github.com/BitGo/BitGoJS/commit/b1ae0fc7e52b83677e228a236b4f8e0844fd9b6f))
+
+
+
+
+
+## [1.20.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.20.3...@bitgo/utxo-core@1.20.4) (2025-10-13)
+
+**Note:** Version bump only for package @bitgo/utxo-core
+
+
+
+
+
+## [1.20.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.20.2...@bitgo/utxo-core@1.20.3) (2025-10-09)
+
+
+### Bug Fixes
+
+* run check-fmt on code files only ([9745196](https://github.com/BitGo/BitGoJS/commit/9745196b02b9678c740d290a4638ceb153a8fd75))
+
+
+
+
+
+## [1.20.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.20.1...@bitgo/utxo-core@1.20.2) (2025-10-08)
+
+**Note:** Version bump only for package @bitgo/utxo-core
+
+
+
+
+
 ## [1.20.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.20.0...@bitgo/utxo-core@1.20.1) (2025-10-02)
 
 **Note:** Version bump only for package @bitgo/utxo-core

@@ -1,13 +1,13 @@
 {
   "name": "@bitgo/sdk-coin-mon",
-  "version": "1.4.2",
+  "version": "1.4.6",
   "description": "BitGo SDK coin library for Mon",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "scripts": {
     "build": "yarn tsc --build --incremental --verbose .",
     "fmt": "prettier --write .",
-    "check-fmt": "prettier --check .",
+    "check-fmt": "prettier --check '**/*.{ts,js,json}'",
     "clean": "rm -r ./dist",
     "lint": "eslint --quiet .",
     "prepare": "npm run build",
@@ -40,14 +40,14 @@
     ]
   },
   "dependencies": {
-    "@bitgo/abstract-eth": "^24.13.2",
-    "@bitgo/sdk-core": "^36.10.1",
-    "@bitgo/statics": "^58.2.0",
+    "@bitgo/abstract-eth": "^24.13.6",
+    "@bitgo/sdk-core": "^36.14.0",
+    "@bitgo/statics": "^58.6.0",
     "@ethereumjs/common": "^2.6.5"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.69.2",
-    "@bitgo/sdk-test": "^9.1.2"
+    "@bitgo/sdk-api": "^1.70.3",
+    "@bitgo/sdk-test": "^9.1.6"
   },
   "files": [
     "dist"

@@ -3,13 +3,12 @@ import { networks } from '../../src';
 const assert = require('assert');
 const crypto = require('crypto');
 
-import { ECPairInterface } from 'ecpair';
 import {
   convertExtendedKeyNetwork,
   privateKeyBufferFromECPair,
   privateKeyBufferToECPair,
 } from '../../src/bitgo/keyutil';
-import { bip32, ECPair } from '../../src/noble_ecc';
+import { bip32, ECPair, ECPairInterface } from '@bitgo/secp256k1';
 
 describe('privateKeyBufferFromECPair', function () {
   it('pads short private keys', function () {

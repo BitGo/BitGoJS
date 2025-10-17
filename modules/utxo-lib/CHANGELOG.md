@@ -3,6 +3,37 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [11.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.11.1...@bitgo/utxo-lib@11.12.0) (2025-10-16)
+
+
+### Bug Fixes
+
+* **utxo-lib:** add tests for both PSBT and PSBT-lite formats ([f098b39](https://github.com/BitGo/BitGoJS/commit/f098b39ea0b921aacc36328047db1b4288e13fe4))
+* **utxo-lib:** avoid circular imports in testutil/mock.ts ([98155e8](https://github.com/BitGo/BitGoJS/commit/98155e8baa3d6525082f0bd39a4a05cb2140d7ce))
+
+
+### Features
+
+* **utxo-lib:** add psbt fixtures ([e73e640](https://github.com/BitGo/BitGoJS/commit/e73e640ce9222d5ae21d7f4aa59ab320824c419a))
+* **utxo-lib:** extend fixture util with type-safe functions ([362c5ed](https://github.com/BitGo/BitGoJS/commit/362c5ed79e483f5196580d7fcc56e31788f14bcc))
+* **utxo-lib:** use @bitgo/secp256k1 instead of internal noble_ecc ([ceed183](https://github.com/BitGo/BitGoJS/commit/ceed183bf78e70816c05801091e56eb936d9e03b))
+* **utxo-lib:** use fixed sessionId for deterministic nonce creation ([04317c7](https://github.com/BitGo/BitGoJS/commit/04317c797df702b195362663382eb19dac85c4ae))
+
+
+
+
+
+## [11.11.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.11.0...@bitgo/utxo-lib@11.11.1) (2025-10-13)
+
+
+### Bug Fixes
+
+* **utxo-lib:** respect skipNonWitnessUtxo flag in PSBT ([dc4871f](https://github.com/BitGo/BitGoJS/commit/dc4871f992624d3c50e15416ff520f1a0a97f5a2))
+
+
+
+
+
 # [11.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.10.0...@bitgo/utxo-lib@11.11.0) (2025-09-25)
 
 ### Features

@@ -123,7 +123,6 @@ import {
   VET_FEATURES,
   WCT_FEATURES,
   WEMIX_FEATURES,
-  WFLR_FEATURES,
   XDC_FEATURES,
   XLM_FEATURES,
   XLM_TOKEN_FEATURES_WITH_FRANKFURT,
@@ -132,6 +131,7 @@ import {
   ZETA_FEATURES,
   ZKETH_FEATURES,
   ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE_AND_MENA_FZE,
+  WFLR_FEATURES,
 } from './coinFeatures';
 import { botTokens } from './coins/botTokens';
 import { adaTokens } from './coins/adaTokens';
@@ -1396,6 +1396,8 @@ export const allCoinsAndTokens = [
       CoinFeature.SHARED_EVM_SDK,
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
     ]
   ),
   account(
@@ -1412,6 +1414,8 @@ export const allCoinsAndTokens = [
       CoinFeature.SHARED_EVM_SDK,
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
     ]
   ),
   account(
@@ -1514,6 +1518,8 @@ export const allCoinsAndTokens = [
       CoinFeature.SHARED_EVM_SDK,
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
     ]
   ),
   account(
@@ -1530,6 +1536,8 @@ export const allCoinsAndTokens = [
       CoinFeature.SHARED_EVM_SDK,
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
     ]
   ),
   account(
@@ -1546,6 +1554,8 @@ export const allCoinsAndTokens = [
       CoinFeature.SHARED_EVM_SDK,
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
     ]
   ),
   account(
@@ -1562,6 +1572,8 @@ export const allCoinsAndTokens = [
       CoinFeature.SHARED_EVM_SDK,
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
     ]
   ),
   account(
@@ -1614,6 +1626,8 @@ export const allCoinsAndTokens = [
       CoinFeature.SHARED_EVM_SDK,
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
     ]
   ),
   account(
@@ -1630,6 +1644,8 @@ export const allCoinsAndTokens = [
       CoinFeature.SHARED_EVM_SDK,
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
     ]
   ),
   account(
@@ -1715,6 +1731,8 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
     ]
   ),
   account(
@@ -1732,6 +1750,8 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
     ]
   ),
   account(
@@ -1850,6 +1870,7 @@ export const allCoinsAndTokens = [
       CoinFeature.SHARED_EVM_SDK,
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.STAKING,
     ]
   ),
   account(
@@ -2000,6 +2021,8 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_COMPATIBLE_WP,
       CoinFeature.SUPPORTS_ERC20,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
     ]
   ),
   account(
@@ -2017,6 +2040,8 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
     ]
   ),
   account(
@@ -2034,6 +2059,8 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
     ]
   ),
   account(
@@ -2051,6 +2078,8 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
     ]
   ),
   account(
@@ -2068,6 +2097,8 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
     ]
   ),
   account(
@@ -2085,6 +2116,8 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
     ]
   ),
   canton(
@@ -4300,7 +4333,7 @@ export const allCoinsAndTokens = [
     18,
     '0x1d80c49bbbcd1c0911346656b529df9e5c2f783d',
     UnderlyingAsset['flr:wflr'],
-    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+    WFLR_FEATURES
   ),
   tflrErc20(
     'ff4dd56d-8fa0-4e92-b764-88c56ea48549',
@@ -4309,6 +4342,15 @@ export const allCoinsAndTokens = [
     18,
     '0xab6fad89389b73dbc887d31206a26fd88d719d1f',
     UnderlyingAsset['tflr:wflr'],
+    WFLR_FEATURES
+  ),
+  tflrErc20(
+    'a1c8fdc6-e5b5-4170-b490-f585db8ab922',
+    'tflr:twc2flr',
+    'Wrapped Coston2Flare Testnet',
+    18,
+    '0xc67dce33d7a8efa5ffeb961899c73fe01bce9273',
+    UnderlyingAsset['tflr:twc2flr'],
     WFLR_FEATURES
   ),
   txrpToken(
