@@ -1,4 +1,5 @@
-# BIP327 reference implementation
+# BIP327 reference implementation with support for deprecated BitGo `p2tr`
+# aggregation method (see key_agg_bitgo_p2tr)
 #
 # WARNING: This implementation is for demonstration purposes only and _not_ to
 # be used in production environments. The code is vulnerable to timing attacks,
@@ -190,13 +191,23 @@ def get_xonly_pk(keyagg_ctx: KeyAggContext) -> XonlyPk:
     Q, _, _ = keyagg_ctx
     return XonlyPk(xbytes(Q))
 
-def key_agg(pubkeys: List[PlainPk]) -> KeyAggContext:
+def key_agg(pubkeys: List[bytes]) -> KeyAggContext:
+    for pk in pubkeys:
+        if len(pk) != len(pubkeys[0]):
+            raise ValueError('all pubkeys must be the same length')
+
     pk2 = get_second_key(pubkeys)
     u = len(pubkeys)
     Q = infinity
     for i in range(u):
         try:
-            P_i = cpoint(pubkeys[i])
+            # if the pubkey is 32 bytes, it is an xonly pubkey
+            if len(pubkeys[i]) == 32:
+                P_i = lift_x(pubkeys[i])
+                if P_i is None:
+                    raise ValueError('invalid xonly pubkey')
+            else:
+                P_i = cpoint(pubkeys[i])
         except ValueError:
             raise InvalidContributionError(i, "pubkey")
         a_i = key_agg_coeff_internal(pubkeys, pubkeys[i], pk2)
@@ -206,6 +217,20 @@ def key_agg(pubkeys: List[PlainPk]) -> KeyAggContext:
     gacc = 1
     tacc = 0
     return KeyAggContext(Q, gacc, tacc)
+
+def key_agg_bitgo_p2tr_legacy(pubkeys: List[PlainPk]) -> KeyAggContext:
+    # This is the legacy algorithm used by the bitgo 'p2tr' output script type (chain 30, 31)
+    # Here, we convert the pubkeys to xonly first and then sort.
+    # This corresponds to an older variant of the musig2 scheme.
+    # The change from 32-byte to 33-byte keys was made in https://github.com/jonasnick/bips/pull/37
+    # For xonly mode, normalize all pubkeys to use only x-coordinate in hashes
+    # by converting them to 32-byte x-only format
+    pubkeys = [pk[-32:] for pk in pubkeys]
+
+    # sort the keys after xonly conversion, before aggregation
+    pubkeys = key_sort(pubkeys)
+
+    return key_agg(pubkeys)
 
 def hash_keys(pubkeys: List[PlainPk]) -> bytes:
     return tagged_hash('KeyAgg list', b''.join(pubkeys))
@@ -345,9 +370,14 @@ def get_session_values(session_ctx: SessionContext) -> Tuple[Point, int, int, in
 def get_session_key_agg_coeff(session_ctx: SessionContext, P: Point) -> int:
     (_, pubkeys, _, _, _) = session_ctx
     pk = PlainPk(cbytes(P))
-    if pk not in pubkeys:
+    if pk not in pubkeys and pk[-32:] not in pubkeys:
         raise ValueError('The signer\'s pubkey must be included in the list of pubkeys.')
-    return key_agg_coeff(pubkeys, pk)
+    # If pubkeys are x-only, use x-only for coefficient calculation
+    if len(pubkeys[0]) == 32:
+        pk_for_coeff = pk[-32:]
+    else:
+        pk_for_coeff = pk
+    return key_agg_coeff(pubkeys, pk_for_coeff)
 
 def sign(secnonce: bytearray, sk: bytes, session_ctx: SessionContext) -> bytes:
     (Q, gacc, _, b, R, e) = get_session_values(session_ctx)
@@ -368,7 +398,7 @@ def sign(secnonce: bytearray, sk: bytes, session_ctx: SessionContext) -> bytes:
     P = point_mul(G, d_)
     assert P is not None
     pk = cbytes(P)
-    if not pk == secnonce[64:97]:
+    if not pk == secnonce[64:97] and not pk[-32:] == secnonce[64:97]:
         raise ValueError('Public key does not match nonce_gen argument')
     a = get_session_key_agg_coeff(session_ctx, P)
     g = 1 if has_even_y(Q) else n - 1
@@ -439,7 +469,8 @@ def partial_sig_verify_internal(psig: bytes, pubnonce: bytes, pk: bytes, session
     R_s2 = cpoint(pubnonce[33:66])
     Re_s_ = point_add(R_s1, point_mul(R_s2, b))
     Re_s = Re_s_ if has_even_y(R) else point_negate(Re_s_)
-    P = cpoint(pk)
+    # prepend a 0x02 if the pk is 32 bytes
+    P = cpoint(b'\x02' + pk) if len(pk) == 32 else cpoint(pk)
     a = get_session_key_agg_coeff(session_ctx, P)
     g = 1 if has_even_y(Q) else n - 1
     g_ = g * gacc % n
@@ -810,63 +841,234 @@ def test_sig_agg_vectors() -> None:
         session_ctx = SessionContext(aggnonce, pubkeys, tweaks, is_xonly, msg)
         assert_raises(exception, lambda: partial_sig_agg(psigs, session_ctx), except_fn)
 
+
+def sign_and_verify_with_aggpk(
+    aggpk: XonlyPk, 
+    sk_1: bytes, 
+    sk_2: bytes, 
+    pk_1: PlainPk, 
+    pk_2: PlainPk, 
+    i: int, 
+    random_nonce: bool, 
+    tweaks: List[bytes], 
+    is_xonly: List[bool]
+) -> Tuple[XonlyPk, bytes]:
+    pubkeys = [pk_1, pk_2]
+    msg = secrets.token_bytes(32)
+    # Use a non-repeating counter for extra_in
+    secnonce_1, pubnonce_1 = nonce_gen(sk_1, pk_1, aggpk, msg, i.to_bytes(4, 'big'))
+
+    # On even iterations use regular signing algorithm for signer 2,
+    # otherwise use deterministic signing algorithm
+    if random_nonce:
+        # Use a clock for extra_in
+        t = time.clock_gettime_ns(time.CLOCK_MONOTONIC)
+        secnonce_2, pubnonce_2 = nonce_gen(sk_2, pk_2, aggpk, msg, t.to_bytes(8, 'big'))
+    else:
+        aggothernonce = nonce_agg([pubnonce_1])
+        rand = secrets.token_bytes(32)
+        pubnonce_2, psig_2 = deterministic_sign(sk_2, aggothernonce, pubkeys, tweaks, is_xonly, msg, rand)
+
+    pubnonces = [pubnonce_1, pubnonce_2]
+    aggnonce = nonce_agg(pubnonces)
+
+    session_ctx = SessionContext(aggnonce, pubkeys, tweaks, is_xonly, msg)
+    psig_1 = sign(secnonce_1, sk_1, session_ctx)
+    assert partial_sig_verify(psig_1, pubnonces, pubkeys, tweaks, is_xonly, msg, 0)
+    # An exception is thrown if secnonce_1 is accidentally reused
+    assert_raises(ValueError, lambda: sign(secnonce_1, sk_1, session_ctx), lambda e: True)
+
+    # Wrong signer index
+    assert not partial_sig_verify(psig_1, pubnonces, pubkeys, tweaks, is_xonly, msg, 1)
+
+    # Wrong message
+    assert not partial_sig_verify(psig_1, pubnonces, pubkeys, tweaks, is_xonly, secrets.token_bytes(32), 0)
+
+    if random_nonce:
+        psig_2 = sign(secnonce_2, sk_2, session_ctx)
+    assert partial_sig_verify(psig_2, pubnonces, pubkeys, tweaks, is_xonly, msg, 1)
+
+    sig = partial_sig_agg([psig_1, psig_2], session_ctx)
+    assert schnorr_verify(msg, aggpk, sig)
+
+
+def sign_and_verify_with_keys(
+    sk_1: bytes, 
+    sk_2: bytes, 
+    pk_1: PlainPk, 
+    pk_2: PlainPk, 
+    i: int, 
+    random_nonce: bool,
+) -> Tuple[XonlyPk, bytes]:
+    # In this example, the message and aggregate pubkey are known before nonce generation,
+    # before nonce generation, so they can be passed into the nonce
+    # generation function as a defense-in-depth measure to protect
+    # against nonce reuse.
+    #
+    # If these values are not known when nonce_gen is called, empty
+    # byte arrays can be passed in for the corresponding arguments
+    # instead.
+    pubkeys = [pk_1, pk_2]
+    v = secrets.randbelow(4)
+    tweaks = [secrets.token_bytes(32) for _ in range(v)]
+    is_xonly = [secrets.choice([False, True]) for _ in range(v)]
+    aggpk = get_xonly_pk(key_agg_and_tweak(pubkeys, tweaks, is_xonly))
+    sign_and_verify_with_aggpk(aggpk, sk_1, sk_2, pk_1, pk_2, i, random_nonce, tweaks, is_xonly)
+
 def test_sign_and_verify_random(iters: int) -> None:
     for i in range(iters):
         sk_1 = secrets.token_bytes(32)
         sk_2 = secrets.token_bytes(32)
         pk_1 = individual_pk(sk_1)
         pk_2 = individual_pk(sk_2)
-        pubkeys = [pk_1, pk_2]
+        sign_and_verify_with_keys(sk_1, sk_2, pk_1, pk_2, i, random_nonce=i % 2 != 0)
 
-        # In this example, the message and aggregate pubkey are known
-        # before nonce generation, so they can be passed into the nonce
-        # generation function as a defense-in-depth measure to protect
-        # against nonce reuse.
-        #
-        # If these values are not known when nonce_gen is called, empty
-        # byte arrays can be passed in for the corresponding arguments
-        # instead.
-        msg = secrets.token_bytes(32)
-        v = secrets.randbelow(4)
-        tweaks = [secrets.token_bytes(32) for _ in range(v)]
-        is_xonly = [secrets.choice([False, True]) for _ in range(v)]
-        aggpk = get_xonly_pk(key_agg_and_tweak(pubkeys, tweaks, is_xonly))
 
-        # Use a non-repeating counter for extra_in
-        secnonce_1, pubnonce_1 = nonce_gen(sk_1, pk_1, aggpk, msg, i.to_bytes(4, 'big'))
+def sign_and_verify_with_aggpk_bitgo(
+    aggpk: XonlyPk, 
+    sk_1: bytes, 
+    sk_2: bytes, 
+    pk_1: PlainPk, 
+    pk_2: PlainPk, 
+    legacy_agg: bool = False
+) -> None:
+    sign_and_verify_with_aggpk(
+        aggpk,
+        sk_1,
+         sk_2, 
+         pk_1, 
+         pk_2, 
+         0, 
+         random_nonce=False, 
+         tweaks=[], 
+         is_xonly=[])
 
-        # On even iterations use regular signing algorithm for signer 2,
-        # otherwise use deterministic signing algorithm
-        if i % 2 == 0:
-            # Use a clock for extra_in
-            t = time.clock_gettime_ns(time.CLOCK_MONOTONIC)
-            secnonce_2, pubnonce_2 = nonce_gen(sk_2, pk_2, aggpk, msg, t.to_bytes(8, 'big'))
+def sign_and_verify_with_aggpk_bitgo_legacy(
+    aggpk: XonlyPk, 
+    sk_1: bytes, 
+    sk_2: bytes, 
+    pk_1: PlainPk, 
+    pk_2: PlainPk,
+) -> None:
+    # normalize the secret key so that the pubkey is even
+    def norm_sk(sk: bytes) -> bytes:
+        pk = individual_pk(sk)
+        P = cpoint(pk)
+        if has_even_y(P):
+            return sk
         else:
-            aggothernonce = nonce_agg([pubnonce_1])
-            rand = secrets.token_bytes(32)
-            pubnonce_2, psig_2 = deterministic_sign(sk_2, aggothernonce, pubkeys, tweaks, is_xonly, msg, rand)
+            # negate the secret key
+            # For secp256k1, negating a secret key is (N - sk), where N is the curve order.
+            norm_sk = ((n - int_from_bytes(sk)) % n).to_bytes(32, 'big')
+            return norm_sk
 
-        pubnonces = [pubnonce_1, pubnonce_2]
-        aggnonce = nonce_agg(pubnonces)
+    # normalize the secret keys so that the pubkeys are even
+    sk_1 = norm_sk(sk_1)
+    sk_2 = norm_sk(sk_2)
+    pk_1 = individual_pk(sk_1)[-32:]
+    pk_2 = individual_pk(sk_2)[-32:]
 
-        session_ctx = SessionContext(aggnonce, pubkeys, tweaks, is_xonly, msg)
-        psig_1 = sign(secnonce_1, sk_1, session_ctx)
-        assert partial_sig_verify(psig_1, pubnonces, pubkeys, tweaks, is_xonly, msg, 0)
-        # An exception is thrown if secnonce_1 is accidentally reused
-        assert_raises(ValueError, lambda: sign(secnonce_1, sk_1, session_ctx), lambda e: True)
+    # order sk_1 and sk_2 by pk order
+    if pk_1 > pk_2:
+        sk_1, sk_2 = sk_2, sk_1
+        pk_1, pk_2 = pk_2, pk_1
 
-        # Wrong signer index
-        assert not partial_sig_verify(psig_1, pubnonces, pubkeys, tweaks, is_xonly, msg, 1)
+    # recompute agg_pk
+    expected_aggpk = get_xonly_pk(key_agg([pk_1, pk_2]))
+    assert aggpk == expected_aggpk, \
+        f"p2tr aggregation mismatch: expected {expected_aggpk.hex()}, got {aggpk.hex()}"
+    
+    sign_and_verify_with_aggpk(
+        expected_aggpk,
+        sk_1,
+        sk_2,
+        pk_1,
+        pk_2,
+        0,
+        random_nonce=False,
+        tweaks=[],
+        is_xonly=[]
+    )
 
-        # Wrong message
-        assert not partial_sig_verify(psig_1, pubnonces, pubkeys, tweaks, is_xonly, secrets.token_bytes(32), 0)
+# This tests the algorithms used by the bitgo 
+# - legacy 'p2tr' output script type (chain 30, 31)
+# - standard 'p2trMusig2' script type (chain 40, 41)
 
-        if i % 2 == 0:
-            psig_2 = sign(secnonce_2, sk_2, session_ctx)
-        assert partial_sig_verify(psig_2, pubnonces, pubkeys, tweaks, is_xonly, msg, 1)
+# Private keys from test fixtures
+privkey_user = bytes.fromhex("a07e682489dad68834f7df8a5c8b34f3b9ff9fdd8809e2ba53ae29df65fc146b")
+privkey_bitgo = bytes.fromhex("2d210ff6703d0fae0e9ca91e1d0bbab006b03e8e699f49becbaf554066fa79aa")
 
-        sig = partial_sig_agg([psig_1, psig_2], session_ctx)
-        assert schnorr_verify(msg, aggpk, sig)
+# Note that pubkeys here have different order depending on whether comparison is on the plain or x-only version
+pubkey_user = PlainPk(bytes.fromhex("02d20a62701c54f6eb3abb9f964b0e29ff90ffa3b4e3fcb73e7c67d4950fa6e3c7"))
+pubkey_bitgo = PlainPk(bytes.fromhex("03203ab799ce28e2cca044f594c69275050af4bb0854ad730a8f74622342300e64"))
+
+def test_agg_bitgo_derive() -> None:
+    # Verify that private keys derive to the expected public keys
+    assert individual_pk(privkey_user) == pubkey_user, \
+        f"User private key does not derive to expected public key: expected {pubkey_user.hex()}, got {individual_pk(privkey_user).hex()}"
+    assert individual_pk(privkey_bitgo) == pubkey_bitgo, \
+        f"BitGo private key does not derive to expected public key: expected {pubkey_bitgo.hex()}, got {individual_pk(privkey_bitgo).hex()}"
+
+def test_agg_bitgo_p2tr_legacy() -> None:
+    expected_internal_pubkey_p2tr = PlainPk(bytes.fromhex("cc899cac29f6243ef481be86f0d39e173c075cd57193d46332b1ec0b42c439aa"))
+
+    # Aggregation using nonstandard key_agg_bitgo_p2tr_legacy
+    keyagg_ctx = key_agg_bitgo_p2tr_legacy([pubkey_user, pubkey_bitgo])
+    aggregated_xonly = get_xonly_pk(keyagg_ctx)
+    assert aggregated_xonly == expected_internal_pubkey_p2tr, \
+        f"p2tr aggregation mismatch: expected {expected_internal_pubkey_p2tr.hex()}, got {aggregated_xonly.hex()}"
+    sign_and_verify_with_aggpk_bitgo(
+        expected_internal_pubkey_p2tr, 
+        privkey_bitgo, 
+        privkey_user, 
+        pubkey_bitgo, 
+        pubkey_user, 
+        legacy_agg=True,
+    )
+
+    # Aggregation with keys in reverse order yields same result
+    keyagg_ctx = key_agg_bitgo_p2tr_legacy([pubkey_bitgo, pubkey_user])
+    aggregated_xonly = get_xonly_pk(keyagg_ctx)
+    assert aggregated_xonly == expected_internal_pubkey_p2tr, \
+        f"p2tr aggregation mismatch: expected {expected_internal_pubkey_p2tr.hex()}, got {aggregated_xonly.hex()}"
+
+def test_agg_bitgo_p2tr_musig2() -> None:
+    expected_internal_pubkey_p2tr_musig2 = PlainPk(bytes.fromhex("c0e255b4510e041ab81151091d875687a618de314344dff4b73b1bcd366cdbd8"))
+    expected_internal_pubkey_p2tr_musig2_reverse = PlainPk(bytes.fromhex("e48d309b535811eb0b148c4b0600a10e82e289899429e40aee05577504eca356"))
+
+
+    # Aggregation using standard key_agg
+    keyagg_ctx = key_agg([pubkey_user, pubkey_bitgo])
+    aggregated_xonly = get_xonly_pk(keyagg_ctx)
+    assert aggregated_xonly == expected_internal_pubkey_p2tr_musig2, \
+        f"p2trMusig2 aggregation mismatch: expected {expected_internal_pubkey_p2tr_musig2.hex()}, got {aggregated_xonly.hex()}"
+
+    sign_and_verify_with_aggpk(
+        expected_internal_pubkey_p2tr_musig2, 
+        privkey_user, 
+        privkey_bitgo, 
+        pubkey_user, 
+        pubkey_bitgo, 
+        0, 
+        random_nonce=False, 
+        tweaks=[], 
+        is_xonly=[]
+    )
+
+    # Aggregation using standard key_agg in reverse order yields different key
+    keyagg_ctx = key_agg([pubkey_bitgo, pubkey_user])
+    aggregated_xonly = get_xonly_pk(keyagg_ctx)
+    assert aggregated_xonly == expected_internal_pubkey_p2tr_musig2_reverse, \
+        f"p2trMusig2 aggregation mismatch: expected {expected_internal_pubkey_p2tr_musig2_reverse.hex()}, got {aggregated_xonly.hex()}"
+
+    sign_and_verify_with_aggpk_bitgo(
+        expected_internal_pubkey_p2tr_musig2_reverse, 
+        privkey_bitgo, 
+        privkey_user, 
+        pubkey_bitgo, 
+        pubkey_user, 
+    )
+
 
 if __name__ == '__main__':
     test_key_sort_vectors()
@@ -878,3 +1080,6 @@ if __name__ == '__main__':
     test_det_sign_vectors()
     test_sig_agg_vectors()
     test_sign_and_verify_random(6)
+    test_agg_bitgo_derive()
+    test_agg_bitgo_p2tr_legacy()
+    test_agg_bitgo_p2tr_musig2()
