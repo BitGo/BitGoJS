@@ -3765,6 +3765,123 @@ describe('V2 Wallet:', function () {
       });
     });
 
+    describe('ensureCleanSigSharesAndSignTransaction', function () {
+      const exampleSignedTx = {
+        txHex: '0x123',
+        txid: '0x456',
+        status: 'signed',
+      };
+
+      const partiallySignedTxRequest: TxRequest = {
+        txRequestId: 'test-tx-id',
+        walletId: 'test-wallet-id',
+        walletType: 'hot',
+        version: 1,
+        state: 'initialized',
+        date: '2025-10-15',
+        userId: 'user-123',
+        intent: {},
+        policiesChecked: false,
+        unsignedTxs: [],
+        apiVersion: 'full',
+        latest: true,
+        transactions: [
+          {
+            state: 'pendingSignature',
+            unsignedTx: {
+              serializedTxHex: 'abc123',
+              signableHex: 'def456',
+              derivationPath: 'm/0',
+            },
+            signatureShares: [
+              {
+                from: 'user',
+                to: 'bitgo',
+                share: 'partial-share-data',
+              },
+            ],
+          },
+        ],
+      };
+
+      const cleanTxRequest: TxRequest = {
+        ...partiallySignedTxRequest,
+        transactions: [
+          {
+            state: 'initialized',
+            unsignedTx: {
+              serializedTxHex: 'abc123',
+              signableHex: 'def456',
+              derivationPath: 'm/0',
+            },
+            signatureShares: [],
+          },
+        ],
+      };
+
+      afterEach(async function () {
+        sandbox.restore();
+      });
+
+      it('should delete signature shares for partially signed Full TxRequest before signing', async function () {
+        const getTxRequestSpy = sandbox.stub(TssUtils.prototype, 'getTxRequest');
+        getTxRequestSpy.resolves(partiallySignedTxRequest);
+
+        const deleteSignatureSharesSpy = sandbox.stub(TssUtils.prototype, 'deleteSignatureShares');
+        deleteSignatureSharesSpy.resolves([]);
+
+        const signTransactionSpy = sandbox.stub(tssSolWallet, 'signTransaction');
+        signTransactionSpy.resolves(exampleSignedTx);
+
+        const signedTx = await tssSolWallet.ensureCleanSigSharesAndSignTransaction({
+          txRequestId: 'test-tx-id',
+          walletPassphrase: 'passphrase',
+        });
+
+        sandbox.assert.calledOnce(getTxRequestSpy);
+        sandbox.assert.calledOnce(deleteSignatureSharesSpy);
+        sandbox.assert.calledOnce(signTransactionSpy);
+        signedTx.should.deepEqual(exampleSignedTx);
+      });
+
+      it('should not delete signature shares for clean Full TxRequest', async function () {
+        const getTxRequestSpy = sandbox.stub(TssUtils.prototype, 'getTxRequest');
+        getTxRequestSpy.resolves(cleanTxRequest);
+
+        const deleteSignatureSharesSpy = sandbox.stub(TssUtils.prototype, 'deleteSignatureShares');
+
+        const signTransactionSpy = sandbox.stub(tssSolWallet, 'signTransaction');
+        signTransactionSpy.resolves(exampleSignedTx);
+
+        const signedTx = await tssSolWallet.ensureCleanSigSharesAndSignTransaction({
+          txRequestId: 'test-tx-id',
+          walletPassphrase: 'passphrase',
+        });
+
+        sandbox.assert.calledOnce(getTxRequestSpy);
+        sandbox.assert.notCalled(deleteSignatureSharesSpy);
+        sandbox.assert.calledOnce(signTransactionSpy);
+        signedTx.should.deepEqual(exampleSignedTx);
+      });
+
+      it('should sign transaction directly when no txRequestId provided', async function () {
+        const getTxRequestSpy = sandbox.stub(TssUtils.prototype, 'getTxRequest');
+        const deleteSignatureSharesSpy = sandbox.stub(TssUtils.prototype, 'deleteSignatureShares');
+
+        const signTransactionSpy = sandbox.stub(tssSolWallet, 'signTransaction');
+        signTransactionSpy.resolves(exampleSignedTx);
+
+        const signedTx = await tssSolWallet.ensureCleanSigSharesAndSignTransaction({
+          walletPassphrase: 'passphrase',
+        });
+
+        sandbox.assert.notCalled(getTxRequestSpy);
+        sandbox.assert.notCalled(deleteSignatureSharesSpy);
+        sandbox.assert.calledOnce(signTransactionSpy);
+        signedTx.should.deepEqual(exampleSignedTx);
+      });
+    });
+
     describe('Message Signing', function () {
       const txHash = '0xrrrsss1b';
       const messageRaw = 'hello world';
