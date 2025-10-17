@@ -3,8 +3,7 @@ import should from 'should';
 
 import { coins } from '@bitgo/statics';
 
-import { WalletInitBuilder } from '../../../../src/lib/walletInitBuilder';
-import { WalletInitTransaction } from '../../../../src/lib/walletInitialization/walletInitTransaction';
+import { WalletInitBuilder, WalletInitTransaction } from '../../../../src';
 import { WalletInitRequest } from '../../../../src/lib/iface';
 
 import { GenerateTopologyResponse, InvalidGenerateTopologyResponse, WalletInitRequestData } from '../../../resources';
