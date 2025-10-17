@@ -1119,8 +1119,21 @@ export class Near extends BaseCoin {
       throw new Error('Error on token enablements: transaction has no outputs to validate beneficiary');
     }
 
+    // NEAR token enablements only support a single recipient
+    if (!txParams.recipients || txParams.recipients.length === 0) {
+      throw new Error('Error on token enablements: missing recipients in transaction parameters');
+    }
+
+    if (txParams.recipients.length !== 1) {
+      throw new Error('Error on token enablements: token enablement only supports a single recipient');
+    }
+
+    if (explainedTx.outputs.length !== 1) {
+      throw new Error('Error on token enablements: transaction must have exactly 1 output');
+    }
+
     const output = explainedTx.outputs[0];
-    const recipient = txParams.recipients?.[0];
+    const recipient = txParams.recipients[0];
 
     if (!recipient?.address) {
       throw new Error('Error on token enablements: missing beneficiary address in transaction parameters');
