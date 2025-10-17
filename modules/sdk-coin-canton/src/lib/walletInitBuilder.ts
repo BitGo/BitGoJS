@@ -1,6 +1,14 @@
 import BigNumber from 'bignumber.js';
 
-import { BaseAddress, BaseKey, BaseTransactionBuilder, BuildTransactionError } from '@bitgo/sdk-core';
+import {
+  BaseAddress,
+  BaseKey,
+  BaseTransactionBuilder,
+  BuildTransactionError,
+  InvalidTransactionError,
+  PublicKey,
+  Signature,
+} from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 
 import { KeyPair } from './keyPair';
@@ -11,6 +19,7 @@ import { PUBLIC_KEY_FORMAT, PUBLIC_KEY_SPEC } from './constant';
 
 export class WalletInitBuilder extends BaseTransactionBuilder {
   private _transaction: WalletInitTransaction;
+  private _signatures: Signature[] = [];
 
   private _publicKey: IPublicKey;
   private _partyHint: string;
@@ -89,6 +98,15 @@ export class WalletInitBuilder extends BaseTransactionBuilder {
   // not implemented because wallet initialization doesn't require any value
   validateValue(value: BigNumber): void {
     throw new Error('Not implemented');
+  }
+
+  /** @inheritDoc */
+  addSignature(publicKey: PublicKey, signature: Buffer): void {
+    if (!this.transaction) {
+      throw new InvalidTransactionError('transaction is empty!');
+    }
+    this._signatures.push({ publicKey, signature });
+    this.transaction.signatures = signature.toString('base64');
   }
 
   /**
