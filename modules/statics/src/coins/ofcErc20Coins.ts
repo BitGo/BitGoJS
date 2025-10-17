@@ -4406,6 +4406,47 @@ export const tOfcErc20Coins = [
   ofcerc20('9cfc5cf7-0a6b-40ec-936c-04be24e196c0', 'ofceth:mavia', 'mavia', 18, underlyingAssetForSymbol('eth:mavia')),
   ofcerc20('9ec6f38f-ce0e-4f8c-94f8-69d182f9c25e', 'ofceth:lm', 'lm', 18, underlyingAssetForSymbol('eth:lm')),
   ofcerc20('259c73b2-7c63-4522-96ee-9711442b45c8', 'ofceth:kub', 'kub', 18, underlyingAssetForSymbol('eth:kub')),
+  ofcerc20(
+    'c1776148-7f04-43b4-9ec9-74ea082111bd',
+    'ofceth:frxusd',
+    'frxusd',
+    18,
+    underlyingAssetForSymbol('eth:frxusd')
+  ),
+  ofcerc20('47f8db6a-d983-4a4b-b43a-fcd83d473a52', 'ofceth:red', 'red', 18, underlyingAssetForSymbol('eth:red')),
+  ofcerc20('1eb11077-5b2d-4f17-9da7-93df043c1bd6', 'ofceth:dka', 'dka', 18, underlyingAssetForSymbol('eth:dka')),
+  ofcerc20('5a3e3177-e3ee-43cb-bd39-567bb9022a16', 'ofceth:cgpt', 'cgpt', 18, underlyingAssetForSymbol('eth:cgpt')),
+  ofcerc20('2e1671ee-1306-483b-b330-dbf52167121f', 'ofceth:apu', 'apu', 18, underlyingAssetForSymbol('eth:apu')),
+  ofcerc20('9ce1f6d0-6a9a-45ec-b4ea-2e8d94d0b76d', 'ofceth:shfl', 'shfl', 18, underlyingAssetForSymbol('eth:shfl')),
+  ofcerc20(
+    '6b77a796-cb3b-4654-bd93-0d28db22e641',
+    'ofceth:banana',
+    'banana',
+    18,
+    underlyingAssetForSymbol('eth:banana')
+  ),
+  ofcerc20('0d6a51be-34d0-4e91-b8a6-b79004c44bc3', 'ofceth:zkj', 'zkj', 18, underlyingAssetForSymbol('eth:zkj')),
+  ofcerc20('42da0317-adf3-4645-99d5-e731ccc0070d', 'ofceth:spk', 'spk', 18, underlyingAssetForSymbol('eth:spk')),
+  ofcerc20('4383dfcc-35b9-4754-aeda-120a36637cb9', 'ofceth:merl', 'merl', 18, underlyingAssetForSymbol('eth:merl')),
+  ofcerc20('e5449864-d826-4369-83e0-e46ffc6bc4fd', 'ofceth:aeur', 'aeur', 18, underlyingAssetForSymbol('eth:aeur')),
+  ofcerc20('405d2275-a38f-4172-bf7b-e055ff4d5871', 'ofceth:soso', 'soso', 18, underlyingAssetForSymbol('eth:soso')),
+  ofcerc20('44875f8c-c9fb-4af5-a3d2-79c25b3504d6', 'ofceth:bfc', 'bfc', 18, underlyingAssetForSymbol('eth:bfc')),
+  ofcerc20('3caa6640-e667-49c0-904c-a08deb1d6f03', 'ofceth:osak', 'osak', 18, underlyingAssetForSymbol('eth:osak')),
+  ofcerc20('8088356c-ea7f-40ce-8984-c23adca25ed7', 'ofceth:uds', 'uds', 18, underlyingAssetForSymbol('eth:uds')),
+  ofcerc20('34f3593c-07bc-4b92-8ed4-33b5a5f01762', 'ofceth:zent', 'zent', 18, underlyingAssetForSymbol('eth:zent')),
+  ofcerc20('cad5301f-d294-41eb-84fc-1e9a1b3592c7', 'ofceth:euri', 'euri', 18, underlyingAssetForSymbol('eth:euri')),
+  ofcerc20('6dd31724-eab3-4667-8748-04da88349e17', 'ofceth:al', 'al', 18, underlyingAssetForSymbol('eth:al')),
+  ofcerc20('c9d9f397-2fda-4418-8362-0c4f9a6d1aad', 'ofceth:wct', 'wct', 18, underlyingAssetForSymbol('eth:wct')),
+  ofcerc20(
+    '8125e1e5-8305-4fc2-834f-f859b81b918c',
+    'ofceth:pundiai',
+    'pundiai',
+    18,
+    underlyingAssetForSymbol('eth:pundiai')
+  ),
+  ofcerc20('17251954-61a5-4f5a-a594-a287b6864a25', 'ofceth:anon', 'anon', 18, underlyingAssetForSymbol('eth:anon')),
+  ofcerc20('3ad9b598-11bd-4dba-9a42-a74eae4c6b43', 'ofceth:omi', 'omi', 18, underlyingAssetForSymbol('eth:omi')),
+  ofcerc20('bf7b99fe-d666-4db7-a775-c05e5bff98ce', 'ofceth:andy', 'andy', 18, underlyingAssetForSymbol('eth:andy')),
 
   ofcerc20('d2b5f3e4-3c4e-4f1e-9f0a-1b2c3d4e5f6a', 'ofcbaseeth:spec', 'Spectral', 18, UnderlyingAsset['baseeth:spec']),
 
