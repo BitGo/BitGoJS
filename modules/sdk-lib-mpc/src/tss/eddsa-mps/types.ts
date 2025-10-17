@@ -1,4 +1,7 @@
+import assert from 'assert';
+import { decode } from 'cbor-x';
 import * as t from 'io-ts';
+import * as DklsTypes from '../ecdsa-dkls/types';
 
 export const ReducedKeyShareType = t.type({
   rootChainCode: t.array(t.number),
@@ -70,4 +73,66 @@ export enum DsgState {
   Finished = 'Finished',
   /** DSG session has been ended/cleaned up */
   Ended = 'Ended',
+}
+
+interface Message<T> {
+  payload: T;
+  from: number;
+}
+
+export type AuthEncMessages = Message<DklsTypes.AuthMessage>[];
+
+export type SerializedMessage = Message<string>;
+
+export type SerializedMessages = Message<string>[];
+
+export type DeserializedMessage = Message<Uint8Array>;
+
+export type DeserializedMessages = Message<Uint8Array>[];
+
+/**
+ * Serializes messages payloads to base64 strings.
+ * @param messages
+ */
+export function serializeMessages(messages: DeserializedMessages): SerializedMessages {
+  return messages.map((message) => ({
+    from: message.from,
+    payload: Buffer.from(message.payload).toString('base64'),
+  }));
+}
+
+/**
+ * Deserialize messages payloads to Uint8Array.
+ * @param messages
+ */
+export function deserializeMessages(messages: SerializedMessages): DeserializedMessages {
+  return messages.map((message) => ({
+    from: message.from,
+    payload: new Uint8Array(Buffer.from(message.payload, 'base64')),
+  }));
+}
+
+/**
+ * Deserializes a Broadcast message.
+ * @param message
+ */
+export function deserializeMessage(message: SerializedMessage): DeserializedMessage {
+  return {
+    from: message.from,
+    payload: new Uint8Array(Buffer.from(message.payload, 'base64')),
+  };
+}
+
+/**
+ * Gets commonkeyChain from DKLS keyShare
+ * @param {Buffer} keyShare - DKLS keyShare
+ * @returns {string} commonKeychain in hex format
+ */
+export function getCommonKeychain(keyShare: Buffer): string {
+  const parsedKeyShare = decode(keyShare);
+  assert(parsedKeyShare.public_key, 'public_key not found in keyShare');
+  assert(parsedKeyShare.root_chain_code, 'root_chain_code not found in public_key');
+  const publicKey = Buffer.from(parsedKeyShare.public_key).toString('hex');
+  const rootChainCode = Buffer.from(parsedKeyShare.root_chain_code).toString('hex');
+  return publicKey + rootChainCode;
 }
