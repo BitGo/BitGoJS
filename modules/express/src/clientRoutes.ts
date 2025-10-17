@@ -687,11 +687,11 @@ export function handleV2CreateLocalKeyChain(req: ExpressApiRouteRequest<'express
  * handle wallet share
  * @param req
  */
-async function handleV2ShareWallet(req: express.Request) {
+export async function handleV2ShareWallet(req: ExpressApiRouteRequest<'express.v2.wallet.share', 'post'>) {
   const bitgo = req.bitgo;
-  const coin = bitgo.coin(req.params.coin);
-  const wallet = await coin.wallets().get({ id: req.params.id });
-  return wallet.shareWallet(req.body);
+  const coin = bitgo.coin(req.decoded.coin);
+  const wallet = await coin.wallets().get({ id: req.decoded.id });
+  return wallet.shareWallet(req.decoded);
 }
 
 /**
@@ -1619,8 +1619,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
 
   router.post('express.v2.wallet.createAddress', [prepareBitGo(config), typedPromiseWrapper(handleV2CreateAddress)]);
 
-  // share wallet
-  app.post('/api/v2/:coin/wallet/:id/share', parseBody, prepareBitGo(config), promiseWrapper(handleV2ShareWallet));
+  router.post('express.v2.wallet.share', [prepareBitGo(config), typedPromiseWrapper(handleV2ShareWallet)]);
   app.post(
     '/api/v2/:coin/walletshare/:id/acceptshare',
     parseBody,
