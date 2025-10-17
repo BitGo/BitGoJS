@@ -41,7 +41,23 @@ describe('express.wallet.update (unit)', () => {
     ];
     const wpPut = nock(bgUrl)
       .put(`/api/v2/${coin}/wallet/${walletId}`)
-      .reply(200, { id: walletId, label: 'updated', coinSpecific: {} });
+      .reply(200, {
+        id: walletId,
+        label: 'updated',
+        coin: coin,
+        keys: ['key1', 'key2', 'key3'],
+        approvalsRequired: 1,
+        balance: 0,
+        confirmedBalance: 0,
+        spendableBalance: 0,
+        balanceString: '0',
+        confirmedBalanceString: '0',
+        spendableBalanceString: '0',
+        enterprise: 'testEnterprise',
+        multisigType: 'tss',
+        coinSpecific: {},
+        pendingApprovals: [],
+      });
 
     const req = {
       bitgo,

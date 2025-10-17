@@ -33,13 +33,25 @@ describe('Express Wallet Update Typed Routes Tests', function () {
 
       const updateResponse = {
         id: walletId,
+        label: 'Test Lightning Wallet',
         coin,
+        keys: ['key1', 'key2', 'key3'],
+        approvalsRequired: 1,
+        balance: 1000000,
+        confirmedBalance: 1000000,
+        spendableBalance: 1000000,
+        balanceString: '1000000',
+        confirmedBalanceString: '1000000',
+        spendableBalanceString: '1000000',
+        enterprise: 'enterprise123',
+        multisigType: 'tss' as const,
         coinSpecific: {
           [coin]: {
             signerHost,
             signerTlsCert,
           },
         },
+        pendingApprovals: [],
       };
 
       // Stub bitgo.put() for lightning update
@@ -141,13 +153,25 @@ describe('Express Wallet Update Typed Routes Tests', function () {
 
       const updateResponse = {
         id: walletId,
+        label: 'Mainnet Lightning Wallet',
         coin,
+        keys: ['mainnetKey1', 'mainnetKey2', 'mainnetKey3'],
+        approvalsRequired: 1,
+        balance: 5000000,
+        confirmedBalance: 5000000,
+        spendableBalance: 5000000,
+        balanceString: '5000000',
+        confirmedBalanceString: '5000000',
+        spendableBalanceString: '5000000',
+        enterprise: 'mainnetEnterprise456',
+        multisigType: 'tss' as const,
         coinSpecific: {
           [coin]: {
             signerHost,
             signerTlsCert,
           },
         },
+        pendingApprovals: [],
       };
 
       const putStub = sinon.stub().returns({

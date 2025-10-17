@@ -1,6 +1,7 @@
 import * as t from 'io-ts';
 import { httpRoute, httpRequest, optional } from '@api-ts/io-ts-http';
 import { BitgoExpressError } from '../../schemas/error';
+import { WalletResponse } from '../../schemas/wallet';
 
 /**
  *  Parameters for Express Wallet Update
@@ -30,13 +31,13 @@ export const ExpressWalletUpdateBody = {
  * Response for Express Wallet Update
  */
 export const ExpressWalletUpdateResponse = {
-  /** Updated Wallet */
-  200: t.UnknownRecord,
-  /** Bad Request */
+  /** Updated Wallet - Returns the wallet with updated Lightning signer configuration */
+  200: WalletResponse,
+  /** Bad Request - Invalid parameters or missing required fields */
   400: BitgoExpressError,
-  /** Forbidden */
+  /** Forbidden - Insufficient permissions to update the wallet */
   403: BitgoExpressError,
-  /** Not Found */
+  /** Not Found - Wallet not found or invalid coin type */
   404: BitgoExpressError,
 } as const;
 
