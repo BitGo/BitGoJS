@@ -268,7 +268,7 @@ function getRedeemIndex(keyCombinations: [Buffer, Buffer][], signer: Buffer, cos
   throw new Error(`could not find singer/cosigner combination`);
 }
 
-function createPaymentP2trCommon(
+export function createPaymentP2trCommon(
   scriptType: 'p2tr' | 'p2trMusig2',
   pubkeys: Triple<Buffer>,
   redeemIndex?: number | { signer: Buffer; cosigner: Buffer }
