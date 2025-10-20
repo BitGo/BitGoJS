@@ -258,8 +258,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       data: Buffer.from(base58.decode(instruction.data)),
     }));
 
-    if (!this._recentBlockhash) {
-      throw new BuildTransactionError('Missing nonce (recentBlockhash) for VersionedTransaction');
+    const recentBlockhash = data.recentBlockhash || this._recentBlockhash;
+
+    if (!recentBlockhash) {
+      throw new BuildTransactionError('Missing recent blockhash for VersionedTransaction');
     }
 
     if (!this._sender) {
@@ -269,7 +271,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     const messageV0 = new MessageV0({
       header: data.messageHeader,
       staticAccountKeys,
-      recentBlockhash: this._recentBlockhash,
+      recentBlockhash: recentBlockhash,
       compiledInstructions,
       addressTableLookups,
     });
