@@ -11,12 +11,12 @@ import { multisigType, walletType } from '../../schemas/wallet';
 export const GenerateWalletBody = {
   /** Wallet label */
   label: t.string,
-  /** Enterprise id. This is required for Ethereum wallets since they can only be created as part of an enterprise */
-  enterprise: t.string,
+  /** Enterprise id. Required for Ethereum wallets since they can only be created as part of an enterprise. Optional for other coins. */
+  enterprise: optional(t.string),
   /** If absent, BitGo uses the default wallet type for the asset */
-  multisigType: multisigType,
+  multisigType: optional(multisigType),
   /** The type of wallet, defined by key management and signing protocols. 'hot' and 'cold' are both self-managed wallets. If absent, defaults to 'hot' */
-  type: walletType,
+  type: optional(walletType),
   /** Passphrase to be used to encrypt the user key on the wallet */
   passphrase: optional(t.string),
   /** User provided public key */
