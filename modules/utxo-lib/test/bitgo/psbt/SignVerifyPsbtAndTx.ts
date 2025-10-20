@@ -76,7 +76,9 @@ function toFixture(obj: unknown) {
     return obj.map(toFixture);
   }
   if (typeof obj === 'object') {
-    return Object.fromEntries(Object.entries(obj).map(([key, value]) => [key, toFixture(value)]));
+    return Object.fromEntries(
+      Object.entries(obj).flatMap(([key, value]) => (value === undefined ? [] : [[key, toFixture(value)]]))
+    );
   }
   return obj;
 }
@@ -122,8 +124,10 @@ function runPsbt(network: Network, sign: SignatureTargetType, inputs: TestUtilIn
       const fixture = {
         walletKeys: rootWalletKeys.triple.map((xpub) => xpub.toBase58()),
         psbtBase64: psbt.toBase64(),
-        inputs: getFixturePsbtInputs(psbt, inputs),
-        outputs: getFixturePsbtOutputs(psbt),
+        inputs: psbt.txInputs.map((input) => toFixture(input)),
+        psbtInputs: getFixturePsbtInputs(psbt, inputs),
+        outputs: psbt.txOutputs.map((output) => toFixture(output)),
+        psbtOutputs: getFixturePsbtOutputs(psbt),
       };
       const filename = [`psbt`, coin, sign, 'json'].join('.');
       assert.deepStrictEqual(fixture, await getFixture(`${__dirname}/../fixtures/psbt/${filename}`, fixture));
