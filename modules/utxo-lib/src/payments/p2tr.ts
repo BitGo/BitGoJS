@@ -125,11 +125,12 @@ export function p2tr(a: Payment, opts?: PaymentOpts): Payment {
     } else if (a.pubkeys && a.pubkeys.length === 1) {
       return a.pubkeys[0];
     } else if (a.pubkeys && a.pubkeys.length > 1) {
-      // multiple pubkeys
       if (isPlainPubkeys(a.pubkeys)) {
+        // p2trMusig2 address type
         return Buffer.from(musig.getXOnlyPubkey(musig.keyAgg(a.pubkeys)));
       }
 
+      // legacy p2tr address type
       return Buffer.from(taproot.aggregateMuSigPubkeys(ecc, a.pubkeys));
     } else if (_parsedControlBlock()) {
       return _parsedControlBlock()?.internalPubkey;
