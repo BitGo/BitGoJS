@@ -78,9 +78,9 @@ export async function verifyTransaction(
   if (!(tx instanceof utxolib.bitgo.UtxoPsbt)) {
     throw new TxIntentMismatchError(
       'unexpected transaction type',
-      params.reqId || '',
+      params.reqId,
       [params.txParams],
-      params.txPrebuild.txHex || ''
+      params.txPrebuild.txHex
     );
   }
   assertValidTransaction(tx, descriptorMap, params.txParams.recipients ?? [], tx.network);

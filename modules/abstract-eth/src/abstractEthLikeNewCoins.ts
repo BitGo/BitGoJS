@@ -2775,7 +2775,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
 
     // Helper to throw TxIntentMismatchError with consistent context
     const throwTxMismatch = (message: string): never => {
-      throw new TxIntentMismatchError(message, '', [txParams], txPrebuild?.txHex || '');
+      throw new TxIntentMismatchError(message, undefined, [txParams], txPrebuild?.txHex);
     };
 
     if (
@@ -2849,7 +2849,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
 
     // Helper to throw TxIntentMismatchError with consistent context
     const throwTxMismatch = (message: string): never => {
-      throw new TxIntentMismatchError(message, '', [txParams], txPrebuild?.txHex || '');
+      throw new TxIntentMismatchError(message, undefined, [txParams], txPrebuild?.txHex);
     };
 
     if (!txParams?.recipients || !txPrebuild?.recipients || !wallet) {

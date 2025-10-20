@@ -51,7 +51,7 @@ export async function verifyTransaction<TNumber extends bigint | number>(
 
   // Helper to throw TxIntentMismatchError with consistent context
   const throwTxMismatch = (message: string): never => {
-    throw new TxIntentMismatchError(message, reqId || '', [txParams], txPrebuild.txHex || '');
+    throw new TxIntentMismatchError(message, reqId, [txParams], txPrebuild.txHex);
   };
 
   if (!_.isUndefined(verification.disableNetworking) && !_.isBoolean(verification.disableNetworking)) {
@@ -168,7 +168,7 @@ export async function verifyTransaction<TNumber extends bigint | number>(
 
   const allOutputs = parsedTransaction.outputs;
   if (!txPrebuild.txHex) {
-    throw new TxIntentMismatchError(`txPrebuild.txHex not set`, reqId || '', [txParams], '');
+    throw new TxIntentMismatchError(`txPrebuild.txHex not set`, reqId, [txParams], undefined);
   }
   const inputs = isPsbt
     ? getPsbtTxInputs(txPrebuild.txHex, coin.network).map((v) => ({
