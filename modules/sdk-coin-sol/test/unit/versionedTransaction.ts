@@ -37,6 +37,7 @@ describe('Sol Jupiter Swap Transaction', () => {
       addressLookupTables,
       staticAccountKeys,
       messageHeader: originalDeserialized.message.header,
+      recentBlockhash: originalDeserialized.message.recentBlockhash,
     };
 
     const factory = getBuilderFactory('tsol');
@@ -197,7 +198,7 @@ describe('Sol Jupiter Swap Transaction', () => {
     );
   });
 
-  it('should not inject nonce advance when using regular nonce (no durableNonceParams)', async function () {
+  it('should not inject nonce advance when using recentBlockhash (no durableNonceParams)', async function () {
     const versionedTransactionData = {
       versionedInstructions: [
         {
@@ -213,6 +214,7 @@ describe('Sol Jupiter Swap Transaction', () => {
         numReadonlySignedAccounts: 0,
         numReadonlyUnsignedAccounts: 0,
       },
+      recentBlockhash: testData.blockHashes.validBlockHashes[0],
     };
 
     const factory = getBuilderFactory('tsol');
