@@ -849,7 +849,7 @@ describe('SignTransaction codec tests', function () {
         .send(requestBody);
 
       // Should fail with authentication error
-      assert.ok(result.status === 401 || result.status >= 500);
+      assert.strictEqual(result.status, 401);
     });
   });
 
@@ -963,8 +963,9 @@ describe('SignTransaction codec tests', function () {
         .set('Content-Type', 'application/json')
         .send(requestBody);
 
-      // Should handle empty strings - might pass validation but fail in signing
-      assert.ok(result.status >= 400 || result.status === 200);
+      // Should fail with server error due to invalid transaction data
+      assert.strictEqual(result.status, 500);
+      result.body.should.have.property('error');
     });
 
     it('should handle very long transaction hex', async function () {
@@ -1000,8 +1001,9 @@ describe('SignTransaction codec tests', function () {
         .set('Content-Type', 'application/json')
         .send(requestBody);
 
-      // Should handle large payload
-      assert.ok(result.status === 200 || result.status >= 400);
+      // Should handle large payload successfully
+      assert.strictEqual(result.status, 200);
+      assert.strictEqual(mockWallet.signTransaction.calledOnce, true);
     });
 
     it('should handle large number of unspents', async function () {
@@ -1038,8 +1040,9 @@ describe('SignTransaction codec tests', function () {
         .set('Content-Type', 'application/json')
         .send(requestBody);
 
-      // Should handle large unspents array
-      assert.ok(result.status === 200 || result.status >= 400);
+      // Should handle large unspents array successfully
+      assert.strictEqual(result.status, 200);
+      assert.strictEqual(mockWallet.signTransaction.calledOnce, true);
     });
 
     it('should handle unspents with complex objects', async function () {
@@ -1080,8 +1083,9 @@ describe('SignTransaction codec tests', function () {
         .set('Content-Type', 'application/json')
         .send(requestBody);
 
-      // Should handle additional properties in unspents
-      assert.ok(result.status === 200 || result.status >= 400);
+      // Should handle additional properties in unspents successfully
+      assert.strictEqual(result.status, 200);
+      assert.strictEqual(mockWallet.signTransaction.calledOnce, true);
     });
 
     it('should handle keychain with many additional properties', async function () {
