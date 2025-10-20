@@ -55,11 +55,11 @@ export async function verifyTransaction<TNumber extends bigint | number>(
   };
 
   if (!_.isUndefined(verification.disableNetworking) && !_.isBoolean(verification.disableNetworking)) {
-    throwTxMismatch('verification.disableNetworking must be a boolean');
+    throw new TypeError('verification.disableNetworking must be a boolean');
   }
   const isPsbt = txPrebuild.txHex && utxolib.bitgo.isPsbt(txPrebuild.txHex);
   if (isPsbt && txPrebuild.txInfo?.unspents) {
-    throwTxMismatch('should not have unspents in txInfo for psbt');
+    throw new Error('should not have unspents in txInfo for psbt');
   }
   const disableNetworking = !!verification.disableNetworking;
   const parsedTransaction: ParsedTransaction<TNumber> = await coin.parseTransaction<TNumber>({
@@ -97,7 +97,7 @@ export async function verifyTransaction<TNumber extends bigint | number>(
     const isBackupKeySignatureValid = verify(keychains.backup, keySignatures.backupPub);
     const isBitgoKeySignatureValid = verify(keychains.bitgo, keySignatures.bitgoPub);
     if (!isBackupKeySignatureValid || !isBitgoKeySignatureValid) {
-      throwTxMismatch('secondary public key signatures invalid');
+      throw new Error('secondary public key signatures invalid');
     }
     debug('successfully verified backup and bitgo key signatures');
   } else if (!disableNetworking) {
@@ -108,11 +108,11 @@ export async function verifyTransaction<TNumber extends bigint | number>(
 
   if (parsedTransaction.needsCustomChangeKeySignatureVerification) {
     if (!keychains.user || !userPublicKeyVerified) {
-      throwTxMismatch('transaction requires verification of user public key, but it was unable to be verified');
+      throw new Error('transaction requires verification of user public key, but it was unable to be verified');
     }
     const customChangeKeySignaturesVerified = verifyCustomChangeKeySignatures(parsedTransaction, keychains.user);
     if (!customChangeKeySignaturesVerified) {
-      throwTxMismatch(
+      throw new Error(
         'transaction requires verification of custom change key signatures, but they were unable to be verified'
       );
     }
@@ -168,7 +168,7 @@ export async function verifyTransaction<TNumber extends bigint | number>(
 
   const allOutputs = parsedTransaction.outputs;
   if (!txPrebuild.txHex) {
-    throw new TxIntentMismatchError(`txPrebuild.txHex not set`, reqId, [txParams], undefined);
+    throw new Error(`txPrebuild.txHex not set`);
   }
   const inputs = isPsbt
     ? getPsbtTxInputs(txPrebuild.txHex, coin.network).map((v) => ({
@@ -185,7 +185,7 @@ export async function verifyTransaction<TNumber extends bigint | number>(
   const fee = inputAmount - outputAmount;
 
   if (fee < 0) {
-    throwTxMismatch(
+    throw new Error(
       `attempting to spend ${outputAmount} satoshis, which exceeds the input amount (${inputAmount} satoshis) by ${-fee}`
     );
   }

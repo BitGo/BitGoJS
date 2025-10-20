@@ -1,5 +1,12 @@
 import * as utxolib from '@bitgo/utxo-lib';
-import { ITransactionRecipient, TxIntentMismatchError, VerifyTransactionOptions } from '@bitgo/sdk-core';
+import {
+  IRequestTracer,
+  ITransactionRecipient,
+  MismatchedRecipient,
+  TxIntentMismatchError,
+  TxIntentMismatchRecipientError,
+  VerifyTransactionOptions,
+} from '@bitgo/sdk-core';
 import { DescriptorMap } from '@bitgo/utxo-core/descriptor';
 
 import { AbstractUtxoCoin, BaseOutput, BaseParsedTransactionOutputs } from '../../abstractUtxoCoin';
@@ -58,6 +65,52 @@ export function assertValidTransaction(
 }
 
 /**
+ * Convert ValidationError to TxIntentMismatchRecipientError with structured data
+ *
+ * This preserves the structured error information from the original ValidationError
+ * by extracting the mismatched outputs and converting them to the standardized format.
+ * The original error is preserved as the `cause` for debugging purposes.
+ */
+function convertValidationErrorToTxIntentMismatch(
+  error: AggregateValidationError,
+  reqId: string | IRequestTracer | undefined,
+  txParams: VerifyTransactionOptions['txParams'],
+  txHex: string | undefined
+): TxIntentMismatchRecipientError {
+  const mismatchedRecipients: MismatchedRecipient[] = [];
+
+  for (const err of error.errors) {
+    if (err instanceof ErrorMissingOutputs) {
+      mismatchedRecipients.push(
+        ...err.missingOutputs.map((output) => ({
+          address: output.address,
+          amount: output.amount.toString(),
+        }))
+      );
+    } else if (err instanceof ErrorImplicitExternalOutputs) {
+      mismatchedRecipients.push(
+        ...err.implicitExternalOutputs.map((output) => ({
+          address: output.address,
+          amount: output.amount.toString(),
+        }))
+      );
+    }
+  }
+
+  const txIntentError = new TxIntentMismatchRecipientError(
+    error.message,
+    reqId,
+    [txParams],
+    txHex,
+    mismatchedRecipients
+  );
+  // Preserve the original structured error as the cause for debugging
+  // See: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/cause
+  (txIntentError as Error & { cause?: Error }).cause = error;
+  return txIntentError;
+}
+
+/**
  * Wrapper around assertValidTransaction that returns a boolean instead of throwing.
  *
  * We follow the AbstractUtxoCoin interface here which is a bit confused - the return value is a boolean but we
@@ -68,6 +121,7 @@ export function assertValidTransaction(
  * @param descriptorMap
  * @returns {boolean} True if verification passes
  * @throws {TxIntentMismatchError} if transaction validation fails
+ * @throws {TxIntentMismatchRecipientError} if transaction recipients don't match user intent
  */
 export async function verifyTransaction(
   coin: AbstractUtxoCoin,
@@ -83,6 +137,15 @@ export async function verifyTransaction(
       params.txPrebuild.txHex
     );
   }
-  assertValidTransaction(tx, descriptorMap, params.txParams.recipients ?? [], tx.network);
+
+  try {
+    assertValidTransaction(tx, descriptorMap, params.txParams.recipients ?? [], tx.network);
+  } catch (error) {
+    if (error instanceof AggregateValidationError) {
+      throw convertValidationErrorToTxIntentMismatch(error, params.reqId, params.txParams, params.txPrebuild.txHex);
+    }
+    throw error;
+  }
+
   return true;
 }
