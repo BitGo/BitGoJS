@@ -1,4 +1,4 @@
-export const supportedRequestMethods = ['get', 'post', 'put', 'del', 'patch', 'options'] as const;
+export const supportedRequestMethods = ['get', 'post', 'put', 'del', 'patch', 'options', 'delete'] as const;
 
 export type AuthVersion = 2 | 3;
 
