@@ -65,6 +65,7 @@ module.exports = {
         'COIN-',
         'FIAT-',
         'ME-',
+        'ANT-',
         '#', // Prefix used by GitHub issues
       ],
     },

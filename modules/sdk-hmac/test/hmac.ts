@@ -8,6 +8,7 @@ import {
   verifyResponse,
 } from '../src/hmac';
 import * as sjcl from '@bitgo/sjcl';
+import { createSecretKey } from 'crypto';
 
 // Mock Date.now for consistent timestamp values
 const MOCK_TIMESTAMP = 1672531200000; // Example timestamp (e.g., Jan 1, 2023, 00:00:00 UTC)
@@ -29,6 +30,20 @@ describe('HMAC Utility Functions', () => {
       const message = 'test-message';
       const expectedHmac = 'f8c2bb87c17608c9038eab4e92ef2775e42629c939d6fd3390d42f80af6bb712';
       expect(calculateHMAC(key, message)).to.equal(expectedHmac);
+    });
+
+    it('should accept a Buffer key (BinaryLike) and match the string result', () => {
+      const keyBuffer = Buffer.from('test-key', 'utf8');
+      const message = Buffer.from('test-message');
+      const expectedHmac = 'f8c2bb87c17608c9038eab4e92ef2775e42629c939d6fd3390d42f80af6bb712';
+      expect(calculateHMAC(keyBuffer, message)).to.equal(expectedHmac);
+    });
+
+    it('should accept a KeyObject key and match the string result', () => {
+      const keyObject = createSecretKey(Buffer.from('test-key', 'utf8'));
+      const message = 'test-message';
+      const expectedHmac = 'f8c2bb87c17608c9038eab4e92ef2775e42629c939d6fd3390d42f80af6bb712';
+      expect(calculateHMAC(keyObject, message)).to.equal(expectedHmac);
     });
   });
 
