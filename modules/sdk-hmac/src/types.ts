@@ -4,7 +4,7 @@ export type AuthVersion = 2 | 3;
 
 export interface CalculateHmacSubjectOptions {
   urlPath: string;
-  text: string;
+  text: string | Buffer;
   timestamp: number;
   method: (typeof supportedRequestMethods)[number];
   statusCode?: number;
@@ -13,7 +13,7 @@ export interface CalculateHmacSubjectOptions {
 
 export interface CalculateRequestHmacOptions {
   url: string;
-  text: string;
+  text: string | Buffer;
   timestamp: number;
   token: string;
   method: (typeof supportedRequestMethods)[number];
@@ -22,7 +22,7 @@ export interface CalculateRequestHmacOptions {
 
 export interface CalculateRequestHeadersOptions {
   url: string;
-  text: string;
+  text: string | Buffer;
   token: string;
   method: (typeof supportedRequestMethods)[number];
   authVersion: AuthVersion;
@@ -37,7 +37,7 @@ export interface RequestHeaders {
 export interface VerifyResponseOptions extends CalculateRequestHeadersOptions {
   hmac: string;
   url: string;
-  text: string;
+  text: string | Buffer;
   timestamp: number;
   method: (typeof supportedRequestMethods)[number];
   statusCode?: number;
@@ -47,7 +47,7 @@ export interface VerifyResponseOptions extends CalculateRequestHeadersOptions {
 export interface VerifyResponseInfo {
   isValid: boolean;
   expectedHmac: string;
-  signatureSubject: string;
+  signatureSubject: string | Buffer;
   isInResponseValidityWindow: boolean;
   verificationTime: number;
 }

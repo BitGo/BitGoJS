@@ -27,7 +27,8 @@ export function calculateHMAC(key: string | BinaryLike | KeyObject, message: str
  * @param timestamp request timestamp from `Date.now()`
  * @param statusCode Only set for HTTP responses, leave blank for requests
  * @param method request method
- * @returns {string}
+ * @param authVersion authentication version (2 or 3)
+ * @returns {string | Buffer}
  */
 export function calculateHMACSubject({
   urlPath,
@@ -36,23 +37,33 @@ export function calculateHMACSubject({
   statusCode,
   method,
   authVersion,
-}: CalculateHmacSubjectOptions): string {
+}: CalculateHmacSubjectOptions): string | Buffer {
   /* Normalize legacy 'del' to 'delete' for backward compatibility */
   if (method === 'del') {
     method = 'delete';
   }
   const urlDetails = urlLib.parse(urlPath);
   const queryPath = urlDetails.query && urlDetails.query.length > 0 ? urlDetails.path : urlDetails.pathname;
+
+  let prefixedText: string;
   if (statusCode !== undefined && isFinite(statusCode) && Number.isInteger(statusCode)) {
-    if (authVersion === 3) {
-      return [method.toUpperCase(), timestamp, queryPath, statusCode, text].join('|');
-    }
-    return [timestamp, queryPath, statusCode, text].join('|');
+    prefixedText =
+      authVersion === 3
+        ? [method.toUpperCase(), timestamp, queryPath, statusCode].join('|')
+        : [timestamp, queryPath, statusCode].join('|');
+  } else {
+    prefixedText =
+      authVersion === 3
+        ? [method.toUpperCase(), timestamp, '3.0', queryPath].join('|')
+        : [timestamp, queryPath].join('|');
   }
-  if (authVersion === 3) {
-    return [method.toUpperCase(), timestamp, '3.0', queryPath, text].join('|');
+  prefixedText += '|';
+
+  const isBuffer = Buffer.isBuffer(text);
+  if (isBuffer) {
+    return Buffer.concat([Buffer.from(prefixedText, 'utf-8'), text]);
   }
-  return [timestamp, queryPath, text].join('|');
+  return prefixedText + text;
 }
 
 /**
