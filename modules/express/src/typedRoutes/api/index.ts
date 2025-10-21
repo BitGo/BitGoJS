@@ -29,6 +29,7 @@ import { PostWalletRecoverToken } from './v2/walletRecoverToken';
 import { PostCoinSignTx } from './v2/coinSignTx';
 import { PostWalletSignTx } from './v2/walletSignTx';
 import { PostWalletTxSignTSS } from './v2/walletTxSignTSS';
+import { PostShareWallet } from './v2/shareWallet';
 
 export const ExpressApi = apiSpec({
   'express.ping': {
@@ -111,6 +112,9 @@ export const ExpressApi = apiSpec({
   },
   'express.v2.wallet.signtxtss': {
     post: PostWalletTxSignTSS,
+  },
+  'express.v2.wallet.share': {
+    post: PostShareWallet,
   },
 });
 
