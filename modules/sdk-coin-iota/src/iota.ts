@@ -11,10 +11,9 @@ import {
   MultisigType,
   multisigTypes,
   MPCAlgorithm,
-  InvalidAddressError,
-  EDDSAMethods,
   TssVerifyAddressOptions,
   MPCType,
+  verifyEddsaTssWalletAddress,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
 import utils from './lib/utils';
@@ -92,29 +91,11 @@ export class Iota extends BaseCoin {
    * @param params
    */
   async isWalletAddress(params: TssVerifyAddressOptions): Promise<boolean> {
-    const { keychains, address, index } = params;
-
-    if (!this.isValidAddress(address)) {
-      throw new InvalidAddressError(`invalid address: ${address}`);
-    }
-
-    if (!keychains) {
-      throw new Error('missing required param keychains');
-    }
-
-    for (const keychain of keychains) {
-      const MPC = await EDDSAMethods.getInitializedMpcInstance();
-      const commonKeychain = keychain.commonKeychain as string;
-
-      const derivationPath = 'm/' + index;
-      const derivedPublicKey = MPC.deriveUnhardened(commonKeychain, derivationPath).slice(0, 64);
-      const expectedAddress = utils.getAddressFromPublicKey(derivedPublicKey);
-
-      if (address !== expectedAddress) {
-        return false;
-      }
-    }
-    return true;
+    return verifyEddsaTssWalletAddress(
+      params,
+      (address) => this.isValidAddress(address),
+      (publicKey) => utils.getAddressFromPublicKey(publicKey)
+    );
   }
 
   /**

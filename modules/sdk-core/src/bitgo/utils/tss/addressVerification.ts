@@ -1,4 +1,5 @@
-import { InvalidAddressError, TssVerifyAddressOptions } from '../../baseCoin/iBaseCoin';
+import { TssVerifyAddressOptions } from '../../baseCoin/iBaseCoin';
+import { InvalidAddressError } from '../../errors';
 import { EDDSAMethods } from '../../tss';
 
 /**
