@@ -15,6 +15,10 @@ import {
 import { UnlockLightningWalletBody, UnlockLightningWalletParams } from '../../../src/typedRoutes/api/v2/unlockWallet';
 import { OfcSignPayloadBody } from '../../../src/typedRoutes/api/v2/ofcSignPayload';
 import { CreateAddressBody, CreateAddressParams } from '../../../src/typedRoutes/api/v2/createAddress';
+import {
+  ExpressWalletUpdateBody,
+  ExpressWalletUpdateParams,
+} from '../../../src/typedRoutes/api/v2/expressWalletUpdate';
 
 export function assertDecode<T>(codec: t.Type<T, unknown>, input: unknown): T {
   const result = codec.decode(input);
@@ -242,5 +246,51 @@ describe('io-ts decode tests', function () {
     // valid body
     assertDecode(t.type(CreateAddressBody), { eip1559: { maxFeePerGas: 1, maxPriorityFeePerGas: 1 } });
     assertDecode(t.type(CreateAddressBody), {});
+  });
+  it('express.wallet.update', function () {
+    // missing coin
+    assert.throws(() => assertDecode(t.type(ExpressWalletUpdateParams), { id: 'wallet123' }));
+    // missing id
+    assert.throws(() => assertDecode(t.type(ExpressWalletUpdateParams), { coin: 'tlnbtc' }));
+    // missing required fields
+    assert.throws(() => assertDecode(t.type(ExpressWalletUpdateBody), {}));
+    // signerHost must be string
+    assert.throws(() =>
+      assertDecode(t.type(ExpressWalletUpdateBody), {
+        signerHost: 123,
+        signerTlsCert: 'cert',
+        passphrase: 'p',
+      })
+    );
+    // signerTlsCert must be string
+    assert.throws(() =>
+      assertDecode(t.type(ExpressWalletUpdateBody), {
+        signerHost: 'host.example',
+        signerTlsCert: 456,
+        passphrase: 'p',
+      })
+    );
+    // passphrase must be string and required
+    assert.throws(() =>
+      assertDecode(t.type(ExpressWalletUpdateBody), {
+        signerHost: 'host.example',
+        signerTlsCert: 'cert',
+      })
+    );
+    // valid minimal
+    assertDecode(t.type(ExpressWalletUpdateBody), {
+      signerHost: 'host.example',
+      signerTlsCert: 'cert',
+      passphrase: 'p',
+    });
+    // valid
+    assertDecode(t.type(ExpressWalletUpdateParams), { coin: 'tlnbtc', id: 'wallet123' });
+    // valid with optional signerMacaroon
+    assertDecode(t.type(ExpressWalletUpdateBody), {
+      signerHost: 'host.example',
+      signerTlsCert: 'cert',
+      passphrase: 'p',
+      signerMacaroon: 'mac',
+    });
   });
 });

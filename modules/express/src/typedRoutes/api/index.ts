@@ -30,6 +30,7 @@ import { PostCoinSignTx } from './v2/coinSignTx';
 import { PostWalletSignTx } from './v2/walletSignTx';
 import { PostWalletTxSignTSS } from './v2/walletTxSignTSS';
 import { PostShareWallet } from './v2/shareWallet';
+import { PutExpressWalletUpdate } from './v2/expressWalletUpdate';
 
 export const ExpressApi = apiSpec({
   'express.ping': {
@@ -115,6 +116,9 @@ export const ExpressApi = apiSpec({
   },
   'express.v2.wallet.share': {
     post: PostShareWallet,
+  },
+  'express.wallet.update': {
+    put: PutExpressWalletUpdate,
   },
 });
 
