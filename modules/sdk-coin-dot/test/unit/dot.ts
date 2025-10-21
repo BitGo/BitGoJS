@@ -2,6 +2,7 @@ import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { randomBytes } from 'crypto';
 import should = require('should');
+import assert = require('assert');
 import { Dot, Tdot, KeyPair } from '../../src';
 import * as testData from '../fixtures';
 import { chainName, txVersion, genesisHash, specVersion } from '../resources';
@@ -668,6 +669,96 @@ describe('DOT:', function () {
         .should.be.rejectedWith(
           `tdot doesn't support sending to more than 1 destination address within a single transaction. Try again, using only a single recipient.`
         );
+    });
+  });
+
+  describe('isWalletAddress', () => {
+    it('should verify valid wallet address with correct keychain and index', async function () {
+      const address = '5DxD9nT16GQLrU6aB5pSS5VtxoZbVju3NHUCcawxZyZCTf74';
+      const commonKeychain =
+        '6d2d5150f6e435dfd9b4f225f2cc29d95ec3b61b34e8bec98693b1a7ffe44cd764f99ee5058838d785c73360ad4f24d78e0255ab2c368c09060b29a9b27f040e';
+      const index = '3';
+      const keychains = [{ commonKeychain }];
+
+      const result = await basecoin.isWalletAddress({ keychains, address, index });
+      result.should.equal(true);
+    });
+
+    it('should return false for address with incorrect keychain', async function () {
+      const address = '5DxD9nT16GQLrU6aB5pSS5VtxoZbVju3NHUCcawxZyZCTf74';
+      const wrongKeychain =
+        '0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000';
+      const index = '3';
+      const keychains = [{ commonKeychain: wrongKeychain }];
+
+      const result = await basecoin.isWalletAddress({ keychains, address, index });
+      result.should.equal(false);
+    });
+
+    it('should return false for address with incorrect index', async function () {
+      const address = '5DxD9nT16GQLrU6aB5pSS5VtxoZbVju3NHUCcawxZyZCTf74';
+      const commonKeychain =
+        '6d2d5150f6e435dfd9b4f225f2cc29d95ec3b61b34e8bec98693b1a7ffe44cd764f99ee5058838d785c73360ad4f24d78e0255ab2c368c09060b29a9b27f040e';
+      const wrongIndex = '999';
+      const keychains = [{ commonKeychain }];
+
+      const result = await basecoin.isWalletAddress({ keychains, address, index: wrongIndex });
+      result.should.equal(false);
+    });
+
+    it('should throw error for invalid address', async function () {
+      const invalidAddress = 'invalidaddress';
+      const commonKeychain =
+        '6d2d5150f6e435dfd9b4f225f2cc29d95ec3b61b34e8bec98693b1a7ffe44cd764f99ee5058838d785c73360ad4f24d78e0255ab2c368c09060b29a9b27f040e';
+      const index = '3';
+      const keychains = [{ commonKeychain }];
+
+      await assert.rejects(async () => await basecoin.isWalletAddress({ keychains, address: invalidAddress, index }), {
+        message: `invalid address: ${invalidAddress}`,
+      });
+    });
+
+    it('should throw error when keychains are missing', async function () {
+      const address = '5DxD9nT16GQLrU6aB5pSS5VtxoZbVju3NHUCcawxZyZCTf74';
+      const index = '3';
+
+      await assert.rejects(async () => await basecoin.isWalletAddress({ address, index } as any), {
+        message: 'missing required param keychains',
+      });
+    });
+
+    it('should throw error when keychains have different commonKeychains', async function () {
+      const address = '5DxD9nT16GQLrU6aB5pSS5VtxoZbVju3NHUCcawxZyZCTf74';
+      const commonKeychain1 =
+        '6d2d5150f6e435dfd9b4f225f2cc29d95ec3b61b34e8bec98693b1a7ffe44cd764f99ee5058838d785c73360ad4f24d78e0255ab2c368c09060b29a9b27f040e';
+      const commonKeychain2 =
+        '0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000';
+      const index = '3';
+      const keychains = [{ commonKeychain: commonKeychain1 }, { commonKeychain: commonKeychain2 }];
+
+      await assert.rejects(async () => await basecoin.isWalletAddress({ keychains, address, index }), {
+        message: 'all keychains must have the same commonKeychain for MPC coins',
+      });
+    });
+  });
+
+  describe('getAddressFromPublicKey', () => {
+    it('should convert public key to SS58 address for testnet', function () {
+      const publicKey = '53845d7b6a6e4a666fa2a0f500b88849b02926da5590993731d2b428b7643690';
+      const expectedAddress = '5DxD9nT16GQLrU6aB5pSS5VtxoZbVju3NHUCcawxZyZCTf74';
+
+      const address = basecoin.getAddressFromPublicKey(publicKey);
+      address.should.equal(expectedAddress);
+    });
+
+    it('should convert public key to SS58 address for mainnet', function () {
+      const publicKey = '53845d7b6a6e4a666fa2a0f500b88849b02926da5590993731d2b428b7643690';
+      // Mainnet uses different SS58 prefix (0) vs testnet (42)
+      const address = prodCoin.getAddressFromPublicKey(publicKey);
+      address.should.be.type('string');
+      address.length.should.be.greaterThan(0);
+      // Should be different from testnet address
+      address.should.not.equal('5DxD9nT16GQLrU6aB5pSS5VtxoZbVju3NHUCcawxZyZCTf74');
     });
   });
 });

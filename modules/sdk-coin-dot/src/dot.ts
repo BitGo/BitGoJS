@@ -7,15 +7,14 @@ import {
   Environments,
   ExplanationResult,
   KeyPair,
-  MethodNotImplementedError,
   MPCAlgorithm,
   ParsedTransaction,
   ParseTransactionOptions,
   SignedTransaction,
   SignTransactionOptions as BaseSignTransactionOptions,
   UnsignedTransaction,
-  VerifyAddressOptions,
   VerifyTransactionOptions,
+  TssVerifyAddressOptions,
   EDDSAMethods,
   EDDSAMethodTypes,
   MPCTx,
@@ -29,6 +28,7 @@ import {
   MultisigType,
   multisigTypes,
   AuditDecryptedKeyParams,
+  verifyEddsaTssWalletAddress,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins, PolkadotSpecNameType } from '@bitgo/statics';
 import { Interface, KeyPair as DotKeyPair, Transaction, TransactionBuilderFactory, Utils } from './lib';
@@ -642,8 +642,12 @@ export class Dot extends BaseCoin {
     return {};
   }
 
-  async isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
-    throw new MethodNotImplementedError();
+  async isWalletAddress(params: TssVerifyAddressOptions): Promise<boolean> {
+    return verifyEddsaTssWalletAddress(
+      params,
+      (address) => this.isValidAddress(address),
+      (publicKey) => this.getAddressFromPublicKey(publicKey)
+    );
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
