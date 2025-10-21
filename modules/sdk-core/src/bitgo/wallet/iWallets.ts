@@ -2,6 +2,7 @@ import * as t from 'io-ts';
 
 import { IRequestTracer } from '../../api';
 import { KeychainsTriplet, LightningKeychainsTriplet } from '../baseCoin';
+import { Keychain } from '../keychain';
 import { IWallet, PaginationOptions, WalletShare } from './iWallet';
 import { Wallet } from './wallet';
 
@@ -15,6 +16,14 @@ export interface WalletWithKeychains extends KeychainsTriplet {
 export interface LightningWalletWithKeychains extends LightningKeychainsTriplet {
   responseType: 'LightningWalletWithKeychains';
   wallet: IWallet;
+  warning?: string;
+  encryptedWalletPassphrase?: string;
+}
+
+export interface GoAccountWalletWithUserKeychain {
+  responseType: 'GoAccountWalletWithUserKeychain';
+  wallet: IWallet;
+  userKeychain: Keychain;
   warning?: string;
   encryptedWalletPassphrase?: string;
 }
@@ -68,7 +77,7 @@ export interface GenerateWalletOptions {
   isDistributedCustody?: boolean;
   bitgoKeyId?: string;
   commonKeychain?: string;
-  type?: 'hot' | 'cold' | 'custodial';
+  type?: 'hot' | 'cold' | 'custodial' | 'trading';
   subType?: 'lightningCustody' | 'lightningSelfCustody';
   evmKeyRingReferenceWalletId?: string;
 }
@@ -85,6 +94,19 @@ export const GenerateLightningWalletOptionsCodec = t.strict(
 );
 
 export type GenerateLightningWalletOptions = t.TypeOf<typeof GenerateLightningWalletOptionsCodec>;
+
+export const GenerateGoAccountWalletOptionsCodec = t.strict(
+  {
+    label: t.string,
+    passphrase: t.string,
+    enterprise: t.string,
+    passcodeEncryptionCode: t.string,
+    type: t.literal('trading'),
+  },
+  'GenerateGoAccountWalletOptions'
+);
+
+export type GenerateGoAccountWalletOptions = t.TypeOf<typeof GenerateGoAccountWalletOptionsCodec>;
 
 export interface GetWalletByAddressOptions {
   address?: string;
@@ -214,7 +236,9 @@ export interface IWallets {
   get(params?: GetWalletOptions): Promise<Wallet>;
   list(params?: ListWalletOptions): Promise<{ wallets: IWallet[] }>;
   add(params?: AddWalletOptions): Promise<any>;
-  generateWallet(params?: GenerateWalletOptions): Promise<WalletWithKeychains | LightningWalletWithKeychains>;
+  generateWallet(
+    params?: GenerateWalletOptions
+  ): Promise<WalletWithKeychains | LightningWalletWithKeychains | GoAccountWalletWithUserKeychain>;
   listShares(params?: Record<string, unknown>): Promise<any>;
   getShare(params?: { walletShareId?: string }): Promise<any>;
   updateShare(params?: UpdateShareOptions): Promise<any>;

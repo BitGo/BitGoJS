@@ -1,4 +1,4 @@
-import { createHmac } from 'crypto';
+import { type BinaryLike, createHmac, type KeyObject } from 'crypto';
 import * as urlLib from 'url';
 import * as sjcl from '@bitgo/sjcl';
 import {
@@ -16,7 +16,7 @@ import {
  * @param message {String} - the actual message to HMAC
  * @returns {*} - the result of the HMAC operation
  */
-export function calculateHMAC(key: string, message: string): string {
+export function calculateHMAC(key: string | BinaryLike | KeyObject, message: string | BinaryLike): string {
   return createHmac('sha256', key).update(message).digest('hex');
 }
 
@@ -37,6 +37,10 @@ export function calculateHMACSubject({
   method,
   authVersion,
 }: CalculateHmacSubjectOptions): string {
+  /* Normalize legacy 'del' to 'delete' for backward compatibility */
+  if (method === 'del') {
+    method = 'delete';
+  }
   const urlDetails = urlLib.parse(urlPath);
   const queryPath = urlDetails.query && urlDetails.query.length > 0 ? urlDetails.path : urlDetails.pathname;
   if (statusCode !== undefined && isFinite(statusCode) && Number.isInteger(statusCode)) {

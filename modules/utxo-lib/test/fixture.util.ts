@@ -38,6 +38,10 @@ export async function readFixture<T>(path: string, defaultValue: T): Promise<T> 
   }
 }
 
+export async function assertEqualFixture<T>(path: string, a: T): Promise<void> {
+  assert.deepStrictEqual(await readFixture(path, a), JSON.parse(toPrettyJSON(a)));
+}
+
 /**
  * @param a
  * @param b

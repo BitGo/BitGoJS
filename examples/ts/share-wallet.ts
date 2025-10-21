@@ -22,14 +22,14 @@ bitgo.register(coin, Tbtc.createInstance);
 const walletId = '';
 
 // TODO: set BitGo account email of wallet share recipient
-const recipient = null;
+const recipient = "recipient_email";
 
 // TODO: set share permissions as a comma-separated list
 // Valid permissions to choose from are: view, spend, manage, admin
 const perms = 'view';
 
 // TODO: provide the passphrase for the wallet being shared
-const passphrase = null;
+const passphrase = "passhrase";
 
 async function main() {
   const wallet = await bitgo.coin(coin).wallets().get({ id: walletId });

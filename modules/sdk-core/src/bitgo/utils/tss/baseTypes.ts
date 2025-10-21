@@ -68,6 +68,7 @@ export interface SolVersionedTransactionData {
     numReadonlySignedAccounts: number;
     numReadonlyUnsignedAccounts: number;
   };
+  recentBlockhash?: string;
 }
 
 export interface aptosCustomTransactionParams {
