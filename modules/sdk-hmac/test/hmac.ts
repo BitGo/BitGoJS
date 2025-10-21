@@ -74,6 +74,49 @@ describe('HMAC Utility Functions', () => {
         })
       ).to.equal(expectedSubject);
     });
+
+    it('should handle Buffer text input and return a Buffer for requests', () => {
+      const buffer = Buffer.from('binary-data-content');
+      const result = calculateHMACSubject({
+        urlPath: '/api/test',
+        text: buffer,
+        timestamp: MOCK_TIMESTAMP,
+        method: 'get',
+        authVersion: 3,
+      });
+
+      expect(Buffer.isBuffer(result)).to.be.true;
+
+      // Check the content structure
+      const expectedPrefix = 'GET|1672531200000|3.0|/api/test|';
+      const prefixBuffer = Buffer.from(expectedPrefix, 'utf8');
+
+      // Manually reconstruct the expected buffer to compare
+      const expectedBuffer = Buffer.concat([prefixBuffer, buffer]);
+      expect(result).to.deep.equal(expectedBuffer);
+    });
+
+    it('should handle Buffer text input and return a Buffer for responses', () => {
+      const buffer = Buffer.from('binary-response-data');
+      const result = calculateHMACSubject({
+        urlPath: '/api/test',
+        text: buffer,
+        timestamp: MOCK_TIMESTAMP,
+        statusCode: 200,
+        method: 'get',
+        authVersion: 3,
+      });
+
+      expect(Buffer.isBuffer(result)).to.be.true;
+
+      // Check the content structure
+      const expectedPrefix = 'GET|1672531200000|/api/test|200|';
+      const prefixBuffer = Buffer.from(expectedPrefix, 'utf8');
+
+      // Manually reconstruct the expected buffer to compare
+      const expectedBuffer = Buffer.concat([prefixBuffer, buffer]);
+      expect(result).to.deep.equal(expectedBuffer);
+    });
   });
 
   describe('calculateRequestHMAC', () => {
@@ -160,6 +203,38 @@ describe('HMAC Utility Functions', () => {
       });
 
       expect(result.isInResponseValidityWindow).to.be.false;
+    });
+
+    it('should verify response with Buffer data', () => {
+      const responseData = Buffer.from('binary-response-data');
+
+      // First create an HMAC for this binary data
+      const signatureSubject = calculateHMACSubject({
+        urlPath: '/api/test',
+        text: responseData,
+        timestamp: MOCK_TIMESTAMP,
+        statusCode: 200,
+        method: 'post',
+        authVersion: 3,
+      });
+
+      const token = 'test-token';
+      const expectedHmac = calculateHMAC(token, signatureSubject);
+
+      // Now verify using the generated HMAC
+      const result = verifyResponse({
+        url: '/api/test',
+        statusCode: 200,
+        text: responseData, // Use binary data here
+        timestamp: MOCK_TIMESTAMP,
+        token: token,
+        hmac: expectedHmac,
+        method: 'post',
+        authVersion: 3,
+      });
+      expect(result.isValid).to.be.true;
+      expect(result.expectedHmac).to.equal(expectedHmac);
+      expect(Buffer.isBuffer(result.signatureSubject)).to.be.true;
     });
   });
 });
