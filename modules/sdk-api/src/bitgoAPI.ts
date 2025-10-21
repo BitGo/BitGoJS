@@ -522,7 +522,7 @@ export class BitGoAPI implements BitGoBase {
    * @param method request method
    * @returns {string}
    */
-  calculateHMACSubject(params: CalculateHmacSubjectOptions): string | Buffer {
+  calculateHMACSubject<T extends string | Buffer = string>(params: CalculateHmacSubjectOptions<T>): string | Buffer {
     return sdkHmac.calculateHMACSubject({ ...params, authVersion: this._authVersion });
   }
 

@@ -30,14 +30,14 @@ export function calculateHMAC(key: string | BinaryLike | KeyObject, message: str
  * @param authVersion authentication version (2 or 3)
  * @returns {string | Buffer}
  */
-export function calculateHMACSubject({
+export function calculateHMACSubject<T extends string | Buffer = string>({
   urlPath,
   text,
   timestamp,
   statusCode,
   method,
   authVersion,
-}: CalculateHmacSubjectOptions): string | Buffer {
+}: CalculateHmacSubjectOptions<T>): T {
   /* Normalize legacy 'del' to 'delete' for backward compatibility */
   if (method === 'del') {
     method = 'delete';
@@ -59,24 +59,25 @@ export function calculateHMACSubject({
   }
   prefixedText += '|';
 
-  const isBuffer = Buffer.isBuffer(text);
-  if (isBuffer) {
-    return Buffer.concat([Buffer.from(prefixedText, 'utf-8'), text]);
+  if (Buffer.isBuffer(text)) {
+    return Buffer.concat([Buffer.from(prefixedText, 'utf-8'), text]) as T;
   }
-  return prefixedText + text;
+  return (prefixedText + text) as T;
 }
 
 /**
  * Calculate the HMAC for an HTTP request
  */
-export function calculateRequestHMAC({
+export function calculateRequestHMAC(options: CalculateRequestHmacOptions<string>): string;
+export function calculateRequestHMAC(options: CalculateRequestHmacOptions<Buffer>): string;
+export function calculateRequestHMAC<T extends string | Buffer = string>({
   url: urlPath,
   text,
   timestamp,
   token,
   method,
   authVersion,
-}: CalculateRequestHmacOptions): string {
+}: CalculateRequestHmacOptions<T>): string {
   const signatureSubject = calculateHMACSubject({ urlPath, text, timestamp, method, authVersion });
 
   // calculate the HMAC
