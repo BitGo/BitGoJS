@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [11.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.12.0...@bitgo/utxo-lib@11.13.0) (2025-10-21)
+
+
+### Features
+
+* **utxo-lib:** add assertEqualFixture utility function ([49a26f8](https://github.com/BitGo/BitGoJS/commit/49a26f86c55aa1f7e415a20f3c935624c0977d96))
+* **utxo-lib:** add BIP-0327 implementation with BitGo's p2tr variant ([38d02a5](https://github.com/BitGo/BitGoJS/commit/38d02a5607b78af5b7c2ec75672642162b729a4f))
+* **utxo-lib:** add BIP-327 musig2 reference implementation ([9507a6f](https://github.com/BitGo/BitGoJS/commit/9507a6f75fab2cf71bfb2848003251902c4a2ebf))
+* **utxo-lib:** document taproot key aggregation differences ([cb5bed1](https://github.com/BitGo/BitGoJS/commit/cb5bed13a4933038d361cdd48f4a1eb245a5f755))
+* **utxo-lib:** improve PSBT test fixtures with raw input/output data ([6818dcd](https://github.com/BitGo/BitGoJS/commit/6818dcdb4cd72c99f51e5df5dc65569bfac3bf03))
+
+
+
+
+
 # [11.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.11.1...@bitgo/utxo-lib@11.12.0) (2025-10-16)
 
 

@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [36.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.14.0...@bitgo/sdk-core@36.15.0) (2025-10-21)
+
+
+### Bug Fixes
+
+* change the netUID data type from number to string for Tao Staking ([8202e7a](https://github.com/BitGo/BitGoJS/commit/8202e7a980c76c05d09bffb0c75829b0b32e1b03))
+
+
+### Features
+
+* **sdk-coin-sol:** add recentBlockhash to custom versioned solana tx flow ([191eb86](https://github.com/BitGo/BitGoJS/commit/191eb86aa851cc893b216f23ff0ad3f13423cc2d))
+* **sdk-core:** generate Go account wallet ([7d5e752](https://github.com/BitGo/BitGoJS/commit/7d5e752dd5e9d9c85ec9ccadc1748557f1e0ef9f))
+
+
+
+
+
 # [36.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.13.0...@bitgo/sdk-core@36.14.0) (2025-10-16)
 
 

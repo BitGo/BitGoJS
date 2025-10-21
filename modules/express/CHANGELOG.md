@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [15.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.8.0...@bitgo/express@15.9.0) (2025-10-21)
+
+
+### Features
+
+* **express:** migrate shareWallet to typed routes ([ba0d219](https://github.com/BitGo/BitGoJS/commit/ba0d21903c78eb1d137271d69407a79bf3ed028e))
+* **express:** migrated update express wallet to typed routes ([c47d741](https://github.com/BitGo/BitGoJS/commit/c47d74101c8c091349e3332a68850a803b96ee6a))
+
+
+
+
+
 # [15.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.7.0...@bitgo/express@15.8.0) (2025-10-16)
 
 
