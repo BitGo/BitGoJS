@@ -29,6 +29,7 @@ import {
   Recipient,
   SignTransactionOptions as BaseSignTransactionOptions,
   TxIntentMismatchError,
+  TxIntentMismatchRecipientError,
   TransactionParams,
   TransactionPrebuild as BaseTransactionPrebuild,
   TransactionRecipient,
@@ -2768,14 +2769,14 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
    * @param {TransactionPrebuild} params.txPrebuild - prebuild object returned by server
    * @param {Wallet} params.wallet - Wallet object to obtain keys to verify against
    * @returns {boolean}
-   * @throws {TxIntentMismatchError} if transaction validation fails
+   * @throws {TxIntentMismatchRecipientError} if transaction recipients don't match user intent
    */
   async verifyTssTransaction(params: VerifyEthTransactionOptions): Promise<boolean> {
     const { txParams, txPrebuild, wallet } = params;
 
-    // Helper to throw TxIntentMismatchError with consistent context
-    const throwTxMismatch = (message: string): never => {
-      throw new TxIntentMismatchError(message, undefined, [txParams], txPrebuild?.txHex);
+    // Helper to throw TxIntentMismatchRecipientError with recipient details
+    const throwRecipientMismatch = (message: string, mismatchedRecipients: Recipient[]): never => {
+      throw new TxIntentMismatchRecipientError(message, undefined, [txParams], txPrebuild?.txHex, mismatchedRecipients);
     };
 
     if (
@@ -2785,13 +2786,13 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
         (txParams.type && ['acceleration', 'fillNonce', 'transferToken', 'tokenApproval'].includes(txParams.type))
       )
     ) {
-      throwTxMismatch(`missing txParams`);
+      throw new Error('missing txParams');
     }
     if (!wallet || !txPrebuild) {
-      throwTxMismatch(`missing params`);
+      throw new Error('missing params');
     }
     if (txParams.hop && txParams.recipients && txParams.recipients.length > 1) {
-      throwTxMismatch(`tx cannot be both a batch and hop transaction`);
+      throw new Error('tx cannot be both a batch and hop transaction');
     }
 
     if (txParams.type && ['transfer'].includes(txParams.type)) {
@@ -2806,10 +2807,14 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
         const txJson = tx.toJson();
         if (txJson.data === '0x') {
           if (expectedAmount !== txJson.value) {
-            throwTxMismatch('the transaction amount in txPrebuild does not match the value given by client');
+            throwRecipientMismatch('the transaction amount in txPrebuild does not match the value given by client', [
+              { address: txJson.to, amount: txJson.value },
+            ]);
           }
           if (expectedDestination.toLowerCase() !== txJson.to.toLowerCase()) {
-            throwTxMismatch('destination address does not match with the recipient address');
+            throwRecipientMismatch('destination address does not match with the recipient address', [
+              { address: txJson.to, amount: txJson.value },
+            ]);
           }
         } else if (txJson.data.startsWith('0xa9059cbb')) {
           const [recipientAddress, amount] = getRawDecoded(
@@ -2817,10 +2822,14 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
             getBufferedByteCode('0xa9059cbb', txJson.data)
           );
           if (expectedAmount !== amount.toString()) {
-            throwTxMismatch('the transaction amount in txPrebuild does not match the value given by client');
+            throwRecipientMismatch('the transaction amount in txPrebuild does not match the value given by client', [
+              { address: addHexPrefix(recipientAddress.toString()), amount: amount.toString() },
+            ]);
           }
           if (expectedDestination.toLowerCase() !== addHexPrefix(recipientAddress.toString()).toLowerCase()) {
-            throwTxMismatch('destination address does not match with the recipient address');
+            throwRecipientMismatch('destination address does not match with the recipient address', [
+              { address: addHexPrefix(recipientAddress.toString()), amount: amount.toString() },
+            ]);
           }
         }
       }
@@ -2838,6 +2847,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
    * @param {Wallet} params.wallet - Wallet object to obtain keys to verify against
    * @returns {boolean}
    * @throws {TxIntentMismatchError} if transaction validation fails
+   * @throws {TxIntentMismatchRecipientError} if transaction recipients don't match user intent
    */
   async verifyTransaction(params: VerifyEthTransactionOptions): Promise<boolean> {
     const ethNetwork = this.getNetwork();
@@ -2847,29 +2857,29 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       return this.verifyTssTransaction(params);
     }
 
-    // Helper to throw TxIntentMismatchError with consistent context
-    const throwTxMismatch = (message: string): never => {
-      throw new TxIntentMismatchError(message, undefined, [txParams], txPrebuild?.txHex);
+    // Helper to throw TxIntentMismatchRecipientError with recipient details
+    const throwRecipientMismatch = (message: string, mismatchedRecipients: Recipient[]): never => {
+      throw new TxIntentMismatchRecipientError(message, undefined, [txParams], txPrebuild?.txHex, mismatchedRecipients);
     };
 
     if (!txParams?.recipients || !txPrebuild?.recipients || !wallet) {
-      throwTxMismatch(`missing params`);
+      throw new Error('missing params');
     }
 
     const recipients = txParams.recipients!;
 
     if (txParams.hop && recipients.length > 1) {
-      throwTxMismatch(`tx cannot be both a batch and hop transaction`);
+      throw new Error('tx cannot be both a batch and hop transaction');
     }
     if (txPrebuild.recipients.length > 1) {
-      throwTxMismatch(
+      throw new Error(
         `${this.getChain()} doesn't support sending to more than 1 destination address within a single transaction. Try again, using only a single recipient.`
       );
     }
     if (txParams.hop && txPrebuild.hopTransaction) {
       // Check recipient amount for hop transaction
       if (recipients.length !== 1) {
-        throwTxMismatch(`hop transaction only supports 1 recipient but ${recipients.length} found`);
+        throw new Error(`hop transaction only supports 1 recipient but ${recipients.length} found`);
       }
 
       // Check tx sends to hop address
@@ -2879,7 +2889,9 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       const expectedHopAddress = optionalDeps.ethUtil.stripHexPrefix(decodedHopTx.getSenderAddress().toString());
       const actualHopAddress = optionalDeps.ethUtil.stripHexPrefix(txPrebuild.recipients[0].address);
       if (expectedHopAddress.toLowerCase() !== actualHopAddress.toLowerCase()) {
-        throwTxMismatch('recipient address of txPrebuild does not match hop address');
+        throwRecipientMismatch('recipient address of txPrebuild does not match hop address', [
+          { address: txPrebuild.recipients[0].address, amount: txPrebuild.recipients[0].amount.toString() },
+        ]);
       }
 
       // Convert TransactionRecipient array to Recipient array
@@ -2897,7 +2909,9 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       if (txParams.tokenName) {
         const expectedTotalAmount = new BigNumber(0);
         if (!expectedTotalAmount.isEqualTo(txPrebuild.recipients[0].amount)) {
-          throwTxMismatch('batch token transaction amount in txPrebuild should be zero for token transfers');
+          throwRecipientMismatch('batch token transaction amount in txPrebuild should be zero for token transfers', [
+            { address: txPrebuild.recipients[0].address, amount: txPrebuild.recipients[0].amount.toString() },
+          ]);
         }
       } else {
         let expectedTotalAmount = new BigNumber(0);
@@ -2905,8 +2919,9 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
           expectedTotalAmount = expectedTotalAmount.plus(recipients[i].amount);
         }
         if (!expectedTotalAmount.isEqualTo(txPrebuild.recipients[0].amount)) {
-          throwTxMismatch(
-            'batch transaction amount in txPrebuild received from BitGo servers does not match txParams supplied by client'
+          throwRecipientMismatch(
+            'batch transaction amount in txPrebuild received from BitGo servers does not match txParams supplied by client',
+            [{ address: txPrebuild.recipients[0].address, amount: txPrebuild.recipients[0].amount.toString() }]
           );
         }
       }
@@ -2917,26 +2932,37 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
         !batcherContractAddress ||
         batcherContractAddress.toLowerCase() !== txPrebuild.recipients[0].address.toLowerCase()
       ) {
-        throwTxMismatch('recipient address of txPrebuild does not match batcher address');
+        throwRecipientMismatch('recipient address of txPrebuild does not match batcher address', [
+          { address: txPrebuild.recipients[0].address, amount: txPrebuild.recipients[0].amount.toString() },
+        ]);
       }
     } else {
       // Check recipient address and amount for normal transaction
       if (recipients.length !== 1) {
-        throwTxMismatch(`normal transaction only supports 1 recipient but ${recipients.length} found`);
+        throw new Error(`normal transaction only supports 1 recipient but ${recipients.length} found`);
       }
       const expectedAmount = new BigNumber(recipients[0].amount);
       if (!expectedAmount.isEqualTo(txPrebuild.recipients[0].amount)) {
-        throwTxMismatch(
-          'normal transaction amount in txPrebuild received from BitGo servers does not match txParams supplied by client'
+        throwRecipientMismatch(
+          'normal transaction amount in txPrebuild received from BitGo servers does not match txParams supplied by client',
+          [{ address: txPrebuild.recipients[0].address, amount: txPrebuild.recipients[0].amount.toString() }]
         );
       }
       if (this.isETHAddress(recipients[0].address) && recipients[0].address !== txPrebuild.recipients[0].address) {
-        throwTxMismatch('destination address in normal txPrebuild does not match that in txParams supplied by client');
+        throwRecipientMismatch(
+          'destination address in normal txPrebuild does not match that in txParams supplied by client',
+          [{ address: txPrebuild.recipients[0].address, amount: txPrebuild.recipients[0].amount.toString() }]
+        );
       }
     }
     // Check coin is correct for all transaction types
     if (!this.verifyCoin(txPrebuild)) {
-      throwTxMismatch(`coin in txPrebuild did not match that in txParams supplied by client`);
+      throw new TxIntentMismatchError(
+        'coin in txPrebuild did not match that in txParams supplied by client',
+        undefined,
+        [txParams],
+        txPrebuild?.txHex
+      );
     }
     return true;
   }
