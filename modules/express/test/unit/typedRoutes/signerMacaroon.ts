@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import * as sinon from 'sinon';
-import * as fs from 'fs';
-import { agent as supertest } from 'supertest';
+import * as request from 'supertest';
+import proxyquire from 'proxyquire';
 import 'should';
 import 'should-http';
 import 'should-sinon';
@@ -10,29 +10,28 @@ import { BitGo } from 'bitgo';
 import { PostSignerMacaroon } from '../../../src/typedRoutes/api/v2/signerMacaroon';
 import { LndSignerClient } from '../../../src/lightning/lndSignerClient';
 
+proxyquire.noPreserveCache();
+
 describe('Signer Macaroon Typed Routes Tests', function () {
-  let agent: ReturnType<typeof supertest>;
-  const tempFilePath = '/tmp/test-lightning-signer.json';
+  let agent: request.SuperAgentTest;
 
   before(function () {
-    // Create a temporary JSON file for lightning signer config
-    fs.writeFileSync(tempFilePath, JSON.stringify({}));
+    const validLightningSignerConfigJSON = '{}';
+    const { app } = proxyquire('../../../src/expressApp', {
+      fs: {
+        readFileSync: () => validLightningSignerConfigJSON,
+      },
+    });
 
-    const { app } = require('../../../src/expressApp');
-    // Configure app with lightning signer enabled
-    const config = {
-      ...require('../../../src/config').DefaultConfig,
-      lightningSignerFileSystemPath: tempFilePath,
+    const args: any = {
+      debug: false,
+      env: 'test',
+      logfile: '/dev/null',
+      lightningSignerFileSystemPath: '/mock/path/lightning-signer.json',
     };
-    const testApp = app(config);
-    agent = supertest(testApp);
-  });
 
-  after(function () {
-    // Clean up the temporary file
-    if (fs.existsSync(tempFilePath)) {
-      fs.unlinkSync(tempFilePath);
-    }
+    const testApp = app(args);
+    agent = request.agent(testApp);
   });
 
   afterEach(function () {
