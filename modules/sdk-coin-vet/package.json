@@ -45,6 +45,7 @@
     "@bitgo/sdk-core": "^36.15.0",
     "@bitgo/secp256k1": "^1.6.0",
     "@bitgo/statics": "^58.7.0",
+    "@bitgo/sdk-lib-mpc": "^10.8.1",
     "@noble/curves": "1.8.1",
     "@vechain/sdk-core": "^1.2.0-rc.3",
     "bignumber.js": "^9.1.1",

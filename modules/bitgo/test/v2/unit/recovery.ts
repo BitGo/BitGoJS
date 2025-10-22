@@ -1457,4 +1457,48 @@ describe('Recovery:', function () {
       (output.txRequests[0].transactions[0].unsignedTx.parsedTx as { outputs: any[] }).should.have.property('outputs');
     });
   });
+
+  describe('RecoverVet', function () {
+    beforeEach(() => {
+      nock.cleanAll();
+    });
+    let recoveryParams;
+
+    it('should construct a recovery tx with MPCv2 TSS', async function () {
+      const basecoin = bitgo.coin('tvet');
+      const baseAddress = ethLikeDKLSKeycard.senderAddress;
+      recoveryNocks.nockVetRecovery(bitgo, baseAddress);
+      recoveryParams = {
+        userKey: ethLikeDKLSKeycard.userKey,
+        backupKey: ethLikeDKLSKeycard.backupKey,
+        walletContractAddress: baseAddress,
+        recoveryDestination: ethLikeDKLSKeycard.destinationAddress,
+        walletPassphrase: ethLikeDKLSKeycard.walletPassphrase,
+        isTss: true,
+      };
+
+      const recovery = await basecoin.recover(recoveryParams);
+
+      should.exist(recovery);
+      recovery.should.have.property('id');
+      recovery.should.have.property('tx');
+    });
+
+    it('should construct an unsigned sweep tx with TSS', async function () {
+      recoveryNocks.nockVetRecovery(bitgo, '0xad848d2c97a08b2cd5e7f28f76ecd45dd0f82e0e');
+      const basecoin = bitgo.coin('tvet');
+
+      const unsignedSweepRecoveryParams = {
+        bitgoKey:
+          '03f54983c529802697d9a2320ded23eb7f15118fcba01156356c2264f04d32b4caa77fcf8cf3f73547078e984f28787c4c1e694586214b609e45b6de9cc32ad6e5',
+        recoveryDestination: ethLikeDKLSKeycard.destinationAddress,
+      };
+
+      const recovery = await basecoin.recover(unsignedSweepRecoveryParams);
+      should.exist(recovery);
+      recovery.should.have.property('txHex');
+      recovery.should.have.property('coin');
+      recovery.coin.should.equal('tvet');
+    });
+  });
 });
