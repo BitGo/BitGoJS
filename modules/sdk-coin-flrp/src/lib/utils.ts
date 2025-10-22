@@ -274,10 +274,40 @@ export class Utils implements BaseUtils {
    * @return signature
    */
   createSignature(network: FlareNetwork, message: Buffer, prv: Buffer): Buffer {
-    // Use BitGo secp256k1 since FlareJS may not expose KeyPair in the same way
+    // Used BitGo secp256k1 since FlareJS may not expose KeyPair in the same way
     try {
-      const signature = ecc.sign(message, prv);
-      return Buffer.from(signature);
+      // Hash the message first: secp256k1 signing requires a 32-byte hash as input.
+      // It is essential that the same hashing (sha256 of the message) is applied during signature recovery,
+      // otherwise the recovered public key or signature verification will fail.
+      const messageHash = createHash('sha256').update(message).digest();
+
+      // Sign with recovery parameter
+      const signature = ecc.sign(messageHash, prv);
+
+      // Get recovery parameter by trying both values
+      let recoveryParam = -1;
+      const pubKey = ecc.pointFromScalar(prv, true);
+      if (!pubKey) {
+        throw new Error('Failed to derive public key from private key');
+      }
+      const recovered0 = ecc.recoverPublicKey(messageHash, signature, 0, true);
+      if (recovered0 && Buffer.from(recovered0).equals(Buffer.from(pubKey))) {
+        recoveryParam = 0;
+      } else {
+        const recovered1 = ecc.recoverPublicKey(messageHash, signature, 1, true);
+        if (recovered1 && Buffer.from(recovered1).equals(Buffer.from(pubKey))) {
+          recoveryParam = 1;
+        } else {
+          throw new Error('Could not determine correct recovery parameter for signature');
+        }
+      }
+
+      // Append recovery parameter to signature
+      const fullSig = Buffer.alloc(65); // 64 bytes signature + 1 byte recovery
+      fullSig.set(signature);
+      fullSig[64] = recoveryParam;
+
+      return fullSig;
     } catch (error) {
       throw new Error(`Failed to create signature: ${error}`);
     }
@@ -308,9 +338,24 @@ export class Utils implements BaseUtils {
    */
   recoverySignature(network: FlareNetwork, message: Buffer, signature: Buffer): Buffer {
     try {
-      // This would need to be implemented with secp256k1 recovery
-      // For now, throwing error since recovery logic would need to be adapted
-      throw new NotImplementedError('recoverySignature not fully implemented for FlareJS');
+      // Hash the message first - must match the hash used in signing
+      const messageHash = createHash('sha256').update(message).digest();
+
+      // Extract recovery parameter and signature
+      if (signature.length !== 65) {
+        throw new Error('Invalid signature length - expected 65 bytes (64 bytes signature + 1 byte recovery)');
+      }
+
+      const recoveryParam = signature[64];
+      const sigOnly = signature.slice(0, 64);
+
+      // Recover public key using the provided recovery parameter
+      const recovered = ecc.recoverPublicKey(messageHash, sigOnly, recoveryParam, true);
+      if (!recovered) {
+        throw new Error('Failed to recover public key');
+      }
+
+      return Buffer.from(recovered);
     } catch (error) {
       throw new Error(`Failed to recover signature: ${error}`);
     }
