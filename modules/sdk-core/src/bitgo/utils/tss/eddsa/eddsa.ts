@@ -34,8 +34,8 @@ import {
   TxRequest,
   UnsignedTransactionTss,
 } from '../baseTypes';
-import { CreateEddsaBitGoKeychainParams, CreateEddsaKeychainParams, KeyShare, YShare } from './types';
-import baseTSSUtils from '../baseTSSUtils';
+import { CreateEddsaBitGoKeychainParams, CreateEddsaKeychainParams, YShare } from './types';
+import { BaseEddsaUtils } from './base';
 import { KeychainsTriplet } from '../../../baseCoin';
 import { exchangeEddsaCommitments } from '../../../tss/common';
 import { Ed25519Bip32HdTree } from '@bitgo/sdk-lib-mpc';
@@ -48,7 +48,7 @@ import { readKey } from 'openpgp';
  * Utility functions for TSS work flows.
  */
 
-export class EddsaUtils extends baseTSSUtils<KeyShare> {
+export class EddsaUtils extends BaseEddsaUtils {
   async verifyWalletSignatures(
     userGpgPub: string,
     backupGpgPub: string,
