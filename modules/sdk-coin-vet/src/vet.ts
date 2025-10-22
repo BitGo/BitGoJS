@@ -20,15 +20,36 @@ import {
   VerifyAddressOptions,
   VerifyTransactionOptions,
   TokenType,
+  Ecdsa,
+  ECDSAUtils,
+  Environments,
+  TransactionType,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import utils from './lib/utils';
 import { bip32 } from '@bitgo/secp256k1';
 import { randomBytes, Hash } from 'crypto';
 import { KeyPair as EthKeyPair } from '@bitgo/abstract-eth';
-import { TransactionBuilderFactory } from './lib';
+import { Transaction, TransactionBuilderFactory } from './lib';
 import { ExplainTransactionOptions, VetParseTransactionOptions } from './lib/types';
 import { VetTransactionExplanation } from './lib/iface';
+import { RecoveryOptions, RecoveryTransaction, UnsignedSweepRecoveryTransaction } from '@bitgo/sdk-coin-icp';
+import { VetAgent } from './lib/vetAgent';
+import { AVG_GAS_UNITS, EXPIRATION, GAS_PRICE_COEF, GAS_UNIT_PRICE, COEF_DIVISOR } from './lib/constants';
+
+interface FeeEstimateData {
+  gas: string;
+  gasUnitPrice: string;
+  gasPriceCoef: string;
+  coefDivisor: string;
+}
+
+const feeEstimateData: FeeEstimateData = {
+  gas: AVG_GAS_UNITS,
+  gasUnitPrice: GAS_UNIT_PRICE,
+  gasPriceCoef: GAS_PRICE_COEF,
+  coefDivisor: COEF_DIVISOR,
+};
 
 /**
  * Full Name: Vechain
@@ -271,5 +292,181 @@ export class Vet extends BaseCoin {
       default:
         throw new NotImplementedError(`NFT type ${params.type} not supported on ${this.getChain()}`);
     }
+  }
+
+  async recover(params: RecoveryOptions): Promise<RecoveryTransaction | UnsignedSweepRecoveryTransaction> {
+    try {
+      if (!params.recoveryDestination || !this.isValidAddress(params.recoveryDestination)) {
+        throw new Error('invalid recoveryDestination');
+      }
+
+      const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
+
+      let publicKey: string | undefined;
+      let userKeyShare, backupKeyShare, commonKeyChain;
+      const MPC = new Ecdsa();
+
+      if (isUnsignedSweep) {
+        throw new Error('Unsigned sweep recovery is not supported for VET');
+      } else {
+        if (!params.userKey) {
+          throw new Error('missing userKey');
+        }
+
+        if (!params.backupKey) {
+          throw new Error('missing backupKey');
+        }
+
+        if (!params.walletPassphrase) {
+          throw new Error('missing wallet passphrase');
+        }
+
+        const userKey = params.userKey.replace(/\s/g, '');
+        const backupKey = params.backupKey.replace(/\s/g, '');
+
+        ({ userKeyShare, backupKeyShare, commonKeyChain } = await ECDSAUtils.getMpcV2RecoveryKeyShares(
+          userKey,
+          backupKey,
+          params.walletPassphrase
+        ));
+        publicKey = MPC.deriveUnhardened(commonKeyChain, 'm/0').slice(0, 66);
+      }
+
+      if (!publicKey) {
+        throw new Error('failed to derive public key');
+      }
+
+      const backupKeyPair = new EthKeyPair({ pub: publicKey });
+      const baseAddress = backupKeyPair.getAddress();
+
+      const agent = new VetAgent(this.getPublicNodeUrl());
+      const tx = await this.buildRecoveryTransaction({
+        baseAddress,
+        params,
+        agent,
+      });
+
+      const signableHex = await tx.signablePayload;
+      const serializedTxHex = await tx.toBroadcastFormat();
+      const signableMessage = this.getHashFunction().update(signableHex).digest();
+
+      const signatureObj = await ECDSAUtils.signRecoveryMpcV2(
+        signableMessage,
+        userKeyShare,
+        backupKeyShare,
+        commonKeyChain
+      );
+      const signature = Buffer.from(signatureObj.r + signatureObj.s + (signatureObj.recid === 0 ? '00' : '01'), 'hex');
+      const txBuilder = this.getTxBuilderFactory().getTransferBuilder();
+      await txBuilder.from(serializedTxHex);
+      await txBuilder.addSenderSignature(signature);
+
+      const signedTx = await txBuilder.build();
+
+      //broadcast this transaction
+
+      return {
+        id: signedTx.id,
+        tx: signedTx.toBroadcastFormat(),
+      };
+    } catch (error) {
+      throw new Error(`Error during Vechain recovery: ${error.message || error}`);
+    }
+  }
+
+  /** @inheritDoc **/
+  protected getPublicNodeUrl(): string {
+    return Environments[this.bitgo.getEnv()].vetNodeUrl;
+  }
+
+  private async buildRecoveryTransaction(buildParams: {
+    baseAddress: string;
+    params: RecoveryOptions;
+    agent: VetAgent;
+  }): Promise<Transaction> {
+    const { baseAddress, params, agent } = buildParams;
+    const balance = await agent.getBalance(baseAddress);
+
+    if (balance.isLessThanOrEqualTo(0)) {
+      throw new Error(`no VET balance to recover for address ${baseAddress}`);
+    }
+
+    const recipients = [
+      {
+        address: params.recoveryDestination,
+        amount: balance.toString(),
+      },
+    ];
+
+    const blockRef = await agent.getBlockRef();
+
+    const txBuilder = this.getTxBuilderFactory().getTransferBuilder();
+
+    txBuilder.chainTag(this.bitgo.getEnv() === 'prod' ? 0x4a : 0x27);
+    txBuilder.recipients(recipients);
+    txBuilder.sender(baseAddress);
+    txBuilder.addFeePayerAddress(baseAddress);
+    txBuilder.gas(Number(AVG_GAS_UNITS));
+    txBuilder.blockRef(blockRef);
+    txBuilder.expiration(EXPIRATION);
+    txBuilder.gasPriceCoef(Number(GAS_PRICE_COEF));
+    txBuilder.nonce(this.getRandomNonce());
+
+    let tx = (await txBuilder.build()) as Transaction;
+
+    tx.type = 'Recovery' as unknown as TransactionType;
+
+    const clauses = tx.clauses;
+
+    const actualGasUnits = await agent.estimateGas(clauses, baseAddress);
+
+    const isFeeBalanceEnough = await this.ensureVthoBalanceForFee(baseAddress, actualGasUnits, agent);
+
+    if (!isFeeBalanceEnough) {
+      throw new Error('Insufficient VTHO balance to cover transaction fees');
+    }
+
+    txBuilder.gas(actualGasUnits.toNumber());
+
+    tx = (await txBuilder.build()) as Transaction;
+
+    return tx;
+  }
+
+  getRandomNonce(): string {
+    return '0x' + randomBytes(8).toString('hex');
+  }
+
+  async ensureVthoBalanceForFee(baseAddress: string, requiredGasUnits: BigNumber, agent: VetAgent): Promise<boolean> {
+    const vthoTokenAddress = '0x0000000000000000000000000000456E65726779'; // VTHO token contract address
+    try {
+      const vthoBalance = await agent.getBalance(baseAddress, vthoTokenAddress);
+      const requiredFee = this.calculateFee(feeEstimateData, requiredGasUnits);
+
+      if (vthoBalance.isLessThan(requiredFee)) {
+        // throw new Error(
+        //   `Insufficient VTHO balance for fees. Required: ${requiredFee.toString()}, Available: ${vthoBalance.toString()}`
+        // );
+        return false;
+      }
+      return true;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(`Failed to ensure VTHO balance: ${error.message}`);
+      } else {
+        throw new Error('Failed to ensure VTHO balance: Unknown error');
+      }
+    }
+  }
+
+  private calculateFee(feeEstimateData: FeeEstimateData, estimatedGasLimit: BigNumber): BigNumber {
+    const gasLimit = estimatedGasLimit;
+    const adjustmentFactor = new BigNumber(1).plus(
+      new BigNumber(feeEstimateData.gasPriceCoef)
+        .dividedBy(new BigNumber(feeEstimateData.coefDivisor))
+        .decimalPlaces(18, BigNumber.ROUND_DOWN)
+    );
+    const adjustedGasPrice = new BigNumber(feeEstimateData.gasUnitPrice).times(adjustmentFactor);
+    return gasLimit.times(adjustedGasPrice).integerValue(BigNumber.ROUND_CEIL);
   }
 }

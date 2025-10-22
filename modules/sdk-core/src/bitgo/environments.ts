@@ -273,7 +273,7 @@ const mainnetBase: EnvironmentTemplate = {
   soneiumExplorerBaseUrl: 'https://soneium.blockscout.com',
   monExplorerBaseUrl: 'https://api.etherscan.io/v2',
   stxNodeUrl: 'https://api.hiro.so',
-  vetNodeUrl: 'https://rpc-mainnet.vechain.energy',
+  vetNodeUrl: 'https://sync-mainnet.vechain.org',
   xtzExplorerBaseUrl: 'https://api.tzkt.io',
   xtzRpcUrl: 'https://rpc.tzkt.io/mainnet',
 };
@@ -402,7 +402,7 @@ const testnetBase: EnvironmentTemplate = {
     },
   },
   stxNodeUrl: 'https://api.testnet.hiro.so',
-  vetNodeUrl: 'https://rpc-testnet.vechain.energy',
+  vetNodeUrl: 'https://sync-testnet.vechain.org',
   xtzExplorerBaseUrl: 'https://api.ghostnet.tzkt.io',
   xtzRpcUrl: 'https://rpc.tzkt.io/ghostnet',
 };

@@ -1457,4 +1457,74 @@ describe('Recovery:', function () {
       (output.txRequests[0].transactions[0].unsignedTx.parsedTx as { outputs: any[] }).should.have.property('outputs');
     });
   });
+
+  describe('Recover Vechain', function () {
+    beforeEach(() => {
+      nock.cleanAll();
+    });
+    let recoveryParams;
+
+    const nockTSSData: any[] = [
+      {
+        params: {
+          module: 'account',
+          action: 'txlist',
+          address: '0x88c2ab227908d39f6afdb85203dca3e937bb77af',
+        },
+        response: {
+          balance: '0x1de85858723d03f7d0',
+          energy: '0x19eaeff869f9fea7a',
+          hasCode: false,
+        },
+      },
+    ];
+    before(() => {
+      recoveryParams = {
+        userKey:
+          '{"iv":"+TkmT3GJ5msVWQjBrt3lsw==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
+          ':"ccm","adata":"","cipher":"aes","salt":"cCE20fGIobs=","ct":"NVIdYIh91J3aRI\n' +
+          '8GG0JE3DhXW3AUmz2G5RqMejdz1+t4/vovIP7lleegI7VYyWiiLvlM0OCFf3EVvV/RyXr8+2vsn\n' +
+          'Q0Vn8c2CV5FRZ80OjGYrW3A/6T/zpOz6E8CMvnD++iIpeO4r2eZJavejZxdzlxF0BRz7VI="}',
+        backupKey:
+          '{"iv":"asB356ofC7nZtg4NBvQkiQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
+          ':"ccm","adata":"","cipher":"aes","salt":"1hr2HhBbBIk=","ct":"8CZc6upt+XNOto\n' +
+          'KDD38TUg3ZUjzW+DraZlkcku2bNp0JS2s1g/iC6YTGUGtPoxDxumDlXwlWQx+5WPjZu79M8DCrI\n' +
+          't9aZaOvHkGH9aFtMbavFX419TcrwDmpUeQFN0hRkfrIHXyHNbTpGSVAjHvHMtzDMaw+ACg="}',
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
+        walletContractAddress: '0x5df5a96b478bb1808140d87072143e60262e8670',
+        recoveryDestination: '0xac05da78464520aa7c9d4c19bd7a440b111b3054',
+      };
+      // recoverEthSandbox = sinon.createSandbox();
+      // recoverEthSandbox
+      //   .stub(EcdsaRangeProof, 'generateNtilde')
+      //   .resolves(EcdsaTypes.deserializeNtildeWithProofs(mockSerializedChallengeWithProofs));
+    });
+
+    // after(() => {
+    //   recoverEthSandbox.restore();
+    // });
+
+    it('should construct a recovery tx with MPCv2 TSS', async function () {
+      recoveryNocks.nockVetRecovery(bitgo, nockTSSData);
+      const basecoin = bitgo.coin('tvet');
+      const baseAddress = ethLikeDKLSKeycard.senderAddress;
+
+      recoveryParams = {
+        userKey: ethLikeDKLSKeycard.userKey,
+        backupKey: ethLikeDKLSKeycard.backupKey,
+        walletContractAddress: baseAddress,
+        recoveryDestination: ethLikeDKLSKeycard.destinationAddress,
+        walletPassphrase: ethLikeDKLSKeycard.walletPassphrase,
+        isTss: true,
+      };
+
+      const recovery = await basecoin.recover(recoveryParams);
+
+      should.exist(recovery);
+      recovery.should.have.property('id');
+      recovery.should.have.property('tx');
+
+      recovery.id.should.not.equal('UNAVAILABLE');
+    });
+  });
 });

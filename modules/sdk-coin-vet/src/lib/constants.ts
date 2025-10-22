@@ -15,3 +15,9 @@ export const STARGATE_DELEGATION_ADDRESS = '0x4cb1c9ef05b529c093371264fab2c93cc6
 
 export const STARGATE_NFT_ADDRESS_TESTNET = '0x1ec1d168574603ec35b9d229843b7c2b44bcb770';
 export const STARGATE_DELEGATION_ADDRESS_TESTNET = '0x7240e3bc0d26431512d5b67dbd26d199205bffe8';
+
+export const AVG_GAS_UNITS = '21000';
+export const EXPIRATION = 400;
+export const GAS_PRICE_COEF = '128';
+export const GAS_UNIT_PRICE = '10000000000000'; // vechain has fixed gas unit price of 10^13 wei
+export const COEF_DIVISOR = '255';

@@ -416,6 +416,17 @@ module.exports.nockEthLikeRecovery = function (bitgo, nockData = nockEthData) {
   });
 };
 
+module.exports.nockVetRecovery = function (bitgo, nockData) {
+  const nodeUrl = Environments[bitgo.getEnv()].vetNodeUrl;
+  nockData.forEach((data) => {
+    nock(nodeUrl).get(`/accounts/${data.address}`).query(true).reply(200, data.response);
+    // data.params[`chainid`] = '80002';
+    // nock(Environments[bitgo.getEnv()].vetNodeUrl).get('/api').query(data.params).reply(200, data.response);
+    // data.params[`chainid`] = '97';
+    // nock(Environments[bitgo.getEnv()].vetNodeUrl).get('/api').query(data.params).reply(200, data.response);
+  });
+};
+
 module.exports.nockEtherscanRateLimitError = function () {
   const response = {
     status: '0',
