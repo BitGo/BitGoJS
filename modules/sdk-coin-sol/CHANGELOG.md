@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.4.0...@bitgo/sdk-coin-sol@7.5.0) (2025-10-21)
+
+
+### Features
+
+* **sdk-coin-sol:** add recentBlockhash to custom versioned solana tx flow ([191eb86](https://github.com/BitGo/BitGoJS/commit/191eb86aa851cc893b216f23ff0ad3f13423cc2d))
+* **sdk-coin-sol:** update verifyTransaction for versioned sol tx ([11b1723](https://github.com/BitGo/BitGoJS/commit/11b1723718c13f5ef26ef90174ad299edf64aa2a))
+
+
+
+
+
 # [7.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.3.0...@bitgo/sdk-coin-sol@7.4.0) (2025-10-16)
 
 

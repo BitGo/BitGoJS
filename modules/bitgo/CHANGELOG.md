@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.7.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.6.0...bitgo@50.7.0) (2025-10-21)
+
+
+### Features
+
+* **sdk-core:** generate Go account wallet ([7d5e752](https://github.com/BitGo/BitGoJS/commit/7d5e752dd5e9d9c85ec9ccadc1748557f1e0ef9f))
+
+
+
+
+
 # [50.6.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.5.0...bitgo@50.6.0) (2025-10-16)
 
 

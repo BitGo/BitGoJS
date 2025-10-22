@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [27.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.12.0...@bitgo/account-lib@27.13.0) (2025-10-21)
+
+
+### Features
+
+* use eth message builder factory for arbeth and opeth ([464fe32](https://github.com/BitGo/BitGoJS/commit/464fe32470cefdaf9d20afac8b1bb46ac0627650))
+
+
+
+
+
 # [27.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.11.6...@bitgo/account-lib@27.12.0) (2025-10-16)
 
 

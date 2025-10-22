@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.6.0...@bitgo/statics@58.7.0) (2025-10-21)
+
+
+### Bug Fixes
+
+* correct megaeth transaction url ([4e4cf93](https://github.com/BitGo/BitGoJS/commit/4e4cf93d1e7a16f4facd98efb34ea96c7259b491))
+
+
+### Features
+
+* onboarding new set of eth tokens ([33cb700](https://github.com/BitGo/BitGoJS/commit/33cb7008725aa193580def828aaf203ef31a0b1c))
+
+
+
+
+
 # [58.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.5.0...@bitgo/statics@58.6.0) (2025-10-16)
 
 

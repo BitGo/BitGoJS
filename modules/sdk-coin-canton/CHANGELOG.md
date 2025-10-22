@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.4.0...@bitgo/sdk-coin-canton@1.5.0) (2025-10-21)
+
+
+### Features
+
+* **sdk-coin-canton:** added from implementation to the builder factory ([52a286b](https://github.com/BitGo/BitGoJS/commit/52a286b80e9f53af29f8abfdb55c01b568b49a85))
+* **sdk-coin-canton:** modified the toBroadcastFormat for the wallet init transaction ([2e5d25c](https://github.com/BitGo/BitGoJS/commit/2e5d25c3dc5166e603bbd742012944695156864f))
+
+
+
+
+
 # [1.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.3.0...@bitgo/sdk-coin-canton@1.4.0) (2025-10-16)
 
 

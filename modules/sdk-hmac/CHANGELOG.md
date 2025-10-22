@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-hmac@1.3.0...@bitgo/sdk-hmac@1.4.0) (2025-10-21)
+
+
+### Features
+
+* **sdk-hmac:** normalize HTTP methods and update calculateHMAC types ([3068f37](https://github.com/BitGo/BitGoJS/commit/3068f375b51d6763acbe508760e38024094f51dd))
+
+
+
+
+
 # [1.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-hmac@1.2.0...@bitgo/sdk-hmac@1.3.0) (2025-10-09)
 
 
