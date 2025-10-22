@@ -304,6 +304,9 @@ export const STX_TOKEN_FEATURES = [
   CoinFeature.MULTISIG_COLD,
   CoinFeature.ALPHANUMERIC_MEMO_ID,
 ];
+export const STX_TOKEN_FEATURES_EXCLUDE_SINGAPORE = STX_TOKEN_FEATURES.filter(
+  (feature) => feature !== CoinFeature.CUSTODY_BITGO_SINGAPORE
+);
 export const NEAR_FEATURES = [
   ...ACCOUNT_COIN_DEFAULT_FEATURES,
   CoinFeature.TSS,

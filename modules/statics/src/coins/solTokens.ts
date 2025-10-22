@@ -1840,7 +1840,7 @@ export const solTokens = [
     'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN',
     'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN',
     UnderlyingAsset['jup'],
-    SOL_TOKEN_FEATURES_WITH_FRANKFURT
+    [...SOL_TOKEN_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.BULK_TRANSACTION]
   ),
   solToken(
     'c4db311f-8a4a-4821-b7b4-c4d04c4de752',
@@ -2395,7 +2395,7 @@ export const solTokens = [
     'sSo14endRuUbvQaJS3dq36Q829a3A6BEfoeeRGJywEh',
     'sSo14endRuUbvQaJS3dq36Q829a3A6BEfoeeRGJywEh',
     UnderlyingAsset['sol:ssol'],
-    SOL_TOKEN_FEATURES
+    SOL_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   solToken(
     '371ba1d9-8abf-48c5-85f5-8af2fa7df7ed',
@@ -2486,7 +2486,7 @@ export const solTokens = [
     '27G8MtK7VtTcCHkpASjSDdkWWYfoqT6ggEuKidVJidD4',
     '27G8MtK7VtTcCHkpASjSDdkWWYfoqT6ggEuKidVJidD4',
     UnderlyingAsset['sol:jlp'],
-    SOL_TOKEN_FEATURES
+    SOL_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   solToken(
     '3e5126be-5f80-4f9f-831e-96631ce10484',
@@ -2670,7 +2670,7 @@ export const solTokens = [
     'LAYER4xPpTCb3QL8S9u41EAhAX7mhBn8Q6xMTwY2Yzc',
     'LAYER4xPpTCb3QL8S9u41EAhAX7mhBn8Q6xMTwY2Yzc',
     UnderlyingAsset['sol:layer'],
-    SOL_TOKEN_FEATURES
+    SOL_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   solToken(
     '7ac9fc4f-6e4d-4fdd-90b1-99a4d1c4f8ee',
@@ -2700,7 +2700,7 @@ export const solTokens = [
     '8twuNzMszqWeFbDErwtf4gw13E6MUS4Hsdx5mi3aqXAM',
     '8twuNzMszqWeFbDErwtf4gw13E6MUS4Hsdx5mi3aqXAM',
     UnderlyingAsset['sol:sb'],
-    SOL_TOKEN_FEATURES
+    SOL_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   solToken(
     '492962f0-f485-4526-b104-447523be8fef',

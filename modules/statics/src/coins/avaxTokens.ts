@@ -568,7 +568,10 @@ export const avaxTokens = [
     'Betswap.gg',
     18,
     '0x49f519002eeced6902f24c0be72b6d898e4d27fc',
-    UnderlyingAsset['avaxc:bsgg']
+    UnderlyingAsset['avaxc:bsgg'],
+    AccountCoin.getFeaturesByTypeExcluding([
+      CoinFeature.CUSTODY_BITGO_SINGAPORE
+    ])
   ),
   avaxErc20(
     'e6bd6935-daac-4edc-8cfb-f8305ebbdb11',
