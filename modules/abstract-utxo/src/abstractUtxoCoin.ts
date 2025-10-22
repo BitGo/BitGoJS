@@ -9,7 +9,6 @@ import {
   AddressCoinSpecific,
   BaseCoin,
   BitGoBase,
-  CreateAddressFormat,
   ExtraPrebuildParamsOptions,
   HalfSignedUtxoTransaction,
   IBaseCoin,
@@ -36,7 +35,6 @@ import {
   Triple,
   TxIntentMismatchRecipientError,
   VerificationOptions,
-  VerifyAddressOptions as BaseVerifyAddressOptions,
   VerifyTransactionOptions as BaseVerifyTransactionOptions,
   Wallet,
   isValidPrv,
@@ -71,7 +69,7 @@ import {
   ErrorMissingOutputs,
   ErrorImplicitExternalOutputs,
 } from './transaction/descriptor/verifyTransaction';
-import { assertDescriptorWalletAddress, getDescriptorMapFromWallet, isDescriptorWallet } from './descriptor';
+import { getDescriptorMapFromWallet, isDescriptorWallet } from './descriptor';
 import { getChainFromNetwork, getFamilyFromNetwork, getFullNameFromNetwork } from './names';
 import { assertFixedScriptWalletAddress } from './address/fixedScript';
 import { CustomChangeOptions } from './transaction/fixedScript';
@@ -80,8 +78,21 @@ import { verifyKeySignature, verifyUserPublicKey } from './verifyKey';
 import { getPolicyForEnv } from './descriptor/validatePolicy';
 import { signTransaction } from './transaction/signTransaction';
 import { isUtxoWalletData, UtxoWallet } from './wallet';
-import { canonicalAddress } from './address';
 import { isDescriptorWalletData } from './descriptor/descriptorWallet';
+import {
+  AddressDetails,
+  assertFixedScriptWalletAddress,
+  assertDescriptorWalletAddress,
+  DescriptorAddressCoinSpecific,
+  FixedScriptAddressCoinSpecific,
+  generateAddress,
+  GenerateFixedScriptAddressOptions,
+  UtxoCoinSpecific,
+  VerifyAddressOptions,
+  canonicalAddress,
+} from './address';
+
+export { GenerateFixedScriptAddressOptions } from './address';
 
 import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 
@@ -165,14 +176,6 @@ export type DecodedTransaction<TNumber extends number | bigint> =
   | utxolib.bitgo.UtxoPsbt;
 
 export type RootWalletKeys = bitgo.RootWalletKeys;
-
-export type UtxoCoinSpecific = AddressCoinSpecific | DescriptorAddressCoinSpecific;
-
-export interface VerifyAddressOptions<TCoinSpecific extends UtxoCoinSpecific> extends BaseVerifyAddressOptions {
-  chain?: number;
-  index: number;
-  coinSpecific?: TCoinSpecific;
-}
 
 export interface BaseOutput<TAmount = string | number> {
   address: string;
@@ -301,37 +304,6 @@ export type BaseParsedTransaction<TNumber extends number | bigint, TOutput> = Ba
  * individual amounts.
  */
 export type ParsedTransaction<TNumber extends number | bigint = number> = BaseParsedTransaction<TNumber, Output>;
-
-export interface GenerateAddressOptions {
-  addressType?: ScriptType2Of3;
-  threshold?: number;
-  chain?: number;
-  index?: number;
-  segwit?: boolean;
-  bech32?: boolean;
-}
-
-export interface GenerateFixedScriptAddressOptions extends GenerateAddressOptions {
-  format?: CreateAddressFormat;
-  keychains: {
-    pub: string;
-    aspKeyId?: string;
-  }[];
-}
-
-export interface AddressDetails {
-  address: string;
-  chain: number;
-  index: number;
-  coin: string;
-  coinSpecific: AddressCoinSpecific | DescriptorAddressCoinSpecific;
-  addressType?: string;
-}
-
-export interface DescriptorAddressCoinSpecific extends AddressCoinSpecific {
-  descriptorName: string;
-  descriptorChecksum: string;
-}
 
 type UtxoBaseSignTransactionOptions<TNumber extends number | bigint = number> = BaseSignTransactionOptions & {
   /** Transaction prebuild from bitgo server */
@@ -718,9 +690,13 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       if (!isTriple(keychains)) {
         throw new Error('keychains must be a triple');
       }
+      assert(params.coinSpecific);
+      assert('index' in params && typeof params.index === 'number');
+      assert('descriptorName' in params.coinSpecific);
+      assert('descriptorChecksum' in params.coinSpecific);
       assertDescriptorWalletAddress(
         this.network,
-        params,
+        params as VerifyAddressOptions<DescriptorAddressCoinSpecific>,
         getDescriptorMapFromWallet(wallet, toBip32Triple(keychains), getPolicyForEnv(this.bitgo.env))
       );
       return true;
@@ -743,6 +719,10 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       addressType: params.addressType,
       chain,
       index,
+      keychains,
+      addressType,
+      format: 'base58',
+      address,
     });
 
     return true;
