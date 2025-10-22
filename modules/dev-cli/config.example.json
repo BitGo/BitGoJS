@@ -1,0 +1,60 @@
+{
+  "test": {
+    "tbtc": {
+      "accessToken": "v2x...",
+      "walletId": "...",
+      "walletPassphrase": "...",
+      "otp": "000000",
+      "enterpriseId": "..."
+    },
+    "gteth": {
+      "accessToken": "v2x...",
+      "walletId": "...",
+      "walletPassphrase": "..."
+    },
+    "talgo": {
+      "accessToken": "v2x...",
+      "walletId": "...",
+      "walletPassphrase": "..."
+    }
+  },
+  "staging": {
+    "tbtcsig": {
+      "accessToken": "v2x...",
+      "walletId": "...",
+      "walletPassphrase": "..."
+    },
+    "teos": {
+      "accessToken": "v2x...",
+      "walletId": "...",
+      "walletPassphrase": "..."
+    },
+    "tlnbtc": {
+      "accessToken": "v2x...",
+      "walletId": "...",
+      "walletId2": "...",
+      "walletPassphrase": "..."
+    }
+  },
+  "prod": {
+    "btc": {
+      "accessToken": "v2x...",
+      "walletId": "...",
+      "walletPassphrase": "..."
+    },
+    "eth": {
+      "accessToken": "v2x...",
+      "walletId": "...",
+      "walletPassphrase": "..."
+    }
+  },
+  "custom": {
+    "tbtc": {
+      "accessToken": "v2x...",
+      "walletId": "...",
+      "customRootUri": "https://...",
+      "customBitcoinNetwork": "..."
+    }
+  }
+}
+
