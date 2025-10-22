@@ -1,5 +1,5 @@
 import { decode } from 'cbor-x';
-import { KeyShareReadable } from './types';
+import { DeserializedMessage, KeyShareReadable, SerializedMessage } from './types';
 
 /**
  * Concatenates multiple Uint8Array instances into a single Uint8Array
@@ -31,4 +31,26 @@ export function fetchMaterial(shares: Buffer[]) {
       final_session_id: Buffer.from(material.final_session_id).toString('hex'),
     };
   });
+}
+
+/**
+ * Serializes messages payloads to base64 strings.
+ * @param messages
+ */
+export function serializeMessages(messages: DeserializedMessage[]): SerializedMessage[] {
+  return messages.map((message) => ({
+    from: message.from,
+    payload: Buffer.from(message.payload).toString('base64'),
+  }));
+}
+
+/**
+ * Deserialize messages payloads to Uint8Array.
+ * @param messages
+ */
+export function deserializeMessages(messages: SerializedMessage[]): DeserializedMessage[] {
+  return messages.map((message) => ({
+    from: message.from,
+    payload: new Uint8Array(Buffer.from(message.payload, 'base64')),
+  }));
 }

@@ -1,4 +1,5 @@
 import * as t from 'io-ts';
+import { DklsTypes } from '../ecdsa-dkls';
 
 export const ReducedKeyShareType = t.type({
   rootChainCode: t.array(t.number),
@@ -71,3 +72,6 @@ export enum DsgState {
   /** DSG session has been ended/cleaned up */
   Ended = 'Ended',
 }
+
+export type SerializedMessage = Message<string>;
+export type AuthEncMessage = Message<DklsTypes.AuthMessage>;
