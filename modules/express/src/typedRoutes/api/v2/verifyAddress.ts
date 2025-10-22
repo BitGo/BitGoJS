@@ -9,7 +9,7 @@ import { BitgoExpressError } from '../../schemas/error';
 export const VerifyAddressV2Params = {
   /** Coin ticker / chain identifier */
   coin: t.string,
-};
+} as const;
 
 /**
  * Request body for coin-specific address verification.
@@ -22,7 +22,20 @@ export const VerifyAddressV2Body = {
   address: t.string,
   /** Accept legacy script hash version for applicable UTXO coins (optional). */
   supportOldScriptHashVersion: optional(t.boolean),
-};
+} as const;
+
+export const VerifyAddressV2Response200 = t.type({
+  /** Whether the address is valid for the specified coin. */
+  isValid: t.boolean,
+});
+
+/**
+ * Response for coin-specific address verification.
+ */
+export const VerifyAddressV2Response = {
+  200: VerifyAddressV2Response200,
+  404: BitgoExpressError,
+} as const;
 
 /**
  * Verify address for a given coin.
