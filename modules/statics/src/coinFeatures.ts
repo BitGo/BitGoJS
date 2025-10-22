@@ -593,6 +593,7 @@ export const POLYX_FEATURES = [
   CoinFeature.TSS_COLD,
   CoinFeature.STAKING,
   CoinFeature.SUPPORTS_TOKENS,
+  CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
 ];
 
 export const POLYX_TOKEN_FEATURES = [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.TSS];
