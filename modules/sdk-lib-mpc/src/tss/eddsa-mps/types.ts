@@ -47,13 +47,6 @@ export enum DkgState {
   Complete = 'Complete',
 }
 
-interface Message<T> {
-  payload: T;
-  from: number;
-}
-
-export type DeserializedMessage = Message<Uint8Array>;
-
 /**
  * Represents the state of a DSG (Distributed Signature Generation) session
  * These states correspond to the internal WASM library states
@@ -75,7 +68,7 @@ export enum DsgState {
   Ended = 'Ended',
 }
 
-interface Message<T> {
+export interface Message<T> {
   payload: T;
   from: number;
 }

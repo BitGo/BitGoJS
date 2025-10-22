@@ -1,5 +1,4 @@
-import { DeserializedBroadcastMessage } from '../ecdsa-dkls/types';
-import { BundlerWasmer, EddsaMPSWasm, DsgState } from './types';
+import { BundlerWasmer, EddsaMPSWasm, DsgState, DeserializedMessage, DeserializedMessages } from './types';
 import { type SignSession } from '@silencelaboratories/eddsa-wasm-ll-node';
 import { decode } from 'cbor-x';
 
@@ -90,7 +89,7 @@ export class DSG {
     this.dsgState = DsgState.Init;
   }
 
-  getFirstMessage() {
+  getFirstMessage(): DeserializedMessage {
     this.ensureDsgSessionInitialized();
 
     if (this.dsgState !== DsgState.Init) {
@@ -108,7 +107,7 @@ export class DSG {
     };
   }
 
-  handleIncomingMessages(messagesForIthRound: DeserializedBroadcastMessage[]): DeserializedBroadcastMessage[] {
+  handleIncomingMessages(messagesForIthRound: DeserializedMessages): DeserializedMessages {
     this.ensureDsgSessionInitialized();
 
     if (this.dsgState === DsgState.Finished) {

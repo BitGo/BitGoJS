@@ -1984,6 +1984,8 @@ export class Wallet implements IWallet {
       return this.signTransactionTssExternalSignerECDSAMPCv2(this.baseCoin, params);
     }
 
+    // After we have definite types for EDDSA, invoke the EDDSA MPCv2workflow here.
+
     if (!txPrebuild || typeof txPrebuild !== 'object') {
       if (this.multisigType() === 'onchain') {
         throw new Error('txPrebuild is required for on-chain multisig wallets');
