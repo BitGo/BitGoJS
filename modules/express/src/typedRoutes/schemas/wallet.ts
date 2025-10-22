@@ -140,15 +140,7 @@ export const CustomChangeKeySignatures = t.partial({
 
 export const multisigType = t.union([t.literal('onchain'), t.literal('tss')]);
 
-export const walletType = t.union([
-  t.literal('backing'),
-  t.literal('cold'),
-  t.literal('custodial'),
-  t.literal('custodialPaired'),
-  t.literal('hot'),
-  t.literal('trading'),
-  t.literal('advanced'),
-]);
+export const walletType = t.union([t.literal('cold'), t.literal('custodial'), t.literal('hot'), t.literal('trading')]);
 
 /**
  * Wallet response data
