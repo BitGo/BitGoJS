@@ -182,6 +182,29 @@ export interface PrebuildTransactionOptions {
     data: string;
   }[];
   /**
+   * Solana versioned transaction data for building transactions with Address Lookup Tables.
+   * Contains compiled instructions, address lookup tables, static account keys, and message header.
+   */
+  solVersionedTransactionData?: {
+    versionedInstructions: {
+      programIdIndex: number;
+      accountKeyIndexes: number[];
+      data: string;
+    }[];
+    addressLookupTables: {
+      accountKey: string;
+      writableIndexes: number[];
+      readonlyIndexes: number[];
+    }[];
+    staticAccountKeys: string[];
+    messageHeader: {
+      numRequiredSignatures: number;
+      numReadonlySignedAccounts: number;
+      numReadonlyUnsignedAccounts: number;
+    };
+    recentBlockhash?: string;
+  };
+  /**
    * Custom transaction parameters for Aptos entry function calls.
    * Used with the customTx intent type for Aptos smart contract interactions.
    */

@@ -7,7 +7,7 @@ import * as taproot from '../taproot';
 
 import { isTriple, Triple, Tuple } from './types';
 
-import { ecc as eccLib } from '../noble_ecc';
+import { ecc as eccLib } from '@bitgo/secp256k1';
 import { getDepthFirstTaptree, getTweakedOutputKey } from '../taproot';
 
 export { scriptTypeForChain } from './wallet/chains';
@@ -268,7 +268,7 @@ function getRedeemIndex(keyCombinations: [Buffer, Buffer][], signer: Buffer, cos
   throw new Error(`could not find singer/cosigner combination`);
 }
 
-function createPaymentP2trCommon(
+export function createPaymentP2trCommon(
   scriptType: 'p2tr' | 'p2trMusig2',
   pubkeys: Triple<Buffer>,
   redeemIndex?: number | { signer: Buffer; cosigner: Buffer }

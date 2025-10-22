@@ -3,6 +3,41 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.50.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.50.4...@bitgo/unspents@0.50.5) (2025-10-21)
+
+**Note:** Version bump only for package @bitgo/unspents
+
+
+
+
+
+## [0.50.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.50.3...@bitgo/unspents@0.50.4) (2025-10-16)
+
+**Note:** Version bump only for package @bitgo/unspents
+
+
+
+
+
+## [0.50.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.50.2...@bitgo/unspents@0.50.3) (2025-10-13)
+
+**Note:** Version bump only for package @bitgo/unspents
+
+
+
+
+
+## [0.50.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.50.1...@bitgo/unspents@0.50.2) (2025-10-08)
+
+
+### Bug Fixes
+
+* add explicit 'files' in package json ([3b00373](https://github.com/BitGo/BitGoJS/commit/3b0037396f6ac16bb9380bd85bf37f2b133068f4))
+
+
+
+
+
 ## [0.50.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/unspents@0.50.0...@bitgo/unspents@0.50.1) (2025-10-02)
 
 **Note:** Version bump only for package @bitgo/unspents

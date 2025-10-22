@@ -1,5 +1,10 @@
 import { SolStakingTypeEnum } from '@bitgo/public-types';
-import { TransactionExplanation as BaseTransactionExplanation, Recipient, SolInstruction } from '@bitgo/sdk-core';
+import {
+  TransactionExplanation as BaseTransactionExplanation,
+  Recipient,
+  SolInstruction,
+  SolVersionedInstruction,
+} from '@bitgo/sdk-core';
 import { DecodedCloseAccountInstruction } from '@solana/spl-token';
 import { Blockhash, StakeInstructionType, SystemInstructionType, TransactionSignature } from '@solana/web3.js';
 import { InstructionBuilderTypes } from './constants';
@@ -44,7 +49,8 @@ export type InstructionParams =
   | MintTo
   | Burn
   | Approve
-  | CustomInstruction;
+  | CustomInstruction
+  | VersionedCustomInstruction;
 
 export interface Memo {
   type: InstructionBuilderTypes.Memo;
@@ -239,6 +245,29 @@ export type StakingDelegateParams = {
 export interface CustomInstruction {
   type: InstructionBuilderTypes.CustomInstruction;
   params: SolInstruction;
+}
+
+export interface VersionedCustomInstruction {
+  type: InstructionBuilderTypes.VersionedCustomInstruction;
+  params: SolVersionedInstruction;
+}
+
+export interface VersionedTransactionData {
+  versionedInstructions: SolVersionedInstruction[];
+  addressLookupTables: AddressLookupTable[];
+  staticAccountKeys: string[];
+  messageHeader: {
+    numRequiredSignatures: number;
+    numReadonlySignedAccounts: number;
+    numReadonlyUnsignedAccounts: number;
+  };
+  recentBlockhash?: string;
+}
+
+export interface AddressLookupTable {
+  accountKey: string;
+  writableIndexes: number[];
+  readonlyIndexes: number[];
 }
 
 export interface TransactionExplanation extends BaseTransactionExplanation {

@@ -2144,6 +2144,7 @@ export enum UnderlyingAsset {
   'eth:mavia' = 'eth:mavia',
   'eth:lm' = 'eth:lm',
   'eth:kub' = 'eth:kub',
+  'eth:fidd' = 'eth:fidd',
 
   // Ondo Tokenized Assets
   'eth:qqqon' = 'qqqon',
@@ -2257,6 +2258,29 @@ export enum UnderlyingAsset {
   'eth:usdo' = 'eth:usdo',
   'eth:align' = 'eth:align',
   'eth:xan' = 'eth:xan',
+  'eth:frxusd' = 'eth:frxusd',
+  'eth:red' = 'eth:red',
+  'eth:dka' = 'eth:dka',
+  'eth:cgpt' = 'eth:cgpt',
+  'eth:apu' = 'eth:apu',
+  'eth:shfl' = 'eth:shfl',
+  'eth:banana' = 'eth:banana',
+  'eth:zkj' = 'eth:zkj',
+  'eth:spk' = 'eth:spk',
+  'eth:merl' = 'eth:merl',
+  'eth:aeur' = 'eth:aeur',
+  'eth:soso' = 'eth:soso',
+  'eth:bfc' = 'eth:bfc',
+  'eth:osak' = 'eth:osak',
+  'eth:uds' = 'eth:uds',
+  'eth:zent' = 'eth:zent',
+  'eth:euri' = 'eth:euri',
+  'eth:al' = 'eth:al',
+  'eth:wct' = 'eth:wct',
+  'eth:pundiai' = 'eth:pundiai',
+  'eth:anon' = 'eth:anon',
+  'eth:omi' = 'eth:omi',
+  'eth:andy' = 'eth:andy',
 
   'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ' = 'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ',
   'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M' = 'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M',
@@ -2898,6 +2922,7 @@ export enum UnderlyingAsset {
 
   // Flr testnet tokens
   'tflr:wflr' = 'tflr:wflr',
+  'tflr:twc2flr' = 'tflr:twc2flr',
 
   ERC721 = 'erc721',
   ERC1155 = 'erc1155',
@@ -3170,6 +3195,7 @@ export enum UnderlyingAsset {
   'tpolyx:WEBINRASSET6' = 'tpolyx:WEBINRASSET6',
   'tpolyx:WEBINRASSET7' = 'tpolyx:WEBINRASSET7',
   'tpolyx:BULLRWA' = 'tpolyx:BULLRWA',
+  'tpolyx:0x4a002922d38b8a7f87484b9c65a7ca0c' = 'tpolyx:0x4a002922d38b8a7f87484b9c65a7ca0c',
 
   // Polymesh mainnet tokens
   'polyx:0xa0ce6bc4c60981e08eca6504656c99e6' = 'polyx:0xa0ce6bc4c60981e08eca6504656c99e6',
@@ -3191,6 +3217,8 @@ export enum UnderlyingAsset {
   // Nep141 tokens
   'near:usdc' = 'near:usdc',
   'near:usdt' = 'near:usdt',
+  'near:mpdao' = 'near:mpdao',
+  'near:stnear' = 'near:stnear',
 
   // Nep141 testnet tokens
   'tnear:tnep24dp' = 'tnear:tnep24dp',

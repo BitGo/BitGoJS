@@ -87,6 +87,8 @@ export enum TransactionType {
   FlushERC721,
   // Flush ERC1155 tokens from a forwarder address to base address
   FlushERC1155,
+  // Set up 1-step pre-approval for canton
+  OneStepPreApproval,
 
   // trx
   FREEZE,
@@ -105,6 +107,9 @@ export enum TransactionType {
 
   // cspr
   stakingUnlock,
+
+  // polyx
+  RejectInstruction,
 }
 
 /**

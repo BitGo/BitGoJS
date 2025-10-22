@@ -1,12 +1,42 @@
-// Taproot-specific key aggregation and taptree logic as defined in:
-// https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki
-// https://github.com/bitcoin/bips/blob/master/bip-0341.mediawiki
+/**
+ * This module provides taproot utilities including the legacy MuSig2 key aggregation
+ * algorithm used by BitGo's deprecated `p2tr` script type (chains 30, 31).
+ *
+ * ## Legacy p2tr vs Standard p2trMusig2
+ *
+ * BitGo supports two taproot address types:
+ *
+ * 1. **Legacy `p2tr` (chains 30, 31) - DEPRECATED**
+ *    - Uses the `aggregateMuSigPubkeys()` function in this module
+ *    - Based on an older MuSig2 variant that predates BIP327
+ *    - Expects 32-byte x-only pubkeys with even Y coordinates
+ *    - Sorts keys AFTER x-only conversion
+ *    - Corresponds to MuSig2 before the 32-byte to 33-byte key change
+ *    - See: https://github.com/jonasnick/bips/pull/37
+ *
+ * 2. **Standard `p2trMusig2` (chains 40, 41) - RECOMMENDED**
+ *    - Uses the `@brandonblack/musig` library (standard BIP327 implementation)
+ *    - Uses full 33-byte compressed pubkeys throughout aggregation
+ *    - Key order affects the resulting aggregate key
+ *    - Fully compatible with the BIP327 specification
+ *
+ * ## Key Difference
+ *
+ * The critical difference is **when x-only conversion happens**:
+ * - Legacy: Converts to x-only BEFORE sorting (produces order-independent keys)
+ * - Standard: Uses 33-byte keys throughout (key order matters)
+ *
+ * For the same two pubkeys, these methods produce DIFFERENT aggregate keys because
+ * the sort order differs between 33-byte and 32-byte representations.
+ *
+ * See `modules/utxo-lib/bip-0327/README.md` for detailed comparison and test cases.
+ */
 
 import { TapTree as PsbtTapTree, TapLeaf as PsbtTapLeaf } from 'bip174/src/lib/interfaces';
 import assert = require('assert');
 import FastPriorityQueue = require('fastpriorityqueue');
 import { script as bscript, crypto as bcrypto, payments as bpayments } from 'bitcoinjs-lib';
-import { ecc as eccLib } from './noble_ecc';
+import { ecc as eccLib } from '@bitgo/secp256k1';
 const varuint = require('varuint-bitcoin');
 
 /**
@@ -27,59 +57,114 @@ export interface TinySecp256k1Interface {
 }
 
 /**
- * Aggregates a list of public keys into a single MuSig2* public key
- * according to the MuSig2 paper.
+ * Aggregates a list of public keys into a single public key using the legacy MuSig2 algorithm.
+ *
+ * This implements the deprecated key aggregation method used by BitGo's `p2tr` script type
+ * (chains 30, 31). It corresponds to an older variant of MuSig2 that predates the change
+ * from 32-byte to 33-byte keys in the BIP327 specification.
+ *
+ * ## Algorithm
+ *
+ * The implementation follows the MuSig2 key aggregation scheme:
+ *
+ * ```
+ * P = sum_i (μ_i * P_i)
+ * ```
+ *
+ * where:
+ * - `P_i` is the public key of the i-th signer
+ * - `μ_i` is the MuSig coefficient computed as:
+ *   - `L = TaggedHash("KeyAgg list", P_1 || P_2 || ... || P_n)`
+ *   - `μ_i = TaggedHash("KeyAgg coefficient", L || P_i)` for most keys
+ *   - `μ_i = 1` for the second unique key (optimization to save an exponentiation)
+ *
+ * ## Key Characteristics (Legacy Variant)
+ *
+ * 1. **X-only pubkeys**: Expects 32-byte x-only pubkeys (assumes even Y coordinates)
+ * 2. **Pre-aggregation sorting**: Sorts keys in ascending order BEFORE aggregation
+ * 3. **Order-independent**: Due to sorting, key order doesn't affect the result
+ * 4. **33-byte internal representation**: Internally prepends 0x02 prefix for elliptic curve operations
+ *
+ * ## Differences from Standard MuSig2 (BIP327)
+ *
+ * The standard MuSig2 implementation (`@brandonblack/musig` library):
+ * - Uses 33-byte compressed pubkeys throughout
+ * - Does NOT sort keys before aggregation (key order matters)
+ * - Produces different aggregate keys even for the same set of pubkeys
+ *
+ * ## Reference Implementation
+ *
+ * This corresponds to `key_agg_bitgo_p2tr_legacy()` in the Python reference implementation
+ * at `modules/utxo-lib/bip-0327/reference.py`.
+ *
  * @param ecc Elliptic curve implementation
- * @param pubkeys The list of pub keys to aggregate
- * @returns a 32 byte Buffer representing the aggregate key
+ * @param pubkeys List of 32-byte x-only public keys to aggregate (must have even Y coordinates)
+ * @returns 32-byte Buffer representing the x-only aggregate public key
+ * @throws {Error} if fewer than 2 pubkeys provided or elliptic curve operations fail
+ *
+ * @see modules/utxo-lib/bip-0327/README.md for detailed comparison with standard MuSig2
+ * @see https://github.com/jonasnick/bips/pull/37 for the MuSig2 specification change
  */
 export function aggregateMuSigPubkeys(ecc: TinySecp256k1Interface, pubkeys: Buffer[]): Uint8Array {
   // TODO: Consider enforcing key uniqueness.
   assert(pubkeys.length > 1, 'at least two pubkeys are required for musig key aggregation');
 
-  // Sort the keys in ascending order
+  // LEGACY BEHAVIOR: Sort the keys in ascending order BEFORE aggregation.
+  // This makes the aggregate key independent of input order.
+  // Standard MuSig2 (BIP327) does NOT sort, making key order significant.
   pubkeys.sort(Buffer.compare);
 
-  // In MuSig all signers contribute key material to a single signing key,
-  // using the equation
-  //
-  //     P = sum_i µ_i * P_i
-  //
-  // where `P_i` is the public key of the `i`th signer and `µ_i` is a so-called
-  // _MuSig coefficient_ computed according to the following equation
-  //
-  // L = H(P_1 || P_2 || ... || P_n)
-  // µ_i = H(L || P_i)
-
+  // Compute the "KeyAgg list" hash L = TaggedHash("KeyAgg list", P_1 || P_2 || ... || P_n)
+  // This hash is used to derive the MuSig coefficients for each pubkey.
+  // In the reference implementation (reference.py), this is done in hash_keys().
   const L = bcrypto.taggedHash('KeyAgg list', Buffer.concat(pubkeys));
 
+  // Find the second unique pubkey in the sorted list.
+  // This key (and any keys identical to it) will use coefficient μ = 1 as an optimization.
+  // This saves an expensive point multiplication (see MuSig2* appendix in the MuSig2 paper).
+  // In the reference implementation, this is get_second_key().
   const secondUniquePubkey = pubkeys.find((pubkey) => !pubkeys[0].equals(pubkey));
 
+  // For each pubkey P_i, compute the tweaked pubkey μ_i * P_i
+  // where μ_i is the MuSig coefficient for that key.
   const tweakedPubkeys: Uint8Array[] = pubkeys.map((pubkey) => {
+    // Convert 32-byte x-only pubkey to 33-byte compressed format by prepending 0x02.
+    // This assumes an even Y coordinate (standard for x-only pubkeys in taproot).
+    // In the reference implementation, this is done implicitly in key_agg() via lift_x().
     const xyPubkey = Buffer.concat([EVEN_Y_COORD_PREFIX, pubkey]);
 
     if (secondUniquePubkey !== undefined && secondUniquePubkey.equals(pubkey)) {
-      // The second unique key in the pubkey list given to ''KeyAgg'' (as well
-      // as any keys identical to this key) gets the constant KeyAgg
-      // coefficient 1 which saves an exponentiation (see the MuSig2* appendix
-      // in the MuSig2 paper).
+      // Optimization: The second unique key gets coefficient μ = 1.
+      // This means μ_i * P_i = 1 * P_i = P_i (no multiplication needed).
+      // This saves an expensive elliptic curve point multiplication operation.
+      // See key_agg_coeff_internal() in reference.py where it returns 1 for pk_ == pk2.
       return xyPubkey;
     }
 
+    // Compute the MuSig coefficient: μ_i = TaggedHash("KeyAgg coefficient", L || P_i)
+    // In the reference implementation, this is key_agg_coeff_internal().
     const c = bcrypto.taggedHash('KeyAgg coefficient', Buffer.concat([L, pubkey]));
 
+    // Compute the tweaked pubkey: μ_i * P_i (elliptic curve point multiplication)
     const tweakedPubkey = ecc.pointMultiply(xyPubkey, c);
     if (!tweakedPubkey) {
       throw new Error('Failed to multiply pubkey by coefficient');
     }
     return tweakedPubkey;
   });
+
+  // Sum all the tweaked pubkeys to get the aggregate pubkey:
+  // P = sum_i (μ_i * P_i) = μ_1*P_1 + μ_2*P_2 + ... + μ_n*P_n
+  // This is elliptic curve point addition.
   const aggregatePubkey = tweakedPubkeys.reduce((prev, curr) => {
     const next = ecc.pointAdd(prev, curr);
     if (!next) throw new Error('Failed to sum pubkeys');
     return next;
   });
 
+  // Convert the aggregate pubkey from 33-byte compressed format back to 32-byte x-only format
+  // by removing the first byte (the Y coordinate prefix).
+  // In the reference implementation, this is done by get_xonly_pk() which calls xbytes().
   return aggregatePubkey.slice(1);
 }
 

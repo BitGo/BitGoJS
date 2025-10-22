@@ -26,8 +26,6 @@ const FEE_COEFFICIENTS = {
   B_COEFFICIENT: '155381',
   /** Additional safety margin for the fee */
   SAFETY_MARGIN: '440',
-  /* Min fee required for token transaction */
-  MIN_TOKEN_TRANSACTION_FEE: '1000000',
 };
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
@@ -379,15 +377,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     );
 
     // Calculate the fee based off our dummy transaction
-    let fee = CardanoWasm.min_fee(txDraft, linearFee).checked_add(BigNum.from_str(FEE_COEFFICIENTS.SAFETY_MARGIN));
-    /**
-     * In some cases especially with token transactions the calculated fee can be very low than the fee expected from the node
-     * So, ensure a minimum fee is always set
-     */
-    const minTokenFee = BigNum.from_str(FEE_COEFFICIENTS.MIN_TOKEN_TRANSACTION_FEE);
-    if (fee.less_than(minTokenFee)) {
-      fee = minTokenFee;
-    }
+    const fee = CardanoWasm.min_fee(txDraft, linearFee).checked_add(BigNum.from_str(FEE_COEFFICIENTS.SAFETY_MARGIN));
     this._fee = fee;
   }
 
@@ -414,8 +404,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       const vkey = CardanoWasm.Vkey.new(CardanoWasm.PublicKey.from_bytes(Buffer.from(signature.publicKey.pub, 'hex')));
       const ed255Sig = CardanoWasm.Ed25519Signature.from_bytes(signature.signature);
       vkeyWitnesses.add(CardanoWasm.Vkeywitness.new(vkey, ed255Sig));
+      // Restoring the behaviour from the original buildImplementation
+      if (refreshSignatures) {
+        this._transaction.signature.push(signature.signature.toString('hex'));
+      }
     });
-    if (vkeyWitnesses.len() === 0) {
+    if (!refreshSignatures && vkeyWitnesses.len() === 0) {
       const prv = CardanoWasm.PrivateKey.generate_ed25519();
       const vkeyWitness = CardanoWasm.make_vkey_witness(txHash, prv);
       vkeyWitnesses.add(vkeyWitness);

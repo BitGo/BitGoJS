@@ -94,6 +94,37 @@ describe('EthLike coin tests', function () {
         result.txHex.should.equal(mockData.ccr[coin.name].txHex);
       });
 
+      it('should build cross chain recovery transaction and extract recipients', async function () {
+        const recoveryId = '0x1234567890abcdef';
+        const mockResponse = {
+          coin: coin.name,
+          txHex: mockData.ccr[coin.name].txHex,
+          txid: mockData.ccr[coin.name].txid,
+          walletVersion: 1,
+        };
+
+        nock(bitgo.microservicesUrl(`/api/recovery/v1/crosschain`))
+          .get(`/${recoveryId}/buildtx`)
+          .reply(200, mockResponse);
+
+        const result = await basecoin.buildCrossChainRecoveryTransaction(recoveryId);
+
+        result.should.have.property('coin');
+        result.coin.should.equal(coin.name);
+        result.should.have.property('txHex');
+        result.txHex.should.equal(mockData.ccr[coin.name].txHex);
+        result.should.have.property('txid');
+        result.txid.should.equal(mockData.ccr[coin.name].txid);
+        result.should.have.property('walletVersion');
+        result.should.have.property('recipients');
+        result.recipients.should.be.an.Array();
+        const recipient = result.recipients[0];
+        recipient.should.have.property('address');
+        recipient.should.have.property('amount');
+        recipient.address.should.be.a.String();
+        recipient.amount.should.be.a.String();
+      });
+
       it('should generate signature data for custodial hot wallet and sign using hsm signature', async function () {
         const baseAddress = '0x702cf81e03aa310ec9481d814e3d04a20b04b505';
         const destinationAddress = '0xb9f62c71d5f6949cfb211a67fb13ccf079cc760b';

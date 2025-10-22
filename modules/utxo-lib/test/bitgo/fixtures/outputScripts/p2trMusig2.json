@@ -1,0 +1,82 @@
+[
+  {
+    "scriptType": "p2trMusig2",
+    "privkeys": [
+      "a07e682489dad68834f7df8a5c8b34f3b9ff9fdd8809e2ba53ae29df65fc146b",
+      "34cdbbaf791590f0f774b4f96327efec72930b068d5ee348cd3acef615800602",
+      "2d210ff6703d0fae0e9ca91e1d0bbab006b03e8e699f49becbaf554066fa79aa"
+    ],
+    "pubkeys": [
+      "02d20a62701c54f6eb3abb9f964b0e29ff90ffa3b4e3fcb73e7c67d4950fa6e3c7",
+      "028714039c6866c27eb6885ffbb4085964a603140e5a39b0fa29b1d9839212f9a2",
+      "03203ab799ce28e2cca044f594c69275050af4bb0854ad730a8f74622342300e64"
+    ],
+    "internalPubkey": "c0e255b4510e041ab81151091d875687a618de314344dff4b73b1bcd366cdbd8",
+    "controlBlocks": [
+      {
+        "redeemIndex": 0,
+        "controlBlock": "c0c0e255b4510e041ab81151091d875687a618de314344dff4b73b1bcd366cdbd8b33e39fb32e503897e9cdc949597dac7b156017bf55a4f9802b619db07d3070a"
+      },
+      {
+        "redeemIndex": 1,
+        "controlBlock": "c0c0e255b4510e041ab81151091d875687a618de314344dff4b73b1bcd366cdbd80e87e7b2bddc1e2f2cde702b5cbe51119df98538b35fa91c40a7c74fa9f5d398"
+      }
+    ],
+    "tapTree": {
+      "leaves": [
+        {
+          "script": "20d20a62701c54f6eb3abb9f964b0e29ff90ffa3b4e3fcb73e7c67d4950fa6e3c7ad208714039c6866c27eb6885ffbb4085964a603140e5a39b0fa29b1d9839212f9a2ac",
+          "leafVersion": 192,
+          "depth": 1
+        },
+        {
+          "script": "208714039c6866c27eb6885ffbb4085964a603140e5a39b0fa29b1d9839212f9a2ad20203ab799ce28e2cca044f594c69275050af4bb0854ad730a8f74622342300e64ac",
+          "leafVersion": 192,
+          "depth": 1
+        }
+      ]
+    },
+    "taptreeRoot": "d88b89f6f10f490bb6e1e61585cb3e78f8b4993e574b4031cacc6859c5adbc45",
+    "output": "5120b1b559f099d5480951944bb9e5560b1485c51f7d15c9bb2864b2354de739beaf"
+  },
+  {
+    "scriptType": "p2trMusig2",
+    "privkeys": [
+      "2d210ff6703d0fae0e9ca91e1d0bbab006b03e8e699f49becbaf554066fa79aa",
+      "34cdbbaf791590f0f774b4f96327efec72930b068d5ee348cd3acef615800602",
+      "a07e682489dad68834f7df8a5c8b34f3b9ff9fdd8809e2ba53ae29df65fc146b"
+    ],
+    "pubkeys": [
+      "03203ab799ce28e2cca044f594c69275050af4bb0854ad730a8f74622342300e64",
+      "028714039c6866c27eb6885ffbb4085964a603140e5a39b0fa29b1d9839212f9a2",
+      "02d20a62701c54f6eb3abb9f964b0e29ff90ffa3b4e3fcb73e7c67d4950fa6e3c7"
+    ],
+    "internalPubkey": "e48d309b535811eb0b148c4b0600a10e82e289899429e40aee05577504eca356",
+    "controlBlocks": [
+      {
+        "redeemIndex": 0,
+        "controlBlock": "c0e48d309b535811eb0b148c4b0600a10e82e289899429e40aee05577504eca3569f8d752c1becee80ffd87719934911d9c8aef659fc3ab512ba67f920ffc47545"
+      },
+      {
+        "redeemIndex": 1,
+        "controlBlock": "c0e48d309b535811eb0b148c4b0600a10e82e289899429e40aee05577504eca35645fc694de6d51e7c6fcd37c35377b99e4e6e9a19adb600256a20dc0dd34561bc"
+      }
+    ],
+    "tapTree": {
+      "leaves": [
+        {
+          "script": "20203ab799ce28e2cca044f594c69275050af4bb0854ad730a8f74622342300e64ad208714039c6866c27eb6885ffbb4085964a603140e5a39b0fa29b1d9839212f9a2ac",
+          "leafVersion": 192,
+          "depth": 1
+        },
+        {
+          "script": "208714039c6866c27eb6885ffbb4085964a603140e5a39b0fa29b1d9839212f9a2ad20d20a62701c54f6eb3abb9f964b0e29ff90ffa3b4e3fcb73e7c67d4950fa6e3c7ac",
+          "leafVersion": 192,
+          "depth": 1
+        }
+      ]
+    },
+    "taptreeRoot": "154989ec963f9639848d336c522641b38bf5540ca0934318ac824e623ffd9e14",
+    "output": "5120b402ebe79e4563cbc4619a7b2af7e1f9ff124edca871f688987221a09f17c4a7"
+  }
+]

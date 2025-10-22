@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/abstract-cosmos",
-  "version": "11.15.2",
+  "version": "11.15.7",
   "description": "BitGo SDK coin library for COSMOS base implementation",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -8,7 +8,7 @@
     "build": "npm run prepare",
     "build-ts": "yarn tsc --build --incremental --verbose .",
     "fmt": "prettier --write .",
-    "check-fmt": "prettier --check .",
+    "check-fmt": "prettier --check '**/*.{ts,js,json}'",
     "clean": "rm -r ./dist",
     "lint": "eslint --quiet .",
     "prepare": "npm run build-ts && shx cp -r ./resources ./dist"
@@ -38,10 +38,10 @@
     ]
   },
   "dependencies": {
-    "@bitgo/sdk-core": "^36.10.1",
-    "@bitgo/sdk-lib-mpc": "^10.7.0",
-    "@bitgo/secp256k1": "^1.5.0",
-    "@bitgo/statics": "^58.2.0",
+    "@bitgo/sdk-core": "^36.15.0",
+    "@bitgo/sdk-lib-mpc": "^10.8.1",
+    "@bitgo/secp256k1": "^1.6.0",
+    "@bitgo/statics": "^58.7.0",
     "@cosmjs/amino": "^0.29.5",
     "@cosmjs/crypto": "^0.30.1",
     "@cosmjs/encoding": "^0.29.5",

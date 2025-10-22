@@ -39,7 +39,7 @@ describe('ADA Token Operations', async () => {
       totalInput -
       1500000 /* min ada for change token utxo */ -
       1500000 /* min ada for recipient token utxo*/ -
-      1000000
+      173597
     ) /* fee */
       .toString();
     const expectedChangeToken = '80';
@@ -127,7 +127,7 @@ describe('ADA Token Operations', async () => {
       1500000 /* min ada for change token utxo */ -
       1500000 /* min ada for recipient token utxo*/ -
       1500000 /* min ada for unsupported token change utxo */ -
-      1000000
+      179889
     ) /* fee */
       .toString();
     const expectedChangeToken = '80';

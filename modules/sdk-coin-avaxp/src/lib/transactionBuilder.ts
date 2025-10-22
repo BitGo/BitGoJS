@@ -131,21 +131,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this;
   }
 
-  // TODO(CR-1073):
-  // Implement:
-  //  buildImplementation
-  //  signImplementation
-  //  get transaction
-  //  set transaction
-  //  validateRawTransaction
-
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string): Transaction {
     const [tx] = pvmSerial.AddPermissionlessValidatorTx.fromBytes(
       Buffer.from(rawTransaction, 'hex'),
       avmSerial.getAVMManager().getDefaultCodec()
     );
-    // TODO(CR-1073): check if initBuilder can only use UnsignedTx and pvmSerial.BaseTx is not required
     this.initBuilder(tx);
     return this._transaction;
   }

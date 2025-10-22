@@ -1,11 +1,11 @@
 import { ok as assert } from 'assert';
-import { BIP32Interface } from 'bip32';
-import * as noble from '@noble/secp256k1';
-import * as utxolib from '..';
+import { BIP32Interface } from '@bitgo/secp256k1';
+import { payments } from '..';
 import { getMainnet, Network, networks } from '../networks';
 
 import {
   ChainCode,
+  withUnsafeNonSegwit,
   createPsbtForNetwork,
   fromOutput,
   fromOutputWithPrevTx,
@@ -38,7 +38,7 @@ export function mockPrevTx(
   const keypair = getKey('mock-prev-tx');
   const pubkey = keypair.publicKey;
   assert(keypair.privateKey);
-  const payment = utxolib.payments.p2pkh({ pubkey });
+  const payment = payments.p2pkh({ pubkey });
   const destOutput = payment.output;
   if (!destOutput) throw new Error('Impossible, payment we just constructed has no output');
 
@@ -55,12 +55,8 @@ export function mockPrevTx(
     witnessUtxo: { script: destOutput, value: value * (BigInt(vout) + BigInt(1)) + BigInt(1000) },
   });
   // Don't require the prevTx for signing and finalizing for non-segwit input
-  utxolib.bitgo.withUnsafeNonSegwit(psbtFromNetwork, () => {
-    psbtFromNetwork.signInput(0, {
-      publicKey: pubkey,
-      sign: (hash: Buffer, lowR?: boolean) =>
-        Buffer.from(noble.signSync(hash, keypair.privateKey as Buffer, { canonical: !lowR, der: false })),
-    });
+  withUnsafeNonSegwit(psbtFromNetwork, () => {
+    psbtFromNetwork.signInput(0, keypair);
     psbtFromNetwork.validateSignaturesOfAllInputs();
     psbtFromNetwork.finalizeAllInputs();
   });

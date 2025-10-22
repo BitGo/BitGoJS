@@ -46,6 +46,8 @@ export interface Keychain {
   coinSpecific?: { [coinName: string]: unknown };
   // Alternative encryptedPrv using webauthn and the prf extension
   webauthnDevices?: KeychainWebauthnDevice[];
+  // Ethereum address derived from xpub
+  ethAddress?: string;
 }
 
 export type OptionalKeychainEncryptedKey = Pick<Keychain, 'encryptedPrv' | 'webauthnDevices'>;

@@ -3447,6 +3447,7 @@ export class Wallet implements IWallet {
             sequenceId: params.sequenceId,
             comment: params.comment,
             solInstructions: params.solInstructions,
+            solVersionedTransactionData: params.solVersionedTransactionData,
             aptosCustomTransactionParams: params.aptosCustomTransactionParams,
             recipients: params.recipients || [],
             nonce: params.nonce,

@@ -11570,7 +11570,8 @@ export const erc20Coins = [
     'Hyperwave HLP',
     6,
     '0x9fd7466f987fd4c45a5bbde22ed8aba5bc8d72d1',
-    UnderlyingAsset['eth:hwhlp']
+    UnderlyingAsset['eth:hwhlp'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'e732528b-2c63-4fd0-b15d-290f831a7e92',
@@ -11618,7 +11619,8 @@ export const erc20Coins = [
     'MultiBank Group',
     18,
     '0x45e02bc2875a2914c4f585bbf92a6f28bc07cb70',
-    UnderlyingAsset['eth:mbg']
+    UnderlyingAsset['eth:mbg'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'e2650199-e114-4abd-9086-46d77ee1ee0f',
@@ -11727,6 +11729,190 @@ export const erc20Coins = [
     '0xcedbea37c8872c4171259cdfd5255cb8923cf8e7',
     UnderlyingAsset['eth:xan'],
     [...ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_MENA_FZE, CoinFeature.BULK_TRANSACTION]
+  ),
+  erc20(
+    '9f52bfe6-847d-4f39-bad8-9d62d33e347d',
+    'eth:frxusd',
+    'Frax USD',
+    18,
+    '0xcacd6fd266af91b8aed52accc382b4e165586e29',
+    UnderlyingAsset['eth:frxusd']
+  ),
+  erc20(
+    'cceea05f-3dc5-4511-b92a-0ae64a3cab6a',
+    'eth:red',
+    'Redstone',
+    18,
+    '0xc43c6bfeda065fe2c4c11765bf838789bd0bb5de',
+    UnderlyingAsset['eth:red']
+  ),
+  erc20(
+    'facb8d7f-36f4-45f2-be14-b53895e641ad',
+    'eth:dka',
+    'dKargo',
+    18,
+    '0x5dc60c4d5e75d22588fa17ffeb90a63e535efce0',
+    UnderlyingAsset['eth:dka']
+  ),
+  erc20(
+    'bfdc9a33-3ae7-44bd-99b1-2eabde2a90d7',
+    'eth:cgpt',
+    'ChainGPT',
+    18,
+    '0x25931894a86d47441213199621f1f2994e1c39aa',
+    UnderlyingAsset['eth:cgpt']
+  ),
+  erc20(
+    'd1942ff9-8462-4781-9d1f-86d0bba231c4',
+    'eth:apu',
+    'Apu Apustaja',
+    18,
+    '0x594daad7d77592a2b97b725a7ad59d7e188b5bfa',
+    UnderlyingAsset['eth:apu']
+  ),
+  erc20(
+    '8798b6ed-a590-45a1-b7c2-d0859c50baaa',
+    'eth:shfl',
+    'Shuffle',
+    18,
+    '0x8881562783028f5c1bcb985d2283d5e170d88888',
+    UnderlyingAsset['eth:shfl']
+  ),
+  erc20(
+    '3b42592a-86d7-4537-a052-5048a006982d',
+    'eth:banana',
+    'Banana Gun',
+    18,
+    '0x38e68a37e401f7271568cecaac63c6b1e19130b4',
+    UnderlyingAsset['eth:banana']
+  ),
+  erc20(
+    '63d2a1ee-1202-485a-ab2a-7b831578f136',
+    'eth:zkj',
+    'Polyhedra Network',
+    18,
+    '0xc71b5f631354be6853efe9c3ab6b9590f8302e81',
+    UnderlyingAsset['eth:zkj']
+  ),
+  erc20(
+    '3d19f94a-c8bc-4db4-a6c6-39d96e7cb641',
+    'eth:spk',
+    'Spark',
+    18,
+    '0xc20059e0317de91738d13af027dfc4a50781b066',
+    UnderlyingAsset['eth:spk']
+  ),
+  erc20(
+    '58fd27ad-fc3e-4c1f-8797-a41191621ee7',
+    'eth:merl',
+    'Merlin Chain',
+    18,
+    '0x0f3a12b78fee11ee088e454a0547bdbc5a253a6d',
+    UnderlyingAsset['eth:merl']
+  ),
+  erc20(
+    '984a891d-9d3c-4c2d-bd70-9dfc503cb08c',
+    'eth:aeur',
+    'Anchored Coins AEUR',
+    18,
+    '0xa40640458fbc27b6eefedea1e9c9e17d4cee7a21',
+    UnderlyingAsset['eth:aeur']
+  ),
+  erc20(
+    'a2090636-3133-4e07-8636-3eccbc3f6e73',
+    'eth:soso',
+    'SoSoValue',
+    18,
+    '0x76a0e27618462bdac7a29104bdcfff4e6bfcea2d',
+    UnderlyingAsset['eth:soso']
+  ),
+  erc20(
+    'fc0df2e2-27a9-4997-bb8a-b6a761776720',
+    'eth:bfc',
+    'Bifrost',
+    18,
+    '0x0c7d5ae016f806603cb1782bea29ac69471cab9c',
+    UnderlyingAsset['eth:bfc']
+  ),
+  erc20(
+    '9c060fb4-d5dc-445e-aca7-dcc90211b389',
+    'eth:osak',
+    'Osaka Protocol',
+    18,
+    '0xa21af1050f7b26e0cff45ee51548254c41ed6b5c',
+    UnderlyingAsset['eth:osak']
+  ),
+  erc20(
+    '23a6d0b6-0898-4ae9-b54c-a1d10762bfdc',
+    'eth:uds',
+    'Undeads Games',
+    18,
+    '0x712bd4beb54c6b958267d9db0259abdbb0bff606',
+    UnderlyingAsset['eth:uds']
+  ),
+  erc20(
+    'a4d992db-27e2-4a8b-a6a8-e6f82e4c8eda',
+    'eth:zent',
+    'Zentry',
+    18,
+    '0xdbb7a34bf10169d6d2d0d02a6cbb436cf4381bfa',
+    UnderlyingAsset['eth:zent']
+  ),
+  erc20(
+    'f3adcc31-26ba-498e-b848-f3189f1f41ff',
+    'eth:euri',
+    'Eurite',
+    18,
+    '0x9d1a7a3191102e9f900faa10540837ba84dcbae7',
+    UnderlyingAsset['eth:euri']
+  ),
+  erc20(
+    '82296bc8-f00e-4f83-b6f0-8ae9b7984249',
+    'eth:al',
+    'ArchLoot',
+    18,
+    '0x046bad07658f3b6cad9a396cfcbc1243af452ec1',
+    UnderlyingAsset['eth:al']
+  ),
+  erc20(
+    '0fa109c4-cd42-4226-ace2-f3c48250e682',
+    'eth:wct',
+    'WalletConnect',
+    18,
+    '0xef4461891dfb3ac8572ccf7c794664a8dd927945',
+    UnderlyingAsset['eth:wct']
+  ),
+  erc20(
+    '80e72eaf-b84f-4cf8-a515-140b154e253b',
+    'eth:pundiai',
+    'Pundi AI',
+    18,
+    '0x075f23b9cdfce2cc0ca466f4ee6cb4bd29d83bef',
+    UnderlyingAsset['eth:pundiai']
+  ),
+  erc20(
+    'e42c9030-4863-46d7-bae2-abb1ac5238de',
+    'eth:anon',
+    'HeyAnon',
+    18,
+    '0x79bbf4508b1391af3a0f4b30bb5fc4aa9ab0e07c',
+    UnderlyingAsset['eth:anon']
+  ),
+  erc20(
+    '82a853ca-67c9-43d1-95fc-61716a7b18fe',
+    'eth:omi',
+    'ECOMI',
+    18,
+    '0xed35af169af46a02ee13b9d79eb57d6d68c1749e',
+    UnderlyingAsset['eth:omi']
+  ),
+  erc20(
+    '7d56d20c-fdf6-4ed3-ad75-b5b874780058',
+    'eth:andy',
+    'ANDY',
+    18,
+    '0x68bbed6a47194eff1cf514b50ea91895597fc91e',
+    UnderlyingAsset['eth:andy']
   ),
 
   terc20(
@@ -13600,5 +13786,13 @@ export const erc20Coins = [
     18,
     '0x0649cef6d11ed6f88535462e147304d3fe5ae14d',
     UnderlyingAsset['eth:kub']
+  ),
+  erc20(
+    '379c0ab5-7729-456b-b0b6-db74c3bd6a03',
+    'eth:fidd',
+    'Fidelity Digital Dollar',
+    18,
+    '0x7c135549504245b5eae64fc0e99fa5ebabb8e35d',
+    UnderlyingAsset['eth:fidd']
   ),
 ];

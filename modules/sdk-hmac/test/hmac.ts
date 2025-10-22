@@ -8,6 +8,7 @@ import {
   verifyResponse,
 } from '../src/hmac';
 import * as sjcl from '@bitgo/sjcl';
+import { createSecretKey } from 'crypto';
 
 // Mock Date.now for consistent timestamp values
 const MOCK_TIMESTAMP = 1672531200000; // Example timestamp (e.g., Jan 1, 2023, 00:00:00 UTC)
@@ -29,6 +30,20 @@ describe('HMAC Utility Functions', () => {
       const message = 'test-message';
       const expectedHmac = 'f8c2bb87c17608c9038eab4e92ef2775e42629c939d6fd3390d42f80af6bb712';
       expect(calculateHMAC(key, message)).to.equal(expectedHmac);
+    });
+
+    it('should accept a Buffer key (BinaryLike) and match the string result', () => {
+      const keyBuffer = Buffer.from('test-key', 'utf8');
+      const message = Buffer.from('test-message');
+      const expectedHmac = 'f8c2bb87c17608c9038eab4e92ef2775e42629c939d6fd3390d42f80af6bb712';
+      expect(calculateHMAC(keyBuffer, message)).to.equal(expectedHmac);
+    });
+
+    it('should accept a KeyObject key and match the string result', () => {
+      const keyObject = createSecretKey(Buffer.from('test-key', 'utf8'));
+      const message = 'test-message';
+      const expectedHmac = 'f8c2bb87c17608c9038eab4e92ef2775e42629c939d6fd3390d42f80af6bb712';
+      expect(calculateHMAC(keyObject, message)).to.equal(expectedHmac);
     });
   });
 
@@ -58,6 +73,49 @@ describe('HMAC Utility Functions', () => {
           authVersion: 3,
         })
       ).to.equal(expectedSubject);
+    });
+
+    it('should handle Buffer text input and return a Buffer for requests', () => {
+      const buffer = Buffer.from('binary-data-content');
+      const result = calculateHMACSubject({
+        urlPath: '/api/test',
+        text: buffer,
+        timestamp: MOCK_TIMESTAMP,
+        method: 'get',
+        authVersion: 3,
+      });
+
+      expect(Buffer.isBuffer(result)).to.be.true;
+
+      // Check the content structure
+      const expectedPrefix = 'GET|1672531200000|3.0|/api/test|';
+      const prefixBuffer = Buffer.from(expectedPrefix, 'utf8');
+
+      // Manually reconstruct the expected buffer to compare
+      const expectedBuffer = Buffer.concat([prefixBuffer, buffer]);
+      expect(result).to.deep.equal(expectedBuffer);
+    });
+
+    it('should handle Buffer text input and return a Buffer for responses', () => {
+      const buffer = Buffer.from('binary-response-data');
+      const result = calculateHMACSubject({
+        urlPath: '/api/test',
+        text: buffer,
+        timestamp: MOCK_TIMESTAMP,
+        statusCode: 200,
+        method: 'get',
+        authVersion: 3,
+      });
+
+      expect(Buffer.isBuffer(result)).to.be.true;
+
+      // Check the content structure
+      const expectedPrefix = 'GET|1672531200000|/api/test|200|';
+      const prefixBuffer = Buffer.from(expectedPrefix, 'utf8');
+
+      // Manually reconstruct the expected buffer to compare
+      const expectedBuffer = Buffer.concat([prefixBuffer, buffer]);
+      expect(result).to.deep.equal(expectedBuffer);
     });
   });
 
@@ -145,6 +203,38 @@ describe('HMAC Utility Functions', () => {
       });
 
       expect(result.isInResponseValidityWindow).to.be.false;
+    });
+
+    it('should verify response with Buffer data', () => {
+      const responseData = Buffer.from('binary-response-data');
+
+      // First create an HMAC for this binary data
+      const signatureSubject = calculateHMACSubject({
+        urlPath: '/api/test',
+        text: responseData,
+        timestamp: MOCK_TIMESTAMP,
+        statusCode: 200,
+        method: 'post',
+        authVersion: 3,
+      });
+
+      const token = 'test-token';
+      const expectedHmac = calculateHMAC(token, signatureSubject);
+
+      // Now verify using the generated HMAC
+      const result = verifyResponse({
+        url: '/api/test',
+        statusCode: 200,
+        text: responseData, // Use binary data here
+        timestamp: MOCK_TIMESTAMP,
+        token: token,
+        hmac: expectedHmac,
+        method: 'post',
+        authVersion: 3,
+      });
+      expect(result.isValid).to.be.true;
+      expect(result.expectedHmac).to.equal(expectedHmac);
+      expect(Buffer.isBuffer(result.signatureSubject)).to.be.true;
     });
   });
 });

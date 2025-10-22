@@ -3,6 +3,89 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [36.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.14.0...@bitgo/sdk-core@36.15.0) (2025-10-21)
+
+
+### Bug Fixes
+
+* change the netUID data type from number to string for Tao Staking ([8202e7a](https://github.com/BitGo/BitGoJS/commit/8202e7a980c76c05d09bffb0c75829b0b32e1b03))
+
+
+### Features
+
+* **sdk-coin-sol:** add recentBlockhash to custom versioned solana tx flow ([191eb86](https://github.com/BitGo/BitGoJS/commit/191eb86aa851cc893b216f23ff0ad3f13423cc2d))
+* **sdk-core:** generate Go account wallet ([7d5e752](https://github.com/BitGo/BitGoJS/commit/7d5e752dd5e9d9c85ec9ccadc1748557f1e0ef9f))
+
+
+
+
+
+# [36.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.13.0...@bitgo/sdk-core@36.14.0) (2025-10-16)
+
+
+### Bug Fixes
+
+* **sdk-core:** skip STX stake related tx ([ec54517](https://github.com/BitGo/BitGoJS/commit/ec54517775411f750e4cc9797d25be3c37580203))
+
+
+### Features
+
+* bump public types ([ca817a6](https://github.com/BitGo/BitGoJS/commit/ca817a637015a33584fd68dbf5c36592b6a13608))
+* **sdk-coin-canton:** added pre-approval builder ([8cbdf3e](https://github.com/BitGo/BitGoJS/commit/8cbdf3ec4be6cc52abd405c369befb8814957063))
+* **sdk-coin-polyx:** add rejectInstruction transaction ([ea83103](https://github.com/BitGo/BitGoJS/commit/ea831034d6bd9a8883765ee59d2c7d0c228ee2ab))
+* **sdk-core:** add transaction intent mismatch errors ([b4ce897](https://github.com/BitGo/BitGoJS/commit/b4ce8972a4e6aedc52fe9ea231746ecb0ed417ff))
+
+
+
+
+
+# [36.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.12.0...@bitgo/sdk-core@36.13.0) (2025-10-13)
+
+
+### Features
+
+* support versioned sol transactions with customTx intent ([b33402f](https://github.com/BitGo/BitGoJS/commit/b33402f9a7c4724804a2f45737fcbd2562f6bb3e))
+
+
+
+
+
+# [36.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.11.0...@bitgo/sdk-core@36.12.0) (2025-10-09)
+
+
+### Bug Fixes
+
+* run check-fmt on code files only ([9745196](https://github.com/BitGo/BitGoJS/commit/9745196b02b9678c740d290a4638ceb153a8fd75))
+
+
+### Features
+
+* **express:** migrate coinSignTx to typed routes ([c2638e0](https://github.com/BitGo/BitGoJS/commit/c2638e08308283f9a32b4efe78520472276d991f))
+* **sdk-core:** staking tx STX validate type ([ea7bca6](https://github.com/BitGo/BitGoJS/commit/ea7bca649419308e3e1eab7d94c70bdb2ae28375))
+
+
+
+
+
+# [36.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.10.1...@bitgo/sdk-core@36.11.0) (2025-10-08)
+
+
+### Bug Fixes
+
+* add explicit 'files' in package json ([3b00373](https://github.com/BitGo/BitGoJS/commit/3b0037396f6ac16bb9380bd85bf37f2b133068f4))
+
+
+### Features
+
+* add new param to support the netUID for Tao Staking ([6b175f8](https://github.com/BitGo/BitGoJS/commit/6b175f84510d633d02071dea5fabac3acb36b7cf))
+* change the netUID data type from string to number for Tao Staking ([a4eba23](https://github.com/BitGo/BitGoJS/commit/a4eba231eca91d8b3d58301efbb5b62ea0c655e5))
+* **sdk-core:** add psbt-lite as a transaction format option ([ae4da15](https://github.com/BitGo/BitGoJS/commit/ae4da15972a7f8e5bf0612d9d9feccffea95cbfa))
+* **sdk-core:** tokenApproval func for hot and cold multisig ([76b9577](https://github.com/BitGo/BitGoJS/commit/76b9577eae035c8a846999864304a13a5a6f29c0))
+
+
+
+
+
 ## [36.10.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.10.0...@bitgo/sdk-core@36.10.1) (2025-10-02)
 
 **Note:** Version bump only for package @bitgo/sdk-core

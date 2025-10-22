@@ -1,4 +1,6 @@
-import { Psbt, Transaction, networks, payments, script, address, opcodes } from "bitcoinjs-lib";
+import {
+  Psbt, Transaction, networks, payments, script, address, opcodes
+} from "bitcoinjs-lib";
 import { Taptree } from "bitcoinjs-lib/src/types";
 
 import { BTC_DUST_SAT } from "../constants/dustSat";
@@ -6,9 +8,18 @@ import { internalPubkey } from "../constants/internalPubkey";
 import { UTXO } from "../types/UTXO";
 import { PsbtResult, TransactionResult } from "../types/transaction";
 import { isValidBitcoinAddress, transactionIdToHash } from "../utils/btc";
-import { getStakingTxInputUTXOsAndFees, getWithdrawTxFee } from "../utils/fee";
+import {
+  getStakingExpansionTxFundingUTXOAndFees,
+  getStakingTxInputUTXOsAndFees,
+  getWithdrawTxFee,
+} from "../utils/fee";
 import { inputValueSum } from "../utils/fee/utils";
-import { buildStakingTransactionOutputs, deriveUnbondingOutputInfo } from "../utils/staking";
+import {
+  buildStakingTransactionOutputs,
+  deriveStakingOutputInfo,
+  deriveUnbondingOutputInfo,
+  findMatchingTxOutputIndex,
+} from "../utils/staking";
 import { NON_RBF_SEQUENCE, TRANSACTION_VERSION } from "../constants/psbt";
 import { CovenantSignature } from "../types/covenantSignatures";
 import { REDEEM_VERSION } from "../constants/transaction";
@@ -122,6 +133,144 @@ export function stakingTransaction(
   return {
     transaction: tx,
     fee,
+  };
+}
+
+/**
+ * Expand an existing staking transaction with additional finality providers
+ * or renew timelock.
+ * 
+ * This function builds a Bitcoin transaction that:
+ * 1. Spends the previous staking transaction output as the first input
+ * 2. Uses a funding UTXO as the second input to cover transaction fees
+ * 3. Creates new staking outputs where the timelock is renewed or FPs added
+ * 4. Returns any remaining funds as change
+ * 
+ * @param network - Bitcoin network (mainnet, testnet, etc.)
+ * @param scripts - Scripts for the new staking outputs
+ * @param amount - Total staking amount (must equal previous staking amount,
+ * we only support equal amounts for now)
+ * @param changeAddress - Bitcoin address to receive change from funding UTXO
+ * @param feeRate - Fee rate in satoshis per byte
+ * @param inputUTXOs - Available UTXOs to use for funding the expansion
+ * @param previousStakingTxInfo - Details of the previous staking transaction
+ * being expanded
+ * @returns {TransactionResult & { fundingUTXO: UTXO }} containing the built
+ * transaction and calculated fee, and the funding UTXO
+ */
+export function stakingExpansionTransaction(
+  network: networks.Network,
+  scripts: {
+    timelockScript: Buffer;
+    unbondingScript: Buffer;
+    slashingScript: Buffer;
+  },
+  amount: number,
+  changeAddress: string,
+  feeRate: number,
+  inputUTXOs: UTXO[],
+  previousStakingTxInfo: {
+    stakingTx: Transaction,
+    scripts: {
+      timelockScript: Buffer;
+      unbondingScript: Buffer;
+      slashingScript: Buffer;
+    },
+  },
+): TransactionResult & {
+  fundingUTXO: UTXO;
+} {
+  // Validate input parameters
+  if (amount <= 0 || feeRate <= 0) {
+    throw new Error("Amount and fee rate must be bigger than 0");
+  } else if (!isValidBitcoinAddress(changeAddress, network)) {
+    throw new Error("Invalid BTC change address");
+  }
+  
+  // Derive the output address and amount from the previous staking transaction
+  // scripts. This helps us locate the specific output in the previous
+  // transaction
+  const previousStakingOutputInfo = deriveStakingOutputInfo(
+    previousStakingTxInfo.scripts, network
+  );
+  
+  // Find the output index of the previous staking transaction in the
+  // transaction outputs. This method will throw an error if the output
+  // is not found.
+  const previousStakingOutputIndex = findMatchingTxOutputIndex(
+    previousStakingTxInfo.stakingTx,
+    previousStakingOutputInfo.outputAddress,
+    network
+  );
+  
+  // Extract the actual staking amount from the previous transaction output
+  const previousStakingAmount = previousStakingTxInfo.stakingTx.outs[
+    previousStakingOutputIndex
+  ].value;
+  
+  // Validate that the expansion amount matches the previous staking amount
+  // According to Babylon protocol, expansion amount must be >= previous amount
+  // Currently, this library only supports equal amounts (no stake increase)
+  if (amount !== previousStakingAmount) {
+    throw new Error(
+      "Expansion staking transaction amount must be equal to the previous "
+      + "staking amount. Increase of the staking amount is not supported yet.",
+    );
+  }
+
+  // Build the staking outputs for the expansion transaction
+  // These outputs will contain the new scripts with expanded timelock or FPs
+  const stakingOutputs = buildStakingTransactionOutputs(
+    scripts, network, amount,
+  );
+
+  // Select a single funding UTXO and calculate the required fee
+  // The funding UTXO will be used as the second input to cover transaction fees
+  const { selectedUTXO, fee } = getStakingExpansionTxFundingUTXOAndFees(
+    inputUTXOs,
+    feeRate,
+    stakingOutputs,
+  );
+
+  // Initialize the transaction with the standard version
+  const tx = new Transaction();
+  tx.version = TRANSACTION_VERSION;
+  
+  // Add the first input: previous staking transaction output
+  // This is the existing stake that we're expanding
+  tx.addInput(
+    previousStakingTxInfo.stakingTx.getHash(),
+    previousStakingOutputIndex,
+    NON_RBF_SEQUENCE,
+  );
+  
+  // Add the second input: selected funding UTXO
+  // This provides the funds to cover transaction fees
+  tx.addInput(
+    transactionIdToHash(selectedUTXO.txid),
+    selectedUTXO.vout,
+    NON_RBF_SEQUENCE,
+  );
+
+  // Add all staking outputs to the transaction
+  // These represent the expanded stake with new finality provider coverage
+  stakingOutputs.forEach((o) => {
+    tx.addOutput(o.scriptPubKey, o.value);
+  });
+
+  // Add a change output if there are remaining funds from the funding UTXO
+  // Only create change if the remaining amount is above the dust threshold
+  if (selectedUTXO.value - fee > BTC_DUST_SAT) {
+    tx.addOutput(
+      address.toOutputScript(changeAddress, network),
+      selectedUTXO.value - fee,
+    );
+  }
+
+  return {
+    transaction: tx,
+    fee,
+    fundingUTXO: selectedUTXO,
   };
 }
 
@@ -703,15 +852,19 @@ export const createCovenantWitness = (
       + `got: ${covenantSigs.length}`
     );
   }
-  // Verify all btcPkHex from covenantSigs exist in paramsCovenants
-  for (const sig of covenantSigs) {
+  // Filter out the signatures that are not in the params covenants
+  const filteredCovenantSigs = covenantSigs.filter((sig) => {
     const btcPkHexBuf = Buffer.from(sig.btcPkHex, "hex");
-    if (!paramsCovenants.some(covenant => covenant.equals(btcPkHexBuf))) {
-      throw new Error(
-        `Covenant signature public key ${sig.btcPkHex} not found in params covenants`
-      );
-    }
+    return paramsCovenants.some(covenant => covenant.equals(btcPkHexBuf));
+  });
+
+  if (filteredCovenantSigs.length < covenantQuorum) {
+    throw new Error(
+      `Not enough valid covenant signatures. Required: ${covenantQuorum}, `
+      + `got: ${filteredCovenantSigs.length}`
+    );
   }
+
   // We only take exactly covenantQuorum number of signatures, even if more are provided.
   // Including extra signatures will cause the unbonding transaction to fail validation.
   // This is because the witness script expects exactly covenantQuorum number of signatures

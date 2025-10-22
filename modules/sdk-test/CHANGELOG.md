@@ -3,6 +3,49 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [9.1.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-test@9.1.6...@bitgo/sdk-test@9.1.7) (2025-10-21)
+
+**Note:** Version bump only for package @bitgo/sdk-test
+
+
+
+
+
+## [9.1.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-test@9.1.5...@bitgo/sdk-test@9.1.6) (2025-10-16)
+
+**Note:** Version bump only for package @bitgo/sdk-test
+
+
+
+
+
+## [9.1.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-test@9.1.4...@bitgo/sdk-test@9.1.5) (2025-10-13)
+
+**Note:** Version bump only for package @bitgo/sdk-test
+
+
+
+
+
+## [9.1.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-test@9.1.3...@bitgo/sdk-test@9.1.4) (2025-10-09)
+
+
+### Bug Fixes
+
+* run check-fmt on code files only ([9745196](https://github.com/BitGo/BitGoJS/commit/9745196b02b9678c740d290a4638ceb153a8fd75))
+
+
+
+
+
+## [9.1.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-test@9.1.2...@bitgo/sdk-test@9.1.3) (2025-10-08)
+
+**Note:** Version bump only for package @bitgo/sdk-test
+
+
+
+
+
 ## [9.1.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-test@9.1.1...@bitgo/sdk-test@9.1.2) (2025-10-02)
 
 **Note:** Version bump only for package @bitgo/sdk-test

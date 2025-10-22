@@ -1,13 +1,13 @@
 {
   "name": "@bitgo/sdk-coin-eos",
-  "version": "3.5.2",
+  "version": "3.5.7",
   "description": "BitGo SDK coin library for Eos",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "scripts": {
     "build": "yarn tsc --build --incremental --verbose .",
     "fmt": "prettier --write .",
-    "check-fmt": "prettier --check .",
+    "check-fmt": "prettier --check '**/*.{ts,js,json}'",
     "clean": "rm -r ./dist",
     "lint": "eslint --quiet .",
     "prepare": "npm run build",
@@ -40,9 +40,9 @@
     ]
   },
   "dependencies": {
-    "@bitgo/sdk-core": "^36.10.1",
-    "@bitgo/secp256k1": "^1.5.0",
-    "@bitgo/statics": "^58.2.0",
+    "@bitgo/sdk-core": "^36.15.0",
+    "@bitgo/secp256k1": "^1.6.0",
+    "@bitgo/statics": "^58.7.0",
     "bignumber.js": "^9.0.2",
     "eosjs": "^21.0.2",
     "eosjs-ecc": "^4.0.4",
@@ -50,8 +50,8 @@
     "superagent": "^9.0.1"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.69.2",
-    "@bitgo/sdk-test": "^9.1.2",
+    "@bitgo/sdk-api": "^1.70.4",
+    "@bitgo/sdk-test": "^9.1.7",
     "@types/lodash": "^4.14.121"
   },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c",

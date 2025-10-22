@@ -47,6 +47,30 @@ export interface SolInstruction {
   data: string;
 }
 
+export interface SolVersionedInstruction {
+  programIdIndex: number;
+  accountKeyIndexes: number[];
+  data: string;
+}
+
+export interface SolAddressLookupTable {
+  accountKey: string;
+  writableIndexes: number[];
+  readonlyIndexes: number[];
+}
+
+export interface SolVersionedTransactionData {
+  versionedInstructions: SolVersionedInstruction[];
+  addressLookupTables: SolAddressLookupTable[];
+  staticAccountKeys: string[];
+  messageHeader: {
+    numRequiredSignatures: number;
+    numReadonlySignedAccounts: number;
+    numReadonlyUnsignedAccounts: number;
+  };
+  recentBlockhash?: string;
+}
+
 export interface aptosCustomTransactionParams {
   moduleName: string;
   functionName: string;
@@ -229,6 +253,11 @@ export interface PrebuildTransactionWithIntentOptions extends IntentOptionsBase 
    */
   solInstructions?: SolInstruction[];
   /**
+   * Deconstructed Versioned Transaction data for Solana customTx intent type.
+   * Contains compiled instructions, Address Lookup Tables, and static account keys.
+   */
+  solVersionedTransactionData?: SolVersionedTransactionData;
+  /**
    * Custom transaction parameters for Aptos entry function calls.
    * Used with the customTx intent type for Aptos smart contract interactions.
    */
@@ -298,6 +327,11 @@ export interface PopulatedIntent extends PopulatedIntentBase {
    * Each instruction should contain programId, keys, and data fields.
    */
   solInstructions?: SolInstruction[];
+  /**
+   * Deconstructed Versioned Transaction data for Solana customTx intent type.
+   * Contains compiled instructions, Address Lookup Tables, and static account keys.
+   */
+  solVersionedTransactionData?: SolVersionedTransactionData;
   /**
    * Custom Aptos transaction for use with the customTx intent type.
    */

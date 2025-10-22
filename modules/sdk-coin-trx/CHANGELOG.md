@@ -3,6 +3,60 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.7.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@3.7.3...@bitgo/sdk-coin-trx@3.7.4) (2025-10-21)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-trx
+
+
+
+
+
+## [3.7.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@3.7.2...@bitgo/sdk-coin-trx@3.7.3) (2025-10-16)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-trx
+
+
+
+
+
+## [3.7.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@3.7.1...@bitgo/sdk-coin-trx@3.7.2) (2025-10-13)
+
+
+### Bug Fixes
+
+* **sdk-coin-trx:** fix incorrect decode logic for resource type ([45c3a08](https://github.com/BitGo/BitGoJS/commit/45c3a0848c7141cd713ec0102dc1d18c95b4bb44))
+
+
+
+
+
+## [3.7.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@3.7.0...@bitgo/sdk-coin-trx@3.7.1) (2025-10-09)
+
+
+### Bug Fixes
+
+* run check-fmt on code files only ([9745196](https://github.com/BitGo/BitGoJS/commit/9745196b02b9678c740d290a4638ceb153a8fd75))
+
+
+
+
+
+# [3.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@3.6.2...@bitgo/sdk-coin-trx@3.7.0) (2025-10-08)
+
+
+### Bug Fixes
+
+* add explicit 'files' in package json ([3b00373](https://github.com/BitGo/BitGoJS/commit/3b0037396f6ac16bb9380bd85bf37f2b133068f4))
+
+
+### Features
+
+* **sdk-coin-trx:** added the validation for verifyTxn for trx ([b5faa7c](https://github.com/BitGo/BitGoJS/commit/b5faa7cd4d254abcd9840146b3c8186dd842711b))
+
+
+
+
+
 ## [3.6.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@3.6.1...@bitgo/sdk-coin-trx@3.6.2) (2025-10-02)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-trx

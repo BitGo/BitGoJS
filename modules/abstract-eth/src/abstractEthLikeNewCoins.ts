@@ -67,6 +67,7 @@ import { AbstractEthLikeCoin } from './abstractEthLikeCoin';
 import { EthLikeToken } from './ethLikeToken';
 import {
   calculateForwarderV1Address,
+  decodeTransferData,
   ERC1155TransferBuilder,
   ERC721TransferBuilder,
   getBufferedByteCode,
@@ -1570,6 +1571,30 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     };
   }
 
+  /**
+   * Extract recipients from transaction hex
+   * @param txHex - The transaction hex string
+   * @returns Array of recipients with address and amount
+   */
+  private async extractRecipientsFromTxHex(txHex: string): Promise<Array<{ address: string; amount: string }>> {
+    const txBuffer = optionalDeps.ethUtil.toBuffer(txHex);
+    const decodedTx = optionalDeps.EthTx.TransactionFactory.fromSerializedData(txBuffer);
+    const recipients: Array<{ address: string; amount: string }> = [];
+
+    if (decodedTx.data && decodedTx.data.length > 0) {
+      const dataHex = optionalDeps.ethUtil.bufferToHex(decodedTx.data);
+      const transferData = decodeTransferData(dataHex);
+      if (transferData.to) {
+        recipients.push({
+          address: transferData.to,
+          amount: transferData.amount,
+        });
+      }
+    }
+
+    return recipients;
+  }
+
   async sendCrossChainRecoveryTransaction(
     params: SendCrossChainRecoveryOptions
   ): Promise<{ coin: string; txHex?: string; txid: string }> {
@@ -1617,15 +1642,22 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     };
   }
 
-  async buildCrossChainRecoveryTransaction(
-    recoveryId: string
-  ): Promise<{ coin: string; txHex: string; txid: string; walletVersion?: number }> {
+  async buildCrossChainRecoveryTransaction(recoveryId: string): Promise<{
+    coin: string;
+    txHex: string;
+    txid: string;
+    walletVersion?: number;
+    recipients: Array<{ address: string; amount: string }>;
+  }> {
     const res = await this.bitgo.get(this.bitgo.microservicesUrl(`/api/recovery/v1/crosschain/${recoveryId}/buildtx`));
+    // Extract recipients from the transaction hex
+    const recipients = await this.extractRecipientsFromTxHex(res.body.txHex);
     return {
       coin: res.body.coin,
       txHex: res.body.txHex,
       txid: res.body.txid,
       walletVersion: res.body.walletVersion,
+      recipients,
     };
   }
 

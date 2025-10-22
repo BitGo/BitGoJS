@@ -1402,6 +1402,11 @@ class Creditcoin extends Mainnet implements EthereumNetwork {
   accountExplorerUrl = 'https://creditcoin.blockscout.com/address/';
   chainId = 102030;
   nativeCoinOperationHashPrefix = '102030';
+  forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
+  forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
+  walletFactoryAddress = '0x809ee567e413543af1caebcdb247f6a67eafc8dd';
+  walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class Plasma extends Mainnet implements EthereumNetwork {
@@ -1443,6 +1448,11 @@ class HypeEVM extends Mainnet implements EthereumNetwork {
   accountExplorerUrl = 'https://hyperevm-explorer.vercel.app/address/';
   chainId = 999;
   nativeCoinOperationHashPrefix = '999';
+  forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
+  forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
+  walletFactoryAddress = '0x809ee567e413543af1caebcdb247f6a67eafc8dd';
+  walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
 }
 
 class KavaEVMTestnet extends Testnet implements EthereumNetwork {
@@ -1578,8 +1588,8 @@ class OgTestnet extends Testnet implements EthereumNetwork {
   family = CoinFamily.OG;
   explorerUrl = 'https://chainscan-galileo.0g.ai/tx/';
   accountExplorerUrl = 'https://chainscan-galileo.0g.ai/address/';
-  chainId = 16601;
-  nativeCoinOperationHashPrefix = '16601';
+  chainId = 16602;
+  nativeCoinOperationHashPrefix = '16602';
 }
 
 class Xdc extends Mainnet implements EthereumNetwork {
@@ -1958,7 +1968,7 @@ class FlowTestnet extends Testnet implements EthereumNetwork {
 class MegaETH extends Mainnet implements EthereumNetwork {
   name = 'MegaETH';
   family = CoinFamily.MEGAETH;
-  explorerUrl = 'https://www.megaexplorer.xyz/tx';
+  explorerUrl = 'https://www.megaexplorer.xyz/tx/';
   accountExplorerUrl = 'https://www.megaexplorer.xyz/address/';
   chainId = 6342;
   nativeCoinOperationHashPrefix = '6342';
@@ -1967,7 +1977,7 @@ class MegaETH extends Mainnet implements EthereumNetwork {
 class MegaETHTestnet extends Testnet implements EthereumNetwork {
   name = 'MegaETHTestnet';
   family = CoinFamily.MEGAETH;
-  explorerUrl = 'https://www.megaexplorer.xyz/tx';
+  explorerUrl = 'https://www.megaexplorer.xyz/tx/';
   accountExplorerUrl = 'https://www.megaexplorer.xyz/address/';
   chainId = 6342;
   nativeCoinOperationHashPrefix = '6342';
