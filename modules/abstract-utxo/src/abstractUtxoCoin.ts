@@ -22,6 +22,7 @@ import {
   IWallet,
   KeychainsTriplet,
   KeyIndices,
+  MismatchedRecipient,
   MultisigType,
   multisigTypes,
   P2shP2wshUnsupportedError,
@@ -39,6 +40,7 @@ import {
   TransactionParams as BaseTransactionParams,
   TransactionPrebuild as BaseTransactionPrebuild,
   Triple,
+  TxIntentMismatchRecipientError,
   UnexpectedAddressError,
   UnsupportedAddressTypeError,
   VerificationOptions,
@@ -72,6 +74,11 @@ import {
   parseTransaction,
   verifyTransaction,
 } from './transaction';
+import {
+  AggregateValidationError,
+  ErrorMissingOutputs,
+  ErrorImplicitExternalOutputs,
+} from './transaction/descriptor/verifyTransaction';
 import { assertDescriptorWalletAddress, getDescriptorMapFromWallet, isDescriptorWallet } from './descriptor';
 import { getChainFromNetwork, getFamilyFromNetwork, getFullNameFromNetwork } from './names';
 import { CustomChangeOptions } from './transaction/fixedScript';
@@ -112,6 +119,52 @@ type UtxoCustomSigningFunction<TNumber extends number | bigint> = {
 const { getExternalChainCode, isChainCode, scriptTypeForChain, outputScripts } = bitgo;
 
 type Unspent<TNumber extends number | bigint = number> = bitgo.Unspent<TNumber>;
+
+/**
+ * Convert ValidationError to TxIntentMismatchRecipientError with structured data
+ *
+ * This preserves the structured error information from the original ValidationError
+ * by extracting the mismatched outputs and converting them to the standardized format.
+ * The original error is preserved as the `cause` for debugging purposes.
+ */
+function convertValidationErrorToTxIntentMismatch(
+  error: AggregateValidationError,
+  reqId: string | IRequestTracer | undefined,
+  txParams: BaseTransactionParams,
+  txHex: string | undefined
+): TxIntentMismatchRecipientError {
+  const mismatchedRecipients: MismatchedRecipient[] = [];
+
+  for (const err of error.errors) {
+    if (err instanceof ErrorMissingOutputs) {
+      mismatchedRecipients.push(
+        ...err.missingOutputs.map((output) => ({
+          address: output.address,
+          amount: output.amount.toString(),
+        }))
+      );
+    } else if (err instanceof ErrorImplicitExternalOutputs) {
+      mismatchedRecipients.push(
+        ...err.implicitExternalOutputs.map((output) => ({
+          address: output.address,
+          amount: output.amount.toString(),
+        }))
+      );
+    }
+  }
+
+  const txIntentError = new TxIntentMismatchRecipientError(
+    error.message,
+    reqId,
+    [txParams],
+    txHex,
+    mismatchedRecipients
+  );
+  // Preserve the original structured error as the cause for debugging
+  // See: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/cause
+  (txIntentError as Error & { cause?: Error }).cause = error;
+  return txIntentError;
+}
 
 export type DecodedTransaction<TNumber extends number | bigint> =
   | utxolib.bitgo.UtxoTransaction<TNumber>
@@ -631,13 +684,21 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @param params.verification.disableNetworking Disallow fetching any data from the internet for verification purposes
    * @param params.verification.keychains Pass keychains manually rather than fetching them by id
    * @param params.verification.addresses Address details to pass in for out-of-band verification
-   * @returns {boolean}
+   * @returns {boolean} True if verification passes
    * @throws {TxIntentMismatchError} if transaction validation fails
+   * @throws {TxIntentMismatchRecipientError} if transaction recipients don't match user intent
    */
   async verifyTransaction<TNumber extends number | bigint = number>(
     params: VerifyTransactionOptions<TNumber>
   ): Promise<boolean> {
-    return verifyTransaction(this, this.bitgo, params);
+    try {
+      return await verifyTransaction(this, this.bitgo, params);
+    } catch (error) {
+      if (error instanceof AggregateValidationError) {
+        throw convertValidationErrorToTxIntentMismatch(error, params.reqId, params.txParams, params.txPrebuild.txHex);
+      }
+      throw error;
+    }
   }
 
   /**
