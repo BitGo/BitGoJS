@@ -64,3 +64,20 @@ export interface OneStepEnablementRequest {
   actAs: string[];
   readAs: string[];
 }
+
+export interface OnboardingTransaction {
+  transaction: string;
+}
+
+export interface MultiHashSignature {
+  format: string;
+  signature: string;
+  signedBy: string;
+  signingAlgorithmSpec: string;
+}
+
+export interface WalletInitBroadcastData {
+  preparedParty: PreparedParty;
+  onboardingTransactions: OnboardingTransaction[];
+  multiHashSignatures: MultiHashSignature[];
+}

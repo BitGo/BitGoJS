@@ -202,6 +202,7 @@ export interface PrebuildTransactionOptions {
       numReadonlySignedAccounts: number;
       numReadonlyUnsignedAccounts: number;
     };
+    recentBlockhash?: string;
   };
   /**
    * Custom transaction parameters for Aptos entry function calls.

@@ -520,9 +520,9 @@ export class BitGoAPI implements BitGoBase {
    * @param timestamp request timestamp from `Date.now()`
    * @param statusCode Only set for HTTP responses, leave blank for requests
    * @param method request method
-   * @returns {string}
+   * @returns {string | Buffer}
    */
-  calculateHMACSubject(params: CalculateHmacSubjectOptions): string {
+  calculateHMACSubject<T extends string | Buffer = string>(params: CalculateHmacSubjectOptions<T>): T {
     return sdkHmac.calculateHMACSubject({ ...params, authVersion: this._authVersion });
   }
 

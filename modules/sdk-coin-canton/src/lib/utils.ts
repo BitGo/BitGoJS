@@ -12,7 +12,10 @@ import { RecordField } from './resourcesInterface';
 export class Utils implements BaseUtils {
   /** @inheritdoc */
   isValidAddress(address: string): boolean {
-    throw new Error('Method not implemented.');
+    if (!address || address.trim() === '') return false;
+    const [partyHint, fingerprint] = address.trim().split('::');
+    if (!partyHint || !fingerprint) return false;
+    return partyHint.length === 5 && this.isValidCantonHex(fingerprint);
   }
 
   /** @inheritdoc */
@@ -38,6 +41,16 @@ export class Utils implements BaseUtils {
   /** @inheritdoc */
   isValidTransactionId(txId: string): boolean {
     throw new Error('Method not implemented.');
+  }
+
+  /**
+   * Method to validate the input is a valid canton hex string
+   * @param {String} value the hex string value
+   * @returns {Boolean} true if valid
+   */
+  isValidCantonHex(value: string): boolean {
+    const regex = /^[a-fA-F0-9]{68}$/;
+    return regex.test(value);
   }
 
   /**

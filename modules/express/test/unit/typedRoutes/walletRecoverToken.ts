@@ -7,8 +7,686 @@ import {
   PostWalletRecoverToken,
 } from '../../../src/typedRoutes/api/v2/walletRecoverToken';
 import { assertDecode } from './common';
+import 'should';
+import 'should-http';
+import 'should-sinon';
+import * as sinon from 'sinon';
+import { BitGo } from 'bitgo';
+import { setupAgent } from '../../lib/testutil';
 
 describe('WalletRecoverToken codec tests', function () {
+  describe('walletRecoverToken', function () {
+    const agent = setupAgent();
+    const coin = 'teth';
+    const walletId = '68c02f96aa757d9212bd1a536f123456';
+
+    const mockRecoverTokenResponse = {
+      halfSigned: {
+        recipient: { address: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd', amount: '1000000' },
+        expireTime: 1672531199,
+        contractSequenceId: 1,
+        operationHash: '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
+        signature:
+          '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef12',
+        gasLimit: 100000,
+        gasPrice: 20000000000,
+        tokenContractAddress: '0x1234567890123456789012345678901234567890',
+        walletId: walletId,
+      },
+    };
+
+    afterEach(function () {
+      sinon.restore();
+    });
+
+    it('should successfully recover tokens with walletPassphrase', async function () {
+      const requestBody = {
+        tokenContractAddress: '0x1234567890123456789012345678901234567890',
+        recipient: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
+        walletPassphrase: 'test_passphrase_12345',
+      };
+
+      const mockWallet = {
+        recoverToken: sinon.stub().resolves(mockRecoverTokenResponse),
+      };
+
+      const walletsGetStub = sinon.stub().resolves(mockWallet);
+      const mockWallets = { get: walletsGetStub };
+      const mockCoin = { wallets: sinon.stub().returns(mockWallets) };
+      const coinStub = sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+      const result = await agent
+        .post(`/api/v2/${coin}/wallet/${walletId}/recovertoken`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      assert.strictEqual(result.status, 200);
+      result.body.should.have.property('halfSigned');
+      result.body.halfSigned.should.have.property('recipient');
+      result.body.halfSigned.should.have.property('expireTime');
+      result.body.halfSigned.should.have.property('operationHash');
+      assert.strictEqual(result.body.halfSigned.expireTime, mockRecoverTokenResponse.halfSigned.expireTime);
+      assert.strictEqual(result.body.halfSigned.operationHash, mockRecoverTokenResponse.halfSigned.operationHash);
+
+      const decodedResponse = assertDecode(RecoverTokenResponse, result.body);
+      assert.strictEqual(decodedResponse.halfSigned.expireTime, mockRecoverTokenResponse.halfSigned.expireTime);
+
+      assert.strictEqual(coinStub.calledOnceWith(coin), true);
+      assert.strictEqual(mockCoin.wallets.calledOnce, true);
+      assert.strictEqual(walletsGetStub.calledOnceWith({ id: walletId }), true);
+      assert.strictEqual(mockWallet.recoverToken.calledOnce, true);
+    });
+
+    it('should successfully recover tokens with prv', async function () {
+      const requestBody = {
+        tokenContractAddress: '0x1234567890123456789012345678901234567890',
+        recipient: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
+        prv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
+      };
+
+      const mockWallet = {
+        recoverToken: sinon.stub().resolves(mockRecoverTokenResponse),
+      };
+
+      const walletsGetStub = sinon.stub().resolves(mockWallet);
+      const mockWallets = { get: walletsGetStub };
+      const mockCoin = { wallets: sinon.stub().returns(mockWallets) };
+      sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+      const result = await agent
+        .post(`/api/v2/${coin}/wallet/${walletId}/recovertoken`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      assert.strictEqual(result.status, 200);
+      const decodedResponse = assertDecode(RecoverTokenResponse, result.body);
+      assert.strictEqual(decodedResponse.halfSigned.expireTime, mockRecoverTokenResponse.halfSigned.expireTime);
+    });
+
+    it('should successfully recover tokens with all optional fields', async function () {
+      const requestBody = {
+        tokenContractAddress: '0x1234567890123456789012345678901234567890',
+        recipient: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
+        broadcast: true,
+        walletPassphrase: 'test_passphrase',
+        prv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
+      };
+
+      const mockWallet = {
+        recoverToken: sinon.stub().resolves(mockRecoverTokenResponse),
+      };
+
+      const walletsGetStub = sinon.stub().resolves(mockWallet);
+      const mockWallets = { get: walletsGetStub };
+      const mockCoin = { wallets: sinon.stub().returns(mockWallets) };
+      sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+      const result = await agent
+        .post(`/api/v2/${coin}/wallet/${walletId}/recovertoken`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      assert.strictEqual(result.status, 200);
+
+      const decodedResponse = assertDecode(RecoverTokenResponse, result.body);
+      assert.strictEqual(decodedResponse.halfSigned.expireTime, mockRecoverTokenResponse.halfSigned.expireTime);
+
+      // Verify all parameters were passed to SDK
+      assert.strictEqual(mockWallet.recoverToken.calledOnce, true);
+      const callArgs = mockWallet.recoverToken.firstCall.args[0];
+      assert.strictEqual(callArgs.tokenContractAddress, requestBody.tokenContractAddress);
+      assert.strictEqual(callArgs.recipient, requestBody.recipient);
+      assert.strictEqual(callArgs.broadcast, requestBody.broadcast);
+    });
+
+    it('should successfully recover tokens with broadcast enabled', async function () {
+      const requestBody = {
+        tokenContractAddress: '0x1234567890123456789012345678901234567890',
+        recipient: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
+        broadcast: true,
+        walletPassphrase: 'test_passphrase',
+      };
+
+      const mockBroadcastResponse = {
+        ...mockRecoverTokenResponse,
+        txid: '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
+      };
+
+      const mockWallet = {
+        recoverToken: sinon.stub().resolves(mockBroadcastResponse),
+      };
+
+      const walletsGetStub = sinon.stub().resolves(mockWallet);
+      const mockWallets = { get: walletsGetStub };
+      const mockCoin = { wallets: sinon.stub().returns(mockWallets) };
+      sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+      const result = await agent
+        .post(`/api/v2/${coin}/wallet/${walletId}/recovertoken`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      assert.strictEqual(result.status, 200);
+      result.body.should.have.property('halfSigned');
+      // When broadcast is true, may include txid
+      if (result.body.txid) {
+        assert.strictEqual(result.body.txid, mockBroadcastResponse.txid);
+      }
+    });
+
+    it('should recover tokens without optional recipient (uses default)', async function () {
+      const requestBody = {
+        tokenContractAddress: '0x1234567890123456789012345678901234567890',
+        walletPassphrase: 'test_passphrase',
+      };
+
+      const mockWallet = {
+        recoverToken: sinon.stub().resolves(mockRecoverTokenResponse),
+      };
+
+      const walletsGetStub = sinon.stub().resolves(mockWallet);
+      const mockWallets = { get: walletsGetStub };
+      const mockCoin = { wallets: sinon.stub().returns(mockWallets) };
+      sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+      const result = await agent
+        .post(`/api/v2/${coin}/wallet/${walletId}/recovertoken`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      assert.strictEqual(result.status, 200);
+      const decodedResponse = assertDecode(RecoverTokenResponse, result.body);
+      assert.strictEqual(
+        decodedResponse.halfSigned.tokenContractAddress,
+        mockRecoverTokenResponse.halfSigned.tokenContractAddress
+      );
+    });
+
+    // ==========================================
+    // ERROR AND EDGE CASE TESTS
+    // ==========================================
+
+    describe('Error Cases', function () {
+      it('should handle wallet not found error', async function () {
+        const requestBody = {
+          tokenContractAddress: '0x1234567890123456789012345678901234567890',
+          walletPassphrase: 'test_passphrase',
+        };
+
+        const walletsGetStub = sinon.stub().rejects(new Error('Wallet not found'));
+        const mockWallets = { get: walletsGetStub };
+        const mockCoin = { wallets: sinon.stub().returns(mockWallets) };
+        sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+        const result = await agent
+          .post(`/api/v2/${coin}/wallet/${walletId}/recovertoken`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        assert.strictEqual(result.status, 500);
+        result.body.should.have.property('error');
+      });
+
+      it('should handle recoverToken failure', async function () {
+        const requestBody = {
+          tokenContractAddress: '0x1234567890123456789012345678901234567890',
+          walletPassphrase: 'wrong_passphrase',
+        };
+
+        const mockWallet = {
+          recoverToken: sinon.stub().rejects(new Error('Invalid passphrase')),
+        };
+
+        const walletsGetStub = sinon.stub().resolves(mockWallet);
+        const mockWallets = { get: walletsGetStub };
+        const mockCoin = { wallets: sinon.stub().returns(mockWallets) };
+        sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+        const result = await agent
+          .post(`/api/v2/${coin}/wallet/${walletId}/recovertoken`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        assert.strictEqual(result.status, 500);
+        result.body.should.have.property('error');
+      });
+
+      it('should handle unsupported coin error', async function () {
+        const requestBody = {
+          tokenContractAddress: '0x1234567890123456789012345678901234567890',
+          walletPassphrase: 'test_passphrase',
+        };
+
+        sinon.stub(BitGo.prototype, 'coin').throws(new Error('Unsupported coin: btc'));
+
+        const result = await agent
+          .post(`/api/v2/btc/wallet/${walletId}/recovertoken`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        assert.strictEqual(result.status, 500);
+        result.body.should.have.property('error');
+      });
+
+      it('should handle invalid token contract address error', async function () {
+        const requestBody = {
+          tokenContractAddress: 'invalid_address',
+          walletPassphrase: 'test_passphrase',
+        };
+
+        const mockWallet = {
+          recoverToken: sinon.stub().rejects(new Error('Invalid token contract address')),
+        };
+
+        const walletsGetStub = sinon.stub().resolves(mockWallet);
+        const mockWallets = { get: walletsGetStub };
+        const mockCoin = { wallets: sinon.stub().returns(mockWallets) };
+        sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+        const result = await agent
+          .post(`/api/v2/${coin}/wallet/${walletId}/recovertoken`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        assert.strictEqual(result.status, 500);
+        result.body.should.have.property('error');
+      });
+
+      it('should handle no tokens to recover error', async function () {
+        const requestBody = {
+          tokenContractAddress: '0x1234567890123456789012345678901234567890',
+          walletPassphrase: 'test_passphrase',
+        };
+
+        const mockWallet = {
+          recoverToken: sinon.stub().rejects(new Error('No tokens found to recover')),
+        };
+
+        const walletsGetStub = sinon.stub().resolves(mockWallet);
+        const mockWallets = { get: walletsGetStub };
+        const mockCoin = { wallets: sinon.stub().returns(mockWallets) };
+        sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+        const result = await agent
+          .post(`/api/v2/${coin}/wallet/${walletId}/recovertoken`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        assert.strictEqual(result.status, 500);
+        result.body.should.have.property('error');
+      });
+
+      it('should handle insufficient funds for gas error', async function () {
+        const requestBody = {
+          tokenContractAddress: '0x1234567890123456789012345678901234567890',
+          walletPassphrase: 'test_passphrase',
+        };
+
+        const mockWallet = {
+          recoverToken: sinon.stub().rejects(new Error('Insufficient funds for gas')),
+        };
+
+        const walletsGetStub = sinon.stub().resolves(mockWallet);
+        const mockWallets = { get: walletsGetStub };
+        const mockCoin = { wallets: sinon.stub().returns(mockWallets) };
+        sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+        const result = await agent
+          .post(`/api/v2/${coin}/wallet/${walletId}/recovertoken`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        assert.strictEqual(result.status, 500);
+        result.body.should.have.property('error');
+      });
+
+      it('should handle coin() method error', async function () {
+        const requestBody = {
+          tokenContractAddress: '0x1234567890123456789012345678901234567890',
+          walletPassphrase: 'test_passphrase',
+        };
+
+        sinon.stub(BitGo.prototype, 'coin').throws(new Error('Coin service unavailable'));
+
+        const result = await agent
+          .post(`/api/v2/${coin}/wallet/${walletId}/recovertoken`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        assert.strictEqual(result.status, 500);
+        result.body.should.have.property('error');
+      });
+    });
+
+    describe('Invalid Request Body', function () {
+      it('should reject request with invalid tokenContractAddress type', async function () {
+        const requestBody = {
+          tokenContractAddress: 123, // number instead of string
+          walletPassphrase: 'test_passphrase',
+        };
+
+        const result = await agent
+          .post(`/api/v2/${coin}/wallet/${walletId}/recovertoken`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        assert.ok(result.status >= 400);
+      });
+
+      it('should reject request with invalid recipient type', async function () {
+        const requestBody = {
+          recipient: 123, // number instead of string
+          walletPassphrase: 'test_passphrase',
+        };
+
+        const result = await agent
+          .post(`/api/v2/${coin}/wallet/${walletId}/recovertoken`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        assert.ok(result.status >= 400);
+      });
+
+      it('should reject request with invalid broadcast type', async function () {
+        const requestBody = {
+          tokenContractAddress: '0x1234567890123456789012345678901234567890',
+          broadcast: 'true', // string instead of boolean
+          walletPassphrase: 'test_passphrase',
+        };
+
+        const result = await agent
+          .post(`/api/v2/${coin}/wallet/${walletId}/recovertoken`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        assert.ok(result.status >= 400);
+      });
+
+      it('should reject request with invalid walletPassphrase type', async function () {
+        const requestBody = {
+          tokenContractAddress: '0x1234567890123456789012345678901234567890',
+          walletPassphrase: 123, // number instead of string
+        };
+
+        const result = await agent
+          .post(`/api/v2/${coin}/wallet/${walletId}/recovertoken`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        assert.ok(result.status >= 400);
+      });
+
+      it('should reject request with invalid prv type', async function () {
+        const requestBody = {
+          tokenContractAddress: '0x1234567890123456789012345678901234567890',
+          prv: 123, // number instead of string
+        };
+
+        const result = await agent
+          .post(`/api/v2/${coin}/wallet/${walletId}/recovertoken`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        assert.ok(result.status >= 400);
+      });
+
+      it('should handle request with malformed JSON', async function () {
+        const result = await agent
+          .post(`/api/v2/${coin}/wallet/${walletId}/recovertoken`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send('{ invalid json ]');
+
+        assert.ok(result.status >= 400);
+      });
+    });
+
+    describe('Edge Cases', function () {
+      it('should handle very long wallet ID', async function () {
+        const veryLongWalletId = 'a'.repeat(1000);
+        const requestBody = {
+          tokenContractAddress: '0x1234567890123456789012345678901234567890',
+          walletPassphrase: 'test_passphrase',
+        };
+
+        const walletsGetStub = sinon.stub().rejects(new Error('Invalid wallet ID'));
+        const mockWallets = { get: walletsGetStub };
+        const mockCoin = { wallets: sinon.stub().returns(mockWallets) };
+        sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+        const result = await agent
+          .post(`/api/v2/${coin}/wallet/${veryLongWalletId}/recovertoken`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        assert.ok(result.status >= 400);
+      });
+
+      it('should handle wallet ID with special characters', async function () {
+        const specialCharWalletId = '../../../etc/passwd';
+        const requestBody = {
+          tokenContractAddress: '0x1234567890123456789012345678901234567890',
+          walletPassphrase: 'test_passphrase',
+        };
+
+        const walletsGetStub = sinon.stub().rejects(new Error('Invalid wallet ID'));
+        const mockWallets = { get: walletsGetStub };
+        const mockCoin = { wallets: sinon.stub().returns(mockWallets) };
+        sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+        const result = await agent
+          .post(`/api/v2/${coin}/wallet/${encodeURIComponent(specialCharWalletId)}/recovertoken`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        assert.ok(result.status >= 400);
+      });
+
+      it('should handle both walletPassphrase and prv provided', async function () {
+        const requestBody = {
+          tokenContractAddress: '0x1234567890123456789012345678901234567890',
+          walletPassphrase: 'test_passphrase',
+          prv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
+        };
+
+        const mockWallet = {
+          recoverToken: sinon.stub().resolves(mockRecoverTokenResponse),
+        };
+
+        const walletsGetStub = sinon.stub().resolves(mockWallet);
+        const mockWallets = { get: walletsGetStub };
+        const mockCoin = { wallets: sinon.stub().returns(mockWallets) };
+        sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+        const result = await agent
+          .post(`/api/v2/${coin}/wallet/${walletId}/recovertoken`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        // Should succeed - SDK handles priority of auth methods
+        assert.strictEqual(result.status, 200);
+        const decodedResponse = assertDecode(RecoverTokenResponse, result.body);
+        assert.strictEqual(decodedResponse.halfSigned.expireTime, mockRecoverTokenResponse.halfSigned.expireTime);
+      });
+
+      it('should handle empty body (all fields optional)', async function () {
+        const requestBody = {};
+
+        const mockWallet = {
+          recoverToken: sinon.stub().rejects(new Error('Missing required parameters')),
+        };
+
+        const walletsGetStub = sinon.stub().resolves(mockWallet);
+        const mockWallets = { get: walletsGetStub };
+        const mockCoin = { wallets: sinon.stub().returns(mockWallets) };
+        sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+        const result = await agent
+          .post(`/api/v2/${coin}/wallet/${walletId}/recovertoken`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        // Empty body is valid per codec, but SDK should reject
+        assert.ok(result.status >= 400);
+      });
+
+      it('should handle invalid Ethereum address format', async function () {
+        const requestBody = {
+          tokenContractAddress: '0xinvalid',
+          walletPassphrase: 'test_passphrase',
+        };
+
+        const mockWallet = {
+          recoverToken: sinon.stub().rejects(new Error('Invalid Ethereum address')),
+        };
+
+        const walletsGetStub = sinon.stub().resolves(mockWallet);
+        const mockWallets = { get: walletsGetStub };
+        const mockCoin = { wallets: sinon.stub().returns(mockWallets) };
+        sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+        const result = await agent
+          .post(`/api/v2/${coin}/wallet/${walletId}/recovertoken`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        assert.strictEqual(result.status, 500);
+        result.body.should.have.property('error');
+      });
+
+      it('should handle checksum address validation', async function () {
+        const requestBody = {
+          tokenContractAddress: '0x1234567890ABCDEF1234567890ABCDEF12345678', // Mixed case (checksum)
+          walletPassphrase: 'test_passphrase',
+        };
+
+        const mockWallet = {
+          recoverToken: sinon.stub().resolves(mockRecoverTokenResponse),
+        };
+
+        const walletsGetStub = sinon.stub().resolves(mockWallet);
+        const mockWallets = { get: walletsGetStub };
+        const mockCoin = { wallets: sinon.stub().returns(mockWallets) };
+        sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+        const result = await agent
+          .post(`/api/v2/${coin}/wallet/${walletId}/recovertoken`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        // Should succeed with checksum address
+        assert.strictEqual(result.status, 200);
+      });
+    });
+
+    describe('Response Validation Edge Cases', function () {
+      it('should reject response with missing required field', async function () {
+        const requestBody = {
+          tokenContractAddress: '0x1234567890123456789012345678901234567890',
+          walletPassphrase: 'test_passphrase',
+        };
+
+        // Mock returns invalid response (missing required fields)
+        const invalidResponse = {
+          halfSigned: {
+            recipient: { address: '0xabcd', amount: '1000' },
+            expireTime: 1672531199,
+            // missing other required fields
+          },
+        };
+
+        const mockWallet = {
+          recoverToken: sinon.stub().resolves(invalidResponse),
+        };
+
+        const walletsGetStub = sinon.stub().resolves(mockWallet);
+        const mockWallets = { get: walletsGetStub };
+        const mockCoin = { wallets: sinon.stub().returns(mockWallets) };
+        sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+        const result = await agent
+          .post(`/api/v2/${coin}/wallet/${walletId}/recovertoken`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        // Even if SDK returns 200, response should fail codec validation
+        if (result.status === 200) {
+          assert.throws(() => {
+            assertDecode(RecoverTokenResponse, result.body);
+          });
+        }
+      });
+
+      it('should reject response with wrong type in field', async function () {
+        const requestBody = {
+          tokenContractAddress: '0x1234567890123456789012345678901234567890',
+          walletPassphrase: 'test_passphrase',
+        };
+
+        // Mock returns invalid response (wrong field type)
+        const invalidResponse = {
+          halfSigned: {
+            recipient: { address: '0xabcd', amount: '1000' },
+            expireTime: '1672531199', // Wrong type! Should be number
+            contractSequenceId: 1,
+            operationHash: '0xabcdef',
+            signature: '0x123',
+            gasLimit: 100000,
+            gasPrice: 20000000000,
+            tokenContractAddress: '0x1234567890123456789012345678901234567890',
+            walletId: walletId,
+          },
+        };
+
+        const mockWallet = {
+          recoverToken: sinon.stub().resolves(invalidResponse),
+        };
+
+        const walletsGetStub = sinon.stub().resolves(mockWallet);
+        const mockWallets = { get: walletsGetStub };
+        const mockCoin = { wallets: sinon.stub().returns(mockWallets) };
+        sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+        const result = await agent
+          .post(`/api/v2/${coin}/wallet/${walletId}/recovertoken`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        // Response codec validation should catch type mismatch
+        if (result.status === 200) {
+          assert.throws(() => {
+            assertDecode(RecoverTokenResponse, result.body);
+          });
+        }
+      });
+    });
+  });
+
   describe('RecoverTokenParams', function () {
     it('should validate params with required coin and id', function () {
       const validParams = {

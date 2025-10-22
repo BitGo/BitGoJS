@@ -212,7 +212,9 @@ export function constructPsbt(
     return psbt;
   }
 
-  psbt.setAllInputsMusig2NonceHD(rootWalletKeys['user']);
+  /* use fixed sessionId for deterministic nonce creation */
+  const sessionId = Buffer.alloc(32);
+  psbt.setAllInputsMusig2NonceHD(rootWalletKeys['user'], { sessionId });
   psbt.setAllInputsMusig2NonceHD(rootWalletKeys['bitgo'], { deterministic });
 
   signAllPsbtInputs(psbt, inputs, rootWalletKeys, 'halfsigned', { signers, skipNonWitnessUtxo });

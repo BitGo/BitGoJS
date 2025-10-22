@@ -59,3 +59,13 @@ export const InvalidOneStepPreApprovalPrepareResponse = {
   hashingSchemeVersion: 'HASHING_SCHEME_VERSION_V2',
   hashingDetails: null,
 };
+
+export const CANTON_ADDRESSES = {
+  VALID_ADDRESS: '12205::12205b4e3537a95126d90604592344d8ad3c3ddccda4f79901954280ee19c576714d',
+  // party hint is not 5 characters
+  INVALID_PARTY_HINT: '123456::12205b4e3537a95126d90604592344d8ad3c3ddccda4f79901954280ee19c576714d',
+  // fingerprint is not a valid hex value
+  INVALID_FINGERPRINT: '12205::12205b4e3537a95126d9060459234gd8ad3c3ddccda4f79901954280ee19c576714d',
+  MISSING_PARTY_HINT: '::12205b4e3537a95126d9060459234gd8ad3c3ddccda4f79901954280ee19c576714d',
+  MISSING_FINGERPRINT: '12205::',
+};

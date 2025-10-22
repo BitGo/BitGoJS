@@ -15,6 +15,7 @@ export interface ManagerEvents {
   "delegation:stake": (data?: EventData) => void;
   "delegation:unbond": (data?: EventData) => void;
   "delegation:withdraw": (data?: EventData) => void;
+  "delegation:expand": (data?: EventData) => void;
 }
 
 export type DelegationEvent = keyof ManagerEvents;

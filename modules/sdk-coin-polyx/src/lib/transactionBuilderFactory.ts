@@ -15,6 +15,7 @@ import { Transaction as BaseTransaction } from '@bitgo/abstract-substrate';
 import { Transaction as PolyxTransaction } from './transaction';
 import { PreApproveAssetBuilder } from './preApproveAssetBuilder';
 import { TokenTransferBuilder } from './tokenTransferBuilder';
+import { RejectInstructionBuilder } from './rejectInstructionBuilder';
 
 export type SupportedTransaction = BaseTransaction | PolyxTransaction;
 
@@ -40,6 +41,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getTokenTransferBuilder(): TokenTransferBuilder {
     return new TokenTransferBuilder(this._coinConfig).material(this._material);
+  }
+
+  getRejectInstructionBuilder(): RejectInstructionBuilder {
+    return new RejectInstructionBuilder(this._coinConfig).material(this._material);
   }
 
   getBondExtraBuilder(): BondExtraBuilder {
@@ -93,6 +98,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
       return this.getPreApproveAssetBuilder();
     } else if (methodName === MethodNames.AddAndAffirmWithMediators) {
       return this.getTokenTransferBuilder();
+    } else if (methodName === MethodNames.RejectInstruction) {
+      return this.getRejectInstructionBuilder();
     } else if (methodName === 'bondExtra') {
       return this.getBondExtraBuilder();
     } else if (methodName === 'batchAll') {

@@ -261,6 +261,7 @@ export interface VersionedTransactionData {
     numReadonlySignedAccounts: number;
     numReadonlyUnsignedAccounts: number;
   };
+  recentBlockhash?: string;
 }
 
 export interface AddressLookupTable {

@@ -37,6 +37,7 @@ describe('Sol Jupiter Swap Transaction', () => {
       addressLookupTables,
       staticAccountKeys,
       messageHeader: originalDeserialized.message.header,
+      recentBlockhash: originalDeserialized.message.recentBlockhash,
     };
 
     const factory = getBuilderFactory('tsol');
@@ -127,5 +128,110 @@ describe('Sol Jupiter Swap Transaction', () => {
         `ALT ${i}: readonlyIndexes should match`
       );
     }
+  });
+
+  it('should automatically inject nonce advance instruction when using durable nonce with versioned transactions', async function () {
+    // Simple transaction with one memo instruction
+    const versionedTransactionData = {
+      versionedInstructions: [
+        {
+          programIdIndex: 1,
+          accountKeyIndexes: [0],
+          data: base58.encode(Buffer.from('Hello Versioned Tx', 'utf-8')),
+        },
+      ],
+      addressLookupTables: [],
+      staticAccountKeys: [testData.authAccount.pub, 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr'],
+      messageHeader: {
+        numRequiredSignatures: 1,
+        numReadonlySignedAccounts: 0,
+        numReadonlyUnsignedAccounts: 0,
+      },
+    };
+
+    const durableNonceParams = {
+      walletNonceAddress: 'GHtXQBsoZHVnNFa9YevAzxNzQBz7CV5hj6bSe3u52W9n',
+      authWalletAddress: '8Y7RM6JfcX4ASSNBkrkrmScq3Z9UWV4CJBwtfSNgqTN2',
+    };
+
+    const factory = getBuilderFactory('tsol');
+    const txBuilder = factory.getCustomInstructionBuilder();
+
+    // Providing durableNonceParams triggers automatic nonce advance injection
+    txBuilder.nonce(testData.blockHashes.validBlockHashes[0], durableNonceParams);
+    txBuilder.fromVersionedTransactionData(versionedTransactionData);
+
+    const tx = (await txBuilder.build()) as Transaction;
+    const builtData = tx.getVersionedTransactionData();
+
+    should.exist(builtData);
+
+    // Nonce advance instruction should be prepended
+    builtData!.versionedInstructions.length.should.equal(2);
+    const nonceInstruction = builtData!.versionedInstructions[0];
+    nonceInstruction.accountKeyIndexes.length.should.equal(3);
+
+    // numRequiredSignatures should be updated to include nonce authority
+    const numSigners = builtData!.messageHeader.numRequiredSignatures;
+    numSigners.should.equal(2);
+
+    // Both fee payer and nonce authority should be in signer section
+    const signerKeys = builtData!.staticAccountKeys.slice(0, numSigners);
+    signerKeys.should.containEql(testData.authAccount.pub);
+    signerKeys.should.containEql(durableNonceParams.authWalletAddress);
+
+    // Fee payer must remain at index 0
+    builtData!.staticAccountKeys[0].should.equal(testData.authAccount.pub);
+
+    // Required accounts for nonce advance should be added
+    builtData!.staticAccountKeys.should.containEql(durableNonceParams.walletNonceAddress);
+    builtData!.staticAccountKeys.should.containEql('11111111111111111111111111111111');
+    builtData!.staticAccountKeys.should.containEql('SysvarRecentB1ockHashes11111111111111111111');
+
+    // Original instruction indices should be remapped after account reordering
+    const originalInstruction = builtData!.versionedInstructions[1];
+    originalInstruction.programIdIndex.should.equal(
+      builtData!.staticAccountKeys.indexOf('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr')
+    );
+    originalInstruction.accountKeyIndexes[0].should.equal(
+      builtData!.staticAccountKeys.indexOf(testData.authAccount.pub)
+    );
+  });
+
+  it('should not inject nonce advance when using recentBlockhash (no durableNonceParams)', async function () {
+    const versionedTransactionData = {
+      versionedInstructions: [
+        {
+          programIdIndex: 1,
+          accountKeyIndexes: [0],
+          data: base58.encode(Buffer.from('Hello', 'utf-8')),
+        },
+      ],
+      addressLookupTables: [],
+      staticAccountKeys: [testData.authAccount.pub, 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr'],
+      messageHeader: {
+        numRequiredSignatures: 1,
+        numReadonlySignedAccounts: 0,
+        numReadonlyUnsignedAccounts: 0,
+      },
+      recentBlockhash: testData.blockHashes.validBlockHashes[0],
+    };
+
+    const factory = getBuilderFactory('tsol');
+    const txBuilder = factory.getCustomInstructionBuilder();
+
+    // Regular nonce without durableNonceParams should not trigger injection
+    txBuilder.nonce(testData.blockHashes.validBlockHashes[0]);
+    txBuilder.fromVersionedTransactionData(versionedTransactionData);
+
+    const tx = (await txBuilder.build()) as Transaction;
+    const builtData = tx.getVersionedTransactionData();
+
+    should.exist(builtData);
+
+    // Transaction should remain unchanged
+    builtData!.versionedInstructions.length.should.equal(1);
+    builtData!.messageHeader.numRequiredSignatures.should.equal(1);
+    builtData!.staticAccountKeys.length.should.equal(2);
   });
 });
