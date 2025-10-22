@@ -17,12 +17,12 @@ export interface ClaimRewardsData {
 }
 
 export type RecoverOptions = {
-  userKey: string;
-  backupKey: string;
+  userKey?: string;
+  backupKey?: string;
   walletPassphrase?: string;
-  walletContractAddress: string; // use this as walletBaseAddress for TSS
   recoveryDestination: string;
   isUnsignedSweep?: boolean; // specify if this is an unsigned recovery
+  bitgoKey?: string;
 };
 
 export interface RecoveryTransaction {

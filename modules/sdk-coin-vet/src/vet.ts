@@ -43,6 +43,7 @@ import {
 } from './lib/types';
 import { VetTransactionExplanation } from './lib/iface';
 import { AVG_GAS_UNITS, COEF_DIVISOR, EXPIRATION, GAS_PRICE_COEF, GAS_UNIT_PRICE } from './lib/constants';
+import * as mpc from '@bitgo/sdk-lib-mpc';
 
 interface FeeEstimateData {
   gas: string;
@@ -331,7 +332,22 @@ export class Vet extends BaseCoin {
       const MPC = new Ecdsa();
 
       if (isUnsignedSweep) {
-        throw new Error('Unsigned sweep recovery is not supported for VET');
+        const bitgoKey = params.bitgoKey;
+        if (!bitgoKey) {
+          throw new Error('missing bitgoKey');
+        }
+
+        const hdTree = new mpc.Secp256k1Bip32HdTree();
+        const derivationPath = 'm/0';
+        const derivedPub = hdTree.publicDerive(
+          {
+            pk: mpc.bigIntFromBufferBE(Buffer.from(bitgoKey.slice(0, 66), 'hex')),
+            chaincode: mpc.bigIntFromBufferBE(Buffer.from(bitgoKey.slice(66), 'hex')),
+          },
+          derivationPath
+        );
+
+        publicKey = mpc.bigIntToBufferBE(derivedPub.pk).toString('hex');
       } else {
         if (!params.userKey) {
           throw new Error('missing userKey');
@@ -370,6 +386,14 @@ export class Vet extends BaseCoin {
 
       const signableHex = await tx.signablePayload;
       const serializedTxHex = await tx.toBroadcastFormat();
+
+      if (isUnsignedSweep) {
+        return {
+          txHex: serializedTxHex,
+          coin: this.getChain(),
+        };
+      }
+
       const signableMessage = this.getHashFunction().update(signableHex).digest();
 
       const signatureObj = await ECDSAUtils.signRecoveryMpcV2(

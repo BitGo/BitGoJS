@@ -416,10 +416,10 @@ module.exports.nockEthLikeRecovery = function (bitgo, nockData = nockEthData) {
   });
 };
 
-module.exports.nockVetRecovery = function (bitgo) {
+module.exports.nockVetRecovery = function (bitgo, baseAddress) {
   // nock for account balance
   const url = Environments[bitgo.getEnv()].vetNodeUrl;
-  nock(url).get('/accounts/0x88c2ab227908d39f6afdb85203dca3e937bb77af').reply(200, {
+  nock(url).get(`/accounts/${baseAddress}`).reply(200, {
     balance: '0x8ac7230489e80000',
     energy: '0x5969b539627800',
     hasCode: false,
@@ -456,7 +456,7 @@ module.exports.nockVetRecovery = function (bitgo) {
           data: '0x',
         },
       ],
-      caller: '0x88c2ab227908d39f6afdb85203dca3e937bb77af',
+      caller: `${baseAddress}`,
     })
     .reply(200, [
       {
@@ -464,7 +464,7 @@ module.exports.nockVetRecovery = function (bitgo) {
         events: [],
         transfers: [
           {
-            sender: '0x880ff4718587d678e78fc7803b3634bd12ecf019',
+            sender: `${baseAddress}`,
             recipient: '0xac05da78464520aa7c9d4c19bd7a440b111b3054',
             amount: '0x8ac7230489e80000',
           },
@@ -481,7 +481,7 @@ module.exports.nockVetRecovery = function (bitgo) {
         {
           to: '0x0000000000000000000000000000456E65726779',
           value: '0x0',
-          data: '0x70a0823100000000000000000000000088c2ab227908d39f6afdb85203dca3e937bb77af',
+          data: `0x70a08231000000000000000000000000${baseAddress.slice(2)}`,
         },
       ],
     })
