@@ -1457,4 +1457,75 @@ describe('Recovery:', function () {
       (output.txRequests[0].transactions[0].unsignedTx.parsedTx as { outputs: any[] }).should.have.property('outputs');
     });
   });
+
+  describe('RecoverVet', function () {
+    beforeEach(() => {
+      nock.cleanAll();
+    });
+    let recoveryParams;
+
+    it('should construct a recovery tx with MPCv2 TSS', async function () {
+      recoveryNocks.nockVetRecovery(bitgo);
+      const basecoin = bitgo.coin('tvet');
+      const baseAddress = ethLikeDKLSKeycard.senderAddress;
+      recoveryParams = {
+        userKey: ethLikeDKLSKeycard.userKey,
+        backupKey: ethLikeDKLSKeycard.backupKey,
+        walletContractAddress: baseAddress,
+        recoveryDestination: ethLikeDKLSKeycard.destinationAddress,
+        walletPassphrase: ethLikeDKLSKeycard.walletPassphrase,
+        isTss: true,
+      };
+
+      const recovery = await basecoin.recover(recoveryParams);
+
+      should.exist(recovery);
+      recovery.should.have.property('id');
+      recovery.should.have.property('tx');
+    });
+
+    // it('should construct an unsigned sweep tx with TSS', async function () {
+    //   recoveryNocks.nockEthLikeRecovery(bitgo, nockUnsignedSweepTSSData);
+    //
+    //   const basecoin = bitgo.coin('hteth');
+    //
+    //   const userKey =
+    //     '0234eb39b22fed523ece7c78da29ba1f1de5b64a6e48013e0914de793bc1df0570e779de04758732734d97e54b782c8b336283811af6a2c57bd81438798e1c2446';
+    //   const backupKey =
+    //     '0234eb39b22fed523ece7c78da29ba1f1de5b64a6e48013e0914de793bc1df0570e779de04758732734d97e54b782c8b336283811af6a2c57bd81438798e1c2446';
+    //
+    //   recoveryParams = {
+    //     userKey: userKey,
+    //     backupKey: backupKey,
+    //     walletContractAddress: '0xe7406dc43d13f698fb41a345c7783d39a4c2d191',
+    //     recoveryDestination: '0xac05da78464520aa7c9d4c19bd7a440b111b3054',
+    //     walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
+    //     isTss: true,
+    //     gasPrice: '20000000000',
+    //     gasLimit: '500000',
+    //     replayProtectionOptions: {
+    //       chain: 42,
+    //       hardfork: 'london',
+    //     },
+    //   };
+    //
+    //   const transaction = await basecoin.recover(recoveryParams);
+    //   should.exist(transaction);
+    //   const output = transaction as unknown as UnsignedSweepTxMPCv2;
+    //   output.should.have.property('txRequests');
+    //   output.txRequests.should.have.length(1);
+    //   output.txRequests[0].should.have.property('transactions');
+    //   output.txRequests[0].transactions.should.have.length(1);
+    //   output.txRequests[0].should.have.property('walletCoin');
+    //   output.txRequests[0].transactions[0].should.have.property('unsignedTx');
+    //   output.txRequests[0].transactions[0].unsignedTx.should.have.property('serializedTxHex');
+    //   output.txRequests[0].transactions[0].unsignedTx.should.have.property('signableHex');
+    //   output.txRequests[0].transactions[0].unsignedTx.should.have.property('derivationPath');
+    //   output.txRequests[0].transactions[0].unsignedTx.should.have.property('feeInfo');
+    //   output.txRequests[0].transactions[0].unsignedTx.should.have.property('parsedTx');
+    //   const parsedTx = output.txRequests[0].transactions[0].unsignedTx.parsedTx as { spendAmount: string };
+    //   parsedTx.should.have.property('spendAmount');
+    //   (output.txRequests[0].transactions[0].unsignedTx.parsedTx as { outputs: any[] }).should.have.property('outputs');
+    // });
+  });
 });

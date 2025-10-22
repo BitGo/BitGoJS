@@ -32,6 +32,7 @@ export class Transaction extends BaseTransaction {
   private _senderSignature: Buffer | null;
   private _feePayerAddress: string;
   private _feePayerSignature: Buffer | null;
+  private _isRecovery: boolean;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -47,6 +48,7 @@ export class Transaction extends BaseTransaction {
     this._recipients = [];
     this._senderSignature = null;
     this._feePayerSignature = null;
+    this._isRecovery = false;
   }
 
   public get id(): string {
@@ -198,6 +200,14 @@ export class Transaction extends BaseTransaction {
     this._transactionData = transactionData;
   }
 
+  get isRecovery(): boolean {
+    return this._isRecovery;
+  }
+
+  set isRecovery(isRecovery: boolean) {
+    this._isRecovery = isRecovery;
+  }
+
   /**
    * Get all signatures associated with this transaction
    * Required by BaseTransaction
@@ -337,6 +347,9 @@ export class Transaction extends BaseTransaction {
       if (halfSignedTransaction.signature) {
         this._rawTransaction = halfSignedTransaction;
         this._sender = halfSignedTransaction.origin.toString().toLowerCase();
+        if (this.isRecovery) {
+          this._id = halfSignedTransaction.id.toString();
+        }
       } else {
         return;
       }
@@ -372,7 +385,7 @@ export class Transaction extends BaseTransaction {
     };
 
     if (
-      this.type === TransactionType.Send ||
+      (this.type === TransactionType.Send && !this.isRecovery) ||
       this.type === TransactionType.SendToken ||
       this.type === TransactionType.SendNFT ||
       this.type === TransactionType.ContractCall ||

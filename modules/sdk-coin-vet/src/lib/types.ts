@@ -15,3 +15,22 @@ export interface ClaimRewardsData {
   claimBaseRewards?: boolean;
   claimStakingRewards?: boolean;
 }
+
+export type RecoverOptions = {
+  userKey: string;
+  backupKey: string;
+  walletPassphrase?: string;
+  walletContractAddress: string; // use this as walletBaseAddress for TSS
+  recoveryDestination: string;
+  isUnsignedSweep?: boolean; // specify if this is an unsigned recovery
+};
+
+export interface RecoveryTransaction {
+  id: string;
+  tx: string;
+}
+
+export interface UnsignedSweepRecoveryTransaction {
+  txHex: string;
+  coin: string;
+}

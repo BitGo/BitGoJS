@@ -1,6 +1,8 @@
 import * as _ from 'lodash';
 import BigNumber from 'bignumber.js';
 import blake2b from '@bitgo/blake2b';
+import axios from 'axios';
+import { TransactionClause, Transaction as VetTransaction } from '@vechain/sdk-core';
 import {
   AuditDecryptedKeyParams,
   BaseCoin,
@@ -20,15 +22,41 @@ import {
   VerifyAddressOptions,
   VerifyTransactionOptions,
   TokenType,
+  Ecdsa,
+  ECDSAUtils,
+  Environments,
+  BaseBroadcastTransactionOptions,
+  BaseBroadcastTransactionResult,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import utils from './lib/utils';
 import { bip32 } from '@bitgo/secp256k1';
 import { randomBytes, Hash } from 'crypto';
 import { KeyPair as EthKeyPair } from '@bitgo/abstract-eth';
-import { TransactionBuilderFactory } from './lib';
-import { ExplainTransactionOptions, VetParseTransactionOptions } from './lib/types';
+import { Transaction, TransactionBuilderFactory } from './lib';
+import {
+  ExplainTransactionOptions,
+  RecoverOptions,
+  RecoveryTransaction,
+  UnsignedSweepRecoveryTransaction,
+  VetParseTransactionOptions,
+} from './lib/types';
 import { VetTransactionExplanation } from './lib/iface';
+import { AVG_GAS_UNITS, COEF_DIVISOR, EXPIRATION, GAS_PRICE_COEF, GAS_UNIT_PRICE } from './lib/constants';
+
+interface FeeEstimateData {
+  gas: string;
+  gasUnitPrice: string;
+  gasPriceCoef: string;
+  coefDivisor: string;
+}
+
+const feeEstimateData: FeeEstimateData = {
+  gas: AVG_GAS_UNITS,
+  gasUnitPrice: GAS_UNIT_PRICE,
+  gasPriceCoef: GAS_PRICE_COEF,
+  coefDivisor: COEF_DIVISOR,
+};
 
 /**
  * Full Name: Vechain
@@ -271,5 +299,319 @@ export class Vet extends BaseCoin {
       default:
         throw new NotImplementedError(`NFT type ${params.type} not supported on ${this.getChain()}`);
     }
+  }
+
+  public async broadcastTransaction(payload: BaseBroadcastTransactionOptions): Promise<BaseBroadcastTransactionResult> {
+    const baseUrl = this.getPublicNodeUrl();
+    const url = `${baseUrl}/transactions`;
+
+    // The body should be a JSON object with a 'raw' key
+    const requestBody = {
+      raw: payload.serializedSignedTransaction,
+    };
+
+    try {
+      await axios.post(url, requestBody);
+      return {};
+    } catch (error) {
+      throw new Error(`Failed to broadcast transaction: ${error.message}`);
+    }
+  }
+
+  async recover(params: RecoverOptions): Promise<RecoveryTransaction | UnsignedSweepRecoveryTransaction> {
+    try {
+      if (!params.recoveryDestination || !this.isValidAddress(params.recoveryDestination)) {
+        throw new Error('invalid recoveryDestination');
+      }
+
+      const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
+
+      let publicKey: string | undefined;
+      let userKeyShare, backupKeyShare, commonKeyChain;
+      const MPC = new Ecdsa();
+
+      if (isUnsignedSweep) {
+        throw new Error('Unsigned sweep recovery is not supported for VET');
+      } else {
+        if (!params.userKey) {
+          throw new Error('missing userKey');
+        }
+
+        if (!params.backupKey) {
+          throw new Error('missing backupKey');
+        }
+
+        if (!params.walletPassphrase) {
+          throw new Error('missing wallet passphrase');
+        }
+
+        const userKey = params.userKey.replace(/\s/g, '');
+        const backupKey = params.backupKey.replace(/\s/g, '');
+
+        ({ userKeyShare, backupKeyShare, commonKeyChain } = await ECDSAUtils.getMpcV2RecoveryKeyShares(
+          userKey,
+          backupKey,
+          params.walletPassphrase
+        ));
+        publicKey = MPC.deriveUnhardened(commonKeyChain, 'm/0').slice(0, 66);
+      }
+
+      if (!publicKey) {
+        throw new Error('failed to derive public key');
+      }
+
+      const backupKeyPair = new EthKeyPair({ pub: publicKey });
+      const baseAddress = backupKeyPair.getAddress();
+
+      const tx = await this.buildRecoveryTransaction({
+        baseAddress,
+        params,
+      });
+
+      const signableHex = await tx.signablePayload;
+      const serializedTxHex = await tx.toBroadcastFormat();
+      const signableMessage = this.getHashFunction().update(signableHex).digest();
+
+      const signatureObj = await ECDSAUtils.signRecoveryMpcV2(
+        signableMessage,
+        userKeyShare,
+        backupKeyShare,
+        commonKeyChain
+      );
+      const signature = Buffer.from(signatureObj.r + signatureObj.s + (signatureObj.recid === 0 ? '00' : '01'), 'hex');
+      const txBuilder = this.getTxBuilderFactory().getTransferBuilder();
+      await txBuilder.from(serializedTxHex);
+      txBuilder.isRecovery(true);
+      await txBuilder.addSenderSignature(signature);
+
+      const signedTx = await txBuilder.build();
+
+      // broadcast this transaction
+      await this.broadcastTransaction({
+        serializedSignedTransaction: signedTx.toBroadcastFormat(),
+      });
+
+      return {
+        id: signedTx.id,
+        tx: signedTx.toBroadcastFormat(),
+      };
+    } catch (error) {
+      throw new Error(`Error during Vechain recovery: ${error.message || error}`);
+    }
+  }
+
+  protected getPublicNodeUrl(): string {
+    return Environments[this.bitgo.getEnv()].vetNodeUrl;
+  }
+
+  private calculateFee(feeEstimateData: FeeEstimateData, estimatedGasLimit: BigNumber): BigNumber {
+    const gasLimit = estimatedGasLimit;
+    const adjustmentFactor = new BigNumber(1).plus(
+      new BigNumber(feeEstimateData.gasPriceCoef)
+        .dividedBy(new BigNumber(feeEstimateData.coefDivisor))
+        .decimalPlaces(18, BigNumber.ROUND_DOWN)
+    );
+    const adjustedGasPrice = new BigNumber(feeEstimateData.gasUnitPrice).times(adjustmentFactor);
+    return gasLimit.times(adjustedGasPrice).integerValue(BigNumber.ROUND_CEIL);
+  }
+
+  async ensureVthoBalanceForFee(baseAddress: string, requiredGasUnits: BigNumber): Promise<void> {
+    const vthoTokenAddress = '0x0000000000000000000000000000456E65726779'; // VTHO token contract address
+    try {
+      // const vthoBalance = await agent.getBalance(baseAddress, vthoTokenAddress);
+      const vthoBalance = await this.getBalance(baseAddress, vthoTokenAddress);
+
+      const requiredFee = this.calculateFee(feeEstimateData, requiredGasUnits);
+
+      if (vthoBalance.isLessThan(requiredFee)) {
+        throw new Error(
+          `Insufficient VTHO balance for fees. Required: ${requiredFee.toString()}, Available: ${vthoBalance.toString()}`
+        );
+      }
+    } catch (error) {
+      throw new Error(`Failed to ensure VTHO balance: ${error.message}`);
+    }
+  }
+
+  /**
+   * Fetches the balance for a given Vechain address.
+   *
+   * @param address The Vechain address (e.g., "0x...") to check.
+   * @param tokenContractAddress (Optional) The contract address of a VIP180 token.
+   * @returns A Promise that resolves to a BigNumber instance of the balance.
+   */
+  async getBalance(address: string, tokenContractAddress?: string): Promise<BigNumber> {
+    const baseUrl = this.getPublicNodeUrl();
+
+    if (!tokenContractAddress) {
+      const url = `${baseUrl}/accounts/${address}`;
+
+      try {
+        const response = await axios.get(url);
+
+        // The 'balance' is returned as a hex string.
+        const balance = new BigNumber(response.data.balance);
+
+        return balance;
+      } catch (error) {
+        throw new Error('Failed to get native balance.');
+      }
+    }
+
+    // --- TODO: Implement Token Balance Fetch ---
+    const url = `${baseUrl}/accounts/*`;
+
+    // Construct the ABI-encoded data for the 'balanceOf(address)' call
+    // 1. Function selector for 'balanceOf(address)': '0x70a08231'
+    // 2. Padded address: The address, stripped of '0x', left-padded with zeros to 64 chars
+    const paddedAddress = address.startsWith('0x') ? address.substring(2).padStart(64, '0') : address.padStart(64, '0');
+    const data = `0x70a08231${paddedAddress}`;
+
+    const requestBody = {
+      clauses: [
+        {
+          to: tokenContractAddress, // The token contract address
+          value: '0x0',
+          data: data, // The 'balanceOf' call
+        },
+      ],
+    };
+
+    try {
+      const response = await axios.post(url, requestBody);
+
+      const simResponse = response.data;
+
+      // Validate response and extract the balance data
+      if (!simResponse || !Array.isArray(simResponse) || simResponse.length === 0 || !simResponse[0].data) {
+        throw new Error('Invalid simulation response from VeChain node');
+      }
+
+      // The returned data is the hex-encoded balance
+      return new BigNumber(simResponse[0].data);
+    } catch (error) {
+      console.error('Error fetching token balance:', error);
+      throw new Error(`Failed to get token balance: ${error.message}`);
+    }
+  }
+
+  public async getBlockRef(): Promise<string> {
+    const baseUrl = this.getPublicNodeUrl();
+    const url = `${baseUrl}/blocks/best`;
+
+    try {
+      const response = await axios.get(url);
+
+      const data = response.data;
+
+      // Validate the response data
+      if (!data || !data.id) {
+        throw new Error('Invalid response from the VeChain node');
+      }
+
+      // Return the first 18 characters of the block ID
+      return data.id.slice(0, 18);
+    } catch (error) {
+      // Rethrow or return a sensible default
+      throw new Error('Failed to get block ref: ');
+    }
+  }
+
+  getRandomNonce(): string {
+    return '0x' + randomBytes(8).toString('hex');
+  }
+
+  public async estimateGas(clauses: TransactionClause[], caller: string): Promise<BigNumber> {
+    if (!clauses || !Array.isArray(clauses) || clauses.length === 0) {
+      throw new Error('Clauses must be a non-empty array');
+    }
+
+    if (!caller) {
+      throw new Error('Caller address is required');
+    }
+
+    const baseUrl = this.getPublicNodeUrl();
+    const url = `${baseUrl}/accounts/*`;
+
+    // This request body structure matches your nock example
+    const requestBody = {
+      clauses: clauses,
+      caller: caller,
+    };
+
+    try {
+      const response = await axios.post(url, requestBody);
+
+      const simResponse = response.data;
+
+      if (!simResponse || !Array.isArray(simResponse)) {
+        throw new Error('Invalid simulation response from VeChain node');
+      }
+
+      // Logic as requested
+      const totalSimulatedGas = simResponse.reduce((sum, result) => sum + (result.gasUsed || 0), 0);
+
+      // Note: This assumes you have imported the 'Transaction' object/class
+      // and it has a static 'intrinsicGas' method.
+      const intrinsicGas = Number(VetTransaction.intrinsicGas(clauses).wei);
+
+      const totalGas = Math.ceil(intrinsicGas + (totalSimulatedGas !== 0 ? totalSimulatedGas + 15000 : 0));
+
+      return new BigNumber(totalGas);
+    } catch (error) {
+      // Rethrow or return a sensible default
+      throw new Error(`Failed to estimate gas: ${error.message}`);
+    }
+  }
+
+  private async buildRecoveryTransaction(buildParams: {
+    baseAddress: string;
+    params: RecoverOptions;
+  }): Promise<Transaction> {
+    const { baseAddress, params } = buildParams;
+    const balance = await this.getBalance(baseAddress);
+    //replace with get balance function
+
+    if (balance.isLessThanOrEqualTo(0)) {
+      throw new Error(`no VET balance to recover for address ${baseAddress}`);
+    }
+
+    const recipients = [
+      {
+        address: params.recoveryDestination,
+        amount: balance.toString(),
+      },
+    ];
+
+    // const blockRef = await agent.getBlockRef();
+    // replace with get block ref function
+    const blockRef = await this.getBlockRef();
+
+    const txBuilder = this.getTxBuilderFactory().getTransferBuilder();
+
+    txBuilder.chainTag(this.bitgo.getEnv() === 'prod' ? 0x4a : 0x27);
+    txBuilder.recipients(recipients);
+    txBuilder.sender(baseAddress);
+    txBuilder.addFeePayerAddress(baseAddress);
+    txBuilder.gas(Number(AVG_GAS_UNITS));
+    txBuilder.blockRef(blockRef);
+    txBuilder.expiration(EXPIRATION);
+    txBuilder.gasPriceCoef(Number(GAS_PRICE_COEF));
+    txBuilder.nonce(this.getRandomNonce());
+    txBuilder.isRecovery(true);
+
+    let tx = (await txBuilder.build()) as Transaction;
+
+    const clauses = tx.clauses;
+
+    const actualGasUnits = await this.estimateGas(clauses, baseAddress);
+
+    await this.ensureVthoBalanceForFee(baseAddress, actualGasUnits);
+
+    txBuilder.gas(actualGasUnits.toNumber());
+
+    tx = (await txBuilder.build()) as Transaction;
+
+    return tx;
   }
 }
