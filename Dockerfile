@@ -55,6 +55,7 @@ COPY --from=builder /tmp/bitgo/modules/abstract-utxo /var/modules/abstract-utxo/
 COPY --from=builder /tmp/bitgo/modules/blockapis /var/modules/blockapis/
 COPY --from=builder /tmp/bitgo/modules/sdk-api /var/modules/sdk-api/
 COPY --from=builder /tmp/bitgo/modules/sdk-hmac /var/modules/sdk-hmac/
+COPY --from=builder /tmp/bitgo/modules/utxo-ord /var/modules/utxo-ord/
 COPY --from=builder /tmp/bitgo/modules/account-lib /var/modules/account-lib/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-ada /var/modules/sdk-coin-ada/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-algo /var/modules/sdk-coin-algo/
@@ -122,7 +123,6 @@ COPY --from=builder /tmp/bitgo/modules/sdk-coin-bch /var/modules/sdk-coin-bch/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-bcha /var/modules/sdk-coin-bcha/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-bsv /var/modules/sdk-coin-bsv/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-btc /var/modules/sdk-coin-btc/
-COPY --from=builder /tmp/bitgo/modules/utxo-ord /var/modules/utxo-ord/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-btg /var/modules/sdk-coin-btg/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-dash /var/modules/sdk-coin-dash/
 COPY --from=builder /tmp/bitgo/modules/sdk-coin-doge /var/modules/sdk-coin-doge/
@@ -152,6 +152,7 @@ cd /var/modules/abstract-utxo && yarn link && \
 cd /var/modules/blockapis && yarn link && \
 cd /var/modules/sdk-api && yarn link && \
 cd /var/modules/sdk-hmac && yarn link && \
+cd /var/modules/utxo-ord && yarn link && \
 cd /var/modules/account-lib && yarn link && \
 cd /var/modules/sdk-coin-ada && yarn link && \
 cd /var/modules/sdk-coin-algo && yarn link && \
@@ -219,7 +220,6 @@ cd /var/modules/sdk-coin-bch && yarn link && \
 cd /var/modules/sdk-coin-bcha && yarn link && \
 cd /var/modules/sdk-coin-bsv && yarn link && \
 cd /var/modules/sdk-coin-btc && yarn link && \
-cd /var/modules/utxo-ord && yarn link && \
 cd /var/modules/sdk-coin-btg && yarn link && \
 cd /var/modules/sdk-coin-dash && yarn link && \
 cd /var/modules/sdk-coin-doge && yarn link && \
@@ -252,6 +252,7 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/blockapis && \
     yarn link @bitgo/sdk-api && \
     yarn link @bitgo/sdk-hmac && \
+    yarn link @bitgo/utxo-ord && \
     yarn link @bitgo/account-lib && \
     yarn link @bitgo/sdk-coin-ada && \
     yarn link @bitgo/sdk-coin-algo && \
@@ -319,7 +320,6 @@ RUN cd /var/bitgo-express && \
     yarn link @bitgo/sdk-coin-bcha && \
     yarn link @bitgo/sdk-coin-bsv && \
     yarn link @bitgo/sdk-coin-btc && \
-    yarn link @bitgo/utxo-ord && \
     yarn link @bitgo/sdk-coin-btg && \
     yarn link @bitgo/sdk-coin-dash && \
     yarn link @bitgo/sdk-coin-doge && \

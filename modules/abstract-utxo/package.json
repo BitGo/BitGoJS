@@ -15,7 +15,8 @@
     "lint": "eslint --quiet .",
     "prepare": "npm run build",
     "test": "npm run unit-test",
-    "unit-test": "mocha --recursive test/"
+    "unit-test": "mocha --recursive test/unit/",
+    "integration-test": "mocha --recursive test/integration/"
   },
   "author": "BitGo SDK Team <sdkteam@bitgo.com>",
   "license": "MIT",
@@ -47,6 +48,7 @@
     "@bitgo/sdk-core": "^36.15.0",
     "@bitgo/secp256k1": "^1.6.0",
     "@bitgo/unspents": "^0.50.5",
+    "@bitgo/utxo-ord": "^1.22.7",
     "@bitgo/utxo-core": "^1.21.1",
     "@bitgo/utxo-lib": "^11.13.0",
     "@bitgo/wasm-miniscript": "2.0.0-beta.7",
@@ -58,6 +60,10 @@
     "io-ts": "npm:@bitgo-forks/io-ts@2.1.4",
     "lodash": "^4.17.14",
     "superagent": "^9.0.1"
+  },
+  "devDependencies": {
+    "@bitgo/sdk-test": "^9.1.7",
+    "mocha": "^10.2.0"
   },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c"
 }
