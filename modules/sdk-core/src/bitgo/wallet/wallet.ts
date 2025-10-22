@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import { TxSendBody } from '@bitgo/public-types';
+import { TxSendBody, type AddressQueryResult } from '@bitgo/public-types';
 import { CoinFamily } from '@bitgo/statics';
 import assert from 'assert';
 import BigNumber from 'bignumber.js';
@@ -1077,7 +1077,7 @@ export class Wallet implements IWallet {
    * @param params
    * @returns {*}
    */
-  async addresses(params: AddressesOptions = {}): Promise<any> {
+  async addresses(params: AddressesOptions = {}): Promise<AddressQueryResult> {
     common.validateParams(params, [], []);
 
     const query: AddressesOptions = {};
