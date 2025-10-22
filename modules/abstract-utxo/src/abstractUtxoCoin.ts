@@ -80,6 +80,7 @@ import { verifyKeySignature, verifyUserPublicKey } from './verifyKey';
 import { getPolicyForEnv } from './descriptor/validatePolicy';
 import { signTransaction } from './transaction/signTransaction';
 import { isUtxoWalletData, UtxoWallet } from './wallet';
+import { canonicalAddress } from './address';
 import { isDescriptorWalletData } from './descriptor/descriptorWallet';
 
 import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
@@ -441,6 +442,10 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    */
   getCoinLibrary() {
     return utxolib;
+  }
+
+  override canonicalAddress(address: string, format?: unknown): string {
+    return canonicalAddress(this.network, address, format);
   }
 
   /**
