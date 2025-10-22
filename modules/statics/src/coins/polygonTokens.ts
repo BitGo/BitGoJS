@@ -1,6 +1,10 @@
 import { AccountCoin, polygonErc20, tpolygonErc20 } from '../account';
 import { UnderlyingAsset, CoinFeature } from '../base';
-import { POLYGON_TOKEN_FEATURES, POLYGON_TOKEN_FEATURES_EXCLUDE_SINGAPORE, POLYGON_TOKEN_FEATURES_WITH_FRANKFURT } from '../coinFeatures';
+import {
+  POLYGON_TOKEN_FEATURES,
+  POLYGON_TOKEN_FEATURES_EXCLUDE_SINGAPORE,
+  POLYGON_TOKEN_FEATURES_WITH_FRANKFURT,
+} from '../coinFeatures';
 
 export const polygonTokens = [
   polygonErc20(

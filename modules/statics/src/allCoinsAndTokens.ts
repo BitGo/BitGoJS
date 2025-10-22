@@ -677,12 +677,7 @@ export const allCoinsAndTokens = [
     6,
     UnderlyingAsset.OSMO,
     BaseUnit.OSMO,
-    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING.filter(
-      (feature) =>
-        ![
-          CoinFeature.CUSTODY_BITGO_SINGAPORE,
-        ].includes(feature)
-    )
+    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING.filter((feature) => ![CoinFeature.CUSTODY_BITGO_SINGAPORE].includes(feature))
   ),
   account(
     'd813e9c9-f9b9-4d10-a4e2-57d9e3b65e2c',
@@ -1451,7 +1446,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.WEMIX,
     BaseUnit.ETH,
-    WEMIX_FEATURES.filter( (feature) => feature !== CoinFeature.CUSTODY_BITGO_SINGAPORE)
+    WEMIX_FEATURES.filter((feature) => feature !== CoinFeature.CUSTODY_BITGO_SINGAPORE)
   ),
   account(
     'b18517e3-2fba-44df-be39-7ba062d14895',

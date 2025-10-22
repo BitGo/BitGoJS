@@ -747,7 +747,12 @@ export const erc20Coins = [
     '0xf25c91c87e0b1fd9b4064af0f427157aab0193a7',
     UnderlyingAsset.BASIC,
     AccountCoin.getFeaturesByTypeExcluding(
-      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_SINGAPORE],
+      [
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      ],
       ETH_FEATURES
     )
   ),
@@ -818,7 +823,12 @@ export const erc20Coins = [
     '0xcdc412f306e0c51e3249b88c65423cd16b322673',
     UnderlyingAsset.BCIO,
     AccountCoin.getFeaturesByTypeExcluding(
-      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_SINGAPORE],
+      [
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      ],
       ETH_FEATURES
     )
   ),
@@ -1483,7 +1493,12 @@ export const erc20Coins = [
     '0x4162178b78d6985480a308b2190ee5517460406d',
     UnderlyingAsset.CLN,
     AccountCoin.getFeaturesByTypeExcluding(
-      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_SINGAPORE],
+      [
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      ],
       ETH_FEATURES
     )
   ),
@@ -1555,7 +1570,12 @@ export const erc20Coins = [
     '0x5d8d9f5b96f4438195be9b99eee6118ed4304286',
     UnderlyingAsset.COVER,
     AccountCoin.getFeaturesByTypeExcluding(
-      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_SINGAPORE],
+      [
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      ],
       ETH_FEATURES
     )
   ),
@@ -2280,7 +2300,12 @@ export const erc20Coins = [
     '0xf0ee6b27b759c9893ce4f094b49ad28fd15a23e4',
     UnderlyingAsset.ENG,
     AccountCoin.getFeaturesByTypeExcluding(
-      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_SINGAPORE],
+      [
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      ],
       ETH_FEATURES
     )
   ),
@@ -2334,7 +2359,12 @@ export const erc20Coins = [
     '0x5af2be193a6abca9c8817001f45744777db30756',
     UnderlyingAsset.ETHOS,
     AccountCoin.getFeaturesByTypeExcluding(
-      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_SINGAPORE],
+      [
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      ],
       ETH_FEATURES
     )
   ),
@@ -2379,7 +2409,12 @@ export const erc20Coins = [
     '0xa967dd943b336680540011536e7d8c3d33333515',
     UnderlyingAsset.EURL,
     AccountCoin.getFeaturesByTypeExcluding(
-      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_SINGAPORE],
+      [
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      ],
       ETH_FEATURES
     )
   ),
@@ -2554,7 +2589,12 @@ export const erc20Coins = [
     '0xed1480d12be41d92f36f5f7bdd88212e381a3677',
     UnderlyingAsset.FDT,
     AccountCoin.getFeaturesByTypeExcluding(
-      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_SINGAPORE],
+      [
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      ],
       ETH_FEATURES
     )
   ),
@@ -2638,7 +2678,12 @@ export const erc20Coins = [
     '0xb4d0fdfc8497aef97d3c2892ae682ee06064a2bc',
     UnderlyingAsset.FMF,
     AccountCoin.getFeaturesByTypeExcluding(
-      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_SINGAPORE],
+      [
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      ],
       ETH_FEATURES
     )
   ),
@@ -2783,7 +2828,12 @@ export const erc20Coins = [
     '0x6bea7cfef803d1e3d5f7c0103f7ded065644e197',
     UnderlyingAsset.GAMMA,
     AccountCoin.getFeaturesByTypeExcluding(
-      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_SINGAPORE],
+      [
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      ],
       ETH_FEATURES
     )
   ),
@@ -2804,7 +2854,12 @@ export const erc20Coins = [
     '0x86b4dbe5d203e634a12364c0e428fa242a3fba98',
     UnderlyingAsset.GBPT,
     AccountCoin.getFeaturesByTypeExcluding(
-      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_SINGAPORE],
+      [
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      ],
       ETH_FEATURES
     )
   ),
@@ -3129,7 +3184,12 @@ export const erc20Coins = [
     '0x3e1d5a855ad9d948373ae68e4fe1f094612b1322',
     UnderlyingAsset.HQT,
     AccountCoin.getFeaturesByTypeExcluding(
-      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_SINGAPORE],
+      [
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      ],
       ETH_FEATURES
     )
   ),
@@ -3176,7 +3236,12 @@ export const erc20Coins = [
     UnderlyingAsset.HUSD,
     [
       ...AccountCoin.getFeaturesByTypeExcluding(
-        [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_SINGAPORE],
+        [
+          CoinFeature.CUSTODY_BITGO_GERMANY,
+          CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+          CoinFeature.CUSTODY_BITGO_FRANKFURT,
+          CoinFeature.CUSTODY_BITGO_SINGAPORE,
+        ],
         ETH_FEATURES
       ),
       CoinFeature.STABLECOIN,
@@ -4221,7 +4286,12 @@ export const erc20Coins = [
     '0xa823e6722006afe99e91c30ff5295052fe6b8e32',
     UnderlyingAsset.NEU,
     AccountCoin.getFeaturesByTypeExcluding(
-      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_SINGAPORE],
+      [
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      ],
       ETH_FEATURES
     )
   ),
@@ -4258,7 +4328,12 @@ export const erc20Coins = [
     '0x05bbed16620b352a7f889e23e3cf427d1d379ffe',
     UnderlyingAsset.NGNT,
     AccountCoin.getFeaturesByTypeExcluding(
-      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_SINGAPORE],
+      [
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      ],
       ETH_FEATURES
     )
   ),
@@ -4404,7 +4479,12 @@ export const erc20Coins = [
     '0x6863be0e7cf7ce860a574760e9020d519a8bdc47',
     UnderlyingAsset.ONL,
     AccountCoin.getFeaturesByTypeExcluding(
-      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_SINGAPORE],
+      [
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      ],
       ETH_FEATURES
     )
   ),
@@ -5855,7 +5935,12 @@ export const erc20Coins = [
     '0x00006100f7090010005f1bd7ae6122c3c2cf0090',
     UnderlyingAsset.TAUD,
     AccountCoin.getFeaturesByTypeExcluding(
-      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_SINGAPORE],
+      [
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      ],
       ETH_FEATURES
     )
   ),
@@ -5892,7 +5977,12 @@ export const erc20Coins = [
     '0x00000100f2a2bd000715001920eb70d229700085',
     UnderlyingAsset.TCAD,
     AccountCoin.getFeaturesByTypeExcluding(
-      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_SINGAPORE],
+      [
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      ],
       ETH_FEATURES
     )
   ),
@@ -5937,7 +6027,12 @@ export const erc20Coins = [
     '0x00000000441378008ea67f4284a57932b1c000a5',
     UnderlyingAsset.TGBP,
     AccountCoin.getFeaturesByTypeExcluding(
-      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_SINGAPORE],
+      [
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      ],
       ETH_FEATURES
     )
   ),
@@ -6292,7 +6387,12 @@ export const erc20Coins = [
     UnderlyingAsset.UPUSD,
     [
       ...AccountCoin.getFeaturesByTypeExcluding(
-        [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_SINGAPORE],
+        [
+          CoinFeature.CUSTODY_BITGO_GERMANY,
+          CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+          CoinFeature.CUSTODY_BITGO_FRANKFURT,
+          CoinFeature.CUSTODY_BITGO_SINGAPORE,
+        ],
         ETH_FEATURES
       ),
       CoinFeature.STABLECOIN,
@@ -6409,7 +6509,12 @@ export const erc20Coins = [
     UnderlyingAsset.UST,
     [
       ...AccountCoin.getFeaturesByTypeExcluding(
-        [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_SINGAPORE],
+        [
+          CoinFeature.CUSTODY_BITGO_GERMANY,
+          CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+          CoinFeature.CUSTODY_BITGO_FRANKFURT,
+          CoinFeature.CUSTODY_BITGO_SINGAPORE,
+        ],
         ETH_FEATURES
       ),
       CoinFeature.STABLECOIN,
@@ -6799,7 +6904,12 @@ export const erc20Coins = [
     '0xd2877702675e6ceb975b4a1dff9fb7baf4c91ea9',
     UnderlyingAsset.WLUNA,
     AccountCoin.getFeaturesByTypeExcluding(
-      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_SINGAPORE],
+      [
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      ],
       ETH_FEATURES
     )
   ),
@@ -6930,7 +7040,12 @@ export const erc20Coins = [
     '0x670f9d9a26d3d42030794ff035d35a67aa092ead',
     UnderlyingAsset.XBGOLD,
     AccountCoin.getFeaturesByTypeExcluding(
-      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_SINGAPORE],
+      [
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      ],
       ETH_FEATURES
     )
   ),
@@ -10741,7 +10856,12 @@ export const erc20Coins = [
     '0xb5130f4767ab0acc579f25a76e8f9e977cb3f948',
     UnderlyingAsset['eth:god'],
     AccountCoin.getFeaturesByTypeExcluding(
-      [CoinFeature.CUSTODY_BITGO_GERMANY, CoinFeature.CUSTODY_BITGO_EUROPE_APS, CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.CUSTODY_BITGO_SINGAPORE],
+      [
+        CoinFeature.CUSTODY_BITGO_GERMANY,
+        CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+        CoinFeature.CUSTODY_BITGO_FRANKFURT,
+        CoinFeature.CUSTODY_BITGO_SINGAPORE,
+      ],
       ETH_FEATURES
     )
   ),
