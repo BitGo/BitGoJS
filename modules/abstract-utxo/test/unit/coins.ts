@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+
 import * as utxolib from '@bitgo/utxo-lib';
 
 import { getUtxoCoinForNetwork, utxoCoins } from './util';
