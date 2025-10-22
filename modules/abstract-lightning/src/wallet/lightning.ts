@@ -283,9 +283,22 @@ export class LightningWallet implements ILightningWallet {
       },
     };
 
+    // Convert BigInt values to strings for proper JSON serialization to backend
+    // This fixes NO_ROUTE errors caused by BigInt serialization issues
+    const encodedPaymentIntent = t.type({ intent: LightningPaymentIntent }).encode(paymentIntent);
+    const intentAny = encodedPaymentIntent.intent as any;
+    if (intentAny.signedRequest) {
+      if (intentAny.signedRequest.amountMsat !== undefined) {
+        intentAny.signedRequest.amountMsat = intentAny.signedRequest.amountMsat.toString();
+      }
+      if (intentAny.signedRequest.feeLimitMsat !== undefined) {
+        intentAny.signedRequest.feeLimitMsat = intentAny.signedRequest.feeLimitMsat.toString();
+      }
+    }
+
     const transactionRequestCreate = (await this.wallet.bitgo
       .post(this.wallet.bitgo.url('/wallet/' + this.wallet.id() + '/txrequests', 2))
-      .send(t.type({ intent: LightningPaymentIntent }).encode(paymentIntent))
+      .send(encodedPaymentIntent)
       .result()) as TxRequest;
 
     if (transactionRequestCreate.state === 'pendingApproval') {
@@ -338,7 +351,6 @@ export class LightningWallet implements ILightningWallet {
         onchainRequest: {
           recipients: params.recipients,
           satsPerVbyte: params.satsPerVbyte,
-          numBlocks: params.numBlocks,
         },
         intentType: 'payment',
       },
