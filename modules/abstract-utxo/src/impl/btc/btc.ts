@@ -1,6 +1,5 @@
 import {
   BitGoBase,
-  BaseCoin,
   VerifyRecoveryTransactionOptions as BaseVerifyRecoveryTransactionOptions,
   Wallet,
 } from '@bitgo/sdk-core';
@@ -19,7 +18,7 @@ export class Btc extends AbstractUtxoCoin {
     super(bitgo, network || utxolib.networks.bitcoin);
   }
 
-  static createInstance(bitgo: BitGoBase): BaseCoin {
+  static createInstance(bitgo: BitGoBase): Btc {
     return new Btc(bitgo);
   }
 
