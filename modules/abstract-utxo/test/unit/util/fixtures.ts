@@ -1,11 +1,9 @@
-/**
- * @prettier
- */
 import 'should';
-import * as fs from 'fs-extra';
 import * as mpath from 'path';
 
-import { AbstractUtxoCoin } from '@bitgo/abstract-utxo';
+import * as fs from 'fs-extra';
+
+import { AbstractUtxoCoin } from '../../../src';
 
 function serializeBigInt(k: string, v: any): string | number {
   if (typeof v === 'bigint') {
