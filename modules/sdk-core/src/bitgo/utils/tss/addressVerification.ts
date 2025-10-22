@@ -3,6 +3,31 @@ import { InvalidAddressError } from '../../errors';
 import { EDDSAMethods } from '../../tss';
 
 /**
+ * Extracts and validates the commonKeychain from keychains array.
+ * For MPC wallets, all keychains should have the same commonKeychain.
+ *
+ * @param keychains - Array of keychains containing commonKeychain
+ * @returns The validated commonKeychain
+ * @throws {Error} if keychains are missing, empty, or have mismatched commonKeychains
+ */
+export function extractCommonKeychain(keychains: TssVerifyAddressOptions['keychains']): string {
+  if (!keychains?.length) {
+    throw new Error('missing required param keychains');
+  }
+
+  const commonKeychain = keychains[0].commonKeychain;
+  if (!commonKeychain) {
+    throw new Error('missing required param commonKeychain');
+  }
+
+  // Verify all keychains have the same commonKeychain
+  if (keychains.find((kc) => kc.commonKeychain !== commonKeychain))
+    throw new Error('all keychains must have the same commonKeychain for MPC coins');
+
+  return commonKeychain;
+}
+
+/**
  * Verifies if an address belongs to a wallet using EdDSA TSS MPC derivation.
  * This is a common implementation for EdDSA-based MPC coins (SOL, DOT, SUI, TON, IOTA, etc.)
  *
@@ -24,24 +49,8 @@ export async function verifyEddsaTssWalletAddress(
     throw new InvalidAddressError(`invalid address: ${address}`);
   }
 
-  if (!keychains || keychains.length === 0) {
-    throw new Error('missing required param keychains');
-  }
+  const commonKeychain = extractCommonKeychain(keychains);
 
-  // For MPC coins, commonKeychain should be the same for all keychains
-  const commonKeychain = keychains[0].commonKeychain as string;
-  if (!commonKeychain) {
-    throw new Error('missing required param commonKeychain');
-  }
-
-  // Verify all keychains have the same commonKeychain
-  for (const keychain of keychains) {
-    if (keychain.commonKeychain !== commonKeychain) {
-      throw new Error('all keychains must have the same commonKeychain for MPC coins');
-    }
-  }
-
-  // Only perform derivation once since commonKeychain is the same
   const MPC = await EDDSAMethods.getInitializedMpcInstance();
   const derivationPath = 'm/' + index;
   const derivedPublicKey = MPC.deriveUnhardened(commonKeychain, derivationPath).slice(0, 64);

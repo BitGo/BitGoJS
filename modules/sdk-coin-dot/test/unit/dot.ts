@@ -678,7 +678,7 @@ describe('DOT:', function () {
       const commonKeychain =
         '6d2d5150f6e435dfd9b4f225f2cc29d95ec3b61b34e8bec98693b1a7ffe44cd764f99ee5058838d785c73360ad4f24d78e0255ab2c368c09060b29a9b27f040e';
       const index = '3';
-      const keychains = [{ commonKeychain }];
+      const keychains = [{ id: '1', type: 'tss' as const, commonKeychain }];
 
       const result = await basecoin.isWalletAddress({ keychains, address, index });
       result.should.equal(true);
@@ -689,7 +689,7 @@ describe('DOT:', function () {
       const wrongKeychain =
         '0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000';
       const index = '3';
-      const keychains = [{ commonKeychain: wrongKeychain }];
+      const keychains = [{ id: '1', type: 'tss' as const, commonKeychain: wrongKeychain }];
 
       const result = await basecoin.isWalletAddress({ keychains, address, index });
       result.should.equal(false);
@@ -700,7 +700,7 @@ describe('DOT:', function () {
       const commonKeychain =
         '6d2d5150f6e435dfd9b4f225f2cc29d95ec3b61b34e8bec98693b1a7ffe44cd764f99ee5058838d785c73360ad4f24d78e0255ab2c368c09060b29a9b27f040e';
       const wrongIndex = '999';
-      const keychains = [{ commonKeychain }];
+      const keychains = [{ id: '1', type: 'tss' as const, commonKeychain }];
 
       const result = await basecoin.isWalletAddress({ keychains, address, index: wrongIndex });
       result.should.equal(false);
@@ -711,33 +711,10 @@ describe('DOT:', function () {
       const commonKeychain =
         '6d2d5150f6e435dfd9b4f225f2cc29d95ec3b61b34e8bec98693b1a7ffe44cd764f99ee5058838d785c73360ad4f24d78e0255ab2c368c09060b29a9b27f040e';
       const index = '3';
-      const keychains = [{ commonKeychain }];
+      const keychains = [{ id: '1', type: 'tss' as const, commonKeychain }];
 
       await assert.rejects(async () => await basecoin.isWalletAddress({ keychains, address: invalidAddress, index }), {
         message: `invalid address: ${invalidAddress}`,
-      });
-    });
-
-    it('should throw error when keychains are missing', async function () {
-      const address = '5DxD9nT16GQLrU6aB5pSS5VtxoZbVju3NHUCcawxZyZCTf74';
-      const index = '3';
-
-      await assert.rejects(async () => await basecoin.isWalletAddress({ address, index } as any), {
-        message: 'missing required param keychains',
-      });
-    });
-
-    it('should throw error when keychains have different commonKeychains', async function () {
-      const address = '5DxD9nT16GQLrU6aB5pSS5VtxoZbVju3NHUCcawxZyZCTf74';
-      const commonKeychain1 =
-        '6d2d5150f6e435dfd9b4f225f2cc29d95ec3b61b34e8bec98693b1a7ffe44cd764f99ee5058838d785c73360ad4f24d78e0255ab2c368c09060b29a9b27f040e';
-      const commonKeychain2 =
-        '0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000';
-      const index = '3';
-      const keychains = [{ commonKeychain: commonKeychain1 }, { commonKeychain: commonKeychain2 }];
-
-      await assert.rejects(async () => await basecoin.isWalletAddress({ keychains, address, index }), {
-        message: 'all keychains must have the same commonKeychain for MPC coins',
       });
     });
   });

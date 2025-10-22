@@ -155,12 +155,24 @@ export interface VerifyAddressOptions {
   impliedForwarderVersion?: number;
 }
 
+/**
+ * Options for verifying if an address belongs to a TSS/MPC wallet.
+ * Used for EdDSA-based MPC coins (SOL, DOT, SUI, TON, IOTA, NEAR, etc.)
+ * to cryptographically verify address derivation without trusting the platform.
+ */
 export interface TssVerifyAddressOptions {
+  /** The address to verify */
   address: string;
-  keychains: {
-    commonKeychain: string;
-  }[];
-  chain?: string;
+  /**
+   * Keychains containing the commonKeychain for HD derivation.
+   * For MPC wallets, the commonKeychain (combined public key from MPC key generation)
+   * should be identical across all keychains (user, backup, bitgo).
+   */
+  keychains: Keychain[];
+  /**
+   * Derivation index for the address.
+   * Used to derive child addresses from the root keychain via HD derivation path: m/{index}
+   */
   index: string;
 }
 
