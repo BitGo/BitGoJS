@@ -1,19 +1,18 @@
-# BitGo Express Local Signing Server (REST API)
+# BitGo Express local signing server (REST API)
 
-Suitable for developers working in a language without an official BitGo SDK.
+BitGo Express is suitable for developers working in a language without an official BitGo SDK.
 
-BitGo Express runs as a service in your own datacenter, and handles the client-side operations involving your own keys, such as partially signing transactions before submitting to BitGo.
-This ensures your keys never leave your network, and are not seen by BitGo. BitGo Express can also proxy the standard BitGo REST APIs, providing a unified interface to BitGo through a single REST API.
+BitGo Express runs as a service in your own datacenter, and handles the client-side operations involving your own keys, such as partially signing transactions before submitting to BitGo. This ensures your keys never leave your network, and are not seen by BitGo. BitGo Express can also proxy the standard BitGo REST APIs, providing a unified interface to BitGo through a single REST API.
 
 # Documentation
 
-Comprehensive documentation on the APIs provided by BitGo Express can be found at our [Platform API Reference](https://app.bitgo.com/docs/#tag/Express).
+View comprehensive documentation on the BitGo [Developer Portal](https://developers.bitgo.com/docs/get-started-express-install/).
 
 # Running BitGo Express
 
 ## Docker
 
-For most users, we recommend running BitGo Express as a docker container, since this is the most secure way to run BitGo Express.
+For most users, we recommend running BitGo Express as a Docker container, since this's the most secure way to run BitGo Express.
 
 > Deprecation Warning: bitgosdk/express will no longer receive updates. Please use the official bitgo/express images.
 
@@ -73,13 +72,13 @@ $ openssl req -newkey rsa:2048 -nodes -keyout cert.key -x509 -days 3650 -out cer
 
 This will output a key file `cert.key` and certificate file `cert.crt`
 
-Finally you can run your docker container like this (note, replace `/path/to` with the full path to your `certs` folder):
+Finally you can run your Docker container like this (note, replace `/path/to` with the full path to your `certs` folder):
 
 ```bash
 $ docker run -it --volume /path/to/certs:/private -p 4000:4000 bitgo/express:latest -p 4000 -k /private/cert.key -c /private/cert.crt -e prod
 ```
 
-An alternative way to provide the ssl certification is to export them as environment variables.
+An alternative way to provide the SSL certification is to export them as environment variables.
 
 ```bash
 $ export BITGO_SSL_KEY=$(cat /private/cert.key)
@@ -98,9 +97,9 @@ Environment: prod
 Base URI: https://0.0.0.0:4000
 ```
 
-### Building the docker container
+### Building the Docker container
 
-If you'd like to build the BitGo Express docker container yourself from the source code, first check out the latest **master** branch, then run `docker build` from the project root. Here's the commands:
+To build the BitGo Express Docker container yourself from the source code, check out the latest **master** branch and run `docker build` from the project root.
 
 ```bash
 $ git clone https://github.com/bitgo/bitgojs
@@ -109,7 +108,7 @@ $ docker build -t bitgo-express:latest .
 $ docker run -it bitgo-express:latest
 ```
 
-Another way to build the BitGo Express docker container if you have `yarn` installed:
+You can also build the BitGo Express Docker container using `yarn`:
 
 ```bash
 $ git clone https://github.com/bitgo/bitgojs
@@ -120,17 +119,15 @@ $ docker run -it bitgo-express:latest
 
 ## From source
 
-For users who are unable to run BitGo Express as a docker container, we recommend building and running from the source code.
+For users who are unable to run BitGo Express as a Docker container, we recommend building and running from the source code.
 
 ### Prerequisites
 
-Please make sure you are running at least Node version 16.
-We recommend using `nvm`, the [Node Version Manager](https://github.com/creationix/nvm/blob/master/README.markdown#installation), for setting your Node version.
-BitGo Express has become a first class citizen of the monorepo so we recommend using `yarn` for local setup.
+Ensure you're running at least Node version 16. We recommend using `nvm`, the [Node Version Manager](https://github.com/creationix/nvm/blob/master/README.markdown#installation), for setting your Node version. BitGo Express has become a first class citizen of the monorepo so we recommend using `yarn` for local setup.
 
 ### Cloning the repository and installing dependencies
 
-First, clone the latest **master** branch, then run `yarn install` in the project root directory.
+Clone the latest **master** branch and run `yarn install` in the project root directory.
 
 ```bash
 $ git clone https://github.com/bitgo/bitgojs
@@ -140,7 +137,7 @@ $ yarn install --frozen-lockfile && yarn install --production --frozen-lockfile 
 
 ### Running BitGo Express
 
-From the express module folder (`modules/express`), run this command:
+From the Express module folder (`modules/express`), run this command:
 
 ```bash
 $ yarn run start
@@ -235,7 +232,7 @@ BitGo Express is able to take configuration options from either command line arg
 | N/A             | --disableproxy                  | `BITGO_DISABLE_PROXY` <sup>0</sup>        | N/A           | Disable proxying of routes not explicitly handled by bitgo-express                                                                                                                                                                                                                                                                                   |
 | N/A             | --disableenvcheck               | `BITGO_DISABLE_ENV_CHECK` <sup>0</sup>    | N/A           | Disable checking for correct `NODE_ENV` environment variable when running against BitGo production environment.                                                                                                                                                                                                                                      |
 | -i              | --ipc                           | `BITGO_IPC`                               | N/A           | If set, bind to the given IPC (unix domain) socket. Binding to an IPC socket can be useful if the caller of bitgo-express resides on the same host as the bitgo-express instance itself, since the socket can be secured using normal file permissions and ownership semantics. Note: This is not supported on Windows platforms.                    |
-| N/A             | --authversion                   | `BITGO_AUTH_VERSION`                      | 2             | BitGo Authentication scheme version which should be used form making requests to the BitGo server. Please see the [BitGo API documentation](https://app.bitgo.com/docs) for more info on authentication scheme versions.                                                                                                                             |
+| N/A             | --authversion                   | `BITGO_AUTH_VERSION`                      | 2             | BitGo Authentication scheme version which should be used form making requests to the BitGo server. For more info on authentication scheme versions, view the API reference on the BitGo [Developer Portal](https://developers.bitgo.com/reference/overview#/).                                                                                                                             |
 | N/A             | --externalSignerUrl             | `BITGO_EXTERNAL_SIGNER_URL`               | N/A           | URL specifying the external API to call for remote signing.                                                                                                                                                                                                                                                                                          |
 | N/A             | --signerMode                    | `BITGO_SIGNER_MODE `                      | N/A           | If set, run Express as a remote signer.                                                                                                                                                                                                                                                                                                              |
 | N/A             | --signerFileSystemPath          | `BITGO_SIGNER_FILE_SYSTEM_PATH `          | N/A           | Local path specifying where an Express signer machine keeps the encrypted user private keys. Required when signerMode is set.                                                                                                                                                                                                                        |
