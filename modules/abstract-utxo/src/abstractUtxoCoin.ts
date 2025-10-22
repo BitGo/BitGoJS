@@ -6,11 +6,9 @@ import * as utxolib from '@bitgo/utxo-lib';
 import { bip32 } from '@bitgo/secp256k1';
 import { bitgo, getMainnet, isMainnet, isTestnet } from '@bitgo/utxo-lib';
 import {
-  AddressCoinSpecific,
-  AddressTypeChainMismatchError,
+  VerifyAddressOptions as CoreVerifyAddressOptions,
   BaseCoin,
   BitGoBase,
-  CreateAddressFormat,
   ExtraPrebuildParamsOptions,
   HalfSignedUtxoTransaction,
   IBaseCoin,
@@ -25,15 +23,10 @@ import {
   MismatchedRecipient,
   MultisigType,
   multisigTypes,
-  P2shP2wshUnsupportedError,
-  P2trMusig2UnsupportedError,
-  P2trUnsupportedError,
-  P2wshUnsupportedError,
   ParseTransactionOptions as BaseParseTransactionOptions,
   PrecreateBitGoOptions,
   PresignTransactionOptions,
   RequestTracer,
-  sanitizeLegacyPath,
   SignedTransaction,
   SignTransactionOptions as BaseSignTransactionOptions,
   SupplementGenerateWalletOptions,
@@ -41,10 +34,7 @@ import {
   TransactionPrebuild as BaseTransactionPrebuild,
   Triple,
   TxIntentMismatchRecipientError,
-  UnexpectedAddressError,
-  UnsupportedAddressTypeError,
   VerificationOptions,
-  VerifyAddressOptions as BaseVerifyAddressOptions,
   VerifyTransactionOptions as BaseVerifyTransactionOptions,
   Wallet,
   isValidPrv,
@@ -79,7 +69,7 @@ import {
   ErrorMissingOutputs,
   ErrorImplicitExternalOutputs,
 } from './transaction/descriptor/verifyTransaction';
-import { assertDescriptorWalletAddress, getDescriptorMapFromWallet, isDescriptorWallet } from './descriptor';
+import { getDescriptorMapFromWallet, isDescriptorWallet } from './descriptor';
 import { getChainFromNetwork, getFamilyFromNetwork, getFullNameFromNetwork } from './names';
 import { CustomChangeOptions } from './transaction/fixedScript';
 import { toBip32Triple, UtxoKeychain, UtxoNamedKeychains } from './keychains';
@@ -87,8 +77,21 @@ import { verifyKeySignature, verifyUserPublicKey } from './verifyKey';
 import { getPolicyForEnv } from './descriptor/validatePolicy';
 import { signTransaction } from './transaction/signTransaction';
 import { isUtxoWalletData, UtxoWallet } from './wallet';
-import { canonicalAddress } from './address';
 import { isDescriptorWalletData } from './descriptor/descriptorWallet';
+import {
+  AddressDetails,
+  assertFixedScriptWalletAddress,
+  assertDescriptorWalletAddress,
+  DescriptorAddressCoinSpecific,
+  FixedScriptAddressCoinSpecific,
+  generateAddress,
+  GenerateFixedScriptAddressOptions,
+  UtxoCoinSpecific,
+  VerifyAddressOptions,
+  canonicalAddress,
+} from './address';
+
+export { GenerateFixedScriptAddressOptions } from './address';
 
 import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 
@@ -117,7 +120,7 @@ type UtxoCustomSigningFunction<TNumber extends number | bigint> = {
   }): Promise<SignedTransaction>;
 };
 
-const { getExternalChainCode, isChainCode, scriptTypeForChain, outputScripts } = bitgo;
+const { isChainCode, scriptTypeForChain, outputScripts } = bitgo;
 
 type Unspent<TNumber extends number | bigint = number> = bitgo.Unspent<TNumber>;
 
@@ -172,14 +175,6 @@ export type DecodedTransaction<TNumber extends number | bigint> =
   | utxolib.bitgo.UtxoPsbt;
 
 export type RootWalletKeys = bitgo.RootWalletKeys;
-
-export type UtxoCoinSpecific = AddressCoinSpecific | DescriptorAddressCoinSpecific;
-
-export interface VerifyAddressOptions<TCoinSpecific extends UtxoCoinSpecific> extends BaseVerifyAddressOptions {
-  chain?: number;
-  index: number;
-  coinSpecific?: TCoinSpecific;
-}
 
 export interface BaseOutput<TAmount = string | number> {
   address: string;
@@ -308,37 +303,6 @@ export type BaseParsedTransaction<TNumber extends number | bigint, TOutput> = Ba
  * individual amounts.
  */
 export type ParsedTransaction<TNumber extends number | bigint = number> = BaseParsedTransaction<TNumber, Output>;
-
-export interface GenerateAddressOptions {
-  addressType?: ScriptType2Of3;
-  threshold?: number;
-  chain?: number;
-  index?: number;
-  segwit?: boolean;
-  bech32?: boolean;
-}
-
-export interface GenerateFixedScriptAddressOptions extends GenerateAddressOptions {
-  format?: CreateAddressFormat;
-  keychains: {
-    pub: string;
-    aspKeyId?: string;
-  }[];
-}
-
-export interface AddressDetails {
-  address: string;
-  chain: number;
-  index: number;
-  coin: string;
-  coinSpecific: AddressCoinSpecific | DescriptorAddressCoinSpecific;
-  addressType?: string;
-}
-
-export interface DescriptorAddressCoinSpecific extends AddressCoinSpecific {
-  descriptorName: string;
-  descriptorChecksum: string;
-}
 
 type UtxoBaseSignTransactionOptions<TNumber extends number | bigint = number> = BaseSignTransactionOptions & {
   /** Transaction prebuild from bitgo server */
@@ -711,8 +675,11 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @throws {InvalidAddressDerivationPropertyError}
    * @throws {UnexpectedAddressError}
    */
-  async isWalletAddress(params: VerifyAddressOptions<UtxoCoinSpecific>, wallet?: IWallet): Promise<boolean> {
-    const { address, addressType, keychains, chain, index } = params;
+  async isWalletAddress(
+    params: CoreVerifyAddressOptions & { chain?: number; index?: number; coinSpecific?: UtxoCoinSpecific },
+    wallet?: IWallet
+  ): Promise<boolean> {
+    const { address, addressType, keychains, chain, index } = params as VerifyAddressOptions<UtxoCoinSpecific>;
 
     if (!this.isValidAddress(address)) {
       throw new InvalidAddressError(`invalid address: ${address}`);
@@ -725,9 +692,13 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       if (!isTriple(keychains)) {
         throw new Error('keychains must be a triple');
       }
+      assert(params.coinSpecific);
+      assert('index' in params && typeof params.index === 'number');
+      assert('descriptorName' in params.coinSpecific);
+      assert('descriptorChecksum' in params.coinSpecific);
       assertDescriptorWalletAddress(
         this.network,
-        params,
+        params as VerifyAddressOptions<DescriptorAddressCoinSpecific>,
         getDescriptorMapFromWallet(wallet, toBip32Triple(keychains), getPolicyForEnv(this.bitgo.env))
       );
       return true;
@@ -743,20 +714,14 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       throw new Error('missing required param keychains');
     }
 
-    const expectedAddress = this.generateAddress({
-      format: params.format,
-      addressType: addressType as ScriptType2Of3,
-      keychains,
-      threshold: 2,
+    assertFixedScriptWalletAddress(this.network, this.getChain(), {
       chain,
       index,
+      keychains,
+      addressType,
+      format: 'base58',
+      address,
     });
-
-    if (expectedAddress.address !== address) {
-      throw new UnexpectedAddressError(
-        `address validation failure: expected ${expectedAddress.address} but got ${address}`
-      );
-    }
 
     return true;
   }
@@ -799,88 +764,8 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @param params.bech32      {boolean}  Deprecated
    * @returns {{chain: number, index: number, coin: number, coinSpecific: {outputScript, redeemScript}}}
    */
-  generateAddress(params: GenerateFixedScriptAddressOptions): AddressDetails {
-    let derivationIndex = 0;
-    if (_.isInteger(params.index) && (params.index as number) > 0) {
-      derivationIndex = params.index as number;
-    }
-
-    const { keychains, threshold, chain, segwit = false, bech32 = false } = params as GenerateFixedScriptAddressOptions;
-
-    let derivationChain = getExternalChainCode('p2sh');
-    if (_.isNumber(chain) && _.isInteger(chain) && isChainCode(chain)) {
-      derivationChain = chain;
-    }
-
-    function convertFlagsToAddressType(): ScriptType2Of3 {
-      if (isChainCode(chain)) {
-        return utxolib.bitgo.scriptTypeForChain(chain);
-      }
-      if (_.isBoolean(segwit) && segwit) {
-        return 'p2shP2wsh';
-      } else if (_.isBoolean(bech32) && bech32) {
-        return 'p2wsh';
-      } else {
-        return 'p2sh';
-      }
-    }
-
-    const addressType = params.addressType || convertFlagsToAddressType();
-
-    if (addressType !== utxolib.bitgo.scriptTypeForChain(derivationChain)) {
-      throw new AddressTypeChainMismatchError(addressType, derivationChain);
-    }
-
-    if (!this.supportsAddressType(addressType)) {
-      switch (addressType) {
-        case 'p2sh':
-          throw new Error(`internal error: p2sh should always be supported`);
-        case 'p2shP2wsh':
-          throw new P2shP2wshUnsupportedError();
-        case 'p2wsh':
-          throw new P2wshUnsupportedError();
-        case 'p2tr':
-          throw new P2trUnsupportedError();
-        case 'p2trMusig2':
-          throw new P2trMusig2UnsupportedError();
-        default:
-          throw new UnsupportedAddressTypeError();
-      }
-    }
-
-    let signatureThreshold = 2;
-    if (_.isInteger(threshold)) {
-      signatureThreshold = threshold as number;
-      if (signatureThreshold <= 0) {
-        throw new Error('threshold has to be positive');
-      }
-      if (signatureThreshold > keychains.length) {
-        throw new Error('threshold cannot exceed number of keys');
-      }
-    }
-
-    const path = '0/0/' + derivationChain + '/' + derivationIndex;
-    const hdNodes = keychains.map(({ pub }) => bip32.fromBase58(pub));
-    const derivedKeys = hdNodes.map((hdNode) => hdNode.derivePath(sanitizeLegacyPath(path)).publicKey);
-
-    const { outputScript, redeemScript, witnessScript, address } = this.createMultiSigAddress(
-      addressType,
-      signatureThreshold,
-      derivedKeys
-    );
-
-    return {
-      address: this.canonicalAddress(address, params.format),
-      chain: derivationChain,
-      index: derivationIndex,
-      coin: this.getChain(),
-      coinSpecific: {
-        outputScript: outputScript.toString('hex'),
-        redeemScript: redeemScript && redeemScript.toString('hex'),
-        witnessScript: witnessScript && witnessScript.toString('hex'),
-      },
-      addressType,
-    };
+  generateAddress(params: GenerateFixedScriptAddressOptions): AddressDetails<FixedScriptAddressCoinSpecific> {
+    return generateAddress(this.network, this.getChain(), params);
   }
 
   /**
