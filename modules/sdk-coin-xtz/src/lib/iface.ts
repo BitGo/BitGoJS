@@ -6,6 +6,7 @@ import {
   TransactionRecipient as Recipient,
   TransactionPrebuild as BaseTransactionPrebuild,
 } from '@bitgo/sdk-core';
+import { OperationContents } from '@taquito/rpc';
 
 export interface XtzSignTransactionOptions extends SignTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -79,7 +80,7 @@ export interface TransactionOp extends Operation {
 
 export interface ParsedTransaction {
   branch: string;
-  contents: Operation[];
+  contents: OperationContents[];
 }
 
 /**

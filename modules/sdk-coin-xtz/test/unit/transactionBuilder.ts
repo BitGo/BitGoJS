@@ -186,7 +186,7 @@ describe('Tezos Transaction builder', function () {
       txBuilder.sign({ key: defaultKeyPair.getKeys().prv });
       const tx = await txBuilder.build();
 
-      tx.id.should.equal('oo9rzcHZcGBBKtUfe3aL82isMf8SscBsLE7PBmBQXA2EKGT9yz7');
+      tx.id.should.equal('onpN4Zq664YTriyVmBbgEZAReHbucvD31XwvnpP5T9qzfhbanbx');
       tx.type.should.equal(TransactionType.WalletInitialization);
       tx.source.should.equal('tz2PtJ9zgEgFVTRqy6GXsst54tH3ksEnYvvS');
       should.equal(tx.inputs.length, 2);
@@ -195,12 +195,12 @@ describe('Tezos Transaction builder', function () {
       tx.inputs[0].value.should.equal('1420');
       tx.inputs[1].address.should.equal('tz2PtJ9zgEgFVTRqy6GXsst54tH3ksEnYvvS');
       tx.inputs[1].value.should.equal('1004764');
-      tx.outputs[0].address.should.equal('KT1JQQUXLfoxL6ifTz2SyQK7ZEAvF1m7KXgC');
+      tx.outputs[0].address.should.equal('KT1Hdttpv7CBaJ8igdkhCudMHBWUqNviJCTf');
       tx.outputs[0].value.should.equal('1000000');
       tx.delegate.should.equal('tz1KpbK5v1NB2vg3JHBxXJZhyQ7ur83Xp7iC');
       tx.signature.length.should.equal(1);
       tx.signature[0].should.equal(
-        'sigUyznaJo4JdLuyS7wpP5fDe12cUutDiABEYHHMEpaNYY6TQstAfvLJPQTcFWJJ2QRMZxC46nUvKEdaBJfPN5dzCGMQDtXn'
+        'sigtJtqVf7FJVqkDPyPW878FfCnpCPNb6JJdXAxezepe4t97BwfouYJ6GMqHGSNhevu4uiLSQ2h374a4NxMnA9E9qLXa4j93'
       );
       const indexesByTransactionType = tx.getIndexesByTransactionType();
       Object.keys(indexesByTransactionType).length.should.equal(2);
@@ -224,7 +224,7 @@ describe('Tezos Transaction builder', function () {
       txBuilder.sign({ key: defaultKeyPair.getKeys().prv });
       const tx = await txBuilder.build();
 
-      tx.id.should.equal('oomXs6PuWtmGwMKoXTNsu9XJHnGXtuRujcHMeYS9y37Xj6sXPHb');
+      tx.id.should.equal('oos4n1zJAGeqLQrNsnGAfzzj6FeZqbSrnAMVTdC485cinFWN6su');
       tx.type.should.equal(TransactionType.AccountUpdate);
       tx.source.should.equal('tz2PtJ9zgEgFVTRqy6GXsst54tH3ksEnYvvS');
       should.equal(tx.inputs.length, 1);
@@ -234,7 +234,7 @@ describe('Tezos Transaction builder', function () {
       should.not.exist(tx.delegate);
       tx.signature.length.should.equal(1);
       tx.signature[0].should.equal(
-        'sigQyYsfhtrJBKZuJSEizDdxoejNVvJWRZPDMWdpXVvdTVix37HzURwXfXsi9METnRzskvjgsBSgiF4pr7RVxzWLuixxJL8U'
+        'sigTtfcxtvU5zWbsWDJwKvHdDcWYDhgsb9ozmQ44AUGHnSJJgvPR2CvNCUX8axezJKoZRzgv9gSE3GSDh5SEbm31JqM53yyg'
       );
       const indexesByTransactionType = tx.getIndexesByTransactionType();
       indexesByTransactionType.reveal.length.should.equal(1);

@@ -105,7 +105,7 @@ describe('Offline Tezos Transaction builder', function () {
       offlineTxBuilder.sign({ key: defaultKeyPair.getKeys().prv });
       const signedTx = await offlineTxBuilder.build();
 
-      signedTx.id.should.equal('oomXs6PuWtmGwMKoXTNsu9XJHnGXtuRujcHMeYS9y37Xj6sXPHb');
+      signedTx.id.should.equal('oos4n1zJAGeqLQrNsnGAfzzj6FeZqbSrnAMVTdC485cinFWN6su');
       signedTx.type.should.equal(TransactionType.AccountUpdate);
       signedTx.source.should.equal('tz2PtJ9zgEgFVTRqy6GXsst54tH3ksEnYvvS');
       should.equal(signedTx.inputs.length, 1);
@@ -114,7 +114,7 @@ describe('Offline Tezos Transaction builder', function () {
       signedTx.inputs[0].value.should.equal('1420');
       signedTx.signature.length.should.equal(1);
       signedTx.signature[0].should.equal(
-        'sigQyYsfhtrJBKZuJSEizDdxoejNVvJWRZPDMWdpXVvdTVix37HzURwXfXsi9METnRzskvjgsBSgiF4pr7RVxzWLuixxJL8U'
+        'sigTtfcxtvU5zWbsWDJwKvHdDcWYDhgsb9ozmQ44AUGHnSJJgvPR2CvNCUX8axezJKoZRzgv9gSE3GSDh5SEbm31JqM53yyg'
       );
     });
 
@@ -310,9 +310,9 @@ describe('Offline Tezos Transaction builder', function () {
       });
 
       should.exist(consolidationResult);
-      consolidationResult.id.should.equal('opNrMMvnmQ6cE9JqRD8g14B6XfwGEUs7L9Bgn9qEkTtLeFEX9Tk');
+      consolidationResult.id.should.equal('op22ZtxX7ZsogUuMdvwuMCS6tegJXV8FKsAjzoWAt3JwibBV2A5');
       consolidationResult.tx.should.equal(
-        'ed8f6833f4db890c1f923d51074aa7b3982f7281f42da80212b819ad68c223776b01c62f80a80ce748a8b5ffcf97004b9807cb59b0b78c0bc1f5851ae852000102e8c94e3e18d8a493a2f0baa81eb0ab7fac5d23fe672f9133048ebc8cccc6f5066c01c62f80a80ce748a8b5ffcf97004b9807cb59b0b798f402c2f5851af02eac020001bda70b50cf607aee95c10322a8bff9fc4df50f8500ffff046d61696e0000005f070707070081eb8b34050502000000440320053d036d0743035d0100000024747a3252746e76454c564157356455547473424e47366362534132655146695974345270031e0743036a009482fd11034f034d031b020000000603060306030661836db09de792bfba0cb422fbb61c77b77fd80e22386cc9d7380fb7da67347f594bd8d809bfaf3d1ff172b329263ac1ad9ef2e3eacf1a199f918e33c2bd4adb'
+        'ed8f6833f4db890c1f923d51074aa7b3982f7281f42da80212b819ad68c223776b01c62f80a80ce748a8b5ffcf97004b9807cb59b0b78c0bc1f5851ae852000102e8c94e3e18d8a493a2f0baa81eb0ab7fac5d23fe672f9133048ebc8cccc6f506006c01c62f80a80ce748a8b5ffcf97004b9807cb59b0b798f402c2f5851af02eac020001bda70b50cf607aee95c10322a8bff9fc4df50f8500ffff046d61696e0000005f070707070081eb8b34050502000000440320053d036d0743035d0100000024747a3252746e76454c564157356455547473424e47366362534132655146695974345270031e0743036a009482fd11034f034d031b0200000006030603060306e13e1be168af9539e0b7cb89689ce734bae6fcf3bed1a5a60749ce3bcd8864ea4c2623a0989f5de75c935746e3c88c9caab821876a060019e70f385bf3af4548'
       );
     });
 
@@ -345,7 +345,7 @@ describe('Offline Tezos Transaction builder', function () {
 
       should.exist(consolidationResult);
       consolidationResult.txHex.should.equal(
-        'ed8f6833f4db890c1f923d51074aa7b3982f7281f42da80212b819ad68c223776b01b6da9737d1b4b75053a387d9122c22598ead2d3d8c0bcfda9c1ae852000102f1eb6b09e45afffb3aca4215637edf54d2ea3c4491726128ce5a6071a57dac0e6c01b6da9737d1b4b75053a387d9122c22598ead2d3d98f402d0da9c1af02eac020001ea4d295f3387e9efbf6d791475cb936839eb8d5800ffff046d61696e0000005e07070707008fb5b934050502000000430320053d036d0743035d0100000024747a3252746e76454c564157356455547473424e47366362534132655146695974345270031e0743036a0080897a034f034d031b0200000006030603060306'
+        'ed8f6833f4db890c1f923d51074aa7b3982f7281f42da80212b819ad68c223776b01b6da9737d1b4b75053a387d9122c22598ead2d3d8c0bcfda9c1ae852000102f1eb6b09e45afffb3aca4215637edf54d2ea3c4491726128ce5a6071a57dac0e006c01b6da9737d1b4b75053a387d9122c22598ead2d3d98f402d0da9c1af02eac020001ea4d295f3387e9efbf6d791475cb936839eb8d5800ffff046d61696e0000005e07070707008fb5b934050502000000430320053d036d0743035d0100000024747a3252746e76454c564157356455547473424e47366362534132655146695974345270031e0743036a0080897a034f034d031b0200000006030603060306'
       );
       consolidationResult.source.should.equal('KT1Vwe7wFy6JmspMv4UmFFJU3JLtbfghBTBM');
       consolidationResult.dataToSign.should.equal(
