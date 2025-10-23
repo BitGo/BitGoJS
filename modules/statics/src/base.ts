@@ -3498,4 +3498,20 @@ export abstract class BaseCoin {
     this.network = options.network;
     this.primaryKeyCurve = options.primaryKeyCurve;
   }
+
+  /**
+   * Returns features from a base feature set, excluding specified features
+   * @param excludedFeatures Array of features to exclude
+   * @param baseFeatures Base feature array to filter from (optional)
+   * @returns Filtered array of features
+   */
+  public static getFeaturesByTypeExcluding(
+    excludedFeatures: CoinFeature[],
+    baseFeatures?: CoinFeature[]
+  ): CoinFeature[] {
+    if (!baseFeatures) {
+      return [];
+    }
+    return baseFeatures.filter((feature) => !excludedFeatures.includes(feature));
+  }
 }
