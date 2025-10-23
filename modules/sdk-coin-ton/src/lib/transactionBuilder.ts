@@ -179,4 +179,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this.transaction.publicKey = key;
     return this;
   }
+
+  isV3ContractMessage(bool: boolean): TransactionBuilder {
+    this.transaction.isV3ContractMessage = bool;
+    return this;
+  }
 }
