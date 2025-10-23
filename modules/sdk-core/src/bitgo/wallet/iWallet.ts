@@ -31,7 +31,7 @@ import {
 } from '../utils';
 import { SerializedNtilde } from '../../account-lib/mpc/tss/ecdsa/types';
 import { IAddressBook } from '../address-book';
-import { WalletUser } from '@bitgo/public-types';
+import { WalletUser, AddressQueryResult } from '@bitgo/public-types';
 import { SubmitTransactionResponse } from '../inscriptionBuilder';
 
 export interface MaximumSpendableOptions {
@@ -944,7 +944,7 @@ export interface IWallet {
   sweep(params?: SweepOptions): Promise<any>;
   freeze(params?: FreezeOptions): Promise<any>;
   transferComment(params?: TransferCommentOptions): Promise<any>;
-  addresses(params?: AddressesOptions): Promise<any>;
+  addresses(params?: AddressesOptions): Promise<AddressQueryResult>;
   getAddress(params?: GetAddressOptions): Promise<any>;
   createAddress(params?: CreateAddressOptions): Promise<any>;
   updateAddress(params?: UpdateAddressOptions): Promise<any>;
