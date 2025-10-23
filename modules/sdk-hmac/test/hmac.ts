@@ -75,6 +75,20 @@ describe('HMAC Utility Functions', () => {
       ).to.equal(expectedSubject);
     });
 
+    it('should not include undefined for a response when text is undefined', () => {
+      const expectedSubject = 'GET|1672531200000|/api/test|200|';
+      expect(
+        calculateHMACSubject({
+          urlPath: '/api/test',
+          text: undefined as unknown as string,
+          timestamp: MOCK_TIMESTAMP,
+          statusCode: 200,
+          method: 'get',
+          authVersion: 3,
+        })
+      ).to.equal(expectedSubject);
+    });
+
     it('should handle Buffer text input and return a Buffer for requests', () => {
       const buffer = Buffer.from('binary-data-content');
       const result = calculateHMACSubject({
@@ -94,6 +108,22 @@ describe('HMAC Utility Functions', () => {
       // Manually reconstruct the expected buffer to compare
       const expectedBuffer = Buffer.concat([prefixBuffer, buffer]);
       expect(result).to.deep.equal(expectedBuffer);
+    });
+
+    it('should handle Buffer undefined text input and return a Buffer for requests', () => {
+      const buffer = undefined as unknown as Buffer;
+      const result = calculateHMACSubject({
+        urlPath: '/api/test',
+        text: buffer,
+        timestamp: MOCK_TIMESTAMP,
+        method: 'get',
+        authVersion: 3,
+      });
+
+      expect(Buffer.isBuffer(result)).to.be.false;
+
+      const expectedSubject = 'GET|1672531200000|3.0|/api/test|';
+      expect(result).to.deep.equal(expectedSubject);
     });
 
     it('should handle Buffer text input and return a Buffer for responses', () => {
