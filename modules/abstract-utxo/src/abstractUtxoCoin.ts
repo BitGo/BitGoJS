@@ -91,8 +91,14 @@ import {
   VerifyAddressOptions,
   canonicalAddress,
 } from './address';
+import {
+  decodeTransaction as decodeTransactionUtil,
+  decodeTransactionFromPrebuild as decodeTransactionFromPrebuildUtil,
+  DecodedTransaction,
+} from './transaction/decode';
 
 export { GenerateFixedScriptAddressOptions } from './address';
+export type { DecodedTransaction };
 
 import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 
@@ -170,10 +176,6 @@ function convertValidationErrorToTxIntentMismatch(
   (txIntentError as Error & { cause?: Error }).cause = error;
   return txIntentError;
 }
-
-export type DecodedTransaction<TNumber extends number | bigint> =
-  | utxolib.bitgo.UtxoTransaction<TNumber>
-  | utxolib.bitgo.UtxoPsbt;
 
 export type RootWalletKeys = bitgo.RootWalletKeys;
 
@@ -541,7 +543,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   async postProcessPrebuild<TNumber extends number | bigint>(
     prebuild: TransactionPrebuild<TNumber>
   ): Promise<TransactionPrebuild<TNumber>> {
-    const tx = this.decodeTransactionFromPrebuild(prebuild);
+    const tx = decodeTransactionFromPrebuildUtil(prebuild, this.network, this.amountType);
     if (_.isUndefined(prebuild.blockHeight)) {
       prebuild.blockHeight = (await this.getLatestBlockHeight()) as number;
     }
@@ -560,42 +562,6 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     hex: string
   ): utxolib.bitgo.UtxoTransaction<TNumber> {
     return utxolib.bitgo.createTransactionFromHex<TNumber>(hex, this.network, this.amountType);
-  }
-
-  decodeTransaction<TNumber extends number | bigint>(input: Buffer | string): DecodedTransaction<TNumber> {
-    if (typeof input === 'string') {
-      for (const format of ['hex', 'base64'] as const) {
-        const buffer = Buffer.from(input, format);
-        const bufferToString = buffer.toString(format);
-        if (
-          (format === 'base64' && bufferToString === input) ||
-          (format === 'hex' && bufferToString === input.toLowerCase())
-        ) {
-          return this.decodeTransaction(buffer);
-        }
-      }
-
-      throw new Error('input must be a valid hex or base64 string');
-    }
-
-    if (utxolib.bitgo.isPsbt(input)) {
-      return utxolib.bitgo.createPsbtFromBuffer(input, this.network);
-    } else {
-      return utxolib.bitgo.createTransactionFromBuffer(input, this.network, {
-        amountType: this.amountType,
-      });
-    }
-  }
-
-  decodeTransactionFromPrebuild<TNumber extends number | bigint>(prebuild: {
-    txHex?: string;
-    txBase64?: string;
-  }): DecodedTransaction<TNumber> {
-    const string = prebuild.txHex ?? prebuild.txBase64;
-    if (!string) {
-      throw new Error('missing required txHex or txBase64 property');
-    }
-    return this.decodeTransaction(string);
   }
 
   toCanonicalTransactionRecipient(output: { valueString: string; address?: string }): {
@@ -803,7 +769,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     const txHex = signTransactionParams.txPrebuild.txHex;
     assert(txHex, 'missing txHex parameter');
 
-    const tx = this.decodeTransaction(txHex);
+    const tx = decodeTransactionUtil(txHex, this.network, this.amountType);
 
     const isTxWithKeyPathSpendInput = tx instanceof bitgo.UtxoPsbt && bitgo.isTransactionWithKeyPathSpendInput(tx);
 
@@ -858,7 +824,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   async explainTransaction<TNumber extends number | bigint = number>(
     params: ExplainTransactionOptions<TNumber>
   ): Promise<TransactionExplanation> {
-    return explainTx(this.decodeTransactionFromPrebuild(params), params, this.network);
+    return explainTx(decodeTransactionFromPrebuildUtil(params, this.network, this.amountType), params, this.network);
   }
 
   /**

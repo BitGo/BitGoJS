@@ -10,6 +10,7 @@ import { fetchKeychains, toBip32Triple } from '../keychains';
 
 import * as fixedScript from './fixedScript';
 import * as descriptor from './descriptor';
+import { decodeTransactionFromPrebuild } from './decode';
 
 const debug = buildDebug('bitgo:abstract-utxo:transaction:signTransaction');
 
@@ -42,7 +43,7 @@ export async function signTransaction<TNumber extends number | bigint>(
     throw new Error('missing txPrebuild parameter');
   }
 
-  const tx = coin.decodeTransactionFromPrebuild(params.txPrebuild);
+  const tx = decodeTransactionFromPrebuild(params.txPrebuild, coin.network, coin.amountType);
 
   const signerKeychain = getSignerKeychain(params.prv);
 
