@@ -13,6 +13,7 @@ import {
   CrossChainRecoveryUnsigned,
   getWallet,
   supportedCrossChainRecoveries,
+  generateAddress,
 } from '../../../src';
 import {
   getFixture,
@@ -100,10 +101,13 @@ function run<TNumber extends number | bigint = number>(sourceCoin: AbstractUtxoC
     const recoveryWalletId = '5abacebe28d72fbd07e0b8cbba0ff39e';
     // the address the accidental deposit went to, in both sourceCoin and addressCoin formats
     const [depositAddressSourceCoin, depositAddressRecoveryCoin] = [sourceCoin, recoveryCoin].map((coin) =>
-      coin.generateAddress({ keychains: keychainsBase58, index: 0 })
+      generateAddress(coin.network, coin.getChain(), { keychains: keychainsBase58, index: 0 })
     );
     // the address where we want to recover our funds to
-    const recoveryAddress = sourceCoin.generateAddress({ keychains: keychainsBase58, index: 1 }).address;
+    const recoveryAddress = generateAddress(sourceCoin.network, sourceCoin.getChain(), {
+      keychains: keychainsBase58,
+      index: 1,
+    }).address;
     const nocks: nock.Scope[] = [];
 
     let depositTx: utxolib.bitgo.UtxoTransaction<TNumber>;

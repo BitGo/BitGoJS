@@ -3,7 +3,7 @@ import should = require('should');
 import * as sinon from 'sinon';
 import { Wallet, UnexpectedAddressError, VerificationOptions, Triple } from '@bitgo/sdk-core';
 
-import { UtxoWallet, Output, TransactionExplanation, TransactionParams } from '../../src';
+import { UtxoWallet, Output, TransactionExplanation, TransactionParams, generateAddress } from '../../src';
 
 import { bip322Fixtures } from './fixtures/bip322/fixtures';
 import { psbtTxHex } from './fixtures/psbtHexProof';
@@ -151,7 +151,7 @@ describe('Abstract UTXO Coin:', () => {
       threshold: 2,
     };
 
-    const { address: changeAddress, coinSpecific } = coin.generateAddress(addressData);
+    const { address: changeAddress, coinSpecific } = generateAddress(coin.network, coin.getChain(), addressData);
 
     const changeWalletId = 'changeWalletId';
     const stubData = {
