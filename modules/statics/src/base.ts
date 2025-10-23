@@ -3273,9 +3273,15 @@ export enum UnderlyingAsset {
 
   // ADA testnet tokens
   'tada:water' = 'tada:water',
+  'tada:usda' = 'tada:usda',
 
   // ADA mainnet tokens
   'ada:min' = 'ada:min',
+  'ada:snek' = 'ada:snek',
+  'ada:wmtx' = 'ada:wmtx',
+  'ada:iag' = 'ada:iag',
+  'ada:djed' = 'ada:djed',
+  'ada:usda' = 'ada:usda',
 
   // fiats
   AED = 'aed',
