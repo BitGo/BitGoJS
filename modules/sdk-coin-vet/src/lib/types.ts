@@ -23,6 +23,7 @@ export type RecoverOptions = {
   recoveryDestination: string;
   isUnsignedSweep?: boolean; // specify if this is an unsigned recovery
   bitgoKey?: string;
+  tokenContractAddress?: string;
 };
 
 export interface RecoveryTransaction {

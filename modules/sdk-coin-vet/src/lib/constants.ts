@@ -21,3 +21,10 @@ export const EXPIRATION = 400;
 export const GAS_PRICE_COEF = '128';
 export const GAS_UNIT_PRICE = '10000000000000'; // vechain has fixed gas unit price of 10^13 wei
 export const COEF_DIVISOR = '255';
+
+export const feeEstimateData = {
+  gas: AVG_GAS_UNITS,
+  gasUnitPrice: GAS_UNIT_PRICE,
+  gasPriceCoef: GAS_PRICE_COEF,
+  coefDivisor: COEF_DIVISOR,
+};
