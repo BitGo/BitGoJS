@@ -58,6 +58,7 @@ export const EVM_FEATURES = [
   CoinFeature.BULK_TRANSACTION,
   CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
   CoinFeature.EIP1559,
+  CoinFeature.SHARED_EVM_MESSAGE_SIGNING,
 ];
 export const AVAXC_FEATURES = [
   ...ETH_FEATURES_WITH_MMI,
@@ -467,6 +468,7 @@ export const ARBETH_FEATURES = [
   CoinFeature.MULTISIG,
   CoinFeature.BULK_TRANSACTION,
   CoinFeature.ERC20_BULK_TRANSACTION,
+  CoinFeature.SHARED_EVM_MESSAGE_SIGNING,
 ];
 export const OPETH_FEATURES = [
   ...ETH_FEATURES,
@@ -483,6 +485,7 @@ export const OPETH_FEATURES = [
   CoinFeature.WALLET_CONNECT_DEFI,
   CoinFeature.BULK_TRANSACTION,
   CoinFeature.ERC20_BULK_TRANSACTION,
+  CoinFeature.SHARED_EVM_MESSAGE_SIGNING,
 ];
 export const ZKETH_FEATURES = [
   ...ETH_FEATURES,
