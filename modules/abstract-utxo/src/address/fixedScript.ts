@@ -50,6 +50,25 @@ function supportsAddressType(network: utxolib.Network, addressType: ScriptType2O
   return utxolib.bitgo.outputScripts.isSupportedScriptType(network, addressType);
 }
 
+export function generateAddressWithChainAndIndex(
+  network: utxolib.Network,
+  keychains: { pub: string }[],
+  chain: bitgo.ChainCode,
+  index: number,
+  format: CreateAddressFormat | undefined
+): string {
+  const path = '0/0/' + chain + '/' + index;
+  const hdNodes = keychains.map(({ pub }) => bip32.fromBase58(pub));
+  const derivedKeys = hdNodes.map((hdNode) => hdNode.derivePath(sanitizeLegacyPath(path)).publicKey);
+  const addressType = bitgo.scriptTypeForChain(chain);
+
+  const { scriptPubKey: outputScript } = utxolib.bitgo.outputScripts.createOutputScript2of3(derivedKeys, addressType);
+
+  const address = utxolib.address.fromOutputScript(outputScript, network);
+
+  return canonicalAddress(network, address, format);
+}
+
 /**
  * Generate an address for a wallet based on a set of configurations
  * @param params.addressType {string}   Deprecated
@@ -122,15 +141,7 @@ export function generateAddress(network: utxolib.Network, params: GenerateFixedS
     }
   }
 
-  const path = '0/0/' + derivationChain + '/' + derivationIndex;
-  const hdNodes = keychains.map(({ pub }) => bip32.fromBase58(pub));
-  const derivedKeys = hdNodes.map((hdNode) => hdNode.derivePath(sanitizeLegacyPath(path)).publicKey);
-
-  const { scriptPubKey: outputScript } = utxolib.bitgo.outputScripts.createOutputScript2of3(derivedKeys, addressType);
-
-  const address = utxolib.address.fromOutputScript(outputScript, network);
-
-  return canonicalAddress(network, address, params.format);
+  return generateAddressWithChainAndIndex(network, keychains, derivationChain, derivationIndex, params.format);
 }
 
 type Keychain = {
