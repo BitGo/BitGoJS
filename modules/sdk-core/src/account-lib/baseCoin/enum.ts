@@ -89,6 +89,8 @@ export enum TransactionType {
   FlushERC1155,
   // Set up 1-step pre-approval for canton
   OneStepPreApproval,
+  // canton transfer accept, 2-step
+  TransferAccept,
 
   // trx
   FREEZE,

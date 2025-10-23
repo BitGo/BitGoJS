@@ -57,9 +57,8 @@ export interface WalletInitRequest {
   observingParticipantUids: string[];
 }
 
-export interface OneStepEnablementRequest {
+export interface CantonPrepareCommandRequest {
   commandId: string;
-  receiverId: string;
   verboseHashing: boolean;
   actAs: string[];
   readAs: string[];
@@ -80,4 +79,12 @@ export interface WalletInitBroadcastData {
   preparedParty: PreparedParty;
   onboardingTransactions: OnboardingTransaction[];
   multiHashSignatures: MultiHashSignature[];
+}
+
+export interface CantonOneStepEnablementRequest extends CantonPrepareCommandRequest {
+  receiverId: string;
+}
+
+export interface CantonTransferAcceptRequest extends CantonPrepareCommandRequest {
+  contractId: string;
 }
