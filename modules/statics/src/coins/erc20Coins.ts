@@ -4602,7 +4602,8 @@ export const erc20Coins = [
     'Staked OHM',
     9,
     '0x04906695d6d12cf5459975d7c3c03356e4ccd460',
-    UnderlyingAsset.SOHM
+    UnderlyingAsset.SOHM,
+    ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     '53d7708f-5fdf-4ca0-9f5c-caf2c23c9348',
