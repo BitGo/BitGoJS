@@ -707,7 +707,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @throws {UnexpectedAddressError}
    */
   async isWalletAddress(params: VerifyAddressOptions<UtxoCoinSpecific>, wallet?: IWallet): Promise<boolean> {
-    const { address, addressType, keychains, chain, index } = params;
+    const { address, keychains, chain, index } = params;
 
     if (!this.isValidAddress(address)) {
       throw new InvalidAddressError(`invalid address: ${address}`);
@@ -740,7 +740,6 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
     const expectedAddress = this.generateAddress({
       format: params.format,
-      addressType: addressType as ScriptType2Of3,
       keychains,
       threshold: 2,
       chain,
@@ -782,16 +781,11 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   /**
-   * TODO(BG-11487): Remove addressType, segwit, and bech32 params in SDKv6
    * Generate an address for a wallet based on a set of configurations
-   * @param params.addressType {string}   Deprecated
    * @param params.keychains   {[object]} Array of objects with xpubs
    * @param params.threshold   {number}   Minimum number of signatures
-   * @param params.chain       {number}   Derivation chain (see https://github.com/BitGo/unspents/blob/master/src/codes.ts for
-   *                                                 the corresponding address type of a given chain code)
+   * @param params.chain       {number}   Derivation chain
    * @param params.index       {number}   Derivation index
-   * @param params.segwit      {boolean}  Deprecated
-   * @param params.bech32      {boolean}  Deprecated
    * @returns {{chain: number, index: number, coin: number, coinSpecific: {outputScript, redeemScript}}}
    */
   generateAddress(params: GenerateFixedScriptAddressOptions): AddressDetails {
@@ -800,47 +794,17 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       derivationIndex = params.index as number;
     }
 
-    const { keychains, threshold, chain, segwit = false, bech32 = false } = params as GenerateFixedScriptAddressOptions;
+    const { keychains, threshold, chain } = params as GenerateFixedScriptAddressOptions;
 
     let derivationChain = getExternalChainCode('p2sh');
     if (_.isNumber(chain) && _.isInteger(chain) && isChainCode(chain)) {
       derivationChain = chain;
     }
 
-    function convertFlagsToAddressType(): ScriptType2Of3 {
-      if (isChainCode(chain)) {
-        return utxolib.bitgo.scriptTypeForChain(chain);
-      }
-      if (_.isBoolean(segwit) && segwit) {
-        return 'p2shP2wsh';
-      } else if (_.isBoolean(bech32) && bech32) {
-        return 'p2wsh';
-      } else {
-        return 'p2sh';
-      }
-    }
-
-    const addressType = params.addressType || convertFlagsToAddressType();
-
-    if (addressType !== utxolib.bitgo.scriptTypeForChain(derivationChain)) {
-      throw new AddressTypeChainMismatchError(addressType, derivationChain);
-    }
+    const addressType = utxolib.bitgo.scriptTypeForChain(derivationChain);
 
     if (!this.supportsAddressType(addressType)) {
-      switch (addressType) {
-        case 'p2sh':
-          throw new Error(`internal error: p2sh should always be supported`);
-        case 'p2shP2wsh':
-          throw new P2shP2wshUnsupportedError();
-        case 'p2wsh':
-          throw new P2wshUnsupportedError();
-        case 'p2tr':
-          throw new P2trUnsupportedError();
-        case 'p2trMusig2':
-          throw new P2trMusig2UnsupportedError();
-        default:
-          throw new UnsupportedAddressTypeError();
-      }
+      throw new UnsupportedAddressTypeError();
     }
 
     let signatureThreshold = 2;
