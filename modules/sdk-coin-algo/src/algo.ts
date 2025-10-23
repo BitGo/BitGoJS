@@ -580,6 +580,100 @@ export class Algo extends BaseCoin {
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
+    const { txParams, txPrebuild } = params;
+
+    if (!txParams) {
+      throw new Error('missing txParams');
+    }
+
+    if (!txPrebuild) {
+      throw new Error('missing txPrebuild');
+    }
+
+    if (!txPrebuild.txHex) {
+      throw new Error('missing txHex in txPrebuild');
+    }
+
+    const factory = this.getBuilder();
+    const txBuilder = factory.from(txPrebuild.txHex);
+    const tx = await txBuilder.build();
+    const txJson = tx.toJson();
+
+    // Validate based on Algorand transaction type
+    switch (txJson.type) {
+      case 'pay':
+        return this.validatePayTransaction(txJson, txParams);
+      case 'axfer':
+        return this.validateAssetTransferTransaction(txJson, txParams);
+      default:
+        // For other transaction types, perform basic validation
+        this.validateBasicTransaction(txJson);
+        return true;
+    }
+  }
+
+  /**
+   * Validate basic transaction fields common to all transaction types
+   */
+  private validateBasicTransaction(txJson: any): void {
+    if (!txJson.from) {
+      throw new Error('Invalid transaction: missing sender address');
+    }
+
+    if (!txJson.fee || txJson.fee < 0) {
+      throw new Error('Invalid transaction: invalid fee');
+    }
+  }
+
+  /**
+   * Validate Payment (pay) transaction
+   */
+  private validatePayTransaction(txJson: any, txParams: any): boolean {
+    this.validateBasicTransaction(txJson);
+
+    if (!txJson.to) {
+      throw new Error('Invalid transaction: missing recipient address');
+    }
+
+    if (txJson.amount === undefined || txJson.amount < 0) {
+      throw new Error('Invalid transaction: invalid amount');
+    }
+
+    // Validate recipients if provided in txParams
+    if (txParams.recipients && txParams.recipients.length > 0) {
+      if (txParams.recipients.length !== 1) {
+        throw new Error('Algorand transactions can only have one recipient');
+      }
+
+      const expectedRecipient = txParams.recipients[0];
+      const expectedAmount = expectedRecipient.amount.toString();
+      const expectedAddress = expectedRecipient.address;
+      const actualAmount = txJson.amount.toString();
+      const actualAddress = txJson.to;
+
+      if (expectedAmount !== actualAmount) {
+        throw new Error('transaction amount in txPrebuild does not match the value given by client');
+      }
+
+      if (expectedAddress.toLowerCase() !== actualAddress.toLowerCase()) {
+        throw new Error('destination address does not match with the recipient address');
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * Validate Asset Transfer (axfer) transaction
+   */
+  private validateAssetTransferTransaction(txJson: any, txParams: any): boolean {
+    this.validateBasicTransaction(txJson);
+
+    // Basic amount validation if present
+    if (txJson.amount !== undefined && txJson.amount < 0) {
+      throw new Error('Invalid asset transfer transaction: invalid amount');
+    }
+
     return true;
   }
 
