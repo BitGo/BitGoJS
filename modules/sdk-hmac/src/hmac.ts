@@ -57,13 +57,12 @@ export function calculateHMACSubject<T extends string | Buffer = string>({
         ? [method.toUpperCase(), timestamp, '3.0', queryPath].join('|')
         : [timestamp, queryPath].join('|');
   }
-  prefixedText += '|';
 
   const isBuffer = Buffer.isBuffer(text);
   if (isBuffer) {
-    return Buffer.concat([Buffer.from(prefixedText, 'utf-8'), text]) as T;
+    return Buffer.concat([Buffer.from(prefixedText + '|', 'utf-8'), text]) as T;
   }
-  return (prefixedText + text) as T;
+  return [prefixedText, text].join('|') as T;
 }
 
 /**
