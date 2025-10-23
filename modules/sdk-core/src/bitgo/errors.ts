@@ -253,24 +253,29 @@ export interface ContractDataPayload {
  *
  * @class TxIntentMismatchError
  * @extends {BitGoJsError}
- * @property {string | IRequestTracer} id - Transaction ID or request tracer for tracking
+ * @property {string | IRequestTracer | undefined} id - Transaction ID or request tracer for tracking
  * @property {TransactionParams[]} txParams - Array of transaction parameters that were analyzed
- * @property {string} txHex - The raw transaction in hexadecimal format
+ * @property {string | undefined} txHex - The raw transaction in hexadecimal format
  */
 export class TxIntentMismatchError extends BitGoJsError {
-  public readonly id: string | IRequestTracer;
+  public readonly id: string | IRequestTracer | undefined;
   public readonly txParams: TransactionParams[];
-  public readonly txHex: string;
+  public readonly txHex: string | undefined;
 
   /**
    * Creates an instance of TxIntentMismatchError
    *
    * @param {string} message - Error message describing the intent mismatch
-   * @param {string | IRequestTracer} id - Transaction ID or request tracer
+   * @param {string | IRequestTracer | undefined} id - Transaction ID or request tracer
    * @param {TransactionParams[]} txParams - Transaction parameters that were analyzed
-   * @param {string} txHex - Raw transaction hex string
+   * @param {string | undefined} txHex - Raw transaction hex string
    */
-  public constructor(message: string, id: string | IRequestTracer, txParams: TransactionParams[], txHex: string) {
+  public constructor(
+    message: string,
+    id: string | IRequestTracer | undefined,
+    txParams: TransactionParams[],
+    txHex: string | undefined
+  ) {
     super(message);
     this.id = id;
     this.txParams = txParams;
@@ -295,16 +300,16 @@ export class TxIntentMismatchRecipientError extends TxIntentMismatchError {
    * Creates an instance of TxIntentMismatchRecipientError
    *
    * @param {string} message - Error message describing the recipient intent mismatch
-   * @param {string | IRequestTracer} id - Transaction ID or request tracer
+   * @param {string | IRequestTracer | undefined} id - Transaction ID or request tracer
    * @param {TransactionParams[]} txParams - Transaction parameters that were analyzed
-   * @param {string} txHex - Raw transaction hex string
+   * @param {string | undefined} txHex - Raw transaction hex string
    * @param {MismatchedRecipient[]} mismatchedRecipients - Array of recipients that don't match user intent
    */
   public constructor(
     message: string,
-    id: string | IRequestTracer,
+    id: string | IRequestTracer | undefined,
     txParams: TransactionParams[],
-    txHex: string,
+    txHex: string | undefined,
     mismatchedRecipients: MismatchedRecipient[]
   ) {
     super(message, id, txParams, txHex);
@@ -329,16 +334,16 @@ export class TxIntentMismatchContractError extends TxIntentMismatchError {
    * Creates an instance of TxIntentMismatchContractError
    *
    * @param {string} message - Error message describing the contract intent mismatch
-   * @param {string | IRequestTracer} id - Transaction ID or request tracer
+   * @param {string | IRequestTracer | undefined} id - Transaction ID or request tracer
    * @param {TransactionParams[]} txParams - Transaction parameters that were analyzed
-   * @param {string} txHex - Raw transaction hex string
+   * @param {string | undefined} txHex - Raw transaction hex string
    * @param {ContractDataPayload} mismatchedDataPayload - The contract interaction data that doesn't match user intent
    */
   public constructor(
     message: string,
-    id: string | IRequestTracer,
+    id: string | IRequestTracer | undefined,
     txParams: TransactionParams[],
-    txHex: string,
+    txHex: string | undefined,
     mismatchedDataPayload: ContractDataPayload
   ) {
     super(message, id, txParams, txHex);
@@ -363,16 +368,16 @@ export class TxIntentMismatchApprovalError extends TxIntentMismatchError {
    * Creates an instance of TxIntentMismatchApprovalError
    *
    * @param {string} message - Error message describing the approval intent mismatch
-   * @param {string | IRequestTracer} id - Transaction ID or request tracer
+   * @param {string | IRequestTracer | undefined} id - Transaction ID or request tracer
    * @param {TransactionParams[]} txParams - Transaction parameters that were analyzed
-   * @param {string} txHex - Raw transaction hex string
+   * @param {string | undefined} txHex - Raw transaction hex string
    * @param {TokenApproval} tokenApproval - Details of the token approval that doesn't match user intent
    */
   public constructor(
     message: string,
-    id: string | IRequestTracer,
+    id: string | IRequestTracer | undefined,
     txParams: TransactionParams[],
-    txHex: string,
+    txHex: string | undefined,
     tokenApproval: TokenApproval
   ) {
     super(message, id, txParams, txHex);
