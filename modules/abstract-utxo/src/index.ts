@@ -1,4 +1,5 @@
 export * from './abstractUtxoCoin';
+export * from './address';
 export * from './config';
 export * from './recovery';
 export * from './replayProtection';
