@@ -437,13 +437,6 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   /**
-   * @deprecated
-   */
-  getCoinLibrary() {
-    return utxolib;
-  }
-
-  /**
    * Check if an address is valid
    * @param address
    * @param param
