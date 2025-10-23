@@ -129,8 +129,12 @@ export async function sendSignatureShareV2(
   const addendum = requestType === RequestType.tx ? '/transactions/0' : '/messages/0';
   const urlPath = '/wallet/' + walletId + '/txrequests/' + txRequestId + addendum + '/sign';
   let type = '';
-  if (multisigTypeVersion === 'MPCv2' && mpcAlgorithm === 'ecdsa') {
-    type = 'ecdsaMpcV2';
+  if (multisigTypeVersion === 'MPCv2') {
+    if (mpcAlgorithm === 'ecdsa') {
+      type = 'ecdsaMpcV2';
+    } else {
+      type = 'eddsaMpcV2';
+    }
   } else if (multisigTypeVersion === undefined && mpcAlgorithm === 'eddsa') {
     type = 'eddsaMpcV1';
   }
