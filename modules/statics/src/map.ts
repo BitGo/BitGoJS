@@ -103,7 +103,7 @@ export class CoinMap {
       50: 'xdc',
       51: 'txdc',
       80094: 'bera',
-      80000: 'tbera',
+      80069: 'tbera',
       42220: 'celo',
       44787: 'tcelo',
       2222: 'kava',

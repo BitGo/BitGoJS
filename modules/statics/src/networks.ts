@@ -1275,10 +1275,10 @@ class BerachainTestnet extends Testnet implements EthereumNetwork {
   family = CoinFamily.BERA;
   explorerUrl = 'https://testnet.berascan.com/tx/';
   accountExplorerUrl = 'https://testnet.berascan.com/address/';
-  chainId = 80000;
-  nativeCoinOperationHashPrefix = '80000';
-  tokenOperationHashPrefix = '80000-ERC20';
-  batcherContractAddress = '0xedf1a0016d9c41d2ad0c275e1ba708361a90c0d1';
+  chainId = 80069;
+  nativeCoinOperationHashPrefix = '80069';
+  tokenOperationHashPrefix = '80069-ERC20';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
   forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
