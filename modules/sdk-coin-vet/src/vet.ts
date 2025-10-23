@@ -43,7 +43,7 @@ import {
   VetParseTransactionOptions,
 } from './lib/types';
 import { VetTransactionExplanation } from './lib/iface';
-import { AVG_GAS_UNITS, COEF_DIVISOR, EXPIRATION, GAS_PRICE_COEF, GAS_UNIT_PRICE } from './lib/constants';
+import { AVG_GAS_UNITS, EXPIRATION, GAS_PRICE_COEF, feeEstimateData } from './lib/constants';
 
 interface FeeEstimateData {
   gas: string;
@@ -51,13 +51,6 @@ interface FeeEstimateData {
   gasPriceCoef: string;
   coefDivisor: string;
 }
-
-const feeEstimateData: FeeEstimateData = {
-  gas: AVG_GAS_UNITS,
-  gasUnitPrice: GAS_UNIT_PRICE,
-  gasPriceCoef: GAS_PRICE_COEF,
-  coefDivisor: COEF_DIVISOR,
-};
 
 /**
  * Full Name: Vechain
@@ -419,11 +412,6 @@ export class Vet extends BaseCoin {
 
       const signedTx = await txBuilder.build();
 
-      // broadcast this transaction
-      await this.broadcastTransaction({
-        serializedSignedTransaction: signedTx.toBroadcastFormat(),
-      });
-
       return {
         id: signedTx.id,
         tx: signedTx.toBroadcastFormat(),
@@ -447,7 +435,7 @@ export class Vet extends BaseCoin {
    * @param {BigNumber} estimatedGasLimit - The estimated gas limit for the transaction.
    * @returns {BigNumber} The calculated transaction fee.
    */
-  private calculateFee(feeEstimateData: FeeEstimateData, estimatedGasLimit: BigNumber): BigNumber {
+  protected calculateFee(feeEstimateData: FeeEstimateData, estimatedGasLimit: BigNumber): BigNumber {
     const gasLimit = estimatedGasLimit;
     const adjustmentFactor = new BigNumber(1).plus(
       new BigNumber(feeEstimateData.gasPriceCoef)
@@ -630,7 +618,7 @@ export class Vet extends BaseCoin {
    * @returns {Promise<Transaction>} A promise that resolves to the built recovery transaction.
    * @throws {Error} If there's no VET balance to recover or if there's an error building the transaction.
    */
-  private async buildRecoveryTransaction(buildParams: {
+  protected async buildRecoveryTransaction(buildParams: {
     baseAddress: string;
     params: RecoverOptions;
   }): Promise<Transaction> {

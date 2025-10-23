@@ -506,6 +506,115 @@ module.exports.nockVetRecovery = function (bitgo, baseAddress) {
     });
 };
 
+module.exports.nockVetTokenRecovery = function (bitgo, baseAddress) {
+  // nock for account balance
+  const url = Environments[bitgo.getEnv()].vetNodeUrl;
+  nock(url)
+    .post('/accounts/*', {
+      clauses: [
+        {
+          to: '0x0000000000000000000000000000456E65726779',
+          value: '0x0',
+          data: `0x70a08231000000000000000000000000${baseAddress.slice(2)}`,
+        },
+      ],
+    })
+    .reply(200, [
+      {
+        data: '0x000000000000000000000000000000000000000000000000416003863bd917f8',
+        events: [],
+        transfers: [],
+        gasUsed: 870,
+        reverted: false,
+        vmError: '',
+      },
+    ]);
+
+  nock(url).get('/blocks/best').reply(200, {
+    number: 23107826,
+    id: '0x016098f2a6779c3ad2bb52ef0a3f57c770af55a77bfa1b2837266f752118ad8d',
+    size: 368,
+    parentID: '0x016098f1acffb0125ffeca9b3e2491d31574d14b55a15e912e45e8081e063e0e',
+    timestamp: 1761116630,
+    gasLimit: 40000000,
+    beneficiary: '0xae99cb89767a09d53e589a40cb4016974aba4b94',
+    gasUsed: 0,
+    totalScore: 218523577,
+    txsRoot: '0x45b0cfc220ceec5b7c1c62c4d4193d38e4eba48e8815729ce75f9c0ab0e4c1c0',
+    txsFeatures: 1,
+    stateRoot: '0x7a5e7b3b8b89958e7fdd5e14acbc79dbc419672e84d02376a43b3beebe555e33',
+    receiptsRoot: '0x45b0cfc220ceec5b7c1c62c4d4193d38e4eba48e8815729ce75f9c0ab0e4c1c0',
+    com: true,
+    signer: '0xae99cb89767a09d53e589a40cb4016974aba4b94',
+    isTrunk: true,
+    isFinalized: false,
+    baseFeePerGas: '0x9184e72a000',
+    transactions: [],
+  });
+
+  nock(url)
+    .post('/accounts/*', {
+      clauses: [
+        {
+          to: '0x0000000000000000000000000000456E65726779',
+          value: '0x0',
+          data: '0xa9059cbb000000000000000000000000ac05da78464520aa7c9d4c19bd7a440b111b305400000000000000000000000000000000000000000000000036a9d31575bcee8e',
+        },
+      ],
+      caller: `${baseAddress}`,
+    })
+    .reply(200, [
+      {
+        data: '0x0000000000000000000000000000000000000000000000000000000000000001',
+        events: [
+          {
+            address: '0x0000000000000000000000000000456e65726779',
+            topics: [
+              '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
+              '0x000000000000000000000000880ff4718587d678e78fc7803b3634bd12ecf019',
+              '0x000000000000000000000000ac05da78464520aa7c9d4c19bd7a440b111b3054',
+            ],
+            data: '0x00000000000000000000000000000000000000000000000036a9d31575bcee8e',
+          },
+        ],
+        transfers: [],
+        gasUsed: 13326,
+        reverted: false,
+        vmError: '',
+      },
+    ]);
+  // nock for vtho balance for gas
+  nock(url)
+    .post('/accounts/*', {
+      clauses: [
+        {
+          to: '0x0000000000000000000000000000456E65726779',
+          value: '0x0',
+          data: `0x70a08231000000000000000000000000${baseAddress.slice(2)}`,
+        },
+      ],
+    })
+    .reply(200, [
+      {
+        data: '0x000000000000000000000000000000000000000000000000416003863bd917f8',
+        events: [],
+        transfers: [],
+        gasUsed: 870,
+        reverted: false,
+        vmError: '',
+      },
+    ]);
+
+  nock(url)
+    .post('/transactions', {
+      raw: /^0x[0-9a-f]+$/i,
+    })
+    .reply(200, {
+      id: '0x' + 'a'.repeat(64), // A fake transaction ID
+      reverted: false,
+    });
+};
+
 module.exports.nockEtherscanRateLimitError = function () {
   const response = {
     status: '0',
