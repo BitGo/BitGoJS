@@ -1502,7 +1502,7 @@ describe('Recovery:', function () {
     });
 
     it('should construct a token(vtho) recovery tx with MPCv2 TSS', async function () {
-      const basecoin = bitgo.coin('tvet:vtho');
+      const basecoin = bitgo.coin('tvet');
       const baseAddress = ethLikeDKLSKeycard.senderAddress;
       recoveryNocks.nockVetTokenRecovery(bitgo, baseAddress);
       recoveryParams = {
@@ -1523,7 +1523,7 @@ describe('Recovery:', function () {
 
     it('should construct an unsigned sweep token tx(vtho) with TSS', async function () {
       recoveryNocks.nockVetTokenRecovery(bitgo, '0xad848d2c97a08b2cd5e7f28f76ecd45dd0f82e0e');
-      const basecoin = bitgo.coin('tvet:vtho');
+      const basecoin = bitgo.coin('tvet');
 
       const unsignedSweepRecoveryParams = {
         bitgoKey:
@@ -1536,7 +1536,7 @@ describe('Recovery:', function () {
       should.exist(recovery);
       recovery.should.have.property('txHex');
       recovery.should.have.property('coin');
-      recovery.coin.should.equal('tvet:vtho');
+      recovery.coin.should.equal('tvet');
     });
   });
 });

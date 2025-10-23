@@ -1,6 +1,7 @@
 import * as _ from 'lodash';
 import BigNumber from 'bignumber.js';
 import blake2b from '@bitgo/blake2b';
+import assert from 'assert';
 import axios from 'axios';
 import { TransactionClause, Transaction as VetTransaction } from '@vechain/sdk-core';
 import {
@@ -29,12 +30,12 @@ import {
   BaseBroadcastTransactionResult,
 } from '@bitgo/sdk-core';
 import * as mpc from '@bitgo/sdk-lib-mpc';
-import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import utils from './lib/utils';
 import { bip32 } from '@bitgo/secp256k1';
 import { randomBytes, Hash } from 'crypto';
 import { KeyPair as EthKeyPair } from '@bitgo/abstract-eth';
-import { Transaction, TransactionBuilderFactory } from './lib';
+import { TokenTransaction, Transaction, TransactionBuilderFactory } from './lib';
 import {
   ExplainTransactionOptions,
   RecoverOptions,
@@ -322,6 +323,9 @@ export class Vet extends BaseCoin {
 
   /** @inheritDoc */
   async recover(params: RecoverOptions): Promise<RecoveryTransaction | UnsignedSweepRecoveryTransaction> {
+    if (params.tokenContractAddress) {
+      return this.recoverTokens(params);
+    }
     try {
       if (!params.recoveryDestination || !this.isValidAddress(params.recoveryDestination)) {
         throw new Error('invalid recoveryDestination');
@@ -425,7 +429,7 @@ export class Vet extends BaseCoin {
    * Returns the public node URL for the VeChain network.
    * @returns {string} The URL of the public VeChain node.
    */
-  protected getPublicNodeUrl(): string {
+  private getPublicNodeUrl(): string {
     return Environments[this.bitgo.getEnv()].vetNodeUrl;
   }
 
@@ -435,7 +439,7 @@ export class Vet extends BaseCoin {
    * @param {BigNumber} estimatedGasLimit - The estimated gas limit for the transaction.
    * @returns {BigNumber} The calculated transaction fee.
    */
-  protected calculateFee(feeEstimateData: FeeEstimateData, estimatedGasLimit: BigNumber): BigNumber {
+  private calculateFee(feeEstimateData: FeeEstimateData, estimatedGasLimit: BigNumber): BigNumber {
     const gasLimit = estimatedGasLimit;
     const adjustmentFactor = new BigNumber(1).plus(
       new BigNumber(feeEstimateData.gasPriceCoef)
@@ -618,7 +622,7 @@ export class Vet extends BaseCoin {
    * @returns {Promise<Transaction>} A promise that resolves to the built recovery transaction.
    * @throws {Error} If there's no VET balance to recover or if there's an error building the transaction.
    */
-  protected async buildRecoveryTransaction(buildParams: {
+  private async buildRecoveryTransaction(buildParams: {
     baseAddress: string;
     params: RecoverOptions;
   }): Promise<Transaction> {
@@ -659,6 +663,179 @@ export class Vet extends BaseCoin {
 
     await this.ensureVthoBalanceForFee(baseAddress, actualGasUnits);
 
+    txBuilder.gas(actualGasUnits.toNumber());
+
+    tx = (await txBuilder.build()) as Transaction;
+
+    return tx;
+  }
+
+  async recoverTokens(params: RecoverOptions): Promise<RecoveryTransaction | UnsignedSweepRecoveryTransaction> {
+    try {
+      if (!params.recoveryDestination || !this.isValidAddress(params.recoveryDestination)) {
+        throw new Error('invalid recoveryDestination');
+      }
+      if (!params.tokenContractAddress || !this.isValidAddress(params.tokenContractAddress)) {
+        throw new Error('invalid tokenContractAddress');
+      }
+
+      const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
+
+      let publicKey: string | undefined;
+      let userKeyShare, backupKeyShare, commonKeyChain;
+      const MPC = new Ecdsa();
+
+      if (isUnsignedSweep) {
+        const bitgoKey = params.bitgoKey;
+        if (!bitgoKey) {
+          throw new Error('missing bitgoKey');
+        }
+
+        const hdTree = new mpc.Secp256k1Bip32HdTree();
+        const derivationPath = 'm/0';
+        const derivedPub = hdTree.publicDerive(
+          {
+            pk: mpc.bigIntFromBufferBE(Buffer.from(bitgoKey.slice(0, 66), 'hex')),
+            chaincode: mpc.bigIntFromBufferBE(Buffer.from(bitgoKey.slice(66), 'hex')),
+          },
+          derivationPath
+        );
+
+        publicKey = mpc.bigIntToBufferBE(derivedPub.pk).toString('hex');
+      } else {
+        if (!params.userKey) {
+          throw new Error('missing userKey');
+        }
+
+        if (!params.backupKey) {
+          throw new Error('missing backupKey');
+        }
+
+        if (!params.walletPassphrase) {
+          throw new Error('missing wallet passphrase');
+        }
+
+        const userKey = params.userKey.replace(/\s/g, '');
+        const backupKey = params.backupKey.replace(/\s/g, '');
+
+        ({ userKeyShare, backupKeyShare, commonKeyChain } = await ECDSAUtils.getMpcV2RecoveryKeyShares(
+          userKey,
+          backupKey,
+          params.walletPassphrase
+        ));
+        publicKey = MPC.deriveUnhardened(commonKeyChain, 'm/0').slice(0, 66);
+      }
+
+      if (!publicKey) {
+        throw new Error('failed to derive public key');
+      }
+
+      const backupKeyPair = new EthKeyPair({ pub: publicKey });
+      const baseAddress = backupKeyPair.getAddress();
+
+      const tx = await this.buildTokenRecoveryTransaction({
+        baseAddress,
+        params,
+      });
+
+      const signableHex = await tx.signablePayload;
+      const serializedTxHex = await tx.toBroadcastFormat();
+
+      if (isUnsignedSweep) {
+        return {
+          txHex: serializedTxHex,
+          coin: this.getChain(),
+        };
+      }
+
+      const signableMessage = this.getHashFunction().update(signableHex).digest();
+
+      const signatureObj = await ECDSAUtils.signRecoveryMpcV2(
+        signableMessage,
+        userKeyShare,
+        backupKeyShare,
+        commonKeyChain
+      );
+      const signature = Buffer.from(signatureObj.r + signatureObj.s + (signatureObj.recid === 0 ? '00' : '01'), 'hex');
+      const tokenTransaction = new TokenTransaction(coins.get(this.getChain()));
+      const txBuilder = this.getTxBuilderFactory().getTokenTransactionBuilder(tokenTransaction);
+      await txBuilder.from(serializedTxHex);
+      txBuilder.isRecovery(true);
+      await txBuilder.addSenderSignature(signature);
+
+      const signedTx = await txBuilder.build();
+
+      return {
+        id: signedTx.id,
+        tx: signedTx.toBroadcastFormat(),
+      };
+    } catch (error) {
+      throw new Error(`Error during Vechain token recovery: ${error.message || error}`);
+    }
+  }
+
+  private async buildTokenRecoveryTransaction(buildParams: {
+    baseAddress: string;
+    params: RecoverOptions;
+  }): Promise<Transaction> {
+    const { baseAddress, params } = buildParams;
+    const tokenContractAddress = params.tokenContractAddress;
+    assert(tokenContractAddress, 'tokenContractAddress is required for token recovery');
+
+    const balance = await this.getBalance(baseAddress, tokenContractAddress);
+    //replace with get balance function
+
+    if (balance.isLessThanOrEqualTo(0)) {
+      throw new Error(
+        `no token balance to recover for address ${baseAddress} contract address ${tokenContractAddress}`
+      );
+    }
+
+    // create the recipients here so that we can build the clauses for gas estimation
+    const roughFeeEstimate = this.calculateFee(feeEstimateData, new BigNumber(51390));
+    let recipients = [
+      {
+        address: params.recoveryDestination,
+        amount: balance.minus(roughFeeEstimate).toString(),
+      },
+    ];
+
+    const blockRef = await this.getBlockRef();
+
+    const tokenTransaction = new TokenTransaction(coins.get(this.getChain()));
+    const txBuilder = this.getTxBuilderFactory().getTokenTransactionBuilder(tokenTransaction);
+
+    txBuilder.tokenAddress(tokenContractAddress);
+    txBuilder.chainTag(this.bitgo.getEnv() === 'prod' ? 0x4a : 0x27);
+    txBuilder.recipients(recipients);
+    txBuilder.sender(baseAddress);
+    txBuilder.addFeePayerAddress(baseAddress);
+    txBuilder.gas(Number(AVG_GAS_UNITS));
+    txBuilder.blockRef(blockRef);
+    txBuilder.expiration(EXPIRATION);
+    txBuilder.gasPriceCoef(Number(GAS_PRICE_COEF));
+    txBuilder.nonce(this.getRandomNonce());
+    txBuilder.isRecovery(true);
+
+    let tx = (await txBuilder.build()) as Transaction;
+
+    const clauses = tx.clauses;
+
+    const actualGasUnits = await this.estimateGas(clauses, baseAddress);
+
+    await this.ensureVthoBalanceForFee(baseAddress, actualGasUnits);
+
+    const requiredFee = this.calculateFee(feeEstimateData, actualGasUnits);
+
+    // create the final recipients with the fee deducted
+    recipients = [
+      {
+        address: params.recoveryDestination,
+        amount: balance.minus(requiredFee).toString(),
+      },
+    ];
+
+    txBuilder.recipients(recipients);
     txBuilder.gas(actualGasUnits.toNumber());
 
     tx = (await txBuilder.build()) as Transaction;
