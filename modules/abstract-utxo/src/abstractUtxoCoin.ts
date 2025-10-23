@@ -7,7 +7,6 @@ import { bip32 } from '@bitgo/secp256k1';
 import { bitgo, getMainnet, isMainnet, isTestnet } from '@bitgo/utxo-lib';
 import {
   AddressCoinSpecific,
-  AddressTypeChainMismatchError,
   BaseCoin,
   BitGoBase,
   CreateAddressFormat,
@@ -25,10 +24,6 @@ import {
   MismatchedRecipient,
   MultisigType,
   multisigTypes,
-  P2shP2wshUnsupportedError,
-  P2trMusig2UnsupportedError,
-  P2trUnsupportedError,
-  P2wshUnsupportedError,
   ParseTransactionOptions as BaseParseTransactionOptions,
   PrecreateBitGoOptions,
   PresignTransactionOptions,
@@ -41,7 +36,6 @@ import {
   TransactionPrebuild as BaseTransactionPrebuild,
   Triple,
   TxIntentMismatchRecipientError,
-  UnexpectedAddressError,
   UnsupportedAddressTypeError,
   VerificationOptions,
   VerifyAddressOptions as BaseVerifyAddressOptions,
@@ -81,6 +75,7 @@ import {
 } from './transaction/descriptor/verifyTransaction';
 import { assertDescriptorWalletAddress, getDescriptorMapFromWallet, isDescriptorWallet } from './descriptor';
 import { getChainFromNetwork, getFamilyFromNetwork, getFullNameFromNetwork } from './names';
+import { assertFixedScriptWalletAddress } from './address/fixedScript';
 import { CustomChangeOptions } from './transaction/fixedScript';
 import { toBip32Triple, UtxoKeychain, UtxoNamedKeychains } from './keychains';
 import { verifyKeySignature, verifyUserPublicKey } from './verifyKey';
@@ -738,19 +733,14 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       throw new Error('missing required param keychains');
     }
 
-    const expectedAddress = this.generateAddress({
-      format: params.format,
+    assertFixedScriptWalletAddress(this.network, {
+      address,
       keychains,
-      threshold: 2,
+      format: params.format ?? 'base58',
+      addressType: params.addressType,
       chain,
       index,
     });
-
-    if (expectedAddress.address !== address) {
-      throw new UnexpectedAddressError(
-        `address validation failure: expected ${expectedAddress.address} but got ${address}`
-      );
-    }
 
     return true;
   }

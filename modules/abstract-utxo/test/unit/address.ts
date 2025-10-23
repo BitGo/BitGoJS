@@ -82,7 +82,7 @@ function run(coin: AbstractUtxoCoin) {
       const addresses = getParameters().map((p) => {
         const label = { chain: p.chain === undefined ? 'default' : p.chain };
         try {
-          return [label, generateAddress(coin.network, coin.getChain(), p)];
+          return [label, generateAddress(coin.network, p)];
         } catch (e) {
           return [label, { error: e.message }];
         }
@@ -94,23 +94,23 @@ function run(coin: AbstractUtxoCoin) {
     it('validates and verifies generated addresses', function () {
       getParameters().forEach((p) => {
         if (p.chain && !coin.supportsAddressChain(p.chain)) {
-          assert.throws(() => generateAddress(coin.network, coin.getChain(), p));
+          assert.throws(() => generateAddress(coin.network, p));
           return;
         }
 
-        const a = generateAddress(coin.network, coin.getChain(), p);
-        coin.isValidAddress(a.address).should.eql(true);
-        if (a.address !== a.address.toUpperCase()) {
-          coin.isValidAddress(a.address.toUpperCase()).should.eql(false);
+        const address = generateAddress(coin.network, p);
+        coin.isValidAddress(address).should.eql(true);
+        if (address !== address.toUpperCase()) {
+          coin.isValidAddress(address.toUpperCase()).should.eql(false);
         }
-        coin.verifyAddress({ ...a, keychains });
+        coin.verifyAddress({ address, keychains });
       });
     });
 
     it('defaults to canonical address', function () {
       getParameters().forEach((p) => {
         if (!p.chain || coin.supportsAddressChain(p.chain)) {
-          const address = generateAddress(coin.network, coin.getChain(), p).address;
+          const address = generateAddress(coin.network, p);
           coin.canonicalAddress(address).should.eql(address);
         }
       });
@@ -122,10 +122,10 @@ function run(coin: AbstractUtxoCoin) {
           if (p.chain && (!coin.supportsAddressChain(p.chain) || !otherCoin.supportsAddressChain(p.chain))) {
             return;
           }
-          const address = generateAddress(coin.network, coin.getChain(), p);
-          const otherAddress = generateAddress(otherCoin.network, otherCoin.getChain(), p);
-          (address.address === otherAddress.address).should.eql(isCompatibleAddress(coin, otherCoin));
-          coin.isValidAddress(otherAddress.address).should.eql(isCompatibleAddress(coin, otherCoin));
+          const address = generateAddress(coin.network, p);
+          const otherAddress = generateAddress(otherCoin.network, p);
+          (address === otherAddress).should.eql(isCompatibleAddress(coin, otherCoin));
+          coin.isValidAddress(otherAddress).should.eql(isCompatibleAddress(coin, otherCoin));
         });
       });
     });

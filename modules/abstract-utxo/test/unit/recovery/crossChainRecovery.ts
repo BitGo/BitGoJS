@@ -63,7 +63,6 @@ type Address = {
   address: string;
   chain: number;
   index: number;
-  coinSpecific: unknown;
 };
 
 function nockWalletAddress(coin: AbstractUtxoCoin, walletId: string, address: Address): nock.Scope {
@@ -75,7 +74,6 @@ function nockWalletAddress(coin: AbstractUtxoCoin, walletId: string, address: Ad
       index: address.index,
       coin: coin.getChain(),
       wallet: walletId,
-      coinSpecific: address.coinSpecific,
     })
     .persist();
 }
@@ -100,14 +98,19 @@ function run<TNumber extends number | bigint = number>(sourceCoin: AbstractUtxoC
     const walletKeys = getDefaultWalletKeys();
     const recoveryWalletId = '5abacebe28d72fbd07e0b8cbba0ff39e';
     // the address the accidental deposit went to, in both sourceCoin and addressCoin formats
-    const [depositAddressSourceCoin, depositAddressRecoveryCoin] = [sourceCoin, recoveryCoin].map((coin) =>
-      generateAddress(coin.network, coin.getChain(), { keychains: keychainsBase58, index: 0 })
-    );
+    const [depositAddressSourceCoin, depositAddressRecoveryCoin] = [sourceCoin, recoveryCoin].map((coin) => ({
+      address: generateAddress(coin.network, { keychains: keychainsBase58, chain: 0, index: 0 }),
+      chain: 0,
+      index: 0,
+    }));
+    const chain = 0;
+    const index = 1;
     // the address where we want to recover our funds to
-    const recoveryAddress = generateAddress(sourceCoin.network, sourceCoin.getChain(), {
+    const recoveryAddress = generateAddress(sourceCoin.network, {
       keychains: keychainsBase58,
-      index: 1,
-    }).address;
+      chain,
+      index,
+    });
     const nocks: nock.Scope[] = [];
 
     let depositTx: utxolib.bitgo.UtxoTransaction<TNumber>;
@@ -142,8 +145,8 @@ function run<TNumber extends number | bigint = number>(sourceCoin: AbstractUtxoC
         {
           id: depositTx.getId(),
           address: depositAddressSourceCoin.address,
-          chain: depositAddressSourceCoin.chain as utxolib.bitgo.ChainCode,
-          index: depositAddressSourceCoin.index,
+          chain: chain,
+          index: index,
           value: depositTx.outs[0].value,
         },
       ];

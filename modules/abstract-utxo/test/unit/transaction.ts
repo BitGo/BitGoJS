@@ -311,9 +311,9 @@ function run<TNumber extends number | bigint = number>(
     }
 
     function getOutputAddress(rootWalletKeys: utxolib.bitgo.RootWalletKeys): string {
-      return generateAddress(coin.network, coin.getChain(), {
+      return generateAddress(coin.network, {
         keychains: rootWalletKeys.triple.map((k) => ({ pub: k.neutered().toBase58() })),
-      }).address;
+      });
     }
 
     function getSignParams(
