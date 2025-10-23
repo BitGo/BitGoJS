@@ -67,6 +67,11 @@ export class Canton extends BaseCoin {
     return multisigTypes.tss;
   }
 
+  /** inherited doc */
+  requiresWalletInitializationTransaction(): boolean {
+    return true;
+  }
+
   getMPCAlgorithm(): MPCAlgorithm {
     return 'eddsa';
   }

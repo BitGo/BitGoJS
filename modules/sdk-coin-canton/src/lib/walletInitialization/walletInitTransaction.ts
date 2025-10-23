@@ -79,7 +79,7 @@ export class WalletInitTransaction extends BaseTransaction {
     if (!this._preparedParty) {
       throw new InvalidTransactionError('Empty transaction data');
     }
-    return Buffer.from(this._preparedParty.multiHash);
+    return Buffer.from(this._preparedParty.multiHash, 'base64');
   }
 
   fromRawTransaction(rawTx: string): void {
