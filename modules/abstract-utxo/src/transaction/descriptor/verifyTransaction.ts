@@ -8,6 +8,7 @@ import {
   BaseParsedTransactionOutputs,
   VerifyTransactionOptions,
 } from '../../abstractUtxoCoin';
+import { decodeTransactionFromPrebuild } from '../decode';
 
 import { toBaseParsedTransactionOutputsFromPsbt } from './parse';
 
@@ -79,7 +80,7 @@ export async function verifyTransaction<TNumber extends number | bigint>(
   params: VerifyTransactionOptions<TNumber>,
   descriptorMap: DescriptorMap
 ): Promise<boolean> {
-  const tx = coin.decodeTransactionFromPrebuild(params.txPrebuild);
+  const tx = decodeTransactionFromPrebuild(params.txPrebuild, coin.network, coin.amountType);
   if (!(tx instanceof utxolib.bitgo.UtxoPsbt)) {
     throw new TxIntentMismatchError(
       'unexpected transaction type',

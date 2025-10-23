@@ -14,6 +14,7 @@ import { getDescriptorMapFromWallet, getPolicyForEnv } from '../../descriptor';
 import { IDescriptorWallet } from '../../descriptor/descriptorWallet';
 import { fromExtendedAddressFormatToScript, toExtendedAddressFormat } from '../recipient';
 import { outputDifferencesWithExpected, OutputDifferenceWithExpected } from '../outputDifference';
+import { decodeTransactionFromPrebuild } from '../decode';
 
 type ParsedOutput = coreDescriptors.ParsedOutput;
 
@@ -128,7 +129,7 @@ export function parse(
   if (!recipients) {
     throw new Error('recipients is required');
   }
-  const psbt = coin.decodeTransactionFromPrebuild(params.txPrebuild);
+  const psbt = decodeTransactionFromPrebuild(params.txPrebuild, coin.network, coin.amountType);
   if (!(psbt instanceof utxolib.bitgo.UtxoPsbt)) {
     throw new Error('expected psbt to be an instance of UtxoPsbt');
   }
