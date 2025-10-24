@@ -5,18 +5,13 @@ import {
   AcceptShareRequestBody,
   PostAcceptShare,
 } from '../../../src/typedRoutes/api/v1/acceptShare';
-
-/**
- * Helper function to test io-ts codec decoding
- */
-export function assertDecode<T>(codec: t.Type<T, unknown>, input: unknown): T {
-  const result = codec.decode(input);
-  if (result._tag === 'Left') {
-    const errors = JSON.stringify(result.left, null, 2);
-    assert.fail(`Decode failed with errors:\n${errors}`);
-  }
-  return result.right;
-}
+import { assertDecode } from './common';
+import 'should';
+import 'should-http';
+import 'should-sinon';
+import * as sinon from 'sinon';
+import { BitGo } from 'bitgo';
+import { setupAgent } from '../../lib/testutil';
 
 describe('AcceptShare codec tests', function () {
   describe('AcceptShareRequestParams', function () {
@@ -128,6 +123,222 @@ describe('AcceptShare codec tests', function () {
       assert.strictEqual(decoded.userPassword, 'password123');
       // @ts-expect-error - unknownProperty doesn't exist on the type
       assert.strictEqual(decoded.unknownProperty, undefined);
+    });
+  });
+
+  describe('Supertest Integration Tests', function () {
+    const agent = setupAgent();
+    const shareId = 'share123456789abcdef';
+
+    const mockAcceptShareResponse = {
+      state: 'accepted',
+      changed: true,
+      walletId: 'wallet123',
+    };
+
+    afterEach(function () {
+      sinon.restore();
+    });
+
+    it('should successfully accept share with all optional fields', async function () {
+      const requestBody = {
+        userPassword: 'mySecurePassword',
+        newWalletPassphrase: 'myNewPassphrase',
+        overrideEncryptedXprv: 'encryptedXprvString',
+      };
+
+      const acceptShareStub = sinon.stub().resolves(mockAcceptShareResponse);
+      const mockWallets = {
+        acceptShare: acceptShareStub,
+      };
+
+      sinon.stub(BitGo.prototype, 'wallets').returns(mockWallets as any);
+
+      const result = await agent
+        .post(`/api/v1/walletshare/${shareId}/acceptShare`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      assert.strictEqual(result.status, 200);
+      assert.ok(result.body);
+
+      // Verify the method was called with correct params
+      sinon.assert.calledOnce(acceptShareStub);
+      const callArgs = acceptShareStub.firstCall.args[0];
+      assert.strictEqual(callArgs.walletShareId, shareId);
+      assert.strictEqual(callArgs.userPassword, requestBody.userPassword);
+      assert.strictEqual(callArgs.newWalletPassphrase, requestBody.newWalletPassphrase);
+      assert.strictEqual(callArgs.overrideEncryptedXprv, requestBody.overrideEncryptedXprv);
+    });
+
+    it('should successfully accept share with empty body', async function () {
+      const requestBody = {};
+
+      const acceptShareStub = sinon.stub().resolves(mockAcceptShareResponse);
+      const mockWallets = {
+        acceptShare: acceptShareStub,
+      };
+
+      sinon.stub(BitGo.prototype, 'wallets').returns(mockWallets as any);
+
+      const result = await agent
+        .post(`/api/v1/walletshare/${shareId}/acceptShare`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      assert.strictEqual(result.status, 200);
+      assert.ok(result.body);
+
+      sinon.assert.calledOnce(acceptShareStub);
+      const callArgs = acceptShareStub.firstCall.args[0];
+      assert.strictEqual(callArgs.walletShareId, shareId);
+    });
+
+    it('should successfully accept share with only userPassword', async function () {
+      const requestBody = {
+        userPassword: 'mySecurePassword',
+      };
+
+      const acceptShareStub = sinon.stub().resolves(mockAcceptShareResponse);
+      const mockWallets = {
+        acceptShare: acceptShareStub,
+      };
+
+      sinon.stub(BitGo.prototype, 'wallets').returns(mockWallets as any);
+
+      const result = await agent
+        .post(`/api/v1/walletshare/${shareId}/acceptShare`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      assert.strictEqual(result.status, 200);
+      assert.ok(result.body);
+
+      sinon.assert.calledOnce(acceptShareStub);
+      const callArgs = acceptShareStub.firstCall.args[0];
+      assert.strictEqual(callArgs.walletShareId, shareId);
+      assert.strictEqual(callArgs.userPassword, requestBody.userPassword);
+    });
+
+    it('should successfully accept share with only newWalletPassphrase', async function () {
+      const requestBody = {
+        newWalletPassphrase: 'myNewPassphrase',
+      };
+
+      const acceptShareStub = sinon.stub().resolves(mockAcceptShareResponse);
+      const mockWallets = {
+        acceptShare: acceptShareStub,
+      };
+
+      sinon.stub(BitGo.prototype, 'wallets').returns(mockWallets as any);
+
+      const result = await agent
+        .post(`/api/v1/walletshare/${shareId}/acceptShare`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      assert.strictEqual(result.status, 200);
+      assert.ok(result.body);
+
+      sinon.assert.calledOnce(acceptShareStub);
+      const callArgs = acceptShareStub.firstCall.args[0];
+      assert.strictEqual(callArgs.walletShareId, shareId);
+      assert.strictEqual(callArgs.newWalletPassphrase, requestBody.newWalletPassphrase);
+    });
+  });
+
+  describe('Error Handling Tests', function () {
+    const agent = setupAgent();
+    const shareId = 'share123456789abcdef';
+
+    afterEach(function () {
+      sinon.restore();
+    });
+
+    it('should return 400 for non-string optional fields', async function () {
+      const requestBody = {
+        userPassword: 12345, // Invalid type
+      };
+
+      const result = await agent
+        .post(`/api/v1/walletshare/${shareId}/acceptShare`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      assert.strictEqual(result.status, 400);
+      assert.ok(Array.isArray(result.body));
+      assert.ok(result.body.length > 0);
+    });
+
+    it('should handle acceptShare method throwing error', async function () {
+      const requestBody = {
+        userPassword: 'wrongPassword',
+      };
+
+      const acceptShareStub = sinon.stub().rejects(new Error('Invalid password'));
+      const mockWallets = {
+        acceptShare: acceptShareStub,
+      };
+
+      sinon.stub(BitGo.prototype, 'wallets').returns(mockWallets as any);
+
+      const result = await agent
+        .post(`/api/v1/walletshare/${shareId}/acceptShare`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      assert.strictEqual(result.status, 500);
+      result.body.should.have.property('error');
+    });
+
+    it('should handle share not found error', async function () {
+      const requestBody = {
+        newWalletPassphrase: 'myNewPassphrase',
+      };
+
+      const acceptShareStub = sinon.stub().rejects(new Error('Share not found'));
+      const mockWallets = {
+        acceptShare: acceptShareStub,
+      };
+
+      sinon.stub(BitGo.prototype, 'wallets').returns(mockWallets as any);
+
+      const result = await agent
+        .post(`/api/v1/walletshare/${shareId}/acceptShare`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      assert.strictEqual(result.status, 500);
+      result.body.should.have.property('error');
+    });
+
+    it('should handle share already accepted error', async function () {
+      const requestBody = {
+        userPassword: 'myPassword',
+      };
+
+      const acceptShareStub = sinon.stub().rejects(new Error('Share already accepted'));
+      const mockWallets = {
+        acceptShare: acceptShareStub,
+      };
+
+      sinon.stub(BitGo.prototype, 'wallets').returns(mockWallets as any);
+
+      const result = await agent
+        .post(`/api/v1/walletshare/${shareId}/acceptShare`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      assert.strictEqual(result.status, 500);
+      result.body.should.have.property('error');
     });
   });
 });
