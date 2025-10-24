@@ -5,7 +5,7 @@ import * as t from 'io-ts';
 import { PathReporter } from 'io-ts/lib/PathReporter';
 import { isLeft } from 'fp-ts/Either';
 import * as utxolib from '@bitgo/utxo-lib';
-import { ast, Descriptor } from '@bitgo/wasm-miniscript';
+import { ast, Descriptor } from '@bitgo/wasm-utxo';
 import { PartialSig } from 'bip174/src/lib/interfaces';
 
 import { BabylonDescriptorBuilder } from '../../../src/babylon';

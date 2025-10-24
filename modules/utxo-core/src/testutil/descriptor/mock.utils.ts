@@ -1,4 +1,4 @@
-import { Descriptor, Miniscript } from '@bitgo/wasm-miniscript';
+import { Descriptor, Miniscript } from '@bitgo/wasm-utxo';
 import * as utxolib from '@bitgo/utxo-lib';
 
 import {
