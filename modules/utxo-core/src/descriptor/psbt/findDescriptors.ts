@@ -10,7 +10,7 @@ We should take a look at a more robust and standard approach like this: https://
 
  */
 import { PsbtInput, PsbtOutput } from 'bip174/src/lib/interfaces';
-import { Descriptor } from '@bitgo/wasm-miniscript';
+import { Descriptor } from '@bitgo/wasm-utxo';
 
 import { DescriptorMap } from '../DescriptorMap';
 

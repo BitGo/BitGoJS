@@ -3,7 +3,7 @@ import * as fs from 'fs/promises';
 
 import yargs from 'yargs';
 import * as utxolib from '@bitgo/utxo-lib';
-import { Descriptor } from '@bitgo/wasm-miniscript';
+import { Descriptor } from '@bitgo/wasm-utxo';
 
 import { cmdPsbt } from '../src/commands';
 import { formatTreeNoColor, getFixtureString } from './fixtures';

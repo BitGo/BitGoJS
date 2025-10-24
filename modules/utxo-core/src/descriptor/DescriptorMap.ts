@@ -1,4 +1,4 @@
-import { Descriptor } from '@bitgo/wasm-miniscript';
+import { Descriptor } from '@bitgo/wasm-utxo';
 
 /** Map from descriptor name to descriptor */
 export type DescriptorMap = Map<string, Descriptor>;

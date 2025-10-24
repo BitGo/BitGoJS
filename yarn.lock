@@ -273,6 +273,11 @@
   resolved "https://registry.npmjs.org/@babel/helper-validator-identifier/-/helper-validator-identifier-7.27.1.tgz"
   integrity sha512-D2hP9eA+Sqx1kBZgzxZh0y1trbuU+JoDkiEwqhQ36nodYqJwyEIhPSdMNd7lOm/4io72luTPWH20Yda0xOuUow==
 
+"@babel/helper-validator-identifier@^7.28.5":
+  version "7.28.5"
+  resolved "https://registry.npmjs.org/@babel/helper-validator-identifier/-/helper-validator-identifier-7.28.5.tgz#010b6938fab7cb7df74aa2bbc06aa503b8fe5fb4"
+  integrity sha512-qSs4ifwzKJSV39ucNjsvc6WVHs6b7S03sOh2OcHF9UHfVPqWWALUsNUVzhSBiItjRZoLHx7nIarVjqKVusUZ1Q==
+
 "@babel/helper-validator-option@^7.27.1":
   version "7.27.1"
   resolved "https://registry.npmjs.org/@babel/helper-validator-option/-/helper-validator-option-7.27.1.tgz"
@@ -288,12 +293,12 @@
     "@babel/types" "^7.28.2"
 
 "@babel/helpers@^7.28.2", "@babel/helpers@^7.28.3":
-  version "7.28.3"
-  resolved "https://registry.npmjs.org/@babel/helpers/-/helpers-7.28.3.tgz#b83156c0a2232c133d1b535dd5d3452119c7e441"
-  integrity sha512-PTNtvUQihsAsDHMOP5pfobP8C6CM4JWXmP8DrEIt46c3r2bf87Ua1zoqevsMo9g+tWDwgWrFP5EIxuBx5RudAw==
+  version "7.28.4"
+  resolved "https://registry.npmjs.org/@babel/helpers/-/helpers-7.28.4.tgz#fe07274742e95bdf7cf1443593eeb8926ab63827"
+  integrity sha512-HFN59MmQXGHVyYadKLVumYsA9dBFun/ldYxipEjzA4196jpLZd8UjEEBLkbEkvfYreDqJhZxYAWFPtrfhNpj4w==
   dependencies:
     "@babel/template" "^7.27.2"
-    "@babel/types" "^7.28.2"
+    "@babel/types" "^7.28.4"
 
 "@babel/highlight@^7.10.4":
   version "7.25.9"
@@ -868,9 +873,9 @@
     esutils "^2.0.2"
 
 "@babel/runtime@7.6.0", "@babel/runtime@^7.0.0", "@babel/runtime@^7.12.5", "@babel/runtime@^7.14.6", "@babel/runtime@^7.20.13", "@babel/runtime@^7.25.0", "@babel/runtime@^7.26.9", "@babel/runtime@^7.28.2", "@babel/runtime@^7.7.6":
-  version "7.28.3"
-  resolved "https://registry.npmjs.org/@babel/runtime/-/runtime-7.28.3.tgz#75c5034b55ba868121668be5d5bb31cc64e6e61a"
-  integrity sha512-9uIQ10o0WGdpP6GDhXcdOJPJuDgFtIDtN/9+ArJQ2NAfAmiuhTQdzkaTGR33v43GYS2UrSA0eX2pPPHoFVvpxA==
+  version "7.28.4"
+  resolved "https://registry.npmjs.org/@babel/runtime/-/runtime-7.28.4.tgz#a70226016fabe25c5783b2f22d3e1c9bc5ca3326"
+  integrity sha512-Q/N6JNWvIvPnLDvjlE1OUBLPQHH6l3CltCEsHIujp45zQUSSh8K+gHnaEX45yAT1nyngnINhvWtzN+Nb9D8RAQ==
 
 "@babel/template@^7.27.1", "@babel/template@^7.27.2":
   version "7.27.2"
@@ -901,6 +906,14 @@
   dependencies:
     "@babel/helper-string-parser" "^7.27.1"
     "@babel/helper-validator-identifier" "^7.27.1"
+
+"@babel/types@^7.28.4":
+  version "7.28.5"
+  resolved "https://registry.npmjs.org/@babel/types/-/types-7.28.5.tgz#10fc405f60897c35f07e85493c932c7b5ca0592b"
+  integrity sha512-qQ5m48eI/MFLQ5PxQj4PFaprjyCTLI37ElWMmNs0K8Lk3dVeOdNpB3ks8jc7yM5CDmVC73eMVk/trk3fgmrUpA==
+  dependencies:
+    "@babel/helper-string-parser" "^7.27.1"
+    "@babel/helper-validator-identifier" "^7.28.5"
 
 "@babylonlabs-io/babylon-proto-ts@1.0.0":
   version "1.0.0"
@@ -955,10 +968,9 @@
     monocle-ts "^2.3.13"
     newtype-ts "^0.3.5"
 
-"@bitgo/wasm-miniscript@2.0.0-beta.7":
-  version "2.0.0-beta.7"
-  resolved "https://registry.npmjs.org/@bitgo/wasm-miniscript/-/wasm-miniscript-2.0.0-beta.7.tgz"
-  integrity sha512-cXHEpksbl/myUVkOUJJFXhvPYLLLt8iujrNK00csGyLYTRafwaO2U2txhwt8nUV2CnZXGsmxci/ZsLGLfdJ/8A==
+"@bitgo/wasm-utxo@file:bitgo-wasm-utxo-0.0.0-semantic-release-managed.tgz":
+  version "0.0.0-semantic-release-managed"
+  resolved "file:bitgo-wasm-utxo-0.0.0-semantic-release-managed.tgz#b10ab422c0873b536011c2b2b695bee64dac3d21"
 
 "@brandonblack/musig@^0.0.1-alpha.0":
   version "0.0.1-alpha.1"
@@ -20584,14 +20596,14 @@ web-streams-polyfill@^3.0.3:
 
 web3-errors@^1.1.4, web3-errors@^1.2.0:
   version "1.3.1"
-  resolved "https://registry.npmjs.org/web3-errors/-/web3-errors-1.3.1.tgz"
+  resolved "https://registry.npmjs.org/web3-errors/-/web3-errors-1.3.1.tgz#163bc4d869f98614760b683d733c3ed1fb415d98"
   integrity sha512-w3NMJujH+ZSW4ltIZZKtdbkbyQEvBzyp3JRn59Ckli0Nz4VMsVq8aF1bLWM7A2kuQ+yVEm3ySeNU+7mSRwx7RQ==
   dependencies:
     web3-types "^1.10.0"
 
 web3-types@^1.10.0, web3-types@^1.5.0, web3-types@^1.6.0:
   version "1.10.0"
-  resolved "https://registry.npmjs.org/web3-types/-/web3-types-1.10.0.tgz"
+  resolved "https://registry.npmjs.org/web3-types/-/web3-types-1.10.0.tgz#41b0b4d2dd75e919d5b6f37bf139e29f445db04e"
   integrity sha512-0IXoaAFtFc8Yin7cCdQfB9ZmjafrbP6BO0f0KT/khMhXKUpoJ6yShrVhiNpyRBo8QQjuOagsWzwSK2H49I7sbw==
 
 web3-utils@4.2.1:
@@ -20607,7 +20619,7 @@ web3-utils@4.2.1:
 
 web3-validator@^2.0.4:
   version "2.0.6"
-  resolved "https://registry.npmjs.org/web3-validator/-/web3-validator-2.0.6.tgz"
+  resolved "https://registry.npmjs.org/web3-validator/-/web3-validator-2.0.6.tgz#a0cdaa39e1d1708ece5fae155b034e29d6a19248"
   integrity sha512-qn9id0/l1bWmvH4XfnG/JtGKKwut2Vokl6YXP5Kfg424npysmtRLe9DgiNBM9Op7QL/aSiaA0TVXibuIuWcizg==
   dependencies:
     ethereum-cryptography "^2.0.0"
@@ -21288,5 +21300,5 @@ yoctocolors-cjs@^2.1.2:
 
 zod@^3.21.4:
   version "3.25.76"
-  resolved "https://registry.npmjs.org/zod/-/zod-3.25.76.tgz"
+  resolved "https://registry.npmjs.org/zod/-/zod-3.25.76.tgz#26841c3f6fd22a6a2760e7ccb719179768471e34"
   integrity sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==

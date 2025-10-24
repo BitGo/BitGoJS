@@ -51,7 +51,7 @@
     "@bitgo/utxo-core": "^1.21.2",
     "@bitgo/utxo-lib": "^11.13.1",
     "@bitgo/utxo-ord": "^1.22.8",
-    "@bitgo/wasm-miniscript": "2.0.0-beta.7",
+    "@bitgo/wasm-utxo": "file:../../bitgo-wasm-utxo-0.0.0-semantic-release-managed.tgz",
     "@types/lodash": "^4.14.121",
     "@types/superagent": "4.1.15",
     "bignumber.js": "^9.0.2",
