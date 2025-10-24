@@ -138,6 +138,10 @@ export const CustomChangeKeySignatures = t.partial({
   bitgo: t.string,
 });
 
+export const multisigType = t.union([t.literal('onchain'), t.literal('tss')]);
+
+export const walletType = t.union([t.literal('cold'), t.literal('custodial'), t.literal('hot'), t.literal('trading')]);
+
 /**
  * Wallet response data
  * Comprehensive wallet information returned from wallet operations
@@ -175,11 +179,11 @@ export const WalletResponse = t.partial({
   /** Enterprise ID this wallet belongs to */
   enterprise: t.string,
   /** Wallet type (e.g., 'hot', 'cold', 'custodial') */
-  type: t.string,
+  type: walletType,
   /** Wallet subtype (e.g., 'lightningSelfCustody') */
   subType: t.string,
   /** Multisig type ('onchain' or 'tss') */
-  multisigType: t.union([t.literal('onchain'), t.literal('tss')]),
+  multisigType: multisigType,
   /** Multisig type version (e.g., 'MPCv2') */
   multisigTypeVersion: t.string,
   /** Coin-specific wallet data */

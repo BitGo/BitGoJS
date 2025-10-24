@@ -60,8 +60,8 @@ export interface GenerateWalletOptions {
   backupXpubProvider?: string;
   passcodeEncryptionCode?: string;
   enterprise?: string;
-  disableTransactionNotifications?: string;
-  gasPrice?: string;
+  disableTransactionNotifications?: boolean;
+  gasPrice?: number;
   eip1559?: {
     maxFeePerGas: string;
     maxPriorityFeePerGas: string;
