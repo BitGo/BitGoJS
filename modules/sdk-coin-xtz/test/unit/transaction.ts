@@ -6,6 +6,7 @@ import {
   signedSerializedOriginationTransaction,
   parsedTransaction,
 } from '../resources';
+import { OperationContents } from '@taquito/rpc';
 import { XtzLib } from '../../src';
 
 describe('Tezos transaction', function () {
@@ -104,7 +105,10 @@ describe('Tezos transaction', function () {
 
     it('to sign the transaction if the keys are invalid', async () => {
       const tx = new XtzLib.Transaction(coins.get('txtz'));
-      await tx.initFromParsedTransaction(parsedTransaction);
+      await tx.initFromParsedTransaction({
+        ...parsedTransaction,
+        contents: parsedTransaction.contents as OperationContents[],
+      });
       const signer = new XtzLib.KeyPair({ pub: 'sppk7ZWB8diU2TWehxdkWCV2DTFvn1hPz4qLjiD3nJQozKnoSEnSC8b' });
       await tx.sign(signer).should.be.rejectedWith('Missing private key');
     });

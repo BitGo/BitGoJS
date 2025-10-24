@@ -6,9 +6,10 @@ import {
   TransactionType,
 } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { CODEC, localForger } from '@taquito/local-forging';
+import { localForger } from '@taquito/local-forging';
 import BigNumber from 'bignumber.js';
 import { IndexedSignature, OriginationOp, ParsedTransaction, RevealOp, TransactionOp } from './iface';
+import { OperationContents } from '@taquito/rpc';
 import { KeyPair } from './keyPair';
 import {
   getMultisigTransferDataFromOperation,
@@ -18,6 +19,19 @@ import {
   updateMultisigTransferSignatures,
 } from './multisigUtils';
 import * as Utils from './utils';
+
+/**
+ * Type guard to check if an operation has required fee-based properties
+ */
+function isOperationWithFees(op: OperationContents): op is OperationContents & {
+  counter: string;
+  source: string;
+  fee: string;
+  gas_limit: string;
+  storage_limit: string;
+} {
+  return 'counter' in op && 'source' in op && 'fee' in op && 'gas_limit' in op && 'storage_limit' in op;
+}
 
 /**
  * Tezos transaction model.
@@ -88,6 +102,11 @@ export class Transaction extends BaseTransaction {
     this._parsedTransaction = parsedTransaction;
     let operationIndex = 0;
     for (const operation of parsedTransaction.contents) {
+      // Skip operations that don't have the required properties (like attestations)
+      if (!isOperationWithFees(operation)) {
+        continue;
+      }
+
       if (this._source && this._source !== operation.source) {
         throw new InvalidTransactionError(
           'Source must be the same for every operation but it changed from ' + this._source + ' to ' + operation.source
@@ -96,14 +115,14 @@ export class Transaction extends BaseTransaction {
         this._source = operation.source;
       }
       switch (operation.kind) {
-        case CODEC.OP_ORIGINATION:
+        case 'origination':
           await this.recordOriginationOpFields(operation as OriginationOp, operationIndex);
           operationIndex++;
           break;
-        case CODEC.OP_REVEAL:
+        case 'reveal':
           this.recordRevealOpFields(operation as RevealOp);
           break;
-        case CODEC.OP_TRANSACTION:
+        case 'transaction':
           this.recordTransactionOpFields(operation as TransactionOp);
           break;
         default:
