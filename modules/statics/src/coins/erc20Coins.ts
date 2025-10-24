@@ -1645,7 +1645,10 @@ export const erc20Coins = [
     18,
     '0x2ba592f78db6436527729929aaf6c908497cb200',
     UnderlyingAsset.CREAM,
-    AccountCoin.getFeaturesByTypeExcluding([CoinFeature.CUSTODY_BITGO_MENA_FZE, CoinFeature.CUSTODY_BITGO_SINGAPORE], ETH_FEATURES_WITH_FRANKFURT)
+    AccountCoin.getFeaturesByTypeExcluding(
+      [CoinFeature.CUSTODY_BITGO_MENA_FZE, CoinFeature.CUSTODY_BITGO_SINGAPORE],
+      ETH_FEATURES_WITH_FRANKFURT
+    )
   ),
   erc20(
     '4bc48062-4e23-4338-9337-418eea86665d',
@@ -3993,7 +3996,10 @@ export const erc20Coins = [
     18,
     '0x9d03393d297e42c135625d450c814892505f1a84',
     UnderlyingAsset.MDX,
-    AccountCoin.getFeaturesByTypeExcluding([CoinFeature.CUSTODY_BITGO_MENA_FZE, CoinFeature.CUSTODY_BITGO_SINGAPORE], ETH_FEATURES_WITH_FRANKFURT)
+    AccountCoin.getFeaturesByTypeExcluding(
+      [CoinFeature.CUSTODY_BITGO_MENA_FZE, CoinFeature.CUSTODY_BITGO_SINGAPORE],
+      ETH_FEATURES_WITH_FRANKFURT
+    )
   ),
   erc20(
     '4d88bb1f-b643-41f8-87ca-e01259903393',
@@ -4085,7 +4091,10 @@ export const erc20Coins = [
     18,
     '0x09a3ecafa817268f77be1283176b946c4ff2e608',
     UnderlyingAsset.MIR,
-    AccountCoin.getFeaturesByTypeExcluding([CoinFeature.CUSTODY_BITGO_MENA_FZE, CoinFeature.CUSTODY_BITGO_SINGAPORE], ETH_FEATURES_WITH_FRANKFURT)
+    AccountCoin.getFeaturesByTypeExcluding(
+      [CoinFeature.CUSTODY_BITGO_MENA_FZE, CoinFeature.CUSTODY_BITGO_SINGAPORE],
+      ETH_FEATURES_WITH_FRANKFURT
+    )
   ),
   erc20(
     '6d781cdc-3bb0-4865-afa0-0aa61ccf49b2',
@@ -5324,7 +5333,10 @@ export const erc20Coins = [
     18,
     '0xd291e7a03283640fdc51b121ac401383a46cc623',
     UnderlyingAsset.RGT,
-    AccountCoin.getFeaturesByTypeExcluding([CoinFeature.CUSTODY_BITGO_MENA_FZE, CoinFeature.CUSTODY_BITGO_SINGAPORE], ETH_FEATURES_WITH_FRANKFURT)
+    AccountCoin.getFeaturesByTypeExcluding(
+      [CoinFeature.CUSTODY_BITGO_MENA_FZE, CoinFeature.CUSTODY_BITGO_SINGAPORE],
+      ETH_FEATURES_WITH_FRANKFURT
+    )
   ),
   erc20(
     '5ec84a31-9a02-4c57-9328-a8d09e9e5c61',
