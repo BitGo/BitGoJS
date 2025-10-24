@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 
-import { Descriptor } from '@bitgo/wasm-miniscript';
+import { Descriptor } from '@bitgo/wasm-utxo';
 
 import { getDefaultXPubs } from '../../../src/testutil/descriptor';
 import { getRequiredLocktime } from '../../../src/descriptor';

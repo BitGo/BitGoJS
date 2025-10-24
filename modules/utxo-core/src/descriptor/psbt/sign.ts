@@ -1,9 +1,9 @@
 import assert from 'assert';
 
 import { BIP32Interface, ECPairInterface } from '@bitgo/secp256k1';
-import { Psbt as WasmPsbt } from '@bitgo/wasm-miniscript';
+import { Psbt as WasmPsbt } from '@bitgo/wasm-utxo';
 
-/** These can be replaced when @bitgo/wasm-miniscript is updated */
+/** These can be replaced when @bitgo/wasm-utxo is updated */
 export type SignPsbtInputResult = { Schnorr: string[] } | { Ecdsa: string[] };
 export type SignPsbtResult = {
   [inputIndex: number]: SignPsbtInputResult;

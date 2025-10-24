@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import { ast, Descriptor, Miniscript } from '@bitgo/wasm-miniscript';
+import { ast, Descriptor, Miniscript } from '@bitgo/wasm-utxo';
 import * as utxolib from '@bitgo/utxo-lib';
 import * as bitcoinjslib from 'bitcoinjs-lib';
 import { getFixture } from '@bitgo/utxo-core/testutil';

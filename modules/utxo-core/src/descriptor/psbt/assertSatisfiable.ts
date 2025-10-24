@@ -8,7 +8,7 @@
  *
  * The goal is not an exhaustive check, but to catch common mistakes.
  */
-import { Descriptor } from '@bitgo/wasm-miniscript';
+import { Descriptor } from '@bitgo/wasm-utxo';
 import * as utxolib from '@bitgo/utxo-lib';
 
 export const FINAL_SEQUENCE = 0xffffffff;

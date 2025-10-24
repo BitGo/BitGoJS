@@ -1,5 +1,5 @@
 import * as t from 'io-ts';
-import { Descriptor, DescriptorPkType } from '@bitgo/wasm-miniscript';
+import { Descriptor, DescriptorPkType } from '@bitgo/wasm-utxo';
 import { BIP32Interface, networks } from '@bitgo/utxo-lib';
 import { signMessage, verifyMessage } from '@bitgo/sdk-core';
 

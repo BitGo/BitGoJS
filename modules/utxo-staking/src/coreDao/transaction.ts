@@ -1,5 +1,5 @@
 import { Output } from '@bitgo/utxo-core';
-import { Descriptor } from '@bitgo/wasm-miniscript';
+import { Descriptor } from '@bitgo/wasm-utxo';
 
 import { createCoreDaoOpReturnOutputScript, OpReturnParams } from './opReturn';
 

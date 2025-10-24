@@ -1,4 +1,4 @@
-import { Descriptor, Psbt } from '@bitgo/wasm-miniscript';
+import { Descriptor, Psbt } from '@bitgo/wasm-utxo';
 import * as utxolib from '@bitgo/utxo-lib';
 
 export function updateInputWithDescriptor(psbt: utxolib.Psbt, inputIndex: number, descriptor: Descriptor): void {

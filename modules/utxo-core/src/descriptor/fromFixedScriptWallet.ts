@@ -1,5 +1,5 @@
 import * as utxolib from '@bitgo/utxo-lib';
-import { Descriptor, ast } from '@bitgo/wasm-miniscript';
+import { Descriptor, ast } from '@bitgo/wasm-utxo';
 
 /** Expand a template with the given root wallet keys and chain code */
 function expand(rootWalletKeys: utxolib.bitgo.RootWalletKeys, keyIndex: number, chainCode: number): string {

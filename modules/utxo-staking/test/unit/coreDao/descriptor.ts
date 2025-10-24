@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 
 import * as utxolib from '@bitgo/utxo-lib';
-import { Descriptor } from '@bitgo/wasm-miniscript';
+import { Descriptor } from '@bitgo/wasm-utxo';
 import { getFixture } from '@bitgo/utxo-core/testutil';
 
 import { createMultiSigDescriptor, decodeTimelock } from '../../../src/coreDao';

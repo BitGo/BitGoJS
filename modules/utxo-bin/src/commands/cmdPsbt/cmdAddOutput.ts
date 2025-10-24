@@ -2,7 +2,7 @@ import * as yargs from 'yargs';
 import * as utxolib from '@bitgo/utxo-lib';
 import { Dimensions } from '@bitgo/unspents';
 import { Buffer } from 'buffer';
-import { Descriptor, Miniscript } from '@bitgo/wasm-miniscript';
+import { Descriptor, Miniscript } from '@bitgo/wasm-utxo';
 
 import { withPsbt, withPsbtOptions, WithPsbtOptions } from './withPsbt';
 

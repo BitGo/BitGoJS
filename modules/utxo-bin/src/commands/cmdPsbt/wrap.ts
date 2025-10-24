@@ -1,5 +1,5 @@
 import * as utxolib from '@bitgo/utxo-lib';
-import { Psbt } from '@bitgo/wasm-miniscript';
+import { Psbt } from '@bitgo/wasm-utxo';
 
 export function toWrappedPsbt(psbt: utxolib.bitgo.UtxoPsbt | utxolib.Psbt | Buffer | Uint8Array): Psbt {
   if (psbt instanceof utxolib.bitgo.UtxoPsbt || psbt instanceof utxolib.Psbt) {

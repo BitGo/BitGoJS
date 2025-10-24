@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import { Descriptor } from '@bitgo/wasm-miniscript';
+import { Descriptor } from '@bitgo/wasm-utxo';
 
 /**
  * Get a descriptor at a specific derivation index.

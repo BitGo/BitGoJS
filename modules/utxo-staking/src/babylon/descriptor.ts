@@ -4,7 +4,7 @@
  * https://github.com/babylonlabs-io/babylon/blob/v1.99.0-snapshot.250211/btcstaking/staking.go
  */
 
-import { Descriptor, ast } from '@bitgo/wasm-miniscript';
+import { Descriptor, ast } from '@bitgo/wasm-utxo';
 import { StakingParams } from '@bitgo/babylonlabs-io-btc-staking-ts';
 
 export function getUnspendableKey(): string {

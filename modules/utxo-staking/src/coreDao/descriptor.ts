@@ -1,5 +1,5 @@
 import { BIP32Interface } from '@bitgo/utxo-lib';
-import { ast } from '@bitgo/wasm-miniscript';
+import { ast } from '@bitgo/wasm-utxo';
 
 /**
  * Script type for a descriptor.

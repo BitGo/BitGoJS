@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import { Descriptor, ast } from '@bitgo/wasm-miniscript';
+import { Descriptor, ast } from '@bitgo/wasm-utxo';
 
 import { getKey } from '../../../src/testutil';
 import { toXOnlyPublicKey } from '../../../src';
