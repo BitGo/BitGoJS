@@ -12081,7 +12081,14 @@ export const erc20Coins = [
     '0x68bbed6a47194eff1cf514b50ea91895597fc91e',
     UnderlyingAsset['eth:andy']
   ),
-
+  erc20(
+    'ecb5fc4f-cf1d-4037-928a-a10517091fd6',
+    'eth:meme',
+    'Memecoin',
+    18,
+    '0xb131f4a55907b10d1f0a50d8ab8fa09ec342cd74',
+    UnderlyingAsset['eth:meme']
+  ),
   terc20(
     '0205f0d6-0647-47c9-ad8b-c48d048e54f3',
     'fixed',
