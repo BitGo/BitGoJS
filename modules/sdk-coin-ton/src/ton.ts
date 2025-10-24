@@ -30,6 +30,7 @@ import {
   MPCTxs,
   MPCSweepRecoveryOptions,
   AuditDecryptedKeyParams,
+  extractCommonKeychain,
 } from '@bitgo/sdk-core';
 import { auditEddsaPrivateKey, getDerivationPath } from '@bitgo/sdk-lib-mpc';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
@@ -159,29 +160,21 @@ export class Ton extends BaseCoin {
       throw new InvalidAddressError(`invalid address: ${newAddress}`);
     }
 
-    if (!keychains) {
-      throw new Error('missing required param keychains');
+    const [address, memoId] = newAddress.split('?memoId=');
+
+    // TON supports memoId for address tagging - verify it matches the index
+    if (memoId) {
+      return memoId === `${index}`;
     }
 
-    for (const keychain of keychains) {
-      const [address, memoId] = newAddress.split('?memoId=');
-      const MPC = await EDDSAMethods.getInitializedMpcInstance();
-      const commonKeychain = keychain.commonKeychain as string;
+    const commonKeychain = extractCommonKeychain(keychains);
 
-      const derivationPath = 'm/' + index;
-      const derivedPublicKey = MPC.deriveUnhardened(commonKeychain, derivationPath).slice(0, 64);
-      const expectedAddress = await Utils.default.getAddressFromPublicKey(derivedPublicKey);
+    const MPC = await EDDSAMethods.getInitializedMpcInstance();
+    const derivationPath = 'm/' + index;
+    const derivedPublicKey = MPC.deriveUnhardened(commonKeychain, derivationPath).slice(0, 64);
+    const expectedAddress = await Utils.default.getAddressFromPublicKey(derivedPublicKey);
 
-      if (memoId) {
-        return memoId === `${index}`;
-      }
-
-      if (address !== expectedAddress) {
-        return false;
-      }
-    }
-
-    return true;
+    return address === expectedAddress;
   }
 
   async parseTransaction(params: TonParseTransactionOptions): Promise<ParsedTransaction> {
