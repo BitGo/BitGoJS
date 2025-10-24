@@ -219,7 +219,7 @@ export interface SupplementGenerateWalletOptions {
   rootPrivateKey?: string;
   disableKRSEmail?: boolean;
   multisigType?: 'tss' | 'onchain' | 'blsdkg';
-  type: 'hot' | 'cold' | 'custodial' | 'advanced';
+  type: 'hot' | 'cold' | 'custodial' | 'advanced' | 'trading';
   subType?: 'lightningCustody' | 'lightningSelfCustody' | 'onPrem';
   coinSpecific?: { [coinName: string]: unknown };
   evmKeyRingReferenceWalletId?: string;
@@ -604,4 +604,5 @@ export interface IBaseCoin {
    * @param {string} params.multiSigType - The type of multisig (e.g. 'onchain' or 'tss')
    */
   assertIsValidKey({ publicKey, encryptedPrv, walletPassphrase, multiSigType }: AuditKeyParams): void;
+  requiresWalletInitializationTransaction(): boolean;
 }

@@ -3,6 +3,39 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.7.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.6.0...bitgo@50.7.0) (2025-10-21)
+
+
+### Features
+
+* **sdk-core:** generate Go account wallet ([7d5e752](https://github.com/BitGo/BitGoJS/commit/7d5e752dd5e9d9c85ec9ccadc1748557f1e0ef9f))
+
+
+
+
+
+# [50.6.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.5.0...bitgo@50.6.0) (2025-10-16)
+
+
+### Features
+
+* bump public types ([ca817a6](https://github.com/BitGo/BitGoJS/commit/ca817a637015a33584fd68dbf5c36592b6a13608))
+
+
+
+
+
+# [50.5.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.4.2...bitgo@50.5.0) (2025-10-13)
+
+
+### Features
+
+* support versioned sol transactions with customTx intent ([b33402f](https://github.com/BitGo/BitGoJS/commit/b33402f9a7c4724804a2f45737fcbd2562f6bb3e))
+
+
+
+
+
 ## [50.4.2](https://github.com/BitGo/BitGoJS/compare/bitgo@50.4.1...bitgo@50.4.2) (2025-10-10)
 
 

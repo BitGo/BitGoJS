@@ -44,6 +44,7 @@ import {
   RecoveryTxRequest,
   SignedTransaction,
   SignTransactionOptions,
+  SolVersionedTransactionData,
   TokenEnablement,
   TokenEnablementConfig,
   TransactionExplanation,
@@ -315,6 +316,78 @@ export class Sol extends BaseCoin {
     }
   }
 
+  private hasSolVersionedTransactionData(
+    txParams: TransactionParams
+  ): txParams is TransactionParams & { solVersionedTransactionData: SolVersionedTransactionData } {
+    return 'solVersionedTransactionData' in txParams && txParams.solVersionedTransactionData !== undefined;
+  }
+
+  /**
+   * Verify a versioned Solana transaction with basic structural validation
+   * @param params - verification parameters
+   * @returns true if verification passes
+   */
+  private async verifyVersionedTransaction(params: SolVerifyTransactionOptions): Promise<boolean> {
+    const { txParams, txPrebuild } = params;
+    const rawTx = txPrebuild.txBase64 || txPrebuild.txHex;
+
+    if (!rawTx) {
+      throw new Error('missing required tx prebuild property txBase64 or txHex');
+    }
+
+    // Validate that the versioned transaction data is well-formed
+    if (!this.hasSolVersionedTransactionData(txParams)) {
+      throw new Error('solVersionedTransactionData is required for versioned transaction verification');
+    }
+
+    const versionedData = txParams.solVersionedTransactionData;
+
+    if (!versionedData.versionedInstructions || versionedData.versionedInstructions.length === 0) {
+      throw new Error('versioned transaction must have at least one instruction');
+    }
+
+    if (!versionedData.staticAccountKeys || versionedData.staticAccountKeys.length === 0) {
+      throw new Error('versioned transaction must have at least one static account key');
+    }
+
+    if (!versionedData.messageHeader) {
+      throw new Error('versioned transaction must have a message header');
+    }
+
+    // Validate that we can deserialize the transaction
+    let rawTxBase64 = rawTx;
+    if (HEX_REGEX.test(rawTx)) {
+      rawTxBase64 = Buffer.from(rawTx, 'hex').toString('base64');
+    }
+
+    try {
+      const txBytes = Buffer.from(rawTxBase64, 'base64');
+      if (txBytes.length < 1) {
+        throw new Error('transaction bytes are empty');
+      }
+
+      // Check version byte (after signatures)
+      const numSignatures = txBytes[0];
+      const signatureSize = 64;
+      const versionByteOffset = 1 + numSignatures * signatureSize;
+
+      if (txBytes.length <= versionByteOffset) {
+        throw new Error('transaction bytes are too short to contain version byte');
+      }
+
+      const versionByte = txBytes[versionByteOffset];
+      const isVersioned = (versionByte & 0x80) !== 0;
+
+      if (!isVersioned) {
+        throw new Error('transaction does not have versioned format');
+      }
+    } catch (error) {
+      throw new Error(`failed to validate versioned transaction format: ${error.message}`);
+    }
+
+    return true;
+  }
+
   async verifyTransaction(params: SolVerifyTransactionOptions): Promise<boolean> {
     // asset name to transfer amount map
     const totalAmount: Record<string, BigNumber> = {};
@@ -326,6 +399,11 @@ export class Sol extends BaseCoin {
       durableNonce: durableNonce,
       verification: verificationOptions,
     } = params;
+
+    if (this.hasSolVersionedTransactionData(txParams)) {
+      return this.verifyVersionedTransaction(params);
+    }
+
     const transaction = new Transaction(coinConfig);
     const rawTx = txPrebuild.txBase64 || txPrebuild.txHex;
     const consolidateId = txPrebuild.consolidateId;

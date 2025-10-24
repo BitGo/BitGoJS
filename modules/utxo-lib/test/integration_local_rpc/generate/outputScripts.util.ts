@@ -1,5 +1,5 @@
-import { BIP32Interface } from 'bip32';
 import { Transaction, TxOutput } from 'bitcoinjs-lib';
+import { BIP32Interface } from '@bitgo/secp256k1';
 import * as utxolib from '../../../src';
 import {
   createOutputScript2of3,

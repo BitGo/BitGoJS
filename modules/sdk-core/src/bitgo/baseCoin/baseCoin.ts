@@ -382,6 +382,14 @@ export abstract class BaseCoin implements IBaseCoin {
   }
 
   /**
+   * Check whether a coin requires wallet initialization
+   * @returns {boolean}
+   */
+  requiresWalletInitializationTransaction(): boolean {
+    return false;
+  }
+
+  /**
    * Check whether a coin supports signing of Typed data
    * @returns {boolean}
    */

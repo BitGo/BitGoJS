@@ -10,6 +10,7 @@ export const privateKeys = {
   prvKey4: 'ba4c313bcf830b825adaa3ae08cfde86e79e15a84e6fdc3b1fe35a6bb82d9f22',
   prvKey5: 'fdb9ea1bb7f0120ce6eb7b047ac6744c4298f277756330e18dbd5419590a1ef2',
   prvKey6: 'f66d30357e6a4180e9ab41865f0f347cbaffe60f9d499fe6c2f27046327652f6',
+  prvKey7: '339f9b7c8b039e1f71cc28c5fa30db29913624e2d53d4323a2664d3cfb5b07a4',
 };
 
 export const addresses = {
@@ -22,6 +23,13 @@ export const addresses = {
     '0xc4173a804406a365e69dfb297ddfgsdcvf',
     '5ne7phA48Jrvpn39AtupB8ZkCCAy8gLTfpGihZPuDqen',
   ],
+};
+
+export const vestingContract = {
+  address: 'UQD0eii2CN6p_hznXcqBFlHHbcBQShW2Vj1EaIK2MnxVrWC6',
+  addressBounceable: 'EQD0eii2CN6p_hznXcqBFlHHbcBQShW2Vj1EaIK2MnxVrT1_',
+  publicKey: '339f9b7c8b039e1f71cc28c5fa30db29913624e2d53d4323a2664d3cfb5b07a4',
+  signature: '4K2iXQ5G5lU/1TKhfQn4xaAgL7sK91mFQb6OixkRwpZFJCYSbhmDJqLJfWRVRjfbL+cX4HjC7siqsGMDUgh4DQ==',
 };
 
 export const sender = {
@@ -67,6 +75,21 @@ export const signedSendTransaction = {
   },
   recipientBounceable: {
     address: 'UQA0i8-CdGnF_DhUHHf92R1ONH6sIA9vLZ_WLcCIhfBBX1aD',
+    amount: '10000000',
+  },
+};
+
+export const v3CompatibleSignedSendTransaction = {
+  txBounceable:
+    'te6cckEBAgEAqAAB34gB6PRRbBG9U/w5zruVAiyjjtuAoJQrbKx6iNEFbGT4q1oHBW0S6HI3Mqn+qZUL6E/GLQEBfdhXuswqDfR0WMiOFLIpITCTcMwZNRZL6yKqMb7Zfzi/A8YXdkVVgxgakEPAaU1NGLtH0CDAAAAAGBwBAGZiAGcJlmF0UvErDsi5Rs21SP70rP1K36wtjBImqtbV96EuHMS0AAAAAAAAAAAAAAAAAAAiW72E',
+  txIdBounceable: '4i1GCyN5IkQQ-vESvNl4Wp1ejp7LfazRlNWzUbtGwSA=',
+  bounceableSignable: 'lOEOTzPXnPotTTHi7xgivFNUHH+xUgq/nKpaP/bK+Xo=',
+  recipient: {
+    address: 'EQDOEyzC6KXiVh2Rco2bapH96Vn6lb9YWxgkTVWtq-9CXL0m',
+    amount: '10000000',
+  },
+  recipientNonBounceable: {
+    address: 'UQDOEyzC6KXiVh2Rco2bapH96Vn6lb9YWxgkTVWtq-9CXODj',
     amount: '10000000',
   },
 };

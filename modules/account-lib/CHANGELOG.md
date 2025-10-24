@@ -3,6 +3,41 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [27.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.12.0...@bitgo/account-lib@27.13.0) (2025-10-21)
+
+
+### Features
+
+* use eth message builder factory for arbeth and opeth ([464fe32](https://github.com/BitGo/BitGoJS/commit/464fe32470cefdaf9d20afac8b1bb46ac0627650))
+
+
+
+
+
+# [27.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.11.6...@bitgo/account-lib@27.12.0) (2025-10-16)
+
+
+### Bug Fixes
+
+* **deps:** update account-lib to canton version ([f5eac79](https://github.com/BitGo/BitGoJS/commit/f5eac7918b83aa1949944141d24b51d24a3cd414))
+
+
+### Features
+
+* added canton to account-lib ([b72194f](https://github.com/BitGo/BitGoJS/commit/b72194f572bd16044225fdc47d46c980b0d0319e))
+
+
+
+
+
+## [27.11.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.11.5...@bitgo/account-lib@27.11.6) (2025-10-13)
+
+**Note:** Version bump only for package @bitgo/account-lib
+
+
+
+
+
 ## [27.11.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.11.4...@bitgo/account-lib@27.11.5) (2025-10-10)
 
 **Note:** Version bump only for package @bitgo/account-lib

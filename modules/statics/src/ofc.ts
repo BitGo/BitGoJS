@@ -35,7 +35,9 @@ const DISALLOWED_FEATURES = [
   CoinFeature.CHILD_PAYS_FOR_PARENT,
   CoinFeature.PAYGO,
   CoinFeature.SUPPORTS_TOKENS,
+  // OFC inherits features from the base asset but the features are not always applicable to OFC
   CoinFeature.SHARED_EVM_SIGNING,
+  CoinFeature.EVM_COMPATIBLE_WP,
 ];
 
 const REQUIRED_FEATURES = [CoinFeature.ACCOUNT_MODEL, CoinFeature.REQUIRES_BIG_NUMBER];

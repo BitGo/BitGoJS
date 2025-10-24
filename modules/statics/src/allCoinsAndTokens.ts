@@ -132,6 +132,7 @@ import {
   ZKETH_FEATURES,
   ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE_AND_MENA_FZE,
   WFLR_FEATURES,
+  ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_MENA_FZE,
 } from './coinFeatures';
 import { botTokens } from './coins/botTokens';
 import { adaTokens } from './coins/adaTokens';
@@ -483,7 +484,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.RBTC,
     BaseUnit.ETH,
-    RBTC_FEATURES
+    AccountCoin.getFeaturesByTypeExcluding([CoinFeature.CUSTODY_BITGO_MENA_FZE], RBTC_FEATURES)
   ),
   account(
     '9cf6d137-6c6b-4fc0-acc0-8e78a1599c15',
@@ -2620,7 +2621,7 @@ export const allCoinsAndTokens = [
     7,
     UnderlyingAsset['xlm:SLT-GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP'],
     'smartlands.io',
-    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE,
+    ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE_AND_MENA_FZE,
     '',
     'SLT'
   ),

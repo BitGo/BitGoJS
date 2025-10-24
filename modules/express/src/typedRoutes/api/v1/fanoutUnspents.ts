@@ -63,7 +63,7 @@ export const FanoutUnspentsResponse = t.type({
  * @operationId express.v1.wallet.fanoutunspents
  */
 export const PutFanoutUnspents = httpRoute({
-  path: '/api/v1/wallet/:id/fanoutunspents',
+  path: '/api/v1/wallet/{id}/fanoutunspents',
   method: 'PUT',
   request: httpRequest({
     params: FanoutUnspentsRequestParams,

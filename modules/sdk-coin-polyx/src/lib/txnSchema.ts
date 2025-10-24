@@ -93,6 +93,27 @@ export const AddAndAffirmWithMediatorsTransactionSchema = joi.object({
   mediators: joi.array().length(0).required(),
 });
 
+export const RejectInstructionTransactionSchema = joi.object({
+  id: joi.string().required(),
+  portfolio: joi
+    .object({
+      did: addressSchema.required(),
+      kind: joi
+        .object({
+          default: joi.valid(null),
+        })
+        .required(),
+    })
+    .required(),
+  numberOfAssets: joi
+    .object({
+      fungible: joi.number().required(),
+      nonFungible: joi.number().required(),
+      offChain: joi.number().required(),
+    })
+    .optional(),
+});
+
 // For standalone bondExtra transactions
 export const BondExtraTransactionSchema = joi.object({
   value: joi.string().required(),

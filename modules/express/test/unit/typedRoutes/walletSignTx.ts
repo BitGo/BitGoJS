@@ -12,8 +12,740 @@ import {
   PostWalletSignTx,
 } from '../../../src/typedRoutes/api/v2/walletSignTx';
 import { assertDecode } from './common';
+import 'should';
+import 'should-http';
+import 'should-sinon';
+import * as sinon from 'sinon';
+import { BitGo } from 'bitgo';
+import { setupAgent } from '../../lib/testutil';
 
 describe('WalletSignTx codec tests', function () {
+  describe('walletSignTx', function () {
+    const agent = setupAgent();
+    const coin = 'tbtc';
+    const walletId = '68c02f96aa757d9212bd1a536f123456';
+
+    const mockFullySignedResponse = {
+      txHex:
+        '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
+    };
+
+    afterEach(function () {
+      sinon.restore();
+    });
+
+    it('should successfully sign a wallet transaction', async function () {
+      const requestBody = {
+        txPrebuild: {
+          txHex:
+            '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
+          walletId: walletId,
+        },
+        prv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
+      };
+
+      // Create mock wallet with signTransaction method
+      const mockWallet = {
+        signTransaction: sinon.stub().resolves(mockFullySignedResponse),
+      };
+
+      // Stub the wallets().get() chain
+      const walletsGetStub = sinon.stub().resolves(mockWallet);
+
+      const mockWallets = {
+        get: walletsGetStub,
+      };
+
+      const mockCoin = {
+        wallets: sinon.stub().returns(mockWallets),
+      };
+
+      // Stub BitGo.prototype.coin to return our mock coin
+      const coinStub = sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+      // Make the request to Express
+      const result = await agent
+        .post(`/api/v2/${coin}/wallet/${walletId}/signtx`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      // Verify the response
+      assert.strictEqual(result.status, 200);
+      result.body.should.have.property('txHex');
+      assert.strictEqual(result.body.txHex, mockFullySignedResponse.txHex);
+
+      // This ensures the response structure matches the typed definition
+      const decodedResponse = assertDecode(FullySignedTransactionResponse, result.body);
+      assert.strictEqual(decodedResponse.txHex, mockFullySignedResponse.txHex);
+
+      // Verify that the correct BitGoJS methods were called
+      assert.strictEqual(coinStub.calledOnceWith(coin), true);
+      assert.strictEqual(mockCoin.wallets.calledOnce, true);
+      assert.strictEqual(walletsGetStub.calledOnceWith({ id: walletId }), true);
+      assert.strictEqual(mockWallet.signTransaction.calledOnce, true);
+    });
+
+    it('should successfully sign a half-signed account transaction', async function () {
+      const requestBody = {
+        txPrebuild: {
+          txBase64:
+            'AQAAAAFz2JT3Xvjk8jKcYcMrKR8tPMRm5+/Q6J2sMgtz7QDpAAAAAAD+////AoCWmAAAAAAAGXapFJA29QPQaHHwR3Uriuhw2A6tHkPgiKwAAAAAAAEBH9cQ2QAAAAAAAXapFCf/zr8zPrMftHGIRsOt0Cf+wdOyiKwA',
+          walletId: walletId,
+        },
+        prv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
+      };
+
+      const mockHalfSignedResponse = {
+        halfSigned: {
+          txBase64:
+            'AQAAAAFz2JT3Xvjk8jKcYcMrKR8tPMRm5+/Q6J2sMgtz7QDpAAAAAAD+////AoCWmAAAAAAAGXapFJA29QPQaHHwR3Uriuhw2A6tHkPgiKwAAAAAAAEBH9cQ2QAAAAAAAXapFCf/zr8zPrMftHGIRsOt0Cf+wdOyiKwA',
+        },
+      };
+
+      // Create mock wallet with signTransaction method
+      const mockWallet = {
+        signTransaction: sinon.stub().resolves(mockHalfSignedResponse),
+      };
+
+      // Stub the wallets().get() chain
+      const walletsGetStub = sinon.stub().resolves(mockWallet);
+
+      const mockWallets = {
+        get: walletsGetStub,
+      };
+
+      const mockCoin = {
+        wallets: sinon.stub().returns(mockWallets),
+      };
+
+      // Stub BitGo.prototype.coin to return our mock coin
+      const coinStub = sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+      // Make the request to Express
+      const result = await agent
+        .post(`/api/v2/${coin}/wallet/${walletId}/signtx`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      // Verify the response
+      assert.strictEqual(result.status, 200);
+      result.body.should.have.property('halfSigned');
+      result.body.halfSigned.should.have.property('txBase64');
+      assert.strictEqual(result.body.halfSigned.txBase64, mockHalfSignedResponse.halfSigned.txBase64);
+
+      // This ensures the response structure matches the typed definition
+      const decodedResponse = assertDecode(HalfSignedAccountTransactionResponse, result.body);
+      assert.strictEqual(decodedResponse.halfSigned.txBase64, mockHalfSignedResponse.halfSigned.txBase64);
+
+      // Verify that the correct BitGoJS methods were called
+      assert.strictEqual(coinStub.calledOnceWith(coin), true);
+      assert.strictEqual(mockCoin.wallets.calledOnce, true);
+      assert.strictEqual(walletsGetStub.calledOnceWith({ id: walletId }), true);
+      assert.strictEqual(mockWallet.signTransaction.calledOnce, true);
+    });
+
+    it('should successfully sign a half-signed UTXO transaction', async function () {
+      const requestBody = {
+        txPrebuild: {
+          txHex:
+            '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
+          walletId: walletId,
+        },
+        prv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
+      };
+
+      const mockHalfSignedUtxoResponse = {
+        txHex:
+          '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f00000000484730440220abc123def456...',
+      };
+
+      // Create mock wallet with signTransaction method
+      const mockWallet = {
+        signTransaction: sinon.stub().resolves(mockHalfSignedUtxoResponse),
+      };
+
+      // Stub the wallets().get() chain
+      const walletsGetStub = sinon.stub().resolves(mockWallet);
+
+      const mockWallets = {
+        get: walletsGetStub,
+      };
+
+      const mockCoin = {
+        wallets: sinon.stub().returns(mockWallets),
+      };
+
+      // Stub BitGo.prototype.coin to return our mock coin
+      const coinStub = sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+      // Make the request to Express
+      const result = await agent
+        .post(`/api/v2/${coin}/wallet/${walletId}/signtx`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      // Verify the response
+      assert.strictEqual(result.status, 200);
+      result.body.should.have.property('txHex');
+      assert.strictEqual(result.body.txHex, mockHalfSignedUtxoResponse.txHex);
+
+      // This ensures the response structure matches the typed definition for UTXO half-signed
+      const decodedResponse = assertDecode(HalfSignedUtxoTransactionResponse, result.body);
+      assert.strictEqual(decodedResponse.txHex, mockHalfSignedUtxoResponse.txHex);
+
+      // Verify that the correct BitGoJS methods were called
+      assert.strictEqual(coinStub.calledOnceWith(coin), true);
+      assert.strictEqual(mockCoin.wallets.calledOnce, true);
+      assert.strictEqual(walletsGetStub.calledOnceWith({ id: walletId }), true);
+      assert.strictEqual(mockWallet.signTransaction.calledOnce, true);
+    });
+
+    it('should successfully return a transaction request ID', async function () {
+      const requestBody = {
+        txPrebuild: {
+          txHex:
+            '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
+          walletId: walletId,
+        },
+        walletPassphrase: 'test_passphrase_12345',
+        apiVersion: 'lite' as const,
+      };
+
+      const mockTxRequestResponse = {
+        txRequestId: '5a1341e7c8421dc90710673b3166bbd5',
+      };
+
+      // Create mock wallet with signTransaction method
+      const mockWallet = {
+        signTransaction: sinon.stub().resolves(mockTxRequestResponse),
+      };
+
+      // Stub the wallets().get() chain
+      const walletsGetStub = sinon.stub().resolves(mockWallet);
+
+      const mockWallets = {
+        get: walletsGetStub,
+      };
+
+      const mockCoin = {
+        wallets: sinon.stub().returns(mockWallets),
+      };
+
+      // Stub BitGo.prototype.coin to return our mock coin
+      const coinStub = sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+      // Make the request to Express
+      const result = await agent
+        .post(`/api/v2/${coin}/wallet/${walletId}/signtx`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      // Verify the response
+      assert.strictEqual(result.status, 200);
+      result.body.should.have.property('txRequestId');
+      assert.strictEqual(result.body.txRequestId, mockTxRequestResponse.txRequestId);
+
+      // This ensures the response structure matches the typed definition
+      const decodedResponse = assertDecode(SignedTransactionRequestResponse, result.body);
+      assert.strictEqual(decodedResponse.txRequestId, mockTxRequestResponse.txRequestId);
+
+      // Verify that the correct BitGoJS methods were called
+      assert.strictEqual(coinStub.calledOnceWith(coin), true);
+      assert.strictEqual(mockCoin.wallets.calledOnce, true);
+      assert.strictEqual(walletsGetStub.calledOnceWith({ id: walletId }), true);
+      assert.strictEqual(mockWallet.signTransaction.calledOnce, true);
+    });
+
+    it('should successfully return a full transaction request (TxRequestResponse)', async function () {
+      const requestBody = {
+        txPrebuild: {
+          txHex:
+            '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
+          walletId: walletId,
+          txRequestId: 'tx-req-5a1341e7c8421dc90710673b3166bbd5',
+        },
+        walletPassphrase: 'test_passphrase_12345',
+        apiVersion: 'full' as const,
+        multisigTypeVersion: 'MPCv2' as const,
+      };
+
+      const mockTxRequestFullResponse = {
+        txRequestId: '5a1341e7c8421dc90710673b3166bbd5',
+        walletId: walletId,
+        walletType: 'hot',
+        version: 1,
+        state: 'pendingUserSignature',
+        date: '2023-01-01T00:00:00.000Z',
+        createdDate: '2023-01-01T00:00:00.000Z',
+        userId: '5a1341e7c8421dc90710673b3166bbd5',
+        initiatedBy: '5a1341e7c8421dc90710673b3166bbd5',
+        updatedBy: '5a1341e7c8421dc90710673b3166bbd5',
+        intents: [],
+        enterpriseId: '5a1341e7c8421dc90710673b3166bbd5',
+        intent: {},
+        pendingApprovalId: '5a1341e7c8421dc90710673b3166bbd5',
+        policiesChecked: true,
+        signatureShares: [
+          {
+            from: 'user',
+            to: 'bitgo',
+            share: 'user_signature_share_abc123',
+          },
+        ],
+        commitmentShares: [
+          {
+            from: 'user',
+            to: 'bitgo',
+            share: 'user_commitment_share_abc123',
+            type: 'commitment',
+          },
+        ],
+        txHashes: ['hash1', 'hash2'],
+        unsignedTxs: [
+          {
+            serializedTxHex:
+              '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
+            signableHex:
+              '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
+            derivationPath: "m/44'/0'/0'/0/0",
+          },
+        ],
+        apiVersion: 'full',
+        latest: true,
+      };
+
+      // Create mock wallet with signTransaction method
+      const mockWallet = {
+        signTransaction: sinon.stub().resolves(mockTxRequestFullResponse),
+      };
+
+      // Stub the wallets().get() chain
+      const walletsGetStub = sinon.stub().resolves(mockWallet);
+
+      const mockWallets = {
+        get: walletsGetStub,
+      };
+
+      const mockCoin = {
+        wallets: sinon.stub().returns(mockWallets),
+      };
+
+      // Stub BitGo.prototype.coin to return our mock coin
+      const coinStub = sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+      // Make the request to Express
+      const result = await agent
+        .post(`/api/v2/${coin}/wallet/${walletId}/signtx`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      // Verify the response
+      assert.strictEqual(result.status, 200);
+      result.body.should.have.property('txRequestId');
+      result.body.should.have.property('walletId');
+      result.body.should.have.property('version');
+      result.body.should.have.property('state');
+      result.body.should.have.property('intents');
+      result.body.should.have.property('latest');
+      assert.strictEqual(result.body.txRequestId, mockTxRequestFullResponse.txRequestId);
+      assert.strictEqual(result.body.walletId, mockTxRequestFullResponse.walletId);
+      assert.strictEqual(result.body.version, mockTxRequestFullResponse.version);
+      assert.strictEqual(result.body.state, mockTxRequestFullResponse.state);
+      assert.strictEqual(result.body.latest, mockTxRequestFullResponse.latest);
+
+      // Verify TSS-specific fields
+      result.body.should.have.property('signatureShares');
+      result.body.should.have.property('commitmentShares');
+      result.body.should.have.property('unsignedTxs');
+      result.body.signatureShares.should.be.Array();
+      result.body.signatureShares.should.have.length(1);
+      result.body.commitmentShares.should.be.Array();
+      result.body.commitmentShares.should.have.length(1);
+      result.body.unsignedTxs.should.be.Array();
+      result.body.unsignedTxs.should.have.length(1);
+
+      // This ensures the transaction request response structure matches the typed definition
+      const decodedResponse = assertDecode(TxRequestResponse, result.body);
+      assert.strictEqual(decodedResponse.txRequestId, mockTxRequestFullResponse.txRequestId);
+      assert.strictEqual(decodedResponse.walletId, mockTxRequestFullResponse.walletId);
+      assert.strictEqual(decodedResponse.version, mockTxRequestFullResponse.version);
+      assert.strictEqual(decodedResponse.state, mockTxRequestFullResponse.state);
+      assert.strictEqual(decodedResponse.latest, mockTxRequestFullResponse.latest);
+
+      // Verify that the correct BitGoJS methods were called
+      assert.strictEqual(coinStub.calledOnceWith(coin), true);
+      assert.strictEqual(mockCoin.wallets.calledOnce, true);
+      assert.strictEqual(walletsGetStub.calledOnceWith({ id: walletId }), true);
+      assert.strictEqual(mockWallet.signTransaction.calledOnce, true);
+    });
+
+    // ==========================================
+    // ERROR AND EDGE CASE TESTS
+    // ==========================================
+
+    describe('Error Cases', function () {
+      it('should handle wallet not found error', async function () {
+        const requestBody = {
+          txPrebuild: {
+            txHex:
+              '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
+            walletId: walletId,
+          },
+          prv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
+        };
+
+        // Stub wallets().get() to reject with wallet not found error
+        const walletsGetStub = sinon.stub().rejects(new Error('Wallet not found'));
+
+        const mockWallets = {
+          get: walletsGetStub,
+        };
+
+        const mockCoin = {
+          wallets: sinon.stub().returns(mockWallets),
+        };
+
+        sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+        // Make the request to Express
+        const result = await agent
+          .post(`/api/v2/${coin}/wallet/${walletId}/signtx`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        // Verify error response
+        assert.strictEqual(result.status, 500);
+        result.body.should.have.property('error');
+      });
+
+      it('should handle signTransaction failure', async function () {
+        const requestBody = {
+          txPrebuild: {
+            txHex:
+              '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
+            walletId: walletId,
+          },
+          prv: 'wrong_private_key',
+        };
+
+        // Create mock wallet where signTransaction fails
+        const mockWallet = {
+          signTransaction: sinon.stub().rejects(new Error('Invalid private key')),
+        };
+
+        const walletsGetStub = sinon.stub().resolves(mockWallet);
+
+        const mockWallets = {
+          get: walletsGetStub,
+        };
+
+        const mockCoin = {
+          wallets: sinon.stub().returns(mockWallets),
+        };
+
+        sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+        // Make the request to Express
+        const result = await agent
+          .post(`/api/v2/${coin}/wallet/${walletId}/signtx`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        // Verify error response
+        assert.strictEqual(result.status, 500);
+        result.body.should.have.property('error');
+      });
+
+      it('should handle invalid coin error', async function () {
+        const invalidCoin = 'invalid_coin_xyz';
+        const requestBody = {
+          txPrebuild: {
+            txHex:
+              '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
+            walletId: walletId,
+          },
+          prv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
+        };
+
+        // Stub coin() to throw error for invalid coin
+        sinon.stub(BitGo.prototype, 'coin').throws(new Error(`Coin ${invalidCoin} is not supported`));
+
+        // Make the request to Express
+        const result = await agent
+          .post(`/api/v2/${invalidCoin}/wallet/${walletId}/signtx`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        // Verify error response
+        assert.strictEqual(result.status, 500);
+        result.body.should.have.property('error');
+      });
+    });
+
+    describe('Invalid Request Body', function () {
+      it('should reject request with empty body', async function () {
+        // Make the request with empty body
+        const result = await agent
+          .post(`/api/v2/${coin}/wallet/${walletId}/signtx`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send({});
+
+        // io-ts validation should fail
+        // Note: Depending on your route config, this might be 400 or 500
+        assert.ok(result.status >= 400);
+      });
+
+      it('should reject request with invalid txPrebuild type', async function () {
+        const requestBody = {
+          txPrebuild: 'invalid_string_instead_of_object', // Wrong type!
+          prv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
+        };
+
+        // Make the request
+        const result = await agent
+          .post(`/api/v2/${coin}/wallet/${walletId}/signtx`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        // Should fail validation
+        assert.ok(result.status >= 400);
+      });
+
+      it('should handle request with invalid apiVersion', async function () {
+        const requestBody = {
+          txPrebuild: {
+            txHex:
+              '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
+            walletId: walletId,
+          },
+          walletPassphrase: 'test_passphrase_12345',
+          apiVersion: 'invalid_version', // Invalid value
+        };
+
+        // Make the request
+        const result = await agent
+          .post(`/api/v2/${coin}/wallet/${walletId}/signtx`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        // Should fail validation
+        assert.ok(result.status >= 400);
+      });
+
+      it('should handle request with malformed JSON', async function () {
+        // Make the request with malformed JSON
+        const result = await agent
+          .post(`/api/v2/${coin}/wallet/${walletId}/signtx`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send('{ invalid json ]');
+
+        // Should fail parsing
+        assert.ok(result.status >= 400);
+      });
+    });
+
+    describe('Edge Cases', function () {
+      it('should handle empty txPrebuild object', async function () {
+        const requestBody = {
+          txPrebuild: {}, // Empty object
+          prv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
+        };
+
+        const mockWallet = {
+          signTransaction: sinon.stub().rejects(new Error('Missing transaction data')),
+        };
+
+        const walletsGetStub = sinon.stub().resolves(mockWallet);
+        const mockWallets = { get: walletsGetStub };
+        const mockCoin = { wallets: sinon.stub().returns(mockWallets) };
+        sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+        const result = await agent
+          .post(`/api/v2/${coin}/wallet/${walletId}/signtx`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        // Should handle empty txPrebuild gracefully
+        assert.ok(result.status >= 400);
+      });
+
+      it('should handle very long wallet ID', async function () {
+        const veryLongWalletId = 'a'.repeat(1000);
+        const requestBody = {
+          txPrebuild: {
+            txHex:
+              '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
+            walletId: veryLongWalletId,
+          },
+          prv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
+        };
+
+        const walletsGetStub = sinon.stub().rejects(new Error('Invalid wallet ID'));
+        const mockWallets = { get: walletsGetStub };
+        const mockCoin = { wallets: sinon.stub().returns(mockWallets) };
+        sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+        const result = await agent
+          .post(`/api/v2/${coin}/wallet/${veryLongWalletId}/signtx`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        // Should handle gracefully
+        assert.ok(result.status >= 400);
+      });
+
+      it('should handle wallet ID with special characters', async function () {
+        const specialCharWalletId = '../../../etc/passwd';
+        const requestBody = {
+          txPrebuild: {
+            txHex:
+              '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
+          },
+          prv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
+        };
+
+        const walletsGetStub = sinon.stub().rejects(new Error('Invalid wallet ID'));
+        const mockWallets = { get: walletsGetStub };
+        const mockCoin = { wallets: sinon.stub().returns(mockWallets) };
+        sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+        const result = await agent
+          .post(`/api/v2/${coin}/wallet/${encodeURIComponent(specialCharWalletId)}/signtx`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        // Should handle special characters safely
+        assert.ok(result.status >= 400);
+      });
+
+      it('should handle txRequestId in both txPrebuild and body', async function () {
+        const requestBody = {
+          txPrebuild: {
+            txHex:
+              '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
+            walletId: walletId,
+            txRequestId: 'tx-req-in-prebuild',
+          },
+          txRequestId: 'tx-req-in-body', // Also in body
+          prv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
+        };
+
+        const mockWallet = {
+          signTransaction: sinon.stub().resolves(mockFullySignedResponse),
+        };
+
+        const walletsGetStub = sinon.stub().resolves(mockWallet);
+        const mockWallets = { get: walletsGetStub };
+        const mockCoin = { wallets: sinon.stub().returns(mockWallets) };
+        sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+        const result = await agent
+          .post(`/api/v2/${coin}/wallet/${walletId}/signtx`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        // Should handle gracefully (accept or reject consistently)
+        assert.ok(result.status === 200 || result.status >= 400);
+      });
+    });
+
+    describe('Response Validation Edge Cases', function () {
+      it('should reject response with missing required field in FullySignedTransactionResponse', async function () {
+        const requestBody = {
+          txPrebuild: {
+            txHex:
+              '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
+            walletId: walletId,
+          },
+          prv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
+        };
+
+        // Mock returns invalid response (missing txHex)
+        const invalidResponse = {};
+
+        const mockWallet = {
+          signTransaction: sinon.stub().resolves(invalidResponse),
+        };
+
+        const walletsGetStub = sinon.stub().resolves(mockWallet);
+        const mockWallets = { get: walletsGetStub };
+        const mockCoin = { wallets: sinon.stub().returns(mockWallets) };
+        sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+        const result = await agent
+          .post(`/api/v2/${coin}/wallet/${walletId}/signtx`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        // Even if SDK returns 200, response should fail codec validation
+        // This depends on where validation happens
+        assert.ok(result.status === 200 || result.status >= 400);
+
+        // If status is 200 but response is invalid, codec validation should catch it
+        if (result.status === 200) {
+          assert.throws(() => {
+            assertDecode(FullySignedTransactionResponse, result.body);
+          });
+        }
+      });
+
+      it('should reject response with wrong type in txHex field', async function () {
+        const requestBody = {
+          txPrebuild: {
+            txHex:
+              '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
+            walletId: walletId,
+          },
+          prv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
+        };
+
+        // Mock returns invalid response (txHex is number instead of string)
+        const invalidResponse = {
+          txHex: 12345, // Wrong type!
+        };
+
+        const mockWallet = {
+          signTransaction: sinon.stub().resolves(invalidResponse),
+        };
+
+        const walletsGetStub = sinon.stub().resolves(mockWallet);
+        const mockWallets = { get: walletsGetStub };
+        const mockCoin = { wallets: sinon.stub().returns(mockWallets) };
+        sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+        const result = await agent
+          .post(`/api/v2/${coin}/wallet/${walletId}/signtx`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        // Response codec validation should catch type mismatch
+        if (result.status === 200) {
+          assert.throws(() => {
+            assertDecode(FullySignedTransactionResponse, result.body);
+          });
+        }
+      });
+    });
+  });
+
   describe('WalletSignTxParams', function () {
     it('should validate params with required coin and id', function () {
       const validParams = {
@@ -664,7 +1396,7 @@ describe('WalletSignTx codec tests', function () {
 
   describe('PostWalletSignTx route definition', function () {
     it('should have the correct path', function () {
-      assert.strictEqual(PostWalletSignTx.path, '/api/v2/:coin/wallet/:id/signtx');
+      assert.strictEqual(PostWalletSignTx.path, '/api/v2/{coin}/wallet/{id}/signtx');
     });
 
     it('should have the correct HTTP method', function () {

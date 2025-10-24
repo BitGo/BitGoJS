@@ -288,12 +288,51 @@ jobs:
           context: .
           file: ./Dockerfile
           push: false
+          load: true
           tags: |
             bitgo/express:${{ github.sha }}
           build-args: |
             VERSION=${{ steps.build-info.outputs.version }}
             BUILD_DATE=${{ steps.build-info.outputs.date }}
             GIT_HASH=${{ github.sha }}
+
+      - name: Test Express Docker image
+        id: docker-test
+        run: |
+          echo "Testing Docker image bitgo/express:${{ github.sha }}"
+          
+          CONTAINER_ID=$(docker run -d -p 3080:3080 bitgo/express:${{ github.sha }})
+          echo "Started container: $CONTAINER_ID"
+          
+          # Wait for the service to be ready with timeout
+          echo "Waiting for service to be ready..."
+          
+          for i in {1..30}; do
+            if curl -f -s --max-time 5 http://localhost:3080/api/v2/ping > /dev/null 2>&1; then
+              echo "✅ API health check passed"
+              break
+            fi
+            
+            if [ $i -eq 30 ]; then
+              echo "::error::API health check failed after 30 attempts"
+              docker logs "$CONTAINER_ID"
+              docker stop "$CONTAINER_ID"
+              docker rm "$CONTAINER_ID"
+              exit 1
+            fi
+            
+            echo "Waiting for API... (attempt $i/30)"
+            sleep 2
+          done
+          
+          # Check container logs for errors
+          docker logs "$CONTAINER_ID"
+          
+          # Stop the container
+          docker stop "$CONTAINER_ID"
+          docker rm "$CONTAINER_ID"
+          
+          echo "✅ Docker image tests passed"
 
   dockerfile-check:
     runs-on: ubuntu-latest

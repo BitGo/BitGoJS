@@ -1,23 +1,13 @@
-import * as express from 'express';
-import { ApiResponseError } from '../errors';
-import { UpdateLightningWalletClientRequest, updateWalletCoinSpecific } from '@bitgo/abstract-lightning';
-import { decodeOrElse } from '@bitgo/sdk-core';
+import { updateWalletCoinSpecific } from '@bitgo/abstract-lightning';
+import { ExpressApiRouteRequest } from '../typedRoutes/api';
 
-export async function handleUpdateLightningWalletCoinSpecific(req: express.Request): Promise<unknown> {
+export async function handleUpdateLightningWalletCoinSpecific(
+  req: ExpressApiRouteRequest<'express.wallet.update', 'put'>
+): Promise<unknown> {
   const bitgo = req.bitgo;
 
-  const params = decodeOrElse(
-    'UpdateLightningWalletClientRequest',
-    UpdateLightningWalletClientRequest,
-    req.body,
-    (_) => {
-      // DON'T throw errors from decodeOrElse. It could leak sensitive information.
-      throw new ApiResponseError('Invalid request body to update lightning wallet coin specific', 400);
-    }
-  );
+  const coin = bitgo.coin(req.decoded.coin);
+  const wallet = await coin.wallets().get({ id: req.decoded.id, includeBalance: false });
 
-  const coin = bitgo.coin(req.params.coin);
-  const wallet = await coin.wallets().get({ id: req.params.id, includeBalance: false });
-
-  return await updateWalletCoinSpecific(wallet, params);
+  return await updateWalletCoinSpecific(wallet, req.decoded);
 }

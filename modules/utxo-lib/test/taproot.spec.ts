@@ -1,6 +1,6 @@
 import * as assert from 'assert';
-import { ECPairAPI, ECPairFactory } from 'ecpair';
-import { ecc, taproot } from '../src';
+import { ECPairAPI, ECPairFactory, ecc } from '@bitgo/secp256k1';
+import { taproot } from '../src';
 import { createTaprootOutputScript, getTaprootOutputKey } from '../src/taproot';
 
 const ECPair: ECPairAPI = ECPairFactory(ecc);

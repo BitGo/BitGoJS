@@ -1,8 +1,13 @@
 import * as utxolib from '@bitgo/utxo-lib';
-import { ITransactionRecipient, VerifyTransactionOptions } from '@bitgo/sdk-core';
+import { ITransactionRecipient, TxIntentMismatchError } from '@bitgo/sdk-core';
 import { DescriptorMap } from '@bitgo/utxo-core/descriptor';
 
-import { AbstractUtxoCoin, BaseOutput, BaseParsedTransactionOutputs } from '../../abstractUtxoCoin';
+import {
+  AbstractUtxoCoin,
+  BaseOutput,
+  BaseParsedTransactionOutputs,
+  VerifyTransactionOptions,
+} from '../../abstractUtxoCoin';
 
 import { toBaseParsedTransactionOutputsFromPsbt } from './parse';
 
@@ -66,16 +71,25 @@ export function assertValidTransaction(
  * @param coin
  * @param params
  * @param descriptorMap
+ * @returns {boolean} True if verification passes
+ * @throws {TxIntentMismatchError} if transaction validation fails
  */
-export async function verifyTransaction(
+export async function verifyTransaction<TNumber extends number | bigint>(
   coin: AbstractUtxoCoin,
-  params: VerifyTransactionOptions,
+  params: VerifyTransactionOptions<TNumber>,
   descriptorMap: DescriptorMap
 ): Promise<boolean> {
   const tx = coin.decodeTransactionFromPrebuild(params.txPrebuild);
   if (!(tx instanceof utxolib.bitgo.UtxoPsbt)) {
-    throw new Error('unexpected transaction type');
+    throw new TxIntentMismatchError(
+      'unexpected transaction type',
+      params.reqId,
+      [params.txParams],
+      params.txPrebuild.txHex
+    );
   }
+
   assertValidTransaction(tx, descriptorMap, params.txParams.recipients ?? [], tx.network);
+
   return true;
 }

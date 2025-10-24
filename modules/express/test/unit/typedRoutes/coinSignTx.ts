@@ -980,7 +980,7 @@ describe('CoinSignTx codec tests', function () {
 
   describe('PostCoinSignTx route definition', function () {
     it('should have the correct path', function () {
-      assert.strictEqual(PostCoinSignTx.path, '/api/v2/:coin/signtx');
+      assert.strictEqual(PostCoinSignTx.path, '/api/v2/{coin}/signtx');
     });
 
     it('should have the correct HTTP method', function () {

@@ -1,7 +1,7 @@
 import buildDebug from 'debug';
 import _ from 'lodash';
 import BigNumber from 'bignumber.js';
-import { BitGoBase } from '@bitgo/sdk-core';
+import { BitGoBase, TxIntentMismatchError } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
 
 import { AbstractUtxoCoin, Output, ParsedTransaction, VerifyTransactionOptions } from '../../abstractUtxoCoin';
@@ -25,6 +25,23 @@ function getPayGoLimit(allowPaygoOutput?: boolean): number {
   return 0.015;
 }
 
+/**
+ * Verify that a transaction prebuild complies with the original intention for fixed-script wallets
+ *
+ * This implementation handles transaction verification for traditional UTXO coins using fixed scripts
+ * (non-descriptor wallets). It validates keychains, signatures, outputs, and amounts.
+ *
+ * @param coin - The UTXO coin instance
+ * @param bitgo - BitGo API instance for network calls
+ * @param params - Verification parameters
+ * @param params.txParams - Transaction parameters passed to send
+ * @param params.txPrebuild - Prebuild object returned by server
+ * @param params.wallet - Wallet object to obtain keys to verify against
+ * @param params.verification - Verification options (disableNetworking, keychains, addresses)
+ * @param params.reqId - Optional request ID for logging
+ * @returns {boolean} True if verification passes
+ * @throws {TxIntentMismatchError} if transaction validation fails
+ */
 export async function verifyTransaction<TNumber extends bigint | number>(
   coin: AbstractUtxoCoin,
   bitgo: BitGoBase,
@@ -32,8 +49,13 @@ export async function verifyTransaction<TNumber extends bigint | number>(
 ): Promise<boolean> {
   const { txParams, txPrebuild, wallet, verification = {}, reqId } = params;
 
+  // Helper to throw TxIntentMismatchError with consistent context
+  const throwTxMismatch = (message: string): never => {
+    throw new TxIntentMismatchError(message, reqId, [txParams], txPrebuild.txHex);
+  };
+
   if (!_.isUndefined(verification.disableNetworking) && !_.isBoolean(verification.disableNetworking)) {
-    throw new Error('verification.disableNetworking must be a boolean');
+    throw new TypeError('verification.disableNetworking must be a boolean');
   }
   const isPsbt = txPrebuild.txHex && utxolib.bitgo.isPsbt(txPrebuild.txHex);
   if (isPsbt && txPrebuild.txInfo?.unspents) {
@@ -64,7 +86,7 @@ export async function verifyTransaction<TNumber extends bigint | number>(
   if (!_.isEmpty(keySignatures)) {
     const verify = (key, pub) => {
       if (!keychains.user || !keychains.user.pub) {
-        throw new Error('missing user keychain');
+        throwTxMismatch('missing user keychain');
       }
       return verifyKeySignature({
         userKeychain: keychains.user as { pub: string },
@@ -100,7 +122,7 @@ export async function verifyTransaction<TNumber extends bigint | number>(
   const missingOutputs = parsedTransaction.missingOutputs;
   if (missingOutputs.length !== 0) {
     // there are some outputs in the recipients list that have not made it into the actual transaction
-    throw new Error('expected outputs missing in transaction prebuild');
+    throwTxMismatch('expected outputs missing in transaction prebuild');
   }
 
   const intendedExternalSpend = parsedTransaction.explicitExternalSpendAmount;
@@ -140,7 +162,7 @@ export async function verifyTransaction<TNumber extends bigint | number>(
     } else {
       // the additional external outputs can only be BitGo's pay-as-you-go fee, but we cannot verify the wallet address
       // there are some addresses that are outside the scope of intended recipients that are not change addresses
-      throw new Error('prebuild attempts to spend to unintended external recipients');
+      throwTxMismatch('prebuild attempts to spend to unintended external recipients');
     }
   }
 

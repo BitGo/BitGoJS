@@ -1,5 +1,6 @@
 import { AccountCoin, avaxErc20, tavaxErc20 } from '../account';
 import { CoinFeature, UnderlyingAsset } from '../base';
+import { ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE_AND_MENA_FZE } from '../coinFeatures';
 
 export const avaxTokens = [
   avaxErc20(
@@ -569,7 +570,7 @@ export const avaxTokens = [
     18,
     '0x49f519002eeced6902f24c0be72b6d898e4d27fc',
     UnderlyingAsset['avaxc:bsgg'],
-    AccountCoin.getFeaturesByTypeExcluding([CoinFeature.CUSTODY_BITGO_SINGAPORE])
+    ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE_AND_MENA_FZE
   ),
   avaxErc20(
     'e6bd6935-daac-4edc-8cfb-f8305ebbdb11',

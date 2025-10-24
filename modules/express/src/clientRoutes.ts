@@ -687,11 +687,11 @@ export function handleV2CreateLocalKeyChain(req: ExpressApiRouteRequest<'express
  * handle wallet share
  * @param req
  */
-async function handleV2ShareWallet(req: express.Request) {
+export async function handleV2ShareWallet(req: ExpressApiRouteRequest<'express.v2.wallet.share', 'post'>) {
   const bitgo = req.bitgo;
-  const coin = bitgo.coin(req.params.coin);
-  const wallet = await coin.wallets().get({ id: req.params.id });
-  return wallet.shareWallet(req.body);
+  const coin = bitgo.coin(req.decoded.coin);
+  const wallet = await coin.wallets().get({ id: req.decoded.id });
+  return wallet.shareWallet(req.decoded);
 }
 
 /**
@@ -1005,9 +1005,11 @@ export async function handleV2EnableTokens(req: express.Request) {
  * Handle Update Wallet
  * @param req
  */
-async function handleWalletUpdate(req: express.Request): Promise<unknown> {
+export async function handleWalletUpdate(
+  req: ExpressApiRouteRequest<'express.wallet.update', 'put'>
+): Promise<unknown> {
   // If it's a lightning coin, use the lightning-specific handler
-  if (isLightningCoinName(req.params.coin)) {
+  if (isLightningCoinName(req.decoded.coin)) {
     return handleUpdateLightningWalletCoinSpecific(req);
   }
 
@@ -1022,24 +1024,24 @@ async function handleWalletUpdate(req: express.Request): Promise<unknown> {
  * Changes a keychain's passphrase, re-encrypting the key to a new password
  * @param req
  */
-export async function handleKeychainChangePassword(req: express.Request): Promise<unknown> {
-  const { oldPassword, newPassword, otp } = req.body;
-  if (!oldPassword || !newPassword) {
-    throw new ApiResponseError('Missing 1 or more required fields: [oldPassword, newPassword]', 400);
-  }
+export async function handleKeychainChangePassword(
+  req: ExpressApiRouteRequest<'express.keychain.changePassword', 'post'>
+): Promise<unknown> {
+  const { oldPassword, newPassword, otp, coin: coinName, id } = req.decoded;
   const reqId = new RequestTracer();
 
   const bitgo = req.bitgo;
-  const coin = bitgo.coin(req.params.coin);
+  const coin = bitgo.coin(coinName);
 
   if (otp) {
     await bitgo.unlock({ otp });
   }
 
   const keychain = await coin.keychains().get({
-    id: req.params.id,
+    id: id,
     reqId,
   });
+
   if (!keychain) {
     throw new ApiResponseError(`Keychain ${req.params.id} not found`, 404);
   }
@@ -1607,20 +1609,17 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   // generate wallet
   app.post('/api/v2/:coin/wallet/generate', parseBody, prepareBitGo(config), promiseWrapper(handleV2GenerateWallet));
 
-  app.put('/express/api/v2/:coin/wallet/:id', parseBody, prepareBitGo(config), promiseWrapper(handleWalletUpdate));
+  router.put('express.wallet.update', [prepareBitGo(config), typedPromiseWrapper(handleWalletUpdate)]);
 
   // change wallet passphrase
-  app.post(
-    '/api/v2/:coin/keychain/:id/changepassword',
-    parseBody,
+  router.post('express.keychain.changePassword', [
     prepareBitGo(config),
-    promiseWrapper(handleKeychainChangePassword)
-  );
+    typedPromiseWrapper(handleKeychainChangePassword),
+  ]);
 
   router.post('express.v2.wallet.createAddress', [prepareBitGo(config), typedPromiseWrapper(handleV2CreateAddress)]);
 
-  // share wallet
-  app.post('/api/v2/:coin/wallet/:id/share', parseBody, prepareBitGo(config), promiseWrapper(handleV2ShareWallet));
+  router.post('express.v2.wallet.share', [prepareBitGo(config), typedPromiseWrapper(handleV2ShareWallet)]);
   app.post(
     '/api/v2/:coin/walletshare/:id/acceptshare',
     parseBody,

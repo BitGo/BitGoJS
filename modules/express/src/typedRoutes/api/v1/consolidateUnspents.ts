@@ -75,7 +75,7 @@ export const ConsolidateUnspentsResponse = t.array(
  * @operationId express.v1.wallet.consolidateunspents
  */
 export const PutConsolidateUnspents = httpRoute({
-  path: '/api/v1/wallet/:id/consolidateunspents',
+  path: '/api/v1/wallet/{id}/consolidateunspents',
   method: 'PUT',
   request: httpRequest({
     params: ConsolidateUnspentsRequestParams,

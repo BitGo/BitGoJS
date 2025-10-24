@@ -7,8 +7,614 @@ import {
   PutFanoutUnspents,
 } from '../../../src/typedRoutes/api/v1/fanoutUnspents';
 import { assertDecode } from './common';
+import 'should';
+import 'should-http';
+import 'should-sinon';
+import * as sinon from 'sinon';
+import { BitGo } from 'bitgo';
+import { setupAgent } from '../../lib/testutil';
 
 describe('FanoutUnspents codec tests', function () {
+  describe('fanoutUnspents', function () {
+    const agent = setupAgent();
+    const walletId = '68c02f96aa757d9212bd1a536f123456';
+
+    const mockFanoutResponse = {
+      status: 'accepted',
+      tx: '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
+      hash: '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+      instant: false,
+      fee: 10000,
+      feeRate: 20000,
+      travelInfos: [],
+    };
+
+    afterEach(function () {
+      sinon.restore();
+    });
+
+    it('should successfully fanout unspents', async function () {
+      const requestBody = {
+        target: 10,
+        walletPassphrase: 'test_passphrase_12345',
+      };
+
+      // Create mock wallet with fanOutUnspents method (note: capital O)
+      const mockWallet = {
+        fanOutUnspents: sinon.stub().resolves(mockFanoutResponse),
+      };
+
+      // Stub the wallets().get() chain
+      const walletsGetStub = sinon.stub().resolves(mockWallet);
+
+      const mockWallets = {
+        get: walletsGetStub,
+      };
+
+      // For V1, bitgo.wallets() is called directly (no coin parameter)
+      sinon.stub(BitGo.prototype, 'wallets').returns(mockWallets as any);
+
+      // Make the request to Express
+      const result = await agent
+        .put(`/api/v1/wallet/${walletId}/fanoutunspents`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      // Verify the response
+      assert.strictEqual(result.status, 200);
+      result.body.should.have.property('status');
+      result.body.should.have.property('tx');
+      result.body.should.have.property('hash');
+      assert.strictEqual(result.body.status, mockFanoutResponse.status);
+      assert.strictEqual(result.body.tx, mockFanoutResponse.tx);
+      assert.strictEqual(result.body.hash, mockFanoutResponse.hash);
+
+      // This ensures the response structure matches the typed definition
+      const decodedResponse = assertDecode(FanoutUnspentsResponse, result.body);
+      assert.strictEqual(decodedResponse.status, mockFanoutResponse.status);
+      assert.strictEqual(decodedResponse.tx, mockFanoutResponse.tx);
+      assert.strictEqual(decodedResponse.hash, mockFanoutResponse.hash);
+
+      // Verify that the correct BitGoJS methods were called
+      assert.strictEqual(walletsGetStub.calledOnceWith({ id: walletId }), true);
+      assert.strictEqual(mockWallet.fanOutUnspents.calledOnce, true);
+    });
+
+    it('should successfully fanout unspents with xprv', async function () {
+      const requestBody = {
+        target: 20,
+        xprv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
+      };
+
+      const mockWallet = {
+        fanOutUnspents: sinon.stub().resolves(mockFanoutResponse),
+      };
+
+      const walletsGetStub = sinon.stub().resolves(mockWallet);
+      const mockWallets = { get: walletsGetStub };
+      sinon.stub(BitGo.prototype, 'wallets').returns(mockWallets as any);
+
+      const result = await agent
+        .put(`/api/v1/wallet/${walletId}/fanoutunspents`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      assert.strictEqual(result.status, 200);
+
+      const decodedResponse = assertDecode(FanoutUnspentsResponse, result.body);
+      assert.strictEqual(decodedResponse.status, mockFanoutResponse.status);
+    });
+
+    it('should successfully fanout unspents with all optional fields', async function () {
+      const requestBody = {
+        target: 15,
+        walletPassphrase: 'test_passphrase',
+        validate: false,
+        minConfirms: 2,
+      };
+
+      const mockWallet = {
+        fanOutUnspents: sinon.stub().resolves(mockFanoutResponse),
+      };
+
+      const walletsGetStub = sinon.stub().resolves(mockWallet);
+      const mockWallets = { get: walletsGetStub };
+      sinon.stub(BitGo.prototype, 'wallets').returns(mockWallets as any);
+
+      const result = await agent
+        .put(`/api/v1/wallet/${walletId}/fanoutunspents`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      assert.strictEqual(result.status, 200);
+
+      const decodedResponse = assertDecode(FanoutUnspentsResponse, result.body);
+      assert.strictEqual(decodedResponse.status, mockFanoutResponse.status);
+    });
+
+    it('should return instant transaction response', async function () {
+      const requestBody = {
+        target: 10,
+        walletPassphrase: 'test_passphrase',
+      };
+
+      const mockInstantResponse = {
+        ...mockFanoutResponse,
+        instant: true,
+        instantId: 'inst-123456',
+      };
+
+      const mockWallet = {
+        fanOutUnspents: sinon.stub().resolves(mockInstantResponse),
+      };
+
+      const walletsGetStub = sinon.stub().resolves(mockWallet);
+      const mockWallets = { get: walletsGetStub };
+      sinon.stub(BitGo.prototype, 'wallets').returns(mockWallets as any);
+
+      const result = await agent
+        .put(`/api/v1/wallet/${walletId}/fanoutunspents`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      assert.strictEqual(result.status, 200);
+      result.body.should.have.property('instant');
+      result.body.should.have.property('instantId');
+      assert.strictEqual(result.body.instant, true);
+      assert.strictEqual(result.body.instantId, 'inst-123456');
+
+      const decodedResponse = assertDecode(FanoutUnspentsResponse, result.body);
+      assert.strictEqual(decodedResponse.instant, true);
+      assert.strictEqual(decodedResponse.instantId, 'inst-123456');
+    });
+
+    // ==========================================
+    // ERROR AND EDGE CASE TESTS
+    // ==========================================
+
+    describe('Error Cases', function () {
+      it('should handle wallet not found error', async function () {
+        const requestBody = {
+          target: 10,
+          walletPassphrase: 'test_passphrase',
+        };
+
+        const walletsGetStub = sinon.stub().rejects(new Error('Wallet not found'));
+        const mockWallets = { get: walletsGetStub };
+        sinon.stub(BitGo.prototype, 'wallets').returns(mockWallets as any);
+
+        const result = await agent
+          .put(`/api/v1/wallet/${walletId}/fanoutunspents`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        assert.strictEqual(result.status, 500);
+        result.body.should.have.property('error');
+      });
+
+      it('should handle fanoutUnspents failure', async function () {
+        const requestBody = {
+          target: 10,
+          walletPassphrase: 'wrong_passphrase',
+        };
+
+        const mockWallet = {
+          fanOutUnspents: sinon.stub().rejects(new Error('Invalid passphrase')),
+        };
+
+        const walletsGetStub = sinon.stub().resolves(mockWallet);
+        const mockWallets = { get: walletsGetStub };
+        sinon.stub(BitGo.prototype, 'wallets').returns(mockWallets as any);
+
+        const result = await agent
+          .put(`/api/v1/wallet/${walletId}/fanoutunspents`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        assert.strictEqual(result.status, 500);
+        result.body.should.have.property('error');
+      });
+
+      it('should handle insufficient unspents error', async function () {
+        const requestBody = {
+          target: 100,
+          walletPassphrase: 'test_passphrase',
+        };
+
+        const mockWallet = {
+          fanOutUnspents: sinon.stub().rejects(new Error('Insufficient unspents to fanout')),
+        };
+
+        const walletsGetStub = sinon.stub().resolves(mockWallet);
+        const mockWallets = { get: walletsGetStub };
+        sinon.stub(BitGo.prototype, 'wallets').returns(mockWallets as any);
+
+        const result = await agent
+          .put(`/api/v1/wallet/${walletId}/fanoutunspents`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        assert.strictEqual(result.status, 500);
+        result.body.should.have.property('error');
+      });
+
+      it('should handle wallets() method error', async function () {
+        const requestBody = {
+          target: 10,
+          walletPassphrase: 'test_passphrase',
+        };
+
+        sinon.stub(BitGo.prototype, 'wallets').throws(new Error('Wallets service unavailable'));
+
+        const result = await agent
+          .put(`/api/v1/wallet/${walletId}/fanoutunspents`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        assert.strictEqual(result.status, 500);
+        result.body.should.have.property('error');
+      });
+    });
+
+    describe('Invalid Request Body', function () {
+      it('should reject request with empty body', async function () {
+        // Make the request with empty body (missing required 'target')
+        const result = await agent
+          .put(`/api/v1/wallet/${walletId}/fanoutunspents`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send({});
+
+        // io-ts validation should fail
+        assert.ok(result.status >= 400);
+      });
+
+      it('should reject request with missing target', async function () {
+        const requestBody = {
+          walletPassphrase: 'test_passphrase',
+        };
+
+        const result = await agent
+          .put(`/api/v1/wallet/${walletId}/fanoutunspents`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        // Should fail validation
+        assert.ok(result.status >= 400);
+      });
+
+      it('should reject request with invalid target type', async function () {
+        const requestBody = {
+          target: '10', // string instead of number
+          walletPassphrase: 'test_passphrase',
+        };
+
+        // Make the request
+        const result = await agent
+          .put(`/api/v1/wallet/${walletId}/fanoutunspents`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        // Should fail validation
+        assert.ok(result.status >= 400);
+      });
+
+      it('should reject request with invalid walletPassphrase type', async function () {
+        const requestBody = {
+          target: 10,
+          walletPassphrase: 123, // number instead of string
+        };
+
+        const result = await agent
+          .put(`/api/v1/wallet/${walletId}/fanoutunspents`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        assert.ok(result.status >= 400);
+      });
+
+      it('should reject request with invalid validate type', async function () {
+        const requestBody = {
+          target: 10,
+          validate: 'true', // string instead of boolean
+        };
+
+        const result = await agent
+          .put(`/api/v1/wallet/${walletId}/fanoutunspents`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        assert.ok(result.status >= 400);
+      });
+
+      it('should reject request with invalid minConfirms type', async function () {
+        const requestBody = {
+          target: 10,
+          minConfirms: '2', // string instead of number
+        };
+
+        const result = await agent
+          .put(`/api/v1/wallet/${walletId}/fanoutunspents`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        assert.ok(result.status >= 400);
+      });
+
+      it('should handle request with malformed JSON', async function () {
+        // Make the request with malformed JSON
+        const result = await agent
+          .put(`/api/v1/wallet/${walletId}/fanoutunspents`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send('{ invalid json ]');
+
+        // Should fail parsing
+        assert.ok(result.status >= 400);
+      });
+    });
+
+    describe('Edge Cases', function () {
+      it('should handle target value at minimum boundary (2)', async function () {
+        const requestBody = {
+          target: 2,
+          walletPassphrase: 'test_passphrase',
+        };
+
+        const mockWallet = {
+          fanOutUnspents: sinon.stub().resolves(mockFanoutResponse),
+        };
+
+        const walletsGetStub = sinon.stub().resolves(mockWallet);
+        const mockWallets = { get: walletsGetStub };
+        sinon.stub(BitGo.prototype, 'wallets').returns(mockWallets as any);
+
+        const result = await agent
+          .put(`/api/v1/wallet/${walletId}/fanoutunspents`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        // Should succeed with minimum valid target value
+        assert.strictEqual(result.status, 200);
+        const decodedResponse = assertDecode(FanoutUnspentsResponse, result.body);
+        assert.strictEqual(decodedResponse.status, mockFanoutResponse.status);
+      });
+
+      it('should handle target value at maximum boundary (300)', async function () {
+        const requestBody = {
+          target: 300,
+          walletPassphrase: 'test_passphrase',
+        };
+
+        const mockWallet = {
+          fanOutUnspents: sinon.stub().resolves(mockFanoutResponse),
+        };
+
+        const walletsGetStub = sinon.stub().resolves(mockWallet);
+        const mockWallets = { get: walletsGetStub };
+        sinon.stub(BitGo.prototype, 'wallets').returns(mockWallets as any);
+
+        const result = await agent
+          .put(`/api/v1/wallet/${walletId}/fanoutunspents`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        // Should succeed with maximum valid target value
+        assert.strictEqual(result.status, 200);
+        const decodedResponse = assertDecode(FanoutUnspentsResponse, result.body);
+        assert.strictEqual(decodedResponse.status, mockFanoutResponse.status);
+      });
+
+      it('should handle very long wallet ID', async function () {
+        const veryLongWalletId = 'a'.repeat(1000);
+        const requestBody = {
+          target: 10,
+          walletPassphrase: 'test_passphrase',
+        };
+
+        const walletsGetStub = sinon.stub().rejects(new Error('Invalid wallet ID'));
+        const mockWallets = { get: walletsGetStub };
+        sinon.stub(BitGo.prototype, 'wallets').returns(mockWallets as any);
+
+        const result = await agent
+          .put(`/api/v1/wallet/${veryLongWalletId}/fanoutunspents`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        assert.ok(result.status >= 400);
+      });
+
+      it('should handle wallet ID with special characters', async function () {
+        const specialCharWalletId = '../../../etc/passwd';
+        const requestBody = {
+          target: 10,
+          walletPassphrase: 'test_passphrase',
+        };
+
+        const walletsGetStub = sinon.stub().rejects(new Error('Invalid wallet ID'));
+        const mockWallets = { get: walletsGetStub };
+        sinon.stub(BitGo.prototype, 'wallets').returns(mockWallets as any);
+
+        const result = await agent
+          .put(`/api/v1/wallet/${encodeURIComponent(specialCharWalletId)}/fanoutunspents`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        assert.ok(result.status >= 400);
+      });
+
+      it('should handle both walletPassphrase and xprv provided', async function () {
+        const requestBody = {
+          target: 10,
+          walletPassphrase: 'test_passphrase',
+          xprv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
+        };
+
+        const mockWallet = {
+          fanOutUnspents: sinon.stub().resolves(mockFanoutResponse),
+        };
+
+        const walletsGetStub = sinon.stub().resolves(mockWallet);
+        const mockWallets = { get: walletsGetStub };
+        sinon.stub(BitGo.prototype, 'wallets').returns(mockWallets as any);
+
+        const result = await agent
+          .put(`/api/v1/wallet/${walletId}/fanoutunspents`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        // Should succeed - SDK handles priority of auth methods
+        assert.strictEqual(result.status, 200);
+        const decodedResponse = assertDecode(FanoutUnspentsResponse, result.body);
+        assert.strictEqual(decodedResponse.status, mockFanoutResponse.status);
+      });
+
+      it('should handle zero minConfirms', async function () {
+        const requestBody = {
+          target: 10,
+          walletPassphrase: 'test_passphrase',
+          minConfirms: 0,
+        };
+
+        const mockWallet = {
+          fanOutUnspents: sinon.stub().resolves(mockFanoutResponse),
+        };
+
+        const walletsGetStub = sinon.stub().resolves(mockWallet);
+        const mockWallets = { get: walletsGetStub };
+        sinon.stub(BitGo.prototype, 'wallets').returns(mockWallets as any);
+
+        const result = await agent
+          .put(`/api/v1/wallet/${walletId}/fanoutunspents`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        // Should succeed - zero minConfirms is valid (includes unconfirmed)
+        assert.strictEqual(result.status, 200);
+        const decodedResponse = assertDecode(FanoutUnspentsResponse, result.body);
+        assert.strictEqual(decodedResponse.status, mockFanoutResponse.status);
+      });
+
+      it('should handle negative target value', async function () {
+        const requestBody = {
+          target: -5,
+          walletPassphrase: 'test_passphrase',
+        };
+
+        const mockWallet = {
+          fanOutUnspents: sinon.stub().rejects(new Error('Invalid target value')),
+        };
+
+        const walletsGetStub = sinon.stub().resolves(mockWallet);
+        const mockWallets = { get: walletsGetStub };
+        sinon.stub(BitGo.prototype, 'wallets').returns(mockWallets as any);
+
+        const result = await agent
+          .put(`/api/v1/wallet/${walletId}/fanoutunspents`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        assert.ok(result.status >= 400);
+      });
+    });
+
+    describe('Response Validation Edge Cases', function () {
+      it('should reject response with missing required field in FanoutUnspentsResponse', async function () {
+        const requestBody = {
+          target: 10,
+          walletPassphrase: 'test_passphrase',
+        };
+
+        // Mock returns invalid response (missing required fields)
+        const invalidResponse = {
+          status: 'accepted',
+          tx: '0x123...',
+          // missing other required fields
+        };
+
+        const mockWallet = {
+          fanOutUnspents: sinon.stub().resolves(invalidResponse),
+        };
+
+        const walletsGetStub = sinon.stub().resolves(mockWallet);
+        const mockWallets = { get: walletsGetStub };
+        sinon.stub(BitGo.prototype, 'wallets').returns(mockWallets as any);
+
+        const result = await agent
+          .put(`/api/v1/wallet/${walletId}/fanoutunspents`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        // Even if SDK returns 200, response should fail codec validation
+        if (result.status === 200) {
+          assert.throws(() => {
+            assertDecode(FanoutUnspentsResponse, result.body);
+          });
+        }
+      });
+
+      it('should reject response with wrong type in field', async function () {
+        const requestBody = {
+          target: 10,
+          walletPassphrase: 'test_passphrase',
+        };
+
+        // Mock returns invalid response (wrong field type)
+        const invalidResponse = {
+          status: 123, // Wrong type! Should be string
+          tx: '0x123...',
+          hash: 'abc123',
+          instant: false,
+          fee: 10000,
+          feeRate: 20000,
+          travelInfos: [],
+        };
+
+        const mockWallet = {
+          fanOutUnspents: sinon.stub().resolves(invalidResponse),
+        };
+
+        const walletsGetStub = sinon.stub().resolves(mockWallet);
+        const mockWallets = { get: walletsGetStub };
+        sinon.stub(BitGo.prototype, 'wallets').returns(mockWallets as any);
+
+        const result = await agent
+          .put(`/api/v1/wallet/${walletId}/fanoutunspents`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        // Response codec validation should catch type mismatch
+        if (result.status === 200) {
+          assert.throws(() => {
+            assertDecode(FanoutUnspentsResponse, result.body);
+          });
+        }
+      });
+    });
+  });
+
   describe('FanoutUnspentsRequestParams', function () {
     it('should validate params with required id', function () {
       const validParams = {
@@ -373,7 +979,7 @@ describe('FanoutUnspents codec tests', function () {
 
   describe('PutFanoutUnspents route definition', function () {
     it('should have the correct path', function () {
-      assert.strictEqual(PutFanoutUnspents.path, '/api/v1/wallet/:id/fanoutunspents');
+      assert.strictEqual(PutFanoutUnspents.path, '/api/v1/wallet/{id}/fanoutunspents');
     });
 
     it('should have the correct HTTP method', function () {

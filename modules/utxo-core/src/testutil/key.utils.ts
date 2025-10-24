@@ -1,7 +1,7 @@
 import * as crypto from 'crypto';
 
+import { bip32, BIP32Interface } from '@bitgo/secp256k1';
 import * as utxolib from '@bitgo/utxo-lib';
-import { BIP32Interface } from '@bitgo/utxo-lib';
 
 export type Triple<T> = [T, T, T];
 
@@ -13,7 +13,7 @@ export type KeyTriple = Triple<BIP32Interface>;
  */
 export function getKey(seed?: string): BIP32Interface {
   const finalSeed = seed === undefined ? crypto.randomBytes(32) : crypto.createHash('sha256').update(seed).digest();
-  return utxolib.bip32.fromSeed(finalSeed);
+  return bip32.fromSeed(finalSeed);
 }
 
 /**

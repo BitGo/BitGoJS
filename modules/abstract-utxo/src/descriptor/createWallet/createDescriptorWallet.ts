@@ -1,5 +1,5 @@
 import { BitGoAPI } from '@bitgo/sdk-api';
-import * as utxolib from '@bitgo/utxo-lib';
+import { bip32 } from '@bitgo/secp256k1';
 import { Wallet } from '@bitgo/sdk-core';
 
 import { AbstractUtxoCoin } from '../../abstractUtxoCoin';
@@ -56,12 +56,12 @@ export async function createDescriptorWalletWithWalletPassphrase(
   if (!userKeychain.prv) {
     throw new Error('Missing private key');
   }
-  const userKey = utxolib.bip32.fromBase58(userKeychain.prv);
+  const userKey = bip32.fromBase58(userKeychain.prv);
   const cosigners = [backupKeychain, bitgoKeychain].map((keychain) => {
     if (!keychain.pub) {
       throw new Error('Missing public key');
     }
-    return utxolib.bip32.fromBase58(keychain.pub);
+    return bip32.fromBase58(keychain.pub);
   });
   return createDescriptorWallet(bitgo, coin, {
     ...params,

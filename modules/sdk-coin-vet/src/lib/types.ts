@@ -15,3 +15,23 @@ export interface ClaimRewardsData {
   claimBaseRewards?: boolean;
   claimStakingRewards?: boolean;
 }
+
+export type RecoverOptions = {
+  userKey?: string;
+  backupKey?: string;
+  walletPassphrase?: string;
+  recoveryDestination: string;
+  isUnsignedSweep?: boolean; // specify if this is an unsigned recovery
+  bitgoKey?: string;
+  tokenContractAddress?: string;
+};
+
+export interface RecoveryTransaction {
+  id: string;
+  tx: string;
+}
+
+export interface UnsignedSweepRecoveryTransaction {
+  txHex: string;
+  coin: string;
+}

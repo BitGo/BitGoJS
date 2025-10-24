@@ -10,11 +10,13 @@ import {
   ParseTransactionOptions,
   SignedTransaction,
   SignTransactionOptions,
-  VerifyAddressOptions,
+  TransactionType,
+  TssVerifyAddressOptions,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
 import { auditEddsaPrivateKey } from '@bitgo/sdk-lib-mpc';
-import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
+import { TransactionBuilderFactory } from './lib';
 import { KeyPair as CantonKeyPair } from './lib/keyPair';
 import utils from './lib/utils';
 
@@ -65,17 +67,39 @@ export class Canton extends BaseCoin {
     return multisigTypes.tss;
   }
 
+  /** inherited doc */
+  requiresWalletInitializationTransaction(): boolean {
+    return true;
+  }
+
   getMPCAlgorithm(): MPCAlgorithm {
     return 'eddsa';
   }
 
   /** @inheritDoc */
-  verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
-    throw new Error('Method not implemented.');
+  async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
+    const coinConfig = coins.get(this.getChain());
+    // extract `txParams` when verifying other transaction types
+    const { txPrebuild: txPrebuild } = params;
+    const rawTx = txPrebuild.txHex;
+    if (!rawTx) {
+      throw new Error('missing required tx prebuild property txHex');
+    }
+    const txBuilder = new TransactionBuilderFactory(coinConfig).from(rawTx);
+    const transaction = txBuilder.transaction;
+    switch (transaction.type) {
+      case TransactionType.WalletInitialization: {
+        // there is no input for this type of transaction, so always return true
+        return true;
+      }
+      default: {
+        throw new Error(`unknown transaction type, ${transaction.type}`);
+      }
+    }
   }
 
   /** @inheritDoc */
-  isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
+  isWalletAddress(params: TssVerifyAddressOptions): Promise<boolean> {
     throw new Error('Method not implemented.');
   }
 
@@ -104,7 +128,9 @@ export class Canton extends BaseCoin {
 
   /** @inheritDoc */
   isValidAddress(address: string): boolean {
-    throw new Error('Method not implemented.');
+    // canton addresses are of the form, partyHint::fingerprint
+    // where partyHint is of length 5 and fingerprint is 68 characters long
+    return utils.isValidAddress(address);
   }
 
   /** @inheritDoc */

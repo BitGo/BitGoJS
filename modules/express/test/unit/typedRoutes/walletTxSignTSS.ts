@@ -1451,7 +1451,7 @@ describe('WalletTxSignTSS codec tests', function () {
 
   describe('PostWalletTxSignTSS route definition', function () {
     it('should have the correct path', function () {
-      assert.strictEqual(PostWalletTxSignTSS.path, '/api/v2/:coin/wallet/:id/signtxtss');
+      assert.strictEqual(PostWalletTxSignTSS.path, '/api/v2/{coin}/wallet/{id}/signtxtss');
     });
 
     it('should have the correct HTTP method', function () {

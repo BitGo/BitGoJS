@@ -1,7 +1,12 @@
 import assert from 'assert';
 import should from 'should';
 import utils from '../../src/lib/utils';
-import { GenerateTopologyResponse, PreparedTransactionRawData, PrepareSubmissionResponse } from '../resources';
+import {
+  CANTON_ADDRESSES,
+  GenerateTopologyResponse,
+  PreparedTransactionRawData,
+  PrepareSubmissionResponse,
+} from '../resources';
 
 describe('Canton Util', function () {
   describe('Raw transaction parser', function () {
@@ -29,6 +34,38 @@ describe('Canton Util', function () {
       );
       should.exist(computedHash);
       assert.strictEqual(computedHash, PrepareSubmissionResponse.preparedTransactionHash);
+    });
+  });
+
+  describe('Check if the address is valid', function () {
+    it('should return true when the address is valid', function () {
+      const isValid = utils.isValidAddress(CANTON_ADDRESSES.VALID_ADDRESS);
+      should.exist(isValid);
+      assert.strictEqual(isValid, true);
+    });
+
+    it('should return false when party hint is invalid', function () {
+      const isValid = utils.isValidAddress(CANTON_ADDRESSES.INVALID_PARTY_HINT);
+      should.exist(isValid);
+      assert.strictEqual(isValid, false);
+    });
+
+    it('should return false when fingerprint is invalid', function () {
+      const isValid = utils.isValidAddress(CANTON_ADDRESSES.INVALID_FINGERPRINT);
+      should.exist(isValid);
+      assert.strictEqual(isValid, false);
+    });
+
+    it('should return false when party hint is missing', function () {
+      const isValid = utils.isValidAddress(CANTON_ADDRESSES.MISSING_PARTY_HINT);
+      should.exist(isValid);
+      assert.strictEqual(isValid, false);
+    });
+
+    it('should return false when fingerprint is missing', function () {
+      const isValid = utils.isValidAddress(CANTON_ADDRESSES.MISSING_FINGERPRINT);
+      should.exist(isValid);
+      assert.strictEqual(isValid, false);
     });
   });
 });

@@ -1,55 +1,7 @@
 import { NetworkType } from '@bitgo/statics';
 import EthereumCommon from '@ethereumjs/common';
-import { recoverTransaction } from '@celo/wallet-base';
-import * as ethers from 'ethers';
-import BigNumber from 'bignumber.js';
-import { ETHTransactionType, LegacyTxData } from '@bitgo/sdk-coin-eth';
-import { InvalidTransactionError, ParseTransactionError } from '@bitgo/sdk-core';
+import { InvalidTransactionError } from '@bitgo/sdk-core';
 import { mainnetCommon, testnetCommon } from './resources';
-
-/**
- * Celo transaction deserialization based on code
- * from @celo/contractkit/lib/utils/signing-utils
- * github: https://github.com/celo-org/celo-monorepo/tree/master/packages/contractkit
- *
- * @param {string} serializedTx the serialized transaction
- * @returns {LegacyTxData} the deserialized transaction
- */
-export function deserialize(serializedTx: string): LegacyTxData {
-  try {
-    const decodedTx = ethers.utils.RLP.decode(serializedTx);
-    decodedTx.splice(3, 3); // remove unused feeCurrency, gatewayFeeRecipient and gatewayFee
-    const [nonce, gasPrice, gasLimit, to, value, data, v, r, s] = decodedTx;
-    let chainId = v;
-    let from;
-    if (r !== '0x' && s !== '0x') {
-      const [tx, sender] = recoverTransaction(serializedTx);
-      from = sender;
-      chainId = tx.chainId;
-    }
-    const celoTx: LegacyTxData = {
-      _type: ETHTransactionType.LEGACY,
-      nonce: nonce.toLowerCase() === '0x' ? 0 : parseInt(nonce, 16),
-      gasPrice: gasPrice.toLowerCase() === '0x' ? '0' : new BigNumber(gasPrice, 16).toString(),
-      gasLimit: gasLimit.toLowerCase() === '0x' ? '0' : new BigNumber(gasLimit, 16).toString(),
-      value: value.toLowerCase() === '0x' ? '0' : new BigNumber(value, 16).toString(),
-      data,
-      chainId,
-      from,
-      v,
-      r,
-      s,
-    };
-
-    if (to !== '0x') {
-      celoTx.to = to;
-    }
-
-    return celoTx;
-  } catch {
-    throw new ParseTransactionError('Invalid serialized transaction');
-  }
-}
 
 const commons: Map<NetworkType, EthereumCommon> = new Map<NetworkType, EthereumCommon>([
   [NetworkType.MAINNET, mainnetCommon],

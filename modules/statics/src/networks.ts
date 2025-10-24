@@ -724,7 +724,7 @@ class Litecoin extends Mainnet implements UtxoNetwork {
   name = 'Litecoin';
   family = CoinFamily.LTC;
   utxolibName = 'litecoin';
-  explorerUrl = 'https://blockchair.com/litecoin/transaction/';
+  explorerUrl = 'https://litecoinspace.org/tx/';
 }
 
 class LitecoinTestnet extends Testnet implements UtxoNetwork {
@@ -1968,7 +1968,7 @@ class FlowTestnet extends Testnet implements EthereumNetwork {
 class MegaETH extends Mainnet implements EthereumNetwork {
   name = 'MegaETH';
   family = CoinFamily.MEGAETH;
-  explorerUrl = 'https://www.megaexplorer.xyz/tx';
+  explorerUrl = 'https://www.megaexplorer.xyz/tx/';
   accountExplorerUrl = 'https://www.megaexplorer.xyz/address/';
   chainId = 6342;
   nativeCoinOperationHashPrefix = '6342';
@@ -1977,7 +1977,7 @@ class MegaETH extends Mainnet implements EthereumNetwork {
 class MegaETHTestnet extends Testnet implements EthereumNetwork {
   name = 'MegaETHTestnet';
   family = CoinFamily.MEGAETH;
-  explorerUrl = 'https://www.megaexplorer.xyz/tx';
+  explorerUrl = 'https://www.megaexplorer.xyz/tx/';
   accountExplorerUrl = 'https://www.megaexplorer.xyz/address/';
   chainId = 6342;
   nativeCoinOperationHashPrefix = '6342';

@@ -3,6 +3,49 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.6.0...@bitgo/statics@58.7.0) (2025-10-21)
+
+
+### Bug Fixes
+
+* correct megaeth transaction url ([4e4cf93](https://github.com/BitGo/BitGoJS/commit/4e4cf93d1e7a16f4facd98efb34ea96c7259b491))
+
+
+### Features
+
+* onboarding new set of eth tokens ([33cb700](https://github.com/BitGo/BitGoJS/commit/33cb7008725aa193580def828aaf203ef31a0b1c))
+
+
+
+
+
+# [58.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.5.0...@bitgo/statics@58.6.0) (2025-10-16)
+
+
+### Features
+
+* add WRW support for multiple EVM coins ([64d7265](https://github.com/BitGo/BitGoJS/commit/64d72657683633f7a7f0c0b141e3115d91494773))
+* disallow EVM_COMPATIBLE_WP feature for OFC coin ([df6850b](https://github.com/BitGo/BitGoJS/commit/df6850bc1b6a86022566aa7d7bd9af81ac712180))
+* ofc tokens for ton ([a4d7bc7](https://github.com/BitGo/BitGoJS/commit/a4d7bc7f9ecc47179eb18a779840a71c0cff2b04))
+* ofc tokens for ton ([e736792](https://github.com/BitGo/BitGoJS/commit/e736792bdd3278900aa9c4ee46bb34fadca3d285))
+
+
+
+
+
+# [58.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.4.0...@bitgo/statics@58.5.0) (2025-10-13)
+
+
+### Features
+
+* add ofc statics for plume, kavaevm, and flow ([d851155](https://github.com/BitGo/BitGoJS/commit/d85115539694f52e2a974160ec071c74c4654342))
+* **statics:** add twc2flr testnet token ([7a8a199](https://github.com/BitGo/BitGoJS/commit/7a8a19935dca4ee351f1697b57c446300eb3834f))
+* **statics:** onboard new batch of tokens ([f70224f](https://github.com/BitGo/BitGoJS/commit/f70224f8282b282e1d450fada4f675fe4016dc8c))
+
+
+
+
+
 # [58.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.3.0...@bitgo/statics@58.4.0) (2025-10-09)
 
 

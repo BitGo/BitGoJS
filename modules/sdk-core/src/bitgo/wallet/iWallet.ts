@@ -31,7 +31,7 @@ import {
 } from '../utils';
 import { SerializedNtilde } from '../../account-lib/mpc/tss/ecdsa/types';
 import { IAddressBook } from '../address-book';
-import { WalletUser } from '@bitgo/public-types';
+import { WalletUser, AddressQueryResult } from '@bitgo/public-types';
 import { SubmitTransactionResponse } from '../inscriptionBuilder';
 
 export interface MaximumSpendableOptions {
@@ -202,6 +202,7 @@ export interface PrebuildTransactionOptions {
       numReadonlySignedAccounts: number;
       numReadonlyUnsignedAccounts: number;
     };
+    recentBlockhash?: string;
   };
   /**
    * Custom transaction parameters for Aptos entry function calls.
@@ -892,6 +893,11 @@ export type SendNFTResult = {
   pendingApproval: PendingApprovalData;
 };
 
+export type WalletInitResult = {
+  success: PrebuildTransactionResult[];
+  failure: Error[];
+};
+
 export interface IWallet {
   bitgo: BitGoBase;
   baseCoin: IBaseCoin;
@@ -938,7 +944,7 @@ export interface IWallet {
   sweep(params?: SweepOptions): Promise<any>;
   freeze(params?: FreezeOptions): Promise<any>;
   transferComment(params?: TransferCommentOptions): Promise<any>;
-  addresses(params?: AddressesOptions): Promise<any>;
+  addresses(params?: AddressesOptions): Promise<AddressQueryResult>;
   getAddress(params?: GetAddressOptions): Promise<any>;
   createAddress(params?: CreateAddressOptions): Promise<any>;
   updateAddress(params?: UpdateAddressOptions): Promise<any>;
@@ -984,6 +990,7 @@ export interface IWallet {
   buildTokenEnablements(params?: BuildTokenEnablementOptions): Promise<PrebuildTransactionResult[]>;
   sendTokenEnablement(params?: PrebuildAndSignTransactionOptions): Promise<any>;
   sendTokenEnablements(params?: BuildTokenEnablementOptions): Promise<any>;
+  sendWalletInitialization(params?: PrebuildTransactionOptions): Promise<WalletInitResult>;
   signMessage(params: WalletSignMessageOptions): Promise<SignedMessage>;
   buildSignMessageRequest(params: WalletSignMessageOptions): Promise<TxRequest>;
   signTypedData(params: WalletSignTypedDataOptions): Promise<SignedMessage>;
