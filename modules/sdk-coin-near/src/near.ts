@@ -991,7 +991,7 @@ export class Near extends BaseCoin {
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
     let totalAmount = new BigNumber(0);
     const coinConfig = coins.get(this.getChain());
-    const { txPrebuild: txPrebuild, txParams: txParams } = params;
+    const { txPrebuild: txPrebuild, txParams: txParams, wallet } = params;
     const transaction = new Transaction(coinConfig);
     const rawTx = txPrebuild.txHex;
     if (!rawTx) {
@@ -1057,6 +1057,13 @@ export class Near extends BaseCoin {
       if (!totalAmount.isEqualTo(explainedTx.outputAmount) && txParams.type !== 'enabletoken') {
         throw new Error('Tx total amount does not match with expected total amount field');
       }
+    }
+
+    if (params.verification?.consolidationToBaseAddress) {
+      if (!wallet?.coinSpecific()?.rootAddress) {
+        throw new Error('Unable to determine base address for consolidation');
+      }
+      await this.verifyConsolidationToBaseAddress(explainedTx, wallet.coinSpecific()?.rootAddress as string);
     }
 
     return true;
@@ -1275,6 +1282,17 @@ export class Near extends BaseCoin {
 
     if (actualType !== expectedType) {
       throw new Error(`Invalid transaction type on token enablement: expected "${expectedType}", got "${actualType}".`);
+    }
+  }
+
+  protected async verifyConsolidationToBaseAddress(
+    explainedTx: TransactionExplanation,
+    baseAddress: string
+  ): Promise<void> {
+    for (const output of explainedTx.outputs) {
+      if (output.address !== baseAddress) {
+        throw new Error('tx outputs does not match with expected address');
+      }
     }
   }
 }

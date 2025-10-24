@@ -66,7 +66,7 @@ export class Nep141Token extends Near {
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
-    const { txPrebuild: txPrebuild, txParams: txParams } = params;
+    const { txPrebuild: txPrebuild, txParams: txParams, wallet } = params;
     const rawTx = txPrebuild.txHex;
     let totalAmount = new BigNumber(0);
     if (!rawTx) {
@@ -103,6 +103,13 @@ export class Nep141Token extends Near {
       if (!totalAmount.isEqualTo(explainedTx.outputAmount)) {
         throw new Error('Tx total amount does not match with expected total amount field');
       }
+    }
+
+    if (params.verification?.consolidationToBaseAddress) {
+      if (!wallet?.coinSpecific()?.rootAddress) {
+        throw new Error('Unable to determine base address for consolidation');
+      }
+      await this.verifyConsolidationToBaseAddress(explainedTx, wallet.coinSpecific()?.rootAddress as string);
     }
 
     return true;
