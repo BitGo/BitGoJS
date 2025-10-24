@@ -1,7 +1,6 @@
 import 'should';
 import * as mpath from 'path';
-
-import * as fs from 'fs-extra';
+import * as fs from 'fs/promises';
 
 import { AbstractUtxoCoin } from '../../../src';
 
@@ -22,7 +21,7 @@ async function getFixtureWithName<T>(name: string, defaultValue: T, rawCoinName:
     if (e.code !== 'ENOENT') {
       throw e;
     }
-    await fs.mkdirp(dirname);
+    await fs.mkdir(dirname, { recursive: true });
   }
   try {
     let textContent = await fs.readFile(path, 'utf8');
