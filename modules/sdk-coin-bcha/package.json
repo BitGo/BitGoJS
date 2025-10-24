@@ -11,9 +11,7 @@
     "clean": "rm -r ./dist",
     "lint": "eslint --quiet .",
     "prepare": "npm run build",
-    "test": "npm run coverage",
-    "coverage": "nyc -- npm run unit-test",
-    "unit-test": "mocha"
+    "unit-test": "echo 'test in abstract-utxo'"
   },
   "author": "BitGo SDK Team <sdkteam@bitgo.com>",
   "license": "MIT",
@@ -41,13 +39,7 @@
   },
   "dependencies": {
     "@bitgo/abstract-utxo": "^10.0.1",
-    "@bitgo/sdk-coin-bch": "^2.4.7",
-    "@bitgo/sdk-core": "^36.15.0",
-    "@bitgo/utxo-lib": "^11.13.0"
-  },
-  "devDependencies": {
-    "@bitgo/sdk-api": "^1.70.4",
-    "@bitgo/sdk-test": "^9.1.7"
+    "@bitgo/sdk-core": "^36.15.0"
   },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c",
   "files": [
