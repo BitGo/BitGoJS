@@ -22,7 +22,7 @@ export const adaTokens = [
     '5ec37726eebe67f1db9f84e739b24e9e4dbb4c632a36a50ce74bfc86',
     'USDA',
     'asset1hc9l4ggxu7pgavfgndtn00cwr9uxesrf7ajqq7',
-    UnderlyingAsset['tada:usda'],
+    UnderlyingAsset['tada:tusda'],
     ADA_TOKEN_FEATURES
   ),
   adaToken(
