@@ -12063,7 +12063,8 @@ export const erc20Coins = [
     'HeyAnon',
     18,
     '0x79bbf4508b1391af3a0f4b30bb5fc4aa9ab0e07c',
-    UnderlyingAsset['eth:anon']
+    UnderlyingAsset['eth:anon'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_MENA_FZE, CoinFeature.BULK_TRANSACTION]
   ),
   erc20(
     '82a853ca-67c9-43d1-95fc-61716a7b18fe',
