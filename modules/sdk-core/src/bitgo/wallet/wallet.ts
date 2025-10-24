@@ -3568,8 +3568,9 @@ export class Wallet implements IWallet {
 
   /**
    * Ensures signature shares are in a clean state before signing a transaction.
-   * Automatically detects if a TxRequest is a partially signed Full TxRequest and deletes stale signatures.
-   * Use this for Express API and other integrations that need automatic cleanup of partial signatures.
+   * Automatically deletes signature shares for Full TxRequests before signing to prevent
+   * issues with stale or partial signatures.
+   * Use this for Express API and other integrations that need automatic cleanup of signatures.
    *
    * @param params - signing options
    * @returns signed transaction
@@ -3582,26 +3583,13 @@ export class Wallet implements IWallet {
     if (txRequestId && this.tssUtils && this.multisigType() === 'tss') {
       const txRequest = await this.tssUtils.getTxRequest(txRequestId);
 
-      // Check if txRequest is Full (not Lite)
+      // Always clean signature shares for Full TxRequests before signing
       const isFull =
-        txRequest.apiVersion === 'full' ||
-        (txRequest.transactions ?? []).length > 0 ||
-        (txRequest.messages ?? []).length > 0;
+        txRequest.apiVersion === 'full' &&
+        ((txRequest.transactions ?? []).length > 0 || (txRequest.messages ?? []).length > 0);
 
       if (isFull) {
-        // Check if there are any partial signature shares present
-        // Signature shares array is populated during signing and cleared when complete
-        let isPartiallySigned = false;
-
-        if (txRequest.transactions && txRequest.transactions.length > 0) {
-          isPartiallySigned = txRequest.transactions.some((tx) => (tx.signatureShares ?? []).length > 0);
-        } else if (txRequest.messages && txRequest.messages.length > 0) {
-          isPartiallySigned = txRequest.messages.some((msg) => (msg.signatureShares ?? []).length > 0);
-        }
-
-        if (isPartiallySigned) {
-          await this.tssUtils.deleteSignatureShares(txRequestId);
-        }
+        await this.tssUtils.deleteSignatureShares(txRequestId);
       }
     }
 
