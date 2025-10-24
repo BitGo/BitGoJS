@@ -6,14 +6,17 @@
   "types": "./dist/src/index.d.ts",
   "exports": {
     ".": {
+      "import": "./dist/src/index.js",
       "require": "./dist/src/index.js",
       "types": "./dist/src/index.d.ts"
     },
     "./resources/proto/preparedTransaction": {
+      "import": "./dist/resources/proto/preparedTransaction.js",
       "require": "./dist/resources/proto/preparedTransaction.js",
       "types": "./dist/resources/proto/preparedTransaction.d.ts"
     },
     "./resources/hash/hash": {
+      "import": "./dist/resources/hash/hash.js",
       "require": "./dist/resources/hash/hash.js",
       "types": "./dist/resources/hash/hash.d.ts"
     }
