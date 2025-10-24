@@ -1,11 +1,8 @@
-/**
- * @prettier
- */
 import 'should';
-import * as fs from 'fs-extra';
 import * as mpath from 'path';
+import * as fs from 'fs/promises';
 
-import { AbstractUtxoCoin } from '@bitgo/abstract-utxo';
+import { AbstractUtxoCoin } from '../../../src';
 
 function serializeBigInt(k: string, v: any): string | number {
   if (typeof v === 'bigint') {
@@ -24,7 +21,7 @@ async function getFixtureWithName<T>(name: string, defaultValue: T, rawCoinName:
     if (e.code !== 'ENOENT') {
       throw e;
     }
-    await fs.mkdirp(dirname);
+    await fs.mkdir(dirname, { recursive: true });
   }
   try {
     let textContent = await fs.readFile(path, 'utf8');

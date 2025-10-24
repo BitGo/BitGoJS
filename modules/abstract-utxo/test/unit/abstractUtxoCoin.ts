@@ -2,16 +2,16 @@ import * as utxolib from '@bitgo/utxo-lib';
 import should = require('should');
 import * as sinon from 'sinon';
 import { Wallet, UnexpectedAddressError, VerificationOptions, Triple } from '@bitgo/sdk-core';
-import { TestBitGo } from '@bitgo/sdk-test';
-import { BitGo } from '../../../../src/bitgo';
-import { psbtTxHex } from './payGoPSBTHexFixture/psbtHexProof';
-import { bip322Fixtures } from '../../fixtures/bip322/fixtures';
-import { AbstractUtxoCoin, UtxoWallet, Output, TransactionExplanation, TransactionParams } from '@bitgo/abstract-utxo';
+
+import { UtxoWallet, Output, TransactionExplanation, TransactionParams } from '../../src';
+
+import { bip322Fixtures } from './fixtures/bip322/fixtures';
+import { psbtTxHex } from './fixtures/psbtHexProof';
+import { defaultBitGo, getUtxoCoin } from './util';
 
 describe('Abstract UTXO Coin:', () => {
   describe('Parse Transaction:', () => {
-    const bitgo: BitGo = TestBitGo.decorate(BitGo, { env: 'mock' });
-    const coin = bitgo.coin('tbtc') as AbstractUtxoCoin;
+    const coin = getUtxoCoin('tbtc');
 
     /*
      * mock objects which get passed into parse transaction.
@@ -117,8 +117,7 @@ describe('Abstract UTXO Coin:', () => {
   });
 
   describe('Custom Change Wallets', () => {
-    const bitgo: BitGo = TestBitGo.decorate(BitGo, { env: 'mock' });
-    const coin = bitgo.coin('tbtc') as AbstractUtxoCoin;
+    const coin = getUtxoCoin('tbtc');
 
     const keys = {
       send: {
@@ -249,8 +248,7 @@ describe('Abstract UTXO Coin:', () => {
   });
 
   describe('Verify Transaction', () => {
-    const bitgo: BitGo = TestBitGo.decorate(BitGo, { env: 'mock' });
-    const coin = bitgo.coin('tbtc') as AbstractUtxoCoin;
+    const coin = getUtxoCoin('tbtc');
 
     const userKeychain = coin.keychains().create();
     const otherKeychain = coin.keychains().create();
@@ -277,7 +275,7 @@ describe('Abstract UTXO Coin:', () => {
             // user public key swapped out
             user: {
               pub: otherKeychain.pub,
-              encryptedPrv: bitgo.encrypt({
+              encryptedPrv: defaultBitGo.encrypt({
                 input: userKeychain.prv,
                 password: passphrase,
               }),
@@ -547,7 +545,7 @@ describe('Abstract UTXO Coin:', () => {
 
     it('should work with bigint amounts', async () => {
       // need a coin that uses bigint
-      const bigintCoin = bitgo.coin('tdoge') as AbstractUtxoCoin;
+      const bigintCoin = getUtxoCoin('tdoge');
 
       const coinMock = sinon.stub(bigintCoin, 'parseTransaction').resolves({
         keychains: {} as any,
@@ -596,12 +594,7 @@ describe('Abstract UTXO Coin:', () => {
 
   describe('Explain Transaction', function () {
     describe('Verify paygo output when explaining psbt transaction', function () {
-      const bitgo: BitGo = TestBitGo.decorate(BitGo, { env: 'mock' });
-      let coin: AbstractUtxoCoin;
-
-      beforeEach(() => {
-        coin = bitgo.coin('tbtc4') as AbstractUtxoCoin;
-      });
+      const coin = getUtxoCoin('tbtc4');
 
       it('should detect and verify paygo address proof in PSBT', async function () {
         // Call explainTransaction
@@ -610,13 +603,8 @@ describe('Abstract UTXO Coin:', () => {
     });
 
     describe('BIP322 Proof', function () {
-      const bitgo: BitGo = TestBitGo.decorate(BitGo, { env: 'mock' });
-      let coin: AbstractUtxoCoin;
+      const coin = getUtxoCoin('btc');
       const pubs = bip322Fixtures.valid.rootWalletKeys.triple.map((b) => b.neutered().toBase58()) as Triple<string>;
-
-      beforeEach(() => {
-        coin = bitgo.coin('btc') as AbstractUtxoCoin;
-      });
 
       it('should successfully run with a user nonce', async function () {
         const psbtHex = bip322Fixtures.valid.userNonce;

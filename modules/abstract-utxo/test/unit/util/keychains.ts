@@ -1,6 +1,3 @@
-/**
- * @prettier
- */
 import { Triple } from '@bitgo/sdk-core';
 import { encrypt } from '@bitgo/sdk-api';
 import { getSeed } from '@bitgo/sdk-test';

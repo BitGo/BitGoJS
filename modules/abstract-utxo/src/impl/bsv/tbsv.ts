@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import { BitGoBase, BaseCoin } from '@bitgo/sdk-core';
+import { BitGoBase } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
 
 import { Bsv } from './bsv';
@@ -11,7 +11,7 @@ export class Tbsv extends Bsv {
     super(bitgo, utxolib.networks.bitcoinsvTestnet);
   }
 
-  static createInstance(bitgo: BitGoBase): BaseCoin {
+  static createInstance(bitgo: BitGoBase): Tbsv {
     return new Tbsv(bitgo);
   }
 }

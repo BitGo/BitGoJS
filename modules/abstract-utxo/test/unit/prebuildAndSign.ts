@@ -1,16 +1,13 @@
-/**
- * @prettier
- */
 import * as assert from 'assert';
 
-import { AbstractUtxoCoin, getReplayProtectionAddresses } from '@bitgo/abstract-utxo';
 import * as utxolib from '@bitgo/utxo-lib';
 import nock = require('nock');
-
-import { encryptKeychain, getDefaultWalletKeys, getUtxoWallet, keychainsBase58, utxoCoins } from './util';
 import { common, HalfSignedUtxoTransaction, Wallet } from '@bitgo/sdk-core';
-import { getSeed, TestBitGo } from '@bitgo/sdk-test';
-import { BitGo } from '../../../../../src';
+import { getSeed } from '@bitgo/sdk-test';
+
+import { AbstractUtxoCoin, getReplayProtectionAddresses } from '../../src';
+
+import { defaultBitGo, encryptKeychain, getDefaultWalletKeys, getUtxoWallet, keychainsBase58, utxoCoins } from './util';
 
 const txFormats = ['legacy', 'psbt'] as const;
 export type TxFormat = (typeof txFormats)[number];
@@ -181,8 +178,7 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFor
       id: 'walletId',
     });
 
-    const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
-    const bgUrl = common.Environments[bitgo.getEnv()].uri;
+    const bgUrl = common.Environments[defaultBitGo.getEnv()].uri;
     let prebuild: utxolib.bitgo.UtxoPsbt;
     let recipient: { address: string; amount: string };
     let addressInfo: Record<string, any>;

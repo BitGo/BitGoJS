@@ -1,11 +1,11 @@
 import * as assert from 'node:assert';
 
-import { TestBitGo } from '@bitgo/sdk-test';
-import { AbstractUtxoCoin, descriptor as utxod } from '@bitgo/abstract-utxo';
 import * as utxolib from '@bitgo/utxo-lib';
 import { IWallet, WalletCoinSpecific } from '@bitgo/sdk-core';
 
-import { BitGo } from '../../../../../src';
+import { descriptor as utxod } from '../../src';
+
+import { getUtxoCoin } from './util';
 
 export function getDescriptorAddress(d: string, index: number, network: utxolib.Network): string {
   const derivedScript = Buffer.from(
@@ -15,8 +15,7 @@ export function getDescriptorAddress(d: string, index: number, network: utxolib.
 }
 
 describe('descriptor wallets', function () {
-  const bitgo: BitGo = TestBitGo.decorate(BitGo, { env: 'mock' });
-  const coin = bitgo.coin('tbtc') as AbstractUtxoCoin;
+  const coin = getUtxoCoin('tbtc');
   const xpubs = utxolib.testutil.getKeyTriple('setec astronomy').map((k) => k.neutered().toBase58());
 
   function withChecksum(descriptor: string): string {

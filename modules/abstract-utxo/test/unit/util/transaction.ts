@@ -1,6 +1,3 @@
-/**
- * @prettier
- */
 import * as utxolib from '@bitgo/utxo-lib';
 const { isWalletUnspent, signInputWithUnspent } = utxolib.bitgo;
 type RootWalletKeys = utxolib.bitgo.RootWalletKeys;

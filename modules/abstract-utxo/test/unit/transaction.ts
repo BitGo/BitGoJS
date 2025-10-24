@@ -1,14 +1,19 @@
-/**
- * @prettier
- */
 import 'mocha';
-import * as _ from 'lodash';
 import * as assert from 'assert';
+
+import * as _ from 'lodash';
 import * as utxolib from '@bitgo/utxo-lib';
 import nock = require('nock');
 import { BIP32Interface, bitgo, testutil } from '@bitgo/utxo-lib';
+import {
+  common,
+  FullySignedTransaction,
+  HalfSignedUtxoTransaction,
+  Triple,
+  WalletSignTransactionOptions,
+} from '@bitgo/sdk-core';
 
-import { AbstractUtxoCoin, getReplayProtectionAddresses } from '@bitgo/abstract-utxo';
+import { AbstractUtxoCoin, getReplayProtectionAddresses } from '../../src';
 
 import {
   utxoCoins,
@@ -25,17 +30,8 @@ import {
   getUtxoCoin,
   keychainsBase58,
   getWalletKeys,
+  defaultBitGo,
 } from './util';
-
-import {
-  common,
-  FullySignedTransaction,
-  HalfSignedUtxoTransaction,
-  Triple,
-  WalletSignTransactionOptions,
-} from '@bitgo/sdk-core';
-import { TestBitGo } from '@bitgo/sdk-test';
-import { BitGo } from '../../../../../src';
 
 type Unspent<TNumber extends number | bigint = number> = bitgo.Unspent<TNumber>;
 type WalletUnspent<TNumber extends number | bigint = number> = bitgo.WalletUnspent<TNumber>;
@@ -45,7 +41,7 @@ function getScriptTypes2Of3() {
 }
 
 describe(`UTXO coin signTransaction`, async function () {
-  const bgUrl = common.Environments[TestBitGo.decorate(BitGo, { env: 'mock' }).getEnv()].uri;
+  const bgUrl = common.Environments[defaultBitGo.getEnv()].uri;
 
   const coin = getUtxoCoin('btc');
   const wallet = getUtxoWallet(coin, { id: '5b34252f1bf349930e34020a00000000', coin: coin.getChain() });
@@ -280,7 +276,7 @@ function run<TNumber extends number | bigint = number>(
   describe(`Transaction Stages ${coin.getChain()} (${amountType}) scripts=${inputScripts.join(
     ','
   )} txFormat=${txFormat}`, function () {
-    const bgUrl = common.Environments[TestBitGo.decorate(BitGo, { env: 'mock' }).getEnv()].uri;
+    const bgUrl = common.Environments[defaultBitGo.getEnv()].uri;
 
     const isTransactionWithKeyPathSpend = inputScripts.some((s) => s === 'taprootKeyPathSpend');
     const isTransactionWithReplayProtection = inputScripts.some((s) => s === 'p2shP2pk');
