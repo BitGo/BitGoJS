@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.0.1...@bitgo/abstract-utxo@10.1.0) (2025-10-24)
+
+
+### Features
+
+* **abstract-utxo:** move coin implementations from sdk modules ([02e2e69](https://github.com/BitGo/BitGoJS/commit/02e2e69557703ee75e3ace7d831973a4d66c9d2d))
+* **abstract-utxo:** remove deprecated getCoinLibrary method ([8f1836f](https://github.com/BitGo/BitGoJS/commit/8f1836f620191ca337758292b2f337d76f814f0a))
+* improve transaction verification error handling ([641406f](https://github.com/BitGo/BitGoJS/commit/641406fa3d9e9a9380664f545e0ab80aafffac20))
+* refactoring error handling for transaction verification ([a3513a3](https://github.com/BitGo/BitGoJS/commit/a3513a35c1cde4f7575500a49adc50ee412bcad5))
+* replace generic Error with TxIntentMismatchError ([982f902](https://github.com/BitGo/BitGoJS/commit/982f9022f972076d28ac0647088b329fd1ec827a))
+
+
+
+
+
 ## [10.0.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.0.0...@bitgo/abstract-utxo@10.0.1) (2025-10-21)
 
 **Note:** Version bump only for package @bitgo/abstract-utxo

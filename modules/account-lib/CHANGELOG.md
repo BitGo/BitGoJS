@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [27.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.13.0...@bitgo/account-lib@27.14.0) (2025-10-24)
+
+
+### Features
+
+* **sdk-coin-ethlike:** enable message signing for baseeth ([434fccf](https://github.com/BitGo/BitGoJS/commit/434fccf870c1a70395925dd1a36c8ecdbda62f6e))
+
+
+
+
+
 # [27.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.12.0...@bitgo/account-lib@27.13.0) (2025-10-21)
 
 

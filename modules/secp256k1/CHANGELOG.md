@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.6.0...@bitgo/secp256k1@1.7.0) (2025-10-24)
+
+
+### Features
+
+* **secp256k1:** implement public key recovery in recoverySignature method and add unit tests ([b963e1f](https://github.com/BitGo/BitGoJS/commit/b963e1f0e0d8a1c2e2127dc6b2cefd3524f96a9f))
+
+
+
+
+
 # [1.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.5.0...@bitgo/secp256k1@1.6.0) (2025-10-16)
 
 

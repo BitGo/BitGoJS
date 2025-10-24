@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.6.7...@bitgo/sdk-coin-vet@2.7.0) (2025-10-24)
+
+
+### Bug Fixes
+
+* handle vet token recovery in coin class ([4ceb282](https://github.com/BitGo/BitGoJS/commit/4ceb282a1846462604d31307532bc5760d01d432))
+
+
+### Features
+
+* add logic for vechain token recoveries ([aaaf29b](https://github.com/BitGo/BitGoJS/commit/aaaf29b12c228fe888650cd6671949f7ab332fdb))
+* recover function for vet recovery ([de5f8bd](https://github.com/BitGo/BitGoJS/commit/de5f8bd83565175da05e1d0e0701b28632a8907d))
+
+
+
+
+
 ## [2.6.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.6.6...@bitgo/sdk-coin-vet@2.6.7) (2025-10-21)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-vet

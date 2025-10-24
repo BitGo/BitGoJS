@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.71.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.70.4...@bitgo/sdk-api@1.71.0) (2025-10-24)
+
+
+### Features
+
+* **sdk-hmac:** add Buffer support for HMAC generation ([ecabc9c](https://github.com/BitGo/BitGoJS/commit/ecabc9c8f6c7cff6bf6c82fd9158534befb699f1))
+
+
+
+
+
 ## [1.70.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.70.3...@bitgo/sdk-api@1.70.4) (2025-10-21)
 
 **Note:** Version bump only for package @bitgo/sdk-api

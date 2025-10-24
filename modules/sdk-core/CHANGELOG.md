@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [36.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.15.0...@bitgo/sdk-core@36.16.0) (2025-10-24)
+
+
+### Features
+
+* added createAccount intent for canton wallet init ([f0f9964](https://github.com/BitGo/BitGoJS/commit/f0f9964f7af9dd6e7fc7704e4fde2758d13ae1a6))
+* recover function for vet recovery ([de5f8bd](https://github.com/BitGo/BitGoJS/commit/de5f8bd83565175da05e1d0e0701b28632a8907d))
+* **sdk-coin-canton:** added transfer acceptance builder ([d1f3794](https://github.com/BitGo/BitGoJS/commit/d1f37944f66b377952fc769c3be508404dd3e8d8))
+* **sdk-core:** add MPC EdDSA address verification ([288d4d5](https://github.com/BitGo/BitGoJS/commit/288d4d56c75eb4e5337ead506cb54ae9a3fb791d))
+* **sdk-core:** add typing on fetch addresses ([f3dec74](https://github.com/BitGo/BitGoJS/commit/f3dec74befc76bb305a4f9ac72975e4de43787ff))
+
+
+
+
+
 # [36.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.14.0...@bitgo/sdk-core@36.15.0) (2025-10-21)
 
 

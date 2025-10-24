@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.5.0...@bitgo/sdk-coin-canton@1.6.0) (2025-10-24)
+
+
+### Bug Fixes
+
+* **sdk-coin-canton:** fix transaction signable payload getter ([8d02499](https://github.com/BitGo/BitGoJS/commit/8d02499d3c663cc2d5d3cc03927f36c8c3eae1f4))
+
+
+### Features
+
+* add  in package json to correctly resolve esm-based projects ([34a894d](https://github.com/BitGo/BitGoJS/commit/34a894d2c33bb913fc3dd866cc82002ef93a88fa))
+* added createAccount intent for canton wallet init ([f0f9964](https://github.com/BitGo/BitGoJS/commit/f0f9964f7af9dd6e7fc7704e4fde2758d13ae1a6))
+* **sdk-coin-canton:** added transfer acceptance builder ([d1f3794](https://github.com/BitGo/BitGoJS/commit/d1f37944f66b377952fc769c3be508404dd3e8d8))
+* **sdk-coin-canton:** added verify transaction method handling for wallet init ([b7f600b](https://github.com/BitGo/BitGoJS/commit/b7f600b2f084ec36f1341bf0f051d7434dad782e))
+
+
+
+
+
 # [1.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.4.0...@bitgo/sdk-coin-canton@1.5.0) (2025-10-21)
 
 

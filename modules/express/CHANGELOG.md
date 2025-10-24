@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [15.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.9.0...@bitgo/express@15.10.0) (2025-10-24)
+
+
+### Features
+
+* **express:** migrate update keychain passphrase to typed routes ([419045f](https://github.com/BitGo/BitGoJS/commit/419045f68ed5511b8681419af198abd84ab267a8))
+* **sdk-core:** add typing on fetch addresses ([f3dec74](https://github.com/BitGo/BitGoJS/commit/f3dec74befc76bb305a4f9ac72975e4de43787ff))
+
+
+
+
+
 # [15.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.8.0...@bitgo/express@15.9.0) (2025-10-21)
 
 
