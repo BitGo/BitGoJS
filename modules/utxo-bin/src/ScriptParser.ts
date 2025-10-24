@@ -1,5 +1,5 @@
 import * as utxolib from '@bitgo/utxo-lib';
-import { Miniscript } from '@bitgo/wasm-miniscript';
+import { Miniscript } from '@bitgo/wasm-utxo';
 
 import { Parser, ParserNode } from './Parser';
 import { parseUnknown } from './parseUnknown';

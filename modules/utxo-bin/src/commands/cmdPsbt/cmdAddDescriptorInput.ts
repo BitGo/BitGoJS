@@ -1,5 +1,5 @@
 import * as utxolib from '@bitgo/utxo-lib';
-import { Descriptor } from '@bitgo/wasm-miniscript';
+import { Descriptor } from '@bitgo/wasm-utxo';
 import * as yargs from 'yargs';
 
 import { toUtxoPsbt, toWrappedPsbt } from './wrap';
