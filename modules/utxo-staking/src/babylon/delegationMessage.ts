@@ -8,7 +8,7 @@ import * as vendor from '@bitgo/babylonlabs-io-btc-staking-ts';
 import * as babylonProtobuf from '@babylonlabs-io/babylon-proto-ts';
 import * as bitcoinjslib from 'bitcoinjs-lib';
 import * as utxolib from '@bitgo/utxo-lib';
-import { Descriptor } from '@bitgo/wasm-miniscript';
+import { Descriptor } from '@bitgo/wasm-utxo';
 import { toXOnlyPublicKey } from '@bitgo/utxo-core';
 import { signWithKey, toWrappedPsbt } from '@bitgo/utxo-core/descriptor';
 

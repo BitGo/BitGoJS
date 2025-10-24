@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import { Descriptor } from '@bitgo/wasm-miniscript';
+import { Descriptor } from '@bitgo/wasm-utxo';
 
 import { getFixedOutputSum, MaxOutput, Output, PrevOutput } from '../Output';
 
