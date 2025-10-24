@@ -2145,6 +2145,7 @@ export enum UnderlyingAsset {
   'eth:lm' = 'eth:lm',
   'eth:kub' = 'eth:kub',
   'eth:fidd' = 'eth:fidd',
+  'eth:meme' = 'eth:meme',
 
   // Ondo Tokenized Assets
   'eth:qqqon' = 'qqqon',
