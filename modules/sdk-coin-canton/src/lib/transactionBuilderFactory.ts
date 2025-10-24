@@ -5,6 +5,7 @@ import {
   TransactionType,
 } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { TransferAcceptanceBuilder } from './transferAcceptanceBuilder';
 import { TransactionBuilder } from './transactionBuilder';
 import { TransferBuilder } from './transferBuilder';
 import { Transaction } from './transaction/transaction';
@@ -24,11 +25,23 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     } catch {
       const tx = new Transaction(this._coinConfig);
       tx.fromRawTransaction(raw);
-      if (tx.type === TransactionType.Send) {
-        return this.getTransferBuilder(tx);
+      switch (tx.type) {
+        case TransactionType.Send: {
+          return this.getTransferBuilder(tx);
+        }
+        case TransactionType.TransferAccept: {
+          return this.getTransferAcceptanceBuilder(tx);
+        }
+        default: {
+          throw new InvalidTransactionError('unsupported transaction');
+        }
       }
-      throw new InvalidTransactionError('unsupported transaction');
     }
+  }
+
+  /** @inheritdoc */
+  getTransferAcceptanceBuilder(tx?: Transaction): TransferAcceptanceBuilder {
+    return TransactionBuilderFactory.initializeBuilder(tx, new TransferAcceptanceBuilder(this._coinConfig));
   }
 
   /** @inheritdoc */

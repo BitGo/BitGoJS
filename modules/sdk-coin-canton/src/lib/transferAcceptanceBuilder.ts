@@ -1,12 +1,13 @@
 import { TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { CantonPrepareCommandResponse, CantonOneStepEnablementRequest } from './iface';
+import { CantonPrepareCommandResponse, CantonTransferAcceptRequest } from './iface';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction/transaction';
 
-export class OneStepPreApprovalBuilder extends TransactionBuilder {
+export class TransferAcceptanceBuilder extends TransactionBuilder {
   private _commandId: string;
-  private _receiverPartyId: string;
+  private _contractId: string;
+  private _actAsPartyId: string;
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
   }
@@ -17,11 +18,11 @@ export class OneStepPreApprovalBuilder extends TransactionBuilder {
   }
 
   get transactionType(): TransactionType {
-    return TransactionType.OneStepPreApproval;
+    return TransactionType.TransferAccept;
   }
 
   setTransactionType(): void {
-    this.transaction.transactionType = TransactionType.OneStepPreApproval;
+    this.transaction.transactionType = TransactionType.TransferAccept;
   }
 
   setTransaction(transaction: CantonPrepareCommandResponse): void {
@@ -29,7 +30,7 @@ export class OneStepPreApprovalBuilder extends TransactionBuilder {
   }
 
   /**
-   * Sets the unique id for the 1-step enablement
+   * Sets the unique id for the transfer acceptance
    * Also sets the _id of the transaction
    *
    * @param id - A uuid
@@ -47,37 +48,51 @@ export class OneStepPreApprovalBuilder extends TransactionBuilder {
   }
 
   /**
-   * Sets the receiver for the 1-step enablement
+   * Sets the acceptance contract id the receiver needs to accept
+   * @param id - canton acceptance contract id
+   * @returns The current builder instance for chaining.
+   * @throws Error if id is empty.
+   */
+  contractId(id: string): this {
+    if (!id.trim()) {
+      throw new Error('contractId must be a non-empty string');
+    }
+    this._contractId = id.trim();
+    return this;
+  }
+
+  /**
+   * Sets the receiver of the acceptance
    *
    * @param id - the receiver party id (address)
    * @returns The current builder instance for chaining.
    * @throws Error if id is empty.
    */
-  receiverPartyId(id: string): this {
+  actAs(id: string): this {
     if (!id.trim()) {
-      throw new Error('receiverPartyId must be a non-empty string');
+      throw new Error('actAsPartyId must be a non-empty string');
     }
-    this._receiverPartyId = id.trim();
+    this._actAsPartyId = id.trim();
     return this;
   }
 
   /**
-   * Builds and returns the CantonOneStepEnablementRequest object from the builder's internal state.
+   * Builds and returns the CantonTransferAcceptRequest object from the builder's internal state.
    *
    * This method performs validation before constructing the object. If required fields are
    * missing or invalid, it throws an error.
    *
-   * @returns {CantonOneStepEnablementRequest} - A fully constructed and validated request object for 1-step enablement.
+   * @returns {CantonTransferAcceptRequest} - A fully constructed and validated request object for transfer acceptance.
    * @throws {Error} If any required field is missing or fails validation.
    */
-  toRequestObject(): CantonOneStepEnablementRequest {
+  toRequestObject(): CantonTransferAcceptRequest {
     this.validate();
 
     return {
       commandId: this._commandId,
-      receiverId: this._receiverPartyId,
+      contractId: this._contractId,
       verboseHashing: false,
-      actAs: [this._receiverPartyId],
+      actAs: [this._actAsPartyId],
       readAs: [],
     };
   }
@@ -90,6 +105,7 @@ export class OneStepPreApprovalBuilder extends TransactionBuilder {
    */
   private validate(): void {
     if (!this._commandId) throw new Error('commandId is missing');
-    if (!this._receiverPartyId) throw new Error('receiver partyId is missing');
+    if (!this._contractId) throw new Error('contractId is missing');
+    if (!this._actAsPartyId) throw new Error('receiver partyId is missing');
   }
 }
