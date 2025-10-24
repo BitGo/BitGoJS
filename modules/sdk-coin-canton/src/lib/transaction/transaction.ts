@@ -66,11 +66,11 @@ export class Transaction extends BaseTransaction {
     return result;
   }
 
-  getSignablePayload(): Buffer {
+  get signablePayload(): Buffer {
     if (!this._prepareCommand) {
       throw new InvalidTransactionError('Empty transaction data');
     }
-    return Buffer.from(this._prepareCommand.preparedTransactionHash);
+    return Buffer.from(this._prepareCommand.preparedTransactionHash, 'base64');
   }
 
   fromRawTransaction(rawTx: string): void {
