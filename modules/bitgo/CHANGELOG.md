@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.8.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.7.0...bitgo@50.8.0) (2025-10-24)
+
+
+### Bug Fixes
+
+* handle vet token recovery in coin class ([4ceb282](https://github.com/BitGo/BitGoJS/commit/4ceb282a1846462604d31307532bc5760d01d432))
+
+
+### Features
+
+* add logic for vechain token recoveries ([aaaf29b](https://github.com/BitGo/BitGoJS/commit/aaaf29b12c228fe888650cd6671949f7ab332fdb))
+* added createAccount intent for canton wallet init ([f0f9964](https://github.com/BitGo/BitGoJS/commit/f0f9964f7af9dd6e7fc7704e4fde2758d13ae1a6))
+* recover function for vet recovery ([de5f8bd](https://github.com/BitGo/BitGoJS/commit/de5f8bd83565175da05e1d0e0701b28632a8907d))
+* **sdk-core:** add typing on fetch addresses ([f3dec74](https://github.com/BitGo/BitGoJS/commit/f3dec74befc76bb305a4f9ac72975e4de43787ff))
+
+
+
+
+
 # [50.7.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.6.0...bitgo@50.7.0) (2025-10-21)
 
 

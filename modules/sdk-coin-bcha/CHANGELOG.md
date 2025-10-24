@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bcha@2.5.7...@bitgo/sdk-coin-bcha@2.6.0) (2025-10-24)
+
+
+### Features
+
+* **abstract-utxo:** move coin implementations from sdk modules ([02e2e69](https://github.com/BitGo/BitGoJS/commit/02e2e69557703ee75e3ace7d831973a4d66c9d2d))
+
+
+
+
+
 ## [2.5.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bcha@2.5.6...@bitgo/sdk-coin-bcha@2.5.7) (2025-10-21)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-bcha

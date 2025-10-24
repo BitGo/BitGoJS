@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.7.0...@bitgo/statics@58.8.0) (2025-10-24)
+
+
+### Bug Fixes
+
+* replace cartio with bepolia as bera testnet ([35fd193](https://github.com/BitGo/BitGoJS/commit/35fd193e05d72a72d4106564311d5e7aed10c630))
+
+
+### Features
+
+* add eth:meme token ([7168de3](https://github.com/BitGo/BitGoJS/commit/7168de38a459bba008241bd35025b1ecb0bf0819))
+* **sdk-coin-ada:** onboard ada tokens ([c5631ed](https://github.com/BitGo/BitGoJS/commit/c5631edbda7af9486b27752741fd54f11cf1dde4))
+* **statics:** add shared evm message signing for arb ([241dc58](https://github.com/BitGo/BitGoJS/commit/241dc585049a8c2463eae75b504bbf99f27467ca))
+* **statics:** enable shared evm message signing flag on arb, opeth, baseeth ([acf3ff3](https://github.com/BitGo/BitGoJS/commit/acf3ff3c50665871dc9817c8519f035447e74d31))
+* **statics:** gating assets for Dubai ([df4ba6b](https://github.com/BitGo/BitGoJS/commit/df4ba6b405f0e09ff2bff8e0889fbdae33299d7d))
+* **statics:** refactoring ([493424b](https://github.com/BitGo/BitGoJS/commit/493424b0d8457365c6ee71f6ded2db55b95e8d85))
+* update Litecoin explorer URL ([950b92a](https://github.com/BitGo/BitGoJS/commit/950b92ad5d61342075fff36719d74ab274dd372b))
+
+
+
+
+
 # [58.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.6.0...@bitgo/statics@58.7.0) (2025-10-21)
 
 
