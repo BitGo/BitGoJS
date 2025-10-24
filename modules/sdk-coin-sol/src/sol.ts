@@ -179,6 +179,44 @@ export interface SolConsolidationRecoveryOptions extends MPCConsolidationRecover
 const HEX_REGEX = /^[0-9a-fA-F]+$/;
 const BLIND_SIGNING_TX_TYPES_TO_CHECK = { enabletoken: 'AssociatedTokenAccountInitialization' };
 
+/**
+ * Fix for s390x (big-endian) architecture endianness issue with Solana amounts.
+ *
+ * On s390x, the Solana transaction parser (via @solana/web3.js) incorrectly reads
+ * little-endian u64 amounts as big-endian, resulting in corrupted values.
+ *
+ * This function detects impossibly large amounts (> 1e18 lamports, which exceeds
+ * Solana's ~500M SOL max supply) and corrects them by swapping byte order.
+ *
+ * @param amount - The amount to check and potentially fix
+ * @param isS390x - Whether running on s390x architecture
+ * @returns The corrected amount as a string
+ */
+function handleBigEndianAmount(amount: string | number, isS390x: boolean): string {
+  const amountStr = String(amount);
+
+  if (!isS390x) {
+    return amountStr;
+  }
+
+  try {
+    const amountBN = BigInt(amountStr);
+    // Solana max realistic amount: ~500M SOL = ~5e17 lamports
+    // If amount > 1e18, it's corrupted by endianness
+    if (amountBN > 1000000000000000000n) {
+      // Fix by swapping bytes: write as BE, read as LE
+      const buf = Buffer.alloc(8);
+      buf.writeBigUInt64BE(amountBN, 0);
+      const fixed = buf.readBigUInt64LE(0);
+      return fixed.toString();
+    }
+  } catch (e) {
+    // If conversion fails, return original value
+  }
+
+  return amountStr;
+}
+
 export class Sol extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
 
@@ -449,8 +487,13 @@ export class Sol extends BaseCoin {
           const recipientFromTx = filteredOutputs[index]; // This address should be an ATA
 
           // Compare the BigNumber values because amount is (string | number)
-          const userAmount = new BigNumber(recipientFromUser.amount);
-          const txAmount = new BigNumber(recipientFromTx.amount);
+          // Apply s390x endianness fix if needed
+          const isS390x = process.arch === 's390x';
+          const userAmountStr = String(recipientFromUser.amount);
+          const txAmountStr = handleBigEndianAmount(recipientFromTx.amount, isS390x);
+
+          const userAmount = new BigNumber(userAmountStr);
+          const txAmount = new BigNumber(txAmountStr);
           if (!userAmount.isEqualTo(txAmount)) {
             return false;
           }
@@ -536,11 +579,15 @@ export class Sol extends BaseCoin {
       // total output amount from explainedTx
       const explainedTxTotal: Record<string, BigNumber> = {};
 
+      const isS390x = process.arch === 's390x';
       for (const output of explainedTx.outputs) {
+        // Apply s390x endianness fix to output amounts before summing
+        const outputAmountStr = handleBigEndianAmount(output.amount, isS390x);
+
         // total output amount based on each token
         const assetName = output.tokenName || this.getChain();
         const amount = explainedTxTotal[assetName] || new BigNumber(0);
-        explainedTxTotal[assetName] = amount.plus(output.amount);
+        explainedTxTotal[assetName] = amount.plus(outputAmountStr);
       }
 
       if (!_.isEqual(explainedTxTotal, totalAmount)) {
