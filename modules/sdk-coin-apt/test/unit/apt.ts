@@ -19,6 +19,7 @@ import {
 } from '@aptos-labs/ts-sdk';
 import utils from '../../src/lib/utils';
 import { AptCoin, coins, GasTankAccountCoin } from '@bitgo/statics';
+import { DelegationPoolAddStakeTransaction } from '../../src/lib/transaction/delegationPoolAddStakeTransaction';
 
 describe('APT:', function () {
   let bitgo: TestBitGoAPI;
@@ -226,6 +227,39 @@ describe('APT:', function () {
         fee: { fee: '0' },
         sender: '0x1aed808916ab9b1b30b07abb53561afd46847285ce28651221d406173a372449',
         type: 0,
+      });
+    });
+
+    it('should explain a staking delegate transaction', async function () {
+      const rawTx = testData.DELEGATION_POOL_ADD_STAKE_TX_HEX;
+      const transaction = new DelegationPoolAddStakeTransaction(coins.get('tapt'));
+      transaction.fromRawTransaction(rawTx);
+      const explainedTx = transaction.explainTransaction();
+      explainedTx.should.deepEqual({
+        displayOrder: [
+          'id',
+          'outputs',
+          'outputAmount',
+          'changeOutputs',
+          'changeAmount',
+          'fee',
+          'withdrawAmount',
+          'sender',
+          'type',
+        ],
+        id: '0xc5b960d1bec149c77896344774352c61441307af564eaa8c84f857208e411bf3',
+        outputs: [
+          {
+            address: '0xf7405c28a02cf5bab4ea4498240bb3579db45951794eb1c843bef0534c093ad9',
+            amount: '1000',
+          },
+        ],
+        outputAmount: '1000',
+        changeOutputs: [],
+        changeAmount: '0',
+        fee: { fee: '0' },
+        sender: '0x1aed808916ab9b1b30b07abb53561afd46847285ce28651221d406173a372449',
+        type: 30,
       });
     });
 

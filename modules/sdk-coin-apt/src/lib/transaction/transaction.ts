@@ -304,7 +304,6 @@ export abstract class Transaction extends BaseTransaction {
     try {
       signedTxn = utils.deserializeSignedTransaction(rawTransaction);
     } catch (e) {
-      console.error('invalid raw transaction', e);
       throw new Error('invalid raw transaction');
     }
     this.fromDeserializedSignedTransaction(signedTxn);
@@ -318,7 +317,6 @@ export abstract class Transaction extends BaseTransaction {
     try {
       return utils.deserializeSignedTransaction(signedRawTransaction);
     } catch (e) {
-      console.error('invalid raw transaction', e);
       throw new Error('invalid raw transaction');
     }
   }

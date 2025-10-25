@@ -12,6 +12,8 @@ import { DigitalAssetTransfer } from './transaction/digitalAssetTransfer';
 import { DigitalAssetTransferBuilder } from './transactionBuilder/digitalAssetTransferBuilder';
 import { CustomTransaction } from './transaction/customTransaction';
 import { CustomTransactionBuilder } from './transactionBuilder/customTransactionBuilder';
+import { DelegationPoolAddStakeTransaction } from './transaction/delegationPoolAddStakeTransaction';
+import { DelegationPoolAddStakeTransactionBuilder } from './transactionBuilder/delegationPoolAddStakeTransactionBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -37,6 +39,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           const digitalAssetTransferTx = new DigitalAssetTransfer(this._coinConfig);
           digitalAssetTransferTx.fromDeserializedSignedTransaction(signedTxn);
           return this.getDigitalAssetTransactionBuilder(digitalAssetTransferTx);
+        case TransactionType.StakingDelegate:
+          const delegateTx = new DelegationPoolAddStakeTransaction(this._coinConfig);
+          delegateTx.fromDeserializedSignedTransaction(signedTxn);
+          return this.getDelegationPoolAddStakeTransactionBuilder(delegateTx);
         case TransactionType.CustomTx:
           const customTx = new CustomTransaction(this._coinConfig);
           if (abi) {
@@ -70,6 +76,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   /** @inheritdoc */
   getDigitalAssetTransactionBuilder(tx?: Transaction): DigitalAssetTransferBuilder {
     return this.initializeBuilder(tx, new DigitalAssetTransferBuilder(this._coinConfig));
+  }
+
+  getDelegationPoolAddStakeTransactionBuilder(tx?: Transaction): DelegationPoolAddStakeTransactionBuilder {
+    return this.initializeBuilder(tx, new DelegationPoolAddStakeTransactionBuilder(this._coinConfig));
   }
 
   /**
