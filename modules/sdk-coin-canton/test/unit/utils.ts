@@ -4,8 +4,10 @@ import utils from '../../src/lib/utils';
 import {
   CANTON_ADDRESSES,
   GenerateTopologyResponse,
+  OneStepPreApprovalPrepareResponse,
   PreparedTransactionRawData,
   PrepareSubmissionResponse,
+  TransferAcceptancePrepareResponse,
 } from '../resources';
 
 describe('Canton Util', function () {
@@ -16,6 +18,31 @@ describe('Canton Util', function () {
       assert.equal(parsedData.sender, 'abc-1::12200c1ee226fbdf9fba3461c2c0c73331b69d3c6fd8cfce28cdf864141141cc656d');
       assert.equal(parsedData.receiver, 'abc-2::12207e96ada18a845adf4dc01410265633d5266dca9bb280c98e35c3692db87d3e35');
       assert.equal(parsedData.amount, '20.0000000000');
+    });
+
+    it('should parse the acceptance prepared transaction', () => {
+      const parsedData = utils.parseRawCantonTransactionData(TransferAcceptancePrepareResponse.preparedTransaction);
+      should.exist(parsedData);
+      assert.equal(parsedData.sender, 'DSO::1220be58c29e65de40bf273be1dc2b266d43a9a002ea5b18955aeef7aac881bb471a');
+      assert.equal(
+        parsedData.receiver,
+        'ravi-demo-party-txn-01-tapper::1220ea7ab5a723f8a6b2078e617e6c58cb7e78e49947ddc239e1a941aa56e6ba08b4'
+      );
+      assert.equal(parsedData.amount, '5.0000000000');
+    });
+
+    it('should parse the one-step preapproval prepared transaction', () => {
+      const parsedData = utils.parseRawCantonTransactionData(OneStepPreApprovalPrepareResponse.preparedTransaction);
+      should.exist(parsedData);
+      assert.equal(
+        parsedData.sender,
+        'Bitgo-devnet-validator-1::1220a0a0f60b0e62b5d750c484b18c091dba23080c133d944614ba75a5858cba3045'
+      );
+      assert.equal(
+        parsedData.receiver,
+        'ravi-test-party-1::12205b4e3537a95126d90604592344d8ad3c3ddccda4f79901954280ee19c576714d'
+      );
+      assert.equal(parsedData.amount, '0');
     });
   });
 
