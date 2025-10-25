@@ -81,10 +81,42 @@ export interface WalletInitBroadcastData {
   multiHashSignatures: MultiHashSignature[];
 }
 
+export interface PartySignature {
+  party: string;
+  signatures: MultiHashSignature[];
+}
+
+export interface TransactionBroadcastData {
+  prepareCommandResponse?: CantonPrepareCommandResponse;
+  txType: string;
+  preparedTransaction?: string;
+  partySignatures?: {
+    signatures: PartySignature[];
+  };
+  deduplicationPeriod?: {
+    Empty: Record<string, never>;
+  };
+  submissionId: string;
+  hashingSchemeVersion?: string;
+  minLedgerTime?: {
+    time: {
+      Empty: Record<string, never>;
+    };
+  };
+}
+
 export interface CantonOneStepEnablementRequest extends CantonPrepareCommandRequest {
   receiverId: string;
 }
 
 export interface CantonTransferAcceptRequest extends CantonPrepareCommandRequest {
   contractId: string;
+}
+
+export interface TransferAcknowledge {
+  contractId: string;
+  senderPartyId: string;
+  amount: number;
+  expiryEpoch: number;
+  updateId: string;
 }

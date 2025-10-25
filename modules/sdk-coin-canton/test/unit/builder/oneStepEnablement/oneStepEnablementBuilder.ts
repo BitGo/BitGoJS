@@ -3,9 +3,8 @@ import should from 'should';
 
 import { coins } from '@bitgo/statics';
 
-import { Transaction } from '../../../../src';
+import { OneStepPreApprovalBuilder, Transaction } from '../../../../src';
 import { CantonOneStepEnablementRequest } from '../../../../src/lib/iface';
-import { OneStepPreApprovalBuilder } from '../../../../src/lib/oneStepPreApprovalBuilder';
 
 import {
   InvalidOneStepPreApprovalPrepareResponse,

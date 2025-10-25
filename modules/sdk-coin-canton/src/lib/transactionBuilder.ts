@@ -15,7 +15,7 @@ import utils from './utils';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
-  private _signatures: Signature[] = [];
+  protected _signatures: Signature[] = [];
 
   initBuilder(tx: Transaction): void {
     this._transaction = tx;
@@ -40,9 +40,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /** @inheritDoc */
-  addSignature(publicKey: BasePublicKey, signature: Buffer): void {
-    this._signatures.push({ publicKey, signature });
-  }
+  abstract addSignature(publicKey: BasePublicKey, signature: Buffer): void;
 
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string): Transaction {
