@@ -1,10 +1,19 @@
 import { BaseKey, BaseTransaction, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { CantonPrepareCommandResponse, PreparedTxnParsedInfo, TxData } from '../iface';
+import {
+  CantonPrepareCommandResponse,
+  MultiHashSignature,
+  PartySignature,
+  PreparedTxnParsedInfo,
+  TransactionBroadcastData,
+  TxData,
+} from '../iface';
 import utils from '../utils';
+import { DUMMY_HASH, HASHING_SCHEME_VERSION, SIGNATURE_ALGORITHM_SPEC, SIGNATURE_FORMAT } from '../constant';
 
 export class Transaction extends BaseTransaction {
   private _prepareCommand: CantonPrepareCommandResponse;
+  private _signerFingerprint: string;
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
@@ -37,23 +46,84 @@ export class Transaction extends BaseTransaction {
     return false;
   }
 
+  set signatures(signature: string) {
+    this._signatures.push(signature);
+  }
+
+  set signerFingerprint(fingerprint: string) {
+    this._signerFingerprint = fingerprint;
+  }
+
   toBroadcastFormat(): string {
+    if (!this._type) {
+      throw new InvalidTransactionError('Transaction type is not set');
+    }
+    if (this._type === TransactionType.TransferAcknowledge) {
+      const minData: TransactionBroadcastData = {
+        txType: TransactionType[this._type],
+        submissionId: this.id,
+      };
+      return Buffer.from(JSON.stringify(minData)).toString('base64');
+    }
     if (!this._prepareCommand) {
       throw new InvalidTransactionError('Empty transaction data');
     }
-    return Buffer.from(JSON.stringify(this._prepareCommand)).toString('base64');
+    const partySignatures: PartySignature[] = [];
+    const data: TransactionBroadcastData = {
+      prepareCommandResponse: this._prepareCommand,
+      txType: this._type ? TransactionType[this._type] : '',
+      preparedTransaction: '',
+      partySignatures: {
+        signatures: partySignatures,
+      },
+      deduplicationPeriod: {
+        Empty: {},
+      },
+      submissionId: this.id,
+      hashingSchemeVersion: HASHING_SCHEME_VERSION,
+      minLedgerTime: {
+        time: {
+          Empty: {},
+        },
+      },
+    };
+    const signatures: MultiHashSignature[] = [];
+    if (this._signatures.length > 0 && this._signerFingerprint) {
+      const signerPartyId = `${this._signerFingerprint.slice(0, 5)}::${this._signerFingerprint}`;
+      this.signature.map((signature) => {
+        const signatureObj: MultiHashSignature = {
+          format: SIGNATURE_FORMAT,
+          signature: signature,
+          signedBy: this._signerFingerprint,
+          signingAlgorithmSpec: SIGNATURE_ALGORITHM_SPEC,
+        };
+        signatures.push(signatureObj);
+      });
+      const partySignature = {
+        party: signerPartyId,
+        signatures: signatures,
+      };
+      data.partySignatures?.signatures.push(partySignature);
+      data.preparedTransaction = this._prepareCommand.preparedTransaction
+        ? this._prepareCommand.preparedTransaction
+        : '';
+    }
+    return Buffer.from(JSON.stringify(data)).toString('base64');
   }
 
   toJson(): TxData {
-    if (!this._prepareCommand || !this._prepareCommand.preparedTransaction) {
-      throw new InvalidTransactionError('Empty transaction data');
-    }
     const result: TxData = {
       id: this.id,
       type: this._type as TransactionType,
       sender: '',
       receiver: '',
     };
+    if (this._type === TransactionType.TransferAcknowledge) {
+      return result;
+    }
+    if (!this._prepareCommand || !this._prepareCommand.preparedTransaction) {
+      throw new InvalidTransactionError('Empty transaction data');
+    }
     // TODO: extract other required data (utxo used, request time, execute before etc)
     let parsedInfo: PreparedTxnParsedInfo;
     try {
@@ -67,6 +137,9 @@ export class Transaction extends BaseTransaction {
   }
 
   get signablePayload(): Buffer {
+    if (this._type === TransactionType.TransferAcknowledge) {
+      return Buffer.from(DUMMY_HASH, 'base64');
+    }
     if (!this._prepareCommand) {
       throw new InvalidTransactionError('Empty transaction data');
     }
@@ -75,8 +148,18 @@ export class Transaction extends BaseTransaction {
 
   fromRawTransaction(rawTx: string): void {
     try {
-      const decoded: CantonPrepareCommandResponse = JSON.parse(Buffer.from(rawTx, 'base64').toString('utf8'));
-      this.prepareCommand = decoded;
+      const decoded: TransactionBroadcastData = JSON.parse(Buffer.from(rawTx, 'base64').toString('utf8'));
+      this.id = decoded.submissionId;
+      this.transactionType = TransactionType[decoded.txType];
+      if (this.transactionType !== TransactionType.TransferAcknowledge) {
+        if (decoded.prepareCommandResponse) {
+          this.prepareCommand = decoded.prepareCommandResponse;
+        }
+        if (decoded.partySignatures && decoded.partySignatures.signatures.length > 0) {
+          this.signerFingerprint = decoded.partySignatures.signatures[0].party.split('::')[1];
+          this.signatures = decoded.partySignatures.signatures[0].signatures[0].signature;
+        }
+      }
     } catch (e) {
       throw new InvalidTransactionError('Unable to parse raw transaction data');
     }

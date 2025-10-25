@@ -91,6 +91,8 @@ export enum TransactionType {
   OneStepPreApproval,
   // canton transfer accept, 2-step
   TransferAccept,
+  // canton transfer acknowledgement
+  TransferAcknowledge,
 
   // trx
   FREEZE,

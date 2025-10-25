@@ -54,6 +54,15 @@ export class Utils implements BaseUtils {
   }
 
   /**
+   * Helper method to convert hex value to base64
+   * @param {String} hexString - hex encoded string
+   * @returns {String} base64 encoded string
+   */
+  getBase64FromHex(hexString: string): string {
+    return Buffer.from(hexString, 'hex').toString('base64');
+  }
+
+  /**
    * Method to create fingerprint (part of the canton partyId) from public key
    * @param {String} publicKey the public key
    * @returns {String}

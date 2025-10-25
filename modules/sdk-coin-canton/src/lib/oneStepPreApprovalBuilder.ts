@@ -1,8 +1,9 @@
-import { TransactionType } from '@bitgo/sdk-core';
+import { InvalidTransactionError, PublicKey, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { CantonPrepareCommandResponse, CantonOneStepEnablementRequest } from './iface';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction/transaction';
+import utils from './utils';
 
 export class OneStepPreApprovalBuilder extends TransactionBuilder {
   private _commandId: string;
@@ -26,6 +27,17 @@ export class OneStepPreApprovalBuilder extends TransactionBuilder {
 
   setTransaction(transaction: CantonPrepareCommandResponse): void {
     this.transaction.prepareCommand = transaction;
+  }
+
+  /** @inheritDoc */
+  addSignature(publicKey: PublicKey, signature: Buffer): void {
+    if (!this.transaction) {
+      throw new InvalidTransactionError('transaction is empty!');
+    }
+    this._signatures.push({ publicKey, signature });
+    const pubKeyBase64 = utils.getBase64FromHex(publicKey.pub);
+    this.transaction.signerFingerprint = utils.getAddressFromPublicKey(pubKeyBase64);
+    this.transaction.signatures = signature.toString('base64');
   }
 
   /**
