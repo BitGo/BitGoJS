@@ -31,8 +31,8 @@ export const signTransactionRequestBody = {
  * signTransaction
  * Sign a previously created transaction with a keychain
  *
- * @tag express
  * @operationId express.v1.wallet.signTransaction
+ * @tag express
  */
 export const PostSignTransaction = httpRoute({
   path: '/api/v1/wallet/{id}/signtransaction',

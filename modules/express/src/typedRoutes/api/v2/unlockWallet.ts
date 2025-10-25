@@ -42,8 +42,8 @@ export const UnlockLightningWalletResponse = {
  *
  * This is only used for self-custody lightning. Unlock the Lightning Network Daemon (LND) node with the given wallet password.
  *
- * @tag express
  * @operationId express.lightning.unlockWallet
+ * @tag express
  */
 export const PostUnlockLightningWallet = httpRoute({
   method: 'POST',

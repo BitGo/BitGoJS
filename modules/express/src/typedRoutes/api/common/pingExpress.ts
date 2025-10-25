@@ -6,6 +6,7 @@ import { BitgoExpressError } from '../../schemas/error';
  * Ping Express
  *
  * @operationId express.pingExpress
+ * @tag express
  */
 export const GetPingExpress = httpRoute({
   path: '/api/v[12]/pingexpress',
