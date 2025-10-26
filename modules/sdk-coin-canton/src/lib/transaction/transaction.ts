@@ -6,6 +6,7 @@ import {
   PartySignature,
   PreparedTxnParsedInfo,
   TransactionBroadcastData,
+  TransferAcknowledge,
   TxData,
 } from '../iface';
 import utils from '../utils';
@@ -14,6 +15,7 @@ import { DUMMY_HASH, HASHING_SCHEME_VERSION, SIGNATURE_ALGORITHM_SPEC, SIGNATURE
 export class Transaction extends BaseTransaction {
   private _prepareCommand: CantonPrepareCommandResponse;
   private _signerFingerprint: string;
+  private _acknowledgeData: TransferAcknowledge;
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
@@ -29,6 +31,10 @@ export class Transaction extends BaseTransaction {
 
   set transactionType(transactionType: TransactionType) {
     this._type = transactionType;
+  }
+
+  set acknowledgeData(data: TransferAcknowledge) {
+    this._acknowledgeData = data;
   }
 
   get id(): string {
@@ -59,9 +65,13 @@ export class Transaction extends BaseTransaction {
       throw new InvalidTransactionError('Transaction type is not set');
     }
     if (this._type === TransactionType.TransferAcknowledge) {
+      if (!this._acknowledgeData) {
+        throw new InvalidTransactionError('AcknowledgeData is not set');
+      }
       const minData: TransactionBroadcastData = {
         txType: TransactionType[this._type],
         submissionId: this.id,
+        acknowledgeData: this._acknowledgeData,
       };
       return Buffer.from(JSON.stringify(minData)).toString('base64');
     }
@@ -119,6 +129,10 @@ export class Transaction extends BaseTransaction {
       receiver: '',
     };
     if (this._type === TransactionType.TransferAcknowledge) {
+      if (!this._acknowledgeData) {
+        throw new InvalidTransactionError('AcknowledgeData is not set');
+      }
+      result.acknowledgeData = this._acknowledgeData;
       return result;
     }
     if (!this._prepareCommand || !this._prepareCommand.preparedTransaction) {
@@ -158,6 +172,10 @@ export class Transaction extends BaseTransaction {
         if (decoded.partySignatures && decoded.partySignatures.signatures.length > 0) {
           this.signerFingerprint = decoded.partySignatures.signatures[0].party.split('::')[1];
           this.signatures = decoded.partySignatures.signatures[0].signatures[0].signature;
+        }
+      } else {
+        if (decoded.acknowledgeData) {
+          this.acknowledgeData = decoded.acknowledgeData;
         }
       }
     } catch (e) {
