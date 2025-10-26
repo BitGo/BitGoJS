@@ -9,6 +9,7 @@ export interface TxData {
   type: TransactionType;
   sender: string;
   receiver: string;
+  acknowledgeData?: TransferAcknowledge;
 }
 
 export interface PreparedTxnParsedInfo {
@@ -87,6 +88,7 @@ export interface PartySignature {
 }
 
 export interface TransactionBroadcastData {
+  acknowledgeData?: TransferAcknowledge;
   prepareCommandResponse?: CantonPrepareCommandResponse;
   txType: string;
   preparedTransaction?: string;
