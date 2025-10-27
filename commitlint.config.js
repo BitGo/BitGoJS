@@ -5,10 +5,15 @@ module.exports = {
   ignores: [
     (commit) => /^Merge commit '[a-f0-9]{40}'$/m.test(commit),
     (commit) => /^chore\(root\): publish modules/m.test(commit),
-    (commit) => commit.includes('Signed-off-by: dependabot[bot] <support@github.com>'),
+    (commit) =>
+      commit.includes('Signed-off-by: dependabot[bot] <support@github.com>'),
   ],
   rules: {
-    'scope-enum': async () => [2, 'always', (await readdir('modules')).concat('root', 'deps', 'scripts')],
+    'scope-enum': async () => [
+      2,
+      'always',
+      (await readdir('modules')).concat('root', 'deps', 'scripts', 'examples'),
+    ],
     'footer-max-line-length': [0, 'always', Infinity],
     'references-empty': [2, 'never'],
   },
