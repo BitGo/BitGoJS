@@ -165,7 +165,7 @@ export class Transaction extends BaseTransaction {
       const decoded: TransactionBroadcastData = JSON.parse(Buffer.from(rawTx, 'base64').toString('utf8'));
       this.id = decoded.submissionId;
       this.transactionType = TransactionType[decoded.txType];
-      if (this.transactionType !== TransactionType.TransferAcknowledge) {
+      if (this.type !== TransactionType.TransferAcknowledge) {
         if (decoded.prepareCommandResponse) {
           this.prepareCommand = decoded.prepareCommandResponse;
         }
