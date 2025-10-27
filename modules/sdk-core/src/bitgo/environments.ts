@@ -266,6 +266,9 @@ const mainnetBase: EnvironmentTemplate = {
     megaeth: {
       baseUrl: 'https://carrot.megaeth.com/rpc', //TODO: add mainnet url when available
     },
+    hedera: {
+      baseUrl: 'https://server-verify.hashscan.io/verify',
+    },
   },
   icpNodeUrl: 'https://ic0.app',
   worldExplorerBaseUrl: 'https://worldscan.org/',
@@ -399,6 +402,9 @@ const testnetBase: EnvironmentTemplate = {
     },
     plume: {
       baseUrl: 'https://testnet-explorer.plume.org/api',
+    },
+    hedera: {
+      baseUrl: 'https://server-verify.hashscan.io/verify',
     },
   },
   stxNodeUrl: 'https://api.testnet.hiro.so',

@@ -60,6 +60,7 @@ export enum CoinFamily {
   FLRP = 'flrp',
   HASH = 'hash', // Provenance
   HBAR = 'hbar',
+  HBAREVM = 'hbarevm', // Hedera EVM coin
   ICP = 'icp',
   INITIA = 'initia',
   INJECTIVE = 'injective',
@@ -536,6 +537,7 @@ export enum UnderlyingAsset {
   GTC = 'gtc',
   HASH = 'hash', // Provenance
   HBAR = 'hbar', // Hedera main coin
+  HBAREVM = 'hbarevm', // Hedera EVM coin
   ICP = 'icp',
   IP = 'ip', // Story Chain
   INITIA = 'initia',
