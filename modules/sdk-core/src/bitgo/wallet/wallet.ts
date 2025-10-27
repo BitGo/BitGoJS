@@ -3487,6 +3487,7 @@ export class Wallet implements IWallet {
           {
             reqId,
             intentType: 'createAccount',
+            recipients: params.recipients || [],
           },
           apiVersion,
           params.preview
