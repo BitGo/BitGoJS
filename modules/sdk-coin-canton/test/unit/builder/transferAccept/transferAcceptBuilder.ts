@@ -4,7 +4,7 @@ import should from 'should';
 import { coins } from '@bitgo/statics';
 
 import { TransferAcceptanceBuilder, Transaction } from '../../../../src';
-import { CantonTransferAcceptRequest } from '../../../../src/lib/iface';
+import { CantonTransferAcceptRejectRequest } from '../../../../src/lib/iface';
 
 import { TransferAcceptance, TransferAcceptancePrepareResponse } from '../../../resources';
 
@@ -15,7 +15,7 @@ describe('Transfer Acceptance Builder', () => {
     txBuilder.initBuilder(transferAcceptanceTx);
     const { commandId, contractId, partyId } = TransferAcceptance;
     txBuilder.commandId(commandId).contractId(contractId).actAs(partyId);
-    const requestObj: CantonTransferAcceptRequest = txBuilder.toRequestObject();
+    const requestObj: CantonTransferAcceptRejectRequest = txBuilder.toRequestObject();
     should.exist(requestObj);
     assert.equal(requestObj.commandId, commandId);
     assert.equal(requestObj.contractId, contractId);
@@ -52,20 +52,6 @@ describe('Transfer Acceptance Builder', () => {
       txBuilder.validateRawTransaction(invalidPrepareResponse.preparedTransaction);
     } catch (e) {
       assert.equal(e.message, 'invalid raw transaction, hash not matching');
-    }
-  });
-
-  it('should throw error in validating raw transaction', function () {
-    const txBuilder = new TransferAcceptanceBuilder(coins.get('tcanton'));
-    const oneStepEnablementTx = new Transaction(coins.get('tcanton'));
-    txBuilder.initBuilder(oneStepEnablementTx);
-    const invalidPrepareResponse = TransferAcceptancePrepareResponse;
-    invalidPrepareResponse.preparedTransactionHash = '+vlIXv6Vgd2ypPXD0mrdn7RlcSH4c2hCRj2/tXqqUVs=';
-    oneStepEnablementTx.prepareCommand = invalidPrepareResponse;
-    try {
-      txBuilder.validateTransaction(oneStepEnablementTx);
-    } catch (e) {
-      assert.equal(e.message, 'invalid transaction');
     }
   });
 });

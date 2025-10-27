@@ -9,6 +9,7 @@ import { TransferAcceptanceBuilder } from './transferAcceptanceBuilder';
 import { TransferAcknowledgeBuilder } from './transferAcknowledgeBuilder';
 import { TransactionBuilder } from './transactionBuilder';
 import { TransferBuilder } from './transferBuilder';
+import { TransferRejectionBuilder } from './transferRejectionBuilder';
 import { Transaction } from './transaction/transaction';
 import { WalletInitBuilder } from './walletInitBuilder';
 import { WalletInitTransaction } from './walletInitialization/walletInitTransaction';
@@ -36,6 +37,9 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
         case TransactionType.TransferAcknowledge: {
           return this.getTransferAcknowledgeBuilder(tx);
         }
+        case TransactionType.TransferReject: {
+          return this.getTransferRejectBuilder(tx);
+        }
         default: {
           throw new InvalidTransactionError('unsupported transaction');
         }
@@ -49,6 +53,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getTransferAcknowledgeBuilder(tx?: Transaction): TransferAcknowledgeBuilder {
     return TransactionBuilderFactory.initializeBuilder(tx, new TransferAcknowledgeBuilder(this._coinConfig));
+  }
+
+  getTransferRejectBuilder(tx?: Transaction): TransferRejectionBuilder {
+    return TransactionBuilderFactory.initializeBuilder(tx, new TransferRejectionBuilder(this._coinConfig));
   }
 
   /** @inheritdoc */

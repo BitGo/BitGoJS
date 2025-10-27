@@ -111,7 +111,7 @@ export interface CantonOneStepEnablementRequest extends CantonPrepareCommandRequ
   receiverId: string;
 }
 
-export interface CantonTransferAcceptRequest extends CantonPrepareCommandRequest {
+export interface CantonTransferAcceptRejectRequest extends CantonPrepareCommandRequest {
   contractId: string;
 }
 
