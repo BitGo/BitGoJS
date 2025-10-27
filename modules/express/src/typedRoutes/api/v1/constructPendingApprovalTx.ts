@@ -59,8 +59,8 @@ export const ConstructPendingApprovalTxResponse = t.type({
  * For transaction request type approvals, either a wallet passphrase or xprv must be provided to sign the transaction.
  * You can optionally specify fee-related parameters to customize the transaction fee.
  *
- * @tag express
  * @operationId express.v1.pendingapproval.constructTx
+ * @tag express
  */
 export const PutConstructPendingApprovalTx = httpRoute({
   path: '/api/v1/pendingapprovals/{id}/constructTx',

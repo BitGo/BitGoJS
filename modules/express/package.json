@@ -4,6 +4,7 @@
   "private": true,
   "description": "Local signing server and proxy for the BitGo platform",
   "main": "./dist/src/index.js",
+  "source": "src/typedRoutes/api/index.ts",
   "types": "./dist/src/index.d.ts",
   "bin": {
     "bitgo-express": "./bin/bitgo-express"
