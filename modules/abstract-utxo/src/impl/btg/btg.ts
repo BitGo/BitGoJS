@@ -1,4 +1,4 @@
-import { BitGoBase, BaseCoin } from '@bitgo/sdk-core';
+import { BitGoBase } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
 
 import { AbstractUtxoCoin, UtxoNetwork } from '../../abstractUtxoCoin';
@@ -8,7 +8,7 @@ export class Btg extends AbstractUtxoCoin {
     super(bitgo, network || utxolib.networks.bitcoingold);
   }
 
-  static createInstance(bitgo: BitGoBase): BaseCoin {
+  static createInstance(bitgo: BitGoBase): Btg {
     return new Btg(bitgo);
   }
 }

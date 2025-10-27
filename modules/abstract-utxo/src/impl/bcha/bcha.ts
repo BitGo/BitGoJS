@@ -1,4 +1,4 @@
-import { BitGoBase, BaseCoin } from '@bitgo/sdk-core';
+import { BitGoBase } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
 
 import { Bch } from '../bch/bch';
@@ -9,7 +9,7 @@ export class Bcha extends Bch {
     super(bitgo, network || utxolib.networks.ecash);
   }
 
-  static createInstance(bitgo: BitGoBase): BaseCoin {
+  static createInstance(bitgo: BitGoBase): Bcha {
     return new Bcha(bitgo);
   }
 

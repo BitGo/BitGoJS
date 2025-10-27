@@ -1,4 +1,4 @@
-import { BaseCoin, BitGoBase, HalfSignedUtxoTransaction, SignedTransaction } from '@bitgo/sdk-core';
+import { BitGoBase, HalfSignedUtxoTransaction, SignedTransaction } from '@bitgo/sdk-core';
 import { bitgo, networks } from '@bitgo/utxo-lib';
 
 import {
@@ -60,7 +60,7 @@ export class Doge extends AbstractUtxoCoin {
     super(bitgo, network || networks.dogecoin, 'bigint');
   }
 
-  static createInstance(bitgo: BitGoBase): BaseCoin {
+  static createInstance(bitgo: BitGoBase): Doge {
     return new Doge(bitgo);
   }
 

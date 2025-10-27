@@ -1,6 +1,3 @@
-/**
- * @prettier
- */
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 
