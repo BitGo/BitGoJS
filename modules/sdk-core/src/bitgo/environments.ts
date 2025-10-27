@@ -194,7 +194,7 @@ const mainnetBase: EnvironmentTemplate = {
   cronosNodeUrl: 'https://cronos-pos-rest.publicnode.com/',
   initiaNodeUrl: 'https://rest.initia.xyz/',
   asiNodeUrl: 'https://rest-fetchhub.fetch.ai/',
-  dotNodeUrls: ['wss://rpc.polkadot.io'],
+  dotNodeUrls: ['wss://asset-hub-polkadot-rpc.n.dwellir.com'],
   substrateNodeUrls: ['wss://entrypoint-finney.opentensor.ai'],
   polymeshNodeUrls: ['wss://mainnet-rpc.polymesh.network'],
   tronNodes: {
