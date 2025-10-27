@@ -3326,7 +3326,7 @@ export class Wallet implements IWallet {
    * Builds, Signs and sends a transaction that initializes the canton wallet
    * @param params
    */
-  public async sendWalletInitialization(params: PrebuildAndSignTransactionOptions = {}): Promise<WalletInitResult> {
+  public async sendWalletInitialization(params: PrebuildTransactionOptions = {}): Promise<WalletInitResult> {
     if (!this.baseCoin.requiresWalletInitializationTransaction()) {
       throw new Error(`Wallet initialization is not required for ${this.baseCoin.getFullName()}`);
     }
@@ -3345,9 +3345,6 @@ export class Wallet implements IWallet {
       ...params,
       prebuildTx,
     };
-    if (typeof params.prebuildTx === 'string' || params.prebuildTx?.buildParams?.type !== 'createAccount') {
-      throw new Error('Invalid build of wallet init');
-    }
     const successfulTxs: PrebuildTransactionResult[] = [];
     const failedTxs = new Array<Error>();
     try {
