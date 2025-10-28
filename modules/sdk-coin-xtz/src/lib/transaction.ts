@@ -6,7 +6,8 @@ import {
   TransactionType,
 } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { CODEC, localForger } from '@taquito/local-forging';
+import { localForger } from '@taquito/local-forging';
+import { OpKind } from '@taquito/rpc';
 import BigNumber from 'bignumber.js';
 import { IndexedSignature, OriginationOp, ParsedTransaction, RevealOp, TransactionOp } from './iface';
 import { KeyPair } from './keyPair';
@@ -77,8 +78,6 @@ export class Transaction extends BaseTransaction {
       this._encodedTransaction = await localForger.forge(parsedTransaction);
     }
     if (transactionId) {
-      // If the transaction id is passed, save it and clean up the entries since they will be
-      // recalculated
       this._id = transactionId;
       this._inputs = [];
       this._outputs = [];
@@ -88,26 +87,30 @@ export class Transaction extends BaseTransaction {
     this._parsedTransaction = parsedTransaction;
     let operationIndex = 0;
     for (const operation of parsedTransaction.contents) {
-      if (this._source && this._source !== operation.source) {
-        throw new InvalidTransactionError(
-          'Source must be the same for every operation but it changed from ' + this._source + ' to ' + operation.source
-        );
-      } else {
-        this._source = operation.source;
+      // Narrowing: only operations with a source have a source field
+      if ('source' in operation) {
+        if (this._source && this._source !== operation.source) {
+          throw new InvalidTransactionError(
+            `Source must be the same for every operation but it changed from ${this._source} to ${operation.source}`
+          );
+        } else {
+          this._source = operation.source;
+        }
       }
+
       switch (operation.kind) {
-        case CODEC.OP_ORIGINATION:
+        case OpKind.ORIGINATION:
           await this.recordOriginationOpFields(operation as OriginationOp, operationIndex);
           operationIndex++;
           break;
-        case CODEC.OP_REVEAL:
+        case OpKind.REVEAL:
           this.recordRevealOpFields(operation as RevealOp);
           break;
-        case CODEC.OP_TRANSACTION:
+        case OpKind.TRANSACTION:
           this.recordTransactionOpFields(operation as TransactionOp);
           break;
         default:
-          break;
+          break; // skip operations like attestations, endorsements, etc.
       }
     }
   }

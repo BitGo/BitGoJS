@@ -2,7 +2,8 @@ import { BaseKey, BuildTransactionError, SigningError, BaseTransactionBuilder, T
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
 import { Address } from './address';
-import { Fee, IndexedData, IndexedSignature, Key, Operation, OriginationOp, RevealOp, TransactionOp } from './iface';
+import { Fee, IndexedData, IndexedSignature, Key, OriginationOp, RevealOp, TransactionOp } from './iface';
+import { OperationContents } from '@taquito/rpc';
 import { KeyPair } from './keyPair';
 import {
   forwarderOriginationOperation,
@@ -149,34 +150,34 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       }
       // TODO: make changes to the transaction if any extra parameter has been set then sign it
     } else {
-      let contents: Operation[] = [];
+      let contents: OperationContents[] = [];
       switch (this._type) {
         case TransactionType.AccountUpdate:
           if (this._publicKeyToReveal) {
-            contents.push(this.buildPublicKeyRevelationOperation());
+            contents.push(this.buildPublicKeyRevelationOperation() as OperationContents);
           }
           break;
         case TransactionType.WalletInitialization:
           if (this._publicKeyToReveal) {
-            contents.push(this.buildPublicKeyRevelationOperation());
+            contents.push(this.buildPublicKeyRevelationOperation() as OperationContents);
           }
-          contents.push(this.buildWalletInitializationOperations());
+          contents.push(this.buildWalletInitializationOperations() as OperationContents);
           break;
         case TransactionType.Send:
           if (this._publicKeyToReveal) {
-            contents.push(this.buildPublicKeyRevelationOperation());
+            contents.push(this.buildPublicKeyRevelationOperation() as OperationContents);
           }
-          contents = contents.concat(await this.buildSendTransactionContent());
+          contents = contents.concat((await this.buildSendTransactionContent()) as OperationContents[]);
           break;
         case TransactionType.AddressInitialization:
           if (this._publicKeyToReveal) {
-            contents.push(this.buildPublicKeyRevelationOperation());
+            contents.push(this.buildPublicKeyRevelationOperation() as OperationContents);
           }
-          contents = contents.concat(this.buildForwarderDeploymentContent());
+          contents.push(this.buildForwarderDeploymentContent() as OperationContents);
           break;
         case TransactionType.SingleSigSend:
           // No support for revelation txns as primary use case is to send from fee address
-          contents = contents.concat(await this.buildSendTransactionContent());
+          contents = contents.concat((await this.buildSendTransactionContent()) as OperationContents[]);
           break;
         default:
           throw new BuildTransactionError('Unsupported transaction type');
