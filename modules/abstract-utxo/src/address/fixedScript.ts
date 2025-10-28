@@ -25,14 +25,13 @@ export interface FixedScriptAddressCoinSpecific {
 
 export interface GenerateAddressOptions {
   addressType?: ScriptType2Of3;
-  threshold?: number;
   chain?: number;
   index?: number;
   segwit?: boolean;
   bech32?: boolean;
 }
 
-export interface GenerateFixedScriptAddressOptions extends GenerateAddressOptions {
+interface GenerateFixedScriptAddressOptions extends GenerateAddressOptions {
   format?: CreateAddressFormat;
   keychains: { pub: string }[];
 }
@@ -169,7 +168,6 @@ export function assertFixedScriptWalletAddress(
     format,
     addressType: addressType as ScriptType2Of3,
     keychains,
-    threshold: 2,
     chain,
     index,
   });
