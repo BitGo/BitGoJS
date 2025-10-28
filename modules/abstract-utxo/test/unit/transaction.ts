@@ -13,7 +13,7 @@ import {
   WalletSignTransactionOptions,
 } from '@bitgo/sdk-core';
 
-import { AbstractUtxoCoin, getReplayProtectionAddresses } from '../../src';
+import { AbstractUtxoCoin, getReplayProtectionAddresses, generateAddress } from '../../src';
 
 import {
   utxoCoins,
@@ -311,9 +311,9 @@ function run<TNumber extends number | bigint = number>(
     }
 
     function getOutputAddress(rootWalletKeys: utxolib.bitgo.RootWalletKeys): string {
-      return coin.generateAddress({
+      return generateAddress(coin.network, {
         keychains: rootWalletKeys.triple.map((k) => ({ pub: k.neutered().toBase58() })),
-      }).address;
+      });
     }
 
     function getSignParams(
