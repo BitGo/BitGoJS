@@ -93,6 +93,8 @@ export enum TransactionType {
   TransferAccept,
   // canton transfer acknowledgement
   TransferAcknowledge,
+  // canton transfer reject, 2-step
+  TransferReject,
 
   // trx
   FREEZE,

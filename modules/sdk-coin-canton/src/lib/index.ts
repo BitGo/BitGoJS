@@ -8,6 +8,7 @@ export { TransferAcceptanceBuilder } from './transferAcceptanceBuilder';
 export { TransferAcknowledgeBuilder } from './transferAcknowledgeBuilder';
 export { TransactionBuilder } from './transactionBuilder';
 export { TransactionBuilderFactory } from './transactionBuilderFactory';
+export { TransferRejectionBuilder } from './transferRejectionBuilder';
 export { WalletInitBuilder } from './walletInitBuilder';
 export { WalletInitTransaction } from './walletInitialization/walletInitTransaction';
 

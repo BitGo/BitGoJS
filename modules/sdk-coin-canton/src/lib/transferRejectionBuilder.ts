@@ -5,7 +5,7 @@ import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction/transaction';
 import utils from './utils';
 
-export class TransferAcceptanceBuilder extends TransactionBuilder {
+export class TransferRejectionBuilder extends TransactionBuilder {
   private _commandId: string;
   private _contractId: string;
   private _actAsPartyId: string;
@@ -19,11 +19,11 @@ export class TransferAcceptanceBuilder extends TransactionBuilder {
   }
 
   get transactionType(): TransactionType {
-    return TransactionType.TransferAccept;
+    return TransactionType.TransferReject;
   }
 
   setTransactionType(): void {
-    this.transaction.transactionType = TransactionType.TransferAccept;
+    this.transaction.transactionType = TransactionType.TransferReject;
   }
 
   setTransaction(transaction: CantonPrepareCommandResponse): void {
@@ -42,7 +42,7 @@ export class TransferAcceptanceBuilder extends TransactionBuilder {
   }
 
   /**
-   * Sets the unique id for the transfer acceptance
+   * Sets the unique id for the transfer rejection
    * Also sets the _id of the transaction
    *
    * @param id - A uuid
@@ -60,8 +60,8 @@ export class TransferAcceptanceBuilder extends TransactionBuilder {
   }
 
   /**
-   * Sets the acceptance contract id the receiver needs to accept
-   * @param id - canton acceptance contract id
+   * Sets the rejection contract id the receiver needs to accept
+   * @param id - canton rejection contract id
    * @returns The current builder instance for chaining.
    * @throws Error if id is empty.
    */
