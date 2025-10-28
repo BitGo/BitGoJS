@@ -87,7 +87,7 @@ export function generateAddress(network: utxolib.Network, params: GenerateFixedS
     derivationIndex = params.index as number;
   }
 
-  const { keychains, threshold, chain, segwit = false, bech32 = false } = params as GenerateFixedScriptAddressOptions;
+  const { keychains, chain, segwit = false, bech32 = false } = params as GenerateFixedScriptAddressOptions;
 
   let derivationChain = bitgo.getExternalChainCode('p2sh');
   if (_.isNumber(chain) && _.isInteger(chain) && bitgo.isChainCode(chain)) {
@@ -127,17 +127,6 @@ export function generateAddress(network: utxolib.Network, params: GenerateFixedS
         throw new P2trMusig2UnsupportedError();
       default:
         throw new UnsupportedAddressTypeError();
-    }
-  }
-
-  let signatureThreshold = 2;
-  if (_.isInteger(threshold)) {
-    signatureThreshold = threshold as number;
-    if (signatureThreshold <= 0) {
-      throw new Error('threshold has to be positive');
-    }
-    if (signatureThreshold > keychains.length) {
-      throw new Error('threshold cannot exceed number of keys');
     }
   }
 
