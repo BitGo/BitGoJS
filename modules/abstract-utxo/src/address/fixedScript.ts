@@ -57,13 +57,20 @@ export function generateAddressWithChainAndIndex(
   index: number,
   format: CreateAddressFormat | undefined
 ): string {
+  if (utxolib.isTestnet(network)) {
+    return wasmUtxo.fixedScriptWallet.address(
+      keychains.map((k) => k.pub) as [string, string, string],
+      chain,
+      index,
+      network
+    );
+  }
+
   const path = '0/0/' + chain + '/' + index;
   const hdNodes = keychains.map(({ pub }) => bip32.fromBase58(pub));
   const derivedKeys = hdNodes.map((hdNode) => hdNode.derivePath(sanitizeLegacyPath(path)).publicKey);
   const addressType = bitgo.scriptTypeForChain(chain);
-
   const { scriptPubKey: outputScript } = utxolib.bitgo.outputScripts.createOutputScript2of3(derivedKeys, addressType);
-
   const address = utxolib.address.fromOutputScript(outputScript, network);
 
   return canonicalAddress(network, address, format);
