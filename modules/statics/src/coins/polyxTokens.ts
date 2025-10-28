@@ -104,4 +104,14 @@ export const polyxTokens = [
     UnderlyingAsset['tpolyx:0x4a002922d38b8a7f87484b9c65a7ca0c'],
     POLYX_TOKEN_FEATURES
   ),
+  tpolyxToken(
+    '4dee57ed-846e-4cf9-b032-19534f8d4ec2',
+    'tpolyx:0x753b5a2cb97c83e8b1bd66ed6643e4e9',
+    'BRCK',
+    6,
+    '',
+    '0x753b5a2cb97c83e8b1bd66ed6643e4e9',
+    UnderlyingAsset['tpolyx:0x753b5a2cb97c83e8b1bd66ed6643e4e9'],
+    POLYX_TOKEN_FEATURES
+  ),
 ];
