@@ -2424,6 +2424,88 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['baseeth:morpho'],
     Networks.main.basechain
   ),
+  erc20Token(
+    '6f5e8b2e-7d8d-4f76-8f8e-7d6fbf7b8c5f',
+    'baseeth:creator',
+    'CreatorDAO',
+    18,
+    '0x0fd122a924c4528a78a8141bddd38a0e5ba35fa5',
+    UnderlyingAsset['baseeth:creator'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    '2f1e4b8e-3d4d-4f72-9f4e-3d2f7f3b4c1f',
+    'baseeth:tig',
+    'The Innovation Game',
+    18,
+    '0x0c03ce270b4826ec62e7dd007f0b716068639f7b',
+    UnderlyingAsset['baseeth:tig'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    '1f0e3b9e-2d3d-4f71-8f3e-2d1f6f2b3c0e',
+    'baseeth:spec',
+    'Spectral',
+    18,
+    '0x96419929d7949d6a801a6909c145c8eef6a40431',
+    UnderlyingAsset['baseeth:spec'],
+    Networks.main.basechain,
+    [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.EIP1559]
+  ),
+  erc20Token(
+    '3f2e5b9e-4d5d-4f73-af5e-4d3f8f4b5c2f',
+    'baseeth:virtual',
+    'Virtual Protocol',
+    18,
+    '0x0b3e328455c4059eeb9e3f84b5543f74e24e7e1b',
+    UnderlyingAsset['baseeth:virtual'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    '5f4e7b1e-6d7d-4f75-8f7e-6d5faf6b7c4f',
+    'baseeth:toshi',
+    'Toshi',
+    18,
+    '0xac1bd2486aaf3b5c0fc3fd868558b082a531b2b4',
+    UnderlyingAsset['baseeth:toshi'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    '7f6e9b3e-8d9d-4f77-8f9e-8d7fcf8b9c6f',
+    'baseeth:avnt',
+    'Avantis',
+    18,
+    '0x696f9436b67233384889472cd7cd58a6fb5df4f1',
+    UnderlyingAsset['baseeth:avnt'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    '4f3e6b0e-5d6d-4f74-bf6e-5d4f9f5b6c3f',
+    'baseeth:zora',
+    'Zora',
+    18,
+    '0x1111111111166b7fe7bd91427724b487980afc69',
+    UnderlyingAsset['baseeth:zora'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    '8f7eab4e-9dad-4f78-8f0e-9d8fdf9bac7f',
+    'baseeth:mira',
+    'Mira Network',
+    18,
+    '0x7aafd31a321d3627b30a8e2171264b56852187fe',
+    UnderlyingAsset['baseeth:mira'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    '9f8ebb5e-adb0-4f79-8f1e-ae9fef0bbd8f',
+    'baseeth:towns',
+    'Towns',
+    18,
+    '0x00000000a22c618fd6b4d7e9a335c4b96b189a38',
+    UnderlyingAsset['baseeth:towns'],
+    Networks.main.basechain
+  ),
   hederaCoin(
     '98aad956-27ee-45dd-aa43-6a23c9a1d1d0',
     'hbar',
