@@ -426,6 +426,11 @@ export enum CoinFeature {
   SHARED_COSMOS_WP = 'shared-cosmos-wp',
 
   /**
+   * This coin is a Cosmos coin and should use common Cosmos logic in BGA
+   */
+  COSMOS_COMMON_BGA = 'cosmos-common-bga',
+
+  /**
    * This coin is EVM based coin
    */
   EVM_COIN = 'evm_coin',
