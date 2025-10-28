@@ -8,13 +8,7 @@
     "typeRoots": ["../../types", "./node_modules/@types", "../../node_modules/@types"],
     "resolveJsonModule": true
   },
-  "include": [
-    "src/**/*",
-    "test/**/*",
-    "test/resources/materialData.json",
-    "test/resources/materialDataModified.json",
-    "test/resources/assetHubMaterialData.json"
-  ],
+  "include": ["src/**/*", "test/**/*", "test/resources/materialData.json", "test/resources/materialDataModified.json"],
   "exclude": ["node_modules"],
   "references": [
     {

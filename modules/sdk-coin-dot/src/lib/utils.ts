@@ -32,7 +32,12 @@ import {
   UnstakeBatchCallArgs,
 } from './iface';
 import { KeyPair } from '.';
-import { mainnetMetadataRpc, westendMetadataRpc, westendAssetHubMetadataRpc } from '../resources';
+import {
+  mainnetMetadataRpc,
+  westendMetadataRpc,
+  polkadotAssetHubMetadataRpc,
+  westendAssetHubMetadataRpc,
+} from '../resources';
 
 const PROXY_METHOD_ARG = 2;
 // map to retrieve the address encoding format when the key is the asset name
@@ -261,6 +266,8 @@ export class Utils implements BaseUtils {
       metadataRpc = westendMetadataRpc;
     } else if (specName === 'westmint') {
       metadataRpc = westendAssetHubMetadataRpc;
+    } else if (specName === 'statemint') {
+      metadataRpc = polkadotAssetHubMetadataRpc;
     }
 
     return {
