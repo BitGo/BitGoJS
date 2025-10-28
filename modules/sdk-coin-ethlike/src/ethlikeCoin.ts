@@ -54,14 +54,4 @@ export class EthLikeCoin extends AbstractEthLikeNewCoins {
     const explorerUrl = common.Environments[this.bitgo.getEnv()][this.getFamily().toLowerCase() + 'ExplorerUrl'];
     return await recoveryBlockchainExplorerQuery(query, explorerUrl as string, apiToken);
   }
-
-  /** @inheritDoc */
-  supportsMessageSigning(): boolean {
-    return true;
-  }
-
-  /** @inheritDoc */
-  supportsSigningTypedData(): boolean {
-    return true;
-  }
 }
