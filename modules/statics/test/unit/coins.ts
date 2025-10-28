@@ -883,7 +883,6 @@ coins.forEach((coin, coinName) => {
         const coinSupportsCustody =
           coin.family !== CoinFamily.LNBTC &&
           coin.family !== CoinFamily.CELO &&
-          coin.family !== CoinFamily.CANTON &&
           coin.name !== 'ofccelo' &&
           coin.name !== 'ofctcelo';
         coin.features.includes(CoinFeature.CUSTODY).should.eql(coinSupportsCustody);

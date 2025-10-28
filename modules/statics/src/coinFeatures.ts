@@ -676,4 +676,12 @@ export const CANTON_FEATURES = [
   CoinFeature.REQUIRES_BIG_NUMBER,
   CoinFeature.TSS,
   CoinFeature.TSS_COLD,
+  CoinFeature.CUSTODY,
+  CoinFeature.CUSTODY_BITGO_TRUST,
+  CoinFeature.CUSTODY_BITGO_MENA_FZE,
+  CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+  CoinFeature.CUSTODY_BITGO_SINGAPORE,
+  CoinFeature.CUSTODY_BITGO_KOREA,
+  CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+  CoinFeature.CUSTODY_BITGO_FRANKFURT,
 ];
