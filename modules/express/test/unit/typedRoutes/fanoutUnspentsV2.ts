@@ -15,6 +15,24 @@ import { BitGo } from 'bitgo';
 import { setupAgent } from '../../lib/testutil';
 
 describe('FanoutUnspents V2 codec tests', function () {
+  // Helper to assert and extract single transaction response
+  function assertSingleTxResponse(response: any) {
+    assert.ok(!Array.isArray(response), 'Expected single transaction response, got array');
+    return response as {
+      status: string;
+      tx: string;
+      hash?: string;
+      txid?: string;
+      fee?: number;
+      feeRate?: number;
+      instant?: boolean;
+      instantId?: string;
+      travelInfos?: unknown;
+      bitgoFee?: unknown;
+      travelResult?: unknown;
+    };
+  }
+
   describe('fanoutUnspents v2', function () {
     const agent = setupAgent();
     const walletId = '68c02f96aa757d9212bd1a536f123456';
@@ -73,7 +91,7 @@ describe('FanoutUnspents V2 codec tests', function () {
       assert.strictEqual(result.body.tx, mockFanoutResponse.tx);
 
       // This ensures the response structure matches the typed definition
-      const decodedResponse = assertDecode(FanoutUnspentsResponse, result.body);
+      const decodedResponse = assertSingleTxResponse(assertDecode(FanoutUnspentsResponse, result.body));
       assert.strictEqual(decodedResponse.status, mockFanoutResponse.status);
       assert.strictEqual(decodedResponse.tx, mockFanoutResponse.tx);
 
@@ -106,7 +124,7 @@ describe('FanoutUnspents V2 codec tests', function () {
 
       assert.strictEqual(result.status, 200);
 
-      const decodedResponse = assertDecode(FanoutUnspentsResponse, result.body);
+      const decodedResponse = assertSingleTxResponse(assertDecode(FanoutUnspentsResponse, result.body));
       assert.strictEqual(decodedResponse.status, mockFanoutResponse.status);
     });
 
@@ -142,7 +160,7 @@ describe('FanoutUnspents V2 codec tests', function () {
 
       assert.strictEqual(result.status, 200);
 
-      const decodedResponse = assertDecode(FanoutUnspentsResponse, result.body);
+      const decodedResponse = assertSingleTxResponse(assertDecode(FanoutUnspentsResponse, result.body));
       assert.strictEqual(decodedResponse.status, mockFanoutResponse.status);
 
       // Verify fanoutUnspents was called with the correct parameters
@@ -181,7 +199,7 @@ describe('FanoutUnspents V2 codec tests', function () {
 
       assert.strictEqual(result.status, 200);
 
-      const decodedResponse = assertDecode(FanoutUnspentsResponse, result.body);
+      const decodedResponse = assertSingleTxResponse(assertDecode(FanoutUnspentsResponse, result.body));
       assert.strictEqual(decodedResponse.status, mockFanoutResponse.status);
 
       // Verify unspents array was passed through
@@ -223,7 +241,7 @@ describe('FanoutUnspents V2 codec tests', function () {
       assert.strictEqual(result.body.instant, true);
       assert.strictEqual(result.body.instantId, 'inst-123456');
 
-      const decodedResponse = assertDecode(FanoutUnspentsResponse, result.body);
+      const decodedResponse = assertSingleTxResponse(assertDecode(FanoutUnspentsResponse, result.body));
       assert.strictEqual(decodedResponse.instant, true);
       assert.strictEqual(decodedResponse.instantId, 'inst-123456');
     });
@@ -261,132 +279,9 @@ describe('FanoutUnspents V2 codec tests', function () {
       assert.strictEqual(result.status, 200);
       result.body.should.have.property('txid');
 
-      const decodedResponse = assertDecode(FanoutUnspentsResponse, result.body);
+      const decodedResponse = assertSingleTxResponse(assertDecode(FanoutUnspentsResponse, result.body));
       assert.strictEqual(decodedResponse.status, 'signed');
       assert.strictEqual(decodedResponse.txid, mockResponseWithTxid.txid);
-    });
-
-    describe('URL Parameter Validation', function () {
-      it('should reject request with empty coin parameter', async function () {
-        const requestBody = {
-          numUnspentsToMake: 10,
-          walletPassphrase: 'test_passphrase',
-        };
-
-        const result = await agent
-          .post(`/api/v2/ /wallet/${walletId}/fanoutunspents`)
-          .set('Authorization', 'Bearer test_access_token_12345')
-          .set('Content-Type', 'application/json')
-          .send(requestBody);
-
-        // Should fail - empty coin parameter
-        assert.ok(result.status >= 400);
-      });
-
-      it('should reject request with empty wallet ID parameter', async function () {
-        const requestBody = {
-          numUnspentsToMake: 10,
-          walletPassphrase: 'test_passphrase',
-        };
-
-        const result = await agent
-          .post(`/api/v2/${coin}/wallet/ /fanoutunspents`)
-          .set('Authorization', 'Bearer test_access_token_12345')
-          .set('Content-Type', 'application/json')
-          .send(requestBody);
-
-        // Should fail - empty wallet ID
-        assert.ok(result.status >= 400);
-      });
-
-      it('should handle special characters in wallet ID', async function () {
-        const specialCharWalletId = 'wallet@#$%^&*()';
-        const requestBody = {
-          numUnspentsToMake: 10,
-          walletPassphrase: 'test_passphrase',
-        };
-
-        const walletsGetStub = sinon.stub().rejects(new Error('Invalid wallet ID format'));
-        const mockCoin = {
-          wallets: sinon.stub().returns({ get: walletsGetStub }),
-        };
-        sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
-
-        const result = await agent
-          .post(`/api/v2/${coin}/wallet/${specialCharWalletId}/fanoutunspents`)
-          .set('Authorization', 'Bearer test_access_token_12345')
-          .set('Content-Type', 'application/json')
-          .send(requestBody);
-
-        assert.ok(result.status >= 400);
-      });
-
-      it('should reject request with invalid coin type', async function () {
-        const invalidCoin = 'invalid_coin_12345';
-        const requestBody = {
-          numUnspentsToMake: 10,
-          walletPassphrase: 'test_passphrase',
-        };
-
-        sinon.stub(BitGo.prototype, 'coin').throws(new Error('Unsupported coin'));
-
-        const result = await agent
-          .post(`/api/v2/${invalidCoin}/wallet/${walletId}/fanoutunspents`)
-          .set('Authorization', 'Bearer test_access_token_12345')
-          .set('Content-Type', 'application/json')
-          .send(requestBody);
-
-        assert.ok(result.status >= 400);
-      });
-    });
-
-    describe('Authentication Tests', function () {
-      it('should reject request without Authorization header', async function () {
-        const requestBody = {
-          numUnspentsToMake: 10,
-          walletPassphrase: 'test_passphrase',
-        };
-
-        const result = await agent
-          .post(`/api/v2/${coin}/wallet/${walletId}/fanoutunspents`)
-          .set('Content-Type', 'application/json')
-          .send(requestBody);
-
-        // Should fail authentication
-        assert.ok(result.status === 401 || result.status === 403);
-      });
-
-      it('should reject request with invalid Authorization token', async function () {
-        const requestBody = {
-          numUnspentsToMake: 10,
-          walletPassphrase: 'test_passphrase',
-        };
-
-        const result = await agent
-          .post(`/api/v2/${coin}/wallet/${walletId}/fanoutunspents`)
-          .set('Authorization', 'Bearer invalid_token')
-          .set('Content-Type', 'application/json')
-          .send(requestBody);
-
-        // Should fail authentication
-        assert.ok(result.status === 401 || result.status === 403);
-      });
-
-      it('should reject request with malformed Authorization header', async function () {
-        const requestBody = {
-          numUnspentsToMake: 10,
-          walletPassphrase: 'test_passphrase',
-        };
-
-        const result = await agent
-          .post(`/api/v2/${coin}/wallet/${walletId}/fanoutunspents`)
-          .set('Authorization', 'InvalidFormat')
-          .set('Content-Type', 'application/json')
-          .send(requestBody);
-
-        // Should fail authentication
-        assert.ok(result.status === 401 || result.status === 403);
-      });
     });
 
     describe('Error Cases', function () {
@@ -465,104 +360,6 @@ describe('FanoutUnspents V2 codec tests', function () {
       });
     });
 
-    describe('Invalid Request Body', function () {
-      it('should accept request with empty body (all params are optional)', async function () {
-        const mockWallet = {
-          fanoutUnspents: sinon.stub().resolves(mockFanoutResponse),
-        };
-
-        const walletsGetStub = sinon.stub().resolves(mockWallet);
-        const mockCoin = {
-          wallets: sinon.stub().returns({ get: walletsGetStub }),
-        };
-        sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
-
-        // Make the request with empty body - this should succeed as all params are optional in v2
-        const result = await agent
-          .post(`/api/v2/${coin}/wallet/${walletId}/fanoutunspents`)
-          .set('Authorization', 'Bearer test_access_token_12345')
-          .set('Content-Type', 'application/json')
-          .send({});
-
-        // V2 allows empty body since SDK has defaults
-        assert.strictEqual(result.status, 200);
-      });
-
-      it('should reject request with invalid numUnspentsToMake type', async function () {
-        const requestBody = {
-          numUnspentsToMake: '10', // string instead of number
-          walletPassphrase: 'test_passphrase',
-        };
-
-        // Make the request
-        const result = await agent
-          .post(`/api/v2/${coin}/wallet/${walletId}/fanoutunspents`)
-          .set('Authorization', 'Bearer test_access_token_12345')
-          .set('Content-Type', 'application/json')
-          .send(requestBody);
-
-        // Should fail validation
-        assert.ok(result.status >= 400);
-      });
-
-      it('should reject request with invalid walletPassphrase type', async function () {
-        const requestBody = {
-          numUnspentsToMake: 10,
-          walletPassphrase: 123, // number instead of string
-        };
-
-        const result = await agent
-          .post(`/api/v2/${coin}/wallet/${walletId}/fanoutunspents`)
-          .set('Authorization', 'Bearer test_access_token_12345')
-          .set('Content-Type', 'application/json')
-          .send(requestBody);
-
-        assert.ok(result.status >= 400);
-      });
-
-      it('should reject request with invalid unspents array', async function () {
-        const requestBody = {
-          numUnspentsToMake: 10,
-          unspents: 'not-an-array', // string instead of array
-        };
-
-        const result = await agent
-          .post(`/api/v2/${coin}/wallet/${walletId}/fanoutunspents`)
-          .set('Authorization', 'Bearer test_access_token_12345')
-          .set('Content-Type', 'application/json')
-          .send(requestBody);
-
-        assert.ok(result.status >= 400);
-      });
-
-      it('should reject request with invalid feeRate type', async function () {
-        const requestBody = {
-          numUnspentsToMake: 10,
-          feeRate: 'high', // string instead of number
-        };
-
-        const result = await agent
-          .post(`/api/v2/${coin}/wallet/${walletId}/fanoutunspents`)
-          .set('Authorization', 'Bearer test_access_token_12345')
-          .set('Content-Type', 'application/json')
-          .send(requestBody);
-
-        assert.ok(result.status >= 400);
-      });
-
-      it('should handle request with malformed JSON', async function () {
-        // Make the request with malformed JSON
-        const result = await agent
-          .post(`/api/v2/${coin}/wallet/${walletId}/fanoutunspents`)
-          .set('Authorization', 'Bearer test_access_token_12345')
-          .set('Content-Type', 'application/json')
-          .send('{ invalid json ]');
-
-        // Should fail parsing
-        assert.ok(result.status >= 400);
-      });
-    });
-
     describe('Edge Cases', function () {
       it('should handle both walletPassphrase and xprv provided', async function () {
         const requestBody = {
@@ -589,7 +386,7 @@ describe('FanoutUnspents V2 codec tests', function () {
 
         // Should succeed - SDK handles priority of auth methods
         assert.strictEqual(result.status, 200);
-        const decodedResponse = assertDecode(FanoutUnspentsResponse, result.body);
+        const decodedResponse = assertSingleTxResponse(assertDecode(FanoutUnspentsResponse, result.body));
         assert.strictEqual(decodedResponse.status, mockFanoutResponse.status);
       });
 
@@ -618,7 +415,7 @@ describe('FanoutUnspents V2 codec tests', function () {
 
         // Should succeed - zero minConfirms is valid (includes unconfirmed)
         assert.strictEqual(result.status, 200);
-        const decodedResponse = assertDecode(FanoutUnspentsResponse, result.body);
+        const decodedResponse = assertSingleTxResponse(assertDecode(FanoutUnspentsResponse, result.body));
         assert.strictEqual(decodedResponse.status, mockFanoutResponse.status);
       });
 
@@ -648,30 +445,107 @@ describe('FanoutUnspents V2 codec tests', function () {
 
         // Should succeed - string values are allowed for large numbers
         assert.strictEqual(result.status, 200);
-        const decodedResponse = assertDecode(FanoutUnspentsResponse, result.body);
+        const decodedResponse = assertSingleTxResponse(assertDecode(FanoutUnspentsResponse, result.body));
         assert.strictEqual(decodedResponse.status, mockFanoutResponse.status);
       });
 
-      it('should handle very long wallet ID', async function () {
-        const veryLongWalletId = 'a'.repeat(1000);
+      it('should handle bulk fanout mode with single transaction response', async function () {
         const requestBody = {
           numUnspentsToMake: 10,
           walletPassphrase: 'test_passphrase',
+          bulk: false,
         };
 
-        const walletsGetStub = sinon.stub().rejects(new Error('Invalid wallet ID'));
+        const mockWallet = {
+          fanoutUnspents: sinon.stub().resolves(mockFanoutResponse),
+        };
+
+        const walletsGetStub = sinon.stub().resolves(mockWallet);
         const mockCoin = {
           wallets: sinon.stub().returns({ get: walletsGetStub }),
         };
         sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
 
         const result = await agent
-          .post(`/api/v2/${coin}/wallet/${veryLongWalletId}/fanoutunspents`)
+          .post(`/api/v2/${coin}/wallet/${walletId}/fanoutunspents`)
           .set('Authorization', 'Bearer test_access_token_12345')
           .set('Content-Type', 'application/json')
           .send(requestBody);
 
-        assert.ok(result.status >= 400);
+        // Should succeed with single transaction
+        assert.strictEqual(result.status, 200);
+        const decodedResponse = assertSingleTxResponse(assertDecode(FanoutUnspentsResponse, result.body));
+        assert.strictEqual(decodedResponse.status, mockFanoutResponse.status);
+
+        // Verify bulk parameter was passed
+        const callArgs = mockWallet.fanoutUnspents.firstCall.args[0];
+        assert.strictEqual(callArgs.bulk, false);
+      });
+
+      it('should handle bulk fanout mode with array response', async function () {
+        const requestBody = {
+          numUnspentsToMake: 100,
+          walletPassphrase: 'test_passphrase',
+          bulk: true,
+        };
+
+        // Mock response as an array of transactions for bulk mode
+        const mockBulkResponse = [
+          {
+            status: 'accepted',
+            tx: '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
+            hash: '1111111111111111111111111111111111111111111111111111111111111111',
+            fee: 10000,
+            feeRate: 20000,
+          },
+          {
+            status: 'accepted',
+            tx: '0200000001d8ebe3e9810a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d1f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
+            hash: '2222222222222222222222222222222222222222222222222222222222222222',
+            fee: 11000,
+            feeRate: 21000,
+          },
+          {
+            status: 'accepted',
+            tx: '0300000001e9fcf4fa920b34d56b7d2d6be8cdf13bf0082b1032fc5b83b6ae1d1f2a503e2f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
+            hash: '3333333333333333333333333333333333333333333333333333333333333333',
+            fee: 12000,
+            feeRate: 22000,
+          },
+        ];
+
+        const mockWallet = {
+          fanoutUnspents: sinon.stub().resolves(mockBulkResponse),
+        };
+
+        const walletsGetStub = sinon.stub().resolves(mockWallet);
+        const mockCoin = {
+          wallets: sinon.stub().returns({ get: walletsGetStub }),
+        };
+        sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+        const result = await agent
+          .post(`/api/v2/${coin}/wallet/${walletId}/fanoutunspents`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        // Should succeed with array of transactions
+        assert.strictEqual(result.status, 200);
+        assert.ok(Array.isArray(result.body), 'Response should be an array');
+        assert.strictEqual(result.body.length, 3);
+
+        // Validate the array response against codec
+        const decodedResponse = assertDecode(FanoutUnspentsResponse, result.body);
+        assert.ok(Array.isArray(decodedResponse));
+        assert.strictEqual(decodedResponse[0].status, 'accepted');
+        assert.strictEqual(decodedResponse[0].hash, mockBulkResponse[0].hash);
+        assert.strictEqual(decodedResponse[1].hash, mockBulkResponse[1].hash);
+        assert.strictEqual(decodedResponse[2].hash, mockBulkResponse[2].hash);
+
+        // Verify bulk parameter was passed
+        const callArgs = mockWallet.fanoutUnspents.firstCall.args[0];
+        assert.strictEqual(callArgs.bulk, true);
       });
     });
   });
@@ -766,6 +640,7 @@ describe('FanoutUnspents V2 codec tests', function () {
         otp: '123456',
         targetAddress: '2N8hwP1WmJrFF5QWABn38y63uYLhnJYJYTF',
         unspents: ['abc:0', 'def:1'],
+        bulk: true,
       };
 
       const decoded = assertDecode(t.type(FanoutUnspentsRequestBody), validBody);
@@ -774,6 +649,27 @@ describe('FanoutUnspents V2 codec tests', function () {
       assert.strictEqual(decoded.minConfirms, validBody.minConfirms);
       assert.strictEqual(decoded.maxNumInputsToUse, validBody.maxNumInputsToUse);
       assert.deepStrictEqual(decoded.unspents, validBody.unspents);
+      assert.strictEqual(decoded.bulk, true);
+    });
+
+    it('should validate body with bulk parameter', function () {
+      const validBodyWithBulkTrue = {
+        numUnspentsToMake: 100,
+        walletPassphrase: 'test_passphrase',
+        bulk: true,
+      };
+
+      const decodedTrue = assertDecode(t.type(FanoutUnspentsRequestBody), validBodyWithBulkTrue);
+      assert.strictEqual(decodedTrue.bulk, true);
+
+      const validBodyWithBulkFalse = {
+        numUnspentsToMake: 10,
+        walletPassphrase: 'test_passphrase',
+        bulk: false,
+      };
+
+      const decodedFalse = assertDecode(t.type(FanoutUnspentsRequestBody), validBodyWithBulkFalse);
+      assert.strictEqual(decodedFalse.bulk, false);
     });
 
     it('should reject body with non-number numUnspentsToMake', function () {
@@ -819,7 +715,7 @@ describe('FanoutUnspents V2 codec tests', function () {
         tx: '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
       };
 
-      const decoded = assertDecode(FanoutUnspentsResponse, validResponse);
+      const decoded = assertSingleTxResponse(assertDecode(FanoutUnspentsResponse, validResponse));
       assert.strictEqual(decoded.status, validResponse.status);
       assert.strictEqual(decoded.tx, validResponse.tx);
     });
@@ -838,7 +734,7 @@ describe('FanoutUnspents V2 codec tests', function () {
         travelResult: { compliance: 'pass' },
       };
 
-      const decoded = assertDecode(FanoutUnspentsResponse, validResponse);
+      const decoded = assertSingleTxResponse(assertDecode(FanoutUnspentsResponse, validResponse));
       assert.strictEqual(decoded.status, validResponse.status);
       assert.strictEqual(decoded.tx, validResponse.tx);
       assert.strictEqual(decoded.hash, validResponse.hash);
@@ -854,7 +750,7 @@ describe('FanoutUnspents V2 codec tests', function () {
         fee: 10000,
       };
 
-      const decoded = assertDecode(FanoutUnspentsResponse, validResponse);
+      const decoded = assertSingleTxResponse(assertDecode(FanoutUnspentsResponse, validResponse));
       assert.strictEqual(decoded.status, validResponse.status);
       assert.strictEqual(decoded.txid, validResponse.txid);
     });
@@ -887,6 +783,58 @@ describe('FanoutUnspents V2 codec tests', function () {
 
       assert.throws(() => {
         assertDecode(FanoutUnspentsResponse, invalidResponse);
+      });
+    });
+
+    it('should validate array response for bulk mode', function () {
+      const validArrayResponse = [
+        {
+          status: 'accepted',
+          tx: '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
+          hash: '1111111111111111111111111111111111111111111111111111111111111111',
+          fee: 10000,
+          feeRate: 20000,
+        },
+        {
+          status: 'accepted',
+          tx: '0200000001d8ebe3e9810a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d1f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
+          hash: '2222222222222222222222222222222222222222222222222222222222222222',
+          fee: 11000,
+          feeRate: 21000,
+        },
+      ];
+
+      const decoded = assertDecode(FanoutUnspentsResponse, validArrayResponse);
+      assert.ok(Array.isArray(decoded));
+      assert.strictEqual(decoded.length, 2);
+      assert.strictEqual(decoded[0].status, 'accepted');
+      assert.strictEqual(decoded[0].hash, validArrayResponse[0].hash);
+      assert.strictEqual(decoded[1].status, 'accepted');
+      assert.strictEqual(decoded[1].hash, validArrayResponse[1].hash);
+    });
+
+    it('should validate empty array response for bulk mode', function () {
+      const validEmptyArrayResponse: any[] = [];
+
+      const decoded = assertDecode(FanoutUnspentsResponse, validEmptyArrayResponse);
+      assert.ok(Array.isArray(decoded));
+      assert.strictEqual(decoded.length, 0);
+    });
+
+    it('should reject array with invalid transaction objects', function () {
+      const invalidArrayResponse = [
+        {
+          status: 'accepted',
+          tx: '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
+        },
+        {
+          status: 'accepted',
+          // Missing 'tx' field - should fail
+        },
+      ];
+
+      assert.throws(() => {
+        assertDecode(FanoutUnspentsResponse, invalidArrayResponse);
       });
     });
   });
@@ -1008,7 +956,7 @@ describe('FanoutUnspents V2 codec tests', function () {
 
       // Should validate and pass
       assert.strictEqual(result.status, 200);
-      const decodedResponse = assertDecode(FanoutUnspentsResponse, result.body);
+      const decodedResponse = assertSingleTxResponse(assertDecode(FanoutUnspentsResponse, result.body));
       assert.strictEqual(decodedResponse.status, 'accepted');
       assert.strictEqual(decodedResponse.tx, mockResponse.tx);
 

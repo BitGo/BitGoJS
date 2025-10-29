@@ -54,14 +54,14 @@ export const FanoutUnspentsRequestBody = {
   otp: optional(t.string),
   /** Target address for the fanout outputs */
   targetAddress: optional(t.string),
+  /** If true, enables fanout of large number of unspents by creating multiple transactions (200 unspents per tx) */
+  bulk: optional(t.boolean),
 } as const;
 
 /**
- * Response for fanning out unspents in a wallet (v2)
- *
- * Returns transaction details after the fanout operation is built, signed, and sent.
+ * Single transaction response object
  */
-export const FanoutUnspentsResponse = t.type({
+const FanoutUnspentsSingleTxResponse = t.type({
   /** The status of the transaction ('accepted', 'signed', 'pendingApproval', or 'otp') */
   status: t.string,
   /** The transaction hex/serialized transaction */
@@ -87,6 +87,17 @@ export const FanoutUnspentsResponse = t.type({
 });
 
 /**
+ * Response for fanning out unspents in a wallet (v2)
+ *
+ * Returns transaction details after the fanout operation is built, signed, and sent.
+ * When bulk=true, an array of transaction objects is returned; otherwise, a single transaction object is returned.
+ */
+export const FanoutUnspentsResponse = t.union([
+  FanoutUnspentsSingleTxResponse,
+  t.array(FanoutUnspentsSingleTxResponse),
+]);
+
+/**
  * Fan out unspents in a wallet (v2)
  *
  * This endpoint fans out unspents in a wallet by creating a transaction that spends from
@@ -98,7 +109,8 @@ export const FanoutUnspentsResponse = t.type({
  * - Requiring a coin parameter in the path
  * - Supporting the full set of SDK parameters for advanced UTXO management
  * - Using numUnspentsToMake instead of target (though both refer to output count)
- * - Supporting additional parameters like maxNumInputsToUse, unspents array, fee controls
+ * - Supporting bulk fanout mode that creates multiple transactions
+ * - Supporting additional parameters like maxNumInputsToUse, unspents array, bulk, fee controls
  *
  * @operationId express.v2.wallet.fanoutunspents
  * @tag express
