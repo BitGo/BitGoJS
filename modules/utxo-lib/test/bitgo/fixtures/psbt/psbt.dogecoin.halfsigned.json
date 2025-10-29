@@ -62,6 +62,7 @@
       ]
     }
   ],
+  "psbtInputsFinalized": null,
   "outputs": [
     {
       "script": "a914d909474404c124a3d04c3fbff61faa49cf43c58b87",

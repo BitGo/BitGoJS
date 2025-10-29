@@ -66,6 +66,7 @@
       "redeemScript": "210336ef228ffe9b8efffba052c32d334660dd1f8366cf8fe44ae5aa672b6b629095ac"
     }
   ],
+  "psbtInputsFinalized": null,
   "outputs": [
     {
       "script": "a914d909474404c124a3d04c3fbff61faa49cf43c58b87",

@@ -136,6 +136,10 @@ function runPsbt(
     });
 
     it('matches fixture', async function () {
+      let extractedTransaction: Buffer | undefined;
+      if (sign === 'fullsigned') {
+        extractedTransaction = psbt.clone().finalizeAllInputs().extractTransaction().toBuffer();
+      }
       const fixture = {
         walletKeys: rootWalletKeys.triple.map((xpub) => xpub.toBase58()),
         psbtBase64: psbt.toBase64(),
@@ -143,6 +147,7 @@ function runPsbt(
         psbtInputs: getFixturePsbtInputs(psbt, inputs),
         outputs: psbt.txOutputs.map((output) => toFixture(output)),
         psbtOutputs: getFixturePsbtOutputs(psbt),
+        extractedTransaction: extractedTransaction ? toFixture(extractedTransaction) : null,
       };
       const filename = [txFormat, coin, sign, 'json'].join('.');
       assert.deepStrictEqual(fixture, await getFixture(`${__dirname}/../fixtures/psbt/${filename}`, fixture));
