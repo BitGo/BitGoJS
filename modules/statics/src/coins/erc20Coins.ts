@@ -4106,7 +4106,7 @@ export const erc20Coins = [
   erc20(
     '1301f2e6-3f4c-46ab-9f21-e6e8eadb0f3c',
     'mln',
-    'Melon Token',
+    'Enzyme',
     18,
     '0xec67005c4e498ec7f55e092bd1d35cbc47c91892',
     UnderlyingAsset.MLN

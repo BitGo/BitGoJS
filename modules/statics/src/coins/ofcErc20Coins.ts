@@ -964,7 +964,7 @@ export const ofcErc20Coins = [
   ofcerc20('2c592feb-b052-4a08-bd42-9c0c8a8b8611', 'ofcmix', 'MixMarvel Token', 18, underlyingAssetForSymbol('mix')),
   ofcerc20('2e6f9527-d720-4079-b376-04fdcdd4c9e9', 'ofcmizn', 'Miznettk', 18, underlyingAssetForSymbol('mizn')),
   ofcerc20('6174ddda-b240-4623-b391-50219c0ddc9e', 'ofcmns', 'Monnos Token', 18, underlyingAssetForSymbol('mns')),
-  ofcerc20('f3655b59-17b2-4e9e-914b-771d9ea1078c', 'ofcmln', 'Melon Token', 18, underlyingAssetForSymbol('mln')),
+  ofcerc20('f3655b59-17b2-4e9e-914b-771d9ea1078c', 'ofcmln', 'Enzyme', 18, underlyingAssetForSymbol('mln')),
   ofcerc20('aa31a241-3e24-4a17-95db-ee74a6843b70', 'ofcmoc', 'Moss Coin', 18, underlyingAssetForSymbol('moc')),
   ofcerc20('97ebe992-de04-4917-b808-2c867fa380a0', 'ofcmof', 'Molecular Future', 16, underlyingAssetForSymbol('mof')),
   ofcerc20('9a4e4778-5188-4fbc-8365-9dc0ec667692', 'ofcmpay', 'MenaPay', 18, underlyingAssetForSymbol('mpay')),
