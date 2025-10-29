@@ -33,6 +33,7 @@ import { PostWalletTxSignTSS } from './v2/walletTxSignTSS';
 import { PostShareWallet } from './v2/shareWallet';
 import { PutExpressWalletUpdate } from './v2/expressWalletUpdate';
 import { PostFanoutUnspents } from './v2/fanoutUnspents';
+import { PostConsolidateUnspents } from './v2/consolidateunspents';
 
 // Too large types can cause the following error
 //
@@ -130,9 +131,12 @@ export const ExpressV1PendingApprovalConstructTxApiSpec = apiSpec({
   },
 });
 
-export const ExpressV1WalletConsolidateUnspentsApiSpec = apiSpec({
+export const ExpressWalletConsolidateUnspentsApiSpec = apiSpec({
   'express.v1.wallet.consolidateunspents': {
     put: PutConsolidateUnspents,
+  },
+  'express.v2.wallet.consolidateunspents': {
+    post: PostConsolidateUnspents,
   },
 });
 
@@ -220,7 +224,7 @@ export type ExpressApi = typeof ExpressPingApiSpec &
   typeof ExpressV1KeychainDeriveApiSpec &
   typeof ExpressV1KeychainLocalApiSpec &
   typeof ExpressV1PendingApprovalConstructTxApiSpec &
-  typeof ExpressV1WalletConsolidateUnspentsApiSpec &
+  typeof ExpressWalletConsolidateUnspentsApiSpec &
   typeof ExpressWalletFanoutUnspentsApiSpec &
   typeof ExpressV2WalletCreateAddressApiSpec &
   typeof ExpressKeychainLocalApiSpec &
@@ -246,7 +250,7 @@ export const ExpressApi: ExpressApi = {
   ...ExpressV1KeychainDeriveApiSpec,
   ...ExpressV1KeychainLocalApiSpec,
   ...ExpressV1PendingApprovalConstructTxApiSpec,
-  ...ExpressV1WalletConsolidateUnspentsApiSpec,
+  ...ExpressWalletConsolidateUnspentsApiSpec,
   ...ExpressWalletFanoutUnspentsApiSpec,
   ...ExpressV2WalletCreateAddressApiSpec,
   ...ExpressKeychainLocalApiSpec,
