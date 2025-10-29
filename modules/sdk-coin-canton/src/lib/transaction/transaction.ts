@@ -1,4 +1,10 @@
-import { BaseKey, BaseTransaction, InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
+import {
+  BaseKey,
+  BaseTransaction,
+  InvalidTransactionError,
+  ITransactionRecipient,
+  TransactionType,
+} from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import {
   CantonPrepareCommandResponse,
@@ -6,6 +12,7 @@ import {
   PartySignature,
   PreparedTxnParsedInfo,
   TransactionBroadcastData,
+  TransactionExplanation,
   TransferAcknowledge,
   TxData,
 } from '../iface';
@@ -127,6 +134,7 @@ export class Transaction extends BaseTransaction {
       type: this._type as TransactionType,
       sender: '',
       receiver: '',
+      amount: '',
     };
     if (this._type === TransactionType.TransferAcknowledge) {
       if (!this._acknowledgeData) {
@@ -147,6 +155,7 @@ export class Transaction extends BaseTransaction {
     }
     result.sender = parsedInfo.sender;
     result.receiver = parsedInfo.receiver;
+    result.amount = parsedInfo.amount;
     return result;
   }
 
@@ -181,5 +190,42 @@ export class Transaction extends BaseTransaction {
     } catch (e) {
       throw new InvalidTransactionError('Unable to parse raw transaction data');
     }
+  }
+
+  explainTransaction(): TransactionExplanation {
+    const displayOrder = [
+      'id',
+      'outputs',
+      'outputAmount',
+      'inputs',
+      'inputAmount',
+      'changeOutputs',
+      'changeAmount',
+      'fee',
+      'type',
+    ];
+    const inputs: ITransactionRecipient[] = [];
+    let inputAmount = '0';
+    switch (this.type) {
+      case TransactionType.TransferAccept:
+      case TransactionType.TransferReject: {
+        const txData = this.toJson();
+        inputs.push({ address: txData.sender, amount: txData.amount });
+        inputAmount = txData.amount;
+        break;
+      }
+    }
+    return {
+      id: this.id,
+      displayOrder,
+      outputs: [],
+      outputAmount: '0',
+      inputs: inputs,
+      inputAmount: inputAmount,
+      changeOutputs: [],
+      changeAmount: '0',
+      fee: { fee: '0' },
+      type: this.type,
+    };
   }
 }

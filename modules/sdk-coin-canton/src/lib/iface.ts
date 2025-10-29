@@ -1,5 +1,15 @@
-import { TransactionType } from '@bitgo/sdk-core';
+import {
+  TransactionType,
+  TransactionExplanation as BaseTransactionExplanation,
+  ITransactionRecipient,
+} from '@bitgo/sdk-core';
 import { DamlTransaction, Metadata } from './resourcesInterface';
+
+export interface TransactionExplanation extends BaseTransactionExplanation {
+  type: TransactionType;
+  inputs?: ITransactionRecipient[];
+  inputAmount?: string;
+}
 
 /**
  * The transaction data returned from the toJson() function of a transaction
@@ -9,6 +19,7 @@ export interface TxData {
   type: TransactionType;
   sender: string;
   receiver: string;
+  amount: string;
   acknowledgeData?: TransferAcknowledge;
 }
 
