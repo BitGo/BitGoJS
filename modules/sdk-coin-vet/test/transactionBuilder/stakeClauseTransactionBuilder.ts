@@ -237,17 +237,18 @@ describe('VET Staking Transaction', function () {
     });
 
     it('should build a signed tx and validate its toJson', async function () {
-      const txBuilder = factory.from(testData.STAKING_TRANSACTION);
+      const txBuilder = factory.from(testData.STAKE_CLAUSE_TRANSACTION);
       const tx = txBuilder.transaction as StakeClauseTransaction;
       const toJson = tx.toJson();
-      toJson.id.should.equal('0x99325b39cd04bd1821f6f6af7b679c247e6425a4eb95eb429fa8dff477298d0e');
-      toJson.stakingContractAddress?.should.equal('0x1856c533ac2d94340aaa8544d35a5c1d4a21dee7');
+      toJson.id.should.equal('0x2f96e4c16d70bd3e2dabec29a07eb3d6066691ba5b812d6e897676f6ebc0a798');
+      toJson.stakingContractAddress?.should.equal('0x1ec1d168574603ec35b9d229843b7c2b44bcb770');
       toJson.amountToStake?.should.equal('0xde0b6b3a7640000');
-      toJson.nonce.should.equal('609363');
-      toJson.gas.should.equal(25988);
+      toJson.nonce.should.equal('504440');
+      toJson.gas.should.equal(392538);
       toJson.gasPriceCoef.should.equal(128);
       toJson.expiration.should.equal(64);
       toJson.chainTag.should.equal(39);
+      // in stake txn, nftTokenId indicates the levelId
       toJson.nftTokenId?.should.equal(8);
     });
   });

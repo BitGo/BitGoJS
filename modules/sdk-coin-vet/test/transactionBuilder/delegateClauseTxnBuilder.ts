@@ -151,6 +151,7 @@ describe('VET Delegation Transaction', function () {
       toJson.gasPriceCoef.should.equal(128);
       toJson.expiration.should.equal(64);
       toJson.chainTag.should.equal(39);
+      // in delegate txn, nftTokenId indicates the tokenId
       toJson.nftTokenId?.should.equal(tokenId);
       toJson.autorenew?.should.equal(true);
     });
