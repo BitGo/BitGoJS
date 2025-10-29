@@ -248,7 +248,7 @@ export const utxoCoins: Readonly<BaseCoin>[] = [
     Networks.main.bitcoinGold,
     UnderlyingAsset.BTG,
     BaseUnit.BTC,
-    BTG_FEATURES
+    BTG_FEATURES.filter((f) => f !== CoinFeature.CUSTODY_BITGO_SINGAPORE)
   ),
   utxo(
     '633246f2-af21-41b8-8b9e-ba9ae25d386f',

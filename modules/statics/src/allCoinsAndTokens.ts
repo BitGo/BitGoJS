@@ -680,7 +680,7 @@ export const allCoinsAndTokens = [
     6,
     UnderlyingAsset.OSMO,
     BaseUnit.OSMO,
-    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
+    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING.filter((feature) => ![CoinFeature.CUSTODY_BITGO_SINGAPORE].includes(feature))
   ),
   account(
     'd813e9c9-f9b9-4d10-a4e2-57d9e3b65e2c',
@@ -1449,7 +1449,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.WEMIX,
     BaseUnit.ETH,
-    WEMIX_FEATURES
+    WEMIX_FEATURES.filter((feature) => feature !== CoinFeature.CUSTODY_BITGO_SINGAPORE)
   ),
   account(
     'b18517e3-2fba-44df-be39-7ba062d14895',
@@ -2761,7 +2761,7 @@ export const allCoinsAndTokens = [
     7,
     UnderlyingAsset['xlm:SLT-GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP'],
     'smartlands.io',
-    ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_MENA_FZE,
+    ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE_AND_MENA_FZE,
     '',
     'SLT'
   ),
@@ -4770,7 +4770,7 @@ export const allCoinsAndTokens = [
     'VSUI',
     '0x549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55::vsui::VSUI',
     UnderlyingAsset['sui:vsui'],
-    SUI_TOKEN_FEATURES
+    SUI_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   suiToken(
     '705d1458-d5e6-4eaa-8a34-51e65cc68dec',
