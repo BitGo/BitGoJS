@@ -389,6 +389,7 @@ export class Transaction extends BaseTransaction {
       this.type === TransactionType.SendToken ||
       this.type === TransactionType.SendNFT ||
       this.type === TransactionType.ContractCall ||
+      this.type === TransactionType.StakingActivate ||
       this.type === TransactionType.StakingUnlock ||
       this.type === TransactionType.StakingWithdraw ||
       this.type === TransactionType.StakingClaim

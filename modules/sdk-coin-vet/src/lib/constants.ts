@@ -4,6 +4,7 @@ export const VET_BLOCK_ID_LENGTH = 64;
 
 export const TRANSFER_TOKEN_METHOD_ID = '0xa9059cbb';
 export const STAKING_METHOD_ID = '0xd8da3bbf';
+export const STAKE_CLAUSE_METHOD_ID = '0x604f2177';
 export const EXIT_DELEGATION_METHOD_ID = '0x69e79b7d';
 export const BURN_NFT_METHOD_ID = '0x2e17de78';
 export const TRANSFER_NFT_METHOD_ID = '0x23b872dd';
