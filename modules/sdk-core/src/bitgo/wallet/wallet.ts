@@ -3244,6 +3244,28 @@ export class Wallet implements IWallet {
   }
 
   /**
+   * Builds wallet initialization
+   * @param {PrebuildTransactionOptions} params
+   * @returns {Promise<PrebuildTransactionResult>}
+   */
+  public async buildWalletInitialization(params: PrebuildTransactionOptions): Promise<PrebuildTransactionResult> {
+    if (!this.baseCoin.requiresWalletInitializationTransaction()) {
+      throw new Error(`Wallet initialization is not required for ${this.baseCoin.getFullName()}`);
+    }
+    if (this._wallet.multisigType !== 'tss') {
+      throw new Error('Wallet initialization transaction is only supported for TSS wallets');
+    }
+    if (params.reqId) {
+      this.bitgo.setRequestTracer(params.reqId);
+    }
+    const buildParams: PrebuildTransactionOptions = _.pick(params, this.prebuildWhitelistedParams());
+    if (!buildParams.type) {
+      buildParams.type = 'createAccount';
+    }
+    return await this.prebuildTransaction(buildParams);
+  }
+
+  /**
    * Signs and sends a single unsigned token enablement transaction
    * @param params
    * @returns
@@ -3327,20 +3349,7 @@ export class Wallet implements IWallet {
    * @param params
    */
   public async sendWalletInitialization(params: PrebuildTransactionOptions = {}): Promise<WalletInitResult> {
-    if (!this.baseCoin.requiresWalletInitializationTransaction()) {
-      throw new Error(`Wallet initialization is not required for ${this.baseCoin.getFullName()}`);
-    }
-    if (this._wallet.multisigType !== 'tss') {
-      throw new Error('Wallet initialization transaction is only supported for TSS wallets');
-    }
-    if (params.reqId) {
-      this.bitgo.setRequestTracer(params.reqId);
-    }
-    const buildParams: PrebuildTransactionOptions = _.pick(params, this.prebuildWhitelistedParams());
-    if (!buildParams.type) {
-      buildParams.type = 'createAccount';
-    }
-    const prebuildTx = await this.prebuildTransaction(buildParams);
+    const prebuildTx = await this.buildWalletInitialization(params);
     const unsignedBuildWithOptions: PrebuildAndSignTransactionOptions = {
       ...params,
       prebuildTx,

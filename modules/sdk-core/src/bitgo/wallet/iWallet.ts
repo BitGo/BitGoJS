@@ -990,6 +990,7 @@ export interface IWallet {
   buildTokenEnablements(params?: BuildTokenEnablementOptions): Promise<PrebuildTransactionResult[]>;
   sendTokenEnablement(params?: PrebuildAndSignTransactionOptions): Promise<any>;
   sendTokenEnablements(params?: BuildTokenEnablementOptions): Promise<any>;
+  buildWalletInitialization(params?: PrebuildTransactionOptions): Promise<PrebuildTransactionResult>;
   sendWalletInitialization(params?: PrebuildTransactionOptions): Promise<WalletInitResult>;
   signMessage(params: WalletSignMessageOptions): Promise<SignedMessage>;
   buildSignMessageRequest(params: WalletSignMessageOptions): Promise<TxRequest>;
