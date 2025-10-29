@@ -132,7 +132,6 @@ import {
   ZKETH_FEATURES,
   ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE_AND_MENA_FZE,
   WFLR_FEATURES,
-  ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_MENA_FZE,
 } from './coinFeatures';
 import { botTokens } from './coins/botTokens';
 import { adaTokens } from './coins/adaTokens';
@@ -1064,6 +1063,7 @@ export const allCoinsAndTokens = [
       CoinFeature.CUSTODY_BULK_TRANSACTION,
       CoinFeature.SHARED_COSMOS_SDK,
       CoinFeature.SHARED_COSMOS_WP,
+      CoinFeature.COSMOS_COMMON_BGA,
     ]
   ),
   account(
@@ -1079,6 +1079,7 @@ export const allCoinsAndTokens = [
       CoinFeature.CUSTODY_BULK_TRANSACTION,
       CoinFeature.SHARED_COSMOS_SDK,
       CoinFeature.SHARED_COSMOS_WP,
+      CoinFeature.COSMOS_COMMON_BGA,
     ]
   ),
   account(
