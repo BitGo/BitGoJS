@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@4.6.0...@bitgo/sdk-coin-dot@4.7.0) (2025-10-29)
+
+
+### Features
+
+* **sdk-coin-dot:** configure metadata for polkadot assethub ([00a7820](https://github.com/BitGo/BitGoJS/commit/00a7820ab8c45d59cab785043ae5304cc3b3b82a))
+
+
+
+
+
 # [4.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@4.5.7...@bitgo/sdk-coin-dot@4.6.0) (2025-10-24)
 
 

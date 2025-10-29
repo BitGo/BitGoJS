@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.7.8...@bitgo/sdk-coin-evm@1.8.0) (2025-10-29)
+
+
+### Features
+
+* **sdk-coin-evm:** enable message signing for base ([59cd88b](https://github.com/BitGo/BitGoJS/commit/59cd88b0a89d4c69621ddc950847c93b338fa10d))
+
+
+
+
+
 ## [1.7.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.7.7...@bitgo/sdk-coin-evm@1.7.8) (2025-10-24)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-evm

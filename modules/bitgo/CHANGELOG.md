@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.9.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.8.0...bitgo@50.9.0) (2025-10-29)
+
+
+### Features
+
+* **abstract-utxo:** move utxo test files to abstract-utxo module ([e8a1166](https://github.com/BitGo/BitGoJS/commit/e8a1166de87ec10b214596a8626ed0cae7fdc3ca))
+* added custody wallet feature to canton ([6f3410b](https://github.com/BitGo/BitGoJS/commit/6f3410b015d5508dc5500ed2ba0304f23f1edfc1))
+* added tcanton to coin factory ([e2f7f97](https://github.com/BitGo/BitGoJS/commit/e2f7f978c40841a28f198d33e3c6cb5dd7a5c230))
+
+
+
+
+
 # [50.8.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.7.0...bitgo@50.8.0) (2025-10-24)
 
 

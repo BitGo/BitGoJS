@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.6.0...@bitgo/sdk-coin-canton@1.7.0) (2025-10-29)
+
+
+### Bug Fixes
+
+* **sdk-coin-canton:** bug fix in transaction type ([c0abb73](https://github.com/BitGo/BitGoJS/commit/c0abb734ddbade498c03ef44e2f2283b5dd2dede))
+
+
+### Features
+
+* added transfer reject builder ([ac4fbe7](https://github.com/BitGo/BitGoJS/commit/ac4fbe73ba3ed12f73b43ae43927b3eeb8f9c436))
+* **sdk-coin-canton:** added acknowledgement data in transaction ([f9da33b](https://github.com/BitGo/BitGoJS/commit/f9da33b1c2a885addf77d324d6087e11ad155886))
+* **sdk-coin-canton:** added handling is parse raw canton transaction to correctly extract the data ([f2422d3](https://github.com/BitGo/BitGoJS/commit/f2422d37a98a5eac581ac5fee538d76358ba4db9))
+* **sdk-coin-canton:** added transfer acknowledgement builder ([a51a9f6](https://github.com/BitGo/BitGoJS/commit/a51a9f68950c233dcde97c6a0cf9d5ea323d35e9))
+
+
+
+
+
 # [1.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.5.0...@bitgo/sdk-coin-canton@1.6.0) (2025-10-24)
 
 

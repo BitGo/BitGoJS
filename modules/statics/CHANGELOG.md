@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.8.0...@bitgo/statics@58.9.0) (2025-10-29)
+
+
+### Bug Fixes
+
+* fix baseeth tokens constructor ([28eaf7a](https://github.com/BitGo/BitGoJS/commit/28eaf7a295f1fb4725805f52b3af921538a17ae8))
+
+
+### Features
+
+* add statics config for Hedera EVM ([de480fd](https://github.com/BitGo/BitGoJS/commit/de480fd6dba2dff178058b6a2ea2bf4e7dff68af))
+* added custody wallet feature to canton ([6f3410b](https://github.com/BitGo/BitGoJS/commit/6f3410b015d5508dc5500ed2ba0304f23f1edfc1))
+* **sdk-coin-dot:** configure metadata for polkadot assethub ([00a7820](https://github.com/BitGo/BitGoJS/commit/00a7820ab8c45d59cab785043ae5304cc3b3b82a))
+* **statics:** add new coin feature for bga support ([de87d98](https://github.com/BitGo/BitGoJS/commit/de87d98288bb0bc2a77d9fefd7da127841f69188))
+* **statics:** add shared evm message signing for base ([0be8506](https://github.com/BitGo/BitGoJS/commit/0be8506a95cdd117bb992000f19e93840fa3c610))
+* **statics:** add WALLET_CONNECT_DEFI CoinFeature to Sol ([4480e1b](https://github.com/BitGo/BitGoJS/commit/4480e1bdfec2fccc54bb3255a7366d5bff0c0d66))
+* **statics:** gating eth:anon for Dubai ([c2b3e5a](https://github.com/BitGo/BitGoJS/commit/c2b3e5a66017b2b287999e842fea23c8ebe2e5de))
+
+
+
+
+
 # [58.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.7.0...@bitgo/statics@58.8.0) (2025-10-24)
 
 
