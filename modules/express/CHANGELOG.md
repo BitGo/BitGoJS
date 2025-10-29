@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [15.10.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.10.0...@bitgo/express@15.10.1) (2025-10-29)
+
+
+### Bug Fixes
+
+* revert changes from WP-4376 ([e35665a](https://github.com/BitGo/BitGoJS/commit/e35665a4e167474e550c08a1cf83797ee65b357d))
+
+
+
+
+
 # [15.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.9.0...@bitgo/express@15.10.0) (2025-10-24)
 
 

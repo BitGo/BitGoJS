@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@2.12.0...@bitgo/sdk-coin-near@2.13.0) (2025-10-29)
+
+
+### Features
+
+* **sdk-coin-near:** reapply consolidation validation ([e269796](https://github.com/BitGo/BitGoJS/commit/e269796b1cbf79b798ce76f52af464fdab98b87c))
+
+
+
+
+
 # [2.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@2.11.7...@bitgo/sdk-coin-near@2.12.0) (2025-10-24)
 
 

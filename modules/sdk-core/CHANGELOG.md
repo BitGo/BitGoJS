@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [36.17.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.16.0...@bitgo/sdk-core@36.17.0) (2025-10-29)
+
+
+### Bug Fixes
+
+* bug fix in wallet initialization for canton ([b55fa9b](https://github.com/BitGo/BitGoJS/commit/b55fa9b0a36cb540878374faca6779ffb9d1e4f6))
+
+
+### Features
+
+* add statics config for Hedera EVM ([de480fd](https://github.com/BitGo/BitGoJS/commit/de480fd6dba2dff178058b6a2ea2bf4e7dff68af))
+* added transfer reject builder ([ac4fbe7](https://github.com/BitGo/BitGoJS/commit/ac4fbe73ba3ed12f73b43ae43927b3eeb8f9c436))
+* **sdk-coin-canton:** added transfer acknowledgement builder ([a51a9f6](https://github.com/BitGo/BitGoJS/commit/a51a9f68950c233dcde97c6a0cf9d5ea323d35e9))
+* **sdk-coin-dot:** configure metadata for polkadot assethub ([00a7820](https://github.com/BitGo/BitGoJS/commit/00a7820ab8c45d59cab785043ae5304cc3b3b82a))
+* sending optional param recipients for createAccount ([5930bbf](https://github.com/BitGo/BitGoJS/commit/5930bbfe2529687ca1dd60166fa9fa6e403ac67e))
+
+
+
+
+
 # [36.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.15.0...@bitgo/sdk-core@36.16.0) (2025-10-24)
 
 
