@@ -2506,6 +2506,24 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['baseeth:towns'],
     Networks.main.basechain
   ),
+  erc20Token(
+    'cc24757e-e2e4-4bfe-8102-834f1be55341',
+    'baseeth:brlv',
+    'BRL Velocity',
+    18,
+    '0xd2047ebdb205ee6862b69ae9fb3501652cc97d36',
+    UnderlyingAsset['baseeth:brlv'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    '364a7400-844a-4bda-80dc-74ed6fbce488',
+    'baseeth:wbrly',
+    'Wrapped BRLY',
+    24,
+    '0xe1f72919df7b523919dd49c7b5adc6002f983453',
+    UnderlyingAsset['baseeth:wbrly'],
+    Networks.main.basechain
+  ),
   hederaCoin(
     '98aad956-27ee-45dd-aa43-6a23c9a1d1d0',
     'hbar',

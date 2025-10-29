@@ -4492,6 +4492,21 @@ export const tOfcErc20Coins = [
 
   ofcerc20('faddfbec-becf-4f9f-8f8b-9daebfcadbec', 'ofcbaseeth:towns', 'Towns', 18, UnderlyingAsset['baseeth:towns']),
 
+  ofcerc20(
+    '088adddd-d75d-416f-94f0-05b686ffc424',
+    'ofcbaseeth:brlv',
+    'BRL Velocity',
+    18,
+    UnderlyingAsset['baseeth:brlv']
+  ),
+  ofcerc20(
+    '72d1eb99-3882-42db-abdd-c3a02f3829b4',
+    'ofcbaseeth:wbrly',
+    'Wrapped BRLY',
+    24,
+    UnderlyingAsset['baseeth:wbrly']
+  ),
+
   ofcerc20('abeefced-cfda-4afa-8f9c-aebfcadbecfd', 'ofceth:align', 'Aligned', 18, UnderlyingAsset['eth:align']),
 
   ofcerc20('bcfffdee-daeb-4bfb-9fad-bfcadbecfdae', 'ofceth:xan', 'Anoma', 18, UnderlyingAsset['eth:xan']),
