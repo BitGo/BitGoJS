@@ -2,6 +2,7 @@ import * as assert from 'assert';
 
 import {
   addXpubsToPsbt,
+  clonePsbtWithoutNonWitnessUtxo,
   getPsbtInputSignatureCount,
   getSignatureValidationArrayPsbt,
   getStrictSignatureCount,
@@ -96,7 +97,17 @@ function getFixturePsbtOutputs(psbt: UtxoPsbt) {
   return psbt.data.outputs.map((output: PsbtOutput) => toFixture(output));
 }
 
-function runPsbt(network: Network, sign: SignatureTargetType, inputs: TestUtilInput[], outputs: TestUtilOutput[]) {
+function runPsbt(
+  network: Network,
+  sign: SignatureTargetType,
+  inputs: TestUtilInput[],
+  outputs: TestUtilOutput[],
+  {
+    txFormat,
+  }: {
+    txFormat?: 'psbt' | 'psbt-lite';
+  }
+) {
   const coin = getNetworkName(network);
   const signatureCount = signCount(sign);
   const inputTypes = inputs.map((input) => input.scriptType);
@@ -118,6 +129,10 @@ function runPsbt(network: Network, sign: SignatureTargetType, inputs: TestUtilIn
           }
         });
       });
+
+      if (txFormat === 'psbt-lite') {
+        psbt = clonePsbtWithoutNonWitnessUtxo(psbt);
+      }
     });
 
     it('matches fixture', async function () {
@@ -129,7 +144,7 @@ function runPsbt(network: Network, sign: SignatureTargetType, inputs: TestUtilIn
         outputs: psbt.txOutputs.map((output) => toFixture(output)),
         psbtOutputs: getFixturePsbtOutputs(psbt),
       };
-      const filename = [`psbt`, coin, sign, 'json'].join('.');
+      const filename = [txFormat, coin, sign, 'json'].join('.');
       assert.deepStrictEqual(fixture, await getFixture(`${__dirname}/../fixtures/psbt/${filename}`, fixture));
     });
 
@@ -227,7 +242,8 @@ signs.forEach((sign) => {
         isSupportedScriptType(network, input.scriptType === 'taprootKeyPathSpend' ? 'p2trMusig2' : input.scriptType)
       );
       const supportedPsbtOutputs = psbtOutputs.filter((output) => isSupportedScriptType(network, output.scriptType));
-      runPsbt(network, sign, supportedPsbtInputs, supportedPsbtOutputs);
+      runPsbt(network, sign, supportedPsbtInputs, supportedPsbtOutputs, { txFormat: 'psbt' });
+      runPsbt(network, sign, supportedPsbtInputs, supportedPsbtOutputs, { txFormat: 'psbt-lite' });
 
       const supportedTxInputs = txInputs.filter((input) => isSupportedScriptType(network, input.scriptType));
       const supportedTxOutputs = txOutputs.filter((output) => isSupportedScriptType(network, output.scriptType));
