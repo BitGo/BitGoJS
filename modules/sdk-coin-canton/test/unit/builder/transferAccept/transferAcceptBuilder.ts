@@ -13,6 +13,7 @@ describe('Transfer Acceptance Builder', () => {
     const txBuilder = new TransferAcceptanceBuilder(coins.get('tcanton'));
     const transferAcceptanceTx = new Transaction(coins.get('tcanton'));
     txBuilder.initBuilder(transferAcceptanceTx);
+    txBuilder.setTransaction(TransferAcceptancePrepareResponse);
     const { commandId, contractId, partyId } = TransferAcceptance;
     txBuilder.commandId(commandId).contractId(contractId).actAs(partyId);
     const requestObj: CantonTransferAcceptRejectRequest = txBuilder.toRequestObject();

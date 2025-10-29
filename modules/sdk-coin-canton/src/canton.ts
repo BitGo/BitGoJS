@@ -13,12 +13,22 @@ import {
   TransactionType,
   TssVerifyAddressOptions,
   VerifyTransactionOptions,
+  TransactionExplanation as BaseTransactionExplanation,
+  BaseTransaction,
 } from '@bitgo/sdk-core';
 import { auditEddsaPrivateKey } from '@bitgo/sdk-lib-mpc';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import { TransactionBuilderFactory } from './lib';
 import { KeyPair as CantonKeyPair } from './lib/keyPair';
 import utils from './lib/utils';
+
+export interface TransactionExplanation extends BaseTransactionExplanation {
+  type: TransactionType;
+}
+
+export interface ExplainTransactionOptions {
+  txHex: string;
+}
 
 export class Canton extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -35,6 +45,10 @@ export class Canton extends BaseCoin {
 
   static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
     return new Canton(bitgo, staticsCoin);
+  }
+
+  private getBuilder(): TransactionBuilderFactory {
+    return new TransactionBuilderFactory(coins.get(this.getChain()));
   }
 
   /** @inheritDoc */
@@ -119,6 +133,20 @@ export class Canton extends BaseCoin {
       pub: keys.pub,
       prv: keys.prv,
     };
+  }
+
+  /** @inheritDoc */
+  explainTransaction(params: ExplainTransactionOptions): Promise<TransactionExplanation> {
+    const factory = this.getBuilder();
+    let rebuiltTransaction: BaseTransaction;
+    const txRaw = params.txHex;
+    try {
+      const txBuilder = factory.from(txRaw);
+      rebuiltTransaction = txBuilder.transaction;
+    } catch (e) {
+      throw new Error('Invalid transaction');
+    }
+    return rebuiltTransaction.explainTransaction();
   }
 
   /** @inheritDoc */
