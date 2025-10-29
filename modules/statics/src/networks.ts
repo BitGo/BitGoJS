@@ -545,9 +545,9 @@ class Celo extends Mainnet implements EthereumNetwork {
 class CeloTestnet extends Testnet implements EthereumNetwork {
   name = 'CeloTestnet';
   family = CoinFamily.CELO;
-  explorerUrl = 'https://alfajores-blockscout.celo-testnet.org/tx/';
-  accountExplorerUrl = 'https://alfajores-blockscout.celo-testnet.org/address/';
-  chainId = 44787;
+  explorerUrl = 'https://sepolia.celoscan.io/tx/';
+  accountExplorerUrl = 'https://sepolia.celoscan.io/address/';
+  chainId = 11142220;
   nativeCoinOperationHashPrefix = 'CELO';
   tokenOperationHashPrefix = 'CELO-ERC20';
 }

@@ -23,7 +23,7 @@ describe('An address initialization', () => {
       txJson.gasLimit.should.equal('12100000');
       txJson.gasPrice.should.equal('1000000000');
       should.equal(txJson.nonce, 2);
-      should.equal(txJson.chainId, 44787);
+      should.equal(txJson.chainId, 11142220);
       should.equal(txJson.from, testData.KEYPAIR_PRV.getAddress());
       should.equal(tx.toBroadcastFormat(), testData.TX_ADDRESS_INIT);
       should.equal(txJson.deployedAddress, '0x016e4eee27f3f355bbb78d0e5eb813c4761822c9');
