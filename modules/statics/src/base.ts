@@ -2825,6 +2825,8 @@ export enum UnderlyingAsset {
   'baseeth:avnt' = 'baseeth:avnt',
   'baseeth:mira' = 'baseeth:mira',
   'baseeth:towns' = 'baseeth:towns',
+  'baseeth:brlv' = 'baseeth:brlv',
+  'baseeth:wbrly' = 'baseeth:wbrly',
 
   // BaseETH testnet tokens
   'tbaseeth:usdc' = 'tbaseeth:usdc',
