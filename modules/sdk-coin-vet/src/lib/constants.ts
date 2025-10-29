@@ -1,10 +1,12 @@
 export const VET_TRANSACTION_ID_LENGTH = 64;
 export const VET_ADDRESS_LENGTH = 40;
 export const VET_BLOCK_ID_LENGTH = 64;
+export const ZERO_VALUE_AMOUNT = '0';
 
 export const TRANSFER_TOKEN_METHOD_ID = '0xa9059cbb';
 export const STAKING_METHOD_ID = '0xd8da3bbf';
 export const STAKE_CLAUSE_METHOD_ID = '0x604f2177';
+export const DELEGATE_CLAUSE_METHOD_ID = '0x3207555d';
 export const EXIT_DELEGATION_METHOD_ID = '0x69e79b7d';
 export const BURN_NFT_METHOD_ID = '0x2e17de78';
 export const TRANSFER_NFT_METHOD_ID = '0x23b872dd';
