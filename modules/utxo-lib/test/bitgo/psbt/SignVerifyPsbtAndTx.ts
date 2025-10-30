@@ -31,6 +31,11 @@ import {
 } from '../../../src/testutil';
 import { getNetworkList, getNetworkName, isMainnet, Network, networks } from '../../../src';
 import { isSupportedScriptType } from '../../../src/bitgo/outputScripts';
+import {
+  parsePsbtMusig2Nonces,
+  parsePsbtMusig2PartialSigs,
+  parsePsbtMusig2Participants,
+} from '../../../src/bitgo/Musig2';
 import { SignatureTargetType } from './Psbt';
 import { getFixture } from '../../fixture.util';
 
@@ -89,7 +94,13 @@ function getFixturePsbtInputs(psbt: UtxoPsbt, inputs: TestUtilInput[]) {
     throw new Error('inputs length mismatch');
   }
   return psbt.data.inputs.map((input: PsbtInput, index: number) =>
-    toFixture({ type: inputs[index].scriptType, ...input })
+    toFixture({
+      type: inputs[index].scriptType,
+      ...input,
+      musig2Participants: parsePsbtMusig2Participants(input),
+      musig2Nonces: parsePsbtMusig2Nonces(input),
+      musig2PartialSigs: parsePsbtMusig2PartialSigs(input),
+    })
   );
 }
 
