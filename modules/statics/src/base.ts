@@ -2289,6 +2289,11 @@ export enum UnderlyingAsset {
   'eth:anon' = 'eth:anon',
   'eth:omi' = 'eth:omi',
   'eth:andy' = 'eth:andy',
+  'eth:aioz' = 'eth:aioz',
+  'eth:job' = 'eth:job',
+  'eth:irys' = 'eth:irys',
+  'eth:kpk' = 'eth:kpk',
+  'eth:devve' = 'eth:devve',
 
   'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ' = 'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ',
   'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M' = 'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M',
@@ -2561,6 +2566,7 @@ export enum UnderlyingAsset {
   'polygon:txusd' = 'polygon:txusd',
   'polygon:zig' = 'polygon:zig',
   'polygon:brl1' = 'polygon:brl1',
+  'polygon:cnkt+' = 'polygon:cnkt+',
   // Polygon NFTs
   // generic NFTs
   'erc721:polygontoken' = 'erc721:polygontoken',
@@ -2722,6 +2728,7 @@ export enum UnderlyingAsset {
   'bsc:pln' = 'bsc:pln',
   'bsc:ff' = 'bsc:ff',
   'bsc:c98' = 'bsc:c98',
+  'bsc:ln' = 'bsc:ln',
 
   // BSC NFTs
   // generic NFTs
@@ -2827,6 +2834,7 @@ export enum UnderlyingAsset {
   'baseeth:towns' = 'baseeth:towns',
   'baseeth:brlv' = 'baseeth:brlv',
   'baseeth:wbrly' = 'baseeth:wbrly',
+  'baseeth:recall' = 'baseeth:recall',
 
   // BaseETH testnet tokens
   'tbaseeth:usdc' = 'tbaseeth:usdc',
@@ -3097,6 +3105,8 @@ export enum UnderlyingAsset {
   'sol:xsgd' = 'sol:xsgd',
   'sol:straitxusd' = 'sol:straitxusd',
   'sol:usx' = 'sol:usx',
+  'sol:rksol' = 'sol:rksol',
+  'sol:usda1' = 'sol:usda1',
 
   'tsol:txsgd' = 'sol:txsgd',
   'tsol:txusd' = 'sol:txusd',

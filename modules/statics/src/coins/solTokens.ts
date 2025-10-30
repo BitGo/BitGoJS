@@ -2918,6 +2918,26 @@ export const solTokens = [
     [...SOL_TOKEN_FEATURES, CoinFeature.STABLECOIN]
   ),
   solToken(
+    '1477933f-cda3-469a-8da6-c80e701ffc99',
+    'sol:rksol',
+    'Starke Staked SOL',
+    9,
+    'EPCz5LK372vmvCkZH3HgSuGNKACJJwwxsofW6fypCPZL',
+    'EPCz5LK372vmvCkZH3HgSuGNKACJJwwxsofW6fypCPZL',
+    UnderlyingAsset['sol:rksol'],
+    [...SOL_TOKEN_FEATURES]
+  ),
+  solToken(
+    '092ca0c5-7579-45bb-8def-12df9ff12fa7',
+    'sol:usda1',
+    'ANDX USD',
+    9,
+    '6PvZ7FShNSrSiZ1byAjgB1zG1d8KLe7EZRUn4uwdiVgJ',
+    '6PvZ7FShNSrSiZ1byAjgB1zG1d8KLe7EZRUn4uwdiVgJ',
+    UnderlyingAsset['sol:usda1'],
+    [...SOL_TOKEN_FEATURES]
+  ),
+  solToken(
     'c1890b01-02d5-456c-8aab-f9ba2a46496b',
     'sol:dupe',
     'Dupe',

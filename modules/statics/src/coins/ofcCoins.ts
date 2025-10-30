@@ -1077,6 +1077,17 @@ export const ofcCoins = [
     CoinFeature.STABLECOIN,
   ]),
   ofcsolToken(
+    'e343b3c2-dcbb-4a9f-a60e-3dd79825c5fb',
+    'ofcsol:rksol',
+    'Starke Staked SOL',
+    9,
+    UnderlyingAsset['sol:rksol'],
+    [...SOL_TOKEN_FEATURES]
+  ),
+  ofcsolToken('aac718d6-1cc1-411e-8a48-112d221e7c4d', 'ofcsol:usda1', 'ANDX USD', 9, UnderlyingAsset['sol:usda1'], [
+    ...SOL_TOKEN_FEATURES,
+  ]),
+  ofcsolToken(
     'b08c09fd-73fb-4b7f-8377-72225cd8c256',
     'ofcsol:dupe',
     'Dupe',
@@ -1905,6 +1916,7 @@ export const ofcCoins = [
   ),
   ofcBscToken('4b2e7c6a-9d8f-3f1e-8a2f-5c6d9e7b1a3f', 'ofcbsc:bnx', 'BinaryX', 18, UnderlyingAsset['bsc:bnx']),
   ofcBscToken('3f1e9d8f-7c6a-2e4b-8a5f-1b2e6c7a9d6f', 'ofcbsc:bake', 'BakeryToken', 18, UnderlyingAsset['bsc:bake']),
+  ofcBscToken('1a586a4a-db62-4a2b-8a46-0af0c912ca00', 'ofcbsc:ln', 'LnfiOFT', 6, UnderlyingAsset['bsc:ln']),
   ofcBscToken(
     '8a7d9f6c-5e4b-1f2a-8f7c-9d6a8e2b1c5f',
     'ofcbsc:busd',
@@ -2385,6 +2397,13 @@ export const ofcCoins = [
     'Coinnekt',
     18,
     UnderlyingAsset['polygon:cnkt']
+  ),
+  ofcPolygonErc20(
+    'b35bbebf-a200-4bc8-8a46-c8feb9e08aba',
+    'ofcpolygon:cnkt+',
+    'Coinnekt+',
+    18,
+    UnderlyingAsset['polygon:cnkt+']
   ),
   ofcPolygonErc20(
     'a63bf18b-3462-403c-93f5-ff1b608622c2',
