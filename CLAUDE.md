@@ -70,6 +70,9 @@ yarn compile-dbg
 ### Commits
 BitGoJS uses conventional commits. All commits MUST pass the spec described in `commitlint.config.js`.
 
+### TypeScript Guidelines
+- **Avoid `any` type**: Use specific types, interfaces, or union types instead of `any`. If absolutely necessary, prefer `unknown` and use type guards for safety.
+
 ## Code Architecture
 
 BitGoJS is a monorepo composed of multiple modules, each implementing specific functionality:
