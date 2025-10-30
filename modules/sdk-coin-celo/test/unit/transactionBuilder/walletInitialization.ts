@@ -31,7 +31,7 @@ describe('Celo Transaction builder for wallet initialization', () => {
       txJson.gasLimit.should.equal('12100000');
       txJson.gasPrice.should.equal('1000000000');
       should.equal(txJson.nonce, 2);
-      should.equal(txJson.chainId, 44787);
+      should.equal(txJson.chainId, 11142220);
       should.equal(tx.toBroadcastFormat(), testData.TX_BROADCAST);
       should.equal(txJson.from, testData.KEYPAIR_PRV.getAddress());
     });
@@ -47,7 +47,7 @@ describe('Celo Transaction builder for wallet initialization', () => {
       txJson.gasLimit.should.equal('12100000');
       txJson.gasPrice.should.equal('1000000000');
       should.equal(txJson.nonce, 0);
-      should.equal(txJson.chainId, 44787);
+      should.equal(txJson.chainId, 11142220);
       should.equal(txJson.from, testData.KEYPAIR_PRV.getAddress());
     });
 
@@ -60,9 +60,9 @@ describe('Celo Transaction builder for wallet initialization', () => {
       txJson.gasLimit.should.equal('12100000');
       txJson.gasPrice.should.equal('1000000000');
       should.equal(txJson.nonce, 0);
-      should.equal(txJson.chainId, 44787);
+      should.equal(txJson.chainId, 11142220);
       // Celo has disable final v and it has chain id as v value.
-      should.equal(txJson.v, 0x015e09);
+      should.equal(txJson.v, 0x015408bb);
     });
 
     it('an init transaction from an unsigned serialized one', async () => {
@@ -75,7 +75,7 @@ describe('Celo Transaction builder for wallet initialization', () => {
       newTxBuilder.from(serialized);
       newTxBuilder.sign({ key: testData.KEYPAIR_PRV.getKeys().prv });
       const signedTx = await newTxBuilder.build();
-      should.equal(signedTx.toJson().chainId, 44787);
+      should.equal(signedTx.toJson().chainId, 11142220);
       should.equal(signedTx.toBroadcastFormat(), testData.TX_BROADCAST);
     });
 
@@ -90,7 +90,7 @@ describe('Celo Transaction builder for wallet initialization', () => {
       const newTxBuilder = getBuilder('tcelo') as TransactionBuilder;
       newTxBuilder.from(testData.TEST_WALLET_CREATION);
       const newTx = await newTxBuilder.build();
-      should.equal(newTx.toJson().id, '0x3b6cdb03cc92aae90ae067ec71e27f17ff879e9c6499ab682212bab367628a9c');
+      should.equal(newTx.toJson().id, '0xbfb1de15a69c20c1467fa9708a8ac71e15e3a162618f865067b541b2db03f894');
     });
   });
 

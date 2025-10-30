@@ -308,7 +308,7 @@ describe('Send transaction', function () {
         .key(key);
       const tx = await txBuilder.build();
       const txJson = tx.toJson();
-      should.equal(txJson.v, '0x015e09');
+      should.equal(txJson.v, '0x015408bb');
     });
   });
 
