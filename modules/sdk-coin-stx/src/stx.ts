@@ -115,10 +115,11 @@ export class Stx extends BaseCoin {
    * @param {String} params.baseAddress - the base address from the wallet
    */
   async isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
-    const { address, keychains } = params;
-    if (!keychains || keychains.length !== 3) {
-      throw new Error('Invalid keychains');
+    const { address, keychains: unvalidatedKeychains } = params;
+    if (!unvalidatedKeychains || unvalidatedKeychains.length !== 3 || !unvalidatedKeychains.every((kc) => !!kc.pub)) {
+      throw new Error('missing required param keychains or public key');
     }
+    const keychains = unvalidatedKeychains as { pub: string }[];
     const pubs = keychains.map((keychain) => StxLib.Utils.xpubToSTXPubkey(keychain.pub));
     const addressVersion = StxLib.Utils.getAddressVersion(address);
     const baseAddress = StxLib.Utils.getSTXAddressFromPubKeys(pubs, addressVersion).address;
