@@ -23,6 +23,7 @@ import {
   UtxoTransaction,
   WalletUnspent,
   ChainCode,
+  getProprietaryKeyValuesFromUnknownKeyValues,
 } from '../../../src/bitgo';
 import {
   createKeyPathP2trMusig2,
@@ -157,7 +158,7 @@ export function validateNoncesKeyVals(
   index: number,
   unspent: WalletUnspent<bigint>
 ): void {
-  const keyVals = psbt.getProprietaryKeyVals(index);
+  const keyVals = getProprietaryKeyValuesFromUnknownKeyValues(psbt.data.inputs[index]);
   const walletKeys = rootWalletKeys.deriveForChainAndIndex(unspent.chain, unspent.index);
   const { outputPubkey } = createKeyPathP2trMusig2(walletKeys.publicKeys);
   const participantPubKeys = [walletKeys.user.publicKey, walletKeys.bitgo.publicKey];
@@ -184,7 +185,7 @@ export function validatePartialSigKeyVals(
   index: number,
   unspent: WalletUnspent<bigint>
 ): void {
-  const keyVals = psbt.getProprietaryKeyVals(index);
+  const keyVals = getProprietaryKeyValuesFromUnknownKeyValues(psbt.data.inputs[index]);
   const inputWalletKeys = rootWalletKeys.deriveForChainAndIndex(unspent.chain, unspent.index);
   const { outputPubkey } = createKeyPathP2trMusig2(inputWalletKeys.publicKeys);
   const participantPubKeys = [inputWalletKeys.user.publicKey, inputWalletKeys.bitgo.publicKey];
@@ -211,7 +212,7 @@ export function validateParticipantsKeyVals(
   index: number,
   unspent: WalletUnspent<bigint>
 ): void {
-  const keyVals = psbt.getProprietaryKeyVals(index);
+  const keyVals = getProprietaryKeyValuesFromUnknownKeyValues(psbt.data.inputs[index]);
   const walletKeys = rootWalletKeys.deriveForChainAndIndex(unspent.chain, unspent.index);
   const { internalPubkey, outputPubkey } = createKeyPathP2trMusig2(walletKeys.publicKeys);
   const participantPubKeys = [walletKeys.user.publicKey, walletKeys.bitgo.publicKey];
