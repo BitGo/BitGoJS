@@ -85,7 +85,7 @@ import {
   GetTransactionOptions,
   GetTransferOptions,
   GetUserPrvOptions,
-  IWallet,
+  type IWallet,
   ManageUnspentReservationOptions,
   MaximumSpendable,
   MaximumSpendableOptions,
@@ -1953,6 +1953,9 @@ export class Wallet implements IWallet {
    * - txPrebuild
    * - [keychain / key] (object) or prv (string)
    * - walletPassphrase
+   * - verifyTxParams (optional) - when provided, the transaction will be verified before signing
+   *   - txParams: transaction parameters used for verification
+   *   - verification: optional verification options
    * @return {*}
    */
   async signTransaction(params: WalletSignTransactionOptions = {}): Promise<SignedTransaction | TxRequest> {
@@ -1995,6 +1998,20 @@ export class Wallet implements IWallet {
       }
       // We only do this if we're not using the external signer TSS flow
       params.txPrebuild = { txRequestId };
+    }
+
+    // Verify transaction if verifyTxParams is provided
+    if (params.verifyTxParams && txPrebuild?.txHex) {
+      const verifyParams = {
+        txPrebuild: { ...txPrebuild },
+        txParams: params.verifyTxParams.txParams,
+        wallet: this as IWallet,
+        verification: params.verifyTxParams.verification,
+        reqId: params.reqId,
+        walletType: this.multisigType() as 'onchain' | 'tss',
+      };
+
+      await this.baseCoin.verifyTransaction(verifyParams);
     }
 
     if (
