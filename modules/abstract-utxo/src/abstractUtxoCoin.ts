@@ -706,17 +706,23 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       throw new InvalidAddressError(`invalid address: ${address}`);
     }
 
+    if (!keychains || !keychains.every((kc) => !!kc.pub)) {
+      throw new Error('missing required param keychains or public key');
+    }
+
     if (wallet && isDescriptorWallet(wallet)) {
-      if (!keychains) {
-        throw new Error('missing required param keychains');
-      }
       if (!isTriple(keychains)) {
         throw new Error('keychains must be a triple');
       }
+
       assertDescriptorWalletAddress(
         this.network,
         params,
-        getDescriptorMapFromWallet(wallet, toBip32Triple(keychains), getPolicyForEnv(this.bitgo.env))
+        getDescriptorMapFromWallet(
+          wallet,
+          toBip32Triple(keychains as Triple<{ pub: string }>),
+          getPolicyForEnv(this.bitgo.env)
+        )
       );
       return true;
     }
@@ -727,13 +733,9 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       );
     }
 
-    if (!keychains) {
-      throw new Error('missing required param keychains');
-    }
-
     assertFixedScriptWalletAddress(this.network, {
       address,
-      keychains,
+      keychains: keychains as { pub: string }[],
       format: params.format ?? 'base58',
       addressType: params.addressType,
       chain,
