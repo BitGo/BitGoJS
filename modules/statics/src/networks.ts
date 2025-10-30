@@ -2022,13 +2022,13 @@ class PlumeTestnet extends Testnet implements EthereumNetwork {
 class Canton extends Mainnet implements BaseNetwork {
   name = 'Canton';
   family = CoinFamily.CANTON;
-  explorerUrl = 'https://ccview.io/transfers/';
+  explorerUrl = 'https://ccview.io/updates/';
 }
 
 class CantonTestnet extends Testnet implements BaseNetwork {
   name = 'CantonTestnet';
   family = CoinFamily.CANTON;
-  explorerUrl = 'https://devnet.ccview.io/transfers/';
+  explorerUrl = 'https://devnet.ccview.io/updates/';
 }
 
 export const Networks = {
