@@ -3499,6 +3499,30 @@ export class Wallet implements IWallet {
           params.preview
         );
         break;
+      case 'transferAccept': {
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: 'transferAccept',
+            txRequestId: params.txRequestId,
+          },
+          apiVersion,
+          params.preview
+        );
+        break;
+      }
+      case 'transferReject': {
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: 'transferReject',
+            txRequestId: params.txRequestId,
+          },
+          apiVersion,
+          params.preview
+        );
+        break;
+      }
       case 'customTx':
         txRequest = await this.tssUtils!.prebuildTxWithIntent(
           {
