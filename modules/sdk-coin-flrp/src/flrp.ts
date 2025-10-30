@@ -199,14 +199,15 @@ export class Flrp extends BaseCoin {
    * @param params.keychains public keys to generate the wallet
    */
   async isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
-    const { address, keychains } = params;
+    const { address, keychains: unvalidatedKeychains } = params;
 
     if (!this.isValidAddress(address)) {
       throw new InvalidAddressError(`invalid address: ${address}`);
     }
-    if (!keychains || keychains.length !== 3) {
-      throw new Error('Invalid keychains');
+    if (!unvalidatedKeychains || unvalidatedKeychains.length !== 3 || !unvalidatedKeychains.every((kc) => !!kc.pub)) {
+      throw new Error('missing required param keychains or public key');
     }
+    const keychains = unvalidatedKeychains as { pub: string }[];
 
     // multisig addresses are separated by ~
     const splitAddresses = address.split('~');
