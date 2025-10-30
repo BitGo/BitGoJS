@@ -137,7 +137,21 @@ export abstract class MpcUtils {
       );
     }
 
-    if (!['acceleration', 'fillNonce', 'transferToken', 'tokenApproval', 'customTx'].includes(params.intentType)) {
+    if (['transferAccept', 'transferReject'].includes(params.intentType) && baseCoin.getFamily() === 'canton') {
+      assert(params.txRequestId, `'txRequestId' is required parameter for ${params.intentType} intent`);
+    }
+
+    if (
+      ![
+        'acceleration',
+        'fillNonce',
+        'transferToken',
+        'tokenApproval',
+        'customTx',
+        'transferAccept',
+        'transferReject',
+      ].includes(params.intentType)
+    ) {
       assert(params.recipients, `'recipients' is a required parameter for ${params.intentType} intent`);
     }
     const intentRecipients = params.recipients?.map((recipient) => {

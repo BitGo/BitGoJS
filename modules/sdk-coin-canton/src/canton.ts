@@ -15,6 +15,8 @@ import {
   VerifyTransactionOptions,
   TransactionExplanation as BaseTransactionExplanation,
   BaseTransaction,
+  PopulatedIntent,
+  PrebuildTransactionWithIntentOptions,
 } from '@bitgo/sdk-core';
 import { auditEddsaPrivateKey } from '@bitgo/sdk-lib-mpc';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
@@ -172,5 +174,12 @@ export class Canton extends BaseCoin {
       throw new Error('Unsupported multiSigType');
     }
     auditEddsaPrivateKey(prv, publicKey ?? '');
+  }
+
+  /** @inheritDoc */
+  setCoinSpecificFieldsInIntent(intent: PopulatedIntent, params: PrebuildTransactionWithIntentOptions): void {
+    if (params.txRequestId) {
+      intent.txRequestId = params.txRequestId;
+    }
   }
 }

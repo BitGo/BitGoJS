@@ -215,6 +215,7 @@ export interface PrebuildTransactionOptions {
     functionArguments?: any[];
     abi?: any;
   };
+  txRequestId?: string;
 }
 
 export interface PrebuildAndSignTransactionOptions extends PrebuildTransactionOptions, WalletSignTransactionOptions {
