@@ -136,15 +136,18 @@ function runPsbt(
     });
 
     it('matches fixture', async function () {
+      let finalizedPsbt: UtxoPsbt | undefined;
       let extractedTransaction: Buffer | undefined;
       if (sign === 'fullsigned') {
-        extractedTransaction = psbt.clone().finalizeAllInputs().extractTransaction().toBuffer();
+        finalizedPsbt = psbt.clone().finalizeAllInputs();
+        extractedTransaction = finalizedPsbt.extractTransaction().toBuffer();
       }
       const fixture = {
         walletKeys: rootWalletKeys.triple.map((xpub) => xpub.toBase58()),
         psbtBase64: psbt.toBase64(),
         inputs: psbt.txInputs.map((input) => toFixture(input)),
         psbtInputs: getFixturePsbtInputs(psbt, inputs),
+        psbtInputsFinalized: finalizedPsbt ? getFixturePsbtInputs(finalizedPsbt, inputs) : null,
         outputs: psbt.txOutputs.map((output) => toFixture(output)),
         psbtOutputs: getFixturePsbtOutputs(psbt),
         extractedTransaction: extractedTransaction ? toFixture(extractedTransaction) : null,
