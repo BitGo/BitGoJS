@@ -555,7 +555,7 @@ export class Algo extends BaseCoin {
   async isWalletAddress(params: VerifyAlgoAddressOptions): Promise<boolean> {
     const {
       address,
-      keychains,
+      keychains: unvalidatedKeychains,
       coinSpecific: { bitgoPubKey },
     } = params;
 
@@ -563,9 +563,10 @@ export class Algo extends BaseCoin {
       throw new InvalidAddressError(`invalid address: ${address}`);
     }
 
-    if (!keychains) {
-      throw new Error('missing required param keychains');
+    if (!unvalidatedKeychains || !unvalidatedKeychains.every((kc) => !!kc.pub)) {
+      throw new Error('missing required param keychains or public key');
     }
+    const keychains = unvalidatedKeychains as { pub: string }[];
 
     const effectiveKeychain = bitgoPubKey ? keychains.slice(0, -1).concat([{ pub: bitgoPubKey }]) : keychains;
     const pubKeys = effectiveKeychain.map((key) => this.stellarAddressToAlgoAddress(key.pub));
