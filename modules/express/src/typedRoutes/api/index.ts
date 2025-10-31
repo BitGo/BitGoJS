@@ -27,6 +27,7 @@ import { PostCreateAddress } from './v2/createAddress';
 import { PutFanoutUnspents } from './v1/fanoutUnspents';
 import { PostOfcSignPayload } from './v2/ofcSignPayload';
 import { PostWalletRecoverToken } from './v2/walletRecoverToken';
+import { PostGenerateWallet } from './v2/generateWallet';
 import { PostCoinSignTx } from './v2/coinSignTx';
 import { PostWalletSignTx } from './v2/walletSignTx';
 import { PostWalletTxSignTSS } from './v2/walletTxSignTSS';
@@ -206,6 +207,9 @@ export const ExpressOfcSignPayloadApiSpec = apiSpec({
   },
   'express.wallet.update': {
     put: PutExpressWalletUpdate,
+  },
+  'express.wallet.generate': {
+    post: PostGenerateWallet,
   },
 });
 
