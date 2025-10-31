@@ -1,4 +1,3 @@
-import { Transaction } from './transaction';
 import {
   AccountAddress,
   EntryFunctionABI,
@@ -13,15 +12,16 @@ import {
 import { InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import {
-  FUNGIBLE_ASSET_TYPE_ARGUMENT,
-  FUNGIBLE_ASSET_TRANSFER_FUNCTION,
-  FUNGIBLE_ASSET_BATCH_TRANSFER_FUNCTION,
-  FUNBIGLE_ASSET_TYPE_TAG,
   BATCH_FUNGIBLE_ASSET_TYPE_TAG,
+  FUNBIGLE_ASSET_TYPE_TAG,
+  FUNGIBLE_ASSET_BATCH_TRANSFER_FUNCTION,
+  FUNGIBLE_ASSET_TRANSFER_FUNCTION,
+  FUNGIBLE_ASSET_TYPE_ARGUMENT,
 } from '../constants';
 import utils from '../utils';
+import { AbstractTransferTransaction } from './abstractTransferTransaction';
 
-export class FungibleAssetTransfer extends Transaction {
+export class FungibleAssetTransfer extends AbstractTransferTransaction {
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
     this._type = TransactionType.SendToken;

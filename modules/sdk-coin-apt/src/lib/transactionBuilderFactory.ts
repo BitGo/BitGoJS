@@ -14,6 +14,10 @@ import { CustomTransaction } from './transaction/customTransaction';
 import { CustomTransactionBuilder } from './transactionBuilder/customTransactionBuilder';
 import { DelegationPoolAddStakeTransaction } from './transaction/delegationPoolAddStakeTransaction';
 import { DelegationPoolAddStakeTransactionBuilder } from './transactionBuilder/delegationPoolAddStakeTransactionBuilder';
+import { DelegationPoolUnlockTransaction } from './transaction/delegationPoolUnlockTransaction';
+import { DelegationPoolWithdrawTransactionBuilder } from './transactionBuilder/delegationPoolWithdrawTransactionBuilder';
+import { DelegationPoolUnlockTransactionBuilder } from './transactionBuilder/delegationPoolUnlockTransactionBuilder';
+import { DelegationPoolWithdrawTransaction } from './transaction/delegationPoolWithdrawTransaction';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -43,6 +47,14 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           const delegateTx = new DelegationPoolAddStakeTransaction(this._coinConfig);
           delegateTx.fromDeserializedSignedTransaction(signedTxn);
           return this.getDelegationPoolAddStakeTransactionBuilder(delegateTx);
+        case TransactionType.StakingUnlock:
+          const unlockTx = new DelegationPoolUnlockTransaction(this._coinConfig);
+          unlockTx.fromDeserializedSignedTransaction(signedTxn);
+          return this.getDelegationPoolUnlockTransactionBuilder(unlockTx);
+        case TransactionType.StakingWithdraw:
+          const withdrawTx = new DelegationPoolWithdrawTransaction(this._coinConfig);
+          withdrawTx.fromDeserializedSignedTransaction(signedTxn);
+          return this.getDelegationPoolWithdrawTransactionBuilder(withdrawTx);
         case TransactionType.CustomTx:
           const customTx = new CustomTransaction(this._coinConfig);
           if (abi) {
@@ -80,6 +92,14 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getDelegationPoolAddStakeTransactionBuilder(tx?: Transaction): DelegationPoolAddStakeTransactionBuilder {
     return this.initializeBuilder(tx, new DelegationPoolAddStakeTransactionBuilder(this._coinConfig));
+  }
+
+  getDelegationPoolUnlockTransactionBuilder(tx?: Transaction): DelegationPoolUnlockTransactionBuilder {
+    return this.initializeBuilder(tx, new DelegationPoolUnlockTransactionBuilder(this._coinConfig));
+  }
+
+  getDelegationPoolWithdrawTransactionBuilder(tx?: Transaction): DelegationPoolWithdrawTransactionBuilder {
+    return this.initializeBuilder(tx, new DelegationPoolWithdrawTransactionBuilder(this._coinConfig));
   }
 
   /**

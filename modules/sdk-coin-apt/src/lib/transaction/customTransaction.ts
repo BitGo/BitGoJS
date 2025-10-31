@@ -1,31 +1,31 @@
-import { Transaction } from './transaction';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import {
   AccountAddress,
   EntryFunctionABI,
   EntryFunctionArgumentTypes,
-  SimpleEntryFunctionArgumentTypes,
   InputGenerateTransactionPayloadData,
+  SimpleEntryFunctionArgumentTypes,
   TransactionPayload,
   TransactionPayloadEntryFunction,
   TypeTagAddress,
   TypeTagBool,
-  TypeTagU8,
+  TypeTagU128,
   TypeTagU16,
+  TypeTagU256,
   TypeTagU32,
   TypeTagU64,
-  TypeTagU128,
-  TypeTagU256,
+  TypeTagU8,
 } from '@aptos-labs/ts-sdk';
+import { InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { CustomTransactionParams } from '../iface';
-import { validateModuleName, validateFunctionName } from '../utils/validation';
 import utils from '../utils';
+import { validateFunctionName, validateModuleName } from '../utils/validation';
+import { AbstractTransferTransaction } from './abstractTransferTransaction';
 
 /**
  * Transaction class for custom Aptos transactions.
  */
-export class CustomTransaction extends Transaction {
+export class CustomTransaction extends AbstractTransferTransaction {
   private _moduleName: string;
   private _functionName: string;
   private _typeArguments: string[] = [];

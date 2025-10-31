@@ -2,18 +2,18 @@ import { MoveFunctionId } from '@aptos-labs/ts-sdk';
 import { TransactionType } from '@bitgo/sdk-core';
 
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { DELEGATION_POOL_ADD_STAKE_FUNCTION } from '../constants';
+import { DELEGATION_POOL_WITHDRAW_FUNCTION } from '../constants';
 import { AbstractDelegationPoolAmountBasedTransaction } from './abstractDelegationPoolAmountBasedTransaction';
 import { InputsAndOutputs } from './transaction';
 
-export class DelegationPoolAddStakeTransaction extends AbstractDelegationPoolAmountBasedTransaction {
+export class DelegationPoolWithdrawTransaction extends AbstractDelegationPoolAmountBasedTransaction {
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
-    this._type = TransactionType.StakingDelegate;
+    this._type = TransactionType.StakingWithdraw;
   }
 
   override moveFunctionId(): MoveFunctionId {
-    return DELEGATION_POOL_ADD_STAKE_FUNCTION;
+    return DELEGATION_POOL_WITHDRAW_FUNCTION;
   }
 
   override inputsAndOutputs(): InputsAndOutputs {
@@ -24,24 +24,19 @@ export class DelegationPoolAddStakeTransaction extends AbstractDelegationPoolAmo
     return {
       inputs: [
         {
-          address: sender,
+          address: validatorAddress,
           value: amount,
           coin: this._coinConfig.name,
         },
       ],
       outputs: [
         {
-          address: validatorAddress,
+          address: sender,
           value: amount,
           coin: this._coinConfig.name,
         },
       ],
-      externalOutputs: [
-        {
-          address: validatorAddress,
-          amount: amount,
-        },
-      ],
+      externalOutputs: [],
     };
   }
 }

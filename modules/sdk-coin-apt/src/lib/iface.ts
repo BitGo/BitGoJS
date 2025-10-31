@@ -17,7 +17,7 @@ export interface TxData {
   id: string;
   sender: string;
   /** @deprecated - use `recipients`. */
-  recipient: TransactionRecipient;
+  recipient?: TransactionRecipient;
   recipients: TransactionRecipient[];
   sequenceNumber: number;
   maxGasAmount: number;
@@ -26,6 +26,14 @@ export interface TxData {
   expirationTime: number;
   feePayer: string;
   assetId: string;
+}
+
+/**
+ * The transaction data returned from the toJson() function of a delegation pool transaction
+ */
+export interface DelegationPoolTxData extends TxData {
+  validatorAddress: string | null;
+  amount: string | null;
 }
 
 export interface RecipientsValidationResult {

@@ -16,6 +16,8 @@ export const COIN_TRANSFER_FUNCTION = '0x1::aptos_account::transfer_coins';
 export const COIN_BATCH_TRANSFER_FUNCTION = '0x1::aptos_account::batch_transfer_coins';
 export const DIGITAL_ASSET_TRANSFER_FUNCTION = '0x1::object::transfer';
 export const DELEGATION_POOL_ADD_STAKE_FUNCTION = '0x1::delegation_pool::add_stake';
+export const DELEGATION_POOL_UNLOCK_FUNCTION = '0x1::delegation_pool::unlock';
+export const DELEGATION_POOL_WITHDRAW_FUNCTION = '0x1::delegation_pool::withdraw';
 
 export const APTOS_COIN = '0x1::aptos_coin::AptosCoin';
 export const FUNGIBLE_ASSET_TYPE_ARGUMENT = '0x1::fungible_asset::Metadata';
