@@ -4427,6 +4427,11 @@ export const tOfcErc20Coins = [
     18,
     underlyingAssetForSymbol('eth:banana')
   ),
+  ofcerc20('768025b4-e38d-435c-af69-799522cda202', 'ofceth:aioz', 'aioz', 18, UnderlyingAsset['eth:aioz']),
+  ofcerc20('63f1d5de-5729-4a71-ba6e-dcd7095c20da', 'ofceth:job', 'jobchain', 8, UnderlyingAsset['eth:job']),
+  ofcerc20('90169666-a3ee-4ff6-b447-0553a1a4cbb8', 'ofceth:irys', 'irys', 18, UnderlyingAsset['eth:irys']),
+  ofcerc20('42fc787e-bd51-4ba0-915f-14b7cdae1bf3', 'ofceth:kpk', 'kpk', 18, UnderlyingAsset['eth:kpk']),
+  ofcerc20('20e090cf-d2ca-404d-9e14-2f8795b9fed6', 'ofceth:devve', 'devve', 18, UnderlyingAsset['eth:devve']),
   ofcerc20('0d6a51be-34d0-4e91-b8a6-b79004c44bc3', 'ofceth:zkj', 'zkj', 18, underlyingAssetForSymbol('eth:zkj')),
   ofcerc20('42da0317-adf3-4645-99d5-e731ccc0070d', 'ofceth:spk', 'spk', 18, underlyingAssetForSymbol('eth:spk')),
   ofcerc20('4383dfcc-35b9-4754-aeda-120a36637cb9', 'ofceth:merl', 'merl', 18, underlyingAssetForSymbol('eth:merl')),
@@ -4491,6 +4496,14 @@ export const tOfcErc20Coins = [
   ),
 
   ofcerc20('faddfbec-becf-4f9f-8f8b-9daebfcadbec', 'ofcbaseeth:towns', 'Towns', 18, UnderlyingAsset['baseeth:towns']),
+
+  ofcerc20(
+    'f6bebafa-7934-4ca2-9195-1f4543c2ce0c',
+    'ofcbaseeth:recall',
+    'Recall',
+    18,
+    UnderlyingAsset['baseeth:recall']
+  ),
 
   ofcerc20(
     '088adddd-d75d-416f-94f0-05b686ffc424',

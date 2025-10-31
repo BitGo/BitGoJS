@@ -11900,6 +11900,46 @@ export const erc20Coins = [
     UnderlyingAsset['eth:red']
   ),
   erc20(
+    '49de3bf9-834b-487d-9f83-0bb22a345cba',
+    'eth:aioz',
+    'AIOZ Network',
+    18,
+    '0x626e8036deb333b408be468f951bdb42433cbf18',
+    UnderlyingAsset['eth:aioz']
+  ),
+  erc20(
+    '3b5398f9-9c76-4508-8e9a-bf114506025c',
+    'eth:job',
+    'Jobchain',
+    8,
+    '0xdfbc9050f5b01df53512dcc39b4f2b2bbacd517a',
+    UnderlyingAsset['eth:job']
+  ),
+  erc20(
+    '88be6052-9142-478a-b53b-173777a4c72b',
+    'eth:irys',
+    'IRYS',
+    18,
+    '0x50f41f589afaca2ef41fdf590fe7b90cd26dee64',
+    UnderlyingAsset['eth:irys']
+  ),
+  erc20(
+    'c738d87d-45f8-4380-8ed3-e88be175f29e',
+    'eth:kpk',
+    'KPK',
+    18,
+    '0xbf3f63d8ac133b16d7d50c015036b33219dd8d23',
+    UnderlyingAsset['eth:kpk']
+  ),
+  erc20(
+    'fadee72c-b4ca-4fb6-b985-4cf119dfa49f',
+    'eth:devve',
+    'DEVVE',
+    18,
+    '0x8248270620aa532e4d64316017be5e873e37cc09',
+    UnderlyingAsset['eth:devve']
+  ),
+  erc20(
     'facb8d7f-36f4-45f2-be14-b53895e641ad',
     'eth:dka',
     'dKargo',

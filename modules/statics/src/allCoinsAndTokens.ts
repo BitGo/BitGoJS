@@ -2508,6 +2508,15 @@ export const allCoinsAndTokens = [
     Networks.main.basechain
   ),
   erc20Token(
+    'ff85dedc-78b3-421a-823f-b570c0259dee',
+    'baseeth:recall',
+    'Recall',
+    18,
+    '0x1f16e03c1a5908818f47f6ee7bb16690b40d0671',
+    UnderlyingAsset['baseeth:recall'],
+    Networks.main.basechain
+  ),
+  erc20Token(
     'cc24757e-e2e4-4bfe-8102-834f1be55341',
     'baseeth:brlv',
     'BRL Velocity',

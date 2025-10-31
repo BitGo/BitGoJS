@@ -89,6 +89,15 @@ export const bscTokens = [
     BSC_TOKEN_FEATURES
   ),
   bscToken(
+    '376bf252-c91d-41b4-9db3-05be7765196a',
+    'bsc:ln',
+    'LnfiOFT',
+    6,
+    '0x6d2ebdf6d551d8408e7d896e9a1ec6f84806e193',
+    UnderlyingAsset['bsc:ln'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
     '9ea65fe0-f7e2-44a5-abec-ef663e74a883',
     'bsc:busd',
     'Binance USD Token',
