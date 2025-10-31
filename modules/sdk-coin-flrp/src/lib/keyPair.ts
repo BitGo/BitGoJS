@@ -14,8 +14,8 @@ import utils from './utils';
 
 const DEFAULT_SEED_SIZE_BYTES = 16;
 export enum addressFormat {
-  testnet = 'fuji',
-  mainnet = 'flr',
+  testnet = 'costwo',
+  mainnet = 'flare',
 }
 
 export class KeyPair extends Secp256k1ExtendedKeyPair {
@@ -50,6 +50,10 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
    * @param {string} prv A raw private key
    */
   recordKeysFromPrivateKey(prv: string): void {
+    if (prv.startsWith('PrivateKey-')) {
+      this.keyPair = ECPair.fromPrivateKey(Buffer.from(utils.cb58Decode(prv.split('-')[1])));
+      return;
+    }
     if (!utils.isValidPrivateKey(prv)) {
       throw new Error('Unsupported private key');
     }
@@ -98,7 +102,7 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
   /**
    * Get a Flare P-Chain public mainnet address
    *
-   * @param {string} format - flare hrp selector: Mainnet(flr) or Testnet(fuji)
+   * @param {string} format - flare hrp selector: Mainnet(flare) or Testnet(costwo)
    * @returns {string} The mainnet address derived from the public key
    */
   getAddress(format = 'mainnet'): string {
@@ -107,11 +111,11 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
   /**
    * Get a public address of public key.
    *
-   * @param {string} hrp - select Mainnet(flr) or Testnet(fuji) for the address
+   * @param {string} hrp - select Mainnet(flare) or Testnet(costwo) for the address
    * @returns {string} The address derived from the public key and hrp
    */
   getFlrPAddress(hrp: string): string {
-    const addressBuffer = Buffer.from(this.getAddressBuffer());
+    const addressBuffer: Buffer = Buffer.from(this.getAddressBuffer());
     return utils.addressToString(hrp, 'P', addressBuffer);
   }
 
