@@ -46,7 +46,7 @@ jobs:
           git checkout -b ${{ env.preid }}-$(git rev-parse --short HEAD)
           echo "email=${{ secrets.BETA_EMAIL }}" > .npmrc
           echo "@bitgo-beta:registry=https://registry.npmjs.org" >> .npmrc
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.BETA_TOKEN }}" >> .npmrc
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.BITGO_BETA_PUBLISH_TOKEN }}" >> .npmrc
           echo "//registry.npmjs.org/:always-auth=true" >> .npmrc
 
       - name: Prepare Release
