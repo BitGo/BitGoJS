@@ -6,6 +6,8 @@ import { TransactionPayload, TransactionPayloadEntryFunction } from '@aptos-labs
 import { DelegationPoolAddStakeTransaction } from '../transaction/delegationPoolAddStakeTransaction';
 
 export class DelegationPoolAddStakeTransactionBuilder extends TransactionBuilder {
+  protected override _transaction: DelegationPoolAddStakeTransaction;
+
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
     this.transaction = new DelegationPoolAddStakeTransaction(_coinConfig);
@@ -17,6 +19,12 @@ export class DelegationPoolAddStakeTransactionBuilder extends TransactionBuilder
 
   assetId(_assetId: string): TransactionBuilder {
     this.transaction.assetId = _assetId;
+    return this;
+  }
+
+  validator(validatorAddress: string, amount: string): TransactionBuilder {
+    this._transaction.validatorAddress = validatorAddress;
+    this._transaction.amount = amount;
     return this;
   }
 

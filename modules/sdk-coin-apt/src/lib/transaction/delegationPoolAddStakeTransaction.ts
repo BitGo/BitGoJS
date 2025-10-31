@@ -1,55 +1,47 @@
-import { Transaction } from './transaction';
-import { InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
-import {
-  AccountAddress,
-  EntryFunctionABI,
-  InputGenerateTransactionPayloadData,
-  TransactionPayload,
-  TransactionPayloadEntryFunction,
-  TypeTagAddress,
-  TypeTagU64,
-} from '@aptos-labs/ts-sdk';
+import { MoveFunctionId } from '@aptos-labs/ts-sdk';
+import { TransactionType } from '@bitgo/sdk-core';
 
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { APTOS_COIN, DELEGATION_POOL_ADD_STAKE_FUNCTION } from '../constants';
-import utils from '../utils';
+import { DELEGATION_POOL_ADD_STAKE_FUNCTION } from '../constants';
+import { AbstractDelegationPoolAmountBasedTransaction } from './abstractDelegationPoolAmountBasedTransaction';
+import { InputsAndOutputs } from './transaction';
 
-export class DelegationPoolAddStakeTransaction extends Transaction {
+export class DelegationPoolAddStakeTransaction extends AbstractDelegationPoolAmountBasedTransaction {
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
     this._type = TransactionType.StakingDelegate;
-    this._assetId = APTOS_COIN;
   }
 
-  protected parseTransactionPayload(payload: TransactionPayload): void {
-    if (!this.isValidPayload(payload)) {
-      throw new InvalidTransactionError('Invalid transaction payload');
-    }
-    const { entryFunction } = payload;
-    const addressArg = entryFunction.args[0];
-    const amountArg = entryFunction.args[1];
-    this.recipients = utils.parseRecipients(addressArg, amountArg);
+  override moveFunctionId(): MoveFunctionId {
+    return DELEGATION_POOL_ADD_STAKE_FUNCTION;
   }
 
-  protected getTransactionPayloadData(): InputGenerateTransactionPayloadData {
+  override inputsAndOutputs(): InputsAndOutputs {
+    const { sender, validatorAddress, amount } = this;
+    if (sender === undefined) throw new Error('sender is undefined');
+    if (validatorAddress === undefined) throw new Error('validatorAddress is undefined');
+    if (amount === undefined) throw new Error('amount is undefined');
     return {
-      function: DELEGATION_POOL_ADD_STAKE_FUNCTION,
-      typeArguments: [],
-      functionArguments: [AccountAddress.fromString(this.recipients[0].address), this.recipients[0].amount],
-      abi: this.abi,
+      inputs: [
+        {
+          address: sender,
+          value: amount,
+          coin: this._coinConfig.name,
+        },
+      ],
+      outputs: [
+        {
+          address: validatorAddress,
+          value: amount,
+          coin: this._coinConfig.name,
+        },
+      ],
+      externalOutputs: [
+        {
+          address: validatorAddress,
+          amount: amount,
+        },
+      ],
     };
   }
-
-  private isValidPayload(payload: TransactionPayload): payload is TransactionPayloadEntryFunction {
-    return (
-      payload instanceof TransactionPayloadEntryFunction &&
-      payload.entryFunction.args.length === 2 &&
-      payload.entryFunction.type_args.length === 0
-    );
-  }
-
-  private abi: EntryFunctionABI = {
-    typeParameters: [],
-    parameters: [new TypeTagAddress(), new TypeTagU64()],
-  };
 }

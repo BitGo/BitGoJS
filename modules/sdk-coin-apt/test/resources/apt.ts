@@ -83,12 +83,10 @@ export const digitalTokenRecipients: Recipient[] = [
   },
 ];
 
-export const delegationPoolAddStakeRecipients: Recipient[] = [
-  {
-    address: addresses.validAddresses[0],
-    amount: AMOUNT.toString(),
-  },
-];
+export const delegationPoolData = {
+  validatorAddress: addresses.validAddresses[0],
+  amount: AMOUNT.toString(),
+};
 
 export const invalidRecipients: Recipient[] = [
   {
