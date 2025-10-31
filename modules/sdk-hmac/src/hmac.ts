@@ -28,22 +28,23 @@ export function calculateHMAC(key: string | BinaryLike | KeyObject, message: str
  * @param statusCode Only set for HTTP responses, leave blank for requests
  * @param method request method
  * @param authVersion authentication version (2 or 3)
+ * @param useOriginalPath whether to use the original urlPath without parsing (default false)
  * @returns {string | Buffer}
  */
-export function calculateHMACSubject<T extends string | Buffer = string>({
-  urlPath,
-  text,
-  timestamp,
-  statusCode,
-  method,
-  authVersion,
-}: CalculateHmacSubjectOptions<T>): T {
+export function calculateHMACSubject<T extends string | Buffer = string>(
+  { urlPath, text, timestamp, statusCode, method, authVersion }: CalculateHmacSubjectOptions<T>,
+  useOriginalPath = false
+): T {
   /* Normalize legacy 'del' to 'delete' for backward compatibility */
   if (method === 'del') {
     method = 'delete';
   }
-  const urlDetails = urlLib.parse(urlPath);
-  const queryPath = urlDetails.query && urlDetails.query.length > 0 ? urlDetails.path : urlDetails.pathname;
+
+  let queryPath: string | null = urlPath;
+  if (!useOriginalPath) {
+    const urlDetails = urlLib.parse(urlPath);
+    queryPath = urlDetails.query && urlDetails.query.length > 0 ? urlDetails.path : urlDetails.pathname;
+  }
 
   let prefixedText: string;
   if (statusCode !== undefined && isFinite(statusCode) && Number.isInteger(statusCode)) {

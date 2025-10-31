@@ -61,6 +61,35 @@ describe('HMAC Utility Functions', () => {
       ).to.equal(expectedSubject);
     });
 
+    it('should calculate the correct subject for a request with a trailing ? when useOriginalPath is true', () => {
+      const expectedSubject = 'GET|1672531200000|3.0|/api/test?|body-content';
+      expect(
+        calculateHMACSubject(
+          {
+            urlPath: '/api/test?',
+            text: 'body-content',
+            timestamp: MOCK_TIMESTAMP,
+            method: 'get',
+            authVersion: 3,
+          },
+          true
+        )
+      ).to.equal(expectedSubject);
+    });
+
+    it('should calculate the correct subject for a request with a trailing ? when useOriginalPath is false', () => {
+      const expectedSubject = 'GET|1672531200000|3.0|/api/test|body-content';
+      expect(
+        calculateHMACSubject({
+          urlPath: '/api/test?',
+          text: 'body-content',
+          timestamp: MOCK_TIMESTAMP,
+          method: 'get',
+          authVersion: 3,
+        })
+      ).to.equal(expectedSubject);
+    });
+
     it('should include statusCode for a response', () => {
       const expectedSubject = 'GET|1672531200000|/api/test|200|response-body';
       expect(
