@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.7.0...@bitgo/sdk-coin-canton@1.8.0) (2025-10-31)
+
+
+### Features
+
+* added explainTransaction for canton ([080a847](https://github.com/BitGo/BitGoJS/commit/080a8477188b633e98d702fedc7f5bb0a019f219))
+* handling new type of intents in prebuild ([ad46a25](https://github.com/BitGo/BitGoJS/commit/ad46a25b7959f4f809cabd8c24a1d049e1d678b1))
+
+
+
+
+
 # [1.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.6.0...@bitgo/sdk-coin-canton@1.7.0) (2025-10-29)
 
 

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.2.0...@bitgo/abstract-utxo@10.3.0) (2025-10-31)
+
+
+### Features
+
+* add fixed fee for Dogecoin transactions ([48c4be2](https://github.com/BitGo/BitGoJS/commit/48c4be2e030735db4bbde85930df4155cc59e954))
+
+
+
+
+
 # [10.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.1.0...@bitgo/abstract-utxo@10.2.0) (2025-10-29)
 
 
