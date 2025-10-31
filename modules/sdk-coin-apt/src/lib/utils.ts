@@ -29,6 +29,7 @@ import {
   COIN_BATCH_TRANSFER_FUNCTION,
   COIN_TRANSFER_FUNCTION,
   DELEGATION_POOL_ADD_STAKE_FUNCTION,
+  DELEGATION_POOL_UNLOCK_FUNCTION,
   DIGITAL_ASSET_TRANSFER_FUNCTION,
   FUNGIBLE_ASSET_BATCH_TRANSFER_FUNCTION,
   FUNGIBLE_ASSET_TRANSFER_FUNCTION,
@@ -100,6 +101,8 @@ export class Utils implements BaseUtils {
         return TransactionType.SendNFT;
       case DELEGATION_POOL_ADD_STAKE_FUNCTION:
         return TransactionType.StakingDelegate;
+      case DELEGATION_POOL_UNLOCK_FUNCTION:
+        return TransactionType.StakingUnlock;
       default:
         // For any other function calls, treat as a custom transaction
         return TransactionType.CustomTx;
