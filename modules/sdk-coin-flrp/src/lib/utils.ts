@@ -1,4 +1,6 @@
 import { TransferableOutput } from '@flarenetwork/flarejs';
+import { bech32 } from 'bech32';
+import bs58 from 'bs58';
 import {
   BaseUtils,
   Entry,
@@ -13,7 +15,6 @@ import { ecc } from '@bitgo/secp256k1';
 import { createHash } from 'crypto';
 import { DeprecatedOutput, DeprecatedTx, Output } from './iface';
 import {
-  DECODED_BLOCK_ID_LENGTH,
   SHORT_PUB_KEY_LENGTH,
   COMPRESSED_PUBLIC_KEY_LENGTH,
   UNCOMPRESSED_PUBLIC_KEY_LENGTH,
@@ -30,6 +31,7 @@ import {
   PADSTART_CHAR,
   HEX_RADIX,
   STRING_TYPE,
+  DECODED_BLOCK_ID_LENGTH,
 } from './constants';
 
 // Regex utility functions for hex validation
@@ -44,6 +46,13 @@ export const createFlexibleHexRegex = (requirePrefix = false): RegExp => {
 };
 
 export class Utils implements BaseUtils {
+  public addressToString = (hrp: string, prefix: string, address: Buffer): string => {
+    // Convert the address bytes to 5-bit words for bech32 encoding
+    const words = bech32.toWords(address);
+    // Create the full bech32 address with format: P-{hrp}1{bech32_encoded_address}
+    return `${prefix}-${bech32.encode(hrp, words)}`;
+  };
+
   public includeIn(walletAddresses: string[], otxoOutputAddresses: string[]): boolean {
     return walletAddresses.map((a) => otxoOutputAddresses.includes(a)).reduce((a, b) => a && b, true);
   }
@@ -72,23 +81,6 @@ export class Utils implements BaseUtils {
   }
 
   /**
-   * Checks if it is a valid blockId with length 66 including 0x
-   *
-   * @param {string} hash - blockId to be validated
-   * @returns {boolean} - the validation result
-   */
-  /** @inheritdoc */
-  isValidBlockId(hash: string): boolean {
-    // FlareJS equivalent - check if it's a valid CB58 hash with correct length
-    try {
-      const decoded = Buffer.from(hash); // FlareJS should provide CB58 utilities
-      return decoded.length === DECODED_BLOCK_ID_LENGTH;
-    } catch {
-      return false;
-    }
-  }
-
-  /**
    * Checks if the string is a valid protocol public key or
    * extended public key.
    *
@@ -101,8 +93,7 @@ export class Utils implements BaseUtils {
     let pubBuf: Buffer;
     if (pub.length === SHORT_PUB_KEY_LENGTH) {
       try {
-        // For FlareJS, we'll need to implement CB58 decode functionality
-        pubBuf = Buffer.from(pub, HEX_ENCODING); // Temporary placeholder
+        pubBuf = this.cb58Decode(pub);
       } catch {
         return false;
       }
@@ -135,9 +126,27 @@ export class Utils implements BaseUtils {
     }
   }
 
-  public parseAddress = (pub: string): Buffer => {
-    // FlareJS equivalent for address parsing
-    return Buffer.from(pub, HEX_ENCODING); // Simplified implementation
+  public parseAddress = (address: string): Buffer => {
+    return this.stringToAddress(address);
+  };
+
+  public stringToAddress = (address: string, hrp?: string): Buffer => {
+    const parts = address.trim().split('-');
+    if (parts.length < 2) {
+      throw new Error('Error - Valid address should include -');
+    }
+
+    const split = parts[1].lastIndexOf('1');
+    if (split < 0) {
+      throw new Error('Error - Valid address must include separator (1)');
+    }
+
+    const humanReadablePart = parts[1].slice(0, split);
+    if (humanReadablePart !== 'flare' && humanReadablePart !== 'costwo') {
+      throw new Error('Error - Invalid HRP');
+    }
+
+    return Buffer.from(bech32.fromWords(bech32.decode(parts[1]).words));
   };
 
   /**
@@ -263,7 +272,12 @@ export class Utils implements BaseUtils {
 
   /** @inheritdoc */
   isValidTransactionId(txId: string): boolean {
-    throw new NotImplementedError('isValidTransactionId not implemented');
+    return this.isValidId(txId);
+  }
+
+  /** @inheritdoc */
+  isValidBlockId(blockId: string): boolean {
+    return this.isValidId(blockId);
   }
 
   /**
@@ -323,7 +337,16 @@ export class Utils implements BaseUtils {
    */
   verifySignature(network: FlareNetwork, message: Buffer, signature: Buffer, publicKey: Buffer): boolean {
     try {
-      return ecc.verify(message, publicKey, signature);
+      // Hash the message first - must match the hash used in signing
+      const messageHash = createHash('sha256').update(message).digest();
+
+      // Extract the actual signature without recovery parameter
+      if (signature.length !== 65) {
+        throw new Error('Invalid signature length - expected 65 bytes (64 bytes signature + 1 byte recovery)');
+      }
+      const sigOnly = signature.slice(0, 64);
+
+      return ecc.verify(messageHash, publicKey, sigOnly);
     } catch (error) {
       return false;
     }
@@ -511,34 +534,6 @@ export class Utils implements BaseUtils {
   }
 
   /**
-   * CB58 decode function - simple Base58 decode implementation
-   * @param {string} data - CB58 encoded string
-   * @returns {Buffer} decoded buffer
-   */
-  cb58Decode(data: string): Buffer {
-    // For now, use a simple hex decode as placeholder
-    // In a full implementation, this would be proper CB58 decoding
-    try {
-      return Buffer.from(data, HEX_ENCODING);
-    } catch {
-      // Fallback to buffer from string
-      return Buffer.from(data);
-    }
-  }
-
-  /**
-   * Convert address buffer to bech32 string
-   * @param {string} hrp - Human readable part
-   * @param {string} chainid - Chain identifier
-   * @param {Buffer} addressBuffer - Address buffer
-   * @returns {string} Address string
-   */
-  addressToString(hrp: string, chainid: string, addressBuffer: Buffer): string {
-    // Simple implementation - in practice this would use bech32 encoding
-    return `${chainid}-${addressBuffer.toString(HEX_ENCODING)}`;
-  }
-
-  /**
    * Convert string to bytes for FlareJS memo
    * Follows FlareJS utils.stringToBytes pattern
    * @param {string} text - Text to convert
@@ -599,6 +594,65 @@ export class Utils implements BaseUtils {
    */
   validateMemoSize(memoBytes: Uint8Array, maxSize = 4096): boolean {
     return memoBytes.length <= maxSize;
+  }
+
+  /**
+   * Adds a checksum to a Buffer and returns the concatenated result
+   */
+  private addChecksum(buff: Buffer): Buffer {
+    const hashSlice = createHash('sha256').update(buff).digest().slice(28);
+    return Buffer.concat([buff, hashSlice]);
+  }
+
+  /**
+   * Validates a checksum on a Buffer and returns true if valid, false if not
+   */
+  private validateChecksum(buff: Buffer): boolean {
+    const hashSlice = buff.slice(buff.length - 4);
+    const calculatedHashSlice = createHash('sha256')
+      .update(buff.slice(0, buff.length - 4))
+      .digest()
+      .slice(28);
+    return hashSlice.toString('hex') === calculatedHashSlice.toString('hex');
+  }
+
+  /**
+   * Encodes a Buffer as a base58 string with checksum
+   */
+  public cb58Encode(bytes: Buffer): string {
+    const withChecksum = this.addChecksum(bytes);
+    return bs58.encode(withChecksum);
+  }
+
+  /**
+   * Decodes a base58 string with checksum to a Buffer
+   */
+  public cb58Decode(str: string): Buffer {
+    const decoded = bs58.decode(str);
+    if (!this.validateChecksum(Buffer.from(decoded))) {
+      throw new Error('Invalid checksum');
+    }
+    return Buffer.from(decoded.slice(0, decoded.length - 4));
+  }
+
+  /**
+   * Checks if a string is a valid CB58 (base58 with checksum) format
+   */
+  private isCB58(str: string): boolean {
+    try {
+      this.cb58Decode(str);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  isValidId(id: string): boolean {
+    try {
+      return this.isCB58(id) && this.cb58Decode(id).length === DECODED_BLOCK_ID_LENGTH;
+    } catch {
+      return false;
+    }
   }
 }
 

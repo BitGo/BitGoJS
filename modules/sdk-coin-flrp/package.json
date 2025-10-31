@@ -51,7 +51,9 @@
     "@bitgo/secp256k1": "^1.7.0",
     "@bitgo/statics": "^58.10.0",
     "@flarenetwork/flarejs": "4.1.0-rc0",
-    "bignumber.js": "9.0.0"
+    "bech32": "^2.0.0",
+    "bignumber.js": "9.0.0",
+    "bs58": "^6.0.0"
   },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c",
   "files": [
