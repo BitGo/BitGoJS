@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.10.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.9.0...bitgo@50.10.0) (2025-10-31)
+
+
+### Features
+
+* **sdk-core:** add verification options for signing txHex ([951fbbc](https://github.com/BitGo/BitGoJS/commit/951fbbc6882984db0d735f35a693694a3b50bed2))
+
+
+
+
+
 # [50.9.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.8.0...bitgo@50.9.0) (2025-10-29)
 
 

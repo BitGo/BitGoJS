@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [36.18.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.17.0...@bitgo/sdk-core@36.18.0) (2025-10-31)
+
+
+### Features
+
+* added a method for building wallet init ([5ee449e](https://github.com/BitGo/BitGoJS/commit/5ee449e2d57777b96a415d11e1a24db3f1fa2413))
+* handling new type of intents in prebuild ([ad46a25](https://github.com/BitGo/BitGoJS/commit/ad46a25b7959f4f809cabd8c24a1d049e1d678b1))
+* **sdk-core:** add verification options for signing txHex ([951fbbc](https://github.com/BitGo/BitGoJS/commit/951fbbc6882984db0d735f35a693694a3b50bed2))
+
+
+
+
+
 # [36.17.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.16.0...@bitgo/sdk-core@36.17.0) (2025-10-29)
 
 

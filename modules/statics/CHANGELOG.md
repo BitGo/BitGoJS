@@ -3,6 +3,31 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.9.0...@bitgo/statics@58.10.0) (2025-10-31)
+
+
+### Bug Fixes
+
+* explorer url for canton updated ([2e249fa](https://github.com/BitGo/BitGoJS/commit/2e249faa5b475142a2554ac43106d15d1aeac064))
+
+
+### Features
+
+* added canton explorer url ([4a0953f](https://github.com/BitGo/BitGoJS/commit/4a0953fa09c7189f941f87deb6c5abd6a10293fa))
+* gate assets for Singapore custody ([5833328](https://github.com/BitGo/BitGoJS/commit/5833328d69e7514125d009fca07fbf2c5a7a7f08))
+* gate assets for Singapore custody ([c85b58c](https://github.com/BitGo/BitGoJS/commit/c85b58cd3f521b555681362d7f7bdaff04307055))
+* gate sohm token ([d2023a3](https://github.com/BitGo/BitGoJS/commit/d2023a3c6dc36c71250ebe367ee957db3c5c71ea))
+* onboarding tokens win-7708 ([f177a93](https://github.com/BitGo/BitGoJS/commit/f177a930979dd5e1c6c90bc59e078792cc03e3bd))
+* remove unused imports ([032fc86](https://github.com/BitGo/BitGoJS/commit/032fc864792525ead67e15f5a6622cd1ac7c453e))
+* **sdk-coin-ada:** fix ada token policy id ([72fec81](https://github.com/BitGo/BitGoJS/commit/72fec81876f8789fe40ee6622037b65d8614161a))
+* **sdk-coin-celo:** update celo testnet config ([0c1c875](https://github.com/BitGo/BitGoJS/commit/0c1c8757ba3e062d24f88fcd07aa08a496cd77a4))
+* **statics:** add bga coin feature in mantra ([1665c06](https://github.com/BitGo/BitGoJS/commit/1665c06e8527cd12093dadf1749dbba47417453b))
+* token name change win-7708 ([0a412c8](https://github.com/BitGo/BitGoJS/commit/0a412c829b266586cbfbce2489c32698c8782d0e))
+
+
+
+
+
 # [58.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.8.0...@bitgo/statics@58.9.0) (2025-10-29)
 
 

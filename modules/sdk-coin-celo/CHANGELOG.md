@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-celo@6.0.3...@bitgo/sdk-coin-celo@6.1.0) (2025-10-31)
+
+
+### Features
+
+* **sdk-coin-celo:** update celo testnet config ([0c1c875](https://github.com/BitGo/BitGoJS/commit/0c1c8757ba3e062d24f88fcd07aa08a496cd77a4))
+* **sdk-coin-celo:** update celo testnet to sepolia ([fd47171](https://github.com/BitGo/BitGoJS/commit/fd47171c57ddf0243e192ca736f27e2069ca5803))
+
+
+
+
+
 ## [6.0.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-celo@6.0.2...@bitgo/sdk-coin-celo@6.0.3) (2025-10-29)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-celo
