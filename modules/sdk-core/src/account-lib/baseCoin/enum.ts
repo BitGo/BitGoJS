@@ -47,9 +47,10 @@ export enum TransactionType {
   // Add validator to p-chain
   // @deprecated
   AddValidator,
-  // Cross chain transfer at Avax
+  // Cross chain transfer at Avax and flare
   Export,
   Import,
+  ImportToC,
   // Cross chain Recovery for evm like chains
   RecoveryWalletDeployment,
   // Add staking
