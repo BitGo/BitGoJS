@@ -2566,7 +2566,7 @@ export enum UnderlyingAsset {
   'polygon:txusd' = 'polygon:txusd',
   'polygon:zig' = 'polygon:zig',
   'polygon:brl1' = 'polygon:brl1',
-  'polygon:cnkt+' = 'polygon:cnkt+',
+  'polygon:cnktplus' = 'polygon:cnktplus',
   // Polygon NFTs
   // generic NFTs
   'erc721:polygontoken' = 'erc721:polygontoken',
