@@ -34,6 +34,7 @@ import { PostWalletTxSignTSS } from './v2/walletTxSignTSS';
 import { PostShareWallet } from './v2/shareWallet';
 import { PutExpressWalletUpdate } from './v2/expressWalletUpdate';
 import { PostFanoutUnspents } from './v2/fanoutUnspents';
+import { PostSendMany } from './v2/sendmany';
 import { PostConsolidateUnspents } from './v2/consolidateunspents';
 import { PostPrebuildAndSignTransaction } from './v2/prebuildAndSignTransaction';
 import { PostCoinSign } from './v2/coinSign';
@@ -161,6 +162,12 @@ export const ExpressV2WalletCreateAddressApiSpec = apiSpec({
   },
 });
 
+export const ExpressV2WalletSendManyApiSpec = apiSpec({
+  'express.v2.wallet.sendmany': {
+    post: PostSendMany,
+  },
+});
+
 export const ExpressKeychainLocalApiSpec = apiSpec({
   'express.keychain.local': {
     post: PostKeychainLocal,
@@ -256,6 +263,7 @@ export type ExpressApi = typeof ExpressPingApiSpec &
   typeof ExpressLightningGetStateApiSpec &
   typeof ExpressLightningInitWalletApiSpec &
   typeof ExpressLightningUnlockWalletApiSpec &
+  typeof ExpressV2WalletSendManyApiSpec &
   typeof ExpressOfcSignPayloadApiSpec &
   typeof ExpressWalletRecoverTokenApiSpec &
   typeof ExpressCoinSigningApiSpec &
@@ -286,6 +294,7 @@ export const ExpressApi: ExpressApi = {
   ...ExpressLightningGetStateApiSpec,
   ...ExpressLightningInitWalletApiSpec,
   ...ExpressLightningUnlockWalletApiSpec,
+  ...ExpressV2WalletSendManyApiSpec,
   ...ExpressOfcSignPayloadApiSpec,
   ...ExpressWalletRecoverTokenApiSpec,
   ...ExpressCoinSigningApiSpec,
