@@ -84,6 +84,7 @@ import {
   EthLikeCoin,
   EvmCoin,
   Flr,
+  Flrp,
   FlrToken,
   HashToken,
   TethLikeCoin,
@@ -266,6 +267,7 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('fiatsgd', FiatSGD.createInstance);
   coinFactory.register('fiatusd', FiatUsd.createInstance);
   coinFactory.register('flr', Flr.createInstance);
+  coinFactory.register('flrp', Flrp.createInstance);
   coinFactory.register('gteth', Gteth.createInstance);
   coinFactory.register('hash', Hash.createInstance);
   coinFactory.register('hbar', Hbar.createInstance);
@@ -335,6 +337,7 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('tfiatsgd', TfiatSGD.createInstance);
   coinFactory.register('tfiatusd', TfiatUsd.createInstance);
   coinFactory.register('tflr', Tflr.createInstance);
+  coinFactory.register('tflrp', Flrp.createInstance);
   coinFactory.register('tmon', Tmon.createInstance);
   coinFactory.register('thash', Thash.createInstance);
   coinFactory.register('thbar', Thbar.createInstance);
@@ -651,6 +654,8 @@ export function getCoinConstructor(coinName: string): CoinConstructor | undefine
       return FiatUsd.createInstance;
     case 'flr':
       return Flr.createInstance;
+    case 'flrp':
+      return Flrp.createInstance;
     case 'gteth':
       return Gteth.createInstance;
     case 'hash':
@@ -789,6 +794,8 @@ export function getCoinConstructor(coinName: string): CoinConstructor | undefine
       return TfiatUsd.createInstance;
     case 'tflr':
       return Tflr.createInstance;
+    case 'tflrp':
+      return Flrp.createInstance;
     case 'tmon':
       return Tmon.createInstance;
     case 'thash':
