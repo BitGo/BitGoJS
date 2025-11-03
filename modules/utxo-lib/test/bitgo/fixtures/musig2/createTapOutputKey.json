@@ -1,0 +1,9 @@
+{
+  "inputs": {
+    "internalPubKey": "6d767a69e03d4611485407d777711ee4d1321a84cf82f591db0cd3e179c49821",
+    "tapTreeRoot": "63a3684763dca2d4bb5d412d01f5ce73214af3d7816b52d7ad549562cc4cd890"
+  },
+  "output": {
+    "tapOutputKey": "e5406bdcc45b02e86b30c446fd57375e8bfc8144238d61033d353c8a3641a43d"
+  }
+}
