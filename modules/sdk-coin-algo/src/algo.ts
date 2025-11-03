@@ -30,6 +30,7 @@ import {
   MultisigType,
   multisigTypes,
   AuditDecryptedKeyParams,
+  TxIntentMismatchError,
 } from '@bitgo/sdk-core';
 import stellar from 'stellar-sdk';
 import BigNumber from 'bignumber.js';
@@ -580,7 +581,7 @@ export class Algo extends BaseCoin {
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
-    const { txParams, txPrebuild } = params;
+    const { txParams, txPrebuild, wallet, verification } = params;
 
     if (!txParams) {
       throw new Error('missing txParams');
@@ -602,14 +603,40 @@ export class Algo extends BaseCoin {
     // Validate based on Algorand transaction type
     switch (txJson.type) {
       case 'pay':
-        return this.validatePayTransaction(txJson, txParams);
+        this.validatePayTransaction(txJson, txParams);
+        break;
       case 'axfer':
-        return this.validateAssetTransferTransaction(txJson, txParams);
+        this.validateAssetTransferTransaction(txJson, txParams);
+        break;
       default:
         // For other transaction types, perform basic validation
         this.validateBasicTransaction(txJson);
-        return true;
+        break;
     }
+
+    // Verify consolidation transactions send to base address
+    if (verification?.consolidationToBaseAddress) {
+      if (!wallet?.coinSpecific()?.rootAddress) {
+        throw new Error('Unable to determine base address for consolidation');
+      }
+      const rootAddress = wallet.coinSpecific()?.rootAddress as string;
+
+      // Verify the transaction recipient matches the rootAddress
+      if (!txJson.to) {
+        throw new Error('Transaction is missing recipient address');
+      }
+
+      if (txJson.to !== rootAddress) {
+        throw new TxIntentMismatchError(
+          'Consolidation transaction recipient does not match wallet base address',
+          txJson.to,
+          [txParams],
+          txJson
+        );
+      }
+    }
+
+    return true;
   }
 
   /**
