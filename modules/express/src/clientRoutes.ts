@@ -509,7 +509,7 @@ export async function handleV2SignTSSWalletTx(req: ExpressApiRouteRequest<'expre
 /**
  * This route is used to sign while external express signer is enabled
  */
-export async function handleV2Sign(req: express.Request) {
+export async function handleV2Sign(req: ExpressApiRouteRequest<'express.v2.coin.sign', 'post'>) {
   const walletId = req.body.txPrebuild?.walletId;
 
   if (!walletId) {
@@ -526,7 +526,7 @@ export async function handleV2Sign(req: express.Request) {
   const encryptedPrivKey = await getEncryptedPrivKey(signerFileSystemPath, walletId);
   const bitgo = req.bitgo;
   let privKey = decryptPrivKey(bitgo, encryptedPrivKey, walletPw);
-  const coin = bitgo.coin(req.params.coin);
+  const coin = bitgo.coin(req.decoded.coin);
   if (req.body.derivationSeed) {
     privKey = coin.deriveKeyWithSeed({ key: privKey, seed: req.body.derivationSeed }).key;
   }
@@ -1731,7 +1731,10 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
 }
 
 export function setupSigningRoutes(app: express.Application, config: Config): void {
-  app.post('/api/v2/:coin/sign', parseBody, prepareBitGo(config), promiseWrapper(handleV2Sign));
+  const router = createExpressRouter();
+  app.use(router);
+
+  router.post('express.v2.coin.sign', [prepareBitGo(config), typedPromiseWrapper(handleV2Sign)]);
   app.post(
     '/api/v2/:coin/tssshare/:sharetype',
     parseBody,

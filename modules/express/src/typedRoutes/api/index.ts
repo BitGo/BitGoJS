@@ -35,6 +35,7 @@ import { PostShareWallet } from './v2/shareWallet';
 import { PutExpressWalletUpdate } from './v2/expressWalletUpdate';
 import { PostFanoutUnspents } from './v2/fanoutUnspents';
 import { PostConsolidateUnspents } from './v2/consolidateunspents';
+import { PostCoinSign } from './v2/coinSign';
 
 // Too large types can cause the following error
 //
@@ -190,18 +191,33 @@ export const ExpressOfcSignPayloadApiSpec = apiSpec({
   'express.ofc.signPayload': {
     post: PostOfcSignPayload,
   },
+});
+
+export const ExpressWalletRecoverTokenApiSpec = apiSpec({
   'express.v2.wallet.recovertoken': {
     post: PostWalletRecoverToken,
   },
+});
+
+export const ExpressCoinSigningApiSpec = apiSpec({
   'express.v2.coin.signtx': {
     post: PostCoinSignTx,
   },
+  'express.v2.coin.sign': {
+    post: PostCoinSign,
+  },
+});
+
+export const ExpressWalletSigningApiSpec = apiSpec({
   'express.v2.wallet.signtx': {
     post: PostWalletSignTx,
   },
   'express.v2.wallet.signtxtss': {
     post: PostWalletTxSignTSS,
   },
+});
+
+export const ExpressWalletManagementApiSpec = apiSpec({
   'express.v2.wallet.share': {
     post: PostShareWallet,
   },
@@ -236,7 +252,11 @@ export type ExpressApi = typeof ExpressPingApiSpec &
   typeof ExpressLightningGetStateApiSpec &
   typeof ExpressLightningInitWalletApiSpec &
   typeof ExpressLightningUnlockWalletApiSpec &
-  typeof ExpressOfcSignPayloadApiSpec;
+  typeof ExpressOfcSignPayloadApiSpec &
+  typeof ExpressWalletRecoverTokenApiSpec &
+  typeof ExpressCoinSigningApiSpec &
+  typeof ExpressWalletSigningApiSpec &
+  typeof ExpressWalletManagementApiSpec;
 
 export const ExpressApi: ExpressApi = {
   ...ExpressPingApiSpec,
@@ -263,6 +283,10 @@ export const ExpressApi: ExpressApi = {
   ...ExpressLightningInitWalletApiSpec,
   ...ExpressLightningUnlockWalletApiSpec,
   ...ExpressOfcSignPayloadApiSpec,
+  ...ExpressWalletRecoverTokenApiSpec,
+  ...ExpressCoinSigningApiSpec,
+  ...ExpressWalletSigningApiSpec,
+  ...ExpressWalletManagementApiSpec,
 };
 
 type ExtractDecoded<T> = T extends t.Type<any, infer O, any> ? O : never;
