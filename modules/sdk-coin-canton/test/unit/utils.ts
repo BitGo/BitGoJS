@@ -3,6 +3,7 @@ import should from 'should';
 import utils from '../../src/lib/utils';
 import {
   CANTON_ADDRESSES,
+  CANTON_BLOCK_HEIGHT,
   GenerateTopologyResponse,
   OneStepPreApprovalPrepareResponse,
   PreparedTransactionRawData,
@@ -91,6 +92,26 @@ describe('Canton Util', function () {
 
     it('should return false when fingerprint is missing', function () {
       const isValid = utils.isValidAddress(CANTON_ADDRESSES.MISSING_FINGERPRINT);
+      should.exist(isValid);
+      assert.strictEqual(isValid, false);
+    });
+  });
+
+  describe('Check if block hash is valid', function () {
+    it('should return true when the block hash is valid', function () {
+      const isValid = utils.isValidBlockId(CANTON_BLOCK_HEIGHT.VALID_HASH);
+      should.exist(isValid);
+      assert.strictEqual(isValid, true);
+    });
+
+    it('should return false when the block hash is not a number', function () {
+      const isValid = utils.isValidBlockId(CANTON_BLOCK_HEIGHT.INVALID_BLOCK_HASH);
+      should.exist(isValid);
+      assert.strictEqual(isValid, false);
+    });
+
+    it('should return false when the block hash is negative', function () {
+      const isValid = utils.isValidBlockId(CANTON_BLOCK_HEIGHT.NEGATIVE_BLOCK_HASH);
       should.exist(isValid);
       assert.strictEqual(isValid, false);
     });

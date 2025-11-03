@@ -72,6 +72,12 @@ export const CANTON_ADDRESSES = {
   MISSING_FINGERPRINT: '12205::',
 };
 
+export const CANTON_BLOCK_HEIGHT = {
+  VALID_HASH: '123456',
+  INVALID_BLOCK_HASH: 'xyz',
+  NEGATIVE_BLOCK_HASH: '-100',
+};
+
 export const TransferAcceptance = {
   partyId: 'ravi-test-party-1::12205b4e3537a95126d90604592344d8ad3c3ddccda4f79901954280ee19c576714d',
   commandId: '3935a06d-3b03-41be-99a5-95b2ecaabf7d',
