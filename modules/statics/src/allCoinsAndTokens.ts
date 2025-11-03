@@ -813,7 +813,7 @@ export const allCoinsAndTokens = [
     6,
     UnderlyingAsset.SEI,
     BaseUnit.SEI,
-    [...SEI_FEATURES, CoinFeature.STAKING]
+    SEI_FEATURES
   ),
   account(
     'e902894a-a4e5-4bb4-86a6-c7171b68c8b6',
@@ -895,6 +895,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.STAKING,
     ]
   ),
   account(
