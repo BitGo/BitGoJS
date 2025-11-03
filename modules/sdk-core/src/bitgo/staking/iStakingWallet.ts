@@ -157,6 +157,11 @@ export interface StakeOptions {
    * bera native staking deposit signature
    */
   depositSignature?: string;
+
+  /**
+   * region for eth staking
+   */
+  region?: string;
 }
 
 export interface TronStakeOptions extends StakeOptions {
