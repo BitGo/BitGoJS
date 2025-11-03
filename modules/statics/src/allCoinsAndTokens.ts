@@ -68,6 +68,7 @@ import { jettonTokens } from './coins/jettonTokens';
 import { polyxTokens } from './coins/polyxTokens';
 import { flrp } from './flrp';
 import {
+  ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE_AND_MENA_FZE,
   ADA_FEATURES_WITH_FRANKFURT,
   ALGO_FEATURES,
   APT_FEATURES,
@@ -123,6 +124,7 @@ import {
   VET_FEATURES,
   WCT_FEATURES,
   WEMIX_FEATURES,
+  WFLR_FEATURES,
   XDC_FEATURES,
   XLM_FEATURES,
   XLM_TOKEN_FEATURES_WITH_FRANKFURT,
@@ -130,8 +132,6 @@ import {
   XTZ_FEATURES,
   ZETA_FEATURES,
   ZKETH_FEATURES,
-  ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE_AND_MENA_FZE,
-  WFLR_FEATURES,
 } from './coinFeatures';
 import { botTokens } from './coins/botTokens';
 import { adaTokens } from './coins/adaTokens';
@@ -813,7 +813,7 @@ export const allCoinsAndTokens = [
     6,
     UnderlyingAsset.SEI,
     BaseUnit.SEI,
-    SEI_FEATURES
+    [...SEI_FEATURES, CoinFeature.STAKING]
   ),
   account(
     'e902894a-a4e5-4bb4-86a6-c7171b68c8b6',
