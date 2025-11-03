@@ -8,6 +8,7 @@ import {
   InvalidTransactionError,
   PublicKey,
   Signature,
+  TransactionType,
 } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 
@@ -35,6 +36,10 @@ export class WalletInitBuilder extends BaseTransactionBuilder {
 
   initBuilder(tx: WalletInitTransaction): void {
     this._transaction = tx;
+  }
+
+  protected get transactionType(): TransactionType {
+    return TransactionType.WalletInitialization;
   }
 
   protected buildImplementation(): Promise<WalletInitTransaction> {
