@@ -11,12 +11,15 @@ import {
   SignedTransaction,
   SignTransactionOptions,
   TransactionType,
-  TssVerifyAddressOptions,
   VerifyTransactionOptions,
   TransactionExplanation as BaseTransactionExplanation,
   BaseTransaction,
   PopulatedIntent,
   PrebuildTransactionWithIntentOptions,
+  TssVerifyAddressOptions,
+  InvalidAddressError,
+  extractCommonKeychain,
+  EDDSAMethods,
 } from '@bitgo/sdk-core';
 import { auditEddsaPrivateKey } from '@bitgo/sdk-lib-mpc';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
@@ -115,8 +118,25 @@ export class Canton extends BaseCoin {
   }
 
   /** @inheritDoc */
-  isWalletAddress(params: TssVerifyAddressOptions): Promise<boolean> {
-    throw new Error('Method not implemented.');
+  async isWalletAddress(params: TssVerifyAddressOptions): Promise<boolean> {
+    // TODO: refactor this and use the `verifyEddsaMemoBasedWalletAddress` once published from sdk-core
+    // https://bitgoinc.atlassian.net/browse/COIN-6347
+    const { keychains, address: newAddress, index } = params;
+    const [addressPart, memoId] = newAddress.split('?memoId=');
+    if (!this.isValidAddress(addressPart)) {
+      throw new InvalidAddressError(`invalid address: ${newAddress}`);
+    }
+    if (memoId && memoId !== index) {
+      throw new InvalidAddressError(`invalid memoId index: ${memoId}`);
+    }
+    const commonKeychain = extractCommonKeychain(keychains);
+    const MPC = await EDDSAMethods.getInitializedMpcInstance();
+    const derivationPath = 'm/0';
+    const derivedPublicKey = MPC.deriveUnhardened(commonKeychain, derivationPath).slice(0, 64);
+    const publicKeyBase64 = Buffer.from(derivedPublicKey, 'hex').toString('base64');
+    const rootAddressFingerprint = utils.getAddressFromPublicKey(publicKeyBase64);
+    const rootAddress = `${rootAddressFingerprint.slice(0, 5)}::${rootAddressFingerprint}`;
+    return addressPart === rootAddress;
   }
 
   /** @inheritDoc */
@@ -161,6 +181,11 @@ export class Canton extends BaseCoin {
     // canton addresses are of the form, partyHint::fingerprint
     // where partyHint is of length 5 and fingerprint is 68 characters long
     return utils.isValidAddress(address);
+  }
+
+  getAddressFromPublicKey(publicKeyHex: string): string {
+    const publicKeyBase64 = Buffer.from(publicKeyHex, 'hex').toString('base64');
+    return utils.getAddressFromPublicKey(publicKeyBase64);
   }
 
   /** @inheritDoc */

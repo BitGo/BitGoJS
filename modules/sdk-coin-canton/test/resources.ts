@@ -41,7 +41,7 @@ export const WalletInitRequestData = {
 };
 
 export const OneStepEnablement = {
-  partyId: 'ravi-test-party-1::12205b4e3537a95126d90604592344d8ad3c3ddccda4f79901954280ee19c576714d',
+  partyId: 'ravi-test-party-1::1220a43d89dc7d8f85316116aac093667f769fce55411aef6846ccb933b2e1a3b598',
   commandId: '3935a06d-3b03-41be-99a5-95b2ecaabf7d',
 };
 
@@ -63,9 +63,9 @@ export const InvalidOneStepPreApprovalPrepareResponse = {
 };
 
 export const CANTON_ADDRESSES = {
-  VALID_ADDRESS: '12205::12205b4e3537a95126d90604592344d8ad3c3ddccda4f79901954280ee19c576714d',
+  VALID_ADDRESS: '1220a::1220a43d89dc7d8f85316116aac093667f769fce55411aef6846ccb933b2e1a3b598',
   // party hint is not 5 characters
-  INVALID_PARTY_HINT: '123456::12205b4e3537a95126d90604592344d8ad3c3ddccda4f79901954280ee19c576714d',
+  INVALID_PARTY_HINT: '123456::1220a43d89dc7d8f85316116aac093667f769fce55411aef6846ccb933b2e1a3b598',
   // fingerprint is not a valid hex value
   INVALID_FINGERPRINT: '12205::12205b4e3537a95126d9060459234gd8ad3c3ddccda4f79901954280ee19c576714d',
   MISSING_PARTY_HINT: '::12205b4e3537a95126d9060459234gd8ad3c3ddccda4f79901954280ee19c576714d',
@@ -76,6 +76,11 @@ export const CANTON_BLOCK_HEIGHT = {
   VALID_HASH: '123456',
   INVALID_BLOCK_HASH: 'xyz',
   NEGATIVE_BLOCK_HASH: '-100',
+};
+
+export const CANTON_RECEIVE_ADDRESS = {
+  VALID_ADDRESS: `${CANTON_ADDRESSES.VALID_ADDRESS}?memoId=1`,
+  INVALID_ADDRESS: `${CANTON_ADDRESSES.INVALID_FINGERPRINT}?memoId=1`,
 };
 
 export const TransferAcceptance = {
