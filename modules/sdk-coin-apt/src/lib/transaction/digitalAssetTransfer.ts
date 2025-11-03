@@ -1,4 +1,3 @@
-import { Transaction } from './transaction';
 import {
   AccountAddress,
   EntryFunctionABI,
@@ -14,12 +13,13 @@ import {
 import { InvalidTransactionError, TransactionRecipient, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import {
-  DIGITAL_ASSET_TYPE_ARGUMENT,
-  DIGITAL_ASSET_TRANSFER_FUNCTION,
   DIGITAL_ASSET_TRANSFER_AMOUNT,
+  DIGITAL_ASSET_TRANSFER_FUNCTION,
+  DIGITAL_ASSET_TYPE_ARGUMENT,
 } from '../constants';
+import { AbstractTransferTransaction } from './abstractTransferTransaction';
 
-export class DigitalAssetTransfer extends Transaction {
+export class DigitalAssetTransfer extends AbstractTransferTransaction {
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
     this._type = TransactionType.SendNFT;

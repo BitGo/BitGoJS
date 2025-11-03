@@ -3,18 +3,18 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { TransactionType } from '@bitgo/sdk-core';
 import utils from '../utils';
 import { TransactionPayload, TransactionPayloadEntryFunction } from '@aptos-labs/ts-sdk';
-import { DelegationPoolAddStakeTransaction } from '../transaction/delegationPoolAddStakeTransaction';
+import { DelegationPoolWithdrawTransaction } from '../transaction/delegationPoolWithdrawTransaction';
 
-export class DelegationPoolAddStakeTransactionBuilder extends TransactionBuilder {
-  protected override _transaction: DelegationPoolAddStakeTransaction;
+export class DelegationPoolWithdrawTransactionBuilder extends TransactionBuilder {
+  protected override _transaction: DelegationPoolWithdrawTransaction;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-    this.transaction = new DelegationPoolAddStakeTransaction(_coinConfig);
+    this.transaction = new DelegationPoolWithdrawTransaction(_coinConfig);
   }
 
   protected get transactionType(): TransactionType {
-    return TransactionType.StakingDelegate;
+    return TransactionType.StakingWithdraw;
   }
 
   assetId(_assetId: string): TransactionBuilder {

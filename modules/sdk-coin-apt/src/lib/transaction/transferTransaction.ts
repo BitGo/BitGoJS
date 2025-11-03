@@ -1,5 +1,3 @@
-import { Transaction } from './transaction';
-import { InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import {
   AccountAddress,
   EntryFunctionABI,
@@ -10,12 +8,14 @@ import {
   TypeTagU64,
   TypeTagVector,
 } from '@aptos-labs/ts-sdk';
+import { InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { APTOS_COIN, COIN_BATCH_TRANSFER_FUNCTION, COIN_TRANSFER_FUNCTION } from '../constants';
 import utils from '../utils';
+import { AbstractTransferTransaction } from './abstractTransferTransaction';
 
-export class TransferTransaction extends Transaction {
+export class TransferTransaction extends AbstractTransferTransaction {
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
     this._type = TransactionType.Send;

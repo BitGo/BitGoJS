@@ -1,6 +1,7 @@
 import {
   BaseKey,
   BaseTransaction,
+  Entry,
   InvalidTransactionError,
   PublicKey,
   Signature,
@@ -37,6 +38,15 @@ import utils from '../utils';
 import BigNumber from 'bignumber.js';
 import { AptTransactionExplanation, TxData } from '../iface';
 import assert from 'assert';
+
+export type InputsAndOutputs = {
+  /** Used for this.inputs */
+  inputs: Entry[];
+  /** Used for this.outputs */
+  outputs: Entry[];
+  /** Used for this.explainTransaction() */
+  externalOutputs: TransactionRecipient[];
+};
 
 export abstract class Transaction extends BaseTransaction {
   protected _rawTransaction: RawTransaction;
@@ -83,7 +93,7 @@ export abstract class Transaction extends BaseTransaction {
   }
 
   /** @inheritDoc **/
-  public get id(): string {
+  public override get id(): string {
     this.generateTxnId();
     return this._id ?? UNAVAILABLE_TEXT;
   }
@@ -278,25 +288,12 @@ export abstract class Transaction extends BaseTransaction {
     this.loadInputsAndOutputs();
   }
 
+  abstract inputsAndOutputs(): InputsAndOutputs;
+
   loadInputsAndOutputs(): void {
-    const totalAmount = this._recipients.reduce(
-      (accumulator, current) => accumulator.plus(current.amount),
-      new BigNumber('0')
-    );
-    this._inputs = [
-      {
-        address: this.sender,
-        value: totalAmount.toString(),
-        coin: this._coinConfig.name,
-      },
-    ];
-    this._outputs = this._recipients.map((recipient) => {
-      return {
-        address: recipient.address,
-        value: recipient.amount as string,
-        coin: this._coinConfig.name,
-      };
-    });
+    const { inputs, outputs } = this.inputsAndOutputs();
+    this._inputs = inputs;
+    this._outputs = outputs;
   }
 
   fromRawTransaction(rawTransaction: string): void {
@@ -325,7 +322,6 @@ export abstract class Transaction extends BaseTransaction {
     return {
       id: this.id,
       sender: this.sender,
-      recipient: this.recipient,
       recipients: this.recipients,
       sequenceNumber: this.sequenceNumber,
       maxGasAmount: this.maxGasAmount,
@@ -341,12 +337,12 @@ export abstract class Transaction extends BaseTransaction {
     return new BigNumber(this.gasUsed).multipliedBy(this.gasUnitPrice).toString();
   }
 
-  public get signablePayload(): Buffer {
+  public override get signablePayload(): Buffer {
     return this.feePayerAddress ? this.getSignablePayloadWithFeePayer() : this.getSignablePayloadWithoutFeePayer();
   }
 
   /** @inheritDoc */
-  explainTransaction(): AptTransactionExplanation {
+  override explainTransaction(): AptTransactionExplanation {
     const displayOrder = [
       'id',
       'outputs',
@@ -359,7 +355,7 @@ export abstract class Transaction extends BaseTransaction {
       'type',
     ];
 
-    const outputs: TransactionRecipient[] = this._recipients;
+    const outputs: TransactionRecipient[] = this.inputsAndOutputs().externalOutputs;
     const outputAmount = outputs
       .reduce((accumulator, current) => accumulator.plus(current.amount), new BigNumber('0'))
       .toString();

@@ -3,15 +3,15 @@ import { coins } from '@bitgo/statics';
 import * as testData from '../../resources/apt';
 import { TransactionType } from '@bitgo/sdk-core';
 import should from 'should';
-import { DelegationPoolAddStakeTransaction } from '../../../src/lib/transaction/delegationPoolAddStakeTransaction';
+import { DelegationPoolUnlockTransaction } from '../../../src/lib/transaction/delegationPoolUnlockTransaction';
 
-describe('Apt Delegation Pool Add Stake Builder', () => {
+describe('Apt Delegation Pool Unlock Builder', () => {
   const factory = getBuilderFactory('tapt');
 
   describe('Succeed', () => {
     it('should build a staking delegate transaction', async function () {
-      const transaction = new DelegationPoolAddStakeTransaction(coins.get('tapt'));
-      const txBuilder = factory.getDelegationPoolAddStakeTransactionBuilder(transaction);
+      const transaction = new DelegationPoolUnlockTransaction(coins.get('tapt'));
+      const txBuilder = factory.getDelegationPoolUnlockTransactionBuilder(transaction);
       txBuilder.sender(testData.sender.address);
       txBuilder.validator(testData.delegationPoolData.validatorAddress, testData.delegationPoolData.amount);
       txBuilder.gasData({
@@ -21,66 +21,42 @@ describe('Apt Delegation Pool Add Stake Builder', () => {
       txBuilder.sequenceNumber(14);
       txBuilder.expirationTime(1736246155);
       txBuilder.addFeePayerAddress(testData.feePayer.address);
-      const tx = (await txBuilder.build()) as DelegationPoolAddStakeTransaction;
+      const tx = (await txBuilder.build()) as DelegationPoolUnlockTransaction;
       should.equal(tx.sender, testData.sender.address);
       should.deepEqual(tx.recipients, []);
-      should.equal(tx.validatorAddress, testData.delegationPoolData.validatorAddress);
-      should.equal(tx.amount, testData.delegationPoolData.amount);
+      should.deepEqual(tx.validatorAddress, testData.delegationPoolData.validatorAddress);
+      should.deepEqual(tx.amount, testData.delegationPoolData.amount);
       should.equal(tx.maxGasAmount, 200000);
       should.equal(tx.gasUnitPrice, 100);
       should.equal(tx.sequenceNumber, 14);
       should.equal(tx.expirationTime, 1736246155);
-      should.equal(tx.type, TransactionType.StakingDelegate);
-      should.deepEqual(tx.inputs, [
-        {
-          address: testData.sender.address,
-          value: testData.delegationPoolData.amount,
-          coin: 'tapt',
-        },
-      ]);
-      should.deepEqual(tx.outputs, [
-        {
-          address: testData.delegationPoolData.validatorAddress,
-          value: testData.delegationPoolData.amount,
-          coin: 'tapt',
-        },
-      ]);
+      should.equal(tx.type, TransactionType.StakingUnlock);
+      should.deepEqual(tx.inputs, []);
+      should.deepEqual(tx.outputs, []);
       const rawTx = tx.toBroadcastFormat();
       should.equal(txBuilder.isValidRawTransaction(rawTx), true);
-      rawTx.should.equal(testData.DELEGATION_POOL_ADD_STAKE_TX_HEX);
+      rawTx.should.equal(testData.DELEGATION_POOL_UNLOCK_TX_HEX);
     });
 
     it('should build and send a signed tx', async function () {
-      const txBuilder = factory.from(testData.DELEGATION_POOL_ADD_STAKE_TX_HEX);
-      const tx = (await txBuilder.build()) as DelegationPoolAddStakeTransaction;
-      tx.inputs.should.deepEqual([
-        {
-          address: testData.sender.address,
-          value: testData.delegationPoolData.amount,
-          coin: 'tapt',
-        },
-      ]);
-      tx.outputs.should.deepEqual([
-        {
-          address: testData.delegationPoolData.validatorAddress,
-          value: testData.delegationPoolData.amount,
-          coin: 'tapt',
-        },
-      ]);
-      should.equal(tx.id, '0xc5b960d1bec149c77896344774352c61441307af564eaa8c84f857208e411bf3');
+      const txBuilder = factory.from(testData.DELEGATION_POOL_UNLOCK_TX_HEX);
+      const tx = (await txBuilder.build()) as DelegationPoolUnlockTransaction;
+      tx.inputs.should.deepEqual([]);
+      tx.outputs.should.deepEqual([]);
+      should.equal(tx.id, '0x471bb32955f9cff7c9c0a603ef2354e781fd80a221f9044f08df84d95473e86f');
       should.equal(tx.maxGasAmount, 200000);
       should.equal(tx.gasUnitPrice, 100);
       should.equal(tx.sequenceNumber, 14);
       should.equal(tx.expirationTime, 1736246155);
-      should.equal(tx.type, TransactionType.StakingDelegate);
+      should.equal(tx.type, TransactionType.StakingUnlock);
       const rawTx = tx.toBroadcastFormat();
       should.equal(txBuilder.isValidRawTransaction(rawTx), true);
-      should.equal(rawTx, testData.DELEGATION_POOL_ADD_STAKE_TX_HEX);
+      should.equal(rawTx, testData.DELEGATION_POOL_UNLOCK_TX_HEX);
     });
 
     it('should succeed to validate a valid signablePayload', async function () {
-      const transaction = new DelegationPoolAddStakeTransaction(coins.get('tapt'));
-      const txBuilder = factory.getDelegationPoolAddStakeTransactionBuilder(transaction);
+      const transaction = new DelegationPoolUnlockTransaction(coins.get('tapt'));
+      const txBuilder = factory.getDelegationPoolUnlockTransactionBuilder(transaction);
       txBuilder.sender(testData.sender.address);
       txBuilder.validator(testData.delegationPoolData.validatorAddress, testData.delegationPoolData.amount);
       txBuilder.gasData({
@@ -90,14 +66,14 @@ describe('Apt Delegation Pool Add Stake Builder', () => {
       txBuilder.sequenceNumber(14);
       txBuilder.expirationTime(1736246155);
       txBuilder.addFeePayerAddress(testData.feePayer.address);
-      const tx = (await txBuilder.build()) as DelegationPoolAddStakeTransaction;
+      const tx = (await txBuilder.build()) as DelegationPoolUnlockTransaction;
       const signablePayload = tx.signablePayload;
-      should.equal(signablePayload.toString('hex'), testData.DELEGATION_POOL_ADD_STAKE_TX_HEX_SIGNABLE_PAYLOAD);
+      should.equal(signablePayload.toString('hex'), testData.DELEGATION_POOL_UNLOCK_TX_HEX_SIGNABLE_PAYLOAD);
     });
 
     it('should build a unsigned tx and validate its toJson', async function () {
-      const transaction = new DelegationPoolAddStakeTransaction(coins.get('tapt'));
-      const txBuilder = factory.getDelegationPoolAddStakeTransactionBuilder(transaction);
+      const transaction = new DelegationPoolUnlockTransaction(coins.get('tapt'));
+      const txBuilder = factory.getDelegationPoolUnlockTransactionBuilder(transaction);
       txBuilder.sender(testData.sender.address);
       txBuilder.validator(testData.delegationPoolData.validatorAddress, testData.delegationPoolData.amount);
       txBuilder.gasData({
@@ -108,12 +84,12 @@ describe('Apt Delegation Pool Add Stake Builder', () => {
       txBuilder.expirationTime(1736246155);
       txBuilder.assetId(testData.fungibleTokenAddress.usdt);
       txBuilder.addFeePayerAddress(testData.feePayer.address);
-      const tx = (await txBuilder.build()) as DelegationPoolAddStakeTransaction;
+      const tx = (await txBuilder.build()) as DelegationPoolUnlockTransaction;
       const toJson = tx.toJson();
       should.equal(toJson.sender, testData.sender.address);
       should.deepEqual(toJson.recipients, []);
-      should.equal(toJson.validatorAddress, testData.delegationPoolData.validatorAddress);
-      should.equal(toJson.amount, testData.delegationPoolData.amount);
+      should.deepEqual(tx.validatorAddress, testData.delegationPoolData.validatorAddress);
+      should.deepEqual(tx.amount, testData.delegationPoolData.amount);
       should.equal(toJson.sequenceNumber, 14);
       should.equal(toJson.maxGasAmount, 200000);
       should.equal(toJson.gasUnitPrice, 100);
@@ -122,14 +98,14 @@ describe('Apt Delegation Pool Add Stake Builder', () => {
     });
 
     it('should build a signed tx and validate its toJson', async function () {
-      const txBuilder = factory.from(testData.DELEGATION_POOL_ADD_STAKE_TX_HEX);
-      const tx = (await txBuilder.build()) as DelegationPoolAddStakeTransaction;
+      const txBuilder = factory.from(testData.DELEGATION_POOL_UNLOCK_TX_HEX);
+      const tx = (await txBuilder.build()) as DelegationPoolUnlockTransaction;
       const toJson = tx.toJson();
-      should.equal(toJson.id, '0xc5b960d1bec149c77896344774352c61441307af564eaa8c84f857208e411bf3');
+      should.equal(toJson.id, '0x471bb32955f9cff7c9c0a603ef2354e781fd80a221f9044f08df84d95473e86f');
       should.equal(toJson.sender, testData.sender.address);
       should.deepEqual(toJson.recipients, []);
-      should.equal(toJson.validatorAddress, testData.delegationPoolData.validatorAddress);
-      should.equal(toJson.amount, testData.delegationPoolData.amount);
+      should.deepEqual(tx.validatorAddress, testData.delegationPoolData.validatorAddress);
+      should.deepEqual(tx.amount, testData.delegationPoolData.amount);
       should.equal(toJson.maxGasAmount, 200000);
       should.equal(toJson.gasUnitPrice, 100);
       should.equal(toJson.sequenceNumber, 14);
