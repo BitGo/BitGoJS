@@ -59,11 +59,11 @@ export const polygonTokens = [
   ),
   polygonErc20(
     '80ddd2ff-3156-4212-a768-0445e73fff6b',
-    'polygon:cnkt+',
+    'polygon:cnktplus',
     'Coinnekt+',
     18,
     '0x87bdfbe98ba55104701b2f2e999982a317905637',
-    UnderlyingAsset['polygon:cnkt+'],
+    UnderlyingAsset['polygon:cnktplus'],
     POLYGON_TOKEN_FEATURES
   ),
   polygonErc20(

@@ -2400,10 +2400,10 @@ export const ofcCoins = [
   ),
   ofcPolygonErc20(
     'b35bbebf-a200-4bc8-8a46-c8feb9e08aba',
-    'ofcpolygon:cnkt+',
+    'ofcpolygon:cnktplus',
     'Coinnekt+',
     18,
-    UnderlyingAsset['polygon:cnkt+']
+    UnderlyingAsset['polygon:cnktplus']
   ),
   ofcPolygonErc20(
     'a63bf18b-3462-403c-93f5-ff1b608622c2',
