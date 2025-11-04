@@ -1,5 +1,5 @@
 import { TransferableOutput } from '@flarenetwork/flarejs';
-import * as bech32 from 'bech32';
+import { bech32 } from 'bech32';
 import bs58 from 'bs58';
 import {
   BaseUtils,
