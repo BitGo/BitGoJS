@@ -104,10 +104,12 @@ export class Canton extends BaseCoin {
     const txBuilder = new TransactionBuilderFactory(coinConfig).from(rawTx);
     const transaction = txBuilder.transaction;
     switch (transaction.type) {
-      case TransactionType.WalletInitialization: {
-        // there is no input for this type of transaction, so always return true
+      case TransactionType.WalletInitialization:
+      case TransactionType.TransferAccept:
+      case TransactionType.TransferReject:
+      case TransactionType.TransferAcknowledge:
+        // There is no input for these type of transactions, so always return true.
         return true;
-      }
       default: {
         throw new Error(`unknown transaction type, ${transaction.type}`);
       }
