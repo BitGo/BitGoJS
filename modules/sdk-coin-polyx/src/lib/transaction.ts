@@ -2,6 +2,7 @@ import { Transaction as SubstrateTransaction, utils, KeyPair } from '@bitgo/abst
 import { InvalidTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { construct, decode } from '@substrate/txwrapper-polkadot';
 import { decodeAddress } from '@polkadot/keyring';
+import { coins, PolyxCoin } from '@bitgo/statics';
 import {
   DecodedTx,
   RegisterDidWithCDDArgs,
@@ -22,6 +23,28 @@ export class Transaction extends SubstrateTransaction {
    */
   protected getAddressFormat(): number {
     return polyxUtils.getAddressFormat(this._coinConfig.name);
+  }
+
+  /**
+   * Helper method to find a token name by assetId
+   * @param assetId The assetId to search for
+   * @returns The token name if found
+   * @throws {InvalidTransactionError} If no matching token is found
+   */
+  private getTokenNameByAssetId(assetId: string): string {
+    // Search through all coins to find the one with matching assetId
+    let foundToken: string | undefined;
+    coins.forEach((coin) => {
+      if (coin instanceof PolyxCoin && coin.assetId === assetId) {
+        foundToken = coin.name;
+      }
+    });
+
+    if (!foundToken) {
+      throw new InvalidTransactionError(`No token found for assetId: ${assetId}`);
+    }
+
+    return foundToken;
   }
 
   /** @inheritdoc */
@@ -128,19 +151,21 @@ export class Transaction extends SubstrateTransaction {
   }
 
   private decodeInputsAndOutputsForPreApproveAsset(decodedTx: DecodedTx) {
+    const txMethod = decodedTx.method.args as PreApproveAssetArgs;
     const sender = decodedTx.address;
     const value = '0'; // Pre-approval does not transfer any value
+    const tokenName = this.getTokenNameByAssetId(txMethod.assetId);
 
     this._inputs.push({
       address: sender,
       value,
-      coin: this._coinConfig.name,
+      coin: tokenName,
     });
 
     this._outputs.push({
       address: sender, // In pre-approval, the output is the same as the input
       value,
-      coin: this._coinConfig.name,
+      coin: tokenName,
     });
   }
 
@@ -149,17 +174,19 @@ export class Transaction extends SubstrateTransaction {
     const fromDID = txMethod.legs[0].fungible.sender.did;
     const toDID = txMethod.legs[0].fungible.receiver.did;
     const amount = txMethod.legs[0].fungible.amount.toString();
+    const assetId = txMethod.legs[0].fungible.assetId;
+    const tokenName = this.getTokenNameByAssetId(assetId);
 
     this._inputs.push({
       address: fromDID,
       value: amount,
-      coin: this._coinConfig.name,
+      coin: tokenName,
     });
 
     this._outputs.push({
       address: toDID,
       value: amount,
-      coin: this._coinConfig.name,
+      coin: tokenName,
     });
   }
 
