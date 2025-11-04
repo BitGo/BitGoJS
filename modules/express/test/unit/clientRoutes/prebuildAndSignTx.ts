@@ -4,8 +4,8 @@ import 'should-http';
 import 'should-sinon';
 import '../../lib/asserts';
 
-import { Request } from 'express';
 import { handleV2PrebuildAndSignTransaction } from '../../../src/clientRoutes';
+import { ExpressApiRouteRequest } from '../../../src/typedRoutes/api';
 
 import { BitGo } from 'bitgo';
 
@@ -44,13 +44,13 @@ describe('Prebuild and Sign (and Send) transaction', function () {
     const bitGoStub = sinon.createStubInstance(BitGo as any, { coin: coinStub });
     const req = {
       bitgo: bitGoStub,
-      params: {
+      decoded: {
         coin,
         id: '632874c8be7b040007104869d2fee228',
+        ...txParams,
       },
-      query: {},
       body: txParams,
-    } as unknown as Request;
+    } as unknown as ExpressApiRouteRequest<'express.v2.wallet.prebuildandsigntransaction', 'post'>;
     await handleV2PrebuildAndSignTransaction(req).should.be.resolvedWith(expectedResponse);
   });
 });

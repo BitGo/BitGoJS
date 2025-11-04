@@ -968,11 +968,13 @@ async function handleV2SendMany(req: express.Request) {
  * - send/broadcast transaction
  * @param req where req.body is {@link PrebuildAndSignTransactionOptions}
  */
-export async function handleV2PrebuildAndSignTransaction(req: express.Request): Promise<SignedTransactionRequest> {
+export async function handleV2PrebuildAndSignTransaction(
+  req: ExpressApiRouteRequest<'express.v2.wallet.prebuildandsigntransaction', 'post'>
+): Promise<SignedTransactionRequest> {
   const bitgo = req.bitgo;
-  const coin = bitgo.coin(req.params.coin);
+  const coin = bitgo.coin(req.decoded.coin);
   const reqId = new RequestTracer();
-  const wallet = await coin.wallets().get({ id: req.params.id, reqId });
+  const wallet = await coin.wallets().get({ id: req.decoded.id, reqId });
   req.body.reqId = reqId;
   let result;
   try {
@@ -1640,12 +1642,10 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   // send transaction
   app.post('/api/v2/:coin/wallet/:id/sendcoins', parseBody, prepareBitGo(config), promiseWrapper(handleV2SendOne));
   app.post('/api/v2/:coin/wallet/:id/sendmany', parseBody, prepareBitGo(config), promiseWrapper(handleV2SendMany));
-  app.post(
-    '/api/v2/:coin/wallet/:id/prebuildAndSignTransaction',
-    parseBody,
+  router.post('express.v2.wallet.prebuildandsigntransaction', [
     prepareBitGo(config),
-    promiseWrapper(handleV2PrebuildAndSignTransaction)
-  );
+    typedPromiseWrapper(handleV2PrebuildAndSignTransaction),
+  ]);
 
   // token enablement
   app.post(
