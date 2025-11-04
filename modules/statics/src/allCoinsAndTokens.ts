@@ -719,7 +719,7 @@ export const allCoinsAndTokens = [
     9,
     UnderlyingAsset.HASH,
     BaseUnit.HASH,
-    [...COSMOS_SIDECHAIN_FEATURES_WITH_STAKING, CoinFeature.CUSTODY_BULK_TRANSACTION]
+    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
   ),
   account(
     'feadf3d5-5a9a-427e-8144-7a5085b4d258',
@@ -729,7 +729,7 @@ export const allCoinsAndTokens = [
     9,
     UnderlyingAsset.HASH,
     BaseUnit.HASH,
-    [...COSMOS_SIDECHAIN_FEATURES_WITH_STAKING, CoinFeature.CUSTODY_BULK_TRANSACTION]
+    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
   ),
   account(
     '36700514-fa3c-42d8-9503-98cdcab0b3c3',
@@ -1039,7 +1039,7 @@ export const allCoinsAndTokens = [
     6,
     UnderlyingAsset.BABY,
     BaseUnit.BABY,
-    [...COSMOS_SIDECHAIN_FEATURES_WITH_STAKING, CoinFeature.CUSTODY_BULK_TRANSACTION]
+    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
   ),
   account(
     'ee22282b-c307-4861-b706-d9a178326ad5',
@@ -1049,7 +1049,7 @@ export const allCoinsAndTokens = [
     6,
     UnderlyingAsset.BABY,
     BaseUnit.BABY,
-    [...COSMOS_SIDECHAIN_FEATURES_WITH_STAKING, CoinFeature.CUSTODY_BULK_TRANSACTION]
+    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
   ),
   account(
     '08ff6b77-4cfb-4dcd-9182-dd1cc6f92f70',
@@ -1061,7 +1061,6 @@ export const allCoinsAndTokens = [
     BaseUnit.MANTRA,
     [
       ...COSMOS_SIDECHAIN_FEATURES,
-      CoinFeature.CUSTODY_BULK_TRANSACTION,
       CoinFeature.SHARED_COSMOS_SDK,
       CoinFeature.SHARED_COSMOS_WP,
       CoinFeature.COSMOS_COMMON_BGA,
@@ -1077,7 +1076,6 @@ export const allCoinsAndTokens = [
     BaseUnit.MANTRA,
     [
       ...COSMOS_SIDECHAIN_FEATURES,
-      CoinFeature.CUSTODY_BULK_TRANSACTION,
       CoinFeature.SHARED_COSMOS_SDK,
       CoinFeature.SHARED_COSMOS_WP,
       CoinFeature.COSMOS_COMMON_BGA,
@@ -1091,7 +1089,7 @@ export const allCoinsAndTokens = [
     8,
     UnderlyingAsset.CRONOS,
     BaseUnit.CRONOS,
-    [...COSMOS_SIDECHAIN_FEATURES_WITH_STAKING, CoinFeature.CUSTODY_BULK_TRANSACTION]
+    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
   ),
   account(
     '49d56512-bddb-41aa-ac7f-f4a4c494b412',
@@ -1101,7 +1099,7 @@ export const allCoinsAndTokens = [
     8,
     UnderlyingAsset.CRONOS,
     BaseUnit.CRONOS,
-    [...COSMOS_SIDECHAIN_FEATURES_WITH_STAKING, CoinFeature.CUSTODY_BULK_TRANSACTION]
+    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
   ),
   account(
     '854513b2-cf1a-44b4-879b-e3aae0b5f227',
@@ -1131,7 +1129,7 @@ export const allCoinsAndTokens = [
     6,
     UnderlyingAsset.INITIA,
     BaseUnit.INITIA,
-    [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.CUSTODY_BULK_TRANSACTION]
+    COSMOS_SIDECHAIN_FEATURES
   ),
   account(
     '2d10a918-01f4-40a5-b1db-a5e5247d21d7',
@@ -1141,7 +1139,7 @@ export const allCoinsAndTokens = [
     6,
     UnderlyingAsset.INITIA,
     BaseUnit.INITIA,
-    [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.CUSTODY_BULK_TRANSACTION]
+    COSMOS_SIDECHAIN_FEATURES
   ),
   account(
     '2999b6e6-c30e-4089-a67a-2012df2adfa0',
@@ -1151,7 +1149,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.ASI,
     BaseUnit.ASI,
-    [...COSMOS_SIDECHAIN_FEATURES_WITH_STAKING, CoinFeature.CUSTODY_BULK_TRANSACTION]
+    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
   ),
   account(
     '1b7dfc3e-3431-48ca-883a-e9e8e32b17f2',
@@ -1161,7 +1159,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.ASI,
     BaseUnit.ASI,
-    [...COSMOS_SIDECHAIN_FEATURES_WITH_STAKING, CoinFeature.CUSTODY_BULK_TRANSACTION]
+    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
   ),
   account(
     'b473d5f0-1590-4edf-bc9f-813aff515a23',
