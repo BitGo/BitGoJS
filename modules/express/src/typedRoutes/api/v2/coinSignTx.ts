@@ -174,11 +174,11 @@ export const HalfSignedAccountTransactionResponse = t.type({
   halfSigned: t.partial({
     // Generic account-based coin fields
     /** Transaction in hex format (used by most account coins) */
-    txHex: optional(t.string),
+    txHex: t.string,
     /** Transaction payload (used by some account coins) */
-    payload: optional(t.string),
+    payload: t.string,
     /** Transaction in base64 format (used by some account coins) */
-    txBase64: optional(t.string),
+    txBase64: t.string,
 
     // Additional EVM-specific fields (superset)
     /** Transaction recipients (EVM) */
