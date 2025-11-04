@@ -2048,6 +2048,7 @@ export enum UnderlyingAsset {
   'eth:fuel' = 'eth:fuel',
   'eth:xreth' = 'eth:xreth',
   'eth:xy' = 'eth:xy',
+  'eth:yu' = 'eth:yu',
   'eth:move' = 'eth:move',
   'eth:mon' = 'eth:mon',
   'eth:usual' = 'eth:usual',
@@ -2729,6 +2730,7 @@ export enum UnderlyingAsset {
   'bsc:ff' = 'bsc:ff',
   'bsc:c98' = 'bsc:c98',
   'bsc:ln' = 'bsc:ln',
+  'bsc:home' = 'bsc:home',
 
   // BSC NFTs
   // generic NFTs
@@ -3107,6 +3109,21 @@ export enum UnderlyingAsset {
   'sol:usx' = 'sol:usx',
   'sol:rksol' = 'sol:rksol',
   'sol:usda1' = 'sol:usda1',
+  'sol:ponke' = 'sol:ponke',
+  'sol:jellyjelly' = 'sol:jellyjelly',
+  'sol:yu' = 'sol:yu',
+  'sol:met' = 'sol:met',
+  'sol:white' = 'sol:white',
+  'sol:yzy' = 'sol:yzy',
+  'sol:wild' = 'sol:wild',
+  'sol:npc' = 'sol:npc',
+  'sol:aix' = 'sol:aix',
+  'sol:troll' = 'sol:troll',
+  'sol:ban' = 'sol:ban',
+  'sol:dbr' = 'sol:dbr',
+  'sol:bless' = 'sol:bless',
+  'sol:cpool' = 'sol:cpool',
+  'sol:home' = 'sol:home',
 
   'tsol:txsgd' = 'sol:txsgd',
   'tsol:txusd' = 'sol:txusd',

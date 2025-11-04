@@ -12116,6 +12116,14 @@ export const erc20Coins = [
     '0xb131f4a55907b10d1f0a50d8ab8fa09ec342cd74',
     UnderlyingAsset['eth:meme']
   ),
+  erc20(
+    '29fe91f5-bf1e-41e3-982e-78c7e0bb2f0a',
+    'eth:yu',
+    'Yala Stablecoin',
+    18,
+    '0xe868084cf08f3c3db11f4b73a95473762d9463f7',
+    UnderlyingAsset['eth:yu']
+  ),
   terc20(
     '0205f0d6-0647-47c9-ad8b-c48d048e54f3',
     'fixed',

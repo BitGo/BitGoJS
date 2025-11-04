@@ -1453,4 +1453,13 @@ export const bscTokens = [
     UnderlyingAsset['bsc:c98'],
     BSC_TOKEN_FEATURES
   ),
+  bscToken(
+    '48a5d9b1-179d-49fb-8633-e3edd977f9a7',
+    'bsc:home',
+    'Home',
+    18,
+    '0x4bfaa776991e85e5f8b1255461cbbd216cfc714f',
+    UnderlyingAsset['bsc:home'],
+    BSC_TOKEN_FEATURES
+  ),
 ];
