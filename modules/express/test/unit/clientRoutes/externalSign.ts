@@ -119,10 +119,16 @@ describe('External signer', () => {
       params: {
         coin: 'tbtc',
       },
+      decoded: {
+        coin: 'tbtc',
+        txPrebuild: {
+          walletId: walletId,
+        },
+      },
       config: {
         signerFileSystemPath: 'signerFileSystemPath',
       },
-    } as unknown as express.Request;
+    } as any;
 
     await handleV2Sign(req);
 

@@ -15,11 +15,12 @@ export function unlockToken(agent, accessToken, seconds) {
     });
 }
 
-export function setupAgent(): request.SuperAgentTest {
+export function setupAgent(config?: any): request.SuperAgentTest {
   const args: any = {
     debug: false,
     env: 'test',
     logfile: '/dev/null',
+    ...config,
   };
 
   const app = expressApp(args);
