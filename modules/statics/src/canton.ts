@@ -32,7 +32,7 @@ export class Canton extends BaseCoin {
   }
 
   protected requiredFeatures(): Set<CoinFeature> {
-    return new Set([CoinFeature.UNSPENT_MODEL]);
+    return new Set([]);
   }
 }
 

@@ -675,7 +675,6 @@ export const IOTA_FEATURES = [
 
 // TODO: https://bitgoinc.atlassian.net/browse/COIN-5870
 export const CANTON_FEATURES = [
-  CoinFeature.UNSPENT_MODEL,
   CoinFeature.TRANSACTION_DATA,
   CoinFeature.REQUIRES_BIG_NUMBER,
   CoinFeature.TSS,
