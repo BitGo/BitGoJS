@@ -742,7 +742,7 @@ describe('CoinSignTx codec tests', function () {
         gasPrice: '20000000000',
         expireTime: 1633046400000,
         sequenceId: 42,
-        pubKeys: [
+        pubs: [
           '03a247b2c6826c3f833c6e164a3be1b124bf5f6de0d837a143a4d81e427a43a26f',
           '02d3a8e9a42b89168a54f09476d40b8d60f5d553f6dcc8e5bf3e8b2733cff25c92',
         ],
@@ -764,7 +764,7 @@ describe('CoinSignTx codec tests', function () {
       assert.strictEqual(decoded.gasPrice, validBody.gasPrice);
       assert.strictEqual(decoded.expireTime, validBody.expireTime);
       assert.strictEqual(decoded.sequenceId, validBody.sequenceId);
-      assert.deepStrictEqual(decoded.pubKeys, validBody.pubKeys);
+      assert.deepStrictEqual(decoded.pubs, validBody.pubs);
       assert.strictEqual(decoded.isEvmBasedCrossChainRecovery, validBody.isEvmBasedCrossChainRecovery);
       assert.deepStrictEqual(decoded.recipients, validBody.recipients);
       assert.strictEqual(decoded.custodianTransactionId, validBody.custodianTransactionId);
@@ -787,6 +787,55 @@ describe('CoinSignTx codec tests', function () {
       const decoded = assertDecode(t.partial(CoinSignTxBody), validBody);
       assert.strictEqual(decoded.gasLimit, validBody.gasLimit);
       assert.strictEqual(decoded.gasPrice, validBody.gasPrice);
+    });
+
+    it('should validate body with UTXO-specific fields (pubs and cosignerPub)', function () {
+      const validBody = {
+        prv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
+        txPrebuild: {
+          txHex:
+            '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
+        },
+        pubs: [
+          'xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8',
+          'xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet9',
+          'xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet0',
+        ],
+        cosignerPub:
+          'xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet0',
+        isLastSignature: false,
+        signingStep: 'signerNonce',
+      };
+
+      const decoded = assertDecode(t.partial(CoinSignTxBody), validBody);
+      assert.strictEqual(decoded.prv, validBody.prv);
+      assert.deepStrictEqual(decoded.pubs, validBody.pubs);
+      assert.strictEqual(decoded.cosignerPub, validBody.cosignerPub);
+      assert.strictEqual(decoded.isLastSignature, validBody.isLastSignature);
+      assert.strictEqual(decoded.signingStep, validBody.signingStep);
+    });
+
+    it('should validate body with EVM-specific fields (walletVersion)', function () {
+      const validBody = {
+        prv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
+        txPrebuild: {
+          txHex:
+            '0x02f87301808459682f008459682f0e8252089439c0f2000e39186af4b78b554eb96a2ea8dc5c3680a46a7612020000000000000000000000002c8f0c8aad01af9f2c6ba6f4edbf6f46000a0eedc080a0',
+        },
+        isLastSignature: false,
+        walletVersion: 3,
+        gasLimit: 21000,
+        gasPrice: '20000000000',
+        sequenceId: 5,
+        expireTime: 1700000000,
+      };
+
+      const decoded = assertDecode(t.partial(CoinSignTxBody), validBody);
+      assert.strictEqual(decoded.walletVersion, validBody.walletVersion);
+      assert.strictEqual(decoded.gasLimit, validBody.gasLimit);
+      assert.strictEqual(decoded.gasPrice, validBody.gasPrice);
+      assert.strictEqual(decoded.sequenceId, validBody.sequenceId);
+      assert.strictEqual(decoded.expireTime, validBody.expireTime);
     });
 
     it('should reject body with invalid field types', function () {
@@ -825,7 +874,7 @@ describe('CoinSignTx codec tests', function () {
     });
 
     describe('HalfSignedAccountTransactionResponse', function () {
-      it('should validate response with all halfSigned fields', function () {
+      it('should validate response with generic account coin fields', function () {
         const validResponse = {
           halfSigned: {
             txHex:
@@ -840,6 +889,61 @@ describe('CoinSignTx codec tests', function () {
         assert.strictEqual(decoded.halfSigned.txHex, validResponse.halfSigned.txHex);
         assert.strictEqual(decoded.halfSigned.payload, validResponse.halfSigned.payload);
         assert.strictEqual(decoded.halfSigned.txBase64, validResponse.halfSigned.txBase64);
+      });
+
+      it('should validate response with EVM-specific fields', function () {
+        const validResponse = {
+          halfSigned: {
+            txHex: '0x02f87301808459682f008459682f0e8252089439c0f2000e39186af4b78b554eb96a2ea8dc5c3680a46a761202',
+            recipients: [
+              { address: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb', amount: 1000000 },
+              { address: '0x9b9f8e3a7c5b9e1c4a7d6e5f8a9b0c1d2e3f4a5b', amount: 500000 },
+            ],
+            eip1559: {
+              maxFeePerGas: '2000000000',
+              maxPriorityFeePerGas: '1500000000',
+            },
+            expiration: 1700000000,
+            expireTime: 1700000000,
+            contractSequenceId: 42,
+            sequenceId: 5,
+            hopTransaction: {
+              txHex: '0x123456',
+              userReqSig: '0xabcdef',
+              gasPriceMax: 3000000000,
+              gasLimit: 21000,
+            },
+            custodianTransactionId: 'custodian-tx-12345',
+            isBatch: false,
+          },
+        };
+
+        const decoded = assertDecode(HalfSignedAccountTransactionResponse, validResponse);
+        assert.strictEqual(decoded.halfSigned.txHex, validResponse.halfSigned.txHex);
+        assert.deepStrictEqual(decoded.halfSigned.recipients, validResponse.halfSigned.recipients);
+        assert.deepStrictEqual(decoded.halfSigned.eip1559, validResponse.halfSigned.eip1559);
+        assert.strictEqual(decoded.halfSigned.expiration, validResponse.halfSigned.expiration);
+        assert.strictEqual(decoded.halfSigned.expireTime, validResponse.halfSigned.expireTime);
+        assert.strictEqual(decoded.halfSigned.contractSequenceId, validResponse.halfSigned.contractSequenceId);
+        assert.strictEqual(decoded.halfSigned.sequenceId, validResponse.halfSigned.sequenceId);
+        assert.deepStrictEqual(decoded.halfSigned.hopTransaction, validResponse.halfSigned.hopTransaction);
+        assert.strictEqual(decoded.halfSigned.custodianTransactionId, validResponse.halfSigned.custodianTransactionId);
+        assert.strictEqual(decoded.halfSigned.isBatch, validResponse.halfSigned.isBatch);
+      });
+
+      it('should validate response with mixed generic and EVM fields', function () {
+        const validResponse = {
+          halfSigned: {
+            txHex: '0x02f87301808459682f008459682f0e8252089439c0f2000e39186af4b78b554eb96a2ea8dc5c3680a46a761202',
+            recipients: [{ address: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb', amount: 1000000 }],
+            contractSequenceId: 10,
+          },
+        };
+
+        const decoded = assertDecode(HalfSignedAccountTransactionResponse, validResponse);
+        assert.strictEqual(decoded.halfSigned.txHex, validResponse.halfSigned.txHex);
+        assert.deepStrictEqual(decoded.halfSigned.recipients, validResponse.halfSigned.recipients);
+        assert.strictEqual(decoded.halfSigned.contractSequenceId, validResponse.halfSigned.contractSequenceId);
       });
 
       it('should validate response with empty halfSigned', function () {
