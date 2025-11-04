@@ -5,6 +5,7 @@ export { KeyPair } from './keyPair';
 export { Utils };
 export { TransactionBuilderFactory } from './transactionBuilderFactory';
 export { Transaction } from './transaction';
+export { TransactionBuilder } from './transactionBuilder';
 export { AtomicTransactionBuilder } from './atomicTransactionBuilder';
 export { AtomicInCTransactionBuilder } from './atomicInCTransactionBuilder';
 export { ImportInCTxBuilder } from './importInCTxBuilder';

@@ -35,7 +35,7 @@ import {
   FLARE_ATOMIC_PARSED_PREFIX,
   HEX_ENCODING,
 } from './constants';
-import { createFlexibleHexRegex } from './utils';
+import utils, { createFlexibleHexRegex } from './utils';
 
 /**
  * Flare P-chain atomic transaction builder with FlareJS credential support.
@@ -418,6 +418,60 @@ export abstract class AtomicTransactionBuilder {
       throw new BuildTransactionError(
         `${ERROR_ENHANCED_PARSE_FAILED}: ${error instanceof Error ? error.message : ERROR_UNKNOWN}`
       );
+    }
+  }
+
+  /**
+   * Threshold is an int that names the number of unique signatures required to spend the output.
+   * Must be less than or equal to the length of Addresses.
+   * @param {number}
+   */
+  threshold(value: number): this {
+    this.validateThreshold(value);
+    this.transaction._threshold = value;
+    return this;
+  }
+
+  /**
+   * Validates the threshold
+   * @param threshold
+   */
+  validateThreshold(threshold: number): void {
+    if (!threshold || threshold !== 2) {
+      throw new BuildTransactionError('Invalid transaction: threshold must be set to 2');
+    }
+  }
+
+  /**
+   * fromPubKey is a list of unique addresses that correspond to the private keys that can be used to spend this output.
+   * @param {string | string[]} senderPubKey
+   */
+  // TODO: check the format of the public keys
+  fromPubKey(senderPubKey: string | string[]): this {
+    const pubKeys = senderPubKey instanceof Array ? senderPubKey : [senderPubKey];
+    this.transaction._fromAddresses = pubKeys.map(utils.parseAddress).toString().split(',');
+    return this;
+  }
+
+  /**
+   * Locktime is a long that contains the unix timestamp that this output can be spent after.
+   * The unix timestamp is specific to the second.
+   * @param value
+   */
+  locktime(value: number): this {
+    const locktime = BigInt(value);
+    this.validateLocktime(locktime);
+    this.transaction._locktime = locktime;
+    return this;
+  }
+
+  /**
+   * Validates locktime
+   * @param locktime
+   */
+  validateLocktime(locktime: bigint): void {
+    if (!locktime || locktime < 0n) {
+      throw new BuildTransactionError('Invalid transaction: locktime must be 0 or higher');
     }
   }
 }

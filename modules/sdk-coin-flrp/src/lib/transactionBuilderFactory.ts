@@ -1,51 +1,11 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { NotImplementedError, TransactionType } from '@bitgo/sdk-core';
 import { AtomicTransactionBuilder } from './atomicTransactionBuilder';
-
-// Placeholder builders - basic implementations for testing
-export class ExportTxBuilder extends AtomicTransactionBuilder {
-  protected get transactionType(): TransactionType {
-    return TransactionType.Export;
-  }
-
-  constructor(coinConfig: Readonly<CoinConfig>) {
-    super(coinConfig);
-    // Don't throw error, allow placeholder functionality
-  }
-}
-
-export class ImportTxBuilder extends AtomicTransactionBuilder {
-  protected get transactionType(): TransactionType {
-    return TransactionType.Import;
-  }
-
-  constructor(coinConfig: Readonly<CoinConfig>) {
-    super(coinConfig);
-    // Don't throw error, allow placeholder functionality
-  }
-}
-
-export class ValidatorTxBuilder extends AtomicTransactionBuilder {
-  protected get transactionType(): TransactionType {
-    return TransactionType.AddValidator;
-  }
-
-  constructor(coinConfig: Readonly<CoinConfig>) {
-    super(coinConfig);
-    // Don't throw error, allow placeholder functionality
-  }
-}
-
-export class DelegatorTxBuilder extends AtomicTransactionBuilder {
-  protected get transactionType(): TransactionType {
-    return TransactionType.AddDelegator;
-  }
-
-  constructor(coinConfig: Readonly<CoinConfig>) {
-    super(coinConfig);
-    // Don't throw error, allow placeholder functionality
-  }
-}
+import { ImportInCTxBuilder } from './importInCTxBuilder';
+import { ValidatorTxBuilder } from './validatorTxBuilder';
+import { PermissionlessValidatorTxBuilder } from './permissionlessValidatorTxBuilder';
+import { ExportInCTxBuilder } from './exportInCTxBuilder';
+import { ExportInPTxBuilder } from './exportInPTxBuilder';
+import { ImportInPTxBuilder } from './importInPTxBuilder';
 
 /**
  * Factory for Flare P-chain transaction builders
@@ -70,7 +30,7 @@ export class TransactionBuilderFactory {
 
     // Create a mock export builder for now
     // In the future, this will parse the transaction and determine the correct type
-    const builder = new ExportTxBuilder(this._coinConfig);
+    const builder = new ExportInPTxBuilder(this._coinConfig);
 
     // Initialize with the hex data (placeholder)
     builder.initBuilder({ txHex });
@@ -79,21 +39,56 @@ export class TransactionBuilderFactory {
   }
 
   /**
-   * Create a transaction builder for a specific type
-   * @param type - Transaction type
+   * Initialize Validator builder
+   *
+   * @returns {ValidatorTxBuilder} the builder initialized
    */
-  getBuilder(type: TransactionType): AtomicTransactionBuilder {
-    switch (type) {
-      case TransactionType.Export:
-        return new ExportTxBuilder(this._coinConfig);
-      case TransactionType.Import:
-        return new ImportTxBuilder(this._coinConfig);
-      case TransactionType.AddValidator:
-        return new ValidatorTxBuilder(this._coinConfig);
-      case TransactionType.AddDelegator:
-        return new DelegatorTxBuilder(this._coinConfig);
-      default:
-        throw new NotImplementedError(`Transaction type ${type} not supported`);
-    }
+  getValidatorBuilder(): ValidatorTxBuilder {
+    return new ValidatorTxBuilder(this._coinConfig);
+  }
+
+  /**
+   * Initialize Permissionless Validator builder
+   *
+   * @returns {PermissionlessValidatorTxBuilder} the builder initialized
+   */
+  getPermissionlessValidatorTxBuilder(): PermissionlessValidatorTxBuilder {
+    return new PermissionlessValidatorTxBuilder(this._coinConfig);
+  }
+
+  /**
+   * Export Cross chain transfer
+   *
+   * @returns {ExportInPTxBuilder} the builder initialized
+   */
+  getExportBuilder(): ExportInPTxBuilder {
+    return new ExportInPTxBuilder(this._coinConfig);
+  }
+
+  /**
+   * Import Cross chain transfer
+   *
+   * @returns {ImportInPTxBuilder} the builder initialized
+   */
+  getImportBuilder(): ImportInPTxBuilder {
+    return new ImportInPTxBuilder(this._coinConfig);
+  }
+
+  /**
+   * Import in C chain Cross chain transfer
+   *
+   * @returns {ImportInCTxBuilder} the builder initialized
+   */
+  getImportInCBuilder(): ImportInCTxBuilder {
+    return new ImportInCTxBuilder(this._coinConfig);
+  }
+
+  /**
+   * Export in C chain Cross chain transfer
+   *
+   * @returns {ExportInCTxBuilder} the builder initialized
+   */
+  getExportInCBuilder(): ExportInCTxBuilder {
+    return new ExportInCTxBuilder(this._coinConfig);
   }
 }

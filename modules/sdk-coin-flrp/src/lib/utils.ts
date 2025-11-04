@@ -1,5 +1,5 @@
 import { TransferableOutput } from '@flarenetwork/flarejs';
-import { bech32 } from 'bech32';
+import * as bech32 from 'bech32';
 import bs58 from 'bs58';
 import {
   BaseUtils,
@@ -51,6 +51,27 @@ export class Utils implements BaseUtils {
     const words = bech32.toWords(address);
     // Create the full bech32 address with format: P-{hrp}1{bech32_encoded_address}
     return `${prefix}-${bech32.encode(hrp, words)}`;
+  };
+
+  /**
+   * Convert a NodeID string to a Buffer. This is a Flare-specific implementation
+   * that doesn't rely on the Avalanche dependency.
+   *
+   * NodeIDs in Flare follow the format: NodeID-<base58_string>
+   *
+   * @param {string} nodeID - The NodeID string to convert
+   * @returns {Buffer} - The decoded NodeID as a Buffer
+   */
+  public NodeIDStringToBuffer = (nodeID: string): Buffer => {
+    // Remove 'NodeID-' prefix if present
+    const cleanNodeID = nodeID.startsWith('NodeID-') ? nodeID.slice(7) : nodeID;
+
+    try {
+      // Decode base58 string to buffer
+      return Buffer.from(bs58.decode(cleanNodeID));
+    } catch (error) {
+      throw new Error(`Invalid NodeID format: ${error instanceof Error ? error.message : String(error)}`);
+    }
   };
 
   public includeIn(walletAddresses: string[], otxoOutputAddresses: string[]): boolean {
@@ -126,6 +147,7 @@ export class Utils implements BaseUtils {
     }
   }
 
+  // TODO add test cases for this method
   public parseAddress = (address: string): Buffer => {
     return this.stringToAddress(address);
   };
