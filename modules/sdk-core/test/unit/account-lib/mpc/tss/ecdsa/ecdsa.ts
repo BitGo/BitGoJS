@@ -26,6 +26,32 @@ describe('ecdsa tss', function () {
 
   let signCombine1: SignCombineRT, signCombine2: SignCombineRT;
 
+  function signAndVerify(message: Buffer, shouldHash = true): boolean {
+    const [sign1, sign2] = [
+      ecdsa.sign(message, signCombine1.oShare, signCombine2.dShare, undefined, shouldHash),
+      ecdsa.sign(message, signCombine2.oShare, signCombine1.dShare, undefined, shouldHash),
+    ];
+
+    const [signWithProofs1, signWithProofs2] = [
+      ecdsa.generateVAProofs(message, sign1),
+      ecdsa.generateVAProofs(message, sign2),
+    ];
+
+    const [UT1, UT2] = [
+      ecdsa.verifyVAShares(signWithProofs1, [signWithProofs2]),
+      ecdsa.verifyVAShares(signWithProofs2, [signWithProofs1]),
+    ];
+
+    const [publicUTShares_1, publicUTShares_2] = [UT1, UT2];
+    const [signature1, signature2] = [
+      ecdsa.verifyUTShares(UT1, [publicUTShares_2]),
+      ecdsa.verifyUTShares(UT2, [publicUTShares_1]),
+    ];
+
+    const signature = ecdsa.constructSignature([signature1, signature2]);
+    return ecdsa.verify(message, signature, undefined, shouldHash);
+  }
+
   before('generate key and sign phase 1 to 4', async function () {
     // In some execution environments (e.g. CI), generateNtilde below may take longer at times.
     this.timeout('40s');
@@ -158,8 +184,6 @@ describe('ecdsa tss', function () {
   });
 
   it('sign phase 5 should succeed', async function () {
-    // TODO(HSM-129): There is a bug signing unhashed message (although this deviates from DSA spec) if the message is a little long.
-    //       Some discrepancy between Ecdsa.sign and secp256k1.recoverPublicKey on handling the message input.
     const message = Buffer.from('GG18 PHASE 5');
 
     // Starting phase 5
@@ -270,5 +294,42 @@ describe('ecdsa tss', function () {
     const [publicUTShares_1, publicUTShares_2] = [UT1 as PublicUTShare, UT2 as PublicUTShare];
     (() => ecdsa.verifyUTShares(UT1, [publicUTShares_2])).should.throw('Sum of all U_i does not match sum of all T_i');
     (() => ecdsa.verifyUTShares(UT2, [publicUTShares_1])).should.throw('Sum of all U_i does not match sum of all T_i');
+  });
+
+  describe('shouldHash parameter', function () {
+    it('should validate message length when shouldHash=false', function () {
+      const hash32 = Buffer.alloc(32, 0x01);
+      const shortMessage = Buffer.from('Short');
+      const longMessage = Buffer.from('This is a longer message that exceeds 32 bytes in length');
+
+      (() => ecdsa.sign(hash32, signCombine1.oShare, signCombine2.dShare, undefined, false)).should.not.throw();
+
+      (() => ecdsa.sign(shortMessage, signCombine1.oShare, signCombine2.dShare, undefined, false)).should.throw(
+        /must be exactly 32 bytes/
+      );
+      (() => ecdsa.sign(longMessage, signCombine1.oShare, signCombine2.dShare, undefined, false)).should.throw(
+        /must be exactly 32 bytes/
+      );
+
+      const dummySig = { r: '00', s: '00', recid: 0, y: signCombine1.oShare.y };
+      (() => ecdsa.verify(shortMessage, dummySig, undefined, false)).should.throw(/must be exactly 32 bytes/);
+      (() => ecdsa.verify(longMessage, dummySig, undefined, false)).should.throw(/must be exactly 32 bytes/);
+    });
+
+    it('should work correctly with shouldHash=false when message is 32 bytes', async function () {
+      const { createHash } = require('crypto');
+      const message = Buffer.from('Any message');
+      const messageHash = createHash('sha256').update(message).digest();
+
+      signAndVerify(messageHash, false).should.equal(true);
+    });
+
+    it('should work correctly with shouldHash=true for any message length', async function () {
+      const shortMessage = Buffer.from('Short message');
+      const longMessage = Buffer.from('This is a longer message that exceeds 32 bytes in length');
+
+      signAndVerify(shortMessage, true).should.equal(true);
+      signAndVerify(longMessage, true).should.equal(true);
+    });
   });
 });

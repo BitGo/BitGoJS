@@ -1357,10 +1357,13 @@ export default class Ecdsa {
    * @param {OShare} oShare private omicron share of current participant
    * @param {DShare} dShare delta share received from the other participant
    * @param {Hash} hash hashing algorithm implementing Node`s standard crypto hash interface
-   * @param shouldHash if true, we hash the provided buffer before signing
+   * @param shouldHash if true, we hash the provided buffer before signing. If false, M must be exactly 32 bytes (a hash).
    * @returns {VAShare}
    */
   sign(M: Buffer, oShare: OShare, dShare: DShare, hash?: Hash, shouldHash = true): VAShare {
+    if (!shouldHash && M.length !== 32) {
+      throw new Error(`When shouldHash=false, message must be exactly 32 bytes (a hash), but got ${M.length} bytes`);
+    }
     const m = shouldHash ? (hash || createHash('sha256')).update(M).digest() : M;
 
     const delta = Ecdsa.curve.scalarAdd(hexToBigInt(oShare.delta), hexToBigInt(dShare.delta));
@@ -1560,10 +1563,15 @@ export default class Ecdsa {
    * @param {Buffer} message
    * @param {Signature } signature
    * @param {Hash} hash hashing algorithm implementing Node`s standard crypto hash interface
-   * @param {boolean} shouldHash if true, we hash the provided buffer before verifying
+   * @param {boolean} shouldHash if true, we hash the provided buffer before verifying. If false, message must be exactly 32 bytes (a hash).
    * @returns {boolean} True if signature is valid; False otherwise
    */
   verify(message: Buffer, signature: Signature, hash?: Hash, shouldHash = true): boolean {
+    if (!shouldHash && message.length !== 32) {
+      throw new Error(
+        `When shouldHash=false, message must be exactly 32 bytes (a hash), but got ${message.length} bytes`
+      );
+    }
     const messageToVerify = shouldHash ? (hash || createHash('sha256')).update(message).digest() : message;
     return Ecdsa.curve.verify(
       messageToVerify,
