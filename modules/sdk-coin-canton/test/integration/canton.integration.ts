@@ -1,16 +1,28 @@
 import assert from 'assert';
 
+import { BitGoAPI } from '@bitgo/sdk-api';
 import { TransactionType } from '@bitgo/sdk-core';
+import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 
 import { getCantonBuilderFactory } from '../helper';
 import {
+  CANTON_RECEIVE_ADDRESS,
   GenerateTopologyResponse,
   TransferAcceptRawTransaction,
   TransferRejectRawTransaction,
   WalletInitRawTransaction,
 } from '../resources';
+import { Tcanton } from '../../src';
 
 describe('Canton integration tests', function () {
+  let bitgo: TestBitGoAPI;
+  let basecoin: Tcanton;
+  before(() => {
+    bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
+    bitgo.safeRegister('tcanton', Tcanton.createInstance);
+    basecoin = bitgo.coin('tcanton') as Tcanton;
+  });
+
   describe('Explain raw transaction', function () {
     const factory = getCantonBuilderFactory('tcanton');
     it('should explain raw wallet init transaction', function () {
@@ -39,6 +51,73 @@ describe('Canton integration tests', function () {
       assert(explainTxData);
       assert.equal(explainTxData.type, TransactionType.TransferReject);
       assert.equal(explainTxData.inputAmount, '5.0000000000');
+    });
+  });
+
+  describe('isWalletAddress', function () {
+    let keychains;
+    let commonKeychain: string;
+    before(function () {
+      commonKeychain =
+        '19bdfe2a4b498a05511381235a8892d54267807c4a3f654e310b938b8b424ff4adedbe92f4c146de641c67508a961324c8504cdf8e0c0acbb68d6104ccccd781';
+      keychains = [
+        {
+          id: '6424c353eaf78d000766e95949868468',
+          source: 'user',
+          type: 'tss',
+          commonKeychain:
+            '19bdfe2a4b498a05511381235a8892d54267807c4a3f654e310b938b8b424ff4adedbe92f4c146de641c67508a961324c8504cdf8e0c0acbb68d6104ccccd781',
+          encryptedPrv:
+            '{"iv":"cZd5i7L4RxtwrALW2rK7UA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"5zgoH1Bd3Fw=","ct":"9vVlnXFRtrM9FVEo+d2chbGHlM9lFZemueBuAs3BIkPo33Fo7jzwwNK/kIWkEyg+NmEBd5IaqAS157nvvvwzzsmMWlQdUz9qbmXNv3pg987cXFR08exS+4uhwP1YNOjJTRvRNcO9ZqHb46d4fmyJ/yC9/susCge7r/EsbaN5C3afv1dzybuq912FwaQElZLYYp5BICudFOMZ9k0UDMfKM/PMDkH7WexoGHr9GKq/bgCH2B39TZZyHKU6Uy47lXep2s6h0DrMwHOrnmiL3DZjOj88Ynvphlzxuo4eOlD2UHia2+nvIaISYs29Pr0DAvREutchvcBpExj1kWWPv7hQYrv8F0NAdatsbWl3w+xKyfiMKo1USlrwyJviypGtQtXOJyw0XPN0rv2+L5lW8BbjpzHfYYN13fJTedlGTFhhkzVtbbPAKE02kx7zCJcjYaiexdSTsrDLScYNT9/Jhdt27KpsooehwVohLfSKz4vbFfRu2MPZw3/+c/hfiJNgtz6esWbnxGrcE8U2IwPYCaK+Ghk4DcqWNIni59RI5B5kAsQOToII40qPN510uTgxBSPO7q7MHgkxdd4CqBq+ojr9j0P7oao8E5Y+CBDJrojDoCh1oCCDW9vo2dXlVcD8SIbw7U/9AfvEbA4xyE/5md1M7CIwLnWs2Ynv0YtaKoqhdS9x6FmHlMDhN/DKHinrwmowtrTT82fOkpO5g9saSmgU7Qy3gLt8t+VwdEyeFeQUKRSyci8qgqXQaZIg4+aXgaSOnlCFMtmB8ekYxEhTY5uzRfrNgS4s1QeqFBpNtUF+Ydi297pbVXnJoXAN+SVWd80GCx+yI2dpVC89k3rOWK9WeyqlnzuLJWp2RIOB9cdW8GFv/fN+QAJpYeVxOE4+nZDsKnsj8nKcg9t4Dlx1G6gLM1/Vq9YxNLbuzuRC0asUYvdMnoMvszmpm++TxndYisgNYscpZSoz7wvcazJNEPfhPVjEkd6tUUuN4GM35H0DmKCUQNT+a6B6hmHlTZvjxiyGAg5bY59hdjvJ+22QduazlEEC6LI3HrA7uK0TpplWzS1tCIFvTMUhj65DEZmNJ2+ZY9bQ4vsMf+DRR3OOG4t+DMlNfjOd3zNv3QoY95BjfWpryFwPzDq7bCP67JDsoj7j2TY5FRSrRkD77H0Ewlux2cWfjRTwcMHcdQxxuV0OP0aNjGDjybFN"}',
+        },
+        {
+          id: '6424c353eaf78d000766e96137d4404b',
+          source: 'backup',
+          type: 'tss',
+          commonKeychain:
+            '19bdfe2a4b498a05511381235a8892d54267807c4a3f654e310b938b8b424ff4adedbe92f4c146de641c67508a961324c8504cdf8e0c0acbb68d6104ccccd781',
+          encryptedPrv:
+            '{"iv":"vi0dPef/Rx7kG/pRySQi6Q==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"9efhQsiEvVs=","ct":"Gw6atvf6gxKzsjtl3xseipO3rAxp1mAz7Yu1ihFsi5/lf2vMZegApgZx+pyILFS9KKLHbNF3U6WgSYdrr2t4vzdLsXkH1WIxfHS+cd2C5N59yADZDnPJBT6pv/IRvaYelP0Ck3nIYQ2hSMm8op+VOWC/SzHeh7slYDqwEHTGan0Wigfvk1yRd7CCJTaEAomnc/4eFi2NY3X3gt/3opy9IAgknnwUFohn96EWpEQ0F6pbzH/Z8VF6gF+DUcrrByAxExUPnHQZiFk3YHU/vVV4FxBU/mVAE8xBsBn5ul5e5SUMPfc7TBuJWv4BByTNg9xDShF/91Yx2nbfUm5d9QmM8lpKgzzQvcK8POAPk87gRCuKnsGh5vNS0UppkHc+ocfzRQlGA6jze7QyyQO0rMj5Ly8kWjwk2vISvKYHYS1NR7VU549UIXo7NXjatunKSc3+IreoRUHIshiaLg6hl+pxCCuc0qQ43V0mdIfCjTN8gkGWLNk8R7tAGPz9jyapQPcPEGHgEz0ATIi6yMNWCsibS2eLiE1uVEJONoM4lk6FPl3Q2CHbW2MeEbqjY8hbaw18mNb2xSBH/Fwpiial+Tvi2imqgnCO4ZpO9bllKftZPcQy0stN+eGBlb5ufyflKkDSiChHYroGjEpmiFicdde48cJszF52uKNnf1q67fA9/S2FAHQab3EXojxH2Gbk+kkV2h/TYKFFZSWC3vi4e8mO+vjMUcR0AdsgPFyEIz0SCGuba3CnTLNdEuZwsauAeHkx2vUTnRgJPVgNeeuXmsVG76Sy2ggJHuals0Hj8U2Xda0qO1RuFfoCWfss9wn6HGRwPPkhSB/8oNguAqmRVGKkd8Zwt3IvrTd9fk0/rFFDJKGz7WyNHkYgUmNiGcItD12v0jx7FZ52EJzl3Av1RyJUQK18+8EYPh3SGiU9dt7VX0aF0uo6JouKhOeldUvMP+AugQz8fUclwTQsbboVg27Yxo0DyATVwThW5a56R6Qf5ZiQJluFuzs5y98rq0S5q046lE6o3vVmJpEdwjeSCJoET5CL4nTgkXyWvhm4eB8u/e66l3o0qbaSx8q9YYmT9EpRcl5TP4ThLBKETYdzVvg4exjQfektMatk5EyUpEIhZPXh5vXpJZesdfO9LJ8zTaHBsBjDPU7cdNgQMbebpataRi8A0el2/IJXl+E+olgAz5zC4i2O1Q=="}',
+        },
+        {
+          id: '6424c353eaf78d000766e9510b125fba',
+          source: 'bitgo',
+          type: 'tss',
+          commonKeychain:
+            '19bdfe2a4b498a05511381235a8892d54267807c4a3f654e310b938b8b424ff4adedbe92f4c146de641c67508a961324c8504cdf8e0c0acbb68d6104ccccd781',
+          verifiedVssProof: true,
+          isBitGo: true,
+        },
+      ];
+    });
+    it('should return true when receive address is valid', async function () {
+      const address = CANTON_RECEIVE_ADDRESS.VALID_ADDRESS;
+      const index = '1';
+      const params = { commonKeychain, address: address, index, keychains };
+      const isValid = await basecoin.isWalletAddress(params);
+      isValid.should.equal(true);
+    });
+
+    it('should throw error when receive address is invalid', async function () {
+      const address = CANTON_RECEIVE_ADDRESS.INVALID_ADDRESS;
+      const index = '1';
+      const params = { commonKeychain, address: address, index, keychains };
+      try {
+        await basecoin.isWalletAddress(params);
+      } catch (e) {
+        assert.equal(e.message, 'invalid address: ' + address);
+      }
+    });
+
+    it('should throw error when receive address memoId is incorrect index', async function () {
+      const address = CANTON_RECEIVE_ADDRESS.VALID_ADDRESS;
+      const index = '2';
+      const params = { commonKeychain, address: address, index, keychains };
+      try {
+        await basecoin.isWalletAddress(params);
+      } catch (e) {
+        assert.equal(e.message, 'invalid memoId index: 1');
+      }
     });
   });
 });
