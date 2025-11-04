@@ -440,7 +440,7 @@ export const avaxTokens = [
     'avaxc:shrap',
     'Shrapnel',
     18,
-    '0xd402298a793948698b9a63311404fbeee944eafd',
+    '0xd402298a793948698b9a63311404fbbee944eafd',
     UnderlyingAsset['avaxc:shrap']
   ),
   avaxErc20(
