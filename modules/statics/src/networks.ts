@@ -513,7 +513,7 @@ class ECashTestnet extends Testnet implements UtxoNetwork {
 class PolkadotAssetHub extends Mainnet implements DotNetwork {
   name = 'PolkadotAssetHub';
   family = CoinFamily.DOT;
-  explorerUrl = 'https://assethub-polkadot.subscan.io/extrinsic';
+  explorerUrl = 'https://assethub-polkadot.subscan.io/extrinsic/';
   specName = 'statemint' as PolkadotSpecNameType;
   genesisHash = '0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f';
   specVersion = 1007001;
