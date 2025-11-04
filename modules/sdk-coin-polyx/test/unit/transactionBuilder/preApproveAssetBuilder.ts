@@ -10,7 +10,7 @@ describe('Polyx Pre Approve Asset Builder - Testnet', () => {
   let builder: PreApproveAssetBuilder;
 
   const sender = accounts.rbitgoTokenOwner;
-  const assetId = '0x2ffe769d862a89948e1ccf1423bfc7f8';
+  const assetId = '0x780602887b358cf48989d0d9aa6c8d28';
 
   beforeEach(() => {
     const config = buildTestConfig();

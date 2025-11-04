@@ -12,7 +12,7 @@ describe('Polyx token transfer Builder - Testnet', () => {
   const sender = accounts.rbitgoTokenOwner;
   const senderDID = '0x28e8649fec23dd688090b9b5bb950fd34bf20a014cf05542e3ad0264915ee775';
   const receiverDID = '0x9202856204a721d2f5e8b85408067d54f1ca84390bf4f558b5615a5a6d3bddb8';
-  const assetId = '0x2ffe769d862a89948e1ccf1423bfc7f8';
+  const assetId = '0x780602887b358cf48989d0d9aa6c8d28';
 
   beforeEach(() => {
     const config = buildTestConfig();
