@@ -1824,6 +1824,8 @@ export class Flare extends Mainnet implements FlareNetwork, EthereumNetwork {
   accountExplorerUrl = 'https://flare-explorer.flare.network/address/';
   chainId = 14;
   nativeCoinOperationHashPrefix = '14';
+  walletFactoryAddress = '0x809ee567e413543af1caebcdb247f6a67eafc8dd';
+  walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
   batcherContractAddress = '0xc5d7a3b4c490c6242fb28f20e5fe33cd983372a3';
   forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
@@ -1836,6 +1838,8 @@ export class FlareTestnet extends Testnet implements FlareNetwork, EthereumNetwo
   accountExplorerUrl = 'https://coston2-explorer.flare.network/address/';
   chainId = 114;
   nativeCoinOperationHashPrefix = '114';
+  walletFactoryAddress = '0x809ee567e413543af1caebcdb247f6a67eafc8dd';
+  walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
   batcherContractAddress = '0xc5d7a3b4c490c6242fb28f20e5fe33cd983372a3';
   forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
