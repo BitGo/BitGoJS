@@ -23,7 +23,6 @@ import {
   ITokenEnablement,
   KeyPair,
   Memo,
-  MethodNotImplementedError,
   MPCAlgorithm,
   MPCConsolidationRecoveryOptions,
   MPCRecoveryOptions,
@@ -50,8 +49,9 @@ import {
   TransactionExplanation,
   TransactionParams,
   TransactionRecipient,
-  VerifyAddressOptions,
   VerifyTransactionOptions,
+  TssVerifyAddressOptions,
+  verifyEddsaTssWalletAddress,
 } from '@bitgo/sdk-core';
 import { auditEddsaPrivateKey, getDerivationPath } from '@bitgo/sdk-lib-mpc';
 import { BaseNetwork, CoinFamily, coins, SolCoin, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
@@ -560,8 +560,22 @@ export class Sol extends BaseCoin {
     return true;
   }
 
-  async isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
-    throw new MethodNotImplementedError();
+  async isWalletAddress(params: TssVerifyAddressOptions): Promise<boolean> {
+    return verifyEddsaTssWalletAddress(
+      params,
+      (address) => this.isValidAddress(address),
+      (publicKey) => this.getAddressFromPublicKey(publicKey)
+    );
+  }
+
+  /**
+   * Converts a Solana public key to an address
+   * @param publicKey Hex-encoded public key (64 hex characters = 32 bytes)
+   * @returns Base58-encoded Solana address
+   */
+  getAddressFromPublicKey(publicKey: string): string {
+    const publicKeyBuffer = Buffer.from(publicKey, 'hex');
+    return base58.encode(publicKeyBuffer);
   }
 
   /**

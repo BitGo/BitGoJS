@@ -6,6 +6,12 @@ import {
   PutPendingApproval,
 } from '../../../src/typedRoutes/api/v1/pendingApproval';
 import { assertDecode } from './common';
+import 'should';
+import 'should-http';
+import 'should-sinon';
+import * as sinon from 'sinon';
+import { BitGo } from 'bitgo';
+import { setupAgent } from '../../lib/testutil';
 /**
  * Helper function to test io-ts codec decoding
  */
@@ -202,6 +208,265 @@ describe('PendingApproval codec tests', function () {
       // Check that the response object has the expected status codes
       assert.ok(PutPendingApproval.response[200]);
       assert.ok(PutPendingApproval.response[400]);
+    });
+  });
+
+  describe('Supertest Integration Tests', function () {
+    const agent = setupAgent();
+
+    const mockApprovedResponse = {
+      id: 'approval123',
+      state: 'approved',
+      wallet: 'wallet123',
+      enterprise: 'enterprise123',
+    };
+
+    const mockRejectedResponse = {
+      id: 'approval123',
+      state: 'rejected',
+      wallet: 'wallet123',
+      enterprise: 'enterprise123',
+    };
+
+    afterEach(function () {
+      sinon.restore();
+    });
+
+    it('should successfully approve pending approval', async function () {
+      const approvalId = '123456789abcdef';
+      const requestBody = {
+        state: 'approved',
+        walletPassphrase: 'mySecurePassword',
+      };
+
+      const mockPendingApprovalObject = {
+        approve: sinon.stub().resolves(mockApprovedResponse),
+        reject: sinon.stub().resolves(mockRejectedResponse),
+      };
+
+      sinon.stub(BitGo.prototype, 'pendingApprovals').returns({
+        get: sinon.stub().resolves(mockPendingApprovalObject),
+      } as any);
+
+      const result = await agent
+        .put(`/api/v1/pendingapprovals/${approvalId}/express`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      assert.strictEqual(result.status, 200);
+      result.body.should.have.property('id');
+      result.body.should.have.property('state');
+      assert.strictEqual(result.body.id, mockApprovedResponse.id);
+      assert.strictEqual(result.body.state, 'approved');
+      assert.strictEqual(result.body.wallet, mockApprovedResponse.wallet);
+      assert.strictEqual(result.body.enterprise, mockApprovedResponse.enterprise);
+    });
+
+    it('should successfully reject pending approval', async function () {
+      const approvalId = '123456789abcdef';
+      const requestBody = {
+        state: 'rejected',
+        walletPassphrase: 'mySecurePassword',
+      };
+
+      const mockPendingApprovalObject = {
+        approve: sinon.stub().resolves(mockApprovedResponse),
+        reject: sinon.stub().resolves(mockRejectedResponse),
+      };
+
+      sinon.stub(BitGo.prototype, 'pendingApprovals').returns({
+        get: sinon.stub().resolves(mockPendingApprovalObject),
+      } as any);
+
+      const result = await agent
+        .put(`/api/v1/pendingapprovals/${approvalId}/express`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      assert.strictEqual(result.status, 200);
+      result.body.should.have.property('id');
+      result.body.should.have.property('state');
+      assert.strictEqual(result.body.id, mockRejectedResponse.id);
+      assert.strictEqual(result.body.state, 'rejected');
+      assert.strictEqual(result.body.wallet, mockRejectedResponse.wallet);
+      assert.strictEqual(result.body.enterprise, mockRejectedResponse.enterprise);
+    });
+
+    it('should successfully approve with otp', async function () {
+      const approvalId = '123456789abcdef';
+      const requestBody = {
+        state: 'approved',
+        walletPassphrase: 'mySecurePassword',
+        otp: '123456',
+      };
+
+      const mockPendingApprovalObject = {
+        approve: sinon.stub().resolves(mockApprovedResponse),
+        reject: sinon.stub().resolves(mockRejectedResponse),
+      };
+
+      sinon.stub(BitGo.prototype, 'pendingApprovals').returns({
+        get: sinon.stub().resolves(mockPendingApprovalObject),
+      } as any);
+
+      const result = await agent
+        .put(`/api/v1/pendingapprovals/${approvalId}/express`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      assert.strictEqual(result.status, 200);
+      assert.strictEqual(result.body.id, mockApprovedResponse.id);
+      assert.strictEqual(result.body.state, 'approved');
+    });
+
+    it('should successfully approve with xprv', async function () {
+      const approvalId = '123456789abcdef';
+      const requestBody = {
+        state: 'approved',
+        xprv: 'xprvString',
+      };
+
+      const mockPendingApprovalObject = {
+        approve: sinon.stub().resolves(mockApprovedResponse),
+        reject: sinon.stub().resolves(mockRejectedResponse),
+      };
+
+      sinon.stub(BitGo.prototype, 'pendingApprovals').returns({
+        get: sinon.stub().resolves(mockPendingApprovalObject),
+      } as any);
+
+      const result = await agent
+        .put(`/api/v1/pendingapprovals/${approvalId}/express`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      assert.strictEqual(result.status, 200);
+      assert.strictEqual(result.body.id, mockApprovedResponse.id);
+      assert.strictEqual(result.body.state, 'approved');
+    });
+
+    it('should successfully preview pending transactions', async function () {
+      const approvalId = '123456789abcdef';
+      const requestBody = {
+        previewPendingTxs: true,
+      };
+
+      const mockPreviewResponse = {
+        id: 'approval123',
+        txHex: '0x123456789',
+        pendingTransactions: [],
+      };
+
+      const mockPendingApprovalObject = {
+        approve: sinon.stub().resolves(mockPreviewResponse),
+        reject: sinon.stub().resolves(mockPreviewResponse),
+      };
+
+      sinon.stub(BitGo.prototype, 'pendingApprovals').returns({
+        get: sinon.stub().resolves(mockPendingApprovalObject),
+      } as any);
+
+      const result = await agent
+        .put(`/api/v1/pendingapprovals/${approvalId}/express`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      assert.strictEqual(result.status, 200);
+      assert.strictEqual(result.body.id, mockPreviewResponse.id);
+      assert.strictEqual(result.body.txHex, mockPreviewResponse.txHex);
+      result.body.should.have.property('pendingTransactions');
+    });
+
+    it('should successfully reject with empty body (defaults to reject)', async function () {
+      const approvalId = '123456789abcdef';
+      const requestBody = {};
+
+      const mockPendingApprovalObject = {
+        approve: sinon.stub().resolves(mockApprovedResponse),
+        reject: sinon.stub().resolves(mockRejectedResponse),
+      };
+
+      sinon.stub(BitGo.prototype, 'pendingApprovals').returns({
+        get: sinon.stub().resolves(mockPendingApprovalObject),
+      } as any);
+
+      const result = await agent
+        .put(`/api/v1/pendingapprovals/${approvalId}/express`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      assert.strictEqual(result.status, 200);
+      assert.strictEqual(result.body.id, mockRejectedResponse.id);
+      assert.strictEqual(result.body.state, 'rejected');
+    });
+  });
+
+  describe('Error Handling Tests', function () {
+    const agent = setupAgent();
+
+    afterEach(function () {
+      sinon.restore();
+    });
+
+    it('should handle SDK method failure', async function () {
+      const approvalId = '123456789abcdef';
+      const requestBody = {
+        walletPassphrase: 'mySecurePassword',
+      };
+
+      const mockPendingApprovalObject = {
+        approve: sinon.stub().rejects(new Error('Failed to update pending approval')),
+        reject: sinon.stub().rejects(new Error('Failed to update pending approval')),
+      };
+
+      sinon.stub(BitGo.prototype, 'pendingApprovals').returns({
+        get: sinon.stub().resolves(mockPendingApprovalObject),
+      } as any);
+
+      const result = await agent
+        .put(`/api/v1/pendingapprovals/${approvalId}/express`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      assert.strictEqual(result.status, 500);
+      result.body.should.have.property('error');
+    });
+
+    it('should handle invalid type in request field', async function () {
+      const approvalId = '123456789abcdef';
+      const requestBody = {
+        walletPassphrase: 12345, // number instead of string
+      };
+
+      const result = await agent
+        .put(`/api/v1/pendingapprovals/${approvalId}/express`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      assert.ok(result.status >= 400);
+    });
+
+    it('should handle invalid previewPendingTxs type', async function () {
+      const approvalId = '123456789abcdef';
+      const requestBody = {
+        previewPendingTxs: 'true', // string instead of boolean
+      };
+
+      const result = await agent
+        .put(`/api/v1/pendingapprovals/${approvalId}/express`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      assert.ok(result.status >= 400);
     });
   });
 });

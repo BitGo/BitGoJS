@@ -8,6 +8,8 @@ export interface CantonConstructorOptions {
   network: BaseNetwork;
   features: CoinFeature[];
   asset: UnderlyingAsset;
+  prefix?: string;
+  suffix?: string;
   primaryKeyCurve: KeyCurve;
 }
 
@@ -42,6 +44,8 @@ export class Canton extends BaseCoin {
  * @param {String} fullName complete human-readable name of the coin
  * @param {BaseNetwork} network network object for this coin
  * @param {UnderlyingAsset} asset asset which this coin represents. This is the same for both mainNet and testNet variants of a coin.
+ * @param {string} prefix optional coin prefix. Defaults to empty string
+ * @param {string} suffix optional coin suffix. Defaults to coin name.
  * @param {CoinFeature[]} features features of this coin. Defaults to the CANTON_DEFAULT_FEATURES defined in `account`
  * @param {KeyCurve} primaryKeyCurve the elliptic curve for this chain/token
  */
@@ -52,7 +56,9 @@ export function canton(
   network: BaseNetwork,
   asset: UnderlyingAsset,
   features: CoinFeature[],
-  primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
+  primaryKeyCurve: KeyCurve = KeyCurve.Ed25519,
+  prefix = '',
+  suffix: string = name.toUpperCase()
 ): Readonly<Canton> {
   return Object.freeze(
     new Canton({
@@ -62,6 +68,8 @@ export function canton(
       network,
       features,
       asset,
+      prefix,
+      suffix,
       primaryKeyCurve,
     })
   );

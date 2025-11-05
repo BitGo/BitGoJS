@@ -21,6 +21,10 @@ import { StakingBuilder } from './transactionBuilder/stakingBuilder';
 import { StakingTransaction } from './transaction/stakingTransaction';
 import { NFTTransactionBuilder } from './transactionBuilder/nftTransactionBuilder';
 import { NFTTransaction } from './transaction/nftTransaction';
+import { StakeClauseTransaction } from './transaction/stakeClauseTransaction';
+import { StakeClauseTxnBuilder } from './transactionBuilder/stakeClauseTxnBuilder';
+import { DelegateTxnBuilder } from './transactionBuilder/delegateTxnBuilder';
+import { DelegateClauseTransaction } from './transaction/delegateClauseTransaction';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -57,6 +61,14 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           const stakingTx = new StakingTransaction(this._coinConfig);
           stakingTx.fromDeserializedSignedTransaction(signedTx);
           return this.getStakingBuilder(stakingTx);
+        case TransactionType.StakingActivate:
+          const stakeClauseTx = new StakeClauseTransaction(this._coinConfig);
+          stakeClauseTx.fromDeserializedSignedTransaction(signedTx);
+          return this.getStakingActivateBuilder(stakeClauseTx);
+        case TransactionType.StakingDelegate:
+          const delegateClauseTx = new DelegateClauseTransaction(this._coinConfig);
+          delegateClauseTx.fromDeserializedSignedTransaction(signedTx);
+          return this.getStakingDelegateBuilder(delegateClauseTx);
         case TransactionType.StakingUnlock:
           const exitDelegationTx = new ExitDelegationTransaction(this._coinConfig);
           exitDelegationTx.fromDeserializedSignedTransaction(signedTx);
@@ -96,6 +108,14 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   getStakingBuilder(tx?: StakingTransaction): StakingBuilder {
     return this.initializeBuilder(tx, new StakingBuilder(this._coinConfig));
+  }
+
+  getStakingDelegateBuilder(tx?: DelegateClauseTransaction): DelegateTxnBuilder {
+    return this.initializeBuilder(tx, new DelegateTxnBuilder(this._coinConfig));
+  }
+
+  getStakingActivateBuilder(tx?: StakeClauseTransaction): StakeClauseTxnBuilder {
+    return this.initializeBuilder(tx, new StakeClauseTxnBuilder(this._coinConfig));
   }
 
   /**

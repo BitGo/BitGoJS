@@ -212,4 +212,51 @@ describe('Ton Transfer Builder', () => {
     const txJson2 = tx2.toJson();
     txJson2.destinationAlias.should.equal(otherFormat);
   });
+
+  it('should build a transfer tx compatible with v3 wallet contract', async function () {
+    const txBuilder = factory.getTransferBuilder();
+    txBuilder.sender(testData.vestingContract.address);
+    txBuilder.sequenceNumber(3);
+    txBuilder.expireTime(1761215512);
+    txBuilder.send(testData.v3CompatibleSignedSendTransaction.recipient);
+    txBuilder.isV3ContractMessage(true);
+    txBuilder.bounceable(true);
+    txBuilder.addSignature(
+      { pub: testData.vestingContract.publicKey },
+      Buffer.from(testData.vestingContract.signature, 'base64')
+    );
+    const tx = await txBuilder.build();
+    should.equal(tx.type, TransactionType.Send);
+    tx.inputs.length.should.equal(1);
+    tx.inputs[0].should.deepEqual({
+      address: testData.vestingContract.address,
+      value: testData.v3CompatibleSignedSendTransaction.recipient.amount,
+      coin: 'tton',
+    });
+    tx.outputs.length.should.equal(1);
+    tx.outputs[0].should.deepEqual({
+      address: testData.v3CompatibleSignedSendTransaction.recipient.address,
+      value: testData.v3CompatibleSignedSendTransaction.recipient.amount,
+      coin: 'tton',
+    });
+  });
+
+  it('should build a v3 compatible send transaction using raw transaction hex', async function () {
+    const txBuilder = factory.from(testData.v3CompatibleSignedSendTransaction.txBounceable);
+    const builtTx = await txBuilder.build();
+    const jsonTx = builtTx.toJson();
+    should.equal(builtTx.type, TransactionType.Send);
+    should.equal(
+      builtTx.signablePayload.toString('base64'),
+      testData.v3CompatibleSignedSendTransaction.bounceableSignable
+    );
+    should.equal(builtTx.id, testData.v3CompatibleSignedSendTransaction.txIdBounceable);
+    jsonTx.sender.should.equal(testData.vestingContract.addressBounceable);
+    jsonTx.destination.should.equal(testData.v3CompatibleSignedSendTransaction.recipient.address);
+    jsonTx.destinationAlias.should.equal(testData.v3CompatibleSignedSendTransaction.recipientNonBounceable.address);
+    jsonTx.amount.should.equal(testData.v3CompatibleSignedSendTransaction.recipient.amount);
+    jsonTx.seqno.should.equal(3);
+    jsonTx.expirationTime.should.equal(1761215512);
+    jsonTx.bounceable.should.equal(true);
+  });
 });

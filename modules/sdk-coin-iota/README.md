@@ -36,4 +36,4 @@ const iota = sdk.coin('iota');
 
 ## Documentation
 
-For detailed API documentation, see the [BitGo API reference](https://app.bitgo.com/docs/).
+For detailed API documentation, view the BitGo [Developer Portal](https://developers.bitgo.com/reference/overview#/).

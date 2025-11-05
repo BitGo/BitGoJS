@@ -3,6 +3,34 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.6.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.6.1...@bitgo/sdk-coin-sol@7.6.2) (2025-10-31)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-sol
+
+
+
+
+
+## [7.6.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.6.0...@bitgo/sdk-coin-sol@7.6.1) (2025-10-29)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-sol
+
+
+
+
+
+# [7.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.5.0...@bitgo/sdk-coin-sol@7.6.0) (2025-10-24)
+
+
+### Features
+
+* **sdk-coin-sol:** implement isWalletAddress for address verfn ([e42fb85](https://github.com/BitGo/BitGoJS/commit/e42fb85505c1fe9d5fe7d18f227377e2d844af77))
+* **sdk-core:** add typing on fetch addresses ([f3dec74](https://github.com/BitGo/BitGoJS/commit/f3dec74befc76bb305a4f9ac72975e4de43787ff))
+
+
+
+
+
 # [7.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.4.0...@bitgo/sdk-coin-sol@7.5.0) (2025-10-21)
 
 

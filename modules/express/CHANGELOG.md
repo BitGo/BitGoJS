@@ -3,6 +3,46 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [15.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.10.1...@bitgo/express@15.11.0) (2025-10-31)
+
+
+### Bug Fixes
+
+* **express:** fixed fanoutunspents response codec ([7e2f112](https://github.com/BitGo/BitGoJS/commit/7e2f112c7022344d423a85d94f6117b8ed17a7d3))
+
+
+### Features
+
+* **express:** migrated consolidateunspents as type route ([24a8953](https://github.com/BitGo/BitGoJS/commit/24a89532f2d5534199cc7ba751b5db650dcee3d8))
+* **express:** migrated fanoutunspents as type route ([bf055ab](https://github.com/BitGo/BitGoJS/commit/bf055ab515884c3ceefe92c8cfe6bd73c6b200e2))
+
+
+
+
+
+## [15.10.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.10.0...@bitgo/express@15.10.1) (2025-10-29)
+
+
+### Bug Fixes
+
+* revert changes from WP-4376 ([e35665a](https://github.com/BitGo/BitGoJS/commit/e35665a4e167474e550c08a1cf83797ee65b357d))
+
+
+
+
+
+# [15.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.9.0...@bitgo/express@15.10.0) (2025-10-24)
+
+
+### Features
+
+* **express:** migrate update keychain passphrase to typed routes ([419045f](https://github.com/BitGo/BitGoJS/commit/419045f68ed5511b8681419af198abd84ab267a8))
+* **sdk-core:** add typing on fetch addresses ([f3dec74](https://github.com/BitGo/BitGoJS/commit/f3dec74befc76bb305a4f9ac72975e4de43787ff))
+
+
+
+
+
 # [15.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.8.0...@bitgo/express@15.9.0) (2025-10-21)
 
 

@@ -3,6 +3,33 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-iota@1.4.0...@bitgo/sdk-coin-iota@1.4.1) (2025-10-31)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-iota
+
+
+
+
+
+# [1.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-iota@1.3.8...@bitgo/sdk-coin-iota@1.4.0) (2025-10-29)
+
+
+### Features
+
+* **sdk-coin-iota:** transaction builder for iota ([0df3476](https://github.com/BitGo/BitGoJS/commit/0df3476fffd4d5abc1e116090a98be1150a46ba6))
+
+
+
+
+
+## [1.3.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-iota@1.3.7...@bitgo/sdk-coin-iota@1.3.8) (2025-10-24)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-iota
+
+
+
+
+
 ## [1.3.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-iota@1.3.6...@bitgo/sdk-coin-iota@1.3.7) (2025-10-21)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-iota

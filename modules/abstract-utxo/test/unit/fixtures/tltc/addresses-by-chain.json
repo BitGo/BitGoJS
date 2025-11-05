@@ -1,0 +1,76 @@
+[
+  [
+    {
+      "chain": "default"
+    },
+    "QPNRPpzvJYtxriJJjcsddTiznJJ35u6Chk"
+  ],
+  [
+    {
+      "chain": 0
+    },
+    "QPNRPpzvJYtxriJJjcsddTiznJJ35u6Chk"
+  ],
+  [
+    {
+      "chain": 1
+    },
+    "QSkMY5N6DFBpLrYiL1BjvmSK3mQPb8W877"
+  ],
+  [
+    {
+      "chain": 10
+    },
+    "QYGUvoRti8sDH8R4oCPDKYa1zQp7UWCfAA"
+  ],
+  [
+    {
+      "chain": 11
+    },
+    "QiZVqpGzbzM5aLi19pWSkdJqzg7LkJqXZ9"
+  ],
+  [
+    {
+      "chain": 20
+    },
+    "tltc1qjpzgkka9lhs5l39shlr4d394tljw8p2v35sl88h82djvqp3mculq4yda2d"
+  ],
+  [
+    {
+      "chain": 21
+    },
+    "tltc1q5e7nvvypt2qpjxq74zwtry9klsqkcyvcee85anaa3pax7ae207gswavqrg"
+  ],
+  [
+    {
+      "chain": 30
+    },
+    {
+      "error": "p2tr not supported by this coin"
+    }
+  ],
+  [
+    {
+      "chain": 31
+    },
+    {
+      "error": "p2tr not supported by this coin"
+    }
+  ],
+  [
+    {
+      "chain": 40
+    },
+    {
+      "error": "p2trMusig2 not supported by this coin"
+    }
+  ],
+  [
+    {
+      "chain": 41
+    },
+    {
+      "error": "p2trMusig2 not supported by this coin"
+    }
+  ]
+]

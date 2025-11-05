@@ -45,6 +45,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this;
   }
 
+  isRecovery(isRecovery: boolean): this {
+    this._transaction.isRecovery = isRecovery;
+    return this;
+  }
+
   /**
    * Sets the sender of this transaction.
    *

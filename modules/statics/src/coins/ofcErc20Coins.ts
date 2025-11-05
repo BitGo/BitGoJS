@@ -34,6 +34,8 @@ export const ofcErc20Coins = [
   ),
   ofcerc20('bd61426f-87d8-4c52-b47d-2dc5eed84f64', 'ofcnmr', 'Numeraire', 18, UnderlyingAsset.NMR),
   ofcerc20('3db3b895-756c-4c95-9dea-08d283f09a7a', 'ofcmeme', 'Meme', 8, UnderlyingAsset.MEME),
+  ofcerc20('acf1a5a3-4555-4aa2-8c80-4e2cd4cdb61c', 'ofceth:meme', 'meme', 18, underlyingAssetForSymbol('eth:meme')),
+
   ofcerc20('8a73d170-28c1-48c9-8d3c-c7ea374f4414', 'ofcband', 'Band Protocol', 18, UnderlyingAsset.BAND),
   ofcerc20('ad5d8cf4-59b5-4b82-b1ee-d5d0d6ba5944', 'ofcant', 'Aragon', 18, UnderlyingAsset.ANT),
   ofcerc20('2092c0cc-19cf-42b2-90a0-123b1904d901', 'ofcpyusd', 'PayPal USD', 6, UnderlyingAsset.PYUSD, undefined, [
@@ -962,7 +964,7 @@ export const ofcErc20Coins = [
   ofcerc20('2c592feb-b052-4a08-bd42-9c0c8a8b8611', 'ofcmix', 'MixMarvel Token', 18, underlyingAssetForSymbol('mix')),
   ofcerc20('2e6f9527-d720-4079-b376-04fdcdd4c9e9', 'ofcmizn', 'Miznettk', 18, underlyingAssetForSymbol('mizn')),
   ofcerc20('6174ddda-b240-4623-b391-50219c0ddc9e', 'ofcmns', 'Monnos Token', 18, underlyingAssetForSymbol('mns')),
-  ofcerc20('f3655b59-17b2-4e9e-914b-771d9ea1078c', 'ofcmln', 'Melon Token', 18, underlyingAssetForSymbol('mln')),
+  ofcerc20('f3655b59-17b2-4e9e-914b-771d9ea1078c', 'ofcmln', 'Enzyme', 18, underlyingAssetForSymbol('mln')),
   ofcerc20('aa31a241-3e24-4a17-95db-ee74a6843b70', 'ofcmoc', 'Moss Coin', 18, underlyingAssetForSymbol('moc')),
   ofcerc20('97ebe992-de04-4917-b808-2c867fa380a0', 'ofcmof', 'Molecular Future', 16, underlyingAssetForSymbol('mof')),
   ofcerc20('9a4e4778-5188-4fbc-8365-9dc0ec667692', 'ofcmpay', 'MenaPay', 18, underlyingAssetForSymbol('mpay')),
@@ -4425,6 +4427,11 @@ export const tOfcErc20Coins = [
     18,
     underlyingAssetForSymbol('eth:banana')
   ),
+  ofcerc20('768025b4-e38d-435c-af69-799522cda202', 'ofceth:aioz', 'aioz', 18, UnderlyingAsset['eth:aioz']),
+  ofcerc20('63f1d5de-5729-4a71-ba6e-dcd7095c20da', 'ofceth:job', 'jobchain', 8, UnderlyingAsset['eth:job']),
+  ofcerc20('90169666-a3ee-4ff6-b447-0553a1a4cbb8', 'ofceth:irys', 'irys', 18, UnderlyingAsset['eth:irys']),
+  ofcerc20('42fc787e-bd51-4ba0-915f-14b7cdae1bf3', 'ofceth:kpk', 'kpk', 18, UnderlyingAsset['eth:kpk']),
+  ofcerc20('20e090cf-d2ca-404d-9e14-2f8795b9fed6', 'ofceth:devve', 'devve', 18, UnderlyingAsset['eth:devve']),
   ofcerc20('0d6a51be-34d0-4e91-b8a6-b79004c44bc3', 'ofceth:zkj', 'zkj', 18, underlyingAssetForSymbol('eth:zkj')),
   ofcerc20('42da0317-adf3-4645-99d5-e731ccc0070d', 'ofceth:spk', 'spk', 18, underlyingAssetForSymbol('eth:spk')),
   ofcerc20('4383dfcc-35b9-4754-aeda-120a36637cb9', 'ofceth:merl', 'merl', 18, underlyingAssetForSymbol('eth:merl')),
@@ -4489,6 +4496,29 @@ export const tOfcErc20Coins = [
   ),
 
   ofcerc20('faddfbec-becf-4f9f-8f8b-9daebfcadbec', 'ofcbaseeth:towns', 'Towns', 18, UnderlyingAsset['baseeth:towns']),
+
+  ofcerc20(
+    'f6bebafa-7934-4ca2-9195-1f4543c2ce0c',
+    'ofcbaseeth:recall',
+    'Recall',
+    18,
+    UnderlyingAsset['baseeth:recall']
+  ),
+
+  ofcerc20(
+    '088adddd-d75d-416f-94f0-05b686ffc424',
+    'ofcbaseeth:brlv',
+    'BRL Velocity',
+    18,
+    UnderlyingAsset['baseeth:brlv']
+  ),
+  ofcerc20(
+    '72d1eb99-3882-42db-abdd-c3a02f3829b4',
+    'ofcbaseeth:wbrly',
+    'Wrapped BRLY',
+    24,
+    UnderlyingAsset['baseeth:wbrly']
+  ),
 
   ofcerc20('abeefced-cfda-4afa-8f9c-aebfcadbecfd', 'ofceth:align', 'Aligned', 18, UnderlyingAsset['eth:align']),
 

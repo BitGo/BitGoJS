@@ -149,15 +149,30 @@ export interface VerifyAddressOptions {
   addressType?: string;
   keychains?: {
     pub: string;
-    commonKeychain?: string;
   }[];
   error?: string;
   coinSpecific?: AddressCoinSpecific;
   impliedForwarderVersion?: number;
 }
 
-export interface TssVerifyAddressOptions extends VerifyAddressOptions {
-  chain: string;
+/**
+ * Options for verifying if an address belongs to a TSS/MPC wallet.
+ * Used for EdDSA-based MPC coins (SOL, DOT, SUI, TON, IOTA, NEAR, etc.)
+ * to cryptographically verify address derivation without trusting the platform.
+ */
+export interface TssVerifyAddressOptions {
+  /** The address to verify */
+  address: string;
+  /**
+   * Keychains containing the commonKeychain for HD derivation.
+   * For MPC wallets, the commonKeychain (combined public key from MPC key generation)
+   * should be identical across all keychains (user, backup, bitgo).
+   */
+  keychains: Keychain[];
+  /**
+   * Derivation index for the address.
+   * Used to derive child addresses from the root keychain via HD derivation path: m/{index}
+   */
   index: string;
 }
 
@@ -552,7 +567,7 @@ export interface IBaseCoin {
   explainTransaction(options: Record<string, any>): Promise<ITransactionExplanation<any, string | number> | undefined>;
   verifyTransaction(params: VerifyTransactionOptions): Promise<boolean>;
   verifyAddress(params: VerifyAddressOptions): Promise<boolean>;
-  isWalletAddress(params: VerifyAddressOptions, wallet?: IWallet): Promise<boolean>;
+  isWalletAddress(params: VerifyAddressOptions | TssVerifyAddressOptions, wallet?: IWallet): Promise<boolean>;
   canonicalAddress(address: string, format: unknown): string;
   supportsBlockTarget(): boolean;
   supportsLightning(): boolean;
@@ -604,4 +619,5 @@ export interface IBaseCoin {
    * @param {string} params.multiSigType - The type of multisig (e.g. 'onchain' or 'tss')
    */
   assertIsValidKey({ publicKey, encryptedPrv, walletPassphrase, multiSigType }: AuditKeyParams): void;
+  requiresWalletInitializationTransaction(): boolean;
 }

@@ -11,6 +11,7 @@ export const DecryptRequestBody = {
  * Decrypt
  *
  * @operationId express.decrypt
+ * @tag express
  */
 export const PostDecrypt = httpRoute({
   path: '/api/v[12]/decrypt',

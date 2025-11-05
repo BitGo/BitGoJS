@@ -1,8 +1,9 @@
-import { TransactionType } from '@bitgo/sdk-core';
+import { InvalidTransactionError, PublicKey, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { CantonPrepareCommandResponse, OneStepEnablementRequest } from './iface';
+import { CantonPrepareCommandResponse, CantonOneStepEnablementRequest } from './iface';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction/transaction';
+import utils from './utils';
 
 export class OneStepPreApprovalBuilder extends TransactionBuilder {
   private _commandId: string;
@@ -26,6 +27,17 @@ export class OneStepPreApprovalBuilder extends TransactionBuilder {
 
   setTransaction(transaction: CantonPrepareCommandResponse): void {
     this.transaction.prepareCommand = transaction;
+  }
+
+  /** @inheritDoc */
+  addSignature(publicKey: PublicKey, signature: Buffer): void {
+    if (!this.transaction) {
+      throw new InvalidTransactionError('transaction is empty!');
+    }
+    this._signatures.push({ publicKey, signature });
+    const pubKeyBase64 = utils.getBase64FromHex(publicKey.pub);
+    this.transaction.signerFingerprint = utils.getAddressFromPublicKey(pubKeyBase64);
+    this.transaction.signatures = signature.toString('base64');
   }
 
   /**
@@ -62,15 +74,15 @@ export class OneStepPreApprovalBuilder extends TransactionBuilder {
   }
 
   /**
-   * Builds and returns the OneStepEnablementRequest object from the builder's internal state.
+   * Builds and returns the CantonOneStepEnablementRequest object from the builder's internal state.
    *
    * This method performs validation before constructing the object. If required fields are
    * missing or invalid, it throws an error.
    *
-   * @returns {OneStepEnablementRequest} - A fully constructed and validated request object for 1-step enablement.
+   * @returns {CantonOneStepEnablementRequest} - A fully constructed and validated request object for 1-step enablement.
    * @throws {Error} If any required field is missing or fails validation.
    */
-  toRequestObject(): OneStepEnablementRequest {
+  toRequestObject(): CantonOneStepEnablementRequest {
     this.validate();
 
     return {

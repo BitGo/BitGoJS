@@ -4,7 +4,7 @@ import should from 'should';
 import { SingletonRegistry } from '../../src';
 import utils from '../../src/lib/utils';
 import { accounts, blockHash, signatures, txIds, rawTx } from '../resources';
-import * as material from '../resources/assetHubMaterialData.json';
+import * as material from '../resources/materialData.json';
 
 describe('utils', () => {
   const registry: TypeRegistry = SingletonRegistry.getInstance(material);

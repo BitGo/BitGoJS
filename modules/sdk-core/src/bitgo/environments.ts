@@ -194,7 +194,7 @@ const mainnetBase: EnvironmentTemplate = {
   cronosNodeUrl: 'https://cronos-pos-rest.publicnode.com/',
   initiaNodeUrl: 'https://rest.initia.xyz/',
   asiNodeUrl: 'https://rest-fetchhub.fetch.ai/',
-  dotNodeUrls: ['wss://rpc.polkadot.io'],
+  dotNodeUrls: ['wss://asset-hub-polkadot-rpc.n.dwellir.com'],
   substrateNodeUrls: ['wss://entrypoint-finney.opentensor.ai'],
   polymeshNodeUrls: ['wss://mainnet-rpc.polymesh.network'],
   tronNodes: {
@@ -212,29 +212,32 @@ const mainnetBase: EnvironmentTemplate = {
   wemixExplorerBaseUrl: 'https://api.etherscan.io/v2',
   sgbExplorerBaseUrl: 'https://songbird-explorer.flare.network',
   evm: {
+    apechain: {
+      baseUrl: 'https://api.etherscan.io/v2',
+    },
     phrs: {
       baseUrl: 'https://testnet.dplabs-internal.com', // TODO: WIN-5787 add mainnet url when its available
     },
     ctc: {
-      baseUrl: 'https://mainnet3.creditcoin.network',
+      baseUrl: 'https://creditcoin.blockscout.com',
     },
     hypeevm: {
-      baseUrl: 'https://rpc.hyperliquid.xyz/evm',
+      baseUrl: 'https://api.etherscan.io/v2',
     },
     og: {
-      baseUrl: 'https://chainscan.0g.ai/open/api',
+      baseUrl: 'https://chainscan.0g.ai/open',
     },
     xpl: {
-      baseUrl: 'https://api.routescan.io/v2/network/mainnet/evm/9745/etherscan/api',
+      baseUrl: 'https://api.routescan.io/v2/network/mainnet/evm/9745/etherscan',
     },
     sonic: {
-      baseUrl: 'https://rpc.soniclabs.com',
+      baseUrl: 'https://api.etherscan.io/v2',
     },
     seievm: {
-      baseUrl: 'https://evm-rpc.sei-apis.com',
+      baseUrl: 'https://api.etherscan.io/v2',
     },
     kaia: {
-      baseUrl: 'https://public-en.node.kaia.io',
+      baseUrl: 'https://mainnet-oapi.kaiascan.io',
     },
     kavaevm: {
       baseUrl: 'https://api.verify.mintscan.io/evm/api/0x8ae',
@@ -249,22 +252,25 @@ const mainnetBase: EnvironmentTemplate = {
       baseUrl: 'https://api.etherscan.io/v2',
     },
     ip: {
-      baseUrl: 'https://api.storyscan.app/',
+      baseUrl: 'https://www.storyscan.io',
     },
     somi: {
-      baseUrl: 'https://mainnet.somnia.w3us.site/',
+      baseUrl: 'https://mainnet.somnia.w3us.site',
     },
     baseeth: {
       baseUrl: 'https://api.etherscan.io/v2',
     },
     flow: {
-      baseUrl: 'https://evm.flowscan.io/api',
+      baseUrl: 'https://evm.flowscan.io',
     },
     plume: {
-      baseUrl: 'https://explorer.plume.org/api',
+      baseUrl: 'https://explorer.plume.org',
     },
     megaeth: {
       baseUrl: 'https://carrot.megaeth.com/rpc', //TODO: add mainnet url when available
+    },
+    hedera: {
+      baseUrl: 'https://server-verify.hashscan.io/verify',
     },
   },
   icpNodeUrl: 'https://ic0.app',
@@ -273,7 +279,7 @@ const mainnetBase: EnvironmentTemplate = {
   soneiumExplorerBaseUrl: 'https://soneium.blockscout.com',
   monExplorerBaseUrl: 'https://api.etherscan.io/v2',
   stxNodeUrl: 'https://api.hiro.so',
-  vetNodeUrl: 'https://rpc-mainnet.vechain.energy',
+  vetNodeUrl: 'https://sync-mainnet.vechain.org',
   xtzExplorerBaseUrl: 'https://api.tzkt.io',
   xtzRpcUrl: 'https://rpc.tzkt.io/mainnet',
 };
@@ -349,35 +355,38 @@ const testnetBase: EnvironmentTemplate = {
   somniaExplorerBaseUrl: 'https://shannon-explorer.somnia.network/',
   soneiumExplorerBaseUrl: 'https://soneium-minato.blockscout.com',
   evm: {
+    apechain: {
+      baseUrl: 'https://api.etherscan.io/v2',
+    },
     phrs: {
-      baseUrl: 'https://testnet.dplabs-internal.com',
+      baseUrl: 'https://testnet.dplabs-internal.com', // Wrong value, Not available yet
     },
     ctc: {
-      baseUrl: 'https://rpc.cc3-testnet.creditcoin.network',
+      baseUrl: 'https://creditcoin-testnet.blockscout.com',
     },
     hypeevm: {
-      baseUrl: 'https://rpc.hyperliquid-testnet.xyz/evm',
+      baseUrl: 'https://rpc.hyperliquid-testnet.xyz/evm', // Not Available
     },
     og: {
-      baseUrl: 'https://chainscan-test.0g.ai/open/api',
+      baseUrl: 'https://chainscan-test.0g.ai/open',
     },
     xpl: {
-      baseUrl: 'https://testnet-rpc.plasma.to',
+      baseUrl: 'https://api.routescan.io/v2/network/testnet/evm/9746_5/etherscan',
     },
     sonic: {
-      baseUrl: 'https://rpc.blaze.soniclabs.com',
+      baseUrl: 'https://api.etherscan.io/v2',
     },
     seievm: {
-      baseUrl: 'https://evm-rpc-testnet.sei-apis.com',
+      baseUrl: 'https://api.etherscan.io/v2',
     },
     kaia: {
-      baseUrl: 'https://public-en-kairos.node.kaia.io',
+      baseUrl: 'https://kairos-oapi.kaiascan.io',
     },
     kavaevm: {
       baseUrl: 'https://api.verify.mintscan.io/evm/api/0x8ad',
     },
     irys: {
-      baseUrl: 'https://testnet-rpc.irys.xyz/v1/execution-rpc',
+      baseUrl: 'https://inst-1.cloud.blockscout.com',
     },
     mon: {
       baseUrl: 'https://api.etherscan.io/v2',
@@ -386,23 +395,26 @@ const testnetBase: EnvironmentTemplate = {
       baseUrl: 'https://api.etherscan.io/v2',
     },
     ip: {
-      baseUrl: 'https://api.storyscan.app/',
+      baseUrl: 'https://aeneid.storyscan.io',
     },
     tbaseeth: {
       baseUrl: 'https://api.etherscan.io/v2',
     },
     flow: {
-      baseUrl: 'https://evm-testnet.flowscan.io/api',
+      baseUrl: 'https://evm-testnet.flowscan.io',
     },
     megaeth: {
-      baseUrl: 'https://carrot.megaeth.com/rpc',
+      baseUrl: 'https://megaeth-testnet.blockscout.com',
     },
     plume: {
-      baseUrl: 'https://testnet-explorer.plume.org/api',
+      baseUrl: 'https://testnet-explorer.plume.org',
+    },
+    hedera: {
+      baseUrl: 'https://server-verify.hashscan.io/verify',
     },
   },
   stxNodeUrl: 'https://api.testnet.hiro.so',
-  vetNodeUrl: 'https://rpc-testnet.vechain.energy',
+  vetNodeUrl: 'https://sync-testnet.vechain.org',
   xtzExplorerBaseUrl: 'https://api.ghostnet.tzkt.io',
   xtzRpcUrl: 'https://rpc.tzkt.io/ghostnet',
 };

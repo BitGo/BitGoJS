@@ -3,6 +3,33 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.10.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@3.10.1...@bitgo/sdk-coin-ton@3.10.2) (2025-10-31)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-ton
+
+
+
+
+
+## [3.10.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@3.10.0...@bitgo/sdk-coin-ton@3.10.1) (2025-10-29)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-ton
+
+
+
+
+
+# [3.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@3.9.7...@bitgo/sdk-coin-ton@3.10.0) (2025-10-24)
+
+
+### Features
+
+* **sdk-coin-ton:** add wallet contract v3 transaction support ([b5653fb](https://github.com/BitGo/BitGoJS/commit/b5653fb7678d5b7b418bba682dc501d4f495b848))
+
+
+
+
+
 ## [3.9.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@3.9.6...@bitgo/sdk-coin-ton@3.9.7) (2025-10-21)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ton

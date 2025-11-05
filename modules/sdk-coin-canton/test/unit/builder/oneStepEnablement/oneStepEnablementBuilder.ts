@@ -3,9 +3,8 @@ import should from 'should';
 
 import { coins } from '@bitgo/statics';
 
-import { Transaction } from '../../../../src';
-import { OneStepEnablementRequest } from '../../../../src/lib/iface';
-import { OneStepPreApprovalBuilder } from '../../../../src/lib/oneStepPreApprovalBuilder';
+import { OneStepPreApprovalBuilder, Transaction } from '../../../../src';
+import { CantonOneStepEnablementRequest } from '../../../../src/lib/iface';
 
 import {
   InvalidOneStepPreApprovalPrepareResponse,
@@ -14,13 +13,13 @@ import {
 } from '../../../resources';
 
 describe('Wallet Pre-approval Enablement Builder', () => {
-  it('should get the wallet init request object', function () {
+  it('should get the one step enablement request object', function () {
     const txBuilder = new OneStepPreApprovalBuilder(coins.get('tcanton'));
     const oneStepEnablementTx = new Transaction(coins.get('tcanton'));
     txBuilder.initBuilder(oneStepEnablementTx);
     const { commandId, partyId } = OneStepEnablement;
     txBuilder.commandId(commandId).receiverPartyId(partyId);
-    const requestObj: OneStepEnablementRequest = txBuilder.toRequestObject();
+    const requestObj: CantonOneStepEnablementRequest = txBuilder.toRequestObject();
     should.exist(requestObj);
     assert.equal(requestObj.commandId, commandId);
     assert.equal(requestObj.receiverId, partyId);

@@ -3,10 +3,13 @@ import { randomBytes } from 'crypto';
 import should from 'should';
 import _ from 'lodash';
 import sinon from 'sinon';
+import nock from 'nock';
+import assert from 'assert';
 
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { coins } from '@bitgo/statics';
+import { common, TransactionPrebuild, Wallet } from '@bitgo/sdk-core';
 
 import { KeyPair, Near, TNear, Transaction } from '../../src';
 import nearUtils from '../../src/lib/utils';
@@ -421,6 +424,194 @@ describe('NEAR:', function () {
       };
       const validTransaction = await basecoin.verifyTransaction({ txParams, txPrebuild });
       validTransaction.should.equal(true);
+    });
+
+    it('should verify a spoofed consolidation transaction', async function () {
+      // Set up wallet data
+      const walletData = {
+        id: '62e156dbd641c000076bbabe04041a90',
+        coin: 'tnear',
+        keys: [
+          '5b3424f91bf349930e34017500000000',
+          '5b3424f91bf349930e34017600000000',
+          '5b3424f91bf349930e34017700000000',
+        ],
+        coinSpecific: {
+          rootAddress: '3a1b77653ea1705ad297db7abe259953b4ad5d2ecc5b50bee9a486f785dd90db',
+        },
+        multisigType: 'tss',
+      };
+
+      const consolidationTx = {
+        txRequestId: '03fdf51a-28e1-4268-b5be-a4afc030ff64',
+        walletId: '62e156dbd641c000076bbabe',
+        txHex:
+          '400000006562376433623333313166616261653338393062363731383536343838383066663831383766353465623565626665343336646131313338333130396638623500eb7d3b3311fabae3890b67185648880ff8187f54eb5ebfe436da11383109f8b5c8a6d8a6f86100004000000061393465333937306165633436626262313536393331636130393065643735666633616164653439373966666566366437346337326435613234376365393466ad19fa7faa45643200f99a992715a02f9806bcbf0c5737ccdf5d61172d61a4f901000000030038bf94dd153d9d7fa7010000000000',
+        feeInfo: {
+          fee: 85332111947887500000,
+          feeString: '85332111947887500377',
+        },
+        txInfo: {
+          minerFee: '0',
+          spendAmount: '1999915088987500000000000',
+          spendAmounts: [
+            {
+              coinName: 'tnear',
+              amountString: '1999915088987500000000000',
+            },
+          ],
+          payGoFee: '0',
+          outputs: [
+            {
+              address: 'a94e3970aec46bbb156931ca090ed75ff3aade4979ffef6d74c72d5a247ce94f',
+              value: 1.9999150889875e24,
+              wallet: '62e156dbd641c000076bbabe',
+              wallets: ['62e156dbd641c000076bbabe'],
+              enterprise: '6111785f59548d0007a4d13c',
+              enterprises: ['6111785f59548d0007a4d13c'],
+              valueString: '1999915088987500000000000',
+              coinName: 'tnear',
+              walletType: 'hot',
+              walletTypes: ['hot'],
+            },
+          ],
+          inputs: [
+            {
+              value: 1.9999150889875e24,
+              address: 'eb7d3b3311fabae3890b67185648880ff8187f54eb5ebfe436da11383109f8b5',
+              valueString: '1999915088987500000000000',
+            },
+          ],
+          type: '0',
+        },
+        consolidateId: '68ae77ec62346a69d0aee5a2dda69c8c',
+        coin: 'tnear',
+      };
+      const bgUrl = common.Environments['mock'].uri;
+      const walletObj = new Wallet(bitgo, basecoin, walletData);
+
+      nock(bgUrl)
+        .post('/api/v2/tnear/wallet/62e156dbd641c000076bbabe04041a90/consolidateAccount/build')
+        .reply(200, [
+          {
+            ...consolidationTx,
+            txHex:
+              '400000006139346533393730616563343662626231353639333163613039306564373566663361616465343937396666656636643734633732643561323437636539346600a94e3970aec46bbb156931ca090ed75ff3aade4979ffef6d74c72d5a247ce94f1f3dec154a5700004000000066326137386638303336663861343266383730313962316431646336336131623337623139333365653632646464353365373438633530323266316435373961fb6130e6cc30c926fccde8043ce4e43a810ea63b4d3f93623a54176ff8db1cd001000000030000004a480114169545080000000000',
+          },
+        ]);
+
+      nock(bgUrl)
+        .get('/api/v2/tnear/key/5b3424f91bf349930e34017500000000')
+        .reply(200, [
+          {
+            encryptedPrv: 'fakePrv',
+          },
+        ]);
+
+      nock(bgUrl)
+        .get('/api/v2/tnear/wallet/62e156dbd641c000076bbabe04041a90/addresses?sort=-1&limit=1')
+        .reply(200, [
+          {
+            address: 'a94e3970aec46bbb156931ca090ed75ff3aade4979ffef6d74c72d5a247ce94f',
+          },
+        ]);
+
+      // Call the function to test
+      await assert.rejects(
+        async () => {
+          await walletObj.sendAccountConsolidations({
+            walletPassphrase: 'password',
+            verification: {
+              consolidationToBaseAddress: true,
+            },
+          });
+        },
+        {
+          message: 'tx outputs does not match with expected address',
+        }
+      );
+    });
+
+    it('should verify valid a consolidation transaction', async () => {
+      // Set up wallet data
+      const walletData = {
+        id: '62e156dbd641c000076bbabe04041a90',
+        coin: 'tnear',
+        keys: [
+          '5b3424f91bf349930e34017500000000',
+          '5b3424f91bf349930e34017600000000',
+          '5b3424f91bf349930e34017700000000',
+        ],
+        coinSpecific: {
+          rootAddress: 'a94e3970aec46bbb156931ca090ed75ff3aade4979ffef6d74c72d5a247ce94f',
+        },
+        multisigType: 'tss',
+      };
+
+      const consolidationTx = {
+        txRequestId: '03fdf51a-28e1-4268-b5be-a4afc030ff64',
+        walletId: '62e156dbd641c000076bbabe',
+        txHex:
+          '400000006562376433623333313166616261653338393062363731383536343838383066663831383766353465623565626665343336646131313338333130396638623500eb7d3b3311fabae3890b67185648880ff8187f54eb5ebfe436da11383109f8b5c8a6d8a6f86100004000000061393465333937306165633436626262313536393331636130393065643735666633616164653439373966666566366437346337326435613234376365393466ad19fa7faa45643200f99a992715a02f9806bcbf0c5737ccdf5d61172d61a4f901000000030038bf94dd153d9d7fa7010000000000',
+        feeInfo: {
+          fee: 85332111947887500000,
+          feeString: '85332111947887500377',
+        },
+        txInfo: {
+          minerFee: '0',
+          spendAmount: '1999915088987500000000000',
+          spendAmounts: [
+            {
+              coinName: 'tnear',
+              amountString: '1999915088987500000000000',
+            },
+          ],
+          payGoFee: '0',
+          outputs: [
+            {
+              address: 'a94e3970aec46bbb156931ca090ed75ff3aade4979ffef6d74c72d5a247ce94f',
+              value: 1.9999150889875e24,
+              wallet: '62e156dbd641c000076bbabe',
+              wallets: ['62e156dbd641c000076bbabe'],
+              enterprise: '6111785f59548d0007a4d13c',
+              enterprises: ['6111785f59548d0007a4d13c'],
+              valueString: '1999915088987500000000000',
+              coinName: 'tnear',
+              walletType: 'hot',
+              walletTypes: ['hot'],
+            },
+          ],
+          inputs: [
+            {
+              value: 1.9999150889875e24,
+              address: 'eb7d3b3311fabae3890b67185648880ff8187f54eb5ebfe436da11383109f8b5',
+              valueString: '1999915088987500000000000',
+            },
+          ],
+          type: '0',
+        },
+        consolidateId: '68ae77ec62346a69d0aee5a2dda69c8c',
+        coin: 'tnear',
+      };
+      try {
+        if (
+          !(await basecoin.verifyTransaction({
+            blockhash: '',
+            feePayer: '',
+            txParams: {},
+            txPrebuild: consolidationTx as unknown as TransactionPrebuild,
+            walletType: 'tss',
+            wallet: new Wallet(bitgo, basecoin, walletData),
+            verification: {
+              consolidationToBaseAddress: true,
+            },
+          }))
+        ) {
+          assert.fail('Transaction should pass verification');
+        }
+      } catch (e) {
+        assert.fail('Transaction should pass verification');
+      }
     });
   });
 

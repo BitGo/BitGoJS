@@ -252,6 +252,7 @@ export const SOL_FEATURES = [
   CoinFeature.CUSTODY_BITGO_GERMANY,
   CoinFeature.CUSTODY_BITGO_FRANKFURT,
   CoinFeature.BULK_TRANSACTION,
+  CoinFeature.WALLET_CONNECT_DEFI,
 ];
 export const TSOL_FEATURES = [...SOL_FEATURES, CoinFeature.BULK_TRANSACTION, CoinFeature.CUSTODY_BITGO_SINGAPORE];
 export const SOL_TOKEN_FEATURES = [
@@ -304,6 +305,9 @@ export const STX_TOKEN_FEATURES = [
   CoinFeature.MULTISIG_COLD,
   CoinFeature.ALPHANUMERIC_MEMO_ID,
 ];
+export const STX_TOKEN_FEATURES_EXCLUDE_SINGAPORE = STX_TOKEN_FEATURES.filter(
+  (feature) => feature !== CoinFeature.CUSTODY_BITGO_SINGAPORE
+);
 export const NEAR_FEATURES = [
   ...ACCOUNT_COIN_DEFAULT_FEATURES,
   CoinFeature.TSS,
@@ -467,6 +471,7 @@ export const ARBETH_FEATURES = [
   CoinFeature.MULTISIG,
   CoinFeature.BULK_TRANSACTION,
   CoinFeature.ERC20_BULK_TRANSACTION,
+  CoinFeature.SHARED_EVM_MESSAGE_SIGNING,
 ];
 export const OPETH_FEATURES = [
   ...ETH_FEATURES,
@@ -483,6 +488,7 @@ export const OPETH_FEATURES = [
   CoinFeature.WALLET_CONNECT_DEFI,
   CoinFeature.BULK_TRANSACTION,
   CoinFeature.ERC20_BULK_TRANSACTION,
+  CoinFeature.SHARED_EVM_MESSAGE_SIGNING,
 ];
 export const ZKETH_FEATURES = [
   ...ETH_FEATURES,
@@ -673,4 +679,12 @@ export const CANTON_FEATURES = [
   CoinFeature.REQUIRES_BIG_NUMBER,
   CoinFeature.TSS,
   CoinFeature.TSS_COLD,
+  CoinFeature.CUSTODY,
+  CoinFeature.CUSTODY_BITGO_TRUST,
+  CoinFeature.CUSTODY_BITGO_MENA_FZE,
+  CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+  CoinFeature.CUSTODY_BITGO_SINGAPORE,
+  CoinFeature.CUSTODY_BITGO_KOREA,
+  CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+  CoinFeature.CUSTODY_BITGO_FRANKFURT,
 ];

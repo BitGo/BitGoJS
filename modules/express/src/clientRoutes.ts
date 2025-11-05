@@ -38,7 +38,6 @@ import type { ParamsDictionary } from 'express-serve-static-core';
 import * as _ from 'lodash';
 import * as url from 'url';
 import * as superagent from 'superagent';
-import { handlePingEnclavedExpress } from './enclavedExpressRoutes';
 
 // RequestTracer should be extracted into a separate npm package (along with
 // the rest of the BitGoJS HTTP request machinery)
@@ -637,11 +636,11 @@ export async function handleV2OFCSignPayload(
  * handle new wallet creation
  * @param req
  */
-export async function handleV2GenerateWallet(req: express.Request) {
+export async function handleV2GenerateWallet(req: ExpressApiRouteRequest<'express.wallet.generate', 'post'>) {
   const bitgo = req.bitgo;
-  const coin = bitgo.coin(req.params.coin);
-  const result = await coin.wallets().generateWallet(req.body);
-  if (req.query.includeKeychains === 'false') {
+  const coin = bitgo.coin(req.decoded.coin);
+  const result = await coin.wallets().generateWallet(req.decoded);
+  if ((req.decoded.includeKeychains as any) === false) {
     return result.wallet.toJSON();
   }
   return { ...result, wallet: result.wallet.toJSON() };
@@ -751,10 +750,12 @@ async function handleV2RecoverToken(req: ExpressApiRouteRequest<'express.v2.wall
  * handle wallet fanout unspents
  * @param req
  */
-async function handleV2ConsolidateUnspents(req: express.Request) {
+async function handleV2ConsolidateUnspents(
+  req: ExpressApiRouteRequest<'express.v2.wallet.consolidateunspents', 'post'>
+) {
   const bitgo = req.bitgo;
-  const coin = bitgo.coin(req.params.coin);
-  const wallet = await coin.wallets().get({ id: req.params.id });
+  const coin = bitgo.coin(req.decoded.coin);
+  const wallet = await coin.wallets().get({ id: req.decoded.id });
   return wallet.consolidateUnspents(createSendParams(req));
 }
 
@@ -813,10 +814,10 @@ export async function handleV2ConsolidateAccount(req: express.Request) {
  * handle wallet fanout unspents
  * @param req
  */
-async function handleV2FanOutUnspents(req: express.Request) {
+async function handleV2FanOutUnspents(req: ExpressApiRouteRequest<'express.v2.wallet.fanoutunspents', 'post'>) {
   const bitgo = req.bitgo;
-  const coin = bitgo.coin(req.params.coin);
-  const wallet = await coin.wallets().get({ id: req.params.id });
+  const coin = bitgo.coin(req.decoded.coin);
+  const wallet = await coin.wallets().get({ id: req.decoded.id });
   return wallet.fanoutUnspents(createSendParams(req));
 }
 
@@ -1601,7 +1602,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   router.post('express.keychain.local', [prepareBitGo(config), typedPromiseWrapper(handleV2CreateLocalKeyChain)]);
 
   // generate wallet
-  app.post('/api/v2/:coin/wallet/generate', parseBody, prepareBitGo(config), promiseWrapper(handleV2GenerateWallet));
+  router.post('express.wallet.generate', [prepareBitGo(config), typedPromiseWrapper(handleV2GenerateWallet)]);
 
   router.put('express.wallet.update', [prepareBitGo(config), typedPromiseWrapper(handleWalletUpdate)]);
 
@@ -1649,18 +1650,11 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   );
 
   // unspent changes
-  app.post(
-    '/api/v2/:coin/wallet/:id/consolidateunspents',
-    parseBody,
+  router.post('express.v2.wallet.consolidateunspents', [
     prepareBitGo(config),
-    promiseWrapper(handleV2ConsolidateUnspents)
-  );
-  app.post(
-    '/api/v2/:coin/wallet/:id/fanoutunspents',
-    parseBody,
-    prepareBitGo(config),
-    promiseWrapper(handleV2FanOutUnspents)
-  );
+    typedPromiseWrapper(handleV2ConsolidateUnspents),
+  ]);
+  router.post('express.v2.wallet.fanoutunspents', [prepareBitGo(config), typedPromiseWrapper(handleV2FanOutUnspents)]);
 
   app.post('/api/v2/:coin/wallet/:id/sweep', parseBody, prepareBitGo(config), promiseWrapper(handleV2Sweep));
 
@@ -1744,11 +1738,6 @@ export function setupSigningRoutes(app: express.Application, config: Config): vo
     prepareBitGo(config),
     promiseWrapper(handleV2OFCSignPayloadInExtSigningMode)
   );
-}
-
-export function setupEnclavedExpressRoutes(app: express.Application, config: Config): void {
-  // Keep the ping endpoint for health checks
-  app.get('/ping/enclavedExpress', parseBody, prepareBitGo(config), promiseWrapper(handlePingEnclavedExpress));
 }
 
 export function setupLightningSignerNodeRoutes(app: express.Application, config: Config): void {

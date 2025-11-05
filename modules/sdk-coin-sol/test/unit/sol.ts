@@ -3353,4 +3353,61 @@ describe('SOL:', function () {
       );
     });
   });
+
+  describe('isWalletAddress', () => {
+    it('should verify valid wallet address with correct keychain and index', async function () {
+      const address = '7YAesfwPk41VChUgr65bm8FEep7ymWqLSW5rpYB5zZPY';
+      const commonKeychain =
+        '8ea32ecacfc83effbd2e2790ee44fa7c59b4d86c29a12f09fb613d8195f93f4e21875cad3b98adada40c040c54c3569467df41a020881a6184096378701862bd';
+      const index = '1';
+      const keychains = [{ id: '1', type: 'tss' as const, commonKeychain }];
+
+      const result = await basecoin.isWalletAddress({ keychains, address, index });
+      result.should.equal(true);
+    });
+
+    it('should return false for address with incorrect keychain', async function () {
+      const address = '7YAesfwPk41VChUgr65bm8FEep7ymWqLSW5rpYB5zZPY';
+      const wrongKeychain =
+        '0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000';
+      const index = '1';
+      const keychains = [{ id: '1', type: 'tss' as const, commonKeychain: wrongKeychain }];
+
+      const result = await basecoin.isWalletAddress({ keychains, address, index });
+      result.should.equal(false);
+    });
+
+    it('should return false for address with incorrect index', async function () {
+      const address = '7YAesfwPk41VChUgr65bm8FEep7ymWqLSW5rpYB5zZPY';
+      const commonKeychain =
+        '8ea32ecacfc83effbd2e2790ee44fa7c59b4d86c29a12f09fb613d8195f93f4e21875cad3b98adada40c040c54c3569467df41a020881a6184096378701862bd';
+      const wrongIndex = '999';
+      const keychains = [{ id: '1', type: 'tss' as const, commonKeychain }];
+
+      const result = await basecoin.isWalletAddress({ keychains, address, index: wrongIndex });
+      result.should.equal(false);
+    });
+
+    it('should throw error for invalid address', async function () {
+      const invalidAddress = 'invalidaddress';
+      const commonKeychain =
+        '8ea32ecacfc83effbd2e2790ee44fa7c59b4d86c29a12f09fb613d8195f93f4e21875cad3b98adada40c040c54c3569467df41a020881a6184096378701862bd';
+      const index = '1';
+      const keychains = [{ id: '1', type: 'tss' as const, commonKeychain }];
+
+      await assert.rejects(async () => await basecoin.isWalletAddress({ keychains, address: invalidAddress, index }), {
+        message: `invalid address: ${invalidAddress}`,
+      });
+    });
+  });
+
+  describe('getAddressFromPublicKey', () => {
+    it('should convert public key to base58 address', function () {
+      const publicKey = '61220a9394802b1d1df37b35f7a3197970f48081092cee011fc98f7b71b2bd43';
+      const expectedAddress = '7YAesfwPk41VChUgr65bm8FEep7ymWqLSW5rpYB5zZPY';
+
+      const address = basecoin.getAddressFromPublicKey(publicKey);
+      address.should.equal(expectedAddress);
+    });
+  });
 });

@@ -929,19 +929,18 @@ def sign_and_verify_with_aggpk_bitgo(
     sk_1: bytes, 
     sk_2: bytes, 
     pk_1: PlainPk, 
-    pk_2: PlainPk, 
-    legacy_agg: bool = False
+    pk_2: PlainPk,
 ) -> None:
     sign_and_verify_with_aggpk(
         aggpk,
         sk_1,
-         sk_2, 
-         pk_1, 
-         pk_2, 
-         0, 
-         random_nonce=False, 
-         tweaks=[], 
-         is_xonly=[])
+        sk_2, 
+        pk_1, 
+        pk_2, 
+        0, 
+        random_nonce=False, 
+        tweaks=[], 
+        is_xonly=[])
 
 def sign_and_verify_with_aggpk_bitgo_legacy(
     aggpk: XonlyPk, 
@@ -1017,13 +1016,12 @@ def test_agg_bitgo_p2tr_legacy() -> None:
     aggregated_xonly = get_xonly_pk(keyagg_ctx)
     assert aggregated_xonly == expected_internal_pubkey_p2tr, \
         f"p2tr aggregation mismatch: expected {expected_internal_pubkey_p2tr.hex()}, got {aggregated_xonly.hex()}"
-    sign_and_verify_with_aggpk_bitgo(
+    sign_and_verify_with_aggpk_bitgo_legacy(
         expected_internal_pubkey_p2tr, 
         privkey_bitgo, 
         privkey_user, 
         pubkey_bitgo, 
-        pubkey_user, 
-        legacy_agg=True,
+        pubkey_user,
     )
 
     # Aggregation with keys in reverse order yields same result

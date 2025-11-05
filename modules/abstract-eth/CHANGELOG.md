@@ -3,6 +3,38 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [24.14.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.14.1...@bitgo/abstract-eth@24.14.2) (2025-10-31)
+
+**Note:** Version bump only for package @bitgo/abstract-eth
+
+
+
+
+
+## [24.14.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.14.0...@bitgo/abstract-eth@24.14.1) (2025-10-29)
+
+**Note:** Version bump only for package @bitgo/abstract-eth
+
+
+
+
+
+# [24.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.13.7...@bitgo/abstract-eth@24.14.0) (2025-10-24)
+
+
+### Bug Fixes
+
+* return recipients in unsigned tranasction ([0c6c2cd](https://github.com/BitGo/BitGoJS/commit/0c6c2cdaaec71bc6f62b3eaf416cefdb65937093))
+
+
+### Features
+
+* replace generic Error with TxIntentMismatchError ([982f902](https://github.com/BitGo/BitGoJS/commit/982f9022f972076d28ac0647088b329fd1ec827a))
+
+
+
+
+
 ## [24.13.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.13.6...@bitgo/abstract-eth@24.13.7) (2025-10-21)
 
 **Note:** Version bump only for package @bitgo/abstract-eth

@@ -3,6 +3,33 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.2.1...@bitgo/sdk-coin-flrp@1.2.2) (2025-10-31)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-flrp
+
+
+
+
+
+## [1.2.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.2.0...@bitgo/sdk-coin-flrp@1.2.1) (2025-10-29)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-flrp
+
+
+
+
+
+# [1.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.1.7...@bitgo/sdk-coin-flrp@1.2.0) (2025-10-24)
+
+
+### Features
+
+* **secp256k1:** implement public key recovery in recoverySignature method and add unit tests ([b963e1f](https://github.com/BitGo/BitGoJS/commit/b963e1f0e0d8a1c2e2127dc6b2cefd3524f96a9f))
+
+
+
+
+
 ## [1.1.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.1.6...@bitgo/sdk-coin-flrp@1.1.7) (2025-10-21)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-flrp

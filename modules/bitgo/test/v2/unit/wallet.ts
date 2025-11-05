@@ -11,7 +11,6 @@ import * as _ from 'lodash';
 import {
   BaseTssUtils,
   common,
-  CustomSigningFunction,
   Ecdsa,
   ECDSAUtils,
   EDDSAUtils,
@@ -43,7 +42,6 @@ import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src';
 import * as utxoLib from '@bitgo/utxo-lib';
 import { randomBytes } from 'crypto';
-import { getDefaultWalletKeys, toKeychainObjects } from './coins/utxo/util';
 import { Tsol } from '@bitgo/sdk-coin-sol';
 import { Teth } from '@bitgo/sdk-coin-eth';
 
@@ -409,94 +407,6 @@ describe('V2 Wallet:', function () {
         keychain,
       };
       wallet.getUserPrv(userPrvOptions).should.eql(prv);
-    });
-  });
-
-  describe('UTXO Custom Signer Function', function () {
-    const recipients = [
-      { address: 'abc', amount: 123 },
-      { address: 'def', amount: 456 },
-    ];
-    const rootWalletKey = getDefaultWalletKeys();
-    let customSigningFunction: CustomSigningFunction;
-    let stubs: sinon.SinonStub[];
-
-    beforeEach(function () {
-      customSigningFunction = sinon.stub().returns({
-        txHex: 'this-is-a-tx',
-      });
-      stubs = [
-        sinon.stub(wallet.baseCoin, 'postProcessPrebuild').returnsArg(0),
-        sinon.stub(wallet.baseCoin, 'verifyTransaction').resolves(true),
-        sinon.stub(wallet.baseCoin, 'signTransaction').resolves({ txHex: 'this-is-a-tx' }),
-      ];
-    });
-
-    function nocks(txPrebuild: { txHex: string }) {
-      return nock(bgUrl)
-        .post(wallet.url('/tx/build').replace(bgUrl, ''))
-        .reply(200, txPrebuild)
-        .get(wallet.baseCoin.url('/public/block/latest').replace(bgUrl, ''))
-        .reply(200)
-        .get(wallet.baseCoin.url(`/key/${wallet.keyIds()[0]}`).replace(bgUrl, ''))
-        .reply(200, { pub: 'pub' })
-        .get(wallet.baseCoin.url(`/key/${wallet.keyIds()[1]}`).replace(bgUrl, ''))
-        .reply(200, { pub: 'pub' })
-        .get(wallet.baseCoin.url(`/key/${wallet.keyIds()[2]}`).replace(bgUrl, ''))
-        .reply(200, { pub: 'pub' })
-        .post(wallet.url('/tx/send').replace(bgUrl, ''))
-        .reply(200, { ok: true });
-    }
-
-    it('should use a custom signing function if provided for PSBT with taprootKeyPathSpend input', async function () {
-      const psbt = utxoLib.testutil.constructPsbt(
-        [{ scriptType: 'taprootKeyPathSpend', value: BigInt(1000) }],
-        [{ scriptType: 'p2sh', value: BigInt(900) }],
-        basecoin.network,
-        rootWalletKey,
-        'unsigned'
-      );
-      const scope = nocks({ txHex: psbt.toHex() });
-      const result = await wallet.sendMany({ recipients, customSigningFunction });
-
-      result.should.have.property('ok', true);
-      customSigningFunction.should.have.been.calledTwice();
-      scope.done();
-      stubs.forEach((s) => s.restore());
-    });
-
-    it('should use a custom signing function if provided for PSBT without taprootKeyPathSpend input', async function () {
-      const psbt = utxoLib.testutil.constructPsbt(
-        [{ scriptType: 'p2wsh', value: BigInt(1000) }],
-        [{ scriptType: 'p2sh', value: BigInt(900) }],
-        basecoin.network,
-        rootWalletKey,
-        'unsigned'
-      );
-      const scope = nocks({ txHex: psbt.toHex() });
-      const result = await wallet.sendMany({ recipients, customSigningFunction });
-
-      result.should.have.property('ok', true);
-      customSigningFunction.should.have.been.calledOnce();
-      scope.done();
-      stubs.forEach((s) => s.restore());
-    });
-
-    it('should use a custom signing function if provided for Tx without taprootKeyPathSpend input', async function () {
-      const tx = utxoLib.testutil.constructTxnBuilder(
-        [{ scriptType: 'p2wsh', value: BigInt(1000) }],
-        [{ scriptType: 'p2sh', value: BigInt(900) }],
-        basecoin.network,
-        rootWalletKey,
-        'unsigned'
-      );
-      const scope = nocks({ txHex: tx.buildIncomplete().toHex() });
-      const result = await wallet.sendMany({ recipients, customSigningFunction });
-
-      result.should.have.property('ok', true);
-      customSigningFunction.should.have.been.calledOnce();
-      scope.done();
-      stubs.forEach((s) => s.restore());
     });
   });
 
@@ -1247,6 +1157,87 @@ describe('V2 Wallet:', function () {
     });
   });
 
+  describe('Canton tests: ', () => {
+    let cantonWallet: Wallet;
+    const cantonBitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
+    cantonBitgo.initializeTestVars();
+    const walletData = {
+      id: '598f606cd8fc24710d2ebadb1d9459bb',
+      coinSpecific: {
+        baseAddress: '12205::12205b4e3537a95126d90604592344d8ad3c3ddccda4f79901954280ee19c576714d',
+        pendingChainInitialization: true,
+        lastChainIndex: { 0: 0 },
+      },
+      coin: 'tcanton',
+      keys: [
+        '598f606cd8fc24710d2ebad89dce86c2',
+        '598f606cc8e43aef09fcb785221d9dd2',
+        '5935d59cf660764331bafcade1855fd7',
+      ],
+      multisigType: 'tss',
+    };
+
+    before(async function () {
+      cantonWallet = new Wallet(bitgo, bitgo.coin('tcanton'), walletData);
+      nock(bgUrl).get(`/api/v2/${cantonWallet.coin()}/key/${cantonWallet.keyIds()[0]}`).times(3).reply(200, {
+        id: '598f606cd8fc24710d2ebad89dce86c2',
+        pub: '5f8WmC2uW9SAk7LMX2r4G1Bx8MMwx8sdgpotyHGodiZo',
+        source: 'user',
+        encryptedPrv:
+          '{"iv":"hNK3rg82P1T94MaueXFAbA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"cV4wU4EzPjs=","ct":"9VZX99Ztsb6p75Cxl2lrcXBplmssIAQ9k7ZA81vdDYG4N5dZ36BQNWVfDoelj9O31XyJ+Xri0XKIWUzl0KKLfUERplmtNoOCn5ifJcZwCrOxpHZQe3AJ700o8Wmsrk5H"}',
+        coinSpecific: {},
+      });
+
+      nock(bgUrl).get(`/api/v2/${cantonWallet.coin()}/key/${cantonWallet.keyIds()[1]}`).times(2).reply(200, {
+        id: '598f606cc8e43aef09fcb785221d9dd2',
+        pub: 'G1s43JTzNZzqhUn4aNpwgcc6wb9FUsZQD5JjffG6isyd',
+        encryptedPrv:
+          '{"iv":"UFrt/QlIUR1XeQafPBaAlw==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"7VPBYaJXPm8=","ct":"ajFKv2y8yaIBXQ39sAbBWcnbiEEzbjS4AoQtp5cXYqjeDRxt3aCxemPm22pnkJaCijFjJrMHbkmsNhNYzHg5aHFukN+nEAVssyNwHbzlhSnm8/BVN50yAdAAtWreh8cp"}',
+        source: 'backup',
+        coinSpecific: {},
+      });
+
+      nock(bgUrl).get(`/api/v2/${cantonWallet.coin()}/key/${cantonWallet.keyIds()[2]}`).times(2).reply(200, {
+        id: '5935d59cf660764331bafcade1855fd7',
+        pub: 'GH1LV1e9FdqGe8U2c8PMEcma3fDeh1ktcGVBrD3AuFqx',
+        encryptedPrv:
+          '{"iv":"iIuWOHIOErEDdiJn6g46mg==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"Rzh7RRJksj0=","ct":"rcNICUfp9FakT53l+adB6XKzS1vNTc0Qq9jAtqnxA+ScssiS4Q0l3sgG/0gDy5DaZKtXryKBDUvGsi7b/fYaFCUpAoZn/VZTOhOUN/mo7ZHb4OhOXL29YPPkiryAq9Cr"}',
+        source: 'bitgo',
+        coinSpecific: {},
+      });
+    });
+
+    after(async function () {
+      nock.cleanAll();
+    });
+
+    it('Should build wallet initialization transactions correctly', async function () {
+      const txRequestNock = nock(bgUrl)
+        .post(`/api/v2/wallet/${cantonWallet.id()}/txrequests`)
+        .reply((url, body) => {
+          const bodyParams = body as any;
+          bodyParams.intent.intentType.should.equal('createAccount');
+          bodyParams.intent.recipients.length.should.equal(0);
+          return [
+            200,
+            {
+              apiVersion: 'full',
+              transactions: [
+                {
+                  unsignedTx: {
+                    serializedTxHex: 'fake transaction',
+                    feeInfo: 'fake fee info',
+                  },
+                },
+              ],
+            },
+          ];
+        });
+      await cantonWallet.sendWalletInitialization();
+      txRequestNock.isDone().should.equal(true);
+    });
+  });
+
   describe('Solana tests: ', () => {
     let solWallet: Wallet;
     const passphrase = '#Bondiola1234';
@@ -1556,319 +1547,6 @@ describe('V2 Wallet:', function () {
       response.isDone().should.be.true();
       unusedNocks.pendingMocks().length.should.eql(2);
       nock.cleanAll();
-    });
-  });
-
-  describe('manage unspents', function () {
-    let rootWalletKey;
-    let walletPassphrase;
-    let basecoin;
-    let wallet;
-    let keysObj;
-
-    before(async function () {
-      rootWalletKey = getDefaultWalletKeys();
-      walletPassphrase = 'fixthemoneyfixtheworld';
-      keysObj = toKeychainObjects(rootWalletKey, walletPassphrase);
-      basecoin = bitgo.coin('tbtc');
-      const walletData = {
-        id: '5b34252f1bf349930e34020a',
-        coin: 'tbtc',
-        keys: keysObj.map((k) => k.id),
-      };
-      wallet = new Wallet(bitgo, basecoin, walletData);
-    });
-
-    it('should pass for bulk consolidating unspents', async function () {
-      const psbts = (['p2wsh', 'p2shP2wsh'] as const).map((scriptType) =>
-        utxoLib.testutil.constructPsbt(
-          [{ scriptType, value: BigInt(1000) }],
-          [{ scriptType, value: BigInt(900) }],
-          basecoin.network,
-          rootWalletKey,
-          'unsigned'
-        )
-      );
-      psbts.forEach((psbt) => utxoLib.bitgo.addXpubsToPsbt(psbt, rootWalletKey));
-      const txHexes = psbts.map((psbt) => ({ txHex: psbt.toHex() }));
-
-      const nocks: nock.Scope[] = [];
-      nocks.push(
-        nock(bgUrl).post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/consolidateUnspents`).reply(200, txHexes)
-      );
-
-      nocks.push(
-        ...keysObj.map((k, i) => nock(bgUrl).get(`/api/v2/${wallet.coin()}/key/${wallet.keyIds()[i]}`).reply(200, k))
-      );
-
-      nocks.push(
-        ...psbts.map((psbt) =>
-          nock(bgUrl)
-            .post(
-              `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/send`,
-              _.matches({ txHex: psbt.signAllInputsHD(rootWalletKey.user).toHex() })
-            )
-            .reply(200)
-        )
-      );
-
-      await wallet.consolidateUnspents({ bulk: true, walletPassphrase });
-
-      nocks.forEach((n) => {
-        console.log(n);
-        n.isDone().should.be.true();
-      });
-    });
-
-    it('should pass for single consolidating unspents', async function () {
-      const psbt = utxoLib.testutil.constructPsbt(
-        [{ scriptType: 'p2wsh', value: BigInt(1000) }],
-        [{ scriptType: 'p2shP2wsh', value: BigInt(900) }],
-        basecoin.network,
-        rootWalletKey,
-        'unsigned'
-      );
-      utxoLib.bitgo.addXpubsToPsbt(psbt, rootWalletKey);
-
-      const nocks: nock.Scope[] = [];
-      nocks.push(
-        nock(bgUrl)
-          .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/consolidateUnspents`)
-          .reply(200, { txHex: psbt.toHex() })
-      );
-
-      nocks.push(
-        ...keysObj.map((k, i) => nock(bgUrl).get(`/api/v2/${wallet.coin()}/key/${wallet.keyIds()[i]}`).reply(200, k))
-      );
-
-      nocks.push(
-        nock(bgUrl)
-          .post(
-            `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/send`,
-            _.matches({ txHex: psbt.signAllInputsHD(rootWalletKey.user).toHex() })
-          )
-          .reply(200)
-      );
-
-      await wallet.consolidateUnspents({ walletPassphrase });
-
-      nocks.forEach((n) => {
-        n.isDone().should.be.true();
-      });
-    });
-  });
-  describe('max recipient', function () {
-    const address = '5b34252f1bf349930e34020a';
-    const recipients = [
-      {
-        address,
-        amount: 'max',
-      },
-    ];
-    let basecoin;
-    let wallet;
-
-    before(async function () {
-      basecoin = bitgo.coin('tbtc');
-      const walletData = {
-        id: '5b34252f1bf349930e34020a',
-        coin: 'tbtc',
-        keys: ['5b3424f91bf349930e340175'],
-      };
-      wallet = new Wallet(bitgo, basecoin, walletData);
-    });
-
-    it('should pass maxFeeRate parameter when building transactions', async function () {
-      const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`;
-      const response = nock(bgUrl)
-        .post(
-          path,
-          _.matches({
-            recipients,
-          })
-        ) // use _.matches to do a partial match on request body object instead of strict matching
-        .reply(200);
-
-      try {
-        await wallet.prebuildTransaction({ recipients });
-      } catch (e) {
-        // the prebuildTransaction method will probably throw an exception for not having all of the correct nocks
-        // we only care about /tx/build and whether maxFeeRate is an allowed parameter
-      }
-
-      response.isDone().should.be.true();
-    });
-  });
-
-  describe('maxFeeRate verification', function () {
-    const address = '5b34252f1bf349930e34020a';
-    const recipients = [
-      {
-        address,
-        amount: 0,
-      },
-    ];
-    const maxFeeRate = 10000;
-    let basecoin;
-    let wallet;
-
-    before(async function () {
-      basecoin = bitgo.coin('tbtc');
-      const walletData = {
-        id: '5b34252f1bf349930e34020a',
-        coin: 'tbtc',
-        keys: ['5b3424f91bf349930e340175'],
-      };
-      wallet = new Wallet(bitgo, basecoin, walletData);
-    });
-
-    it('should pass maxFeeRate parameter when building transactions', async function () {
-      const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`;
-      const response = nock(bgUrl)
-        .post(path, _.matches({ recipients, maxFeeRate })) // use _.matches to do a partial match on request body object instead of strict matching
-        .reply(200);
-
-      try {
-        await wallet.prebuildTransaction({ recipients, maxFeeRate });
-      } catch (e) {
-        // the prebuildTransaction method will probably throw an exception for not having all of the correct nocks
-        // we only care about /tx/build and whether maxFeeRate is an allowed parameter
-      }
-
-      response.isDone().should.be.true();
-    });
-
-    it('should pass maxFeeRate parameter when consolidating unspents', async function () {
-      const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/consolidateUnspents`;
-      const response = nock(bgUrl)
-        .post(path, _.matches({ maxFeeRate })) // use _.matches to do a partial match on request body object instead of strict matching
-        .reply(200);
-
-      nock(bgUrl).get(`/api/v2/${wallet.coin()}/key/${wallet.keyIds()[0]}`).reply(200);
-
-      try {
-        await wallet.consolidateUnspents({ recipients, maxFeeRate });
-      } catch (e) {
-        // the consolidateUnspents method will probably throw an exception for not having all of the correct nocks
-        // we only care about /consolidateUnspents and whether maxFeeRate is an allowed parameter
-      }
-
-      response.isDone().should.be.true();
-    });
-
-    it('should only build tx (not sign/send) while consolidating unspents', async function () {
-      const toBeUsedNock = nock(bgUrl);
-      toBeUsedNock.post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/consolidateUnspents`).reply(200);
-
-      const unusedNocks = nock(bgUrl);
-      unusedNocks.get(`/api/v2/${wallet.coin()}/key/${wallet.keyIds()[0]}`).reply(200);
-      unusedNocks.post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/send`).reply(200);
-
-      await wallet.consolidateUnspents({ recipients }, ManageUnspentsOptions.BUILD_ONLY);
-
-      toBeUsedNock.isDone().should.be.true();
-      unusedNocks.pendingMocks().length.should.eql(2);
-      nock.cleanAll();
-    });
-
-    it('should pass maxFeeRate parameter when calling sweep wallets', async function () {
-      const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/sweepWallet`;
-      const response = nock(bgUrl)
-        .post(path, _.matches({ address, maxFeeRate })) // use _.matches to do a partial match on request body object instead of strict matching
-        .reply(200);
-
-      try {
-        await wallet.sweep({ address, maxFeeRate });
-      } catch (e) {
-        // the sweep method will probably throw an exception for not having all of the correct nocks
-        // we only care about /sweepWallet and whether maxFeeRate is an allowed parameter
-      }
-
-      response.isDone().should.be.true();
-    });
-
-    it('should pass maxFeeRate parameter when calling fanout unspents', async function () {
-      const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/fanoutUnspents`;
-      const response = nock(bgUrl)
-        .post(path, _.matches({ maxFeeRate })) // use _.matches to do a partial match on request body object instead of strict matching
-        .reply(200);
-
-      try {
-        await wallet.fanoutUnspents({ address, maxFeeRate });
-      } catch (e) {
-        // the fanoutUnspents method will probably throw an exception for not having all of the correct nocks
-        // we only care about /fanoutUnspents and whether maxFeeRate is an allowed parameter
-      }
-
-      response.isDone().should.be.true();
-    });
-  });
-
-  describe('allowPartialSweep verification', function () {
-    const address = '5b34252f1bf349930e34020a';
-    const allowPartialSweep = true;
-    let basecoin;
-    let wallet;
-
-    before(async function () {
-      basecoin = bitgo.coin('tbtc');
-      const walletData = {
-        id: '5b34252f1bf349930e34020a',
-        coin: 'tbtc',
-        keys: ['5b3424f91bf349930e340175'],
-      };
-      wallet = new Wallet(bitgo, basecoin, walletData);
-    });
-
-    it('should pass allowPartialSweep parameter when calling sweep wallets', async function () {
-      const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/sweepWallet`;
-      const response = nock(bgUrl)
-        .post(path, _.matches({ address, allowPartialSweep })) // use _.matches to do a partial match on request body object instead of strict matching
-        .reply(200);
-
-      try {
-        await wallet.sweep({ address, allowPartialSweep });
-      } catch (e) {
-        // the sweep method will probably throw an exception for not having all of the correct nocks
-        // we only care about /sweepWallet and whether allowPartialSweep is an allowed parameter
-      }
-
-      response.isDone().should.be.true();
-    });
-  });
-
-  describe('sweep wallet', function () {
-    let basecoin;
-    let wallet;
-
-    before(async function () {
-      basecoin = bitgo.coin('ttrx');
-      const walletData = {
-        id: '5b34252f1bf349930e34020a',
-        coin: 'ttrx',
-        keys: ['5b3424f91bf349930e340175'],
-      };
-      wallet = new Wallet(bitgo, basecoin, walletData);
-    });
-
-    it('should use maximum spendable balance of wallet to sweep funds ', async function () {
-      const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/maximumSpendable`;
-      const response = nock(bgUrl).get(path).reply(200, {
-        coin: 'ttrx',
-        maximumSpendable: 65000,
-      });
-      const body = {
-        coin: 'ttrx',
-        address: '2MwvR24yqym2CgHMp7zwvdeqBa4F8KTqunS',
-      };
-      try {
-        await wallet.sweep(body);
-      } catch (e) {
-        // the sweep method will probably throw an exception for not having all of the correct nocks
-        // we only care about maximum spendable balance being used to sweep funds
-      }
-
-      response.isDone().should.be.true();
     });
   });
 

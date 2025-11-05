@@ -3,6 +3,33 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.4.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@7.4.1...@bitgo/abstract-lightning@7.4.2) (2025-10-31)
+
+**Note:** Version bump only for package @bitgo/abstract-lightning
+
+
+
+
+
+## [7.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@7.4.0...@bitgo/abstract-lightning@7.4.1) (2025-10-29)
+
+**Note:** Version bump only for package @bitgo/abstract-lightning
+
+
+
+
+
+# [7.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@7.3.1...@bitgo/abstract-lightning@7.4.0) (2025-10-24)
+
+
+### Features
+
+* **sdk-core:** add typing on fetch addresses ([f3dec74](https://github.com/BitGo/BitGoJS/commit/f3dec74befc76bb305a4f9ac72975e4de43787ff))
+
+
+
+
+
 ## [7.3.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@7.3.0...@bitgo/abstract-lightning@7.3.1) (2025-10-21)
 
 **Note:** Version bump only for package @bitgo/abstract-lightning

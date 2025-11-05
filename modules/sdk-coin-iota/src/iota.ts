@@ -3,7 +3,6 @@ import {
   BaseCoin,
   BitGoBase,
   KeyPair,
-  ParseTransactionOptions,
   ParsedTransaction,
   SignTransactionOptions,
   SignedTransaction,
@@ -11,15 +10,25 @@ import {
   MultisigType,
   multisigTypes,
   MPCAlgorithm,
-  InvalidAddressError,
-  EDDSAMethods,
   TssVerifyAddressOptions,
   MPCType,
+  PopulatedIntent,
+  PrebuildTransactionWithIntentOptions,
+  verifyEddsaTssWalletAddress,
 } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, CoinFamily } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
 import utils from './lib/utils';
-import { KeyPair as IotaKeyPair } from './lib';
+import { KeyPair as IotaKeyPair, Transaction, TransactionBuilderFactory } from './lib';
 import { auditEddsaPrivateKey } from '@bitgo/sdk-lib-mpc';
+import BigNumber from 'bignumber.js';
+import * as _ from 'lodash';
+import {
+  ExplainTransactionOptions,
+  IotaParseTransactionOptions,
+  TransactionExplanation,
+  TransferTxData,
+} from './lib/iface';
+import { TransferTransaction } from './lib/transferTransaction';
 
 export class Iota extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -79,11 +88,43 @@ export class Iota extends BaseCoin {
   }
 
   /**
+   * @inheritDoc
+   */
+  async explainTransaction(params: ExplainTransactionOptions): Promise<TransactionExplanation> {
+    const rawTx = params.txBase64;
+    if (!rawTx) {
+      throw new Error('missing required tx prebuild property txBase64');
+    }
+    const transaction = await this.rebuildTransaction(rawTx);
+    if (!transaction) {
+      throw new Error('failed to explain transaction');
+    }
+    return transaction.explainTransaction();
+  }
+
+  /**
    * Verifies that a transaction prebuild complies with the original intention
    * @param params
    */
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
-    // TODO: Add IOTA-specific transaction verification logic
+    const { txPrebuild: txPrebuild, txParams: txParams } = params;
+    const rawTx = txPrebuild.txBase64;
+    if (!rawTx) {
+      throw new Error('missing required tx prebuild property txBase64');
+    }
+    const transaction = await this.rebuildTransaction(rawTx);
+    if (!transaction) {
+      throw new Error('failed to verify transaction');
+    }
+    if (txParams.recipients !== undefined) {
+      if (!(transaction instanceof TransferTransaction)) {
+        throw new Error('Tx not a transfer transaction');
+      }
+      const txData = transaction.toJson() as TransferTxData;
+      if (!txData.recipients || !_.isEqual(txParams.recipients, txData.recipients)) {
+        throw new Error('Tx recipients does not match with expected txParams recipients');
+      }
+    }
     return true;
   }
 
@@ -92,38 +133,62 @@ export class Iota extends BaseCoin {
    * @param params
    */
   async isWalletAddress(params: TssVerifyAddressOptions): Promise<boolean> {
-    const { keychains, address, index } = params;
-
-    if (!this.isValidAddress(address)) {
-      throw new InvalidAddressError(`invalid address: ${address}`);
-    }
-
-    if (!keychains) {
-      throw new Error('missing required param keychains');
-    }
-
-    for (const keychain of keychains) {
-      const MPC = await EDDSAMethods.getInitializedMpcInstance();
-      const commonKeychain = keychain.commonKeychain as string;
-
-      const derivationPath = 'm/' + index;
-      const derivedPublicKey = MPC.deriveUnhardened(commonKeychain, derivationPath).slice(0, 64);
-      const expectedAddress = utils.getAddressFromPublicKey(derivedPublicKey);
-
-      if (address !== expectedAddress) {
-        return false;
-      }
-    }
-    return true;
+    return verifyEddsaTssWalletAddress(
+      params,
+      (address) => this.isValidAddress(address),
+      (publicKey) => utils.getAddressFromPublicKey(publicKey)
+    );
   }
 
   /**
    * Parse a transaction
    * @param params
    */
-  async parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
-    // TODO: Add IOTA-specific transaction parsing logic
-    return {};
+  async parseTransaction(params: IotaParseTransactionOptions): Promise<ParsedTransaction> {
+    const transactionExplanation = await this.explainTransaction({ txBase64: params.txBase64 });
+
+    if (!transactionExplanation) {
+      throw new Error('Invalid transaction');
+    }
+
+    let fee = new BigNumber(0);
+
+    if (transactionExplanation.outputs.length <= 0) {
+      return {
+        inputs: [],
+        outputs: [],
+        fee,
+      };
+    }
+
+    const senderAddress = transactionExplanation.outputs[0].address;
+    if (transactionExplanation.fee.fee !== '') {
+      fee = new BigNumber(transactionExplanation.fee.fee);
+    }
+
+    // assume 1 sender, who is also the fee payer
+    const inputs = [
+      {
+        address: senderAddress,
+        amount: new BigNumber(transactionExplanation.outputAmount).plus(fee).toFixed(),
+      },
+    ];
+
+    const outputs: {
+      address: string;
+      amount: string;
+    }[] = transactionExplanation.outputs.map((output) => {
+      return {
+        address: output.address,
+        amount: new BigNumber(output.amount).toFixed(),
+      };
+    });
+
+    return {
+      inputs,
+      outputs,
+      fee,
+    };
   }
 
   /**
@@ -167,5 +232,31 @@ export class Iota extends BaseCoin {
       throw new Error('Unsupported multiSigType');
     }
     auditEddsaPrivateKey(prv, publicKey ?? '');
+  }
+
+  /** @inheritDoc */
+  async getSignablePayload(serializedTx: string): Promise<Buffer> {
+    const rebuiltTransaction = await this.rebuildTransaction(serializedTx);
+    return rebuiltTransaction.signablePayload;
+  }
+
+  /** inherited doc */
+  setCoinSpecificFieldsInIntent(intent: PopulatedIntent, params: PrebuildTransactionWithIntentOptions): void {
+    intent.unspents = params.unspents;
+  }
+
+  private getTxBuilderFactory(): TransactionBuilderFactory {
+    return new TransactionBuilderFactory(coins.get(this.getChain()));
+  }
+
+  private async rebuildTransaction(txHex: string): Promise<Transaction> {
+    const txBuilderFactory = this.getTxBuilderFactory();
+    try {
+      const txBuilder = txBuilderFactory.from(txHex);
+      txBuilder.transaction.isSimulateTx = false;
+      return (await txBuilder.build()) as Transaction;
+    } catch {
+      throw new Error('Failed to rebuild transaction');
+    }
   }
 }

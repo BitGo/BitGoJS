@@ -11,6 +11,7 @@ import {
 import {
   TRANSFER_TOKEN_METHOD_ID,
   STAKING_METHOD_ID,
+  STAKE_CLAUSE_METHOD_ID,
   EXIT_DELEGATION_METHOD_ID,
   BURN_NFT_METHOD_ID,
   VET_ADDRESS_LENGTH,
@@ -23,6 +24,7 @@ import {
   STARGATE_NFT_ADDRESS_TESTNET,
   STARGATE_DELEGATION_ADDRESS,
   STARGATE_DELEGATION_ADDRESS_TESTNET,
+  DELEGATE_CLAUSE_METHOD_ID,
 } from './constants';
 import { KeyPair } from './keyPair';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
@@ -91,6 +93,10 @@ export class Utils implements BaseUtils {
       return TransactionType.SendToken;
     } else if (clauses[0].data.startsWith(STAKING_METHOD_ID)) {
       return TransactionType.ContractCall;
+    } else if (clauses[0].data.startsWith(STAKE_CLAUSE_METHOD_ID)) {
+      return TransactionType.StakingActivate;
+    } else if (clauses[0].data.startsWith(DELEGATE_CLAUSE_METHOD_ID)) {
+      return TransactionType.StakingDelegate;
     } else if (clauses[0].data.startsWith(EXIT_DELEGATION_METHOD_ID)) {
       return TransactionType.StakingUnlock;
     } else if (clauses[0].data.startsWith(BURN_NFT_METHOD_ID)) {
@@ -148,6 +154,49 @@ export class Utils implements BaseUtils {
       };
     } catch (error) {
       throw new Error(`Failed to decode staking data: ${error.message}`);
+    }
+  }
+
+  /**
+   * Decodes staking transaction data to extract levelId and autorenew
+   *
+   * @param {string} data - The encoded transaction data
+   * @returns {object} - Object containing levelId and autorenew
+   */
+  decodeStakeClauseData(data: string): { levelId: number } {
+    try {
+      const parameters = data.slice(10);
+
+      // Decode using ethereumjs-abi directly
+      const decoded = EthereumAbi.rawDecode(['uint8'], Buffer.from(parameters, 'hex'));
+
+      return {
+        levelId: Number(decoded[0]),
+      };
+    } catch (error) {
+      throw new Error(`Failed to decode staking data: ${error.message}`);
+    }
+  }
+
+  /**
+   * Decodes delegate transaction data to extract tokenId and delegateForever
+   *
+   * @param {string} data - The encoded transaction data
+   * @returns {object} - Object containing tokenId and delegateForever
+   */
+  decodeDelegateClauseData(data: string): { tokenId: number; delegateForever: boolean } {
+    try {
+      const parameters = data.slice(10);
+
+      // Decode using ethereumjs-abi directly
+      const decoded = EthereumAbi.rawDecode(['uint256', 'bool'], Buffer.from(parameters, 'hex'));
+
+      return {
+        tokenId: Number(decoded[0]),
+        delegateForever: Boolean(decoded[1]),
+      };
+    } catch (error) {
+      throw new Error(`Failed to decode delegation data: ${error.message}`);
     }
   }
 

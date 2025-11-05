@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-hmac@1.4.0...@bitgo/sdk-hmac@1.5.0) (2025-10-24)
+
+
+### Bug Fixes
+
+* do not append text to HMAC subject if undefined ([c9755e7](https://github.com/BitGo/BitGoJS/commit/c9755e743a7bf94ed04191e6303766f0cac1433e))
+
+
+### Features
+
+* **sdk-hmac:** add Buffer support for HMAC generation ([ecabc9c](https://github.com/BitGo/BitGoJS/commit/ecabc9c8f6c7cff6bf6c82fd9158534befb699f1))
+
+
+
+
+
 # [1.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-hmac@1.3.0...@bitgo/sdk-hmac@1.4.0) (2025-10-21)
 
 

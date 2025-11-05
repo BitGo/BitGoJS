@@ -3,6 +3,33 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.6.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-algo@2.6.1...@bitgo/sdk-coin-algo@2.6.2) (2025-10-31)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-algo
+
+
+
+
+
+## [2.6.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-algo@2.6.0...@bitgo/sdk-coin-algo@2.6.1) (2025-10-29)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-algo
+
+
+
+
+
+# [2.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-algo@2.5.7...@bitgo/sdk-coin-algo@2.6.0) (2025-10-24)
+
+
+### Features
+
+* **sdk-coin-algo:** add verify transaction function ([b32dc55](https://github.com/BitGo/BitGoJS/commit/b32dc559276715d54bc83f970dd2a32b24f952ef))
+
+
+
+
+
 ## [2.5.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-algo@2.5.6...@bitgo/sdk-coin-algo@2.5.7) (2025-10-21)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-algo

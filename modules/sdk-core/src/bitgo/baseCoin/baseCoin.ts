@@ -47,6 +47,7 @@ import {
   VerifyTransactionOptions,
   AuditKeyParams,
   AuditDecryptedKeyParams,
+  TssVerifyAddressOptions,
 } from './iBaseCoin';
 import { IInscriptionBuilder } from '../inscriptionBuilder';
 import {
@@ -346,7 +347,7 @@ export abstract class BaseCoin implements IBaseCoin {
    * @param params
    * @return true iff address is a wallet address. Must return false if address is outside wallet.
    */
-  abstract isWalletAddress(params: VerifyAddressOptions): Promise<boolean>;
+  abstract isWalletAddress(params: VerifyAddressOptions | TssVerifyAddressOptions): Promise<boolean>;
 
   /**
    * convert address into desired address format.
@@ -378,6 +379,14 @@ export abstract class BaseCoin implements IBaseCoin {
    * @returns {boolean}
    */
   supportsMessageSigning(): boolean {
+    return false;
+  }
+
+  /**
+   * Check whether a coin requires wallet initialization
+   * @returns {boolean}
+   */
+  requiresWalletInitializationTransaction(): boolean {
     return false;
   }
 

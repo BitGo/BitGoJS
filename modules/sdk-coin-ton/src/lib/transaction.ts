@@ -18,6 +18,7 @@ export class Transaction extends BaseTransaction {
   expireTime: number;
   sender: string;
   publicKey: string;
+  isV3ContractMessage: boolean;
   protected unsignedMessage: string;
   protected finalMessage: string;
 
@@ -26,6 +27,7 @@ export class Transaction extends BaseTransaction {
     this.bounceable = false;
     this.fromAddressBounceable = true;
     this.toAddressBounceable = true;
+    this.isV3ContractMessage = false;
   }
 
   canSign(key: BaseKey): boolean {
@@ -93,7 +95,9 @@ export class Transaction extends BaseTransaction {
     // expireAt should be set as per the provided arg value, regardless of the seqno
     message.bits.writeUint(expireAt, 32);
     message.bits.writeUint(seqno, 32);
-    message.bits.writeUint(0, 8); // op
+    if (!this.isV3ContractMessage) {
+      message.bits.writeUint(0, 8); // op
+    }
     return message;
   }
 
@@ -140,7 +144,7 @@ export class Transaction extends BaseTransaction {
     body.writeCell(signingMessage);
 
     let stateInit;
-    if (seqno === 0) {
+    if (seqno === 0 && !this.isV3ContractMessage) {
       const WalletClass = TonWeb.Wallets.all['v4R2'];
       const wallet = new WalletClass(new TonWeb.HttpProvider(), {
         publicKey: TonWeb.utils.hexToBytes(this.publicKey),
@@ -266,10 +270,14 @@ export class Transaction extends BaseTransaction {
     const seqno = slice.loadUint(32).toNumber();
 
     const op = slice.loadUint(8).toNumber();
-    if (op !== 0) throw new Error('invalid op');
+    if (op !== 3) {
+      if (op !== 0) throw new Error('invalid op');
 
-    const sendMode = slice.loadUint(8).toNumber();
-    if (sendMode !== 3) throw new Error('invalid sendMode');
+      const sendMode = slice.loadUint(8).toNumber();
+      if (sendMode !== 3) throw new Error('invalid sendMode');
+    } else {
+      this.isV3ContractMessage = true;
+    }
 
     let order = slice.loadRef();
 

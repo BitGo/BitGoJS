@@ -60,6 +60,7 @@ export enum CoinFamily {
   FLRP = 'flrp',
   HASH = 'hash', // Provenance
   HBAR = 'hbar',
+  HBAREVM = 'hbarevm', // Hedera EVM coin
   ICP = 'icp',
   INITIA = 'initia',
   INJECTIVE = 'injective',
@@ -425,6 +426,11 @@ export enum CoinFeature {
   SHARED_COSMOS_WP = 'shared-cosmos-wp',
 
   /**
+   * This coin is a Cosmos coin and should use common Cosmos logic in BGA
+   */
+  COSMOS_COMMON_BGA = 'cosmos-common-bga',
+
+  /**
    * This coin is EVM based coin
    */
   EVM_COIN = 'evm_coin',
@@ -536,6 +542,7 @@ export enum UnderlyingAsset {
   GTC = 'gtc',
   HASH = 'hash', // Provenance
   HBAR = 'hbar', // Hedera main coin
+  HBAREVM = 'hbarevm', // Hedera EVM coin
   ICP = 'icp',
   IP = 'ip', // Story Chain
   INITIA = 'initia',
@@ -2145,6 +2152,7 @@ export enum UnderlyingAsset {
   'eth:lm' = 'eth:lm',
   'eth:kub' = 'eth:kub',
   'eth:fidd' = 'eth:fidd',
+  'eth:meme' = 'eth:meme',
 
   // Ondo Tokenized Assets
   'eth:qqqon' = 'qqqon',
@@ -2281,6 +2289,11 @@ export enum UnderlyingAsset {
   'eth:anon' = 'eth:anon',
   'eth:omi' = 'eth:omi',
   'eth:andy' = 'eth:andy',
+  'eth:aioz' = 'eth:aioz',
+  'eth:job' = 'eth:job',
+  'eth:irys' = 'eth:irys',
+  'eth:kpk' = 'eth:kpk',
+  'eth:devve' = 'eth:devve',
 
   'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ' = 'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ',
   'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M' = 'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M',
@@ -2553,6 +2566,7 @@ export enum UnderlyingAsset {
   'polygon:txusd' = 'polygon:txusd',
   'polygon:zig' = 'polygon:zig',
   'polygon:brl1' = 'polygon:brl1',
+  'polygon:cnktplus' = 'polygon:cnktplus',
   // Polygon NFTs
   // generic NFTs
   'erc721:polygontoken' = 'erc721:polygontoken',
@@ -2714,6 +2728,7 @@ export enum UnderlyingAsset {
   'bsc:pln' = 'bsc:pln',
   'bsc:ff' = 'bsc:ff',
   'bsc:c98' = 'bsc:c98',
+  'bsc:ln' = 'bsc:ln',
 
   // BSC NFTs
   // generic NFTs
@@ -2817,6 +2832,9 @@ export enum UnderlyingAsset {
   'baseeth:avnt' = 'baseeth:avnt',
   'baseeth:mira' = 'baseeth:mira',
   'baseeth:towns' = 'baseeth:towns',
+  'baseeth:brlv' = 'baseeth:brlv',
+  'baseeth:wbrly' = 'baseeth:wbrly',
+  'baseeth:recall' = 'baseeth:recall',
 
   // BaseETH testnet tokens
   'tbaseeth:usdc' = 'tbaseeth:usdc',
@@ -3087,6 +3105,8 @@ export enum UnderlyingAsset {
   'sol:xsgd' = 'sol:xsgd',
   'sol:straitxusd' = 'sol:straitxusd',
   'sol:usx' = 'sol:usx',
+  'sol:rksol' = 'sol:rksol',
+  'sol:usda1' = 'sol:usda1',
 
   'tsol:txsgd' = 'sol:txsgd',
   'tsol:txusd' = 'sol:txusd',
@@ -3196,6 +3216,7 @@ export enum UnderlyingAsset {
   'tpolyx:WEBINRASSET7' = 'tpolyx:WEBINRASSET7',
   'tpolyx:BULLRWA' = 'tpolyx:BULLRWA',
   'tpolyx:0x4a002922d38b8a7f87484b9c65a7ca0c' = 'tpolyx:0x4a002922d38b8a7f87484b9c65a7ca0c',
+  'tpolyx:0x753b5a2cb97c83e8b1bd66ed6643e4e9' = 'tpolyx:0x753b5a2cb97c83e8b1bd66ed6643e4e9',
 
   // Polymesh mainnet tokens
   'polyx:0xa0ce6bc4c60981e08eca6504656c99e6' = 'polyx:0xa0ce6bc4c60981e08eca6504656c99e6',
@@ -3273,9 +3294,15 @@ export enum UnderlyingAsset {
 
   // ADA testnet tokens
   'tada:water' = 'tada:water',
+  'tada:usda' = 'tada:usda',
 
   // ADA mainnet tokens
   'ada:min' = 'ada:min',
+  'ada:snek' = 'ada:snek',
+  'ada:wmtx' = 'ada:wmtx',
+  'ada:iag' = 'ada:iag',
+  'ada:djed' = 'ada:djed',
+  'ada:usda' = 'ada:usda',
 
   // fiats
   AED = 'aed',
@@ -3491,5 +3518,21 @@ export abstract class BaseCoin {
     this.asset = options.asset;
     this.network = options.network;
     this.primaryKeyCurve = options.primaryKeyCurve;
+  }
+
+  /**
+   * Returns features from a base feature set, excluding specified features
+   * @param excludedFeatures Array of features to exclude
+   * @param baseFeatures Base feature array to filter from (optional)
+   * @returns Filtered array of features
+   */
+  public static getFeaturesByTypeExcluding(
+    excludedFeatures: CoinFeature[],
+    baseFeatures?: CoinFeature[]
+  ): CoinFeature[] {
+    if (!baseFeatures) {
+      return [];
+    }
+    return baseFeatures.filter((feature) => !excludedFeatures.includes(feature));
   }
 }

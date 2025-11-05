@@ -1,0 +1,84 @@
+[
+  [
+    {
+      "chain": "default"
+    },
+    "t29KFG5ivWmjVf5YMJZ2ucFarni4J3NXbWB"
+  ],
+  [
+    {
+      "chain": 0
+    },
+    "t29KFG5ivWmjVf5YMJZ2ucFarni4J3NXbWB"
+  ],
+  [
+    {
+      "chain": 1
+    },
+    "t2ChBQL66RU2M9DnktwM1uZJB4BAeZTVZAQ"
+  ],
+  [
+    {
+      "chain": 10
+    },
+    {
+      "error": "p2shP2wsh not supported by this coin"
+    }
+  ],
+  [
+    {
+      "chain": 11
+    },
+    {
+      "error": "p2shP2wsh not supported by this coin"
+    }
+  ],
+  [
+    {
+      "chain": 20
+    },
+    {
+      "error": "p2wsh not supported by this coin"
+    }
+  ],
+  [
+    {
+      "chain": 21
+    },
+    {
+      "error": "p2wsh not supported by this coin"
+    }
+  ],
+  [
+    {
+      "chain": 30
+    },
+    {
+      "error": "p2tr not supported by this coin"
+    }
+  ],
+  [
+    {
+      "chain": 31
+    },
+    {
+      "error": "p2tr not supported by this coin"
+    }
+  ],
+  [
+    {
+      "chain": 40
+    },
+    {
+      "error": "p2trMusig2 not supported by this coin"
+    }
+  ],
+  [
+    {
+      "chain": 41
+    },
+    {
+      "error": "p2trMusig2 not supported by this coin"
+    }
+  ]
+]

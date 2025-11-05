@@ -47,7 +47,7 @@ export enum TransactionType {
   // Add validator to p-chain
   // @deprecated
   AddValidator,
-  // Cross chain transfer at Avax
+  // Cross chain transfer at Avax and flare
   Export,
   Import,
   // Cross chain Recovery for evm like chains
@@ -89,6 +89,12 @@ export enum TransactionType {
   FlushERC1155,
   // Set up 1-step pre-approval for canton
   OneStepPreApproval,
+  // canton transfer accept, 2-step
+  TransferAccept,
+  // canton transfer acknowledgement
+  TransferAcknowledge,
+  // canton transfer reject, 2-step
+  TransferReject,
 
   // trx
   FREEZE,
@@ -110,6 +116,9 @@ export enum TransactionType {
 
   // polyx
   RejectInstruction,
+
+  // flrp
+  ImportToC,
 }
 
 /**

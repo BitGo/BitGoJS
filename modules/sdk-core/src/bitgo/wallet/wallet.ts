@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import { TxSendBody } from '@bitgo/public-types';
+import { TxSendBody, type AddressQueryResult } from '@bitgo/public-types';
 import { CoinFamily } from '@bitgo/statics';
 import assert from 'assert';
 import BigNumber from 'bignumber.js';
@@ -85,7 +85,7 @@ import {
   GetTransactionOptions,
   GetTransferOptions,
   GetUserPrvOptions,
-  IWallet,
+  type IWallet,
   ManageUnspentReservationOptions,
   MaximumSpendable,
   MaximumSpendableOptions,
@@ -123,6 +123,7 @@ import {
   WalletSignTypedDataOptions,
   WalletType,
   BuildTokenApprovalResponse,
+  WalletInitResult,
 } from './iWallet';
 
 const debug = require('debug')('bitgo:v2:wallet');
@@ -1077,7 +1078,7 @@ export class Wallet implements IWallet {
    * @param params
    * @returns {*}
    */
-  async addresses(params: AddressesOptions = {}): Promise<any> {
+  async addresses(params: AddressesOptions = {}): Promise<AddressQueryResult> {
     common.validateParams(params, [], []);
 
     const query: AddressesOptions = {};
@@ -1952,6 +1953,9 @@ export class Wallet implements IWallet {
    * - txPrebuild
    * - [keychain / key] (object) or prv (string)
    * - walletPassphrase
+   * - verifyTxParams (optional) - when provided, the transaction will be verified before signing
+   *   - txParams: transaction parameters used for verification
+   *   - verification: optional verification options
    * @return {*}
    */
   async signTransaction(params: WalletSignTransactionOptions = {}): Promise<SignedTransaction | TxRequest> {
@@ -1994,6 +1998,20 @@ export class Wallet implements IWallet {
       }
       // We only do this if we're not using the external signer TSS flow
       params.txPrebuild = { txRequestId };
+    }
+
+    // Verify transaction if verifyTxParams is provided
+    if (params.verifyTxParams && txPrebuild?.txHex) {
+      const verifyParams = {
+        txPrebuild: { ...txPrebuild },
+        txParams: params.verifyTxParams.txParams,
+        wallet: this as IWallet,
+        verification: params.verifyTxParams.verification,
+        reqId: params.reqId,
+        walletType: this.multisigType() as 'onchain' | 'tss',
+      };
+
+      await this.baseCoin.verifyTransaction(verifyParams);
     }
 
     if (
@@ -3243,6 +3261,28 @@ export class Wallet implements IWallet {
   }
 
   /**
+   * Builds wallet initialization
+   * @param {PrebuildTransactionOptions} params
+   * @returns {Promise<PrebuildTransactionResult>}
+   */
+  public async buildWalletInitialization(params: PrebuildTransactionOptions): Promise<PrebuildTransactionResult> {
+    if (!this.baseCoin.requiresWalletInitializationTransaction()) {
+      throw new Error(`Wallet initialization is not required for ${this.baseCoin.getFullName()}`);
+    }
+    if (this._wallet.multisigType !== 'tss') {
+      throw new Error('Wallet initialization transaction is only supported for TSS wallets');
+    }
+    if (params.reqId) {
+      this.bitgo.setRequestTracer(params.reqId);
+    }
+    const buildParams: PrebuildTransactionOptions = _.pick(params, this.prebuildWhitelistedParams());
+    if (!buildParams.type) {
+      buildParams.type = 'createAccount';
+    }
+    return await this.prebuildTransaction(buildParams);
+  }
+
+  /**
    * Signs and sends a single unsigned token enablement transaction
    * @param params
    * @returns
@@ -3313,6 +3353,32 @@ export class Wallet implements IWallet {
       }
     }
 
+    return {
+      success: successfulTxs,
+      failure: failedTxs,
+    };
+  }
+
+  /**
+   * The chain canton, requires the wallet to be initialized by sending out a transaction
+   * to be onboarded onto the validator.
+   * Builds, Signs and sends a transaction that initializes the canton wallet
+   * @param params
+   */
+  public async sendWalletInitialization(params: PrebuildTransactionOptions = {}): Promise<WalletInitResult> {
+    const prebuildTx = await this.buildWalletInitialization(params);
+    const unsignedBuildWithOptions: PrebuildAndSignTransactionOptions = {
+      ...params,
+      prebuildTx,
+    };
+    const successfulTxs: PrebuildTransactionResult[] = [];
+    const failedTxs = new Array<Error>();
+    try {
+      const sendTx = await this.sendManyTxRequests(unsignedBuildWithOptions);
+      successfulTxs.push(sendTx);
+    } catch (e) {
+      failedTxs.push(e);
+    }
     return {
       success: successfulTxs,
       failure: failedTxs,
@@ -3439,6 +3505,41 @@ export class Wallet implements IWallet {
           params.preview
         );
         break;
+      case 'createAccount':
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: 'createAccount',
+            recipients: params.recipients || [],
+          },
+          apiVersion,
+          params.preview
+        );
+        break;
+      case 'transferAccept': {
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: 'transferAccept',
+            txRequestId: params.txRequestId,
+          },
+          apiVersion,
+          params.preview
+        );
+        break;
+      }
+      case 'transferReject': {
+        txRequest = await this.tssUtils!.prebuildTxWithIntent(
+          {
+            reqId,
+            intentType: 'transferReject',
+            txRequestId: params.txRequestId,
+          },
+          apiVersion,
+          params.preview
+        );
+        break;
+      }
       case 'customTx':
         txRequest = await this.tssUtils!.prebuildTxWithIntent(
           {

@@ -3,6 +3,36 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.13.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@2.13.0...@bitgo/sdk-coin-near@2.13.1) (2025-10-31)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-near
+
+
+
+
+
+# [2.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@2.12.0...@bitgo/sdk-coin-near@2.13.0) (2025-10-29)
+
+
+### Features
+
+* **sdk-coin-near:** reapply consolidation validation ([e269796](https://github.com/BitGo/BitGoJS/commit/e269796b1cbf79b798ce76f52af464fdab98b87c))
+
+
+
+
+
+# [2.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@2.11.7...@bitgo/sdk-coin-near@2.12.0) (2025-10-24)
+
+
+### Features
+
+* **sdk-coin-near:** token enablement transaction validation ([2150024](https://github.com/BitGo/BitGoJS/commit/21500242aab8b9542ce97ecabdd716852e23bb41))
+
+
+
+
+
 ## [2.11.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@2.11.6...@bitgo/sdk-coin-near@2.11.7) (2025-10-21)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-near

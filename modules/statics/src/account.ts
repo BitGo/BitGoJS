@@ -3788,7 +3788,8 @@ export function polyxToken(
  * @param name unique identifier of the token
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
- * @param subnetId The uid of the subnet this token belongs to, numerical string
+ * @param ticker The ticker symbol of the token
+ * @param assetId The unique asset identifier for this token
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES
  * @param prefix? Optional token prefix. Defaults to empty string

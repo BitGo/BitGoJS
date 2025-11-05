@@ -30,13 +30,13 @@ import {
   MPCTxs,
   MPCSweepRecoveryOptions,
   AuditDecryptedKeyParams,
+  extractCommonKeychain,
 } from '@bitgo/sdk-core';
 import { auditEddsaPrivateKey, getDerivationPath } from '@bitgo/sdk-lib-mpc';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import { KeyPair as TonKeyPair } from './lib/keyPair';
-import { Transaction, TransactionBuilderFactory, Utils, TransferBuilder } from './lib';
+import { TransactionBuilderFactory, Utils, TransferBuilder } from './lib';
 import { getFeeEstimate } from './lib/utils';
-import { TokenTransaction } from './lib/tokenTransaction';
 
 export interface TonParseTransactionOptions extends ParseTransactionOptions {
   txHex: string;
@@ -113,16 +113,15 @@ export class Ton extends BaseCoin {
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
-    const coinConfig = coins.get(this.getChain());
     const { txPrebuild: txPrebuild, txParams: txParams } = params;
-
-    const transaction = coinConfig.isToken ? new TokenTransaction(coinConfig) : new Transaction(coinConfig);
     const rawTx = txPrebuild.txHex;
     if (!rawTx) {
       throw new Error('missing required tx prebuild property txHex');
     }
 
-    transaction.fromRawTransaction(Buffer.from(rawTx, 'hex').toString('base64'));
+    const txBuilder = this.getBuilder().from(Buffer.from(rawTx, 'hex').toString('base64'));
+    const transaction = await txBuilder.build();
+
     const explainedTx = transaction.explainTransaction();
     if (txParams.recipients !== undefined) {
       const filteredRecipients = txParams.recipients?.map((recipient) => {
@@ -159,29 +158,21 @@ export class Ton extends BaseCoin {
       throw new InvalidAddressError(`invalid address: ${newAddress}`);
     }
 
-    if (!keychains) {
-      throw new Error('missing required param keychains');
+    const [address, memoId] = newAddress.split('?memoId=');
+
+    // TON supports memoId for address tagging - verify it matches the index
+    if (memoId) {
+      return memoId === `${index}`;
     }
 
-    for (const keychain of keychains) {
-      const [address, memoId] = newAddress.split('?memoId=');
-      const MPC = await EDDSAMethods.getInitializedMpcInstance();
-      const commonKeychain = keychain.commonKeychain as string;
+    const commonKeychain = extractCommonKeychain(keychains);
 
-      const derivationPath = 'm/' + index;
-      const derivedPublicKey = MPC.deriveUnhardened(commonKeychain, derivationPath).slice(0, 64);
-      const expectedAddress = await Utils.default.getAddressFromPublicKey(derivedPublicKey);
+    const MPC = await EDDSAMethods.getInitializedMpcInstance();
+    const derivationPath = 'm/' + index;
+    const derivedPublicKey = MPC.deriveUnhardened(commonKeychain, derivationPath).slice(0, 64);
+    const expectedAddress = await Utils.default.getAddressFromPublicKey(derivedPublicKey);
 
-      if (memoId) {
-        return memoId === `${index}`;
-      }
-
-      if (address !== expectedAddress) {
-        return false;
-      }
-    }
-
-    return true;
+    return address === expectedAddress;
   }
 
   async parseTransaction(params: TonParseTransactionOptions): Promise<ParsedTransaction> {

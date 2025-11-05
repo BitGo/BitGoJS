@@ -2,7 +2,7 @@
  * Tron wallets can't send funds from their receive addresses.
  * Account balance consolidation is used to sweep funds from the
  * receive addresses into the wallet's base address for sending.
- * @see {@link https://app.bitgo.com/docs/#operation/v2.wallet.consolidateaccount.build}
+ * @see {@link https://developers.bitgo.com/reference/v2walletconsolidateaccountbuild#/}
  */
 import { BitGo, WalletCoinSpecific } from 'bitgo';
 

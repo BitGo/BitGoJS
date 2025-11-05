@@ -3,6 +3,36 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.7.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@4.7.0...@bitgo/sdk-coin-dot@4.7.1) (2025-10-31)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-dot
+
+
+
+
+
+# [4.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@4.6.0...@bitgo/sdk-coin-dot@4.7.0) (2025-10-29)
+
+
+### Features
+
+* **sdk-coin-dot:** configure metadata for polkadot assethub ([00a7820](https://github.com/BitGo/BitGoJS/commit/00a7820ab8c45d59cab785043ae5304cc3b3b82a))
+
+
+
+
+
+# [4.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@4.5.7...@bitgo/sdk-coin-dot@4.6.0) (2025-10-24)
+
+
+### Features
+
+* **sdk-coin-dot:** implement isWalletAddress for address verfn ([78026ba](https://github.com/BitGo/BitGoJS/commit/78026ba57b6e9cc6a3561e12558ec18c8f435155))
+
+
+
+
+
 ## [4.5.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@4.5.6...@bitgo/sdk-coin-dot@4.5.7) (2025-10-21)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-dot

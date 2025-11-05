@@ -3,6 +3,54 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [36.18.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.17.0...@bitgo/sdk-core@36.18.0) (2025-10-31)
+
+
+### Features
+
+* added a method for building wallet init ([5ee449e](https://github.com/BitGo/BitGoJS/commit/5ee449e2d57777b96a415d11e1a24db3f1fa2413))
+* handling new type of intents in prebuild ([ad46a25](https://github.com/BitGo/BitGoJS/commit/ad46a25b7959f4f809cabd8c24a1d049e1d678b1))
+* **sdk-core:** add verification options for signing txHex ([951fbbc](https://github.com/BitGo/BitGoJS/commit/951fbbc6882984db0d735f35a693694a3b50bed2))
+
+
+
+
+
+# [36.17.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.16.0...@bitgo/sdk-core@36.17.0) (2025-10-29)
+
+
+### Bug Fixes
+
+* bug fix in wallet initialization for canton ([b55fa9b](https://github.com/BitGo/BitGoJS/commit/b55fa9b0a36cb540878374faca6779ffb9d1e4f6))
+
+
+### Features
+
+* add statics config for Hedera EVM ([de480fd](https://github.com/BitGo/BitGoJS/commit/de480fd6dba2dff178058b6a2ea2bf4e7dff68af))
+* added transfer reject builder ([ac4fbe7](https://github.com/BitGo/BitGoJS/commit/ac4fbe73ba3ed12f73b43ae43927b3eeb8f9c436))
+* **sdk-coin-canton:** added transfer acknowledgement builder ([a51a9f6](https://github.com/BitGo/BitGoJS/commit/a51a9f68950c233dcde97c6a0cf9d5ea323d35e9))
+* **sdk-coin-dot:** configure metadata for polkadot assethub ([00a7820](https://github.com/BitGo/BitGoJS/commit/00a7820ab8c45d59cab785043ae5304cc3b3b82a))
+* sending optional param recipients for createAccount ([5930bbf](https://github.com/BitGo/BitGoJS/commit/5930bbfe2529687ca1dd60166fa9fa6e403ac67e))
+
+
+
+
+
+# [36.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.15.0...@bitgo/sdk-core@36.16.0) (2025-10-24)
+
+
+### Features
+
+* added createAccount intent for canton wallet init ([f0f9964](https://github.com/BitGo/BitGoJS/commit/f0f9964f7af9dd6e7fc7704e4fde2758d13ae1a6))
+* recover function for vet recovery ([de5f8bd](https://github.com/BitGo/BitGoJS/commit/de5f8bd83565175da05e1d0e0701b28632a8907d))
+* **sdk-coin-canton:** added transfer acceptance builder ([d1f3794](https://github.com/BitGo/BitGoJS/commit/d1f37944f66b377952fc769c3be508404dd3e8d8))
+* **sdk-core:** add MPC EdDSA address verification ([288d4d5](https://github.com/BitGo/BitGoJS/commit/288d4d56c75eb4e5337ead506cb54ae9a3fb791d))
+* **sdk-core:** add typing on fetch addresses ([f3dec74](https://github.com/BitGo/BitGoJS/commit/f3dec74befc76bb305a4f9ac72975e4de43787ff))
+
+
+
+
+
 # [36.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.14.0...@bitgo/sdk-core@36.15.0) (2025-10-21)
 
 

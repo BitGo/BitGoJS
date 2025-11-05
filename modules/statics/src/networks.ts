@@ -510,15 +510,15 @@ class ECashTestnet extends Testnet implements UtxoNetwork {
   explorerUrl = undefined;
 }
 
-class Polkadot extends Mainnet implements DotNetwork {
-  name = 'Polkadot';
+class PolkadotAssetHub extends Mainnet implements DotNetwork {
+  name = 'PolkadotAssetHub';
   family = CoinFamily.DOT;
-  explorerUrl = 'https://polkadot.subscan.io/extrinsic/';
-  specName = 'polkadot' as PolkadotSpecNameType;
-  genesisHash = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
-  specVersion = 9140;
-  chainName = 'Polkadot';
-  txVersion = 9;
+  explorerUrl = 'https://assethub-polkadot.subscan.io/extrinsic';
+  specName = 'statemint' as PolkadotSpecNameType;
+  genesisHash = '0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f';
+  specVersion = 1007001;
+  chainName = 'Polkadot Asset Hub';
+  txVersion = 15;
 }
 
 class WestendAssetHub extends Testnet implements DotNetwork {
@@ -545,9 +545,9 @@ class Celo extends Mainnet implements EthereumNetwork {
 class CeloTestnet extends Testnet implements EthereumNetwork {
   name = 'CeloTestnet';
   family = CoinFamily.CELO;
-  explorerUrl = 'https://alfajores-blockscout.celo-testnet.org/tx/';
-  accountExplorerUrl = 'https://alfajores-blockscout.celo-testnet.org/address/';
-  chainId = 44787;
+  explorerUrl = 'https://sepolia.celoscan.io/tx/';
+  accountExplorerUrl = 'https://sepolia.celoscan.io/address/';
+  chainId = 11142220;
   nativeCoinOperationHashPrefix = 'CELO';
   tokenOperationHashPrefix = 'CELO-ERC20';
 }
@@ -724,7 +724,7 @@ class Litecoin extends Mainnet implements UtxoNetwork {
   name = 'Litecoin';
   family = CoinFamily.LTC;
   utxolibName = 'litecoin';
-  explorerUrl = 'https://blockchair.com/litecoin/transaction/';
+  explorerUrl = 'https://litecoinspace.org/tx/';
 }
 
 class LitecoinTestnet extends Testnet implements UtxoNetwork {
@@ -1275,10 +1275,10 @@ class BerachainTestnet extends Testnet implements EthereumNetwork {
   family = CoinFamily.BERA;
   explorerUrl = 'https://testnet.berascan.com/tx/';
   accountExplorerUrl = 'https://testnet.berascan.com/address/';
-  chainId = 80000;
-  nativeCoinOperationHashPrefix = '80000';
-  tokenOperationHashPrefix = '80000-ERC20';
-  batcherContractAddress = '0xedf1a0016d9c41d2ad0c275e1ba708361a90c0d1';
+  chainId = 80069;
+  nativeCoinOperationHashPrefix = '80069';
+  tokenOperationHashPrefix = '80069-ERC20';
+  batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
   forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
@@ -1992,6 +1992,24 @@ class Plume extends Mainnet implements EthereumNetwork {
   nativeCoinOperationHashPrefix = '98866';
 }
 
+class HederaEVMTestnet extends Testnet implements EthereumNetwork {
+  name = 'Testnet Hedera EVM';
+  family = CoinFamily.HBAREVM;
+  explorerUrl = 'https://hashscan.io/mainnet/transactions/';
+  accountExplorerUrl = 'https://hashscan.io/mainnet/account/';
+  chainId = 296;
+  nativeCoinOperationHashPrefix = '296';
+}
+
+class HederaEVM extends Mainnet implements EthereumNetwork {
+  name = 'Hedera EVM';
+  family = CoinFamily.HBAREVM;
+  explorerUrl = 'https://hashscan.io/testnet/transaction/';
+  accountExplorerUrl = 'https://hashscan.io/testnet/account/';
+  chainId = 295;
+  nativeCoinOperationHashPrefix = '295';
+}
+
 class PlumeTestnet extends Testnet implements EthereumNetwork {
   name = 'PlumeTestnet';
   family = CoinFamily.PLUME;
@@ -2004,13 +2022,13 @@ class PlumeTestnet extends Testnet implements EthereumNetwork {
 class Canton extends Mainnet implements BaseNetwork {
   name = 'Canton';
   family = CoinFamily.CANTON;
-  explorerUrl = '';
+  explorerUrl = 'https://ccview.io/updates/';
 }
 
 class CantonTestnet extends Testnet implements BaseNetwork {
   name = 'CantonTestnet';
   family = CoinFamily.CANTON;
-  explorerUrl = '';
+  explorerUrl = 'https://devnet.ccview.io/updates/';
 }
 
 export const Networks = {
@@ -2041,7 +2059,7 @@ export const Networks = {
     cronos: Object.freeze(new Cronos()),
     dash: Object.freeze(new Dash()),
     dogecoin: Object.freeze(new Dogecoin()),
-    dot: Object.freeze(new Polkadot()),
+    dot: Object.freeze(new PolkadotAssetHub()),
     eCash: Object.freeze(new ECash()),
     eos: Object.freeze(new Eos()),
     ethereum: Object.freeze(new Ethereum()),
@@ -2055,6 +2073,7 @@ export const Networks = {
     flrP: Object.freeze(new FlareP()),
     hash: Object.freeze(new Hash()),
     hedera: Object.freeze(new Hedera()),
+    hederaEVM: Object.freeze(new HederaEVM()),
     icp: Object.freeze(new Icp()),
     ip: Object.freeze(new IP()),
     initia: Object.freeze(new Initia()),
@@ -2155,6 +2174,7 @@ export const Networks = {
     ethereumClassicTestnet: Object.freeze(new EthereumClassicTestnet()),
     hash: Object.freeze(new HashTestnet()),
     hedera: Object.freeze(new HederaTestnet()),
+    hederaEVM: Object.freeze(new HederaEVMTestnet()),
     icp: Object.freeze(new IcpTestnet()),
     ip: Object.freeze(new IPTestnet()),
     initia: Object.freeze(new InitiaTestnet()),

@@ -68,6 +68,7 @@ import { jettonTokens } from './coins/jettonTokens';
 import { polyxTokens } from './coins/polyxTokens';
 import { flrp } from './flrp';
 import {
+  ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE_AND_MENA_FZE,
   ADA_FEATURES_WITH_FRANKFURT,
   ALGO_FEATURES,
   APT_FEATURES,
@@ -123,6 +124,7 @@ import {
   VET_FEATURES,
   WCT_FEATURES,
   WEMIX_FEATURES,
+  WFLR_FEATURES,
   XDC_FEATURES,
   XLM_FEATURES,
   XLM_TOKEN_FEATURES_WITH_FRANKFURT,
@@ -130,8 +132,6 @@ import {
   XTZ_FEATURES,
   ZETA_FEATURES,
   ZKETH_FEATURES,
-  ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE_AND_MENA_FZE,
-  WFLR_FEATURES,
 } from './coinFeatures';
 import { botTokens } from './coins/botTokens';
 import { adaTokens } from './coins/adaTokens';
@@ -393,6 +393,7 @@ export const allCoinsAndTokens = [
       CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
       CoinFeature.SHARED_EVM_SDK,
       CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_MESSAGE_SIGNING,
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
@@ -415,6 +416,7 @@ export const allCoinsAndTokens = [
       CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
       CoinFeature.SHARED_EVM_SDK,
       CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_MESSAGE_SIGNING,
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
@@ -483,7 +485,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.RBTC,
     BaseUnit.ETH,
-    RBTC_FEATURES
+    AccountCoin.getFeaturesByTypeExcluding([CoinFeature.CUSTODY_BITGO_MENA_FZE], RBTC_FEATURES)
   ),
   account(
     '9cf6d137-6c6b-4fc0-acc0-8e78a1599c15',
@@ -677,7 +679,7 @@ export const allCoinsAndTokens = [
     6,
     UnderlyingAsset.OSMO,
     BaseUnit.OSMO,
-    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING
+    COSMOS_SIDECHAIN_FEATURES_WITH_STAKING.filter((feature) => ![CoinFeature.CUSTODY_BITGO_SINGAPORE].includes(feature))
   ),
   account(
     'd813e9c9-f9b9-4d10-a4e2-57d9e3b65e2c',
@@ -893,6 +895,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.STAKING,
     ]
   ),
   account(
@@ -1061,6 +1064,7 @@ export const allCoinsAndTokens = [
       CoinFeature.CUSTODY_BULK_TRANSACTION,
       CoinFeature.SHARED_COSMOS_SDK,
       CoinFeature.SHARED_COSMOS_WP,
+      CoinFeature.COSMOS_COMMON_BGA,
     ]
   ),
   account(
@@ -1076,6 +1080,7 @@ export const allCoinsAndTokens = [
       CoinFeature.CUSTODY_BULK_TRANSACTION,
       CoinFeature.SHARED_COSMOS_SDK,
       CoinFeature.SHARED_COSMOS_WP,
+      CoinFeature.COSMOS_COMMON_BGA,
     ]
   ),
   account(
@@ -1446,7 +1451,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.WEMIX,
     BaseUnit.ETH,
-    WEMIX_FEATURES
+    WEMIX_FEATURES.filter((feature) => feature !== CoinFeature.CUSTODY_BITGO_SINGAPORE)
   ),
   account(
     'b18517e3-2fba-44df-be39-7ba062d14895',
@@ -1610,6 +1615,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.STAKING,
     ]
   ),
   account(
@@ -2120,6 +2126,44 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
     ]
   ),
+  account(
+    '577efbd5-4f61-4620-a736-5a2655d1521d',
+    'hbarevm',
+    'Hedera EVM',
+    Networks.main.hederaEVM,
+    8,
+    UnderlyingAsset.HBAREVM,
+    BaseUnit.HBAR,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+    ]
+  ),
+  account(
+    'd38fb9c4-2949-404b-85be-7c828a416de9',
+    'thbarevm',
+    'Testnet Hedera EVM',
+    Networks.test.hederaEVM,
+    8,
+    UnderlyingAsset.HBAREVM,
+    BaseUnit.HBAR,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+    ]
+  ),
   canton(
     '07385320-5a4f-48e9-97a5-86d4be9f24b0',
     'canton',
@@ -2383,6 +2427,115 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['baseeth:morpho'],
     Networks.main.basechain
   ),
+  erc20Token(
+    '6f5e8b2e-7d8d-4f76-8f8e-7d6fbf7b8c5f',
+    'baseeth:creator',
+    'CreatorDAO',
+    18,
+    '0x0fd122a924c4528a78a8141bddd38a0e5ba35fa5',
+    UnderlyingAsset['baseeth:creator'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    '2f1e4b8e-3d4d-4f72-9f4e-3d2f7f3b4c1f',
+    'baseeth:tig',
+    'The Innovation Game',
+    18,
+    '0x0c03ce270b4826ec62e7dd007f0b716068639f7b',
+    UnderlyingAsset['baseeth:tig'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    '1f0e3b9e-2d3d-4f71-8f3e-2d1f6f2b3c0e',
+    'baseeth:spec',
+    'Spectral',
+    18,
+    '0x96419929d7949d6a801a6909c145c8eef6a40431',
+    UnderlyingAsset['baseeth:spec'],
+    Networks.main.basechain,
+    [...AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE, CoinFeature.EIP1559]
+  ),
+  erc20Token(
+    '3f2e5b9e-4d5d-4f73-af5e-4d3f8f4b5c2f',
+    'baseeth:virtual',
+    'Virtual Protocol',
+    18,
+    '0x0b3e328455c4059eeb9e3f84b5543f74e24e7e1b',
+    UnderlyingAsset['baseeth:virtual'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    '5f4e7b1e-6d7d-4f75-8f7e-6d5faf6b7c4f',
+    'baseeth:toshi',
+    'Toshi',
+    18,
+    '0xac1bd2486aaf3b5c0fc3fd868558b082a531b2b4',
+    UnderlyingAsset['baseeth:toshi'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    '7f6e9b3e-8d9d-4f77-8f9e-8d7fcf8b9c6f',
+    'baseeth:avnt',
+    'Avantis',
+    18,
+    '0x696f9436b67233384889472cd7cd58a6fb5df4f1',
+    UnderlyingAsset['baseeth:avnt'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    '4f3e6b0e-5d6d-4f74-bf6e-5d4f9f5b6c3f',
+    'baseeth:zora',
+    'Zora',
+    18,
+    '0x1111111111166b7fe7bd91427724b487980afc69',
+    UnderlyingAsset['baseeth:zora'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    '8f7eab4e-9dad-4f78-8f0e-9d8fdf9bac7f',
+    'baseeth:mira',
+    'Mira Network',
+    18,
+    '0x7aafd31a321d3627b30a8e2171264b56852187fe',
+    UnderlyingAsset['baseeth:mira'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    '9f8ebb5e-adb0-4f79-8f1e-ae9fef0bbd8f',
+    'baseeth:towns',
+    'Towns',
+    18,
+    '0x00000000a22c618fd6b4d7e9a335c4b96b189a38',
+    UnderlyingAsset['baseeth:towns'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    'ff85dedc-78b3-421a-823f-b570c0259dee',
+    'baseeth:recall',
+    'Recall',
+    18,
+    '0x1f16e03c1a5908818f47f6ee7bb16690b40d0671',
+    UnderlyingAsset['baseeth:recall'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    'cc24757e-e2e4-4bfe-8102-834f1be55341',
+    'baseeth:brlv',
+    'BRL Velocity',
+    18,
+    '0xd2047ebdb205ee6862b69ae9fb3501652cc97d36',
+    UnderlyingAsset['baseeth:brlv'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    '364a7400-844a-4bda-80dc-74ed6fbce488',
+    'baseeth:wbrly',
+    'Wrapped BRLY',
+    24,
+    '0xe1f72919df7b523919dd49c7b5adc6002f983453',
+    UnderlyingAsset['baseeth:wbrly'],
+    Networks.main.basechain
+  ),
   hederaCoin(
     '98aad956-27ee-45dd-aa43-6a23c9a1d1d0',
     'hbar',
@@ -2620,7 +2773,7 @@ export const allCoinsAndTokens = [
     7,
     UnderlyingAsset['xlm:SLT-GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP'],
     'smartlands.io',
-    AccountCoin.DEFAULT_FEATURES,
+    ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE_AND_MENA_FZE,
     '',
     'SLT'
   ),
@@ -4629,7 +4782,7 @@ export const allCoinsAndTokens = [
     'VSUI',
     '0x549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55::vsui::VSUI',
     UnderlyingAsset['sui:vsui'],
-    SUI_TOKEN_FEATURES
+    SUI_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   suiToken(
     '705d1458-d5e6-4eaa-8a34-51e65cc68dec',

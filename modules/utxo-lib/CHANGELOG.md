@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [11.13.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.13.0...@bitgo/utxo-lib@11.13.1) (2025-10-24)
+
+
+### Bug Fixes
+
+* **utxo-lib:** use correct sign method for BIP-0327 test functions ([09b9371](https://github.com/BitGo/BitGoJS/commit/09b937194c6cd80afaf501cb4bef6819ea038a5c))
+
+
+
+
+
 # [11.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.12.0...@bitgo/utxo-lib@11.13.0) (2025-10-21)
 
 

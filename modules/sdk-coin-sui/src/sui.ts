@@ -7,7 +7,6 @@ import {
   EDDSAMethods,
   EDDSAMethodTypes,
   Environments,
-  InvalidAddressError,
   KeyPair,
   MPCAlgorithm,
   MPCRecoveryOptions,
@@ -30,6 +29,7 @@ import {
   MultisigType,
   multisigTypes,
   AuditDecryptedKeyParams,
+  verifyEddsaTssWalletAddress,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, BaseNetwork, coins, SuiCoin } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
@@ -188,12 +188,11 @@ export class Sui extends BaseCoin {
   }
 
   async isWalletAddress(params: TssVerifyAddressOptions): Promise<boolean> {
-    const { address: newAddress } = params;
-
-    if (!this.isValidAddress(newAddress)) {
-      throw new InvalidAddressError(`invalid address: ${newAddress}`);
-    }
-    return true;
+    return verifyEddsaTssWalletAddress(
+      params,
+      (address) => this.isValidAddress(address),
+      (publicKey) => this.getAddressFromPublicKey(publicKey)
+    );
   }
 
   async parseTransaction(params: SuiParseTransactionOptions): Promise<SuiParsedTransaction> {

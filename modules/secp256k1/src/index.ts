@@ -103,6 +103,27 @@ const ecc = {
     return necc.verify(signature, h, Q, { strict });
   },
 
+  recoverPublicKey: (
+    h: Uint8Array,
+    signature: Uint8Array,
+    recovery: number,
+    compressed?: boolean
+  ): Uint8Array | null => {
+    // Message hash must be exactly 32 bytes
+    if (h.length !== 32) {
+      return null;
+    }
+    // Signature must be exactly 64 bytes (r and s components)
+    if (signature.length !== 64) {
+      return null;
+    }
+    // Recovery value must be 0 or 1
+    if (recovery !== 0 && recovery !== 1) {
+      return null;
+    }
+    return throwToNull(() => necc.recoverPublicKey(h, signature, recovery, defaultTrue(compressed)));
+  },
+
   verifySchnorr: (h: Uint8Array, Q: Uint8Array, signature: Uint8Array): boolean => {
     return necc.schnorr.verifySync(signature, h, Q);
   },

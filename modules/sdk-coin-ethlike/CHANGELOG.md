@@ -3,6 +3,41 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ethlike@2.4.0...@bitgo/sdk-coin-ethlike@2.4.1) (2025-10-31)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-ethlike
+
+
+
+
+
+# [2.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ethlike@2.3.0...@bitgo/sdk-coin-ethlike@2.4.0) (2025-10-29)
+
+
+### Features
+
+* **sdk-coin-evm:** enable message signing for base ([59cd88b](https://github.com/BitGo/BitGoJS/commit/59cd88b0a89d4c69621ddc950847c93b338fa10d))
+
+
+
+
+
+# [2.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ethlike@2.2.7...@bitgo/sdk-coin-ethlike@2.3.0) (2025-10-24)
+
+
+### Bug Fixes
+
+* return recipients in unsigned tranasction ([0c6c2cd](https://github.com/BitGo/BitGoJS/commit/0c6c2cdaaec71bc6f62b3eaf416cefdb65937093))
+
+
+### Features
+
+* **sdk-coin-ethlike:** enable message signing for baseeth ([434fccf](https://github.com/BitGo/BitGoJS/commit/434fccf870c1a70395925dd1a36c8ecdbda62f6e))
+
+
+
+
+
 ## [2.2.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ethlike@2.2.6...@bitgo/sdk-coin-ethlike@2.2.7) (2025-10-21)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ethlike

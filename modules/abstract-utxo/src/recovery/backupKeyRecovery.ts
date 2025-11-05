@@ -228,6 +228,12 @@ async function getRecoveryFeePerBytes(
   coin: AbstractUtxoCoin,
   { defaultValue }: { defaultValue: number }
 ): Promise<number> {
+  if (coin.getFamily() === 'doge') {
+    // https://github.com/dogecoin/dogecoin/blob/master/doc/fee-recommendation.md
+    // 0.01 DOGE per KB
+    return 1000;
+  }
+
   try {
     return await MempoolApi.forCoin(coin.getChain()).getRecoveryFeePerBytes();
   } catch (e) {

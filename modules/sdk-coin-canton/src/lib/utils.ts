@@ -20,7 +20,9 @@ export class Utils implements BaseUtils {
 
   /** @inheritdoc */
   isValidBlockId(hash: string): boolean {
-    throw new Error('Method not implemented.');
+    // In canton, there is no block hash, we store the height as the _id (hash)
+    const blockHeight = Number(hash);
+    return !isNaN(blockHeight) && blockHeight > 0;
   }
 
   /** @inheritdoc */
@@ -51,6 +53,15 @@ export class Utils implements BaseUtils {
   isValidCantonHex(value: string): boolean {
     const regex = /^[a-fA-F0-9]{68}$/;
     return regex.test(value);
+  }
+
+  /**
+   * Helper method to convert hex value to base64
+   * @param {String} hexString - hex encoded string
+   * @returns {String} base64 encoded string
+   */
+  getBase64FromHex(hexString: string): string {
+    return Buffer.from(hexString, 'hex').toString('base64');
   }
 
   /**
@@ -85,32 +96,47 @@ export class Utils implements BaseUtils {
 
       const createNode = nodeType.create;
 
-      // Check if it's the correct template
-      const template = createNode.templateId;
-      if (template?.entityName !== 'AmuletTransferInstruction') return;
-
-      // Now parse the 'create' argument
-      if (createNode.argument?.sum?.oneofKind !== 'record') return;
-      const fields = createNode.argument?.sum?.record?.fields;
-      if (!fields) return;
-
-      // Find the 'transfer' field
-      const transferField = fields.find((f) => f.label === 'transfer');
-      if (transferField?.value?.sum?.oneofKind !== 'record') return;
-      const transferRecord = transferField?.value?.sum?.record?.fields;
-      if (!transferRecord) return;
-
       const getField = (fields: RecordField[], label: string) => fields.find((f) => f.label === label)?.value?.sum;
 
-      const senderData = getField(transferRecord, 'sender');
-      if (!senderData || senderData.oneofKind !== 'party') return;
-      sender = senderData.party;
-      const receiverData = getField(transferRecord, 'receiver');
-      if (!receiverData || receiverData.oneofKind !== 'party') return;
-      receiver = receiverData.party;
-      const amountData = getField(transferRecord, 'amount');
-      if (!amountData || amountData.oneofKind !== 'numeric') return;
-      amount = amountData.numeric;
+      // Check if it's the correct template
+      const template = createNode.templateId;
+      const argSum = createNode.argument?.sum;
+      if (!argSum || argSum.oneofKind !== 'record') return;
+      const fields = argSum.record?.fields;
+      if (!fields) return;
+      if (template?.entityName === 'AmuletTransferInstruction') {
+        const transferField = fields.find((f) => f.label === 'transfer');
+        const transferSum = transferField?.value?.sum;
+        if (!transferSum || transferSum.oneofKind !== 'record') return;
+        const transferRecord = transferSum.record?.fields;
+        if (!transferRecord) return;
+        const senderData = getField(transferRecord, 'sender');
+        if (senderData?.oneofKind === 'party') sender = senderData.party ?? '';
+
+        const receiverData = getField(transferRecord, 'receiver');
+        if (receiverData?.oneofKind === 'party') receiver = receiverData.party ?? '';
+
+        const amountData = getField(transferRecord, 'amount');
+        if (amountData?.oneofKind === 'numeric') amount = amountData.numeric ?? '';
+      } else if (template?.entityName === 'Amulet') {
+        const dsoData = getField(fields, 'dso');
+        if (dsoData?.oneofKind === 'party') sender = dsoData.party ?? '';
+        const ownerData = getField(fields, 'owner');
+        if (ownerData?.oneofKind === 'party') receiver = ownerData.party ?? '';
+        const amountField = getField(fields, 'amount');
+        if (!amountField || amountField.oneofKind !== 'record') return;
+
+        const amountRecord = amountField.record?.fields;
+        if (!amountRecord) return;
+        const initialAmountData = getField(amountRecord, 'initialAmount');
+        if (initialAmountData?.oneofKind === 'numeric') amount = initialAmountData.numeric ?? '';
+      } else if (template?.entityName === 'TransferPreapprovalProposal') {
+        const receiverData = getField(fields, 'receiver');
+        if (receiverData?.oneofKind === 'party') receiver = receiverData.party ?? '';
+        const providerData = getField(fields, 'provider');
+        if (providerData?.oneofKind === 'party') sender = providerData.party ?? '';
+        amount = '0';
+      }
     });
     if (!sender || !receiver || !amount) {
       const missingFields: string[] = [];

@@ -3,6 +3,75 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.9.0...@bitgo/statics@58.10.0) (2025-10-31)
+
+
+### Bug Fixes
+
+* explorer url for canton updated ([2e249fa](https://github.com/BitGo/BitGoJS/commit/2e249faa5b475142a2554ac43106d15d1aeac064))
+
+
+### Features
+
+* added canton explorer url ([4a0953f](https://github.com/BitGo/BitGoJS/commit/4a0953fa09c7189f941f87deb6c5abd6a10293fa))
+* gate assets for Singapore custody ([5833328](https://github.com/BitGo/BitGoJS/commit/5833328d69e7514125d009fca07fbf2c5a7a7f08))
+* gate assets for Singapore custody ([c85b58c](https://github.com/BitGo/BitGoJS/commit/c85b58cd3f521b555681362d7f7bdaff04307055))
+* gate sohm token ([d2023a3](https://github.com/BitGo/BitGoJS/commit/d2023a3c6dc36c71250ebe367ee957db3c5c71ea))
+* onboarding tokens win-7708 ([f177a93](https://github.com/BitGo/BitGoJS/commit/f177a930979dd5e1c6c90bc59e078792cc03e3bd))
+* remove unused imports ([032fc86](https://github.com/BitGo/BitGoJS/commit/032fc864792525ead67e15f5a6622cd1ac7c453e))
+* **sdk-coin-ada:** fix ada token policy id ([72fec81](https://github.com/BitGo/BitGoJS/commit/72fec81876f8789fe40ee6622037b65d8614161a))
+* **sdk-coin-celo:** update celo testnet config ([0c1c875](https://github.com/BitGo/BitGoJS/commit/0c1c8757ba3e062d24f88fcd07aa08a496cd77a4))
+* **statics:** add bga coin feature in mantra ([1665c06](https://github.com/BitGo/BitGoJS/commit/1665c06e8527cd12093dadf1749dbba47417453b))
+* token name change win-7708 ([0a412c8](https://github.com/BitGo/BitGoJS/commit/0a412c829b266586cbfbce2489c32698c8782d0e))
+
+
+
+
+
+# [58.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.8.0...@bitgo/statics@58.9.0) (2025-10-29)
+
+
+### Bug Fixes
+
+* fix baseeth tokens constructor ([28eaf7a](https://github.com/BitGo/BitGoJS/commit/28eaf7a295f1fb4725805f52b3af921538a17ae8))
+
+
+### Features
+
+* add statics config for Hedera EVM ([de480fd](https://github.com/BitGo/BitGoJS/commit/de480fd6dba2dff178058b6a2ea2bf4e7dff68af))
+* added custody wallet feature to canton ([6f3410b](https://github.com/BitGo/BitGoJS/commit/6f3410b015d5508dc5500ed2ba0304f23f1edfc1))
+* **sdk-coin-dot:** configure metadata for polkadot assethub ([00a7820](https://github.com/BitGo/BitGoJS/commit/00a7820ab8c45d59cab785043ae5304cc3b3b82a))
+* **statics:** add new coin feature for bga support ([de87d98](https://github.com/BitGo/BitGoJS/commit/de87d98288bb0bc2a77d9fefd7da127841f69188))
+* **statics:** add shared evm message signing for base ([0be8506](https://github.com/BitGo/BitGoJS/commit/0be8506a95cdd117bb992000f19e93840fa3c610))
+* **statics:** add WALLET_CONNECT_DEFI CoinFeature to Sol ([4480e1b](https://github.com/BitGo/BitGoJS/commit/4480e1bdfec2fccc54bb3255a7366d5bff0c0d66))
+* **statics:** gating eth:anon for Dubai ([c2b3e5a](https://github.com/BitGo/BitGoJS/commit/c2b3e5a66017b2b287999e842fea23c8ebe2e5de))
+
+
+
+
+
+# [58.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.7.0...@bitgo/statics@58.8.0) (2025-10-24)
+
+
+### Bug Fixes
+
+* replace cartio with bepolia as bera testnet ([35fd193](https://github.com/BitGo/BitGoJS/commit/35fd193e05d72a72d4106564311d5e7aed10c630))
+
+
+### Features
+
+* add eth:meme token ([7168de3](https://github.com/BitGo/BitGoJS/commit/7168de38a459bba008241bd35025b1ecb0bf0819))
+* **sdk-coin-ada:** onboard ada tokens ([c5631ed](https://github.com/BitGo/BitGoJS/commit/c5631edbda7af9486b27752741fd54f11cf1dde4))
+* **statics:** add shared evm message signing for arb ([241dc58](https://github.com/BitGo/BitGoJS/commit/241dc585049a8c2463eae75b504bbf99f27467ca))
+* **statics:** enable shared evm message signing flag on arb, opeth, baseeth ([acf3ff3](https://github.com/BitGo/BitGoJS/commit/acf3ff3c50665871dc9817c8519f035447e74d31))
+* **statics:** gating assets for Dubai ([df4ba6b](https://github.com/BitGo/BitGoJS/commit/df4ba6b405f0e09ff2bff8e0889fbdae33299d7d))
+* **statics:** refactoring ([493424b](https://github.com/BitGo/BitGoJS/commit/493424b0d8457365c6ee71f6ded2db55b95e8d85))
+* update Litecoin explorer URL ([950b92a](https://github.com/BitGo/BitGoJS/commit/950b92ad5d61342075fff36719d74ab274dd372b))
+
+
+
+
+
 # [58.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.6.0...@bitgo/statics@58.7.0) (2025-10-21)
 
 

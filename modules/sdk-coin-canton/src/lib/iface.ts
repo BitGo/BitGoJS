@@ -1,5 +1,15 @@
-import { TransactionType } from '@bitgo/sdk-core';
+import {
+  TransactionType,
+  TransactionExplanation as BaseTransactionExplanation,
+  ITransactionRecipient,
+} from '@bitgo/sdk-core';
 import { DamlTransaction, Metadata } from './resourcesInterface';
+
+export interface TransactionExplanation extends BaseTransactionExplanation {
+  type: TransactionType;
+  inputs?: ITransactionRecipient[];
+  inputAmount?: string;
+}
 
 /**
  * The transaction data returned from the toJson() function of a transaction
@@ -9,6 +19,8 @@ export interface TxData {
   type: TransactionType;
   sender: string;
   receiver: string;
+  amount: string;
+  acknowledgeData?: TransferAcknowledge;
 }
 
 export interface PreparedTxnParsedInfo {
@@ -57,9 +69,8 @@ export interface WalletInitRequest {
   observingParticipantUids: string[];
 }
 
-export interface OneStepEnablementRequest {
+export interface CantonPrepareCommandRequest {
   commandId: string;
-  receiverId: string;
   verboseHashing: boolean;
   actAs: string[];
   readAs: string[];
@@ -80,4 +91,45 @@ export interface WalletInitBroadcastData {
   preparedParty: PreparedParty;
   onboardingTransactions: OnboardingTransaction[];
   multiHashSignatures: MultiHashSignature[];
+}
+
+export interface PartySignature {
+  party: string;
+  signatures: MultiHashSignature[];
+}
+
+export interface TransactionBroadcastData {
+  acknowledgeData?: TransferAcknowledge;
+  prepareCommandResponse?: CantonPrepareCommandResponse;
+  txType: string;
+  preparedTransaction?: string;
+  partySignatures?: {
+    signatures: PartySignature[];
+  };
+  deduplicationPeriod?: {
+    Empty: Record<string, never>;
+  };
+  submissionId: string;
+  hashingSchemeVersion?: string;
+  minLedgerTime?: {
+    time: {
+      Empty: Record<string, never>;
+    };
+  };
+}
+
+export interface CantonOneStepEnablementRequest extends CantonPrepareCommandRequest {
+  receiverId: string;
+}
+
+export interface CantonTransferAcceptRejectRequest extends CantonPrepareCommandRequest {
+  contractId: string;
+}
+
+export interface TransferAcknowledge {
+  contractId: string;
+  senderPartyId: string;
+  amount: number;
+  expiryEpoch: number;
+  updateId: string;
 }

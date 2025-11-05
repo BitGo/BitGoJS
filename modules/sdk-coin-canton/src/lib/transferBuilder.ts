@@ -1,4 +1,4 @@
-import { TransactionType } from '@bitgo/sdk-core';
+import { PublicKey, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { TransactionBuilder } from './transactionBuilder';
 import { CantonPrepareCommandResponse } from './iface';
@@ -14,5 +14,10 @@ export class TransferBuilder extends TransactionBuilder {
 
   setTransaction(transaction: CantonPrepareCommandResponse): void {
     this.transaction.prepareCommand = transaction;
+  }
+
+  /** @inheritDoc */
+  addSignature(publicKey: PublicKey, signature: Buffer): void {
+    throw new Error('Not implemented');
   }
 }

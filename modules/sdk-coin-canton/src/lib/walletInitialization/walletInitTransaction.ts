@@ -4,6 +4,7 @@ import {
   MultiHashSignature,
   OnboardingTransaction,
   PreparedParty,
+  TransactionExplanation,
   WalletInitBroadcastData,
   WalletInitTxData,
 } from '../iface';
@@ -79,7 +80,7 @@ export class WalletInitTransaction extends BaseTransaction {
     if (!this._preparedParty) {
       throw new InvalidTransactionError('Empty transaction data');
     }
-    return Buffer.from(this._preparedParty.multiHash);
+    return Buffer.from(this._preparedParty.multiHash, 'base64');
   }
 
   fromRawTransaction(rawTx: string): void {
@@ -96,5 +97,19 @@ export class WalletInitTransaction extends BaseTransaction {
     } catch (e) {
       throw new InvalidTransactionError('Unable to parse raw transaction data');
     }
+  }
+
+  explainTransaction(): TransactionExplanation {
+    const displayOrder = ['id', 'outputs', 'outputAmount', 'changeOutputs', 'changeAmount', 'fee', 'type'];
+    return {
+      id: this.id,
+      displayOrder,
+      outputs: [],
+      outputAmount: '0',
+      changeOutputs: [],
+      changeAmount: '0',
+      fee: { fee: '0' },
+      type: this.type,
+    };
   }
 }

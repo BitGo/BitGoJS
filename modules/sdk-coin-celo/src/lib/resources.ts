@@ -6,11 +6,15 @@ import EthereumCommon from '@ethereumjs/common';
  */
 export const testnetCommon = EthereumCommon.custom(
   {
-    name: 'alfajores',
+    name: 'celo sepolia testnet',
     networkId: (coins.get('tcelo').network as EthereumNetwork).chainId,
     chainId: (coins.get('tcelo').network as EthereumNetwork).chainId,
   },
-  { hardfork: 'london' }
+  {
+    baseChain: 'sepolia',
+    hardfork: 'london',
+    eips: [1559],
+  }
 );
 
 /**
