@@ -4,11 +4,13 @@ import {
   CoinSignParams,
   TransactionPrebuildForExternalSigning,
   CoinSignBody,
+} from '../../../src/typedRoutes/api/v2/coinSign';
+import {
   FullySignedTransactionResponse,
   HalfSignedAccountTransactionResponse,
   HalfSignedUtxoTransactionResponse,
   SignedTransactionRequestResponse,
-} from '../../../src/typedRoutes/api/v2/coinSign';
+} from '../../../src/typedRoutes/api/v2/coinSignTx';
 import { assertDecode } from './common';
 import 'should';
 import 'should-http';
@@ -656,15 +658,20 @@ describe('CoinSign codec tests (External Signer Mode)', function () {
         txInfo: { memo: 'test' },
         nextContractSequenceId: 123,
         isBatch: true,
-        eip1559: { maxFeePerGas: '50000000000' },
-        hopTransaction: { tx: 'hop-tx' },
-        backupKeyNonce: { nonce: 1 },
+        eip1559: {
+          maxFeePerGas: '50000000000',
+          maxPriorityFeePerGas: '1500000000',
+        },
+        hopTransaction: '0x123456abcdef', // String format (valid alternative to full HopTransaction object)
+        backupKeyNonce: 42, // Number (valid - can also be string)
         recipients: [{ address: '0x123', amount: 1000 }],
       };
       const decoded = assertDecode(TransactionPrebuildForExternalSigning, validPrebuild);
       assert.strictEqual(decoded.walletId, walletId);
       assert.strictEqual(decoded.txHex, '0100000001...');
       assert.strictEqual(decoded.isBatch, true);
+      assert.strictEqual(decoded.backupKeyNonce, 42);
+      assert.strictEqual(decoded.hopTransaction, '0x123456abcdef');
     });
 
     it('should fail validation when walletId is missing', function () {
@@ -708,12 +715,23 @@ describe('CoinSign codec tests (External Signer Mode)', function () {
         custodianTransactionId: 'cust-123',
         signingStep: 'signerNonce',
         allowNonSegwitSigningWithoutPrevTx: true,
+        // New fields added from coinSignTx
+        walletVersion: 3,
+        signingKeyNonce: 5,
+        walletContractAddress: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb',
+        pubs: ['xpub1...', 'xpub2...', 'xpub3...'],
+        cosignerPub: 'xpub_cosigner...',
       };
       const decoded = assertDecode(t.type(CoinSignBody), validBody);
       assert.strictEqual(decoded.txPrebuild.walletId, walletId);
       assert.strictEqual(decoded.derivationSeed, 'test-seed');
       assert.strictEqual(decoded.isLastSignature, true);
       assert.strictEqual(decoded.gasLimit, 21000);
+      assert.strictEqual(decoded.walletVersion, 3);
+      assert.strictEqual(decoded.signingKeyNonce, 5);
+      assert.strictEqual(decoded.walletContractAddress, '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb');
+      assert.deepStrictEqual(decoded.pubs, ['xpub1...', 'xpub2...', 'xpub3...']);
+      assert.strictEqual(decoded.cosignerPub, 'xpub_cosigner...');
     });
 
     it('should validate body with gasLimit and gasPrice as different types', function () {
@@ -788,10 +806,14 @@ describe('CoinSign codec tests (External Signer Mode)', function () {
         assert.deepStrictEqual(decoded.halfSigned, {});
       });
 
-      it('should validate response without halfSigned (optional)', function () {
-        const validResponse = {};
+      it('should validate response with minimal halfSigned', function () {
+        const validResponse = {
+          halfSigned: {
+            txHex: '0x123456',
+          },
+        };
         const decoded = assertDecode(HalfSignedAccountTransactionResponse, validResponse);
-        assert.strictEqual(decoded.halfSigned, undefined);
+        assert.strictEqual(decoded.halfSigned.txHex, '0x123456');
       });
     });
 
