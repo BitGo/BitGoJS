@@ -3522,6 +3522,7 @@ export class Wallet implements IWallet {
             reqId,
             intentType: 'transferAccept',
             txRequestId: params.txRequestId,
+            sequenceId: params.txRequestId,
           },
           apiVersion,
           params.preview
@@ -3534,6 +3535,7 @@ export class Wallet implements IWallet {
             reqId,
             intentType: 'transferReject',
             txRequestId: params.txRequestId,
+            sequenceId: params.txRequestId,
           },
           apiVersion,
           params.preview
