@@ -1087,6 +1087,67 @@ export const ofcCoins = [
   ofcsolToken('aac718d6-1cc1-411e-8a48-112d221e7c4d', 'ofcsol:usda1', 'ANDX USD', 9, UnderlyingAsset['sol:usda1'], [
     ...SOL_TOKEN_FEATURES,
   ]),
+  ofcsolToken('debe0717-f965-4461-9765-83a4d36798c2', 'ofcsol:ponke', 'PONKE', 9, UnderlyingAsset['sol:ponke'], [
+    ...SOL_TOKEN_FEATURES,
+  ]),
+  ofcsolToken(
+    '5ca28579-3426-4d86-87f9-91714d668905',
+    'ofcsol:jellyjelly',
+    'Jelly-My-Jelly',
+    6,
+    UnderlyingAsset['sol:jellyjelly'],
+    [...SOL_TOKEN_FEATURES]
+  ),
+  ofcsolToken('1f2639f1-9e28-4019-962a-dca99881132f', 'ofcsol:yu', 'Yala Stablecoin', 6, UnderlyingAsset['sol:yu'], [
+    ...SOL_TOKEN_FEATURES,
+    CoinFeature.STABLECOIN,
+  ]),
+  ofcsolToken('7b69cfb7-963d-4c06-a877-5da6d5ace4c9', 'ofcsol:met', 'Meteora', 6, UnderlyingAsset['sol:met'], [
+    ...SOL_TOKEN_FEATURES,
+  ]),
+  ofcsolToken('11910d65-41cb-430b-a431-3bca840d6654', 'ofcsol:white', 'Whiterock', 8, UnderlyingAsset['sol:white'], [
+    ...SOL_TOKEN_FEATURES,
+  ]),
+  ofcsolToken('c1e66367-f6c9-4542-a645-303a1cdcc78d', 'ofcsol:yzy', 'YZY Money', 6, UnderlyingAsset['sol:yzy'], [
+    ...SOL_TOKEN_FEATURES,
+  ]),
+  ofcsolToken('74479eb1-2582-4ba9-bfb1-36eefb19769a', 'ofcsol:wild', 'Wilder World', 9, UnderlyingAsset['sol:wild'], [
+    ...SOL_TOKEN_FEATURES,
+  ]),
+  ofcsolToken(
+    '6e5bfd2d-ec0b-4db1-b4eb-bb145dae31c8',
+    'ofcsol:npc',
+    'Non-Playable Coin (Wormhole)',
+    8,
+    UnderlyingAsset['sol:npc'],
+    [...SOL_TOKEN_FEATURES]
+  ),
+  ofcsolToken(
+    '3d5e7a1c-7b99-4dfe-8e3d-f936767da963',
+    'ofcsol:aix',
+    'Aixbt by Virtuals',
+    8,
+    UnderlyingAsset['sol:aix'],
+    [...SOL_TOKEN_FEATURES]
+  ),
+  ofcsolToken('def16c1f-6e24-436e-8f96-6bbdf029104e', 'ofcsol:troll', 'Troll', 6, UnderlyingAsset['sol:troll'], [
+    ...SOL_TOKEN_FEATURES,
+  ]),
+  ofcsolToken('dad36108-8b0b-45e5-8302-4a409d39d9dd', 'ofcsol:ban', 'Comedian', 6, UnderlyingAsset['sol:ban'], [
+    ...SOL_TOKEN_FEATURES,
+  ]),
+  ofcsolToken('9e24ffdf-51e9-420a-b1a2-2102cd67f074', 'ofcsol:dbr', 'deBridge', 6, UnderlyingAsset['sol:dbr'], [
+    ...SOL_TOKEN_FEATURES,
+  ]),
+  ofcsolToken('6c7f43d5-5c79-4aca-bee9-d3baca24d034', 'ofcsol:bless', 'Bless', 9, UnderlyingAsset['sol:bless'], [
+    ...SOL_TOKEN_FEATURES,
+  ]),
+  ofcsolToken('9ff08ec4-b971-4fb6-ab72-9e4fb28bebbe', 'ofcsol:cpool', 'Clearpool', 9, UnderlyingAsset['sol:cpool'], [
+    ...SOL_TOKEN_FEATURES,
+  ]),
+  ofcsolToken('eb7fee33-653e-4314-a4fd-c24b3b4641f4', 'ofcsol:home', 'Home', 9, UnderlyingAsset['sol:home'], [
+    ...SOL_TOKEN_FEATURES,
+  ]),
   ofcsolToken(
     'b08c09fd-73fb-4b7f-8377-72225cd8c256',
     'ofcsol:dupe',
@@ -2358,6 +2419,7 @@ export const ofcCoins = [
     UnderlyingAsset['bsc:cashplus']
   ),
   ofcBscToken('08974cb2-8081-4248-89d5-c74af0edf4bb', 'ofcbsc:aster', 'Aster', 18, UnderlyingAsset['bsc:aster']),
+  ofcBscToken('d2b79bd4-3fa4-42db-9534-8def5e117c35', 'ofcbsc:home', 'Home', 18, UnderlyingAsset['bsc:home']),
 
   tofcBscToken(
     'e9174338-0d26-4f49-b111-3487b60c9912',

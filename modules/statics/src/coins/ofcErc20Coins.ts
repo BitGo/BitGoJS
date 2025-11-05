@@ -4531,6 +4531,7 @@ export const tOfcErc20Coins = [
     18,
     UnderlyingAsset['eth:fidd']
   ),
+  ofcerc20('c71454e2-c51c-40df-8605-e57f2d97ed53', 'ofceth:yu', 'Yala Stablecoin', 18, UnderlyingAsset['eth:yu']),
 ];
 
 function underlyingAssetForSymbol(underlyingAssetValue: string): UnderlyingAsset {
