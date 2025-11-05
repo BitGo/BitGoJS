@@ -3191,7 +3191,10 @@ export const solTokens = [
     'METvsvVRapdj9cFLzq4Tr43xK4tAjQfwX76z3n6mWQL',
     'METvsvVRapdj9cFLzq4Tr43xK4tAjQfwX76z3n6mWQL',
     UnderlyingAsset['sol:met'],
-    SOL_TOKEN_FEATURES
+    SolCoin.getFeaturesByTypeExcluding(
+      [CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE, CoinFeature.CUSTODY_BITGO_MENA_FZE],
+      SOL_TOKEN_FEATURES
+    )
   ),
   solToken(
     'd8f30fd1-02c0-4e91-abe9-ac0868a85e5d',
@@ -3201,7 +3204,10 @@ export const solTokens = [
     'ENWC66tsY6cyqSrd8a7S9ETc712xCcSAuGcRUwSMWhyo',
     'ENWC66tsY6cyqSrd8a7S9ETc712xCcSAuGcRUwSMWhyo',
     UnderlyingAsset['sol:white'],
-    SOL_TOKEN_FEATURES
+    SolCoin.getFeaturesByTypeExcluding(
+      [CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE, CoinFeature.CUSTODY_BITGO_MENA_FZE],
+      SOL_TOKEN_FEATURES
+    )
   ),
   solToken(
     '0eebedc0-21a4-4594-8f70-91388dee9035',
