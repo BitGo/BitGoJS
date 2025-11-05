@@ -686,10 +686,7 @@ describe('CoinSignTx codec tests', function () {
           maxPriorityFeePerGas: '10000000000',
           maxFeePerGas: '20000000000',
         },
-        hopTransaction: {
-          txHex: '0x123456',
-          gasPrice: '20000000000',
-        },
+        hopTransaction: '0x123456abcdef', // String format (from SignFinalOptions)
         backupKeyNonce: 42,
         recipients: [
           { address: '1abc', amount: 100000 },
@@ -705,7 +702,7 @@ describe('CoinSignTx codec tests', function () {
       assert.strictEqual(decoded.nextContractSequenceId, validPrebuild.nextContractSequenceId);
       assert.strictEqual(decoded.isBatch, validPrebuild.isBatch);
       assert.deepStrictEqual(decoded.eip1559, validPrebuild.eip1559);
-      assert.deepStrictEqual(decoded.hopTransaction, validPrebuild.hopTransaction);
+      assert.strictEqual(decoded.hopTransaction, validPrebuild.hopTransaction); // Now string
       assert.strictEqual(decoded.backupKeyNonce, validPrebuild.backupKeyNonce);
       assert.deepStrictEqual(decoded.recipients, validPrebuild.recipients);
     });
@@ -726,6 +723,64 @@ describe('CoinSignTx codec tests', function () {
       assert.throws(() => {
         assertDecode(TransactionPrebuild, invalidPrebuild);
       });
+    });
+
+    it('should validate prebuild with hopTransaction as string (EVM)', function () {
+      const validPrebuild = {
+        txHex: '0x02f87301808459682f008459682f0e8252089439c0f2000e39186af4b78b554eb96a2ea8dc5c3680a46a761202',
+        hopTransaction: '0x123456abcdef', // String format instead of object
+        isBatch: false,
+      };
+
+      const decoded = assertDecode(TransactionPrebuild, validPrebuild);
+      assert.strictEqual(decoded.txHex, validPrebuild.txHex);
+      assert.strictEqual(decoded.hopTransaction, validPrebuild.hopTransaction);
+      assert.strictEqual(decoded.isBatch, validPrebuild.isBatch);
+    });
+
+    it('should validate prebuild with addressInfo (Tron)', function () {
+      const validPrebuild = {
+        txHex: '{"raw_data":{"contract":[{"parameter":{"value":{"amount":1000,"to_address":"TTest"}}}]}}',
+        addressInfo: {
+          address: 'TTest123456789',
+          chain: 0,
+          index: 5,
+        },
+      };
+
+      const decoded = assertDecode(TransactionPrebuild, validPrebuild);
+      assert.strictEqual(decoded.txHex, validPrebuild.txHex);
+      assert.deepStrictEqual(decoded.addressInfo, validPrebuild.addressInfo);
+      assert.strictEqual(decoded.addressInfo.address, 'TTest123456789');
+      assert.strictEqual(decoded.addressInfo.chain, 0);
+      assert.strictEqual(decoded.addressInfo.index, 5);
+    });
+
+    it('should validate prebuild with recipients including memo field', function () {
+      const validPrebuild = {
+        txHex: '0x123456',
+        recipients: [
+          {
+            address: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb',
+            amount: '1000000',
+            tokenName: 'USDC',
+            data: '0xabcdef',
+            memo: 'Payment for invoice #12345',
+          },
+          {
+            address: '0x9b9f8e3a7c5b9e1c4a7d6e5f8a9b0c1d2e3f4a5b',
+            amount: 500000,
+            memo: 'Refund',
+          },
+        ],
+      };
+
+      const decoded = assertDecode(TransactionPrebuild, validPrebuild);
+      assert.deepStrictEqual(decoded.recipients, validPrebuild.recipients);
+      assert.strictEqual(decoded.recipients[0].memo, 'Payment for invoice #12345');
+      assert.strictEqual(decoded.recipients[1].memo, 'Refund');
+      assert.strictEqual(decoded.recipients[0].tokenName, 'USDC');
+      assert.strictEqual(decoded.recipients[0].data, '0xabcdef');
     });
   });
 
@@ -907,12 +962,7 @@ describe('CoinSignTx codec tests', function () {
             expireTime: 1700000000,
             contractSequenceId: 42,
             sequenceId: 5,
-            hopTransaction: {
-              txHex: '0x123456',
-              userReqSig: '0xabcdef',
-              gasPriceMax: 3000000000,
-              gasLimit: 21000,
-            },
+            hopTransaction: '0x123456abcdef789', // String format (from SignFinalOptions)
             custodianTransactionId: 'custodian-tx-12345',
             isBatch: false,
           },
@@ -926,7 +976,7 @@ describe('CoinSignTx codec tests', function () {
         assert.strictEqual(decoded.halfSigned.expireTime, validResponse.halfSigned.expireTime);
         assert.strictEqual(decoded.halfSigned.contractSequenceId, validResponse.halfSigned.contractSequenceId);
         assert.strictEqual(decoded.halfSigned.sequenceId, validResponse.halfSigned.sequenceId);
-        assert.deepStrictEqual(decoded.halfSigned.hopTransaction, validResponse.halfSigned.hopTransaction);
+        assert.strictEqual(decoded.halfSigned.hopTransaction, validResponse.halfSigned.hopTransaction); // Now string
         assert.strictEqual(decoded.halfSigned.custodianTransactionId, validResponse.halfSigned.custodianTransactionId);
         assert.strictEqual(decoded.halfSigned.isBatch, validResponse.halfSigned.isBatch);
       });
@@ -953,6 +1003,47 @@ describe('CoinSignTx codec tests', function () {
 
         const decoded = assertDecode(HalfSignedAccountTransactionResponse, validResponse);
         assert.deepStrictEqual(decoded.halfSigned, {});
+      });
+
+      it('should validate response with hopTransaction as string (EVM)', function () {
+        const validResponse = {
+          halfSigned: {
+            txHex: '0x02f87301808459682f008459682f0e8252089439c0f2000e39186af4b78b554eb96a2ea8dc5c3680a46a761202',
+            hopTransaction: '0x123456abcdef789', // String format (from SignFinalOptions)
+            contractSequenceId: 42,
+            sequenceId: 5,
+          },
+        };
+
+        const decoded = assertDecode(HalfSignedAccountTransactionResponse, validResponse);
+        assert.strictEqual(decoded.halfSigned.txHex, validResponse.halfSigned.txHex);
+        assert.strictEqual(decoded.halfSigned.hopTransaction, '0x123456abcdef789');
+        assert.strictEqual(decoded.halfSigned.contractSequenceId, validResponse.halfSigned.contractSequenceId);
+        assert.strictEqual(decoded.halfSigned.sequenceId, validResponse.halfSigned.sequenceId);
+      });
+
+      it('should validate response with recipients including memo field (EVM)', function () {
+        const validResponse = {
+          halfSigned: {
+            txHex: '0x02f87301808459682f008459682f0e8252089439c0f2000e39186af4b78b554eb96a2ea8dc5c3680a46a761202',
+            recipients: [
+              {
+                address: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb',
+                amount: '1000000',
+                tokenName: 'USDC',
+                data: '0xabcdef',
+                memo: 'Payment for services',
+              },
+            ],
+            contractSequenceId: 10,
+          },
+        };
+
+        const decoded = assertDecode(HalfSignedAccountTransactionResponse, validResponse);
+        assert.deepStrictEqual(decoded.halfSigned.recipients, validResponse.halfSigned.recipients);
+        assert.strictEqual(decoded.halfSigned.recipients[0].memo, 'Payment for services');
+        assert.strictEqual(decoded.halfSigned.recipients[0].tokenName, 'USDC');
+        assert.strictEqual(decoded.halfSigned.recipients[0].data, '0xabcdef');
       });
     });
 
