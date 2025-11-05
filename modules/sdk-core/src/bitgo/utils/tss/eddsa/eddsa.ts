@@ -580,18 +580,9 @@ export class EddsaUtils extends BaseEddsaUtils {
     requestType: RequestType
   ): Promise<TxRequest> {
     this.bitgo.setRequestTracer(params.reqId);
-    let txRequestResolved: TxRequest;
-    let txRequestId: string;
+    const { prv } = params;
 
-    const { txRequest, prv } = params;
-
-    if (typeof txRequest === 'string') {
-      txRequestResolved = await getTxRequest(this.bitgo, this.wallet.id(), txRequest, params.reqId);
-      txRequestId = txRequestResolved.txRequestId;
-    } else {
-      txRequestResolved = txRequest;
-      txRequestId = txRequest.txRequestId;
-    }
+    const { txRequestResolved, txRequestId } = await this.resolveTxRequest(params.txRequest, params.reqId);
 
     const hdTree = await Ed25519Bip32HdTree.initialize();
     const MPC = await Eddsa.initialize(hdTree);
@@ -604,12 +595,7 @@ export class EddsaUtils extends BaseEddsaUtils {
     const { apiVersion } = txRequestResolved;
     let unsignedTx: UnsignedTransactionTss;
     if (requestType === RequestType.tx) {
-      assert(
-        txRequestResolved.transactions || txRequestResolved.unsignedTxs,
-        'Unable to find transactions in txRequest'
-      );
-      unsignedTx =
-        apiVersion === 'full' ? txRequestResolved.transactions![0].unsignedTx : txRequestResolved.unsignedTxs[0];
+      unsignedTx = this.getUnsignedTxFromRequest(txRequestResolved);
     } else if (requestType === RequestType.message) {
       assert(txRequestResolved.messages?.length, 'Unable to find messages in txRequest for message signing');
       const message = txRequestResolved.messages[0];
