@@ -1,12 +1,12 @@
 import * as assert from 'assert';
 import * as t from 'io-ts';
 import { TransactionRequest as TxRequestResponse } from '@bitgo/public-types';
+import { PrebuildAndSignTransactionParams } from '../../../src/typedRoutes/api/v2/prebuildAndSignTransaction';
 import {
-  PrebuildAndSignTransactionParams,
   FullySignedTransactionResponse,
   HalfSignedAccountTransactionResponse,
   SignedTransactionRequestResponse,
-} from '../../../src/typedRoutes/api/v2/prebuildAndSignTransaction';
+} from '../../../src/typedRoutes/api/v2/coinSignTx';
 import { assertDecode } from './common';
 import 'should';
 import 'should-http';
@@ -760,6 +760,177 @@ describe('PrebuildAndSignTransaction codec tests', function () {
       assert.throws(() => {
         assertDecode(FullySignedTransactionResponse, invalidResponse);
       });
+    });
+  });
+
+  describe('Request validation for nested required fields', function () {
+    // Import PrebuildAndSignTransactionBody for validation tests
+    const { PrebuildAndSignTransactionBody } = require('../../../src/typedRoutes/api/v2/prebuildAndSignTransaction');
+    const PrebuildAndSignTransactionBodyCodec = t.partial(PrebuildAndSignTransactionBody);
+
+    it('should reject Memo without required value field', function () {
+      const invalidRequest = {
+        recipients: [{ address: '0x123', amount: '1000' }],
+        memo: { type: 'text' }, // Missing 'value' (REQUIRED)
+      };
+
+      assert.throws(() => {
+        assertDecode(PrebuildAndSignTransactionBodyCodec, invalidRequest);
+      }, /value/);
+    });
+
+    it('should reject Memo without required type field', function () {
+      const invalidRequest = {
+        recipients: [{ address: '0x123', amount: '1000' }],
+        memo: { value: 'test' }, // Missing 'type' (REQUIRED)
+      };
+
+      assert.throws(() => {
+        assertDecode(PrebuildAndSignTransactionBodyCodec, invalidRequest);
+      }, /type/);
+    });
+
+    it('should accept Memo with both required fields', function () {
+      const validRequest = {
+        recipients: [{ address: '0x123', amount: '1000' }],
+        memo: { value: 'test', type: 'text' }, // Both REQUIRED fields present
+      };
+
+      const decoded = assertDecode(PrebuildAndSignTransactionBodyCodec, validRequest);
+      assert.strictEqual(decoded.memo.value, 'test');
+      assert.strictEqual(decoded.memo.type, 'text');
+    });
+
+    it('should reject TokenEnablement without required name field', function () {
+      const invalidRequest = {
+        recipients: [{ address: '0x123', amount: '1000' }],
+        enableTokens: [{ address: '0xabc' }], // Missing 'name' (REQUIRED)
+      };
+
+      assert.throws(() => {
+        assertDecode(PrebuildAndSignTransactionBodyCodec, invalidRequest);
+      }, /name/);
+    });
+
+    it('should accept TokenEnablement with required name field', function () {
+      const validRequest = {
+        recipients: [{ address: '0x123', amount: '1000' }],
+        enableTokens: [
+          { name: 'USDC', address: '0xabc' }, // 'name' REQUIRED, 'address' optional
+        ],
+      };
+
+      const decoded = assertDecode(PrebuildAndSignTransactionBodyCodec, validRequest);
+      assert.strictEqual(decoded.enableTokens[0].name, 'USDC');
+    });
+
+    it('should reject MessageToSign without required address field', function () {
+      const invalidRequest = {
+        recipients: [{ address: '0x123', amount: '1000' }],
+        messages: [{ message: 'Sign this' }], // Missing 'address' (REQUIRED)
+      };
+
+      assert.throws(() => {
+        assertDecode(PrebuildAndSignTransactionBodyCodec, invalidRequest);
+      }, /address/);
+    });
+
+    it('should reject MessageToSign without required message field', function () {
+      const invalidRequest = {
+        recipients: [{ address: '0x123', amount: '1000' }],
+        messages: [{ address: '0x123' }], // Missing 'message' (REQUIRED)
+      };
+
+      assert.throws(() => {
+        assertDecode(PrebuildAndSignTransactionBodyCodec, invalidRequest);
+      }, /message/);
+    });
+
+    it('should accept MessageToSign with both required fields', function () {
+      const validRequest = {
+        recipients: [{ address: '0x123', amount: '1000' }],
+        messages: [{ address: '0x123', message: 'Sign this' }],
+      };
+
+      const decoded = assertDecode(PrebuildAndSignTransactionBodyCodec, validRequest);
+      assert.strictEqual(decoded.messages[0].address, '0x123');
+      assert.strictEqual(decoded.messages[0].message, 'Sign this');
+    });
+
+    it('should reject verifyTxParams without required txParams field', function () {
+      const invalidRequest = {
+        recipients: [{ address: '0x123', amount: '1000' }],
+        verifyTxParams: {
+          verification: { disableNetworking: true }, // Missing 'txParams' (REQUIRED when verifyTxParams exists)
+        },
+      };
+
+      assert.throws(() => {
+        assertDecode(PrebuildAndSignTransactionBodyCodec, invalidRequest);
+      }, /txParams/);
+    });
+
+    it('should accept verifyTxParams with required txParams field', function () {
+      const validRequest = {
+        recipients: [{ address: '0x123', amount: '1000' }],
+        verifyTxParams: {
+          txParams: { recipients: [{ address: '0x456', amount: '500' }] }, // txParams REQUIRED
+          verification: { disableNetworking: true }, // verification OPTIONAL
+        },
+      };
+
+      const decoded = assertDecode(PrebuildAndSignTransactionBodyCodec, validRequest);
+      assert.ok(decoded.verifyTxParams.txParams);
+      assert.strictEqual(decoded.verifyTxParams.txParams.recipients[0].address, '0x456');
+    });
+
+    it('should reject Recipient without required address field', function () {
+      const invalidRequest = {
+        recipients: [{ amount: '1000' }], // Missing 'address' (REQUIRED)
+      };
+
+      assert.throws(() => {
+        assertDecode(PrebuildAndSignTransactionBodyCodec, invalidRequest);
+      }, /address/);
+    });
+
+    it('should reject Recipient without required amount field', function () {
+      const invalidRequest = {
+        recipients: [{ address: '0x123' }], // Missing 'amount' (REQUIRED)
+      };
+
+      assert.throws(() => {
+        assertDecode(PrebuildAndSignTransactionBodyCodec, invalidRequest);
+      }, /amount/);
+    });
+
+    it('should accept Recipient with both required fields', function () {
+      const validRequest = {
+        recipients: [
+          { address: '0x123', amount: '1000' }, // Both REQUIRED
+        ],
+      };
+
+      const decoded = assertDecode(PrebuildAndSignTransactionBodyCodec, validRequest);
+      assert.strictEqual(decoded.recipients[0].address, '0x123');
+      assert.strictEqual(decoded.recipients[0].amount, '1000');
+    });
+
+    it('should accept Recipient with optional fields', function () {
+      const validRequest = {
+        recipients: [
+          {
+            address: '0x123',
+            amount: '1000',
+            tokenName: 'USDC', // OPTIONAL
+            tokenData: { someData: 'value' }, // OPTIONAL
+          },
+        ],
+      };
+
+      const decoded = assertDecode(PrebuildAndSignTransactionBodyCodec, validRequest);
+      assert.strictEqual(decoded.recipients[0].tokenName, 'USDC');
+      assert.ok(decoded.recipients[0].tokenData);
     });
   });
 });

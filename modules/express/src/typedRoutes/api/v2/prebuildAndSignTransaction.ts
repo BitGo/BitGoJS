@@ -2,6 +2,13 @@ import * as t from 'io-ts';
 import { httpRoute, httpRequest, optional } from '@api-ts/io-ts-http';
 import { TransactionRequest as TxRequestResponse } from '@bitgo/public-types';
 import { BitgoExpressError } from '../../schemas/error';
+import {
+  FullySignedTransactionResponse,
+  HalfSignedAccountTransactionResponse,
+  HalfSignedUtxoTransactionResponse,
+  SignedTransactionRequestResponse,
+  EIP1559,
+} from './coinSignTx';
 
 /**
  * Request parameters for prebuild and sign transaction
@@ -14,56 +21,61 @@ export const PrebuildAndSignTransactionParams = {
 } as const;
 
 /**
- * EIP1559 transaction parameters for Ethereum
- */
-export const EIP1559 = t.partial({
-  /** Maximum fee per gas */
-  maxFeePerGas: t.union([t.string, t.number]),
-  /** Maximum priority fee per gas */
-  maxPriorityFeePerGas: t.union([t.string, t.number]),
-});
-
-/**
  * Token enablement configuration
+ * Reference: modules/sdk-core/src/bitgo/utils/tss/baseTypes.ts:35-38
  */
-export const TokenEnablement = t.partial({
-  /** Token name */
-  name: t.string,
-  /** Token address */
-  address: t.string,
-});
+export const TokenEnablement = t.intersection([
+  t.type({
+    /** Token name (REQUIRED) */
+    name: t.string,
+  }),
+  t.partial({
+    /** Token address - Solana requires tokens to be enabled for specific address (OPTIONAL) */
+    address: t.string,
+  }),
+]);
 
 /**
  * Memo information for transactions (e.g., Stellar, EOS)
+ * Reference: modules/sdk-core/src/bitgo/wallet/iWallet.ts:57-60
+ * Both fields are REQUIRED when memo object is present
  */
-export const Memo = t.partial({
-  /** Memo value */
+export const Memo = t.type({
+  /** Memo value (REQUIRED) */
   value: t.string,
-  /** Memo type */
+  /** Memo type (REQUIRED) */
   type: t.string,
 });
 
 /**
  * Recipient information for transactions
+ * Reference: modules/sdk-core/src/bitgo/wallet/iWallet.ts:92-97
+ *
  */
-export const Recipient = t.partial({
-  /** Recipient address */
-  address: t.string,
-  /** Amount to send */
-  amount: t.union([t.string, t.number]),
-  /** Token name for token transfers */
-  tokenName: t.string,
-  /** Token-specific data */
-  tokenData: t.any,
-});
+export const Recipient = t.intersection([
+  t.type({
+    /** Recipient address (REQUIRED) */
+    address: t.string,
+    /** Amount to send (REQUIRED) */
+    amount: t.union([t.string, t.number]),
+  }),
+  t.partial({
+    /** Token name for token transfers (OPTIONAL) */
+    tokenName: t.string,
+    /** Token-specific data (OPTIONAL) */
+    tokenData: t.any,
+  }),
+]);
 
 /**
- * Message to sign
+ * Message to sign for transaction
+ * Reference: modules/sdk-core/src/bitgo/wallet/iWallet.ts:125
+ * Both fields are REQUIRED when message object is present
  */
-export const MessageToSign = t.partial({
-  /** Address */
+export const MessageToSign = t.type({
+  /** Address (REQUIRED) */
   address: t.string,
-  /** Message to sign */
+  /** Message to sign (REQUIRED) */
   message: t.string,
 });
 
@@ -214,40 +226,47 @@ export const FeeInfo = t.partial({
 });
 
 /**
- * Consolidation details
+ * Consolidation details for sweep/consolidation transactions
+ * Reference: modules/sdk-core/src/bitgo/wallet/iWallet.ts:230
+ * Note: senderAddressIndex is REQUIRED when consolidationDetails exists
  */
-export const ConsolidationDetails = t.partial({
-  /** Sender address index */
+export const ConsolidationDetails = t.type({
+  /** Sender address index (REQUIRED) */
   senderAddressIndex: t.number,
 });
 
 /**
  * Transaction prebuild result (for when transaction is already prebuilt)
  * Extends TransactionPrebuild with additional fields
+ * Reference: modules/sdk-core/src/bitgo/wallet/iWallet.ts:227-242
  */
-export const TransactionPrebuildResult = t.partial({
-  // From TransactionPrebuild
-  /** Transaction hex */
-  txHex: t.string,
-  /** Transaction base64 */
-  txBase64: t.string,
-  /** Transaction info */
-  txInfo: t.any,
-  /** Transaction request ID */
-  txRequestId: t.string,
-  /** Wallet ID */
-  walletId: t.string,
-  /** Consolidate ID */
-  consolidateId: t.string,
-  /** Consolidation details */
-  consolidationDetails: ConsolidationDetails,
-  /** Fee information */
-  feeInfo: FeeInfo,
-  /** Pending approval ID */
-  pendingApprovalId: t.string,
-  /** Payload string */
-  payload: t.string,
-});
+export const TransactionPrebuildResult = t.intersection([
+  t.type({
+    /** Wallet ID (REQUIRED) */
+    walletId: t.string,
+  }),
+  t.partial({
+    // From TransactionPrebuild
+    /** Transaction hex */
+    txHex: t.string,
+    /** Transaction base64 */
+    txBase64: t.string,
+    /** Transaction info */
+    txInfo: t.any,
+    /** Transaction request ID */
+    txRequestId: t.string,
+    /** Consolidate ID */
+    consolidateId: t.string,
+    /** Consolidation details */
+    consolidationDetails: ConsolidationDetails,
+    /** Fee information */
+    feeInfo: FeeInfo,
+    /** Pending approval ID */
+    pendingApprovalId: t.string,
+    /** Payload string */
+    payload: t.string,
+  }),
+]);
 
 /**
  * Verification options for transaction verification
@@ -393,29 +412,38 @@ export const PrebuildAndSignTransactionBody = {
   multisigTypeVersion: optional(t.literal('MPCv2')),
   /** Transaction prebuild data */
   txPrebuild: optional(TransactionPrebuildResult),
+  /** Private key for signing */
+  prv: optional(t.string),
   /** Public keys for signing */
   pubs: optional(t.array(t.string)),
   /** Cosigner public key */
   cosignerPub: optional(t.string),
-  /** Transaction verification parameters */
+  /**
+   * Transaction verification parameters
+   * Reference: modules/sdk-core/src/bitgo/wallet/iWallet.ts:283-286
+   */
   verifyTxParams: optional(
-    t.partial({
-      /** Transaction parameters */
-      txParams: t.partial({
-        /** Recipients */
-        recipients: t.array(Recipient),
-        /** Wallet passphrase */
-        walletPassphrase: t.string,
-        /** Transaction type */
-        type: t.string,
-        /** Memo */
-        memo: Memo,
-        /** Tokens to enable */
-        enableTokens: t.array(TokenEnablement),
+    t.intersection([
+      t.type({
+        /** Transaction parameters (REQUIRED when verifyTxParams exists) */
+        txParams: t.partial({
+          /** Recipients */
+          recipients: t.array(Recipient),
+          /** Wallet passphrase */
+          walletPassphrase: t.string,
+          /** Transaction type */
+          type: t.string,
+          /** Memo */
+          memo: Memo,
+          /** Tokens to enable */
+          enableTokens: t.array(TokenEnablement),
+        }),
       }),
-      /** Verification options */
-      verification: VerificationOptions,
-    })
+      t.partial({
+        /** Verification options (OPTIONAL) */
+        verification: VerificationOptions,
+      }),
+    ])
   ),
   /** Pre-built transaction (string or object) - alternative to txPrebuild */
   prebuildTx: optional(t.union([t.string, TransactionPrebuildResult])),
@@ -424,43 +452,20 @@ export const PrebuildAndSignTransactionBody = {
 } as const;
 
 /**
- * Response for a fully signed transaction
+ * Response codecs imported from coinSignTx for consistency.
+ * Both endpoints call wallet.prebuildAndSignTransaction() or similar signing methods
+ * and return the same SignedTransaction union type.
+ *
+ * Possible response types:
+ * - FullySignedTransactionResponse: For hot wallets (all signatures collected)
+ * - HalfSignedAccountTransactionResponse: For cold wallets, account-based coins (needs more signatures)
+ * - HalfSignedUtxoTransactionResponse: For cold wallets, UTXO coins (needs more signatures)
+ * - SignedTransactionRequestResponse: For transaction requests
+ * - TxRequestResponse: For TSS wallets (returns transaction request ID)
+ *
+ * Reference: modules/express/src/typedRoutes/api/v2/coinSignTx.ts:267-418
+ * Note: Response types are imported and re-exported at the top of this file
  */
-export const FullySignedTransactionResponse = t.type({
-  /** Transaction in hex format */
-  txHex: t.string,
-});
-
-/**
- * Response for a half-signed account transaction
- */
-export const HalfSignedAccountTransactionResponse = t.partial({
-  /** Half signed data */
-  halfSigned: t.partial({
-    /** Transaction hex */
-    txHex: t.string,
-    /** Payload */
-    payload: t.string,
-    /** Transaction base64 */
-    txBase64: t.string,
-  }),
-});
-
-/**
- * Response for a half-signed UTXO transaction
- */
-export const HalfSignedUtxoTransactionResponse = t.type({
-  /** Transaction in hex format */
-  txHex: t.string,
-});
-
-/**
- * Response for a transaction request
- */
-export const SignedTransactionRequestResponse = t.type({
-  /** Transaction request ID */
-  txRequestId: t.string,
-});
 
 /**
  * Combined response type for prebuild and sign transaction
