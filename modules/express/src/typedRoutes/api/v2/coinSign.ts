@@ -2,6 +2,14 @@ import * as t from 'io-ts';
 import { httpRoute, httpRequest, optional } from '@api-ts/io-ts-http';
 import { TransactionRequest as TxRequestResponse } from '@bitgo/public-types';
 import { BitgoExpressError } from '../../schemas/error';
+import {
+  TransactionPrebuild,
+  Recipient,
+  FullySignedTransactionResponse,
+  HalfSignedAccountTransactionResponse,
+  HalfSignedUtxoTransactionResponse,
+  SignedTransactionRequestResponse,
+} from './coinSignTx';
 
 /**
  * Request parameters for signing a transaction (external signer mode)
@@ -13,33 +21,21 @@ export const CoinSignParams = {
 
 /**
  * Transaction prebuild information for external signing
- * Requires walletId to retrieve encrypted private key from filesystem
+ *
+ * Same as TransactionPrebuild from coinSignTx, but with walletId as REQUIRED field.
+ * The walletId is required for retrieving the encrypted private key from the filesystem.
+ *
+ * This is enforced by the handler at runtime (clientRoutes.ts:513-517).
+ *
+ * Reference: modules/express/src/typedRoutes/api/v2/coinSignTx.ts:102-191 (TransactionPrebuild)
+ * Handler validation: modules/express/src/clientRoutes.ts:513-517 (handleV2Sign)
  */
 export const TransactionPrebuildForExternalSigning = t.intersection([
   t.type({
-    /** Wallet ID - required for retrieving encrypted private key */
+    /** Wallet ID - REQUIRED for retrieving encrypted private key from filesystem */
     walletId: t.string,
   }),
-  t.partial({
-    /** Transaction in hex format */
-    txHex: t.string,
-    /** Transaction in base64 format (for some coins) */
-    txBase64: t.string,
-    /** Transaction in JSON format (for some coins) */
-    txInfo: t.any,
-    /** Next contract sequence ID (for ETH) */
-    nextContractSequenceId: t.number,
-    /** Whether this is a batch transaction (for ETH) */
-    isBatch: t.boolean,
-    /** EIP1559 transaction parameters (for ETH) */
-    eip1559: t.any,
-    /** Hop transaction data (for ETH) */
-    hopTransaction: t.any,
-    /** Backup key nonce (for ETH) */
-    backupKeyNonce: t.any,
-    /** Recipients of the transaction */
-    recipients: t.any,
-  }),
+  TransactionPrebuild,
 ]);
 
 /**
@@ -48,17 +44,31 @@ export const TransactionPrebuildForExternalSigning = t.intersection([
  * This route is used when BitGo Express is configured with external signing.
  * The private key is retrieved from the filesystem and decrypted using
  * a wallet passphrase stored in the environment variable WALLET_{walletId}_PASSPHRASE.
+ *
+ * Fields are similar to CoinSignTxBody except:
+ * - NO `prv` field (added automatically by handler from filesystem)
+ * - HAS `derivationSeed` field (unique to external signing)
+ * - `txPrebuild` has required `walletId` field
+ *
+ * Reference: modules/express/src/typedRoutes/api/v2/coinSignTx.ts:250-293 (CoinSignTxBody)
+ * Handler: modules/express/src/clientRoutes.ts:512-539 (handleV2Sign)
  */
 export const CoinSignBody = {
-  /** Transaction prebuild data - must contain walletId */
+  /** Transaction prebuild data - must contain walletId (REQUIRED) */
   txPrebuild: TransactionPrebuildForExternalSigning,
+
   /**
    * Derivation seed for deriving a child key from the main private key.
    * If provided, the key will be derived using coin.deriveKeyWithSeed()
+   * UNIQUE TO EXTERNAL SIGNING - not present in CoinSignTxBody
    */
   derivationSeed: optional(t.string),
+
+  // ============ Universal fields ============
   /** Whether this is the last signature in a multi-sig tx */
   isLastSignature: optional(t.boolean),
+
+  // ============ EVM-specific fields ============
   /** Gas limit for ETH transactions */
   gasLimit: optional(t.union([t.string, t.number])),
   /** Gas price for ETH transactions */
@@ -67,52 +77,46 @@ export const CoinSignBody = {
   expireTime: optional(t.number),
   /** Sequence ID for transactions */
   sequenceId: optional(t.number),
-  /** Public keys for multi-signature transactions */
-  pubKeys: optional(t.array(t.string)),
-  /** For EVM cross-chain recovery */
-  isEvmBasedCrossChainRecovery: optional(t.boolean),
   /** Recipients of the transaction */
-  recipients: optional(t.any),
+  recipients: optional(t.array(Recipient)),
   /** Custodian transaction ID */
   custodianTransactionId: optional(t.string),
+  /** For EVM cross-chain recovery */
+  isEvmBasedCrossChainRecovery: optional(t.boolean),
+  /** Wallet version (for EVM) */
+  walletVersion: optional(t.number),
+  /** Signing key nonce for EVM final signing */
+  signingKeyNonce: optional(t.number),
+  /** Wallet contract address for EVM final signing */
+  walletContractAddress: optional(t.string),
+
+  // ============ UTXO-specific fields ============
+  /** Public keys for multi-signature transactions (xpub triple: user, backup, bitgo) */
+  pubs: optional(t.array(t.string)),
+  /** Cosigner public key (defaults to bitgo) */
+  cosignerPub: optional(t.string),
   /** Signing step for MuSig2 */
   signingStep: optional(t.union([t.literal('signerNonce'), t.literal('signerSignature'), t.literal('cosignerNonce')])),
-  /** Allow non-segwit signing without previous transaction */
+  /** Allow non-segwit signing without previous transaction (deprecated) */
   allowNonSegwitSigningWithoutPrevTx: optional(t.boolean),
+
+  // ============ Solana-specific fields ============
+  /** Public keys for Solana transactions */
+  pubKeys: optional(t.array(t.string)),
 } as const;
 
 /**
- * Response for a fully signed transaction
+ * Response codecs are imported from coinSignTx.ts since both endpoints call the same
+ * coin.signTransaction() method and return identical response formats:
+ *
+ * - FullySignedTransactionResponse: For fully signed transactions (all signatures collected)
+ * - HalfSignedAccountTransactionResponse: For half-signed account-based transactions (EVM, Algorand, etc.)
+ * - HalfSignedUtxoTransactionResponse: For half-signed UTXO transactions (BTC, LTC, etc.)
+ * - SignedTransactionRequestResponse: For TSS transaction requests
+ * - TxRequestResponse: For TSS transaction requests (from @bitgo/public-types)
+ *
+ * Reference: modules/express/src/typedRoutes/api/v2/coinSignTx.ts:267-418 (Response codecs)
  */
-export const FullySignedTransactionResponse = t.type({
-  /** Transaction in hex format */
-  txHex: t.string,
-});
-
-/**
- * Response for a half-signed account transaction
- */
-export const HalfSignedAccountTransactionResponse = t.partial({
-  halfSigned: t.partial({
-    txHex: t.string,
-    payload: t.string,
-    txBase64: t.string,
-  }),
-});
-
-/**
- * Response for a half-signed UTXO transaction
- */
-export const HalfSignedUtxoTransactionResponse = t.type({
-  txHex: t.string,
-});
-
-/**
- * Response for a transaction request
- */
-export const SignedTransactionRequestResponse = t.type({
-  txRequestId: t.string,
-});
 
 /**
  * Response for signing a transaction in external signer mode
