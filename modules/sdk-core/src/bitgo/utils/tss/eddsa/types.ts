@@ -29,3 +29,50 @@ export {
   SignatureShareRecord,
   SignatureShareType,
 } from '../baseTypes';
+
+/* These types are temporary. To be used from publicTypes later*/
+
+import * as t from 'io-ts';
+import { MPCv2BroadcastMessage } from '@bitgo/public-types';
+
+const MPCv2SigningState = t.union([
+  t.literal('round1Input'),
+  t.literal('round1Output'),
+  t.literal('round2Input'),
+  t.literal('round2Output'),
+  t.literal('round3Input'),
+]);
+
+type MPCv2SigningState = t.TypeOf<typeof MPCv2SigningState>;
+const MPCv2SignatureShareBase = t.type({
+  type: MPCv2SigningState,
+});
+
+const MPCv2SignatureShareRound1Output = t.intersection([
+  MPCv2SignatureShareBase,
+  t.type(
+    {
+      type: t.literal('round1Output'),
+      data: t.type({
+        msg1: MPCv2BroadcastMessage,
+        msg2: MPCv2BroadcastMessage,
+      }),
+    },
+    'MPCv2SignatureShareRound1Output'
+  ),
+]);
+
+export type MPCv2SignatureShareRound1Output = t.TypeOf<typeof MPCv2SignatureShareRound1Output>;
+
+const MPCv2SignatureShareRound2Input = t.intersection([
+  MPCv2SignatureShareBase,
+  t.type({
+    type: t.literal('round2Input'),
+    data: t.type({
+      msg2: MPCv2BroadcastMessage,
+      msg3: MPCv2BroadcastMessage,
+    }),
+  }),
+]);
+
+export type MPCv2SignatureShareRound2Input = t.TypeOf<typeof MPCv2SignatureShareRound2Input>;

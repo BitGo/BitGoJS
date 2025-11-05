@@ -1,8 +1,11 @@
 import assert from 'assert';
+import openpgp from 'openpgp';
+
 import { NonEmptyString } from 'io-ts-types';
 import { Buffer } from 'buffer';
 import { MPCv2KeyGenStateEnum, MPCv2PartyFromStringOrNumber } from '@bitgo/public-types';
-import { DklsTypes, MPSUtil, MPSTypes, MPSComms, MPSDkg } from '@bitgo/sdk-lib-mpc';
+import { DklsTypes, MPSUtil, MPSTypes, MPSComms, MPSDkg, MPSDsg } from '@bitgo/sdk-lib-mpc';
+import createKeccakHash from 'keccak';
 
 import { KeychainsTriplet } from '../../../baseCoin';
 import { AddKeychainOptions, Keychain, KeyType } from '../../../keychain';
@@ -11,7 +14,17 @@ import { generateGPGKeyPair } from '../../opengpgUtils';
 import { envRequiresBitgoPubGpgKeyConfig, isBitgoMpcPubKey } from '../../../tss/bitgoPubKeys';
 
 import { EDDSAMPCv2KeyGenSenderForEnterprise } from './eddsaMPCv2KeyGenSender';
+import { Hash } from 'crypto';
+import { sendTxRequest, sendSignatureShareV2 } from '../../../tss/common';
+import { RequestType, TSSParamsForMessageWithPrv, TSSParamsWithPrv, TxRequest } from '../baseTypes';
 import { BaseEddsaUtils } from './base';
+import { MPCv2SignatureShareRound1Output } from './types';
+import {
+  getSignatureShareRoundOne,
+  verifyBitGoMessagesAndSignaturesRoundOne,
+  getSignatureShareRoundTwo,
+} from '../../../tss/eddsa/eddsaMPCv2';
+import { IRequestTracer } from 'modules/sdk-core/src/api';
 
 export class EddsaMPCv2Utils extends BaseEddsaUtils {
   async createKeychains(params: {
@@ -308,4 +321,239 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
   // #endregion
 
   // #region sign tx request
+
+  /**
+   * Signs the transaction associated to the transaction request.
+   * @param {string | TxRequest} params.txRequest - transaction request object or id
+   * @param {string} params.prv - decrypted private key
+   * @param {string} params.reqId - request id
+   * @param {string} params.mpcv2PartyId - party id for the signer involved in this mpcv2 request (either 0 for user or 1 for backup)
+   * @returns {Promise<TxRequest>} fully signed TxRequest object
+   */
+
+  async signTxRequest(params: TSSParamsWithPrv): Promise<TxRequest> {
+    this.bitgo.setRequestTracer(params.reqId);
+    return this.signRequestBase(params, RequestType.tx);
+  }
+
+  /**
+   * Base method for signing transaction or message requests using EdDSA MPCv2
+   * Orchestrates the complete signing flow including key setup, hash generation, and multi-round signing
+   *
+   * @param {TSSParamsWithPrv | TSSParamsForMessageWithPrv} params - signing parameters
+   * @param {string | TxRequest} params.txRequest - transaction request object or id
+   * @param {string} params.prv - base64 encoded decrypted private key share
+   * @param {string} params.reqId - request id for tracing
+   * @param {0 | 1} params.mpcv2PartyId - party id for the signer (0 for user, 1 for backup)
+   * @param {RequestType} requestType - the type of request being signed (tx or message)
+   * @returns {Promise<TxRequest>} fully signed transaction request object
+   * @throws {Error} if BitGo GPG key is missing or signing process fails
+   *
+   * @description
+   * This method performs the following steps:
+   * 1. Resolves and verifies the transaction request
+   * 2. Generates GPG keys and retrieves BitGo's public key
+   * 3. Prepares the message/transaction hash for signing
+   * 4. Initializes the DSG (Distributed Signature Generation) signer
+   * 5. Executes Round 1: User sends initial message and receives BitGo's responses
+   * 6. Executes Round 2: User processes BitGo's messages and sends final signature share
+   * 7. Returns the fully signed transaction request
+   */
+  private async signRequestBase(
+    params: TSSParamsWithPrv | TSSParamsForMessageWithPrv,
+    requestType: RequestType
+  ): Promise<TxRequest> {
+    const userKeyShare = Buffer.from(params.prv, 'base64');
+    const { txRequestResolved: txRequest } = await this.resolveTxRequest(params.txRequest, params.reqId);
+    const userGpgKey = await generateGPGKeyPair('secp256k1');
+    const bitgoGpgPubKey = await this.pickBitgoPubGpgKeyForSigning(true, params.reqId, txRequest.enterpriseId);
+
+    if (!bitgoGpgPubKey) {
+      throw new Error('Missing BitGo GPG key for MPCv2');
+    }
+
+    const unsignedTx = this.getUnsignedTxFromRequest(txRequest);
+    const txOrMessageToSign = unsignedTx.signableHex;
+    const derivationPath = unsignedTx.derivationPath;
+    const bufferContent = Buffer.from(txOrMessageToSign, 'hex');
+
+    let hash: Hash;
+    try {
+      hash = this.baseCoin.getHashFunction();
+    } catch (err) {
+      hash = createKeccakHash('keccak256') as Hash;
+    }
+    // check what the encoding is supposed to be for message
+    const hashBuffer = hash.update(bufferContent).digest();
+
+    const otherSigner = new MPSDsg.DSG(
+      userKeyShare,
+      params.mpcv2PartyId ? params.mpcv2PartyId : 0,
+      derivationPath,
+      hashBuffer
+    );
+    await otherSigner.init();
+
+    /** Round 1 **/
+    const userSignerBroadcastMsg1 = otherSigner.getFirstMessage();
+    const { bitgoToUserMessagesRound1, bitgoToUserMessagesRound2 } = await this.handleSigningRound1(
+      userSignerBroadcastMsg1,
+      userGpgKey,
+      bitgoGpgPubKey,
+      txRequest,
+      params.mpcv2PartyId ? params.mpcv2PartyId : 0,
+      requestType,
+      params.reqId
+    );
+
+    /** Round 2 **/
+    await this.handleSigningRound2(
+      otherSigner,
+      userSignerBroadcastMsg1,
+      bitgoToUserMessagesRound1,
+      bitgoToUserMessagesRound2,
+      userGpgKey,
+      bitgoGpgPubKey,
+      txRequest,
+      params.mpcv2PartyId ? params.mpcv2PartyId : 0,
+      requestType,
+      params.reqId
+    );
+
+    return sendTxRequest(this.bitgo, txRequest.walletId, txRequest.txRequestId, requestType, params.reqId);
+  }
+
+  /**
+   * Handles Round 1 of the EdDSA MPCv2 signing process
+   * @param {MPSTypes.DeserializedMessage} userSignerBroadcastMsg1 - the user's first broadcast message
+   * @param {openpgp.SerializedKeyPair<string>} userGpgKey - the user's GPG key
+   * @param {openpgp.Key} bitgoGpgPubKey - BitGo's GPG public key
+   * @param {TxRequest} txRequest - the transaction request object
+   * @param {0 | 1} mpcv2PartyId - party id for the signer (0 for user, 1 for backup)
+   * @param {RequestType} requestType - the type of request (tx or message)
+   * @param {IRequestTracer} reqId - request id for tracing
+   * @returns {Promise<{bitgoToUserMessagesRound1: MPSTypes.DeserializedMessage, bitgoToUserMessagesRound2: MPSTypes.DeserializedMessage}>} deserialized BitGo messages for round 1 and 2
+   */
+  private async handleSigningRound1(
+    userSignerBroadcastMsg1: MPSTypes.DeserializedMessage,
+    userGpgKey: openpgp.SerializedKeyPair<string>,
+    bitgoGpgPubKey: openpgp.Key,
+    txRequest: TxRequest,
+    mpcv2PartyId: 0 | 1 = 0,
+    requestType: RequestType,
+    reqId: IRequestTracer
+  ): Promise<{
+    bitgoToUserMessagesRound1: MPSTypes.DeserializedMessage;
+    bitgoToUserMessagesRound2: MPSTypes.DeserializedMessage;
+  }> {
+    const signatureShareRound1 = await getSignatureShareRoundOne(
+      userSignerBroadcastMsg1,
+      userGpgKey,
+      bitgoGpgPubKey,
+      mpcv2PartyId
+    );
+
+    const latestTxRequest = await sendSignatureShareV2(
+      this.bitgo,
+      txRequest.walletId,
+      txRequest.txRequestId,
+      [signatureShareRound1],
+      requestType,
+      this.baseCoin.getMPCAlgorithm(),
+      userGpgKey.publicKey,
+      undefined,
+      this.wallet.multisigTypeVersion(),
+      reqId
+    );
+
+    assert(latestTxRequest.transactions || latestTxRequest.messages, 'Invalid txRequest Object');
+
+    const bitgoToUserMessages1And2 = latestTxRequest.transactions?.[0].signatureShares;
+    assert(bitgoToUserMessages1And2, 'Missing BitGo to User messages for round 1 and 2');
+
+    // TODO: Use codec for parsing
+    const parsedBitGoToUserSigShareRoundOne = JSON.parse(
+      bitgoToUserMessages1And2[bitgoToUserMessages1And2.length - 1].share
+    ) as MPCv2SignatureShareRound1Output;
+
+    if (parsedBitGoToUserSigShareRoundOne.type !== 'round1Output') {
+      throw new Error('Unexpected signature share response. Unable to parse data.');
+    }
+
+    const serializedBitGoToUserMessagesRound1And2 = await verifyBitGoMessagesAndSignaturesRoundOne(
+      parsedBitGoToUserSigShareRoundOne,
+      userGpgKey,
+      bitgoGpgPubKey
+    );
+
+    const [bitgoToUserMessagesRound1, bitgoToUserMessagesRound2] = MPSUtil.deserializeMessages(
+      serializedBitGoToUserMessagesRound1And2
+    );
+
+    return {
+      bitgoToUserMessagesRound1,
+      bitgoToUserMessagesRound2,
+    };
+  }
+
+  /**
+   * Handles Round 2 of the EdDSA MPCv2 signing process
+   * @param {MPSDsg.DSG} otherSigner - the DSG instance for the signer
+   * @param {MPSTypes.DeserializedMessage} userSignerBroadcastMsg1 - the user's first broadcast message
+   * @param {MPSTypes.DeserializedMessage} bitgoToUserMessagesRound1 - BitGo's round 1 message
+   * @param {MPSTypes.DeserializedMessage} bitgoToUserMessagesRound2 - BitGo's round 2 message
+   * @param {any} userGpgKey - the user's GPG key
+   * @param {openpgp.Key} bitgoGpgPubKey - BitGo's GPG public key
+   * @param {TxRequest} txRequest - the transaction request object
+   * @param {0 | 1} mpcv2PartyId - party id for the signer (0 for user, 1 for backup)
+   * @param {RequestType} requestType - the type of request (tx or message)
+   * @param {IRequestTracer} reqId - request id for tracing
+   * @returns {Promise<TxRequest>} the updated transaction request
+   */
+  private async handleSigningRound2(
+    otherSigner: MPSDsg.DSG,
+    userSignerBroadcastMsg1: MPSTypes.DeserializedMessage,
+    bitgoToUserMessagesRound1: MPSTypes.DeserializedMessage,
+    bitgoToUserMessagesRound2: MPSTypes.DeserializedMessage,
+    userGpgKey: openpgp.SerializedKeyPair<string>,
+    bitgoGpgPubKey: openpgp.Key,
+    txRequest: TxRequest,
+    mpcv2PartyId: 0 | 1 = 0,
+    requestType: RequestType,
+    reqId: IRequestTracer
+  ): Promise<TxRequest> {
+    const userToBitGoMessagesRound2 = otherSigner.handleIncomingMessages([
+      userSignerBroadcastMsg1,
+      bitgoToUserMessagesRound1,
+    ])[0];
+    const userToBitGoMessagesRound3 = otherSigner.handleIncomingMessages([
+      userToBitGoMessagesRound2[0],
+      bitgoToUserMessagesRound2,
+    ])[0];
+
+    const signatureShareRoundTwo = await getSignatureShareRoundTwo(
+      userToBitGoMessagesRound2,
+      userToBitGoMessagesRound3,
+      userGpgKey,
+      bitgoGpgPubKey,
+      mpcv2PartyId
+    );
+
+    const latestTxRequest = await sendSignatureShareV2(
+      this.bitgo,
+      txRequest.walletId,
+      txRequest.txRequestId,
+      [signatureShareRoundTwo],
+      requestType,
+      this.baseCoin.getMPCAlgorithm(),
+      userGpgKey.publicKey,
+      undefined,
+      this.wallet.multisigTypeVersion(),
+      reqId
+    );
+
+    assert(latestTxRequest.transactions || latestTxRequest.messages, 'Invalid txRequest Object');
+
+    return latestTxRequest;
+  }
 }
