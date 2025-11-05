@@ -13,97 +13,233 @@ export const CoinSignTxParams = {
 
 /**
  * EIP1559 transaction parameters for Ethereum
- * Reference: modules/abstract-eth/src/abstractEthLikeNewCoins.ts:1106
+ * Reference: modules/abstract-eth/src/abstractEthLikeNewCoins.ts:116-119
+ * Note: Both fields are REQUIRED when EIP1559 object is provided
  */
-export const EIP1559 = t.partial({
-  /** Maximum fee per gas */
-  maxFeePerGas: t.union([t.string, t.number]),
-  /** Maximum priority fee per gas */
+export const EIP1559 = t.type({
+  /** Maximum priority fee per gas (REQUIRED) */
   maxPriorityFeePerGas: t.union([t.string, t.number]),
+  /** Maximum fee per gas (REQUIRED) */
+  maxFeePerGas: t.union([t.string, t.number]),
+});
+
+/**
+ * Replay protection options for EVM transactions
+ * Reference: modules/abstract-eth/src/abstractEthLikeNewCoins.ts:121-124
+ * Note: Both fields are REQUIRED when ReplayProtectionOptions object is provided
+ */
+export const ReplayProtectionOptions = t.type({
+  /** Chain ID (REQUIRED) */
+  chain: t.union([t.string, t.number]),
+  /** Hardfork name (REQUIRED) */
+  hardfork: t.string,
 });
 
 /**
  * Recipient information for a transaction
- * Reference: modules/abstract-eth/src/abstractEthLikeNewCoins.ts:1100-1102
+ * Reference: modules/sdk-core/src/bitgo/baseCoin/iBaseCoin.ts:468-472 (Recipient)
+ * Reference: modules/sdk-core/src/bitgo/baseCoin/iBaseCoin.ts:79-84 (ITransactionRecipient)
+ * Validation: modules/abstract-eth/src/abstractEthLikeNewCoins.ts:622-642
+ *
+ * Note: address and amount are REQUIRED (accessed without null checks in SDK validation)
+ * tokenName, data, and memo are OPTIONAL
  */
-export const Recipient = t.partial({
-  /** Recipient address */
-  address: t.string,
-  /** Amount to send */
-  amount: t.union([t.string, t.number]),
-  /** Token name (for token transfers) */
-  tokenName: t.string,
-  /** Additional data */
-  data: t.string,
-});
+export const Recipient = t.intersection([
+  t.type({
+    /** Recipient address (REQUIRED) */
+    address: t.string,
+    /** Amount to send (REQUIRED) */
+    amount: t.union([t.string, t.number]),
+  }),
+  t.partial({
+    /** Token name (for token transfers) (OPTIONAL) */
+    tokenName: t.string,
+    /** Additional data (EVM) (OPTIONAL) */
+    data: t.string,
+    /** Memo field (used in ITransactionRecipient for various coins) (OPTIONAL) */
+    memo: t.string,
+  }),
+]);
 
 /**
  * Hop transaction data for Ethereum
- * Reference: modules/abstract-eth/src/abstractEthLikeNewCoins.ts:1110
+ * Reference: modules/abstract-eth/src/abstractEthLikeNewCoins.ts:90-102 (HopPrebuild - full interface)
+ * Note: All fields are REQUIRED when HopPrebuild object is provided
  */
-export const HopTransaction = t.partial({
-  /** Transaction hex */
-  txHex: t.string,
-  /** User request signature */
+export const HopTransaction = t.type({
+  /** Transaction hex (REQUIRED) */
+  tx: t.string,
+  /** Transaction ID (REQUIRED) */
+  id: t.string,
+  /** Signature (REQUIRED) */
+  signature: t.string,
+  /** Payment ID (REQUIRED) */
+  paymentId: t.string,
+  /** Gas price (REQUIRED) */
+  gasPrice: t.number,
+  /** Gas limit (REQUIRED) */
+  gasLimit: t.number,
+  /** Amount to send (REQUIRED) */
+  amount: t.number,
+  /** Recipient address (REQUIRED) */
+  recipient: t.string,
+  /** Transaction nonce (REQUIRED) */
+  nonce: t.number,
+  /** User request signature (REQUIRED) */
   userReqSig: t.string,
-  /** Maximum gas price */
-  gasPriceMax: t.union([t.string, t.number]),
-  /** Gas limit */
-  gasLimit: t.union([t.string, t.number]),
+  /** Maximum gas price (REQUIRED) */
+  gasPriceMax: t.number,
 });
 
 /**
  * Half-signed transaction data
+ *
+ * This covers two use cases:
+ * 1. Response halfSigned data (txHex, payload, txBase64, txHash) - general coins
+ * 2. Request txPrebuild.halfSigned for EVM final signing (expireTime, contractSequenceId, backupKeyNonce, signature, txHex)
+ *
+ * Reference:
+ * - Response: modules/sdk-core/src/bitgo/baseCoin/iBaseCoin.ts:408-414
+ * - Request: modules/abstract-eth/src/abstractEthLikeNewCoins.ts:147-153 (SignFinalOptions.txPrebuild.halfSigned)
  */
 export const HalfSignedData = t.partial({
-  /** Transaction hash */
-  txHash: t.string,
+  // From response/general usage (HalfSignedAccountTransaction)
+  /** Transaction in hex format */
+  txHex: t.string,
   /** Transaction payload */
   payload: t.string,
   /** Transaction in base64 format */
   txBase64: t.string,
+  /** Transaction hash */
+  txHash: t.string,
+
+  // From SignFinalOptions.txPrebuild.halfSigned (EVM final signing request)
+  /** Expiration time (EVM final signing) */
+  expireTime: t.number,
+  /** Contract sequence ID (EVM final signing) */
+  contractSequenceId: t.number,
+  /** Backup key nonce (EVM final signing) */
+  backupKeyNonce: t.number,
+  /** Signature (EVM final signing) */
+  signature: t.string,
+});
+
+/**
+ * Build parameters structure
+ * Reference: modules/sdk-core/src/bitgo/baseCoin/iBaseCoin.ts:315-318
+ */
+export const BuildParams = t.partial({
+  /** Preview mode flag */
+  preview: t.boolean,
+  /** Recipients for the transaction */
+  recipients: t.array(Recipient),
+});
+
+/**
+ * Address information for transaction signing (used by Tron, Tezos, etc.)
+ * Reference: modules/sdk-coin-trx/src/trx.ts:55-59
+ * Note: All fields are REQUIRED when AddressInfo object is provided
+ */
+export const AddressInfo = t.type({
+  /** Address string (REQUIRED) */
+  address: t.string,
+  /** Chain index for address derivation (REQUIRED) */
+  chain: t.number,
+  /** Address index for derivation (REQUIRED) */
+  index: t.number,
 });
 
 /**
  * Transaction prebuild information
- * Reference: modules/abstract-utxo/src/abstractUtxoCoin.ts:336-346
- * Reference: modules/abstract-eth/src/abstractEthLikeNewCoins.ts:1088-1116
+ *
+ * Base interface: modules/sdk-core/src/bitgo/baseCoin/iBaseCoin.ts:327-331
+ * EVM extension: modules/abstract-eth/src/abstractEthLikeNewCoins.ts:126-138
+ * UTXO extension: modules/abstract-utxo/src/abstractUtxoCoin.ts:248-251
+ *
+ * This codec covers all fields from:
+ * - SDK Core Base (txBase64, txHex, txInfo, buildParams, consolidateId, txRequestId)
+ * - EVM-specific (coin, token, nextContractSequenceId, isBatch, eip1559, hopTransaction, etc.)
+ * - UTXO-specific (blockHeight)
+ * - Account-based coins (addressInfo, source, feeInfo, keys, addressVersion, etc.)
  */
 export const TransactionPrebuild = t.partial({
+  // ============ Base SDK Core fields ============
   /** Transaction in hex format */
   txHex: t.string,
-  /** Transaction in base64 format (for some coins like Solana) */
+  /** Transaction in base64 format (Solana, Stellar, etc.) */
   txBase64: t.string,
-  /** Transaction info with unspents (for UTXO coins) - coin-specific structure, varies by coin type */
+  /** Transaction info with unspents (UTXO coins) - coin-specific structure */
   txInfo: t.any,
+  /** Build parameters including recipients (from BaseSignable) */
+  buildParams: BuildParams,
+  /** Consolidate ID (from BaseSignable) */
+  consolidateId: t.string,
+  /** Transaction request ID for TSS transactions (from BaseSignable) */
+  txRequestId: t.string,
+
+  // ============ Universal fields ============
   /** Wallet ID for the transaction */
   walletId: t.string,
-  /** Transaction request ID (for TSS transactions) */
-  txRequestId: t.string,
-  /** Consolidate ID */
-  consolidateId: t.string,
-  /** Next contract sequence ID (for ETH) */
-  nextContractSequenceId: t.number,
-  /** Whether this is a batch transaction (for ETH) */
-  isBatch: t.boolean,
-  /** EIP1559 transaction parameters (for ETH) */
-  eip1559: EIP1559,
-  /** Hop transaction data (for ETH) */
-  hopTransaction: HopTransaction,
-  /** Backup key nonce (for ETH) */
-  backupKeyNonce: t.union([t.number, t.string]),
-  /** Recipients of the transaction */
-  recipients: t.array(Recipient),
-  /** Gas limit (for EVM chains) */
-  gasLimit: t.union([t.string, t.number]),
-  /** Gas price (for EVM chains) */
-  gasPrice: t.union([t.string, t.number]),
   /** Transaction expiration time */
   expireTime: t.number,
   /** Half-signed transaction data */
   halfSigned: HalfSignedData,
   /** Payload string */
   payload: t.string,
+
+  // ============ EVM-specific fields ============
+  /** Coin identifier (EVM - required in EVM interface) */
+  coin: t.string,
+  /** Token identifier (EVM - optional in EVM interface) */
+  token: t.string,
+  /** Next contract sequence ID (EVM) */
+  nextContractSequenceId: t.number,
+  /** Whether this is a batch transaction (EVM) */
+  isBatch: t.boolean,
+  /** EIP1559 transaction parameters (EVM) */
+  eip1559: EIP1559,
+  /** Replay protection options (EVM) */
+  replayProtectionOptions: ReplayProtectionOptions,
+  /** Hop transaction data (EVM) - can be string (in SignFinalOptions) or HopPrebuild object (in TransactionPrebuild) */
+  hopTransaction: t.union([t.string, HopTransaction]),
+  /** Backup key nonce (EVM) */
+  backupKeyNonce: t.union([t.number, t.string]),
+  /** Recipients of the transaction */
+  recipients: t.array(Recipient),
+  /** Gas limit (EVM chains) */
+  gasLimit: t.union([t.string, t.number]),
+  /** Gas price (EVM chains) */
+  gasPrice: t.union([t.string, t.number]),
+
+  // ============ UTXO-specific fields ============
+  /** Block height (UTXO coins) */
+  blockHeight: t.number,
+
+  // ============ Account-based coin specific fields ============
+  /** Address information for derivation (Tron, Tezos) - USED in Tron signTransaction */
+  addressInfo: AddressInfo,
+  /** Source address (Solana, Tezos, Hedera, Flare) */
+  source: t.string,
+  /** Fee information (Tron, Tezos, Hedera) - coin-specific structure */
+  feeInfo: t.any,
+  /** Data to sign (Tezos) */
+  dataToSign: t.string,
+  /** Keys array (Algorand) */
+  keys: t.array(t.string),
+  /** Address version (Algorand) */
+  addressVersion: t.number,
+
+  // ============ Near-specific fields ============
+  /** Key for Near transactions */
+  key: t.string,
+  /** Block hash for Near transactions */
+  blockHash: t.string,
+  /** Nonce for Near transactions (bigint in SDK, but JSON uses number/string) */
+  nonce: t.any,
+
+  // ============ Polkadot-specific fields ============
+  /** Transaction data for Polkadot */
+  transaction: t.any,
 });
 
 /**
@@ -136,6 +272,10 @@ export const CoinSignTxBody = {
   isEvmBasedCrossChainRecovery: optional(t.boolean),
   /** Wallet version (for EVM) */
   walletVersion: optional(t.number),
+  /** Signing key nonce for EVM final signing */
+  signingKeyNonce: optional(t.number),
+  /** Wallet contract address for EVM final signing */
+  walletContractAddress: optional(t.string),
 
   // UTXO-specific fields
   /** Public keys for multi-signature transactions (xpub triple: user, backup, bitgo) */
@@ -146,6 +286,10 @@ export const CoinSignTxBody = {
   signingStep: optional(t.union([t.literal('signerNonce'), t.literal('signerSignature'), t.literal('cosignerNonce')])),
   /** Allow non-segwit signing without previous transaction (deprecated) */
   allowNonSegwitSigningWithoutPrevTx: optional(t.boolean),
+
+  // Solana-specific fields
+  /** Public keys for Solana transactions */
+  pubKeys: optional(t.array(t.string)),
 } as const;
 
 /**
@@ -193,8 +337,8 @@ export const HalfSignedAccountTransactionResponse = t.type({
     sequenceId: t.number,
     /** EIP1559 parameters (EVM) */
     eip1559: EIP1559,
-    /** Hop transaction data (EVM) */
-    hopTransaction: HopTransaction,
+    /** Hop transaction data (EVM) - can be string or object */
+    hopTransaction: t.union([t.string, HopTransaction]),
     /** Custodian transaction ID (EVM) */
     custodianTransactionId: t.string,
     /** Whether this is a batch transaction (EVM) */
