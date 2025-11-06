@@ -7,7 +7,7 @@ export const jettonTokens = [
   jettonToken(
     'b72a1bf8-35f2-4a6e-b017-4d0121dba68a',
     'ton:usdt',
-    'Ton USDT',
+    'Tether USD',
     6,
     'EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs',
     UnderlyingAsset['ton:usdt'],

@@ -68,7 +68,7 @@ describe('Jetton Tokens', function () {
     mainnetJettonToken.getFullName().should.equal('Ton Token');
     mainnetJettonToken.getBaseFactor().should.equal(1e6);
     mainnetJettonToken.type.should.equal(mainnetTokenName);
-    mainnetJettonToken.name.should.equal('Ton USDT');
+    mainnetJettonToken.name.should.equal('Tether USD');
     mainnetJettonToken.coin.should.equal('ton');
     mainnetJettonToken.network.should.equal('Mainnet');
     mainnetJettonToken.contractAddress.should.equal('EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs');
