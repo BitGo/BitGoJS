@@ -1,4 +1,4 @@
-import { SerializedMessage, AuthEncMessage } from './types';
+import { SerializedMessage, AuthMessage, AuthEncMessage } from './types';
 import { DklsTypes } from '../ecdsa-dkls/';
 import {
   decryptAndVerifySignedData,
@@ -12,7 +12,7 @@ import {
  *
  * @param {SerializedMessage[]} messages - array of serialized messages to authenticate
  * @param {DklsTypes.PartyGpgKey[]} prvAuthenticationGpgKeys - array of private GPG keys for signing, one per sender party
- * @returns {Promise<AuthEncMessage[]>} array of authenticated messages with detached signatures
+ * @returns {Promise<AuthMessage[]>} array of authenticated messages with detached signatures
  * @throws {Error} if no private key is found for a sender or if signing fails
  *
  * @description
@@ -25,7 +25,7 @@ import {
 export async function encryptAndAuthOutgoingMessages(
   messages: SerializedMessage[],
   prvAuthenticationGpgKeys: DklsTypes.PartyGpgKey[]
-): Promise<AuthEncMessage[]> {
+): Promise<AuthMessage[]> {
   return await Promise.all(
     messages.map(async (m) => {
       const prvGpgKey = prvAuthenticationGpgKeys.find((k) => k.partyId === m.from);
@@ -46,7 +46,7 @@ export async function encryptAndAuthOutgoingMessages(
  * @param {SerializedMessage} message - the serialized message to encrypt and authenticate
  * @param {DklsTypes.PartyGpgKey} fromPartyGpgKey - GPG private key of the sender party for signing
  * @param {DklsTypes.PartyGpgKey} toPartyGpgKey - GPG public key of the recipient party for encryption
- * @returns {Promise<AuthEncMessage>} authenticated and encrypted message ready for transmission
+ * @returns {Promise<AuthMessage>} authenticated and encrypted message ready for transmission
  * @throws {Error} if encryption or signing fails
  *
  * @description
@@ -60,15 +60,17 @@ export async function encryptAndAuthOutgoingMessageP2P(
   fromPartyGpgKey: DklsTypes.PartyGpgKey,
   toPartyGpgKey: DklsTypes.PartyGpgKey
 ): Promise<AuthEncMessage> {
+  const { gpgKey: toPartyPubKey } = toPartyGpgKey
+  const { gpgKey: fromPartyPrvKey } = fromPartyGpgKey
   const { encryptedMessage, signature } = await encryptAndDetachSignData(
     Buffer.from(message.payload, 'base64'),
-    fromPartyGpgKey.gpgKey,
-    toPartyGpgKey.gpgKey
+    toPartyPubKey,
+    fromPartyPrvKey
   );
   return {
     from: message.from,
     payload: {
-      message: encryptedMessage,
+      encryptedMessage: encryptedMessage,
       signature: signature,
     },
   };
@@ -80,7 +82,7 @@ export async function encryptAndAuthOutgoingMessageP2P(
  * @param pubVerificationGpgKeys public keys to verify signatures with
  */
 export function decryptAndVerifyIncomingMessages(
-  messages: AuthEncMessage[],
+  messages: AuthMessage[],
   pubVerificationGpgKeys: DklsTypes.PartyGpgKey[]
 ): Promise<SerializedMessage[]> {
   return Promise.all(
@@ -103,7 +105,7 @@ export function decryptAndVerifyIncomingMessages(
 /**
  * Decrypts and verifies peer-to-peer (P2P) messages
  *
- * @param {AuthEncMessage[]} messages - array of authenticated and encrypted messages to process
+ * @param {AuthMessage[]} messages - array of authenticated and encrypted messages to process
  * @param {DklsTypes.PartyGpgKey} fromPartyGpgKey - GPG public key of the sender party for signature verification
  * @param {DklsTypes.PartyGpgKey} toPartyGpgKey - GPG private key of the recipient party for decryption
  * @returns {Promise<SerializedMessage[]>} array of decrypted and verified serialized messages
@@ -125,7 +127,7 @@ export async function decryptAndVerifyIncomingMessageP2P(
       return {
         from: m.from,
         payload: await decryptAndVerifySignedData(
-          { encryptedMessage: m.payload.message, signature: m.payload.signature },
+          { encryptedMessage: m.payload.encryptedMessage, signature: m.payload.signature },
           fromPartyGpgKey.gpgKey,
           toPartyGpgKey.gpgKey
         ),

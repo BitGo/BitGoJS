@@ -33,7 +33,7 @@ export {
 /* These types are temporary. To be used from publicTypes later*/
 
 import * as t from 'io-ts';
-import { MPCv2BroadcastMessage } from '@bitgo/public-types';
+import { MPCv2P2PMessage } from '@bitgo/public-types';
 
 const MPCv2SigningState = t.union([
   t.literal('round1Input'),
@@ -54,8 +54,8 @@ const MPCv2SignatureShareRound1Output = t.intersection([
     {
       type: t.literal('round1Output'),
       data: t.type({
-        msg1: MPCv2BroadcastMessage,
-        msg2: MPCv2BroadcastMessage,
+        msg1: MPCv2P2PMessage,
+        msg2: MPCv2P2PMessage,
       }),
     },
     'MPCv2SignatureShareRound1Output'
@@ -69,8 +69,8 @@ const MPCv2SignatureShareRound2Input = t.intersection([
   t.type({
     type: t.literal('round2Input'),
     data: t.type({
-      msg2: MPCv2BroadcastMessage,
-      msg3: MPCv2BroadcastMessage,
+      msg2: MPCv2P2PMessage,
+      msg3: MPCv2P2PMessage,
     }),
   }),
 ]);

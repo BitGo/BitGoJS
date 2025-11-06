@@ -149,10 +149,11 @@ export async function sendSignatureShareV2(
 
   let attempts = 0;
   const maxAttempts = 3;
-
+  console.log({requestBody: JSON.stringify(requestBody, null, 2), url: bitgo.url(urlPath, 2)});
+  const url = 'http://localhost:3000/api/v2' + urlPath;
   while (attempts < maxAttempts) {
     try {
-      return await bitgo.post(bitgo.url(urlPath, 2)).send(requestBody).result();
+      return await bitgo.post(url).send(requestBody).result();
     } catch (err) {
       if (err?.status === 429) {
         const sleepTime = 1000 * (attempts + 1);
@@ -165,7 +166,7 @@ export async function sendSignatureShareV2(
       }
     }
   }
-  return await bitgo.post(bitgo.url(urlPath, 2)).send(requestBody).result();
+  return await bitgo.post(url).send(requestBody).result();
 }
 
 /**
@@ -189,7 +190,9 @@ export async function sendTxRequest(
   const urlPath = '/wallet/' + walletId + '/txrequests/' + txRequestId + addendum + '/send';
   const reqTracer = reqId || new RequestTracer();
   bitgo.setRequestTracer(reqTracer);
-  return bitgo.post(bitgo.url(urlPath, 2)).send().result();
+  console.log({urlPath});
+  const url = 'http://localhost:3000/api/v2' + urlPath;
+  return bitgo.post(url).send().result();
 }
 
 /**

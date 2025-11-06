@@ -11,7 +11,7 @@ import {
 } from '@bitgo/public-types';
 import assert from 'assert';
 
-function partyIdToSignatureShareType(partyId: 0 | 1 | 2): SignatureShareType {
+export function partyIdToSignatureShareType(partyId: 0 | 1 | 2): SignatureShareType {
   assert(partyId === 0 || partyId === 1 || partyId === 2, 'Invalid partyId for MPCv2 signing');
   switch (partyId) {
     case 0:

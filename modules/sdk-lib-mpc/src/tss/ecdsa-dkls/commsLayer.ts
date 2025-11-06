@@ -40,6 +40,9 @@ export async function encryptAndDetachSignData(
   const message = await pgp.createMessage({ binary: data });
   const publicKey = await pgp.readKey({ armoredKey: publicArmor });
   const privateKey = await pgp.readPrivateKey({ armoredKey: privateArmor });
+  console.log('Test public key ID:', publicKey.getKeyID().toHex());
+  console.log('Test public key subkey IDs:', publicKey.getSubkeys().map((sk: any) => sk.getKeyID().toHex()));
+
   const encryptedMessage = await pgp.encrypt({
     message,
     encryptionKeys: publicKey,

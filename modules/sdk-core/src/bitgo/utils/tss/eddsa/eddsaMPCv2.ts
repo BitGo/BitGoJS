@@ -25,6 +25,23 @@ import {
   getSignatureShareRoundTwo,
 } from '../../../tss/eddsa/eddsaMPCv2';
 import { IRequestTracer } from 'modules/sdk-core/src/api';
+import { decode } from 'cbor-x';
+
+function logDsgMessageToSign(signer: any): void {
+  const bytes = decode((signer as any).dsgSession.toBytes());
+  const round = JSON.parse(JSON.stringify(bytes)).round;
+  let msg_to_sign = '';
+  if (round?.Partial?.msg_to_sign) {
+    msg_to_sign = Buffer.from(round.Partial.msg_to_sign).toString('hex')
+  } else if (round?.WaitMsg1?.msg_to_sign) {
+    msg_to_sign = Buffer.from(round.WaitMsg1.msg_to_sign).toString('hex')
+  } else if (round?.WaitMsg2?.params.message) {
+    msg_to_sign = Buffer.from(round.WaitMsg2.params.message).toString('hex')
+  } else if (round?.Share) {
+    return; 
+  }
+  console.log({ txOrMessageToSign1: msg_to_sign });
+}
 
 export class EddsaMPCv2Utils extends BaseEddsaUtils {
   async createKeychains(params: {
@@ -192,7 +209,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
     };
   }
 
-  private validateRoundPayload(sessionId: string, payload: MPSTypes.AuthEncMessage[]): void {
+  private validateRoundPayload(sessionId: string, payload: MPSTypes.AuthMessage[]): void {
     assert(NonEmptyString.is(sessionId), 'Session ID is required');
     const userMsg = payload.find((m) => m.from === MPCv2PartiesEnum.USER);
     const backupMsg = payload.find((m) => m.from === MPCv2PartiesEnum.BACKUP);
@@ -223,7 +240,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
   private async sendKeyGenerationRound2(
     enterprise: string,
     sessionId: string,
-    payload: MPSTypes.AuthEncMessage[]
+    payload: MPSTypes.AuthMessage[]
   ): Promise<any> {
     this.validateRoundPayload(sessionId, payload);
     return EDDSAMPCv2KeyGenSenderForEnterprise(this.bitgo, enterprise)(MPCv2KeyGenStateEnum['MPCv2-R2'], {
@@ -235,7 +252,7 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
   private async sendKeyGenerationRound3(
     enterprise: string,
     sessionId: string,
-    payload: MPSTypes.AuthEncMessage[]
+    payload: MPSTypes.AuthMessage[]
   ): Promise<any> {
     this.validateRoundPayload(sessionId, payload);
     return EDDSAMPCv2KeyGenSenderForEnterprise(this.bitgo, enterprise)(MPCv2KeyGenStateEnum['MPCv2-R3'], {
@@ -375,27 +392,29 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
     const unsignedTx = this.getUnsignedTxFromRequest(txRequest);
     const txOrMessageToSign = unsignedTx.signableHex;
     const derivationPath = unsignedTx.derivationPath;
+    console.log({ txOrMessageToSign })
     const bufferContent = Buffer.from(txOrMessageToSign, 'hex');
 
-    let hash: Hash;
-    try {
-      hash = this.baseCoin.getHashFunction();
-    } catch (err) {
-      hash = createKeccakHash('keccak256') as Hash;
-    }
-    // check what the encoding is supposed to be for message
-    const hashBuffer = hash.update(bufferContent).digest();
+    // let hash: Hash;
+    // try {
+    //   hash = this.baseCoin.getHashFunction();
+    // } catch (err) {
+    //   hash = createKeccakHash('keccak256') as Hash;
+    // }
+    // // check what the encoding is supposed to be for message
+    // const hashBuffer = hash.update(bufferContent).digest();
 
     const otherSigner = new MPSDsg.DSG(
       userKeyShare,
       params.mpcv2PartyId ? params.mpcv2PartyId : 0,
       derivationPath,
-      hashBuffer
+      bufferContent
     );
     await otherSigner.init();
 
     /** Round 1 **/
     const userSignerBroadcastMsg1 = otherSigner.getFirstMessage();
+    logDsgMessageToSign(otherSigner)
     const { bitgoToUserMessagesRound1, bitgoToUserMessagesRound2 } = await this.handleSigningRound1(
       userSignerBroadcastMsg1,
       userGpgKey,
@@ -459,10 +478,10 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
       txRequest.txRequestId,
       [signatureShareRound1],
       requestType,
-      this.baseCoin.getMPCAlgorithm(),
+      'eddsa',
       userGpgKey.publicKey,
       undefined,
-      this.wallet.multisigTypeVersion(),
+      'MPCv2',
       reqId
     );
 
@@ -522,18 +541,19 @@ export class EddsaMPCv2Utils extends BaseEddsaUtils {
     requestType: RequestType,
     reqId: IRequestTracer
   ): Promise<TxRequest> {
-    const userToBitGoMessagesRound2 = otherSigner.handleIncomingMessages([
+    const userToBitGoMessageRound2 = otherSigner.handleIncomingMessages([
       userSignerBroadcastMsg1,
       bitgoToUserMessagesRound1,
     ])[0];
-    const userToBitGoMessagesRound3 = otherSigner.handleIncomingMessages([
-      userToBitGoMessagesRound2[0],
+    const userToBitGoMessageRound3 = otherSigner.handleIncomingMessages([
+      userToBitGoMessageRound2,
       bitgoToUserMessagesRound2,
     ])[0];
+    logDsgMessageToSign(otherSigner)
 
     const signatureShareRoundTwo = await getSignatureShareRoundTwo(
-      userToBitGoMessagesRound2,
-      userToBitGoMessagesRound3,
+      userToBitGoMessageRound2,
+      userToBitGoMessageRound3,
       userGpgKey,
       bitgoGpgPubKey,
       mpcv2PartyId

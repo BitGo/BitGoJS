@@ -125,6 +125,7 @@ import {
   BuildTokenApprovalResponse,
   WalletInitResult,
 } from './iWallet';
+import { EddsaMPCv2Utils } from '../utils/tss/eddsa/eddsaMPCv2';
 
 const debug = require('debug')('bitgo:v2:wallet');
 
@@ -150,7 +151,7 @@ export class Wallet implements IWallet {
   public readonly bitgo: BitGoBase;
   public readonly baseCoin: IBaseCoin;
   public _wallet: WalletData;
-  private readonly tssUtils: EcdsaUtils | EcdsaMPCv2Utils | EddsaUtils | undefined;
+  private readonly tssUtils: EcdsaUtils | EcdsaMPCv2Utils | EddsaUtils | EddsaMPCv2Utils | undefined;
   private readonly _permissions?: string[];
 
   constructor(bitgo: BitGoBase, baseCoin: IBaseCoin, walletData: any) {
@@ -163,16 +164,13 @@ export class Wallet implements IWallet {
       this._permissions = _.get(userDetails, 'permissions');
     }
     if (baseCoin?.supportsTss() && this._wallet.multisigType === 'tss') {
+      const isMPCv2Wallet = walletData.multisigTypeVersion === 'MPCv2';
       switch (baseCoin.getMPCAlgorithm()) {
         case 'ecdsa':
-          if (walletData.multisigTypeVersion === 'MPCv2') {
-            this.tssUtils = new EcdsaMPCv2Utils(bitgo, baseCoin, this);
-          } else {
-            this.tssUtils = new EcdsaUtils(bitgo, baseCoin, this);
-          }
+          this.tssUtils = isMPCv2Wallet ? new EcdsaMPCv2Utils(bitgo, baseCoin, this) : new EcdsaUtils(bitgo, baseCoin, this);
           break;
         case 'eddsa':
-          this.tssUtils = new EddsaUtils(bitgo, baseCoin, this);
+          this.tssUtils = isMPCv2Wallet ? new EddsaMPCv2Utils(bitgo, baseCoin, this) : new EddsaUtils(bitgo, baseCoin, this);
           break;
         default:
           this.tssUtils = undefined;
@@ -2022,7 +2020,7 @@ export class Wallet implements IWallet {
       walletData: this._wallet,
       tssUtils: this.tssUtils,
     });
-
+    console.log({presign})
     if (this.multisigType() === 'tss') {
       return this.signTransactionTss({
         ...presign,
@@ -2291,7 +2289,7 @@ export class Wallet implements IWallet {
 
     // the prebuild can be overridden by providing an explicit tx
     const txPrebuild = (await txPrebuildQuery) as PrebuildTransactionResult;
-
+    console.log({txPrebuild})
     try {
       await this.baseCoin.verifyTransaction({
         txParams: { ...txPrebuild.buildParams, ...params },
@@ -2321,6 +2319,7 @@ export class Wallet implements IWallet {
       bitgoKeychain: keychains.length > 2 ? keychains[2] : null,
       reqId: params.reqId,
     };
+    console.log({signingParams})
     if (this._wallet.multisigType === 'onchain') {
       signingParams.pubs = keychains.map((k) => {
         assert(k.pub);
@@ -3744,6 +3743,7 @@ export class Wallet implements IWallet {
         apiVersion: params.apiVersion,
       });
     } catch (e) {
+      console.log(e);
       throw new Error('failed to sign transaction ' + e);
     }
   }

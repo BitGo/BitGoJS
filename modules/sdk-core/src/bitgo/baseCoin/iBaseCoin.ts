@@ -16,6 +16,7 @@ import { TransactionType } from '../../account-lib';
 import { IInscriptionBuilder } from '../inscriptionBuilder';
 import { MessageStandardType, MPCTx, PopulatedIntent, TokenTransferRecipientParams, TokenType } from '../utils';
 import { IWebhooks } from '../webhook/iWebhooks';
+import { EddsaMPCv2Utils } from '../utils/tss/eddsa/eddsaMPCv2';
 
 export const multisigTypes = {
   onchain: 'onchain',
@@ -258,7 +259,7 @@ export interface ExtraPrebuildParamsOptions {
 export interface PresignTransactionOptions {
   txPrebuild?: TransactionPrebuild;
   walletData: WalletData;
-  tssUtils: EcdsaUtils | EcdsaMPCv2Utils | EddsaUtils | undefined;
+  tssUtils: EcdsaUtils | EcdsaMPCv2Utils | EddsaUtils | EddsaMPCv2Utils | undefined;
   [index: string]: unknown;
 }
 

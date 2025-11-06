@@ -500,6 +500,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
   async deleteSignatureShares(txRequestId: string, reqId?: IRequestTracer): Promise<SignatureShareRecord[]> {
     const reqTracer = reqId || new RequestTracer();
     this.bitgo.setRequestTracer(reqTracer);
+    // const url = 'http://localhost:3000/api/v2' + `/wallet/${this.wallet.id()}/txrequests/${txRequestId}/signatureshares`;
     return this.bitgo
       .del(this.bitgo.url(`/wallet/${this.wallet.id()}/txrequests/${txRequestId}/signatureshares`, 2))
       .send()
@@ -563,6 +564,33 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
     isMPCv2 = false,
     reqId?: IRequestTracer
   ): Promise<Key> {
+    return readKey({ armoredKey: `
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: Keybase OpenPGP v1.0.0
+Comment: https://keybase.io/crypto
+
+xm8EaQHdixMFK4EEACIDAwQeH+Q+68s4Q4o/Lv4wGqOeNOFeoyEfyV7o515uag2H
+Yk0xZVwv4//l975+/zYmDtHPwOhiaSzriDU95NFaiBTgj2J6/E6QQtn5+XgNTmrF
+l6lPDaGi/NcU/Mb1yp2mVJfNJlNhc2kgS3VtYXIgVCA8c2FzaWt1bWFydDgyMEBi
+aXRnby5jb20+wo8EExMKABcFAmkB3YsCGy8DCwkHAxUKCAIeAQIXgAAKCRDOVF7E
+gEopOoaSAYCwnnDB/G7cHLOm0NTHJ6UuJ53KoQMTFpuZ2XjwMj2zhUyLwkzNsKZX
+3dSc68X3+s4Bf1C6eMdFScuf7nq7/rdP95f3k/lJQqG7VSk/1oczNCGPzuacYcuP
+K2soObyf8CPm0s5SBGkB3YsTCCqGSM49AwEHAgME4MBpjA5EOZ44+hp/tekwtR4V
+u6Ko6OGoxwg4pJ3C6ABxjGEay9tcX5Mz8v2Y8IGDBsbrMec0b+r8I94ZbGNSEsLA
+JwQYEwoADwUCaQHdiwUJDwmcAAIbLgBqCRDOVF7EgEopOl8gBBkTCgAGBQJpAd2L
+AAoJEPsubafF4HZ/+GsA/1uprbpOh4Sw5EHDdA8rlRibpPCqwYQopUQLFIe2Wv9X
+AP4+JnIvl6AZ8vrE4Tmz2mT1+yxK/lp/rR9iPN0TYZMi/ANlAX9OwbdJiRqWBnvn
+7MPKvjQIHMBvx11LSRrGrv9WZWorH7Jzq4VRZEmZ26G+q0J7zYUBewcoCvI3mRLc
+aeKul2skMah9c6SDbmHV9yC5N2s26xnsKNJAPeg4DEW+pv0A7eLDvc5SBGkB3YsT
+CCqGSM49AwEHAgMEOAYHG9O09/6pG22ba9IOOXGiiT8wxgVYyf3w1+bZadIZFMRE
+e6tWU4xEU0n/lllRnn9s6m3daQQqx3LXSpUHY8LAJwQYEwoADwUCaQHdiwUJDwmc
+AAIbLgBqCRDOVF7EgEopOl8gBBkTCgAGBQJpAd2LAAoJEAGu1CWZ8/q6EUMA/1/p
+JnHag6HPQXDelxbycO0w1tP4PMY1OW05h8vIDXh5AQC4MHysadJEX/BQRAcXi52W
+mQUrnva6lDb+F9+Lx09q6QSDAYD+hU6/J4V6suQaAloc8bBPz/SkMshVIc7vK6pa
+PHizqqk6X/KYcHpZ4XSsBMLIHv0BgLACRDIsSuUbmSvo0VFVAONXcDmbL/kZPnOs
+GMjiJFKG9N5YFgbNmbp9ihGk2Op9tQ==
+=xlw+
+-----END PGP PUBLIC KEY BLOCK-----` });
     const reqTracer = reqId || new RequestTracer();
     this.bitgo.setRequestTracer(reqTracer);
     const response: BitgoGPGPublicKey = await this.bitgo
@@ -571,6 +599,7 @@ export default class BaseTssUtils<KeyShare> extends MpcUtils implements ITssUtil
       .retry(3)
       .result();
     const bitgoPublicKeyStr = isMPCv2 ? response.mpcv2PublicKey : response.publicKey;
+
     return readKey({ armoredKey: bitgoPublicKeyStr as string });
   }
 

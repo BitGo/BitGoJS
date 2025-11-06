@@ -127,15 +127,15 @@ export class Wallets implements IWallets {
       if (!_.isNumber(params.walletVersion)) {
         throw new Error('invalid argument for walletVersion - number expected');
       }
-      if (params.multisigType === 'tss' && this.baseCoin.getMPCAlgorithm() === 'ecdsa' && params.walletVersion === 3) {
-        const tssSettings: TssSettings = await this.bitgo
-          .get(this.bitgo.microservicesUrl('/api/v2/tss/settings'))
-          .result();
-        const multisigTypeVersion =
-          tssSettings.coinSettings[this.baseCoin.getFamily()]?.walletCreationSettings?.multiSigTypeVersion;
-        if (multisigTypeVersion === 'MPCv2') {
+      if (params.multisigType === 'tss') {
+        // const tssSettings: TssSettings = await this.bitgo
+        //   .get(this.bitgo.microservicesUrl('/api/v2/tss/settings'))
+        //   .result();
+        // const multisigTypeVersion =
+        //   tssSettings.coinSettings[this.baseCoin.getFamily()]?.walletCreationSettings?.multiSigTypeVersion;
+        // if (multisigTypeVersion === 'MPCv2') {
           params.walletVersion = 5;
-        }
+        // }
       }
     }
 
@@ -1480,7 +1480,8 @@ export class Wallets implements IWallets {
         tssSettings.coinSettings[this.baseCoin.getFamily()]?.walletCreationSettings?.coldMultiSigTypeVersion;
       walletVersion = this.determineEcdsaMpcWalletVersion(walletVersion, multisigTypeVersion);
     }
-
+    multisigTypeVersion='MPCv2';
+    walletVersion=5;
     // Create MPC Keychains
     const bitgoKeychain = await this.baseCoin.keychains().get({ id: bitgoKeyId });
 

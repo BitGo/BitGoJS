@@ -74,4 +74,5 @@ export enum DsgState {
 }
 
 export type SerializedMessage = Message<string>;
-export type AuthEncMessage = Message<DklsTypes.AuthMessage>;
+export type AuthMessage = Message<DklsTypes.AuthMessage>;
+export type AuthEncMessage = Message<DklsTypes.AuthEncMessage>;
