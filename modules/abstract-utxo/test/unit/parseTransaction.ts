@@ -30,8 +30,25 @@ describe('Parse Transaction', function () {
 
   const outputAmount = (0.01 * 1e8).toString();
 
-  async function runClassifyOutputsTest(outputAddress, verification, expectExternal, txParams: TransactionParams = {}) {
-    sinon.stub(coin, 'explainTransaction').resolves({
+  let stubExplainTransaction: sinon.SinonStub;
+  let stubVerifyAddress: sinon.SinonStub | undefined;
+
+  afterEach(() => {
+    if (stubExplainTransaction) {
+      stubExplainTransaction.restore();
+    }
+    if (stubVerifyAddress) {
+      stubVerifyAddress.restore();
+    }
+  });
+
+  async function runClassifyOutputsTest(
+    outputAddress: string | undefined,
+    verification: VerificationOptions,
+    expectExternal: boolean,
+    txParams: TransactionParams = {}
+  ) {
+    stubExplainTransaction = sinon.stub(coin, 'explainTransaction').resolves({
       outputs: [] as Output[],
       changeOutputs: [
         {
@@ -42,7 +59,7 @@ describe('Parse Transaction', function () {
     } as TransactionExplanation);
 
     if (!txParams.changeAddress) {
-      sinon.stub(coin, 'verifyAddress').throws(new UnexpectedAddressError('test error'));
+      stubVerifyAddress = sinon.stub(coin, 'verifyAddress').throws(new UnexpectedAddressError('test error'));
     }
 
     const parsedTransaction = await coin.parseTransaction({
@@ -69,12 +86,6 @@ describe('Parse Transaction', function () {
       parsedTransaction.implicitExternalSpendAmount,
       Number(!isExplicit && expectExternal ? outputAmount : 0)
     );
-
-    (coin.explainTransaction as any).restore();
-
-    if (!txParams.changeAddress) {
-      (coin.verifyAddress as any).restore();
-    }
   }
 
   it('should classify outputs which spend change back to a v1 wallet base address as internal', async function () {
