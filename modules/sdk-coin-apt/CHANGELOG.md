@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-apt@2.7.1...@bitgo/sdk-coin-apt@2.8.0) (2025-11-06)
+
+
+### Features
+
+* **sdk-coin-apt:** add delegation pool unlock transaction ([e2cd6f4](https://github.com/BitGo/BitGoJS/commit/e2cd6f4635f5175e6c297a51e95995194e46c186))
+* **sdk-coin-apt:** add delegation pool withdraw transaction ([3bdeb41](https://github.com/BitGo/BitGoJS/commit/3bdeb41990ab21fbd64bb0d487f81569fd8776d6))
+* **sdk-coin-apt:** export apt staking types ([291f014](https://github.com/BitGo/BitGoJS/commit/291f0145d058ec29f4925c4c97e714252915d7a9))
+
+
+
+
+
 ## [2.7.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-apt@2.7.0...@bitgo/sdk-coin-apt@2.7.1) (2025-10-31)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-apt

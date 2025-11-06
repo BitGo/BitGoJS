@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [36.19.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.18.0...@bitgo/sdk-core@36.19.0) (2025-11-06)
+
+
+### Bug Fixes
+
+* correct explorer API URLs for multiple chains ([fe17f55](https://github.com/BitGo/BitGoJS/commit/fe17f5588205008b23689db82bffec699f3cdefb))
+* validate 32-byte message requirement in ecdsa.sign and verify when shouldHash=false ([68b27e8](https://github.com/BitGo/BitGoJS/commit/68b27e8c7aec54f22cc3ea9869844342a0d8b159))
+
+
+### Features
+
+* adding txrequestid as sequence id ([003773f](https://github.com/BitGo/BitGoJS/commit/003773ffcad9620ab50a5794f377facc172aed29))
+* **sdk-coin-flrp:** fixed Utils and KeyPair and added test cases ([61e2ef5](https://github.com/BitGo/BitGoJS/commit/61e2ef5293af73499ba51e557d18f1bd0880239d))
+* **sdk-core:** add region param to stake options ([4523215](https://github.com/BitGo/BitGoJS/commit/45232156937f24af2eb71dd4f7071962c5e57b73))
+* **sdk-core:** improve ParsedTransaction interface type ([9cb09c9](https://github.com/BitGo/BitGoJS/commit/9cb09c9e5255e97fa214d9bc8bdc1c24382faa04))
+
+
+
+
+
 # [36.18.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.17.0...@bitgo/sdk-core@36.18.0) (2025-10-31)
 
 

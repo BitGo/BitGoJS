@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.2.2...@bitgo/sdk-coin-flrp@1.3.0) (2025-11-06)
+
+
+### Features
+
+* **sdk-coin-flrp:** fixed Utils and KeyPair and added test cases ([61e2ef5](https://github.com/BitGo/BitGoJS/commit/61e2ef5293af73499ba51e557d18f1bd0880239d))
+
+
+
+
+
 ## [1.2.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.2.1...@bitgo/sdk-coin-flrp@1.2.2) (2025-10-31)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-flrp

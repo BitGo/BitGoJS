@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-hmac@1.5.0...@bitgo/sdk-hmac@1.6.0) (2025-11-06)
+
+
+### Features
+
+* support original url for hmac calculation ([386e545](https://github.com/BitGo/BitGoJS/commit/386e5458fa27566fe55f4fc200d2e6d982e5b02c))
+
+
+
+
+
 # [1.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-hmac@1.4.0...@bitgo/sdk-hmac@1.5.0) (2025-10-24)
 
 

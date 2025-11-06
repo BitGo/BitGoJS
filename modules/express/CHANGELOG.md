@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [15.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.11.0...@bitgo/express@15.12.0) (2025-11-06)
+
+
+### Bug Fixes
+
+* **express:** fixed type codec for coinSign ([d79df81](https://github.com/BitGo/BitGoJS/commit/d79df81a36ab5569a70c5259b4c9489273e10f82))
+* **express:** fixed type codec for coinSignTx ([dfd5583](https://github.com/BitGo/BitGoJS/commit/dfd558373e56320d8f5cc7c822976ea2262e162e))
+* **express:** fixed type codec for coinSignTx ([425d6ae](https://github.com/BitGo/BitGoJS/commit/425d6ae406e9f4438b0b0b2cc5c56f75af61f3c4))
+* **express:** fixed type codec for prebuildSignTrans ([7b3e1e8](https://github.com/BitGo/BitGoJS/commit/7b3e1e889c928a607afad66ec824633647669f80))
+* **express:** removed optional from partial type ([d67c409](https://github.com/BitGo/BitGoJS/commit/d67c409798cdcfa22409fe61137a03140deddb31))
+* **express:** walletRecoverToken type codec ([e82bebb](https://github.com/BitGo/BitGoJS/commit/e82bebb3a525c020b386009fa98d3829d11a6862))
+* **express:** walletSignTx type codec ([2dc3b77](https://github.com/BitGo/BitGoJS/commit/2dc3b771e9bee21601f6d63143178ff3ca0faa57))
+* **express:** walletTxSignTSS type codec ([15efc22](https://github.com/BitGo/BitGoJS/commit/15efc2206eae1de5936c6f2e765f61730ad30c09))
+
+
+### Features
+
+* **express:** migrated coinSign as type route ([e53a947](https://github.com/BitGo/BitGoJS/commit/e53a947580b771868e721f9b65500512edfa57c3))
+* **express:** migrated prebuildAndSignTrans as type route ([fbc0e56](https://github.com/BitGo/BitGoJS/commit/fbc0e560876b0d812d7b9b12faffa145a0541af3))
+
+
+
+
+
 # [15.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.10.1...@bitgo/express@15.11.0) (2025-10-31)
 
 

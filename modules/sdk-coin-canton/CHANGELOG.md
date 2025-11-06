@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.8.0...@bitgo/sdk-coin-canton@1.9.0) (2025-11-06)
+
+
+### Bug Fixes
+
+* memoId check in isWalletAddress for canton ([68e724a](https://github.com/BitGo/BitGoJS/commit/68e724abde5317b0454d7ee4f80876efe405dce9))
+
+
+### Features
+
+* added isWalletAddress implementation for canton ([8818200](https://github.com/BitGo/BitGoJS/commit/8818200a17670797dced54be21aebd75eefbbc0b))
+* isValidBlockHash and get transactionType added ([e54451f](https://github.com/BitGo/BitGoJS/commit/e54451fa6a34151e098ada312b91e161812aebb2))
+* **sdk-coin-canton:** implement verifyTransaction ([ec8d427](https://github.com/BitGo/BitGoJS/commit/ec8d42722cec4c0ed7fe9a04ff26a6dec519fe43))
+
+
+
+
+
 # [1.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.7.0...@bitgo/sdk-coin-canton@1.8.0) (2025-10-31)
 
 

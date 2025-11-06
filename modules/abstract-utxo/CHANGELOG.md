@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.3.0...@bitgo/abstract-utxo@10.4.0) (2025-11-06)
+
+
+### Features
+
+* **abstract-utxo:** improve parseTransaction tests ([c52568f](https://github.com/BitGo/BitGoJS/commit/c52568f1620af62027f98bdb3c7df33fbd61c4bf))
+* **abstract-utxo:** replace should.js with node's assert module ([adc9fb2](https://github.com/BitGo/BitGoJS/commit/adc9fb2ee0d529f276473f0567102322630f8e19))
+
+
+
+
+
 # [10.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.2.0...@bitgo/abstract-utxo@10.3.0) (2025-10-31)
 
 
