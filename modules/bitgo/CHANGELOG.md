@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.11.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.10.0...bitgo@50.11.0) (2025-11-06)
+
+
+### Features
+
+* add Flrp coin support in coin factory and exports ([4a6df07](https://github.com/BitGo/BitGoJS/commit/4a6df07a5bf50d099143b6d3f928d9421c9564d4))
+
+
+
+
+
 # [50.10.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.9.0...bitgo@50.10.0) (2025-10-31)
 
 

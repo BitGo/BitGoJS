@@ -3,6 +3,37 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.10.0...@bitgo/statics@58.11.0) (2025-11-06)
+
+
+### Bug Fixes
+
+* **sdk-coin-dot:** correct explorer url ([d4bc6df](https://github.com/BitGo/BitGoJS/commit/d4bc6df970fb669bb0eb162cb465408691fb4bd8))
+* **statics:** add Token 2022 programId for sol:bio token ([8777b81](https://github.com/BitGo/BitGoJS/commit/8777b81bf95dcf545b7c0fccf74c59931f513b40))
+* **statics:** fix AVAX Shrapnel token address typo ([669c59c](https://github.com/BitGo/BitGoJS/commit/669c59cddebde9af59c850256e17c1687be4896a))
+
+
+### Features
+
+* add staking feature to testnet IP ([a490b8c](https://github.com/BitGo/BitGoJS/commit/a490b8cb8db6c6c1e58d111f4dd03529d7a796ab))
+* gating tokens for mena coin-6282 ([d800e08](https://github.com/BitGo/BitGoJS/commit/d800e089346e2114f02c3fdfa75172058af58f5e))
+* onboard Sui:Deep ([cf45461](https://github.com/BitGo/BitGoJS/commit/cf45461f2839e685a8333a16eb64f8d5e99f6f89))
+* remove unspent model for canton ([859bf42](https://github.com/BitGo/BitGoJS/commit/859bf428ca68f5923ccd6fc5e8b37e6e88f86db8))
+* **sdk-coin-canton:** added prefix and suffix fields for canton coin ([92e057a](https://github.com/BitGo/BitGoJS/commit/92e057a5cbb10c9acd3921495d23a3c41eaebcbd))
+* **sdk-coin-sei:** enabling staking flag in testnet ([0a1928f](https://github.com/BitGo/BitGoJS/commit/0a1928fc957152b92c693b52785216f2ca166797))
+* **statics:** add chainId to coin name mapping ([646f740](https://github.com/BitGo/BitGoJS/commit/646f74068ba722ee82158e729883b8596c5a20e6))
+* **statics:** add multisig support for flr chain ([43ba54f](https://github.com/BitGo/BitGoJS/commit/43ba54f837e275e08c410ceebbd12f73d2d3317d))
+* **statics:** add multisig support for flr chain ([4b6420e](https://github.com/BitGo/BitGoJS/commit/4b6420eef483c09f8f4e71a857d3a332807399e7))
+* **statics:** add new batch of tokens COIN-6282 ([30ccb25](https://github.com/BitGo/BitGoJS/commit/30ccb25949bb8af93632e1271d745f01d68064dd))
+* **statics:** add new batch of tokens WIN-7633 ([71eb906](https://github.com/BitGo/BitGoJS/commit/71eb906d6ff7cf1ab6a4450750bb51be9153b74b))
+* **statics:** add new batch of tokens WIN-7633 ([77ea67a](https://github.com/BitGo/BitGoJS/commit/77ea67af73c84707fd1cd0d5a0330334f14d9034))
+* **statics:** enable custody bulk transaction for all cosmos ([09e6144](https://github.com/BitGo/BitGoJS/commit/09e6144d637eccf1598285b7923728dcfc051049))
+* **statics:** enable staking feature for sei-evm testnet ([49b66fd](https://github.com/BitGo/BitGoJS/commit/49b66fddac97ae98fb98dd393bb4a8bc32ba831a))
+
+
+
+
+
 # [58.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.9.0...@bitgo/statics@58.10.0) (2025-10-31)
 
 

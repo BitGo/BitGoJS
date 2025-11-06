@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [11.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.13.1...@bitgo/utxo-lib@11.14.0) (2025-11-06)
+
+
+### Features
+
+* **utxo-lib:** add cross-validation tests for MuSig2 implementation ([9515d04](https://github.com/BitGo/BitGoJS/commit/9515d049d3219768830c6fcb0352d7d465c466f1))
+
+
+
+
+
 ## [11.13.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.13.0...@bitgo/utxo-lib@11.13.1) (2025-10-24)
 
 
