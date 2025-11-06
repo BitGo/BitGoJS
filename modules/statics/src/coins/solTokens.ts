@@ -3078,7 +3078,8 @@ export const solTokens = [
     'bioJ9JTqW62MLz7UKHU69gtKhPpGi1BQhccj2kmSvUJ',
     'bioJ9JTqW62MLz7UKHU69gtKhPpGi1BQhccj2kmSvUJ',
     UnderlyingAsset['sol:bio'],
-    SOL_TOKEN_FEATURES
+    SOL_TOKEN_FEATURES,
+    ProgramID.Token2022ProgramId
   ),
   solToken(
     '9f24f8f3-2f31-4bfe-b33a-539467e0bc9a',
