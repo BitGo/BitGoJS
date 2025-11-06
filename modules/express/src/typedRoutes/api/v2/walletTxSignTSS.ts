@@ -2,6 +2,7 @@ import * as t from 'io-ts';
 import { httpRoute, httpRequest, optional } from '@api-ts/io-ts-http';
 import { TransactionRequest as TxRequestResponse, TransactionRequestApiVersion } from '@bitgo/public-types';
 import { BitgoExpressError } from '../../schemas/error';
+import { Recipient } from './coinSignTx';
 
 /**
  * Request path parameters for signing a TSS wallet transaction
@@ -38,7 +39,7 @@ export const WalletTxSignTSSTransactionPrebuild = t.partial({
   /** Backup key nonce (for ETH) */
   backupKeyNonce: t.any,
   /** Recipients of the transaction */
-  recipients: t.any,
+  recipients: t.array(Recipient),
 });
 
 /**
@@ -72,7 +73,7 @@ export const WalletTxSignTSSBody = {
   /** Sequence ID for transactions */
   sequenceId: optional(t.union([t.string, t.number])),
   /** Recipients of the transaction */
-  recipients: optional(t.any),
+  recipients: optional(t.array(Recipient)),
   /** Custodian transaction ID */
   custodianTransactionId: optional(t.string),
   /** Signing step for MuSig2 */
