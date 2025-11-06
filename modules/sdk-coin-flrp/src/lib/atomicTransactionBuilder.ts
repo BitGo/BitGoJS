@@ -449,7 +449,7 @@ export abstract class AtomicTransactionBuilder {
   // TODO: check the format of the public keys
   fromPubKey(senderPubKey: string | string[]): this {
     const pubKeys = senderPubKey instanceof Array ? senderPubKey : [senderPubKey];
-    this.transaction._fromAddresses = pubKeys.map(utils.parseAddress).toString().split(',');
+    this.transaction._fromAddresses = pubKeys.map(utils.parseAddress);
     return this;
   }
 

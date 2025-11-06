@@ -62,6 +62,7 @@ export class Utils implements BaseUtils {
    * @param {string} nodeID - The NodeID string to convert
    * @returns {Buffer} - The decoded NodeID as a Buffer
    */
+  // TODO add test cases for this method
   public NodeIDStringToBuffer = (nodeID: string): Buffer => {
     // Remove 'NodeID-' prefix if present
     const cleanNodeID = nodeID.startsWith('NodeID-') ? nodeID.slice(7) : nodeID;
@@ -148,19 +149,30 @@ export class Utils implements BaseUtils {
   }
 
   // TODO add test cases for this method
-  public parseAddress = (address: string): Buffer => {
-    return this.stringToAddress(address);
+  public parseAddress = (address: string): string => {
+    return this.stringToAddress(address).toString(HEX_ENCODING);
   };
 
   public stringToAddress = (address: string, hrp?: string): Buffer => {
+    // Handle hex addresses
+    if (address.startsWith('0x')) {
+      return Buffer.from(address.slice(2), 'hex');
+    }
+
+    // Handle raw hex without 0x prefix
+    if (/^[0-9a-fA-F]{40}$/.test(address)) {
+      return Buffer.from(address, 'hex');
+    }
+
+    // Handle Bech32 addresses
     const parts = address.trim().split('-');
     if (parts.length < 2) {
-      throw new Error('Error - Valid address should include -');
+      throw new Error('Error - Valid bech32 address should include -');
     }
 
     const split = parts[1].lastIndexOf('1');
     if (split < 0) {
-      throw new Error('Error - Valid address must include separator (1)');
+      throw new Error('Error - Valid bech32 address must include separator (1)');
     }
 
     const humanReadablePart = parts[1].slice(0, split);
