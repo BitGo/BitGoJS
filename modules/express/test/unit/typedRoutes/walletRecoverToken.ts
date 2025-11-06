@@ -178,20 +178,11 @@ describe('WalletRecoverToken codec tests', function () {
       }
     });
 
-    it('should recover tokens without optional recipient (uses default)', async function () {
+    it('should reject request without required recipient field', async function () {
       const requestBody = {
         tokenContractAddress: '0x1234567890123456789012345678901234567890',
         walletPassphrase: 'test_passphrase',
       };
-
-      const mockWallet = {
-        recoverToken: sinon.stub().resolves(mockRecoverTokenResponse),
-      };
-
-      const walletsGetStub = sinon.stub().resolves(mockWallet);
-      const mockWallets = { get: walletsGetStub };
-      const mockCoin = { wallets: sinon.stub().returns(mockWallets) };
-      sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
 
       const result = await agent
         .post(`/api/v2/${coin}/wallet/${walletId}/recovertoken`)
@@ -199,12 +190,8 @@ describe('WalletRecoverToken codec tests', function () {
         .set('Content-Type', 'application/json')
         .send(requestBody);
 
-      assert.strictEqual(result.status, 200);
-      const decodedResponse = assertDecode(RecoverTokenResponse, result.body);
-      assert.strictEqual(
-        decodedResponse.halfSigned.tokenContractAddress,
-        mockRecoverTokenResponse.halfSigned.tokenContractAddress
-      );
+      // Should fail validation because recipient is required
+      assert.ok(result.status >= 400);
     });
 
     // ==========================================
@@ -215,6 +202,7 @@ describe('WalletRecoverToken codec tests', function () {
       it('should handle wallet not found error', async function () {
         const requestBody = {
           tokenContractAddress: '0x1234567890123456789012345678901234567890',
+          recipient: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
           walletPassphrase: 'test_passphrase',
         };
 
@@ -236,6 +224,7 @@ describe('WalletRecoverToken codec tests', function () {
       it('should handle recoverToken failure', async function () {
         const requestBody = {
           tokenContractAddress: '0x1234567890123456789012345678901234567890',
+          recipient: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
           walletPassphrase: 'wrong_passphrase',
         };
 
@@ -261,6 +250,7 @@ describe('WalletRecoverToken codec tests', function () {
       it('should handle unsupported coin error', async function () {
         const requestBody = {
           tokenContractAddress: '0x1234567890123456789012345678901234567890',
+          recipient: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
           walletPassphrase: 'test_passphrase',
         };
 
@@ -279,6 +269,7 @@ describe('WalletRecoverToken codec tests', function () {
       it('should handle invalid token contract address error', async function () {
         const requestBody = {
           tokenContractAddress: 'invalid_address',
+          recipient: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
           walletPassphrase: 'test_passphrase',
         };
 
@@ -304,6 +295,7 @@ describe('WalletRecoverToken codec tests', function () {
       it('should handle no tokens to recover error', async function () {
         const requestBody = {
           tokenContractAddress: '0x1234567890123456789012345678901234567890',
+          recipient: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
           walletPassphrase: 'test_passphrase',
         };
 
@@ -329,6 +321,7 @@ describe('WalletRecoverToken codec tests', function () {
       it('should handle insufficient funds for gas error', async function () {
         const requestBody = {
           tokenContractAddress: '0x1234567890123456789012345678901234567890',
+          recipient: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
           walletPassphrase: 'test_passphrase',
         };
 
@@ -354,6 +347,7 @@ describe('WalletRecoverToken codec tests', function () {
       it('should handle coin() method error', async function () {
         const requestBody = {
           tokenContractAddress: '0x1234567890123456789012345678901234567890',
+          recipient: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
           walletPassphrase: 'test_passphrase',
         };
 
@@ -374,6 +368,7 @@ describe('WalletRecoverToken codec tests', function () {
       it('should reject request with invalid tokenContractAddress type', async function () {
         const requestBody = {
           tokenContractAddress: 123, // number instead of string
+          recipient: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
           walletPassphrase: 'test_passphrase',
         };
 
@@ -388,6 +383,7 @@ describe('WalletRecoverToken codec tests', function () {
 
       it('should reject request with invalid recipient type', async function () {
         const requestBody = {
+          tokenContractAddress: '0x1234567890123456789012345678901234567890',
           recipient: 123, // number instead of string
           walletPassphrase: 'test_passphrase',
         };
@@ -404,6 +400,7 @@ describe('WalletRecoverToken codec tests', function () {
       it('should reject request with invalid broadcast type', async function () {
         const requestBody = {
           tokenContractAddress: '0x1234567890123456789012345678901234567890',
+          recipient: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
           broadcast: 'true', // string instead of boolean
           walletPassphrase: 'test_passphrase',
         };
@@ -420,6 +417,7 @@ describe('WalletRecoverToken codec tests', function () {
       it('should reject request with invalid walletPassphrase type', async function () {
         const requestBody = {
           tokenContractAddress: '0x1234567890123456789012345678901234567890',
+          recipient: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
           walletPassphrase: 123, // number instead of string
         };
 
@@ -435,6 +433,7 @@ describe('WalletRecoverToken codec tests', function () {
       it('should reject request with invalid prv type', async function () {
         const requestBody = {
           tokenContractAddress: '0x1234567890123456789012345678901234567890',
+          recipient: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
           prv: 123, // number instead of string
         };
 
@@ -456,6 +455,38 @@ describe('WalletRecoverToken codec tests', function () {
 
         assert.ok(result.status >= 400);
       });
+
+      it('should reject request with missing tokenContractAddress', async function () {
+        const requestBody = {
+          recipient: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
+          walletPassphrase: 'test_passphrase',
+        };
+
+        const result = await agent
+          .post(`/api/v2/${coin}/wallet/${walletId}/recovertoken`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        // Should fail validation because tokenContractAddress is required
+        assert.ok(result.status >= 400);
+      });
+
+      it('should reject request with missing recipient', async function () {
+        const requestBody = {
+          tokenContractAddress: '0x1234567890123456789012345678901234567890',
+          walletPassphrase: 'test_passphrase',
+        };
+
+        const result = await agent
+          .post(`/api/v2/${coin}/wallet/${walletId}/recovertoken`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        // Should fail validation because recipient is required
+        assert.ok(result.status >= 400);
+      });
     });
 
     describe('Edge Cases', function () {
@@ -463,6 +494,7 @@ describe('WalletRecoverToken codec tests', function () {
         const veryLongWalletId = 'a'.repeat(1000);
         const requestBody = {
           tokenContractAddress: '0x1234567890123456789012345678901234567890',
+          recipient: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
           walletPassphrase: 'test_passphrase',
         };
 
@@ -484,6 +516,7 @@ describe('WalletRecoverToken codec tests', function () {
         const specialCharWalletId = '../../../etc/passwd';
         const requestBody = {
           tokenContractAddress: '0x1234567890123456789012345678901234567890',
+          recipient: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
           walletPassphrase: 'test_passphrase',
         };
 
@@ -504,6 +537,7 @@ describe('WalletRecoverToken codec tests', function () {
       it('should handle both walletPassphrase and prv provided', async function () {
         const requestBody = {
           tokenContractAddress: '0x1234567890123456789012345678901234567890',
+          recipient: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
           walletPassphrase: 'test_passphrase',
           prv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
         };
@@ -554,6 +588,7 @@ describe('WalletRecoverToken codec tests', function () {
       it('should handle invalid Ethereum address format', async function () {
         const requestBody = {
           tokenContractAddress: '0xinvalid',
+          recipient: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
           walletPassphrase: 'test_passphrase',
         };
 
@@ -579,6 +614,7 @@ describe('WalletRecoverToken codec tests', function () {
       it('should handle checksum address validation', async function () {
         const requestBody = {
           tokenContractAddress: '0x1234567890ABCDEF1234567890ABCDEF12345678', // Mixed case (checksum)
+          recipient: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
           walletPassphrase: 'test_passphrase',
         };
 
@@ -606,6 +642,7 @@ describe('WalletRecoverToken codec tests', function () {
       it('should reject response with missing required field', async function () {
         const requestBody = {
           tokenContractAddress: '0x1234567890123456789012345678901234567890',
+          recipient: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
           walletPassphrase: 'test_passphrase',
         };
 
@@ -644,6 +681,7 @@ describe('WalletRecoverToken codec tests', function () {
       it('should reject response with wrong type in field', async function () {
         const requestBody = {
           tokenContractAddress: '0x1234567890123456789012345678901234567890',
+          recipient: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
           walletPassphrase: 'test_passphrase',
         };
 
@@ -743,64 +781,76 @@ describe('WalletRecoverToken codec tests', function () {
   });
 
   describe('RecoverTokenBody', function () {
-    it('should validate empty body (all fields optional)', function () {
-      const validBody = {};
+    it('should reject empty body (required fields missing)', function () {
+      const invalidBody = {};
 
-      const decoded = assertDecode(t.type(RecoverTokenBody), validBody);
-      assert.strictEqual(decoded.tokenContractAddress, undefined);
-      assert.strictEqual(decoded.recipient, undefined);
-      assert.strictEqual(decoded.broadcast, undefined);
-      assert.strictEqual(decoded.walletPassphrase, undefined);
-      assert.strictEqual(decoded.prv, undefined);
+      // Should fail because tokenContractAddress and recipient are required
+      assert.throws(() => {
+        assertDecode(t.type(RecoverTokenBody), invalidBody);
+      });
     });
 
-    it('should validate body with tokenContractAddress', function () {
+    it('should validate body with required fields only', function () {
       const validBody = {
         tokenContractAddress: '0x1234567890123456789012345678901234567890',
-      };
-
-      const decoded = assertDecode(t.type(RecoverTokenBody), validBody);
-      assert.strictEqual(decoded.tokenContractAddress, validBody.tokenContractAddress);
-      assert.strictEqual(decoded.recipient, undefined);
-      assert.strictEqual(decoded.broadcast, undefined);
-      assert.strictEqual(decoded.walletPassphrase, undefined);
-      assert.strictEqual(decoded.prv, undefined);
-    });
-
-    it('should validate body with recipient', function () {
-      const validBody = {
         recipient: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
       };
 
       const decoded = assertDecode(t.type(RecoverTokenBody), validBody);
+      assert.strictEqual(decoded.tokenContractAddress, validBody.tokenContractAddress);
       assert.strictEqual(decoded.recipient, validBody.recipient);
-      assert.strictEqual(decoded.tokenContractAddress, undefined);
+      assert.strictEqual(decoded.broadcast, undefined);
+      assert.strictEqual(decoded.walletPassphrase, undefined);
+      assert.strictEqual(decoded.prv, undefined);
+    });
+
+    it('should reject body with only recipient (tokenContractAddress missing)', function () {
+      const invalidBody = {
+        recipient: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
+      };
+
+      // Should fail because tokenContractAddress is required
+      assert.throws(() => {
+        assertDecode(t.type(RecoverTokenBody), invalidBody);
+      });
     });
 
     it('should validate body with broadcast', function () {
       const validBody = {
+        tokenContractAddress: '0x1234567890123456789012345678901234567890',
+        recipient: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
         broadcast: true,
       };
 
       const decoded = assertDecode(t.type(RecoverTokenBody), validBody);
+      assert.strictEqual(decoded.tokenContractAddress, validBody.tokenContractAddress);
+      assert.strictEqual(decoded.recipient, validBody.recipient);
       assert.strictEqual(decoded.broadcast, validBody.broadcast);
     });
 
     it('should validate body with walletPassphrase', function () {
       const validBody = {
+        tokenContractAddress: '0x1234567890123456789012345678901234567890',
+        recipient: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
         walletPassphrase: 'mySecurePassphrase',
       };
 
       const decoded = assertDecode(t.type(RecoverTokenBody), validBody);
+      assert.strictEqual(decoded.tokenContractAddress, validBody.tokenContractAddress);
+      assert.strictEqual(decoded.recipient, validBody.recipient);
       assert.strictEqual(decoded.walletPassphrase, validBody.walletPassphrase);
     });
 
     it('should validate body with prv', function () {
       const validBody = {
+        tokenContractAddress: '0x1234567890123456789012345678901234567890',
+        recipient: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
         prv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
       };
 
       const decoded = assertDecode(t.type(RecoverTokenBody), validBody);
+      assert.strictEqual(decoded.tokenContractAddress, validBody.tokenContractAddress);
+      assert.strictEqual(decoded.recipient, validBody.recipient);
       assert.strictEqual(decoded.prv, validBody.prv);
     });
 
