@@ -1,4 +1,5 @@
-import should = require('should');
+import assert from 'assert';
+
 import * as sinon from 'sinon';
 import { Wallet, UnexpectedAddressError, VerificationOptions } from '@bitgo/sdk-core';
 
@@ -51,8 +52,8 @@ describe('Parse Transaction', function () {
       verification,
     });
 
-    should.exist(parsedTransaction.outputs[0]);
-    parsedTransaction.outputs[0].should.deepEqual({
+    assert.ok(parsedTransaction.outputs[0]);
+    assert.deepStrictEqual(parsedTransaction.outputs[0], {
       address: outputAddress,
       amount: outputAmount,
       external: expectExternal,
@@ -60,8 +61,14 @@ describe('Parse Transaction', function () {
 
     const isExplicit =
       txParams.recipients !== undefined && txParams.recipients.some((recipient) => recipient.address === outputAddress);
-    should.equal(parsedTransaction.explicitExternalSpendAmount, isExplicit && expectExternal ? outputAmount : '0');
-    should.equal(parsedTransaction.implicitExternalSpendAmount, !isExplicit && expectExternal ? outputAmount : '0');
+    assert.strictEqual(
+      parsedTransaction.explicitExternalSpendAmount,
+      Number(isExplicit && expectExternal ? outputAmount : 0)
+    );
+    assert.strictEqual(
+      parsedTransaction.implicitExternalSpendAmount,
+      Number(!isExplicit && expectExternal ? outputAmount : 0)
+    );
 
     (coin.explainTransaction as any).restore();
 

@@ -1,4 +1,5 @@
-import should from 'should';
+import assert from 'assert';
+
 import { Triple } from '@bitgo/sdk-core';
 
 import { bip322Fixtures } from './fixtures/bip322/fixtures';
@@ -22,51 +23,51 @@ describe('Explain Transaction', function () {
     it('should successfully run with a user nonce', async function () {
       const psbtHex = bip322Fixtures.valid.userNonce;
       const result = await coin.explainTransaction({ txHex: psbtHex, pubs });
-      should.equal(result.outputAmount, '0');
-      should.equal(result.changeAmount, '0');
-      should.equal(result.outputs.length, 1);
-      should.equal(result.outputs[0].address, 'scriptPubKey:6a');
-      should.equal(result.fee, '0');
-      should.equal(result.signatures, 0);
-      should.exist(result.messages);
+      assert.strictEqual(result.outputAmount, '0');
+      assert.strictEqual(result.changeAmount, '0');
+      assert.strictEqual(result.outputs.length, 1);
+      assert.strictEqual(result.outputs[0].address, 'scriptPubKey:6a');
+      assert.strictEqual(result.fee, '0');
+      assert.strictEqual(result.signatures, 0);
+      assert.ok(result.messages);
       result.messages?.forEach((obj) => {
-        should.exist(obj.address);
-        should.exist(obj.message);
-        should.equal(obj.message, bip322Fixtures.valid.message);
+        assert.ok(obj.address);
+        assert.ok(obj.message);
+        assert.strictEqual(obj.message, bip322Fixtures.valid.message);
       });
     });
 
     it('should successfully run with a user signature', async function () {
       const psbtHex = bip322Fixtures.valid.userSignature;
       const result = await coin.explainTransaction({ txHex: psbtHex, pubs });
-      should.equal(result.outputAmount, '0');
-      should.equal(result.changeAmount, '0');
-      should.equal(result.outputs.length, 1);
-      should.equal(result.outputs[0].address, 'scriptPubKey:6a');
-      should.equal(result.fee, '0');
-      should.equal(result.signatures, 1);
-      should.exist(result.messages);
+      assert.strictEqual(result.outputAmount, '0');
+      assert.strictEqual(result.changeAmount, '0');
+      assert.strictEqual(result.outputs.length, 1);
+      assert.strictEqual(result.outputs[0].address, 'scriptPubKey:6a');
+      assert.strictEqual(result.fee, '0');
+      assert.strictEqual(result.signatures, 1);
+      assert.ok(result.messages);
       result.messages?.forEach((obj) => {
-        should.exist(obj.address);
-        should.exist(obj.message);
-        should.equal(obj.message, bip322Fixtures.valid.message);
+        assert.ok(obj.address);
+        assert.ok(obj.message);
+        assert.strictEqual(obj.message, bip322Fixtures.valid.message);
       });
     });
 
     it('should successfully run with a hsm signature', async function () {
       const psbtHex = bip322Fixtures.valid.hsmSignature;
       const result = await coin.explainTransaction({ txHex: psbtHex, pubs });
-      should.equal(result.outputAmount, '0');
-      should.equal(result.changeAmount, '0');
-      should.equal(result.outputs.length, 1);
-      should.equal(result.outputs[0].address, 'scriptPubKey:6a');
-      should.equal(result.fee, '0');
-      should.equal(result.signatures, 2);
-      should.exist(result.messages);
+      assert.strictEqual(result.outputAmount, '0');
+      assert.strictEqual(result.changeAmount, '0');
+      assert.strictEqual(result.outputs.length, 1);
+      assert.strictEqual(result.outputs[0].address, 'scriptPubKey:6a');
+      assert.strictEqual(result.fee, '0');
+      assert.strictEqual(result.signatures, 2);
+      assert.ok(result.messages);
       result.messages?.forEach((obj) => {
-        should.exist(obj.address);
-        should.exist(obj.message);
-        should.equal(obj.message, bip322Fixtures.valid.message);
+        assert.ok(obj.address);
+        assert.ok(obj.message);
+        assert.strictEqual(obj.message, bip322Fixtures.valid.message);
       });
     });
   });
