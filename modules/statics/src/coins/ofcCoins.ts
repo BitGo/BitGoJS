@@ -38,6 +38,8 @@ import {
   tofcaptToken,
   ofcTonToken,
   tofcTonToken,
+  ofcSuiToken,
+  tofcSuiToken,
 } from '../ofc';
 import { UnderlyingAsset, CoinKind, CoinFeature } from '../base';
 
@@ -3592,5 +3594,13 @@ export const ofcCoins = [
     'Test Unknown TokenY-US',
     9,
     UnderlyingAsset['tton:ukwny-us']
+  ),
+  ofcSuiToken('6313a162-0c48-4c0c-ae73-27cc3df9e000', 'ofcsui:deep', 'Deepbook', 6, UnderlyingAsset['sui:deep']),
+  tofcSuiToken(
+    'b6e53ed9-5a86-4994-8b69-ca59c243cac6',
+    'ofctsui:deep',
+    'Testnet Deepbook',
+    6,
+    UnderlyingAsset['tsui:deep']
   ),
 ];
