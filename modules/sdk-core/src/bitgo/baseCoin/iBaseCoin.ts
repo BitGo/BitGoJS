@@ -277,8 +277,14 @@ export interface ParseTransactionOptions {
   [index: string]: unknown;
 }
 
-// TODO (SDKT-9): reverse engineer and add options
+/**
+ * This is only used for determining the PayGo fee of a transaction which is only relevant for UTXO coins.
+ * Some coins return various other fields here, but they are only used internally by the respective coins.
+ */
 export interface ParsedTransaction {
+  // the callsite assumes that this is the PayGo amount
+  implicitExternalSpendAmount?: number | bigint;
+  // coins may add internal fields
   [index: string]: unknown;
 }
 

@@ -304,16 +304,16 @@ export class PendingApproval implements IPendingApproval {
     prebuildParams = _.extend({}, prebuildParams, { reqId: reqId });
     const signedTransaction = await this.wallet.prebuildAndSignTransaction(prebuildParams);
     // compare PAYGo fees
-    const originalParsedTransaction = (await this.baseCoin.parseTransaction({
+    const originalParsedTransaction = await this.baseCoin.parseTransaction({
       txParams: prebuildParams,
       wallet: this.wallet,
       txPrebuild: originalPrebuild,
-    })) as any;
-    const recreatedParsedTransaction = (await this.baseCoin.parseTransaction({
+    });
+    const recreatedParsedTransaction = await this.baseCoin.parseTransaction({
       txParams: prebuildParams,
       wallet: this.wallet,
       txPrebuild: signedTransaction,
-    })) as any;
+    });
 
     if (_.isUndefined(recreatedParsedTransaction.implicitExternalSpendAmount)) {
       return signedTransaction;
