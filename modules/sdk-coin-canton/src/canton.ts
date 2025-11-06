@@ -128,7 +128,7 @@ export class Canton extends BaseCoin {
     if (!this.isValidAddress(addressPart)) {
       throw new InvalidAddressError(`invalid address: ${newAddress}`);
     }
-    if (memoId && memoId !== index) {
+    if (memoId && memoId !== `${index}`) {
       throw new InvalidAddressError(`invalid memoId index: ${memoId}`);
     }
     const commonKeychain = extractCommonKeychain(keychains);
