@@ -36,6 +36,7 @@ export type InstructionParams =
   | Nonce
   | Memo
   | WalletInit
+  | SetComputeUnitLimit
   | SetPriorityFee
   | Transfer
   | StakingActivate
@@ -188,6 +189,13 @@ export interface StakingAuthorize {
   };
 }
 
+export interface SetComputeUnitLimit {
+  type: InstructionBuilderTypes.SetComputeUnitLimit;
+  params: {
+    units: number;
+  };
+}
+
 export interface SetPriorityFee {
   type: InstructionBuilderTypes.SetPriorityFee;
   params: {
@@ -221,6 +229,7 @@ export type ValidInstructionTypes =
   | 'CloseAssociatedTokenAccount'
   | DecodedCloseAccountInstruction
   | 'TokenTransfer'
+  | 'SetComputeUnitLimit'
   | 'SetPriorityFee'
   | 'MintTo'
   | 'Burn'

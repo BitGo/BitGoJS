@@ -45,6 +45,7 @@ import {
   TokenTransfer,
   Transfer,
   WalletInit,
+  SetComputeUnitLimit,
   SetPriorityFee,
   CustomInstruction,
   Approve,
@@ -138,9 +139,31 @@ function parseSendInstructions(
   instructions: TransactionInstruction[],
   instructionMetadata?: InstructionParams[],
   _useTokenAddressTokenName?: boolean
-): Array<Nonce | Memo | Transfer | TokenTransfer | AtaInit | AtaClose | SetPriorityFee | MintTo | Burn | Approve> {
+): Array<
+  | Nonce
+  | Memo
+  | Transfer
+  | TokenTransfer
+  | AtaInit
+  | AtaClose
+  | SetComputeUnitLimit
+  | SetPriorityFee
+  | MintTo
+  | Burn
+  | Approve
+> {
   const instructionData: Array<
-    Nonce | Memo | Transfer | TokenTransfer | AtaInit | AtaClose | SetPriorityFee | MintTo | Burn | Approve
+    | Nonce
+    | Memo
+    | Transfer
+    | TokenTransfer
+    | AtaInit
+    | AtaClose
+    | SetComputeUnitLimit
+    | SetPriorityFee
+    | MintTo
+    | Burn
+    | Approve
   > = [];
   for (const instruction of instructions) {
     const type = getInstructionType(instruction);
@@ -251,6 +274,16 @@ function parseSendInstructions(
           },
         };
         instructionData.push(ataClose);
+        break;
+      case ValidInstructionTypesEnum.SetComputeUnitLimit:
+        const setComputeUnitLimitParams = ComputeBudgetInstruction.decodeSetComputeUnitLimit(instruction);
+        const setComputeUnitLimit: SetComputeUnitLimit = {
+          type: InstructionBuilderTypes.SetComputeUnitLimit,
+          params: {
+            units: setComputeUnitLimitParams.units,
+          },
+        };
+        instructionData.push(setComputeUnitLimit);
         break;
       case ValidInstructionTypesEnum.SetPriorityFee:
         const setComputeUnitPriceParams = ComputeBudgetInstruction.decodeSetComputeUnitPrice(instruction);
