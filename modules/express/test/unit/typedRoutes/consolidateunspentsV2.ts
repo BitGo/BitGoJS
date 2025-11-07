@@ -173,6 +173,39 @@ describe('ConsolidateUnspents V2 codec tests', function () {
       assert.strictEqual(callArgs.limit, 100);
     });
 
+    it('should successfully consolidate unspents with txFormat parameter', async function () {
+      const requestBody = {
+        walletPassphrase: 'test_passphrase',
+        txFormat: 'psbt' as const,
+      };
+
+      const mockWallet = {
+        consolidateUnspents: sinon.stub().resolves(mockConsolidateResponse),
+      };
+
+      const walletsGetStub = sinon.stub().resolves(mockWallet);
+      const mockCoin = {
+        wallets: sinon.stub().returns({ get: walletsGetStub }),
+      };
+      sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+      const result = await agent
+        .post(`/api/v2/${coin}/wallet/${walletId}/consolidateunspents`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      assert.strictEqual(result.status, 200);
+
+      const decodedResponse = assertDecode(ConsolidateUnspentsResponse, result.body);
+      const singleResponse = assertSingleTxResponse(decodedResponse);
+      assert.strictEqual(singleResponse.status, mockConsolidateResponse.status);
+
+      // Verify txFormat was passed through to SDK
+      const callArgs = mockWallet.consolidateUnspents.firstCall.args[0];
+      assert.strictEqual(callArgs.txFormat, 'psbt');
+    });
+
     it('should return instant transaction response', async function () {
       const requestBody = {
         walletPassphrase: 'test_passphrase',
@@ -822,6 +855,7 @@ describe('ConsolidateUnspents V2 codec tests', function () {
         comment: 'Test consolidation',
         otp: '123456',
         targetAddress: '2N8hwP1WmJrFF5QWABn38y63uYLhnJYJYTF',
+        txFormat: 'psbt' as const,
         bulk: true,
       };
 
@@ -834,6 +868,7 @@ describe('ConsolidateUnspents V2 codec tests', function () {
       assert.strictEqual(decoded.numUnspentsToMake, validBody.numUnspentsToMake);
       assert.strictEqual(decoded.limit, validBody.limit);
       assert.strictEqual(decoded.minConfirms, validBody.minConfirms);
+      assert.strictEqual(decoded.txFormat, 'psbt');
       assert.strictEqual(decoded.bulk, validBody.bulk);
     });
 
@@ -895,6 +930,56 @@ describe('ConsolidateUnspents V2 codec tests', function () {
 
       const decodedString = assertDecode(t.type(ConsolidateUnspentsRequestBody), validBodyString);
       assert.strictEqual(decodedString.maxValue, '1000000');
+    });
+
+    it('should accept valid txFormat values', function () {
+      const validBodyLegacy = {
+        txFormat: 'legacy',
+      };
+      const validBodyPsbt = {
+        txFormat: 'psbt',
+      };
+      const validBodyPsbtLite = {
+        txFormat: 'psbt-lite',
+      };
+
+      const decodedLegacy = assertDecode(t.type(ConsolidateUnspentsRequestBody), validBodyLegacy);
+      assert.strictEqual(decodedLegacy.txFormat, 'legacy');
+
+      const decodedPsbt = assertDecode(t.type(ConsolidateUnspentsRequestBody), validBodyPsbt);
+      assert.strictEqual(decodedPsbt.txFormat, 'psbt');
+
+      const decodedPsbtLite = assertDecode(t.type(ConsolidateUnspentsRequestBody), validBodyPsbtLite);
+      assert.strictEqual(decodedPsbtLite.txFormat, 'psbt-lite');
+    });
+
+    it('should allow txFormat to be undefined', function () {
+      const validBody = {
+        walletPassphrase: 'test',
+      };
+
+      const decoded = assertDecode(t.type(ConsolidateUnspentsRequestBody), validBody);
+      assert.strictEqual(decoded.txFormat, undefined);
+    });
+
+    it('should reject invalid txFormat values', function () {
+      const invalidBody = {
+        txFormat: 'invalid-format',
+      };
+
+      assert.throws(() => {
+        assertDecode(t.type(ConsolidateUnspentsRequestBody), invalidBody);
+      });
+    });
+
+    it('should reject non-string txFormat', function () {
+      const invalidBody = {
+        txFormat: 123, // number instead of string
+      };
+
+      assert.throws(() => {
+        assertDecode(t.type(ConsolidateUnspentsRequestBody), invalidBody);
+      });
     });
   });
 

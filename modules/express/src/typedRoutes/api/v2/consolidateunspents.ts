@@ -52,6 +52,8 @@ export const ConsolidateUnspentsRequestBody = {
   otp: optional(t.string),
   /** Target address for the consolidation outputs */
   targetAddress: optional(t.string),
+  /** Transaction format type (e.g., 'legacy', 'psbt', 'psbt-lite') - controls output format */
+  txFormat: optional(t.union([t.literal('legacy'), t.literal('psbt'), t.literal('psbt-lite')])),
   /** If true, enables consolidation of large number of unspents by creating multiple transactions (200 unspents per tx) */
   bulk: optional(t.boolean),
 } as const;
