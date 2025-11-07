@@ -2,7 +2,7 @@
 # Each line is a file pattern followed by one or more owners.
 
 # These owners and first officers will be the default owners for everything in the repo.
-*   @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform @BitGo/developer-experience
+*   @BitGo/coins @BitGo/web-experience @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/developer-experience
 
 # Order is important. The last matching pattern has the most precedence.
 
@@ -123,18 +123,18 @@
 /modules/sdk-api/ @BitGo/web-experience @BitGo/wallet-platform
 /modules/sdk-api/src/v1 @BitGo/btc-team
 /modules/sdk-api/test/unit/v1 @BitGo/btc-team
-/modules/sdk-core/ @BitGo/wallet-platform @BitGo/hsm @BitGo/coins
+/modules/sdk-core/ @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/hsm @BitGo/coins
 /modules/sdk-core/src/bitgo/lightning/ @BitGo/btc-team
 /modules/sdk-core/test/unit/bitgo/lightning/ @BitGo/btc-team
-/modules/sdk-lib-mpc/ @BitGo/wallet-platform @BitGo/hsm
-/modules/deser-lib/ @BitGo/wallet-platform @BitGo/hsm
+/modules/sdk-lib-mpc/ @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/hsm
+/modules/deser-lib/ @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/hsm
 /modules/sdk-rpc-wrapper @BitGo/ethalt-team
 /modules/sdk-test/ @BitGo/web-experience @BitGo/wallet-platform
 /modules/sjcl/ @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform
 /modules/statics/ @BitGo/web-experience @BitGo/ethalt-team
 /modules/statics/src/utxo.ts @BitGo/btc-team
 /modules/web-demo/ @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform
-/scripts/ @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform @BitGo/developer-experience
+/scripts/ @BitGo/coins @BitGo/web-experience @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/developer-experience
 /types/ @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform
 /webpack/ @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform
 
@@ -142,19 +142,19 @@
 /modules/statics/src/coins/botTokens.ts @BitGo/ams
 /modules/statics/src/coins/botOfcTokens.ts @BitGo/ams
 
-/.eslintrc.json @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform @BitGo/developer-experience
-/.prettierrc.yml @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform @BitGo/developer-experience
-/check-package-versions.js @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform @BitGo/developer-experience
+/.eslintrc.json @BitGo/coins @BitGo/web-experience @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/developer-experience
+/.prettierrc.yml @BitGo/coins @BitGo/web-experience @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/developer-experience
+/check-package-versions.js @BitGo/coins @BitGo/web-experience @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/developer-experience
 /CODEOWNERS @BitGo/git-admins
-/DEVELOPERS.md @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform @BitGo/developer-experience
+/DEVELOPERS.md @BitGo/coins @BitGo/web-experience @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/developer-experience
 /commitlint.config.js @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform
 /Dockerfile @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform
-/lerna.json @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform @BitGo/developer-experience @BitGo/devops
+/lerna.json @BitGo/coins @BitGo/web-experience @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/developer-experience @BitGo/devops
 /package.json @BitGo/sdk-reviewers
 **/package.json @BitGo/sdk-reviewers
-/tsconfig.json @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform @BitGo/developer-experience @BitGo/devops
+/tsconfig.json @BitGo/coins @BitGo/web-experience @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/developer-experience @BitGo/devops
 /tsconfig.packages.json @BitGo/coins @BitGo/web-experience @BitGo/wallet-platform
 /yarn.lock @BitGo/sdk-reviewers
-/.iyarc @BitGo/wallet-platform @BitGo/hsm @BitGo/velocity
-flake.nix @BitGo/wallet-platform @BitGo/hsm @BitGo/developer-experience
-flake.lock @BitGo/wallet-platform @BitGo/hsm @BitGo/developer-experience
+/.iyarc @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/hsm @BitGo/velocity
+flake.nix @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/hsm @BitGo/developer-experience
+flake.lock @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/hsm @BitGo/developer-experience
