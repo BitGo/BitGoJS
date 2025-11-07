@@ -14,6 +14,7 @@ module.exports = (E) => {
       NonEmptyString: () => E.right({ type: 'string', minLength: 1 }),
       DateFromISOString: () => E.right({ type: 'string', format: 'date-time' }),
       BigIntFromString: () => E.right({ type: 'string' }),
+      BooleanFromString: () => E.right({ type: 'string', enum: ['true', 'false'] }),
     },
     'io-ts-bigint': {
       BigIntFromString: () => E.right({ type: 'string' }),
