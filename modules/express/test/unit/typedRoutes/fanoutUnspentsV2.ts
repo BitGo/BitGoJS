@@ -207,6 +207,39 @@ describe('FanoutUnspents V2 codec tests', function () {
       assert.deepStrictEqual(callArgs.unspents, requestBody.unspents);
     });
 
+    it('should successfully fanout unspents with txFormat parameter', async function () {
+      const requestBody = {
+        numUnspentsToMake: 10,
+        walletPassphrase: 'test_passphrase',
+        txFormat: 'psbt' as const,
+      };
+
+      const mockWallet = {
+        fanoutUnspents: sinon.stub().resolves(mockFanoutResponse),
+      };
+
+      const walletsGetStub = sinon.stub().resolves(mockWallet);
+      const mockCoin = {
+        wallets: sinon.stub().returns({ get: walletsGetStub }),
+      };
+      sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+      const result = await agent
+        .post(`/api/v2/${coin}/wallet/${walletId}/fanoutunspents`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      assert.strictEqual(result.status, 200);
+
+      const decodedResponse = assertSingleTxResponse(assertDecode(FanoutUnspentsResponse, result.body));
+      assert.strictEqual(decodedResponse.status, mockFanoutResponse.status);
+
+      // Verify txFormat was passed through to SDK
+      const callArgs = mockWallet.fanoutUnspents.firstCall.args[0];
+      assert.strictEqual(callArgs.txFormat, 'psbt');
+    });
+
     it('should return instant transaction response', async function () {
       const requestBody = {
         numUnspentsToMake: 10,
@@ -639,6 +672,7 @@ describe('FanoutUnspents V2 codec tests', function () {
         comment: 'Test fanout',
         otp: '123456',
         targetAddress: '2N8hwP1WmJrFF5QWABn38y63uYLhnJYJYTF',
+        txFormat: 'psbt' as const,
         unspents: ['abc:0', 'def:1'],
         bulk: true,
       };
@@ -648,6 +682,7 @@ describe('FanoutUnspents V2 codec tests', function () {
       assert.strictEqual(decoded.numUnspentsToMake, validBody.numUnspentsToMake);
       assert.strictEqual(decoded.minConfirms, validBody.minConfirms);
       assert.strictEqual(decoded.maxNumInputsToUse, validBody.maxNumInputsToUse);
+      assert.strictEqual(decoded.txFormat, 'psbt');
       assert.deepStrictEqual(decoded.unspents, validBody.unspents);
       assert.strictEqual(decoded.bulk, true);
     });
@@ -705,6 +740,56 @@ describe('FanoutUnspents V2 codec tests', function () {
 
       const decodedString = assertDecode(t.type(FanoutUnspentsRequestBody), validBodyString);
       assert.strictEqual(decodedString.minValue, '100000');
+    });
+
+    it('should accept valid txFormat values', function () {
+      const validBodyLegacy = {
+        txFormat: 'legacy',
+      };
+      const validBodyPsbt = {
+        txFormat: 'psbt',
+      };
+      const validBodyPsbtLite = {
+        txFormat: 'psbt-lite',
+      };
+
+      const decodedLegacy = assertDecode(t.type(FanoutUnspentsRequestBody), validBodyLegacy);
+      assert.strictEqual(decodedLegacy.txFormat, 'legacy');
+
+      const decodedPsbt = assertDecode(t.type(FanoutUnspentsRequestBody), validBodyPsbt);
+      assert.strictEqual(decodedPsbt.txFormat, 'psbt');
+
+      const decodedPsbtLite = assertDecode(t.type(FanoutUnspentsRequestBody), validBodyPsbtLite);
+      assert.strictEqual(decodedPsbtLite.txFormat, 'psbt-lite');
+    });
+
+    it('should allow txFormat to be undefined', function () {
+      const validBody = {
+        numUnspentsToMake: 10,
+      };
+
+      const decoded = assertDecode(t.type(FanoutUnspentsRequestBody), validBody);
+      assert.strictEqual(decoded.txFormat, undefined);
+    });
+
+    it('should reject invalid txFormat values', function () {
+      const invalidBody = {
+        txFormat: 'invalid-format',
+      };
+
+      assert.throws(() => {
+        assertDecode(t.type(FanoutUnspentsRequestBody), invalidBody);
+      });
+    });
+
+    it('should reject non-string txFormat', function () {
+      const invalidBody = {
+        txFormat: 123, // number instead of string
+      };
+
+      assert.throws(() => {
+        assertDecode(t.type(FanoutUnspentsRequestBody), invalidBody);
+      });
     });
   });
 
