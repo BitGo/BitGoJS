@@ -269,6 +269,7 @@ export interface PrebuildTransactionWithIntentOptions extends IntentOptionsBase 
     abi?: any;
   };
   txRequestId?: string;
+  isTestTransaction?: boolean;
 }
 export interface IntentRecipient {
   address: {
@@ -338,6 +339,7 @@ export interface PopulatedIntent extends PopulatedIntentBase {
    */
   aptosCustomTransactionParams?: aptosCustomTransactionParams;
   txRequestId?: string;
+  isTestTransaction?: boolean;
 }
 
 export type TxRequestState =

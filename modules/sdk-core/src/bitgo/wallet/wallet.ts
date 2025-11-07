@@ -3434,6 +3434,7 @@ export class Wallet implements IWallet {
             custodianTransactionId: params.custodianTransactionId,
             unspents: params.unspents,
             senderAddress: params.senderAddress,
+            isTestTransaction: params.isTestTransaction,
           },
           apiVersion,
           params.preview

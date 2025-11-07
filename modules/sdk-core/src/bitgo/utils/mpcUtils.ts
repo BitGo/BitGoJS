@@ -188,6 +188,7 @@ export abstract class MpcUtils {
       nonce: params.nonce,
       recipients: intentRecipients,
       tokenName: params.tokenName,
+      isTestTransaction: params.isTestTransaction,
     };
 
     if (baseCoin.getFamily() === 'eth' || baseCoin.getFamily() === 'polygon' || baseCoin.getFamily() === 'bsc') {
