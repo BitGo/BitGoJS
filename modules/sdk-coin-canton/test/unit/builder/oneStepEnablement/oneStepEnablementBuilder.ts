@@ -17,6 +17,7 @@ describe('Wallet Pre-approval Enablement Builder', () => {
     const txBuilder = new OneStepPreApprovalBuilder(coins.get('tcanton'));
     const oneStepEnablementTx = new Transaction(coins.get('tcanton'));
     txBuilder.initBuilder(oneStepEnablementTx);
+    txBuilder.setTransaction(OneStepPreApprovalPrepareResponse);
     const { commandId, partyId } = OneStepEnablement;
     txBuilder.commandId(commandId).receiverPartyId(partyId);
     const requestObj: CantonOneStepEnablementRequest = txBuilder.toRequestObject();

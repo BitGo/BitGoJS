@@ -35,11 +35,17 @@ export interface WalletInitTxData {
   preparedParty: PreparedParty;
 }
 
+export interface UTXOInfo {
+  contractId: string;
+  value: string;
+}
+
 export interface CantonPrepareCommandResponse {
   preparedTransaction?: string;
   preparedTransactionHash: string;
   hashingSchemeVersion: string;
   hashingDetails?: string | null;
+  utxoInfo?: UTXOInfo[];
 }
 
 export interface PreparedParty {
@@ -132,4 +138,14 @@ export interface TransferAcknowledge {
   amount: number;
   expiryEpoch: number;
   updateId: string;
+}
+
+export interface CantonTransferRequest {
+  commandId: string;
+  senderPartyId: string;
+  receiverPartyId: string;
+  amount: number;
+  expiryEpoch: number;
+  sendViaOneStep: boolean;
+  memoId?: string;
 }
