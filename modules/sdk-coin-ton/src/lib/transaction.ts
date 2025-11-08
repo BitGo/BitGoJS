@@ -73,7 +73,7 @@ export class Transaction extends BaseTransaction {
 
   async build(): Promise<void> {
     const signingMessage = this.createSigningMessage(WALLET_ID, this.seqno, this.expireTime);
-    const sendMode = 3;
+    const sendMode = 3; // default sendMode
     signingMessage.bits.writeUint8(sendMode);
     const outMsg = this.createOutMsg(this.recipient.address, this.recipient.amount, this.message);
     signingMessage.refs.push(outMsg);
