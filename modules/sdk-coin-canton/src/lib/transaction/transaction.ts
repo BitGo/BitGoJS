@@ -1,6 +1,7 @@
 import {
   BaseKey,
   BaseTransaction,
+  Entry,
   InvalidTransactionError,
   ITransactionRecipient,
   TransactionType,
@@ -177,6 +178,7 @@ export class Transaction extends BaseTransaction {
       if (this.type !== TransactionType.TransferAcknowledge) {
         if (decoded.prepareCommandResponse) {
           this.prepareCommand = decoded.prepareCommandResponse;
+          this.loadInputsAndOutputs();
         }
         if (decoded.partySignatures && decoded.partySignatures.signatures.length > 0) {
           this.signerFingerprint = decoded.partySignatures.signatures[0].party.split('::')[1];
@@ -192,6 +194,30 @@ export class Transaction extends BaseTransaction {
     }
   }
 
+  /**
+   * Loads the input & output fields for the transaction
+   *
+   */
+  loadInputsAndOutputs(): void {
+    const outputs: Entry[] = [];
+    const inputs: Entry[] = [];
+    const txData = this.toJson();
+    const input: Entry = {
+      address: txData.sender,
+      value: txData.amount,
+      coin: this._coinConfig.name,
+    };
+    const output: Entry = {
+      address: txData.receiver,
+      value: txData.amount,
+      coin: this._coinConfig.name,
+    };
+    inputs.push(input);
+    outputs.push(output);
+    this._inputs = inputs;
+    this._outputs = outputs;
+  }
+
   explainTransaction(): TransactionExplanation {
     const displayOrder = [
       'id',
@@ -205,7 +231,9 @@ export class Transaction extends BaseTransaction {
       'type',
     ];
     const inputs: ITransactionRecipient[] = [];
+    const outputs: ITransactionRecipient[] = [];
     let inputAmount = '0';
+    let outputAmount = '0';
     switch (this.type) {
       case TransactionType.TransferAccept:
       case TransactionType.TransferReject: {
@@ -214,12 +242,18 @@ export class Transaction extends BaseTransaction {
         inputAmount = txData.amount;
         break;
       }
+      case TransactionType.Send: {
+        const txData = this.toJson();
+        outputs.push({ address: txData.sender, amount: txData.amount });
+        outputAmount = txData.amount;
+        break;
+      }
     }
     return {
       id: this.id,
       displayOrder,
-      outputs: [],
-      outputAmount: '0',
+      outputs: outputs,
+      outputAmount: outputAmount,
       inputs: inputs,
       inputAmount: inputAmount,
       changeOutputs: [],

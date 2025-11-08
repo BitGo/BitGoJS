@@ -98,20 +98,35 @@ export class Canton extends BaseCoin {
   /** @inheritDoc */
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
     const coinConfig = coins.get(this.getChain());
-    // extract `txParams` when verifying other transaction types
-    const { txPrebuild: txPrebuild } = params;
+    const { txPrebuild: txPrebuild, txParams } = params;
     const rawTx = txPrebuild.txHex;
     if (!rawTx) {
       throw new Error('missing required tx prebuild property txHex');
     }
     const txBuilder = new TransactionBuilderFactory(coinConfig).from(rawTx);
     const transaction = txBuilder.transaction;
+    const explainedTx = transaction.explainTransaction();
     switch (transaction.type) {
       case TransactionType.WalletInitialization:
       case TransactionType.TransferAccept:
       case TransactionType.TransferReject:
       case TransactionType.TransferAcknowledge:
         // There is no input for these type of transactions, so always return true.
+        return true;
+      case TransactionType.Send:
+        if (txParams.recipients !== undefined) {
+          const filteredRecipients = txParams.recipients?.map((recipient) => {
+            const { address, amount } = recipient;
+            return { address, amount };
+          });
+          const filteredOutputs = explainedTx.outputs?.map((output) => {
+            const { address, amount } = output;
+            return { address, amount };
+          });
+          if (JSON.stringify(filteredRecipients) !== JSON.stringify(filteredOutputs)) {
+            throw new Error('Tx outputs do not match with expected txParams recipients');
+          }
+        }
         return true;
       default: {
         throw new Error(`unknown transaction type, ${transaction.type}`);

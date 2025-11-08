@@ -6,6 +6,7 @@ export { OneStepPreApprovalBuilder } from './oneStepPreApprovalBuilder';
 export { Transaction } from './transaction/transaction';
 export { TransferAcceptanceBuilder } from './transferAcceptanceBuilder';
 export { TransferAcknowledgeBuilder } from './transferAcknowledgeBuilder';
+export { TransferBuilder } from './transferBuilder';
 export { TransactionBuilder } from './transactionBuilder';
 export { TransactionBuilderFactory } from './transactionBuilderFactory';
 export { TransferRejectionBuilder } from './transferRejectionBuilder';
