@@ -40,6 +40,7 @@ import {
   TokenTransfer,
   Transfer,
   WalletInit,
+  SetComputeUnitLimit,
   SetPriorityFee,
   CustomInstruction,
   Approve,
@@ -82,6 +83,8 @@ export function solInstructionFactory(instructionToBuild: InstructionParams): Tr
       return stakingAuthorizeInstruction(instructionToBuild);
     case InstructionBuilderTypes.StakingDelegate:
       return stakingDelegateInstruction(instructionToBuild);
+    case InstructionBuilderTypes.SetComputeUnitLimit:
+      return setComputeUnitLimitInstruction(instructionToBuild);
     case InstructionBuilderTypes.SetPriorityFee:
       return fetchPriorityFeeInstruction(instructionToBuild);
     case InstructionBuilderTypes.MintTo:
@@ -112,6 +115,14 @@ function advanceNonceInstruction(data: Nonce): TransactionInstruction[] {
     authorizedPubkey: new PublicKey(authWalletAddress),
   });
   return [nonceInstruction];
+}
+
+function setComputeUnitLimitInstruction(instructionToBuild: SetComputeUnitLimit): TransactionInstruction[] {
+  const setComputeUnitLimit = ComputeBudgetProgram.setComputeUnitLimit({
+    units: instructionToBuild.params.units,
+  });
+
+  return [setComputeUnitLimit];
 }
 
 function fetchPriorityFeeInstruction(instructionToBuild: SetPriorityFee): TransactionInstruction[] {

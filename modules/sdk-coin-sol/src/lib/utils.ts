@@ -27,6 +27,7 @@ import {
   SystemInstruction,
   SystemProgram,
   TransactionInstruction,
+  ComputeBudgetInstruction,
 } from '@solana/web3.js';
 import assert from 'assert';
 import BigNumber from 'bignumber.js';
@@ -420,6 +421,9 @@ export function getInstructionType(instruction: TransactionInstruction): ValidIn
         );
       }
     case COMPUTE_BUDGET:
+      if (ComputeBudgetInstruction.decodeInstructionType(instruction) === 'SetComputeUnitLimit') {
+        return 'SetComputeUnitLimit';
+      }
       return 'SetPriorityFee';
     default:
       return 'CustomInstruction';

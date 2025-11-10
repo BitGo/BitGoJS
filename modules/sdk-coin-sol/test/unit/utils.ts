@@ -1,7 +1,14 @@
 import should from 'should';
 import { Utils } from '../../src/lib';
 import * as testData from '../resources/sol';
-import { Lockup, PublicKey, StakeProgram, SystemProgram, TransactionInstruction } from '@solana/web3.js';
+import {
+  ComputeBudgetProgram,
+  Lockup,
+  PublicKey,
+  StakeProgram,
+  SystemProgram,
+  TransactionInstruction,
+} from '@solana/web3.js';
 import {
   MEMO_PROGRAM_PK,
   stakingActivateInstructionsIndexes,
@@ -243,6 +250,18 @@ describe('SOL util library', function () {
         data: Buffer.from('random memo'),
       });
       Utils.getInstructionType(invalidInstruction).should.equal('CustomInstruction');
+    });
+    it('should succeed for ComputeBudget SetComputeUnitLimit instruction', function () {
+      const setComputeUnitLimitInstruction = ComputeBudgetProgram.setComputeUnitLimit({
+        units: 300000,
+      });
+      Utils.getInstructionType(setComputeUnitLimitInstruction).should.equal('SetComputeUnitLimit');
+    });
+    it('should succeed for ComputeBudget SetComputeUnitPrice instruction', function () {
+      const setComputeUnitPriceInstruction = ComputeBudgetProgram.setComputeUnitPrice({
+        microLamports: 100000,
+      });
+      Utils.getInstructionType(setComputeUnitPriceInstruction).should.equal('SetPriorityFee');
     });
   });
 

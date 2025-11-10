@@ -489,6 +489,8 @@ export class Transaction extends BaseTransaction {
           break;
         case InstructionBuilderTypes.StakingDelegate:
           break;
+        case InstructionBuilderTypes.SetComputeUnitLimit:
+          break;
         case InstructionBuilderTypes.SetPriorityFee:
           break;
         case InstructionBuilderTypes.CustomInstruction:
