@@ -9,7 +9,7 @@ import {
   stakingWithdrawInstructionsIndexes,
 } from '../../src/lib/constants';
 import BigNumber from 'bignumber.js';
-import { TOKEN_2022_PROGRAM_ID } from '@solana/spl-token';
+import { TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
 describe('SOL util library', function () {
   describe('isValidAddress', function () {
@@ -545,6 +545,58 @@ describe('SOL util library', function () {
         );
         isAMatch.should.be.true();
       });
+    });
+  });
+
+  describe('isIdempotentAtaInstruction', function () {
+    const mockKeys = [
+      { pubkey: new PublicKey('9i8CSiz2un7rfuNvTMt1tTXbHSaMkPZyJ4MexY1yeZBD'), isSigner: true, isWritable: true },
+      { pubkey: new PublicKey('3F7X7ifwMR29Z3t1YamFg6yzCcsSkjAZpZF8yU1kWURh'), isSigner: false, isWritable: true },
+    ];
+
+    it('should return true for idempotent ATA instruction with discriminator byte 1', function () {
+      const instruction = new TransactionInstruction({
+        programId: ASSOCIATED_TOKEN_PROGRAM_ID,
+        keys: mockKeys,
+        data: Buffer.from([1]),
+      });
+      Utils.isIdempotentAtaInstruction(instruction).should.equal(true);
+    });
+
+    it('should return true for idempotent ATA instruction from base64 "AQ=="', function () {
+      const instruction = new TransactionInstruction({
+        programId: ASSOCIATED_TOKEN_PROGRAM_ID,
+        keys: mockKeys,
+        data: Buffer.from('AQ==', 'base64'),
+      });
+      Utils.isIdempotentAtaInstruction(instruction).should.equal(true);
+    });
+
+    it('should return false for legacy ATA instruction with empty data', function () {
+      const instruction = new TransactionInstruction({
+        programId: ASSOCIATED_TOKEN_PROGRAM_ID,
+        keys: mockKeys,
+        data: Buffer.from([]),
+      });
+      Utils.isIdempotentAtaInstruction(instruction).should.equal(false);
+    });
+
+    it('should return false for instruction with wrong discriminator', function () {
+      const instruction = new TransactionInstruction({
+        programId: ASSOCIATED_TOKEN_PROGRAM_ID,
+        keys: mockKeys,
+        data: Buffer.from([2]),
+      });
+      Utils.isIdempotentAtaInstruction(instruction).should.equal(false);
+    });
+
+    it('should return false for instruction with multiple bytes', function () {
+      const instruction = new TransactionInstruction({
+        programId: ASSOCIATED_TOKEN_PROGRAM_ID,
+        keys: mockKeys,
+        data: Buffer.from([1, 2]),
+      });
+      Utils.isIdempotentAtaInstruction(instruction).should.equal(false);
     });
   });
 });

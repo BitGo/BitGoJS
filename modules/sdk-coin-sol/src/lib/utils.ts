@@ -63,6 +63,21 @@ const DECODED_SIGNATURE_LENGTH = 64; // https://docs.solana.com/terminology#sign
 const BASE_58_ENCONDING_REGEX = '[1-9A-HJ-NP-Za-km-z]';
 const COMPUTE_BUDGET = 'ComputeBudget111111111111111111111111111111';
 
+/**
+ * Checks if an ATA instruction is idempotent (discriminator byte = 1).
+ *
+ * Idempotent ATA instructions use Buffer.from([1]) as instruction data, created by
+ * @solana/spl-token's createAssociatedTokenAccountIdempotentInstruction() (v0.4.1+).
+ * An idempotent ATA instruction succeed even if account exists,
+ * preventing race condition errors in concurrent scenarios.
+ *
+ * @param {TransactionInstruction} instruction - The instruction to validate
+ * @returns {boolean} True if instruction data is a single byte with value 1
+ */
+export function isIdempotentAtaInstruction(instruction: TransactionInstruction): boolean {
+  return instruction.data.length === 1 && instruction.data[0] === 1;
+}
+
 /** @inheritdoc */
 export function isValidAddress(address: string): boolean {
   return isValidPublicKey(address);
@@ -395,7 +410,9 @@ export function getInstructionType(instruction: TransactionInstruction): ValidIn
       return StakeInstruction.decodeInstructionType(instruction);
     case ASSOCIATED_TOKEN_PROGRAM_ID.toString():
       // TODO: change this when @spl-token supports decoding associated token instructions
-      if (instruction.data.length === 0) {
+      // Support both legacy ATA creation (data.length === 0) and idempotent ATA creation (discriminator = 1)
+      // Both instruction types are treated as 'InitializeAssociatedTokenAccount' for compatibility
+      if (instruction.data.length === 0 || isIdempotentAtaInstruction(instruction)) {
         return 'InitializeAssociatedTokenAccount';
       } else {
         throw new NotSupported(
