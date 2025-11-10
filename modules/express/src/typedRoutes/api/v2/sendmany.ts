@@ -18,7 +18,7 @@ export const SendManyRequestParams = {
  * EIP-1559 fee parameters for Ethereum transactions
  * When eip1559 object is present, both fields are REQUIRED
  */
-const EIP1559Params = t.type({
+export const EIP1559Params = t.type({
   /** Maximum priority fee per gas (in wei) - REQUIRED */
   maxPriorityFeePerGas: t.union([t.number, t.string]),
   /** Maximum fee per gas (in wei) - REQUIRED */
@@ -29,7 +29,7 @@ const EIP1559Params = t.type({
  * Memo object for chains that support memos (e.g., Stellar, XRP)
  * When memo object is present, both fields are REQUIRED
  */
-const MemoParams = t.type({
+export const MemoParams = t.type({
   /** Memo value - REQUIRED */
   value: t.string,
   /** Memo type - REQUIRED */
@@ -89,7 +89,7 @@ const Recipient = t.intersection([RecipientParams, RecipientParamsOptional]);
  * Token enablement configuration
  * name is REQUIRED when this object is present
  */
-const TokenEnablement = t.intersection([
+export const TokenEnablement = t.intersection([
   t.type({
     /** Token name - REQUIRED */
     name: t.string,
