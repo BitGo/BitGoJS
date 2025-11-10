@@ -291,4 +291,39 @@ describe('ADA Token Operations', async () => {
 
     await txBuilder.build().should.rejectedWith('Insufficient qty: not enough token qty to cover receiver output');
   });
+
+  it(`should build a transaction with ${assetName} when the token qty is exactly the qty in withdrawal`, async () => {
+    const quantity = '1';
+    const totalInput = 20000000;
+    const totalAssetList = {
+      [fingerprint]: {
+        quantity: '1',
+        policy_id: policyId,
+        asset_name: asciiEncodedName,
+      },
+    };
+
+    const txBuilder = factory.getTransferBuilder();
+    txBuilder.input({
+      transaction_id: '3677e75c7ba699bfdc6cd57d42f246f86f63aefd76025006ac78313fad2bba21',
+      transaction_index: 1,
+    });
+
+    txBuilder.output({
+      address: receiverAddress,
+      amount: '0', // Set ADA amount to 0 for token transfer (min ADA is handled in sdk build)
+      multiAssets: {
+        asset_name: asciiEncodedName,
+        policy_id: policyId,
+        quantity,
+        fingerprint,
+      },
+    });
+
+    txBuilder.changeAddress(senderAddress, totalInput.toString(), totalAssetList);
+    txBuilder.ttl(800000000);
+    txBuilder.isTokenTransaction();
+
+    await txBuilder.build().should.not.be.rejected();
+  });
 });
