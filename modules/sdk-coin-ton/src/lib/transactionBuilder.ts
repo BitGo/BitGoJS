@@ -184,4 +184,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this.transaction.isV3ContractMessage = bool;
     return this;
   }
+  subWalletId(id: number): TransactionBuilder {
+    this.transaction.sub_wallet_id = id;
+    return this;
+  }
 }
