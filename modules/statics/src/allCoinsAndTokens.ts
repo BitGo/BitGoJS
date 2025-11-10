@@ -2534,6 +2534,65 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['baseeth:wbrly'],
     Networks.main.basechain
   ),
+
+  // XDC mainnet tokens
+  erc20Token(
+    'b820932d-5772-49ae-a055-a59760f3e4cf',
+    'xdc:usdc',
+    'USD Coin',
+    6,
+    '0xfa2958cb79b0491cc627c1557f441ef849ca8eb1',
+    UnderlyingAsset['xdc:usdc'],
+    Networks.main.xdc
+  ),
+  erc20Token(
+    '8914a1bd-1495-46df-84da-445c6d49edb2',
+    'xdc:lbt',
+    'Law Block Token',
+    18,
+    '0x05940b2df33d6371201e7ae099ced4c363855dfe',
+    UnderlyingAsset['xdc:lbt'],
+    Networks.main.xdc
+  ),
+  erc20Token(
+    'f03302de-b06b-4ddc-94a2-ad7e89896725',
+    'xdc:gama',
+    'Gama Token',
+    18,
+    '0x3a170c7c987f55c84f28733bfa27962d8cdd5d3b',
+    UnderlyingAsset['xdc:gama'],
+    Networks.main.xdc
+  ),
+  erc20Token(
+    'bdf602ea-3a6c-407a-8afd-33d6c04a8bc3',
+    'xdc:srx',
+    'STORX',
+    18,
+    '0x5d5f074837f5d4618b3916ba74de1bf9662a3fed',
+    UnderlyingAsset['xdc:srx'],
+    Networks.main.xdc
+  ),
+  erc20Token(
+    'd42c9497-0987-497d-97f2-8b19c539e350',
+    'xdc:weth',
+    'Wrapped Ether',
+    18,
+    '0xa7348290de5cf01772479c48d50dec791c3fc212',
+    UnderlyingAsset['xdc:weth'],
+    Networks.main.xdc
+  ),
+
+  // MON mainnet tokens
+  erc20Token(
+    '5f15df50-7409-45b8-a7a8-00294a113fcb',
+    'mon:wmon',
+    'Wrapped MON',
+    18,
+    '0x3bd359c1119da7da1d913d1c4d2b7c461115433a',
+    UnderlyingAsset['mon:wmon'],
+    Networks.main.mon
+  ),
+
   hederaCoin(
     '98aad956-27ee-45dd-aa43-6a23c9a1d1d0',
     'hbar',
