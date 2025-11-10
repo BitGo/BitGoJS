@@ -69,7 +69,7 @@ export class Transaction extends BaseTransaction {
   }
 
   toBroadcastFormat(): string {
-    if (!this._type) {
+    if (this._type === undefined) {
       throw new InvalidTransactionError('Transaction type is not set');
     }
     if (this._type === TransactionType.TransferAcknowledge) {
@@ -89,7 +89,7 @@ export class Transaction extends BaseTransaction {
     const partySignatures: PartySignature[] = [];
     const data: TransactionBroadcastData = {
       prepareCommandResponse: this._prepareCommand,
-      txType: this._type ? TransactionType[this._type] : '',
+      txType: this._type !== undefined ? TransactionType[this._type] : '',
       preparedTransaction: '',
       partySignatures: {
         signatures: partySignatures,
