@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js';
 import crypto from 'crypto';
 
 import { BaseUtils, isValidEd25519PublicKey } from '@bitgo/sdk-core';
@@ -145,10 +146,11 @@ export class Utils implements BaseUtils {
       if (!amount) missingFields.push('amount');
       throw new Error(`invalid transaction data: missing ${missingFields.join(', ')}`);
     }
+    const convertedAmount = this.convertAmountToLowestUnit(new BigNumber(amount));
     return {
       sender,
       receiver,
-      amount,
+      amount: convertedAmount,
     };
   }
 
@@ -295,6 +297,16 @@ export class Utils implements BaseUtils {
     const buf = Buffer.alloc(4);
     buf.writeInt32BE(value, 0);
     return buf;
+  }
+
+  /**
+   * Convert to canton raw units
+   * @param {BigNumber} value
+   * @returns {String} the converted raw canton units
+   * @private
+   */
+  private convertAmountToLowestUnit(value: BigNumber): string {
+    return value.multipliedBy(new BigNumber(10).pow(10)).toFixed(0);
   }
 }
 

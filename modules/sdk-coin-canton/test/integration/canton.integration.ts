@@ -1,7 +1,7 @@
 import assert from 'assert';
 
 import { BitGoAPI } from '@bitgo/sdk-api';
-import { TransactionType } from '@bitgo/sdk-core';
+import { ITransactionRecipient, TransactionType, Wallet } from '@bitgo/sdk-core';
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 
 import { getCantonBuilderFactory } from '../helper';
@@ -9,7 +9,9 @@ import {
   CANTON_RECEIVE_ADDRESS,
   GenerateTopologyResponse,
   TransferAcceptRawTransaction,
+  TransferRawTxn,
   TransferRejectRawTransaction,
+  TxParams,
   WalletInitRawTransaction,
 } from '../resources';
 import { Tcanton } from '../../src';
@@ -17,10 +19,41 @@ import { Tcanton } from '../../src';
 describe('Canton integration tests', function () {
   let bitgo: TestBitGoAPI;
   let basecoin: Tcanton;
+  let newTxPrebuild: () => { txHex: string; txInfo: Record<string, unknown> };
+  let newTxParams: () => { recipients: ITransactionRecipient[] };
+  let wallet: Wallet;
+  const txPrebuild = {
+    txHex: TransferRawTxn,
+    txInfo: {},
+  };
+  const txParams = {
+    recipients: [
+      {
+        address: TxParams.RECIPIENT_ADDRESS,
+        amount: TxParams.AMOUNT,
+      },
+    ],
+  };
   before(() => {
     bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
     bitgo.safeRegister('tcanton', Tcanton.createInstance);
     basecoin = bitgo.coin('tcanton') as Tcanton;
+    newTxPrebuild = () => {
+      return structuredClone(txPrebuild);
+    };
+    newTxParams = () => {
+      return structuredClone(txParams);
+    };
+    wallet = new Wallet(bitgo, basecoin, {});
+  });
+
+  describe('Verify Transaction', function () {
+    it('should verify transfer transaction', async function () {
+      const txPrebuild = newTxPrebuild();
+      const txParams = newTxParams();
+      const isTxnVerifies = await basecoin.verifyTransaction({ txPrebuild: txPrebuild, txParams: txParams, wallet });
+      isTxnVerifies.should.equal(true);
+    });
   });
 
   describe('Explain raw transaction', function () {
@@ -41,7 +74,7 @@ describe('Canton integration tests', function () {
       assert(explainTxData);
       assert(explainTxData.id);
       assert.equal(explainTxData.type, TransactionType.TransferAccept);
-      assert.equal(explainTxData.inputAmount, '5.0000000000');
+      assert.equal(explainTxData.inputAmount, '50000000000');
     });
 
     it('should explain raw transfer rejection transaction', function () {
@@ -50,7 +83,7 @@ describe('Canton integration tests', function () {
       const explainTxData = txn.explainTransaction();
       assert(explainTxData);
       assert.equal(explainTxData.type, TransactionType.TransferReject);
-      assert.equal(explainTxData.inputAmount, '5.0000000000');
+      assert.equal(explainTxData.inputAmount, '50000000000');
     });
   });
 

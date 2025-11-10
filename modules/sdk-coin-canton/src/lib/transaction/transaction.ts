@@ -244,7 +244,7 @@ export class Transaction extends BaseTransaction {
       }
       case TransactionType.Send: {
         const txData = this.toJson();
-        outputs.push({ address: txData.sender, amount: txData.amount });
+        outputs.push({ address: txData.receiver, amount: txData.amount });
         outputAmount = txData.amount;
         break;
       }
