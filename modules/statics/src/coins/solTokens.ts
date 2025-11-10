@@ -1820,7 +1820,7 @@ export const solTokens = [
     'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263',
     'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263',
     UnderlyingAsset['sol:bonk'],
-    SOL_TOKEN_FEATURES_WITH_FRANKFURT
+    SOL_TOKEN_FEATURES_WITH_FRANKFURT_GERMANY
   ),
   solToken(
     '7457400a-dbce-4e33-a50a-356c9a1eca3e',

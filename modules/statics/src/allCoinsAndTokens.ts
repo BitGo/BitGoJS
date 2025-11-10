@@ -3772,7 +3772,7 @@ export const allCoinsAndTokens = [
     18,
     '0x912ce59144191c1204e64559fe8253a0e49e6548',
     UnderlyingAsset['arbeth:arb'],
-    TOKEN_FEATURES_WITH_FRANKFURT
+    [...TOKEN_FEATURES_WITH_FRANKFURT, CoinFeature.CUSTODY_BITGO_GERMANY]
   ),
   arbethErc20(
     '65668b2e-6560-4749-a965-4d03eaeffaec',

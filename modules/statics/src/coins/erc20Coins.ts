@@ -2295,7 +2295,8 @@ export const erc20Coins = [
     'Ethena',
     18,
     '0x57e114b691db790c35207b2e685d4a43181e6061',
-    UnderlyingAsset.ENA
+    UnderlyingAsset.ENA,
+    ETH_FEATURES_WITH_FRANKFURT_GERMANY
   ),
   erc20(
     '44c90df7-cdb9-4a7e-a5fa-33f3e12e42d1',
@@ -3352,7 +3353,8 @@ export const erc20Coins = [
     'Immutable X',
     18,
     '0xf57e7e7c23978c3caec3c3548e3d615c346e79ff',
-    UnderlyingAsset.IMXV2
+    UnderlyingAsset.IMXV2,
+    ETH_FEATURES_WITH_FRANKFURT_GERMANY
   ),
   erc20(
     'b86f9330-7c00-4e1a-9432-ec965e3c14d4',
@@ -3411,7 +3413,7 @@ export const erc20Coins = [
     18,
     '0xe28b3b32b6c345a34ff64674606124dd5aceca30',
     UnderlyingAsset.INJV2,
-    TOKEN_FEATURES_WITH_SWISS
+    [...TOKEN_FEATURES_WITH_SWISS, CoinFeature.CUSTODY_BITGO_GERMANY]
   ),
   erc20(
     '108a64ac-9be8-4bf9-a683-3f30d49708de',
@@ -3698,7 +3700,7 @@ export const erc20Coins = [
     18,
     '0x5a98fcbea516cf06857215779fd812ca3bef1b32',
     UnderlyingAsset.LDO,
-    ETH_FEATURES_WITH_FRANKFURT
+    ETH_FEATURES_WITH_FRANKFURT_GERMANY
   ),
   erc20(
     '5a44ae9e-c002-46cd-af8a-7e5fc91f3492',
@@ -4498,7 +4500,7 @@ export const erc20Coins = [
     18,
     '0xfaba6f8e4a5e8ab82f62fe7c39859fa577269be3',
     UnderlyingAsset.ONDO,
-    ETH_FEATURES_WITH_FRANKFURT
+    ETH_FEATURES_WITH_FRANKFURT_GERMANY
   ),
   erc20(
     'fa692f6a-3491-4c7a-b512-927e6fcdd3f0',
@@ -5089,7 +5091,7 @@ export const erc20Coins = [
     18,
     '0x4a220e6096b25eadb88358cb44068a3248254675',
     UnderlyingAsset.QNT,
-    ETH_FEATURES_WITH_FRANKFURT
+    ETH_FEATURES_WITH_FRANKFURT_GERMANY
   ),
   erc20(
     'c3961c7d-6788-45d0-9630-f413ce6e0889',
@@ -11391,7 +11393,8 @@ export const erc20Coins = [
     'Morpho Token',
     18,
     '0x58d97b57bb95320f9a05dc918aef65434969c2b2',
-    UnderlyingAsset['eth:morpho']
+    UnderlyingAsset['eth:morpho'],
+    ETH_FEATURES_WITH_FRANKFURT_GERMANY
   ),
   erc20(
     '784858c8-c97d-490b-b035-7d22b8a4afb6',
