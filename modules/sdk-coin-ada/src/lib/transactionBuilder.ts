@@ -259,11 +259,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
           const currentQty = this._mutableSenderAssetList[fingerprint].quantity;
           const remainingQty = BigInt(currentQty) - BigInt(quantity);
-          this._mutableSenderAssetList[fingerprint].quantity = (remainingQty > 0n ? remainingQty : 0n).toString();
-
-          if (CardanoWasm.BigNum.from_str(this._mutableSenderAssetList[fingerprint].quantity).is_zero()) {
+          if (remainingQty < 0n) {
             throw new BuildTransactionError('Insufficient qty: not enough token qty to cover receiver output');
           }
+
+          this._mutableSenderAssetList[fingerprint].quantity = remainingQty.toString();
 
           const minAmountNeededForAssetOutput = this.addTokensToOutput(change, outputs, receiverAddress, {
             policy_id: policyId,
