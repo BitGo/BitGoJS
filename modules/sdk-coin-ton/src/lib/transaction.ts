@@ -5,7 +5,7 @@ import { Cell } from 'tonweb/dist/types/boc/cell';
 import { BaseKey, BaseTransaction, Entry, Recipient, TransactionRecipient, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { TransactionExplanation, TxData } from './iface';
-import { WITHDRAW_OPCODE, WALLET_ID, JETTON_TRANSFER_OPCODE } from './constants';
+import { WITHDRAW_OPCODE, WALLET_ID, JETTON_TRANSFER_OPCODE, VESTING_CONTRACT_WALLET_ID } from './constants';
 
 export class Transaction extends BaseTransaction {
   public recipient: Recipient;
@@ -19,6 +19,7 @@ export class Transaction extends BaseTransaction {
   sender: string;
   publicKey: string;
   isV3ContractMessage: boolean;
+  sub_wallet_id: number;
   protected unsignedMessage: string;
   protected finalMessage: string;
 
@@ -52,6 +53,7 @@ export class Transaction extends BaseTransaction {
       amount: this.recipient.amount,
       withdrawAmount: this.withdrawAmount,
       seqno: this.seqno,
+      sub_wallet_id: this.sub_wallet_id,
       expirationTime: this.expireTime,
       publicKey: this.publicKey,
       signature: this._signatures[0],
@@ -72,7 +74,14 @@ export class Transaction extends BaseTransaction {
   }
 
   async build(): Promise<void> {
-    const signingMessage = this.createSigningMessage(WALLET_ID, this.seqno, this.expireTime);
+    if (!this.sub_wallet_id) {
+      if (this.isV3ContractMessage) {
+        this.sub_wallet_id = VESTING_CONTRACT_WALLET_ID;
+      } else {
+        this.sub_wallet_id = WALLET_ID;
+      }
+    }
+    const signingMessage = this.createSigningMessage(this.sub_wallet_id, this.seqno, this.expireTime);
     const sendMode = 3; // default sendMode
     signingMessage.bits.writeUint8(sendMode);
     const outMsg = this.createOutMsg(this.recipient.address, this.recipient.amount, this.message);
@@ -189,6 +198,7 @@ export class Transaction extends BaseTransaction {
       this.message = parsed.payload;
       this._signatures.push(parsed.signature);
       this.bounceable = parsed.bounce;
+      this.sub_wallet_id = parsed.walletId;
     } catch (e) {
       throw new Error('invalid raw transaction');
     }
@@ -263,7 +273,7 @@ export class Transaction extends BaseTransaction {
     // signing message
 
     const walletId = slice.loadUint(32).toNumber();
-    if (walletId !== WALLET_ID) throw new Error('invalid walletId');
+    if (walletId !== WALLET_ID && walletId !== VESTING_CONTRACT_WALLET_ID) throw new Error('invalid walletId');
 
     const expireAt = slice.loadUint(32).toNumber();
 

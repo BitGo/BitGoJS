@@ -14,6 +14,7 @@ export interface TxData {
   seqno: number;
   expirationTime: number;
   publicKey: string;
+  sub_wallet_id: number;
   signature: string;
   bounceable: boolean;
 }

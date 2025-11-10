@@ -3,6 +3,7 @@ import TonWeb from 'tonweb';
 import { TransactionType } from '@bitgo/sdk-core';
 import { coins } from '@bitgo/statics';
 import { TransactionBuilderFactory, KeyPair } from '../../src';
+import { WALLET_ID } from '../../src/lib/constants';
 import * as testData from '../resources/ton';
 import * as utils from '../../src/lib/utils';
 
@@ -258,5 +259,6 @@ describe('Ton Transfer Builder', () => {
     jsonTx.seqno.should.equal(3);
     jsonTx.expirationTime.should.equal(1761215512);
     jsonTx.bounceable.should.equal(true);
+    jsonTx.sub_wallet_id.should.equal(WALLET_ID);
   });
 });
