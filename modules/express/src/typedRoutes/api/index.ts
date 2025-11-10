@@ -221,6 +221,9 @@ export const ExpressCoinSigningApiSpec = apiSpec({
   'express.v2.coin.signtx': {
     post: PostCoinSignTx,
   },
+});
+
+export const ExpressExternalSigningApiSpec = apiSpec({
   'express.v2.coin.sign': {
     post: PostCoinSign,
   },
@@ -275,6 +278,7 @@ export type ExpressApi = typeof ExpressPingApiSpec &
   typeof ExpressOfcSignPayloadApiSpec &
   typeof ExpressWalletRecoverTokenApiSpec &
   typeof ExpressCoinSigningApiSpec &
+  typeof ExpressExternalSigningApiSpec &
   typeof ExpressWalletSigningApiSpec &
   typeof ExpressWalletManagementApiSpec;
 
@@ -307,6 +311,7 @@ export const ExpressApi: ExpressApi = {
   ...ExpressOfcSignPayloadApiSpec,
   ...ExpressWalletRecoverTokenApiSpec,
   ...ExpressCoinSigningApiSpec,
+  ...ExpressExternalSigningApiSpec,
   ...ExpressWalletSigningApiSpec,
   ...ExpressWalletManagementApiSpec,
 };
