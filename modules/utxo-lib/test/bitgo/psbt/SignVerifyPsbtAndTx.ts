@@ -3,6 +3,7 @@ import * as assert from 'assert';
 import {
   addXpubsToPsbt,
   clonePsbtWithoutNonWitnessUtxo,
+  createPsbtFromBuffer,
   getPsbtInputSignatureCount,
   getSignatureValidationArrayPsbt,
   getStrictSignatureCount,
@@ -136,9 +137,16 @@ function runPsbt(
   describe(`psbt build, sign and verify for ${coin} ${inputTypes.join('-')} ${sign}`, function () {
     let psbt: UtxoPsbt;
 
-    it(`getSignatureValidationArray with globalXpub ${coin} ${sign}`, function () {
+    before(function () {
       psbt = constructPsbt(inputs, outputs, network, rootWalletKeys, sign, { deterministic: true });
       addXpubsToPsbt(psbt, rootWalletKeysXpubs);
+    });
+
+    it('round-trip test', function () {
+      assert.deepStrictEqual(psbt.toBuffer(), createPsbtFromBuffer(psbt.toBuffer(), network).toBuffer());
+    });
+
+    it(`getSignatureValidationArray with globalXpub ${coin} ${sign}`, function () {
       psbt.data.inputs.forEach((input, inputIndex) => {
         const isP2shP2pk = inputs[inputIndex].scriptType === 'p2shP2pk';
         const expectedSigValid = getSigValidArray(inputs[inputIndex].scriptType, sign);
