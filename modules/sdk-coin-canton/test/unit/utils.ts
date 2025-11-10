@@ -18,7 +18,7 @@ describe('Canton Util', function () {
       should.exist(parsedData);
       assert.equal(parsedData.sender, 'abc-1::12200c1ee226fbdf9fba3461c2c0c73331b69d3c6fd8cfce28cdf864141141cc656d');
       assert.equal(parsedData.receiver, 'abc-2::12207e96ada18a845adf4dc01410265633d5266dca9bb280c98e35c3692db87d3e35');
-      assert.equal(parsedData.amount, '20.0000000000');
+      assert.equal(parsedData.amount, '200000000000');
     });
 
     it('should parse the acceptance prepared transaction', () => {
@@ -29,7 +29,7 @@ describe('Canton Util', function () {
         parsedData.receiver,
         'ravi-demo-party-txn-01-tapper::1220ea7ab5a723f8a6b2078e617e6c58cb7e78e49947ddc239e1a941aa56e6ba08b4'
       );
-      assert.equal(parsedData.amount, '5.0000000000');
+      assert.equal(parsedData.amount, '50000000000');
     });
 
     it('should parse the one-step preapproval prepared transaction', () => {
