@@ -911,11 +911,11 @@ function createTSSSendParams(req: express.Request, wallet: Wallet) {
  * handle send one
  * @param req
  */
-async function handleV2SendOne(req: express.Request) {
+async function handleV2SendOne(req: ExpressApiRouteRequest<'express.v2.wallet.sendcoins', 'post'>) {
   const bitgo = req.bitgo;
-  const coin = bitgo.coin(req.params.coin);
+  const coin = bitgo.coin(req.decoded.coin);
   const reqId = new RequestTracer();
-  const wallet = await coin.wallets().get({ id: req.params.id, reqId });
+  const wallet = await coin.wallets().get({ id: req.decoded.id, reqId });
   req.body.reqId = reqId;
 
   let result;
@@ -1640,7 +1640,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   router.post('express.v2.wallet.recovertoken', [prepareBitGo(config), typedPromiseWrapper(handleV2RecoverToken)]);
 
   // send transaction
-  app.post('/api/v2/:coin/wallet/:id/sendcoins', parseBody, prepareBitGo(config), promiseWrapper(handleV2SendOne));
+  router.post('express.v2.wallet.sendcoins', [prepareBitGo(config), typedPromiseWrapper(handleV2SendOne)]);
   router.post('express.v2.wallet.sendmany', [prepareBitGo(config), typedPromiseWrapper(handleV2SendMany)]);
   router.post('express.v2.wallet.prebuildandsigntransaction', [
     prepareBitGo(config),

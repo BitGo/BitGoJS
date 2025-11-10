@@ -38,6 +38,7 @@ import { PostSendMany } from './v2/sendmany';
 import { PostConsolidateUnspents } from './v2/consolidateunspents';
 import { PostPrebuildAndSignTransaction } from './v2/prebuildAndSignTransaction';
 import { PostCoinSign } from './v2/coinSign';
+import { PostSendCoins } from './v2/sendCoins';
 
 // Too large types can cause the following error
 //
@@ -168,6 +169,12 @@ export const ExpressV2WalletSendManyApiSpec = apiSpec({
   },
 });
 
+export const ExpressV2WalletSendCoinsApiSpec = apiSpec({
+  'express.v2.wallet.sendcoins': {
+    post: PostSendCoins,
+  },
+});
+
 export const ExpressKeychainLocalApiSpec = apiSpec({
   'express.keychain.local': {
     post: PostKeychainLocal,
@@ -264,6 +271,7 @@ export type ExpressApi = typeof ExpressPingApiSpec &
   typeof ExpressLightningInitWalletApiSpec &
   typeof ExpressLightningUnlockWalletApiSpec &
   typeof ExpressV2WalletSendManyApiSpec &
+  typeof ExpressV2WalletSendCoinsApiSpec &
   typeof ExpressOfcSignPayloadApiSpec &
   typeof ExpressWalletRecoverTokenApiSpec &
   typeof ExpressCoinSigningApiSpec &
@@ -295,6 +303,7 @@ export const ExpressApi: ExpressApi = {
   ...ExpressLightningInitWalletApiSpec,
   ...ExpressLightningUnlockWalletApiSpec,
   ...ExpressV2WalletSendManyApiSpec,
+  ...ExpressV2WalletSendCoinsApiSpec,
   ...ExpressOfcSignPayloadApiSpec,
   ...ExpressWalletRecoverTokenApiSpec,
   ...ExpressCoinSigningApiSpec,
