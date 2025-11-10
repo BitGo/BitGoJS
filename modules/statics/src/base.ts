@@ -484,6 +484,11 @@ export enum CoinFeature {
    * This token is a stablecoin
    */
   STABLECOIN = 'stablecoin',
+
+  /**
+   * This coin supports alternative address identifier format
+   */
+  ALTERNATIVE_ADDRESS_IDENTIFIER = 'alternative-address-identifier',
 }
 
 /**
