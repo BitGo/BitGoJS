@@ -156,6 +156,7 @@ function runPsbt(
       const fixture = {
         walletKeys: rootWalletKeys.triple.map((xpub) => xpub.toBase58()),
         psbtBase64: psbt.toBase64(),
+        psbtBase64Finalized: finalizedPsbt ? finalizedPsbt.toBase64() : null,
         inputs: psbt.txInputs.map((input) => toFixture(input)),
         psbtInputs: getFixturePsbtInputs(psbt, inputs),
         psbtInputsFinalized: finalizedPsbt ? getFixturePsbtInputs(finalizedPsbt, inputs) : null,
