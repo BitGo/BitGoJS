@@ -28,7 +28,9 @@ import {
   txnInputScriptTypes,
   TxnOutput,
   txnOutputScriptTypes,
+  getWalletKeysForSeed,
 } from '../../../src/testutil';
+import { Output as TestutilPsbtOutput } from '../../../src/testutil/psbt';
 import { getNetworkList, getNetworkName, isMainnet, Network, networks } from '../../../src';
 import { isSupportedScriptType } from '../../../src/bitgo/outputScripts';
 import {
@@ -47,8 +49,16 @@ const rootWalletKeysXpubs = new RootWalletKeys(
   rootWalletKeys.derivationPrefixes
 );
 
-const psbtInputs = inputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(1000) }));
-const psbtOutputs = outputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(900) }));
+const psbtInputs = inputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(2000) }));
+const psbtOutputs: TestutilPsbtOutput[] = outputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(900) }));
+
+const otherWalletKeys = getWalletKeysForSeed('too many secrets');
+// Test other wallet output
+psbtOutputs.push({ scriptType: 'p2sh', value: BigInt(900), walletKeys: otherWalletKeys });
+// Test non-wallet output
+psbtOutputs.push({ scriptType: 'p2sh', value: BigInt(900), walletKeys: null });
+// Test OP_RETURN output
+psbtOutputs.push({ opReturn: 'setec astronomy', value: BigInt(900) });
 
 const txInputs = txnInputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(1000) }));
 const txOutputs = txnOutputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(900) }));
@@ -261,10 +271,11 @@ signs.forEach((sign) => {
       const supportedPsbtInputs = psbtInputs.filter((input) =>
         isSupportedScriptType(network, input.scriptType === 'taprootKeyPathSpend' ? 'p2trMusig2' : input.scriptType)
       );
-      const supportedPsbtOutputs = psbtOutputs.filter((output) => isSupportedScriptType(network, output.scriptType));
+      const supportedPsbtOutputs = psbtOutputs.filter((output) =>
+        'scriptType' in output ? isSupportedScriptType(network, output.scriptType) : true
+      );
       runPsbt(network, sign, supportedPsbtInputs, supportedPsbtOutputs, { txFormat: 'psbt' });
       runPsbt(network, sign, supportedPsbtInputs, supportedPsbtOutputs, { txFormat: 'psbt-lite' });
-
       const supportedTxInputs = txInputs.filter((input) => isSupportedScriptType(network, input.scriptType));
       const supportedTxOutputs = txOutputs.filter((output) => isSupportedScriptType(network, output.scriptType));
       runTx(network, sign, supportedTxInputs, supportedTxOutputs);

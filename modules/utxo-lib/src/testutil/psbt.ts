@@ -1,3 +1,4 @@
+import * as bitcoinjslib from 'bitcoinjs-lib';
 import { ok as assert } from 'assert';
 
 import {
@@ -31,9 +32,10 @@ import { mockReplayProtectionUnspent, mockWalletUnspent } from './mock';
 import { toOutputScript } from '../address';
 
 /**
- * input script type and value.
- * use p2trMusig2 for p2trMusig2 script path.
- * use taprootKeyPathSpend for p2trMusig2 key path.
+ * This is a bit of a misnomer, as it actually specifies the spend type of the input.
+ * This makes a difference for p2trMusig2 inputs, as they can be spent either by key path or script path.
+ * The value p2trMusig2 is used for p2trMusig2 script path.
+ * The value taprootKeyPathSpend is used for p2trMusig2 key path.
  */
 export type InputScriptType = ScriptType | 'taprootKeyPathSpend';
 export type OutputScriptType = ScriptType2Of3;
@@ -52,8 +54,12 @@ export type Input = {
 // Make script: string as instead of scriptType or address
 export type Output = {
   value: bigint;
+  // Determines chain code for the output
   isInternalAddress?: boolean;
-} & ({ scriptType: OutputScriptType } | { address: string } | { script: string });
+  // Determines the wallet keys to use for the output. By default use root wallet keys used for the inputs.
+  // When set to null, omits the derivation info and effectively makes the output non-wallet output.
+  walletKeys?: RootWalletKeys | null;
+} & ({ scriptType: OutputScriptType } | { address: string } | { script: string } | { opReturn: string });
 
 /**
  * array of supported input script types.
@@ -194,18 +200,30 @@ export function constructPsbt(
     if ('scriptType' in output) {
       addWalletOutputToPsbt(
         psbt,
-        rootWalletKeys,
+        output.walletKeys ?? rootWalletKeys,
         output.isInternalAddress ? getInternalChainCode(output.scriptType) : getExternalChainCode(output.scriptType),
         i,
-        output.value
+        output.value,
+        { addDerivationInfo: output.walletKeys !== null }
       );
+      return;
     } else if ('address' in output) {
       const { address, value } = output;
       psbt.addOutput({ script: toOutputScript(address, network), value });
+      return;
+    } else if ('opReturn' in output) {
+      const { opReturn, value } = output;
+      const script = bitcoinjslib.payments.embed({ data: [Buffer.from(opReturn, 'ascii')] }).output;
+      assert(script, 'script is required');
+      psbt.addOutput({ script, value });
+      return;
     } else if ('script' in output) {
       const { script, value } = output;
       psbt.addOutput({ script: Buffer.from(script, 'hex'), value });
+      return;
     }
+
+    throw new Error('invalid output');
   });
 
   if (sign === 'unsigned') {

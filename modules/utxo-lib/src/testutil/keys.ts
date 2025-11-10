@@ -52,6 +52,10 @@ export function getDefaultCosigner<T>(keyset: Triple<T>, signer: T): T {
   throw new Error(`signer not in pubkeys`);
 }
 
+export function getWalletKeysForSeed(seed: string): RootWalletKeys {
+  return new RootWalletKeys(getKeyTriple(seed));
+}
+
 export function getDefaultWalletKeys(): RootWalletKeys {
-  return new RootWalletKeys(getKeyTriple('default'));
+  return getWalletKeysForSeed('default');
 }
