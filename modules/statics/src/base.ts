@@ -2865,6 +2865,17 @@ export enum UnderlyingAsset {
   'flow:usdf' = 'flow:usdf',
   'flow:wflow' = 'flow:wflow',
 
+  // Monad mainnet tokens
+  'mon:usdc' = 'mon:usdc',
+  'mon:wmon' = 'mon:wmon',
+
+  // XDC mainnet tokens
+  'xdc:usdc' = 'xdc:usdc',
+  'xdc:lbt' = 'xdc:lbt',
+  'xdc:gama' = 'xdc:gama',
+  'xdc:srx' = 'xdc:srx',
+  'xdc:weth' = 'xdc:weth',
+
   // Arbitrum testnet tokens
   'tarbeth:link' = 'tarbeth:link',
   'tarbeth:xsgd' = 'tarbeth:xsgd',

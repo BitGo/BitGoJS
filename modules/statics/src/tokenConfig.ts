@@ -266,6 +266,12 @@ export interface Tokens {
     bera: {
       tokens: EthLikeTokenConfig[];
     };
+    mon: {
+      tokens: EthLikeTokenConfig[];
+    };
+    xdc: {
+      tokens: EthLikeTokenConfig[];
+    };
     apt: {
       tokens: AptTokenConfig[];
       nftCollections: AptNFTCollectionConfig[];
@@ -305,6 +311,12 @@ export interface Tokens {
       tokens: CeloTokenConfig[];
     };
     bsc: {
+      tokens: EthLikeTokenConfig[];
+    };
+    mon: {
+      tokens: EthLikeTokenConfig[];
+    };
+    xdc: {
       tokens: EthLikeTokenConfig[];
     };
     eos: {
@@ -752,6 +764,43 @@ const getFormattedSeievmTokens = (customCoinMap = coins) =>
   customCoinMap.reduce((acc: EthLikeTokenConfig[], coin) => {
     if (coin instanceof EthLikeERC20Token && (coin.name.includes('seievm:') || coin.name.includes('tseievm:'))) {
       acc.push(getSeievmTokenConfig(coin));
+    }
+    return acc;
+  }, []);
+
+function getMonadTokenConfig(coin: EthLikeERC20Token): EthLikeTokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'mon' : 'tmon',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+    decimalPlaces: coin.decimalPlaces,
+  };
+}
+const getFormattedMonadTokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: EthLikeTokenConfig[], coin) => {
+    if (coin instanceof EthLikeERC20Token && (coin.name.includes('mon:') || coin.name.includes('tmon:'))) {
+      acc.push(getMonadTokenConfig(coin));
+    }
+    return acc;
+  }, []);
+
+function getXdcTokenConfig(coin: EthLikeERC20Token): EthLikeTokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'xdc' : 'txdc',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+    decimalPlaces: coin.decimalPlaces,
+  };
+}
+
+const getFormattedXdcTokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: EthLikeTokenConfig[], coin) => {
+    if (coin instanceof EthLikeERC20Token && (coin.name.includes('xdc:') || coin.name.includes('txdc:'))) {
+      acc.push(getXdcTokenConfig(coin));
     }
     return acc;
   }, []);
@@ -1258,6 +1307,12 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
       flow: {
         tokens: getFormattedFlowTokens(coinMap).filter((token) => token.network === 'Mainnet'),
       },
+      mon: {
+        tokens: getFormattedMonadTokens(coinMap).filter((token) => token.network === 'Mainnet'),
+      },
+      xdc: {
+        tokens: getFormattedXdcTokens(coinMap).filter((token) => token.network === 'Mainnet'),
+      },
       lineaeth: {
         tokens: getFormattedLineaethTokens(coinMap).filter((token) => token.network === 'Mainnet'),
       },
@@ -1376,6 +1431,12 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
       },
       flow: {
         tokens: getFormattedFlowTokens(coinMap).filter((token) => token.network === 'Testnet'),
+      },
+      mon: {
+        tokens: getFormattedMonadTokens(coinMap).filter((token) => token.network === 'Testnet'),
+      },
+      xdc: {
+        tokens: getFormattedXdcTokens(coinMap).filter((token) => token.network === 'Testnet'),
       },
       lineaeth: {
         tokens: getFormattedLineaethTokens(coinMap).filter((token) => token.network === 'Testnet'),

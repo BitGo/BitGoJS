@@ -1020,6 +1020,16 @@ export function getTokenConstructor(tokenConfig: TokenConfig): CoinConstructor |
     case 'ton':
     case 'tton':
       return JettonToken.createTokenConstructor(tokenConfig as JettonTokenConfig);
+    case 'mon':
+    case 'tmon': {
+      const coinNames = { Mainnet: 'mon', Testnet: 'tmon' };
+      return EthLikeErc20Token.createTokenConstructor(tokenConfig as EthLikeTokenConfig, coinNames);
+    }
+    case 'xdc':
+    case 'txdc': {
+      const coinNames = { Mainnet: 'xdc', Testnet: 'txdc' };
+      return EthLikeErc20Token.createTokenConstructor(tokenConfig as EthLikeTokenConfig, coinNames);
+    }
     default:
       return undefined;
   }
