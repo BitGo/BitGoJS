@@ -9,8 +9,8 @@ export interface FlareNetwork extends BaseNetwork {
   batcherContractAddress?: string;
   forwarderFactoryAddress?: string;
   forwarderImplementationAddress?: string;
-  blockchainID?: string;
-  cChainBlockchainID?: string;
+  blockchainID: string;
+  cChainBlockchainID: string;
   networkID?: number;
   hrp: string;
   alias: string;

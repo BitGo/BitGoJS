@@ -1,4 +1,4 @@
-import { AtomicTransactionBuilder } from './atomicTransactionBuilderDeprecated';
+import { AtomicTransactionBuilder } from './atomicTransactionBuilder';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import utils from './utils';
 import { BuildTransactionError } from '@bitgo/sdk-core';
