@@ -856,6 +856,39 @@ describe('TSS Ecdsa Utils:', async function () {
         .should.be.rejectedWith('the transaction amount in txPrebuild does not match the value given by client');
     });
 
+    it('signTxRequest should succeed for WalletConnect ERC20 transfer with data field', async function () {
+      nock.cleanAll();
+      // WalletConnect ERC20 transfer: recipients[0].address is token contract, recipients[0].data contains the actual recipient
+      const signableHex =
+        '02f86f83088bb00283e1d7dd84768ea6898301e04b94d9327fd36c3312466efed23ff0493453ee32f55180b844a9059cbb0000000000000000000000007d7e63af583ba73ba5c927dbd028153963566bef00000000000000000000000000000000000000000000000000470de4df820000c0';
+      const serializedTxHex =
+        '02f87283088bb00283e1d7dd84768ea6898301e04b94d9327fd36c3312466efed23ff0493453ee32f55180b844a9059cbb0000000000000000000000007d7e63af583ba73ba5c927dbd028153963566bef00000000000000000000000000000000000000000000000000470de4df820000c0808080';
+      await setupSignTxRequestNocks(true, userSignShare, aShare, dShare, enterpriseData, {
+        signableHex,
+        serializedTxHex,
+        apiVersion: 'full',
+      });
+      await tssUtils.signTxRequest({
+        txRequest: txRequestId,
+        prv: JSON.stringify({
+          pShare: userKeyShare.pShare,
+          bitgoNShare: bitgoKeyShare.nShares[1],
+          backupNShare: backupKeyShare.nShares[1],
+        }),
+        reqId,
+        txParams: {
+          recipients: [
+            {
+              address: '0xd9327fd36c3312466efed23ff0493453ee32f551', // Token contract address
+              amount: '20000000000000000',
+              data: '0xa9059cbb0000000000000000000000007d7e63af583ba73ba5c927dbd028153963566bef00000000000000000000000000000000000000000000000000470de4df820000', // ERC20 transfer calldata with actual recipient
+            },
+          ],
+          type: 'transfer',
+        },
+      });
+    });
+
     it('getOfflineSignerPaillierModulus should succeed', async function () {
       const paillierModulus = tssUtils.getOfflineSignerPaillierModulus({
         prv: JSON.stringify({

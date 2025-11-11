@@ -81,6 +81,7 @@ export interface ITransactionRecipient {
   amount: string | number;
   tokenName?: string;
   memo?: string;
+  data?: string;
 }
 
 /**
