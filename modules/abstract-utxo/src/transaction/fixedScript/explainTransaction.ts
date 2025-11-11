@@ -295,8 +295,8 @@ function getBip322MessageInfoAndVerify(psbt: bitgo.UtxoPsbt, network: utxolib.Ne
  * Decompose a raw psbt into useful information, such as the total amounts,
  * change amounts, and transaction outputs.
  */
-export function explainPsbt<TNumber extends number | bigint, Tx extends bitgo.UtxoTransaction<bigint>>(
-  psbt: bitgo.UtxoPsbt<Tx>,
+export function explainPsbt(
+  psbt: bitgo.UtxoPsbt,
   params: {
     pubs?: bitgo.RootWalletKeys | string[];
   },
@@ -321,7 +321,7 @@ export function explainPsbt<TNumber extends number | bigint, Tx extends bitgo.Ut
 
   const messages = getBip322MessageInfoAndVerify(psbt, network);
   const changeInfo = getChangeInfo(psbt);
-  const tx = psbt.getUnsignedTx() as bitgo.UtxoTransaction<TNumber>;
+  const tx = psbt.getUnsignedTx();
   const common = explainCommon(tx, { ...params, changeInfo }, network);
   const inputSignaturesCount = getPsbtInputSignaturesCount(psbt, params);
 
