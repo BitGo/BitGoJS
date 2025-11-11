@@ -368,3 +368,86 @@ jobs:
             git diff
             exit 1
           fi
+
+  audit-api-spec:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Setup Node.js 18
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+
+      - name: Restore lerna dependencies
+        id: lerna-cache
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: |
+            node_modules
+            modules/*/node_modules
+          key: ${{ runner.os }}-node18-${{ hashFiles('yarn.lock') }}-${{ hashFiles('tsconfig.packages.json') }}-${{ hashFiles('**/package.json') }}
+
+      - name: Install Packages
+        if: steps.lerna-cache.outputs.cache-hit != 'true'
+        run: yarn install --with-frozen-lockfile --ignore-scripts
+
+      - name: Build packages
+        env:
+          DISABLE_V8_COMPILE_CACHE: '1'
+        run: yarn run postinstall
+
+      - name: Install OpenAPI Generator at root
+        run: yarn add -W @api-ts/openapi-generator@v5
+
+      - name: Download and install vacuum v0.18.1
+        run: |
+          curl -L \
+            --output vacuum.tar.gz \
+            --silent \
+            --show-error \
+            --fail \
+            https://github.com/daveshanley/vacuum/releases/download/v0.18.1/vacuum_0.18.1_linux_x86_64.tar.gz
+          tar -xzf vacuum.tar.gz
+          chmod u+x vacuum
+          sudo mv vacuum /usr/local/bin/
+          vacuum version
+
+      - name: Generate API spec
+        working-directory: modules/express
+        run: |
+          ../../node_modules/.bin/openapi-generator \
+            --codec-file openapi-generator.rc.js \
+            src/typedRoutes/api/index.ts \
+            > api-generated.json
+
+      - name: Audit with Vacuum
+        working-directory: modules/express
+        run: |
+
+          vacuum report \
+            --no-style \
+            --stdout \
+            --ruleset ruleset.yaml \
+            api-generated.json > vacuum-report.json
+          
+          jq '.resultSet.results // []' vacuum-report.json > vacuum-results.json
+          
+          ERROR_COUNT=$(jq '[.[] | select(.ruleSeverity == "error")] | length' vacuum-results.json)
+          WARNING_COUNT=$(jq '[.[] | select(.ruleSeverity == "warn")] | length' vacuum-results.json)
+          
+          echo "Found $ERROR_COUNT error(s) and $WARNING_COUNT warning(s)"
+          
+          if [ "$ERROR_COUNT" -gt 0 ]; then
+            echo "API specification audit failed with $ERROR_COUNT error(s)"
+            echo ""
+            echo "Errors:"
+            jq -r '.[] | select(.ruleSeverity == "error") | "  - [\(.ruleId)] \(.message) at \(.path)"' vacuum-results.json
+            exit 1
+          else
+            echo "API specification audit passed!"
+          fi

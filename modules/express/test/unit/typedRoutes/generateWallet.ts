@@ -389,7 +389,7 @@ describe('Generate Wallet Typed Routes Tests', function () {
   describe('Route Definition', function () {
     it('should have correct route metadata', function () {
       assert.strictEqual(PostGenerateWallet.method, 'POST');
-      assert.strictEqual(PostGenerateWallet.path, '/api/v2/:coin/wallet/generate');
+      assert.strictEqual(PostGenerateWallet.path, '/api/v2/{coin}/wallet/generate');
       assert.ok(PostGenerateWallet.response[200]);
       assert.ok(PostGenerateWallet.response[400]);
     });
