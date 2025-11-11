@@ -3,9 +3,7 @@ import * as assert from 'assert';
 import { getStrictSignatureCount, getStrictSignatureCounts } from '../../../src/bitgo';
 import { constructTxnBuilder, TxnInput } from '../../../src/testutil';
 import { AcidTest, SignStage } from '../../../src/testutil/psbt';
-import { getNetworkList, getNetworkName, isMainnet, networks } from '../../../src';
-
-const signs = ['unsigned', 'halfsigned', 'fullsigned'] as const;
+import { getNetworkName } from '../../../src';
 
 function signCount(signStage: SignStage) {
   return signStage === 'unsigned' ? 0 : signStage === 'halfsigned' ? 1 : 2;
@@ -47,10 +45,8 @@ function runTx(acidTest: AcidTest) {
   });
 }
 
-signs.forEach((sign) => {
-  getNetworkList()
-    .filter((v) => isMainnet(v) && v !== networks.bitcoinsv)
-    .forEach((network) => {
-      runTx(AcidTest.withDefaults(network, sign, 'psbt'));
-    });
-});
+AcidTest.suite()
+  .filter((acidTest) => acidTest.txFormat === 'psbt')
+  .forEach((acidTest) => {
+    runTx(acidTest);
+  });

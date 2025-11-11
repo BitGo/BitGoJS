@@ -29,7 +29,7 @@ import {
   addXpubsToPsbt,
   clonePsbtWithoutNonWitnessUtxo,
 } from '../bitgo';
-import { Network } from '../networks';
+import { getNetworkList, getNetworkName, isMainnet, Network, networks } from '../networks';
 import { mockReplayProtectionUnspent, mockWalletUnspent } from './mock';
 import { toOutputScript } from '../address';
 import { getDefaultWalletKeys, getWalletKeysForSeed } from './keys';
@@ -51,7 +51,8 @@ export type Input = {
   value: bigint;
 };
 
-export type SignStage = 'unsigned' | 'halfsigned' | 'fullsigned';
+export const signStages = ['unsigned', 'halfsigned', 'fullsigned'] as const;
+export type SignStage = (typeof signStages)[number];
 
 /**
  * Set isInternalAddress=true for internal output address
@@ -254,7 +255,8 @@ export function constructPsbt(
   return psbt;
 }
 
-export type TxFormat = 'psbt' | 'psbt-lite';
+export const txFormats = ['psbt', 'psbt-lite'] as const;
+export type TxFormat = (typeof txFormats)[number];
 
 /**
  * Creates a valid PSBT with as many features as possible.
@@ -321,6 +323,11 @@ export class AcidTest {
     return new AcidTest(network, signStage, txFormat, rootWalletKeys, otherWalletKeys, inputs, outputs);
   }
 
+  get name(): string {
+    const networkName = getNetworkName(this.network);
+    return `${networkName} ${this.signStage} ${this.txFormat}`;
+  }
+
   createPsbt(): UtxoPsbt {
     const psbt = constructPsbt(this.inputs, this.outputs, this.network, this.rootWalletKeys, this.signStage, {
       deterministic: true,
@@ -330,6 +337,16 @@ export class AcidTest {
       return clonePsbtWithoutNonWitnessUtxo(psbt);
     }
     return psbt;
+  }
+
+  static suite(): AcidTest[] {
+    return getNetworkList()
+      .filter((network) => isMainnet(network) && network !== networks.bitcoinsv)
+      .flatMap((network) =>
+        signStages.flatMap((signStage) =>
+          txFormats.flatMap((txFormat) => AcidTest.withDefaults(network, signStage, txFormat))
+        )
+      );
   }
 }
 

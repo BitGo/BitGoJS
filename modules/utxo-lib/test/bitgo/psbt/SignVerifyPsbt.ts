@@ -14,15 +14,13 @@ import {
 } from '../../../src/bitgo';
 import { Input as TestUtilInput } from '../../../src/testutil';
 import { AcidTest, InputScriptType, SignStage } from '../../../src/testutil/psbt';
-import { getNetworkList, getNetworkName, isMainnet, networks } from '../../../src';
+import { getNetworkName } from '../../../src';
 import {
   parsePsbtMusig2Nonces,
   parsePsbtMusig2PartialSigs,
   parsePsbtMusig2Participants,
 } from '../../../src/bitgo/Musig2';
 import { getFixture } from '../../fixture.util';
-
-const signs = ['unsigned', 'halfsigned', 'fullsigned'] as const;
 
 function getSigValidArray(scriptType: InputScriptType, signStage: SignStage): Triple<boolean> {
   if (scriptType === 'p2shP2pk' || signStage === 'unsigned') {
@@ -83,7 +81,7 @@ function runPsbt(acidTest: AcidTest) {
   const coin = getNetworkName(acidTest.network);
   const signatureCount = signCount(acidTest.signStage);
 
-  describe(`psbt build, sign and verify for ${coin} ${acidTest.signStage}`, function () {
+  describe(`psbt suite for ${acidTest.name}`, function () {
     let psbt: UtxoPsbt;
 
     before(function () {
@@ -92,20 +90,6 @@ function runPsbt(acidTest: AcidTest) {
 
     it('round-trip test', function () {
       assert.deepStrictEqual(psbt.toBuffer(), createPsbtFromBuffer(psbt.toBuffer(), acidTest.network).toBuffer());
-    });
-
-    it(`getSignatureValidationArray with globalXpub ${coin} ${acidTest.signStage}`, function () {
-      psbt.data.inputs.forEach((input, inputIndex) => {
-        const isP2shP2pk = acidTest.inputs[inputIndex].scriptType === 'p2shP2pk';
-        const expectedSigValid = getSigValidArray(acidTest.inputs[inputIndex].scriptType, acidTest.signStage);
-        psbt.getSignatureValidationArray(inputIndex, { rootNodes: acidTest.rootWalletKeys.triple }).forEach((sv, i) => {
-          if (isP2shP2pk && acidTest.signStage !== 'unsigned' && i === 0) {
-            assert.strictEqual(sv, true);
-          } else {
-            assert.strictEqual(sv, expectedSigValid[i]);
-          }
-        });
-      });
     });
 
     it('matches fixture', async function () {
@@ -130,7 +114,7 @@ function runPsbt(acidTest: AcidTest) {
       assert.deepStrictEqual(fixture, await getFixture(`${__dirname}/../fixtures/psbt/${filename}`, fixture));
     });
 
-    it(`getSignatureValidationArray with rootNodes ${coin} ${acidTest.signStage}`, function () {
+    it(`getSignatureValidationArray`, function () {
       psbt.data.inputs.forEach((input, inputIndex) => {
         const isP2shP2pk = acidTest.inputs[inputIndex].scriptType === 'p2shP2pk';
         const expectedSigValid = getSigValidArray(acidTest.inputs[inputIndex].scriptType, acidTest.signStage);
@@ -144,7 +128,7 @@ function runPsbt(acidTest: AcidTest) {
       });
     });
 
-    it(`getSignatureValidationArrayPsbt  ${coin} ${acidTest.signStage}`, function () {
+    it(`getSignatureValidationArrayPsbt`, function () {
       const sigValidations = getSignatureValidationArrayPsbt(psbt, acidTest.rootWalletKeys);
       psbt.data.inputs.forEach((input, inputIndex) => {
         const expectedSigValid = getSigValidArray(acidTest.inputs[inputIndex].scriptType, acidTest.signStage);
@@ -154,7 +138,7 @@ function runPsbt(acidTest: AcidTest) {
       });
     });
 
-    it(`psbt signature counts ${coin} ${acidTest.signStage}`, function () {
+    it(`psbt signature counts`, function () {
       const counts = getStrictSignatureCounts(psbt);
       const countsFromInputs = getStrictSignatureCounts(psbt.data.inputs);
 
@@ -186,11 +170,6 @@ function runPsbt(acidTest: AcidTest) {
   });
 }
 
-signs.forEach((sign) => {
-  getNetworkList()
-    .filter((v) => isMainnet(v) && v !== networks.bitcoinsv)
-    .forEach((network) => {
-      runPsbt(AcidTest.withDefaults(network, sign, 'psbt'));
-      runPsbt(AcidTest.withDefaults(network, sign, 'psbt-lite'));
-    });
+AcidTest.suite().forEach((acidTest) => {
+  runPsbt(acidTest);
 });
