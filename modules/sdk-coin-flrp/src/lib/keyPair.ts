@@ -124,7 +124,7 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
    *
    * @returns {Buffer} The address buffer derived from the public key
    */
-  private getAddressBuffer(): Buffer {
+  getAddressBuffer(): Buffer {
     try {
       // Use the safe buffer method for address derivation
       return this.getAddressSafeBuffer();

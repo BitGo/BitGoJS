@@ -12,8 +12,8 @@ export interface FlareNetwork extends BaseNetwork {
   blockchainID?: string;
   cChainBlockchainID?: string;
   networkID?: number;
-  hrp?: string;
-  alias?: string;
+  hrp: string;
+  alias: string;
   vm?: string;
   txFee?: string;
   maxImportFee?: string;
@@ -28,6 +28,7 @@ export interface FlareNetwork extends BaseNetwork {
   maxStakeDuration?: string;
   minDelegationStake?: string;
   minDelegationFee?: string;
+  assetId?: string;
 }
 
 import { CoinFamily } from './base';
@@ -1789,6 +1790,7 @@ export class FlareP extends Mainnet implements FlareNetwork {
   maxStakeDuration = '31536000'; // 1 year
   minDelegationStake = '50000000000000'; // 50000 FLR
   minDelegationFee = '0';
+  assetId = 'FLRP';
 }
 
 export class FlarePTestnet extends Testnet implements FlareNetwork {
@@ -1815,9 +1817,10 @@ export class FlarePTestnet extends Testnet implements FlareNetwork {
   maxStakeDuration = '31536000'; // 1 year
   minDelegationStake = '50000000000000'; // 50000 FLR
   minDelegationFee = '0';
+  assetId = 'FLRP';
 }
 
-export class Flare extends Mainnet implements FlareNetwork, EthereumNetwork {
+export class Flare extends Mainnet implements EthereumNetwork {
   name = 'Flarechain';
   family = CoinFamily.FLR;
   explorerUrl = 'https://flare-explorer.flare.network/tx/';
@@ -1831,7 +1834,7 @@ export class Flare extends Mainnet implements FlareNetwork, EthereumNetwork {
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
 
-export class FlareTestnet extends Testnet implements FlareNetwork, EthereumNetwork {
+export class FlareTestnet extends Testnet implements EthereumNetwork {
   name = 'FlarechainTestnet';
   family = CoinFamily.FLR;
   explorerUrl = 'https://coston2-explorer.flare.network/tx/';

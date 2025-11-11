@@ -1,4 +1,4 @@
-import { UnsignedTx, Credential } from '@flarenetwork/flarejs';
+import { UnsignedTx, Credential, utils as flrpUtils, pvmSerial, secp256k1 } from '@flarenetwork/flarejs';
 import {
   BaseKey,
   BaseTransaction,
@@ -23,10 +23,6 @@ import { KeyPair } from './keyPair';
 import utils from './utils';
 import {
   FLR_ASSET_ID,
-  FLARE_TX_HEX_PLACEHOLDER,
-  FLARE_SIGNABLE_PAYLOAD,
-  FLARE_TRANSACTION_ID_PLACEHOLDER,
-  PLACEHOLDER_NODE_ID,
   HEX_ENCODING,
   MEMO_FIELD,
   DISPLAY_ORDER_BASE,
@@ -34,6 +30,42 @@ import {
   SOURCE_CHAIN_FIELD,
   DESTINATION_CHAIN_FIELD,
 } from './constants';
+
+/**
+ * Checks if a signature is empty
+ * @param signature
+ * @returns {boolean}
+ */
+function isEmptySignature(signature: string): boolean {
+  return !!signature && utils.removeHexPrefix(signature).startsWith(''.padStart(90, '0'));
+}
+
+interface CheckSignature {
+  (signature: string, addressHex: string): boolean;
+}
+
+function generateSelectorSignature(signatures: string[]): CheckSignature {
+  if (signatures.length > 1 && signatures.every((sig) => isEmptySignature(sig))) {
+    // Look for address.
+    return function (sig, address): boolean {
+      try {
+        if (!isEmptySignature(sig)) {
+          return false;
+        }
+        if (sig.startsWith('0x')) sig = sig.substring(2);
+        const pub = sig.substring(90);
+        return pub === address;
+      } catch (e) {
+        return false;
+      }
+    };
+  } else {
+    // Look for empty string
+    return function (sig, address): boolean {
+      return isEmptySignature(sig);
+    };
+  }
+}
 
 /**
  * Flare P-chain transaction implementation using FlareJS
@@ -52,19 +84,19 @@ export class Transaction extends BaseTransaction {
   public _stakeAmount: bigint;
   public _threshold = 2;
   public _locktime = BigInt(0);
-  public _fromAddresses: string[] = [];
+  public _fromAddresses: string[] = []; // TODO need to check for string or Uint8Array
   public _rewardAddresses: string[] = [];
   public _utxos: DecodedUtxoObj[] = [];
   public _to: string[];
   public _fee: Partial<TransactionFee> = {};
   public _blsPublicKey: string;
   public _blsSignature: string;
-  public _memo: Uint8Array = new Uint8Array(); // FlareJS memo field
+  public _memo: Uint8Array = new Uint8Array(); // FlareJS memo field // TODO need to check need for this
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
     this._network = coinConfig.network as FlareNetwork;
-    this._assetId = FLR_ASSET_ID; // Default FLR asset
+    this._assetId = this._network.assetId || FLR_ASSET_ID;
     this._blockchainID = this._network.blockchainID || '';
     this._networkID = this._network.networkID || 0;
   }
@@ -82,14 +114,13 @@ export class Transaction extends BaseTransaction {
       return [];
     }
     // TODO: Extract signatures from FlareJS credentials
-    // For now, return placeholder
-    return [];
+    return this.credentials[0].getSignatures().filter((s) => !isEmptySignature(s));
   }
 
   get credentials(): Credential[] {
     // TODO: Extract credentials from FlareJS transaction
     // For now, return empty array
-    return [];
+    return (this._flareTransaction as UnsignedTx)?.credentials;
   }
 
   get hasCredentials(): boolean {
@@ -107,27 +138,42 @@ export class Transaction extends BaseTransaction {
    * @param {KeyPair} keyPair
    */
   async sign(keyPair: KeyPair): Promise<void> {
-    const prv = keyPair.getPrivateKey() as Buffer;
-
+    const prv = keyPair.getPrivateKey() as Uint8Array;
+    const addressHex = keyPair.getAddressBuffer().toString('hex');
     if (!prv) {
       throw new SigningError('Missing private key');
     }
-
     if (!this.flareTransaction) {
       throw new InvalidTransactionError('empty transaction to sign');
     }
-
     if (!this.hasCredentials) {
       throw new InvalidTransactionError('empty credentials to sign');
     }
+    const unsignedTx = this._flareTransaction as UnsignedTx;
+    const unsignedBytes = unsignedTx.toBytes();
 
-    // TODO: Implement FlareJS signing process
-    // This will involve:
-    // 1. Creating FlareJS signature using private key
-    // 2. Attaching signature to appropriate credential
-    // 3. Updating transaction with signed credentials
-
-    throw new Error('FlareJS signing not yet implemented - placeholder');
+    const publicKey = secp256k1.getPublicKey(prv);
+    if (unsignedTx.hasPubkey(publicKey)) {
+      const signature = await secp256k1.sign(unsignedBytes, prv);
+      let checkSign: CheckSignature | undefined = undefined;
+      unsignedTx.credentials.forEach((c, index) => {
+        if (checkSign === undefined) {
+          checkSign = generateSelectorSignature(c.getSignatures());
+        }
+        let find = false;
+        c.getSignatures().forEach((sig, index) => {
+          if (checkSign && checkSign(sig, addressHex)) {
+            c.setSignature(index, signature);
+            find = true;
+          }
+        });
+        if (!find) {
+          throw new SigningError(
+            `Private key cannot sign the transaction, address hex ${addressHex}, public key: ${publicKey}`
+          );
+        }
+      });
+    }
   }
 
   /**
@@ -171,7 +217,7 @@ export class Transaction extends BaseTransaction {
   }
 
   toHexString(byteArray: Uint8Array): string {
-    return Buffer.from(byteArray).toString(HEX_ENCODING);
+    return flrpUtils.bufferToHex(Buffer.from(byteArray));
   }
 
   /** @inheritdoc */
@@ -180,9 +226,8 @@ export class Transaction extends BaseTransaction {
       throw new InvalidTransactionError('Empty transaction data');
     }
 
-    // TODO: Implement FlareJS transaction serialization
-    // For now, return placeholder
-    return FLARE_TX_HEX_PLACEHOLDER;
+    // TODO: verify and implement FlareJS transaction serialization
+    return this.toHexString(flrpUtils.addChecksum((this._flareTransaction as UnsignedTx).getSignedTx().toBytes()));
   }
 
   toJson(): TxData {
@@ -222,6 +267,7 @@ export class Transaction extends BaseTransaction {
       TransactionType.AddDelegator,
       TransactionType.AddPermissionlessValidator,
       TransactionType.AddPermissionlessDelegator,
+      TransactionType.ImportToC,
     ];
 
     if (!supportedTypes.includes(transactionType)) {
@@ -239,9 +285,8 @@ export class Transaction extends BaseTransaction {
       throw new InvalidTransactionError('Empty transaction for signing');
     }
 
-    // TODO: Implement FlareJS signable payload extraction
-    // For now, return placeholder
-    return Buffer.from(FLARE_SIGNABLE_PAYLOAD);
+    // TODO: verify and Implement FlareJS signable payload extraction
+    return utils.sha256((this._flareTransaction as UnsignedTx).toBytes());
   }
 
   get id(): string {
@@ -249,23 +294,21 @@ export class Transaction extends BaseTransaction {
       throw new InvalidTransactionError('Empty transaction for ID generation');
     }
 
-    // TODO: Implement FlareJS transaction ID generation
-    // For now, return placeholder
-    return FLARE_TRANSACTION_ID_PLACEHOLDER;
+    // TODO: verify and Implement FlareJS transaction ID generation
+    const bufferArray = utils.sha256((this._flareTransaction as UnsignedTx).toBytes());
+    return utils.cb58Encode(Buffer.from(bufferArray));
   }
 
   get fromAddresses(): string[] {
-    return this._fromAddresses.map((address) => {
-      // TODO: Format addresses using FlareJS utilities
-      return address;
-    });
+    return this._fromAddresses.map((a) =>
+      flrpUtils.format(this._network.alias, this._network.hrp, Buffer.from(a, 'hex'))
+    );
   }
 
   get rewardAddresses(): string[] {
-    return this._rewardAddresses.map((address) => {
-      // TODO: Format addresses using FlareJS utilities
-      return address;
-    });
+    return this._rewardAddresses.map((a) =>
+      flrpUtils.format(this._network.alias, this._network.hrp, Buffer.from(a, 'hex'))
+    );
   }
 
   /**
@@ -284,8 +327,12 @@ export class Transaction extends BaseTransaction {
         // TODO: Extract validator outputs from FlareJS transaction
         return [
           {
-            address: this._nodeID || PLACEHOLDER_NODE_ID,
-            value: this._stakeAmount?.toString() || '0',
+            address: (
+              (this._flareTransaction as UnsignedTx).getTx() as pvmSerial.AddPermissionlessValidatorTx
+            ).subnetValidator.validator.nodeId.toString(),
+            value: (
+              (this._flareTransaction as UnsignedTx).getTx() as pvmSerial.AddPermissionlessValidatorTx
+            ).subnetValidator.validator.weight.toString(),
           },
         ];
       case TransactionType.AddDelegator:
@@ -293,8 +340,12 @@ export class Transaction extends BaseTransaction {
         // TODO: Extract delegator outputs from FlareJS transaction
         return [
           {
-            address: this._nodeID || PLACEHOLDER_NODE_ID,
-            value: this._stakeAmount?.toString() || '0',
+            address: (
+              (this._flareTransaction as UnsignedTx).getTx() as pvmSerial.AddPermissionlessDelegatorTx
+            ).subnetValidator.validator.nodeId.toString(),
+            value: (
+              (this._flareTransaction as UnsignedTx).getTx() as pvmSerial.AddPermissionlessDelegatorTx
+            ).subnetValidator.validator.weight.toString(),
           },
         ];
       default:
@@ -309,17 +360,29 @@ export class Transaction extends BaseTransaction {
   get changeOutputs(): Entry[] {
     // TODO: Extract change outputs from FlareJS transaction
     // For now, return empty array
-    return [];
+    return (
+      (this._flareTransaction as UnsignedTx).getTx() as pvmSerial.AddPermissionlessValidatorTx
+    ).baseTx.outputs.map(utils.mapOutputToEntry(this._network));
   }
 
   get inputs(): FlrpEntry[] {
     // TODO: Extract inputs from FlareJS transaction
     // For now, return placeholder based on UTXOs
-    return this._utxos.map((utxo) => ({
-      id: utxo.txid + INPUT_SEPARATOR + utxo.outputidx,
-      address: this.fromAddresses.sort().join(ADDRESS_SEPARATOR),
-      value: utxo.amount,
-    }));
+    let inputs;
+    switch (this.type) {
+      case TransactionType.AddPermissionlessValidator:
+      default:
+        inputs = ((this._flareTransaction as UnsignedTx).getTx() as pvmSerial.AddPermissionlessValidatorTx).baseTx
+          .inputs;
+        break;
+    }
+    return inputs.map((input) => {
+      return {
+        id: input.utxoID.txID.toString() + INPUT_SEPARATOR + input.utxoID.outputIdx.value(),
+        address: this.fromAddresses.sort().join(ADDRESS_SEPARATOR),
+        value: input.amount().toString(),
+      };
+    });
   }
 
   /**
