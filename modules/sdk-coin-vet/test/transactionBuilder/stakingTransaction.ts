@@ -1,13 +1,13 @@
 import { coins } from '@bitgo/statics';
 import { TransactionBuilderFactory, Transaction, StakingTransaction } from '../../src/lib';
 import should from 'should';
-import { STAKING_METHOD_ID, STARGATE_NFT_ADDRESS_TESTNET } from '../../src/lib/constants';
+import { STAKING_METHOD_ID, STARGATE_CONTRACT_ADDRESS_TESTNET } from '../../src/lib/constants';
 import EthereumAbi from 'ethereumjs-abi';
 import * as testData from '../resources/vet';
 
 describe('VET Staking Transaction', function () {
   const factory = new TransactionBuilderFactory(coins.get('tvet'));
-  const stakingContractAddress = STARGATE_NFT_ADDRESS_TESTNET;
+  const stakingContractAddress = STARGATE_CONTRACT_ADDRESS_TESTNET;
   const amountToStake = '1000000000000000000'; // 1 VET in wei
   const levelId = 8; // Test level ID
   const autorenew = true; // Test autorenew flag

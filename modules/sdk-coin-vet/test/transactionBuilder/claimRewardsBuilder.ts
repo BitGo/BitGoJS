@@ -5,8 +5,7 @@ import should from 'should';
 import {
   CLAIM_BASE_REWARDS_METHOD_ID,
   CLAIM_STAKING_REWARDS_METHOD_ID,
-  STARGATE_DELEGATION_ADDRESS_TESTNET,
-  STARGATE_NFT_ADDRESS_TESTNET,
+  STARGATE_CONTRACT_ADDRESS_TESTNET,
 } from '../../src/lib/constants';
 import { TransactionType } from '@bitgo/sdk-core';
 
@@ -58,7 +57,7 @@ describe('VET Claim Rewards Transaction', function () {
     // Find base rewards clause (claimVetGeneratedVtho)
     const baseRewardsClause = claimTx.clauses.find((clause) => clause.data.startsWith(CLAIM_BASE_REWARDS_METHOD_ID));
     should.exist(baseRewardsClause);
-    baseRewardsClause?.to?.should.equal(STARGATE_NFT_ADDRESS_TESTNET);
+    baseRewardsClause?.to?.should.equal(STARGATE_CONTRACT_ADDRESS_TESTNET);
     baseRewardsClause?.value.should.equal('0x0');
 
     // Find staking rewards clause (claimRewards)
@@ -66,7 +65,7 @@ describe('VET Claim Rewards Transaction', function () {
       clause.data.startsWith(CLAIM_STAKING_REWARDS_METHOD_ID)
     );
     should.exist(stakingRewardsClause);
-    stakingRewardsClause?.to?.should.equal(STARGATE_DELEGATION_ADDRESS_TESTNET);
+    stakingRewardsClause?.to?.should.equal(STARGATE_CONTRACT_ADDRESS_TESTNET);
     stakingRewardsClause?.value.should.equal('0x0');
 
     // Verify recipients should be empty for claim rewards
@@ -87,7 +86,7 @@ describe('VET Claim Rewards Transaction', function () {
     // Should have only 1 clause for base rewards
     claimTx.clauses.length.should.equal(1);
     claimTx.clauses[0].data.should.startWith(CLAIM_BASE_REWARDS_METHOD_ID);
-    claimTx.clauses[0].to?.should.equal(STARGATE_NFT_ADDRESS_TESTNET);
+    claimTx.clauses[0].to?.should.equal(STARGATE_CONTRACT_ADDRESS_TESTNET);
     claimTx.clauses[0].value.should.equal('0x0');
 
     claimTx.claimRewardsData.claimBaseRewards?.should.be.true();
@@ -108,7 +107,7 @@ describe('VET Claim Rewards Transaction', function () {
     // Should have only 1 clause for staking rewards
     claimTx.clauses.length.should.equal(1);
     claimTx.clauses[0].data.should.startWith(CLAIM_STAKING_REWARDS_METHOD_ID);
-    claimTx.clauses[0].to?.should.equal(STARGATE_DELEGATION_ADDRESS_TESTNET);
+    claimTx.clauses[0].to?.should.equal(STARGATE_CONTRACT_ADDRESS_TESTNET);
     claimTx.clauses[0].value.should.equal('0x0');
 
     claimTx.claimRewardsData.claimBaseRewards?.should.be.false();
@@ -194,8 +193,8 @@ describe('VET Claim Rewards Transaction', function () {
 
       should.exist(baseRewardsClause);
       should.exist(stakingRewardsClause);
-      baseRewardsClause?.to?.should.equal(STARGATE_NFT_ADDRESS_TESTNET);
-      stakingRewardsClause?.to?.should.equal(STARGATE_DELEGATION_ADDRESS_TESTNET);
+      baseRewardsClause?.to?.should.equal(STARGATE_CONTRACT_ADDRESS_TESTNET);
+      stakingRewardsClause?.to?.should.equal(STARGATE_CONTRACT_ADDRESS_TESTNET);
     });
 
     it('should build transaction with undefined sender but include it in inputs', async function () {
@@ -298,8 +297,8 @@ describe('VET Claim Rewards Transaction', function () {
         clause.data.startsWith(CLAIM_STAKING_REWARDS_METHOD_ID)
       );
 
-      baseRewardsClause?.to?.should.equal(STARGATE_NFT_ADDRESS_TESTNET);
-      stakingRewardsClause?.to?.should.equal(STARGATE_DELEGATION_ADDRESS_TESTNET);
+      baseRewardsClause?.to?.should.equal(STARGATE_CONTRACT_ADDRESS_TESTNET);
+      stakingRewardsClause?.to?.should.equal(STARGATE_CONTRACT_ADDRESS_TESTNET);
     });
   });
 });

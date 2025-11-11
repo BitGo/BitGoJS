@@ -23,8 +23,9 @@ import {
   STARGATE_NFT_ADDRESS,
   STARGATE_NFT_ADDRESS_TESTNET,
   STARGATE_DELEGATION_ADDRESS,
-  STARGATE_DELEGATION_ADDRESS_TESTNET,
   DELEGATE_CLAUSE_METHOD_ID,
+  STARGATE_CONTRACT_ADDRESS_TESTNET,
+  STARGATE_DELEGATION_ADDRESS_TESTNET,
 } from './constants';
 import { KeyPair } from './keyPair';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
@@ -179,21 +180,21 @@ export class Utils implements BaseUtils {
   }
 
   /**
-   * Decodes delegate transaction data to extract tokenId and delegateForever
+   * Decodes delegate transaction data to extract tokenId and validatorAddress
    *
    * @param {string} data - The encoded transaction data
-   * @returns {object} - Object containing tokenId and delegateForever
+   * @returns {object} - Object containing levelId and validator address
    */
-  decodeDelegateClauseData(data: string): { tokenId: number; delegateForever: boolean } {
+  decodeDelegateClauseData(data: string): { tokenId: string; validator: string } {
     try {
       const parameters = data.slice(10);
 
       // Decode using ethereumjs-abi directly
-      const decoded = EthereumAbi.rawDecode(['uint256', 'bool'], Buffer.from(parameters, 'hex'));
+      const decoded = EthereumAbi.rawDecode(['uint256', 'address'], Buffer.from(parameters, 'hex'));
 
       return {
-        tokenId: Number(decoded[0]),
-        delegateForever: Boolean(decoded[1]),
+        tokenId: String(decoded[0]),
+        validator: String(decoded[1]),
       };
     } catch (error) {
       throw new Error(`Failed to decode delegation data: ${error.message}`);
@@ -298,13 +299,13 @@ export class Utils implements BaseUtils {
   }
 
   /**
-   * Get the network-appropriate delegation contract address
+   * Get the network-appropriate stargate contract address
    * @param {CoinConfig} coinConfig - The coin configuration object
    * @returns {string} The delegation contract address for the network
    */
   getDefaultDelegationAddress(coinConfig: Readonly<CoinConfig>): string {
     const isTestnet = coinConfig.network.type === 'testnet';
-    return isTestnet ? STARGATE_DELEGATION_ADDRESS_TESTNET : STARGATE_DELEGATION_ADDRESS;
+    return isTestnet ? STARGATE_CONTRACT_ADDRESS_TESTNET : STARGATE_DELEGATION_ADDRESS;
   }
 
   /**
@@ -314,7 +315,7 @@ export class Utils implements BaseUtils {
    */
   getDefaultStakingAddress(coinConfig: Readonly<CoinConfig>): string {
     const isTestnet = coinConfig.network.type === 'testnet';
-    return isTestnet ? STARGATE_NFT_ADDRESS_TESTNET : STARGATE_NFT_ADDRESS;
+    return isTestnet ? STARGATE_CONTRACT_ADDRESS_TESTNET : STARGATE_NFT_ADDRESS;
   }
 
   /**
@@ -343,10 +344,10 @@ export class Utils implements BaseUtils {
   }
 
   /**
-   * Validate that a contract address matches the expected NFT/staking contract for the network
+   * Validate that a contract address matches the expected stargate address for the network
    * @param {string} address - The contract address to validate
    * @param {CoinConfig} coinConfig - The coin configuration object
-   * @throws {Error} If the address doesn't match the expected NFT contract address
+   * @throws {Error} If the address doesn't match the expected contract address
    */
   validateStakingContractAddress(address: string, coinConfig: Readonly<CoinConfig>): void {
     const expectedAddress = this.getDefaultStakingAddress(coinConfig);
@@ -358,7 +359,7 @@ export class Utils implements BaseUtils {
   }
 
   /**
-   * Validate that a contract address matches the expected delegation contract for the network
+   * Validate that a contract address matches the expected stargate contract for the network
    * @param {string} address - The contract address to validate
    * @param {CoinConfig} coinConfig - The coin configuration object
    * @throws {Error} If the address doesn't match the expected delegation contract address

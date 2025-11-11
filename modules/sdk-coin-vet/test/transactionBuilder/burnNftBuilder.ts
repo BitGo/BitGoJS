@@ -4,7 +4,7 @@ import { coins } from '@bitgo/statics';
 import { TransactionBuilderFactory } from '../../src';
 import { BurnNftTransaction } from '../../src/lib/transaction/burnNftTransaction';
 import * as testData from '../resources/vet';
-import { BURN_NFT_METHOD_ID, STARGATE_NFT_ADDRESS_TESTNET } from '../../src/lib/constants';
+import { BURN_NFT_METHOD_ID, STARGATE_CONTRACT_ADDRESS_TESTNET } from '../../src/lib/constants';
 
 describe('Vet Burn NFT Transaction', () => {
   const factory = new TransactionBuilderFactory(coins.get('tvet'));
@@ -16,7 +16,7 @@ describe('Vet Burn NFT Transaction', () => {
 
       txBuilder.sender(testData.addresses.validAddresses[0]);
       txBuilder.tokenId(tokenId);
-      txBuilder.nftContract(STARGATE_NFT_ADDRESS_TESTNET);
+      txBuilder.nftContract(STARGATE_CONTRACT_ADDRESS_TESTNET);
       txBuilder.gas(21000);
       txBuilder.nonce('64248');
       txBuilder.blockRef('0x014ead140e77bbc1');
@@ -27,7 +27,7 @@ describe('Vet Burn NFT Transaction', () => {
 
       should.equal(tx.sender, testData.addresses.validAddresses[0]);
       should.equal(tx.tokenId, tokenId);
-      should.equal(tx.contract, STARGATE_NFT_ADDRESS_TESTNET);
+      should.equal(tx.contract, STARGATE_CONTRACT_ADDRESS_TESTNET);
       should.equal(tx.gas, 21000);
       should.equal(tx.nonce, '64248');
       should.equal(tx.expiration, 64);
@@ -40,7 +40,7 @@ describe('Vet Burn NFT Transaction', () => {
       tx.clauses.length.should.equal(1);
       should.exist(tx.clauses[0]);
       should.exist(tx.clauses[0].to);
-      tx.clauses[0]?.to?.should.equal(STARGATE_NFT_ADDRESS_TESTNET);
+      tx.clauses[0]?.to?.should.equal(STARGATE_CONTRACT_ADDRESS_TESTNET);
       should.exist(tx.clauses[0].value);
       tx.clauses[0].value.should.equal('0x0');
 
@@ -51,14 +51,14 @@ describe('Vet Burn NFT Transaction', () => {
       should.equal(tx.inputs[0].value, '0');
       should.equal(tx.inputs[0].coin, 'tvet');
 
-      should.equal(tx.outputs[0].address, STARGATE_NFT_ADDRESS_TESTNET);
+      should.equal(tx.outputs[0].address, STARGATE_CONTRACT_ADDRESS_TESTNET);
       should.equal(tx.outputs[0].value, '0');
       should.equal(tx.outputs[0].coin, 'tvet');
     });
 
     it('should build a burn NFT transaction with custom contract address', async function () {
       const tokenId = '123456';
-      const customContractAddress = STARGATE_NFT_ADDRESS_TESTNET; // Use the valid testnet NFT address
+      const customContractAddress = STARGATE_CONTRACT_ADDRESS_TESTNET; // Use the valid testnet NFT address
       const txBuilder = factory.getBurnNftBuilder();
 
       txBuilder.sender(testData.addresses.validAddresses[0]);
@@ -85,7 +85,7 @@ describe('Vet Burn NFT Transaction', () => {
 
       txBuilder.sender(testData.addresses.validAddresses[0]);
       txBuilder.tokenId(tokenId);
-      txBuilder.nftContract(STARGATE_NFT_ADDRESS_TESTNET);
+      txBuilder.nftContract(STARGATE_CONTRACT_ADDRESS_TESTNET);
       txBuilder.gas(21000);
       txBuilder.nonce('64248');
       txBuilder.blockRef('0x014ead140e77bbc1');
@@ -101,7 +101,7 @@ describe('Vet Burn NFT Transaction', () => {
 
       should.equal(deserializedTx.type, TransactionType.StakingWithdraw);
       should.equal(deserializedTx.tokenId, tokenId);
-      should.equal(deserializedTx.contract, STARGATE_NFT_ADDRESS_TESTNET);
+      should.equal(deserializedTx.contract, STARGATE_CONTRACT_ADDRESS_TESTNET);
     });
 
     it('should validate the transaction data structure', async function () {
@@ -111,7 +111,7 @@ describe('Vet Burn NFT Transaction', () => {
       await should(txBuilder.build()).be.rejectedWith('NFT contract address is required');
 
       txBuilder.sender(testData.addresses.validAddresses[0]);
-      txBuilder.nftContract(STARGATE_NFT_ADDRESS_TESTNET);
+      txBuilder.nftContract(STARGATE_CONTRACT_ADDRESS_TESTNET);
       await should(txBuilder.build()).be.rejectedWith('Token ID is required');
 
       // Now add the token ID and it should build successfully
@@ -134,7 +134,7 @@ describe('Vet Burn NFT Transaction', () => {
     it('should fail with invalid token ID', async function () {
       const txBuilder = factory.getBurnNftBuilder();
       txBuilder.sender(testData.addresses.validAddresses[0]);
-      txBuilder.nftContract(STARGATE_NFT_ADDRESS_TESTNET);
+      txBuilder.nftContract(STARGATE_CONTRACT_ADDRESS_TESTNET);
       txBuilder.tokenId('');
 
       await should(txBuilder.build()).be.rejectedWith('Token ID is required');

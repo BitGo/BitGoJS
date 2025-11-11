@@ -1,14 +1,14 @@
 import { coins } from '@bitgo/statics';
 import { TransactionBuilderFactory, Transaction, StakeClauseTransaction } from '../../src/lib';
 import should from 'should';
-import { STAKE_CLAUSE_METHOD_ID, STARGATE_NFT_ADDRESS_TESTNET } from '../../src/lib/constants';
+import { STAKE_CLAUSE_METHOD_ID, STARGATE_CONTRACT_ADDRESS_TESTNET } from '../../src/lib/constants';
 import EthereumAbi from 'ethereumjs-abi';
 import * as testData from '../resources/vet';
 
 describe('VET Staking Transaction', function () {
   const factory = new TransactionBuilderFactory(coins.get('tvet'));
-  const stakingContractAddress = STARGATE_NFT_ADDRESS_TESTNET;
-  const amountToStake = '1000000000000000000'; // 1 VET in wei
+  const stakingContractAddress = STARGATE_CONTRACT_ADDRESS_TESTNET;
+  const amountToStake = '10000000000000000000000'; // 10000 VET in wei
   const levelId = 8; // Test level ID
 
   // Helper function to create a basic transaction builder with common properties
@@ -240,16 +240,15 @@ describe('VET Staking Transaction', function () {
       const txBuilder = factory.from(testData.STAKE_CLAUSE_TRANSACTION);
       const tx = txBuilder.transaction as StakeClauseTransaction;
       const toJson = tx.toJson();
-      toJson.id.should.equal('0x2f96e4c16d70bd3e2dabec29a07eb3d6066691ba5b812d6e897676f6ebc0a798');
-      toJson.stakingContractAddress?.should.equal('0x1ec1d168574603ec35b9d229843b7c2b44bcb770');
-      toJson.amountToStake?.should.equal('0xde0b6b3a7640000');
-      toJson.nonce.should.equal('504440');
-      toJson.gas.should.equal(392538);
+      toJson.id.should.equal('0x7148f62b42ecfdcb7ee62ac0654514e4b5f65f2fe5fdee79d4d29f56ab1722eb');
+      toJson.stakingContractAddress?.should.equal('0x1e02b2953adefec225cf0ec49805b1146a4429c1');
+      toJson.amountToStake?.should.equal(amountToStake);
+      toJson.nonce.should.equal('996363');
+      toJson.gas.should.equal(406410);
       toJson.gasPriceCoef.should.equal(128);
       toJson.expiration.should.equal(64);
       toJson.chainTag.should.equal(39);
-      // in stake txn, nftTokenId indicates the levelId
-      toJson.nftTokenId?.should.equal(8);
+      toJson.levelId?.should.equal(8);
     });
   });
 });

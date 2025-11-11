@@ -88,11 +88,25 @@ export class DelegateTxnBuilder extends TransactionBuilder {
   /**
    * Sets the token ID for this delegate tx.
    *
-   * @param {number} levelId - The level ID for staking
+   * @param {number} levelId - The NFT token ID
    * @returns {DelegateTxnBuilder} This transaction builder
    */
-  tokenId(tokenId: number): this {
+  tokenId(tokenId: string): this {
     this.delegateTransaction.tokenId = tokenId;
+    return this;
+  }
+
+  /**
+   * Sets the validator address for this delegate tx.
+   * @param {string} address - The validator address
+   * @returns {DelegateTxnBuilder} This transaction builder
+   */
+  validator(address: string): this {
+    if (!address) {
+      throw new Error('Validator address is required');
+    }
+    this.validateAddress({ address });
+    this.delegateTransaction.validator = address;
     return this;
   }
 
@@ -115,7 +129,7 @@ export class DelegateTxnBuilder extends TransactionBuilder {
     assert(transaction.stakingContractAddress, 'Staking contract address is required');
 
     assert(transaction.tokenId, 'Token ID is required');
-    assert(transaction.delegateForever, 'delegate forever flag is required');
+    assert(transaction.validator, 'Validator address is required');
     this.validateAddress({ address: transaction.stakingContractAddress });
   }
 
