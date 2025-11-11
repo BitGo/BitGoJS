@@ -2,6 +2,7 @@ import * as assert from 'assert';
 
 import {
   addXpubsToPsbt,
+  clonePsbtWithoutNonWitnessUtxo,
   getPsbtInputSignatureCount,
   getSignatureValidationArrayPsbt,
   getStrictSignatureCount,
@@ -27,9 +28,16 @@ import {
   txnInputScriptTypes,
   TxnOutput,
   txnOutputScriptTypes,
+  getWalletKeysForSeed,
 } from '../../../src/testutil';
+import { Output as TestutilPsbtOutput } from '../../../src/testutil/psbt';
 import { getNetworkList, getNetworkName, isMainnet, Network, networks } from '../../../src';
 import { isSupportedScriptType } from '../../../src/bitgo/outputScripts';
+import {
+  parsePsbtMusig2Nonces,
+  parsePsbtMusig2PartialSigs,
+  parsePsbtMusig2Participants,
+} from '../../../src/bitgo/Musig2';
 import { SignatureTargetType } from './Psbt';
 import { getFixture } from '../../fixture.util';
 
@@ -41,8 +49,16 @@ const rootWalletKeysXpubs = new RootWalletKeys(
   rootWalletKeys.derivationPrefixes
 );
 
-const psbtInputs = inputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(1000) }));
-const psbtOutputs = outputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(900) }));
+const psbtInputs = inputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(2000) }));
+const psbtOutputs: TestutilPsbtOutput[] = outputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(900) }));
+
+const otherWalletKeys = getWalletKeysForSeed('too many secrets');
+// Test other wallet output
+psbtOutputs.push({ scriptType: 'p2sh', value: BigInt(900), walletKeys: otherWalletKeys });
+// Test non-wallet output
+psbtOutputs.push({ scriptType: 'p2sh', value: BigInt(900), walletKeys: null });
+// Test OP_RETURN output
+psbtOutputs.push({ opReturn: 'setec astronomy', value: BigInt(900) });
 
 const txInputs = txnInputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(1000) }));
 const txOutputs = txnOutputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(900) }));
@@ -88,7 +104,13 @@ function getFixturePsbtInputs(psbt: UtxoPsbt, inputs: TestUtilInput[]) {
     throw new Error('inputs length mismatch');
   }
   return psbt.data.inputs.map((input: PsbtInput, index: number) =>
-    toFixture({ type: inputs[index].scriptType, ...input })
+    toFixture({
+      type: inputs[index].scriptType,
+      ...input,
+      musig2Participants: parsePsbtMusig2Participants(input),
+      musig2Nonces: parsePsbtMusig2Nonces(input),
+      musig2PartialSigs: parsePsbtMusig2PartialSigs(input),
+    })
   );
 }
 
@@ -96,7 +118,17 @@ function getFixturePsbtOutputs(psbt: UtxoPsbt) {
   return psbt.data.outputs.map((output: PsbtOutput) => toFixture(output));
 }
 
-function runPsbt(network: Network, sign: SignatureTargetType, inputs: TestUtilInput[], outputs: TestUtilOutput[]) {
+function runPsbt(
+  network: Network,
+  sign: SignatureTargetType,
+  inputs: TestUtilInput[],
+  outputs: TestUtilOutput[],
+  {
+    txFormat,
+  }: {
+    txFormat?: 'psbt' | 'psbt-lite';
+  }
+) {
   const coin = getNetworkName(network);
   const signatureCount = signCount(sign);
   const inputTypes = inputs.map((input) => input.scriptType);
@@ -118,18 +150,31 @@ function runPsbt(network: Network, sign: SignatureTargetType, inputs: TestUtilIn
           }
         });
       });
+
+      if (txFormat === 'psbt-lite') {
+        psbt = clonePsbtWithoutNonWitnessUtxo(psbt);
+      }
     });
 
     it('matches fixture', async function () {
+      let finalizedPsbt: UtxoPsbt | undefined;
+      let extractedTransaction: Buffer | undefined;
+      if (sign === 'fullsigned') {
+        finalizedPsbt = psbt.clone().finalizeAllInputs();
+        extractedTransaction = finalizedPsbt.extractTransaction().toBuffer();
+      }
       const fixture = {
         walletKeys: rootWalletKeys.triple.map((xpub) => xpub.toBase58()),
         psbtBase64: psbt.toBase64(),
+        psbtBase64Finalized: finalizedPsbt ? finalizedPsbt.toBase64() : null,
         inputs: psbt.txInputs.map((input) => toFixture(input)),
         psbtInputs: getFixturePsbtInputs(psbt, inputs),
+        psbtInputsFinalized: finalizedPsbt ? getFixturePsbtInputs(finalizedPsbt, inputs) : null,
         outputs: psbt.txOutputs.map((output) => toFixture(output)),
         psbtOutputs: getFixturePsbtOutputs(psbt),
+        extractedTransaction: extractedTransaction ? toFixture(extractedTransaction) : null,
       };
-      const filename = [`psbt`, coin, sign, 'json'].join('.');
+      const filename = [txFormat, coin, sign, 'json'].join('.');
       assert.deepStrictEqual(fixture, await getFixture(`${__dirname}/../fixtures/psbt/${filename}`, fixture));
     });
 
@@ -226,9 +271,11 @@ signs.forEach((sign) => {
       const supportedPsbtInputs = psbtInputs.filter((input) =>
         isSupportedScriptType(network, input.scriptType === 'taprootKeyPathSpend' ? 'p2trMusig2' : input.scriptType)
       );
-      const supportedPsbtOutputs = psbtOutputs.filter((output) => isSupportedScriptType(network, output.scriptType));
-      runPsbt(network, sign, supportedPsbtInputs, supportedPsbtOutputs);
-
+      const supportedPsbtOutputs = psbtOutputs.filter((output) =>
+        'scriptType' in output ? isSupportedScriptType(network, output.scriptType) : true
+      );
+      runPsbt(network, sign, supportedPsbtInputs, supportedPsbtOutputs, { txFormat: 'psbt' });
+      runPsbt(network, sign, supportedPsbtInputs, supportedPsbtOutputs, { txFormat: 'psbt-lite' });
       const supportedTxInputs = txInputs.filter((input) => isSupportedScriptType(network, input.scriptType));
       const supportedTxOutputs = txOutputs.filter((output) => isSupportedScriptType(network, output.scriptType));
       runTx(network, sign, supportedTxInputs, supportedTxOutputs);

@@ -240,7 +240,7 @@ describe('psbt internal and wallet outputs', function () {
       );
     });
 
-    it('PSBT woth an OP_RETURN output', function () {
+    it('PSBT with an OP_RETURN output', function () {
       const opReturnScript =
         '6a4c505341542b01045bde60b7d0e6b758ca5dd8c61d377a2c5f1af51ec1a9e209f5ea0036c8c2f41078a3cebee57d8a47d501041f5e0e66b17576a914c4b8ae927ff2b9ce218e20bf06d425d6b68424fd88ac';
       const psbt = testutil.constructPsbt(

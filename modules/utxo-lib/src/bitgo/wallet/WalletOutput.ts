@@ -195,7 +195,8 @@ export function addWalletOutputToPsbt(
   rootWalletKeys: RootWalletKeys,
   chain: ChainCode,
   index: number,
-  value: bigint
+  value: bigint,
+  { addDerivationInfo = true }: { addDerivationInfo?: boolean } = {}
 ): void {
   const walletKeys = rootWalletKeys.deriveForChainAndIndex(chain, index);
   const scriptType = scriptTypeForChain(chain);
@@ -207,7 +208,9 @@ export function addWalletOutputToPsbt(
     const { scriptPubKey: script } = createOutputScript2of3(walletKeys.publicKeys, scriptType);
     psbt.addOutput({ script, value });
   }
-  updateWalletOutputForPsbt(psbt, rootWalletKeys, psbt.data.outputs.length - 1, chain, index);
+  if (addDerivationInfo) {
+    updateWalletOutputForPsbt(psbt, rootWalletKeys, psbt.data.outputs.length - 1, chain, index);
+  }
 }
 
 /**
