@@ -192,13 +192,20 @@ describe('ConstructPendingApprovalTx codec tests', function () {
   });
 
   describe('ConstructPendingApprovalTxResponse', function () {
-    it('should validate response with required tx field', function () {
+    it('should validate response with only required tx field', function () {
       const validResponse = {
         tx: '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
       };
 
       const decoded = assertDecode(ConstructPendingApprovalTxResponse, validResponse);
       assert.strictEqual(decoded.tx, validResponse.tx);
+      assert.strictEqual(decoded.fee, undefined);
+      assert.strictEqual(decoded.feeRate, undefined);
+      assert.strictEqual(decoded.instant, undefined);
+      assert.strictEqual(decoded.bitgoFee, undefined);
+      assert.strictEqual(decoded.travelInfos, undefined);
+      assert.strictEqual(decoded.estimatedSize, undefined);
+      assert.strictEqual(decoded.unspents, undefined);
     });
 
     it('should validate response with all fields', function () {
@@ -244,7 +251,7 @@ describe('ConstructPendingApprovalTx codec tests', function () {
       });
     });
 
-    it('should reject response with non-number fee', function () {
+    it('should reject response with non-number fee (optional field, but must be number if provided)', function () {
       const invalidResponse = {
         tx: '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
         fee: '10000', // string instead of number
@@ -255,7 +262,7 @@ describe('ConstructPendingApprovalTx codec tests', function () {
       });
     });
 
-    it('should reject response with non-number feeRate', function () {
+    it('should reject response with non-number feeRate (optional field, but must be number if provided)', function () {
       const invalidResponse = {
         tx: '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
         feeRate: '20000', // string instead of number
@@ -266,7 +273,7 @@ describe('ConstructPendingApprovalTx codec tests', function () {
       });
     });
 
-    it('should reject response with non-boolean instant', function () {
+    it('should reject response with non-boolean instant (optional field, but must be boolean if provided)', function () {
       const invalidResponse = {
         tx: '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
         instant: 'false', // string instead of boolean
@@ -276,7 +283,8 @@ describe('ConstructPendingApprovalTx codec tests', function () {
         assertDecode(ConstructPendingApprovalTxResponse, invalidResponse);
       });
     });
-    it('should reject response with non-number estimatedSize', function () {
+
+    it('should reject response with non-number estimatedSize (optional field, but must be number if provided)', function () {
       const invalidResponse = {
         tx: '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
         estimatedSize: '256', // string instead of number
@@ -386,6 +394,8 @@ describe('ConstructPendingApprovalTx codec tests', function () {
       fee: 10000,
       feeRate: 20000,
       instant: false,
+      estimatedSize: 256,
+      unspents: [{ id: 'unspent1', value: 1000000 }],
     };
 
     afterEach(function () {
@@ -521,6 +531,46 @@ describe('ConstructPendingApprovalTx codec tests', function () {
 
       const decodedResponse = assertDecode(ConstructPendingApprovalTxResponse, result.body);
       assert.strictEqual(decodedResponse.fee, 15000);
+    });
+
+    it('should successfully construct a pending approval transaction with minimal response (only tx)', async function () {
+      const requestBody = {
+        walletPassphrase: 'mySecurePassphrase',
+      };
+
+      const minimalMockResponse = {
+        tx: '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
+      };
+
+      const mockPendingApproval = {
+        constructApprovalTx: sinon.stub().resolves(minimalMockResponse),
+      };
+
+      const mockPendingApprovals = {
+        get: sinon.stub().resolves(mockPendingApproval),
+      };
+
+      sinon.stub(BitGo.prototype, 'pendingApprovals').returns(mockPendingApprovals as any);
+
+      const result = await agent
+        .put('/api/v1/pendingapprovals/test-approval-id-123/constructTx')
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      assert.strictEqual(result.status, 200);
+      result.body.should.have.property('tx');
+      assert.strictEqual(result.body.tx, minimalMockResponse.tx);
+
+      const decodedResponse = assertDecode(ConstructPendingApprovalTxResponse, result.body);
+      assert.strictEqual(decodedResponse.tx, minimalMockResponse.tx);
+      assert.strictEqual(decodedResponse.fee, undefined);
+      assert.strictEqual(decodedResponse.feeRate, undefined);
+      assert.strictEqual(decodedResponse.instant, undefined);
+      assert.strictEqual(decodedResponse.bitgoFee, undefined);
+      assert.strictEqual(decodedResponse.travelInfos, undefined);
+      assert.strictEqual(decodedResponse.estimatedSize, undefined);
+      assert.strictEqual(decodedResponse.unspents, undefined);
     });
 
     it('should successfully construct a pending approval transaction with all optional response fields', async function () {
@@ -866,7 +916,7 @@ describe('ConstructPendingApprovalTx codec tests', function () {
       });
     });
 
-    it('should reject response with wrong type for fee', async function () {
+    it('should reject response with wrong type for fee (optional but must be number if provided)', async function () {
       const requestBody = {
         walletPassphrase: 'mySecurePassphrase',
       };
