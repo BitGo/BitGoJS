@@ -1,8 +1,6 @@
 import * as assert from 'assert';
 
 import {
-  addXpubsToPsbt,
-  clonePsbtWithoutNonWitnessUtxo,
   createPsbtFromBuffer,
   getPsbtInputSignatureCount,
   getSignatureValidationArrayPsbt,
@@ -10,72 +8,34 @@ import {
   getStrictSignatureCounts,
   PsbtInput,
   PsbtOutput,
-  RootWalletKeys,
   Triple,
   UtxoPsbt,
   UtxoTransaction,
 } from '../../../src/bitgo';
-import { BIP32Interface } from '@bitgo/secp256k1';
-import {
-  constructPsbt,
-  constructTxnBuilder,
-  getDefaultWalletKeys,
-  Input as TestUtilInput,
-  InputScriptType,
-  inputScriptTypes,
-  Output as TestUtilOutput,
-  outputScriptTypes,
-  TxnInput,
-  txnInputScriptTypes,
-  TxnOutput,
-  txnOutputScriptTypes,
-  getWalletKeysForSeed,
-} from '../../../src/testutil';
-import { Output as TestutilPsbtOutput } from '../../../src/testutil/psbt';
-import { getNetworkList, getNetworkName, isMainnet, Network, networks } from '../../../src';
-import { isSupportedScriptType } from '../../../src/bitgo/outputScripts';
+import { constructTxnBuilder, Input as TestUtilInput, TxnInput } from '../../../src/testutil';
+import { AcidTest, InputScriptType, SignStage } from '../../../src/testutil/psbt';
+import { getNetworkList, getNetworkName, isMainnet, networks } from '../../../src';
 import {
   parsePsbtMusig2Nonces,
   parsePsbtMusig2PartialSigs,
   parsePsbtMusig2Participants,
 } from '../../../src/bitgo/Musig2';
-import { SignatureTargetType } from './Psbt';
 import { getFixture } from '../../fixture.util';
 
-const rootWalletKeys = getDefaultWalletKeys();
 const signs = ['unsigned', 'halfsigned', 'fullsigned'] as const;
 
-const rootWalletKeysXpubs = new RootWalletKeys(
-  rootWalletKeys.triple.map((bip32) => bip32.neutered()) as Triple<BIP32Interface>,
-  rootWalletKeys.derivationPrefixes
-);
-
-const psbtInputs = inputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(2000) }));
-const psbtOutputs: TestutilPsbtOutput[] = outputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(900) }));
-
-const otherWalletKeys = getWalletKeysForSeed('too many secrets');
-// Test other wallet output
-psbtOutputs.push({ scriptType: 'p2sh', value: BigInt(900), walletKeys: otherWalletKeys });
-// Test non-wallet output
-psbtOutputs.push({ scriptType: 'p2sh', value: BigInt(900), walletKeys: null });
-// Test OP_RETURN output
-psbtOutputs.push({ opReturn: 'setec astronomy', value: BigInt(900) });
-
-const txInputs = txnInputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(1000) }));
-const txOutputs = txnOutputScriptTypes.map((scriptType) => ({ scriptType, value: BigInt(900) }));
-
-function getSigValidArray(scriptType: InputScriptType, sign: SignatureTargetType): Triple<boolean> {
-  if (scriptType === 'p2shP2pk' || sign === 'unsigned') {
+function getSigValidArray(scriptType: InputScriptType, signStage: SignStage): Triple<boolean> {
+  if (scriptType === 'p2shP2pk' || signStage === 'unsigned') {
     return [false, false, false];
   }
-  if (sign === 'halfsigned') {
+  if (signStage === 'halfsigned') {
     return [true, false, false];
   }
   return scriptType === 'p2trMusig2' ? [true, true, false] : [true, false, true];
 }
 
-function signCount(sign: SignatureTargetType) {
-  return sign === 'unsigned' ? 0 : sign === 'halfsigned' ? 1 : 2;
+function signCount(signStage: SignStage) {
+  return signStage === 'unsigned' ? 0 : signStage === 'halfsigned' ? 1 : 2;
 }
 
 // normalize buffers to hex
@@ -119,81 +79,63 @@ function getFixturePsbtOutputs(psbt: UtxoPsbt) {
   return psbt.data.outputs.map((output: PsbtOutput) => toFixture(output));
 }
 
-function runPsbt(
-  network: Network,
-  sign: SignatureTargetType,
-  inputs: TestUtilInput[],
-  outputs: TestUtilOutput[],
-  {
-    txFormat,
-  }: {
-    txFormat?: 'psbt' | 'psbt-lite';
-  }
-) {
-  const coin = getNetworkName(network);
-  const signatureCount = signCount(sign);
-  const inputTypes = inputs.map((input) => input.scriptType);
+function runPsbt(acidTest: AcidTest) {
+  const coin = getNetworkName(acidTest.network);
+  const signatureCount = signCount(acidTest.signStage);
 
-  describe(`psbt build, sign and verify for ${coin} ${inputTypes.join('-')} ${sign}`, function () {
+  describe(`psbt build, sign and verify for ${coin} ${acidTest.signStage}`, function () {
     let psbt: UtxoPsbt;
 
     before(function () {
-      psbt = constructPsbt(inputs, outputs, network, rootWalletKeys, sign, { deterministic: true });
-      addXpubsToPsbt(psbt, rootWalletKeysXpubs);
+      psbt = acidTest.createPsbt();
     });
 
     it('round-trip test', function () {
-      assert.deepStrictEqual(psbt.toBuffer(), createPsbtFromBuffer(psbt.toBuffer(), network).toBuffer());
+      assert.deepStrictEqual(psbt.toBuffer(), createPsbtFromBuffer(psbt.toBuffer(), acidTest.network).toBuffer());
     });
 
-    it(`getSignatureValidationArray with globalXpub ${coin} ${sign}`, function () {
+    it(`getSignatureValidationArray with globalXpub ${coin} ${acidTest.signStage}`, function () {
       psbt.data.inputs.forEach((input, inputIndex) => {
-        const isP2shP2pk = inputs[inputIndex].scriptType === 'p2shP2pk';
-        const expectedSigValid = getSigValidArray(inputs[inputIndex].scriptType, sign);
-        psbt.getSignatureValidationArray(inputIndex, { rootNodes: rootWalletKeys.triple }).forEach((sv, i) => {
-          if (isP2shP2pk && sign !== 'unsigned' && i === 0) {
+        const isP2shP2pk = acidTest.inputs[inputIndex].scriptType === 'p2shP2pk';
+        const expectedSigValid = getSigValidArray(acidTest.inputs[inputIndex].scriptType, acidTest.signStage);
+        psbt.getSignatureValidationArray(inputIndex, { rootNodes: acidTest.rootWalletKeys.triple }).forEach((sv, i) => {
+          if (isP2shP2pk && acidTest.signStage !== 'unsigned' && i === 0) {
             assert.strictEqual(sv, true);
           } else {
             assert.strictEqual(sv, expectedSigValid[i]);
           }
         });
       });
-
-      if (txFormat === 'psbt-lite') {
-        psbt = clonePsbtWithoutNonWitnessUtxo(psbt);
-      }
     });
 
     it('matches fixture', async function () {
       let finalizedPsbt: UtxoPsbt | undefined;
       let extractedTransaction: Buffer | undefined;
-      if (sign === 'fullsigned') {
+      if (acidTest.signStage === 'fullsigned') {
         finalizedPsbt = psbt.clone().finalizeAllInputs();
         extractedTransaction = finalizedPsbt.extractTransaction().toBuffer();
       }
       const fixture = {
-        walletKeys: rootWalletKeys.triple.map((xpub) => xpub.toBase58()),
+        walletKeys: acidTest.rootWalletKeys.triple.map((xpub) => xpub.toBase58()),
         psbtBase64: psbt.toBase64(),
         psbtBase64Finalized: finalizedPsbt ? finalizedPsbt.toBase64() : null,
         inputs: psbt.txInputs.map((input) => toFixture(input)),
-        psbtInputs: getFixturePsbtInputs(psbt, inputs),
-        psbtInputsFinalized: finalizedPsbt ? getFixturePsbtInputs(finalizedPsbt, inputs) : null,
+        psbtInputs: getFixturePsbtInputs(psbt, acidTest.inputs),
+        psbtInputsFinalized: finalizedPsbt ? getFixturePsbtInputs(finalizedPsbt, acidTest.inputs) : null,
         outputs: psbt.txOutputs.map((output) => toFixture(output)),
         psbtOutputs: getFixturePsbtOutputs(psbt),
         extractedTransaction: extractedTransaction ? toFixture(extractedTransaction) : null,
       };
-      const filename = [txFormat, coin, sign, 'json'].join('.');
+      const filename = [acidTest.txFormat, coin, acidTest.signStage, 'json'].join('.');
       assert.deepStrictEqual(fixture, await getFixture(`${__dirname}/../fixtures/psbt/${filename}`, fixture));
     });
 
-    it(`getSignatureValidationArray with rootNodes ${coin} ${sign}`, function () {
-      const psbt = constructPsbt(inputs, outputs, network, rootWalletKeys, sign);
-      addXpubsToPsbt(psbt, rootWalletKeysXpubs);
+    it(`getSignatureValidationArray with rootNodes ${coin} ${acidTest.signStage}`, function () {
       psbt.data.inputs.forEach((input, inputIndex) => {
-        const isP2shP2pk = inputs[inputIndex].scriptType === 'p2shP2pk';
-        const expectedSigValid = getSigValidArray(inputs[inputIndex].scriptType, sign);
-        psbt.getSignatureValidationArray(inputIndex, { rootNodes: rootWalletKeysXpubs.triple }).forEach((sv, i) => {
-          if (isP2shP2pk && sign !== 'unsigned' && i === 0) {
+        const isP2shP2pk = acidTest.inputs[inputIndex].scriptType === 'p2shP2pk';
+        const expectedSigValid = getSigValidArray(acidTest.inputs[inputIndex].scriptType, acidTest.signStage);
+        psbt.getSignatureValidationArray(inputIndex, { rootNodes: acidTest.rootWalletKeys.triple }).forEach((sv, i) => {
+          if (isP2shP2pk && acidTest.signStage !== 'unsigned' && i === 0) {
             assert.strictEqual(sv, true);
           } else {
             assert.strictEqual(sv, expectedSigValid[i]);
@@ -202,39 +144,39 @@ function runPsbt(
       });
     });
 
-    it(`getSignatureValidationArrayPsbt  ${coin} ${sign}`, function () {
-      const psbt = constructPsbt(inputs, outputs, network, rootWalletKeys, sign);
-      const sigValidations = getSignatureValidationArrayPsbt(psbt, rootWalletKeysXpubs);
+    it(`getSignatureValidationArrayPsbt  ${coin} ${acidTest.signStage}`, function () {
+      const sigValidations = getSignatureValidationArrayPsbt(psbt, acidTest.rootWalletKeys);
       psbt.data.inputs.forEach((input, inputIndex) => {
-        const expectedSigValid = getSigValidArray(inputs[inputIndex].scriptType, sign);
+        const expectedSigValid = getSigValidArray(acidTest.inputs[inputIndex].scriptType, acidTest.signStage);
         const sigValid = sigValidations.find((sv) => sv[0] === inputIndex);
         assert.ok(sigValid);
         sigValid[1].forEach((sv, i) => assert.strictEqual(sv, expectedSigValid[i]));
       });
     });
 
-    it(`psbt signature counts ${coin} ${sign}`, function () {
-      const psbt = constructPsbt(inputs, outputs, network, rootWalletKeys, sign);
+    it(`psbt signature counts ${coin} ${acidTest.signStage}`, function () {
       const counts = getStrictSignatureCounts(psbt);
       const countsFromInputs = getStrictSignatureCounts(psbt.data.inputs);
 
       assert.strictEqual(counts.length, psbt.data.inputs.length);
       assert.strictEqual(countsFromInputs.length, psbt.data.inputs.length);
       psbt.data.inputs.forEach((input, inputIndex) => {
-        const expectedCount = inputs[inputIndex].scriptType === 'p2shP2pk' && signatureCount > 0 ? 1 : signatureCount;
+        const expectedCount =
+          acidTest.inputs[inputIndex].scriptType === 'p2shP2pk' && signatureCount > 0 ? 1 : signatureCount;
         assert.strictEqual(getPsbtInputSignatureCount(input), expectedCount);
         assert.strictEqual(getStrictSignatureCount(input), expectedCount);
         assert.strictEqual(counts[inputIndex], expectedCount);
         assert.strictEqual(countsFromInputs[inputIndex], expectedCount);
       });
 
-      if (sign === 'fullsigned') {
+      if (acidTest.signStage === 'fullsigned') {
         const tx = psbt.finalizeAllInputs().extractTransaction() as UtxoTransaction<bigint>;
         const counts = getStrictSignatureCounts(tx);
         const countsFromIns = getStrictSignatureCounts(tx.ins);
 
         tx.ins.forEach((input, inputIndex) => {
-          const expectedCount = inputs[inputIndex].scriptType === 'p2shP2pk' ? 1 : signatureCount;
+          const expectedCount =
+            acidTest.inputs[inputIndex].scriptType === 'p2shP2pk' && signatureCount > 0 ? 1 : signatureCount;
           assert.strictEqual(getStrictSignatureCount(input), expectedCount);
           assert.strictEqual(counts[inputIndex], expectedCount);
           assert.strictEqual(countsFromIns[inputIndex], expectedCount);
@@ -244,18 +186,22 @@ function runPsbt(
   });
 }
 
-function runTx<TNumber extends number | bigint>(
-  network: Network,
-  sign: SignatureTargetType,
-  inputs: TxnInput<TNumber>[],
-  outputs: TxnOutput<TNumber>[]
-) {
-  const coin = getNetworkName(network);
-  const signatureCount = signCount(sign);
-  describe(`tx build, sign and verify for ${coin} ${sign}`, function () {
-    it(`tx signature counts ${coin} ${sign}`, function () {
-      const txb = constructTxnBuilder(inputs, outputs, network, rootWalletKeys, sign);
-      const tx = sign === 'fullsigned' ? txb.build() : txb.buildIncomplete();
+function runTx(acidTest: AcidTest) {
+  const coin = getNetworkName(acidTest.network);
+  const signatureCount = signCount(acidTest.signStage);
+  describe(`tx build, sign and verify for ${coin} ${acidTest.signStage}`, function () {
+    const inputs = acidTest.inputs.filter(
+      (input): input is TxnInput<bigint> =>
+        input.scriptType !== 'taprootKeyPathSpend' && input.scriptType !== 'p2trMusig2'
+    );
+    const outputs = acidTest.outputs.filter(
+      (output) =>
+        ('scriptType' in output && output.scriptType !== undefined) ||
+        ('address' in output && output.address !== undefined)
+    );
+    it(`tx signature counts ${coin} ${acidTest.signStage}`, function () {
+      const txb = constructTxnBuilder(inputs, outputs, acidTest.network, acidTest.rootWalletKeys, acidTest.signStage);
+      const tx = acidTest.signStage === 'fullsigned' ? txb.build() : txb.buildIncomplete();
 
       const counts = getStrictSignatureCounts(tx);
       const countsFromIns = getStrictSignatureCounts(tx.ins);
@@ -264,7 +210,11 @@ function runTx<TNumber extends number | bigint>(
       assert.strictEqual(countsFromIns.length, tx.ins.length);
       tx.ins.forEach((input, inputIndex) => {
         const expectedCount = inputs[inputIndex].scriptType === 'p2shP2pk' && signatureCount > 0 ? 1 : signatureCount;
-        assert.strictEqual(getStrictSignatureCount(input), expectedCount);
+        assert.strictEqual(
+          getStrictSignatureCount(input),
+          expectedCount,
+          `input ${inputIndex} has ${getStrictSignatureCount(input)} signatures, expected ${expectedCount}`
+        );
         assert.strictEqual(counts[inputIndex], expectedCount);
         assert.strictEqual(countsFromIns[inputIndex], expectedCount);
       });
@@ -276,16 +226,8 @@ signs.forEach((sign) => {
   getNetworkList()
     .filter((v) => isMainnet(v) && v !== networks.bitcoinsv)
     .forEach((network) => {
-      const supportedPsbtInputs = psbtInputs.filter((input) =>
-        isSupportedScriptType(network, input.scriptType === 'taprootKeyPathSpend' ? 'p2trMusig2' : input.scriptType)
-      );
-      const supportedPsbtOutputs = psbtOutputs.filter((output) =>
-        'scriptType' in output ? isSupportedScriptType(network, output.scriptType) : true
-      );
-      runPsbt(network, sign, supportedPsbtInputs, supportedPsbtOutputs, { txFormat: 'psbt' });
-      runPsbt(network, sign, supportedPsbtInputs, supportedPsbtOutputs, { txFormat: 'psbt-lite' });
-      const supportedTxInputs = txInputs.filter((input) => isSupportedScriptType(network, input.scriptType));
-      const supportedTxOutputs = txOutputs.filter((output) => isSupportedScriptType(network, output.scriptType));
-      runTx(network, sign, supportedTxInputs, supportedTxOutputs);
+      runPsbt(AcidTest.withDefaults(network, sign, 'psbt'));
+      runPsbt(AcidTest.withDefaults(network, sign, 'psbt-lite'));
+      runTx(AcidTest.withDefaults(network, sign, 'psbt'));
     });
 });

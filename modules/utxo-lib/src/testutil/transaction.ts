@@ -154,8 +154,12 @@ export function constructTxnBuilder<TNumber extends number | bigint>(
   const outputInputAmount = outputs.reduce((sum, output) => sum + BigInt(output.value), BigInt(0));
   assert(totalInputAmount >= outputInputAmount, 'total output can not exceed total input');
   assert(
-    !outputs.some((o) => (o.scriptType && o.address) || (!o.scriptType && !o.address)),
-    'only either output script type or address should be provided'
+    outputs.every((o) => o.scriptType || o.address),
+    'must provide either scriptType or address for each output'
+  );
+  assert(
+    outputs.every((o) => !(o.scriptType && o.address)),
+    'cannot provide both scriptType and address for the same output'
   );
 
   const txb = createTransactionBuilderForNetwork<TNumber>(network);
