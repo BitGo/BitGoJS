@@ -147,6 +147,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * fromPubKey is a list of unique addresses that correspond to the private keys that can be used to spend this output
    * @param {string | string[]} senderPubKey
    */
+  // TODO: need to check for the address format
   fromPubKey(senderPubKey: string | string[]): this {
     const pubKeys = senderPubKey instanceof Array ? senderPubKey : [senderPubKey];
     this._transaction._fromAddresses = pubKeys; // Store as strings directly
@@ -164,12 +165,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this._transaction._utxos = value;
     return this;
   }
-
-  /**
-   * Build the Flare transaction using FlareJS API
-   * @protected
-   */
-  protected abstract buildFlareTransaction(): Promise<void> | void;
 
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string): Transaction {
