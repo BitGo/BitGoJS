@@ -413,7 +413,9 @@ function decryptPrivKey(bg: BitGo, encryptedPrivKey: string, walletPw: string): 
   }
 }
 
-export async function handleV2GenerateShareTSS(req: express.Request): Promise<any> {
+export async function handleV2GenerateShareTSS(
+  req: ExpressApiRouteRequest<'express.v2.tssshare.generate', 'post'>
+): Promise<any> {
   const walletId = req.body.txRequest ? req.body.txRequest.walletId : req.body.tssParams.txRequest.walletId;
   if (!walletId) {
     throw new Error('Missing required field: walletId');
@@ -429,13 +431,13 @@ export async function handleV2GenerateShareTSS(req: express.Request): Promise<an
   const encryptedPrivKey = await getEncryptedPrivKey(signerFileSystemPath, walletId);
   const bitgo = req.bitgo;
   const privKey = decryptPrivKey(bitgo, encryptedPrivKey, walletPw);
-  const coin = bitgo.coin(req.params.coin);
+  const coin = bitgo.coin(req.decoded.coin);
   req.body.prv = privKey;
   req.body.walletPassphrase = walletPw;
   try {
     if (coin.getMPCAlgorithm() === MPCType.EDDSA) {
       const eddsaUtils = new EddsaUtils(bitgo, coin);
-      switch (req.params.sharetype) {
+      switch (req.decoded.sharetype) {
         case ShareType.Commitment:
           return await eddsaUtils.createCommitmentShareFromTxRequest(req.body);
         case ShareType.R:
@@ -444,7 +446,7 @@ export async function handleV2GenerateShareTSS(req: express.Request): Promise<an
           return await eddsaUtils.createGShareFromTxRequest(req.body);
         default:
           throw new Error(
-            `Share type ${req.params.sharetype} not supported, only commitment, G and R share generation is supported.`
+            `Share type ${req.decoded.sharetype} not supported, only commitment, G and R share generation is supported.`
           );
       }
     } else if (coin.getMPCAlgorithm() === MPCType.ECDSA) {
@@ -452,11 +454,11 @@ export async function handleV2GenerateShareTSS(req: express.Request): Promise<an
         ShareType.MPCv2Round1.toString(),
         ShareType.MPCv2Round2.toString(),
         ShareType.MPCv2Round3.toString(),
-      ].includes(req.params.sharetype);
+      ].includes(req.decoded.sharetype);
 
       if (isMPCv2) {
         const ecdsaMPCv2Utils = new EcdsaMPCv2Utils(bitgo, coin);
-        switch (req.params.sharetype) {
+        switch (req.decoded.sharetype) {
           case ShareType.MPCv2Round1:
             return await ecdsaMPCv2Utils.createOfflineRound1Share(req.body);
           case ShareType.MPCv2Round2:
@@ -465,12 +467,12 @@ export async function handleV2GenerateShareTSS(req: express.Request): Promise<an
             return await ecdsaMPCv2Utils.createOfflineRound3Share(req.body);
           default:
             throw new Error(
-              `Share type ${req.params.sharetype} not supported for MPCv2, only MPCv2Round1, MPCv2Round2 and MPCv2Round3 is supported.`
+              `Share type ${req.decoded.sharetype} not supported for MPCv2, only MPCv2Round1, MPCv2Round2 and MPCv2Round3 is supported.`
             );
         }
       } else {
         const ecdsaUtils = new EcdsaUtils(bitgo, coin);
-        switch (req.params.sharetype) {
+        switch (req.decoded.sharetype) {
           case ShareType.PaillierModulus:
             return ecdsaUtils.getOfflineSignerPaillierModulus(req.body);
           case ShareType.K:
@@ -481,7 +483,7 @@ export async function handleV2GenerateShareTSS(req: express.Request): Promise<an
             return await ecdsaUtils.createOfflineSShare(req.body);
           default:
             throw new Error(
-              `Share type ${req.params.sharetype} not supported, only PaillierModulus, K, MUDelta, and S share generation is supported.`
+              `Share type ${req.decoded.sharetype} not supported, only PaillierModulus, K, MUDelta, and S share generation is supported.`
             );
         }
       }
@@ -1736,12 +1738,7 @@ export function setupSigningRoutes(app: express.Application, config: Config): vo
   app.use(router);
 
   router.post('express.v2.coin.sign', [prepareBitGo(config), typedPromiseWrapper(handleV2Sign)]);
-  app.post(
-    '/api/v2/:coin/tssshare/:sharetype',
-    parseBody,
-    prepareBitGo(config),
-    promiseWrapper(handleV2GenerateShareTSS)
-  );
+  router.post('express.v2.tssshare.generate', [prepareBitGo(config), typedPromiseWrapper(handleV2GenerateShareTSS)]);
   router.post('express.v2.ofc.extSignPayload', [
     prepareBitGo(config),
     typedPromiseWrapper(handleV2OFCSignPayloadInExtSigningMode),

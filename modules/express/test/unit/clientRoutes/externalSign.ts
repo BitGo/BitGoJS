@@ -37,7 +37,6 @@ import {
 import * as assert from 'assert';
 import nock from 'nock';
 import * as fs from 'fs';
-import * as express from 'express';
 
 import 'should-http';
 import 'should-sinon';
@@ -46,6 +45,7 @@ import '../../lib/asserts';
 import { handleV2GenerateShareTSS, handleV2Sign } from '../../../src/clientRoutes';
 import { fetchKeys } from '../../../src/fetchEncryptedPrivKeys';
 import { mockChallengeA, mockChallengeB } from './mocks/ecdsaNtilde';
+import { ExpressApiRouteRequest } from '../../../src/typedRoutes/api';
 import { Coin, BitGo, SignedTransaction } from 'bitgo';
 import { keyShareOneEcdsa, keyShareTwoEcdsa, keyShareThreeEcdsa } from './mocks/keyShares';
 import { bitgoGpgKey } from './mocks/gpgKeys';
@@ -188,6 +188,22 @@ describe('External signer', () => {
           ],
         },
       },
+      decoded: {
+        coin: 'tbsc',
+        sharetype: 'PaillierModulus',
+        txRequest: {
+          apiVersion: 'full',
+          walletId: walletID,
+          transactions: [
+            {
+              unsignedTx: {
+                derivationPath,
+                signableHex: tMessage,
+              },
+            },
+          ],
+        },
+      },
       params: {
         coin: 'tbsc',
         sharetype: 'PaillierModulus',
@@ -195,7 +211,7 @@ describe('External signer', () => {
       config: {
         signerFileSystemPath: 'signerFileSystemPath',
       },
-    } as unknown as express.Request;
+    } as unknown as ExpressApiRouteRequest<'express.v2.tssshare.generate', 'post'>;
     const paillierResult = await handleV2GenerateShareTSS(reqPaillierModulus);
     paillierResult.should.have.property('userPaillierModulus');
     const userPaillierModulus = paillierResult.userPaillierModulus;
@@ -237,6 +253,40 @@ describe('External signer', () => {
         },
         requestType: 0,
       },
+      decoded: {
+        coin: 'tbsc',
+        sharetype: 'K',
+        tssParams: {
+          txRequest: {
+            apiVersion: 'full',
+            walletId: walletID,
+            transactions: [
+              {
+                unsignedTx: {
+                  derivationPath,
+                  signableHex: tMessage,
+                },
+              },
+            ],
+          },
+        },
+        challenges: {
+          enterpriseChallenge: {
+            ntilde: userChallenge.ntilde,
+            h1: userChallenge.h1,
+            h2: userChallenge.h2,
+            p: EcdsaTypes.serializePaillierChallenge({ p: userToBitgoPaillierChallenge }).p,
+          },
+          bitgoChallenge: {
+            ntilde: bitgoChallenge.ntilde,
+            h1: bitgoChallenge.h1,
+            h2: bitgoChallenge.h2,
+            p: EcdsaTypes.serializePaillierChallenge({ p: bitgoToUserPaillierChallenge }).p,
+            n: bitgo.pShare.n,
+          },
+        },
+        requestType: 0,
+      },
       params: {
         coin: 'tbsc',
         sharetype: 'K',
@@ -244,7 +294,7 @@ describe('External signer', () => {
       config: {
         signerFileSystemPath: 'signerFileSystemPath',
       },
-    } as unknown as express.Request;
+    } as unknown as ExpressApiRouteRequest<'express.v2.tssshare.generate', 'post'>;
     const kResult = await handleV2GenerateShareTSS(reqK);
     kResult.should.have.property('kShare');
     kResult.should.have.property('wShare');
@@ -282,6 +332,31 @@ describe('External signer', () => {
         },
         encryptedWShare: kResult.wShare,
       },
+      decoded: {
+        coin: 'tbsc',
+        sharetype: 'MuDelta',
+        txRequest: {
+          apiVersion: 'full',
+          walletId: walletID,
+          transactions: [
+            {
+              unsignedTx: {
+                derivationPath,
+                signableHex: tMessage,
+              },
+            },
+          ],
+        },
+        aShareFromBitgo: aShareFromBitgo.aShare,
+        bitgoChallenge: {
+          ntilde: bitgoChallenge.ntilde,
+          h1: bitgoChallenge.h1,
+          h2: bitgoChallenge.h2,
+          p: EcdsaTypes.serializePaillierChallenge({ p: bitgoToUserPaillierChallenge }).p,
+          n: bitgo.pShare.n,
+        },
+        encryptedWShare: kResult.wShare,
+      },
       params: {
         coin: 'tbsc',
         sharetype: 'MuDelta',
@@ -289,7 +364,7 @@ describe('External signer', () => {
       config: {
         signerFileSystemPath: 'signerFileSystemPath',
       },
-    } as unknown as express.Request;
+    } as unknown as ExpressApiRouteRequest<'express.v2.tssshare.generate', 'post'>;
     const muDeltaResult = await handleV2GenerateShareTSS(reqMuDelta);
     muDeltaResult.should.have.property('muDShare');
     muDeltaResult.should.have.property('oShare');
@@ -325,6 +400,27 @@ describe('External signer', () => {
         requestType: 0,
         encryptedOShare: muDeltaResult.oShare,
       },
+      decoded: {
+        coin: 'tbsc',
+        sharetype: 'S',
+        tssParams: {
+          txRequest: {
+            apiVersion: 'full',
+            walletId: walletID,
+            transactions: [
+              {
+                unsignedTx: {
+                  derivationPath,
+                  signableHex: tMessage,
+                },
+              },
+            ],
+          },
+        },
+        dShareFromBitgo: bitgoDShare.dShare,
+        requestType: 0,
+        encryptedOShare: muDeltaResult.oShare,
+      },
       params: {
         coin: 'tbsc',
         sharetype: 'S',
@@ -332,7 +428,7 @@ describe('External signer', () => {
       config: {
         signerFileSystemPath: 'signerFileSystemPath',
       },
-    } as unknown as express.Request;
+    } as unknown as ExpressApiRouteRequest<'express.v2.tssshare.generate', 'post'>;
     const sResult = await handleV2GenerateShareTSS(reqS);
     sResult.should.have.property('R');
     sResult.should.have.property('s');
@@ -389,6 +485,23 @@ describe('External signer', () => {
           ],
         },
       },
+      decoded: {
+        coin: 'tsol',
+        sharetype: 'commitment',
+        bitgoGpgPubKey: bitgoGpgKey.public,
+        txRequest: {
+          apiVersion: 'full',
+          walletId: walletID,
+          transactions: [
+            {
+              unsignedTx: {
+                derivationPath,
+                signableHex: tMessage,
+              },
+            },
+          ],
+        },
+      },
       params: {
         coin: 'tsol',
         sharetype: 'commitment',
@@ -396,7 +509,7 @@ describe('External signer', () => {
       config: {
         signerFileSystemPath: 'signerFileSystemPath',
       },
-    } as unknown as express.Request;
+    } as unknown as ExpressApiRouteRequest<'express.v2.tssshare.generate', 'post'>;
     const cResult = await handleV2GenerateShareTSS(reqCommitment);
     cResult.should.have.property('userToBitgoCommitment');
     cResult.should.have.property('encryptedSignerShare');
@@ -419,6 +532,23 @@ describe('External signer', () => {
         },
         encryptedUserToBitgoRShare,
       },
+      decoded: {
+        coin: 'tsol',
+        sharetype: 'R',
+        txRequest: {
+          apiVersion: 'full',
+          walletId: walletID,
+          transactions: [
+            {
+              unsignedTx: {
+                derivationPath,
+                signableHex: tMessage,
+              },
+            },
+          ],
+        },
+        encryptedUserToBitgoRShare,
+      },
       params: {
         coin: 'tsol',
         sharetype: 'R',
@@ -426,7 +556,7 @@ describe('External signer', () => {
       config: {
         signerFileSystemPath: 'signerFileSystemPath',
       },
-    } as unknown as express.Request;
+    } as unknown as ExpressApiRouteRequest<'express.v2.tssshare.generate', 'post'>;
     const rResult = await handleV2GenerateShareTSS(reqR);
     rResult.should.have.property('rShare');
 
@@ -470,6 +600,25 @@ describe('External signer', () => {
         bitgoToUserRShare: signatureShareRec,
         bitgoToUserCommitment: bitgoToUserCommitmentShare,
       },
+      decoded: {
+        coin: 'tsol',
+        sharetype: 'G',
+        txRequest: {
+          apiVersion: 'full',
+          walletId: walletID,
+          transactions: [
+            {
+              unsignedTx: {
+                derivationPath,
+                signableHex: tMessage,
+              },
+            },
+          ],
+        },
+        userToBitgoRShare: rResult.rShare,
+        bitgoToUserRShare: signatureShareRec,
+        bitgoToUserCommitment: bitgoToUserCommitmentShare,
+      },
       params: {
         coin: 'tsol',
         sharetype: 'G',
@@ -477,7 +626,7 @@ describe('External signer', () => {
       config: {
         signerFileSystemPath: 'signerFileSystemPath',
       },
-    } as unknown as express.Request;
+    } as unknown as ExpressApiRouteRequest<'express.v2.tssshare.generate', 'post'>;
     const userGShare = await handleV2GenerateShareTSS(reqG);
     userGShare.should.have.property('i');
     userGShare.should.have.property('y');
@@ -541,6 +690,24 @@ describe('External signer', () => {
           ],
         },
       },
+      decoded: {
+        coin: 'hteth',
+        sharetype: 'MPCv2Round1',
+        txRequest: {
+          txRequestId: '123456',
+          apiVersion: 'full',
+          walletId: walletID,
+          transactions: [
+            {
+              unsignedTx: {
+                derivationPath,
+                signableHex: tMessage,
+              },
+              signatureShares: [],
+            },
+          ],
+        },
+      },
       params: {
         coin: 'hteth',
         sharetype: 'MPCv2Round1',
@@ -548,7 +715,7 @@ describe('External signer', () => {
       config: {
         signerFileSystemPath: 'signerFileSystemPath',
       },
-    } as unknown as express.Request;
+    } as unknown as ExpressApiRouteRequest<'express.v2.tssshare.generate', 'post'>;
     const round1Result = await handleV2GenerateShareTSS(reqMPCv2Round1);
     round1Result.should.have.property('signatureShareRound1');
     round1Result.should.have.property('userGpgPubKey');
@@ -581,6 +748,14 @@ describe('External signer', () => {
         encryptedUserGpgPrvKey: round1Result.encryptedUserGpgPrvKey,
         bitgoPublicGpgKey: bitgoGpgKey.public,
       },
+      decoded: {
+        coin: 'hteth',
+        sharetype: 'MPCv2Round2',
+        txRequest: txRequestRound1,
+        encryptedRound1Session: round1Result.encryptedRound1Session,
+        encryptedUserGpgPrvKey: round1Result.encryptedUserGpgPrvKey,
+        bitgoPublicGpgKey: bitgoGpgKey.public,
+      },
       params: {
         coin: 'hteth',
         sharetype: 'MPCv2Round2',
@@ -588,7 +763,7 @@ describe('External signer', () => {
       config: {
         signerFileSystemPath: 'signerFileSystemPath',
       },
-    } as unknown as express.Request;
+    } as unknown as ExpressApiRouteRequest<'express.v2.tssshare.generate', 'post'>;
     const round2Result = await handleV2GenerateShareTSS(reqMPCv2Round2);
     round2Result.should.have.property('signatureShareRound2');
     round2Result.should.have.property('encryptedRound2Session');
@@ -615,6 +790,14 @@ describe('External signer', () => {
         encryptedUserGpgPrvKey: round1Result.encryptedUserGpgPrvKey,
         bitgoPublicGpgKey: bitgoGpgKey.public,
       },
+      decoded: {
+        coin: 'hteth',
+        sharetype: 'MPCv2Round3',
+        txRequest: txRequestRound2,
+        encryptedRound2Session: round2Result.encryptedRound2Session,
+        encryptedUserGpgPrvKey: round1Result.encryptedUserGpgPrvKey,
+        bitgoPublicGpgKey: bitgoGpgKey.public,
+      },
       params: {
         coin: 'hteth',
         sharetype: 'MPCv2Round3',
@@ -622,7 +805,7 @@ describe('External signer', () => {
       config: {
         signerFileSystemPath: 'signerFileSystemPath',
       },
-    } as unknown as express.Request;
+    } as unknown as ExpressApiRouteRequest<'express.v2.tssshare.generate', 'post'>;
     const round3Result = await handleV2GenerateShareTSS(reqMPCv2Round3);
     round3Result.should.have.property('signatureShareRound3');
 
