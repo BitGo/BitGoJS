@@ -2597,7 +2597,7 @@ export const allCoinsAndTokens = [
     '5b648116-5138-438f-9835-eba792d5c133',
     'mon:usdc',
     'Monad USDC',
-    18,
+    6,
     '0x754704bc059f8c67012fed69bc8a327a5aafb603',
     UnderlyingAsset['mon:usdc'],
     Networks.main.mon
