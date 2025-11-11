@@ -3,7 +3,6 @@ import 'should-http';
 import 'should-sinon';
 import 'should';
 import * as fs from 'fs';
-import { Request } from 'express';
 import { BitGo, Coin, BaseCoin, Wallet, Wallets } from 'bitgo';
 import '../../lib/asserts';
 import { handleV2OFCSignPayload, handleV2OFCSignPayloadInExtSigningMode } from '../../../src/clientRoutes';
@@ -158,10 +157,14 @@ describe('With the handler to sign an arbitrary payload in external signing mode
         walletId,
         payload,
       },
+      decoded: {
+        walletId,
+        payload,
+      },
       config: {
         signerFileSystemPath: 'signerFileSystemPath',
       },
-    } as unknown as Request;
+    } as unknown as ExpressApiRouteRequest<'express.v2.ofc.extSignPayload', 'post'>;
 
     await handleV2OFCSignPayloadInExtSigningMode(req).should.be.resolvedWith(expectedResponse);
     readFileStub.should.be.calledOnceWith('signerFileSystemPath');
@@ -195,10 +198,15 @@ describe('With the handler to sign an arbitrary payload in external signing mode
         payload,
         walletPassphrase: walletPassword,
       },
+      decoded: {
+        walletId,
+        payload,
+        walletPassphrase: walletPassword,
+      },
       config: {
         signerFileSystemPath: 'signerFileSystemPath',
       },
-    } as unknown as Request;
+    } as unknown as ExpressApiRouteRequest<'express.v2.ofc.extSignPayload', 'post'>;
 
     await handleV2OFCSignPayloadInExtSigningMode(req).should.be.resolvedWith(expectedResponse);
     readFileStub.should.be.calledOnceWith('signerFileSystemPath');
@@ -233,10 +241,15 @@ describe('With the handler to sign an arbitrary payload in external signing mode
         payload,
         walletPassphrase: walletPassword,
       },
+      decoded: {
+        walletId,
+        payload,
+        walletPassphrase: walletPassword,
+      },
       config: {
         signerFileSystemPath: 'signerFileSystemPath',
       },
-    } as unknown as Request;
+    } as unknown as ExpressApiRouteRequest<'express.v2.ofc.extSignPayload', 'post'>;
 
     await handleV2OFCSignPayloadInExtSigningMode(req).should.be.resolvedWith(expectedResponse);
     readFileStub.should.be.calledOnceWith('signerFileSystemPath');
@@ -260,7 +273,11 @@ describe('With the handler to sign an arbitrary payload in external signing mode
           walletId,
           payload,
         },
-      } as unknown as Request;
+        decoded: {
+          walletId,
+          payload,
+        },
+      } as unknown as ExpressApiRouteRequest<'express.v2.ofc.extSignPayload', 'post'>;
 
       await handleV2OFCSignPayloadInExtSigningMode(req).should.be.rejectedWith(
         'Could not find wallet passphrase WALLET_61f039aad587c2000745c687373e0fa9_PASSPHRASE in environment'
@@ -278,10 +295,14 @@ describe('With the handler to sign an arbitrary payload in external signing mode
           walletId,
           payload,
         },
+        decoded: {
+          walletId,
+          payload,
+        },
         config: {
           signerFileSystemPath: undefined,
         },
-      } as unknown as Request;
+      } as unknown as ExpressApiRouteRequest<'express.v2.ofc.extSignPayload', 'post'>;
 
       await handleV2OFCSignPayloadInExtSigningMode(req).should.be.rejectedWith(
         'Missing required configuration: signerFileSystemPath'
@@ -301,10 +322,14 @@ describe('With the handler to sign an arbitrary payload in external signing mode
           walletId,
           payload,
         },
+        decoded: {
+          walletId,
+          payload,
+        },
         config: {
           signerFileSystemPath: 'signerFileSystemPath',
         },
-      } as unknown as Request;
+      } as unknown as ExpressApiRouteRequest<'express.v2.ofc.extSignPayload', 'post'>;
 
       await handleV2OFCSignPayloadInExtSigningMode(req).should.be.rejectedWith(
         "Error when trying to decrypt private key: INVALID: json decode: this isn't json!"
@@ -326,10 +351,14 @@ describe('With the handler to sign an arbitrary payload in external signing mode
           walletId,
           payload,
         },
+        decoded: {
+          walletId,
+          payload,
+        },
         config: {
           signerFileSystemPath: 'signerFileSystemPath',
         },
-      } as unknown as Request;
+      } as unknown as ExpressApiRouteRequest<'express.v2.ofc.extSignPayload', 'post'>;
 
       await handleV2OFCSignPayloadInExtSigningMode(req).should.be.rejectedWith(
         "Error when trying to decrypt private key: CORRUPT: password error - ccm: tag doesn't match"
@@ -349,10 +378,15 @@ describe('With the handler to sign an arbitrary payload in external signing mode
           payload,
           walletPassphrase: 'invalidPassphrase',
         },
+        decoded: {
+          walletId,
+          payload,
+          walletPassphrase: 'invalidPassphrase',
+        },
         config: {
           signerFileSystemPath: 'signerFileSystemPath',
         },
-      } as unknown as Request;
+      } as unknown as ExpressApiRouteRequest<'express.v2.ofc.extSignPayload', 'post'>;
 
       await handleV2OFCSignPayloadInExtSigningMode(req).should.be.rejectedWith(
         "Error when trying to decrypt private key: CORRUPT: password error - ccm: tag doesn't match"
