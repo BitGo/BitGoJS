@@ -69,7 +69,7 @@ import { polyxTokens } from './coins/polyxTokens';
 import { flrp } from './flrp';
 import {
   ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE_AND_MENA_FZE,
-  ADA_FEATURES_WITH_FRANKFURT,
+  ADA_FEATURES,
   ALGO_FEATURES,
   APT_FEATURES,
   ARBETH_FEATURES,
@@ -180,7 +180,7 @@ export const allCoinsAndTokens = [
     'Cardano ADA',
     Networks.main.ada,
     UnderlyingAsset.ADA,
-    ADA_FEATURES_WITH_FRANKFURT
+    ADA_FEATURES
   ),
   ada(
     '1cbfb5aa-94ba-415b-b5c2-c51e801e21b3',
@@ -188,7 +188,7 @@ export const allCoinsAndTokens = [
     'Testnet Cardano ADA',
     Networks.test.ada,
     UnderlyingAsset.ADA,
-    ADA_FEATURES_WITH_FRANKFURT
+    ADA_FEATURES
   ),
   account(
     'ec41e62a-cc57-4aa0-9b9e-217da1226817',
