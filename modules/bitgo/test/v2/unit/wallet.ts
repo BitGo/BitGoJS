@@ -21,6 +21,7 @@ import {
   MessageStandardType,
   MessageTypes,
   PopulatedIntent,
+  PrebuildTransactionOptions,
   PrebuildTransactionWithIntentOptions,
   RequestTracer,
   SendManyOptions,
@@ -2060,6 +2061,7 @@ describe('V2 Wallet:', function () {
   describe('TSS Wallets', function () {
     const sandbox = sinon.createSandbox();
     const tsol = bitgo.coin('tsol');
+    const tada = bitgo.coin('tada');
     const walletData = {
       id: '5b34252f1bf349930e34020a00000000',
       coin: 'tsol',
@@ -2096,7 +2098,20 @@ describe('V2 Wallet:', function () {
       multisigType: 'tss',
     };
 
+    const adaWalletData = {
+      id: 'bf1897a1-e4bd-4b96-b2a4-ba02c0fc9956',
+      coin: 'tada',
+      keys: [
+        '598f606cd8fc24710d2ebad89dce86c2',
+        '598f606cc8e43aef09fcb785221d9dd2',
+        '5935d59cf660764331bafcade1855fd7',
+      ],
+      coinSpecific: {},
+      multisigType: 'tss',
+    };
+
     const tssSolWallet = new Wallet(bitgo, tsol, walletData);
+    const tssAdaWallet = new Wallet(bitgo, tada, adaWalletData);
 
     let tssEthWallet = new Wallet(bitgo, bitgo.coin('teth'), ethWalletData);
     const tssPolygonWallet = new Wallet(bitgo, bitgo.coin('tpolygon'), polygonWalletData);
@@ -3276,6 +3291,47 @@ describe('V2 Wallet:', function () {
             feeString: '5000',
           },
         });
+      });
+
+      it('should pass unspents and sequence id in transferToken build payload for ada token withdrawals', async function () {
+        const params: PrebuildTransactionOptions = {
+          idfSignedTimestamp: '2025-11-10T08:14:19.010Z',
+          idfUserId: '5cae3130f8f4561d51dfcbfdaafba9b9',
+          idfVersion: 1,
+          instant: false,
+          comment: '',
+          unspents: ['79bac2b3c43de1767f0731caf92d5cd7edfe5da433b056002df42f0c055a3023:1'],
+          recipients: [
+            {
+              amount: '2',
+              address:
+                'addr_test1qz4m3ms9nxra36t6rtz4lzc9zkk3d4qwcpcr3yxwhxlslpathrhqtxv8mr5h5xk9t79s29ddzm2qasrs8zgvawdlp7rs44g5hc',
+              tokenName: 'tada:water',
+            },
+          ],
+          sequenceId: '4QLtXkBrZhc6AtecFZVnHCYH1UAk',
+          numBlocks: 2,
+          txFormat: 'psbt' as const,
+          type: 'transfertoken',
+          preview: true,
+        };
+
+        let capturedRequestBody: any;
+        nock(bgUrl)
+          .post(`/api/v2/wallet/${tssAdaWallet.id()}/txrequests`, (body) => {
+            capturedRequestBody = body;
+            return true;
+          })
+          .reply(200, { unsignedTxs: ['tx'] });
+
+        await tssAdaWallet.prebuildTransaction(params);
+
+        console.log('capturedRequestBody', capturedRequestBody);
+        capturedRequestBody.should.not.be.undefined();
+        capturedRequestBody!.intent.should.have.property('unspents');
+        capturedRequestBody!.intent.unspents.should.deepEqual(params.unspents);
+        capturedRequestBody!.intent.should.have.property('sequenceId');
+        capturedRequestBody!.intent.sequenceId.should.equal(params.sequenceId);
       });
     });
 

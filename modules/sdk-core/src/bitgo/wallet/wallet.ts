@@ -3448,6 +3448,8 @@ export class Wallet implements IWallet {
             recipients: params.recipients || [],
             nonce: params.nonce,
             feeOptions,
+            unspents: params.unspents,
+            sequenceId: params.sequenceId,
           },
           apiVersion,
           params.preview
