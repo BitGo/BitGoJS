@@ -15,7 +15,7 @@ export interface FlareNetwork extends BaseNetwork {
   hrp: string;
   alias: string;
   vm?: string;
-  txFee?: string;
+  txFee: string;
   maxImportFee?: string;
   createSubnetTx?: string;
   createChainTx?: string;
