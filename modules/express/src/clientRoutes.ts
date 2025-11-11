@@ -539,7 +539,7 @@ export async function handleV2Sign(req: ExpressApiRouteRequest<'express.v2.coin.
 }
 
 export async function handleV2OFCSignPayloadInExtSigningMode(
-  req: express.Request
+  req: ExpressApiRouteRequest<'express.v2.ofc.extSignPayload', 'post'>
 ): Promise<{ payload: string; signature: string }> {
   const walletId = req.body.walletId;
   const payload = req.body.payload;
@@ -1741,12 +1741,10 @@ export function setupSigningRoutes(app: express.Application, config: Config): vo
     prepareBitGo(config),
     promiseWrapper(handleV2GenerateShareTSS)
   );
-  app.post(
-    `/api/v2/ofc/signPayload`,
-    parseBody,
+  router.post('express.v2.ofc.extSignPayload', [
     prepareBitGo(config),
-    promiseWrapper(handleV2OFCSignPayloadInExtSigningMode)
-  );
+    typedPromiseWrapper(handleV2OFCSignPayloadInExtSigningMode),
+  ]);
 }
 
 export function setupLightningSignerNodeRoutes(app: express.Application, config: Config): void {

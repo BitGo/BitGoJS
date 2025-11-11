@@ -39,6 +39,7 @@ import { PostConsolidateUnspents } from './v2/consolidateunspents';
 import { PostPrebuildAndSignTransaction } from './v2/prebuildAndSignTransaction';
 import { PostCoinSign } from './v2/coinSign';
 import { PostSendCoins } from './v2/sendCoins';
+import { PostOfcExtSignPayload } from './v2/ofcExtSignPayload';
 
 // Too large types can cause the following error
 //
@@ -226,6 +227,9 @@ export const ExpressCoinSigningApiSpec = apiSpec({
 export const ExpressExternalSigningApiSpec = apiSpec({
   'express.v2.coin.sign': {
     post: PostCoinSign,
+  },
+  'express.v2.ofc.extSignPayload': {
+    post: PostOfcExtSignPayload,
   },
 });
 
