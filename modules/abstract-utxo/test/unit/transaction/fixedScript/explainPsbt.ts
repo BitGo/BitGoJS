@@ -8,12 +8,7 @@ function describeTransactionWith(acidTest: testutil.AcidTest) {
   describe(`explainPsbt ${acidTest.name}`, function () {
     it('should explain the transaction', function () {
       const psbt = acidTest.createPsbt();
-      const explanation = explainPsbt(
-        psbt,
-        { pubs: acidTest.rootWalletKeys.triple.map((k) => k.toBase58()) },
-        acidTest.network,
-        { strict: true }
-      );
+      const explanation = explainPsbt(psbt, { pubs: acidTest.rootWalletKeys }, acidTest.network, { strict: true });
       assert.strictEqual(explanation.outputs.length, 3);
       assert.strictEqual(explanation.outputAmount, '2700');
       assert.strictEqual(explanation.changeOutputs.length, acidTest.outputs.length - 3);
