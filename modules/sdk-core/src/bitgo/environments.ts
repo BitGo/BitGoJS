@@ -272,6 +272,9 @@ const mainnetBase: EnvironmentTemplate = {
     hedera: {
       baseUrl: 'https://server-verify.hashscan.io/verify',
     },
+    fluenteth: {
+      baseUrl: 'https://testnet.fluentscan.xyz/api/', //TODO: COIN-6478: add mainnet url when available
+    },
   },
   icpNodeUrl: 'https://ic0.app',
   worldExplorerBaseUrl: 'https://worldscan.org/',
@@ -411,6 +414,9 @@ const testnetBase: EnvironmentTemplate = {
     },
     hedera: {
       baseUrl: 'https://server-verify.hashscan.io/verify',
+    },
+    fluenteth: {
+      baseUrl: 'https://testnet.fluentscan.xyz/api/',
     },
   },
   stxNodeUrl: 'https://api.testnet.hiro.so',
