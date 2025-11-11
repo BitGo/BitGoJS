@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 import crypto from 'crypto';
 
-import { BaseUtils, isValidEd25519PublicKey } from '@bitgo/sdk-core';
+import { BaseUtils, isValidEd25519PublicKey, TransactionType } from '@bitgo/sdk-core';
 
 import { computePreparedTransaction } from '../../resources/hash/hash.js';
 import { PreparedTransaction } from '../../resources/proto/preparedTransaction.js';
@@ -79,66 +79,101 @@ export class Utils implements BaseUtils {
   /**
    * Method to parse raw canton transaction & get required data
    * @param {String} rawData base64 encoded string
+   * @param {TransactionType} txType the transaction type
    * @returns {PreparedTxnParsedInfo}
    */
-  parseRawCantonTransactionData(rawData: string): PreparedTxnParsedInfo {
+  parseRawCantonTransactionData(rawData: string, txType: TransactionType): PreparedTxnParsedInfo {
     const decodedData = this.decodePreparedTransaction(rawData);
     let sender = '';
     let receiver = '';
     let amount = '';
-    decodedData.transaction?.nodes?.forEach((node) => {
+    let preApprovalNode: RecordField[] = [];
+    let transferNode: RecordField[] = [];
+    let transferAcceptRejectNode: RecordField[] = [];
+    const nodes = decodedData.transaction?.nodes;
+
+    nodes?.forEach((node) => {
       const versionedNode = node.versionedNode;
       if (!versionedNode || versionedNode.oneofKind !== 'v1') return;
-
       const v1Node = versionedNode.v1;
       const nodeType = v1Node.nodeType;
-
       if (nodeType.oneofKind !== 'create') return;
-
       const createNode = nodeType.create;
-
-      const getField = (fields: RecordField[], label: string) => fields.find((f) => f.label === label)?.value?.sum;
-
-      // Check if it's the correct template
       const template = createNode.templateId;
       const argSum = createNode.argument?.sum;
       if (!argSum || argSum.oneofKind !== 'record') return;
       const fields = argSum.record?.fields;
       if (!fields) return;
-      if (template?.entityName === 'AmuletTransferInstruction') {
-        const transferField = fields.find((f) => f.label === 'transfer');
-        const transferSum = transferField?.value?.sum;
-        if (!transferSum || transferSum.oneofKind !== 'record') return;
-        const transferRecord = transferSum.record?.fields;
-        if (!transferRecord) return;
-        const senderData = getField(transferRecord, 'sender');
-        if (senderData?.oneofKind === 'party') sender = senderData.party ?? '';
-
-        const receiverData = getField(transferRecord, 'receiver');
-        if (receiverData?.oneofKind === 'party') receiver = receiverData.party ?? '';
-
-        const amountData = getField(transferRecord, 'amount');
-        if (amountData?.oneofKind === 'numeric') amount = amountData.numeric ?? '';
-      } else if (template?.entityName === 'Amulet') {
-        const dsoData = getField(fields, 'dso');
-        if (dsoData?.oneofKind === 'party') sender = dsoData.party ?? '';
-        const ownerData = getField(fields, 'owner');
-        if (ownerData?.oneofKind === 'party') receiver = ownerData.party ?? '';
-        const amountField = getField(fields, 'amount');
-        if (!amountField || amountField.oneofKind !== 'record') return;
-
-        const amountRecord = amountField.record?.fields;
-        if (!amountRecord) return;
-        const initialAmountData = getField(amountRecord, 'initialAmount');
-        if (initialAmountData?.oneofKind === 'numeric') amount = initialAmountData.numeric ?? '';
-      } else if (template?.entityName === 'TransferPreapprovalProposal') {
-        const receiverData = getField(fields, 'receiver');
-        if (receiverData?.oneofKind === 'party') receiver = receiverData.party ?? '';
-        const providerData = getField(fields, 'provider');
-        if (providerData?.oneofKind === 'party') sender = providerData.party ?? '';
-        amount = '0';
+      if (
+        template?.entityName === 'TransferPreapprovalProposal' &&
+        !preApprovalNode.length &&
+        txType === TransactionType.OneStepPreApproval
+      ) {
+        preApprovalNode = fields;
+      }
+      if (
+        template?.entityName === 'Amulet' &&
+        !transferAcceptRejectNode.length &&
+        (txType === TransactionType.TransferAccept || txType === TransactionType.TransferReject)
+      ) {
+        transferAcceptRejectNode = fields;
       }
     });
+
+    nodes?.forEach((node) => {
+      const versionedNode = node.versionedNode;
+      if (!versionedNode || versionedNode.oneofKind !== 'v1') return;
+      const v1Node = versionedNode.v1;
+      const nodeType = v1Node.nodeType;
+      if (nodeType.oneofKind !== 'exercise') return;
+      const exerciseNode = nodeType.exercise;
+      const choiceId = exerciseNode.choiceId;
+      if (!choiceId || choiceId !== 'TransferFactory_Transfer') return;
+      const argSum = exerciseNode.chosenValue?.sum;
+      if (!argSum || argSum.oneofKind !== 'record') return;
+      const fields = argSum.record?.fields;
+      if (!fields) return;
+      transferNode = fields;
+    });
+
+    const getField = (fields: RecordField[], label: string) => fields.find((f) => f.label === label)?.value?.sum;
+
+    if (preApprovalNode.length) {
+      const receiverData = getField(preApprovalNode, 'receiver');
+      if (receiverData?.oneofKind === 'party') receiver = receiverData.party ?? '';
+      const providerData = getField(preApprovalNode, 'provider');
+      if (providerData?.oneofKind === 'party') sender = providerData.party ?? '';
+      amount = '0';
+    } else if (transferNode.length) {
+      const transferField = transferNode.find((f) => f.label === 'transfer');
+      const transferSum = transferField?.value?.sum;
+      if (transferSum && transferSum.oneofKind === 'record') {
+        const transferRecord = transferSum.record?.fields;
+        if (transferRecord?.length) {
+          const senderData = getField(transferRecord, 'sender');
+          if (senderData?.oneofKind === 'party') sender = senderData.party ?? '';
+
+          const receiverData = getField(transferRecord, 'receiver');
+          if (receiverData?.oneofKind === 'party') receiver = receiverData.party ?? '';
+
+          const amountData = getField(transferRecord, 'amount');
+          if (amountData?.oneofKind === 'numeric') amount = amountData.numeric ?? '';
+        }
+      }
+    } else if (transferAcceptRejectNode.length) {
+      const dsoData = getField(transferAcceptRejectNode, 'dso');
+      if (dsoData?.oneofKind === 'party') sender = dsoData.party ?? '';
+      const ownerData = getField(transferAcceptRejectNode, 'owner');
+      if (ownerData?.oneofKind === 'party') receiver = ownerData.party ?? '';
+      const amountField = getField(transferAcceptRejectNode, 'amount');
+      if (amountField && amountField.oneofKind === 'record') {
+        const amountRecord = amountField.record?.fields;
+        if (amountRecord?.length) {
+          const initialAmountData = getField(amountRecord, 'initialAmount');
+          if (initialAmountData?.oneofKind === 'numeric') amount = initialAmountData.numeric ?? '';
+        }
+      }
+    }
     if (!sender || !receiver || !amount) {
       const missingFields: string[] = [];
       if (!sender) missingFields.push('sender');

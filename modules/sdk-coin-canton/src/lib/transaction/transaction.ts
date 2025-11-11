@@ -150,7 +150,7 @@ export class Transaction extends BaseTransaction {
     // TODO: extract other required data (utxo used, request time, execute before etc)
     let parsedInfo: PreparedTxnParsedInfo;
     try {
-      parsedInfo = utils.parseRawCantonTransactionData(this._prepareCommand.preparedTransaction);
+      parsedInfo = utils.parseRawCantonTransactionData(this._prepareCommand.preparedTransaction, this.type);
     } catch (e) {
       throw new InvalidTransactionError(`Failed to parse transaction hash: ${e instanceof Error ? e.message : e}`);
     }
