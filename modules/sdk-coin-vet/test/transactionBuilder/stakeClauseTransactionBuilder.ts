@@ -8,7 +8,7 @@ import * as testData from '../resources/vet';
 describe('VET Staking Transaction', function () {
   const factory = new TransactionBuilderFactory(coins.get('tvet'));
   const stakingContractAddress = STARGATE_NFT_ADDRESS_TESTNET;
-  const amountToStake = '1000000000000000000'; // 1 VET in wei
+  const amountToStake = '10000000000000000000000'; // 10000 VET in wei
   const levelId = 8; // Test level ID
 
   // Helper function to create a basic transaction builder with common properties
@@ -240,8 +240,8 @@ describe('VET Staking Transaction', function () {
       const txBuilder = factory.from(testData.STAKE_CLAUSE_TRANSACTION);
       const tx = txBuilder.transaction as StakeClauseTransaction;
       const toJson = tx.toJson();
-      toJson.id.should.equal('0x2f96e4c16d70bd3e2dabec29a07eb3d6066691ba5b812d6e897676f6ebc0a798');
-      toJson.stakingContractAddress?.should.equal('0x1ec1d168574603ec35b9d229843b7c2b44bcb770');
+      toJson.id.should.equal('0x7148f62b42ecfdcb7ee62ac0654514e4b5f65f2fe5fdee79d4d29f56ab1722eb');
+      toJson.stakingContractAddress?.should.equal('0x1E02B2953AdEfEC225cF0Ec49805b1146a4429C1');
       toJson.amountToStake?.should.equal('0xde0b6b3a7640000');
       toJson.nonce.should.equal('504440');
       toJson.gas.should.equal(392538);

@@ -110,7 +110,7 @@ export class StakeClauseTransaction extends Transaction {
       to: this.stakingContractAddress,
       stakingContractAddress: this.stakingContractAddress,
       amountToStake: this.amountToStake,
-      nftTokenId: this.levelId,
+      levelId: this.levelId,
     };
 
     return json;
