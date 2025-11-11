@@ -16,7 +16,7 @@ export class Utils implements BaseUtils {
     if (!address || address.trim() === '') return false;
     const [partyHint, fingerprint] = address.trim().split('::');
     if (!partyHint || !fingerprint) return false;
-    return partyHint.length === 5 && this.isValidCantonHex(fingerprint);
+    return partyHint.length >= 5 && this.isValidCantonHex(fingerprint);
   }
 
   /** @inheritdoc */

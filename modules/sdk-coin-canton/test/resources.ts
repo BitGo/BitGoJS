@@ -72,8 +72,8 @@ export const InvalidOneStepPreApprovalPrepareResponse = {
 
 export const CANTON_ADDRESSES = {
   VALID_ADDRESS: '1220a::1220a43d89dc7d8f85316116aac093667f769fce55411aef6846ccb933b2e1a3b598',
-  // party hint is not 5 characters
-  INVALID_PARTY_HINT: '123456::1220a43d89dc7d8f85316116aac093667f769fce55411aef6846ccb933b2e1a3b598',
+  // party hint is not greater than or equal to 5 characters
+  INVALID_PARTY_HINT: '1234::1220a43d89dc7d8f85316116aac093667f769fce55411aef6846ccb933b2e1a3b598',
   // fingerprint is not a valid hex value
   INVALID_FINGERPRINT: '12205::12205b4e3537a95126d9060459234gd8ad3c3ddccda4f79901954280ee19c576714d',
   MISSING_PARTY_HINT: '::12205b4e3537a95126d9060459234gd8ad3c3ddccda4f79901954280ee19c576714d',
