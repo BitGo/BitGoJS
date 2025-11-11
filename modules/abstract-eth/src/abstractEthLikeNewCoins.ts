@@ -2858,7 +2858,23 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
               { address: addHexPrefix(recipientAddress.toString()), amount: amount.toString() },
             ]);
           }
-          if (expectedDestination.toLowerCase() !== addHexPrefix(recipientAddress.toString()).toLowerCase()) {
+
+          // Check if recipients[0].data exists (WalletConnect flow)
+          let expectedRecipientAddress: string;
+          const recipientData = (recipients[0] as any).data;
+          if (recipientData && recipientData.startsWith('0xa9059cbb')) {
+            // WalletConnect: decode expected recipient from recipients[0].data
+            const [expectedRecipient] = getRawDecoded(
+              ['address', 'uint256'],
+              getBufferedByteCode('0xa9059cbb', recipientData)
+            );
+            expectedRecipientAddress = addHexPrefix(expectedRecipient.toString()).toLowerCase();
+          } else {
+            // Normal flow: use recipients[0].address
+            expectedRecipientAddress = expectedDestination.toLowerCase();
+          }
+
+          if (expectedRecipientAddress !== addHexPrefix(recipientAddress.toString()).toLowerCase()) {
             throwRecipientMismatch('destination address does not match with the recipient address', [
               { address: addHexPrefix(recipientAddress.toString()), amount: amount.toString() },
             ]);
