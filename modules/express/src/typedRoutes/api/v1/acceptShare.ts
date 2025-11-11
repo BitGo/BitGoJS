@@ -12,9 +12,17 @@ export const AcceptShareRequestBody = {
   userPassword: optional(t.string),
   /** New passphrase to encrypt the shared wallet's keys */
   newWalletPassphrase: optional(t.string),
-  /** Optional encrypted private key to use instead of generating a new one */
+  /** Optional encrypted xprv to use instead of generating a new one */
   overrideEncryptedXprv: optional(t.string),
 };
+
+/** Response from accepting a wallet share */
+export const AcceptShareResponse = t.type({
+  /** Indicates whether the share state was changed by this operation */
+  changed: t.boolean,
+  /** Current state of the wallet share */
+  state: t.string,
+});
 
 /**
  * Accept a Wallet Share
@@ -34,7 +42,7 @@ export const PostAcceptShare = httpRoute({
   }),
   response: {
     /** Successfully accepted wallet share */
-    200: t.UnknownRecord,
+    200: AcceptShareResponse,
     /** Error response */
     400: BitgoExpressError,
   },
