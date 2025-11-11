@@ -2163,6 +2163,44 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
     ]
   ),
+  account(
+    '8f6ed7e4-cce2-4686-bdab-ae8f54e2c05e',
+    'tfluenteth',
+    'Testnet Fluent Ethereum',
+    Networks.test.fluenteth,
+    18,
+    UnderlyingAsset.FLUENTETH,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+    ],
+    KeyCurve.Secp256k1,
+    '',
+    'TFluentETH'
+  ),
+  account(
+    'a7c813b4-1cd2-4a36-a807-78150d64fba4',
+    'fluenteth',
+    'Fluent Ethereum',
+    Networks.main.fluenteth,
+    18,
+    UnderlyingAsset.FLUENTETH,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+    ],
+    KeyCurve.Secp256k1,
+    '',
+    'FluentETH'
+  ),
   canton(
     '07385320-5a4f-48e9-97a5-86d4be9f24b0',
     'canton',

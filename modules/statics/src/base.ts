@@ -117,6 +117,7 @@ export enum CoinFamily {
   LINEAETH = 'lineaeth',
   IP = 'ip', // Story Chain
   SOMI = 'somi', // Somnia Chain
+  FLUENTETH = 'fluenteth',
 }
 
 /**
@@ -544,6 +545,7 @@ export enum UnderlyingAsset {
   FLOW = 'flow',
   FLR = 'flr',
   FLRP = 'flrp',
+  FLUENTETH = 'fluenteth',
   GTC = 'gtc',
   HASH = 'hash', // Provenance
   HBAR = 'hbar', // Hedera main coin

@@ -1491,6 +1491,24 @@ class LineaETHTestnet extends Testnet implements EthereumNetwork {
   nativeCoinOperationHashPrefix = '59141';
 }
 
+class FluentETH extends Mainnet implements EthereumNetwork {
+  name = 'Fluent Ethereum';
+  family = CoinFamily.FLUENTETH;
+  explorerUrl = 'https://devnet.fluentscan.xyz/tx/';
+  accountExplorerUrl = 'https://devnet.fluentscan.xyz/address/';
+  chainId = 20993;
+  nativeCoinOperationHashPrefix = '20993';
+}
+
+class FluentETHTestnet extends Testnet implements EthereumNetwork {
+  name = 'Testnet Fluent Ethereum';
+  family = CoinFamily.FLUENTETH;
+  explorerUrl = 'https://testnet.fluentscan.xyz/tx/';
+  accountExplorerUrl = 'https://testnet.fluentscan.xyz/address/';
+  chainId = 20994;
+  nativeCoinOperationHashPrefix = '20994';
+}
+
 class CreditcoinTestnet extends Testnet implements EthereumNetwork {
   name = 'CreditcoinTestnet';
   family = CoinFamily.CTC;
@@ -2075,6 +2093,7 @@ export const Networks = {
     flow: Object.freeze(new Flow()),
     flr: Object.freeze(new Flare()),
     flrP: Object.freeze(new FlareP()),
+    fluenteth: Object.freeze(new FluentETH()),
     hash: Object.freeze(new Hash()),
     hedera: Object.freeze(new Hedera()),
     hederaEVM: Object.freeze(new HederaEVM()),
@@ -2171,6 +2190,7 @@ export const Networks = {
     flow: Object.freeze(new FlowTestnet()),
     flr: Object.freeze(new FlareTestnet()),
     flrP: Object.freeze(new FlarePTestnet()),
+    fluenteth: Object.freeze(new FluentETHTestnet()),
     mon: Object.freeze(new MonadTestnet()),
     megaeth: Object.freeze(new MegaETHTestnet()),
     pyrmont: Object.freeze(new Pyrmont()),
