@@ -15,6 +15,7 @@ import {
   NETWORK_ID_PROP,
   BLOCKCHAIN_ID_PROP,
 } from './constants';
+import utils from './utils';
 
 // Lightweight interface placeholders replacing Avalanche SDK transaction shapes
 interface FlareExportInputShape {
@@ -95,8 +96,12 @@ export class ExportInCTxBuilder extends AtomicInCTransactionBuilder {
    * @param pAddresses
    */
   to(pAddresses: string | string[]): this {
-    const pubKeys = Array.isArray(pAddresses) ? pAddresses : pAddresses.split('~');
-    // For now ensure they are stored as bech32 / string addresses directly
+    const pubKeys = pAddresses instanceof Array ? pAddresses : pAddresses.split('~');
+    if (!utils.isValidAddress(pubKeys)) {
+      throw new BuildTransactionError('Invalid to address');
+    }
+
+    // TODO need to check if address should be string or Buffer
     this.transaction._to = pubKeys.map((a) => a.toString());
     return this;
   }

@@ -1,4 +1,10 @@
-import { BaseTransactionBuilder, BuildTransactionError } from '@bitgo/sdk-core';
+import {
+  BaseTransactionBuilder,
+  BuildTransactionError,
+  TransactionType,
+  BaseKey,
+  BaseTransaction,
+} from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { DecodedUtxoObj, Tx } from './iface';
 import { KeyPair } from './keyPair';
@@ -147,6 +153,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * fromPubKey is a list of unique addresses that correspond to the private keys that can be used to spend this output
    * @param {string | string[]} senderPubKey
    */
+  // TODO: need to check for the address format
   fromPubKey(senderPubKey: string | string[]): this {
     const pubKeys = senderPubKey instanceof Array ? senderPubKey : [senderPubKey];
     this._transaction._fromAddresses = pubKeys; // Store as strings directly
@@ -165,12 +172,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this;
   }
 
-  /**
-   * Build the Flare transaction using FlareJS API
-   * @protected
-   */
-  protected abstract buildFlareTransaction(): Promise<void> | void;
-
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string): Transaction {
     // Parse the raw transaction and initialize the builder
@@ -183,6 +184,37 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         `${ERROR_PARSE_RAW_TRANSACTION}: ${error instanceof Error ? error.message : ERROR_UNKNOWN_PARSING}`
       );
     }
+  }
+
+  /** @inheritdoc */
+  protected async buildImplementation(): Promise<Transaction> {
+    this.buildFlareTransaction();
+    this.transaction.setTransactionType(this.transactionType);
+    if (this.hasSigner) {
+      this._signer.forEach((keyPair) => this.transaction.sign(keyPair));
+    }
+    return this.transaction;
+  }
+
+  protected abstract get transactionType(): TransactionType;
+
+  /**
+   * Getter for know if build should sign
+   */
+  get hasSigner(): boolean {
+    return this._signer !== undefined && this._signer.length > 0;
+  }
+
+  /**
+   * Build the Flare transaction using FlareJS API
+   * @protected
+   */
+  protected abstract buildFlareTransaction(): Promise<void> | void;
+
+  /** @inheritdoc */
+  protected signImplementation({ key }: BaseKey): BaseTransaction {
+    this._signer.push(new KeyPair({ prv: key }));
+    return this.transaction;
   }
 
   /**
