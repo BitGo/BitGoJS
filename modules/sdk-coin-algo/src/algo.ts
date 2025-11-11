@@ -44,6 +44,7 @@ import {
   TESTNET_GENESIS_ID,
 } from './lib/transactionBuilder';
 import { Buffer } from 'buffer';
+import { toNumber } from 'lodash';
 
 const SUPPORTED_ADDRESS_VERSION = 1;
 const MSIG_THRESHOLD = 2; // m in m-of-n
@@ -600,18 +601,26 @@ export class Algo extends BaseCoin {
     const tx = await txBuilder.build();
     const txJson = tx.toJson();
 
+    // Check if this is a token enablement transaction
+    const isTokenEnablementTx = txParams.type === 'enabletoken';
+
     // Validate based on Algorand transaction type
-    switch (txJson.type) {
-      case 'pay':
-        this.validatePayTransaction(txJson, txParams);
-        break;
-      case 'axfer':
-        this.validateAssetTransferTransaction(txJson, txParams);
-        break;
-      default:
-        // For other transaction types, perform basic validation
-        this.validateBasicTransaction(txJson);
-        break;
+    if (isTokenEnablementTx && verification?.verifyTokenEnablement) {
+      // Validate token enablement transaction
+      this.validateTokenEnablementTransaction(txJson, txParams);
+    } else {
+      switch (txJson.type) {
+        case 'pay':
+          this.validatePayTransaction(txJson, txParams);
+          break;
+        case 'axfer':
+          this.validateAssetTransferTransaction(txJson, txParams);
+          break;
+        default:
+          // For other transaction types, perform basic validation
+          this.validateBasicTransaction(txJson);
+          break;
+      }
     }
 
     // Verify consolidation transactions send to base address
@@ -699,6 +708,86 @@ export class Algo extends BaseCoin {
     // Basic amount validation if present
     if (txJson.amount !== undefined && txJson.amount < 0) {
       throw new Error('Invalid asset transfer transaction: invalid amount');
+    }
+
+    return true;
+  }
+
+  /**
+   * Extract token ID from token name
+   * Token names are in format like "talgo:JPT-162085446" where the number after the last hyphen is the token ID
+   */
+  private extractTokenIdFromName(tokenName: string): number | null {
+    // Handle format like "talgo:JPT-162085446" or "algo:TOKEN-123456"
+    const parts = tokenName.split(':');
+    if (parts.length < 2) {
+      return null;
+    }
+
+    // Get the part after colon (e.g., "JPT-162085446")
+    const tokenPart = parts[1];
+
+    // Extract the number after the last hyphen
+    const lastHyphenIndex = tokenPart.lastIndexOf('-');
+    if (lastHyphenIndex === -1) {
+      return null;
+    }
+
+    const tokenIdStr = tokenPart.substring(lastHyphenIndex + 1);
+    const tokenId = parseInt(tokenIdStr, 10);
+
+    return isNaN(tokenId) ? null : tokenId;
+  }
+
+  /**
+   * Validate Token Enablement (opt-in) transaction
+   */
+  private validateTokenEnablementTransaction(txJson: any, txParams: any): boolean {
+    this.validateBasicTransaction(txJson);
+
+    // Verify it's an asset transfer (axfer) transaction
+    if (txJson.type !== 'axfer') {
+      throw new Error('Invalid token enablement transaction: must be of type axfer');
+    }
+
+    // Verify amount is 0 (token opt-in requirement)
+    if (toNumber(txJson.amount) !== 0) {
+      throw new Error('Invalid token enablement transaction: amount must be 0 for token opt-in');
+    }
+
+    // Verify sender and recipient are the same (self-transaction)
+    if (!txJson.from || !txJson.to || txJson.from !== txJson.to) {
+      throw new Error('Invalid token enablement transaction: sender and recipient must be the same address');
+    }
+
+    // Verify token ID is present
+    if (!txJson.tokenId) {
+      throw new Error('Invalid token enablement transaction: missing token ID');
+    }
+
+    // If txParams specifies token information, verify the token ID matches
+    let expectedTokenId: number | null = null;
+
+    // Check for enableTokens array (used in TSS wallets)
+    if (txParams.enableTokens && Array.isArray(txParams.enableTokens) && txParams.enableTokens.length > 0) {
+      const tokenName = txParams.enableTokens[0].name;
+      if (tokenName) {
+        expectedTokenId = this.extractTokenIdFromName(tokenName);
+      }
+    }
+    // Check for recipients array with tokenName (used in non-TSS wallets)
+    else if (txParams.recipients && Array.isArray(txParams.recipients) && txParams.recipients.length > 0) {
+      const recipient = txParams.recipients[0];
+      if (recipient.tokenName) {
+        expectedTokenId = this.extractTokenIdFromName(recipient.tokenName);
+      }
+    }
+
+    // Verify the token ID matches if we have an expected value
+    if (expectedTokenId !== null && txJson.tokenId !== expectedTokenId) {
+      throw new Error(
+        `Token enablement verification failed: expected token ID ${expectedTokenId} but transaction has token ID ${txJson.tokenId}`
+      );
     }
 
     return true;

@@ -4,13 +4,14 @@ import { BitGoAPI, encrypt } from '@bitgo/sdk-api';
 import * as AlgoResources from '../fixtures/algo';
 import { randomBytes } from 'crypto';
 import { coins } from '@bitgo/statics';
-import Sinon, { SinonStub } from 'sinon';
+import Sinon, { SinonStub, spy, stub } from 'sinon';
 import assert from 'assert';
 import { Algo } from '../../src/algo';
 import BigNumber from 'bignumber.js';
 import { TransactionBuilderFactory } from '../../src/lib';
-import { KeyPair } from '@bitgo/sdk-core';
+import { common, KeyPair, Wallet } from '@bitgo/sdk-core';
 import { algoBackupKey } from './fixtures/algoBackupKey';
+import nock from 'nock';
 
 describe('ALGO:', function () {
   let bitgo: TestBitGoAPI;
@@ -1177,6 +1178,143 @@ describe('ALGO:', function () {
           });
         },
         { message: 'Invalid private key: Invalid base32 characters' }
+      );
+    });
+  });
+
+  describe('blind signing token enablement protection', () => {
+    let wallet: Wallet;
+    const bgUrl = common.Environments['mock'].uri;
+
+    before(() => {
+      bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
+      bitgo.safeRegister('talgo', Talgo.createInstance);
+      bitgo.initializeTestVars();
+      basecoin = bitgo.coin('talgo');
+
+      wallet = new Wallet(bitgo, basecoin, {
+        id: '123',
+        coin: 'talgo',
+        keys: ['1', '2', '3'],
+        coinSpecific: {
+          rootAddress: '123',
+        },
+        type: 'hot',
+      });
+    });
+    it('should verify a valid token enablement transaction', async function () {
+      const verifyTransactionStub = spy(basecoin, 'verifyTransaction');
+      nock(bgUrl)
+        .post(`/api/v2/talgo/wallet/${wallet.id()}/tx/build`)
+        .reply(200, {
+          txHex:
+            'iaRhcmN2xCBfnMgYtbyG4RL1DspYhxQeyn9QrJ+s2ZcDTcxK+yOH+KNmZWXNA+iiZnbOA2tlJKNnZW6sdGVzdG5ldC12MS4womdoxCBIY7UYpLPITsgQ8i1PEIHLD3HwWaesIN7GL39w5Qk6IqJsds4Da2kMo3NuZMQgX5zIGLW8huES9Q7KWIcUHsp/UKyfrNmXA03MSvsjh/ikdHlwZaVheGZlcqR4YWlkzgmpOkY=',
+          txHash: 'ARYMOXMKZWM372JBFBTADZNJZU7S5HK44NZDZLVX5UR5UPIWT7FA',
+          txInfo: {
+            id: 'ARYMOXMKZWM372JBFBTADZNJZU7S5HK44NZDZLVX5UR5UPIWT7FA',
+            type: 'axfer',
+            from: 'L6OMQGFVXSDOCEXVB3FFRBYUD3FH6UFMT6WNTFYDJXGEV6ZDQ74EXGF6BE',
+            fee: 1000,
+            firstRound: 57369892,
+            lastRound: 57370892,
+            note: {},
+            tokenId: 162085446,
+            genesisID: 'testnet-v1.0',
+            genesisHash: 'SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=',
+            to: 'L6OMQGFVXSDOCEXVB3FFRBYUD3FH6UFMT6WNTFYDJXGEV6ZDQ74EXGF6BE',
+            amount: '0',
+            txType: 'enableToken',
+            tokenName: 'TALGO',
+          },
+          feeInfo: {
+            size: 251,
+            fee: 1000,
+            feeRate: 4,
+            feeString: '1000',
+          },
+          keys: [
+            '42MIYL2KBISV6WJRALTTSXHBEGLNF7MMQ74FGSYUCT5YP3V2KENJGRFVVQ',
+            'MAGXZTDFW5QEXUKOUDIGHTXOKDW7TNQEDLWPBEZEL3VFU3YAA2PGYRS65M',
+            'TMEJTI7XNCACDG3BTODINW6CMR6ARYIKTCFPA2GMIXL4X5Q4BCE6VHMWAM',
+          ],
+          addressVersion: 1,
+          coin: 'talgo',
+        });
+      const validatePwdStub = stub(wallet, 'getKeychainsAndValidatePassphrase' as keyof Wallet).resolves([]);
+      const signTxStub = stub(wallet, 'signTransaction').resolves({});
+
+      await wallet.sendTokenEnablements({
+        verification: { verifyTokenEnablement: true },
+        enableTokens: [
+          {
+            name: 'talgo:JPT-162085446',
+            address: 'L6OMQGFVXSDOCEXVB3FFRBYUD3FH6UFMT6WNTFYDJXGEV6ZDQ74EXGF6BE',
+          },
+        ],
+      });
+
+      verifyTransactionStub.called.should.be.true();
+      verifyTransactionStub.restore();
+      validatePwdStub.restore();
+      signTxStub.restore();
+    });
+
+    it('should throw error when invalid token enablement transaction is returned', async () => {
+      const verifyTransactionStub = spy(basecoin, 'verifyTransaction');
+      nock(bgUrl)
+        .post(`/api/v2/talgo/wallet/${wallet.id()}/tx/build`)
+        .reply(200, {
+          txHex:
+            'iaRhcmN2xCBfnMgYtbyG4RL1DspYhxQeyn9QrJ+s2ZcDTcxK+yOH+KNmZWXNA+iiZnbOA2tpeqNnZW6sdGVzdG5ldC12MS4womdoxCBIY7UYpLPITsgQ8i1PEIHLD3HwWaesIN7GL39w5Qk6IqJsds4Da21io3NuZMQgX5zIGLW8huES9Q7KWIcUHsp/UKyfrNmXA03MSvsjh/ikdHlwZaVheGZlcqR4YWlkzgACwN8=',
+          txHash: 'YPQGYNBOCPXMBFTBZH2AQGCDZ3C2762T6EYQY46F7LRG2URX6DLA',
+          txInfo: {
+            id: 'YPQGYNBOCPXMBFTBZH2AQGCDZ3C2762T6EYQY46F7LRG2URX6DLA',
+            type: 'axfer',
+            from: 'L6OMQGFVXSDOCEXVB3FFRBYUD3FH6UFMT6WNTFYDJXGEV6ZDQ74EXGF6BE',
+            fee: 1000,
+            firstRound: 57371002,
+            lastRound: 57372002,
+            note: {},
+            tokenId: 180447,
+            genesisID: 'testnet-v1.0',
+            genesisHash: 'SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=',
+            to: 'L6OMQGFVXSDOCEXVB3FFRBYUD3FH6UFMT6WNTFYDJXGEV6ZDQ74EXGF6BE',
+            amount: '0',
+            txType: 'enableToken',
+            tokenName: 'TALGO',
+          },
+          feeInfo: {
+            size: 251,
+            fee: 1000,
+            feeRate: 4,
+            feeString: '1000',
+          },
+          keys: [
+            '42MIYL2KBISV6WJRALTTSXHBEGLNF7MMQ74FGSYUCT5YP3V2KENJGRFVVQ',
+            'MAGXZTDFW5QEXUKOUDIGHTXOKDW7TNQEDLWPBEZEL3VFU3YAA2PGYRS65M',
+            'TMEJTI7XNCACDG3BTODINW6CMR6ARYIKTCFPA2GMIXL4X5Q4BCE6VHMWAM',
+          ],
+          addressVersion: 1,
+          coin: 'talgo',
+        });
+      stub(wallet, 'getKeychainsAndValidatePassphrase' as keyof Wallet).resolves([]);
+      stub(wallet, 'signTransaction').resolves({});
+
+      const { success, failure } = await wallet.sendTokenEnablements({
+        verification: { verifyTokenEnablement: true },
+        enableTokens: [
+          {
+            name: 'talgo:JPT-162085446',
+            address: 'L6OMQGFVXSDOCEXVB3FFRBYUD3FH6UFMT6WNTFYDJXGEV6ZDQ74EXGF6BE',
+          },
+        ],
+      });
+
+      verifyTransactionStub.called.should.be.true();
+      success.length.should.equal(0);
+      failure.length.should.equal(1);
+      failure[0].message.should.equal(
+        'Token enablement verification failed: expected token ID 162085446 but transaction has token ID 180447'
       );
     });
   });
