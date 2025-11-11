@@ -3,6 +3,7 @@ import { ok as assert } from 'assert';
 
 import {
   createOutputScriptP2shP2pk,
+  isSupportedScriptType,
   ScriptType,
   ScriptType2Of3,
   scriptTypeP2shP2pk,
@@ -26,10 +27,12 @@ import {
   UtxoTransaction,
   verifySignatureWithUnspent,
   addXpubsToPsbt,
+  clonePsbtWithoutNonWitnessUtxo,
 } from '../bitgo';
-import { Network } from '../networks';
+import { getNetworkList, getNetworkName, isMainnet, Network, networks } from '../networks';
 import { mockReplayProtectionUnspent, mockWalletUnspent } from './mock';
 import { toOutputScript } from '../address';
+import { getDefaultWalletKeys, getWalletKeysForSeed } from './keys';
 
 /**
  * This is a bit of a misnomer, as it actually specifies the spend type of the input.
@@ -47,6 +50,9 @@ export type Input = {
   scriptType: InputScriptType;
   value: bigint;
 };
+
+export const signStages = ['unsigned', 'halfsigned', 'fullsigned'] as const;
+export type SignStage = (typeof signStages)[number];
 
 /**
  * Set isInternalAddress=true for internal output address
@@ -169,7 +175,7 @@ export function constructPsbt(
   outputs: Output[],
   network: Network,
   rootWalletKeys: RootWalletKeys,
-  sign: 'unsigned' | 'halfsigned' | 'fullsigned',
+  signStage: SignStage,
   params?: {
     signers?: { signerName: KeyName; cosignerName?: KeyName };
     deterministic?: boolean;
@@ -183,6 +189,11 @@ export function constructPsbt(
   assert(totalInputAmount >= outputInputAmount, 'total output can not exceed total input');
 
   const psbt = createPsbtForNetwork({ network });
+
+  if (params?.addGlobalXPubs) {
+    addXpubsToPsbt(psbt, rootWalletKeys);
+  }
+
   const unspents = inputs.map((input, i) => toUnspent(input, i, network, rootWalletKeys));
 
   unspents.forEach((u, i) => {
@@ -226,7 +237,7 @@ export function constructPsbt(
     throw new Error('invalid output');
   });
 
-  if (sign === 'unsigned') {
+  if (signStage === 'unsigned') {
     return psbt;
   }
 
@@ -237,15 +248,106 @@ export function constructPsbt(
 
   signAllPsbtInputs(psbt, inputs, rootWalletKeys, 'halfsigned', { signers, skipNonWitnessUtxo });
 
-  if (sign === 'fullsigned') {
-    signAllPsbtInputs(psbt, inputs, rootWalletKeys, sign, { signers, deterministic, skipNonWitnessUtxo });
-  }
-
-  if (params?.addGlobalXPubs) {
-    addXpubsToPsbt(psbt, rootWalletKeys);
+  if (signStage === 'fullsigned') {
+    signAllPsbtInputs(psbt, inputs, rootWalletKeys, signStage, { signers, deterministic, skipNonWitnessUtxo });
   }
 
   return psbt;
+}
+
+export const txFormats = ['psbt', 'psbt-lite'] as const;
+export type TxFormat = (typeof txFormats)[number];
+
+/**
+ * Creates a valid PSBT with as many features as possible.
+ *
+ * - Inputs:
+ *   - All wallet script types that are supported by the network.
+ *   - A p2shP2pk input (for replay protection)
+ * - Outputs:
+ *   - All wallet script types that are supported by the network.
+ *   - A p2sh output with derivation info of a different wallet (not in the global psbt xpubs)
+ *   - A p2sh output with no derivation info (external output)
+ *   - An OP_RETURN output
+ */
+export class AcidTest {
+  public readonly network: Network;
+  public readonly signStage: SignStage;
+  public readonly txFormat: TxFormat;
+  public readonly rootWalletKeys: RootWalletKeys;
+  public readonly otherWalletKeys: RootWalletKeys;
+  public readonly inputs: Input[];
+  public readonly outputs: Output[];
+
+  constructor(
+    network: Network,
+    signStage: SignStage,
+    txFormat: TxFormat,
+    rootWalletKeys: RootWalletKeys,
+    otherWalletKeys: RootWalletKeys,
+    inputs: Input[],
+    outputs: Output[]
+  ) {
+    this.network = network;
+    this.signStage = signStage;
+    this.txFormat = txFormat;
+    this.rootWalletKeys = rootWalletKeys;
+    this.otherWalletKeys = otherWalletKeys;
+    this.inputs = inputs;
+    this.outputs = outputs;
+  }
+
+  static withDefaults(network: Network, signStage: SignStage, txFormat: TxFormat): AcidTest {
+    const rootWalletKeys = getDefaultWalletKeys();
+
+    const otherWalletKeys = getWalletKeysForSeed('too many secrets');
+    const inputs: Input[] = inputScriptTypes
+      .filter((scriptType) =>
+        scriptType === 'taprootKeyPathSpend'
+          ? isSupportedScriptType(network, 'p2trMusig2')
+          : isSupportedScriptType(network, scriptType)
+      )
+      .map((scriptType) => ({ scriptType, value: BigInt(2000) }));
+
+    const outputs: Output[] = outputScriptTypes
+      .filter((scriptType) => isSupportedScriptType(network, scriptType))
+      .map((scriptType) => ({ scriptType, value: BigInt(900) }));
+
+    // Test other wallet output (with derivation info)
+    outputs.push({ scriptType: 'p2sh', value: BigInt(900), walletKeys: otherWalletKeys });
+    // Tes non-wallet output
+    outputs.push({ scriptType: 'p2sh', value: BigInt(900), walletKeys: null });
+    // Test OP_RETURN output
+    outputs.push({ opReturn: 'setec astronomy', value: BigInt(900) });
+
+    return new AcidTest(network, signStage, txFormat, rootWalletKeys, otherWalletKeys, inputs, outputs);
+  }
+
+  get name(): string {
+    const networkName = getNetworkName(this.network);
+    return `${networkName} ${this.signStage} ${this.txFormat}`;
+  }
+
+  createPsbt(): UtxoPsbt {
+    const psbt = constructPsbt(this.inputs, this.outputs, this.network, this.rootWalletKeys, this.signStage, {
+      deterministic: true,
+      addGlobalXPubs: true,
+    });
+    if (this.txFormat === 'psbt-lite') {
+      return clonePsbtWithoutNonWitnessUtxo(psbt);
+    }
+    return psbt;
+  }
+
+  static suite(): AcidTest[] {
+    return getNetworkList()
+      .filter((network) => isMainnet(network) && network !== networks.bitcoinsv)
+      .flatMap((network) =>
+        signStages.flatMap((signStage) =>
+          txFormats.flatMap((txFormat) => AcidTest.withDefaults(network, signStage, txFormat))
+        )
+      );
+  }
 }
 
 /**

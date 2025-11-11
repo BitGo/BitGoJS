@@ -22,7 +22,7 @@ export function explainTx<TNumber extends number | bigint>(
     changeInfo?: fixedScript.ChangeAddressInfo[];
   },
   network: utxolib.Network
-): TransactionExplanation {
+): TransactionExplanation<string | undefined> {
   if (params.wallet && isDescriptorWallet(params.wallet)) {
     if (tx instanceof utxolib.bitgo.UtxoPsbt) {
       if (!params.pubs || !isTriple(params.pubs)) {

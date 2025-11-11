@@ -53,7 +53,7 @@ export async function parseTransaction<TNumber extends bigint | number>(
   }
 
   // obtain all outputs
-  const explanation: TransactionExplanation = await coin.explainTransaction<TNumber>({
+  const explanation: TransactionExplanation<string | undefined> = await coin.explainTransaction<TNumber>({
     txHex: txPrebuild.txHex,
     txInfo: txPrebuild.txInfo,
     pubs: keychainArray.map((k) => k.pub) as Triple<string>,

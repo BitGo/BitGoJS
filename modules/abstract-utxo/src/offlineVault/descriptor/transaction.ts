@@ -45,7 +45,7 @@ export function getHalfSignedPsbt(
 export function getTransactionExplanationFromPsbt(
   tx: DescriptorTransaction,
   network: utxolib.Network
-): TransactionExplanation {
+): TransactionExplanation<string> {
   const psbt = utxolib.bitgo.createPsbtDecode(tx.coinSpecific.txHex, network);
   const descriptorMap = getDescriptorsFromDescriptorTransaction(tx);
   const { outputs, changeOutputs, fee } = explainPsbt(psbt, descriptorMap);
