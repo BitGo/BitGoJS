@@ -8,18 +8,18 @@ export interface ExplanationOutput {
   amount: string | number;
 }
 
-export interface TransactionExplanation {
+export interface TransactionExplanation<TFee> {
   outputs: ExplanationOutput[];
   changeOutputs: ExplanationOutput[];
   fee: {
     /* network fee */
-    fee: string | number;
+    fee: TFee;
     payGoFeeString: string | number | undefined;
     payGoFeeAddress: string | undefined;
   };
 }
 
-export function getTransactionExplanation(coin: string, tx: unknown): TransactionExplanation {
+export function getTransactionExplanation(coin: string, tx: unknown): TransactionExplanation<string> {
   if (!OfflineVaultSignable.is(tx)) {
     throw new Error('not a signable transaction');
   }

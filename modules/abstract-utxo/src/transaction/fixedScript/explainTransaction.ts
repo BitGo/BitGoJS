@@ -345,7 +345,7 @@ export function explainPsbt(
     inputSignatures: inputSignaturesCount,
     signatures: inputSignaturesCount.reduce((prev, curr) => (curr > prev ? curr : prev), 0),
     messages,
-  } as TransactionExplanation;
+  };
 }
 
 export function explainLegacyTx<TNumber extends number | bigint>(
@@ -356,12 +356,12 @@ export function explainLegacyTx<TNumber extends number | bigint>(
     changeInfo?: { address: string; chain: number; index: number }[];
   },
   network: utxolib.Network
-): TransactionExplanation {
+): TransactionExplanation<string | undefined> {
   const common = explainCommon(tx, params, network);
   const inputSignaturesCount = getTxInputSignaturesCount(tx, params, network);
   return {
     ...common,
     inputSignatures: inputSignaturesCount,
     signatures: inputSignaturesCount.reduce((prev, curr) => (curr > prev ? curr : prev), 0),
-  } as TransactionExplanation;
+  };
 }

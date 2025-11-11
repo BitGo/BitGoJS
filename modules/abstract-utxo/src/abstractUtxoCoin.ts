@@ -200,8 +200,8 @@ export function isWalletOutput(output: Output): output is FixedScriptWalletOutpu
   );
 }
 
-export interface TransactionExplanation extends BaseTransactionExplanation<string, string> {
-  locktime: number;
+export interface TransactionExplanation<TFee = string> extends BaseTransactionExplanation<TFee, string> {
+  locktime?: number;
   /** NOTE: this actually only captures external outputs */
   outputs: Output[];
   changeOutputs: Output[];
@@ -872,7 +872,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    */
   async explainTransaction<TNumber extends number | bigint = number>(
     params: ExplainTransactionOptions<TNumber>
-  ): Promise<TransactionExplanation> {
+  ): Promise<TransactionExplanation<string | undefined>> {
     return explainTx(this.decodeTransactionFromPrebuild(params), params, this.network);
   }
 

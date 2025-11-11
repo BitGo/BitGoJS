@@ -34,7 +34,7 @@ function getInputSignatures(psbt: utxolib.bitgo.UtxoPsbt): number[] {
 export function explainPsbt(
   psbt: utxolib.bitgo.UtxoPsbt,
   descriptors: coreDescriptors.DescriptorMap
-): TransactionExplanation {
+): TransactionExplanation<string> {
   const parsedTransaction = coreDescriptors.parse(psbt, descriptors, psbt.network);
   const { inputs, outputs } = parsedTransaction;
   const externalOutputs = outputs.filter((o) => o.scriptId === undefined);

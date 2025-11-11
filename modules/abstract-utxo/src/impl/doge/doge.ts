@@ -114,7 +114,7 @@ export class Doge extends AbstractUtxoCoin {
 
   async explainTransaction<TNumber extends number | bigint = bigint>(
     params: ExplainTransactionOptions<TNumber> | (ExplainTransactionOptions<TNumber> & { txInfo: TransactionInfoJSON })
-  ): Promise<TransactionExplanation> {
+  ): Promise<TransactionExplanation<string | undefined>> {
     return super.explainTransaction({
       ...params,
       txInfo: params.txInfo ? parseTransactionInfo(params.txInfo as TransactionInfoJSON) : undefined,
