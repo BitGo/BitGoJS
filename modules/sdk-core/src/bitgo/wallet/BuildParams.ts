@@ -116,6 +116,7 @@ export const BuildParams = t.exact(
       solVersionedTransactionData: t.unknown,
       // Aptos custom transaction parameters for smart contract calls
       aptosCustomTransactionParams: t.unknown,
+      isTestTransaction: t.unknown,
     }),
   ])
 );

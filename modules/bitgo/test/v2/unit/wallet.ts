@@ -1787,6 +1787,28 @@ describe('V2 Wallet:', function () {
       txPrebuild.recipients[0].amount.should.equal('1000000000000000');
     });
 
+    it('should pass isTestTransaction parameter through for multisig wallets', async function () {
+      const recipients = [
+        {
+          address: 'aaa',
+          amount: '1000',
+        },
+      ];
+      const isTestTransaction = true;
+      const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`;
+      const response = nock(bgUrl)
+        .post(path, _.matches({ recipients, isTestTransaction })) // use _.matches to do a partial match on request body object instead of strict matching
+        .reply(200);
+      try {
+        await wallet.prebuildTransaction({ recipients, isTestTransaction });
+      } catch (e) {
+        // the prebuildTransaction method will probably throw an exception for not having all of the correct nocks
+        // we only care about /tx/build and whether isTestTransaction is an allowed parameter
+      }
+
+      response.isDone().should.be.true();
+    });
+
     it('should pass unspent reservation parameter through when building transactions', async function () {
       const reservation = {
         expireTime: '2029-08-12',
@@ -2369,6 +2391,50 @@ describe('V2 Wallet:', function () {
               value: 'test memo',
             },
             type: 'transfer',
+          },
+          feeInfo: {
+            fee: 5000,
+            feeString: '5000',
+          },
+        });
+      });
+
+      it('should build a transfer transaction with isTestTransaction flag', async function () {
+        const recipients = [
+          {
+            address: '6DadkZcx9JZgeQUDbHh12cmqCpaqehmVxv6sGy49jrah',
+            amount: '1000',
+          },
+        ];
+
+        const prebuildTxWithIntent = sandbox.stub(TssUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(txRequest);
+
+        const txPrebuild = await tssSolWallet.prebuildTransaction({
+          reqId,
+          recipients,
+          type: 'transfer',
+          isTestTransaction: true,
+        });
+
+        // Verify isTestTransaction is passed to prebuildTxWithIntent
+        sinon.assert.calledOnce(prebuildTxWithIntent);
+        const callArgs = prebuildTxWithIntent.getCall(0).args[0];
+        callArgs.should.have.property('isTestTransaction', true);
+        callArgs.should.have.property('intentType', 'payment');
+        callArgs.should.have.property('recipients');
+        should.exist(callArgs.recipients);
+        callArgs.recipients!.should.deepEqual(recipients);
+
+        txPrebuild.should.deepEqual({
+          walletId: tssSolWallet.id(),
+          wallet: tssSolWallet,
+          txRequestId: 'id',
+          txHex: 'ababcdcd',
+          buildParams: {
+            recipients,
+            type: 'transfer',
+            isTestTransaction: true,
           },
           feeInfo: {
             fee: 5000,
@@ -3963,6 +4029,35 @@ describe('V2 Wallet:', function () {
         sendMany.should.deepEqual('sendTxResponse');
         sinon.assert.calledOnce(setRequestTracerSpy);
         setRequestTracerSpy.restore();
+      });
+
+      it('should pass isTestTransaction through sendMany to prebuildAndSignTransaction', async function () {
+        const signedTransaction = {
+          txRequestId: 'txRequestId',
+        };
+
+        const sendManyInputWithTestFlag = {
+          ...sendManyInput,
+          type: 'transfer',
+          isTestTransaction: true,
+        };
+
+        const prebuildAndSignTransaction = sandbox.stub(tssSolWallet, 'prebuildAndSignTransaction');
+        prebuildAndSignTransaction.resolves(signedTransaction);
+
+        const sendTxRequest = sandbox.stub(TssUtils.prototype, 'sendTxRequest');
+        sendTxRequest.resolves('sendTxResponse');
+
+        const sendMany = await tssSolWallet.sendMany(sendManyInputWithTestFlag);
+
+        // Verify prebuildAndSignTransaction was called with isTestTransaction
+        sinon.assert.calledOnce(prebuildAndSignTransaction);
+        const callArgs = prebuildAndSignTransaction.getCall(0).args[0];
+        should.exist(callArgs);
+        callArgs!.should.have.property('isTestTransaction', true);
+        callArgs!.should.have.property('type', 'transfer');
+
+        sendMany.should.deepEqual('sendTxResponse');
       });
 
       it('should return transfer from sendMany for apiVersion=full', async function () {
