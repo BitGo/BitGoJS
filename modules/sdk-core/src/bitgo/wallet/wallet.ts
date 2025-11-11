@@ -3672,6 +3672,36 @@ export class Wallet implements IWallet {
   }
 
   /**
+   * Ensures signature shares are in a clean state before signing a transaction.
+   * Automatically deletes signature shares for Full TxRequests before signing to prevent
+   * issues with stale or partial signatures.
+   * Use this for Express API and other integrations that need automatic cleanup of signatures.
+   *
+   * @param params - signing options
+   * @returns signed transaction
+   */
+  public async ensureCleanSigSharesAndSignTransaction(
+    params: WalletSignTransactionOptions = {}
+  ): Promise<SignedTransaction | TxRequest> {
+    const txRequestId = params.txRequestId || params.txPrebuild?.txRequestId;
+
+    if (txRequestId && this.tssUtils && this.multisigType() === 'tss') {
+      const txRequest = await this.tssUtils.getTxRequest(txRequestId);
+
+      // Always clean signature shares for Full TxRequests before signing
+      const isFull =
+        txRequest.apiVersion === 'full' &&
+        ((txRequest.transactions ?? []).length > 0 || (txRequest.messages ?? []).length > 0);
+
+      if (isFull) {
+        await this.tssUtils.deleteSignatureShares(txRequestId);
+      }
+    }
+
+    return this.signTransaction(params);
+  }
+
+  /**
    * Signs a transaction from a TSS ECDSA wallet using external signer.
    *
    * @param params signing options

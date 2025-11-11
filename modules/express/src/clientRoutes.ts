@@ -498,8 +498,9 @@ export async function handleV2SignTSSWalletTx(req: ExpressApiRouteRequest<'expre
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.decoded.coin);
   const wallet = await coin.wallets().get({ id: req.decoded.id });
+
   try {
-    return await wallet.signTransaction(createTSSSendParams(req, wallet));
+    return await wallet.ensureCleanSigSharesAndSignTransaction(createTSSSendParams(req, wallet));
   } catch (error) {
     console.error('error while signing wallet transaction ', error);
     throw error;
