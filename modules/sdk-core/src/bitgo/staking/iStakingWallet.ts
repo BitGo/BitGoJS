@@ -201,6 +201,10 @@ export interface SwitchValidatorOptions {
   validator: string;
 }
 
+export interface TaoSwitchValidatorOptions extends SwitchValidatorOptions {
+  netUID: string;
+}
+
 export interface ClaimRewardsOptions {
   amount: string;
   clientId?: string;
@@ -294,7 +298,7 @@ export interface IStakingWallet {
   readonly coin: string;
   stake(options: StakeOptions | TronStakeOptions | TaoStakeOptions): Promise<StakingRequest>;
   unstake(options: UnstakeOptions | EthUnstakeOptions): Promise<StakingRequest>;
-  switchValidator(options: SwitchValidatorOptions): Promise<StakingRequest>;
+  switchValidator(options: SwitchValidatorOptions | TaoSwitchValidatorOptions): Promise<StakingRequest>;
   claimRewards(options: ClaimRewardsOptions): Promise<StakingRequest>;
   getStakingRequest(stakingRequestId: string): Promise<StakingRequest>;
   getTransactionsReadyToSign(stakingRequestId: string): Promise<TransactionsReadyToSign>;

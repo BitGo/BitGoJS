@@ -22,6 +22,7 @@ import {
   StakingTxRequestPrebuildTransactionResult,
   TronStakeOptions,
   TaoStakeOptions,
+  TaoSwitchValidatorOptions,
 } from './iStakingWallet';
 import { BitGoBase } from '../bitgoBase';
 import { IWallet, PrebuildTransactionResult } from '../wallet';
@@ -78,7 +79,7 @@ export class StakingWallet implements IStakingWallet {
    * @param options - switch validator options
    * @return StakingRequest
    */
-  async switchValidator(options: SwitchValidatorOptions): Promise<StakingRequest> {
+  async switchValidator(options: SwitchValidatorOptions | TaoSwitchValidatorOptions): Promise<StakingRequest> {
     return await this.createStakingRequest(options, 'SWITCH_VALIDATOR');
   }
 
@@ -317,7 +318,8 @@ export class StakingWallet implements IStakingWallet {
       | SwitchValidatorOptions
       | ClaimRewardsOptions
       | TronStakeOptions
-      | TaoStakeOptions,
+      | TaoStakeOptions
+      | TaoSwitchValidatorOptions,
     type: string
   ): Promise<StakingRequest> {
     return await this.bitgo
