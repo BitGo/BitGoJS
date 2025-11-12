@@ -1114,6 +1114,15 @@ export const polygonTokens = [
     UnderlyingAsset['polygon:brl1'],
     POLYGON_TOKEN_FEATURES
   ),
+  polygonErc20(
+    '93611666-ac86-4859-805d-2604aea6a748',
+    'polygon:mmt54',
+    'METWAVE MINE',
+    15,
+    '0x36178970375da9f363104555149a0bcaf80c777b',
+    UnderlyingAsset['polygon:mmt54'],
+    POLYGON_TOKEN_FEATURES
+  ),
   // testnet polygon tokens
   tpolygonErc20(
     '09ba76d0-331e-4b75-bb75-739285c3e03a',

@@ -3220,6 +3220,14 @@ export const ofcCoins = [
     18,
     UnderlyingAsset['polygon:brl1']
   ),
+  ofcPolygonErc20(
+    'bb845778-42b3-4277-a291-a0d703e5961e',
+    'ofcpolygon:mmt54',
+    'METWAVE MINE',
+    15,
+    UnderlyingAsset['polygon:mmt54']
+  ),
+
   tofcPolygonErc20(
     '62f4329d-11cd-4875-b91b-9ceae66c9439',
     'ofctpolygon:link',
