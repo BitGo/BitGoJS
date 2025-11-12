@@ -858,7 +858,8 @@ describe('TSS Ecdsa Utils:', async function () {
 
     it('signTxRequest should succeed for WalletConnect ERC20 transfer with data field', async function () {
       nock.cleanAll();
-      // WalletConnect ERC20 transfer: recipients[0].address is token contract, recipients[0].data contains the actual recipient
+      // WalletConnect ERC20 transfer: recipients[0].address is token contract, recipients[0].amount is 0 (no native coins)
+      // recipients[0].data contains the actual recipient and token amount
       const signableHex =
         '02f86f83088bb00283e1d7dd84768ea6898301e04b94d9327fd36c3312466efed23ff0493453ee32f55180b844a9059cbb0000000000000000000000007d7e63af583ba73ba5c927dbd028153963566bef00000000000000000000000000000000000000000000000000470de4df820000c0';
       const serializedTxHex =
@@ -880,8 +881,8 @@ describe('TSS Ecdsa Utils:', async function () {
           recipients: [
             {
               address: '0xd9327fd36c3312466efed23ff0493453ee32f551', // Token contract address
-              amount: '20000000000000000',
-              data: '0xa9059cbb0000000000000000000000007d7e63af583ba73ba5c927dbd028153963566bef00000000000000000000000000000000000000000000000000470de4df820000', // ERC20 transfer calldata with actual recipient
+              amount: '0', // No native coins sent
+              data: '0xa9059cbb0000000000000000000000007d7e63af583ba73ba5c927dbd028153963566bef00000000000000000000000000000000000000000000000000470de4df820000', // ERC20 transfer calldata with actual recipient and token amount
             },
           ],
           type: 'transfer',
