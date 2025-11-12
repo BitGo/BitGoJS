@@ -1,5 +1,5 @@
 import { BIP32Interface, bip32 } from '@bitgo/secp256k1';
-import { Descriptor } from '@bitgo/wasm-miniscript';
+import { Descriptor } from '@bitgo/wasm-utxo';
 
 import { DescriptorBuilder, getDescriptorFromBuilder } from './builder';
 

@@ -3,7 +3,7 @@ import assert from 'assert';
 
 import * as bitcoinjs from 'bitcoinjs-lib';
 import * as utxolib from '@bitgo/utxo-lib';
-import * as wasmMiniscript from '@bitgo/wasm-miniscript';
+import * as wasmMiniscript from '@bitgo/wasm-utxo';
 
 // demonstrate https://github.com/babylonlabs-io/btc-staking-ts/issues/71
 describe('btc-staking-ts bug #71', function () {

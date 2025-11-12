@@ -1,6 +1,6 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import { Dimensions, VirtualSizes } from '@bitgo/unspents';
-import { Descriptor } from '@bitgo/wasm-miniscript';
+import { Descriptor } from '@bitgo/wasm-utxo';
 
 import { DescriptorMap } from './DescriptorMap';
 import { findDescriptorForInput } from './psbt';
