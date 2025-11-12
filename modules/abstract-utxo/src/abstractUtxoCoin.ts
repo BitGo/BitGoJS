@@ -96,6 +96,12 @@ class ErrorInvalidTxFormat extends Error {
   }
 }
 
+class ErrorDeprecatedTxFormat extends Error {
+  constructor(txFormat: unknown) {
+    super(`Deprecated txFormat: ${txFormat} for this network`);
+  }
+}
+
 type UtxoCustomSigningFunction<TNumber extends number | bigint> = {
   (params: {
     coin: IBaseCoin;
@@ -996,6 +1002,14 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     if (utxolib.isTestnet(this.network)) {
       if (requestedTxFormat !== undefined && !isTxFormat(requestedTxFormat)) {
         throw new ErrorInvalidTxFormat(requestedTxFormat);
+      }
+
+      if (utxolib.getMainnet(this.network) === utxolib.networks.bitcoin) {
+        if (requestedTxFormat === 'legacy') {
+          throw new ErrorDeprecatedTxFormat(requestedTxFormat);
+        }
+
+        return 'psbt-lite';
       }
     }
 
