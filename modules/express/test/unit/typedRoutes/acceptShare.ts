@@ -3,6 +3,7 @@ import * as t from 'io-ts';
 import {
   AcceptShareRequestParams,
   AcceptShareRequestBody,
+  AcceptShareResponse,
   PostAcceptShare,
 } from '../../../src/typedRoutes/api/v1/acceptShare';
 import { assertDecode } from './common';
@@ -126,6 +127,72 @@ describe('AcceptShare codec tests', function () {
     });
   });
 
+  describe('AcceptShareResponse', function () {
+    it('should validate valid response with all fields', function () {
+      const validResponse = {
+        changed: true,
+        state: 'accepted',
+      };
+
+      const decoded = assertDecode(AcceptShareResponse, validResponse);
+      assert.strictEqual(decoded.changed, validResponse.changed);
+      assert.strictEqual(decoded.state, validResponse.state);
+    });
+
+    it('should validate response with changed=false', function () {
+      const validResponse = {
+        changed: false,
+        state: 'pending',
+      };
+
+      const decoded = assertDecode(AcceptShareResponse, validResponse);
+      assert.strictEqual(decoded.changed, false);
+      assert.strictEqual(decoded.state, 'pending');
+    });
+
+    it('should reject response without changed field', function () {
+      const invalidResponse = {
+        state: 'accepted',
+      };
+
+      assert.throws(() => {
+        assertDecode(AcceptShareResponse, invalidResponse);
+      });
+    });
+
+    it('should reject response without state field', function () {
+      const invalidResponse = {
+        changed: true,
+      };
+
+      assert.throws(() => {
+        assertDecode(AcceptShareResponse, invalidResponse);
+      });
+    });
+
+    it('should reject response with non-boolean changed field', function () {
+      const invalidResponse = {
+        changed: 'true',
+        state: 'accepted',
+      };
+
+      assert.throws(() => {
+        assertDecode(AcceptShareResponse, invalidResponse);
+      });
+    });
+
+    it('should reject response with non-string state field', function () {
+      const invalidResponse = {
+        changed: true,
+        state: 123,
+      };
+
+      assert.throws(() => {
+        assertDecode(AcceptShareResponse, invalidResponse);
+      });
+    });
+  });
+
   describe('Supertest Integration Tests', function () {
     const agent = setupAgent();
     const shareId = 'share123456789abcdef';
@@ -133,7 +200,6 @@ describe('AcceptShare codec tests', function () {
     const mockAcceptShareResponse = {
       state: 'accepted',
       changed: true,
-      walletId: 'wallet123',
     };
 
     afterEach(function () {
@@ -163,6 +229,11 @@ describe('AcceptShare codec tests', function () {
       assert.strictEqual(result.status, 200);
       assert.ok(result.body);
 
+      // Validate response structure
+      const decodedResponse = assertDecode(AcceptShareResponse, result.body);
+      assert.strictEqual(typeof decodedResponse.changed, 'boolean');
+      assert.strictEqual(typeof decodedResponse.state, 'string');
+
       // Verify the method was called with correct params
       sinon.assert.calledOnce(acceptShareStub);
       const callArgs = acceptShareStub.firstCall.args[0];
@@ -191,6 +262,9 @@ describe('AcceptShare codec tests', function () {
       assert.strictEqual(result.status, 200);
       assert.ok(result.body);
 
+      // Validate response structure
+      assertDecode(AcceptShareResponse, result.body);
+
       sinon.assert.calledOnce(acceptShareStub);
       const callArgs = acceptShareStub.firstCall.args[0];
       assert.strictEqual(callArgs.walletShareId, shareId);
@@ -216,6 +290,9 @@ describe('AcceptShare codec tests', function () {
 
       assert.strictEqual(result.status, 200);
       assert.ok(result.body);
+
+      // Validate response structure
+      assertDecode(AcceptShareResponse, result.body);
 
       sinon.assert.calledOnce(acceptShareStub);
       const callArgs = acceptShareStub.firstCall.args[0];
