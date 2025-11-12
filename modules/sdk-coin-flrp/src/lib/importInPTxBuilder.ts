@@ -302,7 +302,8 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
         memo: Buffer.alloc(0),
       };
 
-      this.transaction.setTransaction(enhancedImportTx);
+      console.log('Enhanced Import Tx:', enhancedImportTx);
+      // this.transaction.setTransaction(enhancedImportTx);
     } catch (error) {
       throw new BuildTransactionError(`Failed to build P-chain import transaction: ${error}`);
     }
@@ -495,14 +496,14 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
     return this;
   }
 
-  /**
-   * Set locktime for the P-chain import transaction
-   * @param {number | bigint} locktime - Locktime value
-   */
-  locktime(locktime: number | bigint): this {
-    this.transaction._locktime = typeof locktime === 'number' ? BigInt(locktime) : locktime;
-    return this;
-  }
+  // /**
+  //  * Set locktime for the P-chain import transaction
+  //  * @param {number | bigint} locktime - Locktime value
+  //  */
+  // locktime(locktime: number | bigint): this {
+  //   this.transaction._locktime = typeof locktime === 'number' ? BigInt(locktime) : locktime;
+  //   return this;
+  // }
 
   /**
    * Set threshold for the P-chain import transaction

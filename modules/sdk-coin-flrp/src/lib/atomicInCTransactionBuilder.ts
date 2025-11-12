@@ -2,12 +2,13 @@ import { AtomicTransactionBuilder } from './atomicTransactionBuilder';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import utils from './utils';
 import { BuildTransactionError } from '@bitgo/sdk-core';
+import { Transaction } from './transaction';
 
-interface FlareChainNetworkMeta {
-  blockchainID?: string; // P-chain id (external)
-  cChainBlockchainID?: string; // C-chain id (local)
-  [k: string]: unknown;
-}
+// interface FlareChainNetworkMeta {
+//   blockchainID?: string; // P-chain id (external)
+//   cChainBlockchainID?: string; // C-chain id (local)
+//   [k: string]: unknown;
+// }
 
 interface FeeShape {
   fee?: string; // legacy
@@ -41,12 +42,12 @@ export abstract class AtomicInCTransactionBuilder extends AtomicTransactionBuild
   /**
    * Recreate builder state from raw tx (hex). Flare C-chain support TBD; for now validate & stash.
    */
-  protected fromImplementation(rawTransaction: string): { _tx?: unknown } {
+  protected fromImplementation(rawTransaction: string): Transaction {
     // If utils has validateRawTransaction use it; otherwise basic check
     if ((utils as unknown as { validateRawTransaction?: (r: string) => void }).validateRawTransaction) {
       (utils as unknown as { validateRawTransaction: (r: string) => void }).validateRawTransaction(rawTransaction);
     }
-    this.transaction.setTransaction(rawTransaction);
+    // this.transaction.setTransaction(rawTransaction);
     return this.transaction;
   }
 
@@ -57,13 +58,8 @@ export abstract class AtomicInCTransactionBuilder extends AtomicTransactionBuild
   }
 
   private initializeChainIds(): void {
-    const meta = this.transaction._network as FlareChainNetworkMeta;
-    if (meta?.blockchainID) {
-      this._externalChainId = utils.cb58Decode(meta.blockchainID);
-    }
-    if (meta?.cChainBlockchainID) {
-      this.transaction._blockchainID = utils.cb58Decode(meta.cChainBlockchainID);
-    }
+    this._externalChainId = utils.cb58Decode(this._network.blockchainID);
+    this._blockchainID = utils.cb58Decode(this._network.cChainBlockchainID);
   }
 
   private setFeeRate(n: bigint): void {

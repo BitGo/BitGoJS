@@ -9,8 +9,8 @@ export interface FlareNetwork extends BaseNetwork {
   batcherContractAddress?: string;
   forwarderFactoryAddress?: string;
   forwarderImplementationAddress?: string;
-  blockchainID?: string;
-  cChainBlockchainID?: string;
+  blockchainID: string;
+  cChainBlockchainID: string;
   networkID?: number;
   hrp?: string;
   alias?: string;
@@ -1835,7 +1835,7 @@ export class FlarePTestnet extends Testnet implements FlareNetwork {
   minDelegationFee = '0';
 }
 
-export class Flare extends Mainnet implements FlareNetwork, EthereumNetwork {
+export class Flare extends Mainnet implements EthereumNetwork {
   name = 'Flarechain';
   family = CoinFamily.FLR;
   explorerUrl = 'https://flare-explorer.flare.network/tx/';
@@ -1849,7 +1849,7 @@ export class Flare extends Mainnet implements FlareNetwork, EthereumNetwork {
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
 
-export class FlareTestnet extends Testnet implements FlareNetwork, EthereumNetwork {
+export class FlareTestnet extends Testnet implements EthereumNetwork {
   name = 'FlarechainTestnet';
   family = CoinFamily.FLR;
   explorerUrl = 'https://coston2-explorer.flare.network/tx/';

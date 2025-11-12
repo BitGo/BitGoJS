@@ -15,6 +15,7 @@ import {
   NETWORK_ID_PROP,
   BLOCKCHAIN_ID_PROP,
 } from './constants';
+import { Transaction } from './transaction';
 
 // Lightweight interface placeholders replacing Avalanche SDK transaction shapes
 interface FlareExportInputShape {
@@ -111,7 +112,7 @@ export class ExportInCTxBuilder extends AtomicInCTransactionBuilder {
     if (unsigned.networkId !== this.transaction._networkID) {
       throw new Error('Network ID mismatch');
     }
-    if (!unsigned.sourceBlockchainId.equals(this.transaction._blockchainID)) {
+    if (!unsigned.sourceBlockchainId.equals(this._blockchainID)) {
       throw new Error('Blockchain ID mismatch');
     }
     if (unsigned.outputs.length !== 1) {
@@ -122,23 +123,23 @@ export class ExportInCTxBuilder extends AtomicInCTransactionBuilder {
     }
     const out = unsigned.outputs[0];
     const inp = unsigned.inputs[0];
-    if (!out.assetId.equals(this.transaction._assetId) || !inp.assetId.equals(this.transaction._assetId)) {
+    if (!out.assetId.equals(this._assetId) || !inp.assetId.equals(this._assetId)) {
       throw new Error('AssetID mismatch');
     }
-    this.transaction._to = out.addresses;
+    this._to = out.addresses;
     this._amount = out.amount;
     const fee = inp.amount - out.amount;
     if (fee < 0n) {
       throw new BuildTransactionError('Computed fee is negative');
     }
     const fixed = this.fixedFee;
-    const feeRate = fee - fixed;
-    this.transaction._fee.feeRate = feeRate.toString();
+    const feeRate = Number(fee - fixed);
+    this.transaction._fee.feeRate = feeRate;
     this.transaction._fee.fee = fee.toString();
     this.transaction._fee.size = 1;
     this.transaction._fromAddresses = [inp.address];
     this._nonce = inp.nonce;
-    this.transaction.setTransaction(raw);
+    // this.transaction.setTransaction(raw.unsignedTx);
     return this;
   }
 
@@ -225,28 +226,30 @@ export class ExportInCTxBuilder extends AtomicInCTransactionBuilder {
     // Create FlareJS-ready unsigned transaction
     const unsigned: FlareUnsignedExportTx = {
       networkId: this.transaction._networkID,
-      sourceBlockchainId: this.transaction._blockchainID,
+      sourceBlockchainId: this._blockchainID,
       destinationBlockchainId: this._externalChainId || Buffer.alloc(ASSET_ID_LENGTH),
       inputs: [input],
       outputs: [output],
     };
 
+    console.log('Unsigned Export Tx:', unsigned);
+
     // Create signed transaction structure
-    const signed: FlareSignedExportTx = { unsignedTx: unsigned, credentials: [] };
+    // const signed: FlareSignedExportTx = { unsignedTx: unsigned, credentials: [] };
 
     // Update transaction fee information
     this.transaction._fee.fee = totalFee.toString();
     this.transaction._fee.size = 1;
 
     // Set the enhanced transaction
-    this.transaction.setTransaction(signed);
+    // this.transaction.setTransaction(signed);
   }
 
   /** @inheritdoc */
-  protected fromImplementation(raw: string | RawFlareExportTx): { _tx?: unknown } {
+  protected fromImplementation(raw: string | RawFlareExportTx): Transaction {
     if (typeof raw === STRING_TYPE) {
       // Future: parse hex or serialized form. For now treat as opaque raw tx.
-      this.transaction.setTransaction(raw);
+      // this.transaction.setTransaction(raw);
       return this.transaction;
     }
     return this.initBuilder(raw as RawFlareExportTx).transaction;

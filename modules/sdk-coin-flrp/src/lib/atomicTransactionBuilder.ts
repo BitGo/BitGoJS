@@ -1,22 +1,20 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BuildTransactionError, TransactionType, BaseTransaction } from '@bitgo/sdk-core';
+import { BaseCoin as CoinConfig, FlareNetwork } from '@bitgo/statics';
+import { BuildTransactionError, TransactionType, BaseTransaction, BaseKey } from '@bitgo/sdk-core';
 import { Credential, Signature, TransferableInput, TransferableOutput } from '@flarenetwork/flarejs';
-import { TransactionExplanation, DecodedUtxoObj } from './iface';
+import { TransactionExplanation, DecodedUtxoObj, BaseAddress } from './iface';
+import { KeyPair } from './keyPair';
+import BigNumber from 'bignumber.js';
 import {
   ASSET_ID_LENGTH,
   TRANSACTION_ID_HEX_LENGTH,
   PRIVATE_KEY_HEX_LENGTH,
   SECP256K1_SIGNATURE_LENGTH,
   TRANSACTION_ID_PREFIX,
-  DEFAULT_NETWORK_ID,
-  EMPTY_BUFFER_SIZE,
   HEX_PREFIX,
   HEX_PREFIX_LENGTH,
   DECIMAL_RADIX,
   SIGNING_METHOD,
   AMOUNT_STRING_ZERO,
-  DEFAULT_LOCKTIME,
-  DEFAULT_THRESHOLD,
   ZERO_BIGINT,
   ZERO_NUMBER,
   ERROR_AMOUNT_POSITIVE,
@@ -35,51 +33,41 @@ import {
   FLARE_ATOMIC_PARSED_PREFIX,
   HEX_ENCODING,
 } from './constants';
-import { createFlexibleHexRegex } from './utils';
+import utils, { createFlexibleHexRegex } from './utils';
+import { TransactionBuilder } from './transactionBuilder';
+import { Transaction } from './transaction';
 
 /**
  * Flare P-chain atomic transaction builder with FlareJS credential support.
  * This provides the foundation for building Flare P-chain transactions with proper
  * credential handling using FlareJS Credential and Signature classes.
  */
-export abstract class AtomicTransactionBuilder {
+export abstract class AtomicTransactionBuilder extends TransactionBuilder {
   protected readonly _coinConfig: Readonly<CoinConfig>;
   // External chain id (destination) for export transactions
   protected _externalChainId: Buffer | undefined;
 
   protected _utxos: DecodedUtxoObj[] = [];
+  // TODO check _flrpTransaction type
+  protected _flrpTransaction: any;
 
-  protected transaction: {
-    _network: Record<string, unknown>;
-    _networkID: number;
-    _blockchainID: Buffer;
-    _assetId: Buffer;
-    _fromAddresses: string[];
-    _to: string[];
-    _locktime: bigint;
-    _threshold: number;
-    _fee: { fee: string; feeRate?: string; size?: number };
-    hasCredentials: boolean;
-    _tx?: unknown;
-    _signature?: unknown;
-    setTransaction: (tx: unknown) => void;
-  } = {
-    _network: {},
-    _networkID: DEFAULT_NETWORK_ID,
-    _blockchainID: Buffer.alloc(EMPTY_BUFFER_SIZE),
-    _assetId: Buffer.alloc(EMPTY_BUFFER_SIZE),
-    _fromAddresses: [],
-    _to: [],
-    _locktime: DEFAULT_LOCKTIME,
-    _threshold: DEFAULT_THRESHOLD,
-    _fee: { fee: AMOUNT_STRING_ZERO },
-    hasCredentials: false,
-    setTransaction: function (_tx: unknown) {
-      this._tx = _tx;
-    },
-  };
+  public _network: FlareNetwork;
+  public _networkID: number;
+  public _blockchainID: Buffer;
+  public _assetId: Buffer;
+  public _fromAddresses: string[];
+  public _to: string[];
+  public _locktime: bigint;
+  public _threshold: number;
+  public _fee: { fee: string; feeRate?: string; size?: number };
+  public hasCredentials: boolean;
+  public _tx?: unknown;
+  public _signature?: unknown;
+  public _type: TransactionType;
+  public _rewardAddresses: Buffer[];
 
   constructor(coinConfig: Readonly<CoinConfig>) {
+    super(coinConfig);
     this._coinConfig = coinConfig;
   }
 
@@ -91,8 +79,8 @@ export abstract class AtomicTransactionBuilder {
    */
   protected getAssetId(): Buffer {
     // Use the asset ID from transaction if already set
-    if (this.transaction._assetId && this.transaction._assetId.length > 0) {
-      return this.transaction._assetId;
+    if (this._assetId && this._assetId.length > 0) {
+      return this._assetId;
     }
 
     // For native FLR transactions, return zero-filled buffer as placeholder
@@ -218,7 +206,7 @@ export abstract class AtomicTransactionBuilder {
         assetID: this.getAssetId(),
         output: {
           amount: changeAmount,
-          addresses: this.transaction._fromAddresses,
+          addresses: this._fromAddresses,
           threshold: 1,
           locktime: 0n,
         },
@@ -326,8 +314,8 @@ export abstract class AtomicTransactionBuilder {
       };
 
       // Store signature for FlareJS compatibility
-      this.transaction._signature = signature;
-      this.transaction.hasCredentials = true;
+      this._signature = signature;
+      this.hasCredentials = true;
 
       return this;
     } catch (error) {
@@ -356,7 +344,7 @@ export abstract class AtomicTransactionBuilder {
         _type: this.transactionType,
         signature: [] as string[],
 
-        fromAddresses: this.transaction._fromAddresses,
+        fromAddresses: this._fromAddresses,
         validationErrors: [],
 
         // FlareJS methods with atomic support
@@ -374,7 +362,7 @@ export abstract class AtomicTransactionBuilder {
           id: `${FLARE_ATOMIC_PREFIX}${Date.now()}`,
           changeOutputs: [],
           changeAmount: AMOUNT_STRING_ZERO,
-          fee: { fee: this.transaction._fee.fee },
+          fee: { fee: this._fee.fee },
         }),
 
         isTransactionForCChain: false,
@@ -383,7 +371,7 @@ export abstract class AtomicTransactionBuilder {
         },
         inputs: () => [],
         outputs: () => [],
-        fee: () => ({ fee: this.transaction._fee.fee }),
+        fee: () => ({ fee: this._fee.fee }),
         feeRate: () => 0,
         id: () => `${FLARE_ATOMIC_PREFIX}${Date.now()}`,
         type: this.transactionType,
@@ -412,12 +400,76 @@ export abstract class AtomicTransactionBuilder {
         id: `${FLARE_ATOMIC_PARSED_PREFIX}${Date.now()}`,
         changeOutputs: [],
         changeAmount: AMOUNT_STRING_ZERO,
-        fee: { fee: this.transaction._fee.fee },
+        fee: { fee: this._fee.fee },
       };
     } catch (error) {
       throw new BuildTransactionError(
         `${ERROR_ENHANCED_PARSE_FAILED}: ${error instanceof Error ? error.message : ERROR_UNKNOWN}`
       );
     }
+  }
+
+  /** @inheritdoc */
+  protected signImplementation({ key }: BaseKey): BaseTransaction {
+    this._signer.push(new KeyPair({ prv: key }));
+    return this.transaction;
+  }
+
+  /** @inheritdoc */
+  protected async buildImplementation(): Promise<Transaction> {
+    this.buildFlareTransaction();
+    this.transaction.setTransactionType(this.transactionType);
+    if (this.hasSigner) {
+      this._signer.forEach((keyPair) => this.transaction.sign(keyPair));
+    }
+    return this.transaction;
+  }
+
+  /**
+   * Builds the avax transaction. transaction field is changed.
+   */
+  protected abstract buildFlareTransaction(): void;
+
+  /**
+   * Getter for know if build should sign
+   */
+  get hasSigner(): boolean {
+    return this._signer !== undefined && this._signer.length > 0;
+  }
+
+  /** @inheritdoc */
+  validateKey({ key }: BaseKey): void {
+    if (!new KeyPair({ prv: key })) {
+      throw new BuildTransactionError('Invalid key');
+    }
+  }
+
+  /** @inheritdoc */
+  validateAddress(address: BaseAddress, addressFormat?: string): void {
+    if (!utils.isValidAddress(address.address)) {
+      throw new BuildTransactionError('Invalid address');
+    }
+  }
+
+  /** @inheritdoc */
+  validateValue(value: BigNumber): void {
+    if (value.isLessThan(0)) {
+      throw new BuildTransactionError('Value cannot be less than zero');
+    }
+  }
+
+  /**
+   * Check the raw transaction has a valid format in the blockchain context, throw otherwise.
+   * It overrides abstract method from BaseTransactionBuilder
+   *
+   * @param rawTransaction Transaction in any format
+   */
+  validateRawTransaction(rawTransaction: string): void {
+    utils.validateRawTransaction(rawTransaction);
+  }
+
+  /** @inheritdoc */
+  validateTransaction(transaction?: Transaction): void {
+    // throw new NotImplementedError('validateTransaction not implemented');
   }
 }

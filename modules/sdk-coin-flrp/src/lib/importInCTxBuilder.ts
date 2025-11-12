@@ -284,7 +284,8 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
         _flareJSReady: true,
       };
 
-      this.transaction.setTransaction(enhancedTx);
+      console.log('Enhanced Import Tx:', enhancedTx);
+      // this.transaction.setTransaction(enhancedTx);
     } catch (error) {
       throw new BuildTransactionError(`Failed to build import transaction: ${error}`);
     }
