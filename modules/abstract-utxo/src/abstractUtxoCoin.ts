@@ -1003,6 +1003,11 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       return requestedTxFormat as TxFormat;
     }
 
+    if (utxolib.getMainnet(this.network) === utxolib.networks.zcash) {
+      // FIXME(BTC-1322): fix zcash PSBT support
+      return 'legacy';
+    }
+
     const walletFlagMusigKp = wallet.flag('musigKp') === 'true';
     const isHotWallet = wallet.type() === 'hot';
 
@@ -1010,10 +1015,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     if (
       wallet.subType() === 'distributedCustody' ||
       // default to testnet for all utxo coins except zcash
-      (isTestnet(this.network) &&
-        // FIXME(BTC-1322): fix zcash PSBT support
-        getMainnet(this.network) !== utxolib.networks.zcash &&
-        isHotWallet) ||
+      (isTestnet(this.network) && isHotWallet) ||
       // if mainnet, only default to psbt for btc hot wallets
       (isMainnet(this.network) && getMainnet(this.network) === utxolib.networks.bitcoin && isHotWallet) ||
       // default to psbt if it has the wallet flag
