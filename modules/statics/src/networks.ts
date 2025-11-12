@@ -1509,6 +1509,24 @@ class FluentETHTestnet extends Testnet implements EthereumNetwork {
   nativeCoinOperationHashPrefix = '20994';
 }
 
+class Mantle extends Mainnet implements EthereumNetwork {
+  name = 'Mantle Native';
+  family = CoinFamily.MANTLE;
+  explorerUrl = 'https://mantlescan.xyz/tx/';
+  accountExplorerUrl = 'https://mantlescan.xyz/address/';
+  chainId = 5000;
+  nativeCoinOperationHashPrefix = '5000';
+}
+
+class MantleTestnet extends Testnet implements EthereumNetwork {
+  name = 'Testnet Mantle Native';
+  family = CoinFamily.MANTLE;
+  explorerUrl = 'https://sepolia.mantlescan.xyz/tx/';
+  accountExplorerUrl = 'https://sepolia.mantlescan.xyz/address/';
+  chainId = 5003;
+  nativeCoinOperationHashPrefix = '5003';
+}
+
 class CreditcoinTestnet extends Testnet implements EthereumNetwork {
   name = 'CreditcoinTestnet';
   family = CoinFamily.CTC;
@@ -2111,6 +2129,7 @@ export const Networks = {
     litecoin: Object.freeze(new Litecoin()),
     megaeth: Object.freeze(new MegaETH()),
     mon: Object.freeze(new Monad()),
+    mantle: Object.freeze(new Mantle()),
     mantra: Object.freeze(new Mantra()),
     plume: Object.freeze(new Plume()),
     polygon: Object.freeze(new Polygon()),
@@ -2214,6 +2233,7 @@ export const Networks = {
     hoodi: Object.freeze(new Hoodi()),
     lnbtc: Object.freeze(new LightningBitcoinTestnet()),
     litecoin: Object.freeze(new LitecoinTestnet()),
+    mantle: Object.freeze(new MantleTestnet()),
     mantra: Object.freeze(new MantraTestnet()),
     polygon: Object.freeze(new PolygonTestnet()),
     polyx: Object.freeze(new PolymeshTestnet()),

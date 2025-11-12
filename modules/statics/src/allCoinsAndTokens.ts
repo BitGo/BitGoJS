@@ -2201,6 +2201,38 @@ export const allCoinsAndTokens = [
     '',
     'FluentETH'
   ),
+  account(
+    'bc7e8d57-696a-4ead-a0a3-1aa479ed0665',
+    'mantle',
+    'Mantle Native',
+    Networks.main.mantle,
+    18,
+    UnderlyingAsset.MANTLE,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+    ]
+  ),
+  account(
+    '53cd61e4-1fdd-4c95-a8da-cb39bf383c2e',
+    'tmantle',
+    'Testnet Mantle Native',
+    Networks.test.mantle,
+    18,
+    UnderlyingAsset.MANTLE,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+    ]
+  ),
   canton(
     '07385320-5a4f-48e9-97a5-86d4be9f24b0',
     'canton',

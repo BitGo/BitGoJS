@@ -275,6 +275,9 @@ const mainnetBase: EnvironmentTemplate = {
     fluenteth: {
       baseUrl: 'https://testnet.fluentscan.xyz/api/', //TODO: COIN-6478: add mainnet url when available
     },
+    mantle: {
+      baseUrl: 'https://api.mantlescan.xyz/api',
+    },
   },
   icpNodeUrl: 'https://ic0.app',
   worldExplorerBaseUrl: 'https://worldscan.org/',
@@ -417,6 +420,9 @@ const testnetBase: EnvironmentTemplate = {
     },
     fluenteth: {
       baseUrl: 'https://testnet.fluentscan.xyz/api/',
+    },
+    mantle: {
+      baseUrl: 'https://api-sepolia.mantlescan.xyz/api',
     },
   },
   stxNodeUrl: 'https://api.testnet.hiro.so',
