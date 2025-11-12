@@ -1,5 +1,6 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import { getSeed } from '@bitgo/sdk-test';
+import * as wasmUtxo from '@bitgo/wasm-utxo';
 
 import { getReplayProtectionAddresses } from '../../../src';
 
@@ -31,6 +32,9 @@ export function getWalletAddress(
   chain = defaultChain,
   index = 0
 ): string {
+  if (utxolib.isTestnet(network)) {
+    return wasmUtxo.fixedScriptWallet.address(walletKeys, chain, index, network);
+  }
   return utxolib.address.fromOutputScript(getOutputScript(walletKeys, chain, index).scriptPubKey, network);
 }
 
@@ -49,8 +53,7 @@ export function mockWalletUnspent<TNumber extends number | bigint = number>(
   if (chain === undefined) {
     throw new Error(`unspent chain must be set`);
   }
-  const derived = getOutputScript(walletKeys, chain, index);
-  const deriveAddress = utxolib.address.fromOutputScript(derived.scriptPubKey, network);
+  const deriveAddress = getWalletAddress(network, walletKeys, chain, index);
   if (address) {
     if (address !== deriveAddress) {
       throw new Error(`derivedAddress mismatch: ${address} derived=${deriveAddress}`);

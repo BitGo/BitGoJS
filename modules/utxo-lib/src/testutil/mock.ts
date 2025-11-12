@@ -1,7 +1,7 @@
 import { ok as assert } from 'assert';
 import { BIP32Interface } from '@bitgo/secp256k1';
 import { payments } from '..';
-import { getMainnet, Network, networks } from '../networks';
+import { getMainnet, Network, networks, isTestnet } from '../networks';
 
 import {
   ChainCode,
@@ -22,6 +22,7 @@ import {
 } from '../bitgo';
 import { fromOutputScript } from '../address';
 import { createOutputScript2of3, createOutputScriptP2shP2pk } from '../bitgo/outputScripts';
+import * as wasmUtxo from '@bitgo/wasm-utxo';
 
 import { getDefaultWalletKeys, getKey } from './keys';
 
@@ -94,14 +95,17 @@ export function mockWalletUnspent<TNumber extends number | bigint>(
     id,
   }: { chain?: ChainCode; index?: number; keys?: RootWalletKeys; vout?: number; id?: string } = {}
 ): WalletUnspent<TNumber> | NonWitnessWalletUnspent<TNumber> {
-  const derivedKeys = keys.deriveForChainAndIndex(chain, index);
-  const address = fromOutputScript(
-    createOutputScript2of3(derivedKeys.publicKeys, scriptTypeForChain(chain)).scriptPubKey,
-    network
-  );
+  const address = isTestnet(network)
+    ? wasmUtxo.fixedScriptWallet.address(keys, chain, index, network)
+    : fromOutputScript(
+        createOutputScript2of3(keys.deriveForChainAndIndex(chain, index).publicKeys, scriptTypeForChain(chain))
+          .scriptPubKey,
+        network
+      );
   if (id && typeof id === 'string') {
     return { id, address, chain, index, value };
   } else {
+    const derivedKeys = keys.deriveForChainAndIndex(chain, index);
     const prevTransaction = mockPrevTx(
       vout,
       createOutputScript2of3(derivedKeys.publicKeys, scriptTypeForChain(chain), network).scriptPubKey,

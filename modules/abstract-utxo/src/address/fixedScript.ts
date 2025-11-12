@@ -14,6 +14,7 @@ import {
 import * as utxolib from '@bitgo/utxo-lib';
 import { bitgo } from '@bitgo/utxo-lib';
 import { bip32 } from '@bitgo/secp256k1';
+import * as wasmUtxo from '@bitgo/wasm-utxo';
 
 type ScriptType2Of3 = bitgo.outputScripts.ScriptType2Of3;
 
@@ -56,6 +57,15 @@ export function generateAddressWithChainAndIndex(
   index: number,
   format: CreateAddressFormat | undefined
 ): string {
+  if (utxolib.isTestnet(network)) {
+    return wasmUtxo.fixedScriptWallet.address(
+      keychains.map((k) => k.pub) as [string, string, string],
+      chain,
+      index,
+      network
+    );
+  }
+
   const path = '0/0/' + chain + '/' + index;
   const hdNodes = keychains.map(({ pub }) => bip32.fromBase58(pub));
   const derivedKeys = hdNodes.map((hdNode) => hdNode.derivePath(sanitizeLegacyPath(path)).publicKey);
