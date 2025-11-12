@@ -4142,7 +4142,7 @@ export const erc20Coins = [
   erc20(
     '83efb059-93b4-44b6-ab68-c29d5bbc08e1',
     'mnt',
-    'Mantle',
+    'Mantle ETH Token',
     18,
     '0x3c3a81e81dc49a522a592e7622a7e711c06bf354',
     UnderlyingAsset.MNT,
