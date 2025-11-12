@@ -20,6 +20,7 @@ import {
   InvalidAddressError,
   extractCommonKeychain,
   EDDSAMethods,
+  TokenEnablementConfig,
 } from '@bitgo/sdk-core';
 import { auditEddsaPrivateKey } from '@bitgo/sdk-lib-mpc';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
@@ -111,6 +112,7 @@ export class Canton extends BaseCoin {
       case TransactionType.TransferAccept:
       case TransactionType.TransferReject:
       case TransactionType.TransferAcknowledge:
+      case TransactionType.OneStepPreApproval:
         // There is no input for these type of transactions, so always return true.
         return true;
       case TransactionType.Send:
@@ -198,6 +200,14 @@ export class Canton extends BaseCoin {
     // canton addresses are of the form, partyHint::fingerprint
     // where partyHint is of length 5 and fingerprint is 68 characters long
     return utils.isValidAddress(address);
+  }
+
+  /** @inheritDoc */
+  getTokenEnablementConfig(): TokenEnablementConfig {
+    return {
+      requiresTokenEnablement: true,
+      supportsMultipleTokenEnablements: false,
+    };
   }
 
   getAddressFromPublicKey(publicKeyHex: string): string {
