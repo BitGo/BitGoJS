@@ -999,27 +999,31 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       }
     }
 
+    if (requestedTxFormat !== undefined) {
+      return requestedTxFormat as TxFormat;
+    }
+
     const walletFlagMusigKp = wallet.flag('musigKp') === 'true';
     const isHotWallet = wallet.type() === 'hot';
 
     // if not txFormat is already specified figure out if we should default to psbt format
     if (
-      requestedTxFormat === undefined &&
-      (wallet.subType() === 'distributedCustody' ||
-        // default to testnet for all utxo coins except zcash
-        (isTestnet(this.network) &&
-          // FIXME(BTC-1322): fix zcash PSBT support
-          getMainnet(this.network) !== utxolib.networks.zcash &&
-          isHotWallet) ||
-        // if mainnet, only default to psbt for btc hot wallets
-        (isMainnet(this.network) && getMainnet(this.network) === utxolib.networks.bitcoin && isHotWallet) ||
-        // default to psbt if it has the wallet flag
-        walletFlagMusigKp)
+      wallet.subType() === 'distributedCustody' ||
+      // default to testnet for all utxo coins except zcash
+      (isTestnet(this.network) &&
+        // FIXME(BTC-1322): fix zcash PSBT support
+        getMainnet(this.network) !== utxolib.networks.zcash &&
+        isHotWallet) ||
+      // if mainnet, only default to psbt for btc hot wallets
+      (isMainnet(this.network) && getMainnet(this.network) === utxolib.networks.bitcoin && isHotWallet) ||
+      // default to psbt if it has the wallet flag
+      walletFlagMusigKp
     ) {
       return 'psbt';
     }
 
-    return requestedTxFormat as TxFormat;
+    // let API decide
+    return undefined;
   }
 
   async getExtraPrebuildParams(buildParams: ExtraPrebuildParamsOptions & { wallet: Wallet }): Promise<{
