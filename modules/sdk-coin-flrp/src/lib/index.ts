@@ -1,11 +1,10 @@
 import Utils from './utils';
 export * from './iface';
-export * from './types';
 export { KeyPair } from './keyPair';
 export { Utils };
 export { TransactionBuilderFactory } from './transactionBuilderFactory';
 export { Transaction } from './transaction';
 export { AtomicTransactionBuilder } from './atomicTransactionBuilder';
 export { AtomicInCTransactionBuilder } from './atomicInCTransactionBuilder';
-export { ImportInCTxBuilder } from './importInCTxBuilder';
-export { ImportInPTxBuilder } from './importInPTxBuilder';
+export { ImportInCTxBuilder } from './ImportInCTxBuilder';
+export { ImportInPTxBuilder } from './ImportInPTxBuilder';

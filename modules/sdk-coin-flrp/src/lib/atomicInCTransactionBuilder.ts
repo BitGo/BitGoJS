@@ -1,74 +1,69 @@
 import { AtomicTransactionBuilder } from './atomicTransactionBuilder';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import utils from './utils';
 import { BuildTransactionError } from '@bitgo/sdk-core';
+import { evmSerial, UnsignedTx, utils as FlareUtils, avmSerial, Address } from '@flarenetwork/flarejs';
+import utils from './utils';
+import { Transaction } from './transaction';
 
-interface FlareChainNetworkMeta {
-  blockchainID?: string; // P-chain id (external)
-  cChainBlockchainID?: string; // C-chain id (local)
-  [k: string]: unknown;
-}
-
-interface FeeShape {
-  fee?: string; // legacy
-  feeRate?: string; // per unit rate
-}
-
-/**
- * Flare P->C atomic import/export style builder (C-chain context). This adapts the AVAXP logic
- * removing direct Avalanche SDK dependencies. Network / chain ids are expected to be provided
- * in the transaction._network object by a higher-level factory once Flare network constants
- * are finalized. For now we CB58-decode placeholders if present and default to zero buffers.
- */
 export abstract class AtomicInCTransactionBuilder extends AtomicTransactionBuilder {
-  // Placeholder fixed fee (can be overridden by subclasses or network config)
-  protected fixedFee = 0n;
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-    this.initializeChainIds();
+    // external chain id is P
+    this._externalChainId = utils.cb58Decode(this.transaction._network.blockchainID);
+    // chain id is C
+    this.transaction._blockchainID = Buffer.from(
+      utils.cb58Decode(this.transaction._network.cChainBlockchainID)
+    ).toString('hex');
   }
 
   /**
-   * Set base fee (already scaled to Flare C-chain native decimals). Accept bigint | number | string.
+   * C-Chain base fee with decimal places converted from 18 to 9.
+   *
+   * @param {string | number} baseFee
    */
-  feeRate(baseFee: bigint | number | string): this {
-    const n = typeof baseFee === 'bigint' ? baseFee : BigInt(baseFee);
-    this.validateFee(n);
-    this.setFeeRate(n);
+  feeRate(baseFee: string | number): this {
+    const fee = BigInt(baseFee);
+    this.validateFee(fee);
+    this.transaction._fee.feeRate = Number(fee);
     return this;
   }
 
-  /**
-   * Recreate builder state from raw tx (hex). Flare C-chain support TBD; for now validate & stash.
-   */
-  protected fromImplementation(rawTransaction: string): { _tx?: unknown } {
-    // If utils has validateRawTransaction use it; otherwise basic check
-    if ((utils as unknown as { validateRawTransaction?: (r: string) => void }).validateRawTransaction) {
-      (utils as unknown as { validateRawTransaction: (r: string) => void }).validateRawTransaction(rawTransaction);
-    }
-    this.transaction.setTransaction(rawTransaction);
+  /** @inheritdoc */
+  fromImplementation(rawTransaction: string): Transaction {
+    const txBytes = new Uint8Array(Buffer.from(rawTransaction, 'hex'));
+    const codec = avmSerial.getAVMManager().getDefaultCodec();
+    const [tx] = evmSerial.ImportTx.fromBytes(txBytes, codec);
+
+    const addressMaps = this.transaction._fromAddresses.map((a) => new FlareUtils.AddressMap([[new Address(a), 0]]));
+
+    const unsignedTx = new UnsignedTx(tx, [], new FlareUtils.AddressMaps(addressMaps), []);
+    this.initBuilder(unsignedTx);
     return this.transaction;
   }
 
-  private validateFee(fee: bigint): void {
-    if (fee <= 0n) {
+  /**
+   * Check that fee is greater than 0.
+   * @param {bigint} fee
+   */
+  validateFee(fee: bigint): void {
+    if (fee <= BigInt(0)) {
       throw new BuildTransactionError('Fee must be greater than 0');
     }
   }
 
-  private initializeChainIds(): void {
-    const meta = this.transaction._network as FlareChainNetworkMeta;
-    if (meta?.blockchainID) {
-      this._externalChainId = utils.cb58Decode(meta.blockchainID);
+  /**
+   * Initialize the transaction builder fields using the decoded transaction data
+   *
+   * @param {UnsignedTx} tx the transaction data
+   * @returns itself
+   */
+  initBuilder(tx: UnsignedTx): this {
+    // Validate network and blockchain IDs
+    const baseTx = tx.getTx();
+    if (baseTx.getBlockchainId() !== this.transaction._blockchainID) {
+      throw new Error('blockchain ID mismatch');
     }
-    if (meta?.cChainBlockchainID) {
-      this.transaction._blockchainID = utils.cb58Decode(meta.cChainBlockchainID);
-    }
-  }
-
-  private setFeeRate(n: bigint): void {
-    const currentContainer = this.transaction as unknown as { _fee: FeeShape };
-    const current = currentContainer._fee || { fee: '0' };
-    currentContainer._fee = { ...current, feeRate: n.toString() };
+    this.transaction.setTransaction(tx);
+    return this;
   }
 }

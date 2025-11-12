@@ -42,18 +42,16 @@
       ".ts"
     ]
   },
-  "devDependencies": {
-    "@bitgo/sdk-api": "^1.71.7",
-    "@bitgo/sdk-test": "^9.1.15"
-  },
   "dependencies": {
     "@bitgo/sdk-core": "^36.22.0",
-    "@bitgo/secp256k1": "^1.7.0",
     "@bitgo/statics": "^58.15.0",
-    "@flarenetwork/flarejs": "4.1.0-rc0",
+    "@bitgo/secp256k1": "^1.7.0",
+    "@flarenetwork/flarejs": "4.1.1",
     "bech32": "^2.0.0",
     "bignumber.js": "9.0.0",
-    "bs58": "^6.0.0"
+    "bs58": "^6.0.0",
+    "create-hash": "^1.2.0",
+    "safe-buffer": "^5.2.1"
   },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c",
   "files": [

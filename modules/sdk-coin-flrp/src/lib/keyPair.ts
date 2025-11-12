@@ -9,8 +9,10 @@ import {
   Secp256k1ExtendedKeyPair,
 } from '@bitgo/sdk-core';
 import { bip32, ECPair } from '@bitgo/secp256k1';
-import { randomBytes, createHash } from 'crypto';
+import { randomBytes } from 'crypto';
 import utils from './utils';
+import { Buffer as SafeBuffer } from 'safe-buffer';
+import createHash from 'create-hash';
 
 const DEFAULT_SEED_SIZE_BYTES = 16;
 export enum addressFormat {
@@ -124,10 +126,12 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
    *
    * @returns {Buffer} The address buffer derived from the public key
    */
-  private getAddressBuffer(): Buffer {
+  getAddressBuffer(): Buffer {
     try {
       // Use the safe buffer method for address derivation
-      return this.getAddressSafeBuffer();
+      const publicKey = Buffer.from(this.keyPair.publicKey);
+      const sha256 = createHash('sha256').update(publicKey).digest();
+      return Buffer.from(createHash('ripemd160').update(sha256).digest());
     } catch (error) {
       return this.getAddressSafeBuffer();
     }
@@ -139,8 +143,8 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
    * @returns {Buffer}
    */
   private getAddressSafeBuffer(): Buffer {
-    const publicKeyHex = this.keyPair.publicKey.toString('hex');
-    const sha256 = createHash('sha256').update(publicKeyHex, 'hex').digest();
-    return createHash('ripemd160').update(sha256).digest();
+    const publicKeySafe = SafeBuffer.from(this.keyPair.publicKey);
+    const sha256 = SafeBuffer.from(createHash('sha256').update(publicKeySafe).digest());
+    return Buffer.from(createHash('ripemd160').update(sha256).digest());
   }
 }

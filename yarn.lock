@@ -2701,10 +2701,10 @@
     "@ethersproject/properties" "^5.8.0"
     "@ethersproject/strings" "^5.8.0"
 
-"@flarenetwork/flarejs@4.1.0-rc0":
-  version "4.1.0-rc0"
-  resolved "https://registry.npmjs.org/@flarenetwork/flarejs/-/flarejs-4.1.0-rc0.tgz"
-  integrity sha512-XR07tUI+jVx6Km6SSRcl5FXWRuntPZJ6ov2TmWXZ9T6CDAvt69FZupnHRKjK0jA0Qmjzcbb8Q3xbRSLTlPUecQ==
+"@flarenetwork/flarejs@4.1.1":
+  version "4.1.1"
+  resolved "https://registry.npmjs.org/@flarenetwork/flarejs/-/flarejs-4.1.1.tgz#5aac35a43431e9e08263094da48838e6159a69e7"
+  integrity sha512-XuzMROKI/4LfOWt2NY3suagmq0PjRbhyVaDznfVzTI0kRl/64xDc74kElusidewh55Y/5Ajrl1wBPrRhXG4fNQ==
   dependencies:
     "@noble/curves" "1.3.0"
     "@noble/hashes" "1.3.3"
@@ -21256,7 +21256,7 @@ ws@^6.1.0:
 
 ws@~8.17.1:
   version "8.17.1"
-  resolved "https://registry.npmjs.org/ws/-/ws-8.17.1.tgz"
+  resolved "https://registry.npmjs.org/ws/-/ws-8.17.1.tgz#9293da530bb548febc95371d90f9c878727d919b"
   integrity sha512-6XQFvXTkbfUOZOKKILFG1PDK2NDQs4azKQl26T0YS5CxqWLgXajbPZ+h4gZekJyRqFU8pvnbAbbs/3TgRPy+GQ==
 
 wsl-utils@^0.1.0:

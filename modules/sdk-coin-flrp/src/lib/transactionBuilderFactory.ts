@@ -1,99 +1,91 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { NotImplementedError, TransactionType } from '@bitgo/sdk-core';
-import { AtomicTransactionBuilder } from './atomicTransactionBuilder';
+import { utils as FlareUtils, evmSerial } from '@flarenetwork/flarejs';
+import { BaseTransactionBuilderFactory, NotSupported } from '@bitgo/sdk-core';
+import { FlareNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
+import { TransactionBuilder } from './transactionBuilder';
+import { ExportInPTxBuilder } from './ExportInPTxBuilder';
+import { ImportInPTxBuilder } from './ImportInPTxBuilder';
+import { ExportInCTxBuilder } from './ExportInCTxBuilder';
+import { ImportInCTxBuilder } from './ImportInCTxBuilder';
+import utils from './utils';
 
-// Placeholder builders - basic implementations for testing
-export class ExportTxBuilder extends AtomicTransactionBuilder {
-  protected get transactionType(): TransactionType {
-    return TransactionType.Export;
+export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
+  protected recoverSigner = false;
+
+  constructor(_coinConfig: Readonly<CoinConfig>) {
+    super(_coinConfig);
   }
 
-  constructor(coinConfig: Readonly<CoinConfig>) {
-    super(coinConfig);
-    // Don't throw error, allow placeholder functionality
+  /** @inheritdoc */
+  from(raw: string): TransactionBuilder {
+    utils.validateRawTransaction(raw);
+    let transactionBuilder: TransactionBuilder | undefined = undefined;
+    const rawNoHex = utils.removeHexPrefix(raw);
+    const rawBuffer = Buffer.from(rawNoHex, 'hex');
+    let txSource: 'EVM' | 'PVM';
+
+    // const manager = FlareUtils.getManagerForVM("EVM")
+    // const parsedTx = manager.unpackTransaction(rawBuffer)
+
+    // Get network IDs
+    const network = this._coinConfig.network as FlareNetwork;
+    try {
+      txSource = 'EVM';
+      const evmManager = FlareUtils.getManagerForVM('EVM');
+      const tx = evmManager.unpackTransaction(rawBuffer);
+      const blockchainId = tx.getBlockchainId();
+
+      if (blockchainId === network.cChainBlockchainID) {
+        console.log('Parsed as EVM transaction on C-Chain');
+      }
+
+      if (txSource === 'EVM') {
+        if (ExportInCTxBuilder.verifyTxType(tx._type)) {
+          transactionBuilder = this.getExportInCBuilder();
+          transactionBuilder.initBuilder(tx as evmSerial.ExportTx);
+          return transactionBuilder;
+        }
+      }
+    } catch (e) {
+      console.log('error while parsing tx: ', e.message);
+    }
+    throw new NotSupported('Transaction type not supported');
   }
-}
 
-export class ImportTxBuilder extends AtomicTransactionBuilder {
-  protected get transactionType(): TransactionType {
-    return TransactionType.Import;
-  }
-
-  constructor(coinConfig: Readonly<CoinConfig>) {
-    super(coinConfig);
-    // Don't throw error, allow placeholder functionality
-  }
-}
-
-export class ValidatorTxBuilder extends AtomicTransactionBuilder {
-  protected get transactionType(): TransactionType {
-    return TransactionType.AddValidator;
-  }
-
-  constructor(coinConfig: Readonly<CoinConfig>) {
-    super(coinConfig);
-    // Don't throw error, allow placeholder functionality
-  }
-}
-
-export class DelegatorTxBuilder extends AtomicTransactionBuilder {
-  protected get transactionType(): TransactionType {
-    return TransactionType.AddDelegator;
-  }
-
-  constructor(coinConfig: Readonly<CoinConfig>) {
-    super(coinConfig);
-    // Don't throw error, allow placeholder functionality
-  }
-}
-
-/**
- * Factory for Flare P-chain transaction builders
- */
-export class TransactionBuilderFactory {
-  protected _coinConfig: Readonly<CoinConfig>;
-
-  constructor(coinConfig: Readonly<CoinConfig>) {
-    this._coinConfig = coinConfig;
+  /** @inheritdoc */
+  getTransferBuilder(): TransactionBuilder {
+    throw new NotSupported('Transfer is not supported in P Chain');
   }
 
   /**
-   * Create a transaction builder from a hex string
-   * @param txHex - Transaction hex string
+   * Export Cross chain transfer
    */
-  from(txHex: string): AtomicTransactionBuilder {
-    // TODO: Parse the hex and determine transaction type, then return appropriate builder
-    // For now, return a basic export builder as that's the most common use case
-    if (!txHex) {
-      throw new Error('Transaction hex is required');
-    }
-
-    // Create a mock export builder for now
-    // In the future, this will parse the transaction and determine the correct type
-    const builder = new ExportTxBuilder(this._coinConfig);
-
-    // Initialize with the hex data (placeholder)
-    builder.initBuilder({ txHex });
-
-    return builder;
+  getExportBuilder(): ExportInPTxBuilder {
+    return new ExportInPTxBuilder(this._coinConfig);
   }
 
   /**
-   * Create a transaction builder for a specific type
-   * @param type - Transaction type
+   * Import Cross chain transfer
    */
-  getBuilder(type: TransactionType): AtomicTransactionBuilder {
-    switch (type) {
-      case TransactionType.Export:
-        return new ExportTxBuilder(this._coinConfig);
-      case TransactionType.Import:
-        return new ImportTxBuilder(this._coinConfig);
-      case TransactionType.AddValidator:
-        return new ValidatorTxBuilder(this._coinConfig);
-      case TransactionType.AddDelegator:
-        return new DelegatorTxBuilder(this._coinConfig);
-      default:
-        throw new NotImplementedError(`Transaction type ${type} not supported`);
-    }
+  getImportBuilder(): ImportInPTxBuilder {
+    return new ImportInPTxBuilder(this._coinConfig);
+  }
+
+  /**
+   * Import in C chain Cross chain transfer
+   */
+  getImportInCBuilder(): ImportInCTxBuilder {
+    return new ImportInCTxBuilder(this._coinConfig);
+  }
+
+  /**
+   * Export in C chain Cross chain transfer
+   */
+  getExportInCBuilder(): ExportInCTxBuilder {
+    return new ExportInCTxBuilder(this._coinConfig);
+  }
+
+  /** @inheritdoc */
+  getWalletInitializationBuilder(): TransactionBuilder {
+    throw new NotSupported('Wallet initialization is not needed');
   }
 }
