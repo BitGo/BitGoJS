@@ -86,6 +86,16 @@ import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 
 type TxFormat = 'legacy' | 'psbt' | 'psbt-lite';
 
+function isTxFormat(txFormat: unknown): txFormat is TxFormat {
+  return txFormat === 'legacy' || txFormat === 'psbt' || txFormat === 'psbt-lite';
+}
+
+class ErrorInvalidTxFormat extends Error {
+  constructor(txFormat: unknown) {
+    super(`Invalid txFormat: ${txFormat}. Must be one of: legacy, psbt, psbt-lite`);
+  }
+}
+
 type UtxoCustomSigningFunction<TNumber extends number | bigint> = {
   (params: {
     coin: IBaseCoin;
@@ -983,6 +993,12 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   private getTxFormat(wallet: Wallet, requestedTxFormat: unknown): TxFormat | undefined {
+    if (utxolib.isTestnet(this.network)) {
+      if (requestedTxFormat !== undefined && !isTxFormat(requestedTxFormat)) {
+        throw new ErrorInvalidTxFormat(requestedTxFormat);
+      }
+    }
+
     const walletFlagMusigKp = wallet.flag('musigKp') === 'true';
     const isHotWallet = wallet.type() === 'hot';
 
