@@ -20,10 +20,42 @@ export const FanoutUnspentsRequestBody = {
   xprv: optional(t.string),
   /** Whether to validate addresses (defaults to true) */
   validate: optional(t.boolean),
-  /** Target number of unspents to create (must be at least 2 and less than 300) */
+  /** Target number of unspents to create (must be at least 2 and less than 300) - REQUIRED */
   target: t.number,
   /** Minimum number of confirmations needed for an unspent to be included (defaults to 1) */
   minConfirms: optional(t.number),
+  /** Whether to use SegWit change addresses */
+  segwitChange: optional(t.boolean),
+  /** Message or note for the transaction */
+  message: optional(t.string),
+  /** One-time password for 2FA verification */
+  otp: optional(t.string),
+  /** Exact fee amount in satoshis (use either fee, feeRate, or numBlocks, not multiple) */
+  fee: optional(t.number),
+  /** Fee rate in satoshis per kilobyte (use either fee, feeRate, or numBlocks, not multiple) */
+  feeRate: optional(t.number),
+  /** Whether this is an instant transaction */
+  instant: optional(t.boolean),
+  /** Custom sequence ID for the transaction */
+  sequenceId: optional(t.string),
+  /** Target number of blocks for fee estimation (use either fee, feeRate, or numBlocks, not multiple) */
+  numBlocks: optional(t.number),
+  /** Whether minConfirms also applies to change outputs */
+  enforceMinConfirmsForChange: optional(t.boolean),
+  /** Target number of unspents to maintain in the wallet */
+  targetWalletUnspents: optional(t.number),
+  /** Minimum value of unspents to use (in base units) */
+  minValue: optional(t.number),
+  /** Maximum value of unspents to use (in base units) */
+  maxValue: optional(t.number),
+  /** Disable automatic change splitting for unspent management */
+  noSplitChange: optional(t.boolean),
+  /** Comment for the transaction */
+  comment: optional(t.string),
+  /** Dynamic fee confirmation target (number of blocks) */
+  dynamicFeeConfirmTarget: optional(t.number),
+  /** WIF private key for paying fees from a single-key address */
+  feeSingleKeyWIF: optional(t.string),
 };
 
 /**

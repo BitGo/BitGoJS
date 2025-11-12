@@ -710,6 +710,56 @@ describe('FanoutUnspents codec tests', function () {
       assert.strictEqual(decoded.minConfirms, validBody.minConfirms);
     });
 
+    it('should validate body with fee', function () {
+      const validBody = {
+        target: 10,
+        fee: 10000,
+      };
+
+      const decoded = assertDecode(t.type(FanoutUnspentsRequestBody), validBody);
+      assert.strictEqual(decoded.fee, validBody.fee);
+    });
+
+    it('should validate body with feeRate', function () {
+      const validBody = {
+        target: 10,
+        feeRate: 20000,
+      };
+
+      const decoded = assertDecode(t.type(FanoutUnspentsRequestBody), validBody);
+      assert.strictEqual(decoded.feeRate, validBody.feeRate);
+    });
+
+    it('should validate body with message', function () {
+      const validBody = {
+        target: 10,
+        message: 'Test message',
+      };
+
+      const decoded = assertDecode(t.type(FanoutUnspentsRequestBody), validBody);
+      assert.strictEqual(decoded.message, validBody.message);
+    });
+
+    it('should validate body with otp', function () {
+      const validBody = {
+        target: 10,
+        otp: '123456',
+      };
+
+      const decoded = assertDecode(t.type(FanoutUnspentsRequestBody), validBody);
+      assert.strictEqual(decoded.otp, validBody.otp);
+    });
+
+    it('should validate body with instant', function () {
+      const validBody = {
+        target: 10,
+        instant: true,
+      };
+
+      const decoded = assertDecode(t.type(FanoutUnspentsRequestBody), validBody);
+      assert.strictEqual(decoded.instant, validBody.instant);
+    });
+
     it('should validate body with all fields', function () {
       const validBody = {
         target: 10,
@@ -717,6 +767,22 @@ describe('FanoutUnspents codec tests', function () {
         xprv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
         validate: true,
         minConfirms: 2,
+        segwitChange: true,
+        message: 'Test transaction',
+        otp: '123456',
+        fee: 10000,
+        feeRate: 20000,
+        instant: true,
+        sequenceId: 'seq-12345',
+        numBlocks: 6,
+        enforceMinConfirmsForChange: true,
+        targetWalletUnspents: 50,
+        minValue: 1000,
+        maxValue: 100000,
+        noSplitChange: false,
+        comment: 'Fanout transaction',
+        dynamicFeeConfirmTarget: 3,
+        feeSingleKeyWIF: 'L1aW4aubDFB7yfras2S1mN3bqg9nwySY8nkoLmJebSLD5BWv3ENZ',
       };
 
       const decoded = assertDecode(t.type(FanoutUnspentsRequestBody), validBody);
@@ -725,6 +791,22 @@ describe('FanoutUnspents codec tests', function () {
       assert.strictEqual(decoded.xprv, validBody.xprv);
       assert.strictEqual(decoded.validate, validBody.validate);
       assert.strictEqual(decoded.minConfirms, validBody.minConfirms);
+      assert.strictEqual(decoded.segwitChange, validBody.segwitChange);
+      assert.strictEqual(decoded.message, validBody.message);
+      assert.strictEqual(decoded.otp, validBody.otp);
+      assert.strictEqual(decoded.fee, validBody.fee);
+      assert.strictEqual(decoded.feeRate, validBody.feeRate);
+      assert.strictEqual(decoded.instant, validBody.instant);
+      assert.strictEqual(decoded.sequenceId, validBody.sequenceId);
+      assert.strictEqual(decoded.numBlocks, validBody.numBlocks);
+      assert.strictEqual(decoded.enforceMinConfirmsForChange, validBody.enforceMinConfirmsForChange);
+      assert.strictEqual(decoded.targetWalletUnspents, validBody.targetWalletUnspents);
+      assert.strictEqual(decoded.minValue, validBody.minValue);
+      assert.strictEqual(decoded.maxValue, validBody.maxValue);
+      assert.strictEqual(decoded.noSplitChange, validBody.noSplitChange);
+      assert.strictEqual(decoded.comment, validBody.comment);
+      assert.strictEqual(decoded.dynamicFeeConfirmTarget, validBody.dynamicFeeConfirmTarget);
+      assert.strictEqual(decoded.feeSingleKeyWIF, validBody.feeSingleKeyWIF);
     });
 
     it('should reject body with non-number target', function () {
