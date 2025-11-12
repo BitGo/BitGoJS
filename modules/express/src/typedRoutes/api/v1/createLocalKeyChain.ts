@@ -3,10 +3,14 @@ import { httpRoute, httpRequest, optional } from '@api-ts/io-ts-http';
 import { BitgoExpressError } from '../../schemas/error';
 
 /**
- * Request parameters for creating a local keychain
+ * Request body for creating a local keychain
  */
 export const CreateLocalKeyChainRequestBody = {
-  /** Optional seed for key generation (use with caution) */
+  /**
+   * Optional seed for key generation. If not provided, a random seed with 512 bits
+   * of entropy will be generated for maximum security. The seed is used to derive a BIP32
+   * extended key pair.
+   */
   seed: optional(t.string),
 };
 
@@ -14,24 +18,26 @@ export const CreateLocalKeyChainRequestBody = {
  * Response for creating a local keychain
  */
 export const CreateLocalKeyChainResponse = t.type({
-  /** The extended private key */
+  /** The extended private key in BIP32 format (xprv...) */
   xprv: t.string,
-  /** The extended public key */
+  /** The extended public key in BIP32 format (xpub...) */
   xpub: t.string,
-  /** The Ethereum address derived from the xpub (if available) */
+  /** Ethereum address derived from the extended public key (only available when Ethereum utilities are accessible) */
   ethAddress: optional(t.string),
 });
 
 /**
  * Create a local keychain
  *
- * Locally creates a new keychain. This is a client-side function that does not
- * involve any server-side operations. Returns an object containing the xprv and xpub
- * for the new chain. The created keychain is not known to the BitGo service.
- * To use it with the BitGo service, use the 'Add Keychain' API call.
+ * Locally creates a new keychain using BIP32 HD (Hierarchical Deterministic) key derivation.
+ * This is a client-side operation that does not involve any server-side operations.
  *
- * For security reasons, it is highly recommended that you encrypt and destroy
- * the original xprv immediately to prevent theft.
+ * Returns an object containing the xprv and xpub keys in BIP32 extended key format.
+ * The created keychain is not known to the BitGo service. To use it with BitGo,
+ * you must add it using the 'Add Keychain' API call.
+ *
+ * For security reasons, it is highly recommended that you encrypt the private key
+ * immediately and securely destroy the unencrypted original to prevent theft.
  *
  * @operationId express.v1.keychain.local
  * @tag express
