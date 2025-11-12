@@ -491,6 +491,11 @@ export enum CoinFeature {
    * This coin supports alternative address identifier format
    */
   ALTERNATIVE_ADDRESS_IDENTIFIER = 'alternative-address-identifier',
+
+  /**
+   * This coin supports one-step deposit
+   */
+  SUPPORTS_ONE_STEP_DEPOSIT = 'supports-one-step-deposit',
 }
 
 /**
