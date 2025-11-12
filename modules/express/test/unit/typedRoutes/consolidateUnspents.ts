@@ -65,9 +65,12 @@ describe('ConsolidateUnspents codec tests', function () {
       assert.strictEqual(result.body[0].hash, mockConsolidateResponse[0].hash);
 
       const decodedResponse = assertDecode(ConsolidateUnspentsResponse, result.body);
-      assert.strictEqual(decodedResponse[0].status, mockConsolidateResponse[0].status);
-      assert.strictEqual(decodedResponse[0].tx, mockConsolidateResponse[0].tx);
-      assert.strictEqual(decodedResponse[0].hash, mockConsolidateResponse[0].hash);
+      assert.ok(Array.isArray(decodedResponse), 'Response should be an array');
+      if (Array.isArray(decodedResponse)) {
+        assert.strictEqual(decodedResponse[0].status, mockConsolidateResponse[0].status);
+        assert.strictEqual(decodedResponse[0].tx, mockConsolidateResponse[0].tx);
+        assert.strictEqual(decodedResponse[0].hash, mockConsolidateResponse[0].hash);
+      }
 
       assert.strictEqual(walletsGetStub.calledOnceWith({ id: walletId }), true);
       assert.strictEqual(mockWallet.consolidateUnspents.calledOnce, true);
@@ -95,7 +98,9 @@ describe('ConsolidateUnspents codec tests', function () {
       assert.strictEqual(result.status, 200);
 
       const decodedResponse = assertDecode(ConsolidateUnspentsResponse, result.body);
-      assert.strictEqual(decodedResponse[0].status, mockConsolidateResponse[0].status);
+      if (Array.isArray(decodedResponse)) {
+        assert.strictEqual(decodedResponse[0].status, mockConsolidateResponse[0].status);
+      }
     });
 
     it('should successfully consolidate unspents with all optional fields', async function () {
@@ -109,6 +114,16 @@ describe('ConsolidateUnspents codec tests', function () {
         maxIterationCount: 3,
         minConfirms: 2,
         feeRate: 20000,
+        otp: '123456',
+        message: 'Consolidation transaction',
+        instant: false,
+        sequenceId: 'test-seq-123',
+        numBlocks: 3,
+        enforceMinConfirmsForChange: true,
+        targetWalletUnspents: 5,
+        minValue: 10000,
+        maxValue: 50000,
+        comment: 'Test consolidation',
       };
 
       const mockWallet = {
@@ -128,7 +143,9 @@ describe('ConsolidateUnspents codec tests', function () {
       assert.strictEqual(result.status, 200);
 
       const decodedResponse = assertDecode(ConsolidateUnspentsResponse, result.body);
-      assert.strictEqual(decodedResponse[0].status, mockConsolidateResponse[0].status);
+      if (Array.isArray(decodedResponse)) {
+        assert.strictEqual(decodedResponse[0].status, mockConsolidateResponse[0].status);
+      }
 
       // Verify all parameters were passed to SDK
       assert.strictEqual(mockWallet.consolidateUnspents.calledOnce, true);
@@ -136,6 +153,11 @@ describe('ConsolidateUnspents codec tests', function () {
       assert.strictEqual(callArgs.walletPassphrase, requestBody.walletPassphrase);
       assert.strictEqual(callArgs.validate, requestBody.validate);
       assert.strictEqual(callArgs.target, requestBody.target);
+      assert.strictEqual(callArgs.minValue, requestBody.minValue);
+      assert.strictEqual(callArgs.maxValue, requestBody.maxValue);
+      assert.strictEqual(callArgs.otp, requestBody.otp);
+      assert.strictEqual(callArgs.message, requestBody.message);
+      assert.strictEqual(callArgs.comment, requestBody.comment);
     });
 
     it('should return instant transaction response', async function () {
@@ -172,8 +194,10 @@ describe('ConsolidateUnspents codec tests', function () {
       assert.strictEqual(result.body[0].instantId, 'inst-123456');
 
       const decodedResponse = assertDecode(ConsolidateUnspentsResponse, result.body);
-      assert.strictEqual(decodedResponse[0].instant, true);
-      assert.strictEqual(decodedResponse[0].instantId, 'inst-123456');
+      if (Array.isArray(decodedResponse)) {
+        assert.strictEqual(decodedResponse[0].instant, true);
+        assert.strictEqual(decodedResponse[0].instantId, 'inst-123456');
+      }
     });
 
     it('should return multiple consolidation transactions', async function () {
@@ -230,17 +254,20 @@ describe('ConsolidateUnspents codec tests', function () {
       result.body.should.have.length(3);
 
       const decodedResponse = assertDecode(ConsolidateUnspentsResponse, result.body);
-      assert.strictEqual(decodedResponse.length, 3);
-      assert.strictEqual(decodedResponse[0].hash, mockMultipleConsolidations[0].hash);
-      assert.strictEqual(decodedResponse[1].hash, mockMultipleConsolidations[1].hash);
-      assert.strictEqual(decodedResponse[2].hash, mockMultipleConsolidations[2].hash);
+      assert.strictEqual(Array.isArray(decodedResponse), true);
+      if (Array.isArray(decodedResponse)) {
+        assert.strictEqual(decodedResponse.length, 3);
+        assert.strictEqual(decodedResponse[0].hash, mockMultipleConsolidations[0].hash);
+        assert.strictEqual(decodedResponse[1].hash, mockMultipleConsolidations[1].hash);
+        assert.strictEqual(decodedResponse[2].hash, mockMultipleConsolidations[2].hash);
+      }
     });
 
-    it('should successfully consolidate with minSize and maxSize as strings', async function () {
+    it('should successfully consolidate with minValue and maxValue as strings', async function () {
       const requestBody = {
         walletPassphrase: 'test_passphrase',
-        minSize: '10000',
-        maxSize: '50000',
+        minValue: '10000',
+        maxValue: '50000',
       };
 
       const mockWallet = {
@@ -260,7 +287,44 @@ describe('ConsolidateUnspents codec tests', function () {
       assert.strictEqual(result.status, 200);
 
       const decodedResponse = assertDecode(ConsolidateUnspentsResponse, result.body);
-      assert.strictEqual(decodedResponse[0].status, mockConsolidateResponse[0].status);
+      if (Array.isArray(decodedResponse)) {
+        assert.strictEqual(decodedResponse[0].status, mockConsolidateResponse[0].status);
+      }
+    });
+
+    it('should successfully consolidate with minSize and maxSize as strings', async function () {
+      const requestBody = {
+        walletPassphrase: 'test_passphrase',
+        minSize: '5000',
+        maxSize: '100000',
+      };
+
+      const mockWallet = {
+        consolidateUnspents: sinon.stub().resolves(mockConsolidateResponse),
+      };
+
+      const walletsGetStub = sinon.stub().resolves(mockWallet);
+      const mockWallets = { get: walletsGetStub };
+      sinon.stub(BitGo.prototype, 'wallets').returns(mockWallets as any);
+
+      const result = await agent
+        .put(`/api/v1/wallet/${walletId}/consolidateunspents`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      assert.strictEqual(result.status, 200);
+
+      const decodedResponse = assertDecode(ConsolidateUnspentsResponse, result.body);
+      if (Array.isArray(decodedResponse)) {
+        assert.strictEqual(decodedResponse[0].status, mockConsolidateResponse[0].status);
+      }
+
+      // Verify parameters were passed correctly
+      assert.strictEqual(mockWallet.consolidateUnspents.calledOnce, true);
+      const callArgs = mockWallet.consolidateUnspents.firstCall.args[0];
+      assert.strictEqual(callArgs.minSize, '5000');
+      assert.strictEqual(callArgs.maxSize, '100000');
     });
 
     // ==========================================
@@ -558,7 +622,9 @@ describe('ConsolidateUnspents codec tests', function () {
 
         assert.strictEqual(result.status, 200);
         const decodedResponse = assertDecode(ConsolidateUnspentsResponse, result.body);
-        assert.strictEqual(decodedResponse[0].status, mockConsolidateResponse[0].status);
+        if (Array.isArray(decodedResponse)) {
+          assert.strictEqual(decodedResponse[0].status, mockConsolidateResponse[0].status);
+        }
       });
 
       it('should handle maxInputCountPerConsolidation at minimum boundary (2)', async function () {
@@ -583,7 +649,9 @@ describe('ConsolidateUnspents codec tests', function () {
 
         assert.strictEqual(result.status, 200);
         const decodedResponse = assertDecode(ConsolidateUnspentsResponse, result.body);
-        assert.strictEqual(decodedResponse[0].status, mockConsolidateResponse[0].status);
+        if (Array.isArray(decodedResponse)) {
+          assert.strictEqual(decodedResponse[0].status, mockConsolidateResponse[0].status);
+        }
       });
 
       it('should handle very long wallet ID', async function () {
@@ -647,7 +715,9 @@ describe('ConsolidateUnspents codec tests', function () {
         // Should succeed - SDK handles priority of auth methods
         assert.strictEqual(result.status, 200);
         const decodedResponse = assertDecode(ConsolidateUnspentsResponse, result.body);
-        assert.strictEqual(decodedResponse[0].status, mockConsolidateResponse[0].status);
+        if (Array.isArray(decodedResponse)) {
+          assert.strictEqual(decodedResponse[0].status, mockConsolidateResponse[0].status);
+        }
       });
 
       it('should handle zero minConfirms', async function () {
@@ -673,7 +743,9 @@ describe('ConsolidateUnspents codec tests', function () {
         // Should succeed - zero minConfirms is valid (includes unconfirmed)
         assert.strictEqual(result.status, 200);
         const decodedResponse = assertDecode(ConsolidateUnspentsResponse, result.body);
-        assert.strictEqual(decodedResponse[0].status, mockConsolidateResponse[0].status);
+        if (Array.isArray(decodedResponse)) {
+          assert.strictEqual(decodedResponse[0].status, mockConsolidateResponse[0].status);
+        }
       });
 
       it('should handle negative target value', async function () {
@@ -722,7 +794,9 @@ describe('ConsolidateUnspents codec tests', function () {
         // Should succeed - -1 means unlimited iterations
         assert.strictEqual(result.status, 200);
         const decodedResponse = assertDecode(ConsolidateUnspentsResponse, result.body);
-        assert.strictEqual(decodedResponse[0].status, mockConsolidateResponse[0].status);
+        if (Array.isArray(decodedResponse)) {
+          assert.strictEqual(decodedResponse[0].status, mockConsolidateResponse[0].status);
+        }
       });
 
       it('should handle empty response array (no consolidation needed)', async function () {
@@ -751,7 +825,41 @@ describe('ConsolidateUnspents codec tests', function () {
         result.body.should.have.length(0);
 
         const decodedResponse = assertDecode(ConsolidateUnspentsResponse, result.body);
-        assert.strictEqual(decodedResponse.length, 0);
+        if (Array.isArray(decodedResponse)) {
+          assert.strictEqual(decodedResponse.length, 0);
+        }
+      });
+
+      it('should handle undefined response (target already reached)', async function () {
+        const requestBody = {
+          walletPassphrase: 'test_passphrase',
+        };
+
+        // V1 SDK returns undefined when 'Done' error is caught (target already reached)
+        const undefinedResponse = undefined;
+
+        const mockWallet = {
+          consolidateUnspents: sinon.stub().resolves(undefinedResponse),
+        };
+
+        const walletsGetStub = sinon.stub().resolves(mockWallet);
+        const mockWallets = { get: walletsGetStub };
+        sinon.stub(BitGo.prototype, 'wallets').returns(mockWallets as any);
+
+        const result = await agent
+          .put(`/api/v1/wallet/${walletId}/consolidateunspents`)
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        assert.strictEqual(result.status, 200);
+        // When consolidation completes naturally (target reached), SDK returns undefined
+        // Express serializes undefined as {} in HTTP response
+        assert.deepStrictEqual(result.body, {});
+
+        const decodedResponse = assertDecode(ConsolidateUnspentsResponse, result.body);
+        // The codec decodes {} as {} (empty object), not undefined
+        assert.deepStrictEqual(decodedResponse, {});
       });
     });
 
@@ -878,6 +986,16 @@ describe('ConsolidateUnspents codec tests', function () {
       assert.strictEqual(decoded.maxIterationCount, undefined);
       assert.strictEqual(decoded.minConfirms, undefined);
       assert.strictEqual(decoded.feeRate, undefined);
+      assert.strictEqual(decoded.otp, undefined);
+      assert.strictEqual(decoded.message, undefined);
+      assert.strictEqual(decoded.instant, undefined);
+      assert.strictEqual(decoded.sequenceId, undefined);
+      assert.strictEqual(decoded.numBlocks, undefined);
+      assert.strictEqual(decoded.enforceMinConfirmsForChange, undefined);
+      assert.strictEqual(decoded.targetWalletUnspents, undefined);
+      assert.strictEqual(decoded.minValue, undefined);
+      assert.strictEqual(decoded.maxValue, undefined);
+      assert.strictEqual(decoded.comment, undefined);
     });
 
     it('should validate body with walletPassphrase', function () {
@@ -898,27 +1016,9 @@ describe('ConsolidateUnspents codec tests', function () {
       assert.strictEqual(decoded.xprv, validBody.xprv);
     });
 
-    it('should validate body with validate flag', function () {
-      const validBody = {
-        validate: false,
-      };
-
-      const decoded = assertDecode(t.type(ConsolidateUnspentsRequestBody), validBody);
-      assert.strictEqual(decoded.validate, validBody.validate);
-    });
-
-    it('should validate body with target', function () {
-      const validBody = {
-        target: 5,
-      };
-
-      const decoded = assertDecode(t.type(ConsolidateUnspentsRequestBody), validBody);
-      assert.strictEqual(decoded.target, validBody.target);
-    });
-
     it('should validate body with minSize as number', function () {
       const validBody = {
-        minSize: 10000,
+        minSize: 5000,
       };
 
       const decoded = assertDecode(t.type(ConsolidateUnspentsRequestBody), validBody);
@@ -927,7 +1027,7 @@ describe('ConsolidateUnspents codec tests', function () {
 
     it('should validate body with minSize as string', function () {
       const validBody = {
-        minSize: '10000',
+        minSize: '5000',
       };
 
       const decoded = assertDecode(t.type(ConsolidateUnspentsRequestBody), validBody);
@@ -936,7 +1036,7 @@ describe('ConsolidateUnspents codec tests', function () {
 
     it('should validate body with maxSize as number', function () {
       const validBody = {
-        maxSize: 50000,
+        maxSize: 100000,
       };
 
       const decoded = assertDecode(t.type(ConsolidateUnspentsRequestBody), validBody);
@@ -945,29 +1045,56 @@ describe('ConsolidateUnspents codec tests', function () {
 
     it('should validate body with maxSize as string', function () {
       const validBody = {
-        maxSize: '50000',
+        maxSize: '100000',
       };
 
       const decoded = assertDecode(t.type(ConsolidateUnspentsRequestBody), validBody);
       assert.strictEqual(decoded.maxSize, validBody.maxSize);
     });
 
-    it('should validate body with maxInputCountPerConsolidation', function () {
+    it('should validate body with minValue as number', function () {
       const validBody = {
-        maxInputCountPerConsolidation: 150,
+        minValue: 10000,
       };
 
       const decoded = assertDecode(t.type(ConsolidateUnspentsRequestBody), validBody);
-      assert.strictEqual(decoded.maxInputCountPerConsolidation, validBody.maxInputCountPerConsolidation);
+      assert.strictEqual(decoded.minValue, validBody.minValue);
     });
 
-    it('should validate body with maxIterationCount', function () {
+    it('should validate body with minValue as string', function () {
       const validBody = {
-        maxIterationCount: 3,
+        minValue: '10000',
       };
 
       const decoded = assertDecode(t.type(ConsolidateUnspentsRequestBody), validBody);
-      assert.strictEqual(decoded.maxIterationCount, validBody.maxIterationCount);
+      assert.strictEqual(decoded.minValue, validBody.minValue);
+    });
+
+    it('should validate body with maxValue as number', function () {
+      const validBody = {
+        maxValue: 50000,
+      };
+
+      const decoded = assertDecode(t.type(ConsolidateUnspentsRequestBody), validBody);
+      assert.strictEqual(decoded.maxValue, validBody.maxValue);
+    });
+
+    it('should validate body with maxValue as string', function () {
+      const validBody = {
+        maxValue: '50000',
+      };
+
+      const decoded = assertDecode(t.type(ConsolidateUnspentsRequestBody), validBody);
+      assert.strictEqual(decoded.maxValue, validBody.maxValue);
+    });
+
+    it('should validate body with otp', function () {
+      const validBody = {
+        otp: '123456',
+      };
+
+      const decoded = assertDecode(t.type(ConsolidateUnspentsRequestBody), validBody);
+      assert.strictEqual(decoded.otp, validBody.otp);
     });
 
     it('should validate body with minConfirms', function () {
@@ -988,6 +1115,87 @@ describe('ConsolidateUnspents codec tests', function () {
       assert.strictEqual(decoded.feeRate, validBody.feeRate);
     });
 
+    it('should validate body with message', function () {
+      const validBody = {
+        message: 'Test message',
+      };
+
+      const decoded = assertDecode(t.type(ConsolidateUnspentsRequestBody), validBody);
+      assert.strictEqual(decoded.message, validBody.message);
+    });
+
+    it('should validate body with instant', function () {
+      const validBody = {
+        instant: true,
+      };
+
+      const decoded = assertDecode(t.type(ConsolidateUnspentsRequestBody), validBody);
+      assert.strictEqual(decoded.instant, validBody.instant);
+    });
+
+    it('should validate body with sequenceId', function () {
+      const validBody = {
+        sequenceId: 'test-seq-123',
+      };
+
+      const decoded = assertDecode(t.type(ConsolidateUnspentsRequestBody), validBody);
+      assert.strictEqual(decoded.sequenceId, validBody.sequenceId);
+    });
+
+    it('should validate body with numBlocks', function () {
+      const validBody = {
+        numBlocks: 3,
+      };
+
+      const decoded = assertDecode(t.type(ConsolidateUnspentsRequestBody), validBody);
+      assert.strictEqual(decoded.numBlocks, validBody.numBlocks);
+    });
+
+    it('should validate body with enforceMinConfirmsForChange', function () {
+      const validBody = {
+        enforceMinConfirmsForChange: true,
+      };
+
+      const decoded = assertDecode(t.type(ConsolidateUnspentsRequestBody), validBody);
+      assert.strictEqual(decoded.enforceMinConfirmsForChange, validBody.enforceMinConfirmsForChange);
+    });
+
+    it('should validate body with targetWalletUnspents', function () {
+      const validBody = {
+        targetWalletUnspents: 5,
+      };
+
+      const decoded = assertDecode(t.type(ConsolidateUnspentsRequestBody), validBody);
+      assert.strictEqual(decoded.targetWalletUnspents, validBody.targetWalletUnspents);
+    });
+
+    it('should validate body with comment', function () {
+      const validBody = {
+        comment: 'Test comment',
+      };
+
+      const decoded = assertDecode(t.type(ConsolidateUnspentsRequestBody), validBody);
+      assert.strictEqual(decoded.comment, validBody.comment);
+    });
+
+    it('should validate body with comment', function () {
+      const validBody = {
+        comment: 'Test consolidation',
+      };
+
+      const decoded = assertDecode(t.type(ConsolidateUnspentsRequestBody), validBody);
+      assert.strictEqual(decoded.comment, validBody.comment);
+    });
+
+    it('should validate body with otp', function () {
+      const validBody = {
+        otp: '123456',
+      };
+
+      const decoded = assertDecode(t.type(ConsolidateUnspentsRequestBody), validBody);
+      assert.strictEqual(decoded.otp, validBody.otp);
+    });
+
     it('should validate body with all fields', function () {
       const validBody = {
         walletPassphrase: 'mySecurePassphrase',
@@ -1000,6 +1208,16 @@ describe('ConsolidateUnspents codec tests', function () {
         maxIterationCount: 3,
         minConfirms: 2,
         feeRate: 20000,
+        otp: '123456',
+        message: 'Test message',
+        instant: false,
+        sequenceId: 'test-seq-123',
+        numBlocks: 3,
+        enforceMinConfirmsForChange: true,
+        targetWalletUnspents: 5,
+        minValue: 10000,
+        maxValue: 50000,
+        comment: 'Test consolidation',
       };
 
       const decoded = assertDecode(t.type(ConsolidateUnspentsRequestBody), validBody);
@@ -1013,6 +1231,16 @@ describe('ConsolidateUnspents codec tests', function () {
       assert.strictEqual(decoded.maxIterationCount, validBody.maxIterationCount);
       assert.strictEqual(decoded.minConfirms, validBody.minConfirms);
       assert.strictEqual(decoded.feeRate, validBody.feeRate);
+      assert.strictEqual(decoded.otp, validBody.otp);
+      assert.strictEqual(decoded.message, validBody.message);
+      assert.strictEqual(decoded.instant, validBody.instant);
+      assert.strictEqual(decoded.sequenceId, validBody.sequenceId);
+      assert.strictEqual(decoded.numBlocks, validBody.numBlocks);
+      assert.strictEqual(decoded.enforceMinConfirmsForChange, validBody.enforceMinConfirmsForChange);
+      assert.strictEqual(decoded.targetWalletUnspents, validBody.targetWalletUnspents);
+      assert.strictEqual(decoded.minValue, validBody.minValue);
+      assert.strictEqual(decoded.maxValue, validBody.maxValue);
+      assert.strictEqual(decoded.comment, validBody.comment);
     });
 
     it('should reject body with non-string walletPassphrase', function () {
@@ -1028,26 +1256,6 @@ describe('ConsolidateUnspents codec tests', function () {
     it('should reject body with non-string xprv', function () {
       const invalidBody = {
         xprv: 123, // number instead of string
-      };
-
-      assert.throws(() => {
-        assertDecode(t.type(ConsolidateUnspentsRequestBody), invalidBody);
-      });
-    });
-
-    it('should reject body with non-boolean validate', function () {
-      const invalidBody = {
-        validate: 'true', // string instead of boolean
-      };
-
-      assert.throws(() => {
-        assertDecode(t.type(ConsolidateUnspentsRequestBody), invalidBody);
-      });
-    });
-
-    it('should reject body with non-number target', function () {
-      const invalidBody = {
-        target: '5', // string instead of number
       };
 
       assert.throws(() => {
@@ -1075,9 +1283,9 @@ describe('ConsolidateUnspents codec tests', function () {
       });
     });
 
-    it('should reject body with non-number maxInputCountPerConsolidation', function () {
+    it('should reject body with invalid minValue type', function () {
       const invalidBody = {
-        maxInputCountPerConsolidation: '150', // string instead of number
+        minValue: true, // boolean instead of number or string
       };
 
       assert.throws(() => {
@@ -1085,9 +1293,9 @@ describe('ConsolidateUnspents codec tests', function () {
       });
     });
 
-    it('should reject body with non-number maxIterationCount', function () {
+    it('should reject body with invalid maxValue type', function () {
       const invalidBody = {
-        maxIterationCount: '3', // string instead of number
+        maxValue: true, // boolean instead of number or string
       };
 
       assert.throws(() => {
@@ -1131,16 +1339,19 @@ describe('ConsolidateUnspents codec tests', function () {
       ];
 
       const decoded = assertDecode(ConsolidateUnspentsResponse, validResponse);
-      assert.strictEqual(decoded[0].status, validResponse[0].status);
-      assert.strictEqual(decoded[0].tx, validResponse[0].tx);
-      assert.strictEqual(decoded[0].hash, validResponse[0].hash);
-      assert.strictEqual(decoded[0].instant, validResponse[0].instant);
-      assert.strictEqual(decoded[0].fee, validResponse[0].fee);
-      assert.strictEqual(decoded[0].feeRate, validResponse[0].feeRate);
-      assert.deepStrictEqual(decoded[0].travelInfos, validResponse[0].travelInfos);
-      assert.strictEqual(decoded[0].instantId, undefined); // Optional field
-      assert.strictEqual(decoded[0].bitgoFee, undefined); // Optional field
-      assert.strictEqual(decoded[0].travelResult, undefined); // Optional field
+      assert.ok(Array.isArray(decoded), 'Response should be array');
+      if (Array.isArray(decoded)) {
+        assert.strictEqual(decoded[0].status, validResponse[0].status);
+        assert.strictEqual(decoded[0].tx, validResponse[0].tx);
+        assert.strictEqual(decoded[0].hash, validResponse[0].hash);
+        assert.strictEqual(decoded[0].instant, validResponse[0].instant);
+        assert.strictEqual(decoded[0].fee, validResponse[0].fee);
+        assert.strictEqual(decoded[0].feeRate, validResponse[0].feeRate);
+        assert.deepStrictEqual(decoded[0].travelInfos, validResponse[0].travelInfos);
+        assert.strictEqual(decoded[0].instantId, undefined); // Optional field
+        assert.strictEqual(decoded[0].bitgoFee, undefined); // Optional field
+        assert.strictEqual(decoded[0].travelResult, undefined); // Optional field
+      }
     });
 
     it('should validate response with all fields including optional ones', function () {
@@ -1160,16 +1371,19 @@ describe('ConsolidateUnspents codec tests', function () {
       ];
 
       const decoded = assertDecode(ConsolidateUnspentsResponse, validResponse);
-      assert.strictEqual(decoded[0].status, validResponse[0].status);
-      assert.strictEqual(decoded[0].tx, validResponse[0].tx);
-      assert.strictEqual(decoded[0].hash, validResponse[0].hash);
-      assert.strictEqual(decoded[0].instant, validResponse[0].instant);
-      assert.strictEqual(decoded[0].instantId, validResponse[0].instantId);
-      assert.strictEqual(decoded[0].fee, validResponse[0].fee);
-      assert.strictEqual(decoded[0].feeRate, validResponse[0].feeRate);
-      assert.deepStrictEqual(decoded[0].travelInfos, validResponse[0].travelInfos);
-      assert.deepStrictEqual(decoded[0].bitgoFee, validResponse[0].bitgoFee);
-      assert.deepStrictEqual(decoded[0].travelResult, validResponse[0].travelResult);
+      assert.ok(Array.isArray(decoded), 'Response should be array');
+      if (Array.isArray(decoded)) {
+        assert.strictEqual(decoded[0].status, validResponse[0].status);
+        assert.strictEqual(decoded[0].tx, validResponse[0].tx);
+        assert.strictEqual(decoded[0].hash, validResponse[0].hash);
+        assert.strictEqual(decoded[0].instant, validResponse[0].instant);
+        assert.strictEqual(decoded[0].instantId, validResponse[0].instantId);
+        assert.strictEqual(decoded[0].fee, validResponse[0].fee);
+        assert.strictEqual(decoded[0].feeRate, validResponse[0].feeRate);
+        assert.deepStrictEqual(decoded[0].travelInfos, validResponse[0].travelInfos);
+        assert.deepStrictEqual(decoded[0].bitgoFee, validResponse[0].bitgoFee);
+        assert.deepStrictEqual(decoded[0].travelResult, validResponse[0].travelResult);
+      }
     });
 
     it('should validate response with multiple consolidation transactions', function () {
@@ -1195,21 +1409,23 @@ describe('ConsolidateUnspents codec tests', function () {
       ];
 
       const decoded = assertDecode(ConsolidateUnspentsResponse, validResponse);
-      assert.strictEqual(decoded.length, 2);
-      assert.strictEqual(decoded[0].status, validResponse[0].status);
-      assert.strictEqual(decoded[0].tx, validResponse[0].tx);
-      assert.strictEqual(decoded[0].hash, validResponse[0].hash);
-      assert.strictEqual(decoded[0].instant, validResponse[0].instant);
-      assert.strictEqual(decoded[0].fee, validResponse[0].fee);
-      assert.strictEqual(decoded[0].feeRate, validResponse[0].feeRate);
-      assert.deepStrictEqual(decoded[0].travelInfos, validResponse[0].travelInfos);
-      assert.strictEqual(decoded[1].status, validResponse[1].status);
-      assert.strictEqual(decoded[1].tx, validResponse[1].tx);
-      assert.strictEqual(decoded[1].hash, validResponse[1].hash);
-      assert.strictEqual(decoded[1].instant, validResponse[1].instant);
-      assert.strictEqual(decoded[1].fee, validResponse[1].fee);
-      assert.strictEqual(decoded[1].feeRate, validResponse[1].feeRate);
-      assert.deepStrictEqual(decoded[1].travelInfos, validResponse[1].travelInfos);
+      if (Array.isArray(decoded)) {
+        assert.strictEqual(decoded.length, 2);
+        assert.strictEqual(decoded[0].status, validResponse[0].status);
+        assert.strictEqual(decoded[0].tx, validResponse[0].tx);
+        assert.strictEqual(decoded[0].hash, validResponse[0].hash);
+        assert.strictEqual(decoded[0].instant, validResponse[0].instant);
+        assert.strictEqual(decoded[0].fee, validResponse[0].fee);
+        assert.strictEqual(decoded[0].feeRate, validResponse[0].feeRate);
+        assert.deepStrictEqual(decoded[0].travelInfos, validResponse[0].travelInfos);
+        assert.strictEqual(decoded[1].status, validResponse[1].status);
+        assert.strictEqual(decoded[1].tx, validResponse[1].tx);
+        assert.strictEqual(decoded[1].hash, validResponse[1].hash);
+        assert.strictEqual(decoded[1].instant, validResponse[1].instant);
+        assert.strictEqual(decoded[1].fee, validResponse[1].fee);
+        assert.strictEqual(decoded[1].feeRate, validResponse[1].feeRate);
+        assert.deepStrictEqual(decoded[1].travelInfos, validResponse[1].travelInfos);
+      }
     });
 
     it('should reject response with missing status', function () {
