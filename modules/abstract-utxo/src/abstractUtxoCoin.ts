@@ -84,6 +84,8 @@ import { isDescriptorWalletData } from './descriptor/descriptorWallet';
 
 import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 
+type TxFormat = 'legacy' | 'psbt' | 'psbt-lite';
+
 type UtxoCustomSigningFunction<TNumber extends number | bigint> = {
   (params: {
     coin: IBaseCoin;
@@ -1001,10 +1003,10 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   async getExtraPrebuildParams(buildParams: ExtraPrebuildParamsOptions & { wallet: Wallet }): Promise<{
-    txFormat?: 'legacy' | 'psbt';
+    txFormat?: TxFormat;
     changeAddressType?: ScriptType2Of3[] | ScriptType2Of3;
   }> {
-    let txFormat = buildParams.txFormat as 'legacy' | 'psbt' | undefined;
+    let txFormat = buildParams.txFormat as TxFormat | undefined;
     let changeAddressType = buildParams.changeAddressType as ScriptType2Of3[] | ScriptType2Of3 | undefined;
 
     if (this.shouldDefaultToPsbtTxFormat(buildParams)) {
