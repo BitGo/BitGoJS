@@ -58,8 +58,8 @@ export abstract class AtomicInCTransactionBuilder extends AtomicTransactionBuild
   }
 
   private initializeChainIds(): void {
-    this._externalChainId = utils.cb58Decode(this._network.blockchainID);
-    this._blockchainID = utils.cb58Decode(this._network.cChainBlockchainID);
+    this._externalChainId = utils.cb58Decode(this.transaction._network.blockchainID);
+    this._blockchainID = utils.cb58Decode(this.transaction._network.cChainBlockchainID);
   }
 
   private setFeeRate(n: bigint): void {

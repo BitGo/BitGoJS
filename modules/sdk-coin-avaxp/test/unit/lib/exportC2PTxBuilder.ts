@@ -34,7 +34,7 @@ describe('AvaxP Export C2P Tx Builder', () => {
     });
   });
 
-  describe('should build ', () => {
+  describe('should build C to P transaction', () => {
     const newTxBuilder = () =>
       factory
         .getExportInCBuilder()

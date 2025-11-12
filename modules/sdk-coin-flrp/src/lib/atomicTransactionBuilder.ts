@@ -9,7 +9,6 @@ import {
   TRANSACTION_ID_HEX_LENGTH,
   PRIVATE_KEY_HEX_LENGTH,
   SECP256K1_SIGNATURE_LENGTH,
-  TRANSACTION_ID_PREFIX,
   HEX_PREFIX,
   HEX_PREFIX_LENGTH,
   DECIMAL_RADIX,
@@ -23,13 +22,10 @@ import {
   ERROR_SIGNATURES_ARRAY,
   ERROR_SIGNATURES_EMPTY,
   ERROR_INVALID_PRIVATE_KEY,
-  ERROR_UTXOS_REQUIRED_BUILD,
-  ERROR_ENHANCED_BUILD_FAILED,
   ERROR_ENHANCED_PARSE_FAILED,
   ERROR_FLAREJS_SIGNING_FAILED,
   ERROR_CREATE_CREDENTIAL_FAILED,
   ERROR_UNKNOWN,
-  FLARE_ATOMIC_PREFIX,
   FLARE_ATOMIC_PARSED_PREFIX,
   HEX_ENCODING,
 } from './constants';
@@ -328,62 +324,62 @@ export abstract class AtomicTransactionBuilder extends TransactionBuilder {
   /**
    * Build the transaction using FlareJS compatibility
    */
-  async build(): Promise<BaseTransaction> {
-    // FlareJS UnsignedTx creation with atomic transaction support
-    try {
-      // Validate transaction requirements
-      if (!this._utxos || this._utxos.length === 0) {
-        throw new BuildTransactionError(ERROR_UTXOS_REQUIRED_BUILD);
-      }
+  // async build(): Promise<BaseTransaction> {
+  //   // FlareJS UnsignedTx creation with atomic transaction support
+  //   try {
+  //     // Validate transaction requirements
+  //     if (!this._utxos || this._utxos.length === 0) {
+  //       throw new BuildTransactionError(ERROR_UTXOS_REQUIRED_BUILD);
+  //     }
 
-      // Create FlareJS transaction structure with atomic support
-      const transaction = {
-        _id: `${TRANSACTION_ID_PREFIX}${Date.now()}`,
-        _inputs: [],
-        _outputs: [],
-        _type: this.transactionType,
-        signature: [] as string[],
+  //     // Create FlareJS transaction structure with atomic support
+  //     const transaction = {
+  //       _id: `${TRANSACTION_ID_PREFIX}${Date.now()}`,
+  //       _inputs: [],
+  //       _outputs: [],
+  //       _type: this.transactionType,
+  //       signature: [] as string[],
 
-        fromAddresses: this._fromAddresses,
-        validationErrors: [],
+  //       fromAddresses: this._fromAddresses,
+  //       validationErrors: [],
 
-        // FlareJS methods with atomic support
-        toBroadcastFormat: () => `${TRANSACTION_ID_PREFIX}${Date.now()}`,
-        toJson: () => ({
-          type: this.transactionType,
-        }),
+  //       // FlareJS methods with atomic support
+  //       toBroadcastFormat: () => `${TRANSACTION_ID_PREFIX}${Date.now()}`,
+  //       toJson: () => ({
+  //         type: this.transactionType,
+  //       }),
 
-        explainTransaction: (): TransactionExplanation => ({
-          type: this.transactionType,
-          inputs: [],
-          outputs: [],
-          outputAmount: AMOUNT_STRING_ZERO,
-          rewardAddresses: [],
-          id: `${FLARE_ATOMIC_PREFIX}${Date.now()}`,
-          changeOutputs: [],
-          changeAmount: AMOUNT_STRING_ZERO,
-          fee: { fee: this._fee.fee },
-        }),
+  //       explainTransaction: (): TransactionExplanation => ({
+  //         type: this.transactionType,
+  //         inputs: [],
+  //         outputs: [],
+  //         outputAmount: AMOUNT_STRING_ZERO,
+  //         rewardAddresses: [],
+  //         id: `${FLARE_ATOMIC_PREFIX}${Date.now()}`,
+  //         changeOutputs: [],
+  //         changeAmount: AMOUNT_STRING_ZERO,
+  //         fee: { fee: this._fee.fee },
+  //       }),
 
-        isTransactionForCChain: false,
-        loadInputsAndOutputs: () => {
-          /* FlareJS atomic transaction loading */
-        },
-        inputs: () => [],
-        outputs: () => [],
-        fee: () => ({ fee: this._fee.fee }),
-        feeRate: () => 0,
-        id: () => `${FLARE_ATOMIC_PREFIX}${Date.now()}`,
-        type: this.transactionType,
-      } as unknown as BaseTransaction;
+  //       isTransactionForCChain: false,
+  //       loadInputsAndOutputs: () => {
+  //         /* FlareJS atomic transaction loading */
+  //       },
+  //       inputs: () => [],
+  //       outputs: () => [],
+  //       fee: () => ({ fee: this._fee.fee }),
+  //       feeRate: () => 0,
+  //       id: () => `${FLARE_ATOMIC_PREFIX}${Date.now()}`,
+  //       type: this.transactionType,
+  //     } as unknown as BaseTransaction;
 
-      return transaction;
-    } catch (error) {
-      throw new BuildTransactionError(
-        `${ERROR_ENHANCED_BUILD_FAILED}: ${error instanceof Error ? error.message : ERROR_UNKNOWN}`
-      );
-    }
-  }
+  //     return transaction;
+  //   } catch (error) {
+  //     throw new BuildTransactionError(
+  //       `${ERROR_ENHANCED_BUILD_FAILED}: ${error instanceof Error ? error.message : ERROR_UNKNOWN}`
+  //     );
+  //   }
+  // }
 
   /**
    * Parse and explain a transaction from hex using FlareJS compatibility
@@ -472,4 +468,8 @@ export abstract class AtomicTransactionBuilder extends TransactionBuilder {
   validateTransaction(transaction?: Transaction): void {
     // throw new NotImplementedError('validateTransaction not implemented');
   }
+
+  // setTransaction(tx: any): void {
+  //   this._flrpTransaction = tx;
+  // }
 }

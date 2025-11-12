@@ -235,7 +235,9 @@ export class ExportInCTxBuilder extends AtomicInCTransactionBuilder {
     console.log('Unsigned Export Tx:', unsigned);
 
     // Create signed transaction structure
-    // const signed: FlareSignedExportTx = { unsignedTx: unsigned, credentials: [] };
+    const signed: FlareSignedExportTx = { unsignedTx: unsigned, credentials: [] };
+
+    console.log('Signed Export Tx:', signed);
 
     // Update transaction fee information
     this.transaction._fee.fee = totalFee.toString();
