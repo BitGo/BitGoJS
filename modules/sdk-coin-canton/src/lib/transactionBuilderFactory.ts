@@ -5,6 +5,7 @@ import {
   TransactionType,
 } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { OneStepPreApprovalBuilder } from './oneStepPreApprovalBuilder';
 import { TransferAcceptanceBuilder } from './transferAcceptanceBuilder';
 import { TransferAcknowledgeBuilder } from './transferAcknowledgeBuilder';
 import { TransactionBuilder } from './transactionBuilder';
@@ -28,6 +29,9 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
       const tx = new Transaction(this._coinConfig);
       tx.fromRawTransaction(raw);
       switch (tx.type) {
+        case TransactionType.OneStepPreApproval: {
+          return this.getOneStepPreapprovalBuilder(tx);
+        }
         case TransactionType.Send: {
           return this.getTransferBuilder(tx);
         }
@@ -45,6 +49,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
         }
       }
     }
+  }
+
+  getOneStepPreapprovalBuilder(tx?: Transaction): OneStepPreApprovalBuilder {
+    return TransactionBuilderFactory.initializeBuilder(tx, new OneStepPreApprovalBuilder(this._coinConfig));
   }
 
   getTransferAcceptanceBuilder(tx?: Transaction): TransferAcceptanceBuilder {
