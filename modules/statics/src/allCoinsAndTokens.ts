@@ -52,7 +52,7 @@ import { ada } from './ada';
 import { avaxp } from './avaxp';
 import { BaseUnit, CoinFeature, KeyCurve, UnderlyingAsset } from './base';
 import { canton } from './canton';
-import { erc20Coins } from './coins/erc20Coins';
+import { erc20Tokens } from './coins/erc20Tokens';
 import { avaxTokens } from './coins/avaxTokens';
 import { bscTokens } from './coins/bscTokens';
 import { polygonTokens } from './coins/polygonTokens';
@@ -139,7 +139,7 @@ import { adaTokens } from './coins/adaTokens';
 export const allCoinsAndTokens = [
   ...lightningCoins,
   ...utxoCoins,
-  ...erc20Coins,
+  ...erc20Tokens,
   ...avaxTokens,
   ...bscTokens,
   ...polygonTokens,
