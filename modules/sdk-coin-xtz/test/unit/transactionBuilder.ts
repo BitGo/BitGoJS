@@ -96,7 +96,7 @@ describe('Tezos Transaction builder', function () {
       should.equal(tx.inputs.length, 1);
       should.equal(tx.outputs.length, 0);
       tx.inputs[0].address.should.equal('tz2PtJ9zgEgFVTRqy6GXsst54tH3ksEnYvvS');
-      tx.inputs[0].value.should.equal('1420');
+      tx.inputs[0].value.should.equal('10');
       should.not.exist(tx.delegate);
       tx.signature.length.should.equal(0);
       Object.keys(tx.getIndexesByTransactionType()).length.should.equal(1);
@@ -186,21 +186,21 @@ describe('Tezos Transaction builder', function () {
       txBuilder.sign({ key: defaultKeyPair.getKeys().prv });
       const tx = await txBuilder.build();
 
-      tx.id.should.equal('onpN4Zq664YTriyVmBbgEZAReHbucvD31XwvnpP5T9qzfhbanbx');
+      tx.id.should.equal('oo2KFqWUTKZq6se9hjfegaMaPbXoh54ZdqMCczLMx5EFBFir61k');
       tx.type.should.equal(TransactionType.WalletInitialization);
       tx.source.should.equal('tz2PtJ9zgEgFVTRqy6GXsst54tH3ksEnYvvS');
       should.equal(tx.inputs.length, 2);
       should.equal(tx.outputs.length, 1);
       tx.inputs[0].address.should.equal('tz2PtJ9zgEgFVTRqy6GXsst54tH3ksEnYvvS');
-      tx.inputs[0].value.should.equal('1420');
+      tx.inputs[0].value.should.equal('4764');
       tx.inputs[1].address.should.equal('tz2PtJ9zgEgFVTRqy6GXsst54tH3ksEnYvvS');
       tx.inputs[1].value.should.equal('1004764');
-      tx.outputs[0].address.should.equal('KT1Hdttpv7CBaJ8igdkhCudMHBWUqNviJCTf');
+      tx.outputs[0].address.should.equal('KT1A9heCJqvJ3JUci8mngHd233d5vCZFp7Kn');
       tx.outputs[0].value.should.equal('1000000');
       tx.delegate.should.equal('tz1KpbK5v1NB2vg3JHBxXJZhyQ7ur83Xp7iC');
       tx.signature.length.should.equal(1);
       tx.signature[0].should.equal(
-        'sigtJtqVf7FJVqkDPyPW878FfCnpCPNb6JJdXAxezepe4t97BwfouYJ6GMqHGSNhevu4uiLSQ2h374a4NxMnA9E9qLXa4j93'
+        'sigvD51ih2buKJk18C67QkaWgA4gaWfzz4NwTewpbPkNvBokeXonyVER8PykorqZrjNcr1WGB1QY1wTXeGWaVtHXBg4WhGd7'
       );
       const indexesByTransactionType = tx.getIndexesByTransactionType();
       Object.keys(indexesByTransactionType).length.should.equal(2);

@@ -319,12 +319,20 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /**
-   * Build a reveal operation for the source account with default fees.
+   * Build a reveal operation for the source account using the set fee parameters,
+   * or default fees if not specified.
    *
    * @returns {RevealOp} A Tezos reveal operation
    */
   private buildPublicKeyRevelationOperation(): RevealOp {
-    const operation = revealOperation(this._counter.toString(), this._sourceAddress, this._publicKeyToReveal);
+    const operation = revealOperation(
+      this._counter.toString(),
+      this._sourceAddress,
+      this._publicKeyToReveal,
+      this._fee?.fee,
+      this._fee?.gasLimit,
+      this._fee?.storageLimit
+    );
     this._counter = this._counter.plus(1);
     return operation;
   }
