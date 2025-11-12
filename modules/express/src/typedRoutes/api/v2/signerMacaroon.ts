@@ -49,6 +49,7 @@ export const SignerMacaroonResponse = {
  * Returns the updated wallet with the encrypted signer macaroon in the `coinSpecific` response field.
  *
  * @operationId express.lightning.signerMacaroon
+ * @tag express
  */
 export const PostSignerMacaroon = httpRoute({
   method: 'POST',
