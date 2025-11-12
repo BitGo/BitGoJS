@@ -2853,25 +2853,30 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
             ['address', 'uint256'],
             getBufferedByteCode('0xa9059cbb', txJson.data)
           );
-          if (expectedAmount !== amount.toString()) {
-            throwRecipientMismatch('the transaction amount in txPrebuild does not match the value given by client', [
-              { address: addHexPrefix(recipientAddress.toString()), amount: amount.toString() },
-            ]);
-          }
 
           // Check if recipients[0].data exists (WalletConnect flow)
           let expectedRecipientAddress: string;
+          let expectedTokenAmount: string;
           const recipientData = (recipients[0] as any).data;
+
           if (recipientData && recipientData.startsWith('0xa9059cbb')) {
-            // WalletConnect: decode expected recipient from recipients[0].data
-            const [expectedRecipient] = getRawDecoded(
+            // WalletConnect: decode expected recipient and amount from recipients[0].data
+            const [expectedRecipient, expectedAmount] = getRawDecoded(
               ['address', 'uint256'],
               getBufferedByteCode('0xa9059cbb', recipientData)
             );
             expectedRecipientAddress = addHexPrefix(expectedRecipient.toString()).toLowerCase();
+            expectedTokenAmount = expectedAmount.toString();
           } else {
-            // Normal flow: use recipients[0].address
+            // Normal flow: use recipients[0].address and recipients[0].amount
             expectedRecipientAddress = expectedDestination.toLowerCase();
+            expectedTokenAmount = expectedAmount;
+          }
+
+          if (expectedTokenAmount !== amount.toString()) {
+            throwRecipientMismatch('the transaction amount in txPrebuild does not match the value given by client', [
+              { address: addHexPrefix(recipientAddress.toString()), amount: amount.toString() },
+            ]);
           }
 
           if (expectedRecipientAddress !== addHexPrefix(recipientAddress.toString()).toLowerCase()) {
