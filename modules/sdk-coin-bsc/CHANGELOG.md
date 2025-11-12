@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [22.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@22.8.11...@bitgo/sdk-coin-bsc@22.9.0) (2025-11-12)
+
+
+### Features
+
+* **statics:** support message signing for bsc and polygon ([122b45d](https://github.com/BitGo/BitGoJS/commit/122b45dde1d857c6ba034a71d9e821d09d973527))
+
+
+
+
+
 ## [22.8.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-bsc@22.8.10...@bitgo/sdk-coin-bsc@22.8.11) (2025-11-06)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-bsc

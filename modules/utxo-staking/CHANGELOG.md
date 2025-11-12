@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.24.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.23.3...@bitgo/utxo-staking@1.24.0) (2025-11-12)
+
+
+### Features
+
+* replace wasm-miniscript with wasm-utxo package ([90dc886](https://github.com/BitGo/BitGoJS/commit/90dc8865a6154a5b42211c5610a5ee196cf0ca8e))
+
+
+
+
+
 ## [1.23.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.23.2...@bitgo/utxo-staking@1.23.3) (2025-11-06)
 
 **Note:** Version bump only for package @bitgo/utxo-staking

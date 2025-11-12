@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [27.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.14.3...@bitgo/account-lib@27.15.0) (2025-11-12)
+
+
+### Features
+
+* **statics:** support message signing for bsc and polygon ([122b45d](https://github.com/BitGo/BitGoJS/commit/122b45dde1d857c6ba034a71d9e821d09d973527))
+
+
+
+
+
 ## [27.14.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.14.2...@bitgo/account-lib@27.14.3) (2025-11-06)
 
 **Note:** Version bump only for package @bitgo/account-lib
