@@ -14008,4 +14008,12 @@ export const erc20Coins = [
     '0x7c135549504245b5eae64fc0e99fa5ebabb8e35d',
     UnderlyingAsset['eth:fidd']
   ),
+  erc20(
+    'd74622eb-c7cb-4d3f-b10f-6f4dad930b3d',
+    'eth:fbtc',
+    'Function Bitcoin',
+    8,
+    '0xc96de26018a54d51c097160568752c4e3bd6c364',
+    UnderlyingAsset['eth:fbtc']
+  ),
 ];
