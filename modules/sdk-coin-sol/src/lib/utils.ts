@@ -329,6 +329,9 @@ export function getTransactionType(transaction: SolTransaction): TransactionType
   // check if deactivate instruction does not exist because deactivate can be include a transfer instruction
   const memoInstruction = instructions.find((instruction) => getInstructionType(instruction) === 'Memo');
   const memoData = memoInstruction?.data.toString('utf-8');
+  if (memoData?.includes('WalletConnectDefiCustomTx')) {
+    return TransactionType.CustomTx;
+  }
   if (instructions.filter((instruction) => getInstructionType(instruction) === 'Deactivate').length === 0) {
     for (const instruction of instructions) {
       const instructionType = getInstructionType(instruction);
