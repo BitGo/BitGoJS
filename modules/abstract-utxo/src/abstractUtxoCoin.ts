@@ -982,14 +982,14 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     };
   }
 
-  private shouldDefaultToPsbtTxFormat(buildParams: ExtraPrebuildParamsOptions & { wallet: Wallet }) {
-    const walletFlagMusigKp = buildParams.wallet.flag('musigKp') === 'true';
-    const isHotWallet = buildParams.wallet.type() === 'hot';
+  private getTxFormat(wallet: Wallet, requestedTxFormat: unknown): TxFormat | undefined {
+    const walletFlagMusigKp = wallet.flag('musigKp') === 'true';
+    const isHotWallet = wallet.type() === 'hot';
 
     // if not txFormat is already specified figure out if we should default to psbt format
-    return (
-      buildParams.txFormat === undefined &&
-      (buildParams.wallet.subType() === 'distributedCustody' ||
+    if (
+      requestedTxFormat === undefined &&
+      (wallet.subType() === 'distributedCustody' ||
         // default to testnet for all utxo coins except zcash
         (isTestnet(this.network) &&
           // FIXME(BTC-1322): fix zcash PSBT support
@@ -999,19 +999,18 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
         (isMainnet(this.network) && getMainnet(this.network) === utxolib.networks.bitcoin && isHotWallet) ||
         // default to psbt if it has the wallet flag
         walletFlagMusigKp)
-    );
+    ) {
+      return 'psbt';
+    }
+
+    return requestedTxFormat as TxFormat;
   }
 
   async getExtraPrebuildParams(buildParams: ExtraPrebuildParamsOptions & { wallet: Wallet }): Promise<{
     txFormat?: TxFormat;
     changeAddressType?: ScriptType2Of3[] | ScriptType2Of3;
   }> {
-    let txFormat = buildParams.txFormat as TxFormat | undefined;
     let changeAddressType = buildParams.changeAddressType as ScriptType2Of3[] | ScriptType2Of3 | undefined;
-
-    if (this.shouldDefaultToPsbtTxFormat(buildParams)) {
-      txFormat = 'psbt';
-    }
 
     // if the addressType is not specified, we need to default to p2trMusig2 for testnet hot wallets for staged rollout of p2trMusig2
     if (
@@ -1024,7 +1023,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     }
 
     return {
-      txFormat,
+      txFormat: this.getTxFormat(buildParams.wallet, buildParams.txFormat),
       changeAddressType,
     };
   }
