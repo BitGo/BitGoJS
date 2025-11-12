@@ -43,7 +43,7 @@ describe('CreateLocalKeyChain codec tests', function () {
   });
 
   describe('CreateLocalKeyChainResponse', function () {
-    it('should validate response with required fields', function () {
+    it('should validate response with required xprv field', function () {
       const validResponse = {
         xprv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
         xpub: 'xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8',
@@ -52,20 +52,17 @@ describe('CreateLocalKeyChain codec tests', function () {
       const decoded = assertDecode(CreateLocalKeyChainResponse, validResponse);
       assert.strictEqual(decoded.xprv, validResponse.xprv);
       assert.strictEqual(decoded.xpub, validResponse.xpub);
-      assert.strictEqual(decoded.ethAddress, undefined); // Optional field
     });
 
-    it('should validate response with all fields including optional ones', function () {
+    it('should validate response with both xprv and xpub fields', function () {
       const validResponse = {
         xprv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
         xpub: 'xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8',
-        ethAddress: '0x1234567890123456789012345678901234567890',
       };
 
       const decoded = assertDecode(CreateLocalKeyChainResponse, validResponse);
       assert.strictEqual(decoded.xprv, validResponse.xprv);
       assert.strictEqual(decoded.xpub, validResponse.xpub);
-      assert.strictEqual(decoded.ethAddress, validResponse.ethAddress);
     });
 
     it('should reject response with missing xprv', function () {
@@ -78,14 +75,15 @@ describe('CreateLocalKeyChain codec tests', function () {
       });
     });
 
-    it('should reject response with missing xpub', function () {
-      const invalidResponse = {
+    it('should allow response with missing ethAddress (optional)', function () {
+      const validResponse = {
         xprv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
+        xpub: 'xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8',
       };
 
-      assert.throws(() => {
-        assertDecode(CreateLocalKeyChainResponse, invalidResponse);
-      });
+      const decoded = assertDecode(CreateLocalKeyChainResponse, validResponse);
+      assert.strictEqual(decoded.xprv, validResponse.xprv);
+      assert.strictEqual(decoded.xpub, validResponse.xpub);
     });
 
     it('should reject response with non-string xprv', function () {
@@ -103,18 +101,6 @@ describe('CreateLocalKeyChain codec tests', function () {
       const invalidResponse = {
         xprv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
         xpub: 123, // number instead of string
-      };
-
-      assert.throws(() => {
-        assertDecode(CreateLocalKeyChainResponse, invalidResponse);
-      });
-    });
-
-    it('should reject response with non-string ethAddress', function () {
-      const invalidResponse = {
-        xprv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
-        xpub: 'xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8',
-        ethAddress: 123, // number instead of string
       };
 
       assert.throws(() => {
@@ -177,6 +163,7 @@ describe('CreateLocalKeyChain codec tests', function () {
     const mockKeychainResponse = {
       xprv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
       xpub: 'xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8',
+      ethAddress: '0x1234567890123456789012345678901234567890',
     };
 
     afterEach(function () {
@@ -541,6 +528,7 @@ describe('CreateLocalKeyChain codec tests', function () {
         create: sinon.stub().resolves({
           xprv: longXprv,
           xpub: longXpub,
+          ethAddress: '0x1234567890123456789012345678901234567890',
         }),
       };
 
@@ -558,32 +546,6 @@ describe('CreateLocalKeyChain codec tests', function () {
 
       const decodedResponse = assertDecode(CreateLocalKeyChainResponse, result.body);
       assert.strictEqual(decodedResponse.xprv, longXprv);
-    });
-
-    it('should handle response with empty ethAddress', async function () {
-      const requestBody = {};
-
-      const mockKeychains = {
-        create: sinon.stub().resolves({
-          xprv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
-          xpub: 'xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8',
-          ethAddress: '',
-        }),
-      };
-
-      sinon.stub(BitGo.prototype, 'keychains').returns(mockKeychains as any);
-
-      const result = await agent
-        .post('/api/v1/keychain/local')
-        .set('Authorization', 'Bearer test_access_token_12345')
-        .set('Content-Type', 'application/json')
-        .send(requestBody);
-
-      assert.strictEqual(result.status, 200);
-      assert.strictEqual(result.body.ethAddress, '');
-
-      const decodedResponse = assertDecode(CreateLocalKeyChainResponse, result.body);
-      assert.strictEqual(decodedResponse.ethAddress, '');
     });
 
     it('should handle response with additional unexpected fields', async function () {
@@ -608,11 +570,7 @@ describe('CreateLocalKeyChain codec tests', function () {
 
       assert.strictEqual(result.status, 200);
       // Codec validation should still pass with required fields present
-      const decodedResponse = assertDecode(CreateLocalKeyChainResponse, {
-        xprv: result.body.xprv,
-        xpub: result.body.xpub,
-        ethAddress: result.body.ethAddress,
-      });
+      const decodedResponse = assertDecode(CreateLocalKeyChainResponse, result.body);
       assert.ok(decodedResponse);
     });
 
@@ -683,15 +641,17 @@ describe('CreateLocalKeyChain codec tests', function () {
       });
     });
 
-    it('should reject response with missing xpub field', async function () {
+    it('should allow response with missing ethAddress field (optional)', async function () {
       const requestBody = {};
 
-      const invalidResponse = {
+      const validResponse = {
         xprv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
+        xpub: 'xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8',
+        // ethAddress is optional, so missing it is valid
       };
 
       const mockKeychains = {
-        create: sinon.stub().resolves(invalidResponse),
+        create: sinon.stub().resolves(validResponse),
       };
 
       sinon.stub(BitGo.prototype, 'keychains').returns(mockKeychains as any);
@@ -702,11 +662,11 @@ describe('CreateLocalKeyChain codec tests', function () {
         .set('Content-Type', 'application/json')
         .send(requestBody);
 
-      // Framework returns 200 with invalid response, codec validation should fail
+      // pub is optional, so this should pass
       assert.strictEqual(result.status, 200);
-      assert.throws(() => {
-        assertDecode(CreateLocalKeyChainResponse, result.body);
-      });
+      const decodedResponse = assertDecode(CreateLocalKeyChainResponse, result.body);
+      assert.strictEqual(decodedResponse.xprv, validResponse.xprv);
+      assert.strictEqual(decodedResponse.xpub, validResponse.xpub);
     });
 
     it('should reject response with wrong type for xprv', async function () {
@@ -742,34 +702,6 @@ describe('CreateLocalKeyChain codec tests', function () {
       const invalidResponse = {
         xprv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
         xpub: 123, // number instead of string
-      };
-
-      const mockKeychains = {
-        create: sinon.stub().resolves(invalidResponse),
-      };
-
-      sinon.stub(BitGo.prototype, 'keychains').returns(mockKeychains as any);
-
-      const result = await agent
-        .post('/api/v1/keychain/local')
-        .set('Authorization', 'Bearer test_access_token_12345')
-        .set('Content-Type', 'application/json')
-        .send(requestBody);
-
-      // Framework returns 200 with invalid response, codec validation should fail
-      assert.strictEqual(result.status, 200);
-      assert.throws(() => {
-        assertDecode(CreateLocalKeyChainResponse, result.body);
-      });
-    });
-
-    it('should reject response with wrong type for ethAddress', async function () {
-      const requestBody = {};
-
-      const invalidResponse = {
-        xprv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
-        xpub: 'xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8',
-        ethAddress: 123, // number instead of string
       };
 
       const mockKeychains = {
