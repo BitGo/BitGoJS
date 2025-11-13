@@ -8,6 +8,8 @@ export const pendingApprovalRequestParams = {
 };
 
 export const pendingApprovalRequestBody = {
+  /** State of the approval: 'approved' to approve, omit or 'rejected' to reject (defaults to rejection) */
+  state: optional(t.string),
   /** Wallet passphrase for decrypting user keys (required for transaction signing) */
   walletPassphrase: optional(t.string),
   /** One-time password for 2FA verification */
