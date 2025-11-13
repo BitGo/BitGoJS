@@ -20,6 +20,7 @@ import {
   encryptKeychain,
   getDefaultWalletKeys,
   getFixture,
+  getNormalTestnetCoin,
   getWalletAddress,
   getWalletKeys,
   keychains,
@@ -189,10 +190,16 @@ function run(
     });
 
     it('matches fixture', async function () {
+      const fixtureCoin = getNormalTestnetCoin(coin);
+      const fixtureRecovery = { ...recovery };
+      if (fixtureRecovery.coin) {
+        fixtureRecovery.coin = fixtureCoin.getChain();
+      }
+
       shouldEqualJSON(
-        recovery,
+        fixtureRecovery,
         await getFixture(
-          coin,
+          fixtureCoin,
           `recovery/backupKeyRecovery-${(params.krsProvider ? tags.concat([params.krsProvider]) : tags).join('-')}`,
           recovery
         )
