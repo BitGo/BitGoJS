@@ -375,11 +375,13 @@ function runWithScriptTypes(
     });
 }
 
-// compatible with all coins
-runWithScriptTypes(['p2sh']);
+describe('Backup Key Recovery', function () {
+  // compatible with all coins
+  runWithScriptTypes(['p2sh']);
 
-// segwit compatible coins
-runWithScriptTypes(['p2shP2wsh', 'p2wsh']);
+  // segwit compatible coins
+  runWithScriptTypes(['p2shP2wsh', 'p2wsh']);
 
-// taproot compatible coins
-runWithScriptTypes(['p2tr', 'p2trMusig2'], { runKeyProviderTests: false });
+  // taproot compatible coins
+  runWithScriptTypes(['p2tr', 'p2trMusig2'], { runKeyProviderTests: false });
+});
