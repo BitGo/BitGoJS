@@ -116,6 +116,38 @@ function run(coin: AbstractUtxoCoin) {
       });
     });
 
+    it('respects format parameter', function () {
+      // Only test coins that actually support multiple address formats (BCH/BCHA)
+      // These are the only coins where the format parameter matters
+      const cashaddrPrefixes: Record<string, string> = {
+        bch: 'bitcoincash:',
+        tbch: 'bchtest:',
+        bcha: 'ecash:',
+        tbcha: 'ectest:',
+      };
+
+      const expectedPrefix = cashaddrPrefixes[coin.getChain()];
+      if (!expectedPrefix) {
+        this.skip();
+      }
+
+      const chain = chainCodes[0];
+      const params = { keychains, chain };
+
+      // Generate with cashaddr format
+      const addressCashaddr = generateAddress(coin.network, { ...params, format: 'cashaddr' });
+      coin.isValidAddress(addressCashaddr).should.eql(true);
+      addressCashaddr.should.startWith(expectedPrefix, `cashaddr should start with ${expectedPrefix}`);
+
+      // Generate with base58 format explicitly
+      const addressBase58 = generateAddress(coin.network, { ...params, format: 'base58' });
+      coin.isValidAddress(addressBase58).should.eql(true);
+      addressBase58.should.not.match(/.*:.*/, 'base58 should not contain colon separator');
+
+      // Verify formats produce different strings
+      addressCashaddr.should.not.equal(addressBase58, 'cashaddr and base58 should produce different address strings');
+    });
+
     utxoCoins.forEach((otherCoin) => {
       it(`has expected address compatability with ${otherCoin.getChain()}`, async function () {
         getParameters().forEach((p) => {
