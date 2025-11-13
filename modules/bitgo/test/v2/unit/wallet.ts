@@ -3158,6 +3158,28 @@ describe('V2 Wallet:', function () {
         intent.intentType.should.equal('acceleration');
       });
 
+      it('populate intent should return valid coredao acceleration intent', async function () {
+        const mpcUtils = new ECDSAUtils.EcdsaUtils(bitgo, bitgo.coin('coredao'));
+
+        const feeOptions = {
+          maxFeePerGas: 3000000000,
+          maxPriorityFeePerGas: 2000000000,
+        };
+        const lowFeeTxid = '0x6ea07f9420f4676be6478ab1660eb92444a7c663e0e24bece929f715e882e0cf';
+
+        const intent = mpcUtils.populateIntent(bitgo.coin('coredao'), {
+          reqId,
+          intentType: 'acceleration',
+          lowFeeTxid,
+          feeOptions,
+        });
+
+        intent.should.have.property('recipients', undefined);
+        intent.feeOptions!.should.deepEqual(feeOptions);
+        intent.txid!.should.equal(lowFeeTxid);
+        intent.intentType.should.equal('acceleration');
+      });
+
       it('populate intent should return valid eth acceleration intent for receive address', async function () {
         const mpcUtils = new ECDSAUtils.EcdsaUtils(bitgo, bitgo.coin('hteth'));
 
