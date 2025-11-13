@@ -3,6 +3,31 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.5.0...@bitgo/abstract-utxo@10.6.0) (2025-11-13)
+
+
+### Bug Fixes
+
+* **abstract-utxo:** restore normal fixture path handling ([afaff4f](https://github.com/BitGo/BitGoJS/commit/afaff4f04472851ecb1b867573ee092d0b6fa976))
+
+
+### Features
+
+* **abstract-utxo:** add bitcoin testnet normalization for fixtures ([f580dbf](https://github.com/BitGo/BitGoJS/commit/f580dbf06cac23758abdff6b14dc6af34a3be6b4))
+* **abstract-utxo:** refactor recovery tests to run with multiple script types ([eb7b468](https://github.com/BitGo/BitGoJS/commit/eb7b46867890747dab6b2554627cf035ff3894c5))
+* **abstract-utxo:** wrap recovery tests in describe block for clarity ([996ab3b](https://github.com/BitGo/BitGoJS/commit/996ab3bdb354aac988d9a2ea7c012916dd8f1488))
+* bump wasm-utxo to 1.3.0 ([d84e380](https://github.com/BitGo/BitGoJS/commit/d84e3808d1eb60d00ad03a29c34e27781ee8bf27))
+* use wasm-utxo for address generation on testnets ([65a6c11](https://github.com/BitGo/BitGoJS/commit/65a6c11436c2b773dfa96b92d8ef809759be3516))
+
+
+### Performance Improvements
+
+* **abstract-utxo:** optimize test setup to reduce test discovery time ([3b7dedf](https://github.com/BitGo/BitGoJS/commit/3b7dedf72c490dac90de03392f7ff0d04e522f2a))
+
+
+
+
+
 # [10.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.4.0...@bitgo/abstract-utxo@10.5.0) (2025-11-12)
 
 

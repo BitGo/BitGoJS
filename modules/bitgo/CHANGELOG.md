@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.13.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.12.0...bitgo@50.13.0) (2025-11-13)
+
+
+### Bug Fixes
+
+* **sdk-core:** include coredao family for acceleration ([31b8ae2](https://github.com/BitGo/BitGoJS/commit/31b8ae21147be021f7511f68bcb630c30afb9405))
+
+
+### Features
+
+* update erc20 token transfer amount check for walletconnect ([edc636b](https://github.com/BitGo/BitGoJS/commit/edc636b71fc6a388176402b5f094bb5f0f27bbc7))
+
+
+
+
+
 # [50.12.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.11.0...bitgo@50.12.0) (2025-11-12)
 
 

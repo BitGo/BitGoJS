@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [24.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.15.0...@bitgo/abstract-eth@24.16.0) (2025-11-13)
+
+
+### Features
+
+* update erc20 token transfer amount check for walletconnect ([edc636b](https://github.com/BitGo/BitGoJS/commit/edc636b71fc6a388176402b5f094bb5f0f27bbc7))
+
+
+
+
+
 # [24.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.14.3...@bitgo/abstract-eth@24.15.0) (2025-11-12)
 
 

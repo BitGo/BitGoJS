@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.12.0...@bitgo/statics@58.13.0) (2025-11-13)
+
+
+### Bug Fixes
+
+* fix the explorer url path for story ([0418c12](https://github.com/BitGo/BitGoJS/commit/0418c121a9973c79390f0bdc8ece313ebe893b03))
+
+
+### Features
+
+* add a new list for all the jurisdiction related coin features ([d74144b](https://github.com/BitGo/BitGoJS/commit/d74144b04769d510436c1db63a310e92b7ac3b16))
+* add coin feature for fluent eth ([f1ddb70](https://github.com/BitGo/BitGoJS/commit/f1ddb70700b26ce1b8c04d87c91191f082f82ab6))
+* **statics:** add EVM_COMPATIBLE_WP coin feature for mantle ([af63b5e](https://github.com/BitGo/BitGoJS/commit/af63b5e6bf055a9b3b3f8f25ea2a20c054a68348))
+* **statics:** add new token COIN-6516 ([b214920](https://github.com/BitGo/BitGoJS/commit/b214920949bc3a249c5082bd8783b5f341e7eae9))
+* **statics:** tapt staking coin feature ([debafb9](https://github.com/BitGo/BitGoJS/commit/debafb96b6b5eff36873a00591e0057a0a400de0))
+
+
+
+
+
 # [58.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.11.0...@bitgo/statics@58.12.0) (2025-11-12)
 
 

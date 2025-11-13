@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [27.15.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.15.0...@bitgo/account-lib@27.15.1) (2025-11-13)
+
+
+### Bug Fixes
+
+* **account-lib:** remove message whitelist for cold and custody wallets ([67482b5](https://github.com/BitGo/BitGoJS/commit/67482b5ad88f81595fd0027ca68232636d10265c))
+
+
+
+
+
 # [27.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.14.3...@bitgo/account-lib@27.15.0) (2025-11-12)
 
 
