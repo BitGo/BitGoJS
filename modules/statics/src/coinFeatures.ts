@@ -1,6 +1,22 @@
 import { CoinFeature } from './base';
 import { Ada } from './ada';
 
+//list of all the jurisdictions where BitGo Custody is available
+export const BITGO_CUSTODY_JURISDICTIONS = [
+  CoinFeature.CUSTODY_BITGO_TRUST,
+  CoinFeature.CUSTODY_BITGO_MENA_FZE,
+  CoinFeature.CUSTODY_BITGO_CUSTODY_MENA_FZE,
+  CoinFeature.CUSTODY_BITGO_SINGAPORE,
+  CoinFeature.CUSTODY_BITGO_KOREA,
+  CoinFeature.CUSTODY_BITGO_EUROPE_APS,
+  CoinFeature.CUSTODY_BITGO_GERMANY,
+  CoinFeature.CUSTODY_BITGO_FRANKFURT,
+  CoinFeature.CUSTODY_BITGO_NEW_YORK,
+  CoinFeature.CUSTODY_BITGO_SWITZERLAND,
+  CoinFeature.CUSTODY_BITGO_SISTER_TRUST_ONE,
+  CoinFeature.CUSTODY_BITGO_INDIA,
+];
+
 export const ACCOUNT_COIN_DEFAULT_FEATURES = [
   CoinFeature.ACCOUNT_MODEL,
   CoinFeature.REQUIRES_BIG_NUMBER,
