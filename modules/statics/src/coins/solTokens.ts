@@ -3310,6 +3310,16 @@ export const solTokens = [
     UnderlyingAsset['sol:home'],
     SOL_TOKEN_FEATURES
   ),
+  solToken(
+    'd55d607e-e273-44e9-bfa3-0f06a748dcd3',
+    'sol:oob',
+    'Oobit',
+    6,
+    'oobQ3oX6ubRYMNMahG7VSCe8Z73uaQbAWFn6f22XTgo',
+    'oobQ3oX6ubRYMNMahG7VSCe8Z73uaQbAWFn6f22XTgo',
+    UnderlyingAsset['sol:oob'],
+    SOL_TOKEN_FEATURES
+  ),
 
   tsolToken(
     'b98c5a7a-49c5-45f1-a6ee-b08dff596a7d',

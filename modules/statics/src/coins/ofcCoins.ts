@@ -1150,6 +1150,9 @@ export const ofcCoins = [
   ofcsolToken('eb7fee33-653e-4314-a4fd-c24b3b4641f4', 'ofcsol:home', 'Home', 9, UnderlyingAsset['sol:home'], [
     ...SOL_TOKEN_FEATURES,
   ]),
+  ofcsolToken('40d74e37-2a44-4ce9-9f26-7229f741168e', 'ofcsol:oob', 'Oobit', 6, UnderlyingAsset['sol:oob'], [
+    ...SOL_TOKEN_FEATURES,
+  ]),
   ofcsolToken(
     'b08c09fd-73fb-4b7f-8377-72225cd8c256',
     'ofcsol:dupe',

@@ -3150,6 +3150,7 @@ export enum UnderlyingAsset {
   'sol:bless' = 'sol:bless',
   'sol:cpool' = 'sol:cpool',
   'sol:home' = 'sol:home',
+  'sol:oob' = 'sol:oob',
 
   'tsol:txsgd' = 'sol:txsgd',
   'tsol:txusd' = 'sol:txusd',
