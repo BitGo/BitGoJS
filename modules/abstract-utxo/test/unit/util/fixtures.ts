@@ -3,6 +3,9 @@ import * as mpath from 'path';
 import * as fs from 'fs/promises';
 
 import { AbstractUtxoCoin } from '../../../src';
+import { UtxoCoinName } from '../../../src/names';
+
+import { getUtxoCoin } from './utxoCoins';
 
 function serializeBigInt(k: string, v: any): string | number {
   if (typeof v === 'bigint') {
@@ -24,10 +27,7 @@ async function getFixtureWithName<T>(name: string, defaultValue: T, rawCoinName:
     await fs.mkdir(dirname, { recursive: true });
   }
   try {
-    let textContent = await fs.readFile(path, 'utf8');
-    if (rawCoinName === 'tbtcbgsig') {
-      textContent = textContent.replace(/tbtcsig/g, 'tbtcbgsig');
-    }
+    const textContent = await fs.readFile(path, 'utf8');
     return JSON.parse(textContent);
   } catch (e) {
     if (e.code === 'ENOENT') {
@@ -38,9 +38,25 @@ async function getFixtureWithName<T>(name: string, defaultValue: T, rawCoinName:
   }
 }
 
+/** Normalizes all the bitcoin testnets to tbtc since they are all basically the same */
+export function getNormalTestnetCoin<T extends UtxoCoinName | AbstractUtxoCoin>(coin: T): T {
+  if (typeof coin === 'string') {
+    if (coin === 'tbtc' || coin === 'tbtc4' || coin === 'tbtcsig' || coin === 'tbtcbgsig') {
+      return 'tbtc' as T;
+    }
+    return coin;
+  }
+
+  if (coin instanceof AbstractUtxoCoin) {
+    const normalName = getNormalTestnetCoin(coin.getChain() as UtxoCoinName);
+    return getUtxoCoin(normalName) as T;
+  }
+
+  throw new Error(`Invalid coin: ${coin}`);
+}
+
 export async function getFixture<T>(coin: AbstractUtxoCoin, name: string, defaultValue: T): Promise<T> {
-  const coinChain = coin.getChain() === 'tbtcbgsig' ? 'tbtcsig' : coin.getChain();
-  return await getFixtureWithName(`${coinChain}/${name}`, defaultValue, coin.getChain());
+  return await getFixtureWithName(`${coin.getChain()}/${name}`, defaultValue, coin.getChain());
 }
 
 /**
