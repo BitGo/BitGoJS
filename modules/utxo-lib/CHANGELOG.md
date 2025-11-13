@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [11.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.14.0...@bitgo/utxo-lib@11.15.0) (2025-11-12)
+
+
+### Features
+
+* **utxo-lib:** add AcidTest utility for comprehensive PSBT testing ([64aabd4](https://github.com/BitGo/BitGoJS/commit/64aabd4c18994675a1fa1c3faa71003e9aa21406))
+* **utxo-lib:** add AcidTest.suite() for testing utilities ([aad58a2](https://github.com/BitGo/BitGoJS/commit/aad58a26fa9ec062ef541fd958a5c4501c889885))
+* **utxo-lib:** add extracted transaction to psbt-lite fixtures ([6ff09bf](https://github.com/BitGo/BitGoJS/commit/6ff09bf738fcaac30dbae04d3b8e7395c547cb9f))
+* **utxo-lib:** add finalized input data to PSBT fixtures ([29ba8d3](https://github.com/BitGo/BitGoJS/commit/29ba8d35c6506fb3f5cea8d5518d7bb5df04da06))
+* **utxo-lib:** add PSBT keyvalue helper methods for proprietary keys ([9c763d4](https://github.com/BitGo/BitGoJS/commit/9c763d4312c93e8b41d40ccd010bf83439c3cc1e))
+* **utxo-lib:** add round-trip PSBT buffer test ([fb8f402](https://github.com/BitGo/BitGoJS/commit/fb8f402ed999007b85bfaf57f230ae740233f013))
+* **utxo-lib:** add serialized finalized PSBT to test fixtures ([83c85ea](https://github.com/BitGo/BitGoJS/commit/83c85ea96f071e18674b9f64b2fb3909aa930247))
+* **utxo-lib:** add structured musig2 data to PSBT fixtures ([a5485ac](https://github.com/BitGo/BitGoJS/commit/a5485ac54f0c10e65f8658ba842128570f4cd0f8))
+* **utxo-lib:** add tests for PSBT without nonWitnessUtxo ([2d9c8c9](https://github.com/BitGo/BitGoJS/commit/2d9c8c9a620ff5dee70ffc28021ee499af1c9005))
+* **utxo-lib:** split sign verify tests for PSBTs and legacy transactions ([5d1dae5](https://github.com/BitGo/BitGoJS/commit/5d1dae59a3424b3f0fde6d6aaf1b8ae7be33b87e))
+* **utxo-lib:** support external wallet outputs ([35bdd8b](https://github.com/BitGo/BitGoJS/commit/35bdd8bbfdbe30f488e4540bae6f740c00e06bfa))
+
+
+
+
+
 # [11.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.13.1...@bitgo/utxo-lib@11.14.0) (2025-11-06)
 
 

@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.4.0...@bitgo/abstract-utxo@10.5.0) (2025-11-12)
+
+
+### Features
+
+* **abstract-utxo:** add test for explainPsbt utility ([17b5a94](https://github.com/BitGo/BitGoJS/commit/17b5a94a8b903973c63729bca04da0831422c257))
+* **abstract-utxo:** make TransactionExplanation more flexible ([0912ec0](https://github.com/BitGo/BitGoJS/commit/0912ec000390c2f46b1005ca5898e8d9733af642))
+* **abstract-utxo:** refactor transaction explanation utilities ([fd2e902](https://github.com/BitGo/BitGoJS/commit/fd2e902a360ba07541f75e28169304e684717f22))
+* **abstract-utxo:** remove type param from explainPsbt ([6229861](https://github.com/BitGo/BitGoJS/commit/6229861b85f70c3d7a91f992f9fbe71853f55db3))
+* replace wasm-miniscript with wasm-utxo package ([90dc886](https://github.com/BitGo/BitGoJS/commit/90dc8865a6154a5b42211c5610a5ee196cf0ca8e))
+
+
+
+
+
 # [10.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.3.0...@bitgo/abstract-utxo@10.4.0) (2025-11-06)
 
 

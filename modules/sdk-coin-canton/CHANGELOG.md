@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.9.0...@bitgo/sdk-coin-canton@1.10.0) (2025-11-12)
+
+
+### Bug Fixes
+
+* bug fix in canton verify txn flow ([d90534b](https://github.com/BitGo/BitGoJS/commit/d90534b46d0144498b952a00a1804d428d6d4938))
+* canton isValidAddress method issue handling ([b354646](https://github.com/BitGo/BitGoJS/commit/b354646c7ccb408a54f02d04b7dff7d1b880d832))
+* canton raw prepared transaction parsing ([5dbf201](https://github.com/BitGo/BitGoJS/commit/5dbf2010a2d001cc8a3e868cf6309e7f7b6167a6))
+* this._type handling for send type with enum val 0 ([dddc721](https://github.com/BitGo/BitGoJS/commit/dddc721e197241c601c5fdb3eaf615416f1f28dd))
+
+
+### Features
+
+* added oneStepPreapproval builder to the factory ([14db56a](https://github.com/BitGo/BitGoJS/commit/14db56a7e930bbd9275fc54d96ffa554adc44a59))
+* added token enablement config for canton ([3b37bf1](https://github.com/BitGo/BitGoJS/commit/3b37bf184f60b903c1b742e7c8d61bbf19fa4355))
+* transfer builder added ([1b9a1ed](https://github.com/BitGo/BitGoJS/commit/1b9a1edc3eafbcad297a826746a1d7ad358df59d))
+
+
+
+
+
 # [1.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.8.0...@bitgo/sdk-coin-canton@1.9.0) (2025-11-06)
 
 

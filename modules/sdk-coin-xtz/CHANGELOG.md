@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.8.12](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xtz@2.8.11...@bitgo/sdk-coin-xtz@2.8.12) (2025-11-12)
+
+
+### Bug Fixes
+
+* **sdk-coin-xtz:** use fee if specified in reveal operation ([412a206](https://github.com/BitGo/BitGoJS/commit/412a20605611b6e601bab9c54ea7759929def410))
+
+
+
+
+
 ## [2.8.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xtz@2.8.10...@bitgo/sdk-coin-xtz@2.8.11) (2025-11-06)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-xtz

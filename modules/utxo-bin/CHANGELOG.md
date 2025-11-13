@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@3.10.11...@bitgo/utxo-bin@3.11.0) (2025-11-12)
+
+
+### Features
+
+* replace wasm-miniscript with wasm-utxo package ([90dc886](https://github.com/BitGo/BitGoJS/commit/90dc8865a6154a5b42211c5610a5ee196cf0ca8e))
+
+
+
+
+
 ## [3.10.11](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@3.10.10...@bitgo/utxo-bin@3.10.11) (2025-11-06)
 
 **Note:** Version bump only for package @bitgo/utxo-bin

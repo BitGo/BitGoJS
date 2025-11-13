@@ -3,6 +3,33 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.11.0...@bitgo/statics@58.12.0) (2025-11-12)
+
+
+### Bug Fixes
+
+* decimals to 6 for mon:usdc ([b180293](https://github.com/BitGo/BitGoJS/commit/b1802933b7fe6f81ab39d60aab898ea15ddf5402))
+* update chainId mapping for apechain ([b9b5981](https://github.com/BitGo/BitGoJS/commit/b9b598105085a4234f2cc55338ba05b5b774f9d8))
+
+
+### Features
+
+* add FBTC token support in ERC20 and OFC ERC20 definitions ([d92c17e](https://github.com/BitGo/BitGoJS/commit/d92c17ec8615edafee38cfb8abbd07964371273c))
+* add fluent eth chain config ([6927c0a](https://github.com/BitGo/BitGoJS/commit/6927c0ade3a7e92139be321387c078ffe07d7616))
+* add mantle chain config ([5661a1a](https://github.com/BitGo/BitGoJS/commit/5661a1aff241fa87bb7787b9f363fc155186ab21))
+* add monad usdc token ([b61c328](https://github.com/BitGo/BitGoJS/commit/b61c328b2fb01f013767820d18e09c65b658b36c))
+* added new tokens for mon and xdc ([c7a1062](https://github.com/BitGo/BitGoJS/commit/c7a10625f0b60e84f19695d9bc27e6fee4bb1c10))
+* added token enablement config for canton ([3b37bf1](https://github.com/BitGo/BitGoJS/commit/3b37bf184f60b903c1b742e7c8d61bbf19fa4355))
+* **statics:** add CUSTODY_BITGO_SINGAPORE to ADA features ([2e04e22](https://github.com/BitGo/BitGoJS/commit/2e04e22ecc99604d16d5cdc5f6fa7665cec5e9a3))
+* **statics:** rename mantle eth token ([d756eb0](https://github.com/BitGo/BitGoJS/commit/d756eb029728b21bf38506165016be162be7a90a))
+* **statics:** support message signing for bsc and polygon ([122b45d](https://github.com/BitGo/BitGoJS/commit/122b45dde1d857c6ba034a71d9e821d09d973527))
+* **statics:** ungate coins and tokens for Germany ([77702c9](https://github.com/BitGo/BitGoJS/commit/77702c9b7de0206196f67db3c20c3ed9f4560006))
+* support erc20 token standard ([4862808](https://github.com/BitGo/BitGoJS/commit/48628089295817a8ea0314bbb31d79d609aa16a6))
+
+
+
+
+
 # [58.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.10.0...@bitgo/statics@58.11.0) (2025-11-06)
 
 

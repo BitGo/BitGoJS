@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.6.3...@bitgo/sdk-coin-sol@7.7.0) (2025-11-12)
+
+
+### Features
+
+* **sdk-coin-sol:** accepting idempotent ATA instructions ([2b41681](https://github.com/BitGo/BitGoJS/commit/2b41681b280d7852cf8b547ba3759137cb31dd30))
+* **sdk-coin-sol:** support SetComputeUnitLimit instructions ([307dca3](https://github.com/BitGo/BitGoJS/commit/307dca3b1728b49954e78dc2bfa56f6e22f22ba5))
+
+
+
+
+
 ## [7.6.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.6.2...@bitgo/sdk-coin-sol@7.6.3) (2025-11-06)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol

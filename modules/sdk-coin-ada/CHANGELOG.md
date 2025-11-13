@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.18.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.18.0...@bitgo/sdk-coin-ada@4.18.1) (2025-11-12)
+
+
+### Bug Fixes
+
+* **sdk-coin-ada:** shouldn't throw insufficient qty for total token spend ([6820999](https://github.com/BitGo/BitGoJS/commit/6820999b2d8ce47110d894875db15a0569f31cba))
+
+
+
+
+
 # [4.18.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.17.4...@bitgo/sdk-coin-ada@4.18.0) (2025-11-06)
 
 

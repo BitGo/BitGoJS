@@ -3,6 +3,36 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [15.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.12.0...@bitgo/express@15.13.0) (2025-11-12)
+
+
+### Bug Fixes
+
+* add BooleanFromString codec to openapi-generator config ([ff30b3e](https://github.com/BitGo/BitGoJS/commit/ff30b3eee8f3659ac5a82ff446c3839e876eb08f))
+* codec definition ([3b1a673](https://github.com/BitGo/BitGoJS/commit/3b1a67386c8698d3f35be51cec30ade057404520))
+* **express:** acceptShare type codec ([8749ead](https://github.com/BitGo/BitGoJS/commit/8749eadcd30c538dd2b64c9852457669a0d2d503))
+* **express:** consolidateUnspents v1 type codec ([6e500aa](https://github.com/BitGo/BitGoJS/commit/6e500aa276050e8a7343436d8a51cb5aa9a38e66))
+* **express:** consolidateUnspentsV2 type codec ([e088390](https://github.com/BitGo/BitGoJS/commit/e0883901334b287c7ca7fd06bdcf4af8c019ff23))
+* **express:** construct pending approval type codec ([3e5d4e1](https://github.com/BitGo/BitGoJS/commit/3e5d4e1f5c48490e5bd4b906f9829844bc40145b))
+* **express:** createLocalKeyChain type codec ([b73a598](https://github.com/BitGo/BitGoJS/commit/b73a598673aa9b5a59c79bc94f25610cd417b059))
+* **express:** fanoutUnspentsV1 type codec ([aa72bb2](https://github.com/BitGo/BitGoJS/commit/aa72bb2a4302ff79fc03d2ce5443dc1db6039baa))
+* **express:** fanoutUnspentsV2 type codec ([fc6bb6d](https://github.com/BitGo/BitGoJS/commit/fc6bb6d8d59c78348b4c12328fe42892cbc9cdbe))
+* use openapi syntax for path definition ([f39557d](https://github.com/BitGo/BitGoJS/commit/f39557d928b100d8416ab65892bcef2c8158e269))
+
+
+### Features
+
+* add audit api specs to pr checks ([d1bfac5](https://github.com/BitGo/BitGoJS/commit/d1bfac533f526b3d1f022af2cd27ce88ba526f97))
+* **express:** migrated generate tssshare to type route ([44c7cf7](https://github.com/BitGo/BitGoJS/commit/44c7cf7ce09b35e758372b2e034d43d9462586ec))
+* **express:** migrated ofcExtSignPayload to type route ([4058591](https://github.com/BitGo/BitGoJS/commit/40585913c9778950c2f7392b7c29e67bb9cb1527))
+* **express:** migrated sendCoins to type route ([ed8125f](https://github.com/BitGo/BitGoJS/commit/ed8125f4f06f8002a91756c3ee6e489a9d3b5543))
+* **express:** migrated sendmany as type route ([6ef2483](https://github.com/BitGo/BitGoJS/commit/6ef2483c54fb3d2772710d19ac2aa433f9affbbc))
+* **sdk-core:** add automatic signature cleanup for Express TSS signing ([1a8eff8](https://github.com/BitGo/BitGoJS/commit/1a8eff8fb5eab0d3a3e670a57fb966684c9c8c7d))
+
+
+
+
+
 # [15.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.11.0...@bitgo/express@15.12.0) (2025-11-06)
 
 

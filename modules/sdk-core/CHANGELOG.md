@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [36.20.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.19.0...@bitgo/sdk-core@36.20.0) (2025-11-12)
+
+
+### Features
+
+* add fluent eth chain config ([6927c0a](https://github.com/BitGo/BitGoJS/commit/6927c0ade3a7e92139be321387c078ffe07d7616))
+* add mantle chain config ([5661a1a](https://github.com/BitGo/BitGoJS/commit/5661a1aff241fa87bb7787b9f363fc155186ab21))
+* schema changes to support netUID for staking switch validator options ([fb512c2](https://github.com/BitGo/BitGoJS/commit/fb512c2a7b5cd2aab543ed1f6f17a1141315bf07))
+* **sdk-api:** add isTestTransaction support ([1e1253d](https://github.com/BitGo/BitGoJS/commit/1e1253d015b96f0aa970faa7a97d7801dc7bf83a))
+* **sdk-coin-ada:** add unspents and seq id in transfer token intent ([d1da69e](https://github.com/BitGo/BitGoJS/commit/d1da69e4043b019b99d54ecd57ccc52885582709))
+* **sdk-core:** add automatic signature cleanup for Express TSS signing ([1a8eff8](https://github.com/BitGo/BitGoJS/commit/1a8eff8fb5eab0d3a3e670a57fb966684c9c8c7d))
+* **sdk-core:** update erc20 token transfer check for walletconnect ([e14641b](https://github.com/BitGo/BitGoJS/commit/e14641b61a0de0676bc6520622fecc9f9677819e))
+
+
+
+
+
 # [36.19.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.18.0...@bitgo/sdk-core@36.19.0) (2025-11-06)
 
 
