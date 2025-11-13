@@ -86,6 +86,19 @@ function getKeysForFullSignedRecovery(
   return getNamedKeys([userKey, backupKey, bitgoKey.neutered()], password);
 }
 
+const walletKeys = getDefaultWalletKeys();
+const keysUnsignedSweep = getKeysForUnsignedSweep(walletKeys.triple, walletPassphrase);
+const keysKeyRecoveryService = getKeysForKeyRecoveryService(walletKeys.triple, walletPassphrase);
+const keysFullSignedRecovery = getKeysForFullSignedRecovery(walletKeys.triple, walletPassphrase);
+
+const exoticUserKeyPath = '99/99';
+const exoticWalletKeys = new utxolib.bitgo.RootWalletKeys(keychains, [
+  exoticUserKeyPath,
+  utxolib.bitgo.RootWalletKeys.defaultPrefix,
+  utxolib.bitgo.RootWalletKeys.defaultPrefix,
+]);
+const keysFullSignedRecoveryExotic = getKeysForFullSignedRecovery(exoticWalletKeys.triple, walletPassphrase);
+
 function getScriptTypes2Of3() {
   return outputScripts.scriptTypes2Of3;
 }
@@ -278,14 +291,13 @@ function run(
 }
 
 utxoCoins.forEach((coin) => {
-  const walletKeys = getDefaultWalletKeys();
   getScriptTypes2Of3().forEach((scriptType) => {
     run(
       coin,
       scriptType,
       walletKeys,
       {
-        keys: getKeysForUnsignedSweep(walletKeys.triple, walletPassphrase),
+        keys: keysUnsignedSweep,
         hasUserSignature: false,
         hasBackupSignature: false,
       },
@@ -301,7 +313,7 @@ utxoCoins.forEach((coin) => {
         scriptType,
         walletKeys,
         {
-          keys: getKeysForKeyRecoveryService(walletKeys.triple, walletPassphrase),
+          keys: keysKeyRecoveryService,
           krsProvider: krsProvider,
           hasUserSignature: true,
           hasBackupSignature: false,
@@ -316,7 +328,7 @@ utxoCoins.forEach((coin) => {
       scriptType,
       walletKeys,
       {
-        keys: getKeysForFullSignedRecovery(walletKeys.triple, walletPassphrase),
+        keys: keysFullSignedRecovery,
         hasUserSignature: true,
         hasBackupSignature: true,
       },
@@ -328,7 +340,7 @@ utxoCoins.forEach((coin) => {
       scriptType,
       walletKeys,
       {
-        keys: getKeysForFullSignedRecovery(walletKeys.triple, walletPassphrase),
+        keys: keysFullSignedRecovery,
         hasUserSignature: true,
         hasBackupSignature: true,
         feeRate: 2,
@@ -337,20 +349,13 @@ utxoCoins.forEach((coin) => {
     );
 
     {
-      const userKeyPath = '99/99';
-      const exoticWalletKeys = new utxolib.bitgo.RootWalletKeys(keychains, [
-        userKeyPath,
-        utxolib.bitgo.RootWalletKeys.defaultPrefix,
-        utxolib.bitgo.RootWalletKeys.defaultPrefix,
-      ]);
-
       run(
         coin,
         scriptType,
         exoticWalletKeys,
         {
-          keys: getKeysForFullSignedRecovery(exoticWalletKeys.triple, walletPassphrase),
-          userKeyPath,
+          keys: keysFullSignedRecoveryExotic,
+          userKeyPath: exoticUserKeyPath,
           hasUserSignature: true,
           hasBackupSignature: true,
         },
