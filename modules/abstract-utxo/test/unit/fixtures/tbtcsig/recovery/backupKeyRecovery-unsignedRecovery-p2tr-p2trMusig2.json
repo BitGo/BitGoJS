@@ -1,0 +1,58 @@
+{
+  "txHex": "0100000006b287ab6e4a38737140c0eab40438141cd81612891ad7ce2d21808eaeccd4a4ed0000000000ffffffff746127ff9f83fa8029efde945c8178dd2b06a698056476ec8b015eb7453db9370000000000ffffffff2f68f2a1c56ca4f6b3dd10e86c11456bd0630f8b6178729e4844e8de7d7a3ba00000000000ffffffff314d1622b1f69f05125a369e5b561d2d6ce404b8f35aca68fd37649b5b1037a50100000000ffffffff282ac428d4f4a54ecec9730272400dedc2f9a1fd761eb889a41a2d999969125f0100000000ffffffff91f22aae0bd7bf32528b859c04a603471a41ee837221503cb1634fbe503022770100000000ffffffff010c8a86470000000017a91439c65a0d0072a140694d6b13ec5f5f2437de99ff8700000000",
+  "txInfo": {
+    "unspents": [
+      {
+        "id": "eda4d4ccae8e80212dced71a891216d81c143804b4eac0407173384a6eab87b2:0",
+        "address": "tb1phk6lhy2tka2kxsx6hjd3c0z2h2e0rcrere9lr3kqsg0p6xxqe2pqa44eqg",
+        "value": 100000000,
+        "chain": 31,
+        "index": 0,
+        "valueString": "100000000"
+      },
+      {
+        "id": "37b93d45b75e018bec76640598a6062bdd78815c94deef2980fa839fff276174:0",
+        "address": "tb1phk6lhy2tka2kxsx6hjd3c0z2h2e0rcrere9lr3kqsg0p6xxqe2pqa44eqg",
+        "value": 200000000,
+        "chain": 31,
+        "index": 0,
+        "valueString": "200000000"
+      },
+      {
+        "id": "a03b7a7ddee844489e7278618b0f63d06b45116ce810ddb3f6a46cc5a1f2682f:0",
+        "address": "tb1phk6lhy2tka2kxsx6hjd3c0z2h2e0rcrere9lr3kqsg0p6xxqe2pqa44eqg",
+        "value": 300000000,
+        "chain": 31,
+        "index": 0,
+        "valueString": "300000000"
+      },
+      {
+        "id": "a537105b9b6437fd68ca5af3b804e46c2d1d565b9e365a12059ff6b122164d31:1",
+        "address": "tb1p0zaxydym5r26d67h2sgdtrdaw4cfnl6fwx0xdyfm4w7mxx56nwnscsgt8a",
+        "value": 100000000,
+        "chain": 41,
+        "index": 1,
+        "valueString": "100000000"
+      },
+      {
+        "id": "5f126999992d1aa489b81e76fda1f9c2ed0d40720273c9ce4ea5f4d428c42a28:1",
+        "address": "tb1p0zaxydym5r26d67h2sgdtrdaw4cfnl6fwx0xdyfm4w7mxx56nwnscsgt8a",
+        "value": 200000000,
+        "chain": 41,
+        "index": 1,
+        "valueString": "200000000"
+      },
+      {
+        "id": "77223050be4f63b13c50217283ee411a4703a6049c858b5232bfd70bae2af291:1",
+        "address": "tb1p0zaxydym5r26d67h2sgdtrdaw4cfnl6fwx0xdyfm4w7mxx56nwnscsgt8a",
+        "value": 300000000,
+        "chain": 41,
+        "index": 1,
+        "valueString": "300000000"
+      }
+    ]
+  },
+  "feeInfo": {},
+  "coin": "tbtcsig",
+  "txid": "d2a590cbf3554f6b845bdcfd0e195c164c07ba6bf4d9ec9d55046d44d14c9c0a"
+}

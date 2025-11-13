@@ -1,3 +1,5 @@
+import assert from 'assert';
+
 import 'should';
 import * as mocha from 'mocha';
 import * as sinon from 'sinon';
@@ -28,7 +30,7 @@ import {
 
 import { MockRecoveryProvider } from './mock';
 
-const { toOutput, outputScripts } = utxolib.bitgo;
+const { toOutput } = utxolib.bitgo;
 type WalletUnspent = utxolib.bitgo.WalletUnspent<bigint>;
 type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
 type ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
@@ -99,13 +101,9 @@ const exoticWalletKeys = new utxolib.bitgo.RootWalletKeys(keychains, [
 ]);
 const keysFullSignedRecoveryExotic = getKeysForFullSignedRecovery(exoticWalletKeys.triple, walletPassphrase);
 
-function getScriptTypes2Of3() {
-  return outputScripts.scriptTypes2Of3;
-}
-
 function run(
   coin: AbstractUtxoCoin,
-  scriptType: ScriptType2Of3,
+  scriptTypes: ScriptType2Of3[],
   walletKeys: RootWalletKeys,
   params: {
     keys: NamedKeys;
@@ -118,10 +116,6 @@ function run(
   },
   tags: string[] = []
 ) {
-  if (!coin.supportsAddressType(scriptType)) {
-    return;
-  }
-
   describe(`Backup Key Recovery [${[coin.getChain(), ...tags, params.krsProvider].join(',')}]`, function () {
     const externalWallet = getWalletKeys('external');
     const recoveryDestination = getWalletAddress(coin.network, externalWallet);
@@ -132,23 +126,6 @@ function run(
 
     // 1e8 * 9e7 < 9.007e15 but 2e8 * 9e7 > 9.007e15 to test both code paths in queryBlockchainUnspentsPath
     const valueMul = coin.amountType === 'bigint' ? BigInt(9e7) : BigInt(1);
-    const allUnspents = [
-      utxolib.testutil.toUnspent({ scriptType, value: BigInt(1e8) * valueMul }, 0, coin.network, walletKeys),
-      utxolib.testutil.toUnspent({ scriptType, value: BigInt(2e8) * valueMul }, 2, coin.network, walletKeys),
-      utxolib.testutil.toUnspent({ scriptType, value: BigInt(3e8) * valueMul }, 3, coin.network, walletKeys),
-      // this unspent will not be picked up due to the index gap
-      utxolib.testutil.toUnspent({ scriptType, value: BigInt(23e8) }, 23, coin.network, walletKeys),
-    ];
-
-    const recoverUnspents = allUnspents.slice(0, -1);
-
-    // If the coin is bch, convert the mocked unspent address to cashaddr format since that is the format that blockchair
-    // returns on the /dashboards/addresses response
-    const mockedApiUnspents =
-      coin.getChain() === 'bch' || coin.getChain() === 'bcha'
-        ? recoverUnspents.map((u) => ({ ...u, address: coin.canonicalAddress(u.address, 'cashaddr').split(':')[1] }))
-        : recoverUnspents;
-
     before('mock', function () {
       sinon.stub(CoingeckoApi.prototype, 'getUSDPrice').resolves(69_420);
     });
@@ -166,7 +143,24 @@ function run(
       sinon.restore();
     });
 
+    let recoverUnspents: utxolib.bitgo.Unspent<bigint>[];
+    let mockedApiUnspents: utxolib.bitgo.Unspent<bigint>[];
+
     before('create recovery data', async function () {
+      recoverUnspents = scriptTypes.flatMap((scriptType, index) => [
+        utxolib.testutil.toUnspent({ scriptType, value: BigInt(1e8) * valueMul }, index, coin.network, walletKeys),
+        utxolib.testutil.toUnspent({ scriptType, value: BigInt(2e8) * valueMul }, index, coin.network, walletKeys),
+        utxolib.testutil.toUnspent({ scriptType, value: BigInt(3e8) * valueMul }, index, coin.network, walletKeys),
+      ]);
+
+      // If the coin is bch, convert the mocked unspent address to cashaddr format since that is the format that blockchair
+      // returns on the /dashboards/addresses response
+      mockedApiUnspents =
+        coin.getChain() === 'bch' || coin.getChain() === 'bcha'
+          ? recoverUnspents.map((u) => ({ ...u, address: coin.canonicalAddress(u.address, 'cashaddr').split(':')[1] }))
+          : recoverUnspents;
+
+      assert.strictEqual(mockedApiUnspents.length, recoverUnspents.length);
       recovery = await backupKeyRecovery(coin, defaultBitGo, {
         walletPassphrase,
         recoveryDestination,
@@ -185,6 +179,13 @@ function run(
         : utxolib.bitgo.createTransactionFromHex(txHex as string, coin.network, coin.amountType);
       recovery.txid =
         recoveryTx instanceof utxolib.bitgo.UtxoPsbt ? recoveryTx.getUnsignedTx().getId() : recoveryTx.getId();
+    });
+
+    it('has correct recovery provider mocks', async function () {
+      const recoveryProvider = new MockRecoveryProvider(mockedApiUnspents);
+      (await recoveryProvider.getUnspentsForAddresses(mockedApiUnspents.map((u) => u.address))).length.should.eql(
+        mockedApiUnspents.length
+      );
     });
 
     it('matches fixture', async function () {
@@ -269,7 +270,7 @@ function run(
                 });
                 break;
               default:
-                throw new Error(`unexpected scriptType ${scriptType}`);
+                throw new Error(`unexpected scriptType ${parsed.scriptType}`);
             }
           });
         } else {
@@ -290,68 +291,71 @@ function run(
   });
 }
 
-utxoCoins.forEach((coin) => {
-  getScriptTypes2Of3().forEach((scriptType) => {
-    run(
-      coin,
-      scriptType,
-      walletKeys,
-      {
-        keys: keysUnsignedSweep,
-        hasUserSignature: false,
-        hasBackupSignature: false,
-      },
-      [scriptType, 'unsignedRecovery']
-    );
-
-    ['dai', 'keyternal'].forEach((krsProvider) => {
-      if (krsProvider === 'keyternal' && !['p2sh', 'p2wsh', 'p2shP2wsh'].includes(scriptType)) {
-        return;
-      }
+function runWithScriptTypes(
+  scriptTypes: ScriptType2Of3[],
+  { runKeyProviderTests = true }: { runKeyProviderTests?: boolean } = {}
+) {
+  utxoCoins
+    .filter((coin) => scriptTypes.every((type) => coin.supportsAddressType(type)))
+    .forEach((coin) => {
       run(
         coin,
-        scriptType,
+        scriptTypes,
         walletKeys,
         {
-          keys: keysKeyRecoveryService,
-          krsProvider: krsProvider,
-          hasUserSignature: true,
+          keys: keysUnsignedSweep,
+          hasUserSignature: false,
           hasBackupSignature: false,
-          hasKrsOutput: false,
         },
-        [scriptType, 'keyRecoveryService']
+        ['unsignedRecovery', ...scriptTypes]
       );
-    });
 
-    run(
-      coin,
-      scriptType,
-      walletKeys,
-      {
-        keys: keysFullSignedRecovery,
-        hasUserSignature: true,
-        hasBackupSignature: true,
-      },
-      [scriptType, 'fullSignedRecovery']
-    );
+      if (runKeyProviderTests) {
+        ['dai', 'keyternal'].forEach((krsProvider) => {
+          run(
+            coin,
+            scriptTypes,
+            walletKeys,
+            {
+              keys: keysKeyRecoveryService,
+              krsProvider: krsProvider,
+              hasUserSignature: true,
+              hasBackupSignature: false,
+              hasKrsOutput: false,
+            },
+            ['keyRecoveryService', ...scriptTypes]
+          );
+        });
+      }
 
-    run(
-      coin,
-      scriptType,
-      walletKeys,
-      {
-        keys: keysFullSignedRecovery,
-        hasUserSignature: true,
-        hasBackupSignature: true,
-        feeRate: 2,
-      },
-      [scriptType, 'fullSignedRecovery', 'fixedFeeRate']
-    );
-
-    {
       run(
         coin,
-        scriptType,
+        scriptTypes,
+        walletKeys,
+        {
+          keys: keysFullSignedRecovery,
+          hasUserSignature: true,
+          hasBackupSignature: true,
+        },
+        ['fullSignedRecovery', ...scriptTypes]
+      );
+
+      run(
+        coin,
+        scriptTypes,
+        walletKeys,
+        {
+          keys: keysFullSignedRecovery,
+          hasUserSignature: true,
+          hasBackupSignature: true,
+          feeRate: 2,
+        },
+        ['fullSignedRecovery', 'fixedFeeRate', ...scriptTypes]
+      );
+
+      run(
+        coin,
+        scriptTypes,
         exoticWalletKeys,
         {
           keys: keysFullSignedRecoveryExotic,
@@ -359,8 +363,16 @@ utxoCoins.forEach((coin) => {
           hasUserSignature: true,
           hasBackupSignature: true,
         },
-        [scriptType, 'fullSignedRecovery', 'customUserKeyPath']
+        ['fullSignedRecovery', 'customUserKeyPath', ...scriptTypes]
       );
-    }
-  });
-});
+    });
+}
+
+// compatible with all coins
+runWithScriptTypes(['p2sh']);
+
+// segwit compatible coins
+runWithScriptTypes(['p2shP2wsh', 'p2wsh']);
+
+// taproot compatible coins
+runWithScriptTypes(['p2tr', 'p2trMusig2'], { runKeyProviderTests: false });
