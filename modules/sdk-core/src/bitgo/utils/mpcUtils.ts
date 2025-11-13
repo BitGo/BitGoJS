@@ -191,7 +191,7 @@ export abstract class MpcUtils {
       isTestTransaction: params.isTestTransaction,
     };
 
-    if (baseCoin.getFamily() === 'eth' || baseCoin.getFamily() === 'polygon' || baseCoin.getFamily() === 'bsc') {
+    if (['eth', 'polygon', 'bsc', 'coredao'].includes(baseCoin.getFamily())) {
       switch (params.intentType) {
         case 'payment':
         case 'transferToken':
