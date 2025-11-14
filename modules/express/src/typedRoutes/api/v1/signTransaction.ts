@@ -14,17 +14,27 @@ export const signTransactionRequestBody = {
   and redeemScript with the same index as the inputs in the
   transactionHex */
   unspents: t.array(t.any),
-  /** Keychain containing the xprv to sign with */
-  keychain: t.intersection([
-    t.type({
-      xprv: t.string,
-    }),
-    t.record(t.string, t.any),
-  ]),
-  /** For legacy safe wallets, the private key string */
-  signingKey: t.string,
+  /** Keychain containing the xprv to sign with (either this or signingKey required) */
+  keychain: optional(
+    t.intersection([
+      t.type({
+        xprv: t.string,
+      }),
+      t.record(t.string, t.any),
+    ])
+  ),
+  /** For legacy safe wallets, the private key string (either this or keychain required) */
+  signingKey: optional(t.string),
   /** extra verification of signatures (which are always verified server-side) (defaults to global config) */
   validate: optional(t.boolean),
+  /** PSBT (Partially Signed Bitcoin Transaction) in hex format for PSBT signing flow */
+  psbt: optional(t.string),
+  /** Private key in WIF format for single-key fee address */
+  feeSingleKeyWIF: optional(t.string),
+  /** Enable Bitcoin Cash signing mode */
+  forceBCH: optional(t.boolean),
+  /** Require at least two valid signatures for full local signing */
+  fullLocalSigning: optional(t.boolean),
 };
 
 /**

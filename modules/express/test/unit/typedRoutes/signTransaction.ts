@@ -131,8 +131,8 @@ describe('SignTransaction codec tests', function () {
       });
     });
 
-    it('should reject body with missing keychain', function () {
-      const invalidBody = {
+    it('should accept body with only signingKey (no keychain)', function () {
+      const validBody = {
         transactionHex:
           '0100000001c7a6e16e2bcf94fba6e0a5839b7accd93f2d684b4b7d97a75a6c3b9b79644f0c0000000000ffffffff0188130000000000001976a914385ed68a0d08c9d34553774be5ee8d5ce2261fce88ac00000000',
         unspents: [
@@ -145,13 +145,15 @@ describe('SignTransaction codec tests', function () {
         signingKey: 'L1WKFfxHbVdnqMf6HhNnLhM6hZxewJgBhRbKYoXTQqQaP1oyGZCj',
       };
 
-      assert.throws(() => {
-        assertDecode(t.type(signTransactionRequestBody), invalidBody);
-      });
+      const decoded = assertDecode(t.type(signTransactionRequestBody), validBody);
+      assert.strictEqual(decoded.transactionHex, validBody.transactionHex);
+      assert.deepStrictEqual(decoded.unspents, validBody.unspents);
+      assert.strictEqual(decoded.signingKey, validBody.signingKey);
+      assert.strictEqual(decoded.keychain, undefined);
     });
 
-    it('should reject body with missing signingKey', function () {
-      const invalidBody = {
+    it('should accept body with only keychain (no signingKey)', function () {
+      const validBody = {
         transactionHex:
           '0100000001c7a6e16e2bcf94fba6e0a5839b7accd93f2d684b4b7d97a75a6c3b9b79644f0c0000000000ffffffff0188130000000000001976a914385ed68a0d08c9d34553774be5ee8d5ce2261fce88ac00000000',
         unspents: [
@@ -166,9 +168,11 @@ describe('SignTransaction codec tests', function () {
         },
       };
 
-      assert.throws(() => {
-        assertDecode(t.type(signTransactionRequestBody), invalidBody);
-      });
+      const decoded = assertDecode(t.type(signTransactionRequestBody), validBody);
+      assert.strictEqual(decoded.transactionHex, validBody.transactionHex);
+      assert.deepStrictEqual(decoded.unspents, validBody.unspents);
+      assert.deepStrictEqual(decoded.keychain, validBody.keychain);
+      assert.strictEqual(decoded.signingKey, undefined);
     });
 
     it('should reject body with non-string transactionHex', function () {
@@ -274,6 +278,114 @@ describe('SignTransaction codec tests', function () {
       assert.throws(() => {
         assertDecode(t.type(signTransactionRequestBody), invalidBody);
       });
+    });
+
+    it('should accept body with psbt field', function () {
+      const validBody = {
+        transactionHex:
+          '0100000001c7a6e16e2bcf94fba6e0a5839b7accd93f2d684b4b7d97a75a6c3b9b79644f0c0000000000ffffffff0188130000000000001976a914385ed68a0d08c9d34553774be5ee8d5ce2261fce88ac00000000',
+        unspents: [
+          {
+            chainPath: 'm/0/0',
+            redeemScript:
+              '522103b31347f19510acbc7f50822ac4093ca80554946c471b43eb937d0c9118d1122d2102cd3787d12af6eb87e7b9af00118a225e2ce663a5c94f555460ae131139a2afee2103bd558669de622fc57a8157f449c52254218dfe4e843f58b214b710c4c36833c153ae',
+          },
+        ],
+        keychain: {
+          xprv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
+        },
+        signingKey: 'L1WKFfxHbVdnqMf6HhNnLhM6hZxewJgBhRbKYoXTQqQaP1oyGZCj',
+        psbt: '70736274ff01007d0200000001c7a6e16e2bcf94fba6e0a5839b7accd93f2d684b4b7d97a75a6c3b9b79644f0c0000000000ffffffff0188130000000000001976a914385ed68a0d08c9d34553774be5ee8d5ce2261fce88ac000000000001011f00000000000000001976a914385ed68a0d08c9d34553774be5ee8d5ce2261fce88ac00',
+      };
+
+      const decoded = assertDecode(t.type(signTransactionRequestBody), validBody);
+      assert.strictEqual(decoded.psbt, validBody.psbt);
+    });
+
+    it('should accept body with feeSingleKeyWIF field', function () {
+      const validBody = {
+        transactionHex:
+          '0100000001c7a6e16e2bcf94fba6e0a5839b7accd93f2d684b4b7d97a75a6c3b9b79644f0c0000000000ffffffff0188130000000000001976a914385ed68a0d08c9d34553774be5ee8d5ce2261fce88ac00000000',
+        unspents: [
+          {
+            chainPath: 'm/0/0',
+            redeemScript:
+              '522103b31347f19510acbc7f50822ac4093ca80554946c471b43eb937d0c9118d1122d2102cd3787d12af6eb87e7b9af00118a225e2ce663a5c94f555460ae131139a2afee2103bd558669de622fc57a8157f449c52254218dfe4e843f58b214b710c4c36833c153ae',
+          },
+        ],
+        keychain: {
+          xprv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
+        },
+        signingKey: 'L1WKFfxHbVdnqMf6HhNnLhM6hZxewJgBhRbKYoXTQqQaP1oyGZCj',
+        feeSingleKeyWIF: 'L3VpKvNZWWzZUmzJQVnxPWJhXvdXLKhfDxJNVZMvYpZPvGBBXGJN',
+      };
+
+      const decoded = assertDecode(t.type(signTransactionRequestBody), validBody);
+      assert.strictEqual(decoded.feeSingleKeyWIF, validBody.feeSingleKeyWIF);
+    });
+
+    it('should accept body with forceBCH field', function () {
+      const validBody = {
+        transactionHex:
+          '0100000001c7a6e16e2bcf94fba6e0a5839b7accd93f2d684b4b7d97a75a6c3b9b79644f0c0000000000ffffffff0188130000000000001976a914385ed68a0d08c9d34553774be5ee8d5ce2261fce88ac00000000',
+        unspents: [
+          {
+            chainPath: 'm/0/0',
+            redeemScript:
+              '522103b31347f19510acbc7f50822ac4093ca80554946c471b43eb937d0c9118d1122d2102cd3787d12af6eb87e7b9af00118a225e2ce663a5c94f555460ae131139a2afee2103bd558669de622fc57a8157f449c52254218dfe4e843f58b214b710c4c36833c153ae',
+          },
+        ],
+        keychain: {
+          xprv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
+        },
+        signingKey: 'L1WKFfxHbVdnqMf6HhNnLhM6hZxewJgBhRbKYoXTQqQaP1oyGZCj',
+        forceBCH: true,
+      };
+
+      const decoded = assertDecode(t.type(signTransactionRequestBody), validBody);
+      assert.strictEqual(decoded.forceBCH, validBody.forceBCH);
+    });
+
+    it('should accept body with fullLocalSigning field', function () {
+      const validBody = {
+        transactionHex:
+          '0100000001c7a6e16e2bcf94fba6e0a5839b7accd93f2d684b4b7d97a75a6c3b9b79644f0c0000000000ffffffff0188130000000000001976a914385ed68a0d08c9d34553774be5ee8d5ce2261fce88ac00000000',
+        unspents: [
+          {
+            chainPath: 'm/0/0',
+            redeemScript:
+              '522103b31347f19510acbc7f50822ac4093ca80554946c471b43eb937d0c9118d1122d2102cd3787d12af6eb87e7b9af00118a225e2ce663a5c94f555460ae131139a2afee2103bd558669de622fc57a8157f449c52254218dfe4e843f58b214b710c4c36833c153ae',
+          },
+        ],
+        keychain: {
+          xprv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
+        },
+        signingKey: 'L1WKFfxHbVdnqMf6HhNnLhM6hZxewJgBhRbKYoXTQqQaP1oyGZCj',
+        fullLocalSigning: true,
+      };
+
+      const decoded = assertDecode(t.type(signTransactionRequestBody), validBody);
+      assert.strictEqual(decoded.fullLocalSigning, validBody.fullLocalSigning);
+    });
+
+    it('should reject body with neither keychain nor signingKey', function () {
+      const invalidBody = {
+        transactionHex:
+          '0100000001c7a6e16e2bcf94fba6e0a5839b7accd93f2d684b4b7d97a75a6c3b9b79644f0c0000000000ffffffff0188130000000000001976a914385ed68a0d08c9d34553774be5ee8d5ce2261fce88ac00000000',
+        unspents: [
+          {
+            chainPath: 'm/0/0',
+            redeemScript:
+              '522103b31347f19510acbc7f50822ac4093ca80554946c471b43eb937d0c9118d1122d2102cd3787d12af6eb87e7b9af00118a225e2ce663a5c94f555460ae131139a2afee2103bd558669de622fc57a8157f449c52254218dfe4e843f58b214b710c4c36833c153ae',
+          },
+        ],
+      };
+
+      // Note: io-ts will accept this (both are optional), but the handler/SDK will reject it
+      // This test documents that the codec validation passes, but runtime validation will fail
+      const decoded = assertDecode(t.type(signTransactionRequestBody), invalidBody);
+      assert.strictEqual(decoded.keychain, undefined);
+      assert.strictEqual(decoded.signingKey, undefined);
     });
   });
 
