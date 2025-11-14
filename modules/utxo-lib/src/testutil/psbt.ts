@@ -201,7 +201,7 @@ export function constructPsbt(
     if (isWalletUnspent(u) && cosignerName) {
       addWalletUnspentToPsbt(psbt, u, rootWalletKeys, signerName, cosignerName, { skipNonWitnessUtxo });
     } else {
-      const { redeemScript } = createOutputScriptP2shP2pk(rootWalletKeys[signerName].publicKey);
+      const { redeemScript } = createOutputScriptP2shP2pk(rootWalletKeys.user.publicKey);
       assert(redeemScript);
       addReplayProtectionUnspentToPsbt(psbt, u, redeemScript, { skipNonWitnessUtxo });
     }
@@ -326,6 +326,12 @@ export class AcidTest {
   get name(): string {
     const networkName = getNetworkName(this.network);
     return `${networkName} ${this.signStage} ${this.txFormat}`;
+  }
+
+  getReplayProtectionOutputScript(): Buffer {
+    const { scriptPubKey } = createOutputScriptP2shP2pk(this.rootWalletKeys.user.publicKey);
+    assert(scriptPubKey);
+    return scriptPubKey;
   }
 
   createPsbt(): UtxoPsbt {
