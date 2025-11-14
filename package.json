@@ -59,6 +59,10 @@
     "yeoman-generator": "^5.6.1"
   },
   "resolutions": {
+    "**/lerna/**/glob": "11.1.0",
+    "**/yeoman-generator/**/glob": "11.1.0",
+    "**/cacache/glob": "11.1.0",
+    "**/pacote/glob": "11.1.0",
     "**/sha.js": ">=2.4.12",
     "@ethereumjs/util": "8.0.3",
     "@types/keyv": "3.1.4",

@@ -2,7 +2,7 @@
  * @prettier
  */
 import { BaseCoin, BitGoBase, common, MPCAlgorithm, MultisigType, multisigTypes } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, CoinFeature, coins } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, CoinFeature, coins, CoinFamily } from '@bitgo/statics';
 import {
   AbstractEthLikeNewCoins,
   OfflineVaultTxInfo,
@@ -13,6 +13,7 @@ import {
   VerifyEthTransactionOptions,
 } from '@bitgo/abstract-eth';
 import { TransactionBuilder } from './lib';
+import { recovery_HBAREVM_BlockchainExplorerQuery } from './lib/utils';
 import assert from 'assert';
 
 export class EvmCoin extends AbstractEthLikeNewCoins {
@@ -78,7 +79,22 @@ export class EvmCoin extends AbstractEthLikeNewCoins {
 
     const apiToken = apiKey || evmConfig[this.getFamily()].apiToken;
     const explorerUrl = evmConfig[this.getFamily()].baseUrl;
-    return await recoveryBlockchainExplorerQuery(query, explorerUrl as string, apiToken as string);
+    switch (this.getFamily()) {
+      case CoinFamily.HBAREVM:
+        assert(
+          evmConfig[this.getFamily()].rpcUrl,
+          `rpc url config is missing for ${this.getFamily()} in ${this.bitgo.getEnv()}`
+        );
+        const rpcUrl = evmConfig[this.getFamily()].rpcUrl;
+        return await recovery_HBAREVM_BlockchainExplorerQuery(
+          query,
+          rpcUrl as string,
+          explorerUrl as string,
+          apiToken as string
+        );
+      default:
+        return await recoveryBlockchainExplorerQuery(query, explorerUrl as string, apiToken as string);
+    }
   }
 
   /** @inheritDoc */
