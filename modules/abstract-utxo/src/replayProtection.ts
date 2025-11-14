@@ -1,3 +1,4 @@
+import * as wasmUtxo from '@bitgo/wasm-utxo';
 import * as utxolib from '@bitgo/utxo-lib';
 
 export function getReplayProtectionAddresses(network: utxolib.Network): string[] {
@@ -11,6 +12,12 @@ export function getReplayProtectionAddresses(network: utxolib.Network): string[]
   }
 
   return [];
+}
+
+export function getReplayProtectionOutputScripts(network: utxolib.Network): Buffer[] {
+  return getReplayProtectionAddresses(network).map((address) =>
+    Buffer.from(wasmUtxo.utxolibCompat.toOutputScript(address, network))
+  );
 }
 
 export function isReplayProtectionUnspent<TNumber extends number | bigint>(
