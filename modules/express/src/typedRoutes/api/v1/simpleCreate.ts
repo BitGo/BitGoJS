@@ -19,6 +19,23 @@ export const SimpleCreateRequestBody = {
   disableKRSEmail: optional(t.boolean),
 };
 
+export const SimpleCreateResponse = t.intersection([
+  t.type({
+    /** newly created wallet model object */
+    wallet: t.UnknownRecord,
+    /** the newly created user keychain, which has an encrypted xprv stored on BitGo */
+    userKeychain: t.UnknownRecord,
+    /** the newly created backup keychain */
+    backupKeychain: t.UnknownRecord,
+    /** the BitGo-managed keychain */
+    bitgoKeychain: t.UnknownRecord,
+  }),
+  t.partial({
+    /** warning message when backup keychain has xprv */
+    warning: t.string,
+  }),
+]);
+
 /**
  * Create Wallet with Keychain
  * Create a new 2-of-3 wallet and it's associated keychains.
@@ -41,14 +58,7 @@ export const PostSimpleCreate = httpRoute({
     body: SimpleCreateRequestBody,
   }),
   response: {
-    200: t.type({
-      /** newly created wallet model object */
-      wallet: t.string,
-      /** the newly created user keychain, which has an encrypted xprv stored on BitGo */
-      userKeychain: t.string,
-      /** the newly created backup keychain */
-      backupKeychain: t.string,
-    }),
+    200: SimpleCreateResponse,
     400: BitgoExpressError,
   },
 });
