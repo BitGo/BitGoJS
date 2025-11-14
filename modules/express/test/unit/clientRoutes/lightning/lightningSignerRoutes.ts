@@ -2,11 +2,10 @@ import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGo } from 'bitgo';
 import { common, decodeOrElse } from '@bitgo/sdk-core';
 import nock from 'nock';
-import * as express from 'express';
 import * as sinon from 'sinon';
 import * as fs from 'fs';
 import { UnlockLightningWalletResponse } from '../../../../src/typedRoutes/api/v2/unlockWallet';
-
+import { SignerMacaroonResponse } from '../../../../src/typedRoutes/api/v2/signerMacaroon';
 import { lightningSignerConfigs, apiData, signerApiData } from './lightningSignerFixture';
 import {
   handleCreateSignerMacaroon,
@@ -100,60 +99,198 @@ describe('Lightning signer routes', () => {
     });
   }
 
-  for (const addIpCaveatToMacaroon of [true, false]) {
-    for (const includeWatchOnlyIp of [true, false]) {
-      it(`create signer macaroon ${addIpCaveatToMacaroon ? 'with' : 'without'} including IP caveat when it ${
-        includeWatchOnlyIp ? 'does' : `doesn't`
-      } exist`, async () => {
-        const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(JSON.stringify(lightningSignerConfigs));
-        const wpWalletnock = nock(bgUrl)
-          .get(`/api/v2/tlnbtc/wallet/${apiData.wallet.id}`)
-          .query({ includeBalance: false })
-          .reply(200, {
-            ...apiData.wallet,
-            ...(includeWatchOnlyIp ? {} : { watchOnlyExternalIp: null }),
-          });
+  it('should create signer macaroon with IP caveat when watchOnlyExternalIp exists', async () => {
+    const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(JSON.stringify(lightningSignerConfigs));
 
-        const wpKeychainNocks = [
-          nock(bgUrl).get(`/api/v2/tlnbtc/key/${apiData.userAuthKey.id}`).reply(200, apiData.userAuthKey),
-          nock(bgUrl).get(`/api/v2/tlnbtc/key/${apiData.nodeAuthKey.id}`).reply(200, apiData.nodeAuthKey),
-        ];
+    const wpWalletnock = nock(bgUrl)
+      .get(`/api/v2/tlnbtc/wallet/${apiData.wallet.id}`)
+      .query({ includeBalance: false })
+      .reply(200, apiData.wallet);
 
-        const signerMacaroon = nock(lightningSignerConfigs.fakeid.url)
-          .post(`/v1/macaroon`)
-          .reply(200, signerApiData.bakeMacaroon);
+    const wpKeychainNocks = [
+      nock(bgUrl).get(`/api/v2/tlnbtc/key/${apiData.userAuthKey.id}`).reply(200, apiData.userAuthKey),
+      nock(bgUrl).get(`/api/v2/tlnbtc/key/${apiData.nodeAuthKey.id}`).reply(200, apiData.nodeAuthKey),
+    ];
 
-        const wpWalletUpdateNock = nock(bgUrl).put(`/api/v2/tlnbtc/wallet/${apiData.wallet.id}`).reply(200);
+    const signerMacaroon = nock(lightningSignerConfigs.fakeid.url)
+      .post(`/v1/macaroon`)
+      .reply(200, signerApiData.bakeMacaroon);
 
-        const req = {
-          bitgo: bitgo,
-          body: { ...apiData.signerMacaroonRequestBody, addIpCaveatToMacaroon },
-          params: {
-            coin: 'tlnbtc',
-            id: 'fakeid',
-          },
-          config: {
-            lightningSignerFileSystemPath: 'lightningSignerFileSystemPath',
-          },
-        } as unknown as express.Request;
+    const wpWalletUpdateNock = nock(bgUrl).put(`/api/v2/tlnbtc/wallet/${apiData.wallet.id}`).reply(200);
 
-        try {
-          await handleCreateSignerMacaroon(req);
-        } catch (e) {
-          if (!includeWatchOnlyIp || addIpCaveatToMacaroon) {
-            throw e;
-          }
-        }
+    const req = {
+      bitgo: bitgo,
+      body: { ...apiData.signerMacaroonRequestBody, addIpCaveatToMacaroon: true },
+      params: {
+        coin: 'tlnbtc',
+        walletId: 'fakeid',
+      },
+      decoded: {
+        coin: 'tlnbtc',
+        walletId: 'fakeid',
+        passphrase: apiData.signerMacaroonRequestBody.passphrase,
+        addIpCaveatToMacaroon: true,
+      },
+      config: {
+        lightningSignerFileSystemPath: 'lightningSignerFileSystemPath',
+      },
+    } as unknown as ExpressApiRouteRequest<'express.lightning.signerMacaroon', 'post'>;
 
-        wpWalletUpdateNock.done();
-        signerMacaroon.done();
-        wpKeychainNocks.forEach((s) => s.done());
-        wpWalletnock.done();
-        readFileStub.calledOnceWith('lightningSignerFileSystemPath').should.be.true();
-        readFileStub.restore();
+    const res = await handleCreateSignerMacaroon(req);
+    decodeOrElse('SignerMacaroonResponse200', SignerMacaroonResponse[200], res, (_) => {
+      throw new Error('Response did not match expected codec');
+    });
+
+    wpWalletnock.done();
+    wpKeychainNocks.forEach((s) => s.done());
+    signerMacaroon.done();
+    wpWalletUpdateNock.done();
+    readFileStub.restore();
+  });
+
+  it('should fail to create signer macaroon with IP caveat when watchOnlyExternalIp does not exist', async () => {
+    const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(JSON.stringify(lightningSignerConfigs));
+
+    const wpWalletnock = nock(bgUrl)
+      .get(`/api/v2/tlnbtc/wallet/${apiData.wallet.id}`)
+      .query({ includeBalance: false })
+      .reply(200, {
+        ...apiData.wallet,
+        coinSpecific: {
+          ...apiData.wallet.coinSpecific,
+          watchOnlyExternalIp: null,
+        },
       });
-    }
-  }
+
+    const req = {
+      bitgo: bitgo,
+      body: { ...apiData.signerMacaroonRequestBody, addIpCaveatToMacaroon: true },
+      params: {
+        coin: 'tlnbtc',
+        walletId: 'fakeid',
+      },
+      decoded: {
+        coin: 'tlnbtc',
+        walletId: 'fakeid',
+        passphrase: apiData.signerMacaroonRequestBody.passphrase,
+        addIpCaveatToMacaroon: true,
+      },
+      config: {
+        lightningSignerFileSystemPath: 'lightningSignerFileSystemPath',
+      },
+    } as unknown as ExpressApiRouteRequest<'express.lightning.signerMacaroon', 'post'>;
+
+    await handleCreateSignerMacaroon(req).should.be.rejectedWith(
+      /Cannot create signer macaroon because the external IP is not set/
+    );
+
+    wpWalletnock.done();
+    readFileStub.restore();
+  });
+
+  it('should create signer macaroon without IP caveat when watchOnlyExternalIp exists', async () => {
+    const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(JSON.stringify(lightningSignerConfigs));
+
+    const wpWalletnock = nock(bgUrl)
+      .get(`/api/v2/tlnbtc/wallet/${apiData.wallet.id}`)
+      .query({ includeBalance: false })
+      .reply(200, apiData.wallet);
+
+    const wpKeychainNocks = [
+      nock(bgUrl).get(`/api/v2/tlnbtc/key/${apiData.userAuthKey.id}`).reply(200, apiData.userAuthKey),
+      nock(bgUrl).get(`/api/v2/tlnbtc/key/${apiData.nodeAuthKey.id}`).reply(200, apiData.nodeAuthKey),
+    ];
+
+    const signerMacaroon = nock(lightningSignerConfigs.fakeid.url)
+      .post(`/v1/macaroon`)
+      .reply(200, signerApiData.bakeMacaroon);
+
+    const wpWalletUpdateNock = nock(bgUrl).put(`/api/v2/tlnbtc/wallet/${apiData.wallet.id}`).reply(200);
+
+    const req = {
+      bitgo: bitgo,
+      body: { ...apiData.signerMacaroonRequestBody, addIpCaveatToMacaroon: false },
+      params: {
+        coin: 'tlnbtc',
+        walletId: 'fakeid',
+      },
+      decoded: {
+        coin: 'tlnbtc',
+        walletId: 'fakeid',
+        passphrase: apiData.signerMacaroonRequestBody.passphrase,
+        addIpCaveatToMacaroon: false,
+      },
+      config: {
+        lightningSignerFileSystemPath: 'lightningSignerFileSystemPath',
+      },
+    } as unknown as ExpressApiRouteRequest<'express.lightning.signerMacaroon', 'post'>;
+
+    const res = await handleCreateSignerMacaroon(req);
+    decodeOrElse('SignerMacaroonResponse200', SignerMacaroonResponse[200], res, (_) => {
+      throw new Error('Response did not match expected codec');
+    });
+
+    wpWalletnock.done();
+    wpKeychainNocks.forEach((s) => s.done());
+    signerMacaroon.done();
+    wpWalletUpdateNock.done();
+    readFileStub.restore();
+  });
+
+  it('should create signer macaroon without IP caveat when watchOnlyExternalIp does not exist', async () => {
+    const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(JSON.stringify(lightningSignerConfigs));
+
+    const wpWalletnock = nock(bgUrl)
+      .get(`/api/v2/tlnbtc/wallet/${apiData.wallet.id}`)
+      .query({ includeBalance: false })
+      .reply(200, {
+        ...apiData.wallet,
+        coinSpecific: {
+          ...apiData.wallet.coinSpecific,
+          watchOnlyExternalIp: null,
+        },
+      });
+
+    const wpKeychainNocks = [
+      nock(bgUrl).get(`/api/v2/tlnbtc/key/${apiData.userAuthKey.id}`).reply(200, apiData.userAuthKey),
+      nock(bgUrl).get(`/api/v2/tlnbtc/key/${apiData.nodeAuthKey.id}`).reply(200, apiData.nodeAuthKey),
+    ];
+
+    const signerMacaroon = nock(lightningSignerConfigs.fakeid.url)
+      .post(`/v1/macaroon`)
+      .reply(200, signerApiData.bakeMacaroon);
+
+    const wpWalletUpdateNock = nock(bgUrl).put(`/api/v2/tlnbtc/wallet/${apiData.wallet.id}`).reply(200);
+
+    const req = {
+      bitgo: bitgo,
+      body: { ...apiData.signerMacaroonRequestBody, addIpCaveatToMacaroon: false },
+      params: {
+        coin: 'tlnbtc',
+        walletId: 'fakeid',
+      },
+      decoded: {
+        coin: 'tlnbtc',
+        walletId: 'fakeid',
+        passphrase: apiData.signerMacaroonRequestBody.passphrase,
+        addIpCaveatToMacaroon: false,
+      },
+      config: {
+        lightningSignerFileSystemPath: 'lightningSignerFileSystemPath',
+      },
+    } as unknown as ExpressApiRouteRequest<'express.lightning.signerMacaroon', 'post'>;
+
+    const res = await handleCreateSignerMacaroon(req);
+    decodeOrElse('SignerMacaroonResponse200', SignerMacaroonResponse[200], res, (_) => {
+      throw new Error('Response did not match expected codec');
+    });
+
+    wpWalletnock.done();
+    wpKeychainNocks.forEach((s) => s.done());
+    signerMacaroon.done();
+    wpWalletUpdateNock.done();
+    readFileStub.restore();
+  });
 
   it('should get signer wallet state', async () => {
     const readFileStub = sinon.stub(fs.promises, 'readFile').resolves(JSON.stringify(lightningSignerConfigs));
