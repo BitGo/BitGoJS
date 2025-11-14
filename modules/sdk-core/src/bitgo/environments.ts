@@ -269,8 +269,8 @@ const mainnetBase: EnvironmentTemplate = {
     megaeth: {
       baseUrl: 'https://carrot.megaeth.com/rpc', //TODO: add mainnet url when available
     },
-    hedera: {
-      baseUrl: 'https://server-verify.hashscan.io/verify',
+    hbarevm: {
+      baseUrl: 'https://mainnet.mirrornode.hedera.com/api/v1',
     },
     fluenteth: {
       baseUrl: 'https://testnet.fluentscan.xyz/api/', //TODO: COIN-6478: add mainnet url when available
@@ -415,8 +415,8 @@ const testnetBase: EnvironmentTemplate = {
     plume: {
       baseUrl: 'https://testnet-explorer.plume.org',
     },
-    hedera: {
-      baseUrl: 'https://server-verify.hashscan.io/verify',
+    hbarevm: {
+      baseUrl: 'https://testnet.mirrornode.hedera.com/api/v1',
     },
     fluenteth: {
       baseUrl: 'https://testnet.fluentscan.xyz/api/',

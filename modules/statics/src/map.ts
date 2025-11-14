@@ -149,6 +149,8 @@ export class CoinMap {
       98867: 'tplume',
       98866: 'plume',
       6342: 'tmegaeth',
+      295: 'hbarevm',
+      296: 'thbarevm',
     };
     return ethLikeCoinFromChainId[chainId];
   }

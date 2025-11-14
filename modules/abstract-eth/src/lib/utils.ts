@@ -1047,3 +1047,200 @@ export async function recoveryBlockchainExplorerQuery(
 export function getDefaultExpireTime(): number {
   return Math.floor(new Date().getTime() / 1000) + 60 * 60 * 24 * 7;
 }
+
+export async function recovery_HBAREVM_BlockchainExplorerQuery(
+  query: Record<string, string>,
+  explorerUrl: string,
+  token?: string
+): Promise<Record<string, unknown>> {
+  // Hedera Mirror Node API does not use API keys, but we keep this for compatibility
+  if (token) {
+    query.apikey = token;
+  }
+
+  const { module, action } = query;
+
+  // Remove trailing slash from explorerUrl if present
+  const baseUrl = explorerUrl.replace(/\/$/, '');
+
+  try {
+    switch (`${module}.${action}`) {
+      case 'account.balance':
+        return await queryAddressBalanceHedera(query, baseUrl);
+
+      case 'account.txlist':
+        return await getAddressNonceHedera(query, baseUrl);
+
+      case 'account.tokenbalance':
+        return await queryTokenBalanceHedera(query, baseUrl);
+
+      case 'proxy.eth_gasPrice':
+        return await getGasPriceHedera(query, baseUrl);
+
+      case 'proxy.eth_estimateGas':
+        return await getGasLimitHedera(query, baseUrl);
+
+      case 'proxy.eth_call':
+        return await querySequenceIdHedera(query, baseUrl);
+
+      default:
+        throw new Error(`Unsupported API call: ${module}.${action}`);
+    }
+  } catch (error) {
+    throw error;
+  }
+}
+
+/**
+ * 1. Gets address balance using Hedera Mirror Node API
+ */
+async function queryAddressBalanceHedera(
+  query: Record<string, string>,
+  baseUrl: string
+): Promise<Record<string, unknown>> {
+  const address = query.address;
+  const url = `${baseUrl}/accounts/${address}`;
+  const response = await request.get(url).send();
+
+  if (!response.ok) {
+    throw new Error('could not reach explorer');
+  }
+
+  const balance = response.body.balance?.balance || '0';
+
+  // Convert from tinybars to wei (1 HBAR = 10^8 tinybars, 1 HBAR = 10^18 wei)
+  // So: wei = tinybars * 10^10
+  const balanceInWei = (BigInt(balance) * BigInt('10000000000')).toString();
+
+  return { result: balanceInWei };
+}
+
+/**
+ * 2. Gets nonce using Hedera Mirror Node API
+ */
+async function getAddressNonceHedera(query: Record<string, string>, baseUrl: string): Promise<Record<string, unknown>> {
+  const address = query.address;
+  const accountUrl = `${baseUrl}/accounts/${address}`;
+  const response = await request.get(accountUrl).send();
+
+  if (!response.ok) {
+    throw new Error('could not reach explorer');
+  }
+
+  const nonce = response.body.ethereum_nonce || 0;
+
+  return { nonce: nonce + 1 };
+}
+
+/**
+ * 3. Gets token balance using Hedera Mirror Node API
+ */
+async function queryTokenBalanceHedera(
+  query: Record<string, string>,
+  baseUrl: string
+): Promise<Record<string, unknown>> {
+  const contractAddress = query.contractaddress;
+  const address = query.address;
+
+  // Get token balances for the account
+  const url = `${baseUrl}/accounts/${address}/tokens`;
+  const response = await request.get(url).send();
+
+  if (!response.ok) {
+    throw new Error('could not reach explorer');
+  }
+
+  // Find the specific token balance
+  const tokens = response.body.tokens || [];
+  const tokenBalance = tokens.find(
+    (token: { token_id: string; contract_address: string; balance: number }) =>
+      token.token_id === contractAddress || token.contract_address === contractAddress
+  );
+
+  const balance = tokenBalance ? tokenBalance.balance.toString() : '0';
+  // Convert from tinybars to wei (1 HBAR = 10^8 tinybars, 1 HBAR = 10^18 wei)
+  // So: wei = tinybars * 10^10
+  const balanceInWei = (BigInt(balance) * BigInt('10000000000')).toString();
+
+  return { result: balanceInWei };
+}
+
+/**
+ * 4. Gets sequence ID using Hedera Mirror Node API or rpc call
+ */
+async function querySequenceIdHedera(query: Record<string, string>, baseUrl: string): Promise<Record<string, unknown>> {
+  const { to, data } = query;
+
+  const url = 'https://testnet.hashio.io/api';
+
+  const requestBody = {
+    jsonrpc: '2.0',
+    method: 'eth_call',
+    params: [
+      {
+        to: to,
+        data: data,
+      },
+    ],
+    id: 1,
+  };
+
+  const response = await request.post(url).send(requestBody).set('Content-Type', 'application/json');
+
+  if (!response.ok) {
+    throw new Error('could not reach explorer');
+  }
+
+  return response.body;
+}
+
+/**
+ * 5. getGasPriceFromExternalAPI - Gets gas price using Hedera Mirror Node API
+ */
+async function getGasPriceHedera(query: Record<string, string>, baseUrl: string): Promise<Record<string, unknown>> {
+  const url = 'https://testnet.hashio.io/api';
+
+  const requestBody = {
+    jsonrpc: '2.0',
+    method: 'eth_gasPrice',
+    params: [],
+    id: 1,
+  };
+
+  const response = await request.post(url).send(requestBody).set('Content-Type', 'application/json');
+
+  if (!response.ok) {
+    throw new Error('could not reach explorer');
+  }
+
+  return response.body;
+}
+
+/**
+ * 6. getGasLimitFromExternalAPI - Gets gas limit using Hedera Mirror Node API
+ */
+async function getGasLimitHedera(query: Record<string, string>, baseUrl: string): Promise<Record<string, unknown>> {
+  const url = 'https://testnet.hashio.io/api';
+
+  const { from, to, data } = query;
+
+  const requestBody = {
+    jsonrpc: '2.0',
+    method: 'eth_estimateGas',
+    params: [
+      {
+        from,
+        to,
+        data,
+      },
+    ],
+    id: 1,
+  };
+  const response = await request.post(url).send(requestBody).set('Content-Type', 'application/json');
+
+  if (!response.ok) {
+    throw new Error('could not reach explorer');
+  }
+
+  return response.body;
+}

@@ -2,12 +2,13 @@
  * @prettier
  */
 import { BaseCoin, BitGoBase, common, MPCAlgorithm, MultisigType, multisigTypes } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, CoinFeature, coins } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, CoinFeature, coins, CoinFamily } from '@bitgo/statics';
 import {
   AbstractEthLikeNewCoins,
   OfflineVaultTxInfo,
   RecoverOptions,
   recoveryBlockchainExplorerQuery,
+  recovery_HBAREVM_BlockchainExplorerQuery,
   TransactionBuilder as EthLikeTransactionBuilder,
   UnsignedSweepTxMPCv2,
   VerifyEthTransactionOptions,
@@ -78,7 +79,13 @@ export class EvmCoin extends AbstractEthLikeNewCoins {
 
     const apiToken = apiKey || evmConfig[this.getFamily()].apiToken;
     const explorerUrl = evmConfig[this.getFamily()].baseUrl;
-    return await recoveryBlockchainExplorerQuery(query, explorerUrl as string, apiToken as string);
+
+    switch (this.getFamily()) {
+      case CoinFamily.HBAREVM:
+        return await recovery_HBAREVM_BlockchainExplorerQuery(query, explorerUrl as string, apiToken as string);
+      default:
+        return await recoveryBlockchainExplorerQuery(query, explorerUrl as string, apiToken as string);
+    }
   }
 
   /** @inheritDoc */
