@@ -2072,9 +2072,11 @@ describe('V2 Wallet:', function () {
 
     describe('OFC Multi-User-Key Wallet Sharing', function () {
       const userId = '123';
+      const email = 'shareto@sdktest.com';
       const permissions = 'view,spend';
       let ofcWallet: Wallet;
       let ofcMultiUserKeyWallet: Wallet;
+      let nonMultiUserKeyWallet: Wallet;
 
       before(function () {
         const ofcCoin = bitgo.coin('ofc');
@@ -2110,6 +2112,18 @@ describe('V2 Wallet:', function () {
           type: 'hot',
         } as any;
         ofcMultiUserKeyWallet = new Wallet(bitgo, ofcCoin, multiUserKeyWalletData);
+
+        // Non-multi-user-key wallet for backwards compatibility tests
+        const nonMultiUserKeyWalletData = {
+          id: '5b34252f1bf349930e34020a00000003',
+          coin: 'ofc',
+          keys: ['5b3424f91bf349930e34017500000002'],
+          coinSpecific: {
+            features: [],
+          },
+          type: 'hot',
+        };
+        nonMultiUserKeyWallet = new Wallet(bitgo, ofcCoin, nonMultiUserKeyWalletData);
       });
 
       afterEach(function () {
@@ -2117,98 +2131,262 @@ describe('V2 Wallet:', function () {
         nock.cleanAll();
       });
 
-      it('should exclude keychain property for multi-user-key wallets in createShare', async function () {
-        const createShareParams = {
-          user: userId,
-          permissions,
-        };
+      describe('createShare method', function () {
+        describe('multi-user-key wallets', function () {
+          it('should exclude keychain property from API request', async function () {
+            const createShareParams = {
+              user: userId,
+              permissions,
+            };
 
-        const createShareNock = nock(bgUrl)
-          .post(`/api/v2/ofc/wallet/${ofcMultiUserKeyWallet.id()}/share`, (body) => {
-            // Verify that keychain is not included in the request
-            body.should.not.have.property('keychain');
-            body.user.should.equal(userId);
-            body.permissions.should.equal(permissions);
-            return true;
-          })
-          .reply(200, {});
+            const createShareNock = nock(bgUrl)
+              .post(`/api/v2/ofc/wallet/${ofcMultiUserKeyWallet.id()}/share`, (body) => {
+                body.should.not.have.property('keychain');
+                body.user.should.equal(userId);
+                body.permissions.should.equal(permissions);
+                return true;
+              })
+              .reply(200, {});
 
-        await ofcMultiUserKeyWallet.createShare(createShareParams);
+            await ofcMultiUserKeyWallet.createShare(createShareParams);
 
-        createShareNock.isDone().should.be.True();
+            createShareNock.isDone().should.be.True();
+          });
+
+          it('should throw error when non-empty keychain is provided', async function () {
+            const createShareParams = {
+              user: userId,
+              permissions,
+              keychain: {
+                pub: 'xpub661MyMwAqRbcFXDcWD2vxuebcT1ZpTF4Vke6qmMW8yzddwNYpAPjvYEEL5jLfyYXW2fuxtAxY8TgjPUJLcf1C8qz9N6VgZxArKX4EwB8rH5',
+                encryptedPrv: 'encrypted',
+                fromPubKey: 'fromPub',
+                toPubKey: 'toPub',
+                path: 'm/999999/1/1',
+              },
+            };
+
+            await ofcMultiUserKeyWallet
+              .createShare(createShareParams)
+              .should.be.rejectedWith('keychain property must not be provided for multi-user-key wallets');
+          });
+
+          it('should omit keychain from request even when empty object is provided', async function () {
+            const createShareParams = {
+              user: userId,
+              permissions,
+              keychain: {},
+            };
+
+            const createShareNock = nock(bgUrl)
+              .post(`/api/v2/ofc/wallet/${ofcMultiUserKeyWallet.id()}/share`, (body) => {
+                body.should.not.have.property('keychain');
+                body.user.should.equal(userId);
+                body.permissions.should.equal(permissions);
+                return true;
+              })
+              .reply(200, {});
+
+            await ofcMultiUserKeyWallet.createShare(createShareParams);
+
+            createShareNock.isDone().should.be.True();
+          });
+        });
+
+        describe('non-multi-user-key wallets', function () {
+          it('should include keychain property in API request when provided', async function () {
+            const createShareParams = {
+              user: userId,
+              permissions,
+              keychain: {
+                pub: 'xpub661MyMwAqRbcFXDcWD2vxuebcT1ZpTF4Vke6qmMW8yzddwNYpAPjvYEEL5jLfyYXW2fuxtAxY8TgjPUJLcf1C8qz9N6VgZxArKX4EwB8rH5',
+                encryptedPrv: 'encrypted',
+                fromPubKey: 'fromPub',
+                toPubKey: 'toPub',
+                path: 'm/999999/1/1',
+              },
+            };
+
+            const createShareNock = nock(bgUrl)
+              .post(`/api/v2/ofc/wallet/${ofcWallet.id()}/share`, (body) => {
+                body.should.have.property('keychain');
+                body.keychain.should.have.property('pub');
+                body.keychain.should.have.property('encryptedPrv');
+                body.keychain.should.have.property('fromPubKey');
+                body.keychain.should.have.property('toPubKey');
+                body.keychain.should.have.property('path');
+                body.user.should.equal(userId);
+                body.permissions.should.equal(permissions);
+                return true;
+              })
+              .reply(200, {});
+
+            await ofcWallet.createShare(createShareParams);
+
+            createShareNock.isDone().should.be.True();
+          });
+        });
       });
 
-      it('should throw error when keychain is provided for multi-user-key wallets in createShare', async function () {
-        const createShareParams = {
-          user: userId,
-          permissions,
-          keychain: {
-            pub: 'xpub661MyMwAqRbcFXDcWD2vxuebcT1ZpTF4Vke6qmMW8yzddwNYpAPjvYEEL5jLfyYXW2fuxtAxY8TgjPUJLcf1C8qz9N6VgZxArKX4EwB8rH5',
-            encryptedPrv: 'encrypted',
-            fromPubKey: 'fromPub',
-            toPubKey: 'toPub',
-            path: 'm/999999/1/1',
-          },
-        };
+      describe('shareWallet method', function () {
+        describe('multi-user-key wallets', function () {
+          it('should skip keychain preparation and set skipKeychain=true in API request', async function () {
+            const getSharingKeyNock = nock(bgUrl)
+              .post('/api/v1/user/sharingkey', { email })
+              .reply(200, { userId, pubkey: 'testpubkey', path: 'm/999999/1/1' });
 
-        await ofcMultiUserKeyWallet
-          .createShare(createShareParams)
-          .should.be.rejectedWith('keychain property must not be provided for multi-user-key wallets');
+            const createShareNock = nock(bgUrl)
+              .post(`/api/v2/ofc/wallet/${ofcMultiUserKeyWallet.id()}/share`, function (body) {
+                body.should.have.property('skipKeychain', true);
+                body.should.not.have.property('keychain');
+                body.should.have.property('user', userId);
+                body.should.have.property('permissions', permissions);
+                return true;
+              })
+              .reply(200, {});
+
+            // Stub prepareSharedKeychain to ensure it's not called
+            const prepareSharedKeychainStub = sinon.stub(ofcMultiUserKeyWallet, 'prepareSharedKeychain').resolves({});
+
+            // Stub getEncryptedUserKeychain to prevent any keychain fetching
+            const getEncryptedUserKeychainStub = sinon.stub(ofcMultiUserKeyWallet, 'getEncryptedUserKeychain');
+            getEncryptedUserKeychainStub.rejects(new Error('getEncryptedUserKeychain should not be called'));
+
+            await ofcMultiUserKeyWallet.shareWallet({ email, permissions });
+
+            // Verify keychain preparation methods are not called
+            prepareSharedKeychainStub.called.should.be.false();
+            getEncryptedUserKeychainStub.called.should.be.false();
+            getSharingKeyNock.isDone().should.be.True();
+            createShareNock.isDone().should.be.True();
+          });
+
+          it('should pass skipKeychain=true and undefined keychain to createShare', async function () {
+            const getSharingKeyNock = nock(bgUrl)
+              .post('/api/v1/user/sharingkey', { email })
+              .reply(200, { userId, pubkey: 'testpubkey', path: 'm/999999/1/1' });
+
+            // Stub getEncryptedUserKeychain to prevent any keychain fetching
+            const getEncryptedUserKeychainStub = sinon.stub(ofcMultiUserKeyWallet, 'getEncryptedUserKeychain');
+            getEncryptedUserKeychainStub.rejects(new Error('getEncryptedUserKeychain should not be called'));
+
+            const createShareStub = sinon.stub(ofcMultiUserKeyWallet, 'createShare').callsFake(async (options) => {
+              options!.skipKeychain!.should.equal(true);
+              should(options!.keychain).be.undefined();
+              return undefined;
+            });
+
+            await ofcMultiUserKeyWallet.shareWallet({ email, permissions });
+
+            getEncryptedUserKeychainStub.called.should.be.false();
+            createShareStub.calledOnce.should.be.true();
+            getSharingKeyNock.isDone().should.be.True();
+          });
+        });
+
+        describe('non-multi-user-key wallets', function () {
+          it('should include keychain when wallet passphrase is provided', async function () {
+            const toKeychain = utxoLib.bip32.fromSeed(Buffer.from('deadbeef02deadbeef02deadbeef02deadbeef02', 'hex'));
+            const path = 'm/999999/1/1';
+            const pubkey = toKeychain.derivePath(path).publicKey.toString('hex');
+            const walletPassphrase = 'bitgo1234';
+            const pub = 'Zo1ggzTUKMY5bYnDvT5mtVeZxzf2FaLTbKkmvGUhUQk';
+
+            const getSharingKeyNock = nock(bgUrl)
+              .post('/api/v1/user/sharingkey', { email })
+              .reply(200, { userId, pubkey, path });
+
+            const getKeyNock = nock(bgUrl)
+              .get(`/api/v2/ofc/key/${nonMultiUserKeyWallet.keyIds()[0]}`)
+              .reply(200, {
+                id: nonMultiUserKeyWallet.keyIds()[0],
+                pub,
+                source: 'user',
+                encryptedPrv: bitgo.encrypt({ input: 'xprv1', password: walletPassphrase }),
+                coinSpecific: {},
+              });
+
+            const createShareStub = sinon.stub(nonMultiUserKeyWallet, 'createShare').callsFake(async (options) => {
+              // For non-multi-user-key wallets, keychain should be present when spend permissions are included
+              options!.keychain!.should.not.be.undefined();
+              options!.keychain!.pub!.should.equal(pub);
+              return undefined;
+            });
+
+            await nonMultiUserKeyWallet.shareWallet({ email, permissions, walletPassphrase });
+
+            createShareStub.calledOnce.should.be.true();
+            getSharingKeyNock.isDone().should.be.True();
+            getKeyNock.isDone().should.be.True();
+          });
+        });
       });
 
-      it('should include keychain property for non-multi-user-key OFC wallets', async function () {
-        const createShareParams = {
-          user: userId,
-          permissions,
-          keychain: {
-            pub: 'xpub661MyMwAqRbcFXDcWD2vxuebcT1ZpTF4Vke6qmMW8yzddwNYpAPjvYEEL5jLfyYXW2fuxtAxY8TgjPUJLcf1C8qz9N6VgZxArKX4EwB8rH5',
-            encryptedPrv: 'encrypted',
-            fromPubKey: 'fromPub',
-            toPubKey: 'toPub',
-            path: 'm/999999/1/1',
-          },
-        };
+      describe('multi-user-key detection', function () {
+        it('should detect multi-user-key wallet via coinSpecific.features array', async function () {
+          const ofcCoin: any = bitgo.coin('ofc');
+          const walletWithMultiUserKeyFeature = new Wallet(bitgo, ofcCoin, {
+            id: '5b34252f1bf349930e34020a00000004',
+            coin: 'ofc',
+            keys: ['5b3424f91bf349930e34017500000003'],
+            coinSpecific: {
+              features: ['multi-user-key'],
+            },
+            type: 'hot',
+          });
 
-        const createShareNock = nock(bgUrl)
-          .post(`/api/v2/ofc/wallet/${ofcWallet.id()}/share`, (body) => {
-            // Verify that keychain IS included in the request for regular wallets
-            body.should.have.property('keychain');
-            body.keychain.should.have.property('pub');
-            body.keychain.should.have.property('encryptedPrv');
-            body.keychain.should.have.property('fromPubKey');
-            body.keychain.should.have.property('toPubKey');
-            body.keychain.should.have.property('path');
-            body.user.should.equal(userId);
-            body.permissions.should.equal(permissions);
-            return true;
-          })
-          .reply(200, {});
+          const walletWithoutFeature = new Wallet(bitgo, ofcCoin, {
+            id: '5b34252f1bf349930e34020a00000005',
+            coin: 'ofc',
+            keys: ['5b3424f91bf349930e34017500000004'],
+            coinSpecific: {
+              features: ['some-other-feature'],
+            },
+            type: 'hot',
+          });
 
-        await ofcWallet.createShare(createShareParams);
+          const walletWithoutCoinSpecific = new Wallet(bitgo, ofcCoin, {
+            id: '5b34252f1bf349930e34020a00000006',
+            coin: 'ofc',
+            keys: ['5b3424f91bf349930e34017500000005'],
+            coinSpecific: {},
+            type: 'hot',
+          });
 
-        createShareNock.isDone().should.be.True();
-      });
+          const getSharingKeyNock = nock(bgUrl)
+            .post('/api/v1/user/sharingkey', { email })
+            .times(3)
+            .reply(200, { userId, pubkey: 'testpubkey', path: 'm/999999/1/1' });
 
-      it('should handle empty keychain object for multi-user-key wallets', async function () {
-        const createShareParams = {
-          user: userId,
-          permissions,
-          keychain: {},
-        };
+          // Multi-user-key wallet should skip keychain
+          const getEncryptedUserKeychainStub1 = sinon.stub(walletWithMultiUserKeyFeature, 'getEncryptedUserKeychain');
+          getEncryptedUserKeychainStub1.rejects(new Error('getEncryptedUserKeychain should not be called'));
+          const createShareStub1 = sinon
+            .stub(walletWithMultiUserKeyFeature, 'createShare')
+            .callsFake(async (options) => {
+              options!.skipKeychain!.should.equal(true);
+              return undefined;
+            });
+          await walletWithMultiUserKeyFeature.shareWallet({ email, permissions });
+          getEncryptedUserKeychainStub1.called.should.be.false();
+          createShareStub1.calledOnce.should.be.true();
 
-        const createShareNock = nock(bgUrl)
-          .post(`/api/v2/ofc/wallet/${ofcMultiUserKeyWallet.id()}/share`, (body) => {
-            // Verify that keychain is not included in the request even if passed as empty
-            body.should.not.have.property('keychain');
-            body.user.should.equal(userId);
-            body.permissions.should.equal(permissions);
-            return true;
-          })
-          .reply(200, {});
+          // Wallet without multi-user-key feature should respect skipKeychain flag
+          const createShareStub2 = sinon.stub(walletWithoutFeature, 'createShare').callsFake(async (options) => {
+            return undefined;
+          });
+          await walletWithoutFeature.shareWallet({ email, permissions, skipKeychain: true });
+          createShareStub2.calledOnce.should.be.true();
 
-        await ofcMultiUserKeyWallet.createShare(createShareParams);
+          // Wallet without coinSpecific should not be detected as multi-user-key
+          const createShareStub3 = sinon.stub(walletWithoutCoinSpecific, 'createShare').callsFake(async (options) => {
+            return undefined;
+          });
+          await walletWithoutCoinSpecific.shareWallet({ email, permissions, skipKeychain: true });
+          createShareStub3.calledOnce.should.be.true();
 
-        createShareNock.isDone().should.be.True();
+          getSharingKeyNock.isDone().should.be.True();
+        });
       });
     });
   });
