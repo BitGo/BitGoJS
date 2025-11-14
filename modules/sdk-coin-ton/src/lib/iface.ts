@@ -20,3 +20,15 @@ export interface TxData {
 }
 
 export type TransactionExplanation = ITransactionExplanation<TransactionFee>;
+
+export type VestingContractParams = {
+  subWalletId: number;
+  publicKeyHex: string;
+  vestingStartTime: number;
+  vestingTotalDuration: number;
+  unlockPeriod: number;
+  cliffDuration: number;
+  vestingTotalAmount: bigint;
+  vestingSenderAddress: string;
+  ownerAddress: string;
+};

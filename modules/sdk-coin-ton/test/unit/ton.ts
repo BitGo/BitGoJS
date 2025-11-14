@@ -532,6 +532,22 @@ describe('TON:', function () {
           '0:d57b25093b1dc09d91962ed13497e571bfb73bb939c3f0e5ed08585a3be9ef6a'
         );
       });
+
+      it('should get valid vesting contract address', async function () {
+        const vestingParams = {
+          subWalletId: 698983191,
+          publicKeyHex: '71013394862995cfb527dea9cadcc84d66d1197d2a4454579b93a08223e4b309',
+          vestingStartTime: 1760999164,
+          vestingTotalDuration: 60 * 60 * 24 * 30,
+          unlockPeriod: 60 * 60 * 24,
+          cliffDuration: 60 * 60,
+          vestingTotalAmount: BigInt('400000000'),
+          vestingSenderAddress: '0QDOEyzC6KXiVh2Rco2bapH96Vn6lb9YWxgkTVWtq-9CXFtp',
+          ownerAddress: '0QDBrOgjQThbN7eWBHErRhrJQH3ApecGDtu3K11Lujjmx49Z',
+        };
+        const vestingContractAddress = await utils.getVestingContractAddress(vestingParams);
+        vestingContractAddress.should.equal('EQAjmgMbwU3WVK_pn2gj1XBG_NMvrkoT4earvs_C9Q6fs-SE');
+      });
     });
 
     describe('getAddress', function () {
