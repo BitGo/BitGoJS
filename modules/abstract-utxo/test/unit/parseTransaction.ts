@@ -6,7 +6,7 @@ import { Wallet, UnexpectedAddressError, VerificationOptions } from '@bitgo/sdk-
 import { UtxoWallet, Output, TransactionParams } from '../../src';
 import type { TransactionExplanation } from '../../src/transaction/fixedScript/explainTransaction';
 
-import { getUtxoCoin } from './util';
+import { getUtxoCoin, getUtxoWallet } from './util';
 
 describe('Parse Transaction', function () {
   const coin = getUtxoCoin('tbtc');
@@ -121,6 +121,83 @@ describe('Parse Transaction', function () {
     const externalAddress = '2NAuziD75WnPPHJVwnd4ckgY4SuJaDVVbMD';
     return runClassifyOutputsTest(externalAddress, verification, true, {
       recipients: [{ address: externalAddress, amount: outputAmount }],
+    });
+  });
+
+  describe('RBF Transaction ID Validation', function () {
+    let rbfWallet: Wallet;
+    let stubExplain: sinon.SinonStub;
+
+    beforeEach(function () {
+      rbfWallet = getUtxoWallet(coin, {
+        id: '5b34252f1bf349930e34020a',
+        coin: 'tbtc',
+        keys: ['5b3424f91bf349930e340175', '5b3424f91bf349930e340176', '5b3424f91bf349930e340177'],
+      });
+    });
+
+    afterEach(function () {
+      if (stubExplain) {
+        stubExplain.restore();
+      }
+      sinon.restore();
+    });
+
+    it('should throw error when decoded transaction ID does not match rbfTxId', async function () {
+      const providedRbfTxId = 'tx-to-be-replaced';
+      const decodedTxId = 'actual-decoded-tx-id';
+
+      // Stub wallet.getTransaction
+      sinon.stub(rbfWallet, 'getTransaction').resolves({
+        id: providedRbfTxId,
+        txHex: '0100000001',
+        outputs: [
+          {
+            address: '2MzQwSSnBHWHqSAqtTVQ6v47XtaisrJa1Vc',
+            value: 1000000,
+            valueString: '1000000',
+            wallet: 'some-other-wallet-id',
+          },
+        ],
+      });
+
+      stubExplain = sinon.stub(coin, 'explainTransaction');
+      stubExplain.onCall(0).resolves({
+        id: 'new-tx-id',
+        outputs: [] as Output[],
+        changeOutputs: [] as Output[],
+      } as TransactionExplanation);
+
+      // Second call: decoding the old RBF transaction with mismatched ID
+      stubExplain.onCall(1).resolves({
+        id: decodedTxId, // Different from providedRbfTxId
+        outputs: [] as Output[],
+        changeOutputs: [] as Output[],
+      } as TransactionExplanation);
+
+      try {
+        await coin.parseTransaction({
+          txParams: {
+            rbfTxIds: [providedRbfTxId],
+          },
+          txPrebuild: { txHex: '0100000001' },
+          wallet: rbfWallet as unknown as UtxoWallet,
+          verification: {
+            disableNetworking: true,
+            keychains: {
+              user: { id: '0', pub: 'aaa', type: 'independent' },
+              backup: { id: '1', pub: 'bbb', type: 'independent' },
+              bitgo: { id: '2', pub: 'ccc', type: 'independent' },
+            },
+          },
+        });
+        assert.fail('Should have thrown an error');
+      } catch (error) {
+        assert.ok(error instanceof Error);
+        // Verify the error message matches the expected validation error
+        const expectedMessage = `The provided rbfTxId ${providedRbfTxId} does not match the decoded transaction id ${decodedTxId}`;
+        assert.strictEqual(error.message, expectedMessage);
+      }
     });
   });
 });
