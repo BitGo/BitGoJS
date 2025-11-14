@@ -2,6 +2,7 @@ import { BitGoBase } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
 
 import { AbstractUtxoCoin, UtxoNetwork } from '../../abstractUtxoCoin';
+import { isScriptRecipient } from '../../transaction';
 
 export class Bch extends AbstractUtxoCoin {
   protected constructor(bitgo: BitGoBase, network?: UtxoNetwork) {
@@ -25,6 +26,10 @@ export class Bch extends AbstractUtxoCoin {
    * @returns {*} address string
    */
   canonicalAddress(address: string, version: unknown = 'base58'): string {
+    if (isScriptRecipient(address)) {
+      return address;
+    }
+
     if (version === 'base58') {
       return utxolib.addressFormat.toCanonicalFormat(address, this.network);
     }
