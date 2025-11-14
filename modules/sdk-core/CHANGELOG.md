@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [36.20.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.20.0...@bitgo/sdk-core@36.20.1) (2025-11-13)
+
+
+### Bug Fixes
+
+* **sdk-core:** include coredao family for acceleration ([31b8ae2](https://github.com/BitGo/BitGoJS/commit/31b8ae21147be021f7511f68bcb630c30afb9405))
+
+
+
+
+
 # [36.20.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.19.0...@bitgo/sdk-core@36.20.0) (2025-11-12)
 
 

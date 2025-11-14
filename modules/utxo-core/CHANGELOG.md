@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.23.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.22.0...@bitgo/utxo-core@1.23.0) (2025-11-13)
+
+
+### Features
+
+* bump wasm-utxo to 1.3.0 ([d84e380](https://github.com/BitGo/BitGoJS/commit/d84e3808d1eb60d00ad03a29c34e27781ee8bf27))
+
+
+
+
+
 # [1.22.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.21.3...@bitgo/utxo-core@1.22.0) (2025-11-12)
 
 
