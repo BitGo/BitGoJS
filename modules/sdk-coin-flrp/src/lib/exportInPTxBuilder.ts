@@ -126,7 +126,7 @@ export class ExportInPTxBuilder extends AtomicTransactionBuilder {
       ],
 
       // Enhanced fee structure for P-chain operations
-      fee: BigInt(this.transaction._fee.fee) || BigInt(DEFAULT_BASE_FEE), // Default P-chain fee
+      fee: BigInt(this._fee.fee) || BigInt(DEFAULT_BASE_FEE), // Default P-chain fee
 
       // Credential placeholders ready for FlareJS integration
       credentials: this.transaction._fromAddresses.map(() => ({
@@ -139,8 +139,10 @@ export class ExportInPTxBuilder extends AtomicTransactionBuilder {
       memo: Buffer.alloc(EMPTY_BUFFER_SIZE),
     };
 
+    console.log('Enhanced P-chain Export Tx:', enhancedExportTx);
+
     // Store the transaction structure
-    this.transaction.setTransaction(enhancedExportTx);
+    // this.transaction.setTransaction(enhancedExportTx);
   }
 
   /**

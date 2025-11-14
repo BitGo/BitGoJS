@@ -138,3 +138,7 @@ export interface FlrpSpendOptions {
   memo?: Uint8Array; // FlareJS memo format (byte array)
   locktime?: bigint;
 }
+
+export interface BaseAddress {
+  address: string;
+}
