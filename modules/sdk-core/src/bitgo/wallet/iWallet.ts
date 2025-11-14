@@ -328,6 +328,7 @@ export interface WalletCoinSpecific {
   walletVersion?: number;
   hashAlgorithm?: string;
   pendingEcdsaTssInitialization?: boolean;
+  features?: string[];
   /**
    * Lightning coin specific data starts
    */

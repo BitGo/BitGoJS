@@ -1594,12 +1594,26 @@ export class Wallet implements IWallet {
     return userPrv;
   }
 
+  private isMultiUserKeyWallet(): boolean {
+    return this._wallet.coinSpecific?.features?.includes('multi-user-key') ?? false;
+  }
+
   /**
    * Send an encrypted wallet share to BitGo.
    * @param params
    */
   async createShare(params: CreateShareOptions = {}): Promise<any> {
     common.validateParams(params, ['user', 'permissions'], []);
+
+    const isMultiUserKeyWallet = this.isMultiUserKeyWallet();
+
+    if (isMultiUserKeyWallet) {
+      if (params.keychain && !_.isEmpty(params.keychain)) {
+        throw new Error('keychain property must not be provided for multi-user-key wallets');
+      }
+      // Remove keychain from params if presents
+      return await this.bitgo.post(this.url('/share')).send(_.omit(params, 'keychain')).result();
+    }
 
     if (params.keychain && !_.isEmpty(params.keychain)) {
       if (
