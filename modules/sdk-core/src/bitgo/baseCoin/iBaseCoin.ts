@@ -239,6 +239,7 @@ export interface SupplementGenerateWalletOptions {
   subType?: 'lightningCustody' | 'lightningSelfCustody' | 'onPrem';
   coinSpecific?: { [coinName: string]: unknown };
   evmKeyRingReferenceWalletId?: string;
+  lightningProvider?: 'voltage' | 'amboss';
 }
 
 export interface FeeEstimateOptions {
