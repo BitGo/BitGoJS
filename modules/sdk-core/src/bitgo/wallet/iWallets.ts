@@ -82,17 +82,21 @@ export interface GenerateWalletOptions {
   evmKeyRingReferenceWalletId?: string;
 }
 
-export const GenerateLightningWalletOptionsCodec = t.strict(
-  {
-    label: t.string,
-    passphrase: t.string,
-    enterprise: t.string,
-    passcodeEncryptionCode: t.string,
-    subType: t.union([t.literal('lightningCustody'), t.literal('lightningSelfCustody')]),
-  },
+export const GenerateLightningWalletOptionsCodec = t.intersection(
+  [
+    t.strict({
+      label: t.string,
+      passphrase: t.string,
+      enterprise: t.string,
+      passcodeEncryptionCode: t.string,
+      subType: t.union([t.literal('lightningCustody'), t.literal('lightningSelfCustody')]),
+    }),
+    t.partial({
+      lightningProvider: t.union([t.literal('amboss'), t.literal('voltage')]),
+    }),
+  ],
   'GenerateLightningWalletOptions'
 );
-
 export type GenerateLightningWalletOptions = t.TypeOf<typeof GenerateLightningWalletOptionsCodec>;
 
 export const GenerateGoAccountWalletOptionsCodec = t.strict(
