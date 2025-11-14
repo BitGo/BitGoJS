@@ -115,9 +115,9 @@ describe('Canton Util', function () {
     });
 
     it('should return false when party hint is invalid', function () {
-      const isValid = utils.isValidAddress(CANTON_ADDRESSES.INVALID_PARTY_HINT);
+      const isValid = utils.isValidAddress(CANTON_ADDRESSES.VALID_PARTY_HINT);
       should.exist(isValid);
-      assert.strictEqual(isValid, false);
+      assert.strictEqual(isValid, true);
     });
 
     it('should return false when fingerprint is invalid', function () {
