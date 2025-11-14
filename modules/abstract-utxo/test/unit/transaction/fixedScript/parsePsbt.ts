@@ -8,9 +8,13 @@ import { parseTransaction } from '../../../../src/transaction/fixedScript/parseT
 import { ParsedTransaction } from '../../../../src/transaction/types';
 import { UtxoWallet } from '../../../../src/wallet';
 import { getUtxoCoin } from '../../util';
-import { explainPsbt } from '../../../../src/transaction/fixedScript';
-import type { TransactionExplanation } from '../../../../src/transaction/fixedScript/explainTransaction';
+import { explainLegacyTx, explainPsbt } from '../../../../src/transaction/fixedScript';
+import type {
+  TransactionExplanation,
+  ChangeAddressInfo,
+} from '../../../../src/transaction/fixedScript/explainTransaction';
 import { getChainFromNetwork } from '../../../../src/names';
+import { TransactionPrebuild } from '../../../../src/abstractUtxoCoin';
 
 function getTxParamsFromExplanation(explanation: TransactionExplanation): {
   recipients: ITransactionRecipient[];
@@ -30,15 +34,39 @@ function getTxParamsFromExplanation(explanation: TransactionExplanation): {
   };
 }
 
+function getChangeInfoFromPsbt(psbt: utxolib.bitgo.UtxoPsbt): ChangeAddressInfo[] | undefined {
+  try {
+    return utxolib.bitgo.findInternalOutputIndices(psbt).map((i) => {
+      const output = psbt.data.outputs[i];
+      const derivations = output.bip32Derivation ?? output.tapBip32Derivation ?? undefined;
+      if (!derivations || derivations.length !== 3) {
+        throw new Error('expected 3 derivation paths');
+      }
+      const path = derivations[0].path;
+      const { chain, index } = utxolib.bitgo.getChainAndIndexFromPath(path);
+      return {
+        address: utxolib.address.fromOutputScript(psbt.txOutputs[i].script, psbt.network),
+        chain,
+        index,
+      };
+    });
+  } catch (e) {
+    if (e instanceof utxolib.bitgo.ErrorNoMultiSigInputFound) {
+      return undefined;
+    }
+    throw e;
+  }
+}
+
 function describeParseTransactionWith(
   acidTest: utxolib.testutil.AcidTest,
+  label: string,
   {
-    label = 'default',
     txParams,
     expectedExplicitExternalSpendAmount,
     expectedImplicitExternalSpendAmount,
+    txFormat = 'psbt',
   }: {
-    label?: string;
     txParams:
       | {
           recipients: ITransactionRecipient[];
@@ -47,6 +75,7 @@ function describeParseTransactionWith(
       | 'inferFromExplanation';
     expectedExplicitExternalSpendAmount: bigint;
     expectedImplicitExternalSpendAmount: bigint;
+    txFormat?: 'psbt' | 'legacy';
   }
 ) {
   describe(`${acidTest.name}/${label}`, function () {
@@ -61,9 +90,21 @@ function describeParseTransactionWith(
 
       // Create PSBT and explanation
       const psbt = acidTest.createPsbt();
-      const explanation = explainPsbt(psbt, { pubs: acidTest.rootWalletKeys }, acidTest.network, {
-        strict: true,
-      });
+
+      let explanation: TransactionExplanation;
+      if (txFormat === 'psbt') {
+        explanation = explainPsbt(psbt, { pubs: acidTest.rootWalletKeys }, acidTest.network, {
+          strict: true,
+        });
+      } else if (txFormat === 'legacy') {
+        const tx = psbt.getUnsignedTx();
+        const pubs = acidTest.rootWalletKeys.triple.map((k) => k.neutered().toBase58());
+        // Extract change info from PSBT to pass to explainLegacyTx
+        const changeInfo = getChangeInfoFromPsbt(psbt);
+        explanation = explainLegacyTx(tx, { pubs, changeInfo }, acidTest.network);
+      } else {
+        throw new Error(`Invalid txFormat: ${txFormat}`);
+      }
 
       // Determine txParams
       const resolvedTxParams =
@@ -92,12 +133,23 @@ function describeParseTransactionWith(
       // Stub explainTransaction to return the explanation without making network calls
       stubExplainTransaction = sinon.stub(coin, 'explainTransaction').resolves(explanation);
 
+      let txPrebuild: TransactionPrebuild<bigint>;
+      if (txFormat === 'psbt') {
+        txPrebuild = {
+          txHex: psbt.toHex(),
+        };
+      } else if (txFormat === 'legacy') {
+        txPrebuild = {
+          txHex: psbt.getUnsignedTx().toHex(),
+        };
+      } else {
+        throw new Error(`Invalid txFormat: ${txFormat}`);
+      }
+
       refParsedTransaction = await parseTransaction(coin, {
         wallet: mockWallet as unknown as UtxoWallet,
         txParams: resolvedTxParams,
-        txPrebuild: {
-          txHex: psbt.toHex(),
-        },
+        txPrebuild,
         verification,
       });
     });
@@ -143,10 +195,10 @@ function describeParseTransactionWith(
   });
 }
 
-describe('parsePsbt', function () {
+describe('parseTransaction', function () {
   utxolib.testutil.AcidTest.suite().forEach((test) => {
-    // Default case: infer recipients from explanation
-    describeParseTransactionWith(test, {
+    // Default case: psbt format, infer recipients from explanation
+    describeParseTransactionWith(test, 'default', {
       txParams: 'inferFromExplanation',
       expectedExplicitExternalSpendAmount: 2700n,
       expectedImplicitExternalSpendAmount: 0n,
@@ -154,8 +206,15 @@ describe('parsePsbt', function () {
 
     if (test.network === utxolib.networks.bitcoin) {
       // extended test suite for bitcoin
-      describeParseTransactionWith(test, {
-        label: 'empty recipients',
+
+      describeParseTransactionWith(test, 'legacy', {
+        txFormat: 'legacy',
+        txParams: 'inferFromExplanation',
+        expectedExplicitExternalSpendAmount: 2700n,
+        expectedImplicitExternalSpendAmount: 0n,
+      });
+
+      describeParseTransactionWith(test, 'empty recipients', {
         txParams: {
           recipients: [],
           changeAddress: undefined,
