@@ -1810,7 +1810,14 @@ export class Wallet implements IWallet {
     if (params.skipKeychain !== undefined && !_.isBoolean(params.skipKeychain)) {
       throw new Error('Expected skipKeychain to be a boolean. ');
     }
-    const needsKeychain = !params.skipKeychain && params.permissions && params.permissions.indexOf('spend') !== -1;
+
+    // Check if this is a multi-user-key OFC wallet
+    // For multi-user-key wallets, skip keychain preparation regardless of other conditions
+    const needsKeychain =
+      !this.isMultiUserKeyWallet() &&
+      !params.skipKeychain &&
+      params.permissions &&
+      params.permissions.indexOf('spend') !== -1;
 
     if (params.disableEmail !== undefined && !_.isBoolean(params.disableEmail)) {
       throw new Error('Expected disableEmail to be a boolean.');
