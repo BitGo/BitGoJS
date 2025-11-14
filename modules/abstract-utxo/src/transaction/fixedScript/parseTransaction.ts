@@ -4,11 +4,10 @@ import _ from 'lodash';
 import { Triple, VerificationOptions, Wallet } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
 
-import {
+import type {
   AbstractUtxoCoin,
   FixedScriptWalletOutput,
   Output,
-  TransactionExplanation,
   ParsedTransaction,
   ParseTransactionOptions,
 } from '../../abstractUtxoCoin';
@@ -16,6 +15,7 @@ import { fetchKeychains, getKeySignatures, toKeychainTriple, UtxoKeychain, UtxoN
 import { ComparableOutput, outputDifference } from '../outputDifference';
 import { fromExtendedAddressFormatToScript, toExtendedAddressFormat } from '../recipient';
 
+import type { TransactionExplanation } from './explainTransaction';
 import { CustomChangeOptions, parseOutput } from './parseOutput';
 
 export type ComparableOutputWithExternal<TValue> = ComparableOutput<TValue> & {
@@ -53,7 +53,7 @@ export async function parseTransaction<TNumber extends bigint | number>(
   }
 
   // obtain all outputs
-  const explanation: TransactionExplanation<string | undefined> = await coin.explainTransaction<TNumber>({
+  const explanation: TransactionExplanation = await coin.explainTransaction<TNumber>({
     txHex: txPrebuild.txHex,
     txInfo: txPrebuild.txInfo,
     pubs: keychainArray.map((k) => k.pub) as Triple<string>,

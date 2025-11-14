@@ -28,6 +28,7 @@ describe('Explain Transaction', function () {
       assert.strictEqual(result.outputs.length, 1);
       assert.strictEqual(result.outputs[0].address, 'scriptPubKey:6a');
       assert.strictEqual(result.fee, '0');
+      assert.ok('signatures' in result);
       assert.strictEqual(result.signatures, 0);
       assert.ok(result.messages);
       result.messages?.forEach((obj) => {
@@ -45,6 +46,7 @@ describe('Explain Transaction', function () {
       assert.strictEqual(result.outputs.length, 1);
       assert.strictEqual(result.outputs[0].address, 'scriptPubKey:6a');
       assert.strictEqual(result.fee, '0');
+      assert.ok('signatures' in result);
       assert.strictEqual(result.signatures, 1);
       assert.ok(result.messages);
       result.messages?.forEach((obj) => {
@@ -62,6 +64,7 @@ describe('Explain Transaction', function () {
       assert.strictEqual(result.outputs.length, 1);
       assert.strictEqual(result.outputs[0].address, 'scriptPubKey:6a');
       assert.strictEqual(result.fee, '0');
+      assert.ok('signatures' in result);
       assert.strictEqual(result.signatures, 2);
       assert.ok(result.messages);
       result.messages?.forEach((obj) => {

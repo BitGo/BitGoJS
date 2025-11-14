@@ -17,7 +17,6 @@ import {
   InvalidAddressError,
   IRequestTracer,
   isTriple,
-  ITransactionExplanation as BaseTransactionExplanation,
   IWallet,
   KeychainsTriplet,
   KeyIndices,
@@ -66,6 +65,7 @@ import {
   parseTransaction,
   verifyTransaction,
 } from './transaction';
+import type { TransactionExplanation } from './transaction/fixedScript/explainTransaction';
 import {
   AggregateValidationError,
   ErrorMissingOutputs,
@@ -198,29 +198,6 @@ export function isWalletOutput(output: Output): output is FixedScriptWalletOutpu
   return (
     (output as FixedScriptWalletOutput).chain !== undefined && (output as FixedScriptWalletOutput).index !== undefined
   );
-}
-
-export interface TransactionExplanation<TFee = string> extends BaseTransactionExplanation<TFee, string> {
-  locktime?: number;
-  /** NOTE: this actually only captures external outputs */
-  outputs: Output[];
-  changeOutputs: Output[];
-
-  /**
-   * Number of input signatures per input.
-   */
-  inputSignatures: number[];
-
-  /**
-   * Highest input signature count for the transaction
-   */
-  signatures: number;
-
-  /**
-   * BIP322 messages extracted from the transaction inputs.
-   * These messages are used for verifying the transaction against the BIP322 standard.
-   */
-  messages?: Bip322Message[];
 }
 
 export interface TransactionInfo<TNumber extends number | bigint = number> {
@@ -870,9 +847,9 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * change amounts, and transaction outputs.
    * @param params
    */
-  async explainTransaction<TNumber extends number | bigint = number>(
+  override async explainTransaction<TNumber extends number | bigint = number>(
     params: ExplainTransactionOptions<TNumber>
-  ): Promise<TransactionExplanation<string | undefined>> {
+  ): Promise<TransactionExplanation> {
     return explainTx(this.decodeTransactionFromPrebuild(params), params, this.network);
   }
 

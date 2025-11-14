@@ -3,7 +3,8 @@ import assert from 'assert';
 import * as sinon from 'sinon';
 import { Wallet, UnexpectedAddressError, VerificationOptions } from '@bitgo/sdk-core';
 
-import { UtxoWallet, Output, TransactionExplanation, TransactionParams } from '../../src';
+import { UtxoWallet, Output, TransactionParams } from '../../src';
+import type { TransactionExplanation } from '../../src/transaction/fixedScript/explainTransaction';
 
 import { getUtxoCoin } from './util';
 

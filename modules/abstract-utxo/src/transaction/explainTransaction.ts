@@ -1,11 +1,14 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import { isTriple, IWallet } from '@bitgo/sdk-core';
 
-import { TransactionExplanation } from '../abstractUtxoCoin';
 import { getDescriptorMapFromWallet, isDescriptorWallet } from '../descriptor';
 import { toBip32Triple } from '../keychains';
 import { getPolicyForEnv } from '../descriptor/validatePolicy';
 
+import type {
+  TransactionExplanationUtxolibLegacy,
+  TransactionExplanationUtxolibPsbt,
+} from './fixedScript/explainTransaction';
 import * as fixedScript from './fixedScript';
 import * as descriptor from './descriptor';
 
@@ -22,7 +25,7 @@ export function explainTx<TNumber extends number | bigint>(
     changeInfo?: fixedScript.ChangeAddressInfo[];
   },
   network: utxolib.Network
-): TransactionExplanation<string | undefined> {
+): TransactionExplanationUtxolibLegacy | TransactionExplanationUtxolibPsbt {
   if (params.wallet && isDescriptorWallet(params.wallet)) {
     if (tx instanceof utxolib.bitgo.UtxoPsbt) {
       if (!params.pubs || !isTriple(params.pubs)) {
