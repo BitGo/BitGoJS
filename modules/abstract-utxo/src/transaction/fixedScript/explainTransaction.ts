@@ -41,13 +41,19 @@ interface TransactionExplanationWithSignatures<TFee = string> extends AbstractUt
   signatures: number;
 }
 
+/** For our wasm backend, we do not return the deprecated fields. We set TFee to string for backwards compatibility. */
+export type TransactionExplanationWasm = AbstractUtxoTransactionExplanation<string>;
+
 /** When parsing the legacy transaction format, we cannot always infer the fee so we set it to string | undefined */
 export type TransactionExplanationUtxolibLegacy = TransactionExplanationWithSignatures<string | undefined>;
 
 /** When parsing a PSBT, we can infer the fee so we set TFee to string. */
 export type TransactionExplanationUtxolibPsbt = TransactionExplanationWithSignatures<string>;
 
-export type TransactionExplanation = TransactionExplanationUtxolibLegacy | TransactionExplanationUtxolibPsbt;
+export type TransactionExplanation =
+  | TransactionExplanationUtxolibLegacy
+  | TransactionExplanationUtxolibPsbt
+  | TransactionExplanationWasm;
 
 export type ChangeAddressInfo = {
   address: string;
