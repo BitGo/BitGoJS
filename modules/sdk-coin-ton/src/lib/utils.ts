@@ -1,6 +1,8 @@
-import { BaseUtils, isValidEd25519PublicKey } from '@bitgo/sdk-core';
 import TonWeb from 'tonweb';
-
+import { BN } from 'bn.js';
+import { BaseUtils, isValidEd25519PublicKey } from '@bitgo/sdk-core';
+import { VESTING_CONTRACT_CODE_B64 } from './constants';
+import { VestingContractParams } from './iface';
 export class Utils implements BaseUtils {
   /** @inheritdoc */
   isValidAddress(address: string): boolean {
@@ -84,6 +86,30 @@ export class Utils implements BaseUtils {
     const slice = (cell as any).beginParse();
     const address = slice.loadAddress();
     return address.toString();
+  }
+
+  async getVestingContractAddress(params: VestingContractParams): Promise<string> {
+    const cell = new TonWeb.boc.Cell();
+    cell.bits.writeUint(0, 32); //seq no
+    cell.bits.writeUint(params.subWalletId, 32);
+    cell.bits.writeBytes(TonWeb.utils.hexToBytes(params.publicKeyHex));
+    cell.bits.writeUint(0, 1); // empty whitelist
+    const vestingParamsCell = new TonWeb.boc.Cell();
+    vestingParamsCell.bits.writeUint(params.vestingStartTime, 64);
+    vestingParamsCell.bits.writeUint(params.vestingTotalDuration, 32);
+    vestingParamsCell.bits.writeUint(params.unlockPeriod, 32);
+    vestingParamsCell.bits.writeUint(params.cliffDuration, 32);
+    vestingParamsCell.bits.writeCoins(new BN(params.vestingTotalAmount.toString()));
+    const senderAddress = new TonWeb.Address(params.vestingSenderAddress);
+    vestingParamsCell.bits.writeAddress(senderAddress);
+    const ownerAddress = new TonWeb.Address(params.ownerAddress);
+    vestingParamsCell.bits.writeAddress(ownerAddress);
+    cell.refs.push(vestingParamsCell);
+    const contractCodeCell = TonWeb.boc.Cell.oneFromBoc(TonWeb.utils.base64ToBytes(VESTING_CONTRACT_CODE_B64));
+    const stateInit = TonWeb.Contract.createStateInit(contractCodeCell, cell);
+    const stateInitHash = await stateInit.hash();
+    const contractAddress = new TonWeb.Address('0:' + TonWeb.utils.bytesToHex(stateInitHash));
+    return contractAddress.toString(true, true, true);
   }
 }
 
