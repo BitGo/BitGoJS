@@ -74,8 +74,8 @@ import {
 import { assertDescriptorWalletAddress, getDescriptorMapFromWallet, isDescriptorWallet } from './descriptor';
 import { getChainFromNetwork, getFamilyFromNetwork, getFullNameFromNetwork } from './names';
 import { assertFixedScriptWalletAddress } from './address/fixedScript';
-import { CustomChangeOptions } from './transaction/fixedScript';
-import { toBip32Triple, UtxoKeychain, UtxoNamedKeychains } from './keychains';
+import { ParsedTransaction } from './transaction/types';
+import { toBip32Triple, UtxoKeychain } from './keychains';
 import { verifyKeySignature, verifyUserPublicKey } from './verifyKey';
 import { getPolicyForEnv } from './descriptor/validatePolicy';
 import { signTransaction } from './transaction/signTransaction';
@@ -186,32 +186,10 @@ export interface VerifyAddressOptions<TCoinSpecific extends UtxoCoinSpecific> ex
   coinSpecific?: TCoinSpecific;
 }
 
-export interface BaseOutput<TAmount = string | number> {
-  address: string;
-  amount: TAmount;
-  // Even though this external flag is redundant with the chain property, it is necessary for backwards compatibility
-  // with legacy transaction format.
-  external?: boolean;
-}
-
-export interface FixedScriptWalletOutput<TAmount = string | number> extends BaseOutput<TAmount> {
-  needsCustomChangeKeySignatureVerification?: boolean;
-  chain: number;
-  index: number;
-}
-
-export type Output<TAmount = string | number> = BaseOutput<TAmount> | FixedScriptWalletOutput<TAmount>;
-
 export type Bip322Message = {
   address: string;
   message: string;
 };
-
-export function isWalletOutput(output: Output): output is FixedScriptWalletOutput {
-  return (
-    (output as FixedScriptWalletOutput).chain !== undefined && (output as FixedScriptWalletOutput).index !== undefined
-  );
-}
 
 export interface TransactionInfo<TNumber extends number | bigint = number> {
   /** Maps txid to txhex. Required for offline signing. */
@@ -254,42 +232,6 @@ export interface ParseTransactionOptions<TNumber extends number | bigint = numbe
   verification?: VerificationOptions;
   reqId?: IRequestTracer;
 }
-
-export type BaseParsedTransactionOutputs<TNumber extends number | bigint, TOutput> = {
-  /** all transaction outputs */
-  outputs: TOutput[];
-  /** transaction outputs that were specified as recipients but are missing from the transaction */
-  missingOutputs: TOutput[];
-  /** transaction outputs that were specified as recipients and are present in the transaction */
-  explicitExternalOutputs: TOutput[];
-  /** transaction outputs that were not specified as recipients but are present in the transaction */
-  implicitExternalOutputs: TOutput[];
-  /** transaction outputs that are change outputs */
-  changeOutputs: TOutput[];
-  /** sum of all explicit external outputs */
-  explicitExternalSpendAmount: TNumber;
-  /** sum of all implicit external outputs */
-  implicitExternalSpendAmount: TNumber;
-};
-
-export type BaseParsedTransaction<TNumber extends number | bigint, TOutput> = BaseParsedTransactionOutputs<
-  TNumber,
-  TOutput
-> /** Some extra properties that have nothing to do with an individual transaction */ & {
-  keychains: UtxoNamedKeychains;
-  keySignatures: {
-    backupPub?: string;
-    bitgoPub?: string;
-  };
-  needsCustomChangeKeySignatureVerification: boolean;
-  customChange?: CustomChangeOptions;
-};
-
-/**
- * This type is a bit silly because it allows the type for the aggregate amounts to be different from the type of
- * individual amounts.
- */
-export type ParsedTransaction<TNumber extends number | bigint = number> = BaseParsedTransaction<TNumber, Output>;
 
 export interface GenerateAddressOptions {
   addressType?: ScriptType2Of3;

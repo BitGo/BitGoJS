@@ -2,12 +2,8 @@ import * as utxolib from '@bitgo/utxo-lib';
 import { ITransactionRecipient, TxIntentMismatchError } from '@bitgo/sdk-core';
 import { DescriptorMap } from '@bitgo/utxo-core/descriptor';
 
-import {
-  AbstractUtxoCoin,
-  BaseOutput,
-  BaseParsedTransactionOutputs,
-  VerifyTransactionOptions,
-} from '../../abstractUtxoCoin';
+import { AbstractUtxoCoin, VerifyTransactionOptions } from '../../abstractUtxoCoin';
+import { BaseOutput, BaseParsedTransactionOutputs } from '../types';
 
 import { toBaseParsedTransactionOutputsFromPsbt } from './parse';
 

@@ -4,13 +4,8 @@ import _ from 'lodash';
 import { Triple, VerificationOptions, Wallet } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
 
-import type {
-  AbstractUtxoCoin,
-  FixedScriptWalletOutput,
-  Output,
-  ParsedTransaction,
-  ParseTransactionOptions,
-} from '../../abstractUtxoCoin';
+import type { AbstractUtxoCoin, ParseTransactionOptions } from '../../abstractUtxoCoin';
+import type { FixedScriptWalletOutput, Output, ParsedTransaction } from '../types';
 import { fetchKeychains, getKeySignatures, toKeychainTriple, UtxoKeychain, UtxoNamedKeychains } from '../../keychains';
 import { ComparableOutput, outputDifference } from '../outputDifference';
 import { fromExtendedAddressFormatToScript, toExtendedAddressFormat } from '../recipient';

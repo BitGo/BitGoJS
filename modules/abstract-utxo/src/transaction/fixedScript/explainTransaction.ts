@@ -5,7 +5,8 @@ import { bitgo } from '@bitgo/utxo-lib';
 import { ITransactionExplanation as BaseTransactionExplanation, Triple } from '@bitgo/sdk-core';
 import * as utxocore from '@bitgo/utxo-core';
 
-import type { Output, Bip322Message, FixedScriptWalletOutput } from '../../abstractUtxoCoin';
+import type { Bip322Message } from '../../abstractUtxoCoin';
+import type { Output, FixedScriptWalletOutput } from '../types';
 import { toExtendedAddressFormat } from '../recipient';
 import { getPayGoVerificationPubkey } from '../getPayGoVerificationPubkey';
 

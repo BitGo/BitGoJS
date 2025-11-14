@@ -4,7 +4,8 @@ import BigNumber from 'bignumber.js';
 import { BitGoBase, TxIntentMismatchError } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
 
-import { AbstractUtxoCoin, Output, ParsedTransaction, VerifyTransactionOptions } from '../../abstractUtxoCoin';
+import { AbstractUtxoCoin, VerifyTransactionOptions } from '../../abstractUtxoCoin';
+import { Output, ParsedTransaction } from '../types';
 import { verifyCustomChangeKeySignatures, verifyKeySignature, verifyUserPublicKey } from '../../verifyKey';
 import { getPsbtTxInputs, getTxInputs } from '../fetchInputs';
 

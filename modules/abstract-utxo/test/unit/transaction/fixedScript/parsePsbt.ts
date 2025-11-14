@@ -5,7 +5,7 @@ import * as utxolib from '@bitgo/utxo-lib';
 import { Wallet, VerificationOptions, ITransactionRecipient } from '@bitgo/sdk-core';
 
 import { parseTransaction } from '../../../../src/transaction/fixedScript/parseTransaction';
-import { ParsedTransaction } from '../../../../src/abstractUtxoCoin';
+import { ParsedTransaction } from '../../../../src/transaction/types';
 import { UtxoWallet } from '../../../../src/wallet';
 import { getUtxoCoin } from '../../util';
 import { explainPsbt } from '../../../../src/transaction/fixedScript';

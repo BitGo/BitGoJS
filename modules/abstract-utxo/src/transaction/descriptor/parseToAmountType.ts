@@ -1,4 +1,5 @@
-import { AbstractUtxoCoin, BaseOutput, BaseParsedTransaction, ParseTransactionOptions } from '../../abstractUtxoCoin';
+import { AbstractUtxoCoin, ParseTransactionOptions } from '../../abstractUtxoCoin';
+import { BaseOutput, BaseParsedTransaction } from '../types';
 import { IDescriptorWallet } from '../../descriptor/descriptorWallet';
 
 import { parse, ParsedDescriptorTransaction } from './parse';
