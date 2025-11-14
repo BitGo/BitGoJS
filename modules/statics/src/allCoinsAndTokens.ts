@@ -1939,7 +1939,7 @@ export const allCoinsAndTokens = [
     8,
     UnderlyingAsset.APT,
     BaseUnit.APT,
-    [...APT_FEATURES, CoinFeature.STAKING],
+    APT_FEATURES,
     KeyCurve.Ed25519,
     80,
     200
