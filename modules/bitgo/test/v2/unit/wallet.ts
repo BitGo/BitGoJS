@@ -2069,6 +2069,148 @@ describe('V2 Wallet:', function () {
       getSharingKeyNock.isDone().should.be.True();
       getKeyNock.isDone().should.be.True();
     });
+
+    describe('OFC Multi-User-Key Wallet Sharing', function () {
+      const userId = '123';
+      const permissions = 'view,spend';
+      let ofcWallet: Wallet;
+      let ofcMultiUserKeyWallet: Wallet;
+
+      before(function () {
+        const ofcCoin = bitgo.coin('ofc');
+
+        // Regular OFC wallet without multi-user-key feature
+        const regularOfcWalletData = {
+          id: '5b34252f1bf349930e3400c00000000',
+          coin: 'ofc',
+          keys: [
+            '5b3424f91bf349930e34018100000000',
+            '5b3424f91bf349930e34018200000000',
+            '5b3424f91bf349930e34018300000000',
+          ],
+          coinSpecific: {},
+          multisigType: 'onchain',
+          type: 'hot',
+        } as any;
+        ofcWallet = new Wallet(bitgo, ofcCoin, regularOfcWalletData);
+
+        // OFC wallet with multi-user-key feature
+        const multiUserKeyWalletData = {
+          id: '5b34252f1bf349930e3400d00000000',
+          coin: 'ofc',
+          keys: [
+            '5b3424f91bf349930e34018400000000',
+            '5b3424f91bf349930e34018500000000',
+            '5b3424f91bf349930e34018600000000',
+          ],
+          coinSpecific: {
+            features: ['multi-user-key'],
+          },
+          multisigType: 'onchain',
+          type: 'hot',
+        } as any;
+        ofcMultiUserKeyWallet = new Wallet(bitgo, ofcCoin, multiUserKeyWalletData);
+      });
+
+      afterEach(function () {
+        sinon.restore();
+        nock.cleanAll();
+      });
+
+      it('should exclude keychain property for multi-user-key wallets in createShare', async function () {
+        const createShareParams = {
+          user: userId,
+          permissions,
+        };
+
+        const createShareNock = nock(bgUrl)
+          .post(`/api/v2/ofc/wallet/${ofcMultiUserKeyWallet.id()}/share`, (body) => {
+            // Verify that keychain is not included in the request
+            body.should.not.have.property('keychain');
+            body.user.should.equal(userId);
+            body.permissions.should.equal(permissions);
+            return true;
+          })
+          .reply(200, {});
+
+        await ofcMultiUserKeyWallet.createShare(createShareParams);
+
+        createShareNock.isDone().should.be.True();
+      });
+
+      it('should throw error when keychain is provided for multi-user-key wallets in createShare', async function () {
+        const createShareParams = {
+          user: userId,
+          permissions,
+          keychain: {
+            pub: 'xpub661MyMwAqRbcFXDcWD2vxuebcT1ZpTF4Vke6qmMW8yzddwNYpAPjvYEEL5jLfyYXW2fuxtAxY8TgjPUJLcf1C8qz9N6VgZxArKX4EwB8rH5',
+            encryptedPrv: 'encrypted',
+            fromPubKey: 'fromPub',
+            toPubKey: 'toPub',
+            path: 'm/999999/1/1',
+          },
+        };
+
+        await ofcMultiUserKeyWallet
+          .createShare(createShareParams)
+          .should.be.rejectedWith('keychain property must not be provided for multi-user-key wallets');
+      });
+
+      it('should include keychain property for non-multi-user-key OFC wallets', async function () {
+        const createShareParams = {
+          user: userId,
+          permissions,
+          keychain: {
+            pub: 'xpub661MyMwAqRbcFXDcWD2vxuebcT1ZpTF4Vke6qmMW8yzddwNYpAPjvYEEL5jLfyYXW2fuxtAxY8TgjPUJLcf1C8qz9N6VgZxArKX4EwB8rH5',
+            encryptedPrv: 'encrypted',
+            fromPubKey: 'fromPub',
+            toPubKey: 'toPub',
+            path: 'm/999999/1/1',
+          },
+        };
+
+        const createShareNock = nock(bgUrl)
+          .post(`/api/v2/ofc/wallet/${ofcWallet.id()}/share`, (body) => {
+            // Verify that keychain IS included in the request for regular wallets
+            body.should.have.property('keychain');
+            body.keychain.should.have.property('pub');
+            body.keychain.should.have.property('encryptedPrv');
+            body.keychain.should.have.property('fromPubKey');
+            body.keychain.should.have.property('toPubKey');
+            body.keychain.should.have.property('path');
+            body.user.should.equal(userId);
+            body.permissions.should.equal(permissions);
+            return true;
+          })
+          .reply(200, {});
+
+        await ofcWallet.createShare(createShareParams);
+
+        createShareNock.isDone().should.be.True();
+      });
+
+      it('should handle empty keychain object for multi-user-key wallets', async function () {
+        const createShareParams = {
+          user: userId,
+          permissions,
+          keychain: {},
+        };
+
+        const createShareNock = nock(bgUrl)
+          .post(`/api/v2/ofc/wallet/${ofcMultiUserKeyWallet.id()}/share`, (body) => {
+            // Verify that keychain is not included in the request even if passed as empty
+            body.should.not.have.property('keychain');
+            body.user.should.equal(userId);
+            body.permissions.should.equal(permissions);
+            return true;
+          })
+          .reply(200, {});
+
+        await ofcMultiUserKeyWallet.createShare(createShareParams);
+
+        createShareNock.isDone().should.be.True();
+      });
+    });
   });
 
   describe('Wallet Freezing', function () {
