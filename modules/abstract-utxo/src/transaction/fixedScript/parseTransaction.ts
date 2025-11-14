@@ -65,7 +65,18 @@ export async function parseTransaction<TNumber extends bigint | number>(
   if (txParams.rbfTxIds) {
     assert(txParams.rbfTxIds.length === 1);
 
-    const txToBeReplaced = await wallet.getTransaction({ txHash: txParams.rbfTxIds[0], includeRbf: true });
+    const rbfTxId = txParams.rbfTxIds[0];
+
+    // validate the fetched transaction matches the provided rbfTxId
+    const txToBeReplaced = await wallet.getTransaction({ txHash: rbfTxId, includeRbf: true });
+    const decodedRbfTransactionId = (await coin.explainTransaction({ txHex: txToBeReplaced.txHex })).id;
+
+    if (decodedRbfTransactionId !== rbfTxId) {
+      throw new Error(
+        `The provided rbfTxId ${rbfTxId} does not match the decoded transaction id ${decodedRbfTransactionId}`
+      );
+    }
+
     expectedOutputs = txToBeReplaced.outputs.flatMap(
       (output: { valueString: string; address?: string; wallet?: string }) => {
         // For self-sends, the walletId will be the same as the wallet's id
