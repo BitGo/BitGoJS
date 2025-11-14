@@ -189,11 +189,13 @@ export async function parseTransaction<TNumber extends bigint | number>(
 
   /**
    * The calculation of the implicit external spend amount pertains to verifying the pay-as-you-go-fee BitGo
-   * automatically applies to transactions sending money out of the wallet. The logic is fairly straightforward
+   * automatically applied to transactions sending money out of the wallet. The logic is fairly straightforward
    * in that we compare the external spend amount that was specified explicitly by the user to the portion
    * that was specified implicitly. To protect customers from people tampering with the transaction outputs, we
    * define a threshold for the maximum percentage of the implicit external spend in relation to the explicit
    * external spend.
+   *
+   * This has become obsolete with the intoduction of `utxocore.paygo.verifyPayGoAddressProof()`.
    */
 
   // make sure that all the extra addresses are change addresses
