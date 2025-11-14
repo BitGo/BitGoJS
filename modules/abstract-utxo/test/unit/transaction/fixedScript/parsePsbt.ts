@@ -32,7 +32,6 @@ function getTxParamsFromExplanation(explanation: TransactionExplanation): {
 
 function describeParseTransactionWith(
   acidTest: utxolib.testutil.AcidTest,
-  explanation: TransactionExplanation,
   {
     label = 'default',
     txParams,
@@ -40,10 +39,12 @@ function describeParseTransactionWith(
     expectedImplicitExternalSpendAmount,
   }: {
     label?: string;
-    txParams: {
-      recipients: ITransactionRecipient[];
-      changeAddress?: string;
-    };
+    txParams:
+      | {
+          recipients: ITransactionRecipient[];
+          changeAddress?: string;
+        }
+      | 'inferFromExplanation';
     expectedExplicitExternalSpendAmount: bigint;
     expectedImplicitExternalSpendAmount: bigint;
   }
@@ -57,6 +58,18 @@ function describeParseTransactionWith(
     before('prepare', async function () {
       const coinName = getChainFromNetwork(acidTest.network);
       coin = getUtxoCoin(coinName);
+
+      // Create PSBT and explanation
+      const psbt = acidTest.createPsbt();
+      const explanation = explainPsbt(psbt, { pubs: acidTest.rootWalletKeys }, acidTest.network, {
+        strict: true,
+      });
+
+      // Determine txParams
+      const resolvedTxParams =
+        txParams === 'inferFromExplanation' || txParams === undefined
+          ? getTxParamsFromExplanation(explanation)
+          : txParams;
 
       // Create mock wallet
       mockWallet = sinon.createStubInstance(Wallet);
@@ -81,9 +94,9 @@ function describeParseTransactionWith(
 
       refParsedTransaction = await parseTransaction(coin, {
         wallet: mockWallet as unknown as UtxoWallet,
-        txParams,
+        txParams: resolvedTxParams,
         txPrebuild: {
-          txHex: acidTest.createPsbt().toHex(),
+          txHex: psbt.toHex(),
         },
         verification,
       });
@@ -132,21 +145,16 @@ function describeParseTransactionWith(
 
 describe('parsePsbt', function () {
   utxolib.testutil.AcidTest.suite().forEach((test) => {
-    const psbt = test.createPsbt();
-    const explanation: TransactionExplanation = explainPsbt(psbt, { pubs: test.rootWalletKeys }, test.network, {
-      strict: true,
-    });
-
     // Default case: infer recipients from explanation
-    describeParseTransactionWith(test, explanation, {
-      txParams: getTxParamsFromExplanation(explanation),
+    describeParseTransactionWith(test, {
+      txParams: 'inferFromExplanation',
       expectedExplicitExternalSpendAmount: 2700n,
       expectedImplicitExternalSpendAmount: 0n,
     });
 
     if (test.network === utxolib.networks.bitcoin) {
       // extended test suite for bitcoin
-      describeParseTransactionWith(test, explanation, {
+      describeParseTransactionWith(test, {
         label: 'empty recipients',
         txParams: {
           recipients: [],
