@@ -49,6 +49,7 @@ describe('PendingApproval codec tests', function () {
   describe('pendingApprovalRequestBody', function () {
     it('should validate body with all fields', function () {
       const validBody = {
+        state: 'approved',
         walletPassphrase: 'mySecurePassword',
         otp: '123456',
         tx: 'transactionHexString',
@@ -58,6 +59,7 @@ describe('PendingApproval codec tests', function () {
       };
 
       const decoded = assertDecode(t.type(pendingApprovalRequestBody), validBody);
+      assert.strictEqual(decoded.state, validBody.state);
       assert.strictEqual(decoded.walletPassphrase, validBody.walletPassphrase);
       assert.strictEqual(decoded.otp, validBody.otp);
       assert.strictEqual(decoded.tx, validBody.tx);
@@ -66,10 +68,13 @@ describe('PendingApproval codec tests', function () {
       assert.strictEqual(decoded.pendingApprovalId, validBody.pendingApprovalId);
     });
 
-    it('should validate body with no fields (all optional)', function () {
-      const validBody = {};
+    it('should validate body with only state field', function () {
+      const validBody = {
+        state: 'approved',
+      };
 
       const decoded = assertDecode(t.type(pendingApprovalRequestBody), validBody);
+      assert.strictEqual(decoded.state, validBody.state);
       assert.strictEqual(decoded.walletPassphrase, undefined);
       assert.strictEqual(decoded.otp, undefined);
       assert.strictEqual(decoded.tx, undefined);
@@ -80,11 +85,13 @@ describe('PendingApproval codec tests', function () {
 
     it('should validate body with some fields', function () {
       const validBody = {
+        state: 'rejected',
         walletPassphrase: 'mySecurePassword',
         otp: '123456',
       };
 
       const decoded = assertDecode(t.type(pendingApprovalRequestBody), validBody);
+      assert.strictEqual(decoded.state, validBody.state);
       assert.strictEqual(decoded.walletPassphrase, validBody.walletPassphrase);
       assert.strictEqual(decoded.otp, validBody.otp);
       assert.strictEqual(decoded.tx, undefined);
@@ -93,8 +100,60 @@ describe('PendingApproval codec tests', function () {
       assert.strictEqual(decoded.pendingApprovalId, undefined);
     });
 
+    it('should validate body with missing state field (defaults to rejection)', function () {
+      const validBody = {
+        walletPassphrase: 'mySecurePassword',
+      };
+
+      const decoded = assertDecode(t.type(pendingApprovalRequestBody), validBody);
+      assert.strictEqual(decoded.state, undefined);
+      assert.strictEqual(decoded.walletPassphrase, validBody.walletPassphrase);
+    });
+
+    it('should validate empty body (defaults to rejection)', function () {
+      const validBody = {};
+
+      const decoded = assertDecode(t.type(pendingApprovalRequestBody), validBody);
+      assert.strictEqual(decoded.state, undefined);
+      assert.strictEqual(decoded.walletPassphrase, undefined);
+      assert.strictEqual(decoded.otp, undefined);
+      assert.strictEqual(decoded.tx, undefined);
+      assert.strictEqual(decoded.xprv, undefined);
+      assert.strictEqual(decoded.previewPendingTxs, undefined);
+      assert.strictEqual(decoded.pendingApprovalId, undefined);
+    });
+
+    it('should reject body with non-string state', function () {
+      const invalidBody = {
+        state: 12345, // number instead of string
+      };
+
+      assert.throws(() => {
+        assertDecode(t.type(pendingApprovalRequestBody), invalidBody);
+      });
+    });
+
+    it('should validate body with state "approved"', function () {
+      const validBody = {
+        state: 'approved',
+      };
+
+      const decoded = assertDecode(t.type(pendingApprovalRequestBody), validBody);
+      assert.strictEqual(decoded.state, 'approved');
+    });
+
+    it('should validate body with state "rejected"', function () {
+      const validBody = {
+        state: 'rejected',
+      };
+
+      const decoded = assertDecode(t.type(pendingApprovalRequestBody), validBody);
+      assert.strictEqual(decoded.state, 'rejected');
+    });
+
     it('should reject body with non-string walletPassphrase', function () {
       const invalidBody = {
+        state: 'approved',
         walletPassphrase: 12345, // number instead of string
       };
 
@@ -105,6 +164,7 @@ describe('PendingApproval codec tests', function () {
 
     it('should reject body with non-string otp', function () {
       const invalidBody = {
+        state: 'approved',
         otp: 123456, // number instead of string
       };
 
@@ -115,6 +175,7 @@ describe('PendingApproval codec tests', function () {
 
     it('should reject body with non-string tx', function () {
       const invalidBody = {
+        state: 'approved',
         tx: 12345, // number instead of string
       };
 
@@ -125,6 +186,7 @@ describe('PendingApproval codec tests', function () {
 
     it('should reject body with non-string xprv', function () {
       const invalidBody = {
+        state: 'approved',
         xprv: 12345, // number instead of string
       };
 
@@ -135,6 +197,7 @@ describe('PendingApproval codec tests', function () {
 
     it('should reject body with non-boolean previewPendingTxs', function () {
       const invalidBody = {
+        state: 'approved',
         previewPendingTxs: 'true', // string instead of boolean
       };
 
@@ -145,6 +208,7 @@ describe('PendingApproval codec tests', function () {
 
     it('should reject body with non-string pendingApprovalId', function () {
       const invalidBody = {
+        state: 'approved',
         pendingApprovalId: 12345, // number instead of string
       };
 
@@ -157,6 +221,7 @@ describe('PendingApproval codec tests', function () {
   describe('Edge cases', function () {
     it('should handle empty strings for string fields', function () {
       const body = {
+        state: '',
         walletPassphrase: '',
         otp: '',
         tx: '',
@@ -165,6 +230,7 @@ describe('PendingApproval codec tests', function () {
       };
 
       const decoded = assertDecode(t.type(pendingApprovalRequestBody), body);
+      assert.strictEqual(decoded.state, '');
       assert.strictEqual(decoded.walletPassphrase, '');
       assert.strictEqual(decoded.otp, '');
       assert.strictEqual(decoded.tx, '');
@@ -174,12 +240,14 @@ describe('PendingApproval codec tests', function () {
 
     it('should handle additional unknown properties', function () {
       const body = {
+        state: 'approved',
         walletPassphrase: 'mySecurePassword',
         unknownProperty: 'some value',
       };
 
       // io-ts with t.exact() strips out additional properties
       const decoded = assertDecode(t.exact(t.type(pendingApprovalRequestBody)), body);
+      assert.strictEqual(decoded.state, 'approved');
       assert.strictEqual(decoded.walletPassphrase, 'mySecurePassword');
       // @ts-expect-error - unknownProperty doesn't exist on the type
       assert.strictEqual(decoded.unknownProperty, undefined);
@@ -352,6 +420,7 @@ describe('PendingApproval codec tests', function () {
     it('should successfully preview pending transactions', async function () {
       const approvalId = '123456789abcdef';
       const requestBody = {
+        state: 'approved',
         previewPendingTxs: true,
       };
 
@@ -417,6 +486,7 @@ describe('PendingApproval codec tests', function () {
     it('should handle SDK method failure', async function () {
       const approvalId = '123456789abcdef';
       const requestBody = {
+        state: 'approved',
         walletPassphrase: 'mySecurePassword',
       };
 
@@ -442,6 +512,7 @@ describe('PendingApproval codec tests', function () {
     it('should handle invalid type in request field', async function () {
       const approvalId = '123456789abcdef';
       const requestBody = {
+        state: 'approved',
         walletPassphrase: 12345, // number instead of string
       };
 
@@ -457,6 +528,7 @@ describe('PendingApproval codec tests', function () {
     it('should handle invalid previewPendingTxs type', async function () {
       const approvalId = '123456789abcdef';
       const requestBody = {
+        state: 'approved',
         previewPendingTxs: 'true', // string instead of boolean
       };
 
