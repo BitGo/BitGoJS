@@ -11,7 +11,7 @@
     "clean": "rm -r ./dist",
     "lint": "eslint --quiet .",
     "test": "npm run coverage",
-    "coverage": "nyc -- npm run unit-test",
+    "coverage": "c8 -- npm run unit-test",
     "unit-test": "mocha",
     "prepare": "npm run build"
   },
@@ -41,7 +41,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "nyc": {
+  "c8": {
     "extension": [
       ".ts"
     ]

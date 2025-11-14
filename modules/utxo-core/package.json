@@ -80,7 +80,8 @@
   "publishConfig": {
     "access": "public"
   },
-  "nyc": {
+  "type": "commonjs",
+  "c8": {
     "extension": [
       ".ts"
     ]

@@ -31,7 +31,7 @@
     "clean": "rm -r ./dist",
     "lint": "eslint --quiet .",
     "prepare": "npm run build",
-    "coverage": "nyc -- npm run unit-test",
+    "coverage": "c8 -- npm run unit-test",
     "unit-test": "mocha --recursive \"test/**/*.ts\""
   },
   "author": "BitGo SDK Team <sdkteam@bitgo.com>",
@@ -53,7 +53,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "nyc": {
+  "c8": {
     "extension": [
       ".ts"
     ]

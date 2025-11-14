@@ -27,7 +27,7 @@
     "webpack-prod": "NODE_OPTIONS=--max-old-space-size=4096 cross-env NODE_ENV=production webpack",
     "test": "npm run coverage",
     "unit-test": "NODE_OPTIONS=--max-old-space-size=8192 mocha 'test/v2/unit/**/*.ts' 'test/unit/**/*.ts'",
-    "coverage": "nyc -- npm run unit-test",
+    "coverage": "c8 -- npm run unit-test",
     "integration-test": "nyc -- mocha \"test/v2/integration/**/*.ts\"",
     "browser-test": "karma start karma.conf.js",
     "lint": "eslint --quiet .",
@@ -162,7 +162,7 @@
     "ethereumjs-abi": "^0.6.5",
     "ethereumjs-util": "7.1.5"
   },
-  "nyc": {
+  "c8": {
     "extension": [
       ".ts"
     ]

@@ -7,7 +7,7 @@
   "scripts": {
     "build": "yarn tsc --build --incremental --verbose .",
     "test": "yarn unit-test",
-    "unit-test": "nyc -- mocha --recursive test",
+    "unit-test": "c8 -- mocha --recursive test",
     "fmt": "prettier --write .",
     "check-fmt": "prettier --check '**/*.{ts,js,json}'",
     "clean": "rm -r ./dist",
@@ -33,7 +33,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "nyc": {
+  "c8": {
     "extension": [
       ".ts"
     ]

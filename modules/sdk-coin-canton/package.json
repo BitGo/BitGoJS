@@ -30,7 +30,7 @@
     "lint": "eslint --quiet .",
     "prepare": "npm run build-ts && shx cp -r ./resources ./dist",
     "test": "npm run coverage",
-    "coverage": "nyc -- npm run unit-test",
+    "coverage": "c8 -- npm run unit-test",
     "unit-test": "mocha"
   },
   "author": "BitGo SDK Team <sdkteam@bitgo.com>",
@@ -52,7 +52,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "nyc": {
+  "c8": {
     "extension": [
       ".ts"
     ]

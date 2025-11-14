@@ -101,7 +101,7 @@
       "yarn eslint --fix"
     ]
   },
-  "nyc": {
+  "c8": {
     "extension": [
       ".ts"
     ]

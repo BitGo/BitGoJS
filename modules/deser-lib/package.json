@@ -25,7 +25,7 @@
     "url": "https://github.com/bitgo/bitgojs/issues"
   },
   "homepage": "https://github.com/bitgo/bitgojs#readme",
-  "nyc": {
+  "c8": {
     "extension": [
       ".ts"
     ]

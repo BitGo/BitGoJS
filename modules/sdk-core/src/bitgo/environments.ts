@@ -93,6 +93,7 @@ interface EnvironmentTemplate {
     [key: string]: {
       baseUrl: string;
       apiToken?: string;
+      rpcUrl?: string;
     };
   };
   // The key here is coinFamily and it will be same for both mainnet and testnet (eg: 'cronos')
@@ -269,8 +270,9 @@ const mainnetBase: EnvironmentTemplate = {
     megaeth: {
       baseUrl: 'https://carrot.megaeth.com/rpc', //TODO: add mainnet url when available
     },
-    hedera: {
-      baseUrl: 'https://server-verify.hashscan.io/verify',
+    hbarevm: {
+      baseUrl: 'https://mainnet.mirrornode.hedera.com/api/v1',
+      rpcUrl: 'https://mainnet.hashio.io/api',
     },
     fluenteth: {
       baseUrl: 'https://testnet.fluentscan.xyz/api/', //TODO: COIN-6478: add mainnet url when available
@@ -415,8 +417,9 @@ const testnetBase: EnvironmentTemplate = {
     plume: {
       baseUrl: 'https://testnet-explorer.plume.org',
     },
-    hedera: {
-      baseUrl: 'https://server-verify.hashscan.io/verify',
+    hbarevm: {
+      baseUrl: 'https://testnet.mirrornode.hedera.com/api/v1',
+      rpcUrl: 'https://testnet.hashio.io/api',
     },
     fluenteth: {
       baseUrl: 'https://testnet.fluentscan.xyz/api/',

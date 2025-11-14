@@ -31,7 +31,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "nyc": {
+  "c8": {
     "extension": [
       ".ts"
     ]

@@ -12,7 +12,7 @@
     "lint-fix": "eslint --fix 'src/**/*.ts' 'test/**/*.ts'",
     "prepare": "npm run build-ts && shx cp -r ./resources ./dist",
     "build-ts": "tsc --build --incremental --verbose .",
-    "unit-test": "nyc -- mocha",
+    "unit-test": "c8 -- mocha",
     "test": "npm run unit-test",
     "unprettied": "grep -R -L --include '*.ts' --include '*.js' --include '*.json' '@prettier' src test"
   },
@@ -100,7 +100,7 @@
     "paillier-bigint": "3.3.0",
     "shx": "^0.3.4"
   },
-  "nyc": {
+  "c8": {
     "extension": [
       ".ts"
     ],
