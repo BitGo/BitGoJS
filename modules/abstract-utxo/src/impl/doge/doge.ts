@@ -6,7 +6,6 @@ import {
   UtxoNetwork,
   SignTransactionOptions,
   ExplainTransactionOptions,
-  TransactionExplanation,
   ParseTransactionOptions,
   ParsedTransaction,
   VerifyTransactionOptions,
@@ -14,6 +13,7 @@ import {
   TransactionInfo,
   TransactionPrebuild,
 } from '../../abstractUtxoCoin';
+import type { TransactionExplanation } from '../../transaction/fixedScript/explainTransaction';
 import type { CrossChainRecoverySigned, CrossChainRecoveryUnsigned } from '../../recovery/crossChainRecovery';
 
 type UnspentJSON = bitgo.Unspent<number> & { valueString: string };
@@ -114,7 +114,7 @@ export class Doge extends AbstractUtxoCoin {
 
   async explainTransaction<TNumber extends number | bigint = bigint>(
     params: ExplainTransactionOptions<TNumber> | (ExplainTransactionOptions<TNumber> & { txInfo: TransactionInfoJSON })
-  ): Promise<TransactionExplanation<string | undefined>> {
+  ): Promise<TransactionExplanation> {
     return super.explainTransaction({
       ...params,
       txInfo: params.txInfo ? parseTransactionInfo(params.txInfo as TransactionInfoJSON) : undefined,

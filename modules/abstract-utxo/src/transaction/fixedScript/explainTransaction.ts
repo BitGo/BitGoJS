@@ -2,12 +2,52 @@ import * as utxolib from '@bitgo/utxo-lib';
 import { bip322 } from '@bitgo/utxo-core';
 import { BIP32Interface, bip32 } from '@bitgo/secp256k1';
 import { bitgo } from '@bitgo/utxo-lib';
-import { Triple } from '@bitgo/sdk-core';
+import { ITransactionExplanation as BaseTransactionExplanation, Triple } from '@bitgo/sdk-core';
 import * as utxocore from '@bitgo/utxo-core';
 
-import { Output, TransactionExplanation, Bip322Message, FixedScriptWalletOutput } from '../../abstractUtxoCoin';
+import type { Output, Bip322Message, FixedScriptWalletOutput } from '../../abstractUtxoCoin';
 import { toExtendedAddressFormat } from '../recipient';
 import { getPayGoVerificationPubkey } from '../getPayGoVerificationPubkey';
+
+// ===== Transaction Explanation Type Definitions =====
+
+export interface AbstractUtxoTransactionExplanation<TFee = string> extends BaseTransactionExplanation<TFee, string> {
+  /** NOTE: this actually only captures external outputs */
+  outputs: Output[];
+  changeOutputs: Output[];
+
+  /**
+   * BIP322 messages extracted from the transaction inputs.
+   * These messages are used for verifying the transaction against the BIP322 standard.
+   */
+  messages?: Bip322Message[];
+}
+
+/** @deprecated - the signature fields are not very useful */
+interface TransactionExplanationWithSignatures<TFee = string> extends AbstractUtxoTransactionExplanation<TFee> {
+  /** @deprecated - unused outside of tests */
+  locktime?: number;
+
+  /**
+   * Number of input signatures per input.
+   * @deprecated - this is not very useful without knowing who signed each input.
+   */
+  inputSignatures: number[];
+
+  /**
+   * Highest input signature count for the transaction
+   * @deprecated - this is not very useful without knowing who signed each input.
+   */
+  signatures: number;
+}
+
+/** When parsing the legacy transaction format, we cannot always infer the fee so we set it to string | undefined */
+export type TransactionExplanationUtxolibLegacy = TransactionExplanationWithSignatures<string | undefined>;
+
+/** When parsing a PSBT, we can infer the fee so we set TFee to string. */
+export type TransactionExplanationUtxolibPsbt = TransactionExplanationWithSignatures<string>;
+
+export type TransactionExplanation = TransactionExplanationUtxolibLegacy | TransactionExplanationUtxolibPsbt;
 
 export type ChangeAddressInfo = {
   address: string;
@@ -302,7 +342,7 @@ export function explainPsbt(
   },
   network: utxolib.Network,
   { strict = false }: { strict?: boolean } = {}
-): TransactionExplanation {
+): TransactionExplanationUtxolibPsbt {
   const payGoVerificationInfo = getPayGoVerificationInfo(psbt, network);
   if (payGoVerificationInfo) {
     try {
@@ -356,7 +396,7 @@ export function explainLegacyTx<TNumber extends number | bigint>(
     changeInfo?: { address: string; chain: number; index: number }[];
   },
   network: utxolib.Network
-): TransactionExplanation<string | undefined> {
+): TransactionExplanationUtxolibLegacy {
   const common = explainCommon(tx, params, network);
   const inputSignaturesCount = getTxInputSignaturesCount(tx, params, network);
   return {

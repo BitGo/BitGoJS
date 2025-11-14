@@ -564,12 +564,16 @@ function run<TNumber extends number | bigint = number>(
           ? 2
           : undefined;
 
-      explanation.inputSignatures.should.eql(
-        // FIXME(BG-35154): implement signature verification for replay protection inputs
-        inputScripts.map((type) => (type === 'p2shP2pk' ? 0 : expectedSignatureCount))
-      );
-      explanation.signatures.should.eql(expectedSignatureCount);
-      explanation.changeAmount.should.eql('0'); // no change addresses given
+      if ('inputSignatures' in explanation) {
+        explanation.inputSignatures.should.eql(
+          // FIXME(BG-35154): implement signature verification for replay protection inputs
+          inputScripts.map((type) => (type === 'p2shP2pk' ? 0 : expectedSignatureCount))
+        );
+      }
+      if ('signatures' in explanation) {
+        explanation.signatures.should.eql(expectedSignatureCount);
+        explanation.changeAmount.should.eql('0'); // no change addresses given
+      }
       let expectedOutputAmount =
         BigInt((txFormat === 'psbt' ? getUnspentsForPsbt() : getUnspents()).length) * BigInt(value);
       inputScripts.forEach((type) => {
