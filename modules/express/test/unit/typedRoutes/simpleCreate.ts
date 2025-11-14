@@ -1,6 +1,10 @@
 import * as assert from 'assert';
 import * as t from 'io-ts';
-import { SimpleCreateRequestBody, PostSimpleCreate } from '../../../src/typedRoutes/api/v1/simpleCreate';
+import {
+  SimpleCreateRequestBody,
+  SimpleCreateResponse,
+  PostSimpleCreate,
+} from '../../../src/typedRoutes/api/v1/simpleCreate';
 import { assertDecode } from './common';
 import 'should';
 import 'should-http';
@@ -68,25 +72,52 @@ describe('SimpleCreate codec tests', function () {
   });
 
   describe('SimpleCreateResponse', function () {
-    const SimpleCreateResponse = PostSimpleCreate.response[200];
-
-    it('should validate response with all required fields', function () {
+    it('should validate response with all required fields as objects', function () {
       const validResponse = {
-        wallet: 'wallet_id_123',
-        userKeychain: 'user_keychain_123',
-        backupKeychain: 'backup_keychain_123',
+        wallet: {
+          id: 'wallet_id_123',
+          label: 'My Wallet',
+          m: 2,
+          n: 3,
+        },
+        userKeychain: {
+          xpub: 'xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8',
+          encryptedXprv: 'encrypted_xprv_data',
+        },
+        backupKeychain: {
+          xpub: 'xpub661MyMwAqRbcFW31YEwpkMuc5THy2PSt5bDMsktWQcFF8syAmRUapSCGu8ED9W6oDMSgv6Zz8idoc4a6mr8BDzTJY47LJhkJ8UB7WEGuduB',
+        },
+        bitgoKeychain: {
+          xpub: 'xpub661MyMwAqRbcGU7FnXMKSHMwbWxARxYJUpKD1CoMJP6vonLT9bZZaWYq7A7tKPXmDFFXTKigT7VHMnbtEnjCmxQ1E93ZJe6HDKwxWD28M6f',
+          isBitGo: true,
+        },
       };
 
       const decoded = assertDecode(SimpleCreateResponse, validResponse);
-      assert.strictEqual(decoded.wallet, validResponse.wallet);
-      assert.strictEqual(decoded.userKeychain, validResponse.userKeychain);
-      assert.strictEqual(decoded.backupKeychain, validResponse.backupKeychain);
+      assert.deepStrictEqual(decoded.wallet, validResponse.wallet);
+      assert.deepStrictEqual(decoded.userKeychain, validResponse.userKeychain);
+      assert.deepStrictEqual(decoded.backupKeychain, validResponse.backupKeychain);
+      assert.deepStrictEqual(decoded.bitgoKeychain, validResponse.bitgoKeychain);
+    });
+
+    it('should validate response with optional warning field', function () {
+      const validResponse = {
+        wallet: { id: 'wallet_id_123' },
+        userKeychain: { xpub: 'xpub123' },
+        backupKeychain: { xpub: 'xpub456', xprv: 'xprv789' },
+        bitgoKeychain: { xpub: 'xpub789' },
+        warning: 'Be sure to backup the backup keychain -- it is not stored anywhere else!',
+      };
+
+      const decoded = assertDecode(SimpleCreateResponse, validResponse);
+      assert.strictEqual(decoded.warning, validResponse.warning);
     });
 
     it('should reject response with missing wallet field', function () {
       const invalidResponse = {
-        userKeychain: 'user_keychain_123',
-        backupKeychain: 'backup_keychain_123',
+        userKeychain: { xpub: 'xpub123' },
+        backupKeychain: { xpub: 'xpub456' },
+        bitgoKeychain: { xpub: 'xpub789' },
       };
 
       assert.throws(() => {
@@ -94,11 +125,24 @@ describe('SimpleCreate codec tests', function () {
       });
     });
 
-    it('should reject response with non-string fields', function () {
+    it('should reject response with missing bitgoKeychain field', function () {
       const invalidResponse = {
-        wallet: 123,
-        userKeychain: 'user_keychain_123',
-        backupKeychain: 'backup_keychain_123',
+        wallet: { id: 'wallet_id_123' },
+        userKeychain: { xpub: 'xpub123' },
+        backupKeychain: { xpub: 'xpub456' },
+      };
+
+      assert.throws(() => {
+        assertDecode(SimpleCreateResponse, invalidResponse);
+      });
+    });
+
+    it('should reject response with non-object fields', function () {
+      const invalidResponse = {
+        wallet: 'not_an_object',
+        userKeychain: { xpub: 'xpub123' },
+        backupKeychain: { xpub: 'xpub456' },
+        bitgoKeychain: { xpub: 'xpub789' },
       };
 
       assert.throws(() => {
@@ -130,9 +174,24 @@ describe('SimpleCreate codec tests', function () {
     const agent = setupAgent();
 
     const mockCreateWalletResponse = {
-      wallet: 'wallet_id_123',
-      userKeychain: 'user_keychain_123',
-      backupKeychain: 'backup_keychain_123',
+      wallet: {
+        id: 'wallet_id_123',
+        label: 'My Test Wallet',
+        m: 2,
+        n: 3,
+        keychains: [{ xpub: 'xpub_user' }, { xpub: 'xpub_backup' }, { xpub: 'xpub_bitgo' }],
+      },
+      userKeychain: {
+        xpub: 'xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8',
+        encryptedXprv: 'encrypted_user_xprv',
+      },
+      backupKeychain: {
+        xpub: 'xpub661MyMwAqRbcFW31YEwpkMuc5THy2PSt5bDMsktWQcFF8syAmRUapSCGu8ED9W6oDMSgv6Zz8idoc4a6mr8BDzTJY47LJhkJ8UB7WEGuduB',
+      },
+      bitgoKeychain: {
+        xpub: 'xpub661MyMwAqRbcGU7FnXMKSHMwbWxARxYJUpKD1CoMJP6vonLT9bZZaWYq7A7tKPXmDFFXTKigT7VHMnbtEnjCmxQ1E93ZJe6HDKwxWD28M6f',
+        isBitGo: true,
+      },
     };
 
     afterEach(function () {
@@ -161,10 +220,11 @@ describe('SimpleCreate codec tests', function () {
       result.body.should.have.property('wallet');
       result.body.should.have.property('userKeychain');
       result.body.should.have.property('backupKeychain');
-      assert.strictEqual(result.body.wallet, mockCreateWalletResponse.wallet);
+      result.body.should.have.property('bitgoKeychain');
+      assert.deepStrictEqual(result.body.wallet, mockCreateWalletResponse.wallet);
 
-      const decodedResponse = assertDecode(PostSimpleCreate.response[200], result.body);
-      assert.strictEqual(decodedResponse.wallet, mockCreateWalletResponse.wallet);
+      const decodedResponse = assertDecode(SimpleCreateResponse, result.body);
+      assert.deepStrictEqual(decodedResponse.wallet, mockCreateWalletResponse.wallet);
 
       sinon.assert.calledOnce(createWalletStub);
       sinon.assert.calledWith(createWalletStub, requestBody);
@@ -194,9 +254,9 @@ describe('SimpleCreate codec tests', function () {
         .send(requestBody);
 
       assert.strictEqual(result.status, 200);
-      assert.strictEqual(result.body.wallet, mockCreateWalletResponse.wallet);
+      assert.deepStrictEqual(result.body.wallet, mockCreateWalletResponse.wallet);
 
-      const decodedResponse = assertDecode(PostSimpleCreate.response[200], result.body);
+      const decodedResponse = assertDecode(SimpleCreateResponse, result.body);
       assert.ok(decodedResponse);
 
       sinon.assert.calledOnce(createWalletStub);
@@ -224,7 +284,7 @@ describe('SimpleCreate codec tests', function () {
         .send(requestBody);
 
       assert.strictEqual(result.status, 200);
-      assert.strictEqual(result.body.wallet, mockCreateWalletResponse.wallet);
+      assert.deepStrictEqual(result.body.wallet, mockCreateWalletResponse.wallet);
 
       sinon.assert.calledOnce(createWalletStub);
       sinon.assert.calledWith(createWalletStub, requestBody);
