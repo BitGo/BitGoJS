@@ -4533,6 +4533,23 @@ export const tOfcErc20Coins = [
   ),
   ofcerc20('c71454e2-c51c-40df-8605-e57f2d97ed53', 'ofceth:yu', 'Yala Stablecoin', 18, UnderlyingAsset['eth:yu']),
   ofcerc20('72427813-ec17-4100-8d6d-844a3f71f34e', 'ofceth:fbtc', 'Function Bitcoin', 8, UnderlyingAsset['eth:fbtc']),
+  ofcerc20(
+    'e050aeab-a9c9-4962-b42f-d350c88efb37',
+    'ofceth:byzusd',
+    'Byzantine Prime USD',
+    18,
+    UnderlyingAsset['eth:byzusd']
+  ),
+  ofcerc20(
+    'c3bbb0f5-a0d8-4651-ac4b-3727383f59ec',
+    'ofceth:audm',
+    'Macropod Stablecoin',
+    18,
+    UnderlyingAsset['eth:audm']
+  ),
+  ofcerc20('884a97f2-5808-4614-814e-2cd1d17d29df', 'ofceth:usdi', 'USDi', 6, UnderlyingAsset['eth:usdi']),
+  ofcerc20('f4e98148-b703-4608-b416-67cd89c8a9f0', 'ofceth:tea', 'Tea', 18, UnderlyingAsset['eth:tea']),
+  ofcerc20('727298fe-56c5-477a-92af-5b4139e792ea', 'ofceth:ofc', 'OneFootball Club', 18, UnderlyingAsset['eth:ofc']),
 ];
 
 function underlyingAssetForSymbol(underlyingAssetValue: string): UnderlyingAsset {

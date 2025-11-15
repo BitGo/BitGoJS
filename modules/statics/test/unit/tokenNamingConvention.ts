@@ -1,4 +1,4 @@
-import { erc20Coins } from '../../src/coins/erc20Coins';
+import { erc20Tokens } from '../../src/coins/erc20Tokens';
 import { cosmosTokens } from '../../src/coins/cosmosTokens';
 import { avaxTokens } from '../../src/coins/avaxTokens';
 import { bscTokens } from '../../src/coins/bscTokens';
@@ -9,7 +9,7 @@ import { NetworkType } from '../../src/networks';
 
 describe('Token Naming Convention Tests', function () {
   const allTokens = [
-    ...erc20Coins,
+    ...erc20Tokens,
     ...cosmosTokens,
     ...avaxTokens,
     ...bscTokens,

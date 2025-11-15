@@ -2310,6 +2310,11 @@ export enum UnderlyingAsset {
   'eth:kpk' = 'eth:kpk',
   'eth:devve' = 'eth:devve',
   'eth:fbtc' = 'eth:fbtc',
+  'eth:byzusd' = 'eth:byzusd',
+  'eth:audm' = 'eth:audm',
+  'eth:usdi' = 'eth:usdi',
+  'eth:tea' = 'eth:tea',
+  'eth:ofc' = 'eth:ofc',
 
   'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ' = 'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ',
   'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M' = 'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M',
@@ -2583,6 +2588,7 @@ export enum UnderlyingAsset {
   'polygon:zig' = 'polygon:zig',
   'polygon:brl1' = 'polygon:brl1',
   'polygon:cnktplus' = 'polygon:cnktplus',
+  'polygon:mmt54' = 'polygon:mmt54',
   // Polygon NFTs
   // generic NFTs
   'erc721:polygontoken' = 'erc721:polygontoken',
