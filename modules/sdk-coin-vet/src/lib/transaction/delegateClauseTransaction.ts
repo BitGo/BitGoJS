@@ -6,17 +6,25 @@ import { VetTransactionData } from '../iface';
 import EthereumAbi from 'ethereumjs-abi';
 import utils from '../utils';
 import BigNumber from 'bignumber.js';
-import { addHexPrefix } from 'ethereumjs-util';
+import { addHexPrefix, BN } from 'ethereumjs-util';
 import { ZERO_VALUE_AMOUNT } from '../constants';
 
 export class DelegateClauseTransaction extends Transaction {
   private _stakingContractAddress: string;
-  private _tokenId: number;
-  private _delegateForever = true;
+  private _tokenId: string;
+  private _validator: string;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
     this._type = TransactionType.StakingDelegate;
+  }
+
+  get validator(): string {
+    return this._validator;
+  }
+
+  set validator(address: string) {
+    this._validator = address;
   }
 
   get stakingContractAddress(): string {
@@ -27,20 +35,12 @@ export class DelegateClauseTransaction extends Transaction {
     this._stakingContractAddress = address;
   }
 
-  get tokenId(): number {
+  get tokenId(): string {
     return this._tokenId;
   }
 
-  set tokenId(tokenId: number) {
+  set tokenId(tokenId: string) {
     this._tokenId = tokenId;
-  }
-
-  get delegateForever(): boolean {
-    return this._delegateForever;
-  }
-
-  set delegateForever(delegateForever: boolean) {
-    this._delegateForever = delegateForever;
   }
 
   buildClauses(): void {
@@ -54,7 +54,11 @@ export class DelegateClauseTransaction extends Transaction {
       throw new Error('Token ID is not set');
     }
 
-    const data = this.getDelegateData(this.tokenId, this.delegateForever);
+    if (this.validator === undefined || this.validator === null) {
+      throw new Error('Validator address is not set');
+    }
+
+    const data = this.getDelegateData(this.tokenId, this.validator);
     this._transactionData = data;
 
     // Create the clause for delegation
@@ -80,10 +84,10 @@ export class DelegateClauseTransaction extends Transaction {
    * @param {number} tokenId - The Token ID for delegation
    * @returns {string} - The encoded transaction data
    */
-  getDelegateData(levelId: number, delegateForever = true): string {
+  getDelegateData(tokenId: string, validatorAddress: string): string {
     const methodName = 'delegate';
-    const types = ['uint256', 'bool'];
-    const params = [levelId, delegateForever];
+    const types = ['uint256', 'address'];
+    const params = [new BN(tokenId), validatorAddress];
 
     const method = EthereumAbi.methodID(methodName, types);
     const args = EthereumAbi.rawEncode(types, params);
@@ -107,8 +111,8 @@ export class DelegateClauseTransaction extends Transaction {
       to: this.stakingContractAddress,
       stakingContractAddress: this.stakingContractAddress,
       amountToStake: ZERO_VALUE_AMOUNT,
-      nftTokenId: this.tokenId,
-      autorenew: this.delegateForever,
+      tokenId: this.tokenId,
+      validatorAddress: this.validator,
     };
 
     return json;
@@ -144,7 +148,7 @@ export class DelegateClauseTransaction extends Transaction {
           this.transactionData = clause.data;
           const decoded = utils.decodeDelegateClauseData(clause.data);
           this.tokenId = decoded.tokenId;
-          this.delegateForever = decoded.delegateForever;
+          this.validator = decoded.validator;
         }
       }
 
