@@ -37,6 +37,7 @@ import * as moduleBitgo from '@bitgo/sdk-core';
 describe('V2 Wallets:', function () {
   const bitgo = TestBitGo.decorate(BitGo, { env: 'mock' });
   let wallets;
+  let ofcWallets;
   let bgUrl;
 
   before(function () {
@@ -46,6 +47,7 @@ describe('V2 Wallets:', function () {
 
     const basecoin = bitgo.coin('tbtc');
     wallets = basecoin.wallets();
+    ofcWallets = bitgo.coin('ofc').wallets();
     bgUrl = common.Environments[bitgo.getEnv()].uri;
   });
 
@@ -517,8 +519,6 @@ describe('V2 Wallets:', function () {
     });
 
     it('should generate Go Account wallet', async () => {
-      const ofcWallets = bitgo.coin('ofc').wallets();
-
       const params: GenerateWalletOptions = {
         label: 'Go Account Wallet',
         passphrase: 'go_account_password',
@@ -1391,7 +1391,7 @@ describe('V2 Wallets:', function () {
           });
 
         // Validate accept share case
-        await wallets
+        await ofcWallets
           .acceptShare({ walletShareId: shareId })
           .should.be.rejectedWith('userPassword param must be provided to decrypt shared key');
         walletShareNock.done();
@@ -1403,13 +1403,13 @@ describe('V2 Wallets:', function () {
         const userPassword = 'test_case_2';
         // create a user key
         const keyChainNock = nock(bgUrl)
-          .post('/api/v2/tbtc/key', _.conforms({ pub: (p) => p.startsWith('xpub') }))
+          .post('/api/v2/ofc/key', _.conforms({ pub: (p) => p.startsWith('xpub') }))
           .reply(200, (uri, requestBody) => {
             return { id: keychainId, encryptedPrv: requestBody['encryptedPrv'], pub: requestBody['pub'] };
           });
 
         const walletShareInfoNock = nock(bgUrl)
-          .get(`/api/v2/tbtc/walletshare/${shareId}`)
+          .get(`/api/v2/ofc/walletshare/${shareId}`)
           .reply(200, {
             keychainOverrideRequired: true,
             permissions: ['admin', 'spend', 'view'],
@@ -1417,17 +1417,21 @@ describe('V2 Wallets:', function () {
 
         const acceptShareNock = nock(bgUrl)
           .post(`/api/v2/ofc/walletshare/${shareId}`, (body: any) => {
-            if (body.walletShareId !== shareId || body.state !== 'accepted' || body.keyId !== keychainId) {
-              return false;
-            }
-            return true;
+            // Check required fields are present (signature and payload are dynamic)
+            return (
+              body.walletShareId === shareId &&
+              body.state === 'accepted' &&
+              body.keyId === keychainId &&
+              typeof body.signature === 'string' &&
+              typeof body.payload === 'string'
+            );
           })
           .reply(200, { changed: false });
 
         // Stub wallet share wallet method
         const walletShareStub = sandbox.stub(Wallet.prototype, 'shareWallet').onCall(0).resolves('success');
 
-        const res = await wallets.acceptShare({ walletShareId: shareId, userPassword });
+        const res = await ofcWallets.acceptShare({ walletShareId: shareId, userPassword });
         should.equal(res.changed, false);
         keyChainNock.done();
         walletShareInfoNock.done();
@@ -1442,13 +1446,13 @@ describe('V2 Wallets:', function () {
 
         // create a user key
         const keyChainNock = nock(bgUrl)
-          .post('/api/v2/tbtc/key', _.conforms({ pub: (p) => p.startsWith('xpub') }))
+          .post('/api/v2/ofc/key', _.conforms({ pub: (p) => p.startsWith('xpub') }))
           .reply(200, (uri, requestBody) => {
             return { id: keychainId, encryptedPrv: requestBody['encryptedPrv'], pub: requestBody['pub'] };
           });
 
         const walletShareInfoNock = nock(bgUrl)
-          .get(`/api/v2/tbtc/walletshare/${shareId}`)
+          .get(`/api/v2/ofc/walletshare/${shareId}`)
           .reply(200, {
             keychainOverrideRequired: true,
             permissions: ['admin', 'spend', 'view'],
@@ -1456,17 +1460,21 @@ describe('V2 Wallets:', function () {
 
         const acceptShareNock = nock(bgUrl)
           .post(`/api/v2/ofc/walletshare/${shareId}`, (body: any) => {
-            if (body.walletShareId !== shareId || body.state !== 'accepted' || body.keyId !== keychainId) {
-              return false;
-            }
-            return true;
+            // Check required fields are present (signature and payload are dynamic)
+            return (
+              body.walletShareId === shareId &&
+              body.state === 'accepted' &&
+              body.keyId === keychainId &&
+              typeof body.signature === 'string' &&
+              typeof body.payload === 'string'
+            );
           })
           .reply(200, { changed: true, state: 'not_accepted' });
 
         // Stub wallet share wallet method
         const walletShareStub = sandbox.stub(Wallet.prototype, 'shareWallet').onCall(0).resolves('success');
 
-        const res = await wallets.acceptShare({ walletShareId: shareId, userPassword });
+        const res = await ofcWallets.acceptShare({ walletShareId: shareId, userPassword });
         should.equal(res.changed, true);
         should.equal(res.state, 'not_accepted');
         keyChainNock.done();
@@ -1528,22 +1536,26 @@ describe('V2 Wallets:', function () {
 
         // create a user key
         const keyChainCreateNock = nock(bgUrl)
-          .post('/api/v2/tbtc/key', _.conforms({ pub: (p) => p.startsWith('xpub') }))
+          .post('/api/v2/ofc/key', _.conforms({ pub: (p) => p.startsWith('xpub') }))
           .reply(200, (uri, requestBody) => {
             return { id: keychainId, encryptedPrv: requestBody['encryptedPrv'], pub: requestBody['pub'] };
           });
 
         const acceptShareNock = nock(bgUrl)
           .post(`/api/v2/ofc/walletshare/${shareId}`, (body: any) => {
-            if (body.walletShareId !== shareId || body.state !== 'accepted' || body.keyId !== keychainId) {
-              return false;
-            }
-            return true;
+            // Check required fields are present (signature and payload are dynamic)
+            return (
+              body.walletShareId === shareId &&
+              body.state === 'accepted' &&
+              body.keyId === keychainId &&
+              typeof body.signature === 'string' &&
+              typeof body.payload === 'string'
+            );
           })
           .reply(200, { changed: true, state: 'accepted' });
 
         const walletInfoNock = nock(bgUrl)
-          .get(`/api/v2/tbtc/wallet/${walletId}`)
+          .get(`/api/v2/ofc/wallet/${walletId}`)
           .reply(200, {
             users: [spenderUserOne.payload, spenderUserTwo.payload, adminUser.payload, viewerUser.payload],
             enterprise: enterpriseId,
@@ -1588,7 +1600,7 @@ describe('V2 Wallets:', function () {
           skipKeychain: false,
         };
 
-        const res = await wallets.acceptShare({ walletShareId: shareId, userPassword });
+        const res = await ofcWallets.acceptShare({ walletShareId: shareId, userPassword });
         should.equal(res.changed, true);
         should.equal(res.state, 'accepted');
         keyChainCreateNock.done();
@@ -1645,7 +1657,7 @@ describe('V2 Wallets:', function () {
         const enterpriseId = 'test_case_6';
 
         const walletShareNock = nock(bgUrl)
-          .get(`/api/v2/ofc/walletshare/${shareId}`)
+          .get(`/api/v2/tbtc/walletshare/${shareId}`)
           .reply(200, {
             keychainOverrideRequired: true,
             permissions: ['admin', 'spend', 'view'],
@@ -1660,11 +1672,15 @@ describe('V2 Wallets:', function () {
           });
 
         const acceptShareNock = nock(bgUrl)
-          .post(`/api/v2/ofc/walletshare/${shareId}`, (body: any) => {
-            if (body.walletShareId !== shareId || body.state !== 'accepted' || body.keyId !== keychainId) {
-              return false;
-            }
-            return true;
+          .post(`/api/v2/tbtc/walletshare/${shareId}`, (body: any) => {
+            // Check required fields are present (signature and payload are dynamic)
+            return (
+              body.walletShareId === shareId &&
+              body.state === 'accepted' &&
+              body.keyId === keychainId &&
+              typeof body.signature === 'string' &&
+              typeof body.payload === 'string'
+            );
           })
           .reply(200, { changed: true, state: 'accepted' });
 
@@ -1730,12 +1746,6 @@ describe('V2 Wallets:', function () {
 
     describe('Wallet share where userMultiKeyRotationRequired is set true', () => {
       const sandbox = sinon.createSandbox();
-      let ofcWallets;
-
-      before(function () {
-        const ofcCoin = bitgo.coin('ofc');
-        ofcWallets = ofcCoin.wallets();
-      });
 
       afterEach(function () {
         sandbox.verifyAndRestore();
@@ -1927,6 +1937,126 @@ describe('V2 Wallets:', function () {
         should.deepEqual(result.acceptedWalletShares[0], { walletShareId: 'test_multi_key_bulk_1' });
         should.equal(keychainsStub.calledOnce, true);
         should.equal(encryptStub.calledWith({ input: keychain.prv, password: userPassword }), true);
+      });
+
+      it('should handle bulk accept share with userMultiKeyRotationRequired and newWalletPassphrase', async function () {
+        const shareId = 'test_multi_key_bulk_2';
+        const userPassword = 'test_password_123';
+        const newWalletPassphrase = 'new_wallet_passphrase_456';
+
+        // Mock listSharesV2 to return a share with userMultiKeyRotationRequired
+        sandbox.stub(Wallets.prototype, 'listSharesV2').resolves({
+          incoming: [
+            {
+              id: shareId,
+              coin: 'ofc',
+              walletLabel: 'test wallet',
+              fromUser: 'fromUser',
+              toUser: 'toUser',
+              wallet: 'wallet123',
+              permissions: ['admin', 'spend', 'view'],
+              state: 'active',
+              userMultiKeyRotationRequired: true,
+              // No keychain - this is the key difference for multi-user-key shares
+            },
+          ],
+          outgoing: [],
+        });
+
+        const testKeychain = bitgo.coin('ofc').keychains().create();
+        const keychain = {
+          prv: testKeychain.prv,
+          pub: testKeychain.pub,
+        };
+
+        // Set up stubs first
+        const keychainsInstance = ofcWallets.baseCoin.keychains();
+        const keychainsStub = sandbox.stub(keychainsInstance, 'create').returns(keychain);
+
+        // Should encrypt with newWalletPassphrase if provided (as per implementation)
+        const encryptedPrv = bitgo.encrypt({ input: keychain.prv, password: newWalletPassphrase });
+        const encryptStub = sandbox.stub(bitgo, 'encrypt').returns(encryptedPrv);
+
+        // Mock bulk update API - this is called via bulkUpdateWalletShare
+        nock(bgUrl)
+          .put('/api/v2/walletshares/update', (body: any) => {
+            if (!body.shares || body.shares.length !== 1) {
+              return false;
+            }
+            const share = body.shares[0];
+            return (
+              share.walletShareId === shareId &&
+              share.status === 'accept' &&
+              share.pub === keychain.pub &&
+              share.encryptedPrv === encryptedPrv
+            );
+          })
+          .reply(200, {
+            acceptedWalletShares: [{ walletShareId: shareId }],
+            rejectedWalletShares: [],
+            walletShareUpdateErrors: [],
+          });
+
+        const result = await ofcWallets.bulkUpdateWalletShare({
+          shares: [{ walletShareId: shareId, status: 'accept' }],
+          userLoginPassword: userPassword,
+          newWalletPassphrase: newWalletPassphrase,
+        });
+
+        should.equal(result.acceptedWalletShares.length, 1);
+        should.deepEqual(result.acceptedWalletShares[0], { walletShareId: shareId });
+        should.equal(keychainsStub.calledOnce, true);
+        // Verify encrypt was called with newWalletPassphrase (not userPassword)
+        should.equal(encryptStub.calledWith({ input: keychain.prv, password: newWalletPassphrase }), true);
+      });
+
+      it('should throw error when neither userLoginPassword nor newWalletPassphrase provided for bulk accept', async function () {
+        const shareId = 'test_multi_key_bulk_3';
+
+        // Mock listSharesV2 to return a share with userMultiKeyRotationRequired
+        sandbox.stub(Wallets.prototype, 'listSharesV2').resolves({
+          incoming: [
+            {
+              id: shareId,
+              coin: 'ofc',
+              walletLabel: 'test wallet',
+              fromUser: 'fromUser',
+              toUser: 'toUser',
+              wallet: 'wallet123',
+              permissions: ['admin', 'spend', 'view'],
+              state: 'active',
+              userMultiKeyRotationRequired: true,
+            },
+          ],
+          outgoing: [],
+        });
+
+        // Mock user settings API call (required by bulkUpdateWalletShare)
+        nock(bgUrl).get('/api/v1/user/settings').reply(200, {});
+
+        // Mock bulkUpdateWalletShareRequest - when there are errors, it's called with empty array
+        nock(bgUrl)
+          .put('/api/v2/walletshares/update', (body: any) => {
+            return body.shares && body.shares.length === 0;
+          })
+          .reply(200, {
+            acceptedWalletShares: [],
+            rejectedWalletShares: [],
+            walletShareUpdateErrors: [],
+          });
+
+        // bulkUpdateWalletShare uses Promise.allSettled, so errors are caught and returned in walletShareUpdateErrors
+        // We need to check the result for errors instead of expecting a rejection
+        const result = await ofcWallets.bulkUpdateWalletShare({
+          shares: [{ walletShareId: shareId, status: 'accept' }],
+        });
+
+        // Verify that the error was captured in walletShareUpdateErrors
+        should.equal(result.walletShareUpdateErrors.length, 1);
+        should.equal(result.walletShareUpdateErrors[0].walletShareId, shareId);
+        should(result.walletShareUpdateErrors[0].reason).containEql(
+          'userLoginPassword param must be provided to generate user keychain'
+        );
       });
 
       it('should work with newWalletPassphrase parameter', async function () {
@@ -2838,8 +2968,9 @@ describe('V2 Wallets:', function () {
         ]);
       });
 
-      it('should handle special override cases and reshare with spenders', async () => {
-        const walletPassphrase = 'bitgo1234';
+      it('should handle keychainOverrideRequired with newWalletPassphrase in bulk operations', async () => {
+        const userLoginPassword = 'bitgo1234';
+        const newWalletPassphrase = 'new_wallet_passphrase_456';
 
         // Mock listSharesV2 to return a share with keychainOverrideRequired
         sinon.stub(Wallets.prototype, 'listSharesV2').resolves({
@@ -2859,17 +2990,91 @@ describe('V2 Wallets:', function () {
           outgoing: [],
         });
 
+        // Mock user settings API call (required by bulkUpdateWalletShare)
+        nock(bgUrl).get('/api/v1/user/settings').reply(200, {});
+
+        // Mock getECDHKeychain (required by bulkUpdateWalletShare when userLoginPassword is provided)
+        sinon.stub(bitgo, 'getECDHKeychain').resolves({
+          encryptedXprv: 'encryptedXprv',
+        });
+
         // Setup for the baseCoin.keychains().createUserKeychain
         const userKeychain = {
           id: 'key1',
           pub: 'pubKey',
           encryptedPrv: 'encryptedPrivateKey',
         };
-        sinon.stub(wallets.baseCoin.keychains(), 'createUserKeychain').resolves(userKeychain);
+        const createUserKeychainStub = sinon
+          .stub(wallets.baseCoin.keychains(), 'createUserKeychain')
+          .resolves(userKeychain);
 
         // Mock decrypt and signMessage
         sinon.stub(bitgo, 'decrypt').returns('decryptedPrivateKey');
         sinon.stub(wallets.baseCoin, 'signMessage').resolves(Buffer.from('signature'));
+
+        // Mock bulkUpdateWalletShareRequest
+        const bulkUpdateStub = sinon.stub(Wallets.prototype, 'bulkUpdateWalletShareRequest').resolves({
+          acceptedWalletShares: ['share1'],
+          rejectedWalletShares: [],
+          walletShareUpdateErrors: [],
+        });
+
+        // Mock reshareWalletWithSpenders (called for keychainOverrideRequired cases)
+        const reshareStub = sinon.stub(Wallets.prototype, 'reshareWalletWithSpenders').resolves();
+
+        const result = await wallets.bulkUpdateWalletShare({
+          shares: [{ walletShareId: 'share1', status: 'accept' }],
+          userLoginPassword: userLoginPassword,
+          newWalletPassphrase: newWalletPassphrase,
+        });
+
+        // Verify createUserKeychain was called with newWalletPassphrase (not userLoginPassword)
+        createUserKeychainStub.calledOnce.should.be.true();
+        createUserKeychainStub.calledWith(newWalletPassphrase).should.be.true();
+
+        // Verify the result
+        assert.deepEqual(result, {
+          acceptedWalletShares: ['share1'],
+          rejectedWalletShares: [],
+          walletShareUpdateErrors: [],
+        });
+
+        bulkUpdateStub.calledOnce.should.be.true();
+        // Verify reshare was called for keychainOverrideRequired case
+        reshareStub.calledOnce.should.be.true();
+      });
+
+      it('should handle special override cases and reshare with spenders', async () => {
+        const walletPassphrase = 'bitgo1234';
+        // Mock listSharesV2 to return a share with keychainOverrideRequired
+        sinon.stub(Wallets.prototype, 'listSharesV2').resolves({
+          incoming: [
+            {
+              id: 'share1',
+              coin: 'ofc',
+              walletLabel: 'testing',
+              fromUser: 'dummyFromUser',
+              toUser: 'dummyToUser',
+              wallet: 'wallet1',
+              permissions: ['admin', 'spend'],
+              state: 'active',
+              keychainOverrideRequired: true,
+            },
+          ],
+          outgoing: [],
+        });
+
+        // Setup for the baseCoin.keychains().createUserKeychain
+        const userKeychain = {
+          id: 'key1',
+          pub: 'pubKey',
+          encryptedPrv: 'encryptedPrivateKey',
+        };
+        sinon.stub(ofcWallets.baseCoin.keychains(), 'createUserKeychain').resolves(userKeychain);
+
+        // Mock decrypt and signMessage
+        sinon.stub(bitgo, 'decrypt').returns('decryptedPrivateKey');
+        sinon.stub(ofcWallets.baseCoin, 'signMessage').resolves(Buffer.from('signature'));
 
         // Mock getECDHKeychain
         sinon.stub(bitgo, 'getECDHKeychain').resolves({
@@ -2886,7 +3091,7 @@ describe('V2 Wallets:', function () {
         // Mock reshareWalletWithSpenders
         const reshareStub = sinon.stub(Wallets.prototype, 'reshareWalletWithSpenders').resolves();
 
-        const result = await wallets.bulkUpdateWalletShare({
+        const result = await ofcWallets.bulkUpdateWalletShare({
           shares: [{ walletShareId: 'share1', status: 'accept' }],
           userLoginPassword: walletPassphrase,
         });

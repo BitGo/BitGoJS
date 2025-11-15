@@ -1310,7 +1310,9 @@ export class Wallets implements IWallets {
         throw new Error('userLoginPassword param must be provided to decrypt shared key');
       }
 
-      const walletKeychain = await this.baseCoin.keychains().createUserKeychain(userLoginPassword);
+      const walletKeychain = await this.baseCoin
+        .keychains()
+        .createUserKeychain(newWalletPassphrase || userLoginPassword);
       if (!walletKeychain.encryptedPrv) {
         throw new Error('encryptedPrv was not found on wallet keychain');
       }
@@ -1341,7 +1343,7 @@ export class Wallets implements IWallets {
 
     // Multi-user-key case: requires user to provide their own public key
     if (walletShare.userMultiKeyRotationRequired) {
-      if (!userLoginPassword) {
+      if (!(newWalletPassphrase || userLoginPassword)) {
         throw new Error('userLoginPassword param must be provided to generate user keychain');
       }
 
