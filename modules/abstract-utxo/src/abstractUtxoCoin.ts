@@ -84,6 +84,24 @@ import { isDescriptorWalletData } from './descriptor/descriptorWallet';
 
 import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 
+type TxFormat = 'legacy' | 'psbt' | 'psbt-lite';
+
+function isTxFormat(txFormat: unknown): txFormat is TxFormat {
+  return txFormat === 'legacy' || txFormat === 'psbt' || txFormat === 'psbt-lite';
+}
+
+class ErrorInvalidTxFormat extends Error {
+  constructor(txFormat: unknown) {
+    super(`Invalid txFormat: ${txFormat}. Must be one of: legacy, psbt, psbt-lite`);
+  }
+}
+
+class ErrorDeprecatedTxFormat extends Error {
+  constructor(txFormat: unknown) {
+    super(`Deprecated txFormat: ${txFormat} for this network`);
+  }
+}
+
 type UtxoCustomSigningFunction<TNumber extends number | bigint> = {
   (params: {
     coin: IBaseCoin;
@@ -957,36 +975,55 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     };
   }
 
-  private shouldDefaultToPsbtTxFormat(buildParams: ExtraPrebuildParamsOptions & { wallet: Wallet }) {
-    const walletFlagMusigKp = buildParams.wallet.flag('musigKp') === 'true';
-    const isHotWallet = buildParams.wallet.type() === 'hot';
+  private getTxFormat(wallet: Wallet, requestedTxFormat: unknown): TxFormat | undefined {
+    if (utxolib.isTestnet(this.network)) {
+      if (requestedTxFormat !== undefined && !isTxFormat(requestedTxFormat)) {
+        throw new ErrorInvalidTxFormat(requestedTxFormat);
+      }
+
+      if (utxolib.getMainnet(this.network) === utxolib.networks.bitcoin) {
+        if (requestedTxFormat === 'legacy') {
+          throw new ErrorDeprecatedTxFormat(requestedTxFormat);
+        }
+
+        return 'psbt-lite';
+      }
+    }
+
+    if (requestedTxFormat !== undefined) {
+      return requestedTxFormat as TxFormat;
+    }
+
+    if (utxolib.getMainnet(this.network) === utxolib.networks.zcash) {
+      // FIXME(BTC-1322): fix zcash PSBT support
+      return 'legacy';
+    }
+
+    const walletFlagMusigKp = wallet.flag('musigKp') === 'true';
+    const isHotWallet = wallet.type() === 'hot';
 
     // if not txFormat is already specified figure out if we should default to psbt format
-    return (
-      buildParams.txFormat === undefined &&
-      (buildParams.wallet.subType() === 'distributedCustody' ||
-        // default to testnet for all utxo coins except zcash
-        (isTestnet(this.network) &&
-          // FIXME(BTC-1322): fix zcash PSBT support
-          getMainnet(this.network) !== utxolib.networks.zcash &&
-          isHotWallet) ||
-        // if mainnet, only default to psbt for btc hot wallets
-        (isMainnet(this.network) && getMainnet(this.network) === utxolib.networks.bitcoin && isHotWallet) ||
-        // default to psbt if it has the wallet flag
-        walletFlagMusigKp)
-    );
+    if (
+      wallet.subType() === 'distributedCustody' ||
+      // default to testnet for all utxo coins except zcash
+      (isTestnet(this.network) && isHotWallet) ||
+      // if mainnet, only default to psbt for btc hot wallets
+      (isMainnet(this.network) && getMainnet(this.network) === utxolib.networks.bitcoin && isHotWallet) ||
+      // default to psbt if it has the wallet flag
+      walletFlagMusigKp
+    ) {
+      return 'psbt';
+    }
+
+    // let API decide
+    return undefined;
   }
 
   async getExtraPrebuildParams(buildParams: ExtraPrebuildParamsOptions & { wallet: Wallet }): Promise<{
-    txFormat?: 'legacy' | 'psbt';
+    txFormat?: TxFormat;
     changeAddressType?: ScriptType2Of3[] | ScriptType2Of3;
   }> {
-    let txFormat = buildParams.txFormat as 'legacy' | 'psbt' | undefined;
     let changeAddressType = buildParams.changeAddressType as ScriptType2Of3[] | ScriptType2Of3 | undefined;
-
-    if (this.shouldDefaultToPsbtTxFormat(buildParams)) {
-      txFormat = 'psbt';
-    }
 
     // if the addressType is not specified, we need to default to p2trMusig2 for testnet hot wallets for staged rollout of p2trMusig2
     if (
@@ -999,7 +1036,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     }
 
     return {
-      txFormat,
+      txFormat: this.getTxFormat(buildParams.wallet, buildParams.txFormat),
       changeAddressType,
     };
   }
