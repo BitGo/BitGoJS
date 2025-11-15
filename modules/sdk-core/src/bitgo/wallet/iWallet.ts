@@ -657,7 +657,16 @@ export interface WalletShare {
   enterprise?: string;
   message?: string;
   pendingApprovalId?: string;
+  /**
+   * If true, the wallet share requires the user to provide a new keychain.
+   * When accepted, the wallet will be re-shared with all other spenders.
+   */
   keychainOverrideRequired?: boolean;
+  /**
+   * If true, the wallet share requires the user to provide to generate a new key-pair.
+   * In addition to the encrypted private key, the user must provide the public key.
+   * */
+  userMultiKeyRotationRequired?: boolean;
   isUMSInitiated?: boolean;
   keychain?: BulkWalletShareKeychain;
 }

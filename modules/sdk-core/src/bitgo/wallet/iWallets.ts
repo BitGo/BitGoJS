@@ -120,6 +120,7 @@ export interface UpdateShareOptions {
   keyId?: string;
   signature?: string;
   payload?: string;
+  pub?: string;
 }
 
 export interface AcceptShareOptions {
@@ -138,6 +139,11 @@ export interface BulkAcceptShareOptions {
 export interface AcceptShareOptionsRequest {
   walletShareId: string;
   encryptedPrv: string;
+  /**
+   * The public associated to the encrypted private key.
+   * Required for userMultiKeyRotationRequired shares.
+   */
+  pub?: string;
 }
 
 export interface BulkUpdateWalletShareOptions {
@@ -156,6 +162,7 @@ export interface BulkUpdateWalletShareOptionsRequest {
   keyId?: string;
   signature?: string;
   payload?: string;
+  pub?: string;
 }
 
 export interface BulkUpdateWalletShareResponse {
