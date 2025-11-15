@@ -663,7 +663,7 @@ export interface WalletShare {
    */
   keychainOverrideRequired?: boolean;
   /**
-   * If true, the wallet share requires the user to provide to generate a new key-pair.
+   * If true, the wallet share requires the user to to generate a new key-pair.
    * In addition to the encrypted private key, the user must provide the public key.
    * */
   userMultiKeyRotationRequired?: boolean;
