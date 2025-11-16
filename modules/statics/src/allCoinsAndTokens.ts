@@ -1926,7 +1926,7 @@ export const allCoinsAndTokens = [
     8,
     UnderlyingAsset.APT,
     BaseUnit.APT,
-    APT_FEATURES,
+    [...APT_FEATURES, CoinFeature.STAKING],
     KeyCurve.Ed25519,
     80,
     200
@@ -1939,7 +1939,7 @@ export const allCoinsAndTokens = [
     8,
     UnderlyingAsset.APT,
     BaseUnit.APT,
-    APT_FEATURES,
+    [...APT_FEATURES, CoinFeature.STAKING],
     KeyCurve.Ed25519,
     80,
     200
