@@ -10,10 +10,7 @@ export interface VetParseTransactionOptions extends ParseTransactionOptions {
 
 export interface ClaimRewardsData {
   tokenId: string;
-  delegationContractAddress?: string;
-  stargateNftAddress?: string;
-  claimBaseRewards?: boolean;
-  claimStakingRewards?: boolean;
+  stakingContractAddress?: string;
 }
 
 export type RecoverOptions = {

@@ -32,7 +32,6 @@ export interface VetTransactionData {
   nftTokenId?: number; // Used as tier level (levelId) for stakeAndDelegate method (not the actual NFT token ID)
   autorenew?: boolean; // Autorenew flag for stakeAndDelegate method
   nftCollectionId?: string;
-  claimRewardsData?: ClaimRewardsData;
   validatorAddress?: string;
 }
 

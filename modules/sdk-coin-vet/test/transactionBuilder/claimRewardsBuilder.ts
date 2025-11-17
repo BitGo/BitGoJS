@@ -1,17 +1,14 @@
 import { coins } from '@bitgo/statics';
 import { TransactionBuilderFactory, Transaction, ClaimRewardsTransaction } from '../../src/lib';
-import { ClaimRewardsData } from '../../src/lib/types';
 import should from 'should';
-import {
-  CLAIM_BASE_REWARDS_METHOD_ID,
-  CLAIM_STAKING_REWARDS_METHOD_ID,
-  STARGATE_CONTRACT_ADDRESS_TESTNET,
-} from '../../src/lib/constants';
+import { STARGATE_CONTRACT_ADDRESS_TESTNET } from '../../src/lib/constants';
+import * as testData from '../resources/vet';
 import { TransactionType } from '@bitgo/sdk-core';
 
 describe('VET Claim Rewards Transaction', function () {
   const factory = new TransactionBuilderFactory(coins.get('tvet'));
   const tokenId = '12345';
+  const stakingContractAddress = STARGATE_CONTRACT_ADDRESS_TESTNET;
 
   // Helper function to create a basic transaction builder with common properties
   const createBasicTxBuilder = () => {
@@ -19,6 +16,7 @@ describe('VET Claim Rewards Transaction', function () {
     txBuilder.sender('0x9378c12BD7502A11F770a5C1F223c959B2805dA9');
     txBuilder.chainTag(0x27); // Testnet chain tag
     txBuilder.blockRef('0x0000000000000000');
+    txBuilder.stakingContractAddress(stakingContractAddress);
     txBuilder.expiration(64);
     txBuilder.gas(100000);
     txBuilder.gasPriceCoef(0);
@@ -28,11 +26,8 @@ describe('VET Claim Rewards Transaction', function () {
 
   it('should build a claim rewards transaction with both reward types', async function () {
     const txBuilder = factory.getClaimRewardsBuilder();
-    txBuilder.claimRewardsData({
-      tokenId,
-      claimBaseRewards: true,
-      claimStakingRewards: true,
-    });
+    txBuilder.stakingContractAddress(stakingContractAddress);
+    txBuilder.tokenId(tokenId);
     txBuilder.sender('0x9378c12BD7502A11F770a5C1F223c959B2805dA9');
     txBuilder.chainTag(0x27); // Testnet chain tag
     txBuilder.blockRef('0x0000000000000000');
@@ -47,23 +42,14 @@ describe('VET Claim Rewards Transaction', function () {
     tx.should.be.instanceof(ClaimRewardsTransaction);
 
     const claimTx = tx as ClaimRewardsTransaction;
-    claimTx.claimRewardsData.tokenId.should.equal(tokenId);
-    claimTx.claimRewardsData.claimBaseRewards?.should.be.true();
-    claimTx.claimRewardsData.claimStakingRewards?.should.be.true();
+    claimTx.tokenId.should.equal(tokenId);
+    claimTx.stakingContractAddress.should.equal(stakingContractAddress);
 
-    // Verify clauses - should have 2 clauses for both reward types
-    claimTx.clauses.length.should.equal(2);
+    // Verify clauses - should have ONLY 1 clause (delegation rewards)
+    claimTx.clauses.length.should.equal(1);
 
-    // Find base rewards clause (claimVetGeneratedVtho)
-    const baseRewardsClause = claimTx.clauses.find((clause) => clause.data.startsWith(CLAIM_BASE_REWARDS_METHOD_ID));
-    should.exist(baseRewardsClause);
-    baseRewardsClause?.to?.should.equal(STARGATE_CONTRACT_ADDRESS_TESTNET);
-    baseRewardsClause?.value.should.equal('0x0');
-
-    // Find staking rewards clause (claimRewards)
-    const stakingRewardsClause = claimTx.clauses.find((clause) =>
-      clause.data.startsWith(CLAIM_STAKING_REWARDS_METHOD_ID)
-    );
+    // staking rewards clause (claimRewards)
+    const stakingRewardsClause = claimTx.clauses[0];
     should.exist(stakingRewardsClause);
     stakingRewardsClause?.to?.should.equal(STARGATE_CONTRACT_ADDRESS_TESTNET);
     stakingRewardsClause?.value.should.equal('0x0');
@@ -72,233 +58,104 @@ describe('VET Claim Rewards Transaction', function () {
     claimTx.recipients.length.should.equal(0);
   });
 
-  it('should build a claim rewards transaction with only base rewards', async function () {
-    const txBuilder = createBasicTxBuilder();
-    txBuilder.claimRewardsData({
-      tokenId,
-      claimBaseRewards: true,
-      claimStakingRewards: false,
-    });
+  it('should build transaction with undefined sender but include it in inputs', async function () {
+    const txBuilder = factory.getClaimRewardsBuilder();
+    txBuilder.tokenId(tokenId);
+    txBuilder.stakingContractAddress(stakingContractAddress);
+    txBuilder.chainTag(0x27);
+    txBuilder.blockRef('0x0000000000000000');
+    txBuilder.expiration(64);
+    txBuilder.gas(100000);
+    txBuilder.gasPriceCoef(0);
+    txBuilder.nonce('12345');
+    // Not setting sender
 
     const tx = await txBuilder.build();
+    tx.should.be.instanceof(ClaimRewardsTransaction);
+
     const claimTx = tx as ClaimRewardsTransaction;
+    // Verify the transaction has inputs but with undefined address
+    claimTx.inputs.length.should.equal(1);
+    should.not.exist(claimTx.inputs[0].address);
 
-    // Should have only 1 clause for base rewards
-    claimTx.clauses.length.should.equal(1);
-    claimTx.clauses[0].data.should.startWith(CLAIM_BASE_REWARDS_METHOD_ID);
-    claimTx.clauses[0].to?.should.equal(STARGATE_CONTRACT_ADDRESS_TESTNET);
-    claimTx.clauses[0].value.should.equal('0x0');
-
-    claimTx.claimRewardsData.claimBaseRewards?.should.be.true();
-    claimTx.claimRewardsData.claimStakingRewards?.should.be.false();
+    // Verify the transaction has no outputs (claim rewards doesn't transfer value)
+    claimTx.outputs.length.should.equal(0);
   });
 
-  it('should build a claim rewards transaction with only staking rewards', async function () {
+  it('should serialize and explain transaction correctly', async function () {
     const txBuilder = createBasicTxBuilder();
-    txBuilder.claimRewardsData({
-      tokenId,
-      claimBaseRewards: false,
-      claimStakingRewards: true,
-    });
+    txBuilder.tokenId(tokenId);
+    txBuilder.stakingContractAddress(stakingContractAddress);
 
     const tx = await txBuilder.build();
     const claimTx = tx as ClaimRewardsTransaction;
 
-    // Should have only 1 clause for staking rewards
-    claimTx.clauses.length.should.equal(1);
-    claimTx.clauses[0].data.should.startWith(CLAIM_STAKING_REWARDS_METHOD_ID);
-    claimTx.clauses[0].to?.should.equal(STARGATE_CONTRACT_ADDRESS_TESTNET);
-    claimTx.clauses[0].value.should.equal('0x0');
+    // Test serialization
+    const serialized = claimTx.toBroadcastFormat();
+    serialized.should.be.String();
+    serialized.should.startWith('0x');
 
-    claimTx.claimRewardsData.claimBaseRewards?.should.be.false();
-    claimTx.claimRewardsData.claimStakingRewards?.should.be.true();
+    // Test explanation
+    const explanation = claimTx.explainTransaction();
+    explanation.type?.should.equal(TransactionType.StakingClaim);
+    should.exist(explanation.fee);
+    explanation.outputAmount.should.equal('0');
+    explanation.changeAmount.should.equal('0');
+
+    // Test toJson
+    const txJson = claimTx.toJson();
+    should.exist(txJson);
+    txJson.tokenId?.should.equal(tokenId);
+    txJson.stakingContractAddress?.should.equal(stakingContractAddress);
+  });
+
+  it('should use network default chainTag when not explicitly set', async function () {
+    const txBuilder = factory.getClaimRewardsBuilder();
+    txBuilder.tokenId(tokenId);
+    txBuilder.stakingContractAddress(stakingContractAddress);
+    // Not setting chainTag
+    txBuilder.blockRef('0x0000000000000000');
+    txBuilder.expiration(64);
+    txBuilder.gas(100000);
+    txBuilder.gasPriceCoef(0);
+    txBuilder.nonce('12345');
+    txBuilder.sender('0x9378c12BD7502A11F770a5C1F223c959B2805dA9');
+
+    const tx = await txBuilder.build();
+    tx.should.be.instanceof(ClaimRewardsTransaction);
+
+    const claimTx = tx as ClaimRewardsTransaction;
+    // Verify the chainTag is set to the testnet default (39)
+    claimTx.chainTag.should.equal(39);
+  });
+
+  it('should build a signed tx and validate its toJson', async function () {
+    const tokenIdForClaimTxn = '15662';
+    const txBuilder = factory.from(testData.CLAIM_REWARDS_TRANSACTION);
+    const tx = txBuilder.transaction as ClaimRewardsTransaction;
+    const toJson = tx.toJson();
+    toJson.id.should.equal('0x841b388ee325838eb1e3efad661c2ae3266e950b8fc86b8bb484571bdfa27c6d');
+    toJson.stakingContractAddress?.should.equal('0x1e02b2953adefec225cf0ec49805b1146a4429c1');
+    toJson.nonce.should.equal('973150');
+    toJson.gas.should.equal(150878);
+    toJson.gasPriceCoef.should.equal(128);
+    toJson.expiration.should.equal(64);
+    toJson.chainTag.should.equal(39);
+    toJson.tokenId?.should.equal(tokenIdForClaimTxn);
   });
 
   describe('Failure scenarios', function () {
-    it('should throw error when claim rewards data is missing', async function () {
-      const txBuilder = createBasicTxBuilder();
-      // Not setting claimRewardsData
-
-      await txBuilder.build().should.be.rejectedWith('Claim rewards data is required');
-    });
-
     it('should throw error when token ID is missing', async function () {
       const txBuilder = createBasicTxBuilder();
 
-      should(() => {
-        txBuilder.claimRewardsData({} as ClaimRewardsData);
-      }).throw('Token ID is required');
+      await txBuilder.build().should.be.rejectedWith('Token ID is required');
     });
 
-    it('should throw error when token ID is invalid', async function () {
+    it('should throw error when staking contract address is missing', async function () {
       const txBuilder = createBasicTxBuilder();
+      txBuilder.tokenId(tokenId);
 
-      should(() => {
-        txBuilder.claimRewardsData({
-          tokenId: 'invalid-tokenid',
-        });
-      }).throw('Token ID must be a valid number string');
-    });
-
-    it('should throw error when both reward flags are false', async function () {
-      const txBuilder = createBasicTxBuilder();
-
-      should(() => {
-        txBuilder.claimRewardsData({
-          tokenId,
-          claimBaseRewards: false,
-          claimStakingRewards: false,
-        });
-      }).throw('At least one type of rewards (base or staking) must be claimed');
-    });
-
-    it('should throw error when claimBaseRewards is not boolean', async function () {
-      const txBuilder = createBasicTxBuilder();
-
-      should(() => {
-        txBuilder.claimRewardsData({
-          tokenId,
-          claimBaseRewards: 'true' as unknown as boolean,
-        });
-      }).throw('claimBaseRewards must be a boolean');
-    });
-
-    it('should throw error when claimStakingRewards is not boolean', async function () {
-      const txBuilder = createBasicTxBuilder();
-
-      should(() => {
-        txBuilder.claimRewardsData({
-          tokenId,
-          claimStakingRewards: 1 as unknown as boolean,
-        });
-      }).throw('claimStakingRewards must be a boolean');
-    });
-
-    it('should default to claiming both rewards when flags are undefined', async function () {
-      const txBuilder = createBasicTxBuilder();
-      txBuilder.claimRewardsData({
-        tokenId,
-      });
-
-      const tx = await txBuilder.build();
-      const claimTx = tx as ClaimRewardsTransaction;
-
-      // Should have 2 clauses by default
-      claimTx.clauses.length.should.equal(2);
-
-      const baseRewardsClause = claimTx.clauses.find((clause) => clause.data.startsWith(CLAIM_BASE_REWARDS_METHOD_ID));
-      const stakingRewardsClause = claimTx.clauses.find((clause) =>
-        clause.data.startsWith(CLAIM_STAKING_REWARDS_METHOD_ID)
-      );
-
-      should.exist(baseRewardsClause);
-      should.exist(stakingRewardsClause);
-      baseRewardsClause?.to?.should.equal(STARGATE_CONTRACT_ADDRESS_TESTNET);
-      stakingRewardsClause?.to?.should.equal(STARGATE_CONTRACT_ADDRESS_TESTNET);
-    });
-
-    it('should build transaction with undefined sender but include it in inputs', async function () {
-      const txBuilder = factory.getClaimRewardsBuilder();
-      txBuilder.claimRewardsData({
-        tokenId,
-      });
-      txBuilder.chainTag(0x27);
-      txBuilder.blockRef('0x0000000000000000');
-      txBuilder.expiration(64);
-      txBuilder.gas(100000);
-      txBuilder.gasPriceCoef(0);
-      txBuilder.nonce('12345');
-      // Not setting sender
-
-      const tx = await txBuilder.build();
-      tx.should.be.instanceof(ClaimRewardsTransaction);
-
-      const claimTx = tx as ClaimRewardsTransaction;
-      // Verify the transaction has inputs but with undefined address
-      claimTx.inputs.length.should.equal(1);
-      should.not.exist(claimTx.inputs[0].address);
-
-      // Verify the transaction has no outputs (claim rewards doesn't transfer value)
-      claimTx.outputs.length.should.equal(0);
-    });
-
-    it('should use network default chainTag when not explicitly set', async function () {
-      const txBuilder = factory.getClaimRewardsBuilder();
-      txBuilder.claimRewardsData({
-        tokenId,
-      });
-      // Not setting chainTag
-      txBuilder.blockRef('0x0000000000000000');
-      txBuilder.expiration(64);
-      txBuilder.gas(100000);
-      txBuilder.gasPriceCoef(0);
-      txBuilder.nonce('12345');
-      txBuilder.sender('0x9378c12BD7502A11F770a5C1F223c959B2805dA9');
-
-      const tx = await txBuilder.build();
-      tx.should.be.instanceof(ClaimRewardsTransaction);
-
-      const claimTx = tx as ClaimRewardsTransaction;
-      // Verify the chainTag is set to the testnet default (39)
-      claimTx.chainTag.should.equal(39);
-    });
-
-    it('should serialize and explain transaction correctly', async function () {
-      const txBuilder = createBasicTxBuilder();
-      txBuilder.claimRewardsData({
-        tokenId,
-      });
-
-      const tx = await txBuilder.build();
-      const claimTx = tx as ClaimRewardsTransaction;
-
-      // Test serialization
-      const serialized = claimTx.toBroadcastFormat();
-      serialized.should.be.String();
-      serialized.should.startWith('0x');
-
-      // Test explanation
-      const explanation = claimTx.explainTransaction();
-      explanation.type?.should.equal(TransactionType.StakingClaim);
-      should.exist(explanation.fee);
-      explanation.outputAmount.should.equal('0');
-      explanation.changeAmount.should.equal('0');
-
-      // Test toJson
-      const json = claimTx.toJson();
-      should.exist(json.claimRewardsData);
-      json.claimRewardsData?.tokenId.should.equal(tokenId);
-    });
-
-    it('should correctly handle custom contract addresses when building transactions', async function () {
-      const customNftAddress = '0x1234567890123456789012345678901234567890';
-      const customDelegationAddress = '0x0987654321098765432109876543210987654321';
-
-      const txBuilder = createBasicTxBuilder();
-      txBuilder.claimRewardsData({
-        tokenId,
-        delegationContractAddress: customDelegationAddress,
-        stargateNftAddress: customNftAddress,
-      });
-
-      const tx = await txBuilder.build();
-      const claimTx = tx as ClaimRewardsTransaction;
-
-      // Verify that custom addresses are stored in claimRewardsData when they differ from defaults
-      should.exist(claimTx.claimRewardsData.delegationContractAddress);
-      claimTx.claimRewardsData.delegationContractAddress?.should.equal(customDelegationAddress);
-
-      should.exist(claimTx.claimRewardsData.stargateNftAddress);
-      claimTx.claimRewardsData.stargateNftAddress?.should.equal(customNftAddress);
-
-      // Verify clauses still use the default addresses (as builders use defaults)
-      const baseRewardsClause = claimTx.clauses.find((clause) => clause.data.startsWith(CLAIM_BASE_REWARDS_METHOD_ID));
-      const stakingRewardsClause = claimTx.clauses.find((clause) =>
-        clause.data.startsWith(CLAIM_STAKING_REWARDS_METHOD_ID)
-      );
-
-      baseRewardsClause?.to?.should.equal(STARGATE_CONTRACT_ADDRESS_TESTNET);
-      stakingRewardsClause?.to?.should.equal(STARGATE_CONTRACT_ADDRESS_TESTNET);
+      await txBuilder.build().should.be.rejectedWith('Staking contract address is required');
     });
   });
 });

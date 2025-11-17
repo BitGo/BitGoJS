@@ -48,7 +48,7 @@ export class DelegateClauseTransaction extends Transaction {
       throw new Error('Staking contract address is not set');
     }
 
-    utils.validateDelegationContractAddress(this.stakingContractAddress, this._coinConfig);
+    utils.validateStakingContractAddress(this.stakingContractAddress, this._coinConfig);
 
     if (this.tokenId === undefined || this.tokenId === null) {
       throw new Error('Token ID is not set');

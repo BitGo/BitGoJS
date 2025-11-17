@@ -6,8 +6,7 @@ import assert from 'assert';
 import { TransactionBuilder } from './transactionBuilder';
 import { ClaimRewardsTransaction } from '../transaction/claimRewards';
 import { Transaction } from '../transaction/transaction';
-import { ClaimRewardsData } from '../types';
-import { CLAIM_BASE_REWARDS_METHOD_ID, CLAIM_STAKING_REWARDS_METHOD_ID } from '../constants';
+import { CLAIM_STAKING_REWARDS_METHOD_ID } from '../constants';
 import utils from '../utils';
 
 export class ClaimRewardsBuilder extends TransactionBuilder {
@@ -49,6 +48,34 @@ export class ClaimRewardsBuilder extends TransactionBuilder {
   }
 
   /**
+   * Sets the staking contract address for this claim tx.
+   * The address must be explicitly provided to ensure the correct contract is used.
+   *
+   * @param {string} address - The staking contract address (required)
+   * @returns {ClaimRewardsBuilder} This transaction builder
+   * @throws {Error} If no address is provided
+   */
+  stakingContractAddress(address: string): this {
+    if (!address) {
+      throw new Error('Staking contract address is required');
+    }
+    this.validateAddress({ address });
+    this.claimRewardsTransaction.stakingContractAddress = address;
+    return this;
+  }
+
+  /**
+   * Sets the token ID for this claim tx.
+   *
+   * @param {number} levelId - The NFT token ID
+   * @returns {DelegateTxnBuilder} This transaction builder
+   */
+  tokenId(tokenId: string): this {
+    this.claimRewardsTransaction.tokenId = tokenId;
+    return this;
+  }
+
+  /**
    * Validates the transaction clauses for claim rewards transaction.
    * @param {TransactionClause[]} clauses - The transaction clauses to validate.
    * @returns {boolean} - Returns true if the clauses are valid, false otherwise.
@@ -59,82 +86,23 @@ export class ClaimRewardsBuilder extends TransactionBuilder {
         return false;
       }
 
-      let hasValidClaimClause = false;
-
-      for (const clause of clauses) {
-        if (!clause.to || !utils.isValidAddress(clause.to)) {
-          return false;
-        }
-
-        // For claim rewards transactions, value must be '0x0' or 0
-        if (clause.value !== '0x0' && clause.value !== 0 && clause.value !== '0') {
-          return false;
-        }
-
-        const isDelegationContract = utils.isDelegationContractAddress(clause.to);
-        const isNftContract = utils.isNftContractAddress(clause.to);
-
-        if (clause.data && (isDelegationContract || isNftContract)) {
-          if (
-            (clause.data.startsWith(CLAIM_BASE_REWARDS_METHOD_ID) && isNftContract) ||
-            (clause.data.startsWith(CLAIM_STAKING_REWARDS_METHOD_ID) && isDelegationContract)
-          ) {
-            hasValidClaimClause = true;
-          }
-        }
+      const clause = clauses[0];
+      if (!clause.to || !utils.isValidAddress(clause.to)) {
+        return false;
       }
 
-      return hasValidClaimClause;
+      // Ensure value is '0x0', '0', or 0
+      if (!['0x0', '0', 0].includes(clause.value)) {
+        return false;
+      }
+
+      if (clause.data && clause.data.startsWith(CLAIM_STAKING_REWARDS_METHOD_ID)) {
+        return true;
+      }
+
+      return false;
     } catch (e) {
       return false;
-    }
-  }
-
-  /**
-   * Sets the claim rewards data for this transaction.
-   *
-   * @param {ClaimRewardsData} data - The claim rewards data
-   * @returns {ClaimRewardsBuilder} This transaction builder
-   */
-  claimRewardsData(data: ClaimRewardsData): this {
-    this.validateClaimRewardsData(data);
-    this.claimRewardsTransaction.claimRewardsData = data;
-    return this;
-  }
-
-  /**
-   * Validates the claim rewards data.
-   *
-   * @param {ClaimRewardsData} data - The claim rewards data to validate
-   */
-  private validateClaimRewardsData(data: ClaimRewardsData): void {
-    if (!data) {
-      throw new Error('Claim rewards data is required');
-    }
-
-    if (!data.tokenId) {
-      throw new Error('Token ID is required');
-    }
-
-    // Validate tokenId is a valid number string
-    if (!/^\d+$/.test(data.tokenId)) {
-      throw new Error('Token ID must be a valid number string');
-    }
-
-    if (data.claimBaseRewards !== undefined && typeof data.claimBaseRewards !== 'boolean') {
-      throw new Error('claimBaseRewards must be a boolean');
-    }
-
-    if (data.claimStakingRewards !== undefined && typeof data.claimStakingRewards !== 'boolean') {
-      throw new Error('claimStakingRewards must be a boolean');
-    }
-
-    // At least one type of rewards must be claimed (both default to true if undefined)
-    const claimBase = data.claimBaseRewards !== false;
-    const claimStaking = data.claimStakingRewards !== false;
-
-    if (!claimBase && !claimStaking) {
-      throw new Error('At least one type of rewards (base or staking) must be claimed');
     }
   }
 
@@ -144,14 +112,10 @@ export class ClaimRewardsBuilder extends TransactionBuilder {
       throw new Error('transaction not defined');
     }
 
-    const claimData = transaction.claimRewardsData;
-    assert(claimData, 'Claim rewards data is required');
-    assert(claimData.tokenId, 'Token ID is required');
+    assert(transaction.tokenId, 'Token ID is required');
+    assert(transaction.stakingContractAddress, 'Staking contract address is required');
 
-    // Validate tokenId is a valid number string
-    if (!/^\d+$/.test(claimData.tokenId)) {
-      throw new Error('Token ID must be a valid number string');
-    }
+    this.validateAddress({ address: transaction.stakingContractAddress });
   }
 
   /** @inheritdoc */

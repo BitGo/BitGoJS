@@ -5,24 +5,32 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { Transaction as VetTransaction, Secp256k1, TransactionClause } from '@vechain/sdk-core';
 import { Transaction } from './transaction';
 import { VetTransactionData } from '../iface';
-import { ClaimRewardsData } from '../types';
-import { CLAIM_BASE_REWARDS_METHOD_ID, CLAIM_STAKING_REWARDS_METHOD_ID } from '../constants';
+import { CLAIM_STAKING_REWARDS_METHOD_ID } from '../constants';
 import utils from '../utils';
 
 export class ClaimRewardsTransaction extends Transaction {
-  private _claimRewardsData: ClaimRewardsData;
+  private _stakingContractAddress: string;
+  private _tokenId: string;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
     this._type = TransactionType.StakingClaim;
   }
 
-  get claimRewardsData(): ClaimRewardsData {
-    return this._claimRewardsData;
+  get stakingContractAddress(): string {
+    return this._stakingContractAddress;
   }
 
-  set claimRewardsData(data: ClaimRewardsData) {
-    this._claimRewardsData = data;
+  set stakingContractAddress(address: string) {
+    this._stakingContractAddress = address;
+  }
+
+  get tokenId(): string {
+    return this._tokenId;
+  }
+
+  set tokenId(tokenId: string) {
+    this._tokenId = tokenId;
   }
 
   /** @inheritdoc */
@@ -51,65 +59,37 @@ export class ClaimRewardsTransaction extends Transaction {
 
   /** @inheritdoc */
   buildClauses(): void {
-    if (!this._claimRewardsData) {
-      throw new InvalidTransactionError('Missing claim rewards data');
+    if (!this.stakingContractAddress) {
+      throw new Error('Staking contract address is not set');
     }
 
-    const clauses: TransactionClause[] = [];
+    utils.validateStakingContractAddress(this.stakingContractAddress, this._coinConfig);
 
-    // Add clause for claiming base rewards if requested
-    const shouldClaimBaseRewards = this.claimRewardsData.claimBaseRewards !== false; // Default true
-    if (shouldClaimBaseRewards) {
-      clauses.push(this.buildClaimBaseRewardsClause());
+    if (this.tokenId === undefined || this.tokenId === null) {
+      throw new Error('Token ID is not set');
     }
 
-    // Add clause for claiming staking rewards if requested
-    const shouldClaimStakingRewards = this.claimRewardsData.claimStakingRewards !== false; // Default true
-    if (shouldClaimStakingRewards) {
-      clauses.push(this.buildClaimStakingRewardsClause());
-    }
+    const data = this.encodeClaimRewardsMethod(this.tokenId);
+    this._transactionData = data;
 
-    if (clauses.length === 0) {
-      throw new InvalidTransactionError('At least one type of rewards must be claimed');
-    }
-
-    this.clauses = clauses;
+    // Create the clause for claim rewards
+    this._clauses = [
+      {
+        to: this.stakingContractAddress,
+        value: '0x0',
+        data: this._transactionData,
+      },
+    ];
 
     // Set recipients as empty since claim rewards doesn't send value
     this.recipients = [];
   }
 
   /**
-   * Build clause for claiming base rewards (claimVetGeneratedVtho)
-   */
-  private buildClaimBaseRewardsClause(): TransactionClause {
-    const methodData = this.encodeClaimRewardsMethod(CLAIM_BASE_REWARDS_METHOD_ID, this._claimRewardsData.tokenId);
-
-    return {
-      to: utils.getDefaultStakingAddress(this._coinConfig),
-      value: '0x0',
-      data: methodData,
-    };
-  }
-
-  /**
-   * Build clause for claiming staking rewards (claimRewards)
-   */
-  private buildClaimStakingRewardsClause(): TransactionClause {
-    const methodData = this.encodeClaimRewardsMethod(CLAIM_STAKING_REWARDS_METHOD_ID, this._claimRewardsData.tokenId);
-
-    return {
-      to: utils.getDefaultDelegationAddress(this._coinConfig),
-      value: '0x0',
-      data: methodData,
-    };
-  }
-
-  /**
    * Encode the claim rewards method call data
    */
-  private encodeClaimRewardsMethod(methodId: string, tokenId: string): string {
-    const methodName = methodId === CLAIM_BASE_REWARDS_METHOD_ID ? 'claimVetGeneratedVtho' : 'claimRewards';
+  private encodeClaimRewardsMethod(tokenId: string): string {
+    const methodName = 'claimRewards';
     const types = ['uint256'];
     const params = [tokenId];
 
@@ -133,7 +113,8 @@ export class ClaimRewardsTransaction extends Transaction {
       sender: this.sender,
       feePayer: this.feePayerAddress,
       recipients: this.recipients,
-      claimRewardsData: this._claimRewardsData,
+      tokenId: this.tokenId,
+      stakingContractAddress: this.stakingContractAddress,
     };
     return json;
   }
@@ -159,8 +140,14 @@ export class ClaimRewardsTransaction extends Transaction {
       this.dependsOn = body.dependsOn || null;
       this.nonce = String(body.nonce);
 
-      // Parse claim rewards data from clauses
-      this.parseClaimRewardsDataFromClauses(body.clauses);
+      if (body.clauses.length === 1) {
+        const clause = body.clauses[0];
+        if (clause.data && clause.data.startsWith(CLAIM_STAKING_REWARDS_METHOD_ID)) {
+          // claimRewards should go to STARGATE_DELEGATION_ADDRESS
+          this.tokenId = utils.decodeClaimRewardsData(clause.data);
+          this.stakingContractAddress = clause.to || '0x0';
+        }
+      }
 
       // Set recipients as empty for claim rewards
       this.recipients = [];
@@ -184,60 +171,5 @@ export class ClaimRewardsTransaction extends Transaction {
     } catch (e) {
       throw new InvalidTransactionError(`Failed to deserialize transaction: ${e.message}`);
     }
-  }
-
-  /**
-   * Parse claim rewards data from transaction clauses
-   */
-  private parseClaimRewardsDataFromClauses(clauses: TransactionClause[]): void {
-    if (!clauses || clauses.length === 0) {
-      throw new InvalidTransactionError('No clauses found in transaction');
-    }
-
-    let claimBaseRewards = false;
-    let claimStakingRewards = false;
-    let tokenId = '';
-    let delegationContractAddress = '';
-    let stargateNftAddress = '';
-
-    for (const clause of clauses) {
-      if (clause.data) {
-        if (clause.data.startsWith(CLAIM_BASE_REWARDS_METHOD_ID)) {
-          // claimVetGeneratedVtho should go to STARGATE_NFT_ADDRESS
-          claimBaseRewards = true;
-          if (!tokenId) {
-            tokenId = utils.decodeClaimRewardsData(clause.data);
-          }
-          if (!stargateNftAddress && clause.to) {
-            stargateNftAddress = clause.to;
-          }
-        } else if (clause.data.startsWith(CLAIM_STAKING_REWARDS_METHOD_ID)) {
-          // claimRewards should go to STARGATE_DELEGATION_ADDRESS
-          claimStakingRewards = true;
-          if (!tokenId) {
-            tokenId = utils.decodeClaimRewardsData(clause.data);
-          }
-          if (!delegationContractAddress && clause.to) {
-            delegationContractAddress = clause.to;
-          }
-        }
-      }
-    }
-
-    if (!claimBaseRewards && !claimStakingRewards) {
-      throw new InvalidTransactionError('Transaction does not contain claim rewards clauses');
-    }
-
-    this._claimRewardsData = {
-      tokenId,
-      delegationContractAddress:
-        delegationContractAddress && !utils.isDelegationContractAddress(delegationContractAddress)
-          ? delegationContractAddress
-          : undefined,
-      stargateNftAddress:
-        stargateNftAddress && !utils.isNftContractAddress(stargateNftAddress) ? stargateNftAddress : undefined,
-      claimBaseRewards,
-      claimStakingRewards,
-    };
   }
 }
