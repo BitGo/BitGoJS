@@ -15,6 +15,12 @@ describe('Lightning Withdraw Routes', () => {
     req.params = params.params || {};
     req.query = params.query || {};
     req.bitgo = params.bitgo;
+    // Add decoded property with both path params and body for typed routes
+    (req as any).decoded = {
+      coin: params.params?.coin,
+      id: params.params?.id,
+      ...params.body,
+    };
     return req as express.Request;
   };
 
@@ -149,10 +155,10 @@ describe('Lightning Withdraw Routes', () => {
       const req = mockRequestObject({
         params: { id: 'testWalletId', coin },
         body: inputParams,
+        bitgo,
       });
-      req.bitgo = bitgo;
 
-      await should(handleLightningWithdraw(req)).be.rejectedWith(
+      await should(handleLightningWithdraw(req as any)).be.rejectedWith(
         'Invalid request body for withdrawing on chain lightning balance'
       );
     });
@@ -171,10 +177,10 @@ describe('Lightning Withdraw Routes', () => {
       const req = mockRequestObject({
         params: { id: 'testWalletId', coin },
         body: inputParams,
+        bitgo,
       });
-      req.bitgo = bitgo;
 
-      await should(handleLightningWithdraw(req)).be.rejectedWith(
+      await should(handleLightningWithdraw(req as any)).be.rejectedWith(
         'Invalid request body for withdrawing on chain lightning balance'
       );
     });
