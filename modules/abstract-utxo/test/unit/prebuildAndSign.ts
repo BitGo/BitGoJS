@@ -214,7 +214,8 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFor
 
     [true, false].forEach((useWebauthn) => {
       it(`should succeed with ${useWebauthn ? 'webauthn encryptedPrv' : 'encryptedPrv'}`, async function () {
-        const txCoins = ['tzec', 'zec', 'ltc', 'bcha', 'doge', 'dash', 'btg', 'bch'];
+        // Check if this wallet/coin combination defaults to psbt
+        const defaultTxFormat = coin.getDefaultTxFormat(wallet);
         const nocks = createNocks({
           bgUrl,
           wallet,
@@ -223,7 +224,7 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFor
           recipient,
           addressInfo,
           nockOutputAddresses: txFormat !== 'psbt',
-          txFormat: !txCoins.includes(coin.getChain()) ? 'psbt' : undefined,
+          txFormat: defaultTxFormat,
         });
 
         // call prebuild and sign, nocks should be consumed
@@ -261,7 +262,8 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFor
       it(`should be able to build, sign, & verify a replacement transaction with selfSend: ${selfSend}`, async function () {
         const rbfTxIds = ['tx-to-be-replaced'],
           feeMultiplier = 1.5;
-        const txCoins = ['tzec', 'zec', 'ltc', 'bcha', 'doge', 'dash', 'btg', 'bch'];
+        // Check if this wallet/coin combination defaults to psbt
+        const defaultTxFormat = coin.getDefaultTxFormat(wallet);
         const nocks = createNocks({
           bgUrl,
           wallet,
@@ -273,7 +275,7 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFor
           feeMultiplier,
           selfSend,
           nockOutputAddresses: txFormat !== 'psbt',
-          txFormat: !txCoins.includes(coin.getChain()) ? 'psbt' : undefined,
+          txFormat: defaultTxFormat,
         });
 
         // call prebuild and sign, nocks should be consumed
