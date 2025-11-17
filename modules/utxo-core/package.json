@@ -2,25 +2,60 @@
   "name": "@bitgo/utxo-core",
   "version": "1.23.0",
   "description": "BitGo UTXO Core types",
-  "main": "./dist/src/index.js",
-  "types": "./dist/src/index.d.ts",
+  "main": "./dist/cjs/src/index.js",
+  "module": "./dist/esm/index.js",
+  "browser": "./dist/esm/index.js",
+  "types": "./dist/cjs/src/index.d.ts",
   "files": [
-    "dist/src"
+    "dist/cjs",
+    "dist/esm"
   ],
   "exports": {
-    ".": "./dist/src/index.js",
-    "./descriptor": "./dist/src/descriptor/index.js",
-    "./testutil": "./dist/src/testutil/index.js",
-    "./testutil/descriptor": "./dist/src/testutil/descriptor/index.js"
-  },
-  "browser": {
-    ".": "./dist/src/index.js",
-    "./descriptor": "./dist/src/descriptor/index.js",
-    "./testutil": "./dist/src/testutil/index.js",
-    "./testutil/descriptor": "./dist/src/testutil/descriptor/index.js"
+    ".": {
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/src/index.d.ts",
+        "default": "./dist/cjs/src/index.js"
+      }
+    },
+    "./descriptor": {
+      "import": {
+        "types": "./dist/esm/descriptor/index.d.ts",
+        "default": "./dist/esm/descriptor/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/src/descriptor/index.d.ts",
+        "default": "./dist/cjs/src/descriptor/index.js"
+      }
+    },
+    "./testutil": {
+      "import": {
+        "types": "./dist/esm/testutil/index.d.ts",
+        "default": "./dist/esm/testutil/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/src/testutil/index.d.ts",
+        "default": "./dist/cjs/src/testutil/index.js"
+      }
+    },
+    "./testutil/descriptor": {
+      "import": {
+        "types": "./dist/esm/testutil/descriptor/index.d.ts",
+        "default": "./dist/esm/testutil/descriptor/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/src/testutil/descriptor/index.d.ts",
+        "default": "./dist/cjs/src/testutil/descriptor/index.js"
+      }
+    }
   },
   "scripts": {
-    "build": "yarn tsc --build --incremental --verbose .",
+    "build": "npm run build:cjs && npm run build:esm",
+    "build:cjs": "yarn tsc --build --incremental --verbose .",
+    "build:esm": "yarn tsc --project tsconfig.esm.json",
     "fmt": "prettier --write .",
     "check-fmt": "prettier --check '**/*.{ts,js,json}'",
     "clean": "rm -r ./dist",
@@ -45,7 +80,6 @@
   "publishConfig": {
     "access": "public"
   },
-  "type": "commonjs",
   "nyc": {
     "extension": [
       ".ts"

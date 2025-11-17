@@ -11,7 +11,9 @@
     "require": "./dist/index.cjs"
   },
   "scripts": {
-    "generate-types": "dts-bundle-generator -o ./dist/index.d.cts ./src/index.ts --no-check",
+    "generate-types:cjs": "dts-bundle-generator -o ./dist/index.d.cts ./src/index.ts --no-check",
+    "generate-types:esm": "dts-bundle-generator -o ./dist/index.d.ts ./src/index.ts --no-check",
+    "generate-types": "npm run generate-types:cjs && npm run generate-types:esm",
     "build": "node build.js && npm run generate-types",
     "prepare": "husky",
     "prepublishOnly": "npm run build",
