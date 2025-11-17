@@ -103,26 +103,17 @@ function runTest(params: {
 
 describe('txFormat', function () {
   describe('getDefaultTxFormat', function () {
-    // ZCash never defaults to PSBT
+    // All testnet wallets default to PSBT
     runTest({
-      description: 'should never return psbt for zcash',
-      coinFilter: (coin) => utxolib.getMainnet(coin.network) === utxolib.networks.zcash,
-      expectedTxFormat: undefined,
-    });
-
-    // All non-ZCash testnet wallets default to PSBT
-    runTest({
-      description: 'should always return psbt for testnet (non-zcash)',
-      coinFilter: (coin) =>
-        utxolib.isTestnet(coin.network) && utxolib.getMainnet(coin.network) !== utxolib.networks.zcash,
+      description: 'should always return psbt for testnet',
+      coinFilter: (coin) => utxolib.isTestnet(coin.network),
       expectedTxFormat: 'psbt',
     });
 
     // DistributedCustody wallets default to PSBT (mainnet only, testnet already covered)
     runTest({
       description: 'should return psbt for distributedCustody wallets on mainnet',
-      coinFilter: (coin) =>
-        utxolib.isMainnet(coin.network) && utxolib.getMainnet(coin.network) !== utxolib.networks.zcash,
+      coinFilter: (coin) => utxolib.isMainnet(coin.network),
       walletFilter: (w) => w.options.subType === 'distributedCustody',
       expectedTxFormat: 'psbt',
     });
@@ -130,8 +121,7 @@ describe('txFormat', function () {
     // MuSig2 wallets default to PSBT (mainnet only, testnet already covered)
     runTest({
       description: 'should return psbt for wallets with musigKp flag on mainnet',
-      coinFilter: (coin) =>
-        utxolib.isMainnet(coin.network) && utxolib.getMainnet(coin.network) !== utxolib.networks.zcash,
+      coinFilter: (coin) => utxolib.isMainnet(coin.network),
       walletFilter: (w) => Boolean(w.options.walletFlags?.some((f) => f.name === 'musigKp' && f.value === 'true')),
       expectedTxFormat: 'psbt',
     });
@@ -148,8 +138,7 @@ describe('txFormat', function () {
     // Other mainnet wallets do NOT default to PSBT
     runTest({
       description: 'should return undefined for other mainnet wallets',
-      coinFilter: (coin) =>
-        utxolib.isMainnet(coin.network) && utxolib.getMainnet(coin.network) !== utxolib.networks.zcash,
+      coinFilter: (coin) => utxolib.isMainnet(coin.network),
       walletFilter: (w) => {
         const isHotBitcoin = w.options.type === 'hot'; // This will be bitcoin hot wallets
         const isDistributedCustody = w.options.subType === 'distributedCustody';

@@ -971,10 +971,6 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       return requestedFormat;
     }
 
-    if (getMainnet(this.network) === utxolib.networks.zcash) {
-      return undefined;
-    }
-
     if (isTestnet(this.network)) {
       return 'psbt';
     }
