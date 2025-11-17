@@ -84,7 +84,18 @@ import { isDescriptorWalletData } from './descriptor/descriptorWallet';
 
 import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 
-export type TxFormat = 'legacy' | 'psbt';
+export type TxFormat =
+  // This is a legacy transaction format based around the bitcoinjs-lib serialization of unsigned transactions
+  // does not include prevOut data and is a bit painful to work with
+  // going to be deprecated in favor of psbt
+  // @deprecated
+  | 'legacy'
+  // This is the standard psbt format, including the full prevTx data for legacy transactions.
+  // This will remain supported but is not the default, since the data sizes can become prohibitively large.
+  | 'psbt'
+  // This is a nonstandard psbt version where legacy inputs are serialized as if they were segwit inputs.
+  // While this prevents us to fully verify the transaction fee, we have other checks in place to ensure the fee is within bounds.
+  | 'psbt-lite';
 
 type UtxoCustomSigningFunction<TNumber extends number | bigint> = {
   (params: {
@@ -972,7 +983,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     }
 
     if (isTestnet(this.network)) {
-      return 'psbt';
+      return 'psbt-lite';
     }
 
     const walletFlagMusigKp = wallet.flag('musigKp') === 'true';

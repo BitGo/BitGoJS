@@ -103,11 +103,11 @@ function runTest(params: {
 
 describe('txFormat', function () {
   describe('getDefaultTxFormat', function () {
-    // All testnet wallets default to PSBT
+    // All testnet wallets default to PSBT-lite
     runTest({
-      description: 'should always return psbt for testnet',
+      description: 'should always return psbt-lite for testnet',
       coinFilter: (coin) => utxolib.isTestnet(coin.network),
-      expectedTxFormat: 'psbt',
+      expectedTxFormat: 'psbt-lite',
     });
 
     // DistributedCustody wallets default to PSBT (mainnet only, testnet already covered)
@@ -160,6 +160,12 @@ describe('txFormat', function () {
       description: 'should respect explicitly requested psbt format',
       expectedTxFormat: 'psbt',
       requestedTxFormat: 'psbt',
+    });
+
+    runTest({
+      description: 'should respect explicitly requested psbt-lite format',
+      expectedTxFormat: 'psbt-lite',
+      requestedTxFormat: 'psbt-lite',
     });
   });
 });
