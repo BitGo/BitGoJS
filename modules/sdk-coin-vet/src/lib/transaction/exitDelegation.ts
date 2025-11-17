@@ -11,6 +11,7 @@ import BigNumber from 'bignumber.js';
 
 export class ExitDelegationTransaction extends Transaction {
   private _tokenId: string;
+  private _stakingContractAddress: string;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -25,6 +26,14 @@ export class ExitDelegationTransaction extends Transaction {
     this._tokenId = id;
   }
 
+  get stakingContractAddress(): string {
+    return this._stakingContractAddress;
+  }
+
+  set stakingContractAddress(address: string) {
+    this._stakingContractAddress = address;
+  }
+
   /** @inheritdoc */
   async build(): Promise<void> {
     this.buildClauses();
@@ -35,15 +44,15 @@ export class ExitDelegationTransaction extends Transaction {
 
   /** @inheritdoc */
   buildClauses(): void {
-    if (!this._contract || !this._tokenId) {
+    if (!this._stakingContractAddress || !this._tokenId) {
       throw new InvalidTransactionError('Missing required unstaking parameters');
     }
 
-    utils.validateDelegationContractAddress(this._contract, this._coinConfig);
+    utils.validateStakingContractAddress(this._stakingContractAddress, this._coinConfig);
 
     this._clauses = [
       {
-        to: this._contract,
+        to: this._stakingContractAddress,
         value: '0x0',
         data: this._transactionData || this.getExitDelegationData(),
       },
@@ -51,7 +60,7 @@ export class ExitDelegationTransaction extends Transaction {
 
     this._recipients = [
       {
-        address: this._contract,
+        address: this._stakingContractAddress,
         amount: '0',
       },
     ];
@@ -88,7 +97,8 @@ export class ExitDelegationTransaction extends Transaction {
       data: this.transactionData || this.getExitDelegationData(),
       value: '0',
       sender: this.sender,
-      to: this.contract,
+      to: this.stakingContractAddress,
+      tokenId: this.tokenId,
     };
     return json;
   }
@@ -115,7 +125,7 @@ export class ExitDelegationTransaction extends Transaction {
       this.nonce = String(body.nonce);
 
       // Set data from clauses
-      this.contract = body.clauses[0]?.to || '0x0';
+      this.stakingContractAddress = body.clauses[0]?.to || '0x0';
       this.transactionData = body.clauses[0]?.data || '0x0';
       this.type = TransactionType.StakingUnlock;
 

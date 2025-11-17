@@ -48,7 +48,7 @@ export class ExitDelegationBuilder extends TransactionBuilder {
   }
 
   /**
-   * Validates the transaction clauses for unstaking.
+   * Validates the transaction clauses for exit delegation.
    * @param {TransactionClause[]} clauses - The transaction clauses to validate.
    * @returns {boolean} - Returns true if the clauses are valid, false otherwise.
    */
@@ -92,16 +92,19 @@ export class ExitDelegationBuilder extends TransactionBuilder {
   }
 
   /**
-   * Sets the delegation contract address for this unstaking transaction.
-   * If not provided, uses the network-appropriate default address.
+   * Sets the staking contract address for this staking tx.
+   * The address must be explicitly provided to ensure the correct contract is used.
    *
-   * @param {string} address - The delegation contract address
-   * @returns {ExitDelegationBuilder} This transaction builder
+   * @param {string} address - The staking contract address (required)
+   * @returns {StakingBuilder} This transaction builder
+   * @throws {Error} If no address is provided
    */
-  delegationContract(address?: string): this {
-    const contractAddress = address || utils.getDefaultDelegationAddress(this._coinConfig);
-    this.validateAddress({ address: contractAddress });
-    this.exitDelegationTransaction.contract = contractAddress;
+  stakingContractAddress(address: string): this {
+    if (!address) {
+      throw new Error('Staking contract address is required');
+    }
+    this.validateAddress({ address });
+    this.exitDelegationTransaction.stakingContractAddress = address;
     return this;
   }
 
@@ -110,10 +113,10 @@ export class ExitDelegationBuilder extends TransactionBuilder {
     if (!transaction) {
       throw new Error('transaction not defined');
     }
-    assert(transaction.contract, 'Delegation contract address is required');
+    assert(transaction.stakingContractAddress, 'Staking contract address is required');
     assert(transaction.tokenId, 'Token ID is required');
 
-    this.validateAddress({ address: transaction.contract });
+    this.validateAddress({ address: transaction.stakingContractAddress });
   }
 
   /** @inheritdoc */
