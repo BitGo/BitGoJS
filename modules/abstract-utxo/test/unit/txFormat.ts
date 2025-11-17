@@ -98,11 +98,16 @@ describe('txFormat', function () {
         utxolib.isMainnet(coin.network) && utxolib.getMainnet(coin.network) !== utxolib.networks.bitcoin,
     });
 
-    // Cold wallets do NOT default to PSBT
+    // Cold wallets default to PSBT
     runTest({
-      description: 'should not default to psbt for cold wallets',
+      description: 'should default to psbt for testnet cold wallets as well',
       walletOptions: { type: 'cold' },
-      expectedTxFormat: undefined,
+      coinFilter: (coin) => utxolib.isTestnet(coin.network),
+      expectedTxFormat: (coin) => {
+        const isZcash = utxolib.getMainnet(coin.network) === utxolib.networks.zcash;
+        // ZCash is excluded from PSBT default due to PSBT support issues (BTC-1322)
+        return isZcash ? undefined : 'psbt';
+      },
     });
 
     // DistributedCustody wallets default to PSBT

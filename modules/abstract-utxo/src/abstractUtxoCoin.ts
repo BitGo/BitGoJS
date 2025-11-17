@@ -975,14 +975,16 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       return undefined;
     }
 
+    if (isTestnet(this.network)) {
+      return 'psbt';
+    }
+
     const walletFlagMusigKp = wallet.flag('musigKp') === 'true';
     const isHotWallet = wallet.type() === 'hot';
 
     // Determine if we should default to psbt format
     const shouldDefaultToPsbt =
       wallet.subType() === 'distributedCustody' ||
-      // default to testnet for all utxo coins except zcash
-      (isTestnet(this.network) && isHotWallet) ||
       // if mainnet, only default to psbt for btc hot wallets
       (isMainnet(this.network) && getMainnet(this.network) === utxolib.networks.bitcoin && isHotWallet) ||
       // default to psbt if it has the wallet flag
