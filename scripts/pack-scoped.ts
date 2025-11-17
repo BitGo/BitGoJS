@@ -65,12 +65,12 @@ async function getDistTagsFromPackageJson(
 ): Promise<Map<string, DistTags>> {
   const packageJson = JSON.parse(await fs.promises.readFile(packageJsonPath, 'utf-8'));
   return new Map<string, DistTags>(
-    newModuleNames.map((m) => {
+    newModuleNames.flatMap((m) => {
       const distTags = packageJson.dependencies[m];
       if (distTags) {
-        return [m, { beta: distTags }];
+        return [[m, { beta: distTags }]];
       }
-      return [m, { beta: '0.0.0' }];
+      return [];
     })
   );
 }
@@ -86,7 +86,11 @@ async function getDistTagsForModuleNamesCached(
 ): Promise<Map<string, DistTags>> {
   if (params.sourceFile) {
     if (params.sourceFile.endsWith('package.json')) {
-      return getDistTagsFromPackageJson(newModuleNames, params.sourceFile);
+      const distTagsFromPackageJson = await getDistTagsFromPackageJson(newModuleNames, params.sourceFile);
+      const remainingNames = newModuleNames.filter((m) => !distTagsFromPackageJson.has(m));
+      console.log(`Getting dist tags for ${remainingNames.length} modules from npm`);
+      const distTagsByModuleName = await getDistTagsForModuleNames(remainingNames);
+      return new Map<string, DistTags>([...distTagsFromPackageJson.entries(), ...distTagsByModuleName.entries()]);
     }
   }
 
