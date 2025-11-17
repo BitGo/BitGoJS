@@ -120,7 +120,11 @@ describe('txFormat', function () {
     runTest({
       description: 'should default to psbt for wallets with musigKp flag',
       walletOptions: { type: 'cold', walletFlags: [{ name: 'musigKp', value: 'true' }] },
-      expectedTxFormat: 'psbt',
+      expectedTxFormat: (coin) => {
+        const isZcash = utxolib.getMainnet(coin.network) === utxolib.networks.zcash;
+        // ZCash is excluded from PSBT default due to PSBT support issues (BTC-1322)
+        return isZcash ? undefined : 'psbt';
+      },
     });
 
     // Explicitly specified legacy format is respected
