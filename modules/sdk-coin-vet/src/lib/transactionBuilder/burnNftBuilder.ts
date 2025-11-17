@@ -92,19 +92,19 @@ export class BurnNftBuilder extends TransactionBuilder {
   }
 
   /**
-   * Sets the NFT contract address for this burn NFT transaction.
+   * Sets the staking contract address for this staking tx.
    * The address must be explicitly provided to ensure the correct contract is used.
    *
-   * @param {string} address - The NFT contract address (required)
-   * @returns {BurnNftBuilder} This transaction builder
+   * @param {string} address - The staking contract address (required)
+   * @returns {StakingBuilder} This transaction builder
    * @throws {Error} If no address is provided
    */
-  nftContract(address: string): this {
+  stakingContractAddress(address: string): this {
     if (!address) {
-      throw new Error('NFT contract address is required and must be explicitly provided');
+      throw new Error('Staking contract address is required');
     }
     this.validateAddress({ address });
-    this.burnNftTransaction.contract = address;
+    this.burnNftTransaction.stakingContractAddress = address;
     return this;
   }
 
@@ -113,10 +113,10 @@ export class BurnNftBuilder extends TransactionBuilder {
     if (!transaction) {
       throw new Error('transaction not defined');
     }
-    assert(transaction.contract, 'NFT contract address is required');
+    assert(transaction.stakingContractAddress, 'Staking contract address is required');
     assert(transaction.tokenId, 'Token ID is required');
 
-    this.validateAddress({ address: transaction.contract });
+    this.validateAddress({ address: transaction.stakingContractAddress });
   }
 
   /** @inheritdoc */
