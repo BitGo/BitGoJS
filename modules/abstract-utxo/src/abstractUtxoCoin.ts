@@ -84,6 +84,8 @@ import { isDescriptorWalletData } from './descriptor/descriptorWallet';
 
 import ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 
+export type TxFormat = 'legacy' | 'psbt';
+
 type UtxoCustomSigningFunction<TNumber extends number | bigint> = {
   (params: {
     coin: IBaseCoin;
@@ -957,36 +959,43 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     };
   }
 
-  private shouldDefaultToPsbtTxFormat(buildParams: ExtraPrebuildParamsOptions & { wallet: Wallet }) {
-    const walletFlagMusigKp = buildParams.wallet.flag('musigKp') === 'true';
-    const isHotWallet = buildParams.wallet.type() === 'hot';
+  /**
+   * Determines the default transaction format based on wallet properties and network
+   * @param wallet - The wallet to check
+   * @param requestedFormat - Optional explicitly requested format
+   * @returns The transaction format to use, or undefined if no default applies
+   */
+  getDefaultTxFormat(wallet: Wallet, requestedFormat?: TxFormat): TxFormat | undefined {
+    // If format is explicitly requested, use it
+    if (requestedFormat !== undefined) {
+      return requestedFormat;
+    }
 
-    // if not txFormat is already specified figure out if we should default to psbt format
-    return (
-      buildParams.txFormat === undefined &&
-      (buildParams.wallet.subType() === 'distributedCustody' ||
-        // default to testnet for all utxo coins except zcash
-        (isTestnet(this.network) &&
-          // FIXME(BTC-1322): fix zcash PSBT support
-          getMainnet(this.network) !== utxolib.networks.zcash &&
-          isHotWallet) ||
-        // if mainnet, only default to psbt for btc hot wallets
-        (isMainnet(this.network) && getMainnet(this.network) === utxolib.networks.bitcoin && isHotWallet) ||
-        // default to psbt if it has the wallet flag
-        walletFlagMusigKp)
-    );
+    const walletFlagMusigKp = wallet.flag('musigKp') === 'true';
+    const isHotWallet = wallet.type() === 'hot';
+
+    // Determine if we should default to psbt format
+    const shouldDefaultToPsbt =
+      wallet.subType() === 'distributedCustody' ||
+      // default to testnet for all utxo coins except zcash
+      (isTestnet(this.network) &&
+        // FIXME(BTC-1322): fix zcash PSBT support
+        getMainnet(this.network) !== utxolib.networks.zcash &&
+        isHotWallet) ||
+      // if mainnet, only default to psbt for btc hot wallets
+      (isMainnet(this.network) && getMainnet(this.network) === utxolib.networks.bitcoin && isHotWallet) ||
+      // default to psbt if it has the wallet flag
+      walletFlagMusigKp;
+
+    return shouldDefaultToPsbt ? 'psbt' : undefined;
   }
 
   async getExtraPrebuildParams(buildParams: ExtraPrebuildParamsOptions & { wallet: Wallet }): Promise<{
-    txFormat?: 'legacy' | 'psbt';
+    txFormat?: TxFormat;
     changeAddressType?: ScriptType2Of3[] | ScriptType2Of3;
   }> {
-    let txFormat = buildParams.txFormat as 'legacy' | 'psbt' | undefined;
+    const txFormat = this.getDefaultTxFormat(buildParams.wallet, buildParams.txFormat as TxFormat | undefined);
     let changeAddressType = buildParams.changeAddressType as ScriptType2Of3[] | ScriptType2Of3 | undefined;
-
-    if (this.shouldDefaultToPsbtTxFormat(buildParams)) {
-      txFormat = 'psbt';
-    }
 
     // if the addressType is not specified, we need to default to p2trMusig2 for testnet hot wallets for staged rollout of p2trMusig2
     if (

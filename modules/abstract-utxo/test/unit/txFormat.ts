@@ -1,16 +1,15 @@
 import * as assert from 'assert';
 
 import * as utxolib from '@bitgo/utxo-lib';
-import { ExtraPrebuildParamsOptions, Wallet } from '@bitgo/sdk-core';
+import { Wallet } from '@bitgo/sdk-core';
 
-import { AbstractUtxoCoin } from '../../src';
+import { AbstractUtxoCoin, TxFormat } from '../../src';
 
 import { utxoCoins, defaultBitGo } from './util';
 
 type WalletOptions = {
   type?: 'hot' | 'cold' | 'custodial' | 'custodialPaired' | 'trading';
   subType?: string;
-  multisigType?: string;
   walletFlags?: Array<{ name: string; value: string }>;
 };
 
@@ -23,21 +22,16 @@ export function createMockWallet(coin: AbstractUtxoCoin, options: WalletOptions 
     coin: coin.getChain(),
     type: options.type || 'hot',
     ...(options.subType && { subType: options.subType }),
-    ...(options.multisigType && { multisigType: options.multisigType }),
     ...(options.walletFlags && { walletFlags: options.walletFlags }),
   };
   return new Wallet(defaultBitGo, coin, walletData);
 }
 
 /**
- * Helper function to get the txFormat from a coin's getExtraPrebuildParams method
+ * Helper function to get the txFormat from a coin's getDefaultTxFormat method
  */
-export async function getTxFormat(
-  coin: AbstractUtxoCoin,
-  buildParams: ExtraPrebuildParamsOptions & { wallet: Wallet }
-): Promise<'legacy' | 'psbt' | undefined> {
-  const result = await coin.getExtraPrebuildParams(buildParams);
-  return result.txFormat;
+export function getTxFormat(coin: AbstractUtxoCoin, wallet: Wallet, requestedFormat?: TxFormat): TxFormat | undefined {
+  return coin.getDefaultTxFormat(wallet, requestedFormat);
 }
 
 /**
@@ -46,12 +40,11 @@ export async function getTxFormat(
 function runTest(params: {
   description: string;
   walletOptions: WalletOptions;
-  expectedTxFormat: 'legacy' | 'psbt' | undefined | ((coin: AbstractUtxoCoin) => 'legacy' | 'psbt' | undefined);
+  expectedTxFormat: TxFormat | undefined | ((coin: AbstractUtxoCoin) => TxFormat | undefined);
   coinFilter?: (coin: AbstractUtxoCoin) => boolean;
-  requestedTxFormat?: 'legacy' | 'psbt';
-  extraParams?: Partial<ExtraPrebuildParamsOptions>;
+  requestedTxFormat?: TxFormat;
 }): void {
-  it(params.description, async function () {
+  it(params.description, function () {
     for (const coin of utxoCoins) {
       // Skip coins that don't match the filter
       if (params.coinFilter && !params.coinFilter(coin)) {
@@ -59,12 +52,7 @@ function runTest(params: {
       }
 
       const wallet = createMockWallet(coin, params.walletOptions);
-      const buildParams: ExtraPrebuildParamsOptions & { wallet: Wallet } = {
-        wallet,
-        ...(params.requestedTxFormat && { txFormat: params.requestedTxFormat }),
-        ...params.extraParams,
-      };
-      const txFormat = await getTxFormat(coin, buildParams);
+      const txFormat = getTxFormat(coin, wallet, params.requestedTxFormat);
 
       const expectedTxFormat =
         typeof params.expectedTxFormat === 'function' ? params.expectedTxFormat(coin) : params.expectedTxFormat;
@@ -79,7 +67,7 @@ function runTest(params: {
 }
 
 describe('txFormat', function () {
-  describe('getExtraPrebuildParams', function () {
+  describe('getDefaultTxFormat', function () {
     // Testnet hot wallets default to PSBT (except ZCash)
     runTest({
       description: 'should default to psbt for testnet hot wallets (except zcash)',
@@ -120,8 +108,12 @@ describe('txFormat', function () {
     // DistributedCustody wallets default to PSBT
     runTest({
       description: 'should default to psbt for distributedCustody wallets',
-      walletOptions: { type: 'cold', multisigType: 'tss', subType: 'distributedCustody' },
-      expectedTxFormat: 'psbt',
+      walletOptions: { type: 'cold', subType: 'distributedCustody' },
+      expectedTxFormat: (coin) => {
+        const isZcash = utxolib.getMainnet(coin.network) === utxolib.networks.zcash;
+        // ZCash is excluded from PSBT default due to PSBT support issues (BTC-1322)
+        return isZcash ? undefined : 'psbt';
+      },
     });
 
     // Wallets with musigKp flag default to PSBT
