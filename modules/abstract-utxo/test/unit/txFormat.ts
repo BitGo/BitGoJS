@@ -7,11 +7,29 @@ import { AbstractUtxoCoin, TxFormat } from '../../src';
 
 import { utxoCoins, defaultBitGo } from './util';
 
+type WalletType = 'hot' | 'cold' | 'custodial' | 'custodialPaired' | 'trading';
+type WalletSubType = 'distributedCustody';
+type WalletFlag = { name: string; value: string };
+
 type WalletOptions = {
-  type?: 'hot' | 'cold' | 'custodial' | 'custodialPaired' | 'trading';
-  subType?: string;
-  walletFlags?: Array<{ name: string; value: string }>;
+  type?: WalletType;
+  subType?: WalletSubType;
+  walletFlags?: WalletFlag[];
 };
+
+/**
+ * Enumerates common wallet configurations for testing
+ */
+export function getWalletConfigurations(): Array<{ name: string; options: WalletOptions }> {
+  return [
+    { name: 'hot wallet', options: { type: 'hot' } },
+    { name: 'cold wallet', options: { type: 'cold' } },
+    { name: 'custodial wallet', options: { type: 'custodial' } },
+    { name: 'distributedCustody wallet', options: { type: 'cold', subType: 'distributedCustody' } },
+    { name: 'musigKp wallet', options: { type: 'cold', walletFlags: [{ name: 'musigKp', value: 'true' }] } },
+    { name: 'hot musigKp wallet', options: { type: 'hot', walletFlags: [{ name: 'musigKp', value: 'true' }] } },
+  ];
+}
 
 /**
  * Helper function to create a mock wallet for testing
@@ -35,115 +53,122 @@ export function getTxFormat(coin: AbstractUtxoCoin, wallet: Wallet, requestedFor
 }
 
 /**
- * Helper function to run a txFormat test with named arguments
+ * Helper function to run a txFormat test with named arguments.
+ * By default, iterates over all wallet configurations and all coins.
  */
 function runTest(params: {
   description: string;
-  walletOptions: WalletOptions;
-  expectedTxFormat: TxFormat | undefined | ((coin: AbstractUtxoCoin) => TxFormat | undefined);
+  expectedTxFormat:
+    | TxFormat
+    | undefined
+    | ((coin: AbstractUtxoCoin, walletConfig: WalletOptions) => TxFormat | undefined);
   coinFilter?: (coin: AbstractUtxoCoin) => boolean;
+  walletFilter?: (walletConfig: { name: string; options: WalletOptions }) => boolean;
   requestedTxFormat?: TxFormat;
 }): void {
   it(params.description, function () {
-    for (const coin of utxoCoins) {
-      // Skip coins that don't match the filter
-      if (params.coinFilter && !params.coinFilter(coin)) {
+    const walletConfigs = getWalletConfigurations();
+
+    for (const walletConfig of walletConfigs) {
+      // Skip wallet configurations that don't match the filter
+      if (params.walletFilter && !params.walletFilter(walletConfig)) {
         continue;
       }
 
-      const wallet = createMockWallet(coin, params.walletOptions);
-      const txFormat = getTxFormat(coin, wallet, params.requestedTxFormat);
+      for (const coin of utxoCoins) {
+        // Skip coins that don't match the filter
+        if (params.coinFilter && !params.coinFilter(coin)) {
+          continue;
+        }
 
-      const expectedTxFormat =
-        typeof params.expectedTxFormat === 'function' ? params.expectedTxFormat(coin) : params.expectedTxFormat;
+        const wallet = createMockWallet(coin, walletConfig.options);
+        const txFormat = getTxFormat(coin, wallet, params.requestedTxFormat);
 
-      assert.strictEqual(
-        txFormat,
-        expectedTxFormat,
-        `${params.description} - ${coin.getChain()}: expected ${expectedTxFormat}, got ${txFormat}`
-      );
+        const expectedTxFormat =
+          typeof params.expectedTxFormat === 'function'
+            ? params.expectedTxFormat(coin, walletConfig.options)
+            : params.expectedTxFormat;
+
+        assert.strictEqual(
+          txFormat,
+          expectedTxFormat,
+          `${params.description} - ${
+            walletConfig.name
+          } - ${coin.getChain()}: expected ${expectedTxFormat}, got ${txFormat}`
+        );
+      }
     }
   });
 }
 
 describe('txFormat', function () {
   describe('getDefaultTxFormat', function () {
-    // Testnet hot wallets default to PSBT (except ZCash)
+    // ZCash never defaults to PSBT
     runTest({
-      description: 'should default to psbt for testnet hot wallets (except zcash)',
-      walletOptions: { type: 'hot' },
-      expectedTxFormat: (coin) => {
-        const isZcash = utxolib.getMainnet(coin.network) === utxolib.networks.zcash;
-        // ZCash is excluded from PSBT default due to PSBT support issues (BTC-1322)
-        return isZcash ? undefined : 'psbt';
-      },
-      coinFilter: (coin) => utxolib.isTestnet(coin.network),
+      description: 'should never return psbt for zcash',
+      coinFilter: (coin) => utxolib.getMainnet(coin.network) === utxolib.networks.zcash,
+      expectedTxFormat: undefined,
+    });
+
+    // All non-ZCash testnet wallets default to PSBT
+    runTest({
+      description: 'should always return psbt for testnet (non-zcash)',
+      coinFilter: (coin) =>
+        utxolib.isTestnet(coin.network) && utxolib.getMainnet(coin.network) !== utxolib.networks.zcash,
+      expectedTxFormat: 'psbt',
+    });
+
+    // DistributedCustody wallets default to PSBT (mainnet only, testnet already covered)
+    runTest({
+      description: 'should return psbt for distributedCustody wallets on mainnet',
+      coinFilter: (coin) =>
+        utxolib.isMainnet(coin.network) && utxolib.getMainnet(coin.network) !== utxolib.networks.zcash,
+      walletFilter: (w) => w.options.subType === 'distributedCustody',
+      expectedTxFormat: 'psbt',
+    });
+
+    // MuSig2 wallets default to PSBT (mainnet only, testnet already covered)
+    runTest({
+      description: 'should return psbt for wallets with musigKp flag on mainnet',
+      coinFilter: (coin) =>
+        utxolib.isMainnet(coin.network) && utxolib.getMainnet(coin.network) !== utxolib.networks.zcash,
+      walletFilter: (w) => Boolean(w.options.walletFlags?.some((f) => f.name === 'musigKp' && f.value === 'true')),
+      expectedTxFormat: 'psbt',
     });
 
     // Mainnet Bitcoin hot wallets default to PSBT
     runTest({
-      description: 'should default to psbt for mainnet bitcoin hot wallets',
-      walletOptions: { type: 'hot' },
-      expectedTxFormat: 'psbt',
+      description: 'should return psbt for mainnet bitcoin hot wallets',
       coinFilter: (coin) =>
         utxolib.isMainnet(coin.network) && utxolib.getMainnet(coin.network) === utxolib.networks.bitcoin,
+      walletFilter: (w) => w.options.type === 'hot',
+      expectedTxFormat: 'psbt',
     });
 
-    // Mainnet non-Bitcoin hot wallets do NOT default to PSBT
+    // Other mainnet wallets do NOT default to PSBT
     runTest({
-      description: 'should not default to psbt for mainnet non-bitcoin hot wallets',
-      walletOptions: { type: 'hot' },
-      expectedTxFormat: undefined,
+      description: 'should return undefined for other mainnet wallets',
       coinFilter: (coin) =>
-        utxolib.isMainnet(coin.network) && utxolib.getMainnet(coin.network) !== utxolib.networks.bitcoin,
-    });
-
-    // Cold wallets default to PSBT
-    runTest({
-      description: 'should default to psbt for testnet cold wallets as well',
-      walletOptions: { type: 'cold' },
-      coinFilter: (coin) => utxolib.isTestnet(coin.network),
-      expectedTxFormat: (coin) => {
-        const isZcash = utxolib.getMainnet(coin.network) === utxolib.networks.zcash;
-        // ZCash is excluded from PSBT default due to PSBT support issues (BTC-1322)
-        return isZcash ? undefined : 'psbt';
+        utxolib.isMainnet(coin.network) && utxolib.getMainnet(coin.network) !== utxolib.networks.zcash,
+      walletFilter: (w) => {
+        const isHotBitcoin = w.options.type === 'hot'; // This will be bitcoin hot wallets
+        const isDistributedCustody = w.options.subType === 'distributedCustody';
+        const hasMusigKpFlag = Boolean(w.options.walletFlags?.some((f) => f.name === 'musigKp' && f.value === 'true'));
+        // Only test "other" wallets - exclude the special cases
+        return !isHotBitcoin && !isDistributedCustody && !hasMusigKpFlag;
       },
+      expectedTxFormat: undefined,
     });
 
-    // DistributedCustody wallets default to PSBT
+    // Test explicitly requested formats
     runTest({
-      description: 'should default to psbt for distributedCustody wallets',
-      walletOptions: { type: 'cold', subType: 'distributedCustody' },
-      expectedTxFormat: (coin) => {
-        const isZcash = utxolib.getMainnet(coin.network) === utxolib.networks.zcash;
-        // ZCash is excluded from PSBT default due to PSBT support issues (BTC-1322)
-        return isZcash ? undefined : 'psbt';
-      },
-    });
-
-    // Wallets with musigKp flag default to PSBT
-    runTest({
-      description: 'should default to psbt for wallets with musigKp flag',
-      walletOptions: { type: 'cold', walletFlags: [{ name: 'musigKp', value: 'true' }] },
-      expectedTxFormat: (coin) => {
-        const isZcash = utxolib.getMainnet(coin.network) === utxolib.networks.zcash;
-        // ZCash is excluded from PSBT default due to PSBT support issues (BTC-1322)
-        return isZcash ? undefined : 'psbt';
-      },
-    });
-
-    // Explicitly specified legacy format is respected
-    runTest({
-      description: 'should respect explicitly specified legacy txFormat',
-      walletOptions: { type: 'hot' },
+      description: 'should respect explicitly requested legacy format',
       expectedTxFormat: 'legacy',
       requestedTxFormat: 'legacy',
     });
 
-    // Explicitly specified psbt format is respected
     runTest({
-      description: 'should respect explicitly specified psbt txFormat',
-      walletOptions: { type: 'cold' },
+      description: 'should respect explicitly requested psbt format',
       expectedTxFormat: 'psbt',
       requestedTxFormat: 'psbt',
     });
