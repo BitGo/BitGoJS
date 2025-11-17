@@ -137,6 +137,12 @@ describe('Canton Util', function () {
       should.exist(isValid);
       assert.strictEqual(isValid, false);
     });
+
+    it('should return true when memo id is valid', function () {
+      const isValid = utils.isValidAddress(CANTON_ADDRESSES.VALID_MEMO_ID);
+      should.exist(isValid);
+      assert.strictEqual(isValid, true);
+    });
   });
 
   describe('Check if block hash is valid', function () {
