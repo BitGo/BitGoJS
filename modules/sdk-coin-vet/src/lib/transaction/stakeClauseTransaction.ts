@@ -110,7 +110,7 @@ export class StakeClauseTransaction extends Transaction {
       to: this.stakingContractAddress,
       stakingContractAddress: this.stakingContractAddress,
       amountToStake: this.amountToStake,
-      nftTokenId: this.levelId,
+      levelId: this.levelId,
     };
 
     return json;
@@ -143,7 +143,7 @@ export class StakeClauseTransaction extends Transaction {
           this.stakingContractAddress = clause.to;
         }
         if (clause.value) {
-          this.amountToStake = String(clause.value);
+          this.amountToStake = new BigNumber(clause.value).toFixed();
         }
         if (clause.data) {
           this.transactionData = clause.data;

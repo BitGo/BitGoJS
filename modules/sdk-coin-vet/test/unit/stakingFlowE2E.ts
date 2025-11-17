@@ -1,7 +1,7 @@
 import should from 'should';
 import { coins } from '@bitgo/statics';
 import { TransactionType } from '@bitgo/sdk-core';
-import { TransactionBuilderFactory, StakingTransaction } from '../../src/lib';
+import { TransactionBuilderFactory, StakeClauseTransaction } from '../../src/lib';
 import * as testData from '../resources/vet';
 
 describe('VET Staking Flow - End-to-End Test', function () {
@@ -11,9 +11,7 @@ describe('VET Staking Flow - End-to-End Test', function () {
   // Test data
   const stakingContractAddress = testData.STAKING_CONTRACT_ADDRESS;
   const amountToStake = '1000000000000000000'; // 1 VET in wei
-  const amountToStakeHex = '0xde0b6b3a7640000'; // Same amount in hex
   const levelId = testData.STAKING_LEVEL_ID;
-  const autorenew = testData.STAKING_AUTORENEW;
   const senderAddress = '0x9378c12BD7502A11F770a5C1F223c959B2805dA9';
   const feePayerAddress = '0xdc9fef0b84a0ccf3f1bd4b84e41743e3e051a083';
 
@@ -24,7 +22,7 @@ describe('VET Staking Flow - End-to-End Test', function () {
   describe('Complete Staking Transaction Flow', function () {
     it('should build, sign, and serialize a complete staking transaction with fee delegation', async function () {
       // Step 1: Build the staking transaction
-      const stakingBuilder = factory.getStakingBuilder();
+      const stakingBuilder = factory.getStakingActivateBuilder();
 
       stakingBuilder
         .stakingContractAddress(stakingContractAddress)
@@ -42,16 +40,15 @@ describe('VET Staking Flow - End-to-End Test', function () {
 
       const unsignedTx = await stakingBuilder.build();
       should.exist(unsignedTx);
-      unsignedTx.should.be.instanceof(StakingTransaction);
+      unsignedTx.should.be.instanceof(StakeClauseTransaction);
 
-      const stakingTx = unsignedTx as StakingTransaction;
+      const stakingTx = unsignedTx as StakeClauseTransaction;
 
       // Verify transaction structure
-      stakingTx.type.should.equal(TransactionType.ContractCall);
+      stakingTx.type.should.equal(TransactionType.StakingActivate);
       stakingTx.stakingContractAddress.should.equal(stakingContractAddress);
       stakingTx.amountToStake.should.equal(amountToStake);
       stakingTx.levelId.should.equal(levelId);
-      stakingTx.autorenew.should.equal(autorenew);
 
       should.exist(stakingTx.rawTransaction);
       should.exist(stakingTx.rawTransaction.body);
@@ -85,14 +82,12 @@ describe('VET Staking Flow - End-to-End Test', function () {
 
       // Step 7: Verify transaction can be deserialized
       const deserializedBuilder = factory.from(serializedTx);
-      const deserializedTx = deserializedBuilder.transaction as StakingTransaction;
+      const deserializedTx = deserializedBuilder.transaction as StakeClauseTransaction;
 
-      deserializedTx.should.be.instanceof(StakingTransaction);
+      deserializedTx.should.be.instanceof(StakeClauseTransaction);
       deserializedTx.stakingContractAddress.should.equal(stakingContractAddress);
-      // Amount is stored in hex format in deserialized transaction
-      deserializedTx.amountToStake.should.equal(amountToStakeHex);
+      deserializedTx.amountToStake.should.equal(amountToStake);
       deserializedTx.levelId.should.equal(levelId);
-      deserializedTx.autorenew.should.equal(autorenew);
 
       // Step 8: Verify toJson output
       const jsonOutput = stakingTx.toJson();
@@ -101,13 +96,12 @@ describe('VET Staking Flow - End-to-End Test', function () {
       jsonOutput.should.have.property('stakingContractAddress', stakingContractAddress);
       // JSON output keeps decimal format for amounts
       jsonOutput.should.have.property('amountToStake', amountToStake);
-      jsonOutput.should.have.property('nftTokenId', levelId);
-      jsonOutput.should.have.property('autorenew', autorenew);
+      jsonOutput.should.have.property('levelId', levelId);
     });
 
     it('should handle signature combination in the correct order', async function () {
       // This test specifically validates the signature combination flow that was failing
-      const stakingBuilder = factory.getStakingBuilder();
+      const stakingBuilder = factory.getStakingActivateBuilder();
 
       stakingBuilder
         .stakingContractAddress(stakingContractAddress)
@@ -123,7 +117,7 @@ describe('VET Staking Flow - End-to-End Test', function () {
 
       stakingBuilder.addFeePayerAddress(feePayerAddress);
 
-      const tx = (await stakingBuilder.build()) as StakingTransaction;
+      const tx = (await stakingBuilder.build()) as StakeClauseTransaction;
 
       // Test 1: Only sender signature - should generate half-signed transaction
       tx.addSenderSignature(mockSenderSignature);
@@ -143,7 +137,7 @@ describe('VET Staking Flow - End-to-End Test', function () {
 
     it('should properly set transaction type for fee delegation validation', async function () {
       // This test ensures our fix for TransactionType.ContractCall is working
-      const stakingBuilder = factory.getStakingBuilder();
+      const stakingBuilder = factory.getStakingActivateBuilder();
 
       stakingBuilder
         .stakingContractAddress(stakingContractAddress)
@@ -159,10 +153,10 @@ describe('VET Staking Flow - End-to-End Test', function () {
 
       stakingBuilder.addFeePayerAddress(feePayerAddress);
 
-      const tx = (await stakingBuilder.build()) as StakingTransaction;
+      const tx = (await stakingBuilder.build()) as StakeClauseTransaction;
 
       // Verify the transaction type is ContractCall
-      tx.type.should.equal(TransactionType.ContractCall);
+      tx.type.should.equal(TransactionType.StakingActivate);
 
       // Verify fee delegation is enabled via reserved.features = 1
       const rawTxBody = tx.rawTransaction.body;
@@ -175,7 +169,7 @@ describe('VET Staking Flow - End-to-End Test', function () {
     it('should work with pre-built signed transaction from test data', async function () {
       // Test using the actual signed transaction from our test data
       const txBuilder = factory.from(testData.STAKING_TRANSACTION);
-      const tx = txBuilder.transaction as StakingTransaction;
+      const tx = txBuilder.transaction as StakeClauseTransaction;
 
       // Should be able to get ID without throwing errors
       const txId = tx.id;
@@ -187,7 +181,6 @@ describe('VET Staking Flow - End-to-End Test', function () {
       // The actual contract address from the parsed transaction is 0x1856c533ac2d94340aaa8544d35a5c1d4a21dee7
       tx.stakingContractAddress.should.equal('0x1856c533ac2d94340aaa8544d35a5c1d4a21dee7');
       tx.levelId.should.equal(testData.STAKING_LEVEL_ID);
-      tx.autorenew.should.equal(testData.STAKING_AUTORENEW);
     });
   });
 
@@ -201,7 +194,7 @@ describe('VET Staking Flow - End-to-End Test', function () {
       ];
 
       for (const testCase of testTypes) {
-        const stakingBuilder = factory.getStakingBuilder();
+        const stakingBuilder = factory.getStakingActivateBuilder();
         stakingBuilder
           .stakingContractAddress(stakingContractAddress)
           .amountToStake(amountToStake)
@@ -217,7 +210,7 @@ describe('VET Staking Flow - End-to-End Test', function () {
         stakingBuilder.addFeePayerAddress(feePayerAddress);
 
         // Manually set the transaction type to test different types
-        const tx = (await stakingBuilder.build()) as StakingTransaction;
+        const tx = (await stakingBuilder.build()) as StakeClauseTransaction;
         (tx as any)._type = testCase.type;
 
         // Rebuild the raw transaction to test fee delegation flag
