@@ -882,6 +882,32 @@ export class Wallets implements IWallets {
 
     let encryptedPrv = params.overrideEncryptedPrv;
     const walletShare = await this.getShare({ walletShareId: params.walletShareId });
+
+    // Multi-user-key case: requires user to provide their own public key in addition to the encrypted private key
+    if (walletShare.userMultiKeyRotationRequired) {
+      if (_.isUndefined(params.userPassword)) {
+        throw new Error('userPassword param must be provided to generate user keychain');
+      }
+
+      const walletKeychain = this.baseCoin.keychains().create();
+      const encryptedPrv = this.bitgo.encrypt({
+        password: params.newWalletPassphrase || params.userPassword,
+        input: walletKeychain.prv,
+      });
+
+      const updateParams: UpdateShareOptions = {
+        walletShareId: params.walletShareId,
+        state: 'accepted',
+        encryptedPrv: encryptedPrv,
+        pub: walletKeychain.pub,
+      };
+
+      // Note: Unlike keychainOverrideRequired, we do NOT reshare the wallet with spenders
+      // This is a key difference - multi-user-key wallets don't require reshare
+      return this.updateShare(updateParams);
+    }
+
+    // Keychain override case: requires user keychain creation and signing
     if (
       walletShare.keychainOverrideRequired &&
       walletShare.permissions.indexOf('admin') !== -1 &&
@@ -927,6 +953,7 @@ export class Wallets implements IWallets {
       }
       return response;
     }
+
     // Return right away if there is no keychain to decrypt, or if explicit encryptedPrv was provided
     if (!walletShare.keychain || !walletShare.keychain.encryptedPrv || encryptedPrv) {
       return this.updateShare({
@@ -1011,7 +1038,7 @@ export class Wallets implements IWallets {
 
     const walletShares = params.walletShareIds
       .map((walletShareId) => walletShareMap[walletShareId])
-      .filter((walletShare) => walletShare && walletShare.keychain);
+      .filter((walletShare) => walletShare && (walletShare.keychain || walletShare.userMultiKeyRotationRequired));
 
     if (!walletShares.length) {
       throw new Error('No valid wallet shares found to accept');
@@ -1028,6 +1055,26 @@ export class Wallets implements IWallets {
     });
     const newWalletPassphrase = params.newWalletPassphrase || params.userLoginPassword;
     const keysForWalletShares = walletShares.flatMap((walletShare) => {
+      // Handle userMultiKeyRotationRequired case - these shares don't have keychains
+      if (walletShare.userMultiKeyRotationRequired) {
+        if (!params.userLoginPassword) {
+          throw new Error('userLoginPassword param must be provided to generate user keychain');
+        }
+        const walletKeychain = this.baseCoin.keychains().create();
+        const encryptedPrv = this.bitgo.encrypt({
+          password: newWalletPassphrase,
+          input: walletKeychain.prv,
+        });
+        return [
+          {
+            walletShareId: walletShare.id,
+            encryptedPrv: encryptedPrv,
+            pub: walletKeychain.pub,
+          },
+        ];
+      }
+
+      // Standard case: shares with keychains
       if (!walletShare.keychain) {
         return [];
       }
@@ -1263,7 +1310,9 @@ export class Wallets implements IWallets {
         throw new Error('userLoginPassword param must be provided to decrypt shared key');
       }
 
-      const walletKeychain = await this.baseCoin.keychains().createUserKeychain(userLoginPassword);
+      const walletKeychain = await this.baseCoin
+        .keychains()
+        .createUserKeychain(newWalletPassphrase || userLoginPassword);
       if (!walletKeychain.encryptedPrv) {
         throw new Error('encryptedPrv was not found on wallet keychain');
       }
@@ -1288,6 +1337,28 @@ export class Wallets implements IWallets {
           keyId: walletKeychain.id,
           signature: signature.toString('hex'),
           payload,
+        },
+      ];
+    }
+
+    // Multi-user-key case: requires user to provide their own public key
+    if (walletShare.userMultiKeyRotationRequired) {
+      if (!(newWalletPassphrase || userLoginPassword)) {
+        throw new Error('userLoginPassword param must be provided to generate user keychain');
+      }
+
+      const walletKeychain = this.baseCoin.keychains().create();
+      const encryptedPrv = this.bitgo.encrypt({
+        password: newWalletPassphrase || userLoginPassword,
+        input: walletKeychain.prv,
+      });
+
+      return [
+        {
+          walletShareId,
+          status: 'accept' as const,
+          encryptedPrv: encryptedPrv,
+          pub: walletKeychain.pub,
         },
       ];
     }
