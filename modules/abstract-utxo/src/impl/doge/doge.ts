@@ -7,12 +7,12 @@ import {
   SignTransactionOptions,
   ExplainTransactionOptions,
   ParseTransactionOptions,
-  ParsedTransaction,
   VerifyTransactionOptions,
   RecoverFromWrongChainOptions,
   TransactionInfo,
   TransactionPrebuild,
 } from '../../abstractUtxoCoin';
+import { ParsedTransaction } from '../../transaction/types';
 import type { TransactionExplanation } from '../../transaction/fixedScript/explainTransaction';
 import type { CrossChainRecoverySigned, CrossChainRecoveryUnsigned } from '../../recovery/crossChainRecovery';
 

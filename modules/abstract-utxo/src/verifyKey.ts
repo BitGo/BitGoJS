@@ -11,7 +11,8 @@ import { bip32 } from '@bitgo/secp256k1';
 import * as bitcoinMessage from 'bitcoinjs-message';
 import { BitGoBase, decryptKeychainPrivateKey, KeyIndices } from '@bitgo/sdk-core';
 
-import { ParsedTransaction, VerifyKeySignaturesOptions, VerifyUserPublicKeyOptions } from './abstractUtxoCoin';
+import { VerifyKeySignaturesOptions, VerifyUserPublicKeyOptions } from './abstractUtxoCoin';
+import { ParsedTransaction } from './transaction/types';
 import { UtxoKeychain } from './keychains';
 
 const debug = buildDebug('bitgo:abstract-utxo:verifyKey');

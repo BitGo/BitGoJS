@@ -1,7 +1,7 @@
 import { fixedScriptWallet } from '@bitgo/wasm-utxo';
 import { Triple } from '@bitgo/sdk-core';
 
-import type { Output, FixedScriptWalletOutput } from '../../abstractUtxoCoin';
+import type { FixedScriptWalletOutput, Output } from '../types';
 
 import type { TransactionExplanationWasm } from './explainTransaction';
 

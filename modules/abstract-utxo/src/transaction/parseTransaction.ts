@@ -1,6 +1,7 @@
-import { AbstractUtxoCoin, ParsedTransaction, ParseTransactionOptions } from '../abstractUtxoCoin';
+import { AbstractUtxoCoin, ParseTransactionOptions } from '../abstractUtxoCoin';
 import { isDescriptorWallet } from '../descriptor';
 
+import { ParsedTransaction } from './types';
 import * as descriptor from './descriptor';
 import * as fixedScript from './fixedScript';
 

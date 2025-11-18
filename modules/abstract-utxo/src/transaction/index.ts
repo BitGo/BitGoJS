@@ -1,3 +1,4 @@
+export * from './types';
 export * from './recipient';
 export { explainTx } from './explainTransaction';
 export { parseTransaction } from './parseTransaction';

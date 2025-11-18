@@ -2,13 +2,8 @@ import * as utxolib from '@bitgo/utxo-lib';
 import { ITransactionRecipient } from '@bitgo/sdk-core';
 import * as coreDescriptors from '@bitgo/utxo-core/descriptor';
 
-import {
-  AbstractUtxoCoin,
-  BaseOutput,
-  BaseParsedTransaction,
-  BaseParsedTransactionOutputs,
-  ParseTransactionOptions,
-} from '../../abstractUtxoCoin';
+import { AbstractUtxoCoin, ParseTransactionOptions } from '../../abstractUtxoCoin';
+import { BaseOutput, BaseParsedTransaction, BaseParsedTransactionOutputs } from '../types';
 import { getKeySignatures, toBip32Triple, UtxoNamedKeychains } from '../../keychains';
 import { getDescriptorMapFromWallet, getPolicyForEnv } from '../../descriptor';
 import { IDescriptorWallet } from '../../descriptor/descriptorWallet';

@@ -22,7 +22,7 @@ import {
   ErrorMissingOutputs,
 } from '../../../../src/transaction/descriptor/verifyTransaction';
 import { toAmountType } from '../../../../src/transaction/descriptor/parseToAmountType';
-import { BaseOutput } from '../../../../src';
+import { BaseOutput } from '../../../../src/transaction/types';
 
 import { getFixtureRoot } from './fixtures.utils';
 

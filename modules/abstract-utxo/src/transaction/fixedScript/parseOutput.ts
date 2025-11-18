@@ -12,9 +12,16 @@ import {
   Triple,
 } from '@bitgo/sdk-core';
 
-import { AbstractUtxoCoin, Output, isWalletOutput } from '../../abstractUtxoCoin';
+import { AbstractUtxoCoin } from '../../abstractUtxoCoin';
+import { Output, FixedScriptWalletOutput } from '../types';
 
 const debug = debugLib('bitgo:v2:parseoutput');
+
+export function isWalletOutput(output: Output): output is FixedScriptWalletOutput {
+  return (
+    (output as FixedScriptWalletOutput).chain !== undefined && (output as FixedScriptWalletOutput).index !== undefined
+  );
+}
 
 interface HandleVerifyAddressErrorResponse {
   external: boolean;
