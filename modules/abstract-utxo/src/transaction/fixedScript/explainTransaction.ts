@@ -341,6 +341,11 @@ function getBip322MessageInfoAndVerify(psbt: bitgo.UtxoPsbt, network: utxolib.Ne
 /**
  * Decompose a raw psbt into useful information, such as the total amounts,
  * change amounts, and transaction outputs.
+ *
+ * @param psbt {bitgo.UtxoPsbt} The PSBT to explain
+ * @param pubs {bitgo.RootWalletKeys | string[]} The public keys to use for the explanation
+ * @param network {utxolib.Network} The network to use for the explanation
+ * @param strict {boolean} Whether to throw an error if the PayGo address proof is invalid
  */
 export function explainPsbt(
   psbt: bitgo.UtxoPsbt,
