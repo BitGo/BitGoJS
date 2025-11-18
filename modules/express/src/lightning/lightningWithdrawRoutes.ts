@@ -1,9 +1,11 @@
-import * as express from 'express';
 import { decodeOrElse } from '@bitgo/sdk-core';
 import { getLightningWallet, LightningOnchainWithdrawParams } from '@bitgo/abstract-lightning';
 import { ApiResponseError } from '../errors';
+import { ExpressApiRouteRequest } from '../typedRoutes/api';
 
-export async function handleLightningWithdraw(req: express.Request): Promise<any> {
+export async function handleLightningWithdraw(
+  req: ExpressApiRouteRequest<'express.v2.wallet.lightningWithdraw', 'post'>
+): Promise<any> {
   const bitgo = req.bitgo;
   const params = decodeOrElse(
     LightningOnchainWithdrawParams.name,
@@ -14,8 +16,8 @@ export async function handleLightningWithdraw(req: express.Request): Promise<any
     }
   );
 
-  const coin = bitgo.coin(req.params.coin);
-  const wallet = await coin.wallets().get({ id: req.params.id });
+  const coin = bitgo.coin(req.decoded.coin);
+  const wallet = await coin.wallets().get({ id: req.decoded.id });
   const lightningWallet = getLightningWallet(wallet);
 
   return await lightningWallet.withdrawOnchain(params);

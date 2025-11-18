@@ -41,6 +41,7 @@ import { PostCoinSign } from './v2/coinSign';
 import { PostSendCoins } from './v2/sendCoins';
 import { PostGenerateShareTSS } from './v2/generateShareTSS';
 import { PostOfcExtSignPayload } from './v2/ofcExtSignPayload';
+import { PostLightningWalletWithdraw } from './v2/lightningWithdraw';
 
 // Too large types can cause the following error
 //
@@ -207,6 +208,12 @@ export const ExpressLightningUnlockWalletApiSpec = apiSpec({
   },
 });
 
+export const ExpressLightningWalletWithdrawApiSpec = apiSpec({
+  'express.v2.wallet.lightningWithdraw': {
+    post: PostLightningWalletWithdraw,
+  },
+});
+
 export const ExpressOfcSignPayloadApiSpec = apiSpec({
   'express.ofc.signPayload': {
     post: PostOfcSignPayload,
@@ -281,6 +288,7 @@ export type ExpressApi = typeof ExpressPingApiSpec &
   typeof ExpressLightningGetStateApiSpec &
   typeof ExpressLightningInitWalletApiSpec &
   typeof ExpressLightningUnlockWalletApiSpec &
+  typeof ExpressLightningWalletWithdrawApiSpec &
   typeof ExpressV2WalletSendManyApiSpec &
   typeof ExpressV2WalletSendCoinsApiSpec &
   typeof ExpressOfcSignPayloadApiSpec &
@@ -314,6 +322,7 @@ export const ExpressApi: ExpressApi = {
   ...ExpressLightningGetStateApiSpec,
   ...ExpressLightningInitWalletApiSpec,
   ...ExpressLightningUnlockWalletApiSpec,
+  ...ExpressLightningWalletWithdrawApiSpec,
   ...ExpressV2WalletSendManyApiSpec,
   ...ExpressV2WalletSendCoinsApiSpec,
   ...ExpressOfcSignPayloadApiSpec,
