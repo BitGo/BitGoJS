@@ -59,6 +59,34 @@ export function toBip32Triple(
   return toBip32Triple(toKeychainTriple(keychains));
 }
 
+function toXpub(keychain: { pub: string } | string | BIP32Interface): string {
+  if (typeof keychain === 'string') {
+    if (keychain.startsWith('xpub')) {
+      return keychain;
+    }
+    throw new Error('expected xpub');
+  }
+  if ('neutered' in keychain) {
+    return keychain.neutered().toBase58();
+  }
+  if ('pub' in keychain) {
+    return toXpub(keychain.pub);
+  }
+  throw new Error('expected keychain');
+}
+
+export function toXpubTriple(
+  keychains: UtxoNamedKeychains | Triple<{ pub: string }> | Triple<string> | Triple<BIP32Interface>
+): Triple<string> {
+  if (Array.isArray(keychains)) {
+    if (keychains.length !== 3) {
+      throw new Error('expected 3 keychains');
+    }
+    return keychains.map((k) => toXpub(k)) as Triple<string>;
+  }
+  return toXpubTriple(toKeychainTriple(keychains));
+}
+
 export async function fetchKeychains(
   coin: AbstractUtxoCoin,
   wallet: IWallet,
