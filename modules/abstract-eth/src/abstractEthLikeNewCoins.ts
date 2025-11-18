@@ -902,6 +902,11 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       },
       apiKey
     );
+
+    if (result && typeof result?.nonce === 'number') {
+      return Number(result.nonce);
+    }
+
     if (!result || !Array.isArray(result.result)) {
       throw new Error('Unable to find next nonce from Etherscan, got: ' + JSON.stringify(result));
     }

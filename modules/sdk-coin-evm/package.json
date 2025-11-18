@@ -19,7 +19,8 @@
     "@bitgo/abstract-eth": "^24.16.0",
     "@bitgo/sdk-core": "^36.20.1",
     "@bitgo/statics": "^58.13.0",
-    "@ethereumjs/common": "^2.6.5"
+    "@ethereumjs/common": "^2.6.5",
+    "superagent": "^9.0.1"
   },
   "author": "BitGo SDK Team <sdkteam@bitgo.com>",
   "license": "MIT",
