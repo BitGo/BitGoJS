@@ -14016,4 +14016,47 @@ export const erc20Coins = [
     '0xc96de26018a54d51c097160568752c4e3bd6c364',
     UnderlyingAsset['eth:fbtc']
   ),
+  erc20(
+    'f2327bcc-41a0-446d-b482-4d1148c24343',
+    'eth:byzusd',
+    'Byzantine Prime USD',
+    18,
+    '0x30cacd22f178c9e57b0b010e1f9432881aa530c4',
+    UnderlyingAsset['eth:byzusd']
+  ),
+
+  erc20(
+    '17d33c86-258a-47b7-abab-486b5e349965',
+    'eth:audm',
+    'Macropod Stablecoin',
+    18,
+    '0x081599e4936d12c46bd48913b2329115cd26cbdd',
+    UnderlyingAsset['eth:audm']
+  ),
+
+  erc20(
+    'bb874b3f-8844-4d92-82cf-c3dcfdcfebd0',
+    'eth:usdi',
+    'USDi',
+    6,
+    '0xaf1157149ff040dad186a0142a796d901bef1cf1',
+    UnderlyingAsset['eth:usdi']
+  ),
+  erc20(
+    '4ff37854-c686-4114-bbf2-6bfeeb7e14b1',
+    'eth:tea',
+    'Tea',
+    18,
+    '0x7ea7ea50ed58bc4d0a9194bcd328e21f7be80c2b',
+    UnderlyingAsset['eth:tea']
+  ),
+
+  erc20(
+    'c72cb819-15bc-4265-8efb-c0421edda866',
+    'eth:ofc',
+    'OneFootball Club',
+    18,
+    '0x9cb7a4ef0cae65b07362bc679a0b874041e3da53',
+    UnderlyingAsset['eth:ofc']
+  ),
 ];
