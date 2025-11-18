@@ -342,7 +342,16 @@ export const ofcCoins = [
   ofc('77661a48-865f-48ea-bb73-875744729a69', 'ofcbera:dolo', 'Dolomite', 18, UnderlyingAsset.BERA, CoinKind.CRYPTO),
   ofc('411fd61a-3571-41f4-b632-6058a30a66a2', 'ofcapt', 'Aptos', 8, UnderlyingAsset.APT, CoinKind.CRYPTO),
   ofc('2fee34a2-cfb8-4882-953a-ac02f2c1577d', 'ofcvet', 'VeChain', 18, UnderlyingAsset.VET, CoinKind.CRYPTO),
+  ofc('195cfca5-2a3e-4581-b47c-5582fe9bcf25', 'ofccanton', 'Canton Coin', 10, UnderlyingAsset.CANTON, CoinKind.CRYPTO),
   tofc('49ee4baa-a5a7-47f1-b660-7031be7ef310', 'ofctvet', 'Testnet VeChain', 18, UnderlyingAsset.VET, CoinKind.CRYPTO),
+  tofc(
+    'd820be2d-971b-4fb9-8978-707814d97889',
+    'ofctcanton',
+    'Testnet Canton Coin',
+    10,
+    UnderlyingAsset.CANTON,
+    CoinKind.CRYPTO
+  ),
   tofc('6677edac-c597-43ca-b8ff-6cdfa4e094a3', 'ofctapt', 'Testnet Aptos', 8, UnderlyingAsset.APT, CoinKind.CRYPTO),
   tofc('81bd0c13-6531-42b9-a58a-b1e65d239f6f', 'ofctoas', 'Testnet oaschain', 18, UnderlyingAsset.OAS, CoinKind.CRYPTO),
   tofc(
