@@ -15,8 +15,11 @@ export class Utils implements BaseUtils {
   isValidAddress(address: string): boolean {
     if (!address || address.trim() === '') return false;
     const [partyHint, fingerprint] = address.trim().split('::');
-    if (!partyHint || !fingerprint) return false;
-    return this.isValidCantonHex(fingerprint);
+    if (!fingerprint) return false;
+    // all memoIds are considered valid as long as strings are passed
+    const [fingerprintPart] = fingerprint.trim().split('?memoId=');
+    if (!partyHint || !fingerprintPart) return false;
+    return this.isValidCantonHex(fingerprintPart);
   }
 
   /** @inheritdoc */
