@@ -16,6 +16,12 @@ describe('Lightning Invoice Routes', () => {
     req.params = params.params || {};
     req.query = params.query || {};
     req.bitgo = params.bitgo;
+    // Add decoded property with both path params and body for typed routes
+    (req as any).decoded = {
+      coin: params.params?.coin,
+      id: params.params?.id,
+      ...params.body,
+    };
     return req as express.Request;
   };
 
@@ -168,7 +174,9 @@ describe('Lightning Invoice Routes', () => {
       });
       req.bitgo = bitgo;
 
-      await should(handlePayLightningInvoice(req)).be.rejectedWith('Invalid request body to pay lightning invoice');
+      await should(handlePayLightningInvoice(req as any)).be.rejectedWith(
+        'Invalid request body to pay lightning invoice'
+      );
     });
 
     it('should throw an error if the invoice is missing in the request params', async () => {
@@ -183,7 +191,9 @@ describe('Lightning Invoice Routes', () => {
       });
       req.bitgo = bitgo;
 
-      await should(handlePayLightningInvoice(req)).be.rejectedWith(/^Invalid request body to pay lightning invoice/);
+      await should(handlePayLightningInvoice(req as any)).be.rejectedWith(
+        /^Invalid request body to pay lightning invoice/
+      );
     });
   });
 });
