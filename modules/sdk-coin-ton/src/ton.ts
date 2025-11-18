@@ -20,8 +20,6 @@ import {
   EDDSAMethodTypes,
   MPCRecoveryOptions,
   MPCTx,
-  MPCUnsignedTx,
-  RecoveryTxRequest,
   OvcInput,
   OvcOutput,
   Environments,
@@ -35,7 +33,7 @@ import {
 import { auditEddsaPrivateKey, getDerivationPath } from '@bitgo/sdk-lib-mpc';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import { KeyPair as TonKeyPair } from './lib/keyPair';
-import { TransactionBuilderFactory, Utils, TransferBuilder } from './lib';
+import { TransactionBuilderFactory, Utils, TransferBuilder, TokenTransferBuilder, TransactionBuilder } from './lib';
 import { getFeeEstimate } from './lib/utils';
 
 export interface TonParseTransactionOptions extends ParseTransactionOptions {
@@ -273,7 +271,9 @@ export class Ton extends BaseCoin {
     return new TransactionBuilderFactory(coins.get(this.getChain()));
   }
 
-  async recover(params: MPCRecoveryOptions): Promise<MPCTx | MPCSweepTxs> {
+  async recover(
+    params: MPCRecoveryOptions & { jettonMaster?: string; senderJettonAddress?: string }
+  ): Promise<MPCTx | MPCSweepTxs> {
     if (!params.bitgoKey) {
       throw new Error('missing bitgoKey');
     }
@@ -295,8 +295,21 @@ export class Ton extends BaseCoin {
     const accountId = MPC.deriveUnhardened(bitgoKey, currPath).slice(0, 64);
     const senderAddr = await Utils.default.getAddressFromPublicKey(accountId);
     const balance = await tonweb.getBalance(senderAddr);
-    if (new BigNumber(balance).isEqualTo(0)) {
-      throw Error('Did not find address with funds to recover');
+
+    const jettonBalances: { minterAddress?: string; walletAddress: string; balance: string }[] = [];
+    if (params.senderJettonAddress) {
+      try {
+        const jettonWalletData = await tonweb.provider.call(params.senderJettonAddress, 'get_wallet_data');
+        const jettonBalance = jettonWalletData.stack[0][1];
+        if (jettonBalance && new BigNumber(jettonBalance).gt(0)) {
+          jettonBalances.push({
+            walletAddress: params.senderJettonAddress,
+            balance: jettonBalance,
+          });
+        }
+      } catch (e) {
+        throw new Error(`Failed to query jetton balance for address ${params.senderJettonAddress}: ${e.message}`);
+      }
     }
 
     const WalletClass = tonweb.wallet.all['v4R2'];
@@ -304,41 +317,84 @@ export class Ton extends BaseCoin {
       publicKey: tonweb.utils.hexToBytes(accountId),
       wc: 0,
     });
-    let seqno = await wallet.methods.seqno().call();
-    if (seqno === null) {
-      seqno = 0;
-    }
-
-    const feeEstimate = await getFeeEstimate(wallet, params.recoveryDestination, balance, seqno as number);
-
-    const totalFeeEstimate = Math.round(
-      (feeEstimate.source_fees.in_fwd_fee +
-        feeEstimate.source_fees.storage_fee +
-        feeEstimate.source_fees.gas_fee +
-        feeEstimate.source_fees.fwd_fee) *
-        1.5
-    );
-
-    if (new BigNumber(totalFeeEstimate).gt(balance)) {
-      throw Error('Did not find address with funds to recover');
-    }
+    const seqnoResult = await wallet.methods.seqno().call();
+    const seqno: number = seqnoResult !== null && seqnoResult !== undefined ? seqnoResult : 0;
 
     const factory = this.getBuilder();
-    const expireAt = Math.floor(Date.now() / 1e3) + 60 * 60 * 24 * 7; // 7 days
+    const expireAt = Math.floor(Date.now() / 1e3) + 60 * 60 * 24 * 7;
 
-    const txBuilder = factory
-      .getTransferBuilder()
-      .sender(senderAddr)
-      .sequenceNumber(seqno as number)
-      .publicKey(accountId)
-      .expireTime(expireAt);
+    let txBuilder: TransactionBuilder;
+    let unsignedTransaction: any;
+    let feeEstimate: number;
+    let transactionType: 'ton' | 'jetton';
 
-    (txBuilder as TransferBuilder).send({
-      address: params.recoveryDestination,
-      amount: new BigNumber(balance).minus(new BigNumber(totalFeeEstimate)).toString(),
-    });
+    if ((params.jettonMaster || params.senderJettonAddress) && jettonBalances.length > 0) {
+      const jettonInfo = jettonBalances[0];
+      const tonAmount = '50000000';
+      const forwardTonAmount = '1';
 
-    const unsignedTransaction = await txBuilder.build();
+      const totalRequiredTon = new BigNumber(tonAmount).plus(new BigNumber(forwardTonAmount));
+      if (new BigNumber(balance).lt(totalRequiredTon)) {
+        throw new Error(
+          `Insufficient TON balance for jetton transfer. Required: ${totalRequiredTon.toString()} nanoTON, Available: ${balance}`
+        );
+      }
+
+      txBuilder = factory
+        .getTokenTransferBuilder()
+        .sender(senderAddr)
+        .sequenceNumber(seqno)
+        .publicKey(accountId)
+        .expireTime(expireAt);
+
+      (txBuilder as TokenTransferBuilder).recipient(
+        params.recoveryDestination,
+        jettonInfo.walletAddress,
+        tonAmount,
+        jettonInfo.balance,
+        forwardTonAmount
+      );
+
+      unsignedTransaction = await txBuilder.build();
+      feeEstimate = parseInt(tonAmount, 10);
+      transactionType = 'jetton';
+    } else {
+      if (new BigNumber(balance).isEqualTo(0)) {
+        throw Error('Did not find address with TON balance to recover');
+      }
+
+      const tonFeeEstimate = await getFeeEstimate(wallet, params.recoveryDestination, balance, seqno as number);
+
+      const totalFeeEstimate = Math.round(
+        (tonFeeEstimate.source_fees.in_fwd_fee +
+          tonFeeEstimate.source_fees.storage_fee +
+          tonFeeEstimate.source_fees.gas_fee +
+          tonFeeEstimate.source_fees.fwd_fee) *
+          1.5
+      );
+
+      if (new BigNumber(totalFeeEstimate).gte(balance)) {
+        throw new Error(
+          `Insufficient TON balance for transaction. Required: ${totalFeeEstimate} nanoTON, Available: ${balance}`
+        );
+      }
+
+      txBuilder = factory
+        .getTransferBuilder()
+        .sender(senderAddr)
+        .sequenceNumber(seqno)
+        .publicKey(accountId)
+        .expireTime(expireAt);
+
+      (txBuilder as TransferBuilder).send({
+        address: params.recoveryDestination,
+        amount: new BigNumber(balance).minus(new BigNumber(totalFeeEstimate)).toString(),
+      });
+
+      unsignedTransaction = await txBuilder.build();
+      feeEstimate = totalFeeEstimate;
+      transactionType = 'ton';
+    }
 
     if (!isUnsignedSweep) {
       if (!params.userKey) {
@@ -389,31 +445,33 @@ export class Ton extends BaseCoin {
       txBuilder.addSignature(publicKeyObj as PublicKey, signatureHex);
     }
 
-    const completedTransaction = await txBuilder.build();
-    const serializedTx = completedTransaction.toBroadcastFormat();
     const walletCoin = this.getChain();
-
-    const inputs: OvcInput[] = [];
-    for (const input of completedTransaction.inputs) {
-      inputs.push({
-        address: input.address,
-        valueString: input.value,
-        value: new BigNumber(input.value).toNumber(),
-      });
-    }
-    const outputs: OvcOutput[] = [];
-    for (const output of completedTransaction.outputs) {
-      outputs.push({
-        address: output.address,
-        valueString: output.value,
-        coinName: output.coin,
-      });
-    }
-    const spendAmount = completedTransaction.inputs.length === 1 ? completedTransaction.inputs[0].value : 0;
-    const parsedTx = { inputs: inputs, outputs: outputs, spendAmount: spendAmount, type: '' };
-    const feeInfo = { fee: totalFeeEstimate, feeString: totalFeeEstimate.toString() };
     const coinSpecific = { commonKeychain: bitgoKey };
+
     if (isUnsignedSweep) {
+      const completedTransaction = await txBuilder.build();
+      const serializedTx = completedTransaction.toBroadcastFormat();
+
+      const inputs: OvcInput[] = [];
+      for (const input of completedTransaction.inputs) {
+        inputs.push({
+          address: input.address,
+          valueString: input.value,
+          value: new BigNumber(input.value).toNumber(),
+        });
+      }
+      const outputs: OvcOutput[] = [];
+      for (const output of completedTransaction.outputs) {
+        outputs.push({
+          address: output.address,
+          valueString: output.value,
+          coinName: output.coin,
+        });
+      }
+      const spendAmount = completedTransaction.inputs.length === 1 ? completedTransaction.inputs[0].value : 0;
+      const parsedTx = { inputs: inputs, outputs: outputs, spendAmount: spendAmount, type: transactionType };
+      const feeInfo = { fee: feeEstimate, feeString: feeEstimate.toString() };
+
       const transaction: MPCTx = {
         serializedTx: serializedTx,
         scanIndex: index,
@@ -424,15 +482,12 @@ export class Ton extends BaseCoin {
         feeInfo: feeInfo,
         coinSpecific: coinSpecific,
       };
-      const unsignedTx: MPCUnsignedTx = { unsignedTx: transaction, signatureShares: [] };
-      const transactions: MPCUnsignedTx[] = [unsignedTx];
-      const txRequest: RecoveryTxRequest = {
-        transactions: transactions,
-        walletCoin: walletCoin,
-      };
-      const txRequests: MPCSweepTxs = { txRequests: [txRequest] };
-      return txRequests;
+
+      return transaction;
     }
+
+    const completedTransaction = await txBuilder.build();
+    const serializedTx = completedTransaction.toBroadcastFormat();
 
     const transaction: MPCTx = {
       serializedTx: serializedTx,
