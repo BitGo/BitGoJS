@@ -133,7 +133,7 @@ export class CoinMap {
       16661: 'og',
       9746: 'txpl',
       9745: 'xpl',
-      57054: 'tsonic',
+      14601: 'tsonic',
       146: 'sonic',
       1328: 'tseievm',
       1329: 'seievm',
