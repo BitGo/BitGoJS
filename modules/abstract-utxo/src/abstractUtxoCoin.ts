@@ -97,6 +97,12 @@ export type TxFormat =
   // While this prevents us to fully verify the transaction fee, we have other checks in place to ensure the fee is within bounds.
   | 'psbt-lite';
 
+export class ErrorDeprecatedTxFormat extends Error {
+  constructor(txFormat: TxFormat) {
+    super(`SDK support for txFormat=${txFormat} is deprecated on this environment. Please use psbt instead.`);
+  }
+}
+
 type UtxoCustomSigningFunction<TNumber extends number | bigint> = {
   (params: {
     coin: IBaseCoin;
@@ -979,6 +985,10 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   getDefaultTxFormat(wallet: Wallet, requestedFormat?: TxFormat): TxFormat | undefined {
     // If format is explicitly requested, use it
     if (requestedFormat !== undefined) {
+      if (isTestnet(this.network) && requestedFormat === 'legacy') {
+        throw new ErrorDeprecatedTxFormat(requestedFormat);
+      }
+
       return requestedFormat;
     }
 

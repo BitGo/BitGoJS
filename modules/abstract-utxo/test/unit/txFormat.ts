@@ -3,7 +3,7 @@ import * as assert from 'assert';
 import * as utxolib from '@bitgo/utxo-lib';
 import { Wallet } from '@bitgo/sdk-core';
 
-import { AbstractUtxoCoin, TxFormat } from '../../src';
+import { AbstractUtxoCoin, ErrorDeprecatedTxFormat, TxFormat } from '../../src';
 
 import { utxoCoins, defaultBitGo } from './util';
 
@@ -151,7 +151,8 @@ describe('txFormat', function () {
 
     // Test explicitly requested formats
     runTest({
-      description: 'should respect explicitly requested legacy format',
+      description: 'should respect explicitly requested legacy format on mainnet',
+      coinFilter: (coin) => utxolib.isMainnet(coin.network),
       expectedTxFormat: 'legacy',
       requestedTxFormat: 'legacy',
     });
@@ -166,6 +167,22 @@ describe('txFormat', function () {
       description: 'should respect explicitly requested psbt-lite format',
       expectedTxFormat: 'psbt-lite',
       requestedTxFormat: 'psbt-lite',
+    });
+
+    // Test that legacy format is prohibited on testnet
+    it('should throw ErrorDeprecatedTxFormat when legacy format is requested on testnet', function () {
+      for (const coin of utxoCoins) {
+        if (!utxolib.isTestnet(coin.network)) {
+          continue;
+        }
+
+        const wallet = createMockWallet(coin, { type: 'hot' });
+        assert.throws(
+          () => getTxFormat(coin, wallet, 'legacy'),
+          ErrorDeprecatedTxFormat,
+          `Expected ErrorDeprecatedTxFormat for ${coin.getChain()}`
+        );
+      }
     });
   });
 });
