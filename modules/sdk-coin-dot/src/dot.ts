@@ -651,10 +651,43 @@ export class Dot extends BaseCoin {
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
-    const { txParams } = params;
+    const { txPrebuild, txParams } = params;
+    if (!txParams) {
+      throw new Error('missing txParams');
+    }
+
+    if (!txPrebuild) {
+      throw new Error('missing txPrebuild');
+    }
+
+    if (!txPrebuild.txHex) {
+      throw new Error('missing txHex in txPrebuild');
+    }
+
+    if (!txParams.recipients || txParams.recipients.length === 0) {
+      throw new Error('missing recipients in txParams');
+    }
+
+    const factory = this.getBuilder();
+    const txBuilder = factory.from(txPrebuild.txHex) as any;
+
     if (Array.isArray(txParams.recipients) && txParams.recipients.length > 1) {
       throw new Error(
         `${this.getChain()} doesn't support sending to more than 1 destination address within a single transaction. Try again, using only a single recipient.`
+      );
+    }
+
+    // validate recipient is same as txBuilder._to
+    if (txParams.recipients[0].address !== txBuilder._to) {
+      throw new Error(
+        `Recipient address ${txParams.recipients[0].address} does not match transaction destination address ${txBuilder._to}`
+      );
+    }
+
+    // and amount is same as txBuilder._amount
+    if (txParams.recipients[0].amount !== txBuilder._amount) {
+      throw new Error(
+        `Recipient amount ${txParams.recipients[0].amount} does not match transaction amount ${txBuilder._amount}`
       );
     }
     return true;

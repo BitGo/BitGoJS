@@ -664,11 +664,68 @@ describe('DOT:', function () {
         walletPassphrase: 'fakeWalletPassphrase',
       };
 
+      const txPrebuild = {
+        txHex:
+          '0xa80a0300161b969b6b53ef81225feea3882284c778cd4a406d23215fcf492e83f75d42960b00204aa9d101eb600400000065900f001000000067f9723393ef76214df0118c34bbbd3dbebc8ed46a10973a8c969d48fe7598c9a7b7420ee3e4fe2b88da0fc42b30897e18d56d8b56a1934211d9de730cf96de300',
+      };
+
       await basecoin
-        .verifyTransaction({ txParams })
+        .verifyTransaction({ txPrebuild, txParams })
         .should.be.rejectedWith(
           `tdot doesn't support sending to more than 1 destination address within a single transaction. Try again, using only a single recipient.`
         );
+    });
+
+    it('should reject a txPrebuild with more than invalid amount', async function () {
+      const wallet = new Wallet(bitgo, basecoin, {});
+      const txParams = {
+        recipients: [{ amount: '20000000000', address: '5CZh773vKGwKFCYUjGc31AwXCbf7TPkavdeuk2XoujJMjbBD' }],
+        wallet: wallet,
+        walletPassphrase: 'fakeWalletPassphrase',
+      };
+      const txPrebuild = {
+        txHex:
+          '0xa80a0300161b969b6b53ef81225feea3882284c778cd4a406d23215fcf492e83f75d42960b00204aa9d101eb600400000065900f001000000067f9723393ef76214df0118c34bbbd3dbebc8ed46a10973a8c969d48fe7598c9a7b7420ee3e4fe2b88da0fc42b30897e18d56d8b56a1934211d9de730cf96de300',
+      };
+
+      await basecoin
+        .verifyTransaction({ txPrebuild, txParams })
+        .should.be.rejectedWith(`Recipient amount 20000000000 does not match transaction amount 2000000000000`);
+    });
+
+    it('should reject a txPrebuild with more than invalid recipient', async function () {
+      const wallet = new Wallet(bitgo, basecoin, {});
+      const txParams = {
+        recipients: [{ amount: '2000000000000', address: '5CZh773vKGwKFCUjGc31AwXCbf7TPkavduk2XoujJMjbBD' }],
+        wallet: wallet,
+        walletPassphrase: 'fakeWalletPassphrase',
+      };
+      const txPrebuild = {
+        txHex:
+          '0xa80a0300161b969b6b53ef81225feea3882284c778cd4a406d23215fcf492e83f75d42960b00204aa9d101eb600400000065900f001000000067f9723393ef76214df0118c34bbbd3dbebc8ed46a10973a8c969d48fe7598c9a7b7420ee3e4fe2b88da0fc42b30897e18d56d8b56a1934211d9de730cf96de300',
+      };
+
+      await basecoin
+        .verifyTransaction({ txPrebuild, txParams })
+        .should.be.rejectedWith(
+          `Recipient address 5CZh773vKGwKFCUjGc31AwXCbf7TPkavduk2XoujJMjbBD does not match transaction destination address 5CZh773vKGwKFCYUjGc31AwXCbf7TPkavdeuk2XoujJMjbBD`
+        );
+    });
+
+    it('should accept a txPrebuild with more than valid recipient and amount', async function () {
+      const wallet = new Wallet(bitgo, basecoin, {});
+      const txParams = {
+        recipients: [{ amount: '2000000000000', address: '5CZh773vKGwKFCYUjGc31AwXCbf7TPkavdeuk2XoujJMjbBD' }],
+        wallet: wallet,
+        walletPassphrase: 'fakeWalletPassphrase',
+      };
+      const txPrebuild = {
+        txHex:
+          '0xa80a0300161b969b6b53ef81225feea3882284c778cd4a406d23215fcf492e83f75d42960b00204aa9d101eb600400000065900f001000000067f9723393ef76214df0118c34bbbd3dbebc8ed46a10973a8c969d48fe7598c9a7b7420ee3e4fe2b88da0fc42b30897e18d56d8b56a1934211d9de730cf96de300',
+      };
+
+      const result = await basecoin.verifyTransaction({ txPrebuild, txParams });
+      assert.strictEqual(result, true);
     });
   });
 
