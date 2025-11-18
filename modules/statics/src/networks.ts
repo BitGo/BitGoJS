@@ -1555,8 +1555,8 @@ class SonicTestnet extends Testnet implements EthereumNetwork {
   family = CoinFamily.SONIC;
   explorerUrl = 'https://testnet.sonicscan.org/tx/';
   accountExplorerUrl = 'https://testnet.sonicscan.org/address/';
-  chainId = 57054;
-  nativeCoinOperationHashPrefix = '57054';
+  chainId = 14601;
+  nativeCoinOperationHashPrefix = '14601';
   walletFactoryAddress = '0x809ee567e413543af1caebcdb247f6a67eafc8dd';
   batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
   forwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
