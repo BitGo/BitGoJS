@@ -9,6 +9,35 @@ function scriptToAddress(script: Uint8Array): string {
   return `scriptPubKey:${Buffer.from(script).toString('hex')}`;
 }
 
+type ParsedWalletOutput = fixedScriptWallet.ParsedOutput & { scriptId: fixedScriptWallet.ScriptId };
+type ParsedExternalOutput = fixedScriptWallet.ParsedOutput & { scriptId: null };
+
+function isParsedWalletOutput(output: ParsedWalletOutput | ParsedExternalOutput): output is ParsedWalletOutput {
+  return output.scriptId !== null;
+}
+
+function isParsedExternalOutput(output: ParsedWalletOutput | ParsedExternalOutput): output is ParsedExternalOutput {
+  return output.scriptId === null;
+}
+
+function toChangeOutput(output: ParsedWalletOutput): FixedScriptWalletOutput {
+  return {
+    address: output.address ?? scriptToAddress(output.script),
+    amount: output.value.toString(),
+    chain: output.scriptId.chain,
+    index: output.scriptId.index,
+    external: false,
+  };
+}
+
+function toExternalOutput(output: ParsedExternalOutput): Output {
+  return {
+    address: output.address ?? scriptToAddress(output.script),
+    amount: output.value.toString(),
+    external: true,
+  };
+}
+
 export function explainPsbtWasm(
   psbt: fixedScriptWallet.BitGoPsbt,
   walletXpubs: Triple<string>,
@@ -25,24 +54,14 @@ export function explainPsbtWasm(
   const outputs: Output[] = [];
 
   parsed.outputs.forEach((output) => {
-    const address = output.address ?? scriptToAddress(output.script);
-
-    if (output.scriptId) {
+    if (isParsedWalletOutput(output)) {
       // This is a change output
-      changeOutputs.push({
-        address,
-        amount: output.value.toString(),
-        chain: output.scriptId.chain,
-        index: output.scriptId.index,
-        external: false,
-      });
-    } else {
+      changeOutputs.push(toChangeOutput(output));
+    } else if (isParsedExternalOutput(output)) {
       // This is an external output
-      outputs.push({
-        address,
-        amount: output.value.toString(),
-        external: true,
-      });
+      outputs.push(toExternalOutput(output));
+    } else {
+      throw new Error('Invalid output');
     }
   });
 
