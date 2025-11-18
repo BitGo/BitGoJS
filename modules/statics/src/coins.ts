@@ -60,6 +60,7 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
     seievm: erc20Token,
     mon: erc20Token,
     xdc: erc20Token,
+    ip: erc20Token,
     bsc: bscToken,
     celo: celoToken,
     cosmos: cosmosToken,
@@ -125,6 +126,7 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
     case 'seievm':
     case 'mon':
     case 'xdc':
+    case 'ip':
     case 'celo':
     case 'eth':
     case 'opeth':
