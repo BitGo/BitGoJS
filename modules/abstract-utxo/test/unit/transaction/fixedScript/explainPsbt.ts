@@ -18,10 +18,11 @@ function hasWasmUtxoSupport(network: utxolib.Network): boolean {
 
 function describeTransactionWith(acidTest: testutil.AcidTest) {
   describe(`${acidTest.name}`, function () {
+    let psbt: utxolib.bitgo.UtxoPsbt;
     let psbtBytes: Buffer;
     let refExplanation: TransactionExplanation;
     before('prepare', function () {
-      const psbt = acidTest.createPsbt();
+      psbt = acidTest.createPsbt();
       refExplanation = explainPsbt(psbt, { pubs: acidTest.rootWalletKeys }, acidTest.network, {
         strict: true,
       });
@@ -38,6 +39,20 @@ function describeTransactionWith(acidTest: testutil.AcidTest) {
         assert.strictEqual(change.amount, '900');
         assert.strictEqual(typeof change.address, 'string');
       });
+    });
+
+    it('reference implementation should support custom change outputs', function () {
+      const customChangeExplanation = explainPsbt(
+        psbt,
+        { pubs: acidTest.rootWalletKeys, customChangePubs: acidTest.otherWalletKeys },
+        acidTest.network,
+        { strict: true }
+      );
+      assert.ok(customChangeExplanation.customChangeOutputs);
+      assert.strictEqual(customChangeExplanation.changeOutputs.length, refExplanation.changeOutputs.length);
+      assert.strictEqual(customChangeExplanation.outputs.length, refExplanation.outputs.length - 1);
+      assert.strictEqual(customChangeExplanation.customChangeOutputs.length, 1);
+      assert.strictEqual(customChangeExplanation.customChangeOutputs[0].amount, '900');
     });
 
     it('should match explainPsbtWasm', function () {
