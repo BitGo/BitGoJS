@@ -1,6 +1,7 @@
 import assert from 'assert';
 
 import * as t from 'io-ts';
+import { bitgo } from '@bitgo/utxo-lib';
 import { BIP32Interface, bip32 } from '@bitgo/secp256k1';
 import { IRequestTracer, IWallet, KeyIndices, promiseProps, Triple } from '@bitgo/sdk-core';
 
@@ -47,9 +48,15 @@ export function toKeychainTriple(keychains: UtxoNamedKeychains): Triple<UtxoKeyc
 }
 
 export function toBip32Triple(
-  keychains: UtxoNamedKeychains | Triple<{ pub: string }> | Triple<string>
+  keychains: bitgo.RootWalletKeys | UtxoNamedKeychains | Triple<{ pub: string }> | string[]
 ): Triple<BIP32Interface> {
+  if (keychains instanceof bitgo.RootWalletKeys) {
+    return keychains.triple;
+  }
   if (Array.isArray(keychains)) {
+    if (keychains.length !== 3) {
+      throw new Error('expected 3 keychains');
+    }
     return keychains.map((keychain: { pub: string } | string) => {
       const v = typeof keychain === 'string' ? keychain : keychain.pub;
       return bip32.fromBase58(v);
