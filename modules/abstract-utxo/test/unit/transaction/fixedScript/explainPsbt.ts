@@ -20,6 +20,9 @@ function describeTransactionWith(acidTest: testutil.AcidTest) {
   describe(`${acidTest.name}`, function () {
     let psbt: utxolib.bitgo.UtxoPsbt;
     let psbtBytes: Buffer;
+    let walletXpubs: Triple<string>;
+    let customChangeWalletXpubs: Triple<string> | undefined;
+    let wasmPsbt: fixedScriptWallet.BitGoPsbt;
     let refExplanation: TransactionExplanation;
     before('prepare', function () {
       psbt = acidTest.createPsbt();
@@ -27,6 +30,13 @@ function describeTransactionWith(acidTest: testutil.AcidTest) {
         strict: true,
       });
       psbtBytes = psbt.toBuffer();
+      const networkName = utxolib.getNetworkName(acidTest.network);
+      assert(networkName);
+      walletXpubs = acidTest.rootWalletKeys.triple.map((k) => k.neutered().toBase58()) as Triple<string>;
+      customChangeWalletXpubs = acidTest.otherWalletKeys.triple.map((k) => k.neutered().toBase58()) as Triple<string>;
+      if (hasWasmUtxoSupport(acidTest.network)) {
+        wasmPsbt = fixedScriptWallet.BitGoPsbt.fromBytes(psbtBytes, networkName);
+      }
     });
 
     it('should match the expected values for explainPsbt', function () {
@@ -60,10 +70,6 @@ function describeTransactionWith(acidTest: testutil.AcidTest) {
         return this.skip();
       }
 
-      const networkName = utxolib.getNetworkName(acidTest.network);
-      assert(networkName);
-      const wasmPsbt = fixedScriptWallet.BitGoPsbt.fromBytes(psbtBytes, networkName);
-      const walletXpubs = acidTest.rootWalletKeys.triple.map((k) => k.neutered().toBase58()) as Triple<string>;
       const wasmExplanation = explainPsbtWasm(wasmPsbt, walletXpubs, {
         replayProtection: {
           outputScripts: [acidTest.getReplayProtectionOutputScript()],
@@ -85,6 +91,25 @@ function describeTransactionWith(acidTest: testutil.AcidTest) {
             break;
         }
       }
+    });
+
+    if (acidTest.network !== utxolib.networks.bitcoin) {
+      return;
+    }
+
+    // extended test suite for bitcoin
+
+    it('returns custom change outputs when parameter is set', function () {
+      const wasmExplanation = explainPsbtWasm(wasmPsbt, walletXpubs, {
+        replayProtection: {
+          outputScripts: [acidTest.getReplayProtectionOutputScript()],
+        },
+        customChangeWalletXpubs,
+      });
+      assert.ok(wasmExplanation.customChangeOutputs);
+      assert.deepStrictEqual(wasmExplanation.outputs.length, 2);
+      assert.deepStrictEqual(wasmExplanation.customChangeOutputs.length, 1);
+      assert.deepStrictEqual(wasmExplanation.customChangeOutputs[0].amount, '900');
     });
   });
 }

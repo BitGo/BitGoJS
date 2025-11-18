@@ -46,34 +46,45 @@ export function explainPsbtWasm(
       checkSignature?: boolean;
       outputScripts: Buffer[];
     };
+    customChangeWalletXpubs?: Triple<string>;
   }
 ): TransactionExplanationWasm {
   const parsed = psbt.parseTransactionWithWalletKeys(walletXpubs, params.replayProtection);
 
   const changeOutputs: FixedScriptWalletOutput[] = [];
   const outputs: Output[] = [];
+  const parsedCustomChangeOutputs = params.customChangeWalletXpubs
+    ? psbt.parseOutputsWithWalletKeys(params.customChangeWalletXpubs)
+    : undefined;
 
-  parsed.outputs.forEach((output) => {
+  const customChangeOutputs: FixedScriptWalletOutput[] = [];
+
+  parsed.outputs.forEach((output, i) => {
+    const parseCustomChangeOutput = parsedCustomChangeOutputs?.[i];
     if (isParsedWalletOutput(output)) {
       // This is a change output
       changeOutputs.push(toChangeOutput(output));
+    } else if (parseCustomChangeOutput && isParsedWalletOutput(parseCustomChangeOutput)) {
+      customChangeOutputs.push(toChangeOutput(parseCustomChangeOutput));
     } else if (isParsedExternalOutput(output)) {
-      // This is an external output
       outputs.push(toExternalOutput(output));
     } else {
       throw new Error('Invalid output');
     }
   });
 
-  const changeAmount = changeOutputs.reduce((sum, output) => sum + BigInt(output.amount), BigInt(0));
   const outputAmount = outputs.reduce((sum, output) => sum + BigInt(output.amount), BigInt(0));
+  const changeAmount = changeOutputs.reduce((sum, output) => sum + BigInt(output.amount), BigInt(0));
+  const customChangeAmount = customChangeOutputs.reduce((sum, output) => sum + BigInt(output.amount), BigInt(0));
 
   return {
     id: psbt.unsignedTxid(),
     outputAmount: outputAmount.toString(),
     changeAmount: changeAmount.toString(),
+    customChangeAmount: customChangeAmount.toString(),
     outputs,
     changeOutputs,
+    customChangeOutputs,
     fee: parsed.minerFee.toString(),
   };
 }
