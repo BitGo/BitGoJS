@@ -3053,7 +3053,9 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       !txParams?.recipients &&
       !(
         txParams.prebuildTx?.consolidateId ||
-        (txParams.type && ['acceleration', 'fillNonce', 'transferToken', 'tokenApproval'].includes(txParams.type))
+        txPrebuild?.consolidateId ||
+        (txParams.type &&
+          ['acceleration', 'fillNonce', 'transferToken', 'tokenApproval', 'consolidate'].includes(txParams.type))
       )
     ) {
       throw new Error('missing txParams');
@@ -3123,6 +3125,35 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
             ]);
           }
         }
+      }
+    }
+
+    // Verify consolidation transactions send to base address
+    if (params.verification?.consolidationToBaseAddress) {
+      const coinSpecific = wallet.coinSpecific();
+      if (!coinSpecific || !coinSpecific.baseAddress) {
+        throw new Error('Unable to determine base address for consolidation');
+      }
+      const baseAddress = coinSpecific.baseAddress;
+
+      if (!txPrebuild.txHex) {
+        throw new Error('missing txHex in txPrebuild');
+      }
+
+      const txBuilder = this.getTransactionBuilder();
+      txBuilder.from(txPrebuild.txHex);
+      const tx = await txBuilder.build();
+      const txJson = tx.toJson();
+
+      // Verify the transaction recipient matches the base address
+      if (!txJson.to) {
+        throw new Error('Consolidation transaction is missing recipient address');
+      }
+
+      if (txJson.to.toLowerCase() !== baseAddress.toLowerCase()) {
+        throwRecipientMismatch('Consolidation transaction recipient does not match wallet base address', [
+          { address: txJson.to, amount: txJson.value },
+        ]);
       }
     }
 
