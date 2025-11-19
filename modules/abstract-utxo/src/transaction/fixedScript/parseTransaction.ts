@@ -54,8 +54,7 @@ function toExpectedOutputs(
     recipients?: ITransactionRecipient[];
     allowExternalChangeAddress?: boolean;
     changeAddress?: string;
-  },
-  allOutputs: Output[]
+  }
 ): Output[] {
   // verify that each recipient from txParams has their own output
   const expectedOutputs = (txParams.recipients ?? []).flatMap((output) => {
@@ -70,17 +69,7 @@ function toExpectedOutputs(
   if (txParams.allowExternalChangeAddress && txParams.changeAddress) {
     // when an external change address is explicitly specified, count all outputs going towards that
     // address in the expected outputs (regardless of the output amount)
-    expectedOutputs.push(
-      ...allOutputs.flatMap((output) => {
-        if (
-          output.address === undefined ||
-          output.address !== coin.canonicalAddress(txParams.changeAddress as string)
-        ) {
-          return [];
-        }
-        return [{ ...output, address: coin.canonicalAddress(output.address) }];
-      })
-    );
+    expectedOutputs.push({ address: coin.canonicalAddress(txParams.changeAddress), amount: 'max' });
   }
   return expectedOutputs;
 }
@@ -120,16 +109,7 @@ export async function parseTransaction<TNumber extends bigint | number>(
     throw new Error('missing required txPrebuild property txHex');
   }
 
-  // obtain all outputs
-  const explanation: TransactionExplanation = await coin.explainTransaction<TNumber>({
-    txHex: txPrebuild.txHex,
-    txInfo: txPrebuild.txInfo,
-    pubs: keychainArray.map((k) => k.pub) as Triple<string>,
-  });
-
-  const allOutputs = [...explanation.outputs, ...explanation.changeOutputs];
-
-  const expectedOutputs = toExpectedOutputs(coin, txParams, allOutputs);
+  const expectedOutputs = toExpectedOutputs(coin, txParams);
 
   // get the keychains from the custom change wallet if needed
   let customChange: CustomChangeOptions | undefined;
@@ -158,6 +138,15 @@ export async function parseTransaction<TNumber extends bigint | number>(
       };
     }
   }
+
+  // obtain all outputs
+  const explanation: TransactionExplanation = await coin.explainTransaction<TNumber>({
+    txHex: txPrebuild.txHex,
+    txInfo: txPrebuild.txInfo,
+    pubs: keychainArray.map((k) => k.pub) as Triple<string>,
+  });
+
+  const allOutputs = [...explanation.outputs, ...explanation.changeOutputs];
 
   /**
    * Loop through all the outputs and classify each of them as either internal spends
