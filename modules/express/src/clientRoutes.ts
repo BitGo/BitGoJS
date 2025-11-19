@@ -664,11 +664,13 @@ export async function handleV2CreateAddress(req: ExpressApiRouteRequest<'express
  * handle v2 approve transaction
  * @param req
  */
-async function handleV2PendingApproval(req: express.Request): Promise<any> {
+async function handleV2PendingApproval(
+  req: ExpressApiRouteRequest<'express.v2.pendingapprovals', 'put'>
+): Promise<any> {
   const bitgo = req.bitgo;
-  const coin = bitgo.coin(req.params.coin);
+  const coin = bitgo.coin(req.decoded.coin);
   const params = req.body || {};
-  const pendingApproval = await coin.pendingApprovals().get({ id: req.params.id });
+  const pendingApproval = await coin.pendingApprovals().get({ id: req.decoded.id });
   if (params.state === 'approved') {
     return pendingApproval.approve(params);
   }
@@ -1686,12 +1688,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   // Miscellaneous
   app.post('/api/v2/:coin/canonicaladdress', parseBody, prepareBitGo(config), promiseWrapper(handleCanonicalAddress));
   router.post('express.verifycoinaddress', [prepareBitGo(config), typedPromiseWrapper(handleV2VerifyAddress)]);
-  app.put(
-    '/api/v2/:coin/pendingapprovals/:id',
-    parseBody,
-    prepareBitGo(config),
-    promiseWrapper(handleV2PendingApproval)
-  );
+  router.put('express.v2.pendingapprovals', [prepareBitGo(config), typedPromiseWrapper(handleV2PendingApproval)]);
 
   // lightning - pay invoice
   app.post(
