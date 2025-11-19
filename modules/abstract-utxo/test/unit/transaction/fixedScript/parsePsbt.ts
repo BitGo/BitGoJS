@@ -204,24 +204,25 @@ describe('parseTransaction', function () {
       expectedImplicitExternalSpendAmount: 0n,
     });
 
-    if (test.network === utxolib.networks.bitcoin) {
-      // extended test suite for bitcoin
-
-      describeParseTransactionWith(test, 'legacy', {
-        txFormat: 'legacy',
-        txParams: 'inferFromExplanation',
-        expectedExplicitExternalSpendAmount: 2700n,
-        expectedImplicitExternalSpendAmount: 0n,
-      });
-
-      describeParseTransactionWith(test, 'empty recipients', {
-        txParams: {
-          recipients: [],
-          changeAddress: undefined,
-        },
-        expectedExplicitExternalSpendAmount: 0n,
-        expectedImplicitExternalSpendAmount: 2700n,
-      });
+    if (test.network !== utxolib.networks.bitcoin) {
+      return;
     }
+    // extended test suite for bitcoin
+
+    describeParseTransactionWith(test, 'legacy', {
+      txFormat: 'legacy',
+      txParams: 'inferFromExplanation',
+      expectedExplicitExternalSpendAmount: 2700n,
+      expectedImplicitExternalSpendAmount: 0n,
+    });
+
+    describeParseTransactionWith(test, 'empty recipients', {
+      txParams: {
+        recipients: [],
+        changeAddress: undefined,
+      },
+      expectedExplicitExternalSpendAmount: 0n,
+      expectedImplicitExternalSpendAmount: 2700n,
+    });
   });
 });
