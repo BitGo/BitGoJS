@@ -32,7 +32,7 @@ function describeTransactionWith(acidTest: testutil.AcidTest) {
       // note: `outputs` means external outputs here
       assert.strictEqual(refExplanation.outputs.length, 3);
       assert.strictEqual(refExplanation.changeOutputs.length, acidTest.outputs.length - 3);
-      assert.strictEqual(refExplanation.outputAmount, '2700');
+      assert.strictEqual(refExplanation.outputAmount, '1800');
       assert.strictEqual(refExplanation.changeOutputs.length, acidTest.outputs.length - 3);
       refExplanation.changeOutputs.forEach((change) => {
         assert.strictEqual(change.amount, '900');

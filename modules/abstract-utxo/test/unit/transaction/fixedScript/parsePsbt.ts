@@ -200,7 +200,7 @@ describe('parseTransaction', function () {
     // Default case: psbt format, infer recipients from explanation
     describeParseTransactionWith(test, 'default', {
       txParams: 'inferFromExplanation',
-      expectedExplicitExternalSpendAmount: 2700n,
+      expectedExplicitExternalSpendAmount: 1800n,
       expectedImplicitExternalSpendAmount: 0n,
     });
 
@@ -212,7 +212,7 @@ describe('parseTransaction', function () {
     describeParseTransactionWith(test, 'legacy', {
       txFormat: 'legacy',
       txParams: 'inferFromExplanation',
-      expectedExplicitExternalSpendAmount: 2700n,
+      expectedExplicitExternalSpendAmount: 1800n,
       expectedImplicitExternalSpendAmount: 0n,
     });
 
@@ -222,7 +222,7 @@ describe('parseTransaction', function () {
         changeAddress: undefined,
       },
       expectedExplicitExternalSpendAmount: 0n,
-      expectedImplicitExternalSpendAmount: 2700n,
+      expectedImplicitExternalSpendAmount: 1800n,
     });
   });
 });
