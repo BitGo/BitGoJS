@@ -1,7 +1,7 @@
 import assert from 'assert';
 
 import _ from 'lodash';
-import { Triple, VerificationOptions, Wallet } from '@bitgo/sdk-core';
+import { ITransactionRecipient, Triple, VerificationOptions, Wallet } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
 
 import type { AbstractUtxoCoin, ParseTransactionOptions } from '../../abstractUtxoCoin';
@@ -17,11 +17,73 @@ export type ComparableOutputWithExternal<TValue> = ComparableOutput<TValue> & {
   external: boolean | undefined;
 };
 
+async function parseRbfTransaction<TNumber extends bigint | number>(
+  coin: AbstractUtxoCoin,
+  params: ParseTransactionOptions<TNumber>
+): Promise<ParsedTransaction<TNumber>> {
+  const { txParams, wallet } = params;
+
+  assert(txParams.rbfTxIds);
+  assert(txParams.rbfTxIds.length === 1);
+
+  const txToBeReplaced = await wallet.getTransaction({ txHash: txParams.rbfTxIds[0], includeRbf: true });
+  const recipients = txToBeReplaced.outputs.flatMap(
+    (output: { valueString: string; address?: string; wallet?: string }) => {
+      // For self-sends, the walletId will be the same as the wallet's id
+      if (output.wallet === wallet.id()) {
+        return [];
+      }
+      return [coin.toCanonicalTransactionRecipient(output)];
+    }
+  );
+
+  // Recurse into parseTransaction with the derived recipients and without rbfTxIds
+  return parseTransaction(coin, {
+    ...params,
+    txParams: {
+      ...txParams,
+      recipients,
+      rbfTxIds: undefined,
+    },
+  });
+}
+
+function toExpectedOutputs(
+  coin: AbstractUtxoCoin,
+  txParams: {
+    recipients?: ITransactionRecipient[];
+    allowExternalChangeAddress?: boolean;
+    changeAddress?: string;
+  }
+): Output[] {
+  // verify that each recipient from txParams has their own output
+  const expectedOutputs = (txParams.recipients ?? []).flatMap((output) => {
+    if (output.address === undefined) {
+      if (output.amount.toString() !== '0') {
+        throw new Error(`Only zero amounts allowed for non-encodeable scriptPubkeys: ${output}`);
+      }
+      return [output];
+    }
+    return [{ ...output, address: coin.canonicalAddress(output.address) }];
+  });
+  if (txParams.allowExternalChangeAddress && txParams.changeAddress) {
+    // when an external change address is explicitly specified, count all outputs going towards that
+    // address in the expected outputs (regardless of the output amount)
+    expectedOutputs.push({ address: coin.canonicalAddress(txParams.changeAddress), amount: 'max' });
+  }
+  return expectedOutputs;
+}
+
 export async function parseTransaction<TNumber extends bigint | number>(
   coin: AbstractUtxoCoin,
   params: ParseTransactionOptions<TNumber>
 ): Promise<ParsedTransaction<TNumber>> {
   const { txParams, txPrebuild, wallet, verification = {}, reqId } = params;
+
+  // Branch off early for RBF transactions
+  if (txParams.rbfTxIds) {
+    return parseRbfTransaction(coin, params);
+  }
 
   if (!_.isUndefined(verification.disableNetworking) && !_.isBoolean(verification.disableNetworking)) {
     throw new Error('verification.disableNetworking must be a boolean');
@@ -47,56 +109,7 @@ export async function parseTransaction<TNumber extends bigint | number>(
     throw new Error('missing required txPrebuild property txHex');
   }
 
-  // obtain all outputs
-  const explanation: TransactionExplanation = await coin.explainTransaction<TNumber>({
-    txHex: txPrebuild.txHex,
-    txInfo: txPrebuild.txInfo,
-    pubs: keychainArray.map((k) => k.pub) as Triple<string>,
-  });
-
-  const allOutputs = [...explanation.outputs, ...explanation.changeOutputs];
-
-  let expectedOutputs;
-  if (txParams.rbfTxIds) {
-    assert(txParams.rbfTxIds.length === 1);
-
-    const txToBeReplaced = await wallet.getTransaction({ txHash: txParams.rbfTxIds[0], includeRbf: true });
-    expectedOutputs = txToBeReplaced.outputs.flatMap(
-      (output: { valueString: string; address?: string; wallet?: string }) => {
-        // For self-sends, the walletId will be the same as the wallet's id
-        if (output.wallet === wallet.id()) {
-          return [];
-        }
-        return [coin.toCanonicalTransactionRecipient(output)];
-      }
-    );
-  } else {
-    // verify that each recipient from txParams has their own output
-    expectedOutputs = (txParams.recipients ?? []).flatMap((output) => {
-      if (output.address === undefined) {
-        if (output.amount.toString() !== '0') {
-          throw new Error(`Only zero amounts allowed for non-encodeable scriptPubkeys: ${output}`);
-        }
-        return [output];
-      }
-      return [{ ...output, address: coin.canonicalAddress(output.address) }];
-    });
-    if (txParams.allowExternalChangeAddress && txParams.changeAddress) {
-      // when an external change address is explicitly specified, count all outputs going towards that
-      // address in the expected outputs (regardless of the output amount)
-      expectedOutputs.push(
-        ...allOutputs.flatMap((output) => {
-          if (
-            output.address === undefined ||
-            output.address !== coin.canonicalAddress(txParams.changeAddress as string)
-          ) {
-            return [];
-          }
-          return [{ ...output, address: coin.canonicalAddress(output.address) }];
-        })
-      );
-    }
-  }
+  const expectedOutputs = toExpectedOutputs(coin, txParams);
 
   // get the keychains from the custom change wallet if needed
   let customChange: CustomChangeOptions | undefined;
@@ -125,6 +138,15 @@ export async function parseTransaction<TNumber extends bigint | number>(
       };
     }
   }
+
+  // obtain all outputs
+  const explanation: TransactionExplanation = await coin.explainTransaction<TNumber>({
+    txHex: txPrebuild.txHex,
+    txInfo: txPrebuild.txInfo,
+    pubs: keychainArray.map((k) => k.pub) as Triple<string>,
+  });
+
+  const allOutputs = [...explanation.outputs, ...explanation.changeOutputs];
 
   /**
    * Loop through all the outputs and classify each of them as either internal spends

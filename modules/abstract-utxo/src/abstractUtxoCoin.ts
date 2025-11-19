@@ -561,12 +561,13 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
   toCanonicalTransactionRecipient(output: { valueString: string; address?: string }): {
     amount: bigint;
-    address?: string;
+    address: string;
   } {
     const amount = BigInt(output.valueString);
     assertValidTransactionRecipient({ amount, address: output.address });
-    if (!output.address) {
-      return { amount };
+    assert(output.address, 'address is required');
+    if (isScriptRecipient(output.address)) {
+      return { amount, address: output.address };
     }
     return { amount, address: this.canonicalAddress(output.address) };
   }

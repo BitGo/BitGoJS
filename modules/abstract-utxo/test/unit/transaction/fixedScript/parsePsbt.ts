@@ -2,13 +2,14 @@ import assert from 'node:assert/strict';
 
 import * as sinon from 'sinon';
 import * as utxolib from '@bitgo/utxo-lib';
-import { Wallet, VerificationOptions, ITransactionRecipient } from '@bitgo/sdk-core';
+import { Wallet, VerificationOptions, ITransactionRecipient, Triple } from '@bitgo/sdk-core';
+import { fixedScriptWallet } from '@bitgo/wasm-utxo';
 
 import { parseTransaction } from '../../../../src/transaction/fixedScript/parseTransaction';
 import { ParsedTransaction } from '../../../../src/transaction/types';
 import { UtxoWallet } from '../../../../src/wallet';
 import { getUtxoCoin } from '../../util';
-import { explainLegacyTx, explainPsbt } from '../../../../src/transaction/fixedScript';
+import { explainLegacyTx, explainPsbt, explainPsbtWasm } from '../../../../src/transaction/fixedScript';
 import type {
   TransactionExplanation,
   ChangeAddressInfo,
@@ -16,13 +17,32 @@ import type {
 import { getChainFromNetwork } from '../../../../src/names';
 import { TransactionPrebuild } from '../../../../src/abstractUtxoCoin';
 
-function getTxParamsFromExplanation(explanation: TransactionExplanation): {
+import { hasWasmUtxoSupport } from './util';
+
+function getTxParamsFromExplanation(
+  explanation: TransactionExplanation,
+  { externalCustomChangeAddress }: { externalCustomChangeAddress: boolean }
+): {
   recipients: ITransactionRecipient[];
   changeAddress?: string;
 } {
   // The external outputs are the ones that are in outputs but not in changeOutputs
   const changeAddresses = new Set(explanation.changeOutputs.map((o) => o.address));
-  const externalOutputs = explanation.outputs.filter((o) => o.address && !changeAddresses.has(o.address));
+  let externalOutputs = explanation.outputs.filter((o) => o.address && !changeAddresses.has(o.address));
+
+  let changeAddress: string | undefined;
+  if (externalCustomChangeAddress) {
+    // convert an external output to a change output
+    //
+    // in combination with allowExternalChangeAddress, this allows an external
+    // output on the transaction without a size constraint
+    const externalOutput = externalOutputs[0];
+    if (!externalOutput) {
+      throw new Error('no external output found');
+    }
+    changeAddress = externalOutput.address;
+    externalOutputs = externalOutputs.slice(1);
+  }
 
   return {
     recipients: externalOutputs.map((output) => ({
@@ -30,7 +50,7 @@ function getTxParamsFromExplanation(explanation: TransactionExplanation): {
       address: output.address!,
       amount: output.amount,
     })),
-    changeAddress: undefined,
+    changeAddress,
   };
 }
 
@@ -61,8 +81,10 @@ function getChangeInfoFromPsbt(psbt: utxolib.bitgo.UtxoPsbt): ChangeAddressInfo[
 function describeParseTransactionWith(
   acidTest: utxolib.testutil.AcidTest,
   label: string,
+  backend: 'utxolib' | 'wasm',
   {
     txParams,
+    externalCustomChangeAddress = false,
     expectedExplicitExternalSpendAmount,
     expectedImplicitExternalSpendAmount,
     txFormat = 'psbt',
@@ -70,9 +92,12 @@ function describeParseTransactionWith(
     txParams:
       | {
           recipients: ITransactionRecipient[];
-          changeAddress?: string;
+        }
+      | {
+          rbfTxIds: string[];
         }
       | 'inferFromExplanation';
+    externalCustomChangeAddress?: boolean;
     expectedExplicitExternalSpendAmount: bigint;
     expectedImplicitExternalSpendAmount: bigint;
     txFormat?: 'psbt' | 'legacy';
@@ -90,14 +115,33 @@ function describeParseTransactionWith(
 
       // Create PSBT and explanation
       const psbt = acidTest.createPsbt();
+      const tx = psbt.getUnsignedTx();
+      const txHash = tx.getId();
 
       let explanation: TransactionExplanation;
       if (txFormat === 'psbt') {
-        explanation = explainPsbt(psbt, { pubs: acidTest.rootWalletKeys }, acidTest.network, {
-          strict: true,
-        });
+        if (backend === 'utxolib') {
+          explanation = explainPsbt(psbt, { pubs: acidTest.rootWalletKeys }, acidTest.network, {
+            strict: true,
+          });
+        } else if (backend === 'wasm') {
+          const wasmPsbt = fixedScriptWallet.BitGoPsbt.fromBytes(
+            psbt.toBuffer(),
+            utxolib.getNetworkName(acidTest.network)!
+          );
+          explanation = explainPsbtWasm(
+            wasmPsbt,
+            acidTest.rootWalletKeys.triple.map((k) => k.neutered().toBase58()) as Triple<string>,
+            {
+              replayProtection: {
+                outputScripts: [acidTest.getReplayProtectionOutputScript()],
+              },
+            }
+          );
+        } else {
+          throw new Error(`Invalid backend: ${backend}`);
+        }
       } else if (txFormat === 'legacy') {
-        const tx = psbt.getUnsignedTx();
         const pubs = acidTest.rootWalletKeys.triple.map((k) => k.neutered().toBase58());
         // Extract change info from PSBT to pass to explainLegacyTx
         const changeInfo = getChangeInfoFromPsbt(psbt);
@@ -107,16 +151,39 @@ function describeParseTransactionWith(
       }
 
       // Determine txParams
-      const resolvedTxParams =
-        txParams === 'inferFromExplanation' || txParams === undefined
-          ? getTxParamsFromExplanation(explanation)
-          : txParams;
+      let resolvedTxParams;
+      if (txParams === 'inferFromExplanation' || txParams === undefined) {
+        resolvedTxParams = getTxParamsFromExplanation(explanation, { externalCustomChangeAddress });
+      } else if ('rbfTxIds' in txParams) {
+        // Replace placeholder txHash with actual computed txHash
+        resolvedTxParams = {
+          rbfTxIds: txParams.rbfTxIds.map((hash) => (hash === 'PLACEHOLDER' ? txHash : hash)),
+        };
+      } else {
+        resolvedTxParams = txParams;
+      }
+
+      if (externalCustomChangeAddress) {
+        resolvedTxParams.allowExternalChangeAddress = true;
+      }
 
       // Create mock wallet
       mockWallet = sinon.createStubInstance(Wallet);
       mockWallet.id.returns('test-wallet-id');
       mockWallet.coin.returns(coin.getChain());
       mockWallet.coinSpecific.returns(undefined);
+
+      // Mock getTransaction for RBF case
+      if ('rbfTxIds' in resolvedTxParams) {
+        const rbfTxParams = getTxParamsFromExplanation(explanation, { externalCustomChangeAddress: false });
+        mockWallet.getTransaction.resolves({
+          outputs: rbfTxParams.recipients.map((r) => ({
+            valueString: typeof r.amount === 'string' ? r.amount : r.amount.toString(),
+            address: r.address,
+            // wallet field is undefined for external outputs (not self-sends)
+          })),
+        });
+      }
 
       // Mock verification options with keychains to disable networking
       // Use the same keychains that were used to create the PSBT
@@ -195,33 +262,58 @@ function describeParseTransactionWith(
   });
 }
 
-describe('parseTransaction', function () {
-  utxolib.testutil.AcidTest.suite().forEach((test) => {
-    // Default case: psbt format, infer recipients from explanation
-    describeParseTransactionWith(test, 'default', {
-      txParams: 'inferFromExplanation',
-      expectedExplicitExternalSpendAmount: 2700n,
-      expectedImplicitExternalSpendAmount: 0n,
-    });
+function describeTransaction(
+  backend: 'utxolib' | 'wasm',
+  filter: (test: utxolib.testutil.AcidTest) => boolean = () => true
+) {
+  describe(`parseTransaction (${backend})`, function () {
+    utxolib.testutil.AcidTest.suite()
+      .filter(filter)
+      .forEach((test) => {
+        // Default case: psbt format, infer recipients from explanation
+        describeParseTransactionWith(test, 'default', backend, {
+          txParams: 'inferFromExplanation',
+          expectedExplicitExternalSpendAmount: 1800n,
+          expectedImplicitExternalSpendAmount: 0n,
+        });
 
-    if (test.network === utxolib.networks.bitcoin) {
-      // extended test suite for bitcoin
+        if (test.network !== utxolib.networks.bitcoin) {
+          return;
+        }
+        // extended test suite for bitcoin
 
-      describeParseTransactionWith(test, 'legacy', {
-        txFormat: 'legacy',
-        txParams: 'inferFromExplanation',
-        expectedExplicitExternalSpendAmount: 2700n,
-        expectedImplicitExternalSpendAmount: 0n,
+        describeParseTransactionWith(test, 'legacy', backend, {
+          txFormat: 'legacy',
+          txParams: 'inferFromExplanation',
+          expectedExplicitExternalSpendAmount: 1800n,
+          expectedImplicitExternalSpendAmount: 0n,
+        });
+
+        describeParseTransactionWith(test, 'empty recipients', backend, {
+          txParams: {
+            recipients: [],
+          },
+          expectedExplicitExternalSpendAmount: 0n,
+          expectedImplicitExternalSpendAmount: 1800n,
+        });
+
+        describeParseTransactionWith(test, 'rbf', backend, {
+          txParams: {
+            rbfTxIds: ['PLACEHOLDER'],
+          },
+          expectedExplicitExternalSpendAmount: 1800n,
+          expectedImplicitExternalSpendAmount: 0n,
+        });
+
+        describeParseTransactionWith(test, 'allowExternalChangeAddress', backend, {
+          txParams: 'inferFromExplanation',
+          externalCustomChangeAddress: true,
+          expectedExplicitExternalSpendAmount: 1800n,
+          expectedImplicitExternalSpendAmount: 0n,
+        });
       });
-
-      describeParseTransactionWith(test, 'empty recipients', {
-        txParams: {
-          recipients: [],
-          changeAddress: undefined,
-        },
-        expectedExplicitExternalSpendAmount: 0n,
-        expectedImplicitExternalSpendAmount: 2700n,
-      });
-    }
   });
-});
+}
+
+describeTransaction('utxolib');
+describeTransaction('wasm', (test) => hasWasmUtxoSupport(test.network));

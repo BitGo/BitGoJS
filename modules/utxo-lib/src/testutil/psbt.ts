@@ -318,7 +318,7 @@ export class AcidTest {
     // Tes non-wallet output
     outputs.push({ scriptType: 'p2sh', value: BigInt(900), walletKeys: null });
     // Test OP_RETURN output
-    outputs.push({ opReturn: 'setec astronomy', value: BigInt(900) });
+    outputs.push({ opReturn: 'setec astronomy', value: BigInt(0) });
 
     return new AcidTest(network, signStage, txFormat, rootWalletKeys, otherWalletKeys, inputs, outputs);
   }

@@ -7,14 +7,7 @@ import { fixedScriptWallet, Triple } from '@bitgo/wasm-utxo';
 import type { TransactionExplanation } from '../../../../src/transaction/fixedScript/explainTransaction';
 import { explainPsbt, explainPsbtWasm } from '../../../../src/transaction/fixedScript';
 
-function hasWasmUtxoSupport(network: utxolib.Network): boolean {
-  return ![
-    utxolib.networks.bitcoincash,
-    utxolib.networks.bitcoingold,
-    utxolib.networks.ecash,
-    utxolib.networks.zcash,
-  ].includes(utxolib.getMainnet(network));
-}
+import { hasWasmUtxoSupport } from './util';
 
 function describeTransactionWith(acidTest: testutil.AcidTest) {
   describe(`${acidTest.name}`, function () {
@@ -32,7 +25,7 @@ function describeTransactionWith(acidTest: testutil.AcidTest) {
       // note: `outputs` means external outputs here
       assert.strictEqual(refExplanation.outputs.length, 3);
       assert.strictEqual(refExplanation.changeOutputs.length, acidTest.outputs.length - 3);
-      assert.strictEqual(refExplanation.outputAmount, '2700');
+      assert.strictEqual(refExplanation.outputAmount, '1800');
       assert.strictEqual(refExplanation.changeOutputs.length, acidTest.outputs.length - 3);
       refExplanation.changeOutputs.forEach((change) => {
         assert.strictEqual(change.amount, '900');
