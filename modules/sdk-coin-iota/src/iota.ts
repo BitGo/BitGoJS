@@ -136,10 +136,7 @@ export class Iota extends BaseCoin {
     return verifyEddsaTssWalletAddress(
       params,
       (address) => this.isValidAddress(address),
-      (publicKey) => {
-        const publicKeyOnly = Buffer.from(publicKey, 'hex').subarray(0, 32).toString('hex');
-        return utils.getAddressFromPublicKey(publicKeyOnly);
-      }
+      (publicKey) => utils.getAddressFromPublicKey(publicKey)
     );
   }
 

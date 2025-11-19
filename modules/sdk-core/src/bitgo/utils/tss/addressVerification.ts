@@ -75,7 +75,12 @@ export async function verifyMPCWalletAddress(
   const commonKeychain = extractCommonKeychain(keychains);
   const derivationPath = 'm/' + index;
   const derivedPublicKey = MPC.deriveUnhardened(commonKeychain, derivationPath);
-  const expectedAddress = getAddressFromPublicKey(derivedPublicKey);
+
+  // secp256k1 expects 33 bytes; ed25519 expects 32 bytes
+  const publicKeySize = params.keyCurve === 'secp256k1' ? 33 : 32;
+  const publicKeyOnly = Buffer.from(derivedPublicKey, 'hex').subarray(0, publicKeySize).toString('hex');
+
+  const expectedAddress = getAddressFromPublicKey(publicKeyOnly);
 
   return address === expectedAddress;
 }

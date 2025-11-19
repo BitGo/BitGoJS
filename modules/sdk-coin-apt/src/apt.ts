@@ -128,9 +128,9 @@ export class Apt extends BaseCoin {
       throw new InvalidAddressError(`invalid address: ${address}`);
     }
 
-    return verifyEddsaTssWalletAddress(params, this.isValidAddress.bind(this), (publicKey: string) => {
-      return utils.getAddressFromPublicKey(publicKey.slice(0, 64));
-    });
+    return verifyEddsaTssWalletAddress(params, this.isValidAddress.bind(this), (publicKey: string) =>
+      utils.getAddressFromPublicKey(publicKey)
+    );
   }
 
   async parseTransaction(params: AptParseTransactionOptions): Promise<ParsedTransaction> {
