@@ -1694,12 +1694,10 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   );
 
   // lightning - pay invoice
-  app.post(
-    '/api/v2/:coin/wallet/:id/lightning/payment',
-    parseBody,
+  router.post('express.v2.wallet.lightningPayment', [
     prepareBitGo(config),
-    promiseWrapper(handlePayLightningInvoice)
-  );
+    typedPromiseWrapper(handlePayLightningInvoice),
+  ]);
 
   // lightning - onchain withdrawal
   router.post('express.v2.wallet.lightningWithdraw', [
