@@ -15,15 +15,31 @@ import type {
 } from '../../../../src/transaction/fixedScript/explainTransaction';
 import { getChainFromNetwork } from '../../../../src/names';
 import { TransactionPrebuild } from '../../../../src/abstractUtxoCoin';
-import { isScriptRecipient } from '../../../../src/transaction/recipient';
 
-function getTxParamsFromExplanation(explanation: TransactionExplanation): {
+function getTxParamsFromExplanation(
+  explanation: TransactionExplanation,
+  { externalCustomChangeAddress }: { externalCustomChangeAddress: boolean }
+): {
   recipients: ITransactionRecipient[];
   changeAddress?: string;
 } {
   // The external outputs are the ones that are in outputs but not in changeOutputs
   const changeAddresses = new Set(explanation.changeOutputs.map((o) => o.address));
-  const externalOutputs = explanation.outputs.filter((o) => o.address && !changeAddresses.has(o.address));
+  let externalOutputs = explanation.outputs.filter((o) => o.address && !changeAddresses.has(o.address));
+
+  let changeAddress: string | undefined;
+  if (externalCustomChangeAddress) {
+    // convert an external output to a change output
+    //
+    // in combination with allowExternalChangeAddress, this allows an external
+    // output on the transaction without a size constraint
+    const externalOutput = externalOutputs[0];
+    if (!externalOutput) {
+      throw new Error('no external output found');
+    }
+    changeAddress = externalOutput.address;
+    externalOutputs = externalOutputs.slice(1);
+  }
 
   return {
     recipients: externalOutputs.map((output) => ({
@@ -31,7 +47,7 @@ function getTxParamsFromExplanation(explanation: TransactionExplanation): {
       address: output.address!,
       amount: output.amount,
     })),
-    changeAddress: undefined,
+    changeAddress,
   };
 }
 
@@ -64,6 +80,7 @@ function describeParseTransactionWith(
   label: string,
   {
     txParams,
+    externalCustomChangeAddress = false,
     expectedExplicitExternalSpendAmount,
     expectedImplicitExternalSpendAmount,
     txFormat = 'psbt',
@@ -71,12 +88,12 @@ function describeParseTransactionWith(
     txParams:
       | {
           recipients: ITransactionRecipient[];
-          changeAddress?: string;
         }
       | {
           rbfTxIds: string[];
         }
       | 'inferFromExplanation';
+    externalCustomChangeAddress?: boolean;
     expectedExplicitExternalSpendAmount: bigint;
     expectedImplicitExternalSpendAmount: bigint;
     txFormat?: 'psbt' | 'legacy';
@@ -114,7 +131,7 @@ function describeParseTransactionWith(
       // Determine txParams
       let resolvedTxParams;
       if (txParams === 'inferFromExplanation' || txParams === undefined) {
-        resolvedTxParams = getTxParamsFromExplanation(explanation);
+        resolvedTxParams = getTxParamsFromExplanation(explanation, { externalCustomChangeAddress });
       } else if ('rbfTxIds' in txParams) {
         // Replace placeholder txHash with actual computed txHash
         resolvedTxParams = {
@@ -122,6 +139,10 @@ function describeParseTransactionWith(
         };
       } else {
         resolvedTxParams = txParams;
+      }
+
+      if (externalCustomChangeAddress) {
+        resolvedTxParams.allowExternalChangeAddress = true;
       }
 
       // Create mock wallet
@@ -132,7 +153,7 @@ function describeParseTransactionWith(
 
       // Mock getTransaction for RBF case
       if ('rbfTxIds' in resolvedTxParams) {
-        const rbfTxParams = getTxParamsFromExplanation(explanation);
+        const rbfTxParams = getTxParamsFromExplanation(explanation, { externalCustomChangeAddress: false });
         mockWallet.getTransaction.resolves({
           outputs: rbfTxParams.recipients.map((r) => ({
             valueString: typeof r.amount === 'string' ? r.amount : r.amount.toString(),
@@ -243,7 +264,6 @@ describe('parseTransaction', function () {
     describeParseTransactionWith(test, 'empty recipients', {
       txParams: {
         recipients: [],
-        changeAddress: undefined,
       },
       expectedExplicitExternalSpendAmount: 0n,
       expectedImplicitExternalSpendAmount: 1800n,
@@ -253,6 +273,13 @@ describe('parseTransaction', function () {
       txParams: {
         rbfTxIds: ['PLACEHOLDER'],
       },
+      expectedExplicitExternalSpendAmount: 1800n,
+      expectedImplicitExternalSpendAmount: 0n,
+    });
+
+    describeParseTransactionWith(test, 'allowExternalChangeAddress', {
+      txParams: 'inferFromExplanation',
+      externalCustomChangeAddress: true,
       expectedExplicitExternalSpendAmount: 1800n,
       expectedImplicitExternalSpendAmount: 0n,
     });
