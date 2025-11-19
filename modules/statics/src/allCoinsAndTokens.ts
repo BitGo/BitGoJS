@@ -2306,7 +2306,7 @@ export const allCoinsAndTokens = [
     'Testnet Celo Gold',
     Networks.test.celo,
     18,
-    '0xf194afdf50b03e69bd7d057c1aa9e10c9954e4c9',
+    '0x471ece3750da237f93b8e339c536989b8978a438',
     UnderlyingAsset.CELO,
     BaseUnit.ETH,
     CELO_FEATURES
