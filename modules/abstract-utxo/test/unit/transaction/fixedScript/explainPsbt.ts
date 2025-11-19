@@ -7,14 +7,7 @@ import { fixedScriptWallet, Triple } from '@bitgo/wasm-utxo';
 import type { TransactionExplanation } from '../../../../src/transaction/fixedScript/explainTransaction';
 import { explainPsbt, explainPsbtWasm } from '../../../../src/transaction/fixedScript';
 
-function hasWasmUtxoSupport(network: utxolib.Network): boolean {
-  return ![
-    utxolib.networks.bitcoincash,
-    utxolib.networks.bitcoingold,
-    utxolib.networks.ecash,
-    utxolib.networks.zcash,
-  ].includes(utxolib.getMainnet(network));
-}
+import { hasWasmUtxoSupport } from './util';
 
 function describeTransactionWith(acidTest: testutil.AcidTest) {
   describe(`${acidTest.name}`, function () {
