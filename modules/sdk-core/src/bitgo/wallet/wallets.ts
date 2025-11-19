@@ -904,7 +904,7 @@ export class Wallets implements IWallets {
       };
 
       // Note: Unlike keychainOverrideRequired, we do NOT reshare the wallet with spenders
-      // This is a key difference - multi-user-key wallets don't require reshare
+      // This is a key difference - multi-key-user-key wallets don't require reshare
       return this.updateShare(updateParams);
     }
 

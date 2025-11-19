@@ -1885,7 +1885,7 @@ describe('V2 Wallets:', function () {
               permissions: ['admin', 'spend', 'view'],
               state: 'active',
               userMultiKeyRotationRequired: true,
-              // No keychain - this is the key difference for multi-user-key shares
+              // No keychain - this is the key difference for multi-key-user-key shares
             },
           ],
           outgoing: [],
@@ -1957,7 +1957,7 @@ describe('V2 Wallets:', function () {
               permissions: ['admin', 'spend', 'view'],
               state: 'active',
               userMultiKeyRotationRequired: true,
-              // No keychain - this is the key difference for multi-user-key shares
+              // No keychain - this is the key difference for multi-key-user-key shares
             },
           ],
           outgoing: [],
@@ -2140,10 +2140,10 @@ describe('V2 Wallets:', function () {
         const encryptedPrv = bitgo.encrypt({ input: keychain.prv, password: userPassword });
         sandbox.stub(bitgo, 'encrypt').returns(encryptedPrv);
 
-        // Should use the multi-user-key flow (no signature/payload/keyId)
+        // Should use the multi-key-user-key flow (no signature/payload/keyId)
         const acceptShareNock = nock(bgUrl)
           .post(`/api/v2/ofc/walletshare/${shareId}`, (body: any) => {
-            // Verify it's using multi-user-key flow (has pub and encryptedPrv, but no signature/payload/keyId)
+            // Verify it's using multi-key-user-key flow (has pub and encryptedPrv, but no signature/payload/keyId)
             return (
               body.walletShareId === shareId &&
               body.state === 'accepted' &&
@@ -2161,7 +2161,7 @@ describe('V2 Wallets:', function () {
 
         should.equal(res.changed, true);
         should.equal(res.state, 'accepted');
-        // Verify reshare was NOT called (multi-user-key flow)
+        // Verify reshare was NOT called (multi-key-user-key flow)
         should.equal(reshareStub.called, false);
 
         walletShareNock.done();
