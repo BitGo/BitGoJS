@@ -650,6 +650,80 @@ describe('TON:', function () {
       sandbox.restore(); // Restore the stubbed method
     });
 
+    it('should successfully recover funds using senderJettonAddress', async function () {
+      const recoveryParams = {
+        bitgoKey:
+          'e31b1580400dd4f96e8c6281cfb83e28aa25fcf8fb831996a40176a3e30878c80f366ff6463567dbeb7aa7faeeb9f0f6d1fc0a091ec9918e81ad2c34c345f4d0',
+        recoveryDestination: 'UQBL2idCXR4ATdQtaNa4VpofcpSxuxIgHH7_slOZfdOXSadJ',
+        apiKey: 'db2554641c61e60a979cc6c0053f2ec91da9b13e71d287768c93c2fb556be53b',
+        userKey:
+          '{"iv":"/9Ca180omwEYKiMgUJ90JQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"ipPFqg6qHHY=","ct":"eF6ZstvqobLWB/UfjpmsOcz5+bgvkMhq+Zh+f6TDIa++JkPYRq6hr2LhbidBBCNYHCgahi3nd/FdsFLQ1UkaN9t40mHbUdlSTA42ThH5FI9Um1aACm961Eu5b0Mp7o6U3zuVlaFay6T+/nUWlOKjv+/5MYwfxA/EzMd6yDie7qAIryLCPEIvRuusHupzcJWfN2WGkxw4EhGsSQvs62+PBOCJUeOCThv2HpssJV9gb6mj4lYVTqtEay7G6VFNb+T6OIDU9HNrdxV+5D1zzV5sHNWqDghF03w9adwxgTCPSeZywZPDgBrM/NqHIt+8CPd84wgey61Mz58br08zl2ikksDF5PB8DJzEens6AbY0gosqzAPTuOmy7IS9vP9lfCSaHDoS66hD/I0yh1c6th4gQ1dziwx+hnBKNgqpekJz6P0isnB3urhZInpc0RzKh6R2jrx+hKNr/2dok3dIwgbXWGq7NAm1mSREEs/ChVVeUMmeU9UFmwhOTbRK8CLYHqAqydRLCexNmWhTOPKy3WqS8yG6WkHqSGb9FGLyBRcmQFIBpihV8Xl4W2dB6AX7HsI0F2dYABX0drLiuj2N7mNraRGzxs5jT0lzwjXmy5gmyar23Dqa2eBVOyGdK3DL8jYvgX0mJ58/pKkogrxzMrPkJo2a+gP4OR7cDcL6TxrcwnViYOOGP9OaQZfcKKaAhmJZJGwzyWzjvyEILkCksESuy+c53tdLAku51j2KiV32Rg0tDO3UNjze0qTj3t+YfmTN1GuiNjxFx8dNbX2yxzYxB+MzesuNZAMunwVHrqJpAiozRqpE79R7KRLw7qhBhm5Uez60FBtmAf0kQsGdiIlEwCyTcBYyADlZE+ojD8+x2uiJBBIzd0s7n9ZY3aCYuTVEYGfI9EMGs9WzXcGeTu2xw2OubVHYkvaBbswlrJihIqRH+ce/9+wDedcjbsbo2MODsCJ3sK9KL6JjMWPvhSwR6cMbzDjWrFmRyuekmfSTHuhQEdBAK11N43/ZoYYDBMwBwxjMwwA4hLuBqjehYQ2N0N4o6fpbGSA1+g0IJqkQvh2qn8teYSj67m1vGlEJu852UjJZ4tdt9rSjQ5Tc23YK+XD2kKrXbB7wprraa9PQjnrrIT25yX+l5g7W0EcGTlAcv5/5FC6f6+7R8K5WlLGrp3YM/+570gBS2qbIhl2JzfwgTqjfyh5Z"}',
+        backupKey:
+          '{"iv":"NY65fme2sMeYdu77SW/aLw==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"1SErmofmV7s=","ct":"28zQG7xA2zFzAFyNJQfnIPvou12RwVPu3juzo2cIDareyfMkIXp1QDbo6mSBfzlJfOLgYAn0iQH8uCgnmYCN4CbK2IfOukMmQHGa4lHMGUXrL1rnNOsUZkh8YMcMMvr7qoCRjaKLQvRUWeqGt1/TCoROoHwR88ctVhEKwkhpQoIY0TBeLdvluGVB7pFATtEKgolyQaizZ8YOFvjQn9AGhVlOrRrjRwzHXqiu7yW8guL6f0B7ZczvFgLdCTFVNiyQQdr6Fo1Mi4GS/wRKbWakEx7Lktl3kva88BXARe8+undTZ0H2MbmzMSr5zBYpfhVXTO/axttktL2AWqMy8lR85Y7tVp307VUA8XNY3neTbTxuSqm+xrlB/R0nGFEvRfikGsk4KKHOQ6HFneNRdhj/k6dxE2VyH9IwQ6j+Lxjms+pg1yb56iBnGWM1sU0bdKaJFTRZGdiF//lQaKUVPcH2ReNJsRJaU8go5g1HBuOHeMqdnlB7uK2MQKNPCRb3y0ZFQx8ygidOaAF6aiJpz3LewnXhstD1y9lZ0yY9qXImB4lFCrMrmBnHPjEymzmrK+pchd4dBJHtJiqwngxqpL6l+aa69xGeyWDsVmMklZVPwdS5l+5SVygQGF5M1s1I7RfbTWb7WlHFFCv0C1J/tpKT3BziGEfP5Vj0aqeqicgmTRFwvhR1HiNmGvBANHM/PvSv5+cyRj8G7EHmTeuHeghO2h9ZwoZbihnSmyb/ncSM9MgxrSR4Xz7G33hnbujfHV4IpBG/vWTpJUKI11Lgwr71U2cVCn9WA+TY9CXsGkfeOQbbXngoPt4pOhikJKQYg9rOvgaR+hZAOSItk6pWXozADD8sSfs7R6+n/wlkEvuPI1cfcimbHLQ6oH9kTkDU/LbOzmtDDd8MYZUbqvpyES7bFujmw6tc1ZIBLDsSWD2r4siv0KPeVr5WuoJSYw6QRduAryO1NDw4Sk1alypgOXxJapcXgqwi1v9HdRzG1A0IULDZtyEcHjUBFW3vYqHxVc/j/z2hnAC/SbtRcCcZKgDerTNLbPw3iTQQfLiw+LPkeZdO4UUwsImaP3ywb112ieljWJoUtuYAYCEnz5k9sP3PfCDdgSb5BRJZIaDk7i3vWNXW1ydLNeXzRYpmr4vyMkGE7agL/+I5SZh5EVK/CYcAXgY2Mp/VfZWmeMbFVPXS89xLAwWnQQ=="}',
+        walletPassphrase: 'Ghghjfbvdkmn!234',
+        senderJettonAddress: 'UQBL2idCXR4ATdQtaNa4VpofcpSxuxIgHH7_slOZfdOXSadJ',
+      };
+
+      const mockProvider = {
+        getBalance: sandbox.stub().resolves('1000000000'),
+        getEstimateFee: sandbox.stub().resolves({
+          source_fees: {
+            in_fwd_fee: 1000,
+            storage_fee: 1000,
+            gas_fee: 1000,
+            fwd_fee: 1000,
+          },
+        }),
+        call: sandbox.stub().callsFake((address, method, params) => {
+          if (method === 'get_wallet_data') {
+            return Promise.resolve({
+              stack: [
+                ['num', '5000000000'],
+                ['num', '0'],
+                ['cell', { bytes: '' }],
+                ['cell', { bytes: '' }],
+              ],
+            });
+          }
+          return Promise.resolve({ stack: [] });
+        }),
+        send: sandbox.stub().callsFake((method, params) => {
+          if (method === 'runGetMethod') {
+            return Promise.resolve({
+              gas_used: 0,
+              stack: [['num', '0']],
+            });
+          }
+          if (method === 'sendBoc') {
+            return Promise.resolve({ ok: true });
+          }
+          return Promise.resolve({});
+        }),
+      };
+
+      sandbox.stub(Tonweb, 'HttpProvider').returns(mockProvider);
+
+      const decryptStub = sandbox.stub(bitgo, 'decrypt');
+      decryptStub.onFirstCall().returns(JSON.stringify({ dummy: 'userSigningMaterial' }));
+      decryptStub.onSecondCall().returns(JSON.stringify({ dummy: 'backupSigningMaterial' }));
+
+      sandbox
+        .stub(EDDSAMethods, 'getTSSSignature')
+        .resolves(
+          Buffer.from(
+            '1baafa0d62174bf0c78f3256318613ffc44b6dd54ab1a63c2185232f92ede9da' +
+              'e1b2818dbeb52a8215fd56f5a5f2a9f94c079ce89e4dc3b1ce6ed6e84ce71857',
+            'hex'
+          )
+        );
+
+      const result = await basecoin.recover(recoveryParams);
+
+      result.should.have.property('serializedTx');
+      result.should.have.property('scanIndex');
+      result.scanIndex.should.equal(0);
+    });
+
     it('should return an unsigned sweep transaction if userKey and backupKey are missing', async function () {
       // Define recovery parameters
       const recoveryParams = {
