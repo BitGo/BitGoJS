@@ -3578,6 +3578,7 @@ export class Wallet implements IWallet {
             aptosCustomTransactionParams: params.aptosCustomTransactionParams,
             recipients: params.recipients || [],
             nonce: params.nonce,
+            memo: params.memo,
             feeOptions,
           },
           apiVersion,
