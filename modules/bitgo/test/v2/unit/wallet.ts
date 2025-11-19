@@ -2070,7 +2070,7 @@ describe('V2 Wallet:', function () {
       getKeyNock.isDone().should.be.True();
     });
 
-    describe('OFC Multi-User-Key Wallet Sharing', function () {
+    describe('OFC multi-key-user-Key Wallet Sharing', function () {
       const userId = '123';
       const email = 'shareto@sdktest.com';
       const permissions = 'view,spend';
@@ -2081,7 +2081,7 @@ describe('V2 Wallet:', function () {
       before(function () {
         const ofcCoin = bitgo.coin('ofc');
 
-        // Regular OFC wallet without multi-user-key feature
+        // Regular OFC wallet without multi-key-user-key feature
         const regularOfcWalletData = {
           id: '5b34252f1bf349930e3400c00000000',
           coin: 'ofc',
@@ -2096,24 +2096,20 @@ describe('V2 Wallet:', function () {
         } as any;
         ofcWallet = new Wallet(bitgo, ofcCoin, regularOfcWalletData);
 
-        // OFC wallet with multi-user-key feature
+        // OFC wallet with multi-key-user-key feature
         const multiUserKeyWalletData = {
           id: '5b34252f1bf349930e3400d00000000',
           coin: 'ofc',
-          keys: [
-            '5b3424f91bf349930e34018400000000',
-            '5b3424f91bf349930e34018500000000',
-            '5b3424f91bf349930e34018600000000',
-          ],
+          keys: ['5b3424f91bf349930e34018400000000'],
           coinSpecific: {
-            features: ['multi-user-key'],
+            features: ['multi-key-user-key'],
           },
           multisigType: 'onchain',
           type: 'hot',
         } as any;
         ofcMultiUserKeyWallet = new Wallet(bitgo, ofcCoin, multiUserKeyWalletData);
 
-        // Non-multi-user-key wallet for backwards compatibility tests
+        // Non-multi-key-user-key wallet for backwards compatibility tests
         const nonMultiUserKeyWalletData = {
           id: '5b34252f1bf349930e34020a00000003',
           coin: 'ofc',
@@ -2132,7 +2128,7 @@ describe('V2 Wallet:', function () {
       });
 
       describe('createShare method', function () {
-        describe('multi-user-key wallets', function () {
+        describe('multi-key-user-key wallets', function () {
           it('should exclude keychain property from API request', async function () {
             const createShareParams = {
               user: userId,
@@ -2168,7 +2164,7 @@ describe('V2 Wallet:', function () {
 
             await ofcMultiUserKeyWallet
               .createShare(createShareParams)
-              .should.be.rejectedWith('keychain property must not be provided for multi-user-key wallets');
+              .should.be.rejectedWith('keychain property must not be provided for multi-key-user-key wallets');
           });
 
           it('should omit keychain from request even when empty object is provided', async function () {
@@ -2193,7 +2189,7 @@ describe('V2 Wallet:', function () {
           });
         });
 
-        describe('non-multi-user-key wallets', function () {
+        describe('non-multi-key-user-key wallets', function () {
           it('should include keychain property in API request when provided', async function () {
             const createShareParams = {
               user: userId,
@@ -2229,7 +2225,7 @@ describe('V2 Wallet:', function () {
       });
 
       describe('shareWallet method', function () {
-        describe('multi-user-key wallets', function () {
+        describe('multi-key-user-key wallets', function () {
           it('should skip keychain preparation and set skipKeychain=true in API request', async function () {
             const getSharingKeyNock = nock(bgUrl)
               .post('/api/v1/user/sharingkey', { email })
@@ -2284,7 +2280,7 @@ describe('V2 Wallet:', function () {
           });
         });
 
-        describe('non-multi-user-key wallets', function () {
+        describe('non-multi-key-user-key wallets', function () {
           it('should include keychain when wallet passphrase is provided', async function () {
             const toKeychain = utxoLib.bip32.fromSeed(Buffer.from('deadbeef02deadbeef02deadbeef02deadbeef02', 'hex'));
             const path = 'm/999999/1/1';
@@ -2307,7 +2303,7 @@ describe('V2 Wallet:', function () {
               });
 
             const createShareStub = sinon.stub(nonMultiUserKeyWallet, 'createShare').callsFake(async (options) => {
-              // For non-multi-user-key wallets, keychain should be present when spend permissions are included
+              // For non-multi-key-user-key wallets, keychain should be present when spend permissions are included
               options!.keychain!.should.not.be.undefined();
               options!.keychain!.pub!.should.equal(pub);
               return undefined;
@@ -2322,15 +2318,15 @@ describe('V2 Wallet:', function () {
         });
       });
 
-      describe('multi-user-key detection', function () {
-        it('should detect multi-user-key wallet via coinSpecific.features array', async function () {
+      describe('multi-key-user-key detection', function () {
+        it('should detect multi-key-user-key wallet via coinSpecific.features array', async function () {
           const ofcCoin: any = bitgo.coin('ofc');
           const walletWithMultiUserKeyFeature = new Wallet(bitgo, ofcCoin, {
             id: '5b34252f1bf349930e34020a00000004',
             coin: 'ofc',
             keys: ['5b3424f91bf349930e34017500000003'],
             coinSpecific: {
-              features: ['multi-user-key'],
+              features: ['multi-key-user-key'],
             },
             type: 'hot',
           });
@@ -2358,7 +2354,7 @@ describe('V2 Wallet:', function () {
             .times(3)
             .reply(200, { userId, pubkey: 'testpubkey', path: 'm/999999/1/1' });
 
-          // Multi-user-key wallet should skip keychain
+          // Multi-key-user-key wallet should skip keychain
           const getEncryptedUserKeychainStub1 = sinon.stub(walletWithMultiUserKeyFeature, 'getEncryptedUserKeychain');
           getEncryptedUserKeychainStub1.rejects(new Error('getEncryptedUserKeychain should not be called'));
           const createShareStub1 = sinon
@@ -2371,14 +2367,14 @@ describe('V2 Wallet:', function () {
           getEncryptedUserKeychainStub1.called.should.be.false();
           createShareStub1.calledOnce.should.be.true();
 
-          // Wallet without multi-user-key feature should respect skipKeychain flag
+          // Wallet without multi-key-user-key feature should respect skipKeychain flag
           const createShareStub2 = sinon.stub(walletWithoutFeature, 'createShare').callsFake(async (options) => {
             return undefined;
           });
           await walletWithoutFeature.shareWallet({ email, permissions, skipKeychain: true });
           createShareStub2.calledOnce.should.be.true();
 
-          // Wallet without coinSpecific should not be detected as multi-user-key
+          // Wallet without coinSpecific should not be detected as multi-key-user-key
           const createShareStub3 = sinon.stub(walletWithoutCoinSpecific, 'createShare').callsFake(async (options) => {
             return undefined;
           });

@@ -1595,7 +1595,7 @@ export class Wallet implements IWallet {
   }
 
   private isMultiUserKeyWallet(): boolean {
-    return this._wallet.coinSpecific?.features?.includes('multi-user-key') ?? false;
+    return this._wallet.coinSpecific?.features?.includes('multi-key-user-key') ?? false;
   }
 
   /**
@@ -1609,7 +1609,7 @@ export class Wallet implements IWallet {
 
     if (isMultiUserKeyWallet) {
       if (params.keychain && !_.isEmpty(params.keychain)) {
-        throw new Error('keychain property must not be provided for multi-user-key wallets');
+        throw new Error('keychain property must not be provided for multi-key-user-key wallets');
       }
       // Remove keychain from params if presents
       return await this.bitgo.post(this.url('/share')).send(_.omit(params, 'keychain')).result();
@@ -1811,8 +1811,8 @@ export class Wallet implements IWallet {
       throw new Error('Expected skipKeychain to be a boolean. ');
     }
 
-    // Check if this is a multi-user-key OFC wallet
-    // For multi-user-key wallets, skip keychain preparation regardless of other conditions
+    // Check if this is a multi-key-user-key OFC wallet
+    // For multi-key-user-key wallets, skip keychain preparation regardless of other conditions
     const needsKeychain =
       !this.isMultiUserKeyWallet() &&
       !params.skipKeychain &&
