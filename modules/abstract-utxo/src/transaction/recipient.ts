@@ -47,7 +47,9 @@ export function assertValidTransactionRecipient(output: { amount: bigint | numbe
   // We will verify that the amount is zero, and if it isnt then we will throw an error.
   if (!output.address || isScriptRecipient(output.address)) {
     if (output.amount.toString() !== '0') {
-      throw new Error(`Only zero amounts allowed for non-encodeable scriptPubkeys: ${JSON.stringify(output)}`);
+      throw new Error(
+        `Only zero amounts allowed for non-encodeable scriptPubkeys: amount: ${output.amount}, address: ${output.address}`
+      );
     }
   }
 }
