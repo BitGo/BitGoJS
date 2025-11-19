@@ -815,27 +815,6 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   /**
-   * Create a multisig address of a given type from a list of keychains and a signing threshold
-   * @param addressType
-   * @param signatureThreshold
-   * @param keys
-   */
-  createMultiSigAddress(addressType: ScriptType2Of3, signatureThreshold: number, keys: Buffer[]): MultiSigAddress {
-    const {
-      scriptPubKey: outputScript,
-      redeemScript,
-      witnessScript,
-    } = utxolib.bitgo.outputScripts.createOutputScript2of3(keys, addressType);
-
-    return {
-      outputScript,
-      redeemScript,
-      witnessScript,
-      address: utxolib.address.fromOutputScript(outputScript, this.network),
-    };
-  }
-
-  /**
    * @deprecated - use {@see backupKeyRecovery}
    * Builds a funds recovery transaction without BitGo
    * @param params - {@see backupKeyRecovery}

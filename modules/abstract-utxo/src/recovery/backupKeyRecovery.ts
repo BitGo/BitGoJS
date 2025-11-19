@@ -15,8 +15,9 @@ import {
 } from '@bitgo/sdk-core';
 import { getMainnet, networks } from '@bitgo/utxo-lib';
 
-import { AbstractUtxoCoin, MultiSigAddress } from '../abstractUtxoCoin';
+import { AbstractUtxoCoin } from '../abstractUtxoCoin';
 import { signAndVerifyPsbt } from '../sign';
+import { generateAddressWithChainAndIndex } from '../address';
 
 import { forCoin, RecoveryProvider } from './RecoveryProvider';
 import { MempoolApi } from './mempoolApi';
@@ -125,12 +126,27 @@ export interface RecoverParams {
   feeRate?: number;
 }
 
-function getFormattedAddress(coin: AbstractUtxoCoin, address: MultiSigAddress) {
-  // Blockchair uses cashaddr format when querying the API for address information. Convert legacy addresses to cashaddr
-  // before querying the API.
-  return coin.getChain() === 'bch' || coin.getChain() === 'bcha'
-    ? coin.canonicalAddress(address.address, 'cashaddr').split(':')[1]
-    : address.address;
+/**
+ * Generate an address and format it for API queries
+ * @param coin - The coin instance
+ * @param network - The network to use
+ * @param walletKeys - The wallet keys
+ * @param chain - The chain code
+ * @param addrIndex - The address index
+ * @returns The formatted address (with cashaddr prefix stripped for BCH/BCHA)
+ */
+function getFormattedAddress(
+  coin: AbstractUtxoCoin,
+  network: utxolib.Network,
+  walletKeys: RootWalletKeys,
+  chain: ChainCode,
+  addrIndex: number
+): string {
+  const format = coin.getChain() === 'bch' || coin.getChain() === 'bcha' ? 'cashaddr' : undefined;
+  const address = generateAddressWithChainAndIndex(network, walletKeys, chain, addrIndex, format);
+
+  // Blockchair uses cashaddr format when querying the API for address information. Strip the prefix for BCH/BCHA.
+  return format === 'cashaddr' ? address.split(':')[1] : address;
 }
 
 async function queryBlockchainUnspentsPath(
@@ -157,10 +173,7 @@ async function queryBlockchainUnspentsPath(
   }
 
   async function gatherUnspents(addrIndex: number) {
-    const walletKeysForUnspent = walletKeys.deriveForChainAndIndex(chain, addrIndex);
-    const address = coin.createMultiSigAddress(scriptType, 2, walletKeysForUnspent.publicKeys);
-
-    const formattedAddress = getFormattedAddress(coin, address);
+    const formattedAddress = getFormattedAddress(coin, coin.network, walletKeys, chain, addrIndex);
     const addrInfo = await recoveryProvider.getAddressInfo(formattedAddress);
     // we use txCount here because it implies usage - having tx'es means the addr was generated and used
     if (addrInfo.txCount === 0) {
@@ -169,7 +182,7 @@ async function queryBlockchainUnspentsPath(
       numSequentialAddressesWithoutTxs = 0;
 
       if (addrInfo.balance > 0) {
-        console.log(`Found an address with balance: ${address.address} with balance ${addrInfo.balance}`);
+        console.log(`Found an address with balance: ${formattedAddress} with balance ${addrInfo.balance}`);
         const addressUnspents = await recoveryProvider.getUnspentsForAddresses([formattedAddress]);
         const processedUnspents = await Promise.all(
           addressUnspents.map(async (u): Promise<WalletUnspent<bigint>> => {
@@ -375,9 +388,9 @@ export async function backupKeyRecovery(
   const recoveryAmount = totalInputAmount - approximateFee - krsFee;
 
   if (recoveryAmount < BigInt(0)) {
-    throw new Error(`this wallet\'s balance is too low to pay the fees specified by the KRS provider. 
+    throw new Error(`this wallet\'s balance is too low to pay the fees specified by the KRS provider.
           Existing balance on wallet: ${totalInputAmount.toString()}. Estimated network fee for the recovery transaction
-          : ${approximateFee.toString()}, KRS fee to pay: ${krsFee.toString()}. After deducting fees, your total 
+          : ${approximateFee.toString()}, KRS fee to pay: ${krsFee.toString()}. After deducting fees, your total
           recoverable balance is ${recoveryAmount.toString()}`);
   }
 
