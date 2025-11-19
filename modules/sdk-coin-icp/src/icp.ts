@@ -8,6 +8,7 @@ import {
   Ecdsa,
   ECDSAUtils,
   Environments,
+  InvalidAddressError,
   KeyPair,
   MPCAlgorithm,
   MultisigType,
@@ -19,6 +20,7 @@ import {
   SignTransactionOptions,
   TssVerifyAddressOptions,
   VerifyTransactionOptions,
+  verifyMPCWalletAddress,
 } from '@bitgo/sdk-core';
 import { coins, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { Principal } from '@dfinity/principal';
@@ -46,6 +48,7 @@ import { TransactionBuilderFactory } from './lib/transactionBuilderFactory';
 import utils from './lib/utils';
 import { auditEcdsaPrivateKey } from '@bitgo/sdk-lib-mpc';
 import { IcpAgent } from './lib/icpAgent';
+import { KeyPair as IcpKeyPair } from './lib/keyPair';
 
 /**
  * Class representing the Internet Computer (ICP) coin.
@@ -141,7 +144,20 @@ export class Icp extends BaseCoin {
   }
 
   async isWalletAddress(params: TssVerifyAddressOptions): Promise<boolean> {
-    return this.isValidAddress(params.address);
+    const { address } = params;
+
+    if (!this.isValidAddress(address)) {
+      throw new InvalidAddressError(`invalid address: ${address}`);
+    }
+
+    return verifyMPCWalletAddress(
+      { ...params, keyCurve: 'secp256k1' },
+      this.isValidAddress.bind(this),
+      (publicKey: string) => {
+        const compressedPublicKey = Buffer.from(publicKey, 'hex').subarray(0, 33).toString('hex');
+        return this.getAddressFromPublicKeySync(compressedPublicKey);
+      }
+    );
   }
 
   async parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
@@ -211,6 +227,21 @@ export class Icp extends BaseCoin {
 
   private async getAddressFromPublicKey(hexEncodedPublicKey: string) {
     return utils.getAddressFromPublicKey(hexEncodedPublicKey);
+  }
+
+  /**
+   * Synchronously derives an ICP address from a public key.
+   * Used for address verification in isWalletAddress.
+   * @param hexEncodedPublicKey - The public key in hex format
+   * @returns The derived ICP address
+   */
+  private getAddressFromPublicKeySync(hexEncodedPublicKey: string): string {
+    if (!utils.isValidPublicKey(hexEncodedPublicKey)) {
+      throw new Error('Invalid hex-encoded public key format.');
+    }
+    const compressedKey = utils.compressPublicKey(hexEncodedPublicKey);
+    const keyPair = new IcpKeyPair({ pub: compressedKey });
+    return keyPair.getAddress();
   }
 
   /** @inheritDoc **/

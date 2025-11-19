@@ -23,8 +23,10 @@ import {
   Teth,
   TransactionBuilder,
   TransferBuilder,
+  TssVerifyEthAddressOptions,
   UnsignedBuilConsolidation,
   UnsignedSweepTxMPCv2,
+  VerifyEthAddressOptions,
 } from '../../src';
 import { EthereumNetwork } from '@bitgo/statics';
 import assert from 'assert';
@@ -662,182 +664,250 @@ describe('ETH:', function () {
   });
 
   describe('Address Verification', function () {
-    it('should verify an address generated using forwarder version 0', async function () {
-      const coin = bitgo.coin('teth') as Teth;
+    describe('isWalletAddress', function () {
+      it('should verify an address generated using forwarder version 0', async function () {
+        const coin = bitgo.coin('teth') as Teth;
 
-      const params = {
-        id: '6127bff4ecd84c0006cd9a0e5ccdc36f',
-        chain: 0,
-        index: 3174,
-        coin: 'teth',
-        lastNonce: 0,
-        wallet: '598f606cd8fc24710d2ebadb1d9459bb',
-        baseAddress: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
-        coinSpecific: {
-          nonce: -1,
-          updateTime: '2021-08-26T16:23:16.563Z',
-          txCount: 0,
-          pendingChainInitialization: true,
-          creationFailure: [],
-          pendingDeployment: false,
-          forwarderVersion: 0,
-        },
-      };
+        const params = {
+          id: '6127bff4ecd84c0006cd9a0e5ccdc36f',
+          chain: 0,
+          index: 3174,
+          coin: 'teth',
+          lastNonce: 0,
+          wallet: '598f606cd8fc24710d2ebadb1d9459bb',
+          baseAddress: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
+          coinSpecific: {
+            nonce: -1,
+            updateTime: '2021-08-26T16:23:16.563Z',
+            txCount: 0,
+            pendingChainInitialization: true,
+            creationFailure: [],
+            pendingDeployment: false,
+            forwarderVersion: 0,
+          },
+        } as unknown as VerifyEthAddressOptions;
 
-      const isAddressVerified = await coin.verifyAddress(params as any);
-      isAddressVerified.should.equal(true);
-    });
+        const isWalletAddr = await coin.isWalletAddress(params);
+        isWalletAddr.should.equal(true);
+      });
 
-    it('should verify an address generated using forwarder version 1', async function () {
-      const coin = bitgo.coin('teth') as Teth;
+      it('should verify an address generated using forwarder version 1', async function () {
+        const coin = bitgo.coin('teth') as Teth;
 
-      const params = {
-        id: '61250217c8c02b000654b15e7af6f618',
-        address: '0xb0b56eeae1b283918caca02a14ada2df17a98e6d',
-        chain: 0,
-        index: 3162,
-        coin: 'teth',
-        lastNonce: 0,
-        wallet: '598f606cd8fc24710d2ebadb1d9459bb',
-        baseAddress: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
-        coinSpecific: {
-          nonce: -1,
-          updateTime: '2021-08-24T14:28:39.841Z',
-          txCount: 0,
-          pendingChainInitialization: true,
-          creationFailure: [],
-          salt: '0xc5a',
-          pendingDeployment: true,
-          forwarderVersion: 1,
-        },
-      };
+        const params = {
+          id: '61250217c8c02b000654b15e7af6f618',
+          address: '0xb0b56eeae1b283918caca02a14ada2df17a98e6d',
+          chain: 0,
+          index: 3162,
+          coin: 'teth',
+          lastNonce: 0,
+          wallet: '598f606cd8fc24710d2ebadb1d9459bb',
+          baseAddress: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
+          coinSpecific: {
+            nonce: -1,
+            updateTime: '2021-08-24T14:28:39.841Z',
+            txCount: 0,
+            pendingChainInitialization: true,
+            creationFailure: [],
+            salt: '0xc5a',
+            pendingDeployment: true,
+            forwarderVersion: 1,
+          },
+        };
 
-      const isAddressVerified = await coin.verifyAddress(params);
-      isAddressVerified.should.equal(true);
-    });
+        const isWalletAddr = await coin.isWalletAddress(params as any);
+        isWalletAddr.should.equal(true);
+      });
 
-    it('should reject address verification if coinSpecific field is not an object', async function () {
-      const coin = bitgo.coin('teth') as Teth;
+      it('should reject when actual address differs from expected address', async function () {
+        const coin = bitgo.coin('teth') as Teth;
 
-      const params = {
-        id: '61250217c8c02b000654b15e7af6f618',
-        address: '0xb0b56eeae1b283918caca02a14ada2df17a98e6d',
-        chain: 0,
-        index: 3162,
-        coin: 'teth',
-        lastNonce: 0,
-        wallet: '598f606cd8fc24710d2ebadb1d9459bb',
-        baseAddress: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
-      };
+        const params = {
+          address: '0x28904591f735994f050804fda3b61b813b16e04c',
+          baseAddress: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
+          coinSpecific: {
+            salt: '0xc5a',
+            forwarderVersion: 1,
+          },
+        } as unknown as VerifyEthAddressOptions;
 
-      assert.rejects(async () => coin.verifyAddress(params), InvalidAddressVerificationObjectPropertyError);
-    });
+        await assert.rejects(async () => coin.isWalletAddress(params), UnexpectedAddressError);
+      });
 
-    it('should reject address verification when an actual address is different from expected address', async function () {
-      const coin = bitgo.coin('teth') as Teth;
+      it('should reject if coinSpecific field is not an object', async function () {
+        const coin = bitgo.coin('teth') as Teth;
 
-      const params = {
-        id: '61250217c8c02b000654b15e7af6f618',
-        address: '0x28904591f735994f050804fda3b61b813b16e04c',
-        chain: 0,
-        index: 3162,
-        coin: 'teth',
-        lastNonce: 0,
-        baseAddress: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
-        wallet: '598f606cd8fc24710d2ebadb1d9459bb',
-        coinSpecific: {
-          nonce: -1,
-          updateTime: '2021-08-24T14:28:39.841Z',
-          txCount: 0,
-          pendingChainInitialization: true,
-          creationFailure: [],
-          salt: '0xc5a',
-          pendingDeployment: true,
-          forwarderVersion: 1,
-        },
-      };
+        const params = {
+          address: '0xb0b56eeae1b283918caca02a14ada2df17a98e6d',
+          baseAddress: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
+        };
 
-      assert.rejects(async () => coin.verifyAddress(params), UnexpectedAddressError);
-    });
+        await assert.rejects(
+          async () => coin.isWalletAddress(params as any),
+          InvalidAddressVerificationObjectPropertyError
+        );
+      });
 
-    it('should reject address verification if the derived address is in invalid format', async function () {
-      const coin = bitgo.coin('teth') as Teth;
+      it('should reject if the derived address is in invalid format', async function () {
+        const coin = bitgo.coin('teth') as Teth;
 
-      const params = {
-        id: '61250217c8c02b000654b15e7af6f618',
-        address: '0xe0b56eeae1b283918caca02a14ada2df17a98bvf',
-        chain: 0,
-        index: 3162,
-        coin: 'teth',
-        lastNonce: 0,
-        wallet: '598f606cd8fc24710d2ebadb1d9459bb',
-        baseAddress: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
-        coinSpecific: {
-          nonce: -1,
-          updateTime: '2021-08-24T14:28:39.841Z',
-          txCount: 0,
-          pendingChainInitialization: true,
-          creationFailure: [],
-          salt: '0xc5a',
-          pendingDeployment: true,
-          forwarderVersion: 1,
-        },
-      };
+        const params = {
+          address: '0xe0b56eeae1b283918caca02a14ada2df17a98bvf',
+          baseAddress: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
+          coinSpecific: {
+            salt: '0xc5a',
+            forwarderVersion: 1,
+          },
+        } as unknown as VerifyEthAddressOptions;
 
-      assert.rejects(async () => coin.verifyAddress(params), InvalidAddressError);
-    });
+        await assert.rejects(async () => coin.isWalletAddress(params), InvalidAddressError);
+      });
 
-    it('should reject address verification if base address is undefined', async function () {
-      const coin = bitgo.coin('teth') as Teth;
+      it('should reject if base address is undefined', async function () {
+        const coin = bitgo.coin('teth') as Teth;
 
-      const params = {
-        id: '61250217c8c02b000654b15e7af6f618',
-        address: '0xb0b56eeae1b283918caca02a14ada2df17a98e6d',
-        chain: 0,
-        index: 3162,
-        coin: 'teth',
-        lastNonce: 0,
-        wallet: '598f606cd8fc24710d2ebadb1d9459bb',
-        coinSpecific: {
-          nonce: -1,
-          updateTime: '2021-08-24T14:28:39.841Z',
-          txCount: 0,
-          pendingChainInitialization: true,
-          creationFailure: [],
-          salt: '0xc5a',
-          pendingDeployment: true,
-          forwarderVersion: 1,
-        },
-      };
+        const params = {
+          address: '0xb0b56eeae1b283918caca02a14ada2df17a98e6d',
+          coinSpecific: {
+            salt: '0xc5a',
+            forwarderVersion: 1,
+          },
+        };
 
-      assert.rejects(async () => coin.verifyAddress(params), InvalidAddressError);
-    });
+        await assert.rejects(async () => coin.isWalletAddress(params as any), InvalidAddressError);
+      });
 
-    it('should reject address verification if base address is in invalid format', async function () {
-      const coin = bitgo.coin('teth') as Teth;
+      it('should reject if base address is in invalid format', async function () {
+        const coin = bitgo.coin('teth') as Teth;
 
-      const params = {
-        id: '61250217c8c02b000654b15e7af6f618',
-        address: '0xb0b56eeae1b283918caca02a14ada2df17a98e6d',
-        chain: 0,
-        index: 3162,
-        coin: 'teth',
-        lastNonce: 0,
-        wallet: '598f606cd8fc24710d2ebadb1d9459bb',
-        baseAddress: '0xe0b56eeae1b283918caca02a14ada2df17a98bvf',
-        coinSpecific: {
-          nonce: -1,
-          updateTime: '2021-08-24T14:28:39.841Z',
-          txCount: 0,
-          pendingChainInitialization: true,
-          creationFailure: [],
-          salt: '0xc5a',
-          pendingDeployment: true,
-          forwarderVersion: 1,
-        },
-      };
+        const params = {
+          address: '0xb0b56eeae1b283918caca02a14ada2df17a98e6d',
+          baseAddress: '0xe0b56eeae1b283918caca02a14ada2df17a98bvf',
+          coinSpecific: {
+            salt: '0xc5a',
+            forwarderVersion: 1,
+          },
+        } as unknown as VerifyEthAddressOptions;
 
-      assert.rejects(async () => coin.verifyAddress(params), InvalidAddressError);
+        await assert.rejects(async () => coin.isWalletAddress(params), InvalidAddressError);
+      });
+
+      describe('MPC wallet addresses', function () {
+        const commonKeychain =
+          '03f9c2fb2e5a8b78a44f5d1e4f906f8e3d7a0e6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9e8d7c6b5a4' +
+          '93827160594857463728190a0b0c0d0e0f101112131415161718191a1b1c1d1e1f';
+        const keychains = [
+          { pub: 'user_pub', commonKeychain },
+          { pub: 'backup_pub', commonKeychain },
+          { pub: 'bitgo_pub', commonKeychain },
+        ];
+
+        it('should verify an MPC wallet address with forwarder version 3', async function () {
+          const coin = bitgo.coin('teth') as Teth;
+
+          const params = {
+            address: '0x9e7ce8c24d9f76a814e23633e61be7cb8e6e2d5e',
+            baseAddress: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
+            coinSpecific: {
+              forwarderVersion: 3,
+            },
+            keychains,
+            index: 0,
+            walletVersion: 3,
+          } as unknown as TssVerifyEthAddressOptions;
+
+          const isWalletAddr = await coin.isWalletAddress(params);
+          isWalletAddr.should.equal(true);
+        });
+
+        it('should verify an MPC wallet address with forwarder version 5', async function () {
+          const coin = bitgo.coin('teth') as Teth;
+
+          const params = {
+            address: '0x9e7ce8c24d9f76a814e23633e61be7cb8e6e2d5e',
+            baseAddress: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
+            coinSpecific: {
+              forwarderVersion: 5,
+            },
+            keychains,
+            index: 0,
+            walletVersion: 6,
+          } as unknown as TssVerifyEthAddressOptions;
+
+          const isWalletAddr = await coin.isWalletAddress(params);
+          isWalletAddr.should.equal(true);
+        });
+
+        it('should reject MPC wallet address with wrong address', async function () {
+          const coin = bitgo.coin('teth') as Teth;
+
+          const params = {
+            address: '0x0000000000000000000000000000000000000001',
+            baseAddress: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
+            coinSpecific: {
+              forwarderVersion: 3,
+            },
+            keychains,
+            index: 0,
+            walletVersion: 3,
+          } as unknown as TssVerifyEthAddressOptions;
+
+          const isWalletAddr = await coin.isWalletAddress(params);
+          isWalletAddr.should.equal(false);
+        });
+
+        it('should reject MPC wallet address with invalid address format', async function () {
+          const coin = bitgo.coin('teth') as Teth;
+
+          const params = {
+            address: '0xinvalid',
+            baseAddress: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
+            coinSpecific: {
+              forwarderVersion: 3,
+            },
+            keychains,
+            index: 0,
+            walletVersion: 3,
+          } as unknown as TssVerifyEthAddressOptions;
+
+          await assert.rejects(async () => coin.isWalletAddress(params), InvalidAddressError);
+        });
+
+        it('should reject if keychains are missing for MPC wallet', async function () {
+          const coin = bitgo.coin('teth') as Teth;
+
+          const params = {
+            address: '0x9e7ce8c24d9f76a814e23633e61be7cb8e6e2d5e',
+            baseAddress: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
+            coinSpecific: {
+              forwarderVersion: 3,
+            },
+            index: 0,
+            walletVersion: 3,
+          };
+
+          await assert.rejects(async () => coin.isWalletAddress(params as any), Error);
+        });
+
+        it('should reject if commonKeychain is missing for MPC wallet', async function () {
+          const coin = bitgo.coin('teth') as Teth;
+
+          const invalidKeychains = [{ pub: 'user_pub' }, { pub: 'backup_pub' }, { pub: 'bitgo_pub' }];
+
+          const params = {
+            address: '0x9e7ce8c24d9f76a814e23633e61be7cb8e6e2d5e',
+            baseAddress: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
+            coinSpecific: {
+              forwarderVersion: 3,
+            },
+            keychains: invalidKeychains,
+            index: 0,
+            walletVersion: 3,
+          } as unknown as TssVerifyEthAddressOptions;
+
+          await assert.rejects(async () => coin.isWalletAddress(params), Error);
+        });
+      });
     });
   });
 

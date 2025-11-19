@@ -228,6 +228,36 @@ describe('Vechain', function () {
   });
 
   describe('address validation', () => {
+    let keychains;
+    let commonKeychain;
+
+    before(function () {
+      commonKeychain =
+        '0366ccc33b9011c31e25945606a50b9e6f12bb2f6397537d527ebc00f4b35a38c151c95abefec2e3f730aadca93f573e40f320c64d46e46604159411721bb31288';
+
+      keychains = [
+        {
+          id: '691ce9e4d69474994294a012cd266267',
+          source: 'user',
+          type: 'tss',
+          commonKeychain,
+        },
+        {
+          id: '691ce9e4193ef7977228c769ced07e35',
+          source: 'backup',
+          type: 'tss',
+          commonKeychain,
+        },
+        {
+          id: '691ce9e481112facbfb48cc8a1e5a3a5',
+          source: 'bitgo',
+          type: 'tss',
+          commonKeychain,
+          isBitGo: true,
+        },
+      ];
+    });
+
     it('should return true when validating a well formatted address prefixed with 0x', async function () {
       const address = testData.addresses.validAddresses[0];
       basecoin.isValidAddress(address).should.equal(true);
@@ -236,6 +266,57 @@ describe('Vechain', function () {
     it('should return false when validating an incorrectly formatted', async function () {
       const address = 'wrongaddress';
       basecoin.isValidAddress(address).should.equal(false);
+    });
+
+    describe('isWalletAddress', function () {
+      it('should verify TSS address derivation', async function () {
+        const address = '0xb3ba0f4ebbc8fcb307192c39311fc33872724f01';
+        const index = 0;
+
+        const params = { address, index, keychains };
+        const result = await basecoin.isWalletAddress(params);
+        assert.equal(result, true);
+      });
+
+      it('should return false when address does not match derived address', async function () {
+        const wrongAddress = testData.addresses.validAddresses[1];
+        const index = 0;
+
+        const params = { address: wrongAddress, index, keychains };
+        const result = await basecoin.isWalletAddress(params);
+        assert.equal(result, false);
+      });
+
+      it('should throw error when keychains is missing', async function () {
+        const address = testData.addresses.validAddresses[0];
+        const index = 0;
+
+        const params = { address, index };
+        await basecoin.isWalletAddress(params).should.be.rejectedWith('missing required param keychains');
+      });
+
+      it('should throw error when commonKeychain is missing', async function () {
+        const address = testData.addresses.validAddresses[0];
+        const index = 0;
+        const invalidKeychains = [
+          {
+            id: 'test-user',
+            source: 'user',
+            type: 'tss',
+          },
+        ];
+
+        const params = { address, index, keychains: invalidKeychains };
+        await basecoin.isWalletAddress(params).should.be.rejectedWith('missing required param commonKeychain');
+      });
+
+      it('should throw error when address is invalid', async function () {
+        const invalidAddress = 'badAddress';
+        const index = 0;
+
+        const params = { address: invalidAddress, index, keychains };
+        await basecoin.isWalletAddress(params).should.be.rejectedWith(`invalid address: ${invalidAddress}`);
+      });
     });
   });
 });

@@ -898,4 +898,84 @@ describe('ADA', function () {
         .should.be.rejectedWith('tx outputs does not match with expected address');
     });
   });
+
+  describe('isWalletAddress', function () {
+    let keychains;
+    const commonKeychain =
+      '0c012a54ac4bcbfc322ed71f3fcba85b993f4de0377e211f8e52e539571a7b397b63db46d8f20218019681c45ff7d4ef86b4d7ee8c4dac0d8b69b7b966962258';
+
+    before(function () {
+      keychains = [
+        {
+          id: '691ce22d193ef7977224cef7f2c5736f',
+          source: 'user',
+          type: 'tss',
+          commonKeychain,
+        },
+        {
+          id: '691ce22d193ef7977224cefac9e54e33',
+          source: 'backup',
+          type: 'tss',
+          commonKeychain,
+        },
+        {
+          id: '691ce22d193ef7977224cef23e73b113',
+          source: 'bitgo',
+          type: 'tss',
+          commonKeychain,
+          isBitGo: true,
+        },
+      ];
+    });
+
+    it('should verify TSS address derivation', async function () {
+      const validAddress = 'addr_test1vrdswnnph3gh9pm9zsd2r7k9p2rek7927xqzs48cdtph5rq3fxtjf';
+      const index = 0;
+
+      const params = { address: validAddress, index, keychains };
+      const res = await basecoin.isWalletAddress(params);
+      assert.equal(res, true);
+    });
+
+    it('should return false when address does not match derived address', async function () {
+      const wrongAddress =
+        'addr_test1qqnnvptrc3rec64q2n9jh572ncu5wvdtt8uvg4g3aj96s5dwu9nj70mlahzglm9939uevupsmj8dcdqv25d5n5r8vw8sn7prey';
+      const index = 0;
+
+      const params = { address: wrongAddress, index, keychains };
+      const res = await basecoin.isWalletAddress(params);
+      assert.equal(res, false);
+    });
+
+    it('should throw error when keychains is missing', async function () {
+      const validAddress = 'addr_test1vr8rakm66rcfv4fcxqykg5lf0yv7lsyk9mvapx369jpvtcgfcuk7f';
+      const index = 0;
+
+      const params = { address: validAddress, index };
+      await basecoin.isWalletAddress(params).should.be.rejectedWith('missing required param keychains');
+    });
+
+    it('should throw error when commonKeychain is missing', async function () {
+      const validAddress = 'addr_test1vr8rakm66rcfv4fcxqykg5lf0yv7lsyk9mvapx369jpvtcgfcuk7f';
+      const index = 0;
+      const invalidKeychains = [
+        {
+          id: 'test-user',
+          source: 'user',
+          type: 'tss',
+        },
+      ];
+
+      const params = { address: validAddress, index, keychains: invalidKeychains };
+      await basecoin.isWalletAddress(params).should.be.rejectedWith('missing required param commonKeychain');
+    });
+
+    it('should throw error when address is invalid', async function () {
+      const invalidAddress = 'invalid-address';
+      const index = 0;
+
+      const params = { address: invalidAddress, index, keychains };
+      await basecoin.isWalletAddress(params).should.be.rejectedWith(`Invalid Cardano Address: ${invalidAddress}`);
+    });
+  });
 });

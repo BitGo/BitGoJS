@@ -169,12 +169,23 @@ export interface TssVerifyAddressOptions {
    * For MPC wallets, the commonKeychain (combined public key from MPC key generation)
    * should be identical across all keychains (user, backup, bitgo).
    */
-  keychains: Keychain[];
+  keychains: Pick<Keychain, 'commonKeychain'>[];
   /**
    * Derivation index for the address.
    * Used to derive child addresses from the root keychain via HD derivation path: m/{index}
    */
-  index: string;
+  index: number | string;
+}
+
+export function isTssVerifyAddressOptions<T extends VerifyAddressOptions | TssVerifyAddressOptions>(
+  params: T
+): params is T & TssVerifyAddressOptions {
+  return !!(
+    'keychains' in params &&
+    'index' in params &&
+    'address' in params &&
+    params.keychains?.some((kc) => 'commonKeychain' in kc && !!kc.commonKeychain)
+  );
 }
 
 export interface TransactionParams {

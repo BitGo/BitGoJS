@@ -333,7 +333,7 @@ describe('APT:', function () {
     });
 
     it('should return true for isWalletAddress with valid address for index 4', async function () {
-      const newAddress = '0x8b3c7807730d75792dd6c49732cf9f014d6984a9c77d386bdb1072a9e537d8d8';
+      const newAddress = '0x3d7a55c4f55702b0a57f0228060c78dcf612d157108d77487d1fbed45d8f656a';
       const index = 4;
 
       const params = { commonKeychain, address: newAddress, index, keychains };

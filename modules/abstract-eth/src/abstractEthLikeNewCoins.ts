@@ -40,6 +40,9 @@ import {
   VerifyAddressOptions as BaseVerifyAddressOptions,
   VerifyTransactionOptions,
   Wallet,
+  verifyMPCWalletAddress,
+  TssVerifyAddressOptions,
+  isTssVerifyAddressOptions,
 } from '@bitgo/sdk-core';
 import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
 import { bip32 } from '@bitgo/secp256k1';
@@ -401,8 +404,11 @@ export interface EthConsolidationRecoveryOptions {
 export interface VerifyEthAddressOptions extends BaseVerifyAddressOptions {
   baseAddress: string;
   coinSpecific: EthAddressCoinSpecifics;
-  forwarderVersion: number;
+  forwarderVersion?: number;
+  walletVersion?: number;
 }
+
+export type TssVerifyEthAddressOptions = TssVerifyAddressOptions & VerifyEthAddressOptions;
 
 const debug = debugLib('bitgo:v2:ethlike');
 
@@ -2736,32 +2742,41 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
    * @throws {UnexpectedAddressError}
    * @returns {boolean} True iff address is a wallet address
    */
-  async isWalletAddress(params: VerifyEthAddressOptions): Promise<boolean> {
+  async isWalletAddress(params: VerifyEthAddressOptions | TssVerifyEthAddressOptions): Promise<boolean> {
     const ethUtil = optionalDeps.ethUtil;
 
     let expectedAddress;
     let actualAddress;
 
-    const { address, coinSpecific, baseAddress, impliedForwarderVersion = coinSpecific?.forwarderVersion } = params;
+    const { address, impliedForwarderVersion } = params;
 
     if (address && !this.isValidAddress(address)) {
       throw new InvalidAddressError(`invalid address: ${address}`);
     }
-
-    // base address is required to calculate the salt which is used in calculateForwarderV1Address method
-    if (_.isUndefined(baseAddress) || !this.isValidAddress(baseAddress)) {
-      throw new InvalidAddressError('invalid base address');
-    }
-
-    if (!_.isObject(coinSpecific)) {
-      throw new InvalidAddressVerificationObjectPropertyError(
-        'address validation failure: coinSpecific field must be an object'
-      );
-    }
-
-    if (impliedForwarderVersion === 0 || impliedForwarderVersion === 3 || impliedForwarderVersion === 5) {
+    // Forwarder version 0 addresses cannot be verified because we do not store the nonce value required for address derivation.
+    if (impliedForwarderVersion === 0) {
       return true;
+    }
+    // Verify MPC wallet address for wallet version 3 and 6
+    if (isTssVerifyAddressOptions(params) && params.walletVersion !== 5) {
+      return verifyMPCWalletAddress({ ...params, keyCurve: 'secp256k1' }, this.isValidAddress, (pubKey) => {
+        const derivedPublicKey = Buffer.from(pubKey, 'hex').subarray(0, 33).toString('hex');
+        return new KeyPairLib({ pub: derivedPublicKey }).getAddress();
+      });
     } else {
+      // Verify forwarder receive address
+      const { coinSpecific, baseAddress } = params;
+
+      if (_.isUndefined(baseAddress) || !this.isValidAddress(baseAddress)) {
+        throw new InvalidAddressError('invalid base address');
+      }
+
+      if (!_.isObject(coinSpecific)) {
+        throw new InvalidAddressVerificationObjectPropertyError(
+          'address validation failure: coinSpecific field must be an object'
+        );
+      }
+
       const ethNetwork = this.getNetwork();
       const forwarderFactoryAddress = ethNetwork?.forwarderFactoryAddress as string;
       const forwarderImplementationAddress = ethNetwork?.forwarderImplementationAddress as string;
@@ -3056,7 +3071,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     }
     const typedDataRaw = JSON.parse(typedData.typedDataRaw);
     const sanitizedData = TypedDataUtils.sanitizeData(typedDataRaw as unknown as TypedMessage<any>);
-    const parts = [Buffer.from('1901', 'hex')];
+    const parts: Buffer[] = [Buffer.from('1901', 'hex')];
     const eip712Domain = 'EIP712Domain';
     parts.push(TypedDataUtils.hashStruct(eip712Domain, sanitizedData.domain, sanitizedData.types, version));
 

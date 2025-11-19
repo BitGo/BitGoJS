@@ -12,7 +12,6 @@ import {
   SignedTransaction,
   SignTransactionOptions as BaseSignTransactionOptions,
   TransactionExplanation,
-  VerifyAddressOptions,
   VerifyTransactionOptions,
   EDDSAMethods,
   EDDSAMethodTypes,
@@ -32,6 +31,8 @@ import {
   MultisigType,
   multisigTypes,
   AuditDecryptedKeyParams,
+  TssVerifyAddressOptions,
+  verifyEddsaTssWalletAddress,
 } from '@bitgo/sdk-core';
 import { KeyPair as AdaKeyPair, Transaction, TransactionBuilderFactory, Utils } from './lib';
 import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
@@ -161,12 +162,18 @@ export class Ada extends BaseCoin {
     return true;
   }
 
-  async isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
+  async isWalletAddress(params: TssVerifyAddressOptions): Promise<boolean> {
     const { address } = params;
     if (!this.isValidAddress(address)) {
       throw new InvalidAddressError(`Invalid Cardano Address: ${address}`);
     }
-    return true;
+
+    const addressFormat = this.getChain() === 'ada' ? AddressFormat.mainnet : AddressFormat.testnet;
+
+    return verifyEddsaTssWalletAddress(params, this.isValidAddress.bind(this), (publicKey: string) => {
+      const adaKeyPair = new AdaKeyPair({ pub: publicKey.slice(0, 64) });
+      return adaKeyPair.getAddress(addressFormat);
+    });
   }
 
   /** @inheritDoc */

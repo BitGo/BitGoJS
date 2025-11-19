@@ -14,8 +14,9 @@ import {
   PrebuildTransactionWithIntentOptions,
   SignedTransaction,
   SignTransactionOptions,
-  VerifyAddressOptions,
   VerifyTransactionOptions,
+  TssVerifyAddressOptions,
+  verifyEddsaTssWalletAddress,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import { KeyPair as AptKeyPair, TransactionBuilderFactory } from './lib';
@@ -120,13 +121,16 @@ export class Apt extends BaseCoin {
     return true;
   }
 
-  async isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
-    const { address: newAddress } = params;
+  async isWalletAddress(params: TssVerifyAddressOptions): Promise<boolean> {
+    const { address } = params;
 
-    if (!this.isValidAddress(newAddress)) {
-      throw new InvalidAddressError(`invalid address: ${newAddress}`);
+    if (!this.isValidAddress(address)) {
+      throw new InvalidAddressError(`invalid address: ${address}`);
     }
-    return true;
+
+    return verifyEddsaTssWalletAddress(params, this.isValidAddress.bind(this), (publicKey: string) => {
+      return utils.getAddressFromPublicKey(publicKey.slice(0, 64));
+    });
   }
 
   async parseTransaction(params: AptParseTransactionOptions): Promise<ParsedTransaction> {

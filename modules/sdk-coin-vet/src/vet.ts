@@ -20,7 +20,6 @@ import {
   SignedTransaction,
   SignTransactionOptions,
   TokenTransferRecipientParams,
-  VerifyAddressOptions,
   VerifyTransactionOptions,
   TokenType,
   Ecdsa,
@@ -28,6 +27,8 @@ import {
   Environments,
   BaseBroadcastTransactionOptions,
   BaseBroadcastTransactionResult,
+  TssVerifyAddressOptions,
+  verifyMPCWalletAddress,
 } from '@bitgo/sdk-core';
 import * as mpc from '@bitgo/sdk-lib-mpc';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
@@ -153,13 +154,21 @@ export class Vet extends BaseCoin {
     return true;
   }
 
-  async isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
-    const { address: newAddress } = params;
+  async isWalletAddress(params: TssVerifyAddressOptions): Promise<boolean> {
+    const { address } = params;
 
-    if (!this.isValidAddress(newAddress)) {
-      throw new InvalidAddressError(`invalid address: ${newAddress}`);
+    if (!this.isValidAddress(address)) {
+      throw new InvalidAddressError(`invalid address: ${address}`);
     }
-    return true;
+
+    return verifyMPCWalletAddress(
+      { ...params, keyCurve: 'secp256k1' },
+      this.isValidAddress.bind(this),
+      (publicKey: string) => {
+        const compressedPublicKey = Buffer.from(publicKey, 'hex').subarray(0, 33).toString('hex');
+        return new EthKeyPair({ pub: compressedPublicKey }).getAddress();
+      }
+    );
   }
 
   async parseTransaction(params: VetParseTransactionOptions): Promise<ParsedTransaction> {
