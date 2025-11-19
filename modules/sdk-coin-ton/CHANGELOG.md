@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@3.10.5...@bitgo/sdk-coin-ton@3.11.0) (2025-11-19)
+
+
+### Features
+
+* **sdk-coin-ton:** add jetton recovery support ([ec96bcb](https://github.com/BitGo/BitGoJS/commit/ec96bcb173cdbb33875ecdf79610e6fba3d66c2f))
+* **sdk-coin-ton:** add util function to derive vesting contract address ([d9569d8](https://github.com/BitGo/BitGoJS/commit/d9569d8fd3aa49418caa1f775fa9b8cba47e12ba))
+
+
+
+
+
 ## [3.10.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@3.10.4...@bitgo/sdk-coin-ton@3.10.5) (2025-11-13)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ton

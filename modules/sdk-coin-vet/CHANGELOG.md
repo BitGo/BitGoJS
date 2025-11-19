@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.8.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.8.3...@bitgo/sdk-coin-vet@2.8.4) (2025-11-19)
+
+
+### Bug Fixes
+
+* **sdk-coin-vet:** fix claim rewards builder for hayabusa ([59c4fa7](https://github.com/BitGo/BitGoJS/commit/59c4fa7eb76c5597ffdd33eb891377f3259bbba8))
+* **sdk-coin-vet:** fix exit delegation + burn NFT for hayabusa upgrade ([22be163](https://github.com/BitGo/BitGoJS/commit/22be163c685a47804ef3563cfa173c26e248669d))
+* **sdk-coin-vet:** update stake and delegate builders for hayabusa ([42adabf](https://github.com/BitGo/BitGoJS/commit/42adabfaab80ee172b27937aae23f58e2a4f7ab5))
+
+
+
+
+
 ## [2.8.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.8.2...@bitgo/sdk-coin-vet@2.8.3) (2025-11-13)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-vet

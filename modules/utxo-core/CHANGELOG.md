@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.24.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.23.0...@bitgo/utxo-core@1.24.0) (2025-11-19)
+
+
+### Features
+
+* **utxo-core:** add ESM build support ([36c3cd4](https://github.com/BitGo/BitGoJS/commit/36c3cd47540ef995696fa3ed5f8f5488143765dc))
+
+
+
+
+
 # [1.23.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.22.0...@bitgo/utxo-core@1.23.0) (2025-11-13)
 
 

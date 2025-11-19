@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.13.0...@bitgo/statics@58.14.0) (2025-11-19)
+
+
+### Bug Fixes
+
+* **statics:** update celo token contract address for sepolia ([09e4572](https://github.com/BitGo/BitGoJS/commit/09e45723658ecfbf84764f4af182bafe5f7b94d9))
+
+
+### Features
+
+* add support for new tokens in ERC19 and OFC ERC20 definitions ([a33f90f](https://github.com/BitGo/BitGoJS/commit/a33f90fa2a46c81456b662f8d17399df46514b34))
+* recovery support for Hedera EVM ([b832596](https://github.com/BitGo/BitGoJS/commit/b832596290b006a7403a4e5767b88c9929f74505))
+* **sdk-coin-ada:** fix ada test token name ([bef3679](https://github.com/BitGo/BitGoJS/commit/bef367946ac990e13b3aaf296679e1000161f0a2))
+* **sdk-coin-ada:** fix ada token names ([79361d2](https://github.com/BitGo/BitGoJS/commit/79361d2f20cdb9a0fca257fb92d22935c0884cec))
+* **statics:** add go account support for canton ([7730e06](https://github.com/BitGo/BitGoJS/commit/7730e06001fb17f6b6c21654c86a5bc29f70c9c0))
+* **statics:** staking feature for apt and tapt ([b3a7dcd](https://github.com/BitGo/BitGoJS/commit/b3a7dcdb82d56fcab0270df3f6ddd8b8396cebb8))
+
+
+
+
+
 # [58.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.12.0...@bitgo/statics@58.13.0) (2025-11-13)
 
 

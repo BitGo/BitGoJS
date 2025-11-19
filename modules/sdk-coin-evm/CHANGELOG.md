@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.8.4...@bitgo/sdk-coin-evm@1.9.0) (2025-11-19)
+
+
+### Features
+
+* recovery support for Hedera EVM ([b832596](https://github.com/BitGo/BitGoJS/commit/b832596290b006a7403a4e5767b88c9929f74505))
+
+
+
+
+
 ## [1.8.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.8.3...@bitgo/sdk-coin-evm@1.8.4) (2025-11-13)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-evm

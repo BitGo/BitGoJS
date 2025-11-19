@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-icp",
-  "version": "1.19.13",
+  "version": "1.19.14",
   "description": "BitGo SDK coin library for Internet Computer",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -41,10 +41,10 @@
     ]
   },
   "dependencies": {
-    "@bitgo/sdk-core": "^36.20.1",
+    "@bitgo/sdk-core": "^36.21.0",
     "@bitgo/sdk-lib-mpc": "^10.8.1",
     "@bitgo/secp256k1": "^1.7.0",
-    "@bitgo/statics": "^58.13.0",
+    "@bitgo/statics": "^58.14.0",
     "@dfinity/agent": "^2.2.0",
     "@dfinity/candid": "^2.2.0",
     "@dfinity/principal": "^2.2.0",
@@ -58,8 +58,8 @@
     "protobufjs": "^7.5.0"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.71.5",
-    "@bitgo/sdk-test": "^9.1.13"
+    "@bitgo/sdk-api": "^1.71.6",
+    "@bitgo/sdk-test": "^9.1.14"
   },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c",
   "files": [

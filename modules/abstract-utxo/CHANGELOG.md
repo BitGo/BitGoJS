@@ -3,6 +3,46 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.6.0...@bitgo/abstract-utxo@10.7.0) (2025-11-19)
+
+
+### Bug Fixes
+
+* **abstract-utxo:** handle script recipients in toCanonicalTransipient ([c297db0](https://github.com/BitGo/BitGoJS/commit/c297db02b5610bdb00c8f2cb48c1bfb98f9b7828))
+* **abstract-utxo:** improve error message for invalid recipients ([42007f3](https://github.com/BitGo/BitGoJS/commit/42007f3e3cd862fb219223d0c204cd8089a65418))
+* **abstract-utxo:** refactor parseTransaction to improve organization ([195c1eb](https://github.com/BitGo/BitGoJS/commit/195c1eb452e620645b7d8705316bf79a6cbe560a))
+* **abstract-utxo:** support RBF in parsePsbt tests ([9ace7ad](https://github.com/BitGo/BitGoJS/commit/9ace7ad3e04e59a7c05d3b2f6972440e0be28fb4))
+* **utxo-lib:** set OP_RETURN output value to 0 ([169cab7](https://github.com/BitGo/BitGoJS/commit/169cab7f6e97edd11f6df60e7e8976a2cdd9c500))
+
+
+### Features
+
+* **abstract-utxo:** add ESM build support ([34025df](https://github.com/BitGo/BitGoJS/commit/34025df21144678f22ba59092617a27a72000034))
+* **abstract-utxo:** add replay protection output scripts function ([516a56c](https://github.com/BitGo/BitGoJS/commit/516a56c0ffc6a555f94b1771d9d775737bb8b0fb))
+* **abstract-utxo:** add support for external change address ([975b73e](https://github.com/BitGo/BitGoJS/commit/975b73ecf474703940130dcc63c2af7e1f67ff95))
+* **abstract-utxo:** add support for parsing legacy transactions ([2d36d4e](https://github.com/BitGo/BitGoJS/commit/2d36d4e566691fcc32a5c5797608ef9064c4b6c3))
+* **abstract-utxo:** add support for wasm-utxo PSBT explaining ([cb91c1d](https://github.com/BitGo/BitGoJS/commit/cb91c1dca1f7d120721f9ca5e1278f0701833692))
+* **abstract-utxo:** add tx format unit tests ([51c2560](https://github.com/BitGo/BitGoJS/commit/51c25600c1bb0597f85021dcf7a866790f376bf5))
+* **abstract-utxo:** add wasm test cases for parsePsbt ([e0058a0](https://github.com/BitGo/BitGoJS/commit/e0058a099395dd7734936f47b710419fb9dd410d))
+* **abstract-utxo:** default PSBT for all testnet coins minus zcash ([45745c9](https://github.com/BitGo/BitGoJS/commit/45745c9569c793bd81423ab38b5e9fba773fe959))
+* **abstract-utxo:** default testnet transactions to PSBT format ([6681c74](https://github.com/BitGo/BitGoJS/commit/6681c749be3e2ef9b8ed34f0ff76977c72619639))
+* **abstract-utxo:** default to psbt-lite for testnet ([7f4c3b2](https://github.com/BitGo/BitGoJS/commit/7f4c3b28fa57e877c1144ebbc500e772674f874a))
+* **abstract-utxo:** exclude Zcash from PSBT default tx format ([a5d1612](https://github.com/BitGo/BitGoJS/commit/a5d16121e8300587d58ee1b9c18cc318c14e3d45))
+* **abstract-utxo:** handle script recipients in BCH canonicalAddress ([ba2343d](https://github.com/BitGo/BitGoJS/commit/ba2343d1ab7c2e37656f8f5462105aec970f0a84))
+* **abstract-utxo:** improve parseTransaction expected outputs logic ([7ca4628](https://github.com/BitGo/BitGoJS/commit/7ca46281ea0a21d8001d00ca7287d2ab5e8a2407))
+* **abstract-utxo:** move transaction types to separate file ([bb66fb9](https://github.com/BitGo/BitGoJS/commit/bb66fb9b1b4288bfa87cc3369c39341ac9ed9047))
+* **abstract-utxo:** prohibit legacy tx format on testnet ([f86f3aa](https://github.com/BitGo/BitGoJS/commit/f86f3aae426629460ad535ddba2fa95b32596b9d))
+* **abstract-utxo:** refactor conditional logic in parse transaction tests ([d411c04](https://github.com/BitGo/BitGoJS/commit/d411c042ccfe6a932786e13899130dbc9a5d1ebb))
+* **abstract-utxo:** refactor parsePsbt test to improve reusability ([7c982bf](https://github.com/BitGo/BitGoJS/commit/7c982bf0d9a389c55d884578c302d4109271b075))
+* **abstract-utxo:** refactor tx format selection into dedicated function ([d5abc10](https://github.com/BitGo/BitGoJS/commit/d5abc10eaa7e18fc60735d1b864b804e1f9f599c))
+* **abstract-utxo:** test over all wallet types ([076170e](https://github.com/BitGo/BitGoJS/commit/076170e7424e2dcdeb839f0b7b7526b8f9b85606))
+* **abstract-utxo:** update transaction parsing comments ([93a3af8](https://github.com/BitGo/BitGoJS/commit/93a3af8f0bdcd8043a1d855387bc931a71857cf7))
+* **abstract-utxo:** use defaultTxFormat in tests instead of hardcoded chain list ([4c23213](https://github.com/BitGo/BitGoJS/commit/4c2321318906d03bf8721cc544bf6ea2dbaf3f1b))
+
+
+
+
+
 # [10.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.5.0...@bitgo/abstract-utxo@10.6.0) (2025-11-13)
 
 

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@4.7.4...@bitgo/sdk-coin-dot@4.8.0) (2025-11-19)
+
+
+### Features
+
+* **sdk-coin-dot:** add verify transaction function ([69e0606](https://github.com/BitGo/BitGoJS/commit/69e06063032f72f49c3d8b1dc06c9acd67e250d0))
+
+
+
+
+
 ## [4.7.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-dot@4.7.3...@bitgo/sdk-coin-dot@4.7.4) (2025-11-13)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-dot
