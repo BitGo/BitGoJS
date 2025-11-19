@@ -664,9 +664,7 @@ export async function handleV2CreateAddress(req: ExpressApiRouteRequest<'express
  * handle v2 approve transaction
  * @param req
  */
-async function handleV2PendingApproval(
-  req: ExpressApiRouteRequest<'express.v2.pendingapprovals', 'put'>
-): Promise<any> {
+async function handleV2PendingApproval(req: ExpressApiRouteRequest<'express.v2.pendingapprovals', 'put'>) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.decoded.coin);
   const params = req.body || {};
