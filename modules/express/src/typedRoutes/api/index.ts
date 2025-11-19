@@ -43,6 +43,7 @@ import { PostGenerateShareTSS } from './v2/generateShareTSS';
 import { PostOfcExtSignPayload } from './v2/ofcExtSignPayload';
 import { PostLightningWalletPayment } from './v2/lightningPayment';
 import { PostLightningWalletWithdraw } from './v2/lightningWithdraw';
+import { PutV2PendingApproval } from './v2/pendingApproval';
 
 // Too large types can cause the following error
 //
@@ -110,9 +111,12 @@ export const ExpressV1WalletSimpleCreateApiSpec = apiSpec({
   },
 });
 
-export const ExpressV1PendingApprovalsApiSpec = apiSpec({
+export const ExpressPendingApprovalsApiSpec = apiSpec({
   'express.v1.pendingapprovals': {
     put: PutPendingApproval,
+  },
+  'express.v2.pendingapprovals': {
+    put: PutV2PendingApproval,
   },
 });
 
@@ -282,7 +286,7 @@ export type ExpressApi = typeof ExpressPingApiSpec &
   typeof ExpressCalculateMinerFeeInfoApiSpec &
   typeof ExpressV1WalletAcceptShareApiSpec &
   typeof ExpressV1WalletSimpleCreateApiSpec &
-  typeof ExpressV1PendingApprovalsApiSpec &
+  typeof ExpressPendingApprovalsApiSpec &
   typeof ExpressWalletSignTransactionApiSpec &
   typeof ExpressV1KeychainDeriveApiSpec &
   typeof ExpressV1KeychainLocalApiSpec &
@@ -317,7 +321,7 @@ export const ExpressApi: ExpressApi = {
   ...ExpressCalculateMinerFeeInfoApiSpec,
   ...ExpressV1WalletAcceptShareApiSpec,
   ...ExpressV1WalletSimpleCreateApiSpec,
-  ...ExpressV1PendingApprovalsApiSpec,
+  ...ExpressPendingApprovalsApiSpec,
   ...ExpressWalletSignTransactionApiSpec,
   ...ExpressV1KeychainDeriveApiSpec,
   ...ExpressV1KeychainLocalApiSpec,
