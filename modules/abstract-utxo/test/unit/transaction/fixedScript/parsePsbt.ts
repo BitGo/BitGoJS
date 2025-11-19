@@ -15,6 +15,7 @@ import type {
 } from '../../../../src/transaction/fixedScript/explainTransaction';
 import { getChainFromNetwork } from '../../../../src/names';
 import { TransactionPrebuild } from '../../../../src/abstractUtxoCoin';
+import { isScriptRecipient } from '../../../../src/transaction/recipient';
 
 function getTxParamsFromExplanation(explanation: TransactionExplanation): {
   recipients: ITransactionRecipient[];
@@ -72,6 +73,9 @@ function describeParseTransactionWith(
           recipients: ITransactionRecipient[];
           changeAddress?: string;
         }
+      | {
+          rbfTxIds: string[];
+        }
       | 'inferFromExplanation';
     expectedExplicitExternalSpendAmount: bigint;
     expectedImplicitExternalSpendAmount: bigint;
@@ -90,6 +94,8 @@ function describeParseTransactionWith(
 
       // Create PSBT and explanation
       const psbt = acidTest.createPsbt();
+      const tx = psbt.getUnsignedTx();
+      const txHash = tx.getId();
 
       let explanation: TransactionExplanation;
       if (txFormat === 'psbt') {
@@ -97,7 +103,6 @@ function describeParseTransactionWith(
           strict: true,
         });
       } else if (txFormat === 'legacy') {
-        const tx = psbt.getUnsignedTx();
         const pubs = acidTest.rootWalletKeys.triple.map((k) => k.neutered().toBase58());
         // Extract change info from PSBT to pass to explainLegacyTx
         const changeInfo = getChangeInfoFromPsbt(psbt);
@@ -107,16 +112,35 @@ function describeParseTransactionWith(
       }
 
       // Determine txParams
-      const resolvedTxParams =
-        txParams === 'inferFromExplanation' || txParams === undefined
-          ? getTxParamsFromExplanation(explanation)
-          : txParams;
+      let resolvedTxParams;
+      if (txParams === 'inferFromExplanation' || txParams === undefined) {
+        resolvedTxParams = getTxParamsFromExplanation(explanation);
+      } else if ('rbfTxIds' in txParams) {
+        // Replace placeholder txHash with actual computed txHash
+        resolvedTxParams = {
+          rbfTxIds: txParams.rbfTxIds.map((hash) => (hash === 'PLACEHOLDER' ? txHash : hash)),
+        };
+      } else {
+        resolvedTxParams = txParams;
+      }
 
       // Create mock wallet
       mockWallet = sinon.createStubInstance(Wallet);
       mockWallet.id.returns('test-wallet-id');
       mockWallet.coin.returns(coin.getChain());
       mockWallet.coinSpecific.returns(undefined);
+
+      // Mock getTransaction for RBF case
+      if ('rbfTxIds' in resolvedTxParams) {
+        const rbfTxParams = getTxParamsFromExplanation(explanation);
+        mockWallet.getTransaction.resolves({
+          outputs: rbfTxParams.recipients.map((r) => ({
+            valueString: typeof r.amount === 'string' ? r.amount : r.amount.toString(),
+            address: r.address,
+            // wallet field is undefined for external outputs (not self-sends)
+          })),
+        });
+      }
 
       // Mock verification options with keychains to disable networking
       // Use the same keychains that were used to create the PSBT
@@ -223,6 +247,14 @@ describe('parseTransaction', function () {
       },
       expectedExplicitExternalSpendAmount: 0n,
       expectedImplicitExternalSpendAmount: 1800n,
+    });
+
+    describeParseTransactionWith(test, 'rbf', {
+      txParams: {
+        rbfTxIds: ['PLACEHOLDER'],
+      },
+      expectedExplicitExternalSpendAmount: 1800n,
+      expectedImplicitExternalSpendAmount: 0n,
     });
   });
 });
