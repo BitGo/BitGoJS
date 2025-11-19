@@ -2748,20 +2748,20 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     let expectedAddress;
     let actualAddress;
 
-    const { address, impliedForwarderVersion } = params;
+    const { address, impliedForwarderVersion, coinSpecific } = params;
+    const forwarderVersion = impliedForwarderVersion ?? coinSpecific?.forwarderVersion;
 
     if (address && !this.isValidAddress(address)) {
       throw new InvalidAddressError(`invalid address: ${address}`);
     }
     // Forwarder version 0 addresses cannot be verified because we do not store the nonce value required for address derivation.
-    if (impliedForwarderVersion === 0) {
+    if (forwarderVersion === 0) {
       return true;
     }
     // Verify MPC wallet address for wallet version 3 and 6
     if (isTssVerifyAddressOptions(params) && params.walletVersion !== 5) {
       return verifyMPCWalletAddress({ ...params, keyCurve: 'secp256k1' }, this.isValidAddress, (pubKey) => {
-        const derivedPublicKey = Buffer.from(pubKey, 'hex').subarray(0, 33).toString('hex');
-        return new KeyPairLib({ pub: derivedPublicKey }).getAddress();
+        return new KeyPairLib({ pub: pubKey }).getAddress();
       });
     } else {
       // Verify forwarder receive address

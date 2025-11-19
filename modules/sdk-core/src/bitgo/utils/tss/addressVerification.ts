@@ -1,4 +1,4 @@
-import { Ecdsa } from 'modules/sdk-core/src/account-lib/mpc';
+import { Ecdsa } from '../../../account-lib/mpc';
 import { TssVerifyAddressOptions } from '../../baseCoin/iBaseCoin';
 import { InvalidAddressError } from '../../errors';
 import { EDDSAMethods } from '../../tss';
@@ -73,8 +73,7 @@ export async function verifyMPCWalletAddress(
 
   const MPC = params.keyCurve === 'secp256k1' ? new Ecdsa() : await EDDSAMethods.getInitializedMpcInstance();
   const commonKeychain = extractCommonKeychain(keychains);
-  const derivationPath = 'm/' + index;
-  const derivedPublicKey = MPC.deriveUnhardened(commonKeychain, derivationPath);
+  const derivedPublicKey = MPC.deriveUnhardened(commonKeychain, 'm/' + index);
 
   // secp256k1 expects 33 bytes; ed25519 expects 32 bytes
   const publicKeySize = params.keyCurve === 'secp256k1' ? 33 : 32;

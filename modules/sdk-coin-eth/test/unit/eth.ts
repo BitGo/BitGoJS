@@ -806,7 +806,7 @@ describe('ETH:', function () {
           const coin = bitgo.coin('teth') as Teth;
 
           const params = {
-            address: '0x9e7ce8c24d9f76a814e23633e61be7cb8e6e2d5e',
+            address: '0x01153f3adfe454a72589ca9ef74f013c19e54961',
             baseAddress: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
             coinSpecific: {
               forwarderVersion: 3,
@@ -824,7 +824,7 @@ describe('ETH:', function () {
           const coin = bitgo.coin('teth') as Teth;
 
           const params = {
-            address: '0x9e7ce8c24d9f76a814e23633e61be7cb8e6e2d5e',
+            address: '0x01153f3adfe454a72589ca9ef74f013c19e54961',
             baseAddress: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
             coinSpecific: {
               forwarderVersion: 5,
