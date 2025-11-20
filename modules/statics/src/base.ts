@@ -496,6 +496,11 @@ export enum CoinFeature {
    * This coin supports one-step deposit
    */
   SUPPORTS_ONE_STEP_DEPOSIT = 'supports-one-step-deposit',
+
+  /**
+   * This coin requires a wallet initialization transaction
+   */
+  REQUIRES_WALLET_INITIALIZATION_TRANSACTION = 'requires-wallet-initialization-transaction',
 }
 
 /**
