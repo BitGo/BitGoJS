@@ -968,10 +968,10 @@
     monocle-ts "^2.3.13"
     newtype-ts "^0.3.5"
 
-"@bitgo/wasm-utxo@1.3.0":
-  version "1.3.0"
-  resolved "https://registry.npmjs.org/@bitgo/wasm-utxo/-/wasm-utxo-1.3.0.tgz"
-  integrity sha512-wDwuU08lR0jD/9uzdLnXnDSN9n3j8edQMsHgqCJt2nem7w0RiuaTSCqBYhrgr8YteegHncNS6ABbxowdjhfPqw==
+"@bitgo/wasm-utxo@1.5.0":
+  version "1.5.0"
+  resolved "https://registry.npmjs.org/@bitgo/wasm-utxo/-/wasm-utxo-1.5.0.tgz#2d52d218488bd72589bcf8e8ce4f1c50998e4ef9"
+  integrity sha512-5PfnPD/c41jW7GANu6xbp3TJJ+j1CY8el7pFxxGbU7rx7+qPDogi4pAX+qmVlpxsK+s6Zm7UWpcSBrGn4Y9/eQ==
 
 "@brandonblack/musig@^0.0.1-alpha.0":
   version "0.0.1-alpha.1"
