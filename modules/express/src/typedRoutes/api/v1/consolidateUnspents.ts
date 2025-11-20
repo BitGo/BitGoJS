@@ -14,23 +14,23 @@ export const ConsolidateUnspentsRequestParams = {
  * Request body for consolidating unspents in a wallet
  */
 export const ConsolidateUnspentsRequestBody = {
-  /** The wallet passphrase to decrypt the user key */
+  /** Wallet passphrase to decrypt the user key for signing (required unless xprv is provided) */
   walletPassphrase: optional(t.string),
-  /** The extended private key (alternative to walletPassphrase) */
+  /** Extended private key as alternative to walletPassphrase (provide only one) */
   xprv: optional(t.string),
-  /** Whether to validate addresses (defaults to true) */
+  /** Whether to validate addresses before creating transactions (defaults to true) */
   validate: optional(t.boolean),
-  /** Target number of unspents to maintain (defaults to 1) */
+  /** Target number of unspents to maintain in the wallet (defaults to 1, must be positive integer) */
   target: optional(t.number),
-  /** Minimum size of unspents to consolidate */
+  /** Minimum size of unspents to consolidate in satoshis (defaults to 0 or auto-calculated from feeRate) */
   minSize: optional(t.union([t.number, t.string])),
-  /** Maximum size of unspents to consolidate */
+  /** Maximum size of unspents to consolidate in satoshis */
   maxSize: optional(t.union([t.number, t.string])),
-  /** Maximum number of inputs per consolidation transaction (defaults to 200, must be ≥ 2) */
+  /** Maximum inputs per consolidation transaction (defaults to 200, must be 2-200) */
   maxInputCountPerConsolidation: optional(t.number),
-  /** Maximum number of consolidation iterations (defaults to -1) */
+  /** Maximum consolidation iterations (defaults to -1 for unlimited, or positive integer) */
   maxIterationCount: optional(t.number),
-  /** Minimum number of confirmations needed for an unspent to be included (defaults to 1) */
+  /** Minimum confirmations needed for an unspent to be included (defaults to 1) */
   minConfirms: optional(t.number),
   /** Custom fee rate in satoshis per kilobyte */
   feeRate: optional(t.number),
@@ -48,9 +48,9 @@ export const ConsolidateUnspentsRequestBody = {
   enforceMinConfirmsForChange: optional(t.boolean),
   /** Target number of unspents for the wallet */
   targetWalletUnspents: optional(t.number),
-  /** Minimum value of unspents to include (in satoshis) - accepts number or string */
+  /** Minimum value of unspents to include in satoshis */
   minValue: optional(t.union([t.number, t.string])),
-  /** Maximum value of unspents to include (in satoshis) - accepts number or string */
+  /** Maximum value of unspents to include in satoshis */
   maxValue: optional(t.union([t.number, t.string])),
   /** Comment to attach to the transaction */
   comment: optional(t.string),
@@ -59,44 +59,68 @@ export const ConsolidateUnspentsRequestBody = {
 /**
  * Response for consolidating unspents in a wallet
  *
- * Returns an array of transaction objects when consolidation occurs,
- * or an empty object {} when no consolidation is needed (target already reached).
- * The empty object is how Express serializes an undefined return from the V1 SDK.
+ * Two possible response types:
+ * 1. Array of transaction objects - when consolidation occurs (one per iteration)
+ * 2. Empty object {} - when target is already reached (no consolidation needed)
  */
 export const ConsolidateUnspentsResponse = t.union([
   t.array(
     t.type({
-      /** The status of the transaction ('accepted', 'pendingApproval', or 'otp') */
+      /** Transaction status: 'accepted' (broadcasted), 'pendingApproval' (needs approval), or 'otp' (needs 2FA) */
       status: t.union([t.literal('accepted'), t.literal('pendingApproval'), t.literal('otp')]),
-      /** The transaction hex */
+      /** Signed transaction in hex format */
       tx: t.string,
-      /** The transaction hash/ID */
+      /** Transaction hash/ID */
       hash: t.string,
-      /** Whether the transaction is instant */
+      /** Whether this is an instant transaction (BitGo Instant) */
       instant: t.boolean,
-      /** The instant ID (if applicable) */
+      /** Instant transaction ID (only present for instant transactions) */
       instantId: optional(t.string),
-      /** The fee amount in satoshis */
+      /** Total fee paid in satoshis */
       fee: t.number,
-      /** The fee rate in satoshis per kilobyte */
+      /** Fee rate in satoshis per kilobyte */
       feeRate: t.number,
-      /** Travel rule information */
+      /** Travel rule compliance information */
       travelInfos: t.unknown,
-      /** BitGo fee information (if applicable) */
+      /** BitGo service fee information (if applicable) */
       bitgoFee: optional(t.unknown),
-      /** Travel rule result (if applicable) */
+      /** Travel rule submission result (if applicable) */
       travelResult: optional(t.unknown),
     })
   ),
-  t.type({}), // Empty object when SDK returns undefined
+  t.type({}), // Empty object when target already reached (no consolidation needed)
 ]);
 
 /**
  * Consolidate unspents in a wallet
  *
- * This endpoint consolidates unspents in a wallet by creating a transaction that spends from
- * multiple inputs to a single output. This is useful for reducing the number of UTXOs in a wallet,
- * which can improve performance and reduce transaction fees.
+ * Consolidates unspent transaction outputs (UTXOs) by creating transactions that combine
+ * multiple small inputs into fewer larger outputs. This reduces the UTXO count to improve
+ * wallet performance and lower future transaction fees.
+ *
+ * ## How It Works
+ * The consolidation process is iterative:
+ * 1. Fetches unspents matching the filter criteria (minSize, maxSize, minConfirms)
+ * 2. If unspents ≤ target: consolidation complete (returns empty object)
+ * 3. Creates a new wallet address to receive consolidated funds
+ * 4. Builds a transaction with up to maxInputCountPerConsolidation inputs
+ * 5. Sends all inputs to the new address (minus fees)
+ * 6. Repeats until target is reached or maxIterationCount is hit
+ *
+ * ## Parameters
+ * - **target**: Desired final unspent count (default: 1)
+ * - **maxInputCountPerConsolidation**: Max inputs per transaction (default: 200)
+ * - **maxIterationCount**: Max iterations (default: -1 for unlimited)
+ * - **minSize**: Auto-calculated from feeRate to avoid consolidating unspents smaller than their fee cost
+ *
+ * ## Response
+ * - **Array of transactions**: When consolidation occurs, returns one transaction per iteration
+ * - **Empty object {}**: When target is already reached (no consolidation needed)
+ *
+ * ## Performance Notes
+ * - Large consolidations may take time due to multiple iterations
+ * - Each iteration waits 1 second before the next to allow transaction confirmation
+ * - Use maxIterationCount to limit execution time for very large wallets
  *
  * @operationId express.v1.wallet.consolidateunspents
  * @tag express
