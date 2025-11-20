@@ -31,7 +31,7 @@ export const DeriveLocalKeyChainResponse = t.type({
 /**
  * Derive a local keychain using BIP32 hierarchical deterministic derivation
  *
- * Performs client-side BIP32 key derivation from a parent extended key (xprv or xpub) to a child key
+ * Performs local BIP32 key derivation from a parent extended key (xprv or xpub) to a child key
  * at the specified derivation path. This operation is performed entirely locally on the BitGo Express
  * server without transmitting keys to BitGo's servers.
  *
