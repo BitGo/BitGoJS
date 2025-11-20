@@ -95,7 +95,7 @@ export class TransferTransaction extends Transaction {
       }
       if (input.$kind === 'Pure' && 'bytes' in input.Pure) {
         const value = fromBase64(input.Pure.bytes);
-        const hexValue = toHex(value);
+        const hexValue = '0x' + toHex(value);
         if (utils.isValidAddress(hexValue)) {
           receivers.push(hexValue);
         } else {

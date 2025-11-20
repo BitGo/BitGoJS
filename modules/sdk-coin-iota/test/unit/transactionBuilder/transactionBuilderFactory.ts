@@ -43,16 +43,16 @@ describe('Iota Transaction Builder Factory', () => {
       const tx = (await txBuilder.build()) as TransferTransaction;
       const rawTx = await tx.toBroadcastFormat();
 
-      // The from method should at least create a builder
-      // Note: Full round-trip parsing is not yet implemented
-      try {
-        const rebuiltBuilder = factory.from(rawTx);
-        should.exist(rebuiltBuilder);
-        should(rebuiltBuilder instanceof TransferBuilder).be.true();
-      } catch (e) {
-        // parseFromBroadcastTx may have issues - this is expected for now
-        should.exist(e);
-      }
+      const rebuiltBuilder = factory.from(rawTx);
+      should.exist(rebuiltBuilder);
+      should(rebuiltBuilder instanceof TransferBuilder).be.true();
+      const rebuiltTx = (await rebuiltBuilder.build()) as TransferTransaction;
+      rebuiltTx.sender.should.equal(testData.sender.address);
+      rebuiltTx.recipients.length.should.equal(testData.recipients.length);
+      rebuiltTx.recipients[0].address.should.equal(testData.recipients[0].address);
+      rebuiltTx.recipients[0].amount.should.equal(testData.recipients[0].amount);
+      should.exist(rebuiltTx.paymentObjects);
+      rebuiltTx.paymentObjects?.length.should.equal(testData.paymentObjects.length);
     });
 
     it('should handle Uint8Array format', async function () {
@@ -66,14 +66,16 @@ describe('Iota Transaction Builder Factory', () => {
       const rawTx = await tx.toBroadcastFormat();
       const rawTxBytes = Buffer.from(rawTx, 'base64');
 
-      try {
-        const rebuiltBuilder = factory.from(rawTxBytes);
-        should.exist(rebuiltBuilder);
-        should(rebuiltBuilder instanceof TransferBuilder).be.true();
-      } catch (e) {
-        // parseFromBroadcastTx may have issues - this is expected for now
-        should.exist(e);
-      }
+      const rebuiltBuilder = factory.from(rawTxBytes);
+      should.exist(rebuiltBuilder);
+      should(rebuiltBuilder instanceof TransferBuilder).be.true();
+      const rebuiltTx = (await rebuiltBuilder.build()) as TransferTransaction;
+      rebuiltTx.sender.should.equal(testData.sender.address);
+      rebuiltTx.recipients.length.should.equal(testData.recipients.length);
+      rebuiltTx.recipients[0].address.should.equal(testData.recipients[0].address);
+      rebuiltTx.recipients[0].amount.should.equal(testData.recipients[0].amount);
+      should.exist(rebuiltTx.paymentObjects);
+      rebuiltTx.paymentObjects?.length.should.equal(testData.paymentObjects.length);
     });
   });
 
