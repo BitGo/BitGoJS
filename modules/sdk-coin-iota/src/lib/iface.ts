@@ -8,6 +8,8 @@ import {
 
 export interface TransactionExplanation extends BaseTransactionExplanation {
   type: BitGoTransactionType;
+  sender: string;
+  sponsor?: string;
 }
 
 export type TransactionObjectInput = {
