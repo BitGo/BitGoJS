@@ -9,13 +9,17 @@ import type { Bip322Message } from '../../abstractUtxoCoin';
 import type { Output, FixedScriptWalletOutput } from '../types';
 import { toExtendedAddressFormat } from '../recipient';
 import { getPayGoVerificationPubkey } from '../getPayGoVerificationPubkey';
+import { toBip32Triple } from '../../keychains';
 
 // ===== Transaction Explanation Type Definitions =====
 
-export interface AbstractUtxoTransactionExplanation<TFee = string> extends BaseTransactionExplanation<TFee, string> {
+export interface AbstractUtxoTransactionExplanation<TFee = string, TChangeOutput extends Output = Output>
+  extends BaseTransactionExplanation<TFee, string> {
   /** NOTE: this actually only captures external outputs */
   outputs: Output[];
-  changeOutputs: Output[];
+  changeOutputs: TChangeOutput[];
+  customChangeOutputs?: TChangeOutput[];
+  customChangeAmount?: string;
 
   /**
    * BIP322 messages extracted from the transaction inputs.
@@ -25,7 +29,8 @@ export interface AbstractUtxoTransactionExplanation<TFee = string> extends BaseT
 }
 
 /** @deprecated - the signature fields are not very useful */
-interface TransactionExplanationWithSignatures<TFee = string> extends AbstractUtxoTransactionExplanation<TFee> {
+interface TransactionExplanationWithSignatures<TFee = string, TChangeOutput extends Output = Output>
+  extends AbstractUtxoTransactionExplanation<TFee, TChangeOutput> {
   /** @deprecated - unused outside of tests */
   locktime?: number;
 
@@ -43,13 +48,15 @@ interface TransactionExplanationWithSignatures<TFee = string> extends AbstractUt
 }
 
 /** For our wasm backend, we do not return the deprecated fields. We set TFee to string for backwards compatibility. */
-export type TransactionExplanationWasm = AbstractUtxoTransactionExplanation<string>;
+export type TransactionExplanationWasm = AbstractUtxoTransactionExplanation<string, FixedScriptWalletOutput>;
 
 /** When parsing the legacy transaction format, we cannot always infer the fee so we set it to string | undefined */
 export type TransactionExplanationUtxolibLegacy = TransactionExplanationWithSignatures<string | undefined>;
 
 /** When parsing a PSBT, we can infer the fee so we set TFee to string. */
 export type TransactionExplanationUtxolibPsbt = TransactionExplanationWithSignatures<string>;
+
+export type TransactionExplanationDescriptor = TransactionExplanationWithSignatures<string, Output>;
 
 export type TransactionExplanation =
   | TransactionExplanationUtxolibLegacy
@@ -62,22 +69,47 @@ export type ChangeAddressInfo = {
   index: number;
 };
 
+function toChangeOutput(
+  txOutput: utxolib.TxOutput<number | bigint>,
+  network: utxolib.Network,
+  changeInfo: ChangeAddressInfo[] | undefined
+): FixedScriptWalletOutput | undefined {
+  if (!changeInfo) {
+    return undefined;
+  }
+  const address = toExtendedAddressFormat(txOutput.script, network);
+  const change = changeInfo.find((change) => change.address === address);
+  if (!change) {
+    return undefined;
+  }
+  return {
+    address,
+    amount: txOutput.value.toString(),
+    chain: change.chain,
+    index: change.index,
+    external: false,
+  };
+}
+
+function outputSum(outputs: { amount: string | number }[]): bigint {
+  return outputs.reduce((sum, output) => sum + BigInt(output.amount), BigInt(0));
+}
+
 function explainCommon<TNumber extends number | bigint>(
   tx: bitgo.UtxoTransaction<TNumber>,
   params: {
     changeInfo?: ChangeAddressInfo[];
+    customChangeInfo?: ChangeAddressInfo[];
     feeInfo?: string;
   },
   network: utxolib.Network
 ) {
   const displayOrder = ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs'];
-  let spendAmount = BigInt(0);
-  let changeAmount = BigInt(0);
   const changeOutputs: FixedScriptWalletOutput[] = [];
-  const outputs: Output[] = [];
+  const customChangeOutputs: FixedScriptWalletOutput[] = [];
+  const externalOutputs: Output[] = [];
 
-  const { changeInfo } = params;
-  const changeAddresses = changeInfo?.map((info) => info.address) ?? [];
+  const { changeInfo, customChangeInfo } = params;
 
   tx.outs.forEach((currentOutput) => {
     // Try to encode the script pubkey with an address. If it fails, try to parse it as an OP_RETURN output with the prefix.
@@ -85,26 +117,19 @@ function explainCommon<TNumber extends number | bigint>(
     const currentAddress = toExtendedAddressFormat(currentOutput.script, network);
     const currentAmount = BigInt(currentOutput.value);
 
-    if (changeAddresses.includes(currentAddress)) {
-      // this is change
-      changeAmount += currentAmount;
-      const change = changeInfo?.find((change) => change.address === currentAddress);
-
-      if (!change) {
-        throw new Error('changeInfo must have change information for all change outputs');
-      }
-      changeOutputs.push({
-        address: currentAddress,
-        amount: currentAmount.toString(),
-        chain: change.chain,
-        index: change.index,
-        external: false,
-      });
+    const changeOutput = toChangeOutput(currentOutput, network, changeInfo);
+    if (changeOutput) {
+      changeOutputs.push(changeOutput);
       return;
     }
 
-    spendAmount += currentAmount;
-    outputs.push({
+    const customChangeOutput = toChangeOutput(currentOutput, network, customChangeInfo);
+    if (customChangeOutput) {
+      customChangeOutputs.push(customChangeOutput);
+      return;
+    }
+
+    externalOutputs.push({
       address: currentAddress,
       amount: currentAmount.toString(),
       // If changeInfo has a length greater than or equal to zero, it means that the change information
@@ -117,10 +142,14 @@ function explainCommon<TNumber extends number | bigint>(
   });
 
   const outputDetails = {
-    outputAmount: spendAmount.toString(),
-    changeAmount: changeAmount.toString(),
-    outputs,
+    outputs: externalOutputs,
+    outputAmount: outputSum(externalOutputs).toString(),
+
     changeOutputs,
+    changeAmount: outputSum(changeOutputs).toString(),
+
+    customChangeAmount: outputSum(customChangeOutputs).toString(),
+    customChangeOutputs,
   };
 
   let fee: string | undefined;
@@ -215,25 +244,27 @@ function getChainAndIndexFromBip32Derivations(output: bitgo.PsbtOutput) {
   return utxolib.bitgo.getChainAndIndexFromPath(paths[0]);
 }
 
-function getChangeInfo(psbt: bitgo.UtxoPsbt): ChangeAddressInfo[] | undefined {
+function getChangeInfo(psbt: bitgo.UtxoPsbt, walletKeys?: Triple<BIP32Interface>): ChangeAddressInfo[] | undefined {
   try {
-    return utxolib.bitgo.findInternalOutputIndices(psbt).map((i) => {
-      const derivationInformation = getChainAndIndexFromBip32Derivations(psbt.data.outputs[i]);
-      if (!derivationInformation) {
-        throw new Error('could not find derivation information on bip32Derivation or tapBip32Derivation');
-      }
-      return {
-        address: utxolib.address.fromOutputScript(psbt.txOutputs[i].script, psbt.network),
-        external: false,
-        ...derivationInformation,
-      };
-    });
+    walletKeys = walletKeys ?? utxolib.bitgo.getSortedRootNodes(psbt);
   } catch (e) {
     if (e instanceof utxolib.bitgo.ErrorNoMultiSigInputFound) {
       return undefined;
     }
     throw e;
   }
+
+  return utxolib.bitgo.findWalletOutputIndices(psbt, walletKeys).map((i) => {
+    const derivationInformation = getChainAndIndexFromBip32Derivations(psbt.data.outputs[i]);
+    if (!derivationInformation) {
+      throw new Error('could not find derivation information on bip32Derivation or tapBip32Derivation');
+    }
+    return {
+      address: utxolib.address.fromOutputScript(psbt.txOutputs[i].script, psbt.network),
+      external: false,
+      ...derivationInformation,
+    };
+  });
 }
 
 /**
@@ -341,11 +372,17 @@ function getBip322MessageInfoAndVerify(psbt: bitgo.UtxoPsbt, network: utxolib.Ne
 /**
  * Decompose a raw psbt into useful information, such as the total amounts,
  * change amounts, and transaction outputs.
+ *
+ * @param psbt {bitgo.UtxoPsbt} The PSBT to explain
+ * @param pubs {bitgo.RootWalletKeys | string[]} The public keys to use for the explanation
+ * @param network {utxolib.Network} The network to use for the explanation
+ * @param strict {boolean} Whether to throw an error if the PayGo address proof is invalid
  */
 export function explainPsbt(
   psbt: bitgo.UtxoPsbt,
   params: {
     pubs?: bitgo.RootWalletKeys | string[];
+    customChangePubs?: bitgo.RootWalletKeys | string[];
   },
   network: utxolib.Network,
   { strict = false }: { strict?: boolean } = {}
@@ -368,8 +405,11 @@ export function explainPsbt(
 
   const messages = getBip322MessageInfoAndVerify(psbt, network);
   const changeInfo = getChangeInfo(psbt);
+  const customChangeInfo = params.customChangePubs
+    ? getChangeInfo(psbt, toBip32Triple(params.customChangePubs))
+    : undefined;
   const tx = psbt.getUnsignedTx();
-  const common = explainCommon(tx, { ...params, changeInfo }, network);
+  const common = explainCommon(tx, { ...params, changeInfo, customChangeInfo }, network);
   const inputSignaturesCount = getPsbtInputSignaturesCount(psbt, params);
 
   // Set fee from subtracting inputs from outputs

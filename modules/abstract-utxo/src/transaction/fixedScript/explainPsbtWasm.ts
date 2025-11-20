@@ -9,6 +9,35 @@ function scriptToAddress(script: Uint8Array): string {
   return `scriptPubKey:${Buffer.from(script).toString('hex')}`;
 }
 
+type ParsedWalletOutput = fixedScriptWallet.ParsedOutput & { scriptId: fixedScriptWallet.ScriptId };
+type ParsedExternalOutput = fixedScriptWallet.ParsedOutput & { scriptId: null };
+
+function isParsedWalletOutput(output: ParsedWalletOutput | ParsedExternalOutput): output is ParsedWalletOutput {
+  return output.scriptId !== null;
+}
+
+function isParsedExternalOutput(output: ParsedWalletOutput | ParsedExternalOutput): output is ParsedExternalOutput {
+  return output.scriptId === null;
+}
+
+function toChangeOutput(output: ParsedWalletOutput): FixedScriptWalletOutput {
+  return {
+    address: output.address ?? scriptToAddress(output.script),
+    amount: output.value.toString(),
+    chain: output.scriptId.chain,
+    index: output.scriptId.index,
+    external: false,
+  };
+}
+
+function toExternalOutput(output: ParsedExternalOutput): Output {
+  return {
+    address: output.address ?? scriptToAddress(output.script),
+    amount: output.value.toString(),
+    external: true,
+  };
+}
+
 export function explainPsbtWasm(
   psbt: fixedScriptWallet.BitGoPsbt,
   walletXpubs: Triple<string>,
@@ -17,44 +46,45 @@ export function explainPsbtWasm(
       checkSignature?: boolean;
       outputScripts: Buffer[];
     };
+    customChangeWalletXpubs?: Triple<string>;
   }
 ): TransactionExplanationWasm {
   const parsed = psbt.parseTransactionWithWalletKeys(walletXpubs, params.replayProtection);
 
   const changeOutputs: FixedScriptWalletOutput[] = [];
   const outputs: Output[] = [];
+  const parsedCustomChangeOutputs = params.customChangeWalletXpubs
+    ? psbt.parseOutputsWithWalletKeys(params.customChangeWalletXpubs)
+    : undefined;
 
-  parsed.outputs.forEach((output) => {
-    const address = output.address ?? scriptToAddress(output.script);
+  const customChangeOutputs: FixedScriptWalletOutput[] = [];
 
-    if (output.scriptId) {
+  parsed.outputs.forEach((output, i) => {
+    const parseCustomChangeOutput = parsedCustomChangeOutputs?.[i];
+    if (isParsedWalletOutput(output)) {
       // This is a change output
-      changeOutputs.push({
-        address,
-        amount: output.value.toString(),
-        chain: output.scriptId.chain,
-        index: output.scriptId.index,
-        external: false,
-      });
+      changeOutputs.push(toChangeOutput(output));
+    } else if (parseCustomChangeOutput && isParsedWalletOutput(parseCustomChangeOutput)) {
+      customChangeOutputs.push(toChangeOutput(parseCustomChangeOutput));
+    } else if (isParsedExternalOutput(output)) {
+      outputs.push(toExternalOutput(output));
     } else {
-      // This is an external output
-      outputs.push({
-        address,
-        amount: output.value.toString(),
-        external: true,
-      });
+      throw new Error('Invalid output');
     }
   });
 
-  const changeAmount = changeOutputs.reduce((sum, output) => sum + BigInt(output.amount), BigInt(0));
   const outputAmount = outputs.reduce((sum, output) => sum + BigInt(output.amount), BigInt(0));
+  const changeAmount = changeOutputs.reduce((sum, output) => sum + BigInt(output.amount), BigInt(0));
+  const customChangeAmount = customChangeOutputs.reduce((sum, output) => sum + BigInt(output.amount), BigInt(0));
 
   return {
     id: psbt.unsignedTxid(),
     outputAmount: outputAmount.toString(),
     changeAmount: changeAmount.toString(),
+    customChangeAmount: customChangeAmount.toString(),
     outputs,
     changeOutputs,
+    customChangeOutputs,
     fee: parsed.minerFee.toString(),
   };
 }

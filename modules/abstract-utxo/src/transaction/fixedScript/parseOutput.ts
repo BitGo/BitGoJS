@@ -268,11 +268,14 @@ export async function parseOutput({
       return currentOutput;
     }
     /**
-     * The only way to determine whether an address is known on the wallet is to initiate a network request and
-     * fetch it. Should the request fail and return a 404, it will throw and therefore has to be caught. For that
-     * reason, address wallet ownership detection is wrapped in a try/catch. Additionally, once the address
-     * details are fetched on the wallet, a local address validation is run, whose errors however are generated
-     * client-side and can therefore be analyzed with more granularity and type checking.
+     * For transaction with the legacy transaction format, the only way to
+     * determine whether an address is known on the wallet is to initiate a
+     * network request and fetch it. Should the request fail and return a 404,
+     * it will throw and therefore has to be caught. For that reason, address
+     * wallet ownership detection is wrapped in a try/catch. Additionally, once
+     * the address details are fetched on the wallet, a local address validation
+     * is run, whose errors however are generated client-side and can therefore
+     * be analyzed with more granularity and type checking.
      */
 
     /**
