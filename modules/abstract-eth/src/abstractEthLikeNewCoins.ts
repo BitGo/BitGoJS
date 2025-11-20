@@ -3032,6 +3032,34 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
   }
 
   /**
+   * Generate transaction explanation for error reporting
+   * @param txPrebuild - Transaction prebuild containing txHex and fee info
+   * @returns Stringified JSON explanation
+   */
+  private async getTxExplanation(txPrebuild?: TransactionPrebuild): Promise<string | undefined> {
+    if (!txPrebuild?.txHex || !txPrebuild?.gasPrice) {
+      return undefined;
+    }
+
+    try {
+      const explanation = await this.explainTransaction({
+        txHex: txPrebuild.txHex,
+        feeInfo: {
+          fee: txPrebuild.gasPrice.toString(),
+        },
+      });
+      return JSON.stringify(explanation, null, 2);
+    } catch (e) {
+      const errorDetails = {
+        error: 'Failed to parse transaction explanation',
+        txHex: txPrebuild.txHex,
+        details: e instanceof Error ? e.message : String(e),
+      };
+      return JSON.stringify(errorDetails, null, 2);
+    }
+  }
+
+  /**
    * Verify if a tss transaction is valid
    *
    * @param {VerifyEthTransactionOptions} params
@@ -3044,9 +3072,18 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
   async verifyTssTransaction(params: VerifyEthTransactionOptions): Promise<boolean> {
     const { txParams, txPrebuild, wallet } = params;
 
+    const txExplanation = await this.getTxExplanation(txPrebuild);
+
     // Helper to throw TxIntentMismatchRecipientError with recipient details
     const throwRecipientMismatch = (message: string, mismatchedRecipients: Recipient[]): never => {
-      throw new TxIntentMismatchRecipientError(message, undefined, [txParams], txPrebuild?.txHex, mismatchedRecipients);
+      throw new TxIntentMismatchRecipientError(
+        message,
+        undefined,
+        [txParams],
+        txPrebuild?.txHex,
+        mismatchedRecipients,
+        txExplanation
+      );
     };
 
     if (
@@ -3148,9 +3185,18 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       return this.verifyTssTransaction(params);
     }
 
+    const txExplanation = await this.getTxExplanation(txPrebuild);
+
     // Helper to throw TxIntentMismatchRecipientError with recipient details
     const throwRecipientMismatch = (message: string, mismatchedRecipients: Recipient[]): never => {
-      throw new TxIntentMismatchRecipientError(message, undefined, [txParams], txPrebuild?.txHex, mismatchedRecipients);
+      throw new TxIntentMismatchRecipientError(
+        message,
+        undefined,
+        [txParams],
+        txPrebuild?.txHex,
+        mismatchedRecipients,
+        txExplanation
+      );
     };
 
     if (!txParams?.recipients || !txPrebuild?.recipients || !wallet) {
@@ -3252,7 +3298,8 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
         'coin in txPrebuild did not match that in txParams supplied by client',
         undefined,
         [txParams],
-        txPrebuild?.txHex
+        txPrebuild?.txHex,
+        txExplanation
       );
     }
     return true;
