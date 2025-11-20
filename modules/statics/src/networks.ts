@@ -1688,7 +1688,7 @@ class MonadTestnet extends Testnet implements EthereumNetwork {
 class Monad extends Mainnet implements EthereumNetwork {
   name = 'Monad';
   family = CoinFamily.MON;
-  explorerUrl = 'https://mainnet-beta.monvision.io/tx';
+  explorerUrl = 'https://mainnet-beta.monvision.io/tx/';
   chainId = 143;
   nativeCoinOperationHashPrefix = '143';
   walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
