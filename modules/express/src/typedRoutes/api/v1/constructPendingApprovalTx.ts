@@ -69,24 +69,30 @@ export const ConstructPendingApprovalTxResponse = t.type({
 /**
  * Construct a pending approval transaction
  *
- * Constructs and signs a transaction for a pending approval without broadcasting it to the network.
- * This endpoint allows you to preview and validate the transaction details before final approval.
+ * Constructs and signs a transaction for a transactionRequest type pending approval without
+ * broadcasting it to the network. This allows you to preview and validate the transaction
+ * details before final approval.
+ *
+ * **Important:** This endpoint ONLY works for transactionRequest type pending approvals.
+ * Other approval types (e.g., policy changes, user additions) are not supported.
  *
  * **Authentication Requirements:**
- * - For transactionRequest type approvals, you must provide either walletPassphrase or xprv to sign the transaction
+ * - You must provide either walletPassphrase or xprv to sign the transaction
  * - The user must have permission to approve the pending approval
  *
  * **Fee Customization:**
- * - Use `useOriginalFee: true` to preserve the fee from the original transaction request
- * - Alternatively, specify custom fee parameters (fee, feeRate, or feeTxConfirmTarget)
- * - Fee parameters cannot be combined with useOriginalFee
+ * - `useOriginalFee: true` - Preserves the fee from the original transaction request
+ * - Custom fee parameters - Specify fee, feeRate, or feeTxConfirmTarget
+ * - Default behavior - If no fee parameters provided, fee is recalculated based on current conditions
+ * - Note: Fee parameters cannot be combined with useOriginalFee
  *
  * **Workflow:**
  * 1. Retrieves the pending approval by ID
- * 2. Constructs the transaction according to the approval parameters
- * 3. Signs the transaction (for transactionRequest approvals)
- * 4. Returns the signed transaction hex and metadata
- * 5. Transaction is NOT broadcast to the network
+ * 2. Parses the original transaction to extract recipients
+ * 3. Reconstructs the transaction with specified or original fee
+ * 4. Signs the transaction with the user's key
+ * 5. Returns the signed transaction hex and metadata
+ * 6. Transaction is NOT broadcast to the network
  *
  * @operationId express.v1.pendingapproval.constructTx
  * @tag express
