@@ -20,7 +20,7 @@ export const FanoutUnspentsRequestBody = {
   xprv: optional(t.string),
   /** Whether to validate addresses (defaults to true) */
   validate: optional(t.boolean),
-  /** Target number of unspents to create (must be at least 2 and less than 300) - REQUIRED */
+  /** Target number of unspents to create (must be integer, at least 2, at most 300) */
   target: t.number,
   /** Minimum number of confirmations needed for an unspent to be included (defaults to 1) */
   minConfirms: optional(t.number),
@@ -62,7 +62,7 @@ export const FanoutUnspentsRequestBody = {
  * Response for fanning out unspents in a wallet
  */
 export const FanoutUnspentsResponse = t.type({
-  /** The status of the transaction ('accepted', 'pendingApproval', or 'otp') */
+  /** The status of the transaction: 'accepted' (broadcasted), 'pendingApproval' (needs approval), or 'otp' (needs 2FA) */
   status: t.string,
   /** The transaction hex */
   tx: t.string,
@@ -87,9 +87,26 @@ export const FanoutUnspentsResponse = t.type({
 /**
  * Fan out unspents in a wallet
  *
- * This endpoint fans out unspents in a wallet by creating a transaction that spends from
- * multiple inputs to multiple outputs. This is useful for increasing the number of UTXOs
- * in a wallet, which can improve transaction parallelization.
+ * Creates a transaction that distributes all existing unspents into a larger number of
+ * approximately equal-sized unspents. This is the opposite of consolidateUnspents and is
+ * useful for increasing the UTXO count to enable parallel transactions.
+ *
+ * **How It Works:**
+ * 1. Fetches all unspents with at least minConfirms confirmations
+ * 2. Calculates total value of all unspents
+ * 3. Creates target number of new addresses on the change chain
+ * 4. Distributes total value almost equally (±1 satoshi) across new addresses
+ * 5. Adjusts distribution to account for transaction fees
+ * 6. Creates and broadcasts the transaction
+ *
+ * **Requirements:**
+ * - Current unspent count must be less than target (otherwise use consolidateUnspents)
+ * - Wallet must have at most 80 unspents (transaction input limit)
+ * - Target must be 2-300 (transaction output limit)
+ * - Requires walletPassphrase or xprv for signing
+ *
+ * **Note:** This operation uses ALL wallet unspents and distributes the entire balance
+ * (minus fees) across the target number of new outputs. All original addresses will be emptied.
  *
  * @operationId express.v1.wallet.fanoutunspents
  * @tag express
