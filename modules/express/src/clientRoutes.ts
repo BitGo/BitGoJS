@@ -374,9 +374,9 @@ function handleV2VerifyAddress(req: ExpressApiRouteRequest<'express.verifycoinad
  * handle address canonicalization
  * @param req
  */
-function handleCanonicalAddress(req: express.Request) {
+function handleCanonicalAddress(req: ExpressApiRouteRequest<'express.v2.canonicaladdress', 'post'>) {
   const bitgo = req.bitgo;
-  const coin = bitgo.coin(req.params.coin);
+  const coin = bitgo.coin(req.decoded.coin);
   if (!['ltc', 'bch', 'bsv'].includes(coin.getFamily())) {
     throw new Error('only Litecoin/Bitcoin Cash/Bitcoin SV address canonicalization is supported');
   }
@@ -1684,7 +1684,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   ]);
 
   // Miscellaneous
-  app.post('/api/v2/:coin/canonicaladdress', parseBody, prepareBitGo(config), promiseWrapper(handleCanonicalAddress));
+  router.post('express.v2.canonicaladdress', [prepareBitGo(config), typedPromiseWrapper(handleCanonicalAddress)]);
   router.post('express.verifycoinaddress', [prepareBitGo(config), typedPromiseWrapper(handleV2VerifyAddress)]);
   router.put('express.v2.pendingapprovals', [prepareBitGo(config), typedPromiseWrapper(handleV2PendingApproval)]);
 

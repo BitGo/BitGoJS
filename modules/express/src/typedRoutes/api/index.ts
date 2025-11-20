@@ -45,6 +45,7 @@ import { PostLightningWalletPayment } from './v2/lightningPayment';
 import { PostLightningWalletWithdraw } from './v2/lightningWithdraw';
 import { PutV2PendingApproval } from './v2/pendingApproval';
 import { PostConsolidateAccount } from './v2/consolidateAccount';
+import { PostCanonicalAddress } from './v2/canonicalAddress';
 
 // Too large types can cause the following error
 //
@@ -283,6 +284,12 @@ export const ExpressWalletManagementApiSpec = apiSpec({
   },
 });
 
+export const ExpressV2CanonicalAddressApiSpec = apiSpec({
+  'express.v2.canonicaladdress': {
+    post: PostCanonicalAddress,
+  },
+});
+
 export type ExpressApi = typeof ExpressPingApiSpec &
   typeof ExpressPingExpressApiSpec &
   typeof ExpressLoginApiSpec &
@@ -316,6 +323,7 @@ export type ExpressApi = typeof ExpressPingApiSpec &
   typeof ExpressCoinSigningApiSpec &
   typeof ExpressExternalSigningApiSpec &
   typeof ExpressWalletSigningApiSpec &
+  typeof ExpressV2CanonicalAddressApiSpec &
   typeof ExpressWalletManagementApiSpec;
 
 export const ExpressApi: ExpressApi = {
@@ -352,6 +360,7 @@ export const ExpressApi: ExpressApi = {
   ...ExpressCoinSigningApiSpec,
   ...ExpressExternalSigningApiSpec,
   ...ExpressWalletSigningApiSpec,
+  ...ExpressV2CanonicalAddressApiSpec,
   ...ExpressWalletManagementApiSpec,
 };
 
