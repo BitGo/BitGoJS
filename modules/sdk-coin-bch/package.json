@@ -2,13 +2,29 @@
   "name": "@bitgo/sdk-coin-bch",
   "version": "2.5.5",
   "description": "BitGo SDK coin library for Bitcoin Cash",
-  "main": "./dist/src/index.js",
-  "types": "./dist/src/index.d.ts",
+  "main": "./dist/cjs/src/index.js",
+  "module": "./dist/esm/index.js",
+  "browser": "./dist/esm/index.js",
+  "types": "./dist/cjs/src/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/src/index.d.ts",
+        "default": "./dist/cjs/src/index.js"
+      }
+    }
+  },
   "scripts": {
-    "build": "yarn tsc --build --incremental --verbose .",
+    "build": "npm run build:cjs && npm run build:esm",
+    "build:cjs": "yarn tsc --build --incremental --verbose .",
+    "build:esm": "yarn tsc --project tsconfig.esm.json",
     "fmt": "prettier --write .",
     "check-fmt": "prettier --check '**/*.{ts,js,json}'",
-    "clean": "rm -r ./dist",
+    "clean": "rm -rf ./dist",
     "lint": "eslint --quiet .",
     "prepare": "npm run build",
     "unit-test": "echo 'test in abstract-utxo'"
@@ -43,6 +59,7 @@
   },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c",
   "files": [
-    "dist"
+    "dist/cjs",
+    "dist/esm"
   ]
 }
