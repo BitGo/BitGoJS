@@ -229,6 +229,8 @@ export abstract class Transaction extends BaseTransaction {
       changeOutputs: [],
       changeAmount: '0',
       fee: { fee: this.gasBudget ? this.gasBudget.toString() : '' },
+      sender: this.sender,
+      sponsor: this.gasSponsor,
       type: this.type,
     };
 

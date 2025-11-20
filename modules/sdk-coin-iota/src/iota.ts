@@ -166,13 +166,22 @@ export class Iota extends BaseCoin {
       fee = new BigNumber(transactionExplanation.fee.fee);
     }
 
-    // assume 1 sender, who is also the fee payer
+    const outputAmount = transactionExplanation.sponsor
+      ? new BigNumber(transactionExplanation.outputAmount).toFixed()
+      : new BigNumber(transactionExplanation.outputAmount).plus(fee).toFixed(); // assume 1 sender, who is also the fee payer
+
     const inputs = [
       {
         address: senderAddress,
-        amount: new BigNumber(transactionExplanation.outputAmount).plus(fee).toFixed(),
+        amount: outputAmount,
       },
     ];
+    if (transactionExplanation.sponsor) {
+      inputs.push({
+        address: transactionExplanation.sponsor,
+        amount: fee.toFixed(),
+      });
+    }
 
     const outputs: {
       address: string;
