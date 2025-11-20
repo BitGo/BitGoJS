@@ -9,7 +9,8 @@ import {
   P2trUnsupportedError,
   P2wshUnsupportedError,
   UnsupportedAddressTypeError,
-  sanitizeLegacyPath,
+  isTriple,
+  Triple,
 } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
 import { bitgo } from '@bitgo/utxo-lib';
@@ -52,7 +53,7 @@ function supportsAddressType(network: utxolib.Network, addressType: ScriptType2O
 
 export function generateAddressWithChainAndIndex(
   network: utxolib.Network,
-  keychains: { pub: string }[],
+  keychains: bitgo.RootWalletKeys | Triple<string>,
   chain: bitgo.ChainCode,
   index: number,
   format: CreateAddressFormat | undefined
@@ -61,24 +62,19 @@ export function generateAddressWithChainAndIndex(
     // Convert CreateAddressFormat to AddressFormat for wasm-utxo
     // 'base58' -> 'default', 'cashaddr' -> 'cashaddr'
     const wasmFormat = format === 'base58' ? 'default' : format;
-    return wasmUtxo.fixedScriptWallet.address(
-      keychains.map((k) => k.pub) as [string, string, string],
-      chain,
-      index,
-      network,
-      wasmFormat
-    );
+    return wasmUtxo.fixedScriptWallet.address(keychains, chain, index, network, wasmFormat);
   }
 
-  const path = '0/0/' + chain + '/' + index;
-  const hdNodes = keychains.map(({ pub }) => bip32.fromBase58(pub));
-  const derivedKeys = hdNodes.map((hdNode) => hdNode.derivePath(sanitizeLegacyPath(path)).publicKey);
+  if (!(keychains instanceof bitgo.RootWalletKeys)) {
+    const hdNodes = keychains.map((pub) => bip32.fromBase58(pub));
+    keychains = new bitgo.RootWalletKeys(hdNodes as Triple<utxolib.BIP32Interface>);
+  }
+
   const addressType = bitgo.scriptTypeForChain(chain);
 
+  const derivedKeys = keychains.deriveForChainAndIndex(chain, index).publicKeys;
   const { scriptPubKey: outputScript } = utxolib.bitgo.outputScripts.createOutputScript2of3(derivedKeys, addressType);
-
   const address = utxolib.address.fromOutputScript(outputScript, network);
-
   return canonicalAddress(network, address, format);
 }
 
@@ -143,7 +139,17 @@ export function generateAddress(network: utxolib.Network, params: GenerateFixedS
     }
   }
 
-  return generateAddressWithChainAndIndex(network, keychains, derivationChain, derivationIndex, params.format);
+  if (!isTriple(keychains)) {
+    throw new Error('keychains must be a triple');
+  }
+
+  return generateAddressWithChainAndIndex(
+    network,
+    keychains.map((k) => k.pub) as Triple<string>,
+    derivationChain,
+    derivationIndex,
+    params.format
+  );
 }
 
 type Keychain = {
