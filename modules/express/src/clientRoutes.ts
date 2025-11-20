@@ -767,9 +767,11 @@ async function handleV2ConsolidateUnspents(
  *
  * @param req
  */
-export async function handleV2ConsolidateAccount(req: express.Request) {
+export async function handleV2ConsolidateAccount(
+  req: ExpressApiRouteRequest<'express.v2.wallet.consolidateaccount', 'post'>
+) {
   const bitgo = req.bitgo;
-  const coin = bitgo.coin(req.params.coin);
+  const coin = bitgo.coin(req.decoded.coin);
 
   if (req.body.consolidateAddresses && !_.isArray(req.body.consolidateAddresses)) {
     throw new Error('consolidate address must be an array of addresses');
@@ -779,7 +781,7 @@ export async function handleV2ConsolidateAccount(req: express.Request) {
     throw new Error('invalid coin selected');
   }
 
-  const wallet = await coin.wallets().get({ id: req.params.id });
+  const wallet = await coin.wallets().get({ id: req.decoded.id });
 
   let result: any;
   try {
@@ -1676,12 +1678,10 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   );
 
   // account-based
-  app.post(
-    '/api/v2/:coin/wallet/:id/consolidateAccount',
-    parseBody,
+  router.post('express.v2.wallet.consolidateaccount', [
     prepareBitGo(config),
-    promiseWrapper(handleV2ConsolidateAccount)
-  );
+    typedPromiseWrapper(handleV2ConsolidateAccount),
+  ]);
 
   // Miscellaneous
   app.post('/api/v2/:coin/canonicaladdress', parseBody, prepareBitGo(config), promiseWrapper(handleCanonicalAddress));
