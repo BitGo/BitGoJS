@@ -44,6 +44,7 @@ import { PostOfcExtSignPayload } from './v2/ofcExtSignPayload';
 import { PostLightningWalletPayment } from './v2/lightningPayment';
 import { PostLightningWalletWithdraw } from './v2/lightningWithdraw';
 import { PutV2PendingApproval } from './v2/pendingApproval';
+import { PostConsolidateAccount } from './v2/consolidateAccount';
 
 // Too large types can cause the following error
 //
@@ -153,6 +154,12 @@ export const ExpressWalletConsolidateUnspentsApiSpec = apiSpec({
   },
   'express.v2.wallet.consolidateunspents': {
     post: PostConsolidateUnspents,
+  },
+});
+
+export const ExpressV2WalletConsolidateAccountApiSpec = apiSpec({
+  'express.v2.wallet.consolidateaccount': {
+    post: PostConsolidateAccount,
   },
 });
 
@@ -292,6 +299,7 @@ export type ExpressApi = typeof ExpressPingApiSpec &
   typeof ExpressV1KeychainLocalApiSpec &
   typeof ExpressV1PendingApprovalConstructTxApiSpec &
   typeof ExpressWalletConsolidateUnspentsApiSpec &
+  typeof ExpressV2WalletConsolidateAccountApiSpec &
   typeof ExpressWalletFanoutUnspentsApiSpec &
   typeof ExpressV2WalletCreateAddressApiSpec &
   typeof ExpressKeychainLocalApiSpec &
@@ -329,6 +337,7 @@ export const ExpressApi: ExpressApi = {
   ...ExpressWalletConsolidateUnspentsApiSpec,
   ...ExpressWalletFanoutUnspentsApiSpec,
   ...ExpressV2WalletCreateAddressApiSpec,
+  ...ExpressV2WalletConsolidateAccountApiSpec,
   ...ExpressKeychainLocalApiSpec,
   ...ExpressKeychainChangePasswordApiSpec,
   ...ExpressLightningWalletPaymentApiSpec,

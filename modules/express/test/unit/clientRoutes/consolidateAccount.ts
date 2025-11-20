@@ -17,7 +17,7 @@ describe('Consolidate account', () => {
 
     const mockRequest = {
       bitgo: stubBitgo,
-      params: {
+      decoded: {
         coin: 'tbtc',
         id: '23423423423423',
       },
@@ -37,7 +37,7 @@ describe('Consolidate account', () => {
 
     const mockRequest = {
       bitgo: bitgoStub,
-      params: {
+      decoded: {
         coin: 'txtz',
         id: '23423423423423',
       },
@@ -57,7 +57,7 @@ describe('Consolidate account', () => {
 
     const mockRequest = {
       bitgo: stubBitgo,
-      params: {
+      decoded: {
         coin: 'talgo',
         id: '23423423423423',
       },
@@ -91,8 +91,9 @@ describe('Consolidate account', () => {
     const { bitgoStub, consolidationStub } = createConsolidateMocks(result, true);
     const mockRequest = {
       bitgo: bitgoStub,
-      params: {
+      decoded: {
         coin: 'talgo',
+        id: '23423423423423',
       },
       body,
     };
@@ -110,7 +111,7 @@ describe('Consolidate account', () => {
     const { bitgoStub, consolidationStub } = createConsolidateMocks(result, true, true);
     const mockRequest = {
       bitgo: bitgoStub,
-      params: {
+      decoded: {
         coin: 'tsol',
         id: '23423423423423',
       },
@@ -129,8 +130,9 @@ describe('Consolidate account', () => {
     const { bitgoStub, consolidationStub } = createConsolidateMocks(result, true);
     const mockRequest = {
       bitgo: bitgoStub,
-      params: {
+      decoded: {
         coin: 'talgo',
+        id: '23423423423423',
       },
       body,
     };
@@ -148,8 +150,9 @@ describe('Consolidate account', () => {
     const { bitgoStub, consolidationStub } = createConsolidateMocks(result, true);
     const mockRequest = {
       bitgo: bitgoStub,
-      params: {
+      decoded: {
         coin: 'talgo',
+        id: '23423423423423',
       },
       body,
     };
