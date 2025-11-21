@@ -174,7 +174,7 @@ export interface TssVerifyAddressOptions {
    * Derivation index for the address.
    * Used to derive child addresses from the root keychain via HD derivation path: m/{index}
    */
-  index: string;
+  index: string | number;
 }
 
 export interface TransactionParams {
