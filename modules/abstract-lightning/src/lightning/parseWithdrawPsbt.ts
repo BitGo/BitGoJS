@@ -26,7 +26,7 @@ function parseDerivationPath(derivationPath: string): {
   return { purpose, change, addressIndex };
 }
 
-function parsePsbtOutputs(psbt: Psbt, network: utxolib.Network): WithdrawBaseOutputUTXO<bigint>[] {
+export function parsePsbtOutputs(psbt: Psbt, network: utxolib.Network): WithdrawBaseOutputUTXO<bigint>[] {
   const parsedOutputs: WithdrawBaseOutputUTXO<bigint>[] = [];
   let bip32Derivation: Bip32Derivation | undefined;
 
@@ -58,7 +58,7 @@ function parsePsbtOutputs(psbt: Psbt, network: utxolib.Network): WithdrawBaseOut
   return parsedOutputs;
 }
 
-function verifyChangeAddress(
+export function verifyChangeAddress(
   output: WithdrawBaseOutputUTXO<bigint>,
   accounts: WatchOnlyAccount[],
   network: utxolib.Network
