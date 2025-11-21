@@ -766,6 +766,82 @@ describe('SendMany V2 codec tests', function () {
         tokenId: '12345',
       });
     });
+
+    it('should handle response with transfers array (main transfer + fee transfer)', async function () {
+      const mainTransfer = createMockTransfer({
+        id: 'transfer-main-123',
+        type: 'send',
+        value: 1000000,
+        valueString: '1000000',
+        fee: 5000,
+        feeString: '5000',
+      });
+
+      const feeTransfer = createMockTransfer({
+        id: 'transfer-fee-456',
+        type: 'fee',
+        value: 0,
+        valueString: '0',
+        fee: 5000,
+        feeString: '5000',
+      });
+
+      const mockResponseWithTransfers = {
+        status: 'signed',
+        tx: '0100000001c7dad3d9607a23c45a6c1c5ad7bce02acff71a0f21eb4a72a59d0c0e19402d0f0000000000ffffffff0180a21900000000001976a914c918e1b36f2c72b1aaef94dbb7f578a4b68b542788ac00000000',
+        txid: '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+        transfer: mainTransfer,
+        transfers: [mainTransfer, feeTransfer], // Array with main + fee transfer
+      };
+
+      const requestBody = {
+        recipients: [
+          {
+            address: 'mzKTJw3XJNb7VfkFP77mzPJJz4Dkp4M1T6',
+            amount: 1000000,
+          },
+        ],
+        walletPassphrase: 'test_passphrase_12345',
+      };
+
+      const mockWallet = {
+        sendMany: sinon.stub().resolves(mockResponseWithTransfers),
+        _wallet: { multisigType: 'onchain' },
+      };
+
+      const walletsGetStub = sinon.stub().resolves(mockWallet);
+      const mockCoin = {
+        wallets: sinon.stub().returns({
+          get: walletsGetStub,
+        }),
+      };
+
+      sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+      const result = await agent
+        .post(`/api/v2/${coin}/wallet/${walletId}/sendmany`)
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      assert.strictEqual(result.status, 200);
+
+      // Verify the response includes transfers array
+      const decodedResponse = assertDecode(SendManyResponse, result.body);
+      assertSendManyResponse(decodedResponse);
+
+      assert.ok(decodedResponse.transfers, 'Response should include transfers array');
+      assert.strictEqual(Array.isArray(decodedResponse.transfers), true, 'transfers should be an array');
+      assert.strictEqual(decodedResponse.transfers.length, 2, 'transfers should contain main + fee transfer');
+
+      // Verify main transfer
+      assert.strictEqual(decodedResponse.transfers[0].id, 'transfer-main-123');
+      assert.strictEqual(decodedResponse.transfers[0].type, 'send');
+
+      // Verify fee transfer
+      assert.strictEqual(decodedResponse.transfers[1].id, 'transfer-fee-456');
+      assert.strictEqual(decodedResponse.transfers[1].type, 'fee');
+    });
   });
 
   describe('Request Validation', function () {
