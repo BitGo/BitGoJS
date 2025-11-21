@@ -40,6 +40,9 @@ import {
   VerifyAddressOptions as BaseVerifyAddressOptions,
   VerifyTransactionOptions,
   Wallet,
+  verifyMPCWalletAddress,
+  TssVerifyAddressOptions,
+  isTssVerifyAddressOptions,
 } from '@bitgo/sdk-core';
 import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
 import { bip32 } from '@bitgo/secp256k1';
@@ -369,6 +372,7 @@ interface PresignTransactionOptions extends TransactionPrebuild, BasePresignTran
 interface EthAddressCoinSpecifics extends AddressCoinSpecific {
   forwarderVersion: number;
   salt?: string;
+  feeAddress?: string;
 }
 
 export const DEFAULT_SCAN_FACTOR = 20;
@@ -401,8 +405,11 @@ export interface EthConsolidationRecoveryOptions {
 export interface VerifyEthAddressOptions extends BaseVerifyAddressOptions {
   baseAddress: string;
   coinSpecific: EthAddressCoinSpecifics;
-  forwarderVersion: number;
+  forwarderVersion?: number;
+  walletVersion?: number;
 }
+
+export type TssVerifyEthAddressOptions = TssVerifyAddressOptions & VerifyEthAddressOptions;
 
 const debug = debugLib('bitgo:v2:ethlike');
 
@@ -2725,6 +2732,23 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     return {};
   }
 
+  getFactoryAndImplContractAddresses(walletVersion: number | undefined): {
+    forwarderFactoryAddress: string;
+    forwarderImplementationAddress: string;
+  } {
+    const ethNetwork = this.getNetwork();
+    if (walletVersion && (walletVersion === 5 || walletVersion === 4)) {
+      return {
+        forwarderFactoryAddress: ethNetwork?.walletV4ForwarderFactoryAddress as string,
+        forwarderImplementationAddress: ethNetwork?.walletV4ForwarderImplementationAddress as string,
+      };
+    }
+    return {
+      forwarderFactoryAddress: ethNetwork?.forwarderFactoryAddress as string,
+      forwarderImplementationAddress: ethNetwork?.forwarderImplementationAddress as string,
+    };
+  }
+
   /**
    * Make sure an address is a wallet address and throw an error if it's not.
    * @param {Object} params
@@ -2736,45 +2760,57 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
    * @throws {UnexpectedAddressError}
    * @returns {boolean} True iff address is a wallet address
    */
-  async isWalletAddress(params: VerifyEthAddressOptions): Promise<boolean> {
+  async isWalletAddress(params: VerifyEthAddressOptions | TssVerifyEthAddressOptions): Promise<boolean> {
     const ethUtil = optionalDeps.ethUtil;
 
     let expectedAddress;
     let actualAddress;
 
-    const { address, coinSpecific, baseAddress, impliedForwarderVersion = coinSpecific?.forwarderVersion } = params;
+    const { address, impliedForwarderVersion, coinSpecific } = params;
+    const forwarderVersion = impliedForwarderVersion ?? coinSpecific?.forwarderVersion;
 
     if (address && !this.isValidAddress(address)) {
       throw new InvalidAddressError(`invalid address: ${address}`);
     }
-
-    // base address is required to calculate the salt which is used in calculateForwarderV1Address method
-    if (_.isUndefined(baseAddress) || !this.isValidAddress(baseAddress)) {
-      throw new InvalidAddressError('invalid base address');
-    }
-
-    if (!_.isObject(coinSpecific)) {
-      throw new InvalidAddressVerificationObjectPropertyError(
-        'address validation failure: coinSpecific field must be an object'
-      );
-    }
-
-    if (impliedForwarderVersion === 0 || impliedForwarderVersion === 3 || impliedForwarderVersion === 5) {
+    // Forwarder version 0 addresses cannot be verified because we do not store the nonce value required for address derivation.
+    if (forwarderVersion === 0) {
       return true;
+    }
+    // Verify MPC wallet address for wallet version 3 and 6
+    if (isTssVerifyAddressOptions(params) && params.walletVersion !== 5) {
+      return verifyMPCWalletAddress({ ...params, keyCurve: 'secp256k1' }, this.isValidAddress, (pubKey) => {
+        return new KeyPairLib({ pub: pubKey }).getAddress();
+      });
     } else {
-      const ethNetwork = this.getNetwork();
-      const forwarderFactoryAddress = ethNetwork?.forwarderFactoryAddress as string;
-      const forwarderImplementationAddress = ethNetwork?.forwarderImplementationAddress as string;
+      // Verify forwarder receive address
+      const { coinSpecific, baseAddress } = params;
 
+      if (_.isUndefined(baseAddress) || !this.isValidAddress(baseAddress)) {
+        throw new InvalidAddressError('invalid base address');
+      }
+
+      if (!_.isObject(coinSpecific)) {
+        throw new InvalidAddressVerificationObjectPropertyError(
+          'address validation failure: coinSpecific field must be an object'
+        );
+      }
+
+      const { forwarderFactoryAddress, forwarderImplementationAddress } = this.getFactoryAndImplContractAddresses(
+        params.walletVersion
+      );
       const initcode = getProxyInitcode(forwarderImplementationAddress);
       const saltBuffer = ethUtil.setLengthLeft(
         Buffer.from(ethUtil.padToEven(ethUtil.stripHexPrefix(coinSpecific.salt || '')), 'hex'),
         32
       );
 
-      // Hash the wallet base address with the given salt, so the address directly relies on the base address
+      const { createForwarderParams, createForwarderTypes } =
+        forwarderVersion === 4
+          ? getCreateForwarderParamsAndTypes(baseAddress, saltBuffer, coinSpecific.feeAddress)
+          : getCreateForwarderParamsAndTypes(baseAddress, saltBuffer);
+
       const calculationSalt = optionalDeps.ethUtil.bufferToHex(
-        optionalDeps.ethAbi.soliditySHA3(['address', 'bytes32'], [baseAddress, saltBuffer])
+        optionalDeps.ethAbi.soliditySHA3(createForwarderTypes, createForwarderParams)
       );
 
       expectedAddress = calculateForwarderV1Address(forwarderFactoryAddress, calculationSalt, initcode);
@@ -3056,7 +3092,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     }
     const typedDataRaw = JSON.parse(typedData.typedDataRaw);
     const sanitizedData = TypedDataUtils.sanitizeData(typedDataRaw as unknown as TypedMessage<any>);
-    const parts = [Buffer.from('1901', 'hex')];
+    const parts: Buffer[] = [Buffer.from('1901', 'hex')];
     const eip712Domain = 'EIP712Domain';
     parts.push(TypedDataUtils.hashStruct(eip712Domain, sanitizedData.domain, sanitizedData.types, version));
 
