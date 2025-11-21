@@ -32,20 +32,12 @@
       }
     },
     "./testutil": {
-      "import": {
-        "types": "./dist/esm/testutil/index.d.ts",
-        "default": "./dist/esm/testutil/index.js"
-      },
       "require": {
         "types": "./dist/cjs/src/testutil/index.d.ts",
         "default": "./dist/cjs/src/testutil/index.js"
       }
     },
     "./testutil/descriptor": {
-      "import": {
-        "types": "./dist/esm/testutil/descriptor/index.d.ts",
-        "default": "./dist/esm/testutil/descriptor/index.js"
-      },
       "require": {
         "types": "./dist/cjs/src/testutil/descriptor/index.d.ts",
         "default": "./dist/cjs/src/testutil/descriptor/index.js"
