@@ -2732,16 +2732,18 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     return {};
   }
 
-  getFactoryAndImplContractAddresses(walletVersion: number | undefined): {
+  getForwarderFactoryAndImplContractAddresses(walletVersion: number | undefined): {
     forwarderFactoryAddress: string;
     forwarderImplementationAddress: string;
   } {
     const ethNetwork = this.getNetwork();
     if (walletVersion && (walletVersion === 5 || walletVersion === 4)) {
-      return {
-        forwarderFactoryAddress: ethNetwork?.walletV4ForwarderFactoryAddress as string,
-        forwarderImplementationAddress: ethNetwork?.walletV4ForwarderImplementationAddress as string,
-      };
+      if (ethNetwork?.walletV4ForwarderFactoryAddress && ethNetwork?.walletV4ForwarderImplementationAddress) {
+        return {
+          forwarderFactoryAddress: ethNetwork?.walletV4ForwarderFactoryAddress as string,
+          forwarderImplementationAddress: ethNetwork?.walletV4ForwarderImplementationAddress as string,
+        };
+      }
     }
     return {
       forwarderFactoryAddress: ethNetwork?.forwarderFactoryAddress as string,
@@ -2795,9 +2797,8 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
         );
       }
 
-      const { forwarderFactoryAddress, forwarderImplementationAddress } = this.getFactoryAndImplContractAddresses(
-        params.walletVersion
-      );
+      const { forwarderFactoryAddress, forwarderImplementationAddress } =
+        this.getForwarderFactoryAndImplContractAddresses(params.walletVersion);
       const initcode = getProxyInitcode(forwarderImplementationAddress);
       const saltBuffer = ethUtil.setLengthLeft(
         Buffer.from(ethUtil.padToEven(ethUtil.stripHexPrefix(coinSpecific.salt || '')), 'hex'),

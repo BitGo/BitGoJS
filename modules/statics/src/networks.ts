@@ -1186,6 +1186,8 @@ class Polygon extends Mainnet implements EthereumNetwork {
   batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
   nativeCoinOperationHashPrefix = 'POLYGON';
   tokenOperationHashPrefix = 'POLYGON-ERC20';
+  walletV4ForwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
+  walletV4ForwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
 
 class PolygonTestnet extends Testnet implements EthereumNetwork {
@@ -1201,6 +1203,8 @@ class PolygonTestnet extends Testnet implements EthereumNetwork {
   batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
   nativeCoinOperationHashPrefix = 'POLYGON';
   tokenOperationHashPrefix = 'POLYGON-ERC20';
+  walletV4ForwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
+  walletV4ForwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
 
 class Optimism extends Mainnet implements EthereumNetwork {
@@ -1215,6 +1219,8 @@ class Optimism extends Mainnet implements EthereumNetwork {
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
   walletFactoryAddress = '0x809ee567e413543af1caebcdb247f6a67eafc8dd';
   walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
+  walletV4ForwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
+  walletV4ForwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
   batcherContractAddress = '0xebe27913fcc7510eadf10643a8f86bf5492a9541';
 }
 
@@ -1230,6 +1236,8 @@ class OptimismTestnet extends Testnet implements EthereumNetwork {
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
   walletFactoryAddress = '0x809ee567e413543af1caebcdb247f6a67eafc8dd';
   walletImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
+  walletV4ForwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
+  walletV4ForwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
   batcherContractAddress = '0xebe27913fcc7510eadf10643a8f86bf5492a9541';
 }
 
@@ -1253,6 +1261,8 @@ class ZkSyncTestnet extends Testnet implements EthereumNetwork {
   tokenOperationHashPrefix = '300-ERC20';
   forwarderFactoryAddress = '0xdd498702f44c4da08eb9e08d3f015eefe5cb71fc';
   forwarderImplementationAddress = '0xbe69cae311191fb45e648ed20847f06fad2dbab4';
+  walletV4ForwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
+  walletV4ForwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
   walletFactoryAddress = '0x4550e1e7616d3364877fc6c9324938dab678621a';
   walletImplementationAddress = '0x92db2759d1dca129a0d9d46877f361be819184c4';
 }
