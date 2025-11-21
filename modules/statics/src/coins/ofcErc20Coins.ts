@@ -4550,6 +4550,7 @@ export const tOfcErc20Coins = [
   ofcerc20('884a97f2-5808-4614-814e-2cd1d17d29df', 'ofceth:usdi', 'USDi', 6, UnderlyingAsset['eth:usdi']),
   ofcerc20('f4e98148-b703-4608-b416-67cd89c8a9f0', 'ofceth:tea', 'Tea', 18, UnderlyingAsset['eth:tea']),
   ofcerc20('727298fe-56c5-477a-92af-5b4139e792ea', 'ofceth:ofc', 'OneFootball Club', 18, UnderlyingAsset['eth:ofc']),
+  ofcerc20('10c41a70-8bd2-4415-af52-fefe3af01132', 'ofceth:wxm', 'WeatherXM', 18, UnderlyingAsset['eth:wxm']),
 ];
 
 function underlyingAssetForSymbol(underlyingAssetValue: string): UnderlyingAsset {

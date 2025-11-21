@@ -2315,6 +2315,7 @@ export enum UnderlyingAsset {
   'eth:usdi' = 'eth:usdi',
   'eth:tea' = 'eth:tea',
   'eth:ofc' = 'eth:ofc',
+  'eth:wxm' = 'eth:wxm',
 
   'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ' = 'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ',
   'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M' = 'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M',
@@ -3315,6 +3316,10 @@ export enum UnderlyingAsset {
 
   // TON mainnet tokens
   'ton:usdt' = 'ton:usdt',
+  'ton:usde' = 'ton:usde',
+  'ton:not' = 'ton:not',
+  'ton:cati' = 'ton:cati',
+  'ton:dogs' = 'ton:dogs',
 
   // TON testnet tokens
   'tton:ukwny-us' = 'tton:ukwny-us',
