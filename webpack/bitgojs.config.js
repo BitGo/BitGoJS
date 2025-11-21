@@ -15,6 +15,8 @@ module.exports = {
       // use the default version here since we're webpacking ourselves
       '@bitgo/sdk-api': path.resolve('../sdk-api/dist/src/index.js'),
       async: path.resolve('../../node_modules/async/index.js'),
+      // Force ESM version of wasm-utxo for browser bundles (has proper wasm import)
+      '@bitgo/wasm-utxo': path.resolve('../../node_modules/@bitgo/wasm-utxo/dist/esm/js/index.js'),
     },
     fallback: {
       constants: false,
