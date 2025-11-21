@@ -695,6 +695,8 @@ export const PendingApproval = t.type({
 const SendManyResponseBasic = t.type({
   /** Transfer details - varies by coin and wallet type */
   transfer: optional(Transfer),
+  /** Array of transfers (includes main transfer + optional fee transfer) */
+  transfers: optional(t.array(Transfer)),
   /** Transaction status (e.g., 'signed', 'accepted', 'pendingApproval') */
   status: optional(t.string),
   /** Transaction hex */
