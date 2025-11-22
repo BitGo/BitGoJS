@@ -292,7 +292,7 @@ export class Transaction extends BaseTransaction {
       // Set recipients from clauses
       this.recipients = body.clauses.map((clause) => ({
         address: (clause.to || '0x0').toString().toLowerCase(),
-        amount: Number(clause.value).toString(),
+        amount: new BigNumber(clause.value).toFixed(),
       }));
       this.loadInputsAndOutputs();
 
