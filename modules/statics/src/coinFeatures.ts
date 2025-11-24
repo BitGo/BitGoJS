@@ -205,6 +205,12 @@ export const ADA_TOKEN_FEATURES = [
   CoinFeature.TSS,
   CoinFeature.TSS_COLD,
 ];
+export const ADA_TOKEN_FEATURES_EXCLUDE_SINGAPORE = [
+  ...ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE,
+  CoinFeature.BULK_TRANSACTION,
+  CoinFeature.TSS,
+  CoinFeature.TSS_COLD,
+];
 export const DOT_FEATURES = [
   ...ACCOUNT_COIN_DEFAULT_FEATURES,
   CoinFeature.TSS,
