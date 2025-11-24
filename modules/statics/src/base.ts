@@ -2898,6 +2898,9 @@ export enum UnderlyingAsset {
   'xdc:srx' = 'xdc:srx',
   'xdc:weth' = 'xdc:weth',
 
+  // Story testnet tokens
+  'tip:usdc' = 'tip:usdc',
+
   // Arbitrum testnet tokens
   'tarbeth:link' = 'tarbeth:link',
   'tarbeth:xsgd' = 'tarbeth:xsgd',

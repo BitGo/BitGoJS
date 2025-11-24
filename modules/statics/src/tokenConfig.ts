@@ -209,6 +209,7 @@ export interface TokenNetwork {
   bera: { tokens: EthLikeTokenConfig[] };
   mon: { tokens: EthLikeTokenConfig[] };
   xdc: { tokens: EthLikeTokenConfig[] };
+  ip: { tokens: EthLikeTokenConfig[] };
   apt: {
     tokens: AptTokenConfig[];
     nftCollections: AptNFTCollectionConfig[];
@@ -1119,8 +1120,9 @@ export const getEthLikeTokens = (network: 'Mainnet' | 'Testnet'): EthLikeTokenMa
 
 const getFormattedTokensByNetwork = (network: 'Mainnet' | 'Testnet', coinMap: typeof coins) => {
   const networkType = network === 'Mainnet' ? NetworkType.MAINNET : NetworkType.TESTNET;
-
+  const ethLikeTokenMap = getEthLikeTokens(network);
   return {
+    ...ethLikeTokenMap,
     eth: {
       tokens: getFormattedErc20Tokens(coinMap).filter((token) => token.network === network),
       nfts: getFormattedErc721Tokens(coinMap).filter((token) => token.network === network),
