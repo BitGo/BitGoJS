@@ -85,6 +85,8 @@ export function lightning(
 }
 
 const LNBTC_FEATURES = [...LightningCoin.DEFAULT_FEATURES];
+// TODO(BTC-2821): Add staking feature to lnbtc after testing
+const TLNBTC_FEATURES = [...LNBTC_FEATURES, CoinFeature.STAKING];
 
 export const lightningCoins: Readonly<BaseCoin>[] = [
   lightning(
@@ -103,6 +105,6 @@ export const lightningCoins: Readonly<BaseCoin>[] = [
     Networks.test.lnbtc,
     UnderlyingAsset.LNBTC,
     BaseUnit.LNBTC,
-    LNBTC_FEATURES
+    TLNBTC_FEATURES
   ),
 ];
