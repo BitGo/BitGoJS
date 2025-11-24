@@ -903,7 +903,15 @@ export function getCoinConstructor(coinName: string): CoinConstructor | undefine
   }
 }
 
+// TODO: add IP token here and test changes (Ticket: https://bitgoinc.atlassian.net/browse/WIN-7835)
+const ethLikeChainToTestnetMap: Record<string, string> = {};
 export function getTokenConstructor(tokenConfig: TokenConfig): CoinConstructor | undefined {
+  if (tokenConfig.coin in ethLikeChainToTestnetMap) {
+    return EthLikeErc20Token.createTokenConstructor(tokenConfig as EthLikeTokenConfig, {
+      Mainnet: tokenConfig.coin,
+      Testnet: ethLikeChainToTestnetMap[tokenConfig.coin],
+    });
+  }
   switch (tokenConfig.coin) {
     case 'eth':
     case 'hteth':
