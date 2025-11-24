@@ -50,6 +50,8 @@ describe('Token Naming Convention Tests', function () {
       'gtyfi18dp',
       'gtwbtc18dp',
       'hteth:stgusd1',
+      'hteth:stgsofiusd',
+      'hteth:sofiusd',
       'hteth:tsteth',
       'hteth:gousd',
       'hteth:usd1',

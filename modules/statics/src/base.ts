@@ -1786,6 +1786,8 @@ export enum UnderlyingAsset {
   TUSDS = 'tusds',
   TGOUSD = 'tgousd',
   'hteth:gousd' = 'hteth:gousd',
+  'hteth:sofiusd' = 'hteth:sofiusd',
+  'hteth:stgsofiusd' = 'hteth:stgsofiusd',
   'hteth:usd1' = 'hteth:usd1',
   'hteth:stgusd1' = 'hteth:stgusd1',
   'hteth:tsteth' = 'hteth:tsteth',

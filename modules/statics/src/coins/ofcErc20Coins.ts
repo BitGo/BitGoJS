@@ -3717,6 +3717,20 @@ export const tOfcErc20Coins = [
     'hteth'
   ),
   tofcerc20(
+    '145b2e09-453d-4861-8f54-5791d295bd96',
+    'ofchteth:stgsofiusd',
+    'Test SoFi USD',
+    6,
+    UnderlyingAsset['hteth:stgsofiusd'],
+    undefined,
+    [CoinFeature.STABLECOIN],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'hteth'
+  ),
+  tofcerc20(
     '72358644-ece4-41fd-9269-8d0bce6ff8cd',
     'ofchteth:tsteth',
     'Hoodi Testnet STETH',
@@ -3750,6 +3764,20 @@ export const tOfcErc20Coins = [
     'Test USD1 Token',
     18,
     UnderlyingAsset['hteth:usd1'],
+    undefined,
+    [CoinFeature.STABLECOIN],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'hteth'
+  ),
+  tofcerc20(
+    '8e8028cb-855e-4cd7-8f7e-a00c63f0727c',
+    'ofchteth:sofiusd',
+    'Test SoFi USD',
+    6,
+    UnderlyingAsset['hteth:sofiusd'],
     undefined,
     [CoinFeature.STABLECOIN],
     undefined,
