@@ -490,7 +490,8 @@ export const erc20Coins = [
     'Ampleforth',
     9,
     '0xd46ba6d942050d489dbd938a2c909a5d5039a161',
-    UnderlyingAsset.AMPL
+    UnderlyingAsset.AMPL,
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION, CoinFeature.REBASE_TOKEN]
   ),
   erc20(
     '60b37df5-c078-4d7e-b38a-6f3f7fd25ea7',
@@ -8377,7 +8378,8 @@ export const erc20Coins = [
     'Aave interest bearing WBTC',
     8,
     '0x9ff58f4ffb29fa2266ab25e75e2a8b3503311656',
-    UnderlyingAsset.AWBTC
+    UnderlyingAsset.AWBTC,
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION, CoinFeature.REBASE_TOKEN]
   ),
   erc20(
     'fbd1d2af-b3c9-4272-aa92-30c1594fc626',
