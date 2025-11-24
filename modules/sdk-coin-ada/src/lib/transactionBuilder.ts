@@ -278,7 +278,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         if (e instanceof BuildTransactionError) {
           throw e;
         }
-        throw new BuildTransactionError(`Error processing output: ${e.message}`);
+        throw new BuildTransactionError(`Error processing output: ${e.message ?? e}`);
       }
     });
     return change;
@@ -311,21 +311,25 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @param address - Recipient address
    */
   private buildTokens(asset: Asset, minAmountNeededForOneAssetOutput, outputs, address) {
-    let txOutputBuilder = CardanoWasm.TransactionOutputBuilder.new();
-    const toAddress = util.getWalletAddress(address);
-    txOutputBuilder = txOutputBuilder.with_address(toAddress);
-    let txOutputAmountBuilder = txOutputBuilder.next();
-    const assetName = CardanoWasm.AssetName.new(Buffer.from(asset.asset_name, 'hex'));
-    const policyId = CardanoWasm.ScriptHash.from_bytes(Buffer.from(asset.policy_id, 'hex'));
-    const multiAsset = CardanoWasm.MultiAsset.new();
-    const assets = CardanoWasm.Assets.new();
-    assets.insert(assetName, CardanoWasm.BigNum.from_str(asset.quantity));
-    multiAsset.insert(policyId, assets);
+    try {
+      let txOutputBuilder = CardanoWasm.TransactionOutputBuilder.new();
+      const toAddress = util.getWalletAddress(address);
+      txOutputBuilder = txOutputBuilder.with_address(toAddress);
+      let txOutputAmountBuilder = txOutputBuilder.next();
+      const assetName = CardanoWasm.AssetName.new(Buffer.from(asset.asset_name, 'hex'));
+      const policyId = CardanoWasm.ScriptHash.from_bytes(Buffer.from(asset.policy_id, 'hex'));
+      const multiAsset = CardanoWasm.MultiAsset.new();
+      const assets = CardanoWasm.Assets.new();
+      assets.insert(assetName, CardanoWasm.BigNum.from_str(asset.quantity));
+      multiAsset.insert(policyId, assets);
 
-    txOutputAmountBuilder = txOutputAmountBuilder.with_coin_and_asset(minAmountNeededForOneAssetOutput, multiAsset);
+      txOutputAmountBuilder = txOutputAmountBuilder.with_coin_and_asset(minAmountNeededForOneAssetOutput, multiAsset);
 
-    const txOutput = txOutputAmountBuilder.build();
-    outputs.add(txOutput);
+      const txOutput = txOutputAmountBuilder.build();
+      outputs.add(txOutput);
+    } catch (e) {
+      throw new BuildTransactionError(`Error building tokens: ${e.message || e} for asset ${JSON.stringify(asset)}`);
+    }
   }
 
   /**
