@@ -2678,6 +2678,17 @@ export const allCoinsAndTokens = [
     Networks.main.mon
   ),
 
+  // Story testnet tokens
+  erc20Token(
+    'f9a9c36f-8938-4206-bf0d-5016a861c58f',
+    'tip:usdc',
+    'Testnet Story USDC',
+    6,
+    '0x8c7c52eabb0fcbcaebce2556d9a719d539ea02d8',
+    UnderlyingAsset['tip:usdc'],
+    Networks.test.ip
+  ),
+
   hederaCoin(
     '98aad956-27ee-45dd-aa43-6a23c9a1d1d0',
     'hbar',
