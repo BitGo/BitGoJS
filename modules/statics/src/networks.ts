@@ -1553,8 +1553,8 @@ class Sonic extends Mainnet implements EthereumNetwork {
 class SonicTestnet extends Testnet implements EthereumNetwork {
   name = 'SonicTestnet';
   family = CoinFamily.SONIC;
-  explorerUrl = 'https://testnet.sonicscan.org/tx/';
-  accountExplorerUrl = 'https://testnet.sonicscan.org/address/';
+  explorerUrl = 'https://blaze.soniclabs.com/tx/';
+  accountExplorerUrl = 'https://blaze.soniclabs.com/address/';
   chainId = 14601;
   nativeCoinOperationHashPrefix = '14601';
   walletFactoryAddress = '0x809ee567e413543af1caebcdb247f6a67eafc8dd';
