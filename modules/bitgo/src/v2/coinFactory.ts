@@ -38,6 +38,7 @@ import {
   TaoTokenConfig,
   PolyxTokenConfig,
   JettonTokenConfig,
+  NetworkType,
 } from '@bitgo/statics';
 import {
   Ada,
@@ -903,8 +904,26 @@ export function getCoinConstructor(coinName: string): CoinConstructor | undefine
   }
 }
 
+export const buildEthLikeChainToTestnetMap = (): Record<string, string> => {
+  const map: Record<string, string> = {};
+
+  const enabledEvmCoins = ['ip'];
+
+  // TODO: remove ip coin here and remove other evm coins from switch block, once changes are tested (Ticket: https://bitgoinc.atlassian.net/browse/WIN-7835)
+  coins.forEach((coin) => {
+    if (coin.network.type === NetworkType.TESTNET && !coin.isToken && enabledEvmCoins.includes(coin.family)) {
+      if (coins.get(coin.family)?.features.includes(CoinFeature.SUPPORTS_ERC20)) {
+        map[coin.family] = `${coin.name}`;
+      }
+    }
+  });
+
+  return map;
+};
+
 // TODO: add IP token here and test changes (Ticket: https://bitgoinc.atlassian.net/browse/WIN-7835)
-const ethLikeChainToTestnetMap: Record<string, string> = {};
+const ethLikeChainToTestnetMap: Record<string, string> = buildEthLikeChainToTestnetMap();
+
 export function getTokenConstructor(tokenConfig: TokenConfig): CoinConstructor | undefined {
   if (tokenConfig.coin in ethLikeChainToTestnetMap) {
     return EthLikeErc20Token.createTokenConstructor(tokenConfig as EthLikeTokenConfig, {
