@@ -12582,6 +12582,18 @@ export const erc20Coins = [
     Networks.test.hoodi
   ),
   terc20(
+    'a0660bd4-c508-4704-ac2b-c7ead1f6ad43',
+    'hteth:stgsofiusd',
+    'Test SoFi USD',
+    6,
+    '0x5ce9c87a0b7208491f9fe52bcc8e919eb43c58b2',
+    UnderlyingAsset['hteth:stgsofiusd'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN],
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
+  terc20(
     '31eedb6e-3bd1-4407-b924-7136c4dc0483',
     'hteth:tsteth',
     'Hoodi Testnet STETH',
@@ -12612,6 +12624,18 @@ export const erc20Coins = [
     18,
     '0xed9e025fc3fd4ab704378ff5486b596f00dbef1b',
     UnderlyingAsset['hteth:usd1'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN],
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
+  terc20(
+    '8e4f9c4c-2b03-4ad4-8019-ace4bbda3acd',
+    'hteth:sofiusd',
+    'Test SoFi USD',
+    6,
+    '0x5572728e36b5510010ade1db6bbaea1c402411cc',
+    UnderlyingAsset['hteth:sofiusd'],
     [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN],
     undefined,
     undefined,
