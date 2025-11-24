@@ -1527,6 +1527,24 @@ class MantleTestnet extends Testnet implements EthereumNetwork {
   nativeCoinOperationHashPrefix = '5003';
 }
 
+class JovayETH extends Mainnet implements EthereumNetwork {
+  name = 'Jovay Ethereum';
+  family = CoinFamily.JOVAYETH;
+  explorerUrl = 'https://explorer.jovay.io/tx/';
+  accountExplorerUrl = 'https://explorer.jovay.io/address/';
+  chainId = 5734951;
+  nativeCoinOperationHashPrefix = '5734951';
+}
+
+class JovayETHTestnet extends Testnet implements EthereumNetwork {
+  name = 'Testnet Jovay Ethereum';
+  family = CoinFamily.JOVAYETH;
+  explorerUrl = 'https://sepolia-explorer.jovay.io/tx/';
+  accountExplorerUrl = 'https://sepolia-explorer.jovay.io/address/';
+  chainId = 2019775;
+  nativeCoinOperationHashPrefix = '2019775';
+}
+
 class CreditcoinTestnet extends Testnet implements EthereumNetwork {
   name = 'CreditcoinTestnet';
   family = CoinFamily.CTC;
@@ -2122,6 +2140,7 @@ export const Networks = {
     injective: Object.freeze(new Injective()),
     irys: Object.freeze(new Irys()),
     islm: Object.freeze(new Islm()),
+    jovayeth: Object.freeze(new JovayETH()),
     kaia: Object.freeze(new Kaia()),
     kava: Object.freeze(new Kava()),
     kavaevm: Object.freeze(new KavaEVM()),
@@ -2225,6 +2244,7 @@ export const Networks = {
     iota: Object.freeze(new IotaTestnet()),
     irys: Object.freeze(new IrysTestnet()),
     islm: Object.freeze(new IslmTestnet()),
+    jovayeth: Object.freeze(new JovayETHTestnet()),
     kava: Object.freeze(new KavaTestnet()),
     kavaevm: Object.freeze(new KavaEVMTestnet()),
     kovan: Object.freeze(new Kovan()),
