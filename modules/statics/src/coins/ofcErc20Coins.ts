@@ -197,7 +197,7 @@ export const ofcErc20Coins = [
     CoinFeature.STABLECOIN,
   ]),
   ofcerc20('dec90842-ca08-417e-9cb0-89723cc50b77', 'ofcwbtc', 'Wrapped Bitcoin', 8, UnderlyingAsset.WBTC),
-  ofcerc20('8f01bcec-f576-49f8-b925-274566954017', 'ofcokb', 'OKB', 18, UnderlyingAsset.OKB),
+  ofcerc20('8f01bcec-f576-49f8-b925-274566954017', 'ofceth:okb', 'OKB ETH Token', 18, UnderlyingAsset['eth:okb']),
   ofcerc20('37e7d659-c3a4-4761-8f42-76fb7bc5032c', 'ofcmnt', 'Mantle', 18, UnderlyingAsset.MNT),
   ofcerc20('688725ff-e582-44bc-b42e-0de600426594', 'ofcstrk', 'StarkNet Token', 18, UnderlyingAsset.STRK),
   ofcerc20('d6d6ee90-05c1-4fdd-8621-bfaefaa703ae', 'ofctkx', 'Tokenize', 8, UnderlyingAsset.TKX),
