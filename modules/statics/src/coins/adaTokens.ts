@@ -8,7 +8,7 @@ export const adaTokens = [
     'tada:water',
     'Test ADA Token',
     0,
-    '2533cca6eb42076e144e9f2772c390dece9fce173bc38c72294b3924',
+    '2533cca6eb42076e144e9f2772c390dece9fce173bc38c72294b39245741544552',
     'WATER',
     'asset1n69xf60d0760xvn8v2ffd5frvsm0cl2r8hfjf6',
     UnderlyingAsset['tada:water'],
