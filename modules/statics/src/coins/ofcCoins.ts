@@ -3608,6 +3608,10 @@ export const ofcCoins = [
     UnderlyingAsset['thash:ylds']
   ),
   ofcTonToken('c0e7396b-d21a-4b5a-b547-fdfe001cf3ba', 'ofcton:usdt', 'Ton USDT', 6, UnderlyingAsset['ton:usdt']),
+  ofcTonToken('8977a6f0-0864-4250-a060-6ff385d304f9', 'ofcton:usde', 'Ethena USDe', 6, UnderlyingAsset['ton:usde']),
+  ofcTonToken('827bf2c7-a741-406f-9ed4-fb0f3c33b01a', 'ofcton:not', 'Notcoin', 9, UnderlyingAsset['ton:not']),
+  ofcTonToken('874a497e-61a8-45b5-abe1-1d9637f49264', 'ofcton:cati', 'Catizen', 9, UnderlyingAsset['ton:cati']),
+  ofcTonToken('41ee59d6-2484-429c-aad1-5e79ae766c4b', 'ofcton:dogs', 'Dogs', 9, UnderlyingAsset['ton:dogs']),
   tofcTonToken(
     'e7d516c1-b975-4905-b5d0-8460f6ea7eb9',
     'ofctton:ukwny-us',

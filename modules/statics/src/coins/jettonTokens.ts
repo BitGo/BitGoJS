@@ -13,6 +13,42 @@ export const jettonTokens = [
     UnderlyingAsset['ton:usdt'],
     TON_TOKEN_FEATURES
   ),
+  jettonToken(
+    'c8e53be1-4313-40eb-a2ca-7ab92e89eb1a',
+    'ton:usde',
+    'Ethena USDe',
+    6,
+    'EQAIb6KmdfdDR7CN1GBqVJuP25iCnLKCvBlJ07Evuu2dzP5f',
+    UnderlyingAsset['ton:usde'],
+    TON_TOKEN_FEATURES
+  ),
+  jettonToken(
+    '3879d8a3-5273-455e-9c9d-de6784953b34',
+    'ton:not',
+    'Notcoin',
+    9,
+    'EQAvlWFDxGF2lXm67y4yzC17wYKD9A0guwPkMs1gOsM__NOT',
+    UnderlyingAsset['ton:not'],
+    TON_TOKEN_FEATURES
+  ),
+  jettonToken(
+    '819f4d1f-61d6-45be-950c-9033b8310536',
+    'ton:cati',
+    'Catizen',
+    9,
+    'EQD-cvR0Nz6XAyRBvbhz-abTrRC6sI5tvHvvpeQraV9UAAD7',
+    UnderlyingAsset['ton:cati'],
+    TON_TOKEN_FEATURES
+  ),
+  jettonToken(
+    '59b2e53f-9f11-416e-b22b-2aa27397a919',
+    'ton:dogs',
+    'Dogs',
+    9,
+    'EQCvxJy4eG8hyHBFsZ7eePxrRsUQSFE_jpptRAYBmcG_DOGS',
+    UnderlyingAsset['ton:dogs'],
+    TON_TOKEN_FEATURES
+  ),
 
   // testnet tokens
   tjettonToken(

@@ -14059,4 +14059,13 @@ export const erc20Coins = [
     '0x9cb7a4ef0cae65b07362bc679a0b874041e3da53',
     UnderlyingAsset['eth:ofc']
   ),
+
+  erc20(
+    '23b21214-3fe0-4785-8324-46a6814a334e',
+    'eth:wxm',
+    'WeatherXM',
+    18,
+    '0xde654f497a563dd7a121c176a125dd2f11f13a83',
+    UnderlyingAsset['eth:wxm']
+  ),
 ];
