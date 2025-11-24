@@ -651,7 +651,7 @@ export class Dot extends BaseCoin {
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
-    const { txPrebuild, txParams } = params;
+    const { txPrebuild, txParams, verification, wallet } = params;
     if (!txParams) {
       throw new Error('missing txParams');
     }
@@ -664,12 +664,26 @@ export class Dot extends BaseCoin {
       throw new Error('missing txHex in txPrebuild');
     }
 
+    const factory = this.getBuilder();
+    const txBuilder = factory.from(txPrebuild.txHex) as any;
+
+    if (verification?.consolidationToBaseAddress) {
+      // Verify funds are sent to wallet's base address for consolidation
+      const baseAddress = wallet?.coinSpecific()?.baseAddress || wallet?.coinSpecific()?.rootAddress;
+      if (!baseAddress) {
+        throw new Error('Unable to determine base address for consolidation');
+      }
+      if (txBuilder._to !== baseAddress) {
+        throw new Error(
+          `Transaction destination address ${txBuilder._to} does not match wallet base address ${baseAddress}`
+        );
+      }
+      return true;
+    }
+
     if (!txParams.recipients || txParams.recipients.length === 0) {
       throw new Error('missing recipients in txParams');
     }
-
-    const factory = this.getBuilder();
-    const txBuilder = factory.from(txPrebuild.txHex) as any;
 
     if (Array.isArray(txParams.recipients) && txParams.recipients.length > 1) {
       throw new Error(

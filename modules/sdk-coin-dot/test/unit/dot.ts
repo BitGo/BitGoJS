@@ -727,6 +727,53 @@ describe('DOT:', function () {
       const result = await basecoin.verifyTransaction({ txPrebuild, txParams });
       assert.strictEqual(result, true);
     });
+
+    it('should verify a valid consolidation transaction', async function () {
+      const mockedWallet = {
+        coinSpecific: () => ({
+          baseAddress: '5CZh773vKGwKFCYUjGc31AwXCbf7TPkavdeuk2XoujJMjbBD',
+        }),
+      };
+      const txPrebuild = {
+        txHex:
+          '0xa80a0300161b969b6b53ef81225feea3882284c778cd4a406d23215fcf492e83f75d42960b00204aa9d101eb600400000065900f001000000067f9723393ef76214df0118c34bbbd3dbebc8ed46a10973a8c969d48fe7598c9a7b7420ee3e4fe2b88da0fc42b30897e18d56d8b56a1934211d9de730cf96de300',
+      };
+
+      const result = await basecoin.verifyTransaction({
+        txPrebuild,
+        txParams: {},
+        wallet: mockedWallet as any,
+        verification: {
+          consolidationToBaseAddress: true,
+        },
+      });
+      assert.strictEqual(result, true);
+    });
+
+    it('should reject a consolidation transaction with invalid destination address', async function () {
+      const mockedWallet = {
+        coinSpecific: () => ({
+          baseAddress: '5DxD9nT16GQLrU6aB5pSS5VtxoZbVju3NHUCcawxZyZCTf74',
+        }),
+      };
+      const txPrebuild = {
+        txHex:
+          '0xa80a0300161b969b6b53ef81225feea3882284c778cd4a406d23215fcf492e83f75d42960b00204aa9d101eb600400000065900f001000000067f9723393ef76214df0118c34bbbd3dbebc8ed46a10973a8c969d48fe7598c9a7b7420ee3e4fe2b88da0fc42b30897e18d56d8b56a1934211d9de730cf96de300',
+      };
+
+      await basecoin
+        .verifyTransaction({
+          txPrebuild,
+          txParams: {},
+          wallet: mockedWallet as any,
+          verification: {
+            consolidationToBaseAddress: true,
+          },
+        })
+        .should.be.rejectedWith(
+          'Transaction destination address 5CZh773vKGwKFCYUjGc31AwXCbf7TPkavdeuk2XoujJMjbBD does not match wallet base address 5DxD9nT16GQLrU6aB5pSS5VtxoZbVju3NHUCcawxZyZCTf74'
+        );
+    });
   });
 
   describe('isWalletAddress', () => {
