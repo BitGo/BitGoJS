@@ -280,6 +280,9 @@ const mainnetBase: EnvironmentTemplate = {
     mantle: {
       baseUrl: 'https://api.mantlescan.xyz/api',
     },
+    jovayeth: {
+      baseUrl: 'https://api.zan.top/node/v1/jovay/mainnet/',
+    },
   },
   icpNodeUrl: 'https://ic0.app',
   worldExplorerBaseUrl: 'https://worldscan.org/',
@@ -426,6 +429,9 @@ const testnetBase: EnvironmentTemplate = {
     },
     mantle: {
       baseUrl: 'https://api-sepolia.mantlescan.xyz/api',
+    },
+    jovayeth: {
+      baseUrl: 'https://api.zan.top/node/v1/jovay/testnet/',
     },
   },
   stxNodeUrl: 'https://api.testnet.hiro.so',

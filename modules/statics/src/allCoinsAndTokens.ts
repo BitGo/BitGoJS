@@ -2238,6 +2238,46 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_WP,
     ]
   ),
+  account(
+    'd7ed1781-23ff-49b7-be6b-7fec13e1c452',
+    'jovayeth',
+    'Jovay Ethereum',
+    Networks.main.jovayeth,
+    18,
+    UnderlyingAsset.JOVAYETH,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+    ],
+    KeyCurve.Secp256k1,
+    '',
+    'JovayETH'
+  ),
+  account(
+    '200f9547-79ad-48a3-bc8f-3f074d51bc35',
+    'tjovayeth',
+    'Testnet Jovay Ethereum',
+    Networks.test.jovayeth,
+    18,
+    UnderlyingAsset.JOVAYETH,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+    ],
+    KeyCurve.Secp256k1,
+    '',
+    'TJovayETH'
+  ),
   canton(
     '07385320-5a4f-48e9-97a5-86d4be9f24b0',
     'canton',

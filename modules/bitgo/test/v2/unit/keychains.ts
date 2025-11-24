@@ -101,6 +101,7 @@ describe('V2 Keychains', function () {
         n.asset !== UnderlyingAsset.FLRP &&
         n.asset !== UnderlyingAsset.FLUENTETH &&
         n.asset !== UnderlyingAsset.MANTLE &&
+        n.asset !== UnderlyingAsset.JOVAYETH &&
         coinFamilyValues.includes(n.name)
     );
 
