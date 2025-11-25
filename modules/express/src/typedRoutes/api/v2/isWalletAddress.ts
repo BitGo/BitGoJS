@@ -85,8 +85,8 @@ export const IsWalletAddressResponse = {
  *
  * To verify a baseAddress, set the `baseAddress` and `address` to the base address of the wallet.
  *
- * **Limitations:**
- * - Forwarder v0: Cannot verify (nonce not stored). Returns `true` without verification.
+ * Due to architecture limitations, forwarder version 0 addresses cannot be verified and will return `true` without verification.
+ * Verifying custodial wallet addresses is not supported.
  *
  * @operationId express.v2.wallet.isWalletAddress
  * @tag Express
