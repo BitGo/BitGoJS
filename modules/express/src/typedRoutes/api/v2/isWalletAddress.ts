@@ -36,24 +36,42 @@ export const KeychainCodec = t.intersection([
 export const IsWalletAddressBody = {
   /** The address to verify */
   address: t.string,
-  /** Keychains for verification */
+
+  /**
+   * Keychains for cryptographic verification
+   * Can be retrieved from GET /api/v2/{coin}/key/{id}
+   */
   keychains: t.array(KeychainCodec),
-  /** Base address of the wallet */
+
+  /** Base address of the wallet (wallet.coinSpecific.baseAddress) */
   baseAddress: optional(t.string),
-  /** Wallet version */
+
+  /** Wallet version (wallet.coinSpecific.walletVersion) */
   walletVersion: optional(t.number),
-  /** Address index for TSS/MPC wallet derivation */
+
+  /**
+   * Address derivation index
+   * ForwarderAddress: address.index
+   * BaseAddress: 0
+   */
   index: optional(t.union([t.number, t.string])),
   /** Coin-specific address data */
   coinSpecific: optional(
     t.partial({
-      /** Forwarder version */
+      /** Forwarder version (address.coinSpecific.forwarderVersion, required for forwarder addresses only) */
       forwarderVersion: t.number,
-      /** Salt for CREATE2 address derivation */
+
+      /**
+       * Salt for CREATE2 address derivation
+       * ForwarderAddress: address.coinSpecific.salt
+       * BaseAddress: wallet.coinSpecific.salt
+       */
       salt: t.string,
-      /** Fee address for v4 forwarders */
+
+      /** Fee address for v4 forwarders (wallet.coinSpecific.feeAddress) */
       feeAddress: t.string,
-      /** Base address (alternative to top-level baseAddress) */
+
+      /** Base address (wallet.coinSpecific.baseAddress) */
       baseAddress: t.string,
     })
   ),
