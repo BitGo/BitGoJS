@@ -10,6 +10,7 @@ import { EcdsaUtils } from './bitgo/utils/tss/ecdsa/ecdsa';
 export { EcdsaUtils };
 import { EcdsaMPCv2Utils } from './bitgo/utils/tss/ecdsa/ecdsaMPCv2';
 export { EcdsaMPCv2Utils };
+export { verifyEddsaTssWalletAddress, verifyMPCWalletAddress } from './bitgo/utils/tss/addressVerification';
 export { GShare, SignShare, YShare } from './account-lib/mpc/tss/eddsa/types';
 export { TssEcdsaStep1ReturnMessage, TssEcdsaStep2ReturnMessage } from './bitgo/tss/types';
 export { SShare } from './bitgo/tss/ecdsa/types';
