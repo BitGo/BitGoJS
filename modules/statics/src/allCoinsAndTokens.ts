@@ -2278,6 +2278,40 @@ export const allCoinsAndTokens = [
     '',
     'TJovayETH'
   ),
+  account(
+    '2c59a9f2-9bb0-42ff-b925-6049476b93a0',
+    'okb',
+    'X Layer',
+    Networks.main.okb,
+    18,
+    UnderlyingAsset.OKB,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+    ]
+  ),
+  account(
+    '6f29e239-1bcd-4d29-b638-e17b5efc3f6c',
+    'tokb',
+    'Testnet X Layer',
+    Networks.test.okb,
+    18,
+    UnderlyingAsset.OKB,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+    ]
+  ),
   canton(
     '07385320-5a4f-48e9-97a5-86d4be9f24b0',
     'canton',
