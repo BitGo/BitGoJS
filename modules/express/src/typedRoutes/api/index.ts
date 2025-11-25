@@ -48,6 +48,7 @@ import { PostConsolidateAccount } from './v2/consolidateAccount';
 import { PostCanonicalAddress } from './v2/canonicalAddress';
 import { PostWalletEnableTokens } from './v2/walletEnableTokens';
 import { PostWalletSweep } from './v2/walletSweep';
+import { PostWalletAccelerateTx } from './v2/walletAccelerateTx';
 import { PostIsWalletAddress } from './v2/isWalletAddress';
 
 // Too large types can cause the following error
@@ -311,6 +312,12 @@ export const ExpressV2WalletSweepApiSpec = apiSpec({
   },
 });
 
+export const ExpressV2WalletAccelerateTxApiSpec = apiSpec({
+  'express.v2.wallet.accelerateTx': {
+    post: PostWalletAccelerateTx,
+  },
+});
+
 export type ExpressApi = typeof ExpressPingApiSpec &
   typeof ExpressPingExpressApiSpec &
   typeof ExpressLoginApiSpec &
@@ -348,6 +355,7 @@ export type ExpressApi = typeof ExpressPingApiSpec &
   typeof ExpressWalletSigningApiSpec &
   typeof ExpressV2CanonicalAddressApiSpec &
   typeof ExpressV2WalletSweepApiSpec &
+  typeof ExpressV2WalletAccelerateTxApiSpec &
   typeof ExpressWalletManagementApiSpec;
 
 export const ExpressApi: ExpressApi = {
@@ -388,6 +396,7 @@ export const ExpressApi: ExpressApi = {
   ...ExpressWalletSigningApiSpec,
   ...ExpressV2CanonicalAddressApiSpec,
   ...ExpressV2WalletSweepApiSpec,
+  ...ExpressV2WalletAccelerateTxApiSpec,
   ...ExpressWalletManagementApiSpec,
 };
 
