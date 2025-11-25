@@ -2780,6 +2780,14 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     const ethNetwork = this.getNetwork();
 
     switch (forwarderVersion) {
+      case 1:
+        if (!ethNetwork?.forwarderFactoryAddress || !ethNetwork?.forwarderImplementationAddress) {
+          throw new Error('Forwarder factory addresses not configured for this network');
+        }
+        return {
+          forwarderFactoryAddress: ethNetwork.forwarderFactoryAddress,
+          forwarderImplementationAddress: ethNetwork.forwarderImplementationAddress,
+        };
       case 2:
         if (!ethNetwork?.walletV2ForwarderFactoryAddress || !ethNetwork?.walletV2ForwarderImplementationAddress) {
           throw new Error('Wallet v2 factory addresses not configured for this network');
@@ -2798,13 +2806,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
           forwarderImplementationAddress: ethNetwork.walletV4ForwarderImplementationAddress,
         };
       default:
-        if (!ethNetwork?.forwarderFactoryAddress || !ethNetwork?.forwarderImplementationAddress) {
-          throw new Error('Forwarder factory addresses not configured for this network');
-        }
-        return {
-          forwarderFactoryAddress: ethNetwork.forwarderFactoryAddress,
-          forwarderImplementationAddress: ethNetwork.forwarderImplementationAddress,
-        };
+        throw new Error(`Forwarder version ${forwarderVersion} not supported`);
     }
   }
 
@@ -2824,6 +2826,14 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     const ethNetwork = this.getNetwork();
 
     switch (walletVersion) {
+      case 1:
+        if (!ethNetwork?.walletFactoryAddress || !ethNetwork?.walletImplementationAddress) {
+          throw new Error('Wallet v1 factory addresses not configured for this network');
+        }
+        return {
+          walletFactoryAddress: ethNetwork.walletFactoryAddress,
+          walletImplementationAddress: ethNetwork.walletImplementationAddress,
+        };
       case 2:
         if (!ethNetwork?.walletV2FactoryAddress || !ethNetwork?.walletV2ImplementationAddress) {
           throw new Error('Wallet v2 factory addresses not configured for this network');
@@ -2842,13 +2852,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
           walletImplementationAddress: ethNetwork.walletV4ForwarderImplementationAddress,
         };
       default:
-        if (!ethNetwork?.walletFactoryAddress || !ethNetwork?.walletImplementationAddress) {
-          throw new Error('Wallet v1 factory addresses not configured for this network');
-        }
-        return {
-          walletFactoryAddress: ethNetwork.walletFactoryAddress,
-          walletImplementationAddress: ethNetwork.walletImplementationAddress,
-        };
+        throw new Error(`Wallet version ${walletVersion} not supported`);
     }
   }
 
