@@ -1545,6 +1545,24 @@ class JovayETHTestnet extends Testnet implements EthereumNetwork {
   nativeCoinOperationHashPrefix = '2019775';
 }
 
+class Xlayer extends Mainnet implements EthereumNetwork {
+  name = 'X Layer';
+  family = CoinFamily.OKB;
+  explorerUrl = 'https://www.oklink.com/x-layer/tx/';
+  accountExplorerUrl = 'https://www.oklink.com/x-layer/address/';
+  chainId = 196;
+  nativeCoinOperationHashPrefix = '196';
+}
+
+class XlayerTestnet extends Testnet implements EthereumNetwork {
+  name = 'Testnet X Layer';
+  family = CoinFamily.OKB;
+  explorerUrl = 'https://www.oklink.com/x-layer-testnet/tx/';
+  accountExplorerUrl = 'https://www.oklink.com/x-layer-testnet/address/';
+  chainId = 195;
+  nativeCoinOperationHashPrefix = '195';
+}
+
 class CreditcoinTestnet extends Testnet implements EthereumNetwork {
   name = 'CreditcoinTestnet';
   family = CoinFamily.CTC;
@@ -2160,6 +2178,7 @@ export const Networks = {
     oas: Object.freeze(new Oas()),
     og: Object.freeze(new Og()),
     ofc: Object.freeze(new Ofc()),
+    okb: Object.freeze(new Xlayer()),
     optimism: Object.freeze(new Optimism()),
     osmo: Object.freeze(new Osmo()),
     rbtc: Object.freeze(new Rbtc()),
@@ -2264,6 +2283,7 @@ export const Networks = {
     oas: Object.freeze(new OasTestnet()),
     og: Object.freeze(new OgTestnet()),
     ofc: Object.freeze(new OfcTestnet()),
+    okb: Object.freeze(new XlayerTestnet()),
     optimism: Object.freeze(new OptimismTestnet()),
     osmo: Object.freeze(new OsmoTestnet()),
     rbtc: Object.freeze(new RbtcTestnet()),
