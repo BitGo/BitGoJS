@@ -2925,7 +2925,7 @@ export const solTokens = [
     'EPCz5LK372vmvCkZH3HgSuGNKACJJwwxsofW6fypCPZL',
     'EPCz5LK372vmvCkZH3HgSuGNKACJJwwxsofW6fypCPZL',
     UnderlyingAsset['sol:rksol'],
-    [...SOL_TOKEN_FEATURES]
+    SOL_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   solToken(
     '092ca0c5-7579-45bb-8def-12df9ff12fa7',
