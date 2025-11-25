@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.8.0...@bitgo/sdk-coin-sol@7.9.0) (2025-11-19)
+
+
+### Features
+
+* bump public types ([bab6c62](https://github.com/BitGo/BitGoJS/commit/bab6c624682c1317456376e6bf7e6691224405b9))
+
+
+
+
+
 # [7.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.7.0...@bitgo/sdk-coin-sol@7.8.0) (2025-11-13)
 
 

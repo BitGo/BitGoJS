@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.26.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.25.0...@bitgo/utxo-staking@1.26.0) (2025-11-19)
+
+
+### Features
+
+* **utxo-staking:** add ESM build support ([b6671bc](https://github.com/BitGo/BitGoJS/commit/b6671bcb79c7c418be673200996fe24b0eb1c3cb))
+
+
+
+
+
 # [1.25.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.24.0...@bitgo/utxo-staking@1.25.0) (2025-11-13)
 
 

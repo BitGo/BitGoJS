@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.10.1...@bitgo/sdk-coin-canton@1.11.0) (2025-11-19)
+
+
+### Bug Fixes
+
+* remove length check on party hint ([ce389ef](https://github.com/BitGo/BitGoJS/commit/ce389ef9cf4fe276546b2fa7c7f71cbbc65390df))
+
+
+### Features
+
+* **sdk-coin-canton:** added memoId check for isValidAddress ([f79d2ad](https://github.com/BitGo/BitGoJS/commit/f79d2adcee6759409456bc824b0c436f09e5bede))
+
+
+
+
+
 ## [1.10.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.10.0...@bitgo/sdk-coin-canton@1.10.1) (2025-11-13)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-canton
