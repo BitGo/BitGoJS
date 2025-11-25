@@ -904,8 +904,12 @@ export function getCoinConstructor(coinName: string): CoinConstructor | undefine
   }
 }
 
-export const buildEthLikeChainToTestnetMap = (): Record<string, string> => {
-  const map: Record<string, string> = {};
+export const buildEthLikeChainToTestnetMap = (): {
+  mainnetToTestnetMap: Record<string, string>;
+  testnetToMainnetMap: Record<string, string>;
+} => {
+  const testnetToMainnetMap: Record<string, string> = {};
+  const mainnetToTestnetMap: Record<string, string> = {};
 
   const enabledEvmCoins = ['ip'];
 
@@ -913,22 +917,31 @@ export const buildEthLikeChainToTestnetMap = (): Record<string, string> => {
   coins.forEach((coin) => {
     if (coin.network.type === NetworkType.TESTNET && !coin.isToken && enabledEvmCoins.includes(coin.family)) {
       if (coins.get(coin.family)?.features.includes(CoinFeature.SUPPORTS_ERC20)) {
-        map[coin.family] = `${coin.name}`;
+        mainnetToTestnetMap[coin.family] = `${coin.name}`;
+        testnetToMainnetMap[coin.name] = `${coin.family}`;
       }
     }
   });
 
-  return map;
+  return { mainnetToTestnetMap, testnetToMainnetMap };
 };
 
 // TODO: add IP token here and test changes (Ticket: https://bitgoinc.atlassian.net/browse/WIN-7835)
-const ethLikeChainToTestnetMap: Record<string, string> = buildEthLikeChainToTestnetMap();
+const { mainnetToTestnetMap, testnetToMainnetMap } = buildEthLikeChainToTestnetMap();
 
 export function getTokenConstructor(tokenConfig: TokenConfig): CoinConstructor | undefined {
-  if (tokenConfig.coin in ethLikeChainToTestnetMap) {
+  const testnetCoin = mainnetToTestnetMap[tokenConfig.coin];
+  if (testnetCoin) {
     return EthLikeErc20Token.createTokenConstructor(tokenConfig as EthLikeTokenConfig, {
       Mainnet: tokenConfig.coin,
-      Testnet: ethLikeChainToTestnetMap[tokenConfig.coin],
+      Testnet: testnetCoin,
+    });
+  }
+  const mainnetCoin = testnetToMainnetMap[tokenConfig.coin];
+  if (mainnetCoin) {
+    return EthLikeErc20Token.createTokenConstructor(tokenConfig as EthLikeTokenConfig, {
+      Mainnet: mainnetCoin,
+      Testnet: tokenConfig.coin,
     });
   }
   switch (tokenConfig.coin) {

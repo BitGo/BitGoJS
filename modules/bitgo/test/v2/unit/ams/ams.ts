@@ -100,5 +100,36 @@ describe('Asset metadata service', () => {
       const coin = bitgo.coin(tokenName);
       should.exist(coin);
     });
+
+    it('should register a EVM coin token from statics library if available', async () => {
+      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock', microservicesUri, useAms: true } as BitGoOptions);
+      bitgo.initializeTestVars();
+      await bitgo.registerToken('tip:usdc');
+      const coin = bitgo.coin('tip:usdc');
+      should.exist(coin);
+    });
+
+    it('should register an EVM coin token from AMS', async () => {
+      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock', microservicesUri, useAms: true } as BitGoOptions);
+      bitgo.initializeTestVars();
+
+      const tokenName = 'tip:faketoken';
+
+      // Setup nocks for AMS API call
+      nock(microservicesUri).get(`/api/v1/assets/name/${tokenName}`).reply(200, reducedAmsTokenConfig[tokenName][0]);
+
+      await bitgo.registerToken(tokenName);
+      const coin = bitgo.coin(tokenName);
+      should.exist(coin);
+      coin.type.should.equal(tokenName);
+      const staticsCoin = coin.getConfig();
+      staticsCoin.name.should.equal('tip');
+      staticsCoin.decimalPlaces.should.equal(18);
+      // For EVM tokens, contractAddress is available on the statics coin
+      if ('contractAddress' in staticsCoin && staticsCoin.contractAddress) {
+        (staticsCoin.contractAddress as string).should.equal('0x1234567890123456789012345678901234567890');
+      }
+      staticsCoin.family.should.equal('ip');
+    });
   });
 });

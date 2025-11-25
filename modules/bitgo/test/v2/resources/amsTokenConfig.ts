@@ -21,4 +21,26 @@ export const reducedAmsTokenConfig = {
       contractAddress: '0x89a959b9184b4f8c8633646d5dfd049d2ebc983a',
     },
   ],
+  'tip:faketoken': [
+    {
+      id: 'a1b2c3d4-e5f6-4789-8abc-def123456789',
+      fullName: 'Story Testnet Faketoken',
+      name: 'tip:faketoken',
+      prefix: '',
+      suffix: 'TIP:FAKETOKEN',
+      baseUnit: 'wei',
+      kind: 'crypto',
+      family: 'ip',
+      isToken: true,
+      additionalFeatures: [],
+      excludedFeatures: [],
+      decimalPlaces: 18,
+      asset: 'tip:faketoken',
+      network: {
+        name: 'BaseChainTestnet',
+      },
+      primaryKeyCurve: 'secp256k1',
+      contractAddress: '0x1234567890123456789012345678901234567890',
+    },
+  ],
 };
