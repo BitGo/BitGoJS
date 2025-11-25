@@ -17,13 +17,19 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 # [1.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/deser-lib@1.8.0...@bitgo/deser-lib@1.9.0) (2025-10-08)
 
+
 ### Bug Fixes
 
-- add explicit 'files' in package json ([3b00373](https://github.com/BitGo/BitGoJS/commit/3b0037396f6ac16bb9380bd85bf37f2b133068f4))
+* add explicit 'files' in package json ([3b00373](https://github.com/BitGo/BitGoJS/commit/3b0037396f6ac16bb9380bd85bf37f2b133068f4))
+
 
 ### Features
 
-- configure learn to skip git operations ([ee3a622](https://github.com/BitGo/BitGoJS/commit/ee3a6220496476aa7f4545b5f4a9a3bf97d9bdb9))
+* configure learn to skip git operations ([ee3a622](https://github.com/BitGo/BitGoJS/commit/ee3a6220496476aa7f4545b5f4a9a3bf97d9bdb9))
+
+
+
+
 
 # [1.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/deser-lib@1.7.1...@bitgo/deser-lib@1.8.0) (2025-08-22)
 
