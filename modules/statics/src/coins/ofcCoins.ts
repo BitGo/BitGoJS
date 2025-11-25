@@ -1333,6 +1333,14 @@ export const ofcCoins = [
     UnderlyingAsset['sol:usx'],
     SOL_TOKEN_FEATURES
   ),
+  ofcsolToken(
+    '565e0b5f-26d3-4d60-9f04-24a85d3298f7',
+    'ofcsol:xnet',
+    'XNET Mobile',
+    6,
+    UnderlyingAsset['sol:xnet'],
+    SOL_TOKEN_FEATURES
+  ),
 
   tofcsolToken(
     '24d678cf-e0f0-4cde-a338-d754289c5b27',
@@ -3236,6 +3244,13 @@ export const ofcCoins = [
     15,
     UnderlyingAsset['polygon:mmt54']
   ),
+  ofcPolygonErc20(
+    '31ef4014-5df6-4e6b-ba25-a02da26bd184',
+    'ofcpolygon:jpyc',
+    'JPY Coin',
+    18,
+    UnderlyingAsset['polygon:jpyc']
+  ),
 
   tofcPolygonErc20(
     '62f4329d-11cd-4875-b91b-9ceae66c9439',
@@ -3459,6 +3474,14 @@ export const ofcCoins = [
     'KGEN',
     8,
     UnderlyingAsset['apt:kgen'],
+    APT_OFC_TOKEN_FEATURES
+  ),
+  ofcaptToken(
+    '05c83c82-a0f7-47bc-a780-58f4cb3658d6',
+    'ofcapt:scf1',
+    'Colombia Facility 1 Senior',
+    8,
+    UnderlyingAsset['apt:scf1'],
     APT_OFC_TOKEN_FEATURES
   ),
   tofcaptToken(

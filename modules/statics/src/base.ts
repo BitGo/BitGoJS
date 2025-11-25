@@ -2325,6 +2325,8 @@ export enum UnderlyingAsset {
   'eth:tea' = 'eth:tea',
   'eth:ofc' = 'eth:ofc',
   'eth:wxm' = 'eth:wxm',
+  'eth:jpyc' = 'eth:jpyc',
+  'eth:ten' = 'eth:ten',
 
   'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ' = 'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ',
   'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M' = 'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M',
@@ -2599,6 +2601,7 @@ export enum UnderlyingAsset {
   'polygon:brl1' = 'polygon:brl1',
   'polygon:cnktplus' = 'polygon:cnktplus',
   'polygon:mmt54' = 'polygon:mmt54',
+  'polygon:jpyc' = 'polygon:jpyc',
   // Polygon NFTs
   // generic NFTs
   'erc721:polygontoken' = 'erc721:polygontoken',
@@ -2868,6 +2871,7 @@ export enum UnderlyingAsset {
   'baseeth:brlv' = 'baseeth:brlv',
   'baseeth:wbrly' = 'baseeth:wbrly',
   'baseeth:recall' = 'baseeth:recall',
+  'baseeth:sapien' = 'baseeth:sapien',
 
   // BaseETH testnet tokens
   'tbaseeth:usdc' = 'tbaseeth:usdc',
@@ -3170,6 +3174,7 @@ export enum UnderlyingAsset {
   'sol:cpool' = 'sol:cpool',
   'sol:home' = 'sol:home',
   'sol:oob' = 'sol:oob',
+  'sol:xnet' = 'sol:xnet',
 
   'tsol:txsgd' = 'sol:txsgd',
   'tsol:txusd' = 'sol:txusd',
@@ -3237,6 +3242,7 @@ export enum UnderlyingAsset {
   'apt:benji' = 'apt:benji',
   'apt:lsd' = 'apt:lsd',
   'apt:kgen' = 'apt:kgen',
+  'apt:scf1' = 'apt:scf1',
   // Apt mainnet NFT collections
   'apt:h00ts' = 'apt:h00ts',
 

@@ -14095,4 +14095,22 @@ export const erc20Coins = [
     '0xde654f497a563dd7a121c176a125dd2f11f13a83',
     UnderlyingAsset['eth:wxm']
   ),
+
+  erc20(
+    'd7bcd1cc-3109-481e-abf3-baf2c3926fb1',
+    'eth:jpyc',
+    'JPY Coin',
+    18,
+    '0xe7c3d8c9a439fede00d2600032d5db0be71c3c29',
+    UnderlyingAsset['eth:jpyc']
+  ),
+
+  erc20(
+    'bbe358df-256a-45bf-a184-ebfcdffd19d3',
+    'eth:ten',
+    'TEN',
+    18,
+    '0xea9bb54fc76bfd5dd2ff2f6da641e78c230bb683',
+    UnderlyingAsset['eth:ten']
+  ),
 ];
