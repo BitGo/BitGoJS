@@ -2,7 +2,15 @@ import * as assert from 'assert';
 
 import { networks } from '../../../src';
 import * as utxolib from '../../../src';
-import { addWalletOutputToPsbt, getInternalChainCode, WalletUnspent, ZcashPsbt } from '../../../src/bitgo';
+import {
+  addWalletOutputToPsbt,
+  getInternalChainCode,
+  ProprietaryKeySubtype,
+  PSBT_PROPRIETARY_IDENTIFIER,
+  WalletUnspent,
+  ZcashPsbt,
+  ZcashTransaction,
+} from '../../../src/bitgo';
 import { getDefaultWalletKeys } from '../../../src/testutil';
 
 import { mockUnspents } from '../../../src/testutil/mock';
@@ -56,5 +64,27 @@ describe('Zcash PSBT', function () {
       psbt.finalizeAllInputs();
       psbt.extractTransaction(true);
     });
+  });
+
+  it('if the consensus branch id is already in the global map, it should not be added again', function () {
+    psbt.setDefaultsForVersion(network, 456);
+    const psbtClone = ZcashPsbt.fromHex(psbt.toHex(), { network });
+    const value = Buffer.alloc(4);
+    value.writeUint32LE(ZcashTransaction.VERSION4_BRANCH_NU6_1);
+    psbtClone.addUnknownKeyValToGlobal({
+      key: Buffer.concat([
+        Buffer.of(0xfc),
+        Buffer.of(0x05),
+        Buffer.from(PSBT_PROPRIETARY_IDENTIFIER),
+        Buffer.of(ProprietaryKeySubtype.ZEC_CONSENSUS_BRANCH_ID),
+      ]),
+      value,
+    });
+
+    (psbtClone as ZcashPsbt).setDefaultsForVersion(network, ZcashTransaction.VERSION4_BRANCH_NU6_1);
+
+    const psbtBuffer = psbtClone.toBuffer();
+    const psbt2 = utxolib.bitgo.createPsbtFromBuffer(psbtBuffer, network);
+    assert.deepStrictEqual(psbt2.toBuffer(), psbtBuffer);
   });
 });
