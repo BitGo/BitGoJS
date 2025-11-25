@@ -661,6 +661,19 @@ export async function handleV2CreateAddress(req: ExpressApiRouteRequest<'express
 }
 
 /**
+ * handle v2 isWalletAddress - verify if an address belongs to a wallet
+ * @param req
+ */
+export async function handleV2IsWalletAddress(
+  req: ExpressApiRouteRequest<'express.v2.wallet.isWalletAddress', 'post'>
+) {
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.decoded.coin);
+  const wallet = await coin.wallets().get({ id: req.decoded.id });
+  return await wallet.baseCoin.isWalletAddress(req.decoded as any);
+}
+
+/**
  * handle v2 approve transaction
  * @param req
  */
@@ -1626,6 +1639,10 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   ]);
 
   router.post('express.v2.wallet.createAddress', [prepareBitGo(config), typedPromiseWrapper(handleV2CreateAddress)]);
+  router.post('express.v2.wallet.isWalletAddress', [
+    prepareBitGo(config),
+    typedPromiseWrapper(handleV2IsWalletAddress),
+  ]);
 
   router.post('express.v2.wallet.share', [prepareBitGo(config), typedPromiseWrapper(handleV2ShareWallet)]);
   app.post(
