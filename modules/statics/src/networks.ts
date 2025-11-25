@@ -1608,10 +1608,10 @@ class KaiaTestnet extends Testnet implements EthereumNetwork {
 class Irys extends Mainnet implements EthereumNetwork {
   name = 'Irys';
   family = CoinFamily.IRYS;
-  explorerUrl = ''; //WIN-6191 add mainnet url when available
-  accountExplorerUrl = ''; //WIN-6191 add mainnet url when available
-  chainId = 1270; //WIN-6191 add mainnet id when available
-  nativeCoinOperationHashPrefix = '1270';
+  explorerUrl = 'https://evm-explorer.irys.xyz/tx/';
+  accountExplorerUrl = 'https://evm-explorer.irys.xyz/address/';
+  chainId = 3238;
+  nativeCoinOperationHashPrefix = '3238';
 }
 
 class IrysTestnet extends Testnet implements EthereumNetwork {
