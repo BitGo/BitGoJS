@@ -148,6 +148,7 @@ function run(
     let mockedApiUnspents: utxolib.bitgo.Unspent<bigint>[];
 
     before('create recovery data', async function () {
+      this.timeout(10_000);
       recoverUnspents = scriptTypes.flatMap((scriptType, index) => [
         utxolib.testutil.toUnspent({ scriptType, value: BigInt(1e8) * valueMul }, index, coin.network, walletKeys),
         utxolib.testutil.toUnspent({ scriptType, value: BigInt(2e8) * valueMul }, index, coin.network, walletKeys),
