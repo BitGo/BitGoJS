@@ -84,6 +84,11 @@ export class ZcashPsbt extends UtxoPsbt<ZcashTransaction<bigint>> {
     if (this.tx.version === 5 || this.tx.version >= ZcashTransaction.VERSION5_BRANCH_NU5) {
       return super.toBuffer();
     }
+    // check to see if the consensus branch id is already in the global map
+    if (this.data.globalMap.unknownKeyVals?.some(({ key }) => key.equals(CONSENSUS_BRANCH_ID_KEY))) {
+      return super.toBuffer();
+    }
+
     const value = Buffer.alloc(4);
     value.writeUint32LE(this.tx.consensusBranchId);
     this.addUnknownKeyValToGlobal({ key: CONSENSUS_BRANCH_ID_KEY, value });
