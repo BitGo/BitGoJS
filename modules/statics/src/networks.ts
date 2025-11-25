@@ -152,10 +152,18 @@ export interface EthereumNetwork extends AccountNetwork {
   // forwarder configuration addresses used for calculating forwarder version 1 addresses
   readonly forwarderFactoryAddress?: string;
   readonly forwarderImplementationAddress?: string;
-  readonly nativeCoinOperationHashPrefix?: string;
-  readonly tokenOperationHashPrefix?: string;
+  readonly walletV2ForwarderFactoryAddress?: string;
+  readonly walletV2ForwarderImplementationAddress?: string;
   readonly walletV4ForwarderFactoryAddress?: string;
   readonly walletV4ForwarderImplementationAddress?: string;
+  readonly walletFactoryAddress?: string;
+  readonly walletImplementationAddress?: string;
+  readonly walletV2FactoryAddress?: string;
+  readonly walletV2ImplementationAddress?: string;
+  readonly walletV4FactoryAddress?: string;
+  readonly walletV4ImplementationAddress?: string;
+  readonly nativeCoinOperationHashPrefix?: string;
+  readonly tokenOperationHashPrefix?: string;
 }
 
 export interface TronNetwork extends AccountNetwork {
@@ -578,10 +586,18 @@ class Ethereum extends Mainnet implements EthereumNetwork {
   batcherContractAddress = '0xebe27913fcc7510eadf10643a8f86bf5492a9541';
   forwarderFactoryAddress = '0xffa397285ce46fb78c588a9e993286aac68c37cd';
   forwarderImplementationAddress = '0x059ffafdc6ef594230de44f824e2bd0a51ca5ded';
-  nativeCoinOperationHashPrefix = 'ETHER';
-  tokenOperationHashPrefix = 'ERC20';
+  walletV2ForwarderFactoryAddress = '0x29Ef46035e9fA3D570c598d3266424Ca11413b0C';
+  walletV2ForwarderImplementationAddress = '0x5397d0869aBA0D55e96D5716d383F6e1d8695ed7';
   walletV4ForwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
   walletV4ForwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
+  nativeCoinOperationHashPrefix = 'ETHER';
+  tokenOperationHashPrefix = 'ERC20';
+  walletFactoryAddress = '0x9a0d63911620f7fc15c3c020edbe4d7267ea3e4d';
+  walletImplementationAddress = '0xe8e847cf573fc8ed75621660a36affd18c543d7e';
+  walletV2FactoryAddress = '0xa7198f48C58E91f01317E70Cd24C5Cce475c1555';
+  walletV2ImplementationAddress = '0xe5DcdC13B628c2df813DB1080367E929c1507Ca0';
+  walletV4FactoryAddress = '0x809ee567e413543af1caebcdb247f6a67eafc8dd';
+  walletV4ImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
 }
 
 class Ethereum2 extends Mainnet implements AccountNetwork {
@@ -668,10 +684,18 @@ class Hoodi extends Testnet implements EthereumNetwork {
   batcherContractAddress = '0x3e1e5d78e44f15593b3b61ed278f12c27f0ff33e';
   forwarderFactoryAddress = '0x0e2874d6824fae4f61e446012317a9b86384bd8e';
   forwarderImplementationAddress = '0x7441f20a59be97011842404b9aefd8d85fd81aa6';
-  nativeCoinOperationHashPrefix = 'ETHER';
-  tokenOperationHashPrefix = 'ERC20';
+  walletV2ForwarderFactoryAddress = '0x0e2874d6824fae4f61e446012317a9b86384bd8e';
+  walletV2ForwarderImplementationAddress = '0x7441f20a59be97011842404b9aefd8d85fd81aa6';
   walletV4ForwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
   walletV4ForwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
+  walletFactoryAddress = '0xf514cd80a41bde2e20033b251f1f74633caf3e59';
+  walletImplementationAddress = '0x6bb86b3b27b092bf8a285080fe7d58acdf841041';
+  walletV2FactoryAddress = '0xf514cd80a41bde2e20033b251f1f74633caf3e59';
+  walletV2ImplementationAddress = '0x6bb86b3b27b092bf8a285080fe7d58acdf841041';
+  walletV4FactoryAddress = '0x809ee567e413543af1caebcdb247f6a67eafc8dd';
+  walletV4ImplementationAddress = '0x944fef03af368414f29dc31a72061b8d64f568d2';
+  nativeCoinOperationHashPrefix = 'ETHER';
+  tokenOperationHashPrefix = 'ERC20';
 }
 
 class EthereumClassic extends Mainnet implements EthereumNetwork {

@@ -831,11 +831,12 @@ describe('ETH:', function () {
       });
 
       it('should reject when actual address differs from expected address', async function () {
-        const coin = bitgo.coin('teth') as Teth;
+        const coin = bitgo.coin('hteth') as Hteth;
 
         const params = {
           address: '0x28904591f735994f050804fda3b61b813b16e04c',
           baseAddress: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
+          walletVersion: 1,
           coinSpecific: {
             salt: '0xc5a',
             forwarderVersion: 1,
@@ -1015,6 +1016,284 @@ describe('ETH:', function () {
           } as unknown as TssVerifyEthAddressOptions;
 
           await assert.rejects(async () => coin.isWalletAddress(params), Error);
+        });
+      });
+
+      describe('Base Address Verification', function () {
+        it('should verify base address for wallet version 6 (TSS)', async function () {
+          const coin = bitgo.coin('hteth') as Hteth;
+
+          const keychains = [
+            {
+              id: '691f630e0c56098288a9b7fa107db144',
+              source: 'user',
+              type: 'tss',
+              commonKeychain:
+                '033b02aac4f038fef5118350b77d302ec6202931ca2e7122aad88994ffefcbc70a6069e662436236abb1619195232c41580204cb202c22357ed8f53e69eac5c69e',
+            },
+            {
+              id: '691f630f1d3c9fce8f5a730bff826cf9',
+              source: 'backup',
+              type: 'tss',
+              commonKeychain:
+                '033b02aac4f038fef5118350b77d302ec6202931ca2e7122aad88994ffefcbc70a6069e662436236abb1619195232c41580204cb202c22357ed8f53e69eac5c69e',
+            },
+            {
+              id: '691f630d56735e5eb61b06e353fe7639',
+              source: 'bitgo',
+              type: 'tss',
+              commonKeychain:
+                '033b02aac4f038fef5118350b77d302ec6202931ca2e7122aad88994ffefcbc70a6069e662436236abb1619195232c41580204cb202c22357ed8f53e69eac5c69e',
+            },
+          ];
+
+          const baseAddress = '0xc012041dac143a59fa491db3a2b67b69bd78b685';
+
+          const params = {
+            address: baseAddress,
+            baseAddress: baseAddress,
+            coinSpecific: {
+              salt: '0x0',
+              forwarderVersion: 5,
+              feeAddress: '0xb1e725186990b86ca8efed08a3ccda9c9f400f09',
+            },
+            keychains,
+            index: 0,
+            walletVersion: 6,
+          } as unknown as TssVerifyEthAddressOptions;
+
+          const isWalletAddr = await coin.isWalletAddress(params);
+          isWalletAddr.should.equal(true);
+        });
+
+        it('should verify base address for wallet version 5 (TSS)', async function () {
+          const coin = bitgo.coin('hteth') as Hteth;
+
+          const keychains = [
+            {
+              id: '691e242d93f8d7ad0705887449763c96',
+              source: 'user',
+              type: 'tss',
+              commonKeychain:
+                '02c8a496b16abfe2567520a279e2154642fc3c0e08e629775cb4d845c0c5fbf55ab7ba153e886de65748ed18f4ff8f5cee2242e687399ea3297a1f5524fdefd56c',
+            },
+            {
+              id: '691e242df8b6323d4b08df366864af66',
+              source: 'backup',
+              type: 'tss',
+              commonKeychain:
+                '02c8a496b16abfe2567520a279e2154642fc3c0e08e629775cb4d845c0c5fbf55ab7ba153e886de65748ed18f4ff8f5cee2242e687399ea3297a1f5524fdefd56c',
+            },
+            {
+              id: '691e242c0595b4cfee6f957c1d6458f7',
+              source: 'bitgo',
+              type: 'tss',
+              commonKeychain:
+                '02c8a496b16abfe2567520a279e2154642fc3c0e08e629775cb4d845c0c5fbf55ab7ba153e886de65748ed18f4ff8f5cee2242e687399ea3297a1f5524fdefd56c',
+            },
+          ];
+
+          const baseAddress = '0xf1e3d30798acdf3a12fa5beb5fad8efb23d5be11';
+
+          const params = {
+            address: baseAddress,
+            baseAddress: baseAddress,
+            coinSpecific: {
+              salt: '0x0',
+              forwarderVersion: 4,
+              feeAddress: '0xb1e725186990b86ca8efed08a3ccda9c9f400f09',
+            },
+            keychains,
+            index: 0,
+            walletVersion: 5,
+          } as unknown as TssVerifyEthAddressOptions;
+
+          const isWalletAddr = await coin.isWalletAddress(params);
+          isWalletAddr.should.equal(true);
+        });
+
+        it('should reject base address verification with non-zero index', async function () {
+          const coin = bitgo.coin('hteth') as Hteth;
+
+          const keychains = [
+            {
+              id: '691f630e0c56098288a9b7fa107db144',
+              source: 'user',
+              type: 'tss',
+              commonKeychain:
+                '033b02aac4f038fef5118350b77d302ec6202931ca2e7122aad88994ffefcbc70a6069e662436236abb1619195232c41580204cb202c22357ed8f53e69eac5c69e',
+            },
+            {
+              id: '691f630f1d3c9fce8f5a730bff826cf9',
+              source: 'backup',
+              type: 'tss',
+              commonKeychain:
+                '033b02aac4f038fef5118350b77d302ec6202931ca2e7122aad88994ffefcbc70a6069e662436236abb1619195232c41580204cb202c22357ed8f53e69eac5c69e',
+            },
+            {
+              id: '691f630d56735e5eb61b06e353fe7639',
+              source: 'bitgo',
+              type: 'tss',
+              commonKeychain:
+                '033b02aac4f038fef5118350b77d302ec6202931ca2e7122aad88994ffefcbc70a6069e662436236abb1619195232c41580204cb202c22357ed8f53e69eac5c69e',
+            },
+          ];
+
+          const baseAddress = '0xc012041dac143a59fa491db3a2b67b69bd78b685';
+
+          const params = {
+            address: baseAddress,
+            baseAddress: baseAddress,
+            coinSpecific: {
+              salt: '0x0',
+              forwarderVersion: 5,
+              feeAddress: '0xb1e725186990b86ca8efed08a3ccda9c9f400f09',
+            },
+            keychains,
+            index: 5, // Wrong index - should be 0 for base address
+            walletVersion: 6,
+          } as unknown as TssVerifyEthAddressOptions;
+
+          await assert.rejects(
+            async () => coin.isWalletAddress(params),
+            /Base address verification requires index 0, but got index 5/
+          );
+        });
+
+        it('should reject base address verification with wrong address', async function () {
+          const coin = bitgo.coin('hteth') as Hteth;
+
+          const keychains = [
+            {
+              id: '691f630e0c56098288a9b7fa107db144',
+              source: 'user',
+              type: 'tss',
+              commonKeychain:
+                '033b02aac4f038fef5118350b77d302ec6202931ca2e7122aad88994ffefcbc70a6069e662436236abb1619195232c41580204cb202c22357ed8f53e69eac5c69e',
+            },
+            {
+              id: '691f630f1d3c9fce8f5a730bff826cf9',
+              source: 'backup',
+              type: 'tss',
+              commonKeychain:
+                '033b02aac4f038fef5118350b77d302ec6202931ca2e7122aad88994ffefcbc70a6069e662436236abb1619195232c41580204cb202c22357ed8f53e69eac5c69e',
+            },
+            {
+              id: '691f630d56735e5eb61b06e353fe7639',
+              source: 'bitgo',
+              type: 'tss',
+              commonKeychain:
+                '033b02aac4f038fef5118350b77d302ec6202931ca2e7122aad88994ffefcbc70a6069e662436236abb1619195232c41580204cb202c22357ed8f53e69eac5c69e',
+            },
+          ];
+
+          const wrongAddress = '0x0000000000000000000000000000000000000001';
+          const actualBaseAddress = '0xc012041dac143a59fa491db3a2b67b69bd78b685';
+
+          const params = {
+            address: wrongAddress,
+            baseAddress: actualBaseAddress,
+            coinSpecific: {
+              salt: '0x0',
+              forwarderVersion: 5,
+              feeAddress: '0xb1e725186990b86ca8efed08a3ccda9c9f400f09',
+            },
+            keychains,
+            index: 0,
+            walletVersion: 6,
+          } as unknown as TssVerifyEthAddressOptions;
+
+          const isWalletAddr = await coin.isWalletAddress(params);
+          isWalletAddr.should.equal(false);
+        });
+
+        it('should verify base address for wallet version 2 (BIP32) using wallet factory', async function () {
+          const coin = bitgo.coin('hteth') as Hteth;
+
+          const baseAddress = '0xdc485da076ed4a2b19584e9a1fdbb974f89b60f4';
+          const walletSalt = '0x2';
+
+          const keychains = [
+            {
+              id: '691e8c7b3c8aaa791118d9ce616d3b21',
+              source: 'user',
+              type: 'independent',
+              ethAddress: '0x9d16bb867b792c5e3bf636a0275f2db8601bd7d4',
+            },
+            {
+              id: '691e8c7b1967fd6d9867a22a1a4131a0',
+              source: 'backup',
+              type: 'independent',
+              ethAddress: '0x2dfce5cfeb5c03fbe680cd39ac0d2b25399b7d22',
+            },
+            {
+              id: '68b9ec587d0ba1c7440de551068c36a7',
+              source: 'bitgo',
+              type: 'independent',
+              ethAddress: '0xb1e725186990b86ca8efed08a3ccda9c9f400f09',
+            },
+          ];
+
+          const params = {
+            address: baseAddress,
+            baseAddress: baseAddress,
+            coinSpecific: {
+              salt: walletSalt,
+              forwarderVersion: 2,
+            },
+            keychains: keychains,
+            index: 0,
+            walletVersion: 2,
+          } as unknown as VerifyEthAddressOptions;
+
+          const isWalletAddr = await coin.isWalletAddress(params);
+          isWalletAddr.should.equal(true);
+        });
+
+        it('should verify base address for wallet version 1 (BIP32) using wallet factory', async function () {
+          const coin = bitgo.coin('hteth') as Hteth;
+
+          const baseAddress = '0xe1253bcce7d87db522fbceec6e55c9f78c376d9f';
+          const walletSalt = '0x5';
+
+          const keychains = [
+            {
+              id: '691f638f1d3c9fce8f5aa691569a99eb',
+              source: 'user',
+              type: 'independent',
+              ethAddress: '0xf45dadce751a317957f2a247ff37cb764b97620d',
+              pub: 'xpub661MyMwAqRbcGVb3PfCzwiEX94AB1nJQtzVm...',
+            },
+            {
+              id: '691f638f0b74e73b1f440ea4aceda87e',
+              source: 'backup',
+              type: 'independent',
+              ethAddress: '0x5bdf3ae1d2c2fadeeb70a45872bf4f4252312b55',
+              pub: 'xpub661MyMwAqRbcF46pRHda3sZbuPzza9A9MiqA...',
+            },
+            {
+              id: '68b9ec587d0ba1c7440de551068c36a7',
+              source: 'bitgo',
+              type: 'independent',
+              ethAddress: '0xb1e725186990b86ca8efed08a3ccda9c9f400f09',
+              pub: 'xpub661MyMwAqRbcGzTn5eyNGDkb18R43nH79Hok...',
+            },
+          ];
+
+          const params = {
+            address: baseAddress,
+            baseAddress: baseAddress,
+            coinSpecific: {
+              salt: walletSalt,
+              forwarderVersion: 1,
+            },
+            keychains: keychains,
+            index: 0,
+            walletVersion: 1,
+          } as unknown as VerifyEthAddressOptions;
+
+          const isWalletAddr = await coin.isWalletAddress(params);
+          isWalletAddr.should.equal(true);
         });
       });
     });

@@ -411,6 +411,40 @@ export interface VerifyEthAddressOptions extends BaseVerifyAddressOptions {
 
 export type TssVerifyEthAddressOptions = TssVerifyAddressOptions & VerifyEthAddressOptions;
 
+/**
+ * Keychain with ethAddress for BIP32 wallet verification (V1, V2, V4)
+ * Used for wallets that derive addresses using Ethereum addresses from keychains
+ */
+export interface KeychainWithEthAddress {
+  ethAddress: string;
+  pub: string;
+}
+
+/**
+ * BIP32 wallet base address verification options
+ * Supports V1, V2, and V4 wallets that use ethAddress-based derivation
+ */
+export interface VerifyBip32BaseAddressOptions extends VerifyEthAddressOptions {
+  walletVersion: number;
+  keychains: KeychainWithEthAddress[];
+}
+
+/**
+ * Type guard to check if params are for BIP32 base address verification (V1, V2, V4)
+ * These wallet versions use ethAddress for address derivation
+ */
+export function isVerifyBip32BaseAddressOptions(
+  params: VerifyEthAddressOptions | TssVerifyEthAddressOptions
+): params is VerifyBip32BaseAddressOptions {
+  return (
+    (params.walletVersion === 1 || params.walletVersion === 2 || params.walletVersion === 4) &&
+    'keychains' in params &&
+    Array.isArray(params.keychains) &&
+    params.keychains.length === 3 &&
+    params.keychains.every((kc: any) => 'ethAddress' in kc && typeof kc.ethAddress === 'string')
+  );
+}
+
 const debug = debugLib('bitgo:v2:ethlike');
 
 export const optionalDeps = {
@@ -2732,23 +2766,176 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
     return {};
   }
 
-  getForwarderFactoryAndImplContractAddresses(walletVersion: number | undefined): {
+  /**
+   * Get forwarder factory and implementation addresses for deposit address verification.
+   * Forwarders are smart contracts that forward funds to the base wallet address.
+   *
+   * @param {number | undefined} walletVersion - The wallet version
+   * @returns {object} Factory and implementation addresses for forwarders
+   */
+  getForwarderFactoryAddressesAndForwarderImplementationAddress(walletVersion: number | undefined): {
     forwarderFactoryAddress: string;
     forwarderImplementationAddress: string;
   } {
     const ethNetwork = this.getNetwork();
-    if (walletVersion && (walletVersion === 5 || walletVersion === 4)) {
-      if (ethNetwork?.walletV4ForwarderFactoryAddress && ethNetwork?.walletV4ForwarderImplementationAddress) {
+
+    switch (walletVersion) {
+      case 2:
+        if (!ethNetwork?.walletV2ForwarderFactoryAddress || !ethNetwork?.walletV2ForwarderImplementationAddress) {
+          throw new Error('Wallet v2 factory addresses not configured for this network');
+        }
         return {
-          forwarderFactoryAddress: ethNetwork?.walletV4ForwarderFactoryAddress as string,
-          forwarderImplementationAddress: ethNetwork?.walletV4ForwarderImplementationAddress as string,
+          forwarderFactoryAddress: ethNetwork.walletV2ForwarderFactoryAddress,
+          forwarderImplementationAddress: ethNetwork.walletV2ForwarderImplementationAddress,
         };
-      }
+      case 4:
+      case 5:
+        if (!ethNetwork?.walletV4ForwarderFactoryAddress || !ethNetwork?.walletV4ForwarderImplementationAddress) {
+          throw new Error(`Forwarder v${walletVersion} factory addresses not configured for this network`);
+        }
+        return {
+          forwarderFactoryAddress: ethNetwork.walletV4ForwarderFactoryAddress,
+          forwarderImplementationAddress: ethNetwork.walletV4ForwarderImplementationAddress,
+        };
+      default:
+        if (!ethNetwork?.forwarderFactoryAddress || !ethNetwork?.forwarderImplementationAddress) {
+          throw new Error('Forwarder factory addresses not configured for this network');
+        }
+        return {
+          forwarderFactoryAddress: ethNetwork.forwarderFactoryAddress,
+          forwarderImplementationAddress: ethNetwork.forwarderImplementationAddress,
+        };
     }
-    return {
-      forwarderFactoryAddress: ethNetwork?.forwarderFactoryAddress as string,
-      forwarderImplementationAddress: ethNetwork?.forwarderImplementationAddress as string,
-    };
+  }
+
+  /**
+   * Get wallet base address factory and implementation addresses.
+   * This is used for base address verification for V1, V2, V4, and V5 wallets.
+   * The base address is the main wallet contract deployed via CREATE2.
+   *
+   * @param {number} walletVersion - The wallet version (1, 2, 4, or 5)
+   * @returns {object} Factory and implementation addresses for the wallet base address
+   * @throws {Error} if wallet version addresses are not configured
+   */
+  getWalletBaseAddressFactoryAddressesAndImplementationAddress(walletVersion: number): {
+    walletFactoryAddress: string;
+    walletImplementationAddress: string;
+  } {
+    const ethNetwork = this.getNetwork();
+
+    switch (walletVersion) {
+      case 2:
+        if (!ethNetwork?.walletV2FactoryAddress || !ethNetwork?.walletV2ImplementationAddress) {
+          throw new Error('Wallet v2 factory addresses not configured for this network');
+        }
+        return {
+          walletFactoryAddress: ethNetwork.walletV2FactoryAddress,
+          walletImplementationAddress: ethNetwork.walletV2ImplementationAddress,
+        };
+      case 4:
+      case 5:
+        if (!ethNetwork?.walletV4ForwarderFactoryAddress || !ethNetwork?.walletV4ForwarderImplementationAddress) {
+          throw new Error(`Wallet v${walletVersion} factory addresses not configured for this network`);
+        }
+        return {
+          walletFactoryAddress: ethNetwork.walletV4ForwarderFactoryAddress,
+          walletImplementationAddress: ethNetwork.walletV4ForwarderImplementationAddress,
+        };
+      default:
+        if (!ethNetwork?.walletFactoryAddress || !ethNetwork?.walletImplementationAddress) {
+          throw new Error('Wallet v1 factory addresses not configured for this network');
+        }
+        return {
+          walletFactoryAddress: ethNetwork.walletFactoryAddress,
+          walletImplementationAddress: ethNetwork.walletImplementationAddress,
+        };
+    }
+  }
+
+  /**
+   * Helper method to create a salt buffer from hex string.
+   * Converts a hex salt string to a 32-byte buffer.
+   *
+   * @param {string} salt - The hex salt string
+   * @returns {Buffer} 32-byte salt buffer
+   */
+  private createSaltBuffer(salt: string): Buffer {
+    const ethUtil = optionalDeps.ethUtil;
+    return ethUtil.setLengthLeft(Buffer.from(ethUtil.padToEven(ethUtil.stripHexPrefix(salt || '')), 'hex'), 32);
+  }
+
+  /**
+   * Verify BIP32 wallet base address (V1, V2, V4).
+   * These wallets use a wallet factory to deploy base addresses with CREATE2.
+   * The address is derived from the keychains' ethAddresses and a salt.
+   *
+   * @param {VerifyBip32BaseAddressOptions} params - Verification parameters
+   * @returns {object} Expected and actual addresses for comparison
+   */
+  private verifyBip32BaseAddress(params: VerifyBip32BaseAddressOptions): {
+    expectedAddress: string;
+    actualAddress: string;
+  } {
+    const { address, coinSpecific, keychains, walletVersion } = params;
+
+    if (!coinSpecific.salt) {
+      throw new Error(`missing salt for v${walletVersion} base address verification`);
+    }
+
+    // Get wallet factory and implementation addresses for the wallet version
+    const { walletFactoryAddress, walletImplementationAddress } =
+      this.getWalletBaseAddressFactoryAddressesAndImplementationAddress(walletVersion);
+    const initcode = getProxyInitcode(walletImplementationAddress);
+
+    // Convert the wallet salt to a buffer, pad to 32 bytes
+    const saltBuffer = this.createSaltBuffer(coinSpecific.salt);
+
+    // Reconstruct calculationSalt using keychains' ethAddresses and wallet salt
+    const ethAddresses = keychains.map((kc) => {
+      if (!kc.ethAddress) {
+        throw new Error(`keychain missing ethAddress for v${walletVersion} base address verification`);
+      }
+      return kc.ethAddress;
+    });
+
+    const calculationSalt = optionalDeps.ethUtil.bufferToHex(
+      optionalDeps.ethAbi.soliditySHA3(['address[]', 'bytes32'], [ethAddresses, saltBuffer])
+    );
+
+    const expectedAddress = calculateForwarderV1Address(walletFactoryAddress, calculationSalt, initcode);
+    return { expectedAddress, actualAddress: address };
+  }
+
+  /**
+   * Verify forwarder receive address (deposit address).
+   * Forwarder addresses are derived using CREATE2 from the base address and salt.
+   *
+   * @param {VerifyEthAddressOptions} params - Verification parameters
+   * @param {number} forwarderVersion - The forwarder version
+   * @returns {object} Expected and actual addresses for comparison
+   */
+  private verifyForwarderAddress(
+    params: VerifyEthAddressOptions,
+    forwarderVersion: number
+  ): { expectedAddress: string; actualAddress: string } {
+    const { address, coinSpecific, baseAddress } = params;
+
+    const { forwarderFactoryAddress, forwarderImplementationAddress } =
+      this.getForwarderFactoryAddressesAndForwarderImplementationAddress(params.walletVersion);
+    const initcode = getProxyInitcode(forwarderImplementationAddress);
+    const saltBuffer = this.createSaltBuffer(coinSpecific.salt || '');
+
+    const { createForwarderParams, createForwarderTypes } =
+      forwarderVersion === 4
+        ? getCreateForwarderParamsAndTypes(baseAddress, saltBuffer, coinSpecific.feeAddress)
+        : getCreateForwarderParamsAndTypes(baseAddress, saltBuffer);
+
+    const calculationSalt = optionalDeps.ethUtil.bufferToHex(
+      optionalDeps.ethAbi.soliditySHA3(createForwarderTypes, createForwarderParams)
+    );
+
+    const expectedAddress = calculateForwarderV1Address(forwarderFactoryAddress, calculationSalt, initcode);
+    return { expectedAddress, actualAddress: address };
   }
 
   /**
@@ -2763,66 +2950,79 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
    * @returns {boolean} True iff address is a wallet address
    */
   async isWalletAddress(params: VerifyEthAddressOptions | TssVerifyEthAddressOptions): Promise<boolean> {
-    const ethUtil = optionalDeps.ethUtil;
-
-    let expectedAddress;
-    let actualAddress;
-
-    const { address, impliedForwarderVersion, coinSpecific } = params;
+    const { address, impliedForwarderVersion, coinSpecific, baseAddress } = params;
     const forwarderVersion = impliedForwarderVersion ?? coinSpecific?.forwarderVersion;
 
+    // Validate address format
     if (address && !this.isValidAddress(address)) {
       throw new InvalidAddressError(`invalid address: ${address}`);
     }
+
     // Forwarder version 0 addresses cannot be verified because we do not store the nonce value required for address derivation.
     if (forwarderVersion === 0) {
       return true;
     }
-    // Verify MPC wallet address for wallet version 3 and 6
-    if (isTssVerifyAddressOptions(params) && params.walletVersion !== 5) {
+
+    // Determine if we are verifying a base address
+    const isVerifyingBaseAddress = baseAddress && address === baseAddress;
+
+    // TSS/MPC wallet address verification (V3, V5, V6)
+    // V5 base addresses use TSS, but V5 forwarders use the regular forwarder verification
+    const isTssWalletVersion = params.walletVersion === 3 || params.walletVersion === 5 || params.walletVersion === 6;
+    const shouldUseTssVerification =
+      isTssVerifyAddressOptions(params) && isTssWalletVersion && (params.walletVersion !== 5 || isVerifyingBaseAddress);
+
+    if (shouldUseTssVerification) {
+      if (isVerifyingBaseAddress) {
+        const index = typeof params.index === 'string' ? parseInt(params.index, 10) : params.index;
+        if (index !== 0) {
+          throw new Error(
+            `Base address verification requires index 0, but got index ${params.index}. ` +
+              `The base address is always derived at index 0.`
+          );
+        }
+      }
+
       return verifyMPCWalletAddress({ ...params, keyCurve: 'secp256k1' }, this.isValidAddress, (pubKey) => {
         return new KeyPairLib({ pub: pubKey }).getAddress();
       });
-    } else {
-      // Verify forwarder receive address
-      const { coinSpecific, baseAddress } = params;
-
-      if (_.isUndefined(baseAddress) || !this.isValidAddress(baseAddress)) {
-        throw new InvalidAddressError('invalid base address');
-      }
-
-      if (!_.isObject(coinSpecific)) {
-        throw new InvalidAddressVerificationObjectPropertyError(
-          'address validation failure: coinSpecific field must be an object'
-        );
-      }
-
-      const { forwarderFactoryAddress, forwarderImplementationAddress } =
-        this.getForwarderFactoryAndImplContractAddresses(params.walletVersion);
-      const initcode = getProxyInitcode(forwarderImplementationAddress);
-      const saltBuffer = ethUtil.setLengthLeft(
-        Buffer.from(ethUtil.padToEven(ethUtil.stripHexPrefix(coinSpecific.salt || '')), 'hex'),
-        32
-      );
-
-      const { createForwarderParams, createForwarderTypes } =
-        forwarderVersion === 4
-          ? getCreateForwarderParamsAndTypes(baseAddress, saltBuffer, coinSpecific.feeAddress)
-          : getCreateForwarderParamsAndTypes(baseAddress, saltBuffer);
-
-      const calculationSalt = optionalDeps.ethUtil.bufferToHex(
-        optionalDeps.ethAbi.soliditySHA3(createForwarderTypes, createForwarderParams)
-      );
-
-      expectedAddress = calculateForwarderV1Address(forwarderFactoryAddress, calculationSalt, initcode);
-      actualAddress = address;
     }
 
-    if (expectedAddress !== actualAddress) {
-      throw new UnexpectedAddressError(`address validation failure: expected ${expectedAddress} but got ${address}`);
+    // From here on, we need baseAddress and coinSpecific for non-TSS verifications
+    if (_.isUndefined(baseAddress) || !this.isValidAddress(baseAddress)) {
+      throw new InvalidAddressError('invalid base address');
     }
 
-    return true;
+    if (!_.isObject(coinSpecific)) {
+      throw new InvalidAddressVerificationObjectPropertyError(
+        'address validation failure: coinSpecific field must be an object'
+      );
+    }
+
+    // BIP32 wallet base address verification (V1, V2, V4)
+    if (isVerifyingBaseAddress && isVerifyBip32BaseAddressOptions(params)) {
+      const { expectedAddress, actualAddress } = this.verifyBip32BaseAddress(params);
+
+      if (expectedAddress !== actualAddress) {
+        throw new UnexpectedAddressError(`address validation failure: expected ${expectedAddress} but got ${address}`);
+      }
+
+      return true;
+    }
+
+    // Forwarder receive address verification (deposit addresses)
+    if (!isVerifyingBaseAddress) {
+      const { expectedAddress, actualAddress } = this.verifyForwarderAddress(params, forwarderVersion);
+
+      if (expectedAddress !== actualAddress) {
+        throw new UnexpectedAddressError(`address validation failure: expected ${expectedAddress} but got ${address}`);
+      }
+
+      return true;
+    }
+
+    // If we reach here, it's a base address verification for an unsupported wallet version
+    throw new Error(`Base address verification not supported for wallet version ${params.walletVersion}`);
   }
 
   /**
