@@ -11942,7 +11942,8 @@ export const erc20Coins = [
     'DEVVE',
     18,
     '0x8248270620aa532e4d64316017be5e873e37cc09',
-    UnderlyingAsset['eth:devve']
+    UnderlyingAsset['eth:devve'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'facb8d7f-36f4-45f2-be14-b53895e641ad',
