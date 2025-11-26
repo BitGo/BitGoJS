@@ -1299,6 +1299,222 @@ describe('ETH:', function () {
     });
   });
 
+  describe('Address Creation', function () {
+    it('should pass walletVersion 6 to isWalletAddress during address creation', async function () {
+      const bgUrl = common.Environments[bitgo.getEnv()].uri;
+      const ethCoin = bitgo.coin('hteth') as Hteth;
+      const walletDataV6 = {
+        id: '598f606cd8fc24710d2ebadb1d9459bb',
+        coinSpecific: {
+          baseAddress: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
+          walletVersion: 6,
+        },
+        coin: 'hteth',
+        keys: [
+          '598f606cd8fc24710d2ebad89dce86c2',
+          '598f606cc8e43aef09fcb785221d9dd2',
+          '5935d59cf660764331bafcade1855fd7',
+        ],
+        receiveAddress: {
+          address: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
+        },
+      };
+      const ethWalletV6 = new Wallet(bitgo, ethCoin, walletDataV6);
+      const isWalletAddressSpy = sinon.spy(ethCoin, 'isWalletAddress');
+
+      // Mock keychain requests
+      nock(bgUrl).get(`/api/v2/hteth/key/598f606cd8fc24710d2ebad89dce86c2`).reply(200, {
+        id: '598f606cd8fc24710d2ebad89dce86c2',
+        pub: 'xpub661MyMwAqRbcFXDcWD2vxuebcT1ZpTF4Vke6qmMW8yzddwNYpAPjvYEEL5jLfyYXW2fuxtAxY8TgjPUJLcf1C8qz9N6VgZxArKX4EwB8rH5',
+        commonKeychain:
+          '033b02aac4f038fef5118350b77d302ec6202931ca2e7122aad88994ffefcbc70a6069e662436236abb1619195232c41580204cb202c22357ed8f53e69eac5c69e',
+        source: 'user',
+        type: 'tss',
+      });
+      nock(bgUrl).get(`/api/v2/hteth/key/598f606cc8e43aef09fcb785221d9dd2`).reply(200, {
+        id: '598f606cc8e43aef09fcb785221d9dd2',
+        pub: 'xpub661MyMwAqRbcGhSaXikpuTC9KU88Xx9LrjKSw1JKsvXNgabpTdgjy7LSovh9ZHhcqhAHQu7uthu7FguNGdcC4aXTKK5gqTcPe4WvLYRbCSG',
+        commonKeychain:
+          '033b02aac4f038fef5118350b77d302ec6202931ca2e7122aad88994ffefcbc70a6069e662436236abb1619195232c41580204cb202c22357ed8f53e69eac5c69e',
+        source: 'backup',
+        type: 'tss',
+      });
+      nock(bgUrl).get(`/api/v2/hteth/key/5935d59cf660764331bafcade1855fd7`).reply(200, {
+        id: '5935d59cf660764331bafcade1855fd7',
+        pub: 'xpub661MyMwAqRbcFsXShW8R3hJsHNTYTUwzcejnLkY7KCtaJbDqcGkcBF99BrEJSjNZHeHveiYUrsAdwnjUMGwpgmEbiKcZWRuVA9HxnRaA3r3',
+        commonKeychain:
+          '033b02aac4f038fef5118350b77d302ec6202931ca2e7122aad88994ffefcbc70a6069e662436236abb1619195232c41580204cb202c22357ed8f53e69eac5c69e',
+        source: 'bitgo',
+        type: 'tss',
+      });
+
+      // Mock address creation API
+      nock(bgUrl)
+        .post(`/api/v2/hteth/wallet/${ethWalletV6.id()}/address`)
+        .reply(200, {
+          id: '638a48c6c3dba40007a3497fa49a080c',
+          address: '0xc012041dac143a59fa491db3a2b67b69bd78b685',
+          chain: 0,
+          index: 0,
+          coin: 'hteth',
+          wallet: ethWalletV6.id(),
+          coinSpecific: {
+            forwarderVersion: 4,
+            salt: '0x0',
+            feeAddress: '0xb1e725186990b86ca8efed08a3ccda9c9f400f09',
+          },
+        });
+
+      await ethWalletV6.createAddress({ chain: 0 });
+
+      isWalletAddressSpy.calledOnce.should.be.true();
+      const calledParams = isWalletAddressSpy.firstCall.args[0];
+      calledParams.should.have.property('walletVersion', 6);
+    });
+
+    it('should pass walletVersion 5 to isWalletAddress during address creation', async function () {
+      const bgUrl = common.Environments[bitgo.getEnv()].uri;
+      const ethCoin = bitgo.coin('hteth') as Hteth;
+      const walletDataV5 = {
+        id: '598f606cd8fc24710d2ebadb1d9459bb',
+        coinSpecific: {
+          baseAddress: '0xf1e3d30798acdf3a12fa5beb5fad8efb23d5be11',
+          walletVersion: 5,
+        },
+        coin: 'hteth',
+        keys: [
+          '598f606cd8fc24710d2ebad89dce86c2',
+          '598f606cc8e43aef09fcb785221d9dd2',
+          '5935d59cf660764331bafcade1855fd7',
+        ],
+        receiveAddress: {
+          address: '0xf1e3d30798acdf3a12fa5beb5fad8efb23d5be11',
+        },
+      };
+      const ethWalletV5 = new Wallet(bitgo, ethCoin, walletDataV5);
+      const isWalletAddressSpy = sinon.spy(ethCoin, 'isWalletAddress');
+
+      // Mock keychain requests
+      nock(bgUrl).get(`/api/v2/hteth/key/598f606cd8fc24710d2ebad89dce86c2`).reply(200, {
+        id: '598f606cd8fc24710d2ebad89dce86c2',
+        pub: 'xpub661MyMwAqRbcFXDcWD2vxuebcT1ZpTF4Vke6qmMW8yzddwNYpAPjvYEEL5jLfyYXW2fuxtAxY8TgjPUJLcf1C8qz9N6VgZxArKX4EwB8rH5',
+        commonKeychain:
+          '02c8a496b16abfe2567520a279e2154642fc3c0e08e629775cb4d845c0c5fbf55ab7ba153e886de65748ed18f4ff8f5cee2242e687399ea3297a1f5524fdefd56c',
+        source: 'user',
+        type: 'tss',
+      });
+      nock(bgUrl).get(`/api/v2/hteth/key/598f606cc8e43aef09fcb785221d9dd2`).reply(200, {
+        id: '598f606cc8e43aef09fcb785221d9dd2',
+        pub: 'xpub661MyMwAqRbcGhSaXikpuTC9KU88Xx9LrjKSw1JKsvXNgabpTdgjy7LSovh9ZHhcqhAHQu7uthu7FguNGdcC4aXTKK5gqTcPe4WvLYRbCSG',
+        commonKeychain:
+          '02c8a496b16abfe2567520a279e2154642fc3c0e08e629775cb4d845c0c5fbf55ab7ba153e886de65748ed18f4ff8f5cee2242e687399ea3297a1f5524fdefd56c',
+        source: 'backup',
+        type: 'tss',
+      });
+      nock(bgUrl).get(`/api/v2/hteth/key/5935d59cf660764331bafcade1855fd7`).reply(200, {
+        id: '5935d59cf660764331bafcade1855fd7',
+        pub: 'xpub661MyMwAqRbcFsXShW8R3hJsHNTYTUwzcejnLkY7KCtaJbDqcGkcBF99BrEJSjNZHeHveiYUrsAdwnjUMGwpgmEbiKcZWRuVA9HxnRaA3r3',
+        commonKeychain:
+          '02c8a496b16abfe2567520a279e2154642fc3c0e08e629775cb4d845c0c5fbf55ab7ba153e886de65748ed18f4ff8f5cee2242e687399ea3297a1f5524fdefd56c',
+        source: 'bitgo',
+        type: 'tss',
+      });
+
+      // Mock address creation API
+      nock(bgUrl)
+        .post(`/api/v2/hteth/wallet/${ethWalletV5.id()}/address`)
+        .reply(200, {
+          id: '638a48c6c3dba40007a3497fa49a080c',
+          address: '0xd63b5e2b8d1b4fba3625460508900bf2a0499a4d',
+          chain: 0,
+          index: 117,
+          coin: 'hteth',
+          wallet: ethWalletV5.id(),
+          coinSpecific: {
+            forwarderVersion: 4,
+            salt: '0x75',
+            feeAddress: '0xb1e725186990b86ca8efed08a3ccda9c9f400f09',
+          },
+        });
+
+      await ethWalletV5.createAddress({ chain: 0 });
+
+      // Verify isWalletAddress was called with walletVersion 5
+      isWalletAddressSpy.calledOnce.should.be.true();
+      const calledParams = isWalletAddressSpy.firstCall.args[0];
+      calledParams.should.have.property('walletVersion', 5);
+    });
+
+    it('should pass walletVersion 2 to isWalletAddress during address creation', async function () {
+      const bgUrl = common.Environments[bitgo.getEnv()].uri;
+      const ethCoin = bitgo.coin('hteth') as Hteth;
+      const walletDataV2 = {
+        id: '598f606cd8fc24710d2ebadb1d9459bb',
+        coinSpecific: {
+          baseAddress: '0xdc485da076ed4a2b19584e9a1fdbb974f89b60f4',
+          walletVersion: 2,
+        },
+        coin: 'hteth',
+        keys: [
+          '598f606cd8fc24710d2ebad89dce86c2',
+          '598f606cc8e43aef09fcb785221d9dd2',
+          '5935d59cf660764331bafcade1855fd7',
+        ],
+        receiveAddress: {
+          address: '0xdc485da076ed4a2b19584e9a1fdbb974f89b60f4',
+        },
+      };
+      const ethWalletV2 = new Wallet(bitgo, ethCoin, walletDataV2);
+      const isWalletAddressSpy = sinon.spy(ethCoin, 'isWalletAddress');
+
+      // Mock keychain requests
+      nock(bgUrl).get(`/api/v2/hteth/key/598f606cd8fc24710d2ebad89dce86c2`).reply(200, {
+        id: '598f606cd8fc24710d2ebad89dce86c2',
+        pub: 'xpub661MyMwAqRbcGrCxCX39zb3TvYjTqfUGwEUZHjnraRFm1WeMw9gfCD1wwc2wUDmBBZ2TkccJMwf5eBTja8r3z6HMxoTZGW6nvyoJMQFsecv',
+        ethAddress: '0x9d16bb867b792c5e3bf636a0275f2db8601bd7d4',
+        source: 'user',
+        type: 'independent',
+      });
+      nock(bgUrl).get(`/api/v2/hteth/key/598f606cc8e43aef09fcb785221d9dd2`).reply(200, {
+        id: '598f606cc8e43aef09fcb785221d9dd2',
+        pub: 'xpub661MyMwAqRbcGKhdeC4nr1ta8d27xThtfFFHgbxWMrVb595meMS8i3fBMrTz8EdQMWBKHHKzxapGgheoMymVvRcQmaGDykRTBbtXqbiu9ps',
+        ethAddress: '0x2dfce5cfeb5c03fbe680cd39ac0d2b25399b7d22',
+        source: 'backup',
+        type: 'independent',
+      });
+      nock(bgUrl).get(`/api/v2/hteth/key/5935d59cf660764331bafcade1855fd7`).reply(200, {
+        id: '5935d59cf660764331bafcade1855fd7',
+        pub: 'xpub661MyMwAqRbcGzTn5eyNGDkb18R43nH79HokYLc5PXZM19V8UrbuLdVRaCQMs4EeCAjnqmoYXqfyusTU46WoZMDyLpmTzoUX66ZBwGFjt1a',
+        ethAddress: '0xb1e725186990b86ca8efed08a3ccda9c9f400f09',
+        source: 'bitgo',
+        type: 'independent',
+      });
+
+      // Mock address creation API
+      nock(bgUrl)
+        .post(`/api/v2/hteth/wallet/${ethWalletV2.id()}/address`)
+        .reply(200, {
+          id: '638a48c6c3dba40007a3497fa49a080c',
+          address: '0xf636ceddffe41d106586875c0e56dc8feb6268f7',
+          chain: 0,
+          index: 23,
+          coin: 'hteth',
+          wallet: ethWalletV2.id(),
+          coinSpecific: {
+            forwarderVersion: 2,
+            salt: '0x17',
+          },
+        });
+
+      await ethWalletV2.createAddress({ chain: 0 });
+
+      // Verify isWalletAddress was called with walletVersion 2
+      isWalletAddressSpy.calledOnce.should.be.true();
+      const calledParams = isWalletAddressSpy.firstCall.args[0];
+      calledParams.should.have.property('walletVersion', 2);
+    });
+  });
+
   describe('EVM Cross Chain Recovery', function () {
     const baseUrl = common.Environments.test.etherscanBaseUrl as string;
     it('should build a recovery transaction for hot wallet', async function () {
