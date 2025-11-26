@@ -300,7 +300,7 @@ export const ExpressWalletManagementApiSpec = apiSpec({
 });
 
 export const ExpressV2CanonicalAddressApiSpec = apiSpec({
-  'express.v2.canonicaladdress': {
+  'express.canonicaladdress': {
     post: PostCanonicalAddress,
   },
 });
