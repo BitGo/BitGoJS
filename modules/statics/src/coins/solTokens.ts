@@ -3372,6 +3372,16 @@ export const solTokens = [
     SOL_TOKEN_FEATURES
   ),
   tsolToken(
+    'bb58e4ed-3b82-45e7-9a51-e877f62f25e4',
+    'tsol:wsol',
+    'Wrapped SOL Testnet',
+    9,
+    'So11111111111111111111111111111111111111112',
+    'So11111111111111111111111111111111111111112',
+    UnderlyingAsset['tsol:wsol'],
+    SOL_TOKEN_FEATURES
+  ),
+  tsolToken(
     '30367323-8c04-475b-a6a4-df231032af4b',
     'tsol:gmt',
     'GMT',

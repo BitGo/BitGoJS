@@ -1106,6 +1106,7 @@ export enum UnderlyingAsset {
   'tsol:gmt' = 'tsol:gmt',
   'tsol:usdt' = 'tsol:usdt',
   'tsol:srm' = 'tsol:srm',
+  'tsol:wsol' = 'tsol:wsol',
   'tsol:gari' = 'tsol:gari',
   'tsol:t22mint' = 'tsol:t22mint',
   'tsol:t1test' = 'tsol:t1test',
