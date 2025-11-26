@@ -3,6 +3,35 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.14.0...@bitgo/statics@58.15.0) (2025-11-26)
+
+
+### Bug Fixes
+
+* changed the token symbol for sofi usd ([2a28f28](https://github.com/BitGo/BitGoJS/commit/2a28f283e5808bb32257c68980550113f73789dc))
+* correct explorerUrl for Monad Mainnet ([056d919](https://github.com/BitGo/BitGoJS/commit/056d9191fa3cb814fb98ba9fb1573e92dc4ecbc0))
+
+
+### Features
+
+* add coverage for base address ([0fee53f](https://github.com/BitGo/BitGoJS/commit/0fee53fdde13bf320e573c59bd72c75643f4a0d2))
+* add ip testnet token ([bbcb66b](https://github.com/BitGo/BitGoJS/commit/bbcb66b2d399dac44f21a8a5d77a75f8f2b73c33))
+* add jovay eth chain config ([65a719d](https://github.com/BitGo/BitGoJS/commit/65a719de07d40eb5cdcd6623cec91eed0ab4e53c))
+* add new coin feature - wallet initialization tx ([f4088cc](https://github.com/BitGo/BitGoJS/commit/f4088cca7976d0af546d28dc8389900b63971d43))
+* add xlayer chain config ([97daeac](https://github.com/BitGo/BitGoJS/commit/97daeac8e1ef19547fd72483e7ca27eb6a0da501))
+* enable REBASE_TOKEN feature ([1e17e20](https://github.com/BitGo/BitGoJS/commit/1e17e206b99c71c1ffe8a5a45a2c99b9df12edd5))
+* enabling erc20 standard on ip chain ([6bd823f](https://github.com/BitGo/BitGoJS/commit/6bd823fbe64b957d6df6514f086b234b8ac3486b))
+* gate tokens for bitgo singapore ([c54ad25](https://github.com/BitGo/BitGoJS/commit/c54ad25e270f1e12b4bd7a7461fd08785a3e9e34))
+* **sdk-coin-ada:** add build logs and modify token policy id ([8d8482a](https://github.com/BitGo/BitGoJS/commit/8d8482afa50d707bfa69caa6ccbab750a32c76ef))
+* **sdk-coin-ada:** gate ada tokens for singapore ([d935b78](https://github.com/BitGo/BitGoJS/commit/d935b7826f666236eeebc6ea90ad91353a46139a))
+* **sdk-coin-lnbtc:** add staking feature to TLNBTC ([fdd57c5](https://github.com/BitGo/BitGoJS/commit/fdd57c5e35f707e30d17c8783769540a47b09686))
+* **statics:** add new batch of tokens COIN-6617 ([7dda05a](https://github.com/BitGo/BitGoJS/commit/7dda05af107d109041d43db2a4bba45a41399207))
+* **statics:** added sofiusd test and staging tokens ([0667842](https://github.com/BitGo/BitGoJS/commit/0667842f5ddc63beaffc3c048818be531793cc90))
+
+
+
+
+
 # [58.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.13.0...@bitgo/statics@58.14.0) (2025-11-19)
 
 

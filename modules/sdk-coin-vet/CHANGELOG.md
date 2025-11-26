@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.8.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.8.4...@bitgo/sdk-coin-vet@2.8.5) (2025-11-26)
+
+
+### Bug Fixes
+
+* **sdk-coin-vet:** preserve precision for large value transactions ([a5cd30b](https://github.com/BitGo/BitGoJS/commit/a5cd30b90f860626a419d8a943b192720ced23ef))
+
+
+
+
+
 ## [2.8.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.8.3...@bitgo/sdk-coin-vet@2.8.4) (2025-11-19)
 
 

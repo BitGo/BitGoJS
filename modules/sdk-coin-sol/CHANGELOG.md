@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.9.0...@bitgo/sdk-coin-sol@7.10.0) (2025-11-26)
+
+
+### Features
+
+* **sdk-coin-sol:** big endian support for verifyTransaction ([f1c06bc](https://github.com/BitGo/BitGoJS/commit/f1c06bc6bf0f448fbd1c2dbcd5062e7e6f012c83))
+
+
+
+
+
 # [7.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.8.0...@bitgo/sdk-coin-sol@7.9.0) (2025-11-19)
 
 

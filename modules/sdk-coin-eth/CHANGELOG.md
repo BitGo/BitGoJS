@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [25.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@25.3.14...@bitgo/sdk-coin-eth@25.4.0) (2025-11-26)
+
+
+### Features
+
+* add coverage for base address ([0fee53f](https://github.com/BitGo/BitGoJS/commit/0fee53fdde13bf320e573c59bd72c75643f4a0d2))
+* add wallet address verification for eth ([3292e9d](https://github.com/BitGo/BitGoJS/commit/3292e9de444fa30b635c34b00d3c71e0b9f5ae21))
+
+
+
+
+
 ## [25.3.14](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@25.3.13...@bitgo/sdk-coin-eth@25.3.14) (2025-11-19)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-eth

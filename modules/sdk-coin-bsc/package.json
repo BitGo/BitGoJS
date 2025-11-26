@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-bsc",
-  "version": "22.9.2",
+  "version": "22.9.3",
   "description": "BitGo SDK coin library for Binance Smart Chain",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,15 +40,15 @@
     ]
   },
   "dependencies": {
-    "@bitgo/abstract-eth": "^24.17.0",
-    "@bitgo/sdk-coin-eth": "^25.3.14",
-    "@bitgo/sdk-core": "^36.21.0",
-    "@bitgo/statics": "^58.14.0",
+    "@bitgo/abstract-eth": "^24.18.0",
+    "@bitgo/sdk-coin-eth": "^25.4.0",
+    "@bitgo/sdk-core": "^36.22.0",
+    "@bitgo/statics": "^58.15.0",
     "@ethereumjs/common": "^2.6.5"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.71.6",
-    "@bitgo/sdk-test": "^9.1.14"
+    "@bitgo/sdk-api": "^1.71.7",
+    "@bitgo/sdk-test": "^9.1.15"
   },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c",
   "files": [

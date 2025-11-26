@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.7.0...@bitgo/abstract-utxo@10.8.0) (2025-11-26)
+
+
+### Bug Fixes
+
+* **abstract-utxo:** increase timeout for test recovery data ([f3f088b](https://github.com/BitGo/BitGoJS/commit/f3f088bc6431d66032ac7d460bcb5b4427acd0c9))
+* **utxo-lib:** fix default consensus branch id for v4/v5 transactions ([292196f](https://github.com/BitGo/BitGoJS/commit/292196f2237c510ed4cd3003ade114cdf8f55103))
+
+
+### Features
+
+* **abstract-utxo:** add custom change wallet parsing to PSBT explainer ([80284e0](https://github.com/BitGo/BitGoJS/commit/80284e0d9dbdfd2fa46b58cbb86279cd3ce8bccf))
+* **abstract-utxo:** add function to convert keychains to xpub format ([fcad8e5](https://github.com/BitGo/BitGoJS/commit/fcad8e5bd01ea2fe3f5f26f3d9b9bf6095070f96))
+* **abstract-utxo:** add support for RootWalletKeys in toBip32Triple ([c130be3](https://github.com/BitGo/BitGoJS/commit/c130be3662831e1a03b8d7b8262f727b86f96b64))
+* **abstract-utxo:** add test for custom change outputs in PSBT ([e7d24df](https://github.com/BitGo/BitGoJS/commit/e7d24dfce8acf2c32e8ee3c3dde485522ef6377d))
+* **abstract-utxo:** document explainPsbt parameters ([cdd22af](https://github.com/BitGo/BitGoJS/commit/cdd22af15681f29422127fe41826b24a5ea13630))
+* **abstract-utxo:** implement support for custom change outputs ([4d80186](https://github.com/BitGo/BitGoJS/commit/4d80186f0d90defa9465fc586a1fff81799521f5))
+* **abstract-utxo:** improve comments for address validation process ([2e945a1](https://github.com/BitGo/BitGoJS/commit/2e945a1f96b1d8a1a4d0956bb8386a1d892d98fc))
+* **abstract-utxo:** optimize backup key recovery with address generation ([e4a6b38](https://github.com/BitGo/BitGoJS/commit/e4a6b3819853ca2fe188652cf71a732cb41cb521))
+* **abstract-utxo:** refactor PSBT output handling ([fb12eaf](https://github.com/BitGo/BitGoJS/commit/fb12eafd97e541147755f9f52c5aa8a63676138a))
+* **abstract-utxo:** support RootWalletKeys in fixedScript address generation ([e65fabb](https://github.com/BitGo/BitGoJS/commit/e65fabbc21d7ec6d0d3ef33bd59b8d681a4f39c4))
+
+
+
+
+
 # [10.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.6.0...@bitgo/abstract-utxo@10.7.0) (2025-11-19)
 
 

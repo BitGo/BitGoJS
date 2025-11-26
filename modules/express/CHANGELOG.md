@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [15.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.14.0...@bitgo/express@15.15.0) (2025-11-26)
+
+
+### Bug Fixes
+
+* **express:** sendMany transfers optional field ([166deae](https://github.com/BitGo/BitGoJS/commit/166deae35c50598fdd10ef0073f925bd90fcfef8))
+
+
+### Features
+
+* add isWalletAddress endpoint ([19e2f44](https://github.com/BitGo/BitGoJS/commit/19e2f4472785903b0449934506932e9bfc2c2ac4))
+* **express:** consolidateAccountV2 handler return type ([c503069](https://github.com/BitGo/BitGoJS/commit/c503069abaaa6f7263989e0d4be14c5c0c6cb826))
+* **express:** migrated canonicalAddress to type route ([3a4b4f7](https://github.com/BitGo/BitGoJS/commit/3a4b4f7ff682569bd445da0c2a2ed98bc07d1a89))
+* **express:** migrated wallet sweep to type route ([111ebe6](https://github.com/BitGo/BitGoJS/commit/111ebe6f07d24b54ab079dc8046a94d7aa0c90d5))
+
+
+
+
+
 # [15.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.13.1...@bitgo/express@15.14.0) (2025-11-19)
 
 

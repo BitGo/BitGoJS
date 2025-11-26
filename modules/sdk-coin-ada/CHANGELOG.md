@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.19.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.18.3...@bitgo/sdk-coin-ada@4.19.0) (2025-11-26)
+
+
+### Features
+
+* **sdk-coin-ada:** add build logs and modify token policy id ([8d8482a](https://github.com/BitGo/BitGoJS/commit/8d8482afa50d707bfa69caa6ccbab750a32c76ef))
+
+
+
+
+
 ## [4.18.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.18.2...@bitgo/sdk-coin-ada@4.18.3) (2025-11-19)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ada
