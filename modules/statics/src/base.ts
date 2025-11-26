@@ -2173,6 +2173,8 @@ export enum UnderlyingAsset {
   'eth:kub' = 'eth:kub',
   'eth:fidd' = 'eth:fidd',
   'eth:meme' = 'eth:meme',
+  'eth:bard' = 'eth:bard',
+  'eth:sfp' = 'eth:sfp',
 
   // Ondo Tokenized Assets
   'eth:qqqon' = 'qqqon',
@@ -2756,6 +2758,8 @@ export enum UnderlyingAsset {
   'bsc:ff' = 'bsc:ff',
   'bsc:c98' = 'bsc:c98',
   'bsc:ln' = 'bsc:ln',
+  'bsc:soon' = 'bsc:soon',
+  'bsc:bard' = 'bsc:bard',
   'bsc:home' = 'bsc:home',
 
   // BSC NFTs
@@ -2850,6 +2854,7 @@ export enum UnderlyingAsset {
   'baseeth:usde' = 'baseeth:usde',
   'baseeth:trust' = 'baseeth:trust',
   'baseeth:flk' = 'baseeth:flk',
+  'baseeth:soon' = 'baseeth:soon',
 
   'baseeth:spec' = 'baseeth:spec',
   'baseeth:tig' = 'baseeth:tig',
@@ -3045,6 +3050,7 @@ export enum UnderlyingAsset {
   'sol:apusdt' = 'sol:apusdt',
   'sol:acusd' = 'sol:acusd',
   'sol:solink' = 'sol:solink',
+  'sol:soon' = 'sol:soon',
   'sol:block' = 'sol:block',
   'sol:render' = 'sol:render',
   'sol:wen' = 'sol:wen',

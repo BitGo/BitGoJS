@@ -2322,6 +2322,15 @@ export const allCoinsAndTokens = [
     Networks.test.basechain
   ),
   erc20Token(
+    '01c87cfe-3ba2-43db-9712-b37e9af9f422',
+    'baseeth:soon',
+    'Soon Token',
+    18,
+    '0xb9e1fd5a02d3a33b25a14d661414e6ed6954a721',
+    UnderlyingAsset['baseeth:soon'],
+    Networks.main.basechain
+  ),
+  erc20Token(
     '03b67719-a5d5-4ae3-a050-252b948f4daa',
     'baseeth:aero',
     'Aerodrome Finance',
