@@ -35,6 +35,8 @@ import {
   reducedAmsTokenConfig,
   reducedTokenConfigForAllChains,
 } from './resources/amsTokenConfig';
+import { EthLikeErc20Token } from '../../../sdk-coin-evm/src';
+import { allCoinsAndTokens } from '../../src/allCoinsAndTokens';
 
 interface DuplicateCoinObject {
   name: string;
@@ -1277,6 +1279,23 @@ describe('create token map using config details', () => {
           continue;
         }
         coinMapToken?.[key].should.eql(value);
+      }
+    }
+  });
+
+  it('should create tokens for all EVM coins using createToken', () => {
+    const evmCoinTokens = allCoinsAndTokens
+      .filter((coin) => coin.isToken && coins.get(coin.family)?.features.includes(CoinFeature.SUPPORTS_ERC20))
+      .map((coin) => coin);
+
+    for (const coin of evmCoinTokens) {
+      const token = createToken(coin);
+      token?.should.not.be.undefined();
+      token?.name.should.eql(coin.name);
+      token?.family.should.eql(coin.family);
+      token?.decimalPlaces.should.eql(coin.decimalPlaces);
+      if (token instanceof EthLikeErc20Token) {
+        (token as EthLikeErc20Token).tokenContractAddress.should.eql(coin?.contractAddress);
       }
     }
   });

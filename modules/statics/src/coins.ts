@@ -137,6 +137,17 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
   ];
 
   switch (family) {
+    case erc20ChainToNameMap[family]:
+      return initializer(
+        ...commonArgs.slice(0, 4), // id, name, fullName, decimalPlaces
+        token.contractAddress || token.tokenAddress, // contractAddress
+        token.asset,
+        token.network,
+        token.features,
+        token.prefix,
+        token.suffix,
+        token.primaryKeyCurve
+      );
     case 'arbeth':
     case 'avaxc':
     case 'baseeth':
@@ -152,7 +163,6 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
     case 'opeth':
     case 'polygon':
     case 'trx':
-    case erc20ChainToNameMap[family]:
       return initializer(
         ...commonArgs.slice(0, 4), // id, name, fullName, decimalPlaces
         token.contractAddress || token.tokenAddress, // contractAddress
