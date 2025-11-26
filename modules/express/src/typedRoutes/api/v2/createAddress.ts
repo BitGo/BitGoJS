@@ -7,9 +7,9 @@ import { EIP1559, ForwarderVersion, CreateAddressFormat } from '../../schemas/ad
  * Path parameters for creating a wallet address
  */
 export const CreateAddressParams = {
-  /** Coin ticker / chain identifier */
+  /** Blockchain identifier (e.g., 'btc', 'eth', 'tbtc', 'teth') */
   coin: t.string,
-  /** The ID of the wallet. */
+  /** The wallet ID */
   id: t.string,
 } as const;
 
@@ -17,9 +17,9 @@ export const CreateAddressParams = {
  * Request body for creating a wallet address
  */
 export const CreateAddressBody = {
-  /** Address type for chains that support multiple address types */
+  /** Address type for chains with multiple formats (e.g., 'p2sh', 'p2wsh' for Bitcoin-like chains) */
   type: optional(t.string),
-  /** Chain on which the new address should be created. Default: 1 */
+  /** Derivation chain: 0 for external/receive addresses, 1 for internal/change addresses. Default varies by wallet type */
   chain: optional(t.number),
   /**
    * (ETH only) Specify forwarder version to use in address creation.
@@ -31,39 +31,45 @@ export const CreateAddressBody = {
    * 5: new MPC wallets with wallet-version 6
    */
   forwarderVersion: optional(ForwarderVersion),
-  /** EVM keyring reference address (EVM only) */
+  /** Reference address for EVM keyring address derivation (required for certain EVM-based wallet configurations) */
   evmKeyRingReferenceAddress: optional(t.string),
-  /** Create an address for the given token (OFC only) (eg. ofcbtc) */
+  /** Token identifier for OFC (Offchain) wallets - required when creating token-specific addresses (e.g., 'ofcbtc') */
   onToken: optional(t.string),
   /** A human-readable label for the address (Max length: 250) */
   label: optional(t.string),
-  /** Whether the deployment should use a low priority fee key (ETH only) Default: false */
+  /** Use lower priority fee for Ethereum forwarder contract deployment. Default: false */
   lowPriority: optional(t.boolean),
-  /** Explicit gas price to use when deploying the forwarder contract (ETH only) */
+  /** Gas price in wei for Ethereum forwarder contract deployment */
   gasPrice: optional(t.union([t.number, t.string])),
-  /** EIP1559 fee parameters (ETH forwarderVersion: 0 wallets only) */
+  /** EIP-1559 fee parameters (maxFeePerGas, maxPriorityFeePerGas) for Ethereum wallets with forwarderVersion 0 */
   eip1559: optional(EIP1559),
-  /** Format to use for the new address (e.g., 'cashaddr' for BCH) */
+  /** Address encoding format: 'cashaddr' for Bitcoin Cash or 'base58' for legacy format */
   format: optional(CreateAddressFormat),
-  /** Number of new addresses to create (maximum 250) */
+  /** Number of addresses to create in one request (1-250). Returns array when count > 1, single object when count = 1. Default: 1 */
   count: optional(t.number),
-  /** Base address of the wallet (if applicable) */
+  /** Base address for wallets using hierarchical address structures (coin-specific) */
   baseAddress: optional(t.string),
-  /** When false, throw error if address verification is skipped */
+  /** When false, throws error if address verification is skipped (e.g., during pending chain initialization). Default: true */
   allowSkipVerifyAddress: optional(t.boolean),
 } as const;
 
-/** Response for creating a wallet address */
+/** Response for creating wallet address(es) */
 export const CreateAddressResponse = {
+  /** OK */
   200: t.unknown,
+  /** Invalid request parameters or address creation failed */
   400: BitgoExpressError,
 } as const;
 
 /**
- * Create address for a wallet
+ * Create one or more new receive addresses for a wallet
+ *
+ * Generates new addresses on the specified derivation chain. Returns a single address object
+ * by default, or an array when creating multiple addresses. For Ethereum wallets, this may
+ * deploy forwarder contracts with configurable gas parameters.
  *
  * @operationId express.v2.wallet.createAddress
- * @tag express
+ * @tag Express
  */
 export const PostCreateAddress = httpRoute({
   path: '/api/v2/{coin}/wallet/{id}/address',
