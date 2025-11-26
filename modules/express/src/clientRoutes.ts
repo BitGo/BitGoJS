@@ -28,6 +28,7 @@ import {
   TssEcdsaStep1ReturnMessage,
   TssEcdsaStep2ReturnMessage,
   UnsupportedCoinError,
+  VerifyAddressOptions,
   Wallet,
 } from '@bitgo/sdk-core';
 import { BitGo, BitGoOptions, Coin, CustomSigningFunction, SignedTransaction, SignedTransactionRequest } from 'bitgo';
@@ -670,7 +671,7 @@ export async function handleV2IsWalletAddress(
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.decoded.coin);
   const wallet = await coin.wallets().get({ id: req.decoded.id });
-  return await wallet.baseCoin.isWalletAddress(req.decoded as any);
+  return await wallet.baseCoin.isWalletAddress(req.decoded as VerifyAddressOptions);
 }
 
 /**
