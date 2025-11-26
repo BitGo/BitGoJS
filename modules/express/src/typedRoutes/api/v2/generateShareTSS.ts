@@ -178,7 +178,6 @@ const RShareStructure = t.type({
 export const GenerateShareTSSBody = {
   /** Transaction request object with unsigned transaction data and walletId (either this or tssParams required) */
   txRequest: optional(Json),
-
   /** TSS parameters containing transaction request and optional tracing/verification data */
   tssParams: optional(
     t.partial({
@@ -192,8 +191,6 @@ export const GenerateShareTSSBody = {
       txParams: Json,
     })
   ),
-
-  // ============ EDDSA R Share Generation Fields ============
   /** Encrypted user-to-BitGo R share for EDDSA signing protocol */
   encryptedUserToBitgoRShare: optional(
     t.partial({
@@ -207,8 +204,6 @@ export const GenerateShareTSSBody = {
       type: t.string,
     })
   ),
-
-  // ============ EDDSA G Share Generation Fields ============
   /** BitGo's R share sent to user for EDDSA G share generation */
   bitgoToUserRShare: optional(
     t.partial({
@@ -244,8 +239,6 @@ export const GenerateShareTSSBody = {
   ),
   /** BitGo's GPG public key for encrypted communication during EDDSA commitment generation */
   bitgoGpgPubKey: optional(t.string),
-
-  // ============ ECDSA K Share Generation Fields ============
   /** Cryptographic challenges from enterprise and BitGo for ECDSA K share zero-knowledge proofs */
   challenges: optional(
     t.type({
@@ -257,34 +250,24 @@ export const GenerateShareTSSBody = {
   ),
   /** Type of signing request - 'tx' for transaction or 'message' for arbitrary message */
   requestType: optional(t.string),
-
-  // ============ ECDSA MuDelta Share Generation Fields ============
   /** A share from BitGo containing range proof and commitment data for ECDSA MuDelta generation */
   aShareFromBitgo: optional(AShare),
   /** BitGo's challenge response for MuDelta share verification with ntilde, h1, h2, and n fields */
   bitgoChallenge: optional(TxRequestChallengeResponse),
   /** Encrypted W share from previous round for ECDSA MuDelta computation */
   encryptedWShare: optional(t.string),
-
-  // ============ ECDSA S Share Generation Fields ============
   /** D share from BitGo containing final signature components for ECDSA S share generation */
   dShareFromBitgo: optional(DShare),
   /** Encrypted O share from MuDelta round for final ECDSA signature generation */
   encryptedOShare: optional(t.string),
-
-  // ============ ECDSA MPCv2 Round2 Fields ============
   /** BitGo's GPG public key for secure communication in MPCv2 Round2 */
   bitgoPublicGpgKey: optional(t.string),
   /** User's encrypted GPG private key from Round1 for decryption in Round2 and Round3 */
   encryptedUserGpgPrvKey: optional(t.string),
   /** Encrypted session state from MPCv2 Round1 for continuing to Round2 */
   encryptedRound1Session: optional(t.string),
-
-  // ============ ECDSA MPCv2 Round3 Fields ============
   /** Encrypted session state from MPCv2 Round2 for final signature generation in Round3 */
   encryptedRound2Session: optional(t.string),
-
-  // ============ Message Signing Fields ============
   /** Raw message string to be signed (used for arbitrary message signing) */
   messageRaw: optional(t.string),
   /** Hex-encoded message string ready for signing */
@@ -298,11 +281,6 @@ export const GenerateShareTSSBody = {
       data: t.array(t.number),
     })
   ),
-
-  // ============ Auto-populated fields (added by handler) ============
-  // These fields are automatically added by the handler and should NOT be sent by the client:
-  // - prv: string (decrypted private key from filesystem)
-  // - walletPassphrase: string (from environment variable)
 } as const;
 
 /** Signature share record with participant routing and optional proofs */
@@ -541,52 +519,13 @@ export const GenerateShareTSSResponse = {
 };
 
 /**
- * Generate TSS share for multi-party signing (external signer mode)
+ * Generate cryptographic signature shares for TSS wallet transactions in external signer mode
  *
- * This endpoint is used when BitGo Express is configured with external signing
- * (signerFileSystemPath config is set) for TSS (Threshold Signature Scheme) wallets.
+ * Decrypts stored private keys and generates MPC signing shares based on the coin's algorithm
+ * (EDDSA or ECDSA/MPCv2) and requested share type. Requires signerFileSystemPath configuration.
  *
- * **Process Flow:**
- * 1. Extracts walletId from either txRequest or tssParams.txRequest
- * 2. Retrieves wallet passphrase from environment variable WALLET_{walletId}_PASSPHRASE
- * 3. Reads encrypted private key from filesystem (signerFileSystemPath)
- * 4. Decrypts the private key using the wallet passphrase
- * 5. Generates the appropriate TSS share based on:
- *    - Coin's MPC algorithm (EDDSA or ECDSA)
- *    - Share type parameter (commitment, R, G, K, MuDelta, S, etc.)
- *
- * **Configuration Requirements:**
- * - `signerFileSystemPath`: Path to JSON file containing encrypted private keys
- * - Environment variable: `WALLET_{walletId}_PASSPHRASE` for each wallet
- *
- * **Supported Share Types:**
- *
- * *EDDSA (EdDSA algorithm - e.g., Solana, Sui):*
- * - `commitment`: Generate commitment share (first step)
- * - `R`: Generate R share (second step)
- * - `G`: Generate G share (final step)
- *
- * *ECDSA (ECDSA algorithm - e.g., Bitcoin, Ethereum):*
- * - `PaillierModulus`: Retrieve Paillier modulus from user's key
- * - `K`: Generate K share (step 1)
- * - `MuDelta`: Generate MuDelta share (step 2)
- * - `S`: Generate S share (step 3, final signature)
- *
- * *ECDSA MPCv2 (Enhanced ECDSA with DKLS):*
- * - `MPCv2Round1`: Generate round 1 signature share
- * - `MPCv2Round2`: Generate round 2 signature share
- * - `MPCv2Round3`: Generate round 3 signature share (final)
- *
- * **Error Cases:**
- * - Missing walletId in request
- * - Missing signerFileSystemPath configuration
- * - Missing wallet passphrase in environment
- * - Invalid or corrupted encrypted private key
- * - Unsupported MPC algorithm or share type
- * - Cryptographic operation failures
- *
- * @tag express
  * @operationId express.v2.tssshare.generate
+ * @tag Express
  */
 export const PostGenerateShareTSS = httpRoute({
   path: '/api/v2/{coin}/tssshare/{sharetype}',
