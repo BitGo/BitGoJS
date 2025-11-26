@@ -3,6 +3,7 @@ import { TransactionBuilder } from './transactionBuilder';
 import { TransferBuilder } from './transferBuilder';
 import { Transaction } from './transaction';
 import { TRANSFER_TRANSACTION_COMMANDS } from './constants';
+import utils from './utils';
 import { Transaction as IotaTransaction } from '@iota/iota-sdk/transactions';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 
@@ -22,11 +23,12 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   from(rawTx: string | Uint8Array): TransactionBuilder {
     let builder: TransactionBuilder;
-    const txType: TransactionType = this.identifyTxTypeFromRawTx(rawTx);
+    const rawTxBase64 = utils.getBase64String(rawTx);
+    const txType: TransactionType = this.identifyTxTypeFromRawTx(rawTxBase64);
     switch (txType) {
       case TransactionType.Send:
         builder = new TransferBuilder(this._coinConfig);
-        builder.fromImplementation(rawTx);
+        builder.fromImplementation(rawTxBase64);
         return builder;
     }
     throw new InvalidTransactionError('Unsupported transaction');

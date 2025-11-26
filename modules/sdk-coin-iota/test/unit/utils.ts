@@ -205,6 +205,47 @@ describe('Iota util library', function () {
     });
   });
 
+  describe('getBase64String', function () {
+    it('should convert Uint8Array to base64', function () {
+      const uint8Array = new Uint8Array([72, 101, 108, 108, 111]); // "Hello"
+      const result = utils.getBase64String(uint8Array);
+      should.exist(result);
+      should.equal(typeof result, 'string');
+      should.equal(result.length > 0, true);
+    });
+
+    it('should convert hex string to base64', function () {
+      const hexString = '48656c6c6f'; // "Hello" in hex
+      const result = utils.getBase64String(hexString);
+      should.exist(result);
+      should.equal(typeof result, 'string');
+      should.equal(result.length > 0, true);
+    });
+
+    it('should handle empty Uint8Array', function () {
+      const emptyArray = new Uint8Array([]);
+      const result = utils.getBase64String(emptyArray);
+      should.exist(result);
+      should.equal(typeof result, 'string');
+    });
+
+    it('should handle Buffer conversion to base64', function () {
+      const buffer = Buffer.from('Hello World');
+      const uint8Array = new Uint8Array(buffer);
+      const result = utils.getBase64String(uint8Array);
+      should.exist(result);
+      should.equal(typeof result, 'string');
+      should.equal(result.length > 0, true);
+    });
+
+    it('should consistently convert same input to same output', function () {
+      const uint8Array = new Uint8Array([1, 2, 3, 4, 5]);
+      const result1 = utils.getBase64String(uint8Array);
+      const result2 = utils.getBase64String(new Uint8Array([1, 2, 3, 4, 5]));
+      should.equal(result1, result2);
+    });
+  });
+
   describe('isValidRawTransaction', function () {
     it('should validate proper raw transactions', async function () {
       const factory = new TransactionBuilderFactory(coins.get('tiota'));

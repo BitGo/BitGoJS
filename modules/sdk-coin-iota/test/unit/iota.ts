@@ -136,16 +136,16 @@ describe('IOTA:', function () {
     });
 
     describe('explainTransaction', () => {
-      it('should throw error for missing txBase64', async function () {
+      it('should throw error for missing txHex', async function () {
         await assert.rejects(
-          async () => await basecoin.explainTransaction({ txBase64: '' }),
-          /missing required tx prebuild property txBase64/
+          async () => await basecoin.explainTransaction({ txHex: '' }),
+          /missing required tx prebuild property txHex/
         );
       });
 
       it('should throw error for invalid transaction', async function () {
         await assert.rejects(
-          async () => await basecoin.explainTransaction({ txBase64: 'invalidTxBase64' }),
+          async () => await basecoin.explainTransaction({ txHex: 'invalidTxHex' }),
           /Failed to rebuild transaction/
         );
       });
@@ -171,14 +171,14 @@ describe('IOTA:', function () {
     });
 
     describe('verifyTransaction', () => {
-      it('should throw error for missing txBase64', async function () {
+      it('should throw error for missing txHex', async function () {
         await assert.rejects(
           async () =>
             await basecoin.verifyTransaction({
               txPrebuild: {},
               txParams: { recipients: testData.recipients },
             }),
-          /missing required tx prebuild property txBase64/
+          /missing required tx prebuild property txHex/
         );
       });
 
@@ -191,16 +191,14 @@ describe('IOTA:', function () {
         txBuilder.gasData(testData.gasData);
 
         const tx = (await txBuilder.build()) as TransferTransaction;
-        const txJson = tx.toJson();
-
-        // Rebuild from JSON to simulate what would happen in verification
-        const rebuiltTxBuilder = factory.getTransferBuilder();
-        (rebuiltTxBuilder.transaction as TransferTransaction).parseFromJSON(txJson);
-        const rebuiltTx = (await rebuiltTxBuilder.build()) as TransferTransaction;
-
-        // Verify the rebuilt transaction matches
-        should.equal(rebuiltTx.sender, testData.sender.address);
-        should.deepEqual(rebuiltTx.recipients, testData.recipients);
+        const txHex = Buffer.from(await tx.toBroadcastFormat(), 'base64').toString('hex');
+        should.equal(
+          await basecoin.verifyTransaction({
+            txPrebuild: { txHex: txHex },
+            txParams: { recipients: testData.recipients },
+          }),
+          true
+        );
       });
 
       it('should detect mismatched recipients', async function () {
@@ -211,12 +209,15 @@ describe('IOTA:', function () {
         txBuilder.gasData(testData.gasData);
 
         const tx = (await txBuilder.build()) as TransferTransaction;
-        const txJson = tx.toJson();
-
-        const differentRecipients = [{ address: testData.addresses.validAddresses[0], amount: '9999' }];
-
-        // Recipients don't match
-        should.notDeepEqual(txJson.recipients, differentRecipients);
+        const txHex = Buffer.from(await tx.toBroadcastFormat(), 'base64').toString('hex');
+        assert.rejects(
+          async () =>
+            await basecoin.verifyTransaction({
+              txPrebuild: { txHex: txHex },
+              txParams: { recipients: testData.recipients },
+            }),
+          /Tx recipients does not match with expected txParams recipients/
+        );
       });
 
       it('should verify transaction without recipients parameter', async function () {
@@ -227,17 +228,22 @@ describe('IOTA:', function () {
         txBuilder.gasData(testData.gasData);
 
         const tx = (await txBuilder.build()) as TransferTransaction;
+        const txHex = Buffer.from(await tx.toBroadcastFormat(), 'base64').toString('hex');
 
-        // Verification should still work even if no recipients are provided for comparison
-        should.exist(tx);
-        should.equal(tx.type, TransactionType.Send);
+        should.equal(
+          await basecoin.verifyTransaction({
+            txPrebuild: { txHex: txHex },
+            txParams: {},
+          }),
+          true
+        );
       });
     });
 
     describe('parseTransaction', () => {
       it('should throw error for invalid transaction', async function () {
         await assert.rejects(
-          async () => await basecoin.parseTransaction({ txBase64: 'invalidTxBase64' }),
+          async () => await basecoin.parseTransaction({ txHex: 'invalidTxHex' }),
           /Failed to rebuild transaction/
         );
       });

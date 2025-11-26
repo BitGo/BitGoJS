@@ -43,9 +43,9 @@ export interface TransferTxData extends TxData {
 }
 
 export interface ExplainTransactionOptions {
-  txBase64: string;
+  txHex: string;
 }
 
 export interface IotaParseTransactionOptions extends BaseParseTransactionOptions {
-  txBase64: string;
+  txHex: string;
 }

@@ -7,7 +7,7 @@ import {
 } from './constants';
 import { Ed25519PublicKey } from '@iota/iota-sdk/keypairs/ed25519';
 import { Transaction as IotaTransaction } from '@iota/iota-sdk/transactions';
-import { fromBase64 } from '@iota/bcs';
+import { toBase64, fromBase64 } from '@iota/iota-sdk/utils';
 
 export class Utils implements BaseUtils {
   /** @inheritdoc */
@@ -47,6 +47,14 @@ export class Utils implements BaseUtils {
   isValidHex(value: string, length: number): boolean {
     const regex = new RegExp(`^(0x|0X)[a-fA-F0-9]{${length}}$`);
     return regex.test(value);
+  }
+
+  getBase64String(value: string | Uint8Array): string {
+    if (value instanceof Uint8Array) {
+      return toBase64(value);
+    } else {
+      return toBase64(Buffer.from(value, 'hex'));
+    }
   }
 
   getAddressFromPublicKey(publicKey: string): string {
