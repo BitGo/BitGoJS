@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [24.18.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.17.0...@bitgo/abstract-eth@24.18.0) (2025-11-26)
+
+
+### Features
+
+* add coverage for base address ([0fee53f](https://github.com/BitGo/BitGoJS/commit/0fee53fdde13bf320e573c59bd72c75643f4a0d2))
+* add wallet address verification for eth ([3292e9d](https://github.com/BitGo/BitGoJS/commit/3292e9de444fa30b635c34b00d3c71e0b9f5ae21))
+
+
+
+
+
 # [24.17.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.16.0...@bitgo/abstract-eth@24.17.0) (2025-11-19)
 
 

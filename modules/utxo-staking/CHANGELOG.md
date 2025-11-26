@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.27.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.26.0...@bitgo/utxo-staking@1.27.0) (2025-11-26)
+
+
+### Features
+
+* export network parseDescriptor from babylon namespace ([1985860](https://github.com/BitGo/BitGoJS/commit/1985860805df9e72bde4db648581bd62914fc1fa)), closes [#7534](https://github.com/BitGo/BitGoJS/issues/7534)
+
+
+
+
+
 # [1.26.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.25.0...@bitgo/utxo-staking@1.26.0) (2025-11-19)
 
 

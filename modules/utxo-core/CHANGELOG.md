@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.25.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.24.0...@bitgo/utxo-core@1.25.0) (2025-11-26)
+
+
+### Features
+
+* remove ESM exports for testutil ([acfbaec](https://github.com/BitGo/BitGoJS/commit/acfbaec916135c7db3a86974369ace06452aa7ca))
+
+
+
+
+
 # [1.24.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.23.0...@bitgo/utxo-core@1.24.0) (2025-11-19)
 
 

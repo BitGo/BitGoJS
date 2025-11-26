@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.15.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.14.0...bitgo@50.15.0) (2025-11-26)
+
+
+### Bug Fixes
+
+* add support for seievm for tx acceleration ([16be18e](https://github.com/BitGo/BitGoJS/commit/16be18e6edd9a201402ea4bc636251d9ec1f3c15))
+* typo in multi-key-user-key feature ([1e31467](https://github.com/BitGo/BitGoJS/commit/1e31467b73a375bfaa54134b1f6048797e574451))
+
+
+### Features
+
+* add jovay eth chain config ([65a719d](https://github.com/BitGo/BitGoJS/commit/65a719de07d40eb5cdcd6623cec91eed0ab4e53c))
+* add xlayer chain config ([97daeac](https://github.com/BitGo/BitGoJS/commit/97daeac8e1ef19547fd72483e7ca27eb6a0da501))
+
+
+
+
+
 # [50.14.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.13.0...bitgo@50.14.0) (2025-11-19)
 
 

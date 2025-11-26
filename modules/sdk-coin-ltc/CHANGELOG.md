@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ltc@3.5.6...@bitgo/sdk-coin-ltc@3.6.0) (2025-11-26)
+
+
+### Features
+
+* add ESM build support for utxo coins ([a263c35](https://github.com/BitGo/BitGoJS/commit/a263c35c8d255b54111ec9b3a78b80407f6d3a90))
+
+
+
+
+
 ## [3.5.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ltc@3.5.5...@bitgo/sdk-coin-ltc@3.5.6) (2025-11-19)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ltc

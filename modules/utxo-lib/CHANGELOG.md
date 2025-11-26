@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [11.16.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.16.0...@bitgo/utxo-lib@11.16.1) (2025-11-26)
+
+
+### Bug Fixes
+
+* **utxo-lib:** fix default consensus branch id for v4/v5 transactions ([292196f](https://github.com/BitGo/BitGoJS/commit/292196f2237c510ed4cd3003ade114cdf8f55103))
+* **utxo-lib:** fix zec psbt serialization ([e819661](https://github.com/BitGo/BitGoJS/commit/e81966185dbbbfdb61e3358cec405af218eeaeb1))
+
+
+
+
+
 # [11.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.15.0...@bitgo/utxo-lib@11.16.0) (2025-11-19)
 
 

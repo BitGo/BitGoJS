@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-iota@1.4.5...@bitgo/sdk-coin-iota@1.5.0) (2025-11-26)
+
+
+### Bug Fixes
+
+* **sdk-coin-iota:** updating TransferBuilder parseFromBroadcastTx method ([2cb42bf](https://github.com/BitGo/BitGoJS/commit/2cb42bf44ff66a49db616b05dc0ea0685be14005))
+
+
+### Features
+
+* **sdk-coin-iota:** updating explain transaction ([13cb30d](https://github.com/BitGo/BitGoJS/commit/13cb30d0dbc923be256925f6a19fade7114aac25))
+
+
+
+
+
 ## [1.4.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-iota@1.4.4...@bitgo/sdk-coin-iota@1.4.5) (2025-11-19)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-iota

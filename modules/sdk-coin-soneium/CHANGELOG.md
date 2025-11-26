@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.8.15](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-soneium@1.8.14...@bitgo/sdk-coin-soneium@1.8.15) (2025-11-26)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-soneium
+
+
+
+
+
 ## [1.8.14](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-soneium@1.8.13...@bitgo/sdk-coin-soneium@1.8.14) (2025-11-19)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-soneium
