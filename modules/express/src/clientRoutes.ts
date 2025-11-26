@@ -854,10 +854,10 @@ async function handleV2Sweep(req: ExpressApiRouteRequest<'express.v2.wallet.swee
  * handle CPFP accelerate transaction creation
  * @param req
  */
-async function handleV2AccelerateTransaction(req: express.Request) {
+async function handleV2AccelerateTransaction(req: ExpressApiRouteRequest<'express.v2.wallet.accelerateTx', 'post'>) {
   const bitgo = req.bitgo;
-  const coin = bitgo.coin(req.params.coin);
-  const wallet = await coin.wallets().get({ id: req.params.id });
+  const coin = bitgo.coin(req.decoded.coin);
+  const wallet = await coin.wallets().get({ id: req.decoded.id });
   return wallet.accelerateTransaction(createSendParams(req));
 }
 
@@ -1682,12 +1682,10 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   router.post('express.v2.wallet.sweep', [prepareBitGo(config), typedPromiseWrapper(handleV2Sweep)]);
 
   // CPFP
-  app.post(
-    '/api/v2/:coin/wallet/:id/acceleratetx',
-    parseBody,
+  router.post('express.v2.wallet.accelerateTx', [
     prepareBitGo(config),
-    promiseWrapper(handleV2AccelerateTransaction)
-  );
+    typedPromiseWrapper(handleV2AccelerateTransaction),
+  ]);
 
   // account-based
   router.post('express.v2.wallet.consolidateaccount', [
