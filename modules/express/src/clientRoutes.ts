@@ -1067,6 +1067,15 @@ export async function handleKeychainChangePassword(
     throw new ApiResponseError(`Keychain ${req.params.id} not found`, 404);
   }
 
+  // OFC wallet supports multiple keys (one per spender) on a single keychain.
+  const isMultiUserKey = (keychain.coinSpecific?.[coinName]?.['features'] ?? []).includes('multi-user-key');
+  if (isMultiUserKey && !keychain.pub) {
+    throw new ApiResponseError(
+      `Unexpected missing field "keychain.pub". Please contact support@bitgo.com for more details`,
+      500
+    );
+  }
+
   const updatedKeychain = coin.keychains().updateSingleKeychainPassword({
     keychain,
     oldPassword,
@@ -1075,6 +1084,7 @@ export async function handleKeychainChangePassword(
 
   return bitgo.put(coin.url(`/key/${updatedKeychain.id}`)).send({
     encryptedPrv: updatedKeychain.encryptedPrv,
+    pub: keychain.pub,
   });
 }
 

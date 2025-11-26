@@ -33,6 +33,7 @@ export const KeychainChangePasswordResponse = {
   /** Invalid request or not found */
   400: BitgoExpressError,
   404: BitgoExpressError,
+  500: BitgoExpressError,
 } as const;
 
 /**
