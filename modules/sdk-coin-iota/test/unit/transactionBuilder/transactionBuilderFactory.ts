@@ -42,8 +42,9 @@ describe('Iota Transaction Builder Factory', () => {
 
       const tx = (await txBuilder.build()) as TransferTransaction;
       const rawTx = await tx.toBroadcastFormat();
+      const txHex = Buffer.from(rawTx, 'base64').toString('hex');
 
-      const rebuiltBuilder = factory.from(rawTx);
+      const rebuiltBuilder = factory.from(txHex);
       should.exist(rebuiltBuilder);
       should(rebuiltBuilder instanceof TransferBuilder).be.true();
       const rebuiltTx = (await rebuiltBuilder.build()) as TransferTransaction;

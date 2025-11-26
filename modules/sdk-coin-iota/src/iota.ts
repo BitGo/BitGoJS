@@ -91,9 +91,9 @@ export class Iota extends BaseCoin {
    * @inheritDoc
    */
   async explainTransaction(params: ExplainTransactionOptions): Promise<TransactionExplanation> {
-    const rawTx = params.txBase64;
+    const rawTx = params.txHex;
     if (!rawTx) {
-      throw new Error('missing required tx prebuild property txBase64');
+      throw new Error('missing required tx prebuild property txHex');
     }
     const transaction = await this.rebuildTransaction(rawTx);
     if (!transaction) {
@@ -108,9 +108,9 @@ export class Iota extends BaseCoin {
    */
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
     const { txPrebuild: txPrebuild, txParams: txParams } = params;
-    const rawTx = txPrebuild.txBase64;
+    const rawTx = txPrebuild.txHex;
     if (!rawTx) {
-      throw new Error('missing required tx prebuild property txBase64');
+      throw new Error('missing required tx prebuild property txHex');
     }
     const transaction = await this.rebuildTransaction(rawTx);
     if (!transaction) {
@@ -145,7 +145,7 @@ export class Iota extends BaseCoin {
    * @param params
    */
   async parseTransaction(params: IotaParseTransactionOptions): Promise<ParsedTransaction> {
-    const transactionExplanation = await this.explainTransaction({ txBase64: params.txBase64 });
+    const transactionExplanation = await this.explainTransaction({ txHex: params.txHex });
 
     if (!transactionExplanation) {
       throw new Error('Invalid transaction');
@@ -262,10 +262,9 @@ export class Iota extends BaseCoin {
     const txBuilderFactory = this.getTxBuilderFactory();
     try {
       const txBuilder = txBuilderFactory.from(txHex);
-      txBuilder.transaction.isSimulateTx = false;
       return (await txBuilder.build()) as Transaction;
-    } catch {
-      throw new Error('Failed to rebuild transaction');
+    } catch (err) {
+      throw new Error(`Failed to rebuild transaction ${err.toString()}`);
     }
   }
 }
