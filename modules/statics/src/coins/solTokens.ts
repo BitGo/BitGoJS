@@ -3320,6 +3320,16 @@ export const solTokens = [
     UnderlyingAsset['sol:oob'],
     SOL_TOKEN_FEATURES
   ),
+  solToken(
+    'd1d27c24-4e91-46cc-9d5c-7feec95f4c03',
+    'sol:xnet',
+    'XNET Mobile',
+    6,
+    'AtjhnwvxpaatPM7f7XAeDbbwJ8aVF2VHarhqrzqR9azA',
+    'AtjhnwvxpaatPM7f7XAeDbbwJ8aVF2VHarhqrzqR9azA',
+    UnderlyingAsset['sol:xnet'],
+    SOL_TOKEN_FEATURES
+  ),
 
   tsolToken(
     'b98c5a7a-49c5-45f1-a6ee-b08dff596a7d',

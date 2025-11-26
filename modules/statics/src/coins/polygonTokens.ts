@@ -1123,6 +1123,16 @@ export const polygonTokens = [
     UnderlyingAsset['polygon:mmt54'],
     POLYGON_TOKEN_FEATURES
   ),
+  polygonErc20(
+    'aadb358e-03e3-4eee-be6a-91df0e34fc0e',
+    'polygon:jpyc',
+    'JPY Coin',
+    18,
+    '0xe7c3d8c9a439fede00d2600032d5db0be71c3c29',
+    UnderlyingAsset['polygon:jpyc'],
+    POLYGON_TOKEN_FEATURES
+  ),
+
   // testnet polygon tokens
   tpolygonErc20(
     '09ba76d0-331e-4b75-bb75-739285c3e03a',

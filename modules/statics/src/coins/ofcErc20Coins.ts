@@ -4547,6 +4547,13 @@ export const tOfcErc20Coins = [
     24,
     UnderlyingAsset['baseeth:wbrly']
   ),
+  ofcerc20(
+    'bfda6989-f5d4-4cc4-a80f-6b88e8da5198',
+    'ofcbaseeth:sapien',
+    'Sapien',
+    18,
+    UnderlyingAsset['baseeth:sapien']
+  ),
 
   ofcerc20('abeefced-cfda-4afa-8f9c-aebfcadbecfd', 'ofceth:align', 'Aligned', 18, UnderlyingAsset['eth:align']),
 
@@ -4579,6 +4586,8 @@ export const tOfcErc20Coins = [
   ofcerc20('f4e98148-b703-4608-b416-67cd89c8a9f0', 'ofceth:tea', 'Tea', 18, UnderlyingAsset['eth:tea']),
   ofcerc20('727298fe-56c5-477a-92af-5b4139e792ea', 'ofceth:ofc', 'OneFootball Club', 18, UnderlyingAsset['eth:ofc']),
   ofcerc20('10c41a70-8bd2-4415-af52-fefe3af01132', 'ofceth:wxm', 'WeatherXM', 18, UnderlyingAsset['eth:wxm']),
+  ofcerc20('c574d2de-42be-488f-afc0-71e2691eb900', 'ofceth:jpyc', 'JPY Coin', 18, UnderlyingAsset['eth:jpyc']),
+  ofcerc20('8465f646-73f8-4818-b890-c953f4423c89', 'ofceth:ten', 'TEN', 18, UnderlyingAsset['eth:ten']),
 ];
 
 function underlyingAssetForSymbol(underlyingAssetValue: string): UnderlyingAsset {

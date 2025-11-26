@@ -2684,6 +2684,15 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['baseeth:wbrly'],
     Networks.main.basechain
   ),
+  erc20Token(
+    '6a73d1f3-995d-4188-9732-49f75a2c684a',
+    'baseeth:sapien',
+    'Sapien',
+    18,
+    '0xc729777d0470f30612b1564fd96e8dd26f5814e3',
+    UnderlyingAsset['baseeth:sapien'],
+    Networks.main.basechain
+  ),
 
   // XDC mainnet tokens
   erc20Token(
@@ -5204,6 +5213,15 @@ export const allCoinsAndTokens = [
     8,
     '0x2a8227993a4e38537a57caefe5e7e9a51327bf6cd732c1f56648f26f68304ebc',
     UnderlyingAsset['apt:kgen'],
+    APT_FEATURES
+  ),
+  aptToken(
+    '48f41a8a-88a7-4232-9051-ab1a84043bf8',
+    'apt:scf1',
+    'Colombia Facility 1 Senior',
+    8,
+    '0x1ec8b1ec96cdf4a4e765da973415bc3ed3301bc1d4d3ae18128c89b0bfcdfdce',
+    UnderlyingAsset['apt:scf1'],
     APT_FEATURES
   ),
   taptToken(
