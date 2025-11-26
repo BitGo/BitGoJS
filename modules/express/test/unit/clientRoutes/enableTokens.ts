@@ -4,9 +4,8 @@ import 'should-http';
 import 'should-sinon';
 import '../../lib/asserts';
 
-import * as express from 'express';
-
 import { handleV2EnableTokens } from '../../../src/clientRoutes';
+import { ExpressApiRouteRequest } from '../../../src/typedRoutes/api';
 
 import { BitGo } from 'bitgo';
 
@@ -20,14 +19,14 @@ describe('Enable tokens', () => {
 
     const mockRequest = {
       bitgo: stubBitgo,
-      params: {
+      decoded: {
         coin: 'tbtc',
         id: '23423423423423',
       },
       body: {
         enableTokens: [{ name: 'tsol:usdc' }, { name: 'tsol:usdt' }],
       },
-    } as unknown as express.Request;
+    } as unknown as ExpressApiRouteRequest<'express.v2.wallet.enableTokens', 'post'>;
 
     await handleV2EnableTokens(mockRequest).should.be.resolvedWith('success');
   });

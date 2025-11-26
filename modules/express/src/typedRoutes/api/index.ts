@@ -46,6 +46,7 @@ import { PostLightningWalletWithdraw } from './v2/lightningWithdraw';
 import { PutV2PendingApproval } from './v2/pendingApproval';
 import { PostConsolidateAccount } from './v2/consolidateAccount';
 import { PostCanonicalAddress } from './v2/canonicalAddress';
+import { PostWalletEnableTokens } from './v2/walletEnableTokens';
 import { PostWalletSweep } from './v2/walletSweep';
 import { PostIsWalletAddress } from './v2/isWalletAddress';
 
@@ -253,6 +254,12 @@ export const ExpressWalletRecoverTokenApiSpec = apiSpec({
   },
 });
 
+export const ExpressWalletEnableTokensApiSpec = apiSpec({
+  'express.v2.wallet.enableTokens': {
+    post: PostWalletEnableTokens,
+  },
+});
+
 export const ExpressCoinSigningApiSpec = apiSpec({
   'express.v2.coin.signtx': {
     post: PostCoinSignTx,
@@ -335,6 +342,7 @@ export type ExpressApi = typeof ExpressPingApiSpec &
   typeof ExpressV2WalletSendCoinsApiSpec &
   typeof ExpressOfcSignPayloadApiSpec &
   typeof ExpressWalletRecoverTokenApiSpec &
+  typeof ExpressWalletEnableTokensApiSpec &
   typeof ExpressCoinSigningApiSpec &
   typeof ExpressExternalSigningApiSpec &
   typeof ExpressWalletSigningApiSpec &
@@ -374,6 +382,7 @@ export const ExpressApi: ExpressApi = {
   ...ExpressV2WalletSendCoinsApiSpec,
   ...ExpressOfcSignPayloadApiSpec,
   ...ExpressWalletRecoverTokenApiSpec,
+  ...ExpressWalletEnableTokensApiSpec,
   ...ExpressCoinSigningApiSpec,
   ...ExpressExternalSigningApiSpec,
   ...ExpressWalletSigningApiSpec,

@@ -1008,11 +1008,11 @@ export async function handleV2PrebuildAndSignTransaction(
  * Enables tokens on a wallet
  * @param req
  */
-export async function handleV2EnableTokens(req: express.Request) {
+export async function handleV2EnableTokens(req: ExpressApiRouteRequest<'express.v2.wallet.enableTokens', 'post'>) {
   const bitgo = req.bitgo;
-  const coin = bitgo.coin(req.params.coin);
+  const coin = bitgo.coin(req.decoded.coin);
   const reqId = new RequestTracer();
-  const wallet = await coin.wallets().get({ id: req.params.id, reqId });
+  const wallet = await coin.wallets().get({ id: req.decoded.id, reqId });
   req.body.reqId = reqId;
   try {
     return wallet.sendTokenEnablements(createSendParams(req));
@@ -1670,12 +1670,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   ]);
 
   // token enablement
-  app.post(
-    '/api/v2/:coin/wallet/:id/enableTokens',
-    parseBody,
-    prepareBitGo(config),
-    promiseWrapper(handleV2EnableTokens)
-  );
+  router.post('express.v2.wallet.enableTokens', [prepareBitGo(config), typedPromiseWrapper(handleV2EnableTokens)]);
 
   // unspent changes
   router.post('express.v2.wallet.consolidateunspents', [
