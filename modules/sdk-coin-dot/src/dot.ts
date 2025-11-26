@@ -29,9 +29,17 @@ import {
   multisigTypes,
   AuditDecryptedKeyParams,
   verifyEddsaTssWalletAddress,
+  TxIntentMismatchRecipientError,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins, PolkadotSpecNameType } from '@bitgo/statics';
-import { Interface, KeyPair as DotKeyPair, Transaction, TransactionBuilderFactory, Utils } from './lib';
+import {
+  Interface,
+  KeyPair as DotKeyPair,
+  NativeTransferBuilder,
+  Transaction,
+  TransactionBuilderFactory,
+  Utils,
+} from './lib';
 import '@polkadot/api-augment';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { Material } from './lib/iface';
@@ -651,7 +659,7 @@ export class Dot extends BaseCoin {
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
-    const { txPrebuild, txParams } = params;
+    const { txPrebuild, txParams, verification, wallet, reqId } = params;
     if (!txParams) {
       throw new Error('missing txParams');
     }
@@ -664,12 +672,30 @@ export class Dot extends BaseCoin {
       throw new Error('missing txHex in txPrebuild');
     }
 
+    const factory = this.getBuilder();
+    const txBuilder = factory.from(txPrebuild.txHex) as unknown as NativeTransferBuilder;
+
+    if (verification?.consolidationToBaseAddress) {
+      // Verify funds are sent to wallet's base address for consolidation
+      const baseAddress = wallet?.coinSpecific()?.baseAddress || wallet?.coinSpecific()?.rootAddress;
+      if (!baseAddress) {
+        throw new Error('Unable to determine base address for consolidation');
+      }
+      if (txBuilder['_to'] !== baseAddress) {
+        throw new TxIntentMismatchRecipientError(
+          `Transaction destination address ${txBuilder['_to']} does not match wallet base address ${baseAddress}`,
+          reqId,
+          [txParams],
+          txPrebuild.txHex,
+          [{ address: txBuilder['_to'], amount: txBuilder['_amount'] }]
+        );
+      }
+      return true;
+    }
+
     if (!txParams.recipients || txParams.recipients.length === 0) {
       throw new Error('missing recipients in txParams');
     }
-
-    const factory = this.getBuilder();
-    const txBuilder = factory.from(txPrebuild.txHex) as any;
 
     if (Array.isArray(txParams.recipients) && txParams.recipients.length > 1) {
       throw new Error(
@@ -677,17 +703,25 @@ export class Dot extends BaseCoin {
       );
     }
 
-    // validate recipient is same as txBuilder._to
-    if (txParams.recipients[0].address !== txBuilder._to) {
-      throw new Error(
-        `Recipient address ${txParams.recipients[0].address} does not match transaction destination address ${txBuilder._to}`
+    // validate recipient is same as txBuilder['_to']
+    if (txParams.recipients[0].address !== txBuilder['_to']) {
+      throw new TxIntentMismatchRecipientError(
+        `Recipient address ${txParams.recipients[0].address} does not match transaction destination address ${txBuilder['_to']}`,
+        reqId,
+        [txParams],
+        txPrebuild.txHex,
+        [{ address: txBuilder['_to'], amount: txBuilder['_amount'] }]
       );
     }
 
-    // and amount is same as txBuilder._amount
-    if (txParams.recipients[0].amount !== txBuilder._amount) {
-      throw new Error(
-        `Recipient amount ${txParams.recipients[0].amount} does not match transaction amount ${txBuilder._amount}`
+    // validate amount is same as txBuilder['_amount']
+    if (txParams.recipients[0].amount !== txBuilder['_amount']) {
+      throw new TxIntentMismatchRecipientError(
+        `Recipient amount ${txParams.recipients[0].amount} does not match transaction amount ${txBuilder['_amount']}`,
+        reqId,
+        [txParams],
+        txPrebuild.txHex,
+        [{ address: txBuilder['_to'], amount: txBuilder['_amount'] }]
       );
     }
     return true;
