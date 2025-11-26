@@ -1513,6 +1513,86 @@ describe('ETH:', function () {
       const calledParams = isWalletAddressSpy.firstCall.args[0];
       calledParams.should.have.property('walletVersion', 2);
     });
+
+    it('should fail v6 address creation if walletVersion was not passed (simulates old bug)', async function () {
+      const bgUrl = common.Environments[bitgo.getEnv()].uri;
+      const ethCoin = bitgo.coin('hteth') as Hteth;
+      const walletDataV6 = {
+        id: '598f606cd8fc24710d2ebadb1d9459bb',
+        coinSpecific: {
+          baseAddress: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
+          walletVersion: 6,
+        },
+        coin: 'hteth',
+        keys: [
+          '598f606cd8fc24710d2ebad89dce86c2',
+          '598f606cc8e43aef09fcb785221d9dd2',
+          '5935d59cf660764331bafcade1855fd7',
+        ],
+        receiveAddress: {
+          address: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
+        },
+      };
+      const ethWalletV6 = new Wallet(bitgo, ethCoin, walletDataV6);
+
+      // Stub isWalletAddress to simulate the OLD bug where walletVersion was not passed
+      const originalIsWalletAddress = ethCoin.isWalletAddress.bind(ethCoin);
+      const isWalletAddressStub = sinon.stub(ethCoin, 'isWalletAddress').callsFake(async (params) => {
+        // Remove walletVersion to simulate the old bug
+        const paramsWithoutWalletVersion = { ...params };
+        delete (paramsWithoutWalletVersion as any).walletVersion;
+        return originalIsWalletAddress(paramsWithoutWalletVersion);
+      });
+
+      // Mock keychain requests
+      nock(bgUrl).get(`/api/v2/hteth/key/598f606cd8fc24710d2ebad89dce86c2`).reply(200, {
+        id: '598f606cd8fc24710d2ebad89dce86c2',
+        pub: 'xpub661MyMwAqRbcFXDcWD2vxuebcT1ZpTF4Vke6qmMW8yzddwNYpAPjvYEEL5jLfyYXW2fuxtAxY8TgjPUJLcf1C8qz9N6VgZxArKX4EwB8rH5',
+        commonKeychain:
+          '033b02aac4f038fef5118350b77d302ec6202931ca2e7122aad88994ffefcbc70a6069e662436236abb1619195232c41580204cb202c22357ed8f53e69eac5c69e',
+        source: 'user',
+        type: 'tss',
+      });
+      nock(bgUrl).get(`/api/v2/hteth/key/598f606cc8e43aef09fcb785221d9dd2`).reply(200, {
+        id: '598f606cc8e43aef09fcb785221d9dd2',
+        pub: 'xpub661MyMwAqRbcGhSaXikpuTC9KU88Xx9LrjKSw1JKsvXNgabpTdgjy7LSovh9ZHhcqhAHQu7uthu7FguNGdcC4aXTKK5gqTcPe4WvLYRbCSG',
+        commonKeychain:
+          '033b02aac4f038fef5118350b77d302ec6202931ca2e7122aad88994ffefcbc70a6069e662436236abb1619195232c41580204cb202c22357ed8f53e69eac5c69e',
+        source: 'backup',
+        type: 'tss',
+      });
+      nock(bgUrl).get(`/api/v2/hteth/key/5935d59cf660764331bafcade1855fd7`).reply(200, {
+        id: '5935d59cf660764331bafcade1855fd7',
+        pub: 'xpub661MyMwAqRbcFsXShW8R3hJsHNTYTUwzcejnLkY7KCtaJbDqcGkcBF99BrEJSjNZHeHveiYUrsAdwnjUMGwpgmEbiKcZWRuVA9HxnRaA3r3',
+        commonKeychain:
+          '033b02aac4f038fef5118350b77d302ec6202931ca2e7122aad88994ffefcbc70a6069e662436236abb1619195232c41580204cb202c22357ed8f53e69eac5c69e',
+        source: 'bitgo',
+        type: 'tss',
+      });
+
+      // Mock address creation API
+      nock(bgUrl)
+        .post(`/api/v2/hteth/wallet/${ethWalletV6.id()}/address`)
+        .reply(200, {
+          id: '638a48c6c3dba40007a3497fa49a080c',
+          address: '0xc012041dac143a59fa491db3a2b67b69bd78b685',
+          chain: 0,
+          index: 0,
+          coin: 'hteth',
+          wallet: ethWalletV6.id(),
+          coinSpecific: {
+            forwarderVersion: 4,
+            salt: '0x0',
+            feeAddress: '0xb1e725186990b86ca8efed08a3ccda9c9f400f09',
+          },
+        });
+
+      // Without walletVersion, address creation should fail because
+      // the code doesn't know to use TSS verification for v6 wallets
+      await assert.rejects(async () => ethWalletV6.createAddress({ chain: 0 }), UnexpectedAddressError);
+
+      isWalletAddressStub.restore();
+    });
   });
 
   describe('EVM Cross Chain Recovery', function () {
