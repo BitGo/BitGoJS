@@ -23,7 +23,7 @@ export const ExpressWalletUpdateBody = {
   signerTlsCert: t.string,
   /** (Optional) The signer macaroon for the lighting signer node. */
   signerMacaroon: optional(t.string),
-  /** The wallet passphrase (used locally to decrypt and sign). */
+  /** The wallet passphrase. This is not uploaded to BitGo, but used to decrypt userAuthKey used to sign the request before sending to BitGo. */
   passphrase: t.string,
 } as const;
 
@@ -31,7 +31,7 @@ export const ExpressWalletUpdateBody = {
  * Response for Express Wallet Update
  */
 export const ExpressWalletUpdateResponse = {
-  /** Updated Wallet - Returns the wallet with updated Lightning signer configuration */
+  /** Success - Returns the wallet with updated Lightning signer configuration */
   200: WalletResponse,
   /** Bad Request - Invalid parameters or missing required fields */
   400: BitgoExpressError,
@@ -44,10 +44,11 @@ export const ExpressWalletUpdateResponse = {
 /**
  * Express - Update Wallet
  * The express update wallet route is meant to be used for lightning (lnbtc/tlnbtc).
+ * It will produced a signed wallet update request that can be used to update the wallet.
  * For other coins, use the standard wallet update endpoint.
  *
  * @operationId express.wallet.update
- * @tag express
+ * @tag Express
  */
 export const PutExpressWalletUpdate = httpRoute({
   path: '/express/api/v2/{coin}/wallet/{id}',
