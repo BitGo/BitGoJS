@@ -172,7 +172,7 @@ export const ExpressWalletFanoutUnspentsApiSpec = apiSpec({
   'express.v1.wallet.fanoutunspents': {
     put: PutFanoutUnspents,
   },
-  'express.v2.wallet.fanoutunspents': {
+  'express.wallet.fanoutunspents': {
     post: PostFanoutUnspents,
   },
 });

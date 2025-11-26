@@ -832,7 +832,7 @@ export async function handleV2ConsolidateAccount(
  * handle wallet fanout unspents
  * @param req
  */
-async function handleV2FanOutUnspents(req: ExpressApiRouteRequest<'express.v2.wallet.fanoutunspents', 'post'>) {
+async function handleV2FanOutUnspents(req: ExpressApiRouteRequest<'express.wallet.fanoutunspents', 'post'>) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.decoded.coin);
   const wallet = await coin.wallets().get({ id: req.decoded.id });
@@ -1677,7 +1677,7 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
     prepareBitGo(config),
     typedPromiseWrapper(handleV2ConsolidateUnspents),
   ]);
-  router.post('express.v2.wallet.fanoutunspents', [prepareBitGo(config), typedPromiseWrapper(handleV2FanOutUnspents)]);
+  router.post('express.wallet.fanoutunspents', [prepareBitGo(config), typedPromiseWrapper(handleV2FanOutUnspents)]);
 
   router.post('express.v2.wallet.sweep', [prepareBitGo(config), typedPromiseWrapper(handleV2Sweep)]);
 
