@@ -97,6 +97,12 @@ export const GenerateWalletV2Query = {
  * 4. Creates the BitGo key (and the backup key if you pass `backupXpubProvider`) on the service.
  * 5. Creates the wallet on BitGo with the 3 public keys above.
  *
+ * ⓘ Ethereum wallets can only be created under an enterprise. Pass in the id of the enterprise to associate the wallet with. Your enterprise id can be seen by clicking on the “Manage Organization” link on the enterprise dropdown. Each enterprise has a fee address which will be used to pay for transaction fees on all Ethereum wallets in that enterprise. The fee address is displayed in the dashboard of the website, please fund it before creating a wallet.
+ *
+ * ⓘ You cannot generate a wallet by passing in a subtoken as the coin. Subtokens share wallets with their parent coin and it is not possible to create a wallet specific to one token.
+ *
+ * ⓘ This endpoint should be called through BitGo Express if used without the SDK, such as when using cURL.
+ *
  * ⓘ Many account-based assets, including Ethereum, require you to [Fund Gas Tanks](https://developers.bitgo.com/docs/get-started-gas-tanks#/) to initialize a new wallets on chain. Ensure your gas tank has a sufficient balance to cover this cost before generating a new wallet.
  *
  * @operationId express.wallet.generate
