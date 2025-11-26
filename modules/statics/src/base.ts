@@ -67,6 +67,7 @@ export enum CoinFamily {
   IOTA = 'iota',
   IRYS = 'irys',
   ISLM = 'islm',
+  JOVAYETH = 'jovayeth',
   KAIA = 'kaia',
   KAVA = 'kava',
   KAVAEVM = 'kavaevm',
@@ -86,6 +87,7 @@ export enum CoinFamily {
   OAS = 'oas',
   OFC = 'ofc',
   OG = 'og',
+  OKB = 'okb',
   OPETH = 'opeth',
   OSMO = 'osmo',
   PLUME = 'plume',
@@ -568,6 +570,7 @@ export enum UnderlyingAsset {
   IOTA = 'iota',
   IRYS = 'irys',
   ISLM = 'islm',
+  JOVAYETH = 'jovayeth',
   KAIA = 'kaia',
   KAVA = 'kava',
   KAVAEVM = 'kavaevm',
@@ -581,6 +584,7 @@ export enum UnderlyingAsset {
   NEAR = 'near',
   OAS = 'oas',
   OG = 'og',
+  OKB = 'okb',
   OPETH = 'opeth',
   OSMO = 'osmo',
   XPL = 'xpl', // Plasma Network
@@ -1437,7 +1441,6 @@ export enum UnderlyingAsset {
   OCTAV = 'octav',
   OGN = 'ogn',
   OGV = 'ogv',
-  OKB = 'okb',
   OKBBEAR = 'okbbear',
   OKBBULL = 'okbbull',
   OKBDOOM = 'okbdoom',
@@ -1786,6 +1789,8 @@ export enum UnderlyingAsset {
   TUSDS = 'tusds',
   TGOUSD = 'tgousd',
   'hteth:gousd' = 'hteth:gousd',
+  'hteth:sofid' = 'hteth:sofid',
+  'hteth:stgsofid' = 'hteth:stgsofid',
   'hteth:usd1' = 'hteth:usd1',
   'hteth:stgusd1' = 'hteth:stgusd1',
   'hteth:tsteth' = 'hteth:tsteth',
@@ -2037,6 +2042,7 @@ export enum UnderlyingAsset {
   'ZRO-0xE5C' = 'zro-0xe5c',
   ZRX = 'zrx',
   ZUSD = 'zusd',
+  'eth:okb' = 'eth:okb',
   'eth:usdg' = 'eth:usdg',
   'eth:spxux' = 'eth:spxux',
   'eth:aleo' = 'eth:aleo',
@@ -2320,6 +2326,7 @@ export enum UnderlyingAsset {
   'eth:usdi' = 'eth:usdi',
   'eth:tea' = 'eth:tea',
   'eth:ofc' = 'eth:ofc',
+  'eth:wxm' = 'eth:wxm',
 
   'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ' = 'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ',
   'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M' = 'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M',
@@ -2897,6 +2904,9 @@ export enum UnderlyingAsset {
   'xdc:srx' = 'xdc:srx',
   'xdc:weth' = 'xdc:weth',
 
+  // Story testnet tokens
+  'tip:usdc' = 'tip:usdc',
+
   // Arbitrum testnet tokens
   'tarbeth:link' = 'tarbeth:link',
   'tarbeth:xsgd' = 'tarbeth:xsgd',
@@ -3320,6 +3330,10 @@ export enum UnderlyingAsset {
 
   // TON mainnet tokens
   'ton:usdt' = 'ton:usdt',
+  'ton:usde' = 'ton:usde',
+  'ton:not' = 'ton:not',
+  'ton:cati' = 'ton:cati',
+  'ton:dogs' = 'ton:dogs',
 
   // TON testnet tokens
   'tton:ukwny-us' = 'tton:ukwny-us',

@@ -1315,4 +1315,49 @@ describe('Polygon', function () {
       );
     });
   });
+
+  describe('Test isWalletAddress', function () {
+    it('verify address for tpolygon', async function () {
+      const keychains = [
+        {
+          id: '6920c05e0b195abd8ed0bb0a5df32cdc',
+          source: 'user',
+          type: 'tss',
+          commonKeychain:
+            '02f929f92c25eaccb0e3ebaa0f5ed900c5ad30ba94f8444dc89c94e12f01aa5371522d810b8918ecc9e41eb901352df1c7977420fbaf9b8617f61b780b32b2ccad',
+        },
+        {
+          id: '6920c05e93c3b1c9e5006bf00a3cf016',
+          source: 'backup',
+          type: 'tss',
+          commonKeychain:
+            '02f929f92c25eaccb0e3ebaa0f5ed900c5ad30ba94f8444dc89c94e12f01aa5371522d810b8918ecc9e41eb901352df1c7977420fbaf9b8617f61b780b32b2ccad',
+        },
+        {
+          id: '6920c05d9ebee0100ec4a8aa7e300c02',
+          source: 'bitgo',
+          type: 'tss',
+          commonKeychain:
+            '02f929f92c25eaccb0e3ebaa0f5ed900c5ad30ba94f8444dc89c94e12f01aa5371522d810b8918ecc9e41eb901352df1c7977420fbaf9b8617f61b780b32b2ccad',
+        },
+      ];
+
+      const params = {
+        address: '0x4e9fc44697f4135455157396485f6fe8f909752f',
+        baseAddress: '0x8cf5ebd51585d159c4a1ca36178f9ad0fd7a594c',
+        coinSpecific: {
+          salt: '0xd',
+          forwarderVersion: 4,
+          feeAddress: '0x44dcb3504e323a3d70142036a99e2d4bba3f2270',
+        },
+        keychains,
+        index: 13,
+        walletVersion: 5,
+      };
+
+      const coin = bitgo.coin('tpolygon');
+      const isWalletAddr = await coin.isWalletAddress(params);
+      isWalletAddr.should.equal(true);
+    });
+  });
 });

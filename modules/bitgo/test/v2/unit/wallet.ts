@@ -3357,6 +3357,48 @@ describe('V2 Wallet:', function () {
         args[1]!.should.equal('full');
       });
 
+      it('should call prebuildTxWithIntent with correct params for seievm acceleration (user stuck tx)', async function () {
+        const recipients = [
+          {
+            address: '0xde50d9bbdcd477c962bf1cebecef50e452565c53',
+            amount: '10000000000000000',
+          },
+        ];
+        const feeOptions = {
+          maxFeePerGas: 30000000000,
+          maxPriorityFeePerGas: 20000000000,
+        };
+
+        const lowFeeTxid = '0x4d6deab136da1f3870de4eb6f8cf46ec1e08b9bf918b764578b7b1c7ab08d6b8';
+        const receiveAddress = '0x9bbb9a02e66e17636fd0637a0eee1e38f460b6ba';
+
+        const prebuildTxWithIntent = sandbox.stub(ECDSAUtils.EcdsaUtils.prototype, 'prebuildTxWithIntent');
+        prebuildTxWithIntent.resolves(txRequestFull);
+
+        // Create seievm wallet for testing
+        const seievmWallet = new Wallet(bitgo, bitgo.coin('seievm'), walletData);
+
+        await seievmWallet.prebuildTransaction({
+          reqId,
+          recipients,
+          type: 'acceleration',
+          feeOptions,
+          lowFeeTxid,
+          receiveAddress,
+        });
+
+        // Verify prebuildTxWithIntent was called with correct parameters
+        sinon.assert.calledOnce(prebuildTxWithIntent);
+        const args = prebuildTxWithIntent.args[0];
+        // Validate acceleration intent parameters
+        args[0]!.should.not.have.property('recipients');
+        args[0]!.feeOptions!.should.deepEqual(feeOptions);
+        args[0]!.lowFeeTxid!.should.equal(lowFeeTxid);
+        args[0]!.receiveAddress!.should.equal(receiveAddress);
+        args[0]!.intentType.should.equal('acceleration');
+        args[1]!.should.equal('full');
+      });
+
       it('should call prebuildTxWithIntent with the correct params for eth fillNonce', async function () {
         const feeOptions = {
           maxFeePerGas: 3000000000,
@@ -3493,6 +3535,32 @@ describe('V2 Wallet:', function () {
         intent.should.have.property('recipients', undefined);
         intent.feeOptions!.should.deepEqual(feeOptions);
         intent.txid!.should.equal(lowFeeTxid);
+        intent.intentType.should.equal('acceleration');
+      });
+
+      it('populate intent should return valid seievm acceleration intent for stuck transaction', async function () {
+        const mpcUtils = new ECDSAUtils.EcdsaUtils(bitgo, bitgo.coin('seievm'));
+
+        const feeOptions = {
+          maxFeePerGas: 30000000000,
+          maxPriorityFeePerGas: 20000000000,
+        };
+        const lowFeeTxid = '0x4d6deab136da1f3870de4eb6f8cf46ec1e08b9bf918b764578b7b1c7ab08d6b8';
+        const receiveAddress = '0x9bbb9a02e66e17636fd0637a0eee1e38f460b6ba';
+
+        const intent = mpcUtils.populateIntent(bitgo.coin('seievm'), {
+          reqId,
+          intentType: 'acceleration',
+          lowFeeTxid,
+          receiveAddress,
+          feeOptions,
+        });
+
+        // Validate the acceleration intent structure
+        intent.should.have.property('recipients', undefined);
+        intent.feeOptions!.should.deepEqual(feeOptions);
+        intent.txid!.should.equal(lowFeeTxid);
+        intent.receiveAddress!.should.equal(receiveAddress);
         intent.intentType.should.equal('acceleration');
       });
 

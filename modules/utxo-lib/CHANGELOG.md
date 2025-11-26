@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [11.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.15.0...@bitgo/utxo-lib@11.16.0) (2025-11-19)
+
+
+### Bug Fixes
+
+* **utxo-lib:** set OP_RETURN output value to 0 ([169cab7](https://github.com/BitGo/BitGoJS/commit/169cab7f6e97edd11f6df60e7e8976a2cdd9c500))
+
+
+### Features
+
+* **utxo-lib:** refactor replay protection to use wallet keys ([eb57682](https://github.com/BitGo/BitGoJS/commit/eb576824712d5a44c04037c3719a96f22dc5f12f))
+
+
+
+
+
 # [11.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.14.0...@bitgo/utxo-lib@11.15.0) (2025-11-12)
 
 

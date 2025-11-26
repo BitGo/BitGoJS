@@ -490,7 +490,8 @@ export const erc20Coins = [
     'Ampleforth',
     9,
     '0xd46ba6d942050d489dbd938a2c909a5d5039a161',
-    UnderlyingAsset.AMPL
+    UnderlyingAsset.AMPL,
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION, CoinFeature.REBASE_TOKEN]
   ),
   erc20(
     '60b37df5-c078-4d7e-b38a-6f3f7fd25ea7',
@@ -4444,11 +4445,11 @@ export const erc20Coins = [
   ),
   erc20(
     '987fa929-39ff-40a2-9249-d7b3be9dc76d',
-    'okb',
-    'OKB',
+    'eth:okb',
+    'OKB ETH Token',
     18,
     '0x75231f58b43240c9718dd58b4967c5114342a86c',
-    UnderlyingAsset.OKB
+    UnderlyingAsset['eth:okb']
   ),
   erc20(
     '68a5e76f-cb79-4016-a35e-f88b5a391d95',
@@ -8377,7 +8378,8 @@ export const erc20Coins = [
     'Aave interest bearing WBTC',
     8,
     '0x9ff58f4ffb29fa2266ab25e75e2a8b3503311656',
-    UnderlyingAsset.AWBTC
+    UnderlyingAsset.AWBTC,
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION, CoinFeature.REBASE_TOKEN]
   ),
   erc20(
     'fbd1d2af-b3c9-4272-aa92-30c1594fc626',
@@ -11940,7 +11942,8 @@ export const erc20Coins = [
     'DEVVE',
     18,
     '0x8248270620aa532e4d64316017be5e873e37cc09',
-    UnderlyingAsset['eth:devve']
+    UnderlyingAsset['eth:devve'],
+    AccountCoin.DEFAULT_FEATURES_EXCLUDE_SINGAPORE
   ),
   erc20(
     'facb8d7f-36f4-45f2-be14-b53895e641ad',
@@ -12580,6 +12583,18 @@ export const erc20Coins = [
     Networks.test.hoodi
   ),
   terc20(
+    'a0660bd4-c508-4704-ac2b-c7ead1f6ad43',
+    'hteth:stgsofid',
+    'Test SoFi USD',
+    6,
+    '0x5ce9c87a0b7208491f9fe52bcc8e919eb43c58b2',
+    UnderlyingAsset['hteth:stgsofid'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN],
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
+  terc20(
     '31eedb6e-3bd1-4407-b924-7136c4dc0483',
     'hteth:tsteth',
     'Hoodi Testnet STETH',
@@ -12610,6 +12625,18 @@ export const erc20Coins = [
     18,
     '0xed9e025fc3fd4ab704378ff5486b596f00dbef1b',
     UnderlyingAsset['hteth:usd1'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN],
+    undefined,
+    undefined,
+    Networks.test.hoodi
+  ),
+  terc20(
+    '8e4f9c4c-2b03-4ad4-8019-ace4bbda3acd',
+    'hteth:sofid',
+    'Test SoFi USD',
+    6,
+    '0x5572728e36b5510010ade1db6bbaea1c402411cc',
+    UnderlyingAsset['hteth:sofid'],
     [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN],
     undefined,
     undefined,
@@ -14058,5 +14085,14 @@ export const erc20Coins = [
     18,
     '0x9cb7a4ef0cae65b07362bc679a0b874041e3da53',
     UnderlyingAsset['eth:ofc']
+  ),
+
+  erc20(
+    '23b21214-3fe0-4785-8324-46a6814a334e',
+    'eth:wxm',
+    'WeatherXM',
+    18,
+    '0xde654f497a563dd7a121c176a125dd2f11f13a83',
+    UnderlyingAsset['eth:wxm']
   ),
 ];

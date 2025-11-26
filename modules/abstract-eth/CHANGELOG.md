@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [24.17.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.16.0...@bitgo/abstract-eth@24.17.0) (2025-11-19)
+
+
+### Features
+
+* recovery support for Hedera EVM ([b832596](https://github.com/BitGo/BitGoJS/commit/b832596290b006a7403a4e5767b88c9929f74505))
+
+
+
+
+
 # [24.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.15.0...@bitgo/abstract-eth@24.16.0) (2025-11-13)
 
 

@@ -33,8 +33,9 @@ import {
   VetNFTCollection,
   AdaToken,
   JettonToken,
+  AccountCoin,
 } from './account';
-import { CoinFamily, CoinKind, BaseCoin } from './base';
+import { CoinFamily, CoinKind, BaseCoin, CoinFeature } from './base';
 import { coins } from './coins';
 import { Networks, NetworkType } from './networks';
 import { OfcCoin } from './ofc';
@@ -172,246 +173,60 @@ export type TokenConfig =
   | TaoTokenConfig
   | PolyxTokenConfig
   | JettonTokenConfig;
+export interface TokenNetwork {
+  eth: {
+    tokens: Erc20TokenConfig[];
+    nfts: EthLikeTokenConfig[];
+  };
+  xlm: { tokens: StellarTokenConfig[] };
+  algo: { tokens: AlgoTokenConfig[] };
+  ofc: { tokens: OfcTokenConfig[] };
+  celo: { tokens: CeloTokenConfig[] };
+  eos: { tokens: EosTokenConfig[] };
+  avaxc: { tokens: AvaxcTokenConfig[] };
+  polygon: { tokens: EthLikeTokenConfig[] };
+  soneium: { tokens: EthLikeTokenConfig[] };
+  bsc: { tokens: EthLikeTokenConfig[] };
+  arbeth: { tokens: EthLikeTokenConfig[] };
+  opeth: { tokens: EthLikeTokenConfig[] };
+  baseeth: { tokens: EthLikeTokenConfig[] };
+  og: { tokens: EthLikeTokenConfig[] };
+  flow: { tokens: EthLikeTokenConfig[] };
+  lineaeth: { tokens: EthLikeTokenConfig[] };
+  seievm: { tokens: EthLikeTokenConfig[] };
+  coredao: { tokens: EthLikeTokenConfig[] };
+  world: { tokens: EthLikeTokenConfig[] };
+  flr: { tokens: EthLikeTokenConfig[] };
+  sol: { tokens: SolTokenConfig[] };
+  hbar: { tokens: HbarTokenConfig[] };
+  ada: { tokens: AdaTokenConfig[] };
+  trx: { tokens: TrxTokenConfig[] };
+  xrp: { tokens: XrpTokenConfig[] };
+  zketh: { tokens: EthLikeTokenConfig[] };
+  sui: { tokens: SuiTokenConfig[] };
+  tao: { tokens: TaoTokenConfig[] };
+  polyx: { tokens: PolyxTokenConfig[] };
+  bera: { tokens: EthLikeTokenConfig[] };
+  mon: { tokens: EthLikeTokenConfig[] };
+  xdc: { tokens: EthLikeTokenConfig[] };
+  ip: { tokens: EthLikeTokenConfig[] };
+  apt: {
+    tokens: AptTokenConfig[];
+    nftCollections: AptNFTCollectionConfig[];
+  };
+  stx: { tokens: Sip10TokenConfig[] };
+  near: { tokens: Nep141TokenConfig[] };
+  vet: {
+    tokens: VetTokenConfig[];
+    nftCollections: VetNFTCollectionConfig[];
+  };
+  cosmos: { tokens: CosmosTokenConfig[] };
+  ton: { tokens: JettonTokenConfig[] };
+}
 
 export interface Tokens {
-  bitcoin: {
-    eth: {
-      tokens: Erc20TokenConfig[];
-      nfts: EthLikeTokenConfig[];
-    };
-    xlm: {
-      tokens: StellarTokenConfig[];
-    };
-    algo: {
-      tokens: AlgoTokenConfig[];
-    };
-    ofc: {
-      tokens: OfcTokenConfig[];
-    };
-    celo: {
-      tokens: CeloTokenConfig[];
-    };
-    eos: {
-      tokens: EosTokenConfig[];
-    };
-    avaxc: {
-      tokens: AvaxcTokenConfig[];
-    };
-    polygon: {
-      tokens: EthLikeTokenConfig[];
-    };
-    soneium: {
-      tokens: EthLikeTokenConfig[];
-    };
-    bsc: {
-      tokens: EthLikeTokenConfig[];
-    };
-    arbeth: {
-      tokens: EthLikeTokenConfig[];
-    };
-    opeth: {
-      tokens: EthLikeTokenConfig[];
-    };
-    baseeth: {
-      tokens: EthLikeTokenConfig[];
-    };
-    og: {
-      tokens: EthLikeTokenConfig[];
-    };
-    flow: {
-      tokens: EthLikeTokenConfig[];
-    };
-    lineaeth: {
-      tokens: EthLikeTokenConfig[];
-    };
-    seievm: {
-      tokens: EthLikeTokenConfig[];
-    };
-    coredao: {
-      tokens: EthLikeTokenConfig[];
-    };
-    world: {
-      tokens: EthLikeTokenConfig[];
-    };
-    flr: {
-      tokens: EthLikeTokenConfig[];
-    };
-    sol: {
-      tokens: SolTokenConfig[];
-    };
-    hbar: {
-      tokens: HbarTokenConfig[];
-    };
-    ada: {
-      tokens: AdaTokenConfig[];
-    };
-    trx: {
-      tokens: TrxTokenConfig[];
-    };
-    xrp: {
-      tokens: XrpTokenConfig[];
-    };
-    zketh: {
-      tokens: EthLikeTokenConfig[];
-    };
-    sui: {
-      tokens: SuiTokenConfig[];
-    };
-    tao: {
-      tokens: TaoTokenConfig[];
-    };
-    polyx: {
-      tokens: PolyxTokenConfig[];
-    };
-    bera: {
-      tokens: EthLikeTokenConfig[];
-    };
-    mon: {
-      tokens: EthLikeTokenConfig[];
-    };
-    xdc: {
-      tokens: EthLikeTokenConfig[];
-    };
-    apt: {
-      tokens: AptTokenConfig[];
-      nftCollections: AptNFTCollectionConfig[];
-    };
-    stx: {
-      tokens: Sip10TokenConfig[];
-    };
-    near: {
-      tokens: Nep141TokenConfig[];
-    };
-    vet: {
-      tokens: VetTokenConfig[];
-      nftCollections: VetNFTCollectionConfig[];
-    };
-    cosmos: {
-      tokens: CosmosTokenConfig[];
-    };
-    ton: {
-      tokens: JettonTokenConfig[];
-    };
-  };
-  testnet: {
-    eth: {
-      tokens: Erc20TokenConfig[];
-      nfts: EthLikeTokenConfig[];
-    };
-    xlm: {
-      tokens: StellarTokenConfig[];
-    };
-    algo: {
-      tokens: AlgoTokenConfig[];
-    };
-    ofc: {
-      tokens: OfcTokenConfig[];
-    };
-    celo: {
-      tokens: CeloTokenConfig[];
-    };
-    bsc: {
-      tokens: EthLikeTokenConfig[];
-    };
-    mon: {
-      tokens: EthLikeTokenConfig[];
-    };
-    xdc: {
-      tokens: EthLikeTokenConfig[];
-    };
-    eos: {
-      tokens: EosTokenConfig[];
-    };
-    avaxc: {
-      tokens: AvaxcTokenConfig[];
-    };
-    polygon: {
-      tokens: EthLikeTokenConfig[];
-    };
-    soneium: {
-      tokens: EthLikeTokenConfig[];
-    };
-    arbeth: {
-      tokens: EthLikeTokenConfig[];
-    };
-    opeth: {
-      tokens: EthLikeTokenConfig[];
-    };
-    baseeth: {
-      tokens: EthLikeTokenConfig[];
-    };
-    og: {
-      tokens: EthLikeTokenConfig[];
-    };
-    flow: {
-      tokens: EthLikeTokenConfig[];
-    };
-    lineaeth: {
-      tokens: EthLikeTokenConfig[];
-    };
-    seievm: {
-      tokens: EthLikeTokenConfig[];
-    };
-    sol: {
-      tokens: SolTokenConfig[];
-    };
-    hbar: {
-      tokens: HbarTokenConfig[];
-    };
-    ada: {
-      tokens: AdaTokenConfig[];
-    };
-    trx: {
-      tokens: TrxTokenConfig[];
-    };
-    xrp: {
-      tokens: XrpTokenConfig[];
-    };
-    zketh: {
-      tokens: EthLikeTokenConfig[];
-    };
-    sui: {
-      tokens: SuiTokenConfig[];
-    };
-    tao: {
-      tokens: TaoTokenConfig[];
-    };
-    polyx: {
-      tokens: PolyxTokenConfig[];
-    };
-    bera: {
-      tokens: EthLikeTokenConfig[];
-    };
-    coredao: {
-      tokens: EthLikeTokenConfig[];
-    };
-    world: {
-      tokens: EthLikeTokenConfig[];
-    };
-    flr: {
-      tokens: EthLikeTokenConfig[];
-    };
-    apt: {
-      tokens: AptTokenConfig[];
-      nftCollections: AptNFTCollectionConfig[];
-    };
-    stx: {
-      tokens: Sip10TokenConfig[];
-    };
-    near: {
-      tokens: Nep141TokenConfig[];
-    };
-    vet: {
-      tokens: VetTokenConfig[];
-      nftCollections: VetNFTCollectionConfig[];
-    };
-    cosmos: {
-      tokens: CosmosTokenConfig[];
-    };
-    ton: {
-      tokens: JettonTokenConfig[];
-    };
-  };
+  bitcoin: TokenNetwork;
+  testnet: TokenNetwork;
 }
 
 export interface AmsTokenConfig {
@@ -1254,121 +1069,185 @@ const getFormattedJettonTokens = (customCoinMap = coins) =>
     return acc;
   }, []);
 
+function getEthLikeTokenConfig(coin: EthLikeERC20Token): EthLikeTokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.name.split(':')[0].toLowerCase(),
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+    decimalPlaces: coin.decimalPlaces,
+  };
+}
+
+export const getFormattedEthLikeTokenConfig = (customCoinMap = coins): EthLikeTokenConfig[] =>
+  customCoinMap.reduce((acc: EthLikeTokenConfig[], coin) => {
+    if (coin instanceof EthLikeERC20Token) {
+      acc.push(getEthLikeTokenConfig(coin));
+    }
+    return acc;
+  }, []);
+
+type EthLikeTokenMap = {
+  [K in CoinFamily]: { tokens: EthLikeTokenConfig[] };
+};
+
+/* Get all tokens of a given eth like coin for a given network */
+export const getEthLikeTokens = (network: 'Mainnet' | 'Testnet'): EthLikeTokenMap => {
+  const networkTokens = getFormattedEthLikeTokenConfig().filter((token) => token.network === network);
+  const ethLikeTokenMap = {} as EthLikeTokenMap;
+  // TODO: add IP token here and test changes (Ticket: https://bitgoinc.atlassian.net/browse/WIN-7835)
+  const enabledChains = ['ip'] as string[];
+
+  coins.forEach((coin) => {
+    // TODO: remove enabled chains once changes are done (Ticket: https://bitgoinc.atlassian.net/browse/WIN-7835)
+    if (
+      coin instanceof AccountCoin &&
+      coin.features.includes(CoinFeature.SUPPORTS_ERC20) &&
+      enabledChains.includes(coin.family)
+    ) {
+      const coinName = coin.family;
+      const coinNameForNetwork = network === 'Testnet' ? `t${coinName}` : coinName;
+
+      ethLikeTokenMap[coin.family] = {
+        tokens: networkTokens.filter((token) => token.coin === coinNameForNetwork),
+      };
+    }
+  });
+
+  return ethLikeTokenMap;
+};
+
+const getFormattedTokensByNetwork = (network: 'Mainnet' | 'Testnet', coinMap: typeof coins) => {
+  const networkType = network === 'Mainnet' ? NetworkType.MAINNET : NetworkType.TESTNET;
+  const ethLikeTokenMap = getEthLikeTokens(network);
+  return {
+    ...ethLikeTokenMap,
+    eth: {
+      tokens: getFormattedErc20Tokens(coinMap).filter((token) => token.network === network),
+      nfts: getFormattedErc721Tokens(coinMap).filter((token) => token.network === network),
+    },
+    xlm: {
+      tokens: getFormattedStellarTokens(coinMap).filter((token) => token.network === network),
+    },
+    algo: {
+      tokens: getFormattedAlgoTokens(coinMap).filter((token) => token.network === network),
+    },
+    ofc: {
+      tokens: getFormattedOfcCoins(coinMap).filter((token) => coinMap.get(token.type).network.type === networkType),
+    },
+    celo: {
+      tokens: getFormattedCeloTokens(coinMap).filter((token) => token.network === network),
+    },
+    bsc: {
+      tokens: getFormattedBscTokens(coinMap).filter((token) => token.network === network),
+    },
+    eos: {
+      tokens: getFormattedEosTokens(coinMap).filter((token) => token.network === network),
+    },
+    avaxc: {
+      tokens: getFormattedAvaxCTokens(coinMap).filter((token) => token.network === network),
+    },
+    polygon: {
+      tokens: getFormattedPolygonTokens(coinMap).filter((token) => token.network === network),
+    },
+    soneium: {
+      tokens: getFormattedSoneiumTokens(coinMap).filter((token) => token.network === network),
+    },
+    arbeth: {
+      tokens: getFormattedArbethTokens(coinMap).filter((token) => token.network === network),
+    },
+    opeth: {
+      tokens: getFormattedOpethTokens(coinMap).filter((token) => token.network === network),
+    },
+    baseeth: {
+      tokens: getFormattedBaseethTokens(coinMap).filter((token) => token.network === network),
+    },
+    og: {
+      tokens: getFormattedOgTokens(coinMap).filter((token) => token.network === network),
+    },
+    flow: {
+      tokens: getFormattedFlowTokens(coinMap).filter((token) => token.network === network),
+    },
+    mon: {
+      tokens: getFormattedMonadTokens(coinMap).filter((token) => token.network === network),
+    },
+    xdc: {
+      tokens: getFormattedXdcTokens(coinMap).filter((token) => token.network === network),
+    },
+    lineaeth: {
+      tokens: getFormattedLineaethTokens(coinMap).filter((token) => token.network === network),
+    },
+    seievm: {
+      tokens: getFormattedSeievmTokens(coinMap).filter((token) => token.network === network),
+    },
+    zketh: {
+      tokens: getFormattedZkethTokens(coinMap).filter((token) => token.network === network),
+    },
+    sol: {
+      tokens: getFormattedSolTokens(coinMap).filter((token) => token.network === network),
+    },
+    hbar: {
+      tokens: getFormattedHbarTokens(coinMap).filter((token) => token.network === network),
+    },
+    ada: {
+      tokens: getFormattedAdaTokens(coinMap).filter((token) => token.network === network),
+    },
+    trx: {
+      tokens: getFormattedTrxTokens(coinMap).filter((token) => token.network === network),
+    },
+    xrp: {
+      tokens: getFormattedXrpTokens(coinMap).filter((token) => token.network === network),
+    },
+    sui: {
+      tokens: getFormattedSuiTokens(coinMap).filter((token) => token.network === network),
+    },
+    tao: {
+      tokens: getFormattedTaoTokens(coinMap).filter((token) => token.network === network),
+    },
+    polyx: {
+      tokens: getFormattedPolyxTokens(coinMap).filter((token) => token.network === network),
+    },
+    bera: {
+      tokens: getFormattedBeraTokens(coinMap).filter((token) => token.network === network),
+    },
+    coredao: {
+      tokens: getFormattedCoredaoTokens(coinMap).filter((token) => token.network === network),
+    },
+    world: {
+      tokens: getFormattedWorldTokens(coinMap).filter((token) => token.network === network),
+    },
+    flr: {
+      tokens: getFormattedFlrTokens(coinMap).filter((token) => token.network === network),
+    },
+
+    stx: {
+      tokens: getFormattedSip10Tokens(coinMap).filter((token) => token.network === network),
+    },
+    near: {
+      tokens: getFormattedNep141Tokens(coinMap).filter((token) => token.network === network),
+    },
+    cosmos: {
+      tokens: getFormattedCosmosChainTokens(coinMap).filter((token) => token.network === network),
+    },
+    ton: {
+      tokens: getFormattedJettonTokens(coinMap).filter((token) => token.network === network),
+    },
+  };
+};
+
 export const getFormattedTokens = (coinMap = coins): Tokens => {
   const formattedAptNFTCollections = getFormattedAptNFTCollections(coinMap);
   const formattedVetNFTCollections = getFormattedVetNFTCollections(coinMap);
+
   return {
     bitcoin: {
-      eth: {
-        tokens: getFormattedErc20Tokens(coinMap).filter((token) => token.network === 'Mainnet'),
-        nfts: getFormattedErc721Tokens(coinMap).filter((token) => token.network === 'Mainnet'),
-      },
-      xlm: {
-        tokens: getFormattedStellarTokens(coinMap).filter((token) => token.network === 'Mainnet'),
-      },
-      algo: {
-        tokens: getFormattedAlgoTokens(coinMap).filter((token) => token.network === 'Mainnet'),
-      },
-      ofc: {
-        tokens: getFormattedOfcCoins(coinMap).filter(
-          (token) => coinMap.get(token.type).network.type === NetworkType.MAINNET
-        ),
-      },
-      celo: {
-        tokens: getFormattedCeloTokens(coinMap).filter((token) => token.network === 'Mainnet'),
-      },
-      bsc: {
-        tokens: getFormattedBscTokens(coinMap).filter((token) => token.network === 'Mainnet'),
-      },
-      eos: {
-        tokens: getFormattedEosTokens(coinMap).filter((token) => token.network === 'Mainnet'),
-      },
-      avaxc: {
-        tokens: getFormattedAvaxCTokens(coinMap).filter((token) => token.network === 'Mainnet'),
-      },
-      polygon: {
-        tokens: getFormattedPolygonTokens(coinMap).filter((token) => token.network === 'Mainnet'),
-      },
-      soneium: {
-        tokens: getFormattedSoneiumTokens(coinMap).filter((token) => token.network === 'Mainnet'),
-      },
-      arbeth: {
-        tokens: getFormattedArbethTokens(coinMap).filter((token) => token.network === 'Mainnet'),
-      },
-      opeth: {
-        tokens: getFormattedOpethTokens(coinMap).filter((token) => token.network === 'Mainnet'),
-      },
-      baseeth: {
-        tokens: getFormattedBaseethTokens(coinMap).filter((token) => token.network === 'Mainnet'),
-      },
-      og: {
-        tokens: getFormattedOgTokens(coinMap).filter((token) => token.network === 'Mainnet'),
-      },
-      flow: {
-        tokens: getFormattedFlowTokens(coinMap).filter((token) => token.network === 'Mainnet'),
-      },
-      mon: {
-        tokens: getFormattedMonadTokens(coinMap).filter((token) => token.network === 'Mainnet'),
-      },
-      xdc: {
-        tokens: getFormattedXdcTokens(coinMap).filter((token) => token.network === 'Mainnet'),
-      },
-      lineaeth: {
-        tokens: getFormattedLineaethTokens(coinMap).filter((token) => token.network === 'Mainnet'),
-      },
-      seievm: {
-        tokens: getFormattedSeievmTokens(coinMap).filter((token) => token.network === 'Mainnet'),
-      },
-      zketh: {
-        tokens: getFormattedZkethTokens(coinMap).filter((token) => token.network === 'Mainnet'),
-      },
-      sol: {
-        tokens: getFormattedSolTokens(coinMap).filter((token) => token.network === 'Mainnet'),
-      },
-      hbar: {
-        tokens: getFormattedHbarTokens(coinMap).filter((token) => token.network === 'Mainnet'),
-      },
-      ada: {
-        tokens: getFormattedAdaTokens(coinMap).filter((token) => token.network === 'Mainnet'),
-      },
-      trx: {
-        tokens: getFormattedTrxTokens(coinMap).filter((token) => token.network === 'Mainnet'),
-      },
-      xrp: {
-        tokens: getFormattedXrpTokens(coinMap).filter((token) => token.network === 'Mainnet'),
-      },
-      sui: {
-        tokens: getFormattedSuiTokens(coinMap).filter((token) => token.network === 'Mainnet'),
-      },
-      tao: {
-        tokens: getFormattedTaoTokens(coinMap).filter((token) => token.network === 'Mainnet'),
-      },
-      polyx: {
-        tokens: getFormattedPolyxTokens(coinMap).filter((token) => token.network === 'Mainnet'),
-      },
-      bera: {
-        tokens: getFormattedBeraTokens(coinMap).filter((token) => token.network === 'Mainnet'),
-      },
-      coredao: {
-        tokens: getFormattedCoredaoTokens(coinMap).filter((token) => token.network === 'Mainnet'),
-      },
-      world: {
-        tokens: getFormattedWorldTokens(coinMap).filter((token) => token.network === 'Mainnet'),
-      },
-      flr: {
-        tokens: getFormattedFlrTokens(coinMap).filter((token) => token.network === 'Mainnet'),
-      },
+      ...getFormattedTokensByNetwork('Mainnet', coinMap),
       apt: {
         tokens: getFormattedAptTokens(coinMap).filter((token) => token.network === 'Mainnet'),
         nftCollections: formattedAptNFTCollections.filter(
           (nftCollection: AptNFTCollectionConfig) => nftCollection.network === 'Mainnet'
         ),
-      },
-      stx: {
-        tokens: getFormattedSip10Tokens(coinMap).filter((token) => token.network === 'Mainnet'),
-      },
-      near: {
-        tokens: getFormattedNep141Tokens(coinMap).filter((token) => token.network === 'Mainnet'),
       },
       vet: {
         tokens: getFormattedVetTokens(coinMap).filter((token) => token.network === 'Mainnet'),
@@ -1376,136 +1255,20 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
           (nftCollection: VetNFTCollectionConfig) => nftCollection.network === 'Mainnet'
         ),
       },
-      cosmos: {
-        tokens: getFormattedCosmosChainTokens(coinMap).filter((token) => token.network === 'Mainnet'),
-      },
-      ton: {
-        tokens: getFormattedJettonTokens(coinMap).filter((token) => token.network === 'Mainnet'),
-      },
     },
     testnet: {
-      eth: {
-        tokens: getFormattedErc20Tokens(coinMap).filter((token) => token.network === 'Testnet'),
-        nfts: getFormattedErc721Tokens(coinMap).filter((token) => token.network === 'Testnet'),
-      },
-      xlm: {
-        tokens: getFormattedStellarTokens(coinMap).filter((token) => token.network === 'Testnet'),
-      },
-      algo: {
-        tokens: getFormattedAlgoTokens(coinMap).filter((token) => token.network === 'Testnet'),
-      },
-      ofc: {
-        tokens: getFormattedOfcCoins(coinMap).filter(
-          (token) => coinMap.get(token.type).network.type === NetworkType.TESTNET
-        ),
-      },
-      celo: {
-        tokens: getFormattedCeloTokens(coinMap).filter((token) => token.network === 'Testnet'),
-      },
-      bsc: {
-        tokens: getFormattedBscTokens(coinMap).filter((token) => token.network === 'Testnet'),
-      },
-      eos: {
-        tokens: getFormattedEosTokens(coinMap).filter((token) => token.network === 'Testnet'),
-      },
-      avaxc: {
-        tokens: getFormattedAvaxCTokens(coinMap).filter((token) => token.network === 'Testnet'),
-      },
-      polygon: {
-        tokens: getFormattedPolygonTokens(coinMap).filter((token) => token.network === 'Testnet'),
-      },
-      soneium: {
-        tokens: getFormattedSoneiumTokens(coinMap).filter((token) => token.network === 'Testnet'),
-      },
-      arbeth: {
-        tokens: getFormattedArbethTokens(coinMap).filter((token) => token.network === 'Testnet'),
-      },
-      opeth: {
-        tokens: getFormattedOpethTokens(coinMap).filter((token) => token.network === 'Testnet'),
-      },
-      baseeth: {
-        tokens: getFormattedBaseethTokens(coinMap).filter((token) => token.network === 'Testnet'),
-      },
-      og: {
-        tokens: getFormattedOgTokens(coinMap).filter((token) => token.network === 'Testnet'),
-      },
-      flow: {
-        tokens: getFormattedFlowTokens(coinMap).filter((token) => token.network === 'Testnet'),
-      },
-      mon: {
-        tokens: getFormattedMonadTokens(coinMap).filter((token) => token.network === 'Testnet'),
-      },
-      xdc: {
-        tokens: getFormattedXdcTokens(coinMap).filter((token) => token.network === 'Testnet'),
-      },
-      lineaeth: {
-        tokens: getFormattedLineaethTokens(coinMap).filter((token) => token.network === 'Testnet'),
-      },
-      seievm: {
-        tokens: getFormattedSeievmTokens(coinMap).filter((token) => token.network === 'Testnet'),
-      },
-      zketh: {
-        tokens: getFormattedZkethTokens(coinMap).filter((token) => token.network === 'Testnet'),
-      },
-      sol: {
-        tokens: getFormattedSolTokens(coinMap).filter((token) => token.network === 'Testnet'),
-      },
-      hbar: {
-        tokens: getFormattedHbarTokens(coinMap).filter((token) => token.network === 'Testnet'),
-      },
-      ada: {
-        tokens: getFormattedAdaTokens(coinMap).filter((token) => token.network === 'Testnet'),
-      },
-      trx: {
-        tokens: getFormattedTrxTokens(coinMap).filter((token) => token.network === 'Testnet'),
-      },
-      xrp: {
-        tokens: getFormattedXrpTokens(coinMap).filter((token) => token.network === 'Testnet'),
-      },
-      sui: {
-        tokens: getFormattedSuiTokens(coinMap).filter((token) => token.network === 'Testnet'),
-      },
-      tao: {
-        tokens: getFormattedTaoTokens(coinMap).filter((token) => token.network === 'Testnet'),
-      },
-      polyx: {
-        tokens: getFormattedPolyxTokens(coinMap).filter((token) => token.network === 'Testnet'),
-      },
-      bera: {
-        tokens: getFormattedBeraTokens(coinMap).filter((token) => token.network === 'Testnet'),
-      },
+      ...getFormattedTokensByNetwork('Testnet', coinMap),
       apt: {
         tokens: getFormattedAptTokens(coinMap).filter((token) => token.network === 'Testnet'),
         nftCollections: formattedAptNFTCollections.filter(
           (nftCollection: AptNFTCollectionConfig) => nftCollection.network === 'Testnet'
         ),
       },
-      stx: {
-        tokens: getFormattedSip10Tokens(coinMap).filter((token) => token.network === 'Testnet'),
-      },
-      coredao: {
-        tokens: getFormattedCoredaoTokens(coinMap).filter((token) => token.network === 'Testnet'),
-      },
-      world: {
-        tokens: getFormattedWorldTokens(coinMap).filter((token) => token.network === 'Testnet'),
-      },
-      flr: {
-        tokens: getFormattedFlrTokens(coinMap).filter((token) => token.network === 'Testnet'),
-      },
-      near: {
-        tokens: getFormattedNep141Tokens(coinMap).filter((token) => token.network === 'Testnet'),
-      },
       vet: {
         tokens: getFormattedVetTokens(coinMap).filter((token) => token.network === 'Testnet'),
         nftCollections: formattedVetNFTCollections.filter(
           (nftCollection: VetNFTCollectionConfig) => nftCollection.network === 'Testnet'
         ),
-      },
-      cosmos: {
-        tokens: getFormattedCosmosChainTokens(coinMap).filter((token) => token.network === 'Testnet'),
-      },
-      ton: {
-        tokens: getFormattedJettonTokens(coinMap).filter((token) => token.network === 'Testnet'),
       },
     },
   };

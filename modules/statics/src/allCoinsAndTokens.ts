@@ -1596,6 +1596,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.SUPPORTS_ERC20,
     ]
   ),
   account(
@@ -2237,6 +2238,80 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_WP,
     ]
   ),
+  account(
+    'd7ed1781-23ff-49b7-be6b-7fec13e1c452',
+    'jovayeth',
+    'Jovay Ethereum',
+    Networks.main.jovayeth,
+    18,
+    UnderlyingAsset.JOVAYETH,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+    ],
+    KeyCurve.Secp256k1,
+    '',
+    'JovayETH'
+  ),
+  account(
+    '200f9547-79ad-48a3-bc8f-3f074d51bc35',
+    'tjovayeth',
+    'Testnet Jovay Ethereum',
+    Networks.test.jovayeth,
+    18,
+    UnderlyingAsset.JOVAYETH,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+    ],
+    KeyCurve.Secp256k1,
+    '',
+    'TJovayETH'
+  ),
+  account(
+    '2c59a9f2-9bb0-42ff-b925-6049476b93a0',
+    'okb',
+    'X Layer',
+    Networks.main.okb,
+    18,
+    UnderlyingAsset.OKB,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+    ]
+  ),
+  account(
+    '6f29e239-1bcd-4d29-b638-e17b5efc3f6c',
+    'tokb',
+    'Testnet X Layer',
+    Networks.test.okb,
+    18,
+    UnderlyingAsset.OKB,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+    ]
+  ),
   canton(
     '07385320-5a4f-48e9-97a5-86d4be9f24b0',
     'canton',
@@ -2675,6 +2750,17 @@ export const allCoinsAndTokens = [
     '0x754704bc059f8c67012fed69bc8a327a5aafb603',
     UnderlyingAsset['mon:usdc'],
     Networks.main.mon
+  ),
+
+  // Story testnet tokens
+  erc20Token(
+    'f9a9c36f-8938-4206-bf0d-5016a861c58f',
+    'tip:usdc',
+    'Testnet Story USDC',
+    6,
+    '0x8c7c52eabb0fcbcaebce2556d9a719d539ea02d8',
+    UnderlyingAsset['tip:usdc'],
+    Networks.test.ip
   ),
 
   hederaCoin(

@@ -29,10 +29,10 @@ import {
   erc20Token,
 } from './account';
 import { ofcToken } from './ofc';
-import { BaseCoin } from './base';
+import { BaseCoin, CoinFeature } from './base';
 import { AmsTokenConfig, TrimmedAmsTokenConfig } from './tokenConfig';
 import { CoinMap } from './map';
-import { Networks } from './networks';
+import { Networks, NetworkType } from './networks';
 import { networkFeatureMapForTokens } from './networkFeatureMapForTokens';
 import { ofcErc20Coins, tOfcErc20Coins } from './coins/ofcErc20Coins';
 import { ofcCoins } from './coins/ofcCoins';
@@ -46,6 +46,23 @@ export const coins = CoinMap.fromCoins([
   ...ofcCoins,
   ...botOfcTokens,
 ]);
+
+// Build a map of ERC20-supporting chain family names to their mainnet coin names
+// Maps family -> coin name (e.g., 'ip' -> 'ip')
+const erc20ChainToNameMap: Record<string, string> = {};
+
+// TODO: remove ip coin here and remove other evm coins from switch block, once changes are tested (Ticket: https://bitgoinc.atlassian.net/browse/WIN-7835)
+const enabledEvmCoins = ['ip'];
+allCoinsAndTokens.forEach((coin) => {
+  if (
+    coin.features.includes(CoinFeature.SUPPORTS_ERC20) &&
+    coin.network.type === NetworkType.MAINNET &&
+    !coin.isToken &&
+    enabledEvmCoins.includes(coin.family)
+  ) {
+    erc20ChainToNameMap[coin.family] = coin.name;
+  }
+});
 
 export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefined {
   const initializerMap: Record<string, unknown> = {
@@ -82,6 +99,11 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
     ada: adaToken,
     ton: jettonToken,
   };
+
+  // dynamically add erc20 token initializers for eth like chains to the initializer map
+  Object.keys(erc20ChainToNameMap).forEach((key) => {
+    initializerMap[key] = erc20Token;
+  });
 
   //return the BaseCoin from default coin map if present
   if (isCoinPresentInCoinMap({ ...token })) {
@@ -130,6 +152,7 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
     case 'opeth':
     case 'polygon':
     case 'trx':
+    case erc20ChainToNameMap[family]:
       return initializer(
         ...commonArgs.slice(0, 4), // id, name, fullName, decimalPlaces
         token.contractAddress || token.tokenAddress, // contractAddress

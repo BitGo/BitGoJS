@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [15.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.13.1...@bitgo/express@15.14.0) (2025-11-19)
+
+
+### Bug Fixes
+
+* **express:** pendingApprovalV1 type codec ([00e4c72](https://github.com/BitGo/BitGoJS/commit/00e4c727f475c24221f8653de2710ac3ff23bab0))
+* **express:** signTransactionV1 type codec ([ddc28a3](https://github.com/BitGo/BitGoJS/commit/ddc28a3ea45deaa9e1f5039a5c191b37869b1e11))
+* **express:** simpleCreateV1 type codec ([3f0faf7](https://github.com/BitGo/BitGoJS/commit/3f0faf7a73c1715abf0508c984b8d60349b27bd0))
+
+
+### Features
+
+* bump public types ([bab6c62](https://github.com/BitGo/BitGoJS/commit/bab6c624682c1317456376e6bf7e6691224405b9))
+* **express:** migrated lightningPayment to type route ([f1f065d](https://github.com/BitGo/BitGoJS/commit/f1f065de882d81350c5bf52ddf124afcf11c2a13))
+* **express:** migrated lightningWithdraw to type route ([1feb50c](https://github.com/BitGo/BitGoJS/commit/1feb50cc2b9c48dc2dcbf903e22f5d6c0dc95688))
+* **express:** migrated pendingApprovalV2 to type route ([9769ded](https://github.com/BitGo/BitGoJS/commit/9769ded8e1f651c713180ea3762ff5a98c457975))
+
+
+
+
+
 ## [15.13.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.13.0...@bitgo/express@15.13.1) (2025-11-13)
 
 **Note:** Version bump only for package @bitgo/express

@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.14.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.13.0...bitgo@50.14.0) (2025-11-19)
+
+
+### Bug Fixes
+
+* **sdk-core:** use newWalletPassphrase in processAcceptShare for bulk operations ([b878014](https://github.com/BitGo/BitGoJS/commit/b8780146792be01bca897313ba64ebfa0b6d237e))
+
+
+### Features
+
+* bump public types ([bab6c62](https://github.com/BitGo/BitGoJS/commit/bab6c624682c1317456376e6bf7e6691224405b9))
+* **sdk-core:** exclude keychains for multi-user-key ([2f95b23](https://github.com/BitGo/BitGoJS/commit/2f95b23e5ce725486eaaf3b7e4abd01026779b5d))
+* **sdk-core:** update wallet share acceptance for multi-user-key ([f548584](https://github.com/BitGo/BitGoJS/commit/f54858431b93347b76b446c860dd1a16444a66d3))
+* **sdk-core:** update wallet sharing for multi-user-key ([d594ecf](https://github.com/BitGo/BitGoJS/commit/d594ecf2f880dbda12a40e226e6414d26dda04d9))
+
+
+
+
+
 # [50.13.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.12.0...bitgo@50.13.0) (2025-11-13)
 
 

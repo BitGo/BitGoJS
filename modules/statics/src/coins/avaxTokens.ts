@@ -311,7 +311,8 @@ export const avaxTokens = [
     'Ampleforth',
     9,
     '0x027dbca046ca156de9622cd1e2d907d375e53aa7',
-    UnderlyingAsset['avaxc:ampl']
+    UnderlyingAsset['avaxc:ampl'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.REBASE_TOKEN]
   ),
   avaxErc20(
     '23543dad-ad98-402e-aaef-771107530e83',

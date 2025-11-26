@@ -7,6 +7,8 @@ bitcoinjslib.initEccLib(utxolib.ecc);
 
 export * from './delegationMessage';
 export * from './descriptor';
+export * from './network';
+export * from './parseDescriptor';
 export * from './stakingParams';
 export * from './stakingManager';
 export * from './undelegation';

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/babylonlabs-io-btc-staking-ts@3.1.0...@bitgo/babylonlabs-io-btc-staking-ts@3.2.0) (2025-11-19)
+
+
+### Features
+
+* **babylonlabs-io-btc-staking-ts:** split generate-types script into ESM and CJS variants ([658a096](https://github.com/BitGo/BitGoJS/commit/658a096e86ba15f8893a0d7f2d1ad62b8fb8e9bb))
+
+
+
+
+
 # [3.1.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/babylonlabs-io-btc-staking-ts@2.4.1...@bitgo/babylonlabs-io-btc-staking-ts@3.1.0) (2025-10-16)
 
 

@@ -72,10 +72,10 @@ export function getDefaultConsensusBranchIdForVersion(network: ZcashNetwork, ver
       return NU5_BRANCH_ID;
     case ZcashTransaction.VERSION4_BRANCH_NU6:
     case ZcashTransaction.VERSION5_BRANCH_NU6:
-    case 4:
-    case 5:
       // https://zips.z.cash/zip-0253
       return NU6_BRANCH_ID;
+    case 4:
+    case 5:
     case ZcashTransaction.VERSION4_BRANCH_NU6_1:
     case ZcashTransaction.VERSION5_BRANCH_NU6_1:
       // https://zips.z.cash/zip-0255

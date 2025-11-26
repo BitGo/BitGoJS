@@ -166,6 +166,44 @@ describe('Vet Transfer Transaction', () => {
         should.equal(completelySignedTx.toBroadcastFormat(), testData.completeSignedSerializedHex);
         should.equal(completelySignedTx.id, '0xb988d614d3c24420cb2183239ab601b53e63ff4c81cea1e4888bc9d0aa6aad13');
       });
+
+      it('should preserve full precision of large number values', async function () {
+        // A very large number that would normally be represented in scientific notation '2.332734928448876e+22
+        const largeAmount = '23327349284488761096413';
+
+        const transaction = new Transaction(coins.get('tvet'));
+        const txBuilder = factory.getTransferBuilder(transaction);
+
+        // Use the large amount in recipients
+        const recipients = [
+          {
+            address: testData.addresses.validAddresses[1].toLowerCase(),
+            amount: largeAmount,
+          },
+        ];
+
+        txBuilder.sender(testData.addresses.validAddresses[0]);
+        txBuilder.recipients(recipients);
+        txBuilder.gas(21000);
+        txBuilder.nonce('64248');
+        txBuilder.blockRef('0x014ead140e77bbc1');
+        txBuilder.addFeePayerAddress(testData.feePayer.address);
+        txBuilder.expiration(64);
+        txBuilder.gasPriceCoef(128);
+
+        const tx = (await txBuilder.build()) as Transaction;
+
+        // Verify that the value is preserved exactly as provided
+        should.equal(tx.outputs[0].value, largeAmount);
+
+        // Create a serialized transaction and parse it back
+        const serializedTx = tx.toBroadcastFormat();
+        const deserializedTxBuilder = factory.from(serializedTx);
+        const deserializedTx = await deserializedTxBuilder.build();
+
+        // Verify the value is still preserved after serialization/deserialization
+        should.equal(deserializedTx.outputs[0].value, largeAmount);
+      });
     });
 
     describe('Fail', () => {

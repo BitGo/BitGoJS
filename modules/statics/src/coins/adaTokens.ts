@@ -1,6 +1,6 @@
 import { tadaToken, adaToken } from '../account';
 import { UnderlyingAsset } from '../base';
-import { ADA_TOKEN_FEATURES } from '../coinFeatures';
+import { ADA_TOKEN_FEATURES, ADA_TOKEN_FEATURES_EXCLUDE_SINGAPORE } from '../coinFeatures';
 
 export const adaTokens = [
   tadaToken(
@@ -8,7 +8,7 @@ export const adaTokens = [
     'tada:water',
     'Test ADA Token',
     0,
-    '2533cca6eb42076e144e9f2772c390dece9fce173bc38c72294b3924',
+    '2533cca6eb42076e144e9f2772c390dece9fce173bc38c72294b39245741544552',
     'WATER',
     'asset1n69xf60d0760xvn8v2ffd5frvsm0cl2r8hfjf6',
     UnderlyingAsset['tada:water'],
@@ -23,7 +23,7 @@ export const adaTokens = [
     'USDA',
     'asset1hc9l4ggxu7pgavfgndtn00cwr9uxesrf7ajqq7',
     UnderlyingAsset['tada:tusda'],
-    ADA_TOKEN_FEATURES
+    ADA_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   adaToken(
     '2d1f9c55-808d-4a6e-b494-62bdb54a16a4',
@@ -34,7 +34,7 @@ export const adaTokens = [
     'MIN',
     'asset1d9v7aptfvpx7we2la8f25kwprkj2ma5rp6uwzv',
     UnderlyingAsset['ada:min'],
-    ADA_TOKEN_FEATURES
+    ADA_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   adaToken(
     '9b0edf33-71a8-49e3-86a9-1c8a4bc320ef',
@@ -67,7 +67,7 @@ export const adaTokens = [
     'IAG',
     'asset1z62wksuv4sjkl24kjgr2sm8tfr4p0cf9p32rca',
     UnderlyingAsset['ada:iag'],
-    ADA_TOKEN_FEATURES
+    ADA_TOKEN_FEATURES_EXCLUDE_SINGAPORE
   ),
   adaToken(
     'fc13d676-cf5f-49b4-bb6d-2b5fc95ea174',

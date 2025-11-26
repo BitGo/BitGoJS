@@ -197,7 +197,7 @@ export const ofcErc20Coins = [
     CoinFeature.STABLECOIN,
   ]),
   ofcerc20('dec90842-ca08-417e-9cb0-89723cc50b77', 'ofcwbtc', 'Wrapped Bitcoin', 8, UnderlyingAsset.WBTC),
-  ofcerc20('8f01bcec-f576-49f8-b925-274566954017', 'ofcokb', 'OKB', 18, UnderlyingAsset.OKB),
+  ofcerc20('8f01bcec-f576-49f8-b925-274566954017', 'ofceth:okb', 'OKB ETH Token', 18, UnderlyingAsset['eth:okb']),
   ofcerc20('37e7d659-c3a4-4761-8f42-76fb7bc5032c', 'ofcmnt', 'Mantle', 18, UnderlyingAsset.MNT),
   ofcerc20('688725ff-e582-44bc-b42e-0de600426594', 'ofcstrk', 'StarkNet Token', 18, UnderlyingAsset.STRK),
   ofcerc20('d6d6ee90-05c1-4fdd-8621-bfaefaa703ae', 'ofctkx', 'Tokenize', 8, UnderlyingAsset.TKX),
@@ -3717,6 +3717,20 @@ export const tOfcErc20Coins = [
     'hteth'
   ),
   tofcerc20(
+    '145b2e09-453d-4861-8f54-5791d295bd96',
+    'ofchteth:stgsofid',
+    'Test SoFi USD',
+    6,
+    UnderlyingAsset['hteth:stgsofid'],
+    undefined,
+    [CoinFeature.STABLECOIN],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'hteth'
+  ),
+  tofcerc20(
     '72358644-ece4-41fd-9269-8d0bce6ff8cd',
     'ofchteth:tsteth',
     'Hoodi Testnet STETH',
@@ -3750,6 +3764,20 @@ export const tOfcErc20Coins = [
     'Test USD1 Token',
     18,
     UnderlyingAsset['hteth:usd1'],
+    undefined,
+    [CoinFeature.STABLECOIN],
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'hteth'
+  ),
+  tofcerc20(
+    '8e8028cb-855e-4cd7-8f7e-a00c63f0727c',
+    'ofchteth:sofid',
+    'Test SoFi USD',
+    6,
+    UnderlyingAsset['hteth:sofid'],
     undefined,
     [CoinFeature.STABLECOIN],
     undefined,
@@ -4550,6 +4578,7 @@ export const tOfcErc20Coins = [
   ofcerc20('884a97f2-5808-4614-814e-2cd1d17d29df', 'ofceth:usdi', 'USDi', 6, UnderlyingAsset['eth:usdi']),
   ofcerc20('f4e98148-b703-4608-b416-67cd89c8a9f0', 'ofceth:tea', 'Tea', 18, UnderlyingAsset['eth:tea']),
   ofcerc20('727298fe-56c5-477a-92af-5b4139e792ea', 'ofceth:ofc', 'OneFootball Club', 18, UnderlyingAsset['eth:ofc']),
+  ofcerc20('10c41a70-8bd2-4415-af52-fefe3af01132', 'ofceth:wxm', 'WeatherXM', 18, UnderlyingAsset['eth:wxm']),
 ];
 
 function underlyingAssetForSymbol(underlyingAssetValue: string): UnderlyingAsset {
