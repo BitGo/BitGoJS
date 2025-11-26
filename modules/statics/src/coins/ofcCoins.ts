@@ -1351,6 +1351,14 @@ export const ofcCoins = [
     SOL_TOKEN_FEATURES
   ),
   tofcsolToken(
+    'fccfb15d-e75e-41b6-8984-b240c94ac5aa',
+    'ofctsol:wsol',
+    'Testnet Wrapped Sol',
+    9,
+    UnderlyingAsset['tsol:wsol'],
+    SOL_TOKEN_FEATURES
+  ),
+  tofcsolToken(
     '5610a965-d046-46e2-9077-40f496be3f18',
     'ofctsol:orca',
     'testnet ORCA',
