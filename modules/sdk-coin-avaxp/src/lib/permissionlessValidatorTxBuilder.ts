@@ -283,6 +283,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
     this.transaction._threshold = output.outputOwners.threshold.value();
     this.transaction._nodeID = permissionlessValidatorTx.subnetValidator.validator.nodeId.toString();
     this._nodeID = this.transaction._nodeID;
+    this._delegationFeeRate = permissionlessValidatorTx.shares.value() / 1e4;
     this.transaction._startTime = permissionlessValidatorTx.subnetValidator.validator.startTime.value();
     this._startTime = this.transaction._startTime;
     this.transaction._endTime = permissionlessValidatorTx.subnetValidator.validator.endTime.value();
@@ -526,7 +527,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
 
     // Shares 10,000 times percentage of reward taken from delegators
     // https://docs.avax.network/reference/avalanchego/p-chain/txn-format#unsigned-add-validator-tx
-    const shares = new Int(1e4 * 2);
+    const shares = new Int(1e4 * this._delegationFeeRate);
 
     const addressMaps = [...this.transaction._fromAddresses]
       .sort((a, b) => avaxUtils.bytesCompare(a, b))
