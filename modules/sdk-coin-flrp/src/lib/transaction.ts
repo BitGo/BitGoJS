@@ -32,7 +32,7 @@ function isEmptySignature(signature: string): boolean {
 }
 
 export class Transaction extends BaseTransaction {
-  protected _flareTransaction: pvmSerial.BaseTx | UnsignedTx;
+  protected _flareTransaction: Tx;
   public _type: TransactionType;
   public _network: FlareNetwork;
   public _networkID: number;
@@ -49,11 +49,14 @@ export class Transaction extends BaseTransaction {
   public _rewardAddresses: Uint8Array[] = [];
   public _utxos: DecodedUtxoObj[] = []; // Define proper type based on Flare's UTXO structure
   public _fee: Partial<TransactionFee> = {};
+  // Store original raw signed bytes to preserve exact format when re-serializing
+  public _rawSignedBytes: Buffer | undefined;
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
     this._network = coinConfig.network as FlareNetwork;
-    this._assetId = this._network.assetId; // Update with proper Flare asset ID
+    // Decode cb58-encoded asset ID to hex for use in transaction serialization
+    this._assetId = utils.cb58Decode(this._network.assetId).toString('hex');
     this._blockchainID = this._network.blockchainID;
     this._networkID = this._network.networkID;
   }
@@ -113,6 +116,8 @@ export class Transaction extends BaseTransaction {
         if (emptySlotIndex !== -1) {
           credential.setSignature(emptySlotIndex, signature);
           signatureSet = true;
+          // Clear raw signed bytes since we've modified the transaction
+          this._rawSignedBytes = undefined;
           break;
         }
       }
@@ -127,9 +132,18 @@ export class Transaction extends BaseTransaction {
     if (!this._flareTransaction) {
       throw new InvalidTransactionError('Empty transaction data');
     }
-    return FlareUtils.bufferToHex(
-      FlareUtils.addChecksum((this._flareTransaction as UnsignedTx).getSignedTx().toBytes())
-    );
+    // If we have the original raw signed bytes, use them directly to preserve exact format
+    if (this._rawSignedBytes) {
+      return FlareUtils.bufferToHex(this._rawSignedBytes);
+    }
+    const unsignedTx = this._flareTransaction as UnsignedTx;
+    // For signed transactions, return the full signed tx with credentials
+    // Check signature.length for robustness
+    if (this.signature.length > 0) {
+      return FlareUtils.bufferToHex(unsignedTx.getSignedTx().toBytes());
+    }
+    // For unsigned transactions, return just the transaction bytes
+    return FlareUtils.bufferToHex(unsignedTx.toBytes());
   }
 
   toJson(): TxData {

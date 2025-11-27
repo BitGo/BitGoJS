@@ -78,7 +78,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @param locktime - Timestamp after which the output can be spent
    */
   validateLocktime(locktime: bigint): void {
-    if (!locktime || locktime < BigInt(0)) {
+    if (locktime < BigInt(0)) {
       throw new BuildTransactionError('Invalid transaction: locktime must be 0 or higher');
     }
   }

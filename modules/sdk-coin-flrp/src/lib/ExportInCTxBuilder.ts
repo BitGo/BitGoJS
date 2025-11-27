@@ -75,7 +75,7 @@ export class ExportInCTxBuilder extends AtomicInCTransactionBuilder {
     return TransactionType.Export;
   }
 
-  initBuilder(tx: Tx): this {
+  initBuilder(tx: Tx, rawBytes?: Buffer): this {
     const baseTx = tx as evmSerial.ExportTx;
     if (!this.verifyTxType(baseTx._type)) {
       throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
@@ -106,14 +106,41 @@ export class ExportInCTxBuilder extends AtomicInCTransactionBuilder {
     const outputAmount = transferOutput.amount();
     const fee = inputAmount - outputAmount;
     this._amount = outputAmount;
-    this.transaction._fee.feeRate = Number(fee) - Number(this.fixedFee);
+    // Store the actual fee directly (don't subtract fixedFee since buildFlareTransaction doesn't add it back)
+    this.transaction._fee.feeRate = Number(fee);
     this.transaction._fee.fee = fee.toString();
     this.transaction._fee.size = 1;
     this.transaction._fromAddresses = [Buffer.from(input.address.toBytes())];
     this.transaction._locktime = transferOutput.getLocktime();
 
     this._nonce = input.nonce.value();
-    this.transaction.setTransaction(tx);
+
+    // Check if raw bytes contain credentials and extract them
+    const { hasCredentials, credentials } = rawBytes
+      ? utils.extractCredentialsFromRawBytes(rawBytes, baseTx, 'EVM')
+      : { hasCredentials: false, credentials: [] };
+
+    // If it's a signed transaction, store the original raw bytes to preserve exact format
+    if (hasCredentials && rawBytes) {
+      this.transaction._rawSignedBytes = rawBytes;
+    }
+
+    // Create proper UnsignedTx wrapper with credentials
+    const fromAddress = new Address(this.transaction._fromAddresses[0]);
+    const addressMap = new FlareUtils.AddressMap([
+      [fromAddress, 0],
+      [fromAddress, 1],
+    ]);
+    const addressMaps = new FlareUtils.AddressMaps([addressMap]);
+
+    const unsignedTx = new UnsignedTx(
+      baseTx,
+      [],
+      addressMaps,
+      credentials.length > 0 ? credentials : [new Credential([utils.createNewSig('')])]
+    );
+
+    this.transaction.setTransaction(unsignedTx);
     return this;
   }
 
@@ -147,8 +174,9 @@ export class ExportInCTxBuilder extends AtomicInCTransactionBuilder {
       throw new Error('nonce is required');
     }
 
-    const txFee = BigInt(this.fixedFee);
-    const fee = BigInt(this.transaction._fee.feeRate) + txFee;
+    // For EVM exports, feeRate represents the total fee (baseFee * gasUnits)
+    // Don't add fixedFee as it's already accounted for in the EVM gas model
+    const fee = BigInt(this.transaction._fee.feeRate);
     this.transaction._fee.fee = fee.toString();
     this.transaction._fee.size = 1;
 
@@ -158,6 +186,15 @@ export class ExportInCTxBuilder extends AtomicInCTransactionBuilder {
     const amount = new BigIntPr(this._amount + fee);
     const nonce = new BigIntPr(this._nonce);
     const input = new evmSerial.Input(fromAddress, amount, assetId, nonce);
+    // Map all destination P-chain addresses for multisig support
+    // Sort addresses alphabetically by hex representation (required by Avalanche/Flare protocol)
+    const sortedToAddresses = [...this.transaction._to].sort((a, b) => {
+      const aHex = Buffer.from(a).toString('hex');
+      const bHex = Buffer.from(b).toString('hex');
+      return aHex.localeCompare(bHex);
+    });
+    const toAddresses = sortedToAddresses.map((addr) => new Address(addr));
+
     const exportTx = new evmSerial.ExportTx(
       new Int(this.transaction._networkID),
       utils.flareIdString(this.transaction._blockchainID),
@@ -168,9 +205,11 @@ export class ExportInCTxBuilder extends AtomicInCTransactionBuilder {
           assetId,
           new TransferOutput(
             new BigIntPr(this._amount),
-            new OutputOwners(new BigIntPr(this.transaction._locktime), new Int(this.transaction._threshold), [
-              new Address(this.transaction._to[0]),
-            ])
+            new OutputOwners(
+              new BigIntPr(this.transaction._locktime),
+              new Int(this.transaction._threshold),
+              toAddresses
+            )
           )
         ),
       ]

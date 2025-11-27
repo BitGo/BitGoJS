@@ -90,7 +90,7 @@ describe('ExportInCTxBuilder', function () {
         .nonce(testData.nonce)
         .amount(testData.amount)
         .threshold(testData.threshold)
-        .locktime(10)
+        .locktime(testData.locktime)
         .to(testData.pAddresses)
         .feeRate(testData.fee);
 
@@ -100,6 +100,7 @@ describe('ExportInCTxBuilder', function () {
       const tx = await txBuilder.build();
       const rawTx = tx.toBroadcastFormat();
       rawTx.should.equal(testData.unsignedHex);
+      tx.id.should.equal(testData.txhash);
     });
 
     it('Should recover export tx from raw tx', async () => {
@@ -108,13 +109,15 @@ describe('ExportInCTxBuilder', function () {
       const tx = await txBuilder.build();
       const rawTx = tx.toBroadcastFormat();
       rawTx.should.equal(testData.unsignedHex);
+      tx.id.should.equal(testData.txhash);
     });
 
-    xit('Should recover signed export from signed raw tx', async () => {
+    it('Should recover signed export from signed raw tx', async () => {
       const txBuilder = new TransactionBuilderFactory(coins.get('tflrp')).from(testData.signedHex);
       const tx = await txBuilder.build();
       const rawTx = tx.toBroadcastFormat();
       rawTx.should.equal(testData.signedHex);
+      tx.id.should.equal(testData.txhash);
     });
 
     it('Should full sign a export tx for same values', async () => {
@@ -125,6 +128,7 @@ describe('ExportInCTxBuilder', function () {
       const rawTx = tx.toBroadcastFormat();
       rawTx.should.equal(testData.signedHex);
       tx.signature.should.eql(testData.signature);
+      tx.id.should.equal(testData.txhash);
     });
 
     it('Should full sign a export tx from unsigned raw tx', async () => {
@@ -133,21 +137,20 @@ describe('ExportInCTxBuilder', function () {
       const tx = await txBuilder.build();
       const rawTx = tx.toBroadcastFormat();
       rawTx.should.equal(testData.signedHex);
+      tx.id.should.equal(testData.txhash);
     });
 
     it('Key cannot sign the transaction', () => {
-      it('Should full sign a export  tx from unsigned raw tx', () => {
-        const txBuilder = new TransactionBuilderFactory(coins.get('tflrp'))
-          .from(testData.unsignedHex)
-          .fromPubKey(testData.pAddresses);
-        txBuilder.sign({ key: testData.privateKey });
-        txBuilder
-          .build()
-          .then(() => assert.fail('it can sign'))
-          .catch((err) => {
-            err.message.should.be.equal('Private key cannot sign the transaction');
-          });
-      });
+      const txBuilder = new TransactionBuilderFactory(coins.get('tflrp'))
+        .from(testData.unsignedHex)
+        .fromPubKey(testData.pAddresses);
+      txBuilder.sign({ key: testData.privateKey });
+      txBuilder
+        .build()
+        .then(() => assert.fail('it can sign'))
+        .catch((err) => {
+          err.message.should.be.equal('Private key cannot sign the transaction');
+        });
     });
   });
 });
