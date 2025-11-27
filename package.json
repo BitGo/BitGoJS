@@ -147,10 +147,11 @@
     "test:prepare-release": "mocha --require tsx ./scripts/tests/prepareRelease/prepare-release-main.test.ts"
   },
   "dependencies": {
+    "@bitgo/sdk-coin-iota": "1.4.4",
     "axios": "^1.12.0",
+    "bigint-buffer": "npm:@trufflesuite/bigint-buffer@1.1.10",
     "terser": "^5.14.2",
-    "tmp": "^0.2.3",
-    "bigint-buffer": "npm:@trufflesuite/bigint-buffer@1.1.10"
+    "tmp": "^0.2.3"
   },
   "packageManager": "yarn@1.22.22"
 }
