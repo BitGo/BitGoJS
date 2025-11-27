@@ -78,3 +78,30 @@ export const generateObjects = (count: number): TransactionObjectInput[] => {
     digest: `digest${i}`,
   }));
 };
+
+// Test signature data for signature serialization tests
+export const testSignature = {
+  // 64-byte signature (hex string)
+  signature: Buffer.from(
+    'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2' +
+      'c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4',
+    'hex'
+  ),
+  // Public key (already defined in sender)
+  publicKey: {
+    pub: sender.publicKey,
+  },
+};
+
+export const testGasSponsorSignature = {
+  // 64-byte signature (hex string)
+  signature: Buffer.from(
+    'd4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5' +
+      'f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7',
+    'hex'
+  ),
+  // Public key (already defined in gasSponsor)
+  publicKey: {
+    pub: gasSponsor.publicKey,
+  },
+};

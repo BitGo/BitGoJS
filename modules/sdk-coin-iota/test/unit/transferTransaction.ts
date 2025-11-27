@@ -374,4 +374,160 @@ describe('Iota Transfer Transaction', () => {
       should(() => tx.id).throwError('Tx not built or a rebuild is required');
     });
   });
+
+  describe('Signature Serialization', () => {
+    it('should have undefined serializedSignature before signing', async function () {
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.sender(testData.sender.address);
+      txBuilder.recipients(testData.recipients);
+      txBuilder.paymentObjects(testData.paymentObjects);
+      txBuilder.gasData(testData.gasData);
+
+      const tx = (await txBuilder.build()) as TransferTransaction;
+
+      should.equal(tx.serializedSignature, undefined);
+      should.equal(tx.serializedGasSponsorSignature, undefined);
+    });
+
+    it('should serialize signature after adding and rebuilding', async function () {
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.sender(testData.sender.address);
+      txBuilder.recipients(testData.recipients);
+      txBuilder.paymentObjects(testData.paymentObjects);
+      txBuilder.gasData(testData.gasData);
+
+      const tx = (await txBuilder.build()) as TransferTransaction;
+
+      // Add signature
+      tx.addSignature(testData.testSignature.publicKey, testData.testSignature.signature);
+
+      // Rebuild to trigger serialization
+      await tx.build();
+
+      should.exist(tx.serializedSignature);
+      should.equal(typeof tx.serializedSignature, 'string');
+      // Verify it's valid base64
+      should.equal(/^[A-Za-z0-9+/]*={0,2}$/.test(tx.serializedSignature as string), true);
+    });
+
+    it('should serialize gas sponsor signature correctly', async function () {
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.sender(testData.sender.address);
+      txBuilder.recipients(testData.recipients);
+      txBuilder.paymentObjects(testData.paymentObjects);
+      txBuilder.gasData(testData.gasData);
+      txBuilder.gasSponsor(testData.gasSponsor.address);
+
+      const tx = (await txBuilder.build()) as TransferTransaction;
+
+      // Add gas sponsor signature
+      tx.addGasSponsorSignature(testData.testGasSponsorSignature.publicKey, testData.testGasSponsorSignature.signature);
+
+      // Rebuild to trigger serialization
+      await tx.build();
+
+      should.exist(tx.serializedGasSponsorSignature);
+      should.equal(typeof tx.serializedGasSponsorSignature, 'string');
+      // Verify it's valid base64
+      should.equal(/^[A-Za-z0-9+/]*={0,2}$/.test(tx.serializedGasSponsorSignature as string), true);
+    });
+
+    it('should serialize both sender and gas sponsor signatures', async function () {
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.sender(testData.sender.address);
+      txBuilder.recipients(testData.recipients);
+      txBuilder.paymentObjects(testData.paymentObjects);
+      txBuilder.gasData(testData.gasData);
+      txBuilder.gasSponsor(testData.gasSponsor.address);
+
+      const tx = (await txBuilder.build()) as TransferTransaction;
+
+      // Add both signatures
+      tx.addSignature(testData.testSignature.publicKey, testData.testSignature.signature);
+      tx.addGasSponsorSignature(testData.testGasSponsorSignature.publicKey, testData.testGasSponsorSignature.signature);
+
+      // Rebuild to trigger serialization
+      await tx.build();
+
+      should.exist(tx.serializedSignature);
+      should.exist(tx.serializedGasSponsorSignature);
+      should.notEqual(tx.serializedSignature, tx.serializedGasSponsorSignature);
+    });
+
+    it('should include serialized signatures in signatures array', async function () {
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.sender(testData.sender.address);
+      txBuilder.recipients(testData.recipients);
+      txBuilder.paymentObjects(testData.paymentObjects);
+      txBuilder.gasData(testData.gasData);
+
+      const tx = (await txBuilder.build()) as TransferTransaction;
+
+      // Add signature
+      tx.addSignature(testData.testSignature.publicKey, testData.testSignature.signature);
+
+      // Rebuild to trigger serialization
+      await tx.build();
+
+      // Check that signatures array contains the serialized signature
+      tx.signature.length.should.equal(1);
+      tx.signature[0].should.equal(tx.serializedSignature);
+    });
+
+    it('should include both signatures in signatures array when gas sponsor is present', async function () {
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.sender(testData.sender.address);
+      txBuilder.recipients(testData.recipients);
+      txBuilder.paymentObjects(testData.paymentObjects);
+      txBuilder.gasData(testData.gasData);
+      txBuilder.gasSponsor(testData.gasSponsor.address);
+
+      const tx = (await txBuilder.build()) as TransferTransaction;
+
+      // Add both signatures
+      tx.addSignature(testData.testSignature.publicKey, testData.testSignature.signature);
+      tx.addGasSponsorSignature(testData.testGasSponsorSignature.publicKey, testData.testGasSponsorSignature.signature);
+
+      // Rebuild to trigger serialization
+      await tx.build();
+
+      // Check that signatures array contains both serialized signatures
+      tx.signature.length.should.equal(2);
+      tx.signature[0].should.equal(tx.serializedSignature);
+      tx.signature[1].should.equal(tx.serializedGasSponsorSignature);
+    });
+
+    it('should verify signature serialization format', async function () {
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.sender(testData.sender.address);
+      txBuilder.recipients(testData.recipients);
+      txBuilder.paymentObjects(testData.paymentObjects);
+      txBuilder.gasData(testData.gasData);
+
+      const tx = (await txBuilder.build()) as TransferTransaction;
+
+      // Add signature
+      tx.addSignature(testData.testSignature.publicKey, testData.testSignature.signature);
+
+      // Rebuild to trigger serialization
+      await tx.build();
+
+      // Decode and verify format: 0x00 + signature (64 bytes) + pubkey (32 bytes) = 97 bytes
+      const decoded = Buffer.from(tx.serializedSignature!, 'base64');
+
+      // Should be 97 bytes total (1 prefix + 64 signature + 32 pubkey)
+      decoded.length.should.equal(97);
+
+      // First byte should be 0x00
+      decoded[0].should.equal(0x00);
+
+      // Next 64 bytes should be the signature
+      const signatureBytes = decoded.slice(1, 65);
+      signatureBytes.toString('hex').should.equal(testData.testSignature.signature.toString('hex'));
+
+      // Last 32 bytes should be the public key
+      const pubKeyBytes = decoded.slice(65);
+      pubKeyBytes.toString('hex').should.equal(testData.testSignature.publicKey.pub);
+    });
+  });
 });

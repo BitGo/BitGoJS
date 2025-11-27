@@ -306,4 +306,157 @@ describe('Iota Transfer Builder', () => {
       should(() => factory.from('invalidRawTransaction')).throwError();
     });
   });
+
+  describe('Transaction Signing', () => {
+    it('should build transaction with sender signature', async function () {
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.sender(testData.sender.address);
+      txBuilder.recipients(testData.recipients);
+      txBuilder.paymentObjects(testData.paymentObjects);
+      txBuilder.gasData(testData.gasData);
+
+      const tx = (await txBuilder.build()) as TransferTransaction;
+
+      // Add signature
+      tx.addSignature(testData.testSignature.publicKey, testData.testSignature.signature);
+
+      // Rebuild to trigger serialization
+      await tx.build();
+
+      should.exist(tx.serializedSignature);
+      should.equal(tx.serializedSignature!.length > 0, true);
+    });
+
+    it('should build transaction with gas sponsor signature', async function () {
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.sender(testData.sender.address);
+      txBuilder.recipients(testData.recipients);
+      txBuilder.paymentObjects(testData.paymentObjects);
+      txBuilder.gasData(testData.gasData);
+      txBuilder.gasSponsor(testData.gasSponsor.address);
+
+      const tx = (await txBuilder.build()) as TransferTransaction;
+
+      // Add gas sponsor signature
+      tx.addGasSponsorSignature(testData.testGasSponsorSignature.publicKey, testData.testGasSponsorSignature.signature);
+
+      // Rebuild to trigger serialization
+      await tx.build();
+
+      should.exist(tx.serializedGasSponsorSignature);
+      should.equal(tx.serializedGasSponsorSignature!.length > 0, true);
+    });
+
+    it('should build transaction with both sender and gas sponsor signatures', async function () {
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.sender(testData.sender.address);
+      txBuilder.recipients(testData.recipients);
+      txBuilder.paymentObjects(testData.paymentObjects);
+      txBuilder.gasData(testData.gasData);
+      txBuilder.gasSponsor(testData.gasSponsor.address);
+
+      const tx = (await txBuilder.build()) as TransferTransaction;
+
+      // Add both signatures
+      tx.addSignature(testData.testSignature.publicKey, testData.testSignature.signature);
+      tx.addGasSponsorSignature(testData.testGasSponsorSignature.publicKey, testData.testGasSponsorSignature.signature);
+
+      // Rebuild to trigger serialization
+      await tx.build();
+
+      should.exist(tx.serializedSignature);
+      should.exist(tx.serializedGasSponsorSignature);
+      tx.signature.length.should.equal(2);
+    });
+
+    it('should add signature through builder and serialize correctly', async function () {
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.sender(testData.sender.address);
+      txBuilder.recipients(testData.recipients);
+      txBuilder.paymentObjects(testData.paymentObjects);
+      txBuilder.gasData(testData.gasData);
+
+      // Add signature through builder
+      txBuilder.addSignature(testData.testSignature.publicKey, testData.testSignature.signature);
+
+      const tx = (await txBuilder.build()) as TransferTransaction;
+
+      should.exist(tx.serializedSignature);
+      should.equal(typeof tx.serializedSignature, 'string');
+      // Verify signature array is populated
+      tx.signature.length.should.equal(1);
+    });
+
+    it('should add gas sponsor signature through builder and serialize correctly', async function () {
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.sender(testData.sender.address);
+      txBuilder.recipients(testData.recipients);
+      txBuilder.paymentObjects(testData.paymentObjects);
+      txBuilder.gasData(testData.gasData);
+      txBuilder.gasSponsor(testData.gasSponsor.address);
+
+      // Add gas sponsor signature through builder
+      txBuilder.addGasSponsorSignature(
+        testData.testGasSponsorSignature.publicKey,
+        testData.testGasSponsorSignature.signature
+      );
+
+      const tx = (await txBuilder.build()) as TransferTransaction;
+
+      should.exist(tx.serializedGasSponsorSignature);
+      should.equal(typeof tx.serializedGasSponsorSignature, 'string');
+      // Verify signature array is populated
+      tx.signature.length.should.equal(1);
+    });
+
+    it('should serialize signatures in correct order', async function () {
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.sender(testData.sender.address);
+      txBuilder.recipients(testData.recipients);
+      txBuilder.paymentObjects(testData.paymentObjects);
+      txBuilder.gasData(testData.gasData);
+      txBuilder.gasSponsor(testData.gasSponsor.address);
+
+      // Add signatures through builder
+      txBuilder.addSignature(testData.testSignature.publicKey, testData.testSignature.signature);
+      txBuilder.addGasSponsorSignature(
+        testData.testGasSponsorSignature.publicKey,
+        testData.testGasSponsorSignature.signature
+      );
+
+      const tx = (await txBuilder.build()) as TransferTransaction;
+
+      // Verify signatures are in correct order: sender first, gas sponsor second
+      tx.signature.length.should.equal(2);
+      tx.signature[0].should.equal(tx.serializedSignature);
+      tx.signature[1].should.equal(tx.serializedGasSponsorSignature);
+    });
+
+    it('should fail to add invalid sender signature via builder', function () {
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.sender(testData.sender.address);
+      txBuilder.recipients(testData.recipients);
+      txBuilder.paymentObjects(testData.paymentObjects);
+      txBuilder.gasData(testData.gasData);
+
+      // Builder should validate and throw when adding invalid signature
+      should(() => txBuilder.addSignature({ pub: 'tooshort' }, testData.testSignature.signature)).throwError(
+        'Invalid transaction signature'
+      );
+    });
+
+    it('should fail to add invalid gas sponsor signature via builder', function () {
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.sender(testData.sender.address);
+      txBuilder.recipients(testData.recipients);
+      txBuilder.paymentObjects(testData.paymentObjects);
+      txBuilder.gasData(testData.gasData);
+      txBuilder.gasSponsor(testData.gasSponsor.address);
+
+      // Builder should validate and throw when adding invalid signature
+      should(() =>
+        txBuilder.addGasSponsorSignature(testData.testGasSponsorSignature.publicKey, Buffer.from('invalid'))
+      ).throwError('Invalid transaction signature');
+    });
+  });
 });
