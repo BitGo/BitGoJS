@@ -9,6 +9,7 @@ import {
 } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import {
+  TransactionData as IotaTransactionData,
   Transaction as IotaTransaction,
   TransactionDataBuilder as IotaTransactionDataBuilder,
 } from '@iota/iota-sdk/transactions';
@@ -38,7 +39,7 @@ export abstract class Transaction extends BaseTransaction {
   private _sender: string;
   private _signature?: Signature;
   private _gasSponsorSignature?: Signature;
-  private _txDataBytes?: Uint8Array<ArrayBuffer>;
+  private _txDataBytes?: Uint8Array<ArrayBufferLike>;
   private _isSimulateTx: boolean;
 
   protected constructor(coinConfig: Readonly<CoinConfig>) {
@@ -154,11 +155,11 @@ export abstract class Transaction extends BaseTransaction {
   }
 
   async toBroadcastFormat(): Promise<string> {
-    const txDataBytes: Uint8Array<ArrayBuffer> = await this.build();
+    const txDataBytes: Uint8Array<ArrayBufferLike> = await this.build();
     return toBase64(txDataBytes);
   }
 
-  async build(): Promise<Uint8Array<ArrayBuffer>> {
+  async build(): Promise<Uint8Array<ArrayBufferLike>> {
     if (this.isSimulateTx) {
       return this.buildDryRunTransaction();
     }
@@ -265,10 +266,10 @@ export abstract class Transaction extends BaseTransaction {
     explanationResult: TransactionExplanation
   ): TransactionExplanation;
 
-  private async buildDryRunTransaction(): Promise<Uint8Array<ArrayBuffer>> {
+  private async buildDryRunTransaction(): Promise<Uint8Array<ArrayBufferLike>> {
     this.validateTxDataImplementation();
     await this.populateTxData();
-    const txDataBuilder = new IotaTransactionDataBuilder(this._iotaTransaction.getData());
+    const txDataBuilder = new IotaTransactionDataBuilder(this._iotaTransaction.getData() as IotaTransactionData);
     return txDataBuilder.build({
       overrides: {
         gasData: {
@@ -280,7 +281,7 @@ export abstract class Transaction extends BaseTransaction {
     });
   }
 
-  private async buildTransaction(): Promise<Uint8Array<ArrayBuffer>> {
+  private async buildTransaction(): Promise<Uint8Array<ArrayBufferLike>> {
     if (this._txDataBytes === undefined || this._rebuildRequired) {
       this.validateTxData();
       await this.populateTxData();
