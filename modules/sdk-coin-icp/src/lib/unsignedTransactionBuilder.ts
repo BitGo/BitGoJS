@@ -10,13 +10,18 @@ import {
   MAX_INGRESS_TTL,
   PERMITTED_DRIFT,
   LEDGER_CANISTER_ID,
+  TESTNET_LEDGER_CANISTER_ID,
 } from './iface';
 import utils from './utils';
+import { NetworkType, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 
 export class UnsignedTransactionBuilder {
   private _icpTransactionPayload: IcpTransaction;
-  constructor(icpTransactionPayload: IcpTransaction) {
+  private readonly _staticsCoin: Readonly<StaticsBaseCoin>;
+
+  constructor(icpTransactionPayload: IcpTransaction, staticsCoin: Readonly<StaticsBaseCoin>) {
     this._icpTransactionPayload = icpTransactionPayload;
+    this._staticsCoin = staticsCoin;
   }
 
   async getUnsignedTransaction(): Promise<PayloadsData> {
@@ -104,7 +109,9 @@ export class UnsignedTransactionBuilder {
   async getUpdate(sendArgs: SendArgs, publicKeyHex: string): Promise<HttpCanisterUpdate> {
     const principalId = utils.getPrincipalIdFromPublicKey(publicKeyHex).toUint8Array();
     const senderBlob = Buffer.from(principalId);
-    const canisterIdBuffer = Buffer.from(LEDGER_CANISTER_ID);
+    const ledgerCanisterId =
+      this._staticsCoin.network.type === NetworkType.TESTNET ? TESTNET_LEDGER_CANISTER_ID : LEDGER_CANISTER_ID;
+    const canisterIdBuffer = Buffer.from(ledgerCanisterId);
     const args = await utils.toArg(sendArgs);
     const update: HttpCanisterUpdate = {
       canister_id: canisterIdBuffer,

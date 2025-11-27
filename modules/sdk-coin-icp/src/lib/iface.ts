@@ -6,6 +6,7 @@ import {
 export const MAX_INGRESS_TTL = 5 * 60 * 1000_000_000; // 5 minutes in nanoseconds
 export const PERMITTED_DRIFT = 60 * 1000_000_000; // 60 seconds in nanoseconds
 export const LEDGER_CANISTER_ID = new Uint8Array([0, 0, 0, 0, 0, 0, 0, 2, 1, 1]); // Uint8Array value for "00000000000000020101" and the string value is "ryjl3-tyaaa-aaaaa-aaaba-cai"
+export const TESTNET_LEDGER_CANISTER_ID = new Uint8Array([0, 0, 0, 0, 1, 0, 130, 251, 1, 1]); // Uint8Array value for "00000000010082fb0101" and the string value is "xafvr-biaaa-aaaai-aql5q-cai"
 export const ROOT_PATH = 'm/0';
 export const ACCOUNT_BALANCE_CALL = 'icrc1_balance_of';
 export const PUBLIC_NODE_REQUEST_ENDPOINT = '/api/v3/canister/';
@@ -36,7 +37,11 @@ export enum MethodName {
 }
 
 export enum Network {
-  ID = '00000000000000020101', // ICP does not have different network IDs for mainnet and testnet
+  ID = '00000000000000020101',
+}
+
+export enum TestNetwork {
+  ID = '00000000010082fb0101',
 }
 
 export interface IcpTransactionData {

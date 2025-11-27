@@ -1,14 +1,24 @@
 import { Principal } from '@dfinity/principal';
 import { HttpAgent, replica, AgentCanister } from 'ic0';
 import utils from './utils';
-import { ACCOUNT_BALANCE_CALL, LEDGER_CANISTER_ID, ICRC1_FEE_KEY, METADATA_CALL, DEFAULT_SUBACCOUNT } from './iface';
+import {
+  ACCOUNT_BALANCE_CALL,
+  LEDGER_CANISTER_ID,
+  TESTNET_LEDGER_CANISTER_ID,
+  ICRC1_FEE_KEY,
+  METADATA_CALL,
+  DEFAULT_SUBACCOUNT,
+} from './iface';
 import BigNumber from 'bignumber.js';
+import { NetworkType, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 
 export class IcpAgent {
   private readonly host: string;
+  private readonly staticsCoin: Readonly<StaticsBaseCoin>;
 
-  constructor(host: string) {
+  constructor(host: string, staticsCoin: Readonly<StaticsBaseCoin>) {
     this.host = host;
+    this.staticsCoin = staticsCoin;
   }
 
   /**
@@ -35,7 +45,9 @@ export class IcpAgent {
   private getLedger(): AgentCanister {
     const agent = this.createAgent();
     const ic = replica(agent, { local: true });
-    return ic(Principal.fromUint8Array(LEDGER_CANISTER_ID).toText());
+    const ledgerCanisterId =
+      this.staticsCoin.network.type === NetworkType.TESTNET ? TESTNET_LEDGER_CANISTER_ID : LEDGER_CANISTER_ID;
+    return ic(Principal.fromUint8Array(ledgerCanisterId).toText());
   }
 
   /**
