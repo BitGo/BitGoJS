@@ -1583,11 +1583,6 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   router.post('express.decrypt', [prepareBitGo(config), typedPromiseWrapper(handleDecrypt)]);
   router.post('express.encrypt', [prepareBitGo(config), typedPromiseWrapper(handleEncrypt)]);
   router.post('express.verifyaddress', [prepareBitGo(config), typedPromiseWrapper(handleVerifyAddress)]);
-  router.post('express.lightning.initWallet', [prepareBitGo(config), typedPromiseWrapper(handleInitLightningWallet)]);
-  router.post('express.lightning.unlockWallet', [
-    prepareBitGo(config),
-    typedPromiseWrapper(handleUnlockLightningWallet),
-  ]);
   router.post('express.calculateminerfeeinfo', [
     prepareBitGo(config),
     typedPromiseWrapper(handleCalculateMinerFeeInfo),
@@ -1610,7 +1605,6 @@ export function setupAPIRoutes(app: express.Application, config: Config): void {
   );
 
   router.post('express.v1.wallet.signTransaction', [prepareBitGo(config), typedPromiseWrapper(handleSignTransaction)]);
-  router.get('express.lightning.getState', [prepareBitGo(config), typedPromiseWrapper(handleGetLightningWalletState)]);
 
   app.post('/api/v1/wallet/:id/simpleshare', parseBody, prepareBitGo(config), promiseWrapper(handleShareWallet));
   router.post('express.v1.wallet.acceptShare', [prepareBitGo(config), typedPromiseWrapper(handleAcceptShare)]);
@@ -1757,10 +1751,16 @@ export function setupSigningRoutes(app: express.Application, config: Config): vo
 }
 
 export function setupLightningSignerNodeRoutes(app: express.Application, config: Config): void {
-  app.post(
-    '/api/v2/:coin/wallet/:id/signermacaroon',
-    parseBody,
+  const router = createExpressRouter();
+  app.use(router);
+  router.post('express.lightning.initWallet', [prepareBitGo(config), typedPromiseWrapper(handleInitLightningWallet)]);
+  router.post('express.lightning.signerMacaroon', [
     prepareBitGo(config),
-    promiseWrapper(handleCreateSignerMacaroon)
-  );
+    typedPromiseWrapper(handleCreateSignerMacaroon),
+  ]);
+  router.post('express.lightning.unlockWallet', [
+    prepareBitGo(config),
+    typedPromiseWrapper(handleUnlockLightningWallet),
+  ]);
+  router.get('express.lightning.getState', [prepareBitGo(config), typedPromiseWrapper(handleGetLightningWalletState)]);
 }
