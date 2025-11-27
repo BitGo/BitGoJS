@@ -23,6 +23,7 @@ import {
   IOTA_KEY_BYTES_LENGTH,
   IOTA_SIGNATURE_LENGTH,
 } from './constants';
+import utils from './utils';
 
 export abstract class Transaction extends BaseTransaction {
   static EMPTY_PUBLIC_KEY = Buffer.alloc(IOTA_KEY_BYTES_LENGTH);
@@ -38,7 +39,9 @@ export abstract class Transaction extends BaseTransaction {
   private _gasSponsor?: string;
   private _sender: string;
   private _signature?: Signature;
+  private _serializedSignature?: string;
   private _gasSponsorSignature?: Signature;
+  private _serializedGasSponsorSignature?: string;
   private _txDataBytes?: Uint8Array<ArrayBufferLike>;
   private _isSimulateTx: boolean;
 
@@ -47,12 +50,6 @@ export abstract class Transaction extends BaseTransaction {
     this._sender = '';
     this._rebuildRequired = false;
     this._isSimulateTx = true;
-    this._signature = {
-      publicKey: {
-        pub: Transaction.EMPTY_PUBLIC_KEY.toString('hex'),
-      },
-      signature: Transaction.EMPTY_SIGNATURE,
-    };
   }
 
   get gasBudget(): number | undefined {
@@ -137,12 +134,10 @@ export abstract class Transaction extends BaseTransaction {
   }
 
   addSignature(publicKey: PublicKey, signature: Buffer): void {
-    this._signatures = [...this._signatures, signature.toString('hex')];
     this._signature = { publicKey, signature };
   }
 
   addGasSponsorSignature(publicKey: PublicKey, signature: Buffer): void {
-    this._signatures = [...this._signatures, signature.toString('hex')];
     this._gasSponsorSignature = { publicKey, signature };
   }
 
@@ -152,6 +147,26 @@ export abstract class Transaction extends BaseTransaction {
 
   getFee(): string | undefined {
     return this.gasBudget?.toString();
+  }
+
+  get serializedGasSponsorSignature(): string | undefined {
+    return this._serializedGasSponsorSignature;
+  }
+
+  get serializedSignature(): string | undefined {
+    return this._serializedSignature;
+  }
+
+  serializeSignatures(): void {
+    this._signatures = [];
+    if (this._signature) {
+      this._serializedSignature = this.serializeSignature(this._signature as Signature);
+      this._signatures.push(this._serializedSignature);
+    }
+    if (this._gasSponsorSignature) {
+      this._serializedGasSponsorSignature = this.serializeSignature(this._gasSponsorSignature as Signature);
+      this._signatures.push(this._serializedGasSponsorSignature);
+    }
   }
 
   async toBroadcastFormat(): Promise<string> {
@@ -291,6 +306,7 @@ export abstract class Transaction extends BaseTransaction {
       this._txDataBytes = await this._iotaTransaction.build();
       this._rebuildRequired = false;
     }
+    this.serializeSignatures();
     return this._txDataBytes;
   }
 
@@ -304,6 +320,15 @@ export abstract class Transaction extends BaseTransaction {
       this._iotaTransaction.setGasOwner(this._gasSponsor as string);
     }
     this._iotaTransaction.setSender(this.sender);
+  }
+
+  private serializeSignature(signature: Signature): string {
+    const pubKey = Buffer.from(signature.publicKey.pub, 'hex');
+    const serialized_sig = new Uint8Array(1 + signature.signature.length + pubKey.length);
+    serialized_sig.set([0x00]); //Hardcoding the signature scheme flag since we only support EDDSA for iota
+    serialized_sig.set(signature.signature, 1);
+    serialized_sig.set(pubKey, 1 + signature.signature.length);
+    return toBase64(serialized_sig);
   }
 
   private validateTxData(): void {
@@ -328,6 +353,26 @@ export abstract class Transaction extends BaseTransaction {
       throw new InvalidTransactionError(
         `Gas payment objects count (${this.gasPaymentObjects.length}) exceeds maximum allowed (${MAX_GAS_PAYMENT_OBJECTS})`
       );
+    }
+
+    if (
+      this._signature &&
+      !(
+        utils.isValidPublicKey(this._signature.publicKey.pub) &&
+        utils.isValidSignature(toBase64(this._signature.signature))
+      )
+    ) {
+      throw new InvalidTransactionError('Invalid sender signature');
+    }
+
+    if (
+      this._gasSponsorSignature &&
+      !(
+        utils.isValidPublicKey(this._gasSponsorSignature.publicKey.pub) &&
+        utils.isValidSignature(toBase64(this._gasSponsorSignature.signature))
+      )
+    ) {
+      throw new InvalidTransactionError('Invalid gas sponsor signature');
     }
   }
 }
