@@ -1704,6 +1704,7 @@ export const allCoinsAndTokens = [
       CoinFeature.SHARED_EVM_SDK,
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.SUPPORTS_ERC20,
     ]
   ),
   account(
