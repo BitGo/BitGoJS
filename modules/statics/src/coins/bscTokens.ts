@@ -1052,6 +1052,24 @@ export const bscTokens = [
     BSC_TOKEN_FEATURES
   ),
   bscToken(
+    '1c0e12a5-7115-4bce-9bc7-a01cd39e6d8f',
+    'bsc:soon',
+    'Soon Token',
+    18,
+    '0xb9e1fd5a02d3a33b25a14d661414e6ed6954a721',
+    UnderlyingAsset['bsc:soon'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
+    'f36129ca-9a29-4531-a1c1-deff39c5b7cf',
+    'bsc:bard',
+    'Lombard',
+    18,
+    '0xd23a186a78c0b3b805505e5f8ea4083295ef9f3a',
+    UnderlyingAsset['bsc:bard'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
     '7a97cef9-ac2c-4c76-88d2-334544fdc6bf',
     'bsc:lina',
     'Linear Finance',
