@@ -2912,6 +2912,9 @@ export enum UnderlyingAsset {
   // Story testnet tokens
   'tip:usdc' = 'tip:usdc',
 
+  // Story mainnet tokens
+  'ip:aria' = 'ip:aria',
+
   // Arbitrum testnet tokens
   'tarbeth:link' = 'tarbeth:link',
   'tarbeth:xsgd' = 'tarbeth:xsgd',

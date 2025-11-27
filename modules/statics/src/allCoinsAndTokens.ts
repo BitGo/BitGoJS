@@ -2773,6 +2773,17 @@ export const allCoinsAndTokens = [
     Networks.test.ip
   ),
 
+  // Story mainnet tokens
+  erc20Token(
+    '2460e83c-e819-42c3-83c9-3974e08a45c8',
+    'ip:aria',
+    'Aria',
+    18,
+    '0xc9cbbd8f211300dd0e7a3933b7aeedac6f61dd52',
+    UnderlyingAsset['ip:aria'],
+    Networks.main.ip
+  ),
+
   hederaCoin(
     '98aad956-27ee-45dd-aa43-6a23c9a1d1d0',
     'hbar',
