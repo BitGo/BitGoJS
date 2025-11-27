@@ -118,11 +118,34 @@ export class Utils implements BaseUtils {
 
   /**
    * Creates a signature using the Flare network parameters
+   * Returns a 65-byte signature (64 bytes signature + 1 byte recovery parameter)
    */
   createSignature(network: FlareNetwork, message: Buffer, prv: Buffer): Buffer {
     const messageHash = this.sha256(message);
     const signature = ecc.sign(messageHash, prv);
-    return Buffer.from(signature);
+
+    // Get the public key from the private key for recovery parameter determination
+    const publicKey = ecc.pointFromScalar(prv, true);
+    if (!publicKey) {
+      throw new Error('Failed to derive public key from private key');
+    }
+
+    // Try recovery with param 0 and 1 to find the correct one
+    let recoveryParam = 0;
+    for (let i = 0; i <= 1; i++) {
+      const recovered = ecc.recoverPublicKey(messageHash, signature, i, true);
+      if (recovered && Buffer.from(recovered).equals(Buffer.from(publicKey))) {
+        recoveryParam = i;
+        break;
+      }
+    }
+
+    // Append recovery parameter to create 65-byte signature
+    const sigWithRecovery = Buffer.alloc(65);
+    Buffer.from(signature).copy(sigWithRecovery, 0);
+    sigWithRecovery[64] = recoveryParam;
+
+    return sigWithRecovery;
   }
 
   /**
@@ -337,6 +360,38 @@ export class Utils implements BaseUtils {
 
   flareIdString(value: string): Id {
     return new Id(Buffer.from(value, 'hex'));
+  }
+
+  /**
+   * FlareJS wrapper to recover signature
+   * @param network
+   * @param message
+   * @param signature
+   * @return recovered public key
+   */
+  recoverySignature(network: FlareNetwork, message: Buffer, signature: Buffer): Buffer {
+    try {
+      // Hash the message first - must match the hash used in signing
+      const messageHash = createHash('sha256').update(message).digest();
+
+      // Extract recovery parameter and signature
+      if (signature.length !== 65) {
+        throw new Error('Invalid signature length - expected 65 bytes (64 bytes signature + 1 byte recovery)');
+      }
+
+      const recoveryParam = signature[64];
+      const sigOnly = signature.slice(0, 64);
+
+      // Recover public key using the provided recovery parameter
+      const recovered = ecc.recoverPublicKey(messageHash, sigOnly, recoveryParam, true);
+      if (!recovered) {
+        throw new Error('Failed to recover public key');
+      }
+
+      return Buffer.from(recovered);
+    } catch (error) {
+      throw new Error(`Failed to recover signature: ${error}`);
+    }
   }
 }
 
