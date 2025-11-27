@@ -1,294 +1,161 @@
-import { BuildTransactionError, TransactionType } from '@bitgo/sdk-core';
+import { utils as FlareUtils, TypeSymbols } from '@flarenetwork/flarejs';
+import { BuildTransactionError, isValidBLSPublicKey, isValidBLSSignature, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { AtomicTransactionBuilder } from './atomicTransactionBuilder';
-import { Tx } from './iface';
-import { PermissionlessValidatorExtendedTransaction } from './types';
-import {
-  ADD_PERMISSIONLESS_VALIDATOR_TYPE,
-  BASIS_POINTS_DIVISOR,
-  BLS_PUBLIC_KEY_COMPRESSED_LENGTH,
-  BLS_PUBLIC_KEY_UNCOMPRESSED_LENGTH,
-  BLS_SIGNATURE_LENGTH,
-  MIN_DELEGATION_FEE_BASIS_POINTS,
-  PERCENTAGE_MULTIPLIER,
-} from './constants';
-import { createHexRegex } from './utils';
+import { DecodedUtxoObj } from './iface';
+import { KeyPair } from './keyPair';
+import { Transaction } from './transaction';
+import { TransactionBuilder } from './transactionBuilder';
+import utils from './utils';
 
-export class PermissionlessValidatorTxBuilder extends AtomicTransactionBuilder {
-  protected _nodeID: string | undefined;
-  protected _blsPublicKey: string | undefined;
-  protected _blsSignature: string | undefined;
-  protected _startTime: bigint | undefined;
-  protected _endTime: bigint | undefined;
-  protected _stakeAmount: bigint | undefined;
-  protected _delegationFeeRate: number | undefined;
+export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
+  public _signer: KeyPair[] = [];
+  protected _nodeID: string;
+  protected _blsPublicKey: string;
+  protected _blsSignature: string;
+  protected _startTime: bigint;
+  protected _endTime: bigint;
+  protected _stakeAmount: bigint;
+  protected recoverSigner = false;
+  protected _delegationFeeRate: number;
 
-  /**
-   * @param coinConfig
-   */
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
-    this._nodeID = undefined;
-    this._blsPublicKey = undefined;
-    this._blsSignature = undefined;
-    this._startTime = undefined;
-    this._endTime = undefined;
-    this._stakeAmount = undefined;
-    this._delegationFeeRate = undefined;
+    this.transaction._fee.fee = this.transaction._network.txFee;
   }
 
-  /**
-   * get transaction type
-   * @protected
-   */
   protected get transactionType(): TransactionType {
     return TransactionType.AddPermissionlessValidator;
   }
 
-  /**
-   * Set the node ID for permissionless validation
-   * @param nodeID - The node ID
-   */
-  nodeID(nodeID: string): this {
-    if (!nodeID || nodeID.length === 0) {
-      throw new BuildTransactionError('Node ID cannot be empty');
+  // Validation methods
+  validateLocktime(locktime: bigint): void {
+    if (locktime < BigInt(0)) {
+      throw new BuildTransactionError('Invalid transaction: locktime must be 0 or higher');
     }
+  }
+
+  validateDelegationFeeRate(delegationFeeRate: number): void {
+    if (delegationFeeRate < Number(this.transaction._network.minDelegationFee)) {
+      throw new BuildTransactionError(
+        `Delegation fee cannot be less than ${this.transaction._network.minDelegationFee}`
+      );
+    }
+  }
+
+  validateUtxo(value: DecodedUtxoObj): void {
+    ['outputID', 'amount', 'txid', 'outputidx'].forEach((field) => {
+      if (!value.hasOwnProperty(field)) throw new BuildTransactionError(`Utxos required ${field}`);
+    });
+  }
+
+  validateNodeID(nodeID: string): void {
+    if (!nodeID) {
+      throw new BuildTransactionError('Invalid transaction: missing nodeID');
+    }
+    if (nodeID.slice(0, 6) !== 'NodeID') {
+      throw new BuildTransactionError('Invalid transaction: invalid NodeID tag');
+    }
+    if (!(FlareUtils.base58.decode(nodeID.slice(7)).length === 24)) {
+      throw new BuildTransactionError('Invalid transaction: NodeID is not in cb58 format');
+    }
+  }
+
+  validateStakeDuration(startTime: bigint, endTime: bigint): void {
+    if (endTime < startTime) {
+      throw new BuildTransactionError('End date cannot be less than start date');
+    }
+  }
+
+  validateStakeAmount(amount: bigint): void {
+    const minStake = BigInt(this.transaction._network.minStake);
+    if (amount < minStake) {
+      throw new BuildTransactionError('Minimum staking amount is ' + Number(minStake) / 1000000000 + ' FLR.');
+    }
+  }
+
+  // Builder methods
+  rewardAddresses(address: string | string[]): this {
+    const rewardAddresses = address instanceof Array ? address : [address];
+    this.transaction._rewardAddresses = rewardAddresses.map(utils.parseAddress);
+    return this;
+  }
+
+  nodeID(nodeID: string): this {
+    this.validateNodeID(nodeID);
     this._nodeID = nodeID;
     return this;
   }
 
-  /**
-   * Set the BLS public key for permissionless validation
-   * @param blsPublicKey - The BLS public key
-   */
   blsPublicKey(blsPublicKey: string): this {
-    if (!blsPublicKey || blsPublicKey.length === 0) {
-      throw new BuildTransactionError('BLS public key cannot be empty');
-    }
-
-    // BLS public key should be 48 bytes (96 hex characters) with 0x prefix or 192 hex characters with 0x prefix for uncompressed
-    if (
-      !createHexRegex(BLS_PUBLIC_KEY_COMPRESSED_LENGTH, true).test(blsPublicKey) &&
-      !createHexRegex(BLS_PUBLIC_KEY_UNCOMPRESSED_LENGTH, true).test(blsPublicKey)
-    ) {
-      throw new BuildTransactionError('Invalid BLS public key format');
-    }
-
+    isValidBLSPublicKey(blsPublicKey);
     this._blsPublicKey = blsPublicKey;
     return this;
   }
 
-  /**
-   * Set the BLS signature for permissionless validation
-   * @param blsSignature - The BLS signature
-   */
   blsSignature(blsSignature: string): this {
-    if (!blsSignature || blsSignature.length === 0) {
-      throw new BuildTransactionError('BLS signature cannot be empty');
-    }
-
-    // BLS signature should be 96 bytes (192 hex characters) with 0x prefix
-    if (!createHexRegex(BLS_SIGNATURE_LENGTH, true).test(blsSignature)) {
-      throw new BuildTransactionError('Invalid BLS signature format');
-    }
-
+    isValidBLSSignature(blsSignature);
     this._blsSignature = blsSignature;
     return this;
   }
 
-  /**
-   * Set the start time for validation
-   * @param startTime - Unix timestamp for when validation starts
-   */
-  startTime(startTime: string | number | bigint): this {
-    const time = BigInt(startTime);
-    if (time < 0) {
-      throw new BuildTransactionError('Start time must be non-negative');
-    }
-    this._startTime = time;
+  locktime(value: string | number): this {
+    this.validateLocktime(BigInt(value));
+    this._transaction._locktime = BigInt(value);
     return this;
   }
 
-  /**
-   * Set the end time for validation
-   * @param endTime - Unix timestamp for when validation ends
-   */
-  endTime(endTime: string | number | bigint): this {
-    const time = BigInt(endTime);
-    if (time <= 0) {
-      throw new BuildTransactionError('End time must be positive');
-    }
-    this._endTime = time;
-    return this;
-  }
-
-  /**
-   * Set the stake amount for validation
-   * @param amount - Amount to stake (in nFLR)
-   */
-  stakeAmount(amount: string | number | bigint): this {
-    const stake = BigInt(amount);
-    if (stake <= 0) {
-      throw new BuildTransactionError('Stake amount must be positive');
-    }
-    this._stakeAmount = stake;
-    return this;
-  }
-
-  /**
-   * Set the delegation fee rate
-   * @param value - Delegation fee rate in basis points
-   */
   delegationFeeRate(value: number): this {
     this.validateDelegationFeeRate(value);
     this._delegationFeeRate = value;
     return this;
   }
 
-  /**
-   * Set reward addresses where validation rewards should be sent
-   * @param addresses - Array of reward addresses
-   */
-  rewardAddresses(addresses: string[]): this {
-    if (!addresses || addresses.length === 0) {
-      throw new BuildTransactionError('At least one reward address is required');
-    }
-    // Store reward addresses in the transaction (we'll need to extend the type)
-    (this.transaction as unknown as PermissionlessValidatorExtendedTransaction)._rewardAddresses = addresses;
+  startTime(value: string | number): this {
+    this._startTime = BigInt(value);
     return this;
   }
 
-  /**
-   * Validate that the delegation fee is at least the minDelegationFee
-   * @param delegationFeeRate number
-   */
-  validateDelegationFeeRate(delegationFeeRate: number): void {
-    // For Flare, use a minimum delegation fee of 2% (20000 basis points)
-    const minDelegationFee = MIN_DELEGATION_FEE_BASIS_POINTS;
-    if (delegationFeeRate < minDelegationFee) {
-      const minDelegationFeePercent = (minDelegationFee / BASIS_POINTS_DIVISOR) * PERCENTAGE_MULTIPLIER;
-      throw new BuildTransactionError(
-        `Delegation fee cannot be less than ${minDelegationFee} basis points (${minDelegationFeePercent}%)`
-      );
-    }
-  }
-
-  /** @inheritdoc */
-  initBuilder(tx: Tx): this {
-    // Extract permissionless validator-specific fields from transaction
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const txData = tx as any;
-
-    if (txData.nodeID) {
-      this._nodeID = txData.nodeID;
-    }
-    if (txData.blsPublicKey) {
-      this._blsPublicKey = txData.blsPublicKey;
-    }
-    if (txData.blsSignature) {
-      this._blsSignature = txData.blsSignature;
-    }
-    if (txData.startTime) {
-      this._startTime = BigInt(txData.startTime);
-    }
-    if (txData.endTime) {
-      this._endTime = BigInt(txData.endTime);
-    }
-    if (txData.stakeAmount) {
-      this._stakeAmount = BigInt(txData.stakeAmount);
-    }
-    if (txData.delegationFeeRate !== undefined) {
-      this._delegationFeeRate = txData.delegationFeeRate;
-    }
-    if (txData.rewardAddresses) {
-      (this.transaction as unknown as PermissionlessValidatorExtendedTransaction)._rewardAddresses =
-        txData.rewardAddresses;
-    }
-
+  endTime(value: string | number): this {
+    this._endTime = BigInt(value);
     return this;
   }
 
-  /**
-   * Verify if the transaction is a permissionless validator transaction
-   * @param tx
-   */
-  static verifyTxType(tx: unknown): boolean {
-    // Check if transaction has permissionless validator-specific properties
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const txData = tx as any;
-    return txData && txData.blsPublicKey && txData.blsSignature;
+  stakeAmount(value: bigint | string): this {
+    const valueBigInt = typeof value === 'bigint' ? value : BigInt(value);
+    this.validateStakeAmount(valueBigInt);
+    this._stakeAmount = valueBigInt;
+    return this;
   }
 
-  verifyTxType(tx: unknown): boolean {
-    return PermissionlessValidatorTxBuilder.verifyTxType(tx);
+  protected async buildImplementation(): Promise<Transaction> {
+    this.buildFlareTransaction();
+    this.transaction.setTransactionType(this.transactionType);
+    if (this.hasSigner()) {
+      for (const keyPair of this._signer) {
+        await this.transaction.sign(keyPair);
+      }
+    }
+    return this.transaction;
   }
 
   /**
    * Build the permissionless validator transaction
    * @protected
    */
-  protected async buildFlareTransaction(): Promise<void> {
-    // Basic validation
-    if (!this._nodeID) {
-      throw new BuildTransactionError('Node ID is required for permissionless validator transaction');
-    }
-    if (!this._blsPublicKey) {
-      throw new BuildTransactionError('BLS public key is required for permissionless validator transaction');
-    }
-    if (!this._blsSignature) {
-      throw new BuildTransactionError('BLS signature is required for permissionless validator transaction');
-    }
-    if (!this._startTime) {
-      throw new BuildTransactionError('Start time is required for permissionless validator transaction');
-    }
-    if (!this._endTime) {
-      throw new BuildTransactionError('End time is required for permissionless validator transaction');
-    }
-    if (!this._stakeAmount) {
-      throw new BuildTransactionError('Stake amount is required for permissionless validator transaction');
-    }
-    if (this._delegationFeeRate === undefined) {
-      throw new BuildTransactionError('Delegation fee rate is required for permissionless validator transaction');
-    }
+  protected buildFlareTransaction(): void {
+    throw new Error('Method not implemented.');
+  }
 
-    const rewardAddresses = (this.transaction as unknown as PermissionlessValidatorExtendedTransaction)
-      ._rewardAddresses;
-    if (!rewardAddresses || rewardAddresses.length === 0) {
-      throw new BuildTransactionError('Reward addresses are required for permissionless validator transaction');
-    }
+  static verifyTxType(type: TypeSymbols): boolean {
+    return type === TypeSymbols.AddPermissionlessValidatorTx;
+  }
 
-    // Validate time range
-    if (this._endTime <= this._startTime) {
-      throw new BuildTransactionError('End time must be after start time');
-    }
+  /** @inheritdoc */
+  protected get transaction(): Transaction {
+    return this._transaction;
+  }
 
-    try {
-      // TODO: Implement actual FlareJS PVM API call when available
-      // For now, create a placeholder transaction structure
-      const validatorTx = {
-        type: ADD_PERMISSIONLESS_VALIDATOR_TYPE,
-        nodeID: this._nodeID,
-        blsPublicKey: this._blsPublicKey,
-        blsSignature: this._blsSignature,
-        startTime: this._startTime,
-        endTime: this._endTime,
-        stakeAmount: this._stakeAmount,
-        delegationFeeRate: this._delegationFeeRate,
-        rewardAddress: rewardAddresses[0],
-        fromAddresses: this.transaction._fromAddresses,
-        networkId: this.transaction._networkID,
-        sourceBlockchainId: this.transaction._blockchainID,
-        threshold: this.transaction._threshold || 1,
-        locktime: this.transaction._locktime || 0n,
-      };
-
-      this.transaction.setTransaction(validatorTx);
-    } catch (error) {
-      throw new BuildTransactionError(
-        `Failed to build permissionless validator transaction: ${
-          error instanceof Error ? error.message : 'Unknown error'
-        }`
-      );
-    }
+  protected set transaction(transaction: Transaction) {
+    this._transaction = transaction;
   }
 }

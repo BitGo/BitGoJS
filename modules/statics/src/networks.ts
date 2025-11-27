@@ -9,13 +9,14 @@ export interface FlareNetwork extends BaseNetwork {
   batcherContractAddress?: string;
   forwarderFactoryAddress?: string;
   forwarderImplementationAddress?: string;
-  blockchainID?: string;
-  cChainBlockchainID?: string;
-  networkID?: number;
-  hrp?: string;
-  alias?: string;
+  blockchainID: string;
+  cChainBlockchainID: string;
+  networkID: number;
+  hrp: string;
+  alias: string;
+  assetId: string;
   vm?: string;
-  txFee?: string;
+  txFee: string;
   maxImportFee?: string;
   createSubnetTx?: string;
   createChainTx?: string;
@@ -23,7 +24,7 @@ export interface FlareNetwork extends BaseNetwork {
   minConsumption?: string;
   maxConsumption?: string;
   maxSupply?: string;
-  minStake?: string;
+  minStake: string;
   minStakeDuration?: string;
   maxStakeDuration?: string;
   minDelegationStake?: string;
@@ -1872,6 +1873,7 @@ class Somi extends Mainnet implements EthereumNetwork {
 }
 
 export class FlareP extends Mainnet implements FlareNetwork {
+  assetId = 'Flare';
   name = 'FlareP';
   family = CoinFamily.FLRP;
   explorerUrl = 'https://flarescan.com/blockchain/pvm/transactions/';
@@ -1907,6 +1909,7 @@ export class FlarePTestnet extends Testnet implements FlareNetwork {
   networkID = 114;
   hrp = 'costwo';
   alias = 'P';
+  assetId = 'fxMAKpBQQpFedrUhWMsDYfCUJxdUw4mneTczKBzNg3rc2JUub';
   vm = 'platformvm';
   txFee = '1000000'; // defaults
   maxImportFee = '10000000'; // defaults
@@ -1923,7 +1926,7 @@ export class FlarePTestnet extends Testnet implements FlareNetwork {
   minDelegationFee = '0';
 }
 
-export class Flare extends Mainnet implements FlareNetwork, EthereumNetwork {
+export class Flare extends Mainnet implements EthereumNetwork {
   name = 'Flarechain';
   family = CoinFamily.FLR;
   explorerUrl = 'https://flare-explorer.flare.network/tx/';
@@ -1937,7 +1940,7 @@ export class Flare extends Mainnet implements FlareNetwork, EthereumNetwork {
   forwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
 }
 
-export class FlareTestnet extends Testnet implements FlareNetwork, EthereumNetwork {
+export class FlareTestnet extends Testnet implements EthereumNetwork {
   name = 'FlarechainTestnet';
   family = CoinFamily.FLR;
   explorerUrl = 'https://coston2-explorer.flare.network/tx/';

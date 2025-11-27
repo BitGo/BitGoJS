@@ -1,46 +1,38 @@
-import { UnsignedTx, Credential } from '@flarenetwork/flarejs';
+import { FlareNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
 import {
   BaseKey,
   BaseTransaction,
   Entry,
   InvalidTransactionError,
   SigningError,
-  TransactionFee,
   TransactionType,
+  TransactionFee,
 } from '@bitgo/sdk-core';
-import { FlareNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
-import { Buffer } from 'buffer';
 import {
-  ADDRESS_SEPARATOR,
-  DecodedUtxoObj,
-  INPUT_SEPARATOR,
-  TransactionExplanation,
-  Tx,
-  TxData,
-  FlrpEntry,
-} from './iface';
+  utils as FlareUtils,
+  Credential,
+  pvmSerial,
+  UnsignedTx,
+  secp256k1,
+  EVMUnsignedTx,
+  Address,
+} from '@flarenetwork/flarejs';
+import { Buffer } from 'buffer';
+import { DecodedUtxoObj, TransactionExplanation, Tx, TxData } from './iface';
 import { KeyPair } from './keyPair';
 import utils from './utils';
-import {
-  FLR_ASSET_ID,
-  FLARE_TX_HEX_PLACEHOLDER,
-  FLARE_SIGNABLE_PAYLOAD,
-  FLARE_TRANSACTION_ID_PLACEHOLDER,
-  PLACEHOLDER_NODE_ID,
-  HEX_ENCODING,
-  MEMO_FIELD,
-  DISPLAY_ORDER_BASE,
-  REWARD_ADDRESSES_FIELD,
-  SOURCE_CHAIN_FIELD,
-  DESTINATION_CHAIN_FIELD,
-} from './constants';
 
 /**
- * Flare P-chain transaction implementation using FlareJS
- * Based on AVAX transaction patterns adapted for Flare network
+ * Checks if a signature is empty
+ * @param signature
+ * @returns {boolean}
  */
+function isEmptySignature(signature: string): boolean {
+  return !!signature && utils.removeHexPrefix(signature).startsWith(''.padStart(90, '0'));
+}
+
 export class Transaction extends BaseTransaction {
-  protected _flareTransaction: Tx;
+  protected _flareTransaction: pvmSerial.BaseTx | UnsignedTx;
   public _type: TransactionType;
   public _network: FlareNetwork;
   public _networkID: number;
@@ -52,44 +44,29 @@ export class Transaction extends BaseTransaction {
   public _stakeAmount: bigint;
   public _threshold = 2;
   public _locktime = BigInt(0);
-  public _fromAddresses: string[] = [];
-  public _rewardAddresses: string[] = [];
-  public _utxos: DecodedUtxoObj[] = [];
-  public _to: string[];
+  public _fromAddresses: Uint8Array[] = [];
+  public _to: Uint8Array[] = [];
+  public _rewardAddresses: Uint8Array[] = [];
+  public _utxos: DecodedUtxoObj[] = []; // Define proper type based on Flare's UTXO structure
   public _fee: Partial<TransactionFee> = {};
-  public _blsPublicKey: string;
-  public _blsSignature: string;
-  public _memo: Uint8Array = new Uint8Array(); // FlareJS memo field
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
     this._network = coinConfig.network as FlareNetwork;
-    this._assetId = FLR_ASSET_ID; // Default FLR asset
-    this._blockchainID = this._network.blockchainID || '';
-    this._networkID = this._network.networkID || 0;
-  }
-
-  /**
-   * Get the base transaction from FlareJS UnsignedTx
-   * TODO: Implement proper FlareJS transaction extraction
-   */
-  get flareTransaction(): UnsignedTx {
-    return this._flareTransaction as UnsignedTx;
+    this._assetId = this._network.assetId; // Update with proper Flare asset ID
+    this._blockchainID = this._network.blockchainID;
+    this._networkID = this._network.networkID;
   }
 
   get signature(): string[] {
-    if (this.credentials.length === 0) {
+    if (!this.hasCredentials) {
       return [];
     }
-    // TODO: Extract signatures from FlareJS credentials
-    // For now, return placeholder
-    return [];
+    return this.credentials[0].getSignatures().filter((s) => !isEmptySignature(s));
   }
 
   get credentials(): Credential[] {
-    // TODO: Extract credentials from FlareJS transaction
-    // For now, return empty array
-    return [];
+    return (this._flareTransaction as UnsignedTx)?.credentials;
   }
 
   get hasCredentials(): boolean {
@@ -98,98 +75,67 @@ export class Transaction extends BaseTransaction {
 
   /** @inheritdoc */
   canSign({ key }: BaseKey): boolean {
-    // TODO: Implement proper signing validation for FlareJS
     return true;
   }
 
-  /**
-   * Sign a Flare transaction using FlareJS
-   * @param {KeyPair} keyPair
-   */
   async sign(keyPair: KeyPair): Promise<void> {
-    const prv = keyPair.getPrivateKey() as Buffer;
-
+    const prv = keyPair.getPrivateKey() as Uint8Array;
     if (!prv) {
       throw new SigningError('Missing private key');
     }
-
-    if (!this.flareTransaction) {
+    if (!this._flareTransaction) {
       throw new InvalidTransactionError('empty transaction to sign');
     }
-
     if (!this.hasCredentials) {
       throw new InvalidTransactionError('empty credentials to sign');
     }
 
-    // TODO: Implement FlareJS signing process
-    // This will involve:
-    // 1. Creating FlareJS signature using private key
-    // 2. Attaching signature to appropriate credential
-    // 3. Updating transaction with signed credentials
+    //TODO: need to check for type of transaction and handle accordingly
+    const unsignedTx = this._flareTransaction as EVMUnsignedTx;
+    const unsignedBytes = unsignedTx.toBytes();
+    const publicKey = secp256k1.getPublicKey(prv);
 
-    throw new Error('FlareJS signing not yet implemented - placeholder');
+    const EVMAddressHex = new Address(secp256k1.publicKeyToEthAddress(publicKey)).toHex();
+
+    const addressMap = unsignedTx.getAddresses();
+
+    const hasMatchingAddress = addressMap.some(
+      (addr) => Buffer.from(addr).toString('hex').toLowerCase() === utils.removeHexPrefix(EVMAddressHex).toLowerCase()
+    );
+
+    if (hasMatchingAddress) {
+      const signature = await secp256k1.sign(unsignedBytes, prv);
+
+      let signatureSet = false;
+      // Find first empty signature slot and set it
+      for (const credential of unsignedTx.credentials) {
+        const emptySlotIndex = credential.getSignatures().findIndex((sig) => isEmptySignature(sig));
+        if (emptySlotIndex !== -1) {
+          credential.setSignature(emptySlotIndex, signature);
+          signatureSet = true;
+          break;
+        }
+      }
+
+      if (!signatureSet) {
+        throw new SigningError('No empty signature slot found');
+      }
+    }
   }
 
-  /**
-   * Set memo from string
-   * @param {string} memo - Memo text
-   */
-  setMemo(memo: string): void {
-    this._memo = utils.stringToBytes(memo);
-  }
-
-  /**
-   * Set memo from various formats
-   * @param {string | Record<string, unknown> | Uint8Array} memo - Memo data
-   */
-  setMemoData(memo: string | Record<string, unknown> | Uint8Array): void {
-    this._memo = utils.createMemoBytes(memo);
-  }
-
-  /**
-   * Get memo as bytes (FlareJS format)
-   * @returns {Uint8Array} Memo bytes
-   */
-  getMemoBytes(): Uint8Array {
-    return this._memo;
-  }
-
-  /**
-   * Get memo as string
-   * @returns {string} Memo string
-   */
-  getMemoString(): string {
-    return utils.parseMemoBytes(this._memo);
-  }
-
-  /**
-   * Check if transaction has memo
-   * @returns {boolean} Whether memo exists and is not empty
-   */
-  hasMemo(): boolean {
-    return this._memo.length > 0;
-  }
-
-  toHexString(byteArray: Uint8Array): string {
-    return Buffer.from(byteArray).toString(HEX_ENCODING);
-  }
-
-  /** @inheritdoc */
   toBroadcastFormat(): string {
-    if (!this.flareTransaction) {
+    if (!this._flareTransaction) {
       throw new InvalidTransactionError('Empty transaction data');
     }
-
-    // TODO: Implement FlareJS transaction serialization
-    // For now, return placeholder
-    return FLARE_TX_HEX_PLACEHOLDER;
+    return FlareUtils.bufferToHex(
+      FlareUtils.addChecksum((this._flareTransaction as UnsignedTx).getSignedTx().toBytes())
+    );
   }
 
   toJson(): TxData {
-    if (!this.flareTransaction) {
+    if (!this._flareTransaction) {
       throw new InvalidTransactionError('Empty transaction data');
     }
-
     return {
       id: this.id,
       inputs: this.inputs,
@@ -200,101 +146,52 @@ export class Transaction extends BaseTransaction {
       signatures: this.signature,
       outputs: this.outputs,
       changeOutputs: this.changeOutputs,
-      sourceChain: this._network.blockchainID,
-      destinationChain: this._network.cChainBlockchainID,
-      memo: this.getMemoString(), // Include memo in JSON representation
     };
   }
 
   setTransaction(tx: Tx): void {
-    this._flareTransaction = tx;
+    this._flareTransaction = tx as UnsignedTx;
   }
 
-  /**
-   * Set the transaction type
-   * @param {TransactionType} transactionType The transaction type to be set
-   */
   setTransactionType(transactionType: TransactionType): void {
-    const supportedTypes = [
-      TransactionType.Export,
-      TransactionType.Import,
-      TransactionType.AddValidator,
-      TransactionType.AddDelegator,
-      TransactionType.AddPermissionlessValidator,
-      TransactionType.AddPermissionlessDelegator,
-    ];
-
-    if (!supportedTypes.includes(transactionType)) {
+    if (![TransactionType.AddPermissionlessValidator].includes(transactionType)) {
       throw new Error(`Transaction type ${transactionType} is not supported`);
     }
     this._type = transactionType;
   }
 
-  /**
-   * Returns the portion of the transaction that needs to be signed in Buffer format.
-   * Only needed for coins that support adding signatures directly (e.g. TSS).
-   */
   get signablePayload(): Buffer {
-    if (!this.flareTransaction) {
-      throw new InvalidTransactionError('Empty transaction for signing');
-    }
-
-    // TODO: Implement FlareJS signable payload extraction
-    // For now, return placeholder
-    return Buffer.from(FLARE_SIGNABLE_PAYLOAD);
+    return utils.sha256((this._flareTransaction as UnsignedTx).toBytes());
   }
 
   get id(): string {
-    if (!this.flareTransaction) {
-      throw new InvalidTransactionError('Empty transaction for ID generation');
-    }
-
-    // TODO: Implement FlareJS transaction ID generation
-    // For now, return placeholder
-    return FLARE_TRANSACTION_ID_PLACEHOLDER;
+    const bufferArray = utils.sha256((this._flareTransaction as UnsignedTx).toBytes());
+    return utils.cb58Encode(Buffer.from(bufferArray));
   }
 
   get fromAddresses(): string[] {
-    return this._fromAddresses.map((address) => {
-      // TODO: Format addresses using FlareJS utilities
-      return address;
-    });
+    return this._fromAddresses.map((a) => FlareUtils.format(this._network.alias, this._network.hrp, a));
   }
 
   get rewardAddresses(): string[] {
-    return this._rewardAddresses.map((address) => {
-      // TODO: Format addresses using FlareJS utilities
-      return address;
-    });
+    return this._rewardAddresses.map((a) => FlareUtils.format(this._network.alias, this._network.hrp, a));
   }
 
-  /**
-   * Get the list of outputs. Amounts are expressed in absolute value.
-   */
+  get fee(): TransactionFee {
+    return { fee: '0', ...this._fee };
+  }
+
   get outputs(): Entry[] {
     switch (this.type) {
-      case TransactionType.Export:
-        // TODO: Extract export outputs from FlareJS transaction
-        return [];
-      case TransactionType.Import:
-        // TODO: Extract import outputs from FlareJS transaction
-        return [];
-      case TransactionType.AddValidator:
       case TransactionType.AddPermissionlessValidator:
-        // TODO: Extract validator outputs from FlareJS transaction
         return [
           {
-            address: this._nodeID || PLACEHOLDER_NODE_ID,
-            value: this._stakeAmount?.toString() || '0',
-          },
-        ];
-      case TransactionType.AddDelegator:
-      case TransactionType.AddPermissionlessDelegator:
-        // TODO: Extract delegator outputs from FlareJS transaction
-        return [
-          {
-            address: this._nodeID || PLACEHOLDER_NODE_ID,
-            value: this._stakeAmount?.toString() || '0',
+            address: (
+              (this._flareTransaction as UnsignedTx).getTx() as pvmSerial.AddPermissionlessValidatorTx
+            ).subnetValidator.validator.nodeId.toString(),
+            value: (
+              (this._flareTransaction as UnsignedTx).getTx() as pvmSerial.AddPermissionlessValidatorTx
+            ).subnetValidator.validator.weight.toJSON(),
           },
         ];
       default:
@@ -302,88 +199,26 @@ export class Transaction extends BaseTransaction {
     }
   }
 
-  get fee(): TransactionFee {
-    return { fee: '0', ...this._fee };
-  }
-
   get changeOutputs(): Entry[] {
-    // TODO: Extract change outputs from FlareJS transaction
-    // For now, return empty array
-    return [];
+    return (
+      (this._flareTransaction as UnsignedTx).getTx() as pvmSerial.AddPermissionlessValidatorTx
+    ).baseTx.outputs.map(utils.mapOutputToEntry(this._network));
   }
 
-  get inputs(): FlrpEntry[] {
-    // TODO: Extract inputs from FlareJS transaction
-    // For now, return placeholder based on UTXOs
-    return this._utxos.map((utxo) => ({
-      id: utxo.txid + INPUT_SEPARATOR + utxo.outputidx,
-      address: this.fromAddresses.sort().join(ADDRESS_SEPARATOR),
-      value: utxo.amount,
-    }));
-  }
-
-  /**
-   * Flare wrapper to create signature and return it for credentials
-   * @param prv
-   * @return hexstring
-   */
-  createSignature(prv: Buffer): string {
-    // TODO: Implement FlareJS signature creation
-    // This should use FlareJS signing utilities
-    const signval = utils.createSignature(this._network, this.signablePayload, prv);
-    return signval.toString(HEX_ENCODING);
-  }
-
-  /**
-   * Check if transaction is for C-chain (cross-chain)
-   */
-  get isTransactionForCChain(): boolean {
-    return this.type === TransactionType.Export || this.type === TransactionType.Import;
-  }
-
-  /** @inheritdoc */
   explainTransaction(): TransactionExplanation {
     const txJson = this.toJson();
-    const displayOrder = [...DISPLAY_ORDER_BASE];
+    const displayOrder = ['id', 'inputs', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'type'];
 
-    // Add memo to display order if present
-    if (this.hasMemo()) {
-      displayOrder.push(MEMO_FIELD);
-    }
-
-    // Calculate total output amount
-    const outputAmount = txJson.outputs
-      .reduce((sum, output) => {
-        return sum + BigInt(output.value || '0');
-      }, BigInt(0))
-      .toString();
-
-    // Calculate total change amount
-    const changeAmount = txJson.changeOutputs
-      .reduce((sum, output) => {
-        return sum + BigInt(output.value || '0');
-      }, BigInt(0))
-      .toString();
+    const outputAmount = txJson.outputs.reduce((p, n) => p + BigInt(n.value), BigInt(0)).toString();
+    const changeAmount = txJson.changeOutputs.reduce((p, n) => p + BigInt(n.value), BigInt(0)).toString();
 
     let rewardAddresses;
-    const stakingTypes = [
-      TransactionType.AddValidator,
-      TransactionType.AddDelegator,
-      TransactionType.AddPermissionlessValidator,
-      TransactionType.AddPermissionlessDelegator,
-    ];
-
-    if (stakingTypes.includes(txJson.type)) {
+    if ([TransactionType.AddPermissionlessValidator].includes(txJson.type)) {
       rewardAddresses = this.rewardAddresses;
-      displayOrder.splice(6, 0, REWARD_ADDRESSES_FIELD);
+      displayOrder.splice(6, 0, 'rewardAddresses');
     }
 
-    // Add cross-chain information for export/import
-    if (this.isTransactionForCChain) {
-      displayOrder.push(SOURCE_CHAIN_FIELD, DESTINATION_CHAIN_FIELD);
-    }
-
-    const explanation: TransactionExplanation & { memo?: string } = {
+    return {
       displayOrder,
       id: txJson.id,
       inputs: txJson.inputs,
@@ -395,12 +230,5 @@ export class Transaction extends BaseTransaction {
       fee: this.fee,
       type: txJson.type,
     };
-
-    // Add memo to explanation if present
-    if (this.hasMemo()) {
-      explanation.memo = this.getMemoString();
-    }
-
-    return explanation;
   }
 }

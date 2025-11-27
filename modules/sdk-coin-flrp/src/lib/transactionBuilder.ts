@@ -1,31 +1,16 @@
-import { BaseTransactionBuilder, BuildTransactionError } from '@bitgo/sdk-core';
+import { avmSerial, pvmSerial, UnsignedTx } from '@flarenetwork/flarejs';
+import { BaseTransactionBuilder, BuildTransactionError, BaseKey, BaseAddress } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { DecodedUtxoObj, Tx } from './iface';
 import { KeyPair } from './keyPair';
 import { Transaction } from './transaction';
-import { RawTransactionData } from './types';
-import {
-  ERROR_NETWORK_ID_MISMATCH,
-  ERROR_BLOCKCHAIN_ID_MISMATCH_BUILDER,
-  ERROR_INVALID_THRESHOLD,
-  ERROR_INVALID_LOCKTIME,
-  ERROR_UTXOS_EMPTY_ARRAY,
-  ERROR_UTXOS_MISSING_FIELD,
-  ERROR_FROM_ADDRESSES_REQUIRED,
-  ERROR_UTXOS_REQUIRED_BUILDER,
-  ERROR_PARSE_RAW_TRANSACTION,
-  ERROR_UNKNOWN_PARSING,
-  UTXO_REQUIRED_FIELDS,
-  HEX_ENCODING,
-} from './constants';
+import utils from './utils';
+import BigNumber from 'bignumber.js';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
   protected recoverSigner = false;
   public _signer: KeyPair[] = [];
-
-  // Recovery mode flag for transaction building
-  protected _recoveryMode = false;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -35,27 +20,18 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /**
    * Initialize the transaction builder fields using the decoded transaction data
    *
-   * @param {Tx} tx the transaction data
+   * @param {Transaction} tx the transaction data
    * @returns itself
    */
   initBuilder(tx: Tx): this {
-    // Validate network and blockchain IDs if available
-    const txData = tx as unknown as RawTransactionData;
+    const baseTx = ((tx as UnsignedTx).tx as pvmSerial.AddPermissionlessValidatorTx).baseTx;
 
-    if (txData.networkID !== undefined && txData.networkID !== this._transaction._networkID) {
-      throw new Error(ERROR_NETWORK_ID_MISMATCH);
-    }
-
-    if (txData.blockchainID) {
-      const blockchainID = Buffer.isBuffer(txData.blockchainID)
-        ? txData.blockchainID
-        : Buffer.from(txData.blockchainID, HEX_ENCODING);
-      const transactionBlockchainID = Buffer.isBuffer(this._transaction._blockchainID)
-        ? this._transaction._blockchainID
-        : Buffer.from(this._transaction._blockchainID, HEX_ENCODING);
-      if (!blockchainID.equals(transactionBlockchainID)) {
-        throw new Error(ERROR_BLOCKCHAIN_ID_MISMATCH_BUILDER);
-      }
+    // Validate network and blockchain IDs match
+    if (
+      baseTx.NetworkId.value() !== this._transaction._networkID ||
+      baseTx.BlockchainId.value() !== this._transaction._blockchainID
+    ) {
+      throw new Error('Network or blockchain ID mismatch');
     }
 
     this._transaction.setTransaction(tx);
@@ -64,51 +40,53 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   // region Validators
   /**
-   * Validates the threshold
-   * @param threshold
+   * Validates the threshold for multi-signature transactions
+   * @param threshold - Number of required signatures
    */
   validateThreshold(threshold: number): void {
     if (!threshold || threshold !== 2) {
-      throw new BuildTransactionError(ERROR_INVALID_THRESHOLD);
+      throw new BuildTransactionError('Invalid transaction: threshold must be set to 2');
     }
   }
 
   /**
-   * Check the UTXO has expected fields.
-   * @param UTXO
+   * Validates a single UTXO object
+   * @param value - UTXO to validate
    */
   validateUtxo(value: DecodedUtxoObj): void {
-    UTXO_REQUIRED_FIELDS.forEach((field) => {
-      if (!value.hasOwnProperty(field)) throw new BuildTransactionError(`${ERROR_UTXOS_MISSING_FIELD} ${field}`);
-    });
+    const requiredFields = ['outputID', 'amount', 'txid', 'outputidx'];
+    for (const field of requiredFields) {
+      if (!value.hasOwnProperty(field)) {
+        throw new BuildTransactionError(`UTXO missing required field: ${field}`);
+      }
+    }
   }
 
   /**
-   * Check the list of UTXOS is empty and check each UTXO.
-   * @param values
+   * Validates an array of UTXOs
+   * @param values - Array of UTXOs to validate
    */
   validateUtxos(values: DecodedUtxoObj[]): void {
     if (values.length === 0) {
-      throw new BuildTransactionError(ERROR_UTXOS_EMPTY_ARRAY);
+      throw new BuildTransactionError('UTXOs array cannot be empty');
     }
     values.forEach(this.validateUtxo);
   }
 
   /**
-   * Validates locktime
-   * @param locktime
+   * Validates the locktime value
+   * @param locktime - Timestamp after which the output can be spent
    */
   validateLocktime(locktime: bigint): void {
     if (!locktime || locktime < BigInt(0)) {
-      throw new BuildTransactionError(ERROR_INVALID_LOCKTIME);
+      throw new BuildTransactionError('Invalid transaction: locktime must be 0 or higher');
     }
   }
   // endregion
 
   /**
-   * Threshold is an int that names the number of unique signatures required to spend the output.
-   * Must be less than or equal to the length of Addresses.
-   * @param {number} value
+   * Sets the threshold for multi-signature transactions
+   * @param value - Number of required signatures
    */
   threshold(value: number): this {
     this.validateThreshold(value);
@@ -117,9 +95,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /**
-   * Locktime is a long that contains the unix timestamp that this output can be spent after.
-   * The unix timestamp is specific to the second.
-   * @param value
+   * Sets the locktime for the transaction
+   * @param value - Timestamp after which the output can be spent
    */
   locktime(value: string | number): this {
     this.validateLocktime(BigInt(value));
@@ -128,36 +105,27 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /**
-   * When using recovery key must be set here
-   * @param {boolean}[recoverSigner=true] whether it's recovery signer
+   * Enables recovery mode for the transaction
+   * @param recoverSigner - Whether to use recovery signing
    */
   recoverMode(recoverSigner = true): this {
     this.recoverSigner = recoverSigner;
-    this._recoveryMode = recoverSigner;
-
-    // Recovery operations typically need single signature
-    if (recoverSigner && !this._transaction._threshold) {
-      this._transaction._threshold = 1;
-    }
-
     return this;
   }
 
   /**
-   * fromPubKey is a list of unique addresses that correspond to the private keys that can be used to spend this output
-   * @param {string | string[]} senderPubKey
+   * Sets the sender's public key(s)
+   * @param senderPubKey - Public key or array of public keys
    */
   fromPubKey(senderPubKey: string | string[]): this {
-    const pubKeys = senderPubKey instanceof Array ? senderPubKey : [senderPubKey];
-    this._transaction._fromAddresses = pubKeys; // Store as strings directly
+    const pubKeys = Array.isArray(senderPubKey) ? senderPubKey : [senderPubKey];
+    this._transaction._fromAddresses = pubKeys.map((addr) => utils.parseAddress(addr));
     return this;
   }
 
   /**
-   * List of UTXO required as inputs.
-   * A UTXO is a standalone representation of a transaction output.
-   *
-   * @param {DecodedUtxoObj[]} list of UTXOS
+   * Sets the UTXOs for the transaction
+   * @param value - Array of UTXOs to use
    */
   utxos(value: DecodedUtxoObj[]): this {
     this.validateUtxos(value);
@@ -165,43 +133,110 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return this;
   }
 
-  /**
-   * Build the Flare transaction using FlareJS API
-   * @protected
-   */
-  protected abstract buildFlareTransaction(): Promise<void> | void;
-
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string): Transaction {
-    // Parse the raw transaction and initialize the builder
     try {
-      const parsedTx = JSON.parse(rawTransaction);
-      this.initBuilder(parsedTx);
-      return this._transaction;
-    } catch (error) {
-      throw new Error(
-        `${ERROR_PARSE_RAW_TRANSACTION}: ${error instanceof Error ? error.message : ERROR_UNKNOWN_PARSING}`
+      // Parse the raw transaction using Flare's PVM serialization
+      const [tx] = pvmSerial.AddPermissionlessValidatorTx.fromBytes(
+        Buffer.from(rawTransaction, 'hex'),
+        avmSerial.getAVMManager().getDefaultCodec()
       );
+      this.initBuilder(tx);
+      return this._transaction;
+    } catch (e) {
+      throw new BuildTransactionError(`Failed to parse raw transaction: ${e.message}`);
     }
   }
 
   /**
-   * Get the transaction instance
+   * Abstract method to be implemented by specific transaction builders
+   * Builds the actual transaction based on the builder's configuration
    */
-  get transaction(): Transaction {
+  protected abstract buildImplementation(): Promise<Transaction>;
+
+  /**
+   * Check the buffer has 32 byte long.
+   * @param chainID
+   */
+  validateChainId(chainID: Buffer): void {
+    if (chainID.length !== 32) {
+      throw new BuildTransactionError('Chain id are 32 byte size');
+    }
+  }
+
+  /** @inheritdoc */
+  protected get transaction(): Transaction {
     return this._transaction;
   }
 
+  protected set transaction(transaction: Transaction) {
+    this._transaction = transaction;
+  }
+
   /**
-   * Validate required fields before building transaction
-   * @protected
+   * Check that fee is greater than 0.
+   * @param {bigint} fee
    */
-  protected validateRequiredFields(): void {
-    if (this._transaction._fromAddresses.length === 0) {
-      throw new Error(ERROR_FROM_ADDRESSES_REQUIRED);
+  validateFee(fee: bigint): void {
+    if (fee <= BigInt(0)) {
+      throw new BuildTransactionError('Fee must be greater than 0');
     }
-    if (this._transaction._utxos.length === 0) {
-      throw new Error(ERROR_UTXOS_REQUIRED_BUILDER);
+  }
+
+  /** @inheritdoc */
+  validateKey({ key }: BaseKey): void {
+    try {
+      new KeyPair({ prv: key });
+    } catch (e) {
+      throw new BuildTransactionError('Invalid key');
+    }
+  }
+
+  /** @inheritdoc */
+  validateTransaction(transaction?: Transaction): void {
+    // throw new NotImplementedError('validateTransaction not implemented');
+  }
+
+  /** @inheritdoc */
+  validateValue(value: BigNumber): void {
+    if (value.isLessThan(0)) {
+      throw new BuildTransactionError('Value cannot be less than zero');
+    }
+  }
+
+  /** @inheritdoc */
+  validateAddress(address: BaseAddress, addressFormat?: string): void {
+    if (!utils.isValidAddress(address.address)) {
+      throw new BuildTransactionError('Invalid address');
+    }
+  }
+
+  /**
+   * Check the raw transaction has a valid format in the blockchain context, throw otherwise.
+   *
+   * @param rawTransaction Transaction in any format
+   */
+  validateRawTransaction(rawTransaction: string): void {
+    utils.validateRawTransaction(rawTransaction);
+  }
+
+  /** @inheritdoc */
+  protected signImplementation({ key }: BaseKey): Transaction {
+    this._signer.push(new KeyPair({ prv: key }));
+    return this.transaction;
+  }
+
+  hasSigner(): boolean {
+    return this._signer !== undefined && this._signer.length > 0;
+  }
+
+  /**
+   * Check the amount is positive.
+   * @param amount
+   */
+  validateAmount(amount: bigint): void {
+    if (amount <= BigInt(0)) {
+      throw new BuildTransactionError('Amount must be greater than 0');
     }
   }
 }
