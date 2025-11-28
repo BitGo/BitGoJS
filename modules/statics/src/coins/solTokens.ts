@@ -102,6 +102,16 @@ export const solTokens = [
     ProgramID.Token2022ProgramId
   ),
   solToken(
+    'dce1895d-90c6-49d5-a835-1e3f3fbd7e8c',
+    'sol:soon',
+    'Soon Token',
+    9,
+    '4eDf52YYzL6i6gbZ6FXqrLUPXbtP61f1gPSFM66M4XHe', //https://solscan.io/token/4eDf52YYzL6i6gbZ6FXqrLUPXbtP61f1gPSFM66M4XHe
+    '4eDf52YYzL6i6gbZ6FXqrLUPXbtP61f1gPSFM66M4XHe',
+    UnderlyingAsset['sol:soon'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
     'd6bee044-de5b-4ce2-8ed2-dbae6f23e728',
     'sol:enron',
     'Enron',

@@ -11225,6 +11225,22 @@ export const erc20Coins = [
     UnderlyingAsset['eth:ibenji']
   ),
   erc20(
+    '03886beb-b737-400e-bb44-eb613e65e1d9',
+    'eth:bard',
+    'Lombard',
+    18,
+    '0xf0db65d17e30a966c2ae6a21f6bba71cea6e9754',
+    UnderlyingAsset['eth:bard']
+  ),
+  erc20(
+    'd62ef973-49e6-4d7c-8c67-ec112d6062a0',
+    'eth:sfp',
+    'SafePal Token',
+    18,
+    '0x12e2b8033420270db2f3b328e32370cb5b2ca134',
+    UnderlyingAsset['eth:sfp']
+  ),
+  erc20(
     '4f8f73d3-d264-4d4b-a150-885fdcbae600',
     'eth:towns',
     'Towns',
