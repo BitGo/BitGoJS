@@ -3,6 +3,7 @@
 import { BitGoJsError } from '../bitgojsError';
 import { IRequestTracer } from '../api/types';
 import { TransactionParams } from './baseCoin';
+import { IBaseCoin } from './baseCoin/iBaseCoin';
 import { SendManyOptions } from './wallet';
 
 // re-export for backwards compat
@@ -271,20 +272,58 @@ export class TxIntentMismatchError extends BitGoJsError {
    * @param {string | IRequestTracer | undefined} id - Transaction ID or request tracer
    * @param {TransactionParams[]} txParams - Transaction parameters that were analyzed
    * @param {string | undefined} txHex - Raw transaction hex string
-   * @param {string | undefined} txExplanation - Stringified transaction explanation
+   * @param {unknown} txExplanation - Transaction explanation
    */
   public constructor(
     message: string,
     id: string | IRequestTracer | undefined,
     txParams: TransactionParams[],
     txHex: string | undefined,
-    txExplanation?: string
+    txExplanation?: unknown
   ) {
     super(message);
     this.id = id;
     this.txParams = txParams;
     this.txHex = txHex;
-    this.txExplanation = txExplanation;
+    this.txExplanation = txExplanation ? this.safeStringify(txExplanation) : undefined;
+  }
+
+  /**
+   * Safely stringify a value with BigInt support
+   * @param value - Value to stringify
+   * @returns JSON string with BigInts converted to strings
+   */
+  private safeStringify(value: unknown): string {
+    return JSON.stringify(value, (_, v) => (typeof v === 'bigint' ? v.toString() : v), 2);
+  }
+
+  /**
+   * Try to get transaction explanation from a coin's explainTransaction method.
+   *
+   * @param coin - Coin instance implementing IBaseCoin
+   * @param txPrebuild - Transaction prebuild containing txHex and txInfo
+   * @returns Transaction explanation object or undefined
+   */
+  static async tryGetTxExplanation(
+    coin: IBaseCoin,
+    txPrebuild: { txHex?: string; txInfo?: unknown }
+  ): Promise<unknown> {
+    if (!txPrebuild.txHex) {
+      return undefined;
+    }
+
+    try {
+      return await coin.explainTransaction({
+        txHex: txPrebuild.txHex,
+        txInfo: txPrebuild.txInfo,
+      });
+    } catch (e) {
+      return {
+        error: 'Failed to parse transaction explanation',
+        txHex: txPrebuild.txHex,
+        details: e instanceof Error ? e.message : String(e),
+      };
+    }
   }
 }
 
@@ -309,7 +348,7 @@ export class TxIntentMismatchRecipientError extends TxIntentMismatchError {
    * @param {TransactionParams[]} txParams - Transaction parameters that were analyzed
    * @param {string | undefined} txHex - Raw transaction hex string
    * @param {MismatchedRecipient[]} mismatchedRecipients - Array of recipients that don't match user intent
-   * @param {string | undefined} txExplanation - Stringified transaction explanation
+   * @param {unknown} txExplanation - Transaction explanation
    */
   public constructor(
     message: string,
@@ -317,7 +356,7 @@ export class TxIntentMismatchRecipientError extends TxIntentMismatchError {
     txParams: TransactionParams[],
     txHex: string | undefined,
     mismatchedRecipients: MismatchedRecipient[],
-    txExplanation?: string
+    txExplanation?: unknown
   ) {
     super(message, id, txParams, txHex, txExplanation);
     this.mismatchedRecipients = mismatchedRecipients;
@@ -345,7 +384,7 @@ export class TxIntentMismatchContractError extends TxIntentMismatchError {
    * @param {TransactionParams[]} txParams - Transaction parameters that were analyzed
    * @param {string | undefined} txHex - Raw transaction hex string
    * @param {ContractDataPayload} mismatchedDataPayload - The contract interaction data that doesn't match user intent
-   * @param {string | undefined} txExplanation - Stringified transaction explanation
+   * @param {unknown} txExplanation - Transaction explanation
    */
   public constructor(
     message: string,
@@ -353,7 +392,7 @@ export class TxIntentMismatchContractError extends TxIntentMismatchError {
     txParams: TransactionParams[],
     txHex: string | undefined,
     mismatchedDataPayload: ContractDataPayload,
-    txExplanation?: string
+    txExplanation?: unknown
   ) {
     super(message, id, txParams, txHex, txExplanation);
     this.mismatchedDataPayload = mismatchedDataPayload;
@@ -381,7 +420,7 @@ export class TxIntentMismatchApprovalError extends TxIntentMismatchError {
    * @param {TransactionParams[]} txParams - Transaction parameters that were analyzed
    * @param {string | undefined} txHex - Raw transaction hex string
    * @param {TokenApproval} tokenApproval - Details of the token approval that doesn't match user intent
-   * @param {string | undefined} txExplanation - Stringified transaction explanation
+   * @param {unknown} txExplanation - Transaction explanation
    */
   public constructor(
     message: string,
@@ -389,7 +428,7 @@ export class TxIntentMismatchApprovalError extends TxIntentMismatchError {
     txParams: TransactionParams[],
     txHex: string | undefined,
     tokenApproval: TokenApproval,
-    txExplanation?: string
+    txExplanation?: unknown
   ) {
     super(message, id, txParams, txHex, txExplanation);
     this.tokenApproval = tokenApproval;

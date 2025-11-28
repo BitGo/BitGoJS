@@ -28,6 +28,7 @@ import {
   PresignTransactionOptions,
   RequestTracer,
   SignedTransaction,
+  TxIntentMismatchError,
   SignTransactionOptions as BaseSignTransactionOptions,
   SupplementGenerateWalletOptions,
   TransactionParams as BaseTransactionParams,
@@ -61,7 +62,6 @@ import {
   assertValidTransactionRecipient,
   explainTx,
   fromExtendedAddressFormat,
-  getTxExplanation,
   isScriptRecipient,
   parseTransaction,
   verifyTransaction,
@@ -145,7 +145,7 @@ function convertValidationErrorToTxIntentMismatch(
   reqId: string | IRequestTracer | undefined,
   txParams: BaseTransactionParams,
   txHex: string | undefined,
-  txExplanation?: string
+  txExplanation?: unknown
 ): TxIntentMismatchRecipientError {
   const mismatchedRecipients: MismatchedRecipient[] = [];
 
@@ -619,12 +619,14 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   async verifyTransaction<TNumber extends number | bigint = number>(
     params: VerifyTransactionOptions<TNumber>
   ): Promise<boolean> {
-    const txExplanation = await getTxExplanation(this, params.txPrebuild);
-
     try {
       return await verifyTransaction(this, this.bitgo, params);
     } catch (error) {
       if (error instanceof AggregateValidationError) {
+        const txExplanation = await TxIntentMismatchError.tryGetTxExplanation(
+          this as unknown as IBaseCoin,
+          params.txPrebuild
+        );
         throw convertValidationErrorToTxIntentMismatch(
           error,
           params.reqId,

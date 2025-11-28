@@ -34,16 +34,20 @@ describe('Transaction Intent Mismatch Errors', () => {
 
     it('should create error with txExplanation when provided', () => {
       const message = 'Transaction does not match user intent';
-      const txExplanation = JSON.stringify({
+      const txExplanationObj = {
         id: '0xtxid',
         outputAmount: '1000000',
         outputs: [{ address: '0xrecipient', amount: '1000000' }],
         fee: { fee: '21000' },
-      });
-      const error = new TxIntentMismatchError(message, mockTransactionId, mockTxParams, mockTxHex, txExplanation);
+      };
+      const error = new TxIntentMismatchError(message, mockTransactionId, mockTxParams, mockTxHex, txExplanationObj);
 
       should.exist(error);
-      should.equal(error.txExplanation, txExplanation);
+      // Should be stringified
+      should.equal(typeof error.txExplanation, 'string');
+      const parsed = JSON.parse(error.txExplanation!);
+      should.equal(parsed.id, '0xtxid');
+      should.equal(parsed.outputAmount, '1000000');
     });
 
     it('should be an instance of Error', () => {
@@ -82,10 +86,10 @@ describe('Transaction Intent Mismatch Errors', () => {
     it('should create recipient error with txExplanation when provided', () => {
       const message = 'Transaction recipients do not match user intent';
       const mismatchedRecipients: MismatchedRecipient[] = [{ address: '0xexpected1', amount: '1000' }];
-      const txExplanation = JSON.stringify({
+      const txExplanationObj = {
         id: '0xtxid',
         outputs: [{ address: '0xactual', amount: '1000' }],
-      });
+      };
 
       const error = new TxIntentMismatchRecipientError(
         message,
@@ -93,10 +97,12 @@ describe('Transaction Intent Mismatch Errors', () => {
         mockTxParams,
         mockTxHex,
         mismatchedRecipients,
-        txExplanation
+        txExplanationObj
       );
 
-      should.equal(error.txExplanation, txExplanation);
+      should.equal(typeof error.txExplanation, 'string');
+      const parsed = JSON.parse(error.txExplanation!);
+      should.equal(parsed.id, '0xtxid');
       should.deepEqual(error.mismatchedRecipients, mismatchedRecipients);
     });
 
@@ -142,11 +148,11 @@ describe('Transaction Intent Mismatch Errors', () => {
         rawContractPayload: '0xabcdef',
         decodedContractPayload: { method: 'approve', params: ['0xspender', 'unlimited'] },
       };
-      const txExplanation = JSON.stringify({
+      const txExplanationObj = {
         id: '0xtxid',
         outputs: [{ address: '0xcontract123', amount: '0' }],
         contractCall: { method: 'approve', params: ['0xspender', 'unlimited'] },
-      });
+      };
 
       const error = new TxIntentMismatchContractError(
         message,
@@ -154,10 +160,12 @@ describe('Transaction Intent Mismatch Errors', () => {
         mockTxParams,
         mockTxHex,
         mismatchedDataPayload,
-        txExplanation
+        txExplanationObj
       );
 
-      should.equal(error.txExplanation, txExplanation);
+      should.equal(typeof error.txExplanation, 'string');
+      const parsed = JSON.parse(error.txExplanation!);
+      should.equal(parsed.id, '0xtxid');
       should.deepEqual(error.mismatchedDataPayload, mismatchedDataPayload);
     });
 
@@ -209,7 +217,7 @@ describe('Transaction Intent Mismatch Errors', () => {
         authorizingAmount: { type: 'unlimited' },
         authorizingAddress: '0xmalicious',
       };
-      const txExplanation = JSON.stringify({
+      const txExplanationObj = {
         id: '0xtxid',
         outputs: [{ address: '0xusdc', amount: '0' }],
         tokenApproval: {
@@ -217,7 +225,7 @@ describe('Transaction Intent Mismatch Errors', () => {
           spender: '0xmalicious',
           amount: 'unlimited',
         },
-      });
+      };
 
       const error = new TxIntentMismatchApprovalError(
         message,
@@ -225,10 +233,12 @@ describe('Transaction Intent Mismatch Errors', () => {
         mockTxParams,
         mockTxHex,
         tokenApproval,
-        txExplanation
+        txExplanationObj
       );
 
-      should.equal(error.txExplanation, txExplanation);
+      should.equal(typeof error.txExplanation, 'string');
+      const parsed = JSON.parse(error.txExplanation!);
+      should.equal(parsed.id, '0xtxid');
       should.deepEqual(error.tokenApproval, tokenApproval);
     });
 
@@ -296,24 +306,20 @@ describe('Transaction Intent Mismatch Errors', () => {
 
   describe('Transaction explanation property', () => {
     it('should handle valid JSON transaction explanations', () => {
-      const txExplanation = JSON.stringify(
-        {
-          id: '0x123abc',
-          outputAmount: '1000000000000000000',
-          outputs: [
-            { address: '0xrecipient1', amount: '500000000000000000' },
-            { address: '0xrecipient2', amount: '500000000000000000' },
-          ],
-          fee: { fee: '21000', gasLimit: '21000' },
-          type: 'send',
-        },
-        null,
-        2
-      );
+      const txExplanationObj = {
+        id: '0x123abc',
+        outputAmount: '1000000000000000000',
+        outputs: [
+          { address: '0xrecipient1', amount: '500000000000000000' },
+          { address: '0xrecipient2', amount: '500000000000000000' },
+        ],
+        fee: { fee: '21000', gasLimit: '21000' },
+        type: 'send',
+      };
 
-      const error = new TxIntentMismatchError('Test', mockTransactionId, mockTxParams, mockTxHex, txExplanation);
+      const error = new TxIntentMismatchError('Test', mockTransactionId, mockTxParams, mockTxHex, txExplanationObj);
 
-      should.equal(error.txExplanation, txExplanation);
+      should.equal(typeof error.txExplanation, 'string');
       // Verify it can be parsed back
       const parsed = JSON.parse(error.txExplanation!);
       should.equal(parsed.id, '0x123abc');
@@ -321,23 +327,41 @@ describe('Transaction Intent Mismatch Errors', () => {
     });
 
     it('should handle empty transaction explanation', () => {
-      const error = new TxIntentMismatchError('Test', mockTransactionId, mockTxParams, mockTxHex, '');
+      const error = new TxIntentMismatchError('Test', mockTransactionId, mockTxParams, mockTxHex, undefined);
 
-      should.equal(error.txExplanation, '');
+      should.equal(error.txExplanation, undefined);
+    });
+
+    it('should handle BigInt values in transaction explanation', () => {
+      const txExplanationObj = {
+        id: '0x123',
+        outputAmount: BigInt('9007199254740992'),
+        changeAmount: BigInt('1234567890123456789'),
+        outputs: [{ address: 'addr1', amount: BigInt('9007199254740992') }],
+      };
+
+      const error = new TxIntentMismatchError('Test', mockTransactionId, mockTxParams, mockTxHex, txExplanationObj);
+
+      should.equal(typeof error.txExplanation, 'string');
+      const parsed = JSON.parse(error.txExplanation!);
+      // BigInts should be converted to strings
+      should.equal(parsed.outputAmount, '9007199254740992');
+      should.equal(parsed.changeAmount, '1234567890123456789');
+      should.equal(parsed.outputs[0].amount, '9007199254740992');
     });
 
     it('should work with all error subclasses', () => {
-      const txExplanation = JSON.stringify({ id: '0x123', outputs: [] });
+      const txExplanationObj = { id: '0x123', outputs: [] };
 
       const errors = [
-        new TxIntentMismatchRecipientError('Test', mockTransactionId, mockTxParams, mockTxHex, [], txExplanation),
+        new TxIntentMismatchRecipientError('Test', mockTransactionId, mockTxParams, mockTxHex, [], txExplanationObj),
         new TxIntentMismatchContractError(
           'Test',
           mockTransactionId,
           mockTxParams,
           mockTxHex,
           { address: '0x', rawContractPayload: '0x', decodedContractPayload: {} },
-          txExplanation
+          txExplanationObj
         ),
         new TxIntentMismatchApprovalError(
           'Test',
@@ -345,12 +369,14 @@ describe('Transaction Intent Mismatch Errors', () => {
           mockTxParams,
           mockTxHex,
           { tokenAddress: '0x', authorizingAmount: { type: 'limited', amount: 0 }, authorizingAddress: '0x' },
-          txExplanation
+          txExplanationObj
         ),
       ];
 
       errors.forEach((error) => {
-        should.equal(error.txExplanation, txExplanation);
+        should.equal(typeof error.txExplanation, 'string');
+        const parsed = JSON.parse(error.txExplanation!);
+        should.equal(parsed.id, '0x123');
       });
     });
   });

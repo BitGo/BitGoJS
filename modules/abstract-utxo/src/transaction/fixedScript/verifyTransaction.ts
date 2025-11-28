@@ -1,14 +1,13 @@
 import buildDebug from 'debug';
 import _ from 'lodash';
 import BigNumber from 'bignumber.js';
-import { BitGoBase, TxIntentMismatchError } from '@bitgo/sdk-core';
+import { BitGoBase, TxIntentMismatchError, IBaseCoin } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
 
 import { AbstractUtxoCoin, VerifyTransactionOptions } from '../../abstractUtxoCoin';
 import { Output, ParsedTransaction } from '../types';
 import { verifyCustomChangeKeySignatures, verifyKeySignature, verifyUserPublicKey } from '../../verifyKey';
 import { getPsbtTxInputs, getTxInputs } from '../fetchInputs';
-import { getTxExplanation } from '../txExplanation';
 
 const debug = buildDebug('bitgo:abstract-utxo:verifyTransaction');
 
@@ -51,7 +50,7 @@ export async function verifyTransaction<TNumber extends bigint | number>(
 ): Promise<boolean> {
   const { txParams, txPrebuild, wallet, verification = {}, reqId } = params;
 
-  const txExplanation = await getTxExplanation(coin, txPrebuild);
+  const txExplanation = await TxIntentMismatchError.tryGetTxExplanation(coin as unknown as IBaseCoin, txPrebuild);
 
   // Helper to throw TxIntentMismatchError with consistent context
   const throwTxMismatch = (message: string): never => {
