@@ -503,6 +503,11 @@ export enum CoinFeature {
    * This coin requires a wallet initialization transaction
    */
   REQUIRES_WALLET_INITIALIZATION_TRANSACTION = 'requires-wallet-initialization-transaction',
+
+  /**
+   * This coin requires a deposit acceptance transaction
+   */
+  REQUIRES_DEPOSIT_ACCEPTANCE_TRANSACTION = 'requires-deposit-acceptance-transaction',
 }
 
 /**
