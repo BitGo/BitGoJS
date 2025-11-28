@@ -285,7 +285,7 @@ export class TxIntentMismatchError extends BitGoJsError {
     this.id = id;
     this.txParams = txParams;
     this.txHex = txHex;
-    this.txExplanation = txExplanation ? this.safeStringify(txExplanation) : undefined;
+    this.txExplanation = txExplanation ? TxIntentMismatchError.safeStringify(txExplanation) : undefined;
   }
 
   /**
@@ -293,7 +293,7 @@ export class TxIntentMismatchError extends BitGoJsError {
    * @param value - Value to stringify
    * @returns JSON string with BigInts converted to strings
    */
-  private safeStringify(value: unknown): string {
+  private static safeStringify(value: unknown): string {
     return JSON.stringify(value, (_, v) => (typeof v === 'bigint' ? v.toString() : v), 2);
   }
 
