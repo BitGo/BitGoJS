@@ -59,7 +59,7 @@ export async function signTransaction<TNumber extends number | bigint>(
         return { txHex: tx.toHex() };
       case 'cosignerNonce':
         assert(params.walletId, 'walletId is required for MuSig2 bitgo nonce');
-        return { txHex: (await coin.signPsbt(tx.toHex(), params.walletId)).psbt };
+        return { txHex: (await coin.getMusig2Nonces(tx.toHex(), params.walletId)).psbt };
       case 'signerSignature':
         const txId = tx.getUnsignedTx().getId();
         const psbt = PSBT_CACHE.get(txId);
@@ -76,7 +76,7 @@ export async function signTransaction<TNumber extends number | bigint>(
         assert(params.walletId, 'walletId is required for MuSig2 bitgo nonce');
         assert(signerKeychain);
         tx.setAllInputsMusig2NonceHD(signerKeychain);
-        const response = await coin.signPsbt(tx.toHex(), params.walletId);
+        const response = await coin.getMusig2Nonces(tx.toHex(), params.walletId);
         tx.combine(bitgo.createPsbtFromHex(response.psbt, coin.network));
         break;
     }

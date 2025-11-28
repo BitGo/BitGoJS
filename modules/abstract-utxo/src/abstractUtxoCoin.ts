@@ -712,12 +712,22 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @param psbtHex all MuSig2 inputs should contain user MuSig2 nonce
    * @param walletId
    */
-  async signPsbt(psbtHex: string, walletId: string): Promise<SignPsbtResponse> {
+  async getMusig2Nonces(psbtHex: string, walletId: string): Promise<SignPsbtResponse> {
     const params: SignPsbtRequest = { psbt: psbtHex };
     return await this.bitgo
       .post(this.url('/wallet/' + walletId + '/tx/signpsbt'))
       .send(params)
       .result();
+  }
+
+  /**
+   * @deprecated Use getMusig2Nonces instead
+   * @returns input psbt added with deterministic MuSig2 nonce for bitgo key for each MuSig2 inputs.
+   * @param psbtHex all MuSig2 inputs should contain user MuSig2 nonce
+   * @param walletId
+   */
+  async signPsbt(psbtHex: string, walletId: string): Promise<SignPsbtResponse> {
+    return this.getMusig2Nonces(psbtHex, walletId);
   }
 
   /**
@@ -727,7 +737,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   async signPsbtFromOVC(ovcJson: Record<string, unknown>): Promise<Record<string, unknown>> {
     assert(ovcJson['psbtHex'], 'ovcJson must contain psbtHex');
     assert(ovcJson['walletId'], 'ovcJson must contain walletId');
-    const psbt = (await this.signPsbt(ovcJson['psbtHex'] as string, ovcJson['walletId'] as string)).psbt;
+    const psbt = (await this.getMusig2Nonces(ovcJson['psbtHex'] as string, ovcJson['walletId'] as string)).psbt;
     assert(psbt, 'psbt not found');
     return _.extend(ovcJson, { txHex: psbt });
   }
