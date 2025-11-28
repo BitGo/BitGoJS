@@ -258,6 +258,17 @@ export function constructPsbt(
 export const txFormats = ['psbt', 'psbt-lite'] as const;
 export type TxFormat = (typeof txFormats)[number];
 
+type SuiteConfig = {
+  /**
+   * By default, we include p2trMusig2 script path in the inputs.
+   * This input is a bit of a weirdo because it is signed by the user and the
+   * backup key, which usually is not mixed with other inputs and outputs.
+   *
+   * This option allows to exclude this input from the inputs.
+   */
+  includeP2trMusig2ScriptPath?: boolean;
+};
+
 /**
  * Creates a valid PSBT with as many features as possible.
  *
@@ -297,7 +308,7 @@ export class AcidTest {
     this.outputs = outputs;
   }
 
-  static withDefaults(network: Network, signStage: SignStage, txFormat: TxFormat): AcidTest {
+  static withConfig(network: Network, signStage: SignStage, txFormat: TxFormat, suiteConfig: SuiteConfig): AcidTest {
     const rootWalletKeys = getDefaultWalletKeys();
 
     const otherWalletKeys = getWalletKeysForSeed('too many secrets');
@@ -307,6 +318,7 @@ export class AcidTest {
           ? isSupportedScriptType(network, 'p2trMusig2')
           : isSupportedScriptType(network, scriptType)
       )
+      .filter((scriptType) => (suiteConfig.includeP2trMusig2ScriptPath ?? true) || scriptType !== 'p2trMusig2')
       .map((scriptType) => ({ scriptType, value: BigInt(2000) }));
 
     const outputs: Output[] = outputScriptTypes
@@ -345,12 +357,12 @@ export class AcidTest {
     return psbt;
   }
 
-  static suite(): AcidTest[] {
+  static suite(suiteConfig: SuiteConfig = {}): AcidTest[] {
     return getNetworkList()
       .filter((network) => isMainnet(network) && network !== networks.bitcoinsv)
       .flatMap((network) =>
         signStages.flatMap((signStage) =>
-          txFormats.flatMap((txFormat) => AcidTest.withDefaults(network, signStage, txFormat))
+          txFormats.flatMap((txFormat) => AcidTest.withConfig(network, signStage, txFormat, suiteConfig))
         )
       );
   }
