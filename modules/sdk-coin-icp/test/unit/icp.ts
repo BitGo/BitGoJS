@@ -11,12 +11,12 @@ import should from 'should';
 nock.enableNetConnect();
 
 const bitgo: TestBitGoAPI = TestBitGo.decorate(BitGoAPI, { env: 'test' });
-bitgo.safeRegister('ticp', Ticp.createInstance);
+bitgo.safeRegister('icp', Icp.createInstance);
 
 describe('Internet computer', function () {
   let bitgo;
   let basecoin;
-  const factory = getBuilderFactory('ticp');
+  const factory = getBuilderFactory('icp');
   let txBuilder: any;
 
   before(async function () {
@@ -24,7 +24,7 @@ describe('Internet computer', function () {
     bitgo.safeRegister('icp', Icp.createInstance);
     bitgo.safeRegister('ticp', Ticp.createInstance);
     bitgo.initializeTestVars();
-    basecoin = bitgo.coin('ticp');
+    basecoin = bitgo.coin('icp');
 
     txBuilder = factory.getTransferBuilder();
     txBuilder.sender(testData.Accounts.account1.address, testData.Accounts.account1.publicKey);

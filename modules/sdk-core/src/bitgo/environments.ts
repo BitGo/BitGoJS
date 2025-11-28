@@ -363,7 +363,7 @@ const testnetBase: EnvironmentTemplate = {
   flrExplorerBaseUrl: 'https://coston2-explorer.flare.network',
   xdcExplorerBaseUrl: 'https://api.etherscan.io/v2',
   sgbExplorerBaseUrl: 'https://coston-explorer.flare.network',
-  icpNodeUrl: 'https://exchanges.testnet.dfinity.network',
+  icpNodeUrl: 'https://ic0.app',
   monExplorerBaseUrl: 'https://api.etherscan.io/v2',
   worldExplorerBaseUrl: 'https://sepolia.worldscan.org/',
   somniaExplorerBaseUrl: 'https://shannon-explorer.somnia.network/',

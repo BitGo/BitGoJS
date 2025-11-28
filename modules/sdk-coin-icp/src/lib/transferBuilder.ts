@@ -38,7 +38,10 @@ export class TransferBuilder extends TransactionBuilder {
     }
     this.validateTransaction(this._transaction);
     this.buildIcpTransactionData();
-    const unsignedTransactionBuilder = new UnsignedTransactionBuilder(this._transaction.icpTransaction);
+    const unsignedTransactionBuilder = new UnsignedTransactionBuilder(
+      this._transaction.icpTransaction,
+      this._coinConfig
+    );
     const payloadsData = await unsignedTransactionBuilder.getUnsignedTransaction();
     this._transaction.payloadsData = payloadsData;
     return this._transaction;

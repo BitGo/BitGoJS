@@ -20,7 +20,7 @@ import {
   TssVerifyAddressOptions,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
-import { coins, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { coins, NetworkType, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { Principal } from '@dfinity/principal';
 import axios from 'axios';
 import BigNumber from 'bignumber.js';
@@ -30,6 +30,7 @@ import * as mpc from '@bitgo/sdk-lib-mpc';
 import {
   CurveType,
   LEDGER_CANISTER_ID,
+  TESTNET_LEDGER_CANISTER_ID,
   PayloadsData,
   PUBLIC_NODE_REQUEST_ENDPOINT,
   PublicNodeSubmitResponse,
@@ -249,7 +250,9 @@ export class Icp extends BaseCoin {
 
   private getPublicNodeBroadcastEndpoint(): string {
     const nodeUrl = this.getPublicNodeUrl();
-    const principal = Principal.fromUint8Array(LEDGER_CANISTER_ID);
+    const ledgerCanisterId =
+      this._staticsCoin.network.type === NetworkType.TESTNET ? TESTNET_LEDGER_CANISTER_ID : LEDGER_CANISTER_ID;
+    const principal = Principal.fromUint8Array(ledgerCanisterId);
     const canisterIdHex = principal.toText();
     const endpoint = `${nodeUrl}${PUBLIC_NODE_REQUEST_ENDPOINT}${canisterIdHex}/call`;
     return endpoint;
@@ -263,7 +266,7 @@ export class Icp extends BaseCoin {
    */
   protected async getAccountBalance(publicKeyHex: string): Promise<BigNumber> {
     const principalId = utils.getPrincipalIdFromPublicKey(publicKeyHex).toText();
-    const agent = new IcpAgent(this.getPublicNodeUrl());
+    const agent = new IcpAgent(this.getPublicNodeUrl(), this._staticsCoin);
     return agent.getBalance(principalId);
   }
 
@@ -277,7 +280,7 @@ export class Icp extends BaseCoin {
    * @throws Will propagate any errors encountered while communicating with the ICP node.
    */
   protected async getFeeData(): Promise<BigNumber> {
-    const agent = new IcpAgent(this.getPublicNodeUrl());
+    const agent = new IcpAgent(this.getPublicNodeUrl(), this._staticsCoin);
     return await agent.getFee();
   }
 
