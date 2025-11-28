@@ -6,11 +6,15 @@ import { bitgo } from '@bitgo/utxo-lib';
 import * as utxolib from '@bitgo/utxo-lib';
 import { isTriple, Triple } from '@bitgo/sdk-core';
 
-import { AbstractUtxoCoin, DecodedTransaction } from '../../abstractUtxoCoin';
+import { DecodedTransaction } from '../types';
 
 import { signAndVerifyPsbt, signAndVerifyWalletTransaction } from './sign';
 
 type RootWalletKeys = bitgo.RootWalletKeys;
+
+export interface Musig2Participant {
+  getMusig2Nonces(psbtHex: string, walletId: string): Promise<{ psbt: string }>;
+}
 
 /**
  * Key Value: Unsigned tx id => PSBT
@@ -23,9 +27,10 @@ type RootWalletKeys = bitgo.RootWalletKeys;
 const PSBT_CACHE = new Map<string, utxolib.bitgo.UtxoPsbt>();
 
 export async function signTransaction<TNumber extends number | bigint>(
-  coin: AbstractUtxoCoin,
+  coin: Musig2Participant,
   tx: DecodedTransaction<TNumber>,
   signerKeychain: BIP32Interface | undefined,
+  network: utxolib.Network,
   params: {
     walletId: string | undefined;
     txInfo: { unspents?: utxolib.bitgo.Unspent<TNumber>[] } | undefined;
@@ -79,7 +84,7 @@ export async function signTransaction<TNumber extends number | bigint>(
         assert(signerKeychain);
         tx.setAllInputsMusig2NonceHD(signerKeychain);
         const response = await coin.getMusig2Nonces(tx.toHex(), params.walletId);
-        tx.combine(bitgo.createPsbtFromHex(response.psbt, coin.network));
+        tx.combine(bitgo.createPsbtFromHex(response.psbt, network));
         break;
     }
   } else {

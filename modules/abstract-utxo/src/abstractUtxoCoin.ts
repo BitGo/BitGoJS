@@ -59,6 +59,7 @@ import { isReplayProtectionUnspent } from './transaction/fixedScript/replayProte
 import { supportedCrossChainRecoveries } from './config';
 import {
   assertValidTransactionRecipient,
+  DecodedTransaction,
   explainTx,
   fromExtendedAddressFormat,
   isScriptRecipient,
@@ -178,9 +179,7 @@ function convertValidationErrorToTxIntentMismatch(
   return txIntentError;
 }
 
-export type DecodedTransaction<TNumber extends number | bigint> =
-  | utxolib.bitgo.UtxoTransaction<TNumber>
-  | utxolib.bitgo.UtxoPsbt;
+export type { DecodedTransaction } from './transaction/types';
 
 export type RootWalletKeys = bitgo.RootWalletKeys;
 
