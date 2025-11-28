@@ -313,7 +313,7 @@ export const ExpressV2WalletSweepApiSpec = apiSpec({
 });
 
 export const ExpressV2WalletAccelerateTxApiSpec = apiSpec({
-  'express.v2.wallet.accelerateTx': {
+  'express.wallet.acceleratetx': {
     post: PostWalletAccelerateTx,
   },
 });
