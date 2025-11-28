@@ -6,8 +6,9 @@ import { bitgo } from '@bitgo/utxo-lib';
 import * as utxolib from '@bitgo/utxo-lib';
 import { isTriple, Triple } from '@bitgo/sdk-core';
 
-import { signAndVerifyPsbt, signAndVerifyWalletTransaction } from '../../sign';
 import { AbstractUtxoCoin, DecodedTransaction, RootWalletKeys } from '../../abstractUtxoCoin';
+
+import { signAndVerifyPsbt, signAndVerifyWalletTransaction } from './sign';
 
 /**
  * Key Value: Unsigned tx id => PSBT

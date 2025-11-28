@@ -55,7 +55,7 @@ import {
   v1Sweep,
   V1SweepParams,
 } from './recovery';
-import { isReplayProtectionUnspent } from './replayProtection';
+import { isReplayProtectionUnspent } from './transaction/fixedScript/replayProtection';
 import { supportedCrossChainRecoveries } from './config';
 import {
   assertValidTransactionRecipient,
