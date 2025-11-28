@@ -18,7 +18,6 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   /** @inheritdoc */
   from(raw: string): TransactionBuilder {
     utils.validateRawTransaction(raw);
-    let transactionBuilder: TransactionBuilder | undefined = undefined;
     const rawNoHex = utils.removeHexPrefix(raw);
     const rawBuffer = Buffer.from(rawNoHex, 'hex');
     let txSource: 'EVM' | 'PVM';
@@ -40,9 +39,9 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
       if (txSource === 'EVM') {
         if (ExportInCTxBuilder.verifyTxType(tx._type)) {
-          transactionBuilder = this.getExportInCBuilder();
-          transactionBuilder.initBuilder(tx as evmSerial.ExportTx);
-          return transactionBuilder;
+          const exportBuilder = this.getExportInCBuilder();
+          exportBuilder.initBuilder(tx as evmSerial.ExportTx, rawBuffer);
+          return exportBuilder;
         }
       }
     } catch (e) {
