@@ -11,7 +11,7 @@ type Unspent<TNumber extends number | bigint = number> = utxolib.bitgo.Unspent<T
 
 type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
 
-type PsbtParsedScriptTypes =
+type PsbtParsedScriptType =
   | 'p2sh'
   | 'p2wsh'
   | 'p2shP2wsh'
@@ -22,17 +22,24 @@ type PsbtParsedScriptTypes =
 export class InputSigningError<TNumber extends number | bigint = number> extends Error {
   static expectedWalletUnspent<TNumber extends number | bigint>(
     inputIndex: number,
+    inputType: PsbtParsedScriptType | null, // null for legacy transaction format
     unspent: Unspent<TNumber> | { id: string }
   ): InputSigningError<TNumber> {
-    return new InputSigningError(inputIndex, unspent, `not a wallet unspent, not a replay protection unspent`);
+    return new InputSigningError(
+      inputIndex,
+      inputType,
+      unspent,
+      `not a wallet unspent, not a replay protection unspent`
+    );
   }
 
   constructor(
     public inputIndex: number,
+    public inputType: PsbtParsedScriptType | null, // null for legacy transaction format
     public unspent: Unspent<TNumber> | { id: string },
     public reason: Error | string
   ) {
-    super(`signing error at input ${inputIndex}: unspentId=${unspent.id}: ${reason}`);
+    super(`signing error at input ${inputIndex}: type=${inputType} unspentId=${unspent.id}: ${reason}`);
   }
 }
 
@@ -70,7 +77,7 @@ export function signAndVerifyPsbt(
 ): utxolib.bitgo.UtxoPsbt | utxolib.bitgo.UtxoTransaction<bigint> {
   const txInputs = psbt.txInputs;
   const outputIds: string[] = [];
-  const scriptTypes: PsbtParsedScriptTypes[] = [];
+  const scriptTypes: PsbtParsedScriptType[] = [];
 
   const signErrors: InputSigningError<bigint>[] = psbt.data.inputs
     .map((input, inputIndex: number) => {
@@ -89,7 +96,7 @@ export function signAndVerifyPsbt(
         psbt.signInputHD(inputIndex, signerKeychain);
         debug('Successfully signed input %d of %d', inputIndex + 1, psbt.data.inputs.length);
       } catch (e) {
-        return new InputSigningError<bigint>(inputIndex, { id: outputId }, e);
+        return new InputSigningError<bigint>(inputIndex, scriptType, { id: outputId }, e);
       }
     })
     .filter((e): e is InputSigningError<bigint> => e !== undefined);
@@ -109,11 +116,11 @@ export function signAndVerifyPsbt(
       const outputId = outputIds[inputIndex];
       try {
         if (!psbt.validateSignaturesOfInputHD(inputIndex, signerKeychain)) {
-          return new InputSigningError(inputIndex, { id: outputId }, new Error(`invalid signature`));
+          return new InputSigningError(inputIndex, scriptType, { id: outputId }, new Error(`invalid signature`));
         }
       } catch (e) {
         debug('Invalid signature');
-        return new InputSigningError<bigint>(inputIndex, { id: outputId }, e);
+        return new InputSigningError<bigint>(inputIndex, scriptType, { id: outputId }, e);
       }
     })
     .filter((e): e is InputSigningError<bigint> => e !== undefined);
@@ -178,13 +185,13 @@ export function signAndVerifyWalletTransaction<TNumber extends number | bigint>(
         return;
       }
       if (!isWalletUnspent<TNumber>(unspent)) {
-        return InputSigningError.expectedWalletUnspent<TNumber>(inputIndex, unspent);
+        return InputSigningError.expectedWalletUnspent<TNumber>(inputIndex, null, unspent);
       }
       try {
         signInputWithUnspent<TNumber>(txBuilder, inputIndex, unspent, walletSigner);
         debug('Successfully signed input %d of %d', inputIndex + 1, unspents.length);
       } catch (e) {
-        return new InputSigningError<TNumber>(inputIndex, unspent, e);
+        return new InputSigningError<TNumber>(inputIndex, null, unspent, e);
       }
     })
     .filter((e): e is InputSigningError<TNumber> => e !== undefined);
@@ -203,18 +210,18 @@ export function signAndVerifyWalletTransaction<TNumber extends number | bigint>(
         return;
       }
       if (!isWalletUnspent<TNumber>(unspent)) {
-        return InputSigningError.expectedWalletUnspent<TNumber>(inputIndex, unspent);
+        return InputSigningError.expectedWalletUnspent<TNumber>(inputIndex, null, unspent);
       }
       try {
         const publicKey = walletSigner.deriveForChainAndIndex(unspent.chain, unspent.index).signer.publicKey;
         if (
           !utxolib.bitgo.verifySignatureWithPublicKey<TNumber>(signedTransaction, inputIndex, prevOutputs, publicKey)
         ) {
-          return new InputSigningError(inputIndex, unspent, new Error(`invalid signature`));
+          return new InputSigningError(inputIndex, null, unspent, new Error(`invalid signature`));
         }
       } catch (e) {
         debug('Invalid signature');
-        return new InputSigningError<TNumber>(inputIndex, unspent, e);
+        return new InputSigningError<TNumber>(inputIndex, null, unspent, e);
       }
     })
     .filter((e): e is InputSigningError<TNumber> => e !== undefined);
