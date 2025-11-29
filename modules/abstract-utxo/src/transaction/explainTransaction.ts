@@ -5,8 +5,8 @@ import { isTriple, IWallet, Triple } from '@bitgo/sdk-core';
 import { getDescriptorMapFromWallet, isDescriptorWallet } from '../descriptor';
 import { toBip32Triple } from '../keychains';
 import { getPolicyForEnv } from '../descriptor/validatePolicy';
-import { getReplayProtectionOutputScripts } from '../replayProtection';
 
+import { getReplayProtectionOutputScripts } from './fixedScript/replayProtection';
 import type {
   TransactionExplanationUtxolibLegacy,
   TransactionExplanationUtxolibPsbt,

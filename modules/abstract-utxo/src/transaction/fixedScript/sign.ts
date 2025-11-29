@@ -1,7 +1,7 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import debugLib from 'debug';
 
-import { isReplayProtectionUnspent } from './replayProtection';
+import { getReplayProtectionAddresses } from './replayProtection';
 
 const debug = debugLib('bitgo:v2:utxo');
 
@@ -139,14 +139,24 @@ export function signAndVerifyPsbt(
  * @param unspents - transaction unspents
  * @param walletSigner - signing parameters
  * @param isLastSignature - Returns full-signed transaction when true. Builds half-signed when false.
+ * @param replayProtectionAddresses - List of replay protection addresses to skip signing
  */
 export function signAndVerifyWalletTransaction<TNumber extends number | bigint>(
   transaction: utxolib.bitgo.UtxoTransaction<TNumber> | utxolib.bitgo.UtxoTransactionBuilder<TNumber>,
   unspents: Unspent<TNumber>[],
   walletSigner: utxolib.bitgo.WalletUnspentSigner<RootWalletKeys>,
-  { isLastSignature }: { isLastSignature: boolean }
+  {
+    isLastSignature,
+    replayProtectionAddresses,
+  }: {
+    isLastSignature: boolean;
+    replayProtectionAddresses?: string[];
+  }
 ): utxolib.bitgo.UtxoTransaction<TNumber> {
   const network = transaction.network as utxolib.Network;
+  if (replayProtectionAddresses === undefined) {
+    replayProtectionAddresses = getReplayProtectionAddresses(network);
+  }
   const prevOutputs = unspents.map((u) => toOutput(u, network));
 
   let txBuilder: utxolib.bitgo.UtxoTransactionBuilder<TNumber>;
@@ -163,7 +173,7 @@ export function signAndVerifyWalletTransaction<TNumber extends number | bigint>(
 
   const signErrors: InputSigningError<TNumber>[] = unspents
     .map((unspent: Unspent<TNumber>, inputIndex: number) => {
-      if (isReplayProtectionUnspent<TNumber>(unspent, network)) {
+      if (replayProtectionAddresses.includes(unspent.address)) {
         debug('Skipping signature for input %d of %d (RP input?)', inputIndex + 1, unspents.length);
         return;
       }
@@ -184,7 +194,7 @@ export function signAndVerifyWalletTransaction<TNumber extends number | bigint>(
   const verifyErrors: InputSigningError<TNumber>[] = signedTransaction.ins
     .map((input, inputIndex) => {
       const unspent = unspents[inputIndex] as Unspent<TNumber>;
-      if (isReplayProtectionUnspent<TNumber>(unspent, network)) {
+      if (replayProtectionAddresses.includes(unspent.address)) {
         debug(
           'Skipping input signature %d of %d (unspent from replay protection address which is platform signed only)',
           inputIndex + 1,

@@ -5,7 +5,7 @@ import { BitGoBase, IWallet, Keychain, Triple, Wallet } from '@bitgo/sdk-core';
 import { decrypt } from '@bitgo/sdk-api';
 
 import { AbstractUtxoCoin, TransactionInfo } from '../abstractUtxoCoin';
-import { signAndVerifyWalletTransaction } from '../sign';
+import { signAndVerifyWalletTransaction } from '../transaction/fixedScript/sign';
 
 const { unspentSum, scriptTypeForChain, outputScripts } = utxolib.bitgo;
 type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
