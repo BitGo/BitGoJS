@@ -461,6 +461,68 @@ export class Utils implements BaseUtils {
   }
 
   /**
+   * Parse credentials from raw bytes at a specific offset
+   * This is useful when the standard extraction fails due to serialization differences
+   * @param rawBytes Raw transaction bytes including credentials
+   * @param offset Byte offset where credentials start
+   * @returns Array of parsed credentials
+   */
+  parseCredentialsAtOffset(rawBytes: Buffer, offset: number): Credential[] {
+    try {
+      if (rawBytes.length <= offset + 4) {
+        return [];
+      }
+
+      const credentialBytes = rawBytes.slice(offset);
+      const numCredentials = credentialBytes.readUInt32BE(0);
+
+      if (numCredentials === 0) {
+        return [];
+      }
+
+      const credentials: Credential[] = [];
+      let pos = 4;
+
+      for (let i = 0; i < numCredentials; i++) {
+        if (pos + 8 > credentialBytes.length) {
+          break;
+        }
+
+        // Read type ID (4 bytes) - Type ID 9 = secp256k1 credential
+        const typeId = credentialBytes.readUInt32BE(pos);
+        pos += 4;
+
+        if (typeId !== 9) {
+          continue;
+        }
+
+        // Read number of signatures (4 bytes)
+        const numSigs = credentialBytes.readUInt32BE(pos);
+        pos += 4;
+
+        // Parse all signatures for this credential
+        const signatures: Signature[] = [];
+        for (let j = 0; j < numSigs; j++) {
+          if (pos + 65 > credentialBytes.length) {
+            break;
+          }
+          const sigBytes = Buffer.from(credentialBytes.slice(pos, pos + 65));
+          signatures.push(new Signature(sigBytes));
+          pos += 65;
+        }
+
+        if (signatures.length > 0) {
+          credentials.push(new Credential(signatures));
+        }
+      }
+
+      return credentials;
+    } catch {
+      return [];
+    }
+  }
+
+  /**
    * FlareJS wrapper to recover signature
    * @param network
    * @param message

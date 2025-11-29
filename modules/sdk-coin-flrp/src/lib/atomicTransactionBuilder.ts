@@ -2,8 +2,9 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { TransactionType } from '@bitgo/sdk-core';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
-import { TransferableInput, Int, Id, TypeSymbols } from '@flarenetwork/flarejs';
+import { TransferableInput, Int, Id, TypeSymbols, Credential } from '@flarenetwork/flarejs';
 import { DecodedUtxoObj } from './iface';
+import utils from './utils';
 
 // Interface for objects that can provide an amount
 interface Amounter {
@@ -34,7 +35,7 @@ export abstract class AtomicTransactionBuilder extends TransactionBuilder {
   protected createInputOutput(amount: bigint): {
     inputs: TransferableInput[];
     outputs: TransferableInput[];
-    credentials: any[];
+    credentials: Credential[];
   } {
     const sender = (this.transaction as Transaction)._fromAddresses.slice();
     if (this.recoverSigner) {
@@ -49,7 +50,7 @@ export abstract class AtomicTransactionBuilder extends TransactionBuilder {
     let totalAmount = BigInt(0);
     const inputs: TransferableInput[] = [];
     const outputs: TransferableInput[] = [];
-    const credentials: any[] = [];
+    const credentials: Credential[] = [];
 
     (this.transaction as Transaction)._utxos.forEach((utxo: DecodedUtxoObj) => {
       const utxoAmount = BigInt(utxo.amount);
@@ -96,8 +97,8 @@ export abstract class AtomicTransactionBuilder extends TransactionBuilder {
       inputs.push(transferableInput);
 
       // Create empty credential for each input
-      const emptySignatures = sender.map(() => Buffer.alloc(0));
-      credentials.push({ signatures: emptySignatures });
+      const emptySignatures = sender.map(() => utils.createNewSig(''));
+      credentials.push(new Credential(emptySignatures));
     });
 
     // Create output if there is change
@@ -188,5 +189,29 @@ export abstract class AtomicTransactionBuilder extends TransactionBuilder {
    */
   setTransactionType(transactionType: TransactionType): void {
     this.transaction._type = transactionType;
+  }
+
+  /**
+   * The internal chain is the one set for the coin in coinConfig.network. The external chain is the other chain involved.
+   * The external chain id is the source on import and the destination on export.
+   *
+   * @param {string} chainId - id of the external chain
+   */
+  externalChainId(chainId: string | Buffer): this {
+    const newTargetChainId = typeof chainId === 'string' ? utils.cb58Decode(chainId) : Buffer.from(chainId);
+    this.validateChainId(newTargetChainId);
+    this._externalChainId = newTargetChainId;
+    return this;
+  }
+
+  /**
+   * Set the transaction fee
+   *
+   * @param {string | bigint} feeValue - the fee value
+   */
+  fee(feeValue: string | bigint): this {
+    const fee = typeof feeValue === 'string' ? feeValue : feeValue.toString();
+    (this.transaction as Transaction)._fee.fee = fee;
+    return this;
   }
 }
