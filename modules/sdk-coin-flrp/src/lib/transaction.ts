@@ -18,6 +18,7 @@ import {
   Address,
 } from '@flarenetwork/flarejs';
 import { Buffer } from 'buffer';
+import { createHash } from 'crypto';
 import { DecodedUtxoObj, TransactionExplanation, Tx, TxData } from './iface';
 import { KeyPair } from './keyPair';
 import utils from './utils';
@@ -93,18 +94,27 @@ export class Transaction extends BaseTransaction {
       throw new InvalidTransactionError('empty credentials to sign');
     }
 
-    //TODO: need to check for type of transaction and handle accordingly
     const unsignedTx = this._flareTransaction as EVMUnsignedTx;
     const unsignedBytes = unsignedTx.toBytes();
     const publicKey = secp256k1.getPublicKey(prv);
 
-    const EVMAddressHex = new Address(secp256k1.publicKeyToEthAddress(publicKey)).toHex();
+    // Derive both EVM and P-chain addresses from the public key
+    const evmAddressHex = new Address(secp256k1.publicKeyToEthAddress(publicKey)).toHex();
+
+    // P-chain address derivation: ripemd160(sha256(publicKey))
+    const sha256Hash = createHash('sha256').update(Buffer.from(publicKey)).digest();
+    const pChainAddressBuffer = createHash('ripemd160').update(sha256Hash).digest();
+    const pChainAddressHex = pChainAddressBuffer.toString('hex');
 
     const addressMap = unsignedTx.getAddresses();
 
-    const hasMatchingAddress = addressMap.some(
-      (addr) => Buffer.from(addr).toString('hex').toLowerCase() === utils.removeHexPrefix(EVMAddressHex).toLowerCase()
-    );
+    // Check for both EVM and P-chain address formats
+    const hasMatchingAddress = addressMap.some((addr) => {
+      const addrHex = Buffer.from(addr).toString('hex').toLowerCase();
+      return (
+        addrHex === utils.removeHexPrefix(evmAddressHex).toLowerCase() || addrHex === pChainAddressHex.toLowerCase()
+      );
+    });
 
     if (hasMatchingAddress) {
       const signature = await secp256k1.sign(unsignedBytes, prv);

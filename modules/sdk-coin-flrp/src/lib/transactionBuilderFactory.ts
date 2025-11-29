@@ -1,4 +1,4 @@
-import { utils as FlareUtils, evmSerial } from '@flarenetwork/flarejs';
+import { utils as FlareUtils, evmSerial, pvmSerial } from '@flarenetwork/flarejs';
 import { BaseTransactionBuilderFactory, NotSupported } from '@bitgo/sdk-core';
 import { FlareNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
 import { TransactionBuilder } from './transactionBuilder';
@@ -22,30 +22,40 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     const rawBuffer = Buffer.from(rawNoHex, 'hex');
     let txSource: 'EVM' | 'PVM';
 
-    // const manager = FlareUtils.getManagerForVM("EVM")
-    // const parsedTx = manager.unpackTransaction(rawBuffer)
-
-    // Get network IDs
     const network = this._coinConfig.network as FlareNetwork;
+    let tx: any;
     try {
       txSource = 'EVM';
       const evmManager = FlareUtils.getManagerForVM('EVM');
-      const tx = evmManager.unpackTransaction(rawBuffer);
+      tx = evmManager.unpackTransaction(rawBuffer);
       const blockchainId = tx.getBlockchainId();
 
       if (blockchainId === network.cChainBlockchainID) {
         console.log('Parsed as EVM transaction on C-Chain');
       }
-
-      if (txSource === 'EVM') {
-        if (ExportInCTxBuilder.verifyTxType(tx._type)) {
-          const exportBuilder = this.getExportInCBuilder();
-          exportBuilder.initBuilder(tx as evmSerial.ExportTx, rawBuffer);
-          return exportBuilder;
-        }
-      }
     } catch (e) {
-      console.log('error while parsing tx: ', e.message);
+      txSource = 'PVM';
+      const pvmManager = FlareUtils.getManagerForVM('PVM');
+      tx = pvmManager.unpackTransaction(rawBuffer);
+      const blockchainId = tx.getBlockchainId();
+
+      if (blockchainId === network.blockchainID) {
+        console.log('Parsed as PVM transaction on P-Chain');
+      }
+    }
+
+    if (txSource === 'EVM') {
+      if (ExportInCTxBuilder.verifyTxType(tx._type)) {
+        const exportBuilder = this.getExportInCBuilder();
+        exportBuilder.initBuilder(tx as evmSerial.ExportTx, rawBuffer);
+        return exportBuilder;
+      }
+    } else if (txSource === 'PVM') {
+      if (ImportInPTxBuilder.verifyTxType(tx._type)) {
+        const importBuilder = this.getImportInPBuilder();
+        importBuilder.initBuilder(tx as pvmSerial.ImportTx, rawBuffer);
+        return importBuilder;
+      }
     }
     throw new NotSupported('Transaction type not supported');
   }
@@ -58,14 +68,14 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   /**
    * Export Cross chain transfer
    */
-  getExportBuilder(): ExportInPTxBuilder {
+  getExportInPBuilder(): ExportInPTxBuilder {
     return new ExportInPTxBuilder(this._coinConfig);
   }
 
   /**
    * Import Cross chain transfer
    */
-  getImportBuilder(): ImportInPTxBuilder {
+  getImportInPBuilder(): ImportInPTxBuilder {
     return new ImportInPTxBuilder(this._coinConfig);
   }
 

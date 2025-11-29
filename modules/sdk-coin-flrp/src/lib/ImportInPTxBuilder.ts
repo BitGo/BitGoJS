@@ -2,14 +2,21 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BuildTransactionError, NotSupported, TransactionType } from '@bitgo/sdk-core';
 import { AtomicTransactionBuilder } from './atomicTransactionBuilder';
 import {
-  evmSerial,
+  pvmSerial,
+  avaxSerial,
   UnsignedTx,
   Int,
   Id,
   TransferableInput,
+  TransferableOutput,
+  TransferOutput,
+  TransferInput,
+  OutputOwners,
   utils as FlareUtils,
   Address,
   BigIntPr,
+  Credential,
+  Bytes,
 } from '@flarenetwork/flarejs';
 import utils from './utils';
 import { DecodedUtxoObj, FlareTransactionType, SECP256K1_Transfer_Output, Tx } from './iface';
@@ -17,53 +24,105 @@ import { DecodedUtxoObj, FlareTransactionType, SECP256K1_Transfer_Output, Tx } f
 export class ImportInPTxBuilder extends AtomicTransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-    // external chain id is P
-    this._externalChainId = utils.cb58Decode(this.transaction._network.blockchainID);
-    // chain id is C
-    this.transaction._blockchainID = Buffer.from(
-      utils.cb58Decode(this.transaction._network.cChainBlockchainID)
-    ).toString('hex');
+    // For Import INTO P-chain:
+    // - external chain (source) is C-chain
+    // - blockchain ID (destination) is P-chain
+    this._externalChainId = utils.cb58Decode(this.transaction._network.cChainBlockchainID);
+    // P-chain blockchain ID (from network config - typically all zeros for primary network)
+    this.transaction._blockchainID = Buffer.from(utils.cb58Decode(this.transaction._network.blockchainID)).toString(
+      'hex'
+    );
   }
 
   protected get transactionType(): TransactionType {
     return TransactionType.Import;
   }
 
-  initBuilder(tx: Tx): this {
-    const baseTx = tx as evmSerial.ImportTx;
-    if (!this.verifyTxType(baseTx._type)) {
+  initBuilder(tx: Tx, rawBytes?: Buffer): this {
+    const importTx = tx as pvmSerial.ImportTx;
+
+    if (!this.verifyTxType(importTx._type)) {
       throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
     }
 
     // The regular change output is the tx output in Import tx.
-    // createInputOutput results in a single item array.
     // It's expected to have only one output with the addresses of the sender.
-    const outputs = baseTx.Outs;
+    const outputs = importTx.baseTx.outputs;
     if (outputs.length !== 1) {
       throw new BuildTransactionError('Transaction can have one external output');
     }
 
     const output = outputs[0];
     const assetId = output.assetId.toBytes();
-    if (Buffer.compare(assetId, Buffer.from(this.transaction._assetId)) !== 0) {
+    if (Buffer.compare(assetId, Buffer.from(this.transaction._assetId, 'hex')) !== 0) {
       throw new Error('The Asset ID of the output does not match the transaction');
     }
 
-    // Set locktime to 0 since it's not used in EVM outputs
-    this.transaction._locktime = BigInt(0);
+    const transferOutput = output.output as TransferOutput;
+    const outputOwners = transferOutput.outputOwners;
 
-    // Set threshold to 1 since EVM outputs only have one address
-    this.transaction._threshold = 1;
+    // Set locktime from output
+    this.transaction._locktime = outputOwners.locktime.value();
 
-    // Convert output address to buffer and set as fromAddress
-    this.transaction._fromAddresses = [Buffer.from(output.address.toBytes())];
+    // Set threshold from output
+    this.transaction._threshold = outputOwners.threshold.value();
+
+    // Convert output addresses to buffers and set as fromAddresses
+    this.transaction._fromAddresses = outputOwners.addrs.map((addr) => Buffer.from(addr.toBytes()));
 
     // Set external chain ID from the source chain
-    this._externalChainId = Buffer.from(baseTx.sourceChain.toString());
+    this._externalChainId = Buffer.from(importTx.sourceChain.toBytes());
 
     // Recover UTXOs from imported inputs
-    this.transaction._utxos = this.recoverUtxos(baseTx.importedInputs);
+    this.transaction._utxos = this.recoverUtxos(importTx.ins);
 
+    // Calculate and set fee from input/output difference
+    const totalInputAmount = importTx.ins.reduce((sum, input) => sum + input.amount(), BigInt(0));
+    const outputAmount = transferOutput.amount();
+    const fee = totalInputAmount - outputAmount;
+    this.transaction._fee.fee = fee.toString();
+
+    // Check if raw bytes contain credentials
+    // For PVM transactions, credentials start after the unsigned tx bytes
+    let hasCredentials = false;
+    let credentials: Credential[] = [];
+
+    if (rawBytes) {
+      // Try standard extraction first
+      const result = utils.extractCredentialsFromRawBytes(rawBytes, importTx, 'PVM');
+      hasCredentials = result.hasCredentials;
+      credentials = result.credentials;
+
+      // If extraction failed but raw bytes are longer, try parsing credentials at known offset
+      // For ImportTx, the unsigned tx is typically 302 bytes
+      if ((!hasCredentials || credentials.length === 0) && rawBytes.length > 350) {
+        hasCredentials = true;
+        // Try to extract credentials at the standard position (302 bytes)
+        const credResult = utils.parseCredentialsAtOffset(rawBytes, 302);
+        if (credResult.length > 0) {
+          credentials = credResult;
+        }
+      }
+    }
+
+    // If there are credentials in raw bytes, store the original bytes to preserve exact format
+    if (rawBytes && hasCredentials) {
+      this.transaction._rawSignedBytes = rawBytes;
+    }
+
+    // Create proper UnsignedTx wrapper with credentials
+    const sortedAddresses = [...this.transaction._fromAddresses].sort((a, b) => Buffer.compare(a, b));
+    const addressMaps = sortedAddresses.map((a, i) => new FlareUtils.AddressMap([[new Address(a), i]]));
+
+    // Create credentials if none exist
+    const txCredentials =
+      credentials.length > 0
+        ? credentials
+        : [new Credential(sortedAddresses.slice(0, this.transaction._threshold).map(() => utils.createNewSig('')))];
+
+    const unsignedTx = new UnsignedTx(importTx, [], new FlareUtils.AddressMaps(addressMaps), txCredentials);
+
+    this.transaction.setTransaction(unsignedTx);
     return this;
   }
 
@@ -76,44 +135,121 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
   }
 
   /**
-   * Build the import transaction
+   * Build the import transaction for P-chain
    * @protected
    */
   protected buildFlareTransaction(): void {
     // if tx has credentials, tx shouldn't change
     if (this.transaction.hasCredentials) return;
 
-    const { inputs, credentials } = this.createInputOutput(BigInt(this.transaction.fee.fee));
+    const { inputs, credentials, totalAmount } = this.createImportInputs();
 
-    // Convert TransferableInput to evmSerial.Output
-    const evmOutputs = inputs.map((input) => {
-      return new evmSerial.Output(
-        new Address(this.transaction._fromAddresses[0]),
-        new BigIntPr(input.input.amount()),
-        new Id(input.assetId.toBytes())
-      );
-    });
+    // Calculate fee from transaction fee settings
+    const fee = BigInt(this.transaction.fee.fee);
+    const outputAmount = totalAmount - fee;
 
-    // Create the import transaction
-    const importTx = new evmSerial.ImportTx(
-      new Int(this.transaction._networkID),
-      Id.fromString(this.transaction._blockchainID.toString()),
-      Id.fromString(this._externalChainId.toString()),
-      inputs,
-      evmOutputs
+    // Create the output for P-chain (TransferableOutput with TransferOutput)
+    const assetIdBytes = new Uint8Array(Buffer.from(this.transaction._assetId, 'hex'));
+
+    // Create OutputOwners with the P-chain addresses (sorted by byte value as per AVAX protocol)
+    const sortedAddresses = [...this.transaction._fromAddresses].sort((a, b) => Buffer.compare(a, b));
+    const outputOwners = new OutputOwners(
+      new BigIntPr(this.transaction._locktime),
+      new Int(this.transaction._threshold),
+      sortedAddresses.map((addr) => new Address(addr))
     );
 
-    const addressMaps = this.transaction._fromAddresses.map((a) => new FlareUtils.AddressMap([[new Address(a), 0]]));
+    const transferOutput = new TransferOutput(new BigIntPr(outputAmount), outputOwners);
+    const output = new TransferableOutput(new Id(assetIdBytes), transferOutput);
+
+    // Create the BaseTx for the P-chain import transaction
+    const baseTx = new avaxSerial.BaseTx(
+      new Int(this.transaction._networkID),
+      new Id(Buffer.from(this.transaction._blockchainID, 'hex')),
+      [output], // outputs
+      [], // inputs (empty for import - inputs come from importedInputs)
+      new Bytes(new Uint8Array(0)) // empty memo
+    );
+
+    // Create the P-chain import transaction using pvmSerial.ImportTx
+    const importTx = new pvmSerial.ImportTx(
+      baseTx,
+      new Id(this._externalChainId), // sourceChain (C-chain)
+      inputs // importedInputs (ins)
+    );
+
+    // Create address maps for signing
+    const addressMaps = this.transaction._fromAddresses.map((a, i) => new FlareUtils.AddressMap([[new Address(a), i]]));
 
     // Create unsigned transaction
     const unsignedTx = new UnsignedTx(
       importTx,
-      [], // Empty UTXOs array, will be filled during processing
+      [], // Empty UTXOs array
       new FlareUtils.AddressMaps(addressMaps),
       credentials
     );
 
     this.transaction.setTransaction(unsignedTx);
+  }
+
+  /**
+   * Create inputs from UTXOs for P-chain import
+   * @returns inputs, credentials, and total amount
+   */
+  protected createImportInputs(): {
+    inputs: TransferableInput[];
+    credentials: Credential[];
+    totalAmount: bigint;
+  } {
+    const sender = this.transaction._fromAddresses.slice();
+    if (this.recoverSigner) {
+      // switch first and last signer
+      const tmp = sender.pop();
+      sender.push(sender[0]);
+      if (tmp) {
+        sender[0] = tmp;
+      }
+    }
+
+    let totalAmount = BigInt(0);
+    const inputs: TransferableInput[] = [];
+    const credentials: Credential[] = [];
+
+    this.transaction._utxos.forEach((utxo: DecodedUtxoObj) => {
+      const amount = BigInt(utxo.amount);
+      totalAmount += amount;
+
+      // Create signature indices for threshold
+      const sigIndices: number[] = [];
+      for (let i = 0; i < this.transaction._threshold; i++) {
+        sigIndices.push(i);
+      }
+
+      // Use fromNative to create TransferableInput
+      // fromNative expects cb58-encoded strings for txId and assetId
+      const txIdCb58 = utxo.txid; // Already cb58 encoded
+      const assetIdCb58 = utils.cb58Encode(Buffer.from(this.transaction._assetId, 'hex'));
+
+      const transferableInput = TransferableInput.fromNative(
+        txIdCb58,
+        Number(utxo.outputidx),
+        assetIdCb58,
+        amount,
+        sigIndices
+      );
+
+      inputs.push(transferableInput);
+
+      // Create credential with empty signatures for threshold signers
+      const emptySignatures = sigIndices.map(() => utils.createNewSig(''));
+      credentials.push(new Credential(emptySignatures));
+    });
+
+    return {
+      inputs,
+      credentials,
+      totalAmount,
+    };
   }
 
   /**
@@ -124,12 +260,12 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
   private recoverUtxos(importedInputs: TransferableInput[]): DecodedUtxoObj[] {
     return importedInputs.map((input) => {
       const utxoId = input.utxoID;
-      const transferInput = input.input;
+      const transferInput = input.input as TransferInput;
       const utxo: DecodedUtxoObj = {
         outputID: SECP256K1_Transfer_Output,
-        amount: transferInput.amount.toString(),
-        txid: utils.cb58Encode(Buffer.from(utxoId.ID.toString())),
-        outputidx: utxoId.outputIdx.toBytes().toString(),
+        amount: transferInput.amount().toString(),
+        txid: utils.cb58Encode(Buffer.from(utxoId.txID.toBytes())),
+        outputidx: utxoId.outputIdx.value().toString(),
         threshold: this.transaction._threshold,
         addresses: this.transaction._fromAddresses.map((addr) =>
           utils.addressToString(this.transaction._network.hrp, this.transaction._network.alias, Buffer.from(addr))
