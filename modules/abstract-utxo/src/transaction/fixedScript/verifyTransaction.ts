@@ -1,7 +1,7 @@
 import buildDebug from 'debug';
 import _ from 'lodash';
 import BigNumber from 'bignumber.js';
-import { BitGoBase, TxIntentMismatchError } from '@bitgo/sdk-core';
+import { BitGoBase, TxIntentMismatchError, IBaseCoin } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
 
 import { AbstractUtxoCoin, VerifyTransactionOptions } from '../../abstractUtxoCoin';
@@ -50,9 +50,11 @@ export async function verifyTransaction<TNumber extends bigint | number>(
 ): Promise<boolean> {
   const { txParams, txPrebuild, wallet, verification = {}, reqId } = params;
 
+  const txExplanation = await TxIntentMismatchError.tryGetTxExplanation(coin as unknown as IBaseCoin, txPrebuild);
+
   // Helper to throw TxIntentMismatchError with consistent context
   const throwTxMismatch = (message: string): never => {
-    throw new TxIntentMismatchError(message, reqId, [txParams], txPrebuild.txHex);
+    throw new TxIntentMismatchError(message, reqId, [txParams], txPrebuild.txHex, txExplanation);
   };
 
   if (!_.isUndefined(verification.disableNetworking) && !_.isBoolean(verification.disableNetworking)) {

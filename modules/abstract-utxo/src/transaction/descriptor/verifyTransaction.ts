@@ -1,5 +1,5 @@
 import * as utxolib from '@bitgo/utxo-lib';
-import { ITransactionRecipient, TxIntentMismatchError } from '@bitgo/sdk-core';
+import { ITransactionRecipient, TxIntentMismatchError, IBaseCoin } from '@bitgo/sdk-core';
 import { DescriptorMap } from '@bitgo/utxo-core/descriptor';
 
 import { AbstractUtxoCoin, VerifyTransactionOptions } from '../../abstractUtxoCoin';
@@ -77,11 +77,16 @@ export async function verifyTransaction<TNumber extends number | bigint>(
 ): Promise<boolean> {
   const tx = coin.decodeTransactionFromPrebuild(params.txPrebuild);
   if (!(tx instanceof utxolib.bitgo.UtxoPsbt)) {
+    const txExplanation = await TxIntentMismatchError.tryGetTxExplanation(
+      coin as unknown as IBaseCoin,
+      params.txPrebuild
+    );
     throw new TxIntentMismatchError(
       'unexpected transaction type',
       params.reqId,
       [params.txParams],
-      params.txPrebuild.txHex
+      params.txPrebuild.txHex,
+      txExplanation
     );
   }
 
