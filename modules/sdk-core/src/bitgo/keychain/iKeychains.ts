@@ -88,6 +88,25 @@ export interface UpdateSingleKeychainPasswordOptions {
   newPassword?: string;
 }
 
+/**
+ * Parameters for the rotateKeychain method for ofc multi-user-key
+ * @property {string} id - the public id of the keychain
+ * @property {string} password - the user password use to encrypt/decrypt the private key
+ * @property {IRequestTracer} reqId - optional reqId
+ */
+export type RotateKeychainOptions =
+  | {
+      id: string;
+      password: string;
+      reqId?: IRequestTracer;
+    }
+  | {
+      id: string;
+      pub: string;
+      encryptedPrv: string;
+      reqId?: IRequestTracer;
+    };
+
 export interface AddKeychainOptions {
   pub?: string;
   commonPub?: string;
@@ -214,4 +233,5 @@ export interface IKeychains {
   recreateMpc(params: RecreateMpcOptions): Promise<KeychainsTriplet>;
   createTssBitGoKeyFromOvcShares(ovcOutput: OvcToBitGoJSON, enterprise?: string): Promise<BitGoKeyFromOvcShares>;
   createUserKeychain(userPassword: string): Promise<Keychain>;
+  rotateKeychain(params: RotateKeychainOptions): Promise<Keychain>;
 }
