@@ -55,6 +55,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
         const importBuilder = this.getImportInPBuilder();
         importBuilder.initBuilder(tx as pvmSerial.ImportTx, rawBuffer);
         return importBuilder;
+      } else if (ExportInPTxBuilder.verifyTxType(tx._type)) {
+        const exportBuilder = this.getExportInPBuilder();
+        exportBuilder.initBuilder(tx as pvmSerial.ExportTx, rawBuffer);
+        return exportBuilder;
       }
     }
     throw new NotSupported('Transaction type not supported');

@@ -24,12 +24,64 @@ import { KeyPair } from './keyPair';
 import utils from './utils';
 
 /**
- * Checks if a signature is empty
+ * Checks if a signature is empty (first 90 hex chars are zeros)
  * @param signature
  * @returns {boolean}
  */
 function isEmptySignature(signature: string): boolean {
   return !!signature && utils.removeHexPrefix(signature).startsWith(''.padStart(90, '0'));
+}
+
+/**
+ * Interface for signature slot checking
+ */
+interface CheckSignature {
+  (signature: string, addressHex: string): boolean;
+}
+
+/**
+ * Checks if an empty signature has an embedded address (non-zero bytes after position 90)
+ * @param signature Hex string of the signature
+ */
+function hasEmbeddedAddress(signature: string): boolean {
+  if (!isEmptySignature(signature)) return false;
+  const cleanSig = utils.removeHexPrefix(signature);
+  if (cleanSig.length < 130) return false;
+  const embeddedPart = cleanSig.substring(90, 130);
+  // Check if it's not all zeros
+  return embeddedPart !== '0'.repeat(40);
+}
+
+/**
+ * Generates a function to check if a signature slot matches a given address.
+ * If signatures have embedded addresses, it matches by address.
+ * Otherwise, it just finds empty slots.
+ * @param signatures Array of signature hex strings
+ */
+function generateSelectorSignature(signatures: string[]): CheckSignature {
+  // Check if any empty signature has an embedded address
+  const hasEmbeddedAddresses = signatures.some((sig) => isEmptySignature(sig) && hasEmbeddedAddress(sig));
+
+  if (hasEmbeddedAddresses) {
+    // Look for address embedded in the empty signature (after position 90)
+    return function (sig: string, address: string): boolean {
+      try {
+        if (!isEmptySignature(sig)) {
+          return false;
+        }
+        const cleanSig = utils.removeHexPrefix(sig);
+        const embeddedAddr = cleanSig.substring(90, 130).toLowerCase();
+        return embeddedAddr === address.toLowerCase();
+      } catch (e) {
+        return false;
+      }
+    };
+  } else {
+    // Look for any empty slot (no embedded addresses)
+    return function (sig: string, address: string): boolean {
+      return isEmptySignature(sig);
+    };
+  }
 }
 
 export class Transaction extends BaseTransaction {
@@ -120,20 +172,33 @@ export class Transaction extends BaseTransaction {
       const signature = await secp256k1.sign(unsignedBytes, prv);
 
       let signatureSet = false;
-      // Find first empty signature slot and set it
+      // Use address-based slot matching (like AVAX-P)
+      let checkSign: CheckSignature | undefined = undefined;
+
       for (const credential of unsignedTx.credentials) {
-        const emptySlotIndex = credential.getSignatures().findIndex((sig) => isEmptySignature(sig));
-        if (emptySlotIndex !== -1) {
-          credential.setSignature(emptySlotIndex, signature);
-          signatureSet = true;
-          // Clear raw signed bytes since we've modified the transaction
-          this._rawSignedBytes = undefined;
-          break;
+        const signatures = credential.getSignatures();
+        if (checkSign === undefined) {
+          checkSign = generateSelectorSignature(signatures);
         }
+
+        // Find the slot that matches this address
+        for (let i = 0; i < signatures.length; i++) {
+          const sig = signatures[i];
+          // Try matching with P-chain address first, then EVM address
+          if (checkSign(sig, pChainAddressHex) || checkSign(sig, utils.removeHexPrefix(evmAddressHex).toLowerCase())) {
+            credential.setSignature(i, signature);
+            signatureSet = true;
+            // Clear raw signed bytes since we've modified the transaction
+            this._rawSignedBytes = undefined;
+            break;
+          }
+        }
+
+        if (signatureSet) break;
       }
 
       if (!signatureSet) {
-        throw new SigningError('No empty signature slot found');
+        throw new SigningError('No matching signature slot found for this private key');
       }
     }
   }

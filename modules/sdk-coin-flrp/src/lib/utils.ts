@@ -177,6 +177,33 @@ export class Utils implements BaseUtils {
   }
 
   /**
+   * Creates an empty signature with embedded address for signature slot identification.
+   * The address is embedded at position 90 (after the first 45 zero bytes).
+   * This allows the signing logic to determine which slot belongs to which address.
+   * @param addressHex The 20-byte address in hex format (40 chars, without 0x prefix)
+   */
+  createEmptySigWithAddress(addressHex: string): Signature {
+    // First 45 bytes (90 hex chars) are zeros, followed by 20-byte address (40 hex chars)
+    const cleanAddr = this.removeHexPrefix(addressHex).toLowerCase();
+    const sigHex = '0'.repeat(90) + cleanAddr.padStart(40, '0');
+    const buffer = Buffer.from(sigHex, 'hex');
+    return new Signature(buffer);
+  }
+
+  /**
+   * Extracts the embedded address from an empty signature.
+   * Returns the address hex string (40 chars) or empty string if not found.
+   */
+  getAddressFromEmptySig(sig: string): string {
+    const cleanSig = this.removeHexPrefix(sig);
+    if (cleanSig.length >= 130) {
+      // Address is at position 90-130 (last 40 hex chars = 20 bytes)
+      return cleanSig.substring(90, 130).toLowerCase();
+    }
+    return '';
+  }
+
+  /**
    * Computes SHA256 hash
    */
   sha256(buf: Uint8Array): Buffer {
