@@ -2774,11 +2774,11 @@ export const allCoinsAndTokens = [
 
   // hypeeevm testnet tokens
   erc20Token(
-    '2460e83c-e819-42c3-83c9-3974e08a45c8',
+    'b1bbf865-6b85-44d7-bdb1-3c1233a592f6',
     'thypeevm:usdc',
     'Testnet HypeEVM USDC',
     6,
-    '0x421cdf5e890070c28db0fd8e4bf87deac0cd0ffc',
+    '0x2b3370ee501b4a559b57d449569354196457d8ab',
     UnderlyingAsset['thypeevm:usdc'],
     Networks.test.hypeevm
   ),
@@ -2796,7 +2796,7 @@ export const allCoinsAndTokens = [
 
   // Story mainnet tokens
   erc20Token(
-    'a2460e83-e819-42c3-83c9-3974e08a45c9',
+    '2460e83c-e819-42c3-83c9-3974e08a45c8',
     'ip:aria',
     'Aria',
     18,
