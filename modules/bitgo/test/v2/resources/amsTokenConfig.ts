@@ -43,4 +43,26 @@ export const reducedAmsTokenConfig = {
       contractAddress: '0x1234567890123456789012345678901234567890',
     },
   ],
+  'thypeevm:faketoken': [
+    {
+      id: 'b2c3d4e5-f6a7-4890-9bcd-ef012345678a',
+      fullName: 'Hyperliquid EVM Testnet Faketoken',
+      name: 'thypeevm:faketoken',
+      prefix: '',
+      suffix: 'THYPEEVM:FAKETOKEN',
+      baseUnit: 'wei',
+      kind: 'crypto',
+      family: 'hypeevm',
+      isToken: true,
+      additionalFeatures: [],
+      excludedFeatures: [],
+      decimalPlaces: 18,
+      asset: 'thypeevm:faketoken',
+      network: {
+        name: 'HyperliquidTestnet',
+      },
+      primaryKeyCurve: 'secp256k1',
+      contractAddress: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
+    },
+  ],
 };

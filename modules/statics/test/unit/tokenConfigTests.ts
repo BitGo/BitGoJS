@@ -123,6 +123,64 @@ describe('EthLike Token Config Functions', function () {
       config.coin.should.equal('ip');
       config.type.should.equal('ip:usdc');
     });
+
+    it('should convert an EthLikeERC20Token to EthLikeTokenConfig for hypeevm mainnet', function () {
+      // Create a mock mainnet EthLikeERC20Token for hypeevm
+      const mockMainnetToken = new EthLikeERC20Token({
+        id: 'a1234567-1234-4234-8234-123456789012',
+        name: 'hypeevm:testtoken',
+        fullName: 'HypeEVM Test Token',
+        network: Networks.main.hypeevm,
+        contractAddress: '0x9876543210987654321098765432109876543210',
+        decimalPlaces: 18,
+        asset: UnderlyingAsset.HYPEEVM,
+        features: [...AccountCoin.DEFAULT_FEATURES, CoinFeature.EIP1559],
+        prefix: '',
+        suffix: 'TESTTOKEN',
+        primaryKeyCurve: KeyCurve.Secp256k1,
+        isToken: true,
+        baseUnit: BaseUnit.ETH,
+      });
+
+      const config = getFormattedEthLikeTokenConfig(CoinMap.fromCoins([mockMainnetToken]))[0];
+
+      config.should.not.be.undefined();
+      config.type.should.equal('hypeevm:testtoken');
+      config.coin.should.equal('hypeevm');
+      config.network.should.equal('Mainnet');
+      config.name.should.equal('HypeEVM Test Token');
+      config.tokenContractAddress.should.equal('0x9876543210987654321098765432109876543210');
+      config.decimalPlaces.should.equal(18);
+    });
+
+    it('should convert an EthLikeERC20Token to EthLikeTokenConfig for thypeevm testnet', function () {
+      // Create a mock testnet EthLikeERC20Token for thypeevm
+      const mockTestnetToken = new EthLikeERC20Token({
+        id: 'b2234567-2234-4234-9234-223456789012',
+        name: 'thypeevm:testtoken',
+        fullName: 'HypeEVM Test Token Testnet',
+        network: Networks.test.hypeevm,
+        contractAddress: '0xfedcba0987654321fedcba0987654321fedcba09',
+        decimalPlaces: 18,
+        asset: UnderlyingAsset.HYPEEVM,
+        features: [...AccountCoin.DEFAULT_FEATURES, CoinFeature.EIP1559],
+        prefix: '',
+        suffix: 'TESTTOKEN',
+        primaryKeyCurve: KeyCurve.Secp256k1,
+        isToken: true,
+        baseUnit: BaseUnit.ETH,
+      });
+
+      const config = getFormattedEthLikeTokenConfig(CoinMap.fromCoins([mockTestnetToken]))[0];
+
+      config.should.not.be.undefined();
+      config.type.should.equal('thypeevm:testtoken');
+      config.coin.should.equal('thypeevm');
+      config.network.should.equal('Testnet');
+      config.name.should.equal('HypeEVM Test Token Testnet');
+      config.tokenContractAddress.should.equal('0xfedcba0987654321fedcba0987654321fedcba09');
+      config.decimalPlaces.should.equal(18);
+    });
   });
 
   describe('getFormattedEthLikeTokenConfig', function () {
@@ -254,10 +312,14 @@ describe('EthLike Token Config Functions', function () {
       const result = getEthLikeTokens('Mainnet');
 
       result.should.be.an.Object();
-      // The function filters by enabledChains which currently includes 'ip'
+      // The function filters by enabledChains which currently includes 'ip' and 'hypeevm'
       if (result.ip) {
         result.ip.should.have.property('tokens');
         result.ip.tokens.should.be.an.Array();
+      }
+      if (result.hypeevm) {
+        result.hypeevm.should.have.property('tokens');
+        result.hypeevm.tokens.should.be.an.Array();
       }
     });
 
@@ -289,6 +351,11 @@ describe('EthLike Token Config Functions', function () {
           token.coin.should.equal('tip');
         });
       }
+      if (result.hypeevm && result.hypeevm.tokens.length > 0) {
+        result.hypeevm.tokens.forEach((token) => {
+          token.coin.should.equal('thypeevm');
+        });
+      }
     });
 
     it('should not prepend "t" to coin name for mainnet tokens', function () {
@@ -297,6 +364,11 @@ describe('EthLike Token Config Functions', function () {
       if (result.ip && result.ip.tokens.length > 0) {
         result.ip.tokens.forEach((token) => {
           token.coin.should.equal('ip');
+        });
+      }
+      if (result.hypeevm && result.hypeevm.tokens.length > 0) {
+        result.hypeevm.tokens.forEach((token) => {
+          token.coin.should.equal('hypeevm');
         });
       }
     });
@@ -318,8 +390,8 @@ describe('EthLike Token Config Functions', function () {
       const mainnetResult = getEthLikeTokens('Mainnet');
       const testnetResult = getEthLikeTokens('Testnet');
 
-      // Current implementation only enables 'ip' chain
-      const enabledChains = ['ip'];
+      // Current implementation enables 'ip' and 'hypeevm' chains
+      const enabledChains = ['ip', 'hypeevm'];
 
       Object.keys(mainnetResult).forEach((family) => {
         enabledChains.should.containEql(family);
@@ -346,6 +418,12 @@ describe('EthLike Token Config Functions', function () {
         result.ip.tokens.forEach((token) => {
           // All tokens in ip group should have coin 'ip'
           token.coin.should.equal('ip');
+        });
+      }
+      if (result.hypeevm && result.hypeevm.tokens.length > 0) {
+        result.hypeevm.tokens.forEach((token) => {
+          // All tokens in hypeevm group should have coin 'hypeevm'
+          token.coin.should.equal('hypeevm');
         });
       }
     });

@@ -51,8 +51,8 @@ export const coins = CoinMap.fromCoins([
 // Maps family -> coin name (e.g., 'ip' -> 'ip')
 const erc20ChainToNameMap: Record<string, string> = {};
 
-// TODO: remove ip coin here and remove other evm coins from switch block, once changes are tested (Ticket: https://bitgoinc.atlassian.net/browse/WIN-7835)
-const enabledEvmCoins = ['ip'];
+// TODO: remove ip and hypeeevm coins here and remove other evm coins from switch block, once changes are tested (Ticket: https://bitgoinc.atlassian.net/browse/WIN-7835)
+const enabledEvmCoins = ['ip', 'hypeevm'];
 allCoinsAndTokens.forEach((coin) => {
   if (
     coin.features.includes(CoinFeature.SUPPORTS_ERC20) &&

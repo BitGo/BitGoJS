@@ -911,9 +911,9 @@ export const buildEthLikeChainToTestnetMap = (): {
   const testnetToMainnetMap: Record<string, string> = {};
   const mainnetToTestnetMap: Record<string, string> = {};
 
-  const enabledEvmCoins = ['ip'];
+  const enabledEvmCoins = ['ip', 'hypeevm'];
 
-  // TODO: remove ip coin here and remove other evm coins from switch block, once changes are tested (Ticket: https://bitgoinc.atlassian.net/browse/WIN-7835)
+  // TODO: remove ip and hypeeevm coins here and remove other evm coins from switch block, once changes are tested (Ticket: https://bitgoinc.atlassian.net/browse/WIN-7835)
   coins.forEach((coin) => {
     if (coin.network.type === NetworkType.TESTNET && !coin.isToken && enabledEvmCoins.includes(coin.family)) {
       if (coins.get(coin.family)?.features.includes(CoinFeature.SUPPORTS_ERC20)) {
@@ -926,7 +926,6 @@ export const buildEthLikeChainToTestnetMap = (): {
   return { mainnetToTestnetMap, testnetToMainnetMap };
 };
 
-// TODO: add IP token here and test changes (Ticket: https://bitgoinc.atlassian.net/browse/WIN-7835)
 const { mainnetToTestnetMap, testnetToMainnetMap } = buildEthLikeChainToTestnetMap();
 
 export function getTokenConstructor(tokenConfig: TokenConfig): CoinConstructor | undefined {
