@@ -3396,6 +3396,7 @@ export enum UnderlyingAsset {
   'ada:iag' = 'ada:iag',
   'ada:djed' = 'ada:djed',
   'ada:usda' = 'ada:usda',
+  'ada:night' = 'ada:night',
 
   // fiats
   AED = 'aed',
