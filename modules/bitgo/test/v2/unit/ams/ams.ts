@@ -131,5 +131,28 @@ describe('Asset metadata service', () => {
       }
       staticsCoin.family.should.equal('ip');
     });
+
+    it('should register a thypeevm EVM coin token from AMS', async () => {
+      const bitgo = TestBitGo.decorate(BitGo, { env: 'mock', microservicesUri, useAms: true } as BitGoOptions);
+      bitgo.initializeTestVars();
+
+      const tokenName = 'thypeevm:faketoken';
+
+      // Setup nocks for AMS API call
+      nock(microservicesUri).get(`/api/v1/assets/name/${tokenName}`).reply(200, reducedAmsTokenConfig[tokenName][0]);
+
+      await bitgo.registerToken(tokenName);
+      const coin = bitgo.coin(tokenName);
+      should.exist(coin);
+      coin.type.should.equal(tokenName);
+      const staticsCoin = coin.getConfig();
+      staticsCoin.name.should.equal('thypeevm');
+      staticsCoin.decimalPlaces.should.equal(18);
+      // For EVM tokens, contractAddress is available on the statics coin
+      if ('contractAddress' in staticsCoin && staticsCoin.contractAddress) {
+        (staticsCoin.contractAddress as string).should.equal('0xabcdefabcdefabcdefabcdefabcdefabcdefabcd');
+      }
+      staticsCoin.family.should.equal('hypeevm');
+    });
   });
 });

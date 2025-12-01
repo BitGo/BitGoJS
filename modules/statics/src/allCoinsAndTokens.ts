@@ -1634,6 +1634,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.SUPPORTS_ERC20,
     ]
   ),
   account(
@@ -2771,6 +2772,17 @@ export const allCoinsAndTokens = [
     Networks.main.mon
   ),
 
+  // hypeeevm testnet tokens
+  erc20Token(
+    '2460e83c-e819-42c3-83c9-3974e08a45c8',
+    'thypeevm:usdc',
+    'Testnet HypeEVM USDC',
+    6,
+    '0x421cdf5e890070c28db0fd8e4bf87deac0cd0ffc',
+    UnderlyingAsset['thypeevm:usdc'],
+    Networks.test.hypeevm
+  ),
+
   // Story testnet tokens
   erc20Token(
     'f9a9c36f-8938-4206-bf0d-5016a861c58f',
@@ -2784,7 +2796,7 @@ export const allCoinsAndTokens = [
 
   // Story mainnet tokens
   erc20Token(
-    '2460e83c-e819-42c3-83c9-3974e08a45c8',
+    'a2460e83-e819-42c3-83c9-3974e08a45c9',
     'ip:aria',
     'Aria',
     18,
