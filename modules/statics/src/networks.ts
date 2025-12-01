@@ -1834,8 +1834,8 @@ class SeiEvm extends Mainnet implements EthereumNetwork {
 class SeiEvmTestnet extends Testnet implements EthereumNetwork {
   name = 'SeiEvmTestnet';
   family = CoinFamily.SEIEVM;
-  explorerUrl = 'https://seitrace.com/tx/';
-  accountExplorerUrl = 'https://seitrace.com/address/';
+  explorerUrl = 'https://testnet.seistream.app/transactions/';
+  accountExplorerUrl = 'https://testnet.seistream.app/account/';
   chainId = 1328;
   nativeCoinOperationHashPrefix = '1328';
   walletFactoryAddress = '0x809ee567e413543af1caebcdb247f6a67eafc8dd';
