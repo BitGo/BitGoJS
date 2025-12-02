@@ -157,6 +157,9 @@ export class Transaction extends BaseTransaction {
     result.sender = parsedInfo.sender;
     result.receiver = parsedInfo.receiver;
     result.amount = parsedInfo.amount;
+    if (parsedInfo.memoId) {
+      result.memoId = parsedInfo.memoId;
+    }
     return result;
   }
 
@@ -244,7 +247,14 @@ export class Transaction extends BaseTransaction {
       }
       case TransactionType.Send: {
         const txData = this.toJson();
-        outputs.push({ address: txData.receiver, amount: txData.amount });
+        const output: ITransactionRecipient = {
+          address: txData.receiver,
+          amount: txData.amount,
+        };
+        if (txData.memoId) {
+          output.memo = txData.memoId;
+        }
+        outputs.push(output);
         outputAmount = txData.amount;
         break;
       }

@@ -21,12 +21,14 @@ export interface TxData {
   receiver: string;
   amount: string;
   acknowledgeData?: TransferAcknowledge;
+  memoId?: string;
 }
 
 export interface PreparedTxnParsedInfo {
   sender: string;
   receiver: string;
   amount: string;
+  memoId?: string;
 }
 
 export interface WalletInitTxData {

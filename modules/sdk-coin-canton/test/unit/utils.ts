@@ -10,6 +10,7 @@ import {
   GenerateTopologyResponse,
   OneStepPreApprovalPrepareResponse,
   PreparedTransactionRawData,
+  PreparedTransactionWithMemo,
   PreparedTxn1StepReceiver,
   PreparedTxn2StepReceiver,
   PrepareSubmissionResponse,
@@ -25,6 +26,15 @@ describe('Canton Util', function () {
       assert.equal(parsedData.sender, 'abc-1::12200c1ee226fbdf9fba3461c2c0c73331b69d3c6fd8cfce28cdf864141141cc656d');
       assert.equal(parsedData.receiver, 'abc-2::12207e96ada18a845adf4dc01410265633d5266dca9bb280c98e35c3692db87d3e35');
       assert.equal(parsedData.amount, '200000000000');
+    });
+
+    it('should parse the prepared transaction with memo id field', function () {
+      const parsedData = utils.parseRawCantonTransactionData(PreparedTransactionWithMemo, TransactionType.Send);
+      should.exist(parsedData);
+      assert.equal(parsedData.sender, '1220b::1220bab6ef3eec37b1b3816099befe72b43bf6c1380077d6349254c41ffb7f7753bb');
+      assert.equal(parsedData.receiver, '1220a::1220ade60300cf7d0b18ffaa2ffe4f492ad1ad601cfc162b20f77ec99d16c2c2f158');
+      assert.equal(parsedData.amount, '1000000000');
+      assert.equal(parsedData.memoId, '11');
     });
 
     it('should parse correctly when receiver is on 2-step', () => {
