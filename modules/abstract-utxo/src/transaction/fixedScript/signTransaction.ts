@@ -13,7 +13,7 @@ import { signAndVerifyPsbt, signAndVerifyWalletTransaction } from './sign';
 type RootWalletKeys = bitgo.RootWalletKeys;
 
 export interface Musig2Participant {
-  getMusig2Nonces(psbtHex: string, walletId: string): Promise<{ psbt: string }>;
+  getMusig2Nonces(psbt: utxolib.bitgo.UtxoPsbt, walletId: string): Promise<utxolib.bitgo.UtxoPsbt>;
 }
 
 /**
@@ -66,7 +66,7 @@ export async function signTransaction<TNumber extends number | bigint>(
         return { txHex: tx.toHex() };
       case 'cosignerNonce':
         assert(params.walletId, 'walletId is required for MuSig2 bitgo nonce');
-        return { txHex: (await coin.getMusig2Nonces(tx.toHex(), params.walletId)).psbt };
+        return { txHex: (await coin.getMusig2Nonces(tx, params.walletId)).toHex() };
       case 'signerSignature':
         const txId = tx.getUnsignedTx().getId();
         const psbt = PSBT_CACHE.get(txId);
@@ -83,8 +83,8 @@ export async function signTransaction<TNumber extends number | bigint>(
         assert(params.walletId, 'walletId is required for MuSig2 bitgo nonce');
         assert(signerKeychain);
         tx.setAllInputsMusig2NonceHD(signerKeychain);
-        const response = await coin.getMusig2Nonces(tx.toHex(), params.walletId);
-        tx.combine(bitgo.createPsbtFromHex(response.psbt, network));
+        const response = await coin.getMusig2Nonces(tx, params.walletId);
+        tx = tx.combine(response);
         break;
     }
   } else {

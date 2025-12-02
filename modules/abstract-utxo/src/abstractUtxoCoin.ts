@@ -547,6 +547,14 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     }
   }
 
+  decodeTransactionAsPsbt(input: Buffer | string): utxolib.bitgo.UtxoPsbt {
+    const decoded = this.decodeTransaction(input);
+    if (!(decoded instanceof utxolib.bitgo.UtxoPsbt)) {
+      throw new Error('expected psbt but got transaction');
+    }
+    return decoded;
+  }
+
   decodeTransactionFromPrebuild<TNumber extends number | bigint>(prebuild: {
     txHex?: string;
     txBase64?: string;
@@ -711,12 +719,13 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @param psbtHex all MuSig2 inputs should contain user MuSig2 nonce
    * @param walletId
    */
-  async getMusig2Nonces(psbtHex: string, walletId: string): Promise<SignPsbtResponse> {
-    const params: SignPsbtRequest = { psbt: psbtHex };
-    return await this.bitgo
+  async getMusig2Nonces(psbt: utxolib.bitgo.UtxoPsbt, walletId: string): Promise<utxolib.bitgo.UtxoPsbt> {
+    const params: SignPsbtRequest = { psbt: psbt.toHex() };
+    const response = await this.bitgo
       .post(this.url('/wallet/' + walletId + '/tx/signpsbt'))
       .send(params)
       .result();
+    return this.decodeTransactionAsPsbt(response.psbt);
   }
 
   /**
@@ -726,7 +735,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @param walletId
    */
   async signPsbt(psbtHex: string, walletId: string): Promise<SignPsbtResponse> {
-    return this.getMusig2Nonces(psbtHex, walletId);
+    return { psbt: (await this.getMusig2Nonces(this.decodeTransactionAsPsbt(psbtHex), walletId)).toHex() };
   }
 
   /**
@@ -736,9 +745,11 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   async signPsbtFromOVC(ovcJson: Record<string, unknown>): Promise<Record<string, unknown>> {
     assert(ovcJson['psbtHex'], 'ovcJson must contain psbtHex');
     assert(ovcJson['walletId'], 'ovcJson must contain walletId');
-    const psbt = (await this.getMusig2Nonces(ovcJson['psbtHex'] as string, ovcJson['walletId'] as string)).psbt;
-    assert(psbt, 'psbt not found');
-    return _.extend(ovcJson, { txHex: psbt });
+    const psbt = await this.getMusig2Nonces(
+      this.decodeTransactionAsPsbt(ovcJson['psbtHex'] as string),
+      ovcJson['walletId'] as string
+    );
+    return _.extend(ovcJson, { txHex: psbt.toHex() });
   }
 
   /**
