@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 
 import * as utxolib from '@bitgo/utxo-lib';
 
-import { signAndVerifyPsbt } from '../../../../src/transaction/fixedScript/sign';
+import { signAndVerifyPsbt } from '../../../../src/transaction/fixedScript/signPsbt';
 
 function describeSignAndVerifyPsbt(acidTest: utxolib.testutil.AcidTest) {
   describe(`${acidTest.name}`, function () {

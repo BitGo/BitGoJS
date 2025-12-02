@@ -3,7 +3,7 @@ export * from './address';
 export * from './config';
 export * from './recovery';
 export * from './transaction/fixedScript/replayProtection';
-export * from './transaction/fixedScript/sign';
+export * from './transaction/fixedScript/signLegacyTransaction';
 
 export { UtxoWallet } from './wallet';
 export * as descriptor from './descriptor';

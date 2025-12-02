@@ -1,7 +1,13 @@
+import assert from 'assert';
+
 import * as utxolib from '@bitgo/utxo-lib';
+import { BIP32Interface, bip32 } from '@bitgo/secp256k1';
+import { bitgo } from '@bitgo/utxo-lib';
+import { isTriple, Triple } from '@bitgo/sdk-core';
 import debugLib from 'debug';
 
 import { getReplayProtectionAddresses } from './replayProtection';
+import { InputSigningError, TransactionSigningError } from './SigningError';
 
 const debug = debugLib('bitgo:v2:utxo');
 
@@ -10,132 +16,6 @@ const { isWalletUnspent, signInputWithUnspent, toOutput } = utxolib.bitgo;
 type Unspent<TNumber extends number | bigint = number> = utxolib.bitgo.Unspent<TNumber>;
 
 type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
-
-type PsbtParsedScriptType =
-  | 'p2sh'
-  | 'p2wsh'
-  | 'p2shP2wsh'
-  | 'p2shP2pk'
-  | 'taprootKeyPathSpend'
-  | 'taprootScriptPathSpend';
-
-export class InputSigningError<TNumber extends number | bigint = number> extends Error {
-  static expectedWalletUnspent<TNumber extends number | bigint>(
-    inputIndex: number,
-    inputType: PsbtParsedScriptType | null, // null for legacy transaction format
-    unspent: Unspent<TNumber> | { id: string }
-  ): InputSigningError<TNumber> {
-    return new InputSigningError(
-      inputIndex,
-      inputType,
-      unspent,
-      `not a wallet unspent, not a replay protection unspent`
-    );
-  }
-
-  constructor(
-    public inputIndex: number,
-    public inputType: PsbtParsedScriptType | null, // null for legacy transaction format
-    public unspent: Unspent<TNumber> | { id: string },
-    public reason: Error | string
-  ) {
-    super(`signing error at input ${inputIndex}: type=${inputType} unspentId=${unspent.id}: ${reason}`);
-  }
-}
-
-export class TransactionSigningError<TNumber extends number | bigint = number> extends Error {
-  constructor(signErrors: InputSigningError<TNumber>[], verifyError: InputSigningError<TNumber>[]) {
-    super(
-      `sign errors at inputs: [${signErrors.join(',')}], ` +
-        `verify errors at inputs: [${verifyError.join(',')}], see log for details`
-    );
-  }
-}
-
-/**
- * Sign all inputs of a psbt and verify signatures after signing.
- * Collects and logs signing errors and verification errors, throws error in the end if any of them
- * failed.
- *
- * If it is the last signature, finalize and extract the transaction from the psbt.
- *
- * This function mirrors signAndVerifyWalletTransaction, but is used for signing PSBTs instead of
- * using TransactionBuilder
- *
- * @param psbt
- * @param signerKeychain
- * @param isLastSignature
- */
-export function signAndVerifyPsbt(
-  psbt: utxolib.bitgo.UtxoPsbt,
-  signerKeychain: utxolib.BIP32Interface,
-  {
-    isLastSignature,
-    /** deprecated */
-    allowNonSegwitSigningWithoutPrevTx,
-  }: { isLastSignature: boolean; allowNonSegwitSigningWithoutPrevTx?: boolean }
-): utxolib.bitgo.UtxoPsbt | utxolib.bitgo.UtxoTransaction<bigint> {
-  const txInputs = psbt.txInputs;
-  const outputIds: string[] = [];
-  const scriptTypes: PsbtParsedScriptType[] = [];
-
-  const signErrors: InputSigningError<bigint>[] = psbt.data.inputs
-    .map((input, inputIndex: number) => {
-      const outputId = utxolib.bitgo.formatOutputId(utxolib.bitgo.getOutputIdForInput(txInputs[inputIndex]));
-      outputIds.push(outputId);
-
-      const { scriptType } = utxolib.bitgo.parsePsbtInput(input);
-      scriptTypes.push(scriptType);
-
-      if (scriptType === 'p2shP2pk') {
-        debug('Skipping signature for input %d of %d (RP input?)', inputIndex + 1, psbt.data.inputs.length);
-        return;
-      }
-
-      try {
-        psbt.signInputHD(inputIndex, signerKeychain);
-        debug('Successfully signed input %d of %d', inputIndex + 1, psbt.data.inputs.length);
-      } catch (e) {
-        return new InputSigningError<bigint>(inputIndex, scriptType, { id: outputId }, e);
-      }
-    })
-    .filter((e): e is InputSigningError<bigint> => e !== undefined);
-
-  const verifyErrors: InputSigningError<bigint>[] = psbt.data.inputs
-    .map((input, inputIndex) => {
-      const scriptType = scriptTypes[inputIndex];
-      if (scriptType === 'p2shP2pk') {
-        debug(
-          'Skipping input signature %d of %d (unspent from replay protection address which is platform signed only)',
-          inputIndex + 1,
-          psbt.data.inputs.length
-        );
-        return;
-      }
-
-      const outputId = outputIds[inputIndex];
-      try {
-        if (!psbt.validateSignaturesOfInputHD(inputIndex, signerKeychain)) {
-          return new InputSigningError(inputIndex, scriptType, { id: outputId }, new Error(`invalid signature`));
-        }
-      } catch (e) {
-        debug('Invalid signature');
-        return new InputSigningError<bigint>(inputIndex, scriptType, { id: outputId }, e);
-      }
-    })
-    .filter((e): e is InputSigningError<bigint> => e !== undefined);
-
-  if (signErrors.length || verifyErrors.length) {
-    throw new TransactionSigningError(signErrors, verifyErrors);
-  }
-
-  if (isLastSignature) {
-    psbt.finalizeAllInputs();
-    return psbt.extractTransaction();
-  }
-
-  return psbt;
-}
 
 /**
  * Sign all inputs of a wallet transaction and verify signatures after signing.
@@ -231,4 +111,44 @@ export function signAndVerifyWalletTransaction<TNumber extends number | bigint>(
   }
 
   return signedTransaction;
+}
+
+export function signLegacyTransaction<TNumber extends number | bigint>(
+  tx: utxolib.bitgo.UtxoTransaction<TNumber>,
+  signerKeychain: BIP32Interface | undefined,
+  params: {
+    isLastSignature: boolean;
+    signingStep: 'signerNonce' | 'cosignerNonce' | 'signerSignature' | undefined;
+    txInfo: { unspents?: utxolib.bitgo.Unspent<TNumber>[] } | undefined;
+    pubs: string[] | undefined;
+    cosignerPub: string | undefined;
+  }
+): utxolib.bitgo.UtxoTransaction<TNumber> {
+  switch (params.signingStep) {
+    case 'signerNonce':
+    case 'cosignerNonce':
+      /**
+       * In certain cases, the caller of this method may not know whether the txHex contains a psbt with taproot key path spend input(s).
+       * Instead of throwing error, no-op and return the txHex. So that the caller can call this method in the same sequence.
+       */
+      return tx;
+  }
+
+  if (tx.ins.length !== params.txInfo?.unspents?.length) {
+    throw new Error('length of unspents array should equal to the number of transaction inputs');
+  }
+
+  if (!params.pubs || !isTriple(params.pubs)) {
+    throw new Error(`must provide xpub array`);
+  }
+
+  const keychains = params.pubs.map((pub) => bip32.fromBase58(pub)) as Triple<BIP32Interface>;
+  const cosignerPub = params.cosignerPub ?? params.pubs[2];
+  const cosignerKeychain = bip32.fromBase58(cosignerPub);
+
+  assert(signerKeychain);
+  const walletSigner = new bitgo.WalletUnspentSigner<RootWalletKeys>(keychains, signerKeychain, cosignerKeychain);
+  return signAndVerifyWalletTransaction(tx, params.txInfo.unspents, walletSigner, {
+    isLastSignature: params.isLastSignature,
+  }) as utxolib.bitgo.UtxoTransaction<TNumber>;
 }
