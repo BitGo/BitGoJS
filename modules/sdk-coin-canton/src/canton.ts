@@ -119,10 +119,17 @@ export class Canton extends BaseCoin {
         if (txParams.recipients !== undefined) {
           const filteredRecipients = txParams.recipients?.map((recipient) => {
             const { address, amount } = recipient;
+            const [addressPart, memoId] = address.split('?memoId=');
+            if (memoId) {
+              return { address: addressPart, amount, memo: memoId };
+            }
             return { address, amount };
           });
           const filteredOutputs = explainedTx.outputs?.map((output) => {
-            const { address, amount } = output;
+            const { address, amount, memo } = output;
+            if (memo) {
+              return { address, amount, memo };
+            }
             return { address, amount };
           });
           if (JSON.stringify(filteredRecipients) !== JSON.stringify(filteredOutputs)) {

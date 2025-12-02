@@ -90,6 +90,7 @@ export class Utils implements BaseUtils {
     let sender = '';
     let receiver = '';
     let amount = '';
+    let memoId: string | undefined;
     let preApprovalNode: RecordField[] = [];
     let transferNode: RecordField[] = [];
     let transferAcceptRejectNode: RecordField[] = [];
@@ -161,6 +162,24 @@ export class Utils implements BaseUtils {
 
           const amountData = getField(transferRecord, 'amount');
           if (amountData?.oneofKind === 'numeric') amount = amountData.numeric ?? '';
+
+          const metaField = getField(transferRecord, 'meta');
+          if (metaField?.oneofKind === 'record') {
+            const metaFields = metaField.record?.fields;
+            if (metaFields && metaFields.length) {
+              const valuesField = getField(metaFields, 'values');
+              if (valuesField?.oneofKind === 'textMap') {
+                const entries = valuesField.textMap?.entries ?? [];
+                const memoEntry = entries.find((e) => e.key === 'splice.lfdecentralizedtrust.org/reason');
+                if (memoEntry) {
+                  const memoValue = memoEntry?.value?.sum;
+                  if (memoValue?.oneofKind === 'text') {
+                    memoId = memoValue.text;
+                  }
+                }
+              }
+            }
+          }
         }
       }
     } else if (transferAcceptRejectNode.length) {
@@ -185,11 +204,15 @@ export class Utils implements BaseUtils {
       throw new Error(`invalid transaction data: missing ${missingFields.join(', ')}`);
     }
     const convertedAmount = this.convertAmountToLowestUnit(new BigNumber(amount));
-    return {
+    const parsedData: PreparedTxnParsedInfo = {
       sender,
       receiver,
       amount: convertedAmount,
     };
+    if (memoId) {
+      parsedData.memoId = memoId;
+    }
+    return parsedData;
   }
 
   /**

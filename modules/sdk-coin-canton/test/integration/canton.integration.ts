@@ -10,8 +10,10 @@ import {
   GenerateTopologyResponse,
   TransferAcceptRawTransaction,
   TransferRawTxn,
+  TransferRawTxnWithMemo,
   TransferRejectRawTransaction,
   TxParams,
+  TxParamsWithMemo,
   WalletInitRawTransaction,
 } from '../resources';
 import { Tcanton } from '../../src';
@@ -51,6 +53,23 @@ describe('Canton integration tests', function () {
     it('should verify transfer transaction', async function () {
       const txPrebuild = newTxPrebuild();
       const txParams = newTxParams();
+      const isTxnVerifies = await basecoin.verifyTransaction({ txPrebuild: txPrebuild, txParams: txParams, wallet });
+      isTxnVerifies.should.equal(true);
+    });
+
+    it('should verify transfer transaction with memo', async function () {
+      const txPrebuild = {
+        txHex: TransferRawTxnWithMemo,
+        txInfo: {},
+      };
+      const txParams = {
+        recipients: [
+          {
+            address: TxParamsWithMemo.RECIPIENT_ADDRESS,
+            amount: TxParamsWithMemo.AMOUNT,
+          },
+        ],
+      };
       const isTxnVerifies = await basecoin.verifyTransaction({ txPrebuild: txPrebuild, txParams: txParams, wallet });
       isTxnVerifies.should.equal(true);
     });
