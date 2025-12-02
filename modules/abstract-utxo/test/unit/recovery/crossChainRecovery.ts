@@ -14,6 +14,7 @@ import {
   getWallet,
   supportedCrossChainRecoveries,
   generateAddress,
+  convertLtcAddressToLegacyFormat,
 } from '../../../src';
 import {
   getFixture,
@@ -325,5 +326,34 @@ describe(`Cross-Chain Recovery getWallet`, async function () {
       });
       nockV2Wallet.done();
     }
+  });
+});
+
+describe('convertLtcAddressToLegacyFormat', function () {
+  const ltcNetwork = utxolib.networks.litecoin;
+
+  it('should convert M... P2SH address to 3... legacy format', function () {
+    // These two addresses represent the same underlying script hash:
+    // - MNQ7zkgMsaV67rsjA3JuP59RC5wxRXpwgE is the LTC format (scriptHash 0x32)
+    // - 3GBygsGPvTdfKMbq4AKZZRu1sPMWPEsBfd is the BTC format (scriptHash 0x05)
+    const ltcAddress = 'MNQ7zkgMsaV67rsjA3JuP59RC5wxRXpwgE';
+    const expectedLegacyAddress = '3GBygsGPvTdfKMbq4AKZZRu1sPMWPEsBfd';
+
+    const legacyAddress = convertLtcAddressToLegacyFormat(ltcAddress, ltcNetwork);
+    assert.strictEqual(legacyAddress, expectedLegacyAddress);
+  });
+
+  it('should convert MD68PsdheKxcYsrVLyZRXgoSDLnB1MdVtE to legacy format', function () {
+    const address = 'MD68PsdheKxcYsrVLyZRXgoSDLnB1MdVtE';
+    const legacyAddress = convertLtcAddressToLegacyFormat(address, ltcNetwork);
+
+    // Should start with '3' (legacy BTC P2SH format)
+    assert.ok(legacyAddress.startsWith('3'), `Expected address to start with '3', got: ${legacyAddress}`);
+  });
+
+  it('should not modify bech32 addresses', function () {
+    const bech32Address = 'ltc1qgrl8zpndsklaa9swgd5vevyxmx5x63vcrl7dk4';
+    const result = convertLtcAddressToLegacyFormat(bech32Address, ltcNetwork);
+    assert.strictEqual(result, bech32Address);
   });
 });
