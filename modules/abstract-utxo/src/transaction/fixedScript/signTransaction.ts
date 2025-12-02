@@ -26,14 +26,14 @@ export interface Musig2Participant {
  */
 const PSBT_CACHE = new Map<string, utxolib.bitgo.UtxoPsbt>();
 
-export async function signTransaction<TNumber extends number | bigint>(
+export async function signTransaction(
   coin: Musig2Participant,
-  tx: DecodedTransaction<TNumber>,
+  tx: DecodedTransaction<bigint | number>,
   signerKeychain: BIP32Interface | undefined,
   network: utxolib.Network,
   params: {
     walletId: string | undefined;
-    txInfo: { unspents?: utxolib.bitgo.Unspent<TNumber>[] } | undefined;
+    txInfo: { unspents?: utxolib.bitgo.Unspent<bigint | number>[] } | undefined;
     isLastSignature: boolean;
     signingStep: 'signerNonce' | 'cosignerNonce' | 'signerSignature' | undefined;
     /** deprecated */
@@ -41,7 +41,7 @@ export async function signTransaction<TNumber extends number | bigint>(
     pubs: string[] | undefined;
     cosignerPub: string | undefined;
   }
-): Promise<{ txHex: string }> {
+): Promise<utxolib.bitgo.UtxoPsbt | utxolib.bitgo.UtxoTransaction<bigint | number>> {
   const isTxWithKeyPathSpendInput = tx instanceof bitgo.UtxoPsbt && bitgo.isTransactionWithKeyPathSpendInput(tx);
 
   let isLastSignature = false;
@@ -63,10 +63,10 @@ export async function signTransaction<TNumber extends number | bigint>(
         assert(signerKeychain);
         tx.setAllInputsMusig2NonceHD(signerKeychain);
         PSBT_CACHE.set(tx.getUnsignedTx().getId(), tx);
-        return { txHex: tx.toHex() };
+        return tx;
       case 'cosignerNonce':
         assert(params.walletId, 'walletId is required for MuSig2 bitgo nonce');
-        return { txHex: (await coin.getMusig2Nonces(tx, params.walletId)).toHex() };
+        return await coin.getMusig2Nonces(tx, params.walletId);
       case 'signerSignature':
         const txId = tx.getUnsignedTx().getId();
         const psbt = PSBT_CACHE.get(txId);
@@ -95,7 +95,7 @@ export async function signTransaction<TNumber extends number | bigint>(
          * In certain cases, the caller of this method may not know whether the txHex contains a psbt with taproot key path spend input(s).
          * Instead of throwing error, no-op and return the txHex. So that the caller can call this method in the same sequence.
          */
-        return { txHex: tx.toHex() };
+        return tx;
     }
   }
 
@@ -125,7 +125,5 @@ export async function signTransaction<TNumber extends number | bigint>(
     }) as bitgo.UtxoTransaction<bigint>;
   }
 
-  return {
-    txHex: signedTransaction.toBuffer().toString('hex'),
-  };
+  return signedTransaction;
 }
