@@ -2805,6 +2805,17 @@ export const allCoinsAndTokens = [
     Networks.main.ip
   ),
 
+  // Plume testnet tokens
+  erc20Token(
+    '67a140e3-c73e-4984-af13-7b1555ee3ff3',
+    'tplume:usdc',
+    'Testnet Plume USDC',
+    6,
+    '0xcb5f30e335672893c7eb944b374c196392c19d18',
+    UnderlyingAsset['tplume:usdc'],
+    Networks.test.plume
+  ),
+
   hederaCoin(
     '98aad956-27ee-45dd-aa43-6a23c9a1d1d0',
     'hbar',
