@@ -508,6 +508,10 @@ export enum CoinFeature {
    * This coin requires a deposit acceptance transaction
    */
   REQUIRES_DEPOSIT_ACCEPTANCE_TRANSACTION = 'requires-deposit-acceptance-transaction',
+  /**
+   * This coin allows negative fees in transactions
+   */
+  ALLOWS_NEGATIVE_FEE = 'allows-negative-fee',
 }
 
 /**
