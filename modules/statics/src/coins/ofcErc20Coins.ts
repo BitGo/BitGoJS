@@ -4484,6 +4484,13 @@ export const tOfcErc20Coins = [
   ofcerc20('bf7b99fe-d666-4db7-a775-c05e5bff98ce', 'ofceth:andy', 'andy', 18, underlyingAssetForSymbol('eth:andy')),
 
   ofcerc20('d2b5f3e4-3c4e-4f1e-9f0a-1b2c3d4e5f6a', 'ofcbaseeth:spec', 'Spectral', 18, UnderlyingAsset['baseeth:spec']),
+  ofcerc20(
+    'bc7be60b-7eb8-4512-9675-d804f540962a',
+    'ofcbaseeth:soon',
+    'Soon Token',
+    18,
+    UnderlyingAsset['baseeth:soon']
+  ),
 
   ofcerc20(
     'e3c6f4e5-4d5e-4f2e-8f1a-2c3d4e5f6a7b',
@@ -4567,6 +4574,8 @@ export const tOfcErc20Coins = [
     UnderlyingAsset['eth:fidd']
   ),
   ofcerc20('c71454e2-c51c-40df-8605-e57f2d97ed53', 'ofceth:yu', 'Yala Stablecoin', 18, UnderlyingAsset['eth:yu']),
+  ofcerc20('14912a5e-254c-4c6f-9f9c-f9ce11b7b293', 'ofceth:bard', 'Lombard', 18, UnderlyingAsset['eth:bard']),
+  ofcerc20('a31a6330-cbd6-49b0-b8b1-a7f9a48e770c', 'ofceth:sfp', 'SafePal Token', 18, UnderlyingAsset['eth:sfp']),
   ofcerc20('72427813-ec17-4100-8d6d-844a3f71f34e', 'ofceth:fbtc', 'Function Bitcoin', 8, UnderlyingAsset['eth:fbtc']),
   ofcerc20(
     'e050aeab-a9c9-4962-b42f-d350c88efb37',
