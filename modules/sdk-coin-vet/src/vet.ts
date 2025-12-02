@@ -21,9 +21,7 @@ import {
   SignTransactionOptions,
   TokenTransferRecipientParams,
   TssVerifyAddressOptions,
-  VerifyAddressOptions,
   VerifyTransactionOptions,
-  isTssVerifyAddressOptions,
   TokenType,
   Ecdsa,
   ECDSAUtils,
@@ -165,13 +163,13 @@ export class Vet extends BaseCoin {
   /**
    * Verify that an address belongs to this wallet.
    *
-   * @param {VerifyAddressOptions | TssVerifyAddressOptions} params - Verification parameters
+   * @param {TssVerifyVetAddressOptions} params - Verification parameters
    * @returns {Promise<boolean>} True if address belongs to wallet
    * @throws {InvalidAddressError} If address format is invalid
    * @throws {Error} If invalid wallet version or missing parameters
    */
-  async isWalletAddress(params: VerifyAddressOptions | TssVerifyAddressOptions): Promise<boolean> {
-    const { address, baseAddress, walletVersion } = params as TssVerifyVetAddressOptions;
+  async isWalletAddress(params: TssVerifyVetAddressOptions): Promise<boolean> {
+    const { address, baseAddress, walletVersion } = params;
 
     if (address && !this.isValidAddress(address)) {
       throw new InvalidAddressError(`invalid address: ${address}`);
@@ -179,10 +177,6 @@ export class Vet extends BaseCoin {
 
     if (walletVersion !== 6) {
       throw new Error(`VET only supports wallet version 6, but got version ${walletVersion}`);
-    }
-
-    if (!isTssVerifyAddressOptions(params)) {
-      throw new Error('VET requires TSS verification parameters (keychains with commonKeychain)');
     }
 
     const isVerifyingBaseAddress = baseAddress && address.toLowerCase() === baseAddress.toLowerCase();
