@@ -238,4 +238,99 @@ describe('Vechain', function () {
       basecoin.isValidAddress(address).should.equal(false);
     });
   });
+
+  describe('address verification', () => {
+    const testData = {
+      walletVersion: 6,
+      commonKeychain:
+        '02fad451e7d1a536897ded5f803a73cc7309a403cf43bb25bda494b9800efe32999b6b71b6159eccf1244492556b733f68733a23c184bf40bc37c52da5ad29e575',
+      baseAddress: '0x8420429aa50b7f6ab196c4ce0dcf629fdbb821a1',
+      feeAddress: '0x33f9d3172de8a88e47b399562e51fa9cde0f2511',
+      depositAddress: '0x26b88c0a103d185792a9597580c2c5170d93f410',
+      depositIndex: 3,
+      forwarderVersion: 5,
+    };
+
+    it('should verify a valid TSS base address (wallet version 6)', async function () {
+      const params = {
+        address: testData.baseAddress,
+        baseAddress: testData.baseAddress,
+        keychains: [
+          { commonKeychain: testData.commonKeychain },
+          { commonKeychain: testData.commonKeychain },
+          { commonKeychain: testData.commonKeychain },
+        ],
+        index: 0,
+        walletVersion: testData.walletVersion,
+        coinSpecific: {
+          feeAddress: testData.feeAddress,
+          forwarderVersion: testData.forwarderVersion,
+        },
+      };
+
+      const result = await basecoin.isWalletAddress(params);
+      result.should.equal(true);
+    });
+
+    it('should fail to verify a invalid TSS base address (wallet version 6)', async function () {
+      const params = {
+        address: '0x8420429aa50b7f6ab196c4ce0dcf629fdbb821a0',
+        baseAddress: testData.baseAddress,
+        keychains: [
+          { commonKeychain: testData.commonKeychain },
+          { commonKeychain: testData.commonKeychain },
+          { commonKeychain: testData.commonKeychain },
+        ],
+        index: 0,
+        walletVersion: testData.walletVersion,
+        coinSpecific: {
+          feeAddress: testData.feeAddress,
+          forwarderVersion: testData.forwarderVersion,
+        },
+      };
+
+      await basecoin.isWalletAddress(params).should.be.rejected();
+    });
+
+    it('should verify a valid TSS deposit address (wallet version 6)', async function () {
+      const params = {
+        address: testData.depositAddress,
+        baseAddress: testData.baseAddress,
+        keychains: [
+          { commonKeychain: testData.commonKeychain },
+          { commonKeychain: testData.commonKeychain },
+          { commonKeychain: testData.commonKeychain },
+        ],
+        index: testData.depositIndex,
+        walletVersion: testData.walletVersion,
+        coinSpecific: {
+          feeAddress: testData.feeAddress,
+          forwarderVersion: testData.forwarderVersion,
+        },
+      };
+
+      const result = await basecoin.isWalletAddress(params);
+      result.should.equal(true);
+    });
+
+    it('should fail to verify a invalid TSS deposit address (wallet version 6)', async function () {
+      const params = {
+        address: '0x26b88c0a103d185792a9597580c2c5170d93f411',
+        baseAddress: testData.baseAddress,
+        keychains: [
+          { commonKeychain: testData.commonKeychain },
+          { commonKeychain: testData.commonKeychain },
+          { commonKeychain: testData.commonKeychain },
+        ],
+        index: testData.depositIndex,
+        walletVersion: testData.walletVersion,
+        coinSpecific: {
+          feeAddress: testData.feeAddress,
+          forwarderVersion: testData.forwarderVersion,
+        },
+      };
+
+      await basecoin.isWalletAddress(params).should.be.rejected();
+    });
+  });
 });
