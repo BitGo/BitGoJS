@@ -280,7 +280,6 @@ describe('APT:', function () {
   });
 
   describe('Address Validation', () => {
-    // Real test data from tapt wallet 692f53f35a6e3f25a18c4eb8af016fdd
     const testData = {
       commonKeychain:
         '6a724c11eafea4209704c35e6ee3e1fba80d2a40860d873bbe5981de636c9cf6ade77e6fdd4388889ee93d7eaa737ab584edb57cc0cc15b2899380348d6e482c',
