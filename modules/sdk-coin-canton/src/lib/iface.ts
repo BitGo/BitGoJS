@@ -48,6 +48,7 @@ export interface CantonPrepareCommandResponse {
   hashingSchemeVersion: string;
   hashingDetails?: string | null;
   utxoInfo?: UTXOInfo[];
+  isOneStepTransfer?: boolean;
 }
 
 export interface PreparedParty {
@@ -55,6 +56,7 @@ export interface PreparedParty {
   publicKeyFingerprint: string;
   topologyTransactions: string[];
   multiHash: string;
+  shouldIncludeTxnType?: boolean;
 }
 
 export interface PreparedTransaction {
