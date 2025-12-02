@@ -4,7 +4,6 @@ export { parseTransaction } from './parseTransaction';
 export { CustomChangeOptions } from './parseOutput';
 export { verifyTransaction } from './verifyTransaction';
 export { signTransaction } from './signTransaction';
-export { Musig2Participant } from './signPsbt';
 export * from './signLegacyTransaction';
 export * from './SigningError';
 export * from './replayProtection';

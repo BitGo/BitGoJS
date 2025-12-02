@@ -6,6 +6,7 @@ import { bitgo } from '@bitgo/utxo-lib';
 import debugLib from 'debug';
 
 import { InputSigningError, TransactionSigningError } from './SigningError';
+import { Musig2Participant } from './musig2';
 
 const debug = debugLib('bitgo:v2:utxo');
 
@@ -15,7 +16,11 @@ export type PsbtParsedScriptType =
   | 'p2shP2wsh'
   | 'p2shP2pk'
   | 'taprootKeyPathSpend'
-  | 'taprootScriptPathSpend';
+  | 'taprootScriptPathSpend'
+  // wasm-utxo types
+  | 'p2trLegacy'
+  | 'p2trMusig2ScriptPath'
+  | 'p2trMusig2KeyPath';
 
 /**
  * Sign all inputs of a psbt and verify signatures after signing.
@@ -102,10 +107,6 @@ export function signAndVerifyPsbt(
   return psbt;
 }
 
-export interface Musig2Participant {
-  getMusig2Nonces(psbt: utxolib.bitgo.UtxoPsbt, walletId: string): Promise<utxolib.bitgo.UtxoPsbt>;
-}
-
 /**
  * Key Value: Unsigned tx id => PSBT
  * It is used to cache PSBTs with taproot key path (MuSig2) inputs during external express signer is activated.
@@ -117,7 +118,7 @@ export interface Musig2Participant {
 const PSBT_CACHE = new Map<string, utxolib.bitgo.UtxoPsbt>();
 
 export async function signPsbtWithMusig2Participant(
-  coin: Musig2Participant,
+  coin: Musig2Participant<utxolib.bitgo.UtxoPsbt>,
   tx: utxolib.bitgo.UtxoPsbt,
   signerKeychain: BIP32Interface | undefined,
   params: {

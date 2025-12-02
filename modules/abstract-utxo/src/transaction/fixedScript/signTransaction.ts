@@ -5,11 +5,12 @@ import * as utxolib from '@bitgo/utxo-lib';
 
 import { DecodedTransaction } from '../types';
 
+import { Musig2Participant } from './musig2';
 import { signLegacyTransaction } from './signLegacyTransaction';
-import { Musig2Participant, signPsbtWithMusig2Participant } from './signPsbt';
+import { signPsbtWithMusig2Participant } from './signPsbt';
 
 export async function signTransaction(
-  coin: Musig2Participant,
+  coin: Musig2Participant<utxolib.bitgo.UtxoPsbt>,
   tx: DecodedTransaction<bigint | number>,
   signerKeychain: BIP32Interface | undefined,
   network: utxolib.Network,
