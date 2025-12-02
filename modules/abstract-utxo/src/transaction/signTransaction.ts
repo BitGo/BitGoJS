@@ -63,7 +63,7 @@ export async function signTransaction<TNumber extends number | bigint>(
       throw new Error('expected a UtxoPsbt object');
     }
   } else {
-    return fixedScript.signTransaction(coin, tx, getSignerKeychain(params.prv), {
+    return fixedScript.signTransaction(coin, tx, getSignerKeychain(params.prv), coin.network, {
       walletId: params.txPrebuild.walletId,
       txInfo: params.txPrebuild.txInfo,
       isLastSignature: params.isLastSignature ?? false,

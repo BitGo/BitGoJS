@@ -6,9 +6,15 @@ import { bitgo } from '@bitgo/utxo-lib';
 import * as utxolib from '@bitgo/utxo-lib';
 import { isTriple, Triple } from '@bitgo/sdk-core';
 
-import { AbstractUtxoCoin, DecodedTransaction, RootWalletKeys } from '../../abstractUtxoCoin';
+import { DecodedTransaction } from '../types';
 
 import { signAndVerifyPsbt, signAndVerifyWalletTransaction } from './sign';
+
+type RootWalletKeys = bitgo.RootWalletKeys;
+
+export interface Musig2Participant {
+  getMusig2Nonces(psbt: utxolib.bitgo.UtxoPsbt, walletId: string): Promise<utxolib.bitgo.UtxoPsbt>;
+}
 
 /**
  * Key Value: Unsigned tx id => PSBT
@@ -21,9 +27,10 @@ import { signAndVerifyPsbt, signAndVerifyWalletTransaction } from './sign';
 const PSBT_CACHE = new Map<string, utxolib.bitgo.UtxoPsbt>();
 
 export async function signTransaction<TNumber extends number | bigint>(
-  coin: AbstractUtxoCoin,
+  coin: Musig2Participant,
   tx: DecodedTransaction<TNumber>,
   signerKeychain: BIP32Interface | undefined,
+  network: utxolib.Network,
   params: {
     walletId: string | undefined;
     txInfo: { unspents?: utxolib.bitgo.Unspent<TNumber>[] } | undefined;
@@ -59,7 +66,7 @@ export async function signTransaction<TNumber extends number | bigint>(
         return { txHex: tx.toHex() };
       case 'cosignerNonce':
         assert(params.walletId, 'walletId is required for MuSig2 bitgo nonce');
-        return { txHex: (await coin.signPsbt(tx.toHex(), params.walletId)).psbt };
+        return { txHex: (await coin.getMusig2Nonces(tx, params.walletId)).toHex() };
       case 'signerSignature':
         const txId = tx.getUnsignedTx().getId();
         const psbt = PSBT_CACHE.get(txId);
@@ -76,8 +83,8 @@ export async function signTransaction<TNumber extends number | bigint>(
         assert(params.walletId, 'walletId is required for MuSig2 bitgo nonce');
         assert(signerKeychain);
         tx.setAllInputsMusig2NonceHD(signerKeychain);
-        const response = await coin.signPsbt(tx.toHex(), params.walletId);
-        tx.combine(bitgo.createPsbtFromHex(response.psbt, coin.network));
+        const response = await coin.getMusig2Nonces(tx, params.walletId);
+        tx = tx.combine(response);
         break;
     }
   } else {
