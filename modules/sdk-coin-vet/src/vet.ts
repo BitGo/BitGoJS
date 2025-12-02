@@ -20,7 +20,7 @@ import {
   SignedTransaction,
   SignTransactionOptions,
   TokenTransferRecipientParams,
-  VerifyAddressOptions,
+  TssVerifyAddressOptions,
   VerifyTransactionOptions,
   TokenType,
   Ecdsa,
@@ -28,6 +28,7 @@ import {
   Environments,
   BaseBroadcastTransactionOptions,
   BaseBroadcastTransactionResult,
+  verifyMPCWalletAddress,
 } from '@bitgo/sdk-core';
 import * as mpc from '@bitgo/sdk-lib-mpc';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
@@ -51,6 +52,12 @@ interface FeeEstimateData {
   gasUnitPrice: string;
   gasPriceCoef: string;
   coefDivisor: string;
+}
+
+export interface TssVerifyVetAddressOptions extends TssVerifyAddressOptions {
+  address: string;
+  baseAddress?: string;
+  walletVersion?: number;
 }
 
 /**
@@ -153,12 +160,46 @@ export class Vet extends BaseCoin {
     return true;
   }
 
-  async isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
-    const { address: newAddress } = params;
+  /**
+   * Verify that an address belongs to this wallet.
+   *
+   * @param {TssVerifyVetAddressOptions} params - Verification parameters
+   * @returns {Promise<boolean>} True if address belongs to wallet
+   * @throws {InvalidAddressError} If address format is invalid
+   * @throws {Error} If invalid wallet version or missing parameters
+   */
+  async isWalletAddress(params: TssVerifyVetAddressOptions): Promise<boolean> {
+    const { address, baseAddress, walletVersion } = params;
 
-    if (!this.isValidAddress(newAddress)) {
-      throw new InvalidAddressError(`invalid address: ${newAddress}`);
+    if (address && !this.isValidAddress(address)) {
+      throw new InvalidAddressError(`invalid address: ${address}`);
     }
+
+    if (walletVersion !== 6) {
+      throw new Error(`VET only supports wallet version 6, but got version ${walletVersion}`);
+    }
+
+    const isVerifyingBaseAddress = baseAddress && address.toLowerCase() === baseAddress.toLowerCase();
+    if (isVerifyingBaseAddress) {
+      const index = typeof params.index === 'string' ? parseInt(params.index, 10) : params.index;
+      if (index !== 0) {
+        throw new Error(`Base address verification requires index 0, but got index ${params.index}.`);
+      }
+    }
+
+    const result = await verifyMPCWalletAddress(
+      { ...params, keyCurve: 'secp256k1' },
+      this.isValidAddress.bind(this),
+      (pubKey) => {
+        const keyPair = new EthKeyPair({ pub: pubKey });
+        return keyPair.getAddress();
+      }
+    );
+
+    if (!result) {
+      throw new InvalidAddressError(`invalid address: ${address}`);
+    }
+
     return true;
   }
 
