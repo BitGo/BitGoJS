@@ -87,11 +87,7 @@ export default function signFlowTestSuit(data: signFlowTestSuitArgs): void {
       tx.id.should.equal(data.txHash);
     });
 
-    // TODO: Known limitation - When loading from half-signed tx and adding second signature,
-    // the first signature is not preserved correctly due to FlareJS credential extraction limitations.
-    // Full signing works when done in a single flow (see "Should full sign a tx for same values" test).
-    // This test should be re-enabled once FlareJS credential parsing is improved.
-    xit('Should full sign a tx from half signed raw tx', async () => {
+    it('Should full sign a tx from half signed raw tx', async () => {
       const txBuilder = data.newTxFactory().from(data.halfSignedTxHex);
       txBuilder.sign({ key: data.privateKey.prv2 });
       const tx = await txBuilder.build();

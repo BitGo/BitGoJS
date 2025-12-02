@@ -168,10 +168,10 @@ export class Transaction extends BaseTransaction {
       );
     });
 
-    if (hasMatchingAddress) {
-      const signature = await secp256k1.sign(unsignedBytes, prv);
+    const signature = await secp256k1.sign(unsignedBytes, prv);
+    let signatureSet = false;
 
-      let signatureSet = false;
+    if (hasMatchingAddress) {
       // Use address-based slot matching (like AVAX-P)
       let checkSign: CheckSignature | undefined = undefined;
 
@@ -196,10 +196,28 @@ export class Transaction extends BaseTransaction {
 
         if (signatureSet) break;
       }
+    }
 
-      if (!signatureSet) {
-        throw new SigningError('No matching signature slot found for this private key');
+    // Fallback: If address-based matching didn't work (e.g., ImportInC loaded from unsigned tx
+    // where P-chain addresses aren't in addressMaps), try to sign the first empty slot.
+    // This handles the case where we have empty credentials but signer address isn't in the map.
+    if (!signatureSet) {
+      for (const credential of unsignedTx.credentials) {
+        const signatures = credential.getSignatures();
+        for (let i = 0; i < signatures.length; i++) {
+          if (isEmptySignature(signatures[i])) {
+            credential.setSignature(i, signature);
+            signatureSet = true;
+            this._rawSignedBytes = undefined;
+            break;
+          }
+        }
+        if (signatureSet) break;
       }
+    }
+
+    if (!signatureSet) {
+      throw new SigningError('No matching signature slot found for this private key');
     }
   }
 

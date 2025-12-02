@@ -38,7 +38,7 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
     return TransactionType.Import;
   }
 
-  initBuilder(tx: Tx, rawBytes?: Buffer): this {
+  initBuilder(tx: Tx, rawBytes?: Buffer, parsedCredentials?: Credential[]): this {
     const importTx = tx as pvmSerial.ImportTx;
 
     if (!this.verifyTxType(importTx._type)) {
@@ -82,30 +82,11 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
     const fee = totalInputAmount - outputAmount;
     this.transaction._fee.fee = fee.toString();
 
-    // Check if raw bytes contain credentials
-    // For PVM transactions, credentials start after the unsigned tx bytes
-    let hasCredentials = false;
-    let credentials: Credential[] = [];
+    // Use credentials passed from TransactionBuilderFactory (properly extracted using codec)
+    const credentials = parsedCredentials || [];
+    const hasCredentials = credentials.length > 0;
 
-    if (rawBytes) {
-      // Try standard extraction first
-      const result = utils.extractCredentialsFromRawBytes(rawBytes, importTx, 'PVM');
-      hasCredentials = result.hasCredentials;
-      credentials = result.credentials;
-
-      // If extraction failed but raw bytes are longer, try parsing credentials at known offset
-      // For ImportTx, the unsigned tx is typically 302 bytes
-      if ((!hasCredentials || credentials.length === 0) && rawBytes.length > 350) {
-        hasCredentials = true;
-        // Try to extract credentials at the standard position (302 bytes)
-        const credResult = utils.parseCredentialsAtOffset(rawBytes, 302);
-        if (credResult.length > 0) {
-          credentials = credResult;
-        }
-      }
-    }
-
-    // If there are credentials in raw bytes, store the original bytes to preserve exact format
+    // If there are credentials, store the original bytes to preserve exact format
     if (rawBytes && hasCredentials) {
       this.transaction._rawSignedBytes = rawBytes;
     }
@@ -114,7 +95,7 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
     const sortedAddresses = [...this.transaction._fromAddresses].sort((a, b) => Buffer.compare(a, b));
     const addressMaps = sortedAddresses.map((a, i) => new FlareUtils.AddressMap([[new Address(a), i]]));
 
-    // Create credentials if none exist
+    // When credentials were extracted, use them directly to preserve existing signatures
     const txCredentials =
       credentials.length > 0
         ? credentials
