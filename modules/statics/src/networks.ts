@@ -206,7 +206,7 @@ class Ada extends Mainnet implements AdaNetwork {
   utxolibName = 'cardano';
   poolDeposit = 500000000;
   stakeKeyDeposit = 2000000;
-  explorerUrl = 'https://cexplorer.io/';
+  explorerUrl = 'https://cardanoscan.io/transaction/';
   coinsPerUtxoWord = 34482;
   maxTransactionSize = 8000;
   maxValueSize = 4000;
@@ -216,7 +216,7 @@ class AdaTestnet extends Testnet implements AdaNetwork {
   name = 'AdaCardanoTestnet';
   family = CoinFamily.ADA;
   utxolibName = 'cardanoTestnet';
-  explorerUrl = 'https://preprod.cexplorer.io/';
+  explorerUrl = 'https://preprod.cardanoscan.io/transaction/';
   coinsPerUtxoWord = 34482;
   maxTransactionSize = 8000;
   maxValueSize = 4000;
