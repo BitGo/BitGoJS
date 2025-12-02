@@ -77,6 +77,7 @@ import { assertDescriptorWalletAddress, getDescriptorMapFromWallet, isDescriptor
 import { getChainFromNetwork, getFamilyFromNetwork, getFullNameFromNetwork } from './names';
 import { assertFixedScriptWalletAddress } from './address/fixedScript';
 import { ParsedTransaction } from './transaction/types';
+import { decodePsbtWith, stringToBufferTryFormats } from './transaction/decode';
 import { toBip32Triple, UtxoKeychain } from './keychains';
 import { verifyKeySignature, verifyUserPublicKey } from './verifyKey';
 import { getPolicyForEnv } from './descriptor/validatePolicy';
@@ -527,22 +528,12 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
   decodeTransaction<TNumber extends number | bigint>(input: Buffer | string): DecodedTransaction<TNumber> {
     if (typeof input === 'string') {
-      for (const format of ['hex', 'base64'] as const) {
-        const buffer = Buffer.from(input, format);
-        const bufferToString = buffer.toString(format);
-        if (
-          (format === 'base64' && bufferToString === input) ||
-          (format === 'hex' && bufferToString === input.toLowerCase())
-        ) {
-          return this.decodeTransaction(buffer);
-        }
-      }
-
-      throw new Error('input must be a valid hex or base64 string');
+      const buffer = stringToBufferTryFormats(input, ['hex', 'base64']);
+      return this.decodeTransaction(buffer);
     }
 
     if (utxolib.bitgo.isPsbt(input)) {
-      return utxolib.bitgo.createPsbtFromBuffer(input, this.network);
+      return decodePsbtWith(input, this.network, 'utxolib');
     } else {
       return utxolib.bitgo.createTransactionFromBuffer(input, this.network, {
         amountType: this.amountType,
