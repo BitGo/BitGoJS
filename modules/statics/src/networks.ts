@@ -1598,6 +1598,24 @@ class XlayerTestnet extends Testnet implements EthereumNetwork {
   nativeCoinOperationHashPrefix = '195';
 }
 
+class Morph extends Mainnet implements EthereumNetwork {
+  name = 'Morph Mainnet';
+  family = CoinFamily.MORPH;
+  explorerUrl = 'https://explorer-api-hoodi.morphl2.io/tx/'; // TODO: WIN-8134 add mainnet url when available
+  accountExplorerUrl = 'https://explorer-api-hoodi.morphl2.io/address/'; // TODO: WIN-8134 add mainnet account explorer url when available
+  chainId = 2818;
+  nativeCoinOperationHashPrefix = '2818';
+}
+
+class MorphTestnet extends Testnet implements EthereumNetwork {
+  name = 'Morph Testnet';
+  family = CoinFamily.MORPH;
+  explorerUrl = 'https://explorer-api-hoodi.morphl2.io/tx/';
+  accountExplorerUrl = 'https://explorer-api-hoodi.morphl2.io/address/';
+  chainId = 2710;
+  nativeCoinOperationHashPrefix = '2710';
+}
+
 class CreditcoinTestnet extends Testnet implements EthereumNetwork {
   name = 'CreditcoinTestnet';
   family = CoinFamily.CTC;
@@ -2216,6 +2234,7 @@ export const Networks = {
     og: Object.freeze(new Og()),
     ofc: Object.freeze(new Ofc()),
     okb: Object.freeze(new Xlayer()),
+    morph: Object.freeze(new Morph()),
     optimism: Object.freeze(new Optimism()),
     osmo: Object.freeze(new Osmo()),
     rbtc: Object.freeze(new Rbtc()),
@@ -2321,6 +2340,7 @@ export const Networks = {
     og: Object.freeze(new OgTestnet()),
     ofc: Object.freeze(new OfcTestnet()),
     okb: Object.freeze(new XlayerTestnet()),
+    morph: Object.freeze(new MorphTestnet()),
     optimism: Object.freeze(new OptimismTestnet()),
     osmo: Object.freeze(new OsmoTestnet()),
     rbtc: Object.freeze(new RbtcTestnet()),

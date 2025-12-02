@@ -121,6 +121,7 @@ export enum CoinFamily {
   IP = 'ip', // Story Chain
   SOMI = 'somi', // Somnia Chain
   FLUENTETH = 'fluenteth',
+  MORPH = 'morph',
 }
 
 /**
@@ -590,6 +591,7 @@ export enum UnderlyingAsset {
   MANTRA = 'mantra',
   MEGAETH = 'megaeth',
   MON = 'mon',
+  MORPH = 'morph',
   NEAR = 'near',
   OAS = 'oas',
   OG = 'og',
