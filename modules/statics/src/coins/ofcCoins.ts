@@ -1162,6 +1162,9 @@ export const ofcCoins = [
   ofcsolToken('40d74e37-2a44-4ce9-9f26-7229f741168e', 'ofcsol:oob', 'Oobit', 6, UnderlyingAsset['sol:oob'], [
     ...SOL_TOKEN_FEATURES,
   ]),
+  ofcsolToken('a4db15b5-41db-4ad9-b69a-88306e8c5dfe', 'ofcsol:soon', 'Soon Token', 9, UnderlyingAsset['sol:soon'], [
+    ...SOL_TOKEN_FEATURES,
+  ]),
   ofcsolToken(
     'b08c09fd-73fb-4b7f-8377-72225cd8c256',
     'ofcsol:dupe',
@@ -1953,6 +1956,8 @@ export const ofcCoins = [
   ),
   ofcBscToken('a79933f5-a9d2-4a29-a948-79313a569988', 'ofcbsc:cfx', 'BSC Conflux', 18, UnderlyingAsset['bsc:cfx']),
   ofcBscToken('c6f5df09-5a21-468b-89cc-f626d02d74d0', 'ofcbsc:oort', 'OORT', 18, UnderlyingAsset['bsc:oort']),
+  ofcBscToken('a0d5a2bc-75ab-4272-8b62-b513e88b6e5f', 'ofcbsc:soon', 'Soon Token', 18, UnderlyingAsset['bsc:soon']),
+  ofcBscToken('0fd1ab89-3e66-4f16-b788-2450dfff232d', 'ofcbsc:bard', 'Lombard', 18, UnderlyingAsset['bsc:bard']),
   ofcBscToken(
     '7e8cb701-0f63-4105-be1d-8b20fd42b093',
     'ofcbsc:cake',
