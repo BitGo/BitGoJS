@@ -201,6 +201,34 @@ describe('IOTA:', function () {
         );
       });
 
+      it('should verify transaction with recipients containing extra fields', async function () {
+        // The verification should only compare address, amount, and tokenName
+        // Extra fields should be ignored
+        const txBuilder = factory.getTransferBuilder();
+        txBuilder.sender(testData.sender.address);
+        txBuilder.recipients(testData.recipients);
+        txBuilder.paymentObjects(testData.paymentObjects);
+        txBuilder.gasData(testData.gasData);
+
+        const tx = (await txBuilder.build()) as TransferTransaction;
+        const txHex = Buffer.from(await tx.toBroadcastFormat(), 'base64').toString('hex');
+
+        // Add extra fields to recipients that should be ignored during comparison
+        const recipientsWithExtraFields = testData.recipients.map((r) => ({
+          ...r,
+          extraField: 'should be ignored',
+          anotherField: 123,
+        }));
+
+        should.equal(
+          await basecoin.verifyTransaction({
+            txPrebuild: { txHex: txHex },
+            txParams: { recipients: recipientsWithExtraFields },
+          }),
+          true
+        );
+      });
+
       it('should detect mismatched recipients', async function () {
         const txBuilder = factory.getTransferBuilder();
         txBuilder.sender(testData.sender.address);
@@ -210,11 +238,20 @@ describe('IOTA:', function () {
 
         const tx = (await txBuilder.build()) as TransferTransaction;
         const txHex = Buffer.from(await tx.toBroadcastFormat(), 'base64').toString('hex');
-        assert.rejects(
+
+        // Create mismatched recipients with different addresses/amounts
+        const mismatchedRecipients = [
+          {
+            address: testData.addresses.validAddresses[2], // Different address
+            amount: '9999', // Different amount
+          },
+        ];
+
+        await assert.rejects(
           async () =>
             await basecoin.verifyTransaction({
               txPrebuild: { txHex: txHex },
-              txParams: { recipients: testData.recipients },
+              txParams: { recipients: mismatchedRecipients },
             }),
           /Tx recipients does not match with expected txParams recipients/
         );

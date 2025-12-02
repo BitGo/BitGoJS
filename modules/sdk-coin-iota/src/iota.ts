@@ -14,6 +14,7 @@ import {
   MPCType,
   PopulatedIntent,
   PrebuildTransactionWithIntentOptions,
+  TransactionRecipient,
   verifyEddsaTssWalletAddress,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, CoinFamily, coins } from '@bitgo/statics';
@@ -121,7 +122,21 @@ export class Iota extends BaseCoin {
         throw new Error('Tx not a transfer transaction');
       }
       const txData = transaction.toJson() as TransferTxData;
-      if (!txData.recipients || !_.isEqual(txParams.recipients, txData.recipients)) {
+
+      if (!txData.recipients) {
+        throw new Error('Tx recipients does not match with expected txParams recipients');
+      }
+
+      const normalizeRecipient = (recipient: TransactionRecipient) =>
+        _.pick(recipient, ['address', 'amount', 'tokenName']);
+      const txDataRecipients = txData.recipients.map(normalizeRecipient);
+      const txParamsRecipients = txParams.recipients.map(normalizeRecipient);
+
+      const allRecipientsMatch = txParamsRecipients.every((expectedRecipient) =>
+        txDataRecipients.some((actualRecipient) => _.isEqual(expectedRecipient, actualRecipient))
+      );
+
+      if (!allRecipientsMatch) {
         throw new Error('Tx recipients does not match with expected txParams recipients');
       }
     }
