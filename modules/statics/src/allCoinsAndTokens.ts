@@ -2314,6 +2314,40 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_WP,
     ]
   ),
+  account(
+    '60203912-6332-4f44-8f83-a88a06ae170b',
+    'morph',
+    'Morph Mainnet',
+    Networks.main.morph,
+    18,
+    UnderlyingAsset.MORPH,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+    ]
+  ),
+  account(
+    '9352fddb-3b01-40a3-b09a-a047bc1595bd',
+    'tmorph',
+    'Morph Testnet',
+    Networks.test.morph,
+    18,
+    UnderlyingAsset.MORPH,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+    ]
+  ),
   canton(
     '07385320-5a4f-48e9-97a5-86d4be9f24b0',
     'canton',

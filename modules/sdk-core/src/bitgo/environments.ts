@@ -286,6 +286,9 @@ const mainnetBase: EnvironmentTemplate = {
     okb: {
       baseUrl: 'https://www.oklink.com/api/v5/explorer/block/block-list?chainShortName=xlayer',
     },
+    morph: {
+      baseUrl: 'https://explorer-api-hoodi.morphl2.io', // TODO: WIN-8134 add mainnet url when available
+    },
   },
   icpNodeUrl: 'https://ic0.app',
   worldExplorerBaseUrl: 'https://worldscan.org/',
@@ -438,6 +441,9 @@ const testnetBase: EnvironmentTemplate = {
     },
     okb: {
       baseUrl: 'https://www.oklink.com/api/v5/explorer/block/block-list?chainShortName=xlayer_testnet',
+    },
+    morph: {
+      baseUrl: 'https://explorer-api-hoodi.morphl2.io',
     },
   },
   stxNodeUrl: 'https://api.testnet.hiro.so',
