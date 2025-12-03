@@ -4,6 +4,8 @@ import type { UtxoNamedKeychains } from '../keychains';
 
 import type { CustomChangeOptions } from './fixedScript';
 
+export type SdkBackend = 'utxolib' | 'wasm-utxo';
+
 export type DecodedTransaction<TNumber extends number | bigint> =
   | utxolib.bitgo.UtxoTransaction<TNumber>
   | utxolib.bitgo.UtxoPsbt;
