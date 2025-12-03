@@ -302,7 +302,9 @@ export abstract class Transaction extends BaseTransaction {
       await this.populateTxData();
       this._iotaTransaction.setGasPrice(this.gasPrice as number);
       this._iotaTransaction.setGasBudget(this.gasBudget as number);
-      this._iotaTransaction.setGasPayment(this.gasPaymentObjects as TransactionObjectInput[]);
+      this._iotaTransaction.setGasPayment(
+        this.gasPaymentObjects?.slice(0, MAX_GAS_PAYMENT_OBJECTS - 1) as TransactionObjectInput[]
+      );
       this._txDataBytes = await this._iotaTransaction.build();
       this._rebuildRequired = false;
     }
@@ -347,12 +349,6 @@ export abstract class Transaction extends BaseTransaction {
 
     if (!this.gasPaymentObjects || this.gasPaymentObjects?.length === 0) {
       throw new InvalidTransactionError('Gas payment objects are required');
-    }
-
-    if (this.gasPaymentObjects.length > MAX_GAS_PAYMENT_OBJECTS) {
-      throw new InvalidTransactionError(
-        `Gas payment objects count (${this.gasPaymentObjects.length}) exceeds maximum allowed (${MAX_GAS_PAYMENT_OBJECTS})`
-      );
     }
 
     if (
