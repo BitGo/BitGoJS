@@ -114,6 +114,40 @@ export async function isWalletAddress(wallet: IWallet | WalletV1, address: strin
 }
 
 /**
+ * Convert a Litecoin P2SH address from M... format (scriptHash 0x32) to the legacy 3... format (scriptHash 0x05).
+ * This is needed for cross-chain recovery when LTC was sent to a BTC address, because the BTC wallet
+ * stores addresses in the 3... format while the LTC blockchain returns addresses in M... format.
+ *
+ * @param address - LTC address to convert
+ * @param network - The Litecoin network
+ * @returns The address in legacy 3... format, or the original address if it's not a P2SH address
+ */
+export function convertLtcAddressToLegacyFormat(address: string, network: utxolib.Network): string {
+  try {
+    // Try to decode as bech32 - these don't need conversion
+    utxolib.address.fromBech32(address);
+    return address;
+  } catch (e) {
+    // Not bech32, continue to base58
+  }
+
+  try {
+    const decoded = utxolib.address.fromBase58Check(address, network);
+    // Only convert P2SH addresses (scriptHash), not P2PKH (pubKeyHash)
+    if (decoded.version === network.scriptHash) {
+      // Convert to legacy format using Bitcoin's scriptHash (0x05)
+      const legacyScriptHash = utxolib.networks.bitcoin.scriptHash;
+      return utxolib.address.toBase58Check(decoded.hash, legacyScriptHash, network);
+    }
+    // P2PKH or other - return unchanged
+    return address;
+  } catch (e) {
+    // If decoding fails, return the original address
+    return address;
+  }
+}
+
+/**
  * @param coin
  * @param txid
  * @param amountType
@@ -137,7 +171,18 @@ async function getAllRecoveryOutputs<TNumber extends number | bigint = number>(
         // in non legacy format. However, we want to keep the address in the same format as the response since we
         // are going to hit the API again to fetch address unspents.
         const canonicalAddress = coin.canonicalAddress(output.address);
-        const isWalletOwned = await isWalletAddress(wallet, canonicalAddress);
+        let isWalletOwned = await isWalletAddress(wallet, canonicalAddress);
+
+        // For LTC cross-chain recovery: if the address isn't found, try the legacy format.
+        // When LTC is sent to a BTC address, the LTC blockchain returns M... addresses
+        // but the BTC wallet stores addresses in 3... format.
+        if (!isWalletOwned && coin.getFamily() === 'ltc') {
+          const legacyAddress = convertLtcAddressToLegacyFormat(output.address, coin.network);
+          if (legacyAddress !== output.address) {
+            isWalletOwned = await isWalletAddress(wallet, legacyAddress);
+          }
+        }
+
         return isWalletOwned ? output.address : null;
       })
     )
