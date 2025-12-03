@@ -17,7 +17,7 @@ export interface FlareNetwork extends BaseNetwork {
   assetId: string;
   vm?: string;
   txFee: string;
-  maxImportFee?: string;
+  maxImportFee: string;
   createSubnetTx?: string;
   createChainTx?: string;
   creationTxFee?: string;

@@ -42,6 +42,10 @@
       ".ts"
     ]
   },
+  "devDependencies": {
+    "@bitgo/sdk-api": "^1.71.8",
+    "@bitgo/sdk-test": "^9.1.16"
+  },
   "dependencies": {
     "@bitgo/sdk-core": "^36.23.0",
     "@bitgo/secp256k1": "^1.7.0",
@@ -51,6 +55,7 @@
     "bignumber.js": "9.0.0",
     "bs58": "^6.0.0",
     "create-hash": "^1.2.0",
+    "ethereumjs-util": "^7.1.5",
     "safe-buffer": "^5.2.1"
   },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c",

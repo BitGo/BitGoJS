@@ -5,18 +5,23 @@ import {
   InvalidTransactionError,
   isValidXprv,
   isValidXpub,
-  NotImplementedError,
   ParseTransactionError,
 } from '@bitgo/sdk-core';
 import { FlareNetwork } from '@bitgo/statics';
 import { Buffer } from 'buffer';
 import { createHash } from 'crypto';
 import { ecc } from '@bitgo/secp256k1';
-import { ADDRESS_SEPARATOR, Output, DeprecatedTx } from './iface';
+import { ADDRESS_SEPARATOR, Output } from './iface';
 import bs58 from 'bs58';
 import { bech32 } from 'bech32';
 
 export class Utils implements BaseUtils {
+  isValidTransactionId(txId: string): boolean {
+    throw new Error('Method not implemented.');
+  }
+  isValidSignature(signature: string): boolean {
+    throw new Error('Method not implemented.');
+  }
   /**
    * Check if addresses in wallet match UTXO output addresses
    */
@@ -40,10 +45,6 @@ export class Utils implements BaseUtils {
 
     return true;
   }
-
-  // Regex patterns
-  // export const ADDRESS_REGEX = /^(^P||NodeID)-[a-zA-Z0-9]+$/;
-  // export const HEX_REGEX = /^(0x){0,1}([0-9a-f])+$/i;
 
   private isValidAddressRegex(address: string): boolean {
     return /^(^P||NodeID)-[a-zA-Z0-9]+$/.test(address);
@@ -154,7 +155,7 @@ export class Utils implements BaseUtils {
   verifySignature(network: FlareNetwork, message: Buffer, signature: Buffer, publicKey: Buffer): boolean {
     try {
       const messageHash = this.sha256(message);
-      return ecc.verify(signature, messageHash, publicKey);
+      return ecc.verify(messageHash, publicKey, signature);
     } catch (e) {
       return false;
     }
@@ -264,15 +265,6 @@ export class Utils implements BaseUtils {
     return parseInt(outputidx.toString('hex'), 16).toString();
   }
 
-  // Required by BaseUtils interface but not implemented
-  isValidSignature(signature: string): boolean {
-    throw new NotImplementedError('isValidSignature not implemented');
-  }
-
-  isValidTransactionId(txId: string): boolean {
-    throw new NotImplementedError('isValidTransactionId not implemented');
-  }
-
   /**
    * Helper method to convert address components to string
    */
@@ -329,7 +321,6 @@ export class Utils implements BaseUtils {
    * @param address - The address to parse
    * @returns Buffer containing the parsed address
    */
-  //TODO: need check and validate this method
   public parseAddress = (address: string): Buffer => {
     return this.stringToAddress(address);
   };
@@ -364,27 +355,6 @@ export class Utils implements BaseUtils {
     return Buffer.from(bech32.fromWords(bech32.decode(parts[1]).words));
   };
 
-  /**
-   * Check if tx is for the blockchainId
-   *
-   * @param {DeprecatedTx} tx
-   * @param {string} blockchainId
-   * @returns true if tx is for blockchainId
-   */
-  // TODO: remove DeprecatedTx usage
-  isTransactionOf(tx: DeprecatedTx, blockchainId: string): boolean {
-    // FlareJS equivalent - this would need proper CB58 encoding implementation
-    try {
-      const txRecord = tx as unknown as Record<string, unknown>;
-      const unsignedTx = (txRecord.getUnsignedTx as () => Record<string, unknown>)();
-      const transaction = (unsignedTx.getTransaction as () => Record<string, unknown>)();
-      const txBlockchainId = (transaction.getBlockchainID as () => unknown)();
-      return Buffer.from(txBlockchainId as string).toString('hex') === blockchainId;
-    } catch (error) {
-      return false;
-    }
-  }
-
   flareIdString(value: string): Id {
     return new Id(Buffer.from(value, 'hex'));
   }
@@ -417,7 +387,7 @@ export class Utils implements BaseUtils {
 
       return Buffer.from(recovered);
     } catch (error) {
-      throw new Error(`Failed to recover signature: ${error}`);
+      throw new Error(`Failed to recover signature: ${error.message}`);
     }
   }
 }

@@ -12,6 +12,7 @@ import {
   utils as FlareUtils,
   Credential,
   pvmSerial,
+  evmSerial,
   UnsignedTx,
   secp256k1,
   EVMUnsignedTx,
@@ -19,7 +20,7 @@ import {
 } from '@flarenetwork/flarejs';
 import { Buffer } from 'buffer';
 import { createHash } from 'crypto';
-import { DecodedUtxoObj, TransactionExplanation, Tx, TxData } from './iface';
+import { DecodedUtxoObj, TransactionExplanation, Tx, TxData, ADDRESS_SEPARATOR, FlareTransactionType } from './iface';
 import { KeyPair } from './keyPair';
 import utils from './utils';
 
@@ -288,28 +289,132 @@ export class Transaction extends BaseTransaction {
     return { fee: '0', ...this._fee };
   }
 
+  /**
+   * Check if this transaction is for C-chain (EVM transactions)
+   */
+  get isTransactionForCChain(): boolean {
+    const tx = (this._flareTransaction as UnsignedTx).getTx();
+    const txType = (tx as { _type?: string })._type;
+    return txType === FlareTransactionType.EvmExportTx || txType === FlareTransactionType.EvmImportTx;
+  }
+
   get outputs(): Entry[] {
+    const tx = (this._flareTransaction as UnsignedTx).getTx();
+
     switch (this.type) {
+      case TransactionType.Import:
+        if (this.isTransactionForCChain) {
+          // C-chain Import: output is to a C-chain address
+          const importTx = tx as evmSerial.ImportTx;
+          return importTx.Outs.map((out) => ({
+            address: '0x' + Buffer.from(out.address.toBytes()).toString('hex'),
+            value: out.amount.value().toString(),
+          }));
+        } else {
+          // P-chain Import: outputs are the baseTx.outputs (destination on P-chain)
+          const pvmImportTx = tx as pvmSerial.ImportTx;
+          return pvmImportTx.baseTx.outputs.map(utils.mapOutputToEntry(this._network));
+        }
+
+      case TransactionType.Export:
+        if (this.isTransactionForCChain) {
+          // C-chain Export: exported outputs go to P-chain
+          const exportTx = tx as evmSerial.ExportTx;
+          return exportTx.exportedOutputs.map(utils.mapOutputToEntry(this._network));
+        } else {
+          // P-chain Export: exported outputs go to C-chain
+          const pvmExportTx = tx as pvmSerial.ExportTx;
+          return pvmExportTx.outs.map(utils.mapOutputToEntry(this._network));
+        }
+
       case TransactionType.AddPermissionlessValidator:
         return [
           {
-            address: (
-              (this._flareTransaction as UnsignedTx).getTx() as pvmSerial.AddPermissionlessValidatorTx
-            ).subnetValidator.validator.nodeId.toString(),
-            value: (
-              (this._flareTransaction as UnsignedTx).getTx() as pvmSerial.AddPermissionlessValidatorTx
-            ).subnetValidator.validator.weight.toJSON(),
+            address: (tx as pvmSerial.AddPermissionlessValidatorTx).subnetValidator.validator.nodeId.toString(),
+            value: (tx as pvmSerial.AddPermissionlessValidatorTx).subnetValidator.validator.weight.toJSON(),
           },
         ];
+
       default:
         return [];
     }
   }
 
   get changeOutputs(): Entry[] {
-    return (
-      (this._flareTransaction as UnsignedTx).getTx() as pvmSerial.AddPermissionlessValidatorTx
-    ).baseTx.outputs.map(utils.mapOutputToEntry(this._network));
+    const tx = (this._flareTransaction as UnsignedTx).getTx();
+
+    // C-chain transactions and Import transactions don't have change outputs
+    if (this.isTransactionForCChain || this.type === TransactionType.Import) {
+      return [];
+    }
+
+    switch (this.type) {
+      case TransactionType.Export:
+        // P-chain Export: change outputs are in baseTx.outputs
+        return (tx as pvmSerial.ExportTx).baseTx.outputs.map(utils.mapOutputToEntry(this._network));
+
+      case TransactionType.AddPermissionlessValidator:
+        return (tx as pvmSerial.AddPermissionlessValidatorTx).baseTx.outputs.map(utils.mapOutputToEntry(this._network));
+
+      default:
+        return [];
+    }
+  }
+
+  get inputs(): Entry[] {
+    const tx = (this._flareTransaction as UnsignedTx).getTx();
+
+    switch (this.type) {
+      case TransactionType.Import:
+        if (this.isTransactionForCChain) {
+          // C-chain Import: inputs come from P-chain (importedInputs)
+          const importTx = tx as evmSerial.ImportTx;
+          return importTx.importedInputs.map((input) => ({
+            id: utils.cb58Encode(Buffer.from(input.utxoID.txID.toBytes())) + ':' + input.utxoID.outputIdx.value(),
+            address: this.fromAddresses.sort().join(ADDRESS_SEPARATOR),
+            value: input.amount().toString(),
+          }));
+        } else {
+          // P-chain Import: inputs are ins (imported from C-chain)
+          const pvmImportTx = tx as pvmSerial.ImportTx;
+          return pvmImportTx.ins.map((input) => ({
+            id: utils.cb58Encode(Buffer.from(input.utxoID.txID.toBytes())) + ':' + input.utxoID.outputIdx.value(),
+            address: this.fromAddresses.sort().join(ADDRESS_SEPARATOR),
+            value: input.amount().toString(),
+          }));
+        }
+
+      case TransactionType.Export:
+        if (this.isTransactionForCChain) {
+          // C-chain Export: inputs are from C-chain (EVM inputs)
+          const exportTx = tx as evmSerial.ExportTx;
+          return exportTx.ins.map((evmInput) => ({
+            address: '0x' + Buffer.from(evmInput.address.toBytes()).toString('hex'),
+            value: evmInput.amount.value().toString(),
+            nonce: Number(evmInput.nonce.value()),
+          }));
+        } else {
+          // P-chain Export: inputs are from baseTx.inputs
+          const pvmExportTx = tx as pvmSerial.ExportTx;
+          return pvmExportTx.baseTx.inputs.map((input) => ({
+            id: utils.cb58Encode(Buffer.from(input.utxoID.txID.toBytes())) + ':' + input.utxoID.outputIdx.value(),
+            address: this.fromAddresses.sort().join(ADDRESS_SEPARATOR),
+            value: input.amount().toString(),
+          }));
+        }
+
+      case TransactionType.AddPermissionlessValidator:
+      default:
+        const baseTx = tx as pvmSerial.AddPermissionlessValidatorTx;
+        if (baseTx.baseTx?.inputs) {
+          return baseTx.baseTx.inputs.map((input) => ({
+            id: utils.cb58Encode(Buffer.from(input.utxoID.txID.toBytes())) + ':' + input.utxoID.outputIdx.value(),
+            address: this.fromAddresses.sort().join(ADDRESS_SEPARATOR),
+            value: input.amount().toString(),
+          }));
+        }
+        return [];
+    }
   }
 
   explainTransaction(): TransactionExplanation {

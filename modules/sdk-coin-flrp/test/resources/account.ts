@@ -34,6 +34,8 @@ export const ACCOUNT_2 = {
     'xprv9s21ZrQH143K2KjD8ytSfLWDfe2585pBJNdadLgwsEKoGLbGdHCKSK5yDnfcmToazd3oPLDXprtXnCvsn9T6MDJz1qwMPaq22oTrzqvyeDQ',
   xPublicKey:
     'xprv9s21ZrQH143K2KjD8ytSfLWDfe2585pBJNdadLgwsEKoGLbGdHCKSK5yDnfcmToazd3oPLDXprtXnCvsn9T6MDJz1qwMPaq22oTrzqvyeDQ',
+  addressMainnet: 'P-flare1xvngrrmqzldj50kpvqx7mhkx3htvh5x87nkl9j',
+  addressTestnet: 'P-costwo1xvngrrmqzldj50kpvqx7mhkx3htvh5x8mhgsqy',
 };
 
 export const ACCOUNT_3 = {

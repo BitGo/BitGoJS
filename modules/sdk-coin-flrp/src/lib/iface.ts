@@ -1,4 +1,13 @@
-import { TransactionExplanation as BaseTransactionExplanation, Entry, TransactionType } from '@bitgo/sdk-core';
+import {
+  TransactionExplanation as BaseTransactionExplanation,
+  Entry,
+  SignTransactionOptions,
+  TransactionParams,
+  TransactionPrebuild as BaseTransactionPrebuild,
+  TransactionType,
+  VerifyTransactionOptions,
+  TransactionRecipient,
+} from '@bitgo/sdk-core';
 import { pvmSerial, UnsignedTx, TransferableOutput, evmSerial } from '@flarenetwork/flarejs';
 
 /**
@@ -11,22 +20,10 @@ export enum FlareTransactionType {
   PvmImportTx = 'pvm.ImportTx',
 }
 
-export interface FlrpEntry extends Entry {
-  id: string;
-}
-
 export interface TransactionExplanation extends BaseTransactionExplanation {
   type: TransactionType;
   rewardAddresses: string[];
   inputs: Entry[];
-}
-
-/**
- * Method names for the transaction method. Names change based on the type of transaction
- */
-export enum MethodNames {
-  addPermissionlessValidator,
-  addPermissionlessDelegator,
 }
 
 /**
@@ -72,13 +69,7 @@ export type DecodedUtxoObj = {
  */
 export const SECP256K1_Transfer_Output = 7;
 
-/**
- * TypeId value for Stakeable Lock Output
- */
-export const SECP256K1_STAKEABLE_LOCK_OUT = 22;
-
 export const ADDRESS_SEPARATOR = '~';
-export const INPUT_SEPARATOR = ':';
 
 // Simplified type definitions for Flare
 export type Tx =
@@ -88,50 +79,47 @@ export type Tx =
   | evmSerial.ImportTx
   | pvmSerial.ExportTx
   | pvmSerial.ImportTx;
+
+export type SerializedTx = evmSerial.ExportTx | evmSerial.ImportTx | pvmSerial.ExportTx | pvmSerial.ImportTx;
 export type BaseTx = pvmSerial.BaseTx;
 export type Output = TransferableOutput;
-export type DeprecatedTx = unknown;
-/**
- * Interface for staking options
- */
-export interface FlrpTransactionStakingOptions {
-  nodeID: string;
-  startTime: string;
-  endTime: string;
-  amount: string;
-  rewardAddress?: string;
-  delegationFee?: number;
-}
-
-/**
- * Interface for transaction parameters
- */
-export interface FlrpTransactionParams {
-  recipients?: {
-    address: string;
-    amount: string;
-  }[];
-  stakingOptions?: FlrpTransactionStakingOptions;
-  unspents?: string[];
-  type?: string;
-}
-
-/**
- * Interface for transaction verification options
- */
-export interface FlrpVerifyTransactionOptions {
-  txPrebuild: {
-    txHex: string;
-  };
+export interface FlrpVerifyTransactionOptions extends VerifyTransactionOptions {
   txParams: FlrpTransactionParams;
 }
 
-/**
- * Interface for explaining transaction options
- */
-export interface ExplainTransactionOptions {
+export interface FlrpTransactionParams extends TransactionParams {
+  type: string;
+  locktime?: number;
+  unspents?: string[];
+  sourceChain?: string;
+}
+
+export interface FlrpEntry extends Entry {
+  id: string;
+}
+
+export interface FlrpSignTransactionOptions extends SignTransactionOptions {
+  txPrebuild: TransactionPrebuild;
+  prv: string | string[];
+  pubKeys?: string[];
+}
+
+export interface TransactionPrebuild extends BaseTransactionPrebuild {
+  txHex: string;
+  txInfo: TxInfo;
+  source: string;
+}
+
+export interface TxInfo {
+  recipients: TransactionRecipient[];
+  from: string;
+  txid: string;
+}
+
+export interface FlrpExplainTransactionOptions {
   txHex?: string;
   halfSigned?: {
     txHex: string;
   };
+  publicKeys?: string[];
 }
