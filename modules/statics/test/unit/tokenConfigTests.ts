@@ -391,7 +391,7 @@ describe('EthLike Token Config Functions', function () {
       const testnetResult = getEthLikeTokens('Testnet');
 
       // Current implementation enables 'ip' and 'hypeevm' chains
-      const enabledChains = ['ip', 'hypeevm'];
+      const enabledChains = ['ip', 'hypeevm', 'plume'];
 
       Object.keys(mainnetResult).forEach((family) => {
         enabledChains.should.containEql(family);
@@ -424,6 +424,11 @@ describe('EthLike Token Config Functions', function () {
         result.hypeevm.tokens.forEach((token) => {
           // All tokens in hypeevm group should have coin 'hypeevm'
           token.coin.should.equal('hypeevm');
+        });
+      }
+      if (result.plume && result.plume.tokens.length > 0) {
+        result.plume.tokens.forEach((token) => {
+          token.coin.should.equal('plume');
         });
       }
     });

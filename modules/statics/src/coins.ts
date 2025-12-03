@@ -52,7 +52,7 @@ export const coins = CoinMap.fromCoins([
 const erc20ChainToNameMap: Record<string, string> = {};
 
 // TODO: remove ip and hypeeevm coins here and remove other evm coins from switch block, once changes are tested (Ticket: https://bitgoinc.atlassian.net/browse/WIN-7835)
-const enabledEvmCoins = ['ip', 'hypeevm'];
+const enabledEvmCoins = ['ip', 'hypeevm', 'plume'];
 allCoinsAndTokens.forEach((coin) => {
   if (
     coin.features.includes(CoinFeature.SUPPORTS_ERC20) &&
