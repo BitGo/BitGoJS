@@ -2,15 +2,32 @@
   "name": "@bitgo/sdk-core",
   "version": "36.22.0",
   "description": "core library functions for BitGoJS",
-  "main": "./dist/src/index.js",
-  "types": "./dist/src/index.d.ts",
+  "main": "./dist/cjs/src/index.js",
+  "module": "./dist/esm/index.js",
+  "browser": "./dist/esm/index.js",
+  "types": "./dist/cjs/src/index.d.ts",
   "files": [
-    "dist"
+    "dist/cjs",
+    "dist/esm"
   ],
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/src/index.d.ts",
+        "default": "./dist/cjs/src/index.js"
+      }
+    }
+  },
   "scripts": {
     "test": "yarn unit-test",
     "unit-test": "nyc -- mocha --recursive test",
-    "build": "yarn tsc --build --incremental --verbose .",
+    "build": "yarn build:cjs && yarn build:esm",
+    "build:cjs": "yarn tsc --build --incremental --verbose .",
+    "build:esm": "yarn tsc --project tsconfig.esm.json",
     "fmt": "prettier --write .",
     "check-fmt": "prettier --check '**/*.{ts,js,json}'",
     "clean": "rm -r ./dist",

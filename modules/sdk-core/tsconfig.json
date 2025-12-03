@@ -1,8 +1,10 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "outDir": "./dist",
+    "outDir": "./dist/cjs",
     "rootDir": "./",
+    "module": "node16",
+    "moduleResolution": "node16",
     "strictPropertyInitialization": false,
     "esModuleInterop": true,
     "typeRoots": ["../../types", "./node_modules/@types", "../../node_modules/@types"]
