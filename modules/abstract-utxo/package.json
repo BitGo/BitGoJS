@@ -31,7 +31,7 @@
     "clean": "rm -rf ./dist",
     "lint": "eslint --quiet .",
     "prepare": "npm run build",
-    "test": "npm run unit-test",
+    "test": "mocha --recursive test/unit/",
     "unit-test": "mocha --recursive test/unit/",
     "integration-test": "mocha --recursive test/integration/"
   },
