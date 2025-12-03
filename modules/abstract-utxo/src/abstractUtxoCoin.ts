@@ -28,6 +28,7 @@ import {
   PresignTransactionOptions,
   RequestTracer,
   SignedTransaction,
+  TxIntentMismatchError,
   SignTransactionOptions as BaseSignTransactionOptions,
   SupplementGenerateWalletOptions,
   TransactionParams as BaseTransactionParams,
@@ -144,7 +145,8 @@ function convertValidationErrorToTxIntentMismatch(
   error: AggregateValidationError,
   reqId: string | IRequestTracer | undefined,
   txParams: BaseTransactionParams,
-  txHex: string | undefined
+  txHex: string | undefined,
+  txExplanation?: unknown
 ): TxIntentMismatchRecipientError {
   const mismatchedRecipients: MismatchedRecipient[] = [];
 
@@ -171,7 +173,8 @@ function convertValidationErrorToTxIntentMismatch(
     reqId,
     [txParams],
     txHex,
-    mismatchedRecipients
+    mismatchedRecipients,
+    txExplanation
   );
   // Preserve the original structured error as the cause for debugging
   // See: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/cause
@@ -627,7 +630,17 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       return await verifyTransaction(this, this.bitgo, params);
     } catch (error) {
       if (error instanceof AggregateValidationError) {
-        throw convertValidationErrorToTxIntentMismatch(error, params.reqId, params.txParams, params.txPrebuild.txHex);
+        const txExplanation = await TxIntentMismatchError.tryGetTxExplanation(
+          this as unknown as IBaseCoin,
+          params.txPrebuild
+        );
+        throw convertValidationErrorToTxIntentMismatch(
+          error,
+          params.reqId,
+          params.txParams,
+          params.txPrebuild.txHex,
+          txExplanation
+        );
       }
       throw error;
     }

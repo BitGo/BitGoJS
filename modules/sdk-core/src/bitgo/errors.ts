@@ -3,6 +3,7 @@
 import { BitGoJsError } from '../bitgojsError';
 import { IRequestTracer } from '../api/types';
 import { TransactionParams } from './baseCoin';
+import { IBaseCoin } from './baseCoin/iBaseCoin';
 import { SendManyOptions } from './wallet';
 
 // re-export for backwards compat
@@ -256,11 +257,13 @@ export interface ContractDataPayload {
  * @property {string | IRequestTracer | undefined} id - Transaction ID or request tracer for tracking
  * @property {TransactionParams[]} txParams - Array of transaction parameters that were analyzed
  * @property {string | undefined} txHex - The raw transaction in hexadecimal format
+ * @property {string | undefined} txExplanation - Stringified transaction explanation
  */
 export class TxIntentMismatchError extends BitGoJsError {
   public readonly id: string | IRequestTracer | undefined;
   public readonly txParams: TransactionParams[];
   public readonly txHex: string | undefined;
+  public readonly txExplanation: string | undefined;
 
   /**
    * Creates an instance of TxIntentMismatchError
@@ -269,17 +272,58 @@ export class TxIntentMismatchError extends BitGoJsError {
    * @param {string | IRequestTracer | undefined} id - Transaction ID or request tracer
    * @param {TransactionParams[]} txParams - Transaction parameters that were analyzed
    * @param {string | undefined} txHex - Raw transaction hex string
+   * @param {unknown} txExplanation - Transaction explanation
    */
   public constructor(
     message: string,
     id: string | IRequestTracer | undefined,
     txParams: TransactionParams[],
-    txHex: string | undefined
+    txHex: string | undefined,
+    txExplanation?: unknown
   ) {
     super(message);
     this.id = id;
     this.txParams = txParams;
     this.txHex = txHex;
+    this.txExplanation = txExplanation ? TxIntentMismatchError.safeStringify(txExplanation) : undefined;
+  }
+
+  /**
+   * Safely stringify a value with BigInt support
+   * @param value - Value to stringify
+   * @returns JSON string with BigInts converted to strings
+   */
+  private static safeStringify(value: unknown): string {
+    return JSON.stringify(value, (_, v) => (typeof v === 'bigint' ? v.toString() : v), 2);
+  }
+
+  /**
+   * Try to get transaction explanation from a coin's explainTransaction method.
+   *
+   * @param coin - Coin instance implementing IBaseCoin
+   * @param txPrebuild - Transaction prebuild containing txHex and txInfo
+   * @returns Transaction explanation object or undefined
+   */
+  static async tryGetTxExplanation(
+    coin: IBaseCoin,
+    txPrebuild: { txHex?: string; txInfo?: unknown }
+  ): Promise<unknown> {
+    if (!txPrebuild.txHex) {
+      return undefined;
+    }
+
+    try {
+      return await coin.explainTransaction({
+        txHex: txPrebuild.txHex,
+        txInfo: txPrebuild.txInfo,
+      });
+    } catch (e) {
+      return {
+        error: 'Failed to parse transaction explanation',
+        txHex: txPrebuild.txHex,
+        details: e instanceof Error ? e.message : String(e),
+      };
+    }
   }
 }
 
@@ -304,15 +348,17 @@ export class TxIntentMismatchRecipientError extends TxIntentMismatchError {
    * @param {TransactionParams[]} txParams - Transaction parameters that were analyzed
    * @param {string | undefined} txHex - Raw transaction hex string
    * @param {MismatchedRecipient[]} mismatchedRecipients - Array of recipients that don't match user intent
+   * @param {unknown} txExplanation - Transaction explanation
    */
   public constructor(
     message: string,
     id: string | IRequestTracer | undefined,
     txParams: TransactionParams[],
     txHex: string | undefined,
-    mismatchedRecipients: MismatchedRecipient[]
+    mismatchedRecipients: MismatchedRecipient[],
+    txExplanation?: unknown
   ) {
-    super(message, id, txParams, txHex);
+    super(message, id, txParams, txHex, txExplanation);
     this.mismatchedRecipients = mismatchedRecipients;
   }
 }
@@ -338,15 +384,17 @@ export class TxIntentMismatchContractError extends TxIntentMismatchError {
    * @param {TransactionParams[]} txParams - Transaction parameters that were analyzed
    * @param {string | undefined} txHex - Raw transaction hex string
    * @param {ContractDataPayload} mismatchedDataPayload - The contract interaction data that doesn't match user intent
+   * @param {unknown} txExplanation - Transaction explanation
    */
   public constructor(
     message: string,
     id: string | IRequestTracer | undefined,
     txParams: TransactionParams[],
     txHex: string | undefined,
-    mismatchedDataPayload: ContractDataPayload
+    mismatchedDataPayload: ContractDataPayload,
+    txExplanation?: unknown
   ) {
-    super(message, id, txParams, txHex);
+    super(message, id, txParams, txHex, txExplanation);
     this.mismatchedDataPayload = mismatchedDataPayload;
   }
 }
@@ -372,15 +420,17 @@ export class TxIntentMismatchApprovalError extends TxIntentMismatchError {
    * @param {TransactionParams[]} txParams - Transaction parameters that were analyzed
    * @param {string | undefined} txHex - Raw transaction hex string
    * @param {TokenApproval} tokenApproval - Details of the token approval that doesn't match user intent
+   * @param {unknown} txExplanation - Transaction explanation
    */
   public constructor(
     message: string,
     id: string | IRequestTracer | undefined,
     txParams: TransactionParams[],
     txHex: string | undefined,
-    tokenApproval: TokenApproval
+    tokenApproval: TokenApproval,
+    txExplanation?: unknown
   ) {
-    super(message, id, txParams, txHex);
+    super(message, id, txParams, txHex, txExplanation);
     this.tokenApproval = tokenApproval;
   }
 }
