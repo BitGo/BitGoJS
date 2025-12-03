@@ -911,7 +911,7 @@ export const buildEthLikeChainToTestnetMap = (): {
   const testnetToMainnetMap: Record<string, string> = {};
   const mainnetToTestnetMap: Record<string, string> = {};
 
-  const enabledEvmCoins = ['ip', 'hypeevm'];
+  const enabledEvmCoins = ['ip', 'hypeevm', 'plume'];
 
   // TODO: remove ip and hypeeevm coins here and remove other evm coins from switch block, once changes are tested (Ticket: https://bitgoinc.atlassian.net/browse/WIN-7835)
   coins.forEach((coin) => {

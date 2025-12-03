@@ -1097,7 +1097,7 @@ export const getEthLikeTokens = (network: 'Mainnet' | 'Testnet'): EthLikeTokenMa
   const networkTokens = getFormattedEthLikeTokenConfig().filter((token) => token.network === network);
   const ethLikeTokenMap = {} as EthLikeTokenMap;
   // TODO: add IP token here and test changes (Ticket: https://bitgoinc.atlassian.net/browse/WIN-7835)
-  const enabledChains = ['ip', 'hypeevm'] as string[];
+  const enabledChains = ['ip', 'hypeevm', 'plume'] as string[];
 
   coins.forEach((coin) => {
     // TODO: remove enabled chains once changes are done (Ticket: https://bitgoinc.atlassian.net/browse/WIN-7835)
