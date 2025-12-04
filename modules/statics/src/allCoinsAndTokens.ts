@@ -827,6 +827,7 @@ export const allCoinsAndTokens = [
       ...EVM_FEATURES,
       CoinFeature.SHARED_EVM_SIGNING,
       CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.SHARED_EVM_MESSAGE_SIGNING,
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
