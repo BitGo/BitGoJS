@@ -340,8 +340,12 @@ export class AcidTest {
     return `${networkName} ${this.signStage} ${this.txFormat}`;
   }
 
+  getReplayProtectionPublicKey(): Buffer {
+    return this.rootWalletKeys.user.publicKey;
+  }
+
   getReplayProtectionOutputScript(): Buffer {
-    const { scriptPubKey } = createOutputScriptP2shP2pk(this.rootWalletKeys.user.publicKey);
+    const { scriptPubKey } = createOutputScriptP2shP2pk(this.getReplayProtectionPublicKey());
     assert(scriptPubKey);
     return scriptPubKey;
   }
