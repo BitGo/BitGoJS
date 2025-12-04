@@ -6,6 +6,7 @@ import assert from 'assert';
 import { coins, GasTankAccountCoin } from '@bitgo/statics';
 import * as testData from '../resources/iota';
 import { TransactionType } from '@bitgo/sdk-core';
+import { createTransferBuilderWithGas } from './helpers/testHelpers';
 
 describe('IOTA:', function () {
   let bitgo: TestBitGoAPI;
@@ -86,19 +87,20 @@ describe('IOTA:', function () {
       ];
     });
 
-    it('should return true when validating a well formatted address prefixed with 0x', async function () {
-      const address = '0xf941ae3cbe5645dccc15da8346b533f7f91f202089a5521653c062b2ff10b304';
-      basecoin.isValidAddress(address).should.equal(true);
-    });
+    const addressValidationTests = [
+      {
+        address: '0xf941ae3cbe5645dccc15da8346b533f7f91f202089a5521653c062b2ff10b304',
+        valid: true,
+        description: 'valid 0x-prefixed address',
+      },
+      { address: '0x2959bfc3fdb7dc23fed8deba2fafb70f3e606a59', valid: false, description: 'old format address' },
+      { address: 'wrongaddress', valid: false, description: 'incorrectly formatted address' },
+    ];
 
-    it('should return false when validating an old address', async function () {
-      const address = '0x2959bfc3fdb7dc23fed8deba2fafb70f3e606a59';
-      basecoin.isValidAddress(address).should.equal(false);
-    });
-
-    it('should return false when validating an incorrectly formatted', async function () {
-      const address = 'wrongaddress';
-      basecoin.isValidAddress(address).should.equal(false);
+    addressValidationTests.forEach(({ address, valid, description }) => {
+      it(`should return ${valid} when validating ${description}`, function () {
+        basecoin.isValidAddress(address).should.equal(valid);
+      });
     });
 
     it('should return true for isWalletAddress with valid address for index 4', async function () {
@@ -151,12 +153,7 @@ describe('IOTA:', function () {
       });
 
       it('should call explainTransaction on transaction object', async function () {
-        const txBuilder = factory.getTransferBuilder();
-        txBuilder.sender(testData.sender.address);
-        txBuilder.recipients(testData.recipients);
-        txBuilder.paymentObjects(testData.paymentObjects);
-        txBuilder.gasData(testData.gasData);
-
+        const txBuilder = createTransferBuilderWithGas();
         const tx = (await txBuilder.build()) as TransferTransaction;
         const explanation = tx.explainTransaction();
 
@@ -182,19 +179,14 @@ describe('IOTA:', function () {
         );
       });
 
-      it('should verify transaction with matching recipients using JSON', async function () {
-        // Build transaction and get JSON instead of broadcast format to avoid parsing issues
-        const txBuilder = factory.getTransferBuilder();
-        txBuilder.sender(testData.sender.address);
-        txBuilder.recipients(testData.recipients);
-        txBuilder.paymentObjects(testData.paymentObjects);
-        txBuilder.gasData(testData.gasData);
-
+      it('should verify transaction with matching recipients', async function () {
+        const txBuilder = createTransferBuilderWithGas();
         const tx = (await txBuilder.build()) as TransferTransaction;
         const txHex = Buffer.from(await tx.toBroadcastFormat(), 'base64').toString('hex');
+
         should.equal(
           await basecoin.verifyTransaction({
-            txPrebuild: { txHex: txHex },
+            txPrebuild: { txHex },
             txParams: { recipients: testData.recipients },
           }),
           true
@@ -202,18 +194,10 @@ describe('IOTA:', function () {
       });
 
       it('should verify transaction with recipients containing extra fields', async function () {
-        // The verification should only compare address, amount, and tokenName
-        // Extra fields should be ignored
-        const txBuilder = factory.getTransferBuilder();
-        txBuilder.sender(testData.sender.address);
-        txBuilder.recipients(testData.recipients);
-        txBuilder.paymentObjects(testData.paymentObjects);
-        txBuilder.gasData(testData.gasData);
-
+        const txBuilder = createTransferBuilderWithGas();
         const tx = (await txBuilder.build()) as TransferTransaction;
         const txHex = Buffer.from(await tx.toBroadcastFormat(), 'base64').toString('hex');
 
-        // Add extra fields to recipients that should be ignored during comparison
         const recipientsWithExtraFields = testData.recipients.map((r) => ({
           ...r,
           extraField: 'should be ignored',
@@ -222,7 +206,7 @@ describe('IOTA:', function () {
 
         should.equal(
           await basecoin.verifyTransaction({
-            txPrebuild: { txHex: txHex },
+            txPrebuild: { txHex },
             txParams: { recipients: recipientsWithExtraFields },
           }),
           true
@@ -230,27 +214,21 @@ describe('IOTA:', function () {
       });
 
       it('should detect mismatched recipients', async function () {
-        const txBuilder = factory.getTransferBuilder();
-        txBuilder.sender(testData.sender.address);
-        txBuilder.recipients(testData.recipients);
-        txBuilder.paymentObjects(testData.paymentObjects);
-        txBuilder.gasData(testData.gasData);
-
+        const txBuilder = createTransferBuilderWithGas();
         const tx = (await txBuilder.build()) as TransferTransaction;
         const txHex = Buffer.from(await tx.toBroadcastFormat(), 'base64').toString('hex');
 
-        // Create mismatched recipients with different addresses/amounts
         const mismatchedRecipients = [
           {
-            address: testData.addresses.validAddresses[2], // Different address
-            amount: '9999', // Different amount
+            address: testData.addresses.validAddresses[2],
+            amount: '9999',
           },
         ];
 
         await assert.rejects(
           async () =>
             await basecoin.verifyTransaction({
-              txPrebuild: { txHex: txHex },
+              txPrebuild: { txHex },
               txParams: { recipients: mismatchedRecipients },
             }),
           /Tx recipients does not match with expected txParams recipients/
@@ -258,18 +236,13 @@ describe('IOTA:', function () {
       });
 
       it('should verify transaction without recipients parameter', async function () {
-        const txBuilder = factory.getTransferBuilder();
-        txBuilder.sender(testData.sender.address);
-        txBuilder.recipients(testData.recipients);
-        txBuilder.paymentObjects(testData.paymentObjects);
-        txBuilder.gasData(testData.gasData);
-
+        const txBuilder = createTransferBuilderWithGas();
         const tx = (await txBuilder.build()) as TransferTransaction;
         const txHex = Buffer.from(await tx.toBroadcastFormat(), 'base64').toString('hex');
 
         should.equal(
           await basecoin.verifyTransaction({
-            txPrebuild: { txHex: txHex },
+            txPrebuild: { txHex },
             txParams: {},
           }),
           true
@@ -286,36 +259,23 @@ describe('IOTA:', function () {
       });
 
       it('should parse transaction using JSON format', async function () {
-        // Build a transaction
-        const txBuilder = factory.getTransferBuilder();
-        txBuilder.sender(testData.sender.address);
-        txBuilder.recipients(testData.recipients);
-        txBuilder.paymentObjects(testData.paymentObjects);
-        txBuilder.gasData(testData.gasData);
-
+        const txBuilder = createTransferBuilderWithGas();
         const tx = (await txBuilder.build()) as TransferTransaction;
-
-        // Get the transaction explanation (which is what parseTransaction returns internally)
         const explanation = tx.explainTransaction();
 
-        // Verify the parsed data structure
         explanation.should.have.property('id');
         explanation.should.have.property('outputs');
         explanation.should.have.property('outputAmount');
         explanation.should.have.property('fee');
 
-        // Verify outputs match recipients
         explanation.outputs.length.should.equal(testData.recipients.length);
         explanation.outputs.forEach((output, index) => {
           output.address.should.equal(testData.recipients[index].address);
           output.amount.should.equal(testData.recipients[index].amount);
         });
 
-        // Verify output amount
         const totalAmount = testData.recipients.reduce((sum, r) => sum + Number(r.amount), 0);
         explanation.outputAmount.should.equal(totalAmount.toString());
-
-        // Verify fee
         explanation.fee.fee.should.equal(testData.GAS_BUDGET.toString());
       });
 
@@ -360,17 +320,12 @@ describe('IOTA:', function () {
 
     describe('getSignablePayload', () => {
       it('should get signable payload from transaction directly', async function () {
-        const txBuilder = factory.getTransferBuilder();
-        txBuilder.sender(testData.sender.address);
-        txBuilder.recipients(testData.recipients);
-        txBuilder.paymentObjects(testData.paymentObjects);
-        txBuilder.gasData(testData.gasData);
-
+        const txBuilder = createTransferBuilderWithGas();
         const tx = (await txBuilder.build()) as TransferTransaction;
         const signablePayload = tx.signablePayload;
 
         signablePayload.should.be.instanceOf(Buffer);
-        signablePayload.length.should.equal(32); // Blake2b hash is 32 bytes
+        signablePayload.length.should.equal(32);
       });
 
       it('should throw error for invalid transaction', async function () {
@@ -381,54 +336,28 @@ describe('IOTA:', function () {
       });
 
       it('should generate consistent signable payload for identical transactions', async function () {
-        // Build first transaction
-        const txBuilder1 = factory.getTransferBuilder();
-        txBuilder1.sender(testData.sender.address);
-        txBuilder1.recipients(testData.recipients);
-        txBuilder1.paymentObjects(testData.paymentObjects);
-        txBuilder1.gasData(testData.gasData);
-
+        const txBuilder1 = createTransferBuilderWithGas();
         const tx1 = (await txBuilder1.build()) as TransferTransaction;
-        const payload1 = tx1.signablePayload;
 
-        // Build second identical transaction
-        const txBuilder2 = factory.getTransferBuilder();
-        txBuilder2.sender(testData.sender.address);
-        txBuilder2.recipients(testData.recipients);
-        txBuilder2.paymentObjects(testData.paymentObjects);
-        txBuilder2.gasData(testData.gasData);
-
+        const txBuilder2 = createTransferBuilderWithGas();
         const tx2 = (await txBuilder2.build()) as TransferTransaction;
-        const payload2 = tx2.signablePayload;
 
-        // Payloads should be identical for identical transactions
-        payload1.toString('hex').should.equal(payload2.toString('hex'));
+        tx1.signablePayload.toString('hex').should.equal(tx2.signablePayload.toString('hex'));
       });
 
       it('should generate different signable payloads for different transactions', async function () {
-        // Build first transaction
-        const txBuilder1 = factory.getTransferBuilder();
-        txBuilder1.sender(testData.sender.address);
-        txBuilder1.recipients(testData.recipients);
-        txBuilder1.paymentObjects(testData.paymentObjects);
-        txBuilder1.gasData(testData.gasData);
-
+        const txBuilder1 = createTransferBuilderWithGas();
         const tx1 = (await txBuilder1.build()) as TransferTransaction;
-        const payload1 = tx1.signablePayload;
 
-        // Build second transaction with different recipient
         const differentRecipients = [{ address: testData.addresses.validAddresses[0], amount: '5000' }];
         const txBuilder2 = factory.getTransferBuilder();
         txBuilder2.sender(testData.sender.address);
         txBuilder2.recipients(differentRecipients);
         txBuilder2.paymentObjects(testData.paymentObjects);
         txBuilder2.gasData(testData.gasData);
-
         const tx2 = (await txBuilder2.build()) as TransferTransaction;
-        const payload2 = tx2.signablePayload;
 
-        // Payloads should be different for different transactions
-        payload1.toString('hex').should.not.equal(payload2.toString('hex'));
+        tx1.signablePayload.toString('hex').should.not.equal(tx2.signablePayload.toString('hex'));
       });
 
       it('should throw error when getting payload from simulate transaction', async function () {
@@ -436,11 +365,9 @@ describe('IOTA:', function () {
         txBuilder.sender(testData.sender.address);
         txBuilder.recipients(testData.recipients);
         txBuilder.paymentObjects(testData.paymentObjects);
-        // Don't set gasData - this will be a simulate transaction
 
         const tx = (await txBuilder.build()) as TransferTransaction;
         should.equal(tx.isSimulateTx, true);
-
         should(() => tx.signablePayload).throwError('Cannot sign a simulate tx');
       });
     });
@@ -484,13 +411,8 @@ describe('IOTA:', function () {
 
     describe('Transaction with Gas Sponsor', () => {
       it('should build transaction with gas sponsor', async function () {
-        const txBuilder = factory.getTransferBuilder();
-        txBuilder.sender(testData.sender.address);
-        txBuilder.recipients(testData.recipients);
-        txBuilder.paymentObjects(testData.paymentObjects);
-        txBuilder.gasData(testData.gasData);
+        const txBuilder = createTransferBuilderWithGas();
         txBuilder.gasSponsor(testData.gasSponsor.address);
-
         const tx = (await txBuilder.build()) as TransferTransaction;
 
         should.equal(tx.sender, testData.sender.address);
@@ -500,13 +422,8 @@ describe('IOTA:', function () {
       });
 
       it('should handle transaction where sender and gas sponsor are same', async function () {
-        const txBuilder = factory.getTransferBuilder();
-        txBuilder.sender(testData.sender.address);
-        txBuilder.recipients(testData.recipients);
-        txBuilder.paymentObjects(testData.paymentObjects);
-        txBuilder.gasData(testData.gasData);
-        txBuilder.gasSponsor(testData.sender.address); // Same as sender
-
+        const txBuilder = createTransferBuilderWithGas();
+        txBuilder.gasSponsor(testData.sender.address);
         const tx = (await txBuilder.build()) as TransferTransaction;
 
         should.equal(tx.sender, testData.sender.address);
@@ -516,32 +433,17 @@ describe('IOTA:', function () {
 
     describe('Transaction ID Consistency', () => {
       it('should generate same ID for identical transactions', async function () {
-        const txBuilder1 = factory.getTransferBuilder();
-        txBuilder1.sender(testData.sender.address);
-        txBuilder1.recipients(testData.recipients);
-        txBuilder1.paymentObjects(testData.paymentObjects);
-        txBuilder1.gasData(testData.gasData);
-
+        const txBuilder1 = createTransferBuilderWithGas();
         const tx1 = (await txBuilder1.build()) as TransferTransaction;
 
-        const txBuilder2 = factory.getTransferBuilder();
-        txBuilder2.sender(testData.sender.address);
-        txBuilder2.recipients(testData.recipients);
-        txBuilder2.paymentObjects(testData.paymentObjects);
-        txBuilder2.gasData(testData.gasData);
-
+        const txBuilder2 = createTransferBuilderWithGas();
         const tx2 = (await txBuilder2.build()) as TransferTransaction;
 
         should.equal(tx1.id, tx2.id);
       });
 
       it('should generate different IDs for different transactions', async function () {
-        const txBuilder1 = factory.getTransferBuilder();
-        txBuilder1.sender(testData.sender.address);
-        txBuilder1.recipients(testData.recipients);
-        txBuilder1.paymentObjects(testData.paymentObjects);
-        txBuilder1.gasData(testData.gasData);
-
+        const txBuilder1 = createTransferBuilderWithGas();
         const tx1 = (await txBuilder1.build()) as TransferTransaction;
 
         const differentRecipients = [{ address: testData.addresses.validAddresses[0], amount: '9999' }];
@@ -550,7 +452,6 @@ describe('IOTA:', function () {
         txBuilder2.recipients(differentRecipients);
         txBuilder2.paymentObjects(testData.paymentObjects);
         txBuilder2.gasData(testData.gasData);
-
         const tx2 = (await txBuilder2.build()) as TransferTransaction;
 
         should.notEqual(tx1.id, tx2.id);
@@ -598,12 +499,7 @@ describe('IOTA:', function () {
       });
 
       it('should return gas fee from transaction', async function () {
-        const txBuilder = factory.getTransferBuilder();
-        txBuilder.sender(testData.sender.address);
-        txBuilder.recipients(testData.recipients);
-        txBuilder.paymentObjects(testData.paymentObjects);
-        txBuilder.gasData(testData.gasData);
-
+        const txBuilder = createTransferBuilderWithGas();
         const tx = (await txBuilder.build()) as TransferTransaction;
         const fee = tx.getFee();
 
@@ -656,12 +552,7 @@ describe('IOTA:', function () {
       });
 
       it('should handle transaction type correctly', async function () {
-        const txBuilder = factory.getTransferBuilder();
-        txBuilder.sender(testData.sender.address);
-        txBuilder.recipients(testData.recipients);
-        txBuilder.paymentObjects(testData.paymentObjects);
-        txBuilder.gasData(testData.gasData);
-
+        const txBuilder = createTransferBuilderWithGas();
         const tx = (await txBuilder.build()) as TransferTransaction;
 
         should.equal(tx.type, TransactionType.Send);
@@ -670,21 +561,11 @@ describe('IOTA:', function () {
 
     describe('Transaction Serialization Formats', () => {
       it('should serialize to consistent broadcast format', async function () {
-        const txBuilder1 = factory.getTransferBuilder();
-        txBuilder1.sender(testData.sender.address);
-        txBuilder1.recipients(testData.recipients);
-        txBuilder1.paymentObjects(testData.paymentObjects);
-        txBuilder1.gasData(testData.gasData);
-
+        const txBuilder1 = createTransferBuilderWithGas();
         const tx1 = (await txBuilder1.build()) as TransferTransaction;
         const broadcast1 = await tx1.toBroadcastFormat();
 
-        const txBuilder2 = factory.getTransferBuilder();
-        txBuilder2.sender(testData.sender.address);
-        txBuilder2.recipients(testData.recipients);
-        txBuilder2.paymentObjects(testData.paymentObjects);
-        txBuilder2.gasData(testData.gasData);
-
+        const txBuilder2 = createTransferBuilderWithGas();
         const tx2 = (await txBuilder2.build()) as TransferTransaction;
         const broadcast2 = await tx2.toBroadcastFormat();
 
@@ -692,32 +573,20 @@ describe('IOTA:', function () {
       });
 
       it('should produce valid base64 broadcast format', async function () {
-        const txBuilder = factory.getTransferBuilder();
-        txBuilder.sender(testData.sender.address);
-        txBuilder.recipients(testData.recipients);
-        txBuilder.paymentObjects(testData.paymentObjects);
-        txBuilder.gasData(testData.gasData);
-
+        const txBuilder = createTransferBuilderWithGas();
         const tx = (await txBuilder.build()) as TransferTransaction;
         const broadcast = await tx.toBroadcastFormat();
 
-        // Check if it's valid base64
         should.equal(typeof broadcast, 'string');
         should.equal(/^[A-Za-z0-9+/]*={0,2}$/.test(broadcast), true);
         should.equal(broadcast.length > 0, true);
 
-        // Should be able to decode
         const decoded = Buffer.from(broadcast, 'base64');
         should.equal(decoded.length > 0, true);
       });
 
       it('should maintain JSON serialization consistency', async function () {
-        const txBuilder = factory.getTransferBuilder();
-        txBuilder.sender(testData.sender.address);
-        txBuilder.recipients(testData.recipients);
-        txBuilder.paymentObjects(testData.paymentObjects);
-        txBuilder.gasData(testData.gasData);
-
+        const txBuilder = createTransferBuilderWithGas();
         const tx = (await txBuilder.build()) as TransferTransaction;
         const json1 = tx.toJson();
         const json2 = tx.toJson();
