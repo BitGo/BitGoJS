@@ -134,7 +134,7 @@ function describeParseTransactionWith(
             acidTest.rootWalletKeys.triple.map((k) => k.neutered().toBase58()) as Triple<string>,
             {
               replayProtection: {
-                outputScripts: [acidTest.getReplayProtectionOutputScript()],
+                publicKeys: [acidTest.getReplayProtectionPublicKey()],
               },
             }
           );

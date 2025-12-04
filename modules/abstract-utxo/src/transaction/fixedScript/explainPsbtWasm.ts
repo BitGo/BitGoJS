@@ -44,7 +44,7 @@ export function explainPsbtWasm(
   params: {
     replayProtection: {
       checkSignature?: boolean;
-      outputScripts: Buffer[];
+      publicKeys: Buffer[];
     };
     customChangeWalletXpubs?: Triple<string>;
   }

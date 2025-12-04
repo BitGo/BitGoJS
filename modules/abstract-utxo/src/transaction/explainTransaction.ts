@@ -6,7 +6,7 @@ import { getDescriptorMapFromWallet, isDescriptorWallet } from '../descriptor';
 import { toBip32Triple } from '../keychains';
 import { getPolicyForEnv } from '../descriptor/validatePolicy';
 
-import { getReplayProtectionOutputScripts } from './fixedScript/replayProtection';
+import { getReplayProtectionPubkeys } from './fixedScript/replayProtection';
 import type {
   TransactionExplanationUtxolibLegacy,
   TransactionExplanationUtxolibPsbt,
@@ -63,7 +63,7 @@ export function explainTx<TNumber extends number | bigint>(
     }
     return fixedScript.explainPsbtWasm(tx, walletXpubs, {
       replayProtection: {
-        outputScripts: getReplayProtectionOutputScripts(network),
+        publicKeys: getReplayProtectionPubkeys(network),
       },
     });
   } else {
