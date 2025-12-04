@@ -3189,7 +3189,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
       }
 
       if (txJson.to.toLowerCase() !== baseAddress.toLowerCase()) {
-        throwRecipientMismatch('Consolidation transaction recipient does not match wallet base address', [
+        await throwRecipientMismatch('Consolidation transaction recipient does not match wallet base address', [
           { address: txJson.to, amount: txJson.value },
         ]);
       }
