@@ -23,7 +23,7 @@ import {
 } from '../../utils';
 import { BaseTransaction } from '../../../account-lib';
 import { Ed25519Bip32HdTree } from '@bitgo/sdk-lib-mpc';
-import _ = require('lodash');
+import _ from 'lodash';
 import { commonVerifyWalletSignature, getTxRequest, sendSignatureShare } from '../common';
 import { IRequestTracer } from '../../../api';
 
