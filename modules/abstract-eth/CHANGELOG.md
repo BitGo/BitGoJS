@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [24.19.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.18.0...@bitgo/abstract-eth@24.19.0) (2025-12-04)
+
+
+### Bug Fixes
+
+* **abstract-eth:** fix TSS consolidation verification for ETH wallets ([45f4f53](https://github.com/BitGo/BitGoJS/commit/45f4f530e836de35fda1c3201a113b786628de13))
+
+
+### Features
+
+* add tx explanation for TxIntentMismatch errors ([feed271](https://github.com/BitGo/BitGoJS/commit/feed271ec7ae1ae099adf3eb100a532b12d03228))
+
+
+
+
+
 # [24.18.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-eth@24.17.0...@bitgo/abstract-eth@24.18.0) (2025-11-26)
 
 

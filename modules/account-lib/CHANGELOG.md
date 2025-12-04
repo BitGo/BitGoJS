@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [27.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.15.3...@bitgo/account-lib@27.16.0) (2025-12-04)
+
+
+### Features
+
+* add message signing support for seievm ([f43915e](https://github.com/BitGo/BitGoJS/commit/f43915ec088b9bf5c65999555bcec81e283ad01a))
+
+
+
+
+
 ## [27.15.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.15.2...@bitgo/account-lib@27.15.3) (2025-11-26)
 
 **Note:** Version bump only for package @bitgo/account-lib
