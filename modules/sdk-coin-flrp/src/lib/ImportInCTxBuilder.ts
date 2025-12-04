@@ -9,7 +9,6 @@ import {
   Int,
   Id,
   TransferableInput,
-  TypeSymbols,
   Address,
   utils as FlareUtils,
   avmSerial,
@@ -36,7 +35,7 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
     return TransactionType.Import;
   }
 
-  initBuilder(tx: Tx): this {
+  initBuilder(tx: Tx, rawBytes?: Buffer, parsedCredentials?: Credential[]): this {
     const baseTx = tx as evmSerial.ImportTx;
     if (!this.verifyTxType(baseTx._type)) {
       throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
@@ -50,8 +49,7 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
     }
     const output = outputs[0];
 
-    const assetIdStr = Buffer.from(this.transaction._assetId).toString('hex');
-    if (Buffer.from(output.assetId.toBytes()).toString('hex') !== assetIdStr) {
+    if (Buffer.from(output.assetId.toBytes()).toString('hex') !== this.transaction._assetId) {
       throw new Error('AssetID are not equals');
     }
     this.transaction._to = [Buffer.from(output.address.toBytes())];
@@ -66,7 +64,8 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
     // Calculate fee based on input/output difference
     const fee = totalInputAmount - totalOutputAmount;
     const feeSize = this.calculateFeeSize(baseTx);
-    const feeRate = Number(fee) / feeSize;
+    // Use integer division to ensure feeRate can be converted back to BigInt
+    const feeRate = Math.floor(Number(fee) / feeSize);
 
     this.transaction._fee = {
       fee: fee.toString(),
@@ -74,12 +73,46 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
       size: feeSize,
     };
 
-    this.transaction.setTransaction(tx);
+    // Use credentials passed from TransactionBuilderFactory (properly extracted using codec)
+    const credentials = parsedCredentials || [];
+    const hasCredentials = credentials.length > 0;
+
+    // If it's a signed transaction, store the original raw bytes to preserve exact format
+    if (hasCredentials && rawBytes) {
+      this.transaction._rawSignedBytes = rawBytes;
+    }
+
+    // Extract threshold from first input's sigIndicies (number of required signatures)
+    const firstInput = inputs[0];
+    const inputThreshold = firstInput.sigIndicies().length || this.transaction._threshold;
+    this.transaction._threshold = inputThreshold;
+
+    // Create proper UnsignedTx wrapper with credentials
+    const toAddress = new Address(output.address.toBytes());
+    const addressMap = new FlareUtils.AddressMap([[toAddress, 0]]);
+    const addressMaps = new FlareUtils.AddressMaps([addressMap]);
+
+    // When credentials were extracted, use them directly to preserve existing signatures
+    let txCredentials: Credential[];
+    if (credentials.length > 0) {
+      txCredentials = credentials;
+    } else {
+      // Create empty credential with threshold number of signature slots
+      const emptySignatures: ReturnType<typeof utils.createNewSig>[] = [];
+      for (let i = 0; i < inputThreshold; i++) {
+        emptySignatures.push(utils.createNewSig(''));
+      }
+      txCredentials = [new Credential(emptySignatures)];
+    }
+
+    const unsignedTx = new UnsignedTx(baseTx, [], addressMaps, txCredentials);
+
+    this.transaction.setTransaction(unsignedTx);
     return this;
   }
 
   static verifyTxType(txnType: string): boolean {
-    return txnType === FlareTransactionType.PvmImportTx;
+    return txnType === FlareTransactionType.EvmImportTx;
   }
 
   verifyTxType(txnType: string): boolean {
@@ -91,8 +124,10 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
    * @protected
    */
   protected buildFlareTransaction(): void {
-    // if tx has credentials, tx shouldn't change
+    // if tx has credentials or was already recovered from raw, tx shouldn't change
     if (this.transaction.hasCredentials) return;
+    // If fee is already calculated (from initBuilder), the transaction is already built
+    if (this.transaction._fee.fee) return;
     if (this.transaction._to.length !== 1) {
       throw new Error('to is required');
     }
@@ -109,14 +144,12 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
     this.transaction._fee.fee = fee.toString();
     this.transaction._fee.size = feeSize;
 
-    // Create output with required interface implementation
-    const output = {
-      _type: TypeSymbols.BaseTx,
-      address: new Address(this.transaction._to[0]),
-      amount: new BigIntPr(amount - fee),
-      assetId: new Id(new Uint8Array(Buffer.from(this.transaction._assetId, 'hex'))),
-      toBytes: () => new Uint8Array(),
-    };
+    // Create EVM output using proper FlareJS class
+    const output = new evmSerial.Output(
+      new Address(this.transaction._to[0]),
+      new BigIntPr(amount - fee),
+      new Id(new Uint8Array(Buffer.from(this.transaction._assetId, 'hex')))
+    );
 
     // Create the import transaction
     const importTx = new evmSerial.ImportTx(
@@ -127,8 +160,11 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
       [output]
     );
 
-    // Create unsigned transaction
-    const addressMap = new FlareUtils.AddressMap([[new Address(this.transaction._fromAddresses[0]), 0]]);
+    // Create unsigned transaction with all potential signers in address map
+    const addressMap = new FlareUtils.AddressMap();
+    this.transaction._fromAddresses.forEach((addr, i) => {
+      addressMap.set(new Address(addr), i);
+    });
     const addressMaps = new FlareUtils.AddressMaps([addressMap]);
 
     const unsignedTx = new UnsignedTx(
@@ -172,49 +208,29 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
       const amount = BigInt(utxo.amount);
       totalAmount += amount;
 
-      // Create input with proper interface implementation
-      const input = {
-        _type: TypeSymbols.Input,
-        amount: () => amount,
-        sigIndices: sender.map((_, i) => i),
-        toBytes: () => new Uint8Array(),
-      };
+      // Create signature indices for threshold
+      const sigIndices: number[] = [];
+      for (let i = 0; i < this.transaction._threshold; i++) {
+        sigIndices.push(i);
+      }
 
-      // Create TransferableInput with proper UTXOID implementation
-      const txId = new Id(new Uint8Array(Buffer.from(utxo.txid, 'hex')));
-      const outputIdxInt = new Int(Number(utxo.outputidx));
-      const outputIdxBytes = new Uint8Array(Buffer.alloc(4));
-      new DataView(outputIdxBytes.buffer).setInt32(0, Number(utxo.outputidx), true);
-      const outputIdxId = new Id(outputIdxBytes);
+      // Use fromNative to create TransferableInput (same pattern as ImportInPTxBuilder)
+      // fromNative expects cb58-encoded strings for txId and assetId
+      const txIdCb58 = utxo.txid; // Already cb58 encoded
+      const assetIdCb58 = utils.cb58Encode(Buffer.from(this.transaction._assetId, 'hex'));
 
-      // Create asset with complete Amounter interface
-      const assetIdBytes = new Uint8Array(Buffer.from(this.transaction._assetId, 'hex'));
-      const assetId = {
-        _type: TypeSymbols.BaseTx,
-        amount: () => amount,
-        toBytes: () => assetIdBytes,
-        toString: () => Buffer.from(assetIdBytes).toString('hex'),
-      };
-
-      // Create TransferableInput with UTXOID using Int for outputIdx
-      const transferableInput = new TransferableInput(
-        {
-          _type: TypeSymbols.UTXOID,
-          txID: txId,
-          outputIdx: outputIdxInt,
-          ID: () => utxo.txid,
-          toBytes: () => new Uint8Array(),
-        },
-        outputIdxId, // Use Id type for TransferableInput constructor
-        assetId // Use asset with complete Amounter interface
+      const transferableInput = TransferableInput.fromNative(
+        txIdCb58,
+        Number(utxo.outputidx),
+        assetIdCb58,
+        amount,
+        sigIndices
       );
 
-      // Set input properties
-      Object.assign(transferableInput, { input });
       inputs.push(transferableInput);
 
-      // Create empty credential for each input
-      const emptySignatures = sender.map(() => utils.createNewSig(''));
+      // Create empty credential for each input with threshold signers
+      const emptySignatures = sigIndices.map(() => utils.createNewSig(''));
       const credential = new Credential(emptySignatures);
       credentials.push(credential);
     });
@@ -228,6 +244,7 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
 
   /**
    * Calculate the fee size for the transaction
+   * For C-chain imports, the feeRate is treated as an absolute fee value
    */
   private calculateFeeSize(tx?: evmSerial.ImportTx): number {
     // If tx is provided, calculate based on actual transaction size
@@ -236,14 +253,8 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
       return tx.toBytes(codec).length;
     }
 
-    // Otherwise estimate based on typical import transaction size
-    const baseSize = 256; // Base transaction size
-    const inputSize = 128; // Size per input
-    const outputSize = 64; // Size per output
-    const numInputs = this.transaction._utxos.length;
-    const numOutputs = 1; // Import tx always has 1 output
-
-    return baseSize + inputSize * numInputs + outputSize * numOutputs;
+    // For C-chain imports, treat feeRate as the absolute fee (multiplier of 1)
+    return 1;
   }
 
   /**

@@ -51,7 +51,7 @@ export class ExportInPTxBuilder extends AtomicTransactionBuilder {
     return this;
   }
 
-  initBuilder(tx: Tx, rawBytes?: Buffer): this {
+  initBuilder(tx: Tx, rawBytes?: Buffer, parsedCredentials?: Credential[]): this {
     const exportTx = tx as pvmSerial.ExportTx;
 
     if (!this.verifyTxType(exportTx._type)) {
@@ -101,37 +101,11 @@ export class ExportInPTxBuilder extends AtomicTransactionBuilder {
     const fee = totalInputAmount - changeOutputAmount - this._amount;
     this.transaction._fee.fee = fee.toString();
 
-    // Extract credentials from raw bytes
-    let hasCredentials = false;
-    let credentials: Credential[] = [];
+    // Use credentials passed from TransactionBuilderFactory (properly extracted using codec)
+    const credentials = parsedCredentials || [];
+    const hasCredentials = credentials.length > 0;
 
-    if (rawBytes) {
-      // Try standard extraction first
-      const result = utils.extractCredentialsFromRawBytes(rawBytes, exportTx, 'PVM');
-      hasCredentials = result.hasCredentials;
-      credentials = result.credentials;
-
-      // If extraction failed but raw bytes are longer, try parsing credentials at known offset
-      if ((!hasCredentials || credentials.length === 0) && rawBytes.length > 300) {
-        const codec = FlareUtils.getManagerForVM('PVM').getDefaultCodec();
-        const txBytesLength = exportTx.toBytes(codec).length;
-
-        if (rawBytes.length > txBytesLength) {
-          hasCredentials = true;
-          const credResult = utils.parseCredentialsAtOffset(rawBytes, txBytesLength);
-          if (credResult.length > 0) {
-            credentials = credResult;
-          }
-        }
-      }
-    }
-
-    // If we have parsed credentials with the correct number of credentials for the inputs,
-    // use them directly (preserves existing signatures)
-    const numInputs = exportTx.baseTx.inputs.length;
-    const useDirectCredentials = hasCredentials && credentials.length === numInputs;
-
-    // If there are credentials in raw bytes, store the original bytes to preserve exact format
+    // If there are credentials, store the original bytes to preserve exact format
     if (rawBytes && hasCredentials) {
       this.transaction._rawSignedBytes = rawBytes;
     }
@@ -139,57 +113,22 @@ export class ExportInPTxBuilder extends AtomicTransactionBuilder {
     // Create proper UnsignedTx wrapper with credentials
     const sortedAddresses = [...this.transaction._fromAddresses].sort((a, b) => Buffer.compare(a, b));
 
-    // Helper function to check if a signature is empty (contains no real signature data)
-    // A real ECDSA signature will never start with 45 bytes of zeros
-    const isSignatureEmpty = (sig: string): boolean => {
-      if (!sig) return true;
-      const cleanSig = utils.removeHexPrefix(sig);
-      if (cleanSig.length === 0) return true;
-      // Check if the first 90 hex chars (45 bytes) are all zeros
-      // Real signatures from secp256k1 will never have this pattern
-      const first90Chars = cleanSig.substring(0, 90);
-      return first90Chars === '0'.repeat(90) || first90Chars === '0'.repeat(first90Chars.length);
-    };
-
-    // Build txCredentials - either use direct credentials or reconstruct with embedded addresses
-    let txCredentials: Credential[];
-
-    if (useDirectCredentials) {
-      // Use the extracted credentials directly - they already have the correct signatures
-      // Just ensure empty slots have embedded addresses for signing identification
-      txCredentials = credentials;
-    } else {
-      // Reconstruct credentials from scratch with embedded addresses
-      txCredentials = exportTx.baseTx.inputs.map((input, idx) => {
-        const transferInput = input.input as TransferInput;
-        const inputThreshold = transferInput.sigIndicies().length || this.transaction._threshold;
-
-        // Get existing signatures from parsed credentials if available
-        const existingSigs: string[] = [];
-        if (idx < credentials.length) {
-          const existingCred = credentials[idx];
-          existingSigs.push(...existingCred.getSignatures());
-        }
-
-        // Create credential with correct number of slots, preserving existing signatures
-        // Empty slots get embedded addresses for slot identification
-        const sigSlots: ReturnType<typeof utils.createNewSig>[] = [];
-        for (let i = 0; i < inputThreshold; i++) {
-          const existingSig = i < existingSigs.length ? existingSigs[i] : null;
-
-          if (existingSig && !isSignatureEmpty(existingSig)) {
-            // Use existing non-empty signature (real signature from signing)
-            const sigHex = utils.removeHexPrefix(existingSig);
-            sigSlots.push(utils.createNewSig(sigHex));
-          } else {
-            // Empty slot - create with embedded address for slot identification
-            const addrHex = Buffer.from(sortedAddresses[i]).toString('hex');
-            sigSlots.push(utils.createEmptySigWithAddress(addrHex));
-          }
-        }
-        return new Credential(sigSlots);
-      });
-    }
+    // When credentials were extracted, use them directly to preserve existing signatures
+    // Otherwise, create empty credentials with embedded addresses for slot identification
+    const txCredentials =
+      credentials.length > 0
+        ? credentials
+        : exportTx.baseTx.inputs.map((input) => {
+            const transferInput = input.input as TransferInput;
+            const inputThreshold = transferInput.sigIndicies().length || this.transaction._threshold;
+            // Create empty signatures with embedded addresses for slot identification
+            const sigSlots: ReturnType<typeof utils.createEmptySigWithAddress>[] = [];
+            for (let i = 0; i < inputThreshold; i++) {
+              const addrHex = Buffer.from(sortedAddresses[i]).toString('hex');
+              sigSlots.push(utils.createEmptySigWithAddress(addrHex));
+            }
+            return new Credential(sigSlots);
+          });
 
     // Create address maps for signing - one per input/credential
     // Each address map contains all addresses mapped to their indices
