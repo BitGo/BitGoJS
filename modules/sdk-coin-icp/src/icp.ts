@@ -20,6 +20,7 @@ import {
   SignTransactionOptions,
   VerifyTransactionOptions,
   verifyMPCWalletAddress,
+  UnexpectedAddressError,
 } from '@bitgo/sdk-core';
 import { coins, NetworkType, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { Principal } from '@dfinity/principal';
@@ -146,9 +147,15 @@ export class Icp extends BaseCoin {
   /**
    * Verify that an address belongs to this wallet.
    *
+   * For wallet version 1 (memo-based): The address format is `rootAddress?memoId=X`.
+   * We extract the root address and verify it against the commonKeychain at index 0.
+   *
+   * For wallet version 2+: The address is derived directly from the commonKeychain
+   * at the specified index.
+   *
    * @param {TssVerifyIcpAddressOptions} params - Verification parameters
    * @returns {Promise<boolean>} True if address belongs to wallet
-   * @throws {InvalidAddressError} If address format is invalid
+   * @throws {InvalidAddressError} If address format is invalid or doesn't match derived address
    * @throws {Error} If invalid wallet version or missing parameters
    */
   async isWalletAddress(params: TssVerifyIcpAddressOptions): Promise<boolean> {
@@ -158,63 +165,38 @@ export class Icp extends BaseCoin {
       throw new InvalidAddressError(`invalid address: ${address}`);
     }
 
+    let addressToVerify = address;
+    const parsedIndex = typeof params.index === 'string' ? parseInt(params.index, 10) : params.index;
+
     if (walletVersion === 1) {
-      return this.verifyMemoBasedAddress(address, rootAddress);
+      if (!rootAddress) {
+        throw new Error('rootAddress is required for wallet version 1');
+      }
+      const extractedRootAddress = utils.validateMemoAndReturnRootAddress(address);
+      if (!extractedRootAddress || extractedRootAddress === address) {
+        throw new Error('memoId is required for wallet version 1 addresses');
+      }
+      if (extractedRootAddress.toLowerCase() !== rootAddress.toLowerCase()) {
+        throw new UnexpectedAddressError(
+          `address validation failure: expected ${rootAddress} but got ${extractedRootAddress}`
+        );
+      }
+      addressToVerify = rootAddress;
+    } else if (rootAddress && address.toLowerCase() === rootAddress.toLowerCase() && parsedIndex !== 0) {
+      throw new Error(`Root address verification requires index 0, but got index ${params.index}`);
     }
 
-    return this.verifyKeyDerivedAddress(params, address, rootAddress);
-  }
-
-  /**
-   * Verifies a memo-based address for wallet version 1.
-   *
-   * @param {string} address - The full address to verify (must include memoId)
-   * @param {string | undefined} rootAddress - The wallet's root address
-   * @returns {boolean} True if the address is valid
-   * @throws {Error} If rootAddress is missing or memoId is missing
-   */
-  private verifyMemoBasedAddress(address: string, rootAddress: string | undefined): boolean {
-    if (!rootAddress) {
-      throw new Error('rootAddress is required for wallet version 1');
-    }
-    const extractedRootAddress = utils.validateMemoAndReturnRootAddress(address);
-    if (extractedRootAddress === address) {
-      throw new Error('memoId is required for wallet version 1 addresses');
-    }
-
-    return extractedRootAddress?.toLowerCase() === rootAddress.toLowerCase();
-  }
-
-  /**
-   * Verifies a key-derived address using MPC wallet verification.
-   *
-   * @param {TssVerifyIcpAddressOptions} params - Verification parameters
-   * @param {string} address - The full address to verify
-   * @param {string | undefined} rootAddress - The wallet's root address
-   * @returns {Promise<boolean>} True if the address matches the derived address
-   * @throws {Error} If keychains are missing or address doesn't match
-   */
-  private async verifyKeyDerivedAddress(
-    params: TssVerifyIcpAddressOptions,
-    address: string,
-    rootAddress: string | undefined
-  ): Promise<boolean> {
-    const { index } = params;
-    const parsedIndex = typeof index === 'string' ? parseInt(index, 10) : index;
-
-    const isVerifyingRootAddress = rootAddress && address.toLowerCase() === rootAddress.toLowerCase();
-    if (isVerifyingRootAddress && parsedIndex !== 0) {
-      throw new Error(`Root address verification requires index 0, but got index ${index}`);
-    }
-
+    const indexToVerify = walletVersion === 1 ? 0 : params.index;
     const result = await verifyMPCWalletAddress(
-      { ...params, keyCurve: 'secp256k1' },
+      { ...params, address: addressToVerify, index: indexToVerify, keyCurve: 'secp256k1' },
       this.isValidAddress.bind(this),
       (pubKey) => utils.getAddressFromPublicKey(pubKey)
     );
 
     if (!result) {
-      throw new InvalidAddressError(`invalid address: ${address}`);
+      throw new UnexpectedAddressError(
+        `address validation failure: address ${addressToVerify} is not a wallet address`
+      );
     }
 
     return true;

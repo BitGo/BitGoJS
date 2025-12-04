@@ -238,31 +238,25 @@ describe('Internet computer', function () {
     };
 
     describe('Wallet VersionKey 1', () => {
+      let keychains;
+
+      before(function () {
+        keychains = [
+          { commonKeychain: addressVerificationData.commonKeychain },
+          { commonKeychain: addressVerificationData.commonKeychain },
+          { commonKeychain: addressVerificationData.commonKeychain },
+        ];
+      });
+
       it('should verify a valid memo-based address', async function () {
-        const rootAddress = testData.Accounts.account1.address;
+        const rootAddress = addressVerificationData.rootAddress;
         const addressWithMemo = `${rootAddress}?memoId=123`;
 
         const params = {
           address: addressWithMemo,
           rootAddress: rootAddress,
           walletVersion: 1,
-          keychains: [],
-          index: 123,
-        };
-
-        const result = await basecoin.isWalletAddress(params);
-        result.should.equal(true);
-      });
-
-      it('should verify address with memoId=0', async function () {
-        const rootAddress = testData.Accounts.account1.address;
-        const addressWithMemo = `${rootAddress}?memoId=0`;
-
-        const params = {
-          address: addressWithMemo,
-          rootAddress: rootAddress,
-          walletVersion: 1,
-          keychains: [],
+          keychains: keychains,
           index: 0,
         };
 
@@ -270,8 +264,24 @@ describe('Internet computer', function () {
         result.should.equal(true);
       });
 
-      it('should fail when base address does not match root address', async function () {
-        const rootAddress = testData.Accounts.account1.address;
+      it('should verify address with memoId=0', async function () {
+        const rootAddress = addressVerificationData.rootAddress;
+        const addressWithMemo = `${rootAddress}?memoId=0`;
+
+        const params = {
+          address: addressWithMemo,
+          rootAddress: rootAddress,
+          walletVersion: 1,
+          keychains: keychains,
+          index: 0,
+        };
+
+        const result = await basecoin.isWalletAddress(params);
+        result.should.equal(true);
+      });
+
+      it('should fail when extracted root does not match provided rootAddress param', async function () {
+        const rootAddress = addressVerificationData.rootAddress;
         const differentAddress = testData.Accounts.account2.address;
         const addressWithMemo = `${differentAddress}?memoId=123`;
 
@@ -279,35 +289,37 @@ describe('Internet computer', function () {
           address: addressWithMemo,
           rootAddress: rootAddress,
           walletVersion: 1,
-          keychains: [],
-          index: 123,
+          keychains: keychains,
+          index: 0,
         };
 
-        const result = await basecoin.isWalletAddress(params);
-        result.should.equal(false);
+        // The extracted root (differentAddress) doesn't match provided rootAddress
+        await basecoin
+          .isWalletAddress(params)
+          .should.be.rejectedWith(`address validation failure: expected ${rootAddress} but got ${differentAddress}`);
       });
 
       it('should throw error when rootAddress is missing for wallet version 1', async function () {
-        const address = `${testData.Accounts.account1.address}?memoId=123`;
+        const address = `${addressVerificationData.rootAddress}?memoId=123`;
 
         const params = {
           address: address,
           walletVersion: 1,
-          keychains: [],
-          index: 123,
+          keychains: keychains,
+          index: 0,
         };
 
         await basecoin.isWalletAddress(params).should.be.rejectedWith('rootAddress is required for wallet version 1');
       });
 
       it('should throw error when memoId is missing for wallet version 1', async function () {
-        const rootAddress = testData.Accounts.account1.address;
+        const rootAddress = addressVerificationData.rootAddress;
 
         const params = {
           address: rootAddress,
           rootAddress: rootAddress,
           walletVersion: 1,
-          keychains: [],
+          keychains: keychains,
           index: 0,
         };
 
@@ -317,7 +329,7 @@ describe('Internet computer', function () {
       });
 
       it('should handle large memoId values', async function () {
-        const rootAddress = testData.Accounts.account1.address;
+        const rootAddress = addressVerificationData.rootAddress;
         const largeMemoId = '9007199254740991';
         const addressWithMemo = `${rootAddress}?memoId=${largeMemoId}`;
 
@@ -325,12 +337,31 @@ describe('Internet computer', function () {
           address: addressWithMemo,
           rootAddress: rootAddress,
           walletVersion: 1,
-          keychains: [],
-          index: Number(largeMemoId),
+          keychains: keychains,
+          index: 0,
         };
 
         const result = await basecoin.isWalletAddress(params);
         result.should.equal(true);
+      });
+
+      it('should fail when rootAddress does not match commonKeychain derivation', async function () {
+        // Use a rootAddress that doesn't match what's derived from commonKeychain
+        const invalidRootAddress = testData.Accounts.account1.address;
+        const addressWithMemo = `${invalidRootAddress}?memoId=123`;
+
+        const params = {
+          address: addressWithMemo,
+          rootAddress: invalidRootAddress,
+          walletVersion: 1,
+          keychains: keychains,
+          index: 0,
+        };
+
+        // rootAddress is cryptographically verified against commonKeychain
+        await basecoin
+          .isWalletAddress(params)
+          .should.be.rejectedWith(`address validation failure: address ${invalidRootAddress} is not a wallet address`);
       });
     });
 
@@ -368,7 +399,9 @@ describe('Internet computer', function () {
           walletVersion: 2,
         };
 
-        await basecoin.isWalletAddress(params).should.be.rejectedWith(`invalid address: ${invalidAddress}`);
+        await basecoin
+          .isWalletAddress(params)
+          .should.be.rejectedWith(`address validation failure: address ${invalidAddress} is not a wallet address`);
       });
 
       it('should throw error when keychains is missing', async function () {

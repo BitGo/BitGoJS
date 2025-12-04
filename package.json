@@ -109,7 +109,8 @@
     "**/avalanche/store2": "2.14.4",
     "webpack-dev-server": "5.2.1",
     "memfs": "4.46.0",
-    "**/iota-sdk/**/valibot": "1.2.0"
+    "**/iota-sdk/**/valibot": "1.2.0",
+    "validator": "13.15.23"
   },
   "workspaces": [
     "modules/*"
