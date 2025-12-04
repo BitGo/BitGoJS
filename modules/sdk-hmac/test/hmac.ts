@@ -249,7 +249,7 @@ describe('HMAC Utility Functions', () => {
       expect(result.isValid).to.be.false;
     });
 
-    it('should return invalid if timestamp is outside the validity window', () => {
+    it('should return invalid if timestamp is outside the validity window (backwards check)', () => {
       const result = verifyResponse({
         url: '/api/test',
         statusCode: 200,
@@ -262,6 +262,39 @@ describe('HMAC Utility Functions', () => {
       });
 
       expect(result.isInResponseValidityWindow).to.be.false;
+    });
+
+    it('should return invalid if timestamp is outside the validity window (forwards check)', () => {
+      const result = verifyResponse({
+        url: '/api/test',
+        statusCode: 200,
+        text: 'response-body',
+        timestamp: MOCK_TIMESTAMP + 1000 * 60 * 2, // 2 minutes in the future
+        token: 'test-token',
+        hmac: '8f6a2d183e4c4f2bd2023202486e1651292c84573a31b3829d394f1763a6ec6c',
+        method: 'post',
+        authVersion: 3,
+      });
+
+      expect(result.isInResponseValidityWindow).to.be.false;
+    });
+
+    it('should verify if timestamp is inside the forward validity window', () => {
+      const result = verifyResponse({
+        url: '/api/test',
+        statusCode: 200,
+        text: 'response-body',
+        timestamp: MOCK_TIMESTAMP + 1000 * 30, // 30 seconds in the future
+        token: 'test-token',
+        hmac: '5e08c494691951ee45a6fc0e3fbfce3a76fcb5b9ee37e9bf9f2ac66690466dc7',
+        method: 'post',
+        authVersion: 3,
+      });
+
+      expect(result).to.include({
+        isValid: true,
+        isInResponseValidityWindow: true,
+      });
     });
 
     it('should verify response with Buffer data', () => {
