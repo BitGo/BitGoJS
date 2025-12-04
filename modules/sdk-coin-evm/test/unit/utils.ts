@@ -32,7 +32,7 @@ describe('EVM Coin Utils', function () {
           },
         };
 
-        nock(mockExplorerUrl).get(`/accounts/${mockAddress}`).reply(200, mockResponse);
+        nock(mockExplorerUrl).get(`/accounts/${mockAddress}?transactions=false`).reply(200, mockResponse);
 
         const result = await recovery_HBAREVM_BlockchainExplorerQuery(query, mockRpcUrl, mockExplorerUrl, mockToken);
 
@@ -49,7 +49,7 @@ describe('EVM Coin Utils', function () {
 
         const mockResponse = {};
 
-        nock(mockExplorerUrl).get(`/accounts/${mockAddress}`).reply(200, mockResponse);
+        nock(mockExplorerUrl).get(`/accounts/${mockAddress}?transactions=false`).reply(200, mockResponse);
 
         const result = await recovery_HBAREVM_BlockchainExplorerQuery(query, mockRpcUrl, mockExplorerUrl, mockToken);
 
@@ -64,7 +64,7 @@ describe('EVM Coin Utils', function () {
           address: mockAddress,
         };
 
-        nock(mockExplorerUrl).get(`/accounts/${mockAddress}`).reply(500, 'Internal Server Error');
+        nock(mockExplorerUrl).get(`/accounts/${mockAddress}?transactions=false`).reply(500, 'Internal Server Error');
 
         try {
           await recovery_HBAREVM_BlockchainExplorerQuery(query, mockRpcUrl, mockExplorerUrl, mockToken);
@@ -88,7 +88,7 @@ describe('EVM Coin Utils', function () {
           ethereum_nonce: 42,
         };
 
-        nock(mockExplorerUrl).get(`/accounts/${mockAddress}`).reply(200, mockResponse);
+        nock(mockExplorerUrl).get(`/accounts/${mockAddress}?transactions=false`).reply(200, mockResponse);
 
         const result = await recovery_HBAREVM_BlockchainExplorerQuery(query, mockRpcUrl, mockExplorerUrl, mockToken);
 
@@ -105,7 +105,7 @@ describe('EVM Coin Utils', function () {
 
         const mockResponse = {};
 
-        nock(mockExplorerUrl).get(`/accounts/${mockAddress}`).reply(200, mockResponse);
+        nock(mockExplorerUrl).get(`/accounts/${mockAddress}?transactions=false`).reply(200, mockResponse);
 
         const result = await recovery_HBAREVM_BlockchainExplorerQuery(query, mockRpcUrl, mockExplorerUrl, mockToken);
 
@@ -331,7 +331,7 @@ describe('EVM Coin Utils', function () {
         };
 
         nock(mockExplorerUrl) // Note: nock should match without trailing slash
-          .get(`/accounts/${mockAddress}`)
+          .get(`/accounts/${mockAddress}?transactions=false`)
           .reply(200, mockResponse);
 
         const result = await recovery_HBAREVM_BlockchainExplorerQuery(
@@ -362,7 +362,7 @@ describe('EVM Coin Utils', function () {
           },
         };
 
-        nock(mockExplorerUrl).get(`/accounts/${mockAddress}`).reply(200, mockResponse);
+        nock(mockExplorerUrl).get(`/accounts/${mockAddress}?transactions=false`).reply(200, mockResponse);
 
         const result = await recovery_HBAREVM_BlockchainExplorerQuery(query, mockRpcUrl, mockExplorerUrl, mockToken);
 
@@ -389,7 +389,7 @@ describe('EVM Coin Utils', function () {
           },
         };
 
-        nock(mockExplorerUrl).get(`/accounts/${mockAddress}`).reply(200, mockResponse);
+        nock(mockExplorerUrl).get(`/accounts/${mockAddress}?transactions=false`).reply(200, mockResponse);
 
         const result = await recovery_HBAREVM_BlockchainExplorerQuery(query, mockRpcUrl, mockExplorerUrl, mockToken);
 
@@ -410,7 +410,7 @@ describe('EVM Coin Utils', function () {
           },
         };
 
-        nock(mockExplorerUrl).get(`/accounts/${mockAddress}`).reply(200, mockResponse);
+        nock(mockExplorerUrl).get(`/accounts/${mockAddress}?transactions=false`).reply(200, mockResponse);
 
         const result = await recovery_HBAREVM_BlockchainExplorerQuery(query, mockRpcUrl, mockExplorerUrl, mockToken);
 
