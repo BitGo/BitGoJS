@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.20.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.19.0...@bitgo/sdk-coin-ada@4.20.0) (2025-12-04)
+
+
+### Features
+
+* address verification for ada ([b4ed3c5](https://github.com/BitGo/BitGoJS/commit/b4ed3c56739ad94471b3ccd417217ac91ecb573d))
+
+
+
+
+
 # [4.19.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.18.3...@bitgo/sdk-coin-ada@4.19.0) (2025-11-26)
 
 

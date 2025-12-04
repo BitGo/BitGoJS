@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [15.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.15.0...@bitgo/express@15.16.0) (2025-12-04)
+
+
+### Bug Fixes
+
+* fix the operation id to be according to the doc ([6bd7be3](https://github.com/BitGo/BitGoJS/commit/6bd7be391fa99bf067a4f1b78b3483e97b1f44ba))
+
+
+### Features
+
+* **express:** migrated accelerateTx to type route ([343dc5e](https://github.com/BitGo/BitGoJS/commit/343dc5e09d0323226c74e929091974170d2bc24a))
+* **express:** migrated wallet enableTokens to type route ([1708658](https://github.com/BitGo/BitGoJS/commit/1708658a279ac2b0b32a871904ba13b975d08074))
+* **express:** update change keychain password for ofc multi-user-key wallet ([c306c97](https://github.com/BitGo/BitGoJS/commit/c306c976befa5b235769a5fba1d37b7be82c0c17))
+
+
+
+
+
 # [15.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.14.0...@bitgo/express@15.15.0) (2025-11-26)
 
 

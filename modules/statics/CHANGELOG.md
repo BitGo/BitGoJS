@@ -3,6 +3,41 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.15.0...@bitgo/statics@58.16.0) (2025-12-04)
+
+
+### Bug Fixes
+
+* changing the explorer url for tseievm ([0e20775](https://github.com/BitGo/BitGoJS/commit/0e20775923b7aeae0a44c52ff0dd63336316ac1d))
+* getTokenConstructor to work for testnet tokens + test cases ([e4852bc](https://github.com/BitGo/BitGoJS/commit/e4852bc692267d0f99305b7e8c2cf3a5f2dc1112))
+* story token decimal places to 18 ([cbffb86](https://github.com/BitGo/BitGoJS/commit/cbffb86c0bc4bb2a2767868e1115af144c444af3))
+* using correct explorer for ada ([ddf539c](https://github.com/BitGo/BitGoJS/commit/ddf539c6ed850f76bdbe7debfa0881cddd96cdc6))
+
+
+### Features
+
+* add DogeOS and DogeOS Testnet support ([c760ffc](https://github.com/BitGo/BitGoJS/commit/c760ffcafe87a35432d91ec3ff100a0a2ab8b0ef))
+* add ip mainnet token aria ([da8dc41](https://github.com/BitGo/BitGoJS/commit/da8dc41ffc32a0e76e63da41642bb048074a7c0e))
+* add message signing support for seievm ([f43915e](https://github.com/BitGo/BitGoJS/commit/f43915ec088b9bf5c65999555bcec81e283ad01a))
+* add new coin feature requires deposit acceptance transcation ([2b77d98](https://github.com/BitGo/BitGoJS/commit/2b77d98816d0ad9eaad9712aaab598fe8c88a92f))
+* add SUPPORTS_ERC20 feature in hbarevm ([585fc0f](https://github.com/BitGo/BitGoJS/commit/585fc0f9ead581a5dca3928e20f3c4334182ecd1))
+* add tss stuck tx coin feature for arbeth and opeth ([c103dda](https://github.com/BitGo/BitGoJS/commit/c103dda42c70554681a33c22f665fe5c6c22b16a))
+* ofc equivalent tokens for go accounts ([06b78e0](https://github.com/BitGo/BitGoJS/commit/06b78e082c1edffe62bd531887e7041e2c4aa94a))
+* onboard thypeevm:usdc ([533ac0e](https://github.com/BitGo/BitGoJS/commit/533ac0e271eaa4f2dd812f8768597175bfd82e08))
+* onboard tplume:usdc ([cd468d1](https://github.com/BitGo/BitGoJS/commit/cd468d153aaa3f182383c6bb4e75bcaa1e2cc1d8))
+* onboard wrapped sol testnet token ([fb8af6e](https://github.com/BitGo/BitGoJS/commit/fb8af6e614d181a8d2bf56a41b7ce0b04b6e0872))
+* onboard XPL plasma token standard ([892e422](https://github.com/BitGo/BitGoJS/commit/892e4229b332a94cbdc56cb547a63e775c380d5c))
+* **sdk-coin-ada:** onboard night ada token ([e9f9431](https://github.com/BitGo/BitGoJS/commit/e9f9431d0746b67fbf4d878a9756601b66dfc8e8))
+* **sdk-coin-flrp:** refactored and implemented export C to P builder with test cases\ ([764be80](https://github.com/BitGo/BitGoJS/commit/764be80e9ccd6e20c8fe185711c657cd62eddc8b))
+* **statics:** add morph chain config ([00dca1d](https://github.com/BitGo/BitGoJS/commit/00dca1d066eed9d866d974722e163e2edadb8262))
+* **statics:** add negative network fee feature ([fc24a60](https://github.com/BitGo/BitGoJS/commit/fc24a60270cc6f6e4d4f02485703afa5826d09ae))
+* **statics:** add top tokens COIN-6619 ([9df7855](https://github.com/BitGo/BitGoJS/commit/9df7855066cd319c2b9ab9b31166a8a07f3121ac))
+* **statics:** added new coins Ticket: WIN-8020 ([399bd99](https://github.com/BitGo/BitGoJS/commit/399bd99db7dc8749f8a1df5da5ee0f12241f49f6))
+
+
+
+
+
 # [58.15.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.14.0...@bitgo/statics@58.15.0) (2025-11-26)
 
 

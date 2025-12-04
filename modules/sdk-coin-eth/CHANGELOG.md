@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [25.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@25.4.0...@bitgo/sdk-coin-eth@25.4.1) (2025-12-04)
+
+
+### Bug Fixes
+
+* **abstract-eth:** fix TSS consolidation verification for ETH wallets ([45f4f53](https://github.com/BitGo/BitGoJS/commit/45f4f530e836de35fda1c3201a113b786628de13))
+
+
+
+
+
 # [25.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-eth@25.3.14...@bitgo/sdk-coin-eth@25.4.0) (2025-11-26)
 
 

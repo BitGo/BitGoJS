@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-iota@1.5.0...@bitgo/sdk-coin-iota@1.6.0) (2025-12-04)
+
+
+### Bug Fixes
+
+* lock valibot version ([3f7bde9](https://github.com/BitGo/BitGoJS/commit/3f7bde97f8538867f506bc7aba85d5d377ef2cd8))
+* **sdk-coin-iota:** handle serialised tx as hex in iota controller ([41fd197](https://github.com/BitGo/BitGoJS/commit/41fd19739b229caca9cc176583f4bf5224c5ae5e))
+* **sdk-coin-iota:** update verify transaction check in iota ([aec76a6](https://github.com/BitGo/BitGoJS/commit/aec76a6fcbbcdc4b817e9c56ec07c526deabef5f))
+
+
+### Features
+
+* **sdk-coin-iota:** add signature serialization for iota transaction ([8472e3c](https://github.com/BitGo/BitGoJS/commit/8472e3c092bfcd53d0e0986ed431d571b6367dbf))
+* **sdk-coin-iota:** refactor iota sdk for beter readability ([81b347f](https://github.com/BitGo/BitGoJS/commit/81b347f641ee268a3448008ca0ca862f5d8f3a77))
+* **sdk-coin-iota:** refactor tx builders for better readability ([7391438](https://github.com/BitGo/BitGoJS/commit/73914386b29ae80ef8be14ae39925b88f3e4d6e1))
+* **sdk-coin-iota:** updating transferTxn to use gas for payment ([73c8f3d](https://github.com/BitGo/BitGoJS/commit/73c8f3d9709d7d073bbd39f041cf8b894b88a8c5))
+
+
+
+
+
 # [1.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-iota@1.4.5...@bitgo/sdk-coin-iota@1.5.0) (2025-11-26)
 
 
