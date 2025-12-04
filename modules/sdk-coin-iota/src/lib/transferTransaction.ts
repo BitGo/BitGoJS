@@ -10,7 +10,7 @@ import {
 import { fromBase64 } from '@iota/iota-sdk/utils';
 import { messageWithIntent as iotaMessageWithIntent } from '@iota/iota-sdk/cryptography';
 import { BcsReader } from '@iota/bcs';
-import { MAX_INPUT_OBJECTS, MAX_RECIPIENTS, TRANSFER_TRANSACTION_COMMANDS } from './constants';
+import { MAX_GAS_PAYMENT_OBJECTS, MAX_INPUT_OBJECTS, MAX_RECIPIENTS, TRANSFER_TRANSACTION_COMMANDS } from './constants';
 import utils from './utils';
 import BigNumber from 'bignumber.js';
 
@@ -106,7 +106,14 @@ export class TransferTransaction extends Transaction {
     if (amounts.length !== receivers.length) {
       throw new InvalidTransactionError('count of amounts does not match count of receivers');
     }
-    this._paymentObjects = inputObjects;
+    if (
+      (!this.gasPaymentObjects || this.gasPaymentObjects.length === 0) &&
+      (!this.gasSponsor || this.sender === this.gasSponsor)
+    ) {
+      this.gasPaymentObjects = inputObjects;
+    } else if (inputObjects.length > 0) {
+      this._paymentObjects = inputObjects;
+    }
     this.recipients = [];
     receivers.forEach((recipient, index) => {
       this._recipients.push({
@@ -122,31 +129,70 @@ export class TransferTransaction extends Transaction {
   }
 
   protected populateTxInputsAndCommands(): void {
-    if (this.paymentObjects) {
-      let firstInputObj: TransactionObjectArgument = this._iotaTransaction.object(
-        IotaInputs.ObjectRef(this.paymentObjects[0])
-      );
-      if (this.paymentObjects.length > 1) {
-        let idx = 1;
-        while (idx < this.paymentObjects.length) {
-          [firstInputObj] = this._iotaTransaction.mergeCoins(
-            firstInputObj,
-            this.paymentObjects
-              .slice(idx, idx + MAX_INPUT_OBJECTS)
-              .map((input) => this._iotaTransaction.object(IotaInputs.ObjectRef(input)))
-          );
-          idx += MAX_INPUT_OBJECTS;
-        }
-      }
+    const consolidatedCoin = this.shouldUseGasObjectsForPayment()
+      ? this.consolidateGasObjects()
+      : this.consolidatePaymentObjects();
+    this.splitAndTransferToRecipients(consolidatedCoin);
+  }
 
-      const coins = this._iotaTransaction.splitCoins(
-        firstInputObj,
-        this._recipients.map((recipient) => recipient.amount)
-      );
-      this._recipients.forEach((recipient, idx) => {
-        this._iotaTransaction.transferObjects([coins[idx]], recipient.address);
-      });
+  private shouldUseGasObjectsForPayment(): boolean {
+    const paymentObjectExists = this.paymentObjects && this.paymentObjects.length > 0;
+    const senderPaysOwnGas = !this.gasSponsor || this.gasSponsor === this.sender;
+    return !paymentObjectExists && senderPaysOwnGas && Boolean(this.gasPaymentObjects);
+  }
+
+  private consolidatePaymentObjects(): TransactionObjectArgument {
+    if (!this.paymentObjects || this.paymentObjects.length === 0) {
+      throw new InvalidTransactionError('Payment objects are required');
     }
+
+    const firstObject = this._iotaTransaction.object(IotaInputs.ObjectRef(this.paymentObjects[0]));
+
+    if (this.paymentObjects.length === 1) {
+      return firstObject;
+    }
+
+    return this.mergeObjectsInBatches(firstObject, this.paymentObjects.slice(1), MAX_INPUT_OBJECTS);
+  }
+
+  private consolidateGasObjects(): TransactionObjectArgument {
+    if (!this.gasPaymentObjects || this.gasPaymentObjects.length === 0) {
+      throw new InvalidTransactionError('Gas payment objects are required');
+    }
+
+    const gasObject = this._iotaTransaction.gas;
+
+    if (this.gasPaymentObjects.length <= MAX_GAS_PAYMENT_OBJECTS) {
+      return gasObject;
+    }
+
+    return this.mergeObjectsInBatches(gasObject, this.gasPaymentObjects, MAX_INPUT_OBJECTS);
+  }
+
+  private mergeObjectsInBatches(
+    targetCoin: TransactionObjectArgument,
+    objectsToMerge: TransactionObjectInput[],
+    batchSize: number
+  ): TransactionObjectArgument {
+    let consolidatedCoin = targetCoin;
+
+    for (let startIndex = 0; startIndex < objectsToMerge.length; startIndex += batchSize) {
+      const batch = objectsToMerge.slice(startIndex, startIndex + batchSize);
+      const batchAsTransactionObjects = batch.map((obj) => this._iotaTransaction.object(IotaInputs.ObjectRef(obj)));
+
+      [consolidatedCoin] = this._iotaTransaction.mergeCoins(consolidatedCoin, batchAsTransactionObjects);
+    }
+
+    return consolidatedCoin;
+  }
+
+  private splitAndTransferToRecipients(sourceCoin: TransactionObjectArgument): void {
+    const recipientAmounts = this._recipients.map((recipient) => recipient.amount);
+    const splitCoins = this._iotaTransaction.splitCoins(sourceCoin, recipientAmounts);
+
+    this._recipients.forEach((recipient, index) => {
+      this._iotaTransaction.transferObjects([splitCoins[index]], recipient.address);
+    });
   }
 
   protected validateTxDataImplementation(): void {
@@ -161,11 +207,17 @@ export class TransferTransaction extends Transaction {
     }
 
     if (!this.paymentObjects || this.paymentObjects?.length === 0) {
-      throw new InvalidTransactionError('Payment objects are required');
+      if (!this.gasSponsor || this.gasSponsor === this.sender) {
+        if (!this.gasPaymentObjects || this.gasPaymentObjects?.length === 0) {
+          throw new InvalidTransactionError('Payment or Gas objects are required');
+        }
+      } else {
+        throw new InvalidTransactionError('Payment objects are required');
+      }
     }
 
     // Check for duplicate object IDs in payment objects
-    const paymentObjectIds = this.paymentObjects.map((obj) => obj.objectId);
+    const paymentObjectIds = this.paymentObjects?.map((obj) => obj.objectId) ?? [];
     const uniquePaymentIds = new Set(paymentObjectIds);
     if (uniquePaymentIds.size !== paymentObjectIds.length) {
       throw new InvalidTransactionError('Duplicate object IDs found in payment objects');
@@ -180,10 +232,10 @@ export class TransferTransaction extends Transaction {
         throw new InvalidTransactionError('Duplicate object IDs found in gas payment objects');
       }
 
-      const duplicates = this.paymentObjects.filter((payment) => gasObjectIds.includes(payment.objectId));
+      const duplicates = paymentObjectIds.filter((payment) => gasObjectIds.includes(payment));
       if (duplicates.length > 0) {
         throw new InvalidTransactionError(
-          'Payment objects cannot be the same as gas payment objects: ' + duplicates.map((d) => d.objectId).join(', ')
+          'Payment objects cannot be the same as gas payment objects: ' + duplicates.join(', ')
         );
       }
     }

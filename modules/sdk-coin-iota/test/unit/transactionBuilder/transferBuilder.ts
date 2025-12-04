@@ -4,7 +4,8 @@ import { TransactionBuilderFactory, TransferTransaction } from '../../../src';
 import * as testData from '../../resources/iota';
 import { TransactionType } from '@bitgo/sdk-core';
 import utils from '../../../src/lib/utils';
-import { MAX_GAS_PAYMENT_OBJECTS } from '../../../src/lib/constants';
+import { MAX_GAS_PAYMENT_OBJECTS, MAX_RECIPIENTS } from '../../../src/lib/constants';
+import { TransactionObjectInput } from '../../../src/lib/iface';
 
 describe('Iota Transfer Builder', () => {
   const factory = new TransactionBuilderFactory(coins.get('tiota'));
@@ -270,13 +271,77 @@ describe('Iota Transfer Builder', () => {
       await builder.build().should.be.rejected();
     });
 
-    it('should fail to build without payment objects', async function () {
+    it('should fail to build without payment objects when using gas sponsor', async function () {
       const builder = factory.getTransferBuilder();
       builder.sender(testData.sender.address);
       builder.recipients(testData.recipients);
       builder.gasData(testData.gasData);
+      builder.gasSponsor(testData.gasSponsor.address); // Gas sponsor requires payment objects
 
       await builder.build().should.be.rejected();
+    });
+
+    it('should build transfer using gas objects when no payment objects and sender pays own gas', async function () {
+      const builder = factory.getTransferBuilder();
+      builder.sender(testData.sender.address);
+      builder.recipients(testData.recipients);
+      builder.gasData(testData.gasData);
+      // No payment objects, no gas sponsor - should use gas objects for payment
+
+      const tx = (await builder.build()) as TransferTransaction;
+      should.equal(tx.type, TransactionType.Send);
+      should.equal(tx.sender, testData.sender.address);
+      should.equal(tx.isSimulateTx, false);
+      should.equal(tx.gasBudget, testData.GAS_BUDGET);
+      should.equal(tx.gasPrice, testData.GAS_PRICE);
+
+      const rawTx = await tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+    });
+
+    it('should build transfer using many gas objects requiring merge', async function () {
+      const builder = factory.getTransferBuilder();
+      builder.sender(testData.sender.address);
+      builder.recipients(testData.recipients);
+
+      // Create more than MAX_GAS_PAYMENT_OBJECTS (256) to test merge logic
+      // Use duplicate of valid gas payment objects to have valid digests
+      const manyGasObjects: TransactionObjectInput[] = [];
+      for (let i = 0; i < MAX_GAS_PAYMENT_OBJECTS + 10; i++) {
+        manyGasObjects.push({
+          ...testData.gasPaymentObjects[i % testData.gasPaymentObjects.length],
+          objectId: `0x${i.toString(16).padStart(64, '0')}`, // Unique object IDs
+        });
+      }
+
+      builder.gasData({
+        gasBudget: testData.GAS_BUDGET,
+        gasPrice: testData.GAS_PRICE,
+        gasPaymentObjects: manyGasObjects,
+      });
+
+      const tx = (await builder.build()) as TransferTransaction;
+      should.equal(tx.type, TransactionType.Send);
+      should.equal(tx.sender, testData.sender.address);
+      should.equal(tx.isSimulateTx, false);
+
+      const rawTx = await tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+    });
+
+    it('should fail when no payment objects and no gas payment objects', async function () {
+      const builder = factory.getTransferBuilder();
+      builder.sender(testData.sender.address);
+      builder.recipients(testData.recipients);
+
+      // Should fail during gasData() call due to validation
+      should(() =>
+        builder.gasData({
+          gasBudget: testData.GAS_BUDGET,
+          gasPrice: testData.GAS_PRICE,
+          gasPaymentObjects: [], // Empty gas payment objects
+        })
+      ).throwError(/Gas input objects list is empty/);
     });
 
     it('should fail to get signable payload for simulate tx', async function () {
@@ -304,6 +369,161 @@ describe('Iota Transfer Builder', () => {
 
     it('should fail to parse invalid raw transaction', function () {
       should(() => factory.from('invalidRawTransaction')).throwError();
+    });
+  });
+
+  describe('Round-trip with Gas Objects', () => {
+    it('should correctly parse and rebuild transaction using gas objects', async function () {
+      const builder = factory.getTransferBuilder();
+      builder.sender(testData.sender.address);
+      builder.recipients(testData.recipients);
+      builder.gasData(testData.gasData);
+      // No payment objects - using gas objects for payment
+
+      const tx = (await builder.build()) as TransferTransaction;
+      const rawTx = await tx.toBroadcastFormat();
+      const txHex = Buffer.from(rawTx, 'base64').toString('hex');
+
+      // Parse and rebuild
+      const rebuiltBuilder = factory.from(txHex);
+      const rebuiltTx = (await rebuiltBuilder.build()) as TransferTransaction;
+
+      // Verify properties match
+      should.equal(rebuiltTx.sender, tx.sender);
+      should.deepEqual(rebuiltTx.recipients, tx.recipients);
+      should.equal(rebuiltTx.gasBudget, tx.gasBudget);
+      should.equal(rebuiltTx.gasPrice, tx.gasPrice);
+
+      // Verify it was correctly identified as gas object transaction
+      should.equal(rebuiltTx.paymentObjects, undefined);
+      should.exist(rebuiltTx.gasPaymentObjects);
+    });
+
+    it('should correctly parse and rebuild gas object transaction via JSON', async function () {
+      const builder = factory.getTransferBuilder();
+      builder.sender(testData.sender.address);
+      builder.recipients(testData.recipients);
+      builder.gasData(testData.gasData);
+      // No payment objects - using gas objects for payment
+
+      const tx = (await builder.build()) as TransferTransaction;
+      const txJson = tx.toJson();
+
+      // Parse from JSON and rebuild
+      const rebuiltBuilder = factory.getTransferBuilder();
+      (rebuiltBuilder.transaction as TransferTransaction).parseFromJSON(txJson);
+      const rebuiltTx = (await rebuiltBuilder.build()) as TransferTransaction;
+
+      // Verify properties match
+      should.equal(rebuiltTx.sender, tx.sender);
+      should.deepEqual(rebuiltTx.recipients, tx.recipients);
+      should.equal(rebuiltTx.gasBudget, tx.gasBudget);
+      should.equal(rebuiltTx.gasPrice, tx.gasPrice);
+
+      // Verify it was correctly identified as gas object transaction
+      should.equal(rebuiltTx.paymentObjects, undefined);
+      should.exist(rebuiltTx.gasPaymentObjects);
+    });
+
+    it('should correctly parse transaction with payment objects', async function () {
+      const builder = factory.getTransferBuilder();
+      builder.sender(testData.sender.address);
+      builder.recipients(testData.recipients);
+      builder.paymentObjects(testData.paymentObjects);
+      builder.gasData(testData.gasData);
+
+      const tx = (await builder.build()) as TransferTransaction;
+      const rawTx = await tx.toBroadcastFormat();
+      const txHex = Buffer.from(rawTx, 'base64').toString('hex');
+
+      // Parse and rebuild
+      const rebuiltBuilder = factory.from(txHex);
+      const rebuiltTx = (await rebuiltBuilder.build()) as TransferTransaction;
+
+      // Verify it has payment objects
+      should.exist(rebuiltTx.paymentObjects);
+      should.equal(rebuiltTx.paymentObjects?.length, testData.paymentObjects.length);
+    });
+
+    it('should handle round-trip with gas sponsor and payment objects', async function () {
+      const builder = factory.getTransferBuilder();
+      builder.sender(testData.sender.address);
+      builder.recipients(testData.recipients);
+      builder.paymentObjects(testData.paymentObjects);
+      builder.gasData(testData.gasData);
+      builder.gasSponsor(testData.gasSponsor.address);
+
+      const tx = (await builder.build()) as TransferTransaction;
+      const rawTx = await tx.toBroadcastFormat();
+      const txHex = Buffer.from(rawTx, 'base64').toString('hex');
+
+      // Parse and rebuild
+      const rebuiltBuilder = factory.from(txHex);
+      const rebuiltTx = (await rebuiltBuilder.build()) as TransferTransaction;
+
+      // Verify gas sponsor is preserved
+      should.equal(rebuiltTx.gasSponsor, testData.gasSponsor.address);
+      should.exist(rebuiltTx.paymentObjects);
+    });
+  });
+
+  describe('Boundary Tests', () => {
+    it('should build with exactly MAX_GAS_PAYMENT_OBJECTS gas objects', async function () {
+      const builder = factory.getTransferBuilder();
+      builder.sender(testData.sender.address);
+      builder.recipients(testData.recipients);
+
+      // Create exactly MAX_GAS_PAYMENT_OBJECTS (256)
+      const exactlyMaxGasObjects: TransactionObjectInput[] = [];
+      for (let i = 0; i < MAX_GAS_PAYMENT_OBJECTS; i++) {
+        exactlyMaxGasObjects.push({
+          ...testData.gasPaymentObjects[i % testData.gasPaymentObjects.length],
+          objectId: `0x${i.toString(16).padStart(64, '0')}`,
+        });
+      }
+
+      builder.gasData({
+        gasBudget: testData.GAS_BUDGET,
+        gasPrice: testData.GAS_PRICE,
+        gasPaymentObjects: exactlyMaxGasObjects,
+      });
+
+      const tx = (await builder.build()) as TransferTransaction;
+      should.equal(tx.type, TransactionType.Send);
+      should.equal(tx.sender, testData.sender.address);
+
+      const rawTx = await tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+    });
+
+    it('should build with single payment object (no merge needed)', async function () {
+      const builder = factory.getTransferBuilder();
+      builder.sender(testData.sender.address);
+      builder.recipients(testData.recipients);
+      builder.paymentObjects([testData.paymentObjects[0]]); // Only one
+      builder.gasData(testData.gasData);
+
+      const tx = (await builder.build()) as TransferTransaction;
+      should.equal(tx.type, TransactionType.Send);
+      tx.paymentObjects?.length.should.equal(1);
+
+      const rawTx = await tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+    });
+
+    it('should build with two payment objects (simple merge)', async function () {
+      const builder = factory.getTransferBuilder();
+      builder.sender(testData.sender.address);
+      builder.recipients(testData.recipients);
+      builder.paymentObjects(testData.paymentObjects); // Two objects
+      builder.gasData(testData.gasData);
+
+      const tx = (await builder.build()) as TransferTransaction;
+      should.equal(tx.type, TransactionType.Send);
+      tx.paymentObjects?.length.should.equal(2);
+
+      const rawTx = await tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
     });
   });
 
@@ -457,6 +677,360 @@ describe('Iota Transfer Builder', () => {
       should(() =>
         txBuilder.addGasSponsorSignature(testData.testGasSponsorSignature.publicKey, Buffer.from('invalid'))
       ).throwError('Invalid transaction signature');
+    });
+  });
+
+  describe('Gas Object Edge Cases', () => {
+    it('should build with single gas object', async function () {
+      const builder = factory.getTransferBuilder();
+      builder.sender(testData.sender.address);
+      builder.recipients(testData.recipients);
+      builder.gasData({
+        gasBudget: testData.GAS_BUDGET,
+        gasPrice: testData.GAS_PRICE,
+        gasPaymentObjects: [testData.gasPaymentObjects[0]],
+      });
+
+      const tx = (await builder.build()) as TransferTransaction;
+      should.equal(tx.type, TransactionType.Send);
+      should.exist(tx.gasPaymentObjects);
+      tx.gasPaymentObjects?.length.should.equal(1);
+
+      const rawTx = await tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+    });
+
+    it('should build with multiple gas objects', async function () {
+      const builder = factory.getTransferBuilder();
+      builder.sender(testData.sender.address);
+      builder.recipients(testData.recipients);
+      builder.gasData(testData.gasData);
+
+      const tx = (await builder.build()) as TransferTransaction;
+      should.equal(tx.type, TransactionType.Send);
+      should.exist(tx.gasPaymentObjects);
+      tx.gasPaymentObjects?.length.should.equal(testData.gasPaymentObjects.length);
+    });
+
+    it('should successfully build with gas objects and single recipient', async function () {
+      const builder = factory.getTransferBuilder();
+      builder.sender(testData.sender.address);
+      builder.recipients([testData.recipients[0]]);
+      builder.gasData(testData.gasData);
+
+      const tx = (await builder.build()) as TransferTransaction;
+      should.equal(tx.type, TransactionType.Send);
+      tx.outputs.length.should.equal(1);
+      tx.outputs[0].should.deepEqual({
+        address: testData.recipients[0].address,
+        value: testData.recipients[0].amount,
+        coin: 'tiota',
+      });
+    });
+
+    it('should use gas objects when payment objects are undefined', async function () {
+      const builder = factory.getTransferBuilder();
+      builder.sender(testData.sender.address);
+      builder.recipients(testData.recipients);
+      builder.gasData(testData.gasData);
+      // Explicitly not setting payment objects
+
+      const tx = (await builder.build()) as TransferTransaction;
+      should.equal(tx.paymentObjects, undefined);
+      should.exist(tx.gasPaymentObjects);
+      should.equal(tx.type, TransactionType.Send);
+    });
+
+    it('should validate gas budget is set when using gas objects', async function () {
+      const builder = factory.getTransferBuilder();
+      builder.sender(testData.sender.address);
+      builder.recipients(testData.recipients);
+      builder.gasData(testData.gasData);
+
+      const tx = (await builder.build()) as TransferTransaction;
+      should.exist(tx.gasBudget);
+      should.equal(tx.gasBudget, testData.GAS_BUDGET);
+    });
+
+    it('should validate gas price is set when using gas objects', async function () {
+      const builder = factory.getTransferBuilder();
+      builder.sender(testData.sender.address);
+      builder.recipients(testData.recipients);
+      builder.gasData(testData.gasData);
+
+      const tx = (await builder.build()) as TransferTransaction;
+      should.exist(tx.gasPrice);
+      should.equal(tx.gasPrice, testData.GAS_PRICE);
+    });
+  });
+
+  describe('Recipient Validation Tests', () => {
+    it('should build with single recipient', async function () {
+      const builder = factory.getTransferBuilder();
+      builder.sender(testData.sender.address);
+      builder.recipients([
+        {
+          address: testData.addresses.validAddresses[0],
+          amount: '5000',
+        },
+      ]);
+      builder.paymentObjects(testData.paymentObjects);
+      builder.gasData(testData.gasData);
+
+      const tx = (await builder.build()) as TransferTransaction;
+      should.equal(tx.type, TransactionType.Send);
+      tx.outputs.length.should.equal(1);
+      tx.outputs[0].value.should.equal('5000');
+    });
+
+    it('should fail with more than MAX_RECIPIENTS', async function () {
+      const builder = factory.getTransferBuilder();
+      builder.sender(testData.sender.address);
+
+      const tooManyRecipients = new Array(MAX_RECIPIENTS + 1).fill({
+        address: testData.addresses.validAddresses[0],
+        amount: '100',
+      });
+
+      builder.recipients(tooManyRecipients);
+      builder.paymentObjects(testData.paymentObjects);
+      builder.gasData(testData.gasData);
+
+      await builder.build().should.be.rejected();
+    });
+
+    it('should build with MAX_RECIPIENTS exactly', async function () {
+      const builder = factory.getTransferBuilder();
+      builder.sender(testData.sender.address);
+
+      const maxRecipients = new Array(MAX_RECIPIENTS).fill({
+        address: testData.addresses.validAddresses[0],
+        amount: '100',
+      });
+
+      builder.recipients(maxRecipients);
+      builder.paymentObjects(testData.paymentObjects);
+      builder.gasData(testData.gasData);
+
+      const tx = (await builder.build()) as TransferTransaction;
+      should.equal(tx.type, TransactionType.Send);
+      tx.outputs.length.should.equal(MAX_RECIPIENTS);
+    });
+
+    it('should fail when recipient address is same as sender', async function () {
+      const builder = factory.getTransferBuilder();
+      builder.sender(testData.sender.address);
+      // Using sender address as recipient - should still work as it's technically valid
+      builder.recipients([
+        {
+          address: testData.sender.address,
+          amount: '1000',
+        },
+      ]);
+      builder.paymentObjects(testData.paymentObjects);
+      builder.gasData(testData.gasData);
+
+      const tx = (await builder.build()) as TransferTransaction;
+      should.equal(tx.type, TransactionType.Send);
+    });
+
+    it('should handle duplicate recipient addresses', async function () {
+      const builder = factory.getTransferBuilder();
+      builder.sender(testData.sender.address);
+      builder.recipients([
+        {
+          address: testData.addresses.validAddresses[0],
+          amount: '1000',
+        },
+        {
+          address: testData.addresses.validAddresses[0],
+          amount: '2000',
+        },
+      ]);
+      builder.paymentObjects(testData.paymentObjects);
+      builder.gasData(testData.gasData);
+
+      const tx = (await builder.build()) as TransferTransaction;
+      should.equal(tx.type, TransactionType.Send);
+      tx.outputs.length.should.equal(2);
+    });
+  });
+
+  describe('Amount Validation Tests', () => {
+    it('should fail with negative amount', function () {
+      const builder = factory.getTransferBuilder();
+      builder.sender(testData.sender.address);
+      should(() =>
+        builder.recipients([
+          {
+            address: testData.addresses.validAddresses[0],
+            amount: '-100',
+          },
+        ])
+      ).throwError('Value cannot be less than zero');
+    });
+
+    it('should build with zero amount', async function () {
+      const builder = factory.getTransferBuilder();
+      builder.sender(testData.sender.address);
+      builder.recipients([
+        {
+          address: testData.addresses.validAddresses[0],
+          amount: '0',
+        },
+      ]);
+      builder.paymentObjects(testData.paymentObjects);
+      builder.gasData(testData.gasData);
+
+      const tx = (await builder.build()) as TransferTransaction;
+      should.equal(tx.type, TransactionType.Send);
+      tx.outputs[0].value.should.equal('0');
+    });
+
+    it('should build with very large amount', async function () {
+      const builder = factory.getTransferBuilder();
+      builder.sender(testData.sender.address);
+      const largeAmount = '999999999999999999';
+      builder.recipients([
+        {
+          address: testData.addresses.validAddresses[0],
+          amount: largeAmount,
+        },
+      ]);
+      builder.paymentObjects(testData.paymentObjects);
+      builder.gasData(testData.gasData);
+
+      const tx = (await builder.build()) as TransferTransaction;
+      should.equal(tx.type, TransactionType.Send);
+      tx.outputs[0].value.should.equal(largeAmount);
+    });
+
+    it('should calculate total input amount correctly for multiple recipients', async function () {
+      const builder = factory.getTransferBuilder();
+      builder.sender(testData.sender.address);
+      const amount1 = '1000';
+      const amount2 = '2000';
+      const amount3 = '3000';
+      builder.recipients([
+        {
+          address: testData.addresses.validAddresses[0],
+          amount: amount1,
+        },
+        {
+          address: testData.addresses.validAddresses[1],
+          amount: amount2,
+        },
+        {
+          address: testData.addresses.validAddresses[2],
+          amount: amount3,
+        },
+      ]);
+      builder.paymentObjects(testData.paymentObjects);
+      builder.gasData(testData.gasData);
+
+      const tx = (await builder.build()) as TransferTransaction;
+      const expectedTotal = (Number(amount1) + Number(amount2) + Number(amount3)).toString();
+      tx.inputs[0].value.should.equal(expectedTotal);
+    });
+
+    it('should fail with invalid amount format', function () {
+      const builder = factory.getTransferBuilder();
+      builder.sender(testData.sender.address);
+      should(() =>
+        builder.recipients([
+          {
+            address: testData.addresses.validAddresses[0],
+            amount: 'invalid',
+          },
+        ])
+      ).throwError();
+    });
+  });
+
+  describe('Payment and Gas Object Interaction Tests', () => {
+    it('should keep payment and gas objects separate', async function () {
+      const builder = factory.getTransferBuilder();
+      builder.sender(testData.sender.address);
+      builder.recipients(testData.recipients);
+      builder.paymentObjects(testData.paymentObjects);
+      builder.gasData(testData.gasData);
+
+      const tx = (await builder.build()) as TransferTransaction;
+      should.exist(tx.paymentObjects);
+      should.exist(tx.gasPaymentObjects);
+      // Verify they are different
+      tx.paymentObjects?.length.should.equal(testData.paymentObjects.length);
+      tx.gasPaymentObjects?.length.should.equal(testData.gasPaymentObjects.length);
+    });
+
+    it('should handle payment objects with different versions', async function () {
+      const builder = factory.getTransferBuilder();
+      builder.sender(testData.sender.address);
+      builder.recipients(testData.recipients);
+      const mixedVersionObjects: TransactionObjectInput[] = [
+        {
+          objectId: '0x1111111111111111111111111111111111111111111111111111111111111111',
+          version: '1',
+          digest: 'DGVhYjk6YHwdPdZBgBN8czavy8LvbrshkbxF963EW7mB',
+        },
+        {
+          objectId: '0x2222222222222222222222222222222222222222222222222222222222222222',
+          version: '999999',
+          digest: 'DoJwXuz9oU5Y5v5vBRiTgisVTQuZQLmHZWeqJzzD5QUE',
+        },
+      ];
+      builder.paymentObjects(mixedVersionObjects);
+      builder.gasData(testData.gasData);
+
+      const tx = (await builder.build()) as TransferTransaction;
+      should.equal(tx.type, TransactionType.Send);
+      tx.paymentObjects?.length.should.equal(2);
+    });
+
+    it('should serialize and parse transaction with both payment and gas objects', async function () {
+      const builder = factory.getTransferBuilder();
+      builder.sender(testData.sender.address);
+      builder.recipients(testData.recipients);
+      builder.paymentObjects(testData.paymentObjects);
+      builder.gasData(testData.gasData);
+
+      const tx = (await builder.build()) as TransferTransaction;
+      const rawTx = await tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+
+      // Parse it back
+      const rebuiltBuilder = factory.from(Buffer.from(rawTx, 'base64').toString('hex'));
+      const rebuiltTx = (await rebuiltBuilder.build()) as TransferTransaction;
+
+      should.exist(rebuiltTx.paymentObjects);
+      should.exist(rebuiltTx.gasPaymentObjects);
+    });
+
+    it('should fail when using same object ID in payment and gas', async function () {
+      const builder = factory.getTransferBuilder();
+      builder.sender(testData.sender.address);
+      builder.recipients(testData.recipients);
+      // Use same object IDs for payment and gas
+      builder.paymentObjects(testData.gasPaymentObjects);
+      builder.gasData(testData.gasData);
+
+      await builder.build().should.be.rejected();
+    });
+
+    it('should handle gas sponsor with payment objects correctly', async function () {
+      const builder = factory.getTransferBuilder();
+      builder.sender(testData.sender.address);
+      builder.recipients(testData.recipients);
+      builder.paymentObjects(testData.paymentObjects);
+      builder.gasData(testData.gasData);
+      builder.gasSponsor(testData.gasSponsor.address);
+
+      const tx = (await builder.build()) as TransferTransaction;
+      should.equal(tx.gasSponsor, testData.gasSponsor.address);
+      should.exist(tx.paymentObjects);
+      should.exist(tx.gasPaymentObjects);
+      should.equal(tx.sender, testData.sender.address);
+      should.notEqual(tx.sender, tx.gasSponsor);
     });
   });
 });
