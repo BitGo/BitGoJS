@@ -385,7 +385,7 @@ export function explainPsbt(
     customChangePubs?: bitgo.RootWalletKeys | string[];
   },
   network: utxolib.Network,
-  { strict = false }: { strict?: boolean } = {}
+  { strict = true }: { strict?: boolean } = {}
 ): TransactionExplanationUtxolibPsbt {
   const payGoVerificationInfo = getPayGoVerificationInfo(psbt, network);
   if (payGoVerificationInfo) {
