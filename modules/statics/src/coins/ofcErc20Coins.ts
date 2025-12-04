@@ -4597,6 +4597,57 @@ export const tOfcErc20Coins = [
   ofcerc20('10c41a70-8bd2-4415-af52-fefe3af01132', 'ofceth:wxm', 'WeatherXM', 18, UnderlyingAsset['eth:wxm']),
   ofcerc20('c574d2de-42be-488f-afc0-71e2691eb900', 'ofceth:jpyc', 'JPY Coin', 18, UnderlyingAsset['eth:jpyc']),
   ofcerc20('8465f646-73f8-4818-b890-c953f4423c89', 'ofceth:ten', 'TEN', 18, UnderlyingAsset['eth:ten']),
+
+  // MON Network tokens
+  ofcerc20(
+    '1458bca6-e0d3-455e-81c7-55862dc5af52',
+    'ofcmon:usdc',
+    'USDC:MON',
+    6,
+    underlyingAssetForSymbol('mon:usdc'),
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
+  ofcerc20(
+    '7a8631a5-deed-43c5-92a0-13e3322429ba',
+    'ofcmon:wmon',
+    'Wrapped MON',
+    18,
+    underlyingAssetForSymbol('mon:wmon')
+  ),
+
+  // XDC Network tokens
+  ofcerc20(
+    '517ca4d1-a2c4-4606-914f-4c4b5b4943ff',
+    'ofcxdc:usdc',
+    'USD Coin (XDC)',
+    6,
+    underlyingAssetForSymbol('xdc:usdc'),
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
+  ofcerc20(
+    'b4666353-81d0-491b-a554-bdd8e677be24',
+    'ofcxdc:lbt',
+    'Law Block Token',
+    18,
+    underlyingAssetForSymbol('xdc:lbt')
+  ),
+  ofcerc20(
+    '086883c7-f7e9-458e-a0a1-ed3ec525f9c6',
+    'ofcxdc:gama',
+    'Gama Token',
+    18,
+    underlyingAssetForSymbol('xdc:gama')
+  ),
+  ofcerc20('0c8b533c-1929-4de8-af36-9cf4b4409c0d', 'ofcxdc:srx', 'STORX', 18, underlyingAssetForSymbol('xdc:srx')),
+  ofcerc20(
+    '3c7ec48a-ba51-47c9-9044-f29d9c0daf35',
+    'ofcxdc:weth',
+    'Wrapped Ether (XDC)',
+    18,
+    underlyingAssetForSymbol('xdc:weth')
+  ),
 ];
 
 function underlyingAssetForSymbol(underlyingAssetValue: string): UnderlyingAsset {
