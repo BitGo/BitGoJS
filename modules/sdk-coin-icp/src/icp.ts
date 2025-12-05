@@ -8,6 +8,7 @@ import {
   Ecdsa,
   ECDSAUtils,
   Environments,
+  InvalidAddressError,
   KeyPair,
   MPCAlgorithm,
   MultisigType,
@@ -17,8 +18,8 @@ import {
   SignedTransaction,
   SigningError,
   SignTransactionOptions,
-  TssVerifyAddressOptions,
   VerifyTransactionOptions,
+  verifyMPCWalletAddress,
 } from '@bitgo/sdk-core';
 import { coins, NetworkType, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { Principal } from '@dfinity/principal';
@@ -41,6 +42,7 @@ import {
   SigningPayload,
   IcpTransactionExplanation,
   TransactionHexParams,
+  TssVerifyIcpAddressOptions,
   UnsignedSweepRecoveryTransaction,
 } from './lib/iface';
 import { TransactionBuilderFactory } from './lib/transactionBuilderFactory';
@@ -141,8 +143,81 @@ export class Icp extends BaseCoin {
     return true;
   }
 
-  async isWalletAddress(params: TssVerifyAddressOptions): Promise<boolean> {
-    return this.isValidAddress(params.address);
+  /**
+   * Verify that an address belongs to this wallet.
+   *
+   * @param {TssVerifyIcpAddressOptions} params - Verification parameters
+   * @returns {Promise<boolean>} True if address belongs to wallet
+   * @throws {InvalidAddressError} If address format is invalid
+   * @throws {Error} If invalid wallet version or missing parameters
+   */
+  async isWalletAddress(params: TssVerifyIcpAddressOptions): Promise<boolean> {
+    const { address, rootAddress, walletVersion } = params;
+
+    if (!this.isValidAddress(address)) {
+      throw new InvalidAddressError(`invalid address: ${address}`);
+    }
+
+    if (walletVersion === 1) {
+      return this.verifyMemoBasedAddress(address, rootAddress);
+    }
+
+    return this.verifyKeyDerivedAddress(params, address, rootAddress);
+  }
+
+  /**
+   * Verifies a memo-based address for wallet version 1.
+   *
+   * @param {string} address - The full address to verify (must include memoId)
+   * @param {string | undefined} rootAddress - The wallet's root address
+   * @returns {boolean} True if the address is valid
+   * @throws {Error} If rootAddress is missing or memoId is missing
+   */
+  private verifyMemoBasedAddress(address: string, rootAddress: string | undefined): boolean {
+    if (!rootAddress) {
+      throw new Error('rootAddress is required for wallet version 1');
+    }
+    const extractedRootAddress = utils.validateMemoAndReturnRootAddress(address);
+    if (extractedRootAddress === address) {
+      throw new Error('memoId is required for wallet version 1 addresses');
+    }
+
+    return extractedRootAddress?.toLowerCase() === rootAddress.toLowerCase();
+  }
+
+  /**
+   * Verifies a key-derived address using MPC wallet verification.
+   *
+   * @param {TssVerifyIcpAddressOptions} params - Verification parameters
+   * @param {string} address - The full address to verify
+   * @param {string | undefined} rootAddress - The wallet's root address
+   * @returns {Promise<boolean>} True if the address matches the derived address
+   * @throws {Error} If keychains are missing or address doesn't match
+   */
+  private async verifyKeyDerivedAddress(
+    params: TssVerifyIcpAddressOptions,
+    address: string,
+    rootAddress: string | undefined
+  ): Promise<boolean> {
+    const { index } = params;
+    const parsedIndex = typeof index === 'string' ? parseInt(index, 10) : index;
+
+    const isVerifyingRootAddress = rootAddress && address.toLowerCase() === rootAddress.toLowerCase();
+    if (isVerifyingRootAddress && parsedIndex !== 0) {
+      throw new Error(`Root address verification requires index 0, but got index ${index}`);
+    }
+
+    const result = await verifyMPCWalletAddress(
+      { ...params, keyCurve: 'secp256k1' },
+      this.isValidAddress.bind(this),
+      (pubKey) => utils.getAddressFromPublicKey(pubKey)
+    );
+
+    if (!result) {
+      throw new InvalidAddressError(`invalid address: ${address}`);
+    }
+
+    return true;
   }
 
   async parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
@@ -210,7 +285,7 @@ export class Icp extends BaseCoin {
     return createHash('sha256');
   }
 
-  private async getAddressFromPublicKey(hexEncodedPublicKey: string) {
+  private getAddressFromPublicKey(hexEncodedPublicKey: string): string {
     return utils.getAddressFromPublicKey(hexEncodedPublicKey);
   }
 
@@ -388,7 +463,7 @@ export class Icp extends BaseCoin {
         throw new Error('failed to derive public key');
       }
 
-      const senderAddress = await this.getAddressFromPublicKey(publicKey);
+      const senderAddress = this.getAddressFromPublicKey(publicKey);
       const balance = await this.getAccountBalance(publicKey);
       const feeData = await this.getFeeData();
       const actualBalance = balance.minus(feeData);

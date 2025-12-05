@@ -87,21 +87,17 @@ describe('Internet computer', function () {
       accountID.should.deepEqual(validAccountID2);
     });
 
-    it('should throw an error when invalid public key is provided', async function () {
-      await basecoin
-        .getAddressFromPublicKey(invalidPublicKey)
-        .should.be.rejectedWith(`Invalid hex-encoded public key format.`);
+    it('should throw an error when invalid public key is provided', function () {
+      (() => basecoin.getAddressFromPublicKey(invalidPublicKey)).should.throw('Invalid hex-encoded public key format.');
     });
 
-    it('should return valid address from a valid hex encoded public key', async function () {
-      const accountID = await utils.getAddressFromPublicKey(hexEncodedPublicKey);
+    it('should return valid address from a valid hex encoded public key', function () {
+      const accountID = utils.getAddressFromPublicKey(hexEncodedPublicKey);
       accountID.should.deepEqual(validAccountID);
     });
 
-    it('should throw an error when invalid public key is provided', async function () {
-      await utils
-        .getAddressFromPublicKey(invalidPublicKey)
-        .should.be.rejectedWith(`Invalid hex-encoded public key format.`);
+    it('should throw an error when invalid public key is provided', function () {
+      (() => utils.getAddressFromPublicKey(invalidPublicKey)).should.throw('Invalid hex-encoded public key format.');
     });
   });
 
@@ -231,6 +227,202 @@ describe('Internet computer', function () {
           txParams: txParams,
         })
         .should.rejectedWith('generated signableHex is not equal to params.signableHex');
+    });
+  });
+
+  describe('Address Verification', () => {
+    const addressVerificationData = {
+      commonKeychain:
+        '036b38ca5e63e9800b5040af498eb6e9a9c77e244ac2858edafa4bd0926a635731c3fabde9007a5771e93621d9fcb1c879660208dc79cc609fe8ddd189f7a955ab',
+      rootAddress: 'fd3eaed3e2064bd30ab497e22e8ac5a0dcadd81fa5353879dbab64e259ec70c0',
+    };
+
+    describe('Wallet VersionKey 1', () => {
+      it('should verify a valid memo-based address', async function () {
+        const rootAddress = testData.Accounts.account1.address;
+        const addressWithMemo = `${rootAddress}?memoId=123`;
+
+        const params = {
+          address: addressWithMemo,
+          rootAddress: rootAddress,
+          walletVersion: 1,
+          keychains: [],
+          index: 123,
+        };
+
+        const result = await basecoin.isWalletAddress(params);
+        result.should.equal(true);
+      });
+
+      it('should verify address with memoId=0', async function () {
+        const rootAddress = testData.Accounts.account1.address;
+        const addressWithMemo = `${rootAddress}?memoId=0`;
+
+        const params = {
+          address: addressWithMemo,
+          rootAddress: rootAddress,
+          walletVersion: 1,
+          keychains: [],
+          index: 0,
+        };
+
+        const result = await basecoin.isWalletAddress(params);
+        result.should.equal(true);
+      });
+
+      it('should fail when base address does not match root address', async function () {
+        const rootAddress = testData.Accounts.account1.address;
+        const differentAddress = testData.Accounts.account2.address;
+        const addressWithMemo = `${differentAddress}?memoId=123`;
+
+        const params = {
+          address: addressWithMemo,
+          rootAddress: rootAddress,
+          walletVersion: 1,
+          keychains: [],
+          index: 123,
+        };
+
+        const result = await basecoin.isWalletAddress(params);
+        result.should.equal(false);
+      });
+
+      it('should throw error when rootAddress is missing for wallet version 1', async function () {
+        const address = `${testData.Accounts.account1.address}?memoId=123`;
+
+        const params = {
+          address: address,
+          walletVersion: 1,
+          keychains: [],
+          index: 123,
+        };
+
+        await basecoin.isWalletAddress(params).should.be.rejectedWith('rootAddress is required for wallet version 1');
+      });
+
+      it('should throw error when memoId is missing for wallet version 1', async function () {
+        const rootAddress = testData.Accounts.account1.address;
+
+        const params = {
+          address: rootAddress,
+          rootAddress: rootAddress,
+          walletVersion: 1,
+          keychains: [],
+          index: 0,
+        };
+
+        await basecoin
+          .isWalletAddress(params)
+          .should.be.rejectedWith('memoId is required for wallet version 1 addresses');
+      });
+
+      it('should handle large memoId values', async function () {
+        const rootAddress = testData.Accounts.account1.address;
+        const largeMemoId = '9007199254740991';
+        const addressWithMemo = `${rootAddress}?memoId=${largeMemoId}`;
+
+        const params = {
+          address: addressWithMemo,
+          rootAddress: rootAddress,
+          walletVersion: 1,
+          keychains: [],
+          index: Number(largeMemoId),
+        };
+
+        const result = await basecoin.isWalletAddress(params);
+        result.should.equal(true);
+      });
+    });
+
+    describe('Wallet VersionKey 2+', () => {
+      let keychains;
+
+      before(function () {
+        keychains = [
+          { commonKeychain: addressVerificationData.commonKeychain },
+          { commonKeychain: addressVerificationData.commonKeychain },
+          { commonKeychain: addressVerificationData.commonKeychain },
+        ];
+      });
+
+      it('should verify a valid TSS root address (index 0)', async function () {
+        const params = {
+          address: addressVerificationData.rootAddress,
+          rootAddress: addressVerificationData.rootAddress,
+          keychains: keychains,
+          index: 0,
+          walletVersion: 2,
+        };
+
+        const result = await basecoin.isWalletAddress(params);
+        result.should.equal(true);
+      });
+
+      it('should throw error for invalid TSS address', async function () {
+        const invalidAddress = testData.Accounts.account2.address;
+
+        const params = {
+          address: invalidAddress,
+          keychains: keychains,
+          index: 0,
+          walletVersion: 2,
+        };
+
+        await basecoin.isWalletAddress(params).should.be.rejectedWith(`invalid address: ${invalidAddress}`);
+      });
+
+      it('should throw error when keychains is missing', async function () {
+        const params = {
+          address: addressVerificationData.rootAddress,
+          keychains: [],
+          index: 0,
+          walletVersion: 2,
+        };
+
+        await basecoin.isWalletAddress(params).should.be.rejectedWith('missing required param keychains');
+      });
+
+      it('should throw error when verifying root address with wrong index', async function () {
+        const params = {
+          address: addressVerificationData.rootAddress,
+          rootAddress: addressVerificationData.rootAddress,
+          keychains: keychains,
+          index: 1,
+          walletVersion: 2,
+        };
+
+        await basecoin
+          .isWalletAddress(params)
+          .should.be.rejectedWith('Root address verification requires index 0, but got index 1');
+      });
+
+      it('should handle string index', async function () {
+        const params = {
+          address: addressVerificationData.rootAddress,
+          rootAddress: addressVerificationData.rootAddress,
+          keychains: keychains,
+          index: '0',
+          walletVersion: 2,
+        };
+
+        const result = await basecoin.isWalletAddress(params);
+        result.should.equal(true);
+      });
+    });
+
+    describe('Address validation', () => {
+      it('should throw error for invalid address format', async function () {
+        const invalidAddress = 'invalid-address';
+
+        const params = {
+          address: invalidAddress,
+          walletVersion: 2,
+          keychains: [{ commonKeychain: addressVerificationData.commonKeychain }],
+          index: 0,
+        };
+
+        await basecoin.isWalletAddress(params).should.be.rejectedWith(`invalid address: ${invalidAddress}`);
+      });
     });
   });
 });
