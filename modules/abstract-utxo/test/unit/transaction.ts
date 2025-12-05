@@ -14,7 +14,9 @@ import {
 } from '@bitgo/sdk-core';
 
 import { AbstractUtxoCoin, getReplayProtectionAddresses, generateAddress } from '../../src';
+import { SdkBackend } from '../../src/transaction/types';
 
+import { hasWasmUtxoSupport } from './transaction/fixedScript/util';
 import {
   utxoCoins,
   shouldEqualJSON,
@@ -271,11 +273,16 @@ function run<TNumber extends number | bigint = number>(
   coin: AbstractUtxoCoin,
   inputScripts: testutil.InputScriptType[],
   txFormat: 'legacy' | 'psbt',
-  amountType: 'number' | 'bigint' = 'number'
+  { decodeWith }: { decodeWith?: SdkBackend } = {}
 ) {
-  describe(`Transaction Stages ${coin.getChain()} (${amountType}) scripts=${inputScripts.join(
-    ','
-  )} txFormat=${txFormat}`, function () {
+  const amountType = coin.amountType;
+  const title = [
+    inputScripts.join(','),
+    `txFormat=${txFormat}`,
+    `amountType=${amountType}`,
+    decodeWith ? `decodeWith=${decodeWith}` : '',
+  ];
+  describe(`${title.join(' ')}`, function () {
     const bgUrl = common.Environments[defaultBitGo.getEnv()].uri;
 
     const isTransactionWithKeyPathSpend = inputScripts.some((s) => s === 'taprootKeyPathSpend');
@@ -319,7 +326,8 @@ function run<TNumber extends number | bigint = number>(
     function getSignParams(
       prebuildHex: string,
       signer: BIP32Interface,
-      cosigner: BIP32Interface
+      cosigner: BIP32Interface,
+      decodeWith: SdkBackend | undefined
     ): WalletSignTransactionOptions {
       const txInfo = {
         unspents: txFormat === 'psbt' ? undefined : getUnspents(),
@@ -329,6 +337,7 @@ function run<TNumber extends number | bigint = number>(
           walletId: isTransactionWithKeyPathSpend ? wallet.id() : undefined,
           txHex: prebuildHex,
           txInfo,
+          decodeWith,
         },
         prv: signer.toBase58(),
         pubs: walletKeys.triple.map((k) => k.neutered().toBase58()),
@@ -351,7 +360,7 @@ function run<TNumber extends number | bigint = number>(
 
       // half-sign with the user key
       const result = (await wallet.signTransaction(
-        getSignParams(prebuild.toBuffer().toString('hex'), signer, cosigner)
+        getSignParams(prebuild.toBuffer().toString('hex'), signer, cosigner, decodeWith)
       )) as Promise<HalfSignedUtxoTransaction>;
 
       if (scope) {
@@ -367,7 +376,7 @@ function run<TNumber extends number | bigint = number>(
       cosigner: BIP32Interface
     ): Promise<FullySignedTransaction> {
       return (await wallet.signTransaction({
-        ...getSignParams(halfSigned.txHex, signer, cosigner),
+        ...getSignParams(halfSigned.txHex, signer, cosigner, decodeWith),
         isLastSignature: true,
       })) as FullySignedTransaction;
     }
@@ -533,8 +542,8 @@ function run<TNumber extends number | bigint = number>(
     async function testExplainTx(
       stageName: string,
       txHex: string,
-      unspents?: utxolib.bitgo.Unspent<TNumber>[],
-      pubs?: Triple<string>
+      unspents: utxolib.bitgo.Unspent<TNumber>[],
+      pubs: Triple<string> | undefined
     ): Promise<void> {
       const explanation = await coin.explainTransaction<TNumber>({
         txHex,
@@ -542,18 +551,16 @@ function run<TNumber extends number | bigint = number>(
           unspents,
         },
         pubs,
+        decodeWith,
       });
 
-      explanation.should.have.properties(
-        'displayOrder',
-        'id',
-        'outputs',
-        'changeOutputs',
-        'changeAmount',
-        'outputAmount',
-        'inputSignatures',
-        'signatures'
-      );
+      const expectedProperties = ['id', 'outputs', 'changeOutputs', 'changeAmount', 'outputAmount'];
+
+      if (decodeWith !== 'wasm-utxo') {
+        expectedProperties.push('displayOrder', 'inputSignatures', 'signatures');
+      }
+
+      explanation.should.have.properties(...expectedProperties);
 
       const expectedSignatureCount =
         stageName === 'prebuild' || pubs === undefined
@@ -623,38 +630,44 @@ function run<TNumber extends number | bigint = number>(
             ? getUnspentsForPsbt().map((u) => ({ ...u, value: bitgo.toTNumber(u.value, amountType) as TNumber }))
             : getUnspents();
         await testExplainTx(stageName, txHex, unspents, pubs);
-        await testExplainTx(stageName, txHex, unspents);
+        if (decodeWith !== 'wasm-utxo') {
+          await testExplainTx(stageName, txHex, unspents, undefined);
+        }
       }
     });
   });
 }
 
-function runWithAmountType(
-  coin: AbstractUtxoCoin,
-  inputScripts: testutil.InputScriptType[],
-  txFormat: 'legacy' | 'psbt'
-) {
-  const amountType = coin.amountType;
-  if (amountType === 'bigint') {
-    run<bigint>(coin, inputScripts, txFormat, amountType);
-  } else {
-    run(coin, inputScripts, txFormat, amountType);
-  }
-}
-
-utxoCoins.forEach((coin) =>
+function runTestForCoin(coin: AbstractUtxoCoin) {
   getScriptTypes2Of3().forEach((type) => {
     (['legacy', 'psbt'] as const).forEach((txFormat) => {
+      if (!coin.supportsAddressType(type === 'taprootKeyPathSpend' ? 'p2trMusig2' : type)) {
+        return;
+      }
+
       if ((type === 'taprootKeyPathSpend' || type === 'p2trMusig2') && txFormat !== 'psbt') {
         return;
       }
-      if (coin.supportsAddressType(type === 'taprootKeyPathSpend' ? 'p2trMusig2' : type)) {
-        runWithAmountType(coin, [type, type], txFormat);
 
+      run(coin, [type, type], txFormat);
+      if (getReplayProtectionAddresses(coin.network).length) {
+        run(coin, ['p2shP2pk', type], txFormat);
+      }
+
+      if (txFormat === 'psbt' && hasWasmUtxoSupport(coin.network)) {
+        run(coin, [type, type], txFormat, { decodeWith: 'wasm-utxo' });
         if (getReplayProtectionAddresses(coin.network).length) {
-          runWithAmountType(coin, ['p2shP2pk', type], txFormat);
+          run(coin, ['p2shP2pk', type], txFormat, { decodeWith: 'wasm-utxo' });
         }
       }
     });
-  })
-);
+  });
+}
+
+describe('Transaction Suite', function () {
+  utxoCoins.forEach((coin) => {
+    describe(`${coin.getChain()}`, function () {
+      runTestForCoin(coin);
+    });
+  });
+});
