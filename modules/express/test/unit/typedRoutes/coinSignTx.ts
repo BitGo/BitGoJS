@@ -782,6 +782,84 @@ describe('CoinSignTx codec tests', function () {
       assert.strictEqual(decoded.recipients[0].tokenName, 'USDC');
       assert.strictEqual(decoded.recipients[0].data, '0xabcdef');
     });
+
+    it('should validate prebuild with eip1559 as legacy transaction marker (token transactions)', function () {
+      // This tests the fix for WP-6630 - SDK sends { isEip1559: false } for legacy token transactions
+      const validPrebuild = {
+        txHex: '0xf9010d81f88408ccd68c830f424094932bb3ec0a0cb9e8aafba8e2f2c7ecf83deacc5c80b8e40dcd7a6c',
+        gasPrice: '147641996',
+        gasLimit: 1000000,
+        eip1559: {
+          isEip1559: false, // Legacy transaction marker
+        },
+        coin: 'avaxc',
+        token: 'avaxc:usdc',
+        walletId: '6618f448f6c53303d38130bc60e9efe6',
+      };
+
+      const decoded = assertDecode(TransactionPrebuild, validPrebuild);
+      assert.deepStrictEqual(decoded.eip1559, validPrebuild.eip1559);
+      assert.strictEqual(decoded.eip1559?.isEip1559, false);
+      assert.strictEqual(decoded.gasPrice, validPrebuild.gasPrice);
+      assert.strictEqual(decoded.gasLimit, validPrebuild.gasLimit);
+      assert.strictEqual(decoded.coin, validPrebuild.coin);
+      assert.strictEqual(decoded.token, validPrebuild.token);
+    });
+
+    it('should validate prebuild without eip1559 field (base coin legacy transactions)', function () {
+      // This tests base coin legacy transactions where eip1559 is undefined
+      const validPrebuild = {
+        txHex: '0xf9012e81f88408b66e168307a12094932bb3ec0a0cb9e8aafba8e2f2c7ecf83deacc5c80b90104',
+        gasPrice: 146173462,
+        gasLimit: 500000,
+        coin: 'avaxc',
+        walletId: '6618f448f6c53303d38130bc60e9efe6',
+        // Note: No eip1559 field - it's undefined
+      };
+
+      const decoded = assertDecode(TransactionPrebuild, validPrebuild);
+      assert.strictEqual(decoded.eip1559, undefined);
+      assert.strictEqual(decoded.gasPrice, validPrebuild.gasPrice);
+      assert.strictEqual(decoded.gasLimit, validPrebuild.gasLimit);
+      assert.strictEqual(decoded.coin, validPrebuild.coin);
+    });
+
+    it('should validate prebuild with full EIP1559 parameters', function () {
+      // This tests actual EIP1559 transactions with maxFeePerGas and maxPriorityFeePerGas
+      const validPrebuild = {
+        txHex: '0x02f87301808459682f008459682f0e8252089439c0f2000e39186af4b78b554eb96a2ea8dc5c3680',
+        eip1559: {
+          maxPriorityFeePerGas: '1500000000',
+          maxFeePerGas: '2000000000',
+          isEip1559: true,
+        },
+        coin: 'eth',
+        walletId: '6618f448f6c53303d38130bc60e9efe6',
+      };
+
+      const decoded = assertDecode(TransactionPrebuild, validPrebuild);
+      assert.deepStrictEqual(decoded.eip1559, validPrebuild.eip1559);
+      assert.strictEqual(decoded.eip1559?.maxPriorityFeePerGas, '1500000000');
+      assert.strictEqual(decoded.eip1559?.maxFeePerGas, '2000000000');
+      assert.strictEqual(decoded.eip1559?.isEip1559, true);
+    });
+
+    it('should validate prebuild with partial EIP1559 fields', function () {
+      // This tests that EIP1559 fields are optional (t.partial)
+      const validPrebuild = {
+        txHex: '0x02f87301808459682f008459682f0e8252089439c0f2000e39186af4b78b554eb96a2ea8dc5c3680',
+        eip1559: {
+          maxFeePerGas: '2000000000',
+          // Only one field provided - tests that t.partial allows omitting fields
+        },
+        coin: 'eth',
+        walletId: '6618f448f6c53303d38130bc60e9efe6',
+      };
+
+      const decoded = assertDecode(TransactionPrebuild, validPrebuild);
+      assert.deepStrictEqual(decoded.eip1559, validPrebuild.eip1559);
+      assert.strictEqual(decoded.eip1559?.maxFeePerGas, '2000000000');
+    });
   });
 
   describe('CoinSignTxBody', function () {
