@@ -122,7 +122,7 @@ describe('Vechain', function () {
       data.should.deepEqual({
         tokenType: 'ERC721',
         tokenQuantity: '1',
-        tokenContractAddress: '0x1ec1d168574603ec35b9d229843b7c2b44bcb770',
+        tokenContractAddress: '0x887d9102f0003f1724d8fd5d4fe95a11572fcd77',
         tokenId: '1234',
       });
     });

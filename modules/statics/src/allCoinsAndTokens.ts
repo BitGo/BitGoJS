@@ -5418,7 +5418,7 @@ export const allCoinsAndTokens = [
     'dd710759-1b87-4435-bef5-db377040deaf',
     'tvet:sdt',
     'Testnet StarGate Delegator Token',
-    '0x1ec1d168574603ec35b9d229843b7c2b44bcb770',
+    '0x887d9102f0003f1724d8fd5d4fe95a11572fcd77',
     UnderlyingAsset['tvet:sdt'],
     VET_FEATURES
   ),
