@@ -10,6 +10,7 @@ import { fetchKeychains, toBip32Triple } from '../keychains';
 
 import * as fixedScript from './fixedScript';
 import * as descriptor from './descriptor';
+import { encodeTransaction } from './decode';
 
 const debug = buildDebug('bitgo:abstract-utxo:transaction:signTransaction');
 
@@ -72,6 +73,7 @@ export async function signTransaction<TNumber extends number | bigint>(
       pubs: params.pubs,
       cosignerPub: params.cosignerPub,
     });
-    return { txHex: signedTx.toBuffer().toString('hex') };
+    const buffer = Buffer.isBuffer(signedTx) ? signedTx : encodeTransaction(signedTx);
+    return { txHex: buffer.toString('hex') };
   }
 }
