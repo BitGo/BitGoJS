@@ -14,13 +14,19 @@ export const CoinSignTxParams = {
 /**
  * EIP1559 transaction parameters for Ethereum
  * Reference: modules/abstract-eth/src/abstractEthLikeNewCoins.ts:116-119
- * Note: Both fields are REQUIRED when EIP1559 object is provided
+ *
+ * Note: Changed to t.partial() to support multiple use cases:
+ * 1. Full EIP1559 transactions: { maxFeePerGas, maxPriorityFeePerGas }
+ * 2. Legacy token transactions: { isEip1559: false } (SDK marker for non-EIP1559)
+ * 3. Legacy base coin transactions: undefined (field omitted entirely)
  */
-export const EIP1559 = t.type({
-  /** Maximum priority fee per gas (REQUIRED) */
+export const EIP1559 = t.partial({
+  /** Maximum priority fee per gas */
   maxPriorityFeePerGas: t.union([t.string, t.number]),
-  /** Maximum fee per gas (REQUIRED) */
+  /** Maximum fee per gas */
   maxFeePerGas: t.union([t.string, t.number]),
+  /** Flag indicating whether transaction uses EIP1559 fee model */
+  isEip1559: t.boolean,
 });
 
 /**
