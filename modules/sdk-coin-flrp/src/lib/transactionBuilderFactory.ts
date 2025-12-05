@@ -1,16 +1,19 @@
 import { utils as FlareUtils, evmSerial, pvmSerial, Credential } from '@flarenetwork/flarejs';
 import { BaseTransactionBuilderFactory, NotSupported } from '@bitgo/sdk-core';
-import { FlareNetwork, BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { TransactionBuilder } from './transactionBuilder';
 import { ExportInPTxBuilder } from './ExportInPTxBuilder';
 import { ImportInPTxBuilder } from './ImportInPTxBuilder';
 import { ExportInCTxBuilder } from './ExportInCTxBuilder';
 import { ImportInCTxBuilder } from './ImportInCTxBuilder';
+import { SerializedTx } from './iface';
 import utils from './utils';
 
-export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
-  protected recoverSigner = false;
+interface Codec {
+  UnpackPrefix<T>(bytes: Uint8Array): [T, Uint8Array];
+}
 
+export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
   }
@@ -22,7 +25,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    * @param codec The FlareJS codec to use for unpacking
    * @returns Array of parsed credentials
    */
-  private extractCredentialsWithCodec(credentialBytes: Uint8Array, codec: any): Credential[] {
+  private extractCredentialsWithCodec(credentialBytes: Uint8Array, codec: Codec): Credential[] {
     const credentials: Credential[] = [];
     if (credentialBytes.length < 4) {
       return credentials;
@@ -35,10 +38,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
     do {
       try {
-        const unpacked = codec.UnpackPrefix(remainingBytes);
-        credentials.push(unpacked[0] as Credential);
-        remainingBytes = unpacked[1] as Uint8Array;
-      } catch (e) {
+        const [credential, rest] = codec.UnpackPrefix<Credential>(remainingBytes);
+        credentials.push(credential);
+        remainingBytes = rest;
+      } catch {
         moreCredentials = false;
       }
     } while (remainingBytes.length > 0 && moreCredentials);
@@ -46,78 +49,86 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     return credentials;
   }
 
+  /**
+   * Parse a raw transaction buffer using the specified VM manager.
+   * @param rawBuffer The raw transaction buffer
+   * @param vmType The VM type to use for parsing ('EVM' or 'PVM')
+   * @returns Parsed transaction and credentials, or null if parsing fails
+   */
+  private parseWithVM(
+    rawBuffer: Buffer,
+    vmType: 'EVM' | 'PVM'
+  ): { tx: SerializedTx; credentials: Credential[] } | null {
+    try {
+      const manager = FlareUtils.getManagerForVM(vmType);
+      const [codec, txBytes] = manager.getCodecFromBuffer(rawBuffer);
+      const [tx, credentialBytes] = (codec as Codec).UnpackPrefix<SerializedTx>(txBytes);
+
+      const credentials =
+        credentialBytes.length > 4 ? this.extractCredentialsWithCodec(credentialBytes, codec as Codec) : [];
+
+      return { tx, credentials };
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Create the appropriate transaction builder based on transaction type.
+   * @param tx The parsed transaction
+   * @param rawBuffer The raw transaction buffer
+   * @param credentials The extracted credentials
+   * @param isEVM Whether this is an EVM transaction
+   * @returns The appropriate transaction builder
+   */
+  private createBuilder(
+    tx: SerializedTx,
+    rawBuffer: Buffer,
+    credentials: Credential[],
+    isEVM: boolean
+  ): TransactionBuilder {
+    if (isEVM) {
+      if (ExportInCTxBuilder.verifyTxType(tx._type)) {
+        const builder = this.getExportInCBuilder();
+        builder.initBuilder(tx as evmSerial.ExportTx, rawBuffer, credentials);
+        return builder;
+      }
+      if (ImportInCTxBuilder.verifyTxType(tx._type)) {
+        const builder = this.getImportInCBuilder();
+        builder.initBuilder(tx as evmSerial.ImportTx, rawBuffer, credentials);
+        return builder;
+      }
+    } else {
+      if (ImportInPTxBuilder.verifyTxType(tx._type)) {
+        const builder = this.getImportInPBuilder();
+        builder.initBuilder(tx as pvmSerial.ImportTx, rawBuffer, credentials);
+        return builder;
+      }
+      if (ExportInPTxBuilder.verifyTxType(tx._type)) {
+        const builder = this.getExportInPBuilder();
+        builder.initBuilder(tx as pvmSerial.ExportTx, rawBuffer, credentials);
+        return builder;
+      }
+    }
+    throw new NotSupported('Transaction type not supported');
+  }
+
   /** @inheritdoc */
   from(raw: string): TransactionBuilder {
     utils.validateRawTransaction(raw);
-    const rawNoHex = utils.removeHexPrefix(raw);
-    const rawBuffer = Buffer.from(rawNoHex, 'hex');
-    let txSource: 'EVM' | 'PVM';
+    const rawBuffer = Buffer.from(utils.removeHexPrefix(raw), 'hex');
 
-    const network = this._coinConfig.network as FlareNetwork;
-    let tx: any;
-    let credentials: Credential[] = [];
-
-    try {
-      txSource = 'EVM';
-      const evmManager = FlareUtils.getManagerForVM('EVM');
-
-      // Use getCodecFromBuffer to get both codec and remaining bytes
-      const [codec, txBytes] = evmManager.getCodecFromBuffer(rawBuffer);
-      // UnpackPrefix returns [transaction, remainingBytes]
-      const [transaction, credentialBytes] = codec.UnpackPrefix(txBytes) as [any, Uint8Array];
-      tx = transaction;
-
-      // Extract credentials from remaining bytes using codec
-      if (credentialBytes.length > 4) {
-        credentials = this.extractCredentialsWithCodec(credentialBytes, codec);
-      }
-
-      const blockchainId = tx.getBlockchainId();
-      if (blockchainId === network.cChainBlockchainID) {
-        console.log('Parsed as EVM transaction on C-Chain');
-      }
-    } catch (e) {
-      txSource = 'PVM';
-      const pvmManager = FlareUtils.getManagerForVM('PVM');
-
-      // Use getCodecFromBuffer to get both codec and remaining bytes
-      const [codec, txBytes] = pvmManager.getCodecFromBuffer(rawBuffer);
-      // UnpackPrefix returns [transaction, remainingBytes]
-      const [transaction, credentialBytes] = codec.UnpackPrefix(txBytes) as [any, Uint8Array];
-      tx = transaction;
-
-      // Extract credentials from remaining bytes using codec
-      if (credentialBytes.length > 4) {
-        credentials = this.extractCredentialsWithCodec(credentialBytes, codec);
-      }
-
-      const blockchainId = tx.getBlockchainId();
-      if (blockchainId === network.blockchainID) {
-        console.log('Parsed as PVM transaction on P-Chain');
-      }
+    // Try EVM first, then fall back to PVM
+    const evmResult = this.parseWithVM(rawBuffer, 'EVM');
+    if (evmResult) {
+      return this.createBuilder(evmResult.tx, rawBuffer, evmResult.credentials, true);
     }
 
-    if (txSource === 'EVM') {
-      if (ExportInCTxBuilder.verifyTxType(tx._type)) {
-        const exportBuilder = this.getExportInCBuilder();
-        exportBuilder.initBuilder(tx as evmSerial.ExportTx, rawBuffer, credentials);
-        return exportBuilder;
-      } else if (ImportInCTxBuilder.verifyTxType(tx._type)) {
-        const importBuilder = this.getImportInCBuilder();
-        importBuilder.initBuilder(tx as evmSerial.ImportTx, rawBuffer, credentials);
-        return importBuilder;
-      }
-    } else if (txSource === 'PVM') {
-      if (ImportInPTxBuilder.verifyTxType(tx._type)) {
-        const importBuilder = this.getImportInPBuilder();
-        importBuilder.initBuilder(tx as pvmSerial.ImportTx, rawBuffer, credentials);
-        return importBuilder;
-      } else if (ExportInPTxBuilder.verifyTxType(tx._type)) {
-        const exportBuilder = this.getExportInPBuilder();
-        exportBuilder.initBuilder(tx as pvmSerial.ExportTx, rawBuffer, credentials);
-        return exportBuilder;
-      }
+    const pvmResult = this.parseWithVM(rawBuffer, 'PVM');
+    if (pvmResult) {
+      return this.createBuilder(pvmResult.tx, rawBuffer, pvmResult.credentials, false);
     }
+
     throw new NotSupported('Transaction type not supported');
   }
 

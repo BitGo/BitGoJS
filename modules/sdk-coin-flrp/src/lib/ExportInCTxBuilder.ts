@@ -89,7 +89,9 @@ export class ExportInCTxBuilder extends AtomicInCTransactionBuilder {
     }
     const output = outputs[0];
 
-    // TODO validate assetId
+    if (Buffer.from(output.assetId.toBytes()).toString('hex') !== this.transaction._assetId) {
+      throw new BuildTransactionError('AssetID mismatch');
+    }
 
     // The inputs is not an utxo.
     // It's expected to have only one input from C-Chain address.

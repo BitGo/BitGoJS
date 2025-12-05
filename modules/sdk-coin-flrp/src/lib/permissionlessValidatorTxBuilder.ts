@@ -2,20 +2,17 @@ import { utils as FlareUtils, TypeSymbols } from '@flarenetwork/flarejs';
 import { BuildTransactionError, isValidBLSPublicKey, isValidBLSSignature, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { DecodedUtxoObj } from './iface';
-import { KeyPair } from './keyPair';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import utils from './utils';
 
 export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
-  public _signer: KeyPair[] = [];
   protected _nodeID: string;
   protected _blsPublicKey: string;
   protected _blsSignature: string;
   protected _startTime: bigint;
   protected _endTime: bigint;
   protected _stakeAmount: bigint;
-  protected recoverSigner = false;
   protected _delegationFeeRate: number;
 
   constructor(coinConfig: Readonly<CoinConfig>) {

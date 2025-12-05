@@ -166,7 +166,7 @@ export abstract class AtomicTransactionBuilder extends TransactionBuilder {
   }
 
   /**
-   * Builds the avax transaction. transaction field is changed.
+   * Builds the Flare transaction. Transaction field is changed.
    */
   protected abstract buildFlareTransaction(): void;
 
