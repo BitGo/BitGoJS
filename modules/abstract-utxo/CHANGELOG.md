@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.9.0...@bitgo/abstract-utxo@10.10.0) (2025-12-05)
+
+
+### Features
+
+* **abstract-utxo:** add encodeTransaction function ([8783f95](https://github.com/BitGo/BitGoJS/commit/8783f95b42b824d6cb8eba678450979c8495afa3))
+* **abstract-utxo:** add fixedScriptWallet to decodeTransactionAsPsbt ([19cd235](https://github.com/BitGo/BitGoJS/commit/19cd2358b8aef0a2d97522dbd1fde66b593aff7e))
+* **abstract-utxo:** add support for PSBT decoder selection ([c78c2f2](https://github.com/BitGo/BitGoJS/commit/c78c2f210f3b78365a84b98f092a7346cc26fc50))
+* **abstract-utxo:** add WASM-based PSBT signing for MuSig2 ([2dc2ede](https://github.com/BitGo/BitGoJS/commit/2dc2ede4b93024a20aa04af9d53905502b6ae1ca))
+* **abstract-utxo:** add wasm-utxo decoding support to test suite ([0f5c86c](https://github.com/BitGo/BitGoJS/commit/0f5c86c4f00a37fe8d850ee4450f1ffa008390d4))
+* **abstract-utxo:** enable signing psbt with wasm implementation ([c941b08](https://github.com/BitGo/BitGoJS/commit/c941b08afb3ade94164a51164f754bf3d45bcbc2))
+* **abstract-utxo:** extend DecodedTransaction to include wasm-utxo BitGoPsbt ([cc67073](https://github.com/BitGo/BitGoJS/commit/cc67073e45a871769d54d4e1a349517b5df32137))
+* **abstract-utxo:** refactor replay protection to use pubkeys ([b2c8c47](https://github.com/BitGo/BitGoJS/commit/b2c8c470d13000cdcea0c5eb4944655486dac7d1))
+
+
+
+
+
 # [10.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.8.0...@bitgo/abstract-utxo@10.9.0) (2025-12-04)
 
 
