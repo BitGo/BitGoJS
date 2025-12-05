@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [11.18.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.17.0...@bitgo/utxo-lib@11.18.0) (2025-12-05)
+
+
+### Features
+
+* **utxo-lib:** add getReplayProtectionPublicKey method to AcidTest ([724af70](https://github.com/BitGo/BitGoJS/commit/724af70721068719b7a4d0ee262e292a127e1ba2))
+
+
+
+
+
 # [11.17.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.16.1...@bitgo/utxo-lib@11.17.0) (2025-12-04)
 
 

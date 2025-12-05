@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.3.17](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-apechain@1.3.16...@bitgo/sdk-coin-apechain@1.3.17) (2025-12-05)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-apechain
+
+
+
+
+
 ## [1.3.16](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-apechain@1.3.15...@bitgo/sdk-coin-apechain@1.3.16) (2025-12-04)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-apechain

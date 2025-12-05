@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [15.16.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.16.0...@bitgo/express@15.16.1) (2025-12-05)
+
+
+### Bug Fixes
+
+* **express:** support legacy EIP1559 transaction in type validation ([6c5e13f](https://github.com/BitGo/BitGoJS/commit/6c5e13f0cba9aeb15dc0304a73b9cb1d1318e9fa))
+
+
+
+
+
 # [15.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.15.0...@bitgo/express@15.16.0) (2025-12-04)
 
 
