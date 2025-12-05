@@ -130,9 +130,9 @@ function describeSignPsbtWithMusig2Participant(
           getMockCoinWasm(acidTest.rootWalletKeys, acidTest.network),
           psbt,
           acidTest.rootWalletKeys.user,
-          wasmWalletKeys,
-          replayProtection,
+          fixedScriptWallet.RootWalletKeys.from(acidTest.rootWalletKeys),
           {
+            replayProtection,
             isLastSignature: false,
             signingStep: undefined,
             walletId: 'test-wallet-id',

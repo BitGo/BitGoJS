@@ -20,7 +20,7 @@ const PSBT_CACHE_WASM = new Map<string, fixedScriptWallet.BitGoPsbt>();
 
 function hasKeyPathSpendInput(
   tx: fixedScriptWallet.BitGoPsbt,
-  rootWalletKeys: fixedScriptWallet.IWalletKeys,
+  rootWalletKeys: fixedScriptWallet.RootWalletKeys,
   replayProtection: ReplayProtectionKeys
 ): boolean {
   const parsed = tx.parseTransactionWithWalletKeys(rootWalletKeys, replayProtection);
@@ -36,10 +36,10 @@ function hasKeyPathSpendInput(
 export function signAndVerifyPsbtWasm(
   tx: fixedScriptWallet.BitGoPsbt,
   signerKeychain: BIP32Interface,
-  rootWalletKeys: fixedScriptWallet.IWalletKeys,
+  rootWalletKeys: fixedScriptWallet.RootWalletKeys,
   replayProtection: ReplayProtectionKeys,
   { isLastSignature }: { isLastSignature: boolean }
-): fixedScriptWallet.BitGoPsbt | Uint8Array {
+): fixedScriptWallet.BitGoPsbt | Buffer {
   const wasmSigner = toWasmBIP32(signerKeychain);
   const parsed = tx.parseTransactionWithWalletKeys(rootWalletKeys, replayProtection);
 
@@ -85,7 +85,7 @@ export function signAndVerifyPsbtWasm(
 
   if (isLastSignature) {
     tx.finalizeAllInputs();
-    return tx.extractTransaction();
+    return Buffer.from(tx.extractTransaction());
   }
 
   return tx;
@@ -100,17 +100,17 @@ export async function signPsbtWithMusig2ParticipantWasm(
   coin: Musig2Participant<fixedScriptWallet.BitGoPsbt>,
   tx: fixedScriptWallet.BitGoPsbt,
   signerKeychain: BIP32Interface | undefined,
-  rootWalletKeys: fixedScriptWallet.IWalletKeys,
-  replayProtection: ReplayProtectionKeys,
+  rootWalletKeys: fixedScriptWallet.RootWalletKeys,
   params: {
+    replayProtection: ReplayProtectionKeys;
     isLastSignature: boolean;
     signingStep: 'signerNonce' | 'cosignerNonce' | 'signerSignature' | undefined;
     walletId: string | undefined;
   }
-): Promise<fixedScriptWallet.BitGoPsbt | Uint8Array> {
+): Promise<fixedScriptWallet.BitGoPsbt | Buffer> {
   const wasmSigner = signerKeychain ? toWasmBIP32(signerKeychain) : undefined;
 
-  if (hasKeyPathSpendInput(tx, rootWalletKeys, replayProtection)) {
+  if (hasKeyPathSpendInput(tx, rootWalletKeys, params.replayProtection)) {
     // We can only be the first signature on a transaction with taproot key path spend inputs because
     // we require the secret nonce in the cache of the first signer, which is impossible to retrieve if
     // deserialized from a hex.
@@ -162,7 +162,7 @@ export async function signPsbtWithMusig2ParticipantWasm(
   }
 
   assert(signerKeychain);
-  return signAndVerifyPsbtWasm(tx, signerKeychain, rootWalletKeys, replayProtection, {
+  return signAndVerifyPsbtWasm(tx, signerKeychain, rootWalletKeys, params.replayProtection, {
     isLastSignature: params.isLastSignature,
   });
 }
