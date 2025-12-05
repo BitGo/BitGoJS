@@ -64,6 +64,7 @@ export interface BitGoAPIOptions {
   validate?: boolean;
   cookiesPropagationEnabled?: boolean;
   getAdditionalHeadersCb?: AdditionalHeadersCallback;
+  requestIdPrefix?: string;
   evm?: {
     [key: string]: {
       baseUrl?: string;

@@ -38,6 +38,107 @@ describe('Constructor', function () {
       bitgo.cookiesPropagationEnabled.should.equal(false);
     });
   });
+
+  describe('requestIdPrefix argument', function () {
+    afterEach(function () {
+      nock.cleanAll();
+    });
+
+    it('should prepend requestIdPrefix to Request-ID header when set', async function () {
+      const bitgo = new BitGoAPI({
+        env: 'custom',
+        customRootURI: 'https://app.example.local',
+        requestIdPrefix: 'test-prefix-',
+      });
+
+      const scope = nock('https://app.example.local')
+        .get('/api/v1/ping')
+        .matchHeader('Request-ID', /^test-prefix-/)
+        .reply(200, { status: 'ok' });
+
+      await bitgo.ping({
+        reqId: {
+          toString: () => '12345',
+          inc: () => {
+            /* mock */
+          },
+        } as any,
+      });
+
+      scope.isDone().should.be.true();
+    });
+
+    it('should not modify Request-ID header when requestIdPrefix is not set', async function () {
+      const bitgo = new BitGoAPI({
+        env: 'custom',
+        customRootURI: 'https://app.example.local',
+      });
+
+      const scope = nock('https://app.example.local')
+        .get('/api/v1/ping')
+        .matchHeader('Request-ID', /^12345$/)
+        .reply(200, { status: 'ok' });
+
+      await bitgo.ping({
+        reqId: {
+          toString: () => '12345',
+          inc: () => {
+            /* mock */
+          },
+        } as any,
+      });
+
+      scope.isDone().should.be.true();
+    });
+
+    it('should correctly format Request-ID with prefix and numeric sequence', async function () {
+      const bitgo = new BitGoAPI({
+        env: 'custom',
+        customRootURI: 'https://app.example.local',
+        requestIdPrefix: 'myapp-v1-',
+      });
+
+      const scope = nock('https://app.example.local')
+        .get('/api/v1/ping')
+        .matchHeader('Request-ID', 'myapp-v1-trace-123')
+        .reply(200, { status: 'ok' });
+
+      await bitgo.ping({
+        reqId: {
+          toString: () => 'trace-123',
+          inc: () => {
+            /* mock */
+          },
+        } as any,
+      });
+
+      scope.isDone().should.be.true();
+    });
+
+    it('should work with empty string prefix', async function () {
+      const bitgo = new BitGoAPI({
+        env: 'custom',
+        customRootURI: 'https://app.example.local',
+        requestIdPrefix: '',
+      });
+
+      const scope = nock('https://app.example.local')
+        .get('/api/v1/ping')
+        .matchHeader('Request-ID', 'abc-123')
+        .reply(200, { status: 'ok' });
+
+      await bitgo.ping({
+        reqId: {
+          toString: () => 'abc-123',
+          inc: () => {
+            /* mock */
+          },
+        } as any,
+      });
+
+      scope.isDone().should.be.true();
+    });
+  });
   describe('http proxy agent', function () {
     it('http proxy agent shall be created when proxy(customProxyagent) is set', function () {
       const customProxyAgent = new ProxyAgent({
