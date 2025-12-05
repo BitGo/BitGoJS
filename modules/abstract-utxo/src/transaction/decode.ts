@@ -57,3 +57,15 @@ export function decodePsbtWith(
     return fixedScriptWallet.BitGoPsbt.fromBytes(psbt, toNetworkName(network));
   }
 }
+
+export function encodeTransaction(
+  transaction: utxolib.bitgo.UtxoTransaction<bigint | number> | utxolib.bitgo.UtxoPsbt | fixedScriptWallet.BitGoPsbt
+): Buffer {
+  if (transaction instanceof utxolib.bitgo.UtxoTransaction) {
+    return transaction.toBuffer();
+  } else if (transaction instanceof utxolib.bitgo.UtxoPsbt) {
+    return transaction.toBuffer();
+  } else {
+    return Buffer.from(transaction.serialize());
+  }
+}
