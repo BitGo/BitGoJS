@@ -298,6 +298,33 @@ describe('Iota Transfer Builder', () => {
       should.equal(tx.type, TransactionType.Send);
       tx.paymentObjects?.length.should.equal(2);
     });
+
+    it('should accept empty payment objects array and use gas objects for payment in non-sponsor mode', async function () {
+      const builder = factory
+        .getTransferBuilder()
+        .sender(testData.sender.address)
+        .recipients(testData.recipients)
+        .paymentObjects([])
+        .gasData(testData.gasData);
+
+      const tx = (await builder.build()) as TransferTransaction;
+      should.equal(tx.type, TransactionType.Send);
+      should.equal(tx.isSimulateTx, false);
+      should.equal(tx.sender, testData.sender.address);
+      await assertValidRawTransaction(tx);
+    });
+
+    it('should fail tx building in case of empty payment objects in sponsor mode', async function () {
+      const builder = factory
+        .getTransferBuilder()
+        .sender(testData.sender.address)
+        .gasSponsor(testData.gasSponsor.address)
+        .recipients(testData.recipients)
+        .paymentObjects([])
+        .gasData(testData.gasData);
+
+      await builder.build().should.be.rejectedWith(/Payment objects are required when using a gas sponsor/);
+    });
   });
 
   describe('Validation Errors', () => {
@@ -380,9 +407,9 @@ describe('Iota Transfer Builder', () => {
         await builder.build().should.be.rejected();
       });
 
-      it('should fail for empty payment objects', function () {
+      it('should allow empty payment objects', function () {
         const builder = createBasicTransferBuilder();
-        should(() => builder.paymentObjects([])).throwError('No Objects provided for payment');
+        should.doesNotThrow(() => builder.paymentObjects([]));
       });
 
       it('should fail without payment objects when using gas sponsor', async function () {
