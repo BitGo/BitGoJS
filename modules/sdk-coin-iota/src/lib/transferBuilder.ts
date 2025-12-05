@@ -33,12 +33,8 @@ export class TransferBuilder extends TransactionBuilder {
    * These are the source coins that will be split and transferred to recipients.
    * @param paymentObjects - Array of IOTA coin objects to use for payment
    * @returns This builder for method chaining
-   * @throws BuildTransactionError if payment objects array is empty
    */
   paymentObjects(paymentObjects: TransactionObjectInput[]): this {
-    if (paymentObjects.length === 0) {
-      throw new BuildTransactionError('No Objects provided for payment');
-    }
     this.transferTransaction.paymentObjects = paymentObjects;
     return this;
   }
