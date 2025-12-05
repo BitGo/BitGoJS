@@ -7,6 +7,10 @@ import type { CustomChangeOptions } from './fixedScript';
 
 export type SdkBackend = 'utxolib' | 'wasm-utxo';
 
+export function isSdkBackend(backend: string): backend is SdkBackend {
+  return backend === 'utxolib' || backend === 'wasm-utxo';
+}
+
 export type DecodedTransaction<TNumber extends number | bigint> =
   | utxolib.bitgo.UtxoTransaction<TNumber>
   | utxolib.bitgo.UtxoPsbt
