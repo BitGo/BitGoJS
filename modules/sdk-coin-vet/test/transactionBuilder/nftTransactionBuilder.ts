@@ -98,7 +98,7 @@ describe('nftTransactionBuilder', () => {
       should.equal(tx.getFee(), '315411764705882352');
       should.equal(tx.nonce, '64248');
       should.equal(tx.expiration, 64);
-      should.equal(tx.nftCollectionId, '0x1ec1d168574603ec35b9d229843b7c2b44bcb770');
+      should.equal(tx.nftCollectionId, '0x887d9102f0003f1724d8fd5d4fe95a11572fcd77');
       should.equal(tx.tokenId, '100131');
       should.equal(tx.type, TransactionType.SendNFT);
       const rawTx = tx.toBroadcastFormat();
