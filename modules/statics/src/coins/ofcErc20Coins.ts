@@ -4561,6 +4561,14 @@ export const tOfcErc20Coins = [
     18,
     UnderlyingAsset['baseeth:sapien']
   ),
+  ofcerc20(
+    'bdfff799-1623-4847-93c0-c1a040c13d3f',
+    'ofcbaseeth:aixbt',
+    'Aixbt by Virtuals',
+    18,
+    UnderlyingAsset['baseeth:aixbt']
+  ),
+  ofcerc20('3ce0c7b4-7043-4309-8493-7809001ad410', 'ofcbaseeth:brett', 'Brett', 18, UnderlyingAsset['baseeth:brett']),
 
   ofcerc20('abeefced-cfda-4afa-8f9c-aebfcadbecfd', 'ofceth:align', 'Aligned', 18, UnderlyingAsset['eth:align']),
 
@@ -4597,6 +4605,11 @@ export const tOfcErc20Coins = [
   ofcerc20('10c41a70-8bd2-4415-af52-fefe3af01132', 'ofceth:wxm', 'WeatherXM', 18, UnderlyingAsset['eth:wxm']),
   ofcerc20('c574d2de-42be-488f-afc0-71e2691eb900', 'ofceth:jpyc', 'JPY Coin', 18, UnderlyingAsset['eth:jpyc']),
   ofcerc20('8465f646-73f8-4818-b890-c953f4423c89', 'ofceth:ten', 'TEN', 18, UnderlyingAsset['eth:ten']),
+  ofcerc20('9c1aaba6-e190-4be5-a477-f7db7d0f07ef', 'ofceth:camp', 'Camp', 18, UnderlyingAsset['eth:camp']),
+  ofcerc20('2c28b184-614a-427f-bf5c-37dadee8985b', 'ofceth:f', 'SynFutures', 18, UnderlyingAsset['eth:f']),
+  ofcerc20('f8e6404b-2adc-4f74-b957-d9cbd7228d7e', 'ofceth:turtle', 'Turtle', 18, UnderlyingAsset['eth:turtle']),
+  ofcerc20('a6e121e6-6563-4d2c-818d-91e9bd4af7ed', 'ofceth:order', 'Orderly Network', 18, UnderlyingAsset['eth:order']),
+  ofcerc20('7192609e-c255-4da8-b1a5-e40cabbf4f2e', 'ofceth:puffer', 'Puffer', 18, UnderlyingAsset['eth:puffer']),
 
   // MON Network tokens
   ofcerc20(

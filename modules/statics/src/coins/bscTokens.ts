@@ -1480,4 +1480,22 @@ export const bscTokens = [
     UnderlyingAsset['bsc:home'],
     BSC_TOKEN_FEATURES
   ),
+  bscToken(
+    '7e5962df-a44b-4d69-af9d-ef96f77064db',
+    'bsc:zbt',
+    'ZEROBASE',
+    18,
+    '0xfab99fcf605fd8f4593edb70a43ba56542777777',
+    UnderlyingAsset['bsc:zbt'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
+    '5803d1f3-5950-4410-b0de-db7aa3f0f67c',
+    'bsc:iost',
+    'IOSToken',
+    18,
+    '0xaf48b7e315a52518cfbf7d96c455d9dfad94cb48',
+    UnderlyingAsset['bsc:iost'],
+    BSC_TOKEN_FEATURES
+  ),
 ];
