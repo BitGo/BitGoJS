@@ -406,7 +406,6 @@ export const SUI_TOKEN_FEATURES = [
   CoinFeature.TSS,
   CoinFeature.TSS_COLD,
   CoinFeature.BULK_TRANSACTION,
-  CoinFeature.ALLOWS_NEGATIVE_FEE,
 ];
 export const SUI_TOKEN_FEATURES_EXCLUDE_SINGAPORE = SUI_TOKEN_FEATURES.filter(
   (feature) => feature !== CoinFeature.CUSTODY_BITGO_SINGAPORE
