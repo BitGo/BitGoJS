@@ -3,6 +3,7 @@ export * from './iface';
 export { KeyPair } from './keyPair';
 export { Utils };
 export { TransactionBuilderFactory } from './transactionBuilderFactory';
+export { TransactionBuilder } from './transactionBuilder';
 export { Transaction } from './transaction';
 export { AtomicTransactionBuilder } from './atomicTransactionBuilder';
 export { AtomicInCTransactionBuilder } from './atomicInCTransactionBuilder';
