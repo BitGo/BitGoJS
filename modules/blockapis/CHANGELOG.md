@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.12.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/blockapis@1.12.9...@bitgo/blockapis@1.12.10) (2025-12-05)
+
+**Note:** Version bump only for package @bitgo/blockapis
+
+
+
+
+
 ## [1.12.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/blockapis@1.12.8...@bitgo/blockapis@1.12.9) (2025-12-04)
 
 **Note:** Version bump only for package @bitgo/blockapis

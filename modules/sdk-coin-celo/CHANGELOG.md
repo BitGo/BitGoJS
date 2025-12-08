@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [6.1.7](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-celo@6.1.6...@bitgo/sdk-coin-celo@6.1.7) (2025-12-05)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-celo
+
+
+
+
+
 ## [6.1.6](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-celo@6.1.5...@bitgo/sdk-coin-celo@6.1.6) (2025-12-04)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-celo
