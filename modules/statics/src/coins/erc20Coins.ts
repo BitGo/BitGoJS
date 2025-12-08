@@ -14129,4 +14129,45 @@ export const erc20Coins = [
     '0xea9bb54fc76bfd5dd2ff2f6da641e78c230bb683',
     UnderlyingAsset['eth:ten']
   ),
+
+  erc20(
+    '4a083157-205b-4769-8ecd-e71f40f94021',
+    'eth:camp',
+    'Camp',
+    18,
+    '0x84eaac1b2dc3f84d92ff84c3ec205b1fa74671fc',
+    UnderlyingAsset['eth:camp']
+  ),
+  erc20(
+    '152ae10b-384a-48f2-9f3a-936776d05fd0',
+    'eth:f',
+    'SynFutures',
+    18,
+    '0x6e15a54b5ecac17e58dadeddbe8506a7560252f9',
+    UnderlyingAsset['eth:f']
+  ),
+  erc20(
+    'b742d8e7-aaf6-4c86-87d4-f430e39ca951',
+    'eth:turtle',
+    'Turtle',
+    18,
+    '0x66fd8de541c0594b4dccdfc13bf3a390e50d3afd',
+    UnderlyingAsset['eth:turtle']
+  ),
+  erc20(
+    '6a4d3d5e-8934-442b-9929-9b1c0b6e9e2b',
+    'eth:order',
+    'Orderly Network',
+    18,
+    '0xabd4c63d2616a5201454168269031355f4764337',
+    UnderlyingAsset['eth:order']
+  ),
+  erc20(
+    'b54da6ed-2724-4293-84aa-ae65d7e7162b',
+    'eth:puffer',
+    'Puffer',
+    18,
+    '0x4d1c297d39c5c1277964d0e3f8aa901493664530',
+    UnderlyingAsset['eth:puffer']
+  ),
 ];

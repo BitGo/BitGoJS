@@ -2791,6 +2791,24 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['baseeth:sapien'],
     Networks.main.basechain
   ),
+  erc20Token(
+    '4e38986f-66d0-4ec6-a2dd-350129b8e844',
+    'baseeth:aixbt',
+    'Aixbt by Virtuals',
+    18,
+    '0x4f9fd6be4a90f2620860d680c0d4d5fb53d1a825',
+    UnderlyingAsset['baseeth:aixbt'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    'd7c2eb80-a682-4b0b-929a-fb7c1017788c',
+    'baseeth:brett',
+    'Brett',
+    18,
+    '0x532f27101965dd16442e59d40670faf5ebb142e4',
+    UnderlyingAsset['baseeth:brett'],
+    Networks.main.basechain
+  ),
 
   // XDC mainnet tokens
   erc20Token(
@@ -4475,6 +4493,14 @@ export const allCoinsAndTokens = [
     18,
     '0x0c880f6761f1af8d9aa9c466984b80dab9a8c9e8',
     UnderlyingAsset['arbeth:pendle']
+  ),
+  arbethErc20(
+    '98000a40-1674-4bff-8579-949d9dd1a733',
+    'arbeth:uxlink',
+    'UXLINK Token',
+    18,
+    '0x1a6b3a62391eccaaa992ade44cd4afe6bec8cff1',
+    UnderlyingAsset['arbeth:uxlink']
   ),
 
   opethErc20(

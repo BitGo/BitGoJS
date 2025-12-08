@@ -1737,6 +1737,13 @@ export const ofcCoins = [
     18,
     UnderlyingAsset['arbeth:pendle']
   ),
+  ofcArbethErc20(
+    '870deb9f-5e40-4889-a2b9-4fadb69d5db1',
+    'ofcarbeth:uxlink',
+    'UXLINK Token',
+    18,
+    UnderlyingAsset['arbeth:uxlink']
+  ),
 
   ofcAvaxErc20('2bd6201d-c46c-481e-b82d-7cf3601679cb', 'ofcavaxc:aave-e', 'Aave', 18, UnderlyingAsset['avaxc:aave']),
   ofcAvaxErc20(
@@ -2455,6 +2462,8 @@ export const ofcCoins = [
   ),
   ofcBscToken('08974cb2-8081-4248-89d5-c74af0edf4bb', 'ofcbsc:aster', 'Aster', 18, UnderlyingAsset['bsc:aster']),
   ofcBscToken('d2b79bd4-3fa4-42db-9534-8def5e117c35', 'ofcbsc:home', 'Home', 18, UnderlyingAsset['bsc:home']),
+  ofcBscToken('ebc957fa-50ed-42c1-993d-b752c247ada9', 'ofcbsc:zbt', 'ZEROBASE', 18, UnderlyingAsset['bsc:zbt']),
+  ofcBscToken('d6570d4a-03fa-4af8-9cd1-03b0777fca92', 'ofcbsc:iost', 'IOSToken', 18, UnderlyingAsset['bsc:iost']),
 
   tofcBscToken(
     'e9174338-0d26-4f49-b111-3487b60c9912',

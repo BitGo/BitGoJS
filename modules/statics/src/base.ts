@@ -2345,6 +2345,11 @@ export enum UnderlyingAsset {
   'eth:wxm' = 'eth:wxm',
   'eth:jpyc' = 'eth:jpyc',
   'eth:ten' = 'eth:ten',
+  'eth:camp' = 'eth:camp',
+  'eth:f' = 'eth:f',
+  'eth:turtle' = 'eth:turtle',
+  'eth:order' = 'eth:order',
+  'eth:puffer' = 'eth:puffer',
 
   'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ' = 'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ',
   'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M' = 'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M',
@@ -2785,6 +2790,8 @@ export enum UnderlyingAsset {
   'bsc:soon' = 'bsc:soon',
   'bsc:bard' = 'bsc:bard',
   'bsc:home' = 'bsc:home',
+  'bsc:zbt' = 'bsc:zbt',
+  'bsc:iost' = 'bsc:iost',
 
   // BSC NFTs
   // generic NFTs
@@ -2867,6 +2874,7 @@ export enum UnderlyingAsset {
   'arbeth:rdnt' = 'arbeth:rdnt',
   'arbeth:pendle' = 'arbeth:pendle',
   'arbeth:gmx' = 'arbeth:gmx',
+  'arbeth:uxlink' = 'arbeth:uxlink',
 
   // BaseETH mainnet tokens
   'baseeth:aero' = 'baseeth:aero',
@@ -2893,6 +2901,8 @@ export enum UnderlyingAsset {
   'baseeth:wbrly' = 'baseeth:wbrly',
   'baseeth:recall' = 'baseeth:recall',
   'baseeth:sapien' = 'baseeth:sapien',
+  'baseeth:aixbt' = 'baseeht:aixbt',
+  'baseeth:brett' = 'baseeth:brett',
 
   // BaseETH testnet tokens
   'tbaseeth:usdc' = 'tbaseeth:usdc',
