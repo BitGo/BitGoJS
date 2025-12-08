@@ -3,6 +3,33 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [50.16.1](https://github.com/BitGo/BitGoJS/compare/bitgo@50.16.0...bitgo@50.16.1) (2025-12-05)
+
+**Note:** Version bump only for package bitgo
+
+
+
+
+
+# [50.16.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.15.0...bitgo@50.16.0) (2025-12-04)
+
+
+### Bug Fixes
+
+* getTokenConstructor to work for testnet tokens + test cases ([e4852bc](https://github.com/BitGo/BitGoJS/commit/e4852bc692267d0f99305b7e8c2cf3a5f2dc1112))
+
+
+### Features
+
+* add DogeOS and DogeOS Testnet support ([c760ffc](https://github.com/BitGo/BitGoJS/commit/c760ffcafe87a35432d91ec3ff100a0a2ab8b0ef))
+* added rotate keychain method for multi-user-key ofc wallet ([49f0701](https://github.com/BitGo/BitGoJS/commit/49f07018762667ed1647fe438f7624be2cc5e5c6))
+* onboard thypeevm:usdc ([533ac0e](https://github.com/BitGo/BitGoJS/commit/533ac0e271eaa4f2dd812f8768597175bfd82e08))
+* **statics:** add morph chain config ([00dca1d](https://github.com/BitGo/BitGoJS/commit/00dca1d066eed9d866d974722e163e2edadb8262))
+
+
+
+
+
 # [50.15.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.14.0...bitgo@50.15.0) (2025-11-26)
 
 

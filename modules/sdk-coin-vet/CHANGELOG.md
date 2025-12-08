@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.9.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.9.0...@bitgo/sdk-coin-vet@2.9.1) (2025-12-05)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-vet
+
+
+
+
+
+# [2.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.8.5...@bitgo/sdk-coin-vet@2.9.0) (2025-12-04)
+
+
+### Features
+
+* address verification for vet ([791c320](https://github.com/BitGo/BitGoJS/commit/791c320e66c3fb5121a4402e82cd5eb3910e1fc8))
+
+
+
+
+
 ## [2.8.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.8.4...@bitgo/sdk-coin-vet@2.8.5) (2025-11-26)
 
 

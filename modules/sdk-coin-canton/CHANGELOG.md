@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.12.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.12.0...@bitgo/sdk-coin-canton@1.12.1) (2025-12-05)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-canton
+
+
+
+
+
+# [1.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.11.1...@bitgo/sdk-coin-canton@1.12.0) (2025-12-04)
+
+
+### Features
+
+* added memoId handling in verifyTransaction ([c777fed](https://github.com/BitGo/BitGoJS/commit/c777feddd8a4912373d013b4b9bfc81e7a46d5e0))
+* added optional fields to canton build data ([626c94e](https://github.com/BitGo/BitGoJS/commit/626c94e8983d9cf359ee9ad843ebe1d814be8622))
+
+
+
+
+
 ## [1.11.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.11.0...@bitgo/sdk-coin-canton@1.11.1) (2025-11-26)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-canton

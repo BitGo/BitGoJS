@@ -1,30 +1,27 @@
-import {
-  Signature,
-  TransferableOutput,
-  TransferOutput,
-  TypeSymbols,
-  Id,
-  Credential,
-  utils as FlareUtils,
-} from '@flarenetwork/flarejs';
+import { Signature, TransferableOutput, TransferOutput, TypeSymbols, Id } from '@flarenetwork/flarejs';
 import {
   BaseUtils,
   Entry,
   InvalidTransactionError,
   isValidXprv,
   isValidXpub,
-  NotImplementedError,
   ParseTransactionError,
 } from '@bitgo/sdk-core';
 import { FlareNetwork } from '@bitgo/statics';
 import { Buffer } from 'buffer';
 import { createHash } from 'crypto';
 import { ecc } from '@bitgo/secp256k1';
-import { ADDRESS_SEPARATOR, Output, DeprecatedTx } from './iface';
+import { ADDRESS_SEPARATOR, Output } from './iface';
 import bs58 from 'bs58';
 import { bech32 } from 'bech32';
 
 export class Utils implements BaseUtils {
+  isValidTransactionId(txId: string): boolean {
+    throw new Error('Method not implemented.');
+  }
+  isValidSignature(signature: string): boolean {
+    throw new Error('Method not implemented.');
+  }
   /**
    * Check if addresses in wallet match UTXO output addresses
    */
@@ -48,10 +45,6 @@ export class Utils implements BaseUtils {
 
     return true;
   }
-
-  // Regex patterns
-  // export const ADDRESS_REGEX = /^(^P||NodeID)-[a-zA-Z0-9]+$/;
-  // export const HEX_REGEX = /^(0x){0,1}([0-9a-f])+$/i;
 
   private isValidAddressRegex(address: string): boolean {
     return /^(^P||NodeID)-[a-zA-Z0-9]+$/.test(address);
@@ -162,7 +155,7 @@ export class Utils implements BaseUtils {
   verifySignature(network: FlareNetwork, message: Buffer, signature: Buffer, publicKey: Buffer): boolean {
     try {
       const messageHash = this.sha256(message);
-      return ecc.verify(signature, messageHash, publicKey);
+      return ecc.verify(messageHash, publicKey, signature);
     } catch (e) {
       return false;
     }
@@ -272,15 +265,6 @@ export class Utils implements BaseUtils {
     return parseInt(outputidx.toString('hex'), 16).toString();
   }
 
-  // Required by BaseUtils interface but not implemented
-  isValidSignature(signature: string): boolean {
-    throw new NotImplementedError('isValidSignature not implemented');
-  }
-
-  isValidTransactionId(txId: string): boolean {
-    throw new NotImplementedError('isValidTransactionId not implemented');
-  }
-
   /**
    * Helper method to convert address components to string
    */
@@ -337,7 +321,6 @@ export class Utils implements BaseUtils {
    * @param address - The address to parse
    * @returns Buffer containing the parsed address
    */
-  //TODO: need check and validate this method
   public parseAddress = (address: string): Buffer => {
     return this.stringToAddress(address);
   };
@@ -372,181 +355,8 @@ export class Utils implements BaseUtils {
     return Buffer.from(bech32.fromWords(bech32.decode(parts[1]).words));
   };
 
-  /**
-   * Check if tx is for the blockchainId
-   *
-   * @param {DeprecatedTx} tx
-   * @param {string} blockchainId
-   * @returns true if tx is for blockchainId
-   */
-  // TODO: remove DeprecatedTx usage
-  isTransactionOf(tx: DeprecatedTx, blockchainId: string): boolean {
-    // FlareJS equivalent - this would need proper CB58 encoding implementation
-    try {
-      const txRecord = tx as unknown as Record<string, unknown>;
-      const unsignedTx = (txRecord.getUnsignedTx as () => Record<string, unknown>)();
-      const transaction = (unsignedTx.getTransaction as () => Record<string, unknown>)();
-      const txBlockchainId = (transaction.getBlockchainID as () => unknown)();
-      return Buffer.from(txBlockchainId as string).toString('hex') === blockchainId;
-    } catch (error) {
-      return false;
-    }
-  }
-
   flareIdString(value: string): Id {
     return new Id(Buffer.from(value, 'hex'));
-  }
-
-  /**
-   * Extract credentials from raw transaction bytes.
-   * Signed transactions have credentials appended after the transaction body.
-   * This function handles both checking for credentials and extracting them.
-   *
-   * @param rawBytes - The full raw transaction bytes
-   * @param tx - The parsed transaction (must have toBytes method)
-   * @param vmType - The VM type ('EVM' or 'PVM') to get the correct codec
-   * @returns Object with hasCredentials flag and credentials array
-   */
-  extractCredentialsFromRawBytes(
-    rawBytes: Buffer,
-    tx: { toBytes(codec: unknown): Uint8Array },
-    vmType: 'EVM' | 'PVM' = 'EVM'
-  ): { hasCredentials: boolean; credentials: Credential[] } {
-    try {
-      // Get the size of the transaction without credentials using the default codec
-      const codec = FlareUtils.getManagerForVM(vmType).getDefaultCodec();
-      const txBytes = tx.toBytes(codec);
-      const txSize = txBytes.length;
-
-      // If raw bytes are not longer than tx bytes, there are no credentials
-      if (rawBytes.length <= txSize) {
-        return { hasCredentials: false, credentials: [] };
-      }
-
-      // Extract credential bytes (everything after the transaction)
-      const credentialBytes = rawBytes.slice(txSize);
-
-      // Parse credentials
-      // Format: [num_credentials: 4 bytes] [credentials...]
-      if (credentialBytes.length < 4) {
-        return { hasCredentials: false, credentials: [] };
-      }
-
-      const numCredentials = credentialBytes.readUInt32BE(0);
-
-      // Check if there are credentials in raw bytes (for hasCredentials flag)
-      const hasCredentials = numCredentials > 0;
-
-      if (numCredentials === 0) {
-        return { hasCredentials: false, credentials: [] };
-      }
-
-      const credentials: Credential[] = [];
-      let offset = 4;
-
-      for (let i = 0; i < numCredentials; i++) {
-        if (offset + 8 > credentialBytes.length) {
-          break;
-        }
-
-        // Read type ID (4 bytes) - Type ID 9 = secp256k1 credential
-        const typeId = credentialBytes.readUInt32BE(offset);
-        offset += 4;
-
-        // Validate credential type (9 = secp256k1)
-        if (typeId !== 9) {
-          continue; // Skip unsupported credential types
-        }
-
-        // Read number of signatures (4 bytes)
-        const numSigs = credentialBytes.readUInt32BE(offset);
-        offset += 4;
-
-        // Parse all signatures for this credential
-        const signatures: Signature[] = [];
-        for (let j = 0; j < numSigs; j++) {
-          if (offset + 65 > credentialBytes.length) {
-            break;
-          }
-          // Each signature is 65 bytes (64 bytes signature + 1 byte recovery)
-          const sigBytes = Buffer.from(credentialBytes.slice(offset, offset + 65));
-          signatures.push(new Signature(sigBytes));
-          offset += 65;
-        }
-
-        // Create credential with the parsed signatures
-        if (signatures.length > 0) {
-          credentials.push(new Credential(signatures));
-        }
-      }
-
-      return { hasCredentials, credentials };
-    } catch (e) {
-      // If parsing fails, return no credentials
-      return { hasCredentials: false, credentials: [] };
-    }
-  }
-
-  /**
-   * Parse credentials from raw bytes at a specific offset
-   * This is useful when the standard extraction fails due to serialization differences
-   * @param rawBytes Raw transaction bytes including credentials
-   * @param offset Byte offset where credentials start
-   * @returns Array of parsed credentials
-   */
-  parseCredentialsAtOffset(rawBytes: Buffer, offset: number): Credential[] {
-    try {
-      if (rawBytes.length <= offset + 4) {
-        return [];
-      }
-
-      const credentialBytes = rawBytes.slice(offset);
-      const numCredentials = credentialBytes.readUInt32BE(0);
-
-      if (numCredentials === 0) {
-        return [];
-      }
-
-      const credentials: Credential[] = [];
-      let pos = 4;
-
-      for (let i = 0; i < numCredentials; i++) {
-        if (pos + 8 > credentialBytes.length) {
-          break;
-        }
-
-        // Read type ID (4 bytes) - Type ID 9 = secp256k1 credential
-        const typeId = credentialBytes.readUInt32BE(pos);
-        pos += 4;
-
-        if (typeId !== 9) {
-          continue;
-        }
-
-        // Read number of signatures (4 bytes)
-        const numSigs = credentialBytes.readUInt32BE(pos);
-        pos += 4;
-
-        // Parse all signatures for this credential
-        const signatures: Signature[] = [];
-        for (let j = 0; j < numSigs; j++) {
-          if (pos + 65 > credentialBytes.length) {
-            break;
-          }
-          const sigBytes = Buffer.from(credentialBytes.slice(pos, pos + 65));
-          signatures.push(new Signature(sigBytes));
-          pos += 65;
-        }
-
-        if (signatures.length > 0) {
-          credentials.push(new Credential(signatures));
-        }
-      }
-
-      return credentials;
-    } catch {
-      return [];
-    }
   }
 
   /**
@@ -577,7 +387,7 @@ export class Utils implements BaseUtils {
 
       return Buffer.from(recovered);
     } catch (error) {
-      throw new Error(`Failed to recover signature: ${error}`);
+      throw new Error(`Failed to recover signature: ${error.message}`);
     }
   }
 }

@@ -3,6 +3,31 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.13.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@3.13.0...@bitgo/utxo-bin@3.13.1) (2025-12-05)
+
+**Note:** Version bump only for package @bitgo/utxo-bin
+
+
+
+
+
+# [3.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@3.12.2...@bitgo/utxo-bin@3.13.0) (2025-12-04)
+
+
+### Bug Fixes
+
+* **utxo-bin:** add support for providing previous transaction data ([8661c77](https://github.com/BitGo/BitGoJS/commit/8661c77961d388dfbe644ab0f36cc31d03ad3883))
+* **utxo-bin:** fix signature matching in InputParser ([921c801](https://github.com/BitGo/BitGoJS/commit/921c801758bcdccce3db143cb5ddac249ce1475a))
+
+
+### Features
+
+* **abstract-utxo:** bump wasm-utxo version to 1.11.0 ([11225f6](https://github.com/BitGo/BitGoJS/commit/11225f6012dee5759ea246811aebe5f25c64717d))
+
+
+
+
+
 ## [3.12.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-bin@3.12.1...@bitgo/utxo-bin@3.12.2) (2025-11-26)
 
 **Note:** Version bump only for package @bitgo/utxo-bin

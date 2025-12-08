@@ -3,6 +3,49 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.9.0...@bitgo/abstract-utxo@10.10.0) (2025-12-05)
+
+
+### Features
+
+* **abstract-utxo:** add encodeTransaction function ([8783f95](https://github.com/BitGo/BitGoJS/commit/8783f95b42b824d6cb8eba678450979c8495afa3))
+* **abstract-utxo:** add fixedScriptWallet to decodeTransactionAsPsbt ([19cd235](https://github.com/BitGo/BitGoJS/commit/19cd2358b8aef0a2d97522dbd1fde66b593aff7e))
+* **abstract-utxo:** add support for PSBT decoder selection ([c78c2f2](https://github.com/BitGo/BitGoJS/commit/c78c2f210f3b78365a84b98f092a7346cc26fc50))
+* **abstract-utxo:** add WASM-based PSBT signing for MuSig2 ([2dc2ede](https://github.com/BitGo/BitGoJS/commit/2dc2ede4b93024a20aa04af9d53905502b6ae1ca))
+* **abstract-utxo:** add wasm-utxo decoding support to test suite ([0f5c86c](https://github.com/BitGo/BitGoJS/commit/0f5c86c4f00a37fe8d850ee4450f1ffa008390d4))
+* **abstract-utxo:** enable signing psbt with wasm implementation ([c941b08](https://github.com/BitGo/BitGoJS/commit/c941b08afb3ade94164a51164f754bf3d45bcbc2))
+* **abstract-utxo:** extend DecodedTransaction to include wasm-utxo BitGoPsbt ([cc67073](https://github.com/BitGo/BitGoJS/commit/cc67073e45a871769d54d4e1a349517b5df32137))
+* **abstract-utxo:** refactor replay protection to use pubkeys ([b2c8c47](https://github.com/BitGo/BitGoJS/commit/b2c8c470d13000cdcea0c5eb4944655486dac7d1))
+
+
+
+
+
+# [10.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.8.0...@bitgo/abstract-utxo@10.9.0) (2025-12-04)
+
+
+### Features
+
+* **abstract-utxo:** add test for signAndVerifyPsbt function ([1eee8fe](https://github.com/BitGo/BitGoJS/commit/1eee8fe7d6d5c6b483f669773b5dbb738f8c72af))
+* **abstract-utxo:** add transaction decoding utils ([1121868](https://github.com/BitGo/BitGoJS/commit/1121868dcd4a0e79577c4447dc46b1c93e64f805))
+* **abstract-utxo:** bump wasm-utxo version to 1.11.0 ([11225f6](https://github.com/BitGo/BitGoJS/commit/11225f6012dee5759ea246811aebe5f25c64717d))
+* **abstract-utxo:** change `signTransaction` to return transaction object ([581edde](https://github.com/BitGo/BitGoJS/commit/581edde7b14cf522b0be79e0cf46a2f89a6a7c68))
+* **abstract-utxo:** extract replay protection addresses param ([eb767d8](https://github.com/BitGo/BitGoJS/commit/eb767d8080501c0ab443e8d25b662c93a5d9fb72))
+* **abstract-utxo:** fix npm test to handle extra arguments ([4696fad](https://github.com/BitGo/BitGoJS/commit/4696fad8d5142c1cee4e40f6e09ea4d4800b69c7))
+* **abstract-utxo:** include script type in input signing error ([b73057e](https://github.com/BitGo/BitGoJS/commit/b73057e6a6e86a7e4a5b2cf80b7612ab03445a73))
+* **abstract-utxo:** move replay protection and signing to transaction/fixedScript ([65f39e1](https://github.com/BitGo/BitGoJS/commit/65f39e1b812e140f3eb7c706edc5ad984185cc70))
+* **abstract-utxo:** move RootWalletKeys type to utxo-lib ([7809170](https://github.com/BitGo/BitGoJS/commit/7809170cfe88a0cc37d4bc3c86f98c8f5a4b5e14))
+* **abstract-utxo:** move signTransaction away from abstract coin ([ef88bda](https://github.com/BitGo/BitGoJS/commit/ef88bdab2d6507e7a6c2574fe5904c04ffe1a58d))
+* **abstract-utxo:** rename signPsbt to getMusig2Nonces ([4548dfc](https://github.com/BitGo/BitGoJS/commit/4548dfcf98be51b8673d950d0eeeef34e3aed3c1))
+* **abstract-utxo:** set default strict to true for paygo ver ([2b6567a](https://github.com/BitGo/BitGoJS/commit/2b6567a380919b5ffa3b235353275b212322f40f))
+* **abstract-utxo:** test signPsbtWithMusig2Participant ([540eca9](https://github.com/BitGo/BitGoJS/commit/540eca9c667547e136c7e31bfa021aef9f56e94f))
+* add LTC cross-chain recovery support ([0e6a03a](https://github.com/BitGo/BitGoJS/commit/0e6a03ad54a8145e8249811b365f03b2e47fad43))
+* add tx explanation for TxIntentMismatch errors ([feed271](https://github.com/BitGo/BitGoJS/commit/feed271ec7ae1ae099adf3eb100a532b12d03228))
+
+
+
+
+
 # [10.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.7.0...@bitgo/abstract-utxo@10.8.0) (2025-11-26)
 
 

@@ -4561,6 +4561,14 @@ export const tOfcErc20Coins = [
     18,
     UnderlyingAsset['baseeth:sapien']
   ),
+  ofcerc20(
+    'bdfff799-1623-4847-93c0-c1a040c13d3f',
+    'ofcbaseeth:aixbt',
+    'Aixbt by Virtuals',
+    18,
+    UnderlyingAsset['baseeth:aixbt']
+  ),
+  ofcerc20('3ce0c7b4-7043-4309-8493-7809001ad410', 'ofcbaseeth:brett', 'Brett', 18, UnderlyingAsset['baseeth:brett']),
 
   ofcerc20('abeefced-cfda-4afa-8f9c-aebfcadbecfd', 'ofceth:align', 'Aligned', 18, UnderlyingAsset['eth:align']),
 
@@ -4597,6 +4605,62 @@ export const tOfcErc20Coins = [
   ofcerc20('10c41a70-8bd2-4415-af52-fefe3af01132', 'ofceth:wxm', 'WeatherXM', 18, UnderlyingAsset['eth:wxm']),
   ofcerc20('c574d2de-42be-488f-afc0-71e2691eb900', 'ofceth:jpyc', 'JPY Coin', 18, UnderlyingAsset['eth:jpyc']),
   ofcerc20('8465f646-73f8-4818-b890-c953f4423c89', 'ofceth:ten', 'TEN', 18, UnderlyingAsset['eth:ten']),
+  ofcerc20('9c1aaba6-e190-4be5-a477-f7db7d0f07ef', 'ofceth:camp', 'Camp', 18, UnderlyingAsset['eth:camp']),
+  ofcerc20('2c28b184-614a-427f-bf5c-37dadee8985b', 'ofceth:f', 'SynFutures', 18, UnderlyingAsset['eth:f']),
+  ofcerc20('f8e6404b-2adc-4f74-b957-d9cbd7228d7e', 'ofceth:turtle', 'Turtle', 18, UnderlyingAsset['eth:turtle']),
+  ofcerc20('a6e121e6-6563-4d2c-818d-91e9bd4af7ed', 'ofceth:order', 'Orderly Network', 18, UnderlyingAsset['eth:order']),
+  ofcerc20('7192609e-c255-4da8-b1a5-e40cabbf4f2e', 'ofceth:puffer', 'Puffer', 18, UnderlyingAsset['eth:puffer']),
+
+  // MON Network tokens
+  ofcerc20(
+    '1458bca6-e0d3-455e-81c7-55862dc5af52',
+    'ofcmon:usdc',
+    'USDC:MON',
+    6,
+    underlyingAssetForSymbol('mon:usdc'),
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
+  ofcerc20(
+    '7a8631a5-deed-43c5-92a0-13e3322429ba',
+    'ofcmon:wmon',
+    'Wrapped MON',
+    18,
+    underlyingAssetForSymbol('mon:wmon')
+  ),
+
+  // XDC Network tokens
+  ofcerc20(
+    '517ca4d1-a2c4-4606-914f-4c4b5b4943ff',
+    'ofcxdc:usdc',
+    'USD Coin (XDC)',
+    6,
+    underlyingAssetForSymbol('xdc:usdc'),
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
+  ofcerc20(
+    'b4666353-81d0-491b-a554-bdd8e677be24',
+    'ofcxdc:lbt',
+    'Law Block Token',
+    18,
+    underlyingAssetForSymbol('xdc:lbt')
+  ),
+  ofcerc20(
+    '086883c7-f7e9-458e-a0a1-ed3ec525f9c6',
+    'ofcxdc:gama',
+    'Gama Token',
+    18,
+    underlyingAssetForSymbol('xdc:gama')
+  ),
+  ofcerc20('0c8b533c-1929-4de8-af36-9cf4b4409c0d', 'ofcxdc:srx', 'STORX', 18, underlyingAssetForSymbol('xdc:srx')),
+  ofcerc20(
+    '3c7ec48a-ba51-47c9-9044-f29d9c0daf35',
+    'ofcxdc:weth',
+    'Wrapped Ether (XDC)',
+    18,
+    underlyingAssetForSymbol('xdc:weth')
+  ),
 ];
 
 function underlyingAssetForSymbol(underlyingAssetValue: string): UnderlyingAsset {

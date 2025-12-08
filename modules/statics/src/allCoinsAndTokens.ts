@@ -827,6 +827,7 @@ export const allCoinsAndTokens = [
       ...EVM_FEATURES,
       CoinFeature.SHARED_EVM_SIGNING,
       CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.SHARED_EVM_MESSAGE_SIGNING,
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
@@ -2145,6 +2146,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_WP,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.SUPPORTS_ERC20,
     ]
   ),
   account(
@@ -2355,6 +2357,49 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_COMPATIBLE_WP,
     ]
+  ),
+  account(
+    '887eebff-5d50-47f7-aea5-905e25c2e846',
+    'tdogeos',
+    'DogeOS Testnet',
+    Networks.test.dogeos,
+    18,
+    UnderlyingAsset.DOGEOS,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+    ],
+    KeyCurve.Secp256k1,
+    '',
+    'TDogeOS'
+  ),
+  account(
+    '7d69a368-ea4b-422d-bb21-38812fb5a418',
+    'dogeos',
+    'DogeOS',
+    Networks.main.dogeos,
+    18,
+    UnderlyingAsset.DOGEOS,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.SUPPORTS_ERC20,
+    ],
+    KeyCurve.Secp256k1,
+    '',
+    'DogeOS'
   ),
   canton(
     '07385320-5a4f-48e9-97a5-86d4be9f24b0',
@@ -2744,6 +2789,24 @@ export const allCoinsAndTokens = [
     18,
     '0xc729777d0470f30612b1564fd96e8dd26f5814e3',
     UnderlyingAsset['baseeth:sapien'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    '4e38986f-66d0-4ec6-a2dd-350129b8e844',
+    'baseeth:aixbt',
+    'Aixbt by Virtuals',
+    18,
+    '0x4f9fd6be4a90f2620860d680c0d4d5fb53d1a825',
+    UnderlyingAsset['baseeth:aixbt'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    'd7c2eb80-a682-4b0b-929a-fb7c1017788c',
+    'baseeth:brett',
+    'Brett',
+    18,
+    '0x532f27101965dd16442e59d40670faf5ebb142e4',
+    UnderlyingAsset['baseeth:brett'],
     Networks.main.basechain
   ),
 
@@ -4431,6 +4494,14 @@ export const allCoinsAndTokens = [
     '0x0c880f6761f1af8d9aa9c466984b80dab9a8c9e8',
     UnderlyingAsset['arbeth:pendle']
   ),
+  arbethErc20(
+    '98000a40-1674-4bff-8579-949d9dd1a733',
+    'arbeth:uxlink',
+    'UXLINK Token',
+    18,
+    '0x1a6b3a62391eccaaa992ade44cd4afe6bec8cff1',
+    UnderlyingAsset['arbeth:uxlink']
+  ),
 
   opethErc20(
     '8d80fac6-4cbc-447c-b49b-4229cb8aa89d',
@@ -5373,7 +5444,7 @@ export const allCoinsAndTokens = [
     'dd710759-1b87-4435-bef5-db377040deaf',
     'tvet:sdt',
     'Testnet StarGate Delegator Token',
-    '0x1ec1d168574603ec35b9d229843b7c2b44bcb770',
+    '0x887d9102f0003f1724d8fd5d4fe95a11572fcd77',
     UnderlyingAsset['tvet:sdt'],
     VET_FEATURES
   ),

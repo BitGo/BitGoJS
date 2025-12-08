@@ -69,15 +69,11 @@ export function calculateHMACSubject<T extends string | Buffer = string>(
 /**
  * Calculate the HMAC for an HTTP request
  */
-export function calculateRequestHMAC<T extends string | Buffer = string>({
-  url: urlPath,
-  text,
-  timestamp,
-  token,
-  method,
-  authVersion,
-}: CalculateRequestHmacOptions<T>): string {
-  const signatureSubject = calculateHMACSubject({ urlPath, text, timestamp, method, authVersion });
+export function calculateRequestHMAC<T extends string | Buffer = string>(
+  { url: urlPath, text, timestamp, token, method, authVersion }: CalculateRequestHmacOptions<T>,
+  useOriginalPath = false
+): string {
+  const signatureSubject = calculateHMACSubject({ urlPath, text, timestamp, method, authVersion }, useOriginalPath);
 
   // calculate the HMAC
   return calculateHMAC(token, signatureSubject);
@@ -86,15 +82,12 @@ export function calculateRequestHMAC<T extends string | Buffer = string>({
 /**
  * Calculate request headers with HMAC
  */
-export function calculateRequestHeaders<T extends string | Buffer = string>({
-  url,
-  text,
-  token,
-  method,
-  authVersion,
-}: CalculateRequestHeadersOptions<T>): RequestHeaders {
+export function calculateRequestHeaders<T extends string | Buffer = string>(
+  { url, text, token, method, authVersion }: CalculateRequestHeadersOptions<T>,
+  useOriginalPath = false
+): RequestHeaders {
   const timestamp = Date.now();
-  const hmac = calculateRequestHMAC({ url, text, timestamp, token, method, authVersion });
+  const hmac = calculateRequestHMAC({ url, text, timestamp, token, method, authVersion }, useOriginalPath);
 
   // calculate the SHA256 hash of the token
   const hashDigest = sjcl.hash.sha256.hash(token);
@@ -109,31 +102,31 @@ export function calculateRequestHeaders<T extends string | Buffer = string>({
 /**
  * Verify the HMAC for an HTTP response
  */
-export function verifyResponse<T extends string | Buffer = string>({
-  url: urlPath,
-  statusCode,
-  text,
-  timestamp,
-  token,
-  hmac,
-  method,
-  authVersion,
-}: VerifyResponseOptions<T>): VerifyResponseInfo<T> {
-  const signatureSubject = calculateHMACSubject({
-    urlPath,
-    text,
-    timestamp,
-    statusCode,
-    method,
-    authVersion,
-  });
+export function verifyResponse<T extends string | Buffer = string>(
+  { url: urlPath, statusCode, text, timestamp, token, hmac, method, authVersion }: VerifyResponseOptions<T>,
+  useOriginalPath = false
+): VerifyResponseInfo<T> {
+  const signatureSubject = calculateHMACSubject(
+    {
+      urlPath,
+      text,
+      timestamp,
+      statusCode,
+      method,
+      authVersion,
+    },
+    useOriginalPath
+  );
 
   // calculate the HMAC
   const expectedHmac = calculateHMAC(token, signatureSubject);
 
-  // determine if the response is still within the validity window (5 minute window)
+  // determine if the response is still within the validity window (5-minute backwards window, 1-minute forward window)
   const now = Date.now();
-  const isInResponseValidityWindow = timestamp >= now - 1000 * 60 * 5 && timestamp <= now;
+  const backwardValidityWindow = 1000 * 60 * 5;
+  const forwardValidityWindow = 1000 * 60;
+  const isInResponseValidityWindow =
+    timestamp >= now - backwardValidityWindow && timestamp <= now + forwardValidityWindow;
 
   // verify the HMAC and timestamp
   return {

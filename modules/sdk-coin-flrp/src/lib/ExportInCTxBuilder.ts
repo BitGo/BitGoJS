@@ -75,7 +75,7 @@ export class ExportInCTxBuilder extends AtomicInCTransactionBuilder {
     return TransactionType.Export;
   }
 
-  initBuilder(tx: Tx, rawBytes?: Buffer): this {
+  initBuilder(tx: Tx, rawBytes?: Buffer, parsedCredentials?: Credential[]): this {
     const baseTx = tx as evmSerial.ExportTx;
     if (!this.verifyTxType(baseTx._type)) {
       throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
@@ -89,7 +89,9 @@ export class ExportInCTxBuilder extends AtomicInCTransactionBuilder {
     }
     const output = outputs[0];
 
-    // TODO validate assetId
+    if (Buffer.from(output.assetId.toBytes()).toString('hex') !== this.transaction._assetId) {
+      throw new BuildTransactionError('AssetID mismatch');
+    }
 
     // The inputs is not an utxo.
     // It's expected to have only one input from C-Chain address.
@@ -115,10 +117,9 @@ export class ExportInCTxBuilder extends AtomicInCTransactionBuilder {
 
     this._nonce = input.nonce.value();
 
-    // Check if raw bytes contain credentials and extract them
-    const { hasCredentials, credentials } = rawBytes
-      ? utils.extractCredentialsFromRawBytes(rawBytes, baseTx, 'EVM')
-      : { hasCredentials: false, credentials: [] };
+    // Use credentials passed from TransactionBuilderFactory (properly extracted using codec)
+    const credentials = parsedCredentials || [];
+    const hasCredentials = credentials.length > 0;
 
     // If it's a signed transaction, store the original raw bytes to preserve exact format
     if (hasCredentials && rawBytes) {

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-hmac@1.6.0...@bitgo/sdk-hmac@1.7.0) (2025-12-04)
+
+
+### Features
+
+* add forward tolerance for v3 validity check ([1af1db9](https://github.com/BitGo/BitGoJS/commit/1af1db90b492608d8dd025d75c9c1a1ca5ef144d))
+
+
+
+
+
 # [1.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-hmac@1.5.0...@bitgo/sdk-hmac@1.6.0) (2025-11-06)
 
 

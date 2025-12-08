@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.10.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.10.0...@bitgo/sdk-coin-evm@1.10.1) (2025-12-05)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-evm
+
+
+
+
+
+# [1.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.9.1...@bitgo/sdk-coin-evm@1.10.0) (2025-12-04)
+
+
+### Features
+
+* add SUPPORTS_ERC20 feature in hbarevm ([585fc0f](https://github.com/BitGo/BitGoJS/commit/585fc0f9ead581a5dca3928e20f3c4334182ecd1))
+
+
+
+
+
 ## [1.9.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.9.0...@bitgo/sdk-coin-evm@1.9.1) (2025-11-26)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-evm

@@ -19,6 +19,7 @@ import {
   ListKeychainOptions,
   ListKeychainsResult,
   RecreateMpcOptions,
+  RotateKeychainOptions,
   UpdatePasswordOptions,
   UpdateSingleKeychainPasswordOptions,
 } from './iKeychains';
@@ -516,5 +517,52 @@ export class Keychains implements IKeychains {
       })),
       prv: newKeychain.prv,
     };
+  }
+
+  /**
+   * Rotate an ofc multi-user-keychain by recreating a new keypair, encrypt it using the user password and sent it to WP
+   * This is only meant to be called by ofc multi-user-wallet's key, and will throw if otherwise.
+   *
+   * Requires 2fa auth before calling. Call the bitgo.unlock() SDK method to unlock the session first.
+   * @param params parameters for the rotate keychain method
+   * @return rotatedKeychain
+   */
+  async rotateKeychain(params: RotateKeychainOptions): Promise<Keychain> {
+    const keyChain = await this.get({ id: params.id });
+    if (!Keychains.isMultiUserKey(keyChain)) {
+      throw new Error(`rotateKeychain is only permitted for ofc multi-user-key wallet`);
+    }
+
+    let pub: string, encryptedPrv: string;
+    if ('encryptedPrv' in params) {
+      // client passed in pub and encryptedPrv directly
+      pub = params.pub;
+      encryptedPrv = params.encryptedPrv;
+    } else {
+      // bitgo generate pub and prv and encrypt it
+      const { pub: keyPub, prv: keyPrv } = this.create();
+      if (!keyPub) {
+        throw Error('Expected a public key to be generated');
+      }
+      pub = keyPub;
+      encryptedPrv = this.bitgo.encrypt({ input: keyPrv, password: params.password });
+    }
+
+    return this.bitgo
+      .put(this.baseCoin.url(`/key/${params.id}`))
+      .send({
+        encryptedPrv,
+        pub,
+        reqId: params.reqId,
+      })
+      .result();
+  }
+
+  /**
+   * Static helper method to determine if a keychain is a ofc multi-user-key
+   * @param keychain
+   */
+  static isMultiUserKey(keychain: Keychain): boolean {
+    return (keychain.coinSpecific?.ofc?.['features'] ?? []).includes('multi-user-key');
   }
 }

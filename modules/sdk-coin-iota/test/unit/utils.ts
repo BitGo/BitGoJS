@@ -1,294 +1,245 @@
 import * as testData from '../resources/iota';
 import should from 'should';
 import utils from '../../src/lib/utils';
-import { TransactionBuilderFactory } from '../../src';
-import { coins } from '@bitgo/statics';
+import { createTransferBuilderWithGas } from './helpers/testHelpers';
 
 describe('Iota util library', function () {
-  describe('isValidAddress', function () {
-    it('should succeed to validate addresses', function () {
-      for (const address of testData.addresses.validAddresses) {
-        should.equal(utils.isValidAddress(address), true);
-      }
+  describe('Address Validation', function () {
+    it('should validate all correct addresses', function () {
+      testData.addresses.validAddresses.forEach((address) => {
+        utils.isValidAddress(address).should.be.true();
+      });
     });
 
-    it('should fail to validate invalid addresses', function () {
-      for (const address of testData.addresses.invalidAddresses) {
-        should.doesNotThrow(() => utils.isValidAddress(address));
-        should.equal(utils.isValidAddress(address), false);
-      }
-      // @ts-expect-error Testing for missing param, should not throw an error
-      should.doesNotThrow(() => utils.isValidAddress(undefined));
-      // @ts-expect-error Testing for missing param, should return false
-      should.equal(utils.isValidAddress(undefined), false);
+    it('should reject all invalid addresses', function () {
+      testData.addresses.invalidAddresses.forEach((address) => {
+        utils.isValidAddress(address).should.be.false();
+      });
     });
 
-    it('should validate addresses with correct length', function () {
-      // IOTA addresses are 64 characters hex with 0x prefix
-      const validAddress = '0x' + 'a'.repeat(64);
-      should.equal(utils.isValidAddress(validAddress), true);
-    });
+    const addressTestCases = [
+      { address: '0x' + 'a'.repeat(64), valid: true, description: 'correct length (64 hex chars)' },
+      { address: '0x' + 'a'.repeat(32), valid: false, description: 'too short' },
+      { address: '0x' + 'a'.repeat(128), valid: false, description: 'too long' },
+      { address: 'a'.repeat(64), valid: false, description: 'missing 0x prefix' },
+      { address: '0x' + 'g'.repeat(64), valid: false, description: 'non-hex characters' },
+      { address: undefined, valid: false, description: 'undefined' },
+    ];
 
-    it('should reject addresses with incorrect length', function () {
-      const shortAddress = '0x' + 'a'.repeat(32);
-      const longAddress = '0x' + 'a'.repeat(128);
-      should.equal(utils.isValidAddress(shortAddress), false);
-      should.equal(utils.isValidAddress(longAddress), false);
-    });
-
-    it('should reject addresses without 0x prefix', function () {
-      const addressWithoutPrefix = 'a'.repeat(64);
-      should.equal(utils.isValidAddress(addressWithoutPrefix), false);
-    });
-
-    it('should reject addresses with non-hex characters', function () {
-      const invalidHex = '0x' + 'g'.repeat(64);
-      should.equal(utils.isValidAddress(invalidHex), false);
+    addressTestCases.forEach(({ address, valid, description }) => {
+      it(`should ${valid ? 'accept' : 'reject'} address with ${description}`, function () {
+        // @ts-expect-error Testing for undefined
+        utils.isValidAddress(address).should.equal(valid);
+      });
     });
   });
 
-  describe('isValidPublicKey', function () {
-    it('should validate correct public keys', function () {
-      // without 0x prefix (64 hex chars)
-      should.equal(true, utils.isValidPublicKey('b2051899478edeb36a79d1d16dfec56dc3a6ebd29fbbbb4a4ef2dfaf46043355'));
-      should.equal(true, utils.isValidPublicKey(testData.sender.publicKey));
+  describe('Public Key Validation', function () {
+    const validPublicKeys = [
+      'b2051899478edeb36a79d1d16dfec56dc3a6ebd29fbbbb4a4ef2dfaf46043355',
+      testData.sender.publicKey,
+    ];
+
+    it('should validate all correct public keys', function () {
+      validPublicKeys.forEach((key) => {
+        utils.isValidPublicKey(key).should.be.true();
+      });
     });
 
-    it('should reject public keys with 0x prefix', function () {
-      should.equal(false, utils.isValidPublicKey('0x413f7fa8beb54459e1e9ede3af3b12e5a4a3550390bb616da30dd72017701263'));
-    });
+    const invalidPublicKeyTestCases = [
+      { key: '0x413f7fa8beb54459e1e9ede3af3b12e5a4a3550390bb616da30dd72017701263', description: 'with 0x prefix' },
+      { key: 'invalid', description: 'invalid format' },
+      { key: '', description: 'empty string' },
+      { key: '123', description: 'too short' },
+      { key: 'a'.repeat(32), description: 'incorrect length (too short)' },
+      { key: 'a'.repeat(128), description: 'incorrect length (too long)' },
+    ];
 
-    it('should reject invalid public keys', function () {
-      should.equal(false, utils.isValidPublicKey('invalid'));
-      should.equal(false, utils.isValidPublicKey(''));
-      should.equal(false, utils.isValidPublicKey('123'));
-    });
-
-    it('should reject public keys with incorrect length', function () {
-      should.equal(false, utils.isValidPublicKey('a'.repeat(32))); // Too short
-      should.equal(false, utils.isValidPublicKey('a'.repeat(128))); // Too long
+    invalidPublicKeyTestCases.forEach(({ key, description }) => {
+      it(`should reject public key ${description}`, function () {
+        utils.isValidPublicKey(key).should.be.false();
+      });
     });
   });
 
-  describe('isValidPrivateKey', function () {
-    it('should validate ed25519 secret keys', function () {
-      // Ed25519 secret keys (as used by tweetnacl) are 64 bytes (128 hex chars)
-      // This includes the 32-byte seed + 32-byte public key
+  describe('Private Key Validation', function () {
+    it('should validate ed25519 secret keys with correct length', function () {
+      // Ed25519 secret keys are 128 hex chars (64 bytes: 32-byte seed + 32-byte public key)
       const validSecretKey = '0'.repeat(128);
-      should.equal(utils.isValidPrivateKey(validSecretKey), true);
+      utils.isValidPrivateKey(validSecretKey).should.be.true();
     });
 
-    it('should reject invalid private keys', function () {
-      should.equal(utils.isValidPrivateKey('invalid'), false);
-      should.equal(utils.isValidPrivateKey(''), false);
-      should.equal(utils.isValidPrivateKey('123'), false);
-    });
+    const invalidPrivateKeyTestCases = [
+      { key: 'invalid', description: 'invalid format' },
+      { key: '', description: 'empty string' },
+      { key: '123', description: 'too short' },
+      { key: 'a'.repeat(32), description: '16 bytes (too short)' },
+      { key: 'a'.repeat(64), description: '32 bytes (seed only, not full secret)' },
+      { key: 'a'.repeat(256), description: '128 bytes (too long)' },
+    ];
 
-    it('should reject private keys with wrong length', function () {
-      should.equal(utils.isValidPrivateKey('a'.repeat(32)), false); // Too short (16 bytes)
-      should.equal(utils.isValidPrivateKey('a'.repeat(64)), false); // Seed length, not full secret key (32 bytes)
-      should.equal(utils.isValidPrivateKey('a'.repeat(256)), false); // Too long (128 bytes)
-    });
-  });
-
-  describe('isValidTransactionId', function () {
-    it('should validate correct transaction IDs', function () {
-      should.equal(true, utils.isValidTransactionId('BftEk3BeKUWTj9uzVGntd4Ka16QZG8hUnr6KsAb7q7bt'));
-    });
-
-    it('should reject invalid transaction IDs', function () {
-      should.equal(
-        false,
-        utils.isValidTransactionId('0xff86b121181a43d03df52e8930785af3dda944ec87654cdba3a378ff518cd75b')
-      );
-      should.equal(false, utils.isValidTransactionId('BftEk3BeKUWTj9uzVGntd4Ka16QZG8hUnr6KsAb7q7b53t')); // Wrong length
-    });
-
-    it('should reject hex strings', function () {
-      should.equal(false, utils.isValidTransactionId('0xabcdef123456'));
-    });
-
-    it('should reject empty strings', function () {
-      should.equal(false, utils.isValidTransactionId(''));
+    invalidPrivateKeyTestCases.forEach(({ key, description }) => {
+      it(`should reject private key: ${description}`, function () {
+        utils.isValidPrivateKey(key).should.be.false();
+      });
     });
   });
 
-  describe('isValidBlockId', function () {
-    it('should validate correct block IDs', function () {
-      should.equal(true, utils.isValidBlockId('GZXZvvLS3ZnuE4E9CxQJJ2ij5xeNsvUXdAKVrPCQKrPz'));
+  describe('Transaction and Block ID Validation', function () {
+    it('should validate correct transaction ID (base58)', function () {
+      utils.isValidTransactionId('BftEk3BeKUWTj9uzVGntd4Ka16QZG8hUnr6KsAb7q7bt').should.be.true();
     });
 
-    it('should reject invalid block IDs', function () {
-      should.equal(false, utils.isValidBlockId('0x9ac6a0c313c4a0563a169dad29f1d018647683be54a314ed229a2693293dfc98'));
-      should.equal(false, utils.isValidBlockId('GZXZvvLS3ZnuE4E9CxQJJ2ij5xeNsvUXdAK56VrPCQKrPz')); // Wrong length
+    it('should validate correct block ID (base58)', function () {
+      utils.isValidBlockId('GZXZvvLS3ZnuE4E9CxQJJ2ij5xeNsvUXdAKVrPCQKrPz').should.be.true();
     });
 
-    it('should reject hex strings', function () {
-      should.equal(false, utils.isValidBlockId('0xabcdef'));
-    });
+    const invalidIdTestCases = [
+      {
+        validator: 'isValidTransactionId',
+        cases: [
+          { id: '0xff86b121181a43d03df52e8930785af3dda944ec87654cdba3a378ff518cd75b', description: 'hex format' },
+          { id: 'BftEk3BeKUWTj9uzVGntd4Ka16QZG8hUnr6KsAb7q7b53t', description: 'wrong length' },
+          { id: '0xabcdef123456', description: 'hex with prefix' },
+          { id: '', description: 'empty string' },
+        ],
+      },
+      {
+        validator: 'isValidBlockId',
+        cases: [
+          { id: '0x9ac6a0c313c4a0563a169dad29f1d018647683be54a314ed229a2693293dfc98', description: 'hex format' },
+          { id: 'GZXZvvLS3ZnuE4E9CxQJJ2ij5xeNsvUXdAK56VrPCQKrPz', description: 'wrong length' },
+          { id: '0xabcdef', description: 'hex with prefix' },
+          { id: '', description: 'empty string' },
+        ],
+      },
+    ];
 
-    it('should reject empty strings', function () {
-      should.equal(false, utils.isValidBlockId(''));
-    });
-  });
-
-  describe('isValidSignature', function () {
-    it('should validate correct signatures', function () {
-      should.equal(
-        true,
-        utils.isValidSignature(
-          'iXrcUjgQgpYUsa7O90KZicdTmIdJSjB99+tJW6l6wPCqI/lUTou6sQ2sLoZgC0n4qQKX+vFDz+lBIXl7J/ZgCg=='
-        )
-      );
-    });
-
-    it('should reject invalid signatures', function () {
-      should.equal(false, utils.isValidSignature('0x9ac6a0c313c4a0563a169dad29f1d018647683be54a314ed229a2693293dfc98'));
-      should.equal(false, utils.isValidSignature('goppBTDgLuBbcU5tP90n3igvZGHmcE23HCoxLfdJwOCcbyztVh9r0TPacJRXmjZ6'));
-    });
-
-    it('should reject signatures with incorrect length', function () {
-      should.equal(false, utils.isValidSignature('dG9vU2hvcnQ=')); // Too short base64
-    });
-
-    it('should reject non-base64 strings', function () {
-      should.equal(false, utils.isValidSignature('not a base64 string!!!'));
-      should.equal(false, utils.isValidSignature(''));
+    invalidIdTestCases.forEach(({ validator, cases }) => {
+      cases.forEach(({ id, description }) => {
+        it(`${validator} should reject ${description}`, function () {
+          utils[validator](id).should.be.false();
+        });
+      });
     });
   });
 
-  describe('isValidHex', function () {
-    it('should validate correct hex strings', function () {
-      should.equal(true, utils.isValidHex('0xabcdef', 6));
-      should.equal(true, utils.isValidHex('0x123456', 6));
-      should.equal(true, utils.isValidHex('0XABCDEF', 6));
+  describe('Signature Validation', function () {
+    it('should validate correct base64-encoded 64-byte signature', function () {
+      const validSignature = 'iXrcUjgQgpYUsa7O90KZicdTmIdJSjB99+tJW6l6wPCqI/lUTou6sQ2sLoZgC0n4qQKX+vFDz+lBIXl7J/ZgCg==';
+      utils.isValidSignature(validSignature).should.be.true();
     });
 
-    it('should reject hex strings with incorrect length', function () {
-      should.equal(false, utils.isValidHex('0xabcd', 6));
-      should.equal(false, utils.isValidHex('0xabcdefgh', 6));
-    });
+    const invalidSignatureTestCases = [
+      { sig: '0x9ac6a0c313c4a0563a169dad29f1d018647683be54a314ed229a2693293dfc98', description: 'hex format' },
+      { sig: 'goppBTDgLuBbcU5tP90n3igvZGHmcE23HCoxLfdJwOCcbyztVh9r0TPacJRXmjZ6', description: 'wrong format' },
+      { sig: 'dG9vU2hvcnQ=', description: 'too short (base64)' },
+      { sig: 'not a base64 string!!!', description: 'invalid base64' },
+      { sig: '', description: 'empty string' },
+    ];
 
-    it('should reject hex strings without prefix', function () {
-      should.equal(false, utils.isValidHex('abcdef', 6));
-    });
-
-    it('should reject hex strings with non-hex characters', function () {
-      should.equal(false, utils.isValidHex('0xghijkl', 6));
-      should.equal(false, utils.isValidHex('0xabcdeg', 6));
-    });
-
-    it('should handle uppercase and lowercase', function () {
-      should.equal(true, utils.isValidHex('0xABCDEF', 6));
-      should.equal(true, utils.isValidHex('0xabcdef', 6));
-      should.equal(true, utils.isValidHex('0xAbCdEf', 6));
+    invalidSignatureTestCases.forEach(({ sig, description }) => {
+      it(`should reject ${description}`, function () {
+        utils.isValidSignature(sig).should.be.false();
+      });
     });
   });
 
-  describe('getAddressFromPublicKey', function () {
+  describe('Hex String Validation', function () {
+    const hexTestCases = [
+      { hex: '0xabcdef', length: 6, valid: true, description: 'lowercase' },
+      { hex: '0x123456', length: 6, valid: true, description: 'numbers' },
+      { hex: '0XABCDEF', length: 6, valid: true, description: 'uppercase prefix' },
+      { hex: '0xABCDEF', length: 6, valid: true, description: 'uppercase' },
+      { hex: '0xAbCdEf', length: 6, valid: true, description: 'mixed case' },
+      { hex: '0xabcd', length: 6, valid: false, description: 'too short' },
+      { hex: '0xabcdefgh', length: 6, valid: false, description: 'too long' },
+      { hex: 'abcdef', length: 6, valid: false, description: 'no prefix' },
+      { hex: '0xghijkl', length: 6, valid: false, description: 'non-hex chars' },
+      { hex: '0xabcdeg', length: 6, valid: false, description: 'invalid char at end' },
+    ];
+
+    hexTestCases.forEach(({ hex, length, valid, description }) => {
+      it(`should ${valid ? 'accept' : 'reject'} ${description}`, function () {
+        utils.isValidHex(hex, length).should.equal(valid);
+      });
+    });
+  });
+
+  describe('Address Derivation from Public Key', function () {
     it('should generate valid address from public key', function () {
       const address = utils.getAddressFromPublicKey(testData.sender.publicKey);
       should.exist(address);
-      should.equal(utils.isValidAddress(address), true);
+      utils.isValidAddress(address).should.be.true();
     });
 
-    it('should generate consistent addresses', function () {
+    it('should generate consistent addresses from same key', function () {
       const address1 = utils.getAddressFromPublicKey(testData.sender.publicKey);
       const address2 = utils.getAddressFromPublicKey(testData.sender.publicKey);
-      should.equal(address1, address2);
+      address1.should.equal(address2);
     });
 
     it('should generate different addresses for different keys', function () {
       const address1 = utils.getAddressFromPublicKey(testData.sender.publicKey);
       const address2 = utils.getAddressFromPublicKey(testData.gasSponsor.publicKey);
-      should.notEqual(address1, address2);
+      address1.should.not.equal(address2);
     });
   });
 
-  describe('getBase64String', function () {
-    it('should convert Uint8Array to base64', function () {
-      const uint8Array = new Uint8Array([72, 101, 108, 108, 111]); // "Hello"
-      const result = utils.getBase64String(uint8Array);
-      should.exist(result);
-      should.equal(typeof result, 'string');
-      should.equal(result.length > 0, true);
+  describe('Base64 String Conversion', function () {
+    const conversionTestCases = [
+      { input: new Uint8Array([72, 101, 108, 108, 111]), description: 'Uint8Array ("Hello")' },
+      { input: '48656c6c6f', description: 'hex string ("Hello")' },
+      { input: new Uint8Array([]), description: 'empty Uint8Array' },
+      { input: new Uint8Array(Buffer.from('Hello World')), description: 'Buffer as Uint8Array' },
+    ];
+
+    conversionTestCases.forEach(({ input, description }) => {
+      it(`should convert ${description} to base64`, function () {
+        const result = utils.getBase64String(input);
+        should.exist(result);
+        should.equal(typeof result, 'string');
+      });
     });
 
-    it('should convert hex string to base64', function () {
-      const hexString = '48656c6c6f'; // "Hello" in hex
-      const result = utils.getBase64String(hexString);
-      should.exist(result);
-      should.equal(typeof result, 'string');
-      should.equal(result.length > 0, true);
-    });
-
-    it('should handle empty Uint8Array', function () {
-      const emptyArray = new Uint8Array([]);
-      const result = utils.getBase64String(emptyArray);
-      should.exist(result);
-      should.equal(typeof result, 'string');
-    });
-
-    it('should handle Buffer conversion to base64', function () {
-      const buffer = Buffer.from('Hello World');
-      const uint8Array = new Uint8Array(buffer);
-      const result = utils.getBase64String(uint8Array);
-      should.exist(result);
-      should.equal(typeof result, 'string');
-      should.equal(result.length > 0, true);
-    });
-
-    it('should consistently convert same input to same output', function () {
+    it('should produce consistent output for same input', function () {
       const uint8Array = new Uint8Array([1, 2, 3, 4, 5]);
       const result1 = utils.getBase64String(uint8Array);
       const result2 = utils.getBase64String(new Uint8Array([1, 2, 3, 4, 5]));
-      should.equal(result1, result2);
+      result1.should.equal(result2);
     });
   });
 
-  describe('isValidRawTransaction', function () {
-    it('should validate proper raw transactions', async function () {
-      const factory = new TransactionBuilderFactory(coins.get('tiota'));
-      const txBuilder = factory.getTransferBuilder();
-      txBuilder.sender(testData.sender.address);
-      txBuilder.recipients(testData.recipients);
-      txBuilder.paymentObjects(testData.paymentObjects);
-      txBuilder.gasData(testData.gasData);
-
+  describe('Raw Transaction Validation', function () {
+    it('should validate properly built transaction (base64)', async function () {
+      const txBuilder = createTransferBuilderWithGas();
       const tx = await txBuilder.build();
       const rawTx = await tx.toBroadcastFormat();
 
-      should.equal(utils.isValidRawTransaction(rawTx), true);
+      utils.isValidRawTransaction(rawTx).should.be.true();
     });
 
-    it('should validate raw transactions as Uint8Array', async function () {
-      const factory = new TransactionBuilderFactory(coins.get('tiota'));
-      const txBuilder = factory.getTransferBuilder();
-      txBuilder.sender(testData.sender.address);
-      txBuilder.recipients(testData.recipients);
-      txBuilder.paymentObjects(testData.paymentObjects);
-      txBuilder.gasData(testData.gasData);
-
+    it('should validate transaction as Uint8Array', async function () {
+      const txBuilder = createTransferBuilderWithGas();
       const tx = await txBuilder.build();
       const rawTx = await tx.toBroadcastFormat();
       const rawTxBytes = Buffer.from(rawTx, 'base64');
 
-      should.equal(utils.isValidRawTransaction(rawTxBytes), true);
+      utils.isValidRawTransaction(rawTxBytes).should.be.true();
     });
 
-    it('should reject invalid raw transactions', function () {
-      should.equal(utils.isValidRawTransaction('invalidRawTx'), false);
-      should.equal(utils.isValidRawTransaction(''), false);
-      should.equal(utils.isValidRawTransaction('0x123456'), false);
-    });
+    const invalidRawTxTestCases = [
+      { tx: 'invalidRawTx', description: 'invalid string' },
+      { tx: '', description: 'empty string' },
+      { tx: '0x123456', description: 'hex format' },
+      { tx: 'not-base64!!!', description: 'invalid base64' },
+      { tx: Buffer.from('malformed data').toString('base64'), description: 'malformed data' },
+    ];
 
-    it('should reject invalid base64 strings', function () {
-      should.equal(utils.isValidRawTransaction('not-base64!!!'), false);
-    });
-
-    it('should reject malformed transaction data', function () {
-      const malformedBase64 = Buffer.from('malformed data').toString('base64');
-      should.equal(utils.isValidRawTransaction(malformedBase64), false);
+    invalidRawTxTestCases.forEach(({ tx, description }) => {
+      it(`should reject ${description}`, function () {
+        utils.isValidRawTransaction(tx).should.be.false();
+      });
     });
   });
 });

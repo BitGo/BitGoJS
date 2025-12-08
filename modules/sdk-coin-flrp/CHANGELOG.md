@@ -3,6 +3,34 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.4.0...@bitgo/sdk-coin-flrp@1.4.1) (2025-12-05)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-flrp
+
+
+
+
+
+# [1.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.3.4...@bitgo/sdk-coin-flrp@1.4.0) (2025-12-04)
+
+
+### Bug Fixes
+
+* **sdk-coin-flrp:** update fee calculation and address sorting in ExportInCTxBuilder ([32f7b43](https://github.com/BitGo/BitGoJS/commit/32f7b437dd207f814b1fea64452b4ea079152053))
+
+
+### Features
+
+* **sdk-coin-flrp:** add ExportInP transaction data and builder tests ([db6a4a4](https://github.com/BitGo/BitGoJS/commit/db6a4a41f05c7ecf787567323304d4f0ca59e632))
+* **sdk-coin-flrp:** add recoverySignature method for public key recovery from signature ([926f361](https://github.com/BitGo/BitGoJS/commit/926f36136a4353c7f38d8829a0ad1015f3614b00))
+* **sdk-coin-flrp:** enhance ImportInPTxBuilder for P-chain transactions ([2f11726](https://github.com/BitGo/BitGoJS/commit/2f117267d1b9d16895275a4b864c61819ece9155))
+* **sdk-coin-flrp:** implement ImportInCTxBuilder for C-chain transactions ([aba135f](https://github.com/BitGo/BitGoJS/commit/aba135fc0f26050ba0543a3fad90c257ebf285af))
+* **sdk-coin-flrp:** refactored and implemented export C to P builder with test cases\ ([764be80](https://github.com/BitGo/BitGoJS/commit/764be80e9ccd6e20c8fe185711c657cd62eddc8b))
+
+
+
+
+
 ## [1.3.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.3.3...@bitgo/sdk-coin-flrp@1.3.4) (2025-11-26)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-flrp

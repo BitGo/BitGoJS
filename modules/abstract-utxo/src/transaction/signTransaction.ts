@@ -10,6 +10,7 @@ import { fetchKeychains, toBip32Triple } from '../keychains';
 
 import * as fixedScript from './fixedScript';
 import * as descriptor from './descriptor';
+import { encodeTransaction } from './decode';
 
 const debug = buildDebug('bitgo:abstract-utxo:transaction:signTransaction');
 
@@ -63,7 +64,7 @@ export async function signTransaction<TNumber extends number | bigint>(
       throw new Error('expected a UtxoPsbt object');
     }
   } else {
-    return fixedScript.signTransaction(coin, tx, getSignerKeychain(params.prv), coin.network, {
+    const signedTx = await fixedScript.signTransaction(coin, tx, getSignerKeychain(params.prv), coin.network, {
       walletId: params.txPrebuild.walletId,
       txInfo: params.txPrebuild.txInfo,
       isLastSignature: params.isLastSignature ?? false,
@@ -72,5 +73,7 @@ export async function signTransaction<TNumber extends number | bigint>(
       pubs: params.pubs,
       cosignerPub: params.cosignerPub,
     });
+    const buffer = Buffer.isBuffer(signedTx) ? signedTx : encodeTransaction(signedTx);
+    return { txHex: buffer.toString('hex') };
   }
 }

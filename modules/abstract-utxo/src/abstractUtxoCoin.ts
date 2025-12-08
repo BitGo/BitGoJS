@@ -28,6 +28,7 @@ import {
   PresignTransactionOptions,
   RequestTracer,
   SignedTransaction,
+  TxIntentMismatchError,
   SignTransactionOptions as BaseSignTransactionOptions,
   SupplementGenerateWalletOptions,
   TransactionParams as BaseTransactionParams,
@@ -41,6 +42,7 @@ import {
   isValidPrv,
   isValidXprv,
 } from '@bitgo/sdk-core';
+import { fixedScriptWallet } from '@bitgo/wasm-utxo';
 
 import {
   backupKeyRecovery,
@@ -67,6 +69,7 @@ import {
   verifyTransaction,
 } from './transaction';
 import type { TransactionExplanation } from './transaction/fixedScript/explainTransaction';
+import { Musig2Participant } from './transaction/fixedScript/musig2';
 import {
   AggregateValidationError,
   ErrorMissingOutputs,
@@ -75,7 +78,8 @@ import {
 import { assertDescriptorWalletAddress, getDescriptorMapFromWallet, isDescriptorWallet } from './descriptor';
 import { getChainFromNetwork, getFamilyFromNetwork, getFullNameFromNetwork } from './names';
 import { assertFixedScriptWalletAddress } from './address/fixedScript';
-import { ParsedTransaction } from './transaction/types';
+import { isSdkBackend, ParsedTransaction, SdkBackend } from './transaction/types';
+import { decodePsbtWith, encodeTransaction, stringToBufferTryFormats } from './transaction/decode';
 import { toBip32Triple, UtxoKeychain } from './keychains';
 import { verifyKeySignature, verifyUserPublicKey } from './verifyKey';
 import { getPolicyForEnv } from './descriptor/validatePolicy';
@@ -144,7 +148,8 @@ function convertValidationErrorToTxIntentMismatch(
   error: AggregateValidationError,
   reqId: string | IRequestTracer | undefined,
   txParams: BaseTransactionParams,
-  txHex: string | undefined
+  txHex: string | undefined,
+  txExplanation?: unknown
 ): TxIntentMismatchRecipientError {
   const mismatchedRecipients: MismatchedRecipient[] = [];
 
@@ -171,7 +176,8 @@ function convertValidationErrorToTxIntentMismatch(
     reqId,
     [txParams],
     txHex,
-    mismatchedRecipients
+    mismatchedRecipients,
+    txExplanation
   );
   // Preserve the original structured error as the cause for debugging
   // See: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/cause
@@ -209,6 +215,7 @@ export interface ExplainTransactionOptions<TNumber extends number | bigint = num
   txInfo?: TransactionInfo<TNumber>;
   feeInfo?: string;
   pubs?: Triple<string>;
+  decodeWith?: SdkBackend;
 }
 
 export interface DecoratedExplainTransactionOptions<TNumber extends number | bigint = number>
@@ -221,6 +228,7 @@ export type UtxoNetwork = utxolib.Network;
 export interface TransactionPrebuild<TNumber extends number | bigint = number> extends BaseTransactionPrebuild {
   txInfo?: TransactionInfo<TNumber>;
   blockHeight?: number;
+  decodeWith?: SdkBackend;
 }
 
 export interface TransactionParams extends BaseTransactionParams {
@@ -280,6 +288,7 @@ type UtxoBaseSignTransactionOptions<TNumber extends number | bigint = number> = 
     walletId?: string;
     txHex: string;
     txInfo?: TransactionInfo<TNumber>;
+    decodeWith?: SdkBackend;
   };
   /** xpubs triple for wallet (user, backup, bitgo). Required only when txPrebuild.txHex is not a PSBT */
   pubs?: Triple<string>;
@@ -356,7 +365,10 @@ export interface SignPsbtResponse {
   psbt: string;
 }
 
-export abstract class AbstractUtxoCoin extends BaseCoin {
+export abstract class AbstractUtxoCoin
+  extends BaseCoin
+  implements Musig2Participant<utxolib.bitgo.UtxoPsbt>, Musig2Participant<fixedScriptWallet.BitGoPsbt>
+{
   public altScriptHash?: number;
   public supportAltScriptDestination?: boolean;
   public readonly amountType: 'number' | 'bigint';
@@ -505,7 +517,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     if (_.isUndefined(prebuild.blockHeight)) {
       prebuild.blockHeight = (await this.getLatestBlockHeight()) as number;
     }
-    return _.extend({}, prebuild, { txHex: tx.toHex() });
+    return _.extend({}, prebuild, { txHex: encodeTransaction(tx).toString('hex') });
   }
 
   /**
@@ -522,48 +534,52 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     return utxolib.bitgo.createTransactionFromHex<TNumber>(hex, this.network, this.amountType);
   }
 
-  decodeTransaction<TNumber extends number | bigint>(input: Buffer | string): DecodedTransaction<TNumber> {
+  decodeTransaction<TNumber extends number | bigint>(
+    input: Buffer | string,
+    decodeWith?: SdkBackend
+  ): DecodedTransaction<TNumber> {
     if (typeof input === 'string') {
-      for (const format of ['hex', 'base64'] as const) {
-        const buffer = Buffer.from(input, format);
-        const bufferToString = buffer.toString(format);
-        if (
-          (format === 'base64' && bufferToString === input) ||
-          (format === 'hex' && bufferToString === input.toLowerCase())
-        ) {
-          return this.decodeTransaction(buffer);
-        }
-      }
-
-      throw new Error('input must be a valid hex or base64 string');
+      const buffer = stringToBufferTryFormats(input, ['hex', 'base64']);
+      return this.decodeTransaction(buffer, decodeWith);
     }
 
     if (utxolib.bitgo.isPsbt(input)) {
-      return utxolib.bitgo.createPsbtFromBuffer(input, this.network);
+      return decodePsbtWith(input, this.network, decodeWith ?? 'utxolib');
     } else {
+      if (decodeWith ?? 'utxolib' !== 'utxolib') {
+        console.error('received decodeWith hint %s, ignoring for legacy transaction', decodeWith);
+      }
       return utxolib.bitgo.createTransactionFromBuffer(input, this.network, {
         amountType: this.amountType,
       });
     }
   }
 
-  decodeTransactionAsPsbt(input: Buffer | string): utxolib.bitgo.UtxoPsbt {
+  decodeTransactionAsPsbt(input: Buffer | string): utxolib.bitgo.UtxoPsbt | fixedScriptWallet.BitGoPsbt {
     const decoded = this.decodeTransaction(input);
-    if (!(decoded instanceof utxolib.bitgo.UtxoPsbt)) {
-      throw new Error('expected psbt but got transaction');
+    if (decoded instanceof fixedScriptWallet.BitGoPsbt || decoded instanceof utxolib.bitgo.UtxoPsbt) {
+      return decoded;
     }
-    return decoded;
+    throw new Error('expected psbt but got transaction');
   }
 
   decodeTransactionFromPrebuild<TNumber extends number | bigint>(prebuild: {
     txHex?: string;
     txBase64?: string;
+    decodeWith?: string;
   }): DecodedTransaction<TNumber> {
     const string = prebuild.txHex ?? prebuild.txBase64;
     if (!string) {
       throw new Error('missing required txHex or txBase64 property');
     }
-    return this.decodeTransaction(string);
+    let { decodeWith } = prebuild;
+    if (decodeWith !== undefined) {
+      if (typeof decodeWith !== 'string' || !isSdkBackend(decodeWith)) {
+        console.error('decodeWith %s is not a valid value, using default', decodeWith);
+        decodeWith = undefined;
+      }
+    }
+    return this.decodeTransaction(string, decodeWith);
   }
 
   toCanonicalTransactionRecipient(output: { valueString: string; address?: string }): {
@@ -627,7 +643,17 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       return await verifyTransaction(this, this.bitgo, params);
     } catch (error) {
       if (error instanceof AggregateValidationError) {
-        throw convertValidationErrorToTxIntentMismatch(error, params.reqId, params.txParams, params.txPrebuild.txHex);
+        const txExplanation = await TxIntentMismatchError.tryGetTxExplanation(
+          this as unknown as IBaseCoin,
+          params.txPrebuild
+        );
+        throw convertValidationErrorToTxIntentMismatch(
+          error,
+          params.reqId,
+          params.txParams,
+          params.txPrebuild.txHex,
+          txExplanation
+        );
       }
       throw error;
     }
@@ -716,16 +742,29 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
   /**
    * @returns input psbt added with deterministic MuSig2 nonce for bitgo key for each MuSig2 inputs.
-   * @param psbtHex all MuSig2 inputs should contain user MuSig2 nonce
+   * @param psbt all MuSig2 inputs should contain user MuSig2 nonce
    * @param walletId
    */
-  async getMusig2Nonces(psbt: utxolib.bitgo.UtxoPsbt, walletId: string): Promise<utxolib.bitgo.UtxoPsbt> {
-    const params: SignPsbtRequest = { psbt: psbt.toHex() };
+  async getMusig2Nonces(psbt: utxolib.bitgo.UtxoPsbt, walletId: string): Promise<utxolib.bitgo.UtxoPsbt>;
+  async getMusig2Nonces(psbt: fixedScriptWallet.BitGoPsbt, walletId: string): Promise<fixedScriptWallet.BitGoPsbt>;
+  async getMusig2Nonces<T extends utxolib.bitgo.UtxoPsbt | fixedScriptWallet.BitGoPsbt>(
+    psbt: T,
+    walletId: string
+  ): Promise<T>;
+  async getMusig2Nonces<T extends utxolib.bitgo.UtxoPsbt | fixedScriptWallet.BitGoPsbt>(
+    psbt: T,
+    walletId: string
+  ): Promise<T> {
+    const buffer = encodeTransaction(psbt);
     const response = await this.bitgo
       .post(this.url('/wallet/' + walletId + '/tx/signpsbt'))
-      .send(params)
+      .send({ psbt: buffer.toString('hex') })
       .result();
-    return this.decodeTransactionAsPsbt(response.psbt);
+    if (psbt instanceof utxolib.bitgo.UtxoPsbt) {
+      return decodePsbtWith(response.psbt, this.network, 'utxolib') as T;
+    } else {
+      return decodePsbtWith(response.psbt, this.network, 'wasm-utxo') as T;
+    }
   }
 
   /**
@@ -735,7 +774,8 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @param walletId
    */
   async signPsbt(psbtHex: string, walletId: string): Promise<SignPsbtResponse> {
-    return { psbt: (await this.getMusig2Nonces(this.decodeTransactionAsPsbt(psbtHex), walletId)).toHex() };
+    const psbt = await this.getMusig2Nonces(this.decodeTransactionAsPsbt(psbtHex), walletId);
+    return { psbt: encodeTransaction(psbt).toString('hex') };
   }
 
   /**
@@ -745,11 +785,10 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   async signPsbtFromOVC(ovcJson: Record<string, unknown>): Promise<Record<string, unknown>> {
     assert(ovcJson['psbtHex'], 'ovcJson must contain psbtHex');
     assert(ovcJson['walletId'], 'ovcJson must contain walletId');
-    const psbt = await this.getMusig2Nonces(
-      this.decodeTransactionAsPsbt(ovcJson['psbtHex'] as string),
-      ovcJson['walletId'] as string
-    );
-    return _.extend(ovcJson, { txHex: psbt.toHex() });
+    const hex = ovcJson['psbtHex'] as string;
+    const walletId = ovcJson['walletId'] as string;
+    const psbt = await this.getMusig2Nonces(this.decodeTransactionAsPsbt(hex), walletId);
+    return _.extend(ovcJson, { txHex: encodeTransaction(psbt).toString('hex') });
   }
 
   /**

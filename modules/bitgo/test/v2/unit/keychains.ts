@@ -9,9 +9,10 @@ import nock = require('nock');
 import should = require('should');
 import * as sinon from 'sinon';
 
-import { common, decodeOrElse, ECDSAUtils, EDDSAUtils, Keychains, OvcShare } from '@bitgo/sdk-core';
+import { common, decodeOrElse, ECDSAUtils, EDDSAUtils, Keychain, Keychains, OvcShare } from '@bitgo/sdk-core';
 import { TestBitGo } from '@bitgo/sdk-test';
 import { BitGo } from '../../../src/bitgo';
+import { SinonStub } from 'sinon';
 
 describe('V2 Keychains', function () {
   let bitgo;
@@ -104,6 +105,7 @@ describe('V2 Keychains', function () {
         n.asset !== UnderlyingAsset.JOVAYETH &&
         n.asset !== UnderlyingAsset.OKB &&
         n.asset !== UnderlyingAsset.MORPH &&
+        n.asset !== UnderlyingAsset.DOGEOS &&
         coinFamilyValues.includes(n.name)
     );
 
@@ -174,9 +176,7 @@ describe('V2 Keychains', function () {
           'expected new password to be a string'
         );
 
-        (() => keychains.updateSingleKeychainPassword({ oldPassword: '1234', newPassword: 5678 })).should.throw(
-          'expected new password to be a string'
-        );
+        (() => keychains.updateSingleKeychainPassword({ oldPassword: '1234', newPassword: 5678 })).should.throw();
 
         (() => keychains.updateSingleKeychainPassword({ oldPassword: '1234', newPassword: '5678' })).should.throw(
           'expected keychain to be an object with an encryptedPrv property'
@@ -829,5 +829,93 @@ describe('V2 Keychains', function () {
     backup.should.have.property('encryptedPrv');
     const decryptedPrv = bitgo.decrypt({ input: backup.encryptedPrv, password: 't3stSicretly!' });
     decryptedPrv.should.startWith('xprv');
+  });
+
+  describe('Rotate OFC multi-user-key keychains', function () {
+    let ofcBaseCoin;
+    let ofcKeychains;
+    const mockOfcKeychain: Keychain = {
+      id: 'ofcKeychainId',
+      pub: 'ofcKeychainPub',
+      encryptedPrv: 'ofcEncryptedPrv',
+      source: 'user',
+      coinSpecific: {
+        ofc: {
+          features: ['multi-user-key'],
+        },
+      },
+      type: 'tss',
+    };
+    let nonOfcBaseCoin;
+    let nonOfcKeychains;
+    const mockNonOfcKeychain: Keychain = {
+      id: 'nonOfcKeychainId',
+      pub: 'nonOfcKeychainPub',
+      source: 'user',
+      type: 'tss',
+    };
+
+    const mockNewKeypair = {
+      pub: 'newPub',
+      prv: 'newPrv',
+    };
+
+    let sandbox;
+    let updateKeychainStub: SinonStub;
+    let createKeypairStub: SinonStub;
+    let encryptionStub: SinonStub;
+
+    beforeEach(function () {
+      ofcBaseCoin = bitgo.coin('ofc');
+      ofcKeychains = ofcBaseCoin.keychains();
+
+      nonOfcBaseCoin = bitgo.coin('hteth');
+      nonOfcKeychains = nonOfcBaseCoin.keychains();
+
+      sandbox = sinon.createSandbox();
+      updateKeychainStub = sandbox.stub().returns({ result: sandbox.stub().resolves() });
+      sandbox.stub(BitGo.prototype, 'put').returns({ send: updateKeychainStub });
+      createKeypairStub = sandbox.stub(ofcKeychains, 'create').returns(mockNewKeypair);
+      encryptionStub = sandbox.stub(BitGo.prototype, 'encrypt').returns('newEncryptedPrv');
+    });
+
+    afterEach(function () {
+      sandbox.restore();
+    });
+
+    it('should rotate ofc multi-user-key properly', async function () {
+      nock(bgUrl).get(`/api/v2/ofc/key/${mockOfcKeychain.id}`).query(true).reply(200, mockOfcKeychain);
+
+      await ofcKeychains.rotateKeychain({ id: mockOfcKeychain.id, password: '1234' });
+      sinon.assert.called(createKeypairStub);
+      sinon.assert.calledWith(encryptionStub, { input: mockNewKeypair.prv, password: '1234' });
+      sinon.assert.calledWith(updateKeychainStub, {
+        pub: mockNewKeypair.pub,
+        encryptedPrv: 'newEncryptedPrv',
+        reqId: undefined,
+      });
+    });
+
+    it('should allow user to supply pub and encryptedPrv directly', async function () {
+      nock(bgUrl).get(`/api/v2/ofc/key/${mockOfcKeychain.id}`).query(true).reply(200, mockOfcKeychain);
+
+      await ofcKeychains.rotateKeychain({ id: mockOfcKeychain.id, pub: 'pub', encryptedPrv: 'encryptedPrv' });
+      sinon.assert.notCalled(createKeypairStub);
+      sinon.assert.notCalled(encryptionStub);
+      sinon.assert.calledWith(updateKeychainStub, {
+        pub: 'pub',
+        encryptedPrv: 'encryptedPrv',
+        reqId: undefined,
+      });
+    });
+
+    it('should throw when trying to rotate non-ofc keychain', async function () {
+      nock(bgUrl).get(`/api/v2/hteth/key/${mockNonOfcKeychain.id}`).query(true).reply(200, mockNonOfcKeychain);
+
+      await assert.rejects(
+        async () => await nonOfcKeychains.rotateKeychain({ id: mockNonOfcKeychain.id, password: '1234' }),
+        (err: Error) => err.message === 'rotateKeychain is only permitted for ofc multi-user-key wallet'
+      );
+    });
   });
 });

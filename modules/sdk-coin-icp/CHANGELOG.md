@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.19.17](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-icp@1.19.16...@bitgo/sdk-coin-icp@1.19.17) (2025-12-05)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-icp
+
+
+
+
+
+## [1.19.16](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-icp@1.19.15...@bitgo/sdk-coin-icp@1.19.16) (2025-12-04)
+
+
+### Bug Fixes
+
+* **sdk-coin-icp:** update testnet ledger canister details ([5f7c953](https://github.com/BitGo/BitGoJS/commit/5f7c953e7ceb4500a3cfc9d56a415a1fe6d8a2cb))
+
+
+
+
+
 ## [1.19.15](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-icp@1.19.14...@bitgo/sdk-coin-icp@1.19.15) (2025-11-26)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-icp

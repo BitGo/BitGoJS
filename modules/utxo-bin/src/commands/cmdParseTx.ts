@@ -19,15 +19,17 @@ import {
   fetchTransactionStatus,
   getClient,
 } from '../fetch';
-import { getParserTxProperties } from '../ParserTx';
+import { getParserTxProperties, ParserTx } from '../ParserTx';
 import { parseUnknown } from '../parseUnknown';
 import { Parser } from '../Parser';
 
 import { formatString } from './formatString';
+import { getPrevOutputsFromPrevTxs } from '../prevTx';
 
 export type ArgsParseTransaction = ReadStringOptions & {
   network: utxolib.Network;
   txid?: string;
+  prevTx?: string[];
   blockHeight?: number;
   txIndex?: number;
   all: boolean;
@@ -71,6 +73,7 @@ export const cmdParseTx = {
       .options(readStringOptions)
       .options(getNetworkOptionsDemand())
       .option('txid', { type: 'string' })
+      .option('prevTx', { type: 'string', description: 'previous transaction hex or base64 string', array: true })
       .option('blockHeight', { type: 'number' })
       .option('txIndex', { type: 'number' })
       .option('fetchAll', { type: 'boolean', default: false })
@@ -128,11 +131,14 @@ export const cmdParseTx = {
       throw new Error(`no txdata`);
     }
 
-    const bytes = stringToBuffer(string, ['hex', 'base64']);
+    function decodeBytes(bytes: Buffer): ParserTx {
+      return utxolib.bitgo.isPsbt(bytes)
+        ? utxolib.bitgo.createPsbtFromBuffer(bytes, argv.network)
+        : utxolib.bitgo.createTransactionFromBuffer(bytes, argv.network, { amountType: 'bigint' });
+    }
 
-    let tx = utxolib.bitgo.isPsbt(bytes)
-      ? utxolib.bitgo.createPsbtFromBuffer(bytes, argv.network)
-      : utxolib.bitgo.createTransactionFromBuffer(bytes, argv.network, { amountType: 'bigint' });
+    const bytes = stringToBuffer(string, ['hex', 'base64']);
+    let tx = decodeBytes(bytes);
 
     const { id: txid } = getParserTxProperties(tx, undefined);
     if (tx instanceof utxolib.bitgo.UtxoTransaction) {
@@ -143,6 +149,11 @@ export const cmdParseTx = {
       tx.finalizeAllInputs();
       tx = tx.extractTransaction();
     }
+
+    const prevTxs: ParserTx[] = (argv.prevTx ?? []).map((s) => {
+      const buf = stringToBuffer(s, ['hex', 'base64']);
+      return decodeBytes(buf);
+    });
 
     if (argv.parseAsUnknown) {
       console.log(formatString(parseUnknown(new Parser(), 'tx', tx), argv));
@@ -157,7 +168,7 @@ export const cmdParseTx = {
 
     const parsed = getTxParser(argv).parse(tx, {
       status: argv.fetchStatus && txid ? await fetchTransactionStatus(httpClient, txid, argv.network) : undefined,
-      prevOutputs: argv.fetchInputs ? await fetchPrevOutputs(httpClient, tx) : undefined,
+      prevOutputs: argv.fetchInputs ? await fetchPrevOutputs(httpClient, tx) : getPrevOutputsFromPrevTxs(tx, prevTxs),
       prevOutputSpends: argv.fetchSpends ? await fetchPrevOutputSpends(httpClient, tx) : undefined,
       outputSpends:
         argv.fetchSpends && tx instanceof utxolib.bitgo.UtxoTransaction

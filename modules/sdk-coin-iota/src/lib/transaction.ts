@@ -16,34 +16,35 @@ import {
 import { TxData, TransactionObjectInput, TransactionExplanation } from './iface';
 import { toBase64 } from '@iota/iota-sdk/utils';
 import blake2b from '@bitgo/blake2b';
-import {
-  MAX_GAS_BUDGET,
-  MAX_GAS_PAYMENT_OBJECTS,
-  MAX_GAS_PRICE,
-  IOTA_KEY_BYTES_LENGTH,
-  IOTA_SIGNATURE_LENGTH,
-} from './constants';
+import { MAX_GAS_BUDGET, MAX_GAS_PAYMENT_OBJECTS, MAX_GAS_PRICE } from './constants';
 import utils from './utils';
 
+/**
+ * Base class for IOTA transactions.
+ * Manages transaction state, gas data, signatures, and building/serialization.
+ */
 export abstract class Transaction extends BaseTransaction {
-  static EMPTY_PUBLIC_KEY = Buffer.alloc(IOTA_KEY_BYTES_LENGTH);
-  static EMPTY_SIGNATURE = Buffer.alloc(IOTA_SIGNATURE_LENGTH);
-
+  // Transaction state management
   protected _rebuildRequired: boolean;
   protected _type: TransactionType;
   protected _iotaTransaction: IotaTransaction;
 
+  // Gas and payment data
   private _gasBudget?: number;
   private _gasPaymentObjects?: TransactionObjectInput[];
   private _gasPrice?: number;
   private _gasSponsor?: string;
+
+  // Transaction identifiers and data
   private _sender: string;
+  private _txDataBytes?: Uint8Array<ArrayBufferLike>;
+  private _isSimulateTx: boolean;
+
+  // Signature data
   private _signature?: Signature;
   private _serializedSignature?: string;
   private _gasSponsorSignature?: Signature;
   private _serializedGasSponsorSignature?: string;
-  private _txDataBytes?: Uint8Array<ArrayBufferLike>;
-  private _isSimulateTx: boolean;
 
   protected constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
@@ -52,99 +53,150 @@ export abstract class Transaction extends BaseTransaction {
     this._isSimulateTx = true;
   }
 
+  // Gas budget getter/setter - marks rebuild required when changed
   get gasBudget(): number | undefined {
     return this._gasBudget;
   }
 
   set gasBudget(value: number | undefined) {
     this._gasBudget = value;
-    this._rebuildRequired = true;
+    this.markRebuildRequired();
   }
 
+  // Gas payment objects getter/setter - marks rebuild required when changed
   get gasPaymentObjects(): TransactionObjectInput[] | undefined {
     return this._gasPaymentObjects;
   }
 
   set gasPaymentObjects(value: TransactionObjectInput[] | undefined) {
     this._gasPaymentObjects = value;
-    this._rebuildRequired = true;
+    this.markRebuildRequired();
   }
 
+  // Gas price getter/setter - marks rebuild required when changed
   get gasPrice(): number | undefined {
     return this._gasPrice;
   }
 
   set gasPrice(value: number | undefined) {
     this._gasPrice = value;
-    this._rebuildRequired = true;
+    this.markRebuildRequired();
   }
 
+  // Gas sponsor getter/setter - marks rebuild required when changed
   get gasSponsor(): string | undefined {
     return this._gasSponsor;
   }
 
   set gasSponsor(value: string | undefined) {
     this._gasSponsor = value;
-    this._rebuildRequired = true;
+    this.markRebuildRequired();
   }
 
+  // Transaction sender getter/setter - marks rebuild required when changed
   get sender(): string {
     return this._sender;
   }
 
   set sender(value: string) {
     this._sender = value;
-    this._rebuildRequired = true;
+    this.markRebuildRequired();
   }
 
+  /**
+   * Indicates whether this is a simulate transaction (dry run) or a real transaction.
+   * Simulate transactions use maximum gas values for estimation purposes.
+   */
   get isSimulateTx(): boolean {
     return this._isSimulateTx;
   }
 
   set isSimulateTx(value: boolean) {
     if (!value) {
-      try {
-        this.validateTxData();
-        this._rebuildRequired = true;
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        throw new Error(`Tx data validation failed: ${errorMessage}. {Cause: ${error}}`);
-      }
+      this.validateTxDataForRealTransaction();
+      this.markRebuildRequired();
     }
     this._isSimulateTx = value;
   }
 
+  /**
+   * Marks that the transaction needs to be rebuilt before it can be signed or broadcast.
+   */
+  private markRebuildRequired(): void {
+    this._rebuildRequired = true;
+  }
+
+  /**
+   * Validates transaction data when switching from simulate to real transaction mode.
+   */
+  private validateTxDataForRealTransaction(): void {
+    try {
+      this.validateTxData();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Tx data validation failed: ${errorMessage}. {Cause: ${error}}`);
+    }
+  }
+
+  /**
+   * Returns the signable payload for this transaction.
+   * This is the Blake2b hash of the transaction data with intent message.
+   * @throws Error if transaction is in simulate mode or not built
+   */
   get signablePayload(): Buffer {
     if (this.isSimulateTx) {
       throw new Error('Cannot sign a simulate tx');
     }
-    if (this._txDataBytes === undefined || this._rebuildRequired) {
-      throw new Error('Tx not built or a rebuild is required');
-    }
-    const intentMessage = this.messageWithIntent(this._txDataBytes);
+    this.ensureTransactionIsBuilt();
+
+    const intentMessage = this.messageWithIntent(this._txDataBytes as Uint8Array<ArrayBufferLike>);
     return Buffer.from(blake2b(32).update(intentMessage).digest('binary'));
   }
 
-  /** @inheritDoc **/
+  /**
+   * Returns the transaction digest (ID).
+   * @throws Error if transaction is not built or needs rebuilding
+   */
   get id(): string {
+    this.ensureTransactionIsBuilt();
+    return IotaTransactionDataBuilder.getDigestFromBytes(this._txDataBytes as Uint8Array<ArrayBufferLike>);
+  }
+
+  /**
+   * Ensures the transaction is built and doesn't need rebuilding.
+   * @throws Error if transaction is not built or rebuild is required
+   */
+  private ensureTransactionIsBuilt(): void {
     if (this._txDataBytes === undefined || this._rebuildRequired) {
       throw new Error('Tx not built or a rebuild is required');
     }
-    return IotaTransactionDataBuilder.getDigestFromBytes(this._txDataBytes);
   }
 
+  /**
+   * Adds a signature from the transaction sender.
+   */
   addSignature(publicKey: PublicKey, signature: Buffer): void {
     this._signature = { publicKey, signature };
   }
 
+  /**
+   * Adds a signature from the gas sponsor (if different from sender).
+   */
   addGasSponsorSignature(publicKey: PublicKey, signature: Buffer): void {
     this._gasSponsorSignature = { publicKey, signature };
   }
 
+  /**
+   * Checks if this transaction can be signed.
+   * Only real transactions (not simulate) can be signed.
+   */
   canSign(_key: BaseKey): boolean {
     return !this.isSimulateTx;
   }
 
+  /**
+   * Returns the transaction fee (gas budget).
+   */
   getFee(): string | undefined {
     return this.gasBudget?.toString();
   }
@@ -157,28 +209,42 @@ export abstract class Transaction extends BaseTransaction {
     return this._serializedSignature;
   }
 
+  /**
+   * Serializes all signatures for the transaction.
+   * Includes both sender signature and gas sponsor signature if present.
+   */
   serializeSignatures(): void {
     this._signatures = [];
+
     if (this._signature) {
-      this._serializedSignature = this.serializeSignature(this._signature as Signature);
+      this._serializedSignature = this.serializeSignature(this._signature);
       this._signatures.push(this._serializedSignature);
     }
+
     if (this._gasSponsorSignature) {
-      this._serializedGasSponsorSignature = this.serializeSignature(this._gasSponsorSignature as Signature);
+      this._serializedGasSponsorSignature = this.serializeSignature(this._gasSponsorSignature);
       this._signatures.push(this._serializedGasSponsorSignature);
     }
   }
 
+  /**
+   * Converts the transaction to broadcast format (base64 encoded).
+   */
   async toBroadcastFormat(): Promise<string> {
-    const txDataBytes: Uint8Array<ArrayBufferLike> = await this.build();
+    const txDataBytes = await this.build();
     return toBase64(txDataBytes);
   }
 
+  /**
+   * Builds the transaction bytes.
+   * If in simulate mode, builds a dry run transaction with max gas values.
+   * Otherwise, builds a real transaction with actual gas data.
+   */
   async build(): Promise<Uint8Array<ArrayBufferLike>> {
     if (this.isSimulateTx) {
       return this.buildDryRunTransaction();
     }
-    return this.buildTransaction();
+    return this.buildRealTransaction();
   }
 
   toJson(): TxData {
@@ -202,31 +268,49 @@ export abstract class Transaction extends BaseTransaction {
     }
   }
 
+  /**
+   * Parses transaction data from its broadcast format (base64 or raw bytes).
+   * Extracts sender, gas data, and gas sponsor information.
+   */
   parseFromBroadcastTx(tx: string | Uint8Array): void {
     const txData = IotaTransaction.from(tx).getData();
+
+    this.parseSender(txData);
+    this.parseGasData(txData);
+  }
+
+  /**
+   * Parses the sender address from transaction data.
+   */
+  private parseSender(txData: ReturnType<IotaTransaction['getData']>): void {
     if (txData.sender) {
       this.sender = txData.sender;
     }
-    if (txData.gasData?.budget) {
-      this.gasBudget = Number(txData.gasData.budget);
-    } else {
+  }
+
+  /**
+   * Parses gas-related data from transaction data.
+   */
+  private parseGasData(txData: ReturnType<IotaTransaction['getData']>): void {
+    const gasData = txData.gasData;
+
+    if (!gasData) {
       this.gasBudget = undefined;
-    }
-    if (txData.gasData?.price) {
-      this.gasPrice = Number(txData.gasData.price);
-    } else {
       this.gasPrice = undefined;
-    }
-    if (txData.gasData?.payment && txData.gasData.payment.length > 0) {
-      this.gasPaymentObjects = txData.gasData.payment.map((payment) => payment as TransactionObjectInput);
-    } else {
       this.gasPaymentObjects = undefined;
-    }
-    if (txData.gasData?.owner) {
-      this.gasSponsor = txData.gasData.owner;
-    } else {
       this.gasSponsor = undefined;
+      return;
     }
+
+    this.gasBudget = gasData.budget ? Number(gasData.budget) : undefined;
+    this.gasPrice = gasData.price ? Number(gasData.price) : undefined;
+
+    this.gasPaymentObjects =
+      gasData.payment && gasData.payment.length > 0
+        ? gasData.payment.map((payment) => payment as TransactionObjectInput)
+        : undefined;
+
+    this.gasSponsor = gasData.owner || undefined;
   }
 
   /**
@@ -253,37 +337,35 @@ export abstract class Transaction extends BaseTransaction {
     return this.explainTransactionImplementation(result, explanationResult);
   }
 
+  /**
+   * Updates the simulate transaction flag based on gas data availability.
+   * If all gas data is present, switches to real transaction mode.
+   */
   protected updateIsSimulateTx(): void {
-    if (this.gasBudget && this.gasPrice && this.gasPaymentObjects && this.gasPaymentObjects?.length > 0) {
-      this.isSimulateTx = false;
-    } else {
-      this.isSimulateTx = true;
-    }
+    const hasAllGasData =
+      this.gasBudget && this.gasPrice && this.gasPaymentObjects && this.gasPaymentObjects.length > 0;
+
+    this.isSimulateTx = !hasAllGasData;
   }
 
+  // Abstract methods to be implemented by child classes
   protected abstract messageWithIntent(message: Uint8Array): Uint8Array;
   protected abstract populateTxInputsAndCommands(): void;
   protected abstract validateTxDataImplementation(): void;
-
-  /**
-   * Add the input and output entries for this transaction.
-   */
   abstract addInputsAndOutputs(): void;
-
-  /**
-   * Returns a complete explanation for a transfer transaction
-   * @param {TxData} json The transaction data in json format
-   * @param {TransactionExplanation} explanationResult The transaction explanation to be completed
-   * @returns {TransactionExplanation}
-   */
   protected abstract explainTransactionImplementation(
     json: TxData,
     explanationResult: TransactionExplanation
   ): TransactionExplanation;
 
+  /**
+   * Builds a dry run (simulate) transaction with maximum gas values.
+   * Used for gas estimation without committing the transaction.
+   */
   private async buildDryRunTransaction(): Promise<Uint8Array<ArrayBufferLike>> {
     this.validateTxDataImplementation();
     await this.populateTxData();
+
     const txDataBuilder = new IotaTransactionDataBuilder(this._iotaTransaction.getData() as IotaTransactionData);
     return txDataBuilder.build({
       overrides: {
@@ -296,44 +378,97 @@ export abstract class Transaction extends BaseTransaction {
     });
   }
 
-  private async buildTransaction(): Promise<Uint8Array<ArrayBufferLike>> {
+  /**
+   * Builds a real transaction with actual gas data.
+   * Only builds if necessary (first time or rebuild required).
+   */
+  private async buildRealTransaction(): Promise<Uint8Array<ArrayBufferLike>> {
     if (this._txDataBytes === undefined || this._rebuildRequired) {
       this.validateTxData();
       await this.populateTxData();
-      this._iotaTransaction.setGasPrice(this.gasPrice as number);
-      this._iotaTransaction.setGasBudget(this.gasBudget as number);
-      this._iotaTransaction.setGasPayment(this.gasPaymentObjects as TransactionObjectInput[]);
+      this.setGasDataOnTransaction();
       this._txDataBytes = await this._iotaTransaction.build();
       this._rebuildRequired = false;
     }
+
     this.serializeSignatures();
     return this._txDataBytes;
   }
 
+  /**
+   * Sets gas data on the IOTA transaction object.
+   */
+  private setGasDataOnTransaction(): void {
+    this._iotaTransaction.setGasPrice(this.gasPrice!);
+    this._iotaTransaction.setGasBudget(this.gasBudget!);
+    this._iotaTransaction.setGasPayment(
+      this.gasPaymentObjects!.slice(0, MAX_GAS_PAYMENT_OBJECTS - 1) as TransactionObjectInput[]
+    );
+  }
+
+  /**
+   * Populates the IOTA transaction with inputs, commands, and gas sponsor if applicable.
+   */
   private async populateTxData(): Promise<void> {
     this._iotaTransaction = new IotaTransaction();
     this.populateTxInputsAndCommands();
-    if (this.gasSponsor && this._sender !== this.gasSponsor) {
-      this._iotaTransaction = IotaTransaction.fromKind(
-        await this._iotaTransaction.build({ onlyTransactionKind: true })
-      );
-      this._iotaTransaction.setGasOwner(this._gasSponsor as string);
+
+    // If gas sponsor is different from sender, set up sponsored transaction
+    if (this.hasDifferentGasSponsor()) {
+      await this.setupGasSponsoredTransaction();
     }
+
     this._iotaTransaction.setSender(this.sender);
   }
 
-  private serializeSignature(signature: Signature): string {
-    const pubKey = Buffer.from(signature.publicKey.pub, 'hex');
-    const serialized_sig = new Uint8Array(1 + signature.signature.length + pubKey.length);
-    serialized_sig.set([0x00]); //Hardcoding the signature scheme flag since we only support EDDSA for iota
-    serialized_sig.set(signature.signature, 1);
-    serialized_sig.set(pubKey, 1 + signature.signature.length);
-    return toBase64(serialized_sig);
+  /**
+   * Checks if the transaction has a gas sponsor different from the sender.
+   */
+  private hasDifferentGasSponsor(): boolean {
+    return Boolean(this.gasSponsor && this._sender !== this.gasSponsor);
   }
 
+  /**
+   * Sets up a gas-sponsored transaction by building the transaction kind
+   * and setting the gas owner.
+   */
+  private async setupGasSponsoredTransaction(): Promise<void> {
+    const transactionKind = await this._iotaTransaction.build({ onlyTransactionKind: true });
+    this._iotaTransaction = IotaTransaction.fromKind(transactionKind);
+    this._iotaTransaction.setGasOwner(this._gasSponsor!);
+  }
+
+  /**
+   * Serializes a signature into IOTA's expected format.
+   * Format: [signature_scheme_flag (1 byte), signature, public_key]
+   * Currently hardcoded to EDDSA (0x00) as IOTA only supports this scheme.
+   */
+  private serializeSignature(signature: Signature): string {
+    const SIGNATURE_SCHEME_EDDSA = 0x00;
+    const pubKey = Buffer.from(signature.publicKey.pub, 'hex');
+    const serializedSignature = new Uint8Array(1 + signature.signature.length + pubKey.length);
+
+    serializedSignature.set([SIGNATURE_SCHEME_EDDSA]);
+    serializedSignature.set(signature.signature, 1);
+    serializedSignature.set(pubKey, 1 + signature.signature.length);
+
+    return toBase64(serializedSignature);
+  }
+
+  /**
+   * Validates all transaction data required for a real (non-simulate) transaction.
+   */
   private validateTxData(): void {
     this.validateTxDataImplementation();
-    if (!this.sender || this.sender === '') {
+    this.validateCommonTxData();
+    this.validateSignatures();
+  }
+
+  /**
+   * Validates common transaction data (sender, gas data).
+   */
+  private validateCommonTxData(): void {
+    if (!this.sender) {
       throw new InvalidTransactionError('Transaction sender is required');
     }
 
@@ -345,34 +480,28 @@ export abstract class Transaction extends BaseTransaction {
       throw new InvalidTransactionError('Gas budget is required');
     }
 
-    if (!this.gasPaymentObjects || this.gasPaymentObjects?.length === 0) {
+    if (!this.gasPaymentObjects || this.gasPaymentObjects.length === 0) {
       throw new InvalidTransactionError('Gas payment objects are required');
     }
+  }
 
-    if (this.gasPaymentObjects.length > MAX_GAS_PAYMENT_OBJECTS) {
-      throw new InvalidTransactionError(
-        `Gas payment objects count (${this.gasPaymentObjects.length}) exceeds maximum allowed (${MAX_GAS_PAYMENT_OBJECTS})`
-      );
-    }
-
-    if (
-      this._signature &&
-      !(
-        utils.isValidPublicKey(this._signature.publicKey.pub) &&
-        utils.isValidSignature(toBase64(this._signature.signature))
-      )
-    ) {
+  /**
+   * Validates sender and gas sponsor signatures if present.
+   */
+  private validateSignatures(): void {
+    if (this._signature && !this.isValidSignature(this._signature)) {
       throw new InvalidTransactionError('Invalid sender signature');
     }
 
-    if (
-      this._gasSponsorSignature &&
-      !(
-        utils.isValidPublicKey(this._gasSponsorSignature.publicKey.pub) &&
-        utils.isValidSignature(toBase64(this._gasSponsorSignature.signature))
-      )
-    ) {
+    if (this._gasSponsorSignature && !this.isValidSignature(this._gasSponsorSignature)) {
       throw new InvalidTransactionError('Invalid gas sponsor signature');
     }
+  }
+
+  /**
+   * Checks if a signature has valid public key and signature data.
+   */
+  private isValidSignature(signature: Signature): boolean {
+    return utils.isValidPublicKey(signature.publicKey.pub) && utils.isValidSignature(toBase64(signature.signature));
   }
 }

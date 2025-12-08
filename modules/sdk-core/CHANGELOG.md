@@ -3,6 +3,36 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [36.23.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.23.0...@bitgo/sdk-core@36.23.1) (2025-12-05)
+
+**Note:** Version bump only for package @bitgo/sdk-core
+
+
+
+
+
+# [36.23.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.22.0...@bitgo/sdk-core@36.23.0) (2025-12-04)
+
+
+### Bug Fixes
+
+* pass wallet version during creation to determine if onchain or tss ([ee66fb5](https://github.com/BitGo/BitGoJS/commit/ee66fb5c436b6202fcd923771fb2ab80c37dafcc))
+* **sdk-coin-icp:** update testnet ledger canister details ([5f7c953](https://github.com/BitGo/BitGoJS/commit/5f7c953e7ceb4500a3cfc9d56a415a1fe6d8a2cb))
+
+
+### Features
+
+* add DogeOS and DogeOS Testnet support ([c760ffc](https://github.com/BitGo/BitGoJS/commit/c760ffcafe87a35432d91ec3ff100a0a2ab8b0ef))
+* add tx explanation for TxIntentMismatch errors ([feed271](https://github.com/BitGo/BitGoJS/commit/feed271ec7ae1ae099adf3eb100a532b12d03228))
+* added rotate keychain method for multi-user-key ofc wallet ([49f0701](https://github.com/BitGo/BitGoJS/commit/49f07018762667ed1647fe438f7624be2cc5e5c6))
+* **sdk-coin-vet:** add new param to support nftTier for Vet Staking ([6ea344b](https://github.com/BitGo/BitGoJS/commit/6ea344bb911c38535ffbcb6afddb3ec4539476b5))
+* **sdk-core:** add ESM build support ([cde798f](https://github.com/BitGo/BitGoJS/commit/cde798f76f1eaf09a7509f59c18d59c8b7c08453))
+* **statics:** add morph chain config ([00dca1d](https://github.com/BitGo/BitGoJS/commit/00dca1d066eed9d866d974722e163e2edadb8262))
+
+
+
+
+
 # [36.22.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.21.0...@bitgo/sdk-core@36.22.0) (2025-11-26)
 
 

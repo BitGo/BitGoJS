@@ -87,7 +87,7 @@ async function queryAddressBalanceHedera(
   baseUrl: string
 ): Promise<Record<string, unknown>> {
   const address = query.address;
-  const url = `${baseUrl}/accounts/${address}`;
+  const url = `${baseUrl}/accounts/${address}?transactions=false`;
   const response = await request.get(url).send();
 
   if (!response.ok) {
@@ -106,7 +106,7 @@ async function queryAddressBalanceHedera(
  */
 async function getAddressNonceHedera(query: Record<string, string>, baseUrl: string): Promise<Record<string, unknown>> {
   const address = query.address;
-  const accountUrl = `${baseUrl}/accounts/${address}`;
+  const accountUrl = `${baseUrl}/accounts/${address}?transactions=false`;
   const response = await request.get(accountUrl).send();
 
   if (!response.ok) {

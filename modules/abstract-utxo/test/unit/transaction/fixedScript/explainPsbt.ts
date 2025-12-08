@@ -65,7 +65,7 @@ function describeTransactionWith(acidTest: testutil.AcidTest) {
 
       const wasmExplanation = explainPsbtWasm(wasmPsbt, walletXpubs, {
         replayProtection: {
-          outputScripts: [acidTest.getReplayProtectionOutputScript()],
+          publicKeys: [acidTest.getReplayProtectionPublicKey()],
         },
       });
 
@@ -95,7 +95,7 @@ function describeTransactionWith(acidTest: testutil.AcidTest) {
     it('returns custom change outputs when parameter is set', function () {
       const wasmExplanation = explainPsbtWasm(wasmPsbt, walletXpubs, {
         replayProtection: {
-          outputScripts: [acidTest.getReplayProtectionOutputScript()],
+          publicKeys: [acidTest.getReplayProtectionPublicKey()],
         },
         customChangeWalletXpubs,
       });

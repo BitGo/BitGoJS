@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/abstract-utxo",
-  "version": "10.8.0",
+  "version": "10.10.0",
   "description": "BitGo SDK coin library for UTXO base implementation",
   "main": "./dist/cjs/src/index.js",
   "module": "./dist/esm/index.js",
@@ -31,7 +31,7 @@
     "clean": "rm -rf ./dist",
     "lint": "eslint --quiet .",
     "prepare": "npm run build",
-    "test": "npm run unit-test",
+    "test": "mocha --recursive test/unit/",
     "unit-test": "mocha --recursive test/unit/",
     "integration-test": "mocha --recursive test/integration/"
   },
@@ -60,15 +60,15 @@
     ]
   },
   "dependencies": {
-    "@bitgo/blockapis": "^1.12.8",
-    "@bitgo/sdk-api": "^1.71.7",
-    "@bitgo/sdk-core": "^36.22.0",
+    "@bitgo/blockapis": "^1.12.10",
+    "@bitgo/sdk-api": "^1.71.9",
+    "@bitgo/sdk-core": "^36.23.1",
     "@bitgo/secp256k1": "^1.7.0",
-    "@bitgo/unspents": "^0.50.10",
-    "@bitgo/utxo-core": "^1.25.0",
-    "@bitgo/utxo-lib": "^11.16.1",
-    "@bitgo/utxo-ord": "^1.22.15",
-    "@bitgo/wasm-utxo": "1.8.0",
+    "@bitgo/unspents": "^0.50.12",
+    "@bitgo/utxo-core": "^1.26.1",
+    "@bitgo/utxo-lib": "^11.18.0",
+    "@bitgo/utxo-ord": "^1.22.17",
+    "@bitgo/wasm-utxo": "1.11.0",
     "@types/lodash": "^4.14.121",
     "@types/superagent": "4.1.15",
     "bignumber.js": "^9.0.2",
@@ -79,7 +79,7 @@
     "superagent": "^9.0.1"
   },
   "devDependencies": {
-    "@bitgo/sdk-test": "^9.1.15",
+    "@bitgo/sdk-test": "^9.1.17",
     "mocha": "^10.2.0"
   },
   "gitHead": "18e460ddf02de2dbf13c2aa243478188fb539f0c"

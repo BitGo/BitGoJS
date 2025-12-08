@@ -663,6 +663,402 @@ describe('ETH:', function () {
     });
   });
 
+  describe('TSS Transaction Verification', function () {
+    it('should verify TSS consolidation transaction when txPrebuild has consolidateId', async function () {
+      const coin = bitgo.coin('hteth') as Hteth;
+      const baseAddress = '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be';
+      const wallet = new Wallet(bitgo, coin, {
+        coinSpecific: {
+          baseAddress: baseAddress,
+        },
+      });
+
+      // txParams without recipients (as in consolidation flow)
+      const txParams = {
+        wallet: wallet,
+        walletPassphrase: 'fakeWalletPassphrase',
+      };
+
+      // txPrebuild with consolidateId (set by server during consolidation build)
+      const txPrebuild = {
+        consolidateId: '68a7d5d0c66e74e216b97173bd558c6d',
+        txHex: '0x',
+        coin: 'hteth',
+        walletId: 'fakeWalletId',
+      };
+
+      const verification = {};
+
+      const isTransactionVerified = await coin.verifyTransaction({
+        txParams: txParams as any,
+        txPrebuild: txPrebuild as any,
+        wallet,
+        verification,
+        walletType: 'tss',
+      });
+      isTransactionVerified.should.equal(true);
+    });
+
+    it('should verify TSS transaction when txParams.type is consolidate', async function () {
+      const coin = bitgo.coin('hteth') as Hteth;
+      const baseAddress = '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be';
+      const wallet = new Wallet(bitgo, coin, {
+        coinSpecific: {
+          baseAddress: baseAddress,
+        },
+      });
+
+      const txParams = {
+        type: 'consolidate',
+        wallet: wallet,
+        walletPassphrase: 'fakeWalletPassphrase',
+      };
+
+      const txPrebuild = {
+        txHex: '0x',
+        coin: 'hteth',
+        walletId: 'fakeWalletId',
+      };
+
+      const verification = {};
+
+      const isTransactionVerified = await coin.verifyTransaction({
+        txParams: txParams as any,
+        txPrebuild: txPrebuild as any,
+        wallet,
+        verification,
+        walletType: 'tss',
+      });
+      isTransactionVerified.should.equal(true);
+    });
+
+    it('should verify TSS transaction when txParams.prebuildTx has consolidateId', async function () {
+      const coin = bitgo.coin('hteth') as Hteth;
+      const baseAddress = '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be';
+      const wallet = new Wallet(bitgo, coin, {
+        coinSpecific: {
+          baseAddress: baseAddress,
+        },
+      });
+
+      const txParams = {
+        wallet: wallet,
+        walletPassphrase: 'fakeWalletPassphrase',
+        prebuildTx: {
+          consolidateId: '68a7d5d0c66e74e216b97173bd558c6d',
+        },
+      };
+
+      const txPrebuild = {
+        txHex: '0x',
+        coin: 'hteth',
+        walletId: 'fakeWalletId',
+      };
+
+      const verification = {};
+
+      const isTransactionVerified = await coin.verifyTransaction({
+        txParams: txParams as any,
+        txPrebuild: txPrebuild as any,
+        wallet,
+        verification,
+        walletType: 'tss',
+      });
+      isTransactionVerified.should.equal(true);
+    });
+
+    it('should reject TSS transaction without recipients, consolidateId, or valid type', async function () {
+      const coin = bitgo.coin('hteth') as Hteth;
+      const baseAddress = '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be';
+      const wallet = new Wallet(bitgo, coin, {
+        coinSpecific: {
+          baseAddress: baseAddress,
+        },
+      });
+
+      const txParams = {
+        wallet: wallet,
+        walletPassphrase: 'fakeWalletPassphrase',
+      };
+
+      const txPrebuild = {
+        txHex: '0x',
+        coin: 'hteth',
+        walletId: 'fakeWalletId',
+      };
+
+      const verification = {};
+
+      await coin
+        .verifyTransaction({
+          txParams: txParams as any,
+          txPrebuild: txPrebuild as any,
+          wallet,
+          verification,
+          walletType: 'tss',
+        })
+        .should.be.rejectedWith('missing txParams');
+    });
+
+    it('should verify TSS transaction with acceleration type', async function () {
+      const coin = bitgo.coin('hteth') as Hteth;
+      const baseAddress = '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be';
+      const wallet = new Wallet(bitgo, coin, {
+        coinSpecific: {
+          baseAddress: baseAddress,
+        },
+      });
+
+      const txParams = {
+        type: 'acceleration',
+        wallet: wallet,
+        walletPassphrase: 'fakeWalletPassphrase',
+      };
+
+      const txPrebuild = {
+        txHex: '0x',
+        coin: 'hteth',
+        walletId: 'fakeWalletId',
+      };
+
+      const verification = {};
+
+      const isTransactionVerified = await coin.verifyTransaction({
+        txParams: txParams as any,
+        txPrebuild: txPrebuild as any,
+        wallet,
+        verification,
+        walletType: 'tss',
+      });
+      isTransactionVerified.should.equal(true);
+    });
+
+    it('should verify TSS transaction with fillNonce type', async function () {
+      const coin = bitgo.coin('hteth') as Hteth;
+      const baseAddress = '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be';
+      const wallet = new Wallet(bitgo, coin, {
+        coinSpecific: {
+          baseAddress: baseAddress,
+        },
+      });
+
+      const txParams = {
+        type: 'fillNonce',
+        wallet: wallet,
+        walletPassphrase: 'fakeWalletPassphrase',
+      };
+
+      const txPrebuild = {
+        txHex: '0x',
+        coin: 'hteth',
+        walletId: 'fakeWalletId',
+      };
+
+      const verification = {};
+
+      const isTransactionVerified = await coin.verifyTransaction({
+        txParams: txParams as any,
+        txPrebuild: txPrebuild as any,
+        wallet,
+        verification,
+        walletType: 'tss',
+      });
+      isTransactionVerified.should.equal(true);
+    });
+
+    describe('consolidationToBaseAddress verification', function () {
+      it('should verify consolidation when recipient matches base address', async function () {
+        const coin = bitgo.coin('hteth') as Hteth;
+        const baseAddress = '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be';
+
+        // Build a real transaction that sends to the baseAddress
+        const txBuilder = getBuilder('hteth') as TransactionBuilder;
+        txBuilder.type(TransactionType.SingleSigSend);
+        txBuilder.fee({
+          fee: '10',
+          gasLimit: '21000',
+        });
+        txBuilder.counter(1);
+        txBuilder.contract(baseAddress);
+        txBuilder.value('1000000000000000000');
+        const tx = await txBuilder.build();
+        const txHex = tx.toBroadcastFormat();
+
+        const wallet = new Wallet(bitgo, coin, {
+          coinSpecific: {
+            baseAddress: baseAddress,
+          },
+        });
+
+        const txParams = {
+          type: 'consolidate',
+          wallet: wallet,
+          walletPassphrase: 'fakeWalletPassphrase',
+        };
+
+        const txPrebuild = {
+          consolidateId: '68a7d5d0c66e74e216b97173bd558c6d',
+          txHex: txHex,
+          coin: 'hteth',
+          walletId: 'fakeWalletId',
+        };
+
+        const verification = {
+          consolidationToBaseAddress: true,
+        };
+
+        const isTransactionVerified = await coin.verifyTransaction({
+          txParams: txParams as any,
+          txPrebuild: txPrebuild as any,
+          wallet,
+          verification,
+          walletType: 'tss',
+        });
+        isTransactionVerified.should.equal(true);
+      });
+
+      it('should reject consolidation when recipient does not match base address', async function () {
+        const coin = bitgo.coin('hteth') as Hteth;
+        const baseAddress = '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be';
+        const wrongRecipient = '0x7e85bdc27c050e3905ebf4b8e634d9ad6edd0de6';
+
+        // Build a transaction that sends to a DIFFERENT address (not baseAddress)
+        const txBuilder = getBuilder('hteth') as TransactionBuilder;
+        txBuilder.type(TransactionType.SingleSigSend);
+        txBuilder.fee({
+          fee: '10',
+          gasLimit: '21000',
+        });
+        txBuilder.counter(1);
+        txBuilder.contract(wrongRecipient);
+        txBuilder.value('1000000000000000000');
+        const tx = await txBuilder.build();
+        const txHex = tx.toBroadcastFormat();
+
+        const wallet = new Wallet(bitgo, coin, {
+          coinSpecific: {
+            baseAddress: baseAddress,
+          },
+        });
+
+        const txParams = {
+          type: 'consolidate',
+          wallet: wallet,
+          walletPassphrase: 'fakeWalletPassphrase',
+        };
+
+        const txPrebuild = {
+          consolidateId: '68a7d5d0c66e74e216b97173bd558c6d',
+          txHex: txHex,
+          coin: 'hteth',
+          walletId: 'fakeWalletId',
+        };
+
+        const verification = {
+          consolidationToBaseAddress: true,
+        };
+
+        await coin
+          .verifyTransaction({
+            txParams: txParams as any,
+            txPrebuild: txPrebuild as any,
+            wallet,
+            verification,
+            walletType: 'tss',
+          })
+          .should.be.rejectedWith('Consolidation transaction recipient does not match wallet base address');
+      });
+
+      it('should throw error when txHex is missing for consolidation verification', async function () {
+        const coin = bitgo.coin('hteth') as Hteth;
+        const baseAddress = '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be';
+
+        const wallet = new Wallet(bitgo, coin, {
+          coinSpecific: {
+            baseAddress: baseAddress,
+          },
+        });
+
+        const txParams = {
+          type: 'consolidate',
+          wallet: wallet,
+          walletPassphrase: 'fakeWalletPassphrase',
+        };
+
+        const txPrebuild = {
+          consolidateId: '68a7d5d0c66e74e216b97173bd558c6d',
+          // Intentionally missing txHex
+          coin: 'hteth',
+          walletId: 'fakeWalletId',
+        };
+
+        const verification = {
+          consolidationToBaseAddress: true,
+        };
+
+        await coin
+          .verifyTransaction({
+            txParams: txParams as any,
+            txPrebuild: txPrebuild as any,
+            wallet,
+            verification,
+            walletType: 'tss',
+          })
+          .should.be.rejectedWith('missing txHex in txPrebuild');
+      });
+
+      it('should throw error when wallet is missing baseAddress for consolidation verification', async function () {
+        const coin = bitgo.coin('hteth') as Hteth;
+        const baseAddress = '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be';
+
+        // Build a real transaction
+        const txBuilder = getBuilder('hteth') as TransactionBuilder;
+        txBuilder.type(TransactionType.SingleSigSend);
+        txBuilder.fee({
+          fee: '10',
+          gasLimit: '21000',
+        });
+        txBuilder.counter(1);
+        txBuilder.contract(baseAddress);
+        txBuilder.value('1000000000000000000');
+        const tx = await txBuilder.build();
+        const txHex = tx.toBroadcastFormat();
+
+        // Wallet without baseAddress
+        const wallet = new Wallet(bitgo, coin, {
+          coinSpecific: {},
+        });
+
+        const txParams = {
+          type: 'consolidate',
+          wallet: wallet,
+          walletPassphrase: 'fakeWalletPassphrase',
+        };
+
+        const txPrebuild = {
+          consolidateId: '68a7d5d0c66e74e216b97173bd558c6d',
+          txHex: txHex,
+          coin: 'hteth',
+          walletId: 'fakeWalletId',
+        };
+
+        const verification = {
+          consolidationToBaseAddress: true,
+        };
+
+        await coin
+          .verifyTransaction({
+            txParams: txParams as any,
+            txPrebuild: txPrebuild as any,
+            wallet,
+            verification,
+            walletType: 'tss',
+          })
+          .should.be.rejectedWith('Unable to determine base address for consolidation');
+      });
+    });
+  });
+
   describe('Address Verification', function () {
     describe('isWalletAddress', function () {
       it('should verify an address generated using forwarder version 1', async function () {

@@ -17,7 +17,7 @@ export interface FlareNetwork extends BaseNetwork {
   assetId: string;
   vm?: string;
   txFee: string;
-  maxImportFee?: string;
+  maxImportFee: string;
   createSubnetTx?: string;
   createChainTx?: string;
   creationTxFee?: string;
@@ -2162,6 +2162,24 @@ class CantonTestnet extends Testnet implements BaseNetwork {
   explorerUrl = 'https://devnet.ccview.io/updates/';
 }
 
+class Dogeos extends Mainnet implements EthereumNetwork {
+  name = 'Doge OS';
+  family = CoinFamily.DOGEOS;
+  explorerUrl = 'https://blockscout.testnet.dogeos.com/tx/'; //TODO: WIN-8082 => add mainnet url when available
+  accountExplorerUrl = "'https://blockscout.testnet.dogeos.com/address/"; //TODO: WIN-8082 => add mainnet url when available
+  chainId = 1234567; ////TODO: WIN-8082 => add mainnet chainId when available
+  nativeCoinOperationHashPrefix = '1234567'; //TODO: WIN-8082 => add when mainnet details available
+}
+
+class DogeosTestnet extends Testnet implements EthereumNetwork {
+  name = 'Doge OS Testnet';
+  family = CoinFamily.DOGEOS;
+  explorerUrl = 'https://blockscout.testnet.dogeos.com/tx/';
+  accountExplorerUrl = 'https://blockscout.testnet.dogeos.com/address/';
+  chainId = 6281971;
+  nativeCoinOperationHashPrefix = '6281971';
+}
+
 export const Networks = {
   main: {
     ada: Object.freeze(new Ada()),
@@ -2190,6 +2208,7 @@ export const Networks = {
     cronos: Object.freeze(new Cronos()),
     dash: Object.freeze(new Dash()),
     dogecoin: Object.freeze(new Dogecoin()),
+    dogeos: Object.freeze(new Dogeos()),
     dot: Object.freeze(new PolkadotAssetHub()),
     eCash: Object.freeze(new ECash()),
     eos: Object.freeze(new Eos()),
@@ -2295,6 +2314,7 @@ export const Networks = {
     cronos: Object.freeze(new CronosTestnet()),
     dash: Object.freeze(new DashTestnet()),
     dogecoin: Object.freeze(new DogecoinTestnet()),
+    dogeos: Object.freeze(new DogeosTestnet()),
     dot: Object.freeze(new WestendAssetHub()),
     eCash: Object.freeze(new ECashTestnet()),
     eos: Object.freeze(new EosTestnet()),
