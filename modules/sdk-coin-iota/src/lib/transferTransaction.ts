@@ -234,12 +234,12 @@ export class TransferTransaction extends Transaction {
     const firstObject = this._iotaTransaction.object(IotaInputs.ObjectRef(this.paymentObjects[0]));
 
     // Single object doesn't need consolidation
-    if (this.paymentObjects.length === 1) {
-      return firstObject;
+    if (this.paymentObjects.length > 1) {
+      // Merge extra objects into the first one
+      this.mergeObjectsInBatches(firstObject, this.paymentObjects.slice(1), MAX_INPUT_OBJECTS);
     }
 
-    // Merge remaining objects into the first one
-    return this.mergeObjectsInBatches(firstObject, this.paymentObjects.slice(1), MAX_INPUT_OBJECTS);
+    return firstObject;
   }
 
   /**
@@ -253,13 +253,12 @@ export class TransferTransaction extends Transaction {
 
     const gasObject = this._iotaTransaction.gas;
 
-    // If within the limit, no consolidation needed
-    if (this.gasPaymentObjects.length <= MAX_GAS_PAYMENT_OBJECTS) {
-      return gasObject;
+    if (this.gasPaymentObjects.length > MAX_GAS_PAYMENT_OBJECTS) {
+      // Merge excess gas objects to stay within limits
+      this.mergeObjectsInBatches(gasObject, this.gasPaymentObjects, MAX_INPUT_OBJECTS);
     }
 
-    // Merge excess gas objects to stay within limits
-    return this.mergeObjectsInBatches(gasObject, this.gasPaymentObjects, MAX_INPUT_OBJECTS);
+    return gasObject;
   }
 
   /**
@@ -275,17 +274,13 @@ export class TransferTransaction extends Transaction {
     targetCoin: TransactionObjectArgument,
     objectsToMerge: TransactionObjectInput[],
     batchSize: number
-  ): TransactionObjectArgument {
-    let consolidatedCoin = targetCoin;
-
+  ): void {
     for (let startIndex = 0; startIndex < objectsToMerge.length; startIndex += batchSize) {
       const batch = objectsToMerge.slice(startIndex, startIndex + batchSize);
       const batchAsTransactionObjects = batch.map((obj) => this._iotaTransaction.object(IotaInputs.ObjectRef(obj)));
 
-      [consolidatedCoin] = this._iotaTransaction.mergeCoins(consolidatedCoin, batchAsTransactionObjects);
+      this._iotaTransaction.mergeCoins(targetCoin, batchAsTransactionObjects);
     }
-
-    return consolidatedCoin;
   }
 
   /**
