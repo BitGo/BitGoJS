@@ -10945,6 +10945,15 @@ export const erc20Coins = [
     [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   erc20(
+    '4400af90-30d8-43fb-98b6-ca6791c94aa2',
+    'eth:sofid',
+    'SoFiUSD',
+    6,
+    '0x0cb6d03b0ac88a463f67b7ad99f9f3ec4678092e',
+    UnderlyingAsset['eth:sofid'],
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  erc20(
     'e811d594-de4f-48b0-9b6b-47e8b4ba7dda',
     'eth:ibtc',
     'Token iBTC',
@@ -12601,7 +12610,7 @@ export const erc20Coins = [
   terc20(
     'a0660bd4-c508-4704-ac2b-c7ead1f6ad43',
     'hteth:stgsofid',
-    'Test SoFi USD',
+    'Test SoFiUSD',
     6,
     '0x5ce9c87a0b7208491f9fe52bcc8e919eb43c58b2',
     UnderlyingAsset['hteth:stgsofid'],
@@ -12649,7 +12658,7 @@ export const erc20Coins = [
   terc20(
     '8e4f9c4c-2b03-4ad4-8019-ace4bbda3acd',
     'hteth:sofid',
-    'Test SoFi USD',
+    'Test SoFiUSD',
     6,
     '0x5572728e36b5510010ade1db6bbaea1c402411cc',
     UnderlyingAsset['hteth:sofid'],

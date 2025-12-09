@@ -3108,6 +3108,15 @@ export const ofcErc20Coins = [
     [CoinFeature.STABLECOIN]
   ),
   ofcerc20(
+    'dc5d090c-6677-4e6c-9b2c-da42ed1cf3fb',
+    'ofceth:sofid',
+    'SoFiUSD',
+    6,
+    underlyingAssetForSymbol('eth:sofid'),
+    undefined,
+    [CoinFeature.STABLECOIN]
+  ),
+  ofcerc20(
     '80bfa43e-f01c-42bd-bd14-269b88948bbf',
     'ofceth:usdg',
     'Global Dollar',
@@ -3719,7 +3728,7 @@ export const tOfcErc20Coins = [
   tofcerc20(
     '145b2e09-453d-4861-8f54-5791d295bd96',
     'ofchteth:stgsofid',
-    'Test SoFi USD',
+    'Test SoFiUSD',
     6,
     UnderlyingAsset['hteth:stgsofid'],
     undefined,
@@ -3775,7 +3784,7 @@ export const tOfcErc20Coins = [
   tofcerc20(
     '8e8028cb-855e-4cd7-8f7e-a00c63f0727c',
     'ofchteth:sofid',
-    'Test SoFi USD',
+    'Test SoFiUSD',
     6,
     UnderlyingAsset['hteth:sofid'],
     undefined,
