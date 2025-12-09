@@ -423,6 +423,11 @@ export enum CoinFeature {
   SUPPORTS_ERC20 = 'supports-erc20-token',
 
   /**
+   * This coin supports erc721 tokens
+   */
+  SUPPORTS_ERC721 = 'supports-erc721-token',
+
+  /**
    * This coin is a Cosmos coin and should use shared Cosmos SDK module
    */
   SHARED_COSMOS_SDK = 'shared-cosmos-sdk',
