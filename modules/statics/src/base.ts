@@ -2092,6 +2092,7 @@ export enum UnderlyingAsset {
   'eth:mon' = 'eth:mon',
   'eth:usual' = 'eth:usual',
   'eth:usd1' = 'eth:usd1',
+  'eth:sofid' = 'eth:sofid',
   'eth:ibtc' = 'eth:ibtc',
   'eth:pyr' = 'eth:pyr',
   'eth:una' = 'eth:una',
