@@ -27,6 +27,7 @@ export abstract class TransactionBuilder<T = SuiProgrammableTransaction> extends
   protected _type: SuiTransactionType;
   protected _sender: string;
   protected _gasData: GasData;
+  protected _inputObjects: SuiObjectRef[];
 
   protected constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -93,6 +94,12 @@ export abstract class TransactionBuilder<T = SuiProgrammableTransaction> extends
     return this;
   }
 
+  inputObjects(inputObjects: SuiObjectRef[]): this {
+    this.validateInputObjectsBase(inputObjects);
+    this._inputObjects = inputObjects;
+    return this;
+  }
+
   /**
    * Initialize the transaction builder fields using the decoded transaction data
    *
@@ -146,6 +153,14 @@ export abstract class TransactionBuilder<T = SuiProgrammableTransaction> extends
     payments.forEach((payment) => {
       this.validateSuiObjectRef(payment, 'payment');
     });
+  }
+
+  protected validateInputObjectsBase(inputObjects: SuiObjectRef[]): void {
+    if (inputObjects && inputObjects.length > 0) {
+      inputObjects.forEach((inputObject) => {
+        this.validateSuiObjectRef(inputObject, 'input object');
+      });
+    }
   }
 
   validateSuiObjectRef(suiObjectRef: SuiObjectRef, field: string): void {

@@ -13,8 +13,14 @@ import { MAX_GAS_OBJECTS, SUI_ADDRESS_LENGTH, UNAVAILABLE_TEXT } from './constan
 import { Buffer } from 'buffer';
 import { Transaction } from './transaction';
 import { CallArg, SuiObjectRef, normalizeSuiAddress } from './mystenlab/types';
-import utils from './utils';
-import { builder, Inputs, TransactionBlockInput } from './mystenlab/builder';
+import utils, { isImmOrOwnedObj } from './utils';
+import {
+  builder,
+  Inputs,
+  TransactionArgument,
+  TransactionBlockInput,
+  TransactionType as SuiTransactionBlockType,
+} from './mystenlab/builder';
 import { BCS } from '@mysten/bcs';
 import BigNumber from 'bignumber.js';
 
@@ -70,6 +76,17 @@ export class TransferTransaction extends Transaction<TransferProgrammableTransac
     }
 
     const tx = this._suiTransaction;
+    if (tx.gasData.owner !== tx.sender) {
+      // Sponsored transaction
+      return {
+        id: this._id,
+        sender: tx.sender,
+        kind: { ProgrammableTransaction: tx.tx },
+        gasData: tx.gasData,
+        expiration: { None: null },
+        inputObjects: this.getInputObjectsFromTx(tx.tx),
+      };
+    }
     return {
       id: this._id,
       sender: tx.sender,
@@ -194,6 +211,16 @@ export class TransferTransaction extends Transaction<TransferProgrammableTransac
       transactions: this._suiTransaction.tx.transactions,
     } as TransferProgrammableTransaction;
 
+    if (this._suiTransaction.gasData.owner !== this._suiTransaction.sender) {
+      return {
+        sender: this._suiTransaction.sender,
+        expiration: { None: null },
+        gasData: this._suiTransaction.gasData,
+        kind: {
+          ProgrammableTransaction: programmableTx,
+        },
+      };
+    }
     return {
       sender: this._suiTransaction.sender,
       expiration: { None: null },
@@ -228,5 +255,38 @@ export class TransferTransaction extends Transaction<TransferProgrammableTransac
       outputAmount,
       outputs,
     };
+  }
+
+  /**
+   * Extracts the objects that were provided as inputs while building the transaction
+   * @param tx
+   * @returns {SuiObjectRef[]} Objects that are inputs for the transaction
+   */
+  private getInputObjectsFromTx(tx: TransferProgrammableTransaction): SuiObjectRef[] {
+    const inputs = tx.inputs;
+    const transaction = tx.transactions[0] as SuiTransactionBlockType;
+
+    let args: TransactionArgument[] = [];
+    if (transaction.kind === 'MergeCoins') {
+      const { destination, sources } = transaction;
+      args = [destination, ...sources];
+    } else if (transaction.kind === 'SplitCoins') {
+      args = [transaction.coin];
+    }
+
+    const inputObjects: SuiObjectRef[] = [];
+    args.forEach((arg) => {
+      if (arg.kind === 'Input') {
+        let input = inputs[arg.index];
+        if ('value' in input) {
+          input = input.value;
+        }
+        if ('Object' in input && isImmOrOwnedObj(input.Object)) {
+          inputObjects.push(input.Object.ImmOrOwned);
+        }
+      }
+    });
+
+    return inputObjects;
   }
 }
