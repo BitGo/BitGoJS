@@ -132,10 +132,12 @@ export class BitGoAPI implements BitGoBase {
   protected _validate: boolean;
   public readonly cookiesPropagationEnabled: boolean;
   private _customProxyAgent?: Agent;
+  private _requestIdPrefix?: string;
   private getAdditionalHeadersCb?: AdditionalHeadersCallback;
 
   constructor(params: BitGoAPIOptions = {}) {
     this.getAdditionalHeadersCb = params.getAdditionalHeadersCb;
+    this._requestIdPrefix = params.requestIdPrefix;
     this.cookiesPropagationEnabled = false;
     if (
       !common.validateParams(
@@ -395,7 +397,9 @@ export class BitGoAPI implements BitGoBase {
       }
 
       if (!_.isUndefined(this._reqId)) {
-        req.set('Request-ID', this._reqId.toString());
+        const reqId = this._reqId.toString();
+        const requestId = this._requestIdPrefix ? `${this._requestIdPrefix}${reqId}` : reqId;
+        req.set('Request-ID', requestId);
 
         // increment after setting the header so the sequence numbers start at 0
         this._reqId.inc();
