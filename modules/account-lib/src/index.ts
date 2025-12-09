@@ -206,6 +206,9 @@ export { CosmosSharedCoin };
 import * as Canton from '@bitgo/sdk-coin-canton';
 export { Canton };
 
+import { FlrPLib as FlrP } from '@bitgo/sdk-coin-flrp';
+export { FlrP };
+
 import { MIDNIGHT_TNC_HASH } from './utils';
 export { MIDNIGHT_TNC_HASH };
 
@@ -320,6 +323,8 @@ const coinBuilderMap = {
   tvet: Vet.TransactionBuilderFactory,
   canton: Canton.TransactionBuilderFactory,
   tcanton: Canton.TransactionBuilderFactory,
+  flrp: FlrP.TransactionBuilderFactory,
+  tflrp: FlrP.TransactionBuilderFactory,
 };
 
 const coinMessageBuilderFactoryMap = {
