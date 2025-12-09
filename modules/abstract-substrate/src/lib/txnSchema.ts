@@ -61,8 +61,8 @@ export const UnstakeTransactionSchema = joi.object({
 export const TransferStakeTransactionSchema = joi.object({
   destinationColdkey: addressSchema.required(),
   hotkey: addressSchema.required(),
-  originNetuid: joi.string().required(),
-  destinationNetuid: joi.string().required(),
+  originNetuid: joi.string().regex(/^\d+$/).required(),
+  destinationNetuid: joi.string().regex(/^\d+$/).required(),
   alphaAmount: joi.string().required(),
 });
 

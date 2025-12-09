@@ -43,6 +43,31 @@ describe('Tao Token Transfer Builder', function () {
 
       SinonAssert.callCount(spyValidateAddress, 4);
     });
+
+    it('should validate netuid', function () {
+      const spyValidateAddress = spy(builder, 'validateNetuid');
+      assert.throws(
+        () => builder.destinationNetuid('abc'),
+        (e: Error) => e.message === `Cannot convert abc to a BigInt`
+      );
+      assert.throws(
+        () => builder.destinationNetuid('-10'),
+        (e: Error) => e.message === `The netuid '-10' is not a valid netuid`
+      );
+      should.doesNotThrow(() => builder.destinationNetuid('36'));
+
+      assert.throws(
+        () => builder.originNetuid('abc'),
+        (e: Error) => e.message === `Cannot convert abc to a BigInt`
+      );
+      assert.throws(
+        () => builder.destinationNetuid('-1'),
+        (e: Error) => e.message === `The netuid '-1' is not a valid netuid`
+      );
+      should.doesNotThrow(() => builder.originNetuid('64'));
+
+      SinonAssert.callCount(spyValidateAddress, 6);
+    });
   });
 
   describe('build transfer stake transaction', function () {
@@ -51,8 +76,8 @@ describe('Tao Token Transfer Builder', function () {
         .amount('9007199254740995')
         .destinationColdkey('5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq')
         .hotkey('5FCPTnjevGqAuTttetBy4a24Ej3pH9fiQ8fmvP1ZkrVsLUoT')
-        .originNetuid('1')
-        .destinationNetuid('1')
+        .originNetuid('12')
+        .destinationNetuid('10')
         .sender({ address: sender.address })
         .validity({ firstValid: 3933, maxDuration: 64 })
         .referenceBlock(referenceBlock)
@@ -65,7 +90,7 @@ describe('Tao Token Transfer Builder', function () {
 
       serializedTx.should.equal(rawTx.transferStake.signed);
       tx.toJson().should.deepEqual({
-        id: '0xe5ce9ff1bbdf54d1dbd5adee8648027aa7efa99d319b041afb4b57be2042fc11',
+        id: '0xe5932b507a53d351aabd520487ba55ba833e0968ad18642a28f54dabeb7abf2f',
         sender: '5EGoFA95omzemRssELLDjVenNZ68aXyUeqtKQScXSEBvVJkr',
         referenceBlock: '0x149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d',
         blockNumber: 3933,
@@ -78,18 +103,9 @@ describe('Tao Token Transfer Builder', function () {
         tip: 0,
         destinationColdkey: '5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq',
         hotkey: '5FCPTnjevGqAuTttetBy4a24Ej3pH9fiQ8fmvP1ZkrVsLUoT',
-        originNetuid: '1',
-        destinationNetuid: '1',
+        originNetuid: '12',
+        destinationNetuid: '10',
         alphaAmount: '9007199254740995',
-      });
-      tx.explainTransaction().should.containDeep({
-        outputs: [
-          {
-            address: '5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq',
-            amount: '9007199254740995',
-            tokenName: 'ttao:apex',
-          },
-        ],
       });
     });
 

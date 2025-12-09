@@ -80,6 +80,7 @@ export class TokenTransferBuilder extends TransactionBuilder {
    * @returns {TokenTransferBuilder} This builder.
    */
   originNetuid(netuid: string): this {
+    this.validateNetuid(netuid);
     this._originNetuid = netuid;
     return this;
   }
@@ -90,6 +91,7 @@ export class TokenTransferBuilder extends TransactionBuilder {
    * @returns {TokenTransferBuilder} This builder.
    */
   destinationNetuid(netuid: string): this {
+    this.validateNetuid(netuid);
     this._destinationNetuid = netuid;
     return this;
   }
@@ -162,6 +164,16 @@ export class TokenTransferBuilder extends TransactionBuilder {
       if (validationResult.error) {
         throw new InvalidTransactionError(`Transfer Transaction validation failed: ${validationResult.error.message}`);
       }
+    }
+  }
+
+  /**
+   * Validate the netuid. Throws an error if the netuid is not a non-negative integer.
+   * @param netuid The netuid to validate.
+   */
+  validateNetuid(netuid: string): void {
+    if (BigInt(netuid) < 0n) {
+      throw new Error(`The netuid '${netuid}' is not a valid netuid`);
     }
   }
 

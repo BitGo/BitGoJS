@@ -29,30 +29,6 @@ export class TokenTransferTransaction extends SubstrateTransaction {
   }
 
   /** @inheritdoc */
-  loadInputsAndOutputs(): void {
-    super.loadInputsAndOutputs();
-
-    const decodedTx = decode(this._substrateTransaction, {
-      metadataRpc: this._substrateTransaction.metadataRpc,
-      registry: this._registry,
-      isImmortalEra: utils.isZeroHex(this._substrateTransaction.era),
-    }) as unknown as SubstrateInterface.DecodedTx;
-    const txMethod = decodedTx.method.args as SubstrateInterface.TransferStakeArgs;
-
-    this._inputs.push({
-      address: this._sender,
-      value: txMethod.alphaAmount,
-      coin: utils.getTaoTokenBySubnetId(txMethod.originNetuid).name,
-    });
-
-    this._outputs.push({
-      address: txMethod.destinationColdkey,
-      value: txMethod.alphaAmount,
-      coin: utils.getTaoTokenBySubnetId(txMethod.destinationNetuid).name,
-    });
-  }
-
-  /** @inheritdoc */
   explainTransaction(): SubstrateInterface.TransactionExplanation {
     const result = this.toJson();
     const outputs: TransactionRecipient[] = this._outputs.map((output) => {
