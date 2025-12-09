@@ -2169,6 +2169,44 @@ export const allCoinsAndTokens = [
     ]
   ),
   account(
+    '66783902-d5cf-4416-8d5a-f32a68f0c2a0',
+    'quai',
+    'Quai',
+    Networks.main.quai,
+    18,
+    UnderlyingAsset.QUAI,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+    ]
+  ),
+  account(
+    '327d7440-3287-4449-ae06-c9742292a145',
+    'tquai',
+    'Testnet Quai',
+    Networks.test.quai,
+    18,
+    UnderlyingAsset.QUAI,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+    ]
+  ),
+  account(
     '8f6ed7e4-cce2-4686-bdab-ae8f54e2c05e',
     'tfluenteth',
     'Testnet Fluent Ethereum',

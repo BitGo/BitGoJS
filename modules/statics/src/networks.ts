@@ -2156,6 +2156,24 @@ class Canton extends Mainnet implements BaseNetwork {
   explorerUrl = 'https://ccview.io/updates/';
 }
 
+class Quai extends Mainnet implements EthereumNetwork {
+  name = 'Quai';
+  family = CoinFamily.QUAI;
+  explorerUrl = 'https://quaiscan.io/tx/';
+  accountExplorerUrl = 'https://quaiscan.io/address/';
+  chainId = 9;
+  nativeCoinOperationHashPrefix = '9';
+}
+
+class QuaiTestnet extends Testnet implements EthereumNetwork {
+  name = 'QuaiTestnet';
+  family = CoinFamily.QUAI;
+  explorerUrl = 'https://orchard.quaiscan.io/tx/';
+  accountExplorerUrl = 'https://orchard.quaiscan.io/address/';
+  chainId = 15000;
+  nativeCoinOperationHashPrefix = '15000';
+}
+
 class CantonTestnet extends Testnet implements BaseNetwork {
   name = 'CantonTestnet';
   family = CoinFamily.CANTON;
@@ -2246,6 +2264,7 @@ export const Networks = {
     polygon: Object.freeze(new Polygon()),
     polyx: Object.freeze(new Polymesh()),
     phrs: Object.freeze(new Pharos()),
+    quai: Object.freeze(new Quai()),
     ctc: Object.freeze(new Creditcoin()),
     hypeevm: Object.freeze(new HypeEVM()),
     lineaeth: Object.freeze(new LineaETH()),
@@ -2353,6 +2372,7 @@ export const Networks = {
     polygon: Object.freeze(new PolygonTestnet()),
     polyx: Object.freeze(new PolymeshTestnet()),
     phrs: Object.freeze(new PharosTestnet()),
+    quai: Object.freeze(new QuaiTestnet()),
     ctc: Object.freeze(new CreditcoinTestnet()),
     hypeevm: Object.freeze(new HypeEVMTestnet()),
     lineaeth: Object.freeze(new LineaETHTestnet()),

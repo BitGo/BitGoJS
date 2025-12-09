@@ -133,6 +133,7 @@ export const expectedColdFeatures = {
     'zeta',
     'tada',
     'tasi',
+    'quai',
     'tatom',
     'tapechain',
     'tapt',
@@ -199,6 +200,7 @@ export const expectedColdFeatures = {
     'tseievm',
     'tton',
     'tsonic',
+    'tquai',
   ],
   neither: [
     'ethw',
