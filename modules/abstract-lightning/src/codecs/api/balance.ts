@@ -27,6 +27,10 @@ export const ChannelBalance = t.strict(
     pendingOpenLocalBalance: LndAmount,
     /** Sum of local remote balances. */
     pendingOpenRemoteBalance: LndAmount,
+    /** Total local reserved balance. */
+    reservedLocalBalance: LndAmount,
+    /** Total local spendable balance. */
+    spendableLocalBalance: LndAmount,
   },
   'ChannelBalance'
 );
@@ -73,6 +77,8 @@ export const LndGetOffchainBalances = t.strict(
     outboundPendingBalance: BigIntFromString,
     outboundUnsettledBalance: BigIntFromString,
     outboundLockedBalance: BigIntFromString,
+    outboundReservedBalance: BigIntFromString,
+    outboundSpendableBalance: BigIntFromString,
     inboundBalance: BigIntFromString,
     inboundPendingBalance: BigIntFromString,
     inboundUnsettledBalance: BigIntFromString,
