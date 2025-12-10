@@ -162,6 +162,12 @@ describe('Canton Util', function () {
       assert.strictEqual(isValid, true);
     });
 
+    it('should return true when the block hash has version', function () {
+      const isValid = utils.isValidBlockId(CANTON_BLOCK_HEIGHT.VALID_HASH_WITH_VERSION);
+      should.exist(isValid);
+      assert.strictEqual(isValid, true);
+    });
+
     it('should return false when the block hash is not a number', function () {
       const isValid = utils.isValidBlockId(CANTON_BLOCK_HEIGHT.INVALID_BLOCK_HASH);
       should.exist(isValid);

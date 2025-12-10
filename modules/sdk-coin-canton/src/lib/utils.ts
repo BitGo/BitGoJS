@@ -25,7 +25,9 @@ export class Utils implements BaseUtils {
   /** @inheritdoc */
   isValidBlockId(hash: string): boolean {
     // In canton, there is no block hash, we store the height as the _id (hash)
-    const blockHeight = Number(hash);
+    // this will be of the form, <blockHeight>_<version>
+    const [height] = hash.split('_');
+    const blockHeight = Number(height);
     return !isNaN(blockHeight) && blockHeight > 0;
   }
 
