@@ -545,6 +545,7 @@ export abstract class AbstractUtxoCoin
     }
 
     if (utxolib.bitgo.isPsbt(input)) {
+      console.trace('Decoding PSBT decodeWith=', decodeWith);
       return decodePsbtWith(input, this.network, decodeWith);
     } else {
       if (decodeWith !== 'utxolib') {
@@ -579,8 +580,9 @@ export abstract class AbstractUtxoCoin
         console.error('decodeWith %s is not a valid value, using default', decodeWith);
         decodeWith = undefined;
       }
+      console.trace('prebuild decodeWith=', decodeWith);
     }
-    return this.decodeTransaction(string, decodeWith);
+    return this.decodeTransaction(string, 'wasm-utxo');
   }
 
   toCanonicalTransactionRecipient(output: { valueString: string; address?: string }): {

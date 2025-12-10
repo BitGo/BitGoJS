@@ -54,7 +54,9 @@ export function decodePsbtWith(
   if (backend === 'utxolib') {
     return utxolib.bitgo.createPsbtFromBuffer(psbt, network);
   } else {
-    return fixedScriptWallet.BitGoPsbt.fromBytes(psbt, toNetworkName(network));
+    const psbtObj = fixedScriptWallet.BitGoPsbt.fromBytes(psbt, toNetworkName(network));
+    console.log('Decoded PSBT with wasm-utxo txid=', psbtObj.unsignedTxid());
+    return psbtObj;
   }
 }
 

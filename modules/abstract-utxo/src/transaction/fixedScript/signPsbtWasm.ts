@@ -40,6 +40,7 @@ export function signAndVerifyPsbtWasm(
   replayProtection: ReplayProtectionKeys,
   { isLastSignature }: { isLastSignature: boolean }
 ): fixedScriptWallet.BitGoPsbt | Buffer {
+  console.log('Signing PSBT with wasm-utxo txid=', tx.unsignedTxid());
   const wasmSigner = toWasmBIP32(signerKeychain);
   const parsed = tx.parseTransactionWithWalletKeys(rootWalletKeys, replayProtection);
 

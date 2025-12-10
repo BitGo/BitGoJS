@@ -49,6 +49,7 @@ export function explainPsbtWasm(
     customChangeWalletXpubs?: Triple<string>;
   }
 ): TransactionExplanationWasm {
+  console.log('Explaining PSBT with wasm-utxo txid=', psbt.unsignedTxid());
   const parsed = psbt.parseTransactionWithWalletKeys(walletXpubs, params.replayProtection);
 
   const changeOutputs: FixedScriptWalletOutput[] = [];
