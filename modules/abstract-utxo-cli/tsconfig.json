@@ -1,0 +1,36 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist/"
+  },
+  "include": [
+    "src/**/*",
+    "test/**/*"
+  ],
+  "exclude": [
+    "node_modules"
+  ],
+  "references": [
+    {
+      "path": "../blockapis"
+    },
+    {
+      "path": "../sdk-api"
+    },
+    {
+      "path": "../sdk-core"
+    },
+    {
+      "path": "../utxo-lib"
+    },
+    {
+      "path": "../utxo-staking"
+    },
+    {
+      "path": "../abstract-utxo"
+    },
+    {
+      "path": "../sdk-coin-btc"
+    }
+  ]
+}
