@@ -1,40 +1,40 @@
 import axios from 'axios';
 import { CommandModule } from 'yargs';
 import * as utxolib from '@bitgo/utxo-lib';
-
-import { BitGoApiArgs } from '../../bitGoArgs';
 import { getBitGoWithUtxoCoin, selectWallet } from '../../util/bitGoInstance';
 import { signTransactionWithFullnode } from './sign';
-import { optionsWallet, optionWalletPassphrase, WalletArgs, WalletPassphraseArgs } from '../args/wallet';
+import { BitGoApiArgs } from '../../bitGoArgs';
 import { buildTransactionLocal } from './build';
 import { getXprv } from '../xprv';
 
-type ArgsBuildSignSendTransaction = WalletArgs &
-  WalletPassphraseArgs & {
-    buildMode: 'local' | 'http' | 'wallet';
-    sendMode: 'bitgo' | 'mempool';
-    feeRateSatB: number;
-    otp: string;
-    recipient: string;
-    amount: string;
-    fullnodeUrl: string;
-  };
+type Args = BitGoApiArgs & {
+  walletId: string | undefined;
+  walletLabel: string | undefined;
+  xprv: string | undefined;
+  walletPassphrase: string;
+  buildMode: 'local' | 'http' | 'wallet';
+  sendMode: 'bitgo' | 'mempool';
+  feeRateSatB: number;
+  otp: string;
+  recipient: string;
+  amount: string;
+  fullnodeUrl: string | undefined;
+};
 
-// export async function buildSignSendNoVerify() {}
-
-export const cmdBuildSignSend: CommandModule<BitGoApiArgs, BitGoApiArgs & ArgsBuildSignSendTransaction> = {
+export const cmdBuildSignSend: CommandModule<BitGoApiArgs, Args> = {
   command: 'buildSignSend',
-  builder(y) {
-    return y
-      .options(optionsWallet)
-      .options(optionWalletPassphrase)
-      .option('buildMode', { choices: ['local', 'http', 'wallet'] as const, default: 'wallet' })
-      .option('sendMode', { choices: ['bitgo', 'mempool'] as const, default: 'bitgo' })
-      .option('otp', { type: 'string', default: '0000000' })
-      .option('recipient', { type: 'string', demandOption: true })
-      .option('feeRateSatB', { type: 'number', default: 10 })
-      .option('amount', { type: 'string', demandOption: true })
-      .option('fullnodeUrl', { type: 'string' });
+  builder: {
+    walletId: { type: 'string' },
+    walletLabel: { type: 'string' },
+    xprv: { type: 'string' },
+    walletPassphrase: { type: 'string', default: 'setec astronomy' },
+    buildMode: { choices: ['local', 'http', 'wallet'], default: 'wallet' },
+    sendMode: { choices: ['bitgo', 'mempool'], default: 'bitgo' },
+    otp: { type: 'string', default: '0000000' },
+    recipient: { type: 'string', demandOption: true },
+    feeRateSatB: { type: 'number', default: 10 },
+    amount: { type: 'string', demandOption: true },
+    fullnodeUrl: { type: 'string' },
   },
   async handler(args) {
     const { bitgo, coin } = getBitGoWithUtxoCoin(args);
@@ -85,6 +85,10 @@ export const cmdBuildSignSend: CommandModule<BitGoApiArgs, BitGoApiArgs & ArgsBu
         });
     }
 
+    if (!psbt) {
+      throw new Error('PSBT not found');
+    }
+
     switch (args.sendMode) {
       case 'bitgo':
         try {
@@ -103,7 +107,6 @@ export const cmdBuildSignSend: CommandModule<BitGoApiArgs, BitGoApiArgs & ArgsBu
         break;
       case 'mempool':
         const tx = psbt.finalizeAllInputs().extractTransaction();
-        // console.log(await request('https://mempool.space/api/tx').post(psbt.toHex()));
         await axios.post('https://mempool.space/testnet/api/tx', tx.toHex());
         break;
     }

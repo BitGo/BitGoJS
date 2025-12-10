@@ -15,9 +15,6 @@
   },
   "author": "BitGo SDK Team <sdkteam@bitgo.com>",
   "license": "MIT",
-  "engines": {
-    "node": ">=18 <21"
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/BitGo/BitGoJS.git",
@@ -40,7 +37,7 @@
     "@bitgo/sdk-core": "^36.23.0",
     "@bitgo/unspents": "^0.50.11",
     "@bitgo/utxo-lib": "^11.17.0",
-    "yargs": "^17.7.2"
+    "yargs": "18.0.0"
   },
   "devDependencies": {
     "typescript": "^5.5.4"

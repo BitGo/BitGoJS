@@ -119,7 +119,7 @@ export const cmdBuild: CommandModule<BitGoApiArgs, BitGoApiArgs & ArgsBuildTrans
       console.log(psbt.toBase64());
     }
 
-    return await wallet.prebuildTransaction({
+    await wallet.prebuildTransaction({
       recipients,
     });
   },
