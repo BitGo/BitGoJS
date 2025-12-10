@@ -11,7 +11,7 @@ import { FlareNetwork } from '@bitgo/statics';
 import { Buffer } from 'buffer';
 import { createHash } from 'crypto';
 import { ecc } from '@bitgo/secp256k1';
-import { ADDRESS_SEPARATOR, Output } from './iface';
+import { ADDRESS_SEPARATOR, Output, Tx } from './iface';
 import bs58 from 'bs58';
 import { bech32 } from 'bech32';
 
@@ -389,6 +389,45 @@ export class Utils implements BaseUtils {
     } catch (error) {
       throw new Error(`Failed to recover signature: ${error.message}`);
     }
+  }
+
+  /**
+   * Check if tx is for the blockchainId
+   *
+   * @param {Tx} tx
+   * @param {string} blockchainId - blockchain ID in hex format
+   * @returns true if tx is for blockchainId
+   */
+  isTransactionOf(tx: Tx, blockchainId: string): boolean {
+    // Note: getBlockchainId() and BlockchainId.value() return CB58-encoded strings,
+    // but we need hex format, so we use toBytes() and convert to hex
+    const extractBlockchainId = (txObj: any): string | null => {
+      if (typeof txObj.getTx === 'function') {
+        const innerTx = txObj.getTx();
+        if (innerTx.baseTx?.BlockchainId?.toBytes) {
+          return Buffer.from(innerTx.baseTx.BlockchainId.toBytes()).toString('hex');
+        }
+        if (innerTx.blockchainId?.toBytes) {
+          return Buffer.from(innerTx.blockchainId.toBytes()).toString('hex');
+        }
+      }
+
+      if (txObj.tx?.baseTx?.BlockchainId?.toBytes) {
+        return Buffer.from(txObj.tx.baseTx.BlockchainId.toBytes()).toString('hex');
+      }
+
+      if (txObj.baseTx?.BlockchainId?.toBytes) {
+        return Buffer.from(txObj.baseTx.BlockchainId.toBytes()).toString('hex');
+      }
+      if (txObj.blockchainId?.toBytes) {
+        return Buffer.from(txObj.blockchainId.toBytes()).toString('hex');
+      }
+
+      return null;
+    };
+
+    const txBlockchainId = extractBlockchainId(tx);
+    return txBlockchainId === blockchainId;
   }
 }
 

@@ -12,6 +12,9 @@ import {
 import { ecc } from '@bitgo/secp256k1';
 import { EXPORT_IN_C } from '../../resources/transactionData/exportInC';
 import { IMPORT_IN_P } from '../../resources/transactionData/importInP';
+import { EXPORT_IN_P } from '../../resources/transactionData/exportInP';
+import { IMPORT_IN_C } from '../../resources/transactionData/importInC';
+import { TransactionBuilderFactory, Transaction } from '../../../src/lib';
 
 describe('Utils', function () {
   let utils: Utils;
@@ -537,6 +540,166 @@ describe('Utils', function () {
       const signature = Buffer.alloc(65); // Valid length but all zeros - invalid signature
 
       assert.throws(() => utils.recoverySignature(network, message, signature), /Failed to recover signature/);
+    });
+  });
+
+  describe('isTransactionOf', function () {
+    const factory = new TransactionBuilderFactory(coins.get('tflrp'));
+    const utilsInstance = new Utils();
+    const testnetNetwork = coins.get('tflrp').network as FlareNetwork;
+    const pChainBlockchainIdHex = Buffer.from(utilsInstance.cb58Decode(testnetNetwork.blockchainID)).toString('hex');
+    const cChainBlockchainIdHex = Buffer.from(utilsInstance.cb58Decode(testnetNetwork.cChainBlockchainID)).toString(
+      'hex'
+    );
+
+    it('should return true for Import in P transaction with matching P-chain blockchain ID', async function () {
+      const txBuilder = factory
+        .getImportInPBuilder()
+        .threshold(IMPORT_IN_P.threshold)
+        .locktime(IMPORT_IN_P.locktime)
+        .fromPubKey(IMPORT_IN_P.pAddresses)
+        .externalChainId(IMPORT_IN_P.sourceChainId)
+        .fee(IMPORT_IN_P.fee)
+        .utxos(IMPORT_IN_P.outputs);
+
+      const tx = (await txBuilder.build()) as Transaction;
+      const flareTransaction = tx.getFlareTransaction();
+
+      assert.strictEqual(utilsInstance.isTransactionOf(flareTransaction, pChainBlockchainIdHex), true);
+    });
+
+    it('should return false for Import in P transaction with non-matching C-chain blockchain ID', async function () {
+      const txBuilder = factory
+        .getImportInPBuilder()
+        .threshold(IMPORT_IN_P.threshold)
+        .locktime(IMPORT_IN_P.locktime)
+        .fromPubKey(IMPORT_IN_P.pAddresses)
+        .externalChainId(IMPORT_IN_P.sourceChainId)
+        .fee(IMPORT_IN_P.fee)
+        .utxos(IMPORT_IN_P.outputs);
+
+      const tx = (await txBuilder.build()) as Transaction;
+      const flareTransaction = tx.getFlareTransaction();
+
+      assert.strictEqual(utilsInstance.isTransactionOf(flareTransaction, cChainBlockchainIdHex), false);
+    });
+
+    it('should return true for Export in P transaction with matching P-chain blockchain ID', async function () {
+      const txBuilder = factory
+        .getExportInPBuilder()
+        .threshold(EXPORT_IN_P.threshold)
+        .locktime(EXPORT_IN_P.locktime)
+        .fromPubKey(EXPORT_IN_P.pAddresses)
+        .externalChainId(EXPORT_IN_P.sourceChainId)
+        .fee(EXPORT_IN_P.fee)
+        .amount(EXPORT_IN_P.amount)
+        .utxos(EXPORT_IN_P.outputs);
+
+      const tx = (await txBuilder.build()) as Transaction;
+      const flareTransaction = tx.getFlareTransaction();
+
+      assert.strictEqual(utilsInstance.isTransactionOf(flareTransaction, pChainBlockchainIdHex), true);
+    });
+
+    it('should return false for Export in P transaction with non-matching C-chain blockchain ID', async function () {
+      const txBuilder = factory
+        .getExportInPBuilder()
+        .threshold(EXPORT_IN_P.threshold)
+        .locktime(EXPORT_IN_P.locktime)
+        .fromPubKey(EXPORT_IN_P.pAddresses)
+        .externalChainId(EXPORT_IN_P.sourceChainId)
+        .fee(EXPORT_IN_P.fee)
+        .amount(EXPORT_IN_P.amount)
+        .utxos(EXPORT_IN_P.outputs);
+
+      const tx = (await txBuilder.build()) as Transaction;
+      const flareTransaction = tx.getFlareTransaction();
+
+      assert.strictEqual(utilsInstance.isTransactionOf(flareTransaction, cChainBlockchainIdHex), false);
+    });
+
+    it('should return true for Import in C transaction with matching C-chain blockchain ID', async function () {
+      const txBuilder = factory
+        .getImportInCBuilder()
+        .threshold(IMPORT_IN_C.threshold)
+        .locktime(IMPORT_IN_C.locktime)
+        .fromPubKey(IMPORT_IN_C.pAddresses)
+        .externalChainId(IMPORT_IN_C.sourceChainId)
+        .feeRate(IMPORT_IN_C.fee)
+        .to(IMPORT_IN_C.to)
+        .utxos(IMPORT_IN_C.outputs);
+
+      const tx = (await txBuilder.build()) as Transaction;
+      const flareTransaction = tx.getFlareTransaction();
+
+      assert.strictEqual(utilsInstance.isTransactionOf(flareTransaction, cChainBlockchainIdHex), true);
+    });
+
+    it('should return false for Import in C transaction with non-matching P-chain blockchain ID', async function () {
+      const txBuilder = factory
+        .getImportInCBuilder()
+        .threshold(IMPORT_IN_C.threshold)
+        .locktime(IMPORT_IN_C.locktime)
+        .fromPubKey(IMPORT_IN_C.pAddresses)
+        .externalChainId(IMPORT_IN_C.sourceChainId)
+        .feeRate(IMPORT_IN_C.fee)
+        .to(IMPORT_IN_C.to)
+        .utxos(IMPORT_IN_C.outputs);
+
+      const tx = (await txBuilder.build()) as Transaction;
+      const flareTransaction = tx.getFlareTransaction();
+
+      assert.strictEqual(utilsInstance.isTransactionOf(flareTransaction, pChainBlockchainIdHex), false);
+    });
+
+    it('should return true for Export in C transaction with matching C-chain blockchain ID', async function () {
+      const txBuilder = factory
+        .getExportInCBuilder()
+        .fromPubKey(EXPORT_IN_C.cHexAddress)
+        .nonce(EXPORT_IN_C.nonce)
+        .amount(EXPORT_IN_C.amount)
+        .threshold(EXPORT_IN_C.threshold)
+        .locktime(EXPORT_IN_C.locktime)
+        .to(EXPORT_IN_C.pAddresses)
+        .feeRate(EXPORT_IN_C.fee);
+
+      const tx = (await txBuilder.build()) as Transaction;
+      const flareTransaction = tx.getFlareTransaction();
+
+      assert.strictEqual(utilsInstance.isTransactionOf(flareTransaction, cChainBlockchainIdHex), true);
+    });
+
+    it('should return false for Export in C transaction with non-matching P-chain blockchain ID', async function () {
+      const txBuilder = factory
+        .getExportInCBuilder()
+        .fromPubKey(EXPORT_IN_C.cHexAddress)
+        .nonce(EXPORT_IN_C.nonce)
+        .amount(EXPORT_IN_C.amount)
+        .threshold(EXPORT_IN_C.threshold)
+        .locktime(EXPORT_IN_C.locktime)
+        .to(EXPORT_IN_C.pAddresses)
+        .feeRate(EXPORT_IN_C.fee);
+
+      const tx = (await txBuilder.build()) as Transaction;
+      const flareTransaction = tx.getFlareTransaction();
+
+      assert.strictEqual(utilsInstance.isTransactionOf(flareTransaction, pChainBlockchainIdHex), false);
+    });
+
+    it('should return false for invalid blockchain ID', async function () {
+      const txBuilder = factory
+        .getImportInPBuilder()
+        .threshold(IMPORT_IN_P.threshold)
+        .locktime(IMPORT_IN_P.locktime)
+        .fromPubKey(IMPORT_IN_P.pAddresses)
+        .externalChainId(IMPORT_IN_P.sourceChainId)
+        .fee(IMPORT_IN_P.fee)
+        .utxos(IMPORT_IN_P.outputs);
+
+      const tx = (await txBuilder.build()) as Transaction;
+      const flareTransaction = tx.getFlareTransaction();
+
+      assert.strictEqual(utilsInstance.isTransactionOf(flareTransaction, 'invalidblockchainid'), false);
     });
   });
 });
