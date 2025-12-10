@@ -371,6 +371,7 @@ export abstract class AbstractUtxoCoin
 {
   public altScriptHash?: number;
   public supportAltScriptDestination?: boolean;
+  public defaultSdkBackend: SdkBackend = 'utxolib';
   public readonly amountType: 'number' | 'bigint';
   private readonly _network: utxolib.Network;
 
@@ -536,7 +537,7 @@ export abstract class AbstractUtxoCoin
 
   decodeTransaction<TNumber extends number | bigint>(
     input: Buffer | string,
-    decodeWith?: SdkBackend
+    decodeWith: SdkBackend = this.defaultSdkBackend
   ): DecodedTransaction<TNumber> {
     if (typeof input === 'string') {
       const buffer = stringToBufferTryFormats(input, ['hex', 'base64']);
@@ -544,9 +545,9 @@ export abstract class AbstractUtxoCoin
     }
 
     if (utxolib.bitgo.isPsbt(input)) {
-      return decodePsbtWith(input, this.network, decodeWith ?? 'utxolib');
+      return decodePsbtWith(input, this.network, decodeWith);
     } else {
-      if (decodeWith ?? 'utxolib' !== 'utxolib') {
+      if (decodeWith !== 'utxolib') {
         console.error('received decodeWith hint %s, ignoring for legacy transaction', decodeWith);
       }
       return utxolib.bitgo.createTransactionFromBuffer(input, this.network, {
