@@ -43,6 +43,8 @@ export const GenerateWalletBody = {
   bitgoKeyId: optional(t.string),
   /** Common keychain for self-managed cold MPC wallets */
   commonKeychain: optional(t.string),
+  /** Reference wallet ID for creating EVM keyring child wallets. When provided, the new wallet inherits keys and properties from the reference wallet, enabling unified addresses across EVM chains. */
+  evmKeyRingReferenceWalletId: optional(t.string),
 } as const;
 
 export const GenerateWalletResponse200 = t.union([

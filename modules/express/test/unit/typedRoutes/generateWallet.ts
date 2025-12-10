@@ -276,6 +276,55 @@ describe('Generate Wallet Typed Routes Tests', function () {
       generateWalletStub.firstCall.args[0].should.have.property('bitgoKeyId', bitgoKeyId);
       generateWalletStub.firstCall.args[0].should.have.property('commonKeychain', commonKeychain);
     });
+
+    it('should successfully generate EVM keyring wallet with evmKeyRingReferenceWalletId', async function () {
+      const coin = 'tpolygon';
+      const label = 'EVM Keyring Child Wallet';
+      const evmKeyRingReferenceWalletId = 'referenceWallet123';
+
+      const mockWallet = {
+        id: 'walletKeyring',
+        coin,
+        label,
+        evmKeyRingReferenceWalletId,
+        toJSON: sinon.stub().returns({
+          id: 'walletKeyring',
+          coin,
+          label,
+          evmKeyRingReferenceWalletId,
+          multisigType: 'tss',
+        }),
+      };
+
+      const walletResponse = {
+        wallet: mockWallet,
+        userKeychain: { id: 'userKeyKeyring' },
+        backupKeychain: { id: 'backupKeyKeyring' },
+        bitgoKeychain: { id: 'bitgoKeyKeyring' },
+      };
+
+      const generateWalletStub = sinon.stub().resolves(walletResponse);
+      const walletsStub = { generateWallet: generateWalletStub } as any;
+      const coinStub = { wallets: sinon.stub().returns(walletsStub) } as any;
+
+      sinon.stub(BitGo.prototype, 'coin').returns(coinStub);
+
+      const res = await agent.post(`/api/v2/${coin}/wallet/generate`).send({
+        label,
+        evmKeyRingReferenceWalletId,
+      });
+
+      res.status.should.equal(200);
+      res.body.should.have.property('wallet');
+      res.body.wallet.should.have.property('evmKeyRingReferenceWalletId', evmKeyRingReferenceWalletId);
+
+      generateWalletStub.should.have.been.calledOnce();
+      generateWalletStub.firstCall.args[0].should.have.property('label', label);
+      generateWalletStub.firstCall.args[0].should.have.property(
+        'evmKeyRingReferenceWalletId',
+        evmKeyRingReferenceWalletId
+      );
+    });
   });
 
   describe('Codec Validation', function () {
