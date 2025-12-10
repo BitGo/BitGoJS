@@ -13,8 +13,6 @@ import {
   psbtOutputIncludesPaygoAddressProof,
   verifyPayGoAddressProof,
 } from '../../../src/paygo/psbt/payGoAddressProof';
-import { generatePayGoAttestationProof } from '../../../src/testutil/generatePayGoAttestationProof.utils';
-import { trimMessagePrefix } from '../../../src/testutil/trimMessagePrefix';
 import { signMessage } from '../../../src/bip32utils';
 import { NIL_UUID } from '../../../src/paygo/attestation';
 
@@ -45,18 +43,63 @@ export const addressToVerify = utxolib.address.toBase58Check(
   utxolib.networks.bitcoin
 );
 
-// this should be retuning a Buffer
-export const addressProofBuffer = generatePayGoAttestationProof(NIL_UUID, Buffer.from(addressToVerify));
-export const addressProofMsgBuffer = trimMessagePrefix(addressProofBuffer);
-// We know that that the entropy is a set 64 bytes.
-export const addressProofEntropy = addressProofMsgBuffer.subarray(0, 65);
+// Fixed entropy for deterministic test fixtures (64 bytes of 0x00)
+export const addressProofEntropy = Buffer.alloc(64, 0x00);
 
-// signature with the given msg addressProofBuffer
+// Create the message buffer manually with our fixed entropy
+const addressBuffer = Buffer.from(addressToVerify);
+const uuidBuffer = Buffer.from(NIL_UUID);
+export const addressProofMsgBuffer = Buffer.concat([addressProofEntropy, addressBuffer, uuidBuffer]);
+
+// signature with the given msg addressProofMsgBuffer
 export const sig = signMessage(addressProofMsgBuffer, attestationPrvKey!, network);
 
 function getTestPsbt() {
   return utxolib.testutil.constructPsbt(psbtInputs, psbtOutputs, network, rootWalletKeys, 'unsigned');
 }
+
+describe('test fixtures', () => {
+  it('should have expected test fixture values', () => {
+    // Address fixture - derived from backup key
+    assert.strictEqual(addressToVerify, '1CdWUVacSQQJ617HfuNWByGiisEGXGNx2c');
+
+    // Entropy fixture - fixed 64 bytes of zeros for deterministic testing
+    assert.strictEqual(
+      addressProofEntropy.toString('hex'),
+      '0000000000000000000000000000000000000000000000000000000000000000' +
+        '0000000000000000000000000000000000000000000000000000000000000000'
+    );
+    assert.strictEqual(addressProofEntropy.length, 64);
+
+    // Signature fixture - Bitcoin message signature (65 bytes with recovery ID)
+    assert.strictEqual(
+      sig.toString('hex'),
+      '1fd62abac20bb963f5150aa4b3f4753c5f2f53ced5183ab7761d0c95c2820f6b' +
+        'b722b6d0d9adbab782d2d0d66402794b6bd6449dc26f634035ee388a2b5e7b53f6'
+    );
+    assert.strictEqual(sig.length, 65);
+
+    // Public key fixture - compressed secp256k1 public key (33 bytes)
+    assert.strictEqual(
+      attestationPubKey.toString('hex'),
+      '02456f4f788b6af55eb9c54d88692cadef4babdbc34cde75218cc1d6b6de3dea2d'
+    );
+    assert.strictEqual(attestationPubKey.length, 33);
+
+    // Message buffer structure: [ENTROPY][ADDRESS][UUID]
+    // Total length: 64 (entropy) + 34 (address) + 36 (UUID) = 134
+    assert.strictEqual(addressProofMsgBuffer.length, 134);
+
+    // Verify message components
+    const entropy = addressProofMsgBuffer.subarray(0, 64);
+    const address = addressProofMsgBuffer.subarray(64, 98);
+    const uuid = addressProofMsgBuffer.subarray(98, 134);
+
+    assert.strictEqual(entropy.toString('hex'), addressProofEntropy.toString('hex'));
+    assert.strictEqual(address.toString(), addressToVerify);
+    assert.strictEqual(uuid.toString(), NIL_UUID);
+  });
+});
 
 describe('addPaygoAddressProof and verifyPaygoAddressProof', () => {
   function getPayGoProprietaryKey(proprietaryKeyVals: KeyValue[]) {
