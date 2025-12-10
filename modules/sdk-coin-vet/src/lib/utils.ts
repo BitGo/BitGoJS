@@ -194,7 +194,7 @@ export class Utils implements BaseUtils {
 
       return {
         tokenId: String(decoded[0]),
-        validator: String(decoded[1]),
+        validator: addHexPrefix(decoded[1].toString()).toLowerCase(),
       };
     } catch (error) {
       throw new Error(`Failed to decode delegation data: ${error.message}`);

@@ -5,6 +5,7 @@ import { DELEGATE_CLAUSE_METHOD_ID, STARGATE_CONTRACT_ADDRESS_TESTNET } from '..
 import EthereumAbi from 'ethereumjs-abi';
 import * as testData from '../resources/vet';
 import { BN } from 'ethereumjs-util';
+import utils from '../../src/lib/utils';
 
 describe('VET Delegation Transaction', function () {
   const factory = new TransactionBuilderFactory(coins.get('tvet'));
@@ -166,7 +167,35 @@ describe('VET Delegation Transaction', function () {
       toJson.expiration.should.equal(64);
       toJson.chainTag.should.equal(39);
       toJson.tokenId?.should.equal(tokenIdForDelegateTxn);
-      toJson.validatorAddress?.should.equal('00563ec3cafbbe7e60b04b3190e6eca66579706d');
+      toJson.validatorAddress?.should.equal('0x00563ec3cafbbe7e60b04b3190e6eca66579706d');
+    });
+  });
+
+  describe('decodeDelegateClauseData', function () {
+    it('should correctly decode delegate transaction data with proper address formatting', function () {
+      const decodedData = utils.decodeDelegateClauseData(testData.DELEGATE_CLAUSE_DATA);
+
+      decodedData.tokenId.should.equal(testData.DELEGATE_TOKEN_ID);
+      decodedData.validator.should.equal(testData.DELEGATE_VALIDATOR);
+      decodedData.validator.should.startWith('0x');
+      decodedData.validator.should.equal(decodedData.validator.toLowerCase());
+    });
+
+    it('should correctly deserialize real signed delegate transaction from raw hex', async function () {
+      const txBuilder = factory.from(testData.SIGNED_DELEGATE_RAW_HEX);
+      const tx = txBuilder.transaction as DelegateClauseTransaction;
+      tx.should.be.instanceof(DelegateClauseTransaction);
+      tx.stakingContractAddress.should.equal(testData.SIGNED_DELEGATE_RAW_EXPECTED_STAKING_CONTRACT);
+      tx.tokenId.should.equal(testData.SIGNED_DELEGATE_RAW_EXPECTED_TOKEN_ID);
+      tx.validator.should.equal(testData.SIGNED_DELEGATE_RAW_EXPECTED_VALIDATOR);
+      tx.validator.should.startWith('0x');
+      tx.validator.should.equal(tx.validator.toLowerCase());
+      should.exist(tx.inputs);
+      tx.inputs.length.should.equal(1);
+
+      const decodedData = utils.decodeDelegateClauseData(tx.clauses[0].data);
+      decodedData.tokenId.should.equal(testData.SIGNED_DELEGATE_RAW_EXPECTED_TOKEN_ID);
+      decodedData.validator.should.equal(testData.SIGNED_DELEGATE_RAW_EXPECTED_VALIDATOR);
     });
   });
 });
