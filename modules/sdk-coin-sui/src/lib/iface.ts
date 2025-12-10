@@ -103,6 +103,7 @@ export interface SuiTransaction<T = SuiProgrammableTransaction> {
   sender: string;
   tx: T;
   gasData: GasData;
+  inputObjects?: SuiObjectRef[];
 }
 
 export interface RequestAddStake {

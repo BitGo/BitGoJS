@@ -46,6 +46,61 @@ describe('Sui Transfer Builder', () => {
       should.equal(rawTx, testData.TRANSFER);
     });
 
+    it('should build a sponsored transfer tx with inputObjects', async function () {
+      const inputObjects = [
+        {
+          objectId: '0000000000000000000000001234567890abcdef1234567890abcdef12345678',
+          version: 100,
+          digest: '2B8XKQJ7mfxQPUWqJJAGjzBAzivkWKq2cEa3W8LLz1yB',
+        },
+        {
+          objectId: '000000000000000000000000abcdef1234567890abcdef1234567890abcdef12',
+          version: 200,
+          digest: 'DoJwXuz9oU5Y5v5vBRiTgisVTQuZQLmHZWeqJzzD5QUE',
+        },
+      ];
+
+      // Create gas data with different owner (sponsor)
+      const sponsoredGasData = {
+        ...testData.gasData,
+        owner: testData.feePayer.address, // Different from sender
+      };
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address); // Sender
+      txBuilder.send(testData.recipients);
+      txBuilder.gasData(sponsoredGasData); // Gas paid by sponsor
+      txBuilder.inputObjects(inputObjects); // Required for sponsored tx
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      const suiTx = tx as SuiTransaction<TransferProgrammableTransaction>;
+
+      // Verify transaction structure for sponsored transaction
+      const programmableTx = suiTx.suiTransaction.tx;
+      programmableTx.transactions.length.should.be.greaterThan(0);
+
+      // Verify sponsored transaction characteristics
+      suiTx.suiTransaction.sender.should.equal(testData.sender.address);
+      suiTx.suiTransaction.gasData.owner.should.equal(testData.feePayer.address);
+
+      // Should have transactions for merging/splitting and transferring when using inputObjects
+      programmableTx.transactions.length.should.be.greaterThan(0);
+
+      // Verify we have transfer operations (the exact structure varies with API versions)
+      should.exist(programmableTx.transactions);
+
+      // Verify inputObjects are not used in gas payment (they're separate)
+      suiTx.suiTransaction.gasData.payment.should.not.containDeep(inputObjects);
+
+      const rawTx = tx.toBroadcastFormat();
+      should.exist(rawTx);
+      should.equal(typeof rawTx, 'string');
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+    });
+
     it('should build a split coin tx', async function () {
       const txBuilder = factory.getTransferBuilder();
       txBuilder.type(SuiTransactionType.Transfer);
@@ -183,6 +238,75 @@ describe('Sui Transfer Builder', () => {
         ],
       };
       should(() => builder.gasData(invalidGasPayment)).throwError('Invalid payment, invalid or missing version');
+    });
+
+    it('should fail for invalid inputObjects', function () {
+      const builder = factory.getTransferBuilder();
+      const invalidInputObjects = [
+        {
+          objectId: '',
+          version: -1,
+          digest: '',
+        },
+      ];
+      should(() => builder.inputObjects(invalidInputObjects)).throwError(
+        'Invalid input object, invalid or missing version'
+      );
+    });
+
+    it('should build transfer with different gas owner but no inputObjects', async function () {
+      const sponsoredGasData = {
+        ...testData.gasData,
+        owner: testData.feePayer.address, // Different from sender
+      };
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address); // Sender
+      txBuilder.send(testData.recipients);
+      txBuilder.gasData(sponsoredGasData); // Gas paid by sponsor
+      // Note: NOT providing inputObjects - should still work (fee sponsorship without coin sponsorship)
+
+      const tx = await txBuilder.build();
+      should.equal(tx.type, TransactionType.Send);
+
+      const suiTx = tx as SuiTransaction<TransferProgrammableTransaction>;
+      should.not.exist(suiTx.suiTransaction.inputObjects);
+
+      const rawTx = tx.toBroadcastFormat();
+      should.equal(utils.isValidRawTransaction(rawTx), true);
+    });
+
+    it('should extract inputObjects from transaction data via toJson', async function () {
+      const inputObjects = [
+        {
+          objectId: '0x1234567890abcdef1234567890abcdef12345678',
+          version: 100,
+          digest: '2B8XKQJ7mfxQPUWqJJAGjzBAzivkWKq2cEa3W8LLz1yB',
+        },
+      ];
+      const sponsoredGasData = {
+        ...testData.gasData,
+        owner: testData.feePayer.address, // Different from sender
+      };
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.type(SuiTransactionType.Transfer);
+      txBuilder.sender(testData.sender.address);
+      txBuilder.send(testData.recipients);
+      txBuilder.gasData(sponsoredGasData);
+      txBuilder.inputObjects(inputObjects);
+
+      const tx = await txBuilder.build();
+
+      // Test that toJson extracts inputObjects from transaction structure
+      const txData = (tx as any).toJson();
+      should.exist(txData.inputObjects);
+
+      // The toJson should extract the inputObjects from the transaction structure
+      // This tests our new getInputObjectsFromTx method
+      should.exist(txData.inputObjects);
+      Array.isArray(txData.inputObjects).should.equal(true);
     });
   });
 });
