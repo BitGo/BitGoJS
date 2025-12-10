@@ -261,6 +261,14 @@ export class Transaction extends BaseTransaction {
     this._flareTransaction = tx as UnsignedTx;
   }
 
+  /**
+   * Get the underlying Flare transaction
+   * @returns The Flare transaction object
+   */
+  getFlareTransaction(): Tx {
+    return this._flareTransaction;
+  }
+
   setTransactionType(transactionType: TransactionType): void {
     if (![TransactionType.AddPermissionlessValidator].includes(transactionType)) {
       throw new Error(`Transaction type ${transactionType} is not supported`);
