@@ -238,6 +238,13 @@ export class Iota extends BaseCoin {
   }
 
   /**
+   * @inheritDoc
+   */
+  allowsAccountConsolidations(): boolean {
+    return true;
+  }
+
+  /**
    * Sets coin-specific fields in the transaction intent.
    * @param intent - The populated intent object to modify
    * @param params - Parameters containing unspents data

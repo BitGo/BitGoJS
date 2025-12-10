@@ -42,6 +42,10 @@ describe('IOTA:', function () {
     tiotaStatics.gasTankMinBalanceRecommendationFactor.should.equal(200);
   });
 
+  it('should support account consolidations', function () {
+    basecoin.allowsAccountConsolidations().should.equal(true);
+  });
+
   it('is valid pub', function () {
     // with 0x prefix
     basecoin.isValidPub('0x9b4e96086d111500259f9b38680b0509a405c1904da18976455a20c691d3bb07').should.equal(false);
