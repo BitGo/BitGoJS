@@ -16,6 +16,7 @@ type Args = BitGoApiArgs & {
   amount: string;
   fullnodeUrl: string | undefined;
   message: string | undefined;
+  sdkBackend: 'utxolib' | 'wasm-utxo' | undefined;
 };
 
 export const cmdBuildSignSend: CommandModule<BitGoApiArgs, Args> = {
@@ -33,9 +34,13 @@ export const cmdBuildSignSend: CommandModule<BitGoApiArgs, Args> = {
     amount: { type: 'string', demandOption: true },
     fullnodeUrl: { type: 'string' },
     message: { type: 'string', description: 'Message to include in an OP_RETURN output' },
+    sdkBackend: { choices: ['utxolib', 'wasm-utxo'], description: 'SDK backend to use' },
   },
   async handler(args) {
     const { bitgo, coin } = getBitGoWithUtxoCoin(args);
+    if (args.sdkBackend) {
+      coin.defaultSdkBackend = args.sdkBackend;
+    }
     const wallet = await selectWallet(bitgo, coin, args);
     const { walletPassphrase } = args;
     let { recipient } = args;
