@@ -1324,7 +1324,17 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.ZKETH,
     BaseUnit.ETH,
-    ZKETH_FEATURES
+    [
+      ...ZKETH_FEATURES,
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+    ]
   ),
   account(
     'ac3c225e-55a9-4236-b907-a4cccc30a2fd',
