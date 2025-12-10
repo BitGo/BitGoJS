@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { Descriptor } from '@bitgo/wasm-miniscript';
+import { Descriptor } from '@bitgo/wasm-utxo';
 import { getBitGoInstance } from '../../util/bitGoInstance';
 import { CommandModule } from 'yargs';
 import { BitGoApiArgs } from '../../bitGoArgs';
@@ -63,7 +63,8 @@ export async function buildTransactionLocal(
   bitgo: BitGoAPI,
   coin: AbstractUtxoCoin,
   wallet: IWallet,
-  recipients: Recipient[]
+  recipients: Recipient[],
+  changeAddress?: string
 ): Promise<utxolib.Psbt> {
   type Unspent = {
     id: string;
@@ -112,7 +113,7 @@ export const cmdBuild: CommandModule<BitGoApiArgs, BitGoApiArgs & ArgsBuildTrans
     }
     const recipients = [{ address: recipient, amount: args.amount }];
     if (args.local) {
-      assert(coin instanceof AbstractUtxoCoin);
+      assert.ok(coin instanceof AbstractUtxoCoin);
       const change = (await wallet.createAddress()).address;
       const psbt = await buildTransactionLocal(bitgo, coin, wallet, recipients, change);
       console.log(psbt.toBase64());

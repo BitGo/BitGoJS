@@ -5,7 +5,7 @@ import { coreDao } from '@bitgo/utxo-staking';
 import { BitGoApiArgs } from '../../bitGoArgs';
 import { cmdCreate, createDescriptorWallet, CreateWalletArgs } from '../createWallet';
 import { getBitGoWithUtxoCoin, getDefaultEnterpriseId } from '../../util/bitGoInstance';
-import { Descriptor } from '@bitgo/wasm-miniscript';
+import { Descriptor } from '@bitgo/wasm-utxo';
 
 type CreateStakingWalletArgs = CreateWalletArgs & {
   locktime: string;

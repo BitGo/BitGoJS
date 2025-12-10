@@ -4,7 +4,7 @@ import * as utxolib from '@bitgo/utxo-lib';
 import { AbstractUtxoCoin } from '@bitgo/abstract-utxo';
 import { BitGoAPI } from '@bitgo/sdk-api';
 import { Keychain, Wallet, WalletData } from '@bitgo/sdk-core';
-import { Descriptor } from '@bitgo/wasm-miniscript';
+import { Descriptor } from '@bitgo/wasm-utxo';
 
 import { BitGoApiArgs } from '../bitGoArgs';
 import { getBitGoInstance, getBitGoWithUtxoCoin, getDefaultEnterpriseId } from '../util/bitGoInstance';
