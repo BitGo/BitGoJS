@@ -545,6 +545,13 @@ export abstract class AbstractUtxoCoin
     }
 
     if (utxolib.bitgo.isPsbt(input)) {
+      if (utxolib.isMainnet(this.network) && decodeWith === 'wasm-utxo') {
+        console.error(
+          'Decoding PSBT with wasm-utxo not supported on mainnet yet in this SDK version. Using utxolib instead.'
+        );
+        decodeWith = 'utxolib';
+      }
+
       return decodePsbtWith(input, this.network, decodeWith);
     } else {
       if (decodeWith !== 'utxolib') {
