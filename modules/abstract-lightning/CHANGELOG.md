@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@7.5.3...@bitgo/abstract-lightning@7.6.0) (2025-12-11)
+
+
+### Features
+
+* spendable reserved offchain balance lightning ([e914efa](https://github.com/BitGo/BitGoJS/commit/e914efafdc0f5c45051c0381496a67a7639db65e))
+
+
+
+
+
 ## [7.5.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@7.5.2...@bitgo/abstract-lightning@7.5.3) (2025-12-05)
 
 **Note:** Version bump only for package @bitgo/abstract-lightning

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.19.18](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.19.17...@bitgo/sdk-coin-sui@5.19.18) (2025-12-11)
+
+
+### Bug Fixes
+
+* **sdk-coin-sui:** adding inputObjects in transferBuilder ([311a7d8](https://github.com/BitGo/BitGoJS/commit/311a7d8a98d552730a6c808d95f25043587158df))
+
+
+
+
+
 ## [5.19.17](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.19.16...@bitgo/sdk-coin-sui@5.19.17) (2025-12-05)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sui

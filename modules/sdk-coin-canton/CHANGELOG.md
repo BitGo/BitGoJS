@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.12.1...@bitgo/sdk-coin-canton@1.13.0) (2025-12-11)
+
+
+### Features
+
+* added support for versioned blockId validation ([f6e28ae](https://github.com/BitGo/BitGoJS/commit/f6e28ae356a7db4f78eea92357b761de4a5829ef))
+
+
+
+
+
 ## [1.12.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-canton@1.12.0...@bitgo/sdk-coin-canton@1.12.1) (2025-12-05)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-canton

@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.17.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.16.1...@bitgo/statics@58.17.0) (2025-12-11)
+
+
+### Bug Fixes
+
+* **statics:** disable negative fee for sui token ([60c1977](https://github.com/BitGo/BitGoJS/commit/60c19773f7d2e26c4436de87e6ffea84590cdc4d))
+
+
+### Features
+
+* add DogeOS and DogeOS Testnet support ([5613442](https://github.com/BitGo/BitGoJS/commit/5613442a555894ce84c62fc1c348a942544832ce))
+* enable seievm staking for production environment ([09b3839](https://github.com/BitGo/BitGoJS/commit/09b38391cc5188f8b39224c1217f00037603d58c))
+* **statics:** added new coins Ticket: COIN-6793 ([336fd93](https://github.com/BitGo/BitGoJS/commit/336fd9379124b700245b43db7b44ced5721b10fa))
+* **statics:** onboard eth:sofid token ([0562f29](https://github.com/BitGo/BitGoJS/commit/0562f29a85235744ea51f10462457235c9351942))
+* **statics:** remove enterprise pay gas feature for iota ([a9d08ff](https://github.com/BitGo/BitGoJS/commit/a9d08ff7c28344ec77939738cf003c12c4804654))
+
+
+
+
+
 ## [58.16.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.16.0...@bitgo/statics@58.16.1) (2025-12-05)
 
 **Note:** Version bump only for package @bitgo/statics

@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-iota@1.6.1...@bitgo/sdk-coin-iota@1.7.0) (2025-12-11)
+
+
+### Bug Fixes
+
+* **sdk-coin-iota:** update merge coin params ([378efac](https://github.com/BitGo/BitGoJS/commit/378efac006d3eecb2d2c7ac95e6fd27d1c6593f8))
+* **sdk-coin-iota:** update tx builder validation ([db3402a](https://github.com/BitGo/BitGoJS/commit/db3402af757fb65a9dbd0311ed9c93cec11b22cb))
+
+
+### Features
+
+* **sdk-coin-iota:** adding address consolidation support for iota ([3dad54c](https://github.com/BitGo/BitGoJS/commit/3dad54c42f067f73357cd05dbf38c27545dd02c0))
+
+
+
+
+
 ## [1.6.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-iota@1.6.0...@bitgo/sdk-coin-iota@1.6.1) (2025-12-05)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-iota

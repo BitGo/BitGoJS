@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [15.17.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.16.1...@bitgo/express@15.17.0) (2025-12-11)
+
+
+### Features
+
+* added evmKeyRingReferenceWalletId in GenerateWalletBody ([f40414b](https://github.com/BitGo/BitGoJS/commit/f40414b556f652a3595ec1522684b50638f89fff))
+
+
+
+
+
 ## [15.16.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.16.0...@bitgo/express@15.16.1) (2025-12-05)
 
 
