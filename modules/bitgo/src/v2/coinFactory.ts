@@ -259,8 +259,10 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('eth', Eth.createInstance);
   coinFactory.register('ethw', Ethw.createInstance);
   coinFactory.register('baseeth', EthLikeCoin.createInstance);
+  coinFactory.register('opbnb', EthLikeCoin.createInstance);
   coinFactory.register('og', EthLikeCoin.createInstance);
   coinFactory.register('tog', EthLikeCoin.createInstance);
+  coinFactory.register('topbnb', TethLikeCoin.createInstance);
   coinFactory.register('tbaseeth', TethLikeCoin.createInstance);
   coinFactory.register('fiataed', FiatAED.createInstance);
   coinFactory.register('fiateur', FiatEur.createInstance);
@@ -641,7 +643,11 @@ export function getCoinConstructor(coinName: string): CoinConstructor | undefine
       return Ethw.createInstance;
     case 'baseeth':
       return EthLikeCoin.createInstance;
+    case 'opbnb':
+      return EthLikeCoin.createInstance;
     case 'tbaseeth':
+      return TethLikeCoin.createInstance;
+    case 'topbnb':
       return TethLikeCoin.createInstance;
     case 'fiataed':
       return FiatAED.createInstance;
@@ -993,6 +999,10 @@ export function getTokenConstructor(tokenConfig: TokenConfig): CoinConstructor |
     case 'tbaseeth':
       const coinNames = { Mainnet: 'baseeth', Testnet: 'tbaseeth' };
       return EthLikeErc20Token.createTokenConstructor(tokenConfig as EthLikeTokenConfig, coinNames);
+    case 'opbnb':
+    case 'topbnb':
+      const opbnbCoinNames = { Mainnet: 'opbnb', Testnet: 'topbnb' };
+      return EthLikeErc20Token.createTokenConstructor(tokenConfig as EthLikeTokenConfig, opbnbCoinNames);
     case 'coredao':
     case 'tcoredao':
       return CoredaoToken.createTokenConstructor(tokenConfig as EthLikeTokenConfig);

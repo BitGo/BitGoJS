@@ -261,6 +261,10 @@ const mainnetBase: EnvironmentTemplate = {
     baseeth: {
       baseUrl: 'https://api.etherscan.io/v2',
     },
+    opbnb: {
+      baseUrl: 'https://api.etherscan.io/v2',
+      apiToken: process.env.ETHERSCAN_API_TOKEN,
+    },
     flow: {
       baseUrl: 'https://evm.flowscan.io',
     },
@@ -419,6 +423,10 @@ const testnetBase: EnvironmentTemplate = {
     },
     tbaseeth: {
       baseUrl: 'https://api.etherscan.io/v2',
+    },
+    topbnb: {
+      baseUrl: 'https://api.etherscan.io/v2',
+      apiToken: process.env.ETHERSCAN_API_TOKEN,
     },
     flow: {
       baseUrl: 'https://evm-testnet.flowscan.io',

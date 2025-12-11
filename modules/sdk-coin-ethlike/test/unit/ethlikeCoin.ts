@@ -22,6 +22,10 @@ const coins = [
     name: 'tarbeth',
     common: getCommon('tarbeth'),
   },
+  {
+    name: 'topbnb',
+    common: getCommon('topbnb'),
+  },
 ];
 
 describe('EthLike coin tests', function () {
