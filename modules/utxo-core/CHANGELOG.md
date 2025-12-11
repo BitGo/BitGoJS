@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.27.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.26.1...@bitgo/utxo-core@1.27.0) (2025-12-11)
+
+
+### Features
+
+* **utxo-core:** add deterministic test fixtures for PayGo address proof ([046ec06](https://github.com/BitGo/BitGoJS/commit/046ec061bc508b57fb8126066775a2d88329374a))
+
+
+
+
+
 ## [1.26.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.26.0...@bitgo/utxo-core@1.26.1) (2025-12-05)
 
 **Note:** Version bump only for package @bitgo/utxo-core

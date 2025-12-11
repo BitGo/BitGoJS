@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [27.17.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.16.1...@bitgo/account-lib@27.17.0) (2025-12-11)
+
+
+### Features
+
+* **account-lib:** add flrp to account lib ([86216e2](https://github.com/BitGo/BitGoJS/commit/86216e2d61c9334b4b9b0bf11378a4e343aad382))
+
+
+
+
+
 ## [27.16.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.16.0...@bitgo/account-lib@27.16.1) (2025-12-05)
 
 **Note:** Version bump only for package @bitgo/account-lib

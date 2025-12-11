@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.9.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.9.1...@bitgo/sdk-coin-vet@2.9.2) (2025-12-11)
+
+
+### Bug Fixes
+
+* **sdk-coin-vet:** add prefix for validator address ([dc17da1](https://github.com/BitGo/BitGoJS/commit/dc17da196640f76629c81d46cd4c11ebcb7ad64c))
+
+
+
+
+
 ## [2.9.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.9.0...@bitgo/sdk-coin-vet@2.9.1) (2025-12-05)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-vet

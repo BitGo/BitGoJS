@@ -3,7 +3,7 @@
   "description": "Utilities for building ordinals with BitGo utxo-lib",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
-  "version": "1.22.17",
+  "version": "1.22.18",
   "files": [
     "dist/**/*"
   ],
@@ -28,7 +28,7 @@
     "directory": "modules/utxo-ord"
   },
   "dependencies": {
-    "@bitgo/sdk-core": "^36.23.1",
+    "@bitgo/sdk-core": "^36.23.2",
     "@bitgo/unspents": "^0.50.12",
     "@bitgo/utxo-lib": "^11.18.0"
   },

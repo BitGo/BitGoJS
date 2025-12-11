@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.72.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.71.9...@bitgo/sdk-api@1.72.0) (2025-12-11)
+
+
+### Features
+
+* add requestIdPrefix option to BitGoAPI ([b5ca774](https://github.com/BitGo/BitGoJS/commit/b5ca7747260f116e72bb5e776ebc46be30c50ff0))
+
+
+
+
+
 ## [1.71.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.71.8...@bitgo/sdk-api@1.71.9) (2025-12-05)
 
 **Note:** Version bump only for package @bitgo/sdk-api

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.10.0...@bitgo/abstract-utxo@10.11.0) (2025-12-11)
+
+
+### Features
+
+* **abstract-utxo:** add default SDK backend property ([a517e73](https://github.com/BitGo/BitGoJS/commit/a517e7354facc16170611a2cfaef465632310347))
+
+
+
+
+
 # [10.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.9.0...@bitgo/abstract-utxo@10.10.0) (2025-12-05)
 
 

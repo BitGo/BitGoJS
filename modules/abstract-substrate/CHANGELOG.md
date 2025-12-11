@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.11.18](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.11.17...@bitgo/abstract-substrate@1.11.18) (2025-12-11)
+
+
+### Bug Fixes
+
+* **sdk-coin-tao:** support all valid netuids for transferStake tx ([1ac6041](https://github.com/BitGo/BitGoJS/commit/1ac6041d4d4f8dc912037cf79f4c1f8934b1389c))
+
+
+
+
+
 ## [1.11.17](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-substrate@1.11.16...@bitgo/abstract-substrate@1.11.17) (2025-12-05)
 
 **Note:** Version bump only for package @bitgo/abstract-substrate

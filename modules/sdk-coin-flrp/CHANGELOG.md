@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.4.1...@bitgo/sdk-coin-flrp@1.5.0) (2025-12-11)
+
+
+### Features
+
+* **sdk-coin-flrp:** add transaction validation utility ([8d09223](https://github.com/BitGo/BitGoJS/commit/8d09223f277152e75ab7cb59ec6eeeef6a033da5))
+* **sdk-coin-flrp:** export TransactionBuilder from transactionBuilder module ([5b426f5](https://github.com/BitGo/BitGoJS/commit/5b426f5e7f493a0c77a65a4bc83f84d60afe2285))
+
+
+
+
+
 ## [1.4.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.4.0...@bitgo/sdk-coin-flrp@1.4.1) (2025-12-05)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-flrp
