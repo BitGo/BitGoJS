@@ -1074,7 +1074,7 @@ export class Sol extends BaseCoin {
     }
 
     const bitgoKey = params.bitgoKey.replace(/\s/g, '');
-    const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
+    const isUnsignedSweep = !params.walletPassphrase;
 
     // Build the transaction
     const MPC = await EDDSAMethods.getInitializedMpcInstance();
@@ -1575,7 +1575,7 @@ export class Sol extends BaseCoin {
    * @param {string} [params.endingScanIndex] - receive address index to end scanning at. default to startingScanIndex + 20 (exclusive).
    */
   async recoverConsolidations(params: SolConsolidationRecoveryOptions): Promise<MPCTxs | MPCSweepTxs> {
-    const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
+    const isUnsignedSweep = !params.walletPassphrase;
     const startIdx = params.startingScanIndex || 1;
     const endIdx = params.endingScanIndex || startIdx + DEFAULT_SCAN_FACTOR;
 

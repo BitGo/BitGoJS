@@ -425,7 +425,7 @@ export class Sui extends BaseCoin {
         payment: inputCoins,
       });
 
-      const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
+      const isUnsignedSweep = !params.walletPassphrase;
       if (isUnsignedSweep) {
         return this.buildUnsignedSweepTransaction(txBuilder, senderAddress, bitgoKey, idx, derivationPath);
       }
@@ -509,7 +509,7 @@ export class Sui extends BaseCoin {
       payment: gasObjects,
     });
 
-    const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
+    const isUnsignedSweep = !params.walletPassphrase;
     if (isUnsignedSweep) {
       return this.buildUnsignedSweepTransaction(txBuilder, senderAddress, bitgoKey, idx, derivationPath, token);
     }
@@ -733,7 +733,7 @@ export class Sui extends BaseCoin {
    * @param {string} [params.endingScanIndex] - receive address index to end scanning at. default to startingScanIndex + 20 (exclusive).
    */
   async recoverConsolidations(params: MPCConsolidationRecoveryOptions): Promise<MPCTxs | MPCSweepTxs> {
-    const isUnsignedSweep = !params.userKey && !params.backupKey && !params.walletPassphrase;
+    const isUnsignedSweep = !params.walletPassphrase;
     const startIdx = utils.validateNonNegativeNumber(
       1,
       'Invalid starting index to scan for addresses',

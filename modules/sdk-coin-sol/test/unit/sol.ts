@@ -2111,16 +2111,6 @@ describe('SOL:', function () {
         })
         .should.rejectedWith('missing backupKey');
 
-      // missing wallet passphrase
-      await basecoin
-        .recover({
-          userKey: testData.keys.userKey,
-          backupKey: testData.keys.backupKey,
-          bitgoKey: testData.keys.bitgoKey,
-          recoveryDestination: testData.keys.destinationPubKey,
-        })
-        .should.rejectedWith('missing wallet passphrase');
-
       // incorrect wallet passphrase, user key, backup key combination
       await basecoin
         .recover({
