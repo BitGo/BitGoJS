@@ -2046,7 +2046,7 @@ export const ofcErc20Coins = [
   ofcerc20('db12970d-9be6-4399-9657-705a984661a6', 'ofcgate', 'GATENet', 18, underlyingAssetForSymbol('gate')),
   ofcerc20('7949daf7-305c-47bd-9e08-f85a4972b002', 'ofclcx', 'LCX', 18, underlyingAssetForSymbol('lcx')),
   ofcerc20('a2872b71-b5d1-4ac9-bcaa-5a0c18062b44', 'ofcrfox', 'RFOX', 18, underlyingAssetForSymbol('rfox')),
-  ofcerc20('8dfdb813-b1e7-4975-9b14-a862906563b5', 'ofcswise', 'StakeWise', 18, underlyingAssetForSymbol('swice')),
+  ofcerc20('8dfdb813-b1e7-4975-9b14-a862906563b5', 'ofcswise', 'StakeWise', 18, underlyingAssetForSymbol('swise')),
   ofcerc20('c8224deb-4439-4fa1-8472-bb84c9852736', 'ofcdamm', 'dAMM', 18, underlyingAssetForSymbol('damm')),
   ofcerc20('8303eadb-7732-4b60-9c5e-2699aed58111', 'ofccere', 'CERE Network', 10, underlyingAssetForSymbol('cere')),
   ofcerc20(

@@ -1742,7 +1742,7 @@ export enum UnderlyingAsset {
   SWAP = 'SWAP',
   SWEAT = 'sweat',
   SWETH = 'sweth',
-  SWISE = 'swice',
+  SWISE = 'swise',
   SWITCH = 'switch',
   SWRV = 'swrv',
   SXP = 'sxp',
@@ -2441,6 +2441,8 @@ export enum UnderlyingAsset {
   'tavaxc:xsgd' = 'tavaxc:xsgd',
   'tavaxc:bitgo' = 'tavaxc:bitgo',
   'tavaxc:stavax' = 'tavaxc:stavax',
+  'avaxc:usdc-e' = 'avaxc:usdc-e',
+  'avaxc:usdt-e' = 'avaxc:usdt-e',
   // Begin FTX missing AVAXC tokens
   'avaxc:yeti' = 'avaxc:yeti',
   'avaxc:spell' = 'avaxc:spell',
@@ -3342,6 +3344,7 @@ export enum UnderlyingAsset {
   'hbar:bonzo' = 'hbar:bonzo',
   'hbar:co2e' = 'hbar:co2e',
   'hbar:hsuite' = 'hbar:hsuite',
+  'hbar:usdc' = 'hbar:usdc',
 
   // Hbar Testnet tokens
   'thbar:txsgd' = 'thbar:txsgd',
