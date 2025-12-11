@@ -718,8 +718,6 @@ export const IOTA_FEATURES = [
   CoinFeature.TSS_COLD,
   CoinFeature.BULK_TRANSACTION,
   CoinFeature.CUSTODY_BULK_TRANSACTION,
-  CoinFeature.ENTERPRISE_PAYS_FEES,
-  CoinFeature.TSS_ENTERPRISE_PAYS_FEES,
 ];
 
 // TODO: https://bitgoinc.atlassian.net/browse/COIN-5870
