@@ -1,0 +1,8 @@
+import { BitGoBase } from '@bitgo/sdk-core';
+import { <%= constructor %> } from './<%= symbol %>';
+import { <%= testnetConstructor %> } from './<%= testnetSymbol %>';
+
+export const register = (sdk: BitGoBase): void => {
+  sdk.register('<%= symbol %>', <%= constructor %>.createInstance);
+  sdk.register('<%= testnetSymbol %>', <%= testnetConstructor %>.createInstance);
+};
