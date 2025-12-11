@@ -428,6 +428,26 @@ export const allCoinsAndTokens = [
     'BaseETH'
   ),
   account(
+    '2b5c52f8-0d0c-4a17-8052-d56373f5d264',
+    'topbnb',
+    'opBNB Testnet',
+    Networks.test.opbnb,
+    18,
+    UnderlyingAsset.OPBNB,
+    BaseUnit.ETH,
+    [...ETH_FEATURES, CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA, CoinFeature.EIP1559]
+  ),
+  account(
+    '1588f6da-8e43-4535-8e1c-25e53788437b',
+    'opbnb',
+    'opBNB Mainnet',
+    Networks.main.opbnb,
+    18,
+    UnderlyingAsset.OPBNB,
+    BaseUnit.ETH,
+    [...ETH_FEATURES, CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA, CoinFeature.EIP1559]
+  ),
+  account(
     'ffc472f5-27c6-49f8-ad9a-f57659258fb9',
     'etc',
     'Ethereum Classic',

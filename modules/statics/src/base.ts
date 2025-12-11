@@ -88,6 +88,7 @@ export enum CoinFamily {
   OAS = 'oas',
   OFC = 'ofc',
   OG = 'og',
+  OPBNB = 'opbnb', // opBNB Chain
   OKB = 'okb',
   OPETH = 'opeth',
   OSMO = 'osmo',
@@ -597,6 +598,7 @@ export enum UnderlyingAsset {
   OAS = 'oas',
   OG = 'og',
   OKB = 'okb',
+  OPBNB = 'opbnb', // opBNB Chain
   OPETH = 'opeth',
   OSMO = 'osmo',
   XPL = 'xpl', // Plasma Network
