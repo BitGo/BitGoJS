@@ -73,8 +73,14 @@ export class Utils implements BaseUtils {
       return undefined;
     }
     const [rootAddress, memoId] = address.split('?memoId=');
-    if (memoId && this.validateMemo(BigInt(memoId))) {
-      return rootAddress;
+    if (memoId) {
+      try {
+        if (this.validateMemo(BigInt(memoId))) {
+          return rootAddress;
+        }
+      } catch {
+        return undefined;
+      }
     }
     return address;
   }
@@ -210,8 +216,14 @@ export class Utils implements BaseUtils {
     const publicKeyBuffer = Buffer.from(publicKeyHex, 'hex');
     const ellipticKey = secp256k1.ProjectivePoint.fromHex(publicKeyBuffer.toString('hex'));
     const uncompressedPublicKeyHex = ellipticKey.toHex(false);
-    const derEncodedKey = agent.wrapDER(Buffer.from(uncompressedPublicKeyHex, 'hex'), agent.SECP256K1_OID);
-    return derEncodedKey;
+    const uncompressedKeyBuffer = Buffer.from(uncompressedPublicKeyHex, 'hex');
+    return agent.wrapDER(
+      uncompressedKeyBuffer.buffer.slice(
+        uncompressedKeyBuffer.byteOffset,
+        uncompressedKeyBuffer.byteOffset + uncompressedKeyBuffer.byteLength
+      ),
+      agent.SECP256K1_OID
+    );
   }
 
   /**
@@ -273,10 +285,10 @@ export class Utils implements BaseUtils {
    * Retrieves the address associated with a given hex-encoded public key.
    *
    * @param {string} hexEncodedPublicKey - The public key in hex-encoded format.
-   * @returns {Promise<string>} A promise that resolves to the address derived from the provided public key.
+   * @returns {string} The address derived from the provided public key.
    * @throws {Error} Throws an error if the provided public key is not in a valid hex-encoded format.
    */
-  async getAddressFromPublicKey(hexEncodedPublicKey: string): Promise<string> {
+  getAddressFromPublicKey(hexEncodedPublicKey: string): string {
     if (!this.isValidPublicKey(hexEncodedPublicKey)) {
       throw new Error('Invalid hex-encoded public key format.');
     }

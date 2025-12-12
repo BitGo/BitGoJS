@@ -132,23 +132,23 @@ describe('utils', () => {
   });
 
   describe('getAddressFromPublicKey()', () => {
-    it('should return the correct address for a valid public key', async () => {
-      const address1 = await utils.getAddressFromPublicKey(Accounts.account1.publicKey);
+    it('should return the correct address for a valid public key', () => {
+      const address1 = utils.getAddressFromPublicKey(Accounts.account1.publicKey);
       should.equal(address1, Accounts.account1.address);
-      const address2 = await utils.getAddressFromPublicKey(Accounts.account1.publicKey);
+      const address2 = utils.getAddressFromPublicKey(Accounts.account1.publicKey);
       should.equal(address2, Accounts.account1.address);
-      const address3 = await utils.getAddressFromPublicKey(Accounts.account1.publicKey);
+      const address3 = utils.getAddressFromPublicKey(Accounts.account1.publicKey);
       should.equal(address3, Accounts.account1.address);
-      const address4 = await utils.getAddressFromPublicKey(Accounts.account1.publicKey);
+      const address4 = utils.getAddressFromPublicKey(Accounts.account1.publicKey);
       should.equal(address4, Accounts.account1.address);
-      const address5 = await utils.getAddressFromPublicKey(Accounts.account1.publicKey);
+      const address5 = utils.getAddressFromPublicKey(Accounts.account1.publicKey);
       should.equal(address5, Accounts.account1.address);
-      const address6 = await utils.getAddressFromPublicKey(Accounts.account1.publicKey);
+      const address6 = utils.getAddressFromPublicKey(Accounts.account1.publicKey);
       should.equal(address6, Accounts.account1.address);
     });
 
-    it('should throw an error for an invalid public key', async () => {
-      await should(utils.getAddressFromPublicKey(Accounts.errorsAccounts.account1.publicKey)).be.rejectedWith(
+    it('should throw an error for an invalid public key', () => {
+      (() => utils.getAddressFromPublicKey(Accounts.errorsAccounts.account1.publicKey)).should.throw(
         'Invalid hex-encoded public key format.'
       );
     });
