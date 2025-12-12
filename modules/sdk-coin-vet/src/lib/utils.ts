@@ -26,6 +26,9 @@ import {
   DELEGATE_CLAUSE_METHOD_ID,
   STARGATE_CONTRACT_ADDRESS_TESTNET,
   STARGATE_DELEGATION_ADDRESS_TESTNET,
+  VALIDATOR_REGISTRATION_STAKER_CONTRACT_ADDRESS_MAINNET,
+  VALIDATOR_REGISTRATION_STAKER_CONTRACT_ADDRESS_TESTNET,
+  ADD_VALIDATION_METHOD_ID,
 } from './constants';
 import { KeyPair } from './keyPair';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
@@ -100,6 +103,8 @@ export class Utils implements BaseUtils {
       return TransactionType.StakingDelegate;
     } else if (clauses[0].data.startsWith(EXIT_DELEGATION_METHOD_ID)) {
       return TransactionType.StakingUnlock;
+    } else if (clauses[0].data.startsWith(ADD_VALIDATION_METHOD_ID)) {
+      return TransactionType.StakingLock;
     } else if (clauses[0].data.startsWith(BURN_NFT_METHOD_ID)) {
       return TransactionType.StakingWithdraw;
     } else if (
@@ -259,6 +264,28 @@ export class Utils implements BaseUtils {
   }
 
   /**
+   * Decodes add validation transaction data to extract validator address and staking period
+   *
+   * @param {string} data - The encoded transaction data
+   * @returns {object} - Object containing validator address and staking period
+   */
+  decodeAddValidationData(data: string): { validator: string; period: number } {
+    try {
+      const parameters = data.slice(10);
+
+      // Decode using ethereumjs-abi directly
+      const decoded = EthereumAbi.rawDecode(['address', 'uint32'], Buffer.from(parameters, 'hex'));
+
+      return {
+        validator: addHexPrefix(decoded[0].toString()).toLowerCase(),
+        period: Number(decoded[1]),
+      };
+    } catch (error) {
+      throw new Error(`Failed to decode add validation data: ${error.message}`);
+    }
+  }
+
+  /**
    * Decodes exit delegation transaction data to extract tokenId
    *
    * @param {string} data - The encoded exit delegation method call data
@@ -319,6 +346,18 @@ export class Utils implements BaseUtils {
   }
 
   /**
+   * Get the network-appropriate contract address for validator registration
+   * @param {CoinConfig} coinConfig - The coin configuration object
+   * @returns {string} The contract address for the network
+   */
+  getContractAddressForValidatorRegistration(coinConfig: Readonly<CoinConfig>): string {
+    const isTestnet = coinConfig.network.type === 'testnet';
+    return isTestnet
+      ? VALIDATOR_REGISTRATION_STAKER_CONTRACT_ADDRESS_TESTNET
+      : VALIDATOR_REGISTRATION_STAKER_CONTRACT_ADDRESS_MAINNET;
+  }
+
+  /**
    * Check if an address is a valid delegation contract address for any network
    * @param {string} address - The address to check
    * @returns {boolean} True if the address is a delegation contract address
@@ -354,6 +393,21 @@ export class Utils implements BaseUtils {
     if (address.toLowerCase() !== expectedAddress.toLowerCase()) {
       throw new Error(
         `Invalid staking contract address. Expected ${expectedAddress} for ${coinConfig.network.type}, got ${address}`
+      );
+    }
+  }
+
+  /**
+   * Validate that the contract address matches the expected stargate address for the network
+   * @param {string} address - The contract address to validate
+   * @param {CoinConfig} coinConfig - The coin configuration object
+   * @throws {Error} If the address doesn't match the expected contract address
+   */
+  validateContractAddressForValidatorRegistration(address: string, coinConfig: Readonly<CoinConfig>): void {
+    const expectedAddress = this.getContractAddressForValidatorRegistration(coinConfig);
+    if (address.toLowerCase() !== expectedAddress.toLowerCase()) {
+      throw new Error(
+        `Invalid contract address for validator registration. Expected ${expectedAddress} for ${coinConfig.network.type}, got ${address}`
       );
     }
   }

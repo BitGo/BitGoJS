@@ -14,6 +14,7 @@ export { ExitDelegationTransaction } from './transaction/exitDelegation';
 export { BurnNftTransaction } from './transaction/burnNftTransaction';
 export { ClaimRewardsTransaction } from './transaction/claimRewards';
 export { NFTTransaction } from './transaction/nftTransaction';
+export { ValidatorRegistrationTransaction } from './transaction/validatorRegistrationTransaction';
 export { TransactionBuilder } from './transactionBuilder/transactionBuilder';
 export { TransferBuilder } from './transactionBuilder/transferBuilder';
 export { AddressInitializationBuilder } from './transactionBuilder/addressInitializationBuilder';
@@ -25,5 +26,6 @@ export { NFTTransactionBuilder } from './transactionBuilder/nftTransactionBuilde
 export { BurnNftBuilder } from './transactionBuilder/burnNftBuilder';
 export { ExitDelegationBuilder } from './transactionBuilder/exitDelegationBuilder';
 export { ClaimRewardsBuilder } from './transactionBuilder/claimRewardsBuilder';
+export { ValidatorRegistrationBuilder } from './transactionBuilder/validatorRegistrationBuilder';
 export { TransactionBuilderFactory } from './transactionBuilderFactory';
 export { Constants, Utils, Interface };
