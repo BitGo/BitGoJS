@@ -90,6 +90,10 @@ export interface Erc20ConstructorOptions extends AccountConstructorOptions {
   contractAddress: string;
 }
 
+export interface Erc721ConstructorOptions extends AccountConstructorOptions {
+  contractAddress: string;
+}
+
 export interface NFTCollectionIdConstructorOptions extends AccountConstructorOptions {
   nftCollectionId: string;
 }
@@ -426,6 +430,12 @@ export class SolCoin extends AccountCoinToken {
 
 export class EthLikeERC20Token extends ContractAddressDefinedToken {
   constructor(options: Erc20ConstructorOptions) {
+    super(options);
+  }
+}
+
+export class EthLikeERC721Token extends ContractAddressDefinedToken {
+  constructor(options: Erc721ConstructorOptions) {
     super(options);
   }
 }
@@ -885,6 +895,49 @@ export function erc20Token(
       contractAddress,
       decimalPlaces,
       asset,
+      features,
+      prefix,
+      suffix,
+      primaryKeyCurve,
+      isToken: true,
+      baseUnit: BaseUnit.ETH,
+    })
+  );
+}
+
+/**
+ * Factory function for erc721 token instances.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param contractAddress Contract address of this token
+ * @param network network
+ * @param features Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param prefix Optional token prefix
+ * @param suffix Optional token suffix
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function erc721Token(
+  id: string,
+  name: string,
+  fullName: string,
+  contractAddress: string,
+  network: AccountNetwork,
+  features: CoinFeature[] = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.EIP1559],
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
+): Readonly<EthLikeERC721Token> {
+  return Object.freeze(
+    new EthLikeERC721Token({
+      id,
+      name,
+      fullName,
+      network,
+      contractAddress,
+      decimalPlaces: 0, // ERC721 tokens are non-divisible
+      asset: UnderlyingAsset.ERC721,
       features,
       prefix,
       suffix,

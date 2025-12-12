@@ -55,6 +55,7 @@ describe('Coins', () => {
       CosmosSharedCoin: 1,
       VetToken: 1,
       EthLikeErc20Token: 1,
+      EthLikeErc721Token: 1,
       HashToken: 1,
       FlrToken: 1,
       JettonToken: 1,
