@@ -1303,7 +1303,12 @@ describe('create token map using config details', () => {
   it('should create ERC721 tokens for all coins supporting ERC721 using createToken', () => {
     // Get all ERC721 token configs from allCoinsAndTokens that support ERC721
     const erc721TokenConfigs = allCoinsAndTokens
-      .filter((coin) => coin.isToken && coins.get(coin.family).features.includes(CoinFeature.SUPPORTS_ERC721))
+      .filter(
+        (coin) =>
+          coin.isToken &&
+          coins.get(coin.family).features.includes(CoinFeature.SUPPORTS_ERC721) &&
+          coin.asset === UnderlyingAsset.ERC721
+      )
       .map((coin) => coin);
 
     for (const tokenConfig of erc721TokenConfigs) {
