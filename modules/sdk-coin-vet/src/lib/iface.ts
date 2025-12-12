@@ -33,6 +33,7 @@ export interface VetTransactionData {
   autorenew?: boolean; // Autorenew flag for stakeAndDelegate method
   nftCollectionId?: string;
   validatorAddress?: string;
+  stakingPeriod?: number;
 }
 
 export interface VetTransactionExplanation extends BaseTransactionExplanation {
