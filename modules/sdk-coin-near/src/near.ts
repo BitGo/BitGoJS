@@ -18,8 +18,8 @@ import {
   EDDSAMethods,
   EDDSAMethodTypes,
   Environments,
+  InvalidAddressError,
   KeyPair,
-  MethodNotImplementedError,
   MPCAlgorithm,
   MPCRecoveryOptions,
   MPCSweepRecoveryOptions,
@@ -38,7 +38,9 @@ import {
   TokenEnablementConfig,
   TransactionParams,
   TransactionType,
-  VerifyAddressOptions,
+  TssVerifyAddressOptions,
+  UnexpectedAddressError,
+  verifyMPCWalletAddress,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, CoinFamily, coins, Nep141Token, Networks } from '@bitgo/statics';
@@ -80,6 +82,15 @@ export interface NearParseTransactionOptions extends BaseParseTransactionOptions
   feeInfo: {
     fee: string;
   };
+}
+
+/**
+ * Options for verifying NEAR TSS/MPC wallet addresses.
+ * Extends base TssVerifyAddressOptions with NEAR-specific fields.
+ */
+export interface TssVerifyNearAddressOptions extends TssVerifyAddressOptions {
+  /** The root address of the wallet (for root address verification) */
+  rootAddress?: string;
 }
 
 interface TransactionOutput {
@@ -984,8 +995,41 @@ export class Near extends BaseCoin {
     };
   }
 
-  async isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
-    throw new MethodNotImplementedError();
+  /**
+   * Verify if an address belongs to a NEAR wallet using EdDSA TSS MPC derivation.
+   * For NEAR, the address is the public key directly (implicit accounts).
+   *
+   * @param {TssVerifyAddressOptions} params - Verification parameters
+   * @returns {Promise<boolean>} True if address belongs to wallet
+   * @throws {InvalidAddressError} If address format is invalid or doesn't match derived address
+   * @throws {Error} If invalid parameters
+   */
+  async isWalletAddress(params: TssVerifyNearAddressOptions): Promise<boolean> {
+    const { address, rootAddress } = params;
+
+    if (!this.isValidAddress(address)) {
+      throw new InvalidAddressError(`invalid address: ${address}`);
+    }
+
+    const isVerifyingRootAddress = rootAddress && address === rootAddress;
+    if (isVerifyingRootAddress) {
+      const index = typeof params.index === 'string' ? parseInt(params.index, 10) : params.index;
+      if (index !== 0) {
+        throw new Error(`Root address verification requires index 0, but got index ${params.index}.`);
+      }
+    }
+
+    const result = await verifyMPCWalletAddress(
+      { ...params, keyCurve: 'ed25519' },
+      this.isValidAddress.bind(this),
+      (pubKey) => pubKey
+    );
+
+    if (!result) {
+      throw new UnexpectedAddressError(`address validation failure: address ${address} is not a wallet address`);
+    }
+
+    return true;
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
