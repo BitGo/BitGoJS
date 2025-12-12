@@ -1,0 +1,6 @@
+require:
+  - ts-node/register
+  - source-map-support/register
+spec: 'test/unit/**/*.ts'
+timeout: 10000
+reporter: min

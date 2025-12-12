@@ -135,6 +135,7 @@
 /modules/statics/src/utxo.ts @BitGo/btc-team
 /modules/web-demo/ @BitGo/coins @BitGo/web-experience @BitGo/wallet-core @BitGo/wallet-core-india
 /scripts/ @BitGo/coins @BitGo/web-experience @BitGo/wallet-core @BitGo/wallet-core-india @BitGo/developer-experience
+/scripts/sdk-coin-generator-v2/ @BitGo/ethalt-team
 /types/ @BitGo/coins @BitGo/web-experience @BitGo/wallet-core @BitGo/wallet-core-india
 /webpack/ @BitGo/coins @BitGo/web-experience @BitGo/wallet-core @BitGo/wallet-core-india
 
