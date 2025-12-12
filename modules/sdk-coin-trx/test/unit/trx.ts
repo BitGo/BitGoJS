@@ -21,6 +21,27 @@ describe('TRON:', function () {
 
   let basecoin;
 
+  // Test data from wallet 693b011a3ec26986f569b02140c7627e
+  const testWalletData = {
+    rootAddress: 'TAf36b36eqoMCzJJm3jwSsP81UvkMxrPbi',
+    receiveAddress: 'TFaD6DeKFMcBuGuDD7LbbqxTnKunhXfdya',
+    receiveAddressIndex: 2,
+    keychains: [
+      {
+        id: '693b0110271fc3f5749754097793bb8d',
+        pub: 'xpub661MyMwAqRbcFsVAdZyN2m8p21WHXg8NRNkqKApyS5gwmFsPdRTrmHYCnzR9vYe8DQ4uWGCBcAAsWE3r97HsFS3K2faZ2ejXNhHxdEoAEWC',
+      },
+      {
+        id: '693b011065b9c4674825ce1f849b7bef',
+        pub: 'xpub661MyMwAqRbcErKpZr9ztTFJk6fzXWatMFgRnpXfsjybWBfE9847EVGrHHBsGP8fcnzJmJuevAbPUEpjHTjEEWfYUWNMEDahvssQein848o',
+      },
+      {
+        id: '693b01117c41846abb04818815b89b6c',
+        pub: 'xpub661MyMwAqRbcFqZd7XU9DFW4f29VJzQt7UCA51ypaWa5ymhQ2pRZDTgViw3vZ56PqZ8dj1cracN3fAWhaiG1QKj9mvyt9Cba4nM2tPibNKw',
+      },
+    ],
+  };
+
   before(function () {
     basecoin = bitgo.coin('ttrx');
   });
@@ -610,6 +631,115 @@ describe('TRON:', function () {
       assert.equal(value1.amount, 100000000);
       assert.equal(Utils.getBase58AddressFromHex(value1.owner_address), TestRecoverData.firstReceiveAddress);
       assert.equal(Utils.getBase58AddressFromHex(value1.to_address), TestRecoverData.baseAddress);
+    });
+  });
+
+  describe('isWalletAddress', () => {
+    it('should verify root address (index 0)', async function () {
+      const result = await basecoin.isWalletAddress({
+        address: testWalletData.rootAddress,
+        keychains: testWalletData.keychains,
+        index: 0,
+      });
+      assert.equal(result, true);
+    });
+
+    it('should verify receive address (index > 0)', async function () {
+      const result = await basecoin.isWalletAddress({
+        address: testWalletData.receiveAddress,
+        keychains: testWalletData.keychains,
+        index: testWalletData.receiveAddressIndex,
+        chain: 0,
+      });
+      assert.equal(result, true);
+    });
+
+    it('should verify address with index in coinSpecific', async function () {
+      const result = await basecoin.isWalletAddress({
+        address: testWalletData.rootAddress,
+        keychains: testWalletData.keychains,
+        coinSpecific: { index: 0 },
+      });
+      assert.equal(result, true);
+    });
+
+    it('should verify address with string index', async function () {
+      const result = await basecoin.isWalletAddress({
+        address: testWalletData.rootAddress,
+        keychains: testWalletData.keychains,
+        index: '0',
+      });
+      assert.equal(result, true);
+    });
+
+    it('should return false for wrong address at index 0', async function () {
+      const result = await basecoin.isWalletAddress({
+        address: testWalletData.receiveAddress, // wrong address for index 0
+        keychains: testWalletData.keychains,
+        index: 0,
+      });
+      assert.equal(result, false);
+    });
+
+    it('should return false for wrong address at receive index', async function () {
+      const result = await basecoin.isWalletAddress({
+        address: testWalletData.rootAddress, // wrong address for index 1
+        keychains: testWalletData.keychains,
+        index: testWalletData.receiveAddressIndex,
+        chain: 0,
+      });
+      assert.equal(result, false);
+    });
+
+    it('should throw for invalid address', async function () {
+      await assert.rejects(
+        basecoin.isWalletAddress({
+          address: 'invalid-address',
+          keychains: testWalletData.keychains,
+          index: 0,
+        }),
+        {
+          message: 'Invalid address: invalid-address',
+        }
+      );
+    });
+
+    it('should throw for missing index', async function () {
+      await assert.rejects(
+        basecoin.isWalletAddress({
+          address: testWalletData.rootAddress,
+          keychains: testWalletData.keychains,
+        }),
+        {
+          message: 'Invalid or missing index for address verification',
+        }
+      );
+    });
+
+    it('should throw for missing bitgo key on root address verification', async function () {
+      await assert.rejects(
+        basecoin.isWalletAddress({
+          address: testWalletData.rootAddress,
+          keychains: testWalletData.keychains.slice(0, 2), // only user and backup keys
+          index: 0,
+        }),
+        {
+          message: 'BitGo public key required for root address verification',
+        }
+      );
+    });
+
+    it('should throw for missing user key on receive address verification', async function () {
+      await assert.rejects(
+        basecoin.isWalletAddress({
+          address: testWalletData.receiveAddress,
+          keychains: [], // no keys
+          index: testWalletData.receiveAddressIndex,
+        }),
+        {
+          message: 'User public key required for receive address verification',
+        }
+      );
     });
   });
 });
