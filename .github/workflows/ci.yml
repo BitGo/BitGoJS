@@ -14,6 +14,9 @@ permissions:
   contents: read
   pull-requests: read
 
+env:
+  SOCKET_SECURITY_MODE: monitor  # Options: monitor (non-blocking) or block (fails on vulnerabilities)
+
 jobs:
   unit-test:
     runs-on: ubuntu-latest
@@ -24,6 +27,10 @@ jobs:
         node-version: [20.x, 22.x, 24.x]
 
     steps:
+      - uses: socketdev/action@v1
+        with:
+          mode: firewall-free
+
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           ref: ${{ github.event.pull_request.head.sha }}
@@ -58,7 +65,7 @@ jobs:
 
       - name: Install Packages
         if: steps.lerna-cache.outputs.cache-hit != 'true' || contains( github.event.pull_request.labels.*.name, 'SKIP_CACHE')
-        run: yarn install --with-frozen-lockfile --ignore-scripts
+        run: sfw yarn install --with-frozen-lockfile --ignore-scripts
 
       - name: Check In-Repo Package Versions
         run: yarn run check-versions
@@ -90,6 +97,10 @@ jobs:
         check: ['lint', 'format', 'commit-lint', 'dependencies', 'audit']
 
     steps:
+      - uses: socketdev/action@v1
+        with:
+          mode: firewall-free
+
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           ref: ${{ github.event.pull_request.head.sha }}
@@ -110,7 +121,7 @@ jobs:
 
       - name: Install Packages
         if: steps.lerna-cache.outputs.cache-hit != 'true' || contains( github.event.pull_request.labels.*.name, 'SKIP_CACHE')
-        run: yarn install --with-frozen-lockfile --ignore-scripts
+        run: sfw yarn install --with-frozen-lockfile --ignore-scripts
 
       - name: Lint Source Code
         if: matrix.check == 'lint'
@@ -138,6 +149,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: socketdev/action@v1
+        with:
+          mode: firewall-free
+
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Setup node 22
@@ -156,7 +171,7 @@ jobs:
 
       - name: Install Packages
         if: steps.lerna-cache.outputs.cache-hit != 'true'
-        run: yarn install --with-frozen-lockfile --ignore-scripts
+        run: sfw yarn install --with-frozen-lockfile --ignore-scripts
 
       - name: build packages
         env:
@@ -175,6 +190,10 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
+      - uses: socketdev/action@v1
+        with:
+          mode: firewall-free
+
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
         with:
           ref: ${{ github.event.pull_request.head.sha }}
@@ -249,7 +268,7 @@ jobs:
 
       - name: Install Packages
         if: steps.lerna-cache.outputs.cache-hit != 'true' || contains( github.event.pull_request.labels.*.name, 'SKIP_CACHE')
-        run: yarn install --with-frozen-lockfile
+        run: sfw yarn install --with-frozen-lockfile
 
       - name: build packages
         if: steps.lerna-cache.outputs.cache-hit == 'true'
@@ -295,6 +314,7 @@ jobs:
             VERSION=${{ steps.build-info.outputs.version }}
             BUILD_DATE=${{ steps.build-info.outputs.date }}
             GIT_HASH=${{ github.sha }}
+            SOCKET_SECURITY_MODE=${{ env.SOCKET_SECURITY_MODE }}
 
       - name: Test Express Docker image
         id: docker-test
@@ -338,6 +358,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: socketdev/action@v1
+        with:
+          mode: firewall-free
+
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
         with:
           ref: ${{ github.event.pull_request.head.sha }}
@@ -358,7 +382,7 @@ jobs:
 
       - name: Install Packages
         if: steps.lerna-cache.outputs.cache-hit != 'true' || contains( github.event.pull_request.labels.*.name, 'SKIP_CACHE')
-        run: yarn install --with-frozen-lockfile --ignore-scripts
+        run: sfw yarn install --with-frozen-lockfile --ignore-scripts
 
       - name: Check Dockerfile is up to date
         run: |
