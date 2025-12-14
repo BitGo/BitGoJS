@@ -41,10 +41,18 @@
   },
   "dependencies": {
     "@bitgo/abstract-eth": "^24.19.2",
+    "@bitgo/sdk-coin-eth": "^25.4.3",
+    "@bitgo/sdk-coin-flrp": "^1.5.0",
     "@bitgo/sdk-core": "^36.23.2",
+    "@bitgo/secp256k1": "^1.7.0",
     "@bitgo/statics": "^58.17.0",
     "@ethereumjs/common": "^2.6.5",
-    "@ethereumjs/tx": "^3.3.0"
+    "@ethereumjs/tx": "^3.3.0",
+    "bignumber.js": "^9.0.0",
+    "ethereumjs-util": "7.1.5",
+    "keccak": "^3.0.0",
+    "lodash": "^4.17.21",
+    "secp256k1": "^5.0.0"
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.72.0",
