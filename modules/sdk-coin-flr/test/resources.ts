@@ -90,3 +90,41 @@ export const mockDataNonBitGoRecovery = {
   getBalanceRequest: getBalanceRequestNonBitGoRecovery,
   getBalanceResponse: getBalanceResponseNonBitGoRecovery,
 };
+
+/**
+ * Test data for Export C to P transactions
+ * Based on actual FlrP ExportInC transaction format
+ */
+export const EXPORT_C_TEST_DATA = {
+  // P-chain address format for Flare (testnet uses costwo prefix)
+  pAddresses: [
+    'P-costwo1zt9n96hey4fsvnde35n3k4kt5pu7c784dzewzd',
+    'P-costwo1cwrdtrgf4xh80ncu7palrjw7gn4mpj0n4dxghh',
+    'P-costwo15msvr27szvhhpmah0c38gcml7vm29xjh7tcek8',
+  ],
+  // Multisig P-chain address (tilde-separated)
+  pMultisigAddress:
+    'P-costwo1zt9n96hey4fsvnde35n3k4kt5pu7c784dzewzd~P-costwo1cwrdtrgf4xh80ncu7palrjw7gn4mpj0n4dxghh~P-costwo15msvr27szvhhpmah0c38gcml7vm29xjh7tcek8',
+  // C-chain hex address
+  cHexAddress: '0x28A05933dC76e4e6c25f35D5c9b2A58769700E76',
+  // Amount in nanoFLR (0.00005 FLR = 50000000 nanoFLR)
+  amount: '50000000',
+  // Transaction nonce
+  nonce: 9,
+  // Multisig threshold
+  threshold: 2,
+  // Fee in nanoFLR
+  fee: '281750',
+  // Target chain ID (P-chain)
+  targetChainId: '11111111111111111111111111111111LpoYY',
+  // Transaction hash
+  txhash: 'KELMR2gmYpRUeXRyuimp1xLNUoHSkwNUURwBn4v1D4aKircKR',
+  // Unsigned transaction hex (Export from C to P)
+  unsignedTxHex:
+    '0x0000000000010000007278db5c30bed04c05ce209179812850bbb3fe6d46d7eef3744d814c0da555247900000000000000000000000000000000000000000000000000000000000000000000000128a05933dc76e4e6c25f35d5c9b2a58769700e760000000002ff3d1658734f94af871c3d131b56131b6fb7a0291eacadd261e69dfb42a9cdf6f7fddd00000000000000090000000158734f94af871c3d131b56131b6fb7a0291eacadd261e69dfb42a9cdf6f7fddd000000070000000002faf0800000000000000000000000020000000312cb32eaf92553064db98d271b56cba079ec78f5a6e0c1abd0132f70efb77e2274637ff336a29a57c386d58d09a9ae77cf1cf07bf1c9de44ebb0c9f3',
+  // Signed transaction hex
+  fullsigntxHex:
+    '0x0000000000010000007278db5c30bed04c05ce209179812850bbb3fe6d46d7eef3744d814c0da555247900000000000000000000000000000000000000000000000000000000000000000000000128a05933dc76e4e6c25f35d5c9b2a58769700e760000000002ff3d1658734f94af871c3d131b56131b6fb7a0291eacadd261e69dfb42a9cdf6f7fddd00000000000000090000000158734f94af871c3d131b56131b6fb7a0291eacadd261e69dfb42a9cdf6f7fddd000000070000000002faf0800000000000000000000000020000000312cb32eaf92553064db98d271b56cba079ec78f5a6e0c1abd0132f70efb77e2274637ff336a29a57c386d58d09a9ae77cf1cf07bf1c9de44ebb0c9f300000001000000090000000133f126dee90108c473af9513ebd9eb1591a701b5dfc69041075b303b858fee0609ca9a60208b46f6836f0baf1a9fba740d97b65d45caae10470b5fa707eb45c900',
+  // Private key for signing
+  privKey: '14977929a4e00e4af1c33545240a6a5a08ca3034214618f6b04b72b80883be3a',
+};
