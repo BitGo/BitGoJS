@@ -1,0 +1,10 @@
+**/*.ts
+!**/*.d.ts
+src
+test
+tsconfig.json
+tslint.json
+.gitignore
+.eslintignore
+.mocharc.yml
+.prettierignore
