@@ -146,3 +146,21 @@ export const signedSingleNominatorWithdrawTransaction = {
     amount: '123400000',
   },
 };
+
+export const signedTonWhalesDepositTransaction = {
+  recipient: {
+    //https://testnet.tonscan.org/address/kQDr9Sq482A6ikIUh5mUUjJaBUUJBrye13CJiDB-R31_l7mg
+    address: 'EQDr9Sq482A6ikIUh5mUUjJaBUUJBrye13CJiDB-R31_lwIq',
+    amount: '10000000000', // 10 TON
+  },
+  // This is the raw TX from sandboxing a deposit to Ton Whales
+  tx: 'te6cckEBAgEAvAAB4YgAyB87FgBG4jQNUAYzcmw2aJG9QQeQmtOPGsRPvX+eMdwFf6OLyGMsPoPXNPLUqMoUZTIrdu2maNNUK52q+Wa0BJhNq9e/qHXYsF9xU5TYbOsZt1EBGJf1GpkumdgXj0/4CU1NGLtKFdHwAAAC4AAcAQCLYgB1+pVcebAdRSEKQ8zKKRktAqKEg15Pa7hExBg/I76/y6gSoF8gAAAAAAAAAAAAAAAAAAB7zR/vAAAAAGlCugJDuaygCErRw2Y=',
+  seqno: 92,
+  queryId: '000000006942ba02',
+  expireTime: 1765980734,
+  sender: 'EQBkD52LACNxGgaoAxm5Nhs0SN6gg8hNaceNYifev88Y7qoZ',
+  publicKey: '9d6d3714aeb1f007f6e6aa728f79fdd005ea2c7ad459b2f54d73f9e672426230',
+  signature:
+    'aff471790c6587d07ae69e5a9519428ca6456eddb4cd1a6a8573b55f2cd6809309b57af7f50ebb160bee2a729b0d9d6336ea202312fea35325d33b02f1e9ff01',
+  bounceable: true,
+};
