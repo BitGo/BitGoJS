@@ -1,0 +1,49 @@
+import { KeyPair } from '../../src/lib';
+import should from 'should';
+
+describe('Tempo KeyPair', function () {
+  describe('Key Generation', function () {
+    it('should generate a valid keypair without a seed', function () {
+      const keyPair = new KeyPair();
+      const keys = keyPair.getKeys();
+
+      should.exist(keys.prv);
+      should.exist(keys.pub);
+      should(keys.prv).be.a.String();
+      keys.pub.should.be.a.String();
+    });
+
+    it('should generate a valid keypair with a seed', function () {
+      const seed = Buffer.from('0'.repeat(64), 'hex');
+      const keyPair = new KeyPair({ seed });
+      const keys = keyPair.getKeys();
+
+      should.exist(keys.prv);
+      should.exist(keys.pub);
+      should(keys.prv).be.a.String();
+      keys.pub.should.be.a.String();
+    });
+
+    it('should generate the same keypair with the same seed', function () {
+      const seed = Buffer.from('0'.repeat(64), 'hex');
+      const keyPair1 = new KeyPair({ seed });
+      const keyPair2 = new KeyPair({ seed });
+
+      const keys1 = keyPair1.getKeys();
+      const keys2 = keyPair2.getKeys();
+
+      should.exist(keys1.prv);
+      should.exist(keys2.prv);
+      should(keys1.prv).equal(keys2.prv);
+      keys1.pub.should.equal(keys2.pub);
+    });
+
+    it('should generate an address from the keypair', function () {
+      const keyPair = new KeyPair();
+      const address = keyPair.getAddress();
+
+      address.should.be.a.String();
+      address.length.should.be.greaterThan(0);
+    });
+  });
+});
