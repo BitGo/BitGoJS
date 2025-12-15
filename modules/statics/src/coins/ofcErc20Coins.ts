@@ -4670,6 +4670,9 @@ export const tOfcErc20Coins = [
     18,
     underlyingAssetForSymbol('xdc:weth')
   ),
+
+  // Story Network tokens
+  ofcerc20('452cc4f6-3c77-4193-a572-4b0d0f838c3c', 'ofcip:aria', 'Aria', 18, underlyingAssetForSymbol('ip:aria')),
 ];
 
 function underlyingAssetForSymbol(underlyingAssetValue: string): UnderlyingAsset {
