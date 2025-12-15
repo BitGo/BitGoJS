@@ -2451,7 +2451,7 @@ export const allCoinsAndTokens = [
     18, // 1 VET = 10^18 wei
     UnderlyingAsset.VET,
     BaseUnit.ETH, // The smallest unit of VET, similar to Ethereum, is called 'wei'.
-    VET_FEATURES,
+    [...VET_FEATURES, CoinFeature.STAKING],
     KeyCurve.Secp256k1,
     80,
     200,

@@ -40,12 +40,12 @@
     ]
   },
   "dependencies": {
-    "@bitgo/sdk-core": "^36.23.1",
-    "@bitgo/statics": "^58.16.1"
+    "@bitgo/sdk-core": "^36.23.2",
+    "@bitgo/statics": "^58.17.0"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.71.9",
-    "@bitgo/sdk-test": "^9.1.17"
+    "@bitgo/sdk-api": "^1.72.0",
+    "@bitgo/sdk-test": "^9.1.18"
   },
   "files": [
     "dist"
