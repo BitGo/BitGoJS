@@ -106,7 +106,7 @@ export class Tempo extends BaseCoin {
    */
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
     // TODO: Implement transaction verification
-    throw new Error('Method not implemented.');
+    return false;
   }
 
   /**
@@ -115,7 +115,7 @@ export class Tempo extends BaseCoin {
    */
   async isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
     // TODO: Implement address verification
-    throw new Error('Method not implemented.');
+    return false;
   }
 
   /**
@@ -134,7 +134,7 @@ export class Tempo extends BaseCoin {
    */
   async parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
     // TODO: Implement transaction parsing
-    throw new Error('Method not implemented.');
+    return {} as ParsedTransaction;
   }
 
   /**
@@ -143,7 +143,7 @@ export class Tempo extends BaseCoin {
    */
   async explainTransaction(params: Record<string, unknown>): Promise<TransactionExplanation> {
     // TODO: Implement transaction explanation
-    throw new Error('Method not implemented.');
+    return {} as TransactionExplanation;
   }
 
   /**
@@ -152,6 +152,6 @@ export class Tempo extends BaseCoin {
    */
   async signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
     // TODO: Implement transaction signing
-    throw new Error('Method not implemented.');
+    return {} as SignedTransaction;
   }
 }
