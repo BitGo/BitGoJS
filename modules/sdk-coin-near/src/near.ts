@@ -18,7 +18,6 @@ import {
   EDDSAMethods,
   EDDSAMethodTypes,
   Environments,
-  InvalidAddressError,
   KeyPair,
   MPCAlgorithm,
   MPCRecoveryOptions,
@@ -40,7 +39,7 @@ import {
   TransactionType,
   TssVerifyAddressOptions,
   UnexpectedAddressError,
-  verifyMPCWalletAddress,
+  verifyEddsaTssWalletAddress,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, CoinFamily, coins, Nep141Token, Networks } from '@bitgo/statics';
@@ -996,21 +995,18 @@ export class Near extends BaseCoin {
   }
 
   /**
-   * Verify if an address belongs to a NEAR wallet using EdDSA TSS MPC derivation.
+   * Verifies if the given address belongs to a TSS wallet for NEAR.
    * For NEAR, the address is the public key directly (implicit accounts).
    *
-   * @param {TssVerifyAddressOptions} params - Verification parameters
+   * @param {TssVerifyNearAddressOptions} params - Verification parameters
    * @returns {Promise<boolean>} True if address belongs to wallet
-   * @throws {InvalidAddressError} If address format is invalid or doesn't match derived address
-   * @throws {Error} If invalid parameters
+   * @throws {UnexpectedAddressError} If address doesn't match derived address
+   * @throws {Error} If invalid parameters or root address verification with wrong index
    */
   async isWalletAddress(params: TssVerifyNearAddressOptions): Promise<boolean> {
     const { address, rootAddress } = params;
 
-    if (!this.isValidAddress(address)) {
-      throw new InvalidAddressError(`invalid address: ${address}`);
-    }
-
+    // Root address verification requires index 0
     const isVerifyingRootAddress = rootAddress && address === rootAddress;
     if (isVerifyingRootAddress) {
       const index = typeof params.index === 'string' ? parseInt(params.index, 10) : params.index;
@@ -1019,14 +1015,14 @@ export class Near extends BaseCoin {
       }
     }
 
-    const result = await verifyMPCWalletAddress(
-      { ...params, keyCurve: 'ed25519' },
-      this.isValidAddress.bind(this),
-      (pubKey) => pubKey
+    const result = await verifyEddsaTssWalletAddress(
+      params,
+      (address) => this.isValidAddress(address),
+      (publicKey) => publicKey
     );
 
     if (!result) {
-      throw new UnexpectedAddressError(`address validation failure: address ${address} is not a wallet address`);
+      throw new UnexpectedAddressError(`address validation failure: address ${params.address} is not a wallet address`);
     }
 
     return true;
