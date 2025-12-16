@@ -202,6 +202,8 @@ export const expectedColdFeatures = {
   ],
   neither: [
     'ethw',
+    'fantom',
+    'tfantom',
     'opbnb',
     'topbnb',
     'fiataed',

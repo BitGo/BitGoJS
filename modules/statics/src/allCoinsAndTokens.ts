@@ -448,6 +448,26 @@ export const allCoinsAndTokens = [
     [...ETH_FEATURES, CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA, CoinFeature.EIP1559]
   ),
   account(
+    'a97b6e81-33fb-4f63-83b6-7ca91e95f8b4',
+    'tfantom',
+    'Fantom Testnet',
+    Networks.test.fantom,
+    18,
+    UnderlyingAsset.FANTOM,
+    BaseUnit.ETH,
+    [...ETH_FEATURES, CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA, CoinFeature.EIP1559]
+  ),
+  account(
+    '06178542-d2e1-4626-bd46-6a4aaa45415e',
+    'fantom',
+    'Fantom Mainnet',
+    Networks.main.fantom,
+    18,
+    UnderlyingAsset.FANTOM,
+    BaseUnit.ETH,
+    [...ETH_FEATURES, CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA, CoinFeature.EIP1559]
+  ),
+  account(
     'ffc472f5-27c6-49f8-ad9a-f57659258fb9',
     'etc',
     'Ethereum Classic',
