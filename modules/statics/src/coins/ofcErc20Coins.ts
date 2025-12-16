@@ -4501,6 +4501,16 @@ export const tOfcErc20Coins = [
     UnderlyingAsset['baseeth:soon']
   ),
 
+  ofcerc20('c2c6b14c-62e8-4dc1-9b8e-63e8fc5c7ab6', 'ofcbaseeth:wave', 'Waveform', 18, UnderlyingAsset['baseeth:wave']),
+
+  ofcerc20(
+    'd20cc76e-1384-4261-9d90-df2d6a87b3d0',
+    'ofchype:hwhype',
+    'Hyperwave HYPE',
+    18,
+    UnderlyingAsset['hype:hwhype']
+  ),
+
   ofcerc20(
     'e3c6f4e5-4d5e-4f2e-8f1a-2c3d4e5f6a7b',
     'ofcbaseeth:tig',
@@ -4593,6 +4603,7 @@ export const tOfcErc20Coins = [
   ofcerc20('c71454e2-c51c-40df-8605-e57f2d97ed53', 'ofceth:yu', 'Yala Stablecoin', 18, UnderlyingAsset['eth:yu']),
   ofcerc20('14912a5e-254c-4c6f-9f9c-f9ce11b7b293', 'ofceth:bard', 'Lombard', 18, UnderlyingAsset['eth:bard']),
   ofcerc20('a31a6330-cbd6-49b0-b8b1-a7f9a48e770c', 'ofceth:sfp', 'SafePal Token', 18, UnderlyingAsset['eth:sfp']),
+  ofcerc20('60f825f0-ed18-46b2-a03f-fd93b5e94f43', 'ofceth:aztec', 'Aztec', 18, UnderlyingAsset['eth:aztec']),
   ofcerc20('72427813-ec17-4100-8d6d-844a3f71f34e', 'ofceth:fbtc', 'Function Bitcoin', 8, UnderlyingAsset['eth:fbtc']),
   ofcerc20(
     'e050aeab-a9c9-4962-b42f-d350c88efb37',

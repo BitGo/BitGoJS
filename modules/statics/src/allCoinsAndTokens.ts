@@ -2509,6 +2509,15 @@ export const allCoinsAndTokens = [
     Networks.test.basechain
   ),
   erc20Token(
+    '439fb12d-fddf-4749-8a33-b7c79fefc1b4',
+    'baseeth:wave',
+    'Waveform',
+    18,
+    '0x64712fbdf19ae8b5b3b6d0478750e3d5e1a17718',
+    UnderlyingAsset['baseeth:wave'],
+    Networks.main.basechain
+  ),
+  erc20Token(
     '01c87cfe-3ba2-43db-9712-b37e9af9f422',
     'baseeth:soon',
     'Soon Token',
@@ -2910,6 +2919,17 @@ export const allCoinsAndTokens = [
     '0x2b3370ee501b4a559b57d449569354196457d8ab',
     UnderlyingAsset['thypeevm:usdc'],
     Networks.test.hypeevm
+  ),
+
+  // hypeevm mainnet tokens
+  erc20Token(
+    '062b64cd-5569-41e9-a144-478976fd576f',
+    'hype:hwhype',
+    'Hyperwave HYPE',
+    18,
+    '0x4de03ca1f02591b717495cfa19913ad56a2f5858',
+    UnderlyingAsset['hype:hwhype'],
+    Networks.main.hypeevm
   ),
 
   // Story testnet tokens
@@ -4991,6 +5011,28 @@ export const allCoinsAndTokens = [
     'rK67JczCpaYXVtfw3qJVmqwpSfa1bYTptw::5853474400000000000000000000000000000000',
     'straitsx.com',
     UnderlyingAsset['xrp:xsgd']
+  ),
+  xrpToken(
+    'c9d4f341-72de-41d2-b6dc-5d77e2a3cda0',
+    'xrp:usdc',
+    'USDC',
+    15,
+    'rGm7WCVp9gb4jZHWTEtGUr4dd74z2XuWhE',
+    '5553444300000000000000000000000000000000',
+    'rGm7WCVp9gb4jZHWTEtGUr4dd74z2XuWhE::5553444300000000000000000000000000000000',
+    'circle.com',
+    UnderlyingAsset['xrp:usdc']
+  ),
+  xrpToken(
+    '5067c3e5-51f2-4209-a842-d4450436245a',
+    'xrp:eurcv',
+    'EUR CoinVertible',
+    15,
+    'rUNaS5sqRuxZz6V7rBGhoSaZiVYA3ut4UL',
+    '4555524356000000000000000000000000000000',
+    'rUNaS5sqRuxZz6V7rBGhoSaZiVYA3ut4UL::4555524356000000000000000000000000000000',
+    'xrpl.org',
+    UnderlyingAsset['xrp:eurcv']
   ),
   xrpToken(
     'a47c9171-6cb5-487a-a467-7bc131b93ed3',

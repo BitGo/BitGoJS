@@ -1165,6 +1165,9 @@ export const ofcCoins = [
   ofcsolToken('a4db15b5-41db-4ad9-b69a-88306e8c5dfe', 'ofcsol:soon', 'Soon Token', 9, UnderlyingAsset['sol:soon'], [
     ...SOL_TOKEN_FEATURES,
   ]),
+  ofcsolToken('0f9985a2-da91-4c0e-a683-8108750cc600', 'ofcsol:wylds', 'Hastra wYLDS', 6, UnderlyingAsset['sol:wylds'], [
+    ...SOL_TOKEN_FEATURES,
+  ]),
   ofcsolToken(
     'b08c09fd-73fb-4b7f-8377-72225cd8c256',
     'ofcsol:dupe',
@@ -1516,6 +1519,14 @@ export const ofcCoins = [
     undefined,
     [CoinFeature.STABLECOIN]
   ),
+  ofcXrpToken('da12fc69-9373-4437-ad3c-076df9207379', 'ofcxrp:usdc', 'USDC', 15, UnderlyingAsset['xrp:usdc']),
+  ofcXrpToken(
+    'c9da00b4-ee95-40c2-a96d-e73587bfd4ea',
+    'ofcxrp:eurcv',
+    'EUR CoinVertible',
+    15,
+    UnderlyingAsset['xrp:eurcv']
+  ),
   ofcXrpToken('eb3c02de-7221-4fde-9235-5cc576eb7c8b', 'ofcxrp:xsgd', 'XSGD', 15, UnderlyingAsset['xrp:xsgd']),
   ofcXrpToken(
     '46c75216-5498-4417-b73c-a08c11d693ad',
@@ -1759,6 +1770,13 @@ export const ofcCoins = [
     'Colony Avalanche Index',
     18,
     UnderlyingAsset['avaxc:cai']
+  ),
+  ofcAvaxErc20(
+    'b004de04-767c-440a-8839-715644c81500',
+    'ofcavaxc:arena',
+    'The Arena',
+    18,
+    UnderlyingAsset['avaxc:arena']
   ),
   ofcAvaxErc20(
     '58d7ae4a-296c-4215-b133-01bf553f8500',
@@ -3656,6 +3674,7 @@ export const ofcCoins = [
   ofcTonToken('8977a6f0-0864-4250-a060-6ff385d304f9', 'ofcton:usde', 'Ethena USDe', 6, UnderlyingAsset['ton:usde']),
   ofcTonToken('827bf2c7-a741-406f-9ed4-fb0f3c33b01a', 'ofcton:not', 'Notcoin', 9, UnderlyingAsset['ton:not']),
   ofcTonToken('874a497e-61a8-45b5-abe1-1d9637f49264', 'ofcton:cati', 'Catizen', 9, UnderlyingAsset['ton:cati']),
+  ofcTonToken('e548896b-5867-491e-8a9c-5261f7e3ba69', 'ofcton:ston', 'STON.fi', 9, UnderlyingAsset['ton:ston']),
   ofcTonToken('41ee59d6-2484-429c-aad1-5e79ae766c4b', 'ofcton:dogs', 'Dogs', 9, UnderlyingAsset['ton:dogs']),
   tofcTonToken(
     'e7d516c1-b975-4905-b5d0-8460f6ea7eb9',

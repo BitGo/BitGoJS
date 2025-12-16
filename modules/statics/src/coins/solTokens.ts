@@ -3165,6 +3165,16 @@ export const solTokens = [
     SOL_TOKEN_FEATURES
   ),
   solToken(
+    'dfd33e08-4056-4e3d-a85f-611bb1d14e80',
+    'sol:wylds',
+    'Hastra wYLDS',
+    6,
+    '8fr7WGTVFszfyNWRMXj6fRjZZAnDwmXwEpCrtzmUkdih',
+    '8fr7WGTVFszfyNWRMXj6fRjZZAnDwmXwEpCrtzmUkdih',
+    UnderlyingAsset['sol:wylds'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
     '87922fc0-9a17-4a6f-9820-02a21de69dc4',
     'sol:ponke',
     'PONKE',
