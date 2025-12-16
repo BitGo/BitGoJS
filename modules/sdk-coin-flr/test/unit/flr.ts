@@ -371,6 +371,236 @@ describe('flr', function () {
         .should.be.rejectedWith('coin in txPrebuild did not match that in txParams supplied by client');
     });
 
+    describe('TSS Transaction Verification', function () {
+      it('should verify a TSS transfer transaction without txPrebuild.recipients', async function () {
+        const wallet = new Wallet(bitgo, tflrCoin, {});
+
+        const txParams = {
+          recipients: [{ amount: '100000000000000000', address: '0x4e1e3d4856ad8b33352eb3add5ff12ea3206169a' }],
+          type: 'transfer',
+          isTss: true,
+        };
+
+        // TSS txPrebuild typically has buildParams.recipients but not recipients directly
+        const txPrebuild = {
+          walletId: 'fakeWalletId',
+          txRequestId: 'fake-tx-request-id',
+          txHex:
+            '02f17281d902850ba43b740283061a80944e1e3d4856ad8b33352eb3add5ff12ea3206169a88016345785d8a000080c0808080',
+          buildParams: {
+            apiVersion: 'full',
+            recipients: [{ address: '0x4e1e3d4856ad8b33352eb3add5ff12ea3206169a', amount: '100000000000000000' }],
+            type: 'transfer',
+          },
+          feeInfo: { fee: 10000000000800000, feeString: '10000000000800000' },
+          coin: 'tflr',
+        };
+
+        const verification = {};
+
+        // When walletType is 'tss', it should delegate to parent's verifyTransaction
+        // which handles TSS transactions without requiring txPrebuild.recipients
+        const isTransactionVerified = await tflrCoin.verifyTransaction({
+          txParams,
+          txPrebuild: txPrebuild as any,
+          wallet,
+          verification,
+          walletType: 'tss',
+        });
+        isTransactionVerified.should.equal(true);
+      });
+
+      it('should verify TSS consolidation transaction when txPrebuild has consolidateId', async function () {
+        const wallet = new Wallet(bitgo, tflrCoin, {
+          coinSpecific: {
+            baseAddress: '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be',
+          },
+        });
+
+        // txParams without recipients (as in consolidation flow)
+        const txParams = {
+          wallet: wallet,
+          walletPassphrase: 'fakeWalletPassphrase',
+        };
+
+        // txPrebuild with consolidateId (set by server during consolidation build)
+        const txPrebuild = {
+          consolidateId: '68a7d5d0c66e74e216b97173bd558c6d',
+          txHex: '0x',
+          coin: 'tflr',
+          walletId: 'fakeWalletId',
+        };
+
+        const verification = {};
+
+        const isTransactionVerified = await tflrCoin.verifyTransaction({
+          txParams: txParams as any,
+          txPrebuild: txPrebuild as any,
+          wallet,
+          verification,
+          walletType: 'tss',
+        });
+        isTransactionVerified.should.equal(true);
+      });
+
+      it('should verify TSS transaction when txParams.type is consolidate', async function () {
+        const wallet = new Wallet(bitgo, tflrCoin, {
+          coinSpecific: {
+            baseAddress: '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be',
+          },
+        });
+
+        const txParams = {
+          type: 'consolidate',
+          wallet: wallet,
+          walletPassphrase: 'fakeWalletPassphrase',
+        };
+
+        const txPrebuild = {
+          txHex: '0x',
+          coin: 'tflr',
+          walletId: 'fakeWalletId',
+        };
+
+        const verification = {};
+
+        const isTransactionVerified = await tflrCoin.verifyTransaction({
+          txParams: txParams as any,
+          txPrebuild: txPrebuild as any,
+          wallet,
+          verification,
+          walletType: 'tss',
+        });
+        isTransactionVerified.should.equal(true);
+      });
+
+      it('should verify TSS transaction with acceleration type', async function () {
+        const wallet = new Wallet(bitgo, tflrCoin, {
+          coinSpecific: {
+            baseAddress: '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be',
+          },
+        });
+
+        const txParams = {
+          type: 'acceleration',
+          wallet: wallet,
+          walletPassphrase: 'fakeWalletPassphrase',
+        };
+
+        const txPrebuild = {
+          txHex: '0x',
+          coin: 'tflr',
+          walletId: 'fakeWalletId',
+        };
+
+        const verification = {};
+
+        const isTransactionVerified = await tflrCoin.verifyTransaction({
+          txParams: txParams as any,
+          txPrebuild: txPrebuild as any,
+          wallet,
+          verification,
+          walletType: 'tss',
+        });
+        isTransactionVerified.should.equal(true);
+      });
+
+      it('should verify TSS transaction with fillNonce type', async function () {
+        const wallet = new Wallet(bitgo, tflrCoin, {
+          coinSpecific: {
+            baseAddress: '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be',
+          },
+        });
+
+        const txParams = {
+          type: 'fillNonce',
+          wallet: wallet,
+          walletPassphrase: 'fakeWalletPassphrase',
+        };
+
+        const txPrebuild = {
+          txHex: '0x',
+          coin: 'tflr',
+          walletId: 'fakeWalletId',
+        };
+
+        const verification = {};
+
+        const isTransactionVerified = await tflrCoin.verifyTransaction({
+          txParams: txParams as any,
+          txPrebuild: txPrebuild as any,
+          wallet,
+          verification,
+          walletType: 'tss',
+        });
+        isTransactionVerified.should.equal(true);
+      });
+
+      it('should reject TSS transaction without recipients, consolidateId, or valid type', async function () {
+        const wallet = new Wallet(bitgo, tflrCoin, {
+          coinSpecific: {
+            baseAddress: '0x174cfd823af8ce27ed0afee3fcf3c3ba259116be',
+          },
+        });
+
+        const txParams = {
+          wallet: wallet,
+          walletPassphrase: 'fakeWalletPassphrase',
+        };
+
+        const txPrebuild = {
+          txHex: '0x',
+          coin: 'tflr',
+          walletId: 'fakeWalletId',
+        };
+
+        const verification = {};
+
+        await tflrCoin
+          .verifyTransaction({
+            txParams: txParams as any,
+            txPrebuild: txPrebuild as any,
+            wallet,
+            verification,
+            walletType: 'tss',
+          })
+          .should.be.rejectedWith('missing txParams');
+      });
+
+      it('should still use FLR-specific verification for non-TSS wallets', async function () {
+        const wallet = new Wallet(bitgo, tflrCoin, {});
+
+        const txParams = {
+          recipients: [{ amount: '1000000000000', address: '0x1374a2046661f914d1687d85dbbceb9ac7910a29' }],
+          wallet: wallet,
+          walletPassphrase: 'fakeWalletPassphrase',
+        };
+
+        const txPrebuild = {
+          recipients: [{ amount: '1000000000000', address: '0x1374a2046661f914d1687d85dbbceb9ac7910a29' }],
+          nextContractSequenceId: 0,
+          gasPrice: 20000000000,
+          gasLimit: 500000,
+          isBatch: false,
+          coin: 'tflr',
+          walletId: 'fakeWalletId',
+          walletContractAddress: 'fakeWalletContractAddress',
+        };
+
+        const verification = {};
+
+        // Without walletType or with walletType: 'onchain', should use FLR's own verification
+        const isTransactionVerified = await tflrCoin.verifyTransaction({
+          txParams,
+          txPrebuild: txPrebuild as any,
+          wallet,
+          verification,
+          walletType: 'onchain',
+        });
+        isTransactionVerified.should.equal(true);
+      });
+    });
+
     describe('Hop export tx verify', () => {
       const wallet = new Wallet(bitgo, tflrCoin, {});
       const hopDestinationAddress =

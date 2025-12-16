@@ -215,7 +215,13 @@ export class Flr extends AbstractEthLikeNewCoins {
    * @returns {Promise<boolean>}
    */
   async verifyTransaction(params: VerifyFlrTransactionOptions): Promise<boolean> {
-    const { txParams, txPrebuild, wallet } = params;
+    const { txParams, txPrebuild, wallet, walletType } = params;
+
+    // For TSS wallets, use the parent class's TSS-specific verification
+    if (walletType === 'tss') {
+      return super.verifyTransaction(params);
+    }
+
     if (!txParams?.recipients || !txPrebuild?.recipients || !wallet) {
       throw new Error(`missing params`);
     }
