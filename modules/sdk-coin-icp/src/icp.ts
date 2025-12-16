@@ -147,12 +147,6 @@ export class Icp extends BaseCoin {
   /**
    * Verify that an address belongs to this wallet.
    *
-   * For wallet version 1 (memo-based): The address format is `rootAddress?memoId=X`.
-   * We extract the root address and verify it against the commonKeychain at index 0.
-   *
-   * For wallet version 2+: The address is derived directly from the commonKeychain
-   * at the specified index.
-   *
    * @param {TssVerifyIcpAddressOptions} params - Verification parameters
    * @returns {Promise<boolean>} True if address belongs to wallet
    * @throws {InvalidAddressError} If address format is invalid or doesn't match derived address
@@ -166,8 +160,6 @@ export class Icp extends BaseCoin {
     }
 
     let addressToVerify = address;
-    const parsedIndex = typeof params.index === 'string' ? parseInt(params.index, 10) : params.index;
-
     if (walletVersion === 1) {
       if (!rootAddress) {
         throw new Error('rootAddress is required for wallet version 1');
@@ -182,8 +174,6 @@ export class Icp extends BaseCoin {
         );
       }
       addressToVerify = rootAddress;
-    } else if (rootAddress && address.toLowerCase() === rootAddress.toLowerCase() && parsedIndex !== 0) {
-      throw new Error(`Root address verification requires index 0, but got index ${params.index}`);
     }
 
     const indexToVerify = walletVersion === 1 ? 0 : params.index;

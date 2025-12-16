@@ -415,20 +415,6 @@ describe('Internet computer', function () {
         await basecoin.isWalletAddress(params).should.be.rejectedWith('missing required param keychains');
       });
 
-      it('should throw error when verifying root address with wrong index', async function () {
-        const params = {
-          address: addressVerificationData.rootAddress,
-          rootAddress: addressVerificationData.rootAddress,
-          keychains: keychains,
-          index: 1,
-          walletVersion: 2,
-        };
-
-        await basecoin
-          .isWalletAddress(params)
-          .should.be.rejectedWith('Root address verification requires index 0, but got index 1');
-      });
-
       it('should handle string index', async function () {
         const params = {
           address: addressVerificationData.rootAddress,
