@@ -11,12 +11,130 @@ describe('Tao:', function () {
   let bitgo: TestBitGoAPI;
   let baseCoin;
 
+  // Test data from wallet 694042b5efbee757e47ec2771cf58a45
+  const isWalletAddressTestData = {
+    commonKeychain:
+      '6e2235aee215f3909b42bf67c360f5bc6ba7087cbf0ed5ba841dd044ae7c3051722f9be974e8e79fa6c4c93d109dbc618672e36571925df0b5a7c5b015bcd382',
+    rootAddress: '5GU55E8X2YVSpd4LApeJR5RsXwQ8AnPdjM37Qz1drLTKh7as',
+    receiveAddress: '5EN6LFnhFRtWiwZfFncqBxaNUabTASKnSxoDt2zQvpVX4qVy',
+    receiveAddressIndex: 1,
+  };
+
   before(function () {
     bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
     bitgo.safeRegister('tao', Tao.createInstance);
     bitgo.safeRegister('ttao', Ttao.createInstance);
     bitgo.initializeTestVars();
     baseCoin = bitgo.coin('ttao') as Ttao;
+  });
+
+  describe('isWalletAddress', function () {
+    it('should verify root address (index 0)', async function () {
+      const keychains = [
+        { commonKeychain: isWalletAddressTestData.commonKeychain },
+        { commonKeychain: isWalletAddressTestData.commonKeychain },
+        { commonKeychain: isWalletAddressTestData.commonKeychain },
+      ];
+
+      const result = await baseCoin.isWalletAddress({
+        address: isWalletAddressTestData.rootAddress,
+        keychains,
+        index: 0,
+      });
+
+      result.should.be.true();
+    });
+
+    it('should verify receive address (index > 0)', async function () {
+      const keychains = [
+        { commonKeychain: isWalletAddressTestData.commonKeychain },
+        { commonKeychain: isWalletAddressTestData.commonKeychain },
+        { commonKeychain: isWalletAddressTestData.commonKeychain },
+      ];
+
+      const result = await baseCoin.isWalletAddress({
+        address: isWalletAddressTestData.receiveAddress,
+        keychains,
+        index: isWalletAddressTestData.receiveAddressIndex,
+      });
+
+      result.should.be.true();
+    });
+
+    it('should throw for address mismatch', async function () {
+      const keychains = [
+        { commonKeychain: isWalletAddressTestData.commonKeychain },
+        { commonKeychain: isWalletAddressTestData.commonKeychain },
+        { commonKeychain: isWalletAddressTestData.commonKeychain },
+      ];
+
+      await baseCoin
+        .isWalletAddress({
+          address: isWalletAddressTestData.receiveAddress,
+          keychains,
+          index: 0, // Wrong index for this address
+        })
+        .should.be.rejectedWith(/Address verification failed/);
+    });
+
+    it('should throw for missing index', async function () {
+      const keychains = [
+        { commonKeychain: isWalletAddressTestData.commonKeychain },
+        { commonKeychain: isWalletAddressTestData.commonKeychain },
+        { commonKeychain: isWalletAddressTestData.commonKeychain },
+      ];
+
+      await baseCoin
+        .isWalletAddress({
+          address: isWalletAddressTestData.rootAddress,
+          keychains,
+        })
+        .should.be.rejectedWith(/Invalid or missing index/);
+    });
+
+    it('should throw for invalid address', async function () {
+      const keychains = [
+        { commonKeychain: isWalletAddressTestData.commonKeychain },
+        { commonKeychain: isWalletAddressTestData.commonKeychain },
+        { commonKeychain: isWalletAddressTestData.commonKeychain },
+      ];
+
+      await baseCoin
+        .isWalletAddress({
+          address: 'invalidaddress',
+          keychains,
+          index: 0,
+        })
+        .should.be.rejectedWith(/invalid address/);
+    });
+
+    it('should throw for missing keychains', async function () {
+      await baseCoin
+        .isWalletAddress({
+          address: isWalletAddressTestData.rootAddress,
+          keychains: [],
+          index: 0,
+        })
+        .should.be.rejectedWith(/missing required param keychains/);
+    });
+
+    it('should accept index from coinSpecific', async function () {
+      const keychains = [
+        { commonKeychain: isWalletAddressTestData.commonKeychain },
+        { commonKeychain: isWalletAddressTestData.commonKeychain },
+        { commonKeychain: isWalletAddressTestData.commonKeychain },
+      ];
+
+      const result = await baseCoin.isWalletAddress({
+        address: isWalletAddressTestData.receiveAddress,
+        keychains,
+        coinSpecific: {
+          index: isWalletAddressTestData.receiveAddressIndex,
+        },
+      });
+
+      result.should.be.true();
+    });
   });
 
   describe.skip('Recover Transactions:', function () {
