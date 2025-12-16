@@ -14,6 +14,7 @@ import {
   getIsKrsRecovery,
   getIsUnsignedSweep,
   KeyPair,
+  KeyIndices,
   MethodNotImplementedError,
   ParsedTransaction,
   ParseTransactionOptions,
@@ -284,11 +285,9 @@ export class Trx extends BaseCoin {
       throw new Error(`Invalid address: ${address}`);
     }
 
-    const userPub = keychains && keychains.length > 0 ? keychains[0].pub : undefined;
-    const bitgoPub = keychains && keychains.length > 2 ? keychains[2].pub : undefined;
-
     // Root address verification (Index 0)
     if (index === 0) {
+      const bitgoPub = keychains && keychains.length > KeyIndices.BITGO ? keychains[KeyIndices.BITGO].pub : undefined;
       if (!bitgoPub) {
         throw new Error('BitGo public key required for root address verification');
       }
@@ -297,6 +296,7 @@ export class Trx extends BaseCoin {
 
     // Receive address verification (Index > 0)
     if (index > 0) {
+      const userPub = keychains && keychains.length > KeyIndices.USER ? keychains[KeyIndices.USER].pub : undefined;
       if (!userPub) {
         throw new Error('User public key required for receive address verification');
       }
