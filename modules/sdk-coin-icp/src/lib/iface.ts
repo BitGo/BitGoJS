@@ -1,6 +1,7 @@
 import {
   TransactionExplanation as BaseTransactionExplanation,
   TransactionType as BitGoTransactionType,
+  TssVerifyAddressOptions,
 } from '@bitgo/sdk-core';
 
 export const MAX_INGRESS_TTL = 5 * 60 * 1000_000_000; // 5 minutes in nanoseconds
@@ -215,4 +216,9 @@ export interface AccountIdentifierHash {
 export interface TransactionHexParams {
   transactionHex: string;
   signableHex?: string;
+}
+
+export interface TssVerifyIcpAddressOptions extends TssVerifyAddressOptions {
+  rootAddress?: string;
+  walletVersion?: number;
 }
