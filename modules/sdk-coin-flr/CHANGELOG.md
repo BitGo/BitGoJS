@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flr@1.6.18...@bitgo/sdk-coin-flr@1.7.0) (2025-12-17)
+
+
+### Features
+
+* **sdk-coin-flr:** add Export C to P chain support ([db858bd](https://github.com/BitGo/BitGoJS/commit/db858bd9ab00233c200440ef653730a9a02e4a8d))
+* **sdk-coin-flr:** handle tss wallets flow and add unit tests ([64a865a](https://github.com/BitGo/BitGoJS/commit/64a865af67a40bec6919211716beb8dbca24bd87))
+
+
+
+
+
 ## [1.6.18](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flr@1.6.17...@bitgo/sdk-coin-flr@1.6.18) (2025-12-11)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-flr

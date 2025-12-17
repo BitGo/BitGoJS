@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.9.2...@bitgo/sdk-coin-vet@2.10.0) (2025-12-17)
+
+
+### Features
+
+* **sdk-coin-vet:** add support for validator registration ([b8a4f43](https://github.com/BitGo/BitGoJS/commit/b8a4f439a6aa6ccb30d1eab3ec2840807907036c))
+
+
+
+
+
 ## [2.9.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.9.1...@bitgo/sdk-coin-vet@2.9.2) (2025-12-11)
 
 
