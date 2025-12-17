@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ethlike@2.4.9...@bitgo/sdk-coin-ethlike@2.5.0) (2025-12-17)
+
+
+### Features
+
+* added opBNB support ([f01a689](https://github.com/BitGo/BitGoJS/commit/f01a68958d92d583e8541eeb4044a46a35e8cb4a))
+* added support for ftm ([365435f](https://github.com/BitGo/BitGoJS/commit/365435f36acb49064254b4e7bc2cb8ff4246e8c7))
+
+
+
+
+
 ## [2.4.9](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ethlike@2.4.8...@bitgo/sdk-coin-ethlike@2.4.9) (2025-12-11)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ethlike

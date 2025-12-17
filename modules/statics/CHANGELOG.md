@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.18.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.17.0...@bitgo/statics@58.18.0) (2025-12-17)
+
+
+### Bug Fixes
+
+* fix underlying asset for ofc assets ([12f73ce](https://github.com/BitGo/BitGoJS/commit/12f73cec2a464bb4095c6aa996d1e85fdd7c6bf0))
+
+
+### Features
+
+* added opBNB support ([f01a689](https://github.com/BitGo/BitGoJS/commit/f01a68958d92d583e8541eeb4044a46a35e8cb4a))
+* added support for ftm ([365435f](https://github.com/BitGo/BitGoJS/commit/365435f36acb49064254b4e7bc2cb8ff4246e8c7))
+* go account support for IP token aria ([cac3bb5](https://github.com/BitGo/BitGoJS/commit/cac3bb5d09f644ba301a35dcca7b7857517e0365))
+* **sdk-coin-lnbtc:** add staking feature to lnbtc ([ea9aae6](https://github.com/BitGo/BitGoJS/commit/ea9aae6cd642f7e6f029a3ecaabde76bc393d327))
+* **sdk-coin-vet:** enable staking in prod ([ed0f1cb](https://github.com/BitGo/BitGoJS/commit/ed0f1cb1bb62044b6a3f98267965101d79ac8346))
+* **statics:** adding ofc coin for iota ([b33f4c5](https://github.com/BitGo/BitGoJS/commit/b33f4c572b84ea2e01154413aaaa74ebc7898db0))
+* **statics:** tokens onboarding ([b4f1df5](https://github.com/BitGo/BitGoJS/commit/b4f1df503e71dc7a8301394a5fdde791090f0e28))
+
+
+
+
+
 # [58.17.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.16.1...@bitgo/statics@58.17.0) (2025-12-11)
 
 
