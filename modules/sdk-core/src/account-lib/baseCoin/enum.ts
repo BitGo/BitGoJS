@@ -119,6 +119,10 @@ export enum TransactionType {
 
   // flrp
   ImportToC,
+
+  // ton whales
+  TonWhalesDeposit,
+  TonWhalesWithdraw,
 }
 
 /**
