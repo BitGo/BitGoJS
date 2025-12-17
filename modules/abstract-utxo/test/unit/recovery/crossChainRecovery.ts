@@ -23,7 +23,6 @@ import {
   mockUnspent,
   shouldEqualJSON,
   utxoCoins,
-  transactionHexToObj,
   getDefaultWalletKeys,
   defaultBitGo,
   getUtxoCoin,
@@ -170,47 +169,36 @@ function run<TNumber extends number | bigint = number>(sourceCoin: AbstractUtxoC
       sinon.restore();
     });
 
-    function testMatchFixture(
+    async function matchFixture(
       name: string,
-      getRecoveryResult: () => CrossChainRecoverySigned<TNumber> | CrossChainRecoveryUnsigned<TNumber>
+      recovery: CrossChainRecoverySigned<TNumber> | CrossChainRecoveryUnsigned<TNumber>
     ) {
-      it(`should match fixture (${name})`, async function () {
-        const recovery = getRecoveryResult();
-        let recoveryObj = {
-          ...recovery,
-          tx: transactionHexToObj(recovery.txHex as string, sourceCoin.network, sourceCoin.amountType),
-        };
-        if (sourceCoin.amountType === 'bigint') {
-          recoveryObj = JSON.parse(
-            JSON.stringify(recoveryObj, (k, v) => {
-              if (typeof v === 'bigint') {
-                return v.toString();
-              } else {
-                return v;
-              }
-            })
-          );
-        }
-        shouldEqualJSON(
-          recoveryObj,
-          await getFixture(sourceCoin, `recovery/crossChainRecovery-${recoveryCoin.getChain()}-${name}`, recoveryObj)
+      let recoveryObj: Record<string, unknown> = { ...recovery };
+      if (sourceCoin.amountType === 'bigint') {
+        recoveryObj = JSON.parse(
+          JSON.stringify(recoveryObj, (k, v) => {
+            if (typeof v === 'bigint') {
+              return v.toString();
+            } else {
+              return v;
+            }
+          })
         );
-      });
+      }
+      shouldEqualJSON(
+        recoveryObj,
+        await getFixture(sourceCoin, `recovery/crossChainRecovery-${recoveryCoin.getChain()}-${name}`, recoveryObj)
+      );
     }
 
-    function checkRecoveryTransactionSignature(tx: string | utxolib.bitgo.UtxoTransaction<TNumber>) {
-      if (typeof tx === 'string') {
-        tx = utxolib.bitgo.createTransactionFromBuffer<TNumber>(Buffer.from(tx, 'hex'), sourceCoin.network, {
-          amountType: sourceCoin.amountType,
-        });
-      }
+    function checkRecoveryPsbtSignature(psbtHex: string) {
+      const psbt = utxolib.bitgo.createPsbtFromHex(psbtHex, sourceCoin.network);
       const unspents = getRecoveryUnspents();
-      should.equal(tx.ins.length, unspents.length);
-      tx.ins.forEach((input, i) => {
-        assert.ok(typeof tx !== 'string');
-        utxolib.bitgo
-          .verifySignatureWithUnspent<TNumber>(tx, i, getRecoveryUnspents(), walletKeys)
-          .should.eql([true, false, false]);
+      should.equal(psbt.data.inputs.length, unspents.length);
+      // Verify user key has signed each input (same pattern as backupKeyRecovery test)
+      psbt.data.inputs.forEach((input, i) => {
+        const userSigned = psbt.validateSignaturesOfInputHD(i, walletKeys.user);
+        userSigned.should.eql(true, `Input ${i} should be signed by user key`);
       });
     }
 
@@ -230,11 +218,11 @@ function run<TNumber extends number | bigint = number>(sourceCoin: AbstractUtxoC
       })) as CrossChainRecoverySigned<TNumber>;
       should.equal(getRecoveryProviderStub.callCount, 1);
 
-      testMatchFixture('signed', () => signedRecovery);
+      // Verify fixture match
+      await matchFixture('signed', signedRecovery);
 
-      it('should have valid signatures for signed recovery', function () {
-        checkRecoveryTransactionSignature(signedRecovery.txHex as string);
-      });
+      // Verify PSBT has valid signatures (user key signed)
+      checkRecoveryPsbtSignature(signedRecovery.txHex as string);
     });
 
     it('should test unsigned cross chain recovery', async () => {
@@ -253,16 +241,16 @@ function run<TNumber extends number | bigint = number>(sourceCoin: AbstractUtxoC
       })) as CrossChainRecoveryUnsigned<TNumber>;
       should.equal(getRecoveryProviderStub.callCount, 1);
 
-      testMatchFixture('unsigned', () => unsignedRecovery);
+      // Verify fixture match
+      await matchFixture('unsigned', unsignedRecovery);
 
-      it('should be signable for unsigned recovery', async function () {
-        const signedTx = await sourceCoin.signTransaction<TNumber>({
-          txPrebuild: unsignedRecovery,
-          prv: keychainsBase58[0].prv,
-          pubs: keychainsBase58.map((k) => k.pub) as Triple<string>,
-        });
-        checkRecoveryTransactionSignature((signedTx as { txHex: string }).txHex);
+      // Verify the unsigned PSBT can be signed
+      const signedTx = await sourceCoin.signTransaction<TNumber>({
+        txPrebuild: unsignedRecovery,
+        prv: keychainsBase58[0].prv,
+        pubs: keychainsBase58.map((k) => k.pub) as Triple<string>,
       });
+      checkRecoveryPsbtSignature((signedTx as { txHex: string }).txHex);
     });
   });
 }
