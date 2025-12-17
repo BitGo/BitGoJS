@@ -2955,6 +2955,7 @@ export enum UnderlyingAsset {
 
   // Story testnet tokens
   'tip:usdc' = 'tip:usdc',
+  'tip:tmt' = 'tip:tmt',
 
   // Story mainnet tokens
   'ip:aria' = 'ip:aria',

@@ -2963,6 +2963,16 @@ export const allCoinsAndTokens = [
     Networks.test.ip
   ),
 
+  erc20Token(
+    '9d0e81bc-b049-402b-83ce-3a5dd9680f17',
+    'tip:tmt',
+    'Testnet Story TMT',
+    6,
+    '0xb283ec8dad644effc5c4c50bb7bb21442ac3c2db',
+    UnderlyingAsset['tip:tmt'],
+    Networks.test.ip
+  ),
+
   // Story mainnet tokens
   erc20Token(
     '2460e83c-e819-42c3-83c9-3974e08a45c8',
