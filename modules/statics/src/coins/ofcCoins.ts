@@ -339,7 +339,14 @@ export const ofcCoins = [
     UnderlyingAsset.POLYX,
     CoinKind.CRYPTO
   ),
-  ofc('77661a48-865f-48ea-bb73-875744729a69', 'ofcbera:dolo', 'Dolomite', 18, UnderlyingAsset.BERA, CoinKind.CRYPTO),
+  ofc(
+    '77661a48-865f-48ea-bb73-875744729a69',
+    'ofcbera:dolo',
+    'Dolomite',
+    18,
+    UnderlyingAsset['bera:dolo'],
+    CoinKind.CRYPTO
+  ),
   ofc('411fd61a-3571-41f4-b632-6058a30a66a2', 'ofcapt', 'Aptos', 8, UnderlyingAsset.APT, CoinKind.CRYPTO),
   ofc('2fee34a2-cfb8-4882-953a-ac02f2c1577d', 'ofcvet', 'VeChain', 18, UnderlyingAsset.VET, CoinKind.CRYPTO),
   ofc('195cfca5-2a3e-4581-b47c-5582fe9bcf25', 'ofccanton', 'Canton Coin', 10, UnderlyingAsset.CANTON, CoinKind.CRYPTO),
@@ -1309,7 +1316,7 @@ export const ofcCoins = [
     'ofcsol:glxy',
     'Galaxy Digital Inc. Class A Common Stock',
     6,
-    UnderlyingAsset['sol:ford'],
+    UnderlyingAsset['sol:glxy'],
     SOL_TOKEN_FEATURES
   ),
 
@@ -1805,7 +1812,7 @@ export const ofcCoins = [
     'ofcavaxc:usdc-e',
     'USD Coin',
     6,
-    UnderlyingAsset['avaxc:usdc'],
+    UnderlyingAsset['avaxc:usdc-e'],
     undefined,
     [CoinFeature.STABLECOIN]
   ),
@@ -1823,7 +1830,7 @@ export const ofcCoins = [
     'ofcavaxc:usdt-e',
     'Tether USD',
     6,
-    UnderlyingAsset['avaxc:usdt'],
+    UnderlyingAsset['avaxc:usdt-e'],
     undefined,
     [CoinFeature.STABLECOIN]
   ),
@@ -3364,7 +3371,7 @@ export const ofcCoins = [
     'ofchbar:usdc',
     'Mainnet Hedera USD Coin',
     6,
-    UnderlyingAsset.USDC,
+    UnderlyingAsset['hbar:usdc'],
     undefined,
     [CoinFeature.STABLECOIN]
   ),
