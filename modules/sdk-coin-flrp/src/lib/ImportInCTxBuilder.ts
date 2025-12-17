@@ -126,8 +126,6 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
   protected buildFlareTransaction(): void {
     // if tx has credentials or was already recovered from raw, tx shouldn't change
     if (this.transaction.hasCredentials) return;
-    // If fee is already calculated (from initBuilder), the transaction is already built
-    if (this.transaction._fee.fee) return;
     if (this.transaction._to.length !== 1) {
       throw new Error('to is required');
     }

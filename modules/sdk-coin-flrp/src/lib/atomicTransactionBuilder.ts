@@ -20,6 +20,7 @@ export abstract class AtomicTransactionBuilder extends TransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
     this.transaction = new Transaction(_coinConfig);
+    this.transaction._fee.fee = this.fixedFee;
   }
 
   /**
