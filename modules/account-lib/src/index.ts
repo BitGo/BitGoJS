@@ -346,6 +346,10 @@ const coinMessageBuilderFactoryMap = {
   tpolygon: Eth.MessageBuilderFactory,
   seievm: Eth.MessageBuilderFactory,
   tseievm: Eth.MessageBuilderFactory,
+  flr: Eth.MessageBuilderFactory,
+  tflr: Eth.MessageBuilderFactory,
+  mon: Eth.MessageBuilderFactory,
+  tmon: Eth.MessageBuilderFactory,
 };
 
 coins
