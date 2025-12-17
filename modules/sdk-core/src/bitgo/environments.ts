@@ -244,7 +244,7 @@ const mainnetBase: EnvironmentTemplate = {
       baseUrl: 'https://api.verify.mintscan.io/evm/api/0x8ae',
     },
     irys: {
-      baseUrl: 'https://testnet-rpc.irys.xyz/v1/execution-rpc', //TODO: WIN-6191 add mainnet url when available
+      baseUrl: 'https://evm-explorer.irys.xyz/api',
     },
     mon: {
       baseUrl: 'https://api.etherscan.io/v2',
@@ -410,7 +410,7 @@ const testnetBase: EnvironmentTemplate = {
       baseUrl: 'https://api.verify.mintscan.io/evm/api/0x8ad',
     },
     irys: {
-      baseUrl: 'https://inst-1.cloud.blockscout.com',
+      baseUrl: 'https://inst-1.cloud.blockscout.com/api',
     },
     mon: {
       baseUrl: 'https://api.etherscan.io/v2',
