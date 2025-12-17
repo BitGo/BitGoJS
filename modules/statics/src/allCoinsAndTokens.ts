@@ -1511,7 +1511,12 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.MON,
     BaseUnit.ETH,
-    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SUPPORTS_ERC20]
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_MESSAGE_SIGNING,
+      CoinFeature.SUPPORTS_ERC20,
+    ]
   ),
   account(
     '5c5ebe50-fa27-4312-ae3d-7032520aedb5',
@@ -1525,6 +1530,7 @@ export const allCoinsAndTokens = [
       ...EVM_FEATURES,
       CoinFeature.SHARED_EVM_SIGNING,
       CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.SHARED_EVM_MESSAGE_SIGNING,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.SUPPORTS_ERC20,
