@@ -12596,7 +12596,7 @@ export const erc20Coins = [
     'tgousd',
     'Hoodi Testnet GoUSD',
     6,
-    '0x32275b636171ba98fec28e86ed5f0289bd42aeb9',
+    '0xdbb7a34ea6859d307c4f2bb5be266e2d32356f5c',
     UnderlyingAsset.TGOUSD,
     [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN],
     undefined,
