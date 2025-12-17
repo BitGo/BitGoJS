@@ -109,6 +109,15 @@ export const avaxTokens = [
     [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
   avaxErc20(
+    'a9ba57b1-31fd-49df-b965-c7c5f4da0cf0',
+    'avaxc:arena',
+    'The Arena',
+    18,
+    '0xb8d7710f7d8349a506b75dd184f05777c82dad0c',
+    UnderlyingAsset['avaxc:arena'],
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+  ),
+  avaxErc20(
     'd9a021b1-a94a-495c-84c3-061d97c98748',
     'avaxc:dai-e',
     'Dai Stablecoin',

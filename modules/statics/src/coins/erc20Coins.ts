@@ -11234,6 +11234,14 @@ export const erc20Coins = [
     UnderlyingAsset['eth:ibenji']
   ),
   erc20(
+    'a184ee20-3d70-4029-83fa-6d44728313ca',
+    'eth:aztec',
+    'Aztec',
+    18,
+    '0xa27ec0006e59f245217ff08cd52a7e8b169e62d2',
+    UnderlyingAsset['eth:aztec']
+  ),
+  erc20(
     '03886beb-b737-400e-bb44-eb613e65e1d9',
     'eth:bard',
     'Lombard',

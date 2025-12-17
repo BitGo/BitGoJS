@@ -2198,6 +2198,7 @@ export enum UnderlyingAsset {
   'eth:meme' = 'eth:meme',
   'eth:bard' = 'eth:bard',
   'eth:sfp' = 'eth:sfp',
+  'eth:aztec' = 'eth:aztec',
 
   // Ondo Tokenized Assets
   'eth:qqqon' = 'qqqon',
@@ -2429,6 +2430,7 @@ export enum UnderlyingAsset {
   'avaxc:aave' = 'avaxc:aave',
   'avaxc:btc' = 'avaxc:btc',
   'avaxc:dai' = 'avaxc:dai',
+  'avaxc:arena' = 'avaxc:arena',
   'avaxc:tryb' = 'avaxc:tryb',
   'avaxc:wbtc' = 'avaxc:wbtc',
   'avaxc:weth' = 'avaxc:weth',
@@ -2890,6 +2892,7 @@ export enum UnderlyingAsset {
   'baseeth:trust' = 'baseeth:trust',
   'baseeth:flk' = 'baseeth:flk',
   'baseeth:soon' = 'baseeth:soon',
+  'baseeth:wave' = 'baseeth:wave',
 
   'baseeth:spec' = 'baseeth:spec',
   'baseeth:tig' = 'baseeth:tig',
@@ -2942,6 +2945,9 @@ export enum UnderlyingAsset {
 
   // hypeeevm testnet tokens
   'thypeevm:usdc' = 'thypeevm:usdc',
+
+  // hype mainnet tokens
+  'hype:hwhype' = 'hype:hwhype',
 
   // Story testnet tokens
   'tip:usdc' = 'tip:usdc',
@@ -3101,6 +3107,7 @@ export enum UnderlyingAsset {
   'sol:acusd' = 'sol:acusd',
   'sol:solink' = 'sol:solink',
   'sol:soon' = 'sol:soon',
+  'sol:wylds' = 'sol:wylds',
   'sol:block' = 'sol:block',
   'sol:render' = 'sol:render',
   'sol:wen' = 'sol:wen',
@@ -3250,6 +3257,8 @@ export enum UnderlyingAsset {
   'xrp:vchf' = 'xrp:vchf',
   'xrp:vgbp' = 'xrp:vgbp',
   'xrp:solo' = 'xrp:solo',
+  'xrp:usdc' = 'xrp:usdc',
+  'xrp:eurcv' = 'xrp:eurcv',
   'xrp:aau' = 'xrp:aau',
   'xrp:fiuaxrp' = 'xrp:fiuaxrp',
   // XRP testnet tokens
@@ -3382,6 +3391,7 @@ export enum UnderlyingAsset {
   'ton:not' = 'ton:not',
   'ton:cati' = 'ton:cati',
   'ton:dogs' = 'ton:dogs',
+  'ton:ston' = 'ton:ston',
 
   // TON testnet tokens
   'tton:ukwny-us' = 'tton:ukwny-us',

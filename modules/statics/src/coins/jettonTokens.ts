@@ -49,6 +49,15 @@ export const jettonTokens = [
     UnderlyingAsset['ton:dogs'],
     TON_TOKEN_FEATURES
   ),
+  jettonToken(
+    'ba862cef-e960-4601-a8f9-03c9b0634300',
+    'ton:ston',
+    'STON.fi',
+    9,
+    'EQA2kCVNwVsil2EM2mB0SkXytxCqQjS4mttjDpnXmwG9T6bO',
+    UnderlyingAsset['ton:ston'],
+    TON_TOKEN_FEATURES
+  ),
 
   // testnet tokens
   tjettonToken(
