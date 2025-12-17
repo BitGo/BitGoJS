@@ -579,6 +579,8 @@ export const ofcCoins = [
   ),
   tofc('b364799a-e6d1-4d84-afc9-588594e850f7', 'ofctton', 'Test Ton', 9, UnderlyingAsset.TON, CoinKind.CRYPTO),
   tofc('d7ec69dc-619d-4c10-b269-75c2327bd69d', 'ofcttao', 'Testnet Bittensor', 9, UnderlyingAsset.TAO, CoinKind.CRYPTO),
+  ofc('8d329a6a-7b7a-4663-b3a4-a027fc3386d8', 'ofciota', 'Iota', 9, UnderlyingAsset.IOTA, CoinKind.CRYPTO),
+  tofc('35d5b5eb-f61d-428d-8908-2f161507511f', 'ofctiota', 'Testnet Iota', 9, UnderlyingAsset.IOTA, CoinKind.CRYPTO),
   ofcsolToken(
     '7d1b17b3-d606-4ba7-82dc-3e3a0eede46a',
     'ofcsol:wsol',
