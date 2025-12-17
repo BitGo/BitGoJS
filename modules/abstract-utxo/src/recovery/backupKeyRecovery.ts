@@ -1,5 +1,3 @@
-import assert from 'assert';
-
 import _ from 'lodash';
 import * as utxolib from '@bitgo/utxo-lib';
 import { Dimensions } from '@bitgo/unspents';
@@ -33,42 +31,13 @@ type WalletUnspentJSON = utxolib.bitgo.WalletUnspent & {
 
 const { getInternalChainCode, scriptTypeForChain, outputScripts, getExternalChainCode } = utxolib.bitgo;
 
-export interface OfflineVaultTxInfo {
-  inputs: WalletUnspentJSON[];
-}
-
 export interface FormattedOfflineVaultTxInfo {
   txInfo: {
-    unspents: WalletUnspentJSON[];
+    unspents?: WalletUnspentJSON[];
   };
   txHex: string;
   feeInfo: Record<string, never>;
   coin: string;
-}
-
-/**
- * This transforms the txInfo from recover into the format that offline-signing-tool expects
- * @param coinName
- * @param txInfo
- * @param txHex
- * @returns {{txHex: *, txInfo: {unspents: *}, feeInfo: {}, coin: void}}
- */
-function formatForOfflineVault(
-  coinName: string,
-  txInfo: OfflineVaultTxInfo,
-  txHex: string
-): FormattedOfflineVaultTxInfo {
-  return {
-    txHex,
-    txInfo: {
-      unspents: txInfo.inputs.map((input) => {
-        assert(input.valueString);
-        return { ...input, valueString: input.valueString };
-      }),
-    },
-    feeInfo: {},
-    coin: coinName,
-  };
 }
 
 /**
@@ -316,7 +285,7 @@ export async function backupKeyRecovery(
 
   const isKrsRecovery = getIsKrsRecovery(params);
   const isUnsignedSweep = getIsUnsignedSweep(params);
-  const responseTxFormat = isUnsignedSweep || !isKrsRecovery || params.krsProvider === 'keyternal' ? 'legacy' : 'psbt';
+  const responseTxFormat = !isKrsRecovery || params.krsProvider === 'keyternal' ? 'legacy' : 'psbt';
 
   const krsProvider = isKrsRecovery ? getKrsProvider(coin, params.krsProvider) : undefined;
 
@@ -413,9 +382,12 @@ export async function backupKeyRecovery(
   }
 
   if (isUnsignedSweep) {
-    // TODO BTC-317 - When ready to PSBTify OVC, send psbt hex and skip unspents in response.
-    const txHex = psbt.getUnsignedTx().toBuffer().toString('hex');
-    return formatForOfflineVault(coin.getChain(), txInfo as OfflineVaultTxInfo, txHex);
+    return {
+      txHex: psbt.toHex(),
+      txInfo: {},
+      feeInfo: {},
+      coin: coin.getChain(),
+    };
   } else {
     signAndVerifyPsbt(psbt, walletKeys.user, { isLastSignature: false });
     if (isKrsRecovery) {
