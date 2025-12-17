@@ -26,6 +26,10 @@ const coins = [
     name: 'topbnb',
     common: getCommon('topbnb'),
   },
+  {
+    name: 'tfantom',
+    common: getCommon('tfantom'),
+  },
 ];
 
 describe('EthLike coin tests', function () {

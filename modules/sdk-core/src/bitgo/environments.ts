@@ -265,6 +265,10 @@ const mainnetBase: EnvironmentTemplate = {
       baseUrl: 'https://api.etherscan.io/v2',
       apiToken: process.env.ETHERSCAN_API_TOKEN,
     },
+    fantom: {
+      baseUrl: 'https://explorer.fantom.network',
+      rpcUrl: 'https://rpcapi.fantom.network/',
+    },
     flow: {
       baseUrl: 'https://evm.flowscan.io',
     },

@@ -260,9 +260,11 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('ethw', Ethw.createInstance);
   coinFactory.register('baseeth', EthLikeCoin.createInstance);
   coinFactory.register('opbnb', EthLikeCoin.createInstance);
+  coinFactory.register('fantom', EthLikeCoin.createInstance);
   coinFactory.register('og', EthLikeCoin.createInstance);
   coinFactory.register('tog', EthLikeCoin.createInstance);
   coinFactory.register('topbnb', TethLikeCoin.createInstance);
+  coinFactory.register('tfantom', TethLikeCoin.createInstance);
   coinFactory.register('tbaseeth', TethLikeCoin.createInstance);
   coinFactory.register('fiataed', FiatAED.createInstance);
   coinFactory.register('fiateur', FiatEur.createInstance);
@@ -645,9 +647,13 @@ export function getCoinConstructor(coinName: string): CoinConstructor | undefine
       return EthLikeCoin.createInstance;
     case 'opbnb':
       return EthLikeCoin.createInstance;
+    case 'fantom':
+      return EthLikeCoin.createInstance;
     case 'tbaseeth':
       return TethLikeCoin.createInstance;
     case 'topbnb':
+      return TethLikeCoin.createInstance;
+    case 'tfantom':
       return TethLikeCoin.createInstance;
     case 'fiataed':
       return FiatAED.createInstance;

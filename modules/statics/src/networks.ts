@@ -398,6 +398,26 @@ class OpBNBTestnet extends Testnet implements EthereumNetwork {
   tokenOperationHashPrefix = '5611-ERC20';
 }
 
+class Fantom extends Mainnet implements EthereumNetwork {
+  name = 'Fantom';
+  family = CoinFamily.FANTOM;
+  explorerUrl = 'https://explorer.fantom.network/transactions/';
+  accountExplorerUrl = 'https://explorer.fantom.network/address/';
+  chainId = 250;
+  nativeCoinOperationHashPrefix = '250';
+  tokenOperationHashPrefix = '250-ERC20';
+}
+
+class FantomTestnet extends Testnet implements EthereumNetwork {
+  name = 'FantomTestnet';
+  family = CoinFamily.FANTOM;
+  explorerUrl = 'https://explorer.fantom.network/transactions/';
+  accountExplorerUrl = 'https://explorer.fantom.network/address/';
+  chainId = 4002;
+  nativeCoinOperationHashPrefix = '4002';
+  tokenOperationHashPrefix = '4002-ERC20';
+}
+
 class LightningBitcoin extends Mainnet implements LightningNetwork {
   name = 'LightningBitcoin';
   family = CoinFamily.LNBTC;
@@ -2274,6 +2294,7 @@ export const Networks = {
     ofc: Object.freeze(new Ofc()),
     okb: Object.freeze(new Xlayer()),
     opbnb: Object.freeze(new OpBNB()),
+    fantom: Object.freeze(new Fantom()),
     morph: Object.freeze(new Morph()),
     optimism: Object.freeze(new Optimism()),
     osmo: Object.freeze(new Osmo()),
@@ -2382,6 +2403,7 @@ export const Networks = {
     ofc: Object.freeze(new OfcTestnet()),
     okb: Object.freeze(new XlayerTestnet()),
     opbnb: Object.freeze(new OpBNBTestnet()),
+    fantom: Object.freeze(new FantomTestnet()),
     morph: Object.freeze(new MorphTestnet()),
     optimism: Object.freeze(new OptimismTestnet()),
     osmo: Object.freeze(new OsmoTestnet()),
