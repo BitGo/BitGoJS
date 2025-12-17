@@ -3,7 +3,6 @@ import {
   BaseCoin,
   BaseTransaction,
   BitGoBase,
-  InvalidAddressError,
   KeyPair,
   MPCAlgorithm,
   MultisigType,
@@ -15,8 +14,9 @@ import {
   SignedTransaction,
   SignTransactionOptions,
   TssVerifyAddressOptions,
+  UnexpectedAddressError,
+  verifyEddsaTssWalletAddress,
   VerifyTransactionOptions,
-  verifyMPCWalletAddress,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import { KeyPair as AptKeyPair, TransactionBuilderFactory } from './lib';
@@ -29,11 +29,6 @@ import { auditEddsaPrivateKey } from '@bitgo/sdk-lib-mpc';
 
 export interface AptParseTransactionOptions extends ParseTransactionOptions {
   txHex: string;
-}
-
-export interface TssVerifyAptAddressOptions extends TssVerifyAddressOptions {
-  address: string;
-  rootAddress?: string;
 }
 
 export class Apt extends BaseCoin {
@@ -129,33 +124,17 @@ export class Apt extends BaseCoin {
   /**
    * Verify that an address belongs to this wallet.
    *
-   * @param {TssVerifyAptAddressOptions} params - Verification parameters
-   * @returns {Promise<boolean>} True if address belongs to wallet
-   * @throws {InvalidAddressError} If address format is invalid or doesn't match derived address
+   * @param params - Verification parameters including address, keychains, and index
+   * @returns True if address belongs to wallet
+   * @throws UnexpectedAddressError if address doesn't match derived address
    */
-  async isWalletAddress(params: TssVerifyAptAddressOptions): Promise<boolean> {
-    const { address, rootAddress } = params;
-
-    if (!this.isValidAddress(address)) {
-      throw new InvalidAddressError(`invalid address: ${address}`);
-    }
-
-    const isVerifyingRootAddress = rootAddress && address.toLowerCase() === rootAddress.toLowerCase();
-    if (isVerifyingRootAddress) {
-      const index = typeof params.index === 'string' ? parseInt(params.index, 10) : params.index;
-      if (index !== 0) {
-        throw new Error(`Root address verification requires index 0, but got index ${params.index}.`);
-      }
-    }
-
-    const result = await verifyMPCWalletAddress(
-      { ...params, keyCurve: 'ed25519' },
-      this.isValidAddress.bind(this),
-      (pubKey) => utils.getAddressFromPublicKey(pubKey)
+  async isWalletAddress(params: TssVerifyAddressOptions): Promise<boolean> {
+    const isValid = await verifyEddsaTssWalletAddress(params, this.isValidAddress.bind(this), (pubKey) =>
+      utils.getAddressFromPublicKey(pubKey)
     );
 
-    if (!result) {
-      throw new InvalidAddressError(`invalid address: ${address}`);
+    if (!isValid) {
+      throw new UnexpectedAddressError();
     }
 
     return true;
