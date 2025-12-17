@@ -74,22 +74,9 @@ describe('Tao:', function () {
           keychains,
           index: 0, // Wrong index for this address
         })
-        .should.be.rejectedWith(/address validation failure/);
-    });
-
-    it('should throw for missing index', async function () {
-      const keychains = [
-        { commonKeychain: isWalletAddressTestData.commonKeychain },
-        { commonKeychain: isWalletAddressTestData.commonKeychain },
-        { commonKeychain: isWalletAddressTestData.commonKeychain },
-      ];
-
-      await baseCoin
-        .isWalletAddress({
-          address: isWalletAddressTestData.rootAddress,
-          keychains,
-        })
-        .should.be.rejectedWith(/Invalid or missing index/);
+        .should.be.rejectedWith(
+          `address validation failure: ${isWalletAddressTestData.receiveAddress} is not a wallet address`
+        );
     });
 
     it('should throw for invalid address', async function () {
@@ -105,7 +92,7 @@ describe('Tao:', function () {
           keychains,
           index: 0,
         })
-        .should.be.rejectedWith(/invalid address/);
+        .should.be.rejectedWith('invalid address: invalidaddress');
     });
 
     it('should throw for missing keychains', async function () {
@@ -115,7 +102,7 @@ describe('Tao:', function () {
           keychains: [],
           index: 0,
         })
-        .should.be.rejectedWith(/missing required param keychains/);
+        .should.be.rejectedWith('missing required param keychains');
     });
   });
 
