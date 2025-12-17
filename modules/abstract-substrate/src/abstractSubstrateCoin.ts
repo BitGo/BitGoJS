@@ -119,7 +119,7 @@ export class SubstrateCoin extends BaseCoin {
     );
 
     if (!isValid) {
-      throw new UnexpectedAddressError();
+      throw new UnexpectedAddressError(`address validation failure: ${params.address} is not a wallet address`);
     }
 
     return true;
