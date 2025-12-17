@@ -2121,8 +2121,8 @@ class MegaETH extends Mainnet implements EthereumNetwork {
   family = CoinFamily.MEGAETH;
   explorerUrl = 'https://www.megaexplorer.xyz/tx/';
   accountExplorerUrl = 'https://www.megaexplorer.xyz/address/';
-  chainId = 6342;
-  nativeCoinOperationHashPrefix = '6342';
+  chainId = 4326;
+  nativeCoinOperationHashPrefix = '4326';
 }
 
 class MegaETHTestnet extends Testnet implements EthereumNetwork {

@@ -106,6 +106,7 @@ describe('V2 Keychains', function () {
         n.asset !== UnderlyingAsset.OKB &&
         n.asset !== UnderlyingAsset.MORPH &&
         n.asset !== UnderlyingAsset.DOGEOS &&
+        n.asset !== UnderlyingAsset.MEGAETH &&
         coinFamilyValues.includes(n.name)
     );
 
