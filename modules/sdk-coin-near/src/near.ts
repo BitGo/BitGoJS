@@ -1004,17 +1004,6 @@ export class Near extends BaseCoin {
    * @throws {Error} If invalid parameters or root address verification with wrong index
    */
   async isWalletAddress(params: TssVerifyNearAddressOptions): Promise<boolean> {
-    const { address, rootAddress } = params;
-
-    // Root address verification requires index 0
-    const isVerifyingRootAddress = rootAddress && address === rootAddress;
-    if (isVerifyingRootAddress) {
-      const index = typeof params.index === 'string' ? parseInt(params.index, 10) : params.index;
-      if (index !== 0) {
-        throw new Error(`Root address verification requires index 0, but got index ${params.index}.`);
-      }
-    }
-
     const result = await verifyEddsaTssWalletAddress(
       params,
       (address) => this.isValidAddress(address),
@@ -1022,7 +1011,7 @@ export class Near extends BaseCoin {
     );
 
     if (!result) {
-      throw new UnexpectedAddressError(`address validation failure: address ${params.address} is not a wallet address`);
+      throw new UnexpectedAddressError(`address validation failure`);
     }
 
     return true;

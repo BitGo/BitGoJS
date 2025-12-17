@@ -199,7 +199,7 @@ describe('NEAR:', function () {
         keychains: keychains,
         index: 0,
       };
-      await basecoin.isWalletAddress(params).should.be.rejected();
+      await basecoin.isWalletAddress(params).should.be.rejectedWith('address validation failure');
     });
 
     it('should throw error when verifying root address with wrong index', async function () {
@@ -209,9 +209,7 @@ describe('NEAR:', function () {
         keychains: keychains,
         index: 1,
       };
-      await basecoin
-        .isWalletAddress(params)
-        .should.be.rejectedWith('Root address verification requires index 0, but got index 1.');
+      await basecoin.isWalletAddress(params).should.be.rejectedWith('address validation failure');
     });
 
     it('should throw error when keychains is missing', async function () {
@@ -230,7 +228,7 @@ describe('NEAR:', function () {
         keychains: keychains,
         index: 0,
       };
-      await basecoin.isWalletAddress(params).should.be.rejected();
+      await basecoin.isWalletAddress(params).should.be.rejectedWith('address validation failure');
     });
 
     it('should handle string index', async function () {
