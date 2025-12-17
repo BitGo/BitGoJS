@@ -1,5 +1,4 @@
 import {
-  AddressCoinSpecific,
   AuditDecryptedKeyParams,
   BaseCoin,
   BitGoBase,
@@ -21,8 +20,8 @@ import {
   RecoveryTxRequest,
   SignedTransaction,
   TssVerifyAddressOptions,
+  UnexpectedAddressError,
   verifyEddsaTssWalletAddress,
-  VerifyAddressOptions,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
 import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
@@ -35,13 +34,6 @@ import BigNumber from 'bignumber.js';
 import { ApiPromise } from '@polkadot/api';
 
 export const DEFAULT_SCAN_FACTOR = 20;
-
-export interface SubstrateVerifyAddressOptions extends VerifyAddressOptions {
-  index?: number | string;
-  coinSpecific?: AddressCoinSpecific & {
-    index?: number | string;
-  };
-}
 
 export class SubstrateCoin extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -119,28 +111,15 @@ export class SubstrateCoin extends BaseCoin {
   }
 
   /** @inheritDoc **/
-  async isWalletAddress(params: SubstrateVerifyAddressOptions): Promise<boolean> {
-    const { address, keychains } = params;
-
-    const index = Number(params.index ?? params.coinSpecific?.index);
-    if (isNaN(index) || index < 0) {
-      throw new Error('Invalid or missing index. index must be a non-negative number.');
-    }
-
-    const tssParams: TssVerifyAddressOptions = {
-      address,
-      keychains: keychains as TssVerifyAddressOptions['keychains'],
-      index,
-    };
-
+  async isWalletAddress(params: TssVerifyAddressOptions): Promise<boolean> {
     const isValid = await verifyEddsaTssWalletAddress(
-      tssParams,
+      params,
       (addr) => this.isValidAddress(addr),
       (pubKey) => this.getAddressFromPublicKey(pubKey)
     );
 
     if (!isValid) {
-      throw new Error(`Address verification failed: address ${address} is not a wallet address at index ${index}`);
+      throw new UnexpectedAddressError();
     }
 
     return true;
