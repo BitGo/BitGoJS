@@ -184,6 +184,14 @@ export interface VetStakeOptions extends StakeOptions {
    */
   nftTier?: string;
 }
+
+export interface StoryStakeOptions extends StakeOptions {
+  /**
+   * Story staking period
+   */
+  stakingPeriod?: string;
+}
+
 export interface UnstakeOptions {
   amount: string;
   clientId?: string;
@@ -302,7 +310,9 @@ export interface StakingSignOptions {
 export interface IStakingWallet {
   readonly walletId: string;
   readonly coin: string;
-  stake(options: StakeOptions | TronStakeOptions | TaoStakeOptions | VetStakeOptions): Promise<StakingRequest>;
+  stake(
+    options: StakeOptions | TronStakeOptions | TaoStakeOptions | VetStakeOptions | StoryStakeOptions
+  ): Promise<StakingRequest>;
   unstake(options: UnstakeOptions | EthUnstakeOptions): Promise<StakingRequest>;
   switchValidator(options: SwitchValidatorOptions | TaoSwitchValidatorOptions): Promise<StakingRequest>;
   claimRewards(options: ClaimRewardsOptions): Promise<StakingRequest>;
