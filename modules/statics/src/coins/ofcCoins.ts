@@ -1356,6 +1356,14 @@ export const ofcCoins = [
     UnderlyingAsset['sol:xnet'],
     SOL_TOKEN_FEATURES
   ),
+  ofcsolToken(
+    'fa15fdb4-4134-45ee-8184-43fa7f77b648',
+    'ofcsol:kmno',
+    'Kamino',
+    6,
+    UnderlyingAsset['sol:kmno'],
+    SOL_TOKEN_FEATURES
+  ),
 
   tofcsolToken(
     '24d678cf-e0f0-4cde-a338-d754289c5b27',
