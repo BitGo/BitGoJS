@@ -7,12 +7,14 @@ import nock = require('nock');
 import { BIP32Interface } from '@bitgo/utxo-lib';
 import * as utxolib from '@bitgo/utxo-lib';
 import { Config, krsProviders, Triple } from '@bitgo/sdk-core';
+import { Dimensions } from '@bitgo/unspents';
 
 import {
   AbstractUtxoCoin,
   backupKeyRecovery,
   BackupKeyRecoveryTransansaction,
   CoingeckoApi,
+  DEFAULT_RECOVERY_FEERATE_SAT_VBYTE_V2,
   FormattedOfflineVaultTxInfo,
 } from '../../../src';
 import {
@@ -188,6 +190,21 @@ function run(
       (await recoveryProvider.getUnspentsForAddresses(mockedApiUnspents.map((u) => u.address))).length.should.eql(
         mockedApiUnspents.length
       );
+    });
+
+    it('has expected fee rate', function () {
+      if (!(recoveryTx instanceof utxolib.bitgo.UtxoPsbt)) {
+        this.skip();
+      }
+      const expectedFeeRate = params.feeRate ?? DEFAULT_RECOVERY_FEERATE_SAT_VBYTE_V2;
+      const inputSum = utxolib.bitgo.unspentSum(recoverUnspents, 'bigint');
+      const outputSum = recoveryTx.txOutputs.reduce((sum, o) => sum + o.value, BigInt(0));
+      const fee = inputSum - outputSum;
+      const vsize = Dimensions.fromPsbt(recoveryTx).getVSize();
+      const feeRateSatB = Number(fee) / vsize;
+      const diff = Math.abs(feeRateSatB - expectedFeeRate) / expectedFeeRate;
+      // within 10%
+      assert.strictEqual(diff < 0.1, true, `expected fee rate ${expectedFeeRate} but got ${feeRateSatB}`);
     });
 
     it('matches fixture', async function () {
