@@ -28,6 +28,7 @@ import { PutFanoutUnspents } from './v1/fanoutUnspents';
 import { PostOfcSignPayload } from './v2/ofcSignPayload';
 import { PostWalletRecoverToken } from './v2/walletRecoverToken';
 import { PostGenerateWallet } from './v2/generateWallet';
+import { PostSignerMacaroon } from './v2/signerMacaroon';
 import { PostCoinSignTx } from './v2/coinSignTx';
 import { PostWalletSignTx } from './v2/walletSignTx';
 import { PostWalletTxSignTSS } from './v2/walletTxSignTSS';
@@ -297,6 +298,9 @@ export const ExpressWalletManagementApiSpec = apiSpec({
   },
   'express.wallet.generate': {
     post: PostGenerateWallet,
+  },
+  'express.lightning.signerMacaroon': {
+    post: PostSignerMacaroon,
   },
 });
 
