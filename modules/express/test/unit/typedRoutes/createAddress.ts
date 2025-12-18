@@ -276,7 +276,7 @@ describe('CreateAddress codec tests', function () {
     });
 
     it('should validate body with all forwarder version values', function () {
-      const forwarderVersions = [0, 1, 2, 3, 4];
+      const forwarderVersions = [0, 1, 2, 3, 4, 5];
 
       forwarderVersions.forEach((version) => {
         const validBody = {
@@ -289,7 +289,7 @@ describe('CreateAddress codec tests', function () {
 
     it('should reject body with invalid forwarder version', function () {
       const invalidBody = {
-        forwarderVersion: 5, // not in union [0,1,2,3,4]
+        forwarderVersion: 6, // not in union [0,1,2,3,4,5]
       };
 
       assert.throws(() => {
