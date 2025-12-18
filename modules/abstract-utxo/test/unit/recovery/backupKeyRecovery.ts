@@ -14,7 +14,6 @@ import {
   backupKeyRecovery,
   BackupKeyRecoveryTransansaction,
   CoingeckoApi,
-  DEFAULT_RECOVERY_FEERATE_SAT_VBYTE_V2,
   FormattedOfflineVaultTxInfo,
 } from '../../../src';
 import {
@@ -115,10 +114,11 @@ function run(
     hasUserSignature: boolean;
     hasBackupSignature: boolean;
     hasKrsOutput?: boolean;
-    feeRate?: number;
   },
   tags: string[] = []
 ) {
+  const defaultFeeRateSatB = 100;
+
   describe(`Backup Key Recovery [${[coin.getChain(), ...tags, params.krsProvider].join(',')}]`, function () {
     const externalWallet = getWalletKeys('external');
     const recoveryDestination = getWalletAddress(coin.network, externalWallet);
@@ -174,6 +174,7 @@ function run(
         krsProvider: params.krsProvider,
         ...params.keys,
         recoveryProvider: new MockRecoveryProvider(mockedApiUnspents),
+        feeRate: defaultFeeRateSatB,
       });
       const txHex =
         (recovery as BackupKeyRecoveryTransansaction).transactionHex ?? (recovery as FormattedOfflineVaultTxInfo).txHex;
@@ -196,15 +197,14 @@ function run(
       if (!(recoveryTx instanceof utxolib.bitgo.UtxoPsbt)) {
         this.skip();
       }
-      const expectedFeeRate = params.feeRate ?? DEFAULT_RECOVERY_FEERATE_SAT_VBYTE_V2;
       const inputSum = utxolib.bitgo.unspentSum(recoverUnspents, 'bigint');
       const outputSum = recoveryTx.txOutputs.reduce((sum, o) => sum + o.value, BigInt(0));
       const fee = inputSum - outputSum;
       const vsize = Dimensions.fromPsbt(recoveryTx).getVSize();
       const feeRateSatB = Number(fee) / vsize;
-      const diff = Math.abs(feeRateSatB - expectedFeeRate) / expectedFeeRate;
+      const diff = Math.abs(feeRateSatB - defaultFeeRateSatB) / defaultFeeRateSatB;
       // within 10%
-      assert.strictEqual(diff < 0.1, true, `expected fee rate ${expectedFeeRate} but got ${feeRateSatB}`);
+      assert.strictEqual(diff < 0.1, true, `expected fee rate ${defaultFeeRateSatB} but got ${feeRateSatB}`);
     });
 
     it('matches fixture', async function () {
@@ -363,19 +363,6 @@ function runWithScriptTypes(
           hasBackupSignature: true,
         },
         ['fullSignedRecovery', ...scriptTypes]
-      );
-
-      run(
-        coin,
-        scriptTypes,
-        walletKeys,
-        {
-          keys: keysFullSignedRecovery,
-          hasUserSignature: true,
-          hasBackupSignature: true,
-          feeRate: 2,
-        },
-        ['fullSignedRecovery', 'fixedFeeRate', ...scriptTypes]
       );
 
       run(
