@@ -203,8 +203,8 @@ function run(
       const vsize = Dimensions.fromPsbt(recoveryTx).getVSize();
       const feeRateSatB = Number(fee) / vsize;
       const diff = Math.abs(feeRateSatB - defaultFeeRateSatB) / defaultFeeRateSatB;
-      // within 10%
-      assert.strictEqual(diff < 0.1, true, `expected fee rate ${defaultFeeRateSatB} but got ${feeRateSatB}`);
+      // within 1%
+      assert.strictEqual(diff < 0.01, true, `expected fee rate ${defaultFeeRateSatB} but got ${feeRateSatB}`);
     });
 
     it('matches fixture', async function () {
