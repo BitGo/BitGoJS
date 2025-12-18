@@ -808,6 +808,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
       CoinFeature.SUPPORTS_ERC20,
+      CoinFeature.STAKING,
     ],
     KeyCurve.Secp256k1,
     '',
