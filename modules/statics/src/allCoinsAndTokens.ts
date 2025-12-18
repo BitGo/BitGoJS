@@ -2992,6 +2992,26 @@ export const allCoinsAndTokens = [
     Networks.main.ip
   ),
 
+  // MegaEth mainnet tokens
+  erc20Token(
+    '342f9823-2de9-46d9-b1a1-9d35ba582678',
+    'megaeth:mega',
+    'Mega',
+    18,
+    '0x28b7e77f82b25b95953825f1e3ea0e36c1c29861',
+    UnderlyingAsset['megaeth:mega'],
+    Networks.main.megaeth
+  ),
+  erc20Token(
+    '1139cdc6-81ff-48d9-afab-c562feb8b3da',
+    'megaeth:weth',
+    'Wrapped Ether',
+    18,
+    '0x4200000000000000000000000000000000000006',
+    UnderlyingAsset['megaeth:weth'],
+    Networks.main.megaeth
+  ),
+
   // Plume testnet tokens
   erc20Token(
     '67a140e3-c73e-4984-af13-7b1555ee3ff3',
