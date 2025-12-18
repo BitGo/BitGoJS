@@ -4684,6 +4684,22 @@ export const tOfcErc20Coins = [
 
   // Story Network tokens
   ofcerc20('452cc4f6-3c77-4193-a572-4b0d0f838c3c', 'ofcip:aria', 'Aria', 18, underlyingAssetForSymbol('ip:aria')),
+
+  // MegaEth Network tokens
+  ofcerc20(
+    '65df2f65-bb7a-4485-b725-a5fb2e6cd281',
+    'ofcmegaeth:mega',
+    'Mega',
+    18,
+    underlyingAssetForSymbol('megaeth:mega')
+  ),
+  ofcerc20(
+    '7bcafa71-a2f3-4a9e-98e2-4d3f655281f8',
+    'ofcmegaeth:weth',
+    'Wrapped Ether',
+    18,
+    underlyingAssetForSymbol('megaeth:weth')
+  ),
 ];
 
 function underlyingAssetForSymbol(underlyingAssetValue: string): UnderlyingAsset {
