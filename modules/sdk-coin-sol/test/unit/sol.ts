@@ -3443,26 +3443,28 @@ describe('SOL:', function () {
       result.should.equal(true);
     });
 
-    it('should return false for address with incorrect keychain', async function () {
+    it('should throw error for address with incorrect keychain', async function () {
       const address = '7YAesfwPk41VChUgr65bm8FEep7ymWqLSW5rpYB5zZPY';
       const wrongKeychain =
         '0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000';
       const index = '1';
       const keychains = [{ id: '1', type: 'tss' as const, commonKeychain: wrongKeychain }];
 
-      const result = await basecoin.isWalletAddress({ keychains, address, index });
-      result.should.equal(false);
+      await assert.rejects(async () => await basecoin.isWalletAddress({ keychains, address, index }), {
+        message: `address validation failure: ${address} is not a wallet address`,
+      });
     });
 
-    it('should return false for address with incorrect index', async function () {
+    it('should throw error for address with incorrect index', async function () {
       const address = '7YAesfwPk41VChUgr65bm8FEep7ymWqLSW5rpYB5zZPY';
       const commonKeychain =
         '8ea32ecacfc83effbd2e2790ee44fa7c59b4d86c29a12f09fb613d8195f93f4e21875cad3b98adada40c040c54c3569467df41a020881a6184096378701862bd';
       const wrongIndex = '999';
       const keychains = [{ id: '1', type: 'tss' as const, commonKeychain }];
 
-      const result = await basecoin.isWalletAddress({ keychains, address, index: wrongIndex });
-      result.should.equal(false);
+      await assert.rejects(async () => await basecoin.isWalletAddress({ keychains, address, index: wrongIndex }), {
+        message: `address validation failure: ${address} is not a wallet address`,
+      });
     });
 
     it('should throw error for invalid address', async function () {

@@ -52,6 +52,7 @@ import {
   VerifyTransactionOptions,
   TssVerifyAddressOptions,
   verifyEddsaTssWalletAddress,
+  UnexpectedAddressError,
 } from '@bitgo/sdk-core';
 import { auditEddsaPrivateKey, getDerivationPath } from '@bitgo/sdk-lib-mpc';
 import { BaseNetwork, CoinFamily, coins, SolCoin, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
@@ -603,11 +604,17 @@ export class Sol extends BaseCoin {
   }
 
   async isWalletAddress(params: TssVerifyAddressOptions): Promise<boolean> {
-    return verifyEddsaTssWalletAddress(
+    const result = await verifyEddsaTssWalletAddress(
       params,
       (address) => this.isValidAddress(address),
       (publicKey) => this.getAddressFromPublicKey(publicKey)
     );
+
+    if (!result) {
+      throw new UnexpectedAddressError(`address validation failure: ${params.address} is not a wallet address`);
+    }
+
+    return true;
   }
 
   /**
