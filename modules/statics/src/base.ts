@@ -2960,6 +2960,10 @@ export enum UnderlyingAsset {
   // Story mainnet tokens
   'ip:aria' = 'ip:aria',
 
+  // MegaEth mainnet tokens
+  'megaeth:mega' = 'megaeth:mega',
+  'megaeth:weth' = 'megaeth:weth',
+
   // Plume testnet tokens
   'tplume:usdc' = 'tplume:usdc',
 
