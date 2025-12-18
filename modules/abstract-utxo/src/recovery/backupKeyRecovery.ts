@@ -31,6 +31,14 @@ type WalletUnspentJSON = utxolib.bitgo.WalletUnspent & {
 
 const { getInternalChainCode, scriptTypeForChain, outputScripts, getExternalChainCode } = utxolib.bitgo;
 
+// V1 only deals with BTC. 50 sat/vbyte is very arbitrary.
+export const DEFAULT_RECOVERY_FEERATE_SAT_VBYTE_V1 = 50;
+
+// FIXME(BTC-2691): it is unclear why sweeps have a different default than regular recovery. 100 sat/vbyte is extremely high.
+export const DEFAULT_RECOVERY_FEERATE_SAT_VBYTE_V1_SWEEP = 100;
+
+// FIXME(BTC-2691): it makes little sense to have a single default for every coin.
+export const DEFAULT_RECOVERY_FEERATE_SAT_VBYTE_V2 = 50;
 export interface FormattedOfflineVaultTxInfo {
   txInfo: {
     unspents?: WalletUnspentJSON[];
@@ -329,7 +337,9 @@ export async function backupKeyRecovery(
   utxolib.bitgo.addXpubsToPsbt(psbt, walletKeys);
   const txInfo = {} as BackupKeyRecoveryTransansaction;
   const feePerByte: number =
-    params.feeRate !== undefined ? params.feeRate : await getRecoveryFeePerBytes(coin, { defaultValue: 50 });
+    params.feeRate !== undefined
+      ? params.feeRate
+      : await getRecoveryFeePerBytes(coin, { defaultValue: DEFAULT_RECOVERY_FEERATE_SAT_VBYTE_V2 });
 
   // KRS recovery transactions have a 2nd output to pay the recovery fee, like paygo fees.
   const dimensions = Dimensions.fromPsbt(psbt).plus(isKrsRecovery ? Dimensions.SingleOutput.p2wsh : Dimensions.ZERO);
@@ -446,7 +456,9 @@ export async function v1BackupKeyRecovery(
     throw new Error('invalid recoveryDestination');
   }
 
-  const recoveryFeePerByte = await getRecoveryFeePerBytes(coin, { defaultValue: 50 });
+  const recoveryFeePerByte = await getRecoveryFeePerBytes(coin, {
+    defaultValue: DEFAULT_RECOVERY_FEERATE_SAT_VBYTE_V1,
+  });
   const v1wallet = await bitgo.wallets().get({ id: params.walletId });
   return await v1wallet.recover({
     ...params,
@@ -472,7 +484,9 @@ export async function v1Sweep(
 
   let recoveryFeePerByte = 100;
   if (bitgo.env === 'prod') {
-    recoveryFeePerByte = await getRecoveryFeePerBytes(coin, { defaultValue: 100 });
+    recoveryFeePerByte = await getRecoveryFeePerBytes(coin, {
+      defaultValue: DEFAULT_RECOVERY_FEERATE_SAT_VBYTE_V1_SWEEP,
+    });
   }
 
   const v1wallet = await bitgo.wallets().get({ id: params.walletId });
