@@ -1,6 +1,5 @@
 import _ from 'lodash';
 import * as utxolib from '@bitgo/utxo-lib';
-import { Dimensions } from '@bitgo/unspents';
 import {
   BitGoBase,
   ErrorNoInputToRecover,
@@ -20,6 +19,7 @@ import { generateAddressWithChainAndIndex } from '../address';
 import { forCoin, RecoveryProvider } from './RecoveryProvider';
 import { MempoolApi } from './mempoolApi';
 import { CoingeckoApi } from './coingeckoApi';
+import { createBackupKeyRecoveryPsbt, getRecoveryAmount } from './psbt';
 
 type ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 type ChainCode = utxolib.bitgo.ChainCode;
@@ -100,6 +100,7 @@ export interface RecoverParams {
   apiKey?: string;
   userKeyPath?: string;
   recoveryProvider?: RecoveryProvider;
+  /** Satoshi per byte */
   feeRate?: number;
 }
 
@@ -331,10 +332,6 @@ export async function backupKeyRecovery(
     throw new ErrorNoInputToRecover();
   }
 
-  // Build the psbt
-  const psbt = utxolib.bitgo.createPsbtForNetwork({ network: coin.network });
-  // xpubs can become handy for many things.
-  utxolib.bitgo.addXpubsToPsbt(psbt, walletKeys);
   const txInfo = {} as BackupKeyRecoveryTransansaction;
   const feePerByte: number =
     params.feeRate !== undefined
@@ -346,10 +343,6 @@ export async function backupKeyRecovery(
       ? unspents.map((u) => ({ ...u, value: Number(u.value), valueString: u.value.toString(), prevTx: undefined }))
       : undefined;
 
-  unspents.forEach((unspent) => {
-    utxolib.bitgo.addWalletUnspentToPsbt(psbt, unspent, walletKeys, 'user', 'backup');
-  });
-
   let krsFee = BigInt(0);
   if (isKrsRecovery && params.krsProvider) {
     try {
@@ -360,39 +353,25 @@ export async function backupKeyRecovery(
     }
   }
 
-  const dimensions = Dimensions.fromPsbt(psbt)
-    // Add the recovery output
-    .plus(Dimensions.fromOutput({ script: utxolib.address.toOutputScript(params.recoveryDestination, coin.network) }))
-    // KRS recovery transactions have a 2nd output to pay the recovery fee, like paygo fees.
-    .plus(krsFee > BigInt(0) ? Dimensions.SingleOutput.p2wsh : Dimensions.ZERO);
-  const approximateFee = BigInt(dimensions.getVSize() * feePerByte);
-
-  const recoveryAmount = totalInputAmount - approximateFee - krsFee;
-
-  if (recoveryAmount < BigInt(0)) {
-    throw new Error(`this wallet\'s balance is too low to pay the fees specified by the KRS provider.
-          Existing balance on wallet: ${totalInputAmount.toString()}. Estimated network fee for the recovery transaction
-          : ${approximateFee.toString()}, KRS fee to pay: ${krsFee.toString()}. After deducting fees, your total
-          recoverable balance is ${recoveryAmount.toString()}`);
-  }
-
-  const recoveryOutputScript = utxolib.address.toOutputScript(params.recoveryDestination, coin.network);
-  psbt.addOutput({ script: recoveryOutputScript, value: recoveryAmount });
-
+  let krsFeeAddress: string | undefined;
   if (krsProvider && krsFee > BigInt(0)) {
     if (!krsProvider.feeAddresses) {
       throw new Error(`keyProvider must define feeAddresses`);
     }
 
-    const krsFeeAddress = krsProvider.feeAddresses[coin.getChain()];
+    krsFeeAddress = krsProvider.feeAddresses[coin.getChain()];
 
     if (!krsFeeAddress) {
       throw new Error('this KRS provider has not configured their fee structure yet - recovery cannot be completed');
     }
-
-    const krsFeeOutputScript = utxolib.address.toOutputScript(krsFeeAddress, coin.network);
-    psbt.addOutput({ script: krsFeeOutputScript, value: krsFee });
   }
+
+  const psbt = createBackupKeyRecoveryPsbt(coin.network, walletKeys, unspents, {
+    feeRateSatVB: feePerByte,
+    recoveryDestination: params.recoveryDestination,
+    keyRecoveryServiceFee: krsFee,
+    keyRecoveryServiceFeeAddress: krsFeeAddress,
+  });
 
   if (isUnsignedSweep) {
     return {
@@ -421,6 +400,7 @@ export async function backupKeyRecovery(
   if (isKrsRecovery) {
     txInfo.coin = coin.getChain();
     txInfo.backupKey = params.backupKey;
+    const recoveryAmount = getRecoveryAmount(psbt, params.recoveryDestination);
     txInfo.recoveryAmount = Number(recoveryAmount);
     txInfo.recoveryAmountString = recoveryAmount.toString();
   }
