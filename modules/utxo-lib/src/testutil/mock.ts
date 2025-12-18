@@ -76,9 +76,12 @@ export function isReplayProtectionUnspent<TNumber extends bigint | number>(
 export function mockReplayProtectionUnspent<TNumber extends number | bigint>(
   network: Network,
   value: TNumber,
-  { key = replayProtectionKeyPair, vout = 0 }: { key?: BIP32Interface; vout?: number } = {}
+  { key = replayProtectionKeyPair, vout = 0 }: { key?: BIP32Interface | Buffer; vout?: number } = {}
 ): UnspentWithPrevTx<TNumber> {
-  const outputScript = createOutputScriptP2shP2pk(key.publicKey).scriptPubKey;
+  if (!Buffer.isBuffer(key)) {
+    key = key.publicKey;
+  }
+  const outputScript = createOutputScriptP2shP2pk(key).scriptPubKey;
   const prevTransaction = mockPrevTx(vout, outputScript, BigInt(value), network);
   return { ...fromOutputWithPrevTx(prevTransaction, vout), value };
 }

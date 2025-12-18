@@ -86,10 +86,14 @@ export function toUnspent(
   input: Input,
   index: number,
   network: Network,
-  rootWalletKeys: RootWalletKeys
+  rootWalletKeys: RootWalletKeys,
+  { p2shP2pkKey }: { p2shP2pkKey?: Buffer } = {}
 ): Unspent<bigint> {
   if (input.scriptType === 'p2shP2pk') {
-    return mockReplayProtectionUnspent(network, input.value, { key: rootWalletKeys['user'], vout: index });
+    return mockReplayProtectionUnspent(network, input.value, {
+      key: p2shP2pkKey ?? rootWalletKeys['user'],
+      vout: index,
+    });
   } else {
     const chain = getInternalChainCode(input.scriptType === 'taprootKeyPathSpend' ? 'p2trMusig2' : input.scriptType);
     return mockWalletUnspent(network, input.value, {
@@ -177,6 +181,7 @@ export function constructPsbt(
   rootWalletKeys: RootWalletKeys,
   signStage: SignStage,
   params?: {
+    p2shP2pkKey?: Buffer;
     signers?: { signerName: KeyName; cosignerName?: KeyName };
     deterministic?: boolean;
     skipNonWitnessUtxo?: boolean;
@@ -194,14 +199,16 @@ export function constructPsbt(
     addXpubsToPsbt(psbt, rootWalletKeys);
   }
 
-  const unspents = inputs.map((input, i) => toUnspent(input, i, network, rootWalletKeys));
+  const unspents = inputs.map((input, i) =>
+    toUnspent(input, i, network, rootWalletKeys, { p2shP2pkKey: params?.p2shP2pkKey })
+  );
 
   unspents.forEach((u, i) => {
     const { signerName, cosignerName } = signers ? signers : getSigners(inputs[i].scriptType);
     if (isWalletUnspent(u) && cosignerName) {
       addWalletUnspentToPsbt(psbt, u, rootWalletKeys, signerName, cosignerName, { skipNonWitnessUtxo });
     } else {
-      const { redeemScript } = createOutputScriptP2shP2pk(rootWalletKeys.user.publicKey);
+      const { redeemScript } = createOutputScriptP2shP2pk(params?.p2shP2pkKey ?? rootWalletKeys.user.publicKey);
       assert(redeemScript);
       addReplayProtectionUnspentToPsbt(psbt, u, redeemScript, { skipNonWitnessUtxo });
     }
