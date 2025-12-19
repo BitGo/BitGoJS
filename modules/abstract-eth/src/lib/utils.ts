@@ -664,7 +664,7 @@ export function decodeFlushTokensData(data: string, to?: string): FlushTokensDat
  * @param {string} data The data to classify the transaction with
  * @returns {TransactionType} The classified transaction type
  */
-export function classifyTransaction(data: string): TransactionType {
+export function classifyTransaction(data: string, coinName?: string): TransactionType {
   if (data.length < 10) {
     // contract calls must have at least 4 bytes (method id) and '0x'
     // if it doesn't have enough data to be a contract call it must be a single sig send
@@ -672,13 +672,26 @@ export function classifyTransaction(data: string): TransactionType {
   }
 
   // TODO(STLX-1970): validate if we are going to constraint to some methods allowed
-  let transactionType = transactionTypesMap[data.slice(0, 10).toLowerCase()];
-  if (transactionType === undefined) {
+  const methodId = data.slice(0, 10).toLowerCase();
+  const isCeloStaking =
+    CELO_STAKING_METHOD_IDS.has(methodId) && coinName && (coinName === 'celo' || coinName === 'tcelo');
+  let transactionType = transactionTypesMap[methodId];
+
+  if ((!isCeloStaking && CELO_STAKING_METHOD_IDS.has(methodId)) || transactionType === undefined) {
     transactionType = TransactionType.ContractCall;
   }
 
   return transactionType;
 }
+
+const CELO_STAKING_METHOD_IDS = new Set([
+  LockMethodId,
+  VoteMethodId,
+  ActivateMethodId,
+  UnvoteMethodId,
+  UnlockMethodId,
+  WithdrawMethodId,
+]);
 
 /**
  * A transaction types map according to the starting part of the encoded data

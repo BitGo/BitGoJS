@@ -183,7 +183,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @param {boolean} isFirstSigner if the transaction is being signed by the first signer
    */
   protected loadBuilderInput(transactionJson: TxData, isFirstSigner?: boolean): void {
-    const decodedType = classifyTransaction(transactionJson.data);
+    const decodedType = classifyTransaction(transactionJson.data, this._coinConfig.name);
     this.type(decodedType);
     this.counter(transactionJson.nonce);
     this.value(transactionJson.value);
