@@ -11946,6 +11946,14 @@ export const erc20Coins = [
     UnderlyingAsset['eth:aioz']
   ),
   erc20(
+    '2f4c46e8-9e30-4ecd-bcf1-1b50447c6f26',
+    'eth:lit',
+    'Lighter',
+    18,
+    '0x232ce3bd40fcd6f80f3d55a522d03f25df784ee2',
+    UnderlyingAsset['eth:lit']
+  ),
+  erc20(
     '3b5398f9-9c76-4508-8e9a-bf114506025c',
     'eth:job',
     'Jobchain',

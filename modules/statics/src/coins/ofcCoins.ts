@@ -2547,6 +2547,13 @@ export const ofcCoins = [
     UnderlyingAsset['polygon:cnktplus']
   ),
   ofcPolygonErc20(
+    '54077a8d-f71c-428c-b775-1a4b3dc4b6d9',
+    'ofcpolygon:land1',
+    'LAND1',
+    6,
+    UnderlyingAsset['polygon:land1']
+  ),
+  ofcPolygonErc20(
     'a63bf18b-3462-403c-93f5-ff1b608622c2',
     'ofcpolygon:usdc',
     'USD Coin',

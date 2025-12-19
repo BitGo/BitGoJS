@@ -2188,6 +2188,7 @@ export enum UnderlyingAsset {
   'eth:seda' = 'eth:seda',
   'eth:enso' = 'eth:enso',
   'eth:hpp' = 'eth:hpp',
+  'eth:lit' = 'eth:lit',
   'eth:six' = 'eth:six',
   'eth:eden' = 'eth:eden',
   'eth:xeden' = 'eth:xeden',
@@ -2632,6 +2633,7 @@ export enum UnderlyingAsset {
   'polygon:zig' = 'polygon:zig',
   'polygon:brl1' = 'polygon:brl1',
   'polygon:cnktplus' = 'polygon:cnktplus',
+  'polygon:land1' = 'polygon:land1',
   'polygon:mmt54' = 'polygon:mmt54',
   'polygon:jpyc' = 'polygon:jpyc',
   // Polygon NFTs
