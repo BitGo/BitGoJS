@@ -14195,4 +14195,12 @@ export const erc20Coins = [
     '0x4d1c297d39c5c1277964d0e3f8aa901493664530',
     UnderlyingAsset['eth:puffer']
   ),
+  terc20(
+    '8eb8a6c5-45cd-43ef-a804-327bcb95b5f4',
+    'tog:tog',
+    'Testnet OG TOG',
+    6,
+    '0x233fd9435ddaf83fbb548f7e360ce34d0ed1eb9a',
+    UnderlyingAsset['tog:tog']
+  ),
 ];
