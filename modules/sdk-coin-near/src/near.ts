@@ -19,7 +19,6 @@ import {
   EDDSAMethodTypes,
   Environments,
   KeyPair,
-  MethodNotImplementedError,
   MPCAlgorithm,
   MPCRecoveryOptions,
   MPCSweepRecoveryOptions,
@@ -38,7 +37,9 @@ import {
   TokenEnablementConfig,
   TransactionParams,
   TransactionType,
-  VerifyAddressOptions,
+  TssVerifyAddressOptions,
+  UnexpectedAddressError,
+  verifyEddsaTssWalletAddress,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, CoinFamily, coins, Nep141Token, Networks } from '@bitgo/statics';
@@ -80,6 +81,15 @@ export interface NearParseTransactionOptions extends BaseParseTransactionOptions
   feeInfo: {
     fee: string;
   };
+}
+
+/**
+ * Options for verifying NEAR TSS/MPC wallet addresses.
+ * Extends base TssVerifyAddressOptions with NEAR-specific fields.
+ */
+export interface TssVerifyNearAddressOptions extends TssVerifyAddressOptions {
+  /** The root address of the wallet (for root address verification) */
+  rootAddress?: string;
 }
 
 interface TransactionOutput {
@@ -984,8 +994,27 @@ export class Near extends BaseCoin {
     };
   }
 
-  async isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
-    throw new MethodNotImplementedError();
+  /**
+   * Verifies if the given address belongs to a TSS wallet for NEAR.
+   * For NEAR, the address is the public key directly (implicit accounts).
+   *
+   * @param {TssVerifyNearAddressOptions} params - Verification parameters
+   * @returns {Promise<boolean>} True if address belongs to wallet
+   * @throws {UnexpectedAddressError} If address doesn't match derived address
+   * @throws {Error} If invalid parameters or root address verification with wrong index
+   */
+  async isWalletAddress(params: TssVerifyNearAddressOptions): Promise<boolean> {
+    const result = await verifyEddsaTssWalletAddress(
+      params,
+      (address) => this.isValidAddress(address),
+      (publicKey) => publicKey
+    );
+
+    if (!result) {
+      throw new UnexpectedAddressError(`address validation failure`);
+    }
+
+    return true;
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
