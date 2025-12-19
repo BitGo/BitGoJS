@@ -4465,6 +4465,7 @@ export const tOfcErc20Coins = [
     underlyingAssetForSymbol('eth:banana')
   ),
   ofcerc20('768025b4-e38d-435c-af69-799522cda202', 'ofceth:aioz', 'aioz', 18, UnderlyingAsset['eth:aioz']),
+  ofcerc20('d1fa53cb-7868-4699-9e86-853d9e017bfd', 'ofceth:lit', 'lighter', 18, UnderlyingAsset['eth:lit']),
   ofcerc20('63f1d5de-5729-4a71-ba6e-dcd7095c20da', 'ofceth:job', 'jobchain', 8, UnderlyingAsset['eth:job']),
   ofcerc20('90169666-a3ee-4ff6-b447-0553a1a4cbb8', 'ofceth:irys', 'irys', 18, UnderlyingAsset['eth:irys']),
   ofcerc20('42fc787e-bd51-4ba0-915f-14b7cdae1bf3', 'ofceth:kpk', 'kpk', 18, UnderlyingAsset['eth:kpk']),
