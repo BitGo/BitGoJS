@@ -913,8 +913,15 @@ Wallet.prototype.createTransaction = function (params, callback) {
 Wallet.prototype.signTransaction = function (params, callback) {
   params = _.extend({}, params);
 
-  if (params.psbt) {
-    return tryPromise(() => signPsbtRequest(params))
+  // Route to PSBT signing if params.psbt exists OR if transactionHex contains a PSBT
+  // Use utxolib.bitgo.isPsbt() to auto-detect PSBT format in transactionHex
+  if (params.psbt || (params.transactionHex && utxolib.bitgo.isPsbt(params.transactionHex))) {
+    const psbtHex = params.psbt || params.transactionHex;
+    return tryPromise(() => signPsbtRequest({ psbt: psbtHex, keychain: params.keychain }))
+      .then(function (result) {
+        // Return result with transactionHex containing the signed PSBT for consistency
+        return { tx: result.psbt, transactionHex: result.psbt };
+      })
       .then(callback)
       .catch(callback);
   }
@@ -1672,6 +1679,7 @@ Wallet.prototype.createAndSignTransaction = function (params, callback) {
     }
 
     // @ts-expect-error - no implicit this
+    // Build transaction (legacy format by default, PSBT when usePsbt: true)
     const transaction = (await this.createTransaction(params)) as any;
     const fee = transaction.fee;
     const feeRate = transaction.feeRate;
@@ -1704,6 +1712,7 @@ Wallet.prototype.createAndSignTransaction = function (params, callback) {
 
     transaction.feeSingleKeyWIF = params.feeSingleKeyWIF;
     // @ts-expect-error - no implicit this
+    // signTransaction auto-detects PSBT vs legacy from transactionHex
     const result = await this.signTransaction(transaction);
     return _.extend(result, {
       fee,
