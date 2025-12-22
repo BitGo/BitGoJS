@@ -28,6 +28,18 @@ export const UNAVAILABLE_TEXT = 'UNAVAILABLE';
  */
 export const SOLANA_TRANSACTION_MAX_SIZE = 1232;
 
+/**
+ * Maximum safe recipient limits for Solana token transfers
+ *
+ * These limits are based on empirical testing to stay within SOLANA_TRANSACTION_MAX_SIZE (1232 bytes).
+ * Source: modules/sdk-coin-sol/scripts/transaction-size-benchmark-results.json
+ *
+ * With ATA Creation: Includes Associated Token Account initialization instructions
+ * Without ATA Creation: Recipients already have token accounts
+ */
+export const MAX_RECIPIENTS_WITH_ATA_CREATION = 9;
+export const MAX_RECIPIENTS_WITHOUT_ATA_CREATION = 19;
+
 export const JITO_STAKE_POOL_ADDRESS = 'Jito4APyf642JPZPx3hGc6WWJ8zPKtRbRs4P815Awbb';
 export const JITOSOL_MINT_ADDRESS = 'J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn';
 export const JITO_STAKE_POOL_RESERVE_ACCOUNT = 'BgKUXdS29YcHCFrPm5M8oLHiTzZaMDjsebggjoaQ6KFL';
