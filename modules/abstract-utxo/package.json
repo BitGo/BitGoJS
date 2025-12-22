@@ -68,7 +68,7 @@
     "@bitgo/utxo-core": "^1.27.0",
     "@bitgo/utxo-lib": "^11.18.0",
     "@bitgo/utxo-ord": "^1.22.19",
-    "@bitgo/wasm-utxo": "1.15.0",
+    "@bitgo/wasm-utxo": "1.17.0",
     "@types/lodash": "^4.14.121",
     "@types/superagent": "4.1.15",
     "bignumber.js": "^9.0.2",
