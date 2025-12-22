@@ -31,8 +31,8 @@ import { tryPromise } from '../util';
 const TransactionBuilder = require('./transactionBuilder');
 const PendingApproval = require('./pendingapproval');
 
-// PSBT rollout: 10% on mainnet, 100% on testnet
-const V1_PSBT_ROLLOUT_PERCENT = 10;
+// PSBT rollout: 0% on mainnet, 100% on testnet
+const V1_PSBT_ROLLOUT_PERCENT = 0;
 
 function shouldUsePsbt(bitgo: any, explicitUsePsbt?: boolean): boolean {
   // Explicit setting always wins
@@ -914,8 +914,32 @@ Wallet.prototype.createTransaction = function (params, callback) {
   params.wallet = this;
 
   // Apply PSBT rollout logic (respects explicit usePsbt if set)
-  params.usePsbt = shouldUsePsbt(this.bitgo, params.usePsbt);
+  const wantsPsbt = shouldUsePsbt(this.bitgo, params.usePsbt);
 
+  if (wantsPsbt) {
+    // Try PSBT first, fall back to legacy on failure
+    return TransactionBuilder.createTransaction({ ...params, usePsbt: true })
+      .then((result: any) => {
+        result.psbtAttempt = { success: true };
+        return result;
+      })
+      .catch((psbtError: Error) => {
+        // PSBT failed - fall back to legacy and capture error for backend reporting
+        console.warn('PSBT transaction failed, falling back to legacy');
+        return TransactionBuilder.createTransaction({ ...params, usePsbt: false }).then((result: any) => {
+          result.psbtAttempt = {
+            success: false,
+            stack: psbtError.stack?.split('\n').slice(0, 5).join('\n'), // First 5 lines only
+          };
+          return result;
+        });
+      })
+      .then(callback)
+      .catch(callback);
+  }
+
+  // Legacy path
+  params.usePsbt = false;
   return TransactionBuilder.createTransaction(params).then(callback).catch(callback);
 };
 
@@ -1746,6 +1770,7 @@ Wallet.prototype.createAndSignTransaction = function (params, callback) {
       travelInfos,
       estimatedSize,
       unspents,
+      psbtAttempt: transaction.psbtAttempt, // Propagate PSBT attempt info for error reporting
     });
   }
     .call(this)
