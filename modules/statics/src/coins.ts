@@ -27,6 +27,7 @@ import {
   xrpToken,
   adaToken,
   erc20Token,
+  erc721Token,
 } from './account';
 import { ofcToken } from './ofc';
 import { BaseCoin, CoinFeature } from './base';
@@ -61,6 +62,17 @@ allCoinsAndTokens.forEach((coin) => {
     enabledEvmCoins.includes(coin.family)
   ) {
     erc20ChainToNameMap[coin.family] = coin.name;
+  }
+});
+
+const erc721ChainToNameMap: Record<string, string> = {};
+allCoinsAndTokens.forEach((coin) => {
+  if (
+    coin.features.includes(CoinFeature.SUPPORTS_ERC721) &&
+    coin.network.type === NetworkType.MAINNET &&
+    !coin.isToken
+  ) {
+    erc721ChainToNameMap[coin.family] = coin.name;
   }
 });
 
@@ -105,6 +117,10 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
     initializerMap[key] = erc20Token;
   });
 
+  Object.keys(erc721ChainToNameMap).forEach((key) => {
+    initializerMap[key] = erc721Token;
+  });
+
   //return the BaseCoin from default coin map if present
   if (isCoinPresentInCoinMap({ ...token })) {
     if (coins.has(token.name)) {
@@ -142,6 +158,16 @@ export function createToken(token: AmsTokenConfig): Readonly<BaseCoin> | undefin
         ...commonArgs.slice(0, 4), // id, name, fullName, decimalPlaces
         token.contractAddress || token.tokenAddress, // contractAddress
         token.asset,
+        token.network,
+        token.features,
+        token.prefix,
+        token.suffix,
+        token.primaryKeyCurve
+      );
+    case erc721ChainToNameMap[family]:
+      return initializer(
+        ...commonArgs.slice(0, 3), // id, name, fullName
+        token.contractAddress, // contractAddress
         token.network,
         token.features,
         token.prefix,

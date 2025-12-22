@@ -15,6 +15,7 @@ import {
   getEthLikeTokens,
   getFormattedTokens,
   EthLikeTokenConfig,
+  TokenTypeEnum,
 } from '../../src/tokenConfig';
 import { EthLikeERC20Token } from '../../src/account';
 
@@ -38,7 +39,7 @@ describe('EthLike Token Config Functions', function () {
         baseUnit: BaseUnit.ETH,
       });
 
-      const config = getFormattedEthLikeTokenConfig(CoinMap.fromCoins([mockMainnetToken]))[0];
+      const config = getFormattedEthLikeTokenConfig(CoinMap.fromCoins([mockMainnetToken]), TokenTypeEnum.ERC20)[0];
 
       config.should.not.be.undefined();
       config.type.should.equal('ip:testtoken');
@@ -67,7 +68,7 @@ describe('EthLike Token Config Functions', function () {
         baseUnit: BaseUnit.ETH,
       });
 
-      const config = getFormattedEthLikeTokenConfig(CoinMap.fromCoins([mockTestnetToken]))[0];
+      const config = getFormattedEthLikeTokenConfig(CoinMap.fromCoins([mockTestnetToken]), TokenTypeEnum.ERC20)[0];
 
       config.should.not.be.undefined();
       config.type.should.equal('tip:testtoken');
@@ -95,7 +96,7 @@ describe('EthLike Token Config Functions', function () {
         baseUnit: BaseUnit.ETH,
       });
 
-      const config = getFormattedEthLikeTokenConfig(CoinMap.fromCoins([mockToken]))[0];
+      const config = getFormattedEthLikeTokenConfig(CoinMap.fromCoins([mockToken]), TokenTypeEnum.ERC20)[0];
 
       config.tokenContractAddress.should.equal('0xabcdef1234567890abcdef1234567890abcdef12');
       config.tokenContractAddress.should.not.match(/[A-F]/);
@@ -118,7 +119,7 @@ describe('EthLike Token Config Functions', function () {
         baseUnit: BaseUnit.ETH,
       });
 
-      const config = getFormattedEthLikeTokenConfig(CoinMap.fromCoins([mockToken]))[0];
+      const config = getFormattedEthLikeTokenConfig(CoinMap.fromCoins([mockToken]), TokenTypeEnum.ERC20)[0];
 
       config.coin.should.equal('ip');
       config.type.should.equal('ip:usdc');
@@ -142,7 +143,7 @@ describe('EthLike Token Config Functions', function () {
         baseUnit: BaseUnit.ETH,
       });
 
-      const config = getFormattedEthLikeTokenConfig(CoinMap.fromCoins([mockMainnetToken]))[0];
+      const config = getFormattedEthLikeTokenConfig(CoinMap.fromCoins([mockMainnetToken]), TokenTypeEnum.ERC20)[0];
 
       config.should.not.be.undefined();
       config.type.should.equal('hypeevm:testtoken');
@@ -171,7 +172,7 @@ describe('EthLike Token Config Functions', function () {
         baseUnit: BaseUnit.ETH,
       });
 
-      const config = getFormattedEthLikeTokenConfig(CoinMap.fromCoins([mockTestnetToken]))[0];
+      const config = getFormattedEthLikeTokenConfig(CoinMap.fromCoins([mockTestnetToken]), TokenTypeEnum.ERC20)[0];
 
       config.should.not.be.undefined();
       config.type.should.equal('thypeevm:testtoken');
@@ -216,7 +217,10 @@ describe('EthLike Token Config Functions', function () {
         baseUnit: BaseUnit.BTC,
       });
 
-      const result = getFormattedEthLikeTokenConfig(CoinMap.fromCoins([mockEthLikeToken, mockAccountCoin]));
+      const result = getFormattedEthLikeTokenConfig(
+        CoinMap.fromCoins([mockEthLikeToken, mockAccountCoin]),
+        TokenTypeEnum.ERC20
+      );
 
       result.length.should.equal(1);
       result[0].type.should.equal('ip:token1');
@@ -255,7 +259,7 @@ describe('EthLike Token Config Functions', function () {
         baseUnit: BaseUnit.ETH,
       });
 
-      const result = getFormattedEthLikeTokenConfig(CoinMap.fromCoins([mockToken1, mockToken2]));
+      const result = getFormattedEthLikeTokenConfig(CoinMap.fromCoins([mockToken1, mockToken2]), TokenTypeEnum.ERC20);
 
       result.length.should.equal(2);
       result[0].type.should.equal('ip:token1');
@@ -265,7 +269,7 @@ describe('EthLike Token Config Functions', function () {
     });
 
     it('should use default coins map when no parameter is provided', function () {
-      const result = getFormattedEthLikeTokenConfig();
+      const result = getFormattedEthLikeTokenConfig(undefined, TokenTypeEnum.ERC20);
 
       result.should.be.an.Array();
       // Check that it filters coins from the default coin map
@@ -296,7 +300,7 @@ describe('EthLike Token Config Functions', function () {
         baseUnit: BaseUnit.ETH,
       });
 
-      const result = getFormattedEthLikeTokenConfig(CoinMap.fromCoins([mockToken]));
+      const result = getFormattedEthLikeTokenConfig(CoinMap.fromCoins([mockToken]), TokenTypeEnum.ERC20);
 
       result[0].should.have.property('type').which.is.a.String();
       result[0].should.have.property('coin').which.is.a.String();
@@ -309,7 +313,7 @@ describe('EthLike Token Config Functions', function () {
 
   describe('getEthLikeTokens', function () {
     it('should return a map with tokens for enabled chains', function () {
-      const result = getEthLikeTokens('Mainnet');
+      const result = getEthLikeTokens('Mainnet', TokenTypeEnum.ERC20);
 
       result.should.be.an.Object();
       // The function filters by enabledChains which currently includes 'ip' and 'hypeevm'
@@ -324,7 +328,7 @@ describe('EthLike Token Config Functions', function () {
     });
 
     it('should filter mainnet tokens correctly', function () {
-      const result = getEthLikeTokens('Mainnet');
+      const result = getEthLikeTokens('Mainnet', TokenTypeEnum.ERC20);
 
       Object.values(result).forEach((chainData) => {
         chainData.tokens.forEach((token) => {
@@ -334,7 +338,7 @@ describe('EthLike Token Config Functions', function () {
     });
 
     it('should filter testnet tokens correctly', function () {
-      const result = getEthLikeTokens('Testnet');
+      const result = getEthLikeTokens('Testnet', TokenTypeEnum.ERC20);
 
       Object.values(result).forEach((chainData) => {
         chainData.tokens.forEach((token) => {
@@ -344,7 +348,7 @@ describe('EthLike Token Config Functions', function () {
     });
 
     it('should prepend "t" to coin name for testnet tokens', function () {
-      const result = getEthLikeTokens('Testnet');
+      const result = getEthLikeTokens('Testnet', TokenTypeEnum.ERC20);
 
       if (result.ip && result.ip.tokens.length > 0) {
         result.ip.tokens.forEach((token) => {
@@ -359,7 +363,7 @@ describe('EthLike Token Config Functions', function () {
     });
 
     it('should not prepend "t" to coin name for mainnet tokens', function () {
-      const result = getEthLikeTokens('Mainnet');
+      const result = getEthLikeTokens('Mainnet', TokenTypeEnum.ERC20);
 
       if (result.ip && result.ip.tokens.length > 0) {
         result.ip.tokens.forEach((token) => {
@@ -374,7 +378,7 @@ describe('EthLike Token Config Functions', function () {
     });
 
     it('should only include tokens from chains with SUPPORTS_ERC20 feature', function () {
-      const result = getEthLikeTokens('Mainnet');
+      const result = getEthLikeTokens('Mainnet', TokenTypeEnum.ERC20);
 
       // Verify that all included chains are AccountCoins with SUPPORTS_ERC20 feature
       Object.keys(result).forEach((family) => {
@@ -387,8 +391,8 @@ describe('EthLike Token Config Functions', function () {
     });
 
     it('should only include tokens from enabled chains', function () {
-      const mainnetResult = getEthLikeTokens('Mainnet');
-      const testnetResult = getEthLikeTokens('Testnet');
+      const mainnetResult = getEthLikeTokens('Mainnet', TokenTypeEnum.ERC20);
+      const testnetResult = getEthLikeTokens('Testnet', TokenTypeEnum.ERC20);
 
       // Current implementation enables 'ip' and 'hypeevm' chains
       const enabledChains = ['ip', 'hypeevm', 'plume'];
@@ -403,7 +407,7 @@ describe('EthLike Token Config Functions', function () {
     });
 
     it('should return empty tokens array for chains without tokens', function () {
-      const result = getEthLikeTokens('Mainnet');
+      const result = getEthLikeTokens('Mainnet', TokenTypeEnum.ERC20);
 
       // If a chain is in the result but has no tokens, it should have an empty array
       Object.values(result).forEach((chainData) => {
@@ -412,7 +416,7 @@ describe('EthLike Token Config Functions', function () {
     });
 
     it('should group tokens by their coin family', function () {
-      const result = getEthLikeTokens('Mainnet');
+      const result = getEthLikeTokens('Mainnet', TokenTypeEnum.ERC20);
 
       if (result.ip && result.ip.tokens.length > 0) {
         result.ip.tokens.forEach((token) => {
@@ -434,7 +438,7 @@ describe('EthLike Token Config Functions', function () {
     });
 
     it('should return tokens with correct structure', function () {
-      const mainnetResult = getEthLikeTokens('Mainnet');
+      const mainnetResult = getEthLikeTokens('Mainnet', TokenTypeEnum.ERC20);
 
       Object.values(mainnetResult).forEach((chainData) => {
         chainData.should.have.property('tokens');
@@ -452,8 +456,8 @@ describe('EthLike Token Config Functions', function () {
     });
 
     it('should handle both Mainnet and Testnet parameters', function () {
-      const mainnetResult = getEthLikeTokens('Mainnet');
-      const testnetResult = getEthLikeTokens('Testnet');
+      const mainnetResult = getEthLikeTokens('Mainnet', TokenTypeEnum.ERC20);
+      const testnetResult = getEthLikeTokens('Testnet', TokenTypeEnum.ERC20);
 
       mainnetResult.should.be.an.Object();
       testnetResult.should.be.an.Object();
@@ -473,8 +477,8 @@ describe('EthLike Token Config Functions', function () {
     });
 
     it('should not mix mainnet and testnet tokens', function () {
-      const mainnetResult = getEthLikeTokens('Mainnet');
-      const testnetResult = getEthLikeTokens('Testnet');
+      const mainnetResult = getEthLikeTokens('Mainnet', TokenTypeEnum.ERC20);
+      const testnetResult = getEthLikeTokens('Testnet', TokenTypeEnum.ERC20);
 
       // Get all token types from mainnet
       const mainnetTokenTypes = new Set<string>();
@@ -502,7 +506,7 @@ describe('EthLike Token Config Functions', function () {
       const ethLikeTokens = Array.from(coins).filter((coin) => coin instanceof EthLikeERC20Token);
 
       if (ethLikeTokens.length > 0) {
-        const configs = getFormattedEthLikeTokenConfig(coins);
+        const configs = getFormattedEthLikeTokenConfig(coins, TokenTypeEnum.ERC20);
 
         configs.length.should.be.greaterThanOrEqual(0);
 
@@ -532,7 +536,7 @@ describe('EthLike Token Config Functions', function () {
         }
       });
 
-      const formattedConfigs = getFormattedEthLikeTokenConfig(coins);
+      const formattedConfigs = getFormattedEthLikeTokenConfig(coins, TokenTypeEnum.ERC20);
       formattedConfigs.length.should.equal(ethLikeTokenCount);
     });
   });

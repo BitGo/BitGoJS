@@ -13,6 +13,7 @@ import {
   erc20CompatibleAccountCoin,
   erc20Token,
   erc721,
+  erc721Token,
   fiat,
   flrErc20,
   gasTankAccount,
@@ -2196,6 +2197,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
       CoinFeature.SUPPORTS_ERC20,
+      CoinFeature.SUPPORTS_ERC721,
     ]
   ),
   account(
@@ -2217,6 +2219,16 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
     ]
   ),
+
+  erc721Token(
+    'a7604e03-7f40-41f0-8efa-2e7673ac2a9f',
+    'terc721:hbarevmtoken',
+    'Testnet Hedera EVM NFT',
+    '0x00000000000000000000000000000000007103a5',
+    Networks.test.hederaEVM,
+    GENERIC_TOKEN_FEATURES
+  ),
+
   account(
     '8f6ed7e4-cce2-4686-bdab-ae8f54e2c05e',
     'tfluenteth',

@@ -14,6 +14,7 @@ import {
   Erc20Coin,
   Erc721Coin,
   EthLikeERC20Token,
+  EthLikeERC721Token,
   FlrERC20Token,
   HederaToken,
   Nep141Token,
@@ -148,6 +149,10 @@ export type JettonTokenConfig = BaseNetworkConfig & {
   contractAddress: string;
 };
 
+export type EthLikeERC721TokenConfig = BaseContractAddressConfig & {
+  network: string;
+};
+
 export type TokenConfig =
   | Erc20TokenConfig
   | StellarTokenConfig
@@ -172,7 +177,9 @@ export type TokenConfig =
   | VetNFTCollectionConfig
   | TaoTokenConfig
   | PolyxTokenConfig
-  | JettonTokenConfig;
+  | JettonTokenConfig
+  | EthLikeERC721TokenConfig;
+
 export interface TokenNetwork {
   eth: {
     tokens: Erc20TokenConfig[];
@@ -1069,6 +1076,15 @@ const getFormattedJettonTokens = (customCoinMap = coins) =>
     return acc;
   }, []);
 
+type EthLikeTokenMap = {
+  [K in CoinFamily]: { tokens: EthLikeTokenConfig[] };
+};
+
+export enum TokenTypeEnum {
+  ERC20 = 'erc20',
+  ERC721 = 'erc721',
+}
+
 function getEthLikeTokenConfig(coin: EthLikeERC20Token): EthLikeTokenConfig {
   return {
     type: coin.name,
@@ -1080,32 +1096,60 @@ function getEthLikeTokenConfig(coin: EthLikeERC20Token): EthLikeTokenConfig {
   };
 }
 
-export const getFormattedEthLikeTokenConfig = (customCoinMap = coins): EthLikeTokenConfig[] =>
-  customCoinMap.reduce((acc: EthLikeTokenConfig[], coin) => {
-    if (coin instanceof EthLikeERC20Token) {
-      acc.push(getEthLikeTokenConfig(coin));
+function getEthLikeERC721TokenConfig(coin: EthLikeERC721Token): EthLikeERC721TokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.name.split(':')[0].toLowerCase(),
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+    decimalPlaces: coin.decimalPlaces,
+  };
+}
+
+export const getFormattedEthLikeTokenConfig = (
+  customCoinMap = coins,
+  tokenType: TokenTypeEnum
+): EthLikeTokenConfig[] => {
+  let className: typeof EthLikeERC20Token | typeof EthLikeERC721Token;
+  if (tokenType === TokenTypeEnum.ERC20) {
+    className = EthLikeERC20Token;
+  } else if (tokenType === TokenTypeEnum.ERC721) {
+    className = EthLikeERC721Token;
+  } else {
+    throw new Error(`Unsupported token type: ${tokenType}`);
+  }
+
+  return customCoinMap.reduce((acc: EthLikeTokenConfig[], coin) => {
+    if (coin instanceof className) {
+      if (tokenType === TokenTypeEnum.ERC20) {
+        acc.push(getEthLikeTokenConfig(coin as EthLikeERC20Token));
+      } else if (tokenType === TokenTypeEnum.ERC721) {
+        acc.push(getEthLikeERC721TokenConfig(coin as EthLikeERC721Token));
+      }
     }
     return acc;
   }, []);
-
-type EthLikeTokenMap = {
-  [K in CoinFamily]: { tokens: EthLikeTokenConfig[] };
 };
 
 /* Get all tokens of a given eth like coin for a given network */
-export const getEthLikeTokens = (network: 'Mainnet' | 'Testnet'): EthLikeTokenMap => {
-  const networkTokens = getFormattedEthLikeTokenConfig().filter((token) => token.network === network);
+export const getEthLikeTokens = (network: 'Mainnet' | 'Testnet', tokenType: TokenTypeEnum): EthLikeTokenMap => {
+  let feature: CoinFeature;
+  const networkTokens = getFormattedEthLikeTokenConfig(coins, tokenType).filter((token) => token.network === network);
+
+  if (tokenType === TokenTypeEnum.ERC20) {
+    feature = CoinFeature.SUPPORTS_ERC20;
+  } else if (tokenType === TokenTypeEnum.ERC721) {
+    feature = CoinFeature.SUPPORTS_ERC721;
+  }
+
   const ethLikeTokenMap = {} as EthLikeTokenMap;
   // TODO: add IP token here and test changes (Ticket: https://bitgoinc.atlassian.net/browse/WIN-7835)
   const enabledChains = ['ip', 'hypeevm', 'plume'] as string[];
 
   coins.forEach((coin) => {
     // TODO: remove enabled chains once changes are done (Ticket: https://bitgoinc.atlassian.net/browse/WIN-7835)
-    if (
-      coin instanceof AccountCoin &&
-      coin.features.includes(CoinFeature.SUPPORTS_ERC20) &&
-      enabledChains.includes(coin.family)
-    ) {
+    if (coin instanceof AccountCoin && coin.features.includes(feature) && enabledChains.includes(coin.family)) {
       const coinName = coin.family;
       const coinNameForNetwork = network === 'Testnet' ? `t${coinName}` : coinName;
 
@@ -1118,11 +1162,28 @@ export const getEthLikeTokens = (network: 'Mainnet' | 'Testnet'): EthLikeTokenMa
   return ethLikeTokenMap;
 };
 
+const mergeEthLikeTokenMap = (...maps: EthLikeTokenMap[]): EthLikeTokenMap => {
+  const mergedMap: EthLikeTokenMap = {} as EthLikeTokenMap;
+
+  maps.forEach((map) => {
+    Object.keys(map).forEach((key) => {
+      if (!mergedMap[key as CoinFamily]) {
+        mergedMap[key as CoinFamily] = { tokens: [] };
+      }
+      mergedMap[key as CoinFamily].tokens.push(...map[key as CoinFamily].tokens);
+    });
+  });
+  return mergedMap;
+};
+
 const getFormattedTokensByNetwork = (network: 'Mainnet' | 'Testnet', coinMap: typeof coins) => {
   const networkType = network === 'Mainnet' ? NetworkType.MAINNET : NetworkType.TESTNET;
-  const ethLikeTokenMap = getEthLikeTokens(network);
+
+  const ethLikeTokenMap = getEthLikeTokens(network, TokenTypeEnum.ERC20);
+  const ethLikeErc721TokenMap = getEthLikeTokens(network, TokenTypeEnum.ERC721);
+
   return {
-    ...ethLikeTokenMap,
+    ...mergeEthLikeTokenMap(ethLikeTokenMap, ethLikeErc721TokenMap),
     eth: {
       tokens: getFormattedErc20Tokens(coinMap).filter((token) => token.network === network),
       nfts: getFormattedErc721Tokens(coinMap).filter((token) => token.network === network),
@@ -1387,6 +1448,8 @@ export function getFormattedTokenConfigForCoin(coin: Readonly<BaseCoin>): TokenC
     return getFlrTokenConfig(coin);
   } else if (coin instanceof EthLikeERC20Token) {
     return getEthLikeTokenConfig(coin);
+  } else if (coin instanceof EthLikeERC721Token) {
+    return getEthLikeERC721TokenConfig(coin);
   }
   return undefined;
 }

@@ -9,7 +9,8 @@ import { Near, TNear, Nep141Token } from '@bitgo/sdk-coin-near';
 import { SolToken } from '@bitgo/sdk-coin-sol';
 import { TrxToken } from '@bitgo/sdk-coin-trx';
 import { CoinFactory, CoinConstructor } from '@bitgo/sdk-core';
-import { EthLikeErc20Token } from '@bitgo/sdk-coin-evm';
+import { EthLikeErc20Token, EthLikeErc721Token } from '@bitgo/sdk-coin-evm';
+
 import {
   CoinMap,
   coins,
@@ -38,7 +39,6 @@ import {
   TaoTokenConfig,
   PolyxTokenConfig,
   JettonTokenConfig,
-  NetworkType,
 } from '@bitgo/statics';
 import {
   Ada,
@@ -569,6 +569,20 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
         coinFactory.register(name, coinConstructor);
       });
     });
+
+  // Generic ERC721 token registration for coins with SUPPORTS_ERC721 feature
+  coins
+    .filter((coin) => coin.features.includes(CoinFeature.SUPPORTS_ERC721) && !coin.isToken)
+    .forEach((coin) => {
+      const coinNames = {
+        Mainnet: `${coin.name}`,
+        Testnet: `t${coin.name}`,
+      };
+
+      EthLikeErc721Token.createTokenConstructors(coinNames).forEach(({ name, coinConstructor }) => {
+        coinFactory.register(name, coinConstructor);
+      });
+    });
 }
 
 export function getCoinConstructor(coinName: string): CoinConstructor | undefined {
@@ -916,45 +930,31 @@ export function getCoinConstructor(coinName: string): CoinConstructor | undefine
   }
 }
 
-export const buildEthLikeChainToTestnetMap = (): {
-  mainnetToTestnetMap: Record<string, string>;
-  testnetToMainnetMap: Record<string, string>;
-} => {
-  const testnetToMainnetMap: Record<string, string> = {};
-  const mainnetToTestnetMap: Record<string, string> = {};
-
-  const enabledEvmCoins = ['ip', 'hypeevm', 'plume'];
-
-  // TODO: remove ip and hypeeevm coins here and remove other evm coins from switch block, once changes are tested (Ticket: https://bitgoinc.atlassian.net/browse/WIN-7835)
-  coins.forEach((coin) => {
-    if (coin.network.type === NetworkType.TESTNET && !coin.isToken && enabledEvmCoins.includes(coin.family)) {
-      if (coins.get(coin.family)?.features.includes(CoinFeature.SUPPORTS_ERC20)) {
-        mainnetToTestnetMap[coin.family] = `${coin.name}`;
-        testnetToMainnetMap[coin.name] = `${coin.family}`;
-      }
-    }
-  });
-
-  return { mainnetToTestnetMap, testnetToMainnetMap };
-};
-
-const { mainnetToTestnetMap, testnetToMainnetMap } = buildEthLikeChainToTestnetMap();
-
 export function getTokenConstructor(tokenConfig: TokenConfig): CoinConstructor | undefined {
-  const testnetCoin = mainnetToTestnetMap[tokenConfig.coin];
-  if (testnetCoin) {
+  const coin = coins.get(tokenConfig.coin);
+
+  if (
+    'network' in tokenConfig &&
+    tokenConfig.network === 'Mainnet' &&
+    coin?.features.includes(CoinFeature.SUPPORTS_ERC20)
+  ) {
     return EthLikeErc20Token.createTokenConstructor(tokenConfig as EthLikeTokenConfig, {
       Mainnet: tokenConfig.coin,
-      Testnet: testnetCoin,
+      Testnet: `t${tokenConfig.coin}`,
     });
   }
-  const mainnetCoin = testnetToMainnetMap[tokenConfig.coin];
-  if (mainnetCoin) {
-    return EthLikeErc20Token.createTokenConstructor(tokenConfig as EthLikeTokenConfig, {
-      Mainnet: mainnetCoin,
-      Testnet: tokenConfig.coin,
+
+  if (
+    'network' in tokenConfig &&
+    tokenConfig.network === 'Mainnet' &&
+    coin?.features.includes(CoinFeature.SUPPORTS_ERC721)
+  ) {
+    return EthLikeErc721Token.createTokenConstructor(tokenConfig as EthLikeTokenConfig, {
+      Mainnet: tokenConfig.coin,
+      Testnet: `t${tokenConfig.coin}`,
     });
   }
+
   switch (tokenConfig.coin) {
     case 'eth':
     case 'hteth':

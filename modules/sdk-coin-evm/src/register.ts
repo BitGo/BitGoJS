@@ -2,6 +2,7 @@ import { BitGoBase } from '@bitgo/sdk-core';
 import { CoinFeature, coins, NetworkType } from '@bitgo/statics';
 import { EvmCoin } from './evmCoin';
 import { EthLikeErc20Token } from './ethLikeErc20Token';
+import { EthLikeErc721Token } from './ethLikeErc721Token';
 
 export const registerAll = (sdk: BitGoBase): void => {
   coins
@@ -32,6 +33,18 @@ export const register = (coinFamily: string, sdk: BitGoBase): void => {
         };
 
         EthLikeErc20Token.createTokenConstructors(coinNames).forEach(({ name, coinConstructor }) => {
+          sdk.register(name, coinConstructor);
+        });
+      }
+
+      // Handle SUPPORTS_ERC721 registration
+      if (coinFeatures.includes(CoinFeature.SUPPORTS_ERC721)) {
+        const coinNames = {
+          Mainnet: `${coin.name}`,
+          Testnet: `${coin.name}`,
+        };
+
+        EthLikeErc721Token.createTokenConstructors(coinNames).forEach(({ name, coinConstructor }) => {
           sdk.register(name, coinConstructor);
         });
       }
