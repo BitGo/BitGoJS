@@ -4685,7 +4685,20 @@ export const tOfcErc20Coins = [
 
   // Story Network tokens
   ofcerc20('452cc4f6-3c77-4193-a572-4b0d0f838c3c', 'ofcip:aria', 'Aria', 18, underlyingAssetForSymbol('ip:aria')),
-  tofcerc20('0f1c9dc6-183c-4b11-8614-5f28406193c7', 'ofctog:TOG', 'OG TOG', 6, underlyingAssetForSymbol('tog:tog')),
+  tofcerc20(
+    '0f1c9dc6-183c-4b11-8614-5f28406193c7',
+    'ofctog:TOG',
+    'OG TOG',
+    6,
+    underlyingAssetForSymbol('tog:tog'),
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    'tog'
+  ),
 ];
 
 function underlyingAssetForSymbol(underlyingAssetValue: string): UnderlyingAsset {
