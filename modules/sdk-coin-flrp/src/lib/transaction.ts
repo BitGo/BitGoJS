@@ -254,7 +254,94 @@ export class Transaction extends BaseTransaction {
       signatures: this.signature,
       outputs: this.outputs,
       changeOutputs: this.changeOutputs,
+      sourceChain: this.sourceChain,
+      destinationChain: this.destinationChain,
     };
+  }
+
+  /**
+   * Get the source chain id or undefined if it's not a cross chain transfer.
+   */
+  get sourceChain(): string | undefined {
+    const tx = (this._flareTransaction as UnsignedTx).getTx();
+
+    switch (this.type) {
+      case TransactionType.Import:
+        if (this.isTransactionForCChain) {
+          // C-chain Import: source is the chain we're importing FROM (P-chain)
+          const importTx = tx as evmSerial.ImportTx;
+          return this.blockchainIDtoAlias(Buffer.from(importTx.sourceChain.toBytes()));
+        } else {
+          // P-chain Import: source is the chain we're importing FROM (C-chain)
+          const pvmImportTx = tx as pvmSerial.ImportTx;
+          return this.blockchainIDtoAlias(Buffer.from(pvmImportTx.sourceChain.toBytes()));
+        }
+
+      case TransactionType.Export:
+        if (this.isTransactionForCChain) {
+          // C-chain Export: source is C-chain (the blockchain ID)
+          const exportTx = tx as evmSerial.ExportTx;
+          return this.blockchainIDtoAlias(Buffer.from(exportTx.blockchainId.toBytes()));
+        } else {
+          // P-chain Export: source is P-chain (the blockchain ID from baseTx)
+          const pvmExportTx = tx as pvmSerial.ExportTx;
+          return this.blockchainIDtoAlias(Buffer.from(pvmExportTx.baseTx.BlockchainId.toBytes()));
+        }
+
+      default:
+        return undefined;
+    }
+  }
+
+  /**
+   * Get the destination chain id or undefined if it's not a cross chain transfer.
+   */
+  get destinationChain(): string | undefined {
+    const tx = (this._flareTransaction as UnsignedTx).getTx();
+
+    switch (this.type) {
+      case TransactionType.Import:
+        if (this.isTransactionForCChain) {
+          // C-chain Import: destination is C-chain (the blockchain ID)
+          const importTx = tx as evmSerial.ImportTx;
+          return this.blockchainIDtoAlias(Buffer.from(importTx.blockchainId.toBytes()));
+        } else {
+          // P-chain Import: destination is P-chain (the blockchain ID from baseTx)
+          const pvmImportTx = tx as pvmSerial.ImportTx;
+          return this.blockchainIDtoAlias(Buffer.from(pvmImportTx.baseTx.BlockchainId.toBytes()));
+        }
+
+      case TransactionType.Export:
+        if (this.isTransactionForCChain) {
+          // C-chain Export: destination is P-chain (the destination chain)
+          const exportTx = tx as evmSerial.ExportTx;
+          return this.blockchainIDtoAlias(Buffer.from(exportTx.destinationChain.toBytes()));
+        } else {
+          // P-chain Export: destination is C-chain (the destination chain)
+          const pvmExportTx = tx as pvmSerial.ExportTx;
+          return this.blockchainIDtoAlias(Buffer.from(pvmExportTx.destination.toBytes()));
+        }
+
+      default:
+        return undefined;
+    }
+  }
+
+  /**
+   * Convert a blockchainId buffer to string and return P or C alias if it matches any of those chains.
+   * @param {Buffer} blockchainIDBuffer
+   * @return {string} blockchainID or alias if exists.
+   * @private
+   */
+  private blockchainIDtoAlias(blockchainIDBuffer: Buffer): string {
+    const blockchainId = utils.cb58Encode(blockchainIDBuffer);
+    if (blockchainId === this._network.cChainBlockchainID) {
+      return 'C';
+    }
+    if (blockchainId === this._network.blockchainID) {
+      return 'P';
+    }
+    return blockchainId;
   }
 
   setTransaction(tx: Tx): void {
