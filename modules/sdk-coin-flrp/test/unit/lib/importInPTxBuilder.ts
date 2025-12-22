@@ -4,6 +4,7 @@ import { IMPORT_IN_P as testData } from '../../resources/transactionData/importI
 import { TransactionBuilderFactory, DecodedUtxoObj, Transaction } from '../../../src/lib';
 import { coins, FlareNetwork } from '@bitgo/statics';
 import signFlowTest from './signFlowTestSuit';
+import recoverModeTestSuit from './recoverModeTestSuit';
 
 describe('Flrp Import In P Tx Builder', () => {
   const coinConfig = coins.get('tflrp');
@@ -128,5 +129,24 @@ describe('Flrp Import In P Tx Builder', () => {
       .catch((err) => {
         err.message.should.be.equal('Private key cannot sign the transaction');
       });
+  });
+
+  recoverModeTestSuit({
+    transactionType: 'Import P (Recovery Mode)',
+    newTxFactory: () => new TransactionBuilderFactory(coins.get('tflrp')),
+    newTxBuilder: () =>
+      new TransactionBuilderFactory(coins.get('tflrp'))
+        .getImportInPBuilder()
+        .threshold(testData.threshold)
+        .locktime(testData.locktime)
+        .fromPubKey(testData.pAddresses)
+        .externalChainId(testData.sourceChainId)
+        .fee(testData.fee)
+        .utxos(testData.outputs),
+    privateKey: {
+      prv1: testData.privateKeys[0],
+      prv2: testData.privateKeys[1],
+      prv3: testData.privateKeys[2],
+    },
   });
 });

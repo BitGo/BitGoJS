@@ -4,6 +4,7 @@ import { TransactionBuilderFactory, DecodedUtxoObj } from '../../../src/lib';
 import { coins } from '@bitgo/statics';
 import { IMPORT_IN_C as testData } from '../../resources/transactionData/importInC';
 import signFlowTest from './signFlowTestSuit';
+import recoverModeTestSuit from './recoverModeTestSuit';
 
 describe('Flrp Import In C Tx Builder', () => {
   const factory = new TransactionBuilderFactory(coins.get('tflrp'));
@@ -48,5 +49,23 @@ describe('Flrp Import In C Tx Builder', () => {
       prv2: testData.privateKeys[1],
     },
     txHash: testData.txhash,
+  });
+
+  recoverModeTestSuit({
+    transactionType: 'Import C (Recovery Mode)',
+    newTxFactory: () => new TransactionBuilderFactory(coins.get('tflrp')),
+    newTxBuilder: () =>
+      new TransactionBuilderFactory(coins.get('tflrp'))
+        .getImportInCBuilder()
+        .threshold(testData.threshold)
+        .fromPubKey(testData.pAddresses)
+        .utxos(testData.outputs)
+        .to(testData.to)
+        .feeRate(testData.fee),
+    privateKey: {
+      prv1: testData.privateKeys[0],
+      prv2: testData.privateKeys[1],
+      prv3: testData.privateKeys[2],
+    },
   });
 });

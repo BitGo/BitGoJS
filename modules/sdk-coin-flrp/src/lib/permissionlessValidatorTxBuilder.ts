@@ -14,6 +14,7 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
   protected _endTime: bigint;
   protected _stakeAmount: bigint;
   protected _delegationFeeRate: number;
+  protected recoverSigner = false;
 
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);

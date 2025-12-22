@@ -14,8 +14,21 @@ interface Codec {
 }
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
+  protected recoverSigner = false;
+
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
+  }
+
+  /**
+   * Enables recovery mode for transaction building.
+   * When enabled, uses backup key (index 2) instead of user key (index 0) for signing.
+   * @param recoverSigner - Whether to use recovery signing (default: true)
+   * @returns this factory for chaining
+   */
+  recoverMode(recoverSigner = true): this {
+    this.recoverSigner = recoverSigner;
+    return this;
   }
 
   /**
@@ -74,6 +87,18 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   /**
+   * Apply recovery mode setting to a builder if enabled on the factory.
+   * @param builder The transaction builder to configure
+   * @returns The configured builder
+   */
+  private applyRecoverMode<T extends TransactionBuilder>(builder: T): T {
+    if (this.recoverSigner) {
+      builder.recoverMode(true);
+    }
+    return builder;
+  }
+
+  /**
    * Create the appropriate transaction builder based on transaction type.
    * @param tx The parsed transaction
    * @param rawBuffer The raw transaction buffer
@@ -91,23 +116,23 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
       if (ExportInCTxBuilder.verifyTxType(tx._type)) {
         const builder = this.getExportInCBuilder();
         builder.initBuilder(tx as evmSerial.ExportTx, rawBuffer, credentials);
-        return builder;
+        return this.applyRecoverMode(builder);
       }
       if (ImportInCTxBuilder.verifyTxType(tx._type)) {
         const builder = this.getImportInCBuilder();
         builder.initBuilder(tx as evmSerial.ImportTx, rawBuffer, credentials);
-        return builder;
+        return this.applyRecoverMode(builder);
       }
     } else {
       if (ImportInPTxBuilder.verifyTxType(tx._type)) {
         const builder = this.getImportInPBuilder();
         builder.initBuilder(tx as pvmSerial.ImportTx, rawBuffer, credentials);
-        return builder;
+        return this.applyRecoverMode(builder);
       }
       if (ExportInPTxBuilder.verifyTxType(tx._type)) {
         const builder = this.getExportInPBuilder();
         builder.initBuilder(tx as pvmSerial.ExportTx, rawBuffer, credentials);
-        return builder;
+        return this.applyRecoverMode(builder);
       }
     }
     throw new NotSupported('Transaction type not supported');
