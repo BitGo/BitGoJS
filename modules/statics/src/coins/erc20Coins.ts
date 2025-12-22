@@ -14201,6 +14201,10 @@ export const erc20Coins = [
     'Testnet OG TOG',
     6,
     '0x233fd9435ddaf83fbb548f7e360ce34d0ed1eb9a',
-    UnderlyingAsset['tog:tog']
+    UnderlyingAsset['tog:tog'],
+    undefined,
+    undefined,
+    undefined,
+    Networks.test.og
   ),
 ];
