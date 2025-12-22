@@ -31,6 +31,25 @@ import { tryPromise } from '../util';
 const TransactionBuilder = require('./transactionBuilder');
 const PendingApproval = require('./pendingapproval');
 
+// PSBT rollout: 10% on mainnet, 100% on testnet
+const V1_PSBT_ROLLOUT_PERCENT = 10;
+
+function shouldUsePsbt(bitgo: any, explicitUsePsbt?: boolean): boolean {
+  // Explicit setting always wins
+  if (explicitUsePsbt !== undefined) {
+    return explicitUsePsbt;
+  }
+
+  // Testnet: always PSBT
+  const network = common.Environments[bitgo.getEnv()]?.network;
+  if (network !== 'bitcoin') {
+    return true;
+  }
+
+  // Mainnet: 10% rollout
+  return Math.random() * 100 < V1_PSBT_ROLLOUT_PERCENT;
+}
+
 const { getExternalChainCode, getInternalChainCode, isChainCode, scriptTypeForChain } = utxolib.bitgo;
 const request = require('superagent');
 
@@ -894,6 +913,9 @@ Wallet.prototype.createTransaction = function (params, callback) {
   params.validate = params.validate !== undefined ? params.validate : this.bitgo.getValidate();
   params.wallet = this;
 
+  // Apply PSBT rollout logic (respects explicit usePsbt if set)
+  params.usePsbt = shouldUsePsbt(this.bitgo, params.usePsbt);
+
   return TransactionBuilder.createTransaction(params).then(callback).catch(callback);
 };
 
@@ -1609,6 +1631,7 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
     const changeAddress = await this.createAddress({ chain: changeChain });
 
     // create the child tx and broadcast
+    // Use legacy format - PSBT rollout applies to user-facing createTransaction only
     // @ts-expect-error - no implicit this
     const tx = await this.createAndSignTransaction({
       unspents: unspentsToUse,
@@ -1625,6 +1648,7 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
       },
       xprv: params.xprv,
       walletPassphrase: params.walletPassphrase,
+      usePsbt: false,
     });
 
     // child fee rate must be in sat/kB, so we need to convert
