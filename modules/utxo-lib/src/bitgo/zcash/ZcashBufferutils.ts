@@ -193,3 +193,93 @@ export function toBufferV5<TNumber extends number | bigint>(
   // https://github.com/zcash/zcash/blob/v4.5.1/src/primitives/transaction.h#L1081
   writeEmptyOrchardBundle(bufferWriter);
 }
+
+/**
+ * Returns `true` if the transaction buffer contains any Sapling or Orchard shielded components.
+ *
+ * This helper is intended as a lightweight preflight check for code paths that only support
+ * fully transparent transactions. It reuses existing parsing/assertion helpers and relies on
+ * try/catch to detect non-empty shielded sections.
+ *
+ * Notes:
+ * - Sapling detection uses `readEmptySaplingBundle()`. This will return `true` for *any* non-empty
+ *   Sapling bundle (spends or outputs). It does not distinguish between shielded inputs vs outputs.
+ * - Orchard detection uses `readEmptyOrchardBundle()` (v5 only).
+ */
+export function hasSaplingOrOrchardShieldedComponentsFromBuffer(buffer: Buffer): boolean {
+  const bufferReader = new BufferReader(buffer);
+
+  // Split the header into fOverwintered and nVersion
+  const header = bufferReader.readInt32();
+  const overwintered = header >>> 31;
+  const version = header & 0x07fffffff;
+
+  if (!overwintered) {
+    return false;
+  }
+
+  // Overwinter-compatible transactions serialize nVersionGroupId.
+  if (version >= ZcashTransaction.VERSION_OVERWINTER) {
+    bufferReader.readUInt32(); // nVersionGroupId
+  }
+
+  if (version === 5) {
+    // https://github.com/zcash/zcash/blob/v4.5.1/src/primitives/transaction.h#L815
+    bufferReader.readUInt32(); // consensusBranchId
+    bufferReader.readUInt32(); // locktime
+    bufferReader.readUInt32(); // expiryHeight
+
+    // https://github.com/zcash/zcash/blob/v4.5.1/src/primitives/transaction.h#L828
+    readInputs(bufferReader);
+    readOutputs(bufferReader, 'number');
+
+    // https://github.com/zcash/zcash/blob/v4.5.1/src/primitives/transaction.h#L835
+    try {
+      readEmptySaplingBundle(bufferReader);
+    } catch (e) {
+      if (e instanceof UnsupportedTransactionError) {
+        return true;
+      }
+      throw e;
+    }
+
+    try {
+      readEmptyOrchardBundle(bufferReader);
+    } catch (e) {
+      if (e instanceof UnsupportedTransactionError) {
+        return true;
+      }
+      throw e;
+    }
+
+    return false;
+  }
+
+  // v4-style encoding for non-v5 overwintered txs (as used by this library).
+  readInputs(bufferReader);
+  readOutputs(bufferReader, 'number');
+  bufferReader.readUInt32(); // locktime
+
+  // expiryHeight is serialized for overwinter-compatible tx (v3+)
+  bufferReader.readUInt32(); // expiryHeight
+
+  if (version >= ZcashTransaction.VERSION_SAPLING) {
+    const valueBalance = bufferReader.readSlice(8);
+    if (!valueBalance.equals(VALUE_INT64_ZERO)) {
+      // Non-zero valueBalance implies shielded; keep consistent with existing parser behavior.
+      return true;
+    }
+
+    try {
+      readEmptySaplingBundle(bufferReader);
+    } catch (e) {
+      if (e instanceof UnsupportedTransactionError) {
+        return true;
+      }
+      throw e;
+    }
+  }
+
+  // No Orchard in pre-v5 encoding.
+  return false;
+}
