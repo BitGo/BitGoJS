@@ -2941,7 +2941,7 @@ export const erc20Coins = [
     'eth:gousd',
     'goUSD',
     6,
-    '0xf1f6b8cc3a0d544a40f1d29909396378370e6938',
+    '0x04f4f7b8bb7b8aca7beb8a027603dfc6eb66af5d',
     UnderlyingAsset['eth:gousd'],
     [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
@@ -12652,7 +12652,7 @@ export const erc20Coins = [
     'hteth:gousd',
     'Hoodi Testnet GoUSD',
     6,
-    '0xd94dd81066271d0930e53cfd77f374e64ba306e9',
+    '0xb09d446d962498842bbcfd1e919373b3a2585fbb',
     UnderlyingAsset['hteth:gousd'],
     [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN],
     undefined,
