@@ -3374,6 +3374,9 @@ export enum UnderlyingAsset {
   // Hbar Testnet tokens
   'thbar:txsgd' = 'thbar:txsgd',
 
+  // Hbarevm TEstnet Tokens
+  'thbarevm:hbarnativetoken' = 'thbarevm:hbarnativetoken',
+
   // Nep141 tokens
   'near:usdc' = 'near:usdc',
   'near:usdt' = 'near:usdt',

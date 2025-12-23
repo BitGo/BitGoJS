@@ -3036,6 +3036,17 @@ export const allCoinsAndTokens = [
     Networks.test.plume
   ),
 
+  // HederaEVM testnet token
+  erc20Token(
+    'e2926ac1-9225-4b83-9f8b-51f805040c13',
+    'thbarevm:hbarnativetoken',
+    'Testnet HBAREVM Native Token',
+    18,
+    '0x0000000000000000000000000000000000728a62',
+    UnderlyingAsset['thbarevm:hbarnativetoken'],
+    Networks.test.hederaEVM
+  ),
+
   hederaCoin(
     '98aad956-27ee-45dd-aa43-6a23c9a1d1d0',
     'hbar',
