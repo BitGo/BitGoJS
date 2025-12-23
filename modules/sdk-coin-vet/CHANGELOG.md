@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.10.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.10.0...@bitgo/sdk-coin-vet@2.10.1) (2025-12-23)
+
+
+### Bug Fixes
+
+* **sdk-coin-vet:** fix mainnet addresses ([b83b094](https://github.com/BitGo/BitGoJS/commit/b83b09463ad5ae831047ff5f68357a5c471dd9c6))
+
+
+
+
+
 # [2.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.9.2...@bitgo/sdk-coin-vet@2.10.0) (2025-12-17)
 
 

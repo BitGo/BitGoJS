@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.18.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.17.0...bitgo@50.18.0) (2025-12-23)
+
+
+### Features
+
+* erc721 token support for evm coins ([823808b](https://github.com/BitGo/BitGoJS/commit/823808b98a363f101e3c3ab05425d643404dc3ae))
+* fix config for erc20 tokens ([4969a36](https://github.com/BitGo/BitGoJS/commit/4969a364a579657ee1c40138741f6076ee756188))
+* **sdk-core:** support forwarderVersion 5 in createAddress ([36ffe11](https://github.com/BitGo/BitGoJS/commit/36ffe11ff6216e6fd461a4fd3633ea613cf98f1f))
+
+
+
+
+
 # [50.17.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.16.2...bitgo@50.17.0) (2025-12-17)
 
 

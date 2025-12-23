@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@3.11.5...@bitgo/sdk-coin-ton@3.12.0) (2025-12-23)
+
+
+### Features
+
+* **sdk-coin-ton:** add ton whales deposit tx building ([b0b5dce](https://github.com/BitGo/BitGoJS/commit/b0b5dce4448ff4268cfff6fb40c10812d6e56826))
+* **sdk-coin-ton:** add ton whales withdrawal builder ([bad8df9](https://github.com/BitGo/BitGoJS/commit/bad8df905247e1b669a533c4c816e21e56a66b09))
+
+
+
+
+
 ## [3.11.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@3.11.4...@bitgo/sdk-coin-ton@3.11.5) (2025-12-17)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-ton

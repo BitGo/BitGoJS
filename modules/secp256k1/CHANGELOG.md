@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.7.0...@bitgo/secp256k1@1.8.0) (2025-12-23)
+
+
+### Features
+
+* **root:** make node v20 the minimum version ([f2bd9ee](https://github.com/BitGo/BitGoJS/commit/f2bd9ee8e1b0816473dc12d614883422a3a2aa10))
+
+
+
+
+
 # [1.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.6.0...@bitgo/secp256k1@1.7.0) (2025-10-24)
 
 

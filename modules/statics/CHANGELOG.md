@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.19.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.18.0...@bitgo/statics@58.19.0) (2025-12-23)
+
+
+### Features
+
+* add ip test minatable token ([0d7a7d5](https://github.com/BitGo/BitGoJS/commit/0d7a7d5efaa386ff78ea32d8c8111e13f0356248))
+* add support for OG TOG in ERC20 and OFC token lists ([da36144](https://github.com/BitGo/BitGoJS/commit/da36144847c2e1a1e968e3e387fa05dad107e588))
+* add Testnet HBAREVM token ([f1c1f90](https://github.com/BitGo/BitGoJS/commit/f1c1f90b9aa894613d5484329f2bb85ff07cb6bd))
+* erc721 token support for evm coins ([823808b](https://github.com/BitGo/BitGoJS/commit/823808b98a363f101e3c3ab05425d643404dc3ae))
+* fix config for erc20 tokens ([4969a36](https://github.com/BitGo/BitGoJS/commit/4969a364a579657ee1c40138741f6076ee756188))
+* onboard SOL:KMNO to BitGo JS ([dd363be](https://github.com/BitGo/BitGoJS/commit/dd363be60646355770582efd9fa64e07cb2182b5))
+* **statics:** add erc20 support for megaeth ([a7587c7](https://github.com/BitGo/BitGoJS/commit/a7587c7d50da16c5e17e998e20273db7fb23384a))
+* **statics:** add megaeth mainnet tokens ([f8fb3dc](https://github.com/BitGo/BitGoJS/commit/f8fb3dceaf22656963a1ed40986ae2b7e6e1c248))
+* **statics:** add mon to coinNameFromChainId ([ef39a06](https://github.com/BitGo/BitGoJS/commit/ef39a063fa9b273bc120bd917f46bb9f18ccd32e))
+* **statics:** add new tokens WIN-8385 ([fec9cf7](https://github.com/BitGo/BitGoJS/commit/fec9cf7da5b23fdfeff9a7ca52232f924c1f9d05))
+* **statics:** updates contract address for gousd test and prod ([e36a414](https://github.com/BitGo/BitGoJS/commit/e36a414b39b9be3dc5b09efb644f0ff14c48e304))
+* **statics:** updates contract address for tgousd staging coin ([38e28cc](https://github.com/BitGo/BitGoJS/commit/38e28ccde1f6b546b947a256775efe642d27dd9b))
+* support message signing for FLR and MON ([69864b6](https://github.com/BitGo/BitGoJS/commit/69864b63d278fe35e80c669990355bf64e5c9f52))
+
+
+
+
+
 # [58.18.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.17.0...@bitgo/statics@58.18.0) (2025-12-17)
 
 

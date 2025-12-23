@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/utxo-core",
-  "version": "1.27.0",
+  "version": "1.28.0",
   "description": "BitGo UTXO Core types",
   "main": "./dist/cjs/src/index.js",
   "module": "./dist/esm/index.js",
@@ -78,9 +78,9 @@
     ]
   },
   "dependencies": {
-    "@bitgo/secp256k1": "^1.7.0",
-    "@bitgo/unspents": "^0.50.12",
-    "@bitgo/utxo-lib": "^11.18.0",
+    "@bitgo/secp256k1": "^1.8.0",
+    "@bitgo/unspents": "^0.50.13",
+    "@bitgo/utxo-lib": "^11.19.0",
     "@bitgo/wasm-utxo": "1.17.0",
     "bip174": "npm:@bitgo-forks/bip174@3.1.0-master.4",
     "bitcoinjs-message": "npm:@bitgo-forks/bitcoinjs-message@1.0.0-master.3",

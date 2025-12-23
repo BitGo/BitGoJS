@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.6.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@7.6.1...@bitgo/abstract-lightning@7.6.2) (2025-12-23)
+
+
+### Bug Fixes
+
+* test cases for parseWithdrawPsbt ([83af8e1](https://github.com/BitGo/BitGoJS/commit/83af8e17f3e40c1e948c619b2b35b6a36e11715e))
+
+
+
+
+
 ## [7.6.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-lightning@7.6.0...@bitgo/abstract-lightning@7.6.1) (2025-12-17)
 
 **Note:** Version bump only for package @bitgo/abstract-lightning

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [7.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.10.4...@bitgo/sdk-coin-sol@7.11.0) (2025-12-23)
+
+
+### Features
+
+* **sdk-coin-sol:** add transaction size benchmark tool ([3ebe108](https://github.com/BitGo/BitGoJS/commit/3ebe1084195c9c806b9fb6ff7e9151db8fdd220c))
+
+
+
+
+
 ## [7.10.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.10.3...@bitgo/sdk-coin-sol@7.10.4) (2025-12-17)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol

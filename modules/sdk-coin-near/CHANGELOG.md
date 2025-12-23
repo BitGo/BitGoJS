@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@2.13.10...@bitgo/sdk-coin-near@2.14.0) (2025-12-23)
+
+
+### Features
+
+* address verification for near ([a3065e1](https://github.com/BitGo/BitGoJS/commit/a3065e18d51030ff06ed12e217514f7626a2a8ca))
+
+
+
+
+
 ## [2.13.10](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-near@2.13.9...@bitgo/sdk-coin-near@2.13.10) (2025-12-17)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-near
