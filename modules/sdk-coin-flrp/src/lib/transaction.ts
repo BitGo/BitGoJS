@@ -231,13 +231,14 @@ export class Transaction extends BaseTransaction {
       return FlareUtils.bufferToHex(this._rawSignedBytes);
     }
     const unsignedTx = this._flareTransaction as UnsignedTx;
-    // For signed transactions, return the full signed tx with credentials
-    // Check signature.length for robustness
-    if (this.signature.length > 0) {
-      return FlareUtils.bufferToHex(unsignedTx.getSignedTx().toBytes());
-    }
-    // For unsigned transactions, return just the transaction bytes
-    return FlareUtils.bufferToHex(unsignedTx.toBytes());
+    const signedTxBytes = unsignedTx.getSignedTx().toBytes();
+
+    // Both P-chain and C-chain transactions include checksum (matching avaxp behavior)
+    // avaxp P-chain: transaction.ts uses addChecksum() explicitly
+    // avaxp C-chain: deprecatedTransaction.ts uses Tx.toStringHex() which internally adds checksum
+    const rawTx = FlareUtils.bufferToHex(utils.addChecksum(signedTxBytes));
+    console.log('rawTx in toBroadcastFormat:', rawTx);
+    return rawTx;
   }
 
   toJson(): TxData {

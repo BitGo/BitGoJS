@@ -114,20 +114,57 @@ export class ExportInPTxBuilder extends AtomicTransactionBuilder {
     const sortedAddresses = [...this.transaction._fromAddresses].sort((a, b) => Buffer.compare(a, b));
 
     // When credentials were extracted, use them directly to preserve existing signatures
-    // Otherwise, create empty credentials with embedded addresses for slot identification
+    // Otherwise, create empty credentials with dynamic ordering based on addressesIndex
+    // Match avaxp behavior: order depends on UTXO address positions
     const txCredentials =
       credentials.length > 0
         ? credentials
-        : exportTx.baseTx.inputs.map((input) => {
+        : exportTx.baseTx.inputs.map((input, inputIdx) => {
             const transferInput = input.input as TransferInput;
             const inputThreshold = transferInput.sigIndicies().length || this.transaction._threshold;
-            // Create empty signatures with embedded addresses for slot identification
-            const sigSlots: ReturnType<typeof utils.createEmptySigWithAddress>[] = [];
-            for (let i = 0; i < inputThreshold; i++) {
-              const addrHex = Buffer.from(sortedAddresses[i]).toString('hex');
-              sigSlots.push(utils.createEmptySigWithAddress(addrHex));
+
+            // Get UTXO for this input to determine addressesIndex
+            const utxo = this.transaction._utxos[inputIdx];
+
+            // either user (0) or recovery (2)
+            const firstIndex = this.recoverSigner ? 2 : 0;
+            const bitgoIndex = 1;
+
+            // If UTXO has addresses, compute dynamic ordering
+            if (utxo && utxo.addresses && utxo.addresses.length > 0) {
+              const utxoAddresses = utxo.addresses.map((a) => utils.parseAddress(a));
+              const addressesIndex = this.transaction._fromAddresses.map((a) =>
+                utxoAddresses.findIndex((u) => Buffer.compare(Buffer.from(u), Buffer.from(a)) === 0)
+              );
+
+              // Dynamic ordering based on addressesIndex
+              let sigSlots: ReturnType<typeof utils.createNewSig>[];
+              if (addressesIndex[bitgoIndex] < addressesIndex[firstIndex]) {
+                // Bitgo comes first: [zeros, userAddress]
+                sigSlots = [
+                  utils.createNewSig(''),
+                  utils.createEmptySigWithAddress(
+                    Buffer.from(this.transaction._fromAddresses[firstIndex]).toString('hex')
+                  ),
+                ];
+              } else {
+                // User comes first: [userAddress, zeros]
+                sigSlots = [
+                  utils.createEmptySigWithAddress(
+                    Buffer.from(this.transaction._fromAddresses[firstIndex]).toString('hex')
+                  ),
+                  utils.createNewSig(''),
+                ];
+              }
+              return new Credential(sigSlots);
+            } else {
+              // Fallback: use all zeros if no UTXO addresses available
+              const sigSlots: ReturnType<typeof utils.createNewSig>[] = [];
+              for (let i = 0; i < inputThreshold; i++) {
+                sigSlots.push(utils.createNewSig(''));
+              }
+              return new Credential(sigSlots);
             }
-            return new Credential(sigSlots);
           });
 
     // Create address maps for signing - one per input/credential
@@ -277,14 +314,43 @@ export class ExportInPTxBuilder extends AtomicTransactionBuilder {
 
       inputs.push(transferableInput);
 
-      // Create credential with empty signatures that have embedded addresses for slot identification
-      // This allows the signing logic to determine which slot belongs to which address
-      const sortedAddrs = [...this.transaction._fromAddresses].sort((a, b) => Buffer.compare(a, b));
-      const emptySignatures = sigIndices.map((idx) => {
-        const addrHex = Buffer.from(sortedAddrs[idx]).toString('hex');
-        return utils.createEmptySigWithAddress(addrHex);
-      });
-      credentials.push(new Credential(emptySignatures));
+      // Create credential with empty signatures for slot identification
+      // Match avaxp behavior: dynamic ordering based on addressesIndex from UTXO
+      const hasAddresses =
+        this.transaction._fromAddresses && this.transaction._fromAddresses.length >= this.transaction._threshold;
+
+      if (!hasAddresses) {
+        // If addresses not available, use all zeros
+        const emptySignatures = sigIndices.map(() => utils.createNewSig(''));
+        credentials.push(new Credential(emptySignatures));
+      } else {
+        // Compute addressesIndex: position of each _fromAddresses in UTXO's address list
+        const utxoAddresses = utxo.addresses.map((a) => utils.parseAddress(a));
+        const addressesIndex = this.transaction._fromAddresses.map((a) =>
+          utxoAddresses.findIndex((u) => Buffer.compare(Buffer.from(u), Buffer.from(a)) === 0)
+        );
+
+        // either user (0) or recovery (2)
+        const firstIndex = this.recoverSigner ? 2 : 0;
+        const bitgoIndex = 1;
+
+        // Dynamic ordering based on addressesIndex
+        let emptySignatures: ReturnType<typeof utils.createNewSig>[];
+        if (addressesIndex[bitgoIndex] < addressesIndex[firstIndex]) {
+          // Bitgo comes first in signature order: [zeros, userAddress]
+          emptySignatures = [
+            utils.createNewSig(''),
+            utils.createEmptySigWithAddress(Buffer.from(this.transaction._fromAddresses[firstIndex]).toString('hex')),
+          ];
+        } else {
+          // User comes first in signature order: [userAddress, zeros]
+          emptySignatures = [
+            utils.createEmptySigWithAddress(Buffer.from(this.transaction._fromAddresses[firstIndex]).toString('hex')),
+            utils.createNewSig(''),
+          ];
+        }
+        credentials.push(new Credential(emptySignatures));
+      }
     }
 
     // Create change output if there is remaining amount after export and fee
