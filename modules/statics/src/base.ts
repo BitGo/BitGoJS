@@ -2918,7 +2918,7 @@ export enum UnderlyingAsset {
   'baseeth:wbrly' = 'baseeth:wbrly',
   'baseeth:recall' = 'baseeth:recall',
   'baseeth:sapien' = 'baseeth:sapien',
-  'baseeth:aixbt' = 'baseeht:aixbt',
+  'baseeth:aixbt' = 'baseeth:aixbt',
   'baseeth:brett' = 'baseeth:brett',
 
   // BaseETH testnet tokens

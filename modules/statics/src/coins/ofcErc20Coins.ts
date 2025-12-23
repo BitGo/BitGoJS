@@ -4493,23 +4493,63 @@ export const tOfcErc20Coins = [
   ofcerc20('3ad9b598-11bd-4dba-9a42-a74eae4c6b43', 'ofceth:omi', 'omi', 18, underlyingAssetForSymbol('eth:omi')),
   ofcerc20('bf7b99fe-d666-4db7-a775-c05e5bff98ce', 'ofceth:andy', 'andy', 18, underlyingAssetForSymbol('eth:andy')),
 
-  ofcerc20('d2b5f3e4-3c4e-4f1e-9f0a-1b2c3d4e5f6a', 'ofcbaseeth:spec', 'Spectral', 18, UnderlyingAsset['baseeth:spec']),
+  ofcerc20(
+    'd2b5f3e4-3c4e-4f1e-9f0a-1b2c3d4e5f6a',
+    'ofcbaseeth:spec',
+    'Spectral',
+    18,
+    UnderlyingAsset['baseeth:spec'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
   ofcerc20(
     'bc7be60b-7eb8-4512-9675-d804f540962a',
     'ofcbaseeth:soon',
     'Soon Token',
     18,
-    UnderlyingAsset['baseeth:soon']
+    UnderlyingAsset['baseeth:soon'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
   ),
 
-  ofcerc20('c2c6b14c-62e8-4dc1-9b8e-63e8fc5c7ab6', 'ofcbaseeth:wave', 'Waveform', 18, UnderlyingAsset['baseeth:wave']),
+  ofcerc20(
+    'c2c6b14c-62e8-4dc1-9b8e-63e8fc5c7ab6',
+    'ofcbaseeth:wave',
+    'Waveform',
+    18,
+    UnderlyingAsset['baseeth:wave'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
 
   ofcerc20(
     'd20cc76e-1384-4261-9d90-df2d6a87b3d0',
     'ofchype:hwhype',
     'Hyperwave HYPE',
     18,
-    UnderlyingAsset['hype:hwhype']
+    UnderlyingAsset['hype:hwhype'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'hype'
   ),
 
   ofcerc20(
@@ -4517,7 +4557,14 @@ export const tOfcErc20Coins = [
     'ofcbaseeth:tig',
     'The Innovation Game',
     18,
-    UnderlyingAsset['baseeth:tig']
+    UnderlyingAsset['baseeth:tig'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
   ),
 
   ofcerc20(
@@ -4525,39 +4572,119 @@ export const tOfcErc20Coins = [
     'ofcbaseeth:virtual',
     'Virtual Protocol',
     18,
-    UnderlyingAsset['baseeth:virtual']
+    UnderlyingAsset['baseeth:virtual'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
   ),
 
-  ofcerc20('a5e8f6e7-6f7a-4f4a-8f3c-4e5f6a7b8c9d', 'ofcbaseeth:zora', 'Zora', 18, UnderlyingAsset['baseeth:zora']),
+  ofcerc20(
+    'a5e8f6e7-6f7a-4f4a-8f3c-4e5f6a7b8c9d',
+    'ofcbaseeth:zora',
+    'Zora',
+    18,
+    UnderlyingAsset['baseeth:zora'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
 
-  ofcerc20('b6f9f7e8-7a8b-4f5b-8f4d-5f6a7b8c9dae', 'ofcbaseeth:toshi', 'Toshi', 18, UnderlyingAsset['baseeth:toshi']),
+  ofcerc20(
+    'b6f9f7e8-7a8b-4f5b-8f4d-5f6a7b8c9dae',
+    'ofcbaseeth:toshi',
+    'Toshi',
+    18,
+    UnderlyingAsset['baseeth:toshi'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
 
   ofcerc20(
     'c7aaf8e9-8b9c-4f6c-8f5e-6a7b8c9daebf',
     'ofcbaseeth:creator',
     'CreatorDAO',
     18,
-    UnderlyingAsset['baseeth:creator']
+    UnderlyingAsset['baseeth:creator'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
   ),
 
-  ofcerc20('d8bbf9ea-9cad-4f7d-8f6f-7b8c9daebfca', 'ofcbaseeth:avnt', 'Avantis', 18, UnderlyingAsset['baseeth:avnt']),
+  ofcerc20(
+    'd8bbf9ea-9cad-4f7d-8f6f-7b8c9daebfca',
+    'ofcbaseeth:avnt',
+    'Avantis',
+    18,
+    UnderlyingAsset['baseeth:avnt'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
 
   ofcerc20(
     'e9ccfaeb-adbe-4f8e-8f7a-8c9daebfcadb',
     'ofcbaseeth:mira',
     'Mira Network',
     18,
-    UnderlyingAsset['baseeth:mira']
+    UnderlyingAsset['baseeth:mira'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
   ),
 
-  ofcerc20('faddfbec-becf-4f9f-8f8b-9daebfcadbec', 'ofcbaseeth:towns', 'Towns', 18, UnderlyingAsset['baseeth:towns']),
+  ofcerc20(
+    'faddfbec-becf-4f9f-8f8b-9daebfcadbec',
+    'ofcbaseeth:towns',
+    'Towns',
+    18,
+    UnderlyingAsset['baseeth:towns'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
 
   ofcerc20(
     'f6bebafa-7934-4ca2-9195-1f4543c2ce0c',
     'ofcbaseeth:recall',
     'Recall',
     18,
-    UnderlyingAsset['baseeth:recall']
+    UnderlyingAsset['baseeth:recall'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
   ),
 
   ofcerc20(
@@ -4565,30 +4692,71 @@ export const tOfcErc20Coins = [
     'ofcbaseeth:brlv',
     'BRL Velocity',
     18,
-    UnderlyingAsset['baseeth:brlv']
+    UnderlyingAsset['baseeth:brlv'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
   ),
   ofcerc20(
     '72d1eb99-3882-42db-abdd-c3a02f3829b4',
     'ofcbaseeth:wbrly',
     'Wrapped BRLY',
     24,
-    UnderlyingAsset['baseeth:wbrly']
+    UnderlyingAsset['baseeth:wbrly'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
   ),
   ofcerc20(
     'bfda6989-f5d4-4cc4-a80f-6b88e8da5198',
     'ofcbaseeth:sapien',
     'Sapien',
     18,
-    UnderlyingAsset['baseeth:sapien']
+    UnderlyingAsset['baseeth:sapien'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
   ),
   ofcerc20(
     'bdfff799-1623-4847-93c0-c1a040c13d3f',
     'ofcbaseeth:aixbt',
     'Aixbt by Virtuals',
     18,
-    UnderlyingAsset['baseeth:aixbt']
+    UnderlyingAsset['baseeth:aixbt'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
   ),
-  ofcerc20('3ce0c7b4-7043-4309-8493-7809001ad410', 'ofcbaseeth:brett', 'Brett', 18, UnderlyingAsset['baseeth:brett']),
+  ofcerc20(
+    '3ce0c7b4-7043-4309-8493-7809001ad410',
+    'ofcbaseeth:brett',
+    'Brett',
+    18,
+    UnderlyingAsset['baseeth:brett'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
 
   ofcerc20('abeefced-cfda-4afa-8f9c-aebfcadbecfd', 'ofceth:align', 'Aligned', 18, UnderlyingAsset['eth:align']),
 
@@ -4640,14 +4808,26 @@ export const tOfcErc20Coins = [
     6,
     underlyingAssetForSymbol('mon:usdc'),
     undefined,
-    [CoinFeature.STABLECOIN]
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'mon'
   ),
   ofcerc20(
     '7a8631a5-deed-43c5-92a0-13e3322429ba',
     'ofcmon:wmon',
     'Wrapped MON',
     18,
-    underlyingAssetForSymbol('mon:wmon')
+    underlyingAssetForSymbol('mon:wmon'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'mon'
   ),
 
   // XDC Network tokens
@@ -4658,33 +4838,85 @@ export const tOfcErc20Coins = [
     6,
     underlyingAssetForSymbol('xdc:usdc'),
     undefined,
-    [CoinFeature.STABLECOIN]
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'xdc'
   ),
   ofcerc20(
     'b4666353-81d0-491b-a554-bdd8e677be24',
     'ofcxdc:lbt',
     'Law Block Token',
     18,
-    underlyingAssetForSymbol('xdc:lbt')
+    underlyingAssetForSymbol('xdc:lbt'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'xdc'
   ),
   ofcerc20(
     '086883c7-f7e9-458e-a0a1-ed3ec525f9c6',
     'ofcxdc:gama',
     'Gama Token',
     18,
-    underlyingAssetForSymbol('xdc:gama')
+    underlyingAssetForSymbol('xdc:gama'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'xdc'
   ),
-  ofcerc20('0c8b533c-1929-4de8-af36-9cf4b4409c0d', 'ofcxdc:srx', 'STORX', 18, underlyingAssetForSymbol('xdc:srx')),
+  ofcerc20(
+    '0c8b533c-1929-4de8-af36-9cf4b4409c0d',
+    'ofcxdc:srx',
+    'STORX',
+    18,
+    underlyingAssetForSymbol('xdc:srx'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'xdc'
+  ),
   ofcerc20(
     '3c7ec48a-ba51-47c9-9044-f29d9c0daf35',
     'ofcxdc:weth',
     'Wrapped Ether (XDC)',
     18,
-    underlyingAssetForSymbol('xdc:weth')
+    underlyingAssetForSymbol('xdc:weth'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'xdc'
   ),
 
   // Story Network tokens
-  ofcerc20('452cc4f6-3c77-4193-a572-4b0d0f838c3c', 'ofcip:aria', 'Aria', 18, underlyingAssetForSymbol('ip:aria')),
+  ofcerc20(
+    '452cc4f6-3c77-4193-a572-4b0d0f838c3c',
+    'ofcip:aria',
+    'Aria',
+    18,
+    underlyingAssetForSymbol('ip:aria'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'ip'
+  ),
 ];
 
 function underlyingAssetForSymbol(underlyingAssetValue: string): UnderlyingAsset {
