@@ -20,6 +20,7 @@ export abstract class AtomicTransactionBuilder extends TransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
     this.transaction = new Transaction(_coinConfig);
+    this.transaction._fee.fee = this.fixedFee;
   }
 
   /**
@@ -96,9 +97,42 @@ export abstract class AtomicTransactionBuilder extends TransactionBuilder {
       Object.assign(transferableInput, { input });
       inputs.push(transferableInput);
 
-      // Create empty credential for each input
-      const emptySignatures = sender.map(() => utils.createNewSig(''));
-      credentials.push(new Credential(emptySignatures));
+      // Create credential with empty signatures for slot identification
+      // Match avaxp behavior: dynamic ordering based on addressesIndex from UTXO
+      const hasAddresses = sender && sender.length >= (this.transaction as Transaction)._threshold;
+
+      if (!hasAddresses) {
+        // If addresses not available, use all zeros
+        const emptySignatures = sender.map(() => utils.createNewSig(''));
+        credentials.push(new Credential(emptySignatures));
+      } else {
+        // Compute addressesIndex: position of each _fromAddresses in UTXO's address list
+        const utxoAddresses = utxo.addresses.map((a: string) => utils.parseAddress(a));
+        const addressesIndex = sender.map((a) =>
+          utxoAddresses.findIndex((u) => Buffer.compare(Buffer.from(u), Buffer.from(a)) === 0)
+        );
+
+        // either user (0) or recovery (2)
+        const firstIndex = this.recoverSigner ? 2 : 0;
+        const bitgoIndex = 1;
+
+        // Dynamic ordering based on addressesIndex
+        let emptySignatures: ReturnType<typeof utils.createNewSig>[];
+        if (addressesIndex[bitgoIndex] < addressesIndex[firstIndex]) {
+          // Bitgo comes first in signature order: [zeros, userAddress]
+          emptySignatures = [
+            utils.createNewSig(''),
+            utils.createEmptySigWithAddress(Buffer.from(sender[firstIndex]).toString('hex')),
+          ];
+        } else {
+          // User comes first in signature order: [userAddress, zeros]
+          emptySignatures = [
+            utils.createEmptySigWithAddress(Buffer.from(sender[firstIndex]).toString('hex')),
+            utils.createNewSig(''),
+          ];
+        }
+        credentials.push(new Credential(emptySignatures));
+      }
     });
 
     // Create output if there is change

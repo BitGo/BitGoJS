@@ -13,7 +13,7 @@ import {
   WalletSignTransactionOptions,
 } from '@bitgo/sdk-core';
 
-import { AbstractUtxoCoin, getReplayProtectionAddresses, generateAddress } from '../../src';
+import { AbstractUtxoCoin, getReplayProtectionAddresses, generateAddress, getReplayProtectionPubkeys } from '../../src';
 import { SdkBackend } from '../../src/transaction/types';
 
 import { hasWasmUtxoSupport } from './transaction/fixedScript/util';
@@ -176,7 +176,9 @@ describe(`UTXO coin signTransaction`, async function () {
     }));
     const unspentSum = inputs.reduce((prev: bigint, curr) => prev + curr.value, BigInt(0));
     const outputs: testutil.Output[] = [{ scriptType: 'p2sh', value: unspentSum - BigInt(1000) }];
-    const psbt = testutil.constructPsbt(inputs, outputs, coin.network, rootWalletKeys, 'unsigned');
+    const psbt = testutil.constructPsbt(inputs, outputs, coin.network, rootWalletKeys, 'unsigned', {
+      p2shP2pkKey: getReplayProtectionPubkeys(coin.network)[0],
+    });
 
     for (const v of [false, true]) {
       await signTransaction(psbt, v);
@@ -402,7 +404,9 @@ function run<TNumber extends number | bigint = number>(
       const outputs: testutil.Output[] = [
         { address: getOutputAddress(getWalletKeys('test')), value: unspentSum - BigInt(1000) },
       ];
-      const psbt = testutil.constructPsbt(inputs, outputs, coin.network, walletKeys, 'unsigned');
+      const psbt = testutil.constructPsbt(inputs, outputs, coin.network, walletKeys, 'unsigned', {
+        p2shP2pkKey: getReplayProtectionPubkeys(coin.network)[0],
+      });
       utxolib.bitgo.addXpubsToPsbt(psbt, walletKeys);
       return psbt;
     }

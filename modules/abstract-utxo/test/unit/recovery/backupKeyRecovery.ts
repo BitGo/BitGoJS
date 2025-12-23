@@ -7,6 +7,7 @@ import nock = require('nock');
 import { BIP32Interface } from '@bitgo/utxo-lib';
 import * as utxolib from '@bitgo/utxo-lib';
 import { Config, krsProviders, Triple } from '@bitgo/sdk-core';
+import { Dimensions } from '@bitgo/unspents';
 
 import {
   AbstractUtxoCoin,
@@ -113,10 +114,11 @@ function run(
     hasUserSignature: boolean;
     hasBackupSignature: boolean;
     hasKrsOutput?: boolean;
-    feeRate?: number;
   },
   tags: string[] = []
 ) {
+  const defaultFeeRateSatB = 100;
+
   describe(`Backup Key Recovery [${[coin.getChain(), ...tags, params.krsProvider].join(',')}]`, function () {
     const externalWallet = getWalletKeys('external');
     const recoveryDestination = getWalletAddress(coin.network, externalWallet);
@@ -172,6 +174,7 @@ function run(
         krsProvider: params.krsProvider,
         ...params.keys,
         recoveryProvider: new MockRecoveryProvider(mockedApiUnspents),
+        feeRate: defaultFeeRateSatB,
       });
       const txHex =
         (recovery as BackupKeyRecoveryTransansaction).transactionHex ?? (recovery as FormattedOfflineVaultTxInfo).txHex;
@@ -188,6 +191,20 @@ function run(
       (await recoveryProvider.getUnspentsForAddresses(mockedApiUnspents.map((u) => u.address))).length.should.eql(
         mockedApiUnspents.length
       );
+    });
+
+    it('has expected fee rate', function () {
+      if (!(recoveryTx instanceof utxolib.bitgo.UtxoPsbt)) {
+        this.skip();
+      }
+      const inputSum = utxolib.bitgo.unspentSum(recoverUnspents, 'bigint');
+      const outputSum = recoveryTx.txOutputs.reduce((sum, o) => sum + o.value, BigInt(0));
+      const fee = inputSum - outputSum;
+      const vsize = Dimensions.fromPsbt(recoveryTx).getVSize();
+      const feeRateSatB = Number(fee) / vsize;
+      const diff = Math.abs(feeRateSatB - defaultFeeRateSatB) / defaultFeeRateSatB;
+      // within 1%
+      assert.strictEqual(diff < 0.01, true, `expected fee rate ${defaultFeeRateSatB} but got ${feeRateSatB}`);
     });
 
     it('matches fixture', async function () {
@@ -346,19 +363,6 @@ function runWithScriptTypes(
           hasBackupSignature: true,
         },
         ['fullSignedRecovery', ...scriptTypes]
-      );
-
-      run(
-        coin,
-        scriptTypes,
-        walletKeys,
-        {
-          keys: keysFullSignedRecovery,
-          hasUserSignature: true,
-          hasBackupSignature: true,
-          feeRate: 2,
-        },
-        ['fullSignedRecovery', 'fixedFeeRate', ...scriptTypes]
       );
 
       run(

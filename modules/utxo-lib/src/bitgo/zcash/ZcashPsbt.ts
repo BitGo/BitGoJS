@@ -100,6 +100,14 @@ export class ZcashPsbt extends UtxoPsbt<ZcashTransaction<bigint>> {
     return buff;
   }
 
+  toHex(): string {
+    return this.toBuffer().toString('hex');
+  }
+
+  toBase64(): string {
+    return this.toBuffer().toString('base64');
+  }
+
   setVersion(version: number, overwinter = true): this {
     typeforce(types.UInt32, version);
     this.tx.overwintered = overwinter ? 1 : 0;

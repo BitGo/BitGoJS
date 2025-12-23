@@ -151,6 +151,98 @@ describe('NEAR:', function () {
     });
   });
 
+  describe('Address verification', () => {
+    const addressVerificationData = {
+      commonKeychain:
+        '43d3f6a94d7e3faf4dd390a7e26f554eaa98c8f0813e3f0ae959d61d8acd012e0504e552a5c311260f2fbaef3a817dfa5b85b984cd43b161bebad9ded25764cc',
+      rootAddress: '98908af363d3e99d87b1d6dce4f80a28bbfe64fee22dbb8a36dada25ba30d027',
+      receiveAddress: '6aa21569736f6ebaf925fef8ece219c2b703098cc358ce34a97f2c2a2e099659',
+      receiveAddressIndex: 2,
+    };
+
+    let keychains;
+
+    before(function () {
+      keychains = [
+        { commonKeychain: addressVerificationData.commonKeychain },
+        { commonKeychain: addressVerificationData.commonKeychain },
+        { commonKeychain: addressVerificationData.commonKeychain },
+      ];
+    });
+
+    it('should verify a valid TSS root address (index 0)', async function () {
+      const params = {
+        address: addressVerificationData.rootAddress,
+        rootAddress: addressVerificationData.rootAddress,
+        keychains: keychains,
+        index: 0,
+      };
+      const result = await basecoin.isWalletAddress(params);
+      result.should.equal(true);
+    });
+
+    it('should verify a valid TSS receive address (index > 0)', async function () {
+      const params = {
+        address: addressVerificationData.receiveAddress,
+        rootAddress: addressVerificationData.rootAddress,
+        keychains: keychains,
+        index: addressVerificationData.receiveAddressIndex,
+      };
+      const result = await basecoin.isWalletAddress(params);
+      result.should.equal(true);
+    });
+
+    it('should throw error for invalid address format', async function () {
+      const invalidAddress = 'invalid-address';
+      const params = {
+        address: invalidAddress,
+        keychains: keychains,
+        index: 0,
+      };
+      await basecoin.isWalletAddress(params).should.be.rejectedWith('address validation failure');
+    });
+
+    it('should throw error when verifying root address with wrong index', async function () {
+      const params = {
+        address: addressVerificationData.rootAddress,
+        rootAddress: addressVerificationData.rootAddress,
+        keychains: keychains,
+        index: 1,
+      };
+      await basecoin.isWalletAddress(params).should.be.rejectedWith('address validation failure');
+    });
+
+    it('should throw error when keychains is missing', async function () {
+      const params = {
+        address: addressVerificationData.rootAddress,
+        keychains: [],
+        index: 0,
+      };
+      await basecoin.isWalletAddress(params).should.be.rejectedWith('missing required param keychains');
+    });
+
+    it('should throw error for address that does not match derivation', async function () {
+      const wrongAddress = '0000000000000000000000000000000000000000000000000000000000000000';
+      const params = {
+        address: wrongAddress,
+        keychains: keychains,
+        index: 0,
+      };
+      await basecoin.isWalletAddress(params).should.be.rejectedWith('address validation failure');
+    });
+
+    it('should handle string index', async function () {
+      const params = {
+        address: addressVerificationData.rootAddress,
+        rootAddress: addressVerificationData.rootAddress,
+        keychains: keychains,
+        index: '0',
+      };
+      const result = await basecoin.isWalletAddress(params);
+      result.should.equal(true);
+    });
+  });
+
   describe('Verify transaction: ', () => {
     const amount = '1000000';
     const gas = '125000000000000';

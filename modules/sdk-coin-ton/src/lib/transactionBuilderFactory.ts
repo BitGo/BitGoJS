@@ -6,6 +6,7 @@ import { SingleNominatorWithdrawBuilder } from './singleNominatorWithdrawBuilder
 import { Transaction } from './transaction';
 import { TokenTransferBuilder } from './tokenTransferBuilder';
 import { TokenTransaction } from './tokenTransaction';
+import { TonWhalesDepositBuilder } from './tonWhalesDepositBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -36,6 +37,9 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
           break;
         case TransactionType.SendToken:
           builder = this.getTokenTransferBuilder();
+          break;
+        case TransactionType.TonWhalesDeposit:
+          builder = this.getTonWhalesDepositBuilder();
           break;
         default:
           throw new InvalidTransactionError('unsupported transaction');
@@ -69,5 +73,9 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   /** @inheritdoc */
   getWalletInitializationBuilder(): void {
     throw new Error('Method not implemented.');
+  }
+
+  getTonWhalesDepositBuilder(): TonWhalesDepositBuilder {
+    return new TonWhalesDepositBuilder(this._coinConfig);
   }
 }

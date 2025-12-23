@@ -152,8 +152,16 @@ describe('VET Claim Rewards Transaction', function () {
     });
 
     it('should throw error when staking contract address is missing', async function () {
-      const txBuilder = createBasicTxBuilder();
+      const txBuilder = factory.getClaimRewardsBuilder();
       txBuilder.tokenId(tokenId);
+      txBuilder.sender('0x9378c12BD7502A11F770a5C1F223c959B2805dA9');
+      txBuilder.chainTag(0x27);
+      txBuilder.blockRef('0x0000000000000000');
+      txBuilder.expiration(64);
+      txBuilder.gas(100000);
+      txBuilder.gasPriceCoef(0);
+      txBuilder.nonce('12345');
+      // Intentionally not setting stakingContractAddress
 
       await txBuilder.build().should.be.rejectedWith('Staking contract address is required');
     });

@@ -1356,6 +1356,14 @@ export const ofcCoins = [
     UnderlyingAsset['sol:xnet'],
     SOL_TOKEN_FEATURES
   ),
+  ofcsolToken(
+    'fa15fdb4-4134-45ee-8184-43fa7f77b648',
+    'ofcsol:kmno',
+    'Kamino',
+    6,
+    UnderlyingAsset['sol:kmno'],
+    SOL_TOKEN_FEATURES
+  ),
 
   tofcsolToken(
     '24d678cf-e0f0-4cde-a338-d754289c5b27',
@@ -2537,6 +2545,13 @@ export const ofcCoins = [
     'Coinnekt+',
     18,
     UnderlyingAsset['polygon:cnktplus']
+  ),
+  ofcPolygonErc20(
+    '54077a8d-f71c-428c-b775-1a4b3dc4b6d9',
+    'ofcpolygon:land1',
+    'LAND1',
+    6,
+    UnderlyingAsset['polygon:land1']
   ),
   ofcPolygonErc20(
     'a63bf18b-3462-403c-93f5-ff1b608622c2',

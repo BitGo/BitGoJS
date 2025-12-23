@@ -308,10 +308,12 @@ export class Utils implements BaseUtils {
 
   /**
    * Adds a checksum to a Buffer and returns the concatenated result
+   * Uses last 4 bytes of SHA256 hash as checksum (matching avaxp behavior)
    */
-  private addChecksum(buff: Buffer): Buffer {
-    const hashSlice = createHash('sha256').update(buff).digest().slice(28);
-    return Buffer.concat([buff, hashSlice]);
+  public addChecksum(buff: Buffer | Uint8Array): Uint8Array {
+    const buffer = Buffer.from(buff);
+    const hashSlice = createHash('sha256').update(buffer).digest().slice(28);
+    return new Uint8Array(Buffer.concat([buffer, hashSlice]));
   }
 
   // In utils.ts, add this method to the Utils class:

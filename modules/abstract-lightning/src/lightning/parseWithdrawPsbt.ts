@@ -110,10 +110,15 @@ export function verifyChangeAddress(
       }).address;
       break;
     case 86: // P2TR (Taproot)
-      derivedAddress = utxolib.payments.p2tr({
-        pubkey: derivedPubkey,
-        network,
-      }).address;
+      // P2TR requires x-only pubkey (32 bytes)
+      const xOnlyPubkey = derivedPubkey.length === 33 ? derivedPubkey.subarray(1, 33) : derivedPubkey;
+      derivedAddress = utxolib.payments.p2tr(
+        {
+          pubkey: xOnlyPubkey,
+          network,
+        },
+        { eccLib: utxolib.ecc }
+      ).address;
       break;
     default:
       throw new Error(`Unsupported purpose: ${purpose}`);

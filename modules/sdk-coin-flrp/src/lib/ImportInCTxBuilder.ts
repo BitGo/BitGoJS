@@ -93,11 +93,12 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
     const addressMaps = new FlareUtils.AddressMaps([addressMap]);
 
     // When credentials were extracted, use them directly to preserve existing signatures
+    // For initBuilder, _fromAddresses may not be set yet, so use all zeros for credential slots
     let txCredentials: Credential[];
     if (credentials.length > 0) {
       txCredentials = credentials;
     } else {
-      // Create empty credential with threshold number of signature slots
+      // Create empty credential with threshold number of signature slots (all zeros)
       const emptySignatures: ReturnType<typeof utils.createNewSig>[] = [];
       for (let i = 0; i < inputThreshold; i++) {
         emptySignatures.push(utils.createNewSig(''));
@@ -126,8 +127,6 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
   protected buildFlareTransaction(): void {
     // if tx has credentials or was already recovered from raw, tx shouldn't change
     if (this.transaction.hasCredentials) return;
-    // If fee is already calculated (from initBuilder), the transaction is already built
-    if (this.transaction._fee.fee) return;
     if (this.transaction._to.length !== 1) {
       throw new Error('to is required');
     }
@@ -229,10 +228,43 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
 
       inputs.push(transferableInput);
 
-      // Create empty credential for each input with threshold signers
-      const emptySignatures = sigIndices.map(() => utils.createNewSig(''));
-      const credential = new Credential(emptySignatures);
-      credentials.push(credential);
+      // Create credential with empty signatures for slot identification
+      // Match avaxp behavior: dynamic ordering based on addressesIndex from UTXO
+      const hasAddresses =
+        this.transaction._fromAddresses && this.transaction._fromAddresses.length >= this.transaction._threshold;
+
+      if (!hasAddresses) {
+        // If addresses not available, use all zeros
+        const emptySignatures = sigIndices.map(() => utils.createNewSig(''));
+        credentials.push(new Credential(emptySignatures));
+      } else {
+        // Compute addressesIndex: position of each _fromAddresses in UTXO's address list
+        const utxoAddresses = utxo.addresses.map((a) => utils.parseAddress(a));
+        const addressesIndex = this.transaction._fromAddresses.map((a) =>
+          utxoAddresses.findIndex((u) => Buffer.compare(Buffer.from(u), Buffer.from(a)) === 0)
+        );
+
+        // either user (0) or recovery (2)
+        const firstIndex = this.recoverSigner ? 2 : 0;
+        const bitgoIndex = 1;
+
+        // Dynamic ordering based on addressesIndex
+        let emptySignatures: ReturnType<typeof utils.createNewSig>[];
+        if (addressesIndex[bitgoIndex] < addressesIndex[firstIndex]) {
+          // Bitgo comes first in signature order: [zeros, userAddress]
+          emptySignatures = [
+            utils.createNewSig(''),
+            utils.createEmptySigWithAddress(Buffer.from(this.transaction._fromAddresses[firstIndex]).toString('hex')),
+          ];
+        } else {
+          // User comes first in signature order: [userAddress, zeros]
+          emptySignatures = [
+            utils.createEmptySigWithAddress(Buffer.from(this.transaction._fromAddresses[firstIndex]).toString('hex')),
+            utils.createNewSig(''),
+          ];
+        }
+        credentials.push(new Credential(emptySignatures));
+      }
     });
 
     return {

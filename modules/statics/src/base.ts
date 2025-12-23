@@ -424,6 +424,11 @@ export enum CoinFeature {
   SUPPORTS_ERC20 = 'supports-erc20-token',
 
   /**
+   * This coin supports erc721 tokens
+   */
+  SUPPORTS_ERC721 = 'supports-erc721-token',
+
+  /**
    * This coin is a Cosmos coin and should use shared Cosmos SDK module
    */
   SHARED_COSMOS_SDK = 'shared-cosmos-sdk',
@@ -2188,6 +2193,7 @@ export enum UnderlyingAsset {
   'eth:seda' = 'eth:seda',
   'eth:enso' = 'eth:enso',
   'eth:hpp' = 'eth:hpp',
+  'eth:lit' = 'eth:lit',
   'eth:six' = 'eth:six',
   'eth:eden' = 'eth:eden',
   'eth:xeden' = 'eth:xeden',
@@ -2632,6 +2638,7 @@ export enum UnderlyingAsset {
   'polygon:zig' = 'polygon:zig',
   'polygon:brl1' = 'polygon:brl1',
   'polygon:cnktplus' = 'polygon:cnktplus',
+  'polygon:land1' = 'polygon:land1',
   'polygon:mmt54' = 'polygon:mmt54',
   'polygon:jpyc' = 'polygon:jpyc',
   // Polygon NFTs
@@ -2911,7 +2918,7 @@ export enum UnderlyingAsset {
   'baseeth:wbrly' = 'baseeth:wbrly',
   'baseeth:recall' = 'baseeth:recall',
   'baseeth:sapien' = 'baseeth:sapien',
-  'baseeth:aixbt' = 'baseeht:aixbt',
+  'baseeth:aixbt' = 'baseeth:aixbt',
   'baseeth:brett' = 'baseeth:brett',
 
   // BaseETH testnet tokens
@@ -2955,9 +2962,14 @@ export enum UnderlyingAsset {
 
   // Story testnet tokens
   'tip:usdc' = 'tip:usdc',
+  'tip:tmt' = 'tip:tmt',
 
   // Story mainnet tokens
   'ip:aria' = 'ip:aria',
+
+  // MegaEth mainnet tokens
+  'megaeth:mega' = 'megaeth:mega',
+  'megaeth:weth' = 'megaeth:weth',
 
   // Plume testnet tokens
   'tplume:usdc' = 'tplume:usdc',
@@ -3361,6 +3373,9 @@ export enum UnderlyingAsset {
 
   // Hbar Testnet tokens
   'thbar:txsgd' = 'thbar:txsgd',
+
+  // Hbarevm TEstnet Tokens
+  'thbarevm:hbarnativetoken' = 'thbarevm:hbarnativetoken',
 
   // Nep141 tokens
   'near:usdc' = 'near:usdc',

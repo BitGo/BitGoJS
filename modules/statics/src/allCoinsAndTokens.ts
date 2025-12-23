@@ -13,6 +13,7 @@ import {
   erc20CompatibleAccountCoin,
   erc20Token,
   erc721,
+  erc721Token,
   fiat,
   flrErc20,
   gasTankAccount,
@@ -808,6 +809,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
       CoinFeature.SUPPORTS_ERC20,
+      CoinFeature.STAKING,
     ],
     KeyCurve.Secp256k1,
     '',
@@ -1511,7 +1513,12 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.MON,
     BaseUnit.ETH,
-    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SUPPORTS_ERC20]
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_MESSAGE_SIGNING,
+      CoinFeature.SUPPORTS_ERC20,
+    ]
   ),
   account(
     '5c5ebe50-fa27-4312-ae3d-7032520aedb5',
@@ -1525,6 +1532,7 @@ export const allCoinsAndTokens = [
       ...EVM_FEATURES,
       CoinFeature.SHARED_EVM_SIGNING,
       CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.SHARED_EVM_MESSAGE_SIGNING,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.SUPPORTS_ERC20,
@@ -2149,6 +2157,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_WP,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.SUPPORTS_ERC20,
     ]
   ),
   account(
@@ -2168,6 +2177,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_WP,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.SUPPORTS_ERC20,
     ]
   ),
   account(
@@ -2188,6 +2198,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
       CoinFeature.SUPPORTS_ERC20,
+      CoinFeature.SUPPORTS_ERC721,
     ]
   ),
   account(
@@ -2209,6 +2220,16 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
     ]
   ),
+
+  erc721Token(
+    'a7604e03-7f40-41f0-8efa-2e7673ac2a9f',
+    'terc721:hbarevmtoken',
+    'Testnet Hedera EVM NFT',
+    '0x00000000000000000000000000000000007103a5',
+    Networks.test.hederaEVM,
+    GENERIC_TOKEN_FEATURES
+  ),
+
   account(
     '8f6ed7e4-cce2-4686-bdab-ae8f54e2c05e',
     'tfluenteth',
@@ -2963,6 +2984,16 @@ export const allCoinsAndTokens = [
     Networks.test.ip
   ),
 
+  erc20Token(
+    '9d0e81bc-b049-402b-83ce-3a5dd9680f17',
+    'tip:tmt',
+    'Testnet Story TMT',
+    6,
+    '0xb283ec8dad644effc5c4c50bb7bb21442ac3c2db',
+    UnderlyingAsset['tip:tmt'],
+    Networks.test.ip
+  ),
+
   // Story mainnet tokens
   erc20Token(
     '2460e83c-e819-42c3-83c9-3974e08a45c8',
@@ -2974,6 +3005,26 @@ export const allCoinsAndTokens = [
     Networks.main.ip
   ),
 
+  // MegaEth mainnet tokens
+  erc20Token(
+    '342f9823-2de9-46d9-b1a1-9d35ba582678',
+    'megaeth:mega',
+    'Mega',
+    18,
+    '0x28b7e77f82b25b95953825f1e3ea0e36c1c29861',
+    UnderlyingAsset['megaeth:mega'],
+    Networks.main.megaeth
+  ),
+  erc20Token(
+    '1139cdc6-81ff-48d9-afab-c562feb8b3da',
+    'megaeth:weth',
+    'Wrapped Ether',
+    18,
+    '0x4200000000000000000000000000000000000006',
+    UnderlyingAsset['megaeth:weth'],
+    Networks.main.megaeth
+  ),
+
   // Plume testnet tokens
   erc20Token(
     '67a140e3-c73e-4984-af13-7b1555ee3ff3',
@@ -2983,6 +3034,17 @@ export const allCoinsAndTokens = [
     '0xcb5f30e335672893c7eb944b374c196392c19d18',
     UnderlyingAsset['tplume:usdc'],
     Networks.test.plume
+  ),
+
+  // HederaEVM testnet token
+  erc20Token(
+    'e2926ac1-9225-4b83-9f8b-51f805040c13',
+    'thbarevm:hbarnativetoken',
+    'Testnet HBAREVM Native Token',
+    18,
+    '0x0000000000000000000000000000000000728a62',
+    UnderlyingAsset['thbarevm:hbarnativetoken'],
+    Networks.test.hederaEVM
   ),
 
   hederaCoin(

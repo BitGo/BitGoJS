@@ -5,7 +5,6 @@ import {
   EDDSAMethods,
   EDDSAMethodTypes,
   KeyPair,
-  MethodNotImplementedError,
   MPCAlgorithm,
   MPCConsolidationRecoveryOptions,
   MPCRecoveryOptions,
@@ -20,7 +19,9 @@ import {
   ParseTransactionOptions,
   RecoveryTxRequest,
   SignedTransaction,
-  VerifyAddressOptions,
+  TssVerifyAddressOptions,
+  UnexpectedAddressError,
+  verifyEddsaTssWalletAddress,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
 import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
@@ -110,8 +111,18 @@ export class SubstrateCoin extends BaseCoin {
   }
 
   /** @inheritDoc **/
-  isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
-    throw new MethodNotImplementedError();
+  async isWalletAddress(params: TssVerifyAddressOptions): Promise<boolean> {
+    const isValid = await verifyEddsaTssWalletAddress(
+      params,
+      (addr) => this.isValidAddress(addr),
+      (pubKey) => this.getAddressFromPublicKey(pubKey)
+    );
+
+    if (!isValid) {
+      throw new UnexpectedAddressError(`address validation failure: ${params.address} is not a wallet address`);
+    }
+
+    return true;
   }
 
   /** @inheritDoc **/

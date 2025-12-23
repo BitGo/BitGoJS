@@ -1299,4 +1299,35 @@ describe('create token map using config details', () => {
       }
     }
   });
+
+  it('should create ERC721 tokens for all coins supporting ERC721 using createToken', () => {
+    // Get all ERC721 token configs from allCoinsAndTokens that support ERC721
+    const erc721TokenConfigs = allCoinsAndTokens
+      .filter(
+        (coin) =>
+          coin.isToken &&
+          coins.get(coin.family).features.includes(CoinFeature.SUPPORTS_ERC721) &&
+          coin.asset === UnderlyingAsset.ERC721
+      )
+      .map((coin) => coin);
+
+    for (const tokenConfig of erc721TokenConfigs) {
+      const token = createToken(tokenConfig);
+      token?.should.not.be.undefined();
+      if (token) {
+        token.name.should.eql(tokenConfig.name);
+        token.family.should.eql(tokenConfig.family);
+        token.decimalPlaces.should.eql(0); // ERC721 tokens are non-divisible
+        token.asset.should.eql(UnderlyingAsset.ERC721);
+        token.isToken.should.eql(true);
+
+        // Verify contract address matches for ERC721 tokens
+        if ('contractAddress' in token && 'contractAddress' in tokenConfig) {
+          (token as unknown as { contractAddress: string }).contractAddress.should.eql(
+            (tokenConfig as unknown as { contractAddress: string }).contractAddress
+          );
+        }
+      }
+    }
+  });
 });

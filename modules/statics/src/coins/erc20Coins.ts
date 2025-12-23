@@ -2941,7 +2941,7 @@ export const erc20Coins = [
     'eth:gousd',
     'goUSD',
     6,
-    '0xf1f6b8cc3a0d544a40f1d29909396378370e6938',
+    '0x04f4f7b8bb7b8aca7beb8a027603dfc6eb66af5d',
     UnderlyingAsset['eth:gousd'],
     [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
@@ -11946,6 +11946,14 @@ export const erc20Coins = [
     UnderlyingAsset['eth:aioz']
   ),
   erc20(
+    '2f4c46e8-9e30-4ecd-bcf1-1b50447c6f26',
+    'eth:lit',
+    'Lighter',
+    18,
+    '0x232ce3bd40fcd6f80f3d55a522d03f25df784ee2',
+    UnderlyingAsset['eth:lit']
+  ),
+  erc20(
     '3b5398f9-9c76-4508-8e9a-bf114506025c',
     'eth:job',
     'Jobchain',
@@ -12596,7 +12604,7 @@ export const erc20Coins = [
     'tgousd',
     'Hoodi Testnet GoUSD',
     6,
-    '0x32275b636171ba98fec28e86ed5f0289bd42aeb9',
+    '0xdbb7a34ea6859d307c4f2bb5be266e2d32356f5c',
     UnderlyingAsset.TGOUSD,
     [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN],
     undefined,
@@ -12644,7 +12652,7 @@ export const erc20Coins = [
     'hteth:gousd',
     'Hoodi Testnet GoUSD',
     6,
-    '0xd94dd81066271d0930e53cfd77f374e64ba306e9',
+    '0xb09d446d962498842bbcfd1e919373b3a2585fbb',
     UnderlyingAsset['hteth:gousd'],
     [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN],
     undefined,

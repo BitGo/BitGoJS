@@ -1,8 +1,5 @@
-import assert from 'assert';
-
 import _ from 'lodash';
 import * as utxolib from '@bitgo/utxo-lib';
-import { Dimensions } from '@bitgo/unspents';
 import {
   BitGoBase,
   ErrorNoInputToRecover,
@@ -22,6 +19,7 @@ import { generateAddressWithChainAndIndex } from '../address';
 import { forCoin, RecoveryProvider } from './RecoveryProvider';
 import { MempoolApi } from './mempoolApi';
 import { CoingeckoApi } from './coingeckoApi';
+import { createBackupKeyRecoveryPsbt, getRecoveryAmount } from './psbt';
 
 type ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 type ChainCode = utxolib.bitgo.ChainCode;
@@ -33,42 +31,21 @@ type WalletUnspentJSON = utxolib.bitgo.WalletUnspent & {
 
 const { getInternalChainCode, scriptTypeForChain, outputScripts, getExternalChainCode } = utxolib.bitgo;
 
-export interface OfflineVaultTxInfo {
-  inputs: WalletUnspentJSON[];
-}
+// V1 only deals with BTC. 50 sat/vbyte is very arbitrary.
+export const DEFAULT_RECOVERY_FEERATE_SAT_VBYTE_V1 = 50;
 
+// FIXME(BTC-2691): it is unclear why sweeps have a different default than regular recovery. 100 sat/vbyte is extremely high.
+export const DEFAULT_RECOVERY_FEERATE_SAT_VBYTE_V1_SWEEP = 100;
+
+// FIXME(BTC-2691): it makes little sense to have a single default for every coin.
+export const DEFAULT_RECOVERY_FEERATE_SAT_VBYTE_V2 = 50;
 export interface FormattedOfflineVaultTxInfo {
   txInfo: {
-    unspents: WalletUnspentJSON[];
+    unspents?: WalletUnspentJSON[];
   };
   txHex: string;
   feeInfo: Record<string, never>;
   coin: string;
-}
-
-/**
- * This transforms the txInfo from recover into the format that offline-signing-tool expects
- * @param coinName
- * @param txInfo
- * @param txHex
- * @returns {{txHex: *, txInfo: {unspents: *}, feeInfo: {}, coin: void}}
- */
-function formatForOfflineVault(
-  coinName: string,
-  txInfo: OfflineVaultTxInfo,
-  txHex: string
-): FormattedOfflineVaultTxInfo {
-  return {
-    txHex,
-    txInfo: {
-      unspents: txInfo.inputs.map((input) => {
-        assert(input.valueString);
-        return { ...input, valueString: input.valueString };
-      }),
-    },
-    feeInfo: {},
-    coin: coinName,
-  };
 }
 
 /**
@@ -123,6 +100,7 @@ export interface RecoverParams {
   apiKey?: string;
   userKeyPath?: string;
   recoveryProvider?: RecoveryProvider;
+  /** Satoshi per byte */
   feeRate?: number;
 }
 
@@ -316,7 +294,7 @@ export async function backupKeyRecovery(
 
   const isKrsRecovery = getIsKrsRecovery(params);
   const isUnsignedSweep = getIsUnsignedSweep(params);
-  const responseTxFormat = isUnsignedSweep || !isKrsRecovery || params.krsProvider === 'keyternal' ? 'legacy' : 'psbt';
+  const responseTxFormat = !isKrsRecovery || params.krsProvider === 'keyternal' ? 'legacy' : 'psbt';
 
   const krsProvider = isKrsRecovery ? getKrsProvider(coin, params.krsProvider) : undefined;
 
@@ -354,26 +332,16 @@ export async function backupKeyRecovery(
     throw new ErrorNoInputToRecover();
   }
 
-  // Build the psbt
-  const psbt = utxolib.bitgo.createPsbtForNetwork({ network: coin.network });
-  // xpubs can become handy for many things.
-  utxolib.bitgo.addXpubsToPsbt(psbt, walletKeys);
   const txInfo = {} as BackupKeyRecoveryTransansaction;
   const feePerByte: number =
-    params.feeRate !== undefined ? params.feeRate : await getRecoveryFeePerBytes(coin, { defaultValue: 50 });
-
-  // KRS recovery transactions have a 2nd output to pay the recovery fee, like paygo fees.
-  const dimensions = Dimensions.fromPsbt(psbt).plus(isKrsRecovery ? Dimensions.SingleOutput.p2wsh : Dimensions.ZERO);
-  const approximateFee = BigInt(dimensions.getVSize() * feePerByte);
+    params.feeRate !== undefined
+      ? params.feeRate
+      : await getRecoveryFeePerBytes(coin, { defaultValue: DEFAULT_RECOVERY_FEERATE_SAT_VBYTE_V2 });
 
   txInfo.inputs =
     responseTxFormat === 'legacy'
       ? unspents.map((u) => ({ ...u, value: Number(u.value), valueString: u.value.toString(), prevTx: undefined }))
       : undefined;
-
-  unspents.forEach((unspent) => {
-    utxolib.bitgo.addWalletUnspentToPsbt(psbt, unspent, walletKeys, 'user', 'backup');
-  });
 
   let krsFee = BigInt(0);
   if (isKrsRecovery && params.krsProvider) {
@@ -385,37 +353,33 @@ export async function backupKeyRecovery(
     }
   }
 
-  const recoveryAmount = totalInputAmount - approximateFee - krsFee;
-
-  if (recoveryAmount < BigInt(0)) {
-    throw new Error(`this wallet\'s balance is too low to pay the fees specified by the KRS provider.
-          Existing balance on wallet: ${totalInputAmount.toString()}. Estimated network fee for the recovery transaction
-          : ${approximateFee.toString()}, KRS fee to pay: ${krsFee.toString()}. After deducting fees, your total
-          recoverable balance is ${recoveryAmount.toString()}`);
-  }
-
-  const recoveryOutputScript = utxolib.address.toOutputScript(params.recoveryDestination, coin.network);
-  psbt.addOutput({ script: recoveryOutputScript, value: recoveryAmount });
-
+  let krsFeeAddress: string | undefined;
   if (krsProvider && krsFee > BigInt(0)) {
     if (!krsProvider.feeAddresses) {
       throw new Error(`keyProvider must define feeAddresses`);
     }
 
-    const krsFeeAddress = krsProvider.feeAddresses[coin.getChain()];
+    krsFeeAddress = krsProvider.feeAddresses[coin.getChain()];
 
     if (!krsFeeAddress) {
       throw new Error('this KRS provider has not configured their fee structure yet - recovery cannot be completed');
     }
-
-    const krsFeeOutputScript = utxolib.address.toOutputScript(krsFeeAddress, coin.network);
-    psbt.addOutput({ script: krsFeeOutputScript, value: krsFee });
   }
 
+  const psbt = createBackupKeyRecoveryPsbt(coin.network, walletKeys, unspents, {
+    feeRateSatVB: feePerByte,
+    recoveryDestination: params.recoveryDestination,
+    keyRecoveryServiceFee: krsFee,
+    keyRecoveryServiceFeeAddress: krsFeeAddress,
+  });
+
   if (isUnsignedSweep) {
-    // TODO BTC-317 - When ready to PSBTify OVC, send psbt hex and skip unspents in response.
-    const txHex = psbt.getUnsignedTx().toBuffer().toString('hex');
-    return formatForOfflineVault(coin.getChain(), txInfo as OfflineVaultTxInfo, txHex);
+    return {
+      txHex: psbt.toHex(),
+      txInfo: {},
+      feeInfo: {},
+      coin: coin.getChain(),
+    };
   } else {
     signAndVerifyPsbt(psbt, walletKeys.user, { isLastSignature: false });
     if (isKrsRecovery) {
@@ -436,6 +400,7 @@ export async function backupKeyRecovery(
   if (isKrsRecovery) {
     txInfo.coin = coin.getChain();
     txInfo.backupKey = params.backupKey;
+    const recoveryAmount = getRecoveryAmount(psbt, params.recoveryDestination);
     txInfo.recoveryAmount = Number(recoveryAmount);
     txInfo.recoveryAmountString = recoveryAmount.toString();
   }
@@ -474,7 +439,9 @@ export async function v1BackupKeyRecovery(
     throw new Error('invalid recoveryDestination');
   }
 
-  const recoveryFeePerByte = await getRecoveryFeePerBytes(coin, { defaultValue: 50 });
+  const recoveryFeePerByte = await getRecoveryFeePerBytes(coin, {
+    defaultValue: DEFAULT_RECOVERY_FEERATE_SAT_VBYTE_V1,
+  });
   const v1wallet = await bitgo.wallets().get({ id: params.walletId });
   return await v1wallet.recover({
     ...params,
@@ -500,7 +467,9 @@ export async function v1Sweep(
 
   let recoveryFeePerByte = 100;
   if (bitgo.env === 'prod') {
-    recoveryFeePerByte = await getRecoveryFeePerBytes(coin, { defaultValue: 100 });
+    recoveryFeePerByte = await getRecoveryFeePerBytes(coin, {
+      defaultValue: DEFAULT_RECOVERY_FEERATE_SAT_VBYTE_V1_SWEEP,
+    });
   }
 
   const v1wallet = await bitgo.wallets().get({ id: params.walletId });

@@ -14,6 +14,7 @@ import {
   getIsKrsRecovery,
   getIsUnsignedSweep,
   KeyPair,
+  KeyIndices,
   MethodNotImplementedError,
   ParsedTransaction,
   ParseTransactionOptions,
@@ -29,8 +30,9 @@ import {
   MultisigType,
   multisigTypes,
   AuditDecryptedKeyParams,
+  AddressCoinSpecific,
 } from '@bitgo/sdk-core';
-import { Interface, Utils, WrappedBuilder } from './lib';
+import { Interface, Utils, WrappedBuilder, KeyPair as TronKeyPair } from './lib';
 import { ValueFields, TransactionReceipt } from './lib/iface';
 import { getBuilder } from './lib/builder';
 import { isInteger, isUndefined } from 'lodash';
@@ -127,6 +129,25 @@ export enum NodeTypes {
  */
 export interface AccountResponse {
   data: [Interface.AccountInfo];
+}
+
+export interface TrxVerifyAddressOptions extends VerifyAddressOptions {
+  index?: number | string;
+  chain?: number;
+  coinSpecific?: AddressCoinSpecific & {
+    index?: number | string;
+    chain?: number;
+  };
+}
+
+function isTrxVerifyAddressOptions(params: VerifyAddressOptions): params is TrxVerifyAddressOptions {
+  return (
+    'index' in params ||
+    'chain' in params ||
+    ('coinSpecific' in params &&
+      params.coinSpecific !== undefined &&
+      ('index' in params.coinSpecific || 'chain' in params.coinSpecific))
+  );
 }
 
 export class Trx extends BaseCoin {
@@ -246,7 +267,73 @@ export class Trx extends BaseCoin {
   }
 
   async isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
-    throw new MethodNotImplementedError();
+    const { address, keychains } = params;
+
+    if (!isTrxVerifyAddressOptions(params)) {
+      throw new Error('Invalid or missing index for address verification');
+    }
+
+    const rawIndex = params.index ?? params.coinSpecific?.index;
+    const index = Number(rawIndex);
+    if (isNaN(index)) {
+      throw new Error('Invalid index. index must be a number.');
+    }
+
+    const chain = Number(params.chain ?? params.coinSpecific?.chain ?? 0);
+
+    if (!this.isValidAddress(address)) {
+      throw new Error(`Invalid address: ${address}`);
+    }
+
+    // Root address verification (Index 0)
+    if (index === 0) {
+      const bitgoPub = keychains && keychains.length > KeyIndices.BITGO ? keychains[KeyIndices.BITGO].pub : undefined;
+      if (!bitgoPub) {
+        throw new Error('BitGo public key required for root address verification');
+      }
+      return this.verifyRootAddress(address, bitgoPub);
+    }
+
+    // Receive address verification (Index > 0)
+    if (index > 0) {
+      const userPub = keychains && keychains.length > KeyIndices.USER ? keychains[KeyIndices.USER].pub : undefined;
+      if (!userPub) {
+        throw new Error('User public key required for receive address verification');
+      }
+      return this.verifyReceiveAddress(address, userPub, index, chain);
+    }
+
+    throw new Error('Invalid index for address verification');
+  }
+
+  /**
+   * Cryptographically verify that an address is the root address derived from BitGo's public key
+   */
+  private verifyRootAddress(address: string, bitgoPub: string): boolean {
+    if (!this.isValidXpub(bitgoPub)) {
+      throw new Error('Invalid bitgo public key');
+    }
+    const uncompressedPub = this.xpubToUncompressedPub(bitgoPub);
+    const byteArrayAddr = Utils.getByteArrayFromHexAddress(uncompressedPub);
+    const rawAddress = Utils.getRawAddressFromPubKey(byteArrayAddr);
+    const derivedAddress = Utils.getBase58AddressFromByteArray(rawAddress);
+    return derivedAddress === address;
+  }
+
+  /**
+   * Cryptographically verify that an address is a receive address derived from user's key
+   */
+  private verifyReceiveAddress(address: string, userPub: string, index: number, chain: number): boolean {
+    if (!this.isValidXpub(userPub)) {
+      throw new Error('Invalid user public key');
+    }
+    const derivationPath = `0/0/${chain}/${index}`;
+    const parentKey = bip32.fromBase58(userPub);
+    const childKey = parentKey.derivePath(derivationPath);
+    const derivedPubKeyHex = childKey.publicKey.toString('hex');
+    const keypair = new TronKeyPair({ pub: derivedPubKeyHex });
+    const derivedAddress = keypair.getAddress();
+    return derivedAddress === address;
   }
 
   async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {

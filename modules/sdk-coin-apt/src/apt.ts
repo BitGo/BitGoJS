@@ -3,7 +3,6 @@ import {
   BaseCoin,
   BaseTransaction,
   BitGoBase,
-  InvalidAddressError,
   KeyPair,
   MPCAlgorithm,
   MultisigType,
@@ -14,7 +13,9 @@ import {
   PrebuildTransactionWithIntentOptions,
   SignedTransaction,
   SignTransactionOptions,
-  VerifyAddressOptions,
+  TssVerifyAddressOptions,
+  UnexpectedAddressError,
+  verifyEddsaTssWalletAddress,
   VerifyTransactionOptions,
 } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
@@ -120,12 +121,22 @@ export class Apt extends BaseCoin {
     return true;
   }
 
-  async isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
-    const { address: newAddress } = params;
+  /**
+   * Verify that an address belongs to this wallet.
+   *
+   * @param params - Verification parameters including address, keychains, and index
+   * @returns True if address belongs to wallet
+   * @throws UnexpectedAddressError if address doesn't match derived address
+   */
+  async isWalletAddress(params: TssVerifyAddressOptions): Promise<boolean> {
+    const isValid = await verifyEddsaTssWalletAddress(params, this.isValidAddress.bind(this), (pubKey) =>
+      utils.getAddressFromPublicKey(pubKey)
+    );
 
-    if (!this.isValidAddress(newAddress)) {
-      throw new InvalidAddressError(`invalid address: ${newAddress}`);
+    if (!isValid) {
+      throw new UnexpectedAddressError();
     }
+
     return true;
   }
 

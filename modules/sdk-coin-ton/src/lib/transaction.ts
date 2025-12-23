@@ -5,7 +5,13 @@ import { Cell } from 'tonweb/dist/types/boc/cell';
 import { BaseKey, BaseTransaction, Entry, Recipient, TransactionRecipient, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { TransactionExplanation, TxData } from './iface';
-import { WITHDRAW_OPCODE, WALLET_ID, JETTON_TRANSFER_OPCODE, VESTING_CONTRACT_WALLET_ID } from './constants';
+import {
+  WITHDRAW_OPCODE,
+  WALLET_ID,
+  JETTON_TRANSFER_OPCODE,
+  VESTING_CONTRACT_WALLET_ID,
+  TON_WHALES_DEPOSIT_OPCODE,
+} from './constants';
 
 export class Transaction extends BaseTransaction {
   public recipient: Recipient;
@@ -127,6 +133,11 @@ export class Transaction extends BaseTransaction {
             payloadCell.bits.writeUint(parseInt(WITHDRAW_OPCODE, 16), 32);
             payloadCell.bits.writeUint(parseInt(queryId, 16), 64);
             payloadCell.bits.writeCoins(new BN(withdrawAmount));
+          } else if (payload.length >= 26 && payload.substring(0, 10) === TON_WHALES_DEPOSIT_OPCODE) {
+            const queryId = payload.substring(10, 26);
+            payloadCell.bits.writeUint(parseInt(TON_WHALES_DEPOSIT_OPCODE, 10), 32);
+            payloadCell.bits.writeUint(parseInt(queryId, 16), 64);
+            payloadCell.bits.writeCoins(TonWeb.utils.toNano('1'));
           } else {
             payloadCell.bits.writeUint(0, 32);
             payloadCell.bits.writeString(payload);
@@ -369,6 +380,13 @@ export class Transaction extends BaseTransaction {
             forwardTonAmount: forwardTonAmount.toString(),
             message: message,
           };
+        } else if (opcode === parseInt(TON_WHALES_DEPOSIT_OPCODE, 10)) {
+          this.transactionType = TransactionType.TonWhalesDeposit;
+          const queryId = order.loadUint(64).toNumber();
+          // This is the gas limit, which must be read to advance the cursor
+          // We do not need to store it
+          order.loadCoins();
+          payload = TON_WHALES_DEPOSIT_OPCODE + queryId.toString(16).padStart(16, '0');
         } else {
           payload = '';
         }
