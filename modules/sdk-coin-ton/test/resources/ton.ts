@@ -164,3 +164,39 @@ export const signedTonWhalesDepositTransaction = {
     'aff471790c6587d07ae69e5a9519428ca6456eddb4cd1a6a8573b55f2cd6809309b57af7f50ebb160bee2a729b0d9d6336ea202312fea35325d33b02f1e9ff01',
   bounceable: true,
 };
+
+export const signedTonWhalesWithdrawalTransaction = {
+  recipient: {
+    //https://testnet.tonscan.org/address/kQDr9Sq482A6ikIUh5mUUjJaBUUJBrye13CJiDB-R31_l7mg
+    address: 'EQDr9Sq482A6ikIUh5mUUjJaBUUJBrye13CJiDB-R31_lwIq',
+    amount: '200000000', // 10 TON
+  },
+  withdrawAmount: '10000000000',
+  // This is the raw TX from sandboxing a withdrawal request to Ton Whales
+  tx: 'te6cckEBAgEAwAAB4YgAyB87FgBG4jQNUAYzcmw2aJG9QQeQmtOPGsRPvX+eMdwGzbdqzqRjzzou/GIUqqqdZn7Tevr+oSawF529ibEgSoxfcezGF5GW4oF6/Ws+4OanMgBwMVCe0GIEK3GSTzCIaU1NGLtKVSvAAAAC6AAcAQCUYgB1+pVcebAdRSEKQ8zKKRktAqKEg15Pa7hExBg/I76/y6BfXhAAAAAAAAAAAAAAAAAAANqAPv0AAAAAaUqlPEO5rKAFAlQL5ACKp3CI',
+  seqno: 93,
+  queryId: '00000000694aa53c',
+  expireTime: 1766499704,
+  sender: 'EQBkD52LACNxGgaoAxm5Nhs0SN6gg8hNaceNYifev88Y7qoZ',
+  publicKey: '9d6d3714aeb1f007f6e6aa728f79fdd005ea2c7ad459b2f54d73f9e672426230',
+  signature:
+    'd9b6ed59d48c79e745df8c42955553accfda6f5f5fd424d602f3b7b1362409518bee3d98c2f232dc502f5fad67dc1cd4e6400e062a13da0c40856e3249e6110d',
+  bounceable: true,
+};
+
+export const signedTonWhalesFullWithdrawalTransaction = {
+  recipient: {
+    address: 'EQDr9Sq482A6ikIUh5mUUjJaBUUJBrye13CJiDB-R31_lwIq',
+    amount: '200000000', // 0.2 TON (Fee)
+  },
+  withdrawAmount: '0', // 0 means Full Withdraw
+  tx: 'te6cckEBAgEAuwAB4YgAyB87FgBG4jQNUAYzcmw2aJG9QQeQmtOPGsRPvX+eMdwHSrLxEIwA9nyfxKqom8MsGbPCL5SfwqGDzHyYnKzJwU8ecNqb6xkB7u9gBwBrZdO3NvecF44nXe2Lm/+OL8Z4aU1NGLtKVgg4AAAC8AAcAQCKYgB1+pVcebAdRSEKQ8zKKRktAqKEg15Pa7hExBg/I76/y6BfXhAAAAAAAAAAAAAAAAAAANqAPv0AAAAAaUrAy0O5rKAAudrTIw==',
+  seqno: 94,
+  queryId: '00000000694ac0cb',
+  expireTime: 1766506759,
+  sender: 'EQBkD52LACNxGgaoAxm5Nhs0SN6gg8hNaceNYifev88Y7qoZ',
+  publicKey: '9d6d3714aeb1f007f6e6aa728f79fdd005ea2c7ad459b2f54d73f9e672426230',
+  signature:
+    'e9565e2211801ecf93f8955513786583367845f293f85430798f931395993829e3ce1b537d63203dddec00e00d6cba76e6def382f1c4ebbdb1737ff1c5f8cf0d',
+  bounceable: true,
+};
