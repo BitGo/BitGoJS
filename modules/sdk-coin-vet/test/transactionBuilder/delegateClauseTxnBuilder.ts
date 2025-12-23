@@ -155,19 +155,19 @@ describe('VET Delegation Transaction', function () {
     });
 
     it('should build a signed tx and validate its toJson', async function () {
-      const tokenIdForDelegateTxn = '15662';
+      const tokenIdForDelegateTxn = '15685';
       const txBuilder = factory.from(testData.DELEGATION_TRANSACTION);
       const tx = txBuilder.transaction as DelegateClauseTransaction;
       const toJson = tx.toJson();
-      toJson.id.should.equal('0xc47792a421d90cb52a4aedbd9abe96f779a8ad68e508680ac3cc135428c3f4c5');
+      toJson.id.should.equal('0x841fd66a1d7feff7ab3d432720a659697197e6c67da1aeb9ce9d93b131e46ab7');
       toJson.stakingContractAddress?.should.equal('0x1e02b2953adefec225cf0ec49805b1146a4429c1');
-      toJson.nonce.should.equal('887557');
-      toJson.gas.should.equal(287920);
+      toJson.nonce.should.equal('0xf341b4c6b5ff5294');
+      toJson.gas.should.equal(242796);
       toJson.gasPriceCoef.should.equal(128);
-      toJson.expiration.should.equal(64);
+      toJson.expiration.should.equal(400);
       toJson.chainTag.should.equal(39);
       toJson.tokenId?.should.equal(tokenIdForDelegateTxn);
-      toJson.validatorAddress?.should.equal('0x00563ec3cafbbe7e60b04b3190e6eca66579706d');
+      toJson.validatorAddress?.should.equal('0x00000021cbe0de65ea10f7658effeea70727154a');
     });
   });
 
