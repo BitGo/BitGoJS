@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [27.18.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.17.1...@bitgo/account-lib@27.18.0) (2025-12-23)
+
+
+### Features
+
+* support message signing for FLR and MON ([69864b6](https://github.com/BitGo/BitGoJS/commit/69864b63d278fe35e80c669990355bf64e5c9f52))
+
+
+
+
+
 ## [27.17.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/account-lib@27.17.0...@bitgo/account-lib@27.17.1) (2025-12-17)
 
 **Note:** Version bump only for package @bitgo/account-lib

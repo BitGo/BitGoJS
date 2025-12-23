@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-zketh@2.4.19...@bitgo/sdk-coin-zketh@2.5.0) (2025-12-23)
+
+
+### Features
+
+* **root:** make node v20 the minimum version ([f2bd9ee](https://github.com/BitGo/BitGoJS/commit/f2bd9ee8e1b0816473dc12d614883422a3a2aa10))
+
+
+
+
+
 ## [2.4.19](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-zketh@2.4.18...@bitgo/sdk-coin-zketh@2.4.19) (2025-12-17)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-zketh

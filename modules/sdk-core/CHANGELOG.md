@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [36.25.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.24.0...@bitgo/sdk-core@36.25.0) (2025-12-23)
+
+
+### Features
+
+* add new param to support stakingPeriod for story ([1b6debb](https://github.com/BitGo/BitGoJS/commit/1b6debb465d17ba4f99c04b20b3cd0a5dfaddd59))
+* **sdk-coin-ton:** add ton whales deposit tx building ([b0b5dce](https://github.com/BitGo/BitGoJS/commit/b0b5dce4448ff4268cfff6fb40c10812d6e56826))
+* **sdk-coin-ton:** add ton whales withdrawal builder ([bad8df9](https://github.com/BitGo/BitGoJS/commit/bad8df905247e1b669a533c4c816e21e56a66b09))
+* **sdk-core:** support forwarderVersion 5 in createAddress ([36ffe11](https://github.com/BitGo/BitGoJS/commit/36ffe11ff6216e6fd461a4fd3633ea613cf98f1f))
+
+
+
+
+
 # [36.24.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.23.2...@bitgo/sdk-core@36.24.0) (2025-12-17)
 
 

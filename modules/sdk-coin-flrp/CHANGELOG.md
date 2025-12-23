@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.5.1...@bitgo/sdk-coin-flrp@1.6.0) (2025-12-23)
+
+
+### Bug Fixes
+
+* **sdk-coin-flr:** set default transaction fee for export in P txn ([046c92a](https://github.com/BitGo/BitGoJS/commit/046c92a6fd38247e7e5bfcf0556e6621e5399159))
+
+
+### Features
+
+* **sdk-coin-flrp:** add sourceChain and destinationChain properties ([df8e16d](https://github.com/BitGo/BitGoJS/commit/df8e16d6541df78dd94a07a14e84f4f4cf5200a1))
+* **sdk-coin-flrp:** implement dynamic credential ordering based ([143830f](https://github.com/BitGo/BitGoJS/commit/143830f0c68612ae4ab82e5e6c71b6904a42a5ce))
+
+
+
+
+
 ## [1.5.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.5.0...@bitgo/sdk-coin-flrp@1.5.1) (2025-12-17)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-flrp

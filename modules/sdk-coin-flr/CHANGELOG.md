@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flr@1.7.0...@bitgo/sdk-coin-flr@1.8.0) (2025-12-23)
+
+
+### Features
+
+* support message signing for FLR and MON ([69864b6](https://github.com/BitGo/BitGoJS/commit/69864b63d278fe35e80c669990355bf64e5c9f52))
+
+
+
+
+
 # [1.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flr@1.6.18...@bitgo/sdk-coin-flr@1.7.0) (2025-12-17)
 
 

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.20.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-icp@1.19.19...@bitgo/sdk-coin-icp@1.20.0) (2025-12-23)
+
+
+### Features
+
+* address verification for icp ([f31f558](https://github.com/BitGo/BitGoJS/commit/f31f558291705b1819ce77e3993a1fe6217f678b))
+
+
+
+
+
 ## [1.19.19](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-icp@1.19.18...@bitgo/sdk-coin-icp@1.19.19) (2025-12-17)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-icp

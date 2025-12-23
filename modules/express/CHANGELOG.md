@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [15.18.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.17.1...@bitgo/express@15.18.0) (2025-12-23)
+
+
+### Features
+
+* migrate handleCreateSignerMacaroon ([10d8d14](https://github.com/BitGo/BitGoJS/commit/10d8d1408d823b8663b218fddc75992dc0dcf9d4))
+* **sdk-core:** support forwarderVersion 5 in createAddress ([36ffe11](https://github.com/BitGo/BitGoJS/commit/36ffe11ff6216e6fd461a4fd3633ea613cf98f1f))
+
+
+
+
+
 ## [15.17.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.17.0...@bitgo/express@15.17.1) (2025-12-17)
 
 **Note:** Version bump only for package @bitgo/express

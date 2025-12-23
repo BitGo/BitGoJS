@@ -3,6 +3,33 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.11.1...@bitgo/abstract-utxo@10.12.0) (2025-12-23)
+
+
+### Bug Fixes
+
+* **abstract-utxo:** add fee rate test for backup key recovery ([4bad0f8](https://github.com/BitGo/BitGoJS/commit/4bad0f817fc2b630613156c5423221772e8cb593))
+* **abstract-utxo:** correct fee calculation in backup recovery ([e8c8961](https://github.com/BitGo/BitGoJS/commit/e8c8961d546a39a24b48f70a577a11dfb32a2c3f))
+* **abstract-utxo:** fix backup key recovery for KRS wallets ([ef2b442](https://github.com/BitGo/BitGoJS/commit/ef2b44239929f95ed05033aab48f59301b4e56e8))
+* **abstract-utxo:** refactor backup key recovery psbt creation ([8d6c758](https://github.com/BitGo/BitGoJS/commit/8d6c758649b5f080d0b0b3e671bb2685dc42f16c))
+* **abstract-utxo:** use fixed fee rate for bkr tests ([441a305](https://github.com/BitGo/BitGoJS/commit/441a3052a79a6097250966600029ca7c444ea335))
+
+
+### Features
+
+* **abstract-utxo:** add getReplayProtectionPubkeys function ([8c2bb89](https://github.com/BitGo/BitGoJS/commit/8c2bb89b74ea75a99c99d67359c38d24ae999427))
+* **abstract-utxo:** enable wasm support for BCH, BTG, BSV, XEC ([90d369e](https://github.com/BitGo/BitGoJS/commit/90d369ebff5324a8d9559406349db02e4d8d5e11))
+* **abstract-utxo:** extract default recovery fee rates into constants ([8f61ac4](https://github.com/BitGo/BitGoJS/commit/8f61ac409d70f0ccbdb11ecee83bbef4a63fd49d))
+* bump wasm-utxo to 1.15.0 ([e327602](https://github.com/BitGo/BitGoJS/commit/e3276022fca422ee6befefaaac83ed49919e1ad8))
+* bump wasm-utxo to 1.17.0 ([50b2fe6](https://github.com/BitGo/BitGoJS/commit/50b2fe66e2ce8288c098660f82e1f56277f15a75))
+* psbtify cross-chain recovery transactions ([a58302a](https://github.com/BitGo/BitGoJS/commit/a58302a5e583b0c45d78f669ee8fdf5772247a99))
+* refactor unsignedSweep tx format in backupKeyRecovery ([1fce5c9](https://github.com/BitGo/BitGoJS/commit/1fce5c971140a8287ed8e971e3f0da143d193108))
+* use wasm-utxo for PSBT creation in backupKeyRecovery ([5ec3b7e](https://github.com/BitGo/BitGoJS/commit/5ec3b7eef9786d171cc5f1f943de08530d9389b9))
+
+
+
+
+
 ## [10.11.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.11.0...@bitgo/abstract-utxo@10.11.1) (2025-12-17)
 
 **Note:** Version bump only for package @bitgo/abstract-utxo

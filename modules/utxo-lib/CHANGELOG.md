@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [11.19.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.18.0...@bitgo/utxo-lib@11.19.0) (2025-12-23)
+
+
+### Bug Fixes
+
+* **utxo-lib:** add consensus branch id to serialization methods ([4870c54](https://github.com/BitGo/BitGoJS/commit/4870c54266a892b6c22f3534dcef3ae72cfc383a))
+
+
+### Features
+
+* **root:** make node v20 the minimum version ([f2bd9ee](https://github.com/BitGo/BitGoJS/commit/f2bd9ee8e1b0816473dc12d614883422a3a2aa10))
+* **utxo-lib:** allow buffer as p2shP2pk key ([91c095a](https://github.com/BitGo/BitGoJS/commit/91c095aa809143967dd932a5ece2c4a7133c0718))
+
+
+
+
+
 # [11.18.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.17.0...@bitgo/utxo-lib@11.18.0) (2025-12-05)
 
 
