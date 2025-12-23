@@ -11,6 +11,7 @@ import {
   JETTON_TRANSFER_OPCODE,
   VESTING_CONTRACT_WALLET_ID,
   TON_WHALES_DEPOSIT_OPCODE,
+  TON_WHALES_WITHDRAW_OPCODE,
 } from './constants';
 
 export class Transaction extends BaseTransaction {
@@ -137,7 +138,21 @@ export class Transaction extends BaseTransaction {
             const queryId = payload.substring(10, 26);
             payloadCell.bits.writeUint(parseInt(TON_WHALES_DEPOSIT_OPCODE, 10), 32);
             payloadCell.bits.writeUint(parseInt(queryId, 16), 64);
+            // The Ton Whales protocol requires a specific 'gas limit' field in the payload
+            // structure (OpCode -> QueryId -> GasLimit -> Amount).
             payloadCell.bits.writeCoins(TonWeb.utils.toNano('1'));
+          } else if (payload.length >= 26 && payload.substring(0, 10) === TON_WHALES_WITHDRAW_OPCODE) {
+            const queryId = payload.substring(10, 26);
+            const amountStr = payload.substring(26);
+
+            payloadCell.bits.writeUint(parseInt(TON_WHALES_WITHDRAW_OPCODE, 10), 32);
+            payloadCell.bits.writeUint(new BN(queryId, 16), 64);
+            // The Ton Whales protocol requires a specific 'gas limit' field in the payload
+            // structure (OpCode -> QueryId -> GasLimit -> Amount).
+            // We hardcode 1 TON here to match the Deposit implementation and ensure
+            // sufficient gas for the pool to process the request.
+            payloadCell.bits.writeCoins(TonWeb.utils.toNano('1'));
+            payloadCell.bits.writeCoins(new BN(amountStr));
           } else {
             payloadCell.bits.writeUint(0, 32);
             payloadCell.bits.writeString(payload);
@@ -387,6 +402,18 @@ export class Transaction extends BaseTransaction {
           // We do not need to store it
           order.loadCoins();
           payload = TON_WHALES_DEPOSIT_OPCODE + queryId.toString(16).padStart(16, '0');
+        } else if (opcode === parseInt(TON_WHALES_WITHDRAW_OPCODE, 10)) {
+          this.transactionType = TransactionType.TonWhalesWithdrawal;
+
+          const queryId = order.loadUint(64).toNumber();
+          order.loadCoins(); // Skip Gas (Hardcoded in builder)
+          const amount = order.loadCoins();
+
+          withdrawAmount = amount.toString(); // Decimal String
+
+          // Reconstruct Payload: Decimal Op + Hex Query + Decimal Amount
+          const queryHex = new BN(queryId).toString(16).padStart(16, '0');
+          payload = TON_WHALES_WITHDRAW_OPCODE + queryHex + withdrawAmount;
         } else {
           payload = '';
         }
