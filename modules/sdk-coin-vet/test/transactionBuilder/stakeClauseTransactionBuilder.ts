@@ -240,13 +240,13 @@ describe('VET Staking Transaction', function () {
       const txBuilder = factory.from(testData.STAKE_CLAUSE_TRANSACTION);
       const tx = txBuilder.transaction as StakeClauseTransaction;
       const toJson = tx.toJson();
-      toJson.id.should.equal('0x7148f62b42ecfdcb7ee62ac0654514e4b5f65f2fe5fdee79d4d29f56ab1722eb');
+      toJson.id.should.equal('0xe003dbe6db08e71b962aa97ba5cb9e69810f52db41d31111fe39654281c6227c');
       toJson.stakingContractAddress?.should.equal('0x1e02b2953adefec225cf0ec49805b1146a4429c1');
       toJson.amountToStake?.should.equal(amountToStake);
-      toJson.nonce.should.equal('996363');
-      toJson.gas.should.equal(406410);
+      toJson.nonce.should.equal('0xf536788f0c121df3');
+      toJson.gas.should.equal(338631);
       toJson.gasPriceCoef.should.equal(128);
-      toJson.expiration.should.equal(64);
+      toJson.expiration.should.equal(400);
       toJson.chainTag.should.equal(39);
       toJson.levelId?.should.equal(8);
     });

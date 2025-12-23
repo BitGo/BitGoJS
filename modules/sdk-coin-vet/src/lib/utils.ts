@@ -22,10 +22,9 @@ import {
   CLAIM_STAKING_REWARDS_METHOD_ID,
   STARGATE_NFT_ADDRESS,
   STARGATE_NFT_ADDRESS_TESTNET,
-  STARGATE_DELEGATION_ADDRESS,
   DELEGATE_CLAUSE_METHOD_ID,
   STARGATE_CONTRACT_ADDRESS_TESTNET,
-  STARGATE_DELEGATION_ADDRESS_TESTNET,
+  STARGATE_CONTRACT_ADDRESS,
   VALIDATOR_REGISTRATION_STAKER_CONTRACT_ADDRESS_MAINNET,
   VALIDATOR_REGISTRATION_STAKER_CONTRACT_ADDRESS_TESTNET,
   ADD_VALIDATION_METHOD_ID,
@@ -326,23 +325,13 @@ export class Utils implements BaseUtils {
   }
 
   /**
-   * Get the network-appropriate stargate contract address
-   * @param {CoinConfig} coinConfig - The coin configuration object
-   * @returns {string} The delegation contract address for the network
-   */
-  getDefaultDelegationAddress(coinConfig: Readonly<CoinConfig>): string {
-    const isTestnet = coinConfig.network.type === 'testnet';
-    return isTestnet ? STARGATE_CONTRACT_ADDRESS_TESTNET : STARGATE_DELEGATION_ADDRESS;
-  }
-
-  /**
    * Get the network-appropriate staking contract address
    * @param {CoinConfig} coinConfig - The coin configuration object
    * @returns {string} The staking contract address for the network
    */
   getDefaultStakingAddress(coinConfig: Readonly<CoinConfig>): string {
     const isTestnet = coinConfig.network.type === 'testnet';
-    return isTestnet ? STARGATE_CONTRACT_ADDRESS_TESTNET : STARGATE_NFT_ADDRESS;
+    return isTestnet ? STARGATE_CONTRACT_ADDRESS_TESTNET : STARGATE_CONTRACT_ADDRESS;
   }
 
   /**
@@ -355,19 +344,6 @@ export class Utils implements BaseUtils {
     return isTestnet
       ? VALIDATOR_REGISTRATION_STAKER_CONTRACT_ADDRESS_TESTNET
       : VALIDATOR_REGISTRATION_STAKER_CONTRACT_ADDRESS_MAINNET;
-  }
-
-  /**
-   * Check if an address is a valid delegation contract address for any network
-   * @param {string} address - The address to check
-   * @returns {boolean} True if the address is a delegation contract address
-   */
-  isDelegationContractAddress(address: string): boolean {
-    const lowerAddress = address.toLowerCase();
-    return (
-      lowerAddress === STARGATE_DELEGATION_ADDRESS.toLowerCase() ||
-      lowerAddress === STARGATE_DELEGATION_ADDRESS_TESTNET.toLowerCase()
-    );
   }
 
   /**
@@ -408,21 +384,6 @@ export class Utils implements BaseUtils {
     if (address.toLowerCase() !== expectedAddress.toLowerCase()) {
       throw new Error(
         `Invalid contract address for validator registration. Expected ${expectedAddress} for ${coinConfig.network.type}, got ${address}`
-      );
-    }
-  }
-
-  /**
-   * Validate that a contract address matches the expected stargate contract for the network
-   * @param {string} address - The contract address to validate
-   * @param {CoinConfig} coinConfig - The coin configuration object
-   * @throws {Error} If the address doesn't match the expected delegation contract address
-   */
-  validateDelegationContractAddress(address: string, coinConfig: Readonly<CoinConfig>): void {
-    const expectedAddress = this.getDefaultDelegationAddress(coinConfig);
-    if (address.toLowerCase() !== expectedAddress.toLowerCase()) {
-      throw new Error(
-        `Invalid delegation contract address. Expected ${expectedAddress} for ${coinConfig.network.type}, got ${address}`
       );
     }
   }
