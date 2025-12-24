@@ -1,7 +1,7 @@
 import should from 'should';
 import { coins } from '@bitgo/statics';
 import { TransactionType } from '@bitgo/sdk-core';
-import { TransactionBuilderFactory, StakeClauseTransaction } from '../../src/lib';
+import { TransactionBuilderFactory, StakeClauseTransaction, ValidatorRegistrationTransaction } from '../../src/lib';
 import * as testData from '../resources/vet';
 
 describe('VET Staking Flow - End-to-End Test', function () {
@@ -10,7 +10,10 @@ describe('VET Staking Flow - End-to-End Test', function () {
 
   // Test data
   const stakingContractAddress = testData.STAKING_CONTRACT_ADDRESS;
+  const builtInStakerContractAddress = testData.BUILT_IN_STAKER_CONTRACT_ADDRESS;
   const amountToStake = '1000000000000000000'; // 1 VET in wei
+  const stakingPeriod = 60480;
+  const validatorAddress = '0x9a7afcacc88c106f3bbd6b213cd0821d9224d945';
   const levelId = testData.STAKING_LEVEL_ID;
   const senderAddress = '0x9378c12BD7502A11F770a5C1F223c959B2805dA9';
   const feePayerAddress = '0xdc9fef0b84a0ccf3f1bd4b84e41743e3e051a083';
@@ -97,6 +100,84 @@ describe('VET Staking Flow - End-to-End Test', function () {
       // JSON output keeps decimal format for amounts
       jsonOutput.should.have.property('amountToStake', amountToStake);
       jsonOutput.should.have.property('levelId', levelId);
+    });
+
+    it('should build, sign, and serialize a complete validator registration transaction with fee delegation', async function () {
+      // Step 1: Build the staking transaction
+      const validatorRegistrationBuilder = factory.getValidatorRegistrationBuilder();
+
+      validatorRegistrationBuilder
+        .stakingContractAddress(builtInStakerContractAddress)
+        .stakingPeriod(60480)
+        .validator(validatorAddress)
+        .sender(senderAddress)
+        .chainTag(0x27) // Testnet chain tag
+        .blockRef('0x014ead140e77bbc1')
+        .expiration(64)
+        .gas(100000)
+        .gasPriceCoef(128)
+        .nonce('12345');
+
+      validatorRegistrationBuilder.addFeePayerAddress(feePayerAddress);
+
+      const unsignedTx = await validatorRegistrationBuilder.build();
+      should.exist(unsignedTx);
+      unsignedTx.should.be.instanceof(ValidatorRegistrationTransaction);
+
+      const validatorRegistrationTx = unsignedTx as ValidatorRegistrationTransaction;
+
+      // Verify transaction structure
+      validatorRegistrationTx.type.should.equal(TransactionType.StakingLock);
+      validatorRegistrationTx.stakingContractAddress.should.equal(builtInStakerContractAddress);
+      validatorRegistrationTx.stakingPeriod.should.equal(stakingPeriod);
+      validatorRegistrationTx.validator.should.equal(validatorAddress);
+
+      should.exist(validatorRegistrationTx.rawTransaction);
+      should.exist(validatorRegistrationTx.rawTransaction.body);
+
+      // This is the critical test - ensure reserved.features = 1
+      should.exist(validatorRegistrationTx.rawTransaction.body.reserved);
+      validatorRegistrationTx.rawTransaction.body.reserved!.should.have.property('features', 1);
+
+      // Step 3: Add sender signature
+      validatorRegistrationTx.addSenderSignature(mockSenderSignature);
+      should.exist(validatorRegistrationTx.senderSignature);
+      Buffer.from(validatorRegistrationTx.senderSignature!).should.eql(mockSenderSignature);
+
+      // Step 4: Add fee payer signature
+      validatorRegistrationTx.addFeePayerSignature(mockFeePayerSignature);
+      should.exist(validatorRegistrationTx.feePayerSignature);
+      Buffer.from(validatorRegistrationTx.feePayerSignature!).should.eql(mockFeePayerSignature);
+
+      // Step 5: Generate transaction ID
+
+      // This should NOT throw "not signed transaction: id unavailable" error anymore
+      const transactionId = validatorRegistrationTx.id;
+      should.exist(transactionId);
+      transactionId.should.not.equal('UNAVAILABLE');
+
+      // Step 6: Serialize the fully signed transaction
+      const serializedTx = validatorRegistrationTx.toBroadcastFormat();
+      should.exist(serializedTx);
+      serializedTx.should.be.type('string');
+      serializedTx.should.startWith('0x');
+
+      // Step 7: Verify transaction can be deserialized
+      const deserializedBuilder = factory.from(serializedTx);
+      const deserializedTx = deserializedBuilder.transaction as ValidatorRegistrationTransaction;
+
+      deserializedTx.should.be.instanceof(ValidatorRegistrationTransaction);
+      deserializedTx.stakingContractAddress.should.equal(builtInStakerContractAddress);
+      deserializedTx.stakingPeriod.should.equal(stakingPeriod);
+      deserializedTx.validator.should.equal(validatorAddress);
+
+      // Step 8: Verify toJson output
+      const jsonOutput = validatorRegistrationTx.toJson();
+      should.exist(jsonOutput);
+      jsonOutput.should.have.property('id', transactionId);
+      jsonOutput.should.have.property('stakingContractAddress', builtInStakerContractAddress);
+      jsonOutput.should.have.property('stakingPeriod', stakingPeriod);
+      jsonOutput.should.have.property('validatorAddress', validatorAddress);
     });
 
     it('should handle signature combination in the correct order', async function () {
