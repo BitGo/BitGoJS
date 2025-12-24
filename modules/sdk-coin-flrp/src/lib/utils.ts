@@ -151,10 +151,13 @@ export class Utils implements BaseUtils {
 
   /**
    * Verifies a signature
+   * @param messageHash - The SHA256 hash of the message (e.g., signablePayload)
+   * @param signature - The 64-byte signature (without recovery parameter)
+   * @param publicKey - The public key to verify against
+   * @returns true if signature is valid
    */
-  verifySignature(network: FlareNetwork, message: Buffer, signature: Buffer, publicKey: Buffer): boolean {
+  verifySignature(messageHash: Buffer, signature: Buffer, publicKey: Buffer): boolean {
     try {
-      const messageHash = this.sha256(message);
       return ecc.verify(messageHash, publicKey, signature);
     } catch (e) {
       return false;
@@ -362,17 +365,13 @@ export class Utils implements BaseUtils {
   }
 
   /**
-   * FlareJS wrapper to recover signature
-   * @param network
-   * @param message
-   * @param signature
+   * Recover public key from signature
+   * @param messageHash - The SHA256 hash of the message (e.g., signablePayload)
+   * @param signature - 65-byte signature (64 bytes signature + 1 byte recovery parameter)
    * @return recovered public key
    */
-  recoverySignature(network: FlareNetwork, message: Buffer, signature: Buffer): Buffer {
+  recoverySignature(messageHash: Buffer, signature: Buffer): Buffer {
     try {
-      // Hash the message first - must match the hash used in signing
-      const messageHash = createHash('sha256').update(message).digest();
-
       // Extract recovery parameter and signature
       if (signature.length !== 65) {
         throw new Error('Invalid signature length - expected 65 bytes (64 bytes signature + 1 byte recovery)');
@@ -382,6 +381,7 @@ export class Utils implements BaseUtils {
       const sigOnly = signature.slice(0, 64);
 
       // Recover public key using the provided recovery parameter
+      // messageHash should already be the SHA256 hash (signablePayload)
       const recovered = ecc.recoverPublicKey(messageHash, sigOnly, recoveryParam, true);
       if (!recovered) {
         throw new Error('Failed to recover public key');

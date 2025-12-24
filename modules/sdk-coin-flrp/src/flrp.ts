@@ -323,8 +323,8 @@ export class Flrp extends BaseCoin {
     }
   }
 
-  recoverySignature(message: Buffer, signature: Buffer): Buffer {
-    return FlrpLib.Utils.recoverySignature(this._staticsCoin.network as FlareNetwork, message, signature);
+  recoverySignature(messageHash: Buffer, signature: Buffer): Buffer {
+    return FlrpLib.Utils.recoverySignature(messageHash, signature);
   }
 
   async signMessage(key: KeyPair, message: string | Buffer): Promise<Buffer> {

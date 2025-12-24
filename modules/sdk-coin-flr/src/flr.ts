@@ -26,7 +26,7 @@ import {
   TransactionExplanation,
   Entry,
 } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin, coins, FlareNetwork } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
 import {
   AbstractEthLikeNewCoins,
   optionalDeps,
@@ -157,10 +157,7 @@ export class Flr extends AbstractEthLikeNewCoins {
     const tx = await txBuilder.build();
     const payload = tx.signablePayload;
     const signatures = tx.signature.map((s) => Buffer.from(FlrPLib.Utils.removeHexPrefix(s), 'hex'));
-    const network = _.get(tx, '_network');
-    const recoverPubkey = signatures.map((s) =>
-      FlrPLib.Utils.recoverySignature(network as unknown as FlareNetwork, payload, s)
-    );
+    const recoverPubkey = signatures.map((s) => FlrPLib.Utils.recoverySignature(payload, s));
     const expectedSenders = recoverPubkey.map((r) => pubToAddress(r, true));
     const senders = tx.inputs.map((i) => FlrPLib.Utils.parseAddress(i.address));
     return expectedSenders.every((e) => senders.some((sender) => e.equals(sender)));
