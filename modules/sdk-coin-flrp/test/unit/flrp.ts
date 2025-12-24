@@ -186,8 +186,7 @@ describe('Flrp test cases', function () {
       const signature = await basecoin.signMessage(keys, messageToSign.toString('hex'));
 
       const verify = FlrpLib.Utils.verifySignature(
-        basecoin._staticsCoin.network,
-        messageToSign,
+        FlrpLib.Utils.sha256(messageToSign),
         signature.slice(0, 64), // Remove recovery byte for verification
         Buffer.from(pubKey, 'hex')
       );
@@ -551,12 +550,9 @@ describe('Flrp test cases', function () {
     it('should recover signature from signed message', async () => {
       const message = Buffer.from(SEED_ACCOUNT.message, 'utf8');
       const privateKey = Buffer.from(SEED_ACCOUNT.privateKey, 'hex');
-
-      // Create signature
       const signature = FlrpLib.Utils.createSignature(basecoin._staticsCoin.network, message, privateKey);
-
-      // Recover public key from signature
-      const recoveredPubKey = basecoin.recoverySignature(message, signature);
+      const messageHash = FlrpLib.Utils.sha256(message);
+      const recoveredPubKey = basecoin.recoverySignature(messageHash, signature);
 
       recoveredPubKey.should.be.instanceOf(Buffer);
       recoveredPubKey.length.should.equal(33);

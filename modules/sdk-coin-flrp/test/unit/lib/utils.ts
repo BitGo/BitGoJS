@@ -15,6 +15,7 @@ import { IMPORT_IN_P } from '../../resources/transactionData/importInP';
 import { EXPORT_IN_P } from '../../resources/transactionData/exportInP';
 import { IMPORT_IN_C } from '../../resources/transactionData/importInC';
 import { TransactionBuilderFactory, Transaction } from '../../../src/lib';
+import { secp256k1, Address } from '@flarenetwork/flarejs';
 
 describe('Utils', function () {
   let utils: Utils;
@@ -206,7 +207,8 @@ describe('Utils', function () {
       const signature = utils.createSignature(network, message, privateKey);
       const sigOnly = signature.slice(0, 64);
 
-      const isValid = utils.verifySignature(network, message, sigOnly, publicKey);
+      const messageHash = utils.sha256(message);
+      const isValid = utils.verifySignature(messageHash, sigOnly, publicKey);
       assert.strictEqual(isValid, true);
     });
 
@@ -215,7 +217,8 @@ describe('Utils', function () {
       const publicKey = Buffer.from(SEED_ACCOUNT.publicKey, 'hex');
       const invalidSignature = Buffer.alloc(64);
 
-      const isValid = utils.verifySignature(network, message, invalidSignature, publicKey);
+      const messageHash = utils.sha256(message);
+      const isValid = utils.verifySignature(messageHash, invalidSignature, publicKey);
       assert.strictEqual(isValid, false);
     });
 
@@ -480,11 +483,12 @@ describe('Utils', function () {
       const message = Buffer.from(SEED_ACCOUNT.message, 'utf8');
       const privateKey = Buffer.from(SEED_ACCOUNT.privateKey, 'hex');
 
-      // Create signature using the same private key
+      // Create signature using the same private key (createSignature hashes the message internally)
       const signature = utils.createSignature(network, message, privateKey);
 
-      // Recover public key
-      const recoveredPubKey = utils.recoverySignature(network, message, signature);
+      // Recover public key - pass the hashed message since recoverySignature expects pre-hashed
+      const messageHash = utils.sha256(message);
+      const recoveredPubKey = utils.recoverySignature(messageHash, signature);
 
       assert.ok(recoveredPubKey instanceof Buffer);
       assert.strictEqual(recoveredPubKey.length, 33); // Should be compressed public key (33 bytes)
@@ -495,8 +499,9 @@ describe('Utils', function () {
       const privateKey = Buffer.from(SEED_ACCOUNT.privateKey, 'hex');
       const signature = utils.createSignature(network, message, privateKey);
 
-      const pubKey1 = utils.recoverySignature(network, message, signature);
-      const pubKey2 = utils.recoverySignature(network, message, signature);
+      const messageHash = utils.sha256(message);
+      const pubKey1 = utils.recoverySignature(messageHash, signature);
+      const pubKey2 = utils.recoverySignature(messageHash, signature);
 
       assert.deepStrictEqual(pubKey1, pubKey2);
     });
@@ -510,7 +515,8 @@ describe('Utils', function () {
 
       // Create signature and recover public key
       const signature = utils.createSignature(network, message, privateKey);
-      const recoveredPubKey = utils.recoverySignature(network, message, signature);
+      const messageHash = utils.sha256(message);
+      const recoveredPubKey = utils.recoverySignature(messageHash, signature);
 
       // Convert both to hex strings for comparison
       assert.strictEqual(recoveredPubKey.toString('hex'), originalPubKey.toString('hex'));
@@ -523,23 +529,67 @@ describe('Utils', function () {
       const originalPubKey = Buffer.from(ecc.pointFromScalar(privateKey, true) as Uint8Array);
 
       const signature = utils.createSignature(network, message, privateKey);
-      const recoveredPubKey = utils.recoverySignature(network, message, signature);
+      const messageHash = utils.sha256(message);
+      const recoveredPubKey = utils.recoverySignature(messageHash, signature);
 
       assert.strictEqual(recoveredPubKey.toString('hex'), originalPubKey.toString('hex'));
     });
 
     it('should throw error for invalid signature length', function () {
-      const message = Buffer.from(SEED_ACCOUNT.message, 'utf8');
+      const messageHash = utils.sha256(Buffer.from(SEED_ACCOUNT.message, 'utf8'));
       const invalidSignature = Buffer.from(INVALID_SHORT_KEYPAIR_KEY, 'hex');
 
-      assert.throws(() => utils.recoverySignature(network, message, invalidSignature), /Failed to recover signature/);
+      assert.throws(() => utils.recoverySignature(messageHash, invalidSignature), /Failed to recover signature/);
     });
 
     it('should throw error for signature with invalid recovery parameter', function () {
-      const message = Buffer.from(SEED_ACCOUNT.message, 'utf8');
+      const messageHash = utils.sha256(Buffer.from(SEED_ACCOUNT.message, 'utf8'));
       const signature = Buffer.alloc(65); // Valid length but all zeros - invalid signature
 
-      assert.throws(() => utils.recoverySignature(network, message, signature), /Failed to recover signature/);
+      assert.throws(() => utils.recoverySignature(messageHash, signature), /Failed to recover signature/);
+    });
+
+    it('should recover signature and verify sender address from signed C-chain Export tx', async function () {
+      // Transaction from actual build response - C-chain Export tx
+      const tx =
+        '0x0000000000010000007278db5c30bed04c05ce209179812850bbb3fe6d46d7eef3744d814c0da55524790000000000000000000000000000000000000000000000000000000000000000000000012a96025ad506b9fbb9023fbdc1665c7f7d7c923f000000000605236658734f94af871c3d131b56131b6fb7a0291eacadd261e69dfb42a9cdf6f7fddd00000000000000000000000158734f94af871c3d131b56131b6fb7a0291eacadd261e69dfb42a9cdf6f7fddd000000070000000006052340000000000000000000000002000000037fa8c7e0c8ad9f09f9179b42b77e94a487c3df758d4ba538f772333ca7bf3668a2fe36648438c79d9b6b77b56effb860eaa430e0e30c4e392f59cd08000000010000000900000001750076e67d9720283a71c6e7a9a88ff662608fefdd3f316f1211957ca1873eee3ee4a74b468bda66176a3e5d3ab54d43a8c0be12348f251a3093c16d9db00cd001c31e9c15';
+      const expectedSenderAddress = '0x2a96025ad506b9fbb9023fbdc1665c7f7d7c923f';
+
+      const factory = new TransactionBuilderFactory(coins.get('tflrp'));
+      const txn = (await factory.from(tx).build()) as Transaction;
+      const signablePayload = txn.signablePayload;
+      const signatures = txn.signature;
+      const sig = Buffer.from(utils.removeHexPrefix(signatures[0]), 'hex');
+
+      // Recover public key from signature (signablePayload is already SHA256 hashed)
+      const recoveredPubKey = utils.recoverySignature(signablePayload, sig);
+
+      // Get the sender address from the transaction inputs
+      const txInputs = txn.inputs;
+      const senderAddressFromTx = txInputs[0].address.toLowerCase();
+
+      // Verify sender address matches expected
+      assert.strictEqual(
+        senderAddressFromTx,
+        expectedSenderAddress.toLowerCase(),
+        'Transaction sender address does not match expected'
+      );
+
+      // Derive address from recovered public key
+      const derivedEvmAddress =
+        '0x' + Buffer.from(new Address(secp256k1.publicKeyToEthAddress(recoveredPubKey)).toBytes()).toString('hex');
+
+      // Verify the recovered public key matches the sender
+      assert.strictEqual(
+        derivedEvmAddress.toLowerCase(),
+        senderAddressFromTx,
+        'Recovered public key does not match sender address'
+      );
+
+      // Also verify signature validity
+      const sigOnly = sig.slice(0, 64);
+      const isValid = utils.verifySignature(signablePayload, sigOnly, recoveredPubKey);
+      assert.strictEqual(isValid, true, 'Signature verification failed');
     });
   });
 

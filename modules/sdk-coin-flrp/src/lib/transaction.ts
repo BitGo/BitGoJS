@@ -237,7 +237,6 @@ export class Transaction extends BaseTransaction {
     // avaxp P-chain: transaction.ts uses addChecksum() explicitly
     // avaxp C-chain: deprecatedTransaction.ts uses Tx.toStringHex() which internally adds checksum
     const rawTx = FlareUtils.bufferToHex(utils.addChecksum(signedTxBytes));
-    console.log('rawTx in toBroadcastFormat:', rawTx);
     return rawTx;
   }
 
