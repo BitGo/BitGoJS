@@ -4539,17 +4539,10 @@ export const tOfcErc20Coins = [
 
   ofcerc20(
     'd20cc76e-1384-4261-9d90-df2d6a87b3d0',
-    'ofchype:hwhype',
+    'ofchypeevm:hwhype',
     'Hyperwave HYPE',
     18,
-    UnderlyingAsset['hype:hwhype'],
-    undefined,
-    undefined,
-    '',
-    undefined,
-    undefined,
-    true,
-    'hype'
+    UnderlyingAsset['hypeevm:hwhype']
   ),
 
   ofcerc20(
