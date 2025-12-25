@@ -2,6 +2,7 @@ import assert from 'assert';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { TransactionType } from '@bitgo/sdk-core';
 import { TransactionClause } from '@vechain/sdk-core';
+import BigNumber from 'bignumber.js';
 
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from '../transaction/transaction';
@@ -97,6 +98,17 @@ export class ValidatorRegistrationBuilder extends TransactionBuilder {
   }
 
   /**
+   * Sets the amount to stake for this validator registration tx (VET amount being sent).
+   *
+   * @param {string} amount - The amount to stake in wei
+   * @returns {ValidatorRegistrationBuilder} This transaction builder
+   */
+  amountToStake(amount: string): this {
+    this.validatorRegistrationTransaction.amountToStake = amount;
+    return this;
+  }
+
+  /**
    * Sets the validator address for this validator registration tx.
    * @param {string} address - The validator address
    * @returns {ValidatorRegistrationBuilder} This transaction builder
@@ -127,9 +139,16 @@ export class ValidatorRegistrationBuilder extends TransactionBuilder {
       throw new Error('transaction not defined');
     }
     assert(transaction.stakingContractAddress, 'Staking contract address is required');
-
     assert(transaction.stakingPeriod, 'Staking period is required');
     assert(transaction.validator, 'Validator address is required');
+    assert(transaction.amountToStake, 'Staking amount is required');
+
+    // Validate staking amount is within allowed range
+    const amountInVET = new BigNumber(transaction.amountToStake).dividedBy(new BigNumber(10).pow(18));
+    if (amountInVET.isLessThan(25_000_000) || amountInVET.isGreaterThan(600_000_000)) {
+      throw new Error('Staking amount must be between 25M and 600M VET');
+    }
+
     this.validateAddress({ address: transaction.stakingContractAddress });
   }
 

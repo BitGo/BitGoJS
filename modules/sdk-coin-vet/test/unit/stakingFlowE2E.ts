@@ -12,6 +12,7 @@ describe('VET Staking Flow - End-to-End Test', function () {
   const stakingContractAddress = testData.STAKING_CONTRACT_ADDRESS;
   const builtInStakerContractAddress = testData.BUILT_IN_STAKER_CONTRACT_ADDRESS;
   const amountToStake = '1000000000000000000'; // 1 VET in wei
+  const amountToStakeForValidatorRegistration = '25000000000000000000000000'; // 25M VET in wei
   const stakingPeriod = 60480;
   const validatorAddress = '0x9a7afcacc88c106f3bbd6b213cd0821d9224d945';
   const levelId = testData.STAKING_LEVEL_ID;
@@ -110,6 +111,7 @@ describe('VET Staking Flow - End-to-End Test', function () {
         .stakingContractAddress(builtInStakerContractAddress)
         .stakingPeriod(60480)
         .validator(validatorAddress)
+        .amountToStake(amountToStakeForValidatorRegistration)
         .sender(senderAddress)
         .chainTag(0x27) // Testnet chain tag
         .blockRef('0x014ead140e77bbc1')
@@ -131,6 +133,7 @@ describe('VET Staking Flow - End-to-End Test', function () {
       validatorRegistrationTx.stakingContractAddress.should.equal(builtInStakerContractAddress);
       validatorRegistrationTx.stakingPeriod.should.equal(stakingPeriod);
       validatorRegistrationTx.validator.should.equal(validatorAddress);
+      validatorRegistrationTx.amountToStake.should.equal(amountToStakeForValidatorRegistration);
 
       should.exist(validatorRegistrationTx.rawTransaction);
       should.exist(validatorRegistrationTx.rawTransaction.body);
@@ -170,6 +173,7 @@ describe('VET Staking Flow - End-to-End Test', function () {
       deserializedTx.stakingContractAddress.should.equal(builtInStakerContractAddress);
       deserializedTx.stakingPeriod.should.equal(stakingPeriod);
       deserializedTx.validator.should.equal(validatorAddress);
+      deserializedTx.amountToStake.should.equal(amountToStakeForValidatorRegistration);
 
       // Step 8: Verify toJson output
       const jsonOutput = validatorRegistrationTx.toJson();
@@ -178,6 +182,7 @@ describe('VET Staking Flow - End-to-End Test', function () {
       jsonOutput.should.have.property('stakingContractAddress', builtInStakerContractAddress);
       jsonOutput.should.have.property('stakingPeriod', stakingPeriod);
       jsonOutput.should.have.property('validatorAddress', validatorAddress);
+      jsonOutput.should.have.property('amountToStake', amountToStakeForValidatorRegistration);
     });
 
     it('should handle signature combination in the correct order', async function () {
