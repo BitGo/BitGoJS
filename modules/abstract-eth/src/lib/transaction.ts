@@ -90,7 +90,7 @@ export class Transaction extends BaseTransaction {
     if (txData.id) {
       this._id = txData.id;
     }
-    this._type = classifyTransaction(txData.data);
+    this._type = classifyTransaction(txData.data, this._coinConfig.name);
 
     // reset arrays to empty to ensure that they are only set with one set of fresh values
     this._inputs = [];
