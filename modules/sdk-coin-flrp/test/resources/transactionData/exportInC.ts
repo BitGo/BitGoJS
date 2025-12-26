@@ -1,4 +1,9 @@
 // Test data for building export transactions with multiple P-addresses
+// Note: This test data was created with legacy fee calculation.
+// The hex encodes totalFee = 281750, but the new implementation uses:
+// totalFee = feeRate (gas fee) + fixedFee (1000000 import fee)
+// For round-trip tests to work, feeRate is calculated as: totalFee - fixedFee = -718250
+// For build-from-scratch tests, the hex will differ as proper fees are now enforced.
 export const EXPORT_IN_C = {
   txhash: 'KELMR2gmYpRUeXRyuimp1xLNUoHSkwNUURwBn4v1D4aKircKR',
   unsignedHex:
@@ -29,6 +34,6 @@ export const EXPORT_IN_C = {
   targetChainId: '11111111111111111111111111111111LpoYY',
   nonce: 9,
   threshold: 2,
-  fee: '281750', // Total fee derived from expected hex (input - output = 50281750 - 50000000)
+  fee: '1000000', // 1M nFLR as base feeRate, totalFee will be 2M (feeRate + fixedFee)
   locktime: 0,
 };
