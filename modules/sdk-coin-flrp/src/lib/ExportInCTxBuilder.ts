@@ -108,8 +108,9 @@ export class ExportInCTxBuilder extends AtomicInCTransactionBuilder {
     const outputAmount = transferOutput.amount();
     const fee = inputAmount - outputAmount;
     this._amount = outputAmount;
-    // Store the actual fee directly (don't subtract fixedFee since buildFlareTransaction doesn't add it back)
-    this.transaction._fee.feeRate = Number(fee);
+    // Subtract fixedFee from total fee to get the gas-based feeRate
+    // buildFlareTransaction will add fixedFee back when building the transaction
+    this.transaction._fee.feeRate = Number(fee) - Number(this.fixedFee);
     this.transaction._fee.fee = fee.toString();
     this.transaction._fee.size = 1;
     this.transaction._fromAddresses = [Buffer.from(input.address.toBytes())];
@@ -175,9 +176,10 @@ export class ExportInCTxBuilder extends AtomicInCTransactionBuilder {
       throw new Error('nonce is required');
     }
 
-    // For EVM exports, feeRate represents the total fee (baseFee * gasUnits)
-    // Don't add fixedFee as it's already accounted for in the EVM gas model
-    const fee = BigInt(this.transaction._fee.feeRate);
+    // For EVM exports, total fee = feeRate (gas-based fee) + fixedFee (P-chain import fee)
+    // This matches the AVAX implementation where fixedFee covers the import cost
+    const txFee = BigInt(this.fixedFee);
+    const fee = BigInt(this.transaction._fee.feeRate) + txFee;
     this.transaction._fee.fee = fee.toString();
     this.transaction._fee.size = 1;
 
