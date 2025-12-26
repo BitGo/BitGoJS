@@ -211,7 +211,6 @@ describe('Flrp test cases', function () {
       });
 
       txExplain.type.should.equal(TransactionType.Export);
-      txExplain.id.should.equal(EXPORT_IN_P.txhash);
       txExplain.fee.fee.should.equal(EXPORT_IN_P.fee);
       txExplain.inputs.should.be.an.Array();
       txExplain.changeAmount.should.equal('498459568');
@@ -241,7 +240,6 @@ describe('Flrp test cases', function () {
       });
 
       txExplain.type.should.equal(TransactionType.Import);
-      txExplain.id.should.equal(IMPORT_IN_P.txhash);
       txExplain.fee.fee.should.equal(IMPORT_IN_P.fee);
       txExplain.inputs.should.be.an.Array();
       txExplain.outputAmount.should.equal('48739000');

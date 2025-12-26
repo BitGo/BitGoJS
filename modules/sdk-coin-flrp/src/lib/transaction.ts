@@ -368,7 +368,9 @@ export class Transaction extends BaseTransaction {
   }
 
   get id(): string {
-    const bufferArray = utils.sha256((this._flareTransaction as UnsignedTx).toBytes());
+    const unsignedTx = this._flareTransaction as UnsignedTx;
+    const txBytes = unsignedTx.getSignedTx().toBytes();
+    const bufferArray = utils.sha256(txBytes);
     return utils.cb58Encode(Buffer.from(bufferArray));
   }
 

@@ -129,4 +129,16 @@ describe('Flrp Import In P Tx Builder', () => {
         err.message.should.be.equal('Private key cannot sign the transaction');
       });
   });
+
+  describe('on-chain verified transactions', () => {
+    it('should verify on-chain tx id for signed P-chain import', async () => {
+      const signedImportHex =
+        '0x0000000000110000007200000000000000000000000000000000000000000000000000000000000000000000000158734f94af871c3d131b56131b6fb7a0291eacadd261e69dfb42a9cdf6f7fddd000000070000000002e79f04000000000000000000000002000000033329be7d01cd3ebaae6654d7327dd9f17a2e15817e918a5e8083ae4c9f2f0ed77055c24bf3665001c7324437c96c7c8a6a152da2385c1db5c3ab1f91000000000000000078db5c30bed04c05ce209179812850bbb3fe6d46d7eef3744d814c0da555247900000001063ec620d1892f802c8f0c124d05ce1e73a85686bea2b09380fc58f6d72497db0000000058734f94af871c3d131b56131b6fb7a0291eacadd261e69dfb42a9cdf6f7fddd000000050000000002faf0800000000200000000000000010000000100000009000000022ed4ebc2c81e38820cc7bd6e952d10bd30382fa0679c8a0ba5dc67990a09125656d47eadcc622af935fd5dad654f9b00d3b9563df38e875ef1964e1c9ded851100ec514ace26baefce3ffeab94e3580443abcc3cea669a87c7c26ef8ffa3fe79b330e4bdbacabfd1cce9f7b6a9f2515b4fdf627f7d2678e9532d861a7673444aa700';
+      const txBuilder = new TransactionBuilderFactory(coins.get('tflrp')).from(signedImportHex);
+      const tx = await txBuilder.build();
+      const rawTx = tx.toBroadcastFormat();
+      rawTx.should.equal(signedImportHex);
+      tx.id.should.equal('2vwvuXp47dsUmqb4vkaMk7UsukrZNapKXT2ruZhVibbjMDpqr9');
+    });
+  });
 });
