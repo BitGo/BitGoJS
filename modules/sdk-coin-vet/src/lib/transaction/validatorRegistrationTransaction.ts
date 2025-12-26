@@ -7,12 +7,12 @@ import EthereumAbi from 'ethereumjs-abi';
 import utils from '../utils';
 import BigNumber from 'bignumber.js';
 import { addHexPrefix, BN } from 'ethereumjs-util';
-import { ZERO_VALUE_AMOUNT } from '../constants';
 
 export class ValidatorRegistrationTransaction extends Transaction {
   private _stakingContractAddress: string;
   private _validator: string;
   private _stakingPeriod: number;
+  private _amountToStake: string;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -33,6 +33,14 @@ export class ValidatorRegistrationTransaction extends Transaction {
 
   set stakingPeriod(period: number) {
     this._stakingPeriod = period;
+  }
+
+  get amountToStake(): string {
+    return this._amountToStake;
+  }
+
+  set amountToStake(amount: string) {
+    this._amountToStake = amount;
   }
 
   get stakingContractAddress(): string {
@@ -63,7 +71,7 @@ export class ValidatorRegistrationTransaction extends Transaction {
     this._clauses = [
       {
         to: this.stakingContractAddress,
-        value: ZERO_VALUE_AMOUNT,
+        value: this.amountToStake,
         data: addValidationData,
       },
     ];
@@ -72,7 +80,7 @@ export class ValidatorRegistrationTransaction extends Transaction {
     this._recipients = [
       {
         address: this.stakingContractAddress,
-        amount: ZERO_VALUE_AMOUNT,
+        amount: this.amountToStake,
       },
     ];
   }
@@ -107,11 +115,11 @@ locking their VET into the built-in staker contract. Allowed values are 60480 (7
       dependsOn: this.dependsOn,
       nonce: this.nonce,
       data: this.transactionData,
-      value: ZERO_VALUE_AMOUNT,
+      value: this.amountToStake,
       sender: this.sender,
       to: this.stakingContractAddress,
       stakingContractAddress: this.stakingContractAddress,
-      amountToStake: ZERO_VALUE_AMOUNT,
+      amountToStake: this.amountToStake,
       validatorAddress: this.validator,
       stakingPeriod: this.stakingPeriod,
     };
@@ -145,6 +153,10 @@ locking their VET into the built-in staker contract. Allowed values are 60480 (7
         const addValidationClause = body.clauses[0];
         if (addValidationClause.to) {
           this.stakingContractAddress = addValidationClause.to;
+        }
+
+        if (addValidationClause.value) {
+          this.amountToStake = new BigNumber(addValidationClause.value).toFixed();
         }
 
         // Extract validator and period from addValidation data
