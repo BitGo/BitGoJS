@@ -1634,8 +1634,8 @@ class XlayerTestnet extends Testnet implements EthereumNetwork {
   family = CoinFamily.OKB;
   explorerUrl = 'https://www.oklink.com/x-layer-testnet/tx/';
   accountExplorerUrl = 'https://www.oklink.com/x-layer-testnet/address/';
-  chainId = 195;
-  nativeCoinOperationHashPrefix = '195';
+  chainId = 1952;
+  nativeCoinOperationHashPrefix = '1952';
 }
 
 class Morph extends Mainnet implements EthereumNetwork {
