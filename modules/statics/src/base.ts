@@ -2957,8 +2957,8 @@ export enum UnderlyingAsset {
   // hypeeevm testnet tokens
   'thypeevm:usdc' = 'thypeevm:usdc',
 
-  // hype mainnet tokens
-  'hype:hwhype' = 'hype:hwhype',
+  // hypeevm mainnet tokens
+  'hypeevm:hwhype' = 'hypeevm:hwhype',
 
   // Story testnet tokens
   'tip:usdc' = 'tip:usdc',

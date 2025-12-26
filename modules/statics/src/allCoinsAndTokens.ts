@@ -2965,11 +2965,11 @@ export const allCoinsAndTokens = [
   // hypeevm mainnet tokens
   erc20Token(
     '062b64cd-5569-41e9-a144-478976fd576f',
-    'hype:hwhype',
+    'hypeevm:hwhype',
     'Hyperwave HYPE',
     18,
     '0x4de03ca1f02591b717495cfa19913ad56a2f5858',
-    UnderlyingAsset['hype:hwhype'],
+    UnderlyingAsset['hypeevm:hwhype'],
     Networks.main.hypeevm
   ),
 
