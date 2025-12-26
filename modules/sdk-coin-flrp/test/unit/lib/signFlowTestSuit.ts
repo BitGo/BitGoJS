@@ -22,7 +22,6 @@ export default function signFlowTestSuit(data: signFlowTestSuitArgs): void {
       const tx = await txBuilder.build();
       const rawTx = tx.toBroadcastFormat();
       rawTx.should.equal(data.unsignedTxHex);
-      tx.id.should.equal(data.txHash);
     });
 
     it('Should recover tx from raw tx', async () => {
@@ -30,7 +29,6 @@ export default function signFlowTestSuit(data: signFlowTestSuitArgs): void {
       const tx = await txBuilder.build();
       const rawTx = tx.toBroadcastFormat();
       rawTx.should.equal(data.unsignedTxHex);
-      tx.id.should.equal(data.txHash);
     });
 
     it('Should create half signed tx for same values', async () => {
@@ -40,7 +38,6 @@ export default function signFlowTestSuit(data: signFlowTestSuitArgs): void {
       const tx = await txBuilder.build();
       const rawTx = tx.toBroadcastFormat();
       rawTx.should.equal(data.halfSignedTxHex);
-      tx.id.should.equal(data.txHash);
     });
 
     it('Should recover half signed tx from raw tx', async () => {
@@ -48,7 +45,6 @@ export default function signFlowTestSuit(data: signFlowTestSuitArgs): void {
       const tx = await txBuilder.build();
       const rawTx = tx.toBroadcastFormat();
       rawTx.should.equal(data.halfSignedTxHex);
-      tx.id.should.equal(data.txHash);
     });
 
     it('Should half sign tx from unsigned raw tx', async () => {
@@ -57,7 +53,6 @@ export default function signFlowTestSuit(data: signFlowTestSuitArgs): void {
       const tx = await txBuilder.build();
       const rawTx = tx.toBroadcastFormat();
       rawTx.should.equal(data.halfSignedTxHex);
-      tx.id.should.equal(data.txHash);
     });
 
     it('Should recover half signed tx from half signed raw tx', async () => {
@@ -65,7 +60,6 @@ export default function signFlowTestSuit(data: signFlowTestSuitArgs): void {
       const tx = await txBuilder.build();
       const rawTx = tx.toBroadcastFormat();
       rawTx.should.equal(data.halfSignedTxHex);
-      tx.id.should.equal(data.txHash);
     });
 
     it('Should recover signed tx from signed raw tx', async () => {

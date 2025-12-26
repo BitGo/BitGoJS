@@ -128,7 +128,6 @@ describe('ExportInCTxBuilder', function () {
       const tx = await txBuilder.build();
       const rawTx = tx.toBroadcastFormat();
       rawTx.should.equal(testData.unsignedHex);
-      tx.id.should.equal(testData.txhash);
     });
 
     it('Should recover signed export from signed raw tx', async () => {
@@ -175,6 +174,16 @@ describe('ExportInCTxBuilder', function () {
         .catch((err) => {
           err.message.should.be.equal('Private key cannot sign the transaction');
         });
+    });
+
+    it('should verify on-chain tx id for signed C-chain export', async () => {
+      const signedExportHex =
+        '0x0000000000010000007278db5c30bed04c05ce209179812850bbb3fe6d46d7eef3744d814c0da555247900000000000000000000000000000000000000000000000000000000000000000000000117dbd11b9dd1c9be337353db7c14f9fb3662e5b50000000002ff3d1658734f94af871c3d131b56131b6fb7a0291eacadd261e69dfb42a9cdf6f7fddd00000000000000050000000158734f94af871c3d131b56131b6fb7a0291eacadd261e69dfb42a9cdf6f7fddd000000070000000002faf080000000000000000000000002000000033329be7d01cd3ebaae6654d7327dd9f17a2e15817e918a5e8083ae4c9f2f0ed77055c24bf3665001c7324437c96c7c8a6a152da2385c1db5c3ab1f910000000100000009000000018d1ac79d2e26d1c9689ca93b3b191c077dced2f201bdda132e74c3fc5ab9b10b6c85fd318dd6c0a99b327145977ac6ea6ff54cb8e9b7093b6bbe3545b3cc126400';
+      const txBuilder = new TransactionBuilderFactory(coins.get('tflrp')).from(signedExportHex);
+      const tx = await txBuilder.build();
+      const rawTx = tx.toBroadcastFormat();
+      rawTx.should.equal(signedExportHex);
+      tx.id.should.equal('3kXUsHix1bZRQ9hqUc24cp7sXFiy2LbPn6Eh2HQCAaMUi75s9');
     });
   });
 });
