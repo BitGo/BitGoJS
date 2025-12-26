@@ -24,6 +24,7 @@ export class TonWhalesWithdrawalBuilder extends TransactionBuilder {
   setWithdrawalMessage(unstakeAmount: string, queryId?: string): TonWhalesWithdrawalBuilder {
     const qId = queryId || '0000000000000000';
 
+    this.transaction.withdrawAmount = unstakeAmount;
     this.transaction.message = TON_WHALES_WITHDRAW_OPCODE + qId + unstakeAmount;
     return this;
   }
