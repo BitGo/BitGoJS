@@ -99,6 +99,10 @@ describe('Ton Whales Withdrawal Builder', () => {
 
         // Build Signed Transaction
         const signedBuiltTx = await builder.build();
+        const jsonTx = signedBuiltTx.toJson();
+
+        // Verify that the builder correctly set the withdrawal amount on the transaction object
+        should.equal(jsonTx.withdrawAmount, fixture.withdrawAmount);
 
         // Byte-for-byte equality with the Sandbox output
         should.equal(signedBuiltTx.toBroadcastFormat(), fixture.tx);
