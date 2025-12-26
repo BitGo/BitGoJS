@@ -9,6 +9,25 @@ export const STAKE_ACCOUNT_RENT_EXEMPT_AMOUNT = 2282880;
 
 export const UNAVAILABLE_TEXT = 'UNAVAILABLE';
 
+/**
+ * Maximum over-the-wire size of a Solana transaction (in bytes)
+ *
+ * Source: https://github.com/anza-xyz/agave/blob/v2.1.13/sdk/packet/src/lib.rs#L27-L29
+ *
+ * Calculation:
+ * - IPv6 minimum MTU: 1280 bytes
+ * - IPv6 header: 40 bytes
+ * - Fragment/UDP header: 8 bytes
+ * - Result: 1280 - 40 - 8 = 1232 bytes
+ *
+ * This limit is designed to avoid packet fragmentation on typical internet infrastructure.
+ * Transactions exceeding this limit will fail to serialize with a RangeError during
+ * the encoding of the transaction message.
+ *
+ * Reference: https://solana.com/docs/core/transactions#transaction-size
+ */
+export const SOLANA_TRANSACTION_MAX_SIZE = 1232;
+
 export const JITO_STAKE_POOL_ADDRESS = 'Jito4APyf642JPZPx3hGc6WWJ8zPKtRbRs4P815Awbb';
 export const JITOSOL_MINT_ADDRESS = 'J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn';
 export const JITO_STAKE_POOL_RESERVE_ACCOUNT = 'BgKUXdS29YcHCFrPm5M8oLHiTzZaMDjsebggjoaQ6KFL';

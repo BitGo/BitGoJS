@@ -7,182 +7,99 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol
 
-
-
-
-
 ## [7.10.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.10.2...@bitgo/sdk-coin-sol@7.10.3) (2025-12-11)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol
-
-
-
-
 
 ## [7.10.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.10.1...@bitgo/sdk-coin-sol@7.10.2) (2025-12-05)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol
 
-
-
-
-
 ## [7.10.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.10.0...@bitgo/sdk-coin-sol@7.10.1) (2025-12-04)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol
 
-
-
-
-
 # [7.10.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.9.0...@bitgo/sdk-coin-sol@7.10.0) (2025-11-26)
-
 
 ### Features
 
-* **sdk-coin-sol:** big endian support for verifyTransaction ([f1c06bc](https://github.com/BitGo/BitGoJS/commit/f1c06bc6bf0f448fbd1c2dbcd5062e7e6f012c83))
-
-
-
-
+- **sdk-coin-sol:** big endian support for verifyTransaction ([f1c06bc](https://github.com/BitGo/BitGoJS/commit/f1c06bc6bf0f448fbd1c2dbcd5062e7e6f012c83))
 
 # [7.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.8.0...@bitgo/sdk-coin-sol@7.9.0) (2025-11-19)
 
-
 ### Features
 
-* bump public types ([bab6c62](https://github.com/BitGo/BitGoJS/commit/bab6c624682c1317456376e6bf7e6691224405b9))
-
-
-
-
+- bump public types ([bab6c62](https://github.com/BitGo/BitGoJS/commit/bab6c624682c1317456376e6bf7e6691224405b9))
 
 # [7.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.7.0...@bitgo/sdk-coin-sol@7.8.0) (2025-11-13)
 
-
 ### Features
 
-* **sdk-coin-sol:** classify all WalletConnect transactions as custom using memo ([1f639da](https://github.com/BitGo/BitGoJS/commit/1f639da78dbc2c144ee0a4cc9741d03f036717bf))
-
-
-
-
+- **sdk-coin-sol:** classify all WalletConnect transactions as custom using memo ([1f639da](https://github.com/BitGo/BitGoJS/commit/1f639da78dbc2c144ee0a4cc9741d03f036717bf))
 
 # [7.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.6.3...@bitgo/sdk-coin-sol@7.7.0) (2025-11-12)
 
-
 ### Features
 
-* **sdk-coin-sol:** accepting idempotent ATA instructions ([2b41681](https://github.com/BitGo/BitGoJS/commit/2b41681b280d7852cf8b547ba3759137cb31dd30))
-* **sdk-coin-sol:** support SetComputeUnitLimit instructions ([307dca3](https://github.com/BitGo/BitGoJS/commit/307dca3b1728b49954e78dc2bfa56f6e22f22ba5))
-
-
-
-
+- **sdk-coin-sol:** accepting idempotent ATA instructions ([2b41681](https://github.com/BitGo/BitGoJS/commit/2b41681b280d7852cf8b547ba3759137cb31dd30))
+- **sdk-coin-sol:** support SetComputeUnitLimit instructions ([307dca3](https://github.com/BitGo/BitGoJS/commit/307dca3b1728b49954e78dc2bfa56f6e22f22ba5))
 
 ## [7.6.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.6.2...@bitgo/sdk-coin-sol@7.6.3) (2025-11-06)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol
 
-
-
-
-
 ## [7.6.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.6.1...@bitgo/sdk-coin-sol@7.6.2) (2025-10-31)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol
-
-
-
-
 
 ## [7.6.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.6.0...@bitgo/sdk-coin-sol@7.6.1) (2025-10-29)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol
 
-
-
-
-
 # [7.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.5.0...@bitgo/sdk-coin-sol@7.6.0) (2025-10-24)
-
 
 ### Features
 
-* **sdk-coin-sol:** implement isWalletAddress for address verfn ([e42fb85](https://github.com/BitGo/BitGoJS/commit/e42fb85505c1fe9d5fe7d18f227377e2d844af77))
-* **sdk-core:** add typing on fetch addresses ([f3dec74](https://github.com/BitGo/BitGoJS/commit/f3dec74befc76bb305a4f9ac72975e4de43787ff))
-
-
-
-
+- **sdk-coin-sol:** implement isWalletAddress for address verfn ([e42fb85](https://github.com/BitGo/BitGoJS/commit/e42fb85505c1fe9d5fe7d18f227377e2d844af77))
+- **sdk-core:** add typing on fetch addresses ([f3dec74](https://github.com/BitGo/BitGoJS/commit/f3dec74befc76bb305a4f9ac72975e4de43787ff))
 
 # [7.5.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.4.0...@bitgo/sdk-coin-sol@7.5.0) (2025-10-21)
 
-
 ### Features
 
-* **sdk-coin-sol:** add recentBlockhash to custom versioned solana tx flow ([191eb86](https://github.com/BitGo/BitGoJS/commit/191eb86aa851cc893b216f23ff0ad3f13423cc2d))
-* **sdk-coin-sol:** update verifyTransaction for versioned sol tx ([11b1723](https://github.com/BitGo/BitGoJS/commit/11b1723718c13f5ef26ef90174ad299edf64aa2a))
-
-
-
-
+- **sdk-coin-sol:** add recentBlockhash to custom versioned solana tx flow ([191eb86](https://github.com/BitGo/BitGoJS/commit/191eb86aa851cc893b216f23ff0ad3f13423cc2d))
+- **sdk-coin-sol:** update verifyTransaction for versioned sol tx ([11b1723](https://github.com/BitGo/BitGoJS/commit/11b1723718c13f5ef26ef90174ad299edf64aa2a))
 
 # [7.4.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.3.0...@bitgo/sdk-coin-sol@7.4.0) (2025-10-16)
 
-
 ### Features
 
-* bump public types ([ca817a6](https://github.com/BitGo/BitGoJS/commit/ca817a637015a33584fd68dbf5c36592b6a13608))
-* **sdk-coin-sol:** inject durable nonce for versioned transactions ([b6d7524](https://github.com/BitGo/BitGoJS/commit/b6d7524b06568c51626fce231a119e15abe86365))
-
-
-
-
+- bump public types ([ca817a6](https://github.com/BitGo/BitGoJS/commit/ca817a637015a33584fd68dbf5c36592b6a13608))
+- **sdk-coin-sol:** inject durable nonce for versioned transactions ([b6d7524](https://github.com/BitGo/BitGoJS/commit/b6d7524b06568c51626fce231a119e15abe86365))
 
 # [7.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.2.3...@bitgo/sdk-coin-sol@7.3.0) (2025-10-13)
 
-
 ### Features
 
-* support versioned sol transactions with customTx intent ([b33402f](https://github.com/BitGo/BitGoJS/commit/b33402f9a7c4724804a2f45737fcbd2562f6bb3e))
-
-
-
-
+- support versioned sol transactions with customTx intent ([b33402f](https://github.com/BitGo/BitGoJS/commit/b33402f9a7c4724804a2f45737fcbd2562f6bb3e))
 
 ## [7.2.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.2.2...@bitgo/sdk-coin-sol@7.2.3) (2025-10-10)
 
-
 ### Bug Fixes
 
-* upgrade public types version ([49cb5b1](https://github.com/BitGo/BitGoJS/commit/49cb5b1f07bf63ae0fab7feb5f55457f641ada9f))
-
-
-
-
+- upgrade public types version ([49cb5b1](https://github.com/BitGo/BitGoJS/commit/49cb5b1f07bf63ae0fab7feb5f55457f641ada9f))
 
 ## [7.2.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.2.1...@bitgo/sdk-coin-sol@7.2.2) (2025-10-09)
 
-
 ### Bug Fixes
 
-* run check-fmt on code files only ([9745196](https://github.com/BitGo/BitGoJS/commit/9745196b02b9678c740d290a4638ceb153a8fd75))
-
-
-
-
+- run check-fmt on code files only ([9745196](https://github.com/BitGo/BitGoJS/commit/9745196b02b9678c740d290a4638ceb153a8fd75))
 
 ## [7.2.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.2.0...@bitgo/sdk-coin-sol@7.2.1) (2025-10-08)
 
-
 ### Bug Fixes
 
-* add explicit 'files' in package json ([3b00373](https://github.com/BitGo/BitGoJS/commit/3b0037396f6ac16bb9380bd85bf37f2b133068f4))
-
-
-
-
+- add explicit 'files' in package json ([3b00373](https://github.com/BitGo/BitGoJS/commit/3b0037396f6ac16bb9380bd85bf37f2b133068f4))
 
 # [7.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.1.0...@bitgo/sdk-coin-sol@7.2.0) (2025-10-02)
 
