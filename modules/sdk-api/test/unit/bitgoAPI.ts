@@ -408,6 +408,79 @@ describe('Constructor', function () {
     });
   });
 
+  describe('User-Agent header based on environment', function () {
+    afterEach(function () {
+      nock.cleanAll();
+      sinon.restore();
+    });
+
+    it('should set User-Agent header when running in Node.js (typeof window === undefined)', async function () {
+      const bitgo = new BitGoAPI({
+        env: 'custom',
+        customRootURI: 'https://app.example.local',
+        userAgent: 'TestAgent/1.0',
+      });
+
+      // Ensure we're in a Node.js environment by verifying window is undefined
+      (typeof window).should.equal('undefined');
+
+      const scope = nock('https://app.example.local')
+        .get('/api/v1/ping')
+        .matchHeader('User-Agent', 'TestAgent/1.0')
+        .reply(200, { status: 'ok' });
+
+      await bitgo.ping({
+        reqId: {
+          toString: () => 'test-123',
+          inc: () => {
+            /* mock */
+          },
+        } as any,
+      });
+
+      scope.isDone().should.be.true();
+    });
+
+    it('should not set User-Agent header when running in browser (typeof window !== undefined)', async function () {
+      // Mock the window object to simulate browser environment
+      const windowStub = { location: 'mock' };
+      (global as any).window = windowStub;
+
+      try {
+        const bitgo = new BitGoAPI({
+          env: 'custom',
+          customRootURI: 'https://app.example.local',
+          userAgent: 'TestAgent/1.0',
+        });
+
+        const scope = nock('https://app.example.local')
+          .get('/api/v1/ping')
+          .reply(function () {
+            // Verify User-Agent header is NOT set to our custom value
+            const userAgent = this.req.headers['user-agent'];
+            if (userAgent && userAgent.includes('TestAgent/1.0')) {
+              throw new Error('User-Agent should not be set in browser environment');
+            }
+            return [200, { status: 'ok' }];
+          });
+
+        await bitgo.ping({
+          reqId: {
+            toString: () => 'test-123',
+            inc: () => {
+              /* mock */
+            },
+          } as any,
+        });
+
+        scope.isDone().should.be.true();
+      } finally {
+        // Clean up the global window mock
+        delete (global as any).window;
+      }
+    });
+  });
+
   describe('constants parameter', function () {
     it('should allow passing constants via options and expose via fetchConstants', async function () {
       const bitgo = new BitGoAPI({

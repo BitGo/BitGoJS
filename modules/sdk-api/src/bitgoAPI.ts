@@ -413,7 +413,7 @@ export class BitGoAPI implements BitGoBase {
       // prevent IE from caching requests
       req.set('If-Modified-Since', 'Mon, 26 Jul 1997 05:00:00 GMT');
 
-      if (!(process as any).browser && this._userAgent) {
+      if (typeof window === 'undefined' && this._userAgent) {
         // If not in the browser, set the User-Agent. Browsers don't allow
         // setting of User-Agent, so we must disable this when run in the
         // browser (browserify sets process.browser).
