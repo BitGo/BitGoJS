@@ -76,3 +76,10 @@ export class ConflictingCoinFeaturesError extends BitGoStaticsError {
     Object.setPrototypeOf(this, ConflictingCoinFeaturesError.prototype);
   }
 }
+
+export class ChainIdNotFoundError extends BitGoStaticsError {
+  public constructor(chainId: number) {
+    super(`chain '${chainId}' not found`);
+    Object.setPrototypeOf(this, CoinNotDefinedError.prototype);
+  }
+}
