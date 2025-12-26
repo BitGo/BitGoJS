@@ -1,6 +1,7 @@
 import { BaseCoin } from './base';
 import { DuplicateCoinDefinitionError, CoinNotDefinedError, DuplicateCoinIdDefinitionError } from './errors';
 import { ContractAddressDefinedToken, NFTCollectionIdDefinedToken } from './account';
+import { EthereumNetwork } from './networks';
 
 export class CoinMap {
   private readonly _map = new Map<string, Readonly<BaseCoin>>();
@@ -12,6 +13,8 @@ export class CoinMap {
   private readonly _coinByContractAddress = new Map<string, Readonly<BaseCoin>>();
   // map of coin by NFT collection ID -> the key is the (t)family:nftCollectionID
   private readonly _coinByNftCollectionID = new Map<string, Readonly<BaseCoin>>();
+  // Lazily initialized cache for chainId to coin name mapping (derived from network definitions)
+  private _coinByChainId: Map<number, string> | null = null;
 
   private constructor() {
     // Do not instantiate
@@ -75,89 +78,119 @@ export class CoinMap {
     this.addCoin(coin);
   }
 
-  static coinNameFromChainId(chainId: number): string {
-    const ethLikeCoinFromChainId: Record<number, string> = {
-      1: 'eth',
-      42: 'teth',
-      5: 'gteth',
-      560048: 'hteth',
-      10001: 'ethw',
-      80002: 'tpolygon',
-      137: 'polygon',
-      56: 'bsc',
-      97: 'tbsc',
-      42161: 'arbeth',
-      421614: 'tarbeth',
-      10: 'opeth',
-      11155420: 'topeth',
-      1116: 'coredao',
-      1114: 'tcoredao',
-      248: 'oas',
-      9372: 'toas',
-      14: 'flr',
-      114: 'tflr',
-      19: 'sgb',
-      16: 'tsgb',
-      1111: 'wemix',
-      1112: 'twemix',
-      50: 'xdc',
-      51: 'txdc',
-      80094: 'bera',
-      80069: 'tbera',
-      42220: 'celo',
-      11142220: 'tcelo',
-      2222: 'kava',
-      2221: 'tkava',
-      43114: 'avax',
-      43113: 'tavax',
-      100: 'gno',
-      130: 'uni',
-      324: 'zketh',
-      8453: 'baseeth',
-      84532: 'tbaseeth',
-      30143: 'mon',
-      10143: 'tmon',
-      480: 'world',
-      4801: 'tworld',
-      5031: 'somi',
-      50312: 'tstt',
-      1868: 'soneium',
-      1946: 'tsoneium',
-      33111: 'tapechain',
-      33139: 'apechain',
-      688688: 'tphrs',
-      102030: 'ctc',
-      102031: 'tctc',
-      998: 'thypeevm',
-      999: 'hypeevm',
-      16602: 'tog',
-      16661: 'og',
-      9746: 'txpl',
-      9745: 'xpl',
-      14601: 'tsonic',
-      146: 'sonic',
-      1328: 'tseievm',
-      1329: 'seievm',
-      1001: 'tkaia',
-      8217: 'kaia',
-      1270: 'tirys',
-      59141: 'tlineaeth',
-      59144: 'lineaeth',
-      1315: 'tip',
-      1514: 'ip',
-      545: 'tflow',
-      747: 'flow',
-      98867: 'tplume',
-      98866: 'plume',
-      6342: 'tmegaeth',
-      295: 'hbarevm',
-      296: 'thbarevm',
-      196: 'okb',
-      1952: 'tokb',
-      5734951: 'jovayeth',
-      2019775: 'tjovayeth',
-    };
-    return ethLikeCoinFromChainId[chainId];
+  /**
+   * Hardcoded mapping for backward compatibility.
+   */
+  private static readonly LEGACY_CHAIN_ID_MAP: Record<number, string> = {
+    1: 'eth',
+    42: 'teth',
+    5: 'gteth',
+    560048: 'hteth',
+    10001: 'ethw',
+    80002: 'tpolygon',
+    137: 'polygon',
+    56: 'bsc',
+    97: 'tbsc',
+    42161: 'arbeth',
+    421614: 'tarbeth',
+    10: 'opeth',
+    11155420: 'topeth',
+    1116: 'coredao',
+    1114: 'tcoredao',
+    248: 'oas',
+    9372: 'toas',
+    14: 'flr',
+    114: 'tflr',
+    19: 'sgb',
+    16: 'tsgb',
+    1111: 'wemix',
+    1112: 'twemix',
+    50: 'xdc',
+    51: 'txdc',
+    80094: 'bera',
+    80069: 'tbera',
+    42220: 'celo',
+    11142220: 'tcelo',
+    2222: 'kava',
+    2221: 'tkava',
+    43114: 'avax',
+    43113: 'tavax',
+    100: 'gno',
+    130: 'uni',
+    324: 'zketh',
+    8453: 'baseeth',
+    84532: 'tbaseeth',
+    30143: 'mon',
+    10143: 'tmon',
+    480: 'world',
+    4801: 'tworld',
+    5031: 'somi',
+    50312: 'tstt',
+    1868: 'soneium',
+    1946: 'tsoneium',
+    33111: 'tapechain',
+    33139: 'apechain',
+    688688: 'tphrs',
+    102030: 'ctc',
+    102031: 'tctc',
+    998: 'thypeevm',
+    999: 'hypeevm',
+    16602: 'tog',
+    16661: 'og',
+    9746: 'txpl',
+    9745: 'xpl',
+    14601: 'tsonic',
+    146: 'sonic',
+    1328: 'tseievm',
+    1329: 'seievm',
+    1001: 'tkaia',
+    8217: 'kaia',
+    1270: 'tirys',
+    59141: 'tlineaeth',
+    59144: 'lineaeth',
+    1315: 'tip',
+    1514: 'ip',
+    545: 'tflow',
+    747: 'flow',
+    98867: 'tplume',
+    98866: 'plume',
+    6342: 'tmegaeth',
+    295: 'hbarevm',
+    296: 'thbarevm',
+    196: 'okb',
+    1952: 'tokb',
+    5734951: 'jovayeth',
+    2019775: 'tjovayeth',
+  };
+
+  private buildChainIdMap(): Map<number, string> {
+    const chainIdMap = new Map<number, string>();
+    this._map.forEach((coin, coinName) => {
+      // Skip tokens - they share the same chainId as their parent chain
+      if (coin.isToken) {
+        return;
+      }
+      const network = coin.network;
+      if ('chainId' in network && typeof (network as EthereumNetwork).chainId === 'number') {
+        const chainId = (network as EthereumNetwork).chainId;
+        if (!chainIdMap.has(chainId)) {
+          chainIdMap.set(chainId, coinName);
+        }
+      }
+    });
+    return chainIdMap;
+  }
+
+  public coinNameFromChainId(chainId: number): string | undefined {
+    const coinName = CoinMap.LEGACY_CHAIN_ID_MAP[chainId];
+    if (coinName) {
+      return coinName;
+    }
+
+    if (this._coinByChainId === null) {
+      this._coinByChainId = this.buildChainIdMap();
+    }
+    return this._coinByChainId.get(chainId);
   }
 
   /**
