@@ -110,12 +110,10 @@ export class ExportInPTxBuilder extends AtomicTransactionBuilder {
       this.transaction._rawSignedBytes = rawBytes;
     }
 
-    // Create proper UnsignedTx wrapper with credentials
-    const sortedAddresses = [...this.transaction._fromAddresses].sort((a, b) => Buffer.compare(a, b));
-
     // When credentials were extracted, use them directly to preserve existing signatures
     // Otherwise, create empty credentials with dynamic ordering based on addressesIndex
     // Match avaxp behavior: order depends on UTXO address positions
+    // Use centralized method for credential creation
     const txCredentials =
       credentials.length > 0
         ? credentials
@@ -126,39 +124,11 @@ export class ExportInPTxBuilder extends AtomicTransactionBuilder {
             // Get UTXO for this input to determine addressesIndex
             const utxo = this.transaction._utxos[inputIdx];
 
-            // either user (0) or recovery (2)
-            const firstIndex = this.recoverSigner ? 2 : 0;
-            const bitgoIndex = 1;
-
-            // If UTXO has addresses, compute dynamic ordering
-            if (utxo && utxo.addresses && utxo.addresses.length > 0) {
-              const utxoAddresses = utxo.addresses.map((a) => utils.parseAddress(a));
-              const addressesIndex = this.transaction._fromAddresses.map((a) =>
-                utxoAddresses.findIndex((u) => Buffer.compare(Buffer.from(u), Buffer.from(a)) === 0)
-              );
-
-              // Dynamic ordering based on addressesIndex
-              let sigSlots: ReturnType<typeof utils.createNewSig>[];
-              if (addressesIndex[bitgoIndex] < addressesIndex[firstIndex]) {
-                // Bitgo comes first: [zeros, userAddress]
-                sigSlots = [
-                  utils.createNewSig(''),
-                  utils.createEmptySigWithAddress(
-                    Buffer.from(this.transaction._fromAddresses[firstIndex]).toString('hex')
-                  ),
-                ];
-              } else {
-                // User comes first: [userAddress, zeros]
-                sigSlots = [
-                  utils.createEmptySigWithAddress(
-                    Buffer.from(this.transaction._fromAddresses[firstIndex]).toString('hex')
-                  ),
-                  utils.createNewSig(''),
-                ];
-              }
-              return new Credential(sigSlots);
+            // Use centralized method, but handle case where inputThreshold might differ
+            if (inputThreshold === this.transaction._threshold) {
+              return this.createCredentialForUtxo(utxo, this.transaction._threshold);
             } else {
-              // Fallback: use all zeros if no UTXO addresses available
+              // Fallback: use all zeros if threshold differs (shouldn't happen normally)
               const sigSlots: ReturnType<typeof utils.createNewSig>[] = [];
               for (let i = 0; i < inputThreshold; i++) {
                 sigSlots.push(utils.createNewSig(''));
@@ -167,15 +137,13 @@ export class ExportInPTxBuilder extends AtomicTransactionBuilder {
             }
           });
 
-    // Create address maps for signing - one per input/credential
-    // Each address map contains all addresses mapped to their indices
-    const addressMaps = txCredentials.map(() => {
-      const addressMap = new FlareUtils.AddressMap();
-      sortedAddresses.forEach((addr, i) => {
-        addressMap.set(new Address(addr), i);
-      });
-      return addressMap;
-    });
+    // Create AddressMaps based on signature slot order (matching credential order), not sorted addresses
+    // This matches the approach used in credentials: addressesIndex determines signature order
+    // AddressMaps should map addresses to signature slots in the same order as credentials
+    // Use centralized method for AddressMap creation
+    const addressMaps = txCredentials.map((credential, credIdx) =>
+      this.createAddressMapForUtxo(this.transaction._utxos[credIdx], this.transaction._threshold)
+    );
 
     // Always create a new UnsignedTx with properly structured credentials
     const unsignedTx = new UnsignedTx(exportTx, [], new FlareUtils.AddressMaps(addressMaps), txCredentials);
@@ -227,15 +195,13 @@ export class ExportInPTxBuilder extends AtomicTransactionBuilder {
       this.exportedOutputs() // exportedOutputs
     );
 
-    // Create address maps for signing - one per input/credential
-    const sortedAddresses = [...this.transaction._fromAddresses].sort((a, b) => Buffer.compare(a, b));
-    const addressMaps = credentials.map(() => {
-      const addressMap = new FlareUtils.AddressMap();
-      sortedAddresses.forEach((addr, i) => {
-        addressMap.set(new Address(addr), i);
-      });
-      return addressMap;
-    });
+    // Create AddressMaps based on signature slot order (matching credential order), not sorted addresses
+    // This matches the approach used in credentials: addressesIndex determines signature order
+    // AddressMaps should map addresses to signature slots in the same order as credentials
+    // Use centralized method for AddressMap creation
+    const addressMaps = credentials.map((credential, credIdx) =>
+      this.createAddressMapForUtxo(this.transaction._utxos[credIdx], this.transaction._threshold)
+    );
 
     // Create unsigned transaction
     const unsignedTx = new UnsignedTx(
@@ -316,39 +282,15 @@ export class ExportInPTxBuilder extends AtomicTransactionBuilder {
 
       // Create credential with empty signatures for slot identification
       // Match avaxp behavior: dynamic ordering based on addressesIndex from UTXO
-      const hasAddresses =
-        this.transaction._fromAddresses && this.transaction._fromAddresses.length >= this.transaction._threshold;
-
-      if (!hasAddresses) {
-        // If addresses not available, use all zeros
-        const emptySignatures = sigIndices.map(() => utils.createNewSig(''));
-        credentials.push(new Credential(emptySignatures));
+      // Use centralized method for credential creation
+      // Note: Use utxoThreshold if it differs from transaction threshold (should be rare)
+      const thresholdToUse =
+        utxoThreshold === this.transaction._threshold ? this.transaction._threshold : utxoThreshold;
+      if (thresholdToUse === this.transaction._threshold) {
+        credentials.push(this.createCredentialForUtxo(utxo, thresholdToUse));
       } else {
-        // Compute addressesIndex: position of each _fromAddresses in UTXO's address list
-        const utxoAddresses = utxo.addresses.map((a) => utils.parseAddress(a));
-        const addressesIndex = this.transaction._fromAddresses.map((a) =>
-          utxoAddresses.findIndex((u) => Buffer.compare(Buffer.from(u), Buffer.from(a)) === 0)
-        );
-
-        // either user (0) or recovery (2)
-        const firstIndex = this.recoverSigner ? 2 : 0;
-        const bitgoIndex = 1;
-
-        // Dynamic ordering based on addressesIndex
-        let emptySignatures: ReturnType<typeof utils.createNewSig>[];
-        if (addressesIndex[bitgoIndex] < addressesIndex[firstIndex]) {
-          // Bitgo comes first in signature order: [zeros, userAddress]
-          emptySignatures = [
-            utils.createNewSig(''),
-            utils.createEmptySigWithAddress(Buffer.from(this.transaction._fromAddresses[firstIndex]).toString('hex')),
-          ];
-        } else {
-          // User comes first in signature order: [userAddress, zeros]
-          emptySignatures = [
-            utils.createEmptySigWithAddress(Buffer.from(this.transaction._fromAddresses[firstIndex]).toString('hex')),
-            utils.createNewSig(''),
-          ];
-        }
+        // Fallback: use all zeros if threshold differs (shouldn't happen normally)
+        const emptySignatures = sigIndices.map(() => utils.createNewSig(''));
         credentials.push(new Credential(emptySignatures));
       }
     }

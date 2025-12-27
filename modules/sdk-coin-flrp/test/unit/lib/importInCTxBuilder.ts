@@ -4,6 +4,8 @@ import { TransactionBuilderFactory, DecodedUtxoObj } from '../../../src/lib';
 import { coins } from '@bitgo/statics';
 import { IMPORT_IN_C as testData } from '../../resources/transactionData/importInC';
 import signFlowTest from './signFlowTestSuit';
+import { UnsignedTx } from '@flarenetwork/flarejs';
+import testUtils from '../../../src/lib/utils';
 
 describe('Flrp Import In C Tx Builder', () => {
   const factory = new TransactionBuilderFactory(coins.get('tflrp'));
@@ -59,6 +61,250 @@ describe('Flrp Import In C Tx Builder', () => {
       const rawTx = tx.toBroadcastFormat();
       rawTx.should.equal(signedImportHex);
       tx.id.should.equal('2ks9vW1SVWD4KsNPHgXnV5dpJaCcaxVNbQW4H7t9BMDxApGvfa');
+    });
+
+    it('should FAIL with unsorted UTXO addresses - demonstrates AddressMap mismatch issue for import in C-chain tx', async () => {
+      // This test uses UTXO addresses in UNSORTED order to demonstrate the issue.
+      // With unsorted addresses, the current implementation will create AddressMaps incorrectly
+      // because it uses sequential indices, not UTXO address order.
+      //
+      // Expected: AddressMap should map addresses to signature slots based on UTXO order (addressesIndex)
+      // Current (WRONG): AddressMap uses sequential indices (0, 1, 2...)
+      //
+      // This test WILL FAIL with current implementation because AddressMaps don't match credential order
+
+      // UTXO addresses in UNSORTED order (different from sorted)
+      // Sorted would be: [0x3329... (smallest), 0x7e91... (middle), 0xc732... (largest)]
+      // Unsorted: [0xc732... (largest), 0x3329... (smallest), 0x7e91... (middle)]
+      const unsortedUtxoAddresses = [
+        '0xc7324437c96c7c8a6a152da2385c1db5c3ab1f91', // Largest (would be index 2 if sorted)
+        '0x3329be7d01cd3ebaae6654d7327dd9f17a2e1581', // Smallest (would be index 0 if sorted)
+        '0x7e918a5e8083ae4c9f2f0ed77055c24bf3665001', // Middle (would be index 1 if sorted)
+      ];
+
+      // Corresponding P-chain addresses (in same order as _fromAddresses)
+      const pAddresses = [
+        'P-costwo1xv5mulgpe5lt4tnx2ntnylwe79azu9vpja6lut', // Maps to 0xc732... (UTXO index 0 in unsorted)
+        'P-costwo106gc5h5qswhye8e0pmthq4wzf0ekv5qppsrvpu', // Maps to 0x3329... (UTXO index 1 in unsorted)
+        'P-costwo1cueygd7fd37g56s49k3rshqakhp6k8u3adzt6m', // Maps to 0x7e91... (UTXO index 2 in unsorted)
+      ];
+
+      // Create UTXO with UNSORTED addresses
+      const amount = '500000000'; // 0.5 FLR
+      const fee = '5000000'; // Example fee
+      const utxoAmount = (BigInt(amount) + BigInt(fee) + BigInt('10000000')).toString(); // amount + fee + some buffer
+
+      const utxo: DecodedUtxoObj = {
+        outputID: 0,
+        amount: utxoAmount,
+        txid: '2vPMx8P63adgBae7GAWFx7qvJDwRmMnDCyKddHRBXWhysjX4BP',
+        outputidx: '1',
+        addresses: unsortedUtxoAddresses, // UNSORTED order
+        threshold: 2,
+      };
+
+      // Build transaction
+      const txBuilder = factory
+        .getImportInCBuilder()
+        .threshold(2)
+        .fromPubKey(pAddresses)
+        .utxos([utxo])
+        .to(testData.to)
+        .feeRate(testData.fee);
+
+      // Build unsigned transaction
+      const unsignedTx = await txBuilder.build();
+      const unsignedHex = unsignedTx.toBroadcastFormat();
+
+      // Get AddressMaps from the ORIGINAL transaction (before parsing)
+      // The parsed transaction's AddressMap only contains the output address, not _fromAddresses
+      const originalFlareTx = (unsignedTx as any)._flareTransaction;
+      const originalAddressMaps = (originalFlareTx as any as UnsignedTx).addressMaps;
+
+      // Parse it back to inspect AddressMaps and credentials
+      const parsedBuilder = factory.from(unsignedHex);
+      const parsedTx = await parsedBuilder.build();
+      const flareTx = (parsedTx as any)._flareTransaction;
+
+      // Get the input to check sigIndicies (for C-chain imports, inputs are importedInputs)
+      const importTx = flareTx.tx as any;
+      const input = importTx.importedInputs[0];
+      const sigIndicies = input.sigIndicies();
+
+      // sigIndicies tells us: sigIndicies[slotIndex] = utxoAddressIndex
+      // For threshold=2, we need signatures for first 2 addresses in UTXO order
+      // UTXO order: [0xc732... (index 0), 0x3329... (index 1), 0x7e91... (index 2)]
+      // So sigIndicies should be [0, 1] meaning: slot 0 = UTXO index 0, slot 1 = UTXO index 1
+
+      // Verify sigIndicies are [0, 1] (first 2 addresses in UTXO order, NOT sorted order)
+      sigIndicies.length.should.equal(2);
+      sigIndicies[0].should.equal(0, 'First signature slot should be UTXO address index 0 (0xc732...)');
+      sigIndicies[1].should.equal(1, 'Second signature slot should be UTXO address index 1 (0x3329...)');
+
+      // The critical test: Verify that signature slots have embedded addresses based on UTXO order
+      // With unsorted UTXO addresses, this will FAIL if AddressMaps don't match UTXO order
+      //
+      // Parse the credential to see which slots have which embedded addresses
+      const credential = flareTx.credentials[0];
+      const signatures = credential.getSignatures();
+
+      // Extract embedded addresses from signature slots
+      const embeddedAddresses: string[] = [];
+      const isEmptySignature = (signature: string): boolean => {
+        return !!signature && testUtils.removeHexPrefix(signature).startsWith('0'.repeat(90));
+      };
+
+      const hasEmbeddedAddress = (signature: string): boolean => {
+        if (!isEmptySignature(signature)) return false;
+        const cleanSig = testUtils.removeHexPrefix(signature);
+        if (cleanSig.length < 130) return false;
+        const embeddedPart = cleanSig.substring(90, 130);
+        // Check if embedded part is not all zeros
+        return embeddedPart !== '0'.repeat(40);
+      };
+
+      signatures.forEach((sig: string, slotIndex: number) => {
+        if (hasEmbeddedAddress(sig)) {
+          // Extract embedded address (after position 90, 40 chars = 20 bytes)
+          const cleanSig = testUtils.removeHexPrefix(sig);
+          const embeddedAddr = cleanSig.substring(90, 130).toLowerCase();
+          embeddedAddresses[slotIndex] = '0x' + embeddedAddr;
+        }
+      });
+
+      // Verify: Credentials only embed ONE address (user/recovery), not both
+      // The embedded address should be based on addressesIndex logic, not sequential order
+      //
+      // Compute addressesIndex to determine expected signature order
+      const utxoAddressBytes = unsortedUtxoAddresses.map((addr) => testUtils.parseAddress(addr));
+      const pAddressBytes = pAddresses.map((addr) => testUtils.parseAddress(addr));
+
+      const addressesIndex: number[] = [];
+      pAddressBytes.forEach((pAddr) => {
+        const utxoIndex = utxoAddressBytes.findIndex(
+          (uAddr) => Buffer.compare(Buffer.from(uAddr), Buffer.from(pAddr)) === 0
+        );
+        addressesIndex.push(utxoIndex);
+      });
+
+      // firstIndex = 0 (user), bitgoIndex = 1
+      const firstIndex = 0;
+      const bitgoIndex = 1;
+
+      // Determine expected signature order based on addressesIndex
+      const userComesFirst = addressesIndex[bitgoIndex] > addressesIndex[firstIndex];
+
+      // Expected credential structure:
+      // - If user comes first: [userAddress, zeros]
+      // - If bitgo comes first: [zeros, userAddress]
+      const userAddressHex = Buffer.from(pAddressBytes[firstIndex]).toString('hex').toLowerCase();
+      const expectedUserAddr = '0x' + userAddressHex;
+
+      if (userComesFirst) {
+        // Expected: [userAddress, zeros]
+        // Slot 0 should have user address (pAddr0 = 0xc732... = UTXO index 0)
+        if (embeddedAddresses[0]) {
+          embeddedAddresses[0]
+            .toLowerCase()
+            .should.equal(
+              expectedUserAddr,
+              `Slot 0 should have user address (${expectedUserAddr}) because user comes first in UTXO order`
+            );
+        } else {
+          throw new Error(`Slot 0 should have embedded user address, but is empty`);
+        }
+        // Slot 1 should be zeros (no embedded address)
+        if (embeddedAddresses[1]) {
+          throw new Error(`Slot 1 should be zeros, but has embedded address: ${embeddedAddresses[1]}`);
+        }
+      } else {
+        // Expected: [zeros, userAddress]
+        // Slot 0 should be zeros
+        if (embeddedAddresses[0]) {
+          throw new Error(`Slot 0 should be zeros, but has embedded address: ${embeddedAddresses[0]}`);
+        }
+        // Slot 1 should have user address
+        if (embeddedAddresses[1]) {
+          embeddedAddresses[1]
+            .toLowerCase()
+            .should.equal(
+              expectedUserAddr,
+              `Slot 1 should have user address (${expectedUserAddr}) because bitgo comes first in UTXO order`
+            );
+        } else {
+          throw new Error(`Slot 1 should have embedded user address, but is empty`);
+        }
+      }
+
+      // The key verification: AddressMaps should match the credential order
+      // Current implementation (WRONG): AddressMaps use sequential indices (0, 1, 2...)
+      // Expected (CORRECT): AddressMaps should use addressesIndex logic, matching credential order
+      //
+      // Get AddressMaps from the ORIGINAL transaction (not parsed, because parsed AddressMap only has output address)
+      // For C-chain imports, originalFlareTx is EVMUnsignedTx which has addressMaps property
+
+      const addressMaps = originalAddressMaps;
+      addressMaps.toArray().length.should.equal(1, 'Should have one AddressMap for one input');
+
+      const addressMap = addressMaps.toArray()[0];
+
+      // Expected: Based on addressesIndex logic
+      // If user comes first: slot 0 = user, slot 1 = bitgo
+      // If bitgo comes first: slot 0 = bitgo, slot 1 = user
+      const expectedSlot0Addr = userComesFirst ? pAddressBytes[firstIndex] : pAddressBytes[bitgoIndex];
+      const expectedSlot1Addr = userComesFirst ? pAddressBytes[bitgoIndex] : pAddressBytes[firstIndex];
+
+      // AddressMap maps: Address -> slot index
+      // We need to check which addresses are mapped to slots 0 and 1
+      // AddressMap.get() returns the slot index for a given address
+
+      // Verify that AddressMap correctly maps addresses based on credential order (UTXO order)
+      // The AddressMap should map the addresses that appear in credentials to the correct slots
+      const { Address } = require('@flarenetwork/flarejs');
+      const expectedSlot0Address = new Address(expectedSlot0Addr);
+      const expectedSlot1Address = new Address(expectedSlot1Addr);
+      const expectedSlot0FromMap = addressMap.get(expectedSlot0Address);
+      const expectedSlot1FromMap = addressMap.get(expectedSlot1Address);
+
+      // Verify that the expected addresses map to the correct slots
+      if (expectedSlot0FromMap === undefined) {
+        throw new Error(`Address at UTXO index ${addressesIndex[firstIndex]} not found in AddressMap`);
+      }
+      if (expectedSlot1FromMap === undefined) {
+        throw new Error(`Address at UTXO index ${addressesIndex[bitgoIndex]} not found in AddressMap`);
+      }
+      expectedSlot0FromMap.should.equal(0, `Address at UTXO index ${addressesIndex[firstIndex]} should map to slot 0`);
+      expectedSlot1FromMap.should.equal(1, `Address at UTXO index ${addressesIndex[bitgoIndex]} should map to slot 1`);
+
+      // If addressesIndex is not sequential ([0, 1, ...]), verify that sequential mapping is NOT used incorrectly
+      // Sequential mapping means: pAddresses[0] -> slot 0, pAddresses[1] -> slot 1, regardless of UTXO order
+      const usesSequentialMapping = addressesIndex[0] === 0 && addressesIndex[1] === 1;
+
+      if (!usesSequentialMapping) {
+        // Check if AddressMap uses sequential mapping (array order) instead of UTXO order
+        const sequentialSlot0 = addressMap.get(new Address(pAddressBytes[0]));
+        const sequentialSlot1 = addressMap.get(new Address(pAddressBytes[1]));
+
+        // Sequential mapping would map pAddresses[0] -> slot 0, pAddresses[1] -> slot 1
+        // But we want UTXO order mapping based on addressesIndex
+        const isSequential = sequentialSlot0 === 0 && sequentialSlot1 === 1;
+
+        // Check if pAddresses[0] and pAddresses[1] are the expected addresses for slots 0 and 1
+        // If they are, then sequential mapping happens to be correct (by coincidence)
+        const pAddress0IsExpectedSlot0 =
+          Buffer.compare(Buffer.from(pAddressBytes[0]), Buffer.from(expectedSlot0Addr)) === 0;
+        const pAddress1IsExpectedSlot1 =
+          Buffer.compare(Buffer.from(pAddressBytes[1]), Buffer.from(expectedSlot1Addr)) === 0;
+
+        // If sequential mapping is used but it's NOT correct (doesn't match expected addresses), fail
+        if (isSequential && (!pAddress0IsExpectedSlot0 || !pAddress1IsExpectedSlot1)) {
+          throw new Error(
+            `AddressMap uses sequential mapping (array order) but should use UTXO order. ` +
+              `addressesIndex: [${addressesIndex.join(', ')}]. ` +
+              `Expected slot 0 = address at UTXO index ${addressesIndex[firstIndex]}, slot 1 = address at UTXO index ${addressesIndex[bitgoIndex]}`
+          );
+        }
+      }
     });
   });
 });

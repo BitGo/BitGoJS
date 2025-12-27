@@ -2,7 +2,15 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { TransactionType } from '@bitgo/sdk-core';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
-import { TransferableInput, Int, Id, TypeSymbols, Credential } from '@flarenetwork/flarejs';
+import {
+  TransferableInput,
+  Int,
+  Id,
+  TypeSymbols,
+  Credential,
+  Address,
+  utils as FlareUtils,
+} from '@flarenetwork/flarejs';
 import { DecodedUtxoObj } from './iface';
 import utils from './utils';
 
@@ -247,5 +255,99 @@ export abstract class AtomicTransactionBuilder extends TransactionBuilder {
     const fee = typeof feeValue === 'string' ? feeValue : feeValue.toString();
     (this.transaction as Transaction)._fee.fee = fee;
     return this;
+  }
+
+  /**
+   * Create credential with dynamic ordering based on addressesIndex from UTXO
+   * Matches avaxp behavior: signature order depends on UTXO address positions
+   * @param utxo - The UTXO to create credential for
+   * @param threshold - Number of signatures required
+   * @returns Credential with empty signatures ordered based on UTXO positions
+   * @protected
+   */
+  protected createCredentialForUtxo(utxo: DecodedUtxoObj, threshold: number): Credential {
+    const sender = (this.transaction as Transaction)._fromAddresses;
+    const hasAddresses = sender && sender.length >= threshold;
+
+    if (!hasAddresses || !utxo.addresses || utxo.addresses.length === 0) {
+      // Fallback: use all zeros if no addresses available
+      const emptySignatures: ReturnType<typeof utils.createNewSig>[] = [];
+      for (let i = 0; i < threshold; i++) {
+        emptySignatures.push(utils.createNewSig(''));
+      }
+      return new Credential(emptySignatures);
+    }
+
+    // Compute addressesIndex: position of each _fromAddresses in UTXO's address list
+    const utxoAddresses = utxo.addresses.map((a) => utils.parseAddress(a));
+    const addressesIndex = sender.map((a) =>
+      utxoAddresses.findIndex((u) => Buffer.compare(Buffer.from(u), Buffer.from(a)) === 0)
+    );
+
+    // either user (0) or recovery (2)
+    const firstIndex = this.recoverSigner ? 2 : 0;
+    const bitgoIndex = 1;
+
+    // Dynamic ordering based on addressesIndex
+    let emptySignatures: ReturnType<typeof utils.createNewSig>[];
+    if (addressesIndex[bitgoIndex] < addressesIndex[firstIndex]) {
+      // Bitgo comes first in signature order: [zeros, userAddress]
+      emptySignatures = [
+        utils.createNewSig(''),
+        utils.createEmptySigWithAddress(Buffer.from(sender[firstIndex]).toString('hex')),
+      ];
+    } else {
+      // User comes first in signature order: [userAddress, zeros]
+      emptySignatures = [
+        utils.createEmptySigWithAddress(Buffer.from(sender[firstIndex]).toString('hex')),
+        utils.createNewSig(''),
+      ];
+    }
+    return new Credential(emptySignatures);
+  }
+
+  /**
+   * Create AddressMap based on signature slot order (matching credential order), not sorted addresses
+   * This matches the approach used in credentials: addressesIndex determines signature order
+   * AddressMaps should map addresses to signature slots in the same order as credentials
+   * @param utxo - The UTXO to create AddressMap for
+   * @param threshold - Number of signatures required
+   * @returns AddressMap that maps addresses to signature slots based on UTXO order
+   * @protected
+   */
+  protected createAddressMapForUtxo(utxo: DecodedUtxoObj, threshold: number): FlareUtils.AddressMap {
+    const addressMap = new FlareUtils.AddressMap();
+    const sender = (this.transaction as Transaction)._fromAddresses;
+
+    // If UTXO has addresses, compute addressesIndex to determine signature order
+    if (utxo && utxo.addresses && utxo.addresses.length > 0 && sender && sender.length >= threshold) {
+      const utxoAddresses = utxo.addresses.map((a) => utils.parseAddress(a));
+      const addressesIndex = sender.map((a) =>
+        utxoAddresses.findIndex((u) => Buffer.compare(Buffer.from(u), Buffer.from(a)) === 0)
+      );
+
+      const firstIndex = this.recoverSigner ? 2 : 0;
+      const bitgoIndex = 1;
+
+      // Determine signature slot order based on addressesIndex (same logic as credentials)
+      if (addressesIndex[bitgoIndex] < addressesIndex[firstIndex]) {
+        // Bitgo comes first: slot 0 = bitgo, slot 1 = firstIndex
+        addressMap.set(new Address(sender[bitgoIndex]), 0);
+        addressMap.set(new Address(sender[firstIndex]), 1);
+      } else {
+        // User/recovery comes first: slot 0 = firstIndex, slot 1 = bitgo
+        addressMap.set(new Address(sender[firstIndex]), 0);
+        addressMap.set(new Address(sender[bitgoIndex]), 1);
+      }
+    } else {
+      // Fallback: map addresses sequentially if no UTXO addresses available
+      if (sender && sender.length >= threshold) {
+        sender.slice(0, threshold).forEach((addr, i) => {
+          addressMap.set(new Address(addr), i);
+        });
+      }
+    }
+
+    return addressMap;
   }
 }
