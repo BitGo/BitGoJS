@@ -92,55 +92,19 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
     }
 
     // Create proper UnsignedTx wrapper with credentials
-    const sortedAddresses = [...this.transaction._fromAddresses].sort((a, b) => Buffer.compare(a, b));
-    const addressMaps = sortedAddresses.map((a, i) => new FlareUtils.AddressMap([[new Address(a), i]]));
-
-    // When credentials were extracted, use them directly to preserve existing signatures
     // Match avaxp behavior: dynamic ordering based on addressesIndex from UTXO
+    // Use centralized methods for credential and AddressMap creation
     const txCredentials =
       credentials.length > 0
         ? credentials
-        : this.transaction._utxos.map((utxo) => {
-            // either user (0) or recovery (2)
-            const firstIndex = this.recoverSigner ? 2 : 0;
-            const bitgoIndex = 1;
+        : this.transaction._utxos.map((utxo) => this.createCredentialForUtxo(utxo, this.transaction._threshold));
 
-            // If UTXO has addresses, compute dynamic ordering
-            if (utxo && utxo.addresses && utxo.addresses.length > 0) {
-              const utxoAddresses = utxo.addresses.map((a) => utils.parseAddress(a));
-              const addressesIndex = this.transaction._fromAddresses.map((a) =>
-                utxoAddresses.findIndex((u) => Buffer.compare(Buffer.from(u), Buffer.from(a)) === 0)
-              );
-
-              // Dynamic ordering based on addressesIndex
-              let sigSlots: ReturnType<typeof utils.createNewSig>[];
-              if (addressesIndex[bitgoIndex] < addressesIndex[firstIndex]) {
-                // Bitgo comes first: [zeros, userAddress]
-                sigSlots = [
-                  utils.createNewSig(''),
-                  utils.createEmptySigWithAddress(
-                    Buffer.from(this.transaction._fromAddresses[firstIndex]).toString('hex')
-                  ),
-                ];
-              } else {
-                // User comes first: [userAddress, zeros]
-                sigSlots = [
-                  utils.createEmptySigWithAddress(
-                    Buffer.from(this.transaction._fromAddresses[firstIndex]).toString('hex')
-                  ),
-                  utils.createNewSig(''),
-                ];
-              }
-              return new Credential(sigSlots);
-            } else {
-              // Fallback: use all zeros if no UTXO addresses available
-              const sigSlots: ReturnType<typeof utils.createNewSig>[] = [];
-              for (let i = 0; i < this.transaction._threshold; i++) {
-                sigSlots.push(utils.createNewSig(''));
-              }
-              return new Credential(sigSlots);
-            }
-          });
+    // Create AddressMaps based on signature slot order (matching credential order), not sorted addresses
+    // This matches the approach used in credentials: addressesIndex determines signature order
+    // AddressMaps should map addresses to signature slots in the same order as credentials
+    const addressMaps = this.transaction._utxos.map((utxo) =>
+      this.createAddressMapForUtxo(utxo, this.transaction._threshold)
+    );
 
     const unsignedTx = new UnsignedTx(importTx, [], new FlareUtils.AddressMaps(addressMaps), txCredentials);
 
@@ -200,8 +164,13 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
       inputs // importedInputs (ins)
     );
 
-    // Create address maps for signing
-    const addressMaps = this.transaction._fromAddresses.map((a, i) => new FlareUtils.AddressMap([[new Address(a), i]]));
+    // Create AddressMaps based on signature slot order (matching credential order), not sorted addresses
+    // This matches the approach used in credentials: addressesIndex determines signature order
+    // AddressMaps should map addresses to signature slots in the same order as credentials
+    // Use centralized method for AddressMap creation
+    const addressMaps = credentials.map((credential, credIdx) =>
+      this.createAddressMapForUtxo(this.transaction._utxos[credIdx], this.transaction._threshold)
+    );
 
     // Create unsigned transaction
     const unsignedTx = new UnsignedTx(
@@ -264,41 +233,8 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
 
       // Create credential with empty signatures for slot identification
       // Match avaxp behavior: dynamic ordering based on addressesIndex from UTXO
-      const hasAddresses =
-        this.transaction._fromAddresses && this.transaction._fromAddresses.length >= this.transaction._threshold;
-
-      if (!hasAddresses) {
-        // If addresses not available, use all zeros
-        const emptySignatures = sigIndices.map(() => utils.createNewSig(''));
-        credentials.push(new Credential(emptySignatures));
-      } else {
-        // Compute addressesIndex: position of each _fromAddresses in UTXO's address list
-        const utxoAddresses = utxo.addresses.map((a) => utils.parseAddress(a));
-        const addressesIndex = this.transaction._fromAddresses.map((a) =>
-          utxoAddresses.findIndex((u) => Buffer.compare(Buffer.from(u), Buffer.from(a)) === 0)
-        );
-
-        // either user (0) or recovery (2)
-        const firstIndex = this.recoverSigner ? 2 : 0;
-        const bitgoIndex = 1;
-
-        // Dynamic ordering based on addressesIndex
-        let emptySignatures: ReturnType<typeof utils.createNewSig>[];
-        if (addressesIndex[bitgoIndex] < addressesIndex[firstIndex]) {
-          // Bitgo comes first in signature order: [zeros, userAddress]
-          emptySignatures = [
-            utils.createNewSig(''),
-            utils.createEmptySigWithAddress(Buffer.from(this.transaction._fromAddresses[firstIndex]).toString('hex')),
-          ];
-        } else {
-          // User comes first in signature order: [userAddress, zeros]
-          emptySignatures = [
-            utils.createEmptySigWithAddress(Buffer.from(this.transaction._fromAddresses[firstIndex]).toString('hex')),
-            utils.createNewSig(''),
-          ];
-        }
-        credentials.push(new Credential(emptySignatures));
-      }
+      // Use centralized method for credential creation
+      credentials.push(this.createCredentialForUtxo(utxo, this.transaction._threshold));
     });
 
     return {
