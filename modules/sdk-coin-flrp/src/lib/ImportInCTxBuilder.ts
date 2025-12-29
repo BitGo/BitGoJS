@@ -164,14 +164,32 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
 
     const { inputs, amount, credentials } = this.createInputs();
 
-    // Calculate fee
+    // Calculate import cost units (matching AVAXP's costImportTx approach)
+    // Create a temporary transaction to calculate the actual cost units
+    const tempOutput = new evmSerial.Output(
+      new Address(this.transaction._to[0]),
+      new BigIntPr(amount),
+      new Id(new Uint8Array(Buffer.from(this.transaction._assetId, 'hex')))
+    );
+    const tempImportTx = new evmSerial.ImportTx(
+      new Int(this.transaction._networkID),
+      new Id(new Uint8Array(Buffer.from(this.transaction._blockchainID, 'hex'))),
+      new Id(new Uint8Array(this._externalChainId)),
+      inputs,
+      [tempOutput]
+    );
+
+    // Calculate the import cost units (matches AVAXP's feeSize from costImportTx)
+    const feeSize = this.calculateImportCost(tempImportTx);
+
+    // Multiply feeRate by cost units (matching AVAXP: fee = feeRate.muln(feeSize))
     const feeRate = BigInt(this.transaction._fee.feeRate);
-    const feeSize = this.calculateFeeSize();
     const fee = feeRate * BigInt(feeSize);
+
     this.transaction._fee.fee = fee.toString();
     this.transaction._fee.size = feeSize;
 
-    // Create EVM output using proper FlareJS class
+    // Create EVM output using proper FlareJS class with amount minus fee
     const output = new evmSerial.Output(
       new Address(this.transaction._to[0]),
       new BigIntPr(amount - fee),
@@ -274,7 +292,43 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
   }
 
   /**
-   * Calculate the fee size for the transaction
+   * Calculate the import cost for C-chain import transactions
+   * Matches AVAXP's costImportTx formula:
+   * - Base byte cost: transactionSize * txBytesGas (1 gas per byte)
+   * - Per-input cost: numInputs * costPerSignature (1000 per signature) * threshold
+   * - Fixed fee: 10000
+   *
+   * This returns cost "units" to be multiplied by feeRate, matching AVAXP's approach:
+   * AVAXP: fee = feeRate.muln(costImportTx(tx))
+   * FLRP:  fee = feeRate * calculateImportCost(tx)
+   *
+   * @param tx The ImportTx to calculate the cost for
+   * @returns The total cost units
+   */
+  private calculateImportCost(tx: evmSerial.ImportTx): number {
+    const codec = avmSerial.getAVMManager().getDefaultCodec();
+    const txBytes = tx.toBytes(codec);
+
+    // Base byte cost: 1 gas per byte (matching AVAX txBytesGas)
+    const txBytesGas = 1;
+    let bytesCost = txBytes.length * txBytesGas;
+
+    // Per-input cost: costPerSignature (1000) per signature
+    const costPerSignature = 1000;
+    const numInputs = tx.importedInputs.length;
+    const numSignatures = this.transaction._threshold; // Each input requires threshold signatures
+    const inputCost = numInputs * costPerSignature * numSignatures;
+    bytesCost += inputCost;
+
+    // Fixed fee component
+    const fixedFee = 10000;
+    const totalCost = bytesCost + fixedFee;
+
+    return totalCost;
+  }
+
+  /**
+   * Calculate the fee size for the transaction (for backwards compatibility)
    * For C-chain imports, the feeRate is treated as an absolute fee value
    */
   private calculateFeeSize(tx?: evmSerial.ImportTx): number {
