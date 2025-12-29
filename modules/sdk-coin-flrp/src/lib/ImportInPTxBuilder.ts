@@ -132,6 +132,13 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
 
     // Calculate fee from transaction fee settings
     const fee = BigInt(this.transaction.fee.fee);
+
+    // Validate that totalAmount is sufficient to cover the fee (matching AVAX validation)
+    // This ensures we don't create transactions with insufficient funds
+    if (totalAmount < fee) {
+      throw new BuildTransactionError(`Utxo outputs get ${totalAmount.toString()} and ${fee.toString()} is required`);
+    }
+
     const outputAmount = totalAmount - fee;
 
     // Create the output for P-chain (TransferableOutput with TransferOutput)

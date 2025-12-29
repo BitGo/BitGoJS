@@ -1942,7 +1942,7 @@ export class FlareP extends Mainnet implements FlareNetwork {
   hrp = 'flare';
   alias = 'P';
   vm = 'platformvm';
-  txFee = '1000000'; // defaults
+  txFee = '1261000'; // FLR P-chain import requires higher fee than base txFee
   maxImportFee = '10000000'; // defaults
   createSubnetTx = '100000000'; // defaults
   createChainTx = '100000000'; // defaults
@@ -1969,7 +1969,7 @@ export class FlarePTestnet extends Testnet implements FlareNetwork {
   alias = 'P';
   assetId = 'fxMAKpBQQpFedrUhWMsDYfCUJxdUw4mneTczKBzNg3rc2JUub';
   vm = 'platformvm';
-  txFee = '1000000'; // defaults
+  txFee = '1261000'; // FLR P-chain import requires higher fee than base txFee
   maxImportFee = '10000000'; // defaults
   createSubnetTx = '100000000'; // defaults
   createChainTx = '100000000'; // defaults
