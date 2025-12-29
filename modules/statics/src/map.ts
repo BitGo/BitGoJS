@@ -152,6 +152,10 @@ export class CoinMap {
       6342: 'tmegaeth',
       295: 'hbarevm',
       296: 'thbarevm',
+      196: 'okb',
+      1952: 'tokb',
+      5734951: 'jovayeth',
+      2019775: 'tjovayeth',
     };
     return ethLikeCoinFromChainId[chainId];
   }
