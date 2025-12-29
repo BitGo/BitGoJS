@@ -29,6 +29,26 @@ export const solTokens = [
     SOL_TOKEN_FEATURES
   ),
   solToken(
+    'e3b8c7d2-9f4a-4e5b-a0d6-5c1f8e3b9d7a',
+    'sol:fight',
+    'FIGHT',
+    9,
+    '8f62NyJGo7He5uWeveTA2JJQf4xzf8aqxkmzxRQ3mxfU', // https://solscan.io/token/8f62NyJGo7He5uWeveTA2JJQf4xzf8aqxkmzxRQ3mxfU
+    '8f62NyJGo7He5uWeveTA2JJQf4xzf8aqxkmzxRQ3mxfU',
+    UnderlyingAsset['sol:fight'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    'f4c9d8e3-0a5b-4f6c-91e7-6d2a9f4c0e8b',
+    'sol:wet',
+    'Humidifi',
+    6,
+    'WETZjtprkDMCcUxPi9PfWnowMRZkiGGHDb9rABuRZ2U', // https://solscan.io/token/WETZjtprkDMCcUxPi9PfWnowMRZkiGGHDb9rABuRZ2U
+    'WETZjtprkDMCcUxPi9PfWnowMRZkiGGHDb9rABuRZ2U',
+    UnderlyingAsset['sol:wet'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
     '5367fe0f-1f39-48c1-8673-23cd6bc1f445',
     'sol:pnut',
     'Peanut the Squirrel',

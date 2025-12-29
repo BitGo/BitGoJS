@@ -11954,6 +11954,30 @@ export const erc20Coins = [
     UnderlyingAsset['eth:lit']
   ),
   erc20(
+    'b0e5f4a9-6d1c-4b7e-a2f8-3c9d5e0b7a6f',
+    'eth:aedz',
+    'Zand AED',
+    6,
+    '0xfc347c996bd66c1d92e2045c80b413ef3fc84a90',
+    UnderlyingAsset['eth:aedz']
+  ),
+  erc20(
+    'c1f6a5b0-7e2d-4c8f-b3a9-4d0e6f1c8b7a',
+    'eth:arm-susde-usde',
+    'Ethena Staked USDe ARM',
+    18,
+    '0xceda2d856238aa0d12f6329de20b9115f07c366d',
+    UnderlyingAsset['eth:arm-susde-usde']
+  ),
+  erc20(
+    'd2a7b6c1-8f3e-4d9a-84b0-5e1f7a2d9c8b',
+    'eth:arm-weth-eeth',
+    'Ether.fi ARM',
+    18,
+    '0xfb0a3cf9b019bfd8827443d131b235b3e0fc58d2',
+    UnderlyingAsset['eth:arm-weth-eeth']
+  ),
+  erc20(
     '3b5398f9-9c76-4508-8e9a-bf114506025c',
     'eth:job',
     'Jobchain',

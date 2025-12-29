@@ -2883,6 +2883,33 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['baseeth:brett'],
     Networks.main.basechain
   ),
+  erc20Token(
+    'd6a1b0c5-2f7e-4d3b-a8e9-1c5f6b2d7a4e',
+    'baseeth:argt',
+    'ARG Token',
+    18,
+    '0xf016413834e6d1a14f3d628b11d6ef725a6bdbdd',
+    UnderlyingAsset['baseeth:argt'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    'e7b2c1d6-3a8f-4e4c-b9f0-2d6a7c3e8b5f',
+    'baseeth:brat',
+    'BRA Token',
+    18,
+    '0xfee29845569570f8e0119291dff77b7b93283aab',
+    UnderlyingAsset['baseeth:brat'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    'f8c3d2e7-4b9a-4f5d-80a1-3e7b8d4f9c6a',
+    'baseeth:mext',
+    'Mexican Peso Token',
+    18,
+    '0x59863989d080b22476db95656d0c3cc18be92214',
+    UnderlyingAsset['baseeth:mext'],
+    Networks.main.basechain
+  ),
 
   // XDC mainnet tokens
   erc20Token(
