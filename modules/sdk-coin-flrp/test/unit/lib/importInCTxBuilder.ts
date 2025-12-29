@@ -52,6 +52,71 @@ describe('Flrp Import In C Tx Builder', () => {
     txHash: testData.txhash,
   });
 
+  describe('dynamic fee calculation', () => {
+    it('should calculate proper fee using feeRate multiplier (AVAXP approach) to avoid "insufficient unlocked funds" error', async () => {
+      const amount = '100000000'; // 100M nanoFLRP (0.1 FLR)
+      const feeRate = '1'; // 1 nanoFLRP per cost unit (matching AVAXP's feeRate usage)
+
+      const utxo: DecodedUtxoObj = {
+        outputID: 0,
+        amount: amount,
+        txid: '2vPMx8P63adgBae7GAWFx7qvJDwRmMnDCyKddHRBXWhysjX4BP',
+        outputidx: '0',
+        addresses: [
+          '0x3329be7d01cd3ebaae6654d7327dd9f17a2e1581',
+          '0x7e918a5e8083ae4c9f2f0ed77055c24bf3665001',
+          '0xc7324437c96c7c8a6a152da2385c1db5c3ab1f91',
+        ],
+        threshold: 2,
+      };
+
+      const txBuilder = factory
+        .getImportInCBuilder()
+        .threshold(2)
+        .fromPubKey(testData.pAddresses)
+        .utxos([utxo])
+        .to(testData.to)
+        .feeRate(feeRate) as any;
+
+      const tx = await txBuilder.build();
+
+      const calculatedFee = BigInt((tx as any).fee.fee);
+      const feeRateBigInt = BigInt(feeRate);
+
+      // The fee should be approximately: feeRate × (txSize + inputCost + fixedFee)
+      // For 1 input, threshold=2, ~228 bytes: 1 × (228 + 2000 + 10000) = 12,228
+      const expectedMinCost = 12000; // Minimum cost units (conservative estimate)
+      const expectedMaxCost = 13000; // Maximum cost units (with some buffer)
+
+      const expectedMinFee = feeRateBigInt * BigInt(expectedMinCost);
+      const expectedMaxFee = feeRateBigInt * BigInt(expectedMaxCost);
+
+      // Verify fee is in the expected range
+      assert(
+        calculatedFee >= expectedMinFee,
+        `Fee ${calculatedFee} should be at least ${expectedMinFee} (feeRate × minCost)`
+      );
+      assert(
+        calculatedFee <= expectedMaxFee,
+        `Fee ${calculatedFee} should not exceed ${expectedMaxFee} (feeRate × maxCost)`
+      );
+
+      // Verify the output amount is positive (no "insufficient funds" error)
+      const outputs = tx.outputs;
+      outputs.length.should.equal(1);
+      const outputAmount = BigInt(outputs[0].value);
+      assert(
+        outputAmount > BigInt(0),
+        'Output amount should be positive - transaction should not fail with insufficient funds'
+      );
+
+      // Verify the math: input - output = fee
+      const inputAmount = BigInt(amount);
+      const calculatedOutput = inputAmount - calculatedFee;
+      assert(outputAmount === calculatedOutput, 'Output should equal input minus total fee');
+    });
+  });
+
   describe('on-chain verified transactions', () => {
     it('should verify on-chain tx id for signed C-chain import', async () => {
       const signedImportHex =
