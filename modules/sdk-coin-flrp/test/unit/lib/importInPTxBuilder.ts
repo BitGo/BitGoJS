@@ -13,9 +13,9 @@ describe('Flrp Import In P Tx Builder', () => {
   describe('default fee', () => {
     const FIXED_FEE = (coinConfig.network as FlareNetwork).txFee;
 
-    it('should set fixedFee (1000000) by default in constructor', () => {
+    it('should set fixedFee (1261000) by default in constructor', () => {
       const txBuilder = factory.getImportInPBuilder();
-      // The fixedFee should be set from network.txFee = '1000000'
+      // The fixedFee should be set from network.txFee = '1261000'
       const transaction = (txBuilder as any).transaction;
       transaction._fee.fee.should.equal(FIXED_FEE);
     });
