@@ -263,6 +263,24 @@ export const ofcCoins = [
     UnderlyingAsset.LINEAETH,
     CoinKind.CRYPTO
   ),
+  ofc(
+    'f43afacc-0db3-4a8a-a987-ff9d93e08cb4',
+    'ofcjovayeth',
+    'Jovay Ethereum',
+    18,
+    UnderlyingAsset.JOVAYETH,
+    CoinKind.CRYPTO
+  ),
+  tofc(
+    'be7ba188-78f1-47df-9a72-37572a835ff0',
+    'ofctjovayeth',
+    'Jovay Ethereum Testnet',
+    18,
+    UnderlyingAsset.JOVAYETH,
+    CoinKind.CRYPTO
+  ),
+  ofc('dc733b2f-92bf-49d3-9f5d-9774e1637f0f', 'ofcokb', 'X Layer', 18, UnderlyingAsset.OKB, CoinKind.CRYPTO),
+  tofc('98460a7d-0677-4dbd-934e-fbb0e9c5f8cc', 'ofctokb', 'X Layer Testnet', 18, UnderlyingAsset.OKB, CoinKind.CRYPTO),
   ofc('aa7e956f-2d59-4bf6-aba6-2d51bd298150', 'ofcip', 'Story', 18, UnderlyingAsset.IP, CoinKind.CRYPTO),
   tofc('773b02f6-32ea-493a-bca5-13d93cb0afff', 'ofctip', 'Story Testnet', 18, UnderlyingAsset.IP, CoinKind.CRYPTO),
   ofc('c5015165-6ae4-4925-bd3f-4b767feba2f9', 'ofcplume', 'Plume', 18, UnderlyingAsset.PLUME, CoinKind.CRYPTO),
