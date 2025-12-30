@@ -44,6 +44,15 @@ export const bscTokens = [
     BSC_TOKEN_FEATURES
   ),
   bscToken(
+    'a9d4e3f8-5c0b-4a6e-91d7-4f9e2c8a5b3d',
+    'bsc:ake',
+    'Akedo',
+    18,
+    '0x2c3a8ee94ddd97244a93bc48298f97d2c412f7db',
+    UnderlyingAsset['bsc:ake'],
+    BSC_TOKEN_FEATURES
+  ),
+  bscToken(
     '2a3e9315-0cb8-4bdf-ba9c-d872aeeb1ce2',
     'bsc:bsw',
     'Biswap',

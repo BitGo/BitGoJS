@@ -622,6 +622,8 @@ export const ofcCoins = [
     6,
     UnderlyingAsset['sol:pnut']
   ),
+  ofcsolToken('e5b0c9d4-6f1a-4e8b-97f3-8d4c0a5e9b1f', 'ofcsol:fight', 'FIGHT', 9, UnderlyingAsset['sol:fight']),
+  ofcsolToken('f6c1d0e5-7a2b-4f9c-88a4-9e5d1b6f0c2a', 'ofcsol:wet', 'Humidifi', 6, UnderlyingAsset['sol:wet']),
   ofcsolToken('e792c18a-05d1-4622-a8db-192f431b70a2', 'ofcsol:usdg', 'Global Dollar', 6, UnderlyingAsset['sol:usdg'], [
     CoinFeature.STABLECOIN,
   ]),
@@ -2063,6 +2065,7 @@ export const ofcCoins = [
     UnderlyingAsset['bsc:parti']
   ),
   ofcBscToken('8d250ad4-775f-4435-9c4c-cf0f77b26f7e', 'ofcbsc:form', 'Four', 18, UnderlyingAsset['bsc:form']),
+  ofcBscToken('d4a9b8c3-5f0e-4d7a-96f2-7e3c9b4d0a8e', 'ofcbsc:ake', 'Akedo', 18, UnderlyingAsset['bsc:ake']),
   ofcBscToken(
     '7c3f2e8a-9d1f-4b6a-8e7b-1f9e4c5d2a6f',
     'ofcbsc:burger',
@@ -3332,6 +3335,27 @@ export const ofcCoins = [
     'JPY Coin',
     18,
     UnderlyingAsset['polygon:jpyc']
+  ),
+  ofcPolygonErc20(
+    'a1d6e5f0-2c7b-4a8e-93f9-4d0e6a1c7b8d',
+    'ofcpolygon:argt',
+    'ARG Token',
+    18,
+    UnderlyingAsset['polygon:argt']
+  ),
+  ofcPolygonErc20(
+    'b2e7f6a1-3d8c-4b9f-84a0-5e1f7b2d8c9e',
+    'ofcpolygon:brat',
+    'BRA Token',
+    18,
+    UnderlyingAsset['polygon:brat']
+  ),
+  ofcPolygonErc20(
+    'c3f8a7b2-4e9d-4c0a-a5b1-6f2a8c3e9d0f',
+    'ofcpolygon:chlt',
+    'Chilean Peso token',
+    18,
+    UnderlyingAsset['polygon:chlt']
   ),
 
   tofcPolygonErc20(

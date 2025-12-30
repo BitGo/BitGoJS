@@ -2194,6 +2194,9 @@ export enum UnderlyingAsset {
   'eth:enso' = 'eth:enso',
   'eth:hpp' = 'eth:hpp',
   'eth:lit' = 'eth:lit',
+  'eth:aedz' = 'eth:aedz',
+  'eth:arm-susde-usde' = 'eth:arm-susde-usde',
+  'eth:arm-weth-eeth' = 'eth:arm-weth-eeth',
   'eth:six' = 'eth:six',
   'eth:eden' = 'eth:eden',
   'eth:xeden' = 'eth:xeden',
@@ -2641,6 +2644,9 @@ export enum UnderlyingAsset {
   'polygon:land1' = 'polygon:land1',
   'polygon:mmt54' = 'polygon:mmt54',
   'polygon:jpyc' = 'polygon:jpyc',
+  'polygon:argt' = 'polygon:argt',
+  'polygon:brat' = 'polygon:brat',
+  'polygon:chlt' = 'polygon:chlt',
   // Polygon NFTs
   // generic NFTs
   'erc721:polygontoken' = 'erc721:polygontoken',
@@ -2669,6 +2675,7 @@ export enum UnderlyingAsset {
   'bsc:dd' = 'bsc:dd',
   'bsc:parti' = 'bsc:parti',
   'bsc:form' = 'bsc:form',
+  'bsc:ake' = 'bsc:ake',
   'bsc:ltc' = 'bsc:ltc',
   'bsc:mask' = 'bsc:mask',
   'bsc:matic' = 'bsc:matic',
@@ -2920,6 +2927,9 @@ export enum UnderlyingAsset {
   'baseeth:sapien' = 'baseeth:sapien',
   'baseeth:aixbt' = 'baseeth:aixbt',
   'baseeth:brett' = 'baseeth:brett',
+  'baseeth:argt' = 'baseeth:argt',
+  'baseeth:brat' = 'baseeth:brat',
+  'baseeth:mext' = 'baseeth:mext',
 
   // BaseETH testnet tokens
   'tbaseeth:usdc' = 'tbaseeth:usdc',
@@ -3163,6 +3173,8 @@ export enum UnderlyingAsset {
   'sol:ai16z' = 'sol:ai16z',
   'sol:pnut' = 'sol:pnut',
   'sol:nyan' = 'sol:nyan',
+  'sol:fight' = 'sol:fight',
+  'sol:wet' = 'sol:wet',
   'sol:virtual' = 'sol:virtual',
   'sol:zerebro' = 'sol:zerebro',
   'sol:arc' = 'sol:arc',

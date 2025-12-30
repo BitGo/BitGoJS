@@ -1260,4 +1260,31 @@ export const polygonTokens = [
     UnderlyingAsset['polygon:txusd'],
     POLYGON_TOKEN_FEATURES
   ),
+  polygonErc20(
+    'a3d8e7f2-9c4b-4e1a-95d6-8f2c3a7e9d1b',
+    'polygon:argt',
+    'ARG Token',
+    18,
+    '0x50464be58912745447e24eb3bbdedcee10d3e056',
+    UnderlyingAsset['polygon:argt'],
+    POLYGON_TOKEN_FEATURES
+  ),
+  polygonErc20(
+    'b4e9f8a3-0d5c-4f2b-86e7-9a3d4b8f0e2c',
+    'polygon:brat',
+    'BRA Token',
+    18,
+    '0x59863989d080b22476db95656d0c3cc18be92214',
+    UnderlyingAsset['polygon:brat'],
+    POLYGON_TOKEN_FEATURES
+  ),
+  polygonErc20(
+    'c5f0a9b4-1e6d-4a3c-a7f8-0b4e5c9a1f3d',
+    'polygon:chlt',
+    'Chilean Peso token',
+    18,
+    '0xfa658f62ca6cacaa769035adbcbed9bf75f9f72d',
+    UnderlyingAsset['polygon:chlt'],
+    POLYGON_TOKEN_FEATURES
+  ),
 ];
