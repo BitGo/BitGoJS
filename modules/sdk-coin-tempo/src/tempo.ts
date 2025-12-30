@@ -1,157 +1,116 @@
+/**
+ * @prettier
+ */
 import {
-  AuditDecryptedKeyParams,
-  BaseCoin,
-  BitGoBase,
-  KeyPair,
-  ParsedTransaction,
-  ParseTransactionOptions,
-  SignedTransaction,
-  SignTransactionOptions,
-  VerifyAddressOptions,
-  VerifyTransactionOptions,
-  TransactionExplanation,
-} from '@bitgo/sdk-core';
+  AbstractEthLikeNewCoins,
+  RecoverOptions,
+  OfflineVaultTxInfo,
+  UnsignedSweepTxMPCv2,
+  TransactionBuilder,
+} from '@bitgo/abstract-eth';
+import { BaseCoin, BitGoBase, MPCAlgorithm } from '@bitgo/sdk-core';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
-import { KeyPair as TempoKeyPair } from './lib/keyPair';
-import utils from './lib/utils';
 
-export class Tempo extends BaseCoin {
-  protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
-
+export class Tempo extends AbstractEthLikeNewCoins {
   protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
-    super(bitgo);
-
-    if (!staticsCoin) {
-      throw new Error('missing required constructor parameter staticsCoin');
-    }
-
-    this._staticsCoin = staticsCoin;
+    super(bitgo, staticsCoin);
   }
 
+  /**
+   * Factory method to create Tempo instance
+   */
   static createInstance(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
     return new Tempo(bitgo, staticsCoin);
   }
 
   /**
-   * Factor between the coin's base unit and its smallest subdivision
+   * Get the chain identifier
    */
-  public getBaseFactor(): number {
-    return 1e18;
+  getChain(): string {
+    return this._staticsCoin?.name || 'tempo';
   }
 
-  public getChain(): string {
-    return 'tempo';
-  }
-
-  public getFamily(): string {
-    return 'tempo';
-  }
-
-  public getFullName(): string {
+  /**
+   * Get the full chain name
+   */
+  getFullName(): string {
     return 'Tempo';
   }
 
   /**
-   * Flag for sending value of 0
-   * @returns {boolean} True if okay to send 0 value, false otherwise
+   * Get the base factor (1 TEMPO = 1e18 wei, like Ethereum)
+   */
+  getBaseFactor(): number {
+    return 1e18;
+  }
+
+  /**
+   * Check if value-less transfers are allowed
+   * TODO: Update based on Tempo requirements
    */
   valuelessTransferAllowed(): boolean {
     return false;
   }
 
   /**
-   * Checks if this is a valid base58 or hex address
-   * @param address
+   * Check if TSS is supported
    */
-  isValidAddress(address: string): boolean {
-    return utils.isValidAddress(address);
+  supportsTss(): boolean {
+    return true;
   }
 
   /**
-   * Generate ed25519 key pair
-   *
-   * @param seed
-   * @returns {Object} object with generated pub, prv
+   * Get the MPC algorithm (ECDSA for EVM chains)
    */
-  generateKeyPair(seed?: Buffer): KeyPair {
-    const keyPair = seed ? new TempoKeyPair({ seed }) : new TempoKeyPair();
-    const keys = keyPair.getKeys();
-
-    if (!keys.prv) {
-      throw new Error('Missing prv in key generation.');
-    }
-
-    return {
-      pub: keys.pub,
-      prv: keys.prv,
-    };
+  getMPCAlgorithm(): MPCAlgorithm {
+    return 'ecdsa';
   }
 
   /**
-   * Return boolean indicating whether input is valid public key for the coin.
-   *
-   * @param {String} pub the pub to be checked
-   * @returns {Boolean} is it valid?
+   * Check if message signing is supported
    */
-  isValidPub(pub: string): boolean {
-    return utils.isValidPublicKey(pub);
+  supportsMessageSigning(): boolean {
+    return true;
   }
 
   /**
-   * Verify that a transaction prebuild complies with the original intention
-   * @param params
-   * @param params.txPrebuild
-   * @param params.txParams
-   * @returns {boolean}
+   * Check if typed data signing is supported (EIP-712)
    */
-  async verifyTransaction(params: VerifyTransactionOptions): Promise<boolean> {
-    // TODO: Implement transaction verification
-    return false;
+  supportsSigningTypedData(): boolean {
+    return true;
   }
 
   /**
-   * Check if address is a wallet address
-   * @param params
+   * Build unsigned sweep transaction for TSS
+   * TODO: Implement sweep transaction logic
    */
-  async isWalletAddress(params: VerifyAddressOptions): Promise<boolean> {
-    // TODO: Implement address verification
-    return false;
+  protected async buildUnsignedSweepTxnTSS(params: RecoverOptions): Promise<OfflineVaultTxInfo | UnsignedSweepTxMPCv2> {
+    // TODO: Implement when recovery logic is needed
+    // Return dummy value to prevent downstream services from breaking
+    return {} as OfflineVaultTxInfo;
   }
 
   /**
-   * Audit a decrypted private key for security purposes
-   * @param params
+   * Query block explorer for recovery information
+   * TODO: Implement when Tempo block explorer is available
    */
-  async auditDecryptedKey(params: AuditDecryptedKeyParams): Promise<void> {
-    // TODO: Implement key auditing logic if needed
-    // This method is typically used for security compliance
-    return Promise.resolve();
+  async recoveryBlockchainExplorerQuery(
+    query: Record<string, string>,
+    apiKey?: string
+  ): Promise<Record<string, unknown>> {
+    // TODO: Implement with Tempo block explorer API
+    // Return empty object to prevent downstream services from breaking
+    return {};
   }
 
   /**
-   * Parse a transaction from the raw transaction hex
-   * @param params
+   * Get transaction builder for Tempo
+   * TODO: Implement TransactionBuilder for Tempo
+   * @protected
    */
-  async parseTransaction(params: ParseTransactionOptions): Promise<ParsedTransaction> {
-    // TODO: Implement transaction parsing
-    return {} as ParsedTransaction;
-  }
-
-  /**
-   * Explain a transaction
-   * @param params
-   */
-  async explainTransaction(params: Record<string, unknown>): Promise<TransactionExplanation> {
-    // TODO: Implement transaction explanation
-    return {} as TransactionExplanation;
-  }
-
-  /**
-   * Sign a transaction
-   * @param params
-   */
-  async signTransaction(params: SignTransactionOptions): Promise<SignedTransaction> {
-    // TODO: Implement transaction signing
-    return {} as SignedTransaction;
+  protected getTransactionBuilder(): TransactionBuilder {
+    // TODO: Create and return TransactionBuilder instance
+    // Return undefined cast as TransactionBuilder to prevent downstream services from breaking
+    return undefined as unknown as TransactionBuilder;
   }
 }

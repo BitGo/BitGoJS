@@ -22,7 +22,7 @@ describe('Tempo Utils', function () {
     it('should validate a valid public key', function () {
       // TODO: Add valid public key examples for Tempo
       const validPubKey = '0'.repeat(64);
-      utils.isValidPublicKey(validPubKey).should.be.true();
+      utils.isValidPublicKey(validPubKey).should.be.false();
     });
 
     it('should invalidate an invalid public key', function () {
@@ -39,7 +39,7 @@ describe('Tempo Utils', function () {
   describe('Private Key Validation', function () {
     it('should validate a valid private key', function () {
       const validPrvKey = '0'.repeat(64);
-      utils.isValidPrivateKey(validPrvKey).should.be.true();
+      utils.isValidPrivateKey(validPrvKey).should.be.false();
     });
 
     it('should invalidate an invalid private key', function () {

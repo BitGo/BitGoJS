@@ -153,6 +153,8 @@ export type EthLikeERC721TokenConfig = BaseContractAddressConfig & {
   network: string;
 };
 
+export type Tip20TokenConfig = BaseContractAddressConfig;
+
 export type TokenConfig =
   | Erc20TokenConfig
   | StellarTokenConfig
@@ -178,7 +180,8 @@ export type TokenConfig =
   | TaoTokenConfig
   | PolyxTokenConfig
   | JettonTokenConfig
-  | EthLikeERC721TokenConfig;
+  | EthLikeERC721TokenConfig
+  | Tip20TokenConfig;
 
 export interface TokenNetwork {
   eth: {
@@ -229,6 +232,7 @@ export interface TokenNetwork {
   };
   cosmos: { tokens: CosmosTokenConfig[] };
   ton: { tokens: JettonTokenConfig[] };
+  tempo: { tokens: Tip20TokenConfig[] };
 }
 
 export interface Tokens {
@@ -782,7 +786,7 @@ function getAlgoTokenConfig(coin: AlgoCoin): AlgoTokenConfig {
     decimalPlaces: coin.decimalPlaces,
   };
 }
-export const getFormattedAlgoTokens = (customCoinMap = coins) =>
+export const getFormattedAlgoTokens = (customCoinMap = coins): AlgoTokenConfig[] =>
   customCoinMap.reduce((acc: AlgoTokenConfig[], coin) => {
     if (coin instanceof AlgoCoin) {
       acc.push(getAlgoTokenConfig(coin));
@@ -1076,6 +1080,20 @@ const getFormattedJettonTokens = (customCoinMap = coins) =>
     return acc;
   }, []);
 
+/**
+ * Get all formatted TIP20 tokens (skeleton)
+ * TODO: Implement when Tip20Token coin class is added to @bitgo/statics
+ * @param customCoinMap - Coin map to search
+ */
+const getFormattedTip20Tokens = (customCoinMap = coins): Tip20TokenConfig[] =>
+  customCoinMap.reduce((acc: Tip20TokenConfig[], coin) => {
+    // TODO: Uncomment when Tip20Token class is added to @bitgo/statics
+    // if (coin instanceof Tip20Token) {
+    //   acc.push(getTip20TokenConfig(coin));
+    // }
+    return acc;
+  }, []);
+
 type EthLikeTokenMap = {
   [K in CoinFamily]: { tokens: EthLikeTokenConfig[] };
 };
@@ -1294,6 +1312,9 @@ const getFormattedTokensByNetwork = (network: 'Mainnet' | 'Testnet', coinMap: ty
     ton: {
       tokens: getFormattedJettonTokens(coinMap).filter((token) => token.network === network),
     },
+    tempo: {
+      tokens: getFormattedTip20Tokens(coinMap).filter((token) => token.network === network),
+    },
   };
 };
 
@@ -1451,5 +1472,9 @@ export function getFormattedTokenConfigForCoin(coin: Readonly<BaseCoin>): TokenC
   } else if (coin instanceof EthLikeERC721Token) {
     return getEthLikeERC721TokenConfig(coin);
   }
+  // TODO: Add Tip20Token instance check when class is added to statics
+  // else if (coin instanceof Tip20Token) {
+  //   return getTip20TokenConfig(coin);
+  // }
   return undefined;
 }
