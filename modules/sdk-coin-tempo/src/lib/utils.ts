@@ -1,34 +1,54 @@
-import { VALID_ADDRESS_REGEX, VALID_PUBLIC_KEY_REGEX } from './constants';
-
 /**
- * Utility functions for Tempo
+ * Tempo Utility Functions
+ *
+ * Since Tempo is EVM-compatible, we can reuse Ethereum utilities
+
  */
 
+import { bip32 } from '@bitgo/secp256k1';
+import { VALID_ADDRESS_REGEX } from './constants';
+
 /**
- * Check if the address is valid
- * @param address
+ * Check if address is valid Ethereum-style address
+ * TODO: Replace with ETH utils when implementing
  */
 export function isValidAddress(address: string): boolean {
-  // TODO: Implement proper address validation for Tempo
+  if (typeof address !== 'string') {
+    return false;
+  }
   return VALID_ADDRESS_REGEX.test(address);
 }
 
 /**
- * Check if the public key is valid
- * @param publicKey
+ * Check if public key is valid (BIP32 xpub format)
+ * TODO: Replace with ETH utils when implementing
  */
 export function isValidPublicKey(publicKey: string): boolean {
-  // TODO: Implement proper public key validation for Tempo
-  return VALID_PUBLIC_KEY_REGEX.test(publicKey);
+  if (typeof publicKey !== 'string') {
+    return false;
+  }
+  try {
+    const hdNode = bip32.fromBase58(publicKey);
+    return hdNode.isNeutered();
+  } catch (e) {
+    return false;
+  }
 }
 
 /**
- * Check if the private key is valid
- * @param privateKey
+ * Check if private key is valid (BIP32 xprv format)
+ * TODO: Replace with ETH utils when implementing
  */
 export function isValidPrivateKey(privateKey: string): boolean {
-  // TODO: Implement proper private key validation for Tempo
-  return privateKey.length === 64;
+  if (typeof privateKey !== 'string') {
+    return false;
+  }
+  try {
+    const hdNode = bip32.fromBase58(privateKey);
+    return !hdNode.isNeutered();
+  } catch (e) {
+    return false;
+  }
 }
 
 const utils = {

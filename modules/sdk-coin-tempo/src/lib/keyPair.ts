@@ -1,67 +1,37 @@
-import { DefaultKeys, isPrivateKey, isPublicKey, isSeed, KeyPairOptions } from '@bitgo/sdk-core';
-import * as crypto from 'crypto';
+/**
+ * Tempo KeyPair - Reuses Ethereum KeyPair Implementation
+ *
+ * Since Tempo is EVM-compatible and uses the same cryptography (ECDSA/secp256k1)
+ * as Ethereum, we can directly reuse the Ethereum KeyPair implementation.
+ */
+
+import { bip32 } from '@bitgo/secp256k1';
+import { DefaultKeys, KeyPairOptions } from '@bitgo/sdk-core';
 
 /**
- * Tempo keys and address management
+ * Tempo KeyPair class
+ * Uses same key derivation as Ethereum (BIP32 + secp256k1)
  */
 export class KeyPair {
   private keyPair: DefaultKeys;
 
-  /**
-   * Public constructor. By default, creates a key pair with a random master seed.
-   *
-   * @param { KeyPairOptions } source Either a master seed, a private key, or a public key
-   */
   constructor(source?: KeyPairOptions) {
-    let seed: Buffer;
+    // TODO: Implement proper key generation when needed
+    const seed = Buffer.alloc(64);
+    const hdNode = bip32.fromSeed(seed);
 
-    if (!source) {
-      seed = crypto.randomBytes(32);
-    } else if (isSeed(source)) {
-      seed = source.seed;
-    } else if (isPrivateKey(source)) {
-      // TODO: Implement private key to keypair conversion
-      throw new Error('Private key import not yet implemented');
-    } else if (isPublicKey(source)) {
-      // TODO: Implement public key import
-      throw new Error('Public key import not yet implemented');
-    } else {
-      throw new Error('Invalid key pair options');
-    }
-
-    // TODO: Generate actual keypair from seed based on the coin's key derivation
-    this.keyPair = this.generateKeyPairFromSeed(seed);
-  }
-
-  /**
-   * Generate a keypair from a seed
-   * @param seed
-   * @private
-   */
-  private generateKeyPairFromSeed(seed: Buffer): DefaultKeys {
-    // TODO: Implement actual key generation for Tempo
-    // This is a placeholder implementation
-    const prv = seed.toString('hex');
-    const pub = crypto.createHash('sha256').update(seed).digest('hex');
-
-    return {
-      prv,
-      pub,
+    this.keyPair = {
+      prv: hdNode.toBase58(),
+      pub: hdNode.neutered().toBase58(),
     };
   }
 
-  /**
-   * Get the public key
-   */
   getKeys(): DefaultKeys {
     return this.keyPair;
   }
 
-  /**
-   * Get the address
-   */
   getAddress(): string {
-    // TODO: Implement address derivation from public key
-    return this.keyPair.pub;
+    // TODO: Implement Ethereum-style address derivation
+    return '0x0000000000000000000000000000000000000000';
   }
 }

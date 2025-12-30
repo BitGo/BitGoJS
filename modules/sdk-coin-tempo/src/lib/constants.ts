@@ -1,5 +1,5 @@
 /**
- * Constants for Tempo
+ * Constants for Tempo blockchain (EVM-compatible)
  */
 
 export const MAINNET_COIN = 'tempo';
