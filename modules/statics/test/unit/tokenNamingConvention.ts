@@ -74,6 +74,11 @@ describe('Token Naming Convention Tests', function () {
         return;
       }
 
+      // Skip OFC tokens - they follow their own naming convention (ofct, ofch, etc. instead of 't' prefix)
+      if (tokenName.startsWith('ofc')) {
+        return;
+      }
+
       // All testnet tokens should start with 't'
       tokenName.should.startWith('t', `Testnet token "${tokenName}" should start with 't'`);
     });

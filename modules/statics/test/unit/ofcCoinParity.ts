@@ -2,7 +2,7 @@ const should = require('should');
 import { randomUUID } from 'crypto';
 
 import { CoinFeature, coins, UnderlyingAsset } from '../../src';
-import { ofcErc20Coins } from '../../src/coins/ofcErc20Coins';
+import { ofcErc20Coins } from 'modules/statics/src/coins/erc20Coins';
 
 const EXCLUDED_ASSETS = new Set<string>([
   'erc721', // not erc20
