@@ -2220,6 +2220,15 @@ class DogeosTestnet extends Testnet implements EthereumNetwork {
   nativeCoinOperationHashPrefix = '6281971';
 }
 
+class ArcTestnet extends Testnet implements EthereumNetwork {
+  name = 'ARC Testnet';
+  family = CoinFamily.ARC;
+  explorerUrl = 'https://testnet.arcscan.app/txs/';
+  accountExplorerUrl = 'https://testnet.arcscan.app/address/';
+  chainId = 5042002;
+  nativeCoinOperationHashPrefix = '5042002';
+}
+
 export const Networks = {
   main: {
     ada: Object.freeze(new Ada()),
@@ -2437,5 +2446,6 @@ export const Networks = {
     zCash: Object.freeze(new ZCashTestnet()),
     zeta: Object.freeze(new ZetaTestnet()),
     zkSync: Object.freeze(new ZkSyncTestnet()),
+    arc: Object.freeze(new ArcTestnet()),
   },
 };

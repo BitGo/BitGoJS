@@ -3757,4 +3757,6 @@ export const ofcCoins = [
     6,
     UnderlyingAsset['tsui:deep']
   ),
+  ofc('d45636f8-f120-4374-b717-70fe999baa43', 'ofcarc', 'ARC', 18, UnderlyingAsset.ARC, CoinKind.CRYPTO),
+  tofc('bc57e64d-045e-4421-aa92-64db0c51e1d7', 'ofctarc', 'ARC Testnet', 18, UnderlyingAsset.ARC, CoinKind.CRYPTO),
 ];
