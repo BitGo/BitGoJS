@@ -606,8 +606,9 @@ describe('flr', function () {
       const hopDestinationAddress =
         'P-costwo15msvr27szvhhpmah0c38gcml7vm29xjh7tcek8~P-costwo1cwrdtrgf4xh80ncu7palrjw7gn4mpj0n4dxghh~P-costwo1zt9n96hey4fsvnde35n3k4kt5pu7c784dzewzd';
       const hopAddress = '0x28A05933dC76e4e6c25f35D5c9b2A58769700E76';
-      const importTxFee = 1e6;
-      const amount = 49000000000000000;
+      const importTxFee = 1261000; // Updated to match FlarePTestnet txFee
+      // Adjusted amount to work backwards from hop amount (50000000): 50000000 - 1261000 = 48739000 nanoFLR
+      const amount = 48739000000000000;
       const txParams = {
         recipients: [{ amount, address: hopDestinationAddress }],
         wallet: wallet,
@@ -825,7 +826,7 @@ describe('flr', function () {
         recipients: [
           {
             address: 'P-costwo1different~P-costwo1address~P-costwo1here',
-            amount: '49000000000000000',
+            amount: '48739000000000000',
           },
         ],
       };
