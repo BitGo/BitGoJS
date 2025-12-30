@@ -384,8 +384,12 @@ export class Flr extends AbstractEthLikeNewCoins {
       if (!_.isNil(originalParams)) {
         const { recipients } = originalParams;
 
+        // Get the P-chain import fee from network configuration
+        const flrpCoin = coins.get(this.getFlrP());
+        const importTxFee = (flrpCoin.network as any).txFee || '1000000';
+
         // Then validate that the tx params actually equal the requested params to nano flr plus import tx fee.
-        const originalAmount = new BigNumber(recipients[0].amount).div(1e9).plus(1e6).toFixed(0);
+        const originalAmount = new BigNumber(recipients[0].amount).div(1e9).plus(importTxFee).toFixed(0);
         const originalDestination: string | undefined = recipients[0].address;
         const hopAmount = explainHopExportTx.outputAmount;
         const hopDestination = explainHopExportTx.outputs[0].address;
