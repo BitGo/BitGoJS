@@ -111,6 +111,19 @@ export class Utils implements BaseUtils {
     const contractAddress = new TonWeb.Address('0:' + TonWeb.utils.bytesToHex(stateInitHash));
     return contractAddress.toString(true, true, true);
   }
+
+  /**
+   * Converts a TON address into a Base64 encoded BOC (Bag of Cells) string.
+   * This is required when passing an address as a 'slice' argument to `runGetMethod`.
+   * @param address - The TON address (friendly or raw)
+   * @returns Base64 string of the serialized address cell
+   */
+  async getAddressBoc(address: string): Promise<string> {
+    const cell = new TonWeb.boc.Cell();
+    cell.bits.writeAddress(new TonWeb.Address(address));
+    const boc = await cell.toBoc(false);
+    return TonWeb.utils.bytesToBase64(boc);
+  }
 }
 
 const DUMMY_PRIVATE_KEY = '43e8594854cb53947c4a1a2fab926af11e123f6251dcd5bd0dfb100604186430'; // This dummy private key is used only for fee estimation

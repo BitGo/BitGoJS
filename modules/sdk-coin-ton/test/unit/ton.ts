@@ -604,6 +604,18 @@ describe('TON:', function () {
     });
   });
 
+  describe('getAddressBoc', function () {
+    it('should return the correct BOC for a friendly address', async function () {
+      const result = await utils.getAddressBoc(testData.getMemberStackFixture.friendlyAddress);
+      result.should.equal(testData.getMemberStackFixture.boc);
+    });
+
+    it('should return the correct BOC for a raw address', async function () {
+      const result = await utils.getAddressBoc(testData.getMemberStackFixture.rawAddress);
+      result.should.equal(testData.getMemberStackFixture.boc);
+    });
+  });
+
   describe('Ton recover - Non-BitGo and Unsigned Sweep Transactions', function () {
     let sandbox: sinon.SinonSandbox;
     beforeEach(() => {

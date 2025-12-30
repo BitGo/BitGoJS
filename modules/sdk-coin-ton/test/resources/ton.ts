@@ -200,3 +200,9 @@ export const signedTonWhalesFullWithdrawalTransaction = {
     'e9565e2211801ecf93f8955513786583367845f293f85430798f931395993829e3ce1b537d63203dddec00e00d6cba76e6def382f1c4ebbdb1737ff1c5f8cf0d',
   bounceable: true,
 };
+
+export const getMemberStackFixture = {
+  friendlyAddress: 'EQBkD52LACNxGgaoAxm5Nhs0SN6gg8hNaceNYifev88Y7qoZ',
+  rawAddress: '0:640f9d8b0023711a06a80319b9361b3448dea083c84d69c78d6227debfcf18ee',
+  boc: 'te6cckEBAQEAJAAAQ4AMgfOxYARuI0DVAGM3JsNmiRvUEHkJrTjxrET71/njHdDqtWeh',
+};
