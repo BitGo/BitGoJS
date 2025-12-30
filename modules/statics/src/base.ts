@@ -125,6 +125,7 @@ export enum CoinFamily {
   SOMI = 'somi', // Somnia Chain
   FLUENTETH = 'fluenteth',
   MORPH = 'morph',
+  ARC = 'arc', // ARC network
 }
 
 /**
@@ -704,6 +705,7 @@ export enum UnderlyingAsset {
   APPC = 'appc',
   APT = 'apt',
   AQT = 'aqt',
+  ARC = 'arc',
   ARCT = 'arct',
   ARCX = 'arcx',
   ARKM = 'arkm',
@@ -3537,6 +3539,7 @@ export enum BaseUnit {
   TCRONOS = 'basetcro',
   TASI = 'atestfet',
   CANTON = 'canton',
+  USDC = 'usdc',
 }
 
 export interface BaseCoinConstructorOptions {

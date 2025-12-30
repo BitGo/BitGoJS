@@ -136,6 +136,7 @@ export const expectedColdFeatures = {
     'tatom',
     'tapechain',
     'tapt',
+    'tarc',
     'tbaby',
     'tbera',
     'tbaseeth',

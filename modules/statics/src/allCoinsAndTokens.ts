@@ -2466,6 +2466,28 @@ export const allCoinsAndTokens = [
     '',
     'DogeOS'
   ),
+  account(
+    'cf06d1ea-f7c4-4a26-95fd-f71983eba58f',
+    'tarc',
+    'ARC Testnet',
+    Networks.test.arc,
+    18,
+    UnderlyingAsset.ARC,
+    BaseUnit.USDC,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.EVM_COMPATIBLE_WP,
+    ],
+    KeyCurve.Secp256k1,
+    '',
+    'TARC'
+  ),
   canton(
     '07385320-5a4f-48e9-97a5-86d4be9f24b0',
     'canton',

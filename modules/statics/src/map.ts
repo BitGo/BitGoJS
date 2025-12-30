@@ -161,6 +161,7 @@ export class CoinMap {
     1952: 'tokb',
     5734951: 'jovayeth',
     2019775: 'tjovayeth',
+    5042002: 'tarc',
   };
 
   private buildChainIdMap(): Map<number, string> {
