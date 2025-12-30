@@ -63,7 +63,8 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
 
     // Calculate fee based on input/output difference
     const fee = totalInputAmount - totalOutputAmount;
-    const feeSize = this.calculateFeeSize(baseTx);
+    // Calculate cost units using the same method as buildFlareTransaction
+    const feeSize = this.calculateImportCost(baseTx);
     // Use integer division to ensure feeRate can be converted back to BigInt
     const feeRate = Math.floor(Number(fee) / feeSize);
 
@@ -165,7 +166,7 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
     const { inputs, amount, credentials } = this.createInputs();
 
     // Calculate import cost units (matching AVAXP's costImportTx approach)
-    // Create a temporary transaction to calculate the actual cost units
+    // Create a temporary transaction with full amount to calculate fee size
     const tempOutput = new evmSerial.Output(
       new Address(this.transaction._to[0]),
       new BigIntPr(amount),
@@ -179,12 +180,17 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
       [tempOutput]
     );
 
-    // Calculate the import cost units (matches AVAXP's feeSize from costImportTx)
+    // Calculate feeSize once using full amount (matching AVAXP approach)
     const feeSize = this.calculateImportCost(tempImportTx);
-
-    // Multiply feeRate by cost units (matching AVAXP: fee = feeRate.muln(feeSize))
     const feeRate = BigInt(this.transaction._fee.feeRate);
     const fee = feeRate * BigInt(feeSize);
+
+    // Validate that we have enough funds to cover the fee
+    if (amount <= fee) {
+      throw new BuildTransactionError(
+        `Insufficient funds: have ${amount.toString()}, need more than ${fee.toString()} for fee`
+      );
+    }
 
     this.transaction._fee.fee = fee.toString();
     this.transaction._fee.size = feeSize;
@@ -325,21 +331,6 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
     const totalCost = bytesCost + fixedFee;
 
     return totalCost;
-  }
-
-  /**
-   * Calculate the fee size for the transaction (for backwards compatibility)
-   * For C-chain imports, the feeRate is treated as an absolute fee value
-   */
-  private calculateFeeSize(tx?: evmSerial.ImportTx): number {
-    // If tx is provided, calculate based on actual transaction size
-    if (tx) {
-      const codec = avmSerial.getAVMManager().getDefaultCodec();
-      return tx.toBytes(codec).length;
-    }
-
-    // For C-chain imports, treat feeRate as the absolute fee (multiplier of 1)
-    return 1;
   }
 
   /**
