@@ -115,6 +115,130 @@ describe('Flrp Import In C Tx Builder', () => {
       const calculatedOutput = inputAmount - calculatedFee;
       assert(outputAmount === calculatedOutput, 'Output should equal input minus total fee');
     });
+
+    it('should use consistent fee calculation in initBuilder and buildFlareTransaction', async () => {
+      const inputAmount = '100000000'; // 100M nanoFLRP (matches real-world transaction)
+      const expectedFeeRate = 500; // Real feeRate from working transaction
+      const threshold = 2;
+
+      const utxo: DecodedUtxoObj = {
+        outputID: 0,
+        amount: inputAmount,
+        txid: '2vPMx8P63adgBae7GAWFx7qvJDwRmMnDCyKddHRBXWhysjX4BP',
+        outputidx: '0',
+        addresses: [
+          '0x3329be7d01cd3ebaae6654d7327dd9f17a2e1581',
+          '0x7e918a5e8083ae4c9f2f0ed77055c24bf3665001',
+          '0xc7324437c96c7c8a6a152da2385c1db5c3ab1f91',
+        ],
+        threshold: threshold,
+      };
+
+      const txBuilder = factory
+        .getImportInCBuilder()
+        .threshold(threshold)
+        .fromPubKey(testData.pAddresses)
+        .utxos([utxo])
+        .to(testData.to)
+        .feeRate(expectedFeeRate.toString());
+
+      const tx = await txBuilder.build();
+      const calculatedFee = BigInt((tx as any).fee.fee);
+      const feeInfo = (tx as any).fee;
+
+      const maxReasonableFee = BigInt(inputAmount) / BigInt(10); // Max 10% of input
+      assert(
+        calculatedFee < maxReasonableFee,
+        `Fee ${calculatedFee} should be less than 10% of input (${maxReasonableFee})`
+      );
+
+      const expectedMinFee = BigInt(expectedFeeRate) * BigInt(12000);
+      const expectedMaxFee = BigInt(expectedFeeRate) * BigInt(13000);
+
+      assert(calculatedFee >= expectedMinFee, `Fee ${calculatedFee} should be at least ${expectedMinFee}`);
+      assert(calculatedFee <= expectedMaxFee, `Fee ${calculatedFee} should not exceed ${expectedMaxFee}`);
+
+      const outputAmount = BigInt(tx.outputs[0].value);
+      assert(outputAmount > BigInt(0), 'Output should be positive');
+
+      const expectedOutput = BigInt(inputAmount) - calculatedFee;
+      assert(
+        outputAmount === expectedOutput,
+        `Output ${outputAmount} should equal input ${inputAmount} minus fee ${calculatedFee}`
+      );
+
+      const txHex = tx.toBroadcastFormat();
+      const parsedBuilder = factory.from(txHex);
+      const parsedTx = await parsedBuilder.build();
+      const parsedFeeRate = (parsedTx as any).fee.feeRate;
+
+      assert(parsedFeeRate !== undefined && parsedFeeRate > 0, 'Parsed feeRate should be defined and positive');
+
+      const feeRateDiff = Math.abs(parsedFeeRate! - expectedFeeRate);
+      const maxAllowedDiff = 10;
+      assert(
+        feeRateDiff <= maxAllowedDiff,
+        `Parsed feeRate ${parsedFeeRate} should be close to original ${expectedFeeRate} (diff: ${feeRateDiff})`
+      );
+
+      const feeSize = feeInfo.size!;
+      assert(feeSize > 10000, `Fee size ${feeSize} should include fixed cost (10000) + input costs`);
+      assert(feeSize < 20000, `Fee size ${feeSize} should be reasonable (< 20000)`);
+    });
+
+    it('should prevent artificially inflated feeRate from using wrong calculation', async () => {
+      const inputAmount = '100000000'; // 100M nanoFLRP
+      const threshold = 2;
+
+      const utxo: DecodedUtxoObj = {
+        outputID: 0,
+        amount: inputAmount,
+        txid: '2vPMx8P63adgBae7GAWFx7qvJDwRmMnDCyKddHRBXWhysjX4BP',
+        outputidx: '0',
+        addresses: [
+          '0x3329be7d01cd3ebaae6654d7327dd9f17a2e1581',
+          '0x7e918a5e8083ae4c9f2f0ed77055c24bf3665001',
+          '0xc7324437c96c7c8a6a152da2385c1db5c3ab1f91',
+        ],
+        threshold: threshold,
+      };
+
+      const feeRate = 500;
+
+      const txBuilder = factory
+        .getImportInCBuilder()
+        .threshold(threshold)
+        .fromPubKey(testData.pAddresses)
+        .utxos([utxo])
+        .to(testData.to)
+        .feeRate(feeRate.toString());
+
+      let tx;
+      try {
+        tx = await txBuilder.build();
+      } catch (error: any) {
+        throw new Error(
+          `Transaction build failed (this was the OLD bug behavior): ${error.message}. ` +
+            `The fix ensures calculateImportCost() is used consistently.`
+        );
+      }
+
+      const calculatedFee = BigInt((tx as any).fee.fee);
+
+      const oldBugFee = BigInt(328000000);
+      const reasonableFee = BigInt(10000000);
+
+      assert(
+        calculatedFee < reasonableFee,
+        `Fee ${calculatedFee} should be reasonable (< ${reasonableFee}), not inflated like OLD bug (~${oldBugFee})`
+      );
+
+      const outputAmount = BigInt(tx.outputs[0].value);
+      assert(
+        outputAmount > BigInt(0),
+        `Output ${outputAmount} should be positive. OLD bug would make output negative due to excessive fee.`
+      );
+    });
   });
 
   describe('on-chain verified transactions', () => {
