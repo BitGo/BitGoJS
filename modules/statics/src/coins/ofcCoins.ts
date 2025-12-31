@@ -279,6 +279,24 @@ export const ofcCoins = [
     UnderlyingAsset.JOVAYETH,
     CoinKind.CRYPTO
   ),
+  ofc('23b2e642-8ede-4c6e-a4e3-5355580d062f', 'ofcdogeos', 'DogeOS', 18, UnderlyingAsset.DOGEOS, CoinKind.CRYPTO),
+  tofc(
+    '87d11da0-1a78-4942-a5d6-e6f6568f0867',
+    'ofctdogeos',
+    'DogeOS Testnet',
+    18,
+    UnderlyingAsset.DOGEOS,
+    CoinKind.CRYPTO
+  ),
+  ofc('a8f87aeb-2a87-40c6-bd04-93101f1de515', 'ofcmorph', 'Morph', 18, UnderlyingAsset.DOGEOS, CoinKind.CRYPTO),
+  tofc(
+    'dfaa5fc9-c40b-4215-804a-7f536fa29133',
+    'ofctmorph',
+    'Morph Testnet',
+    18,
+    UnderlyingAsset.MORPH,
+    CoinKind.CRYPTO
+  ),
   ofc('dc733b2f-92bf-49d3-9f5d-9774e1637f0f', 'ofcokb', 'X Layer', 18, UnderlyingAsset.OKB, CoinKind.CRYPTO),
   tofc('98460a7d-0677-4dbd-934e-fbb0e9c5f8cc', 'ofctokb', 'X Layer Testnet', 18, UnderlyingAsset.OKB, CoinKind.CRYPTO),
   ofc('aa7e956f-2d59-4bf6-aba6-2d51bd298150', 'ofcip', 'Story', 18, UnderlyingAsset.IP, CoinKind.CRYPTO),
