@@ -117,6 +117,7 @@ import {
   SUI_TOKEN_FEATURES_STAKING,
   TAO_FEATURES,
   TAO_TOKEN_FEATURES,
+  TEMPO_FEATURES,
   TIA_FEATURES,
   TOKEN_FEATURES_WITH_FRANKFURT,
   TON_FEATURES,
@@ -2487,6 +2488,26 @@ export const allCoinsAndTokens = [
     KeyCurve.Secp256k1,
     '',
     'TARC'
+  ),
+  account(
+    '92c6b706-87bc-4a4e-8dd4-2a2c83b724e4',
+    'tempo',
+    'Tempo',
+    Networks.main.tempo,
+    18,
+    UnderlyingAsset.TEMPO,
+    BaseUnit.ETH,
+    TEMPO_FEATURES
+  ),
+  account(
+    'dfa99966-438d-43e3-8bf1-a6979fee6822',
+    'ttempo',
+    'Tempo Testnet',
+    Networks.test.tempo,
+    18,
+    UnderlyingAsset.TEMPO,
+    BaseUnit.ETH,
+    TEMPO_FEATURES
   ),
   canton(
     '07385320-5a4f-48e9-97a5-86d4be9f24b0',

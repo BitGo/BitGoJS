@@ -572,6 +572,7 @@ export const COREDAO_FEATURES = [
   CoinFeature.EIP1559,
   CoinFeature.ERC20_BULK_TRANSACTION,
 ];
+export const TEMPO_FEATURES = [...EVM_FEATURES];
 export const APECHAIN_FEATURES = [
   ...ETH_FEATURES,
   CoinFeature.TSS,
