@@ -2229,6 +2229,26 @@ class ArcTestnet extends Testnet implements EthereumNetwork {
   nativeCoinOperationHashPrefix = '5042002';
 }
 
+class Tempo extends Mainnet implements EthereumNetwork {
+  name = 'Tempo';
+  family = CoinFamily.TEMPO;
+  explorerUrl = 'https://scout.tempo.xyz/tx/'; // TODO: Update with actual mainnet explorer when available
+  accountExplorerUrl = 'https://scout.tempo.xyz/address/'; // TODO: Update with actual mainnet explorer when available
+  chainId = 42428; // TODO: Update with actual mainnet chain ID when available
+  nativeCoinOperationHashPrefix = 'TEMPO';
+  tokenOperationHashPrefix = 'TEMPO-TIP20';
+}
+
+class TempoTestnet extends Testnet implements EthereumNetwork {
+  name = 'Tempo Testnet';
+  family = CoinFamily.TEMPO;
+  explorerUrl = 'https://scout.tempo.xyz/tx/';
+  accountExplorerUrl = 'https://scout.tempo.xyz/address/';
+  chainId = 42429;
+  nativeCoinOperationHashPrefix = '42429';
+  tokenOperationHashPrefix = '42429';
+}
+
 export const Networks = {
   main: {
     ada: Object.freeze(new Ada()),
@@ -2322,6 +2342,7 @@ export const Networks = {
     soneium: Object.freeze(new Soneium()),
     susd: Object.freeze(new SUSD()),
     tao: Object.freeze(new Bittensor()),
+    tempo: Object.freeze(new Tempo()),
     tia: Object.freeze(new Tia()),
     ton: Object.freeze(new Ton()),
     trx: Object.freeze(new Trx()),
@@ -2433,6 +2454,7 @@ export const Networks = {
     susd: Object.freeze(new SUSDTestnet()),
     coreum: Object.freeze(new CoreumTestnet()),
     tao: Object.freeze(new BittensorTestnet()),
+    tempo: Object.freeze(new TempoTestnet()),
     tia: Object.freeze(new TiaTestnet()),
     ton: Object.freeze(new TonTestnet()),
     trx: Object.freeze(new TrxTestnet()),

@@ -126,6 +126,7 @@ export enum CoinFamily {
   FLUENTETH = 'fluenteth',
   MORPH = 'morph',
   ARC = 'arc', // ARC network
+  TEMPO = 'tempo', // Tempo Network
 }
 
 /**
@@ -1774,6 +1775,7 @@ export enum UnderlyingAsset {
   TEINU = 'teinu',
   TEL = 'tel',
   TELEGRAMDAO = 'telegramdao',
+  TEMPO = 'tempo',
   TEN = 'ten',
   TENX = 'tenx',
   TERC = 'terc',
