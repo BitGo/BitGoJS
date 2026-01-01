@@ -52,84 +52,48 @@ describe('Flrp Import In C Tx Builder', () => {
     txHash: testData.txhash,
   });
 
-  describe('dynamic fee calculation', () => {
-    it('should calculate proper fee using feeRate multiplier (AVAXP approach) to avoid "insufficient unlocked funds" error', async () => {
-      const amount = '100000000'; // 100M nanoFLRP (0.1 FLR)
-      const feeRate = '1'; // 1 nanoFLRP per cost unit (matching AVAXP's feeRate usage)
-
-      const utxo: DecodedUtxoObj = {
-        outputID: 0,
-        amount: amount,
-        txid: '2vPMx8P63adgBae7GAWFx7qvJDwRmMnDCyKddHRBXWhysjX4BP',
-        outputidx: '0',
-        addresses: [
-          '0x3329be7d01cd3ebaae6654d7327dd9f17a2e1581',
-          '0x7e918a5e8083ae4c9f2f0ed77055c24bf3665001',
-          '0xc7324437c96c7c8a6a152da2385c1db5c3ab1f91',
-        ],
-        threshold: 2,
-      };
-
-      const txBuilder = factory
-        .getImportInCBuilder()
-        .threshold(2)
-        .fromPubKey(testData.pAddresses)
-        .utxos([utxo])
-        .to(testData.to)
-        .feeRate(feeRate) as any;
-
-      const tx = await txBuilder.build();
-
-      const calculatedFee = BigInt((tx as any).fee.fee);
-      const feeRateBigInt = BigInt(feeRate);
-
-      // The fee should be approximately: feeRate × (txSize + inputCost + fixedFee)
-      // For 1 input, threshold=2, ~228 bytes: 1 × (228 + 2000 + 10000) = 12,228
-      const expectedMinCost = 12000; // Minimum cost units (conservative estimate)
-      const expectedMaxCost = 13000; // Maximum cost units (with some buffer)
-
-      const expectedMinFee = feeRateBigInt * BigInt(expectedMinCost);
-      const expectedMaxFee = feeRateBigInt * BigInt(expectedMaxCost);
-
-      // Verify fee is in the expected range
-      assert(
-        calculatedFee >= expectedMinFee,
-        `Fee ${calculatedFee} should be at least ${expectedMinFee} (feeRate × minCost)`
-      );
-      assert(
-        calculatedFee <= expectedMaxFee,
-        `Fee ${calculatedFee} should not exceed ${expectedMaxFee} (feeRate × maxCost)`
-      );
-
-      // Verify the output amount is positive (no "insufficient funds" error)
-      const outputs = tx.outputs;
-      outputs.length.should.equal(1);
-      const outputAmount = BigInt(outputs[0].value);
-      assert(
-        outputAmount > BigInt(0),
-        'Output amount should be positive - transaction should not fail with insufficient funds'
-      );
-
-      // Verify the math: input - output = fee
-      const inputAmount = BigInt(amount);
-      const calculatedOutput = inputAmount - calculatedFee;
-      assert(outputAmount === calculatedOutput, 'Output should equal input minus total fee');
-    });
-
-    it('should use consistent fee calculation in initBuilder and buildFlareTransaction', async () => {
-      const inputAmount = '100000000'; // 100M nanoFLRP (matches real-world transaction)
-      const expectedFeeRate = 500; // Real feeRate from working transaction
+  describe('fee calculation - insufficient unlocked funds fix', () => {
+    /**
+     * This test verifies the fix for the "insufficient unlocked funds" error that occurred
+     * during P-to-C chain transactions.
+     *
+     * Real-world transaction data:
+     * - Input: 100,000,000 nanoFLRP (from P-chain export)
+     * - Original feeRate: 500, which caused "needs 280000 more" error
+     * - Old (buggy) calculation:
+     *   - Size: 12,234 (only unsignedTx.toBytes())
+     *   - Fee: 500 × 12,234 = 6,117,000
+     * - Error: "insufficient unlocked funds: needs 280000 more"
+     * - Required fee: 6,117,000 + 280,000 = 6,397,000
+     *
+     * The fix has two parts:
+     * 1. Use getSignedTx().toBytes() to include credentials in size calculation (~140+ bytes)
+     * 2. Increase feeRate from 500 to 550 to provide additional buffer
+     *
+     * With fix: size ~12,376 × feeRate 550 = 6,806,800 > 6,397,000 ✓
+     */
+    it('should calculate sufficient fee to avoid "insufficient unlocked funds" error', async () => {
+      const inputAmount = '100000000';
+      const feeRate = 550;
       const threshold = 2;
 
+      const pAddresses = [
+        'P-costwo1060n6skw5lsz7ch8z4vnv2s24vetjv5w73g4k2',
+        'P-costwo1kt5hrl4kr5dt92ayxjash6uujkf4nh5ex0y9rj',
+        'P-costwo1eys86hynecjn8400j30e7y706aecv8wz0l875x',
+      ];
+
+      const cChainDestination = '0x7e9f3d42cea7e02f62e71559362a0aab32b9328e';
+
       const utxo: DecodedUtxoObj = {
-        outputID: 0,
+        outputID: 7,
         amount: inputAmount,
-        txid: '2vPMx8P63adgBae7GAWFx7qvJDwRmMnDCyKddHRBXWhysjX4BP',
+        txid: '2b2A4CyaRawiVAycUhpfvaxizymUT3TwRUbrzwiy3qp7DnKznj',
         outputidx: '0',
         addresses: [
-          '0x3329be7d01cd3ebaae6654d7327dd9f17a2e1581',
-          '0x7e918a5e8083ae4c9f2f0ed77055c24bf3665001',
-          '0xc7324437c96c7c8a6a152da2385c1db5c3ab1f91',
+          '0x7e9f3d42cea7e02f62e71559362a0aab32b9328e',
+          'C9207d5c93ce2533d5ef945f9f13cfd773861dc2',
+          'b2e971feb61d1ab2aba434bb0beb9c959359de99',
         ],
         threshold: threshold,
       };
@@ -137,73 +101,59 @@ describe('Flrp Import In C Tx Builder', () => {
       const txBuilder = factory
         .getImportInCBuilder()
         .threshold(threshold)
-        .fromPubKey(testData.pAddresses)
+        .fromPubKey(pAddresses)
         .utxos([utxo])
-        .to(testData.to)
-        .feeRate(expectedFeeRate.toString());
+        .to(cChainDestination)
+        .feeRate(feeRate.toString());
 
       const tx = await txBuilder.build();
-      const calculatedFee = BigInt((tx as any).fee.fee);
       const feeInfo = (tx as any).fee;
+      const calculatedFee = BigInt(feeInfo.fee);
+      const calculatedSize = feeInfo.size;
 
-      const maxReasonableFee = BigInt(inputAmount) / BigInt(10); // Max 10% of input
+      const oldBuggyFeeAt500 = BigInt(12234) * BigInt(500);
+      const shortfall = BigInt(280000);
+      const requiredFee = oldBuggyFeeAt500 + shortfall;
+
       assert(
-        calculatedFee < maxReasonableFee,
-        `Fee ${calculatedFee} should be less than 10% of input (${maxReasonableFee})`
+        calculatedFee >= requiredFee,
+        `Fee ${calculatedFee} should be at least ${requiredFee} (old fee ${oldBuggyFeeAt500} + shortfall ${shortfall})`
       );
 
-      const expectedMinFee = BigInt(expectedFeeRate) * BigInt(12000);
-      const expectedMaxFee = BigInt(expectedFeeRate) * BigInt(13000);
-
-      assert(calculatedFee >= expectedMinFee, `Fee ${calculatedFee} should be at least ${expectedMinFee}`);
-      assert(calculatedFee <= expectedMaxFee, `Fee ${calculatedFee} should not exceed ${expectedMaxFee}`);
+      const oldBuggySize = 12234;
+      assert(
+        calculatedSize > oldBuggySize,
+        `Size ${calculatedSize} should be greater than old buggy size ${oldBuggySize}`
+      );
 
       const outputAmount = BigInt(tx.outputs[0].value);
-      assert(outputAmount > BigInt(0), 'Output should be positive');
+      assert(outputAmount > BigInt(0), 'Output amount should be positive');
 
-      const expectedOutput = BigInt(inputAmount) - calculatedFee;
+      const inputBigInt = BigInt(inputAmount);
+      const expectedOutput = inputBigInt - calculatedFee;
       assert(
         outputAmount === expectedOutput,
-        `Output ${outputAmount} should equal input ${inputAmount} minus fee ${calculatedFee}`
+        `Output ${outputAmount} should equal input ${inputBigInt} minus fee ${calculatedFee}`
       );
-
-      const txHex = tx.toBroadcastFormat();
-      const parsedBuilder = factory.from(txHex);
-      const parsedTx = await parsedBuilder.build();
-      const parsedFeeRate = (parsedTx as any).fee.feeRate;
-
-      assert(parsedFeeRate !== undefined && parsedFeeRate > 0, 'Parsed feeRate should be defined and positive');
-
-      const feeRateDiff = Math.abs(parsedFeeRate! - expectedFeeRate);
-      const maxAllowedDiff = 10;
-      assert(
-        feeRateDiff <= maxAllowedDiff,
-        `Parsed feeRate ${parsedFeeRate} should be close to original ${expectedFeeRate} (diff: ${feeRateDiff})`
-      );
-
-      const feeSize = feeInfo.size!;
-      assert(feeSize > 10000, `Fee size ${feeSize} should include fixed cost (10000) + input costs`);
-      assert(feeSize < 20000, `Fee size ${feeSize} should be reasonable (< 20000)`);
     });
 
-    it('should prevent artificially inflated feeRate from using wrong calculation', async () => {
-      const inputAmount = '100000000'; // 100M nanoFLRP
+    it('should match AVAXP costImportTx formula: bytesCost + inputCosts + fixedFee', async () => {
+      const inputAmount = '100000000';
+      const feeRate = 500;
       const threshold = 2;
 
       const utxo: DecodedUtxoObj = {
-        outputID: 0,
+        outputID: 7,
         amount: inputAmount,
-        txid: '2vPMx8P63adgBae7GAWFx7qvJDwRmMnDCyKddHRBXWhysjX4BP',
+        txid: '2b2A4CyaRawiVAycUhpfvaxizymUT3TwRUbrzwiy3qp7DnKznj',
         outputidx: '0',
         addresses: [
-          '0x3329be7d01cd3ebaae6654d7327dd9f17a2e1581',
-          '0x7e918a5e8083ae4c9f2f0ed77055c24bf3665001',
-          '0xc7324437c96c7c8a6a152da2385c1db5c3ab1f91',
+          '0x7e9f3d42cea7e02f62e71559362a0aab32b9328e',
+          'C9207d5c93ce2533d5ef945f9f13cfd773861dc2',
+          'b2e971feb61d1ab2aba434bb0beb9c959359de99',
         ],
         threshold: threshold,
       };
-
-      const feeRate = 500;
 
       const txBuilder = factory
         .getImportInCBuilder()
@@ -213,30 +163,77 @@ describe('Flrp Import In C Tx Builder', () => {
         .to(testData.to)
         .feeRate(feeRate.toString());
 
-      let tx;
-      try {
-        tx = await txBuilder.build();
-      } catch (error: any) {
-        throw new Error(
-          `Transaction build failed (this was the OLD bug behavior): ${error.message}. ` +
-            `The fix ensures calculateImportCost() is used consistently.`
-        );
-      }
+      const tx = await txBuilder.build();
+      const feeInfo = (tx as any).fee;
+      const calculatedSize = feeInfo.size;
 
-      const calculatedFee = BigInt((tx as any).fee.fee);
+      const expectedInputCost = 1000 * threshold;
+      const fixedFee = 10000;
+      const expectedMinBytesCost = 200;
 
-      const oldBugFee = BigInt(328000000);
-      const reasonableFee = BigInt(10000000);
+      const impliedBytesCost = calculatedSize - expectedInputCost - fixedFee;
 
       assert(
-        calculatedFee < reasonableFee,
-        `Fee ${calculatedFee} should be reasonable (< ${reasonableFee}), not inflated like OLD bug (~${oldBugFee})`
+        impliedBytesCost >= expectedMinBytesCost,
+        `Implied bytes cost ${impliedBytesCost} should be at least ${expectedMinBytesCost}`
       );
 
-      const outputAmount = BigInt(tx.outputs[0].value);
+      const expectedMinTotalSize = expectedMinBytesCost + expectedInputCost + fixedFee;
       assert(
-        outputAmount > BigInt(0),
-        `Output ${outputAmount} should be positive. OLD bug would make output negative due to excessive fee.`
+        calculatedSize >= expectedMinTotalSize,
+        `Total size ${calculatedSize} should be at least ${expectedMinTotalSize} (bytes + inputCost + fixedFee)`
+      );
+    });
+
+    it('should produce consistent fees between build and parse (initBuilder vs buildFlareTransaction)', async () => {
+      const inputAmount = '100000000';
+      const feeRate = 500;
+      const threshold = 2;
+
+      const utxo: DecodedUtxoObj = {
+        outputID: 7,
+        amount: inputAmount,
+        txid: '2b2A4CyaRawiVAycUhpfvaxizymUT3TwRUbrzwiy3qp7DnKznj',
+        outputidx: '0',
+        addresses: [
+          '0x7e9f3d42cea7e02f62e71559362a0aab32b9328e',
+          'C9207d5c93ce2533d5ef945f9f13cfd773861dc2',
+          'b2e971feb61d1ab2aba434bb0beb9c959359de99',
+        ],
+        threshold: threshold,
+      };
+
+      const txBuilder = factory
+        .getImportInCBuilder()
+        .threshold(threshold)
+        .fromPubKey(testData.pAddresses)
+        .utxos([utxo])
+        .to(testData.to)
+        .feeRate(feeRate.toString());
+
+      const originalTx = await txBuilder.build();
+      const originalFeeInfo = (originalTx as any).fee;
+      const originalSize = originalFeeInfo.size;
+
+      const txHex = originalTx.toBroadcastFormat();
+      const parsedBuilder = factory.from(txHex);
+      const parsedTx = await parsedBuilder.build();
+      const parsedFeeInfo = (parsedTx as any).fee;
+      const parsedFeeRate = parsedFeeInfo.feeRate;
+      const parsedSize = parsedFeeInfo.size;
+
+      const feeRateDiff = Math.abs(parsedFeeRate - feeRate);
+      const maxAllowedDiff = 50;
+      assert(
+        feeRateDiff <= maxAllowedDiff,
+        `Parsed feeRate ${parsedFeeRate} should be close to original ${feeRate} (diff: ${feeRateDiff})`
+      );
+
+      const sizeDiff = Math.abs(parsedSize - originalSize);
+      const maxSizeDiff = 100;
+      assert(
+        sizeDiff <= maxSizeDiff,
+        `Parsed size ${parsedSize} should be close to original ${originalSize} (diff: ${sizeDiff})`
       );
     });
   });

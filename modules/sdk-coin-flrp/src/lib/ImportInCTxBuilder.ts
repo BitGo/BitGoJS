@@ -11,7 +11,6 @@ import {
   TransferableInput,
   Address,
   utils as FlareUtils,
-  avmSerial,
 } from '@flarenetwork/flarejs';
 import utils from './utils';
 import { DecodedUtxoObj, FlareTransactionType, SECP256K1_Transfer_Output, Tx } from './iface';
@@ -63,16 +62,6 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
 
     // Calculate fee based on input/output difference
     const fee = totalInputAmount - totalOutputAmount;
-    // Calculate cost units using the same method as buildFlareTransaction
-    const feeSize = this.calculateImportCost(baseTx);
-    // Use integer division to ensure feeRate can be converted back to BigInt
-    const feeRate = Math.floor(Number(fee) / feeSize);
-
-    this.transaction._fee = {
-      fee: fee.toString(),
-      feeRate: feeRate,
-      size: feeSize,
-    };
 
     // Use credentials passed from TransactionBuilderFactory (properly extracted using codec)
     const credentials = parsedCredentials || [];
@@ -87,6 +76,30 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
     const firstInput = inputs[0];
     const inputThreshold = firstInput.sigIndicies().length || this.transaction._threshold;
     this.transaction._threshold = inputThreshold;
+
+    // Create a temporary UnsignedTx for accurate fee size calculation
+    // This includes the full structure (ImportTx, AddressMaps, Credentials)
+    const tempAddressMap = new FlareUtils.AddressMap();
+    for (let i = 0; i < inputThreshold; i++) {
+      if (this.transaction._fromAddresses && this.transaction._fromAddresses[i]) {
+        tempAddressMap.set(new Address(this.transaction._fromAddresses[i]), i);
+      }
+    }
+    const tempAddressMaps = new FlareUtils.AddressMaps([tempAddressMap]);
+    const tempCredentials =
+      credentials.length > 0 ? credentials : [new Credential(Array(inputThreshold).fill(utils.createNewSig('')))];
+    const tempUnsignedTx = new UnsignedTx(baseTx, [], tempAddressMaps, tempCredentials);
+
+    // Calculate cost units using the full UnsignedTx structure
+    const feeSize = this.calculateImportCost(tempUnsignedTx);
+    // Use integer division to ensure feeRate can be converted back to BigInt
+    const feeRate = Math.floor(Number(fee) / feeSize);
+
+    this.transaction._fee = {
+      fee: fee.toString(),
+      feeRate: feeRate,
+      size: feeSize,
+    };
 
     // Create AddressMaps based on signature slot order (matching credential order), not sorted addresses
     // This matches the approach used in credentials: addressesIndex determines signature order
@@ -166,7 +179,8 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
     const { inputs, amount, credentials } = this.createInputs();
 
     // Calculate import cost units (matching AVAXP's costImportTx approach)
-    // Create a temporary transaction with full amount to calculate fee size
+    // Create a temporary UnsignedTx with full amount to calculate fee size
+    // This includes the full structure (ImportTx, AddressMaps, Credentials) for accurate size calculation
     const tempOutput = new evmSerial.Output(
       new Address(this.transaction._to[0]),
       new BigIntPr(amount),
@@ -180,8 +194,18 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
       [tempOutput]
     );
 
-    // Calculate feeSize once using full amount (matching AVAXP approach)
-    const feeSize = this.calculateImportCost(tempImportTx);
+    // Create AddressMaps for fee calculation (same as final transaction)
+    const firstUtxo = this.transaction._utxos[0];
+    const tempAddressMap = firstUtxo
+      ? this.createAddressMapForUtxo(firstUtxo, this.transaction._threshold)
+      : new FlareUtils.AddressMap();
+    const tempAddressMaps = new FlareUtils.AddressMaps([tempAddressMap]);
+
+    // Create temporary UnsignedTx with full structure for accurate fee calculation
+    const tempUnsignedTx = new UnsignedTx(tempImportTx, [], tempAddressMaps, credentials);
+
+    // Calculate feeSize once using full UnsignedTx (matching AVAXP approach)
+    const feeSize = this.calculateImportCost(tempUnsignedTx);
     const feeRate = BigInt(this.transaction._fee.feeRate);
     const fee = feeRate * BigInt(feeSize);
 
@@ -211,21 +235,11 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
       [output]
     );
 
-    // Create AddressMaps based on signature slot order (matching credential order), not sorted addresses
-    // This matches the approach used in credentials: addressesIndex determines signature order
-    // AddressMaps should map addresses to signature slots in the same order as credentials
-    // For C-chain imports, we typically have one input, so use the first UTXO
-    // Use centralized method for AddressMap creation
-    const firstUtxo = this.transaction._utxos[0];
-    const addressMap = firstUtxo
-      ? this.createAddressMapForUtxo(firstUtxo, this.transaction._threshold)
-      : new FlareUtils.AddressMap();
-    const addressMaps = new FlareUtils.AddressMaps([addressMap]);
-
+    // Reuse the AddressMaps already calculated for fee calculation
     const unsignedTx = new UnsignedTx(
       importTx,
       [], // Empty UTXOs array, will be filled during processing
-      addressMaps,
+      tempAddressMaps,
       credentials
     );
 
@@ -298,39 +312,21 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
   }
 
   /**
-   * Calculate the import cost for C-chain import transactions
-   * Matches AVAXP's costImportTx formula:
-   * - Base byte cost: transactionSize * txBytesGas (1 gas per byte)
-   * - Per-input cost: numInputs * costPerSignature (1000 per signature) * threshold
-   * - Fixed fee: 10000
-   *
-   * This returns cost "units" to be multiplied by feeRate, matching AVAXP's approach:
-   * AVAXP: fee = feeRate.muln(costImportTx(tx))
-   * FLRP:  fee = feeRate * calculateImportCost(tx)
-   *
-   * @param tx The ImportTx to calculate the cost for
+   * @param unsignedTx The UnsignedTx to calculate the cost for (includes ImportTx, AddressMaps, and Credentials)
    * @returns The total cost units
    */
-  private calculateImportCost(tx: evmSerial.ImportTx): number {
-    const codec = avmSerial.getAVMManager().getDefaultCodec();
-    const txBytes = tx.toBytes(codec);
-
-    // Base byte cost: 1 gas per byte (matching AVAX txBytesGas)
+  private calculateImportCost(unsignedTx: UnsignedTx): number {
+    const signedTxBytes = unsignedTx.getSignedTx().toBytes();
     const txBytesGas = 1;
-    let bytesCost = txBytes.length * txBytesGas;
-
-    // Per-input cost: costPerSignature (1000) per signature
+    let bytesCost = signedTxBytes.length * txBytesGas;
     const costPerSignature = 1000;
-    const numInputs = tx.importedInputs.length;
-    const numSignatures = this.transaction._threshold; // Each input requires threshold signatures
-    const inputCost = numInputs * costPerSignature * numSignatures;
-    bytesCost += inputCost;
-
-    // Fixed fee component
+    const importTx = unsignedTx.getTx() as evmSerial.ImportTx;
+    importTx.importedInputs.forEach((input: TransferableInput) => {
+      const inCost = costPerSignature * input.sigIndicies().length;
+      bytesCost += inCost;
+    });
     const fixedFee = 10000;
-    const totalCost = bytesCost + fixedFee;
-
-    return totalCost;
+    return bytesCost + fixedFee;
   }
 
   /**
