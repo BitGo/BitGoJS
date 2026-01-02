@@ -31,6 +31,25 @@ import { tryPromise } from '../util';
 const TransactionBuilder = require('./transactionBuilder');
 const PendingApproval = require('./pendingapproval');
 
+// PSBT rollout: 0% on mainnet, 100% on testnet
+const V1_PSBT_ROLLOUT_PERCENT = 0;
+
+function shouldUsePsbt(bitgo: any, explicitUsePsbt?: boolean): boolean {
+  // Explicit setting always wins
+  if (explicitUsePsbt !== undefined) {
+    return explicitUsePsbt;
+  }
+
+  // Testnet: always PSBT
+  const network = common.Environments[bitgo.getEnv()]?.network;
+  if (network !== 'bitcoin') {
+    return true;
+  }
+
+  // Mainnet: 10% rollout
+  return Math.random() * 100 < V1_PSBT_ROLLOUT_PERCENT;
+}
+
 const { getExternalChainCode, getInternalChainCode, isChainCode, scriptTypeForChain } = utxolib.bitgo;
 const request = require('superagent');
 
@@ -894,6 +913,33 @@ Wallet.prototype.createTransaction = function (params, callback) {
   params.validate = params.validate !== undefined ? params.validate : this.bitgo.getValidate();
   params.wallet = this;
 
+  // Apply PSBT rollout logic (respects explicit usePsbt if set)
+  const wantsPsbt = shouldUsePsbt(this.bitgo, params.usePsbt);
+
+  if (wantsPsbt) {
+    // Try PSBT first, fall back to legacy on failure
+    return TransactionBuilder.createTransaction({ ...params, usePsbt: true })
+      .then((result: any) => {
+        result.psbtAttempt = { success: true };
+        return result;
+      })
+      .catch((psbtError: Error) => {
+        // PSBT failed - fall back to legacy and capture error for backend reporting
+        console.warn('PSBT transaction failed, falling back to legacy');
+        return TransactionBuilder.createTransaction({ ...params, usePsbt: false }).then((result: any) => {
+          result.psbtAttempt = {
+            success: false,
+            stack: psbtError.stack?.split('\n').slice(0, 5).join('\n'), // First 5 lines only
+          };
+          return result;
+        });
+      })
+      .then(callback)
+      .catch(callback);
+  }
+
+  // Legacy path
+  params.usePsbt = false;
   return TransactionBuilder.createTransaction(params).then(callback).catch(callback);
 };
 
@@ -913,8 +959,15 @@ Wallet.prototype.createTransaction = function (params, callback) {
 Wallet.prototype.signTransaction = function (params, callback) {
   params = _.extend({}, params);
 
-  if (params.psbt) {
-    return tryPromise(() => signPsbtRequest(params))
+  // Route to PSBT signing if params.psbt exists OR if transactionHex contains a PSBT
+  // Use utxolib.bitgo.isPsbt() to auto-detect PSBT format in transactionHex
+  if (params.psbt || (params.transactionHex && utxolib.bitgo.isPsbt(params.transactionHex))) {
+    const psbtHex = params.psbt || params.transactionHex;
+    return tryPromise(() => signPsbtRequest({ psbt: psbtHex, keychain: params.keychain }))
+      .then(function (result) {
+        // Return result with transactionHex containing the signed PSBT for consistency
+        return { tx: result.psbt, transactionHex: result.psbt };
+      })
       .then(callback)
       .catch(callback);
   }
@@ -1602,6 +1655,7 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
     const changeAddress = await this.createAddress({ chain: changeChain });
 
     // create the child tx and broadcast
+    // Use legacy format - PSBT rollout applies to user-facing createTransaction only
     // @ts-expect-error - no implicit this
     const tx = await this.createAndSignTransaction({
       unspents: unspentsToUse,
@@ -1618,6 +1672,7 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
       },
       xprv: params.xprv,
       walletPassphrase: params.walletPassphrase,
+      usePsbt: false,
     });
 
     // child fee rate must be in sat/kB, so we need to convert
@@ -1672,6 +1727,7 @@ Wallet.prototype.createAndSignTransaction = function (params, callback) {
     }
 
     // @ts-expect-error - no implicit this
+    // Build transaction (legacy format by default, PSBT when usePsbt: true)
     const transaction = (await this.createTransaction(params)) as any;
     const fee = transaction.fee;
     const feeRate = transaction.feeRate;
@@ -1704,6 +1760,7 @@ Wallet.prototype.createAndSignTransaction = function (params, callback) {
 
     transaction.feeSingleKeyWIF = params.feeSingleKeyWIF;
     // @ts-expect-error - no implicit this
+    // signTransaction auto-detects PSBT vs legacy from transactionHex
     const result = await this.signTransaction(transaction);
     return _.extend(result, {
       fee,
@@ -1713,6 +1770,7 @@ Wallet.prototype.createAndSignTransaction = function (params, callback) {
       travelInfos,
       estimatedSize,
       unspents,
+      psbtAttempt: transaction.psbtAttempt, // Propagate PSBT attempt info for error reporting
     });
   }
     .call(this)
