@@ -8,24 +8,10 @@ import { Transaction } from './transaction';
 export abstract class AtomicInCTransactionBuilder extends AtomicTransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-    // external chain id is P
     this._externalChainId = utils.cb58Decode(this.transaction._network.blockchainID);
-    // chain id is C
     this.transaction._blockchainID = Buffer.from(
       utils.cb58Decode(this.transaction._network.cChainBlockchainID)
     ).toString('hex');
-  }
-
-  /**
-   * C-Chain base fee with decimal places converted from 18 to 9.
-   *
-   * @param {string | number} baseFee
-   */
-  feeRate(baseFee: string | number): this {
-    const fee = BigInt(baseFee);
-    this.validateFee(fee);
-    this.transaction._fee.feeRate = Number(fee);
-    return this;
   }
 
   /** @inheritdoc */

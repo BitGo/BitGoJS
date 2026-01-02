@@ -72,7 +72,6 @@ export default function signFlowTestSuit(data: signFlowTestSuitArgs): void {
 
     it('Should full sign a tx for same values', async () => {
       const txBuilder = data.newTxBuilder();
-
       txBuilder.sign({ key: data.privateKey.prv1 });
       txBuilder.sign({ key: data.privateKey.prv2 });
       const tx = await txBuilder.build();

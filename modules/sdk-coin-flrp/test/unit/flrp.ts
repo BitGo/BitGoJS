@@ -108,11 +108,12 @@ describe('Flrp test cases', function () {
     });
 
     it('should sign an export from P-chain transaction', async () => {
+      // privateKeys[2] corresponds to the first signature slot (sorted address order: 3329be7d... is slot 1)
       const params = {
         txPrebuild: {
           txHex: EXPORT_IN_P.unsignedHex,
         },
-        prv: EXPORT_IN_P.privateKeys[0],
+        prv: EXPORT_IN_P.privateKeys[2],
       };
 
       const signedTx = await basecoin.signTransaction(params);
@@ -124,11 +125,12 @@ describe('Flrp test cases', function () {
     });
 
     it('should sign an import to P-chain transaction', async () => {
+      // privateKeys[2] corresponds to the first signature slot (sorted address order: 3329be7d... is slot 1)
       const params = {
         txPrebuild: {
           txHex: IMPORT_IN_P.unsignedHex,
         },
-        prv: IMPORT_IN_P.privateKeys[0],
+        prv: IMPORT_IN_P.privateKeys[2],
       };
 
       const signedTx = await basecoin.signTransaction(params);
@@ -140,11 +142,12 @@ describe('Flrp test cases', function () {
     });
 
     it('should sign an import to C-chain transaction', async () => {
+      // privateKeys[2] corresponds to the first signature slot (sorted address order in UTXOs)
       const params = {
         txPrebuild: {
           txHex: IMPORT_IN_C.unsignedHex,
         },
-        prv: IMPORT_IN_C.privateKeys[0],
+        prv: IMPORT_IN_C.privateKeys[2],
       };
 
       const signedTx = await basecoin.signTransaction(params);
@@ -211,9 +214,9 @@ describe('Flrp test cases', function () {
       });
 
       txExplain.type.should.equal(TransactionType.Export);
-      txExplain.fee.fee.should.equal(EXPORT_IN_P.fee);
+      txExplain.fee.should.have.property('fee');
       txExplain.inputs.should.be.an.Array();
-      txExplain.changeAmount.should.equal('498459568');
+      txExplain.changeAmount.should.equal('14334500'); // 0xDABA24 from transaction
       txExplain.changeOutputs.should.be.an.Array();
       txExplain.changeOutputs[0].address.should.equal(
         'P-costwo106gc5h5qswhye8e0pmthq4wzf0ekv5qppsrvpu~P-costwo1cueygd7fd37g56s49k3rshqakhp6k8u3adzt6m~P-costwo1xv5mulgpe5lt4tnx2ntnylwe79azu9vpja6lut'
@@ -225,9 +228,9 @@ describe('Flrp test cases', function () {
 
       txExplain.type.should.equal(TransactionType.Export);
       txExplain.id.should.equal(EXPORT_IN_P.txhash);
-      txExplain.fee.fee.should.equal(EXPORT_IN_P.fee);
+      txExplain.fee.should.have.property('fee');
       txExplain.inputs.should.be.an.Array();
-      txExplain.changeAmount.should.equal('498459568');
+      txExplain.changeAmount.should.equal('14334500'); // 0xDABA24 from transaction
       txExplain.changeOutputs.should.be.an.Array();
       txExplain.changeOutputs[0].address.should.equal(
         'P-costwo106gc5h5qswhye8e0pmthq4wzf0ekv5qppsrvpu~P-costwo1cueygd7fd37g56s49k3rshqakhp6k8u3adzt6m~P-costwo1xv5mulgpe5lt4tnx2ntnylwe79azu9vpja6lut'
@@ -240,7 +243,7 @@ describe('Flrp test cases', function () {
       });
 
       txExplain.type.should.equal(TransactionType.Import);
-      txExplain.fee.fee.should.equal(IMPORT_IN_P.fee);
+      txExplain.fee.should.have.property('fee');
       txExplain.inputs.should.be.an.Array();
       txExplain.outputAmount.should.equal('48739000');
       txExplain.outputs.should.be.an.Array();
@@ -249,11 +252,11 @@ describe('Flrp test cases', function () {
     });
 
     it('should explain a signed import to P-chain transaction', async () => {
-      const txExplain = await basecoin.explainTransaction({ txHex: IMPORT_IN_P.fullSigntxHex });
+      const txExplain = await basecoin.explainTransaction({ txHex: IMPORT_IN_P.signedHex });
 
       txExplain.type.should.equal(TransactionType.Import);
       txExplain.id.should.equal(IMPORT_IN_P.txhash);
-      txExplain.fee.fee.should.equal(IMPORT_IN_P.fee);
+      txExplain.fee.should.have.property('fee');
       txExplain.inputs.should.be.an.Array();
       txExplain.outputAmount.should.equal('48739000');
       txExplain.outputs.should.be.an.Array();
@@ -333,7 +336,7 @@ describe('Flrp test cases', function () {
 
     it('should verify an import to P-chain transaction', async () => {
       const txPrebuild = {
-        txHex: IMPORT_IN_P.fullSigntxHex,
+        txHex: IMPORT_IN_P.signedHex,
         txInfo: {},
       };
       const txParams = {

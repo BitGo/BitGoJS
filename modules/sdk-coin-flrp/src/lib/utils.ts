@@ -1,4 +1,4 @@
-import { Signature, TransferableOutput, TransferOutput, TypeSymbols, Id } from '@flarenetwork/flarejs';
+import { Signature, TransferableOutput, TransferOutput, TypeSymbols, Id, Utxo, pvm } from '@flarenetwork/flarejs';
 import {
   BaseUtils,
   Entry,
@@ -11,7 +11,7 @@ import { FlareNetwork } from '@bitgo/statics';
 import { Buffer } from 'buffer';
 import { createHash } from 'crypto';
 import { ecc } from '@bitgo/secp256k1';
-import { ADDRESS_SEPARATOR, Output, Tx } from './iface';
+import { ADDRESS_SEPARATOR, DecodedUtxoObj, Output, SECP256K1_Transfer_Output, Tx } from './iface';
 import bs58 from 'bs58';
 import { bech32 } from 'bech32';
 
@@ -430,6 +430,82 @@ export class Utils implements BaseUtils {
 
     const txBlockchainId = extractBlockchainId(tx);
     return txBlockchainId === blockchainId;
+  }
+
+  /**
+   * Convert FlareJS native Utxo to DecodedUtxoObj for internal use
+   * @param utxo - FlareJS Utxo object
+   * @param network - Flare network configuration
+   * @returns DecodedUtxoObj compatible with existing methods
+   */
+  public utxoToDecoded(utxo: Utxo, network: FlareNetwork): DecodedUtxoObj {
+    const outputOwners = utxo.getOutputOwners();
+    const output = utxo.output as TransferOutput;
+
+    // Get amount from output
+    const amount = output.amount().toString();
+
+    // Get txid from utxoId (cb58 encoded)
+    const txid = this.cb58Encode(Buffer.from(utxo.utxoId.txID.toBytes()));
+
+    // Get output index
+    const outputidx = utxo.utxoId.outputIdx.value().toString();
+
+    // Get threshold
+    const threshold = outputOwners.threshold.value();
+
+    // Get locktime
+    const locktime = outputOwners.locktime.value().toString();
+
+    // Get addresses as bech32 strings
+    const addresses = outputOwners.addrs.map((addr) =>
+      this.addressToString(network.hrp, network.alias, Buffer.from(addr.toBytes()))
+    );
+
+    return {
+      outputID: SECP256K1_Transfer_Output,
+      locktime,
+      amount,
+      txid,
+      outputidx,
+      threshold,
+      addresses,
+    };
+  }
+
+  /**
+   * Convert array of FlareJS Utxos to DecodedUtxoObj array
+   * @param utxos - Array of FlareJS Utxo objects
+   * @param network - Flare network configuration
+   * @returns Array of DecodedUtxoObj
+   */
+  public utxosToDecoded(utxos: Utxo[], network: FlareNetwork): DecodedUtxoObj[] {
+    return utxos.map((utxo) => this.utxoToDecoded(utxo, network));
+  }
+
+  /**
+   * Parse UTXO hex string to native FlareJS Utxo object
+   * Uses PVM API's internal manager to deserialize the UTXO bytes
+   * @param utxoHex - Hex string of the UTXO (with or without 0x prefix)
+   * @param baseUrl - Optional base URL for PVM API (defaults to empty, manager is used internally)
+   * @returns Native FlareJS Utxo object
+   */
+  public parseUtxoHex(utxoHex: string): Utxo {
+    const hex = utxoHex.startsWith('0x') ? utxoHex.slice(2) : utxoHex;
+    const bytes = Buffer.from(hex, 'hex');
+    const pvmApi = new pvm.PVMApi();
+    const manager = (pvmApi as any).manager;
+    return manager.unpack(bytes, Utxo);
+  }
+
+  /**
+   * Parse array of UTXO hex strings to native FlareJS Utxo objects
+   * @param utxoHexArray - Array of hex strings
+   * @param baseUrl - Optional base URL for PVM API
+   * @returns Array of native FlareJS Utxo objects
+   */
+  public parseUtxoHexArray(utxoHexArray: string[]): Utxo[] {
+    return utxoHexArray.map((hex) => this.parseUtxoHex(hex));
   }
 }
 
