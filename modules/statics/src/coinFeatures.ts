@@ -527,12 +527,17 @@ export const OPETH_FEATURES = [
 ];
 export const ZKETH_FEATURES = [
   ...ETH_FEATURES,
+  CoinFeature.TSS,
+  CoinFeature.TSS_COLD,
+  CoinFeature.MPCV2,
   CoinFeature.MULTISIG_COLD,
   CoinFeature.MULTISIG,
   CoinFeature.EVM_WALLET,
   CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
   CoinFeature.ETH_ROLLUP_CHAIN,
   CoinFeature.EIP1559,
+  CoinFeature.BULK_TRANSACTION,
+  CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
 ];
 export const BERA_FEATURES = [
   ...ETH_FEATURES,
