@@ -60,6 +60,32 @@ export const ACCOUNT_4 = {
   address: 'P-costwo1jvjdvg6jdqez24c5kjxgsu47mqwvpyerk22yl8',
 };
 
+export const CONTEXT = {
+  xBlockchainID: 'FJuSwZuP85eyBpuBrKECnpPedGyXoDy2hP9q4JD8qBTZGxYbJ',
+  pBlockchainID: '11111111111111111111111111111111LpoYY',
+  cBlockchainID: 'vE8M98mEQH6wk56sStD1ML8HApTgSqfJZLk9gQ3Fsd4i6m3Bi',
+  avaxAssetID: 'fxMAKpBQQpFedrUhWMsDYfCUJxdUw4mneTczKBzNg3rc2JUub',
+  baseTxFee: 1000000n,
+  createAssetTxFee: 1000000n,
+  createSubnetTxFee: 100000000n,
+  transformSubnetTxFee: 100000000n,
+  createBlockchainTxFee: 100000000n,
+  addPrimaryNetworkValidatorFee: 0n,
+  addPrimaryNetworkDelegatorFee: 0n,
+  addSubnetValidatorFee: 1000000n,
+  addSubnetDelegatorFee: 1000000n,
+  networkID: 114,
+  hrp: 'costwo',
+  platformFeeConfig: {
+    weights: { 0: 1, 1: 1000, 2: 1000, 3: 4 },
+    maxCapacity: 1000000n,
+    maxPerSecond: 100000n,
+    targetPerSecond: 50000n,
+    minPrice: 250n,
+    excessConversionConstant: 2164043n,
+  },
+};
+
 export const INVALID_SHORT_KEYPAIR_KEY = '82A34E';
 
 export const INVALID_PRIVATE_KEY_ERROR_MESSAGE = 'Unsupported private key';
