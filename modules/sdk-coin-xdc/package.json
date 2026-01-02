@@ -43,6 +43,7 @@
     "@bitgo/abstract-eth": "^24.19.4",
     "@bitgo/sdk-core": "^36.25.0",
     "@bitgo/statics": "^58.19.0",
+    "@bitgo/sdk-coin-evm": "^1.11.0",
     "@ethereumjs/common": "^2.6.5",
     "@ethereumjs/tx": "^3.3.0"
   },
