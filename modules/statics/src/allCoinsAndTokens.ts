@@ -3001,6 +3001,17 @@ export const allCoinsAndTokens = [
     Networks.main.xdc
   ),
 
+  // XDC testnet tokens
+  erc20Token(
+    '5fc561e7-5fb5-4702-9860-9f48d90f1d45',
+    'txdc:tmt',
+    'XDC Network TMT',
+    6,
+    '0xb283ec8dad644effc5c4c50bb7bb21442ac3c2db',
+    UnderlyingAsset['txdc:tmt'],
+    Networks.test.xdc
+  ),
+
   // MON mainnet tokens
   erc20Token(
     '5f15df50-7409-45b8-a7a8-00294a113fcb',

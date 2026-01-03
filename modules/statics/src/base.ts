@@ -2968,6 +2968,9 @@ export enum UnderlyingAsset {
   'xdc:srx' = 'xdc:srx',
   'xdc:weth' = 'xdc:weth',
 
+  // XDC testnet tokens
+  'txdc:tmt' = 'txdc:tmt',
+
   // hypeeevm testnet tokens
   'thypeevm:usdc' = 'thypeevm:usdc',
 
