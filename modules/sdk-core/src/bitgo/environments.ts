@@ -303,6 +303,9 @@ const mainnetBase: EnvironmentTemplate = {
     arc: {
       baseUrl: 'https://testnet.arcscan.app/api/v2', // WIN-8039 => add mainnet url when available
     },
+    xdc: {
+      baseUrl: 'https://api.etherscan.io/v2',
+    },
   },
   icpNodeUrl: 'https://ic0.app',
   worldExplorerBaseUrl: 'https://worldscan.org/',
@@ -468,6 +471,9 @@ const testnetBase: EnvironmentTemplate = {
     },
     arc: {
       baseUrl: 'https://testnet.arcscan.app/api/v2',
+    },
+    xdc: {
+      baseUrl: 'https://api.etherscan.io/v2',
     },
   },
   stxNodeUrl: 'https://api.testnet.hiro.so',
