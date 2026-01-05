@@ -2470,11 +2470,11 @@ export const allCoinsAndTokens = [
   account(
     'cf06d1ea-f7c4-4a26-95fd-f71983eba58f',
     'tarc',
-    'ARC Testnet',
+    'Arc Testnet',
     Networks.test.arc,
     18,
     UnderlyingAsset.ARC,
-    BaseUnit.USDC,
+    BaseUnit.ETH,
     [
       ...EVM_FEATURES,
       CoinFeature.SHARED_EVM_SIGNING,
@@ -2484,10 +2484,26 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
       CoinFeature.EVM_COMPATIBLE_WP,
-    ],
-    KeyCurve.Secp256k1,
-    '',
-    'TARC'
+    ]
+  ),
+  account(
+    '733c4da8-52f7-4f9f-a7dc-897c81453fee',
+    'arc',
+    'Arc',
+    Networks.main.arc,
+    18,
+    UnderlyingAsset.ARC,
+    BaseUnit.ETH,
+    [
+      ...EVM_FEATURES,
+      CoinFeature.SHARED_EVM_SIGNING,
+      CoinFeature.SHARED_EVM_SDK,
+      CoinFeature.EVM_COMPATIBLE_IMS,
+      CoinFeature.EVM_COMPATIBLE_UI,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.EVM_COMPATIBLE_WP,
+    ]
   ),
   account(
     '92c6b706-87bc-4a4e-8dd4-2a2c83b724e4',

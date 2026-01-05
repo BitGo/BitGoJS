@@ -72,6 +72,7 @@ export const expectedColdFeatures = {
     'ada',
     'apechain',
     'apt',
+    'arc',
     'asi',
     'atom',
     'baby',
