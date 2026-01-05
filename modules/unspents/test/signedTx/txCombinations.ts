@@ -149,6 +149,34 @@ describe(`Dimensions for PSBT combinations`, function () {
     should.throws(() => Dimensions.fromPsbt(psbt));
   });
 
+  it(`accepts wasm-utxo BitGoPsbt`, function () {
+    const psbt = constructPsbt(rootWalletKeys, ['p2shP2wsh'], ['p2wpkh'], 'unsigned');
+
+    // Get dimensions from UtxoPsbt directly
+    const dimsFromUtxolib = Dimensions.fromPsbt(psbt);
+
+    // Create a wasm-utxo BitGoPsbt from the same serialized bytes
+    const { fixedScriptWallet } = require('@bitgo/wasm-utxo');
+    const wasmPsbt = fixedScriptWallet.BitGoPsbt.fromBytes(psbt.toBuffer(), 'bitcoin');
+
+    // Get dimensions from wasm-utxo BitGoPsbt
+    const dimsFromWasm = Dimensions.fromPsbt(wasmPsbt, utxolib.networks.bitcoin);
+
+    // Should be equal
+    dimsFromWasm.should.eql(dimsFromUtxolib);
+  });
+
+  it(`requires network when passing wasm-utxo BitGoPsbt`, function () {
+    const psbt = constructPsbt(rootWalletKeys, ['p2shP2wsh'], ['p2wpkh'], 'unsigned');
+
+    // Create a wasm-utxo BitGoPsbt
+    const { fixedScriptWallet } = require('@bitgo/wasm-utxo');
+    const wasmPsbt = fixedScriptWallet.BitGoPsbt.fromBytes(psbt.toBuffer(), 'bitcoin');
+
+    // Should throw when network is not provided
+    should.throws(() => (Dimensions.fromPsbt as any)(wasmPsbt), /network is required/);
+  });
+
   runCombinations(params, (inputTypeCombo: InputScriptType[], outputTypeCombo: TestUnspentType[]) => {
     const expectedInputDims = Dimensions.sum(...inputTypeCombo.map(getInputDimensionsForUnspentType));
     const expectedOutputDims = Dimensions.sum(...outputTypeCombo.map(getOutputDimensionsForUnspentType));

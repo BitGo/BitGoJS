@@ -1,5 +1,7 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import { bitgo } from '@bitgo/utxo-lib';
+import { fixedScriptWallet } from '@bitgo/wasm-utxo';
+
 const { isChainCode, scriptTypeForChain } = bitgo;
 type ChainCode = bitgo.ChainCode;
 
@@ -227,20 +229,75 @@ export class Dimensions {
   };
 
   /**
-   * @return
+   * Wasm-utxo input script type names (aliases for utxolib types)
+   */
+  static readonly WasmInputScriptTypes = ['p2trLegacy', 'p2trMusig2ScriptPath', 'p2trMusig2KeyPath'] as const;
+
+  /**
+   * All supported input script type names (utxolib + wasm-utxo)
+   */
+  static readonly InputScriptTypes = [
+    // utxolib names
+    'p2sh',
+    'p2shP2wsh',
+    'p2wsh',
+    'p2shP2pk',
+    'p2tr',
+    'p2trMusig2',
+    'taprootKeyPathSpend',
+    'taprootScriptPathSpend',
+    // wasm-utxo names (aliases)
+    ...Dimensions.WasmInputScriptTypes,
+  ] as const;
+
+  /**
+   * Create Dimensions from a script type.
+   *
+   * Accepts both utxolib and wasm-utxo naming conventions:
+   * - utxolib: 'p2sh', 'p2shP2wsh', 'p2wsh', 'p2shP2pk', 'p2tr', 'p2trMusig2', 'taprootKeyPathSpend', 'taprootScriptPathSpend'
+   * - wasm-utxo: 'p2trLegacy', 'p2trMusig2ScriptPath', 'p2trMusig2KeyPath'
+   *
+   * @param scriptType - The script type string (from utxolib or wasm-utxo)
+   * @param params - Optional parameters
+   * @param params.scriptPathLevel - For taproot script path spends, specify level 1 or 2.
+   *   - For 'p2tr'/'taprootScriptPathSpend': required (1 or 2)
+   *   - For 'p2trMusig2': undefined = key path, 1 = script path
+   *   - For 'p2trLegacy': defaults to 2 (recovery path) if not specified
+   * @returns Dimensions for the input
+   *
+   * @example
+   * ```typescript
+   * // Using utxolib names
+   * Dimensions.fromScriptType('p2shP2wsh');
+   * Dimensions.fromScriptType('taprootKeyPathSpend');
+   *
+   * // Using wasm-utxo names (from parseTransactionWithWalletKeys)
+   * Dimensions.fromScriptType('p2trMusig2KeyPath');
+   * Dimensions.fromScriptType('p2trLegacy', { scriptPathLevel: 1 });
+   * ```
    */
   static fromScriptType(
-    scriptType: utxolib.bitgo.outputScripts.ScriptType | utxolib.bitgo.ParsedScriptType2Of3 | 'p2pkh',
+    scriptType:
+      | utxolib.bitgo.outputScripts.ScriptType
+      | utxolib.bitgo.ParsedScriptType2Of3
+      | 'p2pkh'
+      // wasm-utxo names (aliases)
+      | 'p2trLegacy'
+      | 'p2trMusig2ScriptPath'
+      | 'p2trMusig2KeyPath',
     params: {
       scriptPathLevel?: number;
     } = {}
   ): Dimensions {
     switch (scriptType) {
+      // Common types (same name in both utxolib and wasm-utxo)
       case 'p2sh':
       case 'p2shP2wsh':
       case 'p2wsh':
       case 'p2shP2pk':
         return Dimensions.SingleInput[scriptType];
+
+      // utxolib taproot names
       case 'p2tr':
       case 'taprootScriptPathSpend':
         switch (params.scriptPathLevel) {
@@ -262,6 +319,25 @@ export class Dimensions {
         }
       case 'taprootKeyPathSpend':
         return Dimensions.SingleInput.p2trKeypath;
+
+      // wasm-utxo taproot names (aliases)
+      case 'p2trLegacy':
+        // Legacy taproot (non-musig2) script path; default to level 2 (recovery) if not specified
+        switch (params.scriptPathLevel ?? 2) {
+          case 1:
+            return Dimensions.SingleInput.p2trScriptPathLevel1;
+          case 2:
+            return Dimensions.SingleInput.p2trScriptPathLevel2;
+          default:
+            throw new Error(`unexpected script path level for p2trLegacy: ${params.scriptPathLevel}`);
+        }
+      case 'p2trMusig2ScriptPath':
+        // MuSig2 script path spend (always level 1)
+        return Dimensions.SingleInput.p2trScriptPathLevel1;
+      case 'p2trMusig2KeyPath':
+        // MuSig2 key path spend
+        return Dimensions.SingleInput.p2trKeypath;
+
       default:
         throw new Error(`unexpected scriptType ${scriptType}`);
     }
@@ -431,11 +507,42 @@ export class Dimensions {
   }
 
   /**
-   * Create Dimensions from psbt inputs and outputs
-   * @param psbt
+   * Create Dimensions from a PSBT.
+   *
+   * Accepts either:
+   * - A utxolib UtxoPsbt instance
+   * - A wasm-utxo BitGoPsbt instance + network
+   *
+   * @param psbt - Either a UtxoPsbt instance or a wasm-utxo BitGoPsbt instance
+   * @param network - Required when passing wasm-utxo BitGoPsbt, optional for utxolib UtxoPsbt
    * @return {Dimensions}
+   *
+   * @example
+   * ```typescript
+   * // With utxolib PSBT (existing usage)
+   * const dims = Dimensions.fromPsbt(utxolibPsbt);
+   *
+   * // With wasm-utxo PSBT (new usage)
+   * const dims = Dimensions.fromPsbt(wasmPsbt, network);
+   * ```
    */
-  static fromPsbt(psbt: bitgo.UtxoPsbt): Dimensions {
+  static fromPsbt(psbt: bitgo.UtxoPsbt): Dimensions;
+  static fromPsbt(wasmPsbt: fixedScriptWallet.BitGoPsbt, network: utxolib.Network): Dimensions;
+  static fromPsbt(psbt: bitgo.UtxoPsbt | fixedScriptWallet.BitGoPsbt, network?: utxolib.Network): Dimensions {
+    // Check if it's a wasm-utxo BitGoPsbt
+    if (psbt instanceof fixedScriptWallet.BitGoPsbt) {
+      // wasm-utxo BitGoPsbt - serialize and parse with utxolib
+      if (!network) {
+        throw new Error('network is required when passing wasm-utxo BitGoPsbt');
+      }
+      const buffer = Buffer.from(psbt.serialize());
+      const utxolibPsbt = bitgo.createPsbtFromBuffer(buffer, network);
+      return Dimensions.fromPsbtInputs(utxolibPsbt.data.inputs).plus(
+        Dimensions.fromOutputs(utxolibPsbt.getUnsignedTx().outs)
+      );
+    }
+
+    // utxolib UtxoPsbt
     return Dimensions.fromPsbtInputs(psbt.data.inputs).plus(Dimensions.fromOutputs(psbt.getUnsignedTx().outs));
   }
 

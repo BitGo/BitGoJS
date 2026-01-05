@@ -211,6 +211,54 @@ describe('Dimensions from unspent types', function () {
   });
 });
 
+describe('Dimensions fromScriptType with wasm-utxo names', function () {
+  it('accepts wasm-utxo script type names', function () {
+    // wasm-utxo taproot names
+    Dimensions.fromScriptType('p2trMusig2KeyPath').should.eql(Dimensions.SingleInput.p2trKeypath);
+    Dimensions.fromScriptType('p2trMusig2ScriptPath').should.eql(Dimensions.SingleInput.p2trScriptPathLevel1);
+
+    // p2trLegacy defaults to level 2 (recovery path)
+    Dimensions.fromScriptType('p2trLegacy').should.eql(Dimensions.SingleInput.p2trScriptPathLevel2);
+    Dimensions.fromScriptType('p2trLegacy', { scriptPathLevel: 1 }).should.eql(
+      Dimensions.SingleInput.p2trScriptPathLevel1
+    );
+    Dimensions.fromScriptType('p2trLegacy', { scriptPathLevel: 2 }).should.eql(
+      Dimensions.SingleInput.p2trScriptPathLevel2
+    );
+  });
+
+  it('accepts utxolib script type names', function () {
+    // utxolib names should still work
+    Dimensions.fromScriptType('taprootKeyPathSpend').should.eql(Dimensions.SingleInput.p2trKeypath);
+    Dimensions.fromScriptType('taprootScriptPathSpend', { scriptPathLevel: 1 }).should.eql(
+      Dimensions.SingleInput.p2trScriptPathLevel1
+    );
+    Dimensions.fromScriptType('p2trMusig2').should.eql(Dimensions.SingleInput.p2trKeypath);
+    Dimensions.fromScriptType('p2trMusig2', { scriptPathLevel: 1 }).should.eql(
+      Dimensions.SingleInput.p2trScriptPathLevel1
+    );
+  });
+
+  it('provides WasmInputScriptTypes constant', function () {
+    Dimensions.WasmInputScriptTypes.should.containEql('p2trLegacy');
+    Dimensions.WasmInputScriptTypes.should.containEql('p2trMusig2ScriptPath');
+    Dimensions.WasmInputScriptTypes.should.containEql('p2trMusig2KeyPath');
+  });
+
+  it('provides InputScriptTypes constant with all types', function () {
+    // utxolib types
+    Dimensions.InputScriptTypes.should.containEql('p2sh');
+    Dimensions.InputScriptTypes.should.containEql('p2shP2wsh');
+    Dimensions.InputScriptTypes.should.containEql('p2wsh');
+    Dimensions.InputScriptTypes.should.containEql('taprootKeyPathSpend');
+    Dimensions.InputScriptTypes.should.containEql('taprootScriptPathSpend');
+    // wasm-utxo types
+    Dimensions.InputScriptTypes.should.containEql('p2trLegacy');
+    Dimensions.InputScriptTypes.should.containEql('p2trMusig2ScriptPath');
+    Dimensions.InputScriptTypes.should.containEql('p2trMusig2KeyPath');
+  });
+});
+
 describe('Dimensions estimates', function () {
   it('calculates vsizes', function () {
     function dim(nP2shInputs: number, nP2shP2wshInputs: number, nP2wshInputs: number, nOutputs: number): Dimensions {
