@@ -44,7 +44,9 @@
     "@bitgo/sdk-core": "^36.25.0",
     "@bitgo/secp256k1": "^1.8.0",
     "@bitgo/statics": "^58.19.0",
-    "viem": "^2.21.0"
+    "bignumber.js": "^9.1.1",
+    "ethereumjs-abi": "^0.6.5",
+    "ethereumjs-util": "7.1.5"
   },
   "devDependencies": {
     "@bitgo/sdk-api": "^1.72.2",

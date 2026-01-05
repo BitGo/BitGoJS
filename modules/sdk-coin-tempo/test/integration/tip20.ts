@@ -1,6 +1,6 @@
 import { describe, it } from 'mocha';
 import { Tip20TransactionBuilder } from '../../src/lib/transactionBuilder';
-import type { Address } from 'viem';
+import type { Address } from '../../src/lib/types';
 import { coins } from '@bitgo/statics';
 
 const mockCoinConfig = coins.get('ttempo');
@@ -98,7 +98,7 @@ describe('TIP-20 Integration Tests', () => {
         memo: '9999',
       });
       builder.feeToken(ALPHA_USD_TOKEN);
-      // TODO: Implement signing with viem privateKeyToAccount
+      // TODO: Implement signing with privateKeyToAccount
       // TODO: const tx = await builder.build();
       // TODO: tx.setSignature(signature);
       // TODO: const serialized = await tx.toBroadcastFormat();
