@@ -821,48 +821,6 @@ describe('CoinMap', function () {
     coinMap.has(coin.name).should.be.false();
     coinMap.has(newCoin.name).should.be.true();
   });
-
-  describe('coinNameFromChainId', function () {
-    it('should return coin name from legacy hardcoded mappings', () => {
-      // Test backward compatibility with existing hardcoded mappings
-      const ethCoinName = coins.coinNameFromChainId(1);
-      should(ethCoinName).not.be.undefined();
-      ethCoinName!.should.equal('eth');
-      const polygonCoinName = coins.coinNameFromChainId(137);
-      should(polygonCoinName).not.be.undefined();
-      polygonCoinName!.should.equal('polygon');
-      const arbethCoinName = coins.coinNameFromChainId(42161);
-      should(arbethCoinName).not.be.undefined();
-      arbethCoinName!.should.equal('arbeth');
-      const baseethCoinName = coins.coinNameFromChainId(8453);
-      should(baseethCoinName).not.be.undefined();
-      baseethCoinName!.should.equal('baseeth');
-    });
-
-    it('should return coin name from dynamic lookup when not in legacy map', () => {
-      // Test dynamic lookup for coins defined in networks.ts but not in legacy map
-      // tdogeos is not present in legacy map but has chainId 6281971 in networks.ts
-      const coinName = coins.coinNameFromChainId(6281971);
-      should(coinName).not.be.undefined();
-      coinName!.should.equal('tdogeos');
-
-      // Verify the coin exists and has the correct chainId
-      const coin = coins.get(coinName!);
-      const network = coin.network as EthereumNetwork;
-      network.chainId.should.equal(6281971);
-    });
-
-    it('should return undefined for non-existent chainId', () => {
-      const result = coins.coinNameFromChainId(999999);
-      should(result).be.undefined();
-    });
-
-    it('should prioritize legacy mappings over dynamic lookup', () => {
-      const ethCoinName = coins.coinNameFromChainId(1);
-      should(ethCoinName).not.be.undefined();
-      ethCoinName!.should.equal('eth');
-    });
-  });
 });
 
 coins.forEach((coin, coinName) => {
@@ -1337,8 +1295,7 @@ describe('create token map using config details', () => {
       token?.family.should.eql(coin.family);
       token?.decimalPlaces.should.eql(coin.decimalPlaces);
       if (token instanceof EthLikeErc20Token) {
-        const erc20Coin = coin as Erc20Coin;
-        (token as EthLikeErc20Token).tokenContractAddress.should.eql(erc20Coin.contractAddress);
+        (token as EthLikeErc20Token).tokenContractAddress.should.eql(coin?.contractAddress);
       }
     }
   });
