@@ -126,9 +126,8 @@ export function encodeTip20TransferWithMemo(to: Address, amount: bigint, memo?: 
   const types = ['address', 'uint256', 'bytes32'];
   const methodId = EthereumAbi.methodID('transferWithMemo', types);
 
-  // Encode the arguments - convert bigint to hex string for ABI encoding
-  const amountHex = '0x' + amount.toString(16);
-  const args = EthereumAbi.rawEncode(types, [to, amountHex, memoBytes]);
+  // Encode the arguments - ethereumjs-abi accepts string representation of numbers
+  const args = EthereumAbi.rawEncode(types, [to, amount.toString(), memoBytes]);
 
   // Combine method ID and encoded arguments
   return bufferToHex(Buffer.concat([methodId, args])) as Hex;
