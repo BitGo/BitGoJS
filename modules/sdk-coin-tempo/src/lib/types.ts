@@ -1,4 +1,12 @@
-import type { Address, Hex, TransactionSerializedEIP7702 } from 'viem';
+/**
+ * Ethereum-style address (0x-prefixed hex string)
+ */
+export type Address = string;
+
+/**
+ * Hex-encoded string (0x-prefixed)
+ */
+export type Hex = string;
 
 /**
  * TIP-20 Operation with optional memo
@@ -10,8 +18,3 @@ export interface Tip20Operation {
   amount: string;
   memo?: string;
 }
-
-/**
- * Re-export viem types for convenience
- */
-export type { Address, Hex, TransactionSerializedEIP7702 };

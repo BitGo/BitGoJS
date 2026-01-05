@@ -7,8 +7,7 @@
 
 import { BaseTransaction, ParseTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import type { Address, Hex } from 'viem';
-import { Tip20Operation } from './types';
+import type { Address, Hex, Tip20Operation } from './types';
 
 /**
  * TIP-20 Transaction Request Structure
@@ -55,7 +54,7 @@ export class Tip20Transaction extends BaseTransaction {
   }
 
   async serialize(signature?: { r: Hex; s: Hex; yParity: number }): Promise<Hex> {
-    // TODO: Implement viem EIP-7702 transaction serialization
+    // TODO: Implement EIP-7702 transaction serialization
     throw new ParseTransactionError('Transaction serialization not yet implemented');
   }
 

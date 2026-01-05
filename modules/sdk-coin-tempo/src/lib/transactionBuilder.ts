@@ -11,8 +11,7 @@
 import { TransactionBuilder as AbstractTransactionBuilder, TransferBuilder } from '@bitgo/abstract-eth';
 import { BaseTransaction, BuildTransactionError } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import type { Address, Hex } from 'viem';
-import { Tip20Operation } from './types';
+import type { Address, Hex, Tip20Operation } from './types';
 import { Tip20Transaction, Tip20TransactionRequest } from './transaction';
 import { amountToTip20Units, encodeTip20TransferWithMemo, isValidAddress, isValidTip20Amount } from './utils';
 import { AA_TRANSACTION_TYPE } from './constants';

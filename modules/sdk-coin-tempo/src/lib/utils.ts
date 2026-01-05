@@ -5,19 +5,21 @@
  */
 
 import { bip32 } from '@bitgo/secp256k1';
-import { parseUnits, formatUnits, encodeFunctionData, pad, toHex, isAddress, type Address, type Hex } from 'viem';
+import { isValidAddress as isValidEthAddress, bufferToHex, setLengthLeft } from 'ethereumjs-util';
+import EthereumAbi from 'ethereumjs-abi';
+import BigNumber from 'bignumber.js';
 import { TIP20_DECIMALS } from './constants';
-import { TIP20_TRANSFER_WITH_MEMO_ABI } from './tip20Abi';
+import type { Address, Hex } from './types';
 
 /**
  * Check if address is valid Ethereum-style address
- * Uses viem's isAddress for proper validation including checksum
+ * Uses ethereumjs-util's isValidAddress for proper validation including checksum
  */
 export function isValidAddress(address: string): boolean {
   if (typeof address !== 'string') {
     return false;
   }
-  return isAddress(address);
+  return isValidEthAddress(address);
 }
 
 /**
@@ -64,7 +66,17 @@ export function isValidPrivateKey(privateKey: string): boolean {
  */
 export function amountToTip20Units(amount: string): bigint {
   try {
-    return parseUnits(amount, TIP20_DECIMALS);
+    const bn = new BigNumber(amount);
+    if (bn.isNaN() || !bn.isFinite()) {
+      throw new Error('Invalid number');
+    }
+    // Multiply by 10^decimals to convert to units
+    const units = bn.multipliedBy(new BigNumber(10).pow(TIP20_DECIMALS));
+    // Check if result has decimal places (not valid for units)
+    if (!units.isInteger()) {
+      throw new Error('Amount has too many decimal places');
+    }
+    return BigInt(units.toFixed(0));
   } catch (error) {
     throw new Error(`Invalid amount format: ${amount}. Expected decimal string.`);
   }
@@ -77,7 +89,9 @@ export function amountToTip20Units(amount: string): bigint {
  * @example tip20UnitsToAmount(1500000n) => "1.5"
  */
 export function tip20UnitsToAmount(units: bigint): string {
-  return formatUnits(units, TIP20_DECIMALS);
+  const bn = new BigNumber(units.toString());
+  const divisor = new BigNumber(10).pow(TIP20_DECIMALS);
+  return bn.dividedBy(divisor).toFixed();
 }
 
 /**
@@ -91,24 +105,32 @@ export function stringToBytes32(memo: string): Hex {
   if (memoByteLength > 32) {
     throw new Error(`Memo too long: ${memoByteLength} bytes. Maximum 32 bytes.`);
   }
-  return pad(toHex(memo), { size: 32 });
+
+  // Convert string to buffer and pad to 32 bytes (right-padded with zeros)
+  const memoBuffer = Buffer.from(memo, 'utf8');
+  const paddedBuffer = setLengthLeft(memoBuffer, 32);
+  return bufferToHex(paddedBuffer) as Hex;
 }
 
 /**
- * Encode TIP-20 transferWithMemo function call using viem
+ * Encode TIP-20 transferWithMemo function call using ethereumjs-abi
  * @param to - Recipient address
  * @param amount - Amount in TIP-20 units (bigint)
  * @param memo - Optional memo string
  * @returns Encoded function call data
  */
 export function encodeTip20TransferWithMemo(to: Address, amount: bigint, memo?: string): Hex {
-  const memoBytes = memo ? stringToBytes32(memo) : pad('0x', { size: 32 });
+  const memoBytes = memo ? stringToBytes32(memo) : bufferToHex(setLengthLeft(Buffer.from(''), 32));
 
-  return encodeFunctionData({
-    abi: TIP20_TRANSFER_WITH_MEMO_ABI,
-    functionName: 'transferWithMemo',
-    args: [to, amount, memoBytes],
-  });
+  // Get the method ID for transferWithMemo
+  const types = ['address', 'uint256', 'bytes32'];
+  const methodId = EthereumAbi.methodID('transferWithMemo', types);
+
+  // Encode the arguments
+  const args = EthereumAbi.rawEncode(types, [to, amount.toString(), memoBytes]);
+
+  // Combine method ID and encoded arguments
+  return bufferToHex(Buffer.concat([methodId, args])) as Hex;
 }
 
 /**
@@ -125,7 +147,7 @@ export function isValidTip20Amount(amount: string): boolean {
     return false;
   }
   try {
-    const parsed = parseUnits(amount, TIP20_DECIMALS);
+    const parsed = amountToTip20Units(amount);
     return parsed >= 0n;
   } catch {
     return false;

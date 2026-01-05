@@ -4,7 +4,7 @@
 import { BitGoBase, CoinConstructor, MPCAlgorithm, NamedCoinConstructor } from '@bitgo/sdk-core';
 import { coins } from '@bitgo/statics';
 import { GetSendMethodArgsOptions, SendMethodArgs } from '@bitgo/abstract-eth';
-import type { Address } from 'viem';
+import type { Address } from './lib/types';
 import { Tempo } from './tempo';
 import { encodeTip20TransferWithMemo, amountToTip20Units, isValidAddress, isValidTip20Amount } from './lib/utils';
 
@@ -256,7 +256,7 @@ export class Tip20Token extends Tempo {
    * @returns Balance as a string in human-readable format (6 decimals)
    *
    * Note: This requires access to Tempo RPC or block explorer API
-   * TODO: Implement using viem publicClient when RPC details are available
+   * TODO: Implement when RPC details are available
    */
   async queryAddressTokenBalance(tokenContractAddress: string, walletAddress: string): Promise<string> {
     // Validate inputs

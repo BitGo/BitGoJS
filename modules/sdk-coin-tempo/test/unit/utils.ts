@@ -1,11 +1,11 @@
-import { getAddress } from 'viem';
+import { toChecksumAddress } from 'ethereumjs-util';
 import utils from '../../src/lib/utils';
 
 describe('Tempo Utils', function () {
   describe('Address Validation', function () {
     it('should validate a valid address', function () {
       // Valid checksummed Ethereum-style address
-      const validAddress = getAddress('0x742d35cc6634c0532925a3b844bc9e7595f0beb1');
+      const validAddress = toChecksumAddress('0x742d35cc6634c0532925a3b844bc9e7595f0beb1');
       utils.isValidAddress(validAddress).should.be.true();
     });
 

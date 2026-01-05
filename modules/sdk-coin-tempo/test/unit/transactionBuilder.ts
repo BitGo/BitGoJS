@@ -1,6 +1,6 @@
 import assert from 'assert';
 import { describe, it } from 'mocha';
-import { getAddress } from 'viem';
+import { toChecksumAddress } from 'ethereumjs-util';
 import { Tip20TransactionBuilder } from '../../src/lib/transactionBuilder';
 import {
   amountToTip20Units,
@@ -51,7 +51,7 @@ describe('TIP-20 Utilities', () => {
 
   describe('encodeTip20TransferWithMemo', () => {
     it('should encode transferWithMemo call', () => {
-      const to = getAddress('0x742d35cc6634c0532925a3b844bc9e7595f0beb1');
+      const to = toChecksumAddress('0x742d35cc6634c0532925a3b844bc9e7595f0beb1');
       const amount = 1500000n;
       const memo = '12345';
 
@@ -62,7 +62,7 @@ describe('TIP-20 Utilities', () => {
     });
 
     it('should encode transferWithMemo without memo', () => {
-      const to = getAddress('0x742d35cc6634c0532925a3b844bc9e7595f0beb1');
+      const to = toChecksumAddress('0x742d35cc6634c0532925a3b844bc9e7595f0beb1');
       const amount = 1500000n;
 
       const encoded = encodeTip20TransferWithMemo(to, amount);
@@ -87,9 +87,9 @@ describe('TIP-20 Utilities', () => {
 });
 
 describe('TIP-20 Transaction Builder', () => {
-  const mockToken = getAddress('0x1234567890123456789012345678901234567890');
-  const mockRecipient = getAddress('0x742d35cc6634c0532925a3b844bc9e7595f0beb1');
-  const mockFeeToken = getAddress('0xabcdefabcdefabcdefabcdefabcdefabcdefabcd');
+  const mockToken = toChecksumAddress('0x1234567890123456789012345678901234567890');
+  const mockRecipient = toChecksumAddress('0x742d35cc6634c0532925a3b844bc9e7595f0beb1');
+  const mockFeeToken = toChecksumAddress('0xabcdefabcdefabcdefabcdefabcdefabcdefabcd');
 
   describe('addOperation', () => {
     it('should add a single operation without memo', () => {
