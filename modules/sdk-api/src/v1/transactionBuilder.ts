@@ -21,46 +21,6 @@ import { common, getAddressP2PKH, getNetwork, sanitizeLegacyPath } from '@bitgo/
 import { verifyAddress } from './verifyAddress';
 import { tryPromise } from '../util';
 
-type Triple<T> = [T, T, T];
-
-interface V1Keychain {
-  xpub: string;
-  path?: string;
-  walletSubPath?: string;
-}
-
-/**
- * Parse chainPath like "/0/13" into { chain: 0, index: 13 }
- */
-function parseChainPath(chainPath: string): { chain: number; index: number } {
-  const parts = chainPath.split('/').filter((p) => p.length > 0);
-  if (parts.length !== 2) {
-    throw new Error(`Invalid chainPath: ${chainPath}`);
-  }
-  return { chain: parseInt(parts[0], 10), index: parseInt(parts[1], 10) };
-}
-
-/**
- * Create RootWalletKeys from v1 wallet keychains.
- * v1 keychains have a structure like { xpub, path: 'm', walletSubPath: '/0/0' }
- */
-function createRootWalletKeysFromV1Keychains(keychains: V1Keychain[]): utxolib.bitgo.RootWalletKeys {
-  if (keychains.length !== 3) {
-    throw new Error('Expected 3 keychains for v1 wallet');
-  }
-
-  const bip32Keys = keychains.map((k) => bip32.fromBase58(k.xpub)) as Triple<utxolib.BIP32Interface>;
-
-  // v1 wallets typically have walletSubPath like '/0/0' which we convert to derivation prefixes like '0/0'
-  const derivationPrefixes = keychains.map((k) => {
-    const walletSubPath = k.walletSubPath || '/0/0';
-    // Remove leading slash if present
-    return walletSubPath.startsWith('/') ? walletSubPath.slice(1) : walletSubPath;
-  }) as Triple<string>;
-
-  return new utxolib.bitgo.RootWalletKeys(bip32Keys, derivationPrefixes);
-}
-
 interface BaseOutput {
   amount: number;
   travelInfo?: any;
@@ -274,9 +234,6 @@ exports.createTransaction = function (params) {
   let inputAmount;
 
   let changeOutputs: Output[] = [];
-
-  // All outputs for the transaction (recipients, OP_RETURNs, change, fees)
-  let outputs: Output[] = [];
 
   let containsUncompressedPublicKeys = false;
 
@@ -646,8 +603,7 @@ exports.createTransaction = function (params) {
       throw new Error('transaction too large: estimated size ' + minerFeeInfo.size + ' bytes');
     }
 
-    // Reset outputs array (use outer scope variable)
-    outputs = [];
+    const outputs: Output[] = [];
 
     recipients.forEach(function (recipient) {
       let script;
@@ -783,75 +739,8 @@ exports.createTransaction = function (params) {
     });
   };
 
-  // Build PSBT with all signing metadata embedded
-  const buildPsbt = function (): utxolib.bitgo.UtxoPsbt {
-    const psbt = utxolib.bitgo.createPsbtForNetwork({ network });
-
-    // Need wallet keychains for PSBT metadata
-    const walletKeychains = params.wallet.keychains;
-    if (!walletKeychains || walletKeychains.length !== 3) {
-      throw new Error('Wallet keychains required for PSBT format');
-    }
-
-    const rootWalletKeys = createRootWalletKeysFromV1Keychains(walletKeychains);
-    utxolib.bitgo.addXpubsToPsbt(psbt, rootWalletKeys);
-
-    // Add multisig inputs with PSBT metadata
-    for (const unspent of unspents) {
-      const { chain, index } = parseChainPath(unspent.chainPath) as { chain: utxolib.bitgo.ChainCode; index: number };
-
-      const walletUnspent: utxolib.bitgo.WalletUnspent<bigint> = {
-        id: `${unspent.tx_hash}:${unspent.tx_output_n}`,
-        address: unspent.address,
-        chain,
-        index,
-        value: BigInt(unspent.value),
-      };
-
-      utxolib.bitgo.addWalletUnspentToPsbt(psbt, walletUnspent, rootWalletKeys, 'user', 'backup', {
-        skipNonWitnessUtxo: true,
-      });
-    }
-
-    // Fee single key inputs are not supported with PSBT yet - throw to trigger fallback to legacy
-    if (feeSingleKeyUnspentsUsed.length > 0) {
-      throw new Error('PSBT does not support feeSingleKey inputs - use legacy transaction format');
-    }
-
-    // Add outputs (recipients, change, fees, OP_RETURNs) - already calculated in outputs array
-    for (const output of outputs) {
-      psbt.addOutput({
-        script: (output as ScriptOutput).script,
-        value: BigInt(output.amount),
-      });
-    }
-
-    return psbt;
-  };
-
   // Serialize the transaction, returning what is needed to sign it
   const serialize = function () {
-    // Build and return PSBT format when usePsbt is explicitly true
-    // PSBT hex is returned in transactionHex field for backward compatibility
-    // Use utxolib.bitgo.isPsbt() to detect if transactionHex contains PSBT or legacy tx
-    if (params.usePsbt === true) {
-      const psbt = buildPsbt();
-      return {
-        transactionHex: psbt.toHex(),
-        fee: fee,
-        changeAddresses: changeOutputs.map(function (co) {
-          return _.pick(co, ['address', 'path', 'amount']);
-        }),
-        walletId: params.wallet.id(),
-        feeRate: feeRate,
-        instant: params.instant,
-        bitgoFee: bitgoFeeInfo,
-        estimatedSize: minerFeeInfo.size,
-        travelInfos: travelInfos,
-      };
-    }
-
-    // Legacy format: return transactionHex with separate unspents array
     // only need to return the unspents that were used and just the chainPath, redeemScript, and instant flag
     const pickedUnspents: any = _.map(unspents, function (unspent) {
       return _.pick(unspent, ['chainPath', 'redeemScript', 'instant', 'witnessScript', 'script', 'value']);
