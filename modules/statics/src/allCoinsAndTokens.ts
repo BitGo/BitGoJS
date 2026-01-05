@@ -2247,6 +2247,8 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
     ],
     KeyCurve.Secp256k1,
     '',
@@ -2267,6 +2269,8 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
     ],
     KeyCurve.Secp256k1,
     '',
@@ -2287,6 +2291,8 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
     ]
   ),
   account(
@@ -2304,6 +2310,8 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
     ]
   ),
   account(
