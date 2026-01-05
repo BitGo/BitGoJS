@@ -202,7 +202,6 @@ describe('Wallet Prototype Methods', function () {
           address: '',
         },
         opReturns: { 'BitGo p2sh test': 1000 },
-        usePsbt: false,
       })) as any;
       transaction.transactionHex.should.equal(
         '010000000144dea5cb05425f94976e887ccba5686a9a12a3f49710b021508d3d9cd8de16b80100000000ffffffff02e803000000000000116a0f426974476f2070327368207465737422a107000000000017a914d039cb3344294a5a384a5508a006444c420cbc118700000000'
@@ -226,266 +225,6 @@ describe('Wallet Prototype Methods', function () {
       signature2.tx.should.equal(
         '010000000144dea5cb05425f94976e887ccba5686a9a12a3f49710b021508d3d9cd8de16b801000000fdfd0000473044022021fa73d5fe61ac8942cd70ff4507c574677ce747de5bc46c3dd2e38ec2448fce022047906d2c0154337ab96041e8fb58c243b9bce5f8818fa991643c1260a1859ad80147304402202ae01f01b5ae0c3fa7d67ac73db81932cb5aca10db16a99063fef45e3f1398cd022055001ba7e163cb350910fc7321ecd7eb6359b321d4c04887484d9c7284b78c4701004c695221031cd227e40ad61b4e137109cb2845eb6f5a584ed5c67d9d3135cdaa5045a842ea2103a2e7b54c7b2da0992555353b8e26c6acff4248f4351f08787bf3e2efc94b658321025c2a6cde33c2d73ccf12eecf64c54f08f722c2f073824498950695e9883b141253aeffffffff02e803000000000000116a0f426974476f2070327368207465737422a107000000000017a914d039cb3344294a5a384a5508a006444c420cbc118700000000'
       );
-    });
-
-    it('p2sh PSBT produces same unsigned tx as legacy', async function () {
-      const p2shAddress = fakeProdWallet.generateAddress({ path: '/0/13', segwit: false });
-      const unspent: any = {
-        addresses: ['2NCEDmmKNNnqKvnWw7pE3RLzuFe5aHHVy1X'],
-        value: '0.00504422',
-        value_int: 504422,
-        txid: 'b816ded89c3d8d5021b01097f4a3129a6a68a5cb7c886e97945f4205cba5de44',
-        n: 1,
-        script_pub_key: {
-          asm: 'OP_HASH160 d039cb3344294a5a384a5508a006444c420cbc11 OP_EQUAL',
-          hex: 'a914d039cb3344294a5a384a5508a006444c420cbc1187',
-        },
-        req_sigs: 1,
-        type: 'scripthash',
-        confirmations: 9,
-        id: 61330229,
-      };
-      _.extend(unspent, p2shAddress);
-      unspent.value = unspent.value_int;
-      unspent.tx_hash = unspent.txid;
-      unspent.tx_output_n = unspent.n;
-      unspent.script = unspent.outputScript;
-
-      const txParams = {
-        changeAddress: p2shAddress.address,
-        unspents: [unspent],
-        recipients: {},
-        noSplitChange: true,
-        forceChangeAtEnd: true,
-        feeRate: 10000,
-        bitgoFee: {
-          amount: 0,
-          address: '',
-        },
-        opReturns: { 'BitGo p2sh test': 1000 },
-      };
-
-      // Create legacy transaction
-      nock(bgUrl).post('/api/v1/billing/address').reply(200, { address: '2MswQjkvN6oWYdE7L2brJ5cAAMjPmG59oco' });
-      const legacyTx = (await fakeProdWallet.createTransaction({ ...txParams, usePsbt: false })) as any;
-
-      // Create PSBT transaction (explicitly)
-      nock(bgUrl).post('/api/v1/billing/address').reply(200, { address: '2MswQjkvN6oWYdE7L2brJ5cAAMjPmG59oco' });
-      const psbtTx = (await fakeProdWallet.createTransaction({ ...txParams, usePsbt: true })) as any;
-
-      // Extract unsigned tx from PSBT and compare
-      const psbt = utxolib.bitgo.createPsbtFromHex(psbtTx.transactionHex, utxolib.networks.bitcoin);
-      const unsignedTxFromPsbt = psbt.getUnsignedTx().toHex();
-
-      // The unsigned transaction hex should be identical
-      legacyTx.transactionHex.should.equal(unsignedTxFromPsbt);
-
-      // Fees should also match
-      legacyTx.fee.should.equal(psbtTx.fee);
-
-      // Clean up nock mocks to avoid interference with other tests
-      nock.cleanAll();
-    });
-
-    it('segwit PSBT produces same unsigned tx as legacy', async function () {
-      const segwitAddress = fakeProdWallet.generateAddress({ path: '/10/13', segwit: true });
-      const unspent: any = {
-        addresses: ['2MxKkH8yB3S9YWmTQRbvmborYQyQnH5petP'],
-        value: '0.18750000',
-        value_int: 18750000,
-        txid: '7d282878a85daee5d46e043827daed57596d75d1aa6e04fd0c09a36f9130881f',
-        n: 0,
-        script_pub_key: {
-          asm: 'OP_HASH160 37b393fce627a0ec634eb543dda1e608e2d1c78a OP_EQUAL',
-          hex: 'a91437b393fce627a0ec634eb543dda1e608e2d1c78a87',
-        },
-        req_sigs: 1,
-        type: 'scripthash',
-        confirmations: 0,
-        id: 61331617,
-      };
-      _.extend(unspent, segwitAddress);
-      unspent.value = unspent.value_int;
-      unspent.tx_hash = unspent.txid;
-      unspent.tx_output_n = unspent.n;
-      unspent.script = unspent.outputScript;
-
-      const txParams = {
-        changeAddress: segwitAddress.address,
-        unspents: [unspent],
-        recipients: {},
-        noSplitChange: true,
-        forceChangeAtEnd: true,
-        feeRate: 10000,
-        bitgoFee: {
-          amount: 0,
-          address: '',
-        },
-        opReturns: { 'BitGo segwit test': 1000 },
-      };
-
-      // Create legacy transaction
-      nock(bgUrl).post('/api/v1/billing/address').reply(200, { address: '2MswQjkvN6oWYdE7L2brJ5cAAMjPmG59oco' });
-      const legacyTx = (await fakeProdWallet.createTransaction({ ...txParams, usePsbt: false })) as any;
-
-      // Create PSBT transaction (explicitly)
-      nock(bgUrl).post('/api/v1/billing/address').reply(200, { address: '2MswQjkvN6oWYdE7L2brJ5cAAMjPmG59oco' });
-      const psbtTx = (await fakeProdWallet.createTransaction({ ...txParams, usePsbt: true })) as any;
-
-      // Extract unsigned tx from PSBT and compare
-      const psbt = utxolib.bitgo.createPsbtFromHex(psbtTx.transactionHex, utxolib.networks.bitcoin);
-      const unsignedTxFromPsbt = psbt.getUnsignedTx().toHex();
-
-      // The unsigned transaction hex should be identical
-      legacyTx.transactionHex.should.equal(unsignedTxFromPsbt);
-
-      // Fees should also match
-      legacyTx.fee.should.equal(psbtTx.fee);
-
-      // Clean up nock mocks to avoid interference with other tests
-      nock.cleanAll();
-    });
-
-    it('p2sh with PSBT format', async function () {
-      const p2shAddress = fakeProdWallet.generateAddress({ path: '/0/13', segwit: false });
-      const unspent: any = {
-        addresses: ['2NCEDmmKNNnqKvnWw7pE3RLzuFe5aHHVy1X'],
-        value: '0.00504422',
-        value_int: 504422,
-        txid: 'b816ded89c3d8d5021b01097f4a3129a6a68a5cb7c886e97945f4205cba5de44',
-        n: 1,
-        script_pub_key: {
-          asm: 'OP_HASH160 d039cb3344294a5a384a5508a006444c420cbc11 OP_EQUAL',
-          hex: 'a914d039cb3344294a5a384a5508a006444c420cbc1187',
-        },
-        req_sigs: 1,
-        type: 'scripthash',
-        confirmations: 9,
-        id: 61330229,
-      };
-      _.extend(unspent, p2shAddress);
-      unspent.value = unspent.value_int;
-      unspent.tx_hash = unspent.txid;
-      unspent.tx_output_n = unspent.n;
-      unspent.script = unspent.outputScript;
-
-      nock(bgUrl).post('/api/v1/billing/address').reply(200, { address: '2MswQjkvN6oWYdE7L2brJ5cAAMjPmG59oco' });
-
-      const transaction = (await fakeProdWallet.createTransaction({
-        changeAddress: p2shAddress.address,
-        unspents: [unspent],
-        recipients: {},
-        noSplitChange: true,
-        forceChangeAtEnd: true,
-        feeRate: 10000,
-        bitgoFee: {
-          amount: 0,
-          address: '',
-        },
-        opReturns: { 'BitGo p2sh test': 1000 },
-        usePsbt: true, // Explicitly request PSBT format
-      })) as any;
-
-      // Verify PSBT format is returned in transactionHex
-      should.exist(transaction.transactionHex);
-      should.ok(utxolib.bitgo.isPsbt(transaction.transactionHex));
-      should.not.exist(transaction.unspents);
-
-      // Parse and validate the PSBT
-      const psbt = utxolib.bitgo.createPsbtFromHex(transaction.transactionHex, utxolib.networks.bitcoin);
-      psbt.data.inputs.length.should.equal(1);
-      psbt.data.outputs.length.should.equal(2); // OP_RETURN + change
-
-      // Verify input has required PSBT metadata
-      const input = psbt.data.inputs[0];
-      should.exist(input.witnessUtxo);
-      should.exist(input.redeemScript);
-      should.exist(input.bip32Derivation);
-      input.bip32Derivation!.length.should.equal(3); // user, backup, bitgo
-
-      // Verify globalXpubs are set
-      should.exist(psbt.data.globalMap.globalXpub);
-      psbt.data.globalMap.globalXpub!.length.should.equal(3);
-
-      // Sign with user key - auto-detects PSBT in transactionHex
-      const signedResult = (await fakeProdWallet.signTransaction({
-        transactionHex: transaction.transactionHex,
-        keychain: userKeypair,
-      })) as any;
-
-      should.exist(signedResult.tx);
-
-      // Parse signed PSBT and verify signature
-      const signedPsbt = utxolib.bitgo.createPsbtFromHex(signedResult.tx, utxolib.networks.bitcoin);
-      should.ok(signedPsbt.validateSignaturesOfInputHD(0, utxolib.bip32.fromBase58(userKeypair.xpub)));
-    });
-
-    it('segwit with PSBT format', async function () {
-      const segwitAddress = fakeProdWallet.generateAddress({ path: '/10/13', segwit: true });
-      const unspent: any = {
-        addresses: ['2MxKkH8yB3S9YWmTQRbvmborYQyQnH5petP'],
-        value: '0.18750000',
-        value_int: 18750000,
-        txid: '7d282878a85daee5d46e043827daed57596d75d1aa6e04fd0c09a36f9130881f',
-        n: 0,
-        script_pub_key: {
-          asm: 'OP_HASH160 37b393fce627a0ec634eb543dda1e608e2d1c78a OP_EQUAL',
-          hex: 'a91437b393fce627a0ec634eb543dda1e608e2d1c78a87',
-        },
-        req_sigs: 1,
-        type: 'scripthash',
-        confirmations: 0,
-        id: 61331617,
-      };
-      _.extend(unspent, segwitAddress);
-      unspent.value = unspent.value_int;
-      unspent.tx_hash = unspent.txid;
-      unspent.tx_output_n = unspent.n;
-      unspent.script = unspent.outputScript;
-
-      nock(bgUrl).post('/api/v1/billing/address').reply(200, { address: '2MswQjkvN6oWYdE7L2brJ5cAAMjPmG59oco' });
-
-      const transaction = (await fakeProdWallet.createTransaction({
-        changeAddress: segwitAddress.address,
-        unspents: [unspent],
-        recipients: {},
-        noSplitChange: true,
-        forceChangeAtEnd: true,
-        feeRate: 10000,
-        bitgoFee: {
-          amount: 0,
-          address: '',
-        },
-        opReturns: { 'BitGo segwit test': 1000 },
-        usePsbt: true, // Explicitly request PSBT format
-      })) as any;
-
-      // Verify PSBT format is returned in transactionHex
-      should.exist(transaction.transactionHex);
-      should.ok(utxolib.bitgo.isPsbt(transaction.transactionHex));
-
-      // Parse and validate the PSBT
-      const psbt = utxolib.bitgo.createPsbtFromHex(transaction.transactionHex, utxolib.networks.bitcoin);
-      psbt.data.inputs.length.should.equal(1);
-
-      // Verify input has segwit PSBT metadata
-      const input = psbt.data.inputs[0];
-      should.exist(input.witnessUtxo);
-      should.exist(input.witnessScript);
-      should.exist(input.redeemScript);
-      should.exist(input.bip32Derivation);
-
-      // Sign with user key - auto-detects PSBT in transactionHex
-      const signedResult = (await fakeProdWallet.signTransaction({
-        transactionHex: transaction.transactionHex,
-        keychain: userKeypair,
-      })) as any;
-
-      should.exist(signedResult.tx);
-
-      // Parse signed PSBT and verify signature
-      const signedPsbt = utxolib.bitgo.createPsbtFromHex(signedResult.tx, utxolib.networks.bitcoin);
-      should.ok(signedPsbt.validateSignaturesOfInputHD(0, utxolib.bip32.fromBase58(userKeypair.xpub)));
     });
 
     it('BCH p2sh', async function () {
@@ -525,7 +264,6 @@ describe('Wallet Prototype Methods', function () {
           address: '',
         },
         opReturns: { 'BitGo p2sh test': 1000 },
-        usePsbt: false,
       })) as any;
       transaction.transactionHex.should.equal(
         '010000000144dea5cb05425f94976e887ccba5686a9a12a3f49710b021508d3d9cd8de16b80100000000ffffffff02e803000000000000116a0f426974476f2070327368207465737422a107000000000017a914d039cb3344294a5a384a5508a006444c420cbc118700000000'
@@ -588,7 +326,6 @@ describe('Wallet Prototype Methods', function () {
           address: '',
         },
         opReturns: { 'BitGo segwit test': 1000 },
-        usePsbt: false,
       })) as any;
       transaction.transactionHex.should.equal(
         '01000000011f8830916fa3090cfd046eaad1756d5957edda2738046ed4e5ae5da87828287d0000000000ffffffff02e803000000000000136a11426974476f2073656777697420746573740e0f1e010000000017a91437b393fce627a0ec634eb543dda1e608e2d1c78a8700000000'
@@ -657,7 +394,6 @@ describe('Wallet Prototype Methods', function () {
           amount: 0,
           address: '',
         },
-        usePsbt: false,
       });
 
       scope.isDone().should.be.true();
@@ -748,7 +484,6 @@ describe('Wallet Prototype Methods', function () {
           address: '',
         },
         opReturns: { 'BitGo segwit test': 1000 },
-        usePsbt: false,
       })) as any;
       transaction.transactionHex.should.equal(
         '01000000011f8830916fa3090cfd046eaad1756d5957edda2738046ed4e5ae5da87828287d0000000000ffffffff02e803000000000000136a11426974476f2073656777697420746573740e0f1e010000000017a91437b393fce627a0ec634eb543dda1e608e2d1c78a8700000000'
@@ -816,7 +551,6 @@ describe('Wallet Prototype Methods', function () {
           amount: 81760,
           address: '2ND7jQR5itjGTbh3DKgbpZWSY9ungDrwcwb',
         },
-        usePsbt: false,
       })) as any;
       transaction.transactionHex.should.equal(
         '01000000027c75f8b4061212ec4669ef10c7a85a6bd8b677e74ecffef72df1e35b0ace54f60100000000ffffffff249f4f3b89110526e9d71f33679c5303dbf00ef43dac90b867ae2f043f9c40a40000000000ffffffff030084d71700000000206a1e426974476f206d6978656420703273682026207365677769742074657374b08ff9020000000017a9148153e7a35508088b6cf599226792c7de2dbff25287603f01000000000017a914d9f7be47975c036f94228b0bfd70701912758ba98700000000'
@@ -898,7 +632,6 @@ describe('Wallet Prototype Methods', function () {
           amount: 81760,
           address: '2ND7jQR5itjGTbh3DKgbpZWSY9ungDrwcwb',
         },
-        usePsbt: false,
       })) as any;
       transaction.transactionHex.should.equal(
         '01000000027c75f8b4061212ec4669ef10c7a85a6bd8b677e74ecffef72df1e35b0ace54f60100000000ffffffff249f4f3b89110526e9d71f33679c5303dbf00ef43dac90b867ae2f043f9c40a40000000000ffffffff04e09304000000000022002047044b55dab740b0c302853b27b8e3f50a79023aca367c94ee006f11bb79368f0084d71700000000206a1e426974476f206d69786564207032736820262073656777697420746573747cfaf4020000000017a9148153e7a35508088b6cf599226792c7de2dbff25287603f01000000000017a914d9f7be47975c036f94228b0bfd70701912758ba98700000000'
