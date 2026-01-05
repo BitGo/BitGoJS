@@ -1,4 +1,4 @@
-import { ofcerc20, tofcerc20 } from '../ofc';
+import { OfcCoin, ofcerc20, tofcerc20 } from '../ofc';
 import { CoinFeature, UnderlyingAsset } from '../base';
 import { AccountCoin } from '../account';
 
@@ -4854,11 +4854,11 @@ export const tOfcErc20Coins = [
   ofcerc20(
     '1458bca6-e0d3-455e-81c7-55862dc5af52',
     'ofcmon:usdc',
-    'USDC:MON',
+    'MON:USDC',
     6,
     underlyingAssetForSymbol('mon:usdc'),
     undefined,
-    undefined,
+    [...OfcCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN],
     '',
     undefined,
     undefined,
@@ -4888,7 +4888,7 @@ export const tOfcErc20Coins = [
     6,
     underlyingAssetForSymbol('xdc:usdc'),
     undefined,
-    undefined,
+    [...OfcCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN],
     '',
     undefined,
     undefined,
@@ -4966,6 +4966,20 @@ export const tOfcErc20Coins = [
     undefined,
     true,
     'ip'
+  ),
+  tofcerc20(
+    '94eb6074-b01f-43b4-81ed-d53fb5c2566d',
+    'ofctip:tmt',
+    'TMT',
+    6,
+    underlyingAssetForSymbol('tip:tmt'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'tip'
   ),
 ];
 
