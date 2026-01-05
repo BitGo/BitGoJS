@@ -5,7 +5,7 @@
  */
 
 import { bip32 } from '@bitgo/secp256k1';
-import { isValidAddress as isValidEthAddress, bufferToHex, setLengthLeft } from 'ethereumjs-util';
+import { isValidAddress as isValidEthAddress, bufferToHex, setLengthRight } from 'ethereumjs-util';
 import EthereumAbi from 'ethereumjs-abi';
 import BigNumber from 'bignumber.js';
 import { TIP20_DECIMALS } from './constants';
@@ -106,9 +106,9 @@ export function stringToBytes32(memo: string): Hex {
     throw new Error(`Memo too long: ${memoByteLength} bytes. Maximum 32 bytes.`);
   }
 
-  // Convert string to buffer and pad to 32 bytes (right-padded with zeros)
+  // Convert string to buffer and pad to 32 bytes (left-aligned, right-padded with zeros)
   const memoBuffer = Buffer.from(memo, 'utf8');
-  const paddedBuffer = setLengthLeft(memoBuffer, 32);
+  const paddedBuffer = setLengthRight(memoBuffer, 32);
   return bufferToHex(paddedBuffer) as Hex;
 }
 
@@ -120,14 +120,15 @@ export function stringToBytes32(memo: string): Hex {
  * @returns Encoded function call data
  */
 export function encodeTip20TransferWithMemo(to: Address, amount: bigint, memo?: string): Hex {
-  const memoBytes = memo ? stringToBytes32(memo) : bufferToHex(setLengthLeft(Buffer.from(''), 32));
+  const memoBytes = memo ? stringToBytes32(memo) : bufferToHex(setLengthRight(Buffer.from(''), 32));
 
   // Get the method ID for transferWithMemo
   const types = ['address', 'uint256', 'bytes32'];
   const methodId = EthereumAbi.methodID('transferWithMemo', types);
 
-  // Encode the arguments
-  const args = EthereumAbi.rawEncode(types, [to, amount.toString(), memoBytes]);
+  // Encode the arguments - convert bigint to hex string for ABI encoding
+  const amountHex = '0x' + amount.toString(16);
+  const args = EthereumAbi.rawEncode(types, [to, amountHex, memoBytes]);
 
   // Combine method ID and encoded arguments
   return bufferToHex(Buffer.concat([methodId, args])) as Hex;
