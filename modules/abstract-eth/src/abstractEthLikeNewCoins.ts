@@ -48,8 +48,8 @@ import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
 import { bip32 } from '@bitgo/secp256k1';
 import {
   BaseCoin as StaticsBaseCoin,
-  ChainIdNotFoundError,
   CoinFeature,
+  CoinMap,
   coins,
   EthereumNetwork as EthLikeNetwork,
   ethGasConfigs,
@@ -545,10 +545,7 @@ export abstract class AbstractEthLikeNewCoins extends AbstractEthLikeCoin {
    * @returns {EthLikeCommon.default}
    */
   static getCustomChainCommon(chainId: number): EthLikeCommon.default {
-    const coinName = coins.coinNameFromChainId(chainId);
-    if (!coinName) {
-      throw new ChainIdNotFoundError(chainId);
-    }
+    const coinName = CoinMap.coinNameFromChainId(chainId);
     const coin = coins.get(coinName);
     const ethLikeCommon = getCommon(coin.network as EthLikeNetwork);
     return ethLikeCommon;
