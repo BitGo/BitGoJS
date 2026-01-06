@@ -16,6 +16,7 @@ import {
   erc721Token,
   fiat,
   flrErc20,
+  xdcErc20,
   gasTankAccount,
   hederaCoin,
   hederaToken,
@@ -34,6 +35,7 @@ import {
   terc1155,
   terc721,
   tflrErc20,
+  txdcErc20,
   topethErc20,
   tronToken,
   tstellarToken,
@@ -2980,61 +2982,55 @@ export const allCoinsAndTokens = [
   ),
 
   // XDC mainnet tokens
-  erc20Token(
+  xdcErc20(
     'b820932d-5772-49ae-a055-a59760f3e4cf',
     'xdc:usdc',
     'USD Coin',
     6,
     '0xfa2958cb79b0491cc627c1557f441ef849ca8eb1',
-    UnderlyingAsset['xdc:usdc'],
-    Networks.main.xdc
+    UnderlyingAsset['xdc:usdc']
   ),
-  erc20Token(
+  xdcErc20(
     '8914a1bd-1495-46df-84da-445c6d49edb2',
     'xdc:lbt',
     'Law Block Token',
     18,
     '0x05940b2df33d6371201e7ae099ced4c363855dfe',
-    UnderlyingAsset['xdc:lbt'],
-    Networks.main.xdc
+    UnderlyingAsset['xdc:lbt']
   ),
-  erc20Token(
+  xdcErc20(
     'f03302de-b06b-4ddc-94a2-ad7e89896725',
     'xdc:gama',
     'Gama Token',
     18,
     '0x3a170c7c987f55c84f28733bfa27962d8cdd5d3b',
-    UnderlyingAsset['xdc:gama'],
-    Networks.main.xdc
+    UnderlyingAsset['xdc:gama']
   ),
-  erc20Token(
+  xdcErc20(
     'bdf602ea-3a6c-407a-8afd-33d6c04a8bc3',
     'xdc:srx',
     'STORX',
     18,
     '0x5d5f074837f5d4618b3916ba74de1bf9662a3fed',
-    UnderlyingAsset['xdc:srx'],
-    Networks.main.xdc
+    UnderlyingAsset['xdc:srx']
   ),
-  erc20Token(
+  xdcErc20(
     'd42c9497-0987-497d-97f2-8b19c539e350',
     'xdc:weth',
     'Wrapped Ether',
     18,
     '0xa7348290de5cf01772479c48d50dec791c3fc212',
-    UnderlyingAsset['xdc:weth'],
-    Networks.main.xdc
+    UnderlyingAsset['xdc:weth']
   ),
 
   // XDC testnet tokens
-  erc20Token(
+  txdcErc20(
     '5fc561e7-5fb5-4702-9860-9f48d90f1d45',
     'txdc:tmt',
     'XDC Network TMT',
     6,
     '0xb283ec8dad644effc5c4c50bb7bb21442ac3c2db',
-    UnderlyingAsset['txdc:tmt'],
-    Networks.test.xdc
+    UnderlyingAsset['txdc:tmt']
   ),
 
   // MON mainnet tokens

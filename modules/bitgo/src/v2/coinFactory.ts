@@ -215,6 +215,7 @@ import {
   World,
   WorldToken,
   Xdc,
+  XdcToken,
   Xlm,
   Xrp,
   XrpToken,
@@ -553,6 +554,10 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   );
 
   FlrToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
+    coinFactory.register(name, coinConstructor);
+  });
+
+  XdcToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
     coinFactory.register(name, coinConstructor);
   });
 
@@ -1081,10 +1086,8 @@ export function getTokenConstructor(tokenConfig: TokenConfig): CoinConstructor |
       return EthLikeErc20Token.createTokenConstructor(tokenConfig as EthLikeTokenConfig, coinNames);
     }
     case 'xdc':
-    case 'txdc': {
-      const coinNames = { Mainnet: 'xdc', Testnet: 'txdc' };
-      return EthLikeErc20Token.createTokenConstructor(tokenConfig as EthLikeTokenConfig, coinNames);
-    }
+    case 'txdc':
+      return XdcToken.createTokenConstructor(tokenConfig as EthLikeTokenConfig);
     default:
       return undefined;
   }
