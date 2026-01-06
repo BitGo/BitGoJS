@@ -2166,8 +2166,8 @@ class Plume extends Mainnet implements EthereumNetwork {
 class HederaEVMTestnet extends Testnet implements EthereumNetwork {
   name = 'Testnet Hedera EVM';
   family = CoinFamily.HBAREVM;
-  explorerUrl = 'https://hashscan.io/mainnet/transaction/';
-  accountExplorerUrl = 'https://hashscan.io/mainnet/account/';
+  explorerUrl = 'https://hashscan.io/testnet/transaction/';
+  accountExplorerUrl = 'https://hashscan.io/testnet/account/';
   chainId = 296;
   nativeCoinOperationHashPrefix = '296';
 }
@@ -2175,8 +2175,8 @@ class HederaEVMTestnet extends Testnet implements EthereumNetwork {
 class HederaEVM extends Mainnet implements EthereumNetwork {
   name = 'Hedera EVM';
   family = CoinFamily.HBAREVM;
-  explorerUrl = 'https://hashscan.io/testnet/transaction/';
-  accountExplorerUrl = 'https://hashscan.io/testnet/account/';
+  explorerUrl = 'https://hashscan.io/mainnet/transaction/';
+  accountExplorerUrl = 'https://hashscan.io/mainnet/account/';
   chainId = 295;
   nativeCoinOperationHashPrefix = '295';
 }
