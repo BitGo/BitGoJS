@@ -1,6 +1,7 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import { BIP32Interface, bip32 } from '@bitgo/secp256k1';
 import { Dimensions } from '@bitgo/unspents';
+import { fixedScriptWallet } from '@bitgo/wasm-utxo';
 import { BitGoBase, IWallet, Keychain, Triple, Wallet } from '@bitgo/sdk-core';
 import { decrypt } from '@bitgo/sdk-api';
 
@@ -406,10 +407,10 @@ function createSweepTransactionWasm<TNumber extends number | bigint = number>(
   const wasmPsbt = createEmptyWasmPsbt(network, walletKeys);
   addWalletInputsToWasmPsbt(wasmPsbt, unspentsBigint, walletKeys);
 
-  // Convert to utxolib PSBT temporarily for dimension calculation
-  const tempPsbt = wasmPsbtToUtxolibPsbt(wasmPsbt, network);
-  const vsize = Dimensions.fromPsbt(tempPsbt)
-    .plus(Dimensions.fromOutput({ script: utxolib.address.toOutputScript(targetAddress, network) }))
+  // Calculate dimensions using wasm-utxo Dimensions
+  const targetOutputScript = utxolib.address.toOutputScript(targetAddress, network);
+  const vsize = fixedScriptWallet.Dimensions.fromPsbt(wasmPsbt)
+    .plus(fixedScriptWallet.Dimensions.fromOutput(new Uint8Array(targetOutputScript)))
     .getVSize();
   const fee = BigInt(Math.round(vsize * feeRateSatVB));
 
