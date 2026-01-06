@@ -3708,6 +3708,71 @@ describe('V2 Wallets:', function () {
         assert.equal(error.message, 'Password shared is incorrect for this wallet');
       }
     });
+
+    it('should fetch keychain only ONCE when sharing with multiple users', async () => {
+      const walletPassphrase = 'bitgo1234';
+      const pub = 'Zo1ggzTUKMY5bYnDvT5mtVeZxzf2FaLTbKkmvGUhUQk';
+      const prv1 = 'xprv1';
+
+      // Create multiple users to share with
+      const users = [
+        {
+          userId: 'user1@example.com',
+          permissions: ['view', 'spend'],
+          pubKey: '02705a6d33a2459feb537e7abe36aaad8c11532cdbffa3a2e4e58868467d51f532',
+          path: 'm/999999/1/1',
+        },
+        {
+          userId: 'user2@example.com',
+          permissions: ['view', 'spend'],
+          pubKey: '03705a6d33a2459feb537e7abe36aaad8c11532cdbffa3a2e4e58868467d51f533',
+          path: 'm/999999/1/2',
+        },
+        {
+          userId: 'user3@example.com',
+          permissions: ['view', 'spend'],
+          pubKey: '02815a6d33a2459feb537e7abe36aaad8c11532cdbffa3a2e4e58868467d51f534',
+          path: 'm/999999/1/3',
+        },
+      ];
+
+      const params: BulkWalletShareOptions = {
+        walletPassphrase,
+        keyShareOptions: users,
+      };
+
+      const getDecryptedKeychainStub = sinon.stub(wallet, 'getDecryptedKeychainForSharing').resolves({
+        prv: prv1,
+        pub,
+      });
+
+      sinon.stub(wallet, 'createBulkKeyShares').resolves({
+        shares: users.map((user) => ({
+          id: user.userId,
+          coin: walletData.coin,
+          wallet: walletData.id,
+          fromUser: 'fromUser',
+          toUser: user.userId,
+          permissions: user.permissions,
+          keychain: {
+            pub: 'dummyPub',
+            encryptedPrv: 'dummyEncryptedPrv',
+            fromPubKey: 'dummyFromPubKey',
+            toPubKey: user.pubKey,
+            path: user.path,
+          },
+        })),
+      });
+
+      await wallet.createBulkWalletShare(params);
+
+      // Verify keychain is fetched only ONCE, not once per user
+      assert.strictEqual(
+        getDecryptedKeychainStub.callCount,
+        1,
+        'getDecryptedKeychainForSharing should be called exactly once, not once per user'
+      );
+    });
   });
 
   describe('List Wallets:', function () {
