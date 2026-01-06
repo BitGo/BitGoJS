@@ -3149,6 +3149,27 @@ export const allCoinsAndTokens = [
     Networks.test.hederaEVM
   ),
 
+  erc20Token(
+    '8f896fc5-4c33-4104-a316-b75000160f7b',
+    'xpl:syzusd',
+    'Stake Yuzu USD',
+    18,
+    '0xc8a8df9b210243c55d31c73090f06787ad0a1bf6',
+    UnderlyingAsset['xpl:syzusd'],
+    Networks.main.xpl
+  ),
+
+  erc20Token(
+    'de7671fa-ddba-4ea0-9673-a24d40f752d4',
+    'xpl:usdto',
+    'USDTO',
+    6,
+    '0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb',
+    UnderlyingAsset['xpl:usdto'],
+    Networks.main.xpl,
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.EIP1559, CoinFeature.STABLECOIN]
+  ),
+
   hederaCoin(
     '98aad956-27ee-45dd-aa43-6a23c9a1d1d0',
     'hbar',
