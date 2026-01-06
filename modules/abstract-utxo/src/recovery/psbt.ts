@@ -19,7 +19,7 @@ export type PsbtBackend = 'wasm-utxo' | 'utxolib';
 /**
  * Check if a chain code is for a taproot script type
  */
-function isTaprootChain(chain: ChainCode): boolean {
+export function isTaprootChain(chain: ChainCode): boolean {
   return (
     (chainCodesP2tr as readonly number[]).includes(chain) || (chainCodesP2trMusig2 as readonly number[]).includes(chain)
   );
@@ -28,7 +28,7 @@ function isTaprootChain(chain: ChainCode): boolean {
 /**
  * Convert utxolib Network to wasm-utxo network name
  */
-function toNetworkName(network: utxolib.Network): utxolibCompat.UtxolibName {
+export function toNetworkName(network: utxolib.Network): utxolibCompat.UtxolibName {
   const networkName = utxolib.getNetworkName(network);
   if (!networkName) {
     throw new Error(`Invalid network`);
@@ -129,32 +129,53 @@ const ZCASH_DEFAULT_BLOCK_HEIGHTS: Record<string, number> = {
 };
 
 /**
- * Create a backup key recovery PSBT using wasm-utxo
+ * Options for creating an empty wasm-utxo PSBT
  */
-function createBackupKeyRecoveryPsbtWasm(
+export interface CreateEmptyWasmPsbtOptions {
+  /** Block height for Zcash networks (required to determine consensus branch ID) */
+  blockHeight?: number;
+}
+
+/**
+ * Create an empty wasm-utxo BitGoPsbt for a given network.
+ * Handles Zcash networks specially by using ZcashBitGoPsbt.
+ *
+ * @param network - The network for the PSBT
+ * @param rootWalletKeys - The wallet keys
+ * @param options - Optional settings (e.g., blockHeight for Zcash)
+ * @returns A wasm-utxo BitGoPsbt instance
+ */
+export function createEmptyWasmPsbt(
   network: utxolib.Network,
   rootWalletKeys: RootWalletKeys,
-  unspents: WalletUnspent<bigint>[],
-  options: CreateBackupKeyRecoveryPsbtOptions
-): utxolib.bitgo.UtxoPsbt {
-  const { feeRateSatVB, recoveryDestination, keyRecoveryServiceFee, keyRecoveryServiceFeeAddress } = options;
-
+  options?: CreateEmptyWasmPsbtOptions
+): fixedScriptWallet.BitGoPsbt {
   const networkName = toNetworkName(network);
-
-  // Create PSBT with wasm-utxo and add wallet inputs
-  // wasm-utxo's RootWalletKeys.from() accepts utxolib's RootWalletKeys format (IWalletKeys interface)
-  let wasmPsbt: fixedScriptWallet.BitGoPsbt;
 
   if (isZcashNetwork(networkName)) {
     // For Zcash, use ZcashBitGoPsbt which requires block height to determine consensus branch ID
-    const blockHeight = options.blockHeight ?? ZCASH_DEFAULT_BLOCK_HEIGHTS[networkName];
-    wasmPsbt = fixedScriptWallet.ZcashBitGoPsbt.createEmpty(networkName as 'zcash' | 'zcashTest', rootWalletKeys, {
+    const blockHeight = options?.blockHeight ?? ZCASH_DEFAULT_BLOCK_HEIGHTS[networkName];
+    return fixedScriptWallet.ZcashBitGoPsbt.createEmpty(networkName as 'zcash' | 'zcashTest', rootWalletKeys, {
       blockHeight,
     });
-  } else {
-    wasmPsbt = fixedScriptWallet.BitGoPsbt.createEmpty(networkName, rootWalletKeys);
   }
 
+  return fixedScriptWallet.BitGoPsbt.createEmpty(networkName, rootWalletKeys);
+}
+
+/**
+ * Add wallet inputs from unspents to a wasm-utxo BitGoPsbt.
+ * Handles taproot inputs by setting the appropriate signPath.
+ *
+ * @param wasmPsbt - The wasm-utxo BitGoPsbt to add inputs to
+ * @param unspents - The wallet unspents to add as inputs
+ * @param rootWalletKeys - The wallet keys
+ */
+export function addWalletInputsToWasmPsbt(
+  wasmPsbt: fixedScriptWallet.BitGoPsbt,
+  unspents: WalletUnspent<bigint>[],
+  rootWalletKeys: RootWalletKeys
+): void {
   unspents.forEach((unspent) => {
     const { txid, vout } = utxolib.bitgo.parseOutputId(unspent.id);
     const signPath: fixedScriptWallet.SignPath | undefined = isTaprootChain(unspent.chain)
@@ -178,11 +199,59 @@ function createBackupKeyRecoveryPsbtWasm(
       }
     );
   });
+}
 
-  // Convert wasm-utxo PSBT to utxolib PSBT for dimension calculation and output addition
-  const psbt = utxolib.bitgo.createPsbtFromBuffer(Buffer.from(wasmPsbt.serialize()), network);
+/**
+ * Add an output to a wasm-utxo BitGoPsbt.
+ *
+ * @param wasmPsbt - The wasm-utxo BitGoPsbt to add the output to
+ * @param address - The destination address
+ * @param value - The output value in satoshis
+ * @param network - The network (used to convert address to script)
+ * @returns The output index
+ */
+export function addOutputToWasmPsbt(
+  wasmPsbt: fixedScriptWallet.BitGoPsbt,
+  address: string,
+  value: bigint,
+  network: utxolib.Network
+): number {
+  const script = utxolib.address.toOutputScript(address, network);
+  return wasmPsbt.addOutput({ script: new Uint8Array(script), value });
+}
 
-  let dimensions = Dimensions.fromPsbt(psbt).plus(
+/**
+ * Convert a wasm-utxo BitGoPsbt to a utxolib UtxoPsbt.
+ *
+ * @param wasmPsbt - The wasm-utxo BitGoPsbt to convert
+ * @param network - The network
+ * @returns A utxolib UtxoPsbt
+ */
+export function wasmPsbtToUtxolibPsbt(
+  wasmPsbt: fixedScriptWallet.BitGoPsbt,
+  network: utxolib.Network
+): utxolib.bitgo.UtxoPsbt {
+  return utxolib.bitgo.createPsbtFromBuffer(Buffer.from(wasmPsbt.serialize()), network);
+}
+
+/**
+ * Create a backup key recovery PSBT using wasm-utxo
+ */
+function createBackupKeyRecoveryPsbtWasm(
+  network: utxolib.Network,
+  rootWalletKeys: RootWalletKeys,
+  unspents: WalletUnspent<bigint>[],
+  options: CreateBackupKeyRecoveryPsbtOptions
+): utxolib.bitgo.UtxoPsbt {
+  const { feeRateSatVB, recoveryDestination, keyRecoveryServiceFee, keyRecoveryServiceFeeAddress } = options;
+
+  // Create PSBT with wasm-utxo and add wallet inputs using shared utilities
+  const wasmPsbt = createEmptyWasmPsbt(network, rootWalletKeys, { blockHeight: options.blockHeight });
+  addWalletInputsToWasmPsbt(wasmPsbt, unspents, rootWalletKeys);
+
+  // Convert to utxolib PSBT temporarily for dimension calculation
+  const tempPsbt = wasmPsbtToUtxolibPsbt(wasmPsbt, network);
+  let dimensions = Dimensions.fromPsbt(tempPsbt).plus(
     Dimensions.fromOutput({ script: utxolib.address.toOutputScript(recoveryDestination, network) })
   );
 
@@ -202,16 +271,15 @@ function createBackupKeyRecoveryPsbtWasm(
     throw new InsufficientFundsError(totalInputAmount, approximateFee, keyRecoveryServiceFee, recoveryAmount);
   }
 
-  psbt.addOutput({ script: utxolib.address.toOutputScript(recoveryDestination, network), value: recoveryAmount });
+  // Add outputs to wasm PSBT
+  addOutputToWasmPsbt(wasmPsbt, recoveryDestination, recoveryAmount, network);
 
   if (keyRecoveryServiceFeeAddress) {
-    psbt.addOutput({
-      script: utxolib.address.toOutputScript(keyRecoveryServiceFeeAddress, network),
-      value: keyRecoveryServiceFee,
-    });
+    addOutputToWasmPsbt(wasmPsbt, keyRecoveryServiceFeeAddress, keyRecoveryServiceFee, network);
   }
 
-  return psbt;
+  // Convert to utxolib PSBT for signing and return
+  return wasmPsbtToUtxolibPsbt(wasmPsbt, network);
 }
 
 /**
