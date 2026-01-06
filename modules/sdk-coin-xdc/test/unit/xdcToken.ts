@@ -19,7 +19,7 @@ describe('XDC Token:', function () {
   it('should return constants', function () {
     xdcTokenCoin.getChain().should.equal('xdc:usdc');
     xdcTokenCoin.getBaseChain().should.equal('xdc');
-    xdcTokenCoin.getFullName().should.equal('ERC20 Token');
+    xdcTokenCoin.getFullName().should.equal('XDC Token');
     xdcTokenCoin.getBaseFactor().should.equal(1e6);
     xdcTokenCoin.type.should.equal(tokenName);
     xdcTokenCoin.name.should.equal('USD Coin');
