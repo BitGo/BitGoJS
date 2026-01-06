@@ -2189,7 +2189,7 @@ export const allCoinsAndTokens = [
     'hbarevm',
     'Hedera EVM',
     Networks.main.hederaEVM,
-    8,
+    18,
     UnderlyingAsset.HBAREVM,
     BaseUnit.HBAR,
     [
@@ -2210,7 +2210,7 @@ export const allCoinsAndTokens = [
     'thbarevm',
     'Testnet Hedera EVM',
     Networks.test.hederaEVM,
-    8,
+    18,
     UnderlyingAsset.HBAREVM,
     BaseUnit.HBAR,
     [
