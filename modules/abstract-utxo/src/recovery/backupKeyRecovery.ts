@@ -11,6 +11,7 @@ import {
   krsProviders,
 } from '@bitgo/sdk-core';
 import { getMainnet, networks } from '@bitgo/utxo-lib';
+import { CoinName } from '@bitgo/wasm-utxo';
 
 import { AbstractUtxoCoin } from '../abstractUtxoCoin';
 import { signAndVerifyPsbt } from '../transaction/fixedScript/signPsbt';
@@ -377,6 +378,7 @@ export async function backupKeyRecovery(
       recoveryDestination: params.recoveryDestination,
       keyRecoveryServiceFee: krsFee,
       keyRecoveryServiceFeeAddress: krsFeeAddress,
+      coinName: coin.getChain() as CoinName,
     },
     backend
   );

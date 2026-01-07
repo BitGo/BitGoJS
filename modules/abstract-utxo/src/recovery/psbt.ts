@@ -1,6 +1,6 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import { Dimensions } from '@bitgo/unspents';
-import { fixedScriptWallet, utxolibCompat } from '@bitgo/wasm-utxo';
+import { fixedScriptWallet, utxolibCompat, CoinName } from '@bitgo/wasm-utxo';
 
 type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
 type WalletUnspent<TNumber extends number | bigint> = utxolib.bitgo.WalletUnspent<TNumber>;
@@ -60,6 +60,8 @@ interface CreateBackupKeyRecoveryPsbtOptions {
   keyRecoveryServiceFeeAddress: string | undefined;
   /** Block height for Zcash networks (required to determine consensus branch ID) */
   blockHeight?: number;
+  /** Coin name for wasm-utxo (e.g. 'btc', 'tbtc', 'ltc') */
+  coinName?: CoinName;
 }
 
 /**
@@ -243,21 +245,23 @@ function createBackupKeyRecoveryPsbtWasm(
   unspents: WalletUnspent<bigint>[],
   options: CreateBackupKeyRecoveryPsbtOptions
 ): utxolib.bitgo.UtxoPsbt {
-  const { feeRateSatVB, recoveryDestination, keyRecoveryServiceFee, keyRecoveryServiceFeeAddress } = options;
+  const { feeRateSatVB, recoveryDestination, keyRecoveryServiceFee, keyRecoveryServiceFeeAddress, coinName } = options;
+
+  if (!coinName) {
+    throw new Error('coinName is required for wasm-utxo backend');
+  }
 
   // Create PSBT with wasm-utxo and add wallet inputs using shared utilities
   const wasmPsbt = createEmptyWasmPsbt(network, rootWalletKeys, { blockHeight: options.blockHeight });
   addWalletInputsToWasmPsbt(wasmPsbt, unspents, rootWalletKeys);
 
   // Calculate dimensions using wasm-utxo Dimensions
-  const recoveryOutputScript = utxolib.address.toOutputScript(recoveryDestination, network);
   let dimensions = fixedScriptWallet.Dimensions.fromPsbt(wasmPsbt).plus(
-    fixedScriptWallet.Dimensions.fromOutput(new Uint8Array(recoveryOutputScript))
+    fixedScriptWallet.Dimensions.fromOutput(recoveryDestination, coinName)
   );
 
   if (keyRecoveryServiceFeeAddress) {
-    const krsOutputScript = utxolib.address.toOutputScript(keyRecoveryServiceFeeAddress, network);
-    dimensions = dimensions.plus(fixedScriptWallet.Dimensions.fromOutput(new Uint8Array(krsOutputScript)));
+    dimensions = dimensions.plus(fixedScriptWallet.Dimensions.fromOutput(keyRecoveryServiceFeeAddress, coinName));
   }
 
   const approximateFee = BigInt(dimensions.getVSize() * feeRateSatVB);

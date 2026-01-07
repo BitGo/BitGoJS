@@ -1,7 +1,7 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import { BIP32Interface, bip32 } from '@bitgo/secp256k1';
 import { Dimensions } from '@bitgo/unspents';
-import { fixedScriptWallet } from '@bitgo/wasm-utxo';
+import { fixedScriptWallet, CoinName } from '@bitgo/wasm-utxo';
 import { BitGoBase, IWallet, Keychain, Triple, Wallet } from '@bitgo/sdk-core';
 import { decrypt } from '@bitgo/sdk-api';
 
@@ -388,6 +388,7 @@ function createSweepTransactionUtxolib<TNumber extends number | bigint = number>
  * @param unspents
  * @param targetAddress
  * @param feeRateSatVB
+ * @param coinName - BitGo coin name (e.g. 'btc', 'tbtc', 'ltc')
  * @return unsigned PSBT
  */
 function createSweepTransactionWasm<TNumber extends number | bigint = number>(
@@ -395,7 +396,8 @@ function createSweepTransactionWasm<TNumber extends number | bigint = number>(
   walletKeys: RootWalletKeys,
   unspents: WalletUnspent<TNumber>[],
   targetAddress: string,
-  feeRateSatVB: number
+  feeRateSatVB: number,
+  coinName: CoinName
 ): utxolib.bitgo.UtxoPsbt {
   const inputValue = unspentSum<bigint>(
     unspents.map((u) => ({ ...u, value: BigInt(u.value) })),
@@ -408,9 +410,8 @@ function createSweepTransactionWasm<TNumber extends number | bigint = number>(
   addWalletInputsToWasmPsbt(wasmPsbt, unspentsBigint, walletKeys);
 
   // Calculate dimensions using wasm-utxo Dimensions
-  const targetOutputScript = utxolib.address.toOutputScript(targetAddress, network);
   const vsize = fixedScriptWallet.Dimensions.fromPsbt(wasmPsbt)
-    .plus(fixedScriptWallet.Dimensions.fromOutput(new Uint8Array(targetOutputScript)))
+    .plus(fixedScriptWallet.Dimensions.fromOutput(targetAddress, coinName))
     .getVSize();
   const fee = BigInt(Math.round(vsize * feeRateSatVB));
 
@@ -429,6 +430,7 @@ function createSweepTransactionWasm<TNumber extends number | bigint = number>(
  * @param targetAddress
  * @param feeRateSatVB
  * @param backend - Which backend to use for PSBT creation (default: 'wasm-utxo')
+ * @param coinName - BitGo coin name (required for wasm-utxo backend)
  * @return unsigned PSBT
  */
 function createSweepTransaction<TNumber extends number | bigint = number>(
@@ -437,10 +439,14 @@ function createSweepTransaction<TNumber extends number | bigint = number>(
   unspents: WalletUnspent<TNumber>[],
   targetAddress: string,
   feeRateSatVB: number,
-  backend: PsbtBackend = 'wasm-utxo'
+  backend: PsbtBackend = 'wasm-utxo',
+  coinName?: CoinName
 ): utxolib.bitgo.UtxoPsbt {
   if (backend === 'wasm-utxo') {
-    return createSweepTransactionWasm(network, walletKeys, unspents, targetAddress, feeRateSatVB);
+    if (!coinName) {
+      throw new Error('coinName is required for wasm-utxo backend');
+    }
+    return createSweepTransactionWasm(network, walletKeys, unspents, targetAddress, feeRateSatVB, coinName);
   } else {
     return createSweepTransactionUtxolib(network, walletKeys, unspents, targetAddress, feeRateSatVB);
   }
@@ -502,7 +508,8 @@ export async function recoverCrossChain<TNumber extends number | bigint = number
     walletUnspents,
     params.recoveryAddress,
     feeRateSatVB,
-    backend
+    backend,
+    params.sourceCoin.getChain() as CoinName
   );
 
   // For unsigned recovery, return unsigned PSBT hex
