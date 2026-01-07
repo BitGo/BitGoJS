@@ -66,10 +66,11 @@ export function getFamilyFromNetwork(n: utxolib.Network): UtxoCoinNameMainnet {
 }
 
 /**
+ * @deprecated - will be removed when we drop support for utxolib
  * Get the chain name for a network.
  * The chain is different for every network.
  */
-export function getChainFromNetwork(n: utxolib.Network): string {
+export function getCoinName(n: utxolib.Network): UtxoCoinName {
   switch (getNetworkName(n)) {
     case 'bitcoinPublicSignet':
       return 'tbtcsig';
@@ -101,17 +102,21 @@ export function getChainFromNetwork(n: utxolib.Network): string {
 }
 
 /**
+ * @deprecated - will be removed when we drop support for utxolib
  * @param coinName - the name of the coin (e.g. 'btc', 'bch', 'ltc'). Also called 'chain' in some contexts.
  * @returns the network for a coin. This is the mainnet network for the coin.
  */
-export function getNetworkFromChain(coinName: string): utxolib.Network {
+export function getNetworkFromCoinName(coinName: string): utxolib.Network {
   for (const network of utxolib.getNetworkList()) {
-    if (getChainFromNetwork(network) === coinName) {
+    if (getCoinName(network) === coinName) {
       return network;
     }
   }
-  throw new Error(`Unknown chain ${coinName}`);
+  throw new Error(`Unknown coin name ${coinName}`);
 }
+
+/** @deprecated - use getNetworkFromCoinName instead */
+export const getNetworkFromChain = getNetworkFromCoinName;
 
 export function getFullNameFromNetwork(n: utxolib.Network): string {
   const name = getNetworkName(n);

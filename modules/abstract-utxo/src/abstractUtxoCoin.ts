@@ -76,7 +76,7 @@ import {
   ErrorImplicitExternalOutputs,
 } from './transaction/descriptor/verifyTransaction';
 import { assertDescriptorWalletAddress, getDescriptorMapFromWallet, isDescriptorWallet } from './descriptor';
-import { getChainFromNetwork, getFamilyFromNetwork, getFullNameFromNetwork } from './names';
+import { getCoinName, getFamilyFromNetwork, getFullNameFromNetwork, UtxoCoinName, UtxoCoinNameMainnet } from './names';
 import { assertFixedScriptWalletAddress } from './address/fixedScript';
 import { isSdkBackend, ParsedTransaction, SdkBackend } from './transaction/types';
 import { decodePsbtWith, encodeTransaction, stringToBufferTryFormats } from './transaction/decode';
@@ -387,24 +387,29 @@ export abstract class AbstractUtxoCoin
     this._network = network;
   }
 
-  get network() {
+  /** @deprecated - will be removed when we drop support for utxolib */
+  get network(): utxolib.Network {
     return this._network;
   }
 
-  getChain() {
-    return getChainFromNetwork(this.network);
+  get name(): UtxoCoinName {
+    return getCoinName(this.network);
   }
 
-  getFamily() {
+  getChain(): UtxoCoinName {
+    return this.name;
+  }
+
+  getFamily(): UtxoCoinNameMainnet {
     return getFamilyFromNetwork(this.network);
   }
 
-  getFullName() {
+  getFullName(): string {
     return getFullNameFromNetwork(this.network);
   }
 
   /** Indicates whether the coin supports a block target */
-  supportsBlockTarget() {
+  supportsBlockTarget(): boolean {
     // FIXME: the SDK does not seem to use this anywhere so it is unclear what the purpose of this method is
     switch (getMainnet(this.network)) {
       case utxolib.networks.bitcoin:
@@ -428,7 +433,7 @@ export abstract class AbstractUtxoCoin
    * Returns the factor between the base unit and its smallest subdivison
    * @return {number}
    */
-  getBaseFactor() {
+  getBaseFactor(): number {
     return 1e8;
   }
 
@@ -466,7 +471,7 @@ export abstract class AbstractUtxoCoin
    * @param {String} pub the pub to be checked
    * @returns {Boolean} is it valid?
    */
-  isValidPub(pub: string) {
+  isValidPub(pub: string): boolean {
     try {
       return bip32.fromBase58(pub).isNeutered();
     } catch (e) {
@@ -1056,7 +1061,15 @@ export abstract class AbstractUtxoCoin
   }
 
   /** @inheritDoc */
-  auditDecryptedKey({ multiSigType, publicKey, prv }) {
+  auditDecryptedKey({
+    multiSigType,
+    publicKey,
+    prv,
+  }: {
+    multiSigType: MultisigType;
+    publicKey: string;
+    prv: string;
+  }): void {
     if (multiSigType === 'tss') {
       throw new Error('tss auditing is not supported for this coin');
     }
