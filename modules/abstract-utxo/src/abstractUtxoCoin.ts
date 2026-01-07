@@ -77,8 +77,8 @@ import {
 } from './transaction/descriptor/verifyTransaction';
 import { assertDescriptorWalletAddress, getDescriptorMapFromWallet, isDescriptorWallet } from './descriptor';
 import {
-  getFamilyFromNetwork,
   getFullNameFromNetwork,
+  getMainnetCoinName,
   getNetworkFromCoinName,
   UtxoCoinName,
   UtxoCoinNameMainnet,
@@ -397,7 +397,7 @@ export abstract class AbstractUtxoCoin
   }
 
   getFamily(): UtxoCoinNameMainnet {
-    return getFamilyFromNetwork(this.network);
+    return getMainnetCoinName(this.name);
   }
 
   getFullName(): string {
