@@ -7,6 +7,7 @@
 
 import { BaseTransaction, ParseTransactionError, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { ethers } from 'ethers';
 import { Address, Hex, Tip20Operation } from './types';
 
 /**
@@ -54,8 +55,105 @@ export class Tip20Transaction extends BaseTransaction {
   }
 
   async serialize(signature?: { r: Hex; s: Hex; yParity: number }): Promise<Hex> {
-    // TODO: Implement EIP-7702 transaction serialization with ethers.js
-    throw new ParseTransactionError('Transaction serialization not yet implemented');
+    const sig = signature || this._signature;
+    return this.serializeTransaction(sig);
+  }
+
+  /**
+   * Encode calls as RLP tuples for atomic batch execution
+   * @returns Array of [to, value, data] tuples
+   * @private
+   */
+  private encodeCallsAsTuples(): any[] {
+    return this.txRequest.calls.map((call) => [
+      call.to,
+      call.value ? ethers.utils.hexlify(call.value) : '0x',
+      call.data,
+    ]);
+  }
+
+  /**
+   * Encode EIP-2930 access list as RLP tuples
+   * @returns Array of [address, storageKeys[]] tuples
+   * @private
+   */
+  private encodeAccessList(): any[] {
+    return (this.txRequest.accessList ?? []).map((item: any) => [item.address, item.storageKeys || []]);
+  }
+
+  /**
+   * Build base RLP data array per Tempo EIP-7702 specification
+   * @param callsTuples Encoded calls
+   * @param accessTuples Encoded access list
+   * @returns RLP-ready array of transaction fields
+   * @private
+   */
+  private buildBaseRlpData(callsTuples: any[], accessTuples: any[]): any[] {
+    return [
+      ethers.utils.hexlify(this.txRequest.chainId),
+      this.txRequest.maxPriorityFeePerGas ? ethers.utils.hexlify(this.txRequest.maxPriorityFeePerGas.toString()) : '0x',
+      ethers.utils.hexlify(this.txRequest.maxFeePerGas.toString()),
+      ethers.utils.hexlify(this.txRequest.gas.toString()),
+      callsTuples,
+      accessTuples,
+      '0x', // nonceKey (reserved for 2D nonce system)
+      ethers.utils.hexlify(this.txRequest.nonce),
+      '0x', // validBefore (reserved for time bounds)
+      '0x', // validAfter (reserved for time bounds)
+      this.txRequest.feeToken || '0x',
+      '0x', // feePayerSignature (reserved for sponsorship)
+      [], // authorizationList (EIP-7702)
+    ];
+  }
+
+  /**
+   * Encode secp256k1 signature as 65-byte envelope
+   * @param signature ECDSA signature components
+   * @returns Hex string of concatenated r (32) + s (32) + v (1) bytes
+   * @private
+   */
+  private encodeSignature(signature: { r: Hex; s: Hex; yParity: number }): string {
+    const v = signature.yParity + 27;
+    const signatureBytes = ethers.utils.concat([
+      ethers.utils.zeroPad(signature.r, 32),
+      ethers.utils.zeroPad(signature.s, 32),
+      ethers.utils.hexlify(v),
+    ]);
+    return ethers.utils.hexlify(signatureBytes);
+  }
+
+  /**
+   * RLP encode and prepend transaction type byte
+   * @param rlpData Transaction fields array
+   * @returns Hex string with 0x76 prefix
+   * @private
+   */
+  private rlpEncodeWithTypePrefix(rlpData: any[]): Hex {
+    try {
+      const encoded = ethers.utils.RLP.encode(rlpData);
+      return ('0x76' + encoded.slice(2)) as Hex;
+    } catch (error) {
+      throw new ParseTransactionError(`Failed to RLP encode transaction: ${error}`);
+    }
+  }
+
+  /**
+   * Serialize Tempo AA transaction (type 0x76) per EIP-7702 specification
+   * Format: 0x76 || RLP([chainId, fees, gas, calls, accessList, nonce fields, feeToken, sponsorship, authList, signature?])
+   * @param signature Optional ECDSA signature (omit for unsigned transactions)
+   * @returns RLP-encoded transaction hex string
+   * @private
+   */
+  private serializeTransaction(signature?: { r: Hex; s: Hex; yParity: number }): Hex {
+    const callsTuples = this.encodeCallsAsTuples();
+    const accessTuples = this.encodeAccessList();
+    const rlpData = this.buildBaseRlpData(callsTuples, accessTuples);
+
+    if (signature) {
+      rlpData.push(this.encodeSignature(signature));
+    }
+
+    return this.rlpEncodeWithTypePrefix(rlpData);
   }
 
   getOperations(): Tip20Operation[] {
