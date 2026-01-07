@@ -55,6 +55,7 @@ function getNetworkName(n: utxolib.Network): utxolib.NetworkName {
 }
 
 /**
+ * @deprecated - will be removed when we drop support for utxolib
  * @param n
  * @returns the family name for a network. Testnets and mainnets of the same coin share the same family name.
  */
@@ -146,60 +147,49 @@ export function getNetworkFromCoinName(coinName: string): utxolib.Network {
 /** @deprecated - use getNetworkFromCoinName instead */
 export const getNetworkFromChain = getNetworkFromCoinName;
 
-export function getFullNameFromNetwork(n: utxolib.Network): string {
-  const name = getNetworkName(n);
+function getBaseNameFromMainnet(coinName: UtxoCoinNameMainnet): string {
+  switch (coinName) {
+    case 'btc':
+      return 'Bitcoin';
+    case 'bch':
+      return 'Bitcoin Cash';
+    case 'bcha':
+      return 'Bitcoin ABC';
+    case 'btg':
+      return 'Bitcoin Gold';
+    case 'bsv':
+      return 'Bitcoin SV';
+    case 'dash':
+      return 'Dash';
+    case 'doge':
+      return 'Dogecoin';
+    case 'ltc':
+      return 'Litecoin';
+    case 'zec':
+      return 'ZCash';
+  }
+}
 
+export function getFullNameFromCoinName(coinName: UtxoCoinName): string {
   let prefix: string;
-  switch (name) {
-    case 'bitcoinTestnet4':
+  switch (coinName) {
+    case 'tbtc4':
       prefix = 'Testnet4 ';
       break;
-    case 'bitcoinPublicSignet':
+    case 'tbtcsig':
       prefix = 'Public Signet ';
       break;
-    case 'bitcoinBitGoSignet':
+    case 'tbtcbgsig':
       prefix = 'BitGo Signet ';
       break;
     default:
-      if (utxolib.isTestnet(n)) {
-        prefix = 'Testnet ';
-      } else {
-        prefix = '';
-      }
+      prefix = isUtxoCoinNameTestnet(coinName) ? 'Testnet ' : '';
   }
 
-  switch (name) {
-    case 'bitcoin':
-    case 'testnet':
-    case 'bitcoinTestnet4':
-    case 'bitcoinPublicSignet':
-    case 'bitcoinBitGoSignet':
-      return prefix + 'Bitcoin';
-    case 'bitcoincash':
-    case 'bitcoincashTestnet':
-      return prefix + 'Bitcoin Cash';
-    case 'ecash':
-    case 'ecashTest':
-      return prefix + 'Bitcoin ABC';
-    case 'bitcoingold':
-    case 'bitcoingoldTestnet':
-      return prefix + 'Bitcoin Gold';
-    case 'bitcoinsv':
-    case 'bitcoinsvTestnet':
-      return prefix + 'Bitcoin SV';
-    case 'dash':
-    case 'dashTest':
-      return prefix + 'Dash';
-    case 'dogecoin':
-    case 'dogecoinTest':
-      return prefix + 'Dogecoin';
-    case 'litecoin':
-    case 'litecoinTest':
-      return prefix + 'Litecoin';
-    case 'zcash':
-    case 'zcashTest':
-      return prefix + 'ZCash';
-    default:
-      throw new Error('Unknown network');
-  }
+  return prefix + getBaseNameFromMainnet(getMainnetCoinName(coinName));
+}
+
+/** @deprecated - use getFullNameFromCoinName instead */
+export function getFullNameFromNetwork(n: utxolib.Network): string {
+  return getFullNameFromCoinName(getCoinName(n));
 }

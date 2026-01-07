@@ -77,7 +77,7 @@ import {
 } from './transaction/descriptor/verifyTransaction';
 import { assertDescriptorWalletAddress, getDescriptorMapFromWallet, isDescriptorWallet } from './descriptor';
 import {
-  getFullNameFromNetwork,
+  getFullNameFromCoinName,
   getMainnetCoinName,
   getNetworkFromCoinName,
   UtxoCoinName,
@@ -401,7 +401,7 @@ export abstract class AbstractUtxoCoin
   }
 
   getFullName(): string {
-    return getFullNameFromNetwork(this.network);
+    return getFullNameFromCoinName(this.name);
   }
 
   /** Indicates whether the coin supports a block target */
