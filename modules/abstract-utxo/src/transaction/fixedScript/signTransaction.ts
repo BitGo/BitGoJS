@@ -31,6 +31,12 @@ export function signAndVerifyPsbt(
 export function signAndVerifyPsbt(
   psbt: utxolib.bitgo.UtxoPsbt | fixedScriptWallet.BitGoPsbt,
   signerKeychain: BIP32Interface,
+  rootWalletKeys: fixedScriptWallet.RootWalletKeys,
+  replayProtection: ReplayProtectionKeys
+): utxolib.bitgo.UtxoPsbt | fixedScriptWallet.BitGoPsbt;
+export function signAndVerifyPsbt(
+  psbt: utxolib.bitgo.UtxoPsbt | fixedScriptWallet.BitGoPsbt,
+  signerKeychain: BIP32Interface,
   rootWalletKeys: fixedScriptWallet.RootWalletKeys | undefined,
   replayProtection: ReplayProtectionKeys | undefined
 ): utxolib.bitgo.UtxoPsbt | fixedScriptWallet.BitGoPsbt {

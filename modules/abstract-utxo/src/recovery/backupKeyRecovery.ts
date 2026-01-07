@@ -11,16 +11,18 @@ import {
   krsProviders,
 } from '@bitgo/sdk-core';
 import { getMainnet, networks } from '@bitgo/utxo-lib';
-import { CoinName } from '@bitgo/wasm-utxo';
+import { fixedScriptWallet } from '@bitgo/wasm-utxo';
 
 import { AbstractUtxoCoin } from '../abstractUtxoCoin';
-import { signAndVerifyPsbt } from '../transaction/fixedScript/signPsbtUtxolib';
+import { signAndVerifyPsbt } from '../transaction/fixedScript/signTransaction';
 import { generateAddressWithChainAndIndex } from '../address';
+import { encodeTransaction } from '../transaction/decode';
+import { getReplayProtectionPubkeys } from '../transaction/fixedScript/replayProtection';
 
 import { forCoin, RecoveryProvider } from './RecoveryProvider';
 import { MempoolApi } from './mempoolApi';
 import { CoingeckoApi } from './coingeckoApi';
-import { createBackupKeyRecoveryPsbt, getRecoveryAmount, PsbtBackend } from './psbt';
+import { createBackupKeyRecoveryPsbt, getRecoveryAmount, PsbtBackend, toPsbtToUtxolibPsbt } from './psbt';
 
 type ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 type ChainCode = utxolib.bitgo.ChainCode;
@@ -369,8 +371,8 @@ export async function backupKeyRecovery(
 
   // Use wasm-utxo for testnet coins only, utxolib for mainnet
   const backend: PsbtBackend = utxolib.isTestnet(coin.network) ? 'wasm-utxo' : 'utxolib';
-  const psbt = createBackupKeyRecoveryPsbt(
-    coin.name,
+  let psbt = createBackupKeyRecoveryPsbt(
+    coin.getChain(),
     walletKeys,
     unspents,
     {
@@ -378,41 +380,52 @@ export async function backupKeyRecovery(
       recoveryDestination: params.recoveryDestination,
       keyRecoveryServiceFee: krsFee,
       keyRecoveryServiceFeeAddress: krsFeeAddress,
-      coinName: coin.getChain() as CoinName,
     },
     backend
   );
 
   if (isUnsignedSweep) {
     return {
-      txHex: psbt.toHex(),
+      txHex: encodeTransaction(psbt).toString('hex'),
       txInfo: {},
       feeInfo: {},
       coin: coin.getChain(),
     };
+  }
+
+  const rootWalletKeysWasm = fixedScriptWallet.RootWalletKeys.from(walletKeys);
+  const replayProtection = { publicKeys: getReplayProtectionPubkeys(coin.network) };
+
+  // Sign with user key first
+  psbt = signAndVerifyPsbt(psbt, walletKeys.user, rootWalletKeysWasm, replayProtection);
+
+  if (isKrsRecovery) {
+    // The KRS provider keyternal solely supports P2SH, P2WSH, and P2SH-P2WSH input script types.
+    // It currently uses an outdated BitGoJS SDK, which relies on a legacy transaction builder for cosigning.
+    // Unfortunately, upgrading the keyternal code presents challenges,
+    // which hinders the integration of the latest BitGoJS SDK with PSBT signing support.
+    txInfo.transactionHex =
+      params.krsProvider === 'keyternal'
+        ? utxolib.bitgo.extractP2msOnlyHalfSignedTx(toPsbtToUtxolibPsbt(psbt, coin.name)).toBuffer().toString('hex')
+        : encodeTransaction(psbt).toString('hex');
   } else {
-    signAndVerifyPsbt(psbt, walletKeys.user);
-    if (isKrsRecovery) {
-      // The KRS provider keyternal solely supports P2SH, P2WSH, and P2SH-P2WSH input script types.
-      // It currently uses an outdated BitGoJS SDK, which relies on a legacy transaction builder for cosigning.
-      // Unfortunately, upgrading the keyternal code presents challenges,
-      // which hinders the integration of the latest BitGoJS SDK with PSBT signing support.
-      txInfo.transactionHex =
-        params.krsProvider === 'keyternal'
-          ? utxolib.bitgo.extractP2msOnlyHalfSignedTx(psbt).toBuffer().toString('hex')
-          : psbt.toHex();
+    // Sign with backup key
+    psbt = signAndVerifyPsbt(psbt, walletKeys.backup, rootWalletKeysWasm, replayProtection);
+    // Finalize and extract transaction
+    psbt.finalizeAllInputs();
+    if (psbt instanceof utxolib.bitgo.UtxoPsbt) {
+      txInfo.transactionHex = psbt.extractTransaction().toBuffer().toString('hex');
+    } else if (psbt instanceof fixedScriptWallet.BitGoPsbt) {
+      txInfo.transactionHex = Buffer.from(psbt.extractTransaction()).toString('hex');
     } else {
-      signAndVerifyPsbt(psbt, walletKeys.backup);
-      psbt.finalizeAllInputs();
-      const tx = psbt.extractTransaction();
-      txInfo.transactionHex = tx.toBuffer().toString('hex');
+      throw new Error('expected a UtxoPsbt or BitGoPsbt object');
     }
   }
 
   if (isKrsRecovery) {
     txInfo.coin = coin.getChain();
     txInfo.backupKey = params.backupKey;
-    const recoveryAmount = getRecoveryAmount(psbt, params.recoveryDestination);
+    const recoveryAmount = getRecoveryAmount(psbt, walletKeys, params.recoveryDestination);
     txInfo.recoveryAmount = Number(recoveryAmount);
     txInfo.recoveryAmountString = recoveryAmount.toString();
   }
