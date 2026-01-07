@@ -1,21 +1,9 @@
 import * as utxolib from '@bitgo/utxo-lib';
 
 export const utxoCoinsMainnet = ['btc', 'bch', 'bcha', 'bsv', 'btg', 'dash', 'doge', 'ltc', 'zec'] as const;
-export const utxoCoinsTestnet = [
-  'tbtc',
-  'tbch',
-  'tbsv',
-  'tdash',
-  'tdoge',
-  'tltc',
-  'tzec',
-  'tbtcsig',
-  'tbtc4',
-  'tbtcbgsig',
-] as const;
 
 export type UtxoCoinNameMainnet = (typeof utxoCoinsMainnet)[number];
-export type UtxoCoinNameTestnet = (typeof utxoCoinsTestnet)[number];
+export type UtxoCoinNameTestnet = `t${UtxoCoinNameMainnet}` | 'tbtcsig' | 'tbtc4' | 'tbtcbgsig';
 export type UtxoCoinName = UtxoCoinNameMainnet | UtxoCoinNameTestnet;
 
 export function isUtxoCoinNameMainnet(coinName: string): coinName is UtxoCoinNameMainnet {
@@ -23,7 +11,7 @@ export function isUtxoCoinNameMainnet(coinName: string): coinName is UtxoCoinNam
 }
 
 export function isUtxoCoinNameTestnet(coinName: string): coinName is UtxoCoinNameTestnet {
-  return utxoCoinsTestnet.includes(coinName as UtxoCoinNameTestnet);
+  return isUtxoCoinNameMainnet(coinName.slice(1)) && coinName.startsWith('t');
 }
 
 export function isUtxoCoinName(coinName: string): coinName is UtxoCoinName {
