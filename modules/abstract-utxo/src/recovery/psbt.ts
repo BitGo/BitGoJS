@@ -249,18 +249,15 @@ function createBackupKeyRecoveryPsbtWasm(
   const wasmPsbt = createEmptyWasmPsbt(network, rootWalletKeys, { blockHeight: options.blockHeight });
   addWalletInputsToWasmPsbt(wasmPsbt, unspents, rootWalletKeys);
 
-  // Convert to utxolib PSBT temporarily for dimension calculation
-  const tempPsbt = wasmPsbtToUtxolibPsbt(wasmPsbt, network);
-  let dimensions = Dimensions.fromPsbt(tempPsbt).plus(
-    Dimensions.fromOutput({ script: utxolib.address.toOutputScript(recoveryDestination, network) })
+  // Calculate dimensions using wasm-utxo Dimensions
+  const recoveryOutputScript = utxolib.address.toOutputScript(recoveryDestination, network);
+  let dimensions = fixedScriptWallet.Dimensions.fromPsbt(wasmPsbt).plus(
+    fixedScriptWallet.Dimensions.fromOutput(new Uint8Array(recoveryOutputScript))
   );
 
   if (keyRecoveryServiceFeeAddress) {
-    dimensions = dimensions.plus(
-      Dimensions.fromOutput({
-        script: utxolib.address.toOutputScript(keyRecoveryServiceFeeAddress, network),
-      })
-    );
+    const krsOutputScript = utxolib.address.toOutputScript(keyRecoveryServiceFeeAddress, network);
+    dimensions = dimensions.plus(fixedScriptWallet.Dimensions.fromOutput(new Uint8Array(krsOutputScript)));
   }
 
   const approximateFee = BigInt(dimensions.getVSize() * feeRateSatVB);
