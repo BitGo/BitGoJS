@@ -370,7 +370,7 @@ export async function backupKeyRecovery(
   // Use wasm-utxo for testnet coins only, utxolib for mainnet
   const backend: PsbtBackend = utxolib.isTestnet(coin.network) ? 'wasm-utxo' : 'utxolib';
   const psbt = createBackupKeyRecoveryPsbt(
-    coin.network,
+    coin.name,
     walletKeys,
     unspents,
     {
