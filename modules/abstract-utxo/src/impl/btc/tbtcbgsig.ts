@@ -2,13 +2,16 @@
  * @prettier
  */
 import { BitGoBase } from '@bitgo/sdk-core';
-import * as utxolib from '@bitgo/utxo-lib';
+
+import { UtxoCoinName } from '../../names';
 
 import { Btc } from './btc';
 
 export class Tbtcbgsig extends Btc {
+  readonly name: UtxoCoinName = 'tbtcbgsig';
+
   constructor(bitgo: BitGoBase) {
-    super(bitgo, utxolib.networks.bitcoinBitGoSignet);
+    super(bitgo);
   }
 
   static createInstance(bitgo: BitGoBase): Tbtcbgsig {

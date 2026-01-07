@@ -76,7 +76,13 @@ import {
   ErrorImplicitExternalOutputs,
 } from './transaction/descriptor/verifyTransaction';
 import { assertDescriptorWalletAddress, getDescriptorMapFromWallet, isDescriptorWallet } from './descriptor';
-import { getCoinName, getFamilyFromNetwork, getFullNameFromNetwork, UtxoCoinName, UtxoCoinNameMainnet } from './names';
+import {
+  getFamilyFromNetwork,
+  getFullNameFromNetwork,
+  getNetworkFromCoinName,
+  UtxoCoinName,
+  UtxoCoinNameMainnet,
+} from './names';
 import { assertFixedScriptWalletAddress } from './address/fixedScript';
 import { isSdkBackend, ParsedTransaction, SdkBackend } from './transaction/types';
 import { decodePsbtWith, encodeTransaction, stringToBufferTryFormats } from './transaction/decode';
@@ -369,31 +375,21 @@ export abstract class AbstractUtxoCoin
   extends BaseCoin
   implements Musig2Participant<utxolib.bitgo.UtxoPsbt>, Musig2Participant<fixedScriptWallet.BitGoPsbt>
 {
+  abstract name: UtxoCoinName;
+
   public altScriptHash?: number;
   public supportAltScriptDestination?: boolean;
   public defaultSdkBackend: SdkBackend = 'utxolib';
   public readonly amountType: 'number' | 'bigint';
-  private readonly _network: utxolib.Network;
 
-  protected constructor(bitgo: BitGoBase, network: utxolib.Network, amountType: 'number' | 'bigint' = 'number') {
+  protected constructor(bitgo: BitGoBase, amountType: 'number' | 'bigint' = 'number') {
     super(bitgo);
-    if (!utxolib.isValidNetwork(network)) {
-      throw new Error(
-        'invalid network: please make sure to use the same version of ' +
-          '@bitgo/utxo-lib as this library when initializing an instance of this class'
-      );
-    }
     this.amountType = amountType;
-    this._network = network;
   }
 
   /** @deprecated - will be removed when we drop support for utxolib */
   get network(): utxolib.Network {
-    return this._network;
-  }
-
-  get name(): UtxoCoinName {
-    return getCoinName(this.network);
+    return getNetworkFromCoinName(this.name);
   }
 
   getChain(): UtxoCoinName {
