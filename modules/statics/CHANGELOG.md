@@ -3,6 +3,36 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.20.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.19.0...@bitgo/statics@58.20.0) (2026-01-07)
+
+
+### Bug Fixes
+
+* added mainnet token details TICKET: WIN-8039 ([d255978](https://github.com/BitGo/BitGoJS/commit/d2559785d2ec3bf7403b306467e256d3cda33811))
+* **sdk-coin-flrp:** fix flrp import to P fee value ([0cb5695](https://github.com/BitGo/BitGoJS/commit/0cb569532a1868f7992e60babb323a7ebc4bea1c))
+* update decimal and explorer url for hbarevm ([1228951](https://github.com/BitGo/BitGoJS/commit/1228951e7d3626b56125de9640c5da445b1c0f56))
+
+
+### Features
+
+* add ofc assets for dogeos and morph ([8273809](https://github.com/BitGo/BitGoJS/commit/827380974f3536467aeed16fd0a6a73a86a3dfa6))
+* add ofc assets for X Layer and Jovay ([ffa3b00](https://github.com/BitGo/BitGoJS/commit/ffa3b0022b15bdf3b94df0d43a2b9d0d871737a6))
+* add support for alpha numeric memo for canton ([780fc17](https://github.com/BitGo/BitGoJS/commit/780fc17a407b99becae77d1de44ed7f29bab61ad))
+* add testnet ip ofc token ([91d1cde](https://github.com/BitGo/BitGoJS/commit/91d1cde7d6c998f50510171bb5d4c8f828fd0a78))
+* add wrw support for mantle and fluenteth ([2c41568](https://github.com/BitGo/BitGoJS/commit/2c415682beb94c39e9b6ae36e8873c5cb051b6dd))
+* add xdc test token ([baf2d59](https://github.com/BitGo/BitGoJS/commit/baf2d59079006259ae23fa77f35dd9ddc3c67a02))
+* enable staking feature for mainnet IP ([9523fa5](https://github.com/BitGo/BitGoJS/commit/9523fa5ba74e66657f21ad011269caa908b0ce16))
+* **sdk-coin-tempo:** add tip20 skeleton ([e4fe395](https://github.com/BitGo/BitGoJS/commit/e4fe395078c7403bf39b9b53e48731e48ccb8d52))
+* **statics:** add new tokens WIN-8472 ([8ce485b](https://github.com/BitGo/BitGoJS/commit/8ce485bcc5c55b928e1b3468f2af2a61cb560062))
+* **statics:** added statics config for arc TICKET: WIN-8039 ([533e51d](https://github.com/BitGo/BitGoJS/commit/533e51d923fcbe49d973c1f8899db74999b4d90b))
+* token onboarding correction ([f74e7e6](https://github.com/BitGo/BitGoJS/commit/f74e7e6eea1c5ff6f29b96998bb42374c3806ca3))
+* xdc token support ([507ede7](https://github.com/BitGo/BitGoJS/commit/507ede77589aa097ed61fccd97e77341c25839fa))
+* xpl token ([ebd12a3](https://github.com/BitGo/BitGoJS/commit/ebd12a34d906f0efa66450c98a0c1c9fa3f5c733))
+
+
+
+
+
 # [58.19.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.18.0...@bitgo/statics@58.19.0) (2025-12-23)
 
 

@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@3.12.0...@bitgo/sdk-coin-ton@3.13.0) (2026-01-07)
+
+
+### Bug Fixes
+
+* **sdk-coin-ton:** set withdraw amount for ton whales unstake ([ad76de1](https://github.com/BitGo/BitGoJS/commit/ad76de1128e276ae1b9fe1c14f0d924798adfb89))
+
+
+### Features
+
+* **sdk-coin-ton:** add address boc converter ([3c9e1fe](https://github.com/BitGo/BitGoJS/commit/3c9e1fef02d39ce521a54533acc95646035957f4))
+
+
+
+
+
 # [3.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ton@3.11.5...@bitgo/sdk-coin-ton@3.12.0) (2025-12-23)
 
 

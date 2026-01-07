@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.8.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flr@1.8.0...@bitgo/sdk-coin-flr@1.8.1) (2026-01-07)
+
+
+### Bug Fixes
+
+* **sdk-coin-flr:** update import transaction fee calculation to use network configuration ([f56a155](https://github.com/BitGo/BitGoJS/commit/f56a1554062dd78fd22d117d40d7a634b8153d08))
+
+
+
+
+
 # [1.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flr@1.7.0...@bitgo/sdk-coin-flr@1.8.0) (2025-12-23)
 
 

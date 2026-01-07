@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.12.0...@bitgo/abstract-utxo@10.13.0) (2026-01-07)
+
+
+### Features
+
+* add wasm-utxo backend for cross-chain recovery ([f6509fb](https://github.com/BitGo/BitGoJS/commit/f6509fbcdef27e6448785a147029f2d61d0bd9c9))
+* bump @bitgo/wasm-utxo to 1.19.0 ([9627848](https://github.com/BitGo/BitGoJS/commit/962784829fc8fc8d2f80ae5299f2143a0d31b269))
+
+
+
+
+
 # [10.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.11.1...@bitgo/abstract-utxo@10.12.0) (2025-12-23)
 
 
