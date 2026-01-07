@@ -2888,7 +2888,7 @@ export function xdcErc20(
   decimalPlaces: number,
   contractAddress: string,
   asset: UnderlyingAsset,
-  features: CoinFeature[] = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.EIP1559],
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix = '',
   suffix: string = name.toUpperCase(),
   network: AccountNetwork = Networks.main.xdc,
