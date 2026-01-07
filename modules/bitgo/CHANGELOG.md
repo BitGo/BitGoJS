@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.19.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.18.0...bitgo@50.19.0) (2026-01-07)
+
+
+### Features
+
+* **statics:** added statics config for arc TICKET: WIN-8039 ([533e51d](https://github.com/BitGo/BitGoJS/commit/533e51d923fcbe49d973c1f8899db74999b4d90b))
+* xdc token support ([507ede7](https://github.com/BitGo/BitGoJS/commit/507ede77589aa097ed61fccd97e77341c25839fa))
+
+
+
+
+
 # [50.18.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.17.0...bitgo@50.18.0) (2025-12-23)
 
 

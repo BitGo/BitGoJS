@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [36.26.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.25.0...@bitgo/sdk-core@36.26.0) (2026-01-07)
+
+
+### Bug Fixes
+
+* add xdc token contructor ([596a624](https://github.com/BitGo/BitGoJS/commit/596a624d5b89584fcc4bcdc1fa914e93ddc43d22))
+
+
+### Features
+
+* **statics:** added statics config for arc TICKET: WIN-8039 ([533e51d](https://github.com/BitGo/BitGoJS/commit/533e51d923fcbe49d973c1f8899db74999b4d90b))
+
+
+
+
+
 # [36.25.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.24.0...@bitgo/sdk-core@36.25.0) (2025-12-23)
 
 
