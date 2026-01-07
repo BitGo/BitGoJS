@@ -1,6 +1,20 @@
 import * as utxolib from '@bitgo/utxo-lib';
 
 export const utxoCoinsMainnet = ['btc', 'bch', 'bcha', 'bsv', 'btg', 'dash', 'doge', 'ltc', 'zec'] as const;
+export const utxoCoinsTestnet = [
+  'tbtc',
+  'tbtc4',
+  'tbtcsig',
+  'tbtcbgsig',
+  'tbch',
+  'tbcha',
+  'tbsv',
+  'tbtg',
+  'tdash',
+  'tdoge',
+  'tltc',
+  'tzec',
+] as const;
 
 export type UtxoCoinNameMainnet = (typeof utxoCoinsMainnet)[number];
 export type UtxoCoinNameTestnet = `t${UtxoCoinNameMainnet}` | 'tbtcsig' | 'tbtc4' | 'tbtcbgsig';
@@ -11,11 +25,25 @@ export function isUtxoCoinNameMainnet(coinName: string): coinName is UtxoCoinNam
 }
 
 export function isUtxoCoinNameTestnet(coinName: string): coinName is UtxoCoinNameTestnet {
-  return isUtxoCoinNameMainnet(coinName.slice(1)) && coinName.startsWith('t');
+  return utxoCoinsTestnet.includes(coinName as UtxoCoinNameTestnet);
 }
 
 export function isUtxoCoinName(coinName: string): coinName is UtxoCoinName {
   return isUtxoCoinNameMainnet(coinName) || isUtxoCoinNameTestnet(coinName);
+}
+
+export function getMainnetCoinName(coinName: UtxoCoinName): UtxoCoinNameMainnet {
+  if (isUtxoCoinNameMainnet(coinName)) {
+    return coinName;
+  }
+  switch (coinName) {
+    case 'tbtc4':
+    case 'tbtcsig':
+    case 'tbtcbgsig':
+      return 'btc';
+    default:
+      return coinName.slice(1) as UtxoCoinNameMainnet;
+  }
 }
 
 function getNetworkName(n: utxolib.Network): utxolib.NetworkName {
