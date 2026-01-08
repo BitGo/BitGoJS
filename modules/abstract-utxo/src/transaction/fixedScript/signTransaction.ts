@@ -9,9 +9,39 @@ import { fixedScriptWallet } from '@bitgo/wasm-utxo';
 
 import { Musig2Participant } from './musig2';
 import { signLegacyTransaction } from './signLegacyTransaction';
-import { signPsbtWithMusig2ParticipantUtxolib } from './signPsbtUtxolib';
-import { signPsbtWithMusig2ParticipantWasm } from './signPsbtWasm';
+import { signPsbtWithMusig2ParticipantUtxolib, signAndVerifyPsbt as signAndVerifyPsbtUtxolib } from './signPsbtUtxolib';
+import { signPsbtWithMusig2ParticipantWasm, signAndVerifyPsbtWasm, ReplayProtectionKeys } from './signPsbtWasm';
 import { getReplayProtectionPubkeys } from './replayProtection';
+
+/**
+ * Sign and verify a PSBT using either utxolib or wasm-utxo depending on the PSBT type.
+ */
+export function signAndVerifyPsbt(
+  psbt: utxolib.bitgo.UtxoPsbt,
+  signerKeychain: BIP32Interface,
+  rootWalletKeys: fixedScriptWallet.RootWalletKeys | undefined,
+  replayProtection: ReplayProtectionKeys | undefined
+): utxolib.bitgo.UtxoPsbt;
+export function signAndVerifyPsbt(
+  psbt: fixedScriptWallet.BitGoPsbt,
+  signerKeychain: BIP32Interface,
+  rootWalletKeys: fixedScriptWallet.RootWalletKeys,
+  replayProtection: ReplayProtectionKeys
+): fixedScriptWallet.BitGoPsbt;
+export function signAndVerifyPsbt(
+  psbt: utxolib.bitgo.UtxoPsbt | fixedScriptWallet.BitGoPsbt,
+  signerKeychain: BIP32Interface,
+  rootWalletKeys: fixedScriptWallet.RootWalletKeys | undefined,
+  replayProtection: ReplayProtectionKeys | undefined
+): utxolib.bitgo.UtxoPsbt | fixedScriptWallet.BitGoPsbt {
+  if (psbt instanceof bitgo.UtxoPsbt) {
+    return signAndVerifyPsbtUtxolib(psbt, signerKeychain);
+  } else {
+    assert(rootWalletKeys, 'rootWalletKeys required for wasm-utxo signing');
+    assert(replayProtection, 'replayProtection required for wasm-utxo signing');
+    return signAndVerifyPsbtWasm(psbt, signerKeychain, rootWalletKeys, replayProtection);
+  }
+}
 
 export async function signTransaction<
   T extends utxolib.bitgo.UtxoPsbt | utxolib.bitgo.UtxoTransaction<bigint | number> | fixedScriptWallet.BitGoPsbt
