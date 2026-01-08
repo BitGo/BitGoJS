@@ -299,6 +299,38 @@ export const ofcCoins = [
   ),
   ofc('dc733b2f-92bf-49d3-9f5d-9774e1637f0f', 'ofcokb', 'X Layer', 18, UnderlyingAsset.OKB, CoinKind.CRYPTO),
   tofc('98460a7d-0677-4dbd-934e-fbb0e9c5f8cc', 'ofctokb', 'X Layer Testnet', 18, UnderlyingAsset.OKB, CoinKind.CRYPTO),
+  ofc(
+    '357901a6-9f4f-444c-abfd-c2f32638f0cb',
+    'ofcmantle',
+    'Mantle Native',
+    18,
+    UnderlyingAsset.MANTLE,
+    CoinKind.CRYPTO
+  ),
+  tofc(
+    'b2fb2db0-e442-4d13-b596-90293c63567a',
+    'ofctmantle',
+    'Testnet Mantle Native',
+    18,
+    UnderlyingAsset.MANTLE,
+    CoinKind.CRYPTO
+  ),
+  ofc(
+    '8182b31e-fe27-4aed-81c1-660aa8ecbcb7',
+    'ofcfluenteth',
+    'Fluent Ethereum',
+    18,
+    UnderlyingAsset.FLUENTETH,
+    CoinKind.CRYPTO
+  ),
+  tofc(
+    'b967f127-cf76-4de1-b6e0-bb40a04f8682',
+    'ofctfluenteth',
+    'Testnet Fluent Ethereum',
+    18,
+    UnderlyingAsset.FLUENTETH,
+    CoinKind.CRYPTO
+  ),
   ofc('aa7e956f-2d59-4bf6-aba6-2d51bd298150', 'ofcip', 'Story', 18, UnderlyingAsset.IP, CoinKind.CRYPTO),
   tofc('773b02f6-32ea-493a-bca5-13d93cb0afff', 'ofctip', 'Story Testnet', 18, UnderlyingAsset.IP, CoinKind.CRYPTO),
   ofc('c5015165-6ae4-4925-bd3f-4b767feba2f9', 'ofcplume', 'Plume', 18, UnderlyingAsset.PLUME, CoinKind.CRYPTO),

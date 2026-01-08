@@ -164,6 +164,10 @@ export class CoinMap {
     5042002: 'tarc',
     42428: 'tempo',
     42429: 'ttempo',
+    5000: 'mantle',
+    5003: 'tmantle',
+    20993: 'fluenteth',
+    20994: 'tfluenteth',
   };
 
   private buildChainIdMap(): Map<number, string> {
