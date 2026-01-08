@@ -70,6 +70,7 @@ import {
   CreatePolicyRuleOptions,
   CreateShareOptions,
   CrossChainUTXO,
+  DecryptedKeychainData,
   DeployForwardersOptions,
   DownloadKeycardOptions,
   FanoutUnspentsOptions,
@@ -1660,7 +1661,7 @@ export class Wallet implements IWallet {
     const anyNeedsKeychain = params.keyShareOptions.some((opt) => opt.permissions && opt.permissions.includes('spend'));
 
     // Fetch and decrypt the keychain ONCE for all users
-    let decryptedKeychain: { prv: string; pub: string } | undefined;
+    let decryptedKeychain: DecryptedKeychainData | undefined;
 
     if (anyNeedsKeychain) {
       try {
@@ -1697,7 +1698,7 @@ export class Wallet implements IWallet {
         bulkCreateShareOptions.push({
           user: shareOption.userId,
           permissions: shareOption.permissions,
-          keychain: sharedKeychain as BulkWalletShareKeychain,
+          keychain: sharedKeychain,
         });
       }
     }
@@ -1759,7 +1760,7 @@ export class Wallet implements IWallet {
    */
   async getDecryptedKeychainForSharing(
     walletPassphrase: string | undefined
-  ): Promise<{ prv: string; pub: string } | undefined> {
+  ): Promise<DecryptedKeychainData | undefined> {
     const keychain = await this.getEncryptedWalletKeychainForWalletSharing();
 
     if (!keychain.encryptedPrv) {
@@ -1799,20 +1800,28 @@ export class Wallet implements IWallet {
    * @param pub - The wallet's public key
    * @param userPubkey - The recipient user's public key
    * @param path - The key path
-   * @returns The encrypted keychain for the recipient
+   * @returns The encrypted keychain for the recipient with all required fields
    */
-  encryptPrvForUser(decryptedPrv: string, pub: string, userPubkey: string, path: string): SharedKeyChain {
+  encryptPrvForUser(decryptedPrv: string, pub: string, userPubkey: string, path: string): BulkWalletShareKeychain {
     const eckey = makeRandomKey();
     const secret = getSharedSecret(eckey, Buffer.from(userPubkey, 'hex')).toString('hex');
     const newEncryptedPrv = this.bitgo.encrypt({ password: secret, input: decryptedPrv });
 
-    return {
+    const keychain: BulkWalletShareKeychain = {
       pub,
       encryptedPrv: newEncryptedPrv,
       fromPubKey: eckey.publicKey.toString('hex'),
       toPubKey: userPubkey,
       path: path,
     };
+
+    assert(keychain.pub, 'pub must be defined for sharing');
+    assert(keychain.encryptedPrv, 'encryptedPrv must be defined for sharing');
+    assert(keychain.fromPubKey, 'fromPubKey must be defined for sharing');
+    assert(keychain.toPubKey, 'toPubKey must be defined for sharing');
+    assert(keychain.path, 'path must be defined for sharing');
+
+    return keychain;
   }
 
   /**
@@ -1832,7 +1841,7 @@ export class Wallet implements IWallet {
     try {
       const decryptedKeychain = await this.getDecryptedKeychainForSharing(walletPassphrase);
       if (!decryptedKeychain) {
-        return {}; // Cold wallet case
+        return {};
       }
       return this.encryptPrvForUser(decryptedKeychain.prv, decryptedKeychain.pub, pubkey, path);
     } catch (e) {

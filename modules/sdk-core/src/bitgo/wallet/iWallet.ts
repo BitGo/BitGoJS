@@ -637,6 +637,11 @@ export interface BulkWalletShareOptions {
 
 export type WalletShareState = 'active' | 'accepted' | 'canceled' | 'rejected' | 'pendingapproval';
 
+export interface DecryptedKeychainData {
+  prv: string;
+  pub: string;
+}
+
 export interface BulkWalletShareKeychain {
   pub: string;
   encryptedPrv: string;

@@ -3746,6 +3746,18 @@ describe('V2 Wallets:', function () {
         pub,
       });
 
+      const encryptPrvForUserStub = sinon
+        .stub(wallet, 'encryptPrvForUser')
+        .callsFake((prv, pubKey, userPubKey, path) => {
+          return {
+            pub: pubKey,
+            encryptedPrv: 'dummyEncryptedPrv',
+            fromPubKey: 'dummyFromPubKey',
+            toPubKey: userPubKey,
+            path: path,
+          };
+        });
+
       sinon.stub(wallet, 'createBulkKeyShares').resolves({
         shares: users.map((user) => ({
           id: user.userId,
@@ -3772,6 +3784,22 @@ describe('V2 Wallets:', function () {
         1,
         'getDecryptedKeychainForSharing should be called exactly once, not once per user'
       );
+
+      // Verify encryption happens for EACH user (once per user)
+      assert.strictEqual(
+        encryptPrvForUserStub.callCount,
+        users.length,
+        `encryptPrvForUser should be called once per user (${users.length} times)`
+      );
+
+      // Verify each call had the correct user's pubKey and path
+      users.forEach((user, index) => {
+        const call = encryptPrvForUserStub.getCall(index);
+        assert.strictEqual(call.args[0], prv1, 'Should use the same decrypted private key for all users');
+        assert.strictEqual(call.args[1], pub, 'Should use the same public key for all users');
+        assert.strictEqual(call.args[2], user.pubKey, `Should use user${index + 1}'s public key`);
+        assert.strictEqual(call.args[3], user.path, `Should use user${index + 1}'s path`);
+      });
     });
   });
 
