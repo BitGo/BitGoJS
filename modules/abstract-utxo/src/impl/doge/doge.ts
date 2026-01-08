@@ -1,9 +1,8 @@
 import { BitGoBase, HalfSignedUtxoTransaction, SignedTransaction } from '@bitgo/sdk-core';
-import { bitgo, networks } from '@bitgo/utxo-lib';
+import { bitgo } from '@bitgo/utxo-lib';
 
 import {
   AbstractUtxoCoin,
-  UtxoNetwork,
   SignTransactionOptions,
   ExplainTransactionOptions,
   ParseTransactionOptions,
@@ -12,6 +11,7 @@ import {
   TransactionInfo,
   TransactionPrebuild,
 } from '../../abstractUtxoCoin';
+import { UtxoCoinName } from '../../names';
 import { ParsedTransaction } from '../../transaction/types';
 import type { TransactionExplanation } from '../../transaction/fixedScript/explainTransaction';
 import type { CrossChainRecoverySigned, CrossChainRecoveryUnsigned } from '../../recovery/crossChainRecovery';
@@ -56,8 +56,10 @@ function parseTransactionPrebuild<TNumber extends number | bigint>(
 }
 
 export class Doge extends AbstractUtxoCoin {
-  constructor(bitgo: BitGoBase, network?: UtxoNetwork) {
-    super(bitgo, network || networks.dogecoin, 'bigint');
+  readonly name: UtxoCoinName = 'doge';
+
+  constructor(bitgo: BitGoBase) {
+    super(bitgo, 'bigint');
   }
 
   static createInstance(bitgo: BitGoBase): Doge {

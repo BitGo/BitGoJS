@@ -2,13 +2,16 @@
  * @prettier
  */
 import { BitGoBase } from '@bitgo/sdk-core';
-import * as utxolib from '@bitgo/utxo-lib';
+
+import { UtxoCoinName } from '../../names';
 
 import { Doge } from './doge';
 
 export class Tdoge extends Doge {
+  readonly name: UtxoCoinName = 'tdoge';
+
   constructor(bitgo: BitGoBase) {
-    super(bitgo, utxolib.networks.dogecoinTest);
+    super(bitgo);
   }
   static createInstance(bitgo: BitGoBase): Tdoge {
     return new Tdoge(bitgo);

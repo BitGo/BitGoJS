@@ -1,12 +1,13 @@
 import { BitGoBase } from '@bitgo/sdk-core';
-import * as utxolib from '@bitgo/utxo-lib';
 
 import { Bch } from '../bch/bch';
-import { UtxoNetwork } from '../../abstractUtxoCoin';
+import { UtxoCoinName } from '../../names';
 
 export class Bcha extends Bch {
-  constructor(bitgo: BitGoBase, network?: UtxoNetwork) {
-    super(bitgo, network || utxolib.networks.ecash);
+  readonly name: UtxoCoinName = 'bcha';
+
+  constructor(bitgo: BitGoBase) {
+    super(bitgo);
   }
 
   static createInstance(bitgo: BitGoBase): Bcha {

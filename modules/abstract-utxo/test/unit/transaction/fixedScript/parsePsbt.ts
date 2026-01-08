@@ -14,7 +14,7 @@ import type {
   TransactionExplanation,
   ChangeAddressInfo,
 } from '../../../../src/transaction/fixedScript/explainTransaction';
-import { getChainFromNetwork } from '../../../../src/names';
+import { getCoinName } from '../../../../src/names';
 import { TransactionPrebuild } from '../../../../src/abstractUtxoCoin';
 
 import { hasWasmUtxoSupport } from './util';
@@ -110,7 +110,7 @@ function describeParseTransactionWith(
     let stubExplainTransaction: sinon.SinonStub;
 
     before('prepare', async function () {
-      const coinName = getChainFromNetwork(acidTest.network);
+      const coinName = getCoinName(acidTest.network);
       coin = getUtxoCoin(coinName);
 
       // Create PSBT and explanation

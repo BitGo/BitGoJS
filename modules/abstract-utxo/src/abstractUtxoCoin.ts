@@ -76,7 +76,13 @@ import {
   ErrorImplicitExternalOutputs,
 } from './transaction/descriptor/verifyTransaction';
 import { assertDescriptorWalletAddress, getDescriptorMapFromWallet, isDescriptorWallet } from './descriptor';
-import { getChainFromNetwork, getFamilyFromNetwork, getFullNameFromNetwork } from './names';
+import {
+  getFullNameFromCoinName,
+  getMainnetCoinName,
+  getNetworkFromCoinName,
+  UtxoCoinName,
+  UtxoCoinNameMainnet,
+} from './names';
 import { assertFixedScriptWalletAddress } from './address/fixedScript';
 import { isSdkBackend, ParsedTransaction, SdkBackend } from './transaction/types';
 import { decodePsbtWith, encodeTransaction, stringToBufferTryFormats } from './transaction/decode';
@@ -369,42 +375,37 @@ export abstract class AbstractUtxoCoin
   extends BaseCoin
   implements Musig2Participant<utxolib.bitgo.UtxoPsbt>, Musig2Participant<fixedScriptWallet.BitGoPsbt>
 {
+  abstract name: UtxoCoinName;
+
   public altScriptHash?: number;
   public supportAltScriptDestination?: boolean;
   public defaultSdkBackend: SdkBackend = 'utxolib';
   public readonly amountType: 'number' | 'bigint';
-  private readonly _network: utxolib.Network;
 
-  protected constructor(bitgo: BitGoBase, network: utxolib.Network, amountType: 'number' | 'bigint' = 'number') {
+  protected constructor(bitgo: BitGoBase, amountType: 'number' | 'bigint' = 'number') {
     super(bitgo);
-    if (!utxolib.isValidNetwork(network)) {
-      throw new Error(
-        'invalid network: please make sure to use the same version of ' +
-          '@bitgo/utxo-lib as this library when initializing an instance of this class'
-      );
-    }
     this.amountType = amountType;
-    this._network = network;
   }
 
-  get network() {
-    return this._network;
+  /** @deprecated - will be removed when we drop support for utxolib */
+  get network(): utxolib.Network {
+    return getNetworkFromCoinName(this.name);
   }
 
-  getChain() {
-    return getChainFromNetwork(this.network);
+  getChain(): UtxoCoinName {
+    return this.name;
   }
 
-  getFamily() {
-    return getFamilyFromNetwork(this.network);
+  getFamily(): UtxoCoinNameMainnet {
+    return getMainnetCoinName(this.name);
   }
 
-  getFullName() {
-    return getFullNameFromNetwork(this.network);
+  getFullName(): string {
+    return getFullNameFromCoinName(this.name);
   }
 
   /** Indicates whether the coin supports a block target */
-  supportsBlockTarget() {
+  supportsBlockTarget(): boolean {
     // FIXME: the SDK does not seem to use this anywhere so it is unclear what the purpose of this method is
     switch (getMainnet(this.network)) {
       case utxolib.networks.bitcoin:
@@ -428,7 +429,7 @@ export abstract class AbstractUtxoCoin
    * Returns the factor between the base unit and its smallest subdivison
    * @return {number}
    */
-  getBaseFactor() {
+  getBaseFactor(): number {
     return 1e8;
   }
 
@@ -466,7 +467,7 @@ export abstract class AbstractUtxoCoin
    * @param {String} pub the pub to be checked
    * @returns {Boolean} is it valid?
    */
-  isValidPub(pub: string) {
+  isValidPub(pub: string): boolean {
     try {
       return bip32.fromBase58(pub).isNeutered();
     } catch (e) {
@@ -1056,7 +1057,15 @@ export abstract class AbstractUtxoCoin
   }
 
   /** @inheritDoc */
-  auditDecryptedKey({ multiSigType, publicKey, prv }) {
+  auditDecryptedKey({
+    multiSigType,
+    publicKey,
+    prv,
+  }: {
+    multiSigType: MultisigType;
+    publicKey: string;
+    prv: string;
+  }): void {
     if (multiSigType === 'tss') {
       throw new Error('tss auditing is not supported for this coin');
     }
