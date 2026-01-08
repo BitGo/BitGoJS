@@ -27,24 +27,16 @@ export type PsbtParsedScriptType =
  * Collects and logs signing errors and verification errors, throws error in the end if any of them
  * failed.
  *
- * If it is the last signature, finalize and extract the transaction from the psbt.
- *
  * This function mirrors signAndVerifyWalletTransaction, but is used for signing PSBTs instead of
  * using TransactionBuilder
  *
  * @param psbt
  * @param signerKeychain
- * @param isLastSignature
  */
 export function signAndVerifyPsbt(
   psbt: utxolib.bitgo.UtxoPsbt,
-  signerKeychain: utxolib.BIP32Interface,
-  {
-    isLastSignature,
-    /** deprecated */
-    allowNonSegwitSigningWithoutPrevTx,
-  }: { isLastSignature: boolean; allowNonSegwitSigningWithoutPrevTx?: boolean }
-): utxolib.bitgo.UtxoPsbt | utxolib.bitgo.UtxoTransaction<bigint> {
+  signerKeychain: utxolib.BIP32Interface
+): utxolib.bitgo.UtxoPsbt {
   const txInputs = psbt.txInputs;
   const outputIds: string[] = [];
   const scriptTypes: PsbtParsedScriptType[] = [];
@@ -99,11 +91,6 @@ export function signAndVerifyPsbt(
     throw new TransactionSigningError(signErrors, verifyErrors);
   }
 
-  if (isLastSignature) {
-    psbt.finalizeAllInputs();
-    return psbt.extractTransaction();
-  }
-
   return psbt;
 }
 
@@ -122,19 +109,11 @@ export async function signPsbtWithMusig2Participant(
   tx: utxolib.bitgo.UtxoPsbt,
   signerKeychain: BIP32Interface | undefined,
   params: {
-    isLastSignature: boolean;
     signingStep: 'signerNonce' | 'cosignerNonce' | 'signerSignature' | undefined;
     walletId: string | undefined;
   }
-): Promise<utxolib.bitgo.UtxoPsbt | utxolib.bitgo.UtxoTransaction<bigint>> {
+): Promise<utxolib.bitgo.UtxoPsbt> {
   if (bitgo.isTransactionWithKeyPathSpendInput(tx)) {
-    // We can only be the first signature on a transaction with taproot key path spend inputs because
-    // we require the secret nonce in the cache of the first signer, which is impossible to retrieve if
-    // deserialized from a hex.
-    if (params.isLastSignature) {
-      throw new Error('Cannot be last signature on a transaction with key path spend inputs');
-    }
-
     switch (params.signingStep) {
       case 'signerNonce':
         assert(signerKeychain);
@@ -177,7 +156,5 @@ export async function signPsbtWithMusig2Participant(
   }
 
   assert(signerKeychain);
-  return signAndVerifyPsbt(tx, signerKeychain, {
-    isLastSignature: params.isLastSignature,
-  });
+  return signAndVerifyPsbt(tx, signerKeychain);
 }

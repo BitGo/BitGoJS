@@ -391,7 +391,7 @@ export async function backupKeyRecovery(
       coin: coin.getChain(),
     };
   } else {
-    signAndVerifyPsbt(psbt, walletKeys.user, { isLastSignature: false });
+    signAndVerifyPsbt(psbt, walletKeys.user);
     if (isKrsRecovery) {
       // The KRS provider keyternal solely supports P2SH, P2WSH, and P2SH-P2WSH input script types.
       // It currently uses an outdated BitGoJS SDK, which relies on a legacy transaction builder for cosigning.
@@ -402,7 +402,9 @@ export async function backupKeyRecovery(
           ? utxolib.bitgo.extractP2msOnlyHalfSignedTx(psbt).toBuffer().toString('hex')
           : psbt.toHex();
     } else {
-      const tx = signAndVerifyPsbt(psbt, walletKeys.backup, { isLastSignature: true });
+      signAndVerifyPsbt(psbt, walletKeys.backup);
+      psbt.finalizeAllInputs();
+      const tx = psbt.extractTransaction();
       txInfo.transactionHex = tx.toBuffer().toString('hex');
     }
   }

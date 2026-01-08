@@ -523,7 +523,7 @@ export async function recoverCrossChain<TNumber extends number | bigint = number
   }
 
   // For signed recovery, sign the PSBT with user key and return half-signed PSBT
-  signAndVerifyPsbt(psbt, prv, { isLastSignature: false });
+  signAndVerifyPsbt(psbt, prv);
   const recoveryAmount = utxolib.bitgo.toTNumber<TNumber>(psbt.txOutputs[0].value, params.sourceCoin.amountType);
 
   return {

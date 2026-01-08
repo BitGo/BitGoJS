@@ -40,16 +40,25 @@ export async function signTransaction<
   }
 
   if (tx instanceof bitgo.UtxoPsbt) {
-    return signPsbtWithMusig2Participant(coin as Musig2Participant<utxolib.bitgo.UtxoPsbt>, tx, signerKeychain, {
-      isLastSignature,
-      signingStep: params.signingStep,
-      walletId: params.walletId,
-    });
+    const signedPsbt = await signPsbtWithMusig2Participant(
+      coin as Musig2Participant<utxolib.bitgo.UtxoPsbt>,
+      tx,
+      signerKeychain,
+      {
+        signingStep: params.signingStep,
+        walletId: params.walletId,
+      }
+    );
+    if (isLastSignature) {
+      signedPsbt.finalizeAllInputs();
+      return signedPsbt.extractTransaction();
+    }
+    return signedPsbt;
   } else if (tx instanceof fixedScriptWallet.BitGoPsbt) {
     assert(params.pubs, 'pubs are required for fixed script signing');
     assert(isTriple(params.pubs), 'pubs must be a triple');
     const rootWalletKeys = fixedScriptWallet.RootWalletKeys.fromXpubs(params.pubs);
-    return signPsbtWithMusig2ParticipantWasm(
+    const signedPsbt = await signPsbtWithMusig2ParticipantWasm(
       coin as Musig2Participant<fixedScriptWallet.BitGoPsbt>,
       tx,
       signerKeychain,
@@ -58,11 +67,15 @@ export async function signTransaction<
         replayProtection: {
           publicKeys: getReplayProtectionPubkeys(network),
         },
-        isLastSignature,
         signingStep: params.signingStep,
         walletId: params.walletId,
       }
     );
+    if (isLastSignature) {
+      signedPsbt.finalizeAllInputs();
+      return Buffer.from(signedPsbt.extractTransaction());
+    }
+    return signedPsbt;
   }
 
   return signLegacyTransaction(tx, signerKeychain, {

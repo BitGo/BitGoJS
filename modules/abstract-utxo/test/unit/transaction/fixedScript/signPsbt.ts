@@ -113,7 +113,6 @@ function describeSignPsbtWithMusig2Participant(
           psbt,
           acidTest.rootWalletKeys.user,
           {
-            isLastSignature: false,
             signingStep: undefined,
             walletId: 'test-wallet-id',
           }
@@ -133,7 +132,6 @@ function describeSignPsbtWithMusig2Participant(
           fixedScriptWallet.RootWalletKeys.from(acidTest.rootWalletKeys),
           {
             replayProtection,
-            isLastSignature: false,
             signingStep: undefined,
             walletId: 'test-wallet-id',
           }

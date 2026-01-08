@@ -30,16 +30,13 @@ function hasKeyPathSpendInput(
 /**
  * Sign all inputs of a PSBT and verify signatures after signing.
  * Collects and logs signing errors and verification errors, throws error in the end if any of them failed.
- *
- * If it is the last signature, finalize and extract the transaction from the psbt.
  */
 export function signAndVerifyPsbtWasm(
   tx: fixedScriptWallet.BitGoPsbt,
   signerKeychain: BIP32Interface,
   rootWalletKeys: fixedScriptWallet.RootWalletKeys,
-  replayProtection: ReplayProtectionKeys,
-  { isLastSignature }: { isLastSignature: boolean }
-): fixedScriptWallet.BitGoPsbt | Buffer {
+  replayProtection: ReplayProtectionKeys
+): fixedScriptWallet.BitGoPsbt {
   const wasmSigner = toWasmBIP32(signerKeychain);
   const parsed = tx.parseTransactionWithWalletKeys(rootWalletKeys, replayProtection);
 
@@ -83,11 +80,6 @@ export function signAndVerifyPsbtWasm(
     throw new TransactionSigningError(signErrors, verifyErrors);
   }
 
-  if (isLastSignature) {
-    tx.finalizeAllInputs();
-    return Buffer.from(tx.extractTransaction());
-  }
-
   return tx;
 }
 
@@ -103,21 +95,13 @@ export async function signPsbtWithMusig2ParticipantWasm(
   rootWalletKeys: fixedScriptWallet.RootWalletKeys,
   params: {
     replayProtection: ReplayProtectionKeys;
-    isLastSignature: boolean;
     signingStep: 'signerNonce' | 'cosignerNonce' | 'signerSignature' | undefined;
     walletId: string | undefined;
   }
-): Promise<fixedScriptWallet.BitGoPsbt | Buffer> {
+): Promise<fixedScriptWallet.BitGoPsbt> {
   const wasmSigner = signerKeychain ? toWasmBIP32(signerKeychain) : undefined;
 
   if (hasKeyPathSpendInput(tx, rootWalletKeys, params.replayProtection)) {
-    // We can only be the first signature on a transaction with taproot key path spend inputs because
-    // we require the secret nonce in the cache of the first signer, which is impossible to retrieve if
-    // deserialized from a hex.
-    if (params.isLastSignature) {
-      throw new Error('Cannot be last signature on a transaction with key path spend inputs');
-    }
-
     switch (params.signingStep) {
       case 'signerNonce':
         assert(wasmSigner);
@@ -162,7 +146,5 @@ export async function signPsbtWithMusig2ParticipantWasm(
   }
 
   assert(signerKeychain);
-  return signAndVerifyPsbtWasm(tx, signerKeychain, rootWalletKeys, params.replayProtection, {
-    isLastSignature: params.isLastSignature,
-  });
+  return signAndVerifyPsbtWasm(tx, signerKeychain, rootWalletKeys, params.replayProtection);
 }
