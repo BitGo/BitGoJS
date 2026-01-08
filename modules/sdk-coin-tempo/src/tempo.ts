@@ -8,8 +8,10 @@ import {
   UnsignedSweepTxMPCv2,
   TransactionBuilder,
 } from '@bitgo/abstract-eth';
+import type * as EthLikeCommon from '@ethereumjs/common';
 import { BaseCoin, BitGoBase, MPCAlgorithm } from '@bitgo/sdk-core';
-import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { BaseCoin as StaticsBaseCoin, coins } from '@bitgo/statics';
+import { Tip20TransactionBuilder } from './lib';
 
 export class Tempo extends AbstractEthLikeNewCoins {
   protected constructor(bitgo: BitGoBase, staticsCoin?: Readonly<StaticsBaseCoin>) {
@@ -105,12 +107,11 @@ export class Tempo extends AbstractEthLikeNewCoins {
 
   /**
    * Get transaction builder for Tempo
-   * TODO: Implement TransactionBuilder for Tempo
+   * Returns a TIP-20 transaction builder for Tempo-specific operations
+   * @param common - Optional common chain configuration
    * @protected
    */
-  protected getTransactionBuilder(): TransactionBuilder {
-    // TODO: Create and return TransactionBuilder instance
-    // Return undefined cast as TransactionBuilder to prevent downstream services from breaking
-    return undefined as unknown as TransactionBuilder;
+  protected getTransactionBuilder(common?: EthLikeCommon.default): TransactionBuilder {
+    return new Tip20TransactionBuilder(coins.get(this.getBaseChain())) as unknown as TransactionBuilder;
   }
 }

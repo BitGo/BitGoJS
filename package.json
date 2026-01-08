@@ -3,6 +3,7 @@
   "private": true,
   "license": "Apache-2.0",
   "devDependencies": {
+    "@api-ts/openapi-generator": "5.14.0",
     "@babel/core": "^7.28.0",
     "@babel/preset-env": "^7.28.0",
     "@clack/prompts": "^0.7.0",

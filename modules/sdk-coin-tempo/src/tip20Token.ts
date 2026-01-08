@@ -4,7 +4,9 @@
 import { BitGoBase, CoinConstructor, MPCAlgorithm, NamedCoinConstructor } from '@bitgo/sdk-core';
 import { coins } from '@bitgo/statics';
 import { GetSendMethodArgsOptions, SendMethodArgs } from '@bitgo/abstract-eth';
+import { Address } from './lib/types';
 import { Tempo } from './tempo';
+import { encodeTip20TransferWithMemo, amountToTip20Units, isValidAddress, isValidTip20Amount } from './lib/utils';
 
 /**
  * TIP20 Token Configuration Interface
@@ -122,48 +124,128 @@ export class Tip20Token extends Tempo {
   }
 
   /**
-   * Placeholder: Verify coin and token match
-   * TODO: Implement when transaction logic is added
+   * Verify that the transaction coin/token matches this token
+   * @param txPrebuild - Transaction prebuild object
+   * @returns true if valid, false otherwise
    */
-  verifyCoin(txPrebuild: unknown): boolean {
-    return true;
+  verifyCoin(txPrebuild: { coin?: string; token?: string }): boolean {
+    if (!txPrebuild) {
+      return false;
+    }
+
+    // Check if the coin or token matches this token's configuration
+    const coinMatch = txPrebuild.coin === this.tokenConfig.coin || txPrebuild.coin === this.tokenConfig.type;
+    const tokenMatch =
+      !txPrebuild.token ||
+      txPrebuild.token === this.tokenConfig.tokenContractAddress ||
+      txPrebuild.token === this.tokenConfig.type;
+
+    return coinMatch && tokenMatch;
   }
 
   /**
-   * Placeholder: Get send method arguments
-   * TODO: Implement for token transfers
+   * Get send method arguments for TIP-20 token transfer with memo
+   * @param txInfo - Transaction information including recipient and amount
+   * @returns Array of send method arguments for ABI encoding
    */
   getSendMethodArgs(txInfo: GetSendMethodArgsOptions): SendMethodArgs[] {
-    // TODO: Implement for token transfers
-    // Return empty array to prevent downstream services from breaking
-    return [];
+    const { recipient } = txInfo;
+
+    if (!recipient) {
+      throw new Error('Recipient is required for token transfer');
+    }
+
+    if (!isValidAddress(recipient.address)) {
+      throw new Error(`Invalid recipient address: ${recipient.address}`);
+    }
+
+    if (!isValidTip20Amount(recipient.amount)) {
+      throw new Error(`Invalid amount: ${recipient.amount}`);
+    }
+
+    const memo = (recipient as { memo?: string }).memo;
+
+    if (memo && Buffer.byteLength(memo, 'utf-8') > 32) {
+      throw new Error('Memo too long: maximum 32 bytes');
+    }
+
+    const amountInUnits = amountToTip20Units(recipient.amount);
+    const data = encodeTip20TransferWithMemo(recipient.address as Address, amountInUnits, memo);
+
+    return [
+      {
+        name: 'toAddress',
+        type: 'address',
+        value: recipient.address,
+      },
+      {
+        name: 'value',
+        type: 'uint',
+        value: recipient.amount,
+      },
+      {
+        name: 'tokenContractAddress',
+        type: 'address',
+        value: this.tokenConfig.tokenContractAddress,
+      },
+      {
+        name: 'data',
+        type: 'bytes',
+        value: Buffer.from(data.slice(2), 'hex'),
+      },
+      {
+        name: 'expireTime',
+        type: 'uint',
+        value: txInfo.expireTime,
+      },
+      {
+        name: 'sequenceId',
+        type: 'uint',
+        value: txInfo.contractSequenceId,
+      },
+      {
+        name: 'signature',
+        type: 'bytes',
+        value: Buffer.from(txInfo.signature.replace('0x', ''), 'hex'),
+      },
+    ];
   }
 
   /**
-   * Placeholder: Get operation for token transfer
-   * TODO: Implement for token transfers
+   * Get operation object for TIP-20 token transfer (for batch transactions)
+   * @param recipient - Recipient information with address, amount, and optional memo
+   * @param expireTime - Transaction expiration time
+   * @param contractSequenceId - Contract sequence ID
+   * @returns Operation array for ABI encoding
    */
   getOperation(
-    recipient: { address: string; amount: string },
+    recipient: { address: string; amount: string; memo?: string },
     expireTime: number,
     contractSequenceId: number
   ): (string | Buffer)[][] {
-    // TODO: Implement for token transfers
-    // Return empty array to prevent downstream services from breaking
-    return [];
-  }
+    if (!isValidAddress(recipient.address)) {
+      throw new Error(`Invalid recipient address: ${recipient.address}`);
+    }
 
-  /**
-   * Placeholder: Query token balance
-   * TODO: Implement using Tempo block explorer or RPC
-   */
-  async queryAddressTokenBalance(
-    tokenContractAddress: string,
-    walletAddress: string,
-    apiKey?: string
-  ): Promise<string> {
-    // TODO: Implement using Tempo block explorer or RPC
-    // Return 0 balance to prevent downstream services from breaking
-    return '0';
+    if (!isValidTip20Amount(recipient.amount)) {
+      throw new Error(`Invalid amount: ${recipient.amount}`);
+    }
+
+    // Validate memo byte length (handles multi-byte UTF-8 characters)
+    if (recipient.memo !== undefined && recipient.memo !== null && recipient.memo !== '') {
+      const memoByteLength = new TextEncoder().encode(recipient.memo).length;
+      if (memoByteLength > 32) {
+        throw new Error(`Memo too long: ${memoByteLength} bytes. Maximum 32 bytes.`);
+      }
+    }
+
+    const amountInUnits = amountToTip20Units(recipient.amount);
+    const data = encodeTip20TransferWithMemo(recipient.address as Address, amountInUnits, recipient.memo);
+
+    // Return format compatible with parent class for ABI encoding
+    return [
+      ['address', 'bytes'],
+      [this.tokenConfig.tokenContractAddress, Buffer.from(data.slice(2), 'hex')],
+    ];
   }
 }

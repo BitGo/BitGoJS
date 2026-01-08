@@ -4981,6 +4981,36 @@ export const tOfcErc20Coins = [
     true,
     'tip'
   ),
+
+  ofcerc20(
+    'e46e4acc-5014-4dad-ba7d-660bae9299a4',
+    'ofcxpl:syzusd',
+    'Stake Yuzu USD',
+    18,
+    underlyingAssetForSymbol('xpl:syzusd'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'xpl'
+  ),
+
+  ofcerc20(
+    '94b84642-620e-496c-b43e-d532adacedce',
+    'ofcxpl:usdto',
+    'USDTO',
+    6,
+    underlyingAssetForSymbol('xpl:usdto'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'xpl'
+  ),
 ];
 
 function underlyingAssetForSymbol(underlyingAssetValue: string): UnderlyingAsset {

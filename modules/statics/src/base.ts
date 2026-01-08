@@ -2023,6 +2023,8 @@ export enum UnderlyingAsset {
   XEX = 'xex',
   XLMBEAR = 'xlmbear',
   XLMBULL = 'xlmbull',
+  'xpl:syzusd' = 'xpl:syzusd',
+  'xpl:usdto' = 'xpl:usdto',
   XRL = 'xrl',
   XRPBEAR = 'xrpbear',
   XRPBULL = 'xrpbull',

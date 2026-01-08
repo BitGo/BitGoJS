@@ -16,6 +16,7 @@ import {
   EthLikeERC20Token,
   EthLikeERC721Token,
   FlrERC20Token,
+  XdcERC20Token,
   HederaToken,
   Nep141Token,
   OpethERC20Token,
@@ -612,25 +613,6 @@ const getFormattedMonadTokens = (customCoinMap = coins) =>
     return acc;
   }, []);
 
-function getXdcTokenConfig(coin: EthLikeERC20Token): EthLikeTokenConfig {
-  return {
-    type: coin.name,
-    coin: coin.network.type === NetworkType.MAINNET ? 'xdc' : 'txdc',
-    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-    name: coin.fullName,
-    tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
-    decimalPlaces: coin.decimalPlaces,
-  };
-}
-
-const getFormattedXdcTokens = (customCoinMap = coins) =>
-  customCoinMap.reduce((acc: EthLikeTokenConfig[], coin) => {
-    if (coin instanceof EthLikeERC20Token && (coin.name.includes('xdc:') || coin.name.includes('txdc:'))) {
-      acc.push(getXdcTokenConfig(coin));
-    }
-    return acc;
-  }, []);
-
 function getFlowTokenConfig(coin: EthLikeERC20Token): EthLikeTokenConfig {
   return {
     type: coin.name,
@@ -753,6 +735,24 @@ const getFormattedFlrTokens = (customCoinMap = coins) =>
   customCoinMap.reduce((acc: EthLikeTokenConfig[], coin) => {
     if (coin instanceof FlrERC20Token) {
       acc.push(getFlrTokenConfig(coin));
+    }
+    return acc;
+  }, []);
+
+function getXdcTokenConfig(coin: XdcERC20Token): EthLikeTokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'xdc' : 'txdc',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+    decimalPlaces: coin.decimalPlaces,
+  };
+}
+const getFormattedXdcTokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: EthLikeTokenConfig[], coin) => {
+    if (coin instanceof XdcERC20Token) {
+      acc.push(getXdcTokenConfig(coin));
     }
     return acc;
   }, []);
@@ -1467,6 +1467,8 @@ export function getFormattedTokenConfigForCoin(coin: Readonly<BaseCoin>): TokenC
     return getJettonTokenConfig(coin);
   } else if (coin instanceof FlrERC20Token) {
     return getFlrTokenConfig(coin);
+  } else if (coin instanceof XdcERC20Token) {
+    return getXdcTokenConfig(coin);
   } else if (coin instanceof EthLikeERC20Token) {
     return getEthLikeTokenConfig(coin);
   } else if (coin instanceof EthLikeERC721Token) {

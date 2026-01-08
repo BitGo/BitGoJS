@@ -19,7 +19,7 @@ import { generateAddressWithChainAndIndex } from '../address';
 import { forCoin, RecoveryProvider } from './RecoveryProvider';
 import { MempoolApi } from './mempoolApi';
 import { CoingeckoApi } from './coingeckoApi';
-import { createBackupKeyRecoveryPsbt, getRecoveryAmount } from './psbt';
+import { createBackupKeyRecoveryPsbt, getRecoveryAmount, PsbtBackend } from './psbt';
 
 type ScriptType2Of3 = utxolib.bitgo.outputScripts.ScriptType2Of3;
 type ChainCode = utxolib.bitgo.ChainCode;
@@ -366,12 +366,20 @@ export async function backupKeyRecovery(
     }
   }
 
-  const psbt = createBackupKeyRecoveryPsbt(coin.network, walletKeys, unspents, {
-    feeRateSatVB: feePerByte,
-    recoveryDestination: params.recoveryDestination,
-    keyRecoveryServiceFee: krsFee,
-    keyRecoveryServiceFeeAddress: krsFeeAddress,
-  });
+  // Use wasm-utxo for testnet coins only, utxolib for mainnet
+  const backend: PsbtBackend = utxolib.isTestnet(coin.network) ? 'wasm-utxo' : 'utxolib';
+  const psbt = createBackupKeyRecoveryPsbt(
+    coin.network,
+    walletKeys,
+    unspents,
+    {
+      feeRateSatVB: feePerByte,
+      recoveryDestination: params.recoveryDestination,
+      keyRecoveryServiceFee: krsFee,
+      keyRecoveryServiceFeeAddress: krsFeeAddress,
+    },
+    backend
+  );
 
   if (isUnsignedSweep) {
     return {

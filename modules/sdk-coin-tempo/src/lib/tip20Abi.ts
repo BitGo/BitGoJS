@@ -1,32 +1,60 @@
 /**
- * TIP20 Token Standard ABI (Skeleton)
+ * TIP-20 Token Standard ABI
  *
- * TODO: Update this file when TIP20 ABI becomes available
+ * TIP-20 is Tempo's token standard, similar to ERC-20 but with:
+ * - 6 decimal places (instead of 18)
+ * - transferWithMemo function for attaching metadata
  */
 
 /**
- * Placeholder TIP20 ABI
- * This is an empty array that should be replaced with the actual ABI
+ * TIP-20 transferWithMemo ABI
+ * Standard function for TIP-20 token transfers with memo field
  */
-export const TIP20_ABI = [] as const;
+export const TIP20_TRANSFER_WITH_MEMO_ABI = [
+  {
+    type: 'function',
+    name: 'transferWithMemo',
+    inputs: [
+      { name: 'to', type: 'address' },
+      { name: 'amount', type: 'uint256' },
+      { name: 'memo', type: 'bytes32' },
+    ],
+    outputs: [{ name: '', type: 'bool' }],
+    stateMutability: 'nonpayable',
+  },
+] as const;
 
 /**
- * Placeholder for TIP20 Factory ABI
+ * Standard TIP-20 token ABI (similar to ERC-20)
  */
-export const TIP20_FACTORY_ABI = [] as const;
-
-/**
- * Get the method signature for TIP20 transfer
- * TODO: Update with actual method name if different from ERC20
- */
-export function getTip20TransferSignature(): string {
-  return 'transfer(address,uint256)';
-}
-
-/**
- * Get the method signature for TIP20 transferFrom
- * TODO: Update with actual method name if different from ERC20
- */
-export function getTip20TransferFromSignature(): string {
-  return 'transferFrom(address,address,uint256)';
-}
+export const TIP20_ABI = [
+  {
+    type: 'function',
+    name: 'balanceOf',
+    inputs: [{ name: 'account', type: 'address' }],
+    outputs: [{ name: '', type: 'uint256' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    name: 'transfer',
+    inputs: [
+      { name: 'to', type: 'address' },
+      { name: 'amount', type: 'uint256' },
+    ],
+    outputs: [{ name: '', type: 'bool' }],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    name: 'transferFrom',
+    inputs: [
+      { name: 'from', type: 'address' },
+      { name: 'to', type: 'address' },
+      { name: 'amount', type: 'uint256' },
+    ],
+    outputs: [{ name: '', type: 'bool' }],
+    stateMutability: 'nonpayable',
+  },
+  ...TIP20_TRANSFER_WITH_MEMO_ABI,
+] as const;

@@ -8,6 +8,7 @@ import { BIP32Interface } from '@bitgo/utxo-lib';
 import * as utxolib from '@bitgo/utxo-lib';
 import { Config, krsProviders, Triple } from '@bitgo/sdk-core';
 import { Dimensions } from '@bitgo/unspents';
+import { fixedScriptWallet } from '@bitgo/wasm-utxo';
 
 import {
   AbstractUtxoCoin,
@@ -200,7 +201,18 @@ function run(
       const inputSum = utxolib.bitgo.unspentSum(recoverUnspents, 'bigint');
       const outputSum = recoveryTx.txOutputs.reduce((sum, o) => sum + o.value, BigInt(0));
       const fee = inputSum - outputSum;
-      const vsize = Dimensions.fromPsbt(recoveryTx).getVSize();
+      // Use wasm-utxo Dimensions for testnet (matches how fee was calculated), utxolib Dimensions for mainnet
+      let vsize: number;
+      if (utxolib.isTestnet(coin.network)) {
+        const networkName = utxolib.getNetworkName(coin.network);
+        if (!networkName) {
+          throw new Error('Invalid network');
+        }
+        const wasmPsbt = fixedScriptWallet.BitGoPsbt.fromBytes(new Uint8Array(recoveryTx.toBuffer()), networkName);
+        vsize = fixedScriptWallet.Dimensions.fromPsbt(wasmPsbt).getVSize();
+      } else {
+        vsize = Dimensions.fromPsbt(recoveryTx).getVSize();
+      }
       const feeRateSatB = Number(fee) / vsize;
       const diff = Math.abs(feeRateSatB - defaultFeeRateSatB) / defaultFeeRateSatB;
       // within 1%

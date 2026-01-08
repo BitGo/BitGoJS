@@ -51,6 +51,7 @@ export const ETH_FEATURES = [
   CoinFeature.ENTERPRISE_PAYS_FEES,
   CoinFeature.WALLET_CONNECT_DEFI,
   CoinFeature.EVM_COIN,
+  CoinFeature.STUCK_TRANSACTION_MANAGEMENT_ONCHAIN,
 ];
 export const ETH_FEATURES_WITH_MMI = [...ETH_FEATURES, CoinFeature.METAMASK_INSTITUTIONAL];
 export const ETH_FEATURES_WITH_STAKING = [...ETH_FEATURES, CoinFeature.STAKING];
@@ -62,7 +63,6 @@ export const ETC_FEATURES = [
   CoinFeature.CUSTODY_BITGO_NEW_YORK,
   CoinFeature.MULTISIG_COLD,
   CoinFeature.MULTISIG,
-  CoinFeature.STUCK_TRANSACTION_MANAGEMENT_ONCHAIN,
   CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
 ];
 export const EVM_FEATURES = [
@@ -692,11 +692,7 @@ export const VET_TOKEN_FEATURES = VET_FEATURES.filter((feature) => feature !== C
 
 export const EVM_NON_EIP1559_FEATURES = [...EVM_FEATURES.filter((feature) => feature !== CoinFeature.EIP1559)];
 
-export const XDC_FEATURES = [
-  ...EVM_NON_EIP1559_FEATURES,
-  CoinFeature.ERC20_BULK_TRANSACTION,
-  CoinFeature.SUPPORTS_ERC20,
-];
+export const XDC_FEATURES = [...EVM_NON_EIP1559_FEATURES, CoinFeature.ERC20_BULK_TRANSACTION];
 
 export const SGB_FEATURES = [...EVM_FEATURES, CoinFeature.ERC20_BULK_TRANSACTION];
 
@@ -739,4 +735,5 @@ export const CANTON_FEATURES = [
   CoinFeature.SUPPORTS_ONE_STEP_DEPOSIT,
   CoinFeature.REQUIRES_WALLET_INITIALIZATION_TRANSACTION,
   CoinFeature.REQUIRES_DEPOSIT_ACCEPTANCE_TRANSACTION,
+  CoinFeature.ALPHANUMERIC_MEMO_ID,
 ];

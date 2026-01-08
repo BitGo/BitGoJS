@@ -14,7 +14,6 @@ import {
 } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
 import { bitgo } from '@bitgo/utxo-lib';
-import { bip32 } from '@bitgo/secp256k1';
 import * as wasmUtxo from '@bitgo/wasm-utxo';
 
 type ScriptType2Of3 = bitgo.outputScripts.ScriptType2Of3;
@@ -38,15 +37,6 @@ interface GenerateFixedScriptAddressOptions extends GenerateAddressOptions {
   keychains: { pub: string }[];
 }
 
-function canonicalAddress(network: utxolib.Network, address: string, format?: CreateAddressFormat): string {
-  if (format === 'cashaddr') {
-    const script = utxolib.addressFormat.toOutputScriptTryFormats(address, network);
-    return utxolib.addressFormat.fromOutputScriptWithFormat(script, format, network);
-  }
-  // Default to canonical format (base58 for most coins)
-  return utxolib.addressFormat.toCanonicalFormat(address, network);
-}
-
 function supportsAddressType(network: utxolib.Network, addressType: ScriptType2Of3): boolean {
   return utxolib.bitgo.outputScripts.isSupportedScriptType(network, addressType);
 }
@@ -58,24 +48,10 @@ export function generateAddressWithChainAndIndex(
   index: number,
   format: CreateAddressFormat | undefined
 ): string {
-  if (utxolib.isTestnet(network)) {
-    // Convert CreateAddressFormat to AddressFormat for wasm-utxo
-    // 'base58' -> 'default', 'cashaddr' -> 'cashaddr'
-    const wasmFormat = format === 'base58' ? 'default' : format;
-    return wasmUtxo.fixedScriptWallet.address(keychains, chain, index, network, wasmFormat);
-  }
-
-  if (!(keychains instanceof bitgo.RootWalletKeys)) {
-    const hdNodes = keychains.map((pub) => bip32.fromBase58(pub));
-    keychains = new bitgo.RootWalletKeys(hdNodes as Triple<utxolib.BIP32Interface>);
-  }
-
-  const addressType = bitgo.scriptTypeForChain(chain);
-
-  const derivedKeys = keychains.deriveForChainAndIndex(chain, index).publicKeys;
-  const { scriptPubKey: outputScript } = utxolib.bitgo.outputScripts.createOutputScript2of3(derivedKeys, addressType);
-  const address = utxolib.address.fromOutputScript(outputScript, network);
-  return canonicalAddress(network, address, format);
+  // Convert CreateAddressFormat to AddressFormat for wasm-utxo
+  // 'base58' -> 'default', 'cashaddr' -> 'cashaddr'
+  const wasmFormat = format === 'base58' ? 'default' : format;
+  return wasmUtxo.fixedScriptWallet.address(keychains, chain, index, network, wasmFormat);
 }
 
 /**

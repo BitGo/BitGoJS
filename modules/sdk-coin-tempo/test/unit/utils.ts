@@ -1,10 +1,11 @@
+import { ethers } from 'ethers';
 import utils from '../../src/lib/utils';
 
 describe('Tempo Utils', function () {
   describe('Address Validation', function () {
     it('should validate a valid address', function () {
-      // TODO: Add valid address examples for Tempo
-      const validAddress = 'validAddress123';
+      // Valid checksummed Ethereum-style address
+      const validAddress = ethers.utils.getAddress('0x742d35cc6634c0532925a3b844bc9e7595f0beb1');
       utils.isValidAddress(validAddress).should.be.true();
     });
 

@@ -1,0 +1,336 @@
+name: Audit API Spec
+
+on:
+  pull_request:
+    branches:
+      - master
+      - rel/**
+
+env:
+  STATIC_ANALYSIS_BOT_APP_ID: 1819979
+jobs:
+  generate-head-api-spec:
+    name: Generate head API spec
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Cache npm dependencies
+        id: node-modules-cache
+        uses: actions/cache@v5
+        with:
+          path: |
+            node_modules
+            modules/*/node_modules
+          key: ${{ runner.os }}-node18-${{ hashFiles('yarn.lock') }}-${{ hashFiles('tsconfig.packages.json') }}-${{ hashFiles('**/package.json') }}
+
+      - name: Install Dependencies
+        if: steps.node-modules-cache.outputs.cache-hit != 'true'
+        run: yarn install --with-frozen-lockfile --ignore-scripts
+
+      - name: Build packages
+        env:
+          DISABLE_V8_COMPILE_CACHE: '1'
+        run: yarn run postinstall
+
+      - name: Generate API spec
+        run: |
+          ./node_modules/.bin/openapi-generator \
+            --codec-file modules/express/openapi-generator.rc.js \
+            modules/express/src/typedRoutes/api/index.ts \
+            > generated.json
+
+      - name: Remove unknown tags from generated spec
+        run: |
+          jq '(.paths[] | .[]? | select(. != null)) |= del(."x-unknown-tags")' generated.json > openapi.json
+
+      - name: Convert merged spec to YAML
+        run: yq -P < openapi.json > openapi-head.yaml
+
+      - name: Upload API spec to artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: openapi-head.yaml
+          path: openapi-head.yaml
+
+  generate-merge-base-api-spec:
+    name: Generate merge base API spec
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Find and checkout merge base
+        run: |
+          git fetch origin ${{ github.event.pull_request.base.ref }}
+          MERGE_BASE=$(git merge-base HEAD origin/${{ github.event.pull_request.base.ref }})
+          echo "Merge base commit: $MERGE_BASE"
+          git checkout $MERGE_BASE
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Cache npm dependencies
+        id: node-modules-cache
+        uses: actions/cache@v5
+        with:
+          path: |
+            node_modules
+            modules/*/node_modules
+          key: ${{ runner.os }}-node18-${{ hashFiles('yarn.lock') }}-${{ hashFiles('tsconfig.packages.json') }}-${{ hashFiles('**/package.json') }}
+
+      - name: Install Dependencies
+        if: steps.node-modules-cache.outputs.cache-hit != 'true'
+        run: yarn install --with-frozen-lockfile --ignore-scripts
+
+      - name: Build packages
+        env:
+          DISABLE_V8_COMPILE_CACHE: '1'
+        run: yarn run postinstall
+
+      - name: Generate API spec
+        run: |
+          ./node_modules/.bin/openapi-generator \
+            --codec-file modules/express/openapi-generator.rc.js \
+            modules/express/src/typedRoutes/api/index.ts \
+            > generated.json
+
+      - name: Remove unknown tags from generated spec
+        run: |
+          jq '(.paths[] | .[]? | select(. != null)) |= del(."x-unknown-tags")' generated.json > openapi.json
+
+      - name: Convert merged spec to YAML
+        run: yq -P < openapi.json > openapi-merge-base.yaml
+
+      - name: Upload API spec to artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: openapi-merge-base.yaml
+          path: openapi-merge-base.yaml
+
+  check-specs-identical:
+    name: Check specs identical
+    runs-on: ubuntu-latest
+    needs: [generate-head-api-spec, generate-merge-base-api-spec]
+    outputs:
+      specs-identical: ${{ steps.check-specs-identical.outputs.identical }}
+    steps:
+      - name: Download head API spec artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: openapi-head.yaml
+
+      - name: Download merge base API spec artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: openapi-merge-base.yaml
+
+      - name: Check specs identical
+        id: check-specs-identical
+        run: |
+          if diff -q openapi-head.yaml openapi-merge-base.yaml > /dev/null 2>&1; then
+            echo "identical=true" >> $GITHUB_OUTPUT
+            echo "✅ Specs are identical - no changes detected, skipping subsequent checks"
+          else
+            echo "identical=false" >> $GITHUB_OUTPUT
+            echo "📝 Specs differ - proceeding with audit checks"
+          fi
+
+  generate-vacuum-reports:
+    name: Generate vacuum reports for API spec
+    runs-on: ubuntu-latest
+    needs: [check-specs-identical]
+    if: needs.check-specs-identical.outputs.specs-identical != 'true'
+    steps:
+      - name: Checkout PR head for ruleset
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Download head API spec artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: openapi-head.yaml
+
+      - name: Download and install vacuum v0.18.1
+        run: |
+          curl -L \
+            --output vacuum.tar.gz \
+            --silent \
+            --show-error \
+            --fail \
+            https://github.com/daveshanley/vacuum/releases/download/v0.18.1/vacuum_0.18.1_linux_x86_64.tar.gz
+          tar -xzf vacuum.tar.gz
+          chmod u+x vacuum
+          sudo mv vacuum /usr/local/bin/
+          vacuum version
+
+      - name: Audit head API spec with Vacuum
+        run: |
+          vacuum report \
+            --no-style \
+            --stdout \
+            --ruleset modules/express/ruleset.yaml \
+            openapi-head.yaml > vacuum-report.json
+
+          jq '.resultSet.results // []' vacuum-report.json > vacuum-results.json
+
+          ERROR_COUNT=$(jq '[.[] | select(.ruleSeverity == "error")] | length' vacuum-results.json)
+          WARNING_COUNT=$(jq '[.[] | select(.ruleSeverity == "warn")] | length' vacuum-results.json)
+
+          echo "Found $ERROR_COUNT error(s) and $WARNING_COUNT warning(s)"
+
+          if [ "$ERROR_COUNT" -gt 0 ]; then
+            echo "API specification audit failed with $ERROR_COUNT error(s)"
+            echo ""
+            echo "Errors:"
+            jq -r '.[] | select(.ruleSeverity == "error") | "  - [\(.ruleId)] \(.message) at \(.path)"' vacuum-results.json
+            exit 1
+          else
+            echo "API specification audit passed!"
+          fi
+
+  check-breaking-changes:
+    name: Check breaking changes
+    needs: [check-specs-identical]
+    if: needs.check-specs-identical.outputs.specs-identical != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download head API spec artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: openapi-head.yaml
+
+      - name: Download merge base API spec artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: openapi-merge-base.yaml
+
+      - name: Create static-analysis config file
+        run: |
+          cat <<EOF > .static-analysis.yaml
+          ---
+          api_version: static-analysis.bitgo/v1alpha1
+
+          rules:
+          - path: rules/openapi/breaking-changes
+            severity: error
+            options:
+              before_spec_path: openapi-merge-base.yaml
+              after_spec_path: openapi-head.yaml
+          EOF
+      - name: Generate GitHub App Token
+        id: generate-github-app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ env.STATIC_ANALYSIS_BOT_APP_ID }}
+          private-key: ${{ secrets.STATIC_ANALYSIS_BOT_PRIVATE_KEY }}
+          owner: bitgo
+          repositories: |
+            static-analysis
+
+      - name: Install BitGo/static-analysis/static-analysis@v1
+        uses: BitGo/install-github-release-binary@v2
+        with:
+          targets: BitGo/static-analysis/static-analysis@v1
+          token: ${{ steps.generate-github-app-token.outputs.token }}
+
+      - name: Check breaking changes
+        run: |
+          if ! static-analysis; then
+            echo "
+          ## ⚠️ Breaking Changes Detected
+
+          The OpenAPI spec changes in this PR contain breaking changes that could affect API consumers.
+
+          What to do next:
+          1. Review the breaking changes in the workflow run.
+          2. If these breaking changes are intentional and necessary, contact the DevEx team in #notify-dev-ex on Slack for a manual override.
+          3. If not intentional, please revise your changes to maintain backward compatibility.
+          "
+            exit 1
+          fi
+
+  manual-linter-override:
+    name: Linter Override
+    needs: [check-breaking-changes]
+    if: always() && needs.check-breaking-changes.result == 'failure'
+    environment: breaking-changes-override
+    runs-on: ubuntu-latest
+    steps:
+      - name: Override Breaking Changes Check
+        run: |
+          echo "⚠️  Manual override requested for breaking changes check"
+          echo "Breaking changes check failed but was manually approved to proceed"
+          echo "This override was approved by the reviewer"
+
+  api-spec-check:
+    name: API Spec Check
+    needs:
+      [
+        generate-head-api-spec,
+        generate-merge-base-api-spec,
+        check-specs-identical,
+        generate-vacuum-reports,
+        check-breaking-changes,
+        manual-linter-override,
+      ]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Check generate-head-api-spec
+        env:
+          GENERATE_HEAD_API_SPEC_RESULT: ${{ needs.generate-head-api-spec.result }}
+        run: |
+          if [ "$GENERATE_HEAD_API_SPEC_RESULT" != "success" ]; then
+            echo "❌ generate-head-api-spec: ${{ needs.generate-head-api-spec.result }}"
+            exit 1
+          fi
+      - name: Check generate-merge-base-api-spec
+        env:
+          GENERATE_MERGE_BASE_API_SPEC_RESULT: ${{ needs.generate-merge-base-api-spec.result }}
+        run: |
+          if [ "$GENERATE_MERGE_BASE_API_SPEC_RESULT" != "success" ]; then
+            echo "❌ generate-merge-base-api-spec: ${{ needs.generate-merge-base-api-spec.result }}"
+            exit 1
+          fi
+      - name: Check generate-vacuum-reports
+        env:
+          GENERATE_VACUUM_REPORTS_RESULT: ${{ needs.generate-vacuum-reports.result }}
+          SPECS_IDENTICAL: ${{ needs.check-specs-identical.outputs.specs-identical }}
+        run: |
+          if [ "$GENERATE_VACUUM_REPORTS_RESULT" = "skipped" ] && [ "$SPECS_IDENTICAL" = "true" ]; then
+            echo "⏭️  generate-vacuum-reports: skipped (specs are identical)"
+          elif [ "$GENERATE_VACUUM_REPORTS_RESULT" != "success" ]; then
+            echo "❌ generate-vacuum-reports: ${{ needs.generate-vacuum-reports.result }}"
+            exit 1
+          fi
+      - name: Check check-breaking-changes
+        env:
+          CHECK_BREAKING_CHANGES_RESULT: ${{ needs.check-breaking-changes.result }}
+          MANUAL_LINTER_OVERRIDE_RESULT: ${{ needs.manual-linter-override.result }}
+          SPECS_IDENTICAL: ${{ needs.check-specs-identical.outputs.specs-identical }}
+        run: |
+          if [ "$CHECK_BREAKING_CHANGES_RESULT" = "skipped" ] && [ "$SPECS_IDENTICAL" = "true" ]; then
+            echo "⏭️  check-breaking-changes: skipped (specs are identical)"
+          elif [ "$CHECK_BREAKING_CHANGES_RESULT" != "success" ] && [ "$MANUAL_LINTER_OVERRIDE_RESULT" = "success" ]; then
+            echo "⚠️ Manual linter override requested for breaking changes check"
+            echo "Breaking changes check failed but was manually approved to proceed"
+          elif [ "$CHECK_BREAKING_CHANGES_RESULT" != "success" ]; then
+            echo "❌ check-breaking-changes: ${{ needs.check-breaking-changes.result }}"
+            exit 1
+          fi
+      - name: Verify API Spec Check Passed
+        run: echo "✅ All API specification checks passed successfully!"
