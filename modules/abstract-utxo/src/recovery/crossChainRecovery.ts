@@ -1,19 +1,23 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import { BIP32Interface, bip32 } from '@bitgo/secp256k1';
 import { Dimensions } from '@bitgo/unspents';
-import { fixedScriptWallet, CoinName } from '@bitgo/wasm-utxo';
+import { CoinName, fixedScriptWallet } from '@bitgo/wasm-utxo';
 import { BitGoBase, IWallet, Keychain, Triple, Wallet } from '@bitgo/sdk-core';
 import { decrypt } from '@bitgo/sdk-api';
 
 import { AbstractUtxoCoin, TransactionInfo } from '../abstractUtxoCoin';
-import { signAndVerifyPsbt } from '../transaction/fixedScript/signPsbt';
+import { signAndVerifyPsbt } from '../transaction/fixedScript/signTransaction';
+import { getNetworkFromCoinName } from '../names';
+import { encodeTransaction } from '../transaction/decode';
+import { getReplayProtectionPubkeys } from '../transaction/fixedScript/replayProtection';
+import { toTNumber } from '../tnumber';
 
 import {
   PsbtBackend,
   createEmptyWasmPsbt,
   addWalletInputsToWasmPsbt,
   addOutputToWasmPsbt,
-  wasmPsbtToUtxolibPsbt,
+  getRecoveryAmount,
 } from './psbt';
 
 const { unspentSum } = utxolib.bitgo;
@@ -343,12 +347,13 @@ async function getPrv(xprv?: string, passphrase?: string, wallet?: IWallet | Wal
  * @return unsigned PSBT
  */
 function createSweepTransactionUtxolib<TNumber extends number | bigint = number>(
-  network: utxolib.Network,
+  coinName: CoinName,
   walletKeys: RootWalletKeys,
   unspents: WalletUnspent<TNumber>[],
   targetAddress: string,
   feeRateSatVB: number
 ): utxolib.bitgo.UtxoPsbt {
+  const network = getNetworkFromCoinName(coinName);
   const inputValue = unspentSum<bigint>(
     unspents.map((u) => ({ ...u, value: BigInt(u.value) })),
     'bigint'
@@ -392,13 +397,12 @@ function createSweepTransactionUtxolib<TNumber extends number | bigint = number>
  * @return unsigned PSBT
  */
 function createSweepTransactionWasm<TNumber extends number | bigint = number>(
-  network: utxolib.Network,
+  coinName: CoinName,
   walletKeys: RootWalletKeys,
   unspents: WalletUnspent<TNumber>[],
   targetAddress: string,
-  feeRateSatVB: number,
-  coinName: CoinName
-): utxolib.bitgo.UtxoPsbt {
+  feeRateSatVB: number
+): fixedScriptWallet.BitGoPsbt {
   const inputValue = unspentSum<bigint>(
     unspents.map((u) => ({ ...u, value: BigInt(u.value) })),
     'bigint'
@@ -406,7 +410,7 @@ function createSweepTransactionWasm<TNumber extends number | bigint = number>(
 
   // Create PSBT with wasm-utxo and add wallet inputs using shared utilities
   const unspentsBigint = unspents.map((u) => ({ ...u, value: BigInt(u.value) }));
-  const wasmPsbt = createEmptyWasmPsbt(network, walletKeys);
+  const wasmPsbt = createEmptyWasmPsbt(coinName, walletKeys);
   addWalletInputsToWasmPsbt(wasmPsbt, unspentsBigint, walletKeys);
 
   // Calculate dimensions using wasm-utxo Dimensions
@@ -416,10 +420,10 @@ function createSweepTransactionWasm<TNumber extends number | bigint = number>(
   const fee = BigInt(Math.round(vsize * feeRateSatVB));
 
   // Add output to wasm PSBT
-  addOutputToWasmPsbt(wasmPsbt, targetAddress, inputValue - fee, network);
+  addOutputToWasmPsbt(wasmPsbt, targetAddress, inputValue - fee, coinName);
 
   // Convert to utxolib PSBT for signing and return
-  return wasmPsbtToUtxolibPsbt(wasmPsbt, network);
+  return wasmPsbt;
 }
 
 /**
@@ -434,21 +438,17 @@ function createSweepTransactionWasm<TNumber extends number | bigint = number>(
  * @return unsigned PSBT
  */
 function createSweepTransaction<TNumber extends number | bigint = number>(
-  network: utxolib.Network,
+  coinName: CoinName,
   walletKeys: RootWalletKeys,
   unspents: WalletUnspent<TNumber>[],
   targetAddress: string,
   feeRateSatVB: number,
-  backend: PsbtBackend = 'wasm-utxo',
-  coinName?: CoinName
-): utxolib.bitgo.UtxoPsbt {
+  backend: PsbtBackend = 'wasm-utxo'
+): utxolib.bitgo.UtxoPsbt | fixedScriptWallet.BitGoPsbt {
   if (backend === 'wasm-utxo') {
-    if (!coinName) {
-      throw new Error('coinName is required for wasm-utxo backend');
-    }
-    return createSweepTransactionWasm(network, walletKeys, unspents, targetAddress, feeRateSatVB, coinName);
+    return createSweepTransactionWasm(coinName, walletKeys, unspents, targetAddress, feeRateSatVB);
   } else {
-    return createSweepTransactionUtxolib(network, walletKeys, unspents, targetAddress, feeRateSatVB);
+    return createSweepTransactionUtxolib(coinName, walletKeys, unspents, targetAddress, feeRateSatVB);
   }
 }
 
@@ -502,20 +502,19 @@ export async function recoverCrossChain<TNumber extends number | bigint = number
   // Create PSBT for both signed and unsigned recovery
   // Use wasm-utxo for testnet coins only, utxolib for mainnet
   const backend: PsbtBackend = utxolib.isTestnet(params.sourceCoin.network) ? 'wasm-utxo' : 'utxolib';
-  const psbt = createSweepTransaction<TNumber>(
-    params.sourceCoin.network,
+  let psbt = createSweepTransaction<TNumber>(
+    params.sourceCoin.getChain(),
     walletKeys,
     walletUnspents,
     params.recoveryAddress,
     feeRateSatVB,
-    backend,
-    params.sourceCoin.getChain() as CoinName
+    backend
   );
 
   // For unsigned recovery, return unsigned PSBT hex
   if (!prv) {
     return {
-      txHex: psbt.toHex(),
+      txHex: encodeTransaction(psbt).toString('hex'),
       walletId: params.walletId,
       address: params.recoveryAddress,
       coin: params.sourceCoin.getChain(),
@@ -523,15 +522,19 @@ export async function recoverCrossChain<TNumber extends number | bigint = number
   }
 
   // For signed recovery, sign the PSBT with user key and return half-signed PSBT
-  signAndVerifyPsbt(psbt, prv, { isLastSignature: false });
-  const recoveryAmount = utxolib.bitgo.toTNumber<TNumber>(psbt.txOutputs[0].value, params.sourceCoin.amountType);
+  psbt = signAndVerifyPsbt(psbt, prv, fixedScriptWallet.RootWalletKeys.from(walletKeys), {
+    publicKeys: getReplayProtectionPubkeys(params.sourceCoin.network),
+  });
 
   return {
     version: wallet instanceof Wallet ? 2 : 1,
     walletId: params.walletId,
-    txHex: psbt.toHex(),
+    txHex: encodeTransaction(psbt).toString('hex'),
     sourceCoin: params.sourceCoin.getChain(),
     recoveryCoin: params.recoveryCoin.getChain(),
-    recoveryAmount,
+    recoveryAmount: toTNumber(
+      getRecoveryAmount(psbt, walletKeys, params.recoveryAddress),
+      params.sourceCoin.amountType
+    ) as TNumber,
   };
 }

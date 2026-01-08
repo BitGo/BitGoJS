@@ -9,9 +9,45 @@ import { fixedScriptWallet } from '@bitgo/wasm-utxo';
 
 import { Musig2Participant } from './musig2';
 import { signLegacyTransaction } from './signLegacyTransaction';
-import { signPsbtWithMusig2Participant } from './signPsbt';
-import { signPsbtWithMusig2ParticipantWasm } from './signPsbtWasm';
+import { signPsbtWithMusig2ParticipantUtxolib, signAndVerifyPsbt as signAndVerifyPsbtUtxolib } from './signPsbtUtxolib';
+import { signPsbtWithMusig2ParticipantWasm, signAndVerifyPsbtWasm, ReplayProtectionKeys } from './signPsbtWasm';
 import { getReplayProtectionPubkeys } from './replayProtection';
+
+/**
+ * Sign and verify a PSBT using either utxolib or wasm-utxo depending on the PSBT type.
+ */
+export function signAndVerifyPsbt(
+  psbt: utxolib.bitgo.UtxoPsbt,
+  signerKeychain: BIP32Interface,
+  rootWalletKeys: fixedScriptWallet.RootWalletKeys | undefined,
+  replayProtection: ReplayProtectionKeys | undefined
+): utxolib.bitgo.UtxoPsbt;
+export function signAndVerifyPsbt(
+  psbt: fixedScriptWallet.BitGoPsbt,
+  signerKeychain: BIP32Interface,
+  rootWalletKeys: fixedScriptWallet.RootWalletKeys,
+  replayProtection: ReplayProtectionKeys
+): fixedScriptWallet.BitGoPsbt;
+export function signAndVerifyPsbt(
+  psbt: utxolib.bitgo.UtxoPsbt | fixedScriptWallet.BitGoPsbt,
+  signerKeychain: BIP32Interface,
+  rootWalletKeys: fixedScriptWallet.RootWalletKeys,
+  replayProtection: ReplayProtectionKeys
+): utxolib.bitgo.UtxoPsbt | fixedScriptWallet.BitGoPsbt;
+export function signAndVerifyPsbt(
+  psbt: utxolib.bitgo.UtxoPsbt | fixedScriptWallet.BitGoPsbt,
+  signerKeychain: BIP32Interface,
+  rootWalletKeys: fixedScriptWallet.RootWalletKeys | undefined,
+  replayProtection: ReplayProtectionKeys | undefined
+): utxolib.bitgo.UtxoPsbt | fixedScriptWallet.BitGoPsbt {
+  if (psbt instanceof bitgo.UtxoPsbt) {
+    return signAndVerifyPsbtUtxolib(psbt, signerKeychain);
+  } else {
+    assert(rootWalletKeys, 'rootWalletKeys required for wasm-utxo signing');
+    assert(replayProtection, 'replayProtection required for wasm-utxo signing');
+    return signAndVerifyPsbtWasm(psbt, signerKeychain, rootWalletKeys, replayProtection);
+  }
+}
 
 export async function signTransaction<
   T extends utxolib.bitgo.UtxoPsbt | utxolib.bitgo.UtxoTransaction<bigint | number> | fixedScriptWallet.BitGoPsbt
@@ -40,16 +76,25 @@ export async function signTransaction<
   }
 
   if (tx instanceof bitgo.UtxoPsbt) {
-    return signPsbtWithMusig2Participant(coin as Musig2Participant<utxolib.bitgo.UtxoPsbt>, tx, signerKeychain, {
-      isLastSignature,
-      signingStep: params.signingStep,
-      walletId: params.walletId,
-    });
+    const signedPsbt = await signPsbtWithMusig2ParticipantUtxolib(
+      coin as Musig2Participant<utxolib.bitgo.UtxoPsbt>,
+      tx,
+      signerKeychain,
+      {
+        signingStep: params.signingStep,
+        walletId: params.walletId,
+      }
+    );
+    if (isLastSignature) {
+      signedPsbt.finalizeAllInputs();
+      return signedPsbt.extractTransaction();
+    }
+    return signedPsbt;
   } else if (tx instanceof fixedScriptWallet.BitGoPsbt) {
     assert(params.pubs, 'pubs are required for fixed script signing');
     assert(isTriple(params.pubs), 'pubs must be a triple');
     const rootWalletKeys = fixedScriptWallet.RootWalletKeys.fromXpubs(params.pubs);
-    return signPsbtWithMusig2ParticipantWasm(
+    const signedPsbt = await signPsbtWithMusig2ParticipantWasm(
       coin as Musig2Participant<fixedScriptWallet.BitGoPsbt>,
       tx,
       signerKeychain,
@@ -58,11 +103,15 @@ export async function signTransaction<
         replayProtection: {
           publicKeys: getReplayProtectionPubkeys(network),
         },
-        isLastSignature,
         signingStep: params.signingStep,
         walletId: params.walletId,
       }
     );
+    if (isLastSignature) {
+      signedPsbt.finalizeAllInputs();
+      return Buffer.from(signedPsbt.extractTransaction());
+    }
+    return signedPsbt;
   }
 
   return signLegacyTransaction(tx, signerKeychain, {

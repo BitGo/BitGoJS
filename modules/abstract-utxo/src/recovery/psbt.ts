@@ -1,6 +1,8 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import { Dimensions } from '@bitgo/unspents';
-import { fixedScriptWallet, utxolibCompat, CoinName } from '@bitgo/wasm-utxo';
+import { CoinName, fixedScriptWallet, utxolibCompat, address as wasmAddress } from '@bitgo/wasm-utxo';
+
+import { getNetworkFromCoinName } from '../names';
 
 type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
 type WalletUnspent<TNumber extends number | bigint> = utxolib.bitgo.WalletUnspent<TNumber>;
@@ -60,19 +62,18 @@ interface CreateBackupKeyRecoveryPsbtOptions {
   keyRecoveryServiceFeeAddress: string | undefined;
   /** Block height for Zcash networks (required to determine consensus branch ID) */
   blockHeight?: number;
-  /** Coin name for wasm-utxo (e.g. 'btc', 'tbtc', 'ltc') */
-  coinName?: CoinName;
 }
 
 /**
  * Create a backup key recovery PSBT using utxolib (legacy implementation)
  */
 function createBackupKeyRecoveryPsbtUtxolib(
-  network: utxolib.Network,
+  coinName: CoinName,
   rootWalletKeys: RootWalletKeys,
   unspents: WalletUnspent<bigint>[],
   options: CreateBackupKeyRecoveryPsbtOptions
 ): utxolib.bitgo.UtxoPsbt {
+  const network = getNetworkFromCoinName(coinName);
   const { feeRateSatVB, recoveryDestination, keyRecoveryServiceFee, keyRecoveryServiceFeeAddress } = options;
 
   const psbt = utxolib.bitgo.createPsbtForNetwork({ network });
@@ -116,8 +117,8 @@ function createBackupKeyRecoveryPsbtUtxolib(
 /**
  * Check if the network is a Zcash network
  */
-function isZcashNetwork(networkName: utxolibCompat.UtxolibName): boolean {
-  return networkName === 'zcash' || networkName === 'zcashTest';
+function isZcash(coinName: CoinName): coinName is 'zec' | 'tzec' {
+  return coinName === 'zec' || coinName === 'tzec';
 }
 
 /**
@@ -125,9 +126,9 @@ function isZcashNetwork(networkName: utxolibCompat.UtxolibName): boolean {
  * These should be set to a height after the latest network upgrade.
  * TODO(BTC-2901): get the height from blockchair API instead of hardcoding.
  */
-const ZCASH_DEFAULT_BLOCK_HEIGHTS: Record<string, number> = {
-  zcash: 3146400,
-  zcashTest: 3536500,
+const ZCASH_DEFAULT_BLOCK_HEIGHTS: Record<'zec' | 'tzec', number> = {
+  zec: 3146400,
+  tzec: 3536500,
 };
 
 /**
@@ -148,21 +149,19 @@ export interface CreateEmptyWasmPsbtOptions {
  * @returns A wasm-utxo BitGoPsbt instance
  */
 export function createEmptyWasmPsbt(
-  network: utxolib.Network,
+  coinName: CoinName,
   rootWalletKeys: RootWalletKeys,
   options?: CreateEmptyWasmPsbtOptions
 ): fixedScriptWallet.BitGoPsbt {
-  const networkName = toNetworkName(network);
-
-  if (isZcashNetwork(networkName)) {
+  if (isZcash(coinName)) {
     // For Zcash, use ZcashBitGoPsbt which requires block height to determine consensus branch ID
-    const blockHeight = options?.blockHeight ?? ZCASH_DEFAULT_BLOCK_HEIGHTS[networkName];
-    return fixedScriptWallet.ZcashBitGoPsbt.createEmpty(networkName as 'zcash' | 'zcashTest', rootWalletKeys, {
+    const blockHeight = options?.blockHeight ?? ZCASH_DEFAULT_BLOCK_HEIGHTS[coinName];
+    return fixedScriptWallet.ZcashBitGoPsbt.createEmpty(coinName, rootWalletKeys, {
       blockHeight,
     });
   }
 
-  return fixedScriptWallet.BitGoPsbt.createEmpty(networkName, rootWalletKeys);
+  return fixedScriptWallet.BitGoPsbt.createEmpty(coinName, rootWalletKeys);
 }
 
 /**
@@ -216,10 +215,10 @@ export function addOutputToWasmPsbt(
   wasmPsbt: fixedScriptWallet.BitGoPsbt,
   address: string,
   value: bigint,
-  network: utxolib.Network
+  coinName: CoinName
 ): number {
-  const script = utxolib.address.toOutputScript(address, network);
-  return wasmPsbt.addOutput({ script: new Uint8Array(script), value });
+  const script = wasmAddress.toOutputScriptWithCoin(address, coinName);
+  return wasmPsbt.addOutput({ script, value });
 }
 
 /**
@@ -229,30 +228,30 @@ export function addOutputToWasmPsbt(
  * @param network - The network
  * @returns A utxolib UtxoPsbt
  */
-export function wasmPsbtToUtxolibPsbt(
-  wasmPsbt: fixedScriptWallet.BitGoPsbt,
-  network: utxolib.Network
+export function toPsbtToUtxolibPsbt(
+  wasmPsbt: fixedScriptWallet.BitGoPsbt | utxolib.bitgo.UtxoPsbt,
+  coinName: CoinName
 ): utxolib.bitgo.UtxoPsbt {
-  return utxolib.bitgo.createPsbtFromBuffer(Buffer.from(wasmPsbt.serialize()), network);
+  if (wasmPsbt instanceof fixedScriptWallet.BitGoPsbt) {
+    const network = getNetworkFromCoinName(coinName);
+    return utxolib.bitgo.createPsbtFromBuffer(Buffer.from(wasmPsbt.serialize()), network);
+  }
+  return wasmPsbt;
 }
 
 /**
  * Create a backup key recovery PSBT using wasm-utxo
  */
 function createBackupKeyRecoveryPsbtWasm(
-  network: utxolib.Network,
+  coinName: CoinName,
   rootWalletKeys: RootWalletKeys,
   unspents: WalletUnspent<bigint>[],
   options: CreateBackupKeyRecoveryPsbtOptions
-): utxolib.bitgo.UtxoPsbt {
-  const { feeRateSatVB, recoveryDestination, keyRecoveryServiceFee, keyRecoveryServiceFeeAddress, coinName } = options;
-
-  if (!coinName) {
-    throw new Error('coinName is required for wasm-utxo backend');
-  }
+): fixedScriptWallet.BitGoPsbt {
+  const { feeRateSatVB, recoveryDestination, keyRecoveryServiceFee, keyRecoveryServiceFeeAddress } = options;
 
   // Create PSBT with wasm-utxo and add wallet inputs using shared utilities
-  const wasmPsbt = createEmptyWasmPsbt(network, rootWalletKeys, { blockHeight: options.blockHeight });
+  const wasmPsbt = createEmptyWasmPsbt(coinName, rootWalletKeys, { blockHeight: options.blockHeight });
   addWalletInputsToWasmPsbt(wasmPsbt, unspents, rootWalletKeys);
 
   // Calculate dimensions using wasm-utxo Dimensions
@@ -273,14 +272,14 @@ function createBackupKeyRecoveryPsbtWasm(
   }
 
   // Add outputs to wasm PSBT
-  addOutputToWasmPsbt(wasmPsbt, recoveryDestination, recoveryAmount, network);
+  addOutputToWasmPsbt(wasmPsbt, recoveryDestination, recoveryAmount, coinName);
 
   if (keyRecoveryServiceFeeAddress) {
-    addOutputToWasmPsbt(wasmPsbt, keyRecoveryServiceFeeAddress, keyRecoveryServiceFee, network);
+    addOutputToWasmPsbt(wasmPsbt, keyRecoveryServiceFeeAddress, keyRecoveryServiceFee, coinName);
   }
 
   // Convert to utxolib PSBT for signing and return
-  return wasmPsbtToUtxolibPsbt(wasmPsbt, network);
+  return wasmPsbt;
 }
 
 /**
@@ -293,28 +292,43 @@ function createBackupKeyRecoveryPsbtWasm(
  * @param backend - Which backend to use for PSBT creation (default: 'wasm-utxo')
  */
 export function createBackupKeyRecoveryPsbt(
-  network: utxolib.Network,
+  coinName: CoinName,
   rootWalletKeys: RootWalletKeys,
   unspents: WalletUnspent<bigint>[],
   options: CreateBackupKeyRecoveryPsbtOptions,
   backend: PsbtBackend = 'wasm-utxo'
-): utxolib.bitgo.UtxoPsbt {
+): utxolib.bitgo.UtxoPsbt | fixedScriptWallet.BitGoPsbt {
   if (options.keyRecoveryServiceFee > 0 && !options.keyRecoveryServiceFeeAddress) {
     throw new Error('keyRecoveryServiceFeeAddress is required when keyRecoveryServiceFee is provided');
   }
 
   if (backend === 'wasm-utxo') {
-    return createBackupKeyRecoveryPsbtWasm(network, rootWalletKeys, unspents, options);
+    return createBackupKeyRecoveryPsbtWasm(coinName, rootWalletKeys, unspents, options);
   } else {
-    return createBackupKeyRecoveryPsbtUtxolib(network, rootWalletKeys, unspents, options);
+    return createBackupKeyRecoveryPsbtUtxolib(coinName, rootWalletKeys, unspents, options);
   }
 }
 
-export function getRecoveryAmount(psbt: utxolib.bitgo.UtxoPsbt, address: string): bigint {
-  const recoveryOutputScript = utxolib.address.toOutputScript(address, psbt.network);
-  const output = psbt.txOutputs.find((o) => o.script.equals(recoveryOutputScript));
-  if (!output) {
-    throw new Error(`Recovery destination output not found in PSBT: ${address}`);
+export function getRecoveryAmount(
+  psbt: utxolib.bitgo.UtxoPsbt | fixedScriptWallet.BitGoPsbt,
+  walletKeys: RootWalletKeys,
+  address: string
+): bigint {
+  if (psbt instanceof utxolib.bitgo.UtxoPsbt) {
+    const recoveryOutputScript = utxolib.address.toOutputScript(address, psbt.network);
+    const output = psbt.txOutputs.find((o) => o.script.equals(recoveryOutputScript));
+    if (!output) {
+      throw new Error(`Recovery destination output not found in PSBT: ${address}`);
+    }
+    return output.value;
   }
-  return output.value;
+  if (psbt instanceof fixedScriptWallet.BitGoPsbt) {
+    const parsedOutputs = psbt.parseOutputsWithWalletKeys(walletKeys);
+    const recoveryOutput = parsedOutputs.find((o) => o.address === address);
+    if (!recoveryOutput) {
+      throw new Error(`Recovery destination output not found in PSBT: ${address}`);
+    }
+    return recoveryOutput.value;
+  }
+  throw new Error('Invalid PSBT type');
 }
