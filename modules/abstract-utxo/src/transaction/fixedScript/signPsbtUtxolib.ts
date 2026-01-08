@@ -104,7 +104,7 @@ export function signAndVerifyPsbt(
  */
 const PSBT_CACHE = new Map<string, utxolib.bitgo.UtxoPsbt>();
 
-export async function signPsbtWithMusig2Participant(
+export async function signPsbtWithMusig2ParticipantUtxolib(
   coin: Musig2Participant<utxolib.bitgo.UtxoPsbt>,
   tx: utxolib.bitgo.UtxoPsbt,
   signerKeychain: BIP32Interface | undefined,

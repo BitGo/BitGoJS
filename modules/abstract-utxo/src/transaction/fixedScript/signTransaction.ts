@@ -9,7 +9,7 @@ import { fixedScriptWallet } from '@bitgo/wasm-utxo';
 
 import { Musig2Participant } from './musig2';
 import { signLegacyTransaction } from './signLegacyTransaction';
-import { signPsbtWithMusig2Participant } from './signPsbt';
+import { signPsbtWithMusig2ParticipantUtxolib } from './signPsbtUtxolib';
 import { signPsbtWithMusig2ParticipantWasm } from './signPsbtWasm';
 import { getReplayProtectionPubkeys } from './replayProtection';
 
@@ -40,7 +40,7 @@ export async function signTransaction<
   }
 
   if (tx instanceof bitgo.UtxoPsbt) {
-    const signedPsbt = await signPsbtWithMusig2Participant(
+    const signedPsbt = await signPsbtWithMusig2ParticipantUtxolib(
       coin as Musig2Participant<utxolib.bitgo.UtxoPsbt>,
       tx,
       signerKeychain,

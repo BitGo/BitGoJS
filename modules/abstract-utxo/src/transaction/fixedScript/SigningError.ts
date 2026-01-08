@@ -1,6 +1,6 @@
 import * as utxolib from '@bitgo/utxo-lib';
 
-import type { PsbtParsedScriptType } from './signPsbt';
+import type { PsbtParsedScriptType } from './signPsbtUtxolib';
 
 type Unspent<TNumber extends number | bigint = number> = utxolib.bitgo.Unspent<TNumber>;
 

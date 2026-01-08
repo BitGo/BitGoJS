@@ -14,7 +14,7 @@ import { getMainnet, networks } from '@bitgo/utxo-lib';
 import { CoinName } from '@bitgo/wasm-utxo';
 
 import { AbstractUtxoCoin } from '../abstractUtxoCoin';
-import { signAndVerifyPsbt } from '../transaction/fixedScript/signPsbt';
+import { signAndVerifyPsbt } from '../transaction/fixedScript/signPsbtUtxolib';
 import { generateAddressWithChainAndIndex } from '../address';
 
 import { forCoin, RecoveryProvider } from './RecoveryProvider';

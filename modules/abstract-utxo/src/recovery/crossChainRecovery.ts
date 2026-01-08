@@ -6,7 +6,7 @@ import { BitGoBase, IWallet, Keychain, Triple, Wallet } from '@bitgo/sdk-core';
 import { decrypt } from '@bitgo/sdk-api';
 
 import { AbstractUtxoCoin, TransactionInfo } from '../abstractUtxoCoin';
-import { signAndVerifyPsbt } from '../transaction/fixedScript/signPsbt';
+import { signAndVerifyPsbt } from '../transaction/fixedScript/signPsbtUtxolib';
 
 import {
   PsbtBackend,
