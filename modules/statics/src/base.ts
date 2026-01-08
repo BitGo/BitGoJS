@@ -2954,6 +2954,16 @@ export enum UnderlyingAsset {
   'lineaeth:usdt' = 'lineaeth:usdt',
   'lineaeth:usdc' = 'lineaeth:usdc',
 
+  // Mantle mainnet tokens
+  'mantle:usdt' = 'mantle:usdt',
+  'mantle:usdc' = 'mantle:usdc',
+  'mantle:usde' = 'mantle:usde',
+  'mantle:usdt0' = 'mantle:usdt0',
+  'mantle:ausd' = 'mantle:ausd',
+
+  // Mantle testnet tokens
+  'tmantle:bgerch' = 'tmantle:bgerch',
+
   // Flow mainnet tokens
   'flow:weth' = 'flow:weth',
   'flow:usdf' = 'flow:usdf',
