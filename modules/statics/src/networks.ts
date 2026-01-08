@@ -1212,14 +1212,14 @@ class ZCash extends Mainnet implements UtxoNetwork {
   name = 'ZCash';
   family = CoinFamily.ZEC;
   utxolibName = 'zcash';
-  explorerUrl = 'https://chain.so/tx/ZEC/';
+  explorerUrl = 'https://mainnet.zcashexplorer.app/transactions/';
 }
 
 class ZCashTestnet extends Testnet implements UtxoNetwork {
   name = 'ZCashTestnet';
   family = CoinFamily.ZEC;
   utxolibName = 'zcashTest';
-  explorerUrl = 'https://chain.so/tx/ZECTEST/';
+  explorerUrl = 'https://testnet.zcashexplorer.app/transactions/';
 }
 
 class Near extends Mainnet implements AccountNetwork {
