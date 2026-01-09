@@ -5162,6 +5162,22 @@ export const tOfcErc20Coins = [
     18,
     underlyingAssetForSymbol('tmantle:bgerch')
   ),
+
+  // MegaEth Network tokens
+  ofcerc20(
+    '65df2f65-bb7a-4485-b725-a5fb2e6cd281',
+    'ofcmegaeth:mega',
+    'Mega',
+    18,
+    underlyingAssetForSymbol('megaeth:mega')
+  ),
+  ofcerc20(
+    '7bcafa71-a2f3-4a9e-98e2-4d3f655281f8',
+    'ofcmegaeth:weth',
+    'Wrapped Ether',
+    18,
+    underlyingAssetForSymbol('megaeth:weth')
+  ),
 ];
 
 function underlyingAssetForSymbol(underlyingAssetValue: string): UnderlyingAsset {

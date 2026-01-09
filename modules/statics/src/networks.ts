@@ -2135,7 +2135,6 @@ class FlowTestnet extends Testnet implements EthereumNetwork {
   nativeCoinOperationHashPrefix = '545';
 }
 
-// TODO update MegaETH explorer urls and chainId when available
 class MegaETH extends Mainnet implements EthereumNetwork {
   name = 'MegaETH';
   family = CoinFamily.MEGAETH;
@@ -2148,8 +2147,8 @@ class MegaETH extends Mainnet implements EthereumNetwork {
 class MegaETHTestnet extends Testnet implements EthereumNetwork {
   name = 'MegaETHTestnet';
   family = CoinFamily.MEGAETH;
-  explorerUrl = 'https://www.megaexplorer.xyz/tx/';
-  accountExplorerUrl = 'https://www.megaexplorer.xyz/address/';
+  explorerUrl = 'https://megaeth.blockscout.com/tx/';
+  accountExplorerUrl = 'https://megaeth.blockscout.com/address/';
   chainId = 6342;
   nativeCoinOperationHashPrefix = '6342';
 }
