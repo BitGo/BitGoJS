@@ -45,7 +45,6 @@
     "@bitgo/secp256k1": "^1.8.0",
     "@bitgo/sjcl": "^1.0.1",
     "@bitgo/statics": "^58.19.0",
-    "@bitgo/utxo-core": "^1.28.0",
     "@bitgo/utxo-lib": "^11.19.0",
     "@noble/curves": "1.8.1",
     "@stablelib/hex": "^1.0.0",
