@@ -2295,6 +2295,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_WP,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.SUPPORTS_ERC20,
     ]
   ),
   account(
@@ -2314,7 +2315,64 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_WP,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.SUPPORTS_ERC20,
     ]
+  ),
+  // Mantle mainnet tokens
+  erc20Token(
+    '3f20d1d3-3e69-417b-80c8-0c2e3e79934a',
+    'mantle:usdt',
+    'USDT',
+    6,
+    '0x201eba5cc46d216ce6dc03f6a759e8e766e956ae',
+    UnderlyingAsset['mantle:usdt'],
+    Networks.main.mantle
+  ),
+  erc20Token(
+    '5c295762-8d8c-4f1d-95df-e0631538c15f',
+    'mantle:usdc',
+    'USDC',
+    6,
+    '0x09bc4e0d864854c6afb6eb9a9cdf58ac190d0df9',
+    UnderlyingAsset['mantle:usdc'],
+    Networks.main.mantle
+  ),
+  erc20Token(
+    '5c3f3e85-d804-49a4-9028-8b494cf01e75',
+    'mantle:usde',
+    'USDe',
+    18,
+    '0x5d3a1ff2b6bab83b63cd9ad0787074081a52ef34',
+    UnderlyingAsset['mantle:usde'],
+    Networks.main.mantle
+  ),
+  erc20Token(
+    'a33599fe-2245-49de-86ab-44eb1755ed30',
+    'mantle:usdt0',
+    'USDT0',
+    6,
+    '0x779ded0c9e1022225f8e0630b35a9b54be713736',
+    UnderlyingAsset['mantle:usdt0'],
+    Networks.main.mantle
+  ),
+  erc20Token(
+    '0f6f182b-bdd1-45ca-a894-1c3ded941dcd',
+    'mantle:ausd',
+    'AUSD',
+    6,
+    '0x00000000efe302beaa2b3e6e1b18d08d69a9012a',
+    UnderlyingAsset['mantle:ausd'],
+    Networks.main.mantle
+  ),
+  // Mantle testnet tokens
+  erc20Token(
+    '10fd0f49-d71a-4815-bbd0-ce1ca67b7982',
+    'tmantle:bgerch',
+    'BGERCH',
+    18,
+    '0x13b62c9cd2b294acbb527335eaf36f85fe37ee55',
+    UnderlyingAsset['tmantle:bgerch'],
+    Networks.test.mantle
   ),
   account(
     'd7ed1781-23ff-49b7-be6b-7fec13e1c452',
