@@ -16,6 +16,8 @@ import {
   erc721Token,
   fiat,
   flrErc20,
+  monErc20,
+  tmonErc20,
   xdcErc20,
   gasTankAccount,
   hederaCoin,
@@ -1516,12 +1518,7 @@ export const allCoinsAndTokens = [
     18,
     UnderlyingAsset.MON,
     BaseUnit.ETH,
-    [
-      ...EVM_FEATURES,
-      CoinFeature.SHARED_EVM_SIGNING,
-      CoinFeature.SHARED_EVM_MESSAGE_SIGNING,
-      CoinFeature.SUPPORTS_ERC20,
-    ]
+    [...EVM_FEATURES, CoinFeature.SHARED_EVM_SIGNING, CoinFeature.SHARED_EVM_MESSAGE_SIGNING]
   ),
   account(
     '5c5ebe50-fa27-4312-ae3d-7032520aedb5',
@@ -1538,7 +1535,6 @@ export const allCoinsAndTokens = [
       CoinFeature.SHARED_EVM_MESSAGE_SIGNING,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
-      CoinFeature.SUPPORTS_ERC20,
     ]
   ),
   account(
@@ -3034,23 +3030,31 @@ export const allCoinsAndTokens = [
   ),
 
   // MON mainnet tokens
-  erc20Token(
+  monErc20(
     '5f15df50-7409-45b8-a7a8-00294a113fcb',
     'mon:wmon',
     'Wrapped MON',
     18,
     '0x3bd359c1119da7da1d913d1c4d2b7c461115433a',
-    UnderlyingAsset['mon:wmon'],
-    Networks.main.mon
+    UnderlyingAsset['mon:wmon']
   ),
-  erc20Token(
+  monErc20(
     '5b648116-5138-438f-9835-eba792d5c133',
     'mon:usdc',
     'Monad USDC',
     6,
     '0x754704bc059f8c67012fed69bc8a327a5aafb603',
-    UnderlyingAsset['mon:usdc'],
-    Networks.main.mon
+    UnderlyingAsset['mon:usdc']
+  ),
+
+  // MON testnet tokens
+  tmonErc20(
+    '25053eca-e1aa-48c2-8969-afa4cbe96f12',
+    'tmon:tmt',
+    'Test Mintable Token',
+    6,
+    '0x119abe0ba145873072e94baa98da26e11da067ad',
+    UnderlyingAsset['tmon:tmt']
   ),
 
   // hypeeevm testnet tokens

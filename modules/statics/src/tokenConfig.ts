@@ -16,6 +16,7 @@ import {
   EthLikeERC20Token,
   EthLikeERC721Token,
   FlrERC20Token,
+  MonERC20Token,
   XdcERC20Token,
   HederaToken,
   Nep141Token,
@@ -595,7 +596,7 @@ const getFormattedSeievmTokens = (customCoinMap = coins) =>
     return acc;
   }, []);
 
-function getMonadTokenConfig(coin: EthLikeERC20Token): EthLikeTokenConfig {
+function getMonTokenConfig(coin: MonERC20Token): EthLikeTokenConfig {
   return {
     type: coin.name,
     coin: coin.network.type === NetworkType.MAINNET ? 'mon' : 'tmon',
@@ -605,10 +606,10 @@ function getMonadTokenConfig(coin: EthLikeERC20Token): EthLikeTokenConfig {
     decimalPlaces: coin.decimalPlaces,
   };
 }
-const getFormattedMonadTokens = (customCoinMap = coins) =>
+const getFormattedMonTokens = (customCoinMap = coins) =>
   customCoinMap.reduce((acc: EthLikeTokenConfig[], coin) => {
-    if (coin instanceof EthLikeERC20Token && (coin.name.includes('mon:') || coin.name.includes('tmon:'))) {
-      acc.push(getMonadTokenConfig(coin));
+    if (coin instanceof MonERC20Token) {
+      acc.push(getMonTokenConfig(coin));
     }
     return acc;
   }, []);
@@ -1249,7 +1250,7 @@ const getFormattedTokensByNetwork = (network: 'Mainnet' | 'Testnet', coinMap: ty
       tokens: getFormattedFlowTokens(coinMap).filter((token) => token.network === network),
     },
     mon: {
-      tokens: getFormattedMonadTokens(coinMap).filter((token) => token.network === network),
+      tokens: getFormattedMonTokens(coinMap).filter((token) => token.network === network),
     },
     xdc: {
       tokens: getFormattedXdcTokens(coinMap).filter((token) => token.network === network),
@@ -1467,6 +1468,8 @@ export function getFormattedTokenConfigForCoin(coin: Readonly<BaseCoin>): TokenC
     return getJettonTokenConfig(coin);
   } else if (coin instanceof FlrERC20Token) {
     return getFlrTokenConfig(coin);
+  } else if (coin instanceof MonERC20Token) {
+    return getMonTokenConfig(coin);
   } else if (coin instanceof XdcERC20Token) {
     return getXdcTokenConfig(coin);
   } else if (coin instanceof EthLikeERC20Token) {
