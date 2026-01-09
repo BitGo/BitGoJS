@@ -2989,6 +2989,21 @@ export enum UnderlyingAsset {
   // hypeevm mainnet tokens
   'hypeevm:hwhype' = 'hypeevm:hwhype',
 
+  // Jovayeth mainnet tokens
+  'jovayeth:jft' = 'jovayeth:jft',
+
+  // Jovayeth testnet tokens
+  'tjovayeth:tcmn' = 'tjovayeth:tcmn',
+
+  // X Layer (OKB) mainnet tokens
+  'okb:usdg' = 'okb:usdg',
+  'okb:usdt0' = 'okb:usdt0',
+  'okb:usdt' = 'okb:usdt',
+  'okb:usdc' = 'okb:usdc',
+
+  // X Layer (OKB) testnet tokens
+  'tokb:tzeb' = 'tokb:tzeb',
+
   // Story testnet tokens
   'tip:usdc' = 'tip:usdc',
   'tip:tmt' = 'tip:tmt',

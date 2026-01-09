@@ -2391,6 +2391,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_WP,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.SUPPORTS_ERC20,
     ],
     KeyCurve.Secp256k1,
     '',
@@ -2413,10 +2414,33 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_WP,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.SUPPORTS_ERC20,
     ],
     KeyCurve.Secp256k1,
     '',
     'TJovayETH'
+  ),
+
+  // Jovayeth mainnet tokens
+  erc20Token(
+    '8a4c6404-6943-4ae4-9fd8-e70b85e1cb04',
+    'jovayeth:jft',
+    'JovayFirst',
+    18,
+    '0x894d0b5dddfaa7434d61ba0930391c602c3fea41',
+    UnderlyingAsset['jovayeth:jft'],
+    Networks.main.jovayeth
+  ),
+
+  // Jovayeth testnet tokens
+  erc20Token(
+    '240568cc-8de7-47d2-a5d0-90be0a3d54fe',
+    'tjovayeth:tcmn',
+    'Common',
+    18,
+    '0x607bafa38ab8ed0f0f15a7f28625d4399612db7f',
+    UnderlyingAsset['tjovayeth:tcmn'],
+    Networks.test.jovayeth
   ),
   account(
     '2c59a9f2-9bb0-42ff-b925-6049476b93a0',
@@ -2435,6 +2459,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_WP,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.SUPPORTS_ERC20,
     ]
   ),
   account(
@@ -2454,8 +2479,58 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_WP,
       CoinFeature.EVM_NON_BITGO_RECOVERY,
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.SUPPORTS_ERC20,
     ]
   ),
+  // X Layer (OKB) mainnet tokens
+  erc20Token(
+    '636c562a-87a1-4d9b-acbb-211d41b73967',
+    'okb:usdg',
+    'Global Dollar',
+    6,
+    '0x4ae46a509f6b1d9056937ba4500cb143933d2dc8',
+    UnderlyingAsset['okb:usdg'],
+    Networks.main.okb
+  ),
+  erc20Token(
+    '34c6e62c-1926-49c0-b31d-72363745fc18',
+    'okb:usdt0',
+    'USDT0',
+    6,
+    '0x779ded0c9e1022225f8e0630b35a9b54be713736',
+    UnderlyingAsset['okb:usdt0'],
+    Networks.main.okb
+  ),
+  erc20Token(
+    'd21681a2-1d13-41db-8813-76bfd9b0b23e',
+    'okb:usdt',
+    'USDT',
+    6,
+    '0x1e4a5963abfd975d8c9021ce480b42188849d41d',
+    UnderlyingAsset['okb:usdt'],
+    Networks.main.okb
+  ),
+  erc20Token(
+    '68387219-4c67-4ccc-abc5-76a5dd1ca964',
+    'okb:usdc',
+    'USDC',
+    6,
+    '0x74b7f16337b8972027f6196a17a631ac6de26d22',
+    UnderlyingAsset['okb:usdc'],
+    Networks.main.okb
+  ),
+
+  // X Layer (OKB) testnet tokens
+  erc20Token(
+    '2b149c11-d8d6-4d5e-88f6-3d1372592201',
+    'tokb:tzeb',
+    'Zebra testnet',
+    18,
+    '0x8ab88ea756a039abe3e2590c1adc90e7d9ee47e9',
+    UnderlyingAsset['tokb:tzeb'],
+    Networks.test.okb
+  ),
+
   account(
     '60203912-6332-4f44-8f83-a88a06ae170b',
     'morph',
