@@ -3608,6 +3608,43 @@ export const ofcErc20Coins = [
     underlyingAssetForSymbol('eth:mbg')
   ),
   ofcerc20('c2b381d1-795f-4c27-bc3a-322757dd7938', 'ofceth:rekt', 'Rekt', 18, underlyingAssetForSymbol('eth:rekt')),
+
+  // Mantle Network tokens
+  ofcerc20(
+    '93c6e145-9c35-4ef9-aa28-5498b9e23c9d',
+    'ofcmantle:usdt',
+    'USDT',
+    6,
+    underlyingAssetForSymbol('mantle:usdt')
+  ),
+  ofcerc20(
+    '058cb406-168d-4d76-9393-2d010ff7600e',
+    'ofcmantle:usdc',
+    'USDC',
+    6,
+    underlyingAssetForSymbol('mantle:usdc')
+  ),
+  ofcerc20(
+    '2b0ecf3d-fe95-4c95-bf53-bc4bb8f6265b',
+    'ofcmantle:usde',
+    'USDe',
+    18,
+    underlyingAssetForSymbol('mantle:usde')
+  ),
+  ofcerc20(
+    '48cf8c79-d8e3-4889-be2d-2419ce85eabf',
+    'ofcmantle:usdt0',
+    'USDT0',
+    6,
+    underlyingAssetForSymbol('mantle:usdt0')
+  ),
+  ofcerc20(
+    '93264efe-c5c3-4f53-91d4-6871ecb579d8',
+    'ofcmantle:ausd',
+    'AUSD',
+    6,
+    underlyingAssetForSymbol('mantle:ausd')
+  ),
 ];
 
 export const tOfcErc20Coins = [
@@ -5010,6 +5047,15 @@ export const tOfcErc20Coins = [
     undefined,
     true,
     'xpl'
+  ),
+
+  // Mantle testnet tokens
+  tofcerc20(
+    '4091a920-f2bf-4026-8d81-a6361cb79278',
+    'ofctmantle:bgerch',
+    'BGERCH',
+    18,
+    underlyingAssetForSymbol('tmantle:bgerch')
   ),
 ];
 
