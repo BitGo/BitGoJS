@@ -21,11 +21,11 @@ export default {
   finalizeGoStakingRequest: function (coin: string, type: 'STAKE' | 'UNSTAKE'): GoStakingRequest {
     return {
       id: 'string',
+      goAccountId: 'goAccountId',
       amount: '1',
       type: type,
       coin: coin,
       status: 'NEW',
-      goSpecificStatus: 'NEW',
       statusModifiedDate: '2025-01-03T22:04:29.264Z',
       createdDate: '2025-01-03T22:04:29.264Z',
     };
