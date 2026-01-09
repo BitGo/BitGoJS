@@ -2973,6 +2973,9 @@ export enum UnderlyingAsset {
   'mon:usdc' = 'mon:usdc',
   'mon:wmon' = 'mon:wmon',
 
+  // Monad testnet tokens
+  'tmon:tmt' = 'tmon:tmt',
+
   // XDC mainnet tokens
   'xdc:usdc' = 'xdc:usdc',
   'xdc:lbt' = 'xdc:lbt',

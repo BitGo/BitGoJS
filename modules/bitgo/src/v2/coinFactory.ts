@@ -88,6 +88,7 @@ import {
   Flrp,
   FlrToken,
   HashToken,
+  MonToken,
   TethLikeCoin,
   FiatAED,
   FiatEur,
@@ -554,6 +555,10 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   );
 
   FlrToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
+    coinFactory.register(name, coinConstructor);
+  });
+
+  MonToken.createTokenConstructors().forEach(({ name, coinConstructor }) => {
     coinFactory.register(name, coinConstructor);
   });
 
@@ -1081,10 +1086,8 @@ export function getTokenConstructor(tokenConfig: TokenConfig): CoinConstructor |
     case 'tton':
       return JettonToken.createTokenConstructor(tokenConfig as JettonTokenConfig);
     case 'mon':
-    case 'tmon': {
-      const coinNames = { Mainnet: 'mon', Testnet: 'tmon' };
-      return EthLikeErc20Token.createTokenConstructor(tokenConfig as EthLikeTokenConfig, coinNames);
-    }
+    case 'tmon':
+      return MonToken.createTokenConstructor(tokenConfig as EthLikeTokenConfig);
     case 'xdc':
     case 'txdc':
       return XdcToken.createTokenConstructor(tokenConfig as EthLikeTokenConfig);
