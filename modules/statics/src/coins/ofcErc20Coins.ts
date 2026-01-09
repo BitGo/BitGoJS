@@ -4952,6 +4952,111 @@ export const tOfcErc20Coins = [
     'xdc'
   ),
 
+  // X Layer (OKB) Mainnet tokens
+  ofcerc20(
+    '74624f51-a9ee-4e08-a3d8-3f59221dd782',
+    'ofcokb:usdg',
+    'Global Dollar',
+    6,
+    underlyingAssetForSymbol('okb:usdg'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'okb'
+  ),
+  ofcerc20(
+    '586b6383-f965-4f6a-9d40-e135ad815147',
+    'ofcokb:usdt0',
+    'USDT0',
+    6,
+    underlyingAssetForSymbol('okb:usdt0'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'okb'
+  ),
+  ofcerc20(
+    '560de5af-59c2-421c-bb60-9086a5745539',
+    'ofcokb:usdt',
+    'USDT',
+    6,
+    underlyingAssetForSymbol('okb:usdt'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'okb'
+  ),
+  ofcerc20(
+    'f22e7b40-8bfb-42b7-a741-44bb36088a50',
+    'ofcokb:usdc',
+    'USDC',
+    6,
+    underlyingAssetForSymbol('okb:usdc'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'okb'
+  ),
+
+  // X Layer (OKB) Testnet tokens
+  tofcerc20(
+    '1be3bd63-04d8-43f5-a772-86292fa5631d',
+    'ofctokb:tzeb',
+    'Zebra testnet',
+    18,
+    underlyingAssetForSymbol('tokb:tzeb'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'tokb'
+  ),
+
+  // Jovayeth Mainnet tokens
+  ofcerc20(
+    '936bfaa7-2a27-4c88-8f56-3ee3b2e3060c',
+    'ofcjovayeth:jft',
+    'JovayFirst',
+    18,
+    underlyingAssetForSymbol('jovayeth:jft'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'jovayeth'
+  ),
+
+  // Jovayeth Testnet tokens
+  tofcerc20(
+    'd30dcc9f-2274-48de-9289-e1801226a9cf',
+    'ofctjovayeth:tcmn',
+    'Common',
+    18,
+    underlyingAssetForSymbol('tjovayeth:tcmn'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'tjovayeth'
+  ),
   // Story Network tokens
   ofcerc20(
     '452cc4f6-3c77-4193-a572-4b0d0f838c3c',
