@@ -15,7 +15,7 @@ describe('Flrp Import In P Tx Builder', () => {
         .getImportInPBuilder()
         .threshold(testData.threshold)
         .locktime(testData.locktime)
-        .fromPubKey(testData.pAddresses)
+        .fromPubKey(testData.corethAddresses)
         .externalChainId(testData.sourceChainId)
         .utxos(testData.utxoHex)
         .context(testData.context);
@@ -82,7 +82,7 @@ describe('Flrp Import In P Tx Builder', () => {
         .getImportInPBuilder()
         .threshold(testData.threshold)
         .locktime(testData.locktime)
-        .fromPubKey(testData.pAddresses)
+        .fromPubKey(testData.corethAddresses)
         .externalChainId(testData.sourceChainId)
         .utxos(testData.utxoHex)
         .feeState(testData.feeState);

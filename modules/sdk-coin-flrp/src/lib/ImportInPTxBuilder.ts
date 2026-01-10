@@ -28,12 +28,28 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
   }
 
   /**
-   * Set the destination P-chain addresses for the import.
-   * If not set, defaults to _fromAddresses (self-transfer).
-   *
-   * @param {string[]} addresses - Array of P-chain addresses (bech32 format)
+   * @param {string | string[]} senderPubKey - C-chain address(es) with C- prefix
+   * @throws {BuildTransactionError} if any address is not a C-chain address
+   */
+  fromPubKey(senderPubKey: string | string[]): this {
+    const pubKeys = Array.isArray(senderPubKey) ? senderPubKey : [senderPubKey];
+    const invalidAddress = pubKeys.find((addr) => !addr.startsWith('C-'));
+    if (invalidAddress) {
+      throw new BuildTransactionError(`Invalid fromAddress: expected C-chain address (C-...), got ${invalidAddress}`);
+    }
+    this.transaction._fromAddresses = pubKeys.map((addr) => utils.parseAddress(addr));
+    return this;
+  }
+
+  /**
+   * @param {string[]} addresses - Array of P-chain addresses (bech32 format with P- prefix)
+   * @throws {BuildTransactionError} if any address is not a P-chain address
    */
   to(addresses: string[]): this {
+    const invalidAddress = addresses.find((addr) => !addr.startsWith('P-'));
+    if (invalidAddress) {
+      throw new BuildTransactionError(`Invalid toAddress: expected P-chain address (P-...), got ${invalidAddress}`);
+    }
     this.transaction._to = addresses.map((addr) => utils.parseAddress(addr));
     return this;
   }
@@ -140,14 +156,28 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
       throw new BuildTransactionError('UTXOs have zero total balance');
     }
 
-    const toAddresses = this.transaction._to.length > 0 ? this.transaction._to : this.transaction._fromAddresses;
+    const toAddresses = this.transaction._to.map((addr) => Buffer.from(addr));
+    const fromAddresses = this.transaction._fromAddresses.map((addr) => Buffer.from(addr));
+
+    // Validate address lengths (P-chain addresses are 20 bytes)
+    const invalidToAddress = toAddresses.find((addr) => addr.length !== 20);
+    if (invalidToAddress) {
+      throw new BuildTransactionError(`Invalid toAddress length: expected 20 bytes, got ${invalidToAddress.length}`);
+    }
+
+    const invalidFromAddress = fromAddresses.find((addr) => addr.length !== 20);
+    if (invalidFromAddress) {
+      throw new BuildTransactionError(
+        `Invalid fromAddress length: expected 20 bytes, got ${invalidFromAddress.length}`
+      );
+    }
 
     const importTx = pvm.e.newImportTx(
       {
         feeState: this.transaction._feeState,
-        fromAddressesBytes: this.transaction._fromAddresses.map((addr) => Buffer.from(addr)),
+        fromAddressesBytes: fromAddresses,
         sourceChainId: this.transaction._network.cChainBlockchainID,
-        toAddressesBytes: toAddresses.map((addr) => Buffer.from(addr)),
+        toAddressesBytes: toAddresses,
         utxos: nativeUtxos,
         threshold: this.transaction._threshold,
         locktime: this.transaction._locktime,
