@@ -14,8 +14,12 @@ import {
   getFormattedEthLikeTokenConfig,
   getEthLikeTokens,
   getFormattedTokens,
+  getFormattedTokensByNetwork,
+  verifyTokens,
   EthLikeTokenConfig,
   TokenTypeEnum,
+  BaseTokenConfig,
+  BaseContractAddressConfig,
 } from '../../src/tokenConfig';
 import { EthLikeERC20Token } from '../../src/account';
 
@@ -550,6 +554,211 @@ describe('EthLike Token Config Functions', function () {
       testnetKeys.forEach((key) => {
         tokens.bitcoin.should.have.property(key);
       });
+    });
+  });
+
+  describe('getFormattedTokensByNetwork', function () {
+    it('should return tokens for Mainnet network', function () {
+      const result = getFormattedTokensByNetwork('Mainnet', coins);
+
+      result.should.be.an.Object();
+      result.should.have.property('eth');
+      result.eth.should.have.property('tokens');
+      result.eth.should.have.property('nfts');
+
+      // All eth tokens should be Mainnet
+      result.eth.tokens.forEach((token) => {
+        token.network.should.equal('Mainnet');
+      });
+    });
+
+    it('should return tokens for Testnet network', function () {
+      const result = getFormattedTokensByNetwork('Testnet', coins);
+
+      result.should.be.an.Object();
+      result.should.have.property('eth');
+      result.eth.should.have.property('tokens');
+      result.eth.should.have.property('nfts');
+
+      // All eth tokens should be Testnet
+      result.eth.tokens.forEach((token) => {
+        token.network.should.equal('Testnet');
+      });
+    });
+
+    it('should return the same chain keys for both networks', function () {
+      const mainnetResult = getFormattedTokensByNetwork('Mainnet', coins);
+      const testnetResult = getFormattedTokensByNetwork('Testnet', coins);
+
+      const mainnetKeys = Object.keys(mainnetResult).sort();
+      const testnetKeys = Object.keys(testnetResult).sort();
+
+      mainnetKeys.should.deepEqual(testnetKeys);
+    });
+
+    it('should have no duplicate token types within any chain', function () {
+      const mainnetResult = getFormattedTokensByNetwork('Mainnet', coins);
+      const testnetResult = getFormattedTokensByNetwork('Testnet', coins);
+
+      // Check for duplicates in Mainnet
+      Object.entries(mainnetResult).forEach(([chain, chainData]) => {
+        if (chainData.tokens && chainData.tokens.length > 0) {
+          const tokenTypes = chainData.tokens.map((t) => t.type);
+          const uniqueTokenTypes = new Set(tokenTypes);
+          const duplicates = tokenTypes.filter((t, i) => tokenTypes.indexOf(t) !== i);
+          tokenTypes.length.should.equal(
+            uniqueTokenTypes.size,
+            `Mainnet ${chain} has duplicate token types: ${duplicates}`
+          );
+        }
+      });
+
+      // Check for duplicates in Testnet
+      Object.entries(testnetResult).forEach(([chain, chainData]) => {
+        if (chainData.tokens && chainData.tokens.length > 0) {
+          const tokenTypes = chainData.tokens.map((t) => t.type);
+          const uniqueTokenTypes = new Set(tokenTypes);
+          const duplicates = tokenTypes.filter((t, i) => tokenTypes.indexOf(t) !== i);
+          tokenTypes.length.should.equal(
+            uniqueTokenTypes.size,
+            `Testnet ${chain} has duplicate token types: ${duplicates}`
+          );
+        }
+      });
+    });
+
+    it('should filter tokens correctly by network type', function () {
+      const mainnetResult = getFormattedTokensByNetwork('Mainnet', coins);
+      const testnetResult = getFormattedTokensByNetwork('Testnet', coins);
+
+      // Verify no testnet tokens in mainnet result
+      Object.values(mainnetResult).forEach((chainData) => {
+        if (chainData.tokens && chainData.tokens.length > 0) {
+          chainData.tokens.forEach((token) => {
+            if (token && token.network) {
+              token.network.should.equal('Mainnet');
+            }
+          });
+        }
+        if ('nfts' in chainData && chainData.nfts && chainData.nfts.length > 0) {
+          chainData.nfts.forEach((nft) => {
+            if (nft && nft.network) {
+              nft.network.should.equal('Mainnet');
+            }
+          });
+        }
+      });
+
+      // Verify no mainnet tokens in testnet result
+      Object.values(testnetResult).forEach((chainData) => {
+        if (chainData.tokens && chainData.tokens.length > 0) {
+          chainData.tokens.forEach((token) => {
+            if (token && token.network) {
+              token.network.should.equal('Testnet');
+            }
+          });
+        }
+        if ('nfts' in chainData && chainData.nfts && chainData.nfts.length > 0) {
+          chainData.nfts.forEach((nft) => {
+            if (nft && nft.network) {
+              nft.network.should.equal('Testnet');
+            }
+          });
+        }
+      });
+    });
+  });
+
+  describe('verifyTokens', function () {
+    it('should return verified tokens record when no duplicates exist', function () {
+      const mockTokens: BaseTokenConfig[] = [
+        { type: 'token1', coin: 'eth', name: 'Token 1', decimalPlaces: 18 },
+        { type: 'token2', coin: 'eth', name: 'Token 2', decimalPlaces: 18 },
+        { type: 'token3', coin: 'eth', name: 'Token 3', decimalPlaces: 6 },
+      ];
+
+      const result = verifyTokens(mockTokens);
+
+      result.should.be.an.Object();
+      result.should.have.property('token1', true);
+      result.should.have.property('token2', true);
+      result.should.have.property('token3', true);
+    });
+
+    it('should throw an error when duplicate token types exist', function () {
+      const mockTokensWithDuplicates: BaseTokenConfig[] = [
+        { type: 'token1', coin: 'eth', name: 'Token 1', decimalPlaces: 18 },
+        { type: 'token2', coin: 'eth', name: 'Token 2', decimalPlaces: 18 },
+        { type: 'token1', coin: 'eth', name: 'Token 1 Duplicate', decimalPlaces: 18 }, // Duplicate
+      ];
+
+      (() => {
+        verifyTokens(mockTokensWithDuplicates);
+      }).should.throw('token : token1 duplicated.');
+    });
+
+    it('should throw an error when token contract address is not lowercase', function () {
+      const mockTokensWithUppercaseAddress: BaseContractAddressConfig[] = [
+        {
+          type: 'token1',
+          coin: 'eth',
+          name: 'Token 1',
+          decimalPlaces: 18,
+          network: 'Mainnet',
+          tokenContractAddress: '0xAbCdEf1234567890AbCdEf1234567890AbCdEf12', // Mixed case
+        },
+      ];
+
+      (() => {
+        verifyTokens(mockTokensWithUppercaseAddress);
+      }).should.throw(/token contract: token1 is not all lower case/);
+    });
+
+    it('should pass when token contract address is lowercase', function () {
+      const mockTokensWithLowercaseAddress: BaseContractAddressConfig[] = [
+        {
+          type: 'token1',
+          coin: 'eth',
+          name: 'Token 1',
+          decimalPlaces: 18,
+          network: 'Mainnet',
+          tokenContractAddress: '0xabcdef1234567890abcdef1234567890abcdef12', // All lowercase
+        },
+      ];
+
+      const result = verifyTokens(mockTokensWithLowercaseAddress);
+      result.should.have.property('token1', true);
+    });
+
+    it('should handle empty token array', function () {
+      const result = verifyTokens([]);
+
+      result.should.be.an.Object();
+      Object.keys(result).length.should.equal(0);
+    });
+
+    it('should verify real tokens from getFormattedTokens have no duplicates', function () {
+      const formattedTokens = getFormattedTokens();
+
+      // Test mainnet eth tokens
+      (() => {
+        verifyTokens(formattedTokens.bitcoin.eth.tokens);
+      }).should.not.throw();
+
+      // Test testnet eth tokens
+      (() => {
+        verifyTokens(formattedTokens.testnet.eth.tokens);
+      }).should.not.throw();
+
+      // Test mainnet xlm tokens
+      (() => {
+        verifyTokens(formattedTokens.bitcoin.xlm.tokens);
+      }).should.not.throw();
+
+      // Test testnet xlm tokens
+      (() => {
+        verifyTokens(formattedTokens.testnet.xlm.tokens);
+      }).should.not.throw();
     });
   });
 });
