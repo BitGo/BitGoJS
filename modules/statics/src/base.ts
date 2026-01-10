@@ -3407,6 +3407,7 @@ export enum UnderlyingAsset {
 
   // Polymesh mainnet tokens
   'polyx:0xa0ce6bc4c60981e08eca6504656c99e6' = 'polyx:0xa0ce6bc4c60981e08eca6504656c99e6',
+  'polyx:TEST-TOKEN-1' = 'polyx:TEST-TOKEN-1',
 
   // Hbar tokens
   'hbar:karate' = 'hbar:karate',
