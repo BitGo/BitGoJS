@@ -1,11 +1,13 @@
-import { avmSerial, pvmSerial, UnsignedTx } from '@flarenetwork/flarejs';
+import { avmSerial, pvmSerial, UnsignedTx, Utxo, Context } from '@flarenetwork/flarejs';
 import { BaseTransactionBuilder, BuildTransactionError, BaseKey, BaseAddress } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { DecodedUtxoObj, Tx } from './iface';
+import { Tx } from './iface';
 import { KeyPair } from './keyPair';
 import { Transaction } from './transaction';
 import utils from './utils';
-import BigNumber from 'bignumber.js';
+import { FlrpContext } from '@bitgo/public-types';
+
+type BigNumberType = Parameters<BaseTransactionBuilder['validateValue']>[0];
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
@@ -47,30 +49,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     if (!threshold || threshold !== 2) {
       throw new BuildTransactionError('Invalid transaction: threshold must be set to 2');
     }
-  }
-
-  /**
-   * Validates a single UTXO object
-   * @param value - UTXO to validate
-   */
-  validateUtxo(value: DecodedUtxoObj): void {
-    const requiredFields = ['outputID', 'amount', 'txid', 'outputidx'];
-    for (const field of requiredFields) {
-      if (!value.hasOwnProperty(field)) {
-        throw new BuildTransactionError(`UTXO missing required field: ${field}`);
-      }
-    }
-  }
-
-  /**
-   * Validates an array of UTXOs
-   * @param values - Array of UTXOs to validate
-   */
-  validateUtxos(values: DecodedUtxoObj[]): void {
-    if (values.length === 0) {
-      throw new BuildTransactionError('UTXOs array cannot be empty');
-    }
-    values.forEach(this.validateUtxo);
   }
 
   /**
@@ -124,12 +102,59 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /**
-   * Sets the UTXOs for the transaction
-   * @param value - Array of UTXOs to use
+   * Validates an array of UTXOs
+   * @param utxos - Array of UTXOs to validate
+   * @throws {BuildTransactionError} if validation fails
    */
-  utxos(value: DecodedUtxoObj[]): this {
-    this.validateUtxos(value);
-    this._transaction._utxos = value;
+  validateUtxos(utxos: Utxo[]): void {
+    if (!utxos || utxos.length === 0) {
+      throw new BuildTransactionError('UTXOs array cannot be empty');
+    }
+    utxos.forEach((utxo, index) => {
+      this.validateUtxo(utxo, index);
+    });
+  }
+
+  /**
+   * Validates a single UTXO
+   * @param utxo - UTXO to validate
+   * @param index - Index in the array for error messaging
+   * @throws {BuildTransactionError} if validation fails
+   */
+  validateUtxo(utxo: Utxo, index: number): void {
+    if (!utxo) {
+      throw new BuildTransactionError(`UTXO at index ${index} is null or undefined`);
+    }
+    if (!utxo.utxoId) {
+      throw new BuildTransactionError(`UTXO at index ${index} missing required field: utxoId`);
+    }
+    if (!utxo.assetId) {
+      throw new BuildTransactionError(`UTXO at index ${index} missing required field: assetId`);
+    }
+    if (!utxo.output) {
+      throw new BuildTransactionError(`UTXO at index ${index} missing required field: output`);
+    }
+  }
+
+  /**
+   * Sets the UTXOs for the transaction from hex strings
+   * Hex strings are obtained from FlareJS getUTXOs API response
+   * @param utxoHexStrings - Array of UTXO hex strings
+   */
+  utxos(utxoHexStrings: string[]): this {
+    if (!utxoHexStrings || utxoHexStrings.length === 0) {
+      throw new BuildTransactionError('UTXOs array cannot be empty');
+    }
+    // Store hex strings for later conversion
+    this._transaction._utxoHexStrings = utxoHexStrings;
+    // Parse to native UTXOs and convert to decoded format
+    const nativeUtxos = utils.parseUtxoHexArray(utxoHexStrings);
+    this._transaction._utxos = utils.utxosToDecoded(nativeUtxos, this._transaction._network);
+    return this;
+  }
+
+  context(context: FlrpContext): this {
+    this._transaction._context = context as Context.Context;
     return this;
   }
 
@@ -198,7 +223,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /** @inheritdoc */
-  validateValue(value: BigNumber): void {
+  validateValue(value: BigNumberType): void {
     if (value.isLessThan(0)) {
       throw new BuildTransactionError('Value cannot be less than zero');
     }

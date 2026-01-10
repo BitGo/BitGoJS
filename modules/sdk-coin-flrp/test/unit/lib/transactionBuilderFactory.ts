@@ -17,7 +17,7 @@ describe('Flrp Transaction Builder Factory', () => {
     const p2cImportTxs = [IMPORT_IN_C.unsignedHex, IMPORT_IN_C.halfSigntxHex, IMPORT_IN_C.fullSigntxHex];
 
     // P-chain Import from C-chain: source is C, destination is P
-    const c2pImportTxs = [IMPORT_IN_P.unsignedHex, IMPORT_IN_P.halfSigntxHex, IMPORT_IN_P.fullSigntxHex];
+    const c2pImportTxs = [IMPORT_IN_P.unsignedHex, IMPORT_IN_P.halfSigntxHex, IMPORT_IN_P.signedHex];
 
     // C-chain Export to P-chain: source is C, destination is P
     const c2pExportTxs = [EXPORT_IN_C.unsignedHex, EXPORT_IN_C.signedHex];
