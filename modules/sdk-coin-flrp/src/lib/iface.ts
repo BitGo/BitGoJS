@@ -60,6 +60,7 @@ export type DecodedUtxoObj = {
   outputidx: string;
   threshold: number;
   addresses: string[];
+  utxoHex?: string;
   addressesIndex?: number[];
 };
 
