@@ -42,9 +42,6 @@ export function getReplayProtectionAddresses(
   }
 }
 
-export function isReplayProtectionUnspent<TNumber extends number | bigint>(
-  u: utxolib.bitgo.Unspent<TNumber>,
-  network: utxolib.Network
-): boolean {
+export function isReplayProtectionUnspent(u: { address: string }, network: utxolib.Network): boolean {
   return getReplayProtectionAddresses(network).includes(u.address);
 }
