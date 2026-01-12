@@ -2135,13 +2135,15 @@ class VetTestnet extends Testnet implements EthereumNetwork {
 class Iota extends Mainnet implements AccountNetwork {
   name = 'Iota';
   family = CoinFamily.IOTA;
-  explorerUrl = 'https://explorer.iota.org/?network=mainnet';
+  explorerUrl = 'https://explorer.iota.org/txblock/?network=mainnet';
+  accountExplorerUrl = 'https://explorer.iota.org/address/?network=mainnet';
 }
 
 class IotaTestnet extends Testnet implements AccountNetwork {
   name = 'Testnet Iota';
   family = CoinFamily.IOTA;
-  explorerUrl = 'https://explorer.iota.org/?network=testnet';
+  explorerUrl = 'https://explorer.iota.org/txblock/?network=testnet';
+  accountExplorerUrl = 'https://explorer.iota.org/address/?network=testnet';
 }
 
 class Flow extends Mainnet implements EthereumNetwork {
