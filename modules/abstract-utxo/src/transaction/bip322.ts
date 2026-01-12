@@ -1,6 +1,6 @@
 import { decodeOrElse } from '@bitgo/sdk-core';
-import { bip322 } from '@bitgo/utxo-core';
-import { bitgo, networks, Network } from '@bitgo/utxo-lib';
+import { bitgo } from '@bitgo/utxo-lib';
+import { bip322, fixedScriptWallet, Transaction, type CoinName, type Triple } from '@bitgo/wasm-utxo';
 import * as t from 'io-ts';
 
 const BIP322MessageInfo = t.type({
@@ -25,6 +25,13 @@ const BIP322MessageBroadcastable = t.type({
 
 export type BIP322MessageBroadcastable = t.TypeOf<typeof BIP322MessageBroadcastable>;
 
+function assertPubkeyTriple(pubkeys: string[]): Triple<string> {
+  if (pubkeys.length !== 3) {
+    throw new Error(`Expected exactly 3 pubkeys, got ${pubkeys.length}`);
+  }
+  return pubkeys as Triple<string>;
+}
+
 export function serializeBIP322BroadcastableMessage(message: BIP322MessageBroadcastable): string {
   return Buffer.from(JSON.stringify(message), 'utf8').toString('hex');
 }
@@ -40,24 +47,35 @@ export function verifyTransactionFromBroadcastableMessage(
   message: BIP322MessageBroadcastable,
   coinName: string
 ): boolean {
-  let network: Network = networks.bitcoin;
-  if (coinName === 'tbtc4') {
-    network = networks.bitcoinTestnet4;
-  } else if (coinName !== 'btc') {
+  if (coinName !== 'btc' && coinName !== 'tbtc4') {
     throw new Error('Only tbtc4 or btc coinNames are supported.');
   }
+  const network = coinName as CoinName;
+
   if (bitgo.isPsbt(message.txHex)) {
-    const psbt = bitgo.createPsbtFromBuffer(Buffer.from(message.txHex, 'hex'), network);
+    const psbt = fixedScriptWallet.BitGoPsbt.fromBytes(Buffer.from(message.txHex, 'hex'), network);
     try {
-      bip322.assertBip322PsbtProof(psbt, message.messageInfo);
+      message.messageInfo.forEach((info, inputIndex) => {
+        bip322.verifyBip322PsbtInputWithPubkeys(psbt, inputIndex, {
+          message: info.message,
+          pubkeys: assertPubkeyTriple(info.pubkeys),
+          scriptType: info.scriptType,
+        });
+      });
       return true;
     } catch (error) {
       return false;
     }
   } else {
-    const tx = bitgo.createTransactionFromBuffer(Buffer.from(message.txHex, 'hex'), network, { amountType: 'bigint' });
+    const tx = Transaction.fromBytes(Buffer.from(message.txHex, 'hex'));
     try {
-      bip322.assertBip322TxProof(tx, message.messageInfo);
+      message.messageInfo.forEach((info, inputIndex) => {
+        bip322.verifyBip322TxInputWithPubkeys(tx, inputIndex, {
+          message: info.message,
+          pubkeys: assertPubkeyTriple(info.pubkeys),
+          scriptType: info.scriptType,
+        });
+      });
       return true;
     } catch (error) {
       return false;
