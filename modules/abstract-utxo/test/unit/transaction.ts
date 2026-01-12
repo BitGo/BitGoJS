@@ -16,7 +16,6 @@ import {
 import { AbstractUtxoCoin, getReplayProtectionAddresses, generateAddress, getReplayProtectionPubkeys } from '../../src';
 import { SdkBackend } from '../../src/transaction/types';
 
-import { hasWasmUtxoSupport } from './transaction/fixedScript/util';
 import {
   utxoCoins,
   shouldEqualJSON,
@@ -658,7 +657,7 @@ function runTestForCoin(coin: AbstractUtxoCoin) {
         run(coin, ['p2shP2pk', type], txFormat);
       }
 
-      if (txFormat === 'psbt' && hasWasmUtxoSupport(coin.network)) {
+      if (txFormat === 'psbt') {
         run(coin, [type, type], txFormat, { decodeWith: 'wasm-utxo' });
         if (getReplayProtectionAddresses(coin.network).length) {
           run(coin, ['p2shP2pk', type], txFormat, { decodeWith: 'wasm-utxo' });

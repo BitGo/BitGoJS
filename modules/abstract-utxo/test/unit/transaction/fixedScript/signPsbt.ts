@@ -12,8 +12,6 @@ import {
 } from '../../../../src/transaction/fixedScript/signPsbtWasm';
 import { SdkBackend } from '../../../../src/transaction/types';
 
-import { hasWasmUtxoSupport } from './util';
-
 function getMockCoinUtxolib(keys: utxolib.bitgo.RootWalletKeys): Musig2Participant<utxolib.bitgo.UtxoPsbt> {
   return {
     async getMusig2Nonces(psbt: utxolib.bitgo.UtxoPsbt, walletId: string): Promise<utxolib.bitgo.UtxoPsbt> {
@@ -153,8 +151,6 @@ describe('signPsbtWithMusig2ParticipantUtxolib', function () {
     .filter((test) => test.signStage === 'unsigned')
     .forEach((test) => {
       describeSignPsbtWithMusig2Participant(test, { decodeWith: 'utxolib' });
-      if (hasWasmUtxoSupport(test.network)) {
-        describeSignPsbtWithMusig2Participant(test, { decodeWith: 'wasm-utxo' });
-      }
+      describeSignPsbtWithMusig2Participant(test, { decodeWith: 'wasm-utxo' });
     });
 });

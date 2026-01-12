@@ -7,8 +7,6 @@ import { fixedScriptWallet, Triple } from '@bitgo/wasm-utxo';
 import type { TransactionExplanation } from '../../../../src/transaction/fixedScript/explainTransaction';
 import { explainPsbt, explainPsbtWasm } from '../../../../src/transaction/fixedScript';
 
-import { hasWasmUtxoSupport } from './util';
-
 function describeTransactionWith(acidTest: testutil.AcidTest) {
   describe(`${acidTest.name}`, function () {
     let psbt: utxolib.bitgo.UtxoPsbt;
@@ -27,9 +25,7 @@ function describeTransactionWith(acidTest: testutil.AcidTest) {
       assert(networkName);
       walletXpubs = acidTest.rootWalletKeys.triple.map((k) => k.neutered().toBase58()) as Triple<string>;
       customChangeWalletXpubs = acidTest.otherWalletKeys.triple.map((k) => k.neutered().toBase58()) as Triple<string>;
-      if (hasWasmUtxoSupport(acidTest.network)) {
-        wasmPsbt = fixedScriptWallet.BitGoPsbt.fromBytes(psbtBytes, networkName);
-      }
+      wasmPsbt = fixedScriptWallet.BitGoPsbt.fromBytes(psbtBytes, networkName);
     });
 
     it('should match the expected values for explainPsbt', function () {
@@ -59,10 +55,6 @@ function describeTransactionWith(acidTest: testutil.AcidTest) {
     });
 
     it('should match explainPsbtWasm', function () {
-      if (!hasWasmUtxoSupport(acidTest.network)) {
-        return this.skip();
-      }
-
       const wasmExplanation = explainPsbtWasm(wasmPsbt, walletXpubs, {
         replayProtection: {
           publicKeys: [acidTest.getReplayProtectionPublicKey()],

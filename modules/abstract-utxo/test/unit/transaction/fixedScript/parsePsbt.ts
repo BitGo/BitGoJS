@@ -17,8 +17,6 @@ import type {
 import { getCoinName } from '../../../../src/names';
 import { TransactionPrebuild } from '../../../../src/abstractUtxoCoin';
 
-import { hasWasmUtxoSupport } from './util';
-
 function getTxParamsFromExplanation(
   explanation: TransactionExplanation,
   { externalCustomChangeAddress }: { externalCustomChangeAddress: boolean }
@@ -316,4 +314,4 @@ function describeTransaction(
 }
 
 describeTransaction('utxolib');
-describeTransaction('wasm', (test) => hasWasmUtxoSupport(test.network));
+describeTransaction('wasm');
