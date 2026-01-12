@@ -29,6 +29,17 @@ export interface FlareNetwork extends BaseNetwork {
   maxStakeDuration?: string;
   minDelegationStake?: string;
   minDelegationFee?: string;
+  flarePublicUrl?: string;
+  baseTxFee?: string;
+  createAssetTxFee?: string;
+  createSubnetTxFee?: string;
+  transformSubnetTxFee?: string;
+  createBlockchainTxFee?: string;
+  addPrimaryNetworkValidatorFee?: string;
+  addPrimaryNetworkDelegatorFee?: string;
+  addSubnetValidatorFee?: string;
+  addSubnetDelegatorFee?: string;
+  xChainBlockchainID?: string;
 }
 
 import { CoinFamily } from './base';
@@ -1938,13 +1949,17 @@ export class FlareP extends Mainnet implements FlareNetwork {
   accountExplorerUrl = 'https://flarescan.com/blockchain/pvm/address/';
   blockchainID = '11111111111111111111111111111111LpoYY';
   cChainBlockchainID = '2q9e4r6Mu3U68nU1fYjgbR6JvwrRx36CohpAX5UQxse55x1Q5';
+  xChainBlockchainID = 'FJuSwZuP85eyBpuBrKECnpPedGyXoDy2hP9q4JD8qBTZGxJ';
   networkID = 14;
   hrp = 'flare';
   alias = 'P';
   vm = 'platformvm';
-  txFee = '1261000'; // FLR P-chain import requires higher fee than base txFee
+  txFee = '200000'; // FLR P-chain import requires higher fee than base txFee
+  baseTxFee = '1000000';
   maxImportFee = '10000000'; // defaults
+  createAssetTxFee = '1000000';
   createSubnetTx = '100000000'; // defaults
+  transformSubnetTxFee = '100000000';
   createChainTx = '100000000'; // defaults
   creationTxFee = '10000000'; // defaults
   minConsumption = '0.1';
@@ -1955,6 +1970,9 @@ export class FlareP extends Mainnet implements FlareNetwork {
   maxStakeDuration = '31536000'; // 1 year
   minDelegationStake = '50000000000000'; // 50000 FLR
   minDelegationFee = '0';
+  addPrimaryNetworkValidatorFee = '0';
+  addSubnetValidatorFee = '1000000';
+  addSubnetDelegatorFee = '1000000';
 }
 
 export class FlarePTestnet extends Testnet implements FlareNetwork {
@@ -1962,16 +1980,21 @@ export class FlarePTestnet extends Testnet implements FlareNetwork {
   family = CoinFamily.FLRP;
   explorerUrl = 'https://coston2.testnet.flarescan.com/blockchain/pvm/transactions';
   accountExplorerUrl = 'https://coston2.testnet.flarescan.com/blockchain/pvm/address/';
+  flarePublicUrl = 'https://coston2.testnet.flare.network';
   blockchainID = '11111111111111111111111111111111LpoYY';
   cChainBlockchainID = 'vE8M98mEQH6wk56sStD1ML8HApTgSqfJZLk9gQ3Fsd4i6m3Bi';
+  xChainBlockchainID = 'FJuSwZuP85eyBpuBrKECnpPedGyXoDy2hP9q4JD8qBTZGxYJ';
   networkID = 114;
   hrp = 'costwo';
   alias = 'P';
   assetId = 'fxMAKpBQQpFedrUhWMsDYfCUJxdUw4mneTczKBzNg3rc2JUub';
   vm = 'platformvm';
-  txFee = '1261000'; // FLR P-chain import requires higher fee than base txFee
+  txFee = '200000'; // FLR P-chain import requires higher fee than base txFee
+  baseTxFee = '1000000';
   maxImportFee = '10000000'; // defaults
+  createAssetTxFee = '1000000';
   createSubnetTx = '100000000'; // defaults
+  transformSubnetTxFee = '100000000';
   createChainTx = '100000000'; // defaults
   creationTxFee = '10000000'; // defaults
   minConsumption = '0.1';
@@ -1982,6 +2005,9 @@ export class FlarePTestnet extends Testnet implements FlareNetwork {
   maxStakeDuration = '31536000'; // 1 year
   minDelegationStake = '50000000000000'; // 50000 FLR
   minDelegationFee = '0';
+  addPrimaryNetworkValidatorFee = '0';
+  addSubnetValidatorFee = '1000000';
+  addSubnetDelegatorFee = '1000000';
 }
 
 export class Flare extends Mainnet implements EthereumNetwork {
@@ -1989,6 +2015,7 @@ export class Flare extends Mainnet implements EthereumNetwork {
   family = CoinFamily.FLR;
   explorerUrl = 'https://flare-explorer.flare.network/tx/';
   accountExplorerUrl = 'https://flare-explorer.flare.network/address/';
+  flarePublicUrl = 'https://flare-explorer.flare.network';
   chainId = 14;
   nativeCoinOperationHashPrefix = '14';
   walletFactoryAddress = '0x809ee567e413543af1caebcdb247f6a67eafc8dd';
