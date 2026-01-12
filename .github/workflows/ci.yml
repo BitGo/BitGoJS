@@ -368,3 +368,65 @@ jobs:
             git diff -- . ':!yarn.lock'
             exit 1
           fi
+
+
+  enforce-cooldown-period:
+    name: Enforce Cooldown Period
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    continue-on-error: true
+    env:
+      STATIC_ANALYSIS_BOT_APP_ID: 1819979
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Fetch base ref
+        run: git fetch origin ${{ github.base_ref }}
+
+      - name: Create static-analysis config file
+        run: |
+          cat <<EOF > .static-analysis.yaml
+          ---
+          api_version: static-analysis.bitgo/v1alpha1
+
+          rules:
+          - path: rules/javascript/dependency-updates
+            severity: error
+            options:
+              cooldown: 7
+              ignore_scopes:
+                  - "bitgo"
+                  - "bitgo-forks"
+                  - "api-ts"
+
+          EOF
+
+      - name: Generate GitHub App Token
+        id: generate-github-app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ env.STATIC_ANALYSIS_BOT_APP_ID }}
+          private-key: ${{ secrets.STATIC_ANALYSIS_BOT_PRIVATE_KEY }}
+          owner: bitgo
+          repositories: |
+            static-analysis
+
+      - name: Install BitGo/static-analysis/static-analysis@v1
+        uses: BitGo/install-github-release-binary@v2
+        with:
+          targets: BitGo/static-analysis/static-analysis@v1
+          token: ${{ steps.generate-github-app-token.outputs.token }}
+
+      - name: Prevent dependency changes since last release
+        env:
+          GH_TOKEN: ${{ steps.generate-github-app-token.outputs.token }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          RUST_LOG: info
+        run: |
+          static-analysis
