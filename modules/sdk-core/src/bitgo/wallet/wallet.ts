@@ -705,6 +705,12 @@ export class Wallet implements IWallet {
     params: ConsolidateUnspentsOptions | FanoutUnspentsOptions = {},
     option = ManageUnspentsOptions.BUILD_SIGN_SEND
   ): Promise<unknown> {
+    if (this._wallet.type === 'custodial' && routeName === 'consolidate') {
+      return this.initiateTransaction({ ...params, type: 'consolidate' });
+    } else if (this._wallet.type === 'custodial' && routeName === 'fanout') {
+      throw new Error('Fanout is not supported for custodial wallets');
+    }
+
     common.validateParams(params, [], ['walletPassphrase', 'xprv']);
 
     const reqId = new RequestTracer();
