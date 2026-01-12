@@ -4,10 +4,11 @@ import * as coreDescriptors from '@bitgo/utxo-core/descriptor';
 
 import { toExtendedAddressFormat } from '../recipient';
 import type { TransactionExplanationDescriptor } from '../fixedScript/explainTransaction';
+import { getCoinName, UtxoCoinName } from '../../names';
 
-function toRecipient(output: coreDescriptors.ParsedOutput, network: utxolib.Network): ITransactionRecipient {
+function toRecipient(output: coreDescriptors.ParsedOutput, coinName: UtxoCoinName): ITransactionRecipient {
   return {
-    address: toExtendedAddressFormat(output.script, network),
+    address: toExtendedAddressFormat(output.script, coinName),
     amount: output.value.toString(),
   };
 }
@@ -41,14 +42,15 @@ export function explainPsbt(
   const changeOutputs = outputs.filter((o) => o.scriptId !== undefined);
   const fee = sumValues(inputs) - sumValues(outputs);
   const inputSignatures = getInputSignatures(psbt);
+  const coinName = getCoinName(psbt.network);
   return {
     inputSignatures,
     signatures: inputSignatures.reduce((a, b) => Math.min(a, b), Infinity),
     locktime: psbt.locktime,
     id: psbt.getUnsignedTx().getId(),
-    outputs: externalOutputs.map((o) => toRecipient(o, psbt.network)),
+    outputs: externalOutputs.map((o) => toRecipient(o, coinName)),
     outputAmount: sumValues(externalOutputs).toString(),
-    changeOutputs: changeOutputs.map((o) => toRecipient(o, psbt.network)),
+    changeOutputs: changeOutputs.map((o) => toRecipient(o, coinName)),
     changeAmount: sumValues(changeOutputs).toString(),
     fee: fee.toString(),
   };

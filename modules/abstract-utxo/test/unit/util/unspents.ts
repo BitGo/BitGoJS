@@ -3,6 +3,7 @@ import { getSeed } from '@bitgo/sdk-test';
 import * as wasmUtxo from '@bitgo/wasm-utxo';
 
 import { getReplayProtectionAddresses } from '../../../src';
+import { getCoinName } from '../../../src/names';
 
 const { scriptTypeForChain, chainCodesP2sh, getExternalChainCode, getInternalChainCode } = utxolib.bitgo;
 
@@ -77,7 +78,8 @@ export function mockUnspentReplayProtection<TNumber extends number | bigint = nu
   network: utxolib.Network,
   value: TNumber
 ): Unspent<TNumber> {
-  const addresses = getReplayProtectionAddresses(network);
+  const coinName = getCoinName(network);
+  const addresses = getReplayProtectionAddresses(coinName);
   if (addresses.length) {
     const address = addresses[0];
     return {

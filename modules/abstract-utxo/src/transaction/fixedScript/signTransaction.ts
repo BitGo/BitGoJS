@@ -7,6 +7,8 @@ import { bitgo } from '@bitgo/utxo-lib';
 import * as utxolib from '@bitgo/utxo-lib';
 import { fixedScriptWallet } from '@bitgo/wasm-utxo';
 
+import { UtxoCoinName } from '../../names';
+
 import { Musig2Participant } from './musig2';
 import { signLegacyTransaction } from './signLegacyTransaction';
 import { signPsbtWithMusig2ParticipantUtxolib, signAndVerifyPsbt as signAndVerifyPsbtUtxolib } from './signPsbtUtxolib';
@@ -55,7 +57,7 @@ export async function signTransaction<
   coin: Musig2Participant<utxolib.bitgo.UtxoPsbt> | Musig2Participant<fixedScriptWallet.BitGoPsbt>,
   tx: T,
   signerKeychain: BIP32Interface | undefined,
-  network: utxolib.Network,
+  coinName: UtxoCoinName,
   params: {
     walletId: string | undefined;
     txInfo: { unspents?: utxolib.bitgo.Unspent<bigint | number>[] } | undefined;
@@ -101,7 +103,7 @@ export async function signTransaction<
       rootWalletKeys,
       {
         replayProtection: {
-          publicKeys: getReplayProtectionPubkeys(network),
+          publicKeys: getReplayProtectionPubkeys(coinName),
         },
         signingStep: params.signingStep,
         walletId: params.walletId,
@@ -114,7 +116,7 @@ export async function signTransaction<
     return signedPsbt;
   }
 
-  return signLegacyTransaction(tx, signerKeychain, {
+  return signLegacyTransaction(tx, signerKeychain, coinName, {
     isLastSignature,
     signingStep: params.signingStep,
     txInfo: params.txInfo,

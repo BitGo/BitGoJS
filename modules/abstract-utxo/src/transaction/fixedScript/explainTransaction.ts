@@ -10,6 +10,7 @@ import type { Output, FixedScriptWalletOutput } from '../types';
 import { toExtendedAddressFormat } from '../recipient';
 import { getPayGoVerificationPubkey } from '../getPayGoVerificationPubkey';
 import { toBip32Triple } from '../../keychains';
+import { getNetworkFromCoinName, UtxoCoinName } from '../../names';
 
 // ===== Transaction Explanation Type Definitions =====
 
@@ -71,13 +72,13 @@ export type ChangeAddressInfo = {
 
 function toChangeOutput(
   txOutput: utxolib.TxOutput<number | bigint>,
-  network: utxolib.Network,
+  coinName: UtxoCoinName,
   changeInfo: ChangeAddressInfo[] | undefined
 ): FixedScriptWalletOutput | undefined {
   if (!changeInfo) {
     return undefined;
   }
-  const address = toExtendedAddressFormat(txOutput.script, network);
+  const address = toExtendedAddressFormat(txOutput.script, coinName);
   const change = changeInfo.find((change) => change.address === address);
   if (!change) {
     return undefined;
@@ -102,7 +103,7 @@ function explainCommon<TNumber extends number | bigint>(
     customChangeInfo?: ChangeAddressInfo[];
     feeInfo?: string;
   },
-  network: utxolib.Network
+  coinName: UtxoCoinName
 ) {
   const displayOrder = ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs'];
   const changeOutputs: FixedScriptWalletOutput[] = [];
@@ -114,16 +115,16 @@ function explainCommon<TNumber extends number | bigint>(
   tx.outs.forEach((currentOutput) => {
     // Try to encode the script pubkey with an address. If it fails, try to parse it as an OP_RETURN output with the prefix.
     // If that fails, then it is an unrecognized scriptPubkey and should fail
-    const currentAddress = toExtendedAddressFormat(currentOutput.script, network);
+    const currentAddress = toExtendedAddressFormat(currentOutput.script, coinName);
     const currentAmount = BigInt(currentOutput.value);
 
-    const changeOutput = toChangeOutput(currentOutput, network, changeInfo);
+    const changeOutput = toChangeOutput(currentOutput, coinName, changeInfo);
     if (changeOutput) {
       changeOutputs.push(changeOutput);
       return;
     }
 
-    const customChangeOutput = toChangeOutput(currentOutput, network, customChangeInfo);
+    const customChangeOutput = toChangeOutput(currentOutput, coinName, customChangeInfo);
     if (customChangeOutput) {
       customChangeOutputs.push(customChangeOutput);
       return;
@@ -194,8 +195,9 @@ function getTxInputSignaturesCount<TNumber extends number | bigint>(
     txInfo?: { unspents?: bitgo.Unspent<TNumber>[] };
     pubs?: bitgo.RootWalletKeys | string[];
   },
-  network: utxolib.Network
+  coinName: UtxoCoinName
 ) {
+  const network = getNetworkFromCoinName(coinName);
   const prevOutputs = params.txInfo?.unspents?.map((u) => bitgo.toOutput<TNumber>(u, network));
   const rootWalletKeys = getRootWalletKeys(params);
   const { unspents = [] } = params.txInfo ?? {};
@@ -273,7 +275,7 @@ function getChangeInfo(psbt: bitgo.UtxoPsbt, walletKeys?: Triple<BIP32Interface>
  */
 function getPayGoVerificationInfo(
   psbt: bitgo.UtxoPsbt,
-  network: utxolib.Network
+  coinName: UtxoCoinName
 ): { outputIndex: number; verificationPubkey: string } | undefined {
   let outputIndex: number | undefined = undefined;
   let address: string | undefined = undefined;
@@ -283,12 +285,13 @@ function getPayGoVerificationInfo(
   }
 
   // This pulls the pubkey depending on given network
-  const verificationPubkey = getPayGoVerificationPubkey(network);
+  const verificationPubkey = getPayGoVerificationPubkey(coinName);
   // find which output index that contains the PayGo proof
   outputIndex = utxocore.paygo.getPayGoAddressProofOutputIndex(psbt);
   if (outputIndex === undefined || !verificationPubkey) {
     return undefined;
   }
+  const network = getNetworkFromCoinName(coinName);
   const output = psbt.txOutputs[outputIndex];
   address = utxolib.address.fromOutputScript(output.script, network);
   if (!address) {
@@ -304,7 +307,8 @@ function getPayGoVerificationInfo(
  * @returns An array of objects containing the message and address for each input,
  *          or undefined if no BIP322 messages are found.
  */
-function getBip322MessageInfoAndVerify(psbt: bitgo.UtxoPsbt, network: utxolib.Network): Bip322Message[] | undefined {
+function getBip322MessageInfoAndVerify(psbt: bitgo.UtxoPsbt, coinName: UtxoCoinName): Bip322Message[] | undefined {
+  const network = getNetworkFromCoinName(coinName);
   const bip322Messages: { message: string; address: string }[] = [];
   for (let i = 0; i < psbt.data.inputs.length; i++) {
     const message = bip322.getBip322ProofMessageAtIndex(psbt, i);
@@ -375,7 +379,7 @@ function getBip322MessageInfoAndVerify(psbt: bitgo.UtxoPsbt, network: utxolib.Ne
  *
  * @param psbt {bitgo.UtxoPsbt} The PSBT to explain
  * @param pubs {bitgo.RootWalletKeys | string[]} The public keys to use for the explanation
- * @param network {utxolib.Network} The network to use for the explanation
+ * @param coinName {UtxoCoinName} The coin name to use for the explanation
  * @param strict {boolean} Whether to throw an error if the PayGo address proof is invalid
  */
 export function explainPsbt(
@@ -384,10 +388,11 @@ export function explainPsbt(
     pubs?: bitgo.RootWalletKeys | string[];
     customChangePubs?: bitgo.RootWalletKeys | string[];
   },
-  network: utxolib.Network,
+  coinName: UtxoCoinName,
   { strict = true }: { strict?: boolean } = {}
 ): TransactionExplanationUtxolibPsbt {
-  const payGoVerificationInfo = getPayGoVerificationInfo(psbt, network);
+  const network = getNetworkFromCoinName(coinName);
+  const payGoVerificationInfo = getPayGoVerificationInfo(psbt, coinName);
   if (payGoVerificationInfo) {
     try {
       utxocore.paygo.verifyPayGoAddressProof(
@@ -403,13 +408,13 @@ export function explainPsbt(
     }
   }
 
-  const messages = getBip322MessageInfoAndVerify(psbt, network);
+  const messages = getBip322MessageInfoAndVerify(psbt, coinName);
   const changeInfo = getChangeInfo(psbt);
   const customChangeInfo = params.customChangePubs
     ? getChangeInfo(psbt, toBip32Triple(params.customChangePubs))
     : undefined;
   const tx = psbt.getUnsignedTx();
-  const common = explainCommon(tx, { ...params, changeInfo, customChangeInfo }, network);
+  const common = explainCommon(tx, { ...params, changeInfo, customChangeInfo }, coinName);
   const inputSignaturesCount = getPsbtInputSignaturesCount(psbt, params);
 
   // Set fee from subtracting inputs from outputs
@@ -442,10 +447,10 @@ export function explainLegacyTx<TNumber extends number | bigint>(
     txInfo?: { unspents?: bitgo.Unspent<TNumber>[] };
     changeInfo?: { address: string; chain: number; index: number }[];
   },
-  network: utxolib.Network
+  coinName: UtxoCoinName
 ): TransactionExplanationUtxolibLegacy {
-  const common = explainCommon(tx, params, network);
-  const inputSignaturesCount = getTxInputSignaturesCount(tx, params, network);
+  const common = explainCommon(tx, params, coinName);
+  const inputSignaturesCount = getTxInputSignaturesCount(tx, params, coinName);
   return {
     ...common,
     inputSignatures: inputSignaturesCount,

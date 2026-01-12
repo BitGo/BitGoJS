@@ -7,7 +7,7 @@ import { decrypt } from '@bitgo/sdk-api';
 
 import { AbstractUtxoCoin, TransactionInfo } from '../abstractUtxoCoin';
 import { signAndVerifyPsbt } from '../transaction/fixedScript/signTransaction';
-import { getNetworkFromCoinName } from '../names';
+import { getNetworkFromCoinName, isTestnetCoin, UtxoCoinName } from '../names';
 import { encodeTransaction } from '../transaction/decode';
 import { getReplayProtectionPubkeys } from '../transaction/fixedScript/replayProtection';
 import { toTNumber } from '../tnumber';
@@ -131,10 +131,11 @@ export async function isWalletAddress(wallet: IWallet | WalletV1, address: strin
  * stores addresses in the 3... format while the LTC blockchain returns addresses in M... format.
  *
  * @param address - LTC address to convert
- * @param network - The Litecoin network
+ * @param coinName - The coin name (e.g. 'ltc', 'tltc')
  * @returns The address in legacy 3... format, or the original address if it's not a P2SH address
  */
-export function convertLtcAddressToLegacyFormat(address: string, network: utxolib.Network): string {
+export function convertLtcAddressToLegacyFormat(address: string, coinName: UtxoCoinName): string {
+  const network = getNetworkFromCoinName(coinName);
   try {
     // Try to decode as bech32 - these don't need conversion
     utxolib.address.fromBech32(address);
@@ -189,7 +190,7 @@ async function getAllRecoveryOutputs<TNumber extends number | bigint = number>(
         // When LTC is sent to a BTC address, the LTC blockchain returns M... addresses
         // but the BTC wallet stores addresses in 3... format.
         if (!isWalletOwned && coin.getFamily() === 'ltc') {
-          const legacyAddress = convertLtcAddressToLegacyFormat(output.address, coin.network);
+          const legacyAddress = convertLtcAddressToLegacyFormat(output.address, coin.name);
           if (legacyAddress !== output.address) {
             isWalletOwned = await isWalletAddress(wallet, legacyAddress);
           }
@@ -501,7 +502,7 @@ export async function recoverCrossChain<TNumber extends number | bigint = number
 
   // Create PSBT for both signed and unsigned recovery
   // Use wasm-utxo for testnet coins only, utxolib for mainnet
-  const backend: PsbtBackend = utxolib.isTestnet(params.sourceCoin.network) ? 'wasm-utxo' : 'utxolib';
+  const backend: PsbtBackend = isTestnetCoin(params.sourceCoin.name) ? 'wasm-utxo' : 'utxolib';
   let psbt = createSweepTransaction<TNumber>(
     params.sourceCoin.getChain(),
     walletKeys,
@@ -523,7 +524,7 @@ export async function recoverCrossChain<TNumber extends number | bigint = number
 
   // For signed recovery, sign the PSBT with user key and return half-signed PSBT
   psbt = signAndVerifyPsbt(psbt, prv, fixedScriptWallet.RootWalletKeys.from(walletKeys), {
-    publicKeys: getReplayProtectionPubkeys(params.sourceCoin.network),
+    publicKeys: getReplayProtectionPubkeys(params.sourceCoin.name),
   });
 
   return {

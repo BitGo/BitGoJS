@@ -6,6 +6,7 @@ import { fixedScriptWallet, Triple } from '@bitgo/wasm-utxo';
 
 import type { TransactionExplanation } from '../../../../src/transaction/fixedScript/explainTransaction';
 import { explainPsbt, explainPsbtWasm } from '../../../../src/transaction/fixedScript';
+import { getCoinName } from '../../../../src/names';
 
 function describeTransactionWith(acidTest: testutil.AcidTest) {
   describe(`${acidTest.name}`, function () {
@@ -17,7 +18,8 @@ function describeTransactionWith(acidTest: testutil.AcidTest) {
     let refExplanation: TransactionExplanation;
     before('prepare', function () {
       psbt = acidTest.createPsbt();
-      refExplanation = explainPsbt(psbt, { pubs: acidTest.rootWalletKeys }, acidTest.network, {
+      const coinName = getCoinName(acidTest.network);
+      refExplanation = explainPsbt(psbt, { pubs: acidTest.rootWalletKeys }, coinName, {
         strict: true,
       });
       psbtBytes = psbt.toBuffer();
@@ -41,10 +43,11 @@ function describeTransactionWith(acidTest: testutil.AcidTest) {
     });
 
     it('reference implementation should support custom change outputs', function () {
+      const coinName = getCoinName(acidTest.network);
       const customChangeExplanation = explainPsbt(
         psbt,
         { pubs: acidTest.rootWalletKeys, customChangePubs: acidTest.otherWalletKeys },
-        acidTest.network,
+        coinName,
         { strict: true }
       );
       assert.ok(customChangeExplanation.customChangeOutputs);

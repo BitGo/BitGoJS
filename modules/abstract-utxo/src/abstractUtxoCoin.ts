@@ -4,7 +4,7 @@ import { randomBytes } from 'crypto';
 import _ from 'lodash';
 import * as utxolib from '@bitgo/utxo-lib';
 import { bip32 } from '@bitgo/secp256k1';
-import { bitgo, getMainnet, isMainnet, isTestnet } from '@bitgo/utxo-lib';
+import { bitgo, getMainnet, isMainnet } from '@bitgo/utxo-lib';
 import {
   AddressCoinSpecific,
   BaseCoin,
@@ -80,6 +80,7 @@ import {
   getFullNameFromCoinName,
   getMainnetCoinName,
   getNetworkFromCoinName,
+  isTestnetCoin,
   UtxoCoinName,
   UtxoCoinNameMainnet,
 } from './names';
@@ -387,7 +388,10 @@ export abstract class AbstractUtxoCoin
     this.amountType = amountType;
   }
 
-  /** @deprecated - will be removed when we drop support for utxolib */
+  /**
+   * @deprecated - will be removed when we drop support for utxolib
+   * Use `name` property instead.
+   */
   get network(): utxolib.Network {
     return getNetworkFromCoinName(this.name);
   }
@@ -546,7 +550,7 @@ export abstract class AbstractUtxoCoin
     }
 
     if (utxolib.bitgo.isPsbt(input)) {
-      return decodePsbtWith(input, this.network, decodeWith);
+      return decodePsbtWith(input, this.name, decodeWith);
     } else {
       if (decodeWith !== 'utxolib') {
         console.error('received decodeWith hint %s, ignoring for legacy transaction', decodeWith);
@@ -688,7 +692,7 @@ export abstract class AbstractUtxoCoin
         throw new Error('keychains must be a triple');
       }
       assertDescriptorWalletAddress(
-        this.network,
+        this.name,
         params,
         getDescriptorMapFromWallet(wallet, toBip32Triple(keychains), getPolicyForEnv(this.bitgo.env))
       );
@@ -705,7 +709,7 @@ export abstract class AbstractUtxoCoin
       throw new Error('missing required param keychains');
     }
 
-    assertFixedScriptWalletAddress(this.network, {
+    assertFixedScriptWalletAddress(this.name, {
       address,
       keychains,
       format: params.format ?? 'base58',
@@ -763,9 +767,9 @@ export abstract class AbstractUtxoCoin
       .send({ psbt: buffer.toString('hex') })
       .result();
     if (psbt instanceof utxolib.bitgo.UtxoPsbt) {
-      return decodePsbtWith(response.psbt, this.network, 'utxolib') as T;
+      return decodePsbtWith(response.psbt, this.name, 'utxolib') as T;
     } else {
-      return decodePsbtWith(response.psbt, this.network, 'wasm-utxo') as T;
+      return decodePsbtWith(response.psbt, this.name, 'wasm-utxo') as T;
     }
   }
 
@@ -862,7 +866,7 @@ export abstract class AbstractUtxoCoin
    * @returns {boolean}
    */
   isBitGoTaintedUnspent<TNumber extends number | bigint>(unspent: Unspent<TNumber>): boolean {
-    return isReplayProtectionUnspent<TNumber>(unspent, this.network);
+    return isReplayProtectionUnspent(unspent, this.name);
   }
 
   /**
@@ -873,7 +877,7 @@ export abstract class AbstractUtxoCoin
   override async explainTransaction<TNumber extends number | bigint = number>(
     params: ExplainTransactionOptions<TNumber>
   ): Promise<TransactionExplanation> {
-    return explainTx(this.decodeTransactionFromPrebuild(params), params, this.network);
+    return explainTx(this.decodeTransactionFromPrebuild(params), params, this.name);
   }
 
   /**
@@ -968,14 +972,14 @@ export abstract class AbstractUtxoCoin
   getDefaultTxFormat(wallet: Wallet, requestedFormat?: TxFormat): TxFormat | undefined {
     // If format is explicitly requested, use it
     if (requestedFormat !== undefined) {
-      if (isTestnet(this.network) && requestedFormat === 'legacy') {
+      if (isTestnetCoin(this.name) && requestedFormat === 'legacy') {
         throw new ErrorDeprecatedTxFormat(requestedFormat);
       }
 
       return requestedFormat;
     }
 
-    if (isTestnet(this.network)) {
+    if (isTestnetCoin(this.name)) {
       return 'psbt-lite';
     }
 

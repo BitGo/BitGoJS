@@ -99,14 +99,14 @@ function run<TNumber extends number | bigint = number>(sourceCoin: AbstractUtxoC
     const recoveryWalletId = '5abacebe28d72fbd07e0b8cbba0ff39e';
     // the address the accidental deposit went to, in both sourceCoin and addressCoin formats
     const [depositAddressSourceCoin, depositAddressRecoveryCoin] = [sourceCoin, recoveryCoin].map((coin) => ({
-      address: generateAddress(coin.network, { keychains: keychainsBase58, chain: 0, index: 0 }),
+      address: generateAddress(coin.name, { keychains: keychainsBase58, chain: 0, index: 0 }),
       chain: 0,
       index: 0,
     }));
     const chain = 0;
     const index = 1;
     // the address where we want to recover our funds to
-    const recoveryAddress = generateAddress(sourceCoin.network, {
+    const recoveryAddress = generateAddress(sourceCoin.name, {
       keychains: keychainsBase58,
       chain,
       index,
@@ -318,8 +318,6 @@ describe(`Cross-Chain Recovery getWallet`, async function () {
 });
 
 describe('convertLtcAddressToLegacyFormat', function () {
-  const ltcNetwork = utxolib.networks.litecoin;
-
   it('should convert M... P2SH address to 3... legacy format', function () {
     // These two addresses represent the same underlying script hash:
     // - MNQ7zkgMsaV67rsjA3JuP59RC5wxRXpwgE is the LTC format (scriptHash 0x32)
@@ -327,13 +325,13 @@ describe('convertLtcAddressToLegacyFormat', function () {
     const ltcAddress = 'MNQ7zkgMsaV67rsjA3JuP59RC5wxRXpwgE';
     const expectedLegacyAddress = '3GBygsGPvTdfKMbq4AKZZRu1sPMWPEsBfd';
 
-    const legacyAddress = convertLtcAddressToLegacyFormat(ltcAddress, ltcNetwork);
+    const legacyAddress = convertLtcAddressToLegacyFormat(ltcAddress, 'ltc');
     assert.strictEqual(legacyAddress, expectedLegacyAddress);
   });
 
   it('should convert MD68PsdheKxcYsrVLyZRXgoSDLnB1MdVtE to legacy format', function () {
     const address = 'MD68PsdheKxcYsrVLyZRXgoSDLnB1MdVtE';
-    const legacyAddress = convertLtcAddressToLegacyFormat(address, ltcNetwork);
+    const legacyAddress = convertLtcAddressToLegacyFormat(address, 'ltc');
 
     // Should start with '3' (legacy BTC P2SH format)
     assert.ok(legacyAddress.startsWith('3'), `Expected address to start with '3', got: ${legacyAddress}`);
@@ -341,7 +339,7 @@ describe('convertLtcAddressToLegacyFormat', function () {
 
   it('should not modify bech32 addresses', function () {
     const bech32Address = 'ltc1qgrl8zpndsklaa9swgd5vevyxmx5x63vcrl7dk4';
-    const result = convertLtcAddressToLegacyFormat(bech32Address, ltcNetwork);
+    const result = convertLtcAddressToLegacyFormat(bech32Address, 'ltc');
     assert.strictEqual(result, bech32Address);
   });
 });

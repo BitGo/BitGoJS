@@ -193,3 +193,11 @@ export function getFullNameFromCoinName(coinName: UtxoCoinName): string {
 export function getFullNameFromNetwork(n: utxolib.Network): string {
   return getFullNameFromCoinName(getCoinName(n));
 }
+
+export function isTestnetCoin(coinName: UtxoCoinName): boolean {
+  return isUtxoCoinNameTestnet(coinName);
+}
+
+export function isMainnetCoin(coinName: UtxoCoinName): boolean {
+  return isUtxoCoinNameMainnet(coinName);
+}
