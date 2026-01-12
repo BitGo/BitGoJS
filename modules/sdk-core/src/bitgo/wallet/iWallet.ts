@@ -260,6 +260,7 @@ export interface WalletSignBaseOptions {
   cosignerPub?: string;
   isLastSignature?: boolean;
   customSigningFunction?: CustomSigningFunction;
+  bulk?: boolean;
 }
 
 export interface WalletSignTransactionOptions extends WalletSignBaseOptions {

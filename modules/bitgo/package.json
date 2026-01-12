@@ -137,7 +137,7 @@
     "superagent": "^9.0.1"
   },
   "devDependencies": {
-    "@bitgo/public-types": "5.43.1",
+    "@bitgo/public-types": "5.63.0",
     "@bitgo/sdk-opensslbytes": "^2.1.0",
     "@bitgo/sdk-test": "^9.1.20",
     "@openpgp/web-stream-tools": "0.0.14",
