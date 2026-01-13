@@ -3809,4 +3809,19 @@ export const ofcCoins = [
   ),
   ofc('d45636f8-f120-4374-b717-70fe999baa43', 'ofcarc', 'Arc', 18, UnderlyingAsset.ARC, CoinKind.CRYPTO),
   tofc('bc57e64d-045e-4421-aa92-64db0c51e1d7', 'ofctarc', 'Arc Testnet', 18, UnderlyingAsset.ARC, CoinKind.CRYPTO),
+  // New BSC OFC token
+  ofcBscToken('b4200c85-f550-44d6-a6cb-a590f19773b0', 'ofcbsc:sto', 'StakeStone', 18, UnderlyingAsset['bsc:sto']),
+  // New Arbitrum OFC token
+  ofcArbethErc20(
+    'd58490c0-07d2-4642-8af7-efa2453392e9',
+    'ofcarbeth:next',
+    'Everclear',
+    18,
+    UnderlyingAsset['arbeth:next']
+  ),
+  // New SOL OFC tokens
+  ofcsolToken('0ce490e5-fba4-4f50-b059-598c151482f0', 'ofcsol:prcl', 'Parcl', 6, UnderlyingAsset['sol:prcl']),
+  ofcsolToken('ddba6928-8700-4435-8970-0e75acae7025', 'ofcsol:asp', 'Aspecta', 9, UnderlyingAsset['sol:asp']),
+  // New SUI OFC token
+  ofcSuiToken('1e01eb3d-2573-4662-aa5e-4c390e4a9b38', 'ofcsui:dmc', 'DeLorean', 9, UnderlyingAsset['sui:dmc']),
 ];

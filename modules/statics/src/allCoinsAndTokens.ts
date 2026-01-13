@@ -3109,6 +3109,24 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['baseeth:mext'],
     Networks.main.basechain
   ),
+  erc20Token(
+    '7609fc1a-c35c-4179-97fb-18c69bd3b6d3',
+    'baseeth:b3',
+    'B3',
+    18,
+    '0xb3b32f9f8827d4634fe7d973fa1034ec9fddb3b3',
+    UnderlyingAsset['baseeth:b3'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    '832db50b-6e27-4570-8455-048ead291bb0',
+    'baseeth:kaito',
+    'Kaito',
+    18,
+    '0x98d0baa52b2d063e780de12f615f963fe8537553',
+    UnderlyingAsset['baseeth:kaito'],
+    Networks.main.basechain
+  ),
 
   // XDC mainnet tokens
   xdcErc20(
@@ -4888,6 +4906,14 @@ export const allCoinsAndTokens = [
     '0x1a6b3a62391eccaaa992ade44cd4afe6bec8cff1',
     UnderlyingAsset['arbeth:uxlink']
   ),
+  arbethErc20(
+    'eb6d0a38-5497-4943-a38c-92e887b68da3',
+    'arbeth:next',
+    'Everclear',
+    18,
+    '0x58b9cb810a68a7f3e1e4f8cb45d1b9b3c79705e8',
+    UnderlyingAsset['arbeth:next']
+  ),
 
   opethErc20(
     '8d80fac6-4cbc-447c-b49b-4229cb8aa89d',
@@ -5656,6 +5682,18 @@ export const allCoinsAndTokens = [
     '0x1a8f4bc33f8ef7fbc851f156857aa65d397a6a6fd27a7ac2ca717b51f2fd9489::alkimi::ALKIMI',
     UnderlyingAsset['sui:alkimi'],
     SUI_TOKEN_FEATURES_EXCLUDE_SINGAPORE
+  ),
+  suiToken(
+    'fa2635bb-de30-41d9-8be6-c336f5bed88b',
+    'sui:dmc',
+    'DeLorean',
+    9,
+    '0x4c981f3ff786cdb9e514da897ab8a953647dae2ace9679e8358eec1e3e8871ac',
+    'dmc',
+    'DMC',
+    '0x4c981f3ff786cdb9e514da897ab8a953647dae2ace9679e8358eec1e3e8871ac::dmc::DMC',
+    UnderlyingAsset['sui:dmc'],
+    SUI_TOKEN_FEATURES
   ),
   tsuiToken(
     '0b8a7919-c37e-4be8-8338-7fc13c6c875e',
