@@ -142,6 +142,8 @@ export const multisigType = t.union([t.literal('onchain'), t.literal('tss')]);
 
 export const walletType = t.union([t.literal('cold'), t.literal('custodial'), t.literal('hot'), t.literal('trading')]);
 
+export const walletSubType = t.union([t.literal('lightningCustody'), t.literal('lightningSelfCustody')]);
+
 /**
  * Wallet response data
  * Comprehensive wallet information returned from wallet operations
