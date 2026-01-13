@@ -14,10 +14,8 @@ import type {
   TransactionExplanation,
   ChangeAddressInfo,
 } from '../../../../src/transaction/fixedScript/explainTransaction';
-import { getChainFromNetwork } from '../../../../src/names';
+import { getCoinName } from '../../../../src/names';
 import { TransactionPrebuild } from '../../../../src/abstractUtxoCoin';
-
-import { hasWasmUtxoSupport } from './util';
 
 function getTxParamsFromExplanation(
   explanation: TransactionExplanation,
@@ -110,7 +108,7 @@ function describeParseTransactionWith(
     let stubExplainTransaction: sinon.SinonStub;
 
     before('prepare', async function () {
-      const coinName = getChainFromNetwork(acidTest.network);
+      const coinName = getCoinName(acidTest.network);
       coin = getUtxoCoin(coinName);
 
       // Create PSBT and explanation
@@ -121,7 +119,7 @@ function describeParseTransactionWith(
       let explanation: TransactionExplanation;
       if (txFormat === 'psbt') {
         if (backend === 'utxolib') {
-          explanation = explainPsbt(psbt, { pubs: acidTest.rootWalletKeys }, acidTest.network, {
+          explanation = explainPsbt(psbt, { pubs: acidTest.rootWalletKeys }, coinName, {
             strict: true,
           });
         } else if (backend === 'wasm') {
@@ -145,7 +143,7 @@ function describeParseTransactionWith(
         const pubs = acidTest.rootWalletKeys.triple.map((k) => k.neutered().toBase58());
         // Extract change info from PSBT to pass to explainLegacyTx
         const changeInfo = getChangeInfoFromPsbt(psbt);
-        explanation = explainLegacyTx(tx, { pubs, changeInfo }, acidTest.network);
+        explanation = explainLegacyTx(tx, { pubs, changeInfo }, coinName);
       } else {
         throw new Error(`Invalid txFormat: ${txFormat}`);
       }
@@ -316,4 +314,4 @@ function describeTransaction(
 }
 
 describeTransaction('utxolib');
-describeTransaction('wasm', (test) => hasWasmUtxoSupport(test.network));
+describeTransaction('wasm');

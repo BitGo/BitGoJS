@@ -8,6 +8,7 @@ import {
   VerifyTransactionOptions,
   TransactionRecipient,
 } from '@bitgo/sdk-core';
+import { FlrpFeeState } from '@bitgo/public-types';
 import { pvmSerial, UnsignedTx, TransferableOutput, evmSerial } from '@flarenetwork/flarejs';
 
 /**
@@ -122,4 +123,39 @@ export interface FlrpExplainTransactionOptions {
     txHex: string;
   };
   publicKeys?: string[];
+}
+
+export interface FeeConfig {
+  weights: Dimensions;
+  maxCapacity: bigint;
+  maxPerSecond: bigint;
+  targetPerSecond: bigint;
+  /** Minimum gas price */
+  minPrice: bigint;
+  excessConversionConstant: bigint;
+}
+
+export enum FeeDimensions {
+  Bandwidth = 0,
+  DBRead = 1,
+  DBWrite = 2,
+  Compute = 3,
+}
+
+export interface FlrpTransactionFee {
+  fee: string;
+  type?: string;
+  feeState?: FlrpFeeState;
+}
+
+type DimensionValue = number;
+
+export type Dimensions = Record<FeeDimensions, DimensionValue>;
+
+/**
+ * Options for EVM export transactions
+ */
+export interface ExportEVMOptions {
+  threshold: number;
+  locktime: bigint;
 }

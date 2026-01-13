@@ -82,7 +82,7 @@ function run(coin: AbstractUtxoCoin) {
       const addresses = getParameters().map((p) => {
         const label = { chain: p.chain === undefined ? 'default' : p.chain };
         try {
-          return [label, generateAddress(coin.network, p)];
+          return [label, generateAddress(coin.name, p)];
         } catch (e) {
           return [label, { error: e.message }];
         }
@@ -94,11 +94,11 @@ function run(coin: AbstractUtxoCoin) {
     it('validates and verifies generated addresses', function () {
       getParameters().forEach((p) => {
         if (p.chain && !coin.supportsAddressChain(p.chain)) {
-          assert.throws(() => generateAddress(coin.network, p));
+          assert.throws(() => generateAddress(coin.name, p));
           return;
         }
 
-        const address = generateAddress(coin.network, p);
+        const address = generateAddress(coin.name, p);
         coin.isValidAddress(address).should.eql(true);
         if (address !== address.toUpperCase()) {
           coin.isValidAddress(address.toUpperCase()).should.eql(false);
@@ -110,7 +110,7 @@ function run(coin: AbstractUtxoCoin) {
     it('defaults to canonical address', function () {
       getParameters().forEach((p) => {
         if (!p.chain || coin.supportsAddressChain(p.chain)) {
-          const address = generateAddress(coin.network, p);
+          const address = generateAddress(coin.name, p);
           coin.canonicalAddress(address).should.eql(address);
         }
       });
@@ -135,12 +135,12 @@ function run(coin: AbstractUtxoCoin) {
       const params = { keychains, chain };
 
       // Generate with cashaddr format
-      const addressCashaddr = generateAddress(coin.network, { ...params, format: 'cashaddr' });
+      const addressCashaddr = generateAddress(coin.name, { ...params, format: 'cashaddr' });
       coin.isValidAddress(addressCashaddr).should.eql(true);
       addressCashaddr.should.startWith(expectedPrefix, `cashaddr should start with ${expectedPrefix}`);
 
       // Generate with base58 format explicitly
-      const addressBase58 = generateAddress(coin.network, { ...params, format: 'base58' });
+      const addressBase58 = generateAddress(coin.name, { ...params, format: 'base58' });
       coin.isValidAddress(addressBase58).should.eql(true);
       addressBase58.should.not.match(/.*:.*/, 'base58 should not contain colon separator');
 
@@ -154,8 +154,8 @@ function run(coin: AbstractUtxoCoin) {
           if (p.chain && (!coin.supportsAddressChain(p.chain) || !otherCoin.supportsAddressChain(p.chain))) {
             return;
           }
-          const address = generateAddress(coin.network, p);
-          const otherAddress = generateAddress(otherCoin.network, p);
+          const address = generateAddress(coin.name, p);
+          const otherAddress = generateAddress(otherCoin.name, p);
           (address === otherAddress).should.eql(isCompatibleAddress(coin, otherCoin));
           coin.isValidAddress(otherAddress).should.eql(isCompatibleAddress(coin, otherCoin));
         });

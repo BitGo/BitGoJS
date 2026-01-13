@@ -13,16 +13,20 @@ interface FeeInfo {
 
 export interface GoStakingRequest {
   id: string;
-  amount: string;
   clientId?: string;
+  goAccountId: string;
+  amount: string;
   type: 'STAKE' | 'UNSTAKE';
   coin: string;
   status: string;
-  goSpecificStatus: string;
   error?: string;
-  rawError?: string;
   statusModifiedDate: string;
   createdDate: string;
+  properties?: GoStakingRequestProperties;
+}
+
+interface GoStakingRequestProperties {
+  amount: string;
 }
 
 export interface GoStakeOptions {

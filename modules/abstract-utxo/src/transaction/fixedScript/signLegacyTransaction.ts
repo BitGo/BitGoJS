@@ -6,6 +6,8 @@ import { bitgo } from '@bitgo/utxo-lib';
 import { isTriple, Triple } from '@bitgo/sdk-core';
 import debugLib from 'debug';
 
+import { UtxoCoinName } from '../../names';
+
 import { getReplayProtectionAddresses } from './replayProtection';
 import { InputSigningError, TransactionSigningError } from './SigningError';
 
@@ -25,6 +27,7 @@ type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
  * @param transaction - wallet transaction (builder) to be signed
  * @param unspents - transaction unspents
  * @param walletSigner - signing parameters
+ * @param coinName - coin name for network-specific logic
  * @param isLastSignature - Returns full-signed transaction when true. Builds half-signed when false.
  * @param replayProtectionAddresses - List of replay protection addresses to skip signing
  */
@@ -32,6 +35,7 @@ export function signAndVerifyWalletTransaction<TNumber extends number | bigint>(
   transaction: utxolib.bitgo.UtxoTransaction<TNumber> | utxolib.bitgo.UtxoTransactionBuilder<TNumber>,
   unspents: Unspent<TNumber>[],
   walletSigner: utxolib.bitgo.WalletUnspentSigner<RootWalletKeys>,
+  coinName: UtxoCoinName,
   {
     isLastSignature,
     replayProtectionAddresses,
@@ -42,7 +46,7 @@ export function signAndVerifyWalletTransaction<TNumber extends number | bigint>(
 ): utxolib.bitgo.UtxoTransaction<TNumber> {
   const network = transaction.network as utxolib.Network;
   if (replayProtectionAddresses === undefined) {
-    replayProtectionAddresses = getReplayProtectionAddresses(network);
+    replayProtectionAddresses = getReplayProtectionAddresses(coinName);
   }
   const prevOutputs = unspents.map((u) => toOutput(u, network));
 
@@ -116,6 +120,7 @@ export function signAndVerifyWalletTransaction<TNumber extends number | bigint>(
 export function signLegacyTransaction<TNumber extends number | bigint>(
   tx: utxolib.bitgo.UtxoTransaction<TNumber>,
   signerKeychain: BIP32Interface | undefined,
+  coinName: UtxoCoinName,
   params: {
     isLastSignature: boolean;
     signingStep: 'signerNonce' | 'cosignerNonce' | 'signerSignature' | undefined;
@@ -148,7 +153,7 @@ export function signLegacyTransaction<TNumber extends number | bigint>(
 
   assert(signerKeychain);
   const walletSigner = new bitgo.WalletUnspentSigner<RootWalletKeys>(keychains, signerKeychain, cosignerKeychain);
-  return signAndVerifyWalletTransaction(tx, params.txInfo.unspents, walletSigner, {
+  return signAndVerifyWalletTransaction(tx, params.txInfo.unspents, walletSigner, coinName, {
     isLastSignature: params.isLastSignature,
   }) as utxolib.bitgo.UtxoTransaction<TNumber>;
 }

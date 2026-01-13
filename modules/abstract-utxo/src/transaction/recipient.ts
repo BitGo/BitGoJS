@@ -1,5 +1,7 @@
 import * as utxolib from '@bitgo/utxo-lib';
 
+import { getNetworkFromCoinName, UtxoCoinName } from '../names';
+
 const ScriptRecipientPrefix = 'scriptPubKey:';
 
 /**
@@ -22,21 +24,23 @@ export function fromExtendedAddressFormat(extendedAddress: string): { address: s
   return { address: extendedAddress };
 }
 
-export function fromExtendedAddressFormatToScript(extendedAddress: string, network: utxolib.Network): Buffer {
+export function fromExtendedAddressFormatToScript(extendedAddress: string, coinName: UtxoCoinName): Buffer {
   const result = fromExtendedAddressFormat(extendedAddress);
   if ('script' in result) {
     return Buffer.from(result.script, 'hex');
   }
+  const network = getNetworkFromCoinName(coinName);
   return utxolib.addressFormat.toOutputScriptTryFormats(result.address, network);
 }
 
 /**
  * Convert a script or address to the extended address format.
  * @param script
- * @param network
+ * @param coinName
  * @returns if the script is an OP_RETURN script, then it will be prefixed with `scriptPubKey:`, otherwise it will be converted to an address.
  */
-export function toExtendedAddressFormat(script: Buffer, network: utxolib.Network): string {
+export function toExtendedAddressFormat(script: Buffer, coinName: UtxoCoinName): string {
+  const network = getNetworkFromCoinName(coinName);
   return script[0] === utxolib.opcodes.OP_RETURN
     ? `${ScriptRecipientPrefix}${script.toString('hex')}`
     : utxolib.address.fromOutputScript(script, network);

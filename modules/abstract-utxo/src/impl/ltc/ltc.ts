@@ -1,11 +1,14 @@
 import { BitGoBase } from '@bitgo/sdk-core';
 import * as utxolib from '@bitgo/utxo-lib';
 
-import { AbstractUtxoCoin, UtxoNetwork } from '../../abstractUtxoCoin';
+import { AbstractUtxoCoin } from '../../abstractUtxoCoin';
+import { UtxoCoinName } from '../../names';
 
 export class Ltc extends AbstractUtxoCoin {
-  constructor(bitgo: BitGoBase, network?: UtxoNetwork) {
-    super(bitgo, network || utxolib.networks.litecoin);
+  readonly name: UtxoCoinName = 'ltc';
+
+  constructor(bitgo: BitGoBase) {
+    super(bitgo);
     // use legacy script hash version, which is the current Bitcoin one
     this.altScriptHash = utxolib.networks.bitcoin.scriptHash;
     // do not support alt destinations in prod

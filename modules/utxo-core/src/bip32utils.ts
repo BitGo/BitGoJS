@@ -1,49 +1,13 @@
-import { BIP32Interface } from '@bitgo/secp256k1';
-import * as utxolib from '@bitgo/utxo-lib';
-import * as bitcoinMessage from 'bitcoinjs-message';
-/**
- * bip32-aware wrapper around bitcoin-message package
- * @see {bitcoinMessage.sign}
- */
-export function signMessage(
-  message: string | Buffer,
-  privateKey: BIP32Interface | Buffer,
-  network: { messagePrefix: string }
-): Buffer {
-  if (!Buffer.isBuffer(privateKey)) {
-    privateKey = privateKey.privateKey as Buffer;
-    if (!privateKey) {
-      throw new Error(`must provide privateKey`);
-    }
-  }
-  if (network === null || typeof network !== 'object' || typeof network.messagePrefix !== 'string') {
-    throw new Error(`invalid argument 'network'`);
-  }
-  const compressed = true;
-  return bitcoinMessage.sign(message, privateKey, compressed, network.messagePrefix);
-}
+import { bip32utils } from '@bitgo/secp256k1';
 
 /**
- * bip32-aware wrapper around bitcoin-message package
- * @see {bitcoinMessage.verify}
+ * @deprecated Use signMessage from @bitgo/secp256k1 instead
+ * @see {bip32utils.signMessage}
  */
-export function verifyMessage(
-  message: string | Buffer,
-  publicKey: BIP32Interface | Buffer,
-  signature: Buffer,
-  network: { messagePrefix: string }
-): boolean {
-  if (!Buffer.isBuffer(publicKey)) {
-    publicKey = publicKey.publicKey;
-  }
-  if (network === null || typeof network !== 'object' || typeof network.messagePrefix !== 'string') {
-    throw new Error(`invalid argument 'network'`);
-  }
+export const signMessage = bip32utils.signMessage;
 
-  const address = utxolib.address.toBase58Check(
-    utxolib.crypto.hash160(publicKey),
-    utxolib.networks.bitcoin.pubKeyHash,
-    utxolib.networks.bitcoin
-  );
-  return bitcoinMessage.verify(message, address, signature, network.messagePrefix);
-}
+/**
+ * @deprecated Use verifyMessage from @bitgo/secp256k1 instead
+ * @see {bip32utils.verifyMessage}
+ */
+export const verifyMessage = bip32utils.verifyMessage;

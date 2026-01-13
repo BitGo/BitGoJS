@@ -5,12 +5,11 @@ import {
   evmSerial,
   UnsignedTx,
   Credential,
-  BigIntPr,
-  Int,
-  Id,
   TransferableInput,
+  TransferOutput,
   Address,
   utils as FlareUtils,
+  evm,
 } from '@flarenetwork/flarejs';
 import utils from './utils';
 import { DecodedUtxoObj, FlareTransactionType, SECP256K1_Transfer_Output, Tx } from './iface';
@@ -40,8 +39,6 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
       throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
     }
 
-    // The outputs is a single C-Chain address result.
-    // It's expected to have only one output to the destination C-Chain address.
     const outputs = baseTx.Outs;
     if (outputs.length !== 1) {
       throw new BuildTransactionError('Transaction can have one output');
@@ -56,56 +53,26 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
     const inputs = baseTx.importedInputs;
     this.transaction._utxos = this.recoverUtxos(inputs);
 
-    // Calculate total input and output amounts
     const totalInputAmount = inputs.reduce((t, i) => t + i.amount(), BigInt(0));
     const totalOutputAmount = output.amount.value();
 
-    // Calculate fee based on input/output difference
     const fee = totalInputAmount - totalOutputAmount;
 
-    // Use credentials passed from TransactionBuilderFactory (properly extracted using codec)
     const credentials = parsedCredentials || [];
     const hasCredentials = credentials.length > 0;
 
-    // If it's a signed transaction, store the original raw bytes to preserve exact format
     if (hasCredentials && rawBytes) {
       this.transaction._rawSignedBytes = rawBytes;
     }
 
-    // Extract threshold from first input's sigIndicies (number of required signatures)
     const firstInput = inputs[0];
     const inputThreshold = firstInput.sigIndicies().length || this.transaction._threshold;
     this.transaction._threshold = inputThreshold;
 
-    // Create a temporary UnsignedTx for accurate fee size calculation
-    // This includes the full structure (ImportTx, AddressMaps, Credentials)
-    const tempAddressMap = new FlareUtils.AddressMap();
-    for (let i = 0; i < inputThreshold; i++) {
-      if (this.transaction._fromAddresses && this.transaction._fromAddresses[i]) {
-        tempAddressMap.set(new Address(this.transaction._fromAddresses[i]), i);
-      }
-    }
-    const tempAddressMaps = new FlareUtils.AddressMaps([tempAddressMap]);
-    const tempCredentials =
-      credentials.length > 0 ? credentials : [new Credential(Array(inputThreshold).fill(utils.createNewSig('')))];
-    const tempUnsignedTx = new UnsignedTx(baseTx, [], tempAddressMaps, tempCredentials);
-
-    // Calculate cost units using the full UnsignedTx structure
-    const feeSize = this.calculateImportCost(tempUnsignedTx);
-    // Use integer division to ensure feeRate can be converted back to BigInt
-    const feeRate = Math.floor(Number(fee) / feeSize);
-
     this.transaction._fee = {
       fee: fee.toString(),
-      feeRate: feeRate,
-      size: feeSize,
     };
 
-    // Create AddressMaps based on signature slot order (matching credential order), not sorted addresses
-    // This matches the approach used in credentials: addressesIndex determines signature order
-    // AddressMaps should map addresses to signature slots in the same order as credentials
-    // If _fromAddresses is available, create AddressMap based on UTXO order (matching credential order)
-    // Otherwise, fall back to mapping just the output address
     const firstUtxo = this.transaction._utxos[0];
     let addressMap: FlareUtils.AddressMap;
     if (
@@ -115,18 +82,14 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
       this.transaction._fromAddresses &&
       this.transaction._fromAddresses.length >= this.transaction._threshold
     ) {
-      // Use centralized method for AddressMap creation
       addressMap = this.createAddressMapForUtxo(firstUtxo, this.transaction._threshold);
     } else {
-      // Fallback: map output address to slot 0 (for C-chain imports, output is the destination)
-      // Or map addresses sequentially if _fromAddresses is available but UTXO addresses are not
       addressMap = new FlareUtils.AddressMap();
       if (this.transaction._fromAddresses && this.transaction._fromAddresses.length >= this.transaction._threshold) {
         this.transaction._fromAddresses.slice(0, this.transaction._threshold).forEach((addr, i) => {
           addressMap.set(new Address(addr), i);
         });
       } else {
-        // Last resort: map output address
         const toAddress = new Address(output.address.toBytes());
         addressMap.set(toAddress, 0);
       }
@@ -134,13 +97,10 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
 
     const addressMaps = new FlareUtils.AddressMaps([addressMap]);
 
-    // When credentials were extracted, use them directly to preserve existing signatures
-    // For initBuilder, _fromAddresses may not be set yet, so use all zeros for credential slots
     let txCredentials: Credential[];
     if (credentials.length > 0) {
       txCredentials = credentials;
     } else {
-      // Create empty credential with threshold number of signature slots (all zeros)
       const emptySignatures: ReturnType<typeof utils.createNewSig>[] = [];
       for (let i = 0; i < inputThreshold; i++) {
         emptySignatures.push(utils.createNewSig(''));
@@ -167,166 +127,57 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
    * @protected
    */
   protected buildFlareTransaction(): void {
-    // if tx has credentials or was already recovered from raw, tx shouldn't change
     if (this.transaction.hasCredentials) return;
     if (this.transaction._to.length !== 1) {
-      throw new Error('to is required');
+      throw new BuildTransactionError('to is required');
     }
-    if (!this.transaction._fee.feeRate) {
-      throw new Error('fee rate is required');
+    if (!this.transaction._fee.fee) {
+      throw new BuildTransactionError('fee is required');
+    }
+    if (!this.transaction._context) {
+      throw new BuildTransactionError('context is required');
+    }
+    if (!this.transaction._fromAddresses || this.transaction._fromAddresses.length === 0) {
+      throw new BuildTransactionError('fromAddresses are required');
+    }
+    if (!this.transaction._utxos || this.transaction._utxos.length === 0) {
+      throw new BuildTransactionError('UTXOs are required');
+    }
+    if (!this.transaction._threshold) {
+      throw new BuildTransactionError('threshold is required');
     }
 
-    const { inputs, amount, credentials } = this.createInputs();
+    const estimatedGasUnits = BigInt(this.transaction._network.txFee) || 200000n;
+    const baseFeeInWei = BigInt(this.transaction._fee.fee);
+    const baseFeeGwei = baseFeeInWei / BigInt(1e9);
+    const actualFeeNFlr = baseFeeGwei * estimatedGasUnits;
+    const sourceChain = 'P';
 
-    // Calculate import cost units (matching AVAXP's costImportTx approach)
-    // Create a temporary UnsignedTx with full amount to calculate fee size
-    // This includes the full structure (ImportTx, AddressMaps, Credentials) for accurate size calculation
-    const tempOutput = new evmSerial.Output(
-      new Address(this.transaction._to[0]),
-      new BigIntPr(amount),
-      new Id(new Uint8Array(Buffer.from(this.transaction._assetId, 'hex')))
-    );
-    const tempImportTx = new evmSerial.ImportTx(
-      new Int(this.transaction._networkID),
-      new Id(new Uint8Array(Buffer.from(this.transaction._blockchainID, 'hex'))),
-      new Id(new Uint8Array(this._externalChainId)),
-      inputs,
-      [tempOutput]
-    );
+    // Convert decoded UTXOs to native FlareJS Utxo objects
+    const assetId = utils.cb58Encode(Buffer.from(this.transaction._assetId, 'hex'));
+    const nativeUtxos = utils.decodedToUtxos(this.transaction._utxos, assetId);
 
-    // Create AddressMaps for fee calculation (same as final transaction)
-    const firstUtxo = this.transaction._utxos[0];
-    const tempAddressMap = firstUtxo
-      ? this.createAddressMapForUtxo(firstUtxo, this.transaction._threshold)
-      : new FlareUtils.AddressMap();
-    const tempAddressMaps = new FlareUtils.AddressMaps([tempAddressMap]);
+    // Validate UTXO balance is sufficient to cover the import fee
+    const totalUtxoAmount = nativeUtxos.reduce((sum, utxo) => {
+      const output = utxo.output as TransferOutput;
+      return sum + output.amount();
+    }, BigInt(0));
 
-    // Create temporary UnsignedTx with full structure for accurate fee calculation
-    const tempUnsignedTx = new UnsignedTx(tempImportTx, [], tempAddressMaps, credentials);
-
-    // Calculate feeSize once using full UnsignedTx (matching AVAXP approach)
-    const feeSize = this.calculateImportCost(tempUnsignedTx);
-    const feeRate = BigInt(this.transaction._fee.feeRate);
-    const fee = feeRate * BigInt(feeSize);
-
-    // Validate that we have enough funds to cover the fee
-    if (amount <= fee) {
+    if (totalUtxoAmount <= actualFeeNFlr) {
       throw new BuildTransactionError(
-        `Insufficient funds: have ${amount.toString()}, need more than ${fee.toString()} for fee`
+        `Insufficient UTXO balance: have ${totalUtxoAmount.toString()} nFLR, need more than ${actualFeeNFlr.toString()} nFLR to cover import fee`
       );
     }
-
-    this.transaction._fee.fee = fee.toString();
-    this.transaction._fee.size = feeSize;
-
-    // Create EVM output using proper FlareJS class with amount minus fee
-    const output = new evmSerial.Output(
-      new Address(this.transaction._to[0]),
-      new BigIntPr(amount - fee),
-      new Id(new Uint8Array(Buffer.from(this.transaction._assetId, 'hex')))
+    const importTx = evm.newImportTx(
+      this.transaction._context,
+      this.transaction._to[0],
+      this.transaction._fromAddresses.map((addr) => Buffer.from(addr)),
+      nativeUtxos,
+      sourceChain,
+      actualFeeNFlr
     );
 
-    // Create the import transaction
-    const importTx = new evmSerial.ImportTx(
-      new Int(this.transaction._networkID),
-      new Id(new Uint8Array(Buffer.from(this.transaction._blockchainID, 'hex'))),
-      new Id(new Uint8Array(this._externalChainId)),
-      inputs,
-      [output]
-    );
-
-    // Reuse the AddressMaps already calculated for fee calculation
-    const unsignedTx = new UnsignedTx(
-      importTx,
-      [], // Empty UTXOs array, will be filled during processing
-      tempAddressMaps,
-      credentials
-    );
-
-    this.transaction.setTransaction(unsignedTx);
-  }
-
-  /**
-   * Create inputs from UTXOs
-   * @return {
-   *     inputs: TransferableInput[];
-   *     credentials: Credential[];
-   *     amount: bigint;
-   * }
-   */
-  protected createInputs(): {
-    inputs: TransferableInput[];
-    credentials: Credential[];
-    amount: bigint;
-  } {
-    const sender = this.transaction._fromAddresses.slice();
-    if (this.recoverSigner) {
-      // switch first and last signer
-      const tmp = sender.pop();
-      sender.push(sender[0]);
-      if (tmp) {
-        sender[0] = tmp;
-      }
-    }
-
-    let totalAmount = BigInt(0);
-    const inputs: TransferableInput[] = [];
-    const credentials: Credential[] = [];
-
-    this.transaction._utxos.forEach((utxo) => {
-      const amount = BigInt(utxo.amount);
-      totalAmount += amount;
-
-      // Create signature indices for threshold
-      const sigIndices: number[] = [];
-      for (let i = 0; i < this.transaction._threshold; i++) {
-        sigIndices.push(i);
-      }
-
-      // Use fromNative to create TransferableInput (same pattern as ImportInPTxBuilder)
-      // fromNative expects cb58-encoded strings for txId and assetId
-      const txIdCb58 = utxo.txid; // Already cb58 encoded
-      const assetIdCb58 = utils.cb58Encode(Buffer.from(this.transaction._assetId, 'hex'));
-
-      const transferableInput = TransferableInput.fromNative(
-        txIdCb58,
-        Number(utxo.outputidx),
-        assetIdCb58,
-        amount,
-        sigIndices
-      );
-
-      inputs.push(transferableInput);
-
-      // Create credential with empty signatures for slot identification
-      // Match avaxp behavior: dynamic ordering based on addressesIndex from UTXO
-      // Use centralized method for credential creation
-      credentials.push(this.createCredentialForUtxo(utxo, this.transaction._threshold));
-    });
-
-    return {
-      inputs,
-      credentials,
-      amount: totalAmount,
-    };
-  }
-
-  /**
-   * @param unsignedTx The UnsignedTx to calculate the cost for (includes ImportTx, AddressMaps, and Credentials)
-   * @returns The total cost units
-   */
-  private calculateImportCost(unsignedTx: UnsignedTx): number {
-    const signedTxBytes = unsignedTx.getSignedTx().toBytes();
-    const txBytesGas = 1;
-    let bytesCost = signedTxBytes.length * txBytesGas;
-    const costPerSignature = 1000;
-    const importTx = unsignedTx.getTx() as evmSerial.ImportTx;
-    importTx.importedInputs.forEach((input: TransferableInput) => {
-      const inCost = costPerSignature * input.sigIndicies().length;
-      bytesCost += inCost;
-    });
-    const fixedFee = 10000;
-    return bytesCost + fixedFee;
+    this.transaction.setTransaction(importTx);
   }
 
   /**

@@ -1,7 +1,6 @@
 import { utils as FlareUtils, TypeSymbols } from '@flarenetwork/flarejs';
 import { BuildTransactionError, isValidBLSPublicKey, isValidBLSSignature, TransactionType } from '@bitgo/sdk-core';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { DecodedUtxoObj } from './iface';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import utils from './utils';
@@ -37,12 +36,6 @@ export class PermissionlessValidatorTxBuilder extends TransactionBuilder {
         `Delegation fee cannot be less than ${this.transaction._network.minDelegationFee}`
       );
     }
-  }
-
-  validateUtxo(value: DecodedUtxoObj): void {
-    ['outputID', 'amount', 'txid', 'outputidx'].forEach((field) => {
-      if (!value.hasOwnProperty(field)) throw new BuildTransactionError(`Utxos required ${field}`);
-    });
   }
 
   validateNodeID(nodeID: string): void {

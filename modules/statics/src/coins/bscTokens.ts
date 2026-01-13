@@ -1507,4 +1507,13 @@ export const bscTokens = [
     UnderlyingAsset['bsc:iost'],
     BSC_TOKEN_FEATURES
   ),
+  bscToken(
+    '0b4a8583-8447-4099-ba49-1270d5f73346',
+    'bsc:sto',
+    'StakeStone',
+    18,
+    '0xdaf1695c41327b61b9b9965ac6a5843a3198cf07',
+    UnderlyingAsset['bsc:sto'],
+    BSC_TOKEN_FEATURES
+  ),
 ];

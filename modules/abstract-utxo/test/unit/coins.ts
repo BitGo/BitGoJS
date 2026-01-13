@@ -2,6 +2,8 @@ import * as assert from 'assert';
 
 import * as utxolib from '@bitgo/utxo-lib';
 
+import { getMainnetCoinName, utxoCoinsMainnet, utxoCoinsTestnet } from '../../src/names';
+
 import { getUtxoCoinForNetwork, utxoCoins } from './util';
 
 describe('utxoCoins', function () {
@@ -67,5 +69,24 @@ describe('utxoCoins', function () {
         ['zcashTest', 'tzec'],
       ]
     );
+  });
+
+  it('getMainnetCoinName returns correct mainnet coin name', function () {
+    // Mainnet coins return themselves
+    for (const coin of utxoCoinsMainnet) {
+      assert.strictEqual(getMainnetCoinName(coin), coin);
+    }
+
+    // Testnet coins return their mainnet counterpart
+    for (const coin of utxoCoinsTestnet) {
+      const mainnet = getMainnetCoinName(coin);
+      assert.ok(utxoCoinsMainnet.includes(mainnet), `${coin} -> ${mainnet} should be a mainnet coin`);
+    }
+
+    // Verify specific mappings for special Bitcoin testnet variants
+    assert.strictEqual(getMainnetCoinName('tbtc'), 'btc');
+    assert.strictEqual(getMainnetCoinName('tbtc4'), 'btc');
+    assert.strictEqual(getMainnetCoinName('tbtcsig'), 'btc');
+    assert.strictEqual(getMainnetCoinName('tbtcbgsig'), 'btc');
   });
 });

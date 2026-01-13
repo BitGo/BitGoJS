@@ -223,3 +223,96 @@ async function getGasLimitFromRPC(query: Record<string, string>, rpcUrl: string)
 
   return response.body;
 }
+
+export function validateHederaAccountId(address: string): { valid: boolean; error: string | null } {
+  const parts = address.split('.');
+  if (parts.length !== 3) {
+    return {
+      valid: false,
+      error: 'Invalid Hedera Account ID format. Use format: 0.0.12345',
+    };
+  }
+  const [shardStr, realmStr, accountStr] = parts;
+  if (!shardStr || !realmStr || !accountStr) {
+    return {
+      valid: false,
+      error: 'Invalid Hedera Account ID. All parts are required.',
+    };
+  }
+
+  const shard = Number(shardStr);
+  const realm = Number(realmStr);
+  const account = Number(accountStr);
+
+  // Validate all parts are valid non-negative integers within safe range
+  if (
+    !Number.isInteger(shard) ||
+    !Number.isInteger(realm) ||
+    !Number.isInteger(account) ||
+    shard < 0 ||
+    realm < 0 ||
+    account < 0
+  ) {
+    return {
+      valid: false,
+      error: 'Invalid Hedera Account ID. All parts must be non-negative integers.',
+    };
+  }
+
+  // Check for JavaScript safe integer limits (prevents precision loss)
+  if (!Number.isSafeInteger(shard) || !Number.isSafeInteger(realm) || !Number.isSafeInteger(account)) {
+    return {
+      valid: false,
+      error: 'Invalid Hedera Account ID. Values are too large.',
+    };
+  }
+
+  return {
+    valid: true,
+    error: null,
+  };
+}
+
+/**
+ * Convert Hedera Account ID (e.g., 0.0.12345) to EVM address
+ */
+export async function resolveHederaAccountIdToEvmAddress(
+  accountId: string,
+  isProd: boolean
+): Promise<{ address: string | null; error?: string }> {
+  try {
+    const mirrorNodeUrl = isProd
+      ? 'https://mainnet-public.mirrornode.hedera.com'
+      : 'https://testnet.mirrornode.hedera.com';
+
+    const response = await fetch(`${mirrorNodeUrl}/api/v1/accounts/${accountId}`);
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        return {
+          address: null,
+          error: 'Hedera Account ID not found. Please verify the account exists.',
+        };
+      }
+      return {
+        address: null,
+        error: `Failed to resolve Hedera Account ID: ${response.status}`,
+      };
+    }
+
+    const accountData = (await response.json()) as { evm_address?: string };
+    if (!accountData.evm_address) {
+      return {
+        address: null,
+        error: 'This Hedera account does not have an associated EVM address.',
+      };
+    }
+
+    return { address: accountData.evm_address };
+  } catch (error) {
+    return {
+      address: null,
+      error: 'Failed to resolve Hedera Account ID. Please check your connection.',
+    };
+  }
+}

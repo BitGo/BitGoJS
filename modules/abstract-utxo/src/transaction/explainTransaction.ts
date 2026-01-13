@@ -5,6 +5,7 @@ import { isTriple, IWallet, Triple } from '@bitgo/sdk-core';
 import { getDescriptorMapFromWallet, isDescriptorWallet } from '../descriptor';
 import { toBip32Triple } from '../keychains';
 import { getPolicyForEnv } from '../descriptor/validatePolicy';
+import { UtxoCoinName } from '../names';
 
 import { getReplayProtectionPubkeys } from './fixedScript/replayProtection';
 import type {
@@ -27,7 +28,7 @@ export function explainTx<TNumber extends number | bigint>(
     txInfo?: { unspents?: utxolib.bitgo.Unspent<TNumber>[] };
     changeInfo?: fixedScript.ChangeAddressInfo[];
   },
-  network: utxolib.Network
+  coinName: UtxoCoinName
 ): TransactionExplanationUtxolibLegacy | TransactionExplanationUtxolibPsbt | TransactionExplanationWasm {
   if (params.wallet && isDescriptorWallet(params.wallet)) {
     if (tx instanceof utxolib.bitgo.UtxoPsbt) {
@@ -46,7 +47,7 @@ export function explainTx<TNumber extends number | bigint>(
     throw new Error('legacy transactions are not supported for descriptor wallets');
   }
   if (tx instanceof utxolib.bitgo.UtxoPsbt) {
-    return fixedScript.explainPsbt(tx, params, network);
+    return fixedScript.explainPsbt(tx, params, coinName);
   } else if (tx instanceof fixedScriptWallet.BitGoPsbt) {
     const pubs = params.pubs;
     if (!pubs) {
@@ -63,10 +64,10 @@ export function explainTx<TNumber extends number | bigint>(
     }
     return fixedScript.explainPsbtWasm(tx, walletXpubs, {
       replayProtection: {
-        publicKeys: getReplayProtectionPubkeys(network),
+        publicKeys: getReplayProtectionPubkeys(coinName),
       },
     });
   } else {
-    return fixedScript.explainLegacyTx(tx, params, network);
+    return fixedScript.explainLegacyTx(tx, params, coinName);
   }
 }

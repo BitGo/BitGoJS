@@ -15,7 +15,7 @@ import { IMPORT_IN_P } from '../../resources/transactionData/importInP';
 import { EXPORT_IN_P } from '../../resources/transactionData/exportInP';
 import { IMPORT_IN_C } from '../../resources/transactionData/importInC';
 import { TransactionBuilderFactory, Transaction } from '../../../src/lib';
-import { secp256k1, Address } from '@flarenetwork/flarejs';
+import { secp256k1, Address, Utxo } from '@flarenetwork/flarejs';
 
 describe('Utils', function () {
   let utils: Utils;
@@ -23,6 +23,81 @@ describe('Utils', function () {
 
   beforeEach(function () {
     utils = new Utils();
+  });
+
+  describe('decodedToUtxo', function () {
+    const assetId = 'fxMAKpBQQpFedrUhWMsDYfCUJxdUw4mneTczKBzNg3rc2JUub';
+
+    it('should convert DecodedUtxoObj to FlareJS Utxo', function () {
+      const decodedUtxo = {
+        outputID: 7,
+        amount: '50000000',
+        txid: '2XJ1MptpmBWVFSzCz44jauGLoooSFShZJM8aykSL1dfVHehFjn',
+        threshold: 2,
+        addresses: [
+          'P-costwo1xv5mulgpe5lt4tnx2ntnylwe79azu9vpja6lut',
+          'P-costwo106gc5h5qswhye8e0pmthq4wzf0ekv5qppsrvpu',
+          'P-costwo1cueygd7fd37g56s49k3rshqakhp6k8u3adzt6m',
+        ],
+        outputidx: '0',
+        locktime: '0',
+      };
+
+      const convertedUtxo = utils.decodedToUtxo(decodedUtxo, assetId);
+
+      assert.ok(convertedUtxo instanceof Utxo);
+      assert.ok(convertedUtxo.utxoId, 'utxoId should exist');
+      assert.ok(convertedUtxo.assetId, 'assetId should exist');
+      assert.ok(convertedUtxo.output, 'output should exist');
+
+      const expectedTxIdHex = 'c87b0455de7ba1a7a3ca508f2df8d9f54488b486a8600aa207229678ee13bb84';
+      assert.strictEqual(Buffer.from(convertedUtxo.utxoId.txID.toBytes()).toString('hex'), expectedTxIdHex);
+
+      assert.strictEqual(Number(convertedUtxo.utxoId.outputIdx.value()), 0);
+
+      assert.strictEqual((convertedUtxo.output as any).amount().toString(), '50000000');
+    });
+
+    it('should convert array of DecodedUtxoObj to FlareJS Utxo array', function () {
+      const decodedUtxos = [
+        {
+          outputID: 7,
+          amount: '50000000',
+          txid: '2XJ1MptpmBWVFSzCz44jauGLoooSFShZJM8aykSL1dfVHehFjn',
+          threshold: 2,
+          addresses: [
+            'P-costwo1xv5mulgpe5lt4tnx2ntnylwe79azu9vpja6lut',
+            'P-costwo106gc5h5qswhye8e0pmthq4wzf0ekv5qppsrvpu',
+            'P-costwo1cueygd7fd37g56s49k3rshqakhp6k8u3adzt6m',
+          ],
+          outputidx: '0',
+          locktime: '0',
+        },
+      ];
+
+      const convertedUtxos = utils.decodedToUtxos(decodedUtxos, assetId);
+
+      assert.strictEqual(convertedUtxos.length, 1);
+      assert.ok(convertedUtxos[0] instanceof Utxo);
+      assert.strictEqual((convertedUtxos[0].output as any).amount().toString(), '50000000');
+    });
+
+    it('should handle locktime correctly', function () {
+      const decodedUtxo = {
+        outputID: 7,
+        amount: '100000000',
+        txid: '2XJ1MptpmBWVFSzCz44jauGLoooSFShZJM8aykSL1dfVHehFjn',
+        threshold: 2,
+        addresses: ['P-costwo1xv5mulgpe5lt4tnx2ntnylwe79azu9vpja6lut'],
+        outputidx: '1',
+        locktime: '1704067200',
+      };
+
+      const convertedUtxo = utils.decodedToUtxo(decodedUtxo, assetId);
+      const outputOwners = convertedUtxo.getOutputOwners();
+
+      assert.strictEqual(outputOwners.locktime.value().toString(), '1704067200');
+    });
   });
 
   describe('includeIn', function () {
@@ -353,14 +428,6 @@ describe('Utils', function () {
   });
 
   describe('outputidxNumberToBuffer and outputidxBufferToNumber', function () {
-    it('should convert output index to buffer and back', function () {
-      const outputIdx = IMPORT_IN_P.outputs[0].outputidx;
-      const buffer = utils.outputidxNumberToBuffer(outputIdx);
-      const result = utils.outputidxBufferToNumber(buffer);
-
-      assert.strictEqual(result, outputIdx);
-    });
-
     it('should handle nonce value', function () {
       const nonceStr = EXPORT_IN_C.nonce.toString();
       const buffer = utils.outputidxNumberToBuffer(nonceStr);
@@ -420,14 +487,6 @@ describe('Utils', function () {
   describe('parseAddress and stringToAddress', function () {
     it('should parse hex address with 0x prefix', function () {
       const buffer = utils.parseAddress(EXPORT_IN_C.cHexAddress);
-
-      assert.ok(buffer instanceof Buffer);
-      assert.strictEqual(buffer.length, 20);
-    });
-
-    it('should parse raw hex address from outputs', function () {
-      const address = IMPORT_IN_P.outputs[0].addresses[0];
-      const buffer = utils.parseAddress(address);
 
       assert.ok(buffer instanceof Buffer);
       assert.strictEqual(buffer.length, 20);
@@ -607,10 +666,12 @@ describe('Utils', function () {
         .getImportInPBuilder()
         .threshold(IMPORT_IN_P.threshold)
         .locktime(IMPORT_IN_P.locktime)
-        .fromPubKey(IMPORT_IN_P.pAddresses)
+        .fromPubKey(IMPORT_IN_P.corethAddresses)
+        .to(IMPORT_IN_P.pAddresses)
         .externalChainId(IMPORT_IN_P.sourceChainId)
-        .fee(IMPORT_IN_P.fee)
-        .utxos(IMPORT_IN_P.outputs);
+        .feeState(IMPORT_IN_P.feeState)
+        .context(IMPORT_IN_P.context)
+        .decodedUtxos(IMPORT_IN_P.utxos);
 
       const tx = (await txBuilder.build()) as Transaction;
       const flareTransaction = tx.getFlareTransaction();
@@ -623,10 +684,12 @@ describe('Utils', function () {
         .getImportInPBuilder()
         .threshold(IMPORT_IN_P.threshold)
         .locktime(IMPORT_IN_P.locktime)
-        .fromPubKey(IMPORT_IN_P.pAddresses)
+        .fromPubKey(IMPORT_IN_P.corethAddresses)
+        .to(IMPORT_IN_P.pAddresses)
         .externalChainId(IMPORT_IN_P.sourceChainId)
-        .fee(IMPORT_IN_P.fee)
-        .utxos(IMPORT_IN_P.outputs);
+        .feeState(IMPORT_IN_P.feeState)
+        .context(IMPORT_IN_P.context)
+        .decodedUtxos(IMPORT_IN_P.utxos);
 
       const tx = (await txBuilder.build()) as Transaction;
       const flareTransaction = tx.getFlareTransaction();
@@ -641,9 +704,10 @@ describe('Utils', function () {
         .locktime(EXPORT_IN_P.locktime)
         .fromPubKey(EXPORT_IN_P.pAddresses)
         .externalChainId(EXPORT_IN_P.sourceChainId)
-        .fee(EXPORT_IN_P.fee)
+        .feeState(EXPORT_IN_P.feeState)
+        .context(EXPORT_IN_P.context)
         .amount(EXPORT_IN_P.amount)
-        .utxos(EXPORT_IN_P.outputs);
+        .decodedUtxos(EXPORT_IN_P.utxos);
 
       const tx = (await txBuilder.build()) as Transaction;
       const flareTransaction = tx.getFlareTransaction();
@@ -658,9 +722,10 @@ describe('Utils', function () {
         .locktime(EXPORT_IN_P.locktime)
         .fromPubKey(EXPORT_IN_P.pAddresses)
         .externalChainId(EXPORT_IN_P.sourceChainId)
-        .fee(EXPORT_IN_P.fee)
+        .feeState(EXPORT_IN_P.feeState)
+        .context(EXPORT_IN_P.context)
         .amount(EXPORT_IN_P.amount)
-        .utxos(EXPORT_IN_P.outputs);
+        .decodedUtxos(EXPORT_IN_P.utxos);
 
       const tx = (await txBuilder.build()) as Transaction;
       const flareTransaction = tx.getFlareTransaction();
@@ -675,9 +740,10 @@ describe('Utils', function () {
         .locktime(IMPORT_IN_C.locktime)
         .fromPubKey(IMPORT_IN_C.pAddresses)
         .externalChainId(IMPORT_IN_C.sourceChainId)
-        .feeRate(IMPORT_IN_C.fee)
+        .fee(IMPORT_IN_C.fee)
+        .context(IMPORT_IN_C.context)
         .to(IMPORT_IN_C.to)
-        .utxos(IMPORT_IN_C.outputs);
+        .decodedUtxos(IMPORT_IN_C.utxos);
 
       const tx = (await txBuilder.build()) as Transaction;
       const flareTransaction = tx.getFlareTransaction();
@@ -692,9 +758,10 @@ describe('Utils', function () {
         .locktime(IMPORT_IN_C.locktime)
         .fromPubKey(IMPORT_IN_C.pAddresses)
         .externalChainId(IMPORT_IN_C.sourceChainId)
-        .feeRate(IMPORT_IN_C.fee)
+        .fee(IMPORT_IN_C.fee)
+        .context(IMPORT_IN_C.context)
         .to(IMPORT_IN_C.to)
-        .utxos(IMPORT_IN_C.outputs);
+        .decodedUtxos(IMPORT_IN_C.utxos);
 
       const tx = (await txBuilder.build()) as Transaction;
       const flareTransaction = tx.getFlareTransaction();
@@ -711,7 +778,8 @@ describe('Utils', function () {
         .threshold(EXPORT_IN_C.threshold)
         .locktime(EXPORT_IN_C.locktime)
         .to(EXPORT_IN_C.pAddresses)
-        .feeRate(EXPORT_IN_C.fee);
+        .fee(EXPORT_IN_C.fee)
+        .context(EXPORT_IN_C.context);
 
       const tx = (await txBuilder.build()) as Transaction;
       const flareTransaction = tx.getFlareTransaction();
@@ -728,7 +796,8 @@ describe('Utils', function () {
         .threshold(EXPORT_IN_C.threshold)
         .locktime(EXPORT_IN_C.locktime)
         .to(EXPORT_IN_C.pAddresses)
-        .feeRate(EXPORT_IN_C.fee);
+        .fee(EXPORT_IN_C.fee)
+        .context(EXPORT_IN_C.context);
 
       const tx = (await txBuilder.build()) as Transaction;
       const flareTransaction = tx.getFlareTransaction();
@@ -741,10 +810,12 @@ describe('Utils', function () {
         .getImportInPBuilder()
         .threshold(IMPORT_IN_P.threshold)
         .locktime(IMPORT_IN_P.locktime)
-        .fromPubKey(IMPORT_IN_P.pAddresses)
+        .fromPubKey(IMPORT_IN_P.corethAddresses)
+        .to(IMPORT_IN_P.pAddresses)
         .externalChainId(IMPORT_IN_P.sourceChainId)
-        .fee(IMPORT_IN_P.fee)
-        .utxos(IMPORT_IN_P.outputs);
+        .feeState(IMPORT_IN_P.feeState)
+        .context(IMPORT_IN_P.context)
+        .decodedUtxos(IMPORT_IN_P.utxos);
 
       const tx = (await txBuilder.build()) as Transaction;
       const flareTransaction = tx.getFlareTransaction();
