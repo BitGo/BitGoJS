@@ -3645,6 +3645,40 @@ export const ofcErc20Coins = [
     6,
     underlyingAssetForSymbol('mantle:ausd')
   ),
+  // New ETH OFC tokens
+  ofcerc20('a5357ba2-5a2a-4d73-8f65-e01b9158ea9c', 'ofceth:resolv', 'Resolv', 18, UnderlyingAsset['eth:resolv']),
+  ofcerc20('5485e380-c3df-49ab-98f2-9c4d3f37f2fb', 'ofceth:spec', 'Spectral', 18, UnderlyingAsset['eth:spec']),
+  ofcerc20('8e52ca73-1860-43e5-98d6-49c5f34b8da2', 'ofceth:prompt', 'Wayfinder', 18, UnderlyingAsset['eth:prompt']),
+  ofcerc20('0edacb3a-b48a-4a6e-ae28-69f8b7a84bfa', 'ofceth:yb', 'YieldBasis', 18, UnderlyingAsset['eth:yb']),
+  // New Base OFC tokens
+  ofcerc20(
+    'b096690d-92fd-4f02-83d6-e26a1ff393f3',
+    'ofcbaseeth:b3',
+    'B3',
+    18,
+    UnderlyingAsset['baseeth:b3'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
+  ofcerc20(
+    '24f6d6b1-524b-4945-8a36-15f60c3bad75',
+    'ofcbaseeth:kaito',
+    'Kaito',
+    18,
+    UnderlyingAsset['baseeth:kaito'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
 ];
 
 export const tOfcErc20Coins = [
