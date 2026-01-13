@@ -2371,6 +2371,10 @@ export enum UnderlyingAsset {
   'eth:turtle' = 'eth:turtle',
   'eth:order' = 'eth:order',
   'eth:puffer' = 'eth:puffer',
+  'eth:resolv' = 'eth:resolv',
+  'eth:spec' = 'eth:spec',
+  'eth:prompt' = 'eth:prompt',
+  'eth:yb' = 'eth:yb',
 
   'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ' = 'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ',
   'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M' = 'xlm:VELO-GDM4RQUQQUVSKQA7S6EM7XBZP3FCGH4Q7CL6TABQ7B2BEJ5ERARM2M5M',
@@ -2821,6 +2825,7 @@ export enum UnderlyingAsset {
   'bsc:home' = 'bsc:home',
   'bsc:zbt' = 'bsc:zbt',
   'bsc:iost' = 'bsc:iost',
+  'bsc:sto' = 'bsc:sto',
 
   // BSC NFTs
   // generic NFTs
@@ -2904,6 +2909,7 @@ export enum UnderlyingAsset {
   'arbeth:pendle' = 'arbeth:pendle',
   'arbeth:gmx' = 'arbeth:gmx',
   'arbeth:uxlink' = 'arbeth:uxlink',
+  'arbeth:next' = 'arbeth:next',
 
   // BaseETH mainnet tokens
   'baseeth:aero' = 'baseeth:aero',
@@ -2936,6 +2942,8 @@ export enum UnderlyingAsset {
   'baseeth:argt' = 'baseeth:argt',
   'baseeth:brat' = 'baseeth:brat',
   'baseeth:mext' = 'baseeth:mext',
+  'baseeth:b3' = 'baseeth:b3',
+  'baseeth:kaito' = 'baseeth:kaito',
 
   // BaseETH testnet tokens
   'tbaseeth:usdc' = 'tbaseeth:usdc',
@@ -2954,6 +2962,16 @@ export enum UnderlyingAsset {
   'lineaeth:usdt' = 'lineaeth:usdt',
   'lineaeth:usdc' = 'lineaeth:usdc',
 
+  // Mantle mainnet tokens
+  'mantle:usdt' = 'mantle:usdt',
+  'mantle:usdc' = 'mantle:usdc',
+  'mantle:usde' = 'mantle:usde',
+  'mantle:usdt0' = 'mantle:usdt0',
+  'mantle:ausd' = 'mantle:ausd',
+
+  // Mantle testnet tokens
+  'tmantle:bgerch' = 'tmantle:bgerch',
+
   // Flow mainnet tokens
   'flow:weth' = 'flow:weth',
   'flow:usdf' = 'flow:usdf',
@@ -2962,6 +2980,9 @@ export enum UnderlyingAsset {
   // Monad mainnet tokens
   'mon:usdc' = 'mon:usdc',
   'mon:wmon' = 'mon:wmon',
+
+  // Monad testnet tokens
+  'tmon:tmt' = 'tmon:tmt',
 
   // XDC mainnet tokens
   'xdc:usdc' = 'xdc:usdc',
@@ -2978,6 +2999,21 @@ export enum UnderlyingAsset {
 
   // hypeevm mainnet tokens
   'hypeevm:hwhype' = 'hypeevm:hwhype',
+
+  // Jovayeth mainnet tokens
+  'jovayeth:jft' = 'jovayeth:jft',
+
+  // Jovayeth testnet tokens
+  'tjovayeth:tcmn' = 'tjovayeth:tcmn',
+
+  // X Layer (OKB) mainnet tokens
+  'okb:usdg' = 'okb:usdg',
+  'okb:usdt0' = 'okb:usdt0',
+  'okb:usdt' = 'okb:usdt',
+  'okb:usdc' = 'okb:usdc',
+
+  // X Layer (OKB) testnet tokens
+  'tokb:tzeb' = 'tokb:tzeb',
 
   // Story testnet tokens
   'tip:usdc' = 'tip:usdc',
@@ -3263,6 +3299,8 @@ export enum UnderlyingAsset {
   'sol:home' = 'sol:home',
   'sol:oob' = 'sol:oob',
   'sol:xnet' = 'sol:xnet',
+  'sol:prcl' = 'sol:prcl',
+  'sol:asp' = 'sol:asp',
 
   'tsol:txsgd' = 'sol:txsgd',
   'tsol:txusd' = 'sol:txusd',
@@ -3319,6 +3357,7 @@ export enum UnderlyingAsset {
   'sui:xmn' = 'sui:xmn',
   'sui:xaum' = 'sui:xaum',
   'sui:alkimi' = 'sui:alkimi',
+  'sui:dmc' = 'sui:dmc',
 
   // Sui testnet tokens
   'tsui:deep' = 'tsui:deep',
@@ -3379,6 +3418,7 @@ export enum UnderlyingAsset {
 
   // Polymesh mainnet tokens
   'polyx:0xa0ce6bc4c60981e08eca6504656c99e6' = 'polyx:0xa0ce6bc4c60981e08eca6504656c99e6',
+  'polyx:TEST-TOKEN-1' = 'polyx:TEST-TOKEN-1',
 
   // Hbar tokens
   'hbar:karate' = 'hbar:karate',

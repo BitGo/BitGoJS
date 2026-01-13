@@ -3608,6 +3608,77 @@ export const ofcErc20Coins = [
     underlyingAssetForSymbol('eth:mbg')
   ),
   ofcerc20('c2b381d1-795f-4c27-bc3a-322757dd7938', 'ofceth:rekt', 'Rekt', 18, underlyingAssetForSymbol('eth:rekt')),
+
+  // Mantle Network tokens
+  ofcerc20(
+    '93c6e145-9c35-4ef9-aa28-5498b9e23c9d',
+    'ofcmantle:usdt',
+    'USDT',
+    6,
+    underlyingAssetForSymbol('mantle:usdt')
+  ),
+  ofcerc20(
+    '058cb406-168d-4d76-9393-2d010ff7600e',
+    'ofcmantle:usdc',
+    'USDC',
+    6,
+    underlyingAssetForSymbol('mantle:usdc')
+  ),
+  ofcerc20(
+    '2b0ecf3d-fe95-4c95-bf53-bc4bb8f6265b',
+    'ofcmantle:usde',
+    'USDe',
+    18,
+    underlyingAssetForSymbol('mantle:usde')
+  ),
+  ofcerc20(
+    '48cf8c79-d8e3-4889-be2d-2419ce85eabf',
+    'ofcmantle:usdt0',
+    'USDT0',
+    6,
+    underlyingAssetForSymbol('mantle:usdt0')
+  ),
+  ofcerc20(
+    '93264efe-c5c3-4f53-91d4-6871ecb579d8',
+    'ofcmantle:ausd',
+    'AUSD',
+    6,
+    underlyingAssetForSymbol('mantle:ausd')
+  ),
+  // New ETH OFC tokens
+  ofcerc20('a5357ba2-5a2a-4d73-8f65-e01b9158ea9c', 'ofceth:resolv', 'Resolv', 18, UnderlyingAsset['eth:resolv']),
+  ofcerc20('5485e380-c3df-49ab-98f2-9c4d3f37f2fb', 'ofceth:spec', 'Spectral', 18, UnderlyingAsset['eth:spec']),
+  ofcerc20('8e52ca73-1860-43e5-98d6-49c5f34b8da2', 'ofceth:prompt', 'Wayfinder', 18, UnderlyingAsset['eth:prompt']),
+  ofcerc20('0edacb3a-b48a-4a6e-ae28-69f8b7a84bfa', 'ofceth:yb', 'YieldBasis', 18, UnderlyingAsset['eth:yb']),
+  // New Base OFC tokens
+  ofcerc20(
+    'b096690d-92fd-4f02-83d6-e26a1ff393f3',
+    'ofcbaseeth:b3',
+    'B3',
+    18,
+    UnderlyingAsset['baseeth:b3'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
+  ofcerc20(
+    '24f6d6b1-524b-4945-8a36-15f60c3bad75',
+    'ofcbaseeth:kaito',
+    'Kaito',
+    18,
+    UnderlyingAsset['baseeth:kaito'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'baseeth'
+  ),
 ];
 
 export const tOfcErc20Coins = [
@@ -4952,6 +5023,111 @@ export const tOfcErc20Coins = [
     'xdc'
   ),
 
+  // X Layer (OKB) Mainnet tokens
+  ofcerc20(
+    '74624f51-a9ee-4e08-a3d8-3f59221dd782',
+    'ofcokb:usdg',
+    'Global Dollar',
+    6,
+    underlyingAssetForSymbol('okb:usdg'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'okb'
+  ),
+  ofcerc20(
+    '586b6383-f965-4f6a-9d40-e135ad815147',
+    'ofcokb:usdt0',
+    'USDT0',
+    6,
+    underlyingAssetForSymbol('okb:usdt0'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'okb'
+  ),
+  ofcerc20(
+    '560de5af-59c2-421c-bb60-9086a5745539',
+    'ofcokb:usdt',
+    'USDT',
+    6,
+    underlyingAssetForSymbol('okb:usdt'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'okb'
+  ),
+  ofcerc20(
+    'f22e7b40-8bfb-42b7-a741-44bb36088a50',
+    'ofcokb:usdc',
+    'USDC',
+    6,
+    underlyingAssetForSymbol('okb:usdc'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'okb'
+  ),
+
+  // X Layer (OKB) Testnet tokens
+  tofcerc20(
+    '1be3bd63-04d8-43f5-a772-86292fa5631d',
+    'ofctokb:tzeb',
+    'Zebra testnet',
+    18,
+    underlyingAssetForSymbol('tokb:tzeb'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'tokb'
+  ),
+
+  // Jovayeth Mainnet tokens
+  ofcerc20(
+    '936bfaa7-2a27-4c88-8f56-3ee3b2e3060c',
+    'ofcjovayeth:jft',
+    'JovayFirst',
+    18,
+    underlyingAssetForSymbol('jovayeth:jft'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'jovayeth'
+  ),
+
+  // Jovayeth Testnet tokens
+  tofcerc20(
+    'd30dcc9f-2274-48de-9289-e1801226a9cf',
+    'ofctjovayeth:tcmn',
+    'Common',
+    18,
+    underlyingAssetForSymbol('tjovayeth:tcmn'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'tjovayeth'
+  ),
   // Story Network tokens
   ofcerc20(
     '452cc4f6-3c77-4193-a572-4b0d0f838c3c',
@@ -5010,6 +5186,31 @@ export const tOfcErc20Coins = [
     undefined,
     true,
     'xpl'
+  ),
+
+  // Mantle testnet tokens
+  tofcerc20(
+    '4091a920-f2bf-4026-8d81-a6361cb79278',
+    'ofctmantle:bgerch',
+    'BGERCH',
+    18,
+    underlyingAssetForSymbol('tmantle:bgerch')
+  ),
+
+  // MegaEth Network tokens
+  ofcerc20(
+    '65df2f65-bb7a-4485-b725-a5fb2e6cd281',
+    'ofcmegaeth:mega',
+    'Mega',
+    18,
+    underlyingAssetForSymbol('megaeth:mega')
+  ),
+  ofcerc20(
+    '7bcafa71-a2f3-4a9e-98e2-4d3f655281f8',
+    'ofcmegaeth:weth',
+    'Wrapped Ether',
+    18,
+    underlyingAssetForSymbol('megaeth:weth')
   ),
 ];
 

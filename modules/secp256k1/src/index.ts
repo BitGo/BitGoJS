@@ -197,6 +197,8 @@ const ECPair: ECPairAPI = ECPairFactory(ecc);
 const bip32: BIP32API = BIP32Factory(ecc);
 const musig: MuSig = MuSigFactory(crypto);
 
+import * as bip32utils from './bip32utils';
+
 export {
   ecc,
   ECPair,
@@ -209,4 +211,5 @@ export {
   BIP32Interface,
   musig,
   MuSig,
+  bip32utils,
 };

@@ -4,6 +4,7 @@ import { DescriptorMap } from '@bitgo/utxo-core/descriptor';
 
 import { AbstractUtxoCoin, VerifyTransactionOptions } from '../../abstractUtxoCoin';
 import { BaseOutput, BaseParsedTransactionOutputs } from '../types';
+import { UtxoCoinName } from '../../names';
 
 import { toBaseParsedTransactionOutputsFromPsbt } from './parse';
 
@@ -53,9 +54,9 @@ export function assertValidTransaction(
   psbt: utxolib.bitgo.UtxoPsbt,
   descriptors: DescriptorMap,
   recipients: ITransactionRecipient[],
-  network: utxolib.Network
+  coinName: UtxoCoinName
 ): void {
-  assertExpectedOutputDifference(toBaseParsedTransactionOutputsFromPsbt(psbt, descriptors, recipients, network));
+  assertExpectedOutputDifference(toBaseParsedTransactionOutputsFromPsbt(psbt, descriptors, recipients, coinName));
 }
 
 /**
@@ -90,7 +91,7 @@ export async function verifyTransaction<TNumber extends number | bigint>(
     );
   }
 
-  assertValidTransaction(tx, descriptorMap, params.txParams.recipients ?? [], tx.network);
+  assertValidTransaction(tx, descriptorMap, params.txParams.recipients ?? [], coin.name);
 
   return true;
 }

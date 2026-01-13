@@ -41,7 +41,7 @@ describe('Custom Change Wallets', () => {
     threshold: 2,
   };
 
-  const changeAddress = generateAddress(coin.network, addressData);
+  const changeAddress = generateAddress(coin.name, addressData);
 
   const changeWalletId = 'changeWalletId';
   const stubData = {

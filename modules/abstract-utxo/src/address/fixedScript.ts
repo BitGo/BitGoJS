@@ -12,10 +12,10 @@ import {
   isTriple,
   Triple,
 } from '@bitgo/sdk-core';
-import * as utxolib from '@bitgo/utxo-lib';
 import { bitgo } from '@bitgo/utxo-lib';
-import { bip32 } from '@bitgo/secp256k1';
 import * as wasmUtxo from '@bitgo/wasm-utxo';
+
+import { getNetworkFromCoinName, UtxoCoinName } from '../names';
 
 type ScriptType2Of3 = bitgo.outputScripts.ScriptType2Of3;
 
@@ -38,44 +38,23 @@ interface GenerateFixedScriptAddressOptions extends GenerateAddressOptions {
   keychains: { pub: string }[];
 }
 
-function canonicalAddress(network: utxolib.Network, address: string, format?: CreateAddressFormat): string {
-  if (format === 'cashaddr') {
-    const script = utxolib.addressFormat.toOutputScriptTryFormats(address, network);
-    return utxolib.addressFormat.fromOutputScriptWithFormat(script, format, network);
-  }
-  // Default to canonical format (base58 for most coins)
-  return utxolib.addressFormat.toCanonicalFormat(address, network);
-}
-
-function supportsAddressType(network: utxolib.Network, addressType: ScriptType2Of3): boolean {
-  return utxolib.bitgo.outputScripts.isSupportedScriptType(network, addressType);
+function supportsAddressType(coinName: UtxoCoinName, addressType: ScriptType2Of3): boolean {
+  const network = getNetworkFromCoinName(coinName);
+  return bitgo.outputScripts.isSupportedScriptType(network, addressType);
 }
 
 export function generateAddressWithChainAndIndex(
-  network: utxolib.Network,
+  coinName: UtxoCoinName,
   keychains: bitgo.RootWalletKeys | Triple<string>,
   chain: bitgo.ChainCode,
   index: number,
   format: CreateAddressFormat | undefined
 ): string {
-  if (utxolib.isTestnet(network)) {
-    // Convert CreateAddressFormat to AddressFormat for wasm-utxo
-    // 'base58' -> 'default', 'cashaddr' -> 'cashaddr'
-    const wasmFormat = format === 'base58' ? 'default' : format;
-    return wasmUtxo.fixedScriptWallet.address(keychains, chain, index, network, wasmFormat);
-  }
-
-  if (!(keychains instanceof bitgo.RootWalletKeys)) {
-    const hdNodes = keychains.map((pub) => bip32.fromBase58(pub));
-    keychains = new bitgo.RootWalletKeys(hdNodes as Triple<utxolib.BIP32Interface>);
-  }
-
-  const addressType = bitgo.scriptTypeForChain(chain);
-
-  const derivedKeys = keychains.deriveForChainAndIndex(chain, index).publicKeys;
-  const { scriptPubKey: outputScript } = utxolib.bitgo.outputScripts.createOutputScript2of3(derivedKeys, addressType);
-  const address = utxolib.address.fromOutputScript(outputScript, network);
-  return canonicalAddress(network, address, format);
+  // Convert CreateAddressFormat to AddressFormat for wasm-utxo
+  // 'base58' -> 'default', 'cashaddr' -> 'cashaddr'
+  const wasmFormat = format === 'base58' ? 'default' : format;
+  const network = getNetworkFromCoinName(coinName);
+  return wasmUtxo.fixedScriptWallet.address(keychains, chain, index, network, wasmFormat);
 }
 
 /**
@@ -90,7 +69,7 @@ export function generateAddressWithChainAndIndex(
  * @param params.bech32      {boolean}  Deprecated
  * @returns {string} The generated address
  */
-export function generateAddress(network: utxolib.Network, params: GenerateFixedScriptAddressOptions): string {
+export function generateAddress(coinName: UtxoCoinName, params: GenerateFixedScriptAddressOptions): string {
   let derivationIndex = 0;
   if (_.isInteger(params.index) && (params.index as number) > 0) {
     derivationIndex = params.index as number;
@@ -118,11 +97,11 @@ export function generateAddress(network: utxolib.Network, params: GenerateFixedS
 
   const addressType = params.addressType || convertFlagsToAddressType();
 
-  if (addressType !== utxolib.bitgo.scriptTypeForChain(derivationChain)) {
+  if (addressType !== bitgo.scriptTypeForChain(derivationChain)) {
     throw new AddressTypeChainMismatchError(addressType, derivationChain);
   }
 
-  if (!supportsAddressType(network, addressType)) {
+  if (!supportsAddressType(coinName, addressType)) {
     switch (addressType) {
       case 'p2sh':
         throw new Error(`internal error: p2sh should always be supported`);
@@ -144,7 +123,7 @@ export function generateAddress(network: utxolib.Network, params: GenerateFixedS
   }
 
   return generateAddressWithChainAndIndex(
-    network,
+    coinName,
     keychains.map((k) => k.pub) as Triple<string>,
     derivationChain,
     derivationIndex,
@@ -157,7 +136,7 @@ type Keychain = {
 };
 
 export function assertFixedScriptWalletAddress(
-  network: utxolib.Network,
+  coinName: UtxoCoinName,
   {
     chain,
     index,
@@ -184,7 +163,7 @@ export function assertFixedScriptWalletAddress(
     throw new Error('missing required param keychains');
   }
 
-  const expectedAddress = generateAddress(network, {
+  const expectedAddress = generateAddress(coinName, {
     format,
     addressType: addressType as ScriptType2Of3,
     keychains,

@@ -11,6 +11,7 @@ import {
 } from '../../descriptor/validatePolicy';
 import { explainPsbt, signPsbt } from '../../transaction/descriptor';
 import { TransactionExplanation } from '../TransactionExplanation';
+import { getNetworkFromCoinName, UtxoCoinName } from '../../names';
 
 export const DescriptorTransaction = t.intersection(
   [OfflineVaultSignable, t.type({ descriptors: t.array(NamedDescriptor) })],
@@ -34,8 +35,9 @@ export function getDescriptorsFromDescriptorTransaction(tx: DescriptorTransactio
 export function getHalfSignedPsbt(
   tx: DescriptorTransaction,
   prv: utxolib.BIP32Interface,
-  network: utxolib.Network
+  coinName: UtxoCoinName
 ): utxolib.Psbt {
+  const network = getNetworkFromCoinName(coinName);
   const psbt = utxolib.bitgo.createPsbtDecode(tx.coinSpecific.txHex, network);
   const descriptorMap = getDescriptorsFromDescriptorTransaction(tx);
   signPsbt(psbt, descriptorMap, prv, { onUnknownInput: 'throw' });
@@ -44,8 +46,9 @@ export function getHalfSignedPsbt(
 
 export function getTransactionExplanationFromPsbt(
   tx: DescriptorTransaction,
-  network: utxolib.Network
+  coinName: UtxoCoinName
 ): TransactionExplanation<string> {
+  const network = getNetworkFromCoinName(coinName);
   const psbt = utxolib.bitgo.createPsbtDecode(tx.coinSpecific.txHex, network);
   const descriptorMap = getDescriptorsFromDescriptorTransaction(tx);
   const { outputs, changeOutputs, fee } = explainPsbt(psbt, descriptorMap);

@@ -312,11 +312,11 @@ describe('EthLike Token Config Functions', function () {
   });
 
   describe('getEthLikeTokens', function () {
-    it('should return a map with tokens for enabled chains', function () {
+    it('should return a map with tokens for EVM chains supporting ERC20', function () {
       const result = getEthLikeTokens('Mainnet', TokenTypeEnum.ERC20);
 
       result.should.be.an.Object();
-      // The function filters by enabledChains which currently includes 'ip' and 'hypeevm'
+      // The function includes all EVM chains with SUPPORTS_ERC20 feature
       if (result.ip) {
         result.ip.should.have.property('tokens');
         result.ip.tokens.should.be.an.Array();
@@ -387,22 +387,6 @@ describe('EthLike Token Config Functions', function () {
           coin.should.be.instanceOf(AccountCoin);
           coin.features.should.containEql(CoinFeature.SUPPORTS_ERC20);
         }
-      });
-    });
-
-    it('should only include tokens from enabled chains', function () {
-      const mainnetResult = getEthLikeTokens('Mainnet', TokenTypeEnum.ERC20);
-      const testnetResult = getEthLikeTokens('Testnet', TokenTypeEnum.ERC20);
-
-      // Current implementation enables 'ip' and 'hypeevm' chains
-      const enabledChains = ['ip', 'hypeevm', 'plume'];
-
-      Object.keys(mainnetResult).forEach((family) => {
-        enabledChains.should.containEql(family);
-      });
-
-      Object.keys(testnetResult).forEach((family) => {
-        enabledChains.should.containEql(family);
       });
     });
 

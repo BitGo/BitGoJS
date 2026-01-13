@@ -78,7 +78,7 @@ describe('parse', function () {
       psbt,
       getDescriptorMap('Wsh2Of3', getDefaultXPubs('a')),
       recipients.map(toBaseOutputString),
-      psbt.network
+      'btc'
     );
   }
 

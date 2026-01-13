@@ -62,10 +62,14 @@ async function findPackagesWithDependency(depName: string): Promise<PackageWithD
   return packagesWithDep;
 }
 
-async function getLatestVersion(packageName: string): Promise<string> {
+async function getLatestVersion(packageName: string, versionPrefix?: string): Promise<string> {
   console.log(`Fetching latest version for ${packageName}...`);
   const { stdout } = await execa('npm', ['view', packageName, 'version']);
-  return stdout.trim();
+  const version = stdout.trim();
+  if (versionPrefix) {
+    return version.startsWith(versionPrefix) ? version : `${versionPrefix}${version}`;
+  }
+  return version;
 }
 
 async function updatePackageJson(
@@ -92,7 +96,12 @@ async function runYarnInstall(): Promise<void> {
   });
 }
 
-async function cmdUpgrade(opts: { package: string; version?: string; dryRun: boolean }): Promise<void> {
+async function cmdUpgrade(opts: {
+  package: string;
+  version?: string;
+  versionPrefix?: string;
+  dryRun: boolean;
+}): Promise<void> {
   const { package: depName, version: targetVersion, dryRun } = opts;
 
   console.log(`\n🔍 Searching for packages with dependency: ${depName}\n`);
@@ -114,7 +123,7 @@ async function cmdUpgrade(opts: { package: string; version?: string; dryRun: boo
     newVersion = targetVersion;
     console.log(`\n📦 Target version: ${newVersion}`);
   } else {
-    newVersion = await getLatestVersion(depName);
+    newVersion = await getLatestVersion(depName, opts.versionPrefix ?? '');
     console.log(`\n📦 Latest version: ${newVersion}`);
   }
 
@@ -157,6 +166,11 @@ yargs
           type: 'string',
           describe: 'Target version (defaults to latest from npm registry)',
           alias: 'v',
+        },
+        versionPrefix: {
+          type: 'string',
+          describe: 'Version prefix to use when getting latest version',
+          default: '^',
         },
         dryRun: {
           type: 'boolean',

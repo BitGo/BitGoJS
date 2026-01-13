@@ -1,4 +1,4 @@
-import { getNetworkFromChain } from '../names';
+import { UtxoCoinName } from '../names';
 
 import { OfflineVaultSignable } from './OfflineVaultSignable';
 import { DescriptorTransaction, getTransactionExplanationFromPsbt } from './descriptor';
@@ -19,12 +19,12 @@ export interface TransactionExplanation<TFee> {
   };
 }
 
-export function getTransactionExplanation(coin: string, tx: unknown): TransactionExplanation<string> {
+export function getTransactionExplanation(coinName: UtxoCoinName, tx: unknown): TransactionExplanation<string> {
   if (!OfflineVaultSignable.is(tx)) {
     throw new Error('not a signable transaction');
   }
   if (DescriptorTransaction.is(tx)) {
-    return getTransactionExplanationFromPsbt(tx, getNetworkFromChain(coin));
+    return getTransactionExplanationFromPsbt(tx, coinName);
   }
 
   throw new Error('unsupported transaction type');

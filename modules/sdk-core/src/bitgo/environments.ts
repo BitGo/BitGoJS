@@ -276,7 +276,7 @@ const mainnetBase: EnvironmentTemplate = {
       baseUrl: 'https://explorer.plume.org',
     },
     megaeth: {
-      baseUrl: 'https://carrot.megaeth.com/rpc', //TODO: add mainnet url when available
+      baseUrl: 'https://mainnet.megaeth.com/rpc',
     },
     hbarevm: {
       baseUrl: 'https://mainnet.mirrornode.hedera.com/api/v1',
@@ -442,7 +442,7 @@ const testnetBase: EnvironmentTemplate = {
       baseUrl: 'https://evm-testnet.flowscan.io',
     },
     megaeth: {
-      baseUrl: 'https://megaeth-testnet.blockscout.com',
+      baseUrl: 'https://carrot.megaeth.com/rpc',
     },
     plume: {
       baseUrl: 'https://testnet-explorer.plume.org',

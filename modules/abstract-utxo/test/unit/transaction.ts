@@ -16,7 +16,6 @@ import {
 import { AbstractUtxoCoin, getReplayProtectionAddresses, generateAddress, getReplayProtectionPubkeys } from '../../src';
 import { SdkBackend } from '../../src/transaction/types';
 
-import { hasWasmUtxoSupport } from './transaction/fixedScript/util';
 import {
   utxoCoins,
   shouldEqualJSON,
@@ -177,7 +176,7 @@ describe(`UTXO coin signTransaction`, async function () {
     const unspentSum = inputs.reduce((prev: bigint, curr) => prev + curr.value, BigInt(0));
     const outputs: testutil.Output[] = [{ scriptType: 'p2sh', value: unspentSum - BigInt(1000) }];
     const psbt = testutil.constructPsbt(inputs, outputs, coin.network, rootWalletKeys, 'unsigned', {
-      p2shP2pkKey: getReplayProtectionPubkeys(coin.network)[0],
+      p2shP2pkKey: getReplayProtectionPubkeys(coin.name)[0],
     });
 
     for (const v of [false, true]) {
@@ -320,7 +319,7 @@ function run<TNumber extends number | bigint = number>(
     }
 
     function getOutputAddress(rootWalletKeys: utxolib.bitgo.RootWalletKeys): string {
-      return generateAddress(coin.network, {
+      return generateAddress(coin.name, {
         keychains: rootWalletKeys.triple.map((k) => ({ pub: k.neutered().toBase58() })),
       });
     }
@@ -405,7 +404,7 @@ function run<TNumber extends number | bigint = number>(
         { address: getOutputAddress(getWalletKeys('test')), value: unspentSum - BigInt(1000) },
       ];
       const psbt = testutil.constructPsbt(inputs, outputs, coin.network, walletKeys, 'unsigned', {
-        p2shP2pkKey: getReplayProtectionPubkeys(coin.network)[0],
+        p2shP2pkKey: getReplayProtectionPubkeys(coin.name)[0],
       });
       utxolib.bitgo.addXpubsToPsbt(psbt, walletKeys);
       return psbt;
@@ -654,13 +653,13 @@ function runTestForCoin(coin: AbstractUtxoCoin) {
       }
 
       run(coin, [type, type], txFormat);
-      if (getReplayProtectionAddresses(coin.network).length) {
+      if (getReplayProtectionAddresses(coin.name).length) {
         run(coin, ['p2shP2pk', type], txFormat);
       }
 
-      if (txFormat === 'psbt' && hasWasmUtxoSupport(coin.network)) {
+      if (txFormat === 'psbt') {
         run(coin, [type, type], txFormat, { decodeWith: 'wasm-utxo' });
-        if (getReplayProtectionAddresses(coin.network).length) {
+        if (getReplayProtectionAddresses(coin.name).length) {
           run(coin, ['p2shP2pk', type], txFormat, { decodeWith: 'wasm-utxo' });
         }
       }

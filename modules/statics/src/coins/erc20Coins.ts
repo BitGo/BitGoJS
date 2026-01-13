@@ -14219,4 +14219,36 @@ export const erc20Coins = [
     '0x4d1c297d39c5c1277964d0e3f8aa901493664530',
     UnderlyingAsset['eth:puffer']
   ),
+  erc20(
+    'ad3c4a14-1a13-4c27-bdbf-214de70e25b8',
+    'eth:resolv',
+    'Resolv',
+    18,
+    '0x259338656198ec7a76c729514d3cb45dfbf768a1',
+    UnderlyingAsset['eth:resolv']
+  ),
+  erc20(
+    '05dc3d4e-8359-413f-b244-2c9fe5ecbf97',
+    'eth:spec',
+    'Spectral',
+    18,
+    '0xadf7c35560035944e805d98ff17d58cde2449389',
+    UnderlyingAsset['eth:spec']
+  ),
+  erc20(
+    'b68c736d-b8c8-4abc-8ef9-7720d0409045',
+    'eth:prompt',
+    'Wayfinder',
+    18,
+    '0x28d38df637db75533bd3f71426f3410a82041544',
+    UnderlyingAsset['eth:prompt']
+  ),
+  erc20(
+    'd54b246d-891c-4aa3-a041-c191d2e7b088',
+    'eth:yb',
+    'YieldBasis',
+    18,
+    '0x01791f726b4103694969820be083196cc7c045ff',
+    UnderlyingAsset['eth:yb']
+  ),
 ];

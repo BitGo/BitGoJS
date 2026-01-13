@@ -3553,4 +3553,24 @@ export const solTokens = [
     UnderlyingAsset['tsol:txusd'],
     SOL_TOKEN_FEATURES
   ),
+  solToken(
+    'bbbd68ee-57c6-4d48-a8a9-e49a6b8946fd',
+    'sol:prcl',
+    'Parcl',
+    6,
+    '4LLbsb5ReP3yEtYzmXewyGjcir5uXtKFURtaEUVC2AHs',
+    '4LLbsb5ReP3yEtYzmXewyGjcir5uXtKFURtaEUVC2AHs',
+    UnderlyingAsset['sol:prcl'],
+    SOL_TOKEN_FEATURES
+  ),
+  solToken(
+    '08a43fa6-bb7e-4bc0-b76a-144d8bab0086',
+    'sol:asp',
+    'Aspecta',
+    9,
+    'DJ7vji2BU7RjNgktPAKN4L42CiXTFHEt4Eeeyr5FiTmy',
+    'DJ7vji2BU7RjNgktPAKN4L42CiXTFHEt4Eeeyr5FiTmy',
+    UnderlyingAsset['sol:asp'],
+    SOL_TOKEN_FEATURES
+  ),
 ];

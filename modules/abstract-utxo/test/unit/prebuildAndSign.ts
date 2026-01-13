@@ -313,7 +313,7 @@ utxoCoins
         }
 
         run(coin, [inputScript, inputScript], 'psbt');
-        if (getReplayProtectionAddresses(coin.network).length) {
+        if (getReplayProtectionAddresses(coin.name).length) {
           run(coin, ['p2shP2pk', inputScript], 'psbt');
         }
       });

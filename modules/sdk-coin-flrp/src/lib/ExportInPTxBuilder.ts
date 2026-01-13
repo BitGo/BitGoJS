@@ -3,27 +3,19 @@ import { BuildTransactionError, NotSupported, TransactionType } from '@bitgo/sdk
 import { AtomicTransactionBuilder } from './atomicTransactionBuilder';
 import {
   pvmSerial,
-  avaxSerial,
   UnsignedTx,
-  BigIntPr,
-  Int,
-  Id,
   TransferableInput,
   TransferableOutput,
   TransferInput,
-  Address,
   utils as FlareUtils,
   TransferOutput,
-  OutputOwners,
   Credential,
-  Bytes,
+  pvm,
 } from '@flarenetwork/flarejs';
 import utils from './utils';
 import { DecodedUtxoObj, SECP256K1_Transfer_Output, FlareTransactionType, Tx } from './iface';
 
 export class ExportInPTxBuilder extends AtomicTransactionBuilder {
-  private _amount: bigint;
-
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
     // For Export FROM P-chain:
@@ -40,26 +32,12 @@ export class ExportInPTxBuilder extends AtomicTransactionBuilder {
     return TransactionType.Export;
   }
 
-  /**
-   * Amount is a bigint that specifies the quantity of the asset that this output owns. Must be positive.
-   * @param {bigint | string} amount The withdrawal amount
-   */
-  amount(value: bigint | string): this {
-    const valueBigInt = typeof value === 'string' ? BigInt(value) : value;
-    this.validateAmount(valueBigInt);
-    this._amount = valueBigInt;
-    return this;
-  }
-
   initBuilder(tx: Tx, rawBytes?: Buffer, parsedCredentials?: Credential[]): this {
     const exportTx = tx as pvmSerial.ExportTx;
 
     if (!this.verifyTxType(exportTx._type)) {
       throw new NotSupported('Transaction cannot be parsed or has an unsupported transaction type');
     }
-
-    // The exportedOutputs is a TransferableOutput array.
-    // It's expected to have only one output with the addresses of the sender.
     const outputs = exportTx.outs;
     if (outputs.length !== 1) {
       throw new BuildTransactionError('Transaction can have one external output');
@@ -73,47 +51,28 @@ export class ExportInPTxBuilder extends AtomicTransactionBuilder {
     }
 
     const outputOwners = outputTransfer.outputOwners;
-
-    // Set locktime from output
     this.transaction._locktime = outputOwners.locktime.value();
-
-    // Set threshold from output
     this.transaction._threshold = outputOwners.threshold.value();
-
-    // Convert output addresses to buffers and set as fromAddresses
     this.transaction._fromAddresses = outputOwners.addrs.map((addr) => Buffer.from(addr.toBytes()));
-
-    // Set external chain ID from the destination chain
     this._externalChainId = Buffer.from(exportTx.destination.toBytes());
-
-    // Set amount from exported output
-    this._amount = outputTransfer.amount();
-
-    // Recover UTXOs from base tx inputs
+    this.transaction._amount = outputTransfer.amount();
     this.transaction._utxos = this.recoverUtxos([...exportTx.baseTx.inputs]);
 
-    // Calculate and set fee from input/output difference
     const totalInputAmount = exportTx.baseTx.inputs.reduce((sum, input) => sum + input.amount(), BigInt(0));
     const changeOutputAmount = exportTx.baseTx.outputs.reduce((sum, out) => {
       const transferOut = out.output as TransferOutput;
       return sum + transferOut.amount();
     }, BigInt(0));
-    const fee = totalInputAmount - changeOutputAmount - this._amount;
+    const fee = totalInputAmount - changeOutputAmount - this.transaction._amount;
     this.transaction._fee.fee = fee.toString();
 
-    // Use credentials passed from TransactionBuilderFactory (properly extracted using codec)
     const credentials = parsedCredentials || [];
     const hasCredentials = credentials.length > 0;
 
-    // If there are credentials, store the original bytes to preserve exact format
     if (rawBytes && hasCredentials) {
       this.transaction._rawSignedBytes = rawBytes;
     }
 
-    // When credentials were extracted, use them directly to preserve existing signatures
-    // Otherwise, create empty credentials with dynamic ordering based on addressesIndex
-    // Match avaxp behavior: order depends on UTXO address positions
-    // Use centralized method for credential creation
     const txCredentials =
       credentials.length > 0
         ? credentials
@@ -121,14 +80,11 @@ export class ExportInPTxBuilder extends AtomicTransactionBuilder {
             const transferInput = input.input as TransferInput;
             const inputThreshold = transferInput.sigIndicies().length || this.transaction._threshold;
 
-            // Get UTXO for this input to determine addressesIndex
             const utxo = this.transaction._utxos[inputIdx];
 
-            // Use centralized method, but handle case where inputThreshold might differ
             if (inputThreshold === this.transaction._threshold) {
               return this.createCredentialForUtxo(utxo, this.transaction._threshold);
             } else {
-              // Fallback: use all zeros if threshold differs (shouldn't happen normally)
               const sigSlots: ReturnType<typeof utils.createNewSig>[] = [];
               for (let i = 0; i < inputThreshold; i++) {
                 sigSlots.push(utils.createNewSig(''));
@@ -137,17 +93,11 @@ export class ExportInPTxBuilder extends AtomicTransactionBuilder {
             }
           });
 
-    // Create AddressMaps based on signature slot order (matching credential order), not sorted addresses
-    // This matches the approach used in credentials: addressesIndex determines signature order
-    // AddressMaps should map addresses to signature slots in the same order as credentials
-    // Use centralized method for AddressMap creation
     const addressMaps = txCredentials.map((credential, credIdx) =>
       this.createAddressMapForUtxo(this.transaction._utxos[credIdx], this.transaction._threshold)
     );
 
-    // Always create a new UnsignedTx with properly structured credentials
     const unsignedTx = new UnsignedTx(exportTx, [], new FlareUtils.AddressMaps(addressMaps), txCredentials);
-
     this.transaction.setTransaction(unsignedTx);
     return this;
   }
@@ -164,194 +114,60 @@ export class ExportInPTxBuilder extends AtomicTransactionBuilder {
    * Build the export transaction for P-chain
    * @protected
    */
-  protected buildFlareTransaction(): void {
-    // if tx has credentials, tx shouldn't change
+  protected async buildFlareTransaction(): Promise<void> {
     if (this.transaction.hasCredentials) return;
 
-    const { inputs, changeOutputs, credentials, totalAmount } = this.createExportInputs();
-
-    // Calculate fee from transaction fee settings
-    const fee = BigInt(this.transaction.fee.fee);
-    const targetAmount = this._amount + fee;
-
-    // Verify we have enough funds
-    if (totalAmount < targetAmount) {
-      throw new BuildTransactionError(`Insufficient funds: have ${totalAmount}, need ${targetAmount}`);
+    const feeState = this.transaction._feeState;
+    if (!feeState) {
+      throw new BuildTransactionError('Fee state is required');
+    }
+    if (!this.transaction._context) {
+      throw new BuildTransactionError('context is required');
+    }
+    if (this.transaction._amount === undefined) {
+      throw new BuildTransactionError('amount is required');
+    }
+    if (!this.transaction._utxos || this.transaction._utxos.length === 0) {
+      throw new BuildTransactionError('UTXOs are required');
     }
 
-    // Create the BaseTx for the P-chain export transaction
-    const baseTx = new avaxSerial.BaseTx(
-      new Int(this.transaction._networkID),
-      new Id(Buffer.from(this.transaction._blockchainID, 'hex')),
-      changeOutputs, // change outputs
-      inputs, // inputs
-      new Bytes(new Uint8Array(0)) // empty memo
-    );
+    // Convert decoded UTXOs to native FlareJS Utxo objects
+    const assetIdCb58 = utils.cb58Encode(Buffer.from(this.transaction._assetId, 'hex'));
+    const nativeUtxos = utils.decodedToUtxos(this.transaction._utxos, assetIdCb58);
 
-    // Create the P-chain export transaction using pvmSerial.ExportTx
-    const exportTx = new pvmSerial.ExportTx(
-      baseTx,
-      new Id(this._externalChainId), // destinationChain (C-chain)
-      this.exportedOutputs() // exportedOutputs
-    );
+    const totalUtxoAmount = nativeUtxos.reduce((sum, utxo) => {
+      const output = utxo.output as TransferOutput;
+      return sum + output.amount();
+    }, BigInt(0));
 
-    // Create AddressMaps based on signature slot order (matching credential order), not sorted addresses
-    // This matches the approach used in credentials: addressesIndex determines signature order
-    // AddressMaps should map addresses to signature slots in the same order as credentials
-    // Use centralized method for AddressMap creation
-    const addressMaps = credentials.map((credential, credIdx) =>
-      this.createAddressMapForUtxo(this.transaction._utxos[credIdx], this.transaction._threshold)
-    );
-
-    // Create unsigned transaction
-    const unsignedTx = new UnsignedTx(
-      exportTx,
-      [], // Empty UTXOs array
-      new FlareUtils.AddressMaps(addressMaps),
-      credentials
-    );
-
-    this.transaction.setTransaction(unsignedTx);
-  }
-
-  /**
-   * Create inputs from UTXOs for P-chain export
-   * Only selects enough UTXOs to cover the target amount (amount + fee)
-   * @returns inputs, change outputs, credentials, and total amount
-   */
-  protected createExportInputs(): {
-    inputs: TransferableInput[];
-    changeOutputs: TransferableOutput[];
-    credentials: Credential[];
-    totalAmount: bigint;
-  } {
-    const sender = [...this.transaction._fromAddresses];
-    if (this.recoverSigner) {
-      // switch first and last signer
-      const tmp = sender.pop();
-      sender.push(sender[0]);
-      if (tmp) {
-        sender[0] = tmp;
-      }
-    }
-
-    const fee = BigInt(this.transaction.fee.fee);
-    const targetAmount = this._amount + fee;
-
-    let totalAmount = BigInt(0);
-    const inputs: TransferableInput[] = [];
-    const credentials: Credential[] = [];
-
-    // Change output threshold is always 1 (matching Flare protocol behavior)
-    // This allows easier spending of change while maintaining security for export outputs
-    const changeOutputThreshold = 1;
-
-    // Only consume enough UTXOs to cover the target amount (in array order)
-    // Inputs will be sorted after selection
-    for (const utxo of this.transaction._utxos) {
-      // Stop if we already have enough
-      if (totalAmount >= targetAmount) {
-        break;
-      }
-
-      const amount = BigInt(utxo.amount);
-      totalAmount += amount;
-
-      // Use the UTXO's own threshold for signature indices
-      const utxoThreshold = utxo.threshold || this.transaction._threshold;
-
-      // Create signature indices for the UTXO's threshold
-      const sigIndices: number[] = [];
-      for (let i = 0; i < utxoThreshold; i++) {
-        sigIndices.push(i);
-      }
-
-      // Use fromNative to create TransferableInput
-      const txIdCb58 = utxo.txid; // Already cb58 encoded
-      const assetIdCb58 = utils.cb58Encode(Buffer.from(this.transaction._assetId, 'hex'));
-
-      const transferableInput = TransferableInput.fromNative(
-        txIdCb58,
-        Number(utxo.outputidx),
-        assetIdCb58,
-        amount,
-        sigIndices
+    if (totalUtxoAmount < this.transaction._amount) {
+      throw new BuildTransactionError(
+        `Insufficient UTXO balance: have ${totalUtxoAmount.toString()} nFLR, need at least ${this.transaction._amount.toString()} nFLR (plus fee)`
       );
-
-      inputs.push(transferableInput);
-
-      // Create credential with empty signatures for slot identification
-      // Match avaxp behavior: dynamic ordering based on addressesIndex from UTXO
-      // Use centralized method for credential creation
-      // Note: Use utxoThreshold if it differs from transaction threshold (should be rare)
-      const thresholdToUse =
-        utxoThreshold === this.transaction._threshold ? this.transaction._threshold : utxoThreshold;
-      if (thresholdToUse === this.transaction._threshold) {
-        credentials.push(this.createCredentialForUtxo(utxo, thresholdToUse));
-      } else {
-        // Fallback: use all zeros if threshold differs (shouldn't happen normally)
-        const emptySignatures = sigIndices.map(() => utils.createNewSig(''));
-        credentials.push(new Credential(emptySignatures));
-      }
     }
 
-    // Create change output if there is remaining amount after export and fee
-    const changeOutputs: TransferableOutput[] = [];
-    const changeAmount = totalAmount - this._amount - fee;
-
-    if (changeAmount > BigInt(0)) {
-      const assetIdBytes = new Uint8Array(Buffer.from(this.transaction._assetId, 'hex'));
-
-      // Create OutputOwners with the P-chain addresses (sorted by byte value as per AVAX protocol)
-      // Use threshold=1 for change outputs (matching Flare protocol behavior)
-      const sortedAddresses = [...this.transaction._fromAddresses].sort((a, b) => Buffer.compare(a, b));
-      const outputOwners = new OutputOwners(
-        new BigIntPr(this.transaction._locktime),
-        new Int(changeOutputThreshold),
-        sortedAddresses.map((addr) => new Address(addr))
-      );
-
-      const transferOutput = new TransferOutput(new BigIntPr(changeAmount), outputOwners);
-      const changeOutput = new TransferableOutput(new Id(assetIdBytes), transferOutput);
-      changeOutputs.push(changeOutput);
-    }
-
-    // Sort inputs lexicographically by txid (Avalanche protocol requirement)
-    const sortedInputsWithCredentials = inputs
-      .map((input, i) => ({ input, credential: credentials[i] }))
-      .sort((a, b) => {
-        const aTxId = Buffer.from(a.input.utxoID.txID.toBytes());
-        const bTxId = Buffer.from(b.input.utxoID.txID.toBytes());
-        return Buffer.compare(aTxId, bTxId);
-      });
-
-    return {
-      inputs: sortedInputsWithCredentials.map((x) => x.input),
-      changeOutputs,
-      credentials: sortedInputsWithCredentials.map((x) => x.credential),
-      totalAmount,
-    };
-  }
-
-  /**
-   * Create the ExportedOutputs where the recipient address are the sender.
-   * Later an importTx should complete the operations signing with the same keys.
-   * @protected
-   */
-  protected exportedOutputs(): TransferableOutput[] {
-    const assetIdBytes = new Uint8Array(Buffer.from(this.transaction._assetId, 'hex'));
-
-    // Create OutputOwners with sorted addresses
-    const sortedAddresses = [...this.transaction._fromAddresses].sort((a, b) => Buffer.compare(a, b));
-    const outputOwners = new OutputOwners(
-      new BigIntPr(this.transaction._locktime),
-      new Int(this.transaction._threshold),
-      sortedAddresses.map((addr) => new Address(addr))
+    const assetId = utils.flareIdString(this.transaction._assetId).toString();
+    const fromAddresses = this.transaction._fromAddresses.map((addr) => Buffer.from(addr));
+    const transferableOutput = TransferableOutput.fromNative(
+      assetId,
+      this.transaction._amount,
+      fromAddresses,
+      this.transaction._locktime,
+      this.transaction._threshold
     );
 
-    const output = new TransferOutput(new BigIntPr(this._amount), outputOwners);
+    const exportTx = pvm.e.newExportTx(
+      {
+        feeState,
+        fromAddressesBytes: this.transaction._fromAddresses.map((addr) => Buffer.from(addr)),
+        destinationChainId: this.transaction._network.cChainBlockchainID,
+        outputs: [transferableOutput],
+        utxos: nativeUtxos,
+      },
+      this.transaction._context
+    );
 
-    return [new TransferableOutput(new Id(assetIdBytes), output)];
+    this.transaction.setTransaction(exportTx);
   }
 
   /**
@@ -362,7 +178,6 @@ export class ExportInPTxBuilder extends AtomicTransactionBuilder {
   private recoverUtxos(inputs: TransferableInput[]): DecodedUtxoObj[] {
     return inputs.map((input) => {
       const utxoId = input.utxoID;
-      // Get the threshold from the input's sigIndices length
       const transferInput = input.input as TransferInput;
       const inputThreshold = transferInput.sigIndicies().length;
       return {

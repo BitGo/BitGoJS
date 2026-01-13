@@ -13,7 +13,7 @@ export interface UtxoWalletData extends WalletData {
 }
 
 export function isUtxoWalletData(obj: WalletData): obj is UtxoWalletData {
-  return isUtxoCoinName(obj.coin);
+  return typeof obj.coin === 'string' && isUtxoCoinName(obj.coin);
 }
 
 export interface UtxoWallet extends Wallet {

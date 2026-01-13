@@ -965,8 +965,7 @@ Wallet.prototype.signTransaction = function (params, callback) {
     const psbtHex = params.psbt || params.transactionHex;
     return tryPromise(() => signPsbtRequest({ psbt: psbtHex, keychain: params.keychain }))
       .then(function (result) {
-        // Return result with transactionHex containing the signed PSBT for consistency
-        return { tx: result.psbt, transactionHex: result.psbt };
+        return { tx: result.psbt };
       })
       .then(callback)
       .catch(callback);
