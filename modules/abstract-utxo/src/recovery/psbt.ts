@@ -2,7 +2,7 @@ import * as utxolib from '@bitgo/utxo-lib';
 import { Dimensions } from '@bitgo/unspents';
 import { CoinName, fixedScriptWallet, utxolibCompat, address as wasmAddress } from '@bitgo/wasm-utxo';
 
-import { getNetworkFromCoinName } from '../names';
+import { getNetworkFromCoinName, UtxoCoinName } from '../names';
 
 type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
 type WalletUnspent<TNumber extends number | bigint> = utxolib.bitgo.WalletUnspent<TNumber>;
@@ -28,12 +28,13 @@ export function isTaprootChain(chain: ChainCode): boolean {
 }
 
 /**
- * Convert utxolib Network to wasm-utxo network name
+ * Convert coin name to wasm-utxo network name
  */
-export function toNetworkName(network: utxolib.Network): utxolibCompat.UtxolibName {
+export function toNetworkName(coinName: UtxoCoinName): utxolibCompat.UtxolibName {
+  const network = getNetworkFromCoinName(coinName);
   const networkName = utxolib.getNetworkName(network);
   if (!networkName) {
-    throw new Error(`Invalid network`);
+    throw new Error(`Invalid coinName: ${coinName}`);
   }
   return networkName;
 }

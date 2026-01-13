@@ -1,6 +1,8 @@
 import * as utxolib from '@bitgo/utxo-lib';
 import { fixedScriptWallet, utxolibCompat } from '@bitgo/wasm-utxo';
 
+import { getNetworkFromCoinName, UtxoCoinName } from '../names';
+
 import { SdkBackend } from './types';
 
 type BufferEncoding = 'hex' | 'base64';
@@ -20,41 +22,43 @@ export function stringToBufferTryFormats(input: string, formats: BufferEncoding[
   throw new Error('input must be a valid hex or base64 string');
 }
 
-function toNetworkName(network: utxolib.Network): utxolibCompat.UtxolibName {
+function toNetworkName(coinName: UtxoCoinName): utxolibCompat.UtxolibName {
+  const network = getNetworkFromCoinName(coinName);
   const networkName = utxolib.getNetworkName(network);
   if (!networkName) {
-    throw new Error(`Invalid network: ${network}`);
+    throw new Error(`Invalid coinName: ${coinName}`);
   }
   return networkName;
 }
 
 export function decodePsbtWith(
   psbt: string | Buffer,
-  network: utxolib.Network,
+  coinName: UtxoCoinName,
   backend: 'utxolib'
 ): utxolib.bitgo.UtxoPsbt;
 export function decodePsbtWith(
   psbt: string | Buffer,
-  network: utxolib.Network,
+  coinName: UtxoCoinName,
   backend: 'wasm-utxo'
 ): fixedScriptWallet.BitGoPsbt;
 export function decodePsbtWith(
   psbt: string | Buffer,
-  network: utxolib.Network,
+  coinName: UtxoCoinName,
   backend: SdkBackend
 ): utxolib.bitgo.UtxoPsbt | fixedScriptWallet.BitGoPsbt;
 export function decodePsbtWith(
   psbt: string | Buffer,
-  network: utxolib.Network,
+  coinName: UtxoCoinName,
   backend: SdkBackend
 ): utxolib.bitgo.UtxoPsbt | fixedScriptWallet.BitGoPsbt {
   if (typeof psbt === 'string') {
     psbt = Buffer.from(psbt, 'hex');
   }
   if (backend === 'utxolib') {
+    const network = getNetworkFromCoinName(coinName);
     return utxolib.bitgo.createPsbtFromBuffer(psbt, network);
   } else {
-    return fixedScriptWallet.BitGoPsbt.fromBytes(psbt, toNetworkName(network));
+    return fixedScriptWallet.BitGoPsbt.fromBytes(psbt, toNetworkName(coinName));
   }
 }
 

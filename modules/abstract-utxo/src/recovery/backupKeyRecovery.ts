@@ -18,6 +18,7 @@ import { signAndVerifyPsbt } from '../transaction/fixedScript/signTransaction';
 import { generateAddressWithChainAndIndex } from '../address';
 import { encodeTransaction } from '../transaction/decode';
 import { getReplayProtectionPubkeys } from '../transaction/fixedScript/replayProtection';
+import { isTestnetCoin, UtxoCoinName } from '../names';
 
 import { forCoin, RecoveryProvider } from './RecoveryProvider';
 import { MempoolApi } from './mempoolApi';
@@ -110,7 +111,7 @@ export interface RecoverParams {
 /**
  * Generate an address and format it for API queries
  * @param coin - The coin instance
- * @param network - The network to use
+ * @param coinName - The coin name
  * @param walletKeys - The wallet keys
  * @param chain - The chain code
  * @param addrIndex - The address index
@@ -118,13 +119,13 @@ export interface RecoverParams {
  */
 function getFormattedAddress(
   coin: AbstractUtxoCoin,
-  network: utxolib.Network,
+  coinName: UtxoCoinName,
   walletKeys: RootWalletKeys,
   chain: ChainCode,
   addrIndex: number
 ): string {
   const format = coin.getChain() === 'bch' || coin.getChain() === 'bcha' ? 'cashaddr' : undefined;
-  const address = generateAddressWithChainAndIndex(network, walletKeys, chain, addrIndex, format);
+  const address = generateAddressWithChainAndIndex(coinName, walletKeys, chain, addrIndex, format);
 
   // Blockchair uses cashaddr format when querying the API for address information. Strip the prefix for BCH/BCHA.
   return format === 'cashaddr' ? address.split(':')[1] : address;
@@ -154,7 +155,7 @@ async function queryBlockchainUnspentsPath(
   }
 
   async function gatherUnspents(addrIndex: number) {
-    const formattedAddress = getFormattedAddress(coin, coin.network, walletKeys, chain, addrIndex);
+    const formattedAddress = getFormattedAddress(coin, coin.name, walletKeys, chain, addrIndex);
     const addrInfo = await recoveryProvider.getAddressInfo(formattedAddress);
     // we use txCount here because it implies usage - having tx'es means the addr was generated and used
     if (addrInfo.txCount === 0) {
@@ -370,7 +371,7 @@ export async function backupKeyRecovery(
   }
 
   // Use wasm-utxo for testnet coins only, utxolib for mainnet
-  const backend: PsbtBackend = utxolib.isTestnet(coin.network) ? 'wasm-utxo' : 'utxolib';
+  const backend: PsbtBackend = isTestnetCoin(coin.name) ? 'wasm-utxo' : 'utxolib';
   let psbt = createBackupKeyRecoveryPsbt(
     coin.getChain(),
     walletKeys,
@@ -394,7 +395,7 @@ export async function backupKeyRecovery(
   }
 
   const rootWalletKeysWasm = fixedScriptWallet.RootWalletKeys.from(walletKeys);
-  const replayProtection = { publicKeys: getReplayProtectionPubkeys(coin.network) };
+  const replayProtection = { publicKeys: getReplayProtectionPubkeys(coin.name) };
 
   // Sign with user key first
   psbt = signAndVerifyPsbt(psbt, walletKeys.user, rootWalletKeysWasm, replayProtection);

@@ -9,6 +9,7 @@ import { getDescriptorMapFromWallet, getPolicyForEnv } from '../../descriptor';
 import { IDescriptorWallet } from '../../descriptor/descriptorWallet';
 import { fromExtendedAddressFormatToScript, toExtendedAddressFormat } from '../recipient';
 import { outputDifferencesWithExpected, OutputDifferenceWithExpected } from '../outputDifference';
+import { UtxoCoinName } from '../../names';
 
 type ParsedOutput = coreDescriptors.ParsedOutput;
 
@@ -16,11 +17,11 @@ export type RecipientOutput = Omit<ParsedOutput, 'value'> & {
   value: bigint | 'max';
 };
 
-function toRecipientOutput(recipient: ITransactionRecipient, network: utxolib.Network): RecipientOutput {
+function toRecipientOutput(recipient: ITransactionRecipient, coinName: UtxoCoinName): RecipientOutput {
   return {
     address: recipient.address,
     value: recipient.amount === 'max' ? 'max' : BigInt(recipient.amount),
-    script: fromExtendedAddressFormatToScript(recipient.address, network),
+    script: fromExtendedAddressFormatToScript(recipient.address, coinName),
   };
 }
 
@@ -49,15 +50,15 @@ function sumValues(arr: { value: bigint }[]): bigint {
   return arr.reduce((sum, e) => sum + e.value, BigInt(0));
 }
 
-function toBaseOutputs(outputs: ParsedOutput[], network: utxolib.Network): BaseOutput<bigint>[];
-function toBaseOutputs(outputs: RecipientOutput[], network: utxolib.Network): BaseOutput<bigint | 'max'>[];
+function toBaseOutputs(outputs: ParsedOutput[], coinName: UtxoCoinName): BaseOutput<bigint>[];
+function toBaseOutputs(outputs: RecipientOutput[], coinName: UtxoCoinName): BaseOutput<bigint | 'max'>[];
 function toBaseOutputs(
   outputs: (ParsedOutput | RecipientOutput)[],
-  network: utxolib.Network
+  coinName: UtxoCoinName
 ): BaseOutput<bigint | 'max'>[] {
   return outputs.map(
     (o): BaseOutput<bigint | 'max'> => ({
-      address: toExtendedAddressFormat(o.script, network),
+      address: toExtendedAddressFormat(o.script, coinName),
       amount: o.value === 'max' ? 'max' : BigInt(o.value),
       external: o.scriptId === undefined,
     })
@@ -68,18 +69,18 @@ export type ParsedOutputsBigInt = BaseParsedTransactionOutputs<bigint, BaseOutpu
 
 function toBaseParsedTransactionOutputs(
   { outputs, changeOutputs, explicitOutputs, implicitOutputs, missingOutputs }: ParsedOutputs,
-  network: utxolib.Network
+  coinName: UtxoCoinName
 ): ParsedOutputsBigInt {
   const explicitExternalOutputs = explicitOutputs.filter((o) => o.scriptId === undefined);
   const implicitExternalOutputs = implicitOutputs.filter((o) => o.scriptId === undefined);
   return {
-    outputs: toBaseOutputs(outputs, network),
-    changeOutputs: toBaseOutputs(changeOutputs, network),
-    explicitExternalOutputs: toBaseOutputs(explicitExternalOutputs, network),
+    outputs: toBaseOutputs(outputs, coinName),
+    changeOutputs: toBaseOutputs(changeOutputs, coinName),
+    explicitExternalOutputs: toBaseOutputs(explicitExternalOutputs, coinName),
     explicitExternalSpendAmount: sumValues(explicitExternalOutputs),
-    implicitExternalOutputs: toBaseOutputs(implicitExternalOutputs, network),
+    implicitExternalOutputs: toBaseOutputs(implicitExternalOutputs, coinName),
     implicitExternalSpendAmount: sumValues(implicitExternalOutputs),
-    missingOutputs: toBaseOutputs(missingOutputs, network),
+    missingOutputs: toBaseOutputs(missingOutputs, coinName),
   };
 }
 
@@ -87,15 +88,15 @@ export function toBaseParsedTransactionOutputsFromPsbt(
   psbt: utxolib.bitgo.UtxoPsbt,
   descriptorMap: coreDescriptors.DescriptorMap,
   recipients: ITransactionRecipient[],
-  network: utxolib.Network
+  coinName: UtxoCoinName
 ): ParsedOutputsBigInt {
   return toBaseParsedTransactionOutputs(
     parseOutputsWithPsbt(
       psbt,
       descriptorMap,
-      recipients.map((r) => toRecipientOutput(r, psbt.network))
+      recipients.map((r) => toRecipientOutput(r, coinName))
     ),
-    network
+    coinName
   );
 }
 
@@ -130,7 +131,7 @@ export function parse(
   const walletKeys = toBip32Triple(keychains);
   const descriptorMap = getDescriptorMapFromWallet(wallet, walletKeys, getPolicyForEnv(params.wallet.bitgo.env));
   return {
-    ...toBaseParsedTransactionOutputsFromPsbt(psbt, descriptorMap, recipients, psbt.network),
+    ...toBaseParsedTransactionOutputsFromPsbt(psbt, descriptorMap, recipients, coin.name),
     keychains,
     keySignatures: getKeySignatures(wallet) ?? {},
     customChange: undefined,

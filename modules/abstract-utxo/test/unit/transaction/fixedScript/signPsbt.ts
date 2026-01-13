@@ -11,6 +11,7 @@ import {
   signPsbtWithMusig2ParticipantWasm,
 } from '../../../../src/transaction/fixedScript/signPsbtWasm';
 import { SdkBackend } from '../../../../src/transaction/types';
+import { getCoinName } from '../../../../src/names';
 
 function getMockCoinUtxolib(keys: utxolib.bitgo.RootWalletKeys): Musig2Participant<utxolib.bitgo.UtxoPsbt> {
   return {
@@ -101,7 +102,8 @@ function describeSignPsbtWithMusig2Participant(
   describe(`${acidTest.name} ${decodeWith}`, function () {
     it('should sign unsigned psbt to halfsigned', async function () {
       // Create unsigned PSBT
-      const psbt = decodePsbtWith(acidTest.createPsbt().toBuffer(), acidTest.network, decodeWith);
+      const coinName = getCoinName(acidTest.network);
+      const psbt = decodePsbtWith(acidTest.createPsbt().toBuffer(), coinName, decodeWith);
 
       let result;
       if (decodeWith === 'utxolib') {

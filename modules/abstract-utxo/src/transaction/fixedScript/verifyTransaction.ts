@@ -174,7 +174,7 @@ export async function verifyTransaction<TNumber extends bigint | number>(
     throw new Error(`txPrebuild.txHex not set`);
   }
   const inputs = isPsbt
-    ? getPsbtTxInputs(txPrebuild.txHex, coin.network).map((v) => ({
+    ? getPsbtTxInputs(txPrebuild.txHex, coin.name).map((v) => ({
         ...v,
         value: utxolib.bitgo.toTNumber(v.value, coin.amountType),
       }))

@@ -119,7 +119,7 @@ function describeParseTransactionWith(
       let explanation: TransactionExplanation;
       if (txFormat === 'psbt') {
         if (backend === 'utxolib') {
-          explanation = explainPsbt(psbt, { pubs: acidTest.rootWalletKeys }, acidTest.network, {
+          explanation = explainPsbt(psbt, { pubs: acidTest.rootWalletKeys }, coinName, {
             strict: true,
           });
         } else if (backend === 'wasm') {
@@ -143,7 +143,7 @@ function describeParseTransactionWith(
         const pubs = acidTest.rootWalletKeys.triple.map((k) => k.neutered().toBase58());
         // Extract change info from PSBT to pass to explainLegacyTx
         const changeInfo = getChangeInfoFromPsbt(psbt);
-        explanation = explainLegacyTx(tx, { pubs, changeInfo }, acidTest.network);
+        explanation = explainLegacyTx(tx, { pubs, changeInfo }, coinName);
       } else {
         throw new Error(`Invalid txFormat: ${txFormat}`);
       }
