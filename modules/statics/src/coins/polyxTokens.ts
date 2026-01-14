@@ -14,6 +14,16 @@ export const polyxTokens = [
     UnderlyingAsset['polyx:0xa0ce6bc4c60981e08eca6504656c99e6'],
     POLYX_TOKEN_FEATURES
   ),
+  polyxToken(
+    '1b28bd56-a704-47bb-abf4-f981905d2b30',
+    'polyx:TEST-TOKEN-1',
+    'Test Token 1',
+    6,
+    '',
+    '0xc444da2d0c13837c95ada4cc98604ca4',
+    UnderlyingAsset['polyx:TEST-TOKEN-1'],
+    POLYX_TOKEN_FEATURES
+  ),
   tpolyxToken(
     'a63b4f8d-84d6-45d3-bc67-625239e40811',
     'tpolyx:nvbitgot',

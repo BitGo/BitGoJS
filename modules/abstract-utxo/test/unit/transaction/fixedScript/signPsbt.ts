@@ -5,14 +5,13 @@ import { BIP32, fixedScriptWallet } from '@bitgo/wasm-utxo';
 
 import { decodePsbtWith } from '../../../../src/transaction/decode';
 import { Musig2Participant } from '../../../../src/transaction/fixedScript/musig2';
-import { signPsbtWithMusig2Participant } from '../../../../src/transaction/fixedScript/signPsbt';
+import { signPsbtWithMusig2ParticipantUtxolib } from '../../../../src/transaction/fixedScript/signPsbtUtxolib';
 import {
   ReplayProtectionKeys,
   signPsbtWithMusig2ParticipantWasm,
 } from '../../../../src/transaction/fixedScript/signPsbtWasm';
 import { SdkBackend } from '../../../../src/transaction/types';
-
-import { hasWasmUtxoSupport } from './util';
+import { getCoinName } from '../../../../src/names';
 
 function getMockCoinUtxolib(keys: utxolib.bitgo.RootWalletKeys): Musig2Participant<utxolib.bitgo.UtxoPsbt> {
   return {
@@ -103,17 +102,17 @@ function describeSignPsbtWithMusig2Participant(
   describe(`${acidTest.name} ${decodeWith}`, function () {
     it('should sign unsigned psbt to halfsigned', async function () {
       // Create unsigned PSBT
-      const psbt = decodePsbtWith(acidTest.createPsbt().toBuffer(), acidTest.network, decodeWith);
+      const coinName = getCoinName(acidTest.network);
+      const psbt = decodePsbtWith(acidTest.createPsbt().toBuffer(), coinName, decodeWith);
 
       let result;
       if (decodeWith === 'utxolib') {
         assert(psbt instanceof utxolib.bitgo.UtxoPsbt, 'psbt should be a UtxoPsbt');
-        result = await signPsbtWithMusig2Participant(
+        result = await signPsbtWithMusig2ParticipantUtxolib(
           getMockCoinUtxolib(acidTest.rootWalletKeys),
           psbt,
           acidTest.rootWalletKeys.user,
           {
-            isLastSignature: false,
             signingStep: undefined,
             walletId: 'test-wallet-id',
           }
@@ -133,7 +132,6 @@ function describeSignPsbtWithMusig2Participant(
           fixedScriptWallet.RootWalletKeys.from(acidTest.rootWalletKeys),
           {
             replayProtection,
-            isLastSignature: false,
             signingStep: undefined,
             walletId: 'test-wallet-id',
           }
@@ -147,7 +145,7 @@ function describeSignPsbtWithMusig2Participant(
   });
 }
 
-describe('signPsbtWithMusig2Participant', function () {
+describe('signPsbtWithMusig2ParticipantUtxolib', function () {
   // Create test suite with includeP2trMusig2ScriptPath set to false
   // p2trMusig2 script path inputs are signed by user and backup keys,
   // which is not the typical signing pattern and makes testing more complex
@@ -155,8 +153,6 @@ describe('signPsbtWithMusig2Participant', function () {
     .filter((test) => test.signStage === 'unsigned')
     .forEach((test) => {
       describeSignPsbtWithMusig2Participant(test, { decodeWith: 'utxolib' });
-      if (hasWasmUtxoSupport(test.network)) {
-        describeSignPsbtWithMusig2Participant(test, { decodeWith: 'wasm-utxo' });
-      }
+      describeSignPsbtWithMusig2Participant(test, { decodeWith: 'wasm-utxo' });
     });
 });

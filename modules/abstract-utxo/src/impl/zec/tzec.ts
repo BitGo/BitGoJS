@@ -1,11 +1,14 @@
 import { BitGoBase } from '@bitgo/sdk-core';
-import * as utxolib from '@bitgo/utxo-lib';
+
+import { UtxoCoinName } from '../../names';
 
 import { Zec } from './zec';
 
 export class Tzec extends Zec {
+  readonly name: UtxoCoinName = 'tzec';
+
   constructor(bitgo: BitGoBase) {
-    super(bitgo, utxolib.networks.zcashTest);
+    super(bitgo);
   }
 
   static createInstance(bitgo: BitGoBase): Tzec {

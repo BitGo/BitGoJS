@@ -142,7 +142,7 @@ const DOGE_FEATURES = [
 ];
 const DASH_FEATURES = [...UtxoCoin.DEFAULT_FEATURES, CoinFeature.CUSTODY_BITGO_FRANKFURT, CoinFeature.BULK_TRANSACTION];
 const TDASH_FEATURES = [...UtxoCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION];
-const ZEC_FEATURES = [...UtxoCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION];
+const ZEC_FEATURES = [...UtxoCoin.DEFAULT_FEATURES, CoinFeature.BULK_TRANSACTION, CoinFeature.CUSTODY_BITGO_FRANKFURT];
 export const utxoCoins: Readonly<BaseCoin>[] = [
   utxo(
     '8d6e08d5-399f-414f-8430-6ceca1798cbf',

@@ -115,6 +115,7 @@ import {
   UnspentsOptions,
   UpdateAddressOptions,
   UpdateBuildDefaultOptions,
+  UpdateWalletOptions,
   WalletCoinSpecific,
   WalletData,
   WalletEcdsaChallenges,
@@ -704,6 +705,12 @@ export class Wallet implements IWallet {
     params: ConsolidateUnspentsOptions | FanoutUnspentsOptions = {},
     option = ManageUnspentsOptions.BUILD_SIGN_SEND
   ): Promise<unknown> {
+    if (this._wallet.type === 'custodial' && routeName === 'consolidate') {
+      return this.initiateTransaction({ ...params, type: 'consolidate' });
+    } else if (this._wallet.type === 'custodial' && routeName === 'fanout') {
+      throw new Error('Fanout is not supported for custodial wallets');
+    }
+
     common.validateParams(params, [], ['walletPassphrase', 'xprv']);
 
     const reqId = new RequestTracer();
@@ -778,8 +785,13 @@ export class Wallet implements IWallet {
 
     const response = await Promise.all(
       txPrebuilds.map(async (txPrebuild) => {
-        const signedTransaction = await this.signTransaction({ ...transactionParams, txPrebuild });
-        const finalTxParams = _.extend({}, signedTransaction, selectParams, { type: routeName });
+        const signedTransaction = await this.signTransaction({
+          ...transactionParams,
+          txPrebuild,
+        });
+        const finalTxParams = _.extend({}, signedTransaction, selectParams, {
+          type: routeName,
+        });
         this.bitgo.setRequestTracer(reqId);
         return this.sendTransaction(finalTxParams, reqId);
       })
@@ -795,9 +807,14 @@ export class Wallet implements IWallet {
    * @param params.modify - modify an existing reservation
    * @param params.delete - delete an existing reservation
    */
-  async manageUnspentReservations(
-    params: ManageUnspentReservationOptions
-  ): Promise<{ unspents: { id: string; walletId: string; expireTime: string; userId?: string }[] }> {
+  async manageUnspentReservations(params: ManageUnspentReservationOptions): Promise<{
+    unspents: {
+      id: string;
+      walletId: string;
+      expireTime: string;
+      userId?: string;
+    }[];
+  }> {
     const filteredParams = _.pick(params, ['create', 'modify', 'delete']);
     this.bitgo.setRequestTracer(new RequestTracer());
     // The URL cannot contain the coinName, so we remove it from the URL
@@ -1446,14 +1463,29 @@ export class Wallet implements IWallet {
 
   async updateWalletBuildDefaults(params: UpdateBuildDefaultOptions): Promise<unknown> {
     common.validateParams(params, [], ['minFeeRate', 'changeAddressType', 'txFormat']);
+    return this.updateWallet({
+      buildDefaults: {
+        minFeeRate: params.minFeeRate,
+        changeAddressType: params.changeAddressType,
+        txFormat: params.txFormat,
+      },
+    });
+  }
+
+  async updateWallet(params: UpdateWalletOptions): Promise<unknown> {
+    const filteredParams = _.pick(params, ['coinSpecific', 'buildDefaults', 'label']);
+    const { coinSpecific, ...rest } = filteredParams;
     return this.bitgo
       .put(this.url())
       .send({
-        buildDefaults: {
-          minFeeRate: params.minFeeRate,
-          changeAddressType: params.changeAddressType,
-          txFormat: params.txFormat,
-        },
+        ...rest,
+        ...(coinSpecific
+          ? {
+              coinSpecific: {
+                [this.baseCoin.getChain()]: coinSpecific,
+              },
+            }
+          : {}),
       })
       .result();
   }
@@ -1768,7 +1800,10 @@ export class Wallet implements IWallet {
         keychain.prv = userPrv;
         const eckey = makeRandomKey();
         const secret = getSharedSecret(eckey, Buffer.from(pubkey, 'hex')).toString('hex');
-        const newEncryptedPrv = this.bitgo.encrypt({ password: secret, input: keychain.prv });
+        const newEncryptedPrv = this.bitgo.encrypt({
+          password: secret,
+          input: keychain.prv,
+        });
 
         // Only one of pub/commonPub/commonKeychain should be present in the keychain
         let pub = keychain.pub ?? keychain.commonPub;
@@ -1830,7 +1865,9 @@ export class Wallet implements IWallet {
       throw new Error('missing required string parameter email');
     }
 
-    const sharing = (await this.bitgo.getSharingKey({ email: params.email.toLowerCase() })) as any;
+    const sharing = (await this.bitgo.getSharingKey({
+      email: params.email.toLowerCase(),
+    })) as any;
     let sharedKeychain;
     if (needsKeychain) {
       sharedKeychain = await this.prepareSharedKeychain(params.walletPassphrase, sharing.pubkey, sharing.path);
@@ -1931,13 +1968,18 @@ export class Wallet implements IWallet {
       buildResponse.blockHeight = blockHeight;
     }
     let prebuild: TransactionPrebuild = (await this.baseCoin.postProcessPrebuild(
-      Object.assign(buildResponse, { wallet: this, buildParams: whitelistedParams })
+      Object.assign(buildResponse, {
+        wallet: this,
+        buildParams: whitelistedParams,
+      })
     )) as any;
     delete prebuild.wallet;
     delete prebuild.buildParams;
     prebuild = _.extend({}, prebuild, { walletId: this.id() });
     if (this._wallet && this._wallet.coinSpecific && !params.walletContractAddress) {
-      prebuild = _.extend({}, prebuild, { walletContractAddress: this._wallet.coinSpecific.baseAddress });
+      prebuild = _.extend({}, prebuild, {
+        walletContractAddress: this._wallet.coinSpecific.baseAddress,
+      });
     }
     prebuild = _.extend({}, prebuild, { reqId: params.reqId });
     debug('final transaction prebuild: %O', prebuild);
@@ -1962,13 +2004,21 @@ export class Wallet implements IWallet {
     }
     const reqId = new RequestTracer();
     // Doing a sanity check for password here to avoid doing further work if we know it's wrong
-    const keychains = await this.getKeychainsAndValidatePassphrase({ reqId, walletPassphrase });
+    const keychains = await this.getKeychainsAndValidatePassphrase({
+      reqId,
+      walletPassphrase,
+    });
     const userKeychain = keychains[0];
     if (!userKeychain || !userKeychain.encryptedPrv) {
       throw new Error('the user keychain does not have property encryptedPrv');
     }
 
-    return this.signTransaction({ txPrebuild: { txRequestId }, walletPassphrase, reqId, keychain: userKeychain });
+    return this.signTransaction({
+      txPrebuild: { txRequestId },
+      walletPassphrase,
+      reqId,
+      keychain: userKeychain,
+    });
   }
 
   /**
@@ -2127,7 +2177,10 @@ export class Wallet implements IWallet {
       params.typedData.typedDataEncoded = (this.baseCoin as any).encodeTypedData(params.typedData);
     }
     const keychains = await this.baseCoin.keychains().getKeysForSigning({ wallet: this, reqId: params.reqId });
-    const userPrvOptions: GetUserPrvOptions = { ...params, keychain: keychains[0] };
+    const userPrvOptions: GetUserPrvOptions = {
+      ...params,
+      keychain: keychains[0],
+    };
     assert(keychains[0].commonKeychain, 'Unable to find commonKeychain in keychains');
     const presign = {
       ...params,
@@ -2163,7 +2216,10 @@ export class Wallet implements IWallet {
       params.message.messageEncoded = (this.baseCoin as any).encodeMessage(params.message.messageRaw);
     }
     const keychains = await this.baseCoin.keychains().getKeysForSigning({ wallet: this, reqId: params.reqId });
-    const userPrvOptions: GetUserPrvOptions = { ...params, keychain: keychains[0] };
+    const userPrvOptions: GetUserPrvOptions = {
+      ...params,
+      keychain: keychains[0],
+    };
     assert(keychains[0].commonKeychain, 'Unable to find commonKeychain in keychains');
     const presign = {
       ...params,
@@ -2247,7 +2303,10 @@ export class Wallet implements IWallet {
 
     if (userPrv && params.coldDerivationSeed) {
       // the derivation only makes sense when a key already exists
-      const derivation = this.baseCoin.deriveKeyWithSeed({ key: userPrv, seed: params.coldDerivationSeed });
+      const derivation = this.baseCoin.deriveKeyWithSeed({
+        key: userPrv,
+        seed: params.coldDerivationSeed,
+      });
       userPrv = derivation.key;
     } else if (!userPrv) {
       if (!userKeychain || typeof userKeychain !== 'object') {
@@ -2568,7 +2627,9 @@ export class Wallet implements IWallet {
     if (params.data && coin.transactionDataAllowed()) {
       recipients[0].data = params.data;
     }
-    const sendManyOptions: SendManyOptions = Object.assign({}, params, { recipients });
+    const sendManyOptions: SendManyOptions = Object.assign({}, params, {
+      recipients,
+    });
     return this.sendMany(sendManyOptions);
   }
 
@@ -2613,7 +2674,10 @@ export class Wallet implements IWallet {
           );
         }
 
-        const data = this.baseCoin.buildNftTransferData({ ...sendNftOptions, fromAddress: baseAddress });
+        const data = this.baseCoin.buildNftTransferData({
+          ...sendNftOptions,
+          fromAddress: baseAddress,
+        });
         let recipient;
         if (this.baseCoin.getFamily() === 'vet') {
           recipient = {
@@ -2650,7 +2714,10 @@ export class Wallet implements IWallet {
           }
         }
 
-        const data = this.baseCoin.buildNftTransferData({ ...sendNftOptions, fromAddress: baseAddress });
+        const data = this.baseCoin.buildNftTransferData({
+          ...sendNftOptions,
+          fromAddress: baseAddress,
+        });
         return this.sendMany({
           ...sendOptions,
           recipients: [
@@ -3085,7 +3152,10 @@ export class Wallet implements IWallet {
     const consolidations: PrebuildTransactionResult[] = [];
     for (const consolidateAccountBuild of buildResponse) {
       let prebuild: PrebuildTransactionResult = (await this.baseCoin.postProcessPrebuild(
-        Object.assign(consolidateAccountBuild, { wallet: this, buildParams: whitelistedParams })
+        Object.assign(consolidateAccountBuild, {
+          wallet: this,
+          buildParams: whitelistedParams,
+        })
       )) as PrebuildTransactionResult;
 
       delete prebuild.wallet;
@@ -3165,7 +3235,10 @@ export class Wallet implements IWallet {
     });
 
     // this gives us a set of account consolidation transactions
-    const unsignedBuilds = await this.buildAccountConsolidations({ ...params, apiVersion: apiVersion });
+    const unsignedBuilds = await this.buildAccountConsolidations({
+      ...params,
+      apiVersion: apiVersion,
+    });
     if (unsignedBuilds && unsignedBuilds.length > 0) {
       // Get wallet's base address to validate destination addresses
       const baseAddress = this._wallet.coinSpecific?.baseAddress || this._wallet.coinSpecific?.rootAddress;
@@ -3615,7 +3688,9 @@ export class Wallet implements IWallet {
       txHex: unsignedTx.serializedTxHex,
       buildParams: whitelistedParams,
       feeInfo: unsignedTx.feeInfo,
-      ...(txRequest.pendingApprovalId && { pendingApprovalId: txRequest.pendingApprovalId }),
+      ...(txRequest.pendingApprovalId && {
+        pendingApprovalId: txRequest.pendingApprovalId,
+      }),
     };
   }
 
@@ -4003,7 +4078,11 @@ export class Wallet implements IWallet {
       const latestTxRequest = await getTxRequest(this.bitgo, this.id(), signedTransaction.txRequestId, params.reqId);
       const reqId = params.reqId || new RequestTracer();
       this.bitgo.setRequestTracer(reqId);
-      const transfer: { state: string; pendingApproval?: string; txid?: string } = await this.bitgo
+      const transfer: {
+        state: string;
+        pendingApproval?: string;
+        txid?: string;
+      } = await this.bitgo
         .post(
           this.bitgo.url(
             '/wallet/' + this._wallet.id + '/txrequests/' + signedTransaction.txRequestId + '/transfers',
@@ -4014,7 +4093,9 @@ export class Wallet implements IWallet {
         .result();
       if (latestTxRequest.state === 'pendingApproval') {
         const pendingApprovals = new PendingApprovals(this.bitgo, this.baseCoin);
-        const pendingApproval = await pendingApprovals.get({ id: latestTxRequest.pendingApprovalId });
+        const pendingApproval = await pendingApprovals.get({
+          id: latestTxRequest.pendingApprovalId,
+        });
         return {
           pendingApproval: pendingApproval.toJSON(),
           txRequest: latestTxRequest,

@@ -2,13 +2,15 @@
  * @prettier
  */
 import { BitGoBase } from '@bitgo/sdk-core';
-import * as utxolib from '@bitgo/utxo-lib';
 
-import { AbstractUtxoCoin, UtxoNetwork } from '../../abstractUtxoCoin';
+import { AbstractUtxoCoin } from '../../abstractUtxoCoin';
+import { UtxoCoinName } from '../../names';
 
 export class Zec extends AbstractUtxoCoin {
-  constructor(bitgo: BitGoBase, network?: UtxoNetwork) {
-    super(bitgo, network || utxolib.networks.zcash);
+  readonly name: UtxoCoinName = 'zec';
+
+  constructor(bitgo: BitGoBase) {
+    super(bitgo);
   }
 
   static createInstance(bitgo: BitGoBase): Zec {

@@ -2,14 +2,16 @@ import * as utxolib from '@bitgo/utxo-lib';
 import { BitGoBase, IRequestTracer } from '@bitgo/sdk-core';
 
 import { AbstractUtxoCoin, TransactionPrebuild } from '../abstractUtxoCoin';
+import { getNetworkFromCoinName, UtxoCoinName } from '../names';
 
 /**
  * Get the inputs for a psbt from a prebuild.
  */
 export function getPsbtTxInputs(
   psbtArg: string | utxolib.bitgo.UtxoPsbt,
-  network: utxolib.Network
+  coinName: UtxoCoinName
 ): { address: string; value: bigint; valueString: string }[] {
+  const network = getNetworkFromCoinName(coinName);
   const psbt = psbtArg instanceof utxolib.bitgo.UtxoPsbt ? psbtArg : utxolib.bitgo.createPsbtFromHex(psbtArg, network);
   const txInputs = psbt.txInputs;
   return psbt.data.inputs.map((input, index) => {

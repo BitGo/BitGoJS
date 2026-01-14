@@ -179,7 +179,7 @@ export async function parseTransaction<TNumber extends bigint | number>(
 
   function toComparableOutputsWithExternal(outputs: Output[]): ComparableOutputWithExternal<bigint | 'max'>[] {
     return outputs.map((output) => ({
-      script: fromExtendedAddressFormatToScript(output.address, coin.network),
+      script: fromExtendedAddressFormatToScript(output.address, coin.name),
       value: output.amount === 'max' ? 'max' : (BigInt(output.amount) as bigint | 'max'),
       external: output.external,
     }));
@@ -225,7 +225,7 @@ export async function parseTransaction<TNumber extends bigint | number>(
 
   function toOutputs(outputs: ComparableOutputWithExternal<bigint | 'max'>[]): Output[] {
     return outputs.map((output) => ({
-      address: toExtendedAddressFormat(output.script, coin.network),
+      address: toExtendedAddressFormat(output.script, coin.name),
       amount: output.value.toString(),
       external: output.external,
     }));

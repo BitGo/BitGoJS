@@ -113,10 +113,8 @@ export function assertBip322PsbtProof(psbt: utxolib.bitgo.UtxoPsbt, messageInfo:
     // Check that the metadata in the PSBT matches the messageInfo, then check the input data
     const info = messageInfo[inputIndex];
 
-    // Check that the to_spend transaction is encoded in the nonWitnessUtxo
-    assert.ok(input.nonWitnessUtxo, `PSBT input ${inputIndex} is missing nonWitnessUtxo`);
-    const toSpendTx = buildToSpendTransaction(prevOuts[inputIndex].script, info.message);
-    assert.deepStrictEqual(input.nonWitnessUtxo.toString('hex'), toSpendTx.toHex());
+    // Note: nonWitnessUtxo is not required - the txid check in assertTxInput verifies
+    // the input references the correct to_spend transaction (computed from message + scriptPubKey)
 
     if (input.bip32Derivation) {
       input.bip32Derivation.forEach((b) => {

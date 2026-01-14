@@ -77,6 +77,34 @@ const getBalanceResponseNonBitGoRecovery: Record<string, unknown> = {
   message: 'OK',
 };
 
+// Mock data for txdc:tmt token transfer TSS transaction
+export const mockTokenTransferData = {
+  txRequestId: '2475368d-f604-46e3-a743-e32f663fa350',
+  walletId: '695e1ca4fb4a739c8c6f9b49120c55c7',
+  serializedTxHex:
+    'f86a0485045d964b8083061a8094b283ec8dad644effc5c4c50bb7bb21442ac3c2db80b844a9059cbb000000000000000000000000421cdf5e890070c28db0fd8e4bf87deac0cd0ffc00000000000000000000000000000000000000000000000000000000000f4240808080',
+  signableHex:
+    'f86a0485045d964b8083061a8094b283ec8dad644effc5c4c50bb7bb21442ac3c2db80b844a9059cbb000000000000000000000000421cdf5e890070c28db0fd8e4bf87deac0cd0ffc00000000000000000000000000000000000000000000000000000000000f4240338080',
+  tokenContractAddress: '0xb283ec8dad644effc5c4c50bb7bb21442ac3c2db',
+  recipientAddress: '0x421cdf5e890070c28db0fd8e4bf87deac0cd0ffc',
+  senderAddress: '0x6aafaddf545f96772140f0008190c176a065df9a',
+  tokenAmount: '1000000',
+  feeInfo: {
+    fee: 7500000000000000,
+    feeString: '7500000000000000',
+  },
+  txPrebuild: {
+    txHex:
+      'f86a0485045d964b8083061a8094b283ec8dad644effc5c4c50bb7bb21442ac3c2db80b844a9059cbb000000000000000000000000421cdf5e890070c28db0fd8e4bf87deac0cd0ffc00000000000000000000000000000000000000000000000000000000000f4240808080',
+    recipients: [
+      {
+        address: '0x421cdf5e890070c28db0fd8e4bf87deac0cd0ffc',
+        amount: '1000000',
+      },
+    ],
+  },
+};
+
 export const mockDataNonBitGoRecovery = {
   recoveryDestination: '0xd76b586901850f2c656db0cbef795c0851bbec35',
   userKeyData:

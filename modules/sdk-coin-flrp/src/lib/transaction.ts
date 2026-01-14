@@ -6,7 +6,6 @@ import {
   InvalidTransactionError,
   SigningError,
   TransactionType,
-  TransactionFee,
 } from '@bitgo/sdk-core';
 import {
   utils as FlareUtils,
@@ -17,10 +16,20 @@ import {
   secp256k1,
   EVMUnsignedTx,
   Address,
+  Context,
 } from '@flarenetwork/flarejs';
 import { Buffer } from 'buffer';
 import { createHash } from 'crypto';
-import { DecodedUtxoObj, TransactionExplanation, Tx, TxData, ADDRESS_SEPARATOR, FlareTransactionType } from './iface';
+import {
+  TransactionExplanation,
+  Tx,
+  TxData,
+  ADDRESS_SEPARATOR,
+  FlareTransactionType,
+  FlrpTransactionFee,
+  DecodedUtxoObj,
+} from './iface';
+import { FlrpFeeState } from '@bitgo/public-types';
 import { KeyPair } from './keyPair';
 import utils from './utils';
 
@@ -49,7 +58,6 @@ function hasEmbeddedAddress(signature: string): boolean {
   const cleanSig = utils.removeHexPrefix(signature);
   if (cleanSig.length < 130) return false;
   const embeddedPart = cleanSig.substring(90, 130);
-  // Check if it's not all zeros
   return embeddedPart !== '0'.repeat(40);
 }
 
@@ -101,9 +109,11 @@ export class Transaction extends BaseTransaction {
   public _fromAddresses: Uint8Array[] = [];
   public _to: Uint8Array[] = [];
   public _rewardAddresses: Uint8Array[] = [];
-  public _utxos: DecodedUtxoObj[] = []; // Define proper type based on Flare's UTXO structure
-  public _fee: Partial<TransactionFee> = {};
-  // Store original raw signed bytes to preserve exact format when re-serializing
+  public _utxos: DecodedUtxoObj[] = [];
+  public _context: Context.Context;
+  public _fee: FlrpTransactionFee = { fee: '0' };
+  public _feeState: FlrpFeeState;
+  public _amount: bigint;
   public _rawSignedBytes: Buffer | undefined;
 
   constructor(coinConfig: Readonly<CoinConfig>) {
@@ -191,17 +201,16 @@ export class Transaction extends BaseTransaction {
             signatureSet = true;
             // Clear raw signed bytes since we've modified the transaction
             this._rawSignedBytes = undefined;
-            break;
+            break; // Break inner loop, but continue to sign other credentials
           }
         }
-
-        if (signatureSet) break;
+        // Don't break outer loop - continue signing ALL credentials that have a matching slot
       }
     }
 
     // Fallback: If address-based matching didn't work (e.g., ImportInC loaded from unsigned tx
-    // where P-chain addresses aren't in addressMaps), try to sign the first empty slot.
-    // This handles the case where we have empty credentials but signer address isn't in the map.
+    // where P-chain addresses aren't in addressMaps), sign ALL empty slots across ALL credentials.
+    // This handles multisig where each UTXO needs a credential signed by the same key.
     if (!signatureSet) {
       for (const credential of unsignedTx.credentials) {
         const signatures = credential.getSignatures();
@@ -210,10 +219,10 @@ export class Transaction extends BaseTransaction {
             credential.setSignature(i, signature);
             signatureSet = true;
             this._rawSignedBytes = undefined;
-            break;
+            break; // Break inner loop, but continue to sign other credentials
           }
         }
-        if (signatureSet) break;
+        // Don't break outer loop - continue signing ALL credentials with empty slots
       }
     }
 
@@ -333,7 +342,7 @@ export class Transaction extends BaseTransaction {
    * @return {string} blockchainID or alias if exists.
    * @private
    */
-  private blockchainIDtoAlias(blockchainIDBuffer: Buffer): string {
+  blockchainIDtoAlias(blockchainIDBuffer: Buffer): string {
     const blockchainId = utils.cb58Encode(blockchainIDBuffer);
     if (blockchainId === this._network.cChainBlockchainID) {
       return 'C';
@@ -382,8 +391,8 @@ export class Transaction extends BaseTransaction {
     return this._rewardAddresses.map((a) => FlareUtils.format(this._network.alias, this._network.hrp, a));
   }
 
-  get fee(): TransactionFee {
-    return { fee: '0', ...this._fee };
+  get fee(): FlrpTransactionFee {
+    return this._fee;
   }
 
   /**

@@ -260,6 +260,7 @@ export interface WalletSignBaseOptions {
   cosignerPub?: string;
   isLastSignature?: boolean;
   customSigningFunction?: CustomSigningFunction;
+  bulk?: boolean;
 }
 
 export interface WalletSignTransactionOptions extends WalletSignBaseOptions {
@@ -329,6 +330,7 @@ export interface WalletCoinSpecific {
   hashAlgorithm?: string;
   pendingEcdsaTssInitialization?: boolean;
   features?: string[];
+  freezeDepositsFromShielded?: boolean;
   /**
    * Lightning coin specific data starts
    */
@@ -557,7 +559,13 @@ export interface UpdateAddressOptions {
 export interface UpdateBuildDefaultOptions {
   minFeeRate?: number;
   changeAddressType?: string;
-  txFormat?: 'legacy' | 'psbt';
+  txFormat?: 'legacy' | 'psbt' | 'psbt-lite';
+}
+
+export interface UpdateWalletOptions {
+  coinSpecific?: WalletCoinSpecific;
+  buildDefaults?: UpdateBuildDefaultOptions;
+  label?: string;
 }
 
 export interface SimulateWebhookOptions {
