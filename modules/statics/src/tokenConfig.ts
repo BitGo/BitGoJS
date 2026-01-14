@@ -1192,7 +1192,7 @@ const mergeEthLikeTokenMap = (...maps: EthLikeTokenMap[]): EthLikeTokenMap => {
   return mergedMap;
 };
 
-const getFormattedTokensByNetwork = (network: 'Mainnet' | 'Testnet', coinMap: typeof coins) => {
+export const getFormattedTokensByNetwork = (network: 'Mainnet' | 'Testnet', coinMap: typeof coins) => {
   const networkType = network === 'Mainnet' ? NetworkType.MAINNET : NetworkType.TESTNET;
 
   const ethLikeTokenMap = getEthLikeTokens(network, TokenTypeEnum.ERC20);
@@ -1358,7 +1358,7 @@ export const getFormattedTokens = (coinMap = coins): Tokens => {
  * Verify mainnet or testnet tokens
  * @param tokens
  */
-const verifyTokens = function (tokens: BaseTokenConfig[]) {
+export const verifyTokens = function (tokens: BaseTokenConfig[]) {
   const verifiedTokens: Record<string, boolean> = {};
   tokens.forEach((token) => {
     if (verifiedTokens[token.type]) {
