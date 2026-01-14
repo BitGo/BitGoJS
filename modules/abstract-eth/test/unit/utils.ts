@@ -4,7 +4,9 @@ import {
   flushERC1155TokensData,
   decodeFlushERC721TokensData,
   decodeFlushERC1155TokensData,
+  classifyTransaction,
 } from '../../src/lib/utils';
+import { TransactionType } from '@bitgo/sdk-core';
 
 describe('Abstract ETH Utils', () => {
   describe('ERC721 Flush Functions', () => {
@@ -226,6 +228,22 @@ describe('Abstract ETH Utils', () => {
       const decoded1155 = decodeFlushERC1155TokensData(encoded1155);
 
       decoded1155.tokenAddress.toLowerCase().should.equal(tokenAddressChecksum.toLowerCase());
+    });
+  });
+
+  describe('classifyTransaction', () => {
+    describe('CELO Staking Method ID Collision', () => {
+      const WITHDRAW_DATA = '0x2e1a7d4d0000000000000000000000000000000000000000000000000000000005f5e100';
+
+      it('should classify as StakingWithdraw on CELO chains', () => {
+        classifyTransaction(WITHDRAW_DATA, 'celo').should.equal(TransactionType.StakingWithdraw);
+        classifyTransaction(WITHDRAW_DATA, 'tcelo').should.equal(TransactionType.StakingWithdraw);
+      });
+
+      it('should classify as ContractCall on non-CELO chains', () => {
+        classifyTransaction(WITHDRAW_DATA, 'eth').should.equal(TransactionType.ContractCall);
+        classifyTransaction(WITHDRAW_DATA).should.equal(TransactionType.ContractCall);
+      });
     });
   });
 });
