@@ -16,6 +16,7 @@ import {
   generateAddress,
   convertLtcAddressToLegacyFormat,
 } from '../../../src';
+import { isMainnetCoin, isTestnetCoin } from '../../../src/names';
 import {
   getFixture,
   keychainsBase58,
@@ -265,8 +266,8 @@ utxoCoins.forEach((coin) => {
       (otherCoin) =>
         coin !== otherCoin &&
         isSupportedCrossChainRecovery(coin, otherCoin) &&
-        ((utxolib.isMainnet(coin.network) && utxolib.isMainnet(otherCoin.network)) ||
-          (utxolib.isTestnet(coin.network) && utxolib.isTestnet(otherCoin.network)))
+        ((isMainnetCoin(coin.name) && isMainnetCoin(otherCoin.name)) ||
+          (isTestnetCoin(coin.name) && isTestnetCoin(otherCoin.name)))
     )
     .forEach((otherCoin) => {
       if (coin.amountType === 'bigint') {
