@@ -3,6 +3,55 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.14.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.13.0...@bitgo/abstract-utxo@10.14.0) (2026-01-14)
+
+
+### Bug Fixes
+
+* **abstract-utxo:** improve type checking in isUtxoWalletData ([75d85f8](https://github.com/BitGo/BitGoJS/commit/75d85f899fe01f86aa2a09b45a7d4b9150a37ded))
+
+
+### Features
+
+* **abstract-utxo:** add BIP-322 signature verification with wasm-utxo ([c28752a](https://github.com/BitGo/BitGoJS/commit/c28752a913a5cbd9e4b37307eef3160fd9a3b865))
+* **abstract-utxo:** add explicit testnet coin array and mainnet mapping ([e321560](https://github.com/BitGo/BitGoJS/commit/e3215603398944de3006ca7c24d7c7a08de2e9fe))
+* **abstract-utxo:** add unified signAndVerifyPsbt function ([b1e6da5](https://github.com/BitGo/BitGoJS/commit/b1e6da5263a1124f27602f98084f8ce1b02eefa0))
+* **abstract-utxo:** bump wasm-utxo dependency to v1.20.0 ([b57480c](https://github.com/BitGo/BitGoJS/commit/b57480cd4698fd23c53b16e733133d0982a746a2))
+* **abstract-utxo:** define coin name in coin class instead of network ([2a15687](https://github.com/BitGo/BitGoJS/commit/2a156874daf73527d95465ffa0f7063e69b214e1))
+* **abstract-utxo:** enable wasm-utxo tests for zcash ([5caf606](https://github.com/BitGo/BitGoJS/commit/5caf60657b9c9dbc0cc71e769e819e993cb5bde3))
+* **abstract-utxo:** refactor signAndVerifyPsbt ([d346b68](https://github.com/BitGo/BitGoJS/commit/d346b687b741c058a262dba6afd940b563176c2b))
+* **abstract-utxo:** refine typed interfaces and update naming ([4f0cd23](https://github.com/BitGo/BitGoJS/commit/4f0cd233f9536ac0578e9c5dd6c68d82cce2add7))
+* **abstract-utxo:** rename signPsbt to signPsbtUtxolib ([b9ed41a](https://github.com/BitGo/BitGoJS/commit/b9ed41a27db8391146f6514620e565600ec2de19))
+* **abstract-utxo:** simplify replay protection unspent check ([23b0f15](https://github.com/BitGo/BitGoJS/commit/23b0f15bec5e6547cbe1cd423b6a9787a2887f2b))
+* **abstract-utxo:** simplify testnet coin name type and check ([9215302](https://github.com/BitGo/BitGoJS/commit/92153022f243072f77a330522271f44f0c09a009))
+* **abstract-utxo:** use coin name instead of network ([0cd99bd](https://github.com/BitGo/BitGoJS/commit/0cd99bdfc786b6b16672a3fdb75c7d5d26f3a19b))
+* **abstract-utxo:** use coin name instead of network object ([bd9ace7](https://github.com/BitGo/BitGoJS/commit/bd9ace7d0ba8950d12f3eb74bbe61883d2d65a53))
+* **abstract-utxo:** use coin name to determine coin full name ([c6afa6b](https://github.com/BitGo/BitGoJS/commit/c6afa6bfadc8483bf3c2cde93a4435d17aeaaa51))
+* **abstract-utxo:** use coin name to get family ([868d070](https://github.com/BitGo/BitGoJS/commit/868d07042385ed98ea8bd261e258cb2679dadb5c))
+* **abstract-utxo:** use wasm-utxo address generator for all networks ([5982cf4](https://github.com/BitGo/BitGoJS/commit/5982cf4fee9cbe877e260a5fcaee5832ddc55a5c))
+* **abstract-utxo:** use wasm-utxo for BIP322 verification ([76e33bf](https://github.com/BitGo/BitGoJS/commit/76e33bf607c5263393320cd87aad312639fb02ef))
+* **abstract-utxo:** use wasm-utxo for recovery functions ([6754c34](https://github.com/BitGo/BitGoJS/commit/6754c349c29e27a728f1c539dbd352c2d16ab99a))
+* use fromOutput to remove utxolib dependency in wasm path ([55e446d](https://github.com/BitGo/BitGoJS/commit/55e446da3754550c46f98e21aa152ac92f0ff37a))
+* use wasm dimensions in psbt calculation ([adae3f8](https://github.com/BitGo/BitGoJS/commit/adae3f8b478925f3c7d6765b78edd741b61ddc50))
+* use wasm-utxo dimensions for crossChainRecovery ([78a3d35](https://github.com/BitGo/BitGoJS/commit/78a3d35dbaf56f1a601e9dad3ff40a1385774951))
+* use wasm-utxo for testnet in backup recovery ([25c26aa](https://github.com/BitGo/BitGoJS/commit/25c26aa519ae52a912cf3fb56eef151e0c479cb0))
+
+
+
+
+
+# [10.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.12.0...@bitgo/abstract-utxo@10.13.0) (2026-01-07)
+
+
+### Features
+
+* add wasm-utxo backend for cross-chain recovery ([f6509fb](https://github.com/BitGo/BitGoJS/commit/f6509fbcdef27e6448785a147029f2d61d0bd9c9))
+* bump @bitgo/wasm-utxo to 1.19.0 ([9627848](https://github.com/BitGo/BitGoJS/commit/962784829fc8fc8d2f80ae5299f2143a0d31b269))
+
+
+
+
+
 # [10.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.11.1...@bitgo/abstract-utxo@10.12.0) (2025-12-23)
 
 

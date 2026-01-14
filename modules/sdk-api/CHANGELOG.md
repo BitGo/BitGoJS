@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.73.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.73.0...@bitgo/sdk-api@1.73.1) (2026-01-14)
+
+**Note:** Version bump only for package @bitgo/sdk-api
+
+
+
+
+
+# [1.73.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.72.2...@bitgo/sdk-api@1.73.0) (2026-01-07)
+
+
+### Bug Fixes
+
+* browser check for user agent ([d4bd0aa](https://github.com/BitGo/BitGoJS/commit/d4bd0aaf6ff390b2a3c800cc06a8ebdb007fe467))
+
+
+### Features
+
+* add PSBT support for v1 transaction building ([1617968](https://github.com/BitGo/BitGoJS/commit/1617968cbbb8644d466266f0944e293198d3bbaa))
+* add PSBT support with 10% rollout for v1 transactions ([ad01a92](https://github.com/BitGo/BitGoJS/commit/ad01a9227ceba834c425dd3c1e5b2e738fc780aa))
+* implement PSBT fallback in wallet transactions ([1c1bde1](https://github.com/BitGo/BitGoJS/commit/1c1bde13782b67ad64c9edc3a3a15989829d292d))
+
+
+
+
+
 ## [1.72.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-api@1.72.1...@bitgo/sdk-api@1.72.2) (2025-12-23)
 
 **Note:** Version bump only for package @bitgo/sdk-api

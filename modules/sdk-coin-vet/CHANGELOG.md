@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.10.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.10.2...@bitgo/sdk-coin-vet@2.10.3) (2026-01-14)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-vet
+
+
+
+
+
+## [2.10.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.10.1...@bitgo/sdk-coin-vet@2.10.2) (2026-01-07)
+
+
+### Bug Fixes
+
+* **sdk-coin-vet:** add stake amount in the validator registration txn ([93ff3b5](https://github.com/BitGo/BitGoJS/commit/93ff3b5170a322d334f5ad05253f28463c00c75c))
+* **sdk-coin-vet:** invalid id for vet validation regn txn ([c57dd55](https://github.com/BitGo/BitGoJS/commit/c57dd55b035eabe3b961fc997ccbec3d0d18cfc4))
+
+
+
+
+
 ## [2.10.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-vet@2.10.0...@bitgo/sdk-coin-vet@2.10.1) (2025-12-23)
 
 

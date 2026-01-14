@@ -3,6 +3,40 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [36.27.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.26.0...@bitgo/sdk-core@36.27.0) (2026-01-14)
+
+
+### Bug Fixes
+
+* **sdk-core:** update go staking request interface ([c728c05](https://github.com/BitGo/BitGoJS/commit/c728c05ac53724e8782368a10501775d0107d842))
+
+
+### Features
+
+* **sdk-core:** add custodial wallet support for consolidate transactions ([91bdf7a](https://github.com/BitGo/BitGoJS/commit/91bdf7a0548129b9070c7b52d0411ef38081f597))
+* **sdk-core:** add updateWallet function and freezeDepositsFromShielded ([110d3dc](https://github.com/BitGo/BitGoJS/commit/110d3dc7ca362fce58c7dc3d2c773d22c77961eb))
+* **sdk-core:** replace utxo-core with secp256k1 for bip32utils ([947beee](https://github.com/BitGo/BitGoJS/commit/947beee75680c8e59e80d25c1c42d9c1ebeb2709))
+
+
+
+
+
+# [36.26.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.25.0...@bitgo/sdk-core@36.26.0) (2026-01-07)
+
+
+### Bug Fixes
+
+* add xdc token contructor ([596a624](https://github.com/BitGo/BitGoJS/commit/596a624d5b89584fcc4bcdc1fa914e93ddc43d22))
+
+
+### Features
+
+* **statics:** added statics config for arc TICKET: WIN-8039 ([533e51d](https://github.com/BitGo/BitGoJS/commit/533e51d923fcbe49d973c1f8899db74999b4d90b))
+
+
+
+
+
 # [36.25.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.24.0...@bitgo/sdk-core@36.25.0) (2025-12-23)
 
 

@@ -3,6 +3,30 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.30.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.29.0...@bitgo/utxo-core@1.30.0) (2026-01-14)
+
+
+### Features
+
+* **abstract-utxo:** bump wasm-utxo dependency to v1.20.0 ([b57480c](https://github.com/BitGo/BitGoJS/commit/b57480cd4698fd23c53b16e733133d0982a746a2))
+* **abstract-utxo:** simplify BIP322 PSBT verification ([02760aa](https://github.com/BitGo/BitGoJS/commit/02760aa714d3a2246aeaf98c514181a8eb711971))
+* **sdk-core:** replace utxo-core with secp256k1 for bip32utils ([947beee](https://github.com/BitGo/BitGoJS/commit/947beee75680c8e59e80d25c1c42d9c1ebeb2709))
+
+
+
+
+
+# [1.29.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.28.0...@bitgo/utxo-core@1.29.0) (2026-01-07)
+
+
+### Features
+
+* bump @bitgo/wasm-utxo to 1.19.0 ([9627848](https://github.com/BitGo/BitGoJS/commit/962784829fc8fc8d2f80ae5299f2143a0d31b269))
+
+
+
+
+
 # [1.28.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-core@1.27.0...@bitgo/utxo-core@1.28.0) (2025-12-23)
 
 

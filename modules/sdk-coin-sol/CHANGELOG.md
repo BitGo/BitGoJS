@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.11.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.11.1...@bitgo/sdk-coin-sol@7.11.2) (2026-01-14)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-sol
+
+
+
+
+
+## [7.11.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.11.0...@bitgo/sdk-coin-sol@7.11.1) (2026-01-07)
+
+
+### Bug Fixes
+
+* **sdk-coin-sol:** use codegen data in tx size bench ([ef01fc1](https://github.com/BitGo/BitGoJS/commit/ef01fc1a1febfa8902b40a07e2caf7ecacfc60d3))
+
+
+
+
+
 # [7.11.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.10.4...@bitgo/sdk-coin-sol@7.11.0) (2025-12-23)
 
 

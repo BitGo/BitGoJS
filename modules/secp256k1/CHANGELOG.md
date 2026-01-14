@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.9.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.8.0...@bitgo/secp256k1@1.9.0) (2026-01-14)
+
+
+### Features
+
+* **sdk-core:** replace utxo-core with secp256k1 for bip32utils ([947beee](https://github.com/BitGo/BitGoJS/commit/947beee75680c8e59e80d25c1c42d9c1ebeb2709))
+
+
+
+
+
 # [1.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/secp256k1@1.7.0...@bitgo/secp256k1@1.8.0) (2025-12-23)
 
 

@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.8.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@3.8.1...@bitgo/sdk-coin-trx@3.8.2) (2026-01-14)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-trx
+
+
+
+
+
+## [3.8.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@3.8.0...@bitgo/sdk-coin-trx@3.8.1) (2026-01-07)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-trx
+
+
+
+
+
 # [3.8.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@3.7.16...@bitgo/sdk-coin-trx@3.8.0) (2025-12-23)
 
 

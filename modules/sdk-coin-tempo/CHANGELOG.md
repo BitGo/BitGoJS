@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tempo@1.2.0...@bitgo/sdk-coin-tempo@1.3.0) (2026-01-14)
+
+
+### Features
+
+* **sdk-coin-tempo:** add transaction serialization ([6dd03fa](https://github.com/BitGo/BitGoJS/commit/6dd03faadfd37941bd386c20a7b1443893c3c98f))
+
+
+
+
+
+# [1.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tempo@1.1.1...@bitgo/sdk-coin-tempo@1.2.0) (2026-01-07)
+
+
+### Features
+
+* **sdk-coin-tempo:** add tip20 skeleton ([e4fe395](https://github.com/BitGo/BitGoJS/commit/e4fe395078c7403bf39b9b53e48731e48ccb8d52))
+* **sdk-coin-tempo:** add token transaction builder ([5c4628f](https://github.com/BitGo/BitGoJS/commit/5c4628f91d667bc585d2bd8a45f27f044c7bea94))
+
+
+
+
+
 ## [1.1.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tempo@1.1.0...@bitgo/sdk-coin-tempo@1.1.1) (2025-12-23)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-tempo

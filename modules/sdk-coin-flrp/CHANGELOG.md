@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.6.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.6.1...@bitgo/sdk-coin-flrp@1.6.2) (2026-01-14)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-flrp
+
+
+
+
+
+## [1.6.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.6.0...@bitgo/sdk-coin-flrp@1.6.1) (2026-01-07)
+
+
+### Bug Fixes
+
+* **sdk-coin-flrp:** fix flrp import to P fee value ([0cb5695](https://github.com/BitGo/BitGoJS/commit/0cb569532a1868f7992e60babb323a7ebc4bea1c))
+* **sdk-coin-flrp:** implement dynamic fee calculation for C-chain import transactions ([689738d](https://github.com/BitGo/BitGoJS/commit/689738d8d21e3c7e41aed02bf75f77075418db3c))
+* **sdk-coin-flrp:** update AddressMap creation to match UTXO address order ([cebeb07](https://github.com/BitGo/BitGoJS/commit/cebeb07be61895e8f37ea7573b5f368c6a531b5b))
+* **sdk-coin-flrp:** update fee calculation for export transactions ([4e891a8](https://github.com/BitGo/BitGoJS/commit/4e891a85f1896d12839d286efee46d5dbfa0e16b))
+* **sdk-coin-flrp:** update tx ID calculation and test data ([780df7b](https://github.com/BitGo/BitGoJS/commit/780df7b436c000d6f16021f2f9bb464dbad185d3))
+
+
+
+
+
 # [1.6.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.5.1...@bitgo/sdk-coin-flrp@1.6.0) (2025-12-23)
 
 
