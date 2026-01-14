@@ -424,11 +424,6 @@ export abstract class AbstractUtxoCoin
     return true;
   }
 
-  /** @deprecated */
-  static get validAddressTypes(): ScriptType2Of3[] {
-    return [...outputScripts.scriptTypes2Of3];
-  }
-
   /**
    * Returns the factor between the base unit and its smallest subdivison
    * @return {number}
