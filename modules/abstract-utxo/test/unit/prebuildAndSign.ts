@@ -6,6 +6,7 @@ import { common, HalfSignedUtxoTransaction, Wallet } from '@bitgo/sdk-core';
 import { getSeed } from '@bitgo/sdk-test';
 
 import { AbstractUtxoCoin, getReplayProtectionAddresses } from '../../src';
+import { getMainnetCoinName } from '../../src/names';
 
 import { defaultBitGo, encryptKeychain, getDefaultWalletKeys, getUtxoWallet, keychainsBase58, utxoCoins } from './util';
 
@@ -295,7 +296,7 @@ function run(coin: AbstractUtxoCoin, inputScripts: ScriptType[], txFormat: TxFor
 }
 
 utxoCoins
-  .filter((coin) => utxolib.getMainnet(coin.network) !== utxolib.networks.bitcoinsv)
+  .filter((coin) => getMainnetCoinName(coin.name) !== 'bsv')
   .forEach((coin) => {
     scriptTypes
       // Don't iterate over p2shP2pk - in no scenario would a wallet spend two p2shP2pk inputs as these
