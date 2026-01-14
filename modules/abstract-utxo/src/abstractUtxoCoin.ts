@@ -408,18 +408,6 @@ export abstract class AbstractUtxoCoin
     return getFullNameFromCoinName(this.name);
   }
 
-  /** Indicates whether the coin supports a block target */
-  supportsBlockTarget(): boolean {
-    // FIXME: the SDK does not seem to use this anywhere so it is unclear what the purpose of this method is
-    switch (getMainnet(this.network)) {
-      case utxolib.networks.bitcoin:
-      case utxolib.networks.dogecoin:
-        return true;
-      default:
-        return false;
-    }
-  }
-
   sweepWithSendMany(): boolean {
     return true;
   }

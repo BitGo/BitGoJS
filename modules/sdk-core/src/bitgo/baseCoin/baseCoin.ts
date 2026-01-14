@@ -359,14 +359,6 @@ export abstract class BaseCoin implements IBaseCoin {
   }
 
   /**
-   * Check whether a coin supports blockTarget for transactions to be included in
-   * @returns {boolean}
-   */
-  supportsBlockTarget() {
-    return false;
-  }
-
-  /**
    * Check whether a coin supports lightning transactions
    * @returns {boolean}
    */

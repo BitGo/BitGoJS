@@ -99,12 +99,6 @@ describe('V2 Base Coin:', function () {
     });
   });
 
-  describe('supportsBlockTarget', function () {
-    it('should return false', function () {
-      basecoinEth.supportsBlockTarget().should.equal(false);
-    });
-  });
-
   describe('Token initialization', function () {
     it('ERC20 Tokens initialized with name and contract should be instances of Erc20Token', function () {
       basecoinErc20TokenWithName.should.be.instanceof(Erc20Token);
