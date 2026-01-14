@@ -392,7 +392,7 @@ export abstract class AbstractUtxoCoin
    * @deprecated - will be removed when we drop support for utxolib
    * Use `name` property instead.
    */
-  get network(): utxolib.Network {
+  private get network(): utxolib.Network {
     return getNetworkFromCoinName(this.name);
   }
 
