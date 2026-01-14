@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import * as sinon from 'sinon';
 import * as utxolib from '@bitgo/utxo-lib';
 import { Wallet, VerificationOptions, ITransactionRecipient, Triple } from '@bitgo/sdk-core';
-import { fixedScriptWallet } from '@bitgo/wasm-utxo';
+import { address as wasmAddress, fixedScriptWallet } from '@bitgo/wasm-utxo';
 
 import { parseTransaction } from '../../../../src/transaction/fixedScript/parseTransaction';
 import { ParsedTransaction } from '../../../../src/transaction/types';
@@ -63,7 +63,7 @@ function getChangeInfoFromPsbt(psbt: utxolib.bitgo.UtxoPsbt): ChangeAddressInfo[
       const path = derivations[0].path;
       const { chain, index } = utxolib.bitgo.getChainAndIndexFromPath(path);
       return {
-        address: utxolib.address.fromOutputScript(psbt.txOutputs[i].script, psbt.network),
+        address: wasmAddress.fromOutputScriptWithCoin(psbt.txOutputs[i].script, getCoinName(psbt.network)),
         chain,
         index,
       };
