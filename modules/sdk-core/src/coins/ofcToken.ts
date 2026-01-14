@@ -2,12 +2,14 @@
  * @prettier
  */
 import { OfcTokenConfig } from '@bitgo/statics';
+import * as bolt11 from 'bolt11';
 import { isString } from 'lodash';
 import {
   BitGoBase,
   CoinConstructor,
   SignTransactionOptions as BaseSignTransactionOptions,
   SignedTransaction,
+  ITransactionRecipient,
 } from '../';
 import { Ofc } from './ofc';
 
@@ -21,6 +23,18 @@ export interface SignTransactionOptions extends BaseSignTransactionOptions {
 export { OfcTokenConfig };
 
 const publicIdRegex = /^[a-f\d]{32}$/i;
+
+function isBolt11Invoice(value: unknown): value is string {
+  if (!isString(value)) {
+    return false;
+  }
+  try {
+    bolt11.decode(value);
+    return true;
+  } catch (_e) {
+    return false;
+  }
+}
 export class OfcToken extends Ofc {
   public readonly tokenConfig: OfcTokenConfig;
 
@@ -63,6 +77,30 @@ export class OfcToken extends Ofc {
 
   public get type() {
     return this.tokenConfig.type;
+  }
+
+  checkRecipient(recipient: ITransactionRecipient): void {
+    if (isBolt11Invoice(recipient.address)) {
+      // amount for bolt11 invoices is either 'invoice' or a non-zero bigint
+      if (recipient.amount === 'invoice') {
+        return;
+      }
+      // try to parse the amount as a bigint
+      let amount: bigint;
+      try {
+        amount = BigInt(recipient.amount);
+      } catch (e) {
+        throw new Error(
+          `invalid argument ${recipient.amount} for amount - lightning invoice amount must be >= 0 or 'invoice'`
+        );
+      }
+      if (amount > 0n) {
+        return;
+      }
+      throw new Error(`invalid argument for amount - lightning invoice amount must be a non-zero bigint or 'invoice'`);
+    }
+
+    super.checkRecipient(recipient);
   }
 
   /**
