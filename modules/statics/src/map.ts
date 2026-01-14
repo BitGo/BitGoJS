@@ -162,7 +162,7 @@ export class CoinMap {
     1952: 'tokb',
     5734951: 'jovayeth',
     2019775: 'tjovayeth',
-    5042002: 'tarc',
+    5042002: 'tarcusdc',
     42428: 'tempo',
     42429: 'ttempo',
     5000: 'mantle',

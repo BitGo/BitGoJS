@@ -126,7 +126,7 @@ export enum CoinFamily {
   SOMI = 'somi', // Somnia Chain
   FLUENTETH = 'fluenteth',
   MORPH = 'morph',
-  ARC = 'arc', // ARC network
+  ARCUSDC = 'arcusdc', // ARC network
   TEMPO = 'tempo', // Tempo Network
 }
 
@@ -708,7 +708,7 @@ export enum UnderlyingAsset {
   APPC = 'appc',
   APT = 'apt',
   AQT = 'aqt',
-  ARC = 'arc',
+  ARCUSDC = 'arcusdc',
   ARCT = 'arct',
   ARCX = 'arcx',
   ARKM = 'arkm',

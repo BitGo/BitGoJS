@@ -2274,18 +2274,18 @@ class DogeosTestnet extends Testnet implements EthereumNetwork {
   nativeCoinOperationHashPrefix = '6281971';
 }
 
-class ArcTestnet extends Testnet implements EthereumNetwork {
-  name = 'Arc Testnet';
-  family = CoinFamily.ARC;
+class ArcUSDCTestnet extends Testnet implements EthereumNetwork {
+  name = 'USDC (ARC) Testnet';
+  family = CoinFamily.ARCUSDC;
   explorerUrl = 'https://testnet.arcscan.app/txs/';
   accountExplorerUrl = 'https://testnet.arcscan.app/address/';
   chainId = 5042002;
   nativeCoinOperationHashPrefix = '5042002';
 }
 
-class Arc extends Mainnet implements EthereumNetwork {
-  name = 'Arc';
-  family = CoinFamily.ARC;
+class ArcUSDC extends Mainnet implements EthereumNetwork {
+  name = 'USDC (ARC)';
+  family = CoinFamily.ARCUSDC;
   explorerUrl = 'https://testnet.arcscan.app/txs/'; // change to prod explorer url
   accountExplorerUrl = 'https://testnet.arcscan.app/address/'; // change to prod explorer url when available
   chainId = 5042002; // change to prod chain id when available
@@ -2319,7 +2319,7 @@ export const Networks = {
     apechain: Object.freeze(new ApeChain()),
     apt: Object.freeze(new Apt()),
     arbitrum: Object.freeze(new Arbitrum()),
-    arc: Object.freeze(new Arc()),
+    arcusdc: Object.freeze(new ArcUSDC()),
     asi: Object.freeze(new Asi()),
     atom: Object.freeze(new Atom()),
     avalancheC: Object.freeze(new AvalancheC()),
@@ -2428,7 +2428,7 @@ export const Networks = {
     apechain: Object.freeze(new ApeChainTestnet()),
     apt: Object.freeze(new AptTestnet()),
     arbitrum: Object.freeze(new ArbitrumTestnet()),
-    arc: Object.freeze(new ArcTestnet()),
+    arcusdc: Object.freeze(new ArcUSDCTestnet()),
     asi: Object.freeze(new AsiTestnet()),
     atom: Object.freeze(new AtomTestnet()),
     avalancheC: Object.freeze(new AvalancheCTestnet()),
