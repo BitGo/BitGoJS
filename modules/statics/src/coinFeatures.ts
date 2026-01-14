@@ -534,6 +534,23 @@ export const ZKETH_FEATURES = [
   CoinFeature.ETH_ROLLUP_CHAIN,
   CoinFeature.EIP1559,
 ];
+
+export const ZKSYNCERA_FEATURES = [
+  ...EVM_FEATURES,
+  CoinFeature.SHARED_EVM_SIGNING,
+  CoinFeature.SHARED_EVM_SDK,
+  CoinFeature.EVM_COMPATIBLE_IMS,
+  CoinFeature.EVM_COMPATIBLE_UI,
+  CoinFeature.EVM_COMPATIBLE_WP,
+  CoinFeature.SUPPORTS_ERC20,
+  CoinFeature.EVM_NON_BITGO_RECOVERY,
+  CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+  CoinFeature.MULTISIG_COLD,
+  CoinFeature.MULTISIG,
+  CoinFeature.USES_NON_PACKED_ENCODING_FOR_TXDATA,
+  CoinFeature.ETH_ROLLUP_CHAIN,
+];
+
 export const BERA_FEATURES = [
   ...ETH_FEATURES,
   CoinFeature.TSS,

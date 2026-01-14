@@ -1,3 +1,5 @@
+import { CoinFamily } from '../../src';
+
 const should = require('should');
 const { UnderlyingAsset } = require('../../src/base');
 
@@ -22,5 +24,15 @@ describe('UnderlyingAsset', function () {
         `;
       should.fail(undefined, undefined, failureMessage);
     }
+  });
+});
+
+describe('zkSync Era Base Types', function () {
+  it('should have ZKSYNCERA in CoinFamily enum', function () {
+    CoinFamily.ZKSYNCERA.should.equal('zksyncera');
+  });
+
+  it('should have ZKSYNCERA in UnderlyingAsset enum', function () {
+    UnderlyingAsset.ZKSYNCERA.should.equal('zksyncera');
   });
 });

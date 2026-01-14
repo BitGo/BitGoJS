@@ -306,6 +306,9 @@ const mainnetBase: EnvironmentTemplate = {
     xdc: {
       baseUrl: 'https://api.etherscan.io/v2',
     },
+    zksyncera: {
+      baseUrl: 'https://api.etherscan.io/v2',
+    },
   },
   icpNodeUrl: 'https://ic0.app',
   worldExplorerBaseUrl: 'https://worldscan.org/',
@@ -473,6 +476,9 @@ const testnetBase: EnvironmentTemplate = {
       baseUrl: 'https://testnet.arcscan.app/api/v2',
     },
     xdc: {
+      baseUrl: 'https://api.etherscan.io/v2',
+    },
+    zksyncera: {
       baseUrl: 'https://api.etherscan.io/v2',
     },
   },
