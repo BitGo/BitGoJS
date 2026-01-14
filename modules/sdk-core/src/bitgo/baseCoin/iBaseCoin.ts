@@ -588,7 +588,6 @@ export interface IBaseCoin {
   verifyAddress(params: VerifyAddressOptions): Promise<boolean>;
   isWalletAddress(params: VerifyAddressOptions | TssVerifyAddressOptions, wallet?: IWallet): Promise<boolean>;
   canonicalAddress(address: string, format: unknown): string;
-  supportsBlockTarget(): boolean;
   supportsLightning(): boolean;
   supportsMessageSigning(): boolean;
   supportsSigningTypedData(): boolean;
