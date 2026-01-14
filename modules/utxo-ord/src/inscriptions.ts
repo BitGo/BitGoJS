@@ -21,6 +21,9 @@ import { PreparedInscriptionRevealData } from '@bitgo/sdk-core';
 
 const OPS = bscript.OPS;
 const MAX_LENGTH_TAP_DATA_PUSH = 520;
+// default "postage" amount
+// https://github.com/ordinals/ord/blob/0.24.2/src/lib.rs#L149
+const DEFAULT_POSTAGE_AMOUNT = BigInt(10_000);
 
 /**
  * The max size of an individual OP_PUSH in a Taproot script is 520 bytes. This
@@ -100,7 +103,7 @@ function getInscriptionRevealSize(
       },
     ],
   });
-  psbt.addOutput({ script: commitOutput, value: BigInt(10_000) });
+  psbt.addOutput({ script: commitOutput, value: DEFAULT_POSTAGE_AMOUNT });
 
   psbt.signTaprootInput(
     0,
