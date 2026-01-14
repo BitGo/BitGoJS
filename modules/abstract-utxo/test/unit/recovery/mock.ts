@@ -1,6 +1,7 @@
 import { bitgo } from '@bitgo/utxo-lib';
 import { AddressInfo, TransactionIO } from '@bitgo/blockapis';
 import * as utxolib from '@bitgo/utxo-lib';
+import { address as wasmAddress, AddressFormat } from '@bitgo/wasm-utxo';
 
 import { AbstractUtxoCoin, RecoveryProvider } from '../../../src';
 import { Bch } from '../../../src/impl/bch';
@@ -51,7 +52,7 @@ export class MockRecoveryProvider implements RecoveryProvider {
 }
 export class MockCrossChainRecoveryProvider<TNumber extends number | bigint> implements RecoveryProvider {
   private addressVersion: 'cashaddr' | 'base58';
-  private addressFormat: utxolib.addressFormat.AddressFormat;
+  private addressFormat: AddressFormat;
   constructor(
     public coin: AbstractUtxoCoin,
     public unspents: Unspent<TNumber>[],
@@ -65,7 +66,7 @@ export class MockCrossChainRecoveryProvider<TNumber extends number | bigint> imp
 
   async getUnspentsForAddresses(addresses: string[]): Promise<Unspent[]> {
     return this.tx.outs.map((o, vout: number) => {
-      let address = utxolib.addressFormat.fromOutputScriptWithFormat(o.script, this.addressFormat, this.coin.network);
+      let address = wasmAddress.fromOutputScriptWithCoin(o.script, this.coin.name, this.addressFormat);
       if (address.includes(':')) {
         [, address] = address.split(':');
       }
@@ -91,7 +92,7 @@ export class MockCrossChainRecoveryProvider<TNumber extends number | bigint> imp
         };
       }),
       outputs: this.tx.outs.map((o) => {
-        let address = utxolib.addressFormat.fromOutputScriptWithFormat(o.script, this.addressFormat, this.coin.network);
+        let address = wasmAddress.fromOutputScriptWithCoin(o.script, this.coin.name, this.addressFormat);
         if (address.includes(':')) {
           [, address] = address.split(':');
         }

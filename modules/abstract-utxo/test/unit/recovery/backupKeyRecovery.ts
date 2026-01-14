@@ -8,7 +8,7 @@ import { BIP32Interface } from '@bitgo/utxo-lib';
 import * as utxolib from '@bitgo/utxo-lib';
 import { Config, krsProviders, Triple } from '@bitgo/sdk-core';
 import { Dimensions } from '@bitgo/unspents';
-import { fixedScriptWallet } from '@bitgo/wasm-utxo';
+import { address as wasmAddress, fixedScriptWallet } from '@bitgo/wasm-utxo';
 
 import {
   AbstractUtxoCoin,
@@ -17,6 +17,7 @@ import {
   CoingeckoApi,
   FormattedOfflineVaultTxInfo,
 } from '../../../src';
+import { getCoinName } from '../../../src/names';
 import {
   defaultBitGo,
   encryptKeychain,
@@ -319,7 +320,9 @@ function run(
     it((params.hasKrsOutput ? 'has' : 'has no') + ' key recovery service output', function () {
       const outs = recoveryTx instanceof utxolib.bitgo.UtxoPsbt ? recoveryTx.getUnsignedTx().outs : recoveryTx.outs;
       outs.length.should.eql(1);
-      const outputAddresses = outs.map((o) => utxolib.address.fromOutputScript(o.script, recoveryTx.network));
+      const outputAddresses = outs.map((o) =>
+        wasmAddress.fromOutputScriptWithCoin(o.script, getCoinName(recoveryTx.network))
+      );
       outputAddresses
         .includes(keyRecoveryServiceAddress)
         .should.eql(!!params.hasKrsOutput && params.krsProvider === 'keyternal');

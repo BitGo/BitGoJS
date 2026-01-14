@@ -36,7 +36,10 @@ export function getWalletAddress(
   if (utxolib.isTestnet(network)) {
     return wasmUtxo.fixedScriptWallet.address(walletKeys, chain, index, network);
   }
-  return utxolib.address.fromOutputScript(getOutputScript(walletKeys, chain, index).scriptPubKey, network);
+  return wasmUtxo.address.fromOutputScriptWithCoin(
+    getOutputScript(walletKeys, chain, index).scriptPubKey,
+    getCoinName(network)
+  );
 }
 
 function mockOutputIdForAddress(address: string) {

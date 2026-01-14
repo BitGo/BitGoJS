@@ -1,4 +1,7 @@
 import * as utxolib from '@bitgo/utxo-lib';
+import { address as wasmAddress } from '@bitgo/wasm-utxo';
+
+import { getCoinName } from '../../../src/names';
 const { isWalletUnspent, signInputWithUnspent } = utxolib.bitgo;
 type RootWalletKeys = utxolib.bitgo.RootWalletKeys;
 type Unspent<TNumber extends number | bigint = number> = utxolib.bitgo.Unspent<TNumber>;
@@ -22,7 +25,7 @@ function toTxOutput<TNumber extends number | bigint = number>(
   network: utxolib.Network
 ): utxolib.TxOutput<TNumber> {
   return {
-    script: utxolib.address.toOutputScript(u.address, network),
+    script: Buffer.from(wasmAddress.toOutputScriptWithCoin(u.address, getCoinName(network))),
     value: u.value,
   };
 }
