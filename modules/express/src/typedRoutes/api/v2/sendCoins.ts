@@ -67,7 +67,7 @@ export const SendCoinsRequestBody = {
   numBlocks: optional(t.number),
 
   /** The desired fee rate for the transaction in base units per kilobyte (e.g., satoshis/kB) */
-  feeRate: optional(t.union([t.number, t.string])),
+  feeRate: optional(t.number),
 
   /** Fee multiplier (multiplies the estimated fee by this factor) */
   feeMultiplier: optional(t.number),
