@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [11.19.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.19.0...@bitgo/utxo-lib@11.19.1) (2026-01-14)
+
+**Note:** Version bump only for package @bitgo/utxo-lib
+
+
+
+
+
 # [11.19.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-lib@11.18.0...@bitgo/utxo-lib@11.19.0) (2025-12-23)
 
 

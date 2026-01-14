@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.20.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.19.0...bitgo@50.20.0) (2026-01-14)
+
+
+### Bug Fixes
+
+* **sdk-core:** update go staking request interface ([c728c05](https://github.com/BitGo/BitGoJS/commit/c728c05ac53724e8782368a10501775d0107d842))
+
+
+### Features
+
+* mon token support ([dfdff66](https://github.com/BitGo/BitGoJS/commit/dfdff6602c5f892cf6b1223561d817a1b96248d6))
+
+
+
+
+
 # [50.19.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.18.0...bitgo@50.19.0) (2026-01-07)
 
 

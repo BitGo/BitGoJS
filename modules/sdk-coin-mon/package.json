@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-mon",
-  "version": "1.5.1",
+  "version": "1.6.0",
   "description": "BitGo SDK coin library for Mon",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,14 +40,14 @@
     ]
   },
   "dependencies": {
-    "@bitgo/abstract-eth": "^24.19.5",
-    "@bitgo/sdk-core": "^36.26.0",
-    "@bitgo/statics": "^58.20.0",
+    "@bitgo/abstract-eth": "^24.19.6",
+    "@bitgo/sdk-core": "^36.27.0",
+    "@bitgo/statics": "^58.21.0",
     "@ethereumjs/common": "^2.6.5"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.73.0",
-    "@bitgo/sdk-test": "^9.1.21"
+    "@bitgo/sdk-api": "^1.73.1",
+    "@bitgo/sdk-test": "^9.1.22"
   },
   "files": [
     "dist"

@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.19.22](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.19.21...@bitgo/sdk-coin-sui@5.19.22) (2026-01-14)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-sui
+
+
+
+
+
 ## [5.19.21](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sui@5.19.20...@bitgo/sdk-coin-sui@5.19.21) (2026-01-07)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sui

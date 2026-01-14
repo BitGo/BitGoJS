@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [15.18.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.18.1...@bitgo/express@15.18.2) (2026-01-14)
+
+
+### Bug Fixes
+
+* **express:** allow string for feeRate ([aa76013](https://github.com/BitGo/BitGoJS/commit/aa76013e20f34d83858034238f805c2d85c7bc78))
+
+
+
+
+
 ## [15.18.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.18.0...@bitgo/express@15.18.1) (2026-01-07)
 
 **Note:** Version bump only for package @bitgo/express

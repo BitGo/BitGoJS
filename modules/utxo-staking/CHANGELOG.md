@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.31.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.30.0...@bitgo/utxo-staking@1.31.0) (2026-01-14)
+
+
+### Features
+
+* **abstract-utxo:** bump wasm-utxo dependency to v1.20.0 ([b57480c](https://github.com/BitGo/BitGoJS/commit/b57480cd4698fd23c53b16e733133d0982a746a2))
+
+
+
+
+
 # [1.30.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-staking@1.29.0...@bitgo/utxo-staking@1.30.0) (2026-01-07)
 
 

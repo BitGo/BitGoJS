@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.3.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tempo@1.2.0...@bitgo/sdk-coin-tempo@1.3.0) (2026-01-14)
+
+
+### Features
+
+* **sdk-coin-tempo:** add transaction serialization ([6dd03fa](https://github.com/BitGo/BitGoJS/commit/6dd03faadfd37941bd386c20a7b1443893c3c98f))
+
+
+
+
+
 # [1.2.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-tempo@1.1.1...@bitgo/sdk-coin-tempo@1.2.0) (2026-01-07)
 
 

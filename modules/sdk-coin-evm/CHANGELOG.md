@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.11.1...@bitgo/sdk-coin-evm@1.12.0) (2026-01-14)
+
+
+### Features
+
+* address resolution function for hbarevm ([8678f78](https://github.com/BitGo/BitGoJS/commit/8678f7895cd49ec4a1a6bb0b17470c5c6e159a99))
+* validateAccountId fn in evm utils ([efafdb9](https://github.com/BitGo/BitGoJS/commit/efafdb9d6a5cd01789c85401fb26858a3897a8b5))
+
+
+
+
+
 ## [1.11.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.11.0...@bitgo/sdk-coin-evm@1.11.1) (2026-01-07)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-evm

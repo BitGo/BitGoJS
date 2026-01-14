@@ -3,6 +3,31 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.21.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.20.0...@bitgo/statics@58.21.0) (2026-01-14)
+
+
+### Bug Fixes
+
+* override verify tss txn for xdc token ([03d5339](https://github.com/BitGo/BitGoJS/commit/03d5339d722ed5d6ecb3c70bb5b3ba0161bd2d7d))
+
+
+### Features
+
+* add mantle erc20 token ([9d5e4ae](https://github.com/BitGo/BitGoJS/commit/9d5e4ae863c2be06fd1e7296fc32a3a76311df48))
+* add ofc assets for Mantle and Fluenteth ([2784be0](https://github.com/BitGo/BitGoJS/commit/2784be0a33ea1d4bd353a67b55d78a2fbb317305))
+* enable erc20 token optimization for all tokens ([a54fefe](https://github.com/BitGo/BitGoJS/commit/a54fefe7edc5680260ffb0d43c79544a823be6f8))
+* enable multisig stuck tx for all EVM chains ([1e95888](https://github.com/BitGo/BitGoJS/commit/1e958884c215047aa4e16d3c1eaf3704f4215ea8))
+* go account support for xlayer and jovayeth erc20 tokens ([7b4e292](https://github.com/BitGo/BitGoJS/commit/7b4e292270d8663c0baa71276c30b28b4df6ef7e))
+* go account suppport for mantle erc20 tokens ([66e50ac](https://github.com/BitGo/BitGoJS/commit/66e50ac7c5c5d6435b8c9a6f8f87e00629717221))
+* mon token support ([dfdff66](https://github.com/BitGo/BitGoJS/commit/dfdff6602c5f892cf6b1223561d817a1b96248d6))
+* onboard xlayer and jovayeth tokens ([cc031e5](https://github.com/BitGo/BitGoJS/commit/cc031e5cdeadeb86c9249d84dacd15f9b1c5555e))
+* **statics:** onboard 11 new ungated tokens with OFC equivalents ([7899c90](https://github.com/BitGo/BitGoJS/commit/7899c909232537abe37e803ce938c6d0f77c3b0e))
+* **statics:** update explorer and address url for iota ([5625b7f](https://github.com/BitGo/BitGoJS/commit/5625b7fef84e41298c1d2cd0ce670f11a099a9ca))
+
+
+
+
+
 # [58.20.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.19.0...@bitgo/statics@58.20.0) (2026-01-07)
 
 
