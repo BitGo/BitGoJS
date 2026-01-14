@@ -9,7 +9,7 @@ function createCommitTransactionPsbt(commitAddress: string, walletKeys: utxolib.
 
   commitTransactionPsbt.addOutput({
     script: commitTransactionOutputScript,
-    value: BigInt(42),
+    value: BigInt(10_000),
   });
 
   const walletUnspent = testutil.mockWalletUnspent(networks.testnet, BigInt(20_000), { keys: walletKeys });
@@ -64,7 +64,7 @@ describe('inscriptions', () => {
     });
   });
 
-  xdescribe('Inscription Reveal Data', () => {
+  describe('Inscription Reveal Data', () => {
     it('should sign reveal transaction and validate reveal size', () => {
       const walletKeys = testutil.getDefaultWalletKeys();
       const inscriptionData = Buffer.from('And Desert You', 'ascii');
@@ -76,11 +76,13 @@ describe('inscriptions', () => {
       );
 
       const commitTransactionPsbt = createCommitTransactionPsbt(address, walletKeys);
+      // Use the commit address (P2TR) as recipient to match the output script size
+      // used in getInscriptionRevealSize estimation
       const fullySignedRevealTransaction = inscriptions.signRevealTransaction(
         walletKeys.user.privateKey as Buffer,
         tapLeafScript,
         address,
-        '2N9R3mMCv6UfVbWEUW3eXJgxDeg4SCUVsu9',
+        address,
         commitTransactionPsbt.getUnsignedTx().toBuffer(),
         networks.testnet
       );
@@ -88,7 +90,6 @@ describe('inscriptions', () => {
       fullySignedRevealTransaction.finalizeTapInputWithSingleLeafScriptAndSignature(0);
       const actualVirtualSize = fullySignedRevealTransaction.extractTransaction(true).virtualSize();
 
-      // TODO(BG-70861): figure out why size is slightly different and re-enable test
       assert.strictEqual(revealTransactionVSize, actualVirtualSize);
     });
   });
