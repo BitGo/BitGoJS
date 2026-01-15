@@ -341,6 +341,37 @@ describe('V2 Keychains', function () {
         const keys = await keychains.updatePassword({ oldPassword: oldPassword, newPassword: newPassword });
         validateKeys(keys, newPassword, 1);
       });
+
+      it('should update multi-user-ofc keys', async function () {
+        nock(bgUrl)
+          .get('/api/v2/tltc/key')
+          .query(true)
+          .reply(200, {
+            keys: [
+              {
+                id: 'randomid1',
+                encryptedPrv: bitgo.encrypt({ input: 'xprv1', password: oldPassword }),
+                coinSpecific: {
+                  ofc: {
+                    features: ['multi-user-key'],
+                  },
+                },
+              },
+              {
+                id: 'randomid2',
+                encryptedPrv: bitgo.encrypt({ input: 'xprv2', password: otherPassword }),
+                coinSpecific: {
+                  ofc: {
+                    features: ['multi-user-key'],
+                  },
+                },
+              },
+            ],
+          });
+
+        const keys = await keychains.updatePassword({ oldPassword: oldPassword, newPassword: newPassword });
+        validateKeys(keys, newPassword, 1);
+      });
     });
 
     describe('Create TSS Keychains', function () {
