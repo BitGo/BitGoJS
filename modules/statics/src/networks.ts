@@ -17,6 +17,7 @@ export interface FlareNetwork extends BaseNetwork {
   assetId: string;
   vm?: string;
   txFee: string;
+  minImportToPFee: string;
   maxImportFee: string;
   createSubnetTx?: string;
   createChainTx?: string;
@@ -1980,6 +1981,7 @@ export class FlareP extends Mainnet implements FlareNetwork {
   hrp = 'flare';
   alias = 'P';
   vm = 'platformvm';
+  minImportToPFee = '1261000'; // 0.1261 FLR
   txFee = '200000'; // FLR P-chain import requires higher fee than base txFee
   baseTxFee = '1000000';
   maxImportFee = '10000000'; // defaults
@@ -2015,6 +2017,7 @@ export class FlarePTestnet extends Testnet implements FlareNetwork {
   alias = 'P';
   assetId = 'fxMAKpBQQpFedrUhWMsDYfCUJxdUw4mneTczKBzNg3rc2JUub';
   vm = 'platformvm';
+  minImportToPFee = '1261000'; // 0.1261 FLR
   txFee = '200000'; // FLR P-chain import requires higher fee than base txFee
   baseTxFee = '1000000';
   maxImportFee = '10000000'; // defaults

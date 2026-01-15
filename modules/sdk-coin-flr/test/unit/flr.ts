@@ -2,6 +2,7 @@ import * as should from 'should';
 
 import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
 import { BitGoAPI } from '@bitgo/sdk-api';
+import { coins } from '@bitgo/statics';
 
 import { Flr, Tflr } from '../../src/index';
 import { ExplainTransactionOptions } from '../../src/iface';
@@ -606,9 +607,10 @@ describe('flr', function () {
       const hopDestinationAddress =
         'P-costwo15msvr27szvhhpmah0c38gcml7vm29xjh7tcek8~P-costwo1cwrdtrgf4xh80ncu7palrjw7gn4mpj0n4dxghh~P-costwo1zt9n96hey4fsvnde35n3k4kt5pu7c784dzewzd';
       const hopAddress = '0x28A05933dC76e4e6c25f35D5c9b2A58769700E76';
-      const importTxFee = 200000; // Match FlarePTestnet txFee from networks.ts
-      // Adjusted amount to work backwards from hop amount (50000000): 50000000 - 200000 = 49800000 nanoFLR
-      const amount = 49800000000000000;
+      const flrpCoin = coins.get('tflrp');
+      const importTxFee = Number((flrpCoin.network as any).minImportToPFee);
+      // Adjusted amount to work backwards from hop amount (50000000): 50000000 - importTxFee nanoFLR
+      const amount = (50000000 - importTxFee) * 1e9;
       const txParams = {
         recipients: [{ amount, address: hopDestinationAddress }],
         wallet: wallet,
@@ -675,9 +677,7 @@ describe('flr', function () {
         await tflrCoin
           .verifyTransaction(verifyFlrTransactionOptions)
           .should.be.rejectedWith(
-            `Hop amount: ${amount / 1e9 + importTxFee} does not equal original amount: ${
-              amount / 1e9 + importTxFee + 1
-            }`
+            `Hop amount: ${amount / 1e9 + importTxFee} is less than required amount: ${amount / 1e9 + importTxFee + 1}`
           );
       });
 
@@ -802,11 +802,13 @@ describe('flr', function () {
 
       await (tflrCoin as any)
         .validateHopPrebuild(wallet, hopPrebuild, originalParams)
-        .should.be.rejectedWith(/Hop amount: .* does not equal original amount/);
+        .should.be.rejectedWith(/Hop amount: .* is less than required amount/);
     });
 
     it('should throw error for Export hop prebuild with mismatched destination', async function () {
       const wallet = new Wallet(bitgo, tflrCoin, {});
+      const flrpCoin = coins.get('tflrp');
+      const minImportToPFee = Number((flrpCoin.network as any).minImportToPFee);
       const hopPrebuild = {
         tx: hopExportTx,
         id: hopExportTxId,
@@ -826,7 +828,7 @@ describe('flr', function () {
         recipients: [
           {
             address: 'P-costwo1different~P-costwo1address~P-costwo1here',
-            amount: '49800000000000000', // 50000000 - 200000 (txFee) = 49800000 nanoFLR = 49800000000000000 wei
+            amount: String((50000000 - minImportToPFee) * 1e9), // Correct amount so destination check is reached
           },
         ],
       };
