@@ -3802,6 +3802,13 @@ export const ofcCoins = [
     6,
     UnderlyingAsset['thash:ylds']
   ),
+  tofcHashToken(
+    '726c0865-2f8b-4409-8e93-a7c9a47a6c35',
+    'ofcthash:tfigr',
+    'Testnet Figure',
+    9,
+    UnderlyingAsset['thash:tfigr']
+  ),
   ofcTonToken('c0e7396b-d21a-4b5a-b547-fdfe001cf3ba', 'ofcton:usdt', 'Ton USDT', 6, UnderlyingAsset['ton:usdt']),
   ofcTonToken('8977a6f0-0864-4250-a060-6ff385d304f9', 'ofcton:usde', 'Ethena USDe', 6, UnderlyingAsset['ton:usde']),
   ofcTonToken('827bf2c7-a741-406f-9ed4-fb0f3c33b01a', 'ofcton:not', 'Notcoin', 9, UnderlyingAsset['ton:not']),
