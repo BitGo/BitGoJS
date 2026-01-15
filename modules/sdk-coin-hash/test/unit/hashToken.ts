@@ -57,8 +57,8 @@ describe('Hash Tokens', function () {
     mainnetHashToken.decimalPlaces.should.equal(6);
   });
 
-  it('should return denomination for YLDS token on hash using hash as coinFamily', function () {
-    testnetUtils.getTokenDenomsUsingCoinFamily('hash').should.deepEqual(['uylds.fcc']);
+  it('should return denomination for hash tokens using hash as coinFamily', function () {
+    testnetUtils.getTokenDenomsUsingCoinFamily('hash').should.deepEqual(['uylds.fcc', 'nfigr.d']);
   });
 
   describe('Address Validation', () => {
