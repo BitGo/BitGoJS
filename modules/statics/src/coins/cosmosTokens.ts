@@ -1,6 +1,6 @@
 import { cosmosToken } from '../account';
 import { UnderlyingAsset, BaseUnit } from '../base';
-import { COSMOS_TOKEN_FEATURES_WITH_STAKING } from '../coinFeatures';
+import { COSMOS_TOKEN_FEATURES, COSMOS_TOKEN_FEATURES_WITH_STAKING } from '../coinFeatures';
 import { Networks } from '../networks';
 
 export const cosmosTokens = [
@@ -25,5 +25,16 @@ export const cosmosTokens = [
     BaseUnit.HASH,
     UnderlyingAsset['thash:ylds'],
     COSMOS_TOKEN_FEATURES_WITH_STAKING
+  ),
+  cosmosToken(
+    '7cc5ddcf-f919-480c-b413-77f667ebc65c',
+    'thash:tfigr',
+    'Testnet Figure',
+    'nfigr.d',
+    9,
+    Networks.test.hash,
+    BaseUnit.HASH,
+    UnderlyingAsset['thash:tfigr'],
+    COSMOS_TOKEN_FEATURES
   ),
 ];
