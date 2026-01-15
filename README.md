@@ -51,7 +51,7 @@ BitGoJS currently provides support for the following Node versions per package.j
 
 ```
 "engines": {
-  "node": ">=20 <23",
+  "node": ">=20 <25",
   "npm": ">=3.10.10"
 }
 ```
@@ -62,6 +62,7 @@ As each Node LTS version reaches its end-of-life we will exclude that version fr
 
 - `20`
 - `22`
+- `24`
 
 JavaScript package managers should allow you to install this package with any version of Node, with, at most, a warning if your version of Node does not fall within the range specified by our node engines property. If you encounter issues installing this package on a supported version of Node, please report the issue to us.
 
