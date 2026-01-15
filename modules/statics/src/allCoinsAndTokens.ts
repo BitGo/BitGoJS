@@ -138,6 +138,7 @@ import {
   XTZ_FEATURES,
   ZETA_FEATURES,
   ZKETH_FEATURES,
+  ZKSYNCERA_FEATURES,
 } from './coinFeatures';
 import { botTokens } from './coins/botTokens';
 import { adaTokens } from './coins/adaTokens';
@@ -1374,6 +1375,26 @@ export const allCoinsAndTokens = [
     UnderlyingAsset.ZKETH,
     BaseUnit.ETH,
     ZKETH_FEATURES
+  ),
+  account(
+    '73c6f066-107a-4dcb-84e6-5a5f9dab2a1e',
+    'zksyncera',
+    'zkSync Era',
+    Networks.main.zkSyncEra,
+    18,
+    UnderlyingAsset.ZKSYNCERA,
+    BaseUnit.ETH,
+    ZKSYNCERA_FEATURES
+  ),
+  account(
+    'fc901cec-26fa-4afb-830a-6793425d7064',
+    'tzksyncera',
+    'Testnet zkSync Era',
+    Networks.test.zkSyncEra,
+    18,
+    UnderlyingAsset.ZKSYNCERA,
+    BaseUnit.ETH,
+    ZKSYNCERA_FEATURES
   ),
   account(
     'ac3c225e-55a9-4236-b907-a4cccc30a2fd',

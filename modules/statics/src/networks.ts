@@ -1343,6 +1343,32 @@ class ZkSyncTestnet extends Testnet implements EthereumNetwork {
   walletImplementationAddress = '0x92db2759d1dca129a0d9d46877f361be819184c4';
 }
 
+class ZkSyncEra extends Mainnet implements EthereumNetwork {
+  name = 'ZkSyncEra';
+  family = CoinFamily.ZKSYNCERA;
+  explorerUrl = 'https://explorer.zksync.io/tx/';
+  accountExplorerUrl = 'https://explorer.zksync.io/address/';
+  chainId = 324;
+  nativeCoinOperationHashPrefix = '324';
+  tokenOperationHashPrefix = '324-ERC20';
+}
+
+class ZkSyncEraTestnet extends Testnet implements EthereumNetwork {
+  name = 'ZkSyncEraTestnet';
+  family = CoinFamily.ZKSYNCERA;
+  explorerUrl = 'https://sepolia.explorer.zksync.io/tx/';
+  accountExplorerUrl = 'https://sepolia.explorer.zksync.io/address/';
+  chainId = 300;
+  nativeCoinOperationHashPrefix = '300';
+  tokenOperationHashPrefix = '300-ERC20';
+  forwarderFactoryAddress = '0xdd498702f44c4da08eb9e08d3f015eefe5cb71fc';
+  forwarderImplementationAddress = '0xbe69cae311191fb45e648ed20847f06fad2dbab4';
+  walletV4ForwarderFactoryAddress = '0x37996e762fa8b671869740c79eb33f625b3bf92a';
+  walletV4ForwarderImplementationAddress = '0xd5fe1c1f216b775dfd30638fa7164d41321ef79b';
+  walletFactoryAddress = '0x4550e1e7616d3364877fc6c9324938dab678621a';
+  walletImplementationAddress = '0x92db2759d1dca129a0d9d46877f361be819184c4';
+}
+
 class Berachain extends Mainnet implements EthereumNetwork {
   name = 'Bera';
   family = CoinFamily.BERA;
@@ -2394,6 +2420,7 @@ export const Networks = {
     zCash: Object.freeze(new ZCash()),
     zeta: Object.freeze(new Zeta()),
     zkSync: Object.freeze(new ZkSync()),
+    zkSyncEra: Object.freeze(new ZkSyncEra()),
   },
   test: {
     ada: Object.freeze(new AdaTestnet()),
@@ -2507,5 +2534,6 @@ export const Networks = {
     zCash: Object.freeze(new ZCashTestnet()),
     zeta: Object.freeze(new ZetaTestnet()),
     zkSync: Object.freeze(new ZkSyncTestnet()),
+    zkSyncEra: Object.freeze(new ZkSyncEraTestnet()),
   },
 };

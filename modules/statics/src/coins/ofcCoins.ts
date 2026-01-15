@@ -333,6 +333,22 @@ export const ofcCoins = [
   ),
   ofc('aa7e956f-2d59-4bf6-aba6-2d51bd298150', 'ofcip', 'Story', 18, UnderlyingAsset.IP, CoinKind.CRYPTO),
   tofc('773b02f6-32ea-493a-bca5-13d93cb0afff', 'ofctip', 'Story Testnet', 18, UnderlyingAsset.IP, CoinKind.CRYPTO),
+  ofc(
+    '8b50bd47-54d4-456d-a141-09f8e90df850',
+    'ofczksyncera',
+    'ZKSyncEra',
+    18,
+    UnderlyingAsset.ZKSYNCERA,
+    CoinKind.CRYPTO
+  ),
+  tofc(
+    'fef4f726-0b9c-42c6-a06a-f76a33020326',
+    'ofctzksyncera',
+    'ZKSyncEra Testnet',
+    18,
+    UnderlyingAsset.ZKSYNCERA,
+    CoinKind.CRYPTO
+  ),
   ofc('c5015165-6ae4-4925-bd3f-4b767feba2f9', 'ofcplume', 'Plume', 18, UnderlyingAsset.PLUME, CoinKind.CRYPTO),
   tofc(
     '7b81e4fb-0ca7-4626-8f0f-0ab36239a35f',

@@ -120,6 +120,7 @@ export enum CoinFamily {
   ZEC = 'zec',
   ZETA = 'zeta',
   ZKETH = 'zketh',
+  ZKSYNCERA = 'zksyncera', // ZkSync Era
   LINEAETH = 'lineaeth',
   IP = 'ip', // Story Chain
   SOMI = 'somi', // Somnia Chain
@@ -641,6 +642,7 @@ export enum UnderlyingAsset {
   ZETA = 'zeta',
   ZKETH = 'zketh',
 
+  ZKSYNCERA = 'zksyncera', // ZkSync Era
   // ERC 20 tokens
   '$Evmosia.com' = '$evmosia.com',
   '0xREVIEW' = '0xreview',
