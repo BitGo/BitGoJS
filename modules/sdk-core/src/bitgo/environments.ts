@@ -300,7 +300,7 @@ const mainnetBase: EnvironmentTemplate = {
     dogeos: {
       baseUrl: 'https://blockscout.testnet.dogeos.com', //TODO: WIN-8082 => add mainnet url when available
     },
-    arc: {
+    arcusdc: {
       baseUrl: 'https://testnet.arcscan.app/api/v2', // WIN-8039 => add mainnet url when available
     },
     xdc: {
@@ -472,7 +472,7 @@ const testnetBase: EnvironmentTemplate = {
     dogeos: {
       baseUrl: 'https://blockscout.testnet.dogeos.com',
     },
-    arc: {
+    arcusdc: {
       baseUrl: 'https://testnet.arcscan.app/api/v2',
     },
     xdc: {

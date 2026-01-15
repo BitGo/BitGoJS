@@ -3823,8 +3823,15 @@ export const ofcCoins = [
     6,
     UnderlyingAsset['tsui:deep']
   ),
-  ofc('d45636f8-f120-4374-b717-70fe999baa43', 'ofcarc', 'Arc', 18, UnderlyingAsset.ARC, CoinKind.CRYPTO),
-  tofc('bc57e64d-045e-4421-aa92-64db0c51e1d7', 'ofctarc', 'Arc Testnet', 18, UnderlyingAsset.ARC, CoinKind.CRYPTO),
+  ofc('d45636f8-f120-4374-b717-70fe999baa43', 'ofcarcusdc', 'USDC (ARC)', 18, UnderlyingAsset.ARCUSDC, CoinKind.CRYPTO),
+  tofc(
+    'bc57e64d-045e-4421-aa92-64db0c51e1d7',
+    'ofctarcusdc',
+    'USDC (ARC) Testnet',
+    18,
+    UnderlyingAsset.ARCUSDC,
+    CoinKind.CRYPTO
+  ),
   // New BSC OFC token
   ofcBscToken('b4200c85-f550-44d6-a6cb-a590f19773b0', 'ofcbsc:sto', 'StakeStone', 18, UnderlyingAsset['bsc:sto']),
   // New Arbitrum OFC token

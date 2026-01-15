@@ -2631,11 +2631,11 @@ export const allCoinsAndTokens = [
   ),
   account(
     'cf06d1ea-f7c4-4a26-95fd-f71983eba58f',
-    'tarc',
-    'Arc Testnet',
-    Networks.test.arc,
+    'tarcusdc',
+    'USDC (ARC) Testnet',
+    Networks.test.arcusdc,
     18,
-    UnderlyingAsset.ARC,
+    UnderlyingAsset.ARCUSDC,
     BaseUnit.ETH,
     [
       ...EVM_FEATURES,
@@ -2650,11 +2650,11 @@ export const allCoinsAndTokens = [
   ),
   account(
     '733c4da8-52f7-4f9f-a7dc-897c81453fee',
-    'arc',
-    'Arc',
-    Networks.main.arc,
+    'arcusdc',
+    'USDC (ARC)',
+    Networks.main.arcusdc,
     18,
-    UnderlyingAsset.ARC,
+    UnderlyingAsset.ARCUSDC,
     BaseUnit.ETH,
     [
       ...EVM_FEATURES,
