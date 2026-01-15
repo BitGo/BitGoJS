@@ -147,10 +147,7 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
       throw new BuildTransactionError('threshold is required');
     }
 
-    const estimatedGasUnits = BigInt(this.transaction._network.txFee) || 200000n;
-    const baseFeeInWei = BigInt(this.transaction._fee.fee);
-    const baseFeeGwei = baseFeeInWei / BigInt(1e9);
-    const actualFeeNFlr = baseFeeGwei * estimatedGasUnits;
+    const actualFeeNFlr = BigInt(this.transaction._fee.fee);
     const sourceChain = 'P';
 
     // Convert decoded UTXOs to native FlareJS Utxo objects
