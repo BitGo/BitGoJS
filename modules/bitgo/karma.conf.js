@@ -15,7 +15,7 @@ module.exports = function (config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'dist/browser/BitGoJS.min.js',
+      'dist/browser/BitGoJS.js',
       'test/browser/karmaHelper.js',
       { pattern: 'test/browser/**/*.ts' },
       { pattern: 'dist/browser/*.wasm', included: false, served: true, watched: false, nocache: true },
