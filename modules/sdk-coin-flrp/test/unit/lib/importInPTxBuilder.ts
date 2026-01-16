@@ -151,4 +151,105 @@ describe('Flrp Import In P Tx Builder', () => {
       tx.id.should.equal('2vwvuXp47dsUmqb4vkaMk7UsukrZNapKXT2ruZhVibbjMDpqr9');
     });
   });
+
+  describe('addressesIndex extraction and signature slot mapping', () => {
+    it('should correctly parse half-signed tx and add second signature', async () => {
+      const txBuilder = new TransactionBuilderFactory(coins.get('tflrp')).from(testData.halfSigntxHex);
+      txBuilder.sign({ key: testData.privateKeys[0] });
+      const tx = await txBuilder.build();
+      const rawTx = tx.toBroadcastFormat();
+      rawTx.should.equal(testData.signedHex);
+      tx.id.should.equal(testData.txhash);
+    });
+
+    it('should preserve transaction structure when parsing unsigned tx', async () => {
+      const freshBuilder = new TransactionBuilderFactory(coins.get('tflrp'))
+        .getImportInPBuilder()
+        .threshold(testData.threshold)
+        .locktime(testData.locktime)
+        .fromPubKey(testData.corethAddresses)
+        .to(testData.pAddresses)
+        .externalChainId(testData.sourceChainId)
+        .feeState(testData.feeState)
+        .context(testData.context)
+        .decodedUtxos(testData.utxos);
+
+      const freshTx = await freshBuilder.build();
+      const freshHex = freshTx.toBroadcastFormat();
+      const parsedBuilder = new TransactionBuilderFactory(coins.get('tflrp')).from(freshHex);
+      const parsedTx = await parsedBuilder.build();
+      const parsedHex = parsedTx.toBroadcastFormat();
+      parsedHex.should.equal(freshHex);
+    });
+
+    it('should sign parsed unsigned tx and produce same result as fresh sign', async () => {
+      const freshBuilder = new TransactionBuilderFactory(coins.get('tflrp'))
+        .getImportInPBuilder()
+        .threshold(testData.threshold)
+        .locktime(testData.locktime)
+        .fromPubKey(testData.corethAddresses)
+        .to(testData.pAddresses)
+        .externalChainId(testData.sourceChainId)
+        .feeState(testData.feeState)
+        .context(testData.context)
+        .decodedUtxos(testData.utxos);
+
+      freshBuilder.sign({ key: testData.privateKeys[2] });
+      freshBuilder.sign({ key: testData.privateKeys[0] });
+
+      const freshTx = await freshBuilder.build();
+      const parsedBuilder = new TransactionBuilderFactory(coins.get('tflrp')).from(testData.unsignedHex);
+      parsedBuilder.sign({ key: testData.privateKeys[2] });
+      parsedBuilder.sign({ key: testData.privateKeys[0] });
+      const parsedTx = await parsedBuilder.build();
+      parsedTx.toBroadcastFormat().should.equal(freshTx.toBroadcastFormat());
+      parsedTx.id.should.equal(freshTx.id);
+    });
+
+    it('should correctly handle signing flow: build -> parse -> sign -> parse -> sign', async () => {
+      const builder1 = new TransactionBuilderFactory(coins.get('tflrp'))
+        .getImportInPBuilder()
+        .threshold(testData.threshold)
+        .locktime(testData.locktime)
+        .fromPubKey(testData.corethAddresses)
+        .to(testData.pAddresses)
+        .externalChainId(testData.sourceChainId)
+        .feeState(testData.feeState)
+        .context(testData.context)
+        .decodedUtxos(testData.utxos);
+
+      const unsignedTx = await builder1.build();
+      const unsignedHex = unsignedTx.toBroadcastFormat();
+      const builder2 = new TransactionBuilderFactory(coins.get('tflrp')).from(unsignedHex);
+      builder2.sign({ key: testData.privateKeys[2] });
+      const halfSignedTx = await builder2.build();
+      const halfSignedHex = halfSignedTx.toBroadcastFormat();
+      const builder3 = new TransactionBuilderFactory(coins.get('tflrp')).from(halfSignedHex);
+      builder3.sign({ key: testData.privateKeys[0] });
+      const fullSignedTx = await builder3.build();
+      fullSignedTx.toBroadcastFormat().should.equal(testData.signedHex);
+      fullSignedTx.id.should.equal(testData.txhash);
+    });
+
+    it('should have correct number of signatures after full sign flow', async () => {
+      const txBuilder = new TransactionBuilderFactory(coins.get('tflrp')).from(testData.signedHex);
+      const tx = await txBuilder.build();
+      const txJson = tx.toJson();
+      txJson.signatures.length.should.equal(2);
+    });
+
+    it('should have 1 signature after half sign', async () => {
+      const txBuilder = new TransactionBuilderFactory(coins.get('tflrp')).from(testData.halfSigntxHex);
+      const tx = await txBuilder.build();
+      const txJson = tx.toJson();
+      txJson.signatures.length.should.equal(1);
+    });
+
+    it('should have 0 signatures for unsigned tx', async () => {
+      const txBuilder = new TransactionBuilderFactory(coins.get('tflrp')).from(testData.unsignedHex);
+      const tx = await txBuilder.build();
+      const txJson = tx.toJson();
+      txJson.signatures.length.should.equal(0);
+    });
+  });
 });

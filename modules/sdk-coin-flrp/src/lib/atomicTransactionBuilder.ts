@@ -113,6 +113,17 @@ export abstract class AtomicTransactionBuilder extends TransactionBuilder {
     const sender = (this.transaction as Transaction)._fromAddresses;
     const hasAddresses = sender && sender.length >= threshold;
 
+    // If we have pre-computed addressesIndex (from parsing a transaction), use it directly
+    // This is the authoritative source for signature ordering from parsed transactions
+    if (utxo.addressesIndex && utxo.addressesIndex.length >= threshold) {
+      // Create credentials matching the sigIndicies order from the parsed transaction
+      const emptySignatures: ReturnType<typeof utils.createNewSig>[] = [];
+      for (let i = 0; i < threshold; i++) {
+        emptySignatures.push(utils.createNewSig(''));
+      }
+      return new Credential(emptySignatures);
+    }
+
     if (!hasAddresses || !utxo.addresses || utxo.addresses.length === 0) {
       // Fallback: use all zeros if no addresses available
       const emptySignatures: ReturnType<typeof utils.createNewSig>[] = [];
@@ -162,6 +173,21 @@ export abstract class AtomicTransactionBuilder extends TransactionBuilder {
   protected createAddressMapForUtxo(utxo: DecodedUtxoObj, threshold: number): FlareUtils.AddressMap {
     const addressMap = new FlareUtils.AddressMap();
     const sender = (this.transaction as Transaction)._fromAddresses;
+
+    // If we have pre-computed addressesIndex (from parsing a transaction), use it directly
+    // addressesIndex from sigIndicies() tells us: addressesIndex[slotIdx] = utxoAddressIdx
+    // This means slot 'slotIdx' expects signature from UTXO address at index 'utxoAddressIdx'
+    // Assuming sender[i] corresponds to utxoAddress[i], we map sender[addressesIndex[slotIdx]] to slotIdx
+    if (utxo.addressesIndex && utxo.addressesIndex.length >= threshold && sender && sender.length >= threshold) {
+      for (let slotIdx = 0; slotIdx < threshold; slotIdx++) {
+        const utxoAddrIdx = utxo.addressesIndex[slotIdx];
+        // Map the sender that corresponds to this UTXO address index to this slot
+        if (utxoAddrIdx < sender.length) {
+          addressMap.set(new Address(sender[utxoAddrIdx]), slotIdx);
+        }
+      }
+      return addressMap;
+    }
 
     // If UTXO has addresses, compute addressesIndex to determine signature order
     if (utxo && utxo.addresses && utxo.addresses.length > 0 && sender && sender.length >= threshold) {
