@@ -45,8 +45,9 @@
     "directory": "modules/utxo-ord"
   },
   "dependencies": {
-    "@bitgo/sdk-core": "^36.29.0",
-    "@bitgo/unspents": "^0.50.14",
+    "@bitgo/wasm-utxo": "^1.27.0"
+  },
+  "devDependencies": {
     "@bitgo/utxo-lib": "^11.19.1"
   },
   "lint-staged": {

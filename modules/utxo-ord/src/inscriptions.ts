@@ -1,219 +1,156 @@
 /*
 Functions for dealing with inscriptions.
 
+Wrapper around @bitgo/wasm-utxo inscription functions for utxo-ord consumers.
+
 See https://docs.ordinals.com/inscriptions.html
 */
 
-import * as assert from 'assert';
 import {
-  p2trPayments as payments,
-  ecc as eccLib,
-  script as bscript,
-  Payment,
-  Network,
-  bitgo,
-  address,
-  taproot,
+  inscriptions as wasmInscriptions,
+  address as wasmAddress,
+  Transaction,
   ECPair,
-} from '@bitgo/utxo-lib';
-import * as utxolib from '@bitgo/utxo-lib';
-import { PreparedInscriptionRevealData } from '@bitgo/sdk-core';
+  type TapLeafScript,
+  type CoinName,
+} from '@bitgo/wasm-utxo';
 
-const OPS = bscript.OPS;
-const MAX_LENGTH_TAP_DATA_PUSH = 520;
+export type { TapLeafScript };
+
 // default "postage" amount
 // https://github.com/ordinals/ord/blob/0.24.2/src/lib.rs#L149
-const DEFAULT_POSTAGE_AMOUNT = BigInt(10_000);
+const DEFAULT_POSTAGE_SATS = BigInt(10_000);
 
 /**
- * The max size of an individual OP_PUSH in a Taproot script is 520 bytes. This
- * function splits inscriptionData into an array buffer of 520 bytes length.
- * https://docs.ordinals.com/inscriptions.html
- * @param inscriptionData
- * @param chunkSize
+ * Prepared data for an inscription reveal transaction.
+ * Compatible with sdk-core's PreparedInscriptionRevealData.
  */
-function splitBuffer(inscriptionData: Buffer, chunkSize: number) {
-  const pushDataBuffers: Buffer[] = [];
-  for (let i = 0; i < inscriptionData.length; i += chunkSize) {
-    pushDataBuffers.push(inscriptionData.slice(i, i + chunkSize));
+export type PreparedInscriptionRevealData = {
+  /** The commit address (derived from outputScript for the given network) */
+  address: string;
+  /** Estimated virtual size of the reveal transaction */
+  revealTransactionVSize: number;
+  /** Tap leaf script for spending the commit output */
+  tapLeafScript: TapLeafScript;
+};
+
+/**
+ * BIP32-like interface compatible with both utxo-lib and wasm-utxo BIP32 types.
+ * The publicKey can be Buffer (utxo-lib) or Uint8Array (wasm-utxo).
+ */
+export interface BIP32Like {
+  publicKey: Uint8Array;
+}
+
+/** Input type for inscription functions - either a BIP32-like key or raw public key bytes */
+export type KeyInput = BIP32Like | Uint8Array;
+
+function isBIP32Like(key: KeyInput): key is BIP32Like {
+  return typeof key === 'object' && key !== null && 'publicKey' in key && !ArrayBuffer.isView(key);
+}
+
+/**
+ * Extract compressed public key from key input.
+ * Handles BIP32-like objects and raw pubkey bytes (32 or 33 bytes).
+ */
+function getCompressedPublicKey(key: KeyInput): Uint8Array {
+  const pubkey = isBIP32Like(key) ? key.publicKey : key;
+
+  if (pubkey.length === 33) {
+    return pubkey;
   }
-
-  return pushDataBuffers;
+  if (pubkey.length === 32) {
+    // x-only pubkey - prepend 0x02 parity byte to make compressed
+    const compressedPubkey = new Uint8Array(33);
+    compressedPubkey[0] = 0x02;
+    compressedPubkey.set(pubkey, 1);
+    return compressedPubkey;
+  }
+  throw new Error(`Invalid public key length: ${pubkey.length}. Expected 32 or 33 bytes.`);
 }
 
 /**
+ * Create the P2TR output script for an inscription.
  *
- * @returns inscription payment object
- * @param pubkey
- * @param contentType
- * @param inscriptionData
+ * @param key - BIP32 key or public key bytes (32-byte x-only or 33-byte compressed)
+ * @param contentType - MIME type of the inscription (e.g., "text/plain", "image/png")
+ * @param inscriptionData - The inscription data bytes
+ * @returns The P2TR output script for the inscription commit address
  */
-function createPaymentForInscription(pubkey: Buffer, contentType: string, inscriptionData: Buffer): Payment {
-  const dataPushBuffers = splitBuffer(inscriptionData, MAX_LENGTH_TAP_DATA_PUSH);
-
-  const uncompiledScript = [
-    pubkey,
-    OPS.OP_CHECKSIG,
-    OPS.OP_FALSE,
-    OPS.OP_IF,
-    Buffer.from('ord', 'ascii'),
-    1, // these two lines should be combined as a single OPS.OP_1,
-    1, // but `ord`'s decoder has a bug so it has to be like this
-    Buffer.from(contentType, 'ascii'),
-    OPS.OP_0,
-    ...dataPushBuffers,
-    OPS.OP_ENDIF,
-  ];
-
-  const compiledScript = bscript.compile(uncompiledScript);
-  const redeem: Payment = {
-    output: compiledScript,
-    depth: 0,
-  };
-
-  return payments.p2tr({ redeems: [redeem], redeemIndex: 0 }, { eccLib });
+export function createOutputScriptForInscription(
+  key: KeyInput,
+  contentType: string,
+  inscriptionData: Uint8Array
+): Uint8Array {
+  const compressedPubkey = getCompressedPublicKey(key);
+  const ecpair = ECPair.fromPublicKey(compressedPubkey);
+  const result = wasmInscriptions.createInscriptionRevealData(ecpair, contentType, inscriptionData);
+  return result.outputScript;
 }
 
 /**
- * @param payment
- * @param controlBlock
- * @param commitOutput
- * @param network
- * @return virtual size of a transaction with a single inscription reveal input and a single commitOutput
- */
-function getInscriptionRevealSize(
-  payment: Payment,
-  controlBlock: Buffer,
-  commitOutput: Buffer,
-  network: Network
-): number {
-  const psbt = bitgo.createPsbtForNetwork({ network });
-  const parsedControlBlock = taproot.parseControlBlock(eccLib, controlBlock);
-  const leafHash = taproot.getTapleafHash(eccLib, parsedControlBlock, payment.redeem?.output as Buffer);
-
-  psbt.addInput({
-    hash: Buffer.alloc(32),
-    index: 0,
-    witnessUtxo: { script: commitOutput, value: BigInt(100_000) },
-    tapLeafScript: [
-      {
-        controlBlock,
-        script: payment.redeem?.output as Buffer,
-        leafVersion: taproot.INITIAL_TAPSCRIPT_VERSION,
-      },
-    ],
-  });
-  psbt.addOutput({ script: commitOutput, value: DEFAULT_POSTAGE_AMOUNT });
-
-  psbt.signTaprootInput(
-    0,
-    {
-      publicKey: Buffer.alloc(32),
-      signSchnorr(hash: Buffer): Buffer {
-        // dummy schnorr-sized signature
-        return Buffer.alloc(64);
-      },
-    },
-    [leafHash]
-  );
-
-  psbt.finalizeTapInputWithSingleLeafScriptAndSignature(0);
-  return psbt.extractTransaction(/* disableFeeCheck */ true).virtualSize();
-}
-
-/**
- * @param pubkey
- * @param contentType
- * @param inscriptionData
- * @param network
- * @returns PreparedInscriptionRevealData
+ * Create inscription reveal data including the commit address and tap leaf script.
+ *
+ * @param key - BIP32 key or public key bytes (32-byte x-only or 33-byte compressed)
+ * @param contentType - MIME type of the inscription (e.g., "text/plain", "image/png")
+ * @param inscriptionData - The inscription data bytes
+ * @param coinName - Coin name (e.g., "btc", "tbtc")
+ * @returns PreparedInscriptionRevealData with address, vsize estimate, and tap leaf script
  */
 export function createInscriptionRevealData(
-  pubkey: Buffer,
+  key: KeyInput,
   contentType: string,
-  inscriptionData: Buffer,
-  network: Network
+  inscriptionData: Uint8Array,
+  coinName: CoinName
 ): PreparedInscriptionRevealData {
-  const payment = createPaymentForInscription(pubkey, contentType, inscriptionData);
+  const compressedPubkey = getCompressedPublicKey(key);
+  const ecpair = ECPair.fromPublicKey(compressedPubkey);
 
-  const { output: commitOutput, controlBlock } = payment;
-  assert.ok(commitOutput);
-  assert.ok(controlBlock);
-  assert.ok(payment.redeem?.output);
-  const commitAddress = address.fromOutputScript(commitOutput, network);
+  const wasmResult = wasmInscriptions.createInscriptionRevealData(ecpair, contentType, inscriptionData);
 
-  const tapLeafScript: utxolib.bitgo.TapLeafScript[] = [
-    {
-      controlBlock,
-      script: payment.redeem?.output,
-      leafVersion: taproot.INITIAL_TAPSCRIPT_VERSION,
-    },
-  ];
-  const revealTransactionVSize = getInscriptionRevealSize(payment, controlBlock, commitOutput, network);
+  // Convert outputScript to address for the given network
+  const address = wasmAddress.fromOutputScriptWithCoin(wasmResult.outputScript, coinName);
 
   return {
-    address: commitAddress,
-    revealTransactionVSize,
-    tapLeafScript: tapLeafScript[0],
+    address,
+    revealTransactionVSize: wasmResult.revealTransactionVSize,
+    tapLeafScript: wasmResult.tapLeafScript,
   };
 }
 
 /**
- * @param pubkey
- * @param contentType
- * @param inscriptionData
- * @returns inscription address
- */
-export function createOutputScriptForInscription(pubkey: Buffer, contentType: string, inscriptionData: Buffer): Buffer {
-  const payment = createPaymentForInscription(pubkey, contentType, inscriptionData);
-
-  assert.ok(payment.output, 'Failed to create inscription output script');
-  return payment.output;
-}
-
-/**
+ * Sign a reveal transaction.
  *
- * @param privateKey
- * @param tapLeafScript
- * @param commitAddress
- * @param recipientAddress
- * @param unsignedCommitTx
- * @param network
+ * Creates and signs the reveal transaction that spends from the commit output
+ * and sends the inscription to the recipient.
  *
- * @return a fully signed reveal transaction
+ * @param privateKey - 32-byte private key
+ * @param tapLeafScript - The tap leaf script from createInscriptionRevealData
+ * @param commitAddress - The commit address
+ * @param recipientAddress - Where to send the inscription
+ * @param unsignedCommitTx - The unsigned commit transaction bytes
+ * @param coinName - Coin name (e.g., "btc", "tbtc")
+ * @returns The signed PSBT as bytes
  */
 export function signRevealTransaction(
-  privateKey: Buffer,
-  tapLeafScript: utxolib.bitgo.TapLeafScript,
+  privateKey: Uint8Array,
+  tapLeafScript: TapLeafScript,
   commitAddress: string,
   recipientAddress: string,
-  unsignedCommitTx: Buffer,
-  network: Network
-): utxolib.bitgo.UtxoPsbt {
-  const unserCommitTxn = utxolib.bitgo.createTransactionFromBuffer(unsignedCommitTx, network);
-  const hash = unserCommitTxn.getHash();
-  const commitOutput = utxolib.address.toOutputScript(commitAddress, network);
-  const vout = unserCommitTxn.outs.findIndex((out) => out.script.equals(commitOutput));
+  unsignedCommitTx: Uint8Array,
+  coinName: CoinName
+): Uint8Array {
+  const ecpair = ECPair.fromPrivateKey(privateKey);
+  const commitTx = Transaction.fromBytes(unsignedCommitTx);
+  const commitOutputScript = wasmAddress.toOutputScriptWithCoin(commitAddress, coinName);
+  const recipientOutputScript = wasmAddress.toOutputScriptWithCoin(recipientAddress, coinName);
 
-  if (vout === -1) {
-    throw new Error('Invalid commit transaction');
-  }
-
-  const psbt = bitgo.createPsbtForNetwork({ network });
-  psbt.addInput({
-    hash,
-    index: vout,
-    witnessUtxo: { script: commitOutput, value: BigInt(unserCommitTxn.outs[vout].value) },
-    tapLeafScript: [tapLeafScript],
-  });
-
-  const recipientOutput = address.toOutputScript(recipientAddress, network);
-  psbt.addOutput({ script: recipientOutput, value: BigInt(10_000) });
-
-  const signer = ECPair.fromPrivateKey(privateKey);
-  const parsedControlBlock = taproot.parseControlBlock(eccLib, tapLeafScript.controlBlock);
-  const leafHash = taproot.getTapleafHash(eccLib, parsedControlBlock, tapLeafScript.script as Buffer);
-  psbt.signTaprootInput(0, signer, [leafHash]);
-
-  return psbt;
+  return wasmInscriptions.signRevealTransaction(
+    ecpair,
+    tapLeafScript,
+    commitTx,
+    commitOutputScript,
+    recipientOutputScript,
+    DEFAULT_POSTAGE_SATS
+  );
 }

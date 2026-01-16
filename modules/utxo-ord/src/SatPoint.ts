@@ -9,9 +9,28 @@ https://github.com/casey/ord/blob/master/bip.mediawiki#terminology-and-notation
 > `680df1e4d43016571e504b0b142ee43c5c0b83398a97bdcfd94ea6f287322d22:0:6`
 
 */
-import { bitgo } from '@bitgo/utxo-lib';
 
 export type SatPoint = `${string}:${number}:${bigint}`;
+
+/**
+ * Parse an output ID (txid:vout) into its components.
+ */
+export function parseOutputId(outputId: string): { txid: string; vout: number } {
+  const colonIndex = outputId.lastIndexOf(':');
+  if (colonIndex === -1) {
+    throw new Error(`Invalid output id format: missing colon`);
+  }
+  const txid = outputId.slice(0, colonIndex);
+  const voutStr = outputId.slice(colonIndex + 1);
+  if (txid.length !== 64 || !/^[0-9a-fA-F]+$/.test(txid)) {
+    throw new Error(`Invalid txid: must be 64 hex characters`);
+  }
+  const vout = parseInt(voutStr, 10);
+  if (isNaN(vout) || vout < 0) {
+    throw new Error(`Invalid vout: must be non-negative integer`);
+  }
+  return { txid, vout };
+}
 
 export function parseSatPoint(p: SatPoint): { txid: string; vout: number; offset: bigint } {
   const parts = p.split(':');
@@ -27,7 +46,7 @@ export function parseSatPoint(p: SatPoint): { txid: string; vout: number; offset
     throw new Error(`SatPoint offset must be positive`);
   }
   return {
-    ...bitgo.parseOutputId([txid, vout].join(':')),
+    ...parseOutputId([txid, vout].join(':')),
     offset,
   };
 }

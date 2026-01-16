@@ -8,3 +8,5 @@ export * from './OutputLayout';
 export * from './SatPoint';
 export * from './psbt';
 export * as inscriptions from './inscriptions';
+export type { TapLeafScript, PreparedInscriptionRevealData } from './inscriptions';
+export type { WalletUnspent } from './psbt';
