@@ -198,15 +198,16 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
     return importedInputs.map((input) => {
       const utxoId = input.utxoID;
       const transferInput = input.input as TransferInput;
+      const addressesIndex = transferInput.sigIndicies();
+
       const utxo: DecodedUtxoObj = {
         outputID: SECP256K1_Transfer_Output,
         amount: transferInput.amount().toString(),
         txid: utils.cb58Encode(Buffer.from(utxoId.txID.toBytes())),
         outputidx: utxoId.outputIdx.value().toString(),
-        threshold: this.transaction._threshold,
-        addresses: this.transaction._fromAddresses.map((addr) =>
-          utils.addressToString(this.transaction._network.hrp, this.transaction._network.alias, Buffer.from(addr))
-        ),
+        threshold: addressesIndex.length || this.transaction._threshold,
+        addresses: [],
+        addressesIndex,
       };
       return utxo;
     });

@@ -6,6 +6,7 @@ import {
   UnsignedTx,
   Credential,
   TransferableInput,
+  TransferInput,
   TransferOutput,
   Address,
   utils as FlareUtils,
@@ -186,16 +187,17 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
     return importedInputs.map((input) => {
       const txid = input.utxoID.toString();
       const outputidx = input.utxoID.outputIdx.toString();
+      const transferInput = input.input as TransferInput;
+      const addressesIndex = transferInput.sigIndicies();
 
       return {
         outputID: SECP256K1_Transfer_Output,
         amount: input.amount().toString(),
         txid: utils.cb58Encode(Buffer.from(txid, 'hex')),
         outputidx: outputidx,
-        threshold: this.transaction._threshold,
-        addresses: this.transaction._fromAddresses.map((addr) =>
-          utils.addressToString(this.transaction._network.hrp, this.transaction._network.alias, Buffer.from(addr))
-        ),
+        threshold: addressesIndex.length || this.transaction._threshold,
+        addresses: [],
+        addressesIndex,
       };
     });
   }

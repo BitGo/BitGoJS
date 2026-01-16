@@ -153,444 +153,59 @@ describe('Flrp Import In C Tx Builder', () => {
     },
     txHash: testData.txhash,
   });
-  //   /**
-  //    * This test verifies the fix for the "insufficient unlocked funds" error that occurred
-  //    * during P-to-C chain transactions.
-  //    *
-  //    * Real-world transaction data:
-  //    * - Input: 100,000,000 nanoFLRP (from P-chain export)
-  //    * - Original feeRate: 500, which caused "needs 280000 more" error
-  //    * - Old (buggy) calculation:
-  //    *   - Size: 12,234 (only unsignedTx.toBytes())
-  //    *   - Fee: 500 × 12,234 = 6,117,000
-  //    * - Error: "insufficient unlocked funds: needs 280000 more"
-  //    * - Required fee: 6,117,000 + 280,000 = 6,397,000
-  //    *
-  //    * The fix has two parts:
-  //    * 1. Use getSignedTx().toBytes() to include credentials in size calculation (~140+ bytes)
-  //    * 2. Increase feeRate from 500 to 550 to provide additional buffer
-  //    *
-  //    * With fix: size ~12,376 × feeRate 550 = 6,806,800 > 6,397,000 ✓
-  //    */
-  //   it('should calculate sufficient fee to avoid "insufficient unlocked funds" error', async () => {
-  //     const inputAmount = '100000000';
-  //     const feeRate = 550;
-  //     const threshold = 2;
+  describe('addressesIndex extraction and signature slot mapping for ImportInC', () => {
+    it('should correctly parse half-signed ImportInC tx and add second signature', async () => {
+      const txBuilder = new TransactionBuilderFactory(coins.get('tflrp')).from(testData.halfSigntxHex);
+      txBuilder.sign({ key: testData.privateKeys[0] });
+      const tx = await txBuilder.build();
+      const rawTx = tx.toBroadcastFormat();
+      rawTx.should.equal(testData.fullSigntxHex);
+      tx.id.should.equal(testData.txhash);
+    });
 
-  //     const pAddresses = [
-  //       'P-costwo1060n6skw5lsz7ch8z4vnv2s24vetjv5w73g4k2',
-  //       'P-costwo1kt5hrl4kr5dt92ayxjash6uujkf4nh5ex0y9rj',
-  //       'P-costwo1eys86hynecjn8400j30e7y706aecv8wz0l875x',
-  //     ];
+    it('should preserve transaction structure when parsing unsigned ImportInC tx', async () => {
+      const parsedBuilder = new TransactionBuilderFactory(coins.get('tflrp')).from(testData.unsignedHex);
+      const parsedTx = await parsedBuilder.build();
+      const parsedHex = parsedTx.toBroadcastFormat();
+      parsedHex.should.equal(testData.unsignedHex);
+    });
 
-  //     const cChainDestination = '0x7e9f3d42cea7e02f62e71559362a0aab32b9328e';
+    it('should correctly handle ImportInC signing flow: parse -> sign -> parse -> sign', async () => {
+      // Step 1:  unsigned transaction
+      const builder1 = new TransactionBuilderFactory(coins.get('tflrp')).from(testData.unsignedHex);
+      const unsignedTx = await builder1.build();
+      const unsignedHex = unsignedTx.toBroadcastFormat();
+      unsignedHex.should.equal(testData.unsignedHex);
+      const builder2 = new TransactionBuilderFactory(coins.get('tflrp')).from(unsignedHex);
+      builder2.sign({ key: testData.privateKeys[2] });
+      const halfSignedTx = await builder2.build();
+      const halfSignedHex = halfSignedTx.toBroadcastFormat();
+      const builder3 = new TransactionBuilderFactory(coins.get('tflrp')).from(halfSignedHex);
+      builder3.sign({ key: testData.privateKeys[0] });
+      const fullSignedTx = await builder3.build();
+      fullSignedTx.toBroadcastFormat().should.equal(testData.fullSigntxHex);
+      fullSignedTx.id.should.equal(testData.txhash);
+    });
 
-  //     const utxo: DecodedUtxoObj = {
-  //       outputID: 7,
-  //       amount: inputAmount,
-  //       txid: '2b2A4CyaRawiVAycUhpfvaxizymUT3TwRUbrzwiy3qp7DnKznj',
-  //       outputidx: '0',
-  //       addresses: [
-  //         '0x7e9f3d42cea7e02f62e71559362a0aab32b9328e',
-  //         'C9207d5c93ce2533d5ef945f9f13cfd773861dc2',
-  //         'b2e971feb61d1ab2aba434bb0beb9c959359de99',
-  //       ],
-  //       threshold: threshold,
-  //     };
+    it('should have correct number of signatures for ImportInC after full sign flow', async () => {
+      const txBuilder = new TransactionBuilderFactory(coins.get('tflrp')).from(testData.fullSigntxHex);
+      const tx = await txBuilder.build();
+      const txJson = tx.toJson();
+      txJson.signatures.length.should.equal(2);
+    });
 
-  //     const txBuilder = factory
-  //       .getImportInCBuilder()
-  //       .threshold(threshold)
-  //       .fromPubKey(pAddresses)
-  //       .utxos([utxo])
-  //       .to(cChainDestination)
-  //       .feeRate(feeRate.toString());
+    it('should have correct number of signatures for ImportInC half-signed tx', async () => {
+      const txBuilder = new TransactionBuilderFactory(coins.get('tflrp')).from(testData.halfSigntxHex);
+      const tx = await txBuilder.build();
+      const txJson = tx.toJson();
+      txJson.signatures.length.should.equal(1);
+    });
 
-  //     const tx = await txBuilder.build();
-  //     const feeInfo = (tx as any).fee;
-  //     const calculatedFee = BigInt(feeInfo.fee);
-  //     const calculatedSize = feeInfo.size;
-
-  //     const oldBuggyFeeAt500 = BigInt(12234) * BigInt(500);
-  //     const shortfall = BigInt(280000);
-  //     const requiredFee = oldBuggyFeeAt500 + shortfall;
-
-  //     assert(
-  //       calculatedFee >= requiredFee,
-  //       `Fee ${calculatedFee} should be at least ${requiredFee} (old fee ${oldBuggyFeeAt500} + shortfall ${shortfall})`
-  //     );
-
-  //     const oldBuggySize = 12234;
-  //     assert(
-  //       calculatedSize > oldBuggySize,
-  //       `Size ${calculatedSize} should be greater than old buggy size ${oldBuggySize}`
-  //     );
-
-  //     const outputAmount = BigInt(tx.outputs[0].value);
-  //     assert(outputAmount > BigInt(0), 'Output amount should be positive');
-
-  //     const inputBigInt = BigInt(inputAmount);
-  //     const expectedOutput = inputBigInt - calculatedFee;
-  //     assert(
-  //       outputAmount === expectedOutput,
-  //       `Output ${outputAmount} should equal input ${inputBigInt} minus fee ${calculatedFee}`
-  //     );
-  //   });
-
-  //   it('should match AVAXP costImportTx formula: bytesCost + inputCosts + fixedFee', async () => {
-  //     const inputAmount = '100000000';
-  //     const feeRate = 500;
-  //     const threshold = 2;
-
-  //     const utxo: DecodedUtxoObj = {
-  //       outputID: 7,
-  //       amount: inputAmount,
-  //       txid: '2b2A4CyaRawiVAycUhpfvaxizymUT3TwRUbrzwiy3qp7DnKznj',
-  //       outputidx: '0',
-  //       addresses: [
-  //         '0x7e9f3d42cea7e02f62e71559362a0aab32b9328e',
-  //         'C9207d5c93ce2533d5ef945f9f13cfd773861dc2',
-  //         'b2e971feb61d1ab2aba434bb0beb9c959359de99',
-  //       ],
-  //       threshold: threshold,
-  //     };
-
-  //     const txBuilder = factory
-  //       .getImportInCBuilder()
-  //       .threshold(threshold)
-  //       .fromPubKey(testData.pAddresses)
-  //       .utxos([utxo])
-  //       .to(testData.to)
-  //       .feeRate(feeRate.toString());
-
-  //     const tx = await txBuilder.build();
-  //     const feeInfo = (tx as any).fee;
-  //     const calculatedSize = feeInfo.size;
-
-  //     const expectedInputCost = 1000 * threshold;
-  //     const fixedFee = 10000;
-  //     const expectedMinBytesCost = 200;
-
-  //     const impliedBytesCost = calculatedSize - expectedInputCost - fixedFee;
-
-  //     assert(
-  //       impliedBytesCost >= expectedMinBytesCost,
-  //       `Implied bytes cost ${impliedBytesCost} should be at least ${expectedMinBytesCost}`
-  //     );
-
-  //     const expectedMinTotalSize = expectedMinBytesCost + expectedInputCost + fixedFee;
-  //     assert(
-  //       calculatedSize >= expectedMinTotalSize,
-  //       `Total size ${calculatedSize} should be at least ${expectedMinTotalSize} (bytes + inputCost + fixedFee)`
-  //     );
-  //   });
-
-  //   it('should produce consistent fees between build and parse (initBuilder vs buildFlareTransaction)', async () => {
-  //     const inputAmount = '100000000';
-  //     const feeRate = 500;
-  //     const threshold = 2;
-
-  //     const utxo: DecodedUtxoObj = {
-  //       outputID: 7,
-  //       amount: inputAmount,
-  //       txid: '2b2A4CyaRawiVAycUhpfvaxizymUT3TwRUbrzwiy3qp7DnKznj',
-  //       outputidx: '0',
-  //       addresses: [
-  //         '0x7e9f3d42cea7e02f62e71559362a0aab32b9328e',
-  //         'C9207d5c93ce2533d5ef945f9f13cfd773861dc2',
-  //         'b2e971feb61d1ab2aba434bb0beb9c959359de99',
-  //       ],
-  //       threshold: threshold,
-  //     };
-
-  //     const txBuilder = factory
-  //       .getImportInCBuilder()
-  //       .threshold(threshold)
-  //       .fromPubKey(testData.pAddresses)
-  //       .utxos([utxo])
-  //       .to(testData.to)
-  //       .feeRate(feeRate.toString());
-
-  //     const originalTx = await txBuilder.build();
-  //     const originalFeeInfo = (originalTx as any).fee;
-  //     const originalSize = originalFeeInfo.size;
-
-  //     const txHex = originalTx.toBroadcastFormat();
-  //     const parsedBuilder = factory.from(txHex);
-  //     const parsedTx = await parsedBuilder.build();
-  //     const parsedFeeInfo = (parsedTx as any).fee;
-  //     const parsedFeeRate = parsedFeeInfo.feeRate;
-  //     const parsedSize = parsedFeeInfo.size;
-
-  //     const feeRateDiff = Math.abs(parsedFeeRate - feeRate);
-  //     const maxAllowedDiff = 50;
-  //     assert(
-  //       feeRateDiff <= maxAllowedDiff,
-  //       `Parsed feeRate ${parsedFeeRate} should be close to original ${feeRate} (diff: ${feeRateDiff})`
-  //     );
-
-  //     const sizeDiff = Math.abs(parsedSize - originalSize);
-  //     const maxSizeDiff = 100;
-  //     assert(
-  //       sizeDiff <= maxSizeDiff,
-  //       `Parsed size ${parsedSize} should be close to original ${originalSize} (diff: ${sizeDiff})`
-  //     );
-  //   });
-  // });
-
-  // describe('on-chain verified transactions', () => {
-  //   it('should verify on-chain tx id for signed C-chain import', async () => {
-  //     const signedImportHex =
-  //       '0x0000000000000000007278db5c30bed04c05ce209179812850bbb3fe6d46d7eef3744d814c0da555247900000000000000000000000000000000000000000000000000000000000000000000000162ef0c8ced5668d1230c82e274f5c19357df8c005743367421e8a2b48c73989a0000000158734f94af871c3d131b56131b6fb7a0291eacadd261e69dfb42a9cdf6f7fddd000000050000000002faf0800000000200000000000000010000000117dbd11b9dd1c9be337353db7c14f9fb3662e5b50000000002aea54058734f94af871c3d131b56131b6fb7a0291eacadd261e69dfb42a9cdf6f7fddd000000010000000900000002ab32c15c75c763b24adf26eee85aa7d6a76b366e6b88e34b94f76baec91bae7336a32ed637fc232cccb2f772d3092eee66594070a2be92751148feffc76005b1013ee78fb11f3f9ffd90d970cd5c95e9dee611bb4feafaa0b0220cc641ef054c9f5701fde4fad2fe7f2594db9dafd858c62f9cf6fe6b58334d73da40a5a8412d4600';
-  //     const txBuilder = new TransactionBuilderFactory(coins.get('tflrp')).from(signedImportHex);
-  //     const tx = await txBuilder.build();
-  //     const rawTx = tx.toBroadcastFormat();
-  //     rawTx.should.equal(signedImportHex);
-  //     tx.id.should.equal('2ks9vW1SVWD4KsNPHgXnV5dpJaCcaxVNbQW4H7t9BMDxApGvfa');
-  //   });
-
-  //   it('should FAIL with unsorted UTXO addresses - demonstrates AddressMap mismatch issue for import in C-chain tx', async () => {
-  //     // This test uses UTXO addresses in UNSORTED order to demonstrate the issue.
-  //     // With unsorted addresses, the current implementation will create AddressMaps incorrectly
-  //     // because it uses sequential indices, not UTXO address order.
-  //     //
-  //     // Expected: AddressMap should map addresses to signature slots based on UTXO order (addressesIndex)
-  //     // Current (WRONG): AddressMap uses sequential indices (0, 1, 2...)
-  //     //
-  //     // This test WILL FAIL with current implementation because AddressMaps don't match credential order
-
-  //     // UTXO addresses in UNSORTED order (different from sorted)
-  //     // Sorted would be: [0x3329... (smallest), 0x7e91... (middle), 0xc732... (largest)]
-  //     // Unsorted: [0xc732... (largest), 0x3329... (smallest), 0x7e91... (middle)]
-  //     const unsortedUtxoAddresses = [
-  //       '0xc7324437c96c7c8a6a152da2385c1db5c3ab1f91', // Largest (would be index 2 if sorted)
-  //       '0x3329be7d01cd3ebaae6654d7327dd9f17a2e1581', // Smallest (would be index 0 if sorted)
-  //       '0x7e918a5e8083ae4c9f2f0ed77055c24bf3665001', // Middle (would be index 1 if sorted)
-  //     ];
-
-  //     // Corresponding P-chain addresses (in same order as _fromAddresses)
-  //     const pAddresses = [
-  //       'P-costwo1xv5mulgpe5lt4tnx2ntnylwe79azu9vpja6lut', // Maps to 0xc732... (UTXO index 0 in unsorted)
-  //       'P-costwo106gc5h5qswhye8e0pmthq4wzf0ekv5qppsrvpu', // Maps to 0x3329... (UTXO index 1 in unsorted)
-  //       'P-costwo1cueygd7fd37g56s49k3rshqakhp6k8u3adzt6m', // Maps to 0x7e91... (UTXO index 2 in unsorted)
-  //     ];
-
-  //     // Create UTXO with UNSORTED addresses
-  //     const amount = '500000000'; // 0.5 FLR
-  //     const fee = '5000000'; // Example fee
-  //     const utxoAmount = (BigInt(amount) + BigInt(fee) + BigInt('10000000')).toString(); // amount + fee + some buffer
-
-  //     const utxo: DecodedUtxoObj = {
-  //       outputID: 0,
-  //       amount: utxoAmount,
-  //       txid: '2vPMx8P63adgBae7GAWFx7qvJDwRmMnDCyKddHRBXWhysjX4BP',
-  //       outputidx: '1',
-  //       addresses: unsortedUtxoAddresses, // UNSORTED order
-  //       threshold: 2,
-  //     };
-
-  //     // Build transaction
-  //     const txBuilder = factory
-  //       .getImportInCBuilder()
-  //       .threshold(2)
-  //       .fromPubKey(pAddresses)
-  //       .utxos([utxo])
-  //       .to(testData.to)
-  //       .feeRate(testData.fee);
-
-  //     // Build unsigned transaction
-  //     const unsignedTx = await txBuilder.build();
-  //     const unsignedHex = unsignedTx.toBroadcastFormat();
-
-  //     // Get AddressMaps from the ORIGINAL transaction (before parsing)
-  //     // The parsed transaction's AddressMap only contains the output address, not _fromAddresses
-  //     const originalFlareTx = (unsignedTx as any)._flareTransaction;
-  //     const originalAddressMaps = (originalFlareTx as any as UnsignedTx).addressMaps;
-
-  //     // Parse it back to inspect AddressMaps and credentials
-  //     const parsedBuilder = factory.from(unsignedHex);
-  //     const parsedTx = await parsedBuilder.build();
-  //     const flareTx = (parsedTx as any)._flareTransaction;
-
-  //     // Get the input to check sigIndicies (for C-chain imports, inputs are importedInputs)
-  //     const importTx = flareTx.tx as any;
-  //     const input = importTx.importedInputs[0];
-  //     const sigIndicies = input.sigIndicies();
-
-  //     // sigIndicies tells us: sigIndicies[slotIndex] = utxoAddressIndex
-  //     // For threshold=2, we need signatures for first 2 addresses in UTXO order
-  //     // UTXO order: [0xc732... (index 0), 0x3329... (index 1), 0x7e91... (index 2)]
-  //     // So sigIndicies should be [0, 1] meaning: slot 0 = UTXO index 0, slot 1 = UTXO index 1
-
-  //     // Verify sigIndicies are [0, 1] (first 2 addresses in UTXO order, NOT sorted order)
-  //     sigIndicies.length.should.equal(2);
-  //     sigIndicies[0].should.equal(0, 'First signature slot should be UTXO address index 0 (0xc732...)');
-  //     sigIndicies[1].should.equal(1, 'Second signature slot should be UTXO address index 1 (0x3329...)');
-
-  //     // The critical test: Verify that signature slots have embedded addresses based on UTXO order
-  //     // With unsorted UTXO addresses, this will FAIL if AddressMaps don't match UTXO order
-  //     //
-  //     // Parse the credential to see which slots have which embedded addresses
-  //     const credential = flareTx.credentials[0];
-  //     const signatures = credential.getSignatures();
-
-  //     // Extract embedded addresses from signature slots
-  //     const embeddedAddresses: string[] = [];
-  //     const isEmptySignature = (signature: string): boolean => {
-  //       return !!signature && testUtils.removeHexPrefix(signature).startsWith('0'.repeat(90));
-  //     };
-
-  //     const hasEmbeddedAddress = (signature: string): boolean => {
-  //       if (!isEmptySignature(signature)) return false;
-  //       const cleanSig = testUtils.removeHexPrefix(signature);
-  //       if (cleanSig.length < 130) return false;
-  //       const embeddedPart = cleanSig.substring(90, 130);
-  //       // Check if embedded part is not all zeros
-  //       return embeddedPart !== '0'.repeat(40);
-  //     };
-
-  //     signatures.forEach((sig: string, slotIndex: number) => {
-  //       if (hasEmbeddedAddress(sig)) {
-  //         // Extract embedded address (after position 90, 40 chars = 20 bytes)
-  //         const cleanSig = testUtils.removeHexPrefix(sig);
-  //         const embeddedAddr = cleanSig.substring(90, 130).toLowerCase();
-  //         embeddedAddresses[slotIndex] = '0x' + embeddedAddr;
-  //       }
-  //     });
-
-  //     // Verify: Credentials only embed ONE address (user/recovery), not both
-  //     // The embedded address should be based on addressesIndex logic, not sequential order
-  //     //
-  //     // Compute addressesIndex to determine expected signature order
-  //     const utxoAddressBytes = unsortedUtxoAddresses.map((addr) => testUtils.parseAddress(addr));
-  //     const pAddressBytes = pAddresses.map((addr) => testUtils.parseAddress(addr));
-
-  //     const addressesIndex: number[] = [];
-  //     pAddressBytes.forEach((pAddr) => {
-  //       const utxoIndex = utxoAddressBytes.findIndex(
-  //         (uAddr) => Buffer.compare(Buffer.from(uAddr), Buffer.from(pAddr)) === 0
-  //       );
-  //       addressesIndex.push(utxoIndex);
-  //     });
-
-  //     // firstIndex = 0 (user), bitgoIndex = 1
-  //     const firstIndex = 0;
-  //     const bitgoIndex = 1;
-
-  //     // Determine expected signature order based on addressesIndex
-  //     const userComesFirst = addressesIndex[bitgoIndex] > addressesIndex[firstIndex];
-
-  //     // Expected credential structure:
-  //     // - If user comes first: [userAddress, zeros]
-  //     // - If bitgo comes first: [zeros, userAddress]
-  //     const userAddressHex = Buffer.from(pAddressBytes[firstIndex]).toString('hex').toLowerCase();
-  //     const expectedUserAddr = '0x' + userAddressHex;
-
-  //     if (userComesFirst) {
-  //       // Expected: [userAddress, zeros]
-  //       // Slot 0 should have user address (pAddr0 = 0xc732... = UTXO index 0)
-  //       if (embeddedAddresses[0]) {
-  //         embeddedAddresses[0]
-  //           .toLowerCase()
-  //           .should.equal(
-  //             expectedUserAddr,
-  //             `Slot 0 should have user address (${expectedUserAddr}) because user comes first in UTXO order`
-  //           );
-  //       } else {
-  //         throw new Error(`Slot 0 should have embedded user address, but is empty`);
-  //       }
-  //       // Slot 1 should be zeros (no embedded address)
-  //       if (embeddedAddresses[1]) {
-  //         throw new Error(`Slot 1 should be zeros, but has embedded address: ${embeddedAddresses[1]}`);
-  //       }
-  //     } else {
-  //       // Expected: [zeros, userAddress]
-  //       // Slot 0 should be zeros
-  //       if (embeddedAddresses[0]) {
-  //         throw new Error(`Slot 0 should be zeros, but has embedded address: ${embeddedAddresses[0]}`);
-  //       }
-  //       // Slot 1 should have user address
-  //       if (embeddedAddresses[1]) {
-  //         embeddedAddresses[1]
-  //           .toLowerCase()
-  //           .should.equal(
-  //             expectedUserAddr,
-  //             `Slot 1 should have user address (${expectedUserAddr}) because bitgo comes first in UTXO order`
-  //           );
-  //       } else {
-  //         throw new Error(`Slot 1 should have embedded user address, but is empty`);
-  //       }
-  //     }
-
-  //     // The key verification: AddressMaps should match the credential order
-  //     // Current implementation (WRONG): AddressMaps use sequential indices (0, 1, 2...)
-  //     // Expected (CORRECT): AddressMaps should use addressesIndex logic, matching credential order
-  //     //
-  //     // Get AddressMaps from the ORIGINAL transaction (not parsed, because parsed AddressMap only has output address)
-  //     // For C-chain imports, originalFlareTx is EVMUnsignedTx which has addressMaps property
-
-  //     const addressMaps = originalAddressMaps;
-  //     addressMaps.toArray().length.should.equal(1, 'Should have one AddressMap for one input');
-
-  //     const addressMap = addressMaps.toArray()[0];
-
-  //     // Expected: Based on addressesIndex logic
-  //     // If user comes first: slot 0 = user, slot 1 = bitgo
-  //     // If bitgo comes first: slot 0 = bitgo, slot 1 = user
-  //     const expectedSlot0Addr = userComesFirst ? pAddressBytes[firstIndex] : pAddressBytes[bitgoIndex];
-  //     const expectedSlot1Addr = userComesFirst ? pAddressBytes[bitgoIndex] : pAddressBytes[firstIndex];
-
-  //     // AddressMap maps: Address -> slot index
-  //     // We need to check which addresses are mapped to slots 0 and 1
-  //     // AddressMap.get() returns the slot index for a given address
-
-  //     // Verify that AddressMap correctly maps addresses based on credential order (UTXO order)
-  //     // The AddressMap should map the addresses that appear in credentials to the correct slots
-  //     const { Address } = require('@flarenetwork/flarejs');
-  //     const expectedSlot0Address = new Address(expectedSlot0Addr);
-  //     const expectedSlot1Address = new Address(expectedSlot1Addr);
-  //     const expectedSlot0FromMap = addressMap.get(expectedSlot0Address);
-  //     const expectedSlot1FromMap = addressMap.get(expectedSlot1Address);
-
-  //     // Verify that the expected addresses map to the correct slots
-  //     if (expectedSlot0FromMap === undefined) {
-  //       throw new Error(`Address at UTXO index ${addressesIndex[firstIndex]} not found in AddressMap`);
-  //     }
-  //     if (expectedSlot1FromMap === undefined) {
-  //       throw new Error(`Address at UTXO index ${addressesIndex[bitgoIndex]} not found in AddressMap`);
-  //     }
-  //     expectedSlot0FromMap.should.equal(0, `Address at UTXO index ${addressesIndex[firstIndex]} should map to slot 0`);
-  //     expectedSlot1FromMap.should.equal(1, `Address at UTXO index ${addressesIndex[bitgoIndex]} should map to slot 1`);
-
-  //     // If addressesIndex is not sequential ([0, 1, ...]), verify that sequential mapping is NOT used incorrectly
-  //     // Sequential mapping means: pAddresses[0] -> slot 0, pAddresses[1] -> slot 1, regardless of UTXO order
-  //     const usesSequentialMapping = addressesIndex[0] === 0 && addressesIndex[1] === 1;
-
-  //     if (!usesSequentialMapping) {
-  //       // Check if AddressMap uses sequential mapping (array order) instead of UTXO order
-  //       const sequentialSlot0 = addressMap.get(new Address(pAddressBytes[0]));
-  //       const sequentialSlot1 = addressMap.get(new Address(pAddressBytes[1]));
-
-  //       // Sequential mapping would map pAddresses[0] -> slot 0, pAddresses[1] -> slot 1
-  //       // But we want UTXO order mapping based on addressesIndex
-  //       const isSequential = sequentialSlot0 === 0 && sequentialSlot1 === 1;
-
-  //       // Check if pAddresses[0] and pAddresses[1] are the expected addresses for slots 0 and 1
-  //       // If they are, then sequential mapping happens to be correct (by coincidence)
-  //       const pAddress0IsExpectedSlot0 =
-  //         Buffer.compare(Buffer.from(pAddressBytes[0]), Buffer.from(expectedSlot0Addr)) === 0;
-  //       const pAddress1IsExpectedSlot1 =
-  //         Buffer.compare(Buffer.from(pAddressBytes[1]), Buffer.from(expectedSlot1Addr)) === 0;
-
-  //       // If sequential mapping is used but it's NOT correct (doesn't match expected addresses), fail
-  //       if (isSequential && (!pAddress0IsExpectedSlot0 || !pAddress1IsExpectedSlot1)) {
-  //         throw new Error(
-  //           `AddressMap uses sequential mapping (array order) but should use UTXO order. ` +
-  //             `addressesIndex: [${addressesIndex.join(', ')}]. ` +
-  //             `Expected slot 0 = address at UTXO index ${addressesIndex[firstIndex]}, slot 1 = address at UTXO index ${addressesIndex[bitgoIndex]}`
-  //         );
-  //       }
-  //     }
-  //   });
-  // });
+    it('should have 0 signatures for unsigned ImportInC tx', async () => {
+      const txBuilder = new TransactionBuilderFactory(coins.get('tflrp')).from(testData.unsignedHex);
+      const tx = await txBuilder.build();
+      const txJson = tx.toJson();
+      txJson.signatures.length.should.equal(0);
+    });
+  });
 });
