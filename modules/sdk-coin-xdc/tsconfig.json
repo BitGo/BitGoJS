@@ -5,9 +5,10 @@
     "rootDir": "./",
     "strictPropertyInitialization": false,
     "esModuleInterop": true,
+    "resolveJsonModule": true,
     "typeRoots": ["../../types", "./node_modules/@types", "../../node_modules/@types"]
   },
-  "include": ["src/**/*", "test/**/*"],
+  "include": ["src/**/*", "test/**/*", "src/**/*.json"],
   "exclude": ["node_modules"],
   "references": [
     {
