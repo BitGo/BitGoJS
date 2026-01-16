@@ -128,4 +128,4 @@ This will generate the necessary boilerplate for a new coin implementation.
 
 ## Node.js Version Support
 
-BitGoJS supports Node.js versions >=20 and <23, with NPM >=3.10.10.
+BitGoJS supports Node.js versions >=20 and <25, with NPM >=3.10.10.
