@@ -3802,6 +3802,7 @@ export const ofcCoins = [
     6,
     UnderlyingAsset['thash:ylds']
   ),
+  ofcHashToken('f5df8376-e06c-4c96-a9c3-f5dfd41525f1', 'ofchash:figr', 'Figure', 9, UnderlyingAsset['hash:figr']),
   tofcHashToken(
     '726c0865-2f8b-4409-8e93-a7c9a47a6c35',
     'ofcthash:tfigr',
