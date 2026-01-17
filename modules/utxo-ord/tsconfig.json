@@ -1,7 +1,7 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "outDir": "./dist",
+    "outDir": "./dist/cjs",
     "rootDir": ".",
     "typeRoots": ["./node_modules/@types", "../../node_modules/@types"],
     "allowJs": false,
