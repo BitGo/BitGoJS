@@ -5,6 +5,7 @@ import * as _ from 'lodash';
 import * as utxolib from '@bitgo/utxo-lib';
 import nock = require('nock');
 import { BIP32Interface, bitgo, testutil } from '@bitgo/utxo-lib';
+import { address as wasmAddress } from '@bitgo/wasm-utxo';
 import {
   common,
   FullySignedTransaction,
@@ -507,7 +508,7 @@ function run<TNumber extends number | bigint = number>(
           : getUnspents();
       const prevOutputs = unspents.map(
         (u): utxolib.TxOutput<TNumber> => ({
-          script: utxolib.address.toOutputScript(u.address, coin.network),
+          script: Buffer.from(wasmAddress.toOutputScriptWithCoin(u.address, coin.name)),
           value: u.value,
         })
       );

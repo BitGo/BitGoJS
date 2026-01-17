@@ -1,9 +1,9 @@
 import * as assert from 'assert';
 
-import * as utxolib from '@bitgo/utxo-lib';
 import { Wallet } from '@bitgo/sdk-core';
 
 import { AbstractUtxoCoin, ErrorDeprecatedTxFormat, TxFormat } from '../../src';
+import { getMainnetCoinName, isMainnetCoin, isTestnetCoin } from '../../src/names';
 
 import { utxoCoins, defaultBitGo } from './util';
 
@@ -106,14 +106,14 @@ describe('txFormat', function () {
     // All testnet wallets default to PSBT-lite
     runTest({
       description: 'should always return psbt-lite for testnet',
-      coinFilter: (coin) => utxolib.isTestnet(coin.network),
+      coinFilter: (coin) => isTestnetCoin(coin.name),
       expectedTxFormat: 'psbt-lite',
     });
 
     // DistributedCustody wallets default to PSBT (mainnet only, testnet already covered)
     runTest({
       description: 'should return psbt for distributedCustody wallets on mainnet',
-      coinFilter: (coin) => utxolib.isMainnet(coin.network),
+      coinFilter: (coin) => isMainnetCoin(coin.name),
       walletFilter: (w) => w.options.subType === 'distributedCustody',
       expectedTxFormat: 'psbt',
     });
@@ -121,7 +121,7 @@ describe('txFormat', function () {
     // MuSig2 wallets default to PSBT (mainnet only, testnet already covered)
     runTest({
       description: 'should return psbt for wallets with musigKp flag on mainnet',
-      coinFilter: (coin) => utxolib.isMainnet(coin.network),
+      coinFilter: (coin) => isMainnetCoin(coin.name),
       walletFilter: (w) => Boolean(w.options.walletFlags?.some((f) => f.name === 'musigKp' && f.value === 'true')),
       expectedTxFormat: 'psbt',
     });
@@ -129,8 +129,7 @@ describe('txFormat', function () {
     // Mainnet Bitcoin hot wallets default to PSBT
     runTest({
       description: 'should return psbt for mainnet bitcoin hot wallets',
-      coinFilter: (coin) =>
-        utxolib.isMainnet(coin.network) && utxolib.getMainnet(coin.network) === utxolib.networks.bitcoin,
+      coinFilter: (coin) => isMainnetCoin(coin.name) && getMainnetCoinName(coin.name) === 'btc',
       walletFilter: (w) => w.options.type === 'hot',
       expectedTxFormat: 'psbt',
     });
@@ -138,7 +137,7 @@ describe('txFormat', function () {
     // Other mainnet wallets do NOT default to PSBT
     runTest({
       description: 'should return undefined for other mainnet wallets',
-      coinFilter: (coin) => utxolib.isMainnet(coin.network),
+      coinFilter: (coin) => isMainnetCoin(coin.name),
       walletFilter: (w) => {
         const isHotBitcoin = w.options.type === 'hot'; // This will be bitcoin hot wallets
         const isDistributedCustody = w.options.subType === 'distributedCustody';
@@ -152,7 +151,7 @@ describe('txFormat', function () {
     // Test explicitly requested formats
     runTest({
       description: 'should respect explicitly requested legacy format on mainnet',
-      coinFilter: (coin) => utxolib.isMainnet(coin.network),
+      coinFilter: (coin) => isMainnetCoin(coin.name),
       expectedTxFormat: 'legacy',
       requestedTxFormat: 'legacy',
     });
@@ -172,7 +171,7 @@ describe('txFormat', function () {
     // Test that legacy format is prohibited on testnet
     it('should throw ErrorDeprecatedTxFormat when legacy format is requested on testnet', function () {
       for (const coin of utxoCoins) {
-        if (!utxolib.isTestnet(coin.network)) {
+        if (!isTestnetCoin(coin.name)) {
           continue;
         }
 
