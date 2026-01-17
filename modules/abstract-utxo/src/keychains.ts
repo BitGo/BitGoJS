@@ -4,6 +4,7 @@ import * as t from 'io-ts';
 import { bitgo } from '@bitgo/utxo-lib';
 import { BIP32Interface, bip32 } from '@bitgo/secp256k1';
 import { IRequestTracer, IWallet, KeyIndices, promiseProps, Triple } from '@bitgo/sdk-core';
+import { fixedScriptWallet } from '@bitgo/wasm-utxo';
 
 import { AbstractUtxoCoin } from './abstractUtxoCoin';
 import { UtxoWallet } from './wallet';
@@ -106,6 +107,18 @@ export async function fetchKeychains(
   });
   assert(UtxoNamedKeychains.is(result));
   return result;
+}
+
+/**
+ * Fetch wallet keys as wasm-utxo RootWalletKeys
+ */
+export async function fetchWasmRootWalletKeys(
+  coin: AbstractUtxoCoin,
+  wallet: IWallet,
+  reqId?: IRequestTracer
+): Promise<fixedScriptWallet.RootWalletKeys> {
+  const keychains = await fetchKeychains(coin, wallet, reqId);
+  return fixedScriptWallet.RootWalletKeys.from([keychains.user.pub, keychains.backup.pub, keychains.bitgo.pub]);
 }
 
 export const KeySignatures = t.partial({

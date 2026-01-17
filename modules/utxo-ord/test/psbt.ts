@@ -5,35 +5,46 @@ import {
   createPsbtFromOutputLayout,
   findOutputLayoutForWalletUnspents,
   WalletInputBuilder,
+  WalletUnspent,
   toArray,
 } from '../src';
 import { isSatPoint, OutputLayout, toParameters } from '../src';
-import { bitgo, networks, testutil } from '@bitgo/utxo-lib';
+import { fixedScriptWallet, BIP32, type CoinName } from '@bitgo/wasm-utxo';
+import { getTestWalletKeys, mockWalletUnspent } from './testutils';
+
+const coinName: CoinName = 'btc';
 
 function assertValidPsbt(
-  psbt: bitgo.UtxoPsbt,
-  s: bitgo.WalletUnspentSigner<bitgo.RootWalletKeys>,
+  psbt: fixedScriptWallet.BitGoPsbt,
+  rootWalletKeys: fixedScriptWallet.RootWalletKeys,
+  signerKeys: [string, string], // xprvs for signer and cosigner
   expectedOutputs: number,
   expectedFee: bigint
 ) {
-  psbt.signAllInputsHD(s.signer);
-  psbt.signAllInputsHD(s.cosigner);
+  const replayProtection = { publicKeys: [] as Uint8Array[] };
+  const parsed = psbt.parseTransactionWithWalletKeys(rootWalletKeys, replayProtection);
+
+  // Sign all inputs with both signers
+  const signer1 = BIP32.fromBase58(signerKeys[0]);
+  const signer2 = BIP32.fromBase58(signerKeys[1]);
+  parsed.inputs.forEach((_input, inputIndex) => {
+    psbt.sign(inputIndex, signer1);
+    psbt.sign(inputIndex, signer2);
+  });
+
   psbt.finalizeAllInputs();
-  assert.strictEqual(psbt.txOutputs.length, expectedOutputs);
-  assert.strictEqual(psbt.getFee(), expectedFee);
+
+  assert.strictEqual(parsed.outputs.length, expectedOutputs);
+  assert.strictEqual(parsed.minerFee, expectedFee);
 }
 
 describe('OutputLayout to PSBT conversion', function () {
-  const network = networks.bitcoin;
-  const walletKeys = testutil.getDefaultWalletKeys();
-  const signer = bitgo.WalletUnspentSigner.from(walletKeys, walletKeys.user, walletKeys.bitgo);
-  const inscriptionRecipient = bitgo.outputScripts.createOutputScript2of3(
-    walletKeys.deriveForChainAndIndex(0, 0).publicKeys,
-    'p2sh'
-  ).scriptPubKey;
-  const walletUnspent = testutil.mockWalletUnspent(network, BigInt(20_000), { keys: walletKeys });
+  const { rootWalletKeys, signerXprvs } = getTestWalletKeys();
+  // Use wasm-utxo to derive the inscription recipient address (chain 0, index 0)
+  const inscriptionRecipient = fixedScriptWallet.address(rootWalletKeys, 0, 0, coinName);
+  const walletUnspent = mockWalletUnspent(BigInt(20_000));
   const inputBuilder: WalletInputBuilder = {
-    walletKeys,
+    walletKeys: rootWalletKeys,
     signer: 'user',
     cosigner: 'bitgo',
   };
@@ -47,8 +58,9 @@ describe('OutputLayout to PSBT conversion', function () {
 
   function testInscriptionTxWithLayout(layout: OutputLayout, expectedOutputs: number) {
     assertValidPsbt(
-      createPsbtFromOutputLayout(network, inputBuilder, [walletUnspent], outputs, layout),
-      signer,
+      createPsbtFromOutputLayout(coinName, inputBuilder, [walletUnspent], outputs, layout),
+      rootWalletKeys,
+      signerXprvs,
       expectedOutputs,
       layout.feeOutput
     );
@@ -71,9 +83,9 @@ describe('OutputLayout to PSBT conversion', function () {
   });
 
   function testWithUnspents(
-    inscriptionUnspent: bitgo.WalletUnspent<bigint>,
-    supplementaryUnspents: bitgo.WalletUnspent<bigint>[],
-    expectedUnspentSelection: bitgo.WalletUnspent<bigint>[],
+    inscriptionUnspent: WalletUnspent,
+    supplementaryUnspents: WalletUnspent[],
+    expectedUnspentSelection: WalletUnspent[],
     expectedResult: OutputLayout | undefined,
     { minimizeInputs }: { minimizeInputs?: boolean } = {}
   ) {
@@ -83,7 +95,7 @@ describe('OutputLayout to PSBT conversion', function () {
       assert.ok(isSatPoint(satPoint));
       const f = () =>
         createPsbtForSingleInscriptionPassingTransaction(
-          network,
+          coinName,
           inputBuilder,
           [inscriptionUnspent],
           satPoint,
@@ -101,8 +113,10 @@ describe('OutputLayout to PSBT conversion', function () {
         return;
       }
       const psbt1 = f();
+      const replayProtection = { publicKeys: [] as Uint8Array[] };
+      const parsed1 = psbt1.parseTransactionWithWalletKeys(rootWalletKeys, replayProtection);
       assert.deepStrictEqual(
-        psbt1.txInputs.map((i) => bitgo.formatOutputId(bitgo.getOutputIdForInput(i))),
+        parsed1.inputs.map((i) => `${i.previousOutput.txid}:${i.previousOutput.vout}`),
         expectedUnspentSelection.map((u) => u.id)
       );
       const result = findOutputLayoutForWalletUnspents(expectedUnspentSelection, satPoint, outputs, {
@@ -111,19 +125,19 @@ describe('OutputLayout to PSBT conversion', function () {
       assert.ok(result);
       assert.deepStrictEqual(result.layout, expectedResult);
       const expectedOutputs = toArray(expectedResult).filter((v) => v !== BigInt(0)).length - 1;
-      const psbt = createPsbtFromOutputLayout(network, inputBuilder, expectedUnspentSelection, outputs, result.layout);
-      assertValidPsbt(psbt, signer, expectedOutputs, expectedResult.feeOutput);
-      assertValidPsbt(psbt1, signer, expectedOutputs, expectedResult.feeOutput);
+      const psbt = createPsbtFromOutputLayout(coinName, inputBuilder, expectedUnspentSelection, outputs, result.layout);
+      assertValidPsbt(psbt, rootWalletKeys, signerXprvs, expectedOutputs, expectedResult.feeOutput);
+      assertValidPsbt(psbt1, rootWalletKeys, signerXprvs, expectedOutputs, expectedResult.feeOutput);
       assert.strictEqual(
-        psbt.extractTransaction().toBuffer().toString('hex'),
-        psbt1.extractTransaction().toBuffer().toString('hex')
+        Buffer.from(psbt.extractTransaction()).toString('hex'),
+        Buffer.from(psbt1.extractTransaction()).toString('hex')
       );
     });
   }
 
   let nUnspent = 0;
-  function unspent(v: number): bitgo.WalletUnspent<bigint> {
-    return testutil.mockWalletUnspent(network, BigInt(v), { vout: nUnspent++ });
+  function unspent(v: number): WalletUnspent {
+    return mockWalletUnspent(BigInt(v), { vout: nUnspent++ });
   }
 
   const u1k = unspent(1_000);
@@ -148,15 +162,15 @@ describe('OutputLayout to PSBT conversion', function () {
     {
       firstChangeOutput: BigInt(0),
       inscriptionOutput: BigInt(10_000),
-      secondChangeOutput: BigInt(199990009),
-      feeOutput: BigInt(991),
+      secondChangeOutput: BigInt(199990007),
+      feeOutput: BigInt(993),
     },
     { minimizeInputs: false }
   );
   testWithUnspents(u1k, [u5k1, u5k2, u10k], [u1k, u10k], {
     firstChangeOutput: BigInt(0),
-    inscriptionOutput: BigInt(10_350),
+    inscriptionOutput: BigInt(10_349),
     secondChangeOutput: BigInt(0),
-    feeOutput: BigInt(650),
+    feeOutput: BigInt(651),
   });
 });
