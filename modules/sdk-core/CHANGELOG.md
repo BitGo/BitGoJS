@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [36.28.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.27.0...@bitgo/sdk-core@36.28.0) (2026-01-19)
+
+
+### Bug Fixes
+
+* sanitize wallet object from logs ([8465744](https://github.com/BitGo/BitGoJS/commit/8465744ca75accd6289638becf42c6f7137a7de5))
+
+
+### Features
+
+* statics configuration for zksyncera ([a0576a6](https://github.com/BitGo/BitGoJS/commit/a0576a6397c0e6ecd6c4d9cf2c500a43e88592e7))
+
+
+
+
+
 # [36.27.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.26.0...@bitgo/sdk-core@36.27.0) (2026-01-14)
 
 
