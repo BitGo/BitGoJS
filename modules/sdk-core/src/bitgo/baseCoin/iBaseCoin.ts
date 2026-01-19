@@ -583,7 +583,10 @@ export interface IBaseCoin {
     backup: string;
     bitgo: string;
   }>;
-  explainTransaction(options: Record<string, any>): Promise<ITransactionExplanation<any, string | number> | undefined>;
+  explainTransaction(
+    options: Record<string, any>,
+    wallet?: IWallet
+  ): Promise<ITransactionExplanation<any, string | number> | undefined>;
   verifyTransaction(params: VerifyTransactionOptions): Promise<boolean>;
   verifyAddress(params: VerifyAddressOptions): Promise<boolean>;
   isWalletAddress(params: VerifyAddressOptions | TssVerifyAddressOptions, wallet?: IWallet): Promise<boolean>;
