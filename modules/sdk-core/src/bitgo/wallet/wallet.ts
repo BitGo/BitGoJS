@@ -2407,7 +2407,15 @@ export class Wallet implements IWallet {
         'transaction params:',
         _.omit(params, ['keychain', 'prv', 'passphrase', 'walletPassphrase', 'key', 'wallet'])
       );
-      console.error('transaction prebuild:', txPrebuild);
+      // Sanitize to remove _token from bitgo
+      const sanitizedPrebuild = {
+        ..._.omit(txPrebuild, ['wallet']),
+        wallet: {
+          ...this,
+          bitgo: _.omit(this.bitgo, ['_token']),
+        },
+      };
+      console.error('transaction prebuild:', sanitizedPrebuild);
       console.trace(e);
       throw e;
     }
@@ -2449,7 +2457,13 @@ export class Wallet implements IWallet {
           confirmedBalance: this.confirmedBalance(),
           spendableBalance: this.spendableBalance(),
         };
-        error.txParams = _.omit(params, ['keychain', 'prv', 'passphrase', 'walletPassphrase', 'key']);
+        error.txParams = {
+          ..._.omit(params, ['keychain', 'prv', 'passphrase', 'walletPassphrase', 'key', 'wallet']),
+          wallet: {
+            ...this,
+            bitgo: _.omit(this.bitgo, ['_token']),
+          },
+        };
       }
       throw error;
     }
