@@ -1,0 +1,4 @@
+# tar v6 vulnerability - excluded because:
+# - Lerna requires tar v6 (no patched v6 exists, only v7.5.3)
+# - Vulnerability affects unpacking malicious archives
+GHSA-8qq5-rm4j-mr97
