@@ -1010,6 +1010,86 @@ describe('ADA', function () {
         })
         .should.be.rejectedWith('all keychains must have the same commonKeychain for MPC coins');
     });
+
+    it('should verify address when derivedFromParentWithSeed is present', async function () {
+      const derivedFromParentWithSeed = 'testDerivationSeed123';
+
+      const keychains = [
+        {
+          id: '1',
+          commonKeychain: commonKeychain,
+          derivedFromParentWithSeed: derivedFromParentWithSeed,
+          type: 'tss' as const,
+          source: 'user' as const,
+        },
+        {
+          id: '2',
+          commonKeychain: commonKeychain,
+          derivedFromParentWithSeed: derivedFromParentWithSeed,
+          type: 'tss' as const,
+          source: 'backup' as const,
+        },
+        {
+          id: '3',
+          commonKeychain: commonKeychain,
+          derivedFromParentWithSeed: derivedFromParentWithSeed,
+          type: 'tss' as const,
+          source: 'bitgo' as const,
+        },
+      ];
+
+      const { address: expectedAddress } = await (basecoin as any).getAdaAddressAndAccountId({
+        bitgoKey: commonKeychain,
+        index: 0,
+        seed: derivedFromParentWithSeed,
+      });
+
+      const isValid = await basecoin.isWalletAddress({
+        address: expectedAddress,
+        keychains,
+        index: 0,
+      });
+
+      isValid.should.equal(true);
+    });
+
+    it('should fail verification when derivedFromParentWithSeed is missing but address was created with seed', async function () {
+      const derivedFromParentWithSeed = 'testDerivationSeed123';
+      const { address: addressWithSeed } = await (basecoin as any).getAdaAddressAndAccountId({
+        bitgoKey: commonKeychain,
+        index: 0,
+        seed: derivedFromParentWithSeed,
+      });
+
+      const keychainsWithoutSeed = [
+        {
+          id: '1',
+          commonKeychain: commonKeychain,
+          type: 'tss' as const,
+          source: 'user' as const,
+        },
+        {
+          id: '2',
+          commonKeychain: commonKeychain,
+          type: 'tss' as const,
+          source: 'backup' as const,
+        },
+        {
+          id: '3',
+          commonKeychain: commonKeychain,
+          type: 'tss' as const,
+          source: 'bitgo' as const,
+        },
+      ];
+
+      const isValid = await basecoin.isWalletAddress({
+        address: addressWithSeed,
+        keychains: keychainsWithoutSeed,
+        index: 0,
+      });
+
+      isValid.should.equal(false);
+    });
   });
 
   describe('Verify token consolidation transaction:', () => {

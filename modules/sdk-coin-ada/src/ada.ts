@@ -174,9 +174,11 @@ export class Ada extends BaseCoin {
     }
 
     const commonKeychain = extractCommonKeychain(keychains);
+    const derivationSeed = (keychains[0] as { derivedFromParentWithSeed?: string })?.derivedFromParentWithSeed;
     const { address: derivedAddress } = await this.getAdaAddressAndAccountId({
       bitgoKey: commonKeychain,
       index: indexNumber,
+      seed: derivationSeed,
     });
 
     return address === derivedAddress;
