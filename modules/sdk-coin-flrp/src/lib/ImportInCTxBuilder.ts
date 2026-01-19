@@ -74,42 +74,48 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
       fee: fee.toString(),
     };
 
-    const firstUtxo = this.transaction._utxos[0];
-    let addressMap: FlareUtils.AddressMap;
-    if (
-      firstUtxo &&
-      firstUtxo.addresses &&
-      firstUtxo.addresses.length > 0 &&
-      this.transaction._fromAddresses &&
-      this.transaction._fromAddresses.length >= this.transaction._threshold
-    ) {
-      addressMap = this.createAddressMapForUtxo(firstUtxo, this.transaction._threshold);
-    } else {
-      addressMap = new FlareUtils.AddressMap();
-      if (this.transaction._fromAddresses && this.transaction._fromAddresses.length >= this.transaction._threshold) {
-        this.transaction._fromAddresses.slice(0, this.transaction._threshold).forEach((addr, i) => {
+    const addressMaps = this.transaction._utxos.map((utxo) => {
+      const utxoThreshold = utxo.threshold || this.transaction._threshold;
+      if (
+        utxo.addressesIndex &&
+        utxo.addressesIndex.length >= utxoThreshold &&
+        this.transaction._fromAddresses &&
+        this.transaction._fromAddresses.length >= utxoThreshold
+      ) {
+        return this.createAddressMapForUtxo(utxo, utxoThreshold);
+      }
+      if (
+        utxo.addresses &&
+        utxo.addresses.length > 0 &&
+        this.transaction._fromAddresses &&
+        this.transaction._fromAddresses.length >= utxoThreshold
+      ) {
+        return this.createAddressMapForUtxo(utxo, utxoThreshold);
+      }
+      const addressMap = new FlareUtils.AddressMap();
+      if (this.transaction._fromAddresses && this.transaction._fromAddresses.length >= utxoThreshold) {
+        this.transaction._fromAddresses.slice(0, utxoThreshold).forEach((addr, i) => {
           addressMap.set(new Address(addr), i);
         });
       } else {
         const toAddress = new Address(output.address.toBytes());
         addressMap.set(toAddress, 0);
       }
-    }
+      return addressMap;
+    });
 
-    const addressMaps = new FlareUtils.AddressMaps([addressMap]);
+    const flareAddressMaps = new FlareUtils.AddressMaps(addressMaps);
 
     let txCredentials: Credential[];
     if (credentials.length > 0) {
       txCredentials = credentials;
     } else {
-      const emptySignatures: ReturnType<typeof utils.createNewSig>[] = [];
-      for (let i = 0; i < inputThreshold; i++) {
-        emptySignatures.push(utils.createNewSig(''));
-      }
-      txCredentials = [new Credential(emptySignatures)];
+      txCredentials = this.transaction._utxos.map((utxo) =>
+        this.createCredentialForUtxo(utxo, utxo.threshold || this.transaction._threshold)
+      );
     }
 
-    const unsignedTx = new UnsignedTx(baseTx, [], addressMaps, txCredentials);
+    const unsignedTx = new UnsignedTx(baseTx, [], flareAddressMaps, txCredentials);
 
     this.transaction.setTransaction(unsignedTx);
     return this;
@@ -175,7 +181,27 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
       actualFeeNFlr
     );
 
-    this.transaction.setTransaction(importTx);
+    const flareUnsignedTx = importTx as UnsignedTx;
+    const innerTx = flareUnsignedTx.getTx() as evmSerial.ImportTx;
+
+    const utxosWithIndex = innerTx.importedInputs.map((input, idx) => {
+      const transferInput = input.input as TransferInput;
+      const addressesIndex = transferInput.sigIndicies();
+      return {
+        ...this.transaction._utxos[idx],
+        addressesIndex,
+        addresses: [],
+        threshold: addressesIndex.length || this.transaction._utxos[idx].threshold,
+      };
+    });
+
+    const txCredentials = utxosWithIndex.map((utxo) => this.createCredentialForUtxo(utxo, utxo.threshold));
+
+    const addressMaps = utxosWithIndex.map((utxo) => this.createAddressMapForUtxo(utxo, utxo.threshold));
+
+    const fixedUnsignedTx = new UnsignedTx(innerTx, [], new FlareUtils.AddressMaps(addressMaps), txCredentials);
+
+    this.transaction.setTransaction(fixedUnsignedTx);
   }
 
   /**

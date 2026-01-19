@@ -95,11 +95,15 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
     const txCredentials =
       credentials.length > 0
         ? credentials
-        : this.transaction._utxos.map((utxo) => this.createCredentialForUtxo(utxo, this.transaction._threshold));
+        : this.transaction._utxos.map((utxo) => {
+            const utxoThreshold = utxo.threshold || this.transaction._threshold;
+            return this.createCredentialForUtxo(utxo, utxoThreshold);
+          });
 
-    const addressMaps = this.transaction._utxos.map((utxo) =>
-      this.createAddressMapForUtxo(utxo, this.transaction._threshold)
-    );
+    const addressMaps = this.transaction._utxos.map((utxo) => {
+      const utxoThreshold = utxo.threshold || this.transaction._threshold;
+      return this.createAddressMapForUtxo(utxo, utxoThreshold);
+    });
 
     const unsignedTx = new UnsignedTx(importTx, [], new FlareUtils.AddressMaps(addressMaps), txCredentials);
 
@@ -186,7 +190,27 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
       this.transaction._context
     );
 
-    this.transaction.setTransaction(importTx);
+    const flareUnsignedTx = importTx as UnsignedTx;
+    const innerTx = flareUnsignedTx.getTx() as pvmSerial.ImportTx;
+
+    const utxosWithIndex = innerTx.ins.map((input, idx) => {
+      const transferInput = input.input as TransferInput;
+      const addressesIndex = transferInput.sigIndicies();
+      return {
+        ...this.transaction._utxos[idx],
+        addressesIndex,
+        addresses: [],
+        threshold: addressesIndex.length || this.transaction._utxos[idx].threshold,
+      };
+    });
+
+    const txCredentials = utxosWithIndex.map((utxo) => this.createCredentialForUtxo(utxo, utxo.threshold));
+
+    const addressMaps = utxosWithIndex.map((utxo) => this.createAddressMapForUtxo(utxo, utxo.threshold));
+
+    const fixedUnsignedTx = new UnsignedTx(innerTx, [], new FlareUtils.AddressMaps(addressMaps), txCredentials);
+
+    this.transaction.setTransaction(fixedUnsignedTx);
   }
 
   /**
