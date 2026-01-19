@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.23.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-ord@1.22.22...@bitgo/utxo-ord@1.23.0) (2026-01-19)
+
+
+### Bug Fixes
+
+* **utxo-ord:** fix inscription reveal size test ([1754f49](https://github.com/BitGo/BitGoJS/commit/1754f4909dab3bad3591cb1176b8be6f260ffdb9))
+
+
+### Features
+
+* **utxo-ord:** use constant for default postage amount ([4d4bae3](https://github.com/BitGo/BitGoJS/commit/4d4bae3982657ab81b533547719d36776dffc4d3))
+
+
+
+
+
 ## [1.22.22](https://github.com/BitGo/BitGoJS/compare/@bitgo/utxo-ord@1.22.21...@bitgo/utxo-ord@1.22.22) (2026-01-14)
 
 **Note:** Version bump only for package @bitgo/utxo-ord

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [15.18.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.18.2...@bitgo/express@15.18.3) (2026-01-19)
+
+
+### Bug Fixes
+
+* lightning wallet generation codec fix ([402846e](https://github.com/BitGo/BitGoJS/commit/402846e926f13a10a8d54b6b2fda724a6615cd81))
+
+
+
+
+
 ## [15.18.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/express@15.18.1...@bitgo/express@15.18.2) (2026-01-14)
 
 

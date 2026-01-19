@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.21.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.20.0...bitgo@50.21.0) (2026-01-19)
+
+
+### Features
+
+* **bitgo:** use unminified BitGoJS for browser tests ([a9cf76c](https://github.com/BitGo/BitGoJS/commit/a9cf76cad1dd0bfb5d07951b295109e9bf7c91b0))
+* statics configuration for zksyncera ([a0576a6](https://github.com/BitGo/BitGoJS/commit/a0576a6397c0e6ecd6c4d9cf2c500a43e88592e7))
+
+
+
+
+
 # [50.20.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.19.0...bitgo@50.20.0) (2026-01-14)
 
 

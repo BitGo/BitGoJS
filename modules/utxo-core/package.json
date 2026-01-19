@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/utxo-core",
-  "version": "1.30.0",
+  "version": "1.31.0",
   "description": "BitGo UTXO Core types",
   "main": "./dist/cjs/src/index.js",
   "module": "./dist/esm/index.js",

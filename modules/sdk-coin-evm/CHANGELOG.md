@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.13.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.12.0...@bitgo/sdk-coin-evm@1.13.0) (2026-01-19)
+
+
+### Features
+
+* statics configuration for zksyncera ([a0576a6](https://github.com/BitGo/BitGoJS/commit/a0576a6397c0e6ecd6c4d9cf2c500a43e88592e7))
+
+
+
+
+
 # [1.12.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-evm@1.11.1...@bitgo/sdk-coin-evm@1.12.0) (2026-01-14)
 
 
