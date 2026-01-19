@@ -1,0 +1,7 @@
+# Excluded because:
+# - Lerna requires tar v6, but no patched v6 exists (fix only in v7.5.3)
+# - Forcing tar v7.5.3 breaks lerna's packDirectory API
+# - This CVE affects archive EXTRACTION (unpacking malicious symlinks/hardlinks)
+# - Lerna only uses tar for PACKING
+GHSA-8qq5-rm4j-mr97
+
