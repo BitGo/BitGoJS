@@ -317,7 +317,6 @@ describe('Flrp Import In P Tx Builder', () => {
     });
 
     it('should correctly complete full sign flow with different UTXO address order', async () => {
-      // Step 1: Build fresh unsigned transaction
       const builder1 = new TransactionBuilderFactory(coins.get('tflrp'))
         .getImportInPBuilder()
         .threshold(testData.threshold)

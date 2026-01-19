@@ -78,7 +78,8 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
     this.transaction._threshold = outputOwners.threshold.value();
     this.transaction._fromAddresses = outputOwners.addrs.map((addr) => Buffer.from(addr.toBytes()));
     this._externalChainId = Buffer.from(importTx.sourceChain.toBytes());
-    this.transaction._utxos = this.recoverUtxos(importTx.ins);
+
+    this.transaction._utxos = this.recoverUtxos(importTx.ins, outputOwners.addrs);
 
     const totalInputAmount = importTx.ins.reduce((sum, input) => sum + input.amount(), BigInt(0));
     const outputAmount = transferOutput.amount();
@@ -91,6 +92,8 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
     if (rawBytes && hasCredentials) {
       this.transaction._rawSignedBytes = rawBytes;
     }
+
+    this.computeAddressesIndexFromParsed();
 
     const txCredentials =
       credentials.length > 0
@@ -147,11 +150,13 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
       throw new BuildTransactionError('locktime is required');
     }
 
-    // Convert decoded UTXOs to native FlareJS Utxo objects
+    this.computeAddressesIndex();
+
+    this.validateUtxoAddresses();
+
     const assetId = utils.cb58Encode(Buffer.from(this.transaction._assetId, 'hex'));
     const nativeUtxos = utils.decodedToUtxos(this.transaction._utxos, assetId);
 
-    // Validate UTXO balance is non-zero (fee will be deducted during import)
     const totalUtxoAmount = nativeUtxos.reduce((sum, utxo) => {
       const output = utxo.output as TransferOutput;
       return sum + output.amount();
@@ -164,7 +169,6 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
     const toAddresses = this.transaction._to.map((addr) => Buffer.from(addr));
     const fromAddresses = this.transaction._fromAddresses.map((addr) => Buffer.from(addr));
 
-    // Validate address lengths (P-chain addresses are 20 bytes)
     const invalidToAddress = toAddresses.find((addr) => addr.length !== 20);
     if (invalidToAddress) {
       throw new BuildTransactionError(`Invalid toAddress length: expected 20 bytes, got ${invalidToAddress.length}`);
@@ -194,15 +198,16 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
     const innerTx = flareUnsignedTx.getTx() as pvmSerial.ImportTx;
 
     const utxosWithIndex = innerTx.ins.map((input, idx) => {
-      const transferInput = input.input as TransferInput;
-      const addressesIndex = transferInput.sigIndicies();
+      const originalUtxo = this.transaction._utxos[idx];
       return {
-        ...this.transaction._utxos[idx],
-        addressesIndex,
-        addresses: [],
-        threshold: addressesIndex.length || this.transaction._utxos[idx].threshold,
+        ...originalUtxo,
+        addressesIndex: originalUtxo.addressesIndex,
+        addresses: originalUtxo.addresses,
+        threshold: originalUtxo.threshold || this.transaction._threshold,
       };
     });
+
+    this.transaction._utxos = utxosWithIndex;
 
     const txCredentials = utxosWithIndex.map((utxo) => this.createCredentialForUtxo(utxo, utxo.threshold));
 
@@ -214,26 +219,66 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
   }
 
   /**
-   * Recover UTXOs from imported inputs
+   * Recover UTXOs from imported inputs.
+   * Uses output addresses as proxy for UTXO addresses since they should be the same
+   * addresses controlling the multisig (just potentially in different on-chain order).
+   *
    * @param importedInputs Array of transferable inputs
+   * @param outputAddrs Output owner addresses to use as proxy for UTXO addresses
    * @returns Array of decoded UTXO objects
    */
-  private recoverUtxos(importedInputs: TransferableInput[]): DecodedUtxoObj[] {
+  private recoverUtxos(
+    importedInputs: TransferableInput[],
+    outputAddrs?: { toBytes(): Uint8Array }[]
+  ): DecodedUtxoObj[] {
+    const proxyAddresses = outputAddrs
+      ? outputAddrs.map((addr) =>
+          utils.addressToString(
+            this.transaction._network.hrp,
+            this.transaction._network.alias,
+            Buffer.from(addr.toBytes())
+          )
+        )
+      : [];
+
     return importedInputs.map((input) => {
       const utxoId = input.utxoID;
       const transferInput = input.input as TransferInput;
-      const addressesIndex = transferInput.sigIndicies();
+      const sigIndicies = transferInput.sigIndicies();
 
       const utxo: DecodedUtxoObj = {
         outputID: SECP256K1_Transfer_Output,
         amount: transferInput.amount().toString(),
         txid: utils.cb58Encode(Buffer.from(utxoId.txID.toBytes())),
         outputidx: utxoId.outputIdx.value().toString(),
-        threshold: addressesIndex.length || this.transaction._threshold,
-        addresses: [],
-        addressesIndex,
+        threshold: sigIndicies.length || this.transaction._threshold,
+        addresses: proxyAddresses,
+        addressesIndex: sigIndicies,
       };
       return utxo;
+    });
+  }
+
+  /**
+   * Compute proper addressesIndex from parsed transaction's sigIndicies.
+   * Following AVAX P approach: addressesIndex[senderIdx] = position of sender in UTXO addresses.
+   *
+   * For parsed transactions:
+   * - sigIndicies tells us which UTXO positions need to sign for each slot
+   * - We use output addresses as proxy for UTXO addresses
+   * - We compute addressesIndex as sender -> utxo position mapping
+   */
+  private computeAddressesIndexFromParsed(): void {
+    const sender = this.transaction._fromAddresses;
+    if (!sender || sender.length === 0) return;
+
+    this.transaction._utxos.forEach((utxo) => {
+      if (utxo.addresses && utxo.addresses.length > 0) {
+        const utxoAddresses = utxo.addresses.map((a) => utils.parseAddress(a));
+        utxo.addressesIndex = sender.map((senderAddr) =>
+          utxoAddresses.findIndex((utxoAddr) => Buffer.compare(Buffer.from(utxoAddr), Buffer.from(senderAddr)) === 0)
+        );
+      }
     });
   }
 }
