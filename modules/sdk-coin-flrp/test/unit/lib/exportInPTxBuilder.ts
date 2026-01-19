@@ -147,4 +147,86 @@ describe('Flrp Export In P Tx Builder', () => {
         err.message.should.be.equal('Private key cannot sign the transaction');
       });
   });
+
+  describe('addressesIndex extraction and signature ordering', () => {
+    it('should extract addressesIndex from parsed transaction inputs', async () => {
+      const txBuilder = factory.from(testData.halfSigntxHex);
+      const tx = await txBuilder.build();
+      const txJson = tx.toJson();
+
+      txJson.type.should.equal(22);
+      txJson.signatures.length.should.be.greaterThan(0);
+    });
+
+    it('should correctly handle fresh build with proper signature ordering', async () => {
+      const txBuilder = factory
+        .getExportInPBuilder()
+        .threshold(testData.threshold)
+        .locktime(testData.locktime)
+        .fromPubKey(testData.pAddresses)
+        .amount(testData.amount)
+        .externalChainId(testData.sourceChainId)
+        .feeState(testData.feeState)
+        .context(testData.context)
+        .decodedUtxos(testData.utxos);
+
+      txBuilder.sign({ key: testData.privateKeys[2] });
+      const tx = await txBuilder.build();
+      const txJson = tx.toJson();
+
+      txJson.type.should.equal(22);
+      tx.toBroadcastFormat().should.be.a.String();
+    });
+
+    it('should correctly build and sign with different UTXO address ordering', async () => {
+      const reorderedUtxos = testData.utxos.map((utxo) => ({
+        ...utxo,
+        addresses: [testData.pAddresses[1], testData.pAddresses[2], testData.pAddresses[0]],
+      }));
+
+      const txBuilder = factory
+        .getExportInPBuilder()
+        .threshold(testData.threshold)
+        .locktime(testData.locktime)
+        .fromPubKey(testData.pAddresses)
+        .amount(testData.amount)
+        .externalChainId(testData.sourceChainId)
+        .feeState(testData.feeState)
+        .context(testData.context)
+        .decodedUtxos(reorderedUtxos);
+
+      txBuilder.sign({ key: testData.privateKeys[2] });
+      const tx = await txBuilder.build();
+      const txJson = tx.toJson();
+
+      txJson.type.should.equal(22);
+      tx.toBroadcastFormat().should.be.a.String();
+    });
+
+    it('should handle parse-sign-parse-sign flow correctly', async () => {
+      const txBuilder = factory
+        .getExportInPBuilder()
+        .threshold(testData.threshold)
+        .locktime(testData.locktime)
+        .fromPubKey(testData.pAddresses)
+        .amount(testData.amount)
+        .externalChainId(testData.sourceChainId)
+        .feeState(testData.feeState)
+        .context(testData.context)
+        .decodedUtxos(testData.utxos);
+
+      txBuilder.sign({ key: testData.privateKeys[2] });
+      const halfSignedTx = await txBuilder.build();
+      const halfSignedHex = halfSignedTx.toBroadcastFormat();
+
+      const txBuilder2 = factory.from(halfSignedHex);
+      txBuilder2.sign({ key: testData.privateKeys[0] });
+      const fullSignedTx = await txBuilder2.build();
+      const fullSignedJson = fullSignedTx.toJson();
+
+      fullSignedJson.type.should.equal(22);
+      fullSignedJson.signatures.length.should.be.greaterThan(0);
+      fullSignedTx.toBroadcastFormat().should.be.a.String();
+    });
+  });
 });

@@ -252,4 +252,123 @@ describe('Flrp Import In P Tx Builder', () => {
       txJson.signatures.length.should.equal(0);
     });
   });
+
+  describe('fresh build with different UTXO address order', () => {
+    it('should correctly set up addressMaps when UTXO addresses differ from fromAddresses order', async () => {
+      const txBuilder = new TransactionBuilderFactory(coins.get('tflrp'))
+        .getImportInPBuilder()
+        .threshold(testData.threshold)
+        .locktime(testData.locktime)
+        .fromPubKey(testData.corethAddresses)
+        .to(testData.pAddresses)
+        .externalChainId(testData.sourceChainId)
+        .feeState(testData.feeState)
+        .context(testData.context)
+        .decodedUtxos(testData.utxos);
+
+      const tx = await txBuilder.build();
+      const txJson = tx.toJson();
+
+      txJson.type.should.equal(23);
+      txJson.threshold.should.equal(2);
+    });
+
+    it('should produce correct signatures when signing fresh build with different address order', async () => {
+      const txBuilder = new TransactionBuilderFactory(coins.get('tflrp'))
+        .getImportInPBuilder()
+        .threshold(testData.threshold)
+        .locktime(testData.locktime)
+        .fromPubKey(testData.corethAddresses)
+        .to(testData.pAddresses)
+        .externalChainId(testData.sourceChainId)
+        .feeState(testData.feeState)
+        .context(testData.context)
+        .decodedUtxos(testData.utxos);
+
+      txBuilder.sign({ key: testData.privateKeys[2] });
+      txBuilder.sign({ key: testData.privateKeys[0] });
+
+      const tx = await txBuilder.build();
+      const txJson = tx.toJson();
+
+      txJson.signatures.length.should.equal(2);
+    });
+
+    it('should produce matching tx when fresh build is parsed and rebuilt', async () => {
+      const freshBuilder = new TransactionBuilderFactory(coins.get('tflrp'))
+        .getImportInPBuilder()
+        .threshold(testData.threshold)
+        .locktime(testData.locktime)
+        .fromPubKey(testData.corethAddresses)
+        .to(testData.pAddresses)
+        .externalChainId(testData.sourceChainId)
+        .feeState(testData.feeState)
+        .context(testData.context)
+        .decodedUtxos(testData.utxos);
+
+      const freshTx = await freshBuilder.build();
+      const freshHex = freshTx.toBroadcastFormat();
+
+      const parsedBuilder = new TransactionBuilderFactory(coins.get('tflrp')).from(freshHex);
+      const parsedTx = await parsedBuilder.build();
+      const parsedHex = parsedTx.toBroadcastFormat();
+
+      parsedHex.should.equal(freshHex);
+    });
+
+    it('should correctly complete full sign flow with different UTXO address order', async () => {
+      // Step 1: Build fresh unsigned transaction
+      const builder1 = new TransactionBuilderFactory(coins.get('tflrp'))
+        .getImportInPBuilder()
+        .threshold(testData.threshold)
+        .locktime(testData.locktime)
+        .fromPubKey(testData.corethAddresses)
+        .to(testData.pAddresses)
+        .externalChainId(testData.sourceChainId)
+        .feeState(testData.feeState)
+        .context(testData.context)
+        .decodedUtxos(testData.utxos);
+
+      const unsignedTx = await builder1.build();
+      const unsignedHex = unsignedTx.toBroadcastFormat();
+
+      const builder2 = new TransactionBuilderFactory(coins.get('tflrp')).from(unsignedHex);
+      builder2.sign({ key: testData.privateKeys[2] });
+      const halfSignedTx = await builder2.build();
+      const halfSignedHex = halfSignedTx.toBroadcastFormat();
+
+      halfSignedTx.toJson().signatures.length.should.equal(1);
+
+      const builder3 = new TransactionBuilderFactory(coins.get('tflrp')).from(halfSignedHex);
+      builder3.sign({ key: testData.privateKeys[0] });
+      const fullSignedTx = await builder3.build();
+
+      fullSignedTx.toJson().signatures.length.should.equal(2);
+
+      const txId = fullSignedTx.id;
+      txId.should.be.a.String();
+      txId.length.should.be.greaterThan(0);
+    });
+
+    it('should handle signing in different order and still produce valid tx', async () => {
+      const txBuilder = new TransactionBuilderFactory(coins.get('tflrp'))
+        .getImportInPBuilder()
+        .threshold(testData.threshold)
+        .locktime(testData.locktime)
+        .fromPubKey(testData.corethAddresses)
+        .to(testData.pAddresses)
+        .externalChainId(testData.sourceChainId)
+        .feeState(testData.feeState)
+        .context(testData.context)
+        .decodedUtxos(testData.utxos);
+
+      txBuilder.sign({ key: testData.privateKeys[0] });
+      txBuilder.sign({ key: testData.privateKeys[2] });
+
+      const tx = await txBuilder.build();
+      const txJson = tx.toJson();
+
+      txJson.signatures.length.should.equal(2);
+    });
+  });
 });

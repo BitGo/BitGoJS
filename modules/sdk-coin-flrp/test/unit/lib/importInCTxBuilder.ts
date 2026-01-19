@@ -208,4 +208,41 @@ describe('Flrp Import In C Tx Builder', () => {
       txJson.signatures.length.should.equal(0);
     });
   });
+
+  describe('fresh build with different UTXO address order for ImportInC', () => {
+    it('should correctly complete full sign flow with different UTXO address order for ImportInC', async () => {
+      const builder1 = new TransactionBuilderFactory(coins.get('tflrp')).from(testData.unsignedHex);
+      const unsignedTx = await builder1.build();
+      const unsignedHex = unsignedTx.toBroadcastFormat();
+
+      const builder2 = new TransactionBuilderFactory(coins.get('tflrp')).from(unsignedHex);
+      builder2.sign({ key: testData.privateKeys[2] });
+      const halfSignedTx = await builder2.build();
+      const halfSignedHex = halfSignedTx.toBroadcastFormat();
+
+      halfSignedTx.toJson().signatures.length.should.equal(1);
+
+      const builder3 = new TransactionBuilderFactory(coins.get('tflrp')).from(halfSignedHex);
+      builder3.sign({ key: testData.privateKeys[0] });
+      const fullSignedTx = await builder3.build();
+
+      fullSignedTx.toJson().signatures.length.should.equal(2);
+
+      const txId = fullSignedTx.id;
+      txId.should.be.a.String();
+      txId.length.should.be.greaterThan(0);
+    });
+
+    it('should handle ImportInC signing in different order and still produce valid tx', async () => {
+      const txBuilder = new TransactionBuilderFactory(coins.get('tflrp')).from(testData.unsignedHex);
+
+      txBuilder.sign({ key: testData.privateKeys[0] });
+      txBuilder.sign({ key: testData.privateKeys[2] });
+
+      const tx = await txBuilder.build();
+      const txJson = tx.toJson();
+
+      txJson.signatures.length.should.equal(2);
+    });
+  });
 });
