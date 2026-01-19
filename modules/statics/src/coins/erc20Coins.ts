@@ -14251,4 +14251,28 @@ export const erc20Coins = [
     '0x01791f726b4103694969820be083196cc7c045ff',
     UnderlyingAsset['eth:yb']
   ),
+  erc20(
+    'd95a9238-a1e6-42df-862f-a921adf8151d',
+    'morph:usdc',
+    'USD Coin',
+    6,
+    '0xe34c91815d7fc18a9e2148bcd4241d0a5848b693',
+    UnderlyingAsset['morph:usdc']
+  ),
+  erc20(
+    '7c3fb96a-edaf-4c5d-85b3-4a445ce92fc8',
+    'morph:usdt',
+    'Tether USD',
+    6,
+    '0xc7d67a9cbb121b3b0b9c053dd9f469523243379a',
+    UnderlyingAsset['morph:usdt']
+  ),
+  erc20(
+    '03ccbfa5-c912-45f7-8b77-9e21950a5369',
+    'morph:usd1',
+    'USD1',
+    18,
+    '0x111111d2bf19e43c34263401e0cad979ed1cdb61',
+    UnderlyingAsset['morph:usd1']
+  ),
 ];
