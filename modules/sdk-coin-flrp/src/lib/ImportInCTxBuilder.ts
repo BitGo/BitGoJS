@@ -8,7 +8,6 @@ import {
   TransferableInput,
   TransferInput,
   TransferOutput,
-  Address,
   utils as FlareUtils,
   evm,
 } from '@flarenetwork/flarejs';
@@ -52,6 +51,11 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
     this.transaction._to = [Buffer.from(output.address.toBytes())];
 
     const inputs = baseTx.importedInputs;
+
+    const firstInput = inputs[0];
+    const inputThreshold = firstInput.sigIndicies().length || this.transaction._threshold;
+    this.transaction._threshold = inputThreshold;
+
     this.transaction._utxos = this.recoverUtxos(inputs);
 
     const totalInputAmount = inputs.reduce((t, i) => t + i.amount(), BigInt(0));
@@ -66,42 +70,15 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
       this.transaction._rawSignedBytes = rawBytes;
     }
 
-    const firstInput = inputs[0];
-    const inputThreshold = firstInput.sigIndicies().length || this.transaction._threshold;
-    this.transaction._threshold = inputThreshold;
-
     this.transaction._fee = {
       fee: fee.toString(),
     };
 
+    this.computeAddressesIndexFromParsed();
+
     const addressMaps = this.transaction._utxos.map((utxo) => {
       const utxoThreshold = utxo.threshold || this.transaction._threshold;
-      if (
-        utxo.addressesIndex &&
-        utxo.addressesIndex.length >= utxoThreshold &&
-        this.transaction._fromAddresses &&
-        this.transaction._fromAddresses.length >= utxoThreshold
-      ) {
-        return this.createAddressMapForUtxo(utxo, utxoThreshold);
-      }
-      if (
-        utxo.addresses &&
-        utxo.addresses.length > 0 &&
-        this.transaction._fromAddresses &&
-        this.transaction._fromAddresses.length >= utxoThreshold
-      ) {
-        return this.createAddressMapForUtxo(utxo, utxoThreshold);
-      }
-      const addressMap = new FlareUtils.AddressMap();
-      if (this.transaction._fromAddresses && this.transaction._fromAddresses.length >= utxoThreshold) {
-        this.transaction._fromAddresses.slice(0, utxoThreshold).forEach((addr, i) => {
-          addressMap.set(new Address(addr), i);
-        });
-      } else {
-        const toAddress = new Address(output.address.toBytes());
-        addressMap.set(toAddress, 0);
-      }
-      return addressMap;
+      return this.createAddressMapForUtxo(utxo, utxoThreshold);
     });
 
     const flareAddressMaps = new FlareUtils.AddressMaps(addressMaps);
@@ -131,6 +108,7 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
 
   /**
    * Build the import in C-chain transaction
+   * Following AVAX P approach for UTXO handling and signature slot assignment.
    * @protected
    */
   protected buildFlareTransaction(): void {
@@ -153,6 +131,10 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
     if (!this.transaction._threshold) {
       throw new BuildTransactionError('threshold is required');
     }
+
+    this.computeAddressesIndex();
+
+    this.validateUtxoAddresses();
 
     const actualFeeNFlr = BigInt(this.transaction._fee.fee);
     const sourceChain = 'P';
@@ -185,15 +167,16 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
     const innerTx = flareUnsignedTx.getTx() as evmSerial.ImportTx;
 
     const utxosWithIndex = innerTx.importedInputs.map((input, idx) => {
-      const transferInput = input.input as TransferInput;
-      const addressesIndex = transferInput.sigIndicies();
+      const originalUtxo = this.transaction._utxos[idx];
       return {
-        ...this.transaction._utxos[idx],
-        addressesIndex,
-        addresses: [],
-        threshold: addressesIndex.length || this.transaction._utxos[idx].threshold,
+        ...originalUtxo,
+        addressesIndex: originalUtxo.addressesIndex,
+        addresses: originalUtxo.addresses,
+        threshold: originalUtxo.threshold || this.transaction._threshold,
       };
     });
+
+    this.transaction._utxos = utxosWithIndex;
 
     const txCredentials = utxosWithIndex.map((utxo) => this.createCredentialForUtxo(utxo, utxo.threshold));
 
@@ -205,26 +188,50 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
   }
 
   /**
-   * Recover UTXOs from imported inputs
+   * Recover UTXOs from imported inputs.
+   * Uses fromAddresses as proxy for UTXO addresses since they should be the same
+   * addresses controlling the multisig.
+   *
    * @param importedInputs Array of transferable inputs
    * @returns Array of decoded UTXO objects
    */
   private recoverUtxos(importedInputs: TransferableInput[]): DecodedUtxoObj[] {
+    const proxyAddresses =
+      this.transaction._fromAddresses && this.transaction._fromAddresses.length > 0
+        ? this.transaction._fromAddresses.map((addr) =>
+            utils.addressToString(this.transaction._network.hrp, 'P', Buffer.from(addr))
+          )
+        : [];
+
     return importedInputs.map((input) => {
       const txid = input.utxoID.toString();
       const outputidx = input.utxoID.outputIdx.toString();
       const transferInput = input.input as TransferInput;
-      const addressesIndex = transferInput.sigIndicies();
+      const sigIndicies = transferInput.sigIndicies();
 
       return {
         outputID: SECP256K1_Transfer_Output,
         amount: input.amount().toString(),
         txid: utils.cb58Encode(Buffer.from(txid, 'hex')),
         outputidx: outputidx,
-        threshold: addressesIndex.length || this.transaction._threshold,
-        addresses: [],
-        addressesIndex,
+        threshold: sigIndicies.length || this.transaction._threshold,
+        addresses: proxyAddresses,
+        addressesIndex: sigIndicies,
       };
+    });
+  }
+
+  private computeAddressesIndexFromParsed(): void {
+    const sender = this.transaction._fromAddresses;
+    if (!sender || sender.length === 0) return;
+
+    this.transaction._utxos.forEach((utxo) => {
+      if (utxo.addresses && utxo.addresses.length > 0) {
+        const utxoAddresses = utxo.addresses.map((a) => utils.parseAddress(a));
+        utxo.addressesIndex = sender.map((senderAddr) =>
+          utxoAddresses.findIndex((utxoAddr) => Buffer.compare(Buffer.from(utxoAddr), Buffer.from(senderAddr)) === 0)
+        );
+      }
     });
   }
 }
