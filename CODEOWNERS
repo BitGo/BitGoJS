@@ -104,7 +104,7 @@
 # Examples
 /examples/ @BitGo/ethalt-team
 /examples/ts/btc/ @BitGo/btc-team
-/examples/ts/stablecoin @Bitgo/gousd-team
+/examples/ts/stablecoin @Bitgo/stablecoins
 
 # Trade
 /modules/sdk-core/src/bitgo/address-book/ @BitGo/prime
