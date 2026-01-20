@@ -3031,6 +3031,9 @@ export enum UnderlyingAsset {
   'megaeth:mega' = 'megaeth:mega',
   'megaeth:weth' = 'megaeth:weth',
 
+  // MegaEth testnet tokens
+  'tmegaeth:tmt' = 'tmegaeth:tmt',
+
   // Plume testnet tokens
   'tplume:usdc' = 'tplume:usdc',
 

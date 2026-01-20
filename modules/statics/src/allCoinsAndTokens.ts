@@ -3304,6 +3304,17 @@ export const allCoinsAndTokens = [
     Networks.main.megaeth
   ),
 
+  // MegaEth testnet tokens
+  erc20Token(
+    'b8a7c96f-96af-4c2f-94eb-582aa21ac6bb',
+    'tmegaeth:tmt',
+    'Test Mintable Token',
+    6,
+    '0x9abf1ca968783ba2ad3a75b6b7b2beece80a4fc2',
+    UnderlyingAsset['tmegaeth:tmt'],
+    Networks.test.megaeth
+  ),
+
   // Plume testnet tokens
   erc20Token(
     '67a140e3-c73e-4984-af13-7b1555ee3ff3',

@@ -154,7 +154,7 @@ export class CoinMap {
     747: 'flow',
     98867: 'tplume',
     98866: 'plume',
-    6342: 'tmegaeth',
+    6343: 'tmegaeth',
     4326: 'megaeth',
     295: 'hbarevm',
     296: 'thbarevm',
