@@ -30,7 +30,7 @@ export const cosmosTokens = [
     'ab7f8f89-1cb6-4b07-b837-f9e792095d1c',
     'hash:figr',
     'Figure',
-    'figr.d',
+    'nfgrd',
     9,
     Networks.main.hash,
     BaseUnit.HASH,
