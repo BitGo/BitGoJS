@@ -5212,6 +5212,17 @@ export const tOfcErc20Coins = [
     18,
     underlyingAssetForSymbol('megaeth:weth')
   ),
+
+  // MegaEth testnet tokens
+  tofcerc20(
+    'c4e8f2a1-9b3d-4e5f-8a6c-7d2e1f0b9c8a',
+    'ofctmegaeth:tmt',
+    'Test Mintable Token',
+    6,
+    underlyingAssetForSymbol('tmegaeth:tmt')
+  ),
+
+  // Morph tokens
   ofcerc20('4d5f4fb7-b2e2-4e63-bbda-7f315332da5b', 'ofcmorph:usdc', 'USD Coin', 6, UnderlyingAsset['morph:usdc']),
   ofcerc20('37f51c58-9be5-4c56-adcb-2c7f3c2cfc1a', 'ofcmorph:usdt', 'Tether USD', 6, UnderlyingAsset['morph:usdt']),
   ofcerc20('e499e7cc-22ae-4374-ae4b-27651565af15', 'ofcmorph:usd1', 'USD1', 18, UnderlyingAsset['morph:usd1']),

@@ -2196,8 +2196,8 @@ class FlowTestnet extends Testnet implements EthereumNetwork {
 class MegaETH extends Mainnet implements EthereumNetwork {
   name = 'MegaETH';
   family = CoinFamily.MEGAETH;
-  explorerUrl = 'https://www.megaexplorer.xyz/tx/';
-  accountExplorerUrl = 'https://www.megaexplorer.xyz/address/';
+  explorerUrl = 'https://megaeth.blockscout.com/tx/';
+  accountExplorerUrl = 'https://megaeth.blockscout.com/address/';
   chainId = 4326;
   nativeCoinOperationHashPrefix = '4326';
 }
@@ -2205,10 +2205,10 @@ class MegaETH extends Mainnet implements EthereumNetwork {
 class MegaETHTestnet extends Testnet implements EthereumNetwork {
   name = 'MegaETHTestnet';
   family = CoinFamily.MEGAETH;
-  explorerUrl = 'https://megaeth.blockscout.com/tx/';
-  accountExplorerUrl = 'https://megaeth.blockscout.com/address/';
-  chainId = 6342;
-  nativeCoinOperationHashPrefix = '6342';
+  explorerUrl = 'https://www.megaexplorer.xyz/tx/';
+  accountExplorerUrl = 'https://www.megaexplorer.xyz/address/';
+  chainId = 6343;
+  nativeCoinOperationHashPrefix = '6343';
 }
 
 class Plume extends Mainnet implements EthereumNetwork {
