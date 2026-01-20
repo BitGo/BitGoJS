@@ -197,8 +197,18 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
     const flareUnsignedTx = importTx as UnsignedTx;
     const innerTx = flareUnsignedTx.getTx() as pvmSerial.ImportTx;
 
-    const utxosWithIndex = innerTx.ins.map((input, idx) => {
-      const originalUtxo = this.transaction._utxos[idx];
+    const utxosWithIndex = innerTx.ins.map((input) => {
+      const inputTxid = utils.cb58Encode(Buffer.from(input.utxoID.txID.toBytes()));
+      const inputOutputIdx = input.utxoID.outputIdx.value().toString();
+
+      const originalUtxo = this.transaction._utxos.find(
+        (utxo) => utxo.txid === inputTxid && utxo.outputidx === inputOutputIdx
+      );
+
+      if (!originalUtxo) {
+        throw new BuildTransactionError(`Could not find matching UTXO for input ${inputTxid}:${inputOutputIdx}`);
+      }
+
       return {
         ...originalUtxo,
         addressesIndex: originalUtxo.addressesIndex,
