@@ -708,7 +708,23 @@ export const ofcCoins = [
     ...SOL_OFC_TOKEN_FEATURES,
     CoinFeature.STABLECOIN,
   ]),
+  ofcsolToken('daf9636e-8c99-4d62-bfaf-3ec7a4a5c883', 'ofcsol:eusx', 'Solstice eUSX', 6, UnderlyingAsset['sol:eusx'], [
+    ...SOL_OFC_TOKEN_FEATURES,
+    CoinFeature.STABLECOIN,
+  ]),
+  ofcsolToken(
+    '74ca70b5-a98c-4486-a51b-f59165bdbed8',
+    'ofcsol:myrc',
+    'Malaysian Ringgit Coin',
+    6,
+    UnderlyingAsset['sol:myrc'],
+    [...SOL_OFC_TOKEN_FEATURES]
+  ),
   ofcsolToken('0d96e2db-d01e-4ea0-ac87-3b51d563ea91', 'ofcsol:usdc', 'USD Coin', 6, UnderlyingAsset['sol:usdc'], [
+    ...SOL_OFC_TOKEN_FEATURES,
+    CoinFeature.STABLECOIN,
+  ]),
+  ofcsolToken('2ef2ca5a-139b-4797-97e1-476b2a39e63e', 'ofcsol:usdm1', 'USDM1', 9, UnderlyingAsset['sol:usdm1'], [
     ...SOL_OFC_TOKEN_FEATURES,
     CoinFeature.STABLECOIN,
   ]),
@@ -3556,6 +3572,16 @@ export const ofcCoins = [
     'Stellar USDC',
     7,
     UnderlyingAsset['xlm:USDC-GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN'],
+    undefined,
+    [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
+  ),
+
+  ofcStellarToken(
+    '14d6fddf-3a96-4495-a4d7-1afaf166c25e',
+    'ofcxlm:usdm1',
+    'USDM1',
+    7,
+    UnderlyingAsset['xlm:USDM1-GDM5QWWXCMDTQMZAKMYTCI52LA7FWBHAZMU5NJLMIFHDJISJRP2ZWPKC'],
     undefined,
     [...ACCOUNT_COIN_DEFAULT_FEATURES, CoinFeature.STABLECOIN]
   ),
