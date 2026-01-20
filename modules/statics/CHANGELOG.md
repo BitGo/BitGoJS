@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.22.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.21.0...@bitgo/statics@58.22.0) (2026-01-19)
+
+
+### Bug Fixes
+
+* **sdk-coin-flr:** update import transaction fee validation ([8281d49](https://github.com/BitGo/BitGoJS/commit/8281d4925f5b7b98e68289b491d9c5e863f91a8b))
+
+
+### Features
+
+* statics configuration for zksyncera ([a0576a6](https://github.com/BitGo/BitGoJS/commit/a0576a6397c0e6ecd6c4d9cf2c500a43e88592e7))
+* **statics:** onboard tokens on morph chain ([f27eeb4](https://github.com/BitGo/BitGoJS/commit/f27eeb4c3a84391703a9706a84353aaca2851d8f))
+
+
+
+
+
 # [58.21.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.20.0...@bitgo/statics@58.21.0) (2026-01-14)
 
 
