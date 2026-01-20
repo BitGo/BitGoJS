@@ -975,16 +975,28 @@ class InjectiveTestnet extends Testnet implements AccountNetwork {
   explorerUrl = 'https://testnet.explorer.injective.network/transaction/';
 }
 
-class Kava extends Mainnet implements AccountNetwork {
+class Kava extends Mainnet implements CosmosNetwork {
   name = 'Kava';
   family = CoinFamily.KAVA;
-  explorerUrl = 'https://www.mintscan.io/kava/transactions/';
+  explorerUrl = 'https://www.mintscan.io/kava/tx/';
+  addressPrefix = 'kava';
+  validatorPrefix = 'kavavaloper';
+  denom = 'ukava';
+  gasAmount = '5000';
+  gasLimit = 200000;
+  validDenoms = ['kava', 'ukava'];
 }
 
-class KavaTestnet extends Testnet implements AccountNetwork {
+class KavaTestnet extends Testnet implements CosmosNetwork {
   name = 'KavaTestnet';
   family = CoinFamily.KAVA;
-  explorerUrl = 'https://testnet.mintscan.io/kava-testnet/txs/';
+  explorerUrl = 'https://testnet.mintscan.io/kava-testnet/tx/';
+  addressPrefix = 'kava';
+  validatorPrefix = 'kavavaloper';
+  denom = 'ukava';
+  gasAmount = '5000';
+  gasLimit = 200000;
+  validDenoms = ['kava', 'ukava'];
 }
 
 class Ton extends Mainnet implements AccountNetwork {
