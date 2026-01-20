@@ -2564,6 +2564,9 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.SUPPORTS_ERC20,
     ]
   ),
   account(
@@ -2581,6 +2584,9 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.SUPPORTS_ERC20,
     ]
   ),
   account(
@@ -2601,10 +2607,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
       CoinFeature.SUPPORTS_ERC20,
       CoinFeature.EVM_COMPATIBLE_WP,
-    ],
-    KeyCurve.Secp256k1,
-    '',
-    'TDogeOS'
+    ]
   ),
   account(
     '7d69a368-ea4b-422d-bb21-38812fb5a418',
@@ -2624,10 +2627,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
       CoinFeature.SUPPORTS_ERC20,
       CoinFeature.EVM_COMPATIBLE_WP,
-    ],
-    KeyCurve.Secp256k1,
-    '',
-    'DogeOS'
+    ]
   ),
   account(
     'cf06d1ea-f7c4-4a26-95fd-f71983eba58f',
