@@ -14275,4 +14275,12 @@ export const erc20Coins = [
     '0x111111d2bf19e43c34263401e0cad979ed1cdb61',
     UnderlyingAsset['morph:usd1']
   ),
+  terc20(
+    '7949177e-0c92-4a02-8f34-cee1cbfb38d1',
+    'tmorph:tmt',
+    'Test Mintable Token',
+    6,
+    '0x5257950b5277dac30536eae4742ffef4e5af5256',
+    UnderlyingAsset['tmorph:tmt']
+  ),
 ];
