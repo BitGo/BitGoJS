@@ -74,12 +74,25 @@ export class DelegateResourceTxBuilder extends ResourceManagementTxBuilder {
    * @returns {string} the delegate resource transaction raw data hex
    */
   protected getResourceManagementTxRawDataHex(): string {
-    const rawContract = {
+    const rawContract: {
+      ownerAddress: number[];
+      receiverAddress: number[];
+      balance: string;
+      resource?: string;
+    } = {
       ownerAddress: getByteArrayFromHexAddress(this._ownerAddress),
       receiverAddress: getByteArrayFromHexAddress(this._receiverAddress),
       balance: this._balance,
-      resource: this._resource,
     };
+
+    // Only include resource if it's not BANDWIDTH (the default value = 0)
+    // In protobuf3, default values are typically not encoded in the wire format.
+    // TRON's node re-serializes transactions and omits default values,
+    // so we must match that behavior to ensure consistent transaction hashes.
+    if (this._resource !== 'BANDWIDTH') {
+      rawContract.resource = this._resource;
+    }
+
     const delegateResourceContract = protocol.DelegateResourceContract.fromObject(rawContract);
     const delegateResourceContractBytes = protocol.DelegateResourceContract.encode(delegateResourceContract).finish();
     const txContract = {
