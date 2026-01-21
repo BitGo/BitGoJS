@@ -694,4 +694,303 @@ describe('Signature Index Handling - AVAX P Alignment', () => {
       fullSignedTx.id.should.equal(importPTestData.txhash);
     });
   });
+
+  /**
+   * Test suite for UTXO reordering fix.
+   *
+   * FlareJS's newImportTx/newExportTx functions sort inputs by UTXO ID (txid + outputidx)
+   * for deterministic transaction building. The SDK must match inputs back to UTXOs
+   * by UTXO ID, not by array index, to ensure credentials are created for the correct inputs.
+   *
+   * These tests verify that transactions with multiple UTXOs work correctly regardless
+   * of the order in which UTXOs are provided.
+   */
+  describe('UTXO Reordering Fix - Multiple UTXOs with Different txids', () => {
+    describe('ImportInC with reordered UTXOs', () => {
+      it('should correctly handle multiple UTXOs that may get reordered by FlareJS', async () => {
+        const reorderedUtxos = [importCTestData.utxos[4], importCTestData.utxos[0]];
+
+        const txBuilder = newFactory()
+          .getImportInCBuilder()
+          .threshold(importCTestData.threshold)
+          .fromPubKey(importCTestData.pAddresses)
+          .decodedUtxos(reorderedUtxos)
+          .to(importCTestData.to)
+          .fee(importCTestData.fee)
+          .context(importCTestData.context);
+
+        txBuilder.sign({ key: importCTestData.privateKeys[2] });
+        txBuilder.sign({ key: importCTestData.privateKeys[0] });
+
+        const tx = await txBuilder.build();
+        const txJson = tx.toJson();
+
+        txJson.signatures.length.should.equal(2);
+        tx.toBroadcastFormat().should.be.a.String();
+        txJson.inputs.length.should.equal(2);
+      });
+
+      it('should correctly sign in parse-sign-parse-sign flow with multiple UTXOs', async () => {
+        const reorderedUtxos = [importCTestData.utxos[3], importCTestData.utxos[1]];
+
+        const builder1 = newFactory()
+          .getImportInCBuilder()
+          .threshold(importCTestData.threshold)
+          .fromPubKey(importCTestData.pAddresses)
+          .decodedUtxos(reorderedUtxos)
+          .to(importCTestData.to)
+          .fee(importCTestData.fee)
+          .context(importCTestData.context);
+
+        const unsignedTx = await builder1.build();
+        unsignedTx.toJson().signatures.length.should.equal(0);
+
+        const builder2 = newFactory().from(unsignedTx.toBroadcastFormat());
+        builder2.sign({ key: importCTestData.privateKeys[2] });
+        const halfSignedTx = await builder2.build();
+        halfSignedTx.toJson().signatures.length.should.equal(1);
+
+        const builder3 = newFactory().from(halfSignedTx.toBroadcastFormat());
+        builder3.sign({ key: importCTestData.privateKeys[0] });
+        const fullSignedTx = await builder3.build();
+        fullSignedTx.toJson().signatures.length.should.equal(2);
+
+        fullSignedTx.toBroadcastFormat().should.be.a.String();
+        fullSignedTx.id.should.be.a.String();
+      });
+
+      it('should handle 3+ UTXOs with different ordering', async () => {
+        const mixedUtxos = [importCTestData.utxos[2], importCTestData.utxos[4], importCTestData.utxos[0]];
+
+        const txBuilder = newFactory()
+          .getImportInCBuilder()
+          .threshold(importCTestData.threshold)
+          .fromPubKey(importCTestData.pAddresses)
+          .decodedUtxos(mixedUtxos)
+          .to(importCTestData.to)
+          .fee(importCTestData.fee)
+          .context(importCTestData.context);
+
+        txBuilder.sign({ key: importCTestData.privateKeys[2] });
+        txBuilder.sign({ key: importCTestData.privateKeys[0] });
+
+        const tx = await txBuilder.build();
+        tx.toJson().signatures.length.should.equal(2);
+        tx.toJson().inputs.length.should.equal(3);
+      });
+
+      it('should handle all 5 UTXOs from test data', async () => {
+        const allUtxosReversed = [...importCTestData.utxos].reverse();
+
+        const txBuilder = newFactory()
+          .getImportInCBuilder()
+          .threshold(importCTestData.threshold)
+          .fromPubKey(importCTestData.pAddresses)
+          .decodedUtxos(allUtxosReversed)
+          .to(importCTestData.to)
+          .fee(importCTestData.fee)
+          .context(importCTestData.context);
+
+        txBuilder.sign({ key: importCTestData.privateKeys[2] });
+        txBuilder.sign({ key: importCTestData.privateKeys[0] });
+
+        const tx = await txBuilder.build();
+        tx.toJson().signatures.length.should.equal(2);
+        tx.toJson().inputs.length.should.equal(5);
+      });
+    });
+
+    describe('ImportInP with multiple UTXOs', () => {
+      it('should correctly handle multiple UTXOs with different outputidx', async () => {
+        const multipleUtxos = [
+          {
+            ...importPTestData.utxos[0],
+            outputidx: '1',
+            amount: '25000000',
+          },
+          {
+            ...importPTestData.utxos[0],
+            outputidx: '0',
+            amount: '25000000',
+          },
+        ];
+
+        const txBuilder = newFactory()
+          .getImportInPBuilder()
+          .threshold(importPTestData.threshold)
+          .locktime(importPTestData.locktime)
+          .fromPubKey(importPTestData.corethAddresses)
+          .to(importPTestData.pAddresses)
+          .externalChainId(importPTestData.sourceChainId)
+          .feeState(importPTestData.feeState)
+          .context(importPTestData.context)
+          .decodedUtxos(multipleUtxos);
+
+        txBuilder.sign({ key: importPTestData.privateKeys[2] });
+        txBuilder.sign({ key: importPTestData.privateKeys[0] });
+
+        const tx = await txBuilder.build();
+        tx.toJson().signatures.length.should.equal(2);
+        tx.toJson().inputs.length.should.equal(2);
+      });
+
+      it('should correctly sign in parse-sign-parse-sign flow with multiple UTXOs', async () => {
+        const multipleUtxos = [
+          {
+            ...importPTestData.utxos[0],
+            outputidx: '1',
+            amount: '25000000',
+          },
+          {
+            ...importPTestData.utxos[0],
+            outputidx: '0',
+            amount: '25000000',
+          },
+        ];
+
+        const builder1 = newFactory()
+          .getImportInPBuilder()
+          .threshold(importPTestData.threshold)
+          .locktime(importPTestData.locktime)
+          .fromPubKey(importPTestData.corethAddresses)
+          .to(importPTestData.pAddresses)
+          .externalChainId(importPTestData.sourceChainId)
+          .feeState(importPTestData.feeState)
+          .context(importPTestData.context)
+          .decodedUtxos(multipleUtxos);
+
+        const unsignedTx = await builder1.build();
+
+        const builder2 = newFactory().from(unsignedTx.toBroadcastFormat());
+        builder2.sign({ key: importPTestData.privateKeys[2] });
+        const halfSignedTx = await builder2.build();
+
+        const builder3 = newFactory().from(halfSignedTx.toBroadcastFormat());
+        builder3.sign({ key: importPTestData.privateKeys[0] });
+        const fullSignedTx = await builder3.build();
+
+        fullSignedTx.toJson().signatures.length.should.equal(2);
+        fullSignedTx.toBroadcastFormat().should.be.a.String();
+      });
+    });
+
+    describe('ExportInP with multiple UTXOs', () => {
+      it('should correctly handle multiple UTXOs that may get reordered', async () => {
+        const reorderedUtxos = [
+          {
+            ...exportPTestData.utxos[1],
+            outputidx: '1',
+          },
+          {
+            ...exportPTestData.utxos[1],
+            outputidx: '0',
+          },
+        ];
+
+        const txBuilder = newFactory()
+          .getExportInPBuilder()
+          .threshold(exportPTestData.threshold)
+          .locktime(exportPTestData.locktime)
+          .fromPubKey(exportPTestData.pAddresses)
+          .amount('20000000')
+          .externalChainId(exportPTestData.sourceChainId)
+          .feeState(exportPTestData.feeState)
+          .context(exportPTestData.context)
+          .decodedUtxos(reorderedUtxos);
+
+        txBuilder.sign({ key: exportPTestData.privateKeys[2] });
+        txBuilder.sign({ key: exportPTestData.privateKeys[0] });
+
+        const tx = await txBuilder.build();
+        tx.toJson().signatures.length.should.equal(2);
+      });
+
+      it('should correctly sign in parse-sign-parse-sign flow with multiple UTXOs', async () => {
+        const reorderedUtxos = [
+          {
+            ...exportPTestData.utxos[1],
+            outputidx: '1',
+          },
+          {
+            ...exportPTestData.utxos[1],
+            outputidx: '0',
+          },
+        ];
+
+        const builder1 = newFactory()
+          .getExportInPBuilder()
+          .threshold(exportPTestData.threshold)
+          .locktime(exportPTestData.locktime)
+          .fromPubKey(exportPTestData.pAddresses)
+          .amount('20000000')
+          .externalChainId(exportPTestData.sourceChainId)
+          .feeState(exportPTestData.feeState)
+          .context(exportPTestData.context)
+          .decodedUtxos(reorderedUtxos);
+
+        const unsignedTx = await builder1.build();
+
+        const builder2 = newFactory().from(unsignedTx.toBroadcastFormat());
+        builder2.sign({ key: exportPTestData.privateKeys[2] });
+        const halfSignedTx = await builder2.build();
+
+        const builder3 = newFactory().from(halfSignedTx.toBroadcastFormat());
+        builder3.sign({ key: exportPTestData.privateKeys[0] });
+        const fullSignedTx = await builder3.build();
+
+        fullSignedTx.toJson().signatures.length.should.equal(2);
+        fullSignedTx.toBroadcastFormat().should.be.a.String();
+      });
+    });
+
+    describe('Edge cases for UTXO matching', () => {
+      it('should match UTXOs by both txid AND outputidx', async () => {
+        const sameIdUtxos = [
+          {
+            ...importCTestData.utxos[0],
+            outputidx: '2',
+          },
+          {
+            ...importCTestData.utxos[0],
+            outputidx: '0',
+          },
+        ];
+
+        const txBuilder = newFactory()
+          .getImportInCBuilder()
+          .threshold(importCTestData.threshold)
+          .fromPubKey(importCTestData.pAddresses)
+          .decodedUtxos(sameIdUtxos)
+          .to(importCTestData.to)
+          .fee(importCTestData.fee)
+          .context(importCTestData.context);
+
+        txBuilder.sign({ key: importCTestData.privateKeys[2] });
+        txBuilder.sign({ key: importCTestData.privateKeys[0] });
+
+        const tx = await txBuilder.build();
+        tx.toJson().signatures.length.should.equal(2);
+        tx.toJson().inputs.length.should.equal(2);
+      });
+
+      it('should work correctly when UTXOs are already in sorted order', async () => {
+        const sortedUtxos = [importCTestData.utxos[0], importCTestData.utxos[1]];
+
+        const txBuilder = newFactory()
+          .getImportInCBuilder()
+          .threshold(importCTestData.threshold)
+          .fromPubKey(importCTestData.pAddresses)
+          .decodedUtxos(sortedUtxos)
+          .to(importCTestData.to)
+          .fee(importCTestData.fee)
+          .context(importCTestData.context);
+
+        txBuilder.sign({ key: importCTestData.privateKeys[2] });
+        txBuilder.sign({ key: importCTestData.privateKeys[0] });
+
+        const tx = await txBuilder.build();
+        tx.toJson().signatures.length.should.equal(2);
+      });
+    });
+  });
 });
