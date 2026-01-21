@@ -333,6 +333,15 @@ export const ofcCoins = [
   ),
   ofc('aa7e956f-2d59-4bf6-aba6-2d51bd298150', 'ofcip', 'Story', 18, UnderlyingAsset.IP, CoinKind.CRYPTO),
   tofc('773b02f6-32ea-493a-bca5-13d93cb0afff', 'ofctip', 'Story Testnet', 18, UnderlyingAsset.IP, CoinKind.CRYPTO),
+  ofc('98baf021-6dff-453f-86a7-132396686b20', 'ofcmegaeth', 'MegaETH', 18, UnderlyingAsset.MEGAETH, CoinKind.CRYPTO),
+  tofc(
+    'd15e02f3-31cb-4f46-941b-6fb16701edf1',
+    'ofctmegaeth',
+    'MegaETH Testnet',
+    18,
+    UnderlyingAsset.MEGAETH,
+    CoinKind.CRYPTO
+  ),
   ofc(
     '8b50bd47-54d4-456d-a141-09f8e90df850',
     'ofczksyncera',
