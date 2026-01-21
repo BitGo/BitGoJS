@@ -5,3 +5,8 @@
 # - Lerna only uses tar for PACKING
 GHSA-8qq5-rm4j-mr97
 
+# Excluded because:
+# - Same tar v6 dependency issue as above
+# - Affects only dev dependencies (lerna, yeoman-generator)
+# - Not exploitable in our build context
+GHSA-r6q2-hw4h-h46w
