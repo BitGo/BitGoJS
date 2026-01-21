@@ -154,6 +154,11 @@ export interface VerifyAddressOptions {
   error?: string;
   coinSpecific?: AddressCoinSpecific;
   impliedForwarderVersion?: number;
+  /**
+   * Optional derivation prefix for SMC wallets.
+   * Used when verifying TSS addresses for Self-Managed Custodial wallets.
+   */
+  derivationPrefix?: string;
 }
 
 /**
@@ -173,8 +178,15 @@ export interface TssVerifyAddressOptions {
   /**
    * Derivation index for the address.
    * Used to derive child addresses from the root keychain via HD derivation path: m/{index}
+   * For SMC (Self-Managed Custodial) wallets, the path includes a prefix: m/{derivationPrefix}/{index}
    */
   index: number | string;
+  /**
+   * Optional derivation prefix for SMC wallets.
+   * For SMC wallets, addresses are derived using m/{derivationPrefix}/{index} instead of m/{index}.
+   * This prefix comes from derivedFromParentWithSeed on the user keychain.
+   */
+  derivationPrefix?: string;
 }
 
 export function isTssVerifyAddressOptions<T extends VerifyAddressOptions | TssVerifyAddressOptions>(

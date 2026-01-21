@@ -1,7 +1,6 @@
 import { Ecdsa } from '../../../account-lib/mpc';
 import { TssVerifyAddressOptions } from '../../baseCoin/iBaseCoin';
 import { InvalidAddressError } from '../../errors';
-import { EDDSAMethods } from '../../tss';
 
 /**
  * Extracts and validates the commonKeychain from keychains array.
@@ -65,15 +64,24 @@ export async function verifyMPCWalletAddress(
   isValidAddress: (address: string) => boolean,
   getAddressFromPublicKey: (publicKey: string) => string
 ): Promise<boolean> {
-  const { keychains, address, index } = params;
+  const { keychains, address, index, derivationPrefix } = params;
 
   if (!isValidAddress(address)) {
     throw new InvalidAddressError(`invalid address: ${address}`);
   }
 
-  const MPC = params.keyCurve === 'secp256k1' ? new Ecdsa() : await EDDSAMethods.getInitializedMpcInstance();
+  // Lazy import EDDSAMethods to avoid circular dependency: utils/tss -> tss -> utils
+  const MPC =
+    params.keyCurve === 'secp256k1'
+      ? new Ecdsa()
+      : await (await import('../../tss')).EDDSAMethods.getInitializedMpcInstance();
   const commonKeychain = extractCommonKeychain(keychains);
-  const derivedPublicKey = MPC.deriveUnhardened(commonKeychain, 'm/' + index);
+
+  // For SMC cold TSS wallets with prefix, use derivation path {derivationPrefix}/{index}
+  // derivationPrefix already includes 'm/' (e.g., "m/999999/12345/67890")
+  // For wallets without prefix, use derivation path m/{index}
+  const derivationPath = derivationPrefix ? `${derivationPrefix}/${index}` : `m/${index}`;
+  const derivedPublicKey = MPC.deriveUnhardened(commonKeychain, derivationPath);
 
   // secp256k1 expects 33 bytes; ed25519 expects 32 bytes
   const publicKeySize = params.keyCurve === 'secp256k1' ? 33 : 32;
