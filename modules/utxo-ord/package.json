@@ -5,7 +5,7 @@
   "module": "./dist/esm/index.js",
   "browser": "./dist/esm/index.js",
   "types": "./dist/cjs/src/index.d.ts",
-  "version": "1.24.0",
+  "version": "1.24.1",
   "exports": {
     ".": {
       "import": {
@@ -45,7 +45,7 @@
     "directory": "modules/utxo-ord"
   },
   "dependencies": {
-    "@bitgo/sdk-core": "^36.28.0",
+    "@bitgo/sdk-core": "^36.29.0",
     "@bitgo/unspents": "^0.50.14",
     "@bitgo/utxo-lib": "^11.19.1"
   },

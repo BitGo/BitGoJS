@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [7.11.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.11.3...@bitgo/sdk-coin-sol@7.11.4) (2026-01-22)
+
+
+### Bug Fixes
+
+* address validation for SMC wallets ([23a1c91](https://github.com/BitGo/BitGoJS/commit/23a1c91e905364bb9d8d9fd21941cae7d90d7760))
+
+
+
+
+
 ## [7.11.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-sol@7.11.2...@bitgo/sdk-coin-sol@7.11.3) (2026-01-19)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-sol

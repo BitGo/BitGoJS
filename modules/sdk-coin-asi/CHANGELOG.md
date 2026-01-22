@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.5.24](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-asi@1.5.23...@bitgo/sdk-coin-asi@1.5.24) (2026-01-22)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-asi
+
+
+
+
+
 ## [1.5.23](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-asi@1.5.22...@bitgo/sdk-coin-asi@1.5.23) (2026-01-19)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-asi

@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [36.29.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.28.0...@bitgo/sdk-core@36.29.0) (2026-01-22)
+
+
+### Bug Fixes
+
+* address validation for SMC wallets ([23a1c91](https://github.com/BitGo/BitGoJS/commit/23a1c91e905364bb9d8d9fd21941cae7d90d7760))
+
+
+### Features
+
+* fetch keychain per wallet once ([65a93b6](https://github.com/BitGo/BitGoJS/commit/65a93b6ff60df68245f2bd590b9f02b471b403d5))
+* **sdk-core:** add Lightning invoice support to OFC tokens ([30f26d9](https://github.com/BitGo/BitGoJS/commit/30f26d96389767bfbc51ada385f0891add2f4a89))
+* **sdk-core:** pass wallet to explainTransaction ([70b4e34](https://github.com/BitGo/BitGoJS/commit/70b4e34cb643596bd17ef96107c7384cf74f175b))
+
+
+
+
+
 # [36.28.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-core@36.27.0...@bitgo/sdk-core@36.28.0) (2026-01-19)
 
 

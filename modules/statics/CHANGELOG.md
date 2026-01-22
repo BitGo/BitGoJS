@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [58.23.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.22.0...@bitgo/statics@58.23.0) (2026-01-22)
+
+
+### Bug Fixes
+
+* update figure token mainnet denom ([e57321f](https://github.com/BitGo/BitGoJS/commit/e57321f35ccd0fc51e4e44eedd1617b723a2d990))
+
+
+### Features
+
+* **sdk-coin-canton:** added canton token skeleton ([dadfc4d](https://github.com/BitGo/BitGoJS/commit/dadfc4dfcfd94bd95b6b646bcc70bd226fd6963a))
+* **statics:** add MegaETH ERC20 token support ([1a92ef0](https://github.com/BitGo/BitGoJS/commit/1a92ef0c64773aa9bb19a7bb858a9faa8708fe50))
+* **statics:** add shared cosmos coin feature for kava ([c7ffac3](https://github.com/BitGo/BitGoJS/commit/c7ffac37d7b0ae9269e02e0a299226089d557d1a))
+* **statics:** fix testnet tokens on morph chain testnet ([bee3a21](https://github.com/BitGo/BitGoJS/commit/bee3a21d2d6288abaf836182942378b8f64cd462))
+* **statics:** onboard testnet tokens on morph chain testnet ([1bda337](https://github.com/BitGo/BitGoJS/commit/1bda3374328acbe2187e16fa0a8729880ffaeaeb))
+* **statics:** onboard tokens on morph chain ([2d488bd](https://github.com/BitGo/BitGoJS/commit/2d488bdda8d94af44183ab84d8e1971ad3cb6bbf))
+* **statics:** onboard USDM1, eUSX, MYRC, CRE, MEY, CFI, GRTX ([36af663](https://github.com/BitGo/BitGoJS/commit/36af66302fa5d9a2c3d74e92649d9f6fb4126931))
+
+
+
+
+
 # [58.22.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/statics@58.21.0...@bitgo/statics@58.22.0) (2026-01-19)
 
 ### Bug Fixes

@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-vet",
-  "version": "2.10.4",
+  "version": "2.10.5",
   "description": "BitGo SDK coin library for VeChain",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -40,12 +40,12 @@
     ]
   },
   "dependencies": {
-    "@bitgo/abstract-eth": "^24.19.7",
+    "@bitgo/abstract-eth": "^24.19.8",
     "@bitgo/blake2b": "^3.2.4",
-    "@bitgo/sdk-core": "^36.28.0",
+    "@bitgo/sdk-core": "^36.29.0",
     "@bitgo/sdk-lib-mpc": "^10.8.1",
     "@bitgo/secp256k1": "^1.9.0",
-    "@bitgo/statics": "^58.22.0",
+    "@bitgo/statics": "^58.23.0",
     "@noble/curves": "1.8.1",
     "@vechain/sdk-core": "^1.2.0-rc.3",
     "bignumber.js": "^9.1.1",
@@ -55,8 +55,8 @@
     "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.73.2",
-    "@bitgo/sdk-test": "^9.1.23"
+    "@bitgo/sdk-api": "^1.73.3",
+    "@bitgo/sdk-test": "^9.1.24"
   },
   "files": [
     "dist"
