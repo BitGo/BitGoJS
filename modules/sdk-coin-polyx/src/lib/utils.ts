@@ -3,6 +3,7 @@ import { NetworkType } from '@bitgo/statics';
 import { TypeRegistry } from '@substrate/txwrapper-core/lib/types';
 import { mainnetMaterial, testnetMaterial } from '../resources';
 import { BatchCallObject } from './iface';
+import { POLYX_DID_REGEX } from './constants';
 
 export class Utils extends SubstrateUtils {
   /**
@@ -15,6 +16,17 @@ export class Utils extends SubstrateUtils {
   getAddressFormat(coinName: string): number {
     const isMainnet = coinName.toLowerCase() === 'polyx';
     return isMainnet ? 12 : 42;
+  }
+
+  /**
+   * Checks if a string is a valid Polymesh DID (Decentralized Identifier)
+   * DIDs are 32-byte hex strings (0x prefix + 64 hex characters)
+   *
+   * @param {string} did - The string to validate
+   * @returns {boolean} true if valid DID format, false otherwise
+   */
+  isValidDid(did: string): boolean {
+    return POLYX_DID_REGEX.test(did);
   }
 
   getMaterial(networkType: NetworkType): Interface.Material {
