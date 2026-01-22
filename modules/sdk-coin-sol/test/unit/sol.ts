@@ -3485,13 +3485,12 @@ describe('SOL:', function () {
       const commonKeychain =
         '8ea32ecacfc83effbd2e2790ee44fa7c59b4d86c29a12f09fb613d8195f93f4e21875cad3b98adada40c040c54c3569467df41a020881a6184096378701862bd';
       const index = '1';
-      const testSeed = 'smc-test-seed-123';
-      const derivationPrefix = require('@bitgo/sdk-lib-mpc').getDerivationPath(testSeed);
+      const derivedFromParentWithSeed = 'smc-test-seed-123';
       const keychains = [{ id: '1', type: 'tss' as const, commonKeychain }];
 
-      // This test verifies that derivationPrefix is accepted as a parameter and correctly validates addresses
-      // derived with the SMC wallet derivation prefix
-      const result = await basecoin.isWalletAddress({ keychains, address, index, derivationPrefix });
+      // This test verifies that derivedFromParentWithSeed is accepted as a parameter
+      // and the verification function correctly computes the derivation prefix internally
+      const result = await basecoin.isWalletAddress({ keychains, address, index, derivedFromParentWithSeed });
       result.should.equal(true);
     });
   });

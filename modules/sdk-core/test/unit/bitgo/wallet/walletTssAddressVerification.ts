@@ -2,7 +2,6 @@ import * as assert from 'assert';
 import * as sinon from 'sinon';
 import 'should';
 import { Wallet } from '../../../../src/bitgo/wallet/wallet';
-import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
 import { KeyIndices } from '../../../../src/bitgo/keychain';
 
 describe('Wallet - TSS Address Verification with Derivation Prefix', function () {
@@ -98,11 +97,11 @@ describe('Wallet - TSS Address Verification with Derivation Prefix', function ()
 
       await wallet.createAddress({ chain: 0 });
 
-      // Verify that custodial wallets don't use derivationPrefix
+      // Verify that custodial wallets don't use derivedFromParentWithSeed
       // (their commonKeychain already accounts for the prefix)
       const verificationCall = mockBaseCoin.isWalletAddress.getCall(0);
       const verificationData = verificationCall.args[0];
-      assert.strictEqual(verificationData.derivationPrefix, undefined);
+      assert.strictEqual(verificationData.derivedFromParentWithSeed, undefined);
     });
   });
 
@@ -130,13 +129,12 @@ describe('Wallet - TSS Address Verification with Derivation Prefix', function ()
 
       await wallet.createAddress({ chain: 0 });
 
-      // Verify that isWalletAddress was called with derivationPrefix from User keychain
+      // Verify that isWalletAddress was called with derivedFromParentWithSeed from User keychain
       const verificationCall = mockBaseCoin.isWalletAddress.getCall(0);
       const verificationData = verificationCall.args[0];
 
-      verificationData.should.have.property('derivationPrefix');
-      verificationData.derivationPrefix.should.equal(getDerivationPath('test-seed-user'));
-      verificationData.derivationPrefix.should.match(/^m\/999999\/\d+\/\d+$/);
+      verificationData.should.have.property('derivedFromParentWithSeed');
+      verificationData.derivedFromParentWithSeed.should.equal('test-seed-user');
     });
 
     it('should handle missing derivedFromParentWithSeed gracefully for cold wallet', async function () {
@@ -160,10 +158,10 @@ describe('Wallet - TSS Address Verification with Derivation Prefix', function ()
 
       await wallet.createAddress({ chain: 0 });
 
-      // Should not have derivationPrefix if seed is missing (no prefix used in this case)
+      // Should not have derivedFromParentWithSeed if seed is missing
       const verificationCall = mockBaseCoin.isWalletAddress.getCall(0);
       const verificationData = verificationCall.args[0];
-      assert.strictEqual(verificationData.derivationPrefix, undefined);
+      assert.strictEqual(verificationData.derivedFromParentWithSeed, undefined);
     });
   });
 
@@ -192,10 +190,10 @@ describe('Wallet - TSS Address Verification with Derivation Prefix', function ()
 
       await wallet.createAddress({ chain: 0 });
 
-      // Verify that derivationPrefix is not set for non-TSS wallets
+      // Verify that derivedFromParentWithSeed is not set for non-TSS wallets
       const verificationCall = mockBaseCoin.isWalletAddress.getCall(0);
       const verificationData = verificationCall.args[0];
-      assert.strictEqual(verificationData.derivationPrefix, undefined);
+      assert.strictEqual(verificationData.derivedFromParentWithSeed, undefined);
     });
   });
 
@@ -236,8 +234,8 @@ describe('Wallet - TSS Address Verification with Derivation Prefix', function ()
 
       const verificationCall = mockBaseCoin.isWalletAddress.getCall(0);
       const verificationData = verificationCall.args[0];
-      // Should not have derivationPrefix if USER keychain doesn't exist in keys array
-      assert.strictEqual(verificationData.derivationPrefix, undefined);
+      // Should not have derivedFromParentWithSeed if USER keychain doesn't exist in keys array
+      assert.strictEqual(verificationData.derivedFromParentWithSeed, undefined);
     });
 
     it('should handle pendingChainInitialization correctly', async function () {

@@ -53,7 +53,6 @@ import { postWithCodec } from '../utils/postWithCodec';
 import { EcdsaMPCv2Utils, EcdsaUtils } from '../utils/tss/ecdsa';
 import EddsaUtils from '../utils/tss/eddsa';
 import { getTxRequestApiVersion, validateTxRequestApiVersion } from '../utils/txRequest';
-import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
 import { buildParamKeys, BuildParams } from './BuildParams';
 import {
   AccelerateTransactionOptions,
@@ -1410,15 +1409,12 @@ export class Wallet implements IWallet {
 
       verificationData.impliedForwarderVersion = forwarderVersion ?? verificationData.coinSpecific?.forwarderVersion;
 
-      // For SMC (Self-Managed Custodial) wallets, extract derivation prefix from User keychain
+      // For SMC (Self-Managed Custodial) wallets, pass derivedFromParentWithSeed from user keychain
+      // The verification function will compute the derivation prefix internally
       // Custodial wallets don't need this as their commonKeychain already accounts for the prefix
       if (this.multisigType() === 'tss' && this.type() === 'cold' && this._wallet.keys.length > KeyIndices.USER) {
-        // Find the user keychain by index
         const userKeychain = keychains[KeyIndices.USER] as Keychain | undefined;
-        if (userKeychain?.derivedFromParentWithSeed) {
-          const derivationPrefix = getDerivationPath(userKeychain.derivedFromParentWithSeed.toString());
-          verificationData.derivationPrefix = derivationPrefix;
-        }
+        verificationData.derivedFromParentWithSeed = userKeychain?.derivedFromParentWithSeed;
       }
 
       // This condition was added in first place because in celo, when verifyAddress method was called on addresses which were having pendingChainInitialization as true, it used to throw some error
