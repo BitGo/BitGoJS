@@ -990,7 +990,7 @@ class Kava extends Mainnet implements CosmosNetwork {
 class KavaTestnet extends Testnet implements CosmosNetwork {
   name = 'KavaTestnet';
   family = CoinFamily.KAVA;
-  explorerUrl = 'https://testnet.mintscan.io/kava-testnet/tx/';
+  explorerUrl = 'https://www.mintscan.io/kava-testnet/tx/';
   addressPrefix = 'kava';
   validatorPrefix = 'kavavaloper';
   denom = 'ukava';

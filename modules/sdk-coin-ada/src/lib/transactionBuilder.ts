@@ -10,7 +10,7 @@ import {
   TransactionType,
   UtilsError,
 } from '@bitgo/sdk-core';
-import { Asset, Transaction, TransactionInput, TransactionOutput, Withdrawal } from './transaction';
+import { Asset, Transaction, TransactionInput, TransactionOutput, Withdrawal, SponsorshipInfo } from './transaction';
 import { KeyPair } from './keyPair';
 import util, { MIN_ADA_FOR_ONE_ASSET } from './utils';
 import * as CardanoWasm from '@emurgo/cardano-serialization-lib-nodejs';
@@ -46,6 +46,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _recipientAddress: string;
   /** Map of sender's assets by asset name */
   protected _senderAssetList: Record<string, any> = {};
+  protected _sponsorshipInfo: SponsorshipInfo | undefined; // Enriched for sponsored transactions
   private _fee: BigNum;
   /** Flag indicating if this is a token transaction */
   private _isTokenTransaction = false;
@@ -110,6 +111,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   isTokenTransaction() {
     this._isTokenTransaction = true;
+    return this;
+  }
+
+  sponsorshipInfo(info: SponsorshipInfo): this {
+    this._sponsorshipInfo = info;
     return this;
   }
 
@@ -219,10 +225,26 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @param outputs - The outputs collection to add to
    */
   private addOutputs(outputs) {
-    const utxoBalance = CardanoWasm.BigNum.from_str(this._senderBalance); // Total UTXO balance
-    const change = utxoBalance.checked_sub(this._fee);
-    const changeAfterReceiverDeductions = this.addReceiverOutputs(outputs, change);
-    this.addChangeOutput(changeAfterReceiverDeductions, outputs);
+    if (this._sponsorshipInfo) {
+      const feeAddressUtxoBalance = CardanoWasm.BigNum.from_str(this._sponsorshipInfo.feeAddressInputBalance);
+      let feeAddressChange = feeAddressUtxoBalance.checked_sub(this._fee);
+      const senderAddressUtxoBalance = CardanoWasm.BigNum.from_str(this._senderBalance);
+      if (this._isTokenTransaction) {
+        // Fee address sponsors min ada
+        feeAddressChange = this.addReceiverOutputs(outputs, feeAddressChange);
+        this.addChangeOutput(senderAddressUtxoBalance, outputs, this._changeAddress);
+        this.addChangeOutput(feeAddressChange, outputs, this._sponsorshipInfo.feeAddress);
+      } else {
+        const senderChangeAfterReceiverDeductions = this.addReceiverOutputs(outputs, senderAddressUtxoBalance);
+        this.addChangeOutput(senderChangeAfterReceiverDeductions, outputs, this._changeAddress);
+        this.addChangeOutput(feeAddressChange, outputs, this._sponsorshipInfo.feeAddress);
+      }
+    } else {
+      const utxoBalance = CardanoWasm.BigNum.from_str(this._senderBalance); // Total UTXO balance
+      const change = utxoBalance.checked_sub(this._fee);
+      const changeAfterReceiverDeductions = this.addReceiverOutputs(outputs, change);
+      this.addChangeOutput(changeAfterReceiverDeductions, outputs, this._changeAddress);
+    }
   }
 
   /**
@@ -250,6 +272,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
           );
         }
 
+        // output.multiAssets is set when there are token assets to send
         const multiAssets = output.multiAssets as Asset;
         if (multiAssets) {
           const policyId = multiAssets.policy_id;
@@ -273,6 +296,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
           });
 
           change = change.checked_sub(minAmountNeededForAssetOutput);
+        } else {
+          // Native coin send
+          const amount = CardanoWasm.BigNum.from_str(receiverAmount);
+          outputs.add(
+            CardanoWasm.TransactionOutput.new(util.getWalletAddress(receiverAddress), CardanoWasm.Value.new(amount))
+          );
         }
       } catch (e) {
         if (e instanceof BuildTransactionError) {
@@ -337,26 +366,32 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @param change - The change amount in Lovelace
    * @param outputs - The outputs collection to add to
    */
-  private addChangeOutput(change, outputs) {
-    const changeAddress = util.getWalletAddress(this._changeAddress);
-    Object.keys(this._mutableSenderAssetList).forEach((fingerprint) => {
-      const asset = this._mutableSenderAssetList[fingerprint];
-      const changeQty = asset.quantity;
-      const policyId = asset.policy_id;
-      const assetName = asset.asset_name;
+  private addChangeOutput(change, outputs, outputAddress) {
+    const changeAddress = util.getWalletAddress(outputAddress);
+    /**
+     * this.mutableSenderAssetList is the list of assets from the sender address
+     * As ada only utxos are picked for fee address, the assets by default are sent to the sender address
+     */
+    if (!this._sponsorshipInfo || this._sponsorshipInfo.feeAddress !== outputAddress) {
+      Object.keys(this._mutableSenderAssetList).forEach((fingerprint) => {
+        const asset = this._mutableSenderAssetList[fingerprint];
+        const changeQty = asset.quantity;
+        const policyId = asset.policy_id;
+        const assetName = asset.asset_name;
 
-      if (CardanoWasm.BigNum.from_str(changeQty).is_zero()) {
-        return;
-      }
+        if (CardanoWasm.BigNum.from_str(changeQty).is_zero()) {
+          return;
+        }
 
-      const minAmountNeededForAssetOutput = this.addTokensToOutput(change, outputs, this._changeAddress, {
-        policy_id: policyId,
-        asset_name: assetName,
-        quantity: changeQty,
-        fingerprint,
+        const minAmountNeededForAssetOutput = this.addTokensToOutput(change, outputs, outputAddress, {
+          policy_id: policyId,
+          asset_name: assetName,
+          quantity: changeQty,
+          fingerprint,
+        });
+        change = change.checked_sub(minAmountNeededForAssetOutput);
       });
-      change = change.checked_sub(minAmountNeededForAssetOutput);
-    });
+    }
     if (!change.is_zero()) {
       const changeOutput = CardanoWasm.TransactionOutput.new(changeAddress, CardanoWasm.Value.new(change));
       outputs.add(changeOutput);
@@ -436,7 +471,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
-    if (this._isTokenTransaction) {
+    if (this._isTokenTransaction || (this._sponsorshipInfo && this._type === TransactionType.Send)) {
       return this.processTokenBuild();
     }
     const inputs = CardanoWasm.TransactionInputs.new();

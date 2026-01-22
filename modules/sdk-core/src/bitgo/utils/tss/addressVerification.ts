@@ -1,3 +1,4 @@
+import { getDerivationPath } from '@bitgo/sdk-lib-mpc';
 import { Ecdsa } from '../../../account-lib/mpc';
 import { TssVerifyAddressOptions } from '../../baseCoin/iBaseCoin';
 import { InvalidAddressError } from '../../errors';
@@ -65,7 +66,7 @@ export async function verifyMPCWalletAddress(
   isValidAddress: (address: string) => boolean,
   getAddressFromPublicKey: (publicKey: string) => string
 ): Promise<boolean> {
-  const { keychains, address, index } = params;
+  const { keychains, address, index, derivedFromParentWithSeed } = params;
 
   if (!isValidAddress(address)) {
     throw new InvalidAddressError(`invalid address: ${address}`);
@@ -73,7 +74,13 @@ export async function verifyMPCWalletAddress(
 
   const MPC = params.keyCurve === 'secp256k1' ? new Ecdsa() : await EDDSAMethods.getInitializedMpcInstance();
   const commonKeychain = extractCommonKeychain(keychains);
-  const derivedPublicKey = MPC.deriveUnhardened(commonKeychain, 'm/' + index);
+
+  // Compute derivation path:
+  // - For SMC wallets with derivedFromParentWithSeed, compute prefix and use: {prefix}/{index}
+  // - For other wallets, use simple path: m/{index}
+  const prefix = derivedFromParentWithSeed ? getDerivationPath(derivedFromParentWithSeed.toString()) : undefined;
+  const derivationPath = prefix ? `${prefix}/${index}` : `m/${index}`;
+  const derivedPublicKey = MPC.deriveUnhardened(commonKeychain, derivationPath);
 
   // secp256k1 expects 33 bytes; ed25519 expects 32 bytes
   const publicKeySize = params.keyCurve === 'secp256k1' ? 33 : 32;
