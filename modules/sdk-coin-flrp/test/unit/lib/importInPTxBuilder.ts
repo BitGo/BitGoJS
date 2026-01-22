@@ -253,6 +253,215 @@ describe('Flrp Import In P Tx Builder', () => {
     });
   });
 
+  describe('UTXO address sorting fix - addresses in non-sorted order', () => {
+    /**
+     * This test suite verifies the fix for the address ordering bug.
+     *
+     * The issue: When the API returns UTXO addresses in a different order than how they're
+     * stored on-chain (lexicographically sorted by byte value), the sigIndices would be
+     * computed incorrectly, causing signature verification to fail.
+     *
+     * The fix: Sort UTXO addresses before computing addressesIndex to match on-chain order.
+     *
+     * We use the existing testData addresses but create UTXOs with different address orderings
+     * to simulate the failed transaction scenario.
+     */
+
+    // Create UTXOs with addresses in different orders to test sorting
+    const createUtxoWithAddressOrder = (addresses: string[]) => ({
+      outputID: 7,
+      amount: '50000000',
+      txid: testData.utxos[0].txid,
+      threshold: 2,
+      addresses: addresses,
+      outputidx: '0',
+      locktime: '0',
+    });
+
+    it('should correctly sort UTXO addresses when building transaction', async () => {
+      // Create UTXO with addresses in reversed order (simulating API returning unsorted)
+      const reversedAddresses = [...testData.utxos[0].addresses].reverse();
+      const utxoWithReversedAddresses = [createUtxoWithAddressOrder(reversedAddresses)];
+
+      const txBuilder = factory
+        .getImportInPBuilder()
+        .threshold(testData.threshold)
+        .locktime(testData.locktime)
+        .fromPubKey(testData.corethAddresses)
+        .to(testData.pAddresses)
+        .externalChainId(testData.sourceChainId)
+        .feeState(testData.feeState)
+        .context(testData.context)
+        .decodedUtxos(utxoWithReversedAddresses);
+
+      // Should not throw - the fix ensures addresses are sorted before computing sigIndices
+      const tx = await txBuilder.build();
+      const txJson = tx.toJson();
+
+      txJson.type.should.equal(23); // Import type
+      txJson.threshold.should.equal(2);
+    });
+
+    it('should produce same transaction hex regardless of input UTXO address order', async () => {
+      // Build with original address order
+      const txBuilder1 = factory
+        .getImportInPBuilder()
+        .threshold(testData.threshold)
+        .locktime(testData.locktime)
+        .fromPubKey(testData.corethAddresses)
+        .to(testData.pAddresses)
+        .externalChainId(testData.sourceChainId)
+        .feeState(testData.feeState)
+        .context(testData.context)
+        .decodedUtxos(testData.utxos);
+
+      const tx1 = await txBuilder1.build();
+      const hex1 = tx1.toBroadcastFormat();
+
+      // Build with reversed address order in UTXO
+      const reversedAddresses = [...testData.utxos[0].addresses].reverse();
+      const utxoWithReversedAddresses = [createUtxoWithAddressOrder(reversedAddresses)];
+
+      const txBuilder2 = factory
+        .getImportInPBuilder()
+        .threshold(testData.threshold)
+        .locktime(testData.locktime)
+        .fromPubKey(testData.corethAddresses)
+        .to(testData.pAddresses)
+        .externalChainId(testData.sourceChainId)
+        .feeState(testData.feeState)
+        .context(testData.context)
+        .decodedUtxos(utxoWithReversedAddresses);
+
+      const tx2 = await txBuilder2.build();
+      const hex2 = tx2.toBroadcastFormat();
+
+      // Both should produce the same hex since addresses get sorted
+      hex1.should.equal(hex2);
+    });
+
+    it('should handle multiple UTXOs with different address orders', async () => {
+      // Create multiple UTXOs with addresses in different orders
+      const addresses = testData.utxos[0].addresses;
+      const multipleUtxos = [
+        {
+          outputID: 7,
+          amount: '30000000',
+          txid: testData.utxos[0].txid,
+          threshold: 2,
+          addresses: [addresses[0], addresses[1], addresses[2]], // Original order
+          outputidx: '0',
+          locktime: '0',
+        },
+        {
+          outputID: 7,
+          amount: '20000000',
+          txid: '2bK27hnZ8FaR33bRBs6wrb1PkjJfseZrn3nD4LckW9gCwTrmGX',
+          threshold: 2,
+          addresses: [addresses[2], addresses[0], addresses[1]], // Different order
+          outputidx: '0',
+          locktime: '0',
+        },
+      ];
+
+      const txBuilder = factory
+        .getImportInPBuilder()
+        .threshold(testData.threshold)
+        .locktime(testData.locktime)
+        .fromPubKey(testData.corethAddresses)
+        .to(testData.pAddresses)
+        .externalChainId(testData.sourceChainId)
+        .feeState(testData.feeState)
+        .context(testData.context)
+        .decodedUtxos(multipleUtxos);
+
+      const tx = await txBuilder.build();
+      const txJson = tx.toJson();
+
+      // Should have 2 inputs from the 2 UTXOs
+      txJson.inputs.length.should.equal(2);
+      txJson.type.should.equal(23);
+    });
+
+    it('should produce valid transaction that can be parsed and rebuilt with unsorted addresses', async () => {
+      const reversedAddresses = [...testData.utxos[0].addresses].reverse();
+      const utxoWithReversedAddresses = [createUtxoWithAddressOrder(reversedAddresses)];
+
+      const txBuilder = factory
+        .getImportInPBuilder()
+        .threshold(testData.threshold)
+        .locktime(testData.locktime)
+        .fromPubKey(testData.corethAddresses)
+        .to(testData.pAddresses)
+        .externalChainId(testData.sourceChainId)
+        .feeState(testData.feeState)
+        .context(testData.context)
+        .decodedUtxos(utxoWithReversedAddresses);
+
+      const tx = await txBuilder.build();
+      const txHex = tx.toBroadcastFormat();
+
+      // Parse the transaction
+      const parsedBuilder = new TransactionBuilderFactory(coins.get('tflrp')).from(txHex);
+      const parsedTx = await parsedBuilder.build();
+      const parsedHex = parsedTx.toBroadcastFormat();
+
+      // Should produce identical hex
+      parsedHex.should.equal(txHex);
+    });
+
+    it('should handle signing correctly with unsorted UTXO addresses', async () => {
+      const reversedAddresses = [...testData.utxos[0].addresses].reverse();
+      const utxoWithReversedAddresses = [createUtxoWithAddressOrder(reversedAddresses)];
+
+      const txBuilder = factory
+        .getImportInPBuilder()
+        .threshold(testData.threshold)
+        .locktime(testData.locktime)
+        .fromPubKey(testData.corethAddresses)
+        .to(testData.pAddresses)
+        .externalChainId(testData.sourceChainId)
+        .feeState(testData.feeState)
+        .context(testData.context)
+        .decodedUtxos(utxoWithReversedAddresses);
+
+      txBuilder.sign({ key: testData.privateKeys[2] });
+      txBuilder.sign({ key: testData.privateKeys[0] });
+
+      const tx = await txBuilder.build();
+      const txJson = tx.toJson();
+
+      // Should have 2 signatures after signing
+      txJson.signatures.length.should.equal(2);
+    });
+
+    it('should produce valid signed transaction matching original test data signing flow', async () => {
+      // This test verifies that with unsorted UTXO addresses, we still get the expected signed tx
+      const reversedAddresses = [...testData.utxos[0].addresses].reverse();
+      const utxoWithReversedAddresses = [createUtxoWithAddressOrder(reversedAddresses)];
+
+      const txBuilder = factory
+        .getImportInPBuilder()
+        .threshold(testData.threshold)
+        .locktime(testData.locktime)
+        .fromPubKey(testData.corethAddresses)
+        .to(testData.pAddresses)
+        .externalChainId(testData.sourceChainId)
+        .feeState(testData.feeState)
+        .context(testData.context)
+        .decodedUtxos(utxoWithReversedAddresses);
+
+      txBuilder.sign({ key: testData.privateKeys[2] });
+      txBuilder.sign({ key: testData.privateKeys[0] });
+
+      const tx = await txBuilder.build();
+
+      // The signed tx should match the expected signedHex from testData
+      tx.toBroadcastFormat().should.equal(testData.signedHex);
+      tx.id.should.equal(testData.txhash);
+    });
+  });
+
   describe('fresh build with different UTXO address order', () => {
     it('should correctly set up addressMaps when UTXO addresses differ from fromAddresses order', async () => {
       const txBuilder = new TransactionBuilderFactory(coins.get('tflrp'))

@@ -268,27 +268,4 @@ export class ImportInPTxBuilder extends AtomicTransactionBuilder {
       return utxo;
     });
   }
-
-  /**
-   * Compute proper addressesIndex from parsed transaction's sigIndicies.
-   * Following AVAX P approach: addressesIndex[senderIdx] = position of sender in UTXO addresses.
-   *
-   * For parsed transactions:
-   * - sigIndicies tells us which UTXO positions need to sign for each slot
-   * - We use output addresses as proxy for UTXO addresses
-   * - We compute addressesIndex as sender -> utxo position mapping
-   */
-  private computeAddressesIndexFromParsed(): void {
-    const sender = this.transaction._fromAddresses;
-    if (!sender || sender.length === 0) return;
-
-    this.transaction._utxos.forEach((utxo) => {
-      if (utxo.addresses && utxo.addresses.length > 0) {
-        const utxoAddresses = utxo.addresses.map((a) => utils.parseAddress(a));
-        utxo.addressesIndex = sender.map((senderAddr) =>
-          utxoAddresses.findIndex((utxoAddr) => Buffer.compare(Buffer.from(utxoAddr), Buffer.from(senderAddr)) === 0)
-        );
-      }
-    });
-  }
 }
