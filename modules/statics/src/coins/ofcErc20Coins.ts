@@ -5303,15 +5303,61 @@ export const tOfcErc20Coins = [
   ),
 
   // Morph tokens
-  ofcerc20('4d5f4fb7-b2e2-4e63-bbda-7f315332da5b', 'ofcmorph:usdc', 'USD Coin', 6, UnderlyingAsset['morph:usdc']),
-  ofcerc20('37f51c58-9be5-4c56-adcb-2c7f3c2cfc1a', 'ofcmorph:usdt', 'Tether USD', 6, UnderlyingAsset['morph:usdt']),
-  ofcerc20('e499e7cc-22ae-4374-ae4b-27651565af15', 'ofcmorph:usd1', 'USD1', 18, UnderlyingAsset['morph:usd1']),
+  ofcerc20(
+    '4d5f4fb7-b2e2-4e63-bbda-7f315332da5b',
+    'ofcmorph:usdc',
+    'USD Coin',
+    6,
+    UnderlyingAsset['morph:usdc'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'morph'
+  ),
+  ofcerc20(
+    '37f51c58-9be5-4c56-adcb-2c7f3c2cfc1a',
+    'ofcmorph:usdt',
+    'Tether USD',
+    6,
+    UnderlyingAsset['morph:usdt'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'morph'
+  ),
+  ofcerc20(
+    'e499e7cc-22ae-4374-ae4b-27651565af15',
+    'ofcmorph:usd1',
+    'USD1',
+    18,
+    UnderlyingAsset['morph:usd1'],
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'morph'
+  ),
   tofcerc20(
     '299efde0-9c67-44d8-ac00-44d0259d709d',
     'ofctmorph:tmt',
     'Test Mintable Token',
     6,
-    underlyingAssetForSymbol('tmorph:tmt')
+    underlyingAssetForSymbol('tmorph:tmt'),
+    undefined,
+    undefined,
+    '',
+    undefined,
+    undefined,
+    true,
+    'tmorph'
   ),
 ];
 
