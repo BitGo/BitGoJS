@@ -230,18 +230,4 @@ export class ImportInCTxBuilder extends AtomicInCTransactionBuilder {
       };
     });
   }
-
-  private computeAddressesIndexFromParsed(): void {
-    const sender = this.transaction._fromAddresses;
-    if (!sender || sender.length === 0) return;
-
-    this.transaction._utxos.forEach((utxo) => {
-      if (utxo.addresses && utxo.addresses.length > 0) {
-        const utxoAddresses = utxo.addresses.map((a) => utils.parseAddress(a));
-        utxo.addressesIndex = sender.map((senderAddr) =>
-          utxoAddresses.findIndex((utxoAddr) => Buffer.compare(Buffer.from(utxoAddr), Buffer.from(senderAddr)) === 0)
-        );
-      }
-    });
-  }
 }

@@ -375,6 +375,32 @@ export class Utils implements BaseUtils {
   }
 
   /**
+   * Sort addresses lexicographically by their byte representation.
+   * This matches how addresses are stored on-chain in Avalanche/Flare P-chain UTXOs.
+   * @param addresses - Array of bech32 address strings (e.g., "P-costwo1...")
+   * @returns Array of addresses sorted by hex value
+   */
+  public sortAddressesByHex(addresses: string[]): string[] {
+    return [...addresses].sort((a, b) => {
+      const aHex = this.parseAddress(a).toString('hex');
+      const bHex = this.parseAddress(b).toString('hex');
+      return aHex.localeCompare(bHex);
+    });
+  }
+
+  /**
+   * Sort address buffers lexicographically by their byte representation.
+   * This matches how addresses are stored on-chain in Avalanche/Flare P-chain UTXOs.
+   * @param addressBuffers - Array of address byte buffers
+   * @returns Array of address buffers sorted by hex value
+   */
+  public sortAddressBuffersByHex(addressBuffers: Buffer[]): Buffer[] {
+    return [...addressBuffers].sort((a, b) => {
+      return a.toString('hex').localeCompare(b.toString('hex'));
+    });
+  }
+
+  /**
    * Recover public key from signature
    * @param messageHash - The SHA256 hash of the message (e.g., signablePayload)
    * @param signature - 65-byte signature (64 bytes signature + 1 byte recovery parameter)
@@ -496,6 +522,11 @@ export class Utils implements BaseUtils {
   /**
    * Convert DecodedUtxoObj to native FlareJS Utxo object
    * This is the reverse of utxoToDecoded
+   *
+   * IMPORTANT: Addresses are sorted lexicographically by byte value to match
+   * on-chain storage order. The API may return addresses in arbitrary order, but
+   * on-chain UTXOs always store addresses in sorted order.
+   *
    * @param decoded - DecodedUtxoObj to convert
    * @param assetId - Asset ID as cb58 encoded string
    * @returns Native FlareJS Utxo object
@@ -507,9 +538,14 @@ export class Utils implements BaseUtils {
     // Parse addresses from bech32 strings to byte buffers
     const addressBytes = decoded.addresses.map((addr) => this.parseAddress(addr));
 
-    // Create OutputOwners with locktime, threshold, and addresses
+    // Sort addresses lexicographically by byte value to match on-chain order
+    // This is critical because the P-chain stores addresses in sorted order,
+    // and sigIndices must reference the correct positions.
+    const sortedAddressBytes = this.sortAddressBuffersByHex(addressBytes);
+
+    // Create OutputOwners with locktime, threshold, and SORTED addresses
     const locktime = decoded.locktime ? BigInt(decoded.locktime) : BigInt(0);
-    const outputOwners = OutputOwners.fromNative(addressBytes, locktime, decoded.threshold);
+    const outputOwners = OutputOwners.fromNative(sortedAddressBytes, locktime, decoded.threshold);
 
     // Create TransferOutput with amount and owners
     const amount = BigInt(decoded.amount);

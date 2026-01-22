@@ -105,12 +105,17 @@ export abstract class AtomicTransactionBuilder extends TransactionBuilder {
    * Compute addressesIndex for UTXOs following AVAX P approach.
    * addressesIndex[senderIdx] = position of sender[senderIdx] in UTXO's address list
    *
+   * IMPORTANT: UTXO addresses are sorted lexicographically by byte value to match
+   * on-chain storage order. The API may return addresses in arbitrary order, but
+   * on-chain UTXOs always store addresses in sorted order.
+   *
    * Example:
    *   A = user key, B = hsm key, C = backup key
    *   sender (bitgoAddresses) = [ A, B, C ]
-   *   utxo.addresses (IMS addresses) = [ B, C, A ]
-   *   addressesIndex = [ 2, 0, 1 ]
-   *   (sender[0]=A is at position 2 in UTXO, sender[1]=B is at position 0, etc.)
+   *   utxo.addresses (from API) = [ B, C, A ]
+   *   sorted utxo.addresses = [ A, B, C ] (sorted by hex value)
+   *   addressesIndex = [ 0, 1, 2 ]
+   *   (sender[0]=A is at position 0 in sorted UTXO, sender[1]=B is at position 1, etc.)
    *
    * @protected
    */
@@ -123,9 +128,39 @@ export abstract class AtomicTransactionBuilder extends TransactionBuilder {
       }
 
       if (utxo.addresses && utxo.addresses.length > 0) {
-        const utxoAddresses = utxo.addresses.map((a) => utils.parseAddress(a));
+        const sortedAddresses = utils.sortAddressesByHex(utxo.addresses);
+        utxo.addresses = sortedAddresses;
+
+        const utxoAddresses = sortedAddresses.map((a) => utils.parseAddress(a));
         utxo.addressesIndex = sender.map((a) =>
           utxoAddresses.findIndex((u) => Buffer.compare(Buffer.from(u), Buffer.from(a)) === 0)
+        );
+      }
+    });
+  }
+
+  /**
+   * Compute addressesIndex from parsed transaction data.
+   * Similar to computeAddressesIndex() but used when parsing existing transactions
+   * via initBuilder().
+   *
+   * IMPORTANT: UTXO addresses are sorted lexicographically by byte value to match
+   * on-chain storage order, ensuring consistency with fresh builds.
+   *
+   * @protected
+   */
+  protected computeAddressesIndexFromParsed(): void {
+    const sender = this.transaction._fromAddresses;
+    if (!sender || sender.length === 0) return;
+
+    this.transaction._utxos.forEach((utxo) => {
+      if (utxo.addresses && utxo.addresses.length > 0) {
+        const sortedAddresses = utils.sortAddressesByHex(utxo.addresses);
+        utxo.addresses = sortedAddresses;
+
+        const utxoAddresses = sortedAddresses.map((a) => utils.parseAddress(a));
+        utxo.addressesIndex = sender.map((senderAddr) =>
+          utxoAddresses.findIndex((utxoAddr) => Buffer.compare(Buffer.from(utxoAddr), Buffer.from(senderAddr)) === 0)
         );
       }
     });
