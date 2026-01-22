@@ -446,3 +446,8 @@ export class Transaction extends BaseTransaction {
     this._fee = fee;
   }
 }
+
+export interface SponsorshipInfo {
+  feeAddress: string;
+  feeAddressInputBalance: string;
+}

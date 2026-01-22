@@ -3478,6 +3478,21 @@ describe('SOL:', function () {
         message: `invalid address: ${invalidAddress}`,
       });
     });
+
+    it('should verify address with derivation prefix for SMC wallets', async function () {
+      // Address derived with derivation prefix m/999999/148242355/239336845/1
+      const address = 'CC715Q92C8vuEFT5xujE55Do6BkWRdpDvr7Vh8iUNUBw';
+      const commonKeychain =
+        '8ea32ecacfc83effbd2e2790ee44fa7c59b4d86c29a12f09fb613d8195f93f4e21875cad3b98adada40c040c54c3569467df41a020881a6184096378701862bd';
+      const index = '1';
+      const derivedFromParentWithSeed = 'smc-test-seed-123';
+      const keychains = [{ id: '1', type: 'tss' as const, commonKeychain }];
+
+      // This test verifies that derivedFromParentWithSeed is accepted as a parameter
+      // and the verification function correctly computes the derivation prefix internally
+      const result = await basecoin.isWalletAddress({ keychains, address, index, derivedFromParentWithSeed });
+      result.should.equal(true);
+    });
   });
 
   describe('getAddressFromPublicKey', () => {

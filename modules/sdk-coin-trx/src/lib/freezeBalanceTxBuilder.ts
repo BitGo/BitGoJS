@@ -163,11 +163,23 @@ export class FreezeBalanceTxBuilder extends TransactionBuilder {
    * @returns {string} the freeze balance transaction raw data hex
    */
   private getFreezeRawDataHex(): string {
-    const rawContract = {
+    const rawContract: {
+      ownerAddress: number[];
+      frozenBalance: string;
+      resource?: string;
+    } = {
       ownerAddress: getByteArrayFromHexAddress(this._ownerAddress),
       frozenBalance: this._frozenBalance,
-      resource: this._resource,
     };
+
+    // Only include resource if it's not BANDWIDTH (the default value = 0)
+    // In protobuf3, default values are typically not encoded in the wire format.
+    // TRON's node re-serializes transactions and omits default values,
+    // so we must match that behavior to ensure consistent transaction hashes.
+    if (this._resource !== 'BANDWIDTH') {
+      rawContract.resource = this._resource;
+    }
+
     const freezeContract = protocol.FreezeBalanceV2Contract.fromObject(rawContract);
     const freezeContractBytes = protocol.FreezeBalanceV2Contract.encode(freezeContract).finish();
     const txContract = {

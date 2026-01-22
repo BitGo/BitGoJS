@@ -6,7 +6,8 @@
 GHSA-8qq5-rm4j-mr97
 
 # Excluded because:
-# - Same tar v6 dependency issue as above
-# - Affects only dev dependencies (lerna, yeoman-generator)
-# - Not exploitable in our build context
+# - Transitive dependency through lerna and yeoman-generator, which currently pin tar to a
+#   < 7.5.4 range; We only use their tar integration for
+#   archive PACKING, not extraction,
 GHSA-r6q2-hw4h-h46w
+

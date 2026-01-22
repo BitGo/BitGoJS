@@ -7,6 +7,7 @@ import {
   BLOCK_NUMBER,
   EXPIRATION,
   RESOURCE_ENERGY,
+  RESOURCE_BANDWIDTH,
   UNFROZEN_BALANCE,
   UNFREEZE_BALANCE_V2_CONTRACT,
 } from '../../resources';
@@ -318,6 +319,131 @@ describe('Tron UnfreezeBalanceV2 builder', function () {
       assert.doesNotReject(() => {
         return txBuilder.build();
       });
+    });
+  });
+
+  describe('BANDWIDTH serialization (protobuf3 compatibility)', () => {
+    it('should round-trip BANDWIDTH transactions correctly', async () => {
+      // Build a BANDWIDTH transaction
+      const builder = (getBuilder('ttrx') as WrappedBuilder).getUnfreezeBalanceV2TxBuilder();
+      builder
+        .source({ address: PARTICIPANTS.custodian.address })
+        .block({ number: BLOCK_NUMBER, hash: BLOCK_HASH })
+        .setUnfreezeBalance(UNFROZEN_BALANCE)
+        .setResource(RESOURCE_BANDWIDTH);
+
+      const tx = await builder.build();
+      const txJson = tx.toJson();
+
+      // Verify the built transaction has BANDWIDTH resource
+      assert.equal(
+        txJson.raw_data.contract[0].parameter.value.resource,
+        RESOURCE_BANDWIDTH,
+        'Built transaction should have BANDWIDTH resource'
+      );
+
+      // Round-trip: deserialize from broadcast format and rebuild
+      const builder2 = getBuilder('ttrx').from(tx.toBroadcastFormat());
+      const tx2 = await builder2.build();
+      const tx2Json = tx2.toJson();
+
+      // Verify resource is preserved after round-trip
+      assert.equal(
+        tx2Json.raw_data.contract[0].parameter.value.resource,
+        RESOURCE_BANDWIDTH,
+        'Resource should be BANDWIDTH after round-trip from broadcast format'
+      );
+
+      // Round-trip: deserialize from JSON and rebuild
+      const builder3 = getBuilder('ttrx').from(tx.toJson());
+      const tx3 = await builder3.build();
+      const tx3Json = tx3.toJson();
+
+      // Verify resource is preserved after round-trip from JSON
+      assert.equal(
+        tx3Json.raw_data.contract[0].parameter.value.resource,
+        RESOURCE_BANDWIDTH,
+        'Resource should be BANDWIDTH after round-trip from JSON'
+      );
+    });
+
+    it('should round-trip ENERGY transactions correctly', async () => {
+      // Build an ENERGY transaction
+      const builder = (getBuilder('ttrx') as WrappedBuilder).getUnfreezeBalanceV2TxBuilder();
+      builder
+        .source({ address: PARTICIPANTS.custodian.address })
+        .block({ number: BLOCK_NUMBER, hash: BLOCK_HASH })
+        .setUnfreezeBalance(UNFROZEN_BALANCE)
+        .setResource(RESOURCE_ENERGY);
+
+      const tx = await builder.build();
+      const txJson = tx.toJson();
+
+      // Verify the built transaction has ENERGY resource
+      assert.equal(
+        txJson.raw_data.contract[0].parameter.value.resource,
+        RESOURCE_ENERGY,
+        'Built transaction should have ENERGY resource'
+      );
+
+      // Round-trip: deserialize from broadcast format and rebuild
+      const builder2 = getBuilder('ttrx').from(tx.toBroadcastFormat());
+      const tx2 = await builder2.build();
+      const tx2Json = tx2.toJson();
+
+      // Verify resource is preserved after round-trip
+      assert.equal(
+        tx2Json.raw_data.contract[0].parameter.value.resource,
+        RESOURCE_ENERGY,
+        'Resource should be ENERGY after round-trip from broadcast format'
+      );
+    });
+
+    it('should produce consistent transaction IDs for BANDWIDTH transactions', async () => {
+      // Build a BANDWIDTH transaction
+      const builder = (getBuilder('ttrx') as WrappedBuilder).getUnfreezeBalanceV2TxBuilder();
+      builder
+        .source({ address: PARTICIPANTS.custodian.address })
+        .block({ number: BLOCK_NUMBER, hash: BLOCK_HASH })
+        .setUnfreezeBalance(UNFROZEN_BALANCE)
+        .setResource(RESOURCE_BANDWIDTH);
+
+      const tx = await builder.build();
+      const originalTxId = tx.toJson().txID;
+
+      // Round-trip and verify txID is consistent
+      const builder2 = getBuilder('ttrx').from(tx.toBroadcastFormat());
+      const tx2 = await builder2.build();
+      const roundTripTxId = tx2.toJson().txID;
+
+      assert.equal(originalTxId, roundTripTxId, 'Transaction ID should be consistent after round-trip');
+    });
+
+    it('should allow signing BANDWIDTH transactions after round-trip', async () => {
+      // Build a BANDWIDTH transaction
+      const builder = (getBuilder('ttrx') as WrappedBuilder).getUnfreezeBalanceV2TxBuilder();
+      builder
+        .source({ address: PARTICIPANTS.custodian.address })
+        .block({ number: BLOCK_NUMBER, hash: BLOCK_HASH })
+        .setUnfreezeBalance(UNFROZEN_BALANCE)
+        .setResource(RESOURCE_BANDWIDTH);
+
+      const tx = await builder.build();
+
+      // Round-trip and sign
+      const builder2 = getBuilder('ttrx').from(tx.toBroadcastFormat());
+      builder2.sign({ key: PARTICIPANTS.custodian.pk });
+      const signedTx = await builder2.build();
+
+      // Verify signature was added
+      assert.equal(signedTx.toJson().signature.length, 1, 'Transaction should have one signature');
+
+      // Verify resource is still BANDWIDTH
+      assert.equal(
+        signedTx.toJson().raw_data.contract[0].parameter.value.resource,
+        RESOURCE_BANDWIDTH,
+        'Resource should still be BANDWIDTH after signing'
+      );
     });
   });
 });
