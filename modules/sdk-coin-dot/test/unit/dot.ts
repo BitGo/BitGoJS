@@ -775,7 +775,7 @@ describe('DOT:', function () {
         );
     });
 
-    it('should check _amount for TransferAll (sweep) transactions', async function () {
+    it('should skip _amount check for TransferAll (sweep) transactions', async function () {
       const mockedWallet = {
         coinSpecific: () => ({
           baseAddress: '5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq',
