@@ -326,4 +326,76 @@ describe('ADA Token Operations', async () => {
 
     await txBuilder.build().should.not.be.rejected();
   });
+
+  it(`should build a sponsored token transaction where fee address sponsors min ADA for receiver`, async () => {
+    const feeAddress =
+      'addr_test1qz2fxv2umyhttkxyxp8x0dlpdt3k6cwng5pxj3jhsydzer3jcu5d8ps7zex2k2xt3uqxgjqnnj83ws8lhrn648jjxtwq2ytjqp';
+    const quantity = '20';
+    const senderInputBalance = 5000000;
+    const feeAddressInputBalance = 20000000; // Fee address has enough ADA to sponsor
+    const totalAssetList = {
+      [fingerprint]: {
+        quantity: '100',
+        policy_id: policyId,
+        asset_name: asciiEncodedName,
+      },
+    };
+
+    const txBuilder = factory.getTransferBuilder();
+    // Sender input (has tokens)
+    txBuilder.input({
+      transaction_id: '3677e75c7ba699bfdc6cd57d42f246f86f63aefd76025006ac78313fad2bba21',
+      transaction_index: 1,
+    });
+    // Fee address input (sponsors fees and min ADA)
+    txBuilder.input({
+      transaction_id: '3677e75c7ba699bfdc6cd57d42f246f86f63aefd76025006ac78313fad2bba22',
+      transaction_index: 0,
+    });
+
+    txBuilder.output({
+      address: receiverAddress,
+      amount: '0', // Set ADA amount to 0 for token transfer (min ADA is handled by fee address)
+      multiAssets: {
+        asset_name: asciiEncodedName,
+        policy_id: policyId,
+        quantity,
+        fingerprint,
+      },
+    });
+
+    txBuilder.changeAddress(senderAddress, senderInputBalance.toString(), totalAssetList);
+    txBuilder.sponsorshipInfo({
+      feeAddress: feeAddress,
+      feeAddressInputBalance: feeAddressInputBalance.toString(),
+    });
+    txBuilder.ttl(800000000);
+    txBuilder.isTokenTransaction();
+    const tx = (await txBuilder.build()) as Transaction;
+
+    should.equal(tx.type, TransactionType.Send);
+    const txData = tx.toJson();
+
+    txData.inputs.length.should.equal(2);
+    txData.outputs.length.should.equal(4);
+
+    // Validate receiver output - min ADA should be sponsored by fee address
+    const receiverOutput = txData.outputs.filter((output) => output.address === receiverAddress);
+    receiverOutput.length.should.equal(1);
+    receiverOutput[0].amount.should.equal('1500000'); // Minimum ADA for asset output (sponsored by fee address)
+    (receiverOutput[0].multiAssets! as CardanoWasm.MultiAsset)
+      .get_asset(policyScriptHash, CardanoWasm.AssetName.new(Buffer.from(asciiEncodedName, 'hex')))
+      .to_str()
+      .should.equal(quantity);
+
+    // Validate sender change output - should have full sender balance (tokens only, no ADA deduction for receiver)
+    const senderChangeOutput = txData.outputs.filter((output) => output.address === senderAddress);
+    senderChangeOutput.length.should.be.equal(2);
+
+    // Validate fee address change output - should have remaining ADA after fees and min ADA for receiver
+    const feeAddressChangeOutput = txData.outputs.filter((output) => output.address === feeAddress);
+    feeAddressChangeOutput.length.should.equal(1);
+    // Fee address change should not have any tokens
+    should.not.exist(feeAddressChangeOutput[0].multiAssets);
+  });
 });

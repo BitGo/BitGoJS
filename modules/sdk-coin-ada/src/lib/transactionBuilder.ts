@@ -227,11 +227,18 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private addOutputs(outputs) {
     if (this._sponsorshipInfo) {
       const feeAddressUtxoBalance = CardanoWasm.BigNum.from_str(this._sponsorshipInfo.feeAddressInputBalance);
-      const feeAddressChange = feeAddressUtxoBalance.checked_sub(this._fee);
+      let feeAddressChange = feeAddressUtxoBalance.checked_sub(this._fee);
       const senderAddressUtxoBalance = CardanoWasm.BigNum.from_str(this._senderBalance);
-      const senderChangeAfterReceiverDeductions = this.addReceiverOutputs(outputs, senderAddressUtxoBalance);
-      this.addChangeOutput(senderChangeAfterReceiverDeductions, outputs, this._changeAddress); // Change address is the sender address
-      this.addChangeOutput(feeAddressChange, outputs, this._sponsorshipInfo.feeAddress);
+      if (this._isTokenTransaction) {
+        // Fee address sponsors min ada
+        feeAddressChange = this.addReceiverOutputs(outputs, feeAddressChange);
+        this.addChangeOutput(senderAddressUtxoBalance, outputs, this._changeAddress);
+        this.addChangeOutput(feeAddressChange, outputs, this._sponsorshipInfo.feeAddress);
+      } else {
+        const senderChangeAfterReceiverDeductions = this.addReceiverOutputs(outputs, senderAddressUtxoBalance);
+        this.addChangeOutput(senderChangeAfterReceiverDeductions, outputs, this._changeAddress);
+        this.addChangeOutput(feeAddressChange, outputs, this._sponsorshipInfo.feeAddress);
+      }
     } else {
       const utxoBalance = CardanoWasm.BigNum.from_str(this._senderBalance); // Total UTXO balance
       const change = utxoBalance.checked_sub(this._fee);
