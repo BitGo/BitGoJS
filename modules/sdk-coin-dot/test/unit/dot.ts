@@ -774,6 +774,87 @@ describe('DOT:', function () {
           'Transaction destination address 5CZh773vKGwKFCYUjGc31AwXCbf7TPkavdeuk2XoujJMjbBD does not match wallet base address 5DxD9nT16GQLrU6aB5pSS5VtxoZbVju3NHUCcawxZyZCTf74'
         );
     });
+
+    it('should log txParams for consolidation to verify recipients are passed', async function () {
+      const mockedWallet = {
+        coinSpecific: () => ({
+          baseAddress: '5CZh773vKGwKFCYUjGc31AwXCbf7TPkavdeuk2XoujJMjbBD',
+        }),
+      };
+      // This is a TransferKeepAlive tx (regular transfer), NOT a TransferAll (sweep)
+      const txPrebuild = {
+        txHex:
+          '0xa80a0300161b969b6b53ef81225feea3882284c778cd4a406d23215fcf492e83f75d42960b00204aa9d101eb600400000065900f001000000067f9723393ef76214df0118c34bbbd3dbebc8ed46a10973a8c969d48fe7598c9a7b7420ee3e4fe2b88da0fc42b30897e18d56d8b56a1934211d9de730cf96de300',
+      };
+
+      // Test 1: consolidation with empty txParams (no recipients)
+      const txParamsEmpty = {};
+
+      const result1 = await basecoin.verifyTransaction({
+        txPrebuild,
+        txParams: txParamsEmpty,
+        wallet: mockedWallet as any,
+        verification: {
+          consolidationToBaseAddress: true,
+        },
+      });
+      assert.strictEqual(result1, true);
+
+      // Test 2: consolidation with recipients in txParams (matching base address)
+      const txParamsWithRecipients = {
+        recipients: [{ address: '5CZh773vKGwKFCYUjGc31AwXCbf7TPkavdeuk2XoujJMjbBD', amount: '2000000000000' }],
+      };
+
+      const result2 = await basecoin.verifyTransaction({
+        txPrebuild,
+        txParams: txParamsWithRecipients,
+        wallet: mockedWallet as any,
+        verification: {
+          consolidationToBaseAddress: true,
+        },
+      });
+      assert.strictEqual(result2, true);
+    });
+
+    it('should check _amount for TransferAll (sweep) transactions', async function () {
+      const mockedWallet = {
+        coinSpecific: () => ({
+          baseAddress: '5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq',
+        }),
+      };
+
+      // This is a TransferAll tx (sweep) - uses method 0a04 (balances.transferAll)
+      // From testData.rawTx.transferAll.unsigned
+      const transferAllTxHex =
+        '0x900a04009f7b0675db59d19b4bd9c8c72eaabba75a9863d02b30115b8b3c3ca5c20f025401d50121030000009d880f001000000067f9723393ef76214df0118c34bbbd3dbebc8ed46a10973a8c969d48fe7598c9149799bc9602cb5cf201f3425fb8d253b2d4e61fc119dcab3249f307f594754d00';
+
+      const txPrebuild = { txHex: transferAllTxHex };
+
+      // Test: consolidation with empty txParams should pass
+      const result1 = await basecoin.verifyTransaction({
+        txPrebuild,
+        txParams: {},
+        wallet: mockedWallet as any,
+        verification: {
+          consolidationToBaseAddress: true,
+        },
+      });
+      assert.strictEqual(result1, true);
+
+      const txParamsWithRecipients = {
+        recipients: [{ address: '5Ffp1wJCPu4hzVDTo7XaMLqZSvSadyUQmxWPDw74CBjECSoq', amount: '1000000000000' }],
+      };
+
+      const result = await basecoin.verifyTransaction({
+        txPrebuild,
+        txParams: txParamsWithRecipients,
+        wallet: mockedWallet as any,
+        verification: {
+          consolidationToBaseAddress: true,
+        },
+      });
+      assert.strictEqual(result, true);
+    });
   });
 
   describe('isWalletAddress', () => {

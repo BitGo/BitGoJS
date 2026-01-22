@@ -715,7 +715,9 @@ export class Dot extends BaseCoin {
       }
 
       // validate amount is same as txBuilder['_amount']
-      if (txParams.recipients[0].amount !== txBuilder['_amount']) {
+      // Skip amount validation for TransferAll (sweep) transactions as they don't have a fixed amount
+      const isSweepTransaction = txBuilder['_sweepFreeBalance'] === true;
+      if (!isSweepTransaction && txParams.recipients[0].amount !== txBuilder['_amount']) {
         throw new TxIntentMismatchRecipientError(
           `Recipient amount ${txParams.recipients[0].amount} does not match transaction amount ${txBuilder['_amount']}`,
           reqId,
