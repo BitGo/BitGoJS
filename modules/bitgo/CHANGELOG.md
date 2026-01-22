@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [50.22.0](https://github.com/BitGo/BitGoJS/compare/bitgo@50.21.1...bitgo@50.22.0) (2026-01-22)
+
+
+### Features
+
+* fetch keychain per wallet once ([65a93b6](https://github.com/BitGo/BitGoJS/commit/65a93b6ff60df68245f2bd590b9f02b471b403d5))
+
+
+
+
+
 ## [50.21.1](https://github.com/BitGo/BitGoJS/compare/bitgo@50.21.0...bitgo@50.21.1) (2026-01-19)
 
 **Note:** Version bump only for package bitgo

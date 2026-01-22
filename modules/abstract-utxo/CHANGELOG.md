@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [10.16.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.15.1...@bitgo/abstract-utxo@10.16.0) (2026-01-22)
+
+
+### Features
+
+* **abstract-utxo:** fetch keychains from wallet in explainTransaction ([3ca122b](https://github.com/BitGo/BitGoJS/commit/3ca122bec75333a781be6302a04498ea570401c4))
+
+
+
+
+
 ## [10.15.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/abstract-utxo@10.15.0...@bitgo/abstract-utxo@10.15.1) (2026-01-19)
 
 **Note:** Version bump only for package @bitgo/abstract-utxo

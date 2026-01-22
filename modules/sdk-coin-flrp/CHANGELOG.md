@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.7.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.7.1...@bitgo/sdk-coin-flrp@1.7.2) (2026-01-22)
+
+
+### Bug Fixes
+
+* **sdk-coin-flrp:** update UTXO matching logic ([5fde79f](https://github.com/BitGo/BitGoJS/commit/5fde79ffa6c1e2b8acc9f72219e035ec0f45890e))
+
+
+
+
+
 ## [1.7.1](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flrp@1.7.0...@bitgo/sdk-coin-flrp@1.7.1) (2026-01-19)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-flrp

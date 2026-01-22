@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.21.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.20.8...@bitgo/sdk-coin-ada@4.21.0) (2026-01-22)
+
+
+### Features
+
+* **sdk-coin-ada:** support for sponsored txns ([cb75eda](https://github.com/BitGo/BitGoJS/commit/cb75edad4850135a92e0c5ea41156491977edf73))
+* **sdk-coin-ada:** token sponsorship support ([12e0c78](https://github.com/BitGo/BitGoJS/commit/12e0c78cef2d763d0e6de4bea94973d7b0e1788a))
+
+
+
+
+
 ## [4.20.8](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-ada@4.20.7...@bitgo/sdk-coin-ada@4.20.8) (2026-01-19)
 
 

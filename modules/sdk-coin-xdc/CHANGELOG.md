@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.7.0](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xdc@1.6.2...@bitgo/sdk-coin-xdc@1.7.0) (2026-01-22)
+
+
+### Features
+
+* **sdk-coin-xdc:** add uploadKyc tx builder ([91bc8ea](https://github.com/BitGo/BitGoJS/commit/91bc8eac0c5c5ab5a4d9bc3e259df62f36966381))
+
+
+
+
+
 ## [1.6.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-xdc@1.6.1...@bitgo/sdk-coin-xdc@1.6.2) (2026-01-19)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-xdc

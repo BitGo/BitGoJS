@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.8.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@3.8.3...@bitgo/sdk-coin-trx@3.8.4) (2026-01-22)
+
+
+### Bug Fixes
+
+* **sdk-coin-trx:** fix BANDWIDTH transaction signature mismatch (SIGERROR) ([31d8394](https://github.com/BitGo/BitGoJS/commit/31d8394664ed452a58489c431f15d0422c17e0eb))
+
+
+
+
+
 ## [3.8.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-trx@3.8.2...@bitgo/sdk-coin-trx@3.8.3) (2026-01-19)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-trx
