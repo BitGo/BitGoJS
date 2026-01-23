@@ -71,6 +71,7 @@ import { vetTokens } from './coins/vetTokens';
 import { cosmosTokens } from './coins/cosmosTokens';
 import { jettonTokens } from './coins/jettonTokens';
 import { polyxTokens } from './coins/polyxTokens';
+import { cantonTokens } from './coins/cantonTokens';
 import { flrp } from './flrp';
 import {
   ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE_AND_MENA_FZE,
@@ -159,6 +160,7 @@ export const allCoinsAndTokens = [
   ...adaTokens,
   ...jettonTokens,
   ...polyxTokens,
+  ...cantonTokens,
   avaxp(
     '5436386e-9e4d-4d82-92df-59d9720d1738',
     'avaxp',

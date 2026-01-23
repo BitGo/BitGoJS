@@ -5,7 +5,7 @@ import { AccountNetwork, BaseNetwork, EthereumNetwork, Networks, TronNetwork } f
 import {
   ACCOUNT_COIN_DEFAULT_FEATURES,
   ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE,
-  CANTON_FEATURES,
+  CANTON_TOKEN_FEATURES,
   CELO_TOKEN_FEATURES,
   COSMOS_SIDECHAIN_FEATURES,
 } from './coinFeatures';
@@ -4225,7 +4225,7 @@ export function cantonToken(
   assetName: string,
   admin: string,
   asset: UnderlyingAsset,
-  features: CoinFeature[] = CANTON_FEATURES,
+  features: CoinFeature[] = CANTON_TOKEN_FEATURES,
   prefix = '',
   suffix: string = name.toUpperCase(),
   network: AccountNetwork = Networks.main.canton,
@@ -4278,7 +4278,7 @@ export function tcantonToken(
   assetName: string,
   admin: string,
   asset: UnderlyingAsset,
-  features: CoinFeature[] = CANTON_FEATURES,
+  features: CoinFeature[] = CANTON_TOKEN_FEATURES,
   prefix = '',
   suffix: string = name.toUpperCase(),
   network: AccountNetwork = Networks.test.canton,

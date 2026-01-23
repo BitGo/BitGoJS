@@ -3534,6 +3534,10 @@ export enum UnderlyingAsset {
   'ada:usda' = 'ada:usda',
   'ada:night' = 'ada:night',
 
+  // Canton testnet tokens
+  'tcanton:testcoin1' = 'tcanton:testcoin1',
+  'tcanton:testtoken' = 'tcanton:testtoken',
+
   // fiats
   AED = 'aed',
   EUR = 'eur',
