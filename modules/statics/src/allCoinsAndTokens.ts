@@ -1025,7 +1025,7 @@ export const allCoinsAndTokens = [
     6,
     UnderlyingAsset.KAVA,
     BaseUnit.KAVA,
-    [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.SHARED_COSMOS_SDK]
+    [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.SHARED_COSMOS_SDK, CoinFeature.SHARED_COSMOS_WP]
   ),
   account(
     '62895d6b-6e99-4eba-82f1-9ce4e7658998',
@@ -1035,7 +1035,7 @@ export const allCoinsAndTokens = [
     6,
     UnderlyingAsset.KAVA,
     BaseUnit.KAVA,
-    [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.SHARED_COSMOS_SDK]
+    [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.SHARED_COSMOS_SDK, CoinFeature.SHARED_COSMOS_WP]
   ),
   account(
     '7df858d5-9da3-4071-ab06-399962ea87b7',
