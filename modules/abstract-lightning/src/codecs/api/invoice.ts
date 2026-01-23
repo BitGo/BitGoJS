@@ -18,18 +18,12 @@ export const InvoiceStatus = t.union(
 );
 export type InvoiceStatus = t.TypeOf<typeof InvoiceStatus>;
 
-export const CreateInvoiceBody = t.intersection(
-  [
-    t.type({
-      valueMsat: BigIntFromString,
-    }),
-    t.partial({
-      memo: t.string,
-      expiry: t.number,
-    }),
-  ],
-  'CreateInvoiceBody'
-);
+export const CreateInvoiceBody = t.partial({
+  valueMsat: BigIntFromString,
+  valueSat: t.number,
+  memo: t.string,
+  expiry: t.number,
+});
 export type CreateInvoiceBody = t.TypeOf<typeof CreateInvoiceBody>;
 
 /**
@@ -52,6 +46,9 @@ export const Invoice = t.intersection(
       updatedAt: DateFromISOString,
     }),
     t.partial({
+      // Keep valueSat for backward compatibility with older versions of the API
+      // Will be moved up to required fields in the future
+      valueSat: t.number,
       memo: t.string,
       amtPaidMsat: BigIntFromString,
     }),
