@@ -507,6 +507,11 @@ export enum CoinFeature {
   ALTERNATIVE_ADDRESS_IDENTIFIER = 'alternative-address-identifier',
 
   /**
+   * This token standard uses alternative address identifiers (e.g., DIDs for Polymesh tokens)
+   */
+  TOKEN_STANDARD_USES_ALTERNATIVE_ADDRESS_IDENTIFIER = 'token-standard-uses-alternative-address-identifier',
+
+  /**
    * This coin supports one-step deposit
    */
   SUPPORTS_ONE_STEP_DEPOSIT = 'supports-one-step-deposit',
