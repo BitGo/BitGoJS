@@ -6330,7 +6330,7 @@
   dependencies:
     "@types/node" "*"
 
-"@types/node@*", "@types/node@^22.15.29":
+"@types/node@*":
   version "22.18.0"
   resolved "https://registry.npmjs.org/@types/node/-/node-22.18.0.tgz"
   integrity sha512-m5ObIqwsUp6BZzyiy4RdZpzWGub9bqLJMvZDD0QMXhxjqMHMENlj+SqF5QxoUwaQNFe+8kz8XM8ZQhqkQPTgMQ==
@@ -6379,6 +6379,13 @@
   integrity sha512-K7DIaHnh0mzVxreCR9qwgNxp3MH9dltPNIEddW9MYUlcKAzm+3grKNSTe2vCJHI1FaLpvpL5JGJrz1UZDKYvDg==
   dependencies:
     undici-types "~5.26.4"
+
+"@types/node@^24.10.9":
+  version "24.10.9"
+  resolved "https://registry.npmjs.org/@types/node/-/node-24.10.9.tgz#1aeb5142e4a92957489cac12b07f9c7fe26057d0"
+  integrity sha512-ne4A0IpG3+2ETuREInjPNhUGis1SFjv1d5asp8MzEAGtOZeTeHVDOYqOgqfhvseqg/iXty2hjBf1zAOb7RNiNw==
+  dependencies:
+    undici-types "~7.16.0"
 
 "@types/normalize-package-data@^2.4.0":
   version "2.4.4"
@@ -20690,6 +20697,11 @@ undici-types@~7.10.0:
   version "7.10.0"
   resolved "https://registry.npmjs.org/undici-types/-/undici-types-7.10.0.tgz"
   integrity sha512-t5Fy/nfn+14LuOc2KNYg75vZqClpAiqscVvMygNnlsHBFpSXdJaYtXMcdNLpl/Qvc3P2cB3s6lOV51nqsFq4ag==
+
+undici-types@~7.16.0:
+  version "7.16.0"
+  resolved "https://registry.npmjs.org/undici-types/-/undici-types-7.16.0.tgz#ffccdff36aea4884cbfce9a750a0580224f58a46"
+  integrity sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw==
 
 unicode-canonical-property-names-ecmascript@^2.0.0:
   version "2.0.1"

@@ -16,7 +16,7 @@
   },
   "license": "Apache-2.0",
   "engines": {
-    "node": ">=20 <23",
+    "node": ">=20 <25",
     "npm": ">=3.10.10"
   },
   "scripts": {
