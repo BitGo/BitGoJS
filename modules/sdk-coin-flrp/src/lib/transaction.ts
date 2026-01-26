@@ -182,7 +182,16 @@ export class Transaction extends BaseTransaction {
     const signature = await secp256k1.sign(unsignedBytes, prv);
     let signatureSet = false;
 
-    if (hasMatchingAddress) {
+    // Check if any credential has embedded addresses - if so, we MUST use address-based matching
+    const hasEmbeddedAddressesInCredentials = unsignedTx.credentials.some((credential) => {
+      const signatures = credential.getSignatures();
+      return signatures.some((sig) => isEmptySignature(sig) && hasEmbeddedAddress(sig));
+    });
+
+    // Use address-based slot matching if:
+    // 1. addressMap contains matching address, OR
+    // 2. credentials have embedded addresses (prioritize this to ensure correct slot placement)
+    if (hasMatchingAddress || hasEmbeddedAddressesInCredentials) {
       // Use address-based slot matching (like AVAX-P)
       let checkSign: CheckSignature | undefined = undefined;
 
@@ -209,8 +218,9 @@ export class Transaction extends BaseTransaction {
     }
 
     // Fallback: If address-based matching didn't work (e.g., ImportInC loaded from unsigned tx
-    // where P-chain addresses aren't in addressMaps), sign ALL empty slots across ALL credentials.
-    // This handles multisig where each UTXO needs a credential signed by the same key.
+    // where P-chain addresses aren't in addressMaps AND no embedded addresses), sign ALL empty
+    // slots across ALL credentials. This handles multisig where each UTXO needs a credential
+    // signed by the same key.
     if (!signatureSet) {
       for (const credential of unsignedTx.credentials) {
         const signatures = credential.getSignatures();

@@ -993,4 +993,385 @@ describe('Signature Index Handling - AVAX P Alignment', () => {
       });
     });
   });
+
+  /**
+   * Tests specifically for the sigIndices fix.
+   *
+   * Background: FLRP import to P transactions were failing with:
+   * - "could not parse transaction" (HSM error)
+   * - "wrong signature" (on-chain error)
+   *
+   * Root cause: Mismatch between SDK's assumed credential order and FlareJS's
+   * actual sigIndices order. When UTXO addresses are sorted differently than
+   * sender addresses, the credentials must follow FlareJS's sigIndices order
+   * (ascending by UTXO position), not the SDK's sender address order.
+   *
+   * The fix reads actual sigIndices from FlareJS-built transaction inputs
+   * and creates credentials in that exact order.
+   *
+   * Real-world failure examples:
+   * 1. Wallet 697738a870cd159b6ab80f7071e3146a - HSM error "could not parse transaction"
+   *    - UTXO addresses: [r6gzm4acz..., x3u4xeal7..., l4f9rrc7w...]
+   *    - Sender addresses: [l4f9rrc7w..., x3u4xeal7..., r6gzm4acz...]
+   *
+   * 2. Wallet 69773884a565c4dbaf680e360b920c9e - On-chain "wrong signature"
+   *    - UTXO addresses: [t37m2e8fa..., urz6r3jy2..., 7r4k0nqne...]
+   *    - Sender addresses: [urz6r3jy2..., 7r4k0nqne..., t37m2e8fa...]
+   */
+  describe('SigIndices Fix Verification', () => {
+    describe('Credential ordering matches FlareJS sigIndices', () => {
+      it('should create credentials in correct order when UTXO addresses differ from sender order', async () => {
+        // Test data where UTXO addresses are in different order than pAddresses
+        // UTXO addresses: [xv5mulgpe..., 06gc5h5qs..., cueygd7fd...]
+        // pAddresses:     [06gc5h5qs..., cueygd7fd..., xv5mulgpe...]
+        //
+        // FlareJS will compute sigIndices based on which addresses are signing
+        // and their positions in the UTXO's address list (sorted by address bytes)
+
+        const txBuilder = newFactory()
+          .getImportInPBuilder()
+          .threshold(importPTestData.threshold)
+          .locktime(importPTestData.locktime)
+          .fromPubKey(importPTestData.corethAddresses)
+          .to(importPTestData.pAddresses)
+          .externalChainId(importPTestData.sourceChainId)
+          .feeState(importPTestData.feeState)
+          .context(importPTestData.context)
+          .decodedUtxos(importPTestData.utxos);
+
+        const tx = await txBuilder.build();
+        const hex = tx.toBroadcastFormat();
+
+        // The fix ensures the unsigned tx has credentials ordered correctly
+        // Before fix: credentials were in sender address order
+        // After fix: credentials are in sigIndices order (ascending UTXO position)
+        hex.should.equal(importPTestData.unsignedHex);
+
+        // Verify we can sign and the signatures go in the correct slots
+        const builder1 = newFactory().from(hex);
+        builder1.sign({ key: importPTestData.privateKeys[2] }); // user key
+        const halfSignedTx = await builder1.build();
+
+        halfSignedTx.toBroadcastFormat().should.equal(importPTestData.halfSigntxHex);
+
+        const builder2 = newFactory().from(halfSignedTx.toBroadcastFormat());
+        builder2.sign({ key: importPTestData.privateKeys[0] }); // bitgo key
+        const fullSignedTx = await builder2.build();
+
+        fullSignedTx.toBroadcastFormat().should.equal(importPTestData.signedHex);
+        fullSignedTx.toJson().signatures.length.should.equal(2);
+      });
+
+      it('should produce valid signatures when signing keys are provided in any order', async () => {
+        // This tests that the fix properly handles the address mapping
+        // regardless of which key signs first
+        const txBuilder1 = newFactory()
+          .getImportInPBuilder()
+          .threshold(importPTestData.threshold)
+          .locktime(importPTestData.locktime)
+          .fromPubKey(importPTestData.corethAddresses)
+          .to(importPTestData.pAddresses)
+          .externalChainId(importPTestData.sourceChainId)
+          .feeState(importPTestData.feeState)
+          .context(importPTestData.context)
+          .decodedUtxos(importPTestData.utxos);
+
+        // Sign user first, then bitgo
+        txBuilder1.sign({ key: importPTestData.privateKeys[2] });
+        txBuilder1.sign({ key: importPTestData.privateKeys[0] });
+        const tx1 = await txBuilder1.build();
+
+        const txBuilder2 = newFactory()
+          .getImportInPBuilder()
+          .threshold(importPTestData.threshold)
+          .locktime(importPTestData.locktime)
+          .fromPubKey(importPTestData.corethAddresses)
+          .to(importPTestData.pAddresses)
+          .externalChainId(importPTestData.sourceChainId)
+          .feeState(importPTestData.feeState)
+          .context(importPTestData.context)
+          .decodedUtxos(importPTestData.utxos);
+
+        // Sign bitgo first, then user
+        txBuilder2.sign({ key: importPTestData.privateKeys[0] });
+        txBuilder2.sign({ key: importPTestData.privateKeys[2] });
+        const tx2 = await txBuilder2.build();
+
+        // Both should produce the same valid transaction
+        tx1.toBroadcastFormat().should.equal(tx2.toBroadcastFormat());
+        tx1.toJson().signatures.length.should.equal(2);
+        tx2.toJson().signatures.length.should.equal(2);
+      });
+
+      it('should handle Export P transaction with correct sigIndices order', async () => {
+        const txBuilder = newFactory()
+          .getExportInPBuilder()
+          .threshold(exportPTestData.threshold)
+          .locktime(exportPTestData.locktime)
+          .fromPubKey(exportPTestData.pAddresses)
+          .externalChainId(exportPTestData.sourceChainId)
+          .feeState(exportPTestData.feeState)
+          .context(exportPTestData.context)
+          .decodedUtxos(exportPTestData.utxos)
+          .amount(exportPTestData.amount);
+
+        const tx = await txBuilder.build();
+        const hex = tx.toBroadcastFormat();
+
+        hex.should.equal(exportPTestData.unsignedHex);
+
+        // Verify signing flow
+        const builder1 = newFactory().from(hex);
+        builder1.sign({ key: exportPTestData.privateKeys[2] });
+        const halfSignedTx = await builder1.build();
+
+        halfSignedTx.toBroadcastFormat().should.equal(exportPTestData.halfSigntxHex);
+      });
+
+      it('should handle Import C transaction with correct sigIndices order', async () => {
+        const txBuilder = newFactory()
+          .getImportInCBuilder()
+          .threshold(importCTestData.threshold)
+          .fromPubKey(importCTestData.pAddresses)
+          .decodedUtxos(importCTestData.utxos)
+          .to(importCTestData.to)
+          .fee(importCTestData.fee)
+          .context(importCTestData.context);
+
+        const tx = await txBuilder.build();
+        const hex = tx.toBroadcastFormat();
+
+        hex.should.equal(importCTestData.unsignedHex);
+
+        // Verify signing flow
+        const builder1 = newFactory().from(hex);
+        builder1.sign({ key: importCTestData.privateKeys[2] });
+        const halfSignedTx = await builder1.build();
+
+        halfSignedTx.toBroadcastFormat().should.equal(importCTestData.halfSigntxHex);
+      });
+    });
+
+    describe('Two-phase signing flow (mimics HSM flow)', () => {
+      it('should support build -> serialize -> parse -> sign -> serialize -> parse -> sign flow for Import P', async () => {
+        // Phase 1: Build unsigned transaction
+        const builder1 = newFactory()
+          .getImportInPBuilder()
+          .threshold(importPTestData.threshold)
+          .locktime(importPTestData.locktime)
+          .fromPubKey(importPTestData.corethAddresses)
+          .to(importPTestData.pAddresses)
+          .externalChainId(importPTestData.sourceChainId)
+          .feeState(importPTestData.feeState)
+          .context(importPTestData.context)
+          .decodedUtxos(importPTestData.utxos);
+
+        const unsignedTx = await builder1.build();
+        const unsignedHex = unsignedTx.toBroadcastFormat();
+
+        // Phase 2: Parse unsigned and add first signature (user/backup)
+        const builder2 = newFactory().from(unsignedHex);
+        builder2.sign({ key: importPTestData.privateKeys[2] });
+        const halfSignedTx = await builder2.build();
+        const halfSignedHex = halfSignedTx.toBroadcastFormat();
+
+        halfSignedTx.toJson().signatures.length.should.equal(1);
+
+        // Phase 3: Parse half-signed and add second signature (bitgo)
+        const builder3 = newFactory().from(halfSignedHex);
+        builder3.sign({ key: importPTestData.privateKeys[0] });
+        const fullSignedTx = await builder3.build();
+
+        fullSignedTx.toJson().signatures.length.should.equal(2);
+        fullSignedTx.toBroadcastFormat().should.equal(importPTestData.signedHex);
+      });
+    });
+
+    describe('Failed transaction scenarios (real-world cases)', () => {
+      /**
+       * This test simulates the exact failure pattern from wallet 697738a870cd159b6ab80f7071e3146a
+       * which failed at HSM with "could not parse transaction".
+       *
+       * The failure occurred because:
+       * - UTXO addresses were in order: [addr0, addr1, addr2]
+       * - Sender addresses were in order: [addr2, addr1, addr0] (reversed)
+       * - FlareJS computed sigIndices based on UTXO positions
+       * - SDK was creating credentials based on sender positions (wrong)
+       *
+       * After the fix, credentials are created in the order specified by FlareJS sigIndices.
+       */
+      it('should handle address ordering where UTXO order differs significantly from sender order', async () => {
+        // Simulate the failed case pattern:
+        // UTXO addresses: [pAddresses[2], pAddresses[1], pAddresses[0]]
+        // Sender addresses: [pAddresses[0], pAddresses[1], pAddresses[2]]
+        const reorderedUtxos = [
+          {
+            ...importPTestData.utxos[0],
+            addresses: [
+              importPTestData.pAddresses[2], // backup at UTXO position 0
+              importPTestData.pAddresses[1], // bitgo at UTXO position 1
+              importPTestData.pAddresses[0], // user at UTXO position 2
+            ],
+          },
+        ];
+
+        const txBuilder = newFactory()
+          .getImportInPBuilder()
+          .threshold(importPTestData.threshold)
+          .locktime(importPTestData.locktime)
+          .fromPubKey(importPTestData.corethAddresses)
+          .to(importPTestData.pAddresses)
+          .externalChainId(importPTestData.sourceChainId)
+          .feeState(importPTestData.feeState)
+          .context(importPTestData.context)
+          .decodedUtxos(reorderedUtxos);
+
+        const tx = await txBuilder.build();
+        const hex = tx.toBroadcastFormat();
+
+        // Verify transaction can be built without errors
+        hex.should.be.a.String();
+        hex.length.should.be.greaterThan(0);
+
+        // Verify we can parse and sign the transaction
+        const builder1 = newFactory().from(hex);
+        builder1.sign({ key: importPTestData.privateKeys[2] }); // user key
+        const halfSignedTx = await builder1.build();
+
+        halfSignedTx.toJson().signatures.length.should.equal(1);
+
+        const builder2 = newFactory().from(halfSignedTx.toBroadcastFormat());
+        builder2.sign({ key: importPTestData.privateKeys[0] }); // bitgo key
+        const fullSignedTx = await builder2.build();
+
+        fullSignedTx.toJson().signatures.length.should.equal(2);
+
+        // Both signatures should be present and valid
+        const signatures = fullSignedTx.toJson().signatures;
+        signatures.forEach((sig: string) => {
+          sig.should.be.a.String();
+          sig.length.should.be.greaterThan(0);
+        });
+      });
+
+      /**
+       * This test simulates scenarios with multiple UTXOs where each has different
+       * address orderings, similar to the failed transaction with 4 UTXOs.
+       */
+      it('should handle multiple UTXOs with varying address orderings', async () => {
+        // Create multiple UTXOs with different address orderings
+        // Use same txid but different outputidx to create valid unique UTXOs
+        const multipleUtxos = [
+          {
+            ...importPTestData.utxos[0],
+            outputidx: '0',
+            addresses: [
+              importPTestData.pAddresses[2], // backup first
+              importPTestData.pAddresses[0], // user second
+              importPTestData.pAddresses[1], // bitgo third
+            ],
+          },
+          {
+            ...importPTestData.utxos[0],
+            outputidx: '1',
+            addresses: [
+              importPTestData.pAddresses[1], // bitgo first
+              importPTestData.pAddresses[2], // backup second
+              importPTestData.pAddresses[0], // user third
+            ],
+          },
+          {
+            ...importPTestData.utxos[0],
+            outputidx: '2',
+            addresses: [
+              importPTestData.pAddresses[0], // user first
+              importPTestData.pAddresses[1], // bitgo second
+              importPTestData.pAddresses[2], // backup third
+            ],
+          },
+        ];
+
+        const txBuilder = newFactory()
+          .getImportInPBuilder()
+          .threshold(importPTestData.threshold)
+          .locktime(importPTestData.locktime)
+          .fromPubKey(importPTestData.corethAddresses)
+          .to(importPTestData.pAddresses)
+          .externalChainId(importPTestData.sourceChainId)
+          .feeState(importPTestData.feeState)
+          .context(importPTestData.context)
+          .decodedUtxos(multipleUtxos);
+
+        const tx = await txBuilder.build();
+        const hex = tx.toBroadcastFormat();
+
+        // Verify transaction builds successfully
+        hex.should.be.a.String();
+        tx.toJson().inputs.length.should.equal(3);
+
+        // Verify full signing flow works
+        const builder1 = newFactory().from(hex);
+        builder1.sign({ key: importPTestData.privateKeys[2] });
+        const halfSignedTx = await builder1.build();
+
+        const builder2 = newFactory().from(halfSignedTx.toBroadcastFormat());
+        builder2.sign({ key: importPTestData.privateKeys[0] });
+        const fullSignedTx = await builder2.build();
+
+        // Each input should have its own credential
+        fullSignedTx.toJson().signatures.length.should.equal(2);
+      });
+
+      /**
+       * This test verifies that signing order doesn't matter even with
+       * complex address orderings - the fix ensures signatures go to
+       * the correct slots based on FlareJS sigIndices.
+       */
+      it('should produce identical results regardless of signing order with reordered addresses', async () => {
+        const reorderedUtxos = [
+          {
+            ...importPTestData.utxos[0],
+            addresses: [importPTestData.pAddresses[2], importPTestData.pAddresses[1], importPTestData.pAddresses[0]],
+          },
+        ];
+
+        // Sign user first, then bitgo
+        const builder1 = newFactory()
+          .getImportInPBuilder()
+          .threshold(importPTestData.threshold)
+          .locktime(importPTestData.locktime)
+          .fromPubKey(importPTestData.corethAddresses)
+          .to(importPTestData.pAddresses)
+          .externalChainId(importPTestData.sourceChainId)
+          .feeState(importPTestData.feeState)
+          .context(importPTestData.context)
+          .decodedUtxos(reorderedUtxos);
+
+        builder1.sign({ key: importPTestData.privateKeys[2] });
+        builder1.sign({ key: importPTestData.privateKeys[0] });
+        const tx1 = await builder1.build();
+
+        // Sign bitgo first, then user
+        const builder2 = newFactory()
+          .getImportInPBuilder()
+          .threshold(importPTestData.threshold)
+          .locktime(importPTestData.locktime)
+          .fromPubKey(importPTestData.corethAddresses)
+          .to(importPTestData.pAddresses)
+          .externalChainId(importPTestData.sourceChainId)
+          .feeState(importPTestData.feeState)
+          .context(importPTestData.context)
+          .decodedUtxos(reorderedUtxos);
+
+        builder2.sign({ key: importPTestData.privateKeys[0] });
+        builder2.sign({ key: importPTestData.privateKeys[2] });
+        const tx2 = await builder2.build();
+
+        // Both should produce identical fully signed transactions
+        tx1.toBroadcastFormat().should.equal(tx2.toBroadcastFormat());
+        tx1.toJson().signatures.length.should.equal(2);
+        tx2.toJson().signatures.length.should.equal(2);
+      });
+    });
+  });
 });
