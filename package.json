@@ -67,6 +67,8 @@
     "**/cacache/glob": "11.1.0",
     "**/pacote/glob": "11.1.0",
     "**/sha.js": ">=2.4.12",
+    "**/lerna/**/tar": "7.5.6",
+    "**/yeoman-generator/**/tar": "7.5.6",
     "@ethereumjs/util": "8.0.3",
     "@types/keyv": "3.1.4",
     "@types/react": "17.0.24",
