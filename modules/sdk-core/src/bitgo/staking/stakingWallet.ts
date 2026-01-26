@@ -405,7 +405,7 @@ export class StakingWallet implements IStakingWallet {
       return;
     }
 
-    const explainedTransaction = await coin.explainTransaction(result);
+    const explainedTransaction = await coin.explainTransaction(result, this.wallet);
     const mismatchErrors: string[] = [];
 
     if (buildParams?.recipients && buildParams.recipients.length > 0) {

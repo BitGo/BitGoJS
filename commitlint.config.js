@@ -12,7 +12,7 @@ module.exports = {
     'scope-enum': async () => [
       2,
       'always',
-      (await readdir('modules')).concat('root', 'deps', 'scripts', 'examples'),
+      (await readdir('modules')).concat('root', 'deps', 'scripts', 'examples', 'webpack'),
     ],
     'footer-max-line-length': [0, 'always', Infinity],
     'references-empty': [2, 'never'],

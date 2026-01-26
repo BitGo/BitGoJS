@@ -87,7 +87,7 @@ import {
 import { assertFixedScriptWalletAddress } from './address/fixedScript';
 import { isSdkBackend, ParsedTransaction, SdkBackend } from './transaction/types';
 import { decodePsbtWith, encodeTransaction, stringToBufferTryFormats } from './transaction/decode';
-import { toBip32Triple, UtxoKeychain } from './keychains';
+import { fetchKeychains, toBip32Triple, UtxoKeychain } from './keychains';
 import { verifyKeySignature, verifyUserPublicKey } from './verifyKey';
 import { getPolicyForEnv } from './descriptor/validatePolicy';
 import { signTransaction } from './transaction/signTransaction';
@@ -875,8 +875,16 @@ export abstract class AbstractUtxoCoin
    * @param params
    */
   override async explainTransaction<TNumber extends number | bigint = number>(
-    params: ExplainTransactionOptions<TNumber>
+    params: ExplainTransactionOptions<TNumber>,
+    wallet?: IWallet
   ): Promise<TransactionExplanation> {
+    if (!params.pubs) {
+      // if no pubs are provided, opportunistically fetch the keychains from the wallet
+      if (wallet) {
+        const keychains = await fetchKeychains(this, wallet);
+        params.pubs = toBip32Triple(keychains).map((k) => k.neutered().toBase58()) as Triple<string>;
+      }
+    }
     return explainTx(this.decodeTransactionFromPrebuild(params), params, this.name);
   }
 

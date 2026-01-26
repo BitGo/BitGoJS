@@ -27,6 +27,17 @@ export const cosmosTokens = [
     COSMOS_TOKEN_FEATURES_WITH_STAKING
   ),
   cosmosToken(
+    'ab7f8f89-1cb6-4b07-b837-f9e792095d1c',
+    'hash:figr',
+    'Figure',
+    'nfgrd',
+    9,
+    Networks.main.hash,
+    BaseUnit.HASH,
+    UnderlyingAsset['hash:figr'],
+    COSMOS_TOKEN_FEATURES
+  ),
+  cosmosToken(
     '7cc5ddcf-f919-480c-b413-77f667ebc65c',
     'thash:tfigr',
     'Testnet Figure',

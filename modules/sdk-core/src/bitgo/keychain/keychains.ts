@@ -119,7 +119,11 @@ export class Keychains implements IKeychains {
             newPassword: params.newPassword,
           });
           if (updatedKeychain.encryptedPrv) {
-            const changedKeyIdentifier = updatedKeychain.type === 'tss' ? updatedKeychain.id : updatedKeychain.pub;
+            // Both TSS and multi-user-ofc keys have multiple public keys in their key document and thus need to use objectID
+            const changedKeyIdentifier =
+              updatedKeychain.type === 'tss' || Keychains.isMultiUserKey(updatedKeychain)
+                ? updatedKeychain.id
+                : updatedKeychain.pub;
             if (changedKeyIdentifier) {
               changedKeys[changedKeyIdentifier] = updatedKeychain.encryptedPrv;
             }

@@ -3,6 +3,33 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.8.5](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flr@1.8.4...@bitgo/sdk-coin-flr@1.8.5) (2026-01-22)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-flr
+
+
+
+
+
+## [1.8.4](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flr@1.8.3...@bitgo/sdk-coin-flr@1.8.4) (2026-01-19)
+
+**Note:** Version bump only for package @bitgo/sdk-coin-flr
+
+
+
+
+
+## [1.8.3](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flr@1.8.2...@bitgo/sdk-coin-flr@1.8.3) (2026-01-19)
+
+
+### Bug Fixes
+
+* **sdk-coin-flr:** update import transaction fee validation ([8281d49](https://github.com/BitGo/BitGoJS/commit/8281d4925f5b7b98e68289b491d9c5e863f91a8b))
+
+
+
+
+
 ## [1.8.2](https://github.com/BitGo/BitGoJS/compare/@bitgo/sdk-coin-flr@1.8.1...@bitgo/sdk-coin-flr@1.8.2) (2026-01-14)
 
 **Note:** Version bump only for package @bitgo/sdk-coin-flr

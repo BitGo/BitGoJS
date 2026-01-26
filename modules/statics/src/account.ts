@@ -5,6 +5,7 @@ import { AccountNetwork, BaseNetwork, EthereumNetwork, Networks, TronNetwork } f
 import {
   ACCOUNT_COIN_DEFAULT_FEATURES,
   ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE,
+  CANTON_TOKEN_FEATURES,
   CELO_TOKEN_FEATURES,
   COSMOS_SIDECHAIN_FEATURES,
 } from './coinFeatures';
@@ -181,6 +182,13 @@ export interface AdaTokenConstructorOptions extends AccountConstructorOptions {
   assetName: string;
   contractAddress: string;
 }
+
+export interface CantonTokenConstructorOptions extends AccountConstructorOptions {
+  baseUrl: string;
+  admin: string;
+  assetName: string;
+}
+
 export interface ContractAddress extends String {
   __contractaddress_phantom__: never;
 }
@@ -771,6 +779,25 @@ export class AdaToken extends AccountCoinToken {
     this.policyId = options.policyId;
     this.assetName = options.assetName;
     this.contractAddress = options.contractAddress;
+  }
+}
+
+/**
+ * The canton network supports tokens
+ * Canton tokens work similar to Canton coin,
+ * but they will have their own token standard base url and instrument admin
+ */
+export class CantonToken extends AccountCoinToken {
+  public baseUrl: string;
+  public admin: string;
+  public assetName: string;
+  constructor(options: CantonTokenConstructorOptions) {
+    super({
+      ...options,
+    });
+    this.baseUrl = options.baseUrl;
+    this.admin = options.admin;
+    this.assetName = options.assetName;
   }
 }
 
@@ -4163,6 +4190,108 @@ export function tjettonToken(
     fullName,
     decimalPlaces,
     contractAddress,
+    asset,
+    features,
+    prefix,
+    suffix,
+    network,
+    primaryKeyCurve
+  );
+}
+
+/**
+ * Factory function for prod canton token instances.
+ *
+ * @param id uuid v4
+ * @param name Name of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param baseUrl token standard base url, ref: https://docs.digitalasset.com/utilities/devnet/overview/registry-user-guide/token-standard.html#token-standard-endpoints
+ * @param assetName the token instrument name
+ * @param admin the instrument admin for this token
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param features Features of this coin. Defaults to CANTON_FEATURES
+ * @param prefix Optional token prefix. Defaults to empty string
+ * @param suffix Optional token suffix. Defaults to token name.
+ * @param network Optional token network. Defaults to the mainnet canton network.
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function cantonToken(
+  id: string,
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  baseUrl: string,
+  assetName: string,
+  admin: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = CANTON_TOKEN_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.main.canton,
+  primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
+) {
+  return Object.freeze(
+    new CantonToken({
+      id,
+      name,
+      fullName,
+      decimalPlaces,
+      network,
+      baseUrl,
+      assetName,
+      admin,
+      asset,
+      features,
+      prefix,
+      suffix,
+      isToken: true,
+      primaryKeyCurve,
+      baseUnit: BaseUnit.CANTON,
+    })
+  );
+}
+
+/**
+ * Factory function for testnet canton token instances.
+ *
+ * @param id uuid v4
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param baseUrl token standard base url
+ * @param assetName the token instrument name
+ * @param admin the instrument admin for this token
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param features Features of this coin. Defaults to the CANTON_FEATURES
+ * @param prefix Optional token prefix. Defaults to empty string
+ * @param suffix Optional token suffix. Defaults to token name.
+ * @param network Optional token network. Defaults to the testnet Canton network.
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function tcantonToken(
+  id: string,
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  baseUrl: string,
+  assetName: string,
+  admin: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = CANTON_TOKEN_FEATURES,
+  prefix = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.test.canton,
+  primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
+) {
+  return cantonToken(
+    id,
+    name,
+    fullName,
+    decimalPlaces,
+    baseUrl,
+    assetName,
+    admin,
     asset,
     features,
     prefix,

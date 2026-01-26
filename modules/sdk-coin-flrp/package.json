@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/sdk-coin-flrp",
-  "version": "1.6.2",
+  "version": "1.7.2",
   "description": "BitGo's SDK coin library for flrp coin",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -43,14 +43,14 @@
     ]
   },
   "devDependencies": {
-    "@bitgo/sdk-api": "^1.73.1",
-    "@bitgo/sdk-test": "^9.1.22"
+    "@bitgo/sdk-api": "^1.73.3",
+    "@bitgo/sdk-test": "^9.1.24"
   },
   "dependencies": {
     "@bitgo/public-types": "5.61.0",
-    "@bitgo/sdk-core": "^36.27.0",
+    "@bitgo/sdk-core": "^36.29.0",
     "@bitgo/secp256k1": "^1.9.0",
-    "@bitgo/statics": "^58.21.0",
+    "@bitgo/statics": "^58.23.0",
     "@flarenetwork/flarejs": "4.1.1",
     "bech32": "^2.0.0",
     "bignumber.js": "9.0.0",

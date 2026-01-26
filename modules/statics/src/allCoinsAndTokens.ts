@@ -71,6 +71,7 @@ import { vetTokens } from './coins/vetTokens';
 import { cosmosTokens } from './coins/cosmosTokens';
 import { jettonTokens } from './coins/jettonTokens';
 import { polyxTokens } from './coins/polyxTokens';
+import { cantonTokens } from './coins/cantonTokens';
 import { flrp } from './flrp';
 import {
   ACCOUNT_COIN_DEFAULT_FEATURES_EXCLUDE_SINGAPORE_AND_MENA_FZE,
@@ -159,6 +160,7 @@ export const allCoinsAndTokens = [
   ...adaTokens,
   ...jettonTokens,
   ...polyxTokens,
+  ...cantonTokens,
   avaxp(
     '5436386e-9e4d-4d82-92df-59d9720d1738',
     'avaxp',
@@ -1023,7 +1025,7 @@ export const allCoinsAndTokens = [
     6,
     UnderlyingAsset.KAVA,
     BaseUnit.KAVA,
-    COSMOS_SIDECHAIN_FEATURES
+    [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.SHARED_COSMOS_SDK, CoinFeature.SHARED_COSMOS_WP]
   ),
   account(
     '62895d6b-6e99-4eba-82f1-9ce4e7658998',
@@ -1033,7 +1035,7 @@ export const allCoinsAndTokens = [
     6,
     UnderlyingAsset.KAVA,
     BaseUnit.KAVA,
-    COSMOS_SIDECHAIN_FEATURES
+    [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.SHARED_COSMOS_SDK, CoinFeature.SHARED_COSMOS_WP]
   ),
   account(
     '7df858d5-9da3-4071-ab06-399962ea87b7',
@@ -2564,6 +2566,9 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.SUPPORTS_ERC20,
     ]
   ),
   account(
@@ -2581,6 +2586,9 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_COMPATIBLE_IMS,
       CoinFeature.EVM_COMPATIBLE_UI,
       CoinFeature.EVM_COMPATIBLE_WP,
+      CoinFeature.EVM_NON_BITGO_RECOVERY,
+      CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
+      CoinFeature.SUPPORTS_ERC20,
     ]
   ),
   account(
@@ -2601,10 +2609,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
       CoinFeature.SUPPORTS_ERC20,
       CoinFeature.EVM_COMPATIBLE_WP,
-    ],
-    KeyCurve.Secp256k1,
-    '',
-    'TDogeOS'
+    ]
   ),
   account(
     '7d69a368-ea4b-422d-bb21-38812fb5a418',
@@ -2624,10 +2629,7 @@ export const allCoinsAndTokens = [
       CoinFeature.EVM_UNSIGNED_SWEEP_RECOVERY,
       CoinFeature.SUPPORTS_ERC20,
       CoinFeature.EVM_COMPATIBLE_WP,
-    ],
-    KeyCurve.Secp256k1,
-    '',
-    'DogeOS'
+    ]
   ),
   account(
     'cf06d1ea-f7c4-4a26-95fd-f71983eba58f',
@@ -2951,6 +2953,15 @@ export const allCoinsAndTokens = [
     Networks.main.basechain
   ),
   erc20Token(
+    '1d6535c8-38f0-4b5b-b2d9-d5433dbaf868',
+    'baseeth:cfi',
+    'ConsumerFI',
+    18,
+    '0x0382e3fee4a420bd446367d468a6f00225853420',
+    UnderlyingAsset['baseeth:cfi'],
+    Networks.main.basechain
+  ),
+  erc20Token(
     'f5df6b74-c009-4d28-95e6-3cc7e66427b6',
     'baseeth:weth',
     'Wrapped Ether',
@@ -2966,6 +2977,24 @@ export const allCoinsAndTokens = [
     18,
     '0xbaa5cc21fd487b8fcc2f632f3f4e8d37262a0842',
     UnderlyingAsset['baseeth:morpho'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    '2bd8ca07-ea27-4f6e-8503-0d9be1648fa5',
+    'baseeth:mey',
+    'Mey Network',
+    18,
+    '0x8bfac1b375bf2894d6f12fb2eb48b1c1a7916789',
+    UnderlyingAsset['baseeth:mey'],
+    Networks.main.basechain
+  ),
+  erc20Token(
+    'd304292e-95c1-43b9-a690-f0ef04bd6590',
+    'baseeth:myrc',
+    'Malaysian Ringgit Coin',
+    18,
+    '0x3ed03e95dd894235090b3d4a49e0c3239edce59e',
+    UnderlyingAsset['baseeth:myrc'],
     Networks.main.basechain
   ),
   erc20Token(
@@ -3168,6 +3197,14 @@ export const allCoinsAndTokens = [
     UnderlyingAsset['xdc:lbt']
   ),
   xdcErc20(
+    '39ac0cd2-8869-4b7e-8122-89f12dc9c7c6',
+    'xdc:cre',
+    'Crescite',
+    18,
+    '0xb5fa33923ec3ff7f4b9ab7b4c20b236d31243f77',
+    UnderlyingAsset['xdc:cre']
+  ),
+  xdcErc20(
     'f03302de-b06b-4ddc-94a2-ad7e89896725',
     'xdc:gama',
     'Gama Token',
@@ -3302,6 +3339,57 @@ export const allCoinsAndTokens = [
     '0x4200000000000000000000000000000000000006',
     UnderlyingAsset['megaeth:weth'],
     Networks.main.megaeth
+  ),
+
+  // MegaEth testnet tokens
+  erc20Token(
+    'b8a7c96f-96af-4c2f-94eb-582aa21ac6bb',
+    'tmegaeth:tmt',
+    'Test Mintable Token',
+    6,
+    '0x9abf1ca968783ba2ad3a75b6b7b2beece80a4fc2',
+    UnderlyingAsset['tmegaeth:tmt'],
+    Networks.test.megaeth
+  ),
+
+  // Morph mainnet tokens
+  erc20Token(
+    'd95a9238-a1e6-42df-862f-a921adf8151d',
+    'morph:usdc',
+    'USD Coin',
+    6,
+    '0xe34c91815d7fc18a9e2148bcd4241d0a5848b693',
+    UnderlyingAsset['morph:usdc'],
+    Networks.main.morph
+  ),
+  erc20Token(
+    '7c3fb96a-edaf-4c5d-85b3-4a445ce92fc8',
+    'morph:usdt',
+    'Tether USD',
+    6,
+    '0xc7d67a9cbb121b3b0b9c053dd9f469523243379a',
+    UnderlyingAsset['morph:usdt'],
+    Networks.main.morph
+  ),
+  erc20Token(
+    '03ccbfa5-c912-45f7-8b77-9e21950a5369',
+    'morph:usd1',
+    'USD1',
+    18,
+    '0x111111d2bf19e43c34263401e0cad979ed1cdb61',
+    UnderlyingAsset['morph:usd1'],
+    Networks.main.morph
+  ),
+
+  // Morph testnet tokens
+  erc20Token(
+    '7949177e-0c92-4a02-8f34-cee1cbfb38d1',
+    'tmorph:tmt',
+    'Test Mintable Token',
+    6,
+    '0x5257950b5277dac30536eae4742ffef4e5af5256',
+    UnderlyingAsset['tmorph:tmt'],
+    Networks.test.morph
   ),
 
   // Plume testnet tokens
@@ -3631,6 +3719,17 @@ export const allCoinsAndTokens = [
     [...XLM_TOKEN_FEATURES_WITH_FRANKFURT, CoinFeature.STABLECOIN],
     '',
     'USDC'
+  ),
+  stellarToken(
+    'b7f3e8d2-5a9c-4e6b-8f1d-3c2a7e9b4f0d',
+    'xlm:USDM1-GDM5QWWXCMDTQMZAKMYTCI52LA7FWBHAZMU5NJLMIFHDJISJRP2ZWPKC',
+    'USDM1',
+    7,
+    UnderlyingAsset['xlm:USDM1-GDM5QWWXCMDTQMZAKMYTCI52LA7FWBHAZMU5NJLMIFHDJISJRP2ZWPKC'],
+    '',
+    [...AccountCoin.DEFAULT_FEATURES, CoinFeature.STABLECOIN],
+    '',
+    'USDM1'
   ),
   stellarToken(
     '8b30dc19-aad7-426b-a98b-ee05f2e6dd71',

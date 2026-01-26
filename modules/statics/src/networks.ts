@@ -975,16 +975,28 @@ class InjectiveTestnet extends Testnet implements AccountNetwork {
   explorerUrl = 'https://testnet.explorer.injective.network/transaction/';
 }
 
-class Kava extends Mainnet implements AccountNetwork {
+class Kava extends Mainnet implements CosmosNetwork {
   name = 'Kava';
   family = CoinFamily.KAVA;
-  explorerUrl = 'https://www.mintscan.io/kava/transactions/';
+  explorerUrl = 'https://www.mintscan.io/kava/tx/';
+  addressPrefix = 'kava';
+  validatorPrefix = 'kavavaloper';
+  denom = 'ukava';
+  gasAmount = '5000';
+  gasLimit = 200000;
+  validDenoms = ['kava', 'ukava'];
 }
 
-class KavaTestnet extends Testnet implements AccountNetwork {
+class KavaTestnet extends Testnet implements CosmosNetwork {
   name = 'KavaTestnet';
   family = CoinFamily.KAVA;
-  explorerUrl = 'https://testnet.mintscan.io/kava-testnet/txs/';
+  explorerUrl = 'https://www.mintscan.io/kava-testnet/tx/';
+  addressPrefix = 'kava';
+  validatorPrefix = 'kavavaloper';
+  denom = 'ukava';
+  gasAmount = '5000';
+  gasLimit = 200000;
+  validDenoms = ['kava', 'ukava'];
 }
 
 class Ton extends Mainnet implements AccountNetwork {
@@ -2196,8 +2208,8 @@ class FlowTestnet extends Testnet implements EthereumNetwork {
 class MegaETH extends Mainnet implements EthereumNetwork {
   name = 'MegaETH';
   family = CoinFamily.MEGAETH;
-  explorerUrl = 'https://www.megaexplorer.xyz/tx/';
-  accountExplorerUrl = 'https://www.megaexplorer.xyz/address/';
+  explorerUrl = 'https://megaeth.blockscout.com/tx/';
+  accountExplorerUrl = 'https://megaeth.blockscout.com/address/';
   chainId = 4326;
   nativeCoinOperationHashPrefix = '4326';
 }
@@ -2205,10 +2217,10 @@ class MegaETH extends Mainnet implements EthereumNetwork {
 class MegaETHTestnet extends Testnet implements EthereumNetwork {
   name = 'MegaETHTestnet';
   family = CoinFamily.MEGAETH;
-  explorerUrl = 'https://megaeth.blockscout.com/tx/';
-  accountExplorerUrl = 'https://megaeth.blockscout.com/address/';
-  chainId = 6342;
-  nativeCoinOperationHashPrefix = '6342';
+  explorerUrl = 'https://www.megaexplorer.xyz/tx/';
+  accountExplorerUrl = 'https://www.megaexplorer.xyz/address/';
+  chainId = 6343;
+  nativeCoinOperationHashPrefix = '6343';
 }
 
 class Plume extends Mainnet implements EthereumNetwork {

@@ -37,6 +37,7 @@ import {
   AdaToken,
   JettonToken,
   AccountCoin,
+  CantonToken,
 } from './account';
 import { CoinFamily, CoinKind, BaseCoin, CoinFeature } from './base';
 import { coins } from './coins';
@@ -135,6 +136,12 @@ export type Nep141TokenConfig = BaseNetworkConfig & {
   storageDepositAmount: string;
 };
 
+export type CantonTokenConfig = BaseNetworkConfig & {
+  baseUrl: string;
+  assetName: string;
+  admin: string;
+};
+
 export type VetTokenConfig = BaseNetworkConfig & {
   contractAddress: string;
 };
@@ -176,6 +183,7 @@ export type TokenConfig =
   | AptNFTCollectionConfig
   | Sip10TokenConfig
   | Nep141TokenConfig
+  | CantonTokenConfig
   | CosmosTokenConfig
   | VetTokenConfig
   | VetNFTCollectionConfig
@@ -235,6 +243,7 @@ export interface TokenNetwork {
   cosmos: { tokens: CosmosTokenConfig[] };
   ton: { tokens: JettonTokenConfig[] };
   tempo: { tokens: Tip20TokenConfig[] };
+  canton: { tokens: CantonTokenConfig[] };
 }
 
 export interface Tokens {
@@ -1024,6 +1033,26 @@ const getFormattedNep141Tokens = (customCoinMap = coins) =>
     return acc;
   }, []);
 
+function getCantonTokenConfig(coin: CantonToken): CantonTokenConfig {
+  return {
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'canton' : 'tcanton',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    decimalPlaces: coin.decimalPlaces,
+    baseUrl: coin.baseUrl,
+    admin: coin.admin,
+    assetName: coin.assetName,
+  };
+}
+const getFormattedCantonTokens = (customCoinMap = coins) =>
+  customCoinMap.reduce((acc: CantonTokenConfig[], coin) => {
+    if (coin instanceof CantonToken) {
+      acc.push(getCantonTokenConfig(coin));
+    }
+    return acc;
+  }, []);
+
 function getVetTokenConfig(coin: VetToken): VetTokenConfig {
   return {
     type: coin.name,
@@ -1313,6 +1342,9 @@ export const getFormattedTokensByNetwork = (network: 'Mainnet' | 'Testnet', coin
     tempo: {
       tokens: getFormattedTip20Tokens(coinMap).filter((token) => token.network === network),
     },
+    canton: {
+      tokens: getFormattedCantonTokens(coinMap).filter((token) => token.network === network),
+    },
   };
 };
 
@@ -1473,6 +1505,8 @@ export function getFormattedTokenConfigForCoin(coin: Readonly<BaseCoin>): TokenC
     return getEthLikeTokenConfig(coin);
   } else if (coin instanceof EthLikeERC721Token) {
     return getEthLikeERC721TokenConfig(coin);
+  } else if (coin instanceof CantonToken) {
+    return getCantonTokenConfig(coin);
   }
   // TODO: Add Tip20Token instance check when class is added to statics
   // else if (coin instanceof Tip20Token) {

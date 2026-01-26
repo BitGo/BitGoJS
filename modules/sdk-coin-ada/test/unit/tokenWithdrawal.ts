@@ -1,10 +1,12 @@
 import should from 'should';
 import { TransactionType } from '@bitgo/sdk-core';
 import * as testData from '../resources';
-import { TransactionBuilderFactory } from '../../src';
+import { TransactionBuilderFactory, AdaToken } from '../../src';
 import { coins } from '@bitgo/statics';
 import * as CardanoWasm from '@emurgo/cardano-serialization-lib-nodejs';
 import { Transaction } from '../../src/lib/transaction';
+import { TestBitGo, TestBitGoAPI } from '@bitgo/sdk-test';
+import { BitGoAPI } from '@bitgo/sdk-api';
 
 describe('ADA Token Operations', async () => {
   const factory = new TransactionBuilderFactory(coins.get('tada'));
@@ -325,5 +327,507 @@ describe('ADA Token Operations', async () => {
     txBuilder.isTokenTransaction();
 
     await txBuilder.build().should.not.be.rejected();
+  });
+
+  it(`should build a sponsored token transaction where fee address sponsors min ADA for receiver`, async () => {
+    const feeAddress =
+      'addr_test1qz2fxv2umyhttkxyxp8x0dlpdt3k6cwng5pxj3jhsydzer3jcu5d8ps7zex2k2xt3uqxgjqnnj83ws8lhrn648jjxtwq2ytjqp';
+    const quantity = '20';
+    const senderInputBalance = 5000000;
+    const feeAddressInputBalance = 20000000; // Fee address has enough ADA to sponsor
+    const totalAssetList = {
+      [fingerprint]: {
+        quantity: '100',
+        policy_id: policyId,
+        asset_name: asciiEncodedName,
+      },
+    };
+
+    const txBuilder = factory.getTransferBuilder();
+    // Sender input (has tokens)
+    txBuilder.input({
+      transaction_id: '3677e75c7ba699bfdc6cd57d42f246f86f63aefd76025006ac78313fad2bba21',
+      transaction_index: 1,
+    });
+    // Fee address input (sponsors fees and min ADA)
+    txBuilder.input({
+      transaction_id: '3677e75c7ba699bfdc6cd57d42f246f86f63aefd76025006ac78313fad2bba22',
+      transaction_index: 0,
+    });
+
+    txBuilder.output({
+      address: receiverAddress,
+      amount: '0', // Set ADA amount to 0 for token transfer (min ADA is handled by fee address)
+      multiAssets: {
+        asset_name: asciiEncodedName,
+        policy_id: policyId,
+        quantity,
+        fingerprint,
+      },
+    });
+
+    txBuilder.changeAddress(senderAddress, senderInputBalance.toString(), totalAssetList);
+    txBuilder.sponsorshipInfo({
+      feeAddress: feeAddress,
+      feeAddressInputBalance: feeAddressInputBalance.toString(),
+    });
+    txBuilder.ttl(800000000);
+    txBuilder.isTokenTransaction();
+    const tx = (await txBuilder.build()) as Transaction;
+
+    should.equal(tx.type, TransactionType.Send);
+    const txData = tx.toJson();
+
+    txData.inputs.length.should.equal(2);
+    txData.outputs.length.should.equal(4);
+
+    // Validate receiver output - min ADA should be sponsored by fee address
+    const receiverOutput = txData.outputs.filter((output) => output.address === receiverAddress);
+    receiverOutput.length.should.equal(1);
+    receiverOutput[0].amount.should.equal('1500000'); // Minimum ADA for asset output (sponsored by fee address)
+    (receiverOutput[0].multiAssets! as CardanoWasm.MultiAsset)
+      .get_asset(policyScriptHash, CardanoWasm.AssetName.new(Buffer.from(asciiEncodedName, 'hex')))
+      .to_str()
+      .should.equal(quantity);
+
+    // Validate sender change output - should have full sender balance (tokens only, no ADA deduction for receiver)
+    const senderChangeOutput = txData.outputs.filter((output) => output.address === senderAddress);
+    senderChangeOutput.length.should.be.equal(2);
+
+    // Validate fee address change output - should have remaining ADA after fees and min ADA for receiver
+    const feeAddressChangeOutput = txData.outputs.filter((output) => output.address === feeAddress);
+    feeAddressChangeOutput.length.should.equal(1);
+    // Fee address change should not have any tokens
+    should.not.exist(feeAddressChangeOutput[0].multiAssets);
+  });
+
+  describe('AdaToken verifyTransaction', () => {
+    let bitgo: TestBitGoAPI;
+    let adaToken;
+
+    before(function () {
+      bitgo = TestBitGo.decorate(BitGoAPI, { env: 'mock' });
+      bitgo.initializeTestVars();
+      const tokenConfig = {
+        type: 'tada:water',
+        coin: 'tada',
+        network: 'Testnet' as const,
+        name: 'WATER',
+        decimalPlaces: 0,
+        policyId: policyId,
+        assetName: name, // ASCII 'WATER', not hex-encoded
+        contractAddress: `${policyId}:${asciiEncodedName}`,
+      };
+      adaToken = new AdaToken(bitgo, tokenConfig);
+    });
+
+    it('should verify a token transaction with correct token amount', async () => {
+      const quantity = '20';
+      const totalInput = 20000000;
+      const totalAssetList = {
+        [fingerprint]: {
+          quantity: '100',
+          policy_id: policyId,
+          asset_name: asciiEncodedName,
+        },
+      };
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.input({
+        transaction_id: '3677e75c7ba699bfdc6cd57d42f246f86f63aefd76025006ac78313fad2bba21',
+        transaction_index: 1,
+      });
+
+      txBuilder.output({
+        address: receiverAddress,
+        amount: '0',
+        multiAssets: {
+          asset_name: asciiEncodedName,
+          policy_id: policyId,
+          quantity,
+          fingerprint,
+        },
+      });
+
+      txBuilder.changeAddress(senderAddress, totalInput.toString(), totalAssetList);
+      txBuilder.ttl(800000000);
+      txBuilder.isTokenTransaction();
+      const tx = (await txBuilder.build()) as Transaction;
+      const txHex = tx.toBroadcastFormat();
+
+      // Verify transaction with correct token amount
+      const txParams = {
+        recipients: [
+          {
+            address: receiverAddress,
+            amount: quantity, // Token amount, not ADA amount
+          },
+        ],
+      };
+
+      const txPrebuild = { txHex };
+      const mockWallet = { coinSpecific: () => ({ baseAddress: senderAddress }) };
+      const isVerified = await adaToken.verifyTransaction({ txParams, txPrebuild, wallet: mockWallet as any });
+      isVerified.should.equal(true);
+    });
+
+    it('should fail to verify a token transaction with incorrect token amount', async () => {
+      const quantity = '20';
+      const totalInput = 20000000;
+      const totalAssetList = {
+        [fingerprint]: {
+          quantity: '100',
+          policy_id: policyId,
+          asset_name: asciiEncodedName,
+        },
+      };
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.input({
+        transaction_id: '3677e75c7ba699bfdc6cd57d42f246f86f63aefd76025006ac78313fad2bba21',
+        transaction_index: 1,
+      });
+
+      txBuilder.output({
+        address: receiverAddress,
+        amount: '0',
+        multiAssets: {
+          asset_name: asciiEncodedName,
+          policy_id: policyId,
+          quantity,
+          fingerprint,
+        },
+      });
+
+      txBuilder.changeAddress(senderAddress, totalInput.toString(), totalAssetList);
+      txBuilder.ttl(800000000);
+      txBuilder.isTokenTransaction();
+      const tx = (await txBuilder.build()) as Transaction;
+      const txHex = tx.toBroadcastFormat();
+
+      // Verify transaction with WRONG token amount (should fail)
+      const txParams = {
+        recipients: [
+          {
+            address: receiverAddress,
+            amount: '999', // Wrong amount
+          },
+        ],
+      };
+
+      const txPrebuild = { txHex };
+      const mockWallet = { coinSpecific: () => ({ baseAddress: senderAddress }) };
+      await adaToken
+        .verifyTransaction({ txParams, txPrebuild, wallet: mockWallet as any })
+        .should.be.rejectedWith('cannot find recipient in expected output');
+    });
+
+    it('should fail to verify when address does not match', async () => {
+      const quantity = '20';
+      const totalInput = 20000000;
+      const totalAssetList = {
+        [fingerprint]: {
+          quantity: '100',
+          policy_id: policyId,
+          asset_name: asciiEncodedName,
+        },
+      };
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.input({
+        transaction_id: '3677e75c7ba699bfdc6cd57d42f246f86f63aefd76025006ac78313fad2bba21',
+        transaction_index: 1,
+      });
+
+      txBuilder.output({
+        address: receiverAddress,
+        amount: '0',
+        multiAssets: {
+          asset_name: asciiEncodedName,
+          policy_id: policyId,
+          quantity,
+          fingerprint,
+        },
+      });
+
+      txBuilder.changeAddress(senderAddress, totalInput.toString(), totalAssetList);
+      txBuilder.ttl(800000000);
+      txBuilder.isTokenTransaction();
+      const tx = (await txBuilder.build()) as Transaction;
+      const txHex = tx.toBroadcastFormat();
+
+      // Verify with wrong address (should fail)
+      const txParams = {
+        recipients: [
+          {
+            address:
+              'addr_test1qqa86e3d7lfpwu0k2rhjz76ecmfxdr74s9kf9yfcp5hj5vmnh6xccjcclrk8jtaw9jgeuy99p2n8smtdpylmy45qjjfsfmp3g6',
+            amount: quantity,
+          },
+        ],
+      };
+
+      const txPrebuild = { txHex };
+      const mockWallet = { coinSpecific: () => ({ baseAddress: senderAddress }) };
+      await adaToken
+        .verifyTransaction({ txParams, txPrebuild, wallet: mockWallet as any })
+        .should.be.rejectedWith('cannot find recipient in expected output');
+    });
+
+    it('should verify transaction when policyId has concatenated assetName (crypto compare format)', async () => {
+      // This tests the case where policyId in tokenConfig contains policyId + asciiEncodedAssetName
+      // which is consistent with crypto compare format
+      const concatenatedPolicyId = policyId + asciiEncodedName; // e.g., 'e16c2dc8ae937e8d3790c7fd7168d7b994621ba14ca11415f39fed725741544552'
+
+      const tokenConfigWithConcatenatedPolicyId = {
+        type: 'tada:water',
+        coin: 'tada',
+        network: 'Testnet' as const,
+        name: 'WATER',
+        decimalPlaces: 0,
+        policyId: concatenatedPolicyId, // policyId + assetName hex
+        assetName: name, // ASCII name 'WATER' (not hex encoded)
+        contractAddress: `${policyId}:${asciiEncodedName}`,
+      };
+      const adaTokenWithConcatenatedPolicyId = new AdaToken(bitgo, tokenConfigWithConcatenatedPolicyId);
+
+      const quantity = '20';
+      const totalInput = 20000000;
+      const totalAssetList = {
+        [fingerprint]: {
+          quantity: '100',
+          policy_id: policyId,
+          asset_name: asciiEncodedName,
+        },
+      };
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.input({
+        transaction_id: '3677e75c7ba699bfdc6cd57d42f246f86f63aefd76025006ac78313fad2bba21',
+        transaction_index: 1,
+      });
+
+      txBuilder.output({
+        address: receiverAddress,
+        amount: '0',
+        multiAssets: {
+          asset_name: asciiEncodedName,
+          policy_id: policyId,
+          quantity,
+          fingerprint,
+        },
+      });
+
+      txBuilder.changeAddress(senderAddress, totalInput.toString(), totalAssetList);
+      txBuilder.ttl(800000000);
+      txBuilder.isTokenTransaction();
+      const tx = (await txBuilder.build()) as Transaction;
+      const txHex = tx.toBroadcastFormat();
+
+      // Verify transaction - the verifyTransaction should strip the assetName from policyId
+      const txParams = {
+        recipients: [
+          {
+            address: receiverAddress,
+            amount: quantity,
+          },
+        ],
+      };
+
+      const txPrebuild = { txHex };
+      const mockWallet = { coinSpecific: () => ({ baseAddress: senderAddress }) };
+      const isVerified = await adaTokenWithConcatenatedPolicyId.verifyTransaction({
+        txParams,
+        txPrebuild,
+        wallet: mockWallet as any,
+      });
+      isVerified.should.equal(true);
+    });
+
+    it('should verify transaction with policyId that does not have concatenated assetName', async () => {
+      // This tests the case where policyId is just the 28-byte policy ID (no assetName appended)
+      const tokenConfigWithPlainPolicyId = {
+        type: 'tada:water',
+        coin: 'tada',
+        network: 'Testnet' as const,
+        name: 'WATER',
+        decimalPlaces: 0,
+        policyId: policyId, // Just the policy ID without assetName
+        assetName: name, // ASCII name 'WATER'
+        contractAddress: `${policyId}:${asciiEncodedName}`,
+      };
+      const adaTokenWithPlainPolicyId = new AdaToken(bitgo, tokenConfigWithPlainPolicyId);
+
+      const quantity = '20';
+      const totalInput = 20000000;
+      const totalAssetList = {
+        [fingerprint]: {
+          quantity: '100',
+          policy_id: policyId,
+          asset_name: asciiEncodedName,
+        },
+      };
+
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.input({
+        transaction_id: '3677e75c7ba699bfdc6cd57d42f246f86f63aefd76025006ac78313fad2bba21',
+        transaction_index: 1,
+      });
+
+      txBuilder.output({
+        address: receiverAddress,
+        amount: '0',
+        multiAssets: {
+          asset_name: asciiEncodedName,
+          policy_id: policyId,
+          quantity,
+          fingerprint,
+        },
+      });
+
+      txBuilder.changeAddress(senderAddress, totalInput.toString(), totalAssetList);
+      txBuilder.ttl(800000000);
+      txBuilder.isTokenTransaction();
+      const tx = (await txBuilder.build()) as Transaction;
+      const txHex = tx.toBroadcastFormat();
+
+      // Verify transaction - should work with plain policyId as well
+      const txParams = {
+        recipients: [
+          {
+            address: receiverAddress,
+            amount: quantity,
+          },
+        ],
+      };
+
+      const txPrebuild = { txHex };
+      const mockWallet = { coinSpecific: () => ({ baseAddress: senderAddress }) };
+      const isVerified = await adaTokenWithPlainPolicyId.verifyTransaction({
+        txParams,
+        txPrebuild,
+        wallet: mockWallet as any,
+      });
+      isVerified.should.equal(true);
+    });
+
+    it('should verify token consolidation transaction when all outputs go to base address', async () => {
+      const quantity = '100';
+      const totalInput = 20000000;
+      const totalAssetList = {
+        [fingerprint]: {
+          quantity: '100',
+          policy_id: policyId,
+          asset_name: asciiEncodedName,
+        },
+      };
+
+      // Build a consolidation transaction - all outputs go to sender (base) address
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.input({
+        transaction_id: '3677e75c7ba699bfdc6cd57d42f246f86f63aefd76025006ac78313fad2bba21',
+        transaction_index: 1,
+      });
+
+      // For consolidation, tokens go back to the sender's base address
+      txBuilder.output({
+        address: senderAddress,
+        amount: '0',
+        multiAssets: {
+          asset_name: asciiEncodedName,
+          policy_id: policyId,
+          quantity,
+          fingerprint,
+        },
+      });
+
+      txBuilder.changeAddress(senderAddress, totalInput.toString(), totalAssetList);
+      txBuilder.ttl(800000000);
+      txBuilder.isTokenTransaction();
+      const tx = (await txBuilder.build()) as Transaction;
+      const txHex = tx.toBroadcastFormat();
+
+      // Mock wallet with coinSpecific returning base address
+      const mockWallet = {
+        coinSpecific: () => ({
+          baseAddress: senderAddress,
+        }),
+      };
+
+      // Verify consolidation transaction - no recipients, but consolidationToBaseAddress is true
+      const txParams = {
+        recipients: undefined,
+      };
+
+      const txPrebuild = { txHex };
+      const verification = { consolidationToBaseAddress: true };
+
+      const isVerified = await adaToken.verifyTransaction({
+        txParams,
+        txPrebuild,
+        verification,
+        wallet: mockWallet as any,
+      });
+      isVerified.should.equal(true);
+    });
+
+    it('should fail token consolidation when output address does not match base address', async () => {
+      const quantity = '100';
+      const totalInput = 20000000;
+      const totalAssetList = {
+        [fingerprint]: {
+          quantity: '100',
+          policy_id: policyId,
+          asset_name: asciiEncodedName,
+        },
+      };
+
+      // Build a transaction with output to receiver (not base address)
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.input({
+        transaction_id: '3677e75c7ba699bfdc6cd57d42f246f86f63aefd76025006ac78313fad2bba21',
+        transaction_index: 1,
+      });
+
+      txBuilder.output({
+        address: receiverAddress, // Output goes to receiver, not base address
+        amount: '0',
+        multiAssets: {
+          asset_name: asciiEncodedName,
+          policy_id: policyId,
+          quantity,
+          fingerprint,
+        },
+      });
+
+      txBuilder.changeAddress(senderAddress, totalInput.toString(), totalAssetList);
+      txBuilder.ttl(800000000);
+      txBuilder.isTokenTransaction();
+      const tx = (await txBuilder.build()) as Transaction;
+      const txHex = tx.toBroadcastFormat();
+
+      // Mock wallet with different base address
+      const mockWallet = {
+        coinSpecific: () => ({
+          baseAddress: senderAddress, // Base address is sender, but output goes to receiver
+        }),
+      };
+
+      const txParams = {
+        recipients: undefined,
+      };
+
+      const txPrebuild = { txHex };
+      const verification = { consolidationToBaseAddress: true };
+
+      await adaToken
+        .verifyTransaction({
+          txParams,
+          txPrebuild,
+          verification,
+          wallet: mockWallet as any,
+        })
+        .should.be.rejectedWith('tx outputs does not match with expected address');
+    });
   });
 });

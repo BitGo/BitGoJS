@@ -32,7 +32,7 @@ import {
 import { SubmitTransactionResponse } from '../inscriptionBuilder';
 import { drawKeycard } from '../internal';
 import * as internal from '../internal/internal';
-import { decryptKeychainPrivateKey, Keychain, KeychainWithEncryptedPrv } from '../keychain';
+import { decryptKeychainPrivateKey, Keychain, KeychainWithEncryptedPrv, KeyIndices } from '../keychain';
 import { getLightningAuthKey } from '../lightning/lightningWalletUtil';
 import { IPendingApproval, PendingApproval, PendingApprovals } from '../pendingApproval';
 import { GoStakingWallet, StakingWallet } from '../staking';
@@ -70,6 +70,7 @@ import {
   CreatePolicyRuleOptions,
   CreateShareOptions,
   CrossChainUTXO,
+  DecryptedKeychainData,
   DeployForwardersOptions,
   DownloadKeycardOptions,
   FanoutUnspentsOptions,
@@ -1407,6 +1408,15 @@ export class Wallet implements IWallet {
       }
 
       verificationData.impliedForwarderVersion = forwarderVersion ?? verificationData.coinSpecific?.forwarderVersion;
+
+      // For SMC (Self-Managed Custodial) wallets, pass derivedFromParentWithSeed from user keychain
+      // The verification function will compute the derivation prefix internally
+      // Custodial wallets don't need this as their commonKeychain already accounts for the prefix
+      if (this.multisigType() === 'tss' && this.type() === 'cold' && this._wallet.keys.length > KeyIndices.USER) {
+        const userKeychain = keychains[KeyIndices.USER] as Keychain | undefined;
+        verificationData.derivedFromParentWithSeed = userKeychain?.derivedFromParentWithSeed;
+      }
+
       // This condition was added in first place because in celo, when verifyAddress method was called on addresses which were having pendingChainInitialization as true, it used to throw some error
       // In case of forwarder version 1 eth addresses, addresses need to be verified even if the pendingChainInitialization flag is true
       if (
@@ -1685,7 +1695,26 @@ export class Wallet implements IWallet {
     if (params.keyShareOptions.length === 0) {
       throw new Error('No share options provided');
     }
+
     const bulkCreateShareOptions: BulkCreateShareOption[] = [];
+
+    // Check if any share option needs a keychain (has 'spend' permission)
+    const anyNeedsKeychain = params.keyShareOptions.some((opt) => opt.permissions && opt.permissions.includes('spend'));
+
+    // Fetch and decrypt the keychain ONCE for all users
+    let decryptedKeychain: DecryptedKeychainData | undefined;
+
+    if (anyNeedsKeychain) {
+      try {
+        decryptedKeychain = await this.getDecryptedKeychainForSharing(params.walletPassphrase);
+      } catch (e) {
+        if (e instanceof MissingEncryptedKeychainError) {
+          decryptedKeychain = undefined;
+        } else {
+          throw e;
+        }
+      }
+    }
 
     for (const shareOption of params.keyShareOptions) {
       try {
@@ -1699,36 +1728,22 @@ export class Wallet implements IWallet {
 
       const needsKeychain = shareOption.permissions && shareOption.permissions.includes('spend');
 
-      if (needsKeychain) {
-        const sharedKeychain = await this.prepareSharedKeychain(
-          params.walletPassphrase,
+      if (needsKeychain && decryptedKeychain) {
+        const sharedKeychain = this.encryptPrvForUser(
+          decryptedKeychain.prv,
+          decryptedKeychain.pub,
           shareOption.pubKey,
           shareOption.path
         );
-        const keychain = Object.keys(sharedKeychain ?? {}).length === 0 ? undefined : sharedKeychain;
-        if (keychain) {
-          assert(keychain.pub, 'pub must be defined for sharing');
-          assert(keychain.encryptedPrv, 'encryptedPrv must be defined for sharing');
-          assert(keychain.fromPubKey, 'fromPubKey must be defined for sharing');
-          assert(keychain.toPubKey, 'toPubKey must be defined for sharing');
-          assert(keychain.path, 'path must be defined for sharing');
 
-          const bulkKeychain: BulkWalletShareKeychain = {
-            pub: keychain.pub,
-            encryptedPrv: keychain.encryptedPrv,
-            fromPubKey: keychain.fromPubKey,
-            toPubKey: keychain.toPubKey,
-            path: keychain.path,
-          };
-
-          bulkCreateShareOptions.push({
-            user: shareOption.userId,
-            permissions: shareOption.permissions,
-            keychain: bulkKeychain,
-          });
-        }
+        bulkCreateShareOptions.push({
+          user: shareOption.userId,
+          permissions: shareOption.permissions,
+          keychain: sharedKeychain,
+        });
       }
     }
+
     return await this.createBulkKeyShares(bulkCreateShareOptions);
   }
 
@@ -1776,62 +1791,107 @@ export class Wallet implements IWallet {
     }
   }
 
+  /**
+   * Fetches and decrypts the wallet keychain for sharing.
+   * This method fetches the keychain once and decrypts it, returning the decrypted
+   * private key and public key info needed for sharing with multiple users.
+   *
+   * @param walletPassphrase - The passphrase to decrypt the keychain
+   * @returns Object containing decrypted prv and pub, or undefined for cold wallets
+   */
+  async getDecryptedKeychainForSharing(
+    walletPassphrase: string | undefined
+  ): Promise<DecryptedKeychainData | undefined> {
+    const keychain = await this.getEncryptedWalletKeychainForWalletSharing();
+
+    if (!keychain.encryptedPrv) {
+      return undefined;
+    }
+
+    if (!walletPassphrase) {
+      throw new Error('Missing walletPassphrase argument');
+    }
+
+    const prv = decryptKeychainPrivateKey(this.bitgo, keychain, walletPassphrase);
+    if (!prv) {
+      throw new IncorrectPasswordError('Password shared is incorrect for this wallet');
+    }
+
+    // Only one of pub/commonPub/commonKeychain should be present in the keychain
+    let pub = keychain.pub ?? keychain.commonPub;
+    if (keychain.commonKeychain) {
+      pub =
+        this.baseCoin.getMPCAlgorithm() === 'eddsa'
+          ? EddsaUtils.getPublicKeyFromCommonKeychain(keychain.commonKeychain)
+          : EcdsaUtils.getPublicKeyFromCommonKeychain(keychain.commonKeychain);
+    }
+
+    if (!pub) {
+      throw new Error('Unable to determine public key from keychain');
+    }
+
+    return { prv, pub };
+  }
+
+  /**
+   * Encrypts a decrypted private key for sharing with a specific user.
+   * This is the pure encryption step - no API calls, no decryption.
+   *
+   * @param decryptedPrv - The already-decrypted private key
+   * @param pub - The wallet's public key
+   * @param userPubkey - The recipient user's public key
+   * @param path - The key path
+   * @returns The encrypted keychain for the recipient with all required fields
+   */
+  encryptPrvForUser(decryptedPrv: string, pub: string, userPubkey: string, path: string): BulkWalletShareKeychain {
+    const eckey = makeRandomKey();
+    const secret = getSharedSecret(eckey, Buffer.from(userPubkey, 'hex')).toString('hex');
+    const newEncryptedPrv = this.bitgo.encrypt({ password: secret, input: decryptedPrv });
+
+    const keychain: BulkWalletShareKeychain = {
+      pub,
+      encryptedPrv: newEncryptedPrv,
+      fromPubKey: eckey.publicKey.toString('hex'),
+      toPubKey: userPubkey,
+      path: path,
+    };
+
+    assert(keychain.pub, 'pub must be defined for sharing');
+    assert(keychain.encryptedPrv, 'encryptedPrv must be defined for sharing');
+    assert(keychain.fromPubKey, 'fromPubKey must be defined for sharing');
+    assert(keychain.toPubKey, 'toPubKey must be defined for sharing');
+    assert(keychain.path, 'path must be defined for sharing');
+
+    return keychain;
+  }
+
+  /**
+   * Prepares a keychain for sharing with another user.
+   * Fetches the wallet keychain, decrypts it, and encrypts it for the recipient.
+   *
+   * @param walletPassphrase - The passphrase to decrypt the keychain
+   * @param pubkey - The recipient's public key
+   * @param path - The key path
+   * @returns The encrypted keychain for the recipient
+   */
   async prepareSharedKeychain(
     walletPassphrase: string | undefined,
     pubkey: string,
     path: string
   ): Promise<SharedKeyChain> {
-    let sharedKeychain: SharedKeyChain = {};
-
     try {
-      const keychain = await this.getEncryptedWalletKeychainForWalletSharing();
-
-      // Decrypt the user key with a passphrase
-      if (keychain.encryptedPrv) {
-        if (!walletPassphrase) {
-          throw new Error('Missing walletPassphrase argument');
-        }
-
-        const userPrv = decryptKeychainPrivateKey(this.bitgo, keychain, walletPassphrase);
-        if (!userPrv) {
-          throw new IncorrectPasswordError('Password shared is incorrect for this wallet');
-        }
-
-        keychain.prv = userPrv;
-        const eckey = makeRandomKey();
-        const secret = getSharedSecret(eckey, Buffer.from(pubkey, 'hex')).toString('hex');
-        const newEncryptedPrv = this.bitgo.encrypt({
-          password: secret,
-          input: keychain.prv,
-        });
-
-        // Only one of pub/commonPub/commonKeychain should be present in the keychain
-        let pub = keychain.pub ?? keychain.commonPub;
-        if (keychain.commonKeychain) {
-          pub =
-            this.baseCoin.getMPCAlgorithm() === 'eddsa'
-              ? EddsaUtils.getPublicKeyFromCommonKeychain(keychain.commonKeychain)
-              : EcdsaUtils.getPublicKeyFromCommonKeychain(keychain.commonKeychain);
-        }
-
-        sharedKeychain = {
-          pub,
-          encryptedPrv: newEncryptedPrv,
-          fromPubKey: eckey.publicKey.toString('hex'),
-          toPubKey: pubkey,
-          path: path,
-        };
+      const decryptedKeychain = await this.getDecryptedKeychainForSharing(walletPassphrase);
+      if (!decryptedKeychain) {
+        return {};
       }
+      return this.encryptPrvForUser(decryptedKeychain.prv, decryptedKeychain.pub, pubkey, path);
     } catch (e) {
       if (e instanceof MissingEncryptedKeychainError) {
-        sharedKeychain = {};
         // ignore this error because this looks like a cold wallet
-      } else {
-        throw e;
+        return {};
       }
+      throw e;
     }
-
-    return sharedKeychain;
   }
 
   /**
@@ -2407,7 +2467,15 @@ export class Wallet implements IWallet {
         'transaction params:',
         _.omit(params, ['keychain', 'prv', 'passphrase', 'walletPassphrase', 'key', 'wallet'])
       );
-      console.error('transaction prebuild:', txPrebuild);
+      // Sanitize to remove _token from bitgo
+      const sanitizedPrebuild = {
+        ..._.omit(txPrebuild, ['wallet']),
+        wallet: {
+          ...this,
+          bitgo: _.omit(this.bitgo, ['_token']),
+        },
+      };
+      console.error('transaction prebuild:', sanitizedPrebuild);
       console.trace(e);
       throw e;
     }
@@ -2449,7 +2517,13 @@ export class Wallet implements IWallet {
           confirmedBalance: this.confirmedBalance(),
           spendableBalance: this.spendableBalance(),
         };
-        error.txParams = _.omit(params, ['keychain', 'prv', 'passphrase', 'walletPassphrase', 'key']);
+        error.txParams = {
+          ..._.omit(params, ['keychain', 'prv', 'passphrase', 'walletPassphrase', 'key', 'wallet']),
+          wallet: {
+            ...this,
+            bitgo: _.omit(this.bitgo, ['_token']),
+          },
+        };
       }
       throw error;
     }

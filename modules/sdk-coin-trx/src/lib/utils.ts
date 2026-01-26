@@ -447,10 +447,6 @@ export function decodeFreezeBalanceV2Contract(base64: string): FreezeBalanceCont
     throw new UtilsError('Owner address does not exist in this freeze contract.');
   }
 
-  if (freezeContract.resource === undefined) {
-    throw new UtilsError('Resource type does not exist in this freeze contract.');
-  }
-
   if (freezeContract.frozenBalance === undefined) {
     throw new UtilsError('Frozen balance does not exist in this freeze contract.');
   }
@@ -459,7 +455,12 @@ export function decodeFreezeBalanceV2Contract(base64: string): FreezeBalanceCont
     getByteArrayFromHexAddress(Buffer.from(freezeContract.ownerAddress, 'base64').toString('hex'))
   );
 
-  const resourceValue = freezeContract.resource === 'BANDWIDTH' ? TronResource.BANDWIDTH : TronResource.ENERGY;
+  // In protobuf3, default values (BANDWIDTH = 0) may be omitted from serialization.
+  // If resource is undefined, default to BANDWIDTH.
+  const resourceValue =
+    freezeContract.resource === undefined || freezeContract.resource === 'BANDWIDTH'
+      ? TronResource.BANDWIDTH
+      : TronResource.ENERGY;
 
   return [
     {
@@ -549,10 +550,6 @@ export function decodeUnfreezeBalanceV2Contract(base64: string): UnfreezeBalance
     throw new UtilsError('Owner address does not exist in this unfreeze contract.');
   }
 
-  if (unfreezeContract.resource === undefined) {
-    throw new UtilsError('Resource type does not exist in this unfreeze contract.');
-  }
-
   if (unfreezeContract.unfreezeBalance === undefined) {
     throw new UtilsError('Unfreeze balance does not exist in this unfreeze contract.');
   }
@@ -562,9 +559,13 @@ export function decodeUnfreezeBalanceV2Contract(base64: string): UnfreezeBalance
     getByteArrayFromHexAddress(Buffer.from(unfreezeContract.ownerAddress, 'base64').toString('hex'))
   );
 
-  // Convert ResourceCode enum value to string resource name
+  // In protobuf3, default values (BANDWIDTH = 0) may be omitted from serialization.
+  // If resource is undefined, default to BANDWIDTH.
   const resourceValue = unfreezeContract.resource;
-  const resourceEnum = resourceValue === protocol.ResourceCode.BANDWIDTH ? TronResource.BANDWIDTH : TronResource.ENERGY;
+  const resourceEnum =
+    resourceValue === undefined || resourceValue === protocol.ResourceCode.BANDWIDTH
+      ? TronResource.BANDWIDTH
+      : TronResource.ENERGY;
 
   return [
     {
@@ -670,10 +671,6 @@ export function decodeDelegateResourceContract(base64: string): ResourceManageme
     throw new UtilsError('Receiver address does not exist in this delegate resource contract.');
   }
 
-  if (delegateResourceContract.resource === undefined) {
-    throw new UtilsError('Resource type does not exist in this delegate resource contract.');
-  }
-
   if (delegateResourceContract.balance === undefined) {
     throw new UtilsError('Balance does not exist in this delegate resource contract.');
   }
@@ -686,6 +683,8 @@ export function decodeDelegateResourceContract(base64: string): ResourceManageme
     getByteArrayFromHexAddress(Buffer.from(delegateResourceContract.receiverAddress, 'base64').toString('hex'))
   );
 
+  // In protobuf3, default values (BANDWIDTH = 0) may be omitted from serialization.
+  // If resource is undefined or falsy, default to BANDWIDTH.
   const resourceValue = !delegateResourceContract.resource ? TronResource.BANDWIDTH : TronResource.ENERGY;
 
   return [
@@ -724,10 +723,6 @@ export function decodeUnDelegateResourceContract(base64: string): ResourceManage
     throw new UtilsError('Receiver address does not exist in this delegate resource contract.');
   }
 
-  if (undelegateResourceContract.resource === undefined) {
-    throw new UtilsError('Resource type does not exist in this delegate resource contract.');
-  }
-
   if (undelegateResourceContract.balance === undefined) {
     throw new UtilsError('Balance does not exist in this delegate resource contract.');
   }
@@ -740,6 +735,8 @@ export function decodeUnDelegateResourceContract(base64: string): ResourceManage
     getByteArrayFromHexAddress(Buffer.from(undelegateResourceContract.receiverAddress, 'base64').toString('hex'))
   );
 
+  // In protobuf3, default values (BANDWIDTH = 0) may be omitted from serialization.
+  // If resource is undefined or falsy, default to BANDWIDTH.
   const resourceValue = !undelegateResourceContract.resource ? TronResource.BANDWIDTH : TronResource.ENERGY;
 
   return [

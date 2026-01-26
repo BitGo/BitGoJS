@@ -652,6 +652,122 @@ describe('Utils', function () {
     });
   });
 
+  describe('sortAddressesByHex', function () {
+    it('should sort addresses lexicographically by byte value', function () {
+      // Use addresses from IMPORT_IN_P test data (these are valid bech32 addresses)
+      // UTXO addresses in test data order: [xv5mulgpe..., 06gc5h5qs..., cueygd7fd...]
+      const unsortedAddresses = IMPORT_IN_P.utxos[0].addresses;
+
+      const sortedAddresses = utils.sortAddressesByHex(unsortedAddresses);
+
+      // Verify the result is sorted by comparing hex values
+      const sortedHexes = sortedAddresses.map((addr) => utils.parseAddress(addr).toString('hex'));
+      for (let i = 1; i < sortedHexes.length; i++) {
+        assert.ok(
+          sortedHexes[i - 1].localeCompare(sortedHexes[i]) <= 0,
+          `Address at index ${i - 1} should be <= address at index ${i}`
+        );
+      }
+
+      // The sorted result should have the same addresses, just reordered
+      assert.strictEqual(sortedAddresses.length, unsortedAddresses.length);
+      unsortedAddresses.forEach((addr) => {
+        assert.ok(sortedAddresses.includes(addr), `Sorted array should contain ${addr}`);
+      });
+    });
+
+    it('should produce consistent sorting regardless of input order', function () {
+      const addresses = [...IMPORT_IN_P.utxos[0].addresses];
+      const reversed = [...addresses].reverse();
+      const shuffled = [addresses[1], addresses[2], addresses[0]];
+
+      const sorted1 = utils.sortAddressesByHex(addresses);
+      const sorted2 = utils.sortAddressesByHex(reversed);
+      const sorted3 = utils.sortAddressesByHex(shuffled);
+
+      // All should produce the same sorted result
+      assert.deepStrictEqual(sorted1, sorted2);
+      assert.deepStrictEqual(sorted2, sorted3);
+    });
+
+    it('should not modify original array', function () {
+      const original = [...IMPORT_IN_P.utxos[0].addresses];
+      const originalCopy = [...original];
+
+      utils.sortAddressesByHex(original);
+
+      assert.deepStrictEqual(original, originalCopy);
+    });
+
+    it('should handle single address array', function () {
+      const singleAddr = [IMPORT_IN_P.pAddresses[0]];
+      const sorted = utils.sortAddressesByHex(singleAddr);
+
+      assert.strictEqual(sorted.length, 1);
+      assert.strictEqual(sorted[0], singleAddr[0]);
+    });
+
+    it('should handle empty array', function () {
+      const sorted = utils.sortAddressesByHex([]);
+      assert.strictEqual(sorted.length, 0);
+    });
+  });
+
+  describe('sortAddressBuffersByHex', function () {
+    it('should sort address buffers lexicographically by byte value', function () {
+      // Parse addresses from test data
+      const addresses = IMPORT_IN_P.utxos[0].addresses;
+      const buffers = addresses.map((addr) => utils.parseAddress(addr));
+
+      // Shuffle to ensure unsorted
+      const unsortedBuffers = [buffers[2], buffers[0], buffers[1]];
+      const sortedBuffers = utils.sortAddressBuffersByHex(unsortedBuffers);
+
+      // Verify the result is sorted by comparing hex values
+      for (let i = 1; i < sortedBuffers.length; i++) {
+        const prevHex = sortedBuffers[i - 1].toString('hex');
+        const currHex = sortedBuffers[i].toString('hex');
+        assert.ok(prevHex.localeCompare(currHex) <= 0, `Buffer at index ${i - 1} should be <= buffer at index ${i}`);
+      }
+    });
+
+    it('should produce consistent sorting regardless of input order', function () {
+      const addresses = IMPORT_IN_P.utxos[0].addresses;
+      const buffers = addresses.map((addr) => utils.parseAddress(addr));
+
+      const order1 = [buffers[0], buffers[1], buffers[2]];
+      const order2 = [buffers[2], buffers[1], buffers[0]];
+      const order3 = [buffers[1], buffers[2], buffers[0]];
+
+      const sorted1 = utils.sortAddressBuffersByHex(order1);
+      const sorted2 = utils.sortAddressBuffersByHex(order2);
+      const sorted3 = utils.sortAddressBuffersByHex(order3);
+
+      // All should produce the same sorted result
+      assert.deepStrictEqual(
+        sorted1.map((b) => b.toString('hex')),
+        sorted2.map((b) => b.toString('hex'))
+      );
+      assert.deepStrictEqual(
+        sorted2.map((b) => b.toString('hex')),
+        sorted3.map((b) => b.toString('hex'))
+      );
+    });
+
+    it('should not modify original array', function () {
+      const addresses = IMPORT_IN_P.utxos[0].addresses;
+      const original = addresses.map((addr) => utils.parseAddress(addr));
+      const originalHexes = original.map((b) => b.toString('hex'));
+
+      utils.sortAddressBuffersByHex(original);
+
+      assert.deepStrictEqual(
+        original.map((b) => b.toString('hex')),
+        originalHexes
+      );
+    });
+  });
+
   describe('isTransactionOf', function () {
     const factory = new TransactionBuilderFactory(coins.get('tflrp'));
     const utilsInstance = new Utils();

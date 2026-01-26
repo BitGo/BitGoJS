@@ -33,6 +33,7 @@ export {
   CosmosChainToken,
   AdaToken,
   JettonToken,
+  CantonToken,
 } from './account';
 export { CoinMap } from './map';
 export { networkFeatureMapForTokens } from './networkFeatureMapForTokens';

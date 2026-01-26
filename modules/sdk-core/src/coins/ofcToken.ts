@@ -8,7 +8,10 @@ import {
   CoinConstructor,
   SignTransactionOptions as BaseSignTransactionOptions,
   SignedTransaction,
+  ITransactionRecipient,
 } from '../';
+import { isBolt11Invoice, LIGHTNING_INVOICE } from '../lightning';
+
 import { Ofc } from './ofc';
 
 export interface SignTransactionOptions extends BaseSignTransactionOptions {
@@ -21,6 +24,7 @@ export interface SignTransactionOptions extends BaseSignTransactionOptions {
 export { OfcTokenConfig };
 
 const publicIdRegex = /^[a-f\d]{32}$/i;
+
 export class OfcToken extends Ofc {
   public readonly tokenConfig: OfcTokenConfig;
 
@@ -63,6 +67,37 @@ export class OfcToken extends Ofc {
 
   public get type() {
     return this.tokenConfig.type;
+  }
+
+  checkRecipient(recipient: ITransactionRecipient): void {
+    if (isBolt11Invoice(recipient.address)) {
+      // should throw error if this isnt bitcoin (mainnet or testnet)
+      if (this.backingCoin !== 'btc' && this.backingCoin !== 'tbtc') {
+        throw new Error(`invalid argument - lightning invoice is only supported for bitcoin`);
+      }
+
+      // amount for bolt11 invoices is either 'invoice' or a non-zero bigint
+      if (recipient.amount === LIGHTNING_INVOICE) {
+        return;
+      }
+      // try to parse the amount as a bigint
+      let amount: bigint;
+      try {
+        amount = BigInt(recipient.amount);
+      } catch (e) {
+        throw new Error(
+          `invalid argument ${recipient.amount} for amount - lightning invoice amount must be >= 0 or ${LIGHTNING_INVOICE}`
+        );
+      }
+      if (amount > 0n) {
+        return;
+      }
+      throw new Error(
+        `invalid argument for amount - lightning invoice amount must be a non-zero bigint or ${LIGHTNING_INVOICE}`
+      );
+    }
+
+    super.checkRecipient(recipient);
   }
 
   /**

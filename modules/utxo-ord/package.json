@@ -1,11 +1,26 @@
 {
   "name": "@bitgo/utxo-ord",
   "description": "Utilities for building ordinals with BitGo utxo-lib",
-  "main": "./dist/src/index.js",
-  "types": "./dist/src/index.d.ts",
-  "version": "1.22.22",
+  "main": "./dist/cjs/src/index.js",
+  "module": "./dist/esm/index.js",
+  "browser": "./dist/esm/index.js",
+  "types": "./dist/cjs/src/index.d.ts",
+  "version": "1.24.1",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/src/index.d.ts",
+        "default": "./dist/cjs/src/index.js"
+      }
+    }
+  },
   "files": [
-    "dist/**/*"
+    "dist/cjs",
+    "dist/esm"
   ],
   "keywords": [
     "bitgo",
@@ -16,7 +31,9 @@
   ],
   "scripts": {
     "prepare": "npm run build",
-    "build": "yarn tsc --build --incremental --verbose .",
+    "build": "npm run build:cjs && npm run build:esm",
+    "build:cjs": "yarn tsc --build --incremental --verbose .",
+    "build:esm": "yarn tsc --project tsconfig.esm.json",
     "lint": "eslint --quiet .",
     "unit-test": "mocha --recursive test",
     "fmt": "prettier --write '{src,test}/**/*.{ts,js}'",
@@ -28,7 +45,7 @@
     "directory": "modules/utxo-ord"
   },
   "dependencies": {
-    "@bitgo/sdk-core": "^36.27.0",
+    "@bitgo/sdk-core": "^36.29.0",
     "@bitgo/unspents": "^0.50.14",
     "@bitgo/utxo-lib": "^11.19.1"
   },

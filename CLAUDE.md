@@ -65,6 +65,11 @@ yarn compile
 # Build for development
 yarn compile-dbg
 ```
+
+## Dual ESM/CJS Builds
+
+For modules that need browser support (especially those using `@bitgo/wasm-utxo`), see [docs/esm.md](docs/esm.md) for the dual ESM/CJS build pattern.
+
 ## Code Style
 
 ### Commits
