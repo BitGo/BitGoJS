@@ -1702,8 +1702,8 @@ class MorphTestnet extends Testnet implements EthereumNetwork {
   family = CoinFamily.MORPH;
   explorerUrl = 'https://explorer-api-hoodi.morphl2.io/tx/';
   accountExplorerUrl = 'https://explorer-api-hoodi.morphl2.io/address/';
-  chainId = 2710;
-  nativeCoinOperationHashPrefix = '2710';
+  chainId = 2910;
+  nativeCoinOperationHashPrefix = '2910';
 }
 
 class CreditcoinTestnet extends Testnet implements EthereumNetwork {
