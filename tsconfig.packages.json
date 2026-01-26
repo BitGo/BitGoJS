@@ -224,6 +224,9 @@
       "path": "./modules/sdk-coin-tao"
     },
     {
+      "path": "./modules/sdk-coin-tempo"
+    },
+    {
       "path": "./modules/sdk-coin-tia"
     },
     {

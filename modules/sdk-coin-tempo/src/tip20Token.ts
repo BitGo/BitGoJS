@@ -2,23 +2,13 @@
  * @prettier
  */
 import { BitGoBase, CoinConstructor, MPCAlgorithm, NamedCoinConstructor } from '@bitgo/sdk-core';
-import { coins } from '@bitgo/statics';
+import { coins, Tip20TokenConfig } from '@bitgo/statics';
 import { GetSendMethodArgsOptions, SendMethodArgs } from '@bitgo/abstract-eth';
 import { Address } from './lib/types';
 import { Tempo } from './tempo';
 import { encodeTip20TransferWithMemo, amountToTip20Units, isValidAddress, isValidTip20Amount } from './lib/utils';
 
-/**
- * TIP20 Token Configuration Interface
- */
-export interface Tip20TokenConfig {
-  type: string; // Token identifier (e.g., 'tempo:usdc')
-  coin: string; // Base coin (e.g., 'tempo' or 'ttempo')
-  network: 'Mainnet' | 'Testnet';
-  name: string; // Token full name
-  tokenContractAddress: string; // Smart contract address (0x...)
-  decimalPlaces: number; // Token decimal places
-}
+export { Tip20TokenConfig };
 
 /**
  * TIP20 Token Implementation (Skeleton)
@@ -31,8 +21,7 @@ export class Tip20Token extends Tempo {
   public readonly tokenConfig: Tip20TokenConfig;
 
   constructor(bitgo: BitGoBase, tokenConfig: Tip20TokenConfig) {
-    const coinName = tokenConfig.network === 'Mainnet' ? 'tempo' : 'ttempo';
-    const staticsCoin = coins.get(coinName);
+    const staticsCoin = tokenConfig.network === 'Mainnet' ? coins.get('tempo') : coins.get('ttempo');
     super(bitgo, staticsCoin);
     this.tokenConfig = tokenConfig;
   }
@@ -79,7 +68,7 @@ export class Tip20Token extends Tempo {
   }
 
   /** Get the network */
-  get network(): 'Mainnet' | 'Testnet' {
+  get network(): string {
     return this.tokenConfig.network;
   }
 
@@ -96,6 +85,11 @@ export class Tip20Token extends Tempo {
   /** @inheritDoc */
   getChain(): string {
     return this.tokenConfig.type;
+  }
+
+  /** @inheritDoc */
+  getBaseChain(): string {
+    return this.coin;
   }
 
   /** @inheritDoc */

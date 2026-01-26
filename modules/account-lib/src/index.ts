@@ -170,6 +170,9 @@ export { Apechain };
 import * as Tao from '@bitgo/sdk-coin-tao';
 export { Tao };
 
+import * as Tempo from '@bitgo/sdk-coin-tempo';
+export { Tempo };
+
 import * as Icp from '@bitgo/sdk-coin-icp';
 export { Icp };
 
@@ -292,6 +295,8 @@ const coinBuilderMap = {
   tapt: Apt.TransactionBuilder,
   tao: Tao.TransactionBuilderFactory,
   ttao: Tao.TransactionBuilderFactory,
+  tempo: Tempo.Tip20TransactionBuilder,
+  ttempo: Tempo.Tip20TransactionBuilder,
   icp: Icp.TransactionBuilder,
   ticp: Icp.TransactionBuilder,
   baby: Baby.TransactionBuilder,
