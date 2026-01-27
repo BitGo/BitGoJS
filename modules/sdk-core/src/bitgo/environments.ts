@@ -291,7 +291,7 @@ const mainnetBase: EnvironmentTemplate = {
     jovayeth: {
       baseUrl: 'https://api.zan.top/node/v1/jovay/mainnet/',
     },
-    okb: {
+    okbxlayer: {
       baseUrl: 'https://www.oklink.com/api/v5/explorer/block/block-list?chainShortName=xlayer',
     },
     morph: {
@@ -463,7 +463,7 @@ const testnetBase: EnvironmentTemplate = {
     jovayeth: {
       baseUrl: 'https://api.zan.top/node/v1/jovay/testnet/',
     },
-    okb: {
+    okbxlayer: {
       baseUrl: 'https://www.oklink.com/api/v5/explorer/block/block-list?chainShortName=xlayer_testnet',
     },
     morph: {
