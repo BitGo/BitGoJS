@@ -7,18 +7,19 @@ import * as utxolib from '@bitgo/utxo-lib';
 import type { AbstractUtxoCoin, ParseTransactionOptions } from '../../abstractUtxoCoin';
 import type { FixedScriptWalletOutput, Output, ParsedTransaction } from '../types';
 import { fetchKeychains, getKeySignatures, toKeychainTriple, UtxoKeychain, UtxoNamedKeychains } from '../../keychains';
-import { ComparableOutput, outputDifference } from '../outputDifference';
 import {
   assertValidTransactionRecipient,
   fromExtendedAddressFormatToScript,
   isScriptRecipient,
   toExtendedAddressFormat,
+  toOutputScript,
 } from '../recipient';
+import { ComparableOutput, ExpectedOutput, outputDifference } from '../outputDifference';
 
 import type { TransactionExplanation } from './explainTransaction';
 import { CustomChangeOptions, parseOutput } from './parseOutput';
 
-export type ComparableOutputWithExternal<TValue> = ComparableOutput<TValue> & {
+export type ComparableOutputWithExternal<TValue> = (ComparableOutput<TValue> | ExpectedOutput) & {
   external: boolean | undefined;
 };
 
@@ -76,21 +77,37 @@ function toExpectedOutputs(
     allowExternalChangeAddress?: boolean;
     changeAddress?: string;
   }
-): Output[] {
+): ExpectedOutput[] {
   // verify that each recipient from txParams has their own output
-  const expectedOutputs = (txParams.recipients ?? []).flatMap((output) => {
+  const expectedOutputs: ExpectedOutput[] = (txParams.recipients ?? []).flatMap((output) => {
     if (output.address === undefined) {
+      assert('script' in output, 'script is required for non-encodeable scriptPubkeys');
       if (output.amount.toString() !== '0') {
         throw new Error(`Only zero amounts allowed for non-encodeable scriptPubkeys: ${output}`);
       }
-      return [output];
+      return [
+        {
+          script: toOutputScript(output, coin.name),
+          value: output.amount === 'max' ? 'max' : BigInt(output.amount),
+        },
+      ];
     }
-    return [{ ...output, address: coin.canonicalAddress(output.address) }];
+    return [
+      {
+        script: fromExtendedAddressFormatToScript(output.address, coin.name),
+        value: output.amount === 'max' ? 'max' : BigInt(output.amount),
+      },
+    ];
   });
   if (txParams.allowExternalChangeAddress && txParams.changeAddress) {
-    // when an external change address is explicitly specified, count all outputs going towards that
-    // address in the expected outputs (regardless of the output amount)
-    expectedOutputs.push({ address: coin.canonicalAddress(txParams.changeAddress), amount: 'max' });
+    expectedOutputs.push({
+      script: toOutputScript(txParams.changeAddress, coin.name),
+      // When an external change address is explicitly specified, count all outputs going towards that
+      // address in the expected outputs (regardless of the output amount)
+      value: 'max',
+      // Note that the change output is not required to exist, so we mark it as optional.
+      optional: true,
+    });
   }
   return expectedOutputs;
 }
@@ -206,15 +223,9 @@ export async function parseTransaction<TNumber extends bigint | number>(
     }));
   }
 
-  const missingOutputs = outputDifference(
-    toComparableOutputsWithExternal(expectedOutputs),
-    toComparableOutputsWithExternal(allOutputs)
-  );
+  const missingOutputs = outputDifference(expectedOutputs, toComparableOutputsWithExternal(allOutputs));
 
-  const implicitOutputs = outputDifference(
-    toComparableOutputsWithExternal(allOutputDetails),
-    toComparableOutputsWithExternal(expectedOutputs)
-  );
+  const implicitOutputs = outputDifference(toComparableOutputsWithExternal(allOutputDetails), expectedOutputs);
   const explicitOutputs = outputDifference(toComparableOutputsWithExternal(allOutputDetails), implicitOutputs);
 
   // these are all the non-wallet outputs that had been originally explicitly specified in recipients
@@ -244,7 +255,7 @@ export async function parseTransaction<TNumber extends bigint | number>(
     coin.amountType
   );
 
-  function toOutputs(outputs: ComparableOutputWithExternal<bigint | 'max'>[]): Output[] {
+  function toOutputs(outputs: ExpectedOutput[] | ComparableOutputWithExternal<bigint | 'max'>[]): Output[] {
     return outputs.map((output) => ({
       address: toExtendedAddressFormat(output.script, coin.name),
       amount: output.value.toString(),

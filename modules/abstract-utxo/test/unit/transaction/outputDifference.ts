@@ -10,8 +10,8 @@ import {
 } from '../../../src/transaction/outputDifference';
 
 describe('outputDifference', function () {
-  function output(script: string, value: bigint | number): ActualOutput;
-  function output(script: string, value: 'max'): ExpectedOutput;
+  function output(script: string, value: bigint | number, optional?: boolean): ActualOutput;
+  function output(script: string, value: 'max', optional?: boolean): ExpectedOutput;
   function output(script: string, value: bigint | number | 'max', optional?: boolean): ActualOutput | ExpectedOutput {
     const scriptBuffer = Buffer.from(script, 'hex');
     if (scriptBuffer.toString('hex') !== script) {
