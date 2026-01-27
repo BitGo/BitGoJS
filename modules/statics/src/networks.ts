@@ -2310,9 +2310,9 @@ class ArcUSDC extends Mainnet implements EthereumNetwork {
 class Tempo extends Mainnet implements EthereumNetwork {
   name = 'Tempo';
   family = CoinFamily.TEMPO;
-  explorerUrl = 'https://scout.tempo.xyz/tx/'; // TODO: Update with actual mainnet explorer when available
-  accountExplorerUrl = 'https://scout.tempo.xyz/address/'; // TODO: Update with actual mainnet explorer when available
-  chainId = 42428; // TODO: Update with actual mainnet chain ID when available
+  explorerUrl = 'https://explore.mainnet.tempo.xyz/tx/';
+  accountExplorerUrl = 'https://explore.mainnet.tempo.xyz/address/';
+  chainId = 4217;
   nativeCoinOperationHashPrefix = 'TEMPO';
   tokenOperationHashPrefix = 'TEMPO-TIP20';
 }
@@ -2320,11 +2320,11 @@ class Tempo extends Mainnet implements EthereumNetwork {
 class TempoTestnet extends Testnet implements EthereumNetwork {
   name = 'Tempo Testnet';
   family = CoinFamily.TEMPO;
-  explorerUrl = 'https://scout.tempo.xyz/tx/';
-  accountExplorerUrl = 'https://scout.tempo.xyz/address/';
-  chainId = 42429;
-  nativeCoinOperationHashPrefix = '42429';
-  tokenOperationHashPrefix = '42429';
+  explorerUrl = 'https://explore.tempo.xyz/tx/';
+  accountExplorerUrl = 'https://explore.tempo.xyz/address/';
+  chainId = 42431;
+  nativeCoinOperationHashPrefix = '42431';
+  tokenOperationHashPrefix = '42431';
 }
 
 export const Networks = {
