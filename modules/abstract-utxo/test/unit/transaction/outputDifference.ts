@@ -3,6 +3,7 @@ import assert from 'assert';
 import {
   ActualOutput,
   ExpectedOutput,
+  getMissingOutputs,
   matchingOutput,
   outputDifference,
   outputDifferencesWithExpected,
@@ -11,7 +12,7 @@ import {
 describe('outputDifference', function () {
   function output(script: string, value: bigint | number): ActualOutput;
   function output(script: string, value: 'max'): ExpectedOutput;
-  function output(script: string, value: bigint | number | 'max'): ActualOutput | ExpectedOutput {
+  function output(script: string, value: bigint | number | 'max', optional?: boolean): ActualOutput | ExpectedOutput {
     const scriptBuffer = Buffer.from(script, 'hex');
     if (scriptBuffer.toString('hex') !== script) {
       throw new Error('invalid script');
@@ -19,7 +20,12 @@ describe('outputDifference', function () {
     return {
       script: Buffer.from(script, 'hex'),
       value: value === 'max' ? 'max' : BigInt(value),
+      ...(optional !== undefined ? { optional } : {}),
     };
+  }
+
+  function expectedOutput(script: string, value: bigint | number | 'max', optional?: boolean): ExpectedOutput {
+    return output(script, value as 'max', optional) as ExpectedOutput;
   }
 
   const a = output('aa', 1);
@@ -64,6 +70,32 @@ describe('outputDifference', function () {
     });
   });
 
+  describe('getMissingOutputs', function () {
+    it('returns missing non-optional outputs', function () {
+      const aOptional = expectedOutput('aa', 1, true);
+      const bOptional = expectedOutput('bb', 1, true);
+
+      // No expected outputs means no missing outputs
+      assert.deepStrictEqual(getMissingOutputs([a], []), []);
+
+      // Missing required output is returned
+      assert.deepStrictEqual(getMissingOutputs([], [a]), [a]);
+      assert.deepStrictEqual(getMissingOutputs([b], [a]), [a]);
+
+      // Missing optional output is filtered out
+      assert.deepStrictEqual(getMissingOutputs([], [aOptional]), []);
+      assert.deepStrictEqual(getMissingOutputs([b], [aOptional]), []);
+
+      // Mix of optional and required: only required missing outputs returned
+      assert.deepStrictEqual(getMissingOutputs([], [a, bOptional]), [a]);
+      assert.deepStrictEqual(getMissingOutputs([], [aOptional, b]), [b]);
+
+      // Present outputs are not returned regardless of optional flag
+      assert.deepStrictEqual(getMissingOutputs([a], [a]), []);
+      assert.deepStrictEqual(getMissingOutputs([a], [aOptional]), []);
+    });
+  });
+
   describe('outputDifferencesWithExpected', function () {
     function test(
       outputs: ActualOutput[],
@@ -90,6 +122,28 @@ describe('outputDifference', function () {
       test([b], [a], { missing: [a], explicit: [], implicit: [b] });
       test([a, a], [a], { missing: [], explicit: [a], implicit: [a] });
       test([a, b], [a], { missing: [], explicit: [a], implicit: [b] });
+    });
+
+    it('handles optional expected outputs', function () {
+      const aOptional = expectedOutput('aa', 1, true);
+      const bOptional = expectedOutput('bb', 1, true);
+
+      // Missing optional output is not reported as missing
+      test([], [aOptional], { missing: [], explicit: [], implicit: [] });
+      test([b], [aOptional], { missing: [], explicit: [], implicit: [b] });
+
+      // Present optional output is still explicit
+      test([a], [aOptional], { missing: [], explicit: [a], implicit: [] });
+
+      // Mix of required and optional outputs
+      test([], [a, bOptional], { missing: [a], explicit: [], implicit: [] });
+      test([a], [a, bOptional], { missing: [], explicit: [a], implicit: [] });
+      test([a, b], [a, bOptional], { missing: [], explicit: [a, b], implicit: [] });
+
+      // Multiple optional outputs
+      test([], [aOptional, bOptional], { missing: [], explicit: [], implicit: [] });
+      test([a], [aOptional, bOptional], { missing: [], explicit: [a], implicit: [] });
+      test([a, b], [aOptional, bOptional], { missing: [], explicit: [a, b], implicit: [] });
     });
   });
 });
