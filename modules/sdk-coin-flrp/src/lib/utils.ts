@@ -377,8 +377,14 @@ export class Utils implements BaseUtils {
   /**
    * Sort addresses lexicographically by their byte representation.
    * This matches how addresses are stored on-chain in Avalanche/Flare P-chain UTXOs.
+   *
+   * IMPORTANT: This sorting MUST be consistent with FlareJS's internal address sorting.
+   * FlareJS uses the same lexicographic comparison: `hexA.localeCompare(hexB)`.
+   * The sigIndices in transaction inputs depend on this sorted order, so any deviation
+   * would cause signature order mismatches and on-chain verification failures.
+   *
    * @param addresses - Array of bech32 address strings (e.g., "P-costwo1...")
-   * @returns Array of addresses sorted by hex value
+   * @returns Array of addresses sorted by hex value (ascending lexicographic order)
    */
   public sortAddressesByHex(addresses: string[]): string[] {
     return [...addresses].sort((a, b) => {

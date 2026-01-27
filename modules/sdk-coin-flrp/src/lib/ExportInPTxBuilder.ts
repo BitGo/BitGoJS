@@ -76,16 +76,29 @@ export class ExportInPTxBuilder extends AtomicTransactionBuilder {
 
     this.computeAddressesIndexFromParsed();
 
+    // Use parsed credentials if available, otherwise create new ones based on sigIndices
+    // The sigIndices from the parsed transaction (stored in addressesIndex) determine
+    // the correct credential ordering for on-chain verification
     const txCredentials =
       credentials.length > 0
         ? credentials
         : this.transaction._utxos.map((utxo) => {
             const utxoThreshold = utxo.threshold || this.transaction._threshold;
+            const sigIndices = utxo.addressesIndex ?? [];
+            // Use sigIndices-based method if we have valid sigIndices from parsed transaction
+            if (sigIndices.length >= utxoThreshold && sigIndices.every((idx) => idx >= 0)) {
+              return this.createCredentialForUtxoWithSigIndices(utxo, utxoThreshold, sigIndices);
+            }
             return this.createCredentialForUtxo(utxo, utxoThreshold);
           });
 
+    // Create addressMaps using sigIndices from parsed transaction for consistency
     const addressMaps = this.transaction._utxos.map((utxo) => {
       const utxoThreshold = utxo.threshold || this.transaction._threshold;
+      const sigIndices = utxo.addressesIndex ?? [];
+      if (sigIndices.length >= utxoThreshold && sigIndices.every((idx) => idx >= 0)) {
+        return this.createAddressMapForUtxoWithSigIndices(utxo, utxoThreshold, sigIndices);
+      }
       return this.createAddressMapForUtxo(utxo, utxoThreshold);
     });
 
@@ -178,19 +191,27 @@ export class ExportInPTxBuilder extends AtomicTransactionBuilder {
         throw new BuildTransactionError(`Could not find matching UTXO for input ${inputTxid}:${inputOutputIdx}`);
       }
 
+      const transferInput = input.input as TransferInput;
+      const actualSigIndices = transferInput.sigIndicies();
+
       return {
         ...originalUtxo,
         addressesIndex: originalUtxo.addressesIndex,
         addresses: originalUtxo.addresses,
         threshold: originalUtxo.threshold || this.transaction._threshold,
+        actualSigIndices,
       };
     });
 
     this.transaction._utxos = utxosWithIndex;
 
-    const txCredentials = utxosWithIndex.map((utxo) => this.createCredentialForUtxo(utxo, utxo.threshold));
+    const txCredentials = utxosWithIndex.map((utxo) =>
+      this.createCredentialForUtxoWithSigIndices(utxo, utxo.threshold, utxo.actualSigIndices)
+    );
 
-    const addressMaps = utxosWithIndex.map((utxo) => this.createAddressMapForUtxo(utxo, utxo.threshold));
+    const addressMaps = utxosWithIndex.map((utxo) =>
+      this.createAddressMapForUtxoWithSigIndices(utxo, utxo.threshold, utxo.actualSigIndices)
+    );
 
     const fixedUnsignedTx = new UnsignedTx(innerTx, [], new FlareUtils.AddressMaps(addressMaps), txCredentials);
 

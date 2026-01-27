@@ -288,4 +288,128 @@ export abstract class AtomicTransactionBuilder extends TransactionBuilder {
 
     return addressMap;
   }
+
+  /**
+   * Create credential using the ACTUAL sigIndices from FlareJS.
+   *
+   * This method determines which sender addresses correspond to which sigIndex positions,
+   * then creates the credential with signatures in the correct order matching the sigIndices.
+   *
+   * sigIndices tell us which positions in the UTXO's owner addresses need to sign.
+   * We need to figure out which sender addresses are at those positions and create
+   * signature slots in the same order as sigIndices.
+   *
+   * @param utxo - The UTXO to create credential for
+   * @param threshold - Number of signatures required
+   * @param actualSigIndices - The actual sigIndices from FlareJS's built input
+   * @returns Credential with signatures ordered to match sigIndices
+   * @protected
+   */
+  protected createCredentialForUtxoWithSigIndices(
+    utxo: DecodedUtxoObj,
+    threshold: number,
+    actualSigIndices: number[]
+  ): Credential {
+    const sender = this.transaction._fromAddresses;
+    const addressesIndex = utxo.addressesIndex ?? [];
+
+    // either user (0) or recovery (2)
+    const firstIndex = this.recoverSigner ? 2 : 0;
+
+    if (threshold === 1) {
+      if (sender && sender.length > firstIndex && addressesIndex[firstIndex] !== undefined) {
+        return new Credential([utils.createEmptySigWithAddress(Buffer.from(sender[firstIndex]).toString('hex'))]);
+      }
+      return new Credential([utils.createNewSig('')]);
+    }
+
+    // For threshold >= 2, use the actual sigIndices order from FlareJS
+    // sigIndices[i] = position in UTXO's owner addresses that needs to sign
+    // addressesIndex[senderIdx] = position in UTXO's owner addresses for that sender
+    //
+    // We need to find which sender corresponds to each sigIndex and create signatures
+    // in the sigIndices order.
+    if (actualSigIndices.length >= 2 && addressesIndex.length >= 2 && sender && sender.length >= threshold) {
+      const emptySignatures: ReturnType<typeof utils.createNewSig>[] = [];
+
+      for (const sigIdx of actualSigIndices) {
+        // Find which sender address is at this UTXO position
+        // addressesIndex[senderIdx] tells us which UTXO position each sender is at
+        const senderIdx = addressesIndex.findIndex((utxoPos) => utxoPos === sigIdx);
+
+        if (senderIdx === firstIndex) {
+          // This sigIndex slot is for user/recovery - embed their address
+          emptySignatures.push(utils.createEmptySigWithAddress(Buffer.from(sender[firstIndex]).toString('hex')));
+        } else {
+          // BitGo (HSM) or unknown sender - empty signature
+          emptySignatures.push(utils.createNewSig(''));
+        }
+      }
+
+      return new Credential(emptySignatures);
+    }
+
+    // Fallback: create threshold empty signatures
+    const emptySignatures: ReturnType<typeof utils.createNewSig>[] = [];
+    for (let i = 0; i < threshold; i++) {
+      emptySignatures.push(utils.createNewSig(''));
+    }
+    return new Credential(emptySignatures);
+  }
+
+  /**
+   * Create AddressMap using the ACTUAL sigIndices from FlareJS.
+   *
+   * Maps sender addresses to signature slots based on the actual sigIndices order.
+   *
+   * @param utxo - The UTXO to create AddressMap for
+   * @param threshold - Number of signatures required
+   * @param actualSigIndices - The actual sigIndices from FlareJS's built input
+   * @returns AddressMap that maps addresses to signature slots
+   * @protected
+   */
+  protected createAddressMapForUtxoWithSigIndices(
+    utxo: DecodedUtxoObj,
+    threshold: number,
+    actualSigIndices: number[]
+  ): FlareUtils.AddressMap {
+    const addressMap = new FlareUtils.AddressMap();
+    const sender = this.transaction._fromAddresses;
+    const addressesIndex = utxo.addressesIndex ?? [];
+
+    const firstIndex = this.recoverSigner ? 2 : 0;
+    const bitgoIndex = 1;
+
+    if (threshold === 1) {
+      if (sender && sender.length > firstIndex) {
+        addressMap.set(new Address(sender[firstIndex]), 0);
+      } else if (sender && sender.length > 0) {
+        addressMap.set(new Address(sender[0]), 0);
+      }
+      return addressMap;
+    }
+
+    // For threshold >= 2, map addresses based on actual sigIndices order
+    if (actualSigIndices.length >= 2 && addressesIndex.length >= 2 && sender && sender.length >= threshold) {
+      actualSigIndices.forEach((sigIdx, slotIdx) => {
+        // Find which sender is at this UTXO position
+        const senderIdx = addressesIndex.findIndex((utxoPos) => utxoPos === sigIdx);
+
+        if (senderIdx === bitgoIndex || senderIdx === firstIndex) {
+          addressMap.set(new Address(sender[senderIdx]), slotIdx);
+        }
+      });
+
+      return addressMap;
+    }
+
+    // Fallback
+    if (sender && sender.length >= threshold) {
+      sender.slice(0, threshold).forEach((addr, i) => {
+        addressMap.set(new Address(addr), i);
+      });
+    }
+
+    return addressMap;
+  }
 }
