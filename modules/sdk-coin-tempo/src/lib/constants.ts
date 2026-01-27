@@ -12,8 +12,8 @@ export const VALID_PUBLIC_KEY_REGEX = /^[A-Fa-f0-9]{64}$/;
  * Tempo Chain IDs
  */
 export const TEMPO_CHAIN_IDS = {
-  TESTNET: 42429, // Andantino testnet
-  // MAINNET: TBD
+  MAINNET: 4217,
+  TESTNET: 42431, // Moderato testnet
 } as const;
 
 /**
