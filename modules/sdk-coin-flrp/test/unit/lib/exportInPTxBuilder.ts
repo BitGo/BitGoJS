@@ -4,6 +4,7 @@ import { EXPORT_IN_P as testData } from '../../resources/transactionData/exportI
 import { TransactionBuilderFactory } from '../../../src/lib';
 import { coins } from '@bitgo/statics';
 import signFlowTest from './signFlowTestSuit';
+import { pvmSerial, UnsignedTx, TransferOutput } from '@flarenetwork/flarejs';
 
 describe('Flrp Export In P Tx Builder', () => {
   const coinConfig = coins.get('tflrp');
@@ -362,6 +363,143 @@ describe('Flrp Export In P Tx Builder', () => {
       fullSignedJson.type.should.equal(22);
       fullSignedJson.signatures.length.should.be.greaterThan(0);
       fullSignedTx.toBroadcastFormat().should.be.a.String();
+    });
+  });
+
+  describe('Change output threshold fix', () => {
+    /**
+     * This test suite verifies the fix for the change output threshold bug.
+     *
+     * The issue: FlareJS's pvm.e.newExportTx() defaults change outputs to threshold=1,
+     * but for multisig wallets we need threshold=2 to maintain proper security.
+     *
+     * The fix: After building the transaction, we correct the change outputs to use
+     * the wallet's threshold (typically 2 for multisig).
+     */
+
+    it('should create change output with threshold=2 for multisig wallets', async () => {
+      const txBuilder = factory
+        .getExportInPBuilder()
+        .threshold(testData.threshold)
+        .locktime(testData.locktime)
+        .fromPubKey(testData.pAddresses)
+        .amount(testData.amount)
+        .externalChainId(testData.sourceChainId)
+        .feeState(testData.feeState)
+        .context(testData.context)
+        .decodedUtxos(testData.utxos);
+
+      const tx = await txBuilder.build();
+
+      const flareTransaction = (tx as any)._flareTransaction as UnsignedTx;
+      const innerTx = flareTransaction.getTx() as pvmSerial.ExportTx;
+      const changeOutputs = innerTx.baseTx.outputs;
+
+      changeOutputs.length.should.be.greaterThan(0);
+
+      changeOutputs.forEach((output, index) => {
+        const transferOut = output.output as TransferOutput;
+        const threshold = transferOut.outputOwners.threshold.value();
+
+        threshold.should.equal(
+          testData.threshold,
+          `Change output ${index} should have threshold=${testData.threshold}, but has threshold=${threshold}`
+        );
+      });
+    });
+
+    it('should create change output with correct locktime for multisig wallets', async () => {
+      const txBuilder = factory
+        .getExportInPBuilder()
+        .threshold(testData.threshold)
+        .locktime(testData.locktime)
+        .fromPubKey(testData.pAddresses)
+        .amount(testData.amount)
+        .externalChainId(testData.sourceChainId)
+        .feeState(testData.feeState)
+        .context(testData.context)
+        .decodedUtxos(testData.utxos);
+
+      const tx = await txBuilder.build();
+
+      const flareTransaction = (tx as any)._flareTransaction as UnsignedTx;
+      const innerTx = flareTransaction.getTx() as pvmSerial.ExportTx;
+      const changeOutputs = innerTx.baseTx.outputs;
+
+      changeOutputs.length.should.be.greaterThan(0);
+
+      changeOutputs.forEach((output, index) => {
+        const transferOut = output.output as TransferOutput;
+        const locktime = transferOut.outputOwners.locktime.value();
+
+        locktime.should.equal(
+          BigInt(testData.locktime),
+          `Change output ${index} should have locktime=${testData.locktime}, but has locktime=${locktime}`
+        );
+      });
+    });
+
+    it('should maintain threshold=2 after parsing and rebuilding', async () => {
+      const txBuilder = factory
+        .getExportInPBuilder()
+        .threshold(testData.threshold)
+        .locktime(testData.locktime)
+        .fromPubKey(testData.pAddresses)
+        .amount(testData.amount)
+        .externalChainId(testData.sourceChainId)
+        .feeState(testData.feeState)
+        .context(testData.context)
+        .decodedUtxos(testData.utxos);
+
+      const tx = await txBuilder.build();
+      const txHex = tx.toBroadcastFormat();
+
+      const parsedTxBuilder = factory.from(txHex);
+      const parsedTx = await parsedTxBuilder.build();
+
+      const flareTransaction = (parsedTx as any)._flareTransaction as UnsignedTx;
+      const innerTx = flareTransaction.getTx() as pvmSerial.ExportTx;
+      const changeOutputs = innerTx.baseTx.outputs;
+
+      changeOutputs.length.should.be.greaterThan(0);
+
+      changeOutputs.forEach((output, index) => {
+        const transferOut = output.output as TransferOutput;
+        const threshold = transferOut.outputOwners.threshold.value();
+
+        threshold.should.equal(
+          testData.threshold,
+          `After parsing, change output ${index} should have threshold=${testData.threshold}, but has threshold=${threshold}`
+        );
+      });
+    });
+
+    it('should have change output addresses matching wallet addresses', async () => {
+      const txBuilder = factory
+        .getExportInPBuilder()
+        .threshold(testData.threshold)
+        .locktime(testData.locktime)
+        .fromPubKey(testData.pAddresses)
+        .amount(testData.amount)
+        .externalChainId(testData.sourceChainId)
+        .feeState(testData.feeState)
+        .context(testData.context)
+        .decodedUtxos(testData.utxos);
+
+      const tx = await txBuilder.build();
+
+      const flareTransaction = (tx as any)._flareTransaction as UnsignedTx;
+      const innerTx = flareTransaction.getTx() as pvmSerial.ExportTx;
+      const changeOutputs = innerTx.baseTx.outputs;
+
+      changeOutputs.length.should.be.greaterThan(0);
+
+      changeOutputs.forEach((output) => {
+        const transferOut = output.output as TransferOutput;
+        const addresses = transferOut.outputOwners.addrs;
+
+        addresses.length.should.equal(3, 'Change output should have 3 addresses for multisig wallet');
+      });
     });
   });
 });
