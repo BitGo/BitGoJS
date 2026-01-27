@@ -609,6 +609,7 @@ export const APT_FEATURES = [
   CoinFeature.SUPPORTS_TOKENS,
   CoinFeature.ENTERPRISE_PAYS_FEES,
   CoinFeature.TSS_ENTERPRISE_PAYS_FEES,
+  CoinFeature.STUCK_TRANSACTION_MANAGEMENT_TSS,
 ];
 
 export const ICP_FEATURES = [
