@@ -2488,7 +2488,7 @@ export const solTokens = [
     '2zMMhcVQEXDtdE6vsFS7S7D5oUodfJHE8vd1gnBouauv',
     '2zMMhcVQEXDtdE6vsFS7S7D5oUodfJHE8vd1gnBouauv',
     UnderlyingAsset['sol:pengu'],
-    SOL_TOKEN_FEATURES_WITH_FRANKFURT
+    SOL_TOKEN_FEATURES
   ),
 
   solToken(
