@@ -479,7 +479,11 @@ export abstract class AbstractUtxoCoin
     }
   }
 
-  preprocessBuildParams(params: Record<string, any>): Record<string, any> {
+  /**
+   * This is called before crafting the HTTP request to the BitGo API.
+   * It converts the recipient address `scriptPubKey:...` to { script: string } | { address: string }.
+   */
+  override preprocessBuildParams(params: Record<string, any>): Record<string, any> {
     if (params.recipients !== undefined) {
       params.recipients =
         params.recipients instanceof Array
