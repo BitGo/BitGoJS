@@ -479,7 +479,11 @@ export abstract class AbstractUtxoCoin
     }
   }
 
-  preprocessBuildParams(params: Record<string, any>): Record<string, any> {
+  /**
+   * This is called before crafting the HTTP request to the BitGo API.
+   * It converts the recipient address `scriptPubKey:...` to { script: string } | { address: string }.
+   */
+  override preprocessBuildParams(params: Record<string, any>): Record<string, any> {
     if (params.recipients !== undefined) {
       params.recipients =
         params.recipients instanceof Array
@@ -586,19 +590,6 @@ export abstract class AbstractUtxoCoin
       }
     }
     return this.decodeTransaction(string, decodeWith);
-  }
-
-  toCanonicalTransactionRecipient(output: { valueString: string; address?: string }): {
-    amount: bigint;
-    address: string;
-  } {
-    const amount = BigInt(output.valueString);
-    assertValidTransactionRecipient({ amount, address: output.address });
-    assert(output.address, 'address is required');
-    if (isScriptRecipient(output.address)) {
-      return { amount, address: output.address };
-    }
-    return { amount, address: this.canonicalAddress(output.address) };
   }
 
   /**

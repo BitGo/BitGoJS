@@ -14,6 +14,7 @@ import {
 
 import { AbstractUtxoCoin } from '../../abstractUtxoCoin';
 import { Output, FixedScriptWalletOutput } from '../types';
+import { fromExtendedAddressFormatToScript } from '../recipient';
 
 const debug = debugLib('bitgo:v2:parseoutput');
 
@@ -284,7 +285,9 @@ export async function parseOutput({
      */
     if (txParams.recipients !== undefined && txParams.recipients.length > RECIPIENT_THRESHOLD) {
       const isCurrentAddressInRecipients = txParams.recipients.some((recipient) =>
-        recipient.address.includes(currentAddress)
+        fromExtendedAddressFormatToScript(recipient.address, coin.name).equals(
+          fromExtendedAddressFormatToScript(currentAddress, coin.name)
+        )
       );
 
       if (isCurrentAddressInRecipients) {

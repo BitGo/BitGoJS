@@ -33,6 +33,19 @@ export function fromExtendedAddressFormatToScript(extendedAddress: string, coinN
   return utxolib.addressFormat.toOutputScriptTryFormats(result.address, network);
 }
 
+export function toOutputScript(v: string | { address: string } | { script: string }, coinName: UtxoCoinName): Buffer {
+  if (typeof v === 'string') {
+    return fromExtendedAddressFormatToScript(v, coinName);
+  }
+  if ('script' in v) {
+    return Buffer.from(v.script, 'hex');
+  }
+  if ('address' in v) {
+    return fromExtendedAddressFormatToScript(v.address, coinName);
+  }
+  throw new Error('invalid input');
+}
+
 /**
  * Convert a script or address to the extended address format.
  * @param script

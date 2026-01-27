@@ -7,7 +7,10 @@ export type ComparableOutput<TValue> = {
 export type ActualOutput = ComparableOutput<bigint>;
 
 /** Expected outputs can have a fixed value or 'max'. */
-export type ExpectedOutput = ComparableOutput<bigint | 'max'>;
+export type ExpectedOutput = ComparableOutput<bigint | 'max'> & {
+  /** When true, the output is not required to be present in the transaction. */
+  optional?: boolean;
+};
 
 /**
  * @param a
@@ -40,6 +43,13 @@ export function outputDifference<A extends ActualOutput | ExpectedOutput, B exte
   return first;
 }
 
+export function getMissingOutputs<A extends ActualOutput, B extends ExpectedOutput>(
+  actualOutputs: A[],
+  expectedOutputs: B[]
+): B[] {
+  return outputDifference(expectedOutputs, actualOutputs).filter((o) => !o.optional);
+}
+
 export type OutputDifferenceWithExpected<TActual extends ActualOutput, TExpected extends ExpectedOutput> = {
   /** These are the external outputs that were expected and found in the transaction. */
   explicitOutputs: TActual[];
@@ -65,7 +75,7 @@ export function outputDifferencesWithExpected<TActual extends ActualOutput, TExp
 ): OutputDifferenceWithExpected<TActual, TExpected> {
   const implicitOutputs = outputDifference(actualOutputs, expectedOutputs);
   const explicitOutputs = outputDifference(actualOutputs, implicitOutputs);
-  const missingOutputs = outputDifference(expectedOutputs, actualOutputs);
+  const missingOutputs = getMissingOutputs(actualOutputs, expectedOutputs);
   return {
     explicitOutputs,
     implicitOutputs,
