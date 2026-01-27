@@ -183,7 +183,7 @@ export async function parseTransaction<TNumber extends bigint | number>(
         keychainArray: toKeychainTriple(keychains),
         wallet,
         txParams: {
-          recipients: expectedOutputs,
+          recipients: txParams.recipients ?? [],
           changeAddress: txParams.changeAddress,
         },
         customChange,
