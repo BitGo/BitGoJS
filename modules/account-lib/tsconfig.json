@@ -122,6 +122,9 @@
       "path": "../sdk-coin-tia"
     },
     {
+      "path": "../sdk-coin-tempo"
+    },
+    {
       "path": "../sdk-coin-trx"
     },
     {

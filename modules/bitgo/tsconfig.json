@@ -237,6 +237,9 @@
       "path": "../sdk-coin-tao"
     },
     {
+      "path": "../sdk-coin-tempo"
+    },
+    {
       "path": "../sdk-coin-tia"
     },
     {

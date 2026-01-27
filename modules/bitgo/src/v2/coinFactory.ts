@@ -37,6 +37,7 @@ import {
   CosmosTokenConfig,
   VetTokenConfig,
   TaoTokenConfig,
+  Tip20TokenConfig,
   PolyxTokenConfig,
   JettonTokenConfig,
 } from '@bitgo/statics';
@@ -133,6 +134,8 @@ import {
   Susd,
   Tao,
   TaoToken,
+  Tempo,
+  Tip20Token,
   Ton,
   Tada,
   Talgo,
@@ -200,6 +203,7 @@ import {
   Twemix,
   Tworld,
   Ttao,
+  Ttempo,
   Ttia,
   Tton,
   Ttrx,
@@ -304,6 +308,7 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('sui', Sui.createInstance);
   coinFactory.register('susd', Susd.createInstance);
   coinFactory.register('tao', Tao.createInstance);
+  coinFactory.register('tempo', Tempo.createInstance);
   coinFactory.register('tia', Tia.createInstance);
   coinFactory.register('ton', Ton.createInstance);
   coinFactory.register('talgo', Talgo.createInstance);
@@ -373,6 +378,7 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   coinFactory.register('tsui', Tsui.createInstance);
   coinFactory.register('tsusd', Tsusd.createInstance);
   coinFactory.register('ttao', Ttao.createInstance);
+  coinFactory.register('ttempo', Ttempo.createInstance);
   coinFactory.register('ttia', Ttia.createInstance);
   coinFactory.register('tton', Tton.createInstance);
   coinFactory.register('ttrx', Ttrx.createInstance);
@@ -519,6 +525,10 @@ export function registerCoinConstructors(coinFactory: CoinFactory, coinMap: Coin
   );
 
   TaoToken.createTokenConstructors([...tokens.bitcoin.tao.tokens, ...tokens.testnet.tao.tokens]).forEach(
+    ({ name, coinConstructor }) => coinFactory.register(name, coinConstructor)
+  );
+
+  Tip20Token.createTokenConstructors([...tokens.bitcoin.tempo.tokens, ...tokens.testnet.tempo.tokens]).forEach(
     ({ name, coinConstructor }) => coinFactory.register(name, coinConstructor)
   );
 
@@ -751,6 +761,8 @@ export function getCoinConstructor(coinName: string): CoinConstructor | undefine
       return Susd.createInstance;
     case 'tao':
       return Tao.createInstance;
+    case 'tempo':
+      return Tempo.createInstance;
     case 'tia':
       return Tia.createInstance;
     case 'ton':
@@ -889,6 +901,8 @@ export function getCoinConstructor(coinName: string): CoinConstructor | undefine
       return Tsusd.createInstance;
     case 'ttao':
       return Ttao.createInstance;
+    case 'ttempo':
+      return Ttempo.createInstance;
     case 'ttia':
       return Ttia.createInstance;
     case 'tton':
@@ -1043,6 +1057,9 @@ export function getTokenConstructor(tokenConfig: TokenConfig): CoinConstructor |
     case 'tao':
     case 'ttao':
       return TaoToken.createTokenConstructor(tokenConfig as TaoTokenConfig);
+    case 'tempo':
+    case 'ttempo':
+      return Tip20Token.createTokenConstructor(tokenConfig as Tip20TokenConfig);
     case 'polyx':
     case 'tpolyx':
       return PolyxToken.createTokenConstructor(tokenConfig as PolyxTokenConfig);
