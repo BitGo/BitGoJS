@@ -3879,6 +3879,13 @@ export const ofcCoins = [
   // New SOL OFC tokens
   ofcsolToken('0ce490e5-fba4-4f50-b059-598c151482f0', 'ofcsol:prcl', 'Parcl', 6, UnderlyingAsset['sol:prcl']),
   ofcsolToken('ddba6928-8700-4435-8970-0e75acae7025', 'ofcsol:asp', 'Aspecta', 9, UnderlyingAsset['sol:asp']),
+  ofcsolToken(
+    '2cb0b222-eeae-441b-9546-698a87c509e0',
+    'ofcsol:pengu',
+    'Pudgy Penguins',
+    6,
+    UnderlyingAsset['sol:pengu']
+  ),
   // New SUI OFC token
   ofcSuiToken('1e01eb3d-2573-4662-aa5e-4c390e4a9b38', 'ofcsui:dmc', 'DeLorean', 9, UnderlyingAsset['sui:dmc']),
 ];
