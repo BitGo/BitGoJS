@@ -179,7 +179,28 @@ export class ExportInPTxBuilder extends AtomicTransactionBuilder {
     const flareUnsignedTx = exportTx as UnsignedTx;
     const innerTx = flareUnsignedTx.getTx() as pvmSerial.ExportTx;
 
-    const utxosWithIndex = innerTx.baseTx.inputs.map((input) => {
+    const changeOutputs = innerTx.baseTx.outputs;
+    let correctedExportTx: pvmSerial.ExportTx = innerTx;
+
+    if (changeOutputs.length > 0) {
+      const correctedChangeOutputs = changeOutputs.map((output) => {
+        const transferOut = output.output as TransferOutput;
+        const originalOwners = transferOut.outputOwners;
+
+        const assetIdStr = utils.flareIdString(Buffer.from(output.assetId.toBytes()).toString('hex')).toString();
+        return TransferableOutput.fromNative(
+          assetIdStr,
+          transferOut.amount(),
+          originalOwners.addrs.map((addr) => Buffer.from(addr.toBytes())),
+          this.transaction._locktime,
+          this.transaction._threshold
+        );
+      });
+
+      correctedExportTx = this.createCorrectedExportTx(innerTx, correctedChangeOutputs);
+    }
+
+    const utxosWithIndex = correctedExportTx.baseTx.inputs.map((input) => {
       const inputTxid = utils.cb58Encode(Buffer.from(input.utxoID.txID.toBytes()));
       const inputOutputIdx = input.utxoID.outputIdx.value().toString();
 
@@ -213,9 +234,44 @@ export class ExportInPTxBuilder extends AtomicTransactionBuilder {
       this.createAddressMapForUtxoWithSigIndices(utxo, utxo.threshold, utxo.actualSigIndices)
     );
 
-    const fixedUnsignedTx = new UnsignedTx(innerTx, [], new FlareUtils.AddressMaps(addressMaps), txCredentials);
+    const fixedUnsignedTx = new UnsignedTx(
+      correctedExportTx,
+      [],
+      new FlareUtils.AddressMaps(addressMaps),
+      txCredentials
+    );
 
     this.transaction.setTransaction(fixedUnsignedTx);
+  }
+
+  /**
+   * Create a corrected ExportTx with the given change outputs.
+   * This is necessary because FlareJS's newExportTx doesn't support setting
+   * the threshold and locktime for change outputs.
+   *
+   * FlareJS declares baseTx.outputs as readonly, so we use Object.defineProperty
+   * to override the property with the corrected outputs. This is a workaround until
+   * FlareJS adds proper support for change output thresholds.
+   *
+   * @param originalTx - The original ExportTx
+   * @param correctedOutputs - The corrected change outputs with proper threshold
+   * @returns A new ExportTx with the corrected change outputs
+   */
+  private createCorrectedExportTx(
+    originalTx: pvmSerial.ExportTx,
+    correctedOutputs: TransferableOutput[]
+  ): pvmSerial.ExportTx {
+    // FlareJS declares baseTx.outputs as `public readonly outputs: readonly TransferableOutput[]`
+    // We use Object.defineProperty to override the readonly property with our corrected outputs.
+    // This is necessary because FlareJS's newExportTx doesn't support change output threshold/locktime.
+    Object.defineProperty(originalTx.baseTx, 'outputs', {
+      value: correctedOutputs,
+      writable: false,
+      enumerable: true,
+      configurable: true,
+    });
+
+    return originalTx;
   }
 
   /**
