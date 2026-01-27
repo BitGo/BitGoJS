@@ -14,7 +14,8 @@ import timeout from 'connect-timeout';
 import * as bodyParser from 'body-parser';
 
 import { Config, config } from './config';
-
+// Initialize console sanitization (ensures override for TypeScript entry point)
+import './utils/consoleOverride';
 const debug = debugLib('bitgo:express');
 
 import { SSL_OP_NO_TLSv1 } from 'constants';

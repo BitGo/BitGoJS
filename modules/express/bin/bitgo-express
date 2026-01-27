@@ -10,6 +10,10 @@ process.on('unhandledRejection', (reason, promise) => {
 
 const { init } = require('../dist/src/expressApp');
 
+// Initialize console sanitization 
+const { overrideConsole } = require('../dist/src/utils/consoleOverride');
+overrideConsole();
+
 if (require.main === module) {
   init().catch((err) => {
     console.log(`Fatal error: ${err.message}`);
