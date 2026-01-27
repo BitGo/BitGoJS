@@ -26,6 +26,9 @@
     },
     {
       "path": "../utxo-core"
+    },
+    {
+      "path": "../utxo-ord"
     }
   ]
 }

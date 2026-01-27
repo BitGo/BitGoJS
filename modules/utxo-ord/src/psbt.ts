@@ -1,30 +1,77 @@
-import { Network, bitgo, address } from '@bitgo/utxo-lib';
-import { Dimensions, VirtualSizes } from '@bitgo/unspents';
+import { fixedScriptWallet, Dimensions, type CoinName } from '@bitgo/wasm-utxo';
 
 import { OrdOutput } from './OrdOutput';
-import { parseSatPoint, SatPoint } from './SatPoint';
+import { parseSatPoint, parseOutputId, SatPoint } from './SatPoint';
 import { SatRange } from './SatRange';
 import { getOrdOutputsForLayout, OutputLayout, toArray, findOutputLayout } from './OutputLayout';
 import { powerset } from './combinations';
 
-type WalletUnspent = bitgo.WalletUnspent<bigint>;
+type WalletKeysArg = fixedScriptWallet.WalletKeysArg;
+type SignPath = fixedScriptWallet.SignPath;
+const { BitGoPsbt, ChainCode } = fixedScriptWallet;
+
+/**
+ * Network type from utxo-lib for backward compatibility.
+ */
+type UtxolibNetwork = {
+  messagePrefix?: string;
+  bech32?: string;
+  pubKeyHash: number;
+  scriptHash: number;
+  wif: number;
+};
+
+/**
+ * Map utxo-lib network objects to CoinName strings.
+ */
+function networkToCoinName(network: UtxolibNetwork): CoinName {
+  // Bitcoin mainnet
+  if (network.bech32 === 'bc' && network.pubKeyHash === 0) {
+    return 'btc';
+  }
+  // Bitcoin testnet
+  if (network.bech32 === 'tb' && network.pubKeyHash === 111) {
+    return 'tbtc';
+  }
+  throw new Error(`Unknown network: ${JSON.stringify(network)}`);
+}
+
+/**
+ * Normalize network parameter - accepts either CoinName string or utxo-lib Network object.
+ */
+function normalizeCoinName(networkOrCoinName: CoinName | UtxolibNetwork): CoinName {
+  if (typeof networkOrCoinName === 'string') {
+    return networkOrCoinName;
+  }
+  return networkToCoinName(networkOrCoinName);
+}
+
+/** Segwit transaction overhead in virtual bytes */
+const TX_SEGWIT_OVERHEAD_VSIZE = 10;
+
+export type WalletUnspent = {
+  id: string; // "txid:vout"
+  value: bigint;
+  chain: number;
+  index: number;
+};
 
 export type WalletOutputPath = {
-  chain: bitgo.ChainCode;
+  chain: fixedScriptWallet.ChainCode;
   index: number;
 };
 
 export type WalletInputBuilder = {
-  walletKeys: bitgo.RootWalletKeys;
-  signer: bitgo.KeyName;
-  cosigner: bitgo.KeyName;
+  walletKeys: WalletKeysArg;
+  signer: SignPath['signer'];
+  cosigner: SignPath['cosigner'];
 };
 
 /**
  * Describes all outputs of an inscription transaction
  */
 export type InscriptionTransactionOutputs = {
-  inscriptionRecipient: string | Buffer;
+  inscriptionRecipient: string | Uint8Array;
   changeOutputs: [WalletOutputPath, WalletOutputPath];
 };
 
@@ -45,50 +92,61 @@ export const DefaultInscriptionConstraints = {
 };
 
 export function createPsbtFromOutputLayout(
-  network: Network,
+  networkOrCoinName: CoinName | UtxolibNetwork,
   inputBuilder: WalletInputBuilder,
   unspents: WalletUnspent[],
   outputs: InscriptionTransactionOutputs,
   outputLayout: OutputLayout
-): bitgo.UtxoPsbt {
-  const psbt = bitgo.createPsbtForNetwork({ network: network });
+): fixedScriptWallet.BitGoPsbt {
   if (unspents.length === 0) {
     throw new Error(`must provide at least one unspent`);
   }
-  unspents.forEach((u) =>
-    bitgo.addWalletUnspentToPsbt(psbt, u, inputBuilder.walletKeys, inputBuilder.signer, inputBuilder.cosigner)
-  );
+
+  const coinName = normalizeCoinName(networkOrCoinName);
+  const psbt = BitGoPsbt.createEmpty(coinName, inputBuilder.walletKeys);
+
+  // Add inputs
+  unspents.forEach((u) => {
+    const { txid, vout } = parseOutputId(u.id);
+    psbt.addWalletInput({ txid, vout, value: u.value }, inputBuilder.walletKeys, {
+      scriptId: { chain: u.chain, index: u.index },
+      signPath: { signer: inputBuilder.signer, cosigner: inputBuilder.cosigner },
+    });
+  });
+
+  // Build ord outputs from layout
   const ordInput = OrdOutput.joinAll(unspents.map((u) => new OrdOutput(u.value)));
   const ordOutputs = getOrdOutputsForLayout(ordInput, outputLayout);
+
   toArray(ordOutputs).forEach((ordOutput) => {
     if (ordOutput === null) {
       return;
     }
     switch (ordOutput) {
-      // skip padding outputs and fee output (virtual)
-      case null:
+      // skip fee output (virtual)
       case ordOutputs.feeOutput:
         return;
-      // add padding outputs
+      // add padding/change outputs
       case ordOutputs.firstChangeOutput:
       case ordOutputs.secondChangeOutput:
         const { chain, index } =
           ordOutput === ordOutputs.firstChangeOutput ? outputs.changeOutputs[0] : outputs.changeOutputs[1];
-        bitgo.addWalletOutputToPsbt(psbt, inputBuilder.walletKeys, chain, index, ordOutput.value);
+        psbt.addWalletOutput(inputBuilder.walletKeys, { chain, index, value: ordOutput.value });
         break;
       // add actual inscription output
       case ordOutputs.inscriptionOutput:
-        let { inscriptionRecipient } = outputs;
-        if (typeof inscriptionRecipient === 'string') {
-          inscriptionRecipient = address.toOutputScript(inscriptionRecipient, network);
+        const recipient = outputs.inscriptionRecipient;
+        if (typeof recipient === 'string') {
+          psbt.addOutput(recipient, ordOutput.value);
+        } else if (recipient instanceof Uint8Array) {
+          psbt.addOutput(recipient, ordOutput.value);
+        } else {
+          throw new Error('inscriptionRecipient must be a string or Uint8Array');
         }
-        psbt.addOutput({
-          script: inscriptionRecipient,
-          value: ordOutput.value,
-        });
         break;
     }
   });
+
   return psbt;
 }
 
@@ -134,6 +192,19 @@ export function findOutputLayoutForWalletUnspents(
     maxInscriptionOutput = DefaultInscriptionConstraints.maxInscriptionOutput,
   } = constraints;
 
+  // Calculate input vsize using wasm-utxo Dimensions
+  const inputDimensions = inputs.reduce(
+    (dims, input) => dims.plus(Dimensions.fromInput({ chain: input.chain })),
+    Dimensions.empty()
+  );
+  const inputsVSize = inputDimensions.getInputVSize();
+
+  // Calculate output vsize using wasm-utxo Dimensions
+  const outputDimensions = Dimensions.fromOutput({
+    scriptType: ChainCode.scriptType(outputs.changeOutputs[0].chain),
+  });
+  const outputVSize = outputDimensions.getOutputVSize();
+
   // Join all the inputs into a single inscriptionOutput.
   // For the purposes of finding a layout there is no difference.
   const inscriptionOutput = OrdOutput.joinAll(
@@ -143,18 +214,8 @@ export function findOutputLayoutForWalletUnspents(
     minChangeOutput,
     minInscriptionOutput,
     maxInscriptionOutput,
-    feeFixed: getFee(
-      VirtualSizes.txSegOverheadVSize +
-        Dimensions.fromUnspents(inputs, {
-          p2tr: { scriptPathLevel: 1 },
-          p2trMusig2: { scriptPathLevel: undefined },
-        }).getInputsVSize(),
-      constraints.feeRateSatKB
-    ),
-    feePerOutput: getFee(
-      Dimensions.fromOutputOnChain(outputs.changeOutputs[0].chain).getOutputsVSize(),
-      constraints.feeRateSatKB
-    ),
+    feeFixed: getFee(TX_SEGWIT_OVERHEAD_VSIZE + inputsVSize, constraints.feeRateSatKB),
+    feePerOutput: getFee(outputVSize, constraints.feeRateSatKB),
   });
 
   return layout ? { inputs, layout } : undefined;
@@ -199,7 +260,7 @@ export class ErrorNoLayout extends Error {
 }
 
 /**
- * @param network
+ * @param networkOrCoinName - Coin name (e.g., "btc", "tbtc") or utxo-lib Network object
  * @param inputBuilder
  * @param unspent
  * @param satPoint
@@ -209,7 +270,7 @@ export class ErrorNoLayout extends Error {
  * @param [minimizeInputs=true] - try to find input combination with minimal fees. Limits supplementaryUnspents to 4.
  */
 export function createPsbtForSingleInscriptionPassingTransaction(
-  network: Network,
+  networkOrCoinName: CoinName | UtxolibNetwork,
   inputBuilder: WalletInputBuilder,
   unspent: WalletUnspent | WalletUnspent[],
   satPoint: SatPoint,
@@ -222,7 +283,7 @@ export function createPsbtForSingleInscriptionPassingTransaction(
     supplementaryUnspents?: WalletUnspent[];
     minimizeInputs?: boolean;
   } = {}
-): bitgo.UtxoPsbt {
+): fixedScriptWallet.BitGoPsbt {
   // support for legacy call style
   if (Array.isArray(unspent)) {
     if (unspent.length !== 1) {
@@ -243,5 +304,5 @@ export function createPsbtForSingleInscriptionPassingTransaction(
     throw new ErrorNoLayout();
   }
 
-  return createPsbtFromOutputLayout(network, inputBuilder, result.inputs, outputs, result.layout);
+  return createPsbtFromOutputLayout(networkOrCoinName, inputBuilder, result.inputs, outputs, result.layout);
 }

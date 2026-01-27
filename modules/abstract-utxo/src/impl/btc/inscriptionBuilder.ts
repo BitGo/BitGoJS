@@ -1,6 +1,7 @@
 import assert from 'assert';
 
 import {
+  BaseCoin,
   HalfSignedUtxoTransaction,
   IInscriptionBuilder,
   IWallet,
@@ -8,10 +9,10 @@ import {
   PrebuildTransactionResult,
   PreparedInscriptionRevealData,
   SubmitTransactionResponse,
+  Triple,
   xprvToRawPrv,
-  xpubToCompressedPub,
 } from '@bitgo/sdk-core';
-import * as utxolib from '@bitgo/utxo-lib';
+import { bip32 } from '@bitgo/secp256k1';
 import {
   createPsbtForSingleInscriptionPassingTransaction,
   DefaultInscriptionConstraints,
@@ -23,10 +24,24 @@ import {
   findOutputLayoutForWalletUnspents,
   MAX_UNSPENTS_FOR_OUTPUT_LAYOUT,
   SatPoint,
+  WalletUnspent,
+  type TapLeafScript,
 } from '@bitgo/utxo-ord';
+import { fixedScriptWallet } from '@bitgo/wasm-utxo';
 
-import { AbstractUtxoCoin, RootWalletKeys } from '../../abstractUtxoCoin';
-import { getWalletKeys } from '../../recovery/crossChainRecovery';
+import { AbstractUtxoCoin } from '../../abstractUtxoCoin';
+import { fetchKeychains } from '../../keychains';
+
+/** Key identifier for signing */
+type SignerKey = 'user' | 'backup' | 'bitgo';
+
+/** Unspent from wallet API (value may be number or bigint) */
+type WalletUnspentLike = {
+  id: string;
+  value: number | bigint;
+  chain: number;
+  index: number;
+};
 
 const SUPPLEMENTARY_UNSPENTS_MIN_VALUE_SATS = [0, 20_000, 200_000];
 
@@ -43,11 +58,26 @@ export class InscriptionBuilder implements IInscriptionBuilder {
     const user = await this.wallet.baseCoin.keychains().get({ id: this.wallet.keyIds()[KeyIndices.USER] });
     assert(user.pub);
 
-    const derived = this.coin.deriveKeyWithSeed({ key: user.pub, seed: inscriptionData.toString() });
-    const compressedPublicKey = xpubToCompressedPub(derived.key);
-    const xOnlyPublicKey = utxolib.bitgo.outputScripts.toXOnlyPublicKey(Buffer.from(compressedPublicKey, 'hex'));
+    const userKey = bip32.fromBase58(user.pub);
+    const { key: derivedKey } = BaseCoin.deriveKeyWithSeedBip32(userKey, inscriptionData.toString());
 
-    return inscriptions.createInscriptionRevealData(xOnlyPublicKey, contentType, inscriptionData, this.coin.network);
+    const result = inscriptions.createInscriptionRevealData(
+      derivedKey.publicKey,
+      contentType,
+      inscriptionData,
+      this.coin.name
+    );
+
+    // Convert TapLeafScript to utxolib format for backwards compatibility
+    return {
+      address: result.address,
+      revealTransactionVSize: result.revealTransactionVSize,
+      tapLeafScript: {
+        controlBlock: Buffer.from(result.tapLeafScript.controlBlock),
+        script: Buffer.from(result.tapLeafScript.script),
+        leafVersion: result.tapLeafScript.leafVersion,
+      },
+    };
   }
 
   private async prepareTransferWithExtraInputs(
@@ -59,8 +89,8 @@ export class InscriptionBuilder implements IInscriptionBuilder {
       inscriptionConstraints,
       txFormat,
     }: {
-      signer: utxolib.bitgo.KeyName;
-      cosigner: utxolib.bitgo.KeyName;
+      signer: SignerKey;
+      cosigner: SignerKey;
       inscriptionConstraints: {
         minChangeOutput?: bigint;
         minInscriptionOutput?: bigint;
@@ -68,29 +98,34 @@ export class InscriptionBuilder implements IInscriptionBuilder {
       };
       txFormat?: 'psbt' | 'legacy';
     },
-    rootWalletKeys: RootWalletKeys,
+    walletXpubs: Triple<string>,
     outputs: InscriptionOutputs,
-    inscriptionUnspents: utxolib.bitgo.WalletUnspent<bigint>[],
+    inscriptionUnspents: WalletUnspent[],
     supplementaryUnspentsMinValue: number
   ): Promise<PrebuildTransactionResult> {
-    let supplementaryUnspents: utxolib.bitgo.WalletUnspent<bigint>[] = [];
+    let supplementaryUnspents: WalletUnspent[] = [];
     if (supplementaryUnspentsMinValue > 0) {
       const response = await this.wallet.unspents({
         minValue: supplementaryUnspentsMinValue,
       });
       // Filter out the inscription unspent from the supplementary unspents
       supplementaryUnspents = response.unspents
-        .filter((unspent) => unspent.id !== inscriptionUnspents[0].id)
+        .filter((unspent: { id: string }) => unspent.id !== inscriptionUnspents[0].id)
         .slice(0, MAX_UNSPENTS_FOR_OUTPUT_LAYOUT - 1)
-        .map((unspent) => {
-          unspent.value = BigInt(unspent.value);
-          return unspent;
-        });
+        .map(
+          (unspent: WalletUnspentLike): WalletUnspent => ({
+            id: unspent.id,
+            value: BigInt(unspent.value),
+            chain: unspent.chain,
+            index: unspent.index,
+          })
+        );
     }
+
     const psbt = createPsbtForSingleInscriptionPassingTransaction(
-      this.coin.network,
+      this.coin.name,
       {
-        walletKeys: rootWalletKeys,
+        walletKeys: walletXpubs,
         signer,
         cosigner,
       },
@@ -117,7 +152,7 @@ export class InscriptionBuilder implements IInscriptionBuilder {
     }
     return {
       walletId: this.wallet.id(),
-      txHex: txFormat === 'psbt' ? psbt.toHex() : psbt.getUnsignedTx().toHex(),
+      txHex: Buffer.from(psbt.serialize()).toString('hex'),
       txInfo: { unspents: allUnspents },
       feeInfo: { fee: Number(outputLayout.layout.feeOutput), feeString: outputLayout.layout.feeOutput.toString() },
     };
@@ -146,27 +181,37 @@ export class InscriptionBuilder implements IInscriptionBuilder {
       changeAddressType = 'p2wsh',
       txFormat = 'psbt',
     }: {
-      signer?: utxolib.bitgo.KeyName;
-      cosigner?: utxolib.bitgo.KeyName;
+      signer?: SignerKey;
+      cosigner?: SignerKey;
       inscriptionConstraints?: {
         minChangeOutput?: bigint;
         minInscriptionOutput?: bigint;
         maxInscriptionOutput?: bigint;
       };
-      changeAddressType?: utxolib.bitgo.outputScripts.ScriptType2Of3;
+      changeAddressType?: 'p2sh' | 'p2shP2wsh' | 'p2wsh' | 'p2tr' | 'p2trMusig2';
       txFormat?: 'psbt' | 'legacy';
     }
   ): Promise<PrebuildTransactionResult> {
     assert(isSatPoint(satPoint));
 
-    const rootWalletKeys = await getWalletKeys(this.coin, this.wallet);
+    const keychains = await fetchKeychains(this.coin, this.wallet);
+    const walletXpubs: Triple<string> = [keychains.user.pub, keychains.backup.pub, keychains.bitgo.pub];
     const parsedSatPoint = parseSatPoint(satPoint);
     const transaction = await this.wallet.getTransaction({ txHash: parsedSatPoint.txid });
-    const unspents: utxolib.bitgo.WalletUnspent<bigint>[] = [transaction.outputs[parsedSatPoint.vout]];
-    unspents[0].value = BigInt(unspents[0].value);
+    const output = transaction.outputs[parsedSatPoint.vout];
+    const unspents: WalletUnspent[] = [
+      {
+        id: `${parsedSatPoint.txid}:${parsedSatPoint.vout}`,
+        value: BigInt(output.value),
+        chain: output.chain,
+        index: output.index,
+      },
+    ];
+
+    const changeChain = fixedScriptWallet.ChainCode.value(changeAddressType, 'internal');
 
     const changeAddress = await this.wallet.createAddress({
-      chain: utxolib.bitgo.getInternalChainCode(changeAddressType),
+      chain: changeChain,
     });
     const outputs: InscriptionOutputs = {
       inscriptionRecipient: recipient,
@@ -182,7 +227,7 @@ export class InscriptionBuilder implements IInscriptionBuilder {
           satPoint,
           feeRateSatKB,
           { signer, cosigner, inscriptionConstraints, txFormat },
-          rootWalletKeys,
+          walletXpubs,
           outputs,
           unspents,
           supplementaryUnspentsMinValue
@@ -209,10 +254,10 @@ export class InscriptionBuilder implements IInscriptionBuilder {
    */
   async signAndSendReveal(
     walletPassphrase: string,
-    tapLeafScript: utxolib.bitgo.TapLeafScript,
+    tapLeafScript: TapLeafScript,
     commitAddress: string,
     unsignedCommitTx: Buffer,
-    commitTransactionUnspents: utxolib.bitgo.WalletUnspent[],
+    commitTransactionUnspents: WalletUnspentLike[],
     recipientAddress: string,
     inscriptionData: Buffer
   ): Promise<SubmitTransactionResponse> {
@@ -230,19 +275,19 @@ export class InscriptionBuilder implements IInscriptionBuilder {
     const derived = this.coin.deriveKeyWithSeed({ key: xprv, seed: inscriptionData.toString() });
     const prv = xprvToRawPrv(derived.key);
 
-    const fullySignedRevealTransaction = await inscriptions.signRevealTransaction(
+    const fullySignedRevealTransaction = inscriptions.signRevealTransaction(
       Buffer.from(prv, 'hex'),
       tapLeafScript,
       commitAddress,
       recipientAddress,
       Buffer.from(halfSignedCommitTransaction.txHex, 'hex'),
-      this.coin.network
+      this.coin.name
     );
 
     return this.wallet.submitTransaction({
       halfSigned: {
         txHex: halfSignedCommitTransaction.txHex,
-        signedChildPsbt: fullySignedRevealTransaction.toHex(),
+        signedChildPsbt: Buffer.from(fullySignedRevealTransaction).toString('hex'),
       },
     });
   }
