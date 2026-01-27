@@ -8,7 +8,12 @@ import type { AbstractUtxoCoin, ParseTransactionOptions } from '../../abstractUt
 import type { FixedScriptWalletOutput, Output, ParsedTransaction } from '../types';
 import { fetchKeychains, getKeySignatures, toKeychainTriple, UtxoKeychain, UtxoNamedKeychains } from '../../keychains';
 import { ComparableOutput, outputDifference } from '../outputDifference';
-import { fromExtendedAddressFormatToScript, toExtendedAddressFormat } from '../recipient';
+import {
+  assertValidTransactionRecipient,
+  fromExtendedAddressFormatToScript,
+  isScriptRecipient,
+  toExtendedAddressFormat,
+} from '../recipient';
 
 import type { TransactionExplanation } from './explainTransaction';
 import { CustomChangeOptions, parseOutput } from './parseOutput';
@@ -16,6 +21,22 @@ import { CustomChangeOptions, parseOutput } from './parseOutput';
 export type ComparableOutputWithExternal<TValue> = ComparableOutput<TValue> & {
   external: boolean | undefined;
 };
+
+function toCanonicalTransactionRecipient(
+  coin: AbstractUtxoCoin,
+  output: { valueString: string; address?: string }
+): {
+  amount: bigint;
+  address: string;
+} {
+  const amount = BigInt(output.valueString);
+  assertValidTransactionRecipient({ amount, address: output.address });
+  assert(output.address, 'address is required');
+  if (isScriptRecipient(output.address)) {
+    return { amount, address: output.address };
+  }
+  return { amount, address: coin.canonicalAddress(output.address) };
+}
 
 async function parseRbfTransaction<TNumber extends bigint | number>(
   coin: AbstractUtxoCoin,
@@ -33,7 +54,7 @@ async function parseRbfTransaction<TNumber extends bigint | number>(
       if (output.wallet === wallet.id()) {
         return [];
       }
-      return [coin.toCanonicalTransactionRecipient(output)];
+      return [toCanonicalTransactionRecipient(coin, output)];
     }
   );
 

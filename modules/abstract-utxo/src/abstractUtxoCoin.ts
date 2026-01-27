@@ -592,19 +592,6 @@ export abstract class AbstractUtxoCoin
     return this.decodeTransaction(string, decodeWith);
   }
 
-  toCanonicalTransactionRecipient(output: { valueString: string; address?: string }): {
-    amount: bigint;
-    address: string;
-  } {
-    const amount = BigInt(output.valueString);
-    assertValidTransactionRecipient({ amount, address: output.address });
-    assert(output.address, 'address is required');
-    if (isScriptRecipient(output.address)) {
-      return { amount, address: output.address };
-    }
-    return { amount, address: this.canonicalAddress(output.address) };
-  }
-
   /**
    * Extract and fill transaction details such as internal/change spend, external spend (explicit vs. implicit), etc.
    * @param params
