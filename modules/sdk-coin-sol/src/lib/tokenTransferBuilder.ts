@@ -9,11 +9,11 @@ import {
   validateMintAddress,
   validateOwnerAddress,
 } from './utils';
-import { InstructionBuilderTypes } from './constants';
+import * as Constants from './constants';
 import { AtaInit, TokenAssociateRecipient, TokenTransfer, SetPriorityFee } from './iface';
 import assert from 'assert';
 import { TransactionBuilder } from './transactionBuilder';
-import _ from 'lodash';
+import * as _ from 'lodash';
 
 export interface SendParams {
   address: string;
@@ -43,7 +43,7 @@ export class TokenTransferBuilder extends TransactionBuilder {
     super.initBuilder(tx);
 
     for (const instruction of this._instructionsData) {
-      if (instruction.type === InstructionBuilderTypes.TokenTransfer) {
+      if (instruction.type === Constants.InstructionBuilderTypes.TokenTransfer) {
         const transferInstruction: TokenTransfer = instruction;
         this.sender(transferInstruction.params.fromAddress);
         this.send({
@@ -55,7 +55,7 @@ export class TokenTransferBuilder extends TransactionBuilder {
           decimalPlaces: transferInstruction.params.decimalPlaces,
         });
       }
-      if (instruction.type === InstructionBuilderTypes.CreateAssociatedTokenAccount) {
+      if (instruction.type === Constants.InstructionBuilderTypes.CreateAssociatedTokenAccount) {
         const ataInitInstruction: AtaInit = instruction;
         this._createAtaParams.push({
           ownerAddress: ataInitInstruction.params.ownerAddress,
@@ -117,6 +117,29 @@ export class TokenTransferBuilder extends TransactionBuilder {
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     assert(this._sender, 'Sender must be set before building the transaction');
+
+    const uniqueAtaCount = _.uniqBy(this._createAtaParams, (recipient: TokenAssociateRecipient) => {
+      return recipient.ownerAddress + recipient.tokenName;
+    }).length;
+
+    if (uniqueAtaCount > 0 && this._sendParams.length > Constants.MAX_RECIPIENTS_WITH_ATA_CREATION) {
+      throw new BuildTransactionError(
+        `Transaction too large: ${this._sendParams.length} recipients with ${uniqueAtaCount} ATA creations. ` +
+          `Solana legacy transactions are limited to ${Constants.SOLANA_TRANSACTION_MAX_SIZE} bytes ` +
+          `(maximum ${Constants.MAX_RECIPIENTS_WITH_ATA_CREATION} recipients with ATA creation). ` +
+          `Please split into multiple transactions with max ${Constants.MAX_RECIPIENTS_WITH_ATA_CREATION} recipients each.`
+      );
+    }
+
+    if (uniqueAtaCount === 0 && this._sendParams.length > Constants.MAX_RECIPIENTS_WITHOUT_ATA_CREATION) {
+      throw new BuildTransactionError(
+        `Transaction too large: ${this._sendParams.length} recipients. ` +
+          `Solana legacy transactions are limited to ${Constants.SOLANA_TRANSACTION_MAX_SIZE} bytes ` +
+          `(maximum ${Constants.MAX_RECIPIENTS_WITHOUT_ATA_CREATION} recipients without ATA creation). ` +
+          `Please split into multiple transactions with max ${Constants.MAX_RECIPIENTS_WITHOUT_ATA_CREATION} recipients each.`
+      );
+    }
+
     const sendInstructions = await Promise.all(
       this._sendParams.map(async (sendParams: SendParams): Promise<TokenTransfer> => {
         const coin = getSolTokenFromTokenName(sendParams.tokenName);
@@ -139,7 +162,7 @@ export class TokenTransferBuilder extends TransactionBuilder {
         }
         const sourceAddress = await getAssociatedTokenAccountAddress(tokenAddress, this._sender, false, programId);
         return {
-          type: InstructionBuilderTypes.TokenTransfer,
+          type: Constants.InstructionBuilderTypes.TokenTransfer,
           params: {
             fromAddress: this._sender,
             toAddress: sendParams.address,
@@ -180,7 +203,7 @@ export class TokenTransferBuilder extends TransactionBuilder {
           ataAddress = await getAssociatedTokenAccountAddress(tokenAddress, recipient.ownerAddress, false, programId);
         }
         return {
-          type: InstructionBuilderTypes.CreateAssociatedTokenAccount,
+          type: Constants.InstructionBuilderTypes.CreateAssociatedTokenAccount,
           params: {
             ownerAddress: recipient.ownerAddress,
             mintAddress: tokenAddress,
@@ -193,7 +216,7 @@ export class TokenTransferBuilder extends TransactionBuilder {
       })
     );
     const addPriorityFeeInstruction: SetPriorityFee = {
-      type: InstructionBuilderTypes.SetPriorityFee,
+      type: Constants.InstructionBuilderTypes.SetPriorityFee,
       params: {
         fee: this._priorityFee,
       },
