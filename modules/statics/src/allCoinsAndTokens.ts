@@ -1038,6 +1038,26 @@ export const allCoinsAndTokens = [
     [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.SHARED_COSMOS_SDK, CoinFeature.SHARED_COSMOS_WP]
   ),
   account(
+    'f5a8c3d1-7b2e-4f9a-8c6d-1e3b5a7c9d2f',
+    'dydxcosmos',
+    'dYdX Cosmos',
+    Networks.main.dydx,
+    18,
+    UnderlyingAsset.DYDX,
+    BaseUnit.DYDX,
+    [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.SHARED_COSMOS_SDK, CoinFeature.SHARED_COSMOS_WP]
+  ),
+  account(
+    'a2b4c6d8-e1f3-5a7b-9c2d-4e6f8a1b3c5d',
+    'tdydxcosmos',
+    'Testnet dYdX Cosmos',
+    Networks.test.dydx,
+    18,
+    UnderlyingAsset.DYDX,
+    BaseUnit.DYDX,
+    [...COSMOS_SIDECHAIN_FEATURES, CoinFeature.SHARED_COSMOS_SDK, CoinFeature.SHARED_COSMOS_WP]
+  ),
+  account(
     '7df858d5-9da3-4071-ab06-399962ea87b7',
     'coreum',
     'Coreum',

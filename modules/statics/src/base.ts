@@ -49,6 +49,7 @@ export enum CoinFamily {
   DOGE = 'doge',
   DOGEOS = 'dogeos',
   DOT = 'dot',
+  DYDX = 'dydx',
   ETH = 'eth',
   ETH2 = 'eth2',
   ETHW = 'ethw',
@@ -3600,6 +3601,7 @@ export enum BaseUnit {
   IOTA = 'iota',
   ZETA = 'azeta',
   KAVA = 'ukava',
+  DYDX = 'adydx',
   COREUM = 'ucore',
   TCOREUM = 'utestcore', // Coreum testnet uses different name for native coin
   ISLM = 'aISLM',
