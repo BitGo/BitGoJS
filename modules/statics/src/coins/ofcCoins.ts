@@ -300,7 +300,7 @@ export const ofcCoins = [
   ofc(
     'dc733b2f-92bf-49d3-9f5d-9774e1637f0f',
     'ofcokbxlayer',
-    'X Layer',
+    'OKB (X layer)',
     18,
     UnderlyingAsset.OKBXLAYER,
     CoinKind.CRYPTO
@@ -308,7 +308,7 @@ export const ofcCoins = [
   tofc(
     '98460a7d-0677-4dbd-934e-fbb0e9c5f8cc',
     'ofctokbxlayer',
-    'X Layer Testnet',
+    'Testnet OKB (X layer)',
     18,
     UnderlyingAsset.OKBXLAYER,
     CoinKind.CRYPTO

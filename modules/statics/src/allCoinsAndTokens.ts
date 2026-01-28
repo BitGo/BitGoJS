@@ -2467,7 +2467,7 @@ export const allCoinsAndTokens = [
   account(
     '2c59a9f2-9bb0-42ff-b925-6049476b93a0',
     'okbxlayer',
-    'X Layer',
+    'OKB (X layer)',
     Networks.main.okbxlayer,
     18,
     UnderlyingAsset.OKBXLAYER,
@@ -2487,7 +2487,7 @@ export const allCoinsAndTokens = [
   account(
     '6f29e239-1bcd-4d29-b638-e17b5efc3f6c',
     'tokbxlayer',
-    'Testnet X Layer',
+    'Testnet OKB (X layer)',
     Networks.test.okbxlayer,
     18,
     UnderlyingAsset.OKBXLAYER,
