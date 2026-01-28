@@ -19,11 +19,13 @@ export { Tip20TokenConfig };
  */
 export class Tip20Token extends Tempo {
   public readonly tokenConfig: Tip20TokenConfig;
+  public readonly contractAddress: string;
 
   constructor(bitgo: BitGoBase, tokenConfig: Tip20TokenConfig) {
     const staticsCoin = tokenConfig.network === 'Mainnet' ? coins.get('tempo') : coins.get('ttempo');
     super(bitgo, staticsCoin);
     this.tokenConfig = tokenConfig;
+    this.contractAddress = tokenConfig.tokenContractAddress;
   }
 
   /**
