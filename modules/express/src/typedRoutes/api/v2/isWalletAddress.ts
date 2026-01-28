@@ -81,6 +81,12 @@ export const IsWalletAddressBody = {
   format: optional(t.string),
   /** Root address for coins that use root address */
   rootAddress: optional(t.string),
+  /**
+   * Optional seed value from user keychain's derivedFromParentWithSeed field.
+   * For SMC (Self-Managed Cold) TSS wallets, this is used to compute the derivation prefix.
+   * This allows reusing the same parent keys to create multiple wallets with different seeds.
+   */
+  derivedFromParentWithSeed: optional(t.string),
 } as const;
 
 /**
@@ -102,6 +108,9 @@ export const IsWalletAddressResponse = {
  * Throws an error if verification fails or parameters are invalid.
  *
  * To verify a baseAddress, set the `baseAddress` and `address` to the base address of the wallet.
+ *
+ * For SMC (Self-Managed Cold) TSS wallets, include the `derivedFromParentWithSeed` parameter
+ * to properly verify addresses for wallets that were created by reusing parent keys with a derivation seed.
  *
  * Due to architecture limitations, forwarder version 0 addresses cannot be verified and will return `true` without verification.
  * Verifying custodial wallet addresses is not supported.

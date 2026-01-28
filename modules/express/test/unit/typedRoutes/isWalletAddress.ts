@@ -193,6 +193,42 @@ describe('IsWalletAddress codec tests', function () {
       assert.strictEqual(decoded.format, 'hex');
     });
 
+    it('should validate body with derivedFromParentWithSeed for SMC wallets', function () {
+      const validBody = {
+        address: '0xa33f0975f53cdcfcc0cb564d25fb5be03b0651cf',
+        baseAddress: '0xc012041dac143a59fa491db3a2b67b69bd78b685',
+        keychains: [
+          {
+            pub: 'user_pub',
+            commonKeychain:
+              '033b02aac4f038fef5118350b77d302ec6202931ca2e7122aad88994ffefcbc70a6069e662436236abb1619195232c41580204cb202c22357ed8f53e69eac5c69e',
+          },
+          {
+            pub: 'backup_pub',
+            commonKeychain:
+              '033b02aac4f038fef5118350b77d302ec6202931ca2e7122aad88994ffefcbc70a6069e662436236abb1619195232c41580204cb202c22357ed8f53e69eac5c69e',
+          },
+          {
+            pub: 'bitgo_pub',
+            commonKeychain:
+              '033b02aac4f038fef5118350b77d302ec6202931ca2e7122aad88994ffefcbc70a6069e662436236abb1619195232c41580204cb202c22357ed8f53e69eac5c69e',
+          },
+        ],
+        walletVersion: 6,
+        index: 7,
+        coinSpecific: {
+          forwarderVersion: 5,
+          feeAddress: '0xb1e725186990b86ca8efed08a3ccda9c9f400f09',
+        },
+        derivedFromParentWithSeed: 'my-unique-smc-seed-123',
+      };
+
+      const decoded = assertDecode(t.type(IsWalletAddressBody), validBody);
+      assert.strictEqual(decoded.address, validBody.address);
+      assert.strictEqual(decoded.derivedFromParentWithSeed, 'my-unique-smc-seed-123');
+      assert.strictEqual(decoded.walletVersion, 6);
+    });
+
     it('should reject body with missing address', function () {
       const invalidBody = {
         keychains: [{ pub: 'xpub1...' }],
@@ -254,6 +290,18 @@ describe('IsWalletAddress codec tests', function () {
 
       const decodedString = assertDecode(t.type(IsWalletAddressBody), validBodyWithString);
       assert.strictEqual(decodedString.index, '7');
+    });
+
+    it('should reject body with invalid derivedFromParentWithSeed type', function () {
+      const invalidBody = {
+        address: '0x6069a4baf2360bf67a6d02a7fc43d8f3910016ae',
+        keychains: [{ pub: 'xpub1...' }],
+        derivedFromParentWithSeed: 12345, // Should be string, not number
+      };
+
+      assert.throws(() => {
+        assertDecode(t.type(IsWalletAddressBody), invalidBody);
+      });
     });
   });
 
@@ -640,6 +688,157 @@ describe('IsWalletAddress codec tests', function () {
       });
     });
 
+    describe('SMC (Self-Managed Cold) TSS Wallet Address Verification', function () {
+      const commonKeychain =
+        '033b02aac4f038fef5118350b77d302ec6202931ca2e7122aad88994ffefcbc70a6069e662436236abb1619195232c41580204cb202c22357ed8f53e69eac5c69e';
+
+      it('should verify SMC wallet address with derivedFromParentWithSeed', async function () {
+        const requestBody = {
+          address: '0xa33f0975f53cdcfcc0cb564d25fb5be03b0651cf',
+          baseAddress: '0xc012041dac143a59fa491db3a2b67b69bd78b685',
+          coinSpecific: {
+            forwarderVersion: 5,
+            feeAddress: '0xb1e725186990b86ca8efed08a3ccda9c9f400f09',
+          },
+          keychains: [
+            { pub: 'user_pub', commonKeychain },
+            { pub: 'backup_pub', commonKeychain },
+            { pub: 'bitgo_pub', commonKeychain },
+          ],
+          index: 7,
+          walletVersion: 6,
+          derivedFromParentWithSeed: 'my-unique-smc-seed-abc123',
+        };
+
+        const isWalletAddressStub = sinon.stub().resolves(true);
+        const mockWallet = {
+          baseCoin: {
+            isWalletAddress: isWalletAddressStub,
+          },
+        };
+        const walletsGetStub = sinon.stub().resolves(mockWallet);
+        const mockWallets = {
+          get: walletsGetStub,
+        };
+        const mockCoin = {
+          wallets: sinon.stub().returns(mockWallets),
+        };
+        sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+        const result = await agent
+          .post('/api/v2/hteth/wallet/test-wallet-id/iswalletaddress')
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        assert.strictEqual(result.status, 200);
+        assert.strictEqual(result.body, true);
+
+        // Verify that the derivedFromParentWithSeed was passed to isWalletAddress
+        sinon.assert.calledOnce(isWalletAddressStub);
+        const callArgs = isWalletAddressStub.firstCall.args[0];
+        assert.strictEqual(callArgs.derivedFromParentWithSeed, 'my-unique-smc-seed-abc123');
+      });
+
+      it('should verify SMC wallet base address with derivedFromParentWithSeed', async function () {
+        const baseAddress = '0xc012041dac143a59fa491db3a2b67b69bd78b685';
+        const requestBody = {
+          address: baseAddress,
+          baseAddress: baseAddress,
+          coinSpecific: {
+            salt: '0x0',
+            forwarderVersion: 5,
+            feeAddress: '0xb1e725186990b86ca8efed08a3ccda9c9f400f09',
+          },
+          keychains: [
+            { pub: 'user_pub', commonKeychain },
+            { pub: 'backup_pub', commonKeychain },
+            { pub: 'bitgo_pub', commonKeychain },
+          ],
+          index: 0,
+          walletVersion: 6,
+          derivedFromParentWithSeed: 'another-smc-seed-xyz789',
+        };
+
+        const isWalletAddressStub = sinon.stub().resolves(true);
+        const mockWallet = {
+          baseCoin: {
+            isWalletAddress: isWalletAddressStub,
+          },
+        };
+        const walletsGetStub = sinon.stub().resolves(mockWallet);
+        const mockWallets = {
+          get: walletsGetStub,
+        };
+        const mockCoin = {
+          wallets: sinon.stub().returns(mockWallets),
+        };
+        sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+        const result = await agent
+          .post('/api/v2/hteth/wallet/test-wallet-id/iswalletaddress')
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        assert.strictEqual(result.status, 200);
+        assert.strictEqual(result.body, true);
+
+        // Verify that the derivedFromParentWithSeed was passed to isWalletAddress
+        sinon.assert.calledOnce(isWalletAddressStub);
+        const callArgs = isWalletAddressStub.firstCall.args[0];
+        assert.strictEqual(callArgs.derivedFromParentWithSeed, 'another-smc-seed-xyz789');
+      });
+
+      it('should work without derivedFromParentWithSeed for non-SMC wallets', async function () {
+        const requestBody = {
+          address: '0xa33f0975f53cdcfcc0cb564d25fb5be03b0651cf',
+          baseAddress: '0xc012041dac143a59fa491db3a2b67b69bd78b685',
+          coinSpecific: {
+            forwarderVersion: 5,
+            feeAddress: '0xb1e725186990b86ca8efed08a3ccda9c9f400f09',
+          },
+          keychains: [
+            { pub: 'user_pub', commonKeychain },
+            { pub: 'backup_pub', commonKeychain },
+            { pub: 'bitgo_pub', commonKeychain },
+          ],
+          index: 7,
+          walletVersion: 6,
+          // No derivedFromParentWithSeed - this is a regular TSS wallet
+        };
+
+        const isWalletAddressStub = sinon.stub().resolves(true);
+        const mockWallet = {
+          baseCoin: {
+            isWalletAddress: isWalletAddressStub,
+          },
+        };
+        const walletsGetStub = sinon.stub().resolves(mockWallet);
+        const mockWallets = {
+          get: walletsGetStub,
+        };
+        const mockCoin = {
+          wallets: sinon.stub().returns(mockWallets),
+        };
+        sinon.stub(BitGo.prototype, 'coin').returns(mockCoin as any);
+
+        const result = await agent
+          .post('/api/v2/hteth/wallet/test-wallet-id/iswalletaddress')
+          .set('Authorization', 'Bearer test_access_token_12345')
+          .set('Content-Type', 'application/json')
+          .send(requestBody);
+
+        assert.strictEqual(result.status, 200);
+        assert.strictEqual(result.body, true);
+
+        // Verify that derivedFromParentWithSeed is undefined for non-SMC wallets
+        sinon.assert.calledOnce(isWalletAddressStub);
+        const callArgs = isWalletAddressStub.firstCall.args[0];
+        assert.strictEqual(callArgs.derivedFromParentWithSeed, undefined);
+      });
+    });
+
     describe('Invalid Address Cases', function () {
       it('should return false for wrong address', async function () {
         const requestBody = {
@@ -785,6 +984,23 @@ describe('IsWalletAddress codec tests', function () {
         address: '0x6069a4baf2360bf67a6d02a7fc43d8f3910016ae',
         keychains: [{ pub: 'xpub1...' }],
         walletVersion: '1', // Should be number
+      };
+
+      const result = await agent
+        .post('/api/v2/hteth/wallet/test-wallet-id/iswalletaddress')
+        .set('Authorization', 'Bearer test_access_token_12345')
+        .set('Content-Type', 'application/json')
+        .send(requestBody);
+
+      assert.strictEqual(result.status, 400);
+      assert.ok(Array.isArray(result.body));
+    });
+
+    it('should return 400 for invalid derivedFromParentWithSeed type', async function () {
+      const requestBody = {
+        address: '0x6069a4baf2360bf67a6d02a7fc43d8f3910016ae',
+        keychains: [{ pub: 'xpub1...' }],
+        derivedFromParentWithSeed: 12345, // Should be string, not number
       };
 
       const result = await agent
