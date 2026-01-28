@@ -1672,7 +1672,7 @@ class JovayETHTestnet extends Testnet implements EthereumNetwork {
 
 class Xlayer extends Mainnet implements EthereumNetwork {
   name = 'X Layer';
-  family = CoinFamily.OKB;
+  family = CoinFamily.OKBXLAYER;
   explorerUrl = 'https://www.oklink.com/x-layer/tx/';
   accountExplorerUrl = 'https://www.oklink.com/x-layer/address/';
   chainId = 196;
@@ -1681,7 +1681,7 @@ class Xlayer extends Mainnet implements EthereumNetwork {
 
 class XlayerTestnet extends Testnet implements EthereumNetwork {
   name = 'Testnet X Layer';
-  family = CoinFamily.OKB;
+  family = CoinFamily.OKBXLAYER;
   explorerUrl = 'https://www.oklink.com/x-layer-testnet/tx/';
   accountExplorerUrl = 'https://www.oklink.com/x-layer-testnet/address/';
   chainId = 1952;
@@ -2400,7 +2400,7 @@ export const Networks = {
     oas: Object.freeze(new Oas()),
     og: Object.freeze(new Og()),
     ofc: Object.freeze(new Ofc()),
-    okb: Object.freeze(new Xlayer()),
+    okbxlayer: Object.freeze(new Xlayer()),
     opbnb: Object.freeze(new OpBNB()),
     fantom: Object.freeze(new Fantom()),
     morph: Object.freeze(new Morph()),
@@ -2512,7 +2512,7 @@ export const Networks = {
     oas: Object.freeze(new OasTestnet()),
     og: Object.freeze(new OgTestnet()),
     ofc: Object.freeze(new OfcTestnet()),
-    okb: Object.freeze(new XlayerTestnet()),
+    okbxlayer: Object.freeze(new XlayerTestnet()),
     opbnb: Object.freeze(new OpBNBTestnet()),
     fantom: Object.freeze(new FantomTestnet()),
     morph: Object.freeze(new MorphTestnet()),

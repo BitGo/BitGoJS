@@ -297,8 +297,22 @@ export const ofcCoins = [
     UnderlyingAsset.MORPH,
     CoinKind.CRYPTO
   ),
-  ofc('dc733b2f-92bf-49d3-9f5d-9774e1637f0f', 'ofcokb', 'X Layer', 18, UnderlyingAsset.OKB, CoinKind.CRYPTO),
-  tofc('98460a7d-0677-4dbd-934e-fbb0e9c5f8cc', 'ofctokb', 'X Layer Testnet', 18, UnderlyingAsset.OKB, CoinKind.CRYPTO),
+  ofc(
+    'dc733b2f-92bf-49d3-9f5d-9774e1637f0f',
+    'ofcokbxlayer',
+    'X Layer',
+    18,
+    UnderlyingAsset.OKBXLAYER,
+    CoinKind.CRYPTO
+  ),
+  tofc(
+    '98460a7d-0677-4dbd-934e-fbb0e9c5f8cc',
+    'ofctokbxlayer',
+    'X Layer Testnet',
+    18,
+    UnderlyingAsset.OKBXLAYER,
+    CoinKind.CRYPTO
+  ),
   ofc(
     '357901a6-9f4f-444c-abfd-c2f32638f0cb',
     'ofcmantle',

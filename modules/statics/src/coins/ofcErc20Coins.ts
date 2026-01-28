@@ -206,7 +206,7 @@ export const ofcErc20Coins = [
     CoinFeature.STABLECOIN,
   ]),
   ofcerc20('dec90842-ca08-417e-9cb0-89723cc50b77', 'ofcwbtc', 'Wrapped Bitcoin', 8, UnderlyingAsset.WBTC),
-  ofcerc20('8f01bcec-f576-49f8-b925-274566954017', 'ofceth:okb', 'OKB ETH Token', 18, UnderlyingAsset['eth:okb']),
+  ofcerc20('8f01bcec-f576-49f8-b925-274566954017', 'ofcokb', 'OKB', 18, UnderlyingAsset.OKB),
   ofcerc20('37e7d659-c3a4-4761-8f42-76fb7bc5032c', 'ofcmnt', 'Mantle', 18, UnderlyingAsset.MNT),
   ofcerc20('688725ff-e582-44bc-b42e-0de600426594', 'ofcstrk', 'StarkNet Token', 18, UnderlyingAsset.STRK),
   ofcerc20('d6d6ee90-05c1-4fdd-8621-bfaefaa703ae', 'ofctkx', 'Tokenize', 8, UnderlyingAsset.TKX),
@@ -5106,75 +5106,75 @@ export const tOfcErc20Coins = [
   // X Layer (OKB) Mainnet tokens
   ofcerc20(
     '74624f51-a9ee-4e08-a3d8-3f59221dd782',
-    'ofcokb:usdg',
+    'ofcokbxlayer:usdg',
     'Global Dollar',
     6,
-    underlyingAssetForSymbol('okb:usdg'),
+    underlyingAssetForSymbol('okbxlayer:usdg'),
     undefined,
     undefined,
     '',
     undefined,
     undefined,
     true,
-    'okb'
+    'okbxlayer'
   ),
   ofcerc20(
     '586b6383-f965-4f6a-9d40-e135ad815147',
-    'ofcokb:usdt0',
+    'ofcokbxlayer:usdt0',
     'USDT0',
     6,
-    underlyingAssetForSymbol('okb:usdt0'),
+    underlyingAssetForSymbol('okbxlayer:usdt0'),
     undefined,
     undefined,
     '',
     undefined,
     undefined,
     true,
-    'okb'
+    'okbxlayer'
   ),
   ofcerc20(
     '560de5af-59c2-421c-bb60-9086a5745539',
-    'ofcokb:usdt',
+    'ofcokbxlayer:usdt',
     'USDT',
     6,
-    underlyingAssetForSymbol('okb:usdt'),
+    underlyingAssetForSymbol('okbxlayer:usdt'),
     undefined,
     undefined,
     '',
     undefined,
     undefined,
     true,
-    'okb'
+    'okbxlayer'
   ),
   ofcerc20(
     'f22e7b40-8bfb-42b7-a741-44bb36088a50',
-    'ofcokb:usdc',
+    'ofcokbxlayer:usdc',
     'USDC',
     6,
-    underlyingAssetForSymbol('okb:usdc'),
+    underlyingAssetForSymbol('okbxlayer:usdc'),
     undefined,
     undefined,
     '',
     undefined,
     undefined,
     true,
-    'okb'
+    'okbxlayer'
   ),
 
   // X Layer (OKB) Testnet tokens
   tofcerc20(
     '1be3bd63-04d8-43f5-a772-86292fa5631d',
-    'ofctokb:tzeb',
+    'ofctokbxlayer:tzeb',
     'Zebra testnet',
     18,
-    underlyingAssetForSymbol('tokb:tzeb'),
+    underlyingAssetForSymbol('tokbxlayer:tzeb'),
     undefined,
     undefined,
     '',
     undefined,
     undefined,
     true,
-    'tokb'
+    'tokbxlayer'
   ),
 
   // Jovayeth Mainnet tokens

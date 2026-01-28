@@ -4445,11 +4445,11 @@ export const erc20Coins = [
   ),
   erc20(
     '987fa929-39ff-40a2-9249-d7b3be9dc76d',
-    'eth:okb',
-    'OKB ETH Token',
+    'okb',
+    'OKB',
     18,
     '0x75231f58b43240c9718dd58b4967c5114342a86c',
-    UnderlyingAsset['eth:okb']
+    UnderlyingAsset.OKB
   ),
   erc20(
     '68a5e76f-cb79-4016-a35e-f88b5a391d95',

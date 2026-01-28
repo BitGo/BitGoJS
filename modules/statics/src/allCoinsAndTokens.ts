@@ -2466,11 +2466,11 @@ export const allCoinsAndTokens = [
   ),
   account(
     '2c59a9f2-9bb0-42ff-b925-6049476b93a0',
-    'okb',
+    'okbxlayer',
     'X Layer',
-    Networks.main.okb,
+    Networks.main.okbxlayer,
     18,
-    UnderlyingAsset.OKB,
+    UnderlyingAsset.OKBXLAYER,
     BaseUnit.ETH,
     [
       ...EVM_FEATURES,
@@ -2486,11 +2486,11 @@ export const allCoinsAndTokens = [
   ),
   account(
     '6f29e239-1bcd-4d29-b638-e17b5efc3f6c',
-    'tokb',
+    'tokbxlayer',
     'Testnet X Layer',
-    Networks.test.okb,
+    Networks.test.okbxlayer,
     18,
-    UnderlyingAsset.OKB,
+    UnderlyingAsset.OKBXLAYER,
     BaseUnit.ETH,
     [
       ...EVM_FEATURES,
@@ -2507,50 +2507,50 @@ export const allCoinsAndTokens = [
   // X Layer (OKB) mainnet tokens
   erc20Token(
     '636c562a-87a1-4d9b-acbb-211d41b73967',
-    'okb:usdg',
+    'okbxlayer:usdg',
     'Global Dollar',
     6,
     '0x4ae46a509f6b1d9056937ba4500cb143933d2dc8',
-    UnderlyingAsset['okb:usdg'],
-    Networks.main.okb
+    UnderlyingAsset['okbxlayer:usdg'],
+    Networks.main.okbxlayer
   ),
   erc20Token(
     '34c6e62c-1926-49c0-b31d-72363745fc18',
-    'okb:usdt0',
+    'okbxlayer:usdt0',
     'USDT0',
     6,
     '0x779ded0c9e1022225f8e0630b35a9b54be713736',
-    UnderlyingAsset['okb:usdt0'],
-    Networks.main.okb
+    UnderlyingAsset['okbxlayer:usdt0'],
+    Networks.main.okbxlayer
   ),
   erc20Token(
     'd21681a2-1d13-41db-8813-76bfd9b0b23e',
-    'okb:usdt',
+    'okbxlayer:usdt',
     'USDT',
     6,
     '0x1e4a5963abfd975d8c9021ce480b42188849d41d',
-    UnderlyingAsset['okb:usdt'],
-    Networks.main.okb
+    UnderlyingAsset['okbxlayer:usdt'],
+    Networks.main.okbxlayer
   ),
   erc20Token(
     '68387219-4c67-4ccc-abc5-76a5dd1ca964',
-    'okb:usdc',
+    'okbxlayer:usdc',
     'USDC',
     6,
     '0x74b7f16337b8972027f6196a17a631ac6de26d22',
-    UnderlyingAsset['okb:usdc'],
-    Networks.main.okb
+    UnderlyingAsset['okbxlayer:usdc'],
+    Networks.main.okbxlayer
   ),
 
   // X Layer (OKB) testnet tokens
   erc20Token(
     '2b149c11-d8d6-4d5e-88f6-3d1372592201',
-    'tokb:tzeb',
+    'tokbxlayer:tzeb',
     'Zebra testnet',
     18,
     '0x8ab88ea756a039abe3e2590c1adc90e7d9ee47e9',
-    UnderlyingAsset['tokb:tzeb'],
-    Networks.test.okb
+    UnderlyingAsset['tokbxlayer:tzeb'],
+    Networks.test.okbxlayer
   ),
 
   account(

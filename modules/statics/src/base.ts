@@ -90,7 +90,7 @@ export enum CoinFamily {
   OFC = 'ofc',
   OG = 'og',
   OPBNB = 'opbnb', // opBNB Chain
-  OKB = 'okb',
+  OKBXLAYER = 'okbxlayer',
   OPETH = 'opeth',
   OSMO = 'osmo',
   PLUME = 'plume',
@@ -612,7 +612,7 @@ export enum UnderlyingAsset {
   NEAR = 'near',
   OAS = 'oas',
   OG = 'og',
-  OKB = 'okb',
+  OKBXLAYER = 'okbxlayer',
   OPBNB = 'opbnb', // opBNB Chain
   OPETH = 'opeth',
   OSMO = 'osmo',
@@ -1477,6 +1477,7 @@ export enum UnderlyingAsset {
   OCTAV = 'octav',
   OGN = 'ogn',
   OGV = 'ogv',
+  OKB = 'okb',
   OKBBEAR = 'okbbear',
   OKBBULL = 'okbbull',
   OKBDOOM = 'okbdoom',
@@ -2082,7 +2083,6 @@ export enum UnderlyingAsset {
   'ZRO-0xE5C' = 'zro-0xe5c',
   ZRX = 'zrx',
   ZUSD = 'zusd',
-  'eth:okb' = 'eth:okb',
   'eth:usdg' = 'eth:usdg',
   'eth:spxux' = 'eth:spxux',
   'eth:aleo' = 'eth:aleo',
@@ -3028,13 +3028,13 @@ export enum UnderlyingAsset {
   'tjovayeth:tcmn' = 'tjovayeth:tcmn',
 
   // X Layer (OKB) mainnet tokens
-  'okb:usdg' = 'okb:usdg',
-  'okb:usdt0' = 'okb:usdt0',
-  'okb:usdt' = 'okb:usdt',
-  'okb:usdc' = 'okb:usdc',
+  'okbxlayer:usdg' = 'okbxlayer:usdg',
+  'okbxlayer:usdt0' = 'okbxlayer:usdt0',
+  'okbxlayer:usdt' = 'okbxlayer:usdt',
+  'okbxlayer:usdc' = 'okbxlayer:usdc',
 
   // X Layer (OKB) testnet tokens
-  'tokb:tzeb' = 'tokb:tzeb',
+  'tokbxlayer:tzeb' = 'tokbxlayer:tzeb',
 
   // Story testnet tokens
   'tip:usdc' = 'tip:usdc',
