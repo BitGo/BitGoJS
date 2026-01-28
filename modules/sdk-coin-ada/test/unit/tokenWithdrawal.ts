@@ -399,6 +399,8 @@ describe('ADA Token Operations', async () => {
     feeAddressChangeOutput.length.should.equal(1);
     // Fee address change should not have any tokens
     should.not.exist(feeAddressChangeOutput[0].multiAssets);
+
+    tx.getFee.should.equal('182485'); // Fee with two witnesses
   });
 
   describe('AdaToken verifyTransaction', () => {

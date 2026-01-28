@@ -455,6 +455,11 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       if (this._type !== TransactionType.Send) {
         vkeyWitnesses.add(vkeyWitness);
       }
+      if (this._sponsorshipInfo) {
+        const sponsorPrv = CardanoWasm.PrivateKey.generate_ed25519();
+        const sponsorVkeyWitness = CardanoWasm.make_vkey_witness(txHash, sponsorPrv);
+        vkeyWitnesses.add(sponsorVkeyWitness);
+      }
     }
     witnessSet.set_vkeys(vkeyWitnesses);
 
