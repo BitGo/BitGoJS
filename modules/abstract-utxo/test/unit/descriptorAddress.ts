@@ -1,17 +1,16 @@
 import * as assert from 'node:assert';
 
 import * as utxolib from '@bitgo/utxo-lib';
+import { address as wasmAddress, CoinName } from '@bitgo/wasm-utxo';
 import { IWallet, WalletCoinSpecific } from '@bitgo/sdk-core';
 
 import { descriptor as utxod } from '../../src';
 
 import { getUtxoCoin } from './util';
 
-export function getDescriptorAddress(d: string, index: number, network: utxolib.Network): string {
-  const derivedScript = Buffer.from(
-    utxod.Descriptor.fromString(d, 'derivable').atDerivationIndex(index).scriptPubkey()
-  );
-  return utxolib.address.fromOutputScript(derivedScript, network);
+export function getDescriptorAddress(d: string, index: number, coinName: CoinName): string {
+  const derivedScript = utxod.Descriptor.fromString(d, 'derivable').atDerivationIndex(index).scriptPubkey();
+  return wasmAddress.fromOutputScriptWithCoin(derivedScript, coinName);
 }
 
 describe('descriptor wallets', function () {
@@ -40,9 +39,9 @@ describe('descriptor wallets', function () {
 
   const descFoo = getNamedDescriptor2Of2('foo', xpubs[0], xpubs[1]);
   const descBar = getNamedDescriptor2Of2('bar', xpubs[1], xpubs[0]);
-  const addressFoo0 = getDescriptorAddress(descFoo.value, 0, coin.network);
-  const addressFoo1 = getDescriptorAddress(descFoo.value, 1, coin.network);
-  const addressBar0 = getDescriptorAddress(descBar.value, 0, coin.network);
+  const addressFoo0 = getDescriptorAddress(descFoo.value, 0, coin.name);
+  const addressFoo1 = getDescriptorAddress(descFoo.value, 1, coin.name);
+  const addressBar0 = getDescriptorAddress(descBar.value, 0, coin.name);
 
   it('has expected values', function () {
     assert.deepStrictEqual(

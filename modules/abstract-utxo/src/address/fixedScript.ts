@@ -12,17 +12,15 @@ import {
   isTriple,
   Triple,
 } from '@bitgo/sdk-core';
-import { bitgo } from '@bitgo/utxo-lib';
-import * as wasmUtxo from '@bitgo/wasm-utxo';
+import { fixedScriptWallet } from '@bitgo/wasm-utxo';
 
-import { getNetworkFromCoinName, UtxoCoinName } from '../names';
+import { UtxoCoinName } from '../names';
 
-type ScriptType2Of3 = bitgo.outputScripts.ScriptType2Of3;
+type ScriptType2Of3 = fixedScriptWallet.OutputScriptType;
+type ChainCode = fixedScriptWallet.ChainCode;
 
 export interface FixedScriptAddressCoinSpecific {
   outputScript?: string;
-  redeemScript?: string;
-  witnessScript?: string;
 }
 
 export interface GenerateAddressOptions {
@@ -39,22 +37,27 @@ interface GenerateFixedScriptAddressOptions extends GenerateAddressOptions {
 }
 
 function supportsAddressType(coinName: UtxoCoinName, addressType: ScriptType2Of3): boolean {
-  const network = getNetworkFromCoinName(coinName);
-  return bitgo.outputScripts.isSupportedScriptType(network, addressType);
+  return fixedScriptWallet.supportsScriptType(coinName, addressType);
+}
+
+/**
+ * Normalize script type aliases. "p2tr" is an alias for "p2trLegacy".
+ */
+function normalizeScriptType(scriptType: ScriptType2Of3 | 'p2tr'): ScriptType2Of3 {
+  return scriptType === 'p2tr' ? 'p2trLegacy' : scriptType;
 }
 
 export function generateAddressWithChainAndIndex(
   coinName: UtxoCoinName,
-  keychains: bitgo.RootWalletKeys | Triple<string>,
-  chain: bitgo.ChainCode,
+  keychains: fixedScriptWallet.WalletKeysArg | Triple<string>,
+  chain: ChainCode,
   index: number,
   format: CreateAddressFormat | undefined
 ): string {
   // Convert CreateAddressFormat to AddressFormat for wasm-utxo
   // 'base58' -> 'default', 'cashaddr' -> 'cashaddr'
   const wasmFormat = format === 'base58' ? 'default' : format;
-  const network = getNetworkFromCoinName(coinName);
-  return wasmUtxo.fixedScriptWallet.address(keychains, chain, index, network, wasmFormat);
+  return fixedScriptWallet.address(keychains, chain, index, coinName, wasmFormat);
 }
 
 /**
@@ -77,14 +80,14 @@ export function generateAddress(coinName: UtxoCoinName, params: GenerateFixedScr
 
   const { keychains, chain, segwit = false, bech32 = false } = params as GenerateFixedScriptAddressOptions;
 
-  let derivationChain = bitgo.getExternalChainCode('p2sh');
-  if (_.isNumber(chain) && _.isInteger(chain) && bitgo.isChainCode(chain)) {
+  let derivationChain: ChainCode = fixedScriptWallet.ChainCode.value('p2sh', 'external');
+  if (_.isNumber(chain) && _.isInteger(chain) && fixedScriptWallet.ChainCode.is(chain)) {
     derivationChain = chain;
   }
 
   function convertFlagsToAddressType(): ScriptType2Of3 {
-    if (bitgo.isChainCode(chain)) {
-      return bitgo.scriptTypeForChain(chain);
+    if (fixedScriptWallet.ChainCode.is(chain)) {
+      return fixedScriptWallet.ChainCode.scriptType(chain);
     }
     if (_.isBoolean(segwit) && segwit) {
       return 'p2shP2wsh';
@@ -95,9 +98,9 @@ export function generateAddress(coinName: UtxoCoinName, params: GenerateFixedScr
     }
   }
 
-  const addressType = params.addressType || convertFlagsToAddressType();
+  const addressType = normalizeScriptType(params.addressType || convertFlagsToAddressType());
 
-  if (addressType !== bitgo.scriptTypeForChain(derivationChain)) {
+  if (addressType !== fixedScriptWallet.ChainCode.scriptType(derivationChain)) {
     throw new AddressTypeChainMismatchError(addressType, derivationChain);
   }
 
@@ -110,6 +113,7 @@ export function generateAddress(coinName: UtxoCoinName, params: GenerateFixedScr
       case 'p2wsh':
         throw new P2wshUnsupportedError();
       case 'p2tr':
+      case 'p2trLegacy':
         throw new P2trUnsupportedError();
       case 'p2trMusig2':
         throw new P2trMusig2UnsupportedError();

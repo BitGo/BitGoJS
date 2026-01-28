@@ -2,14 +2,19 @@ import * as assert from 'assert';
 
 import * as utxolib from '@bitgo/utxo-lib';
 
-import { getMainnetCoinName, utxoCoinsMainnet, utxoCoinsTestnet } from '../../src/names';
+import { getMainnetCoinName, getNetworkFromCoinName, utxoCoinsMainnet, utxoCoinsTestnet } from '../../src/names';
 
 import { getUtxoCoinForNetwork, utxoCoins } from './util';
 
 describe('utxoCoins', function () {
   it('has expected chain/network values for items', function () {
     assert.deepStrictEqual(
-      utxoCoins.map((c) => [c.getChain(), c.getFamily(), c.getFullName(), utxolib.getNetworkName(c.network)]),
+      utxoCoins.map((c) => [
+        c.getChain(),
+        c.getFamily(),
+        c.getFullName(),
+        utxolib.getNetworkName(getNetworkFromCoinName(c.name)),
+      ]),
       [
         ['btc', 'btc', 'Bitcoin', 'bitcoin'],
         ['tbtc', 'btc', 'Testnet Bitcoin', 'testnet'],
