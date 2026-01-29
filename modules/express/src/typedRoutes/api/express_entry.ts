@@ -1,4 +1,6 @@
+import * as t from 'io-ts';
 import { apiSpec } from '@api-ts/io-ts-http';
+import * as express from 'express';
 
 import { GetPing } from './common/ping';
 // import { GetPingExpress } from './common/pingExpress';
@@ -33,7 +35,7 @@ import { GetPing } from './common/ping';
 // import { PostShareWallet } from './v2/shareWallet';
 // import { PutExpressWalletUpdate } from './v2/expressWalletUpdate';
 // import { PostFanoutUnspents } from './v2/fanoutUnspents';
-import { PostSendMany } from './v2/sendmany';
+// import { PostSendMany } from './v2/sendmany';
 // import { PostConsolidateUnspents } from './v2/consolidateunspents';
 // import { PostPrebuildAndSignTransaction } from './v2/prebuildAndSignTransaction';
 // import { PostCoinSign } from './v2/coinSign';
@@ -188,11 +190,11 @@ export const ExpressPingApiSpec = apiSpec({
 //   },
 // });
 
-export const ExpressV2WalletSendManyApiSpec = apiSpec({
-  'express.v2.wallet.sendmany': {
-    post: PostSendMany,
-  },
-});
+// export const ExpressV2WalletSendManyApiSpec = apiSpec({
+//   'express.v2.wallet.sendmany': {
+//     post: PostSendMany,
+//   },
+// });
 
 // export const ExpressV2WalletSendCoinsApiSpec = apiSpec({
 //   'express.v2.wallet.sendcoins': {
@@ -319,3 +321,98 @@ export const ExpressV2WalletSendManyApiSpec = apiSpec({
 //     post: PostWalletAccelerateTx,
 //   },
 // });
+
+export type ExpressApi = typeof ExpressPingApiSpec;
+//   typeof ExpressPingExpressApiSpec &
+//   typeof ExpressLoginApiSpec &
+//   typeof ExpressDecryptApiSpec &
+//   typeof ExpressEncryptApiSpec &
+//   typeof ExpressVerifyAddressApiSpec &
+//   typeof ExpressVerifyCoinAddressApiSpec &
+//   typeof ExpressCalculateMinerFeeInfoApiSpec &
+//   typeof ExpressV1WalletAcceptShareApiSpec &
+//   typeof ExpressV1WalletSimpleCreateApiSpec &
+//   typeof ExpressPendingApprovalsApiSpec &
+//   typeof ExpressWalletSignTransactionApiSpec &
+//   typeof ExpressV1KeychainDeriveApiSpec &
+//   typeof ExpressV1KeychainLocalApiSpec &
+//   typeof ExpressV1PendingApprovalConstructTxApiSpec &
+//   typeof ExpressWalletConsolidateUnspentsApiSpec &
+//   typeof ExpressV2WalletConsolidateAccountApiSpec &
+//   typeof ExpressWalletFanoutUnspentsApiSpec &
+//   typeof ExpressV2WalletCreateAddressApiSpec &
+//   typeof ExpressV2WalletIsWalletAddressApiSpec &
+//   typeof ExpressKeychainLocalApiSpec &
+//   typeof ExpressKeychainChangePasswordApiSpec &
+//   typeof ExpressLightningWalletPaymentApiSpec &
+//   typeof ExpressLightningGetStateApiSpec &
+//   typeof ExpressLightningInitWalletApiSpec &
+//   typeof ExpressLightningUnlockWalletApiSpec &
+//   typeof ExpressLightningWalletWithdrawApiSpec &
+//   typeof ExpressV2WalletSendManyApiSpec &
+//   typeof ExpressV2WalletSendCoinsApiSpec &
+//   typeof ExpressOfcSignPayloadApiSpec &
+//   typeof ExpressWalletRecoverTokenApiSpec &
+//   typeof ExpressWalletEnableTokensApiSpec &
+//   typeof ExpressCoinSigningApiSpec &
+//   typeof ExpressExternalSigningApiSpec &
+//   typeof ExpressWalletSigningApiSpec &
+//   typeof ExpressV2CanonicalAddressApiSpec &
+//   typeof ExpressV2WalletSweepApiSpec &
+//   typeof ExpressV2WalletAccelerateTxApiSpec &
+//   typeof ExpressWalletManagementApiSpec;
+
+export const ExpressApi: ExpressApi = {
+  ...ExpressPingApiSpec,
+  // ...ExpressPingExpressApiSpec,
+  // ...ExpressLoginApiSpec,
+  // ...ExpressDecryptApiSpec,
+  // ...ExpressEncryptApiSpec,
+  // ...ExpressVerifyAddressApiSpec,
+  // ...ExpressVerifyCoinAddressApiSpec,
+  // ...ExpressCalculateMinerFeeInfoApiSpec,
+  // ...ExpressV1WalletAcceptShareApiSpec,
+  // ...ExpressV1WalletSimpleCreateApiSpec,
+  // ...ExpressPendingApprovalsApiSpec,
+  // ...ExpressWalletSignTransactionApiSpec,
+  // ...ExpressV1KeychainDeriveApiSpec,
+  // ...ExpressV1KeychainLocalApiSpec,
+  // ...ExpressV1PendingApprovalConstructTxApiSpec,
+  // ...ExpressWalletConsolidateUnspentsApiSpec,
+  // ...ExpressWalletFanoutUnspentsApiSpec,
+  // ...ExpressV2WalletCreateAddressApiSpec,
+  // ...ExpressV2WalletConsolidateAccountApiSpec,
+  // ...ExpressV2WalletIsWalletAddressApiSpec,
+  // ...ExpressKeychainLocalApiSpec,
+  // ...ExpressKeychainChangePasswordApiSpec,
+  // ...ExpressLightningWalletPaymentApiSpec,
+  // ...ExpressLightningGetStateApiSpec,
+  // ...ExpressLightningInitWalletApiSpec,
+  // ...ExpressLightningUnlockWalletApiSpec,
+  // ...ExpressLightningWalletWithdrawApiSpec,
+  // ...ExpressV2WalletSendManyApiSpec,
+  // ...ExpressV2WalletSendCoinsApiSpec,
+  // ...ExpressOfcSignPayloadApiSpec,
+  // ...ExpressWalletRecoverTokenApiSpec,
+  // ...ExpressWalletEnableTokensApiSpec,
+  // ...ExpressCoinSigningApiSpec,
+  // ...ExpressExternalSigningApiSpec,
+  // ...ExpressWalletSigningApiSpec,
+  // ...ExpressV2CanonicalAddressApiSpec,
+  // ...ExpressV2WalletSweepApiSpec,
+  // ...ExpressV2WalletAccelerateTxApiSpec,
+  // ...ExpressWalletManagementApiSpec,
+};
+
+type ExtractDecoded<T> = T extends t.Type<any, infer O, any> ? O : never;
+type FlattenDecoded<T> = T extends Record<string, unknown>
+  ? (T extends { body: infer B } ? B : any) &
+      (T extends { query: infer Q } ? Q : any) &
+      (T extends { params: infer P } ? P : any)
+  : T;
+export type ExpressApiRouteRequest<
+  ApiName extends keyof ExpressApi,
+  Method extends keyof ExpressApi[ApiName]
+> = ExpressApi[ApiName][Method] extends { request: infer R }
+  ? express.Request & { decoded: FlattenDecoded<ExtractDecoded<R>> }
+  : never;
