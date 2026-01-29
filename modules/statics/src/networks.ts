@@ -999,6 +999,30 @@ class KavaTestnet extends Testnet implements CosmosNetwork {
   validDenoms = ['kava', 'ukava'];
 }
 
+class Dydx extends Mainnet implements CosmosNetwork {
+  name = 'Dydx';
+  family = CoinFamily.DYDX;
+  explorerUrl = 'https://www.mintscan.io/dydx/tx/';
+  addressPrefix = 'dydx';
+  validatorPrefix = 'dydxvaloper';
+  denom = 'adydx';
+  gasAmount = '5000000000000000';
+  gasLimit = 200000;
+  validDenoms = ['adydx'];
+}
+
+class DydxTestnet extends Testnet implements CosmosNetwork {
+  name = 'DydxTestnet';
+  family = CoinFamily.DYDX;
+  explorerUrl = 'https://www.mintscan.io/dydx-testnet/tx/';
+  addressPrefix = 'dydx';
+  validatorPrefix = 'dydxvaloper';
+  denom = 'adv4tnt';
+  gasAmount = '5000000000000000';
+  gasLimit = 200000;
+  validDenoms = ['adv4tnt'];
+}
+
 class Ton extends Mainnet implements AccountNetwork {
   name = 'Ton';
   family = CoinFamily.TON;
@@ -2358,6 +2382,7 @@ export const Networks = {
     dogecoin: Object.freeze(new Dogecoin()),
     dogeos: Object.freeze(new Dogeos()),
     dot: Object.freeze(new PolkadotAssetHub()),
+    dydx: Object.freeze(new Dydx()),
     eCash: Object.freeze(new ECash()),
     eos: Object.freeze(new Eos()),
     ethereum: Object.freeze(new Ethereum()),
@@ -2469,6 +2494,7 @@ export const Networks = {
     dogecoin: Object.freeze(new DogecoinTestnet()),
     dogeos: Object.freeze(new DogeosTestnet()),
     dot: Object.freeze(new WestendAssetHub()),
+    dydx: Object.freeze(new DydxTestnet()),
     eCash: Object.freeze(new ECashTestnet()),
     eos: Object.freeze(new EosTestnet()),
     fiat: Object.freeze(new FiatTestnet()),

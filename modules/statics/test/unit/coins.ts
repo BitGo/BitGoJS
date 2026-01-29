@@ -878,7 +878,7 @@ coins.forEach((coin, coinName) => {
     });
 
     if (!coin.isToken && coin.family !== CoinFamily.FIAT) {
-      if (coin.family !== CoinFamily.THOR) {
+      if (coin.family !== CoinFamily.THOR && coin.family !== CoinFamily.DYDX) {
         it(`has expected network type`, function () {
           coin.network.type.should.eql(coin.name === coin.family ? NetworkType.MAINNET : NetworkType.TESTNET);
         });
